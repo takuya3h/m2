@@ -1,29 +1,12 @@
+# @package _global_
+# Experiment preset loaded via: python -m research_template.train +experiment=baseline
+
+defaults:
+  - override /data: custom_dataset
+  - override /model: resnet50
+
 seed: 42
-
-data:
-  name: custom_dataset
-  root: data/processed/custom_dataset
-  batch_size: 64
-  num_workers: 8
-  image_size: 224
-
-model:
-  name: resnet50
-  pretrained: true
-  num_classes: 10
-
-optimizer:
-  name: adamw
-  lr: 0.0001
-  weight_decay: 0.05
-
-scheduler:
-  name: cosine
-  warmup_epochs: 5
 
 train:
   epochs: 100
   amp: true
-
-eval:
-  batch_size: 64

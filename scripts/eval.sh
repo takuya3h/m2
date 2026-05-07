@@ -13,14 +13,15 @@ if [ ! -f "${EXPERIMENT_DIR}/config.yaml" ]; then
     exit 1
 fi
 
+if [ ! -f "${EXPERIMENT_DIR}/eval_command.sh" ]; then
+    echo "Error: eval_command.sh not found in ${EXPERIMENT_DIR}"
+    exit 1
+fi
+
 mkdir -p "${EXPERIMENT_DIR}/logs"
 
 LOG_FILE="${EXPERIMENT_DIR}/logs/eval.log"
-
 echo "Starting evaluation for experiment: ${EXPERIMENT_DIR}"
 echo "Log: ${LOG_FILE}"
 
-python -m research_template.evaluate \
-    --config "${EXPERIMENT_DIR}/config.yaml" \
-    --output-dir "${EXPERIMENT_DIR}" \
-    2>&1 | tee "${LOG_FILE}"
+bash "${EXPERIMENT_DIR}/eval_command.sh" 2>&1 | tee "${LOG_FILE}"

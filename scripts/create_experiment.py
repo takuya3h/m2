@@ -1,7 +1,6 @@
 """Create a new experiment directory with metadata files."""
 
 import argparse
-import json
 import re
 import shutil
 import subprocess
@@ -18,26 +17,12 @@ def normalize_name(name: str) -> str:
 
 
 def get_next_seq(experiments_dir: Path, today: str) -> int:
-    existing = [
-        p.name for p in experiments_dir.iterdir()
-        if p.is_dir() and p.name.startswith(today)
-    ]
-    if not existing:
-        return 1
     seqs = []
-    for name in existing:
-        parts = name.split("_")
-        if len(parts) >= 2:
-            try:
-                seqs.append(int(parts[0].split("-")[-1]) if "-" in parts[0] else int(parts[1]))
-            except ValueError:
-                pass
-    # Parse NNN from YYYY-MM-DD_NNN_...
-    seqs = []
-    for name in existing:
-        # format: YYYY-MM-DD_NNN_desc
-        m = re.match(r"\d{4}-\d{2}-\d{2}_(\d{3})_", name)
-        if m:
+    for p in experiments_dir.iterdir():
+        if not p.is_dir():
+            continue
+        m = re.match(r"\d{4}-\d{2}-\d{2}_(\d{3})_", p.name)
+        if m and p.name.startswith(today):
             seqs.append(int(m.group(1)))
     return max(seqs, default=0) + 1
 
@@ -53,12 +38,25 @@ def get_git_commit() -> str:
         return "UNKNOWN"
 
 
+def infer_experiment_preset(config_path: Path) -> str | None:
+    """Derive Hydra experiment preset name from config path.
+
+    configs/experiment/baseline.yaml -> "baseline"
+    """
+    parts = config_path.parts
+    if "experiment" in parts:
+        idx = list(parts).index("experiment")
+        if idx + 1 < len(parts):
+            return config_path.stem
+    return None
+
+
 def main():
     parser = argparse.ArgumentParser(description="Create a new experiment directory.")
     parser.add_argument("--name", required=True, help="Short experiment name")
-    parser.add_argument("--config", required=True, help="Path to experiment config YAML")
+    parser.add_argument("--config", required=True, help="Path to experiment config YAML (e.g. configs/experiment/baseline.yaml)")
     parser.add_argument("--experiments-dir", default="experiments", help="Root experiments directory")
-    parser.add_argument("--command", default=None, help="Training command to record in command.sh")
+    parser.add_argument("--command", default=None, help="Override training command recorded in command.sh")
     args = parser.parse_args()
 
     experiments_dir = Path(args.experiments_dir)
@@ -74,20 +72,40 @@ def main():
     exp_name = f"{today}_{seq:03d}_{short_name}"
     exp_dir = experiments_dir / exp_name
     exp_dir.mkdir(parents=True, exist_ok=False)
+    exp_dir_abs = exp_dir.resolve()
 
-    # config.yaml
+    # config.yaml — copy the experiment preset for reference
     shutil.copy(config_path, exp_dir / "config.yaml")
 
-    # command.sh
+    # command.sh — Hydra-based training command
     if args.command:
         command_content = args.command
     else:
+        preset = infer_experiment_preset(config_path)
+        experiment_override = f"+experiment={preset} \\\n    " if preset else ""
         command_content = (
-            f'python -m research_template.train'
-            f' --config "{exp_dir}/config.yaml"'
-            f' --output-dir "{exp_dir}"'
+            "#!/bin/bash\n"
+            "# Run from project root\n"
+            f"uv run python -m research_template.train \\\n"
+            f"    {experiment_override}"
+            f'hydra.run.dir="{exp_dir_abs}"\n'
         )
-    (exp_dir / "command.sh").write_text(f"#!/bin/bash\n{command_content}\n")
+    (exp_dir / "command.sh").write_text(command_content)
+
+    # eval_command.sh
+    if args.command:
+        eval_command_content = args.command.replace("train", "evaluate")
+    else:
+        preset = infer_experiment_preset(config_path)
+        experiment_override = f"+experiment={preset} \\\n    " if preset else ""
+        eval_command_content = (
+            "#!/bin/bash\n"
+            "# Run from project root\n"
+            f"uv run python -m research_template.evaluate \\\n"
+            f"    {experiment_override}"
+            f'hydra.run.dir="{exp_dir_abs}"\n'
+        )
+    (exp_dir / "eval_command.sh").write_text(eval_command_content)
 
     # git_commit.txt
     (exp_dir / "git_commit.txt").write_text(get_git_commit() + "\n")

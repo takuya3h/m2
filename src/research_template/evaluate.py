@@ -1,37 +1,40 @@
 """Entry point for model evaluation."""
 
-import argparse
-from pathlib import Path
+import wandb
+import hydra
+from hydra.core.hydra_config import HydraConfig
+from omegaconf import DictConfig, OmegaConf
+
+from research_template.utils.logging import get_logger
+from research_template.utils.seed import set_seed
 
 
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Evaluate a model.")
-    parser.add_argument("--config", required=True, help="Path to config YAML")
-    parser.add_argument("--output-dir", required=True, help="Experiment output directory")
-    return parser.parse_args()
+@hydra.main(version_base=None, config_path="../../configs", config_name="config")
+def main(cfg: DictConfig) -> None:
+    logger = get_logger(__name__)
+    set_seed(cfg.seed)
 
+    output_dir = HydraConfig.get().runtime.output_dir
+    logger.info(f"Output dir: {output_dir}")
+    logger.info(f"Config:\n{OmegaConf.to_yaml(cfg)}")
 
-def main() -> None:
-    args = parse_args()
+    run = wandb.init(
+        project=cfg.wandb.project,
+        entity=cfg.wandb.get("entity") or None,
+        mode=cfg.wandb.get("mode", "online"),
+        config=OmegaConf.to_container(cfg, resolve=True),
+        dir=output_dir,
+    )
 
-    config_path = Path(args.config)
-    output_dir = Path(args.output_dir)
-
-    if not config_path.exists():
-        raise FileNotFoundError(f"Config not found: {config_path}")
-    if not output_dir.exists():
-        raise FileNotFoundError(f"Output directory not found: {output_dir}")
-
-    print(f"Config:     {config_path}")
-    print(f"Output dir: {output_dir}")
-
-    # TODO: Load config
-    # TODO: Build dataset and dataloader (eval split)
-    # TODO: Load model from checkpoint
-    # TODO: Run evaluation loop
-    # TODO: Compute and save metrics to metrics.json
-
-    raise NotImplementedError("Evaluation loop is not yet implemented.")
+    try:
+        # TODO: Load model from checkpoint (e.g., output_dir/checkpoints/best.pth)
+        # TODO: Build eval dataloader
+        # TODO: Run evaluation loop
+        # TODO: Compute metrics and log with: wandb.log({"val/acc": acc, "val/loss": loss})
+        # TODO: Save metrics to output_dir/metrics.json
+        raise NotImplementedError("Evaluation loop is not yet implemented.")
+    finally:
+        wandb.finish()
 
 
 if __name__ == "__main__":
