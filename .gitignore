@@ -207,7 +207,31 @@ marimo/_lsp/
 __marimo__/
 
 # add
-data/
+data/*
+!data/README.md
+!data/splits/
+data/splits/*
+!data/splits/train.txt
+!data/splits/val.txt
+!data/splits/test.txt
 weights/
 logs/
 .ipynb_checkpoints/
+experiments/*/checkpoints/
+experiments/*/logs/
+experiments/*/predictions/
+experiments/*/visualizations/
+*.pth
+*.pt
+*.ckpt
+*.onnx
+
+# Tracking tools
+wandb/
+mlruns/
+runs/
+
+# OS / Editor
+.DS_Store
+.vscode/
+.idea/
