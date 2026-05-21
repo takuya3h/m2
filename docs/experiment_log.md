@@ -1,13 +1,20 @@
-# Experiment Log
+# 実験ログ
 
-## YYYY-MM-DD
+全実験で「仮説→実験→結果→解釈→次の行動」を記録する。
 
-### Hypothesis
+---
 
-### Experiment
+## YYYY-MM-DD — [S?] 短い説明
 
-### Result
+### 仮説
 
-### Interpretation
+### 実験
+- 実験 ID:
+- 変更した軸:
 
-### Next Action
+### 結果
+
+### 解釈
+
+### 次の行動
+1.

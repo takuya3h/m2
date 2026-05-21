@@ -1,16 +1,43 @@
-.PHONY: install create-exp train eval test
+.PHONY: setup test lint s0 s2 s4 s5 s6 eval delta
 
-install:
-	uv sync
-
-create-exp:
-	uv run python scripts/create_experiment.py --name baseline_resnet50 --config configs/experiment/baseline.yaml
-
-train:
-	@echo "Usage: bash scripts/train.sh experiments/YYYY-MM-DD_NNN_short-description"
-
-eval:
-	@echo "Usage: bash scripts/eval.sh experiments/YYYY-MM-DD_NNN_short-description"
+setup:
+	pip install -e ".[dev]"
 
 test:
-	uv run pytest tests
+	pytest tests/ -v --cov=src/egosurgery
+
+lint:
+	ruff check src/ tests/
+	black --check src/ tests/
+
+format:
+	ruff check --fix src/ tests/
+	black src/ tests/
+
+s0:
+	bash scripts/run_s0.sh
+
+s2:
+	bash scripts/run_s2.sh
+
+s4:
+	bash scripts/run_s4.sh
+
+s5:
+	bash scripts/run_s5.sh
+
+s6:
+	bash scripts/run_s6.sh
+
+eval:
+	bash scripts/eval.sh
+
+delta:
+	python scripts/compute_delta.py
+
+tables:
+	python scripts/export_paper_tables.py
+
+clean:
+	find . -type d -name __pycache__ -exec rm -rf {} +
+	find . -type f -name "*.pyc" -delete
