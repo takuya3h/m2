@@ -73,6 +73,9 @@ paper/sections/*.aux
 !experiments/**/metrics.json
 !experiments/**/per_class_ap.json
 !experiments/**/notes.md
+# 学習に使う tool 検出アノテーション（instances_*.json）は再現性のため追跡する。
+# tool/ hand/ の生 COCO コピーは EgoSurgery 公式と重複・大容量のため追跡しない。
+!data/annotations/egosurgery_tool/instances_*.json
 
 # === third_party (外部 fork: MaskDINO 等) ===
 third_party/

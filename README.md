@@ -63,13 +63,39 @@ uv pip install mmdet==3.3.0
 uv pip install "setuptools<80" ninja packaging wheel
 CUDA_HOME=/usr/local/cuda MAX_JOBS=8 \
   uv pip install causal-conv1d==1.4.0 mamba-ssm==2.2.2 --no-build-isolation
+
+# プロジェクトを editable install（egosurgery を import 可能にする。PYTHONPATH 不要）
+uv pip install -e .          # 開発ツール込みなら -e ".[dev]"
 ```
+
+`pyproject.toml` は src レイアウトのパッケージ発見・pytest（`pythonpath=["src"]`）・
+ruff・black・coverage を定義する。`pip install -e .` 後は `PYTHONPATH=src` は不要。
+torch / mmcv 系 / mamba-ssm は CUDA 依存のため `pyproject.toml` の依存には含めず、
+上記の手順で個別に導入する。
 
 検証済み: driver 535（CUDA 12.2）上で cu118 ランタイムが動作し、`torch.cuda` /
 mmcv 2.1 / mmdet 3.3 / mamba-ssm 2.2.2 / causal-conv1d 1.4.0 がすべて GPU で動作。
 `transformers` は mamba-ssm 2.2.2 が旧 generation API を参照するため 4.44.2 に固定。
 
+### 別マシンでの環境再現（推奨）
+
+検証済み環境を他サーバで完全再現するための再現セット（すべて Git 管理）:
+
+```bash
+bash scripts/setup_env.sh   # venv 作成〜全依存導入〜検証まで自動
+```
+
+- `requirements.lock.txt` — 全 100 パッケージの厳密バージョン（`uv pip freeze`）
+- `scripts/setup_env.sh` — index URL・find-links・ソースビルドを含む再現スクリプト
+- `docs/environment.md` — OS / driver / CUDA Toolkit 11.8 等のシステム層の記録
+- `docs/reproduce_on_new_machine.md` — 別マシンの Claude Code 向け再現指示書
+
+前提: Ubuntu 22.04 系・NVIDIA driver 525 以降・**CUDA Toolkit 11.8（nvcc）**・uv。
+
 ### 基本依存（requirements.txt）
+
+`requirements.txt` は依存の概要一覧。厳密な再現には上記 `requirements.lock.txt` を
+用いること。
 
 ```bash
 pip install -r requirements.txt
