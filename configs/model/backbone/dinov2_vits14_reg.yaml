@@ -1,0 +1,25 @@
+name: "dinov2_vits14_reg"
+arch: "vits"
+patch_size: 14
+embed_dim: 384
+num_heads: 6
+depth: 12
+num_register_tokens: 4
+out_indices: [2, 5, 8, 11]
+img_size: 518
+pretrained: true
+hub_repo: "facebookresearch/dinov2"
+hub_model: "dinov2_vits14_reg"
+
+# 軽量変種。スモーク実行・テスト・低 VRAM 環境向け。
+peft:
+  method: "lora"
+  r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  target_modules: ["qkv", "proj"]
+  use_dora: true
+  quantization: null
+
+use_bf16: true
+gradient_checkpointing: false

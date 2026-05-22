@@ -1,0 +1,95 @@
+# @package _global_
+# S0: 術具検出ベースライン — §2.5(a) 基準点
+#
+# `# @package _global_` 指定により、本ファイルの内容はグローバル名前空間
+# （cfg.experiment / cfg.train / ...）へ直接マージされ default.yaml を上書きする。
+#
+# data セクションは EgoSurgeryDataModule の契約（train/val/test サブ辞書）に
+# 合わせた構造で記述する。スモーク実行は CLI override で行う:
+#   model.backbone=dinov2_vits14_reg data.limit=16 data.img_size=224 \
+#   train.epochs=1 train.freeze_backbone=true data.num_workers=0
+
+experiment:
+  category: "baselines"
+  step: "s0"
+  description: "tool_baseline"
+
+model:
+  num_classes: 15
+  backbone: dinov2_vitl14_reg     # build_backbone が文字列を解決
+  detection_head: mask_dino       # run_s0.sh で varifocanet に切替えて並走
+
+train:
+  epochs: 100
+  batch_size: 4
+  num_workers: 8
+  amp: true
+  gradient_checkpoint: true
+  grad_clip_norm: 1.0
+  freeze_backbone: false          # スモーク時のみ true で高速化
+
+optimizer:
+  name: "adamw"
+  lr: 0.0001
+  weight_decay: 0.05
+
+scheduler:
+  name: "cosine"
+  warmup_epochs: 5
+
+# 長尾対策（操作フラグは data セクションへ反映）
+longtail:
+  seesaw_loss: true
+  seesaw_p: 0.8
+  seesaw_q: 2.0
+  rfs: true
+  rfs_thresh: 0.001
+  copypaste: true
+  copypaste_prob: 0.5
+  logit_adjustment: true
+  logit_adjustment_tau: 1.0
+
+# S0 固有: Phase head なし、双方向なし
+feedback:
+  phase_to_det: false
+  det_to_phase: false
+
+relation:
+  enabled: false
+
+exo:
+  enabled: false
+
+# データ（EgoSurgeryDataModule の契約に準拠）
+data:
+  img_size: 518
+  batch_size: 4
+  num_workers: 8
+  include_hand: false
+  include_phase: false
+  use_rfs: true
+  repeat_thresh: 0.001
+  use_copypaste: false            # crop バンク生成後に true へ
+  limit: null                     # スモーク用の画像数上限
+  copypaste:
+    bank_dir: "data/processed/copypaste_bank/"
+    rare_classes: ["Skewer", "Syringe", "Forceps"]
+    paste_prob: 0.5
+    max_paste_per_image: 3
+  train:
+    ann_file: "data/annotations/egosurgery_tool/instances_train.json"
+    img_dir: "data/raw/ego/"
+  val:
+    ann_file: "data/annotations/egosurgery_tool/instances_val.json"
+    img_dir: "data/raw/ego/"
+  test:
+    ann_file: "data/annotations/egosurgery_tool/instances_test.json"
+    img_dir: "data/raw/ego/"
+
+logging:
+  wandb_project: "egosurgery_multitask"
+  wandb_enabled: true
+  save_top_k: 3
+
+eval:
+  num_seeds: 3

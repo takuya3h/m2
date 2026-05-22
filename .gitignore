@@ -73,3 +73,12 @@ paper/sections/*.aux
 !experiments/**/metrics.json
 !experiments/**/per_class_ap.json
 !experiments/**/notes.md
+
+# === third_party (外部 fork: MaskDINO 等) ===
+third_party/
+
+# === outputs (Hydra 実行ログ) ===
+outputs/
+
+# === Claude Code（個人設定のみ除外。commands/agents/skills は共有）===
+.claude/settings.local.json

@@ -1,0 +1,11 @@
+name: "mask_dino"
+num_queries: 300
+hidden_dim: 256
+nheads: 8
+dim_feedforward: 2048
+dec_layers: 9
+enc_layers: 6
+mask_on: false     # Phase-0 では bbox-only
+denoising: true
+dn_num: 100
+class_balanced_denoising: false  # 提案手法。S0 で効果を確認後に true にする

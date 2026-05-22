@@ -1,0 +1,90 @@
+# =====================================================================
+# Hydra グローバル設定 — 全実験の共通デフォルト。
+# stage/ 配下の設定が _self_ より後に読み込まれ、本ファイルを上書きする。
+# =====================================================================
+defaults:
+  - _self_
+  - stage: s0_tool_baseline   # デフォルトステージ
+
+seed: 42
+deterministic: true
+cudnn_benchmark: false
+
+# === Phase Configuration ===
+phase:
+  current: "phase0"
+  mask_available: false
+
+# === Model (ダミー、実際の model/ config で上書きされる) ===
+model:
+  num_classes: 15
+  input_dim: 512
+
+# === Feedback Control ===
+feedback:
+  phase_to_det: false
+  det_to_phase: false
+  injection_method: "cross_attention"
+  entropy_gating: true
+  stop_gradient: true
+
+# === Relation Module ===
+relation:
+  enabled: false
+
+# === Exo ===
+exo:
+  enabled: false
+
+# === Loss Weights ===
+loss:
+  lambda_det: 1.0
+  lambda_mask: 0.0
+  lambda_rel: 0.0
+  lambda_phase: 1.0
+  lambda_temp_smooth: 0.1
+  lambda_ssl: 0.0
+  lambda_distill: 0.0
+  lambda_view_consist: 0.0
+  balancer: "famo"
+
+# === Training ===
+train:
+  epochs: 100
+  amp: true
+  gradient_checkpoint: true
+  batch_size: 4
+  num_workers: 4
+  accumulate_grad_batches: 1
+
+# === Optimizer ===
+optimizer:
+  name: "adamw"
+  lr: 0.0001
+  weight_decay: 0.05
+
+# === Scheduler ===
+scheduler:
+  name: "cosine"
+  warmup_epochs: 5
+
+# === Experiment ===
+experiment:
+  base_dir: "experiments"
+  category: "baselines"
+  step: "s0"
+  description: "default"
+
+# === Logging ===
+logging:
+  wandb_project: "egosurgery_multitask"
+  wandb_entity: null
+  wandb_enabled: false    # テスト時は false、本番で true に
+  log_every_n_steps: 50
+  save_top_k: 3
+
+# === Evaluation ===
+eval:
+  num_seeds: 3
+  bootstrap_n: 1000
+  delta_significance_threshold: 1.0

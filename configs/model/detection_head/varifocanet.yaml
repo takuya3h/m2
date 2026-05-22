@@ -1,0 +1,13 @@
+name: "varifocanet"
+# mmdet の VarifocalNet デフォルト設定
+stacked_convs: 3
+feat_channels: 256
+strides: [8, 16, 32, 64, 128]
+loss_cls:
+  type: "VarifocalLoss"
+  alpha: 0.75
+  gamma: 2.0
+  iou_weighted: true
+loss_bbox:
+  type: "GIoULoss"
+  loss_weight: 1.5

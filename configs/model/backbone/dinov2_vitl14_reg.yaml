@@ -1,0 +1,24 @@
+name: "dinov2_vitl14_reg"
+arch: "vitl"
+patch_size: 14
+embed_dim: 1024
+num_heads: 16
+depth: 24
+num_register_tokens: 4
+out_indices: [7, 11, 15, 23]
+img_size: 518
+pretrained: true
+hub_repo: "facebookresearch/dinov2"
+hub_model: "dinov2_vitl14_reg"
+
+peft:
+  method: "lora"
+  r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  target_modules: ["qkv", "proj"]
+  use_dora: true
+  quantization: null
+
+use_bf16: true
+gradient_checkpointing: true
