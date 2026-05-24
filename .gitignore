@@ -1,10 +1,27 @@
-# === データ ===
-data/raw/
+# === データ（中身は ignore・フォルダ構造のみ .gitkeep で保持）===
+# 各ディレクトリで:
+#   <dir>/**             ← 中身を全て ignore
+#   !<dir>/**/           ← ただし子ディレクトリ自体は traverse させる（.gitkeep を見つけるため）
+#   !<dir>/**/.gitkeep   ← .gitkeep だけは追跡
+data/raw/**
+!data/raw/**/
+!data/raw/**/.gitkeep
+
 data/annotations/**/*.json
-data/annotations/egosurgery_hts/
-data/annotations/pseudo_labels/
-data/processed/
-data/external/
+data/annotations/egosurgery_hts/**
+!data/annotations/egosurgery_hts/**/
+!data/annotations/egosurgery_hts/**/.gitkeep
+data/annotations/pseudo_labels/**
+!data/annotations/pseudo_labels/**/
+!data/annotations/pseudo_labels/**/.gitkeep
+
+data/processed/**
+!data/processed/**/
+!data/processed/**/.gitkeep
+
+data/external/**
+!data/external/**/
+!data/external/**/.gitkeep
 
 # === 実験結果（大容量） ===
 experiments/**/checkpoints/
