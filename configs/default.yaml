@@ -87,6 +87,11 @@ logging:
   wandb_enabled: false    # テスト時は false、本番で true に
   log_every_n_steps: 50
   save_top_k: 3
+  # 実行サーバー名（M2研究計画 §14「実験結果ログ（実行マシン別）」用）。
+  # OmegaConf の env 補間で shell rc の SERVERNAME を直接参照する
+  # （例: zsh に export SERVERNAME=bengio）。未設定なら null となり、
+  # utils/server_name.py が socket.gethostname() でフォールバック解決する。
+  server_name: ${oc.env:SERVERNAME,null}
 
 # === Evaluation ===
 eval:

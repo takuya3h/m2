@@ -46,6 +46,7 @@ from egosurgery.metrics.confusion_matrix import (
 )
 from egosurgery.utils.experiment_manager import ExperimentManager
 from egosurgery.utils.seed import seed_everything
+from egosurgery.utils.server_name import resolve_server_name
 
 # detection_head 名 -> 内部 detector キーの対応。
 _VFNET_ALIASES = ("varifocanet", "varifocalnet", "vfnet")
@@ -110,6 +111,13 @@ class MMDetTrainer:
         self.manager = manager
         self.exp_dir = manager.exp_dir
         manager.save_config(cfg)
+
+        # 実行サーバー名を確定し、実験フォルダへ証跡として残す
+        # （M2研究計画 §14 実験結果ログ、研究計画 §13.8 GPU 割り当ての追跡）。
+        self.server_name = resolve_server_name(cfg)
+        (self.exp_dir / "server.txt").write_text(
+            self.server_name + "\n", encoding="utf-8"
+        )
 
         self.mmdet_cfg = self._build_mmdet_cfg(base)
         # 再現性のため mmdet config 全文も実験フォルダへ保存する。
@@ -445,6 +453,7 @@ class MMDetTrainer:
         import json as _json
         cfg = self.mmdet_cfg
         recipe = {
+            "server_name": self.server_name,
             "test_cfg": {
                 "score_thr": float(cfg.model.test_cfg.get("score_thr", 0.05)),
                 "max_per_img": int(cfg.model.test_cfg.get("max_per_img", 100)),
@@ -601,13 +610,23 @@ class MMDetTrainer:
             import wandb
         except ImportError:
             return
+        # 実行サーバー名を tags と config の両方に入れて W&B ダッシュボードで
+        # フィルタ・グルーピング可能にする（M2研究計画 §14 実験結果ログ）。
+        wandb_config = OmegaConf.to_container(self.cfg, resolve=True)
+        if isinstance(wandb_config, dict):
+            wandb_config["server_name"] = self.server_name
         self._wandb_run = wandb.init(
             project=str(self.cfg.logging.get("wandb_project", "egosurgery_multitask")),
             entity=self.cfg.logging.get("wandb_entity", None),
             name=self.manager.exp_id,
             group=str(self.cfg.experiment.step),
-            tags=[str(self.cfg.experiment.step), self.detector, "real_detector"],
-            config=OmegaConf.to_container(self.cfg, resolve=True),
+            tags=[
+                str(self.cfg.experiment.step),
+                self.detector,
+                "real_detector",
+                f"server:{self.server_name}",
+            ],
+            config=wandb_config,
             dir=str(self.exp_dir),
             reinit=True,
         )

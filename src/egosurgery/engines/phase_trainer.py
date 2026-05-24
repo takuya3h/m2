@@ -43,6 +43,7 @@ from egosurgery.models.losses.phase import (
 )
 from egosurgery.utils.experiment_manager import ExperimentManager
 from egosurgery.utils.seed import seed_everything
+from egosurgery.utils.server_name import resolve_server_name
 
 
 class PhaseTrainer:
@@ -76,6 +77,12 @@ class PhaseTrainer:
         self.manager.setup()
         self.exp_dir = self.manager.exp_dir
         self.manager.save_config(cfg)
+
+        # 実行サーバー名を確定し、実験フォルダへ証跡として残す（M2研究計画 §14）。
+        self.server_name = resolve_server_name(cfg)
+        (self.exp_dir / "server.txt").write_text(
+            self.server_name + "\n", encoding="utf-8"
+        )
 
         # --- データ --------------------------------------------------- #
         image_size = int(cfg.data.get("image_size", 224))
@@ -256,6 +263,12 @@ class PhaseTrainer:
             "phase_seg_f1_25": best.get("phase_seg_f1_25", 0.0),
             "phase_seg_f1_50": best.get("phase_seg_f1_50", 0.0),
             "train_loss": best.get("train_loss", 0.0),
+            "eval_recipe": {
+                "server_name": self.server_name,
+                "backbone": "torchvision resnet50 (frozen, ImageNet weights)",
+                "phase_head_dropout": float(self.phase_head.dropout_p),
+                "image_size": int(self.cfg.data.get("image_size", 224)),
+            },
         }
         self.manager.log_metrics(scalars)
         self.manager.log_per_class_ap(best.get("phase_per_class_f1", {}))
@@ -326,12 +339,19 @@ class PhaseTrainer:
             import wandb
         except ImportError:
             return
+        wandb_config = OmegaConf.to_container(self.cfg, resolve=True)
+        if isinstance(wandb_config, dict):
+            wandb_config["server_name"] = self.server_name
         self._wandb_run = wandb.init(
             project=str(self.cfg.logging.get("wandb_project", "egosurgery_multitask")),
             name=self.manager.exp_id,
             group=str(self.cfg.experiment.step),
-            tags=[str(self.cfg.experiment.step), "phase_head"],
-            config=OmegaConf.to_container(self.cfg, resolve=True),
+            tags=[
+                str(self.cfg.experiment.step),
+                "phase_head",
+                f"server:{self.server_name}",
+            ],
+            config=wandb_config,
             dir=str(self.exp_dir),
             reinit=True,
         )
