@@ -384,14 +384,18 @@ make tables  # 論文用テーブルの書き出し
 | `src/egosurgery/utils/seed.py` | 全乱数生成器の seed 固定 |
 | `src/egosurgery/utils/git_utils.py` | git commit hash の取得・保存 |
 | `src/egosurgery/utils/experiment_id.py` | 連番付き実験 ID の採番 |
-| `src/egosurgery/utils/experiment_manager.py` | 実験フォルダ・証拠ファイルの自動生成 |
+| `src/egosurgery/utils/experiment_manager.py` | 実験フォルダ・証拠ファイルの自動生成（§14 対応で `server.txt` を併記、`log_eval_recipe()` で metrics.json に eval_recipe を併記） |
+| `src/egosurgery/utils/eval_recipe.py` | locked-down test_cfg / 論文公式 split サイズ / `build_eval_recipe()`（§15.3 G1） |
+| `src/egosurgery/utils/server_name.py` | 実行サーバー名の単一情報源（環境変数 → cfg → hostname の優先順位） |
 | `src/egosurgery/utils/logging.py` | `ExperimentLogger` — W&B + ローカルの二重ロギング（W&B 不在時はフォールバック） |
 | `src/egosurgery/utils/checkpoint.py` | `CheckpointManager` — top-k 保持 + best 管理 |
-| `src/egosurgery/metrics/delta.py` | `DeltaCalculator` — 基準点に対する Δ（相互改善幅）の自動計算 |
+| `src/egosurgery/metrics/delta.py` | `DeltaCalculator` — Δ 計算 + eval recipe の整合性検証（不一致なら `InconsistentRecipeError`、§15.4 B / §15.6） |
 | `src/egosurgery/engines/trainer.py` | `Trainer` — ダミーモデルで学習・評価ループを回す汎用トレーナー |
 | `src/egosurgery/train.py` | Hydra エントリーポイント |
 | `configs/default.yaml` / `configs/stage/s0_tool_baseline.yaml` | グローバル設定・S0 ステージ設定 |
-| `tests/test_pipeline.py` | パイプライン統合テスト（5 ケース） |
+| `tests/test_pipeline.py` / `tests/test_delta.py` | パイプライン統合テスト + Δ 整合性検証テスト |
+
+研究計画 §15 反映の patch（2026/05/24 適用）: §15.1 のデータ split 取り違え事故と §15.2 の `score_thr` 不一致事故を踏まえ、`DeltaCalculator` が異なる eval recipe 間の Δ 計算を `InconsistentRecipeError` で拒否する機構と、各実験フォルダへの `server.txt` 記録を追加した。詳細は `prompts/phase1_patch_eval_recipe.md`。
 
 動作確認:
 

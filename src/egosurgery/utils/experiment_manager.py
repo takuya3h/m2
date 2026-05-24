@@ -45,6 +45,7 @@ from typing import TYPE_CHECKING
 
 from egosurgery.utils.experiment_id import generate_experiment_id
 from egosurgery.utils.git_utils import save_git_commit
+from egosurgery.utils.server_name import resolve_server_name
 
 if TYPE_CHECKING:  # 型注釈専用。実行時は import しない。
     from omegaconf import DictConfig
@@ -148,6 +149,10 @@ class ExperimentManager:
         self._init_json(self.exp_dir / "metrics.json")
         self._init_json(self.exp_dir / "per_class_ap.json")
         self._write_notes()
+        # §14（実験結果ログ・実行マシン別）: どの物理サーバーで動いたかを
+        # 実験フォルダに永続化する。
+        server_name = resolve_server_name(cfg)
+        (self.exp_dir / "server.txt").write_text(server_name + "\n", encoding="utf-8")
 
         if cfg is not None:
             self.save_config(cfg)
@@ -181,10 +186,41 @@ class ExperimentManager:
     def log_metrics(self, metrics: dict) -> None:
         """``metrics.json`` を与えられた辞書で上書き保存する。
 
+        既存ファイルに ``eval_recipe`` キーがあれば保持する（log_eval_recipe
+        で書いた整合性情報を log_metrics の上書きで消さないため）。
+
         Args:
             metrics: 保存する metrics 辞書。
         """
-        self._dump_json(self._require_exp_dir() / "metrics.json", metrics)
+        path = self._require_exp_dir() / "metrics.json"
+        merged = dict(metrics)
+        existing_recipe = self._read_existing_eval_recipe(path)
+        if existing_recipe is not None and "eval_recipe" not in merged:
+            merged["eval_recipe"] = existing_recipe
+        self._dump_json(path, merged)
+
+    def log_eval_recipe(self, eval_recipe: dict) -> None:
+        """``metrics.json`` に ``eval_recipe`` キーを併記する。
+
+        研究計画 §15.3 G3 / §15.4 B に対応。既存の指標値は保持したまま
+        ``eval_recipe`` のみを書き込む（または更新する）。
+
+        Args:
+            eval_recipe: ``build_eval_recipe()`` の戻り値形式の dict。
+                ``split_train_images``、``test_cfg``、``server_name`` 等を含む。
+        """
+        path = self._require_exp_dir() / "metrics.json"
+        if path.exists():
+            try:
+                current = json.loads(path.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, OSError):
+                current = {}
+        else:
+            current = {}
+        if not isinstance(current, dict):
+            current = {}
+        current["eval_recipe"] = dict(eval_recipe)
+        self._dump_json(path, current)
 
     def log_per_class_ap(self, ap_dict: dict) -> None:
         """``per_class_ap.json`` を与えられた辞書で上書き保存する。
@@ -224,6 +260,20 @@ class ExperimentManager:
             seed=self.seed,
         )
         (self._require_exp_dir() / "notes.md").write_text(content, encoding="utf-8")
+
+    @staticmethod
+    def _read_existing_eval_recipe(path: Path) -> dict | None:
+        """metrics.json から既存の ``eval_recipe`` を読む（壊れていれば None）。"""
+        if not path.exists():
+            return None
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            return None
+        if not isinstance(data, dict):
+            return None
+        recipe = data.get("eval_recipe")
+        return recipe if isinstance(recipe, dict) else None
 
     @staticmethod
     def _init_json(path: Path) -> None:

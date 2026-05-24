@@ -31,9 +31,29 @@
 from __future__ import annotations
 
 import json
+import logging
 from pathlib import Path
 
 import numpy as np
+
+_logger = logging.getLogger(__name__)
+
+# 研究計画 §15.4 B / §15.6: eval recipe の不一致は Δ の意味を破壊するため、
+# 不一致が検出された場合は計算自体を拒否する。
+_RECIPE_REQUIRED_KEYS = (
+    "split_train_images",
+    "split_val_images",
+    "split_test_images",
+)
+_TEST_CFG_KEYS = ("score_thr", "max_per_img", "nms_pre", "nms_iou")
+
+
+class InconsistentRecipeError(Exception):
+    """2 つの実験の eval_recipe が一致しないときに送出される。
+
+    研究計画 §15.4 B / §15.6 に対応: Δ は同一の評価条件で測定された
+    値同士でのみ意味を持つため、不一致時は計算を続行せず例外で停止する。
+    """
 
 
 class DeltaCalculator:
@@ -110,6 +130,65 @@ class DeltaCalculator:
         }
 
     # ------------------------------------------------------------------ #
+    # eval recipe の整合性検証（§15.4 B / §15.6）
+    # ------------------------------------------------------------------ #
+    @staticmethod
+    def _load_eval_recipe(metrics_path: str | Path) -> dict | None:
+        """``metrics.json`` から ``eval_recipe`` を読む。無ければ ``None``。
+
+        Args:
+            metrics_path: ``metrics.json`` のパス。
+
+        Returns:
+            eval_recipe dict、または存在しない場合 ``None``。
+        """
+        path = Path(metrics_path)
+        if not path.exists():
+            return None
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            return None
+        recipe = data.get("eval_recipe") if isinstance(data, dict) else None
+        return recipe if isinstance(recipe, dict) else None
+
+    @staticmethod
+    def _recipes_match(recipe_a: dict, recipe_b: dict) -> bool:
+        """2 つの ``eval_recipe`` が一致するか判定する。
+
+        比較対象: split の image/annotation 数、``test_cfg`` の全項目。
+        ``server_name`` の不一致は警告のみで True/False には影響しない
+        （§15.6: 同一サーバー測定は推奨だが必須化はしていない）。
+
+        Args:
+            recipe_a: 片方の eval_recipe。
+            recipe_b: もう一方の eval_recipe。
+
+        Returns:
+            split と test_cfg が全て一致する場合に True。
+        """
+        for key in _RECIPE_REQUIRED_KEYS:
+            if recipe_a.get(key) != recipe_b.get(key):
+                return False
+
+        test_a = recipe_a.get("test_cfg") or {}
+        test_b = recipe_b.get("test_cfg") or {}
+        for key in _TEST_CFG_KEYS:
+            if test_a.get(key) != test_b.get(key):
+                return False
+
+        # server_name は不一致でも match と判定する。警告のみ出す。
+        server_a = recipe_a.get("server_name")
+        server_b = recipe_b.get("server_name")
+        if server_a and server_b and server_a != server_b:
+            _logger.warning(
+                "eval_recipe.server_name が異なります "
+                "(%r vs %r). 同一サーバー測定が推奨されますが、Δ 計算は続行します。",
+                server_a, server_b,
+            )
+        return True
+
+    # ------------------------------------------------------------------ #
     # Δ の計算
     # ------------------------------------------------------------------ #
     def compute_delta(
@@ -117,6 +196,8 @@ class DeltaCalculator:
         baseline_step: str,
         experiment_metrics: dict,
         metric: str,
+        experiment_recipe: dict | None = None,
+        baseline_recipe: dict | None = None,
     ) -> dict:
         """単一指標について基準点との Δ を計算する。
 
@@ -124,6 +205,8 @@ class DeltaCalculator:
             baseline_step: 基準ステップ識別子（例: ``s0``）。
             experiment_metrics: 比較対象実験の metrics 辞書。
             metric: 対象の指標名。
+            experiment_recipe: 実験側の ``eval_recipe`` dict（省略可）。
+            baseline_recipe: 基準点側の ``eval_recipe`` dict（省略可）。
 
         Returns:
             Δ・基準統計・有意性を含む辞書。``significant`` は
@@ -132,9 +215,31 @@ class DeltaCalculator:
         Raises:
             KeyError: ``experiment_metrics`` に ``metric`` が無い場合。
             ValueError: 基準点が取得できない場合（:meth:`get_baseline` 経由）。
+            InconsistentRecipeError: ``experiment_recipe`` と ``baseline_recipe``
+                が両方与えられて split / test_cfg が一致しない場合（§15.4 B / §15.6）。
+
+        Notes:
+            recipe がどちらか一方でも ``None`` の場合は後方互換のため警告を
+            出して計算を続行する（旧実験の metrics.json には eval_recipe が
+            無いため）。
         """
         if metric not in experiment_metrics:
             raise KeyError(f"experiment_metrics に指標 {metric!r} がありません。")
+
+        if experiment_recipe is not None and baseline_recipe is not None:
+            if not self._recipes_match(experiment_recipe, baseline_recipe):
+                raise InconsistentRecipeError(
+                    "eval_recipe の不一致により Δ 計算を停止します "
+                    "（§15.4 B / §15.6）。実験と基準点で split サイズまたは "
+                    "test_cfg が異なります: "
+                    f"exp={experiment_recipe!r}, base={baseline_recipe!r}"
+                )
+        elif experiment_recipe is None or baseline_recipe is None:
+            _logger.warning(
+                "eval_recipe の片方または両方が None です。"
+                "後方互換のため Δ 計算を続行しますが、結果の比較可能性は保証されません "
+                "(§15.4 B)。"
+            )
 
         baseline = self.get_baseline(baseline_step, metric)
         exp_value = float(experiment_metrics[metric])

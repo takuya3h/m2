@@ -65,6 +65,68 @@ def test_experiment_manager_creates_structure(tmp_path):
 
 
 # ---------------------------------------------------------------------- #
+# 1b. setup() で server.txt が作成される（§14 実験結果ログ・実行マシン別）
+# ---------------------------------------------------------------------- #
+def test_experiment_manager_writes_server_txt(tmp_path, monkeypatch):
+    """setup() 後に server.txt が存在し、中身が空でないことを確認する。"""
+    from egosurgery.utils.experiment_manager import ExperimentManager
+
+    # SERVERNAME を明示して決定的に検証する（resolve_server_name の優先順位 1）。
+    monkeypatch.setenv("SERVERNAME", "bengio")
+
+    manager = ExperimentManager(
+        base_dir=tmp_path,
+        category="baselines",
+        step="s0",
+        description="servertxt",
+        seed=42,
+    )
+    exp_dir = manager.setup()
+
+    server_txt = exp_dir / "server.txt"
+    assert server_txt.is_file(), "server.txt が作成されていません"
+    content = server_txt.read_text(encoding="utf-8").strip()
+    assert content != "", "server.txt が空です"
+    assert content == "bengio", f"SERVERNAME 環境変数が反映されていません: {content!r}"
+
+
+# ---------------------------------------------------------------------- #
+# 1c. log_eval_recipe() で metrics.json に eval_recipe が併記される
+# ---------------------------------------------------------------------- #
+def test_log_eval_recipe(tmp_path):
+    """log_eval_recipe() 後に metrics.json に eval_recipe キーがあること、
+    既存指標と log_metrics による後続上書きでも recipe が保持されることを確認する。"""
+    from egosurgery.utils.eval_recipe import PAPER_SPLIT_SIZES, build_eval_recipe
+    from egosurgery.utils.experiment_manager import ExperimentManager
+
+    manager = ExperimentManager(
+        base_dir=tmp_path,
+        category="baselines",
+        step="s0",
+        description="logrecipe",
+        seed=42,
+    )
+    exp_dir = manager.setup()
+
+    recipe = build_eval_recipe(PAPER_SPLIT_SIZES, server_name="bengio")
+    manager.log_eval_recipe(recipe)
+
+    metrics_path = exp_dir / "metrics.json"
+    saved = json.loads(metrics_path.read_text(encoding="utf-8"))
+    assert "eval_recipe" in saved, "eval_recipe キーが書かれていません"
+    assert saved["eval_recipe"]["split_train_images"] == 9657
+    assert saved["eval_recipe"]["test_cfg"]["score_thr"] == 1e-8
+    assert saved["eval_recipe"]["server_name"] == "bengio"
+
+    # log_metrics で指標を上書きしても eval_recipe が保持されること。
+    manager.log_metrics({"mAP": 0.42})
+    after = json.loads(metrics_path.read_text(encoding="utf-8"))
+    assert after["mAP"] == 0.42
+    assert "eval_recipe" in after, "log_metrics が eval_recipe を消してしまいました"
+    assert after["eval_recipe"]["split_train_images"] == 9657
+
+
+# ---------------------------------------------------------------------- #
 # 2. 連番が正しく採番される
 # ---------------------------------------------------------------------- #
 def test_experiment_id_sequential(tmp_path):
