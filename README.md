@@ -92,6 +92,153 @@ bash scripts/setup_env.sh   # venv 作成〜全依存導入〜検証まで自動
 
 前提: Ubuntu 22.04 系・NVIDIA driver 525 以降・**CUDA Toolkit 11.8（nvcc）**・uv。
 
+---
+
+## 別マシンで完全再現する手順（クローン → 学習開始まで）
+
+新しいサーバで本リポジトリを 0 から立ち上げる手順を順番に示す。
+**`scripts/setup_env.sh` だけでは不足**で、以下のシステム準備とデータ配置が前提となる。
+
+### 0. ハードウェア／OS 要件
+
+| 項目 | 要件 |
+|---|---|
+| OS | Ubuntu 22.04 LTS（20.04 でも `setup_env.sh` は通る想定） |
+| NVIDIA driver | **535 以降推奨**（最低 525。`nvidia-smi` で確認）|
+| GPU | **VRAM 24GB 以上 × 1 枚以上**。S0/S2 の DINO 学習は batch 4 で 23-48GB 消費。RTX A6000（49GB）×2 で検証済み |
+| ディスク | データ・重み・実験結果込みで **40GB 以上空き**（EgoSurgery 約 15GB + COCO 事前学習重み 約 400MB + 実験ログ）|
+| RAM | 32GB 以上推奨（DataLoader workers + mmdet で消費）|
+
+### 1. システムパッケージのインストール（root 権限）
+
+```bash
+# nvcc 11.8（uv venv の前にホスト側で必要）
+wget https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda_11.8.0_520.61.05_linux.run
+sudo sh cuda_11.8.0_520.61.05_linux.run --toolkit --silent --override
+export CUDA_HOME=/usr/local/cuda-11.8
+echo 'export CUDA_HOME=/usr/local/cuda-11.8' >> ~/.bashrc
+echo 'export PATH=$CUDA_HOME/bin:$PATH' >> ~/.bashrc
+
+# uv（Python パッケージマネージャ）
+curl -LsSf https://astral.sh/uv/install.sh | sh
+# pyenv 経由で Python 3.11 を入手するか、uv 内蔵の Python ダウンロードに任せる
+```
+
+`nvcc --version` で **CUDA 11.8** が表示されることを確認（システム nvcc と
+`torch+cu118` の major バージョン一致が CUDA 拡張ビルドの絶対条件）。
+
+### 2. リポジトリのクローン
+
+```bash
+git clone git@github.com:takuya3h/m2.git egosurgery_multitask
+cd egosurgery_multitask
+git checkout phase2   # 最新の作業ブランチ
+```
+
+### 3. Python 環境のセットアップ
+
+```bash
+bash scripts/setup_env.sh         # venv 作成〜全依存導入〜import 検証まで自動
+source .venv/bin/activate
+PYTHONPATH=src .venv/bin/python -m pytest tests/ -q   # 28/28 パスを確認
+```
+
+### 4. データセットの取得と配置
+
+**Git に含まれない要素 — 別途取得が必要**:
+
+| 取得物 | 入手元 | 配置先 |
+|---|---|---|
+| EgoSurgery-Tool / Phase の動画フレーム | プロジェクトページ（公式配布、要承認） | `data/raw/ego/{train,val,test}/<vid>/<vid>_<sess>_<frame>.jpg` |
+| EgoSurgery-Tool 公式 COCO 注釈 | 同上配布物 | `data/annotations/egosurgery_tool/tool/{train,val,test}.json` と `hand/{train,val,test}.json` |
+| EgoSurgery-Phase 工程 CSV | 同上配布物 | `data/annotations/egosurgery_phase/<vid>_<sess>.csv` |
+
+最終的に `data/raw/ego/` 直下に **論文準拠 split**（10/2/3 videos）で配置されている必要がある:
+
+```
+data/raw/ego/train/{01,02,03,06,08,11,12,13,14,15}/<frame>.jpg
+data/raw/ego/val/{09,10}/<frame>.jpg
+data/raw/ego/test/{04,05,07}/<frame>.jpg
+```
+
+`data/annotations/egosurgery_tool/{tool,hand}/{train,val,test}.json` を上記レイアウトで
+配置したのち、本リポジトリ用の派生注釈を生成する:
+
+```bash
+# tool 注釈を instances_*.json に展開（公式 tool/*.json をそのままコピー）
+cp data/annotations/egosurgery_tool/tool/train.json data/annotations/egosurgery_tool/instances_train.json
+cp data/annotations/egosurgery_tool/tool/val.json   data/annotations/egosurgery_tool/instances_val.json
+cp data/annotations/egosurgery_tool/tool/test.json  data/annotations/egosurgery_tool/instances_test.json
+
+# tool + hand 19 クラス統合 COCO の生成（S2 で必要）
+python scripts/build_tool_hand_coco.py
+```
+
+**注意**: `data/splits/ego_*.txt` は git 管理されており、論文準拠の動画 ID リストが
+入っている（変更禁止）。`scripts/preprocess_ego.py` を独自実行する場合は
+最後に `assert_paper_split()` が走り、論文 Table 3a と一致しない場合 `AssertionError`
+で停止する（再発防止策、§15.3 参照）。
+
+### 5. 環境変数とトークン
+
+```bash
+cp .env.example .env
+# .env を編集:
+#   WANDB_API_KEY=<your_api_key>     # W&B 記録を有効にする場合
+#   WANDB_PROJECT=egosurgery_multitask
+#   DATA_ROOT=/abs/path/to/data       # data/ を別パスにしたい場合のみ
+```
+
+W&B を使わない場合は `logging.wandb_enabled=false` を CLI override で渡せる。
+
+### 6. 動作確認（sanity check）
+
+```bash
+# (a) 単体テスト（28 ケースが全パスすること）
+PYTHONPATH=src .venv/bin/python -m pytest tests/ -q
+
+# (b) Hydra config の resolve 確認（学習しない）
+PYTHONPATH=src .venv/bin/python -c "
+from hydra import compose, initialize_config_dir
+from pathlib import Path
+with initialize_config_dir(version_base=None, config_dir=str(Path('configs').resolve())):
+    cfg = compose('default', overrides=['stage=s0_tool_baseline'])
+    print('step=', cfg.experiment.step, 'num_classes=', cfg.model.num_classes)
+"
+
+# (c) 内蔵 SimpleDetectionHead でのスモーク学習（1 epoch、~1 分、GPU 1 枚）
+S0_EXTRA_ARGS="train.real_detector=false model.backbone=dinov2_vits14_reg \
+  data.limit=16 data.img_size=224 train.epochs=1 train.freeze_backbone=true \
+  data.num_workers=0 logging.wandb_enabled=false" bash scripts/run_s0.sh
+
+# (d) データ split 整合性の自動検証
+.venv/bin/python -c "
+import sys; sys.path.insert(0, 'scripts'); sys.path.insert(0, 'src')
+from preprocess_ego import assert_paper_split
+from pathlib import Path
+assert_paper_split(Path('data'), strict=True)
+"
+```
+
+### 7. 本番学習の起動
+
+```bash
+# COCO 事前学習重みの自動 DL は run_s0.sh が初回実行時に行う（VFNet 132MB + DINO 263MB）
+bash scripts/run_s0.sh   # S0: 6 実験、3 波 × 2 GPU、~9-13 時間
+bash scripts/run_s2.sh   # S2: hand 検出、~4-8 時間
+bash scripts/run_s3.sh   # S3: phase 認識、~10 分（軽量）
+```
+
+### 8. 既知の前提・落とし穴
+
+- **`venv` の必須有効化**: `bash scripts/run_*.sh` は内部で `source .venv/bin/activate` を実行するが、対話セッションでは自分で `source` すること。pyenv グローバル python では mmcv の C 拡張が ABI 不一致で失敗する。
+- **DINOv2 重み**: 初回 `torch.hub.load` でダウンロードされる（~/.cache/torch/hub/）。オフライン環境では事前キャッシュ必要。
+- **ResNet50 ImageNet 重み**: S3 で初回 `tv_models.resnet50(weights=...)` が自動 DL（~/.cache/torch/hub/checkpoints/、97MB）。
+- **Mask DINO / Detectron2**: S0 では mmdet の `dino-4scale_r50` で代替するため、third_party の Mask DINO は必須ではない（オプション）。
+- **GPU が 1 枚しか無い場合**: `run_s0.sh` は GPU 数を自動検出し逐次実行へフォールバックするが、合計時間は約 2 倍。
+- **失敗実験の保存**: `experiments/_smoke_prior/` `experiments/baselines/_wrong_split_8_2_3/` `experiments/phase0/_failed_s3_weighted/` は過去の失敗ランの証跡。**消さずに残す**（研究 integrity の物理証拠、§15 参照）。
+- **研究計画との整合**: M2 研究計画は Notion ページ（社内）に存在。本リポジトリの §15.4 が研究計画への波及項目を集約しているので、計画書を更新する際の参照点とする。
+
 ### 基本依存（requirements.txt）
 
 `requirements.txt` は依存の概要一覧。厳密な再現には上記 `requirements.lock.txt` を
