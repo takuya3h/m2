@@ -59,10 +59,21 @@ uv pip install "numpy<2" hydra-core omegaconf wandb timm "peft==0.13.2" \
 uv pip install mmcv==2.1.0 --find-links https://download.openmmlab.com/mmcv/dist/cu118/torch2.1/index.html
 uv pip install mmdet==3.3.0
 
-# mamba-ssm / causal-conv1d（CUDA 拡張をソースビルド。setuptools<80 が必要）
+# numpy<2 を先に pin（mmdet 等が numpy 2.x を引き込むと torch 2.1 系の C 拡張が壊れる）
+uv pip install --force-reinstall "numpy<2"
+
+# ビルドツール（setuptools<80 が必要）
 uv pip install "setuptools<80" ninja packaging wheel
-CUDA_HOME=/usr/local/cuda MAX_JOBS=8 \
-  uv pip install causal-conv1d==1.4.0 mamba-ssm==2.2.2 --no-build-isolation
+
+# mamba-ssm / causal-conv1d（GitHub の prebuilt wheel を直接導入）
+# 注: mamba-ssm 2.2.2 の PyPI sdist には csrc/ ディレクトリが含まれずソースビルド不可。
+#     setup.py の GitHub wheel 自動 DL も 403 を返すケースがあるため URL を明示する。
+WHEEL_DIR=/tmp/egosurgery_wheels && mkdir -p "$WHEEL_DIR"
+CC=causal_conv1d-1.4.0+cu118torch2.1cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
+MS=mamba_ssm-2.2.2+cu118torch2.1cxx11abiFALSE-cp311-cp311-linux_x86_64.whl
+curl -fSL -o "$WHEEL_DIR/$CC" "https://github.com/Dao-AILab/causal-conv1d/releases/download/v1.4.0/$CC"
+curl -fSL -o "$WHEEL_DIR/$MS" "https://github.com/state-spaces/mamba/releases/download/v2.2.2/$MS"
+uv pip install --no-deps "$WHEEL_DIR/$CC" "$WHEEL_DIR/$MS"
 
 # プロジェクトを editable install（egosurgery を import 可能にする。PYTHONPATH 不要）
 uv pip install -e .          # 開発ツール込みなら -e ".[dev]"

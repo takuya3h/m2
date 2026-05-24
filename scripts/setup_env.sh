@@ -68,11 +68,27 @@ echo "[setup] === 3. mmcv 2.1.0 + mmdet 3.3.0 ==="
 echo "[setup] === 4. ビルドツール ==="
 "$UV" pip install --python .venv/bin/python "setuptools<80" ninja packaging wheel
 
-# --- 5. mamba-ssm / causal-conv1d（CUDA 拡張をソースビルド）----------------- #
-echo "[setup] === 5. causal-conv1d 1.4.0 + mamba-ssm 2.2.2（ソースビルド）==="
-CUDA_HOME="$CUDA_HOME" MAX_JOBS="${MAX_JOBS:-8}" \
-  "$UV" pip install --python .venv/bin/python --no-build-isolation \
-  causal-conv1d==1.4.0 mamba-ssm==2.2.2
+# --- 4.5. numpy<2 を先に pin（mmdet 等が numpy 2.x を引き込むと torch C 拡張が
+#         _ARRAY_API not found で壊れ、以降のビルドが連鎖失敗するため）-------- #
+echo "[setup] === 4.5. numpy<2 を pin（torch 2.1 系の ABI 整合）==="
+"$UV" pip install --python .venv/bin/python --force-reinstall "numpy<2"
+
+# --- 5. mamba-ssm / causal-conv1d（GitHub の prebuilt wheel を直接導入）----- #
+# 注: mamba-ssm 2.2.2 の PyPI sdist には csrc/ ディレクトリが含まれず、
+#     ローカルでのソースビルドは原理的に不可能。setup.py の GitHub wheel
+#     自動 DL は 403 を返すケースがあるため、wheel URL を明示して curl で取得する。
+#     ABI（cxx11abiFALSE / cu118 / torch2.1 / cp311）は本スクリプトの torch ピンに対応。
+echo "[setup] === 5. causal-conv1d 1.4.0 + mamba-ssm 2.2.2（prebuilt wheel）==="
+WHEEL_DIR="${WHEEL_DIR:-/tmp/egosurgery_wheels}"
+mkdir -p "$WHEEL_DIR"
+CC_WHEEL="causal_conv1d-1.4.0+cu118torch2.1cxx11abiFALSE-cp311-cp311-linux_x86_64.whl"
+MS_WHEEL="mamba_ssm-2.2.2+cu118torch2.1cxx11abiFALSE-cp311-cp311-linux_x86_64.whl"
+[ -f "$WHEEL_DIR/$CC_WHEEL" ] || curl -fSL --retry 3 -o "$WHEEL_DIR/$CC_WHEEL" \
+  "https://github.com/Dao-AILab/causal-conv1d/releases/download/v1.4.0/$CC_WHEEL"
+[ -f "$WHEEL_DIR/$MS_WHEEL" ] || curl -fSL --retry 3 -o "$WHEEL_DIR/$MS_WHEEL" \
+  "https://github.com/state-spaces/mamba/releases/download/v2.2.2/$MS_WHEEL"
+"$UV" pip install --python .venv/bin/python --no-deps \
+  "$WHEEL_DIR/$CC_WHEEL" "$WHEEL_DIR/$MS_WHEEL"
 
 # --- 6. 全依存をロックファイルの厳密版へスナップ ---------------------------- #
 echo "[setup] === 6. requirements.lock.txt で全 100 パッケージを厳密固定 ==="
