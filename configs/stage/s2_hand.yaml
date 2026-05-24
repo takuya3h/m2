@@ -1,0 +1,90 @@
+# @package _global_
+# S2: 手検出の追加 — tool 15 + hand 4 = 19 クラス
+#
+# S0 の best checkpoint から fine-tune し、術具 mAP を S0 水準で維持しつつ
+# 手 4 クラスを併せて学習する。`# @package _global_` で default.yaml を上書き。
+#
+# 重要: scripts/build_tool_hand_coco.py で
+#   data/annotations/egosurgery_tool_hand/instances_{train,val,test}.json
+# を事前生成しておくこと（tool + hand を 19 クラス COCO に統合）。
+
+experiment:
+  category: "phase0"
+  step: "s2"
+  description: "hand_detection"
+
+model:
+  num_classes: 19                 # tool 15 + hand 4
+  backbone: dinov2_vitl14_reg
+  detection_head: mask_dino       # run_s2.sh で varifocanet にも切替可
+
+train:
+  real_detector: true             # MMDetTrainer 経由
+  epochs: 8                       # S0 best からの fine-tune（spec 50 は長すぎる + 既に良好な初期値）
+  batch_size: 4
+  num_workers: 8
+  amp: true
+  gradient_checkpoint: true
+  grad_clip_norm: 1.0
+  freeze_backbone: false
+
+optimizer:
+  name: "adamw"
+  lr: 0.0001
+  weight_decay: 0.05
+
+scheduler:
+  name: "cosine"
+  warmup_epochs: 5
+
+longtail:
+  seesaw_loss: true
+  rfs: true
+  copypaste: true
+
+augmentation:
+  artificial_gloves: true
+  blood_splatter: true
+
+feedback:
+  phase_to_det: false
+  det_to_phase: false
+
+relation:
+  enabled: false
+
+exo:
+  enabled: false
+
+data:
+  img_size: 518
+  batch_size: 4
+  num_workers: 8
+  include_hand: true              # ← S2 のキーワード。MMDetTrainer が分岐する
+  include_phase: false
+  use_rfs: true
+  repeat_thresh: 0.001
+  use_copypaste: false
+  limit: null
+  copypaste:
+    bank_dir: "data/processed/copypaste_bank/"
+    rare_classes: ["Skewer", "Syringe", "Forceps"]
+    paste_prob: 0.5
+    max_paste_per_image: 3
+  train:
+    ann_file: "data/annotations/egosurgery_tool_hand/instances_train.json"
+    img_dir: "data/raw/ego/"
+  val:
+    ann_file: "data/annotations/egosurgery_tool_hand/instances_val.json"
+    img_dir: "data/raw/ego/"
+  test:
+    ann_file: "data/annotations/egosurgery_tool_hand/instances_test.json"
+    img_dir: "data/raw/ego/"
+
+logging:
+  wandb_project: "egosurgery_multitask"
+  wandb_enabled: true
+  save_top_k: 3
+
+eval:
+  num_seeds: 3

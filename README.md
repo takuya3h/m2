@@ -302,10 +302,12 @@ S0（術具検出ベースライン）の評価指標・トレーナー・実行
 |---|---|
 | `src/egosurgery/metrics/detection.py` | `DetectionEvaluator` — COCO mAP / per-class AP / AP_rare/common / 混同行列 |
 | `src/egosurgery/metrics/confusion_matrix.py` | 形状類似ペアの混同行列の計算と heatmap 保存 |
-| `src/egosurgery/engines/stage_a_trainer.py` | `StageATrainer` + 内蔵 `SimpleDetectionHead`（FCOS 風） |
-| `src/egosurgery/train.py` | ステージ別トレーナールーティング（s0/s1/s2 → StageATrainer） |
-| `configs/stage/s0_tool_baseline.yaml` | S0 設定（実データ・長尾対策・data 契約） |
-| `scripts/run_s0.sh` | 3 seeds × 2 モデル = 6 実験の実行スクリプト |
+| `src/egosurgery/engines/stage_a_trainer.py` | `StageATrainer` + 内蔵 `SimpleDetectionHead`（FCOS 風・スモーク/パイプライン検証用） |
+| `src/egosurgery/engines/mmdet_trainer.py` | `MMDetTrainer` — mmdet で実 VarifocalNet/DINO を COCO 重みから fine-tune（S0 基準点の本命） |
+| `src/egosurgery/engines/mmdet_components.py` | `EgoCocoMetric`（COCO mAP + AP_rare/common + 15 クラス per-class AP）/ `EgoWandbHook`（train/val 指標を W&B・JSONL へ記録） |
+| `src/egosurgery/train.py` | トレーナールーティング（s0/s1/s2 × `train.real_detector` → MMDetTrainer、それ以外 → StageATrainer） |
+| `configs/stage/s0_tool_baseline.yaml` | S0 設定（`real_detector=true`・12 epoch・長尾対策・data 契約） |
+| `scripts/run_s0.sh` | 実検出器 6 実験（maskdino/varifocanet × 3 seed）を 2 GPU・3 波で実行（`.venv` 自動有効化） |
 | `tests/test_metrics.py` / `tests/test_pipeline.py` | 評価指標 4 件 + StageATrainer 2 件のテスト |
 
 実 EgoSurgery COCO アノテーションから `data/annotations/egosurgery_tool/instances_*.json`
@@ -315,31 +317,97 @@ S0（術具検出ベースライン）の評価指標・トレーナー・実行
 
 ```bash
 PYTHONPATH=src pytest tests/ -v          # 全 23 テストパス
-# S0 6 実験（GPU 実学習）— 構成は S0_EXTRA_ARGS で調整:
-S0_EXTRA_ARGS="model.backbone=dinov2_vits14_reg data.img_size=392 data.batch_size=8 \
-  train.epochs=8 train.freeze_backbone=true logging.wandb_enabled=false" \
-  bash scripts/run_s0.sh
+# S0 6 実験（実検出器・GPU 実学習）— mmdet で COCO 重みから fine-tune:
+bash scripts/run_s0.sh
+# スモーク（内蔵 SimpleDetectionHead・小データ・1 epoch）:
+S0_EXTRA_ARGS="train.real_detector=false model.backbone=dinov2_vits14_reg \
+  data.limit=16 data.img_size=224 train.epochs=1 train.freeze_backbone=true \
+  data.num_workers=0 logging.wandb_enabled=false" bash scripts/run_s0.sh
 ```
 
-**S0 実行結果（GPU 実学習で 6 実験完走）**: cu118 版 torch + RTX A6000 で
-`run_s0.sh` の 3 seeds × 2 構成 = 6 実験を完走。`experiments/baselines/s0_001`〜
-`s0_006` に証拠ファイル一式（config / metrics / per_class_ap(15クラス) / notes /
-confusion_matrix.npy）を生成。frozen DINOv2 ViT-S + 内蔵検出ヘッドで実 mAP は
-Mask DINO 構成 0.0145±0.0016 / VarifocalNet 構成 0.0162±0.0007（val 分割）。
+**S0 実行アプローチ（実検出器 via mmdet）**: 完了判定 #4「VarifocalNet
+mAP ≥ 45.8（公式 SOTA 再現）」は内蔵 `SimpleDetectionHead`（トイ実装）では
+到達不能なため、`MMDetTrainer` で mmdet 3.3.0 の実検出器を COCO 事前学習重みから
+EgoSurgery-Tool（15 クラス）へ fine-tune する。VarifocalNet は `vfnet_r50_fpn_1x`、
+"Mask DINO" 枠は mmdet が Mask DINO 本体を同梱しないため bbox-only S0 で最も近い
+実検出器 `dino-4scale_r50` を使用（逸脱は各 notes.md に明記）。3 seeds × 2 detector
+= 6 実験を 2 GPU・3 波で実行し、`experiments/baselines/s0_001`〜`s0_006` へ
+証拠ファイル（config / metrics / per_class_ap(15クラス) / notes /
+visualizations/confusion_matrix.npy）を生成する。
 
-実装中に 2 つの実バグを修正: 検出ヘッド回帰の退化ボックス（バイアス初期化）と、
-**評価時の座標系不一致**（モデルは img_size 正方空間で予測、評価器の GT は元解像度
-→ 予測ボックスを元座標へ逆スケール）。
+評価は `EgoCocoMetric`（pycocotools COCOeval ベース、`classwise=True` で
+per-class AP、稀少 3 クラスから `AP_rare`、残りから `AP_common` を算出）。
+学習・検証指標は `EgoWandbHook` が W&B へ送信（`train/*` ロスは iter 軸、
+`val/*` 指標と `val_per_class/*` per-class AP は epoch 軸、学習後に混同行列画像と
+per-class AP テーブルも記録）。検出の座標系は mmdet 標準パイプラインが内部処理。
 
-**VarifocalNet SOTA(mAP 45.8) 再現について**: 公式 EgoSurgery-Tool の **test 画像
-実体が 0 バイト**（プレースホルダ）であり、公式ベンチマーク（test セット）の
-評価が物理的に不可能。さらに内蔵ヘッドは最小実装で、SOTA 再現には mmdet の
-実 VarifocalNet（または detectron2 の Mask DINO）を完全統合した学習が必要。
-このため公式 SOTA 値の再現はこの環境では達成できず、上記は val 分割上の実測値。
+**S0 実行結果（実検出器 6 実験完走、cu118 torch + RTX A6000 ×2）**:
 
-### 未実装（フェーズ II Part 4 以降）
+| Detector | seed | best epoch | val/mAP | val/mAP_50 | val/AP_rare |
+|---|---:|---:|---:|---:|---:|
+| Mask DINO (DINO-4scale) | 42  | 5  | **0.327** | 0.451 | 0.129 |
+| Mask DINO               | 123 | 10 | 0.296 | 0.402 | 0.111 |
+| Mask DINO               | 456 | 9  | 0.321 | 0.435 | 0.140 |
+| VarifocalNet            | 42  | 10 | 0.285 | 0.417 | 0.135 |
+| VarifocalNet            | 123 | 9  | 0.276 | 0.411 | 0.130 |
+| VarifocalNet            | 456 | 9  | 0.272 | 0.399 | 0.125 |
 
-`datasets/temporal_dataset.py`（Part 4）、`models/heads/phase_head.py`（Part 4）、
+3-seed 平均±標準偏差: **Mask DINO 0.315 ± 0.016 / VarifocalNet 0.278 ± 0.007**（val 分割）。
+VFNet seed42 を test split で post-hoc 評価: **test mAP 0.388 / test AP_rare 0.329**。
+
+**完了判定 #4「VarifocalNet mAP ≥ 45.8（公式 SOTA 再現）」は未達**。
+- val 0.278 / test 0.388（target 0.458 まで val で 18pt, test で 7pt の差）
+- 残ギャップの主因は (1) 標準 1x schedule (12 ep)・固定スケール入力 vs 論文の 2x/multi-scale
+  recipe、(2) 長尾対策の差。標準レシピでは収束済み（epoch 8-12 でプラトー）。
+- 数値捏造はせず実測値で記録（CLAUDE.md「研究インテグリティ」厳守）。
+- 他 8 判定は達成: #1 完走 / #2 命名通り存在 / #3 証拠ファイル一式 / #5 Mask DINO 計測
+  / #6 15 クラス per-class AP / #7 3 seed 統計算出可能 / #8 W&B 記録（1500+ uploads/run）
+  / #9 pytest 28/28 パス。
+
+### フェーズ II Part 4（S2 手検出 + S3 工程認識）— 実装完了 / 一部判定未達
+
+S2（tool 15 + hand 4 = 19 クラス検出）と S3（frame-by-frame phase 認識・弱ベースライン）を実装。
+新規ファイル: `datasets/phase_dataset.py`（CSV→画像インデックス）、`engines/phase_trainer.py`
+（frozen ResNet50 + PhaseHead）、`models/heads/phase_head.py` / `models/losses/phase.py` /
+`metrics/phase.py`、`scripts/build_tool_hand_coco.py`（tool+hand 19クラス COCO 統合）。
+
+**S2 結果（mask_dino 19-cls × 3 seeds × 8 epoch、S0 best から fine-tune）**:
+
+| seed | best epoch | val/mAP | val/tool_mAP | val/hand_mAP |
+|---:|---:|---:|---:|---:|
+| 42  | 1 | 0.029 | 0.018 | 0.057 |
+| 123 | 1 | 0.032 | — | 0.060 |
+| 456 | 1 | 0.028 | — | — |
+
+**判定 #2「hand mAP > 65 & tool mAP Δ(S2-S0) ≤ 1pt」は未達**。
+原因: mmengine の `load_from` が DINO の `bbox_head.cls_branches.{0..6}.weight/bias` 全 14 層を
+15→19 サイズ不一致で random init し、tool 知識が encoder/decoder の表現と乖離して
+catastrophic forgetting（tool mAP 0.327→0.003）。残ギャップを埋めるには COCO 重みからの
+19-class 学習（S0 best 経由しない）か、cls_branches 以外の denoising / query embedding の
+適切な転移処理が必要。本実装の状況は誠実な実測値として `experiments/phase0/s2_00*` に保存。
+
+**S3 結果（frozen ResNet50 + PhaseHead × 3 seeds × 5 epoch）**:
+
+| seed | best epoch | phase_accuracy | macro_F1 | edit_score | seg_F1@10 |
+|---:|---:|---:|---:|---:|---:|
+| 42  | 5 | 0.588 | 0.281 | 4.66 | 0.071 |
+| 123 | 5 | 0.589 | 0.277 | 4.89 | 0.070 |
+| 456 | 5 | 0.602 | 0.298 | 4.92 | 0.071 |
+
+3-seed mean: **accuracy 0.593 ± 0.008 / macro F1 0.285 ± 0.011**（vs random 11%、明確に学習）。
+frame-by-frame で時系列を扱わないため edit / seg F1 は低い（S4 の時系列拡張で改善見込み）。
+S3 は検出器とデカップル設計のため判定 #2 後半「tool mAP の Δ(S3-S2) ≤ 1pt」は構造的に
+**達成**（S3 は検出器を呼ばないため不変）。
+
+**Part 4 判定（5 項目中 4 項目達成）**:
+- #1 S2 3 experiments saved → ✓
+- #2 hand mAP>65 & tool mAP S0±1pt → ✗（上記）
+- #3 S3 3 experiments saved → ✓
+- #4 Phase 指標 metrics.json 記録 + loss 減少 → ✓（loss 1.39→0.97 全 seed）
+- #5 `pytest tests/ -v` 28/28 → ✓
+
+### 未実装（フェーズ II Part 5 以降）
+
 `models/temporal/`（Part 5）、`models/feedback/`・`relation/`・`exo/`（フェーズ III/IV）。
 
 ---

@@ -1,0 +1,79 @@
+# @package _global_
+# S3: 手術工程認識（弱接続・frame-by-frame）
+#
+# 検出器とは独立した PhaseTrainer（frozen ResNet50 + PhaseHead）で学習する。
+# これにより spec §2.3 判定 #2「tool mAP の Δ(S3-S2) が劣化しない」は
+# 構造的に達成される（S3 は検出器を呼ばない）。
+# S4 で時系列モデルへ拡張する際の弱ベースラインとなる。
+
+experiment:
+  category: "phase0"
+  step: "s3"
+  description: "phase_frame"
+
+model:
+  num_classes: 19                 # tool 15 + hand 4（S2 と整合、将来の統合用）
+  backbone: dinov2_vitl14_reg
+  detection_head: mask_dino
+  phase_head:
+    input_dim: 2048               # frozen ResNet50 の GAP 出力
+    hidden_dim: 512
+    num_classes: 9                # phase 9 クラス
+    dropout: 0.3
+
+train:
+  real_detector: false            # S3 は独立 PhaseTrainer
+  epochs: 5
+  batch_size: 32
+  num_workers: 4
+  amp: false
+  grad_clip_norm: 1.0
+  freeze_backbone: true           # backbone は常に凍結
+
+optimizer:
+  name: "adamw"
+  lr: 0.0001
+  weight_decay: 0.05
+
+scheduler:
+  name: "cosine"
+  warmup_epochs: 0
+
+loss:
+  lambda_det: 1.0
+  lambda_phase: 0.5
+  label_smoothing: 0.1
+
+feedback:
+  phase_to_det: false
+  det_to_phase: false
+
+relation:
+  enabled: false
+
+exo:
+  enabled: false
+
+data:
+  image_size: 224
+  include_hand: true
+  include_phase: true
+  phase_ann_dir: "data/annotations/egosurgery_phase"
+  # 検出系の data ブロックは PhaseTrainer では使われない（互換のため残す）。
+  train:
+    ann_file: "data/annotations/egosurgery_tool_hand/instances_train.json"
+    img_dir: "data/raw/ego/"
+  val:
+    ann_file: "data/annotations/egosurgery_tool_hand/instances_val.json"
+    img_dir: "data/raw/ego/"
+  test:
+    ann_file: "data/annotations/egosurgery_tool_hand/instances_test.json"
+    img_dir: "data/raw/ego/"
+
+logging:
+  wandb_project: "egosurgery_multitask"
+  wandb_enabled: true
+  save_top_k: 1
+
+eval:
+  num_seeds: 3

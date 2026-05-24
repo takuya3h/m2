@@ -158,3 +158,63 @@ def test_confusion_matrix_shape(tmp_path):
     assert cm.shape == (4, 4)
     # 予測 = GT なので similar ペアは対角に乗る。
     assert cm.trace() == cm.sum()
+
+
+# ---------------------------------------------------------------------- #
+# 5. PhaseEvaluator: 基本動作 (S3)
+# ---------------------------------------------------------------------- #
+def test_phase_evaluator_basic():
+    """PhaseEvaluator が accuracy / macro F1 / per-class F1 を計算できる。"""
+    from egosurgery.metrics.phase import PhaseEvaluator
+
+    ev = PhaseEvaluator(num_classes=9, class_names=[f"p{i}" for i in range(9)])
+    # 完全一致: accuracy=1, F1=1
+    ev.update([0, 1, 2, 3, 4, 5, 6, 7, 8], [0, 1, 2, 3, 4, 5, 6, 7, 8], "vid_perfect")
+    res = ev.compute()
+    assert res["phase_accuracy"] == 1.0
+    assert res["phase_macro_f1"] == 1.0
+    assert all(v == 1.0 for v in res["phase_per_class_f1"].values())
+
+    # 半分誤分類
+    ev2 = PhaseEvaluator(num_classes=9)
+    ev2.update([0, 0, 0, 0], [0, 1, 0, 1], "vid")
+    res2 = ev2.compute()
+    assert 0.0 < res2["phase_accuracy"] < 1.0
+
+
+# ---------------------------------------------------------------------- #
+# 6. Edit score (Levenshtein on segment-label sequences)
+# ---------------------------------------------------------------------- #
+def test_edit_score():
+    """edit_score が 0〜100 の範囲で返り、完全一致で 100、完全不一致で低値。"""
+    from egosurgery.metrics.phase import edit_score
+
+    # 完全一致 (segment labels も一致)
+    s = edit_score([0, 0, 1, 1, 2], [0, 0, 1, 1, 2], norm=True)
+    assert s == 100.0
+
+    # ラベル列が完全に異なる: pred segs=[0], gt segs=[1] -> dist 1 / max(1,1) = 100*(1-1) = 0
+    s2 = edit_score([0, 0, 0], [1, 1, 1], norm=True)
+    assert 0.0 <= s2 <= 100.0
+    assert s2 == 0.0
+
+    # フレーム単位で異なるがセグメントラベル列が一致 → 100
+    s3 = edit_score([0, 1, 1, 2], [0, 0, 1, 2], norm=True)
+    assert s3 == 100.0
+
+
+# ---------------------------------------------------------------------- #
+# 7. Segmental F1@k (IoU 閾値ごと)
+# ---------------------------------------------------------------------- #
+def test_segmental_f1():
+    """segmental_f1 が 0-1 の範囲を返し、完全一致で 1、完全不一致で 0。"""
+    from egosurgery.metrics.phase import segmental_f1
+
+    for thr in (0.10, 0.25, 0.50):
+        # 完全一致
+        assert segmental_f1([0, 0, 1, 1, 2, 2], [0, 0, 1, 1, 2, 2], thr) == 1.0
+        # ラベル違いで一致ゼロ
+        assert segmental_f1([0, 0, 0], [1, 1, 1], thr) == 0.0
+        # 部分一致 (IoU=0.5 で thr=0.10 / 0.25 / 0.50 とも 1 GT セグメント該当)
+        v = segmental_f1([0, 0, 0, 0, 0, 1], [0, 0, 0, 1, 1, 1], thr)
+        assert 0.0 <= v <= 1.0

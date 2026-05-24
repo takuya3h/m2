@@ -43,16 +43,18 @@ HAND_CLASSES: list[dict] = [
 ]
 
 # --- 手術工程 9 クラス（phase id 0..8、S3 以降で使用） -------------------- #
+# 実 CSV (data/annotations/egosurgery_phase/*.csv) の Phase 列に出現する
+# 9 ラベルをアルファベット順で固定（CSV に id は無いため当方で割り当てる）。
 PHASE_CLASSES: list[dict] = [
-    {"id": 0, "name": "Preparation"},
-    {"id": 1, "name": "Draping"},
-    {"id": 2, "name": "Incision"},
-    {"id": 3, "name": "Dissection"},
-    {"id": 4, "name": "Hemostasis"},
-    {"id": 5, "name": "Irrigation"},
-    {"id": 6, "name": "Closure"},
-    {"id": 7, "name": "Dressing"},
-    {"id": 8, "name": "Completion"},
+    {"id": 0, "name": "anesthesia"},
+    {"id": 1, "name": "closure"},
+    {"id": 2, "name": "design"},
+    {"id": 3, "name": "disinfection"},
+    {"id": 4, "name": "dissection"},
+    {"id": 5, "name": "dressing"},
+    {"id": 6, "name": "hemostasis"},
+    {"id": 7, "name": "incision"},
+    {"id": 8, "name": "irrigation"},
 ]
 
 NUM_TOOL_CLASSES = len(TOOL_CLASSES)   # 15

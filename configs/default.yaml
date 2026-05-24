@@ -56,6 +56,11 @@ train:
   batch_size: 4
   num_workers: 4
   accumulate_grad_batches: 1
+  # S2 以降の fine-tune 用に S0 best checkpoint パスを与える。
+  # null のときは検出器ごとの COCO 事前学習重みを使う（S0 の挙動）。
+  load_from: null
+  # S0/S1/S2 で True のとき MMDetTrainer（mmdet 実検出器）を選択する。
+  real_detector: false
 
 # === Optimizer ===
 optimizer:

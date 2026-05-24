@@ -151,9 +151,26 @@ def build_detection_head(cfg) -> nn.Module:
 
 
 def build_phase_head(cfg):
-    """Phase head を構築する（Part 4 で実装。現状は常に ``None``）。"""
-    # phase_head 本体は Part 4 のスコープ。S0 では構築しない。
-    return None
+    """Phase head を構築する（S3 以降）。
+
+    ``cfg.data.include_phase`` または ``cfg.model.phase_head`` が指定された場合に
+    :class:`~egosurgery.models.heads.phase_head.PhaseHead` を返す。それ以外は
+    ``None`` を返し、``build_model`` 側で components に組み込まない。
+    """
+    include_phase = bool(cfg.get("data", {}).get("include_phase", False))
+    phase_cfg = cfg.get("model", {}).get("phase_head", None)
+    if not include_phase and phase_cfg is None:
+        return None
+
+    from egosurgery.models.heads.phase_head import PhaseHead
+
+    spec = OmegaConf.to_container(phase_cfg, resolve=True) if phase_cfg is not None else {}
+    return PhaseHead(
+        input_dim=int(spec.get("input_dim", 1024)),
+        num_classes=int(spec.get("num_classes", 9)),
+        hidden_dim=int(spec.get("hidden_dim", 512)),
+        dropout=float(spec.get("dropout", 0.3)),
+    )
 
 
 # --------------------------------------------------------------------- #

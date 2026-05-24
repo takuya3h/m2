@@ -210,3 +210,40 @@ def test_logit_adjustment():
     assert torch.allclose(delta, expected, atol=1e-6)
     # 高頻度クラスほど log_prior が大きい（= 補正の加算量が大きい）。
     assert adjuster.log_prior[0] > adjuster.log_prior[-1]
+
+
+# ---------------------------------------------------------------------- #
+# 7. PhaseHead (S3)
+# ---------------------------------------------------------------------- #
+def test_phase_head_forward():
+    """PhaseHead が (B, input_dim) -> (B, num_classes) の forward を通すこと。"""
+    from egosurgery.models.heads.phase_head import PhaseHead
+
+    head = PhaseHead(input_dim=1024, num_classes=9, hidden_dim=512, dropout=0.3)
+    x = torch.randn(4, 1024)
+    out = head(x)
+    assert out.shape == (4, 9)
+    # 出力に NaN が混入しない。
+    assert not torch.isnan(out).any()
+
+
+def test_phase_loss_gradient():
+    """PhaseLoss が class_weights / label_smoothing を尊重し勾配を返すこと。"""
+    from egosurgery.models.losses.phase import PhaseLoss, class_weights_from_frequencies
+
+    weights = class_weights_from_frequencies()
+    loss_fn = PhaseLoss(class_weights=weights, label_smoothing=0.1)
+
+    logits = torch.randn(8, 9, requires_grad=True)
+    targets = torch.tensor([0, 1, 2, 3, 4, 5, 6, 7, 0][:8])
+    loss = loss_fn(logits, targets)
+    assert torch.is_tensor(loss) and loss.ndim == 0
+    loss.backward()
+    assert logits.grad is not None
+    assert logits.grad.shape == logits.shape
+    # クラス重みが効くこと: 重み付きと均一の loss が異なる値になる。
+    unweighted = PhaseLoss(label_smoothing=0.0)(logits.detach(), targets)
+    skewed = torch.ones(9)
+    skewed[0] = 10.0  # クラス 0 だけ強調
+    weighted = PhaseLoss(class_weights=skewed, label_smoothing=0.0)(logits.detach(), targets)
+    assert abs(float(weighted) - float(unweighted)) > 1e-4

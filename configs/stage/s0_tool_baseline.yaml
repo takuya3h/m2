@@ -4,10 +4,11 @@
 # `# @package _global_` 指定により、本ファイルの内容はグローバル名前空間
 # （cfg.experiment / cfg.train / ...）へ直接マージされ default.yaml を上書きする。
 #
-# data セクションは EgoSurgeryDataModule の契約（train/val/test サブ辞書）に
-# 合わせた構造で記述する。スモーク実行は CLI override で行う:
-#   model.backbone=dinov2_vits14_reg data.limit=16 data.img_size=224 \
-#   train.epochs=1 train.freeze_backbone=true data.num_workers=0
+# S0 基準点は実検出器（VarifocalNet / DINO）を mmdet で COCO 重みから
+# fine-tune して確立する（train.real_detector=true → MMDetTrainer）。
+# 内蔵 SimpleDetectionHead でのスモークは CLI override で行う:
+#   train.real_detector=false model.backbone=dinov2_vits14_reg data.limit=16 \
+#   data.img_size=224 train.epochs=1 train.freeze_backbone=true data.num_workers=0
 
 experiment:
   category: "baselines"
@@ -16,11 +17,12 @@ experiment:
 
 model:
   num_classes: 15
-  backbone: dinov2_vitl14_reg     # build_backbone が文字列を解決
+  backbone: dinov2_vitl14_reg     # build_backbone が文字列を解決（内蔵ヘッド時）
   detection_head: mask_dino       # run_s0.sh で varifocanet に切替えて並走
 
 train:
-  epochs: 100
+  real_detector: true             # true: MMDetTrainer（実 VFNet/DINO）/ false: 内蔵ヘッド
+  epochs: 12                      # mmdet VFNet 1x / DINO 12e スケジュールに整合
   batch_size: 4
   num_workers: 8
   amp: true
