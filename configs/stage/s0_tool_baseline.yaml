@@ -63,6 +63,11 @@ exo:
   enabled: false
 
 # データ（EgoSurgeryDataModule の契約に準拠）
+# 【DDP 注記・§8.0 条件 (5)・§13.2 (b)(ii)】
+#   batch_size は **per-GPU batch size**。DDP 2 GPU 実行時は
+#   effective batch size = gpu_count × batch_size となり、eval_recipe に記録される。
+#   use_rfs=true のとき、DataModule(world_size>1) は RFS と DistributedSampler の
+#   二重適用を避けるため DistributedRepeatFactorSampler に切り替える。
 data:
   img_size: 518
   batch_size: 4
@@ -74,8 +79,10 @@ data:
   use_copypaste: false            # crop バンク生成後に true へ
   limit: null                     # スモーク用の画像数上限
   copypaste:
+    # 2026/05/24 v2 訂正: Forceps は 12.21% の頻出クラスのため Copy-Paste 対象外。
+    # 稀少クラス（§3.3）= Skewer 0.7% / Syringe 1.17% の 2 クラスのみ。
     bank_dir: "data/processed/copypaste_bank/"
-    rare_classes: ["Skewer", "Syringe", "Forceps"]
+    rare_classes: ["Skewer", "Syringe"]
     paste_prob: 0.5
     max_paste_per_image: 3
   train:
