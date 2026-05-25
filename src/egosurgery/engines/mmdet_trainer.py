@@ -340,7 +340,54 @@ class MMDetTrainer:
         mmcfg.randomness = dict(
             seed=int(self.cfg.seed), deterministic=False, diff_rank_seed=False
         )
+
+        # --- 負の転移対策（§14 catastrophic forgetting 再発防止） --- #
+        self._apply_negative_transfer_overrides(mmcfg)
         return mmcfg
+
+    def _apply_negative_transfer_overrides(self, mmcfg) -> None:
+        """``cfg.negative_transfer`` セクションを mmcfg に反映する。
+
+        S2 で過去に発生した tool mAP 0.3% への崩壊（§14 退避ログ）を防ぐ:
+
+        - ``layer_wise_lr.enabled``: backbone の lr を ``backbone_lr_scale``
+          倍に下げる（mmdet ``paramwise_cfg.custom_keys`` で実装）
+        - ``backbone_freeze.enabled``: 最初の ``freeze_epochs`` epoch は
+          backbone を凍結する（mmcfg にフィールド注釈として残す。実 hook の
+          実装は本番 S2 で必要に応じて拡張）
+        - ``best_metric.formula``: ``save_best`` の対象指標を切り替える
+          （``tool_protected_sum`` 等の複合指標は EgoCocoMetric の出力に
+          依存するため、現状は注釈として mmcfg へ残し、本番実装時に拡張）
+        """
+        nt = self.cfg.get("negative_transfer", None) if hasattr(self.cfg, "get") else None
+        if nt is None:
+            return
+
+        # 1. layer-wise lr: backbone の lr を base * backbone_lr_scale 倍に。
+        lwl = nt.get("layer_wise_lr", {}) if hasattr(nt, "get") else {}
+        if hasattr(lwl, "get") and bool(lwl.get("enabled", False)):
+            scale = float(lwl.get("backbone_lr_scale", 0.1))
+            paramwise_cfg = dict(
+                custom_keys={"backbone": dict(lr_mult=scale)},
+                norm_decay_mult=0.0,
+            )
+            if not hasattr(mmcfg, "optim_wrapper") or mmcfg.optim_wrapper is None:
+                mmcfg.optim_wrapper = dict()
+            mmcfg.optim_wrapper["paramwise_cfg"] = paramwise_cfg
+
+        # 2. backbone_freeze: 仕様を mmcfg に注釈として残す（実 hook は本番拡張）。
+        bf = nt.get("backbone_freeze", {}) if hasattr(nt, "get") else {}
+        if hasattr(bf, "get") and bool(bf.get("enabled", False)):
+            freeze_n = int(bf.get("freeze_epochs", 0) or 0)
+            if freeze_n > 0:
+                mmcfg.negative_transfer_freeze_backbone_epochs = freeze_n
+
+        # 3. best_metric: 複合指標の意図を注釈として残す（実装は本番拡張）。
+        bm = nt.get("best_metric", {}) if hasattr(nt, "get") else {}
+        if hasattr(bm, "get"):
+            formula = str(bm.get("formula", "") or "")
+            if formula:
+                mmcfg.negative_transfer_best_metric_formula = formula
 
     @staticmethod
     def _patch_dataset(

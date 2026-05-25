@@ -1,12 +1,21 @@
 """手術工程（phase）認識用の損失関数。
 
-クラス不均衡対策（Dissection / Closure が支配的）と過信抑制（label smoothing）を
-施した cross-entropy。実頻度を ``class_weights`` に渡せば逆頻度正規化された
-重みでクラスバランスを取れる。
+クラス不均衡対策（Dissection 44.1% / Closure 34.3% が支配的）と
+過信抑制（label smoothing）を施した cross-entropy。
 
-使い方:
-    loss_fn = PhaseLoss(class_weights=torch.tensor([...9...]), label_smoothing=0.1)
+【§14 再発防止 / v2】class weights が不適切だと学習が崩壊する
+（過去に val_acc 0.5% に崩壊した事故あり）。本実装の方針:
+
+- ``use_class_weights=False`` をデフォルトとする（崩壊しない構成）
+- 有効化時は weight の最大/最小比を ``max_weight_ratio`` で上限クリップ
+- label smoothing は常に 0.1 を既定とする
+
+使い方（推奨・v2）:
+    loss_fn = PhaseLoss(num_classes=9, use_class_weights=False)
     loss = loss_fn(logits, targets)   # logits: (B, C), targets: (B,)
+
+旧 API（v1・後方互換）:
+    loss_fn = PhaseLoss(class_weights=torch.tensor([...9...]))
 """
 
 from __future__ import annotations
@@ -24,28 +33,71 @@ DEFAULT_PHASE_FREQUENCIES: tuple[float, ...] = (
 )
 
 
+def _clip_weight_ratio(weights: torch.Tensor, max_ratio: float) -> torch.Tensor:
+    """重みの max/min 比が ``max_ratio`` を超えないようクリップする（§14 再発防止）。
+
+    過去に逆頻度から計算された極端な重み（最大/最小比 ~20 以上）で学習が
+    崩壊した。本関数は最小値を持ち上げて比を上限に抑え、平均が 1 になるよう
+    再正規化する（cross_entropy weight の慣行）。
+    """
+    w = weights.float().clone()
+    w_min = float(w.min().item())
+    w_max = float(w.max().item())
+    if w_min <= 0 or w_max / w_min <= max_ratio:
+        return w
+    target_min = w_max / float(max_ratio)
+    w = torch.clamp(w, min=target_min)
+    return w * (len(w) / w.sum())
+
+
 class PhaseLoss(nn.Module):
     """クラス重み付き cross-entropy + label smoothing。
 
     Args:
         class_weights: 9 クラスの重み（``torch.Tensor`` または ``None``）。
-            ``None`` のときは均一重み。
-        label_smoothing: ラベル平滑化係数（既定 0.1）。
+            旧 API: 直接重みテンソルを渡す。``use_class_weights`` より優先。
+        num_classes: クラス数（既定 9）。
+        class_frequencies: クラス頻度（``use_class_weights=True`` 時に
+            逆頻度重みを計算する入力）。``None`` のときは
+            :data:`DEFAULT_PHASE_FREQUENCIES` を使う。
+        use_class_weights: ``True`` のとき逆頻度重みを内部計算する。
+            **既定 False**（§14 再発防止: 不適切な weight で学習崩壊した
+            事故を防ぐ）。
+        max_weight_ratio: 計算された重みの最大値/最小値の比の上限。
+            ``use_class_weights=True`` 時のみ適用。既定 10.0。
+        label_smoothing: ラベル平滑化係数（既定 0.1、§14 で常時推奨）。
         reduction: 損失集約方法（``"mean"`` / ``"sum"`` / ``"none"``）。
     """
 
     def __init__(
         self,
         class_weights: torch.Tensor | None = None,
+        num_classes: int = 9,
+        class_frequencies: list[float] | tuple[float, ...] | None = None,
+        use_class_weights: bool = False,
+        max_weight_ratio: float = 10.0,
         label_smoothing: float = 0.1,
         reduction: str = "mean",
     ) -> None:
         super().__init__()
+        self.num_classes = int(num_classes)
+        self.use_class_weights = bool(use_class_weights)
+        self.max_weight_ratio = float(max_weight_ratio)
         self.label_smoothing = float(label_smoothing)
         self.reduction = str(reduction)
+
+        # 重みの解決順序: 旧 API（直接渡し）優先 → v2 (use_class_weights + frequencies) → なし。
+        resolved: torch.Tensor | None = None
         if class_weights is not None:
+            resolved = class_weights.float()
+        elif self.use_class_weights:
+            freqs = class_frequencies or DEFAULT_PHASE_FREQUENCIES
+            resolved = class_weights_from_frequencies(freqs)
+            resolved = _clip_weight_ratio(resolved, self.max_weight_ratio)
+
+        if resolved is not None:
             # buffer として登録すると ``.to(device)`` で自動移動する。
-            self.register_buffer("class_weights", class_weights.float())
+            self.register_buffer("class_weights", resolved)
         else:
             self.class_weights = None  # type: ignore[assignment]
 

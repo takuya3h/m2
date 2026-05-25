@@ -43,6 +43,11 @@ loss:
   lambda_det: 1.0
   lambda_phase: 0.5
   label_smoothing: 0.1
+  # 【§14 v2 再発防止】class weights は不適切で過去に val_acc 0.5% に
+  # 崩壊したため、デフォルト無効。有効化時も weight 比を上限クリップ。
+  phase_use_class_weights: false
+  phase_max_weight_ratio: 10.0
+  phase_label_smoothing: 0.1
 
 feedback:
   phase_to_det: false

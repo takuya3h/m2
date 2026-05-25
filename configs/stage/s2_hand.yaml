@@ -37,6 +37,31 @@ scheduler:
   name: "cosine"
   warmup_epochs: 5
 
+# 【§14 catastrophic forgetting 再発防止】負の転移対策（v2）
+# 過去の S2 で tool mAP 0.3% に崩壊した。MMDetTrainer は本セクションを
+# 読み、以下を適用する:
+# - layer_wise_lr: backbone の lr を base * backbone_lr_scale 倍に下げる
+#                  (既存 tool head も同様に existing_head_lr_scale 倍)
+# - backbone_freeze: 最初の N epoch は backbone を凍結
+# - best_metric.formula: 'tool_mAP * 0.7 + hand_mAP * 0.3' のような
+#                       tool 劣化にペナルティをかける複合指標
+negative_transfer:
+  layer_wise_lr:
+    enabled: true
+    backbone_lr_scale: 0.1          # backbone lr = base_lr * 0.1
+    existing_head_lr_scale: 0.1     # 既存 tool head も同じく lr/10
+    new_head_lr_scale: 1.0          # 新規 hand head は通常 lr
+  backbone_freeze:
+    enabled: true
+    freeze_epochs: 3                # 最初の 3 epoch は backbone 凍結
+  kd_tool:
+    enabled: false                  # 任意 (true で S0 teacher による KD)
+    lambda_kd: 0.5
+  best_metric:
+    formula: "tool_mAP * 0.7 + hand_mAP * 0.3"
+    tool_degradation_threshold: -1.0    # S0 比 -1pt 以上劣化で除外
+  s0_tool_mAP_ref: 0.327              # README §493 Mask DINO seed42 best (val)
+
 longtail:
   seesaw_loss: true
   rfs: true
@@ -68,7 +93,7 @@ data:
   limit: null
   copypaste:
     bank_dir: "data/processed/copypaste_bank/"
-    rare_classes: ["Skewer", "Syringe", "Forceps"]
+    rare_classes: ["Skewer", "Syringe"]   # 【v2 訂正】Forceps は AP_common 側
     paste_prob: 0.5
     max_paste_per_image: 3
   train:

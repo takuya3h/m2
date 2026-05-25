@@ -253,7 +253,12 @@ class PhaseTrainer:
     # 記録
     # ------------------------------------------------------------------ #
     def _write_metrics(self, best: dict) -> None:
-        """metrics.json と per_class_ap.json（phase 用に流用）を書く。"""
+        """metrics.json と per_class_ap.json（phase 用に流用）を書く。
+
+        eval_recipe は ``build_eval_recipe()`` 経由で構築し、§15.4 B の
+        整合性検証が DeltaCalculator から行えるようにする。Phase タスクの
+        ため test_cfg は検出後処理ではなく Phase 評価の構成を載せる。
+        """
         scalars = {
             "epoch": best.get("epoch", 0),
             "phase_accuracy": best.get("phase_accuracy", 0.0),
@@ -263,15 +268,64 @@ class PhaseTrainer:
             "phase_seg_f1_25": best.get("phase_seg_f1_25", 0.0),
             "phase_seg_f1_50": best.get("phase_seg_f1_50", 0.0),
             "train_loss": best.get("train_loss", 0.0),
-            "eval_recipe": {
-                "server_name": self.server_name,
-                "backbone": "torchvision resnet50 (frozen, ImageNet weights)",
-                "phase_head_dropout": float(self.phase_head.dropout_p),
-                "image_size": int(self.cfg.data.get("image_size", 224)),
-            },
         }
         self.manager.log_metrics(scalars)
+        # eval_recipe は別途明示的に書く（log_metrics は既存 eval_recipe を
+        # 保持する設計だが、PhaseTrainer 用の dict を新規に書き込む形が明瞭）。
+        self.manager.log_eval_recipe(self._build_eval_recipe())
         self.manager.log_per_class_ap(best.get("phase_per_class_f1", {}))
+
+    def _build_eval_recipe(self) -> dict:
+        """S3 (Phase 認識) 用の eval_recipe を build_eval_recipe 経由で構築する。
+
+        検出タスクの test_cfg（score_thr 等）の代わりに、Phase 評価の
+        構成パラメータを test_cfg として記録する（task='phase' で区別）。
+        split_train_images 等が公式（9657）に一致していれば §15.4 A の
+        strict 3 条件のうち split 部分が満たされる。
+        """
+        import json as _json
+
+        from egosurgery.utils.eval_recipe import build_eval_recipe
+
+        # ann_file 経由で split サイズを実測（捏造防止）。
+        split_sizes: dict = {}
+        for split_key in ("train", "val", "test"):
+            ann_file = None
+            data_cfg = self.cfg.data if hasattr(self.cfg, "data") else {}
+            if hasattr(data_cfg, "get"):
+                split_block = data_cfg.get(split_key, {})
+                if hasattr(split_block, "get"):
+                    ann_file = split_block.get("ann_file")
+            if ann_file:
+                try:
+                    d = _json.loads(Path(ann_file).read_text(encoding="utf-8"))
+                    split_sizes[split_key] = {
+                        "images": len(d.get("images", [])),
+                        "annotations": len(d.get("annotations", [])),
+                    }
+                    continue
+                except Exception:
+                    pass
+            split_sizes[split_key] = {"images": 0, "annotations": 0}
+
+        loss_cfg = self.cfg.get("loss", {}) if hasattr(self.cfg, "get") else {}
+        get = (lambda k, default: loss_cfg.get(k, default)) if hasattr(loss_cfg, "get") else (
+            lambda k, default: default
+        )
+        test_cfg = {
+            "task": "phase",
+            "backbone": "torchvision_resnet50_frozen_imagenet",
+            "phase_head_dropout": float(self.phase_head.dropout_p),
+            "image_size": int(self.cfg.data.get("image_size", 224)),
+            "use_class_weights": bool(get("phase_use_class_weights", False)),
+            "max_weight_ratio": float(get("phase_max_weight_ratio", 10.0)),
+            "label_smoothing": float(get("phase_label_smoothing", 0.1)),
+        }
+        return build_eval_recipe(
+            split_sizes=split_sizes,
+            server_name=self.server_name,
+            test_cfg=test_cfg,
+        )
 
     def _write_notes(self, best: dict, history: list[dict]) -> None:
         ref_tool_map = self._read_s2_tool_mAP()
