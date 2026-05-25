@@ -46,6 +46,9 @@ _RECIPE_REQUIRED_KEYS = (
     "split_test_images",
 )
 _TEST_CFG_KEYS = ("score_thr", "max_per_img", "nms_pre", "nms_iou")
+# §8.0 条件 (4)(5): 単一 GPU と DDP 2 GPU の混在は Δ の意味を崩壊させるため、
+# gpu_count / effective_batch_size の不一致も致命的不整合として扱う。
+_DDP_REQUIRED_KEYS = ("gpu_count", "effective_batch_size")
 
 
 class InconsistentRecipeError(Exception):
@@ -156,7 +159,14 @@ class DeltaCalculator:
     def _recipes_match(recipe_a: dict, recipe_b: dict) -> bool:
         """2 つの ``eval_recipe`` が一致するか判定する。
 
-        比較対象: split の image/annotation 数、``test_cfg`` の全項目。
+        比較対象:
+            - split の image/annotation 数
+            - ``test_cfg`` の全項目
+            - GPU 構成（``gpu_count`` / ``effective_batch_size``）— §8.0 条件 (4)(5)。
+              単一 GPU と DDP 2 GPU の混在は effective batch size・NCCL allreduce
+              非決定性・BN/LN 挙動差により Δ の意味が崩壊するため、recipe 不一致
+              とみなし False を返す。
+
         ``server_name`` の不一致は警告のみで True/False には影響しない
         （§15.6: 同一サーバー測定は推奨だが必須化はしていない）。
 
@@ -165,7 +175,7 @@ class DeltaCalculator:
             recipe_b: もう一方の eval_recipe。
 
         Returns:
-            split と test_cfg が全て一致する場合に True。
+            split / test_cfg / GPU 構成が全て一致する場合に True。
         """
         for key in _RECIPE_REQUIRED_KEYS:
             if recipe_a.get(key) != recipe_b.get(key):
@@ -175,6 +185,24 @@ class DeltaCalculator:
         test_b = recipe_b.get("test_cfg") or {}
         for key in _TEST_CFG_KEYS:
             if test_a.get(key) != test_b.get(key):
+                return False
+
+        # §8.0 条件 (4)(5): GPU 構成（gpu_count / effective_batch_size）の比較。
+        # 旧 metrics.json（v1 時代）にはこのキーが無いため、両側に存在する場合のみ
+        # 厳格比較する。一方に欠落していたら（=v1 互換）警告だけ出して通す。
+        for key in _DDP_REQUIRED_KEYS:
+            val_a = recipe_a.get(key)
+            val_b = recipe_b.get(key)
+            if val_a is None or val_b is None:
+                # v1 互換のため、欠落側を不整合扱いせず警告に留める。
+                if val_a != val_b:
+                    _logger.warning(
+                        "eval_recipe.%s が片側のみ存在します (%r vs %r). "
+                        "v1 時代の metrics.json と推測されるため Δ 計算は続行します。",
+                        key, val_a, val_b,
+                    )
+                continue
+            if val_a != val_b:
                 return False
 
         # server_name は不一致でも match と判定する。警告のみ出す。
@@ -216,7 +244,8 @@ class DeltaCalculator:
             KeyError: ``experiment_metrics`` に ``metric`` が無い場合。
             ValueError: 基準点が取得できない場合（:meth:`get_baseline` 経由）。
             InconsistentRecipeError: ``experiment_recipe`` と ``baseline_recipe``
-                が両方与えられて split / test_cfg が一致しない場合（§15.4 B / §15.6）。
+                が両方与えられて split / test_cfg / GPU 構成のいずれかが一致しない
+                場合（§15.4 B / §15.6 / §8.0 条件 (4)(5)）。
 
         Notes:
             recipe がどちらか一方でも ``None`` の場合は後方互換のため警告を
@@ -230,8 +259,9 @@ class DeltaCalculator:
             if not self._recipes_match(experiment_recipe, baseline_recipe):
                 raise InconsistentRecipeError(
                     "eval_recipe の不一致により Δ 計算を停止します "
-                    "（§15.4 B / §15.6）。実験と基準点で split サイズまたは "
-                    "test_cfg が異なります: "
+                    "（§15.4 B / §15.6 / §8.0 条件 (4)(5)）。実験と基準点で "
+                    "split サイズ・test_cfg・GPU 構成（gpu_count / "
+                    "effective_batch_size）のいずれかが異なります: "
                     f"exp={experiment_recipe!r}, base={baseline_recipe!r}"
                 )
         elif experiment_recipe is None or baseline_recipe is None:

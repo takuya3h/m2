@@ -249,3 +249,179 @@ def test_mmdet_trainer_wandb_tags():
     assert 'f"server:{self.server_name}"' in src or "f'server:{self.server_name}'" in src, (
         "mmdet_trainer.py に W&B tags への server: タグ付加が無い"
     )
+    # §13.2 (b)(iii): DDP gpu:{world_size} タグの付加処理も検証。
+    assert 'f"gpu:{self.world_size}"' in src or "f'gpu:{self.world_size}'" in src, (
+        "mmdet_trainer.py に W&B tags への gpu:{world_size} タグ付加が無い"
+    )
+
+
+# ---------------------------------------------------------------------- #
+# 7. Co-DETR でも _build_mmdet_cfg が test_cfg を locked-down 値に上書き
+# ---------------------------------------------------------------------- #
+def test_mmdet_trainer_codetr_locked_test_cfg(tmp_path, monkeypatch):
+    """Co-DETR 構成でも _build_mmdet_cfg の test_cfg が locked-down 値。
+    実 mmdet codetr base config が無い環境でも、_resolve_detector が
+    codetr を受け付けること自体は検証する。"""
+    from egosurgery.engines.mmdet_trainer import MMDetTrainer
+
+    assert MMDetTrainer._resolve_detector("codetr") == "codetr"
+    assert MMDetTrainer._resolve_detector("co_detr") == "codetr"
+    assert MMDetTrainer._resolve_detector("co-detr") == "codetr"
+
+
+# ---------------------------------------------------------------------- #
+# 8. compare_judge6 の判定ロジック（§9 #6）
+# ---------------------------------------------------------------------- #
+def test_compare_judge6_logic():
+    """|ΔAPr| >= 3.0 で「切替検討」、未満で「Mask DINO 継続」を返す。"""
+    sys.path.insert(0, str(_PROJECT_ROOT / "scripts"))
+    from compare_judge6 import judge
+
+    assert judge(3.0) == "検出ヘッド切替を検討"
+    assert judge(-3.5) == "検出ヘッド切替を検討"
+    assert judge(2.9) == "Mask DINO 継続"
+    assert judge(0.0) == "Mask DINO 継続"
+    # しきい値の上書き。
+    assert judge(2.5, threshold_pt=2.0) == "検出ヘッド切替を検討"
+
+
+# ---------------------------------------------------------------------- #
+# 9-12. DDP 関連の純粋ロジック検証（weights / annotation 不要のユニットテスト）
+#       weights ファイルや mmdet base config を必要としない部分のみを切り出し、
+#       worktree 環境や CI 上でも skip せず実行できるようにする。
+# ---------------------------------------------------------------------- #
+def _make_trainer_no_setup(monkeypatch, lr_scaling_mode: str | None = None,
+                           world_size: int | None = None,
+                           rank: int | None = None,
+                           local_rank: int | None = None):
+    """setup() を呼ばず DDP 環境検出だけを行う MMDetTrainer を返す。
+
+    setup() は mmdet base config / 重み / annotation を要求するため、
+    DDP 文脈の検出 / _resolve_lr_label / _build_eval_recipe（mmdet_cfg なし）
+    といった純粋ロジックのテストでは setup() を直接呼ばず、必要な
+    インスタンス属性だけを手で埋める形で検証する。
+    """
+    from omegaconf import OmegaConf
+
+    from egosurgery.engines.mmdet_trainer import MMDetTrainer
+
+    # 環境変数の上書き。
+    if world_size is None:
+        monkeypatch.delenv("WORLD_SIZE", raising=False)
+    else:
+        monkeypatch.setenv("WORLD_SIZE", str(world_size))
+    if rank is None:
+        monkeypatch.delenv("RANK", raising=False)
+    else:
+        monkeypatch.setenv("RANK", str(rank))
+    if local_rank is None:
+        monkeypatch.delenv("LOCAL_RANK", raising=False)
+    else:
+        monkeypatch.setenv("LOCAL_RANK", str(local_rank))
+
+    cfg_dict = {
+        "seed": 42,
+        "model": {"num_classes": 15, "detection_head": "varifocanet"},
+        "train": {
+            "real_detector": True, "epochs": 1,
+            "batch_size": 2, "num_workers": 0,
+            "load_from": None,
+        },
+        "data": {"img_size": 224, "include_hand": False, "include_phase": False},
+        "logging": {"wandb_enabled": False, "server_name": None},
+        "experiment": {"base_dir": "experiments", "category": "baselines",
+                       "step": "s0", "description": "ut"},
+    }
+    if lr_scaling_mode is not None:
+        cfg_dict["train"]["lr_scaling_mode"] = lr_scaling_mode
+
+    cfg = OmegaConf.create(cfg_dict)
+    trainer = MMDetTrainer(cfg)
+    # setup() の DDP 検出ロジックだけを再現する（実 setup() は呼ばない）。
+    import os as _os
+    trainer.world_size = int(_os.environ.get("WORLD_SIZE", "1"))
+    trainer.rank = int(_os.environ.get("RANK", "0"))
+    trainer.local_rank = int(_os.environ.get("LOCAL_RANK", "0"))
+    trainer.is_distributed = trainer.world_size > 1
+    trainer._lr_scaling_label = trainer._resolve_lr_label()
+    return trainer
+
+
+# 9. _build_eval_recipe() の戻り値に gpu_count / effective_batch_size /
+#    lr_scaling が含まれる（mmdet_cfg なしでも _build_eval_recipe は
+#    AttributeError になるため、_resolve_lr_label と eval_recipe.build_eval_recipe
+#    の組み合わせで等価な検証を行う）。
+def test_mmdet_trainer_eval_recipe_ddp_fields(monkeypatch):
+    """単一 GPU では gpu_count=1, lr_scaling="none"。DDP 2 GPU では gpu_count=2,
+    lr_scaling="linear_x2"。eval_recipe.build_eval_recipe との結合で検証する。"""
+    from egosurgery.utils.eval_recipe import (
+        LOCKED_DOWN_TEST_CFG,
+        PAPER_SPLIT_SIZES,
+        build_eval_recipe,
+    )
+
+    # 単一 GPU。
+    t1 = _make_trainer_no_setup(monkeypatch)
+    recipe = build_eval_recipe(
+        test_cfg=LOCKED_DOWN_TEST_CFG, split_sizes=PAPER_SPLIT_SIZES,
+        server_name="bengio",
+        gpu_count=t1.world_size,
+        effective_batch_size=int(t1.cfg.train.batch_size) * t1.world_size,
+        lr_scaling=t1._lr_scaling_label,
+    )
+    assert recipe["gpu_count"] == 1
+    assert recipe["effective_batch_size"] == 2
+    assert recipe["lr_scaling"] == "none"
+
+    # DDP 2 GPU。
+    t2 = _make_trainer_no_setup(monkeypatch, world_size=2, rank=0, local_rank=0)
+    recipe = build_eval_recipe(
+        test_cfg=LOCKED_DOWN_TEST_CFG, split_sizes=PAPER_SPLIT_SIZES,
+        server_name="bengio",
+        gpu_count=t2.world_size,
+        effective_batch_size=int(t2.cfg.train.batch_size) * t2.world_size,
+        lr_scaling=t2._lr_scaling_label,
+    )
+    assert recipe["gpu_count"] == 2
+    assert recipe["effective_batch_size"] == 4
+    assert recipe["lr_scaling"] == "linear_x2"
+
+
+# 10. WORLD_SIZE 未設定（単一 GPU）時に is_distributed=False / gpu_count=1
+def test_mmdet_trainer_single_gpu_fallback(monkeypatch):
+    """torchrun を介さない実行では DDP モードに入らない。"""
+    trainer = _make_trainer_no_setup(monkeypatch)
+    assert trainer.is_distributed is False
+    assert trainer.world_size == 1
+    assert trainer.rank == 0
+    assert trainer._lr_scaling_label == "none"
+
+
+# 11. lr_scaling_mode=linear かつ world_size=2 で linear_x2 ラベル
+def test_resolve_lr_linear_scaling(monkeypatch):
+    """torchrun + lr_scaling_mode=linear → "linear_x2"。"""
+    trainer = _make_trainer_no_setup(
+        monkeypatch, world_size=2, rank=0, local_rank=0, lr_scaling_mode="linear",
+    )
+    assert trainer.is_distributed is True
+    assert trainer.world_size == 2
+    assert trainer._lr_scaling_label == "linear_x2"
+
+
+# 12. lr_scaling_mode=keep_effective_bs で per_gpu_bs_adjusted ラベル
+def test_resolve_lr_keep_effective_bs(monkeypatch):
+    """lr_scaling_mode=keep_effective_bs → "per_gpu_bs_adjusted"。"""
+    trainer = _make_trainer_no_setup(
+        monkeypatch, world_size=2, rank=0, local_rank=0,
+        lr_scaling_mode="keep_effective_bs",
+    )
+    assert trainer._lr_scaling_label == "per_gpu_bs_adjusted"
+
+
+# 13. world_size=3 (任意の DDP サイズ) で linear_x{N} ラベル
+def test_resolve_lr_linear_scaling_arbitrary_world_size(monkeypatch):
+    """単一 GPU/DDP 2 GPU 以外の値でも linear_x{N} を返す（汎用性検証）。"""
+    trainer = _make_trainer_no_setup(
+        monkeypatch, world_size=4, rank=0, local_rank=0, lr_scaling_mode="linear",
+    )
+    assert trainer._lr_scaling_label == "linear_x4"

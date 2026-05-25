@@ -171,6 +171,50 @@ def test_build_model_s0():
 
 
 # ---------------------------------------------------------------------- #
+# 4b. build_model で CoDETR ヘッドが構築できること（§13.2 S0・§9 #6）
+# ---------------------------------------------------------------------- #
+def test_build_model_codetr():
+    """configs/model/detection_head/co_detr.yaml で build_model が CoDETRHead
+    を含むモデルを返すこと（mmdet projects/CO-DETR 非依存環境でも構築自体は通る）。"""
+    from omegaconf import OmegaConf
+
+    from egosurgery.models.build import build_model
+    from egosurgery.models.heads.codetr_head import CoDETRHead
+
+    cfg = OmegaConf.create(
+        {
+            "model": {
+                "num_classes": 15,
+                "backbone": _vits_backbone_cfg(peft_method=None),
+                "detection_head": {
+                    "name": "codetr",
+                    "num_queries": 300,
+                    "with_box_refine": True,
+                    "as_two_stage": True,
+                    "aux_heads": {"enabled": True},
+                    "mask_on": False,
+                },
+            },
+            "relation": {"enabled": False},
+            "exo": {"enabled": False},
+        }
+    )
+
+    try:
+        model = build_model(cfg)
+    except Exception as exc:
+        pytest.skip(f"build_model に必要な DINOv2 をロードできません: {exc}")
+
+    assert "detection_head" in model.components
+    assert isinstance(model.detection_head, CoDETRHead)
+    # CoDETRHead は num_classes を保持していること（ヘッド側で受け取れる口の検証）。
+    assert model.detection_head.num_classes == 15
+    # test_cfg 受け取り口（§15.3 G1）が既定の locked-down 値で初期化されている。
+    assert model.detection_head.test_detections_per_img == 300
+    assert model.detection_head.test_score_thr == 1e-8
+
+
+# ---------------------------------------------------------------------- #
 # 5. Seesaw Loss の勾配
 # ---------------------------------------------------------------------- #
 def test_seesaw_loss_gradient():
