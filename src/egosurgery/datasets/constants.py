@@ -64,8 +64,11 @@ NUM_PHASE_CLASSES = len(PHASE_CLASSES)  # 9
 # 形状が似て混同しやすいクラス（confusion matrix / Compensation factor 対象）。
 CONFUSABLE_CLASSES = ["Forceps", "Tweezers", "Needle Holders", "Bipolar Forceps"]
 
-# 稀少クラス（Copy-Paste / RFS の優先対象）。研究計画 §7 の長尾分析に基づく。
-RARE_CLASSES = ["Skewer", "Syringe", "Forceps"]
+# 稀少クラス（Copy-Paste / RFS の優先対象）。
+# 【2026/05/24 v2 訂正】Forceps の出現割合は 12.21%（旧誤記 1.22%）で
+# 実際にはトップ3頻出クラス。稀少クラスは Skewer (0.7%) と Syringe (1.17%) の
+# 2 クラスのみとする。Forceps は形状類似ペア（CONFUSABLE_CLASSES）に残す。
+RARE_CLASSES = ["Skewer", "Syringe"]
 
 
 def _build_maps(classes: list[dict]) -> tuple[dict, dict]:

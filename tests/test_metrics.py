@@ -139,8 +139,10 @@ def test_ap_rare_common_split(tmp_path):
 
     assert results["AP_rare"] == np.mean(rare)
     assert results["AP_common"] == np.mean(common)
-    # 稀少 3 クラス + 残り 12 クラス = 15。
-    assert len(rare) == 3 and len(common) == 12
+    # 【2026/05/24 v2 訂正】Forceps 12.21% は稀少ではないため、
+    # 稀少クラスは Skewer / Syringe の 2 クラスのみ。残り 13 クラス = 15。
+    assert len(rare) == len(RARE_CLASSES) == 2
+    assert len(common) == 15 - len(RARE_CLASSES) == 13
 
 
 # ---------------------------------------------------------------------- #

@@ -1,19 +1,27 @@
 """bbox-level Simple Copy-Paste augmentation。
 
-稀少クラス（Skewer / Syringe / Forceps 等）の術具を事前に切り出した
-バンクから、学習画像へランダムに貼り付けてインスタンス数を水増しする。
+稀少クラス（Skewer / Syringe）の術具を事前に切り出したバンクから、
+学習画像へランダムに貼り付けてインスタンス数を水増しする。
 mask は使わない（Phase-0 主経路）。
+
+【2026/05/24 v2 訂正】貼り付け対象は Skewer / Syringe の 2 クラスのみ。
+Forceps は出現割合 12.21% でトップ3頻出クラスのため対象から除外する。
 
 使い方:
     cp = BBoxCopyPaste(
         bank_dir="data/processed/copypaste_bank/",
-        rare_classes=["Skewer", "Syringe", "Forceps"],
+        rare_classes=["Skewer", "Syringe"],  # Forceps は含めない
         paste_prob=0.5,
         max_paste_per_image=3,
     )
     image, target = cp(image, target)
     # image  : np.ndarray (H, W, 3) uint8（RGB）
     # target : {"boxes": (N,4) xyxy, "labels": (N,)}  貼り付け分が追加される
+
+将来拡張（研究計画 §3.3）: temporal-consistent copy-paste — 同一クリップ内で
+時間的に整合した位置に貼り付ける手法が提案手法として予定されている。
+本実装では frame 独立の簡易版に留め、``temporal_consistent`` フラグを
+予約しておく（True 指定時は現状 NotImplementedError）。
 """
 
 from __future__ import annotations
@@ -49,29 +57,45 @@ class BBoxCopyPaste:
     def __init__(
         self,
         bank_dir: str | Path,
-        rare_classes: list[str],
+        rare_classes: list[str] | None = None,
         paste_prob: float = 0.5,
         max_paste_per_image: int = 3,
         max_iou: float = 0.3,
         scale_range: tuple[float, float] = (0.6, 1.4),
         seed: int | None = None,
+        temporal_consistent: bool = False,
     ) -> None:
         """
         Args:
             bank_dir: ``{bank_dir}/{class_name}/*.jpg`` の crop バンク。
-            rare_classes: 貼り付け対象の稀少クラス名。
+            rare_classes: 貼り付け対象の稀少クラス名。省略時は
+                :data:`~egosurgery.datasets.constants.RARE_CLASSES`
+                （Skewer / Syringe）を使う。
             paste_prob: 画像ごとに Copy-Paste を適用する確率。
             max_paste_per_image: 1 画像あたりの最大貼り付け数。
             max_iou: 既存 bbox との IoU がこの値未満なら貼り付けを許可。
             scale_range: crop の拡縮率の範囲。
             seed: 乱数シード（``None`` で非決定的）。
+            temporal_consistent: 将来拡張（研究計画 §3.3）の予約フラグ。
+                現状は ``False`` のみサポート。``True`` 指定時は明示的に
+                ``NotImplementedError`` を送出する。
         """
+        if rare_classes is None:
+            # 遅延 import で循環依存を避ける。
+            from egosurgery.datasets.constants import RARE_CLASSES
+            rare_classes = list(RARE_CLASSES)
+        if temporal_consistent:
+            raise NotImplementedError(
+                "temporal_consistent=True は研究計画 §3.3 で予定されているが "
+                "本実装では未対応（frame 独立の簡易版のみ）。"
+            )
         self.bank_dir = Path(bank_dir)
         self.rare_classes = list(rare_classes)
         self.paste_prob = float(paste_prob)
         self.max_paste_per_image = int(max_paste_per_image)
         self.max_iou = float(max_iou)
         self.scale_range = scale_range
+        self.temporal_consistent = bool(temporal_consistent)
         self.rng = np.random.default_rng(seed)
 
         # クラスごとに crop ファイル一覧を索引化する。

@@ -175,6 +175,55 @@ def test_copypaste_adds_instances(tmp_path):
 
 
 # ---------------------------------------------------------------------- #
+# 4b. Copy-Paste の対象が Skewer / Syringe のみで Forceps を含まない
+#     【§v2 訂正 / 2026/05/24】Forceps 12.21% は稀少ではない
+# ---------------------------------------------------------------------- #
+def test_copypaste_targets_only_skewer_syringe(tmp_path):
+    """Copy-Paste 後に追加される label が Skewer / Syringe のみで、
+    Forceps を含まないことを確認する。"""
+    from egosurgery.datasets.constants import RARE_CLASSES, TOOL_NAME_TO_ID
+    from egosurgery.datasets.copypaste import BBoxCopyPaste
+
+    # 1. constants の RARE_CLASSES が Skewer / Syringe のみであること（不変条件）。
+    assert set(RARE_CLASSES) == {"Skewer", "Syringe"}, (
+        f"RARE_CLASSES に Forceps 等が混入: {RARE_CLASSES}"
+    )
+
+    # 2. crop バンクに Skewer / Syringe の crop を用意する。
+    bank_dir = tmp_path / "bank"
+    for class_name in ("Skewer", "Syringe"):
+        cls_dir = bank_dir / class_name
+        cls_dir.mkdir(parents=True)
+        for i in range(3):
+            crop = np.random.randint(0, 255, (16, 16, 3), dtype=np.uint8)
+            cv2.imwrite(str(cls_dir / f"crop_{i}.jpg"), crop)
+
+    # 3. rare_classes を省略すると default の RARE_CLASSES が使われる。
+    cp = BBoxCopyPaste(
+        bank_dir=bank_dir,
+        paste_prob=1.0,
+        max_paste_per_image=5,
+        seed=0,
+    )
+    # 4. 何枚かの画像に適用し、追加された label が Skewer / Syringe のみで
+    #    Forceps (id=2) が混入しないことを確認する。
+    forceps_id = TOOL_NAME_TO_ID["Forceps"]
+    allowed_ids = {TOOL_NAME_TO_ID[n] for n in RARE_CLASSES}
+    n_pasted = 0
+    for _ in range(20):
+        image = np.random.randint(0, 255, (_IMG_H, _IMG_W, 3), dtype=np.uint8)
+        target = {"boxes": np.array([[5, 5, 15, 15]], dtype=np.float32), "labels": [1]}
+        _, new_target = cp(image, target)
+        # 元の 1 件を超えて追加された label を抽出する。
+        extra = list(new_target["labels"])[1:]
+        for lbl in extra:
+            assert lbl != forceps_id, "Forceps が Copy-Paste 対象になっている"
+            assert lbl in allowed_ids, f"許可外クラス {lbl} が追加された"
+            n_pasted += 1
+    assert n_pasted > 0, "Copy-Paste で 1 件も追加されなかった（テスト前提崩壊）"
+
+
+# ---------------------------------------------------------------------- #
 # 5. RFS が稀少クラスを oversample する
 # ---------------------------------------------------------------------- #
 def test_rfs_sampler_oversamples_rare(tmp_path):
