@@ -102,3 +102,19 @@ outputs/
 
 # === Claude Code（個人設定のみ除外。commands/agents/skills は共有）===
 .claude/settings.local.json
+# 別セッションが作成した git worktree 跡（履歴外、ローカルのみ）
+.claude/worktrees/
+
+# === 退避フォルダ (S0 やり直しの過程で生まれたローカル証跡) ===
+# 容量が大きい (合計 ~5.6GB) ため git 履歴には載せず、ローカルに保持して
+# 再現性検証・監査用の参照点とする。
+experiments/baselines/_aborted_s0_cuda_visible_misconfig/
+experiments/baselines/_failed_num_workers_zero/
+experiments/baselines/_smoke_prior_simplehead/
+experiments/baselines/_smoke_v2_part3/
+experiments/phase0/_pre_redo_s0_smoke/
+experiments/phase0/_prior_no_eval_recipe/
+
+# === 退避済みプロンプト (新シリーズで置換済み、ローカル参照用) ===
+prompts_legacy/
+prompts_n_legacy/
