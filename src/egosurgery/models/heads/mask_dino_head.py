@@ -31,13 +31,24 @@ def is_maskdino_available() -> bool:
     return True
 
 
-def build_d2_config(cfg):
+def build_d2_config(
+    cfg,
+    test_detections_per_img: int = 300,
+    test_score_thr: float = 1e-8,
+):
     """Hydra config (DictConfig) から Detectron2 の ``CfgNode`` を構築する。
 
     Detectron2 / Mask DINO がインストールされている環境でのみ呼べる。
 
     Args:
         cfg: ``configs/model/detection_head/mask_dino.yaml`` 由来の設定。
+        test_detections_per_img: 評価時の検出数上限（既定 300、§15.3 G1 の
+            locked-down 値）。Detectron2 の ``TEST.DETECTIONS_PER_IMAGE`` と
+            ``MODEL.MaskDINO.TEST.DETECTIONS_PER_IMAGE`` に注入する。
+        test_score_thr: 評価時の検出スコア閾値（既定 1e-8、§15.3 G1）。
+            ``MODEL.MaskDINO.TEST.SCORE_THRESHOLD`` 等に注入する。
+        実値の適用は Part 3 の ``MMDetTrainer._build_mmdet_cfg`` / Mask DINO 側
+        の同等処理が担うが、本ヘッドはそれを受け取れる口を持つ（v2 §15.3 G1）。
 
     Returns:
         Mask DINO 用に各フィールドを設定した Detectron2 ``CfgNode``。
@@ -57,31 +68,58 @@ def build_d2_config(cfg):
         )
 
     num_classes = int(cfg.get("num_classes", 15))
-    d2_cfg.MODEL.MASK_DINO.NUM_CLASSES = num_classes
-    d2_cfg.MODEL.MASK_DINO.NUM_OBJECT_QUERIES = int(cfg.get("num_queries", 300))
-    d2_cfg.MODEL.MASK_DINO.HIDDEN_DIM = int(cfg.get("hidden_dim", 256))
-    d2_cfg.MODEL.MASK_DINO.NHEADS = int(cfg.get("nheads", 8))
-    d2_cfg.MODEL.MASK_DINO.DIM_FEEDFORWARD = int(cfg.get("dim_feedforward", 2048))
-    d2_cfg.MODEL.MASK_DINO.DEC_LAYERS = int(cfg.get("dec_layers", 9))
-    d2_cfg.MODEL.MASK_DINO.ENC_LAYERS = int(cfg.get("enc_layers", 6))
+    d2_cfg.MODEL.MaskDINO.NUM_CLASSES = num_classes
+    d2_cfg.MODEL.MaskDINO.NUM_OBJECT_QUERIES = int(cfg.get("num_queries", 300))
+    d2_cfg.MODEL.MaskDINO.HIDDEN_DIM = int(cfg.get("hidden_dim", 256))
+    d2_cfg.MODEL.MaskDINO.NHEADS = int(cfg.get("nheads", 8))
+    d2_cfg.MODEL.MaskDINO.DIM_FEEDFORWARD = int(cfg.get("dim_feedforward", 2048))
+    d2_cfg.MODEL.MaskDINO.DEC_LAYERS = int(cfg.get("dec_layers", 9))
+    d2_cfg.MODEL.MaskDINO.ENC_LAYERS = int(cfg.get("enc_layers", 6))
     # Phase-0 は bbox-only。mask branch を無効化する。
-    d2_cfg.MODEL.MASK_DINO.MASK_ON = bool(cfg.get("mask_on", False))
+    d2_cfg.MODEL.MaskDINO.MASK_ON = bool(cfg.get("mask_on", False))
     # contrastive denoising。
-    d2_cfg.MODEL.MASK_DINO.DN = "cdn" if bool(cfg.get("denoising", True)) else "no"
-    d2_cfg.MODEL.MASK_DINO.DN_NUM = int(cfg.get("dn_num", 100))
+    d2_cfg.MODEL.MaskDINO.DN = "cdn" if bool(cfg.get("denoising", True)) else "no"
+    d2_cfg.MODEL.MaskDINO.DN_NUM = int(cfg.get("dn_num", 100))
+
+    # 【v2 §15.3 G1】locked-down test_cfg を Detectron2 / MaskDINO 側に
+    # 注入する。Δ 比較の科学的妥当性を担保するため score_thr / 検出数
+    # 上限を全 detector・全 stage で揃える（§15.2 事故再発防止）。
+    d2_cfg.TEST.DETECTIONS_PER_IMAGE = int(test_detections_per_img)
+    if hasattr(d2_cfg.MODEL, "MaskDINO"):
+        # MaskDINO の TEST サブノードを安全に用意する。
+        if not hasattr(d2_cfg.MODEL.MaskDINO, "TEST"):
+            from detectron2.config import CfgNode
+            d2_cfg.MODEL.MaskDINO.TEST = CfgNode()
+        d2_cfg.MODEL.MaskDINO.TEST.DETECTIONS_PER_IMAGE = int(test_detections_per_img)
+        d2_cfg.MODEL.MaskDINO.TEST.SCORE_THRESHOLD = float(test_score_thr)
+        d2_cfg.MODEL.MaskDINO.TEST.OBJECT_MASK_THRESHOLD = float(test_score_thr)
+    if hasattr(d2_cfg.MODEL, "RETINANET"):
+        d2_cfg.MODEL.RETINANET.SCORE_THRESH_TEST = float(test_score_thr)
+
     return d2_cfg
 
 
 class MaskDINOHead(nn.Module):
     """Mask DINO 検出ヘッドのラッパー（Detectron2 非依存環境では無効化）。"""
 
-    def __init__(self, cfg) -> None:
+    def __init__(
+        self,
+        cfg,
+        test_detections_per_img: int = 300,
+        test_score_thr: float = 1e-8,
+    ) -> None:
         """
         Args:
             cfg: 検出ヘッド設定（``mask_dino.yaml`` 由来。``num_classes`` 等）。
+            test_detections_per_img: 評価時の検出数上限（§15.3 G1、既定 300）。
+            test_score_thr: 評価時のスコア閾値（§15.3 G1、既定 1e-8）。
+                実値の適用は Part 3 の ``MMDetTrainer._build_mmdet_cfg`` で
+                行うが、本ヘッドはそれを受け取れる口を持つ。
         """
         super().__init__()
         self.cfg = cfg
+        self.test_detections_per_img = int(test_detections_per_img)
+        self.test_score_thr = float(test_score_thr)
         self.num_classes = int(cfg.get("num_classes", 15))
         self.num_queries = int(cfg.get("num_queries", 300))
         self.mask_on = bool(cfg.get("mask_on", False))
@@ -106,7 +144,11 @@ class MaskDINOHead(nn.Module):
         # Detectron2 / Mask DINO が揃う環境でのみ本体を構築する。
         from maskdino.maskdino import MaskDINO  # pragma: no cover - 環境依存
 
-        d2_cfg = build_d2_config(self.cfg)
+        d2_cfg = build_d2_config(
+            self.cfg,
+            test_detections_per_img=self.test_detections_per_img,
+            test_score_thr=self.test_score_thr,
+        )
         self._head = MaskDINO(d2_cfg)
 
     def forward(self, features, targets=None):
