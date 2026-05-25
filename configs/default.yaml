@@ -61,6 +61,11 @@ train:
   load_from: null
   # S0/S1/S2 で True のとき MMDetTrainer（mmdet 実検出器）を選択する。
   real_detector: false
+  # === DDP lr スケーリング（§8.0 条件 (6)・§13.2 (a)） ===
+  # "linear": effective bs 倍率で lr を線形スケーリング（DDP 2 GPU で lr×2）
+  # "keep_effective_bs": per-GPU bs を下げて effective bs を維持・lr 据え置き
+  # 単一 GPU 時は両者とも "none" として eval_recipe.lr_scaling に記録される。
+  lr_scaling_mode: linear
 
 # === Optimizer ===
 optimizer:
