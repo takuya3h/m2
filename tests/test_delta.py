@@ -41,10 +41,27 @@ if str(_SRC) not in sys.path:
 # テスト用ヘルパ
 # ---------------------------------------------------------------------- #
 def _make_recipe(**overrides) -> dict:
-    """論文公式 split + locked-down test_cfg をベースとした recipe を作る。"""
-    from egosurgery.utils.eval_recipe import PAPER_SPLIT_SIZES, build_eval_recipe
+    """論文公式 split + locked-down test_cfg をベースとした recipe を作る。
 
-    recipe = build_eval_recipe(PAPER_SPLIT_SIZES, server_name="bengio")
+    v2（§8.0 反映）では DDP フィールド（gpu_count / effective_batch_size /
+    lr_scaling）が必須化されたため、既定で単一 GPU（gpu_count=1,
+    effective_batch_size=4, lr_scaling="none"）の recipe を生成する。
+    DDP 比較テストでは override で gpu_count=2 等を指定する。
+    """
+    from egosurgery.utils.eval_recipe import (
+        LOCKED_DOWN_TEST_CFG,
+        PAPER_SPLIT_SIZES,
+        build_eval_recipe,
+    )
+
+    recipe = build_eval_recipe(
+        test_cfg=LOCKED_DOWN_TEST_CFG,
+        split_sizes=PAPER_SPLIT_SIZES,
+        server_name="bengio",
+        gpu_count=1,
+        effective_batch_size=4,
+        lr_scaling="none",
+    )
     # overrides は top-level または test_cfg.* を上書きできる。
     for key, value in overrides.items():
         if key.startswith("test_cfg."):
@@ -174,3 +191,81 @@ def test_server_name_mismatch_warns_not_raises(tmp_path, caplog):
         )
     assert result["delta"] == pytest.approx(0.04)
     assert any("server_name" in r.message for r in caplog.records)
+
+
+# ---------------------------------------------------------------------- #
+# 7. gpu_count が異なる → False（§8.0 条件 (4)）
+# ---------------------------------------------------------------------- #
+def test_eval_recipe_mismatch_gpu_count():
+    """gpu_count の不一致（単一 GPU vs DDP 2 GPU）は recipe 不一致と判定する。"""
+    from egosurgery.metrics.delta import DeltaCalculator
+
+    base = _make_recipe(gpu_count=1, effective_batch_size=4)
+    diff = _make_recipe(gpu_count=2, effective_batch_size=4)
+    assert DeltaCalculator._recipes_match(base, diff) is False
+
+
+# ---------------------------------------------------------------------- #
+# 8. effective_batch_size が異なる → False（§8.0 条件 (5)）
+# ---------------------------------------------------------------------- #
+def test_eval_recipe_mismatch_effective_batch_size():
+    """effective_batch_size の不一致は recipe 不一致と判定する。"""
+    from egosurgery.metrics.delta import DeltaCalculator
+
+    base = _make_recipe(gpu_count=2, effective_batch_size=4)
+    diff = _make_recipe(gpu_count=2, effective_batch_size=8)
+    assert DeltaCalculator._recipes_match(base, diff) is False
+
+
+# ---------------------------------------------------------------------- #
+# 9. gpu_count 不一致で compute_delta が例外を送出（§8.0 条件 (4)）
+# ---------------------------------------------------------------------- #
+def test_compute_delta_raises_on_gpu_count_mismatch(tmp_path):
+    """単一 GPU 基準点と DDP 実験を比較しようとすると InconsistentRecipeError。"""
+    from egosurgery.metrics.delta import DeltaCalculator, InconsistentRecipeError
+
+    baselines_dir = tmp_path / "baselines"
+    baseline_recipe = _make_recipe(gpu_count=1, effective_batch_size=4)
+    _seed_baseline(baselines_dir, baseline_recipe)
+    calculator = DeltaCalculator(baselines_dir)
+
+    experiment_recipe = _make_recipe(
+        gpu_count=2, effective_batch_size=4, lr_scaling="linear_x2",
+    )
+    with pytest.raises(InconsistentRecipeError, match=r"§8\.0"):
+        calculator.compute_delta(
+            baseline_step="s0",
+            experiment_metrics={"mAP": 0.50},
+            metric="mAP",
+            experiment_recipe=experiment_recipe,
+            baseline_recipe=baseline_recipe,
+        )
+
+
+# ---------------------------------------------------------------------- #
+# 10. build_eval_recipe が DDP フィールドを含む dict を返す（§8.0 条件 (5)(6)）
+# ---------------------------------------------------------------------- #
+def test_build_eval_recipe_ddp_fields():
+    """build_eval_recipe の戻り値に gpu_count / effective_batch_size /
+    lr_scaling が含まれる。"""
+    from egosurgery.utils.eval_recipe import (
+        LOCKED_DOWN_TEST_CFG,
+        PAPER_SPLIT_SIZES,
+        build_eval_recipe,
+    )
+
+    recipe = build_eval_recipe(
+        test_cfg=LOCKED_DOWN_TEST_CFG,
+        split_sizes=PAPER_SPLIT_SIZES,
+        server_name="bengio",
+        gpu_count=2,
+        effective_batch_size=4,
+        lr_scaling="linear_x2",
+    )
+    assert recipe["gpu_count"] == 2
+    assert recipe["effective_batch_size"] == 4
+    assert recipe["lr_scaling"] == "linear_x2"
+    # 既存フィールドも一緒に確認（v1 互換キーの維持）。
+    assert recipe["test_cfg"]["score_thr"] == 1e-8
+    assert recipe["split_train_images"] == 9657
+    assert recipe["server_name"] == "bengio"

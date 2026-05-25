@@ -96,7 +96,11 @@ def test_experiment_manager_writes_server_txt(tmp_path, monkeypatch):
 def test_log_eval_recipe(tmp_path):
     """log_eval_recipe() 後に metrics.json に eval_recipe キーがあること、
     既存指標と log_metrics による後続上書きでも recipe が保持されることを確認する。"""
-    from egosurgery.utils.eval_recipe import PAPER_SPLIT_SIZES, build_eval_recipe
+    from egosurgery.utils.eval_recipe import (
+        LOCKED_DOWN_TEST_CFG,
+        PAPER_SPLIT_SIZES,
+        build_eval_recipe,
+    )
     from egosurgery.utils.experiment_manager import ExperimentManager
 
     manager = ExperimentManager(
@@ -108,7 +112,11 @@ def test_log_eval_recipe(tmp_path):
     )
     exp_dir = manager.setup()
 
-    recipe = build_eval_recipe(PAPER_SPLIT_SIZES, server_name="bengio")
+    recipe = build_eval_recipe(
+        test_cfg=LOCKED_DOWN_TEST_CFG,
+        split_sizes=PAPER_SPLIT_SIZES,
+        server_name="bengio",
+    )
     manager.log_eval_recipe(recipe)
 
     metrics_path = exp_dir / "metrics.json"
@@ -124,6 +132,45 @@ def test_log_eval_recipe(tmp_path):
     assert after["mAP"] == 0.42
     assert "eval_recipe" in after, "log_metrics が eval_recipe を消してしまいました"
     assert after["eval_recipe"]["split_train_images"] == 9657
+
+
+# ---------------------------------------------------------------------- #
+# 1d. log_eval_recipe で DDP フィールド（gpu_count / effective_batch_size /
+#     lr_scaling）が metrics.json に併記される（§8.0 条件 (5)(6)）
+# ---------------------------------------------------------------------- #
+def test_log_eval_recipe_includes_gpu_count(tmp_path):
+    """DDP 2 GPU の recipe を log_eval_recipe で書き出すと、gpu_count や
+    effective_batch_size、lr_scaling が metrics.json に保存される。"""
+    from egosurgery.utils.eval_recipe import (
+        LOCKED_DOWN_TEST_CFG,
+        PAPER_SPLIT_SIZES,
+        build_eval_recipe,
+    )
+    from egosurgery.utils.experiment_manager import ExperimentManager
+
+    manager = ExperimentManager(
+        base_dir=tmp_path,
+        category="baselines",
+        step="s0",
+        description="ddprecipe",
+        seed=42,
+    )
+    exp_dir = manager.setup()
+
+    recipe = build_eval_recipe(
+        test_cfg=LOCKED_DOWN_TEST_CFG,
+        split_sizes=PAPER_SPLIT_SIZES,
+        server_name="bengio",
+        gpu_count=2,
+        effective_batch_size=4,
+        lr_scaling="linear_x2",
+    )
+    manager.log_eval_recipe(recipe)
+
+    saved = json.loads((exp_dir / "metrics.json").read_text(encoding="utf-8"))
+    assert saved["eval_recipe"]["gpu_count"] == 2
+    assert saved["eval_recipe"]["effective_batch_size"] == 4
+    assert saved["eval_recipe"]["lr_scaling"] == "linear_x2"
 
 
 # ---------------------------------------------------------------------- #
