@@ -23,8 +23,12 @@ from mmdet.evaluation.metrics import CocoMetric
 from mmdet.registry import HOOKS, METRICS
 from mmengine.hooks import Hook
 
-# 研究計画 §7 の稀少 3 クラス（Copy-Paste / RFS 優先対象と一致）。
-_DEFAULT_RARE = ("Skewer", "Syringe", "Forceps")
+from egosurgery.datasets.constants import RARE_CLASSES
+
+# 研究計画 §7 の稀少クラス（Copy-Paste / RFS 優先対象と一致）。
+# 【2026/05/24 v2 訂正】Forceps (12.21%) は稀少ではないため、
+# constants.RARE_CLASSES（Skewer / Syringe の 2 クラス）を単一情報源とする。
+_DEFAULT_RARE = tuple(RARE_CLASSES)
 # S2 (hand 追加) のクラスグループ集計用デフォルト。
 _DEFAULT_TOOL_GROUP = (
     "Bipolar Forceps", "Electric Cautery", "Forceps", "Gauze", "Hook",
