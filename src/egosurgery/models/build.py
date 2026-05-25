@@ -27,6 +27,7 @@ from torch import nn
 from egosurgery.models.backbones.dinov2_registry import DINOv2Backbone
 from egosurgery.models.backbones.peft import apply_peft
 from egosurgery.models.backbones.vit_adapter import ViTAdapter
+from egosurgery.models.heads.codetr_head import CoDETRHead
 from egosurgery.models.heads.mask_dino_head import MaskDINOHead
 from egosurgery.models.heads.varifocanet_head import VarifocalNetHead
 
@@ -136,7 +137,13 @@ def build_backbone(cfg) -> BackboneWithAdapter:
 
 
 def build_detection_head(cfg) -> nn.Module:
-    """config に応じて Mask DINO / VarifocalNet の検出ヘッドを構築する。"""
+    """config に応じて Mask DINO / VarifocalNet / Co-DETR の検出ヘッドを構築する。
+
+    検出ヘッド一覧（§13.2 S0・§9 #6）:
+        - mask_dino: 既定。BBox + mask 統合（Phase-0 は bbox-only）。
+        - varifocanet / vfnet: EgoSurgery-Tool 実質 SOTA (mAP 45.8) の再現対象。
+        - codetr: 長尾対照（Mask DINO vs Co-DETR の APr 比較で切替判断）。
+    """
     head_cfg = _resolve_component_cfg(cfg.model.detection_head, "detection_head")
     # num_classes はモデル全体設定から注入する（tool=15 / tool+hand=19）。
     num_classes = int(cfg.model.get("num_classes", 15))
@@ -147,6 +154,8 @@ def build_detection_head(cfg) -> nn.Module:
     name = str(head_cfg.get("name", "mask_dino")).lower()
     if name in ("varifocanet", "varifocalnet", "vfnet"):
         return VarifocalNetHead(head_cfg)
+    if name in ("codetr", "co_detr", "co-detr"):
+        return CoDETRHead(head_cfg)
     return MaskDINOHead(head_cfg)
 
 
