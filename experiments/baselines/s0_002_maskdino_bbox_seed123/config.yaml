@@ -1,0 +1,102 @@
+seed: 123
+deterministic: true
+cudnn_benchmark: false
+phase:
+  current: phase0
+  mask_available: false
+model:
+  num_classes: 15
+  input_dim: 512
+  backbone: dinov2_vitl14_reg
+  detection_head: mask_dino
+feedback:
+  phase_to_det: false
+  det_to_phase: false
+  injection_method: cross_attention
+  entropy_gating: true
+  stop_gradient: true
+relation:
+  enabled: false
+exo:
+  enabled: false
+loss:
+  lambda_det: 1.0
+  lambda_mask: 0.0
+  lambda_rel: 0.0
+  lambda_phase: 1.0
+  lambda_temp_smooth: 0.1
+  lambda_ssl: 0.0
+  lambda_distill: 0.0
+  lambda_view_consist: 0.0
+  balancer: famo
+train:
+  epochs: 12
+  amp: true
+  gradient_checkpoint: true
+  batch_size: 2
+  num_workers: 8
+  accumulate_grad_batches: 1
+  load_from: null
+  real_detector: true
+  lr_scaling_mode: linear
+  grad_clip_norm: 1.0
+  freeze_backbone: false
+optimizer:
+  name: adamw
+  lr: 0.0001
+  weight_decay: 0.05
+scheduler:
+  name: cosine
+  warmup_epochs: 5
+experiment:
+  base_dir: experiments
+  category: baselines
+  step: s0
+  description: maskdino_bbox
+logging:
+  wandb_project: egosurgery_multitask
+  wandb_entity: null
+  wandb_enabled: true
+  log_every_n_steps: 50
+  save_top_k: 3
+  server_name: null
+eval:
+  num_seeds: 3
+  bootstrap_n: 1000
+  delta_significance_threshold: 1.0
+longtail:
+  seesaw_loss: true
+  seesaw_p: 0.8
+  seesaw_q: 2.0
+  rfs: true
+  rfs_thresh: 0.001
+  copypaste: true
+  copypaste_prob: 0.5
+  logit_adjustment: true
+  logit_adjustment_tau: 1.0
+data:
+  img_size: 518
+  batch_size: 4
+  num_workers: 8
+  include_hand: false
+  include_phase: false
+  use_rfs: true
+  repeat_thresh: 0.001
+  use_copypaste: false
+  limit: null
+  copypaste:
+    bank_dir: data/processed/copypaste_bank/
+    rare_classes:
+    - Skewer
+    - Syringe
+    paste_prob: 0.5
+    max_paste_per_image: 3
+  train:
+    ann_file: data/annotations/egosurgery_tool/instances_train.json
+    img_dir: data/raw/ego/
+  val:
+    ann_file: data/annotations/egosurgery_tool/instances_val.json
+    img_dir: data/raw/ego/
+  test:
+    ann_file: data/annotations/egosurgery_tool/instances_test.json
+    img_dir: data/raw/ego/

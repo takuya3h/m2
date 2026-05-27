@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import time
 from pathlib import Path
 
@@ -65,9 +66,12 @@ _WEIGHTS = {
 _BASE_CFG = {
     "vfnet": ("vfnet", "vfnet_r50_fpn_1x_coco.py"),
     "dino": ("dino", "dino-4scale_r50_8xb2-12e_coco.py"),
-    # Co-DETR は mmdet projects/CO-DETR 配下。Runner.from_cfg が拾えるよう
-    # projects 経由のフル import path を _build_mmdet_cfg 側で解決する。
-    "codetr": ("co_detr", "co_dino_5scale_r50_1x_coco.py"),
+    # Co-DETR は mmdet pip pkg に同梱されないため、third_party/mmdetection から
+    # projects/CO-DETR/configs/codino/ を mmdet/.mim/configs/codino/ にコピーして
+    # 配置する（手順は repo の README §Co-DETR setup 参照）。
+    # 同時に setup() で sys.path に third_party/mmdetection/projects/CO-DETR を
+    # insert し、`import codetr` で MODELS / TRANSFORMER 等の登録を起動する。
+    "codetr": ("codino", "co_dino_5scale_r50_lsj_8xb2_1x_coco.py"),
 }
 
 
@@ -118,48 +122,116 @@ class MMDetTrainer:
         self.rank = int(os.environ.get("RANK", "0"))
         self.local_rank = int(os.environ.get("LOCAL_RANK", "0"))
         self.is_distributed = self.world_size > 1
+
+        # DDP 文脈なら process group を初期化する。
+        # 後段で exp_dir を rank=0 → 他 rank に broadcast するために必要。
+        # mmdet Runner も init_process_group を呼ぶが、既に初期化済みなら
+        # 何もしないので競合しない（torch.distributed の仕様）。
+        if self.is_distributed:
+            import torch
+            import torch.distributed as dist
+
+            if dist.is_available() and not dist.is_initialized():
+                dist.init_process_group(backend="nccl")
+            # CUDA_VISIBLE_DEVICES が rank ごとに 1 枚に絞られている前提で、
+            # その中で cuda:0 (local_rank=0) を使う。
+            torch.cuda.set_device(self.local_rank)
+
         # lr スケーリングラベルを確定（_build_eval_recipe / _apply_lr_scaling 用）。
         self._lr_scaling_label = self._resolve_lr_label()
 
         base = self._original_cwd()
-        # ExperimentManager は連番採番でフォルダを作る。並走時の稀な競合
-        # （同番 mkdir 失敗）に備えて数回リトライする。
-        for attempt in range(8):
-            manager = ExperimentManager(
-                base_dir=self._abs(base, str(cfg.experiment.base_dir)),
-                category=str(cfg.experiment.category),
-                step=str(cfg.experiment.step),
-                description=str(cfg.experiment.description),
-                seed=int(cfg.seed),
-            )
-            try:
-                manager.setup()
-                break
-            except FileExistsError:
-                time.sleep(1.0 + attempt)
-        else:  # pragma: no cover - 競合が連続した場合のみ
-            raise RuntimeError("実験フォルダの採番に繰り返し失敗しました。")
 
-        self.manager = manager
-        self.exp_dir = manager.exp_dir
-        manager.save_config(cfg)
-
-        # 実行サーバー名を確定し、実験フォルダへ証跡として残す
-        # （M2研究計画 §14 実験結果ログ、研究計画 §13.8 GPU 割り当ての追跡）。
+        # Co-DETR は mmdet pip pkg に Python モジュールが同梱されないため、
+        # third_party/mmdetection/projects/CO-DETR/ を sys.path に追加し、
+        # `import codetr` で MODELS 登録を起動する（config 内の custom_imports
+        # も同じ名前 'codetr' で import を試みる）。
+        if self.detector == "codetr":
+            # base (Hydra original_cwd) は呼び出し元 shell の cwd 次第なので、
+            # 実装ファイルから絶対的に repo root を解決する。
+            # mmdet_trainer.py は src/egosurgery/engines/ にあるので parents[3] が repo root。
+            repo_root = Path(__file__).resolve().parents[3]
+            codetr_root = repo_root / "third_party" / "mmdetection" / "projects" / "CO-DETR"
+            if not codetr_root.is_dir():
+                raise FileNotFoundError(
+                    f"Co-DETR が見つかりません: {codetr_root}\n"
+                    "git clone --depth 1 https://github.com/open-mmlab/mmdetection.git "
+                    "third_party/mmdetection を実行してください。"
+                )
+            if str(codetr_root) not in sys.path:
+                sys.path.insert(0, str(codetr_root))
+            import codetr  # noqa: F401  # MODELS 登録の副作用
+        # 実行サーバー名は全 rank で同じ値が必要なため、ガード外で確定する。
         self.server_name = resolve_server_name(cfg)
-        (self.exp_dir / "server.txt").write_text(
-            self.server_name + "\n", encoding="utf-8"
-        )
+
+        # ExperimentManager は rank=0 のみ作成・採番する（§13.2 (b)(iii)）。
+        # rank>=1 は rank=0 が決めた exp_dir を broadcast 経由で受け取り、
+        # 同じフォルダを参照する（フォルダの重複生成と命名衝突を防ぐ）。
+        exp_dir_str: str | None = None
+        if self.rank == 0:
+            # 並走時の稀な競合（同番 mkdir 失敗）に備えて数回リトライする。
+            for attempt in range(8):
+                manager = ExperimentManager(
+                    base_dir=self._abs(base, str(cfg.experiment.base_dir)),
+                    category=str(cfg.experiment.category),
+                    step=str(cfg.experiment.step),
+                    description=str(cfg.experiment.description),
+                    seed=int(cfg.seed),
+                )
+                try:
+                    manager.setup()
+                    break
+                except FileExistsError:
+                    time.sleep(1.0 + attempt)
+            else:  # pragma: no cover - 競合が連続した場合のみ
+                raise RuntimeError("実験フォルダの採番に繰り返し失敗しました。")
+
+            self.manager = manager
+            self.exp_dir = manager.exp_dir
+            manager.save_config(cfg)
+            # 実験フォルダへサーバー名を証跡として残す
+            # （M2研究計画 §14 実験結果ログ、研究計画 §13.8 GPU 割り当ての追跡）。
+            (self.exp_dir / "server.txt").write_text(
+                self.server_name + "\n", encoding="utf-8"
+            )
+            exp_dir_str = str(self.exp_dir)
+        else:
+            # rank>=1 は manager を作らない。後段で書き込み API を呼ばないよう
+            # コード側でも rank ガードを入れる。
+            self.manager = None
+
+        # rank=0 が決めた exp_dir を他 rank に broadcast (DDP 時のみ)。
+        if self.is_distributed:
+            try:
+                import torch.distributed as dist
+
+                if dist.is_available() and dist.is_initialized():
+                    obj_list = [exp_dir_str]
+                    dist.broadcast_object_list(obj_list, src=0)
+                    if self.rank != 0:
+                        self.exp_dir = Path(obj_list[0]) if obj_list[0] else None
+            except Exception:  # pragma: no cover - dist 未初期化等
+                # broadcast 失敗時は rank>=1 は exp_dir なしで継続
+                # （metrics 書き出し等は rank=0 のみなので影響なし）
+                pass
 
         self.mmdet_cfg = self._build_mmdet_cfg(base)
-        # 再現性のため mmdet config 全文も実験フォルダへ保存する。
-        self.mmdet_cfg.dump(str(self.exp_dir / "mmdet_config.py"))
+        # 再現性のため mmdet config 全文も実験フォルダへ保存する（rank=0 のみ）。
+        if self.rank == 0 and self.exp_dir is not None:
+            self.mmdet_cfg.dump(str(self.exp_dir / "mmdet_config.py"))
 
     # ------------------------------------------------------------------ #
     # 実行
     # ------------------------------------------------------------------ #
     def run(self) -> dict:
-        """学習・評価を実行し、証拠ファイルを書き出して最良指標を返す。"""
+        """学習・評価を実行し、証拠ファイルを書き出して最良指標を返す。
+
+        DDP 時の役割分担（§13.2 (b)(iii)）:
+            - 学習 (Runner.train): 全 rank が参加。mmdet が DDP 同期。
+            - 評価指標の収集・書き出し: rank=0 のみ実行。
+              （ExperimentManager は rank=0 のみ持つため、rank>=1 は早期 return）
+            - W&B 初期化・記録: rank=0 のみ実行（_init_wandb 内でガード済み）。
+        """
         if self.mmdet_cfg is None:
             raise RuntimeError("setup() を先に呼び出してください。")
 
@@ -172,10 +244,24 @@ class MMDetTrainer:
         runner = Runner.from_cfg(self.mmdet_cfg)
         runner.train()
 
+        # rank=0 以外は学習完了で終わり。metrics 書き出し・confusion 計算は
+        # rank=0 のみ実施（self.manager は rank>=1 では None）。
+        if self.rank != 0 or self.manager is None:
+            return {}
+
         best = self._collect_best_metrics()
         self._write_metrics(best)
         self._compute_confusion(runner, best)
         self._write_notes(best)
+
+        # Notion「実験Run台帳」への自動投稿 (NOTION_API_KEY 未設定なら no-op)。
+        # W&B と同様、台帳投稿失敗を実験失敗にしない (証拠は既に書き出し済み)。
+        try:
+            from egosurgery.utils.notion_logger import log_experiment_to_notion
+
+            log_experiment_to_notion(self.manager.exp_dir, status="completed")
+        except Exception as exc:  # noqa: BLE001 - Notion 記録失敗を実験失敗にしない
+            print(f"[S0][{self.detector}] Notion logging skipped: {exc}")
 
         if self._wandb_run is not None:
             import wandb
@@ -310,7 +396,19 @@ class MMDetTrainer:
         )
 
         # --- モデル: クラス数 ----------------------------------------- #
-        mmcfg.model.bbox_head.num_classes = num_classes
+        if self.detector == "codetr":
+            # Co-DETR は multi-head: query_head + bbox_head[*] + roi_head[*].bbox_head。
+            # すべての head に EgoSurgery のクラス数を反映する。
+            mmcfg.model.query_head.num_classes = num_classes
+            for h in mmcfg.model.get("bbox_head", []) or []:
+                if isinstance(h, dict):
+                    h["num_classes"] = num_classes
+            for r in mmcfg.model.get("roi_head", []) or []:
+                bh = r.get("bbox_head") if isinstance(r, dict) else None
+                if isinstance(bh, dict):
+                    bh["num_classes"] = num_classes
+        else:
+            mmcfg.model.bbox_head.num_classes = num_classes
 
         # --- test_cfg の locked-down 上書き（論文 Fujii+ 2024 §3.1 に整合） --- #
         # 評価条件を全 detector・全 stage で統一し、Δ 比較の科学的妥当性を担保する
@@ -319,13 +417,25 @@ class MMDetTrainer:
         # - max_per_img=300: dense シーン（11-15 instances/img が 506 枚存在、論文 Table 2）対応
         # - nms_pre=3000:    上位候補拡張で max_per_img cap の影響を緩和
         # - nms IoU=0.6:     mmdet COCO default を維持
-        if not hasattr(mmcfg.model, "test_cfg") or mmcfg.model.test_cfg is None:
-            mmcfg.model.test_cfg = {}
-        mmcfg.model.test_cfg["score_thr"] = 1e-8
-        mmcfg.model.test_cfg["max_per_img"] = 300
-        mmcfg.model.test_cfg["nms_pre"] = 3000
-        if "nms" not in mmcfg.model.test_cfg or mmcfg.model.test_cfg.get("nms") is None:
-            mmcfg.model.test_cfg["nms"] = dict(type="nms", iou_threshold=0.6)
+        if self.detector == "codetr":
+            # Co-DETR: test_cfg は list[3] (detr / faster-rcnn / one-stage)。
+            # config の eval_module='detr' に従い、評価支配的な branch 0 (detr =
+            # query_head) のみを locked-down 値で上書きする。
+            if isinstance(mmcfg.model.test_cfg, list) and len(mmcfg.model.test_cfg) > 0:
+                tc0 = mmcfg.model.test_cfg[0]
+                tc0["score_thr"] = 1e-8
+                tc0["max_per_img"] = 300
+                tc0["nms_pre"] = 3000
+                tc0["nms"] = dict(type="nms", iou_threshold=0.6)
+                mmcfg.model.test_cfg[0] = tc0
+        else:
+            if not hasattr(mmcfg.model, "test_cfg") or mmcfg.model.test_cfg is None:
+                mmcfg.model.test_cfg = {}
+            mmcfg.model.test_cfg["score_thr"] = 1e-8
+            mmcfg.model.test_cfg["max_per_img"] = 300
+            mmcfg.model.test_cfg["nms_pre"] = 3000
+            if "nms" not in mmcfg.model.test_cfg or mmcfg.model.test_cfg.get("nms") is None:
+                mmcfg.model.test_cfg["nms"] = dict(type="nms", iou_threshold=0.6)
 
         # --- 学習スケジュール ----------------------------------------- #
         mmcfg.train_cfg = dict(
@@ -535,13 +645,15 @@ class MMDetTrainer:
         from egosurgery.utils.eval_recipe import build_eval_recipe
 
         cfg = self.mmdet_cfg
+        # Co-DETR は test_cfg が list[3] (branch ごと)。評価支配的な branch 0
+        # (eval_module='detr') の値を記録する。他 detector は dict。
+        _tc_raw = cfg.model.test_cfg
+        _tc = _tc_raw[0] if isinstance(_tc_raw, list) and len(_tc_raw) > 0 else _tc_raw
         test_cfg = {
-            "score_thr": float(cfg.model.test_cfg.get("score_thr", 0.05)),
-            "max_per_img": int(cfg.model.test_cfg.get("max_per_img", 100)),
-            "nms_pre": int(cfg.model.test_cfg.get("nms_pre", 1000)),
-            "nms_iou": float(
-                cfg.model.test_cfg.get("nms", {}).get("iou_threshold", 0.6)
-            ),
+            "score_thr": float(_tc.get("score_thr", 0.05)),
+            "max_per_img": int(_tc.get("max_per_img", 100)),
+            "nms_pre": int(_tc.get("nms_pre", 1000)),
+            "nms_iou": float(_tc.get("nms", {}).get("iou_threshold", 0.6)),
         }
 
         # split サイズを直接 ann file から測る（locked-down 確認用）。

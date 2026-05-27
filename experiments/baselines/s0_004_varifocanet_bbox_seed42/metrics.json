@@ -1,0 +1,27 @@
+{
+  "epoch": 12,
+  "eval_recipe": {
+    "effective_batch_size": 4,
+    "gpu_count": 2,
+    "lr_scaling": "linear_x2",
+    "server_name": "aolab",
+    "split_test_annotations": 12673,
+    "split_test_images": 4265,
+    "split_train_annotations": 32272,
+    "split_train_images": 9657,
+    "split_val_annotations": 4707,
+    "split_val_images": 1515,
+    "test_cfg": {
+      "max_per_img": 300,
+      "nms_iou": 0.6,
+      "nms_pre": 3000,
+      "score_thr": 1e-08
+    }
+  },
+  "mAP": 0.618,
+  "val/AP_common": 0.5566153846153846,
+  "val/AP_rare": 0.706,
+  "val/mAP": 0.618,
+  "val/mAP_50": 0.757,
+  "val/mAP_75": 0.681
+}

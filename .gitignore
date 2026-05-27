@@ -31,6 +31,12 @@ experiments/**/visualizations/
 experiments/**/*.npy
 experiments/**/*.pt
 experiments/**/*.pth
+# mmdet/mmengine が実験フォルダ内に dump する派生ファイル群は再現性に
+# 寄与しない (config.yaml + git_commit.txt + command.sh があれば十分)。
+experiments/**/*.py
+experiments/**/last_checkpoint
+# mmengine の実時間スタンプ付きログディレクトリ (例: 20260525_155843/)
+experiments/**/20[0-9][0-9][0-9]*/
 
 # === モデル重み ===
 *.pth
@@ -90,6 +96,8 @@ paper/sections/*.aux
 !experiments/**/metrics.json
 !experiments/**/per_class_ap.json
 !experiments/**/notes.md
+# server.txt: 実行サーバー名証跡 (§8.0 条件 (2)・eval_recipe.server_name と整合)。
+!experiments/**/server.txt
 # 学習に使う tool 検出アノテーション（instances_*.json）は再現性のため追跡する。
 # tool/ hand/ の生 COCO コピーは EgoSurgery 公式と重複・大容量のため追跡しない。
 !data/annotations/egosurgery_tool/instances_*.json
@@ -112,6 +120,11 @@ experiments/baselines/_aborted_s0_cuda_visible_misconfig/
 experiments/baselines/_failed_num_workers_zero/
 experiments/baselines/_smoke_prior_simplehead/
 experiments/baselines/_smoke_v2_part3/
+# 本セッションで生まれた退避フォルダ:
+# - _aborted_codetr_no_config: Co-DETR config 不在で setup() 失敗した旧 s0_007-009
+# - _smoke_e3: 手動 launcher 動作検証用スモーク (検証成功後に本番起動)
+experiments/baselines/_aborted_codetr_no_config/
+experiments/baselines/_smoke_e3/
 experiments/phase0/_pre_redo_s0_smoke/
 experiments/phase0/_prior_no_eval_recipe/
 

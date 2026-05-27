@@ -96,28 +96,67 @@ if [ "$NUM_GPUS" -lt "$NPROC" ]; then
     NPROC="$NUM_GPUS"
 fi
 
-# 1 実験を torchrun で起動する。
+# 1 実験を「手動 launcher」で起動する（torchrun を使わない）。
+#
+# torchrun は LOCAL_RANK を env で各 worker に渡すだけで、worker 側は親の
+# CUDA_VISIBLE_DEVICES（=全 GPU）を継承する。本プロジェクトの環境では
+# torch.cuda.set_device(local_rank) が期待通り効かず、両 worker が GPU 0 に
+# 集中する事象が観測された。
+#
+# そこで本スクリプトは各 rank を**個別プロセスで起動**し、CUDA_VISIBLE_DEVICES
+# を rank ごとに別 GPU に固定する。各 rank からは「自分の GPU が cuda:0」と
+# 見えるため、torch.cuda.set_device(0) が確実に効く。
+# WORLD_SIZE/RANK/MASTER_ADDR/MASTER_PORT は env で手動指定し、
+# torch.distributed が dist.init_process_group(backend='nccl') で集合する。
+#
 # 引数: detection_head seed seed_idx det_idx desc
 run_ddp() {
     local head="$1" seed="$2" seed_idx="$3" det_idx="$4" desc="$5"
-    # MASTER_PORT を seed/detector ごとにユニーク化（並列実行時のポート競合回避、§13.2 (c)）。
+    # MASTER_PORT を seed/detector ごとにユニーク化（§13.2 (c) ポート競合回避）。
     local port=$((29500 + seed_idx * 3 + det_idx))
-    echo "--- [DDP NPROC=${NPROC}] ${head} seed=${seed} (port=${port}) ---"
+    echo "--- [DDP NPROC=${NPROC} via manual launcher] ${head} seed=${seed} (port=${port}) ---"
 
-    MASTER_PORT="$port" torchrun \
-        --nproc_per_node="${NPROC}" \
-        --master_port="${port}" \
-        -m egosurgery.train \
-        stage=s0_tool_baseline \
-        model.detection_head="${head}" \
-        seed="${seed}" \
-        experiment.description="${desc}" \
-        train.real_detector=true \
-        train.epochs="${EPOCHS}" \
-        train.batch_size="${PER_GPU_BS}" \
-        train.lr_scaling_mode="${LR_SCALING_MODE}" \
-        logging.wandb_enabled=true \
-        ${EXTRA_ARGS}
+    # 各 rank の stdout/stderr は /tmp/s0_<head>_seed<seed>_rank<r>.log へ
+    # 分離。本番のメインログにはサマリのみ出す。
+    local logdir="/tmp/s0_logs"
+    mkdir -p "$logdir"
+    local pids=()
+
+    # rank 0 .. NPROC-1 を順次起動（NPROC=1 のときは rank 0 のみ）
+    for ((r=0; r<NPROC; r++)); do
+        local logf="${logdir}/${head}_seed${seed}_rank${r}.log"
+        # 各 rank は CUDA_VISIBLE_DEVICES=r で 1 GPU だけ見える状態。
+        # その rank 内では cuda:0 が物理 GPU r になる。
+        CUDA_VISIBLE_DEVICES="${r}" \
+        WORLD_SIZE="${NPROC}" \
+        RANK="${r}" \
+        LOCAL_RANK=0 \
+        MASTER_ADDR=127.0.0.1 \
+        MASTER_PORT="${port}" \
+        python -m egosurgery.train \
+            stage=s0_tool_baseline \
+            model.detection_head="${head}" \
+            seed="${seed}" \
+            experiment.description="${desc}" \
+            train.real_detector=true \
+            train.epochs="${EPOCHS}" \
+            train.batch_size="${PER_GPU_BS}" \
+            train.lr_scaling_mode="${LR_SCALING_MODE}" \
+            logging.wandb_enabled=true \
+            ${EXTRA_ARGS} \
+            > "${logf}" 2>&1 &
+        pids+=($!)
+    done
+
+    # 全 rank の完了を待つ。1 つでも失敗したら全体失敗扱い。
+    local rc=0
+    for pid in "${pids[@]}"; do
+        if ! wait "$pid"; then
+            rc=$?
+            echo "WARN: rank pid=${pid} exited with $rc"
+        fi
+    done
+    return $rc
 }
 
 # === 全 9 実験の順次実行 === #
