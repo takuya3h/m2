@@ -198,9 +198,19 @@ cp .env.example .env
 #   WANDB_API_KEY=<your_api_key>     # W&B 記録を有効にする場合
 #   WANDB_PROJECT=egosurgery_multitask
 #   DATA_ROOT=/abs/path/to/data       # data/ を別パスにしたい場合のみ
+#   # --- Notion「実験Run台帳」自動投稿 (任意) ---
+#   NOTION_API_KEY=secret_xxxxxxxx    # https://www.notion.so/profile/integrations で発行
+#   NOTION_DB_ID=7bcf9406-29fc-4b2a-8a9e-0be02fc1fc20
+#   NOTION_SERVER_OPTION=philip (RTX 6000 Ada)
 ```
 
 W&B を使わない場合は `logging.wandb_enabled=false` を CLI override で渡せる。
+
+Notion 連携は `MMDetTrainer.run()` 完了時に rank=0 で `src/egosurgery/utils/notion_logger.py`
+が自動投稿する。`NOTION_API_KEY` / `NOTION_DB_ID` を未設定にすると no-op (学習は通常完走)。
+失敗時も学習プロセスは止めない設計 (証拠ファイルは既に書き出し済みのため)。
+詳細なセットアップ・DB スキーマ要件・手動投稿・トラブルシュートは
+[`docs/notion_run_ledger_auto_post.md`](docs/notion_run_ledger_auto_post.md) を参照。
 
 ### 6. 動作確認（sanity check）
 
