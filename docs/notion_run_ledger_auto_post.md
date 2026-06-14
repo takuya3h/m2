@@ -217,6 +217,15 @@ print('result:', 'OK' if r else 'failed (env vars unset or API error)')
 - 対処: `echo $NOTION_API_KEY` で空文字を確認 → `~/.zshrc` を編集後 `source ~/.zshrc`、
   または `.env` を `set -a; source .env; set +a` で反映。
 
+### 学習ログに `Notion logging disabled (NOTION_API_KEY or NOTION_DB_ID not set)`
+- s0_010-012 (2026-05-28) で実際に起きた事例。投稿側のシェルでは env vars が見えていたが、
+  学習プロセスを起動した shell には継承されておらず no-op で素通りした (warn ではなく INFO で出る)。
+- 典型的な発生条件: `tmux` / `nohup` を `export` 設定**前**に開いていた、別ユーザーから `sudo -u` した、
+  Makefile 等を経由して env が落ちた、など。
+- 対処: `scripts/run_s0.sh` の先頭 (`venv activate` 直後) で `.env` を自動 source するよう改修済み
+  (commit 2026-05-29)。**今後は `.env` に値を書けば確実に学習プロセスへ継承される**。
+- 起動済み実験で no-op になっていた場合は §6 の手動投稿コマンドで遡及登録する。
+
 ### `Notion query failed: 404 ... Could not find database with ID`
 - `NOTION_DB_ID` に Data Source ID を入れている。Database ID を使う。
 - もしくは Integration が当該 DB に Add connections されていない (§2-2)。

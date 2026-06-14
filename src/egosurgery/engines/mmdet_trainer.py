@@ -54,6 +54,9 @@ from egosurgery.utils.server_name import resolve_server_name
 _VFNET_ALIASES = ("varifocanet", "varifocalnet", "vfnet")
 _DINO_ALIASES = ("mask_dino", "maskdino", "dino")
 _CODETR_ALIASES = ("codetr", "co_detr", "co-detr")
+# Phase A: ddq-detr (Dense Distinct Query DETR, CVPR 2023)。mmdet 3.x 同梱。
+# 単 head 構造で codetr のような multi-head 分岐は不要。
+_DDQ_ALIASES = ("ddq", "ddq_detr", "ddq-detr")
 
 # 各 detector の COCO 事前学習重みファイル名（data/external/weights/ 配下）。
 _WEIGHTS = {
@@ -61,6 +64,8 @@ _WEIGHTS = {
     "dino": "dino-4scale_r50_8xb2-12e_coco.pth",
     # Co-DETR の COCO 事前学習重み。projects/CO-DETR の公開済み checkpoint。
     "codetr": "co_dino_5scale_r50_1x_coco.pth",
+    # DDQ-DETR 4scale R50 12 epoch (COCO 51.4 box AP)。
+    "ddq": "ddq-detr-4scale_r50_8xb2-12e_coco.pth",
 }
 # 各 detector の mmdet ベース config（mmdet 同梱の .mim/configs 相対）。
 _BASE_CFG = {
@@ -72,6 +77,9 @@ _BASE_CFG = {
     # 同時に setup() で sys.path に third_party/mmdetection/projects/CO-DETR を
     # insert し、`import codetr` で MODELS / TRANSFORMER 等の登録を起動する。
     "codetr": ("codino", "co_dino_5scale_r50_lsj_8xb2_1x_coco.py"),
+    # DDQ-DETR は mmdet 3.x 同梱。bbox_head/test_cfg は単 dict なので既存
+    # の (codetr 以外の) 処理経路でそのまま動く。
+    "ddq": ("ddq", "ddq-detr-4scale_r50_8xb2-12e_coco.py"),
 }
 
 
@@ -896,9 +904,11 @@ class MMDetTrainer:
             return "dino"
         if name in _CODETR_ALIASES:
             return "codetr"
+        if name in _DDQ_ALIASES:
+            return "ddq"
         raise ValueError(
             f"未知の detection_head: {head_name!r}"
-            f"（対応: {_VFNET_ALIASES + _DINO_ALIASES + _CODETR_ALIASES}）"
+            f"（対応: {_VFNET_ALIASES + _DINO_ALIASES + _CODETR_ALIASES + _DDQ_ALIASES}）"
         )
 
     @staticmethod

@@ -1,0 +1,38 @@
+{
+  "val/mAP": 0.718,
+  "val/mAP_50": 0.856,
+  "val/mAP_75": 0.785,
+  "val/AP_rare": 0.7435,
+  "val/AP_common": 0.7142500000000002,
+  "val/tool_mAP": 0.718,
+  "best_epoch": 12,
+  "eval_recipe": {
+    "framework": "sensex_codetr_mmdet2x",
+    "config_name": "co_dino_5scale_9encoder_lsj_r50_egosurgery",
+    "encoder_num_layers": 9,
+    "decoder_num_layers": 6,
+    "image_size": 1024,
+    "gpu_count": 2,
+    "per_gpu_batch_size": 2,
+    "effective_batch_size": 4,
+    "lr_scaling": "linear_x2",
+    "epochs": 12,
+    "seed": 42,
+    "server_name": "philip",
+    "split_train_images": 9657,
+    "split_val_images": 1515,
+    "split_test_images": 4265,
+    "test_cfg": {
+      "score_thr": 1e-08,
+      "max_per_img": 300,
+      "nms_pre": 3000,
+      "nms_iou": 0.6
+    },
+    "rare_classes": [
+      "Skewer",
+      "Syringe"
+    ],
+    "num_classes": 15,
+    "description": "sensex_codino_bbox"
+  }
+}

@@ -1,0 +1,157 @@
+# Relation-DETR seed42 実行 config (証跡補完)
+# === train_config_egosurgery_seed42.py ===
+# DRAFT (not for direct training) — Relation-DETR train_config adapted to EgoSurgery.
+# Run from inside third_party/Relation-DETR with the .venv-relation-detr venv:
+#   CUDA_VISIBLE_DEVICES=0,1 accelerate launch --num_processes 2 main.py \
+#       --config-file <this file> --seed 42 --mixed-precision fp16
+# Lines marked # <CHANGED> are EgoSurgery-specific.
+import os
+from torch import optim
+
+from datasets.coco import CocoDetection
+from transforms import presets
+from optimizer import param_dict
+
+# ---- training schedule (matches S0: 12 epochs, step at 10) ----
+num_epochs = 12          # S0 parity
+batch_size = 2           # <CHANGED-ish> per-GPU bs; with 2 GPUs -> effective bs = 4 (S0 parity)
+num_workers = 4
+pin_memory = True
+print_freq = 50
+starting_epoch = 0
+max_norm = 0.1
+
+output_dir = "/tmp/reldetr_work_seed42"
+find_unused_parameters = False
+
+# ---- EgoSurgery dataset (COCO-format, bbox-only, 15 classes) ----  # <CHANGED block>
+# NOTE: instances_*.json file_name fields already include the split prefix
+#       e.g. "train/01/01_1_0124.jpg", so img_folder must be the PARENT (data/raw/ego).
+EGO_ROOT = os.environ.get("EGO_ROOT", "/home/ubuntu/slocal2/m2/data/raw/ego")
+ANN_DIR = os.environ.get(
+    "EGO_ANN_DIR", "/home/ubuntu/slocal2/m2/data/annotations/egosurgery_tool"
+)
+train_dataset = CocoDetection(
+    img_folder=EGO_ROOT,
+    ann_file=f"{ANN_DIR}/instances_train.json",
+    transforms=presets.detr,
+    train=True,
+)
+test_dataset = CocoDetection(
+    img_folder=EGO_ROOT,
+    ann_file=f"{ANN_DIR}/instances_val.json",   # use instances_test.json for final test eval
+    transforms=None,
+)
+
+# model config to train
+model_path = "configs/relation_detr/relation_detr_resnet50_egosurgery.py"  # <CHANGED> drafted above
+
+# ---- COCO-pretrained finetune (S0 load_from parity) ----  # <CHANGED>
+# Pointing resume_from_checkpoint at a .pth FILE => finetune. main.py loads it via
+# load_state_dict(), and filter_mismatched_weights() auto-drops the 91->15 class-head
+# mismatch (backbone + transformer load, class heads reinit). A local copy is preferred
+# to avoid network access at train time; download once to data/external/weights/.
+resume_from_checkpoint = os.environ.get(
+    "RELDETR_COCO_CKPT",
+    "/home/ubuntu/slocal2/m2/data/external/weights/relation_detr_resnet50_800_1333_coco_1x.pth",
+)
+
+# ---- optimizer / scheduler (Relation-DETR defaults; 1x schedule) ----
+learning_rate = 1e-4     # see report: S0 lr_scaling=linear_x2 maps to doubling base lr for eff bs
+optimizer = optim.AdamW(lr=learning_rate, weight_decay=1e-4, betas=(0.9, 0.999))
+lr_scheduler = optim.lr_scheduler.MultiStepLR(milestones=[10], gamma=0.1)
+param_dicts = param_dict.finetune_backbone_and_linear_projection(lr=learning_rate)
+
+# === model: relation_detr_resnet50_egosurgery.py ===
+# DRAFT (not for direct training) — Relation-DETR R50 model config adapted to
+# EgoSurgery tool detection (15 classes, bbox-only).
+# Copy of third_party/Relation-DETR/configs/relation_detr/relation_detr_resnet50_800_1333.py
+# with ONLY the EgoSurgery-specific lines changed. Lines marked  # <CHANGED>.
+from torch import nn
+
+from models.backbones.resnet import ResNetBackbone
+from models.bricks.misc import FrozenBatchNorm2d
+from models.bricks.position_encoding import PositionEmbeddingSine
+from models.bricks.post_process import PostProcess
+from models.bricks.relation_transformer import (
+    RelationTransformer,
+    RelationTransformerDecoder,
+    RelationTransformerDecoderLayer,
+    RelationTransformerEncoder,
+    RelationTransformerEncoderLayer,
+)
+from models.bricks.set_criterion import HybridSetCriterion
+from models.detectors.relation_detr import RelationDETR
+from models.matcher.hungarian_matcher import HungarianMatcher
+from models.necks.channel_mapper import ChannelMapper
+
+embed_dim = 256
+num_classes = 15          # <CHANGED> EgoSurgery tool ids 0..14 -> max_id+1 = 15
+num_queries = 900
+hybrid_num_proposals = 1500
+hybrid_assign = 6
+num_feature_levels = 4
+transformer_enc_layers = 6
+transformer_dec_layers = 6
+num_heads = 8
+dim_feedforward = 2048
+
+position_embedding = PositionEmbeddingSine(
+    embed_dim // 2, temperature=10000, normalize=True, offset=-0.5
+)
+backbone = ResNetBackbone(
+    "resnet50", norm_layer=FrozenBatchNorm2d, return_indices=(1, 2, 3), freeze_indices=(0,)
+)
+neck = ChannelMapper(
+    in_channels=backbone.num_channels, out_channels=embed_dim, num_outs=num_feature_levels,
+)
+transformer = RelationTransformer(
+    encoder=RelationTransformerEncoder(
+        encoder_layer=RelationTransformerEncoderLayer(
+            embed_dim=embed_dim, n_heads=num_heads, dropout=0.0,
+            activation=nn.ReLU(inplace=True), n_levels=num_feature_levels,
+            n_points=4, d_ffn=dim_feedforward,
+        ),
+        num_layers=transformer_enc_layers,
+    ),
+    decoder=RelationTransformerDecoder(
+        decoder_layer=RelationTransformerDecoderLayer(
+            embed_dim=embed_dim, n_heads=num_heads, dropout=0.0,
+            activation=nn.ReLU(inplace=True), n_levels=num_feature_levels,
+            n_points=4, d_ffn=dim_feedforward,
+        ),
+        num_layers=transformer_dec_layers, num_classes=num_classes,
+    ),
+    num_classes=num_classes, num_feature_levels=num_feature_levels,
+    two_stage_num_proposals=num_queries, hybrid_num_proposals=hybrid_num_proposals,
+)
+matcher = HungarianMatcher(cost_class=2, cost_bbox=5, cost_giou=2, focal_alpha=0.25, focal_gamma=2.0)
+
+weight_dict = {"loss_class": 1, "loss_bbox": 5, "loss_giou": 2}
+weight_dict.update({"loss_class_dn": 1, "loss_bbox_dn": 5, "loss_giou_dn": 2})
+aux_weight_dict = {}
+for i in range(transformer.decoder.num_layers - 1):
+    aux_weight_dict.update({k + f"_{i}": v for k, v in weight_dict.items()})
+weight_dict.update(aux_weight_dict)
+weight_dict.update({"loss_class_enc": 1, "loss_bbox_enc": 5, "loss_giou_enc": 2})
+weight_dict.update({k + "_hybrid": v for k, v in weight_dict.items()})
+
+criterion = HybridSetCriterion(
+    num_classes=num_classes, matcher=matcher, weight_dict=weight_dict, alpha=0.25, gamma=2.0
+)
+
+# <CHANGED> locked-down eval to mirror S0 mmdet test_cfg:
+#   max_per_img=300 -> select_box_nums_for_evaluation=300
+#   score_thr=1e-8  -> confidence_score=-1 (disabled == effectively no thresh; 1e-8 is ~no-op)
+#   nms (iou=0.6)   -> nms_iou_threshold=-1 (S0 DETR-family Co-DETR/DDQ also run NMS-free here;
+#                      set to 0.6 only if you decide DETR variants must match VFNet NMS — see report)
+postprocessor = PostProcess(
+    select_box_nums_for_evaluation=300, nms_iou_threshold=-1, confidence_score=-1,
+)
+
+model = RelationDETR(
+    backbone=backbone, neck=neck, position_embedding=position_embedding,
+    transformer=transformer, criterion=criterion, postprocessor=postprocessor,
+    num_classes=num_classes, num_queries=num_queries, hybrid_assign=hybrid_assign,
+    denoising_nums=100, min_size=800, max_size=1333,
+)

@@ -56,6 +56,18 @@ fi
 source "$VENV/bin/activate"
 echo "venv: $(command -v python)"
 
+# .env を読み込んで Notion 等の環境変数を学習プロセスに継承させる。
+# tmux / nohup / 別ユーザー起動で shell rc の export が継承されなくても、
+# 本スクリプト経由なら .env が必ず読まれる (s0_010-012 で env 漏れによる
+# Notion no-op が起きた再発防止策)。
+if [ -f "$PROJECT_DIR/.env" ]; then
+    set -a
+    # shellcheck disable=SC1091
+    source "$PROJECT_DIR/.env"
+    set +a
+    echo ".env loaded: NOTION_API_KEY=$([ -n "${NOTION_API_KEY:-}" ] && echo SET || echo UNSET), NOTION_DB_ID=$([ -n "${NOTION_DB_ID:-}" ] && echo SET || echo UNSET)"
+fi
+
 EXTRA_ARGS="${S0_EXTRA_ARGS:-}"
 WEIGHTS_DIR="data/external/weights"
 

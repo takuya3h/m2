@@ -188,3 +188,77 @@ loss 推移（全 seed 共通）: 1.39 → 0.97（単調減少）
 ### 次の行動
 1. S4 で時系列モデル（temporal_dataset.py + TCN/Transformer head）へ拡張し edit/seg F1 を改善。
 2. PhaseLoss の weights を sqrt(inverse freq) でクリップする中間案も S4 で再検証。
+
+## 2026-05-29: Sense-X Co-DETR (9-encoder) を環境統一のため中止
+
+### 仮説
+Sense-X 版 Co-DETR (CoDINO 5-scale 9-encoder LSJ R50) は、mmdet 3.x 同梱の
+Co-DETR (s0_007-009) より深い encoder で精度向上が見込めるか検証する。
+
+### 実験と中止
+- s0_013 (seed42) を専用 venv `.venv-mmdet2` (torch 1.13.1+cu117 / mmcv-full 1.7 /
+  mmdet 2.25 / Python 3.8) で学習開始。epoch4 から resume し epoch8 train 途中
+  (iter950/2415) で停止 (epoch8 の val 未実施)。評価済み val bbox_mAP は epoch1-7:
+  e4=0.686 / e5=0.687 / e6=0.675 / e7=0.696 (best)。
+- **中止理由: 実験環境の統一 (再現性確保)。** 本実験のみ torch/CUDA/Python が
+  プロジェクト本体 `.venv` (torch 2.1.2+cu118 / mmdet 3.3 / Python 3.11) と異質。
+  Sense-X 9-encoder の公式実装が mmcv-full 1.x API 前提で torch 2.1 では CUDA 拡張を
+  ビルドできないことが原因。検出器ベンチマークは可能な限り同一環境で比較すべきという
+  方針に基づき中止した。
+
+### 結果 (採用しない)
+- s0_013/014/015 は欠番。途中結果はベンチマークに使わない。
+- Co-DETR の S0 代表は s0_007-009 (mmdet 3.x 同梱, torch 2.1, 本体 .venv) とする。
+- 詳細: experiments/baselines/s0_013_sensex_codino_bbox_seed42/STOPPED_for_env_unification.md
+
+### 解釈
+- 環境差 (torch 1.13 vs 2.1) は数値計算カーネル・乱数挙動に影響し得るため、Δ 基準点を
+  汚染するリスクがある。9-encoder の精度メリットより、環境統一による再現性を優先した。
+
+### 次
+- 追加検出器は torch 2.1.2+cu118 で動くもの (Stable-DINO / DI-MaskDINO / Relation-DETR)
+  に限定。これらは framework 隔離のため venv は分けるが torch/CUDA は本体と同一。
+- judge #6 (検出器選定) は s0_001-012 (Mask DINO/VFNet/Co-DETR/DDQ ×3seed) +
+  上記3検出器 で構成する。
+
+## 2026-06-02〜03 DETR系拡張 (Mr.DETR/Focus/Align/DAC-DETR) + S0検出器ベンチ確定
+
+### 仮説
+DETR 系の新しい割当・denoising 手法 (Mr.DETR の multi-route、Focus-DETR の
+foreground-aware、Align-DETR の IoU-aware、DAC-DETR の auxiliary decoder) が
+EgoSurgery-Tool の術具検出、特に希少クラス (Skewer/Syringe) で既存検出器を
+上回るか、統一 recipe で検証する。
+
+### 実験設定 (統一 recipe)
+- 全検出器: COCO 検出重みから fine-tune (class_embed をクラス数に reinit, bbox-only) /
+  12 epoch / lr_drop@11 / AdamW (lr 1e-4×linear_x2 = effective 2e-4, backbone 0.1x) /
+  per-GPU bs2 × 2GPU DDP = effective bs4 / eval=val / seed 42/123/456。
+- 環境: 本体 `.venv` (mmdet系) / `.venv-detectron2` (detrex: Stable-DINO/Focus/Align/
+  Mr.DETR) / `.venv-mmdet2` (DAC-DETR standalone, torch1.13)。
+- DAC-DETR 統合の詳細は memory dac-detr-integration (罠8件) と
+  scripts/post_process_dac_detr.py 参照。証跡: s0_025〜039。
+
+### 結果 (metrics.json 直読み・機械集計, 全 verify PASS)
+全13検出器 × 3seed (9enc のみ1seed) の val mAP / AP_rare:
+- Relation-DETR 0.7268±0.0034 (rare 0.7483) — overall 首位
+- Mr.DETR-DINO 0.7223±0.0062 (rare 0.7799)
+- Mr.DETR-Align 0.7195±0.0004 (rare 0.7698)
+- Stable-DINO 0.7192±0.0055 / DDQ-DETR 0.7187±0.0021 / 9enc 0.7180(1seed)
+- DAC-DETR 0.7165±0.0003 (rare 0.7782) — std 最小級・AP_rare 3位
+- Align-DETR 0.7133±0.0115 (rare 0.7868) — AP_rare 首位
+- Focus-DETR 0.6991±0.0070 / Co-DETR 0.6973±0.0039 / Mask DINO 0.6717±0.0039 /
+  VFNet 0.6160±0.0016 / DI-MaskDINO 0.3853±0.0392 (bbox-only 化で劣化)
+
+### 解釈 (judge #6, Δ §10.1)
+- overall mAP 首位 Relation-DETR(0.7268) と 2位 Mr.DETR-DINO(0.7223) の Δ=0.0045 は
+  合成σ(0.0071) 未満 → 上位群 (1〜7位, 0.7165〜0.7268) は統計的に同率圏。
+- AP_rare では Align-DETR(0.7868) > Mr.DETR-DINO(0.7799) > DAC-DETR(0.7782) が上位。
+  希少術具を重視するなら overall 順位と別の結論になり得る。
+- compare_judge6.py は eval_recipe 厳密一致で停止するが、これは検出器固有の native
+  test_cfg 差 (構造由来) であり汚染ではない。統制 knob (split/epochs/bs/seed/optimizer)
+  は全検出器で統一済み。9enc のみ torch1.13 別環境 (脚注で開示)。
+
+### 次
+- S1 主検出器推奨 = Relation-DETR (overall 首位 + 3seed 安定 + torch2.1 本体整合)。
+  ただし上位同率圏のため、希少術具優先なら Mr.DETR-DINO / DAC-DETR も有力候補。
+  最終確定はユーザー判断 (S1〜S9 全体の方向を決めるため)。Slack #experiment に投稿済。
