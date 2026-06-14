@@ -1,0 +1,44 @@
+--- a/main.py
++++ b/main.py
+@@ -207,6 +207,14 @@
+     # dataset parameters
+     parser.add_argument("--dataset_file", default="coco")
+     parser.add_argument("--coco_path", default="./data/coco", type=str)
++    parser.add_argument(
++        "--num_classes", default=None, type=int,
++        help="override num_classes for custom datasets (EgoSurgery=15)",
++    )
++    parser.add_argument(
++        "--finetune", default="", type=str,
++        help="COCO-pretrained checkpoint to fine-tune from; drops shape-mismatched keys (e.g. class_embed 91->N)",
++    )
+     parser.add_argument("--coco_panoptic_path", type=str)
+     parser.add_argument("--remove_difficult", action="store_true")
+ 
+@@ -376,6 +384,26 @@
+         model_without_ddp.detr.load_state_dict(checkpoint["model"])
+ 
+     output_dir = Path(args.output_dir)
++    # --- COCO 事前学習重みからの fine-tune (他検出器と統一recipe) ---
++    # 形状不一致キー(class_embed 91->15 等)を除外して strict=False ロード。
++    # optimizer/lr_scheduler/epoch は読み込まない (start_epoch=0 のまま新規学習扱い)。
++    if args.finetune and os.path.exists(args.finetune):
++        print(f"[finetune] loading COCO-pretrained weights from {args.finetune}")
++        ft_ckpt = torch.load(args.finetune, map_location="cpu")
++        ft_src = ft_ckpt["model"] if "model" in ft_ckpt else ft_ckpt
++        ft_model_sd = model_without_ddp.state_dict()
++        ft_keep, ft_drop = {}, []
++        for k, v in ft_src.items():
++            if k in ft_model_sd and ft_model_sd[k].shape == v.shape:
++                ft_keep[k] = v
++            else:
++                ft_drop.append(k)
++        ft_missing, ft_unexpected = model_without_ddp.load_state_dict(ft_keep, strict=False)
++        ft_missing = [k for k in ft_missing if not (k.endswith("total_params") or k.endswith("total_ops"))]
++        print(f"[finetune] loaded {len(ft_keep)} tensors; dropped {len(ft_drop)} mismatch/unknown keys")
++        print(f"[finetune] dropped sample: {ft_drop[:4]}")
++        print(f"[finetune] reinit(missing) count: {len(ft_missing)}; sample: {ft_missing[:4]}")
++
+     if args.resume and os.path.exists(args.resume):
+         if args.resume.startswith("https"):
+             checkpoint = torch.hub.load_state_dict_from_url(

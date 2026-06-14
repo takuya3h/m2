@@ -1,0 +1,12 @@
+--- a/models/deformable_detr.py
++++ b/models/deformable_detr.py
+@@ -928,6 +928,9 @@
+     num_classes = 20 if args.dataset_file != "coco" else 91
+     if args.dataset_file == "coco_panoptic":
+         num_classes = 250
++    # EgoSurgery 等のカスタムデータ用に num_classes を明示上書き可能にする
++    if getattr(args, "num_classes", None) is not None:
++        num_classes = args.num_classes
+     device = torch.device(args.device)
+ 
+     backbone = build_backbone(args)

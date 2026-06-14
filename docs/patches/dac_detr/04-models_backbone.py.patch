@@ -1,0 +1,24 @@
+--- a/models/backbone.py
++++ b/models/backbone.py
+@@ -5,5 +5,6 @@
++import os
+ from collections import OrderedDict
+
+ import torch
+ import torch.nn.functional as F
+ import torchvision
+@@ -138,8 +139,14 @@
+             pretrained=False,
+             norm_layer=norm_layer,
+         )
+-        model_path = './initmodel/resnet50-19c8e357.pth'
+-        backbone.load_state_dict(torch.load(model_path), strict=False)
++        # ImageNet 事前重みはローカルにあれば読む。COCO 重みから fine-tune する場合は
++        # backbone も後段で上書きされるため、ファイル欠如時は skip して構築を続行する。
++        model_path = os.environ.get('DAC_RESNET50_INIT', './initmodel/resnet50-19c8e357.pth')
++        if os.path.exists(model_path):
++            backbone.load_state_dict(torch.load(model_path), strict=False)
++        elif is_main_process():
++            print(f"[backbone] WARN: ImageNet init not found ({model_path}); "
++                  f"relying on --finetune/--resume for backbone weights")
+         assert name not in ("resnet18", "resnet34"), "number of channels are hard coded"
