@@ -582,6 +582,59 @@ S3 は検出器とデカップル設計のため判定 #2 後半「tool mAP の 
 
 `models/temporal/`（Part 5）、`models/feedback/`・`relation/`・`exo/`（フェーズ III/IV）。
 
+### 2026-06-16 S0-frozen（Relation-DETR 凍結 backbone + COCO-init head）
+
+S0-frozen の Δ_detection 分母用に Relation-DETR standalone 経路を追加した。
+
+- model config: `third_party/Relation-DETR/configs/relation_detr/relation_detr_resnet50_egosurgery_s0_frozen.py`
+  - `freeze_indices=(0,1,2,3)` で ResNet-50 backbone を全凍結。
+  - eval は NMS-free (`select_box_nums_for_evaluation=300`, `nms_iou_threshold=-1`)。
+- train config: `third_party/Relation-DETR/configs/train_config_egosurgery_s0_frozen.py`
+  - 初期化は `data/external/weights/relation_detr_s0frozen_init_seed42.pth`。
+  - これは seed42 完走 backbone + COCO-init transformer/head のマージ済み重み。
+- launcher: `scripts/run_s0_frozen.sh`
+  - seed 42/123/456 を seed 並列で実行（GPU0/GPU1 に 2 本、残り 1 本）。
+  - post-process は `.env` を読まない `--skip-external-loggers` でローカル証跡のみ生成。
+
+実行前検証: Python 構文 OK、init checkpoint 188MB 存在、MS-Deform-Attn CUDA extension load OK、
+`backbone_trainable=0` を確認済み。mAP 等の数値は未完走のため未記録。
+
+2026-06-16 20:47 UTC に `setsid -f scripts/run_s0_frozen.sh` で background 起動済み。
+wave1 は seed42/123 が GPU0/1 で稼働し、epoch0 iter100 到達を確認。
+launcher log: `/tmp/s0_frozen_launcher.log`、seed log: `/tmp/s0_frozen_logs/`。
+
+### 2026-06-20 ②特徴レベル結合（共有 C5 線形 neck）— 単一タスク分母と転移結合の確定
+
+①予測レベル（neck無）に加え、②特徴レベル（共有 trainable neck 有）の系統を併設。neck は **C5 のみ・1×1 線形・
+残差・zero-init**（`src/egosurgery/models/necks/c5_linear_neck.py::C5LinearNeck`、masked-GAP 可換）。
+
+- **②検出分母 S0-frozen′（3-seed 完了）= mAP 0.7095 ± 0.0091**。検出経路に neck を挿入する検出器
+  `third_party/Relation-DETR/models/detectors/relation_detr_c5neck.py::RelationDETRC5Neck` +
+  config `..._s0_frozen_neck.py` + `scripts/run_s0_frozen_neck.sh`。①(neck無)0.7051±0.0052 比 +0.0044(<1σ)。
+- **②工程分母 S4′（3-seed 完了）= acc 0.9142 ± 0.0017**（`train_s4_tecno.py --use-neck`）。
+- **真の結合 = 検出→工程 一方向 凍結 neck 転移（S4″）**: `scripts/extract_c5neck.py` で検出 neck を抽出し
+  `train_s4_tecno.py --neck-from <ckpt>` で工程へ凍結ロード。3-seed 完了。
+- **分析 `scripts/analyze_phase_coupling.py`（paired-σ 判定）**: 結合効果 ΔL2 は **全指標で中立**＝
+  frozen neck 転移は Δ_phase 純効果なし（容量利得は工程タスク固有で検出から転移しない）。
+  ※ n=2 で見えた segmental 改善は n=3 で非再現＝撤回。詳細は `docs/experiment_log.md` 2026-06-20。
+
+### 2026-06-20 アノテーション EDA（data/annotations ドメイン特性）
+
+- `scripts/analyze_annotations_eda.py` 新規。COCO 画像 basename == 工程 CSV `Frame` でフレーム結合し、
+  術具/手/工程の分布・bbox・共起・**術具×工程クロス集計**を実データから網羅集計（数値捏造なし・ruff clean・再現可能）。
+- 成果物 `experiments/analysis/annotations_eda/`: `REPORT.md`（日本語ドキュメント）/ `stats.json`（機械可読）/
+  `tool_by_phase_appearance.csv` / `phase_by_tool_distribution.csv` / 図3枚。
+- 要点: 検出↔工程 join 100%（未結合0）、術具不均衡29.1×・工程不均衡57.8×、bbox 約96%が large、
+  術具⇄工程が準決定的（例 Scalpel→incision 97.4%, Needle Holders→closure 99.9%）。詳細は `docs/experiment_log.md` 2026-06-20。
+- 追加分析 `scripts/analyze_annotations_advanced.py`（`stats_advanced.json` / `class_video_coverage.csv` / `fig_adv_*.png`）:
+  split シフト・クラス↔動画カバレッジ・tool→工程予測上限・工程混同・術具共起PMI・bbox幾何・品質・手。
+  **データ整合性の警告**: disinfection は train のみ・irrigation は val 欠・Retractor は val 0件 → 工程 macro-F1 は対象 split の工程のみで算出し欠損扱いを明記、val 選択は test 非保証。
+  tool-presence のみの工程予測上限 test acc=0.752（時系列 S4 base 0.899 未満＝主役は時系列、検出→工程は補完）。
+- 追加分析 第2弾 `scripts/analyze_annotations_extra.py`（`stats_extra.json` / `fig_ext_*.png`）:
+  手-術具接触・時間予測性・シーンテンプレート・工程順序一貫性・手の自他左右・クラス重み・術具スケール/難易度・検出無し工程フレーム。
+  要点: 術具56%が手と重なり(能動工程接触率≈0.95)→疑似ラベル生成可、工程自己遷移0.982(時系列が主役)、工程順序遵守0.943、
+  effective-number 重み提示、工程のみフレーム1,796。詳細は REPORT.md §18–§27。
+
 ---
 
 ## Claude Code 連携（`.claude/`）
