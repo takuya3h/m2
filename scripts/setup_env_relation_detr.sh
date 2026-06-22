@@ -67,8 +67,11 @@ echo "[setup-reldetr] === 2. torch 2.1.2 + torchvision 0.16.2 (cu118) ==="
   torch==2.1.2 torchvision==0.16.2 --index-url "$CU118_INDEX"
 
 # --- 3. lock の厳密版を適用（torch は導入済 → +cu118 解決に extra index を併用）- #
+# index-strategy unsafe-best-match: iopath 等は cu118 index に別版しか無く 0.1.10 は PyPI 側。
+# uv 既定の first-match では「名前を最初に含む index のみ」を見るため解決不能になる → 全 index 横断。
 echo "[setup-reldetr] === 3. ${LOCK} で全 72 パッケージを厳密固定 ==="
 "$UV" pip install --python "$VENV/bin/python" --no-deps \
+  --index-strategy unsafe-best-match \
   --extra-index-url "$CU118_INDEX" -r "$LOCK"
 
 # --- 4. 検証 ---------------------------------------------------------------- #

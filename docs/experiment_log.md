@@ -729,3 +729,43 @@ S6 結合手法も COCO-init head から開始する前提なので、三角形 
 ### 次
 - server B 本走（s0_01{6,7,8}×3・phase_context・画像転送→注入/対照 fine-tune）。早期打ち切り: Δ_injected≤0 なら gradient制御。
 - 完全 §4.6 双方向（+Det→Phase 同時・蒸留）は本 Phase→Det 確立後の拡張。
+
+---
+
+## 2026-06-21 STEP B / T1b 本走（server B = Bengio）: 環境再構築→smoke→実走起動
+
+### 仮説
+- 上記と同一（凍結S4 phase context を C5 FiLM 注入・warm-start fine-tune で Δ_detection>0 か）。本エントリは
+  **server B での実行可能性確立**（環境再現＋疎通）を記録する。
+
+### 実験（環境・疎通）
+- **ブロッカー**: server B に検出器用 `.venv-relation-detr` が未構築。資産（ckpt×3 / phase_context seed42 /
+  annotations / 画像 train,val,test）は転送済みを確認。nvcc 11.8・RTX A6000・driver 535 も確認。
+- **環境再構築の不具合と修正**: `setup_env_relation_detr.sh` STEP3 の lock 適用が `iopath==0.1.10` 解決失敗で停止。
+  原因は **uv 既定の first-match index 戦略**（パッケージ名を最初に含む index=cu118 のみ参照、PyPI 側の 0.1.10 を無視）。
+  **修正**: `--index-strategy unsafe-best-match` を付与し全 index 横断（スクリプトに反映済み・再現性確保）。
+  → torch 2.1.2+cu118 / numpy 1.26.4 / CUDA OK で72パッケージ厳密固定 完了。
+- **smoke gate PASS**（server B 実測, `logs/t1b_smoke.log`）: MS-Deform-Attn JIT ビルド成功・warm-start ロード
+  （`phase_film` missing=zero-init恒等＝設計通り）・**warm-start init mAP=0.8876**・FiLM grad 非ゼロ・
+  phase context join 100%（miss tr/va=0/0）・ep0 で 0.8876→0.8893。`film_grad=True ∧ init>0.5 => PASS`。
+
+### 結果
+- **学習が問題なく実行可能なことを server B 実測で確認（smoke PASS）**。本走（seed42 注入 GPU0 ＋ §4.6 対照
+  zero-ctx GPU1, `--epochs 6`）を background 起動。3-seed の Δ_injected−Δ_control paired-σ 判定は本走完了後に集計。
+- 数値捏造なし。init mAP=0.8876 は S0-frozen 0.7051±0.0052 とサーバー/eval 条件が異なる点に留意（同一 ckpt・
+  同一前処理だが server 差＝学習数値のみ §8.0。Δ は同一 seed・同一 eval の best−init で清潔に取る）。
+
+### 結果（seed42 本走完了 2026-06-21 22:25, server B 実測）
+- **注入**: init_mAP=0.7303 / ep別 val mAP 0.7148・0.6889・0.6983・0.6975・0.7165・0.7189（全epoch<init）/ best_epoch=−1 →
+  best_mAP=init=0.7303 → **Δ_detection=0.0000**。
+- **対照(zero-ctx)**: init_mAP=0.7303 / ep別 0.7031・0.6719・0.7089・0.6935・0.7171・0.7203 / best_epoch=−1 → **Δ=0.0000**。
+- **解釈**: 6ep warm-start fine-tune は **S0-frozen 起点(0.7303)を超えられず**、注入・対照とも Δ=0。**注入純効果 Δ_inj−Δ_ctrl=0**
+  （seed42 単体・ep5 では対照0.7203>注入0.7189 で注入優位すら無し）。phase 注入の検出改善は seed42 では認められない。
+  full-lr 期(ep0–3)に init から最大 −0.06 沈み、lr 減衰後(ep4–5)に 0.717–0.720 まで回復するも init 未達。
+- **§4.6 早期打ち切り該当**: runsheet の「Δ_injected≤0 継続なら gradient 制御」に合致 → 次は `--trainable film`
+  （FiLM のみ学習・検出器凍結）か lr/epoch 見直しを seed123/456 前に検討すべき。捏造なし（best_epoch=−1 が「未改善」を機械的に保証）。
+- **Notion 実験Run台帳**: 注入・対照の2行を completed で記録（Decision Needed=✓）。
+
+### 次
+- seed123/456（lecun 実行）の注入＋対照が揃ったら `/delta` で Δ_injected−Δ_control を **3-seed paired-σ** 判定。
+- seed42 が Δ=0 ゆえ、3-seed でも改善が出ない公算 → 設計見直し（`--trainable film` / 注入位置 / epoch 短縮で過学習回避）を先行検討。
