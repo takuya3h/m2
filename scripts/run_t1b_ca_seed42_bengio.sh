@@ -61,6 +61,13 @@ CTRL_WORK=/tmp/t1b_ca_zeroctx_seed${SEED}
 INJ_LOG="logs/t1b_ca_seed${SEED}.log"
 CTRL_LOG="logs/t1b_ca_zeroctx_seed${SEED}.log"
 
+# MSDeformAttn CUDA 拡張を単一プロセスで事前 JIT ビルド（並列起動時のビルド競合 crash を防ぐ）。
+# 以降の注入/対照は "ninja: no work to do" で安全に拡張をロードできる。
+echo "[warmup] MultiScaleDeformableAttention CUDA 拡張を事前ビルド中 ..."
+CUDA_VISIBLE_DEVICES="$GPU_INJ" "$VENV" -c \
+  "import sys, os; sys.path.insert(0, 'third_party/Relation-DETR'); os.chdir('third_party/Relation-DETR'); import models.bricks.relation_transformer; print('[warmup] MSDeformAttn ext ready')" \
+  || { echo '[ERR] MSDeformAttn 拡張の事前ビルドに失敗。ログを確認せよ'; exit 1; }
+
 if [ "$SEQUENTIAL" = "1" ]; then
   echo "[run] 逐次: 注入 → 対照（同一GPU $GPU_INJ）"
   run "$GPU_INJ" "$INJ_WORK"  "$INJ_LOG"
