@@ -1,0 +1,112 @@
+# @package _global_
+# S4 (phase baseline): 凍結 backbone + 時系列ヘッド = Δ_phase の分母（比較の三角形 §2.2 Step2b）
+#
+# ===== SCAFFOLD（2026-06-15 STEP A / ピボット「分析ファースト」§2.2・§4.2・§5.3）=====
+# 旧 s4_temporal.yaml（空）を置き換える、ピボット後の正本。S4 は「最強の単独工程モデル」
+# ではなく **「結合手法から検出を引いたもの」**。S4 を独立に最適化してはならない（§4.2 核心原則）。
+#
+# 凍結源（STEP 0-2 で確定, S0-frozen と共有）: Relation-DETR seed42 完走 ckpt。
+#   third_party/Relation-DETR/checkpoints/incoming/seed42/best_ap.pth（再 eval mAP 0.7303）
+#   ※ 既存 PhaseTrainer(S3) は ImageNet ResNet50 を使うが、三角形の S4 は **S0 検出 backbone**
+#     （Relation-DETR）を凍結源とする点が決定的に異なる（§4.2: 凍結重み = S0 検出 backbone）。
+#
+# 2段方式（§5.3）: Stage1 特徴（S0-frozen と同一キャッシュを共有）→ Stage2b = 時系列ヘッドのみ学習。
+#
+# ----- 未実装（次の集中・テスト付き実装パス）-----
+#   (1) TeCNO 時系列ヘッド（コア分母）。+ SKiT / SPRMamba / causal-SR-Mamba を併走（全 online）。
+#   (2) Stage1 特徴を時系列に並べる sequence データローダ（動画単位・causal）。
+#   (3) online/causal 評価（未来フレーム不使用）+ §4.2 指標一式の算出。
+
+experiment:
+  category: "phase1"              # 工程・時系列（phase0=S3 frame に対し phase1=S4 temporal）
+  step: "s4_phase_baseline"
+  description: "frozen_tecno_phase_baseline"
+
+# 凍結源（S0-frozen と同一 backbone を共有 = 両 Δ が同一土台に載る前提, §2.2）
+frozen_source:
+  detector: "relation_detr"
+  seed: 42
+  checkpoint: "third_party/Relation-DETR/checkpoints/incoming/seed42/best_ap.pth"
+  backbone: "resnet50"
+
+model:
+  num_phases: 9                   # EgoSurgery-Phase の工程数（PhaseHead と整合）
+  backbone: resnet50              # 凍結。Stage1 で空間特徴を抽出
+  temporal_head: tecno            # コア分母。{tecno, skit, sprmamba, causal_sr_mamba} を併走可
+  temporal:
+    causal: true                  # ★ online（未来フレーム不使用, §4.2）
+    # TeCNO（MS-TCN 系）の標準ハイパー。実装時に確定。
+    num_stages: 2
+    num_layers: 8
+    num_f_maps: 64
+
+train:
+  freeze_backbone: true           # ★ 空間 backbone は凍結（2段方式 / §4.2）
+  epochs: 50
+  batch_size: 1                   # 動画単位（可変長シーケンス）
+  num_workers: 8
+  grad_clip_norm: 1.0
+
+optimizer:
+  name: "adamw"
+  lr: 0.0005
+  weight_decay: 0.01
+
+scheduler:
+  name: "cosine"
+  warmup_epochs: 2
+
+# 2段方式の Stage1（S0-frozen と同一 cache を共有）
+stage1_feature_cache:
+  enabled: true
+  cache_dir: "data/processed/stage1_features/relation_detr_seed42/"
+  pool: "gap"                     # 時系列ヘッド入力は GAP 後の 2048-d ベクトル（要確定）
+  overwrite: false
+
+# 工程 eval recipe ロック（§4.2 / 注249）。online/causal + Jaccard strict を固定。
+# 実装側は egosurgery.utils.eval_recipe.PHASE_EVAL_PROTOCOL を test_cfg にマージして記録すること:
+#   test_cfg = {"task": "phase", **PHASE_EVAL_PROTOCOL, "backbone": "relation_detr_resnet50_frozen", ...}
+eval_recipe:
+  protocol_source: "PHASE_EVAL_PROTOCOL"   # inference_protocol=online_causal / jaccard_mode=strict
+  metrics: ["accuracy", "macro_precision", "macro_recall", "macro_f1",
+            "jaccard", "edit", "seg_f1@10", "seg_f1@25", "seg_f1@50"]
+
+# S4 固有: 検出なし・双方向なし・relation/exo なし（純粋な工程分母）
+feedback:
+  phase_to_det: false
+  det_to_phase: false
+relation:
+  enabled: false
+exo:
+  enabled: false
+
+# データ（工程ラベル付き。動画単位・時系列）
+# 【注意・要対応】工程ラベルは `data/annotations/egosurgery_phase/<vid>.csv`（per-video CSV,
+#   frame→phase）で COCO json ではない。下記 ann_file は暫定プレースホルダ。
+#   Stage1 本走の前に「CSV → frame manifest（動画単位の時系列順 + image_id 対応）」を作る必要がある。
+data:
+  img_size: 1333                  # Stage1 特徴抽出は S0-frozen と同一解像度（§6 同一土台）
+  batch_size: 1
+  num_workers: 8
+  include_hand: false
+  include_phase: true
+  limit: null
+  phase_label_format: "per_video_csv"   # data/annotations/egosurgery_phase/<vid>.csv
+  phase_label_dir: "data/annotations/egosurgery_phase/"
+  train:
+    ann_file: "data/annotations/egosurgery_phase/instances_train.json"  # TODO: frame manifest に置換
+    img_dir: "data/raw/ego/"
+  val:
+    ann_file: "data/annotations/egosurgery_phase/instances_val.json"    # TODO
+    img_dir: "data/raw/ego/"
+  test:
+    ann_file: "data/annotations/egosurgery_phase/instances_test.json"   # TODO
+    img_dir: "data/raw/ego/"
+
+logging:
+  wandb_project: "egosurgery_multitask"
+  wandb_enabled: true
+  save_top_k: 3
+
+eval:
+  num_seeds: 3                    # seed 42/123/456

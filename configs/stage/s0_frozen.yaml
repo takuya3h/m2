@@ -1,0 +1,104 @@
+# @package _global_
+# S0-frozen: 凍結 backbone + 検出ヘッド = Δ_detection の分母（比較の三角形 §2.2 Step2a）
+#
+# ===== SCAFFOLD（2026-06-15 STEP A / ピボット「分析ファースト」§2.2・§5.3）=====
+# 既存 S0（backbone を fine-tune して mAP 計測）は「凍結 / fine-tune の効果」が交絡する
+# ため、そのままでは Δ_detection の分母になれない。S0-frozen は凍結した検出 backbone に
+# 検出ヘッドを載せ直し、結合手法と同一土台（§6）で mAP を計測する基準点。
+#
+# 凍結源（STEP 0-2 で確定）: Relation-DETR seed42 完走 ckpt。
+#   STEP 0-1 の独立再 eval で val mAP 0.7303 を再現（記録 s0_016=0.7297）。
+#   third_party/Relation-DETR/checkpoints/incoming/seed42/best_ap.pth
+#
+# 2段方式（§5.3）: Stage1 = 凍結 backbone で ResNet-50 特徴を抽出しキャッシュ →
+#   Stage2a = 検出ヘッドのみ学習。凍結源が変わっても Stage1 再抽出だけで低コスト再走。
+#
+# ----- 未実装（次の集中・テスト付き実装パス）-----
+#   (1) 凍結 backbone ローダ（Relation-DETR の ResNet-50 重みを seed42 ckpt から復元し freeze）
+#   (2) Stage1 特徴抽出・キャッシュ（下記 stage1_feature_cache を読むモジュール）
+#   (3) 凍結特徴上で検出ヘッドのみ学習するトレーナー経路
+#   検出ヘッドは三角形で共有するため Relation-DETR の検出ヘッド（transformer + heads）を用い、
+#   backbone を freeze して学習する（§6 同一土台: 検出ヘッド・解像度・損失・schedule・seed 共有）。
+
+experiment:
+  category: "baselines"           # 検出ベースライン（凍結 backbone 版）。VALID_CATEGORIES に準拠
+  step: "s0_frozen"
+  description: "frozen_detection_baseline"
+
+# STEP 0-2 で確定した凍結源（Stage1 特徴抽出の入力 backbone）
+frozen_source:
+  detector: "relation_detr"
+  seed: 42
+  checkpoint: "third_party/Relation-DETR/checkpoints/incoming/seed42/best_ap.pth"
+  backbone: "resnet50"
+  reproduced_val_mAP: 0.7303     # STEP 0-1 再 eval 実測（証跡: experiments/analysis/step0_recipe/）
+
+model:
+  num_classes: 15
+  backbone: resnet50             # 凍結源の backbone。Stage1 で特徴抽出に使用
+  detection_head: relation_detr  # 三角形で共有する検出ヘッド（§6）
+
+train:
+  freeze_backbone: true          # ★ S0-frozen の核心: backbone は凍結（Δ_detection 分母の前提）
+  epochs: 12                     # 結合手法と同一スケジュール（§6 計算予算の対称性）
+  batch_size: 4
+  num_workers: 8
+  amp: true
+  grad_clip_norm: 1.0
+
+optimizer:
+  name: "adamw"
+  lr: 0.0001
+  weight_decay: 0.05
+
+scheduler:
+  name: "cosine"
+  warmup_epochs: 5
+
+# 2段方式の Stage1（§5.3）。凍結源が変わっても再抽出のみで再走できるよう cache を分離。
+stage1_feature_cache:
+  enabled: true
+  cache_dir: "data/processed/stage1_features/relation_detr_seed42/"
+  # 抽出層: ResNet-50 の C3/C4/C5（検出ヘッドが要求する多階層特徴）。要確定。
+  return_stages: [2, 3, 4]
+  overwrite: false
+
+# eval recipe: STEP 0-1 決定 = score_thr=0.0系（NMS-free）。NMS は適用しない（Δ_detection 汚染防止）。
+# 実装側は egosurgery.utils.eval_recipe.NMS_FREE_TEST_CFG を build_eval_recipe に渡して記録すること。
+eval_recipe:
+  test_cfg_source: "NMS_FREE_TEST_CFG"
+
+# S0-frozen 固有: Phase head なし・双方向なし・relation/exo なし（純粋な検出分母）
+feedback:
+  phase_to_det: false
+  det_to_phase: false
+relation:
+  enabled: false
+exo:
+  enabled: false
+
+# データ（EgoSurgeryDataModule の契約に準拠。検出のみ・NMS-free 評価）
+data:
+  img_size: 1333                 # Relation-DETR の eval 解像度（min 800 / max 1333）に整合
+  batch_size: 4
+  num_workers: 8
+  include_hand: false
+  include_phase: false
+  limit: null
+  train:
+    ann_file: "data/annotations/egosurgery_tool/instances_train.json"
+    img_dir: "data/raw/ego/"
+  val:
+    ann_file: "data/annotations/egosurgery_tool/instances_val.json"
+    img_dir: "data/raw/ego/"
+  test:
+    ann_file: "data/annotations/egosurgery_tool/instances_test.json"
+    img_dir: "data/raw/ego/"
+
+logging:
+  wandb_project: "egosurgery_multitask"
+  wandb_enabled: true
+  save_top_k: 3
+
+eval:
+  num_seeds: 3                   # seed 42/123/456（凍結源も各 seed の完走 ckpt を用いる）

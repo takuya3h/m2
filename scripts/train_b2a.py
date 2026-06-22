@@ -206,6 +206,11 @@ def train(args) -> dict:
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     ce = nn.CrossEntropyLoss()
 
+    from egosurgery.utils import tracking  # W&B 追跡（無認証なら no-op）
+    tracking.init(f"b2a_det2phase_seed{args.seed}", group="B", job_type="b2a",
+                  config={"seed": args.seed, "lr": args.lr, "epochs": args.epochs, "in_dim": 2063,
+                          "method": "b2a_det_to_phase_toolpresence"})
+
     best = {"phase_accuracy": -1.0}
     for epoch in range(args.epochs):
         model.train()
@@ -224,6 +229,10 @@ def train(args) -> dict:
         print(f"[b2a][epoch {epoch + 1}/{args.epochs}] loss={ep_loss / max(len(train_clips),1):.4f}  "
               f"val_acc={val['phase_accuracy']:.4f}  macroF1={val['phase_macro_f1']:.4f}  "
               f"edit={val['phase_edit_score']:.2f}  segF1@50={val['phase_seg_f1_50']:.2f}")
+        tracking.log({"train/loss": ep_loss / max(len(train_clips), 1),
+                      "val/phase_accuracy": val["phase_accuracy"], "val/macro_f1": val["phase_macro_f1"],
+                      "val/jaccard": val["phase_jaccard"], "val/seg_f1_50": val["phase_seg_f1_50"]},
+                     step=epoch)
         if val["phase_accuracy"] > best["phase_accuracy"]:
             best = {**val, "epoch": epoch + 1}
             if exp_dir is not None:
@@ -240,6 +249,13 @@ def train(args) -> dict:
         manager.log_per_class_ap(per_class)
         _write_notes(exp_dir, args, best, server_name)
         print(f"[b2a] evidence written -> {exp_dir}")
+        # Notion 実験Run台帳へ自動投稿（NOTION_API_KEY/NOTION_DB_ID 未設定なら no-op）。
+        from egosurgery.utils.notion_logger import log_experiment_to_notion
+        log_experiment_to_notion(
+            exp_dir, status="completed", step="B", tier="must",
+            primary_metric="phase acc/macro-F1/jaccard/edit/seg-F1 (online_causal, jaccard strict)",
+            extra_result_text="①信号 det→phase。Δ_phase vs S4 base 0.8986±0.0034")
+    tracking.finish()
     return best
 
 

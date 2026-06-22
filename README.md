@@ -198,19 +198,30 @@ cp .env.example .env
 #   WANDB_API_KEY=<your_api_key>     # W&B 記録を有効にする場合
 #   WANDB_PROJECT=egosurgery_multitask
 #   DATA_ROOT=/abs/path/to/data       # data/ を別パスにしたい場合のみ
-#   # --- Notion「実験Run台帳」自動投稿 (任意) ---
+#   # --- Notion 連携（M2研究運用ハブ・任意）---
 #   NOTION_API_KEY=secret_xxxxxxxx    # https://www.notion.so/profile/integrations で発行
-#   NOTION_DB_ID=7bcf9406-29fc-4b2a-8a9e-0be02fc1fc20
-#   NOTION_SERVER_OPTION=philip (RTX 6000 Ada)
+#   NOTION_DB_ID=ef4ccd02-0a97-41af-814e-9acc44e1e0d3   # 実験Run台帳の database id（後述・collection idでない）
+#   NOTION_SERVER_OPTION=lecun        # Run台帳 Server 列（実行サーバー名）
 ```
 
 W&B を使わない場合は `logging.wandb_enabled=false` を CLI override で渡せる。
 
-Notion 連携は `MMDetTrainer.run()` 完了時に rank=0 で `src/egosurgery/utils/notion_logger.py`
-が自動投稿する。`NOTION_API_KEY` / `NOTION_DB_ID` を未設定にすると no-op (学習は通常完走)。
-失敗時も学習プロセスは止めない設計 (証拠ファイルは既に書き出し済みのため)。
-詳細なセットアップ・DB スキーマ要件・手動投稿・トラブルシュートは
-[`docs/notion_run_ledger_auto_post.md`](docs/notion_run_ledger_auto_post.md) を参照。
+### Notion 連携（運用ハブ駆動・コンテキスト削減）
+
+研究運用を Notion「**M2研究運用ハブ**」に連動させ、マスターの「M2研究計画」（長文）を毎回読まずに
+DB 駆動で回す。**ID レジストリ `configs/notion.yaml`（非秘密・コミット可）/ token は `.env`**。
+`NOTION_API_KEY` 未設定なら全 no-op（研究フローを止めない）。詳細 → [`docs/notion_integration.md`](docs/notion_integration.md)。
+
+- **書く（自動記録）**:
+  - 実験Run台帳: `MMDetTrainer.run()` 完了時 + STEP B 後処理（`postprocess_b1`/`train_b2a`/`train_t1a`/`postprocess_t1b`）が
+    `notion_logger.log_experiment_to_notion` で投稿。既存分の一括投稿は `scripts/post_experiments_to_notion.py`（`--dry-run` 可）。
+  - 意思決定/失敗知見/プロンプト: `egosurgery.utils.notion_ops`（`log_decision` / `log_lesson` / `save_prompt`）。
+- **読む（コンテキスト削減）**: `scripts/notion_context_pack.py --step <S0..S9/B>`（関連 DB 行のみ抽出）+ 「現在の研究状態」を MCP fetch。
+  M2研究計画は**該当 § のみ**取得する。
+- **注（DB id）**: `NOTION_DB_ID` は **database id**（`ef4ccd02…`）。Notion-flavored の `collection://7bcf9406…` は
+  data source id で、REST `/databases/{id}/query`（API 2022-06-28）では使えない。投稿が 404 で skip される場合は
+  database id を使っているか確認する。
+- 失敗時も学習を止めない設計（証拠ファイルは書き出し済）。旧 Run台帳ドキュメント → [`docs/notion_run_ledger_auto_post.md`](docs/notion_run_ledger_auto_post.md)。
 
 ### 6. 動作確認（sanity check）
 

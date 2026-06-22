@@ -44,6 +44,40 @@ LOCKED_DOWN_TEST_CFG: dict = {
     "nms_iou": 0.6,
 }
 
+# 研究ピボット「分析ファースト」STEP 0-1（2026-06-15）の決定。比較の三角形
+# （凍結源 = Relation-DETR 単一 backbone）および DETR-family（NMS-free）検出ヘッドの
+# 公式 eval recipe。Relation-DETR を両 recipe で実測した結果、locked-down の NMS@0.6 を
+# NMS-free モデルに適用すると -4.5pt mAP（PostProcess の class-agnostic NMS が手術シーンの
+# 異クラス重なり箱を誤除去）と判明した。三角形の検出ヘッドには NMS を適用しないこと
+# （Δ_detection 汚染防止）。score_thr は 0.0 と 1e-8 で完全同値（予測の最小スコア ≫ 1e-8）。
+# 証跡: experiments/analysis/step0_recipe/notes.md / docs/experiment_log.md(2026-06-15 STEP 0-1)。
+NMS_FREE_TEST_CFG: dict = {
+    "score_thr": 0.0,
+    "max_per_img": 300,
+    "nms_pre": None,
+    "nms_iou": None,
+}
+
+# 研究計画 §4.2 / §6 / 注249（ピボット 2026-06-15）: 「工程 recipe」のロック。
+# 検出 recipe（NMS_FREE_TEST_CFG / LOCKED_DOWN_TEST_CFG）とは別軸で、工程認識
+# （S4 時系列・結合手法）の評価 protocol を一元定義する。online/causal（未来フレーム
+# 不使用）と Jaccard strict を固定し、offline / relaxed との混在を recipes_match が
+# 不整合として検出できるようにする（§6 公正比較の鉄則: 推論 protocol・指標の混在禁止）。
+# S4 / 結合手法の eval_recipe.test_cfg に **マージして** 記録すること
+# （task='phase' と併記。例: {"task": "phase", **PHASE_EVAL_PROTOCOL, ...}）。
+# 指標セット（accuracy / macro-P,R,F1 / Jaccard+edit / seg-F1@{10,25,50}）は metrics.json
+# 本体に記録するが、Δ 比較の「土台」を縛るのは下記 protocol（online + strict）である。
+PHASE_EVAL_PROTOCOL: dict = {
+    "inference_protocol": "online_causal",  # 未来フレーム不使用（§4.2）
+    "jaccard_mode": "strict",               # relaxed と混ぜない（§6 交絡の禁止）
+}
+
+# eval_recipe.test_cfg のうち「記述用」で Δ の一致判定から除外するキー。検出器ごとに
+# 異なる自由文（例: ``note``）は実効パラメータではないため recipe 一致判定に影響させない。
+# これにより検出（score_thr/nms 等）も phase（task='phase' + backbone/image_size 等）も
+# 「実効キーを全比較」する単一の仕組みで保護できる（recipes_match 参照）。
+DESCRIPTIVE_TEST_CFG_KEYS: tuple = ("note", "description")
+
 # 研究計画 §15.1: 論文公式 split サイズ。§15.1 では train 8 videos / 7427
 # images で学習していた事故が発覚した。Δ 基準点を汚染させないため、
 # 期待値を定数で明示する。
@@ -121,7 +155,9 @@ def recipes_match(recipe_a: dict, recipe_b: dict) -> bool:
     """2 つの ``eval_recipe`` が Δ 計算に互換かを判定する。
 
     比較対象:
-        - :data:`LOCKED_DOWN_TEST_CFG` の全項目
+        - ``test_cfg`` の実効項目（:data:`DESCRIPTIVE_TEST_CFG_KEYS` を除く全キー）。
+          検出 recipe（score_thr/nms_* 等）も phase recipe（task='phase' +
+          backbone/image_size 等）も同一の仕組みで比較される。
         - split サイズ（train/val/test images）
         - GPU 構成（``gpu_count``、``effective_batch_size``）— §8.0 条件 (4)
 
@@ -135,10 +171,13 @@ def recipes_match(recipe_a: dict, recipe_b: dict) -> bool:
     Returns:
         test_cfg / split / GPU 構成が全て一致する場合に True。
     """
-    # test_cfg の全項目を比較
+    # test_cfg の実効項目をすべて比較する（記述用キーは除外）。検出（score_thr/nms_*）も
+    # phase（task='phase' + backbone/image_size 等）も同一の仕組みで保護する。task キーが
+    # 異なれば（検出 vs phase、または phase 同士の構成差）ここで不一致になる。
     test_a = recipe_a.get("test_cfg") or {}
     test_b = recipe_b.get("test_cfg") or {}
-    for key in LOCKED_DOWN_TEST_CFG:
+    compared_keys = (set(test_a) | set(test_b)) - set(DESCRIPTIVE_TEST_CFG_KEYS)
+    for key in compared_keys:
         if test_a.get(key) != test_b.get(key):
             return False
 

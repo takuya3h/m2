@@ -93,8 +93,6 @@ def _log_impl(
         )
         return None
 
-    import requests
-
     name = exp_dir.name
     metrics = _read_json(exp_dir / "metrics.json")
     eval_recipe = metrics.get("eval_recipe") if isinstance(metrics, dict) else {}
@@ -269,17 +267,42 @@ def _update_page(
 # ----------------------------------------------------------------------------
 
 def _format_result(metrics: dict, extra: str | None) -> str:
-    if not isinstance(metrics, dict) or not metrics.get("epoch"):
-        base = "(metrics.json に best epoch なし — 進行中または失敗の可能性)"
+    """実験タイプ（工程/結合・検出器ベンチ・検出fine-tune・汎用）を判別して Result を整形する。
+
+    検出器ベンチは `val/mAP` 命名（旧 MMDetTrainer）、STEP B 工程/結合は `phase_accuracy`、
+    検出 fine-tune（T1b 等）は `mAP`（+`init_mAP`）を持つ。None を `:.3f` で落とさないよう分岐する。
+    """
+    if not isinstance(metrics, dict) or not metrics:
+        base = "(metrics.json なし/空 — 進行中または失敗の可能性)"
+    elif metrics.get("phase_accuracy") is not None:
+        # STEP B 工程/結合（②①系統）
+        def g(k):
+            v = metrics.get(k)
+            return f"{v:.4f}" if isinstance(v, (int, float)) else "n/a"
+        base = (f"phase acc={g('phase_accuracy')}, macro_f1={g('phase_macro_f1')}, "
+                f"jaccard={g('phase_jaccard')}, edit={g('phase_edit_score')}, "
+                f"segF1@50={g('phase_seg_f1_50')}")
+        if isinstance(metrics.get("mAP"), (int, float)):  # B1 など検出も併記する場合
+            base += f", det mAP={metrics['mAP']:.4f}"
+    elif isinstance(metrics.get("val/mAP"), (int, float)):
+        # 検出器ベンチ（旧 MMDetTrainer・既存挙動を維持）
+        def gd(k):
+            v = metrics.get(k)
+            return f"{v:.4f}" if isinstance(v, (int, float)) else "n/a"
+        base = (f"mAP={gd('val/mAP')}, AP_50={gd('val/mAP_50')}, AP_75={gd('val/mAP_75')}, "
+                f"AP_rare={gd('val/AP_rare')}, AP_common={gd('val/AP_common')} "
+                f"@ epoch {metrics.get('epoch')} (best)")
+    elif isinstance(metrics.get("mAP"), (int, float)):
+        # 検出 fine-tune（T1b Phase→Det 等）。init_mAP があれば Δ も併記。
+        base = f"det mAP={metrics['mAP']:.4f}"
+        if isinstance(metrics.get("init_mAP"), (int, float)):
+            base += (f" (init/warm-start={metrics['init_mAP']:.4f}, "
+                     f"Δ_det={metrics['mAP'] - metrics['init_mAP']:+.4f})")
     else:
-        base = (
-            f"mAP={metrics.get('val/mAP'):.3f}, "
-            f"AP_50={metrics.get('val/mAP_50'):.3f}, "
-            f"AP_75={metrics.get('val/mAP_75'):.3f}, "
-            f"AP_rare={metrics.get('val/AP_rare'):.4f}, "
-            f"AP_common={metrics.get('val/AP_common'):.4f} "
-            f"@ epoch {metrics.get('epoch')} (best)"
-        )
+        # 汎用: 数値スカラを先頭から列挙
+        scal = [(k, v) for k, v in metrics.items() if isinstance(v, (int, float))]
+        base = (", ".join(f"{k}={v:.4f}" if isinstance(v, float) else f"{k}={v}"
+                          for k, v in scal[:8]) or "(数値指標なし)")
     if extra:
         base = f"{base}\n{extra}"
     return base
