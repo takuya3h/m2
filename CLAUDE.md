@@ -40,6 +40,10 @@ CV 研究プロジェクト。S0〜S9 の段階的実験と Δ（相互改善幅
 
 - コード変更後は `README.md` に変更内容と現状を記録する。
 - 実験を行ったら `docs/experiment_log.md` に「仮説→実験→結果→解釈→次」を追記する。
+- **実験完了時はユーザーの指示を待たず、Notion 実験Run台帳へも記録する**（`experiment_log.md`
+  と対で必須・既定動作）。`notion_logger` が発火しない場合（`NOTION_API_KEY` 未設定・素の
+  `train_t1b.py` 等が result.json を吐くだけの場合）は **Notion MCP で直接追記**する。捏造防止のため
+  数値は result.json / ログ実測のみ転記し、未確定（例: 3-seed 未達）はその旨を明記する。
 
 ## ハマりどころ
 
@@ -79,6 +83,7 @@ ID レジストリは `configs/notion.yaml`（非秘密）、認証 `NOTION_API_
 
 **書く（自動記録・運用ループ §1-6）**:
 - 実験完了 → 実験Run台帳に自動投稿（`notion_logger.log_experiment_to_notion` 配線済 / バックフィルは `scripts/post_experiments_to_notion.py`）。
+  **これは指示不要の既定動作**。配線が発火しない経路（鍵未設定・素のスクリプト）では Claude が **Notion MCP** で同等の行を追記して埋める。
 - 方針変更 → `egosurgery.utils.notion_ops.log_decision(...)`（意思決定ログ）。
 - 再発防止の失敗 → `notion_ops.log_lesson(...)`（失敗知見・教訓）。
 - 再利用プロンプト → `notion_ops.save_prompt(...)`（プロンプトライブラリ）。
