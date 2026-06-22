@@ -36,6 +36,8 @@ from pathlib import Path
 
 import numpy as np
 
+from egosurgery.utils.eval_recipe import DESCRIPTIVE_TEST_CFG_KEYS
+
 _logger = logging.getLogger(__name__)
 
 # 研究計画 §15.4 B / §15.6: eval recipe の不一致は Δ の意味を破壊するため、
@@ -45,7 +47,9 @@ _RECIPE_REQUIRED_KEYS = (
     "split_val_images",
     "split_test_images",
 )
-_TEST_CFG_KEYS = ("score_thr", "max_per_img", "nms_pre", "nms_iou")
+# test_cfg は固定キー列ではなく「実効キーを全比較」する（DESCRIPTIVE_TEST_CFG_KEYS 除く）。
+# これにより検出（score_thr/max_per_img/nms_pre/nms_iou）に加え phase recipe
+# （task='phase' + backbone/image_size/dropout 等）の構成差も自動で不整合検出できる。
 # §8.0 条件 (4)(5): 単一 GPU と DDP 2 GPU の混在は Δ の意味を崩壊させるため、
 # gpu_count / effective_batch_size の不一致も致命的不整合として扱う。
 _DDP_REQUIRED_KEYS = ("gpu_count", "effective_batch_size")
@@ -161,7 +165,8 @@ class DeltaCalculator:
 
         比較対象:
             - split の image/annotation 数
-            - ``test_cfg`` の全項目
+            - ``test_cfg`` の実効項目（``DESCRIPTIVE_TEST_CFG_KEYS`` を除く全キー）。
+              検出 recipe も phase recipe（task='phase'）も同一の仕組みで保護する。
             - GPU 構成（``gpu_count`` / ``effective_batch_size``）— §8.0 条件 (4)(5)。
               単一 GPU と DDP 2 GPU の混在は effective batch size・NCCL allreduce
               非決定性・BN/LN 挙動差により Δ の意味が崩壊するため、recipe 不一致
@@ -183,7 +188,8 @@ class DeltaCalculator:
 
         test_a = recipe_a.get("test_cfg") or {}
         test_b = recipe_b.get("test_cfg") or {}
-        for key in _TEST_CFG_KEYS:
+        compared_keys = (set(test_a) | set(test_b)) - set(DESCRIPTIVE_TEST_CFG_KEYS)
+        for key in compared_keys:
             if test_a.get(key) != test_b.get(key):
                 return False
 

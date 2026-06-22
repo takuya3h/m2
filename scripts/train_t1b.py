@@ -7,9 +7,13 @@ zero-init=恒等なので warm-start 直後は S0-frozen と一致 → fine-tune
 Δ_detection=(T1b − S0-frozen 0.7051)。§4.6 の注入効果分離のため `--zero-ctx`（context を 0 に
 固定した同スケジュール fine-tune）対照を用意する。
 
+注入機構（§4.6・プロトコルは共通、差分は注入のみ→清潔な ablation）:
+  --inject film      : C5 を FiLM 変調（§4.6 下限・既定。RelationDETRPhaseFiLM）
+  --inject ca        : decoder cross-attention に c_phase token を注入（§4.6 primary。RelationDETRPhaseCrossAttn）
+
 学習対象（warm-start fine-tune の範囲）:
-  --trainable film   : phase_film のみ学習（最速・最純粋な注入効果。検出器は凍結）
-  --trainable all    : phase_film + 検出器全体を fine-tune（既定。容量大・対照必須）
+  --trainable film   : 注入層(phase_*)のみ学習（最速・最純粋な注入効果。検出器は凍結）
+  --trainable all    : 注入層 + 検出器全体を fine-tune（容量大・対照必須）
 
 入力:
   data/processed/phase_context/relation_detr_seed42/{split}_phasectx.npz（frame_ids, ctx=(N,9)）
@@ -46,6 +50,7 @@ S0FROZEN_INIT = BODY / "data/external/weights/relation_detr_s0frozen_init_seed42
 EGO_ROOT = os.environ.get("EGO_ROOT", str(BODY / "data/raw/ego"))
 ANN_DIR = os.environ.get("EGO_ANN_DIR", str(BODY / "data/annotations/egosurgery_tool"))
 MODEL_CFG = "configs/relation_detr/relation_detr_resnet50_egosurgery_t1b.py"
+MODEL_CFG_CA = "configs/relation_detr/relation_detr_resnet50_egosurgery_t1b_ca.py"
 NUM_PHASES = 9
 
 
@@ -102,10 +107,10 @@ def detector_ckpt(seed: int) -> Path:
     return RELDETR / f"checkpoints/incoming/seed{seed}/best_ap.pth"
 
 
-def build_model(device, seed: int):
+def build_model(device, seed: int, model_cfg: str = MODEL_CFG):
     from util.lazy_load import Config
     from util.utils import load_checkpoint, load_state_dict
-    model = Config(MODEL_CFG).model
+    model = Config(model_cfg).model
     ck = detector_ckpt(seed)
     if not ck.exists():
         raise FileNotFoundError(f"学習済み検出器 ckpt が無い: {ck}（s0_01{{6,7,8}} を転送せよ）")
@@ -168,10 +173,14 @@ def eval_detection(model, loader, imgid_to_ctx, device, zero_ctx, limit=None):
 
 
 def set_trainable(model, mode: str):
-    """warm-start fine-tune の範囲。film=phase_film のみ学習（残り凍結）/ all=全 fine-tune。"""
+    """warm-start fine-tune の範囲。film=注入層(phase_*)のみ学習（残り凍結）/ all=全 fine-tune。
+
+    注入層は FiLM の ``phase_film.*`` / CA の ``phase_embed|phase_attn|phase_norm.*`` を ``phase`` で一括選択
+    （base 検出器に ``phase`` を含む param は無いので film/ca どちらでも安全）。
+    """
     if mode == "film":
         for name, p in model.named_parameters():
-            p.requires_grad_("phase_film" in name)
+            p.requires_grad_("phase" in name)
     # mode == "all" は config の freeze_indices(backbone) 以外すべて学習（既定の requires_grad）。
 
 
@@ -184,7 +193,8 @@ def main():
 
     det_train = build_det_loader(train=True)
     det_val = build_det_loader(train=False)
-    model = build_model(device, args.seed)
+    model_cfg = MODEL_CFG_CA if args.inject == "ca" else MODEL_CFG
+    model = build_model(device, args.seed, model_cfg)
     register_classes(model, det_train)
     set_trainable(model, args.trainable)
 
@@ -208,18 +218,24 @@ def main():
     work = Path(os.environ.get("T1B_WORK_DIR",
                 f"/tmp/t1b_work_{'zeroctx' if args.zero_ctx else args.trainable}_seed{args.seed}"))
     work.mkdir(parents=True, exist_ok=True)
-    n_film = sum(p.numel() for n, p in model.named_parameters() if p.requires_grad and "phase_film" in n)
+    n_phase = sum(p.numel() for n, p in model.named_parameters() if p.requires_grad and "phase" in n)
     n_train = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print(f"[t1b] seed={args.seed} trainable={args.trainable} zero_ctx={args.zero_ctx} "
-          f"det_steps/ep={det_steps_per_ep} film_params={n_film} total_trainable={n_train} "
+    print(f"[t1b] seed={args.seed} inject={args.inject} trainable={args.trainable} zero_ctx={args.zero_ctx} "
+          f"det_steps/ep={det_steps_per_ep} phase_params={n_phase} total_trainable={n_train} "
           f"miss_ctx(tr/va)={miss_tr}/{miss_va} work={work}", flush=True)
 
     # warm-start 健全性: 学習前 mAP（FiLM zero-init 恒等 → S0-frozen 水準のはず）
     init_map, _ = eval_detection(model, det_val, imgid_to_ctx_va, device, args.zero_ctx,
                                  limit=20 if args.smoke else None)
-    print(f"[t1b] warm-start init mAP={init_map:.4f} (S0-frozen 水準なら warm-start+FiLM恒等 OK)", flush=True)
+    print(f"[t1b] warm-start init mAP={init_map:.4f} (S0-frozen 水準なら warm-start+恒等 OK)", flush=True)
+    if args.assert_init_map is not None and abs(init_map - args.assert_init_map) > args.assert_init_tol:
+        print(f"[t1b][PREFLIGHT-FAIL] init mAP={init_map:.4f} != "
+              f"{args.assert_init_map}±{args.assert_init_tol} → warm-start/zero-init恒等が壊れている。"
+              f"中断（設定ドリフト・捏造防止）。", flush=True)
+        sys.exit(3)
 
-    film_grad_seen = False
+    phase_named = [(n, p) for n, p in model.named_parameters() if "phase" in n]
+    phase_grad_seen = False
     best = {"mAP": init_map, "epoch": -1, "per_class_coco_map": {}}
     for epoch in range(args.epochs):
         model.train()
@@ -237,9 +253,9 @@ def main():
             loss = sum(loss_dict.values())
             opt.zero_grad()
             loss.backward()
-            if model.phase_film.mlp[-1].weight.grad is not None and \
-                    model.phase_film.mlp[-1].weight.grad.abs().sum() > 0:
-                film_grad_seen = True
+            if not phase_grad_seen and any(
+                    p.grad is not None and p.grad.abs().sum() > 0 for _, p in phase_named):
+                phase_grad_seen = True
             torch.nn.utils.clip_grad_norm_([p for p in model.parameters() if p.requires_grad], 0.1)
             opt.step()
             if step % args.print_freq == 0:
@@ -261,7 +277,7 @@ def main():
                        work / "best_t1b.pth")
 
     result = {
-        "seed": args.seed, "trainable": args.trainable, "zero_ctx": args.zero_ctx,
+        "seed": args.seed, "inject": args.inject, "trainable": args.trainable, "zero_ctx": args.zero_ctx,
         "epochs": args.epochs, "lr": args.lr, "film_lr": args.film_lr,
         "init_mAP": init_map, "best_epoch": best["epoch"], "mAP": best["mAP"],
         "per_class_coco_map": best.get("per_class_coco_map", {}),
@@ -270,8 +286,8 @@ def main():
     (work / "t1b_result.json").write_text(json.dumps(result, indent=2, ensure_ascii=False))
     print(f"[t1b] DONE best@ep{best['epoch']} mAP={best['mAP']:.4f} (init {init_map:.4f}) -> {work}")
     if args.smoke:
-        ok = film_grad_seen and (init_map > 0.5)  # FiLM 学習 + warm-start mAP 健全
-        print(f"[t1b][smoke] film_grad={film_grad_seen} init_mAP={init_map:.4f} "
+        ok = phase_grad_seen and (init_map > 0.5)  # 注入層に勾配 + warm-start mAP 健全
+        print(f"[t1b][smoke] phase_grad={phase_grad_seen} init_mAP={init_map:.4f} "
               f"=> {'PASS' if ok else 'FAIL'}")
         sys.exit(0 if ok else 2)
 
@@ -283,9 +299,14 @@ def parse_args():
     p.add_argument("--lr", type=float, default=1e-4)
     p.add_argument("--film-lr", type=float, default=5e-4)
     p.add_argument("--trainable", choices=["film", "all"], default="all")
+    p.add_argument("--inject", choices=["film", "ca"], default="film",
+                   help="phase 注入機構: film(§4.6下限・C5 FiLM) / ca(§4.6 primary・decoder cross-attn)")
     p.add_argument("--zero-ctx", action="store_true", help="§4.6 対照: phase context を 0 固定で fine-tune")
     p.add_argument("--print-freq", type=int, default=200)
     p.add_argument("--smoke", action="store_true")
+    p.add_argument("--assert-init-map", type=float, default=None,
+                   help="warm-start init mAP がこの値±tol から外れたら中断（恒等性・ドリフト検査）")
+    p.add_argument("--assert-init-tol", type=float, default=0.02)
     return p.parse_args()
 
 

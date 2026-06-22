@@ -185,9 +185,10 @@ class PhaseEvaluator:
 
         Returns:
             ``{"phase_accuracy": float, "phase_macro_f1": float,
-              "phase_edit_score": float, "phase_seg_f1_10": float,
-              "phase_seg_f1_25": float, "phase_seg_f1_50": float,
-              "phase_per_class_f1": dict[str, float]}``
+              "phase_jaccard": float, "phase_edit_score": float,
+              "phase_seg_f1_10": float, "phase_seg_f1_25": float,
+              "phase_seg_f1_50": float, "phase_per_class_f1": dict[str, float],
+              "phase_per_class_jaccard": dict[str, float]}``
         """
         all_preds: list[int] = []
         all_gts: list[int] = []
@@ -198,11 +199,13 @@ class PhaseEvaluator:
             return {
                 "phase_accuracy": 0.0,
                 "phase_macro_f1": 0.0,
+                "phase_jaccard": 0.0,
                 "phase_edit_score": 0.0,
                 "phase_seg_f1_10": 0.0,
                 "phase_seg_f1_25": 0.0,
                 "phase_seg_f1_50": 0.0,
                 "phase_per_class_f1": {n: 0.0 for n in self.class_names},
+                "phase_per_class_jaccard": {n: 0.0 for n in self.class_names},
             }
 
         preds_arr = np.asarray(all_preds, dtype=np.int64)
@@ -211,6 +214,7 @@ class PhaseEvaluator:
         # frame-level
         accuracy = float((preds_arr == gts_arr).mean())
         per_class_f1, macro_f1 = self._frame_f1(preds_arr, gts_arr)
+        per_class_jac, macro_jac = self._frame_jaccard(preds_arr, gts_arr)
 
         # segment-level: 動画ごとに計算して平均する。
         edits, f10, f25, f50 = [], [], [], []
@@ -223,12 +227,16 @@ class PhaseEvaluator:
         return {
             "phase_accuracy": accuracy,
             "phase_macro_f1": float(macro_f1),
+            "phase_jaccard": float(macro_jac),
             "phase_edit_score": float(np.mean(edits)) if edits else 0.0,
             "phase_seg_f1_10": float(np.mean(f10)) if f10 else 0.0,
             "phase_seg_f1_25": float(np.mean(f25)) if f25 else 0.0,
             "phase_seg_f1_50": float(np.mean(f50)) if f50 else 0.0,
             "phase_per_class_f1": {
                 self.class_names[c]: float(per_class_f1[c]) for c in range(self.num_classes)
+            },
+            "phase_per_class_jaccard": {
+                self.class_names[c]: float(per_class_jac[c]) for c in range(self.num_classes)
             },
         }
 
@@ -253,4 +261,24 @@ class PhaseEvaluator:
             macro = per_class[present].mean()
         else:
             macro = 0.0
+        return per_class, float(macro)
+
+    def _frame_jaccard(
+        self, preds: np.ndarray, gts: np.ndarray
+    ) -> tuple[np.ndarray, float]:
+        """フレーム単位の per-class Jaccard(IoU) と macro Jaccard を返す。
+
+        surgical phase 認識の標準指標（Cholec80 / TeCNO 系）。クラス c の Jaccard は
+        ``TP / (TP + FP + FN)``（= ``|GT_c ∩ Pred_c| / |GT_c ∪ Pred_c|``）。
+        GT に存在するクラスのみで macro 平均する（macro F1 と同条件）。
+        """
+        per_class = np.zeros(self.num_classes, dtype=np.float64)
+        for c in range(self.num_classes):
+            tp = int(((preds == c) & (gts == c)).sum())
+            fp = int(((preds == c) & (gts != c)).sum())
+            fn = int(((preds != c) & (gts == c)).sum())
+            denom = tp + fp + fn
+            per_class[c] = tp / denom if denom > 0 else 0.0
+        present = np.array([(gts == c).any() for c in range(self.num_classes)])
+        macro = per_class[present].mean() if present.any() else 0.0
         return per_class, float(macro)

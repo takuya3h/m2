@@ -124,6 +124,12 @@ def main():
     (mgr.exp_dir / "phase_per_class_f1.json").write_text(
         json.dumps(phase_per_class, ensure_ascii=False, indent=2))
     print(f"[b1-post] evidence -> {mgr.exp_dir}")
+    # Notion 実験Run台帳へ自動投稿（NOTION_API_KEY/NOTION_DB_ID 未設定なら no-op）。
+    from egosurgery.utils.notion_logger import log_experiment_to_notion
+    log_experiment_to_notion(
+        mgr.exp_dir, status="completed", step="B", tier="must",
+        primary_metric="phase acc/macro-F1/jaccard + det mAP",
+        extra_result_text="②素朴MTL。Δ_phase vs S4′ 0.9142 / Δ_det vs S0-frozen′ 0.7095")
 
 
 if __name__ == "__main__":

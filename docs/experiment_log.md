@@ -723,12 +723,76 @@ S6 結合手法も COCO-init head から開始する前提なので、三角形 
 - **Δ定義（清潔）**: init mAP（FiLM恒等=warm-start検出器）= 同一evalでの per-seed S0-frozen 分母。
   Δ_detection=best−init。**注入純効果=Δ_injected − Δ_control(zero-ctx)**（fine-tune自体と分離・§4.6）。
 
-### 結果
-- **未実施（数値なし）**。server B で warm-start fine-tune（3-seed＋zero-ctx対照）→ paired-σ Δ。`docs/t1b_server_b_runsheet.md`。
+### 結果（2026-06-21〜22・lecun seed123/456、bengio seed42 は別走）
+- **学習設定の知見**: `--trainable all --epochs3` は warm-start 検出器を fine-tune が ep0 で撹乱（mAP 0.73→0.70）→3ep で回復しきらず **best=init（underfit）**。
+  ただし matched-epoch で **注入 > 対照 が一貫（ep2 +0.0068 等）**。
+- **清潔版 `--trainable film`（検出器凍結・FiLM のみ・init 撹乱なし・6ep）**:
+  - seed123: 注入 Δ_det=best−init=**+0.0022**(best ep5 0.7314 / init 0.7292) / 対照 +0.0000 → **注入純効果 +0.0022**
+  - seed456: 注入 Δ_det=**+0.0040**(best ep1 0.7257 / init 0.7217) / 対照 +0.0037 → **注入純効果 +0.0003**
+  - 2-seed 注入純効果 平均 **+0.0012**（per-epoch 変動 ±0.003 と同オーダー＝**ほぼ中立/限界的**）。seed42(bengio)で 3-seed paired-σ 予定だが効果量が小さく中立見込み。
+
+### 解釈（方向の非対称＝STEP B の核心結論）
+- **phase→det の学習 FiLM 注入は限界的（≈中立, 純効果 +0.001・ノイズ内）**。検出器凍結ゆえ frozen ヘッドが modulation を活かしきれない面もあるが、`--trainable all` の matched-epoch +0.007 も小さい。
+- **方向の非対称が確定**: det→phase は効く（B2a +0.038 / T1a +0.050 有意）／**phase→det は難しい（naive B2b −0.04 で害す・学習 T1b でも ≈中立）**。計画 §4.6「phase→det は phase 未収束で検出退化＝難しい方向」を実証。
+- STEP B 6実験の総括: **「結合の向きと作法が符号を決める」— 素朴結合は両方向で負、凍結特徴を det→phase 入力注入すると正、phase→det は学習でも中立。**
 
 ### 次
-- server B 本走（s0_01{6,7,8}×3・phase_context・画像転送→注入/対照 fine-tune）。早期打ち切り: Δ_injected≤0 なら gradient制御。
-- 完全 §4.6 双方向（+Det→Phase 同時・蒸留）は本 Phase→Det 確立後の拡張。
+- bengio seed42 の film 完走で 3-seed 確定（paired-σ）。注入強化の余地: `--trainable all` を多 epoch / cross-attention 注入（計画 primary・T1b は FiLM 下限）で phase→det が効くか再検証。
+- test 最終評価は全系統一括。STEP D（H-C 不確実性駆動の双方向）へ。
+
+---
+
+## 2026-06-20 STEP B / B2b 工程→検出（Tier-0 ①片方向 pipeline・training-free phase-prior re-scoring）: 負の Δ_detection
+
+### 仮説
+- 凍結検出器の予測 score を凍結 S4 の per-frame phase 事後 × 学習集合 P(tool|phase) で再重み付け（学習ゼロ）すれば、
+  工程文脈が検出の prior になり Δ_detection>0 か。EDA の準決定的 tool×phase 結合（anesthesia→Syringe0.97 等）が根拠。
+
+### 実験
+- `run_b2b_rescore.py`: 凍結 Relation-DETR seed42 を val 全件 forward → 各予測を `score×(Σ_p π_f[p]·P(t|p))^α` で再採点 → COCO mAP。
+  P(t|p) は train（検出アノテ×phase manifest）から。π は phase_context cache（凍結S4 val 事後）。miss_ctx=0（join 100%）。
+- baseline=元 score の同一 eval（=その場の S0-frozen, mAP 0.7302）。α∈{0.5,1.0,2.0} 掃引。**学習なし＝決定的（seed 不要）**。
+
+### 結果（実測・決定的）
+- **Δ_detection = −0.0119 (α0.5) / −0.0376 (α1.0) / −0.0726 (α2.0)**。α が強いほど**単調に悪化**。全 α で負。
+
+### 解釈
+- **素朴な phase→det 再採点は検出を害する**。凍結検出器の score は既に良校正で、phase 予測の誤り・「正準工程外で出る術具」を
+  prior が**誤抑制**し真陽性を高信頼ランクから外す → mAP 低下。Tier-0「情報量のある下限」が **naive pipeline では効かない**ことを実証。
+- **方向対称な negative transfer**: 素朴結合は両方向で害する — B1 素朴MTL→工程 −0.05（予備）/ B2b 再採点→検出 −0.04。
+  対して**凍結単一タスク特徴の入力注入は工程を助ける**（B2a +0.038 / T1a +0.050）。→「どう結合するかで符号が変わる」が STEP B の核心。
+- B2b の負は **T1b（学習 FiLM 注入）の必要性**を動機づける（naive で駄目→学習注入が phase→det を救えるかが T1b の問い）。
+
+### 次
+- T1b（bengio）で学習注入の Δ_detection を測り、B2b(naive −0.04) との対比で「学習が phase→det を効かせられるか」を判定。
+- B1 fixed 3-seed 揃い次第、工程 negative transfer を paired-σ 確定。
+
+---
+
+## 2026-06-21 STEP B / B1 素朴MTL fixed 3-seed 確定 + K&G seed42（②共有neck・両Δ paired-σ）
+
+### 結果（fixed 3-seed・paired-σ §10.1）
+- B1 fixed: seed42(mAP0.7099/acc0.8653) / 123(0.7015/0.8733) / 456(0.7103/0.8660)。証跡 experiments/transfer/b1_mtl_001-003。
+- **Δ_detection (B1−S0-frozen′)**: per-seed [−0.006,+0.002,−0.003]、mean −0.0023、paired-σ=0.0042、同符号=False → **中立**。
+- **Δ_phase (B1−S4′)**: per-seed [−0.0495,−0.0389,−0.0495]、mean **−0.0460**、paired-σ=0.0061、全 seed 負 → **有意（負）**。
+
+### 解釈
+- **素朴 MTL（共有 neck に検出・工程の両勾配）は工程を有意に害す（−4.6pt）が検出は中立**。非対称な negative transfer を 3-seed・paired-σ で確定。
+- 物語が確定: **素朴結合は害する（B1工程 −0.046有意 / B2b検出 −0.04）↔ 凍結特徴の入力注入は助ける（B2a +0.038 / T1a +0.050有意）**。
+
+### K&G（Kendall&Gal 不確実性重み）3-seed 確定（2026-06-21）
+- K&G acc: seed42=0.8719 / 123=0.8733 / 456=0.8389。mAP: 0.7093/0.7022/0.7138。σ²_d≈15.6 / σ²_p≈0.87（全 seed 一貫＝**検出を下げ工程を上げる重みを学習**）。証跡 b1_mtl_004-006。
+- **Δ_phase(K&G−S4′)**: [−0.043,−0.039,−0.077]、mean **−0.0528**、paired-σ=0.0207、全 seed 負 → **有意（負）**。
+- **Δ_det(K&G−S0-frozen′)**: mean −0.0011、paired-σ=0.0049 → **中立**。
+- **緩和（K&G−fixed の工程 acc）**: [+0.007,0.0,−0.027]、mean −0.0068、paired-σ=0.0178、同符号=False → **中立（緩和は有意でない）**。
+
+### 解釈（B1 確定）
+- **素朴 MTL は固定重みでも K&G 学習重みでも工程を有意に害す（fixed −0.046 / K&G −0.053、ともに有意）／検出はどちらも中立**。
+- **K&G の不確実性重み付けは負転移を有意に緩和しない**（seed456 で 0.8389 と悪化し緩和が打ち消される＝高分散）。→「素朴 MTL の負転移は重み付け調整では救えない」。
+- これは B2a/T1a（**入力に凍結特徴を注入する設計**）が正の Δ を出すのと対照的＝**結合の効き方は重み付けでなく"何をどこに渡すか"の設計で決まる**を補強。
+
+### 次
+- bengio T1b（学習 FiLM 注入 phase→det）の Δ_detection が出たら、STEP B 6実験（B2a/T1a/B1fixed/B1K&G/B2b/T1b）の比較表（§7）を確定。test 最終評価は全系統一括。
 
 ---
 
