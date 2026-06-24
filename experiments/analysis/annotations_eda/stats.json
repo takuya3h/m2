@@ -1,0 +1,867 @@
+{
+  "generated_for": "data/annotations EgoSurgery EDA",
+  "join_key": "basename(file_name) == phase CSV Frame",
+  "phase": {
+    "n_classes": 9,
+    "classes_sorted": [
+      "disinfection",
+      "design",
+      "anesthesia",
+      "incision",
+      "dissection",
+      "hemostasis",
+      "irrigation",
+      "closure",
+      "dressing"
+    ],
+    "frame_counts_all_csv": {
+      "disinfection": 125,
+      "design": 646,
+      "anesthesia": 555,
+      "incision": 1170,
+      "dissection": 5799,
+      "hemostasis": 1169,
+      "closure": 7231,
+      "irrigation": 217,
+      "dressing": 321
+    },
+    "total_labeled_frames": 17233,
+    "segment_summary": {
+      "disinfection": {
+        "n_segments": 6,
+        "mean_len": 20.8,
+        "median_len": 17,
+        "max_len": 44
+      },
+      "design": {
+        "n_segments": 20,
+        "mean_len": 32.3,
+        "median_len": 20,
+        "max_len": 170
+      },
+      "anesthesia": {
+        "n_segments": 16,
+        "mean_len": 34.7,
+        "median_len": 35,
+        "max_len": 79
+      },
+      "incision": {
+        "n_segments": 59,
+        "mean_len": 19.8,
+        "median_len": 14,
+        "max_len": 176
+      },
+      "dissection": {
+        "n_segments": 110,
+        "mean_len": 52.7,
+        "median_len": 26,
+        "max_len": 493
+      },
+      "hemostasis": {
+        "n_segments": 62,
+        "mean_len": 18.9,
+        "median_len": 12,
+        "max_len": 102
+      },
+      "closure": {
+        "n_segments": 42,
+        "mean_len": 172.2,
+        "median_len": 133,
+        "max_len": 619
+      },
+      "irrigation": {
+        "n_segments": 8,
+        "mean_len": 27.1,
+        "median_len": 21,
+        "max_len": 61
+      },
+      "dressing": {
+        "n_segments": 4,
+        "mean_len": 80.2,
+        "median_len": 84,
+        "max_len": 116
+      }
+    }
+  },
+  "tool": {
+    "n_classes": 15,
+    "names": [
+      "Bipolar Forceps",
+      "Electric Cautery",
+      "Forceps",
+      "Gauze",
+      "Hook",
+      "Mouth Gag",
+      "Needle Holders",
+      "Raspatory",
+      "Retractor",
+      "Scalpel",
+      "Scissors",
+      "Skewer",
+      "Suction Cannula",
+      "Syringe",
+      "Tweezers"
+    ],
+    "overall_instances": {
+      "Bipolar Forceps": 696,
+      "Electric Cautery": 1667,
+      "Forceps": 6063,
+      "Gauze": 6695,
+      "Hook": 1349,
+      "Mouth Gag": 5985,
+      "Needle Holders": 4829,
+      "Raspatory": 814,
+      "Retractor": 2404,
+      "Scalpel": 1066,
+      "Scissors": 2736,
+      "Skewer": 344,
+      "Suction Cannula": 4411,
+      "Syringe": 581,
+      "Tweezers": 10012
+    },
+    "overall_image_freq": {
+      "Bipolar Forceps": 694,
+      "Electric Cautery": 1659,
+      "Forceps": 3219,
+      "Gauze": 5858,
+      "Hook": 1037,
+      "Mouth Gag": 5982,
+      "Needle Holders": 4754,
+      "Raspatory": 809,
+      "Retractor": 1420,
+      "Scalpel": 1065,
+      "Scissors": 2733,
+      "Skewer": 343,
+      "Suction Cannula": 4399,
+      "Syringe": 564,
+      "Tweezers": 9086
+    },
+    "total_instances": 49652,
+    "imbalance_ratio_max_over_min": 29.1
+  },
+  "hand": {
+    "n_classes": 4,
+    "names": [
+      "Own hands left",
+      "Own hands right",
+      "Other hands left",
+      "Other hands right"
+    ],
+    "instances": {
+      "Own hands left": 8704,
+      "Own hands right": 8447,
+      "Other hands right": 4033,
+      "Other hands left": 6542
+    }
+  },
+  "per_split": {
+    "train": {
+      "n_images": 9657,
+      "n_annotations": 32272,
+      "ann_per_image": 3.342,
+      "videos": [
+        "01",
+        "02",
+        "03",
+        "06",
+        "08",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ],
+      "n_videos": 10,
+      "images_with_no_tool": 39,
+      "frac_images_with_tool": 0.996,
+      "mean_instances_per_frame": 3.342,
+      "mean_distinct_classes_per_frame": 2.977,
+      "max_distinct_classes_per_frame": 6,
+      "class_instances": {
+        "Bipolar Forceps": 446,
+        "Electric Cautery": 1404,
+        "Forceps": 2534,
+        "Gauze": 4596,
+        "Hook": 1045,
+        "Mouth Gag": 3807,
+        "Needle Holders": 3031,
+        "Raspatory": 654,
+        "Retractor": 2079,
+        "Scalpel": 739,
+        "Scissors": 1780,
+        "Skewer": 212,
+        "Suction Cannula": 3134,
+        "Syringe": 344,
+        "Tweezers": 6467
+      },
+      "class_image_freq": {
+        "Bipolar Forceps": 446,
+        "Electric Cautery": 1396,
+        "Forceps": 1476,
+        "Gauze": 4034,
+        "Hook": 807,
+        "Mouth Gag": 3805,
+        "Needle Holders": 2987,
+        "Raspatory": 651,
+        "Retractor": 1196,
+        "Scalpel": 738,
+        "Scissors": 1778,
+        "Skewer": 211,
+        "Suction Cannula": 3130,
+        "Syringe": 327,
+        "Tweezers": 5764
+      },
+      "coco_size": {
+        "large": 30957,
+        "medium": 1257,
+        "small": 58
+      },
+      "class_median_rel_area_pct": {
+        "Bipolar Forceps": 7.5,
+        "Electric Cautery": 8.285,
+        "Forceps": 2.264,
+        "Gauze": 4.936,
+        "Hook": 1.87,
+        "Mouth Gag": 15.559,
+        "Needle Holders": 7.763,
+        "Raspatory": 6.139,
+        "Retractor": 1.961,
+        "Scalpel": 5.951,
+        "Scissors": 5.007,
+        "Skewer": 5.18,
+        "Suction Cannula": 4.53,
+        "Syringe": 3.035,
+        "Tweezers": 5.004
+      }
+    },
+    "val": {
+      "n_images": 1515,
+      "n_annotations": 4707,
+      "ann_per_image": 3.107,
+      "videos": [
+        "09",
+        "10"
+      ],
+      "n_videos": 2,
+      "images_with_no_tool": 0,
+      "frac_images_with_tool": 1.0,
+      "mean_instances_per_frame": 3.107,
+      "mean_distinct_classes_per_frame": 2.88,
+      "max_distinct_classes_per_frame": 5,
+      "class_instances": {
+        "Bipolar Forceps": 55,
+        "Electric Cautery": 101,
+        "Forceps": 154,
+        "Gauze": 455,
+        "Hook": 147,
+        "Mouth Gag": 990,
+        "Needle Holders": 512,
+        "Raspatory": 76,
+        "Retractor": 0,
+        "Scalpel": 168,
+        "Scissors": 391,
+        "Skewer": 103,
+        "Suction Cannula": 509,
+        "Syringe": 96,
+        "Tweezers": 950
+      },
+      "class_image_freq": {
+        "Bipolar Forceps": 53,
+        "Electric Cautery": 101,
+        "Forceps": 130,
+        "Gauze": 316,
+        "Hook": 100,
+        "Mouth Gag": 989,
+        "Needle Holders": 510,
+        "Raspatory": 75,
+        "Retractor": 0,
+        "Scalpel": 168,
+        "Scissors": 390,
+        "Skewer": 103,
+        "Suction Cannula": 507,
+        "Syringe": 96,
+        "Tweezers": 825
+      },
+      "coco_size": {
+        "large": 4617,
+        "medium": 86,
+        "small": 4
+      },
+      "class_median_rel_area_pct": {
+        "Bipolar Forceps": 14.207,
+        "Electric Cautery": 17.523,
+        "Forceps": 2.996,
+        "Gauze": 7.082,
+        "Hook": 2.943,
+        "Mouth Gag": 10.727,
+        "Needle Holders": 13.486,
+        "Raspatory": 10.048,
+        "Scalpel": 4.997,
+        "Scissors": 6.072,
+        "Skewer": 15.201,
+        "Suction Cannula": 3.977,
+        "Syringe": 4.605,
+        "Tweezers": 4.382
+      }
+    },
+    "test": {
+      "n_images": 4265,
+      "n_annotations": 12673,
+      "ann_per_image": 2.971,
+      "videos": [
+        "04",
+        "05",
+        "07"
+      ],
+      "n_videos": 3,
+      "images_with_no_tool": 84,
+      "frac_images_with_tool": 0.9803,
+      "mean_instances_per_frame": 2.971,
+      "mean_distinct_classes_per_frame": 2.465,
+      "max_distinct_classes_per_frame": 6,
+      "class_instances": {
+        "Bipolar Forceps": 195,
+        "Electric Cautery": 162,
+        "Forceps": 3375,
+        "Gauze": 1644,
+        "Hook": 157,
+        "Mouth Gag": 1188,
+        "Needle Holders": 1286,
+        "Raspatory": 84,
+        "Retractor": 325,
+        "Scalpel": 159,
+        "Scissors": 565,
+        "Skewer": 29,
+        "Suction Cannula": 768,
+        "Syringe": 141,
+        "Tweezers": 2595
+      },
+      "class_image_freq": {
+        "Bipolar Forceps": 195,
+        "Electric Cautery": 162,
+        "Forceps": 1613,
+        "Gauze": 1508,
+        "Hook": 130,
+        "Mouth Gag": 1188,
+        "Needle Holders": 1257,
+        "Raspatory": 83,
+        "Retractor": 224,
+        "Scalpel": 159,
+        "Scissors": 565,
+        "Skewer": 29,
+        "Suction Cannula": 762,
+        "Syringe": 141,
+        "Tweezers": 2497
+      },
+      "coco_size": {
+        "large": 12373,
+        "medium": 300
+      },
+      "class_median_rel_area_pct": {
+        "Bipolar Forceps": 9.248,
+        "Electric Cautery": 8.82,
+        "Forceps": 2.158,
+        "Gauze": 5.539,
+        "Hook": 3.215,
+        "Mouth Gag": 9.839,
+        "Needle Holders": 6.097,
+        "Raspatory": 10.058,
+        "Retractor": 3.487,
+        "Scalpel": 5.38,
+        "Scissors": 3.189,
+        "Skewer": 7.73,
+        "Suction Cannula": 7.468,
+        "Syringe": 2.483,
+        "Tweezers": 3.603
+      }
+    }
+  },
+  "video_split": {
+    "01": [
+      "train"
+    ],
+    "02": [
+      "train"
+    ],
+    "03": [
+      "train"
+    ],
+    "04": [
+      "test"
+    ],
+    "05": [
+      "test"
+    ],
+    "06": [
+      "train"
+    ],
+    "07": [
+      "test"
+    ],
+    "08": [
+      "train"
+    ],
+    "09": [
+      "val"
+    ],
+    "10": [
+      "val"
+    ],
+    "11": [
+      "train"
+    ],
+    "12": [
+      "train"
+    ],
+    "13": [
+      "train"
+    ],
+    "14": [
+      "train"
+    ],
+    "15": [
+      "train"
+    ]
+  },
+  "coupling": {
+    "n_detection_frames_joined": 15437,
+    "unmatched_frames": 0,
+    "N_phase_detection_frames": {
+      "design": 378,
+      "anesthesia": 499,
+      "incision": 1096,
+      "dissection": 5440,
+      "hemostasis": 1121,
+      "closure": 6596,
+      "irrigation": 177,
+      "disinfection": 11,
+      "dressing": 119
+    },
+    "M_tool_frames": {
+      "Skewer": 343,
+      "Syringe": 564,
+      "Gauze": 5858,
+      "Tweezers": 9086,
+      "Scalpel": 1065,
+      "Scissors": 2733,
+      "Bipolar Forceps": 694,
+      "Needle Holders": 4754,
+      "Mouth Gag": 5982,
+      "Suction Cannula": 4399,
+      "Raspatory": 809,
+      "Forceps": 3219,
+      "Electric Cautery": 1659,
+      "Retractor": 1420,
+      "Hook": 1037
+    },
+    "frames_any_tool_by_phase": {
+      "design": 371,
+      "anesthesia": 499,
+      "incision": 1096,
+      "dissection": 5390,
+      "hemostasis": 1120,
+      "closure": 6566,
+      "irrigation": 157,
+      "dressing": 115
+    },
+    "appearance_phase_by_tool_pct": {
+      "disinfection": {
+        "Tweezers": 0.0,
+        "Gauze": 0.0,
+        "Forceps": 0.0,
+        "Mouth Gag": 0.0,
+        "Needle Holders": 0.0,
+        "Suction Cannula": 0.0,
+        "Scissors": 0.0,
+        "Retractor": 0.0,
+        "Electric Cautery": 0.0,
+        "Hook": 0.0,
+        "Scalpel": 0.0,
+        "Raspatory": 0.0,
+        "Bipolar Forceps": 0.0,
+        "Syringe": 0.0,
+        "Skewer": 0.0
+      },
+      "design": {
+        "Tweezers": 10.1,
+        "Gauze": 10.3,
+        "Forceps": 3.4,
+        "Mouth Gag": 31.7,
+        "Needle Holders": 0.0,
+        "Suction Cannula": 0.0,
+        "Scissors": 0.0,
+        "Retractor": 0.0,
+        "Electric Cautery": 0.0,
+        "Hook": 0.0,
+        "Scalpel": 0.0,
+        "Raspatory": 0.0,
+        "Bipolar Forceps": 0.0,
+        "Syringe": 0.0,
+        "Skewer": 90.5
+      },
+      "anesthesia": {
+        "Tweezers": 3.4,
+        "Gauze": 45.5,
+        "Forceps": 0.0,
+        "Mouth Gag": 28.5,
+        "Needle Holders": 0.0,
+        "Suction Cannula": 2.0,
+        "Scissors": 0.0,
+        "Retractor": 0.0,
+        "Electric Cautery": 0.0,
+        "Hook": 0.0,
+        "Scalpel": 0.0,
+        "Raspatory": 0.0,
+        "Bipolar Forceps": 0.0,
+        "Syringe": 95.2,
+        "Skewer": 0.0
+      },
+      "incision": {
+        "Tweezers": 42.9,
+        "Gauze": 44.0,
+        "Forceps": 5.2,
+        "Mouth Gag": 29.9,
+        "Needle Holders": 0.0,
+        "Suction Cannula": 38.8,
+        "Scissors": 0.1,
+        "Retractor": 8.2,
+        "Electric Cautery": 0.2,
+        "Hook": 2.5,
+        "Scalpel": 94.6,
+        "Raspatory": 0.0,
+        "Bipolar Forceps": 0.0,
+        "Syringe": 0.0,
+        "Skewer": 0.1
+      },
+      "dissection": {
+        "Tweezers": 55.7,
+        "Gauze": 49.8,
+        "Forceps": 32.7,
+        "Mouth Gag": 32.2,
+        "Needle Holders": 0.1,
+        "Suction Cannula": 48.5,
+        "Scissors": 42.0,
+        "Retractor": 20.7,
+        "Electric Cautery": 27.1,
+        "Hook": 16.6,
+        "Scalpel": 0.3,
+        "Raspatory": 12.1,
+        "Bipolar Forceps": 0.2,
+        "Syringe": 0.0,
+        "Skewer": 0.0
+      },
+      "hemostasis": {
+        "Tweezers": 68.9,
+        "Gauze": 69.6,
+        "Forceps": 32.6,
+        "Mouth Gag": 25.4,
+        "Needle Holders": 0.0,
+        "Suction Cannula": 50.8,
+        "Scissors": 2.8,
+        "Retractor": 11.6,
+        "Electric Cautery": 16.2,
+        "Hook": 7.2,
+        "Scalpel": 0.3,
+        "Raspatory": 0.1,
+        "Bipolar Forceps": 60.7,
+        "Syringe": 0.0,
+        "Skewer": 0.0
+      },
+      "irrigation": {
+        "Tweezers": 0.0,
+        "Gauze": 56.5,
+        "Forceps": 2.8,
+        "Mouth Gag": 6.8,
+        "Needle Holders": 0.0,
+        "Suction Cannula": 28.2,
+        "Scissors": 0.0,
+        "Retractor": 22.0,
+        "Electric Cautery": 0.6,
+        "Hook": 11.3,
+        "Scalpel": 0.0,
+        "Raspatory": 0.0,
+        "Bipolar Forceps": 0.0,
+        "Syringe": 49.7,
+        "Skewer": 0.0
+      },
+      "closure": {
+        "Tweezers": 71.1,
+        "Gauze": 23.0,
+        "Forceps": 15.2,
+        "Mouth Gag": 49.2,
+        "Needle Holders": 72.0,
+        "Suction Cannula": 10.6,
+        "Scissors": 6.2,
+        "Retractor": 0.5,
+        "Electric Cautery": 0.0,
+        "Hook": 0.1,
+        "Scalpel": 0.1,
+        "Raspatory": 2.3,
+        "Bipolar Forceps": 0.1,
+        "Syringe": 0.0,
+        "Skewer": 0.0
+      },
+      "dressing": {
+        "Tweezers": 60.5,
+        "Gauze": 7.6,
+        "Forceps": 0.0,
+        "Mouth Gag": 84.9,
+        "Needle Holders": 0.0,
+        "Suction Cannula": 5.9,
+        "Scissors": 5.0,
+        "Retractor": 0.0,
+        "Electric Cautery": 0.0,
+        "Hook": 0.0,
+        "Scalpel": 0.0,
+        "Raspatory": 0.0,
+        "Bipolar Forceps": 0.0,
+        "Syringe": 0.0,
+        "Skewer": 0.0
+      }
+    },
+    "distribution_tool_by_phase_pct": {
+      "Tweezers": {
+        "disinfection": 0.0,
+        "design": 0.4,
+        "anesthesia": 0.2,
+        "incision": 5.2,
+        "dissection": 33.3,
+        "hemostasis": 8.5,
+        "irrigation": 0.0,
+        "closure": 51.6,
+        "dressing": 0.8
+      },
+      "Gauze": {
+        "disinfection": 0.0,
+        "design": 0.7,
+        "anesthesia": 3.9,
+        "incision": 8.2,
+        "dissection": 46.2,
+        "hemostasis": 13.3,
+        "irrigation": 1.7,
+        "closure": 25.8,
+        "dressing": 0.2
+      },
+      "Forceps": {
+        "disinfection": 0.0,
+        "design": 0.4,
+        "anesthesia": 0.0,
+        "incision": 1.8,
+        "dissection": 55.2,
+        "hemostasis": 11.4,
+        "irrigation": 0.2,
+        "closure": 31.1,
+        "dressing": 0.0
+      },
+      "Mouth Gag": {
+        "disinfection": 0.0,
+        "design": 2.0,
+        "anesthesia": 2.4,
+        "incision": 5.5,
+        "dissection": 29.3,
+        "hemostasis": 4.8,
+        "irrigation": 0.2,
+        "closure": 54.2,
+        "dressing": 1.7
+      },
+      "Needle Holders": {
+        "disinfection": 0.0,
+        "design": 0.0,
+        "anesthesia": 0.0,
+        "incision": 0.0,
+        "dissection": 0.1,
+        "hemostasis": 0.0,
+        "irrigation": 0.0,
+        "closure": 99.9,
+        "dressing": 0.0
+      },
+      "Suction Cannula": {
+        "disinfection": 0.0,
+        "design": 0.0,
+        "anesthesia": 0.2,
+        "incision": 9.7,
+        "dissection": 60.0,
+        "hemostasis": 13.0,
+        "irrigation": 1.1,
+        "closure": 15.8,
+        "dressing": 0.2
+      },
+      "Scissors": {
+        "disinfection": 0.0,
+        "design": 0.0,
+        "anesthesia": 0.0,
+        "incision": 0.0,
+        "dissection": 83.6,
+        "hemostasis": 1.1,
+        "irrigation": 0.0,
+        "closure": 15.0,
+        "dressing": 0.2
+      },
+      "Retractor": {
+        "disinfection": 0.0,
+        "design": 0.0,
+        "anesthesia": 0.0,
+        "incision": 6.3,
+        "dissection": 79.4,
+        "hemostasis": 9.2,
+        "irrigation": 2.7,
+        "closure": 2.3,
+        "dressing": 0.0
+      },
+      "Electric Cautery": {
+        "disinfection": 0.0,
+        "design": 0.0,
+        "anesthesia": 0.0,
+        "incision": 0.1,
+        "dissection": 88.8,
+        "hemostasis": 11.0,
+        "irrigation": 0.1,
+        "closure": 0.0,
+        "dressing": 0.0
+      },
+      "Hook": {
+        "disinfection": 0.0,
+        "design": 0.0,
+        "anesthesia": 0.0,
+        "incision": 2.6,
+        "dissection": 87.0,
+        "hemostasis": 7.8,
+        "irrigation": 1.9,
+        "closure": 0.7,
+        "dressing": 0.0
+      },
+      "Scalpel": {
+        "disinfection": 0.0,
+        "design": 0.0,
+        "anesthesia": 0.0,
+        "incision": 97.4,
+        "dissection": 1.8,
+        "hemostasis": 0.3,
+        "irrigation": 0.0,
+        "closure": 0.6,
+        "dressing": 0.0
+      },
+      "Raspatory": {
+        "disinfection": 0.0,
+        "design": 0.0,
+        "anesthesia": 0.0,
+        "incision": 0.0,
+        "dissection": 81.2,
+        "hemostasis": 0.1,
+        "irrigation": 0.0,
+        "closure": 18.7,
+        "dressing": 0.0
+      },
+      "Bipolar Forceps": {
+        "disinfection": 0.0,
+        "design": 0.0,
+        "anesthesia": 0.0,
+        "incision": 0.0,
+        "dissection": 1.3,
+        "hemostasis": 98.0,
+        "irrigation": 0.0,
+        "closure": 0.7,
+        "dressing": 0.0
+      },
+      "Syringe": {
+        "disinfection": 0.0,
+        "design": 0.0,
+        "anesthesia": 84.2,
+        "incision": 0.0,
+        "dissection": 0.0,
+        "hemostasis": 0.0,
+        "irrigation": 15.6,
+        "closure": 0.2,
+        "dressing": 0.0
+      },
+      "Skewer": {
+        "disinfection": 0.0,
+        "design": 99.7,
+        "anesthesia": 0.0,
+        "incision": 0.3,
+        "dissection": 0.0,
+        "hemostasis": 0.0,
+        "irrigation": 0.0,
+        "closure": 0.0,
+        "dressing": 0.0
+      }
+    }
+  },
+  "top_transitions": [
+    {
+      "from": "dissection",
+      "to": "hemostasis",
+      "count": 57
+    },
+    {
+      "from": "incision",
+      "to": "dissection",
+      "count": 50
+    },
+    {
+      "from": "hemostasis",
+      "to": "dissection",
+      "count": 45
+    },
+    {
+      "from": "dissection",
+      "to": "incision",
+      "count": 25
+    },
+    {
+      "from": "dissection",
+      "to": "closure",
+      "count": 17
+    },
+    {
+      "from": "anesthesia",
+      "to": "incision",
+      "count": 15
+    },
+    {
+      "from": "design",
+      "to": "anesthesia",
+      "count": 12
+    },
+    {
+      "from": "closure",
+      "to": "dissection",
+      "count": 12
+    },
+    {
+      "from": "hemostasis",
+      "to": "closure",
+      "count": 8
+    },
+    {
+      "from": "closure",
+      "to": "incision",
+      "count": 8
+    },
+    {
+      "from": "dissection",
+      "to": "design",
+      "count": 6
+    },
+    {
+      "from": "disinfection",
+      "to": "design",
+      "count": 5
+    },
+    {
+      "from": "incision",
+      "to": "hemostasis",
+      "count": 5
+    },
+    {
+      "from": "irrigation",
+      "to": "closure",
+      "count": 5
+    },
+    {
+      "from": "design",
+      "to": "incision",
+      "count": 5
+    }
+  ]
+}

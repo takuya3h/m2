@@ -144,3 +144,9 @@ seed456 検出が compute-apps に出ず「ハング?」と誤認しかけた）
 - [ ] **ファイル作成/DL後**: ls -la(サイズ) と用途検証(load/compile)を見たか?
 - [ ] **tool call の数**: 5個以内か? 破壊的操作・作成は単独か?
 - [ ] **seed群完走後**: verify_seed_integrity を通したか?
+
+
+## L: shell 経由の `python -c` に Markdown バッククォートを入れない（2026-06-24）
+**症状**: `python3 -c "... add="""... `command` ...""" ..."` の外側を double quote にしたため、Markdown のバッククォート内コマンドが shell の command substitution として解釈され、意図せず評価スクリプトが再実行されかけた。Ctrl-C で停止し、出力 JSON の上書きなしを確認。
+**原因**: shell 引用と Markdown 記法の相互作用を見落とした。`apply_patch` が sandbox 制約で使えない状況で、代替書き込みコマンドの引用安全性を検証せず実行した。
+**ルール**: Markdown を含む追記を `python -c` で行う場合、外側は single quote、Python 内文字列は triple double quote にする。特にバッククォート・`$()`・`$VAR` を含む本文を double quote shell 文字列に入れない。実行前に「shell が本文を展開しない引用か」を確認する。

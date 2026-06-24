@@ -1,0 +1,65 @@
+================================================================================
+②特徴レベル結合 per-phase 分析  (Δ_phase 軸 / frozen backbone=Relation-DETR seed42)
+================================================================================
+
+[S4_base]  seeds=[42, 123, 456]  n=3
+    seed42: s4_phase_baseline_001_frozen_tecno_phase_baseline_seed42
+    seed123: s4_phase_baseline_003_frozen_tecno_phase_baseline_seed123
+    seed456: s4_phase_baseline_002_frozen_tecno_phase_baseline_seed456
+
+[S4'_neck]  seeds=[42, 123, 456]  n=3
+    seed42: s4_phase_baseline_004_frozen_tecno_phase_baseline_neck_seed42
+    seed123: s4_phase_baseline_005_frozen_tecno_phase_baseline_neck_seed123
+    seed456: s4_phase_baseline_006_frozen_tecno_phase_baseline_neck_seed456
+
+[S4''_transfer]  seeds=[42, 123, 456]  n=3
+    seed42: s4_phase_baseline_007_frozen_tecno_phase_necktransfer_seed42
+    seed123: s4_phase_baseline_008_frozen_tecno_phase_necktransfer_seed123
+    seed456: s4_phase_baseline_009_frozen_tecno_phase_necktransfer_seed456
+
+--- 共通 seed（3系統で揃う）: [42, 123, 456] ---
+
+[集計スカラ] mean±std  ※ pp=accuracy/macro_f1/jaccard/seg-F1(×100), edit=0-100素値
+metric     S4_base               S4'_neck              S4''_transfer         
+accuracy   89.86±0.34            91.42±0.17            90.23±0.79            
+macro_f1   70.86±1.92            71.49±1.69            71.13±0.51            
+jaccard    n/a                   66.44±0.36            64.83±0.62            
+edit       41.08±4.22            41.08±3.35            42.39±5.43            
+seg_f1@10  44.69±6.53            46.27±7.06            49.05±6.88            
+seg_f1@25  42.36±4.88            43.38±7.46            46.04±7.05            
+seg_f1@50  36.88±6.29            37.57±5.79            41.70±7.20            
+
+[Δ 分解] 共通 seed [42, 123, 456] 上 seed-matched 平均差
+  Δcap = S4'-S4 (容量) | Δxfer = S4''-S4' (転移) | ΔL2 = S4''-S4 (総結合)
+  ※ matched 差の有意性は base群σ でなく対seed差σ(paired) で判定（符号反転の見落とし防止）
+
+  metric          Δcap    Δxfer     ΔL2(paired)  base1σ  判定
+  accuracy       +1.56    -1.19      +0.37±0.61    0.34  中立
+  macro_f1       +0.63    -0.36      +0.27±2.27    1.92  中立
+  jaccard          n/a    -1.61             n/a     n/a  n/a(base欠測)
+  edit           +0.01    +1.31      +1.32±9.19    4.22  中立
+  seg_f1@10      +1.58    +2.77     +4.35±12.86    6.53  中立
+  seg_f1@25      +1.01    +2.66     +3.68±11.55    4.88  中立
+  seg_f1@50      +0.69    +4.13     +4.82±13.21    6.29  中立
+
+[per-phase F1] 共通 seed [42, 123, 456] 平均 (×100) と Δ 分解
+  phase               S4     S4’    S4’’    Δcap   Δxfer     ΔL2
+  anesthesia       91.40   95.29   91.88   +3.89   -3.41   +0.48
+  closure          92.89   93.51   93.18   +0.62   -0.33   +0.29
+  design          100.00   99.68   99.84   -0.32   +0.16   -0.16
+  disinfection      0.00    0.00    0.00   +0.00   +0.00   +0.00
+  dissection       91.79   93.52   92.38   +1.73   -1.15   +0.58
+  dressing          0.00    0.00    0.00   +0.00   +0.00   +0.00
+  hemostasis       35.30   28.85   35.25   -6.46   +6.41   -0.05
+  incision         84.63   89.61   85.38   +4.98   -4.23   +0.75
+  irrigation        0.00    0.00    0.00   +0.00   +0.00   +0.00
+  MACRO(平均)      55.11   55.61   55.32   +0.49   -0.28   +0.21
+
+[機構の要約]
+  容量(Δcap) が効いた工程 上位: incision(+5.0), anesthesia(+3.9), dissection(+1.7)
+  容量(Δcap) が逆効果の工程  : design(-0.3), hemostasis(-6.5)
+  転移(Δxfer) で最も壊れた工程: incision(-4.2), anesthesia(-3.4), dissection(-1.1)
+  転移(Δxfer) で耐えた/改善工程: design(+0.2), hemostasis(+6.4)
+
+  ※ per-phase は F1 のみ（per_class_ap.json）。per-class Jaccard は
+    predictions 未保存のため再計算不可。base の集計 Jaccard も当時未永続化(n/a)。

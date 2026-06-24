@@ -793,3 +793,60 @@ S6 結合手法も COCO-init head から開始する前提なので、三角形 
 
 ### 次
 - bengio T1b（学習 FiLM 注入 phase→det）の Δ_detection が出たら、STEP B 6実験（B2a/T1a/B1fixed/B1K&G/B2b/T1b）の比較表（§7）を確定。test 最終評価は全系統一括。
+
+---
+
+## T1b-CA（§4.6 primary cross-attention phase→det）3-seed 確定（2026-06-23, lecun 2GPU 並列）
+
+### 仮説
+- §4.6 が "primary" とする decoder cross-attention は、FiLM の空間一様変調と違い**クエリ単位で選択的**に phase を注入できる → 表現力が高く、rare∧工程特異術具を**標的化**して phase→det を FiLM 以上に伸ばせるか（§3.2 の「query-level でないと標的化不能」の直接検証）。
+
+### 実験
+- `scripts/run_t1b_ca_seeds_lecun.sh`（seed42 の `run_t1b_ca_seed42_bengio.sh` と**科学的設定を完全一致**: inject=ca / trainable=film / epochs=6 / lr=1e-4 / film_lr=5e-4 / tol=0.02）。seed 固有に変わるのは warm-start ckpt（`checkpoints/incoming/seed{S}/best_ap.pth`）と、その実測 init mAP（= preflight assert 値）のみ。
+- **assert 値の決め方（捏造防止）**: seed42 の 0.7303 は「その base 検出器の独立既知 mAP」で seed123/456 には独立基準が無い。よって `--epochs 0` の **measure-only 実行で full-val preflight から init mAP を実測** → 健全帯[0.65,0.78]チェック → 実測値を assert に固定（別プロセスでの再現性ガード）。
+- 進行: MSDeformAttn warm-up → measure(両seed) → wave A(inj real-ctx 両seed並列) → wave B(ctrl zero-ctx 両seed並列)。seed123→GPU0 / seed456→GPU1 のロックステップ並列。1run≈3.3h（4809 det step/ep ×6ep @2.4it/s）。
+- **厳密性 cross-check 通過**: init mAP が measure=inj=ctrl で**15桁一致**（s123=0.7291948117 / s456=0.7216619815）→ warm-start+zero-init 恒等・プロセス間決定論・正しい per-seed ckpt ロードを物理的に実証。
+
+### 結果
+- **Δ_det = inj−ctrl（純効果, paired-σ §10.1）**: s42 **+0.00245** / s123 **+0.00161** / s456 **+0.00127**。mean **+0.00178**、pstdev=0.00050、**|mean|/σ=3.58・全正**。
+  - inj mAP: s42 0.73275 / s123 0.73080 / s456 0.72319（best@ ep0/ep2/ep3、いずれも init からほぼ不動）。
+  - ctrl mAP: s42 0.73029 / s123 0.72920 / s456 0.72191。
+- **FiLM 3-seed（比較）**: +0.0019 ± 0.0012（s42 +0.0031 / s123 +0.0022 / s456 +0.0002）。→ **CA +0.00178 ≈ FiLM +0.0019**（むしろ僅かに下、ただし CA の方が低分散）。
+
+### 解釈
+- **2つのσの区別（誠実）**: paired-σ（cross-seed 一貫性 σ=0.0005）では「一貫陽性・|mean|/σ=3.58」で§10.1 を満たすが、**S0-frozen 分母 σ=0.0052 より Δ が小さい** → 統計的には非ゼロでも**実用上は微小**。「有意」を magnitude の主張に流用しない。
+- **CA は FiLM を上回らない（§4.6 への否定寄り結果）**: query-level で選べる高表現力機構でも overall mAP は伸びず。全 seed で warm-start 恒等点からほぼ動かない（best@早期ep）＝**phase→det は学習で伸ばせる信号自体が乏しい**（機構の表現力の問題ではない）。
+- **方向非対称の最終確認**: phase→det は rescore −0.04 / FiLM +0.0019 / CA +0.00178 と**3機構すべてで overall 改善せず**＝機構非依存で弱い、が確定。一方 det→phase は T1a macro-F1 +0.164（有意）。比較の三角形の phase→det 辺が確定。
+
+### 次
+- 残る唯一の反証機会は **test split per-class での rare∧工程特異術具の標的化**（overall では出ないが per-class で局所利得が出るか）。FiLM/CA とも per-class 標的化は現状 n=1（zero-ctx 対照が init を超えない seed で per_class 空保存のため inj−ctrl 不能）→ 標的化のみ test split で取り直しが残課題。
+- 出なければ §7.5 撤退ライン確定＝貢献は「強い det→phase（混同工程を割る機構の実証）＋ phase→det が機構非依存で弱いことの実証（負の結果＋機構解明）」。
+- 証跡: `transfer/t1b_ca_seed{123,456}_lecun/{injected,control}_result.json`＋ログ、`experiments/analysis/step_c_coupling_analysis/REPORT.md §3.6`。
+
+
+---
+
+## 2026-06-24 STEP C / phase→det test split per-class 評価（seed42）
+
+### 実験
+- 実行時刻: 2026-06-24 04:40 JST。
+- コマンド:
+  - `CUDA_VISIBLE_DEVICES=0 .venv-relation-detr/bin/python scripts/eval_phase2det_test.py --models s0_frozen,t1b_film_inj`
+  - `CUDA_VISIBLE_DEVICES=1 .venv-relation-detr/bin/python scripts/eval_phase2det_test.py --models t1b_film_ctrl,t1b_ca_inj`
+- test split: `instances_test.json` 4265 images、phase context 欠損 0。
+- 出力:
+  - `experiments/analysis/step_c_coupling_analysis/test_eval_s0_frozen.json`
+  - `experiments/analysis/step_c_coupling_analysis/test_eval_t1b_film_ctrl.json`
+  - `experiments/analysis/step_c_coupling_analysis/test_eval_t1b_film_inj.json`
+  - `experiments/analysis/step_c_coupling_analysis/test_eval_t1b_ca_inj.json`
+- 実行時に `Ninja is required to load C++ extensions` 警告が出たが、全4評価は完走して JSON を更新済み。
+
+### 結果
+- mAP: S0 0.5060516339 / FiLM ctrl 0.5049835603 / FiLM inj 0.5088367176 / CA inj 0.5090467701。
+- FiLM 純効果（inj−ctrl）: +0.0038531573 mAP。per-class 最大は Skewer +0.0232045679、Hook +0.0176920142、Scalpel +0.0056220186。負方向は Syringe −0.0019096700、Mouth Gag −0.0010796652、Electric Cautery −0.0008959040。
+- CA は今回 ctrl なしのため S0 比のみ: +0.0029951362 mAP。per-class 最大は Scalpel +0.0140817285、Retractor +0.0095953048、Syringe +0.0036040840。負方向は Forceps −0.0023429135、Skewer −0.0004637719、Hook −0.0001715309。
+
+### 解釈
+- test split でも phase→det の overall 利得は小さい（FiLM +0.39pt、CA +0.30pt）。
+- FiLM では Skewer/Hook に局所利得があるが、Syringe は負。CA は Scalpel/Retractor が伸びる一方、Skewer は伸びない。
+- 「rare∧工程特異術具を一貫して標的化する」強い反証には届かない。overall で弱い phase→det という既存結論を大きく覆す結果ではない。

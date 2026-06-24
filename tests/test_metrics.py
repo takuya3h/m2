@@ -220,3 +220,39 @@ def test_segmental_f1():
         # 部分一致 (IoU=0.5 で thr=0.10 / 0.25 / 0.50 とも 1 GT セグメント該当)
         v = segmental_f1([0, 0, 0, 0, 0, 1], [0, 0, 0, 1, 1, 1], thr)
         assert 0.0 <= v <= 1.0
+
+
+# ---------------------------------------------------------------------- #
+# 8. Jaccard (per-class IoU の macro 平均, §4.2 / TeCNO 系の標準指標)
+# ---------------------------------------------------------------------- #
+def test_phase_jaccard():
+    """phase_jaccard が per-class IoU=TP/(TP+FP+FN) の macro 平均であること。"""
+    from egosurgery.metrics.phase import PhaseEvaluator
+
+    # 完全一致 → Jaccard = 1
+    ev = PhaseEvaluator(num_classes=2, class_names=["a", "b"])
+    ev.update([0, 0, 1, 1], [0, 0, 1, 1], "v")
+    r = ev.compute()
+    assert r["phase_jaccard"] == 1.0
+    assert all(v == 1.0 for v in r["phase_per_class_jaccard"].values())
+
+    # 手計算: gts=[0,0,1,1], preds=[0,1,1,1]
+    #   class a: TP=1 FP=0 FN=1 -> J = 1/2 = 0.5
+    #   class b: TP=2 FP=1 FN=0 -> J = 2/3
+    #   macro = (0.5 + 2/3) / 2
+    ev2 = PhaseEvaluator(num_classes=2, class_names=["a", "b"])
+    ev2.update([0, 1, 1, 1], [0, 0, 1, 1], "v")
+    r2 = ev2.compute()
+    assert abs(r2["phase_per_class_jaccard"]["a"] - 0.5) < 1e-9
+    assert abs(r2["phase_per_class_jaccard"]["b"] - 2 / 3) < 1e-9
+    assert abs(r2["phase_jaccard"] - (0.5 + 2 / 3) / 2) < 1e-9
+    # Jaccard と F1 の関係: J = F1 / (2 - F1)
+    for c in ("a", "b"):
+        f1 = r2["phase_per_class_f1"][c]
+        assert abs(r2["phase_per_class_jaccard"][c] - f1 / (2 - f1)) < 1e-9
+
+    # GT 不在クラスは macro から除外される（macro_f1 と同条件）
+    ev3 = PhaseEvaluator(num_classes=3, class_names=["a", "b", "c"])
+    ev3.update([0, 1], [0, 1], "v")  # クラス c は GT/pred とも不在
+    r3 = ev3.compute()
+    assert r3["phase_jaccard"] == 1.0  # 存在する a,b のみで平均 → 1.0

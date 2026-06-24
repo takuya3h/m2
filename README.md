@@ -213,14 +213,18 @@ DB 駆動で回す。**ID レジストリ `configs/notion.yaml`（非秘密・�
 `NOTION_API_KEY` 未設定なら全 no-op（研究フローを止めない）。詳細 → [`docs/notion_integration.md`](docs/notion_integration.md)。
 
 - **書く（自動記録）**:
-  - 実験Run台帳: `MMDetTrainer.run()` 完了時 + STEP B 後処理（`postprocess_b1`/`train_b2a`/`train_t1a`/`postprocess_t1b`）が
+  - 実験Run台帳: `MMDetTrainer.run()` 完了時 + STEP B 後処理（`postprocess_b1` / `train_b2a` / `train_t1a` / `postprocess_t1b`）が
     `notion_logger.log_experiment_to_notion` で投稿。既存分の一括投稿は `scripts/post_experiments_to_notion.py`（`--dry-run` 可）。
-  - 意思決定/失敗知見/プロンプト: `egosurgery.utils.notion_ops`（`log_decision` / `log_lesson` / `save_prompt`）。
+  - **T1b-CA 専用**: `scripts/post_t1b_ca_to_notion.py`（`injected_result.json` / `control_result.json` を inj/ctrl/純効果に整形して冪等 upsert）。
+  - 意思決定 / 失敗知見 / プロンプト: `egosurgery.utils.notion_ops`（`log_decision` / `log_lesson` / `save_prompt`）。
 - **読む（コンテキスト削減）**: `scripts/notion_context_pack.py --step <S0..S9/B>`（関連 DB 行のみ抽出）+ 「現在の研究状態」を MCP fetch。
   M2研究計画は**該当 § のみ**取得する。
+- **DB 共有状態（2026-06-23 確認）**: REST トークンに **全 5 DB（run_ledger / decision_log / lessons / procedure_docs / prompt_library）が共有済み**。
+  以前 404 だった `decision_log` / `lessons` も REST 経由で `notion_ops.log_decision` / `log_lesson` が正常動作する
+  （メモリ: [[notion-rest-share-gap]] は解消済）。新規 DB を追加した場合は Notion 側で Integration への share が必要。
 - **注（DB id）**: `NOTION_DB_ID` は **database id**（`ef4ccd02…`）。Notion-flavored の `collection://7bcf9406…` は
   data source id で、REST `/databases/{id}/query`（API 2022-06-28）では使えない。投稿が 404 で skip される場合は
-  database id を使っているか確認する。
+  ① database id を使っているか ② Integration に share されているか を確認する。
 - 失敗時も学習を止めない設計（証拠ファイルは書き出し済）。旧 Run台帳ドキュメント → [`docs/notion_run_ledger_auto_post.md`](docs/notion_run_ledger_auto_post.md)。
 
 ### 6. 動作確認（sanity check）
@@ -646,6 +650,62 @@ launcher log: `/tmp/s0_frozen_launcher.log`、seed log: `/tmp/s0_frozen_logs/`�
   要点: 術具56%が手と重なり(能動工程接触率≈0.95)→疑似ラベル生成可、工程自己遷移0.982(時系列が主役)、工程順序遵守0.943、
   effective-number 重み提示、工程のみフレーム1,796。詳細は REPORT.md §18–§27。
 
+### 2026-06-22 STEP B 結合実験一式（比較の三角形・①信号 / ②特徴 / ①予測 系統 完走）
+
+凍結源 = Relation-DETR seed42、共有 trainable は C5 線形 neck のみという「**比較の三角形**」上で、
+検出↔工程の結合を **6 つの機構** で完走した（数値は §3 paired-σ、詳細 → `experiments/analysis/step_c_coupling_analysis/REPORT.md`）。
+
+| 系統 | 手法 | 機構 | 主トレーナ | 検出器 | Δ（対分母, 3-seed 平均）| 判定 |
+|---|---|---|---|---|---:|---|
+| **det→phase ①信号** | **B2a** | tool-presence 15-d 連結 | `scripts/train_b2a.py` | （凍結 GAP）| phase acc **+0.0383** | **有意改善** |
+| **det→phase ①信号** | **T1a** | region-token 15×256 連結 | `scripts/train_t1a.py` | （凍結 GAP+RT）| phase acc **+0.0497** | **強く有意** |
+| **②共有MTL** | **B1 固定 / K&G** | 共有C5 neck・両勾配 | `scripts/train_b1_mtl.py` | `relation_detr_b1_mtl.py` | det 中立 / phase **−0.046〜−0.053** | det 中立・phase **有意劣化** |
+| **phase→det ①信号（学習無）** | **B2b** | training-free 再スコア | `scripts/run_b2b_rescore.py` | （凍結検出器）| mAP α単調 **−0.012〜−0.073** | **単調劣化** |
+| **phase→det ①予測（学習・空間一様）** | **T1b-FiLM** | C5 FiLM 注入・zero-init 恒等 | `scripts/train_t1b.py --inject film` | `relation_detr_phasefilm.py` | mAP 純効果 **+0.0019**（s42/123/456: +0.0031/+0.0022/+0.0002）| 一貫正だが微小 |
+| **phase→det ①予測（学習・query選択）** | **T1b-CA**（§4.6 primary）| decoder cross-attn 注入 | `scripts/train_t1b.py --inject ca` | `relation_detr_phasecrossattn.py` | mAP 純効果 **+0.00178**（s42/123/456: +0.00245/+0.00161/+0.00127）| paired-σ \|mean\|/σ=3.58, **CA≈FiLM** |
+
+**比較の三角形における結論（方向非対称が確定）**:
+1. **結合は向きで符号が決まる**: det→phase 大勝（+3.8〜+5.0pt）／phase→det は中立〜負（CA でも +0.00178 = FiLM 同等）。
+2. **共有 MTL は工程のみ劣化**: 更新頻度 89:1 で検出が支配し弱タスク負転移（PCGrad/容量分離が必須）。
+3. **phase→det は機構非依存で弱い**: 再スコア・FiLM・**クエリ選択可能な CA でも overall 改善せず**（§7.5 撤退ライン確定）。
+
+**新規実装ファイル（STEP B）**:
+
+| ファイル | 役割 |
+|---|---|
+| `src/egosurgery/models/necks/c5_linear_neck.py` | `C5LinearNeck` — 1×1 線形・残差・zero-init（masked-GAP 可換、唯一の共有 trainable）|
+| `third_party/Relation-DETR/models/detectors/relation_detr_c5neck.py` | 検出経路に neck を挿入する `RelationDETRC5Neck` |
+| `third_party/Relation-DETR/models/detectors/relation_detr_b1_mtl.py` | B1 共有 neck + phase head（TeCNO ミラー）+ K&G log σ² |
+| `third_party/Relation-DETR/models/detectors/relation_detr_phasefilm.py` | T1b-FiLM: C5 を phase 事後で一様変調（zero-init 恒等）|
+| `third_party/Relation-DETR/models/detectors/relation_detr_phasecrossattn.py` | T1b-CA: decoder cross-attn に c_phase token を注入（§4.6 primary）|
+| `scripts/extract_b2a_detsignal.py` / `extract_t1a_regiontoken.py` | 凍結検出器から tool-presence (15-d) / region-token (3840-d) をキャッシュ |
+| `scripts/postprocess_b1.py` / `postprocess_t1b.py` | 工程指標の集計・Δ 計算・Notion Run台帳投稿 |
+| `scripts/run_t1b_ca_seeds_lecun.sh` | T1b-CA seed123/456 を lecun 2 GPU で並列実行（MSDeformAttn JIT warmup → measure-only → Wave A/B）|
+
+### 2026-06-23 STEP C 分析（val 本編 + test 確証）
+
+STEP B の **per-phase / per-class 分解**で「どこで・なぜ効くか」を実証し、test split で確証した。
+
+- `experiments/analysis/step_c_coupling_analysis/REPORT.md`（v2, val 本編・27 §）:
+  det→phase の利得が混同工程 **hemostasis（F1 0.353 → 0.713 / 0.800 = +0.36 / +0.45）** に局在することを実証。
+  EDA が予言した「Bipolar signature 98%」と完全一致。FiLM/CA は per-class でも rare∧工程特異術具を標的化しない。
+- `experiments/analysis/step_c_coupling_analysis/TEST_EVAL_REPORT.md`（test 確証）:
+  方向非対称は test でも保たれる。val→test で検出 mAP は約 −0.20 落ちるが（EDA 予言の分布シフト JS=0.133）、
+  **macro-F1 では T1a +0.164（強く有意）と val 以上に鮮明**。test FiLM +0.0028 / CA +0.0030（≈0 を維持）。
+- 実装注記: 初版 `eval_det2phase_test.py` の `npz[key][i]` ループが NpzFile 反復展開で RSS 40GB 超 → OOM。
+  `_index_npz` で一括展開に修正し RSS 0.90GB / 全 split 2.5 秒に是正（前セッションの exit 137 根治）。
+
+### 2026-06-23 Notion 連携 — 全 5 DB 共有完了・STEP B/C を全件反映
+
+REST Integration トークン（`.env` の `NOTION_API_KEY`）に **全 5 DB（run_ledger / decision_log / lessons / procedure_docs / prompt_library）が共有済み**。
+`notion_ops.log_decision` / `log_lesson` も REST で正常に動作する（2026-06-23 確認）。
+
+- **実験Run台帳**: STEP B 17 件 + T1b-CA 6 件 = **計 23 件を Notion へ投稿**（冪等 upsert）。
+  - T1b-CA は `metrics.json` を持たず `injected_result.json` / `control_result.json` 形式のため、
+    専用スクリプト `scripts/post_t1b_ca_to_notion.py`（inj/ctrl/純効果を整形して upsert）を追加。
+- **意思決定ログ / 失敗知見**: 「方向非対称確定」「CA≈FiLM の機構独立性」等を反映。
+- **「現在の研究状態」ページ**: STEP C 完了・方向非対称確定・次アクション（test split per-class rare 標的化）に更新。
+
 ---
 
 ## Claude Code 連携（`.claude/`）
@@ -673,3 +733,7 @@ launcher log: `/tmp/s0_frozen_launcher.log`、seed log: `/tmp/s0_frozen_logs/`�
 - [`docs/idea_log.md`](docs/idea_log.md) — アイデアログ
 - [`docs/decision_log.md`](docs/decision_log.md) — 設計判断の記録
 - [`docs/TODO.md`](docs/TODO.md) — TODO
+- [`docs/notion_integration.md`](docs/notion_integration.md) — Notion 5 DB 連携の仕組み（REST + MCP ハイブリッド）
+- [`docs/secrets_and_tracking.md`](docs/secrets_and_tracking.md) — `.env.gpg` 暗号化運用 + W&B / Notion 認証
+- [`experiments/analysis/step_c_coupling_analysis/REPORT.md`](experiments/analysis/step_c_coupling_analysis/REPORT.md) — STEP C 本編（val・27 §）: 結合機構の解明・実証・最良結合法の設計
+- [`experiments/analysis/step_c_coupling_analysis/TEST_EVAL_REPORT.md`](experiments/analysis/step_c_coupling_analysis/TEST_EVAL_REPORT.md) — STEP C test split 確証: 方向非対称は本番データで保たれるか

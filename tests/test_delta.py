@@ -269,3 +269,99 @@ def test_build_eval_recipe_ddp_fields():
     assert recipe["test_cfg"]["score_thr"] == 1e-8
     assert recipe["split_train_images"] == 9657
     assert recipe["server_name"] == "bengio"
+
+
+# ---------------------------------------------------------------------- #
+# phase 側 recipe 保護（イ-2 / 2026-06-15）
+# ---------------------------------------------------------------------- #
+def _make_phase_recipe(**test_cfg_overrides) -> dict:
+    """task='phase' の eval_recipe を作る（phase_trainer._build_eval_recipe と同形式）。
+
+    test_cfg のキーを override して構成差を作れる。split / DDP は既定で
+    _make_recipe と一致させ、test_cfg の差だけが _recipes_match を動かすようにする。
+    """
+    from egosurgery.utils.eval_recipe import PAPER_SPLIT_SIZES, build_eval_recipe
+
+    test_cfg = {
+        "task": "phase",
+        "backbone": "torchvision_resnet50_frozen_imagenet",
+        "phase_head_dropout": 0.5,
+        "image_size": 224,
+        "use_class_weights": False,
+        "max_weight_ratio": 10.0,
+        "label_smoothing": 0.1,
+    }
+    test_cfg.update(test_cfg_overrides)
+    return build_eval_recipe(
+        test_cfg=test_cfg,
+        split_sizes=PAPER_SPLIT_SIZES,
+        server_name="bengio",
+        gpu_count=1,
+        effective_batch_size=4,
+        lr_scaling="none",
+    )
+
+
+def test_phase_recipe_match_same():
+    """同一 phase recipe 同士は _recipes_match が True。"""
+    from egosurgery.metrics.delta import DeltaCalculator
+
+    recipe = _make_phase_recipe()
+    assert DeltaCalculator._recipes_match(recipe, deepcopy(recipe)) is True
+
+
+def test_phase_recipe_mismatch_param():
+    """phase test_cfg の構成差（image_size）を不一致として検出する【イ-2 の主目的】。
+
+    旧実装は固定の検出キー (score_thr 等) のみ比較したため、phase recipe の
+    差は全キー None 同士で素通りしていた。本テストはその穴が塞がれたことを保証する。
+    """
+    from egosurgery.metrics.delta import DeltaCalculator
+
+    base = _make_phase_recipe()
+    diff = _make_phase_recipe(image_size=336)
+    assert DeltaCalculator._recipes_match(base, diff) is False
+
+
+def test_phase_recipe_mismatch_label_smoothing():
+    """phase の label_smoothing 差も不整合として検出する。"""
+    from egosurgery.metrics.delta import DeltaCalculator
+
+    base = _make_phase_recipe()
+    diff = _make_phase_recipe(label_smoothing=0.0)
+    assert DeltaCalculator._recipes_match(base, diff) is False
+
+
+def test_detection_vs_phase_recipe_mismatch():
+    """検出 recipe と phase recipe（task 不一致）は不一致と判定する。"""
+    from egosurgery.metrics.delta import DeltaCalculator
+
+    det = _make_recipe()
+    phase = _make_phase_recipe()
+    assert DeltaCalculator._recipes_match(det, phase) is False
+
+
+def test_descriptive_note_ignored():
+    """記述用 test_cfg.note の差は recipe 一致判定に影響しない（DESCRIPTIVE_TEST_CFG_KEYS）。
+
+    検出器ごとに異なる note（自由文）で s0 ベンチ比較が誤不一致にならないことを保証する。
+    """
+    from egosurgery.metrics.delta import DeltaCalculator
+
+    base = _make_recipe(**{"test_cfg.note": "Relation-DETR topk (NMS-free)"})
+    diff = _make_recipe(**{"test_cfg.note": "VFNet locked-down NMS"})
+    assert DeltaCalculator._recipes_match(base, diff) is True
+
+
+def test_phase_recipe_protocol_lock():
+    """工程 recipe ロック: online_causal / Jaccard strict の差を不整合として検出する（注249）。"""
+    from egosurgery.metrics.delta import DeltaCalculator
+    from egosurgery.utils.eval_recipe import PHASE_EVAL_PROTOCOL
+
+    base = _make_phase_recipe(**PHASE_EVAL_PROTOCOL)
+    same = _make_phase_recipe(**PHASE_EVAL_PROTOCOL)
+    offline = _make_phase_recipe(**{**PHASE_EVAL_PROTOCOL, "inference_protocol": "offline"})
+    relaxed = _make_phase_recipe(**{**PHASE_EVAL_PROTOCOL, "jaccard_mode": "relaxed"})
+    assert DeltaCalculator._recipes_match(base, same) is True
+    assert DeltaCalculator._recipes_match(base, offline) is False  # offline 混在禁止（§6）
+    assert DeltaCalculator._recipes_match(base, relaxed) is False  # relaxed 混在禁止（§6）

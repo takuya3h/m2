@@ -1,0 +1,17 @@
+experiment:
+  category: transfer
+  step: b1_mtl
+  description: b1_naive_mtl_uncertainty
+seed: 42
+method:
+  name: b1_naive_mtl
+  weighting: uncertainty
+  shared_neck: c5_linear_2048_residual_zeroinit
+  frozen_backbone: relation_detr_resnet50_seed42
+  det_head: relation_detr
+  phase_head: tecno
+  w_det: 1.0
+  w_phase: 1.0
+  step_ratio_R: 89
+  best_epoch: 11
+server_name: lecun
