@@ -99,6 +99,42 @@ nohup 常駐プロセスは「最後のログ行が進んでいるか」「pid �
 
 ---
 
+## 教訓: np.load の NpzFile は遅延ロード — ループ内で `d["key"]` を繰り返すな (2026-06-15)
+
+**症状**: `train_s4_tecno.py` の smoke が出力ゼロで SIGKILL(exit 137)。val(小)は生存、train(大)で死亡。
+**原因**: `{str(fid): d["features"][i] for i, fid in enumerate(d["frame_ids"])}`。`d=np.load(...)` の
+`NpzFile` は **アクセス毎に zip から全配列を再展開**する。9657 回ループ = 79MB×9657 ≈ 760GB の反復読込で OOM kill。
+**修正**: `feats_all = d["features"]` と**一度だけ**取り出してから添字アクセスする。
+**一般則**: `np.load(npz)` の戻り値は dict 風だが遅延 I/O。ループ前に必要 array をローカル変数へ実体化する。
+**切り分けの効いた手**: 段階 print(`flush=True`) を前景で流し「どの行で消えるか」を特定。exit 137 + 出力ゼロ
+は「最初の print 到達前に kill」= import/load 段の重さを疑う。`| grep` 越しだと python の kill が
+パイプ成功で隠れる(PIPESTATUS を見るか直接実行)。
+
+## L: matched(対応のある)差の有意性は base群σ でなく paired-σ で測る（2026-06-20）
+**症状**: 三角形 Δ（S4″−S4）の判定に base 3-seed の σ を流用したら accuracy ΔL2=+0.37 が「有意(改善)」と出た。
+だが per-seed 差は +0.79/−0.33/+0.66pp で **seed123 が負**＝符号混在。対seed差の σ(0.61)は平均(0.37)を上回り、実際はゼロと区別不能。
+**根因**: matched 差の分散は **対応差(paired)の分散**で評価すべき。独立群(base)の σ を代用すると seed 間で相殺する符号反転を見落とし**偽陽性**を出す。
+**ルール**: 三角形 Δ の §10.1 判定は「|平均(対seed差)| > paired1σ **かつ** 全 seed 同符号」。`analyze_phase_coupling.py` に実装。
+**併発教訓(小標本の罠)**: n=2 で「segmental +5〜10pt 予備有意」と見えた解離が n=3 で全消滅（paired σ ≫ 平均）。
+**予備値は必ず「予備・要 n 増」と明示し、n を増やして潰す**。撤回は記録に残す(experiment_log 2026-06-20)＝Fail Loud の実践。
+
+## L: 学習プロセスの生死は nvidia-smi 単発でなくログ進行で判定（2026-06-19）
+`nvidia-smi --query-compute-apps` はクエリ瞬間がカーネル境界だと**稼働中 PID を偽陰性で落とす**ことがある（実際 epoch 6/12 進行中の
+seed456 検出が compute-apps に出ず「ハング?」と誤認しかけた）。**生死の確定信号は学習ログの mtime + iter_time/loss の前進**。
+0.5s/iter 級の cadence が出ていれば GPU 実行（CPU なら数十倍遅い）。単発スナップショットで kill 判断をしない。
+
+## L: 全 Run は Notion「実験Run台帳」へ記録する（手動転記は server pivot で脱落する）（2026-06-20）
+**症状**: lecun の Phase-2 STEP B 21 Run（s0_frozen/s4_phase/b2a/t1a, 06-16〜20）が台帳に1件も無かった。
+台帳は philip/aolab の検出器ズー（〜06-01）で止まっていた。
+**根因**: `ExperimentManager` はローカル証跡(config/command/git_commit/metrics)を自動生成するが、**Notion 台帳への転記は手動**。
+サーバー移行（06-17 lecun）で転記ステップが落ちた。副因: Server select に lecun が無く入れ先が曖昧だった。
+**ルール**: Run 完走→証跡確認の直後に台帳へ記録（`docs/notion_run_ledger_recipe.md` 準拠）。
+新サーバーは `update_data_source` で Server オプションを追加してから記録。数値は metrics.json 逐語、legacy Step に無ければ空。
+**横展**: 「全実験は台帳に記録」(CLAUDE.md/運用ルール)は**自動化されていない手動規約**＝作業フェーズの切れ目で最も落ちやすい。
+区切りごとに「台帳件数 vs ローカル Run 数」を突合する。
+
+---
+
 ## 即実行チェックリスト (各操作前に自問)
 
 - [ ] **報告する数値**: この値を同一ターンで Read/集計したか? 手打ち・記憶でないか?
@@ -108,3 +144,9 @@ nohup 常駐プロセスは「最後のログ行が進んでいるか」「pid �
 - [ ] **ファイル作成/DL後**: ls -la(サイズ) と用途検証(load/compile)を見たか?
 - [ ] **tool call の数**: 5個以内か? 破壊的操作・作成は単独か?
 - [ ] **seed群完走後**: verify_seed_integrity を通したか?
+
+
+## L: shell 経由の `python -c` に Markdown バッククォートを入れない（2026-06-24）
+**症状**: `python3 -c "... add="""... `command` ...""" ..."` の外側を double quote にしたため、Markdown のバッククォート内コマンドが shell の command substitution として解釈され、意図せず評価スクリプトが再実行されかけた。Ctrl-C で停止し、出力 JSON の上書きなしを確認。
+**原因**: shell 引用と Markdown 記法の相互作用を見落とした。`apply_patch` が sandbox 制約で使えない状況で、代替書き込みコマンドの引用安全性を検証せず実行した。
+**ルール**: Markdown を含む追記を `python -c` で行う場合、外側は single quote、Python 内文字列は triple double quote にする。特にバッククォート・`$()`・`$VAR` を含む本文を double quote shell 文字列に入れない。実行前に「shell が本文を展開しない引用か」を確認する。

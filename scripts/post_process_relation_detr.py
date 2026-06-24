@@ -92,9 +92,11 @@ def _avg_excl_nan(vals: list[float]) -> float:
     return round(sum(clean) / len(clean), 6) if clean else 0.0
 
 
-def _build_eval_recipe(seed: int, world_size: int, server_name: str) -> dict:
+def _build_eval_recipe(
+    seed: int, world_size: int, server_name: str, per_process_batch_size: int
+) -> dict:
     return {
-        "effective_batch_size": 2 * world_size,
+        "effective_batch_size": per_process_batch_size * world_size,
         "gpu_count": world_size,
         "lr_scaling": "linear_x2",
         "server_name": server_name,
@@ -131,7 +133,14 @@ def main() -> int:
     p.add_argument("--description", default="relationdetr_bbox")
     p.add_argument("--detector", default="Relation-DETR")
     p.add_argument("--world-size", default=2, type=int)
+    p.add_argument("--per-process-batch-size", default=2, type=int)
     p.add_argument("--server-name", default=os.environ.get("SERVERNAME", "philip"))
+    p.add_argument("--step", default="S0")
+    p.add_argument("--init-note", default=(
+        "Relation-DETR R50 COCO 1x 重み (backbone+transformer)、"
+        "class head は 91->15 で再初期化 (他検出器の COCO fine-tune と同条件)。"
+    ))
+    p.add_argument("--skip-external-loggers", action="store_true")
     args = p.parse_args()
 
     args.exp_dir.mkdir(parents=True, exist_ok=True)
@@ -154,7 +163,9 @@ def main() -> int:
         "val/mAP_75": round(summary.get("mAP_75", 0.0), 6),
         "val/AP_rare": ap_rare,
         "val/AP_common": ap_common,
-        "eval_recipe": _build_eval_recipe(args.seed, args.world_size, args.server_name),
+        "eval_recipe": _build_eval_recipe(
+            args.seed, args.world_size, args.server_name, args.per_process_batch_size
+        ),
     }
     metrics["eval_recipe"]["description"] = args.description
 
@@ -184,8 +195,7 @@ def main() -> int:
         f"AP_common={ap_common:.4f} (best epoch {best_ep})\n\n"
         f"## per-class AP\nCOCO mAP(0.50:0.95)。engine.py 改修で precision 全 IoU 平均を出力。\n"
         f"Retractor 等 val 非存在クラスは NaN (AP_rare/common 平均から除外)。\n\n"
-        f"## 初期化\nRelation-DETR R50 COCO 1x 重み (backbone+transformer)、"
-        f"class head は 91->15 で再初期化 (他検出器の COCO fine-tune と同条件)。\n\n"
+        f"## 初期化\n{args.init_note}\n\n"
         f"## tracking\nTensorBoard (train dir/tf_log)。wandb は未使用。\n",
         encoding="utf-8",
     )
@@ -194,25 +204,28 @@ def main() -> int:
     print(f"  mAP={metrics['val/mAP']:.4f}, AP_rare={ap_rare:.4f}, "
           f"AP_common={ap_common:.4f} (best epoch {best_ep})")
 
-    _load_dotenv(REPO_ROOT / ".env")
-    try:
-        from egosurgery.utils.notion_logger import log_experiment_to_notion
-        resp = log_experiment_to_notion(
-            args.exp_dir, status="completed", step="S0", tier="must"
-        )
-        print(f"[post-process-reldetr] Notion: {'投稿済' if resp else 'スキップ'}")
-    except Exception as exc:  # noqa: BLE001
-        print(f"[post-process-reldetr] Notion 例外 (無視): {exc}")
+    if not args.skip_external_loggers:
+        _load_dotenv(REPO_ROOT / ".env")
+        try:
+            from egosurgery.utils.notion_logger import log_experiment_to_notion
+            resp = log_experiment_to_notion(
+                args.exp_dir, status="completed", step=args.step, tier="must"
+            )
+            print(f"[post-process-reldetr] Notion: {'投稿済' if resp else 'スキップ'}")
+        except Exception as exc:  # noqa: BLE001
+            print(f"[post-process-reldetr] Notion 例外 (無視): {exc}")
 
-    try:
-        subprocess.run(
-            [sys.executable, str(REPO_ROOT / "scripts" / "notify_experiment.py"),
-             "--mode", "seed", "--dirs", str(args.exp_dir),
-             "--detector", args.detector],
-            timeout=60, check=False,
-        )
-    except Exception as exc:  # noqa: BLE001
-        print(f"[post-process-reldetr] Slack 例外 (無視): {exc}")
+        try:
+            subprocess.run(
+                [sys.executable, str(REPO_ROOT / "scripts" / "notify_experiment.py"),
+                 "--mode", "seed", "--dirs", str(args.exp_dir),
+                 "--detector", args.detector],
+                timeout=60, check=False,
+            )
+        except Exception as exc:  # noqa: BLE001
+            print(f"[post-process-reldetr] Slack 例外 (無視): {exc}")
+    else:
+        print("[post-process-reldetr] external loggers skipped")
 
     return 0
 

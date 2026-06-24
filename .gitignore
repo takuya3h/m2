@@ -70,8 +70,15 @@ venv/
 # === Jupyter ===
 .ipynb_checkpoints/
 
-# === 環境変数 ===
+# === 環境変数・秘密情報 ===
+# 注意: gitignore は行末コメント非対応（# は行頭のみ）。パターンは単独行で書く。
+# 平文の秘密(.env / .env.local 等)は commit 禁止。暗号文 .env.gpg とテンプレ .env.example のみ許可。
 .env
+.env.*
+!.env.example
+!.env.gpg
+*passphrase*
+*.key
 
 # === LaTeX ===
 paper/*.aux

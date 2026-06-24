@@ -1,0 +1,58 @@
+{
+  "eval_recipe_detection": {
+    "effective_batch_size": 2,
+    "gpu_count": 1,
+    "lr_scaling": "none",
+    "server_name": "lecun",
+    "split_test_annotations": 12673,
+    "split_test_images": 4265,
+    "split_train_annotations": 32272,
+    "split_train_images": 9657,
+    "split_val_annotations": 4707,
+    "split_val_images": 1515,
+    "test_cfg": {
+      "backbone": "relation_detr_resnet50_frozen_seed42",
+      "coupling": "b1_naive_mtl",
+      "max_per_img": 300,
+      "neck": "c5_linear_shared",
+      "nms_iou": null,
+      "nms_pre": null,
+      "score_thr": 0.0
+    }
+  },
+  "eval_recipe_phase": {
+    "effective_batch_size": 1,
+    "gpu_count": 1,
+    "lr_scaling": "none",
+    "server_name": "lecun",
+    "split_test_annotations": 12673,
+    "split_test_images": 4265,
+    "split_train_annotations": 32272,
+    "split_train_images": 9657,
+    "split_val_annotations": 4707,
+    "split_val_images": 1515,
+    "test_cfg": {
+      "backbone": "relation_detr_resnet50_frozen_seed42",
+      "coupling": "b1_naive_mtl",
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "neck": "c5_linear_shared",
+      "num_f_maps": 64,
+      "num_layers": 8,
+      "num_stages": 2,
+      "task": "phase",
+      "temporal_head": "tecno"
+    }
+  },
+  "mAP": 0.7138095047934876,
+  "phase_accuracy": 0.838943894389439,
+  "phase_edit_score": 31.849747474747478,
+  "phase_frame_acc_inline": 0.838943894389439,
+  "phase_jaccard": 0.5432627069720012,
+  "phase_macro_f1": 0.6168919154911966,
+  "phase_seg_f1_10": 0.3409356725146198,
+  "phase_seg_f1_25": 0.31535087719298244,
+  "phase_seg_f1_50": 0.2802631578947368,
+  "sigma2_d": 15.54832935333252,
+  "sigma2_p": 0.8802274465560913
+}
