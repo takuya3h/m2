@@ -67,3 +67,17 @@ notion_ops.save_prompt("S0 DDP runbook prompt", prompt_file="file://.../prompt.m
 - MCP 接続は対話セッション限定（cron/headless では不在のことがある）→ 自動記録は **REST 一択**。
 - DB の select 値は schema に存在するもの。新値（例 Step="B"）を POST すると Notion が option を自動作成する。
 - `.env`・トークンは **コード/コミットに含めない**。`configs/notion.yaml` は ID のみ。
+
+## 全面自動化（auto_logging）
+
+2026-06-26 から `ResearchLogger` ファサード + 取りこぼし防止スイープ + Claude Code フックで
+**研究記録の全面自動化**が稼働。詳細 → [`docs/auto_logging.md`](auto_logging.md)。
+
+主要要素:
+- **ライブラリ**: `src/egosurgery/utils/{research_logger,run_logging,idempotency,notes_schema}.py`
+- **スイープ**: `scripts/sync_experiments_to_notion.py`（`--dry-run` 既定で安全・冪等）
+- **マスター昇格ドラフタ**: `scripts/draft_master_update.py`（人間レビュー後マージ）
+- **Claude Code 連携**: `.claude/hooks/auto_notion_sync.py` + `/log` / `/promote-to-master`
+- **notes.md スキーマ**: `​```decision` / `​```lesson` / `​```prompt` fenced block を sweep が拾って投稿
+
+設計鉄則: REST 経由・fail-open・冪等（`.notion_sync.json` マーカー）・本文は人間が書く（捏造防止）。

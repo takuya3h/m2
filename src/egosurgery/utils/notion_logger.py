@@ -102,7 +102,13 @@ def _log_impl(
         or _read_text(exp_dir / "server.txt").strip()
         or "unknown"
     )
-    server_option = os.environ.get("NOTION_SERVER_OPTION", "").strip() or None
+    # Server select 列の値。NOTION_SERVER_OPTION が未設定なら server_name を fallback
+    # （以前は None で空欄になる挙動だったが、別マシン移行時の不一致を防ぐため
+    # server.txt 由来の事実値を確実に記録する。2026-06-26 修正）
+    server_option = (
+        os.environ.get("NOTION_SERVER_OPTION", "").strip()
+        or (server_name if server_name and server_name != "unknown" else None)
+    )
 
     result_text = _format_result(metrics, extra_result_text)
     eval_recipe_text = _format_eval_recipe(eval_recipe)

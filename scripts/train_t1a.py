@@ -25,6 +25,7 @@ B2a（①, 15-d tool-presence スカラ）と違い、T1a は同じ 15 器具ク
   .venv/bin/python scripts/train_t1a.py --smoke           # 数 epoch・少 clip で疎通確認（証跡なし）
   .venv/bin/python scripts/train_t1a.py --region-only      # 連結せず region のみ（replace 版・別解）
 """
+
 from __future__ import annotations
 
 import argparse
@@ -61,7 +62,9 @@ GAP_DIM = 2048
 REGION_DIM = 15 * 256  # 3840
 
 
-def load_clips(split: str, region_only: bool) -> list[tuple[str, np.ndarray, np.ndarray]]:
+def load_clips(
+    split: str, region_only: bool
+) -> list[tuple[str, np.ndarray, np.ndarray]]:
     """(clip_id, feats, labels) を返す。feats = region(3840) or [GAP2048 ⊕ region3840](5888)。
 
     GAP・region いずれも frame_id でキー化して clip フレーム順に整列・連結する。
@@ -89,7 +92,9 @@ def load_clips(split: str, region_only: bool) -> list[tuple[str, np.ndarray, np.
             else:
                 if fid not in gap_by_frame:
                     raise KeyError(f"[t1a] GAP 特徴に frame_id 欠落: {fid} ({split})")
-                rows.append(np.concatenate([gap_by_frame[fid], reg_by_frame[fid]]))  # 2048+3840
+                rows.append(
+                    np.concatenate([gap_by_frame[fid], reg_by_frame[fid]])
+                )  # 2048+3840
         feats = np.stack(rows).astype(np.float32)
         labels = np.asarray([fr["label"] for fr in frames], dtype=np.int64)
         clips.append((clip["clip_id"], feats, labels))
@@ -120,26 +125,55 @@ DESC = "t1a_regiontoken"
 
 def _build_cfg(args, server_name: str, in_dim: int, n_train: int, n_val: int) -> dict:
     return {
-        "experiment": {"category": "transfer", "step": "t1a_regiontoken", "description": DESC},
+        "experiment": {
+            "category": "transfer",
+            "step": args.description,
+            "description": args.description,
+        },
         "seed": args.seed,
-        "frozen_source": {"detector": "relation_detr", "seed": 42, "backbone": "resnet50",
-                          "gap_cache": str(GAP_DIR.relative_to(PROJ)),
-                          "region_cache": str(REGION_DIR.relative_to(PROJ))},
-        "method": {"name": "t1a_region_to_phase", "system": "②feature_level/object-token",
-                   "ref": "TAPIS/GraSP (MedIA 2025)", "direction": "det->phase",
-                   "coupling": ("regiontoken_only" if args.region_only else "regiontoken_concat_gap"),
-                   "region_repr": "per_class_256d_score_weighted", "region_dim": REGION_DIM,
-                   "neck": None, "grad_crossing": False},
-        "model": {"temporal_head": "tecno", "num_stages": args.num_stages,
-                  "num_layers": args.num_layers, "num_f_maps": args.num_f_maps,
-                  "in_dim": in_dim, "num_phases": len(CLASS_NAMES), "causal": True},
-        "train": {"epochs": args.epochs, "lr": args.lr, "weight_decay": args.weight_decay,
-                  "freeze_backbone": True, "smoothing_weight": 0.15},
+        "frozen_source": {
+            "detector": "relation_detr",
+            "seed": 42,
+            "backbone": "resnet50",
+            "gap_cache": str(GAP_DIR.relative_to(PROJ)),
+            "region_cache": str(REGION_DIR.relative_to(PROJ)),
+        },
+        "method": {
+            "name": "t1a_region_to_phase",
+            "system": "②feature_level/object-token",
+            "ref": "TAPIS/GraSP (MedIA 2025)",
+            "direction": "det->phase",
+            "coupling": (
+                "regiontoken_only" if args.region_only else "regiontoken_concat_gap"
+            ),
+            "region_repr": "per_class_256d_score_weighted",
+            "region_dim": REGION_DIM,
+            "neck": None,
+            "grad_crossing": False,
+        },
+        "model": {
+            "temporal_head": "tecno",
+            "num_stages": args.num_stages,
+            "num_layers": args.num_layers,
+            "num_f_maps": args.num_f_maps,
+            "in_dim": in_dim,
+            "num_phases": len(CLASS_NAMES),
+            "causal": True,
+        },
+        "train": {
+            "epochs": args.epochs,
+            "lr": args.lr,
+            "weight_decay": args.weight_decay,
+            "freeze_backbone": True,
+            "smoothing_weight": 0.15,
+        },
         "data": {"n_train_clips": n_train, "n_val_clips": n_val},
-        "delta": {"phase_denominator": "s4_phase_baseline (frozen_tecno_phase_baseline)",
-                  "denominator_value_lecun": "0.8986±0.0034",
-                  "note": "Δ_phase = (T1a − S4 base). 別サーバー実行時は lecun 分母を流用し "
-                          "サーバー差を §8.0 明文化（同一 ckpt・同一前処理ゆえ差は TeCNO 学習数値のみ）。"},
+        "delta": {
+            "phase_denominator": "s4_phase_baseline (frozen_tecno_phase_baseline)",
+            "denominator_value_lecun": "0.8986±0.0034",
+            "note": "Δ_phase = (T1a − S4 base). 別サーバー実行時は lecun 分母を流用し "
+            "サーバー差を §8.0 明文化（同一 ckpt・同一前処理ゆえ差は TeCNO 学習数値のみ）。",
+        },
         "server_name": server_name,
     }
 
@@ -154,16 +188,24 @@ def _build_phase_recipe(args, server_name: str, in_dim: int) -> dict:
         "num_layers": args.num_layers,
         "num_f_maps": args.num_f_maps,
         "in_dim": in_dim,
-        "coupling": ("t1a_regiontoken_only" if args.region_only else "t1a_regiontoken_concat_gap"),
+        "coupling": (
+            "t1a_regiontoken_only" if args.region_only else "t1a_regiontoken_concat_gap"
+        ),
         "region_dim": REGION_DIM,
     }
     return build_eval_recipe(
-        test_cfg=test_cfg, split_sizes=PAPER_SPLIT_SIZES, server_name=server_name,
-        gpu_count=1, effective_batch_size=1, lr_scaling="none",
+        test_cfg=test_cfg,
+        split_sizes=PAPER_SPLIT_SIZES,
+        server_name=server_name,
+        gpu_count=1,
+        effective_batch_size=1,
+        lr_scaling="none",
     )
 
 
-def _write_notes(exp_dir: Path, args, best: dict, server_name: str, in_dim: int) -> None:
+def _write_notes(
+    exp_dir: Path, args, best: dict, server_name: str, in_dim: int
+) -> None:
     note = (
         f"# T1a region-token→工程（Tier-1 主力⭐ TAPIS/GraSP 型・②系統）\n\n"
         f"凍結 Relation-DETR seed42 の object-query 埋め込み（クラス別 256-d, score 加重）を "
@@ -195,30 +237,54 @@ def train(args) -> dict:
     val_clips = load_clips("val", args.region_only)
     if args.smoke:
         train_clips, val_clips = train_clips[:3], val_clips[:2]
-    print(f"[t1a] train clips={len(train_clips)}  val clips={len(val_clips)}  "
-          f"in_dim={in_dim}  region_only={args.region_only}  classes={len(CLASS_NAMES)}  device={device}")
+    print(
+        f"[t1a] train clips={len(train_clips)}  val clips={len(val_clips)}  "
+        f"in_dim={in_dim}  region_only={args.region_only}  classes={len(CLASS_NAMES)}  device={device}"
+    )
 
     server_name = resolve_server_name(None)
     manager = exp_dir = None
     if not args.smoke and not args.no_evidence:
         manager = ExperimentManager(
-            base_dir=str(PROJ / "experiments"), category="transfer",
-            step="t1a_regiontoken", description=DESC, seed=args.seed,
+            base_dir=str(PROJ / "experiments"),
+            category="transfer",
+            step=args.description,
+            description=args.description,
+            seed=args.seed,
         )
-        manager.setup(_build_cfg(args, server_name, in_dim, len(train_clips), len(val_clips)))
+        manager.setup(
+            _build_cfg(args, server_name, in_dim, len(train_clips), len(val_clips))
+        )
         exp_dir = manager.exp_dir
         print(f"[t1a] evidence dir: {exp_dir}")
 
-    model = TeCNO(num_stages=args.num_stages, num_layers=args.num_layers,
-                  num_f_maps=args.num_f_maps, in_dim=in_dim,
-                  num_classes=len(CLASS_NAMES)).to(device)
-    opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+    model = TeCNO(
+        num_stages=args.num_stages,
+        num_layers=args.num_layers,
+        num_f_maps=args.num_f_maps,
+        in_dim=in_dim,
+        num_classes=len(CLASS_NAMES),
+    ).to(device)
+    opt = torch.optim.AdamW(
+        model.parameters(), lr=args.lr, weight_decay=args.weight_decay
+    )
     ce = nn.CrossEntropyLoss()
 
     from egosurgery.utils import tracking  # W&B 追跡（無認証なら no-op）
-    tracking.init(f"t1a_regiontoken_seed{args.seed}", group="B", job_type="t1a",
-                  config={"seed": args.seed, "lr": args.lr, "epochs": args.epochs, "in_dim": in_dim,
-                          "region_only": args.region_only, "method": "t1a_region_to_phase"})
+
+    tracking.init(
+        f"{args.description}_seed{args.seed}",
+        group="B",
+        job_type="t1a",
+        config={
+            "seed": args.seed,
+            "lr": args.lr,
+            "epochs": args.epochs,
+            "in_dim": in_dim,
+            "region_only": args.region_only,
+            "method": "t1a_region_to_phase",
+        },
+    )
 
     best = {"phase_accuracy": -1.0}
     for epoch in range(args.epochs):
@@ -235,20 +301,32 @@ def train(args) -> dict:
             opt.step()
             ep_loss += float(loss)
         val = evaluate(model, val_clips, device)
-        print(f"[t1a][epoch {epoch + 1}/{args.epochs}] loss={ep_loss / max(len(train_clips),1):.4f}  "
-              f"val_acc={val['phase_accuracy']:.4f}  macroF1={val['phase_macro_f1']:.4f}  "
-              f"edit={val['phase_edit_score']:.2f}  segF1@50={val['phase_seg_f1_50']:.2f}")
-        tracking.log({"train/loss": ep_loss / max(len(train_clips), 1),
-                      "val/phase_accuracy": val["phase_accuracy"], "val/macro_f1": val["phase_macro_f1"],
-                      "val/jaccard": val["phase_jaccard"], "val/seg_f1_50": val["phase_seg_f1_50"]},
-                     step=epoch)
+        print(
+            f"[t1a][epoch {epoch + 1}/{args.epochs}] loss={ep_loss / max(len(train_clips),1):.4f}  "
+            f"val_acc={val['phase_accuracy']:.4f}  macroF1={val['phase_macro_f1']:.4f}  "
+            f"edit={val['phase_edit_score']:.2f}  segF1@50={val['phase_seg_f1_50']:.2f}"
+        )
+        tracking.log(
+            {
+                "train/loss": ep_loss / max(len(train_clips), 1),
+                "val/phase_accuracy": val["phase_accuracy"],
+                "val/macro_f1": val["phase_macro_f1"],
+                "val/jaccard": val["phase_jaccard"],
+                "val/seg_f1_50": val["phase_seg_f1_50"],
+            },
+            step=epoch,
+        )
         if val["phase_accuracy"] > best["phase_accuracy"]:
             best = {**val, "epoch": epoch + 1}
             if exp_dir is not None:
-                torch.save({"tecno": model.state_dict(), "epoch": epoch + 1, "val": val},
-                           exp_dir / "checkpoints" / "best_tecno.pth")
-    print(f"[t1a] best @epoch {best.get('epoch')}: acc={best['phase_accuracy']:.4f} "
-          f"macroF1={best['phase_macro_f1']:.4f}")
+                torch.save(
+                    {"tecno": model.state_dict(), "epoch": epoch + 1, "val": val},
+                    exp_dir / "checkpoints" / "best_tecno.pth",
+                )
+    print(
+        f"[t1a] best @epoch {best.get('epoch')}: acc={best['phase_accuracy']:.4f} "
+        f"macroF1={best['phase_macro_f1']:.4f}"
+    )
 
     if manager is not None:
         per_class = best.get("phase_per_class_f1", {})
@@ -258,19 +336,25 @@ def train(args) -> dict:
         manager.log_per_class_ap(per_class)
         _write_notes(exp_dir, args, best, server_name, in_dim)
         print(f"[t1a] evidence written -> {exp_dir}")
-        # Notion 実験Run台帳へ自動投稿（NOTION_API_KEY/NOTION_DB_ID 未設定なら no-op）。
-        from egosurgery.utils.notion_logger import log_experiment_to_notion
-        log_experiment_to_notion(
-            exp_dir, status="completed", step="B", tier="must",
+        # Notion 実験Run台帳へ自動投稿（ResearchLogger ファサード経由・冪等・fail-open）。
+        # 2026-06-26: 直接呼び出しを ResearchLogger に統一して二重化を解消。
+        from egosurgery.utils.research_logger import ResearchLogger
+
+        ResearchLogger(cfg=None, manager=manager).log_run(
+            status="completed",
+            step="B",
+            tier="must",
             primary_metric="phase acc/macro-F1/jaccard/edit/seg-F1 (online_causal)",
-            extra_result_text="②object-token det→phase。Δ_phase vs S4 base 0.8986（within-server）")
+            extra_result_text="②object-token det→phase。Δ_phase vs S4 base 0.8986（within-server）",
+        )
     tracking.finish()
     return best
 
 
 def parse_args():
     p = argparse.ArgumentParser(
-        description="T1a region-token→phase coupling (frozen object-query embeddings ⊕ GAP → causal TeCNO).")
+        description="T1a region-token→phase coupling (frozen object-query embeddings ⊕ GAP → causal TeCNO)."
+    )
     p.add_argument("--epochs", type=int, default=50)
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--lr", type=float, default=5e-4)
@@ -278,10 +362,24 @@ def parse_args():
     p.add_argument("--num-stages", type=int, default=2)
     p.add_argument("--num-layers", type=int, default=8)
     p.add_argument("--num-f-maps", type=int, default=64)
-    p.add_argument("--region-only", action="store_true",
-                   help="GAP と連結せず region token のみを入力（replace 版・別解）")
-    p.add_argument("--smoke", action="store_true", help="数 epoch・少 clip で疎通確認（証跡なし）")
-    p.add_argument("--no-evidence", action="store_true", help="証跡を残さない（配線検証用）")
+    p.add_argument(
+        "--region-only",
+        action="store_true",
+        help="GAP と連結せず region token のみを入力（replace 版・別解）",
+    )
+    p.add_argument(
+        "--smoke", action="store_true", help="数 epoch・少 clip で疎通確認（証跡なし）"
+    )
+    p.add_argument(
+        "--no-evidence", action="store_true", help="証跡を残さない（配線検証用）"
+    )
+    p.add_argument(
+        "--description",
+        type=str,
+        default=DESC,
+        help="ExperimentManager の step/description に使う識別子。T1a-Deep など派生実験を"
+        "別 step に分けるために上書き可（既定: t1a_regiontoken）",
+    )
     return p.parse_args()
 
 

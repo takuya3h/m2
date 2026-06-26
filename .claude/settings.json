@@ -38,6 +38,25 @@
             "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/lint_changed.py\""
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/auto_notion_sync.py\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/auto_notion_sync.py\""
+          }
+        ]
       }
     ]
   }
