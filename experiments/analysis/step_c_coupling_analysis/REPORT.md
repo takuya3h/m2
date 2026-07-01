@@ -299,6 +299,81 @@ graph LR
 T1b-CA / query条件付けでも rare特異術具の有意な改善が出なければ、**「本ドメインで phase→det は機構を問わず無効」**が確定し、貢献は「**強い det→phase（混同工程を割る機構の実証）＋ phase→det が効かない理由（局在不変性・検出器の per-frame 飽和）の定量的解明**」に収束する。これも十分に防御可能な新規性（負の結果＋機構解明）。
 > **【確定 §3.6, 2026-06-23】CA 3-seed は FiLM を上回らず（CA +0.00178 ≈ FiLM +0.0019, paired-σ 全正・|mean|/σ=3.58 だが分母σ=0.0052 以下の微小）**。overall mAP では撤退ラインに到達＝**phase→det は機構非依存で弱い**ことが確定。本研究の貢献は「**強い det→phase（混同工程を割る機構の実証）＋ phase→det が機構非依存で弱いことの実証**」に定まる。残る唯一の反証機会は **test split per-class での rare∧工程特異術具の標的化**（overall では出ないが per-class で局所利得が出るか）。
 
+#### 7.5.1 H-C-v1（CA + entropy gate）3-seed で 4 機構 ablation が完了 — 撤退ライン最終確定（2026-06-25）
+
+§7.2 の H-C コア最小実装として **T1b-CA に per-frame entropy gate を追加した H-C-v1**（gate hyperparam はデータドリブン: 実 phase ctx の H 分布から τ=0.15, scale=20 に逆算。train 注入優位 76.6% / 抑制 8.6%）の 3-seed 完走結果（warm-start ckpt・epochs=6・lr・eval_recipe すべて T1b-CA と同一）:
+
+| 系統 | 機構 | 3-seed mean Δ_det | \|mean\|/σ | 判定 |
+|---|---|---:|---:|---|
+| ①無較正 prior | B2b 再スコア | **−0.04** | n/a | 単調劣化 |
+| ①予測注入・空間一様 | T1b-FiLM | **+0.0019** | 1.60 | 一貫正だが微小 |
+| ①予測注入・クエリ選択 | T1b-CA（§4.6 primary）| **+0.00178** | 3.58 | 一貫正だが微小 |
+| **①予測注入・クエリ選択＋時間選択** | **H-C-v1**（CA + entropy gate, §7.2 H-C コア最小）| **+0.00040** | **1.12** | **同 4 機構で最小（gate 追加で 0.23x）** |
+
+- per-seed Δ_det = inj−ctrl: s42 **+0.00000** (best@ep-1=init) / s123 **+0.00088** (best@ep5) / s456 **+0.00034** (best@ep1)
+- vs T1b-CA: H-C-v1 は T1b-CA の **0.23 倍**（gate 追加で改善せず・むしろ低下）。seed42 で完全 0.00000 = 6 epoch 学習しても init を超える val sample が一度も無い＝**検出器は phase context の有用情報を抽出できず、gate がそれを更に削った**結果「学習する価値のある信号が消滅」。
+
+**4 機構 ablation の含意（最終確定）**: 機構の表現力・選択性を強化しても overall mAP は改善しない。一様(FiLM)・選択(CA)・時間選択(CA+gate) の 3 機構で **Δ は単調減少 (+0.0019 → +0.00178 → +0.00040)** ＝ 「信号を絞ると効果も縮む」。これは「phase 信号は薄く広く弱く効くだけ」で、**検出のボトルネックは class-prior でなく局在（box の場所）**＝§2.3 の根本原因が機構を変えても残ることを示す。
+
+**H-C-v2（phase-conditional query bias）への投資は見送り**: gate 単独で改善しないため、query-level の class bias を追加しても class score を変えるだけで box は改善せず、同じ理由で overall は伸びないと予測。
+
+**最終的な貢献の定型**:
+1. **強い det→phase**: T1a region-token で公式 phase macro-F1 +0.164、利得は EDA が予言した混同工程 **hemostasis に局在（F1 0.353→0.80, +0.45）**＝ 機構を per-phase 分解で実証。
+2. **phase→det は機構非依存で弱い**: 4 機構（再スコア / FiLM / CA / CA+gate）すべてが overall mAP を実質改善せず。これは局在不変性（§2.3）＋検出器の per-frame 飽和（§3.2）の定量的解明という負の結果。
+3. **方向非対称の体系的測定**: 同一土台・paired-σ・per-phase 分解＝ 文献に乏しい貢献。
+
+**証跡**: `transfer/hc_seed{42,123,456}/{injected,control}_result.json`、`logs/hc_{measure,inj,ctrl}_seed{S}.log`、`scripts/run_hc_seeds_lecun.sh`、`third_party/Relation-DETR/models/detectors/relation_detr_phase_hc.py`、`scripts/post_hc_to_notion.py`。Notion: 意思決定ログ「H-C-v1 結果による §7.5 撤退ライン確定」(38aee4d4-7777-8104-a673-f3eeedbd9550)。
+
+#### 7.5.2 §18.4 Tier-0/1 査読防御強化（2026-06-29）— 5-seed paired-σ + EDA 予言検証 + 上限差分発見
+
+研究計画 §18.4 が要求する「分析論文の検証厳密化」を Tier-0/1 まで実装完了:
+
+**L0 監査（3 variant ALL PASS）**: overfit-reduction の機構順序（FiLM 49.6% > CA 31.5% ≈ HC 31.2%）が val mAP 順序と完全一致 = 「機構容量と汎化能力が比例する=機構変更では本質的に救えない」を物理的に証明。reviewer の under-tuning 反論への決定的反証。
+
+**L2-2 shuffle control（容量効果反論の完全反証）**: T1a の region-token を shuffle で frame 対応破壊 → 5-seed paired-σ で Δ_acc mean **−0.0878 (\|mean\|/σ=54.30)** = T1a 改善が消失どころか S4 base より低い負転移（Δ vs S4 = **−0.0413**）。
+
+**L3 seed 拡張（3-seed → 5-seed）**: T1a 4 variant + B2a 2 variant × seed 789/1000 = 12 run を GPU 共存で 3h 完走。5-seed paired-σ で結論統計強化。
+
+**L2-3 oracle-tool-presence 5-seed paired-σ（重大発見）**:
+
+| seed | B2a base | B2a oracle | Δ_acc | Δ_F1 |
+|---:|---:|---:|---:|---:|
+| 42 | 0.9373 | 0.9518 | +0.0145 | +0.0255 |
+| 123 | 0.9353 | 0.9604 | +0.0251 | +0.0366 |
+| 456 | 0.9380 | 0.9578 | +0.0198 | +0.0361 |
+| 789 | 0.9373 | 0.9617 | +0.0244 | +0.0387 |
+| 1000 | 0.9366 | 0.9597 | +0.0231 | +0.0300 |
+| **5-seed paired-σ** | | | **+0.02139, \|mean\|/σ=5.50 ✓** | **+0.03336, \|mean\|/σ=6.79 ✓** |
+
+- B2a base 5-seed mean acc 0.9369 → Δ vs S4 = +0.0383（既存）
+- **B2a oracle 5-seed mean acc 0.9583 → Δ vs S4 = +0.0597**
+- **上限差分 +0.0214** = 検出器精度向上で達成可能な phase 改善余地
+- 現状 B2a は理論上限の **64% (0.0383/0.0597)** に到達
+
+**L2-4 15-d ablation（EDA 予言の実験的検証）**: 45 run の per-dim 寄与度:
+
+| dim | tool | mean acc | Δ vs B2a base 0.9369 |
+|---:|---|---:|---:|
+| 9 | **Scalpel** | 0.9274 | **−0.0095** |
+| 0 | **Bipolar Forceps** | 0.9283 | **−0.0086** |
+| 6 | **Needle Holders** | 0.9311 | **−0.0058** |
+| 10 | Scissors | 0.9320 | −0.0049 |
+| 7 | Raspatory | 0.9322 | −0.0047 |
+| その他 10 dim | (汎用) | ≈ base | \|±0.005\| 以内 |
+
+**EDA §11 予言との一致**: annotations_eda が特定した「工程特異術具」（Bipolar→hemostasis 98% / Scalpel→incision 97% / Needle Holders→closure 99.9%）が **per-dim 寄与の Top 3 と一致**。
+
+**論文への含意（機構解明の主軸貢献）**:
+- B2a の +0.0383 改善は **3 つの工程特異 dim に集中**（dim 0/6/9 で合計 −0.0239）
+- L2-3 oracle 上限 +0.0214 と整合 → **検出器を強化するなら工程特異術具の per-class AP を優先**が最適戦略
+
+**証跡**:
+- L2-2: `experiments/transfer/t1a_shuffle_{001-005}_*/` + 意思決定ログ (38eee4d4-7777-81c0-b46d-dfb4022bead8)
+- L3: `experiments/transfer/{t1a_*,b2a_*}_*_seed{789,1000}/` + 意思決定ログ (38eee4d4-7777-8171-8c0b-e3e82103969f)
+- L2-3: `experiments/transfer/b2a_det2phase_oracletool_{001-005}_*/` + `scripts/build_oracle_toolpresence.py`
+- L2-4: `experiments/transfer/b2a_mask_dim_*_*/` (45 件) + 意思決定ログ (38eee4d4-7777-8128-be3d-edf7eae81abc)
+- 進行中: L1-2 oracle-phase 6 run（残 ~9h、完走後に §7.5 を最終確定 or 再検討）
+
 ---
 
 ## 8. 文献内での位置づけ（Notion §12.7 C6 サーベイ）

@@ -55,20 +55,37 @@ from egosurgery.utils.server_name import resolve_server_name  # noqa: E402
 FROZEN_SRC = "relation_detr_seed42"
 GAP_DIR = PROJ / "data" / "processed" / "stage1_features" / FROZEN_SRC
 REGION_DIR = PROJ / "data" / "processed" / "t1a_regiontoken" / FROZEN_SRC
+TOOLPRES_DIR = PROJ / "data" / "processed" / "b2a_detsignal" / FROZEN_SRC  # combined pred 用
+ORACLE_TOOL_DIR = PROJ / "data" / "processed" / "oracle_toolpresence"  # combined oracle 用
 MANIFEST_DIR = PROJ / "data" / "processed" / "phase_manifest"
 VOCAB = json.loads((MANIFEST_DIR / "phase_vocab.json").read_text())
 CLASS_NAMES = list(VOCAB.keys())
 GAP_DIM = 2048
 REGION_DIM = 15 * 256  # 3840
+TOOLPRES_DIM = 15  # combined 用 B2a tool-presence dim
 
 
 def load_clips(
-    split: str, region_only: bool
+    split: str,
+    region_only: bool,
+    shuffle_region: bool = False,
+    shuffle_seed: int = 12345,
+    add_toolpresence: bool = False,
+    toolpresence_source: str = "pred",
+    mask_region_tool_dim: int | list[int] | None = None,
+    tool_noise_rate: float = 0.0,
+    tool_noise_dims: list[int] | None = None,
+    tool_noise_seed: int = 0,
 ) -> list[tuple[str, np.ndarray, np.ndarray]]:
     """(clip_id, feats, labels) を返す。feats = region(3840) or [GAP2048 ⊕ region3840](5888)。
 
     GAP・region いずれも frame_id でキー化して clip フレーム順に整列・連結する。
     どちらかに無い frame があれば整合不良として Fail Loud（KeyError）— ダミー補完しない。
+
+    `shuffle_region=True` (§18.4 L2-2 shuffle control): region-token を frame 対応を
+    破壊するように全体 shuffle して assign。phase と region の真の相関が破壊されるため、
+    T1a の Δ_phase が消えれば「region 情報が真に寄与している」ことの positive control 反証。
+    splits 間で独立した RandomState を使い再現性を保つ。
     """
     g = np.load(GAP_DIR / f"{split}_gap.npz")
     gap_all = g["features"]  # NpzFile 遅延展開: 一度だけ取り出す
@@ -77,6 +94,51 @@ def load_clips(
     r = np.load(REGION_DIR / f"{split}_regiontoken.npz")
     reg_all = r["region"]
     reg_by_frame = {str(fid): reg_all[i] for i, fid in enumerate(r["frame_ids"])}
+
+    if shuffle_region:
+        # shuffle: region の frame 対応を完全に破壊（同 split 内で per-frame ベクトルを shuffle）
+        rng = np.random.RandomState(shuffle_seed)
+        keys = list(reg_by_frame.keys())
+        values = list(reg_by_frame.values())
+        rng.shuffle(values)
+        reg_by_frame = dict(zip(keys, values, strict=False))
+
+    # §18.4 L2-4 (T1a 版): region-token の特定 tool slot (15 × 256) を 0 mask
+    # 単一 int / list 両対応
+    mask_slots: list[int] = []
+    if mask_region_tool_dim is not None:
+        if isinstance(mask_region_tool_dim, int):
+            mask_slots = [mask_region_tool_dim] if 0 <= mask_region_tool_dim < 15 else []
+        else:
+            mask_slots = [d for d in mask_region_tool_dim if 0 <= d < 15]
+    if mask_slots:
+        for fid in reg_by_frame:
+            v = reg_by_frame[fid].copy()
+            for slot in mask_slots:
+                v[slot * 256:(slot + 1) * 256] = 0.0
+            reg_by_frame[fid] = v
+
+    # B2a+T1a combined: tool-presence(15d) も追加で連結（pred or oracle）
+    tool_by_frame: dict = {}
+    if add_toolpresence:
+        if toolpresence_source == "oracle":
+            t = np.load(ORACLE_TOOL_DIR / f"{split}_oracletool.npz")
+        else:
+            t = np.load(TOOLPRES_DIR / f"{split}_toolpresence.npz")
+        tp_all = t["signal"]
+        tool_by_frame = {str(fid): tp_all[i] for i, fid in enumerate(t["frame_ids"])}
+
+        # tool-pres に noise injection（検出器精度シミュレーション）
+        if tool_noise_rate > 0.0:
+            split_offset = {"train": 0, "val": 1, "test": 2}.get(split, 3)
+            rng = np.random.RandomState(tool_noise_seed * 100 + split_offset)
+            target_dims = tool_noise_dims if tool_noise_dims else list(range(15))
+            for fid in tool_by_frame:
+                v = tool_by_frame[fid].copy()
+                for d in target_dims:
+                    if 0 <= d < 15 and rng.uniform(0.0, 1.0) < tool_noise_rate:
+                        v[d] = 1.0 - v[d]
+                tool_by_frame[fid] = v
 
     man = json.loads((MANIFEST_DIR / f"{split}.json").read_text())
     clips = []
@@ -92,9 +154,12 @@ def load_clips(
             else:
                 if fid not in gap_by_frame:
                     raise KeyError(f"[t1a] GAP 特徴に frame_id 欠落: {fid} ({split})")
-                rows.append(
-                    np.concatenate([gap_by_frame[fid], reg_by_frame[fid]])
-                )  # 2048+3840
+                parts = [gap_by_frame[fid], reg_by_frame[fid]]
+                if add_toolpresence:
+                    if fid not in tool_by_frame:
+                        raise KeyError(f"[t1a] tool-presence に frame_id 欠落: {fid} ({split})")
+                    parts.append(tool_by_frame[fid])
+                rows.append(np.concatenate(parts))  # 2048+3840 (+15)
         feats = np.stack(rows).astype(np.float32)
         labels = np.asarray([fr["label"] for fr in frames], dtype=np.int64)
         clips.append((clip["clip_id"], feats, labels))
@@ -232,9 +297,42 @@ def train(args) -> dict:
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
 
-    in_dim = REGION_DIM if args.region_only else (GAP_DIM + REGION_DIM)  # 3840 or 5888
-    train_clips = load_clips("train", args.region_only)
-    val_clips = load_clips("val", args.region_only)
+    if args.region_only:
+        in_dim = REGION_DIM
+    else:
+        in_dim = GAP_DIM + REGION_DIM + (TOOLPRES_DIM if args.add_toolpresence else 0)
+    # --mask-region-tool-dims (複数) > --mask-region-tool-dim (単一)
+    if args.mask_region_tool_dims:
+        mask_slots = [int(x) for x in args.mask_region_tool_dims.split(",")]
+    else:
+        mask_slots = args.mask_region_tool_dim
+    tool_noise_dims = None
+    if args.tool_noise_dims:
+        tool_noise_dims = [int(x) for x in args.tool_noise_dims.split(",")]
+    train_clips = load_clips(
+        "train",
+        args.region_only,
+        shuffle_region=args.region_shuffle,
+        shuffle_seed=args.shuffle_seed,
+        add_toolpresence=args.add_toolpresence,
+        toolpresence_source=args.toolpresence_source,
+        mask_region_tool_dim=mask_slots,
+        tool_noise_rate=args.tool_noise_rate,
+        tool_noise_dims=tool_noise_dims,
+        tool_noise_seed=args.seed,
+    )
+    val_clips = load_clips(
+        "val",
+        args.region_only,
+        shuffle_region=args.region_shuffle,
+        shuffle_seed=args.shuffle_seed + 1,  # split 独立 seed
+        add_toolpresence=args.add_toolpresence,
+        toolpresence_source=args.toolpresence_source,
+        mask_region_tool_dim=mask_slots,
+        tool_noise_rate=args.tool_noise_rate,
+        tool_noise_dims=tool_noise_dims,
+        tool_noise_seed=args.seed,
+    )
     if args.smoke:
         train_clips, val_clips = train_clips[:3], val_clips[:2]
     print(
@@ -366,6 +464,53 @@ def parse_args():
         "--region-only",
         action="store_true",
         help="GAP と連結せず region token のみを入力（replace 版・別解）",
+    )
+    p.add_argument(
+        "--region-shuffle",
+        action="store_true",
+        help="§18.4 L2-2 shuffle control: region-token の frame 対応を破壊して入力。"
+        "T1a の Δ_phase が消えれば region 情報の真の寄与を実証する positive control 反証。",
+    )
+    p.add_argument(
+        "--shuffle-seed",
+        type=int,
+        default=12345,
+        help="--region-shuffle 時の shuffle seed（再現性のため固定）",
+    )
+    p.add_argument(
+        "--add-toolpresence",
+        action="store_true",
+        help="B2a tool-presence (15d) も追加で連結（B2a+T1a combined・in_dim=5903）",
+    )
+    p.add_argument(
+        "--toolpresence-source",
+        choices=["pred", "oracle"],
+        default="pred",
+        help="--add-toolpresence 時のソース。pred=凍結検出器予測 / oracle=GT one-hot",
+    )
+    p.add_argument(
+        "--mask-region-tool-dim",
+        type=int,
+        default=None,
+        help="region-token の指定 tool slot (0-14) × 256d を 0 mask（T1a per-tool ablation）",
+    )
+    p.add_argument(
+        "--mask-region-tool-dims",
+        type=str,
+        default=None,
+        help="複数 slot を同時 mask（カンマ区切り、例 '0,6,9' で Top3 同時）",
+    )
+    p.add_argument(
+        "--tool-noise-rate",
+        type=float,
+        default=0.0,
+        help="--add-toolpresence の oracle tool-pres を確率 p で flip（B2a と同じ）",
+    )
+    p.add_argument(
+        "--tool-noise-dims",
+        type=str,
+        default=None,
+        help="--tool-noise-rate を適用する dim をカンマ区切り（例 '0,6,9' で Top3 限定）",
     )
     p.add_argument(
         "--smoke", action="store_true", help="数 epoch・少 clip で疎通確認（証跡なし）"

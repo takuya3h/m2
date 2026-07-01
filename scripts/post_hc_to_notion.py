@@ -1,0 +1,191 @@
+#!/usr/bin/env python
+"""H-C-v1（T1b-CA + entropy gate）の 6 Run を Notion 実験Run台帳へ投稿する。
+
+H-C は seed{42,123,456} × {inj(real-ctx), ctrl(zero-ctx)} の 6 走。各走は
+`transfer/hc_seed{S}/{injected,control}_result.json`（t1b_result.json 形式：
+seed/inject/trainable/zero_ctx/epochs/init_mAP/best_epoch/mAP/per_class_coco_map）を持つ。
+post_t1b_ca_to_notion.py と同じ枠組みで inj/ctrl/純効果(inj−ctrl) を Result に整形し
+**Name 冪等**で upsert する。
+
+H-C-v1 の vs T1b-CA 比較は別途 REPORT.md / experiment_log.md で行う。
+本投稿の Result は H-C 単独の 3-seed 純効果 + 1 行サマリ。
+
+認証は環境変数（NOTION_API_KEY / NOTION_DB_ID）。未設定なら no-op。--dry-run は投稿しない。
+
+実行:
+  set -a; source .env; set +a
+  .venv/bin/python scripts/post_hc_to_notion.py            # 実投稿
+  .venv/bin/python scripts/post_hc_to_notion.py --dry-run  # プレビュー
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+PROJ = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJ / "src"))
+
+NOTION_VERSION = "2022-06-28"
+API_BASE = "https://api.notion.com/v1"
+
+# 各 seed の証跡フォルダ（inj/ctrl は同一フォルダ内の 2 ファイル）と実行サーバー。
+SEEDS = [
+    (42,  "transfer/hc_seed42",  "lecun"),
+    (123, "transfer/hc_seed123", "lecun"),
+    (456, "transfer/hc_seed456", "lecun"),
+]
+PRIMARY = ("det mAP (best-init=warm-start S0-frozen, 同一eval); "
+           "phase->det 純効果 = 注入(real-ctx) - 対照(zero-ctx) + entropy gate (tau=0.15, scale=20)")
+
+
+def _git_commit() -> str:
+    try:
+        return subprocess.run(["git", "-C", str(PROJ), "rev-parse", "HEAD"],
+                              capture_output=True, text=True, timeout=5).stdout.strip()[:12]
+    except Exception:  # noqa: BLE001
+        return ""
+
+
+def _load(p: Path) -> dict:
+    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
+
+
+def _result_text(inj: dict, ctrl: dict, zero_ctx: bool, hc_note: str) -> str:
+    init = inj.get("init_mAP")
+    pure = inj["mAP"] - ctrl["mAP"]
+    if not zero_ctx:
+        return (f"det mAP(inj, real-ctx)={inj['mAP']:.5f}, init/warm-start={init:.5f}; "
+                f"対照 ctrl(zero-ctx)={ctrl['mAP']:.5f} -> 純効果 dDet(inj-ctrl)={pure:+.5f} "
+                f"(best@ep{inj['best_epoch']})\n{hc_note}")
+    return (f"det mAP(ctrl, zero-ctx)={ctrl['mAP']:.5f} = init(warm-start)={init:.5f} "
+            f"(best@ep{ctrl['best_epoch']}); 注入対照（phase context=0、gate≈zero）\n{hc_note}")
+
+
+def _find_existing(db_id: str, name: str, headers: dict) -> str | None:
+    import requests
+    r = requests.post(f"{API_BASE}/databases/{db_id}/query", headers=headers,
+                      json={"filter": {"property": "Name", "title": {"equals": name}},
+                            "page_size": 1}, timeout=30)
+    if r.status_code != 200:
+        raise RuntimeError(f"query {r.status_code} {r.text[:200]}")
+    res = r.json().get("results") or []
+    return res[0]["id"] if res else None
+
+
+def _upsert(db_id: str, name: str, props: dict, headers: dict) -> str:
+    import requests
+    pid = _find_existing(db_id, name, headers)
+    if pid:
+        r = requests.patch(f"{API_BASE}/pages/{pid}", headers=headers,
+                           json={"properties": props}, timeout=30)
+        action = "updated"
+    else:
+        r = requests.post(f"{API_BASE}/pages", headers=headers,
+                          json={"parent": {"database_id": db_id}, "properties": props}, timeout=30)
+        action = "created"
+    if r.status_code != 200:
+        raise RuntimeError(f"{action} {r.status_code} {r.text[:300]}")
+    return action
+
+
+def _summary_note(all_results: list[dict]) -> str:
+    """3-seed の純効果から H-C-v1 サマリを生成。"""
+    if len(all_results) < 3:
+        return "H-C-v1 (T1b-CA + entropy gate). 3-seed 完走を待ち中。"
+    pures = []
+    for r in all_results:
+        if "inj" in r and "ctrl" in r:
+            pures.append((r["seed"], r["inj"]["mAP"] - r["ctrl"]["mAP"]))
+    if len(pures) < 3:
+        return "H-C-v1 partial. 一部 seed の result 欠損。"
+    import statistics
+    vals = [v for _, v in pures]
+    mean = statistics.mean(vals)
+    pstd = statistics.pstdev(vals) if len(vals) > 1 else 0.0
+    ratio = abs(mean) / pstd if pstd > 0 else float("inf")
+    seed_str = " / ".join(f"s{s} {v:+.5f}" for s, v in pures)
+    return (f"H-C-v1 = T1b-CA + entropy gate (tau=0.15, scale=20). 3-seed 純効果 dDet(inj-ctrl)="
+            f"{seed_str}, mean {mean:+.5f}, paired-sigma |mean|/s={ratio:.2f}. "
+            f"vs T1b-CA +0.00178 (gate 単体寄与の差).")
+
+
+def build_runs():
+    commit = _git_commit()
+    all_results = []
+    for seed, rel, server in SEEDS:
+        d = PROJ / rel
+        inj = _load(d / "injected_result.json")
+        ctrl = _load(d / "control_result.json")
+        if inj and ctrl:
+            all_results.append({"seed": seed, "inj": inj, "ctrl": ctrl})
+    hc_note = _summary_note(all_results)
+
+    runs = []
+    for seed, rel, server in SEEDS:
+        d = PROJ / rel
+        inj = _load(d / "injected_result.json")
+        ctrl = _load(d / "control_result.json")
+        if not inj or not ctrl:
+            print(f"[hc-post] SKIP seed{seed}: result.json 欠損 ({d})")
+            continue
+        for zero_ctx in (False, True):
+            tag = "ctrl" if zero_ctx else "inj"
+            runs.append({
+                "name": f"hc_{tag}_seed{seed}",
+                "seed": seed, "server": server, "commit": commit,
+                "result": _result_text(inj, ctrl, zero_ctx, hc_note),
+                "artifacts": f"file://{d.resolve()}",
+            })
+    return runs
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--dry-run", action="store_true")
+    args = ap.parse_args()
+
+    runs = build_runs()
+    print(f"[hc-post] {len(runs)} 件 {'(DRY-RUN)' if args.dry_run else '(投稿)'}")
+    if args.dry_run:
+        for r in runs:
+            print(f"\n■ {r['name']}  [seed={r['seed']} server={r['server']}]\n  {r['result'].splitlines()[0]}")
+        print("\n[hc-post] DRY-RUN 完了。実投稿は `set -a; source .env; set +a` 後に再実行。")
+        return
+
+    api_key = os.environ.get("NOTION_API_KEY", "").strip()
+    db_id = os.environ.get("NOTION_DB_ID", "").strip()
+    if not api_key or not db_id:
+        print("[hc-post] NOTION_API_KEY / NOTION_DB_ID 未設定 -> no-op")
+        return
+    headers = {"Authorization": f"Bearer {api_key}", "Notion-Version": NOTION_VERSION,
+               "Content-Type": "application/json"}
+    ok = 0
+    for r in runs:
+        props = {
+            "Name": {"title": [{"text": {"content": r["name"]}}]},
+            "Status": {"select": {"name": "completed"}},
+            "Step": {"select": {"name": "B"}},
+            "Tier": {"select": {"name": "must"}},
+            "Server": {"select": {"name": r["server"]}},
+            "Seed": {"number": r["seed"]},
+            "Primary Metric": {"rich_text": [{"text": {"content": PRIMARY}}]},
+            "Result": {"rich_text": [{"text": {"content": r["result"]}}]},
+            "Commit": {"rich_text": [{"text": {"content": r["commit"]}}]},
+            "Artifacts": {"url": r["artifacts"]},
+            "Decision Needed": {"checkbox": False},
+        }
+        try:
+            action = _upsert(db_id, r["name"], props, headers)
+            print(f"  {r['name']}: {action}")
+            ok += 1
+        except Exception as exc:  # noqa: BLE001
+            print(f"  {r['name']}: FAIL {exc}")
+    print(f"[hc-post] 投稿 {ok}/{len(runs)}")
+
+
+if __name__ == "__main__":
+    main()

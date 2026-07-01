@@ -1,0 +1,225 @@
+{
+  "inject": "ca",
+  "seed": 42,
+  "trainable": "film",
+  "n_trainable_params": 1584640,
+  "elapsed_min": 1.1779307652420055,
+  "all_pass": true,
+  "checks": {
+    "1_gradient_flow": {
+      "loss_value": 7.23613977432251,
+      "loss_is_finite": true,
+      "n_trainable_params": 38,
+      "n_issues": 0,
+      "issues": [],
+      "phase_param_grad_norms": [
+        {
+          "name": "transformer.decoder.layers.0.phase_norm.weight",
+          "grad_norm": 0.0
+        },
+        {
+          "name": "transformer.decoder.layers.0.phase_norm.bias",
+          "grad_norm": 0.0
+        },
+        {
+          "name": "transformer.decoder.layers.0.phase_attn.in_proj_weight",
+          "grad_norm": 0.0
+        },
+        {
+          "name": "transformer.decoder.layers.0.phase_attn.in_proj_bias",
+          "grad_norm": 0.0
+        },
+        {
+          "name": "transformer.decoder.layers.0.phase_attn.out_proj.weight",
+          "grad_norm": 0.7592273950576782
+        },
+        {
+          "name": "transformer.decoder.layers.0.phase_attn.out_proj.bias",
+          "grad_norm": 0.257517009973526
+        },
+        {
+          "name": "transformer.decoder.layers.1.phase_norm.weight",
+          "grad_norm": 0.0
+        },
+        {
+          "name": "transformer.decoder.layers.1.phase_norm.bias",
+          "grad_norm": 0.0
+        },
+        {
+          "name": "transformer.decoder.layers.1.phase_attn.in_proj_weight",
+          "grad_norm": 0.0
+        },
+        {
+          "name": "transformer.decoder.layers.1.phase_attn.in_proj_bias",
+          "grad_norm": 0.0
+        },
+        {
+          "name": "transformer.decoder.layers.1.phase_attn.out_proj.weight",
+          "grad_norm": 0.4707253873348236
+        },
+        {
+          "name": "transformer.decoder.layers.1.phase_attn.out_proj.bias",
+          "grad_norm": 0.15946193039417267
+        },
+        {
+          "name": "transformer.decoder.layers.2.phase_norm.weight",
+          "grad_norm": 0.0
+        },
+        {
+          "name": "transformer.decoder.layers.2.phase_norm.bias",
+          "grad_norm": 0.0
+        },
+        {
+          "name": "transformer.decoder.layers.2.phase_attn.in_proj_weight",
+          "grad_norm": 0.0
+        },
+        {
+          "name": "transformer.decoder.layers.2.phase_attn.in_proj_bias",
+          "grad_norm": 0.0
+        },
+        {
+          "name": "transformer.decoder.layers.2.phase_attn.out_proj.weight",
+          "grad_norm": 0.28438112139701843
+        },
+        {
+          "name": "transformer.decoder.layers.2.phase_attn.out_proj.bias",
+          "grad_norm": 0.1005132794380188
+        },
+        {
+          "name": "transformer.decoder.layers.3.phase_norm.weight",
+          "grad_norm": 0.0
+        },
+        {
+          "name": "transformer.decoder.layers.3.phase_norm.bias",
+          "grad_norm": 0.0
+        },
+        {
+          "name": "transformer.decoder.layers.3.phase_attn.in_proj_weight",
+          "grad_norm": 0.0
+        },
+        {
+          "name": "transformer.decoder.layers.3.phase_attn.in_proj_bias",
+          "grad_norm": 0.0
+        },
+        {
+          "name": "transformer.decoder.layers.3.phase_attn.out_proj.weight",
+          "grad_norm": 0.16218306124210358
+        },
+        {
+          "name": "transformer.decoder.layers.3.phase_attn.out_proj.bias",
+          "grad_norm": 0.056785713881254196
+        },
+        {
+          "name": "transformer.decoder.layers.4.phase_norm.weight",
+          "grad_norm": 0.0
+        },
+        {
+          "name": "transformer.decoder.layers.4.phase_norm.bias",
+          "grad_norm": 0.0
+        },
+        {
+          "name": "transformer.decoder.layers.4.phase_attn.in_proj_weight",
+          "grad_norm": 0.0
+        },
+        {
+          "name": "transformer.decoder.layers.4.phase_attn.in_proj_bias",
+          "grad_norm": 0.0
+        },
+        {
+          "name": "transformer.decoder.layers.4.phase_attn.out_proj.weight",
+          "grad_norm": 0.08725113421678543
+        },
+        {
+          "name": "transformer.decoder.layers.4.phase_attn.out_proj.bias",
+          "grad_norm": 0.02763553522527218
+        },
+        {
+          "name": "transformer.decoder.layers.5.phase_norm.weight",
+          "grad_norm": 0.0
+        },
+        {
+          "name": "transformer.decoder.layers.5.phase_norm.bias",
+          "grad_norm": 0.0
+        },
+        {
+          "name": "transformer.decoder.layers.5.phase_attn.in_proj_weight",
+          "grad_norm": 0.0
+        },
+        {
+          "name": "transformer.decoder.layers.5.phase_attn.in_proj_bias",
+          "grad_norm": 0.0
+        },
+        {
+          "name": "transformer.decoder.layers.5.phase_attn.out_proj.weight",
+          "grad_norm": 0.05505048483610153
+        },
+        {
+          "name": "transformer.decoder.layers.5.phase_attn.out_proj.bias",
+          "grad_norm": 0.01745883747935295
+        },
+        {
+          "name": "phase_embed.weight",
+          "grad_norm": 0.0
+        },
+        {
+          "name": "phase_embed.bias",
+          "grad_norm": 0.0
+        }
+      ],
+      "phase_grad_nonzero_count": 12,
+      "phase_grad_total": 38,
+      "pass": true
+    },
+    "2_loss_at_init": {
+      "n_samples": 3,
+      "loss_values": [
+        14.207463264465332,
+        24.456096649169922,
+        9.975411415100098
+      ],
+      "loss_mean": 16.212990442911785,
+      "loss_std": 6.079427914953155,
+      "all_finite": true,
+      "in_expected_range_5_30": true,
+      "pass": true
+    },
+    "3_nan_inf_hook": {
+      "n_steps": 5,
+      "loss_trajectory": [
+        20.35613250732422,
+        7.5124831199646,
+        19.397899627685547,
+        17.130502700805664,
+        8.670804023742676
+      ],
+      "all_finite": true,
+      "nan_inf_hits": [],
+      "n_nan_inf_hits": 0,
+      "pass": true
+    },
+    "4_overfit_one_batch": {
+      "n_steps": 50,
+      "init_loss": 12.167230606079102,
+      "final_loss": 8.339936256408691,
+      "loss_reduction_pct": 31.455755821363184,
+      "min_loss": 8.339936256408691,
+      "trajectory_first_5": [
+        12.167230606079102,
+        11.82297134399414,
+        11.7620849609375,
+        11.285528182983398,
+        11.225390434265137
+      ],
+      "trajectory_last_5": [
+        8.540871620178223,
+        8.353089332580566,
+        8.380623817443848,
+        8.80030632019043,
+        8.339936256408691
+      ],
+      "pass": true,
+      "note_threshold": "20% 閾値は phase-only fine-tune 用調整（§18.4 元値 50% は full-model 想定）"
+    }
+  },
+  "interpretation": "§18.4 L0 監査 PASS = phase→det の負の結果が under-tuning/バグでないことの根拠"
+}

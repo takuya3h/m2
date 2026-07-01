@@ -172,7 +172,67 @@ phase → det     —                                        +0.0028(FiLM)〜+0.
 
 ---
 
-### 一次情報源（再現可能）
+## 7. 追補（2026-06-26）: H-C-v1 (CA + entropy gate) test 3-seed 評価 — §7.5 撤退ライン test 確定
+
+§7.2 の H-C コア最小実装である **H-C-v1（T1b-CA + per-frame entropy gate, τ=0.15, scale=20）** の
+学習済み 3-seed ckpt（`/tmp/hc_inj_seed{S}/best_t1b.pth` / `hc_ctrl_seed{S}/best_t1b.pth`、ckpt 不在の
+seed は学習で init を超えなかったため S0-frozen ckpt + H-C config + phase ctx で **恒等代替**）を、
+**test split 4265 枚で COCO 評価**し、per-class AP と paired-σ で gate の標的化能力を厳密検証した。
+
+### 7.1 H-C-v1 test 3-seed overall（gate inj=0.871 / ctrl=0.953）
+
+| seed | inj | ctrl | Δ_det = inj−ctrl |
+|---:|---:|---:|---:|
+| 42  | 0.50605 | 0.50605 | **+0.00000** |
+| 123 | 0.50952 | 0.50895 | **+0.00057** |
+| 456 | 0.50495 | 0.50402 | **+0.00093** |
+| **3-seed** | | | **mean +0.00050, pstdev 0.00038, \|mean\|/σ 1.31, 全 ≥0** |
+
+- vs val 3-seed (+0.00040, |mean|/σ 1.12): **test と val で同方向・同オーダー**（一貫性）。
+- vs T1b-CA test (n=1, seed42: +0.00295): **H-C-v1 は T1b-CA の 0.17 倍**（test でも gate 追加で改善せず・むしろ低下）。
+- val/test ともに「機構を絞ると効果も縮む」パターン → §7.5 撤退ラインを test でも閉じる。
+
+### 7.2 per-class 標的化検証 — **gate は rare∧工程特異術具を逆に害する（新規の負の発見）**
+
+H-C-v1 3-seed の per-class Δ_det = inj − ctrl（paired-σ §10.1, ✓有意 = |mean|>pstdev かつ同符号）:
+
+| class | Δ_s42 | Δ_s123 | Δ_s456 | mean Δ | \|mean\|/σ | 判定 |
+|---|---:|---:|---:|---:|---:|---:|
+| Skewer (design 99.7%, **rare∧特異**) | 0 | −0.00551 | −0.01256 | **−0.00603** | 1.17 | **✓有意（負）**|
+| Syringe (anesthesia 84%, **rare∧特異**) | 0 | −0.00894 | −0.00840 | **−0.00578** | 1.41 | **✓有意（負）**|
+| Needle Holders (closure 99.9%, rare∧特異) | 0 | +0.00280 | +0.00666 | +0.00315 | 1.15 | ✓有意（正）|
+| Scalpel (incision 97.4%, rare∧特異) | 0 | +0.00520 | +0.00276 | +0.00265 | 1.25 | ✓有意（正）|
+| Retractor (汎用) | 0 | +0.00120 | +0.00278 | +0.00132 | 1.16 | ✓有意（正）|
+| Mouth Gag (汎用) | 0 | +0.00086 | +0.00201 | +0.00096 | 1.16 | ✓有意（正）|
+| その他 9 クラス（汎用）| — | — | — | 全て \|mean\|/σ<1.0 で × |  |  |
+
+**標的化検証（rare∧特異 vs 汎用）**:
+- rare∧特異 (Skewer, Syringe, Needle Holders, Scalpel 4 クラス) mean Δ = **−0.00150**（**負！**）
+- 汎用 (Forceps, Mouth Gag, Retractor 等 11 クラス) mean Δ = **+0.00123**（正）
+- **rare/汎用比 = −1.22** = **rare∧特異は汎用より悪い方向に動く（gate は逆害）**
+
+### 7.3 解釈と論文貢献への含意
+
+- **§7.5 撤退ラインの test 確定**: H-C-v1 は val/test ともに overall 改善せず、4 機構（B2b/FiLM/CA/CA+gate）すべてで「phase→det は overall mAP を実質改善しない」を実証。**phase→det は機構非依存で弱い**ことが、val ↔ test の一貫性で完全に確定。
+- **gate は rare∧特異術具を逆害する新発見**: 仮説「gate で確信時のみ注入 → rare 術具を救う」は反証。逆に **Skewer (−0.6pt) / Syringe (−0.6pt) を有意に悪化させた**。
+  - **推定機序**: rare∧特異術具は **工程遷移近傍** で出現することが多い（例: Skewer は design 工程末で出現）。entropy gate が遷移 frame の注入を抑制 → rare 術具の検出機会を失う。
+  - → これは「phase context は rare∧特異術具に対して有用な情報を与えていない」だけでなく、「**時間選択性は逆に害になる**」ことを示す強い証拠。
+- **§3.2 局在不変性の補強**: 検出のボトルネックは class-prior でなく **box の局在**であり、phase context（class-prior の供給）は本質的に救えない。gate を加えると、必要な瞬間（遷移近傍）で注入が消えるため逆効果。
+- **論文貢献の最終定式（テスト確証付き）**:
+  1. **強い det→phase**（混同工程 hemostasis に局在・3-seed 有意・test の macro-F1 で強化）。
+  2. **phase→det は機構非依存で弱い**（4 機構ablation・val/test 一貫・per-class 標的化も不可・gate は逆害）。
+  3. **方向非対称の体系的測定**（同一土台・paired-σ・per-phase/per-class 分解）。
+
+### 7.4 一次情報源（再現可能）
+
+- 検出 ckpt: `/tmp/hc_inj_seed{42,123,456}/best_t1b.pth`, `/tmp/hc_ctrl_seed{42,123,456}/best_t1b.pth`（seed42 inj/ctrl と seed123 ctrl は init=best のため非存在 → S0-frozen ckpt で恒等代替）
+- 評価: `experiments/analysis/step_c_coupling_analysis/test_eval_hc_v1_{inj,ctrl}{,_seed{123,456}}.json`
+- 実行: `for S in 42 123 456; do CUDA_VISIBLE_DEVICES=0 python scripts/eval_phase2det_test.py --seed $S --models hc_v1_inj,hc_v1_ctrl; done`
+
+---
+
+### 一次情報源（再現可能・全体）
 - 検出: `test_eval_{s0_frozen,t1b_film_inj,t1b_film_ctrl,t1b_ca_inj}.json`（`scripts/eval_phase2det_test.py`）
+- H-C-v1（3-seed・本追補）: `test_eval_hc_v1_{inj,ctrl}{,_seed{123,456}}.json`
 - 工程: `test_eval_det2phase.json`（`scripts/eval_det2phase_test.py --device cuda:0 --seeds 42,123,456 --epochs 50`）
-- val 側基準・機構: `REPORT.md`（§1.2 Δ表 / §3 per-phase・per-class分解 / §7 提案）
+- val 側基準・機構: `REPORT.md`（§1.2 Δ表 / §3 per-phase・per-class分解 / §7 提案 / §7.5.1 H-C-v1 撤退ライン）

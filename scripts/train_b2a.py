@@ -48,6 +48,7 @@ from egosurgery.utils.server_name import resolve_server_name  # noqa: E402
 FROZEN_SRC = "relation_detr_seed42"
 GAP_DIR = PROJ / "data" / "processed" / "stage1_features" / FROZEN_SRC
 SIGNAL_DIR = PROJ / "data" / "processed" / "b2a_detsignal" / FROZEN_SRC
+ORACLE_SIGNAL_DIR = PROJ / "data" / "processed" / "oracle_toolpresence"  # §18.4 L2-3
 MANIFEST_DIR = PROJ / "data" / "processed" / "phase_manifest"
 VOCAB = json.loads((MANIFEST_DIR / "phase_vocab.json").read_text())
 CLASS_NAMES = list(VOCAB.keys())
@@ -55,19 +56,65 @@ NUM_TOOLS = 15
 IN_DIM = 2048 + NUM_TOOLS  # 2063
 
 
-def load_clips(split: str) -> list[tuple[str, np.ndarray, np.ndarray]]:
+def load_clips(
+    split: str,
+    tool_source: str = "pred",
+    mask_tool_dim: int | list[int] | None = None,
+    drop_gap: bool = False,
+    noise_rate: float = 0.0,
+    noise_seed: int = 0,
+    noise_dims: list[int] | None = None,
+) -> list[tuple[str, np.ndarray, np.ndarray]]:
     """(clip_id, feats (T,2063)=GAP2048⊕tool15, labels (T,)) のリストを返す（時系列順）。
 
     GAP・tool-presence いずれも frame_id でキー化して clip フレーム順に整列・連結する。
     どちらかに無い frame があれば整合不良として Fail Loud（KeyError）— ダミー補完しない。
+
+    `tool_source` (§18.4 L2-3):
+      - "pred": 凍結検出器の予測 tool-presence（既定・B2a base）
+      - "oracle": GT bbox から作った one-hot 15-d（注入の上限を測る・oracle-tool-presence）
     """
     g = np.load(GAP_DIR / f"{split}_gap.npz")
     gap_all = g["features"]  # NpzFile は遅延展開: 一度だけ取り出す
     feat_by_frame = {str(fid): gap_all[i] for i, fid in enumerate(g["frame_ids"])}
 
-    s = np.load(SIGNAL_DIR / f"{split}_toolpresence.npz")
+    if tool_source == "oracle":
+        s = np.load(ORACLE_SIGNAL_DIR / f"{split}_oracletool.npz")
+    else:
+        s = np.load(SIGNAL_DIR / f"{split}_toolpresence.npz")
     sig_all = s["signal"]
     sig_by_frame = {str(fid): sig_all[i] for i, fid in enumerate(s["frame_ids"])}
+
+    # §18.4 L2-4: 指定 dim を mask（0 埋め）して per-dim 寄与を測定
+    # 単一 int / int リスト 両対応（複数 dim 同時 mask 用）
+    mask_dims: list[int] = []
+    if mask_tool_dim is not None:
+        if isinstance(mask_tool_dim, int):
+            mask_dims = [mask_tool_dim] if 0 <= mask_tool_dim < NUM_TOOLS else []
+        else:
+            mask_dims = [d for d in mask_tool_dim if 0 <= d < NUM_TOOLS]
+    if mask_dims:
+        for fid in sig_by_frame:
+            sig_by_frame[fid] = sig_by_frame[fid].copy()
+            for d in mask_dims:
+                sig_by_frame[fid][d] = 0.0
+
+    # 検出器精度 → phase acc transfer function 推定:
+    # 各 (frame, dim) を確率 noise_rate で flip (0↔1)。oracle 信号への一様 noise 注入で、
+    # 「現実的検出器精度 (1-noise_rate)」の simulated 検出器が出す入力を作る。
+    # split + noise_seed で独立な RandomState を使い再現性を保つ。
+    if noise_rate > 0.0:
+        # split ごとに独立 seed（train/val/test で違う noise を引く）
+        split_offset = {"train": 0, "val": 1, "test": 2}.get(split, 3)
+        rng = np.random.RandomState(noise_seed * 100 + split_offset)
+        # noise_dims が指定されたらその dim のみ flip、None なら全 15 dim
+        target_dims = noise_dims if noise_dims else list(range(NUM_TOOLS))
+        for fid in sig_by_frame:
+            v = sig_by_frame[fid].copy()
+            for d in target_dims:
+                if 0 <= d < NUM_TOOLS and rng.uniform(0.0, 1.0) < noise_rate:
+                    v[d] = 1.0 - v[d]
+            sig_by_frame[fid] = v
 
     man = json.loads((MANIFEST_DIR / f"{split}.json").read_text())
     clips = []
@@ -80,7 +127,10 @@ def load_clips(split: str) -> list[tuple[str, np.ndarray, np.ndarray]]:
                 raise KeyError(f"[b2a] GAP 特徴に frame_id 欠落: {fid} ({split})")
             if fid not in sig_by_frame:
                 raise KeyError(f"[b2a] tool-presence 信号に frame_id 欠落: {fid} ({split})")
-            rows.append(np.concatenate([feat_by_frame[fid], sig_by_frame[fid]]))  # 2048+15
+            if drop_gap:
+                rows.append(sig_by_frame[fid])  # tool-pres only (15d)
+            else:
+                rows.append(np.concatenate([feat_by_frame[fid], sig_by_frame[fid]]))  # 2048+15
         feats = np.stack(rows).astype(np.float32)                       # (T, 2063)
         labels = np.asarray([fr["label"] for fr in frames], dtype=np.int64)
         clips.append((clip["clip_id"], feats, labels))
@@ -107,6 +157,7 @@ def evaluate(model: nn.Module, clips, device) -> dict:
 
 
 DESC = "b2a_det2phase_toolpresence"
+DESC_ORACLE = "b2a_det2phase_oracletool"  # §18.4 L2-3 用
 
 
 def _build_cfg(args, server_name: str, n_train: int, n_val: int) -> dict:
@@ -181,27 +232,55 @@ def train(args) -> dict:
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
 
-    train_clips = load_clips("train")
-    val_clips = load_clips("val")
+    # --mask-tool-dims (複数) > --mask-tool-dim (単一)
+    if args.mask_tool_dims:
+        mask_dims = [int(x) for x in args.mask_tool_dims.split(",")]
+    else:
+        mask_dims = args.mask_tool_dim
+    noise_dims_list = None
+    if args.tool_noise_dims:
+        noise_dims_list = [int(x) for x in args.tool_noise_dims.split(",")]
+    train_clips = load_clips(
+        "train",
+        tool_source=args.tool_source,
+        mask_tool_dim=mask_dims,
+        drop_gap=args.drop_gap,
+        noise_rate=args.tool_noise_rate,
+        noise_seed=args.seed,
+        noise_dims=noise_dims_list,
+    )
+    val_clips = load_clips(
+        "val",
+        tool_source=args.tool_source,
+        mask_tool_dim=mask_dims,
+        drop_gap=args.drop_gap,
+        noise_rate=args.tool_noise_rate,
+        noise_seed=args.seed,
+        noise_dims=noise_dims_list,
+    )
     if args.smoke:
         train_clips, val_clips = train_clips[:3], val_clips[:2]
     print(f"[b2a] train clips={len(train_clips)}  val clips={len(val_clips)}  "
-          f"in_dim={IN_DIM}  classes={len(CLASS_NAMES)}  device={device}")
+          f"in_dim={IN_DIM}  tool_source={args.tool_source}  classes={len(CLASS_NAMES)}  device={device}")
 
     server_name = resolve_server_name(None)
     manager = exp_dir = None
+    desc = args.description_override or (
+        DESC_ORACLE if args.tool_source == "oracle" else DESC
+    )
     if not args.smoke and not args.no_evidence:
         manager = ExperimentManager(
             base_dir=str(PROJ / "experiments"), category="transfer",
-            step="b2a_det2phase", description=DESC, seed=args.seed,
+            step=desc, description=desc, seed=args.seed,
         )
         manager.setup(_build_cfg(args, server_name, len(train_clips), len(val_clips)))
         exp_dir = manager.exp_dir
         print(f"[b2a] evidence dir: {exp_dir}")
 
-    # ①信号レベル: neck 無し・素の TeCNO に 2063-d を入力。
+    # ①信号レベル: neck 無し・素の TeCNO に 2063-d を入力（drop_gap で 15-d のみ）
+    effective_in_dim = NUM_TOOLS if args.drop_gap else IN_DIM
     model = TeCNO(num_stages=args.num_stages, num_layers=args.num_layers,
-                  num_f_maps=args.num_f_maps, in_dim=IN_DIM,
+                  num_f_maps=args.num_f_maps, in_dim=effective_in_dim,
                   num_classes=len(CLASS_NAMES)).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     ce = nn.CrossEntropyLoss()
@@ -266,6 +345,51 @@ def parse_args():
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--lr", type=float, default=5e-4)
     p.add_argument("--weight-decay", type=float, default=0.01)
+    p.add_argument(
+        "--tool-source",
+        choices=["pred", "oracle"],
+        default="pred",
+        help="§18.4 L2-3: tool-presence のソース。pred=凍結検出器予測（既定・B2a base）/ "
+        "oracle=GT bbox からの one-hot（B2a の上限を測定）",
+    )
+    p.add_argument(
+        "--mask-tool-dim",
+        type=int,
+        default=None,
+        help="§18.4 L2-4: 指定 dim (0-14) の tool-presence を 0 mask して per-dim 寄与を測定。"
+        "None なら mask なし。",
+    )
+    p.add_argument(
+        "--mask-tool-dims",
+        type=str,
+        default=None,
+        help="複数 dim を同時 mask（カンマ区切り、例 '0,6,9' で Top3 三同時 mask）",
+    )
+    p.add_argument(
+        "--description-override",
+        type=str,
+        default=None,
+        help="ExperimentManager の step/description を上書き（L2-4 で b2a_mask_dim_<k> のため）",
+    )
+    p.add_argument(
+        "--drop-gap",
+        action="store_true",
+        help="GAP 2048d を削除して tool-presence 15d のみを入力（B2a-RegionOnly）",
+    )
+    p.add_argument(
+        "--tool-noise-rate",
+        type=float,
+        default=0.0,
+        help="oracle tool-pres の各 (frame,dim) を確率 p で flip（検出器精度シミュレーション・"
+             "1-p=実効精度）。p=0 で oracle そのまま、p=0.1 で 90%% 精度の検出器に相当。",
+    )
+    p.add_argument(
+        "--tool-noise-dims",
+        type=str,
+        default=None,
+        help="--tool-noise-rate を適用する dim をカンマ区切りで指定（例 '0,6,9' で Top3 限定 noise）。"
+             "None なら全 15 dim に均一 noise。",
+    )
     p.add_argument("--num-stages", type=int, default=2)
     p.add_argument("--num-layers", type=int, default=8)
     p.add_argument("--num-f-maps", type=int, default=64)

@@ -51,6 +51,7 @@ EGO_ROOT = os.environ.get("EGO_ROOT", str(BODY / "data/raw/ego"))
 ANN_DIR = os.environ.get("EGO_ANN_DIR", str(BODY / "data/annotations/egosurgery_tool"))
 MODEL_CFG = "configs/relation_detr/relation_detr_resnet50_egosurgery_t1b.py"
 MODEL_CFG_CA = "configs/relation_detr/relation_detr_resnet50_egosurgery_t1b_ca.py"
+MODEL_CFG_HC = "configs/relation_detr/relation_detr_resnet50_egosurgery_t1b_hc.py"
 NUM_PHASES = 9
 
 
@@ -59,6 +60,33 @@ def load_phase_ctx(split: str) -> dict:
     d = np.load(PHASECTX_DIR / f"{split}_phasectx.npz")
     ctx_all = d["ctx"]
     return {str(fid): ctx_all[i].astype(np.float32) for i, fid in enumerate(d["frame_ids"])}
+
+
+def load_oracle_phase_ctx(split: str) -> dict:
+    """§18.4 L1-2 oracle-phase: phase_manifest から GT label を読み、frame_id -> one-hot(9)。
+
+    実用上の S4 TeCNO 予測（softmax 出力）の代わりに **完全に正確な phase 情報**を注入する。
+    これで mAP が改善しなければ phase→det 機構非依存性が最終確定（phase 推定誤差ではなく
+    phase 情報そのものが det に貢献しないことを実証）。
+    """
+    man_path = BODY / "data" / "processed" / "phase_manifest" / f"{split}.json"
+    man = json.loads(man_path.read_text())
+    out: dict[str, np.ndarray] = {}
+    for clip in man["clips"]:
+        for fr in clip["frames"]:
+            fid = str(fr["frame"])
+            lbl = int(fr["label"])
+            v = np.zeros(NUM_PHASES, dtype=np.float32)
+            v[lbl] = 1.0
+            out[fid] = v
+    return out
+
+
+def resolve_phase_ctx_loader(source: str):
+    """`--phase-source` の値から ctx loader 関数を返す。'real'=S4 予測、'oracle'=GT one-hot。"""
+    if source == "oracle":
+        return load_oracle_phase_ctx
+    return load_phase_ctx
 
 
 def build_imgid_to_ctx(coco, ctx_by_frame: dict):
@@ -193,13 +221,14 @@ def main():
 
     det_train = build_det_loader(train=True)
     det_val = build_det_loader(train=False)
-    model_cfg = MODEL_CFG_CA if args.inject == "ca" else MODEL_CFG
+    model_cfg = {"ca": MODEL_CFG_CA, "hc": MODEL_CFG_HC}.get(args.inject, MODEL_CFG)
     model = build_model(device, args.seed, model_cfg)
     register_classes(model, det_train)
     set_trainable(model, args.trainable)
 
-    ctx_tr = build_imgid_to_ctx(det_train.dataset.coco, load_phase_ctx("train"))
-    ctx_va = build_imgid_to_ctx(det_val.dataset.coco, load_phase_ctx("val"))
+    phase_ctx_loader = resolve_phase_ctx_loader(args.phase_source)
+    ctx_tr = build_imgid_to_ctx(det_train.dataset.coco, phase_ctx_loader("train"))
+    ctx_va = build_imgid_to_ctx(det_val.dataset.coco, phase_ctx_loader("val"))
     imgid_to_ctx_tr, miss_tr = ctx_tr
     imgid_to_ctx_va, miss_va = ctx_va
 
@@ -299,9 +328,17 @@ def parse_args():
     p.add_argument("--lr", type=float, default=1e-4)
     p.add_argument("--film-lr", type=float, default=5e-4)
     p.add_argument("--trainable", choices=["film", "all"], default="all")
-    p.add_argument("--inject", choices=["film", "ca"], default="film",
-                   help="phase 注入機構: film(§4.6下限・C5 FiLM) / ca(§4.6 primary・decoder cross-attn)")
+    p.add_argument("--inject", choices=["film", "ca", "hc"], default="film",
+                   help="phase 注入機構: film(§4.6下限・C5 FiLM) / ca(§4.6 primary・decoder cross-attn) / "
+                        "hc(§7.2 H-C-v1 = ca + per-frame entropy gate)")
     p.add_argument("--zero-ctx", action="store_true", help="§4.6 対照: phase context を 0 固定で fine-tune")
+    p.add_argument(
+        "--phase-source",
+        choices=["real", "oracle"],
+        default="real",
+        help="§18.4 L1-2: phase context のソース。real=S4 TeCNO 予測（既定）/ "
+        "oracle=phase_manifest からの GT one-hot（注入の上限を測定）",
+    )
     p.add_argument("--print-freq", type=int, default=200)
     p.add_argument("--smoke", action="store_true")
     p.add_argument("--assert-init-map", type=float, default=None,

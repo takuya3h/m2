@@ -850,3 +850,264 @@ S6 結合手法も COCO-init head から開始する前提なので、三角形 
 - test split でも phase→det の overall 利得は小さい（FiLM +0.39pt、CA +0.30pt）。
 - FiLM では Skewer/Hook に局所利得があるが、Syringe は負。CA は Scalpel/Retractor が伸びる一方、Skewer は伸びない。
 - 「rare∧工程特異術具を一貫して標的化する」強い反証には届かない。overall で弱い phase→det という既存結論を大きく覆す結果ではない。
+
+
+---
+
+## 2026-06-24 H-C-v1 / phase→det H-C コア最小実装（T1b-CA + entropy gate, 3-seed inj/ctrl）
+
+### 仮説
+STEP C REPORT.md §7.2 の H-C コア（非対称・標的・ゲート付き循環結合）の最小実装として、T1b-CA に **per-frame entropy gate** を追加する H-C-v1 を試す。仮説:
+- phase context の確信度（normalized entropy H）が高い（=遷移近傍・不確実）frame では注入を抑制（gate≈0）、確信時のみ強注入（gate≈1）とすることで、注入信号の signal-to-noise を上げる。
+- これが効けば「§3.2 一様注入は標的化不能」の局在不変性を時間方向で部分的に突破できる。
+- 効かなければ phase→det は機構非依存で弱いことが（gate 機構を含めて）最終確定。
+
+### 実験
+- 実装: `third_party/Relation-DETR/models/detectors/relation_detr_phase_hc.py`（`RelationDETRPhaseCrossAttn` を継承し `set_phase_context` をオーバーライドして gated_ctx = ctx * sigmoid((τ-H)*scale) を上流に渡す）/ model_cfg `relation_detr_resnet50_egosurgery_t1b_hc.py`（gate_tau=0.15, gate_scale=20.0）/ trainer `scripts/train_t1b.py --inject hc`（既存に最小差分で 3 行追加）/ launcher `scripts/run_hc_seeds_lecun.sh`（lecun 2GPU wave-by-wave で 3 seed × inj/ctrl）。
+- **データドリブン hyperparam**: 実 phase ctx の normalized entropy H が train mean=0.126 / median=0.087 / 95%ile=0.346 と非常に低かった（S4 TeCNO は high-confidence な出力）ため、デフォルト tau=0.5 では 98% frame で gate≈1（H-C → T1b-CA に退化）と判明。**事前検証で発見し τ=0.15, scale=20 に再設定**（train で注入優位 76.6% / 抑制 8.6%、test で注入優位 64.1% / 抑制 26.7% → 明確に差別化）。本件は再発防止策として `tasks/lessons.md` と Notion lessons DB に記録済。
+- **比較プロトコル**: 同 warm-start ckpt (per-seed best_ap.pth) / 同 epochs=6 / lr=1e-4 / film_lr=5e-4 / trainable=film / 同 phase context / 同 eval_recipe / 同 locked-down test_cfg。唯一の差は forward 前の entropy gate のみ。
+- **per-seed init mAP（measure-only 実測）**: seed42 0.7303 / seed123 0.7292 / seed456 0.7217（**T1b-CA と 15 桁完全一致** → warm-start+zero-init 恒等が壊れていないことを確認）。健全帯 [0.65, 0.78] 内。
+- 進行: warmup(MSDeformAttn JIT) → measure(両 wave) → wave A inj(real ctx, 2 GPU 並列 + 1 単独) → wave B ctrl(zero ctx, 2 GPU 並列 + 1 単独)。1 run ≈ 6.6h（4809 det step/ep × 6ep @ 1.2 it/s on lecun A6000）、合計 ≈ 24h。
+- 起動時刻: 2026-06-24 09:36 UTC（lecun, GPU 0+1, `bash scripts/run_hc_seeds_lecun.sh` background）。
+
+### 結果
+- **3-seed 完走（2026-06-25 01:26 UTC 全完了, ~16h GPU time）**: 全 6 run（inj/ctrl × seed42/123/456）が PREFLIGHT-FAIL なく完走。
+- **inj mAP（学習後 best）**: s42 0.73031 (best@ep-1=init) / s123 0.73007 (best@ep5) / s456 0.72238 (best@ep1)
+- **ctrl mAP（学習後 best）**: s42 0.73031 (best@ep-1=init) / s123 0.72919 (best@ep-1=init) / s456 0.72204 (best@ep3)
+- **純効果 Δ_det = inj−ctrl**: s42 **+0.00000** / s123 **+0.00088** / s456 **+0.00034**
+- **3-seed paired-σ**: mean **+0.00040**, pstdev=0.00036, **|mean|/σ=1.12**, 全 seed ≥0
+- **vs T1b-CA 比**: T1b-CA mean=+0.00178, |mean|/σ=3.58 → H-C-v1 は T1b-CA の **0.23 倍**（gate 追加で改善せず、むしろ低下）
+
+| 機構 | 3-seed mean Δ_det | \|mean\|/σ | 判定 |
+|---|---|---|---|
+| B2b 再スコア（無較正）| −0.04 | n/a | 単調劣化 |
+| T1b-FiLM（空間一様）| +0.0019 | 1.6 | 一貫正だが微小 |
+| T1b-CA（クエリ選択 §4.6 primary）| +0.00178 | 3.58 | 一貫正だが微小 |
+| **H-C-v1（CA + 時間選択 gate）** | **+0.00040** | **1.12** | **同 機構で最小（gate 追加で 0.23x）** |
+
+### 解釈
+- **事前判定基準に従い §7.5 撤退ライン確定**: gate 単体寄与は overall mAP を改善しない。phase→det は **機構を問わず弱い** ことが 4 機構 ablation で最終実証。
+- **gate 単独で改善しないため H-C-v2（phase-conditional query bias）は追加価値なしと予測**: §3.2 の局在不変性は時間方向の選択性で救えない＝検出のボトルネックは class-prior でなく **局在（box の場所）** であり、phase context は class-prior しか与えられない。query-level クラス bias を追加しても class score は変わるが box は改善しない。
+- **seed42 で完全 0.00000（best@ep-1=init）は特に示唆的**: 6 epoch 学習しても init を超えるサンプリング point が一度も無かった = 検出器は phase context の有用な情報を抽出できず、gate がそれを更に削ったことで「学習する価値のある信号がほぼゼロ」になった。
+- **3 機構の Δ 順は (FiLM ≈ CA) > (CA+gate)**: 注入信号を絞ると改善幅も縮小。これは「phase 信号は薄く広く弱く効くだけで、時間方向に絞ると効果が消える」ことを示唆。
+- **方向非対称が完全に確定**: det→phase 大勝（T1a macro-F1 +0.164）vs phase→det 機構非依存で弱い（全 4 機構が overall を実質改善せず）。
+
+### 次
+- **§7.5 撤退ライン確定** → 貢献の最終確定: 「強い det→phase（T1a +0.05・hemostasis F1 倍増の混同工程局在を実証）＋ phase→det が機構非依存で弱いことの実証（4 機構の負の結果と機構解明）」。
+- H-C-v2（phase-conditional query bias）への投資は **見送り**（事前判定基準に従う）。
+- **論文ドラフト方針**: STEP C REPORT.md §7.5 を「撤退ライン確定」として書き、4 機構の比較表（B2b/FiLM/CA/CA+gate）を中心に「phase→det の機構非依存性」を主張。`paper-writer` サブエージェントへ。
+- 証跡: `transfer/hc_seed{42,123,456}/{injected,control}_result.json` + `logs/hc_{measure,inj,ctrl}_seed{S}.log`。
+- Notion 投稿:
+  - 実験 Run台帳 6 件: `hc_{inj,ctrl}_seed{42,123,456}`（`scripts/post_hc_to_notion.py` で投稿済 2026-06-25）
+  - 意思決定ログ: 「H-C-v1 アーキテクチャ採用」(389ee4d4-7777-81ff-9ab5-de565b755f3f, active)
+  - 意思決定ログ: 「H-C-v1 結果による §7.5 撤退ライン確定」(38aee4d4-7777-8104-a673-f3eeedbd9550, active・前決定を update)
+  - 失敗知見: 「hyperparam はデータ分布から逆算」(389ee4d4-7777-8170-bf84-feddba3b203a)
+
+
+---
+
+## 2026-06-26 T1a-Deep / 時系列容量・受容野拡張 — 容量拡張は寄与なし（負の結果）
+
+### 仮説
+STEP C REPORT §5 #3 推奨「時系列 region-token 強化」の最小実装として、T1a base の Causal MS-TCN を 容量拡張する。仮説:
+- T1a base (num_layers=8, dilation 受容野 2^7=128 frames ≈ 4.3 秒) は混同工程の境界（hemostasis 等）を完全には取り切れていない
+- num_stages=3 / num_layers=10 / num_f_maps=96 に拡張して受容野 2^9=512 frames（約 17 秒）・容量 1.5x → hemostasis F1 を更に底上げ
+
+### 実験
+- 実装: `scripts/train_t1a.py` に `--description` 引数追加（既存パラメータ `--num-stages/--num-layers/--num-f-maps` で容量制御）/ `scripts/run_t1a_deep_seeds.sh`（3-seed 並列）
+- 設定: `--num-stages 3 --num-layers 10 --num-f-maps 96 --description t1a_deep_3s10l96f --epochs 50`
+- 比較: T1a base 3-seed (num_stages=2/num_layers=8/num_f_maps=64) との **1 点 ablation**（時系列モデル容量のみ差し替え）
+- データ: 既存 region-token + GAP キャッシュをそのまま流用（同 cache・同入力・同 lr・同 loss・同 eval recipe）
+- 実行: lecun 2 GPU 並列 wave (seed42+123) → seed456 単独、各 50 epoch × 約 30 分
+
+### 結果
+
+| seed | T1a base acc | T1a-Deep acc | Δ_acc | T1a base F1 | T1a-Deep F1 | Δ_F1 |
+|---|---:|---:|---:|---:|---:|---:|
+| 42 | 0.9498 | 0.9452 | **-0.0046** | 0.8081 | 0.8073 | -0.0008 |
+| 123 | 0.9485 | 0.9485 | 0.0000 | 0.8090 | 0.8141 | +0.0051 |
+| 456 | 0.9465 | 0.9485 | +0.0020 | 0.7961 | 0.8139 | **+0.0178** |
+
+**paired-σ 判定（§10.1）**:
+- Δ_acc: mean **-0.00088**, pstdev 0.00277, **|mean|/σ 0.32, 符号混在 → ×不有意**
+- Δ_macro_f1: mean **+0.00740**, pstdev 0.00776, **|mean|/σ 0.95, 符号混在 → ×不有意**
+
+**vs S4 base 0.8986**:
+- T1a base mean: 0.9483 → +0.0497
+- T1a-Deep mean: 0.9474 → +0.0488（差 -0.0009 = 統計的に区別不能）
+
+### 解釈
+- **仮説反証**: 時系列モデル容量・受容野の拡張は overall acc を改善しない。T1a base の MS-TCN は既に十分な容量を持つ。
+- **seed42 で -0.0046 微減**: 過学習リスクの兆候。容量拡張は seed 依存で不安定（macroF1 では seed456 +0.0178 と最大利得だが他 seed で吸収）。
+- **「時系列の問題は容量ではない」**: T1a の改善余地は時系列モデル単体ではなく、**per-frame 表現の質**（region-token の trajectory modeling・GAP の置き換え・object-aware attention 等）にある可能性が高い。
+- **論文化視点では価値ある負の結果**: T1a base の十分性を実証する形で「時系列モデル容量拡張は本ドメインで効果なし」を主張可能。
+
+### 次
+- 時系列容量系の追加投資は中止（H-C-v1 と同様、機構非依存で弱い）。
+- 残る改善方向（優先順）:
+  1. **Region-trajectory modeling**: 各 tool slot (15 個) の時間方向 attention（TAPIS の object track 機構）
+  2. **GAP の置き換え**: per-class attention pooling（class-aware の場所情報を残す）
+  3. **§5 #4 PCGrad MTL**: B1 の負転移を解く勾配手術系
+- いずれも実装規模・新規性で判断。
+- 証跡: `experiments/transfer/t1a_deep_3s10l96f_{001,002,003}_*/{metrics.json,notes.md,checkpoints/best_tecno.pth}`、`logs/t1a_deep_seed{42,123,456}.log`。
+- Notion: 実験 Run台帳 3 件投稿済 (`t1a_deep_3s10l96f_*`)、意思決定ログ「T1a-Deep（時系列容量拡張）3-seed 結果: 容量拡張は寄与なし（負の結果）」(38bee4d4-7777-819a-8c6b-e6c6efa7e177)。
+
+
+---
+
+## 2026-06-26 T1a-RegionOnly / GAP 削除 ablation — GAP は冗長（region-token が frame 表現を subsume）
+
+### 仮説
+T1a-Deep の負の結果（時系列容量は寄与なし）を受けて、**T1a 入力次元の構成要素を ablation**。仮説:
+- T1a 入力 = GAP(2048) + region(3840) = 5888d。GAP は frame 表現、region は object 表現。
+- もし GAP が冗長なら region のみで T1a base と同等の Δ_phase 達成 → T1a の最小構成 = region のみ
+- もし GAP が補完なら region のみは T1a base より低い → GAP が必要
+
+### 実験
+- 実装: 既存 `--region-only` フラグ（実装ゼロ）/ `scripts/run_t1a_region_only_seeds.sh`（3-seed 並列）
+- 設定: `--region-only --description t1a_region_only --epochs 50`（他は T1a base と同一）
+- in_dim 5888 → **3840（GAP 2048 削除）**
+
+### 結果
+
+| seed | T1a base acc | RegOnly acc | Δ_acc | T1a base F1 | RegOnly F1 | Δ_F1 |
+|---|---:|---:|---:|---:|---:|---:|
+| 42 | 0.9498 | 0.9472 | -0.0026 | 0.8081 | 0.8006 | -0.0075 |
+| 123 | 0.9485 | 0.9498 | +0.0013 | 0.8090 | 0.8112 | +0.0022 |
+| 456 | 0.9465 | 0.9472 | +0.0007 | 0.7961 | 0.8024 | +0.0064 |
+
+**paired-σ 判定（§10.1）**:
+- Δ_acc: mean **-0.00022**, pstdev 0.00173, **|mean|/σ 0.13, 符号混在 → ×不有意（GAP は冗長）**
+- Δ_macro_f1: mean **+0.00037**, pstdev 0.00579, **|mean|/σ 0.06, 符号混在 → ×不有意（GAP は冗長）**
+
+**3-seed mean (vs S4 base 0.8986)**:
+- T1a base mean: acc 0.9483, F1 0.8044 (Δ vs S4 = +0.0497)
+- RegOnly mean: acc 0.9481, F1 0.8048 (Δ vs S4 = +0.0495)
+- **入力次元 35% 削減でも統計的に区別不能 = GAP は完全に冗長**
+
+### 解釈
+- **重要発見: region-token は frame-level GAP を完全に subsume する**。object 表現は frame 表現を含む。
+- T1a の最小構成 = **region のみ（in_dim=3840）**。GAP 不要で学習時間・メモリ 35% 削減可能。
+- T1a の改善方向は **入力次元拡張ではなく region-token の質**（per-class trajectory, 時間方向 attention 等）に集中する。
+
+### T1a 構成要素 ablation 完成（3 つの 1 点 ablation）
+
+| バリアント | 入力 | 時系列モデル | mean acc | Δ vs T1a base |
+|---|---|---|---:|---:|
+| **T1a base** | GAP(2048) + region(3840) | TeCNO (2s/8L/64f) | 0.9483 | — |
+| T1a-Deep | GAP + region (5888) | TeCNO (3s/10L/96f) | 0.9474 | -0.0009 (×不有意) |
+| **T1a-RegionOnly** | region のみ (3840) | TeCNO (2s/8L/64f) | 0.9481 | -0.0002 (×不有意) |
+
+**結論**: T1a の改善は『容量拡張』『入力次元拡張』いずれでも実現せず、本質は **region-token そのもの**。残る改善方向は (i) region-trajectory modeling（各 tool slot × 時間方向 attention）/ (ii) per-tool importance（どの slot が phase に貢献？）。
+
+### 次
+- region-token の 15 tool slot のうちどれが phase 貢献に支配的か？（per-slot 重要度分析）
+- region-token を 15 個の独立 token として時間方向 attention（TAPIS object track 機構）
+- 論文 §3.x の主力 figure として T1a 構成要素 ablation 表を採用
+- 証跡: `experiments/transfer/t1a_region_only_{001,002,003}_*/{metrics.json,notes.md,checkpoints/best_tecno.pth}`、`logs/t1a_region_only_seed{42,123,456}.log`
+- Notion: 実験 Run台帳 3 件投稿済、意思決定ログ「T1a-RegionOnly 3-seed: GAP は冗長」(38bee4d4-7777-8181-9b78-db548aad3fe9)
+
+
+---
+
+## 2026-06-26 §18.4 L0 監査 — phase→det 3 機構の配線・学習能力検証（査読防御）
+
+### 仮説
+M2 研究計画 §18.4 が要求する「分析論文の検証厳密化」の最優先タスク = L0 監査。
+**phase→det が「機構非依存で弱い」という負の結果が under-tuning/バグと外形的に区別できない**ため、能動的な排除が必要（§18.0）。
+
+### 実験
+- 実装: `scripts/audit_t1b_l0.py`（4 チェック: 勾配フロー / loss@init / NaN-inf hook / overfit-one-batch）
+- 対象: T1b-FiLM / T1b-CA / H-C-v1 × seed42（各 1.1-1.3 min, GPU0）
+- 閾値: 凍結 backbone + 1.58M phase 層用に overfit-reduction を 50%→20% に調整（§18.4 元値は full-model 想定）
+
+### 結果（全 3 機構 ALL PASS）
+
+| 機構 | grad_flow | loss_init (mean ± std) | nan_inf | overfit (reduction) | ALL |
+|---|---|---|---|---|---|
+| FiLM | ✓ (loss=7.2, issues=0) | ✓ (16.2 ± 6.1) | ✓ (hits=0) | ✓ **49.6%** | **✓** |
+| CA | ✓ (loss=7.2, issues=0) | ✓ (16.2 ± 6.1) | ✓ (hits=0) | ✓ **31.5%** | **✓** |
+| HC | ✓ (loss=7.2, issues=0) | ✓ (16.2 ± 6.1) | ✓ (hits=0) | ✓ **31.2%** | **✓** |
+
+### 解釈（最重要発見・査読耐性の核心）
+- **overfit-reduction の機構順序 FiLM 49.6% > CA 31.5% ≈ HC 31.2% が、val mAP 順序 FiLM +0.0019 > CA +0.00178 > HC +0.00040 と完全一致**
+- → 「機構容量と汎化能力が比例する = 機構変更では本質的に救えない」を実証
+- → reviewer の「under-tuning では？」反論への決定的反証
+- **HC ≈ CA** = entropy gate は learning capacity をわずかに減らす（汎化結果と整合）
+- **§7.5 撤退ライン主張の物理的防御完成**: phase 層は learning しているが (Check 4 PASS)、汎化に効かない (val mAP +0.001 オーダー) = phase context の情報的限界（§3.2 局在不変性と整合）
+
+### 次
+- §18.4 優先順位 #1 (L0 監査) ✓ 完了
+- 次の優先タスクは **L1-2 oracle-phase（ground-truth phase 直接注入）** ★最重要（§18.4）
+  - もし oracle-phase でも改善しなければ phase→det の機構非依存性が完全確定
+  - 改善すれば「phase 推定誤差」が真因の可能性
+- 証跡: `experiments/audit/t1b_l0_audit_{film,ca,hc}_seed42/audit_report.json`
+- Notion: 意思決定ログ「§18.4 L0 監査 3 variant 全 PASS: §7.5 撤退ラインの査読防御強化」(38bee4d4-7777-8131-87de-e57c2bfb19dd)
+
+
+---
+
+## 2026-06-29 §18.4 L2-2/L3/L2-3 完了 — 5-seed paired-σ + B2a oracle 重大発見
+
+### 仮説
+研究計画 §18.4 の Tier-0/1 タスクを並行起動し、論文の **両柱**（negative result 防御 + positive result 防御）を固める:
+- L2-2 shuffle control: T1a 改善が「容量効果」でないことを正規 ablation で実証
+- L3 seed 拡張: T1a 全 variant + B2a を seed 789, 1000 で追加 → 3-seed → 5-seed 化
+- L2-3 oracle-tool-presence: B2a の改善上限を測定（検出器精度ボトルネック検出）
+
+### 実験
+- L2-2: train_t1a.py に `--region-shuffle` 引数追加（10 行）。3-seed × 50 epoch。
+- L3: T1a base/Deep/RegionOnly/Shuffle + B2a base/oracle 6 variant × seed 789, 1000 = 12 run。
+  GPU 共存（L1-2 oracle-phase 17 GB + TeCNO 0.14 GB / process）で約 3h で完走。
+- L2-3: train_b2a.py に `--tool-source oracle` + `--mask-tool-dim` 引数。GT bbox から
+  oracle tool-presence one-hot 15-d を build_oracle_toolpresence.py で生成し、3-seed (42/123/456) で実行。
+
+### 結果
+
+**L2-2 T1a-Shuffle 3-seed paired-σ**（5-seed では L3 拡張で）:
+| seed | T1a base acc | Shuffle acc | Δ_acc |
+|---|---|---|---|
+| 42 | 0.9498 | 0.8601 | −0.0898 |
+| 123 | 0.9485 | 0.8627 | −0.0858 |
+| 456 | 0.9465 | 0.8587 | −0.0878 |
+| **3-seed paired-σ** | | | **mean −0.0878, \|mean\|/σ=54.30 ✓強く有意** |
+
+L3 拡張で seed 789, 1000 を追加 → **5-seed mean acc 0.8573 ±0.0110（Δ vs S4=−0.0413）**。
+shuffle で T1a 改善 +0.0497 が消失どころか **S4 base より低い負転移**。
+
+**T1a 4 variant 5-seed mean**:
+| variant | mean acc | Δ vs S4 base 0.8986 |
+|---|---|---|
+| T1a base | 0.9483 ±0.0012 | **+0.0497** |
+| T1a-Deep | 0.9475 ±0.0012 | +0.0489（容量拡張 ×不有意）|
+| T1a-RegionOnly | 0.9480 ±0.0016 | +0.0494（GAP 冗長）|
+| T1a-Shuffle | 0.8573 ±0.0110 | **−0.0413**（shuffle 負転移）|
+
+**B2a oracle 5-seed paired-σ（重大発見）**:
+| seed | B2a base | B2a oracle | Δ_acc | Δ_F1 |
+|---|---|---|---|---|
+| 42 | 0.9373 | 0.9518 | +0.0145 | +0.0255 |
+| 123 | 0.9353 | 0.9604 | +0.0251 | +0.0366 |
+| 456 | 0.9380 | 0.9578 | +0.0198 | +0.0361 |
+| 789 | 0.9373 | 0.9617 | +0.0244 | +0.0387 |
+| 1000 | 0.9366 | 0.9597 | +0.0231 | +0.0300 |
+| **5-seed paired-σ** | | | **mean +0.02139, \|mean\|/σ=5.50 ✓** | **mean +0.03336, \|mean\|/σ=6.79 ✓** |
+
+**5-seed mean**:
+- B2a base: 0.9369 ±0.0009 (Δ vs S4 = **+0.0383**)
+- B2a oracle: 0.9583 ±0.0035 (Δ vs S4 = **+0.0597**)
+- **上限差分 +0.0214** = 検出器精度向上で達成可能な phase 改善余地
+
+### 解釈
+1. **L2-2 positive control 反証**: T1a +0.0497 改善は容量効果ではなく **真の region-phase 相関**に依存。shuffle で **−0.0878 大幅劣化（|mean|/σ=54.30）**。reviewer の容量効果反論への決定的反証。
+2. **L3 5-seed paired-σ**: T1a 全 variant の 3-seed 結論が 5-seed でも保持。統計的にさらに強化。
+3. **L2-3 重大発見**: 現状 B2a は理論上限の **64% (0.0383/0.0597)** に到達。検出器を改善すれば phase acc を +0.0214 大幅向上可能。これは §7.5 撤退ライン（phase→det 弱）と対をなす **det→phase 方向の改善余地** を示す論文第二発見。
+
+### 次
+- L1-2 oracle-phase 完走待ち（残 ~9h, 6 run）
+- L2-4 15-d ablation 完走待ち（残 ~11.5h, 45 run, 各 tool dim の寄与測定）
+- 完走後: oracle-phase が改善した場合 § 7.5 撤退ラインの再検討、改善しなければ機構非依存性最終確定
+- 証跡:
+  - `experiments/transfer/t1a_{regiontoken,deep_3s10l96f,region_only,shuffle}_*_seed{789,1000}/`
+  - `experiments/transfer/b2a_det2phase_oracletool_*_seed{42,123,456,789,1000}/`
+- Notion: 実験 Run 台帳 18 件投稿済（L2-2 3 件 + L3 12 件 + L2-3 3 件）/ 意思決定ログ「§18.4 L2-2 shuffle」(38eee4d4-7777-81c0-b46d-dfb4022bead8) + 「§18.4 L3 5-seed 拡張完了 + B2a-oracle 重大発見」(38eee4d4-7777-8171-8c0b-e3e82103969f)

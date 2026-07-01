@@ -2,18 +2,29 @@
 """test split での phase→det 検出評価（per-class AP・§9 の決定的検証）。
 
 既存の収束済み検出器を **test split**（instances_test.json, 4265枚）で COCO 評価し、overall mAP と
-per-class AP を出す。phase→det 注入（T1b-FiLM / T1b-CA）が、rare∧工程特異術具の検出を test で
-変えるか（val は rare 術具の実例が希少 → test の方が信頼できる）を確かめる。
+per-class AP を出す。phase→det 注入（T1b-FiLM / T1b-CA / H-C-v1）が、rare∧工程特異術具の検出を
+test で変えるか（val は rare 術具の実例が希少 → test の方が信頼できる）を確かめる。
 
 評価対象（abs path・cwd=RELDETR でも壊れない）:
-  s0_frozen      : 注入なしベースライン（warm-start 元の S0-frozen 検出器）
-  t1b_film_inj   : FiLM 注入（test phase context あり）
-  t1b_film_ctrl  : FiLM 対照（zero context）
-  t1b_ca_inj     : CA 注入（test phase context あり）
+  s0_frozen      : 注入なしベースライン（warm-start 元の S0-frozen 検出器・seed42）
+  t1b_film_inj   : FiLM 注入（test phase context あり, seed42）
+  t1b_film_ctrl  : FiLM 対照（zero context, seed42）
+  t1b_ca_inj     : CA 注入（test phase context あり, seed42）
+
+3-seed H-C-v1 評価（--seed と --models hc_v1_inj/hc_v1_ctrl を併用）:
+  hc_v1_inj   : H-C-v1 (CA + entropy gate) 注入（real ctx, --seed で per-seed ckpt）
+  hc_v1_ctrl  : H-C-v1 対照（zero ctx, 同上）
+  ※ best_t1b.pth が無い seed（init=best, 学習で改善せず）は S0-frozen ckpt に **恒等性で代替**
+     （H-C 検出器に S0-frozen ckpt を load → phase 層は missing→zero-init→恒等。
+       phase ctx を渡せば gate 込みで forward → 学習後 H-C-v1 と厳密等価）
 
 実行（.venv-relation-detr）:
+  # seed42 既存（互換維持）:
   CUDA_VISIBLE_DEVICES=0 python scripts/eval_phase2det_test.py --models s0_frozen,t1b_film_inj
-  CUDA_VISIBLE_DEVICES=1 python scripts/eval_phase2det_test.py --models t1b_film_ctrl,t1b_ca_inj
+  # H-C-v1 3-seed 追加（GPU 1 個で順次）:
+  for S in 42 123 456; do
+    CUDA_VISIBLE_DEVICES=0 python scripts/eval_phase2det_test.py --seed $S --models hc_v1_inj,hc_v1_ctrl
+  done
 """
 from __future__ import annotations
 
@@ -41,13 +52,41 @@ OUT_DIR = BODY / "experiments/analysis/step_c_coupling_analysis"
 BASE_CFG = "configs/relation_detr/relation_detr_resnet50_egosurgery.py"
 T1B_CFG = "configs/relation_detr/relation_detr_resnet50_egosurgery_t1b.py"
 CA_CFG = "configs/relation_detr/relation_detr_resnet50_egosurgery_t1b_ca.py"
+HC_CFG = "configs/relation_detr/relation_detr_resnet50_egosurgery_t1b_hc.py"
 
-MODELS = {
-    "s0_frozen": dict(cfg=BASE_CFG, ckpt=str(RELDETR / "checkpoints/incoming/seed42/best_ap.pth"), phase=None),
-    "t1b_film_inj": dict(cfg=T1B_CFG, ckpt="/tmp/t1b_film_seed42/best_t1b.pth", phase="real"),
-    "t1b_film_ctrl": dict(cfg=T1B_CFG, ckpt="/tmp/t1b_film_zeroctx_seed42/best_t1b.pth", phase="zero"),
-    "t1b_ca_inj": dict(cfg=CA_CFG, ckpt=str(BODY / "transfer/t1b_ca_seed42/best_t1b.pth"), phase="real"),
-}
+
+def s0_ckpt_for(seed: int) -> str:
+    return str(RELDETR / f"checkpoints/incoming/seed{seed}/best_ap.pth")
+
+
+def hc_ckpt_for(seed: int, tag: str) -> str:
+    """H-C-v1 の best_t1b.pth path 解決。学習で改善しなかった seed は存在しない → S0-frozen ckpt で
+    恒等代替（H-C 検出器に S0-frozen ckpt を load すると phase 層は missing→zero-init→恒等。
+    phase ctx 入力で gate forward すれば学習後 H-C-v1 と厳密等価=学習で動いていないので）。"""
+    p = Path(f"/tmp/hc_{tag}_seed{seed}/best_t1b.pth")
+    return str(p) if p.exists() else s0_ckpt_for(seed)
+
+
+def models_for_seed(seed: int) -> dict:
+    """Per-seed の MODELS 辞書を返す。seed42 は既存互換、他 seed は H-C-v1 のみ用意。"""
+    s0 = s0_ckpt_for(seed)
+    base = {
+        "s0_frozen":    dict(cfg=BASE_CFG, ckpt=s0, phase=None),
+        "hc_v1_inj":    dict(cfg=HC_CFG, ckpt=hc_ckpt_for(seed, "inj"), phase="real"),
+        "hc_v1_ctrl":   dict(cfg=HC_CFG, ckpt=hc_ckpt_for(seed, "ctrl"), phase="zero"),
+    }
+    if seed == 42:
+        # 既存 seed42 互換: t1b_film/t1b_ca の評価キーを残す
+        base.update({
+            "t1b_film_inj":  dict(cfg=T1B_CFG, ckpt="/tmp/t1b_film_seed42/best_t1b.pth", phase="real"),
+            "t1b_film_ctrl": dict(cfg=T1B_CFG, ckpt="/tmp/t1b_film_zeroctx_seed42/best_t1b.pth", phase="zero"),
+            "t1b_ca_inj":    dict(cfg=CA_CFG, ckpt=str(BODY / "transfer/t1b_ca_seed42/best_t1b.pth"), phase="real"),
+        })
+    return base
+
+
+# 既存呼び出し互換（--seed なしのとき seed42）。
+MODELS = models_for_seed(42)
 
 
 def build_test_loader():
@@ -116,25 +155,39 @@ def evaluate(model, loader, imgid_to_ctx, device, phase_mode):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--models", required=True, help="カンマ区切り（MODELS のキー）")
+    ap.add_argument("--models", required=True, help="カンマ区切り（models_for_seed(seed) のキー）")
+    ap.add_argument("--seed", type=int, default=42,
+                    help="評価対象 seed（42/123/456）。seed42 既存出力は test_eval_{key}.json、"
+                         "それ以外は test_eval_{key}_seed{S}.json として保存")
     args = ap.parse_args()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     loader = build_test_loader()
     imgid_to_ctx, miss = build_imgid_to_ctx(loader.dataset.coco, load_phase_ctx("test"))
-    print(f"[test-eval] test images={len(loader.dataset)} miss_ctx={miss}", flush=True)
+    print(f"[test-eval] seed={args.seed} test images={len(loader.dataset)} miss_ctx={miss}", flush=True)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
+    models = models_for_seed(args.seed)
     for key in args.models.split(","):
-        m = MODELS[key]
+        if key not in models:
+            print(f"[test-eval] SKIP {key}: seed{args.seed} で未定義 (available: {list(models)})", flush=True)
+            continue
+        m = models[key]
         if not Path(m["ckpt"]).exists():
             print(f"[test-eval] SKIP {key}: ckpt 無 {m['ckpt']}", flush=True)
             continue
         model = load_model(m["cfg"], m["ckpt"], device)
         register_classes(model, loader)
         mAP, per = evaluate(model, loader, imgid_to_ctx, device, m["phase"])
-        res = {"model": key, "split": "test", "ckpt": m["ckpt"], "phase": m["phase"],
-               "mAP": mAP, "per_class_ap": per}
-        (OUT_DIR / f"test_eval_{key}.json").write_text(json.dumps(res, indent=2, ensure_ascii=False))
-        print(f"[test-eval] {key}: test mAP={mAP:.4f} -> test_eval_{key}.json", flush=True)
+        # H-C-v1 評価時に gate 統計を併記（解釈の助けに）
+        gate_stat = {}
+        if hasattr(model, "_last_gate_mean") and model._last_gate_mean is not None:
+            gate_stat = {"last_gate_mean": model._last_gate_mean,
+                         "last_entropy_mean": model._last_entropy_mean}
+        res = {"model": key, "seed": args.seed, "split": "test", "ckpt": m["ckpt"], "phase": m["phase"],
+               "mAP": mAP, "per_class_ap": per, **gate_stat}
+        # 出力ファイル名: seed42 既存互換のため seed42 のときだけ {key}.json、それ以外は {key}_seed{S}.json
+        out_name = f"test_eval_{key}.json" if args.seed == 42 else f"test_eval_{key}_seed{args.seed}.json"
+        (OUT_DIR / out_name).write_text(json.dumps(res, indent=2, ensure_ascii=False))
+        print(f"[test-eval] {key}(seed{args.seed}): test mAP={mAP:.4f} -> {out_name}", flush=True)
 
 
 if __name__ == "__main__":

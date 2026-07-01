@@ -150,3 +150,13 @@ seed456 検出が compute-apps に出ず「ハング?」と誤認しかけた）
 **症状**: `python3 -c "... add="""... `command` ...""" ..."` の外側を double quote にしたため、Markdown のバッククォート内コマンドが shell の command substitution として解釈され、意図せず評価スクリプトが再実行されかけた。Ctrl-C で停止し、出力 JSON の上書きなしを確認。
 **原因**: shell 引用と Markdown 記法の相互作用を見落とした。`apply_patch` が sandbox 制約で使えない状況で、代替書き込みコマンドの引用安全性を検証せず実行した。
 **ルール**: Markdown を含む追記を `python -c` で行う場合、外側は single quote、Python 内文字列は triple double quote にする。特にバッククォート・`$()`・`$VAR` を含む本文を double quote shell 文字列に入れない。実行前に「shell が本文を展開しない引用か」を確認する。
+
+## L: hyperparam は理論的中庸点でなく**データ分布**から逆算する（2026-06-24, H-C-v1）
+**症状**: H-C-v1（T1b-CA + entropy gate）の gate ハイパーをデフォルト `tau=0.5, scale=10`（理論的中庸点 H=0.5）で設計したが、実 phase ctx の normalized entropy が train mean=0.126 / median=0.087 / 95%ile=0.346 と非常に低かった（S4 TeCNO は high-confidence な出力）。結果、`tau=0.5` だと 98% frame で gate≈1 となり、**H-C-v1 が T1b-CA に退化**（gate が機能しない）。事前に検出していなければ、3-seed × inj/ctrl = 6 run（推定 24h GPU 時間）を消費したあとで「H-C と T1b-CA がほぼ同じ mAP」という偽の負の結果が出て、研究 integrity を損ねた。
+**原因**: ゲートのハイパーを「H=0.5 が中庸」という理論前提だけで決め、実データの entropy 分布を見なかった。
+**ルール**: 連続変数を gate/threshold/温度で離散化する設計では、**学習を起動する前に実データ分布の統計量（mean/median/percentile）を必ず確認**し、それを基準にハイパーを決める。具体的には:
+1. データ分布が one-hot 寄り（high confidence）→ tau を低く（train median 近く）
+2. データ分布が uniform 寄り（low confidence）→ tau を高く
+3. 注入優位 frame の割合（gate>0.5）を 50–80% に収まるようハイパーを設計（差別化と訓練信号の両立）
+4. 事前検証スクリプト（10行で済む）を必ず走らせ、設計を確定してから本実験を起動する。
+**横展**: GPU 6h × N seed 規模の実験では、ハイパー誤設計のコストが極めて高い（24h+ 無駄）。すべての新しい hyperparam は実データ分布で 1 回検証する。再発防止性が高いので Notion lessons DB にも上げる。
