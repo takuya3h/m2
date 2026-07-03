@@ -1312,3 +1312,40 @@ acc/macro-F1 を維持しつつ edit-score / seg-F1 を改善できるか。D-au
 - acc 改善パスは依然 **検出器強化（B2a 上限 +0.0214）**＝ lecun 実行（本 sandbox は mmcv/ckpt 不在で不可）。
 - 証跡: `experiments/transfer/{t1a_boundary_00[123],t1a_base_env_00[123]}` / 集計 `experiments/analysis/t1a_boundary/REPORT.md`
   / コード `scripts/{train_t1a_boundary,sweep_boundary_tau,compare_causal_decode,report_t1a_boundary}.py`。Notion Run台帳へ自動投稿。
+
+---
+
+## 2026-07-03 検出器改善 → phase 転移の 3-seed 検証（Method A: strong aug）
+
+### 仮説
+検出器（Relation-DETR）を強アグメントで改善（mAP↑）すれば、その特徴を使う工程認識が改善する。
+特に B2a oracle gap(+0.0214) が示す「tool-presence 経由の伸びしろ」が閉じるはず。
+
+### 実験
+- 検出器: S0 レシピから `strong_album`（**aug 強度のみ 1 軸変更**, §6 比較トライアングル）。fp32・2GPU DDP eff bs4・12ep。
+- 3 detector-seed {42,123,456}: mAP **0.7426 / 0.745 / 0.745**（frozen 源 0.7303 → +0.012〜0.015、一貫）。
+- 各検出器から GAP / region-token / tool-presence を再抽出 → S4 / B2a / T1a を再学習。
+- **厳密性**: phase-seed 3 点平均でノイズ除去（同 seed でも ~0.8pp の phase 学習非決定性を発見）→ detector-seed で paired-σ（§10.1）。**全 54 学習成功**。
+- 実行: **efros sandbox**（ユーザーが images/repo/ckpt を供給、mmcv 不要の `.venv-relation-detr`）。従来 log の「lecun でしか不可」を解消。
+
+### 結果（paired-σ, mean Δacc / 判定）
+| 経路 | det42 | det123 | det456 | mean Δacc | 同符号 | 判定 |
+|---|--:|--:|--:|--:|:--:|:--:|
+| **S4（GAP 2048d）** | +1.76 | +1.25 | +2.38 | **+1.80pp** | ✅ | **✅ 有意** |
+| **B2a（tool-presence 15d）** | +0.24 | −0.62 | +0.95 | +0.19pp | ❌ | ❌ 非有意 |
+| **T1a（region-token）** | +0.37 | −0.70 | −0.37 | −0.23pp | ❌ | ❌ 非有意 |
+
+（|1.80|>0.46σ かつ 3seed 全正 → S4 のみ有意。B2a/T1a は符号不一致で非有意）
+
+### 解釈
+1. **S4(GAP) のみ頑健改善 (+1.80pp acc)**。検出器 mAP +1.3pp → phase acc +1.8pp の明確な転移。
+2. **B2a/T1a は非有意** → **B2a oracle gap は検出器改善（強aug）では閉じない**。前回 log の「acc 改善パス＝検出器強化(B2a 上限+0.0214)」を**修正**: 改善は起きるが **GAP 経由**であり tool-presence 経由ではない。
+3. **機序**: 強 aug は backbone を広く改善 → GAP がそれを捉え phase へ頑健転移。tool-presence(15d)・region は術具ヘッド局所で、mAP は上がっても phase へは seed 依存でノイジー。
+4. 皮肉な整合: GAP 改善量(+1.80pp) は B2a oracle gap(+2.14pp) と**同水準** → 「仮説と同程度助けるが想定と違うチャネル」。
+5. **seed42 単独では T1a/B2a も改善と誤認**（+0.37/+0.24pp）→ 3-seed＋phase-seed 平均の厳密化が過剰主張を阻止。「フル」厳密化の意義を数値で実証。
+
+### 次
+- **hires（Method C）**: 小物体術具（small AP ~0.01）を高解像度(1200/2000)で改善 → **別チャネルで B2a を閉じられるか**の検証（Phase II, ~14h）。
+- **test split 最終評価**（勝ち構成の per-class AP + phase test metrics）。
+- 証跡: `experiments/detector_improve/augstrong_seed{42,123,456}/`（mAP・best_ap.pth）, `logs/phase3seed_results.tsv`（54行）, `logs/paired_sigma_final.txt`。
+  コード: `scripts/{_detector_full_study,_run_phase_probe_3seed,paired_sigma_3seed,_extract_improved}`。config ミラー `configs/detector_relation_detr/`。

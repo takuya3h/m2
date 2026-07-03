@@ -1,0 +1,55 @@
+[setup-reldetr] プロジェクト: /home/ubuntu/slocal/m2
+[setup-reldetr] === 前提チェック ===
+[setup-reldetr] nvcc(/usr/local/cuda-11.8): 11.8 / driver: 535.309.01
+[setup-reldetr] === 1. uv 仮想環境（.venv-relation-detr, Python 3.11）===
+Using CPython 3.11.4 interpreter at: /home/ubuntu/.pyenv/versions/3.11.4/bin/python3.11
+Creating virtual environment at: .venv-relation-detr
+Activate with: source .venv-relation-detr/bin/activate
+[setup-reldetr] === 2. torch 2.1.2 + torchvision 0.16.2 (cu118) ===
+Using Python 3.11.4 environment at: .venv-relation-detr
+Resolved 18 packages in 1.72s
+Downloading networkx (2.0MiB)
+Downloading numpy (16.1MiB)
+Downloading torchvision (5.8MiB)
+Downloading torch (2.2GiB)
+Downloading triton (85.1MiB)
+Downloading pillow (6.8MiB)
+Downloading sympy (6.0MiB)
+ Downloaded torchvision
+ Downloaded triton
+ Downloaded pillow
+ Downloaded networkx
+ Downloaded numpy
+ Downloaded sympy
+ Downloaded torch
+Prepared 18 packages in 31.84s
+warning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance.
+         If the cache and target directories are on different filesystems, hardlinking may not be supported.
+         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.
+Installed 18 packages in 5.20s
+ + certifi==2022.12.7
+ + charset-normalizer==2.1.1
+ + filelock==3.29.0
+ + fsspec==2026.4.0
+ + idna==3.4
+ + jinja2==3.1.6
+ + markupsafe==3.0.3
+ + mpmath==1.3.0
+ + networkx==3.6.1
+ + numpy==2.4.4
+ + pillow==12.2.0
+ + requests==2.28.1
+ + sympy==1.14.0
+ + torch==2.1.2+cu118
+ + torchvision==0.16.2+cu118
+ + triton==2.1.0
+ + typing-extensions==4.15.0
+ + urllib3==1.26.13
+[setup-reldetr] === 3. requirements.relation_detr.lock.txt で全 72 パッケージを厳密固定 ===
+Using Python 3.11.4 environment at: .venv-relation-detr
+  × No solution found when resolving dependencies:
+  ╰─▶ Because there is no version of iopath==0.1.10 and you require
+      iopath==0.1.10, we can conclude that your requirements are
+      unsatisfiable.
+
+hint: `iopath` was found on https://download.pytorch.org/whl/cu118, but not at the requested version (iopath==0.1.10). A compatible version may be available on a subsequent index (e.g., https://pypi.org/simple). By default, uv will only consider versions that are published on the first index that contains a given package, to avoid dependency confusion attacks. If all indexes are equally trusted, use `--index-strategy unsafe-best-match` to consider all versions from all indexes, regardless of the order in which they were defined.
