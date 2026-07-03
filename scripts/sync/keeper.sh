@@ -10,6 +10,14 @@ flock -n 9 || exit 0
 M2DIR=$([ -d ~/slocal2 ] && echo ~/slocal2/m2 || echo ~/slocal/m2)
 
 while true; do
+  # hub(philip)へのSSHトンネル維持（~/.tunnel_to_philip が存在するノードのみ。中身=秘密鍵パス）
+  # コンテナ間はSSH(50072)しか通らないため、syncthingは星型(各ノード→philip)で接続する
+  if [ -f ~/.tunnel_to_philip ] && ! pgrep -f 'ssh.*-L 22001:127.0.0.1:22000' >/dev/null; then
+    nohup ssh -N -L 22001:127.0.0.1:22000 -p 50072 -i "$(cat ~/.tunnel_to_philip)" \
+      -o StrictHostKeyChecking=accept-new -o ExitOnForwardFailure=yes \
+      -o ServerAliveInterval=30 -o ServerAliveCountMax=3 \
+      ubuntu@192.168.196.150 >>~/.tunnel.log 2>&1 9>&- &
+  fi
   # syncthing が入っていて動いていなければ起動（未インストールならスキップ）
   # 9>&- : ロックFDを子に継承させない（継承するとkeeper再起動時にflockが永久に失敗する）
   if [ -x ~/bin/syncthing ] && ! pgrep -x syncthing >/dev/null; then
