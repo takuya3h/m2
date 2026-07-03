@@ -21,6 +21,6 @@ while true; do
   # Syncthing の同期ルール (.stignore) も phase0 の .stglobalignore から自動反映
   git -C "$M2DIR" show origin/phase0:.stglobalignore > "$M2DIR/.stignore.new" 2>/dev/null \
     && mv "$M2DIR/.stignore.new" "$M2DIR/.stignore"
-  ~/bin/m2-sync.sh
-  sleep 1800
+  ~/bin/m2-sync.sh 9>&-
+  sleep 1800 9>&-
 done
