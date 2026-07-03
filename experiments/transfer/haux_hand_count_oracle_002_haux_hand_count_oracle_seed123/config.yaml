@@ -1,0 +1,46 @@
+experiment:
+  category: transfer
+  step: haux_hand
+  description: haux_hand_count_oracle
+seed: 123
+frozen_source:
+  detector: relation_detr
+  seed: 42
+  backbone: resnet50
+  gap_cache: data/processed/stage1_features/relation_detr_seed42
+method:
+  name: haux_hand_to_phase
+  system: ①signal_level
+  direction: hand->phase
+  hand_feature_type: count
+  hand_source: oracle
+  with_tool: false
+  tool_source: null
+  drop_gap: false
+  shuffle_control: false
+  hand_feature_dim: 4
+  coupling: handfeature_concat
+  neck: null
+  grad_crossing: false
+model:
+  temporal_head: tecno
+  num_stages: 2
+  num_layers: 8
+  num_f_maps: 64
+  in_dim: 2052
+  num_phases: 9
+  causal: true
+train:
+  epochs: 50
+  lr: 0.0005
+  weight_decay: 0.01
+  freeze_backbone: true
+  smoothing_weight: 0.15
+data:
+  n_train_clips: 13
+  n_val_clips: 3
+delta:
+  phase_denominator: s4_phase_baseline (frozen_tecno_phase_baseline)
+  note: Δ_phase = (H-aux − S4 base 0.8986±0.0028). 土台は素 TeCNO・neck 無しで一致、変える軸は手特徴
+    1 点。
+server_name: efros
