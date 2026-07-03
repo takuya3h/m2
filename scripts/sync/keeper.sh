@@ -17,6 +17,9 @@ while true; do
   # m2-sync.sh を phase0 の最新版へ自己更新してから実行（前回 fetch 時点の origin/phase0 を使用）
   git -C "$M2DIR" show origin/phase0:scripts/sync/m2-sync.sh > ~/bin/m2-sync.sh.new 2>/dev/null \
     && mv ~/bin/m2-sync.sh.new ~/bin/m2-sync.sh && chmod +x ~/bin/m2-sync.sh
+  # Syncthing の同期ルール (.stignore) も phase0 の .stglobalignore から自動反映
+  git -C "$M2DIR" show origin/phase0:.stglobalignore > "$M2DIR/.stignore.new" 2>/dev/null \
+    && mv "$M2DIR/.stignore.new" "$M2DIR/.stignore"
   ~/bin/m2-sync.sh
   sleep 1800
 done
