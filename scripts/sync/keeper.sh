@@ -11,8 +11,9 @@ M2DIR=$([ -d ~/slocal2 ] && echo ~/slocal2/m2 || echo ~/slocal/m2)
 
 while true; do
   # syncthing が入っていて動いていなければ起動（未インストールならスキップ）
+  # 9>&- : ロックFDを子に継承させない（継承するとkeeper再起動時にflockが永久に失敗する）
   if [ -x ~/bin/syncthing ] && ! pgrep -x syncthing >/dev/null; then
-    nohup ~/bin/syncthing serve --no-browser >>~/.syncthing.log 2>&1 &
+    nohup ~/bin/syncthing serve --no-browser >>~/.syncthing.log 2>&1 9>&- &
   fi
   # m2-sync.sh を phase0 の最新版へ自己更新してから実行（前回 fetch 時点の origin/phase0 を使用）
   git -C "$M2DIR" show origin/phase0:scripts/sync/m2-sync.sh > ~/bin/m2-sync.sh.new 2>/dev/null \
