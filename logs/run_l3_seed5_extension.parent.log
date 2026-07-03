@@ -1,0 +1,51 @@
+================ §18.4 L3 seed 拡張（5-seed paired-σ 強化）================
+ 対象: T1a (base/Deep/RegionOnly/Shuffle) + B2a (base/oracle) × seed 789, 1000
+ 軽量実験のため L1-2 oracle-phase と GPU 共存（detection 17GB / TeCNO 0.14GB）
+===========================================================================
+
+[seed 789] wave 1: T1a-base(GPU0) + B2a-base(GPU1) ...
+[seed 789] wave 2: T1a-Deep(GPU0) + B2a-oracle(GPU1) ...
+[seed 789] wave 3: T1a-RegionOnly(GPU0) + T1a-Shuffle(GPU1) ...
+
+[seed 1000] wave 1: T1a-base(GPU0) + B2a-base(GPU1) ...
+[seed 1000] wave 2: T1a-Deep(GPU0) + B2a-oracle(GPU1) ...
+[seed 1000] wave 3: T1a-RegionOnly(GPU0) + T1a-Shuffle(GPU1) ...
+
+================ L3 全 12 run 完走 ================
+-- t1a_base seed789 --
+[t1a] best @epoch 22: acc=0.9472 macroF1=0.7996
+[t1a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/t1a_regiontoken_004_t1a_regiontoken_seed789
+-- t1a_base seed1000 --
+[t1a] best @epoch 18: acc=0.9492 macroF1=0.8065
+[t1a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/t1a_regiontoken_005_t1a_regiontoken_seed1000
+-- t1a_deep seed789 --
+[t1a] best @epoch 24: acc=0.9472 macroF1=0.8066
+[t1a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/t1a_deep_3s10l96f_004_t1a_deep_3s10l96f_seed789
+-- t1a_deep seed1000 --
+[t1a] best @epoch 21: acc=0.9479 macroF1=0.8081
+[t1a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/t1a_deep_3s10l96f_005_t1a_deep_3s10l96f_seed1000
+-- t1a_region_only seed789 --
+[t1a] best @epoch 19: acc=0.9498 macroF1=0.8124
+[t1a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/t1a_region_only_004_t1a_region_only_seed789
+-- t1a_region_only seed1000 --
+[t1a] best @epoch 32: acc=0.9459 macroF1=0.7993
+[t1a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/t1a_region_only_005_t1a_region_only_seed1000
+-- t1a_shuffle seed789 --
+[t1a] best @epoch 29: acc=0.8686 macroF1=0.6287
+[t1a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/t1a_shuffle_004_t1a_shuffle_seed789
+-- t1a_shuffle seed1000 --
+[t1a] best @epoch 33: acc=0.8363 macroF1=0.6130
+[t1a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/t1a_shuffle_005_t1a_shuffle_seed1000
+-- b2a_base seed789 --
+[b2a] best @epoch 34: acc=0.9373 macroF1=0.7914
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_det2phase_toolpresence_001_b2a_det2phase_toolpresence_seed789
+-- b2a_base seed1000 --
+[b2a] best @epoch 47: acc=0.9366 macroF1=0.7957
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_det2phase_toolpresence_002_b2a_det2phase_toolpresence_seed1000
+-- b2a_oracle seed789 --
+[b2a] best @epoch 46: acc=0.9617 macroF1=0.8301
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_det2phase_oracletool_001_b2a_det2phase_oracletool_seed789
+-- b2a_oracle seed1000 --
+[b2a] best @epoch 47: acc=0.9597 macroF1=0.8257
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_det2phase_oracletool_002_b2a_det2phase_oracletool_seed1000
+次: experiments/transfer/ から 5-seed 集計し paired-σ + Holm-Bonferroni で多重比較補正。

@@ -1,0 +1,24 @@
+================ T1a-Deep 3-seed（lecun・固定設定）================
+ DESC=t1a_deep_3s10l96f epochs=50
+ 機構: num_stages=3 num_layers=10 num_f_maps=96 (T1a base 比 +1 stage / +2 layers / +32 maps)
+ 分母: S4 base 0.8986±0.0034 (T1a base mean 0.9483, Δ=+0.0497 既存)
+ 期待: T1a-Deep > T1a base なら時系列容量拡張で混同工程の境界 frame を更に救う
+====================================================================
+[wave 1] seed42(GPU0) + seed123(GPU1) 並列起動 ...
+[wave 1] 完了
+[wave 2] seed456(GPU0) 単独 ...
+[wave 2] 完了
+================ 完了・サマリ ================
+-- seed42 --
+[t1a][epoch 50/50] loss=0.3105  val_acc=0.9399  macroF1=0.7966  edit=26.43  segF1@50=0.28
+[t1a] best @epoch 31: acc=0.9452 macroF1=0.8073
+[t1a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/t1a_deep_3s10l96f_001_t1a_deep_3s10l96f_seed42
+-- seed123 --
+[t1a][epoch 50/50] loss=0.2214  val_acc=0.9406  macroF1=0.8024  edit=30.17  segF1@50=0.33
+[t1a] best @epoch 17: acc=0.9485 macroF1=0.8141
+[t1a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/t1a_deep_3s10l96f_002_t1a_deep_3s10l96f_seed123
+-- seed456 --
+[t1a][epoch 50/50] loss=0.2471  val_acc=0.9175  macroF1=0.7704  edit=45.10  segF1@50=0.45
+[t1a] best @epoch 44: acc=0.9485 macroF1=0.8139
+[t1a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/t1a_deep_3s10l96f_003_t1a_deep_3s10l96f_seed456
+次: experiments/transfer/t1a_deep_3s10l96f_*/metrics.json を集計し、T1a base 3-seed と paired-σ で Δ 判定。

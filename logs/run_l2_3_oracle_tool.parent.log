@@ -1,0 +1,22 @@
+================ §18.4 L2-3 B2a-oracle-tool 3-seed ================
+ 比較: B2a base (mean phase acc 0.9369, Δ +0.0383) との 1 点 ablation
+ 差分: tool-presence ソース pred→oracle のみ。他は全て B2a base と同一
+===================================================================
+[wave 1] seed42(GPU0) + seed123(GPU1) 並列起動 ...
+[wave 1] 完了
+[wave 2] seed456(GPU0) 単独 ...
+[wave 2] 完了
+================ 完了・サマリ ================
+-- seed42 --
+[b2a][epoch 50/50] loss=0.3931  val_acc=0.9182  macroF1=0.6827  edit=35.33  segF1@50=0.33
+[b2a] best @epoch 47: acc=0.9518 macroF1=0.8182
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_det2phase_oracletool_004_b2a_det2phase_oracletool_seed42
+-- seed123 --
+[b2a][epoch 50/50] loss=0.2763  val_acc=0.9578  macroF1=0.8252  edit=54.07  segF1@50=0.56
+[b2a] best @epoch 45: acc=0.9604 macroF1=0.8253
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_det2phase_oracletool_003_b2a_det2phase_oracletool_seed123
+-- seed456 --
+[b2a][epoch 50/50] loss=1.2568  val_acc=0.8924  macroF1=0.7847  edit=51.05  segF1@50=0.38
+[b2a] best @epoch 44: acc=0.9578 macroF1=0.8256
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_det2phase_oracletool_005_b2a_det2phase_oracletool_seed456
+次: B2a base 3-seed と paired-σ で Δ_acc/macroF1 を比較。

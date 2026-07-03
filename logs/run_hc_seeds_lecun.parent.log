@@ -1,0 +1,33 @@
+================ H-C-v1 seed{42,123,456}（lecun・固定設定）================
+ inject=hc (= T1b-CA + entropy gate) trainable=film epochs=6
+ 健全帯: init mAP ∈ [0.65, 0.78]
+ 割当: 2GPU wave-by-wave（GPU0 / GPU1、残り1seedはGPU0単独）
+===============================================================================
+[warmup] MultiScaleDeformableAttention CUDA 拡張を事前ビルド中 ...
+Using /home/ubuntu/.cache/torch_extensions/py311_cu118 as PyTorch extensions root...
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/models/bricks/ms_deform_attn.py:24: UserWarning: Failed to load MultiScaleDeformableAttention C++ extension: Ninja is required to load C++ extensions
+  warnings.warn(f"Failed to load MultiScaleDeformableAttention C++ extension: {e}")
+[warmup] MSDeformAttn ext ready
+[measure wave1] seed42(GPU0) / seed123(GPU1) 並列 measure ...
+[measure wave2] seed456(GPU0) 単独 measure ...
+[measure] seed42 init mAP=0.7303082182
+[measure] seed123 init mAP=0.7291948117
+[measure] seed456 init mAP=0.7216619815
+[measure] 全 seed 健全帯チェック OK
+[wave A:inj wave1] seed42(GPU0) + seed123(GPU1) 並列起動 ...
+[wave A:inj wave2] seed456(GPU0) 単独 ...
+[wave A:inj] 完了
+[wave B:ctrl wave1] seed42(GPU0) + seed123(GPU1) 並列起動 ...
+[wave B:ctrl wave2] seed456(GPU0) 単独 ...
+[wave B:ctrl] 完了
+================ 完了・回収サマリ ================
+-- seed42 --
+  inj: init=0.7303 best@ep-1 mAP=0.7303
+  ctrl: init=0.7303 best@ep-1 mAP=0.7303
+-- seed123 --
+  inj: init=0.7292 best@ep5 mAP=0.7301
+  ctrl: init=0.7292 best@ep-1 mAP=0.7292
+-- seed456 --
+  inj: init=0.7217 best@ep1 mAP=0.7224
+  ctrl: init=0.7217 best@ep3 mAP=0.7220
+次: T1b-CA inj/ctrl と 3-seed paired-σ で純効果差を比較（gate 単体寄与）。
