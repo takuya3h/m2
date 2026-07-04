@@ -28,6 +28,8 @@ experiments/**/checkpoints/
 experiments/**/logs/
 experiments/**/predictions/
 experiments/**/visualizations/
+experiments/**/tf_log/
+experiments/**/training*.log
 experiments/**/*.npy
 experiments/**/*.pt
 experiments/**/*.pth
@@ -140,3 +142,8 @@ prompts_legacy/
 prompts_n_legacy/
 .notion_sync.json
 experiments/**/.notion_sync.json
+logs/
+
+# === Syncthing (デバイス毎の生成物) ===
+.stignore
+.stignore.new

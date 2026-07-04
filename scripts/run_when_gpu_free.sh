@@ -131,7 +131,7 @@ run_tecno_training() {
   # Relation-DETR 側 (frozen_src = relation_detr_seed42)
   for seed in 42 123 456; do
     log "  T1a Relation-DETR seed=$seed ..."
-    FROZEN_SRC=relation_detr_seed42 CUDA_VISIBLE_DEVICES=0 "$vpy" scripts/train_t1a.py \
+    RELDETR_FROZEN_TAG=relation_detr_seed42 CUDA_VISIBLE_DEVICES=0 "$vpy" scripts/train_t1a.py \
       --seed "$seed" --epochs 50 \
       --description t1a_frozen_src_relationdetr \
       > "$LOG_DIR/tecno_t1a_relation_seed${seed}.log" 2>&1
@@ -140,7 +140,7 @@ run_tecno_training() {
   # AlignDETR 側 (frozen_src = aligndetr_s0frozen_seed42)
   for seed in 42 123 456; do
     log "  T1a AlignDETR seed=$seed ..."
-    FROZEN_SRC=aligndetr_s0frozen_seed42 CUDA_VISIBLE_DEVICES=0 "$vpy" scripts/train_t1a.py \
+    RELDETR_FROZEN_TAG=aligndetr_s0frozen_seed42 CUDA_VISIBLE_DEVICES=0 "$vpy" scripts/train_t1a.py \
       --seed "$seed" --epochs 50 \
       --description t1a_frozen_src_aligndetr \
       > "$LOG_DIR/tecno_t1a_aligndetr_seed${seed}.log" 2>&1

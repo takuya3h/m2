@@ -1,0 +1,50 @@
+experiment:
+  category: transfer
+  step: t1a_boundary
+  description: t1a_boundary
+seed: 42
+frozen_source:
+  detector: relation_detr
+  seed: 42
+  backbone: resnet50
+  gap_cache: data/processed/stage1_features/relation_detr_seed42
+  region_cache: data/processed/t1a_regiontoken/relation_detr_seed42
+method:
+  name: t1a_boundary_head
+  system: ②feature_level/object-token + boundary-modeling
+  ref: COUPLING_IMPROVEMENT_RECOMMENDATIONS §4.1/§8 (ASRF/MS-TCN++ boundary head)
+  direction: det->phase
+  coupling: regiontoken_concat_gap + causal_boundary_head
+  base: t1a_regiontoken (in_dim=5888)
+  boundary_head: shared_stage1_trunk -> conv1d(num_f_maps->1), class_agnostic, causal
+  boundary_target: phase-change ±1 dilation (supervision only)
+  boundary_weight: 1.0
+  boundary_pos_weight: 14.702439024390245
+  boundary_tau_sticky: 0.5
+  region_dim: 3840
+  neck: null
+  grad_crossing: false
+model:
+  temporal_head: tecno+boundary
+  num_stages: 2
+  num_layers: 8
+  num_f_maps: 64
+  in_dim: 5888
+  num_phases: 9
+  causal: true
+train:
+  epochs: 50
+  lr: 0.0005
+  weight_decay: 0.01
+  freeze_backbone: true
+  smoothing_weight: 0.15
+data:
+  n_train_clips: 13
+  n_val_clips: 3
+delta:
+  phase_denominator: t1a_regiontoken base (同一環境 efros で再学習・paired)
+  primary_metric: edit_score / seg_f1@{10,25,50} (over-segmentation)
+  maintain_metric: accuracy / macro_f1
+  note: Δ = (T1a-Boundary − T1a base[同env]) の per-seed paired-σ（§10.1）。plain=正則化効果
+    / sticky=+因果 boundary-gated decode。
+server_name: efros
