@@ -902,6 +902,16 @@ S4 base（GAP-only TeCNO 3-seed = acc 0.8983±0.0090 / macro-F1 0.6965、文書�
   → **ボトルネックは時系列核でなく入力信号（per-frame 表現）**。系統①の検出精度ボトルネック(L2-3)と同方向。
 - 実装知見: 純Python 逐次 minGRU は TeCNO の約 30 倍遅い（1run≈25分）。
 
+### 2026-07-04 検出器改善スタディ — 「検出器強化→phase改善」は GAP 経由・val 限定（test で非頑健）
+
+Relation-DETR を efros で強aug(Method A)/高解像(Method C)改善し、phase 転移を **3-seed paired-σ + phase-seed 平均 + test 確認**で厳密評価（`scripts/_detector_full_study.sh` / `_run_phase_probe_3seed.sh` / `paired_sigma_3seed.py` ほか）。**metrics は全て実測**。
+
+- **検出器**: 強aug mAP 0.7303→0.7426/0.745/0.745（3seed 一貫）。hires 0.733（small AP 0.013→0.031 だが large 犠牲で全体微減）。
+- **phase(val)**: S4/GAP のみ **+1.80pp 有意**（3seed 全正）。B2a(tool-presence)/T1a(region) 非有意。hires は全経路で A に劣る。
+- **phase(test, `--eval-test`)**: S4/GAP は **❌非有意**（mean +2.12pp / det42 が +1.76→**−2.49 反転** / σ3.36）。2/3 seed は test でも正だが同符号崩れ。
+- → **検出器改善→phase改善は val で示唆・test で頑健確認に至らず、経路は GAP に限る。B2a oracle gap はどの改善でも非閉塞**。下記 Pillar3「検出器強化」を精緻化: 効くのは **GAP 経由のみ**・test 頑健性は検出器 seed 追加が要。
+- 証跡: `docs/experiment_log.md`(2026-07-03/04), `logs/{phase3seed_results.tsv, paired_sigma_final.txt, hires_probe_summary.txt, s4_test_results.tsv}`, `configs/detector_relation_detr/`。
+
 ### 2026-07-02 T1a-Boundary — over-segmentation は学習 boundary head でなく因果 debounce で回収
 
 STEP C 改善提案 §8「boundary modeling で T1a の edit-score を改善」を実装・実測（`scripts/train_t1a_boundary.py`、

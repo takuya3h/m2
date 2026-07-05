@@ -1349,3 +1349,52 @@ acc/macro-F1 を維持しつつ edit-score / seg-F1 を改善できるか。D-au
 - **test split 最終評価**（勝ち構成の per-class AP + phase test metrics）。
 - 証跡: `experiments/detector_improve/augstrong_seed{42,123,456}/`（mAP・best_ap.pth）, `logs/phase3seed_results.tsv`（54行）, `logs/paired_sigma_final.txt`。
   コード: `scripts/{_detector_full_study,_run_phase_probe_3seed,paired_sigma_3seed,_extract_improved}`。config ミラー `configs/detector_relation_detr/`。
+
+---
+
+## 2026-07-04 hires（Method C: 強aug＋高解像）の phase 転移 — 検出器改善スタディ完了
+
+### 仮説
+Method A(強aug) は GAP のみ改善し tool-presence/region は非頑健だった。原因は「強aug は大域改善だが**小物体術具**(small AP~0.01)は未改善」の可能性。
+高解像度(1200/2000)で小物体検出を改善すれば、別チャネル(tool-presence/region)で B2a gap を閉じられるはず。
+
+### 実験
+- 検出器 Method C: `strong_album_1200_2000`（強aug＋高解像度）seed42。fp32・2GPU・12ep。
+- **mAP=0.733**（Method A 0.7426 より**低下**）。per-size: **small 0.013→0.031(+2.4×)**, medium 0.276→0.282, large 0.753→0.743。小物体は改善したが large と引換で全体微減。
+- phase: frozen42 / augstrong42(A) / hires42(C) の 3-way を S4/B2a/T1a × phase-seed 3点平均で比較。全27学習成功。
+
+### 結果（3-way, acc, phase-seed平均）
+| 経路 | frozen | augA | hiresC | Δ(hiresC−augA) |
+|---|--:|--:|--:|--:|
+| S4（GAP） | 0.8953 | **0.9133** | 0.9076 | **−0.57pp** |
+| B2a（tool-presence） | 0.9377 | 0.9375 | 0.9311 | **−0.64pp** |
+| T1a（region） | 0.9479 | **0.9520** | 0.9476 | **−0.44pp** |
+
+→ **hiresC は全経路で augA に劣る**（B2a/T1a では frozen 以下）。
+
+### 解釈
+1. **小物体 AP 改善は phase に転移せず**。全体 mAP 低下(large↓)が GAP を劣化させ phase を押し下げた。
+2. **B2a gap は hires でも閉じない**（hiresC B2a < frozen）。
+3. 総括: phase が求めるのは**広い backbone 改善(GAP)**。高解像度の**狭い小物体特化**は大域表現を犠牲にし逆効果。
+
+### 検出器改善スタディ 全体結論（確定）
+**検出器改善→phase改善 は成立するが【経路 = GAP のみ / 手段 = 強aug のみ / B2a gap は非閉塞】。**
+tool-presence/region 経路のボトルネックは検出器品質ではない（＝入力信号/表現側の別要因）。論文 Pillar3 に「時系列後処理でなく検出器強化、ただし GAP 経由に限る」を確定知見として反映。
+
+### 次
+- test-set 確認: S4/GAP frozen vs augstrong を test で paired-σ（`--eval-test`、結果は追記）。
+- 証跡: `experiments/detector_improve/augstrong_hires_seed42/`, `logs/{hires_probe_results.tsv(27), hires_probe_summary.txt}`, `logs/paired_sigma_final.txt`。
+  コード: `scripts/{_run_hires_probe,report_hires_probe}.py`。
+
+### test-set 確認結果（S4/GAP, `--eval-test`, 2026-07-04 追記）
+| 検出器seed | val Δacc | test Δacc | test frozen/aug acc |
+|---|--:|--:|--:|
+| det42 | +1.76 | **−2.49** | 0.7955 / 0.7705 |
+| det123 | +1.25 | +5.42 | 0.7504 / 0.8047 |
+| det456 | +2.38 | +3.42 | 0.7401 / 0.7744 |
+
+**test paired-σ: mean=+2.12pp, pstdev=3.36pp, 符号 −/+/+ → ❌非有意**（val の +1.80pp ✅有意 とは不一致）。
+
+**結論の修正**: S4/GAP 改善は **val で有意・test で非有意**（det42 反転・高分散）。2/3 seed は test でも正だが「全seed同符号」が崩れる。
+→ **GAP 経由効果は実在するが seed 感受性が高く held-out test で頑健確認に至らず**。test-set 評価が val 楽観を是正。
+証跡: `logs/s4_test_results.tsv(18)`, `experiments/phase1/s4_phase_baseline_0{44..61}/`(metrics.json に test_* 併記)。
