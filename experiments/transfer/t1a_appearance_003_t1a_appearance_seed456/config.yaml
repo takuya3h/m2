@@ -1,0 +1,44 @@
+experiment:
+  category: transfer
+  step: t1a_appearance
+  description: t1a_appearance
+seed: 456
+frozen_source:
+  detector: relation_detr
+  seed: 42
+  backbone: resnet50
+  gap_cache: data/processed/stage1_features/relation_detr_seed42
+  region_cache: data/processed/t1a_regiontoken/relation_detr_seed42_appearance
+method:
+  name: t1a_region_to_phase
+  system: ②feature_level/object-token
+  ref: TAPIS/GraSP (MedIA 2025)
+  direction: det->phase
+  coupling: regiontoken_concat_gap
+  region_repr: per_class_256d_score_weighted
+  region_dim: 3840
+  neck: null
+  grad_crossing: false
+model:
+  temporal_head: tecno
+  num_stages: 2
+  num_layers: 8
+  num_f_maps: 64
+  in_dim: 5888
+  num_phases: 9
+  causal: true
+train:
+  epochs: 50
+  lr: 0.0005
+  weight_decay: 0.01
+  freeze_backbone: true
+  smoothing_weight: 0.15
+data:
+  n_train_clips: 13
+  n_val_clips: 3
+delta:
+  phase_denominator: s4_phase_baseline (frozen_tecno_phase_baseline)
+  denominator_value_lecun: 0.8986±0.0034
+  note: Δ_phase = (T1a − S4 base). 別サーバー実行時は lecun 分母を流用し サーバー差を §8.0 明文化（同一 ckpt・同一前処理ゆえ差は
+    TeCNO 学習数値のみ）。
+server_name: efros

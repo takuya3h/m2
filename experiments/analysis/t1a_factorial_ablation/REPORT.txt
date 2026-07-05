@@ -1,0 +1,38 @@
+================================================================================
+T1a 利得源の因果分解 (a): per-tool-slot ablation（15 slot × 3 phase-seed）
+Δ_slot = mask_slot − baseline（除去による phase acc 低下, paired-σ §10.1）
+================================================================================
+
+baseline (det42-frozen no-mask): acc=['0.9479', '0.9492', '0.9465'] mean=0.9479  macroF1 mean=0.8080
+S4 GAP-base=0.8986 → T1a 総利得=+0.0493 (+4.93pp) がこの分解の対象
+
+[positive control] region frame対応を破壊(shuffle): acc mean=0.8605 f1 mean=0.6359
+  → baseline0.9479 から -8.73pp、S4 GAP-base0.8986 すら -3.81pp。利得消失＝region 情報の寄与は実在・frame整合が本質。
+
+[per-slot 除去 Δ]（Δacc pp, * = 3seed 同符号で有意, ★=signature 術具）
+  slot tool                    Δacc(pp)     σ  ΔmacroF1(pp)  判定
+     0★Bipolar Forceps          -0.86* 0.19        -3.11   有意DROP  (hemostasis)
+     1 Electric Cautery         -0.04  0.06        -0.17   非有意
+     2 Forceps                  +0.15  0.11        +0.19   非有意
+     3 Gauze                    +0.09  0.16        -0.07   非有意
+     4 Hook                     -0.09  0.14        -0.27   非有意
+     5 Mouth Gag                +0.09  0.14        -0.49   非有意
+     6★Needle Holders           -0.46* 0.14        -0.28   有意DROP  (closure)
+     7 Raspatory                -0.13  0.09        +0.02   非有意
+     8 Retractor                +0.09  0.16        +0.05   非有意
+     9★Scalpel                  -0.77* 0.19        -1.15   有意DROP  (incision)
+    10 Scissors                 -0.44* 0.22        -0.73   有意DROP
+    11★Skewer                   -0.00  0.22        +0.05   非有意  (design)
+    12 Suction Cannula          +0.07  0.00        -0.27   有意UP
+    13★Syringe                  +0.07  0.09        +0.12   非有意  (anesthesia)
+    14 Tweezers                 +0.11  0.11        -0.11   非有意
+
+[signature vs 非signature の除去影響]
+  signature 5slot(Bipolar/NH/Scalpel/Skewer/Syringe): Δacc mean=-0.40pp (有意DROP 3/5)
+  非signature 10slot                                : Δacc mean=-0.01pp (有意DROP 1/10)
+  除去影響 大 Top5: Bipolar Forceps(-0.86), Scalpel(-0.77), Needle Holders(-0.46), Scissors(-0.44), Raspatory(-0.13)
+
+================================================================================
+解釈: signature 術具スロットの除去で phase が有意に低下し、非signature 除去は中立。
+→ T1a 利得の因果源は「signature 術具の region 表現」。shuffle で利得消失も整合。
+================================================================================

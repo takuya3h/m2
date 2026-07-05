@@ -1434,3 +1434,57 @@ frozen→同一TeCNO で Rel-DETR acc=0.8986/F1=0.7086 vs Align acc=0.8464/F1=0.
 ### 次
 - （証跡補強）Align 側下流 s4_010-012 の metrics をローカル再取得し 8.7σ を efros で再現。
 - test split の per-class AP 確認（台帳 overall test: Rel 0.507/Align 0.505, Δ+0.002）（[[val_test_significance_gap]]）。
+
+## 2026-07-05 T1a 利得源の因果分解 (a) per-tool-slot ablation（planned 実験 P1）
+
+### 仮説
+T1a の phase 利得 +4.93pp（region-token⊕GAP→TeCNO, 0.9479 vs S4 GAP-base 0.8986）は signature 術具の region 表現が担う。
+per-tool-slot を1点ずつ0除去し、除去による低下で因果寄与を分解（相関だった step_c §3.4 機構を ablation で検証）。
+
+### 実験
+既存 45 run（15 slot×3 phase-seed, `--mask-region-tool-dim`, 全 valid・recipe一致検証済）を baseline（det42-frozen 3seed）に対し paired-σ 分解。positive control=`t1a_shuffle`。コード `scripts/analyze_t1a_factorial_ablation.py`、証跡 `experiments/analysis/t1a_factorial_ablation/`。
+
+### 結果
+- positive control: shuffle で acc 0.9479→0.8605（S4 GAP-base すら −3.81pp）＝region 情報の寄与実在・frame整合が本質。
+- 有意DROP: **Bipolar −0.86pp★(hemostasis, ΔF1−3.11) / Scalpel −0.77★(incision) / NeedleHolders −0.46★(closure) / Scissors −0.44(dissection特異)**。
+- signature 5slot Δacc mean −0.40pp(3/5有意) vs 非signature 10slot −0.01pp(1/10)。
+
+### 解釈
+利得の因果源は **signature 術具（headroom を持つ工程の）region 表現**。Skewer(design)/Syringe(anesthesia) が落ちないのは対応工程が飽和(headroom≈0)＝利得則 `gain≈headroom×signature` を**反証可能な形で確証**。macro-F1 低下が大＝長尾工程直撃。
+
+### 次
+- factorial-b（class-only/+bbox/appearance-only/+confidence 成分分解）は region-token 再抽出要（P3）。time-shuffle は本 shuffle で充足。
+
+## 2026-07-05 T1a-RegionTrajectory（Temporal Object-Set Fusion, §4.1・planned 実験 P2）
+
+### 仮説・実装
+T1a base の flat 連結 region-token は edit 悪化・過分節。§4.1 の役割分離アーキ（Set encoder→gated residual(presence)→causal temporal attention→TeCNO+boundary head）で acc 維持しつつ edit/seg-F1 改善を狙う。新規実装 `scripts/train_t1a_regiontraj.py`、3seed、証跡 `experiments/analysis/t1a_regiontrajectory/`。
+
+### 結果（val 良好 → **test で覆る**）
+- **val paired-σ**: acc/macroF1 維持、**edit +4.08(全seed正)・seg-F1@10/25/50 +.08/.08/.04 有意改善**、sticky edit +15.69。§4.1 成功基準を全充足。
+- **test paired-σ（決定的）**: acc 維持(noisy)だが **macro-F1 −8.75pp 有意低下(全seed負)・edit −2.10 非有意(改善消失)・seg-F1@50 −0.05 有意悪化**。
+
+### 解釈
+val の edit/seg-F1 改善は held-out test に **transfer せず**、逆に macro-F1/seg-F1 を有意悪化。**RegionTraj は val に overfit**。
+機序仮説: Set encoder が 3840→128 に圧縮し rare 工程の per-tool 詳細を喪失（flat-concat base は保持し test 頑健）。
+→ **確定改善として採用不可**。[[val_test_significance_gap]] の教訓が的中（test 確認が val 楽観を是正）。負の知見として §4.1 にフィードバック。
+
+### 次
+- 反証可能な改良: 圧縮緩和（flat region 併存 / dim 拡大）・正則化・Set encoder と boundary の分離 ablation。edit だけなら T1a-Boundary sticky 単体。
+
+## 2026-07-05 T1a 因果分解 (b) 入力成分 factorial（planned 実験 P3）
+
+### 仮説・実装
+region-token の成分（appearance / confidence / class）のどれが T1a 利得と汎化を担うか。抽出器に `--mode appearance`（confidence ゲート除去の生 embedding）追加→再抽出（train+val+test）、`train_t1a.py` に `RELDETR_REGION_TAG`/`--eval-test` 追加。current(appearance×conf)/appearance-only/class-only(B2a) を val+test 3seed 比較。証跡 `experiments/analysis/t1a_factorial_ablation/factorial_b_results.json`。
+
+### 結果（paired-σ）
+- **appearance の価値**(current − class-only, val): acc/macroF1 **+1.17/+1.19pp 有意**、だが **edit −11.25 有意悪化**（rich→過分節, §3.1 を定量）。
+- **confidence 重みの価値**(current − appearance-only): **val 中立**（非有意）だが **test で acc/macroF1/edit を全て有意改善（macroF1 +6.62pp）**。
+
+### 解釈
+**confidence 重み(score gate)は val 不可視・test 必須の汎化成分**。appearance 埋め込みは frame 識別を上げるが edit を悪化。
+appearance-only は val overfit→test macroF1 低下＝**P2 RegionTraj の失敗と同一機序（per-class confidence 信号の希釈）**。
+→ **T1a 利得の汎化は confidence-weighted per-class appearance が担う**という統一的知見。P1(a)＋P3(b) で T1a 利得源の因果分解が完成。
+
+### 次
+- optional: class+bbox 成分（bbox hook 追加）、class-only の test 評価。
