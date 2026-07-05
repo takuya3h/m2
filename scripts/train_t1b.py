@@ -40,7 +40,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-BODY = Path("/home/ubuntu/slocal2/m2")
+BODY = Path(os.environ.get("EGO_BODY", Path(__file__).resolve().parents[1]))
 RELDETR = BODY / "third_party" / "Relation-DETR"
 sys.path.insert(0, str(RELDETR))
 os.chdir(RELDETR)
@@ -52,6 +52,7 @@ ANN_DIR = os.environ.get("EGO_ANN_DIR", str(BODY / "data/annotations/egosurgery_
 MODEL_CFG = "configs/relation_detr/relation_detr_resnet50_egosurgery_t1b.py"
 MODEL_CFG_CA = "configs/relation_detr/relation_detr_resnet50_egosurgery_t1b_ca.py"
 MODEL_CFG_HC = "configs/relation_detr/relation_detr_resnet50_egosurgery_t1b_hc.py"
+MODEL_CFG_CLSBIAS = "configs/relation_detr/relation_detr_resnet50_egosurgery_t1b_clsbias.py"
 NUM_PHASES = 9
 
 
@@ -221,7 +222,8 @@ def main():
 
     det_train = build_det_loader(train=True)
     det_val = build_det_loader(train=False)
-    model_cfg = {"ca": MODEL_CFG_CA, "hc": MODEL_CFG_HC}.get(args.inject, MODEL_CFG)
+    model_cfg = {"ca": MODEL_CFG_CA, "hc": MODEL_CFG_HC,
+                 "clsbias": MODEL_CFG_CLSBIAS}.get(args.inject, MODEL_CFG)
     model = build_model(device, args.seed, model_cfg)
     register_classes(model, det_train)
     set_trainable(model, args.trainable)
@@ -254,7 +256,7 @@ def main():
           f"miss_ctx(tr/va)={miss_tr}/{miss_va} work={work}", flush=True)
 
     # warm-start 健全性: 学習前 mAP（FiLM zero-init 恒等 → S0-frozen 水準のはず）
-    init_map, _ = eval_detection(model, det_val, imgid_to_ctx_va, device, args.zero_ctx,
+    init_map, init_per_class = eval_detection(model, det_val, imgid_to_ctx_va, device, args.zero_ctx,
                                  limit=20 if args.smoke else None)
     print(f"[t1b] warm-start init mAP={init_map:.4f} (S0-frozen 水準なら warm-start+恒等 OK)", flush=True)
     if args.assert_init_map is not None and abs(init_map - args.assert_init_map) > args.assert_init_tol:
@@ -266,6 +268,9 @@ def main():
     phase_named = [(n, p) for n, p in model.named_parameters() if "phase" in n]
     phase_grad_seen = False
     best = {"mAP": init_map, "epoch": -1, "per_class_coco_map": {}}
+    # epoch 別 per_class を全保存（frozen 検出器で best-overall が動かない/空になる不具合の回避。
+    # inj/ctrl を同一 final epoch で公平比較するため。init(epoch=-1) も含める）。
+    per_epoch = [{"epoch": -1, "mAP": init_map, "per_class_coco_map": init_per_class}]
     for epoch in range(args.epochs):
         model.train()
         from util.collate_fn import DataPrefetcher
@@ -300,16 +305,22 @@ def main():
         mAP, per_class = eval_detection(model, det_val, imgid_to_ctx_va, device, args.zero_ctx,
                                         limit=20 if args.smoke else None)
         print(f"[t1b][ep{epoch}] val mAP={mAP:.4f}", flush=True)
+        per_epoch.append({"epoch": epoch, "mAP": mAP, "per_class_coco_map": per_class})
         if mAP > best["mAP"]:
             best = {"mAP": mAP, "epoch": epoch, "per_class_coco_map": per_class}
             torch.save({"model": model.state_dict(), "epoch": epoch, "seed": args.seed},
                        work / "best_t1b.pth")
 
+    final_eval = per_epoch[-1]  # 最終 epoch（inj/ctrl 同一学習量での公平比較用）
     result = {
         "seed": args.seed, "inject": args.inject, "trainable": args.trainable, "zero_ctx": args.zero_ctx,
         "epochs": args.epochs, "lr": args.lr, "film_lr": args.film_lr,
         "init_mAP": init_map, "best_epoch": best["epoch"], "mAP": best["mAP"],
         "per_class_coco_map": best.get("per_class_coco_map", {}),
+        "init_per_class_coco_map": init_per_class,
+        "final_epoch": final_eval["epoch"], "final_mAP": final_eval["mAP"],
+        "final_per_class_coco_map": final_eval["per_class_coco_map"],
+        "per_epoch_eval": per_epoch,
         "denominator": "S0-frozen 0.7051±0.0052", "delta_note": "Δ_detection=(T1b − S0-frozen)",
     }
     (work / "t1b_result.json").write_text(json.dumps(result, indent=2, ensure_ascii=False))
@@ -328,7 +339,7 @@ def parse_args():
     p.add_argument("--lr", type=float, default=1e-4)
     p.add_argument("--film-lr", type=float, default=5e-4)
     p.add_argument("--trainable", choices=["film", "all"], default="all")
-    p.add_argument("--inject", choices=["film", "ca", "hc"], default="film",
+    p.add_argument("--inject", choices=["film", "ca", "hc", "clsbias"], default="film",
                    help="phase 注入機構: film(§4.6下限・C5 FiLM) / ca(§4.6 primary・decoder cross-attn) / "
                         "hc(§7.2 H-C-v1 = ca + per-frame entropy gate)")
     p.add_argument("--zero-ctx", action="store_true", help="§4.6 対照: phase context を 0 固定で fine-tune")

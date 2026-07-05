@@ -1488,3 +1488,29 @@ appearance-only は val overfit→test macroF1 低下＝**P2 RegionTraj の失�
 
 ### 次
 - optional: class+bbox 成分（bbox hook 追加）、class-only の test 評価。
+
+## 2026-07-05 T1b Phase→Det 最小版 clsbias（planned 実験 P4・最小版先行）
+
+### 仮説・実装
+真の query-selective CA（multi-token）の前に、**box 枝を触らず class logit にのみ** phase 事後(9-d)→MLP(zero-init)→
+per-tool bias(15-d) を加え、**rare∧工程特異 4 術具のみ**（Bipolar0/Scalpel9/Skewer11/Syringe13）通す最小注入で検出改善するか。
+新規 `models/detectors/relation_detr_phaseclsbias.py`＋config、`train_t1b.py --inject clsbias --trainable film`（検出器凍結・注入層1615のみ）。
+3seed×inj/ctrl(zero-ctx) を efros 2GPU で実行（`run_t1b_clsbias_3seed_efros.sh`）。**Δ=inj−ctrl@final epoch** の 3seed paired-σ。
+証跡 `experiments/analysis/t1b_clsbias/`、生 run `transfer/t1b_clsbias_seed{42,123,456}_efros/`。
+（測定修正: `train_t1b.py` の per_class 保存が best-overall epoch のみで frozen 検出器では ctrl が空になる不具合→init/epoch別 per_class を全保存し同一 final epoch 比較に是正。）
+
+### 結果（paired-σ）— 部分的成功 3/4・成功基準は不成立
+- **恒等ガード**: 全 seed init mAP inj=ctrl（diff=0.0000）、base(0.7303/0.7292/0.7217)一致。overall mAP Δ**+0.003pp 非有意**＝非劣化。
+- **rare-4 per-class AP Δ（全て有意・all-seed同符号）**: Scalpel **+1.25**✅ / Skewer **+0.76**✅ / Syringe **+1.17**✅ 改善、
+  **Bipolar Forceps −3.14**✅ **悪化**（epoch 単調悪化）。非 rare は中立。
+- **対照の厳密性**: zero-ctx の per-class AP は base と厳密一致（定数 bias はクラス内順位不変＝AP 不変）→ Δ が phase 条件づけの正味効果を分離。
+
+### 解釈
+改善 3 術具は**工程排他的**（Syringe→anesthesia 等、phase 事後が術具存在を強予測→class prior が素直に効く。Syringe headroom 最大で利得最大、利得則と整合）。
+**Bipolar は hemostasis signature だが工程跨り使用**があり、phase 条件 bias が off-signature 工程での検出を相対抑圧→AP 低下。
+→ 注入対象は **rare∧signature ではなく rare∧phase-排他**に限定すべき。det→phase(T1a)の「confidence-weighted per-class appearance が汎化を担う」と対を成し、
+**双方向とも per-class の phase 特異性が利得/損失の分岐点**という統一像（[[val_test_significance_gap]] は検出に test split 無く本件は val 評価）。
+
+### 次
+- rare_slots を phase-排他 3 術具に限定して再走（Bipolar 除外で全改善→基準充足か検証, 最小コスト）。
+- 有効性確認済みゆえ真の query-selective CA(multi-token)へ拡張、ただし注入ゲートを phase-排他性で条件づけ。Bipolar 工程分布を EDA 定量。
