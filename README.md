@@ -948,6 +948,51 @@ REST Integration トークン（`.env` の `NOTION_API_KEY`）に **全 5 DB（r
 
 ---
 
+## サーバー間同期（m2-sync: git + Syncthing）
+
+研究サーバー 11 台（he / adam / hinton / lecun / efros / bengio / ian / andrew /
+dlsta / ilya / philip）でこのリポジトリは **2 層で自動同期**されている。
+セットアップ・運用・障害対応の詳細は `~/slocal2/m2-sync-setup.md`（リポジトリ外）を参照。
+
+### 層1: git 管理ファイル（コード・設定・ドキュメント）
+
+- 各サーバーの常駐 `keeper` が **30 分毎に `origin/phase0` を自動 fetch** する
+  （GitHub private `takuya3h/m2` がハブ。fetch は読み取り専用 PAT、push は Mac の
+  agent forwarding 経由の ssh）。
+- 運用は **1 サーバー = 1 ブランチ**（`exp/<hostname>-<テーマ>`）。統合の幹は `phase0`。
+  phase0 の更新を取り込むときは各自のブランチ上で `git merge phase0`。
+
+### 層2: gitignore された実験成果物（Syncthing・星型トポロジ）
+
+サーバー間で開いているポートが SSH のみのため、各ノード → philip の SSH トンネル経由の
+**星型**で接続し、A → philip → B と伝播する（実測: 定常時 数秒〜数十秒で全台到達）。
+
+**同期される（= どのサーバーで生成しても全台に現れる）:**
+
+| 対象 | パターン |
+|---|---|
+| 実験成果物 | `experiments/**/` の `checkpoints` `logs` `predictions` `visualizations` `tf_log` `training*.log` `last_checkpoint` `*.npy` `*.pt` `*.pth` `*.py` タイムスタンプ付きフォルダ |
+| モデル重み全般 | `*.pth` `*.pt` `*.ckpt` `*.onnx` `*.safetensors` |
+| 出力・ログ | `outputs/` `logs/` |
+| 加工済みデータ | `data/processed/` |
+| アノテーション | `data/annotations/pseudo_labels` `data/annotations/egosurgery_hts` `data/annotations/**/*.json` |
+| Notion 同期状態 | `.notion_sync.json` |
+
+**同期されない:**
+
+- `.git`・`.claude`・git 追跡ファイル全般（→ 層1 の git 経由で同期）
+- 秘密情報（`.env*` `*.key` `*passphrase*`）・`venv` / `.venv` / `__pycache__` 等の環境依存物
+- `data/raw`・`data/external`（巨大な生データ。各サーバーで個別配置）
+- `third_party`（入れ子 `.git` を含むため。各サーバーで clone）
+- `wandb/`（クラウドに記録済み）
+- 退避フォルダ `experiments/baselines/_*`・`experiments/phase0/_*`（ローカル証跡）
+
+**ルールの変更方法:** リポジトリ直下の `.stglobalignore` を phase0 上で編集して
+commit & push すると、各サーバーの keeper が 30 分以内に `$M2DIR/.stignore` へ
+自動反映する（`.stignore` 自体は編集しない。先にマッチした行が勝つ構文に注意）。
+
+---
+
 ## 主要ドキュメント
 
 - [`docs/experiment_log.md`](docs/experiment_log.md) — 全実験の「仮説→実験→結果→解釈→次」記録
