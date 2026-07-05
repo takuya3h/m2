@@ -65,6 +65,25 @@ class ResearchLogger:
         if is_run_posted(self.exp_dir):
             return load_marker(self.exp_dir).get("run_ledger_page")
 
+        # 空 metrics を "completed" として確定投稿しない。ExperimentManager は setup 時に
+        # 空 {} を書くため、進行中/失敗の run をスイープが拾うと「完了・metrics 空」で投稿し、
+        # さらに marker で固定してしまう（efros で実際に発生）。metrics が揃えば次回スイープで
+        # 正しく upsert される。running 等の明示ステータスはそのまま許可。
+        if status == "completed":
+            import json
+
+            mp = self.exp_dir / "metrics.json"
+            try:
+                _m = json.loads(mp.read_text()) if mp.exists() else {}
+            except Exception:  # noqa: BLE001
+                _m = {}
+            if not _m:
+                logger.info(
+                    "log_run: metrics.json 空/欠落 → completed 投稿を skip (%s)",
+                    self.exp_dir.name,
+                )
+                return None
+
         # cfg から step を補完（指定が無い場合）。defaults は notion_logger 側。
         if step is None and self.cfg is not None:
             try:
