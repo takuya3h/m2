@@ -1,0 +1,235 @@
+{
+  "subsets": {
+    "signature_narrow (4: anesthesia/closure/design/incision)": {
+      "classes": [
+        "Syringe",
+        "Needle Holders",
+        "Skewer",
+        "Scalpel"
+      ],
+      "per_seed": {
+        "Relation-DETR": [
+          0.8161811590910856,
+          0.8133766854235617,
+          0.804738162386934
+        ],
+        "Align-DETR": [
+          0.84142525,
+          0.8300669999999999,
+          0.835699
+        ]
+      },
+      "mean": {
+        "Relation-DETR": 0.811432002300527,
+        "Align-DETR": 0.8357304166666666
+      },
+      "pstdev": {
+        "Relation-DETR": 0.004869763014738182,
+        "Align-DETR": 0.004637039358673739
+      },
+      "delta_rel_minus_align_per_seed": [
+        -0.02524409090891444,
+        -0.016690314576438214,
+        -0.030960837613066006
+      ],
+      "delta_mean": -0.024298414366139554,
+      "delta_pstdev": 0.005864167177437169,
+      "same_sign": true,
+      "significant": true,
+      "winner": "Align-DETR"
+    },
+    "signature_broad (9: +hemostasis/dissection)": {
+      "classes": [
+        "Syringe",
+        "Needle Holders",
+        "Skewer",
+        "Scalpel",
+        "Bipolar Forceps",
+        "Electric Cautery",
+        "Hook",
+        "Raspatory",
+        "Scissors"
+      ],
+      "per_seed": {
+        "Relation-DETR": [
+          0.794630513129099,
+          0.7957869647585057,
+          0.7841395301747581
+        ],
+        "Align-DETR": [
+          0.7807717777777778,
+          0.8014124444444443,
+          0.7636822222222223
+        ]
+      },
+      "mean": {
+        "Relation-DETR": 0.7915190026874543,
+        "Align-DETR": 0.7819554814814814
+      },
+      "pstdev": {
+        "Relation-DETR": 0.005239389660193778,
+        "Align-DETR": 0.015426023101201098
+      },
+      "delta_rel_minus_align_per_seed": [
+        0.013858735351321205,
+        -0.005625479685938517,
+        0.020457307952535864
+      ],
+      "delta_mean": 0.00956352120597285,
+      "delta_pstdev": 0.011072927982674334,
+      "same_sign": false,
+      "significant": false,
+      "winner": null
+    },
+    "ubiquitous_ctrl (4: 対照群)": {
+      "classes": [
+        "Gauze",
+        "Mouth Gag",
+        "Suction Cannula",
+        "Tweezers"
+      ],
+      "per_seed": {
+        "Relation-DETR": [
+          0.6706485256566674,
+          0.6725131572745243,
+          0.6685159439729598
+        ],
+        "Align-DETR": [
+          0.66100675,
+          0.64333375,
+          0.6447265
+        ]
+      },
+      "mean": {
+        "Relation-DETR": 0.6705592089680505,
+        "Align-DETR": 0.649689
+      },
+      "pstdev": {
+        "Relation-DETR": 0.0016330771869286652,
+        "Align-DETR": 0.008023030887700715
+      },
+      "delta_rel_minus_align_per_seed": [
+        0.009641775656667462,
+        0.029179407274524283,
+        0.02378944397295979
+      ],
+      "delta_mean": 0.020870208968050512,
+      "delta_pstdev": 0.008238981007753544,
+      "same_sign": true,
+      "significant": true,
+      "winner": "Relation-DETR"
+    }
+  },
+  "per_class": {
+    "Syringe": {
+      "Relation-DETR_mean": 0.556364535430543,
+      "Align-DETR_mean": 0.6229116666666666,
+      "delta": -0.06654713123612366,
+      "seed_consistent": true,
+      "group": "signature"
+    },
+    "Needle Holders": {
+      "Relation-DETR_mean": 0.8461819022973812,
+      "Align-DETR_mean": 0.84548,
+      "delta": 0.0007019022973812072,
+      "seed_consistent": false,
+      "group": "signature"
+    },
+    "Skewer": {
+      "Relation-DETR_mean": 0.9403324807059984,
+      "Align-DETR_mean": 0.9507623333333334,
+      "delta": -0.010429852627334979,
+      "seed_consistent": false,
+      "group": "signature"
+    },
+    "Scalpel": {
+      "Relation-DETR_mean": 0.9028490907681858,
+      "Align-DETR_mean": 0.9237676666666667,
+      "delta": -0.020918575898480896,
+      "seed_consistent": true,
+      "group": "signature"
+    },
+    "Bipolar Forceps": {
+      "Relation-DETR_mean": 0.7933975614227469,
+      "Align-DETR_mean": 0.7798696666666667,
+      "delta": 0.013527894756080183,
+      "seed_consistent": false,
+      "group": "signature"
+    },
+    "Electric Cautery": {
+      "Relation-DETR_mean": 0.9631646674420546,
+      "Align-DETR_mean": 0.9626363333333333,
+      "delta": 0.0005283341087213289,
+      "seed_consistent": false,
+      "group": "signature"
+    },
+    "Hook": {
+      "Relation-DETR_mean": 0.5878475988198781,
+      "Align-DETR_mean": 0.563061,
+      "delta": 0.024786598819878103,
+      "seed_consistent": false,
+      "group": "signature"
+    },
+    "Raspatory": {
+      "Relation-DETR_mean": 0.8224749609383185,
+      "Align-DETR_mean": 0.6939433333333334,
+      "delta": 0.12853162760498515,
+      "seed_consistent": false,
+      "group": "signature"
+    },
+    "Scissors": {
+      "Relation-DETR_mean": 0.7110582263619826,
+      "Align-DETR_mean": 0.6951673333333334,
+      "delta": 0.01589089302864921,
+      "seed_consistent": false,
+      "group": "signature"
+    },
+    "Forceps": {
+      "Relation-DETR_mean": 0.36921032453977826,
+      "Align-DETR_mean": 0.3495503333333333,
+      "delta": 0.01965999120644496,
+      "seed_consistent": false,
+      "group": "generic"
+    },
+    "Gauze": {
+      "Relation-DETR_mean": 0.278155817621471,
+      "Align-DETR_mean": 0.248459,
+      "delta": 0.029696817621471,
+      "seed_consistent": false,
+      "group": "ctrl"
+    },
+    "Mouth Gag": {
+      "Relation-DETR_mean": 0.80789109620369,
+      "Align-DETR_mean": 0.7945953333333333,
+      "delta": 0.01329576287035672,
+      "seed_consistent": true,
+      "group": "ctrl"
+    },
+    "Suction Cannula": {
+      "Relation-DETR_mean": 0.8151489628489011,
+      "Align-DETR_mean": 0.797093,
+      "delta": 0.018055962848901097,
+      "seed_consistent": true,
+      "group": "ctrl"
+    },
+    "Tweezers": {
+      "Relation-DETR_mean": 0.7810409591981397,
+      "Align-DETR_mean": 0.7586086666666667,
+      "delta": 0.02243229253147294,
+      "seed_consistent": true,
+      "group": "ctrl"
+    }
+  },
+  "runs": {
+    "Relation-DETR": {
+      "42": "s0_016_relationdetr_bbox_seed42",
+      "123": "s0_017_relationdetr_bbox_seed123",
+      "456": "s0_018_relationdetr_bbox_seed456"
+    },
+    "Align-DETR": {
+      "42": "s0_028_aligndetr_bbox_seed42",
+      "123": "s0_029_aligndetr_bbox_seed123",
+      "456": "s0_030_aligndetr_bbox_seed456"
+    }
+  }
+}

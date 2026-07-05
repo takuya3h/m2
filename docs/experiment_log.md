@@ -1398,3 +1398,39 @@ tool-presence/region 経路のボトルネックは検出器品質ではない�
 **結論の修正**: S4/GAP 改善は **val で有意・test で非有意**（det42 反転・高分散）。2/3 seed は test でも正だが「全seed同符号」が崩れる。
 → **GAP 経由効果は実在するが seed 感受性が高く held-out test で頑健確認に至らず**。test-set 評価が val 楽観を是正。
 証跡: `logs/s4_test_results.tsv(18)`, `experiments/phase1/s4_phase_baseline_0{44..61}/`(metrics.json に test_* 併記)。
+
+## 2026-07-05 signature 部分集合 per-class AP 比較（Relation-DETR vs Align-DETR）
+
+### 仮説
+overall mAP は Relation-DETR 首位だが **AP_rare は Align-DETR 首位**（§検出器比較, 2026-06）。phase を決める希少∧工程特異な
+**signature 術具**（EDA §8 / 利得則 `gain≈headroom×signature`）で見れば、det→phase の観点では Align-DETR が有利かもしれない。
+
+### 実験
+S0 bbox baseline 3seed（§6 統制）の `per_class_ap.json` を signature 部分集合に限定して両検出器を比較。
+subset = signature_narrow(4: Syringe/Needle Holders/Skewer/Scalpel = EDA §8(2)) / signature_broad(9) / ubiquitous_ctrl(4)。
+detector-seed で paired-σ（§10.1）。サニティ: 全15平均が公式 mAP（Rel 72.68±0.34 / Align 71.33±1.15）と完全一致。
+コード `scripts/analyze_signature_subset_ap.py`、証跡 `experiments/analysis/signature_subset_detector_compare/{REPORT.md,results.json,REPORT.txt}`。
+
+### 結果
+| subset | Relation | Align | Δ(Rel−Align) | paired-σ |
+|---|--:|--:|--:|---|
+| **signature_narrow(4)** | 81.14±0.49 | **83.57±0.46** | **−2.43pp** | ✅有意・**Align 優位**（3seed全負, σ0.59）|
+| signature_broad(9) | 79.15 | 78.20 | +0.96pp | ❌非有意（符号不一致）|
+| **ubiquitous_ctrl(4)** | **67.06±0.16** | 64.97 | +2.09pp | ✅有意・**Relation 優位**（3seed全正）|
+
+per-class 頑健差（3seed 同符号）: **Syringe −6.65pp / Scalpel −2.09pp → Align 勝ち**（rare∧signature）。対照群 Mouth Gag/Suction/Tweezers は Relation 勝ち。Raspatory は Relation +12.85pp。
+
+### 解釈
+- **Align-DETR の AP_rare 優位の正体 = Syringe(anesthesia) と Scalpel(incision) の signature 術具**。プロジェクト定義の signature tool(narrow 4) では Align-DETR が有意優位。
+- overall mAP 首位（Relation）は主に**対照群の偏在術具＋Raspatory**由来で、**Align の劣位は phase と無関係な術具に局在**。
+- 前回スタディの phase 利得ドライバ3術具（Bipolar/Scalpel/Syringe）のうち **2つ（Scalpel/Syringe）で Align 優位**、Bipolar のみ Relation 微優位。
+
+**しかし「Align → phase 改善」仮説は既存の下流有用性比較①（台帳 completed, s4_001-003 vs s4_010-012）が反証**:
+frozen→同一TeCNO で Rel-DETR acc=0.8986/F1=0.7086 vs Align acc=0.8464/F1=0.6036、**Δacc=+5.2pp(8.7σ)・Rel 圧勝**。
+→ **signature 部分集合の検出 AP（Align優位）は det→phase 有用性（Rel圧勝）を予測しない。凍結源＝Relation-DETR で確定**。
+本 per-class 分解は「Align を選びたくなる理由(signature AP)が下流で覆る」対照証拠として機能。
+（Rel 側 s4_001-003 はローカル一致で検証済／Align 側 s4_010-012 は efros 空 scaffold・別ホスト実行の台帳値のみ [[adhoc_experiment_evidence_gap]]）
+
+### 次
+- （証跡補強）Align 側下流 s4_010-012 の metrics をローカル再取得し 8.7σ を efros で再現。
+- test split の per-class AP 確認（台帳 overall test: Rel 0.507/Align 0.505, Δ+0.002）（[[val_test_significance_gap]]）。
