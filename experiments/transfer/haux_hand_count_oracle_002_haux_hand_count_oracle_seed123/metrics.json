@@ -1,0 +1,37 @@
+{
+  "epoch": 38,
+  "eval_recipe": {
+    "effective_batch_size": 1,
+    "gpu_count": 1,
+    "lr_scaling": "none",
+    "server_name": "efros",
+    "split_test_annotations": 12673,
+    "split_test_images": 4265,
+    "split_train_annotations": 32272,
+    "split_train_images": 9657,
+    "split_val_annotations": 4707,
+    "split_val_images": 1515,
+    "test_cfg": {
+      "backbone": "relation_detr_resnet50_frozen_seed42",
+      "coupling": "haux_hand_to_phase_count",
+      "hand_feature_dim": 4,
+      "hand_source": "oracle",
+      "in_dim": 2052,
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "num_f_maps": 64,
+      "num_layers": 8,
+      "num_stages": 2,
+      "task": "phase",
+      "temporal_head": "tecno",
+      "with_tool": false
+    }
+  },
+  "phase_accuracy": 0.904950495049505,
+  "phase_edit_score": 37.20634920634921,
+  "phase_jaccard": 0.6476442834471019,
+  "phase_macro_f1": 0.6934249788322507,
+  "phase_seg_f1_10": 0.4033333333333333,
+  "phase_seg_f1_25": 0.37666666666666665,
+  "phase_seg_f1_50": 0.31583333333333335
+}

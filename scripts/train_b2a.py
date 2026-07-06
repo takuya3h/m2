@@ -45,7 +45,9 @@ from egosurgery.utils.eval_recipe import (  # noqa: E402
 from egosurgery.utils.experiment_manager import ExperimentManager  # noqa: E402
 from egosurgery.utils.server_name import resolve_server_name  # noqa: E402
 
-FROZEN_SRC = "relation_detr_seed42"
+import os  # noqa: E402  frozen-src の env 上書き用（改善検出器の特徴で probe するため）
+
+FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
 GAP_DIR = PROJ / "data" / "processed" / "stage1_features" / FROZEN_SRC
 SIGNAL_DIR = PROJ / "data" / "processed" / "b2a_detsignal" / FROZEN_SRC
 ORACLE_SIGNAL_DIR = PROJ / "data" / "processed" / "oracle_toolpresence"  # §18.4 L2-3

@@ -47,9 +47,13 @@ MANIFEST_DIR = PROJ / "data/processed/phase_manifest"
 NUM_TOOLS = 15
 EMBED_DIM = 256
 REGION_DIM = NUM_TOOLS * EMBED_DIM  # 3840
+import os  # noqa: E402  再抽出の env 上書き用
+
 MODEL_CFG = str(_REPO / "configs/relation_detr/relation_detr_resnet50_egosurgery.py")
-CKPT = str(_REPO / "checkpoints/incoming/seed42/best_ap.pth")
-OUT_DIR = PROJ / "data/processed/t1a_regiontoken/relation_detr_seed42"
+# 改善検出器での再抽出: env で ckpt / frozen タグを上書き（既定=凍結源 seed42・後方互換）
+_FROZEN_TAG = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
+CKPT = os.environ.get("RELDETR_EXTRACT_CKPT", str(_REPO / "checkpoints/incoming/seed42/best_ap.pth"))
+OUT_DIR = PROJ / f"data/processed/t1a_regiontoken/{_FROZEN_TAG}"
 
 
 class _DecoderCapture:
