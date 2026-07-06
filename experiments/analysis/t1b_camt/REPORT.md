@@ -16,7 +16,9 @@ Bipolar のような phase-spread 術具も off-signature 抑圧を回避して�
   single-token CA の「1 トークンへのゲート的注意」より、queries が phase を **選択的に attend** できる＝真の query-selective。
 - **trainable=film**（検出器凍結・注入層 phase_* のみ 158万 params 学習）＝FiLM 下限・single-token CA・clsbias と同一の注入分離プロトコル。
 - **対照 (ctrl)** = `--zero-ctx`（phase context=0 → token=0 → 注入寄与 0）。inj と同一 warm-start・同一学習量(6ep)。
-- **judge**: 3-seed paired-σ（§10.1）、**Δ=inj−ctrl@final epoch**。検出は train/val split のみ（test split 無し）→ val per-class AP。
+- **judge**: 3-seed paired-σ（§10.1）、**Δ=inj−ctrl@final epoch**。評価は **val per-class AP**。
+
+> ⚠ **誠実性注記**: 検出には held-out test split（`instances_test.json`, 4265 枚）が存在する（phase→det は 2026-06-24 に test 評価済）。本 rare-tool per-class 判定は **val のみ**で test 未検証。val は rare 術具の実例が希少で **test の方が信頼できる**（`eval_phase2det_test.py` の注記）ため、rare∧工程特異術具の結論は **test 追認まで暫定**（[[val_test_significance_gap]]）。
 
 ## 結果
 
@@ -63,7 +65,7 @@ Bipolar のような phase-spread 術具も off-signature 抑圧を回避して�
 - Scalpel が唯一残るのは、incision の phase 排他性が高く phase→術具の写像が最も学習しやすいため（利得則の phase-排他性次元と整合）。
   Syringe が ep0 ピーク→消失するのは、frozen 検出器では初期の粗い注入が後続 epoch で希釈される（RegionTraj の val 過学習・希釈機序と同系）。
 - **含意**: 真の query-selective CA の本領を測るには **trainable=all（検出器同時 fine-tune）** が要る可能性が高い。ただし §3.1/§P2 の
-  過学習リスク（rich 注入→ val 過学習→ 汎化崩壊）を伴うため、test split の無い検出では慎重な正則化・早期停止が前提。
+  過学習リスク（rich 注入→ val 過学習→ 汎化崩壊）を伴うため、慎重な正則化・早期停止と **test split（`instances_test.json`）での汎化追認** が前提。
 
 ## 位置づけ（P4 clsbias との統一）
 det→phase(T1a) の「confidence-weighted per-class appearance が汎化を担う」、phase→det(clsbias) の「phase-排他 rare にのみ有効」、

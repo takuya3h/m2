@@ -18,9 +18,10 @@ rare-4 の epoch 別軌跡も併記する。
   (2) overall mAP 非劣化（inj が ctrl を有意に下回らない）、
   (3) 対照（zero-ctx）に対し real が優越。
 
-注記（誠実性）: 検出データは train/val split のみ（test split 無し）。held-out 評価は val が唯一で、
-本判定は **val per-class AP**。phase タスク側の val→test 乖離（[[val_test_significance_gap]]）は
-検出には別問題（test split 自体が無い）である点を明示する。
+注記（誠実性）: 本判定は **val per-class AP**。検出には held-out test split（instances_test.json,
+4265 枚）が存在し（phase→det は 2026-06-24 に test 評価済）、本 rare-tool per-class 判定は
+まだ test 未検証である。val は rare 術具の実例が希少で test の方が信頼できる（eval_phase2det_test.py の
+注記）ため、rare∧工程特異術具の結論は **test 追認まで暫定**（[[val_test_significance_gap]]）。
 """
 from __future__ import annotations
 
@@ -117,7 +118,7 @@ def main() -> None:
 
     result = {
         "compare_at": W,
-        "note": "検出は train/val split のみ（test split 無し）→ held-out 評価は val per-class AP。",
+        "note": "val per-class AP。test split(instances_test.json,4265枚)は存在するが本 rare 判定は未検証→val は rare 実例希少ゆえ test 追認まで暫定。",
         "init_map_inj_vs_ctrl": init_check,
         "overall_mAP": {"inj": {s: map_at(inj[s], W) for s in SEEDS},
                         "ctrl": {s: map_at(ctrl[s], W) for s in SEEDS},

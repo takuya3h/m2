@@ -51,6 +51,11 @@ zero-ctx の学習後 per-class AP は **base と厳密一致**（seed42 Bipolar
 台帳 spec の成功基準「rare 全 4 の per-class AP が有意に inj>ctrl」は **Bipolar の有意悪化により不成立**。
 一方 overall 非劣化・対照分離は満たし、**工程排他的な 3 術具では最小注入が確かに検出を改善**した。
 
+> ⚠ **誠実性注記**: 本 rare-tool 判定は **val per-class AP** による。検出には held-out test split
+> （`instances_test.json`, 4265 枚）が **存在する**（phase→det は 2026-06-24 に test 評価済）。
+> val は rare 術具の実例が希少で **test の方が信頼できる**（`eval_phase2det_test.py` の注記）ため、
+> Bipolar 悪化・3 術具改善を含む本 per-class 結論は **test 追認まで暫定**（[[val_test_significance_gap]]）。
+
 ## 解釈 — 利得則 `gain ≈ headroom × signature` の「phase 排他性」次元
 - **改善 3 術具は工程排他的**: Syringe→anesthesia・Scalpel→incision・Skewer→design は EDA §8 で当該工程にほぼ排他。
   phase 事後が「その工程 → その術具が居る」を強く予測でき、class prior 加算が素直に効く。Syringe は headroom 最大(0.571)で

@@ -1509,7 +1509,8 @@ per-tool bias(15-d) を加え、**rare∧工程特異 4 術具のみ**（Bipolar
 改善 3 術具は**工程排他的**（Syringe→anesthesia 等、phase 事後が術具存在を強予測→class prior が素直に効く。Syringe headroom 最大で利得最大、利得則と整合）。
 **Bipolar は hemostasis signature だが工程跨り使用**があり、phase 条件 bias が off-signature 工程での検出を相対抑圧→AP 低下。
 → 注入対象は **rare∧signature ではなく rare∧phase-排他**に限定すべき。det→phase(T1a)の「confidence-weighted per-class appearance が汎化を担う」と対を成し、
-**双方向とも per-class の phase 特異性が利得/損失の分岐点**という統一像（[[val_test_significance_gap]] は検出に test split 無く本件は val 評価）。
+**双方向とも per-class の phase 特異性が利得/損失の分岐点**という統一像。
+※誠実性: 本件は **val** per-class 評価。検出には test split（`instances_test.json`, 4265枚）が**存在し**、rare 術具は val で実例希少ゆえ **test の方が信頼できる**（`eval_phase2det_test.py`）→ rare∧工程特異術具の per-class 結論は **test 追認まで暫定**（[[val_test_significance_gap]]）。
 
 ### 次
 - rare_slots を phase-排他 3 術具に限定して再走（Bipolar 除外で全改善→基準充足か検証, 最小コスト）。
@@ -1537,3 +1538,4 @@ det→phase(T1a confidence-weighted appearance)・phase→det(clsbias phase-排�
 
 ### 次
 - optional: camt を trainable=all で再走（CA本領・過学習監視必須）／ clsbias phase-排他3術具限定再走（中断済follow-up再開）／ 双方向§4.6統合へ。
+- ※誠実性: 本結果は **val** per-class AP。test split（`instances_test.json`, 4265枚）は存在し rare は test の方が信頼できる（`eval_phase2det_test.py`）→ rare 結論は **test 追認まで暫定**（[[val_test_significance_gap]]）。
