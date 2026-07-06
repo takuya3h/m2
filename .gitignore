@@ -59,8 +59,8 @@ dist/
 build/
 
 # === 仮想環境 ===
-.venv/
-venv/
+.venv*/
+venv*/
 
 # === IDE ===
 .vscode/
@@ -143,3 +143,8 @@ prompts_n_legacy/
 .notion_sync.json
 experiments/**/.notion_sync.json
 logs/
+
+# === Syncthing (デバイス毎の生成物) ===
+.stignore
+.stignore.new
+.stfolder/
