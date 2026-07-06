@@ -1111,3 +1111,204 @@ shuffle で T1a 改善 +0.0497 が消失どころか **S4 base より低い負�
   - `experiments/transfer/t1a_{regiontoken,deep_3s10l96f,region_only,shuffle}_*_seed{789,1000}/`
   - `experiments/transfer/b2a_det2phase_oracletool_*_seed{42,123,456,789,1000}/`
 - Notion: 実験 Run 台帳 18 件投稿済（L2-2 3 件 + L3 12 件 + L2-3 3 件）/ 意思決定ログ「§18.4 L2-2 shuffle」(38eee4d4-7777-81c0-b46d-dfb4022bead8) + 「§18.4 L3 5-seed 拡張完了 + B2a-oracle 重大発見」(38eee4d4-7777-8171-8c0b-e3e82103969f)
+
+---
+
+## 2026-07-01 STEP D-aux 実装（系統① 手情報 / 系統② 時系列情報）— インフラ構築 + oracle 手特徴の生成・検証
+
+### 仮説（プロンプト `prompts/ Claude_code_prompt_hand_temporal` 準拠・実験は未実施）
+補助信号を det→phase 方向に 1 つずつ注入し「どの信号が・どの機構で・どれだけ工程認識を改善するか」の
+系統的な地図を作る。今回は **①手の情報**（H-1〜H-6）と **②時系列情報**（T-1〜T-6）の 2 系統。
+すべて既存 B2a/T1a パイプライン（凍結信号 → 素 TeCNO 注入）の変種として実装し、分母・eval_recipe・
+paired-σ を既存と完全一致させる。**まず着手すべき最小単位 = 系統① H-1（hand-presence oracle）**。
+
+### 実施内容（このセッション = コード実装 + GT のみで動く部分の実行検証。**GPU 学習は未実施**）
+**重要な環境制約（正直な記録）**: 本チェックアウトは `data/raw/ego`（画像）・GAP 特徴キャッシュ
+（`data/processed/stage1_features/`）・`phase_manifest` が未投入で、検証済み `.venv`（torch 2.1.2 系 /
+mmcv / mamba-ssm）も無い。よって **B2a/T1a 系の GPU 学習はこの環境では実行不能**。実行は lecun で行う
+前提で「動くコード」を実装し、GT アノテーションだけで完結する部分（oracle 手特徴生成・4クラス COCO 抽出）は
+**実際に実行して検証**した。**metrics/mAP 等の数値は一切生成・記載していない**（研究インテグリティ厳守）。
+
+**系統① 手情報（実装 + oracle 特徴を実生成・検証）**:
+- `scripts/build_oracle_handfeature.py`（新規・**実行済**）: 19クラス統合 GT（手 = category 15-18）から
+  oracle 手特徴を生成。presence(4)/count(4)/geom(16)。**実測サマリ（捏造でない生成物の統計）**:
+  train 9657 frame（手あり 9627）、val 1515、test 4265（公式 split 完全一致）。presence rate は
+  自分の手 0.87-0.98 >> 相手の手 0.38-0.74（egocentric 手術映像として妥当）。手/frame 平均 ~2.9-3.3 本。
+- `scripts/train_haux.py`（新規・構文検証済）: `train_b2a.py` の手版。GAP(2048) ⊕ 手特徴 → 素 causal TeCNO。
+  `--hand-feature-type {presence,count,geom,own_other}`（H-1/2/3/5）/ `--hand-source {oracle,pred}` /
+  `--with-tool --tool-source oracle`（H-6）/ `--shuffle-hand`（§4.3 shuffle control）。own_other は
+  geom を own/other 2 ブロックに分離して別枝 MLP で符号化（役割非対称性 §13.2(18)）。H-4 region-token は
+  S2-hand 検出器完成後（非-oracle・本 script scope 外）。
+- H-6 用に `scripts/build_oracle_toolpresence.py` を再実行し、手⊕tool の frame_id が全 1515 完全一致を確認。
+
+**系統② 時系列情報（実装・構文/契約検証済）**:
+- `src/egosurgery/models/heads/mingru_head.py`（新規）: 純 PyTorch の causal minGRU（arXiv:2410.01201）を
+  TeCNO と同一の multi-stage シェル・同一 forward 契約で実装（核だけ差し替え・§8.1 公平比較）。
+  **検証**: forward shape が TeCNO と一致、strict-causal（t≥15 の入力摂動が t<15 の出力に漏れないこと・
+  max|Δ|=0）を確認。
+- `src/egosurgery/models/heads/mamba_head.py`（新規）: mamba-ssm ラッパ（causal SSM・SR-Mamba 系）。
+  mamba-ssm 未導入環境ではコンストラクタで明瞭な ImportError（lecun には導入済）。
+- `scripts/train_taux.py`（新規・構文検証済）: `train_t1a.py` の派生。region-token(3840)⊕GAP 主入力。
+  `--temporal-kernel {tecno,mingru,mamba}`（T-4/5/6・問い B）と `--temporal-feature {none,movavg,delta,window}
+  --temporal-k K`（T-1/2/3・問い A）。全変換は strict-causal（複製 pad・未来非参照）、window は in_dim を
+  再計算し実次元と一致検証（Fail Loud）。問い A/B の交絡を避ける運用（一方の軸を固定）を notes に明記。
+
+**S2-hand 独立検出器 scaffold（非-oracle 系統①の前提。Notion runbook 準拠）**:
+- `scripts/build_hand_coco.py`（新規・**実行済**）: GT から手4クラスだけ抽出し 0-3（own_L/own_R/other_L/other_R）
+  に remap した COCO を生成 → `data/annotations/egosurgery_hand4/instances_{split}.json`。**検証**: 手 box 数
+  train 27726 + val 4918 + test 13676 = **46,320**、§12.11 B3 サーベイ記載の「46,320 hand boxes」と完全一致。
+- `configs/stage/s2_hand_independent.yaml`（新規）: 独立4クラス・COCO-init のみ（S0 tool checkpoint 不使用）・
+  19クラス統合しない（次元不一致を構造的に回避）。旧 S2 の catastrophic forgetting 対策を設計で不要化。
+
+**集計・実行**:
+- `scripts/report_haux_results.py` / `report_taux_results.py` / `src/egosurgery/utils/transfer_delta_report.py`
+  （新規・実行済・現状 0 件レポート出力を確認）: experiments/transfer の haux_*/taux_* を走査し per-seed Δ
+  （vs S4 base acc 0.8986 / macro-F1 0.709）+ paired-σ 判定（|mean|>pstdev かつ同符号）を集計。
+- `scripts/run_haux_oracle_gate.sh` / `run_taux_problemA.sh` / `run_taux_problemB.sh`（新規・bash -n 検証済）:
+  §6 実行順。oracle gate は H-1 → H-2/H-3/H-6 を各 3-seed。冒頭に「H-1 が no-go なら系統①非-oracle
+  （手検出器仕上げ）への投資は見送る」ゲート判定コメント。
+
+### 解釈（現時点 = 実装完了・実験前）
+- §8.3 が最優先で要求した「手 GT の own/other × L/R 実在確認」→ **実在**（category 15-18 = Own/Other × L/R）。
+  H-5（own/other 分離）を含む系統①全手法が実装可能と確定。
+- oracle 手特徴の分布（自分の手 >> 相手の手）は外科ドメインとして妥当で、H-1 gate 実行の前提が整った。
+- 数値結論は無し（GPU 学習未実施）。次セッションで lecun 上で oracle gate を回して初めて Δ が出る。
+
+### 次
+- **lecun で実行**（この環境では不可）: GAP 特徴キャッシュ・phase_manifest を用意 →
+  `bash scripts/run_haux_oracle_gate.sh`（H-1 presence oracle を最優先ゲートとして）。
+- H-1 が有意なら H-2/H-3/H-6 → 有望なら S2-hand 検出器を仕上げて非-oracle 群（H-1/H-4/H-5）。
+- 系統②は既存 T1a 基盤の GAP/region キャッシュがあれば問い A（T-1〜3）→ 問い B（T-4〜6）。
+  T-6（minGRU/Mamba）が横並びなら「工程認識のボトルネックは時系列核でなく入力信号」という一級の負の知見。
+- 集計は `scripts/report_haux_results.py` / `report_taux_results.py`、Notion は完了 run を自動投稿。
+- 証跡（このセッション）: 上記 13 新規ファイル / 生成物 `data/processed/oracle_handfeature/*` ・
+  `data/annotations/egosurgery_hand4/*`。実験 Run はまだ無し（実行は lecun）。
+
+---
+
+## 2026-07-02 STEP D-aux 実行（系統① 手情報 / 系統② 時系列）— 実測 Δ + paired-σ（同一環境S4分母）
+
+### 仮説（`prompts/ Claude_code_prompt_hand_temporal`）
+補助信号を det→phase 方向に注入し「どの信号が・どの機構で・どれだけ工程認識を改善するか」の
+系統的な地図を作る。①手情報（H-1〜H-6）と②時系列（T-1〜T-6）。まず H-1(hand-presence oracle) を
+ゲートとし、有意なら系統①を展開。分母は S4 base、判定は paired-σ（対seed差・同符号）。
+
+### 実験設定（評価・実験設定を全手法で統一）
+- **環境**: lecun 由来の GAP 特徴 (2048-d) / region-token (3840-d) キャッシュを本チェックアウトへ配置し、
+  本セッション（efros・torch 2.0.1・A6000×2）で TeCNO/派生を学習。oracle 手特徴は GT bbox から生成
+  (`build_oracle_handfeature.py`)。**画像・検出器は不要**（キャッシュ済特徴のみ使用）。
+- **分母（同一環境で新規に再学習）**: S4 base = GAP-only TeCNO を seed 42/123/456 で学習
+  → mean acc **0.8983±0.0090** / macro-F1 **0.6965**（文書固定値 0.8986/0.709 と整合＝環境整合の裏取り）。
+- **判定**: 各手法 3-seed で **per-seed paired Δ = method[seed] − S4[seed]**、|mean|>pstdev かつ同符号で✓
+  （§10.1。固定スカラ分母でなく同一seedのS4に対する対差＝seed相関分散を相殺）。
+- 全手法: TeCNO stages2/layers8/fmaps64、lr 5e-4、50 epoch、online_causal+jaccard_strict で完全一致。
+
+### 結果（実測・`scripts/report_daux_paired.py`、単位 pp = percentage point）
+
+**系統① 手情報 → 工程（paired vs 同env S4）**:
+| 手法 | Δacc (\|m\|/σ) | ΔmacroF1 (\|m\|/σ) | 判定 |
+|---|---|---|---|
+| H-1 presence(4d) | **+0.51pp** (6.15) | **+3.44pp** (2.78) | ✓ 両有意（小さいが確実）|
+| H-2 count(4d) | +0.07pp (0.12) | −0.75pp (0.45) | × 寄与なし |
+| H-3 geom(16d) | **+1.23pp** (1.30) | **+3.92pp** (1.09) | ✓ 両有意（presence超＝空間配置が効く）|
+| H-5 own_other(2枝) | +0.07pp (0.07) | −0.25pp (0.09) | × 分離注入は無効 |
+| H-6 presence+tool | **+5.85pp** (6.05) | **+12.80pp** (5.07) | ✓ 大 |
+| **H-1 shuffle (control)** | +0.02pp (0.10) | +0.64pp (0.20) | **× 改善消失→H-1は真の相関** |
+| B2a tool単独(oracle) | +5.81pp (8.01) | +12.70pp (5.19) | ✓（比較用）|
+
+**H-6 の tool 上乗せ価値** = H-6 − B2a(tool単独) per-seed paired: Δacc **+0.04pp (×)** / ΔF1 **+0.10pp (×)**
+→ **手は tool に対し冗長（上乗せ無し）**。
+
+**系統② 時系列 → 工程（region-token 基盤・vs S4 / vs T-4=region-token TeCNO）**:
+| 手法 | vs S4 Δacc | vs T-4 Δacc | 判定（対T-4）|
+|---|---|---|---|
+| T-4 tecno (region base) | +5.06pp ✓ | — | 基準（=T1a 効果の再現）|
+| T-1 movavg | +4.47pp ✓ | −0.59pp | ✓ **悪化**（時間平滑は逆効果）|
+| T-2 delta | +3.17pp ✓ | −1.89pp | ✓ **悪化**（差分イベントは逆効果）|
+| T-3 window | +5.21pp ✓ | +0.15pp | × 中立（短期窓は TeCNO と同等）|
+| T-6 minGRU (核置換) | +5.13pp ✓ | +0.07pp | × 核非依存（3-seed確定・acc同等/F1 −0.71pp劣後）|
+
+### 解釈（＝設計のための知見地図）
+**系統①**:
+1. 手情報は工程認識に寄与するが**弱い**。presence(+0.51pp) と geometry(+1.23pp) が paired-σ 有意で、
+   **geometry > presence**（手の空間配置が「在/不在」より工程情報を持つ、§13.2(18) と整合）。
+2. count・own/other 分離は無効（richer 化・役割分離チャネルは presence/geom を超えない。H-5 の別枝符号化は
+   むしろ signal を希釈）。
+3. **shuffle control** で H-1 の +0.51pp が +0.02pp に消失 → 改善は容量効果でなく **真の region-phase 相関**。
+4. **最重要（§2.3 実務判断）: 手は tool に冗長**。H-6(hand+tool)=+5.85pp ≈ tool単独 +5.81pp、手の上乗せは
+   +0.04pp（不有意）。→ **tool-presence があれば手情報はほぼ無価値。phase 補助信号のためだけに手検出器を
+   仕上げる価値は低い**（非-oracle 系統①への投資は見送り妥当）。
+
+**系統②**:
+1. region-token(T-4) は GAP-only S4 を大きく超える（+5.06pp acc / +11.13pp F1・T1a 効果を同env再現）。
+2. **明示的な時間特徴量化（問いA）は TeCNO の暗黙時間集約を超えない**: movavg(−0.59pp)・delta(−1.89pp) は
+   むしろ悪化、window(+0.15pp) は中立。
+3. **時系列核（問いB）も非依存**: minGRU ≈ TeCNO（acc 同等・F1 で minGRU やや劣後）。
+4. → **工程認識のボトルネックは時系列核でも時間加工でもなく「入力信号（per-frame 表現の質）」**。
+   これは系統①の「検出精度がボトルネック」(L2-3) と同じ方向を指す一級の負の知見。提案手法は
+   時系列核の高度化でなく **object/region 表現・検出精度の改善**に投資すべき。
+
+### 次
+- T-6 minGRU 3-seed 完走・確定（vs T-4: acc +0.07pp ×, F1 −0.71pp × ＝核非依存。結論不変）。
+- 系統① 非-oracle 群（手検出器 S2-hand 仕上げ→H-1/H-4/H-5 の pred 版）は**冗長性の結果を受け優先度低**。
+  実施するなら「手が tool に冗長」の非-oracle 追認に留める。
+- 実装上の知見: 純Python 逐次 minGRU は TeCNO の約30倍遅い（1run≈25分）。核比較を広げるなら parallel-scan 実装が要。
+- 証跡: `experiments/transfer/{haux_*,taux_*,b2a_det2phase_oracletool_*}` / `experiments/phase1/s4_phase_baseline_01[012]_*`
+  / 集計 `experiments/analysis/daux/REPORT.md`（`scripts/report_daux_paired.py`）。Notion 実験Run台帳へ自動投稿済。
+
+---
+
+## 2026-07-02 T1a-Boundary（region-token→工程 + 因果 boundary head）— over-segmentation / edit-score を狙う
+
+### 仮説（STEP C 改善提案書 §4.1/§6-#5/§8「最終提案」）
+T1a の rich な region-token は frame accuracy / macro-F1 を上げる一方 **edit-score を悪化**させ過分節を起こす
+（`COUPLING_IMPROVEMENT_RECOMMENDATIONS.md` §3.1）。**boundary evidence を別ヘッドで扱う役割分離**で、
+acc/macro-F1 を維持しつつ edit-score / seg-F1 を改善できるか。D-aux 系統②は region-token 上で **frame acc** を
+対象に時系列核/加工を比較し「核非依存・入力信号がボトルネック」を示したが、**edit-score（時間的一貫性）は
+未対象**だった。本実験はその直交軸を突く。
+
+### 実験設定（評価・実験設定を全手法で統一）
+- **環境**: efros・system python3・2×A6000。lecun 由来の GAP(2048)/region-token(3840) キャッシュのみ使用
+  （**画像・検出器・mmcv 不要**）。分母 = **同一環境 efros で再学習した T1a base**（region⊕GAP・素 causal TeCNO）
+  seed 42/123/456 → val acc **0.9476** / macro-F1 0.8030 / edit 32.96（lecun T1a base 0.9483/0.8044 と整合＝env parity）。
+- **手法**: `TeCNOBoundary`＝T1a base の共有 stage-1 trunk（64ch）から **class-agnostic 因果 boundary head(64→1)** を分岐。
+  loss = Σ_stage[CE + 0.15·T-MSE] + λ_b·BCE(boundary=phase-change ±1)。**online/causal 厳守**（未来不使用）。
+- **推論 2 系統**: ①plain（per-frame argmax）②sticky（因果 boundary-gated: 遷移を確信度 sigmoid(b_t)≥τ で受理）。
+  さらに boundary head 非依存の③ **min-segment debounce**（新 phase が k 連続で確定＝k 未満 blip 除去・因果）を追加比較。
+- **判定**: 各手法 3-seed で per-seed paired Δ = method[seed] − T1a base[seed]、|mean|>pstdev かつ同符号で ✓（§10.1）。
+  主指標 = edit_score / seg_f1@{10,25,50}、維持指標 = accuracy / macro_f1。
+
+### 結果（実測・`scripts/report_t1a_boundary.py`）
+**機構(1) boundary 監督（plain＝共有 trunk 正則化単独）**: acc −0.18pp / edit +1.07 / seg-F1@50 +0.47 — **全指標 ×**（僅少）。
+**機構(2) 因果 boundary-gated sticky（τ 掃引）**: τ↑で edit↑だが acc が急落。
+| τ | Δacc(paired) | Δedit(paired) | segF1@50 |
+|--:|--:|--:|--:|
+| 0.10 | −3.96pp ✓ | +7.92 × | 0.431 |
+| 0.50 | −19.63pp ✓ | +15.61 ✓ | 0.457 |
+| 0.70 | −23.41pp ✓ | +19.17 ✓ | 0.558 |
+
+→ **acc 維持で edit 改善する τ は存在しない**（§8 の「学習 boundary head」提案は online で非有効）。
+**機構(3) min-segment debounce（boundary head 非依存・パラメタフリー・因果）**:
+| k | Δacc | ΔmacroF1 | Δedit | ΔsegF1@50 |
+|--:|--:|--:|--:|--:|
+| 2 | **−0.95pp** | −2.03pp | **+23.43 ✓** | **+0.229 ✓** |
+| 3 | −2.27pp | −4.97pp | +37.71 ✓ | +0.226 ✓ |
+| 5 | −4.69pp | −10.83pp | +35.27 ✓ | +0.196 ✓ |
+
+→ **k=2 が最良の運用点**: edit 32.96→56.4 / seg-F1@50 0.41→0.63 と大幅改善、acc は約 −1pp に維持（遷移を k−1 遅延させる latency と引換・online 許容）。
+
+### 解釈（＝設計のための知見地図）
+1. **§8「学習 boundary head」は online では効かない**: plain 監督は無効、boundary-gated は edit↔acc の急トレードオフ。
+   本質は「未来を見て区間多数決する offline ASRF が online 制約下で使えない」こと。
+2. **一方 パラメタフリーの因果 min-segment debounce(k=2) が実用的に効く**（Δedit≈+23✓ / ΔsegF1@50≈+0.23✓ を acc −1pp で）。
+   → 過分節は online でも **区間長 prior** で低減可能。「学習した boundary evidence」より「単純な最小区間長」が効く。
+3. **系統②の追認 + 運用指針**: T1a 過分節の一部は per-frame region-token 信号の**実変動**を反映し boundary head では真/偽遷移を
+   分離しきれない（＝入力信号がボトルネック）。**edit-score は安価な後処理(k=2)で回収でき、acc 改善には入力信号
+   （検出/region 表現）の強化が要る**。論文 Pillar 3（設計指針）に「時系列後処理でなく検出器強化」を一段補強。
+
+### 次
+- **test split で追認**: T1a base vs T1a+debounce(k=2) を test で評価（val→test 汎化と §4.2 の正式 recipe）。
+- debounce(k=2) は online 工程報告の**既定の安価な後処理**として全手法に一律適用可（比較の対称性を保てば交絡なし）。
+- acc 改善パスは依然 **検出器強化（B2a 上限 +0.0214）**＝ lecun 実行（本 sandbox は mmcv/ckpt 不在で不可）。
+- 証跡: `experiments/transfer/{t1a_boundary_00[123],t1a_base_env_00[123]}` / 集計 `experiments/analysis/t1a_boundary/REPORT.md`
+  / コード `scripts/{train_t1a_boundary,sweep_boundary_tau,compare_causal_decode,report_t1a_boundary}.py`。Notion Run台帳へ自動投稿。

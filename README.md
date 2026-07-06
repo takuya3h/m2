@@ -862,6 +862,60 @@ T1a-Deep の負の結果（時系列容量は寄与なし）を受けて、T1a �
 
 **証跡**: `experiments/audit/t1b_l0_audit_{film,ca,hc}_seed42/audit_report.json` / Notion 意思決定ログ「§18.4 L0 監査 3 variant 全 PASS: §7.5 撤退ラインの査読防御強化」(38bee4d4-7777-8131-87de-e57c2bfb19dd)
 
+### 2026-07-01 STEP D-aux 実装 — 系統①手情報 / 系統②時系列 のインフラ構築（実行は lecun）
+
+補助信号探索プロンプト `prompts/ Claude_code_prompt_hand_temporal` を実装。**コード実装 + GT だけで動く
+部分の実行検証まで**（GPU 学習は本環境では不可 = 画像 /GAP 特徴キャッシュ /`.venv` 未整備。実行は lecun）。
+**metrics は一切生成していない**（研究インテグリティ）。
+
+- **系統① 手情報**（det→phase・B2a の手版）:
+  - `scripts/build_oracle_handfeature.py`（**実行済**）: GT（手 cat 15-18）→ oracle 手特徴
+    presence(4)/count(4)/geom(16)。実測分布は自分の手 0.87-0.98 >> 相手の手 0.38-0.74（外科的に妥当）、
+    frame 数は公式 split 完全一致。
+  - `scripts/train_haux.py`: GAP⊕手特徴 → 素 causal TeCNO。`--hand-feature-type {presence,count,geom,own_other}`
+    (H-1/2/3/5) / `--hand-source {oracle,pred}` / `--with-tool`(H-6) / `--shuffle-hand`(§4.3 control)。
+- **系統② 時系列情報**（T1a 基盤の核比較 + 時間特徴量化）:
+  - `heads/mingru_head.py`（純 PyTorch causal minGRU）/ `heads/mamba_head.py`（mamba-ssm ラッパ）を
+    **TeCNO と同一 forward 契約の drop-in** で実装（strict-causal を検証: 未来摂動が過去出力に漏れない）。
+  - `scripts/train_taux.py`: `--temporal-kernel {tecno,mingru,mamba}`(T-4/5/6) と
+    `--temporal-feature {none,movavg,delta,window}`(T-1/2/3)。問い A/B の交絡を避ける運用を notes 明記。
+- **S2-hand 独立検出器 scaffold**（Notion runbook 準拠・非-oracle の前提）:
+  - `scripts/build_hand_coco.py`（**実行済**）: 手4クラス COCO 抽出。手 box 計 **46,320**（§12.11 B3 の
+    記載値と完全一致）。`configs/stage/s2_hand_independent.yaml`（COCO-init のみ・19クラス統合せず）。
+- **集計/実行**: `scripts/report_{haux,taux}_results.py` + `utils/transfer_delta_report.py`（paired-σ 判定・
+  現状 0 件）/ `scripts/run_haux_oracle_gate.sh`（§6: H-1 gate 最優先）ほか launcher 3 本。
+- **次**: lecun で GAP キャッシュを用意 → `bash scripts/run_haux_oracle_gate.sh`（H-1 presence oracle を
+  最優先ゲート）。詳細は `docs/experiment_log.md` の 2026-07-01 エントリ。
+
+### 2026-07-02 STEP D-aux 実行結果 — 手情報は tool に冗長 / 時系列は入力信号がボトルネック
+
+GAP/region-token キャッシュを配置し本セッション（A6000×2）で全手法を実測。分母 = 同一環境で再学習した
+S4 base（GAP-only TeCNO 3-seed = acc 0.8983±0.0090 / macro-F1 0.6965、文書値 0.8986/0.709 と整合）。
+判定は per-seed paired-σ（§10.1）。**metrics は全て実測**（`scripts/report_daux_paired.py` → `experiments/analysis/daux/REPORT.md`）。
+
+- **系統① 手情報**: H-1 presence（Δacc +0.51pp / F1 +3.44pp ✓）・H-3 geom（+1.23pp / +3.92pp ✓）が有意
+  （geometry > presence）。H-2 count・H-5 own_other は無効。**shuffle control で H-1 の利得が消失（真の相関）**。
+  **最重要: 手は tool に冗長** — H-6(hand+tool) +5.85pp ≈ tool単独 +5.81pp、手の上乗せ +0.04pp（不有意）。
+  → phase 補助信号のためだけに手検出器を仕上げる価値は低い。
+- **系統② 時系列**: region-token(T-4) は S4 を +5.06pp 超（T1a 再現）。明示的時間加工（movavg −0.59pp / delta
+  −1.89pp / window +0.15pp・対 T-4）は TeCNO の暗黙集約を超えず、時系列核も minGRU ≈ TeCNO。
+  → **ボトルネックは時系列核でなく入力信号（per-frame 表現）**。系統①の検出精度ボトルネック(L2-3)と同方向。
+- 実装知見: 純Python 逐次 minGRU は TeCNO の約 30 倍遅い（1run≈25分）。
+
+### 2026-07-02 T1a-Boundary — over-segmentation は学習 boundary head でなく因果 debounce で回収
+
+STEP C 改善提案 §8「boundary modeling で T1a の edit-score を改善」を実装・実測（`scripts/train_t1a_boundary.py`、
+分母 = 同一環境 efros 再学習 T1a base val acc 0.9476/edit 32.96 ＝ lecun 0.9483 と env parity）。判定は per-seed paired-σ。
+集計 `scripts/report_t1a_boundary.py` → `experiments/analysis/t1a_boundary/REPORT.md`。**metrics は全て実測**。
+
+- **学習 boundary head は online で非有効**: 共有 trunk への boundary 監督（plain）は全指標 ×（edit +1.07 のみ）。
+  因果 boundary-gated sticky decode は τ を上げると edit↑だが acc が急落（τ0.5 で −19.6pp）→ **acc 維持で edit 改善する τ 無し**。
+  本質は「未来を見て区間多数決する offline ASRF が online 制約で使えない」こと。
+- **パラメタフリーの因果 min-segment debounce(k=2) が実用的に効く**: Δedit **+23.4 ✓** / ΔsegF1@50 **+0.229 ✓** を
+  acc **−0.95pp** / macro-F1 −2.03pp で達成（edit 32.96→56.4・seg-F1@50 0.41→0.63）。遷移を k−1 遅延させる latency と引換。
+- → 過分節は online でも **区間長 prior** で低減可能。**edit-score は安価な後処理で回収でき、acc 改善には入力信号
+  （検出/region 表現）強化が要る**（Pillar 3「時系列後処理でなく検出器強化」を一段補強・系統②と同方向）。
+
 ### 2026-06-23 Notion 連携 — 全 5 DB 共有完了・STEP B/C を全件反映
 
 REST Integration トークン（`.env` の `NOTION_API_KEY`）に **全 5 DB（run_ledger / decision_log / lessons / procedure_docs / prompt_library）が共有済み**。
