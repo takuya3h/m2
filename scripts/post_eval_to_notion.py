@@ -19,8 +19,9 @@ CLI 例:
     --step S0 --seed 42 --tier effort \
     --recipe "test-split score_thr=0.0 NMS-free (test_cfg.nms.iou_threshold=1.0)" \
     --log-path experiments/baselines/s0_001_maskdino_bbox_seed42/predictions/reeval_score_thr_0/eval.log \
-    --log-format mmdet3 \
-    --server aolab
+    --log-format mmdet3
+    (--server は省略可。NOTION_SERVER_OPTION → SERVERNAME → hostname の順で自動解決される。
+     egosurgery.utils.server_name.resolve_server_name と同じ優先順位。)
 """
 from __future__ import annotations
 
@@ -28,6 +29,7 @@ import argparse
 import json
 import os
 import re
+import socket
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -217,6 +219,26 @@ def _log_prefix() -> str:
     return "[post_eval] "
 
 
+def _resolve_server_option() -> str:
+    """egosurgery.utils.server_name.resolve_server_name と同じ優先順位で解決する。
+
+    OS hostname はコンテナ由来の名前 (例: "aolab") を返すことがあり、実際の
+    物理サーバー名と一致しない場合がある。SERVERNAME (shell rc で export)
+    が正の情報源で、NOTION_SERVER_OPTION はさらに Notion 表示用の別名
+    (例: "philip (RTX 6000 Ada)") を明示する。
+    """
+    notion_opt = os.environ.get("NOTION_SERVER_OPTION", "").strip()
+    if notion_opt:
+        return notion_opt
+    server_name = (
+        os.environ.get("SERVERNAME", "").strip()
+        or os.environ.get("EGOSURGERY_SERVER_NAME", "").strip()
+    )
+    if server_name:
+        return server_name
+    return socket.gethostname().split(".")[0].lower()
+
+
 def post_eval(
     *,
     name: str,
@@ -299,7 +321,10 @@ def _cli() -> None:
     p.add_argument("--log-format", default="auto",
                    choices=list(PARSERS.keys()) + ["auto"],
                    help="log parser; auto = 内容から自動判定 (default)")
-    p.add_argument("--server", default="aolab")
+    p.add_argument(
+        "--server", default=None,
+        help="未指定なら NOTION_SERVER_OPTION → SERVERNAME → hostname の順で自動解決",
+    )
     p.add_argument("--artifacts", default=None)
     args = p.parse_args()
 
@@ -315,9 +340,10 @@ def _cli() -> None:
     metrics = PARSERS[fmt](log_text)
     started = finished = _mtime_iso(log_path)
     commit = _git_commit()
+    server = args.server or _resolve_server_option()
     post_eval(
         name=args.name, step=args.step, seed=args.seed, tier=args.tier,
-        recipe=args.recipe, server=args.server, metrics=metrics,
+        recipe=args.recipe, server=server, metrics=metrics,
         started=started, finished=finished, commit=commit, artifacts=args.artifacts,
     )
 
