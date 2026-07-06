@@ -34,8 +34,11 @@ ROOT = Path(__file__).resolve().parents[1]
 SEEDS = [42, 123, 456]
 
 
+TAG = "clsbias"  # main() で --tag により上書き（clsbias_pe 等）
+
+
 def load_result(seed: int, kind: str) -> dict:
-    p = ROOT / f"transfer/t1b_clsbias_seed{seed}_efros/{kind}_result.json"
+    p = ROOT / f"transfer/t1b_{TAG}_seed{seed}_efros/{kind}_result.json"
     if not p.exists():
         raise FileNotFoundError(f"欠損: {p}")
     return json.loads(p.read_text())
@@ -59,11 +62,14 @@ def map_at(res: dict, which: str) -> float:
 
 
 def main() -> None:
+    global TAG
     ap = argparse.ArgumentParser()
     ap.add_argument("--which", choices=["final", "best"], default="final")
-    ap.add_argument("--out", default=str(ROOT / "experiments/analysis/t1b_clsbias"))
+    ap.add_argument("--tag", default="clsbias", help="transfer dir suffix: transfer/t1b_<TAG>_seed*_efros")
+    ap.add_argument("--out", default=None)
     args = ap.parse_args()
-    out = Path(args.out)
+    TAG = args.tag
+    out = Path(args.out) if args.out else ROOT / f"experiments/analysis/t1b_{TAG}"
     out.mkdir(parents=True, exist_ok=True)
     W = args.which
 
@@ -130,7 +136,7 @@ def main() -> None:
 
     # --- 人間可読サマリ ---
     L = []
-    L.append(f"# P4 T1b-clsbias 効果判定（inj−ctrl, 3-seed paired-σ / val per-class AP / compare@{W}）\n")
+    L.append(f"# T1b-{TAG} 効果判定（inj−ctrl, 3-seed paired-σ / val per-class AP / compare@{W}）\n")
     L.append("## init mAP（inj/ctrl 恒等ガード: 一致が健全）")
     for s in SEEDS:
         a, b = init_check[s]

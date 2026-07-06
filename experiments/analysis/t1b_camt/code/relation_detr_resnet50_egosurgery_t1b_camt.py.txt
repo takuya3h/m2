@@ -1,24 +1,24 @@
-# T1b Phase→Det model config（①予測相互作用・MT4MTL-KD-style §4.6 双方向の Phase→Det 半分）。
+# T1b-CA-MultiToken Phase→Det model config（§4.6 primary の本命 = 真の query-selective 多トークン CA）。
 #
-# relation_detr_resnet50_egosurgery.py（S0-frozen の検出器）と**唯一の差**は、検出器を
-# RelationDETRPhaseFiLM にして C5 に phase 条件の FiLM 注入を加える点。backbone(凍結) /
-# neck / transformer / criterion / postprocessor は S0-frozen と完全一致 → warm-start で
-# S0-frozen と同一土台（§6）。FiLM は zero-init=恒等なので warm-start 直後は S0-frozen と一致。
-import os
-
+# t1b_ca.py（single-token CA）との **唯一の差**は検出器を RelationDETRPhaseCrossAttnMT にする 1 点のみ。
+# decoder 層は同一の RelationTransformerDecoderLayerPhaseCA を無改造で再利用（phase_attn の KV トークン長は
+# 不問）。backbone(凍結)/neck/encoder/transformer 本体/criterion/postprocessor は S0-frozen・T1b と完全一致
+# → warm-start で同一土台（§6）。phase 副層は zero-init=恒等なので warm-start 直後は S0-frozen と一致。
 from models.backbones.resnet import ResNetBackbone
 from models.bricks.misc import FrozenBatchNorm2d
 from models.bricks.position_encoding import PositionEmbeddingSine
 from models.bricks.post_process import PostProcess
+from models.bricks.relation_decoder_phaseca import (
+    RelationTransformerDecoderLayerPhaseCA,
+)
 from models.bricks.relation_transformer import (
     RelationTransformer,
     RelationTransformerDecoder,
-    RelationTransformerDecoderLayer,
     RelationTransformerEncoder,
     RelationTransformerEncoderLayer,
 )
 from models.bricks.set_criterion import HybridSetCriterion
-from models.detectors.relation_detr_phaseclsbias import RelationDETRPhaseClsBias
+from models.detectors.relation_detr_phasecrossattn_mt import RelationDETRPhaseCrossAttnMT
 from models.matcher.hungarian_matcher import HungarianMatcher
 from models.necks.channel_mapper import ChannelMapper
 from torch import nn
@@ -57,7 +57,7 @@ transformer = RelationTransformer(
         num_layers=transformer_enc_layers,
     ),
     decoder=RelationTransformerDecoder(
-        decoder_layer=RelationTransformerDecoderLayer(
+        decoder_layer=RelationTransformerDecoderLayerPhaseCA(
             embed_dim=embed_dim, n_heads=num_heads, dropout=0.0,
             activation=nn.ReLU(inplace=True), n_levels=num_feature_levels,
             n_points=4, d_ffn=dim_feedforward,
@@ -86,13 +86,10 @@ postprocessor = PostProcess(
     select_box_nums_for_evaluation=300, nms_iou_threshold=-1, confidence_score=-1,
 )
 
-model = RelationDETRPhaseClsBias(
+model = RelationDETRPhaseCrossAttnMT(
     backbone=backbone, neck=neck, position_embedding=position_embedding,
     transformer=transformer, criterion=criterion, postprocessor=postprocessor,
     num_classes=num_classes, num_queries=num_queries, hybrid_assign=hybrid_assign,
     denoising_nums=100, min_size=800, max_size=1333,
-    # rare_slots は環境変数 T1B_RARE_SLOTS で上書き可（既定=従来値 0/9/11/13）。
-    # P4 follow-up: phase-排他3術具のみ注入する場合 T1B_RARE_SLOTS=9,11,13 を渡す。
-    num_phases=num_phases,
-    rare_slots=tuple(int(x) for x in os.environ.get("T1B_RARE_SLOTS", "0,9,11,13").split(",") if x != ""),
+    num_phases=num_phases, embed_dim=embed_dim,
 )

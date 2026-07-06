@@ -1514,3 +1514,26 @@ per-tool bias(15-d) を加え、**rare∧工程特異 4 術具のみ**（Bipolar
 ### 次
 - rare_slots を phase-排他 3 術具に限定して再走（Bipolar 除外で全改善→基準充足か検証, 最小コスト）。
 - 有効性確認済みゆえ真の query-selective CA(multi-token)へ拡張、ただし注入ゲートを phase-排他性で条件づけ。Bipolar 工程分布を EDA 定量。
+
+## 2026-07-06 T1b-CA-MultiToken（真の query-selective 多トークン CA / camt）最優先実行
+
+### 仮説・実装
+clsbias（global per-tool class bias・query非依存）の「phase-排他rareは改善／Bipolar悪化」を、真のquery-selective CAで克服できるか。
+phase事後をP個のphase-prototype token(B,P,embed)=Embedding(P,embed)*posteriorに展開し、各decoder層のquery→phase cross-attentionのKVに渡す
+（`relation_detr_phasecrossattn_mt.py`。decoder層は既存`relation_decoder_phaseca.py`を無改造再利用、out_proj zero-init=恒等）。
+train_t1b `--inject camt --trainable film`（検出器凍結・注入層158万params）。3seed×inj/ctrl(zero-ctx)、Δ=inj−ctrl@final の paired-σ。
+証跡 `experiments/analysis/t1b_camt/`、生 run `transfer/t1b_camt_seed{42,123,456}_efros/`。
+
+### 結果（val per-class AP, §10.1）— 弱い/ほぼnull（有意はScalpelのみ）
+- 恒等ガード: 全seed init inj=ctrl(0.000, full-val厳密恒等)。overall mAP Δ+0.052pp 非有意=非劣化。
+- rare-4 per-class: **Scalpel +0.89pp のみ有意**。Bipolar −0.35/Skewer +0.26/Syringe −0.01 は全て seed 間符号反転で非有意。非rareも中立。
+
+### 解釈
+仮説「query-selectiveならBipolarも改善」は部分的支持: Bipolar悪化は clsbias −3.14pp→camt −0.35pp(非有意)に大幅緩和（queryがphase適合を選べoff-signature抑圧回避）。
+だが同時にSkewer/Syringeの利得も消失し正味Scalpelのみ残存。**frozen検出器では、query特徴への拡散的CA deltaはper-class APを一貫して動かせず、
+直接class logitを押すclsbiasの方が強いレバー**。表現力(多トークンquery-selective)の優位が検出器凍結の制約下では利得に結びつかない。
+det→phase(T1a confidence-weighted appearance)・phase→det(clsbias phase-排他)・camt(frozen×間接CAは最弱象限)で、
+**per-classのphase特異性 × 注入の"直接性×検出器可塑性"が利得を決める**統一像。真のCA本領には trainable=all が要る可能性（過学習監視前提）。
+
+### 次
+- optional: camt を trainable=all で再走（CA本領・過学習監視必須）／ clsbias phase-排他3術具限定再走（中断済follow-up再開）／ 双方向§4.6統合へ。

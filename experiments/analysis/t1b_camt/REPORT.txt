@@ -1,0 +1,43 @@
+# T1b-camt 効果判定（inj−ctrl, 3-seed paired-σ / val per-class AP / compare@final）
+
+## init mAP（inj/ctrl 恒等ガード: 一致が健全）
+- seed42: inj=0.7303 ctrl=0.7303 diff=0.0000
+- seed123: inj=0.7292 ctrl=0.7292 diff=0.0000
+- seed456: inj=0.7217 ctrl=0.7217 diff=0.0000
+
+## overall mAP（@final）
+- inj  : s42=0.7296 / s123=0.7294 / s456=0.7212
+- ctrl : s42=0.7292 / s123=0.7275 / s456=0.7219
+- Δ(inj−ctrl) mean=+0.052pp pstd=0.109 有意=no 非劣化=OK
+
+## rare∧工程特異術具 per-class AP Δ（★=注入対象 slot 0/9/11/13, @final）
+| tool | Δseed42 | Δseed123 | Δseed456 | mean(pp) | pstd | 有意 |
+|---|---:|---:|---:|---:|---:|:--:|
+| ★Bipolar Forceps | -0.45 | +0.15 | -0.76 | **-0.35** | 0.38 | — |
+| ★Scalpel | +1.25 | +1.13 | +0.28 | **+0.89** | 0.43 | ✅ |
+| ★Skewer | -0.20 | +1.17 | -0.20 | **+0.26** | 0.65 | — |
+| ★Syringe | -0.26 | +0.05 | +0.18 | **-0.01** | 0.18 | — |
+
+rare 4 平均 Δ = **+0.196pp** / 有意 inj>ctrl = ['Scalpel']
+
+## rare-4 epoch 別 Δ 軌跡（inj−ctrl mean over seeds, pp）
+| tool | ep-1 | ep0 | ep1 | ep2 | ep3 | ep4 | ep5 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Bipolar Forceps | +0.00 | -0.22 | -0.67 | -0.04 | -0.74 | -0.64 | -0.35 |
+| Scalpel | +0.00 | +0.34 | +0.46 | +0.68 | +0.40 | +0.74 | +0.89 |
+| Skewer | +0.00 | +0.13 | +0.15 | +0.59 | +0.23 | +0.32 | +0.26 |
+| Syringe | +0.00 | +1.04 | +0.41 | +0.21 | -0.16 | -0.08 | -0.01 |
+
+## 非 rare 術具（注入対象外＝理想は中立, @final）
+| tool | mean(pp) | 有意 |
+|---|---:|:--:|
+| Electric Cautery | -0.03 | — |
+| Forceps | +0.06 | — |
+| Gauze | -0.30 | — |
+| Hook | +0.15 | — |
+| Mouth Gag | -0.01 | — |
+| Needle Holders | -0.10 | ⚠ |
+| Raspatory | +0.12 | — |
+| Scissors | -0.06 | — |
+| Suction Cannula | +0.06 | ⚠ |
+| Tweezers | +0.06 | ⚠ |

@@ -10,6 +10,7 @@ zero-init=恒等なので warm-start 直後は S0-frozen と一致 → fine-tune
 注入機構（§4.6・プロトコルは共通、差分は注入のみ→清潔な ablation）:
   --inject film      : C5 を FiLM 変調（§4.6 下限・既定。RelationDETRPhaseFiLM）
   --inject ca        : decoder cross-attention に c_phase token を注入（§4.6 primary。RelationDETRPhaseCrossAttn）
+  --inject camt      : 真の query-selective・multi-token CA（phase を P prototype token に展開。RelationDETRPhaseCrossAttnMT）
 
 学習対象（warm-start fine-tune の範囲）:
   --trainable film   : 注入層(phase_*)のみ学習（最速・最純粋な注入効果。検出器は凍結）
@@ -51,6 +52,7 @@ EGO_ROOT = os.environ.get("EGO_ROOT", str(BODY / "data/raw/ego"))
 ANN_DIR = os.environ.get("EGO_ANN_DIR", str(BODY / "data/annotations/egosurgery_tool"))
 MODEL_CFG = "configs/relation_detr/relation_detr_resnet50_egosurgery_t1b.py"
 MODEL_CFG_CA = "configs/relation_detr/relation_detr_resnet50_egosurgery_t1b_ca.py"
+MODEL_CFG_CAMT = "configs/relation_detr/relation_detr_resnet50_egosurgery_t1b_camt.py"
 MODEL_CFG_HC = "configs/relation_detr/relation_detr_resnet50_egosurgery_t1b_hc.py"
 MODEL_CFG_CLSBIAS = "configs/relation_detr/relation_detr_resnet50_egosurgery_t1b_clsbias.py"
 NUM_PHASES = 9
@@ -222,7 +224,7 @@ def main():
 
     det_train = build_det_loader(train=True)
     det_val = build_det_loader(train=False)
-    model_cfg = {"ca": MODEL_CFG_CA, "hc": MODEL_CFG_HC,
+    model_cfg = {"ca": MODEL_CFG_CA, "camt": MODEL_CFG_CAMT, "hc": MODEL_CFG_HC,
                  "clsbias": MODEL_CFG_CLSBIAS}.get(args.inject, MODEL_CFG)
     model = build_model(device, args.seed, model_cfg)
     register_classes(model, det_train)
@@ -339,7 +341,7 @@ def parse_args():
     p.add_argument("--lr", type=float, default=1e-4)
     p.add_argument("--film-lr", type=float, default=5e-4)
     p.add_argument("--trainable", choices=["film", "all"], default="all")
-    p.add_argument("--inject", choices=["film", "ca", "hc", "clsbias"], default="film",
+    p.add_argument("--inject", choices=["film", "ca", "camt", "hc", "clsbias"], default="film",
                    help="phase 注入機構: film(§4.6下限・C5 FiLM) / ca(§4.6 primary・decoder cross-attn) / "
                         "hc(§7.2 H-C-v1 = ca + per-frame entropy gate)")
     p.add_argument("--zero-ctx", action="store_true", help="§4.6 対照: phase context を 0 固定で fine-tune")
