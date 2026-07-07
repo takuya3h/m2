@@ -1539,3 +1539,29 @@ det→phase(T1a confidence-weighted appearance)・phase→det(clsbias phase-排�
 ### 次
 - optional: camt を trainable=all で再走（CA本領・過学習監視必須）／ clsbias phase-排他3術具限定再走（中断済follow-up再開）／ 双方向§4.6統合へ。
 - ※誠実性: 本結果は **val** per-class AP。test split（`instances_test.json`, 4265枚）は存在し rare は test の方が信頼できる（`eval_phase2det_test.py`）→ rare 結論は **test 追認まで暫定**（[[val_test_significance_gap]]）。
+
+## 2026-07-07 T1b-CA-MultiToken-ALL（真の query-selective 多トークン CA / **trainable=all** / camt_all）
+
+### 仮説・実装
+camt-film（frozen）で真の query-selective CA すら弱かった（有意 Scalpel のみ）のは注入機構でなく**検出器凍結**が原因、と予想し
+`--inject camt --trainable all`（検出器も同時 fine-tune・~26.8M、backbone のみ凍結）で 3seed×inj/ctrl(zero-ctx) を再走。
+唯一の差は trainable（film→all）。証跡 `experiments/analysis/t1b_camt_all/`、生 run `transfer/t1b_camt_all_seed{42,123,456}_efros/`。
+
+### 結果（val per-class AP, §10.1, Δ=inj−ctrl@final）
+- 恒等ガード全 seed init inj=ctrl(0.000)。**全 6run best@ep-1**＝trainable=all は overall val を過学習で init(0.73)→final(0.71) に下げる → `--which final` 比較が正当。
+- **overall mAP Δ +0.609pp（pstd0.081）✅有意・非劣化**（+0.72/+0.59/+0.52 全正）。
+- rare-4: **Bipolar +2.65✅ / Scalpel +0.88✅ / Skewer +1.11✅** 有意改善、Syringe +1.34（seed456 −1.68 反転で非有意）。rare 平均 +1.50pp。
+- 非rare は fine-tune 波及で微動（Scissors +1.63⚠/Gauze +1.22⚠ 正、EC −0.48⚠/Tweezers −0.41⚠ 負）＝frozen と違い共有検出器が動く。
+
+### 解釈（利得則の第三次元＝検出器可塑性）
+**clsbias で −3.14pp 有意悪化した Bipolar が camt-all で +2.65pp 有意改善へ逆転**。三象限 [frozen×直接bias / frozen×間接CA / 可塑×間接CA] で
+Bipolar は −3.14 / −0.35 / **+2.65**。→ 注入利得は **per-class phase 特異性 × 注入の直接性 × 検出器可塑性** の積。
+**frozen×間接CA=最弱象限**（camt-film）、**可塑×間接CA=利得象限**（camt-all: 検出器が phase-conditioned 特徴を再形成でき phase-spread Bipolar すら改善）。
+「phase prior を検出スコアへ直接注ぐ(clsbias)」と「query を phase 条件づけ検出器ごと再学習(camt-all)」は作用機序が根本的に異なる。
+
+### 誠実性 caveat（捏造なし・正直報告）
+- (1) trainable=all は overall val を絶対劣化（init 未超）。有意な改善は inj が ctrl より**劣化が小さい相対利得**で、**frozen S0 の絶対 overall mAP は超えない**。実運用は early-stop/正則化前提。
+- (2) **val** 評価・test 未検証（rare は test の方が信頼、[[val_test_significance_gap]]）。
+
+### 次
+- ③双方向§4.6統合（det→phase と phase→det 同時学習、phase-排他ゲート＋検出器可塑性を反映）へ。残課題: camt-all rare 改善の test 追認 / early-stop 下での利得再測定。
