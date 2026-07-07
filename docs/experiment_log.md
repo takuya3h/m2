@@ -1565,3 +1565,27 @@ Bipolar は −3.14 / −0.35 / **+2.65**。→ 注入利得は **per-class phas
 
 ### 次
 - ③双方向§4.6統合（det→phase と phase→det 同時学習、phase-排他ゲート＋検出器可塑性を反映）へ。残課題: camt-all rare 改善の test 追認 / early-stop 下での利得再測定。
+
+## 2026-07-07 T1b-clsbias-PE（phase-排他ゲート版 clsbias / P4 follow-up / clsbias_pe）
+
+### 仮説・実装
+元 clsbias（rare4全注入）は Bipolar −3.14pp 有意悪化で成功基準未達。**Bipolar を注入対象から外せば**（`T1B_RARE_SLOTS=9,11,13`＝Scalpel/Skewer/Syringe のみ）
+残り3術具は改善を保ち Bipolar 中立化・overall 非劣化以上になるか＝「注入は rare∧signature でなく **rare∧phase-排他** に限定」原則の検証。
+trainable=film・他は元 clsbias と完全一致。証跡 `experiments/analysis/t1b_clsbias_pe/`、生 run `transfer/t1b_clsbias_pe_seed{42,123,456}_efros/`。
+
+### 結果（val per-class AP, §10.1, Δ=inj−ctrl@final）— 成功基準クリア
+- 恒等ガード全 seed init inj=ctrl(0.000)、ctrl final=base 据置(frozen no-op)、inj best は init 超え(ep2/ep4/ep2)。
+- **overall mAP Δ +0.228pp（pstd0.057）✅有意・非劣化・init 超え**（+0.20/+0.31/+0.17 全正）。
+- rare: **Scalpel +1.21✅ / Skewer +0.77✅ / Syringe +1.21✅** 全注入術具が有意改善（全 seed 同符号）、**Bipolar −0.00 厳密中立**（除外）、非 rare 全て厳密 0.00。rare平均 +0.80pp。
+
+### 解釈（二つの正解経路）
+元 clsbias との差分は決定的: **Bipolar 除外で3術具の利得は保存・Bipolar −3.14 消滅・overall が +0.003(非有意)→+0.228(✅有意)へ転換**＝Bipolar の backfire が overall を引き下げていた逆説的証明。
+対比 [clsbias(full)/clsbias-PE/camt-all] で Bipolar −3.14/−0.00/+2.65、overall +0.003/+0.228/+0.609(絶対劣化)。
+→ phase→det には**設計の異なる二つの有効解**: **frozen×phase-排他ゲート**（低コスト・安全・overall init 超え・非注入厳密中立だが phase-spread は救えず）と
+**可塑×広域CA**（phase-spread Bipolar すら改善だが overall 絶対劣化・要 early-stop）。利得則「per-class phase特異性×注入の直接性×検出器可塑性」で統一。
+
+### 誠実性 caveat
+- **val** 評価・test 未検証（rare は test の方が信頼、[[val_test_significance_gap]]）→ rare 結論は test 追認まで暫定。
+
+### 次
+- ③双方向§4.6統合へ。phase→det 側に frozen×ゲート(安全解) と 可塑×広域(強解) のどちらを採るか含め設計。残課題: 両系 rare 改善の test 追認。
