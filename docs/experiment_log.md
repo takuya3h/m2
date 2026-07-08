@@ -1611,3 +1611,24 @@ v2 remedy候補: (1)phase headウォームアップ (2)高品質事後=収束S4 
 
 ### 次
 - pilot が naive 対称双方向の不可を確定。v2 設計方針（非対称/高品質事後/ゲート/時系列）をユーザー判断で選び再挑戦 or 打切り。※誠実性: n=1・val・test 追認まで暫定。
+
+## 2026-07-08 ③ T1c 双方向§4.6 パイロット v2（非対称・高品質S4事後 / 1-seed=42・frame粒度）— partial fix・mutual gain 未達
+
+### 仮説・実装（v1 の是正）
+v1 の negative（online 低品質事後注入で検出器不安定化）を、remedy② 高品質事後で是正。phase→det を**収束済S4事後(precomputed phase context)**に置換した
+**非対称結合**（det→phase のみ online）で相互改善に届くか判定。`train_t1c_bidir.py --phase2det-source s4`（commit 66a5c10）。
+A'=v2-bidir(S4注入+det→phase online,可塑) ∥ C=plastic-phase(det→phase のみ・phase→det off＝可塑性単独の phase 寄与分離)。証跡 experiments/analysis/t1c_bidir_v2_pilot/。
+
+### 結果（val, final ep, n=1）— 破壊は是正、相互改善は未達
+- phase→det: v2 det final 0.7106 は **v1 0.7067 を +0.39pp 改善**（S4 是正が効き LR decay 後 0.7106 回復）が、**① inj 0.7181 に −0.75pp 未達で ① ctrl 0.7110 と同値**。
+  さらに **C(注入なし) 0.7142 ≥ A'(S4注入) 0.7106** → co-training 下で S4 注入の検出上乗せ(① 単独 inj−ctrl +0.71pp)が**消失＝det→phase 同時最適化で相殺**。
+- det→phase: A'/C の phase **平均ほぼ同値**（0.3585 vs 0.3589）で**ともに frozen 0.3690 近傍・激しく振動**（C best0.5023→final0.1987 末尾崩壊、A' best0.3974→final0.3188）。
+  final A'−C=+12.0pp は C 崩壊由来のノイズ、平均では S4 注入は phase を安定化も改善もせず。恒等 init 0.7303 厳密通過 → 配線正・設計課題。
+
+### 解釈・③総括（v1+v2）
+S4 事後は v1 の検出破壊を解消したが、(a)phase→det 利得は det→phase 同時最適化下で中立化(det≈ctrl,A'≤C)、(b)det→phase は frame 粒度 phase head が frozen を安定して超えず振動支配。
+**ボトルネック＝frame 粒度 phase head（時系列なし）**。docs 564「双方向勾配で相互改善」仮説は本 frame 粒度 pilot 群（v1 negative / v2 partial-fix）では**支持されず**、
+①②の「phase→det は結合様式に強く依存」統一像と整合。残 remedy は remedy④ **phase 時系列化(TeCNO)**（相応の実装コスト・本実装フェーズ規模）。
+
+### 次
+- ③ は v1(negative)→v2(partial fix) で「双方向は結合様式・phase 表現依存、frame 粒度では mutual gain 不成立」を確定。次の一手（phase時系列化v3 or ③打切りで①②③統合し test 追認へ）をユーザー判断。※誠実性: n=1・val・test 未検証。
