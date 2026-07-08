@@ -186,6 +186,13 @@ def main():
     ip_tr, miss_tr = build_imgid_to_phase(det_train.dataset.coco, load_frame_phase("train"))
     ip_va, miss_va = build_imgid_to_phase(det_val.dataset.coco, load_frame_phase("val"))
 
+    # v2 非対称: phase→det 注入に収束済 S4 事後（precomputed, ①で+0.61成立）を使う。
+    # det→phase は依然 online phase head（zero-ctx clean region から予測）。online 低品質事後は注入しない。
+    s4_ctx_tr = s4_ctx_va = None
+    if args.phase2det_source == "s4":
+        s4_ctx_tr, _ = t1b.build_imgid_to_ctx(det_train.dataset.coco, t1b.load_phase_ctx("train"))
+        s4_ctx_va, _ = t1b.build_imgid_to_ctx(det_val.dataset.coco, t1b.load_phase_ctx("val"))
+
     # optimizer: 検出器 param（finetune_t1b の group）＋ phase_head。
     from optimizer import param_dict
     groups = param_dict.finetune_t1b(model, lr=args.lr, film_lr=args.film_lr)
@@ -202,7 +209,7 @@ def main():
     work.mkdir(parents=True, exist_ok=True)
     n_det = sum(p.numel() for n, p in model.named_parameters() if p.requires_grad)
     n_ph = sum(p.numel() for p in phase_head.parameters())
-    print(f"[t1c] seed={args.seed} bidir_inject={args.inject_online} lambda_phase={args.lambda_phase} "
+    print(f"[t1c] seed={args.seed} inject={args.inject_online}/{args.phase2det_source} lambda_phase={args.lambda_phase} "
           f"trainable={args.trainable} steps/ep={steps_per_ep} det_trainable={n_det} phase_head={n_ph} "
           f"miss_phase(tr/va)={miss_tr}/{miss_va} work={work}", flush=True)
 
@@ -255,9 +262,14 @@ def main():
                     loss_phase = F.cross_entropy(ph_logits[valid], y[valid])
                 model.train()                           # pass2 は train モード（dn/BN 更新）
 
-            # --- Pass2: online posterior を注入 → L_det（phase→det） ---
-            if args.inject_online and p_online is not None:
-                ctx = p_online.detach()                 # teacher-forcing: 検出器の phase 利用は phase_head に逆流させない
+            # --- Pass2: phase→det 注入 → L_det ---
+            if args.inject_online:
+                if args.phase2det_source == "s4":
+                    ctx = t1b.ctx_for_targets(targets, s4_ctx_tr, device, zero_ctx=False)  # v2: 高品質 S4 事後
+                elif p_online is not None:
+                    ctx = p_online.detach()             # v1: online（teacher-forcing）
+                else:
+                    ctx = torch.zeros(len(targets), NUM_PHASES, device=device)
             else:
                 ctx = torch.zeros(len(targets), NUM_PHASES, device=device)
             model.set_phase_context(ctx)
@@ -281,14 +293,17 @@ def main():
                 sys.exit(4)
         sched.step()
 
-        det_map, det_pc = t1b.eval_detection(model, det_val, {i: np.zeros(NUM_PHASES, np.float32)
-                                                              for i in det_val.dataset.coco.imgs},
-                                             device, zero_ctx=(not args.inject_online),
-                                             limit=(8 if args.smoke else None))
-        # phase→det on の時は eval も online 注入で測るべき → inject_online 時は online ctx で再評価。
-        if args.inject_online:
+        # det eval は phase→det 注入源に合わせる: v2=S4事後注入 / v1=online注入 / off=zero-ctx。
+        if args.inject_online and args.phase2det_source == "s4":
+            det_map, det_pc = t1b.eval_detection(model, det_val, s4_ctx_va, device, zero_ctx=False,
+                                                 limit=(8 if args.smoke else None))
+        elif args.inject_online:
             det_map, det_pc = eval_detection_online(model, phase_head, cap, det_val, device,
                                                     limit=(8 if args.smoke else None))
+        else:
+            det_map, det_pc = t1b.eval_detection(model, det_val, {i: np.zeros(NUM_PHASES, np.float32)
+                                                                  for i in det_val.dataset.coco.imgs},
+                                                 device, zero_ctx=True, limit=(8 if args.smoke else None))
         ph_acc, _ = eval_phase(model, phase_head, cap, det_val, ip_va, device,
                                limit=(8 if args.smoke else None))
         print(f"[t1c] ep{epoch} det mAP={det_map:.4f} phase_acc={ph_acc:.4f}", flush=True)
@@ -297,8 +312,8 @@ def main():
 
     final = per_epoch[-1]
     result = {
-        "seed": args.seed, "bidir_inject": args.inject_online, "lambda_phase": args.lambda_phase,
-        "trainable": args.trainable, "epochs": args.epochs,
+        "seed": args.seed, "bidir_inject": args.inject_online, "phase2det_source": args.phase2det_source,
+        "lambda_phase": args.lambda_phase, "trainable": args.trainable, "epochs": args.epochs,
         "init_det_mAP": init_map, "init_phase_acc": init_phase_acc,
         "init_det_per_class_coco_map": init_per_class,
         "final_epoch": final["epoch"], "final_det_mAP": final["det_mAP"],
@@ -358,7 +373,9 @@ def parse_args():
     p.add_argument("--film-lr", type=float, default=5e-4)
     p.add_argument("--phase-lr", type=float, default=1e-3)
     p.add_argument("--lambda-phase", type=float, default=1.0, help="det→phase 損失重み。0 で det-only")
-    p.add_argument("--inject-online", action="store_true", help="pass2 で online posterior 注入（phase→det on）")
+    p.add_argument("--inject-online", action="store_true", help="phase→det 注入 on（pass2）")
+    p.add_argument("--phase2det-source", choices=["online", "s4"], default="online",
+                   help="phase→det 注入源。online=phase head の online 事後（v1）/ s4=収束済S4 precomputed 事後（v2 非対称）")
     p.add_argument("--bidir", action="store_true", help="両方向 on の糖衣（--inject-online かつ lambda_phase>0）")
     p.add_argument("--trainable", choices=["film", "all"], default="all")
     p.add_argument("--grad-clip", type=float, default=0.1)
