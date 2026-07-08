@@ -1,0 +1,300 @@
+{
+  "tag": "clsbias_pe",
+  "split": "test",
+  "checkpoint_epoch": "best (final未保存, frozen で best≈final)",
+  "seeds": [
+    42,
+    123,
+    456
+  ],
+  "per_seed": {
+    "42": {
+      "gate": {
+        "inj": {
+          "val_mAP_reload": 0.7325149680518992,
+          "val_mAP_stored": 0.7325149680518992,
+          "max_per_class_diff": 0.0,
+          "gate_ok": true
+        },
+        "ctrl": {
+          "val_mAP_reload": 0.7302939864288233,
+          "val_mAP_stored": 0.7302939864288233,
+          "max_per_class_diff": 0.0,
+          "gate_ok": true
+        }
+      },
+      "test": {
+        "inj_mAP": 0.5083274626612961,
+        "ctrl_mAP": 0.5060587018022135,
+        "delta_mAP": 0.0022687608590826747,
+        "inj_per_class": {
+          "Bipolar Forceps": 0.6862770649113837,
+          "Electric Cautery": 0.6872237229627045,
+          "Forceps": 0.16585705093788958,
+          "Gauze": 0.2501430388592516,
+          "Hook": 0.45562365783320913,
+          "Mouth Gag": 0.7799818246793632,
+          "Needle Holders": 0.39835979997597365,
+          "Raspatory": 0.6290795405871283,
+          "Retractor": 0.09959729431124566,
+          "Scalpel": 0.7276208534855276,
+          "Scissors": 0.32521252054620703,
+          "Skewer": 0.8673943807544389,
+          "Suction Cannula": 0.4845114791705563,
+          "Syringe": 0.41586595502344637,
+          "Tweezers": 0.652163755881117
+        },
+        "ctrl_per_class": {
+          "Bipolar Forceps": 0.6862706985987747,
+          "Electric Cautery": 0.687224661261706,
+          "Forceps": 0.1657788041905083,
+          "Gauze": 0.2501216971424016,
+          "Hook": 0.45562527678405557,
+          "Mouth Gag": 0.7799746739069346,
+          "Needle Holders": 0.39832824621053986,
+          "Raspatory": 0.6290824467347276,
+          "Retractor": 0.09958745753787045,
+          "Scalpel": 0.7155407217508742,
+          "Scissors": 0.3252154219203818,
+          "Skewer": 0.8444202877302868,
+          "Suction Cannula": 0.48448767965957323,
+          "Syringe": 0.4170549012543529,
+          "Tweezers": 0.6521675523502151
+        },
+        "delta_per_class": {
+          "Bipolar Forceps": 6.366312609085156e-06,
+          "Electric Cautery": -9.382990014961123e-07,
+          "Forceps": 7.824674738127202e-05,
+          "Gauze": 2.1341716849976322e-05,
+          "Hook": -1.6189508464381497e-06,
+          "Mouth Gag": 7.150772428521357e-06,
+          "Needle Holders": 3.1553765433789405e-05,
+          "Raspatory": -2.9061475992353536e-06,
+          "Retractor": 9.836773375210273e-06,
+          "Scalpel": 0.012080131734653388,
+          "Scissors": -2.9013741747463406e-06,
+          "Skewer": 0.022974093024152098,
+          "Suction Cannula": 2.3799510983080197e-05,
+          "Syringe": -0.0011889462309065402,
+          "Tweezers": -3.7964690980940574e-06
+        },
+        "ctx_miss": {
+          "inj": 0,
+          "ctrl": 0
+        }
+      }
+    },
+    "123": {
+      "gate": {
+        "inj": {
+          "val_mAP_reload": 0.7322692613711107,
+          "val_mAP_stored": 0.7322692613711107,
+          "max_per_class_diff": 0.0,
+          "gate_ok": true
+        },
+        "ctrl": {
+          "val_mAP_reload": 0.7291883938811828,
+          "val_mAP_stored": 0.7291883938811828,
+          "max_per_class_diff": 0.0,
+          "gate_ok": true
+        }
+      },
+      "test": {
+        "inj_mAP": 0.5102188879400256,
+        "ctrl_mAP": 0.508950482081158,
+        "delta_mAP": 0.0012684058588675606,
+        "inj_per_class": {
+          "Bipolar Forceps": 0.6930319102847479,
+          "Electric Cautery": 0.6725308462365742,
+          "Forceps": 0.1545101442136672,
+          "Gauze": 0.21795425302082713,
+          "Hook": 0.49611013818243593,
+          "Mouth Gag": 0.7758354188110602,
+          "Needle Holders": 0.3935171957516053,
+          "Raspatory": 0.6236924617803495,
+          "Retractor": 0.1326841790794041,
+          "Scalpel": 0.7693032667642409,
+          "Scissors": 0.30885396319238484,
+          "Skewer": 0.8613700620043608,
+          "Suction Cannula": 0.5066590477096341,
+          "Syringe": 0.39808985557632465,
+          "Tweezers": 0.6491405764927668
+        },
+        "ctrl_per_class": {
+          "Bipolar Forceps": 0.6930366123081398,
+          "Electric Cautery": 0.6725320422197103,
+          "Forceps": 0.15449852450096446,
+          "Gauze": 0.21792733400714745,
+          "Hook": 0.4961071767773665,
+          "Mouth Gag": 0.7757484174458688,
+          "Needle Holders": 0.39351603710573013,
+          "Raspatory": 0.6236958522340652,
+          "Retractor": 0.13267339668961808,
+          "Scalpel": 0.7532529488469258,
+          "Scissors": 0.308853118800733,
+          "Skewer": 0.8591632155347009,
+          "Suction Cannula": 0.506650673496136,
+          "Syringe": 0.3974812561881285,
+          "Tweezers": 0.6491206250621356
+        },
+        "delta_per_class": {
+          "Bipolar Forceps": -4.702023391978116e-06,
+          "Electric Cautery": -1.195983136081935e-06,
+          "Forceps": 1.161971270274842e-05,
+          "Gauze": 2.6919013679682635e-05,
+          "Hook": 2.961405069445977e-06,
+          "Mouth Gag": 8.700136519146362e-05,
+          "Needle Holders": 1.1586458751877693e-06,
+          "Raspatory": -3.3904537156681513e-06,
+          "Retractor": 1.078238978602375e-05,
+          "Scalpel": 0.016050317917315038,
+          "Scissors": 8.443916518219297e-07,
+          "Skewer": 0.002206846469659962,
+          "Suction Cannula": 8.374213498085759e-06,
+          "Syringe": 0.0006085993881961294,
+          "Tweezers": 1.9951430631159894e-05
+        },
+        "ctx_miss": {
+          "inj": 0,
+          "ctrl": 0
+        }
+      }
+    },
+    "456": {
+      "gate": {
+        "inj": {
+          "val_mAP_reload": 0.7234425498022733,
+          "val_mAP_stored": 0.7234425498022733,
+          "max_per_class_diff": 0.0,
+          "gate_ok": true
+        },
+        "ctrl": {
+          "val_mAP_reload": 0.7216651379249232,
+          "val_mAP_stored": 0.7216651379249232,
+          "max_per_class_diff": 0.0,
+          "gate_ok": true
+        }
+      },
+      "test": {
+        "inj_mAP": 0.5067375134348462,
+        "ctrl_mAP": 0.5056007750504681,
+        "delta_mAP": 0.001136738384378111,
+        "inj_per_class": {
+          "Bipolar Forceps": 0.691429379763878,
+          "Electric Cautery": 0.6693008691390594,
+          "Forceps": 0.18037249023854363,
+          "Gauze": 0.26703339507428103,
+          "Hook": 0.4030588385638528,
+          "Mouth Gag": 0.7735770180007732,
+          "Needle Holders": 0.39062768711384127,
+          "Raspatory": 0.6055474371656108,
+          "Retractor": 0.10481739421105865,
+          "Scalpel": 0.7352714604385174,
+          "Scissors": 0.3439604422790532,
+          "Skewer": 0.86383816327818,
+          "Suction Cannula": 0.5028533849860772,
+          "Syringe": 0.41453449733314435,
+          "Tweezers": 0.6548402439368214
+        },
+        "ctrl_per_class": {
+          "Bipolar Forceps": 0.6914360417598011,
+          "Electric Cautery": 0.6693030173847274,
+          "Forceps": 0.18036846961511216,
+          "Gauze": 0.2670263867046413,
+          "Hook": 0.40305926343915843,
+          "Mouth Gag": 0.7735828956856856,
+          "Needle Holders": 0.3906198329550131,
+          "Raspatory": 0.6055462298131481,
+          "Retractor": 0.10480197706517001,
+          "Scalpel": 0.7189256052076887,
+          "Scissors": 0.3439627912262063,
+          "Skewer": 0.8491269180655135,
+          "Suction Cannula": 0.5028415183095666,
+          "Syringe": 0.42856703330876483,
+          "Tweezers": 0.6548436452168237
+        },
+        "delta_per_class": {
+          "Bipolar Forceps": -6.661995923140651e-06,
+          "Electric Cautery": -2.148245668021076e-06,
+          "Forceps": 4.020623431466586e-06,
+          "Gauze": 7.008369639738277e-06,
+          "Hook": -4.248753056601551e-07,
+          "Mouth Gag": -5.877684912447556e-06,
+          "Needle Holders": 7.854158828146662e-06,
+          "Raspatory": 1.207352462673228e-06,
+          "Retractor": 1.5417145888638184e-05,
+          "Scalpel": 0.016345855230828765,
+          "Scissors": -2.348947153119063e-06,
+          "Skewer": 0.014711245212666424,
+          "Suction Cannula": 1.1866676510652319e-05,
+          "Syringe": -0.014032535975620486,
+          "Tweezers": -3.4012800023131007e-06
+        },
+        "ctx_miss": {
+          "inj": 0,
+          "ctrl": 0
+        }
+      }
+    }
+  },
+  "summary": {
+    "overall_delta_mAP": {
+      "vals": [
+        0.0022687608590826747,
+        0.0012684058588675606,
+        0.001136738384378111
+      ],
+      "mean": 0.001557968367442782,
+      "pstdev": 0.0005054724229789677,
+      "all_same_sign": true,
+      "significant": true
+    },
+    "per_class_delta": {
+      "Bipolar Forceps": {
+        "vals": [
+          6.366312609085156e-06,
+          -4.702023391978116e-06,
+          -6.661995923140651e-06
+        ],
+        "mean": -1.665902235344537e-06,
+        "pstdev": 5.73572021406411e-06,
+        "all_same_sign": false,
+        "significant": false
+      },
+      "Scalpel": {
+        "vals": [
+          0.012080131734653388,
+          0.016050317917315038,
+          0.016345855230828765
+        ],
+        "mean": 0.014825434960932396,
+        "pstdev": 0.0019449683680518098,
+        "all_same_sign": true,
+        "significant": true
+      },
+      "Skewer": {
+        "vals": [
+          0.022974093024152098,
+          0.002206846469659962,
+          0.014711245212666424
+        ],
+        "mean": 0.013297394902159495,
+        "pstdev": 0.008536933949576853,
+        "all_same_sign": true,
+        "significant": true
+      },
+      "Syringe": {
+        "vals": [
+          -0.0011889462309065402,
+          0.0006085993881961294,
+          -0.014032535975620486
+        ],
+        "mean": -0.004870960939443632,
+        "pstdev": 0.006519643927946422,
+        "all_same_sign": false,
+        "significant": false
+      }
+    },
+    "gate_all_ok": true
+  }
+}

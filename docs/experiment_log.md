@@ -1632,3 +1632,24 @@ S4 事後は v1 の検出破壊を解消したが、(a)phase→det 利得は det
 
 ### 次
 - ③ は v1(negative)→v2(partial fix) で「双方向は結合様式・phase 表現依存、frame 粒度では mutual gain 不成立」を確定。次の一手（phase時系列化v3 or ③打切りで①②③統合し test 追認へ）をユーザー判断。※誠実性: n=1・val・test 未検証。
+
+## 2026-07-08 ② clsbias-PE の test split 追認（eval-only・3seed）— overall+Scalpel/Skewer 保存・Syringe 符号反転
+
+### 仮説・方法
+②(clsbias-PE, frozen×phase-排他ゲート) の val 所見（注入3術具全改善・overall +0.228✅・Bipolar 除外中立）が **test で成立するか**追認。
+rare は test の方が信頼（[[val_test_significance_gap]]）＝残課題。① camt-all は checkpoint 消失で不可だが、② は best_t1b.pth（inj+ctrl×3seed）残存 →
+**eval-only**（再学習なし）。`scripts/eval_t1b_test.py`: `T1B_RARE_SLOTS=9,11,13` で同一アーキ再構築→strict load→**整合ゲート（reload→val 再評価が保存済 best per-class と一致するか）**→ 通過後 test 評価。
+
+### 結果（test, §10.1, Δ=inj−ctrl, 3seed）
+- **整合ゲート全6 checkpoint bit-exact 再現**（max_per_class_diff=0.0, val_mAP 完全一致, rare_mask=slot{9,11,13}）→ 再構築忠実・test 数値は実測。
+- **overall Δ: val +0.228 → test +0.156pp（pstd0.051, [0.23,0.13,0.11]）sig✅ 保存**（弱まるが全seed正・有意）。test 絶対 mAP inj≈0.507/ctrl≈0.506（val≈0.727, −22pp 難）。
+- **Scalpel +1.48pp sig✅ 保存**（[1.21,1.61,1.63] 全正）／ **Skewer +1.33pp sig✅ 保存**（[2.30,0.22,1.47] 全正・分散大）。
+- **Syringe −0.49pp 非有意 符号反転❌**（val +1.21 → [−0.12,+0.06,−1.40]）＝val 限定 artifact（Syringe は val AP 最低0.579・分散大）。
+- **Bipolar −0.00pp 厳密中立**（除外ゲート test でも機能）。
+
+### 解釈
+②「frozen×排他ゲート」安全解は overall 押し上げ＋注入2/3(Scalpel/Skewer)が test で有意保存＝機序（工程特異 per-tool bias）を test 追認。
+**Syringe 符号反転は [[val_test_significance_gap]] の警告的中の実例**（rare-class の val 単独改善は test 追認まで暫定、を裏づけ）。
+
+### 次
+- ② の test 追認は完了（部分再現を正直に確定）。① camt-all の test 追認は要再学習（inj+ctrl×3seed）→ 実施可否はユーザー判断。※誠実性: best-epoch ckpt（final未保存, frozen で best≈final）・数値実測・反転隠さず。
