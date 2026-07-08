@@ -1589,3 +1589,25 @@ trainable=film・他は元 clsbias と完全一致。証跡 `experiments/analysi
 
 ### 次
 - ③双方向§4.6統合へ。phase→det 側に frozen×ゲート(安全解) と 可塑×広域(強解) のどちらを採るか含め設計。残課題: 両系 rare 改善の test 追認。
+
+## 2026-07-08 ③ T1c 双方向§4.6 パイロット（1-seed=42・frame粒度・2-pass）— negative result（naive 対称双方向は不可）
+
+### 仮説・実装
+①②を踏まえ、1モデルで det→phase と phase→det の両勾配を同時に流す双方向結合（docs 564「勾配が双方向に流れる結合が要る」）が
+両タスクを単方向 baseline 以上に相互改善するか、1-seed pilot で設計可否を安価に判定。新規 trainer `scripts/train_t1c_bidir.py`（smoke検証済, commit 2536f7d）。
+det→phase: decoder class_head[-1] を hook→region token(3840)→PhaseHead→9工程。phase→det: camt 注入に online posterior 還流。
+2-pass teacher-forced（Pass1 eval zero-ctx→region→L_phase; Pass2 train softmax(P).detach() 注入→L_det; L=L_det+λL_phase）。
+A=bidir(両方向on,可塑) ∥ B=phase-frozen(det→phase off baseline=frozen検出器上のphase head)。証跡 experiments/analysis/t1c_bidir_pilot/。
+
+### 結果（val, final ep5, n=1）— 相互改善せず
+- phase→det Δ = det_mAP(bidir 0.7067) − ① camt-all ctrl 0.7110 = **−0.42pp**（S0-frozen 0.7303 比 −2.36pp）。高LR期に~0.69劣化→LR decay(ep4)で0.711回復もfinal 0.7067。
+- det→phase Δ = phase_acc(bidir 0.3281) − frozen baseline 0.3690 = **−4.09pp**（ただし平均は A 0.3778 ≈ B 0.3788 で中立、A は変動大 best0.574/final0.328）。
+- 恒等ガード init det 0.7303 厳密通過・loss有限・smoke済 → 配線正、設計課題でありバグでない。
+
+### 解釈・是正案
+online の低品質 phase 事後注入が (a) 検出器を誤条件づけで劣化(phase→det負) (b) 劣化した region token が phase を不安定化(det→phase中立止まり)
+＝二方向が naive 結合下で破壊的干渉。docs 564 の「双方向勾配で伸びる」仮説を単純には満たさず、文献「phase→detは難方向」・①②「phase→detは適切regime要」と整合。
+v2 remedy候補: (1)phase headウォームアップ (2)高品質事後=収束S4 precomputed ctx を phase→det に使い det→phase のみ online (非対称) (3)②排他ゲート事後注入 (4)phase時系列化(TeCNO) (5)非対称λ/勾配ゲート。
+
+### 次
+- pilot が naive 対称双方向の不可を確定。v2 設計方針（非対称/高品質事後/ゲート/時系列）をユーザー判断で選び再挑戦 or 打切り。※誠実性: n=1・val・test 追認まで暫定。

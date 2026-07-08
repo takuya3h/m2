@@ -1,0 +1,224 @@
+/home/ubuntu/slocal/m2/.venv-relation-detr/lib/python3.11/site-packages/albumentations/core/validation.py:114: UserWarning: ShiftScaleRotate is a special case of Affine transform. Please use Affine transform instead.
+  original_init(self, **validated_kwargs)
+/home/ubuntu/slocal/m2/third_party/Relation-DETR/transforms/presets.py:109: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal/m2/third_party/Relation-DETR/transforms/presets.py:140: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+/home/ubuntu/slocal/m2/third_party/Relation-DETR/transforms/presets.py:195: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal/m2/third_party/Relation-DETR/transforms/presets.py:226: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+Using /home/ubuntu/.cache/torch_extensions/py311_cu118 as PyTorch extensions root...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /home/ubuntu/.cache/torch_extensions/py311_cu118/MultiScaleDeformableAttention/build.ninja...
+Building extension module MultiScaleDeformableAttention...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+loading annotations into memory...
+Done (t=0.33s)
+creating index...
+index created!
+Using [0, 0.5, 0.6299605249474365, 0.7937005259840997, 1.0, 1.259921049894873, 1.5874010519681991, 2.0, inf] as bins for aspect ratio quantization
+Count of instances per bin: [9618]
+loading annotations into memory...
+Done (t=0.02s)
+creating index...
+index created!
+ninja: no work to do.
+Loading extension module MultiScaleDeformableAttention...
+/home/ubuntu/slocal/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+/home/ubuntu/slocal/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+/home/ubuntu/slocal/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+/home/ubuntu/slocal/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+The model and loaded state dict do not match exactly
+Missing keys: transformer.decoder.layers.0.phase_norm.weight, transformer.decoder.layers.0.phase_norm.bias, transformer.decoder.layers.0.phase_attn.in_proj_weight, transformer.decoder.layers.0.phase_attn.in_proj_bias, transformer.decoder.layers.0.phase_attn.out_proj.weight, transformer.decoder.layers.0.phase_attn.out_proj.bias, transformer.decoder.layers.1.phase_norm.weight, transformer.decoder.layers.1.phase_norm.bias, transformer.decoder.layers.1.phase_attn.in_proj_weight, transformer.decoder.layers.1.phase_attn.in_proj_bias, transformer.decoder.layers.1.phase_attn.out_proj.weight, transformer.decoder.layers.1.phase_attn.out_proj.bias, transformer.decoder.layers.2.phase_norm.weight, transformer.decoder.layers.2.phase_norm.bias, transformer.decoder.layers.2.phase_attn.in_proj_weight, transformer.decoder.layers.2.phase_attn.in_proj_bias, transformer.decoder.layers.2.phase_attn.out_proj.weight, transformer.decoder.layers.2.phase_attn.out_proj.bias, transformer.decoder.layers.3.phase_norm.weight, transformer.decoder.layers.3.phase_norm.bias, transformer.decoder.layers.3.phase_attn.in_proj_weight, transformer.decoder.layers.3.phase_attn.in_proj_bias, transformer.decoder.layers.3.phase_attn.out_proj.weight, transformer.decoder.layers.3.phase_attn.out_proj.bias, transformer.decoder.layers.4.phase_norm.weight, transformer.decoder.layers.4.phase_norm.bias, transformer.decoder.layers.4.phase_attn.in_proj_weight, transformer.decoder.layers.4.phase_attn.in_proj_bias, transformer.decoder.layers.4.phase_attn.out_proj.weight, transformer.decoder.layers.4.phase_attn.out_proj.bias, transformer.decoder.layers.5.phase_norm.weight, transformer.decoder.layers.5.phase_norm.bias, transformer.decoder.layers.5.phase_attn.in_proj_weight, transformer.decoder.layers.5.phase_attn.in_proj_bias, transformer.decoder.layers.5.phase_attn.out_proj.weight, transformer.decoder.layers.5.phase_attn.out_proj.bias, phase_proto.weight
+
+[t1b] warm-start from /home/ubuntu/slocal/m2/third_party/Relation-DETR/checkpoints/incoming/seed42/best_ap.pth
+[t1c] seed=42 bidir_inject=True lambda_phase=1.0 trainable=all steps/ep=4809 det_trainable=26823072 phase_head=993289 miss_phase(tr/va)=0/0 work=/tmp/t1c_bidir_A_seed42
+Accumulating evaluation results...
+DONE (t=4.58s).
+[t1c] warm-start init: det mAP=0.7303 (band[0.65,0.78]) phase_acc=0.0277 (fresh head, val_n=1515)
+[t1c][ep0 0/4809] L=14.442 (det=11.966 phase=2.476) eta_ep=131m
+[t1c][ep0 200/4809] L=12.192 (det=11.117 phase=1.075) eta_ep=77m
+[t1c][ep0 400/4809] L=20.021 (det=19.331 phase=0.690) eta_ep=72m
+[t1c][ep0 600/4809] L=12.342 (det=11.258 phase=1.084) eta_ep=69m
+[t1c][ep0 800/4809] L=18.059 (det=16.565 phase=1.494) eta_ep=65m
+[t1c][ep0 1000/4809] L=22.886 (det=21.380 phase=1.506) eta_ep=62m
+[t1c][ep0 1200/4809] L=17.942 (det=16.773 phase=1.169) eta_ep=59m
+[t1c][ep0 1400/4809] L=21.584 (det=20.619 phase=0.965) eta_ep=56m
+[t1c][ep0 1600/4809] L=19.221 (det=18.261 phase=0.960) eta_ep=52m
+[t1c][ep0 1800/4809] L=20.720 (det=19.546 phase=1.174) eta_ep=49m
+[t1c][ep0 2000/4809] L=15.065 (det=14.141 phase=0.925) eta_ep=46m
+[t1c][ep0 2200/4809] L=18.406 (det=17.496 phase=0.909) eta_ep=42m
+[t1c][ep0 2400/4809] L=20.691 (det=18.967 phase=1.724) eta_ep=39m
+[t1c][ep0 2600/4809] L=17.987 (det=15.801 phase=2.186) eta_ep=36m
+[t1c][ep0 2800/4809] L=15.823 (det=14.867 phase=0.956) eta_ep=33m
+[t1c][ep0 3000/4809] L=14.794 (det=13.788 phase=1.006) eta_ep=29m
+[t1c][ep0 3200/4809] L=17.441 (det=15.025 phase=2.416) eta_ep=26m
+[t1c][ep0 3400/4809] L=20.800 (det=19.047 phase=1.753) eta_ep=23m
+[t1c][ep0 3600/4809] L=13.974 (det=12.773 phase=1.201) eta_ep=20m
+[t1c][ep0 3800/4809] L=9.301 (det=7.484 phase=1.817) eta_ep=16m
+[t1c][ep0 4000/4809] L=14.801 (det=13.086 phase=1.715) eta_ep=13m
+[t1c][ep0 4200/4809] L=23.474 (det=21.455 phase=2.019) eta_ep=10m
+[t1c][ep0 4400/4809] L=18.946 (det=17.307 phase=1.639) eta_ep=7m
+[t1c][ep0 4600/4809] L=14.736 (det=13.739 phase=0.997) eta_ep=3m
+[t1c][ep0 4800/4809] L=22.398 (det=19.558 phase=2.840) eta_ep=0m
+Accumulating evaluation results...
+DONE (t=4.32s).
+Accumulating evaluation results...
+DONE (t=4.24s).
+[t1c] ep0 det mAP=0.6932 phase_acc=0.3802
+[t1c][ep1 0/4809] L=14.987 (det=12.830 phase=2.157) eta_ep=105m
+[t1c][ep1 200/4809] L=23.815 (det=19.976 phase=3.839) eta_ep=76m
+[t1c][ep1 400/4809] L=18.976 (det=16.299 phase=2.677) eta_ep=73m
+[t1c][ep1 600/4809] L=11.986 (det=10.045 phase=1.941) eta_ep=70m
+[t1c][ep1 800/4809] L=12.368 (det=11.508 phase=0.860) eta_ep=66m
+[t1c][ep1 1000/4809] L=19.853 (det=18.087 phase=1.766) eta_ep=63m
+[t1c][ep1 1200/4809] L=14.140 (det=13.235 phase=0.904) eta_ep=60m
+[t1c][ep1 1400/4809] L=29.842 (det=28.200 phase=1.643) eta_ep=56m
+[t1c][ep1 1600/4809] L=14.752 (det=13.686 phase=1.066) eta_ep=53m
+[t1c][ep1 1800/4809] L=14.467 (det=12.192 phase=2.275) eta_ep=50m
+[t1c][ep1 2000/4809] L=13.765 (det=12.585 phase=1.181) eta_ep=46m
+[t1c][ep1 2200/4809] L=18.313 (det=16.538 phase=1.775) eta_ep=43m
+[t1c][ep1 2400/4809] L=23.056 (det=22.197 phase=0.859) eta_ep=40m
+[t1c][ep1 2600/4809] L=22.380 (det=19.789 phase=2.590) eta_ep=37m
+[t1c][ep1 2800/4809] L=19.617 (det=18.759 phase=0.858) eta_ep=33m
+[t1c][ep1 3000/4809] L=15.045 (det=14.124 phase=0.921) eta_ep=30m
+[t1c][ep1 3200/4809] L=11.695 (det=10.692 phase=1.003) eta_ep=27m
+[t1c][ep1 3400/4809] L=31.184 (det=29.809 phase=1.375) eta_ep=23m
+[t1c][ep1 3600/4809] L=20.720 (det=19.846 phase=0.874) eta_ep=20m
+[t1c][ep1 3800/4809] L=26.481 (det=25.597 phase=0.884) eta_ep=17m
+[t1c][ep1 4000/4809] L=17.207 (det=16.484 phase=0.723) eta_ep=13m
+[t1c][ep1 4200/4809] L=18.954 (det=18.173 phase=0.781) eta_ep=10m
+[t1c][ep1 4400/4809] L=16.051 (det=14.526 phase=1.526) eta_ep=7m
+[t1c][ep1 4600/4809] L=17.015 (det=16.444 phase=0.571) eta_ep=3m
+[t1c][ep1 4800/4809] L=13.848 (det=11.935 phase=1.913) eta_ep=0m
+Accumulating evaluation results...
+DONE (t=3.75s).
+Accumulating evaluation results...
+DONE (t=4.22s).
+[t1c] ep1 det mAP=0.6885 phase_acc=0.5743
+[t1c][ep2 0/4809] L=15.567 (det=14.317 phase=1.251) eta_ep=125m
+[t1c][ep2 200/4809] L=20.917 (det=18.489 phase=2.429) eta_ep=79m
+[t1c][ep2 400/4809] L=19.797 (det=18.848 phase=0.949) eta_ep=75m
+[t1c][ep2 600/4809] L=28.044 (det=25.581 phase=2.463) eta_ep=71m
+[t1c][ep2 800/4809] L=21.065 (det=19.993 phase=1.071) eta_ep=68m
+[t1c][ep2 1000/4809] L=18.707 (det=17.077 phase=1.629) eta_ep=65m
+[t1c][ep2 1200/4809] L=19.536 (det=17.818 phase=1.718) eta_ep=61m
+[t1c][ep2 1400/4809] L=25.459 (det=24.334 phase=1.125) eta_ep=58m
+[t1c][ep2 1600/4809] L=15.551 (det=13.627 phase=1.924) eta_ep=54m
+[t1c][ep2 1800/4809] L=30.936 (det=29.962 phase=0.973) eta_ep=51m
+[t1c][ep2 2000/4809] L=13.801 (det=12.719 phase=1.082) eta_ep=48m
+[t1c][ep2 2200/4809] L=15.854 (det=13.302 phase=2.552) eta_ep=44m
+[t1c][ep2 2400/4809] L=10.713 (det=8.995 phase=1.719) eta_ep=41m
+[t1c][ep2 2600/4809] L=24.470 (det=23.791 phase=0.680) eta_ep=37m
+[t1c][ep2 2800/4809] L=21.676 (det=20.032 phase=1.644) eta_ep=34m
+[t1c][ep2 3000/4809] L=15.748 (det=14.775 phase=0.973) eta_ep=31m
+[t1c][ep2 3200/4809] L=23.472 (det=20.797 phase=2.675) eta_ep=27m
+[t1c][ep2 3400/4809] L=16.035 (det=14.181 phase=1.853) eta_ep=24m
+[t1c][ep2 3600/4809] L=19.149 (det=18.365 phase=0.784) eta_ep=20m
+[t1c][ep2 3800/4809] L=16.398 (det=15.242 phase=1.156) eta_ep=17m
+[t1c][ep2 4000/4809] L=19.533 (det=18.546 phase=0.987) eta_ep=14m
+[t1c][ep2 4200/4809] L=15.377 (det=14.001 phase=1.377) eta_ep=10m
+[t1c][ep2 4400/4809] L=28.584 (det=25.438 phase=3.146) eta_ep=7m
+[t1c][ep2 4600/4809] L=22.993 (det=20.773 phase=2.220) eta_ep=4m
+[t1c][ep2 4800/4809] L=16.206 (det=15.159 phase=1.047) eta_ep=0m
+Accumulating evaluation results...
+DONE (t=4.59s).
+Accumulating evaluation results...
+DONE (t=4.69s).
+[t1c] ep2 det mAP=0.6960 phase_acc=0.3472
+[t1c][ep3 0/4809] L=29.435 (det=28.516 phase=0.920) eta_ep=129m
+[t1c][ep3 200/4809] L=20.568 (det=19.357 phase=1.211) eta_ep=79m
+[t1c][ep3 400/4809] L=17.677 (det=16.585 phase=1.093) eta_ep=75m
+[t1c][ep3 600/4809] L=34.214 (det=33.588 phase=0.626) eta_ep=72m
+[t1c][ep3 800/4809] L=21.468 (det=19.942 phase=1.526) eta_ep=68m
+[t1c][ep3 1000/4809] L=15.079 (det=14.460 phase=0.620) eta_ep=65m
+[t1c][ep3 1200/4809] L=19.019 (det=17.621 phase=1.397) eta_ep=61m
+[t1c][ep3 1400/4809] L=14.325 (det=13.381 phase=0.944) eta_ep=58m
+[t1c][ep3 1600/4809] L=19.287 (det=17.296 phase=1.990) eta_ep=55m
+[t1c][ep3 1800/4809] L=14.282 (det=13.662 phase=0.619) eta_ep=51m
+[t1c][ep3 2000/4809] L=22.275 (det=21.475 phase=0.800) eta_ep=48m
+[t1c][ep3 2200/4809] L=26.522 (det=25.430 phase=1.092) eta_ep=44m
+[t1c][ep3 2400/4809] L=10.551 (det=9.237 phase=1.314) eta_ep=41m
+[t1c][ep3 2600/4809] L=14.847 (det=14.351 phase=0.496) eta_ep=37m
+[t1c][ep3 2800/4809] L=21.204 (det=18.739 phase=2.465) eta_ep=34m
+[t1c][ep3 3000/4809] L=24.344 (det=23.426 phase=0.918) eta_ep=31m
+[t1c][ep3 3200/4809] L=13.561 (det=12.881 phase=0.680) eta_ep=27m
+[t1c][ep3 3400/4809] L=21.734 (det=19.673 phase=2.061) eta_ep=24m
+[t1c][ep3 3600/4809] L=11.444 (det=10.298 phase=1.146) eta_ep=20m
+[t1c][ep3 3800/4809] L=12.017 (det=11.064 phase=0.952) eta_ep=17m
+[t1c][ep3 4000/4809] L=12.559 (det=10.802 phase=1.757) eta_ep=14m
+[t1c][ep3 4200/4809] L=18.200 (det=17.185 phase=1.015) eta_ep=10m
+[t1c][ep3 4400/4809] L=19.369 (det=16.614 phase=2.754) eta_ep=7m
+[t1c][ep3 4600/4809] L=17.582 (det=16.404 phase=1.178) eta_ep=4m
+[t1c][ep3 4800/4809] L=26.325 (det=25.097 phase=1.228) eta_ep=0m
+Accumulating evaluation results...
+DONE (t=3.95s).
+Accumulating evaluation results...
+DONE (t=3.92s).
+[t1c] ep3 det mAP=0.6931 phase_acc=0.3089
+[t1c][ep4 0/4809] L=15.249 (det=13.622 phase=1.627) eta_ep=131m
+[t1c][ep4 200/4809] L=16.227 (det=14.407 phase=1.820) eta_ep=79m
+[t1c][ep4 400/4809] L=11.585 (det=10.767 phase=0.818) eta_ep=75m
+[t1c][ep4 600/4809] L=18.679 (det=17.079 phase=1.601) eta_ep=71m
+[t1c][ep4 800/4809] L=22.436 (det=21.238 phase=1.197) eta_ep=68m
+[t1c][ep4 1000/4809] L=16.549 (det=12.736 phase=3.813) eta_ep=64m
+[t1c][ep4 1200/4809] L=12.665 (det=12.217 phase=0.449) eta_ep=61m
+[t1c][ep4 1400/4809] L=18.088 (det=16.836 phase=1.252) eta_ep=58m
+[t1c][ep4 1600/4809] L=8.204 (det=6.707 phase=1.497) eta_ep=54m
+[t1c][ep4 1800/4809] L=13.127 (det=12.427 phase=0.699) eta_ep=51m
+[t1c][ep4 2000/4809] L=31.177 (det=30.770 phase=0.406) eta_ep=48m
+[t1c][ep4 2200/4809] L=21.426 (det=20.254 phase=1.173) eta_ep=44m
+[t1c][ep4 2400/4809] L=14.906 (det=13.189 phase=1.717) eta_ep=41m
+[t1c][ep4 2600/4809] L=16.888 (det=16.342 phase=0.546) eta_ep=37m
+[t1c][ep4 2800/4809] L=14.333 (det=12.673 phase=1.660) eta_ep=34m
+[t1c][ep4 3000/4809] L=7.995 (det=6.985 phase=1.009) eta_ep=31m
+[t1c][ep4 3200/4809] L=24.978 (det=23.222 phase=1.756) eta_ep=27m
+[t1c][ep4 3400/4809] L=16.030 (det=14.067 phase=1.963) eta_ep=24m
+[t1c][ep4 3600/4809] L=9.556 (det=8.547 phase=1.009) eta_ep=20m
+[t1c][ep4 3800/4809] L=19.110 (det=18.373 phase=0.737) eta_ep=17m
+[t1c][ep4 4000/4809] L=20.374 (det=19.332 phase=1.042) eta_ep=14m
+[t1c][ep4 4200/4809] L=10.805 (det=9.968 phase=0.837) eta_ep=10m
+[t1c][ep4 4400/4809] L=13.012 (det=10.755 phase=2.257) eta_ep=7m
+[t1c][ep4 4600/4809] L=30.102 (det=27.950 phase=2.152) eta_ep=4m
+[t1c][ep4 4800/4809] L=17.661 (det=15.092 phase=2.569) eta_ep=0m
+Accumulating evaluation results...
+DONE (t=3.75s).
+Accumulating evaluation results...
+DONE (t=3.97s).
+[t1c] ep4 det mAP=0.7109 phase_acc=0.3281
+[t1c][ep5 0/4809] L=21.722 (det=20.621 phase=1.101) eta_ep=115m
+[t1c][ep5 200/4809] L=25.669 (det=23.837 phase=1.831) eta_ep=79m
+[t1c][ep5 400/4809] L=10.057 (det=7.816 phase=2.241) eta_ep=75m
+[t1c][ep5 600/4809] L=11.991 (det=10.080 phase=1.911) eta_ep=71m
+[t1c][ep5 800/4809] L=12.955 (det=11.843 phase=1.111) eta_ep=68m
+[t1c][ep5 1000/4809] L=13.471 (det=12.105 phase=1.366) eta_ep=65m
+[t1c][ep5 1200/4809] L=21.844 (det=19.743 phase=2.101) eta_ep=61m
+[t1c][ep5 1400/4809] L=13.644 (det=13.149 phase=0.495) eta_ep=58m
+[t1c][ep5 1600/4809] L=21.297 (det=20.379 phase=0.917) eta_ep=54m
+[t1c][ep5 1800/4809] L=27.520 (det=26.890 phase=0.630) eta_ep=51m
+[t1c][ep5 2000/4809] L=15.497 (det=14.628 phase=0.869) eta_ep=48m
+[t1c][ep5 2200/4809] L=15.168 (det=14.341 phase=0.826) eta_ep=44m
+[t1c][ep5 2400/4809] L=16.118 (det=14.027 phase=2.091) eta_ep=41m
+[t1c][ep5 2600/4809] L=16.094 (det=13.079 phase=3.015) eta_ep=37m
+[t1c][ep5 2800/4809] L=16.177 (det=14.190 phase=1.987) eta_ep=34m
+[t1c][ep5 3000/4809] L=15.943 (det=12.598 phase=3.345) eta_ep=31m
+[t1c][ep5 3200/4809] L=16.091 (det=14.665 phase=1.426) eta_ep=27m
+[t1c][ep5 3400/4809] L=29.218 (det=27.590 phase=1.628) eta_ep=24m
+[t1c][ep5 3600/4809] L=18.951 (det=18.118 phase=0.833) eta_ep=20m
+[t1c][ep5 3800/4809] L=10.924 (det=9.831 phase=1.093) eta_ep=17m
+[t1c][ep5 4000/4809] L=16.086 (det=15.378 phase=0.708) eta_ep=14m
+[t1c][ep5 4200/4809] L=12.140 (det=10.607 phase=1.533) eta_ep=10m
+[t1c][ep5 4400/4809] L=18.651 (det=17.679 phase=0.972) eta_ep=7m
+[t1c][ep5 4600/4809] L=18.125 (det=14.571 phase=3.554) eta_ep=4m
+[t1c][ep5 4800/4809] L=23.175 (det=21.842 phase=1.334) eta_ep=0m
+Accumulating evaluation results...
+DONE (t=3.93s).
+Accumulating evaluation results...
+DONE (t=4.08s).
+[t1c] ep5 det mAP=0.7067 phase_acc=0.3281
+[t1c] DONE det mAP=0.7067 phase_acc=0.3281 (init det=0.7303 phase=0.0277) -> /tmp/t1c_bidir_A_seed42
