@@ -40,21 +40,26 @@ def build_loader(split: str):
                            collate_fn=collate_fn, pin_memory=True)
 
 
-def load_ckpt_into_model(seed: int, ckpt_path: Path, loader, device):
-    """clsbias-PE と同一アーキで再構築 → best_t1b.pth を strict load（missing/unexpected は fail loud）。"""
-    model = t1b.build_model(device, seed, model_cfg=t1b.MODEL_CFG_CLSBIAS)
+MODEL_CFG_BY_INJECT = {"clsbias": "MODEL_CFG_CLSBIAS", "camt": "MODEL_CFG_CAMT"}
+
+
+def load_ckpt_into_model(seed: int, ckpt_path: Path, loader, device, inject: str):
+    """学習時と同一アーキ（inject 対応 config）で再構築 → ckpt を strict load（missing/unexpected は fail loud）。"""
+    model_cfg = getattr(t1b, MODEL_CFG_BY_INJECT[inject])
+    model = t1b.build_model(device, seed, model_cfg=model_cfg)
     t1b.register_classes(model, loader)
     sd = torch.load(ckpt_path, map_location=device)
     if isinstance(sd, dict) and "model" in sd:
         sd = sd["model"]
     missing, unexpected = model.load_state_dict(sd, strict=False)
-    # 検出器・注入層・_rare_mask・_classes_ が完全一致でないと再現不能 → fail loud
+    # 検出器・注入層・(clsbiasは)_rare_mask・_classes_ が完全一致でないと再現不能 → fail loud
     missing = [k for k in missing]
     unexpected = [k for k in unexpected]
     if missing or unexpected:
         raise RuntimeError(f"[FAIL-LOUD] state_dict 不整合 ckpt={ckpt_path}\n"
                            f"  missing={missing[:8]}...\n  unexpected={unexpected[:8]}...")
-    rm = model._rare_mask.detach().cpu().tolist()
+    rm = getattr(model, "_rare_mask", None)  # camt には無い（clsbias-PE のゲート buffer）
+    rm = rm.detach().cpu().tolist() if rm is not None else None
     return model.to(device), rm
 
 
@@ -64,9 +69,9 @@ def evaluate(model, loader, split, zero_ctx, device):
     return mAP, per_class, nmiss
 
 
-def gate_val(seed, kind, ckpt, val_loader, device, stored_pc, stored_map, zero_ctx, tol=2e-3):
+def gate_val(seed, kind, ckpt, val_loader, device, stored_pc, stored_map, zero_ctx, inject, tol=2e-3):
     """整合ゲート: reload → VAL 評価 → 保存済 best per-class と一致するか（捏造防止の動作証明）。"""
-    model, rm = load_ckpt_into_model(seed, ckpt, val_loader, device)
+    model, rm = load_ckpt_into_model(seed, ckpt, val_loader, device, inject)
     mAP, per_class, _ = evaluate(model, val_loader, "val", zero_ctx, device)
     diffs = {n: abs(per_class.get(n, float("nan")) - stored_pc.get(n, float("nan")))
              for n in stored_pc}
@@ -80,6 +85,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seeds", default="42,123,456")
     ap.add_argument("--tag", default="clsbias_pe")
+    ap.add_argument("--inject", choices=["clsbias", "camt"], default="clsbias",
+                    help="学習時の注入方式（アーキ再構築の config を決める）")
+    ap.add_argument("--ckpt-root", default="/tmp", help="best_t1b.pth を探す work root")
+    ap.add_argument("--ckpt-name", default="best_t1b.pth", help="評価する checkpoint ファイル名（best/final）")
     ap.add_argument("--out", default=str(BODY / "experiments/analysis/t1b_clsbias_pe_test/test_eval.json"))
     args = ap.parse_args()
     seeds = [int(s) for s in args.seeds.split(",")]
@@ -87,8 +96,8 @@ def main():
 
     per_seed = {}
     for seed in seeds:
-        inj_ck = Path(f"/tmp/t1b_{args.tag}_seed{seed}/best_t1b.pth")
-        ctrl_ck = Path(f"/tmp/t1b_{args.tag}_zeroctx_seed{seed}/best_t1b.pth")
+        inj_ck = Path(f"{args.ckpt_root}/t1b_{args.tag}_seed{seed}/{args.ckpt_name}")
+        ctrl_ck = Path(f"{args.ckpt_root}/t1b_{args.tag}_zeroctx_seed{seed}/{args.ckpt_name}")
         for p in (inj_ck, ctrl_ck):
             if not p.exists():
                 raise FileNotFoundError(f"checkpoint 無し: {p}")
@@ -97,14 +106,18 @@ def main():
         ctrl_stored = json.load(open(stored / "control_result.json"))
         val_loader = build_loader("val")
 
+        # best-epoch ckpt は stored の best per-class（best_epoch）と、final ckpt は final_per_class と照合
+        pc_key = "final_per_class_coco_map" if args.ckpt_name.startswith("final") else "per_class_coco_map"
+        map_key = "final_mAP" if args.ckpt_name.startswith("final") else "mAP"
+
         print(f"\n===== seed{seed} 整合ゲート(val 再現) =====", flush=True)
         inj_model, inj_rm, inj_gate = gate_val(
             seed, "inj", inj_ck, val_loader, device,
-            inj_stored["per_class_coco_map"], inj_stored["mAP"], zero_ctx=False)
+            inj_stored[pc_key], inj_stored[map_key], zero_ctx=False, inject=args.inject)
         print(f"  inj  gate: {inj_gate} rare_mask={inj_rm}", flush=True)
         ctrl_model, ctrl_rm, ctrl_gate = gate_val(
             seed, "ctrl", ctrl_ck, val_loader, device,
-            ctrl_stored["per_class_coco_map"], ctrl_stored["mAP"], zero_ctx=True)
+            ctrl_stored[pc_key], ctrl_stored[map_key], zero_ctx=True, inject=args.inject)
         print(f"  ctrl gate: {ctrl_gate} rare_mask={ctrl_rm}", flush=True)
 
         print(f"===== seed{seed} TEST 評価 =====", flush=True)
@@ -141,7 +154,7 @@ def main():
         "gate_all_ok": all(per_seed[s]["gate"]["inj"]["gate_ok"] and
                            per_seed[s]["gate"]["ctrl"]["gate_ok"] for s in seeds),
     }
-    out = {"tag": args.tag, "split": "test", "checkpoint_epoch": "best (final未保存, frozen で best≈final)",
+    out = {"tag": args.tag, "inject": args.inject, "split": "test", "checkpoint": args.ckpt_name,
            "seeds": seeds, "per_seed": per_seed, "summary": summary}
     # train_t1b の import で cwd=RELDETR に chdir されるため、相対 --out は BODY 基準へ解決（誤配置防止）
     out_path = Path(args.out)
@@ -157,7 +170,10 @@ def main():
           f"same_sign={o['all_same_sign']} sig={o['significant']}", flush=True)
     for n in FOCUS:
         a = summary["per_class_delta"][n]
-        tag = "(注入)" if n in INJECTED else "(除外)"
+        if args.inject == "clsbias":
+            tag = "(注入)" if n in INJECTED else "(除外)"
+        else:
+            tag = "(CA全)"  # camt は query-selective CA で全術具に注入（排他ゲートなし）
         print(f"  {n:16s}{tag}: mean={a['mean']*100:+.3f}pp pstd={a['pstdev']*100:.3f} "
               f"same_sign={a['all_same_sign']} sig={a['significant']} vals={[round(v*100,2) for v in a['vals']]}",
               flush=True)

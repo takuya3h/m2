@@ -28,7 +28,7 @@ INIT_HI=0.78
 SEEDS=(42 123 456)
 GPU_INJ="${GPU_INJ:-0}"
 GPU_CTRL="${GPU_CTRL:-1}"
-TAG=camt_all
+TAG="${TAG:-camt_all}"   # env で上書き可（例: TAG=camt_all_reverify で committed evidence を保護しつつ再走）
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
