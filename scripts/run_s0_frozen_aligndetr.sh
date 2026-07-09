@@ -18,7 +18,7 @@ CONFIG_FILE="$DETREX_DIR/projects/align_detr/configs/aligndetr_r50_4scale_12ep_e
 LOG_DIR="${S0_FROZEN_LOG_DIR:-/tmp/aligndetr_s0frozen_logs}"
 STAMP="$(date +%Y%m%d_%H%M%S)"
 DESC="aligndetr_s0frozen_cocohead"
-SERVER_NAME="${SERVER_NAME:-$(hostname)}"
+SERVER_NAME="${SERVER_NAME:-${SERVERNAME:-$(hostname)}}"
 NUM_GPUS="${NUM_GPUS:-2}"
 
 mkdir -p "$LOG_DIR" "$PROJECT_DIR/experiments/baselines"
