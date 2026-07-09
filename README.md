@@ -952,15 +952,30 @@ REST Integration トークン（`.env` の `NOTION_API_KEY`）に **全 5 DB（r
 
 研究サーバー 11 台（he / adam / hinton / lecun / efros / bengio / ian / andrew /
 dlsta / ilya / philip）でこのリポジトリは **2 層で自動同期**されている。
-セットアップ・運用・障害対応の詳細は `~/slocal2/m2-sync-setup.md`（リポジトリ外）を参照。
+セットアップ・運用・障害対応の詳細は `~/slocal2/sync/m2-sync-setup.md`（リポジトリ外）を参照。
 
 ### 層1: git 管理ファイル（コード・設定・ドキュメント）
 
 - 各サーバーの常駐 `keeper` が **30 分毎に `origin/phase0` を自動 fetch** する
   （GitHub private `takuya3h/m2` がハブ。fetch は読み取り専用 PAT、push は Mac の
   agent forwarding 経由の ssh）。
-- 運用は **1 サーバー = 1 ブランチ**（`exp/<hostname>-<テーマ>`）。統合の幹は `phase0`。
+- 運用は **1 サーバー = 1 ブランチ**（`exp/<サーバー名>-<テーマ>`）。統合の幹は `phase0`。
   phase0 の更新を取り込むときは各自のブランチ上で `git merge phase0`。
+
+### サーバー名の解決（`$(hostname)` を直接使わない）
+
+`hostname` はコンテナ由来で実サーバー名と一致しない。**philip と ilya はどちらも
+`hostname=aolab`** を返す。しかも hostname 自体はコンテナ内から変更できない
+（`sethostname(2)` に CAP_SYS_ADMIN が要るが、バウンディングセットから落ちているため
+root でも不可）。そのためサーバー名は環境変数 `SERVERNAME` を単一情報源とする。
+
+- Python: `egosurgery.utils.server_name.resolve_server_name()`
+  （`SERVERNAME` → `EGOSURGERY_SERVER_NAME` → Hydra `logging.server_name` → hostname）
+- shell: `"${SERVERNAME:-$(hostname)}"`。`SERVER_NAME`（アンダースコア有）は別変数なので注意。
+- 各サーバーの `~/.zshrc` で `export SERVERNAME=<名前>` する。未設定なら hostname に
+  フォールバックするため、既存ノードの動作は壊れない。
+
+同期アラート（`~/claude-sync/sync-alerts.log`）の発信元表記もこの規則に従う。
 
 ### 層2: gitignore された実験成果物（Syncthing・星型トポロジ）
 
