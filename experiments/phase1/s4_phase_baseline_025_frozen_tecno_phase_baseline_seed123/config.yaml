@@ -1,0 +1,32 @@
+experiment:
+  category: phase1
+  step: s4_phase_baseline
+  description: frozen_tecno_phase_baseline
+seed: 123
+frozen_source:
+  detector: relation_detr
+  seed: 42
+  backbone: resnet50
+  cache_dir: data/processed/stage1_features/relation_detr_seed123
+model:
+  temporal_head: tecno
+  num_stages: 2
+  num_layers: 8
+  num_f_maps: 64
+  in_dim: 2048
+  num_phases: 9
+  causal: true
+  use_neck: false
+  neck: null
+  neck_mode: null
+  neck_from: null
+train:
+  epochs: 50
+  lr: 0.0005
+  weight_decay: 0.01
+  freeze_backbone: true
+  smoothing_weight: 0.15
+data:
+  n_train_clips: 13
+  n_val_clips: 3
+server_name: efros

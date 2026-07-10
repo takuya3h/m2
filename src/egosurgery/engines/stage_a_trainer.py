@@ -549,6 +549,9 @@ class StageATrainer:
 
         print(f"[S0] best: {self._best}")
         self.logger.finish()
+        # 実験完了 → 証跡 dir を自動 git 同期（graceful・失敗は no-op）。
+        if self.manager is not None:
+            self.manager.finalize(metric=("mAP", best_map))
         return self._best
 
     # ------------------------------------------------------------------ #

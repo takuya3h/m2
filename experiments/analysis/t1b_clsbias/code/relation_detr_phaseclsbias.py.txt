@@ -1,0 +1,58 @@
+"""T1b Phase→Det 最小版: classification-only phase bias（COUPLING §4.2 の安全な最小版）。
+
+現行 T1b-CA（single-token, 非選択的）より前に、**box 枝を一切触らず class logit にのみ**
+phase 事後(9-d) 由来の per-tool 15次元 residual を加える最小注入を検証する。
+
+  phase posterior (B,9) → MLP(zero-init) → per-tool bias (B,15)
+  → decoder 各層の class logits (B,Q,15) に broadcast 加算（query 非依存＝global class prior）
+
+**zero-init** ゆえ warm-start(s0_016) 直後は S0-frozen と厳密一致（恒等）→ Δ_detection が「注入効果」を測る。
+`rare_slots` で **rare∧工程特異術具（Skewer=11 / Bipolar=0 / Scalpel=9 / Syringe=13）にのみ**適用（最小版）。
+box 枝・decoder 内部は不変なので、真の query-selective CA（multi-token）の**下限対照**として機能する。
+
+注入点: `self.transformer` の forward-hook で outputs_class に bias を加える（criterion 前）。
+denoising 分割前だが bias は zero-init・微小のため dn を壊さない。set_phase_context(ctx) を forward 前に呼ぶ。
+"""
+from __future__ import annotations
+
+import torch
+from torch import nn
+
+from models.detectors.relation_detr import RelationDETR
+
+
+class RelationDETRPhaseClsBias(RelationDETR):
+    """class logit にのみ phase-conditioned per-tool bias を注入する最小 Phase→Det。"""
+
+    def __init__(self, *args, num_phases: int = 9, num_classes: int = 15,
+                 rare_slots=(0, 9, 11, 13), hidden: int = 64, **kwargs) -> None:
+        super().__init__(*args, num_classes=num_classes, **kwargs)
+        self.phase_clsbias = nn.Sequential(
+            nn.Linear(num_phases, hidden), nn.ReLU(), nn.Linear(hidden, num_classes)
+        )
+        nn.init.zeros_(self.phase_clsbias[-1].weight)   # zero-init → 恒等（warm-start=S0-frozen）
+        nn.init.zeros_(self.phase_clsbias[-1].bias)
+        mask = torch.zeros(num_classes)
+        for s in rare_slots:
+            if 0 <= s < num_classes:
+                mask[s] = 1.0
+        self.register_buffer("_rare_mask", mask)        # rare 4 術具のみ bias を通す
+        self._phase_ctx = None
+        self.transformer.register_forward_hook(self._bias_hook)
+
+    def set_phase_context(self, ctx) -> None:
+        """次の forward で使う phase context (B,P) を登録（autograd 有効で渡す）。ctx=None で対照(注入0)。"""
+        self._phase_ctx = ctx
+
+    def _bias_hook(self, module, inputs, output):
+        if self._phase_ctx is None:
+            return output
+        bias = self.phase_clsbias(self._phase_ctx)              # (B,C)
+        bias = bias * self._rare_mask.to(bias.device, bias.dtype)
+        b = bias.unsqueeze(1)                                   # (B,1,C) query へ broadcast
+        oc = output[0]
+        if isinstance(oc, (list, tuple)):
+            new_oc = type(oc)(x + b for x in oc)               # list/tuple の型を保持
+        else:
+            new_oc = oc + b.unsqueeze(0)                        # 積層テンソル (L,B,Q,C)
+        return (new_oc,) + tuple(output[1:])
