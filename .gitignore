@@ -148,3 +148,11 @@ logs/
 .stignore
 .stignore.new
 .stfolder/
+
+# === EgoSurgery-HTS 派生バンドル (2026-07-09 持込) ===
+# SAM(vit_h) 生成の派生セグデータ 16GB。SurgerySegmentation/train.py に
+# Neptune API token が平文で含まれるため追跡禁止 (公開リポ)。
+# 調査結果: data/annotations/egosurgery_hts_bundle_audit.md
+data/annotations/HandDataset/
+data/annotations/HandToolDataset/
+data/annotations/SurgerySegmentation/
