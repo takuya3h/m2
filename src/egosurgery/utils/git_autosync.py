@@ -134,6 +134,10 @@ def _commit_and_push_evidence_impl(
     push: bool,
     alert_log: str | Path | None,
 ) -> AutoSyncResult:
+    # kill-switch: EGOSURGERY_AUTOSYNC が明示的な無効値なら何もしない（緊急停止用）。
+    if os.environ.get("EGOSURGERY_AUTOSYNC", "").strip().lower() in {"0", "false", "no", "off"}:
+        return _skipped("disabled by EGOSURGERY_AUTOSYNC")
+
     meta = meta or {}
 
     if exp_dir is None:
@@ -442,3 +446,57 @@ def _write_alert(alert_log: str | Path | None, message: str) -> None:
     except Exception:
         # アラート追記の失敗自体も学習ループに漏らさない。
         pass
+
+
+# --------------------------------------------------------------------------- #
+# CLI（ad-hoc シェル連携: ExperimentManager 非経由の transfer/<dir> を同期する用途）
+# --------------------------------------------------------------------------- #
+def main(argv: list[str] | None = None) -> int:
+    """ad-hoc シェルからの直呼び用 CLI。**sync 経路は常に 0 を返す**（実験/シェルフローを止めない。
+    引数不正のときだけ argparse が exit 2＝呼び出し側のバグを fail-loud にする）。"""
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        prog="git_autosync",
+        description="実験の証跡ディレクトリだけを provenance 付きで自動 commit + push する。",
+    )
+    parser.add_argument("exp_dir", help="証跡ディレクトリ（例: transfer/<dir>）")
+    parser.add_argument("--repo-root", default=None, help="省略時は exp_dir から解決")
+    parser.add_argument("--step", default=None)
+    parser.add_argument("--description", default=None)
+    parser.add_argument("--seed", type=int, default=None)
+    parser.add_argument("--category", default=None)
+    parser.add_argument("--exp-id", default=None)
+    parser.add_argument("--metric-name", default=None)
+    parser.add_argument("--metric-value", type=float, default=None)
+    parser.add_argument("--extra-path", action="append", default=None, help="追加 stage（複数指定可）")
+    parser.add_argument("--no-push", action="store_true", help="commit のみで push しない")
+    args = parser.parse_args(argv)
+
+    meta_items = {
+        "category": args.category,
+        "step": args.step,
+        "description": args.description,
+        "seed": args.seed,
+        "exp_id": args.exp_id,
+        "metric_name": args.metric_name,
+        "metric_value": args.metric_value,
+    }
+    meta = {key: value for key, value in meta_items.items() if value is not None}
+
+    res = commit_and_push_evidence(
+        args.exp_dir,
+        meta=meta or None,
+        repo_root=args.repo_root,
+        extra_paths=args.extra_path,
+        push=not args.no_push,
+    )
+    print(
+        f"git_autosync: ok={res.ok} action={res.action} branch={res.branch} "
+        f"commit={res.commit} staged={len(res.staged)} reason={res.reason}"
+    )
+    return 0  # 常に 0（実験/シェルフローを止めない）。
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
