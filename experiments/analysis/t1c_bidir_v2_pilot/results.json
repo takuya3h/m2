@@ -1,0 +1,67 @@
+{
+  "pilot": "t1c_bidir v2 (非対称・S4事後) seed42 (n=1)",
+  "bidir_s4": {
+    "det_traj": [
+      0.7303,
+      0.7078,
+      0.7024,
+      0.6919,
+      0.6761,
+      0.7051,
+      0.7106
+    ],
+    "phase_traj": [
+      0.0277,
+      0.3974,
+      0.3888,
+      0.3888,
+      0.3287,
+      0.3287,
+      0.3188
+    ],
+    "final_det": 0.7106080301708846,
+    "final_phase": 0.3188118811881188,
+    "phase_mean": 0.3585,
+    "phase_best": 0.3974,
+    "det_best": 0.7106
+  },
+  "plasticphase_C": {
+    "det_traj": [
+      0.7303,
+      0.7003,
+      0.7052,
+      0.6841,
+      0.6882,
+      0.7097,
+      0.7142
+    ],
+    "phase_traj": [
+      0.0277,
+      0.5023,
+      0.4554,
+      0.3716,
+      0.3776,
+      0.2475,
+      0.1987
+    ],
+    "final_det": 0.714234631618448,
+    "final_phase": 0.19867986798679868,
+    "phase_mean": 0.3589,
+    "phase_best": 0.5023
+  },
+  "baselines": {
+    "camt_all_inj": 0.7181371584855104,
+    "camt_all_ctrl": 0.7109577358973539,
+    "S0_frozen": 0.7302938994613697,
+    "frozen_phase": 0.369,
+    "v1_bidir_det": 0.7067,
+    "v1_bidir_phase": 0.3281
+  },
+  "delta": {
+    "phase2det_vs_camt_inj_pp": -0.75,
+    "phase2det_vs_ctrl_pp": -0.03,
+    "det2phase_mean_vs_frozen_pp": -1.05,
+    "v2_vs_v1_det_pp": 0.39
+  },
+  "verdict": "v2非対称(S4事後)はv1の検出劣化を是正(det 0.7067→0.7106)したが、co-trainingでphase→det利得(①+0.61)は洗い流されdet≈ctrl、det→phaseはphase平均≈frozenで安定利得なし。frame粒度phase headが頭打ち・不安定。双方向の相互改善は未達。残remedy=phase時系列化(TeCNO)。n=1・val。"
+}

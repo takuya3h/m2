@@ -902,6 +902,16 @@ S4 base（GAP-only TeCNO 3-seed = acc 0.8983±0.0090 / macro-F1 0.6965、文書�
   → **ボトルネックは時系列核でなく入力信号（per-frame 表現）**。系統①の検出精度ボトルネック(L2-3)と同方向。
 - 実装知見: 純Python 逐次 minGRU は TeCNO の約 30 倍遅い（1run≈25分）。
 
+### 2026-07-04 検出器改善スタディ — 「検出器強化→phase改善」は GAP 経由・val 限定（test で非頑健）
+
+Relation-DETR を efros で強aug(Method A)/高解像(Method C)改善し、phase 転移を **3-seed paired-σ + phase-seed 平均 + test 確認**で厳密評価（`scripts/_detector_full_study.sh` / `_run_phase_probe_3seed.sh` / `paired_sigma_3seed.py` ほか）。**metrics は全て実測**。
+
+- **検出器**: 強aug mAP 0.7303→0.7426/0.745/0.745（3seed 一貫）。hires 0.733（small AP 0.013→0.031 だが large 犠牲で全体微減）。
+- **phase(val)**: S4/GAP のみ **+1.80pp 有意**（3seed 全正）。B2a(tool-presence)/T1a(region) 非有意。hires は全経路で A に劣る。
+- **phase(test, `--eval-test`)**: S4/GAP は **❌非有意**（mean +2.12pp / det42 が +1.76→**−2.49 反転** / σ3.36）。2/3 seed は test でも正だが同符号崩れ。
+- → **検出器改善→phase改善は val で示唆・test で頑健確認に至らず、経路は GAP に限る。B2a oracle gap はどの改善でも非閉塞**。下記 Pillar3「検出器強化」を精緻化: 効くのは **GAP 経由のみ**・test 頑健性は検出器 seed 追加が要。
+- 証跡: `docs/experiment_log.md`(2026-07-03/04), `logs/{phase3seed_results.tsv, paired_sigma_final.txt, hires_probe_summary.txt, s4_test_results.tsv}`, `configs/detector_relation_detr/`。
+
 ### 2026-07-02 T1a-Boundary — over-segmentation は学習 boundary head でなく因果 debounce で回収
 
 STEP C 改善提案 §8「boundary modeling で T1a の edit-score を改善」を実装・実測（`scripts/train_t1a_boundary.py`、
@@ -945,6 +955,66 @@ REST Integration トークン（`.env` の `NOTION_API_KEY`）に **全 5 DB（r
   `settings.local.json`（`PYTHONPATH` 等のマシン固有設定。Git 管理外）
 
 `settings.json` の権限・フック・env を有効化するには Claude Code の再起動が必要。
+
+---
+
+## サーバー間同期（m2-sync: git + Syncthing）
+
+研究サーバー 11 台（he / adam / hinton / lecun / efros / bengio / ian / andrew /
+dlsta / ilya / philip）でこのリポジトリは **2 層で自動同期**されている。
+セットアップ・運用・障害対応の詳細は `~/slocal2/sync/m2-sync-setup.md`（リポジトリ外）を参照。
+
+### 層1: git 管理ファイル（コード・設定・ドキュメント）
+
+- 各サーバーの常駐 `keeper` が **30 分毎に `origin/phase0` を自動 fetch** する
+  （GitHub private `takuya3h/m2` がハブ。fetch は読み取り専用 PAT、push は Mac の
+  agent forwarding 経由の ssh）。
+- 運用は **1 サーバー = 1 ブランチ**（`exp/<サーバー名>-<テーマ>`）。統合の幹は `phase0`。
+  phase0 の更新を取り込むときは各自のブランチ上で `git merge phase0`。
+
+### サーバー名の解決（`$(hostname)` を直接使わない）
+
+`hostname` はコンテナ由来で実サーバー名と一致しない。**philip と ilya はどちらも
+`hostname=aolab`** を返す。しかも hostname 自体はコンテナ内から変更できない
+（`sethostname(2)` に CAP_SYS_ADMIN が要るが、バウンディングセットから落ちているため
+root でも不可）。そのためサーバー名は環境変数 `SERVERNAME` を単一情報源とする。
+
+- Python: `egosurgery.utils.server_name.resolve_server_name()`
+  （`SERVERNAME` → `EGOSURGERY_SERVER_NAME` → Hydra `logging.server_name` → hostname）
+- shell: `"${SERVERNAME:-$(hostname)}"`。`SERVER_NAME`（アンダースコア有）は別変数なので注意。
+- 各サーバーの `~/.zshrc` で `export SERVERNAME=<名前>` する。未設定なら hostname に
+  フォールバックするため、既存ノードの動作は壊れない。
+
+同期アラート（`~/claude-sync/sync-alerts.log`）の発信元表記もこの規則に従う。
+
+### 層2: gitignore された実験成果物（Syncthing・星型トポロジ）
+
+サーバー間で開いているポートが SSH のみのため、各ノード → philip の SSH トンネル経由の
+**星型**で接続し、A → philip → B と伝播する（実測: 定常時 数秒〜数十秒で全台到達）。
+
+**同期される（= どのサーバーで生成しても全台に現れる）:**
+
+| 対象 | パターン |
+|---|---|
+| 実験成果物 | `experiments/**/` の `checkpoints` `logs` `predictions` `visualizations` `tf_log` `training*.log` `last_checkpoint` `*.npy` `*.pt` `*.pth` `*.py` タイムスタンプ付きフォルダ |
+| モデル重み全般 | `*.pth` `*.pt` `*.ckpt` `*.onnx` `*.safetensors` |
+| 出力・ログ | `outputs/` `logs/` |
+| 加工済みデータ | `data/processed/` |
+| アノテーション | `data/annotations/pseudo_labels` `data/annotations/egosurgery_hts` `data/annotations/**/*.json` |
+| Notion 同期状態 | `.notion_sync.json` |
+
+**同期されない:**
+
+- `.git`・`.claude`・git 追跡ファイル全般（→ 層1 の git 経由で同期）
+- 秘密情報（`.env*` `*.key` `*passphrase*`）・`venv` / `.venv` / `__pycache__` 等の環境依存物
+- `data/raw`・`data/external`（巨大な生データ。各サーバーで個別配置）
+- `third_party`（入れ子 `.git` を含むため。各サーバーで clone）
+- `wandb/`（クラウドに記録済み）
+- 退避フォルダ `experiments/baselines/_*`・`experiments/phase0/_*`（ローカル証跡）
+
+**ルールの変更方法:** リポジトリ直下の `.stglobalignore` を phase0 上で編集して
+commit & push すると、各サーバーの keeper が 30 分以内に `$M2DIR/.stignore` へ
+自動反映する（`.stignore` 自体は編集しない。先にマッチした行が勝つ構文に注意）。
 
 ---
 

@@ -1,0 +1,58 @@
+"""T1b-CA-MultiToken: 真の query-selective・multi-token Phase→Det cross-attention（§4.6 primary の本命）。
+
+single-token 版（RelationDETRPhaseCrossAttn）は phase 事後を **1 トークン**に埋め込むため、各 query は
+その 1 トークンをどれだけ引くか（ゲート的）しか選べない。本 MT 版は phase を **P 個の phase-prototype
+トークン**(B,P,embed) に展開し、各 decoder 層の query→phase cross-attention の KV に渡す。これにより
+各 query は「自分に関連する phase の token」を **selective に attend** できる（例: Syringe 近傍の query は
+anesthesia phase token を選択的に引く）＝真の query-selective。
+
+トークン生成: phase-prototype 埋め込み ``phase_proto: Embedding(P, embed)`` を posterior でスケール
+  tokens[b,p] = phase_proto[p] * ctx[b,p]              # (B,P,embed)
+→ 不在 phase(posterior≈0) は value≈0 で注入寄与 0、活性 phase はその prototype を提示。
+
+恒等性: decoder 層 ``phase_attn.out_proj`` の zero-init が担保するため、warm-start 直後は寄与 0＝S0-frozen と
+厳密一致（single-token 版・FiLM 版と同一プロトコル。§6）。phase_proto は通常初期化でよい（初期は out_proj=0 で
+出力に効かない）。
+
+対照(zero-ctx): ctx=0 → tokens=0 → value=0 → 注入寄与 0（学習後は out_proj.bias 由来の定数のみ）。
+「注入容量・fine-tune の効果」と「phase 信号（query-selective 多トークン）の効果」を分離する。
+
+decoder 層は single-token 版と同一の ``RelationTransformerDecoderLayerPhaseCA`` を **無改造で再利用**
+（phase_attn は標準 MultiheadAttention で KV のトークン長は不問。バッチ拡張=hybrid/dn も層側 forward が処理）。
+"""
+from models.bricks.relation_decoder_phaseca import (
+    RelationTransformerDecoderLayerPhaseCA,
+)
+from models.detectors.relation_detr import RelationDETR
+from torch import nn
+
+
+class RelationDETRPhaseCrossAttnMT(RelationDETR):
+    """真の query-selective・multi-token Phase→Det CA を加えた派生検出器（T1b-CA-MultiToken）。"""
+
+    def __init__(self, *args, num_phases: int = 9, embed_dim: int = 256, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.num_phases = num_phases
+        # P 個の phase-prototype token（学習可能）。恒等性は decoder の phase_attn.out_proj zero-init が担保。
+        self.phase_proto = nn.Embedding(num_phases, embed_dim)
+        self._phase_ctx = None
+        # decoder の phase-CA 層を一度だけ収集（transformer は super().__init__ で構築済み）。
+        self._phase_layers = [
+            m for m in self.modules() if isinstance(m, RelationTransformerDecoderLayerPhaseCA)
+        ]
+
+    def set_phase_context(self, ctx) -> None:
+        """次の forward で使う phase context (B,P) を登録し、multi-token(B,P,embed) を各 decoder 層へ配る。
+
+        ctx は学習ステップ内（autograd 有効）で渡されるため、token 計算は phase_proto まで勾配が流れる。
+        ctx=None は eval/対照フォールバック（注入 skip＝恒等）。
+        """
+        self._phase_ctx = ctx
+        if ctx is None:
+            tokens = None
+        else:
+            # (B,P,embed) = phase_proto[None] * ctx[:,:,None]。不在 phase は value≈0 で寄与 0。
+            proto = self.phase_proto.weight.unsqueeze(0)          # (1,P,embed)
+            tokens = proto * ctx.unsqueeze(-1)                    # (B,P,embed)
+        for layer in self._phase_layers:
+            layer._c_phase = tokens

@@ -1312,3 +1312,344 @@ acc/macro-F1 を維持しつつ edit-score / seg-F1 を改善できるか。D-au
 - acc 改善パスは依然 **検出器強化（B2a 上限 +0.0214）**＝ lecun 実行（本 sandbox は mmcv/ckpt 不在で不可）。
 - 証跡: `experiments/transfer/{t1a_boundary_00[123],t1a_base_env_00[123]}` / 集計 `experiments/analysis/t1a_boundary/REPORT.md`
   / コード `scripts/{train_t1a_boundary,sweep_boundary_tau,compare_causal_decode,report_t1a_boundary}.py`。Notion Run台帳へ自動投稿。
+
+---
+
+## 2026-07-03 検出器改善 → phase 転移の 3-seed 検証（Method A: strong aug）
+
+### 仮説
+検出器（Relation-DETR）を強アグメントで改善（mAP↑）すれば、その特徴を使う工程認識が改善する。
+特に B2a oracle gap(+0.0214) が示す「tool-presence 経由の伸びしろ」が閉じるはず。
+
+### 実験
+- 検出器: S0 レシピから `strong_album`（**aug 強度のみ 1 軸変更**, §6 比較トライアングル）。fp32・2GPU DDP eff bs4・12ep。
+- 3 detector-seed {42,123,456}: mAP **0.7426 / 0.745 / 0.745**（frozen 源 0.7303 → +0.012〜0.015、一貫）。
+- 各検出器から GAP / region-token / tool-presence を再抽出 → S4 / B2a / T1a を再学習。
+- **厳密性**: phase-seed 3 点平均でノイズ除去（同 seed でも ~0.8pp の phase 学習非決定性を発見）→ detector-seed で paired-σ（§10.1）。**全 54 学習成功**。
+- 実行: **efros sandbox**（ユーザーが images/repo/ckpt を供給、mmcv 不要の `.venv-relation-detr`）。従来 log の「lecun でしか不可」を解消。
+
+### 結果（paired-σ, mean Δacc / 判定）
+| 経路 | det42 | det123 | det456 | mean Δacc | 同符号 | 判定 |
+|---|--:|--:|--:|--:|:--:|:--:|
+| **S4（GAP 2048d）** | +1.76 | +1.25 | +2.38 | **+1.80pp** | ✅ | **✅ 有意** |
+| **B2a（tool-presence 15d）** | +0.24 | −0.62 | +0.95 | +0.19pp | ❌ | ❌ 非有意 |
+| **T1a（region-token）** | +0.37 | −0.70 | −0.37 | −0.23pp | ❌ | ❌ 非有意 |
+
+（|1.80|>0.46σ かつ 3seed 全正 → S4 のみ有意。B2a/T1a は符号不一致で非有意）
+
+### 解釈
+1. **S4(GAP) のみ頑健改善 (+1.80pp acc)**。検出器 mAP +1.3pp → phase acc +1.8pp の明確な転移。
+2. **B2a/T1a は非有意** → **B2a oracle gap は検出器改善（強aug）では閉じない**。前回 log の「acc 改善パス＝検出器強化(B2a 上限+0.0214)」を**修正**: 改善は起きるが **GAP 経由**であり tool-presence 経由ではない。
+3. **機序**: 強 aug は backbone を広く改善 → GAP がそれを捉え phase へ頑健転移。tool-presence(15d)・region は術具ヘッド局所で、mAP は上がっても phase へは seed 依存でノイジー。
+4. 皮肉な整合: GAP 改善量(+1.80pp) は B2a oracle gap(+2.14pp) と**同水準** → 「仮説と同程度助けるが想定と違うチャネル」。
+5. **seed42 単独では T1a/B2a も改善と誤認**（+0.37/+0.24pp）→ 3-seed＋phase-seed 平均の厳密化が過剰主張を阻止。「フル」厳密化の意義を数値で実証。
+
+### 次
+- **hires（Method C）**: 小物体術具（small AP ~0.01）を高解像度(1200/2000)で改善 → **別チャネルで B2a を閉じられるか**の検証（Phase II, ~14h）。
+- **test split 最終評価**（勝ち構成の per-class AP + phase test metrics）。
+- 証跡: `experiments/detector_improve/augstrong_seed{42,123,456}/`（mAP・best_ap.pth）, `logs/phase3seed_results.tsv`（54行）, `logs/paired_sigma_final.txt`。
+  コード: `scripts/{_detector_full_study,_run_phase_probe_3seed,paired_sigma_3seed,_extract_improved}`。config ミラー `configs/detector_relation_detr/`。
+
+---
+
+## 2026-07-04 hires（Method C: 強aug＋高解像）の phase 転移 — 検出器改善スタディ完了
+
+### 仮説
+Method A(強aug) は GAP のみ改善し tool-presence/region は非頑健だった。原因は「強aug は大域改善だが**小物体術具**(small AP~0.01)は未改善」の可能性。
+高解像度(1200/2000)で小物体検出を改善すれば、別チャネル(tool-presence/region)で B2a gap を閉じられるはず。
+
+### 実験
+- 検出器 Method C: `strong_album_1200_2000`（強aug＋高解像度）seed42。fp32・2GPU・12ep。
+- **mAP=0.733**（Method A 0.7426 より**低下**）。per-size: **small 0.013→0.031(+2.4×)**, medium 0.276→0.282, large 0.753→0.743。小物体は改善したが large と引換で全体微減。
+- phase: frozen42 / augstrong42(A) / hires42(C) の 3-way を S4/B2a/T1a × phase-seed 3点平均で比較。全27学習成功。
+
+### 結果（3-way, acc, phase-seed平均）
+| 経路 | frozen | augA | hiresC | Δ(hiresC−augA) |
+|---|--:|--:|--:|--:|
+| S4（GAP） | 0.8953 | **0.9133** | 0.9076 | **−0.57pp** |
+| B2a（tool-presence） | 0.9377 | 0.9375 | 0.9311 | **−0.64pp** |
+| T1a（region） | 0.9479 | **0.9520** | 0.9476 | **−0.44pp** |
+
+→ **hiresC は全経路で augA に劣る**（B2a/T1a では frozen 以下）。
+
+### 解釈
+1. **小物体 AP 改善は phase に転移せず**。全体 mAP 低下(large↓)が GAP を劣化させ phase を押し下げた。
+2. **B2a gap は hires でも閉じない**（hiresC B2a < frozen）。
+3. 総括: phase が求めるのは**広い backbone 改善(GAP)**。高解像度の**狭い小物体特化**は大域表現を犠牲にし逆効果。
+
+### 検出器改善スタディ 全体結論（確定）
+**検出器改善→phase改善 は成立するが【経路 = GAP のみ / 手段 = 強aug のみ / B2a gap は非閉塞】。**
+tool-presence/region 経路のボトルネックは検出器品質ではない（＝入力信号/表現側の別要因）。論文 Pillar3 に「時系列後処理でなく検出器強化、ただし GAP 経由に限る」を確定知見として反映。
+
+### 次
+- test-set 確認: S4/GAP frozen vs augstrong を test で paired-σ（`--eval-test`、結果は追記）。
+- 証跡: `experiments/detector_improve/augstrong_hires_seed42/`, `logs/{hires_probe_results.tsv(27), hires_probe_summary.txt}`, `logs/paired_sigma_final.txt`。
+  コード: `scripts/{_run_hires_probe,report_hires_probe}.py`。
+
+### test-set 確認結果（S4/GAP, `--eval-test`, 2026-07-04 追記）
+| 検出器seed | val Δacc | test Δacc | test frozen/aug acc |
+|---|--:|--:|--:|
+| det42 | +1.76 | **−2.49** | 0.7955 / 0.7705 |
+| det123 | +1.25 | +5.42 | 0.7504 / 0.8047 |
+| det456 | +2.38 | +3.42 | 0.7401 / 0.7744 |
+
+**test paired-σ: mean=+2.12pp, pstdev=3.36pp, 符号 −/+/+ → ❌非有意**（val の +1.80pp ✅有意 とは不一致）。
+
+**結論の修正**: S4/GAP 改善は **val で有意・test で非有意**（det42 反転・高分散）。2/3 seed は test でも正だが「全seed同符号」が崩れる。
+→ **GAP 経由効果は実在するが seed 感受性が高く held-out test で頑健確認に至らず**。test-set 評価が val 楽観を是正。
+証跡: `logs/s4_test_results.tsv(18)`, `experiments/phase1/s4_phase_baseline_0{44..61}/`(metrics.json に test_* 併記)。
+
+## 2026-07-05 signature 部分集合 per-class AP 比較（Relation-DETR vs Align-DETR）
+
+### 仮説
+overall mAP は Relation-DETR 首位だが **AP_rare は Align-DETR 首位**（§検出器比較, 2026-06）。phase を決める希少∧工程特異な
+**signature 術具**（EDA §8 / 利得則 `gain≈headroom×signature`）で見れば、det→phase の観点では Align-DETR が有利かもしれない。
+
+### 実験
+S0 bbox baseline 3seed（§6 統制）の `per_class_ap.json` を signature 部分集合に限定して両検出器を比較。
+subset = signature_narrow(4: Syringe/Needle Holders/Skewer/Scalpel = EDA §8(2)) / signature_broad(9) / ubiquitous_ctrl(4)。
+detector-seed で paired-σ（§10.1）。サニティ: 全15平均が公式 mAP（Rel 72.68±0.34 / Align 71.33±1.15）と完全一致。
+コード `scripts/analyze_signature_subset_ap.py`、証跡 `experiments/analysis/signature_subset_detector_compare/{REPORT.md,results.json,REPORT.txt}`。
+
+### 結果
+| subset | Relation | Align | Δ(Rel−Align) | paired-σ |
+|---|--:|--:|--:|---|
+| **signature_narrow(4)** | 81.14±0.49 | **83.57±0.46** | **−2.43pp** | ✅有意・**Align 優位**（3seed全負, σ0.59）|
+| signature_broad(9) | 79.15 | 78.20 | +0.96pp | ❌非有意（符号不一致）|
+| **ubiquitous_ctrl(4)** | **67.06±0.16** | 64.97 | +2.09pp | ✅有意・**Relation 優位**（3seed全正）|
+
+per-class 頑健差（3seed 同符号）: **Syringe −6.65pp / Scalpel −2.09pp → Align 勝ち**（rare∧signature）。対照群 Mouth Gag/Suction/Tweezers は Relation 勝ち。Raspatory は Relation +12.85pp。
+
+### 解釈
+- **Align-DETR の AP_rare 優位の正体 = Syringe(anesthesia) と Scalpel(incision) の signature 術具**。プロジェクト定義の signature tool(narrow 4) では Align-DETR が有意優位。
+- overall mAP 首位（Relation）は主に**対照群の偏在術具＋Raspatory**由来で、**Align の劣位は phase と無関係な術具に局在**。
+- 前回スタディの phase 利得ドライバ3術具（Bipolar/Scalpel/Syringe）のうち **2つ（Scalpel/Syringe）で Align 優位**、Bipolar のみ Relation 微優位。
+
+**しかし「Align → phase 改善」仮説は既存の下流有用性比較①（台帳 completed, s4_001-003 vs s4_010-012）が反証**:
+frozen→同一TeCNO で Rel-DETR acc=0.8986/F1=0.7086 vs Align acc=0.8464/F1=0.6036、**Δacc=+5.2pp(8.7σ)・Rel 圧勝**。
+→ **signature 部分集合の検出 AP（Align優位）は det→phase 有用性（Rel圧勝）を予測しない。凍結源＝Relation-DETR で確定**。
+本 per-class 分解は「Align を選びたくなる理由(signature AP)が下流で覆る」対照証拠として機能。
+（Rel 側 s4_001-003 はローカル一致で検証済／Align 側 s4_010-012 は efros 空 scaffold・別ホスト実行の台帳値のみ [[adhoc_experiment_evidence_gap]]）
+
+### 次
+- （証跡補強）Align 側下流 s4_010-012 の metrics をローカル再取得し 8.7σ を efros で再現。
+- test split の per-class AP 確認（台帳 overall test: Rel 0.507/Align 0.505, Δ+0.002）（[[val_test_significance_gap]]）。
+
+## 2026-07-05 T1a 利得源の因果分解 (a) per-tool-slot ablation（planned 実験 P1）
+
+### 仮説
+T1a の phase 利得 +4.93pp（region-token⊕GAP→TeCNO, 0.9479 vs S4 GAP-base 0.8986）は signature 術具の region 表現が担う。
+per-tool-slot を1点ずつ0除去し、除去による低下で因果寄与を分解（相関だった step_c §3.4 機構を ablation で検証）。
+
+### 実験
+既存 45 run（15 slot×3 phase-seed, `--mask-region-tool-dim`, 全 valid・recipe一致検証済）を baseline（det42-frozen 3seed）に対し paired-σ 分解。positive control=`t1a_shuffle`。コード `scripts/analyze_t1a_factorial_ablation.py`、証跡 `experiments/analysis/t1a_factorial_ablation/`。
+
+### 結果
+- positive control: shuffle で acc 0.9479→0.8605（S4 GAP-base すら −3.81pp）＝region 情報の寄与実在・frame整合が本質。
+- 有意DROP: **Bipolar −0.86pp★(hemostasis, ΔF1−3.11) / Scalpel −0.77★(incision) / NeedleHolders −0.46★(closure) / Scissors −0.44(dissection特異)**。
+- signature 5slot Δacc mean −0.40pp(3/5有意) vs 非signature 10slot −0.01pp(1/10)。
+
+### 解釈
+利得の因果源は **signature 術具（headroom を持つ工程の）region 表現**。Skewer(design)/Syringe(anesthesia) が落ちないのは対応工程が飽和(headroom≈0)＝利得則 `gain≈headroom×signature` を**反証可能な形で確証**。macro-F1 低下が大＝長尾工程直撃。
+
+### 次
+- factorial-b（class-only/+bbox/appearance-only/+confidence 成分分解）は region-token 再抽出要（P3）。time-shuffle は本 shuffle で充足。
+
+## 2026-07-05 T1a-RegionTrajectory（Temporal Object-Set Fusion, §4.1・planned 実験 P2）
+
+### 仮説・実装
+T1a base の flat 連結 region-token は edit 悪化・過分節。§4.1 の役割分離アーキ（Set encoder→gated residual(presence)→causal temporal attention→TeCNO+boundary head）で acc 維持しつつ edit/seg-F1 改善を狙う。新規実装 `scripts/train_t1a_regiontraj.py`、3seed、証跡 `experiments/analysis/t1a_regiontrajectory/`。
+
+### 結果（val 良好 → **test で覆る**）
+- **val paired-σ**: acc/macroF1 維持、**edit +4.08(全seed正)・seg-F1@10/25/50 +.08/.08/.04 有意改善**、sticky edit +15.69。§4.1 成功基準を全充足。
+- **test paired-σ（決定的）**: acc 維持(noisy)だが **macro-F1 −8.75pp 有意低下(全seed負)・edit −2.10 非有意(改善消失)・seg-F1@50 −0.05 有意悪化**。
+
+### 解釈
+val の edit/seg-F1 改善は held-out test に **transfer せず**、逆に macro-F1/seg-F1 を有意悪化。**RegionTraj は val に overfit**。
+機序仮説: Set encoder が 3840→128 に圧縮し rare 工程の per-tool 詳細を喪失（flat-concat base は保持し test 頑健）。
+→ **確定改善として採用不可**。[[val_test_significance_gap]] の教訓が的中（test 確認が val 楽観を是正）。負の知見として §4.1 にフィードバック。
+
+### 次
+- 反証可能な改良: 圧縮緩和（flat region 併存 / dim 拡大）・正則化・Set encoder と boundary の分離 ablation。edit だけなら T1a-Boundary sticky 単体。
+
+## 2026-07-05 T1a 因果分解 (b) 入力成分 factorial（planned 実験 P3）
+
+### 仮説・実装
+region-token の成分（appearance / confidence / class）のどれが T1a 利得と汎化を担うか。抽出器に `--mode appearance`（confidence ゲート除去の生 embedding）追加→再抽出（train+val+test）、`train_t1a.py` に `RELDETR_REGION_TAG`/`--eval-test` 追加。current(appearance×conf)/appearance-only/class-only(B2a) を val+test 3seed 比較。証跡 `experiments/analysis/t1a_factorial_ablation/factorial_b_results.json`。
+
+### 結果（paired-σ）
+- **appearance の価値**(current − class-only, val): acc/macroF1 **+1.17/+1.19pp 有意**、だが **edit −11.25 有意悪化**（rich→過分節, §3.1 を定量）。
+- **confidence 重みの価値**(current − appearance-only): **val 中立**（非有意）だが **test で acc/macroF1/edit を全て有意改善（macroF1 +6.62pp）**。
+
+### 解釈
+**confidence 重み(score gate)は val 不可視・test 必須の汎化成分**。appearance 埋め込みは frame 識別を上げるが edit を悪化。
+appearance-only は val overfit→test macroF1 低下＝**P2 RegionTraj の失敗と同一機序（per-class confidence 信号の希釈）**。
+→ **T1a 利得の汎化は confidence-weighted per-class appearance が担う**という統一的知見。P1(a)＋P3(b) で T1a 利得源の因果分解が完成。
+
+### 次
+- optional: class+bbox 成分（bbox hook 追加）、class-only の test 評価。
+
+## 2026-07-05 T1b Phase→Det 最小版 clsbias（planned 実験 P4・最小版先行）
+
+### 仮説・実装
+真の query-selective CA（multi-token）の前に、**box 枝を触らず class logit にのみ** phase 事後(9-d)→MLP(zero-init)→
+per-tool bias(15-d) を加え、**rare∧工程特異 4 術具のみ**（Bipolar0/Scalpel9/Skewer11/Syringe13）通す最小注入で検出改善するか。
+新規 `models/detectors/relation_detr_phaseclsbias.py`＋config、`train_t1b.py --inject clsbias --trainable film`（検出器凍結・注入層1615のみ）。
+3seed×inj/ctrl(zero-ctx) を efros 2GPU で実行（`run_t1b_clsbias_3seed_efros.sh`）。**Δ=inj−ctrl@final epoch** の 3seed paired-σ。
+証跡 `experiments/analysis/t1b_clsbias/`、生 run `transfer/t1b_clsbias_seed{42,123,456}_efros/`。
+（測定修正: `train_t1b.py` の per_class 保存が best-overall epoch のみで frozen 検出器では ctrl が空になる不具合→init/epoch別 per_class を全保存し同一 final epoch 比較に是正。）
+
+### 結果（paired-σ）— 部分的成功 3/4・成功基準は不成立
+- **恒等ガード**: 全 seed init mAP inj=ctrl（diff=0.0000）、base(0.7303/0.7292/0.7217)一致。overall mAP Δ**+0.003pp 非有意**＝非劣化。
+- **rare-4 per-class AP Δ（全て有意・all-seed同符号）**: Scalpel **+1.25**✅ / Skewer **+0.76**✅ / Syringe **+1.17**✅ 改善、
+  **Bipolar Forceps −3.14**✅ **悪化**（epoch 単調悪化）。非 rare は中立。
+- **対照の厳密性**: zero-ctx の per-class AP は base と厳密一致（定数 bias はクラス内順位不変＝AP 不変）→ Δ が phase 条件づけの正味効果を分離。
+
+### 解釈
+改善 3 術具は**工程排他的**（Syringe→anesthesia 等、phase 事後が術具存在を強予測→class prior が素直に効く。Syringe headroom 最大で利得最大、利得則と整合）。
+**Bipolar は hemostasis signature だが工程跨り使用**があり、phase 条件 bias が off-signature 工程での検出を相対抑圧→AP 低下。
+→ 注入対象は **rare∧signature ではなく rare∧phase-排他**に限定すべき。det→phase(T1a)の「confidence-weighted per-class appearance が汎化を担う」と対を成し、
+**双方向とも per-class の phase 特異性が利得/損失の分岐点**という統一像。
+※誠実性: 本件は **val** per-class 評価。検出には test split（`instances_test.json`, 4265枚）が**存在し**、rare 術具は val で実例希少ゆえ **test の方が信頼できる**（`eval_phase2det_test.py`）→ rare∧工程特異術具の per-class 結論は **test 追認まで暫定**（[[val_test_significance_gap]]）。
+
+### 次
+- rare_slots を phase-排他 3 術具に限定して再走（Bipolar 除外で全改善→基準充足か検証, 最小コスト）。
+- 有効性確認済みゆえ真の query-selective CA(multi-token)へ拡張、ただし注入ゲートを phase-排他性で条件づけ。Bipolar 工程分布を EDA 定量。
+
+## 2026-07-06 T1b-CA-MultiToken（真の query-selective 多トークン CA / camt）最優先実行
+
+### 仮説・実装
+clsbias（global per-tool class bias・query非依存）の「phase-排他rareは改善／Bipolar悪化」を、真のquery-selective CAで克服できるか。
+phase事後をP個のphase-prototype token(B,P,embed)=Embedding(P,embed)*posteriorに展開し、各decoder層のquery→phase cross-attentionのKVに渡す
+（`relation_detr_phasecrossattn_mt.py`。decoder層は既存`relation_decoder_phaseca.py`を無改造再利用、out_proj zero-init=恒等）。
+train_t1b `--inject camt --trainable film`（検出器凍結・注入層158万params）。3seed×inj/ctrl(zero-ctx)、Δ=inj−ctrl@final の paired-σ。
+証跡 `experiments/analysis/t1b_camt/`、生 run `transfer/t1b_camt_seed{42,123,456}_efros/`。
+
+### 結果（val per-class AP, §10.1）— 弱い/ほぼnull（有意はScalpelのみ）
+- 恒等ガード: 全seed init inj=ctrl(0.000, full-val厳密恒等)。overall mAP Δ+0.052pp 非有意=非劣化。
+- rare-4 per-class: **Scalpel +0.89pp のみ有意**。Bipolar −0.35/Skewer +0.26/Syringe −0.01 は全て seed 間符号反転で非有意。非rareも中立。
+
+### 解釈
+仮説「query-selectiveならBipolarも改善」は部分的支持: Bipolar悪化は clsbias −3.14pp→camt −0.35pp(非有意)に大幅緩和（queryがphase適合を選べoff-signature抑圧回避）。
+だが同時にSkewer/Syringeの利得も消失し正味Scalpelのみ残存。**frozen検出器では、query特徴への拡散的CA deltaはper-class APを一貫して動かせず、
+直接class logitを押すclsbiasの方が強いレバー**。表現力(多トークンquery-selective)の優位が検出器凍結の制約下では利得に結びつかない。
+det→phase(T1a confidence-weighted appearance)・phase→det(clsbias phase-排他)・camt(frozen×間接CAは最弱象限)で、
+**per-classのphase特異性 × 注入の"直接性×検出器可塑性"が利得を決める**統一像。真のCA本領には trainable=all が要る可能性（過学習監視前提）。
+
+### 次
+- optional: camt を trainable=all で再走（CA本領・過学習監視必須）／ clsbias phase-排他3術具限定再走（中断済follow-up再開）／ 双方向§4.6統合へ。
+- ※誠実性: 本結果は **val** per-class AP。test split（`instances_test.json`, 4265枚）は存在し rare は test の方が信頼できる（`eval_phase2det_test.py`）→ rare 結論は **test 追認まで暫定**（[[val_test_significance_gap]]）。
+
+## 2026-07-07 T1b-CA-MultiToken-ALL（真の query-selective 多トークン CA / **trainable=all** / camt_all）
+
+### 仮説・実装
+camt-film（frozen）で真の query-selective CA すら弱かった（有意 Scalpel のみ）のは注入機構でなく**検出器凍結**が原因、と予想し
+`--inject camt --trainable all`（検出器も同時 fine-tune・~26.8M、backbone のみ凍結）で 3seed×inj/ctrl(zero-ctx) を再走。
+唯一の差は trainable（film→all）。証跡 `experiments/analysis/t1b_camt_all/`、生 run `transfer/t1b_camt_all_seed{42,123,456}_efros/`。
+
+### 結果（val per-class AP, §10.1, Δ=inj−ctrl@final）
+- 恒等ガード全 seed init inj=ctrl(0.000)。**全 6run best@ep-1**＝trainable=all は overall val を過学習で init(0.73)→final(0.71) に下げる → `--which final` 比較が正当。
+- **overall mAP Δ +0.609pp（pstd0.081）✅有意・非劣化**（+0.72/+0.59/+0.52 全正）。
+- rare-4: **Bipolar +2.65✅ / Scalpel +0.88✅ / Skewer +1.11✅** 有意改善、Syringe +1.34（seed456 −1.68 反転で非有意）。rare 平均 +1.50pp。
+- 非rare は fine-tune 波及で微動（Scissors +1.63⚠/Gauze +1.22⚠ 正、EC −0.48⚠/Tweezers −0.41⚠ 負）＝frozen と違い共有検出器が動く。
+
+### 解釈（利得則の第三次元＝検出器可塑性）
+**clsbias で −3.14pp 有意悪化した Bipolar が camt-all で +2.65pp 有意改善へ逆転**。三象限 [frozen×直接bias / frozen×間接CA / 可塑×間接CA] で
+Bipolar は −3.14 / −0.35 / **+2.65**。→ 注入利得は **per-class phase 特異性 × 注入の直接性 × 検出器可塑性** の積。
+**frozen×間接CA=最弱象限**（camt-film）、**可塑×間接CA=利得象限**（camt-all: 検出器が phase-conditioned 特徴を再形成でき phase-spread Bipolar すら改善）。
+「phase prior を検出スコアへ直接注ぐ(clsbias)」と「query を phase 条件づけ検出器ごと再学習(camt-all)」は作用機序が根本的に異なる。
+
+### 誠実性 caveat（捏造なし・正直報告）
+- (1) trainable=all は overall val を絶対劣化（init 未超）。有意な改善は inj が ctrl より**劣化が小さい相対利得**で、**frozen S0 の絶対 overall mAP は超えない**。実運用は early-stop/正則化前提。
+- (2) **val** 評価・test 未検証（rare は test の方が信頼、[[val_test_significance_gap]]）。
+
+### 次
+- ③双方向§4.6統合（det→phase と phase→det 同時学習、phase-排他ゲート＋検出器可塑性を反映）へ。残課題: camt-all rare 改善の test 追認 / early-stop 下での利得再測定。
+
+## 2026-07-07 T1b-clsbias-PE（phase-排他ゲート版 clsbias / P4 follow-up / clsbias_pe）
+
+### 仮説・実装
+元 clsbias（rare4全注入）は Bipolar −3.14pp 有意悪化で成功基準未達。**Bipolar を注入対象から外せば**（`T1B_RARE_SLOTS=9,11,13`＝Scalpel/Skewer/Syringe のみ）
+残り3術具は改善を保ち Bipolar 中立化・overall 非劣化以上になるか＝「注入は rare∧signature でなく **rare∧phase-排他** に限定」原則の検証。
+trainable=film・他は元 clsbias と完全一致。証跡 `experiments/analysis/t1b_clsbias_pe/`、生 run `transfer/t1b_clsbias_pe_seed{42,123,456}_efros/`。
+
+### 結果（val per-class AP, §10.1, Δ=inj−ctrl@final）— 成功基準クリア
+- 恒等ガード全 seed init inj=ctrl(0.000)、ctrl final=base 据置(frozen no-op)、inj best は init 超え(ep2/ep4/ep2)。
+- **overall mAP Δ +0.228pp（pstd0.057）✅有意・非劣化・init 超え**（+0.20/+0.31/+0.17 全正）。
+- rare: **Scalpel +1.21✅ / Skewer +0.77✅ / Syringe +1.21✅** 全注入術具が有意改善（全 seed 同符号）、**Bipolar −0.00 厳密中立**（除外）、非 rare 全て厳密 0.00。rare平均 +0.80pp。
+
+### 解釈（二つの正解経路）
+元 clsbias との差分は決定的: **Bipolar 除外で3術具の利得は保存・Bipolar −3.14 消滅・overall が +0.003(非有意)→+0.228(✅有意)へ転換**＝Bipolar の backfire が overall を引き下げていた逆説的証明。
+対比 [clsbias(full)/clsbias-PE/camt-all] で Bipolar −3.14/−0.00/+2.65、overall +0.003/+0.228/+0.609(絶対劣化)。
+→ phase→det には**設計の異なる二つの有効解**: **frozen×phase-排他ゲート**（低コスト・安全・overall init 超え・非注入厳密中立だが phase-spread は救えず）と
+**可塑×広域CA**（phase-spread Bipolar すら改善だが overall 絶対劣化・要 early-stop）。利得則「per-class phase特異性×注入の直接性×検出器可塑性」で統一。
+
+### 誠実性 caveat
+- **val** 評価・test 未検証（rare は test の方が信頼、[[val_test_significance_gap]]）→ rare 結論は test 追認まで暫定。
+
+### 次
+- ③双方向§4.6統合へ。phase→det 側に frozen×ゲート(安全解) と 可塑×広域(強解) のどちらを採るか含め設計。残課題: 両系 rare 改善の test 追認。
+
+## 2026-07-08 ③ T1c 双方向§4.6 パイロット（1-seed=42・frame粒度・2-pass）— negative result（naive 対称双方向は不可）
+
+### 仮説・実装
+①②を踏まえ、1モデルで det→phase と phase→det の両勾配を同時に流す双方向結合（docs 564「勾配が双方向に流れる結合が要る」）が
+両タスクを単方向 baseline 以上に相互改善するか、1-seed pilot で設計可否を安価に判定。新規 trainer `scripts/train_t1c_bidir.py`（smoke検証済, commit 2536f7d）。
+det→phase: decoder class_head[-1] を hook→region token(3840)→PhaseHead→9工程。phase→det: camt 注入に online posterior 還流。
+2-pass teacher-forced（Pass1 eval zero-ctx→region→L_phase; Pass2 train softmax(P).detach() 注入→L_det; L=L_det+λL_phase）。
+A=bidir(両方向on,可塑) ∥ B=phase-frozen(det→phase off baseline=frozen検出器上のphase head)。証跡 experiments/analysis/t1c_bidir_pilot/。
+
+### 結果（val, final ep5, n=1）— 相互改善せず
+- phase→det Δ = det_mAP(bidir 0.7067) − ① camt-all ctrl 0.7110 = **−0.42pp**（S0-frozen 0.7303 比 −2.36pp）。高LR期に~0.69劣化→LR decay(ep4)で0.711回復もfinal 0.7067。
+- det→phase Δ = phase_acc(bidir 0.3281) − frozen baseline 0.3690 = **−4.09pp**（ただし平均は A 0.3778 ≈ B 0.3788 で中立、A は変動大 best0.574/final0.328）。
+- 恒等ガード init det 0.7303 厳密通過・loss有限・smoke済 → 配線正、設計課題でありバグでない。
+
+### 解釈・是正案
+online の低品質 phase 事後注入が (a) 検出器を誤条件づけで劣化(phase→det負) (b) 劣化した region token が phase を不安定化(det→phase中立止まり)
+＝二方向が naive 結合下で破壊的干渉。docs 564 の「双方向勾配で伸びる」仮説を単純には満たさず、文献「phase→detは難方向」・①②「phase→detは適切regime要」と整合。
+v2 remedy候補: (1)phase headウォームアップ (2)高品質事後=収束S4 precomputed ctx を phase→det に使い det→phase のみ online (非対称) (3)②排他ゲート事後注入 (4)phase時系列化(TeCNO) (5)非対称λ/勾配ゲート。
+
+### 次
+- pilot が naive 対称双方向の不可を確定。v2 設計方針（非対称/高品質事後/ゲート/時系列）をユーザー判断で選び再挑戦 or 打切り。※誠実性: n=1・val・test 追認まで暫定。
+
+## 2026-07-08 ③ T1c 双方向§4.6 パイロット v2（非対称・高品質S4事後 / 1-seed=42・frame粒度）— partial fix・mutual gain 未達
+
+### 仮説・実装（v1 の是正）
+v1 の negative（online 低品質事後注入で検出器不安定化）を、remedy② 高品質事後で是正。phase→det を**収束済S4事後(precomputed phase context)**に置換した
+**非対称結合**（det→phase のみ online）で相互改善に届くか判定。`train_t1c_bidir.py --phase2det-source s4`（commit 66a5c10）。
+A'=v2-bidir(S4注入+det→phase online,可塑) ∥ C=plastic-phase(det→phase のみ・phase→det off＝可塑性単独の phase 寄与分離)。証跡 experiments/analysis/t1c_bidir_v2_pilot/。
+
+### 結果（val, final ep, n=1）— 破壊は是正、相互改善は未達
+- phase→det: v2 det final 0.7106 は **v1 0.7067 を +0.39pp 改善**（S4 是正が効き LR decay 後 0.7106 回復）が、**① inj 0.7181 に −0.75pp 未達で ① ctrl 0.7110 と同値**。
+  さらに **C(注入なし) 0.7142 ≥ A'(S4注入) 0.7106** → co-training 下で S4 注入の検出上乗せ(① 単独 inj−ctrl +0.71pp)が**消失＝det→phase 同時最適化で相殺**。
+- det→phase: A'/C の phase **平均ほぼ同値**（0.3585 vs 0.3589）で**ともに frozen 0.3690 近傍・激しく振動**（C best0.5023→final0.1987 末尾崩壊、A' best0.3974→final0.3188）。
+  final A'−C=+12.0pp は C 崩壊由来のノイズ、平均では S4 注入は phase を安定化も改善もせず。恒等 init 0.7303 厳密通過 → 配線正・設計課題。
+
+### 解釈・③総括（v1+v2）
+S4 事後は v1 の検出破壊を解消したが、(a)phase→det 利得は det→phase 同時最適化下で中立化(det≈ctrl,A'≤C)、(b)det→phase は frame 粒度 phase head が frozen を安定して超えず振動支配。
+**ボトルネック＝frame 粒度 phase head（時系列なし）**。docs 564「双方向勾配で相互改善」仮説は本 frame 粒度 pilot 群（v1 negative / v2 partial-fix）では**支持されず**、
+①②の「phase→det は結合様式に強く依存」統一像と整合。残 remedy は remedy④ **phase 時系列化(TeCNO)**（相応の実装コスト・本実装フェーズ規模）。
+
+### 次
+- ③ は v1(negative)→v2(partial fix) で「双方向は結合様式・phase 表現依存、frame 粒度では mutual gain 不成立」を確定。次の一手（phase時系列化v3 or ③打切りで①②③統合し test 追認へ）をユーザー判断。※誠実性: n=1・val・test 未検証。
+
+## 2026-07-08 ② clsbias-PE の test split 追認（eval-only・3seed）— overall+Scalpel/Skewer 保存・Syringe 符号反転
+
+### 仮説・方法
+②(clsbias-PE, frozen×phase-排他ゲート) の val 所見（注入3術具全改善・overall +0.228✅・Bipolar 除外中立）が **test で成立するか**追認。
+rare は test の方が信頼（[[val_test_significance_gap]]）＝残課題。① camt-all は checkpoint 消失で不可だが、② は best_t1b.pth（inj+ctrl×3seed）残存 →
+**eval-only**（再学習なし）。`scripts/eval_t1b_test.py`: `T1B_RARE_SLOTS=9,11,13` で同一アーキ再構築→strict load→**整合ゲート（reload→val 再評価が保存済 best per-class と一致するか）**→ 通過後 test 評価。
+
+### 結果（test, §10.1, Δ=inj−ctrl, 3seed）
+- **整合ゲート全6 checkpoint bit-exact 再現**（max_per_class_diff=0.0, val_mAP 完全一致, rare_mask=slot{9,11,13}）→ 再構築忠実・test 数値は実測。
+- **overall Δ: val +0.228 → test +0.156pp（pstd0.051, [0.23,0.13,0.11]）sig✅ 保存**（弱まるが全seed正・有意）。test 絶対 mAP inj≈0.507/ctrl≈0.506（val≈0.727, −22pp 難）。
+- **Scalpel +1.48pp sig✅ 保存**（[1.21,1.61,1.63] 全正）／ **Skewer +1.33pp sig✅ 保存**（[2.30,0.22,1.47] 全正・分散大）。
+- **Syringe −0.49pp 非有意 符号反転❌**（val +1.21 → [−0.12,+0.06,−1.40]）＝val 限定 artifact（Syringe は val AP 最低0.579・分散大）。
+- **Bipolar −0.00pp 厳密中立**（除外ゲート test でも機能）。
+
+### 解釈
+②「frozen×排他ゲート」安全解は overall 押し上げ＋注入2/3(Scalpel/Skewer)が test で有意保存＝機序（工程特異 per-tool bias）を test 追認。
+**Syringe 符号反転は [[val_test_significance_gap]] の警告的中の実例**（rare-class の val 単独改善は test 追認まで暫定、を裏づけ）。
+
+### 次
+- ② の test 追認は完了（部分再現を正直に確定）。① camt-all の test 追認は要再学習（inj+ctrl×3seed）→ 実施可否はユーザー判断。※誠実性: best-epoch ckpt（final未保存, frozen で best≈final）・数値実測・反転隠さず。

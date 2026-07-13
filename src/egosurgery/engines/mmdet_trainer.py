@@ -287,6 +287,16 @@ class MMDetTrainer:
             wandb.finish()
 
         print(f"[S0][{self.detector}] best: {best.get('scalars', {})}")
+
+        # 実験成果（証跡 dir）を exp/* ブランチへ自動 commit + push（graceful）。
+        # rank!=0 は上の early-return で除外済みだが、manager None ガードで
+        # 二重に担保する（rank>=1 では self.manager は None のため呼ばない）。
+        # metric は検出 val mAP（metrics.json と同じ raw 0-1 スケール）。
+        if self.manager is not None:
+            _map = best.get("scalars", {}).get("mAP")
+            _metric = ("mAP", float(_map)) if _map is not None else None
+            self.manager.finalize(metric=_metric)
+
         return best
 
     def _log_eval_artifacts_to_wandb(self, best: dict) -> None:

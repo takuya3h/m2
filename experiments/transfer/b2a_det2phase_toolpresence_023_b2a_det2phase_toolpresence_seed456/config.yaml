@@ -1,0 +1,40 @@
+experiment:
+  category: transfer
+  step: b2a_det2phase
+  description: b2a_det2phase_toolpresence
+seed: 456
+frozen_source:
+  detector: relation_detr
+  seed: 42
+  backbone: resnet50
+  gap_cache: data/processed/stage1_features/relation_detr_augstrong_seed456
+  tool_signal_cache: data/processed/b2a_detsignal/relation_detr_augstrong_seed456
+method:
+  name: b2a_det_to_phase
+  system: ①signal_level
+  direction: det->phase
+  coupling: toolpresence_concat
+  tool_signal_dim: 15
+  neck: null
+  grad_crossing: false
+model:
+  temporal_head: tecno
+  num_stages: 2
+  num_layers: 8
+  num_f_maps: 64
+  in_dim: 2063
+  num_phases: 9
+  causal: true
+train:
+  epochs: 50
+  lr: 0.0005
+  weight_decay: 0.01
+  freeze_backbone: true
+  smoothing_weight: 0.15
+data:
+  n_train_clips: 13
+  n_val_clips: 3
+delta:
+  phase_denominator: s4_phase_baseline (frozen_tecno_phase_baseline)
+  note: Δ_phase = (B2a − S4 base). 土台は素 TeCNO・neck 無しで一致、変える軸は tool 信号 1 点。
+server_name: efros
