@@ -41,7 +41,10 @@ from egosurgery.utils.eval_recipe import (  # noqa: E402
 from egosurgery.utils.experiment_manager import ExperimentManager  # noqa: E402
 from egosurgery.utils.server_name import resolve_server_name  # noqa: E402
 
-CACHE_DIR = PROJ / "data" / "processed" / "stage1_features" / "relation_detr_seed42"
+import os  # noqa: E402  frozen-src の env 上書き用（改善検出器の特徴で probe するため）
+
+_FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
+CACHE_DIR = PROJ / "data" / "processed" / "stage1_features" / _FROZEN_SRC
 MANIFEST_DIR = PROJ / "data" / "processed" / "phase_manifest"
 VOCAB = json.loads((MANIFEST_DIR / "phase_vocab.json").read_text())
 CLASS_NAMES = list(VOCAB.keys())
@@ -265,6 +268,16 @@ def train(args) -> dict:
     print(f"[s4] best @epoch {best.get('epoch')}: acc={best['phase_accuracy']:.4f} "
           f"macroF1={best['phase_macro_f1']:.4f}")
 
+    # --eval-test: val-best モデルを test split で評価し test_* を metrics へ（val 挙動は不変）。
+    if args.eval_test and exp_dir is not None:
+        ck = torch.load(exp_dir / "checkpoints" / "best_tecno.pth", map_location=device)
+        model.load_state_dict(ck["tecno"])
+        test_m = evaluate(model, load_clips("test"), device)
+        for k, v in test_m.items():
+            best[k.replace("phase_", "test_")] = v
+        print(f"[s4] TEST(best@{best.get('epoch')}): acc={test_m['phase_accuracy']:.4f} "
+              f"macroF1={test_m['phase_macro_f1']:.4f}")
+
     if manager is not None:
         per_class = best.get("phase_per_class_f1", {})
         scalars = {k: v for k, v in best.items() if isinstance(v, (int, float))}
@@ -287,6 +300,8 @@ def parse_args():
     p = argparse.ArgumentParser(description="S4 TeCNO phase baseline (frozen features → causal MS-TCN).")
     p.add_argument("--epochs", type=int, default=50)
     p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--eval-test", action="store_true",
+                   help="val-best モデルを test split でも評価し test_* を metrics に追加")
     p.add_argument("--lr", type=float, default=5e-4)
     p.add_argument("--weight-decay", type=float, default=0.01)
     p.add_argument("--num-stages", type=int, default=2)

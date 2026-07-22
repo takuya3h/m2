@@ -1,0 +1,207 @@
+/home/ubuntu/slocal/m2/.venv-relation-detr/lib/python3.11/site-packages/albumentations/core/validation.py:114: UserWarning: ShiftScaleRotate is a special case of Affine transform. Please use Affine transform instead.
+  original_init(self, **validated_kwargs)
+/home/ubuntu/slocal/m2/third_party/Relation-DETR/transforms/presets.py:109: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal/m2/third_party/Relation-DETR/transforms/presets.py:140: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+/home/ubuntu/slocal/m2/third_party/Relation-DETR/transforms/presets.py:195: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal/m2/third_party/Relation-DETR/transforms/presets.py:226: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+Using /home/ubuntu/.cache/torch_extensions/py311_cu118 as PyTorch extensions root...
+Loading extension module MultiScaleDeformableAttention...
+/home/ubuntu/slocal/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+/home/ubuntu/slocal/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+/home/ubuntu/slocal/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+/home/ubuntu/slocal/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+The model and loaded state dict do not match exactly
+Missing keys: transformer.decoder.layers.0.phase_norm.weight, transformer.decoder.layers.0.phase_norm.bias, transformer.decoder.layers.0.phase_attn.in_proj_weight, transformer.decoder.layers.0.phase_attn.in_proj_bias, transformer.decoder.layers.0.phase_attn.out_proj.weight, transformer.decoder.layers.0.phase_attn.out_proj.bias, transformer.decoder.layers.1.phase_norm.weight, transformer.decoder.layers.1.phase_norm.bias, transformer.decoder.layers.1.phase_attn.in_proj_weight, transformer.decoder.layers.1.phase_attn.in_proj_bias, transformer.decoder.layers.1.phase_attn.out_proj.weight, transformer.decoder.layers.1.phase_attn.out_proj.bias, transformer.decoder.layers.2.phase_norm.weight, transformer.decoder.layers.2.phase_norm.bias, transformer.decoder.layers.2.phase_attn.in_proj_weight, transformer.decoder.layers.2.phase_attn.in_proj_bias, transformer.decoder.layers.2.phase_attn.out_proj.weight, transformer.decoder.layers.2.phase_attn.out_proj.bias, transformer.decoder.layers.3.phase_norm.weight, transformer.decoder.layers.3.phase_norm.bias, transformer.decoder.layers.3.phase_attn.in_proj_weight, transformer.decoder.layers.3.phase_attn.in_proj_bias, transformer.decoder.layers.3.phase_attn.out_proj.weight, transformer.decoder.layers.3.phase_attn.out_proj.bias, transformer.decoder.layers.4.phase_norm.weight, transformer.decoder.layers.4.phase_norm.bias, transformer.decoder.layers.4.phase_attn.in_proj_weight, transformer.decoder.layers.4.phase_attn.in_proj_bias, transformer.decoder.layers.4.phase_attn.out_proj.weight, transformer.decoder.layers.4.phase_attn.out_proj.bias, transformer.decoder.layers.5.phase_norm.weight, transformer.decoder.layers.5.phase_norm.bias, transformer.decoder.layers.5.phase_attn.in_proj_weight, transformer.decoder.layers.5.phase_attn.in_proj_bias, transformer.decoder.layers.5.phase_attn.out_proj.weight, transformer.decoder.layers.5.phase_attn.out_proj.bias, phase_proto.weight
+
+loading annotations into memory...
+Done (t=0.38s)
+creating index...
+index created!
+Using [0, 0.5, 0.6299605249474365, 0.7937005259840997, 1.0, 1.259921049894873, 1.5874010519681991, 2.0, inf] as bins for aspect ratio quantization
+Count of instances per bin: [9618]
+loading annotations into memory...
+Done (t=0.03s)
+creating index...
+index created!
+[t1b] warm-start from /home/ubuntu/slocal/m2/third_party/Relation-DETR/checkpoints/incoming/seed123/best_ap.pth
+[t1b] seed=123 inject=camt trainable=film zero_ctx=True det_steps/ep=4809 phase_params=1584384 total_trainable=1584384 miss_ctx(tr/va)=0/0 work=/tmp/t1b_camt_zeroctx_seed123
+Accumulating evaluation results...
+DONE (t=4.46s).
+[t1b] warm-start init mAP=0.7292 (S0-frozen 水準なら warm-start+恒等 OK)
+[t1b][ep0 0/4809] L=20.517 1.6it/s eta_ep=51m
+[t1b][ep0 200/4809] L=7.608 2.6it/s eta_ep=30m
+[t1b][ep0 400/4809] L=11.921 2.6it/s eta_ep=28m
+[t1b][ep0 600/4809] L=10.692 2.6it/s eta_ep=27m
+[t1b][ep0 800/4809] L=9.813 2.7it/s eta_ep=25m
+[t1b][ep0 1000/4809] L=16.855 2.7it/s eta_ep=24m
+[t1b][ep0 1200/4809] L=9.812 2.7it/s eta_ep=22m
+[t1b][ep0 1400/4809] L=18.618 2.7it/s eta_ep=21m
+[t1b][ep0 1600/4809] L=11.598 2.7it/s eta_ep=20m
+[t1b][ep0 1800/4809] L=15.055 2.7it/s eta_ep=19m
+[t1b][ep0 2000/4809] L=12.933 2.7it/s eta_ep=17m
+[t1b][ep0 2200/4809] L=15.245 2.7it/s eta_ep=16m
+[t1b][ep0 2400/4809] L=11.055 2.7it/s eta_ep=15m
+[t1b][ep0 2600/4809] L=15.195 2.7it/s eta_ep=14m
+[t1b][ep0 2800/4809] L=15.818 2.7it/s eta_ep=12m
+[t1b][ep0 3000/4809] L=18.466 2.7it/s eta_ep=11m
+[t1b][ep0 3200/4809] L=12.287 2.7it/s eta_ep=10m
+[t1b][ep0 3400/4809] L=9.106 2.7it/s eta_ep=9m
+[t1b][ep0 3600/4809] L=8.529 2.7it/s eta_ep=7m
+[t1b][ep0 3800/4809] L=18.941 2.7it/s eta_ep=6m
+[t1b][ep0 4000/4809] L=20.611 2.7it/s eta_ep=5m
+[t1b][ep0 4200/4809] L=14.209 2.7it/s eta_ep=4m
+[t1b][ep0 4400/4809] L=14.409 2.7it/s eta_ep=3m
+[t1b][ep0 4600/4809] L=6.040 2.7it/s eta_ep=1m
+[t1b][ep0 4800/4809] L=9.714 2.7it/s eta_ep=0m
+Accumulating evaluation results...
+DONE (t=4.25s).
+[t1b][ep0] val mAP=0.7284
+[t1b][ep1 0/4809] L=9.431 2.3it/s eta_ep=34m
+[t1b][ep1 200/4809] L=24.672 2.7it/s eta_ep=29m
+[t1b][ep1 400/4809] L=14.472 2.7it/s eta_ep=27m
+[t1b][ep1 600/4809] L=12.979 2.7it/s eta_ep=26m
+[t1b][ep1 800/4809] L=17.116 2.7it/s eta_ep=25m
+[t1b][ep1 1000/4809] L=22.319 2.7it/s eta_ep=24m
+[t1b][ep1 1200/4809] L=19.462 2.7it/s eta_ep=22m
+[t1b][ep1 1400/4809] L=12.530 2.7it/s eta_ep=21m
+[t1b][ep1 1600/4809] L=12.007 2.7it/s eta_ep=20m
+[t1b][ep1 1800/4809] L=6.247 2.7it/s eta_ep=19m
+[t1b][ep1 2000/4809] L=13.140 2.7it/s eta_ep=17m
+[t1b][ep1 2200/4809] L=11.398 2.7it/s eta_ep=16m
+[t1b][ep1 2400/4809] L=22.591 2.7it/s eta_ep=15m
+[t1b][ep1 2600/4809] L=18.130 2.7it/s eta_ep=14m
+[t1b][ep1 2800/4809] L=13.504 2.7it/s eta_ep=12m
+[t1b][ep1 3000/4809] L=33.208 2.7it/s eta_ep=11m
+[t1b][ep1 3200/4809] L=13.549 2.7it/s eta_ep=10m
+[t1b][ep1 3400/4809] L=16.381 2.7it/s eta_ep=9m
+[t1b][ep1 3600/4809] L=11.583 2.7it/s eta_ep=7m
+[t1b][ep1 3800/4809] L=12.002 2.7it/s eta_ep=6m
+[t1b][ep1 4000/4809] L=30.166 2.7it/s eta_ep=5m
+[t1b][ep1 4200/4809] L=9.706 2.7it/s eta_ep=4m
+[t1b][ep1 4400/4809] L=16.613 2.7it/s eta_ep=3m
+[t1b][ep1 4600/4809] L=16.463 2.7it/s eta_ep=1m
+[t1b][ep1 4800/4809] L=10.747 2.7it/s eta_ep=0m
+Accumulating evaluation results...
+DONE (t=4.16s).
+[t1b][ep1] val mAP=0.7276
+[t1b][ep2 0/4809] L=14.172 2.6it/s eta_ep=31m
+[t1b][ep2 200/4809] L=11.790 2.6it/s eta_ep=29m
+[t1b][ep2 400/4809] L=16.551 2.7it/s eta_ep=28m
+[t1b][ep2 600/4809] L=11.710 2.7it/s eta_ep=26m
+[t1b][ep2 800/4809] L=20.920 2.7it/s eta_ep=25m
+[t1b][ep2 1000/4809] L=12.993 2.7it/s eta_ep=24m
+[t1b][ep2 1200/4809] L=7.546 2.7it/s eta_ep=23m
+[t1b][ep2 1400/4809] L=7.135 2.7it/s eta_ep=21m
+[t1b][ep2 1600/4809] L=25.474 2.7it/s eta_ep=20m
+[t1b][ep2 1800/4809] L=19.999 2.7it/s eta_ep=19m
+[t1b][ep2 2000/4809] L=31.988 2.7it/s eta_ep=18m
+[t1b][ep2 2200/4809] L=11.901 2.7it/s eta_ep=16m
+[t1b][ep2 2400/4809] L=17.998 2.7it/s eta_ep=15m
+[t1b][ep2 2600/4809] L=13.171 2.7it/s eta_ep=14m
+[t1b][ep2 2800/4809] L=11.531 2.7it/s eta_ep=13m
+[t1b][ep2 3000/4809] L=44.980 2.7it/s eta_ep=11m
+[t1b][ep2 3200/4809] L=6.729 2.7it/s eta_ep=10m
+[t1b][ep2 3400/4809] L=23.185 2.7it/s eta_ep=9m
+[t1b][ep2 3600/4809] L=20.687 2.7it/s eta_ep=8m
+[t1b][ep2 3800/4809] L=21.165 2.7it/s eta_ep=6m
+[t1b][ep2 4000/4809] L=9.986 2.7it/s eta_ep=5m
+[t1b][ep2 4200/4809] L=10.697 2.7it/s eta_ep=4m
+[t1b][ep2 4400/4809] L=12.953 2.7it/s eta_ep=3m
+[t1b][ep2 4600/4809] L=18.893 2.7it/s eta_ep=1m
+[t1b][ep2 4800/4809] L=19.465 2.7it/s eta_ep=0m
+Accumulating evaluation results...
+DONE (t=4.49s).
+[t1b][ep2] val mAP=0.7273
+[t1b][ep3 0/4809] L=9.039 2.5it/s eta_ep=32m
+[t1b][ep3 200/4809] L=9.574 2.6it/s eta_ep=29m
+[t1b][ep3 400/4809] L=9.011 2.6it/s eta_ep=28m
+[t1b][ep3 600/4809] L=12.984 2.6it/s eta_ep=27m
+[t1b][ep3 800/4809] L=10.433 2.6it/s eta_ep=25m
+[t1b][ep3 1000/4809] L=11.795 2.6it/s eta_ep=24m
+[t1b][ep3 1200/4809] L=7.256 2.6it/s eta_ep=23m
+[t1b][ep3 1400/4809] L=10.156 2.6it/s eta_ep=21m
+[t1b][ep3 1600/4809] L=14.079 2.6it/s eta_ep=20m
+[t1b][ep3 1800/4809] L=34.458 2.6it/s eta_ep=19m
+[t1b][ep3 2000/4809] L=13.172 2.6it/s eta_ep=18m
+[t1b][ep3 2200/4809] L=15.731 2.6it/s eta_ep=16m
+[t1b][ep3 2400/4809] L=12.112 2.6it/s eta_ep=15m
+[t1b][ep3 2600/4809] L=13.068 2.6it/s eta_ep=14m
+[t1b][ep3 2800/4809] L=8.423 2.6it/s eta_ep=13m
+[t1b][ep3 3000/4809] L=16.760 2.6it/s eta_ep=11m
+[t1b][ep3 3200/4809] L=11.947 2.6it/s eta_ep=10m
+[t1b][ep3 3400/4809] L=14.512 2.6it/s eta_ep=9m
+[t1b][ep3 3600/4809] L=13.098 2.6it/s eta_ep=8m
+[t1b][ep3 3800/4809] L=5.319 2.6it/s eta_ep=6m
+[t1b][ep3 4000/4809] L=14.302 2.6it/s eta_ep=5m
+[t1b][ep3 4200/4809] L=20.096 2.6it/s eta_ep=4m
+[t1b][ep3 4400/4809] L=20.927 2.6it/s eta_ep=3m
+[t1b][ep3 4600/4809] L=17.185 2.6it/s eta_ep=1m
+[t1b][ep3 4800/4809] L=15.221 2.6it/s eta_ep=0m
+Accumulating evaluation results...
+DONE (t=4.07s).
+[t1b][ep3] val mAP=0.7278
+[t1b][ep4 0/4809] L=17.567 2.2it/s eta_ep=36m
+[t1b][ep4 200/4809] L=13.882 2.6it/s eta_ep=30m
+[t1b][ep4 400/4809] L=6.573 2.6it/s eta_ep=28m
+[t1b][ep4 600/4809] L=8.613 2.6it/s eta_ep=27m
+[t1b][ep4 800/4809] L=13.388 2.6it/s eta_ep=26m
+[t1b][ep4 1000/4809] L=9.713 2.6it/s eta_ep=25m
+[t1b][ep4 1200/4809] L=16.185 2.6it/s eta_ep=23m
+[t1b][ep4 1400/4809] L=15.431 2.6it/s eta_ep=22m
+[t1b][ep4 1600/4809] L=14.273 2.6it/s eta_ep=21m
+[t1b][ep4 1800/4809] L=14.321 2.6it/s eta_ep=19m
+[t1b][ep4 2000/4809] L=12.761 2.6it/s eta_ep=18m
+[t1b][ep4 2200/4809] L=11.749 2.6it/s eta_ep=17m
+[t1b][ep4 2400/4809] L=11.932 2.6it/s eta_ep=16m
+[t1b][ep4 2600/4809] L=20.667 2.6it/s eta_ep=14m
+[t1b][ep4 2800/4809] L=13.824 2.6it/s eta_ep=13m
+[t1b][ep4 3000/4809] L=10.721 2.6it/s eta_ep=12m
+[t1b][ep4 3200/4809] L=16.026 2.6it/s eta_ep=10m
+[t1b][ep4 3400/4809] L=17.282 2.6it/s eta_ep=9m
+[t1b][ep4 3600/4809] L=33.165 2.6it/s eta_ep=8m
+[t1b][ep4 3800/4809] L=15.916 2.6it/s eta_ep=7m
+[t1b][ep4 4000/4809] L=14.691 2.6it/s eta_ep=5m
+[t1b][ep4 4200/4809] L=18.360 2.6it/s eta_ep=4m
+[t1b][ep4 4400/4809] L=8.846 2.6it/s eta_ep=3m
+[t1b][ep4 4600/4809] L=16.999 2.6it/s eta_ep=1m
+[t1b][ep4 4800/4809] L=15.249 2.6it/s eta_ep=0m
+Accumulating evaluation results...
+DONE (t=4.17s).
+[t1b][ep4] val mAP=0.7276
+[t1b][ep5 0/4809] L=14.970 2.3it/s eta_ep=35m
+[t1b][ep5 200/4809] L=17.086 2.5it/s eta_ep=30m
+[t1b][ep5 400/4809] L=20.121 2.5it/s eta_ep=29m
+[t1b][ep5 600/4809] L=12.500 2.6it/s eta_ep=27m
+[t1b][ep5 800/4809] L=16.715 2.6it/s eta_ep=26m
+[t1b][ep5 1000/4809] L=17.696 2.6it/s eta_ep=25m
+[t1b][ep5 1200/4809] L=32.224 2.6it/s eta_ep=23m
+[t1b][ep5 1400/4809] L=18.247 2.6it/s eta_ep=22m
+[t1b][ep5 1600/4809] L=12.835 2.6it/s eta_ep=21m
+[t1b][ep5 1800/4809] L=18.460 2.6it/s eta_ep=20m
+[t1b][ep5 2000/4809] L=13.310 2.6it/s eta_ep=18m
+[t1b][ep5 2200/4809] L=17.074 2.6it/s eta_ep=17m
+[t1b][ep5 2400/4809] L=14.842 2.6it/s eta_ep=16m
+[t1b][ep5 2600/4809] L=16.331 2.6it/s eta_ep=14m
+[t1b][ep5 2800/4809] L=12.946 2.6it/s eta_ep=13m
+[t1b][ep5 3000/4809] L=8.168 2.6it/s eta_ep=12m
+[t1b][ep5 3200/4809] L=26.230 2.6it/s eta_ep=10m
+[t1b][ep5 3400/4809] L=13.611 2.6it/s eta_ep=9m
+[t1b][ep5 3600/4809] L=15.616 2.6it/s eta_ep=8m
+[t1b][ep5 3800/4809] L=25.038 2.6it/s eta_ep=7m
+[t1b][ep5 4000/4809] L=9.733 2.6it/s eta_ep=5m
+[t1b][ep5 4200/4809] L=20.461 2.6it/s eta_ep=4m
+[t1b][ep5 4400/4809] L=7.629 2.6it/s eta_ep=3m
+[t1b][ep5 4600/4809] L=11.778 2.6it/s eta_ep=1m
+[t1b][ep5 4800/4809] L=10.676 2.6it/s eta_ep=0m
+Accumulating evaluation results...
+DONE (t=4.41s).
+[t1b][ep5] val mAP=0.7275
+[t1b] DONE best@ep-1 mAP=0.7292 (init 0.7292) -> /tmp/t1b_camt_zeroctx_seed123

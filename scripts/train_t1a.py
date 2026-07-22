@@ -52,12 +52,13 @@ from egosurgery.utils.eval_recipe import (  # noqa: E402
 from egosurgery.utils.experiment_manager import ExperimentManager  # noqa: E402
 from egosurgery.utils.server_name import resolve_server_name  # noqa: E402
 
-import os as _os
-# 凍結源比較 Run 用に env 上書き可 (default: relation_detr_seed42)。
-# Notion 台帳「凍結源の下流有用性比較」で aligndetr_s0frozen_seed42 に切替える。
-FROZEN_SRC = _os.environ.get("FROZEN_SRC", "relation_detr_seed42")
+import os  # noqa: E402  frozen-src の env 上書き用（改善検出器の特徴で probe するため）
+
+FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
+# region だけ別タグに差し替え可（factorial-b: appearance-only 等の成分 variant を GAP は共有のまま学習）
+REGION_SRC = os.environ.get("RELDETR_REGION_TAG", FROZEN_SRC)
 GAP_DIR = PROJ / "data" / "processed" / "stage1_features" / FROZEN_SRC
-REGION_DIR = PROJ / "data" / "processed" / "t1a_regiontoken" / FROZEN_SRC
+REGION_DIR = PROJ / "data" / "processed" / "t1a_regiontoken" / REGION_SRC
 TOOLPRES_DIR = PROJ / "data" / "processed" / "b2a_detsignal" / FROZEN_SRC  # combined pred 用
 ORACLE_TOOL_DIR = PROJ / "data" / "processed" / "oracle_toolpresence"  # combined oracle 用
 MANIFEST_DIR = PROJ / "data" / "processed" / "phase_manifest"
@@ -429,9 +430,30 @@ def train(args) -> dict:
         f"macroF1={best['phase_macro_f1']:.4f}"
     )
 
+    # test-set 確認（val→test 頑健性; best checkpoint を test 評価）
+    test_scalars: dict = {}
+    if args.eval_test:
+        test_clips = load_clips(
+            "test", args.region_only,
+            shuffle_region=args.region_shuffle, shuffle_seed=args.shuffle_seed + 2,
+            add_toolpresence=args.add_toolpresence, toolpresence_source=args.toolpresence_source,
+            mask_region_tool_dim=mask_slots, tool_noise_rate=args.tool_noise_rate,
+            tool_noise_dims=tool_noise_dims, tool_noise_seed=args.seed,
+        )
+        if exp_dir is not None:
+            ck = torch.load(exp_dir / "checkpoints" / "best_tecno.pth", map_location=device)
+            model.load_state_dict(ck["tecno"])
+        tm = evaluate(model, test_clips, device)
+        for k, v in tm.items():
+            if isinstance(v, (int, float)):
+                test_scalars[k.replace("phase_", "test_")] = v
+        print(f"[t1a] TEST acc={tm['phase_accuracy']:.4f} macroF1={tm['phase_macro_f1']:.4f} "
+              f"edit={tm['phase_edit_score']:.2f} segF1@50={tm['phase_seg_f1_50']:.3f}")
+
     if manager is not None:
         per_class = best.get("phase_per_class_f1", {})
         scalars = {k: v for k, v in best.items() if isinstance(v, (int, float))}
+        scalars.update(test_scalars)
         manager.log_eval_recipe(_build_phase_recipe(args, server_name, in_dim))
         manager.log_metrics(scalars)
         manager.log_per_class_ap(per_class)
@@ -514,6 +536,10 @@ def parse_args():
         type=str,
         default=None,
         help="--tool-noise-rate を適用する dim をカンマ区切り（例 '0,6,9' で Top3 限定）",
+    )
+    p.add_argument(
+        "--eval-test", action="store_true",
+        help="学習後、best checkpoint を test split で評価（val→test 頑健性確認）",
     )
     p.add_argument(
         "--smoke", action="store_true", help="数 epoch・少 clip で疎通確認（証跡なし）"

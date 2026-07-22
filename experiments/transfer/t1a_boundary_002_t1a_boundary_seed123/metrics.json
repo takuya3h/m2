@@ -1,0 +1,42 @@
+{
+  "epoch": 30,
+  "eval_recipe": {
+    "effective_batch_size": 1,
+    "gpu_count": 1,
+    "lr_scaling": "none",
+    "server_name": "efros",
+    "split_test_annotations": 12673,
+    "split_test_images": 4265,
+    "split_train_annotations": 32272,
+    "split_train_images": 9657,
+    "split_val_annotations": 4707,
+    "split_val_images": 1515,
+    "test_cfg": {
+      "backbone": "relation_detr_resnet50_frozen_seed42",
+      "coupling": "t1a_regiontoken_concat_gap+boundary_head",
+      "in_dim": 5888,
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "num_f_maps": 64,
+      "num_layers": 8,
+      "num_stages": 2,
+      "region_dim": 3840,
+      "task": "phase",
+      "temporal_head": "tecno+boundary"
+    }
+  },
+  "phase_accuracy": 0.9452145214521452,
+  "phase_accuracy_sticky": 0.6448844884488449,
+  "phase_edit_score": 33.24009324009324,
+  "phase_edit_score_sticky": 49.0,
+  "phase_jaccard": 0.754822714860838,
+  "phase_jaccard_sticky": 0.5236608259973642,
+  "phase_macro_f1": 0.7979633718342305,
+  "phase_macro_f1_sticky": 0.6123701238381745,
+  "phase_seg_f1_10": 0.4269688644688645,
+  "phase_seg_f1_10_sticky": 0.5525252525252525,
+  "phase_seg_f1_25": 0.4269688644688645,
+  "phase_seg_f1_25_sticky": 0.5373737373737374,
+  "phase_seg_f1_50": 0.3957188644688645,
+  "phase_seg_f1_50_sticky": 0.4707070707070707
+}

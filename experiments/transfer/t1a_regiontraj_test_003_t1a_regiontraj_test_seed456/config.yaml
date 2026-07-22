@@ -1,0 +1,53 @@
+experiment:
+  category: transfer
+  step: t1a_regiontraj_test
+  description: t1a_regiontraj_test
+seed: 456
+frozen_source:
+  detector: relation_detr
+  seed: 42
+  backbone: resnet50
+  gap_cache: data/processed/stage1_features/relation_detr_seed42
+  region_cache: data/processed/t1a_regiontoken/relation_detr_seed42
+method:
+  name: t1a_region_trajectory
+  system: ②feature_level/object-token + temporal-object-set-fusion
+  ref: COUPLING_IMPROVEMENT_RECOMMENDATIONS §4.1 (Temporal Object-Set Fusion)
+  direction: det->phase
+  coupling: set_encoder+gated_residual(presence)+causal_temporal_attn+tecno+boundary
+  set_encoder: per_token_shared_mlp + learnable_class_emb + attention_pool
+  gated_residual: true
+  temporal_attn: true
+  boundary_head: shared_trunk conv1d(f->1) class_agnostic causal
+  region_dim: 3840
+  neck: null
+  grad_crossing: false
+model:
+  temporal_head: regiontraj_tecno+boundary
+  num_stages: 2
+  num_layers: 8
+  num_f_maps: 64
+  d_model: 256
+  tok_dim: 128
+  pres_dim: 64
+  num_phases: 9
+  causal: true
+train:
+  epochs: 50
+  lr: 0.0005
+  weight_decay: 0.01
+  freeze_backbone: true
+  smoothing_weight: 0.15
+  boundary_weight: 1.0
+  boundary_pos_weight: 14.702439024390245
+  boundary_dilate: 1
+  boundary_tau: 0.5
+data:
+  n_train_clips: 13
+  n_val_clips: 3
+delta:
+  phase_denominator: t1a_regiontoken base (同env efros paired)
+  primary_metric: edit_score / seg_f1@{10,25,50}
+  maintain_metric: accuracy / macro_f1
+  note: Δ = (RegionTraj − T1a base[同env]) per-seed paired-σ §10.1。
+server_name: efros

@@ -1,0 +1,132 @@
+# @package _global_
+# S2-hand（独立）: tool 検出器から完全に独立した「手 4 クラス検出器」
+#
+# 系統①の非-oracle 経路（S2-hand → pred 手特徴 → train_haux.py の H-4/pred）の前提。
+# s2_hand.yaml（tool 15 + hand 4 = 19 クラス統合・S0 best から fine-tune）とは
+# **設計思想が根本的に異なる**:
+#
+#   s2_hand.yaml         : S0 tool checkpoint から fine-tune・19 クラス統合・
+#                          bbox_head を 15→19 に拡張（次元不一致 → 再初期化 →
+#                          §14 catastrophic forgetting 対策 negative_transfer が必須）
+#   s2_hand_independent  : S0 を **一切経由しない**・COCO 事前学習重みのみで直接
+#                          fine-tune・手 4 クラスだけ（own/other × L/R）・
+#                          次元不一致が起きない設計 → negative_transfer 対策は不要
+#
+# 【独立性の核（runbook 厳守）】
+#   - tool 検出器（S0）から完全独立。S0 の best checkpoint は **絶対に経由しない**。
+#     → train.load_from は null（= 検出器ごとの COCO 事前学習重み。default.yaml 参照）。
+#     → run スクリプトは s2_hand の様に train.load_from="${S0_BEST}" を **渡してはいけない**。
+#   - 19 クラス統合をしない（tool ラベルを 1 つも混ぜない）。手のみの新規 4 クラス head。
+#   - 次元不一致（15→19 の head 拡張）が構造的に起きない → 負の転移対策は不要化。
+#
+# 【前提データ】scripts/build_hand_coco.py で
+#   data/annotations/egosurgery_hand4/instances_{train,val,test}.json を生成しておくこと
+#   （19 クラス統合 COCO から手 4 クラスを抽出し category_id 15-18 → 0-3 に remap。
+#    images は全画像保持・annotations は手のみ・bbox only）。
+#
+# 【成功基準（runbook）】hand mAP > 65 / own vs other 正答率 > 90% /
+#   L vs R 正答率 > 95%。
+# 【中止条件（runbook）】best epoch が序盤（epoch 1-2）に固定されて以降更新しない
+#   場合は中止する（旧 S2 の catastrophic forgetting 予兆。ここでは tool head が
+#   無いので forgetting は起きない設計だが、学習が早期に頭打ちする兆候として監視）。
+
+experiment:
+  category: "phase0"
+  step: "s2_hand_independent"
+  description: "hand4_independent_coco_init"
+
+model:
+  num_classes: 4                  # own/other × L/R の 4 クラスのみ（tool を混ぜない）
+  backbone: dinov2_vitl14_reg     # S0/S2 と同一 backbone（COCO 事前学習 detector 重みで初期化）
+  detection_head: mask_dino       # bbox only（run スクリプトで varifocanet にも切替可）
+
+train:
+  real_detector: true             # MMDetTrainer 経由（mmdet 実検出器）
+  # 【最重要】COCO-init のみ。S0 tool checkpoint は絶対に指定しない。
+  # null のとき MMDetTrainer は検出器ごとの COCO 事前学習重みを使う（default.yaml §61）。
+  load_from: null
+  epochs: 20                      # COCO 事前学習からの直接 fine-tune（S2 の 8 は S0 warm-start 前提で短い）
+  batch_size: 4
+  num_workers: 8
+  amp: true
+  gradient_checkpoint: true
+  grad_clip_norm: 1.0
+  freeze_backbone: false
+
+optimizer:
+  name: "adamw"
+  lr: 0.0001
+  weight_decay: 0.05
+
+scheduler:
+  name: "cosine"
+  warmup_epochs: 5
+
+# 【negative_transfer 対策は不要化】
+# 旧 S2（19 クラス統合）では tool head を 15→19 に拡張する際の次元不一致・
+# 既存 tool 知識の破壊（§14 catastrophic forgetting）対策が必須だった。
+# 本独立検出器は「手 4 クラスの新規 head を COCO 重みから直接学習」するだけで、
+# 保護すべき既存 tool head も 15→19 の次元不一致も存在しない。よって layer-wise lr /
+# backbone freeze / KD / 複合 best 指標といった負の転移対策はすべて不要。
+negative_transfer:
+  enabled: false                  # 構造的に負の転移が起きない設計（上記コメント参照）
+
+# 手 4 クラスは頭部欠損の稀少 tool と違い比較的バランスするため long-tail 対策は最小化。
+longtail:
+  seesaw_loss: false
+  rfs: false
+  copypaste: false
+
+augmentation:
+  artificial_gloves: true         # 手の見え方頑健化（手袋色バリエーション）
+  blood_splatter: true
+
+feedback:
+  phase_to_det: false
+  det_to_phase: false
+
+relation:
+  enabled: false
+
+exo:
+  enabled: false
+
+data:
+  img_size: 518
+  batch_size: 4
+  num_workers: 8
+  # 【include_hand 関連の明示】
+  # include_hand=True は s2_hand の「tool 15 + hand 4 = 19 クラス統合」を駆動する
+  # キーワード。本 config は **独立 4 クラス**なので 19 クラス統合パスには乗せない
+  # （include_hand: false）。さらに ego_dataset の tool フィルタ（TOOL_CATEGORY_IDS
+  # = 0-14）は手 4 クラスの id 0-3 と衝突するため、その 15 クラス tool パスにも乗せない。
+  # 本 config は下記 hand_only: true を新キーワードとして立て、MMDetTrainer は
+  # constants.HAND_CLASSES（own/other×L/R）から 4 クラス metainfo を構築し、
+  # ann_file（category_id 0-3）をそのまま使う想定（trainer 側 hand_only 分岐は
+  # 本 scaffold の follow-up。build_hand_coco.py で GT は準備済み）。
+  include_hand: false
+  hand_only: true                 # ← S2-hand 独立検出器のキーワード（4 クラス手のみ）
+  include_phase: false
+  use_rfs: false
+  use_copypaste: false
+  limit: null
+  train:
+    ann_file: "data/annotations/egosurgery_hand4/instances_train.json"
+    img_dir: "data/raw/ego/"
+  val:
+    ann_file: "data/annotations/egosurgery_hand4/instances_val.json"
+    img_dir: "data/raw/ego/"
+  test:
+    ann_file: "data/annotations/egosurgery_hand4/instances_test.json"
+    img_dir: "data/raw/ego/"
+
+logging:
+  wandb_project: "egosurgery_multitask"
+  wandb_enabled: true
+  save_top_k: 3
+
+eval:
+  num_seeds: 3                    # seeds 42 / 123 / 456（runbook）
+  # 成功基準（runbook・監視項目）:
+  #   hand_mAP > 65 / own_vs_other_acc > 90% / L_vs_R_acc > 95%
+  # 中止条件: best epoch が序盤固定で更新が止まったら中止（早期頭打ち = 学習破綻の兆候）。

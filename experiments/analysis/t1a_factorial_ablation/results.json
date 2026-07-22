@@ -1,0 +1,262 @@
+{
+  "baseline_acc_per_seed": {
+    "42": 0.9478547854785478,
+    "123": 0.9491749174917492,
+    "456": 0.9465346534653465
+  },
+  "baseline_f1_per_seed": {
+    "42": 0.8097166542002364,
+    "123": 0.812600845989237,
+    "456": 0.8016274897101426
+  },
+  "s4_gap_base": 0.8986,
+  "shuffle_acc_per_seed": {
+    "42": 0.86006600660066,
+    "123": 0.8627062706270627,
+    "456": 0.8587458745874588
+  },
+  "per_slot": [
+    {
+      "slot": 0,
+      "tool": "Bipolar Forceps",
+      "signature": true,
+      "phase": "hemostasis",
+      "delta_acc_pp": -0.8580858085808588,
+      "delta_acc_pstdev_pp": 0.18669485971922326,
+      "same_sign": true,
+      "significant_drop": true,
+      "delta_macrof1_pp": -3.111651139397416,
+      "per_seed_delta_acc": [
+        -0.007260726072607304,
+        -0.011221122112211268,
+        -0.007260726072607193
+      ]
+    },
+    {
+      "slot": 1,
+      "tool": "Electric Cautery",
+      "signature": false,
+      "phase": null,
+      "delta_acc_pp": -0.04400440044004528,
+      "delta_acc_pstdev_pp": 0.062231619906408624,
+      "same_sign": false,
+      "significant_drop": false,
+      "delta_macrof1_pp": -0.17249975969914438,
+      "per_seed_delta_acc": [
+        0.0,
+        -0.0013201320132013583,
+        0.0
+      ]
+    },
+    {
+      "slot": 2,
+      "tool": "Forceps",
+      "signature": false,
+      "phase": null,
+      "delta_acc_pp": 0.15401540154015292,
+      "delta_acc_pstdev_pp": 0.11218964826386654,
+      "same_sign": false,
+      "significant_drop": false,
+      "delta_macrof1_pp": 0.18531966140053663,
+      "per_seed_delta_acc": [
+        0.0,
+        0.0026402640264026056,
+        0.001980198019801982
+      ]
+    },
+    {
+      "slot": 3,
+      "tool": "Gauze",
+      "signature": false,
+      "phase": null,
+      "delta_acc_pp": 0.08800880088009055,
+      "delta_acc_pstdev_pp": 0.1646493899570539,
+      "same_sign": false,
+      "significant_drop": false,
+      "delta_macrof1_pp": -0.06541406176460152,
+      "per_seed_delta_acc": [
+        0.0013201320132013583,
+        -0.0013201320132013583,
+        0.0026402640264027166
+      ]
+    },
+    {
+      "slot": 4,
+      "tool": "Hook",
+      "signature": false,
+      "phase": null,
+      "delta_acc_pp": -0.08800880088008686,
+      "delta_acc_pstdev_pp": 0.13563067113243704,
+      "same_sign": false,
+      "significant_drop": false,
+      "delta_macrof1_pp": -0.27271443680399277,
+      "per_seed_delta_acc": [
+        -0.0006600660066006236,
+        -0.0026402640264027166,
+        0.0006600660066007347
+      ]
+    },
+    {
+      "slot": 5,
+      "tool": "Mouth Gag",
+      "signature": false,
+      "phase": null,
+      "delta_acc_pp": 0.08800880088008686,
+      "delta_acc_pstdev_pp": 0.13563067113243166,
+      "same_sign": false,
+      "significant_drop": false,
+      "delta_macrof1_pp": -0.4878208740277408,
+      "per_seed_delta_acc": [
+        0.0026402640264026056,
+        -0.0006600660066007347,
+        0.0006600660066007347
+      ]
+    },
+    {
+      "slot": 6,
+      "tool": "Needle Holders",
+      "signature": true,
+      "phase": "closure",
+      "delta_acc_pp": -0.46204620462046614,
+      "delta_acc_pstdev_pp": 0.14259055442041738,
+      "same_sign": true,
+      "significant_drop": true,
+      "delta_macrof1_pp": -0.2802176497034773,
+      "per_seed_delta_acc": [
+        -0.0033003300330033403,
+        -0.0066006600660066805,
+        -0.003960396039603964
+      ]
+    },
+    {
+      "slot": 7,
+      "tool": "Raspatory",
+      "signature": false,
+      "phase": null,
+      "delta_acc_pp": -0.1320132013201321,
+      "delta_acc_pstdev_pp": 0.09334742985961031,
+      "same_sign": false,
+      "significant_drop": false,
+      "delta_macrof1_pp": 0.019288558874663853,
+      "per_seed_delta_acc": [
+        -0.001980198019801982,
+        -0.001980198019801982,
+        0.0
+      ]
+    },
+    {
+      "slot": 8,
+      "tool": "Retractor",
+      "signature": false,
+      "phase": null,
+      "delta_acc_pp": 0.08800880088008686,
+      "delta_acc_pstdev_pp": 0.15557904976601894,
+      "same_sign": false,
+      "significant_drop": false,
+      "delta_macrof1_pp": 0.054981496179222024,
+      "per_seed_delta_acc": [
+        0.001980198019801982,
+        -0.0013201320132013583,
+        0.001980198019801982
+      ]
+    },
+    {
+      "slot": 9,
+      "tool": "Scalpel",
+      "signature": true,
+      "phase": "incision",
+      "delta_acc_pp": -0.7700770077007719,
+      "delta_acc_pstdev_pp": 0.1892700828832247,
+      "same_sign": true,
+      "significant_drop": true,
+      "delta_macrof1_pp": -1.151322224532969,
+      "per_seed_delta_acc": [
+        -0.005280528052805322,
+        -0.00990099009900991,
+        -0.007920792079207928
+      ]
+    },
+    {
+      "slot": 10,
+      "tool": "Scissors",
+      "signature": false,
+      "phase": null,
+      "delta_acc_pp": -0.44004400440044167,
+      "delta_acc_pstdev_pp": 0.21781066967242568,
+      "same_sign": true,
+      "significant_drop": true,
+      "delta_macrof1_pp": -0.7271901902454008,
+      "per_seed_delta_acc": [
+        -0.003960396039603964,
+        -0.007260726072607304,
+        -0.001980198019801982
+      ]
+    },
+    {
+      "slot": 11,
+      "tool": "Skewer",
+      "signature": true,
+      "phase": "design",
+      "delta_acc_pp": -3.700743415417188e-15,
+      "delta_acc_pstdev_pp": 0.21557665503042445,
+      "same_sign": false,
+      "significant_drop": false,
+      "delta_macrof1_pp": 0.050557858370077945,
+      "per_seed_delta_acc": [
+        0.0026402640264026056,
+        -0.0026402640264027166,
+        0.0
+      ]
+    },
+    {
+      "slot": 12,
+      "tool": "Suction Cannula",
+      "signature": false,
+      "phase": null,
+      "delta_acc_pp": 0.06600660066006606,
+      "delta_acc_pstdev_pp": 5.233641528945917e-15,
+      "same_sign": true,
+      "significant_drop": false,
+      "delta_macrof1_pp": -0.26654124885963826,
+      "per_seed_delta_acc": [
+        0.0006600660066006236,
+        0.0006600660066006236,
+        0.0006600660066007347
+      ]
+    },
+    {
+      "slot": 13,
+      "tool": "Syringe",
+      "signature": true,
+      "phase": "anesthesia",
+      "delta_acc_pp": 0.06600660066006606,
+      "delta_acc_pstdev_pp": 0.09334742985961555,
+      "same_sign": false,
+      "significant_drop": false,
+      "delta_macrof1_pp": 0.12036518096640118,
+      "per_seed_delta_acc": [
+        0.0013201320132013583,
+        -0.0006600660066007347,
+        0.0013201320132013583
+      ]
+    },
+    {
+      "slot": 14,
+      "tool": "Tweezers",
+      "signature": false,
+      "phase": null,
+      "delta_acc_pp": 0.11001100110011135,
+      "delta_acc_pstdev_pp": 0.11218964826387162,
+      "same_sign": false,
+      "significant_drop": false,
+      "delta_macrof1_pp": -0.10854789104320917,
+      "per_seed_delta_acc": [
+        0.0006600660066006236,
+        0.0,
+        0.0026402640264027166
+      ]
+    }
+  ],
+  "signature_mean_delta_acc_pp": -0.4048404840484069,
+  "nonsignature_mean_delta_acc_pp": -0.011001100110011132
+}
