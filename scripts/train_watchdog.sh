@@ -17,7 +17,7 @@
 #   - 完了 sentinel がログに出現 → "completed" アラートを 1 度だけ出して終了。
 #
 # 使い方:
-#   PROGRESS_LOG=/tmp/sensex_codino_resume.log \
+#   PROGRESS_LOG=logs/sensex_codino_resume.log \
 #   DONE_PATTERN="RESUME completed" \
 #   PROC_PATTERN="train.py" \
 #   ALERT_DIR=/tmp/train_alerts \

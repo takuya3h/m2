@@ -18,7 +18,7 @@
 #   scripts/eval_and_post.sh \
 #     --name s0_042_stabledino_seed42_reeval --seed 42 --tier must \
 #     --recipe "test-split score_thr=0.0 NMS-free" \
-#     --log-path /tmp/stabledino_seed42_eval.log \
+#     --log-path logs/stabledino_seed42_eval.log \
 #     -- CUDA_VISIBLE_DEVICES=0 PYTHONPATH=src \
 #        .venv/bin/python /path/to/eval_wrapper.py cfg.py ckpt.pth \
 #        --out preds.pkl --cfg-options model.test_cfg.score_thr=0.0
