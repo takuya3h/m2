@@ -154,3 +154,43 @@ TeCNO・工程損失/sched・データ(Tool subset 10/2/3)・fps0.5・eval recip
 1. 成果物ギャップの解消方針: (a) bengio/philip から ckpt+repo 転送 / (b) lecun で再学習 /
    (c) 当面スキャフォールディング（コード・config）のみ先行
 2. 公式 eval recipe: 実測 Δ_recipe を待つ（score_thr=0.0系 が作業最小の最有力）
+
+---
+
+## 2026-07-28 — 検出側 run 成果物の永続化（/tmp 廃止 + predictions 保存）
+
+作業前の状態: host `efros` / branch `exp/efros-wip-20260703` / commit `cb075fc`。
+
+### 方針（厳守事項の遵守）
+- 学習・評価ロジック（loss / optimizer / eval recipe / AP 算出）には触れない。
+  変更は **保存先** と **保存物の追加** のみ。
+- `eval_detection()` は既定の戻り値 arity を変えず、`collect_predictions=True` の
+  ときだけ 3-tuple を返す（既存呼び出しは無改変で動く）。
+- `T1B_WORK_DIR` は override として残す（過去 run / 既存スクリプトを壊さない）。
+- ckpt 読み出し側は `checkpoints/best_t1b.pth` → 旧 flat `best_t1b.pth` の順で探す
+  （旧レイアウトの残存 run も引き続き評価可能）。
+
+### チェックリスト
+- [x] A-1 `/tmp` 洗い出し（成果物 vs 意図的一時ファイルの分類）
+- [x] 共通ヘルパ `scripts/run_artifacts.py` 新規（stdlib のみ / 両 venv で動く）
+- [x] A-2/A-3 `train_t1b.py`: 既定出力先を `experiments/transfer/<run_name>/` に変更 + 証跡一式
+- [x] B `train_t1b.py`: predictions 保存（既定 on / init・best 必須 / `--save-predictions-all`）
+- [x] B-4 `eval_phase2det_test.py` / `eval_t1b_test.py`: predictions 保存 + ckpt 解決
+- [x] C `logs/val_metrics_by_epoch.json`（epoch 別 mAP + per-class + best_epoch + init）
+- [x] C-2 init の per-class と predictions SHA256 を記録（inj/ctrl 恒等一致の検証記録）
+      → スモークで **SHA-256 完全一致**を実測（`83fe1d82…c791b2`）。ランチャーが本走ごとに自動検証。
+- [x] `.gitignore`: `logs/val_metrics_by_epoch.json` と `logs/eval_meta_*.json` のみ追跡可能に
+- [x] A-2 全ランチャーおよび成果物を `/tmp` に出す他トレーナの出力先変更
+- [x] D `notion_logger`: Artifacts をホスト名付き絶対パス + checkpoints/predictions/logs
+- [x] 検証1 スモーク実行 → **AP 再現 bit-exact（差 0.000e+00）**を smoke(20枚) と val 全 1515 枚の両方で確認
+- [x] 検証2 `grep -rn "/tmp"` → 保存先としての `/tmp` は 0 件。残るのは意図的一時（wheel/alert）・
+      旧 run 読み取りの後方互換（`train_status.py`）・経緯説明コメントのみ
+- [~] 検証3 `pytest tests/ -q` → efros に `.venv` が無いため `.venv-relation-detr` + 一時 pytest で実行。
+      **133 passed / 4 skipped / 20 failed**。20 件は全て mmdet・hydra 未導入または DINOv2 取得失敗によるもので、
+      **変更前の HEAD でも同一に失敗すること**を stash で確認済み（本改修に起因する失敗は 0）。
+- [x] README / docs 更新
+
+### 未確認事項（正直な記録）
+- フル依存環境（`.venv`: mmcv/mmdet/hydra 込み）でのテスト全パスは efros 上では未検証。
+  `.venv` を持つホスト（lecun 等）で `PYTHONPATH=src pytest tests/ -q` を一度回すことを推奨。
+- 消失済みの過去 run は本改修では復元されない（再発防止であって遡及修復ではない）。

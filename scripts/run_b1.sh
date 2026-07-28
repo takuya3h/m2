@@ -12,11 +12,12 @@ WEIGHTING="${1:?weighting=fixed|uncertainty}"
 SEED="${2:?seed}"
 GPU="${3:-0}"
 
-BODY=/home/ubuntu/slocal2/m2
+# BODY はスクリプト位置から解決する（特定ホストの絶対パス固定は別サーバーで壊れる）。
+BODY="${EGO_BODY:-$(cd "$(dirname "$0")/.." && pwd)}"
 LOG_DIR="$BODY/logs"
 mkdir -p "$LOG_DIR"
 LOG="$LOG_DIR/b1_${WEIGHTING}_seed${SEED}.log"
-WORK="/tmp/b1_work_${WEIGHTING}_seed${SEED}"
+WORK="$BODY/experiments/transfer/b1_work_${WEIGHTING}_seed${SEED}"
 
 # shellcheck disable=SC1091
 source "$BODY/.venv-relation-detr/bin/activate"   # ninja を PATH に

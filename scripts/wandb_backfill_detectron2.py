@@ -10,7 +10,7 @@ output_dir/metrics.json に 1 行 1 イベント (iter ごとの scalar) を残�
 
 Usage:
   python scripts/wandb_backfill_detectron2.py \
-      --metrics /tmp/dimaskdino_work_seed42/metrics.json \
+      --metrics experiments/transfer/dimaskdino_work_seed42/metrics.json \
       --run-name dimaskdino_r50_seed42 --exp-dir experiments/baselines/s0_022_...
 """
 from __future__ import annotations

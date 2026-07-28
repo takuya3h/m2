@@ -24,14 +24,14 @@ echo " A'=v2-bidir(S4注入)→GPU$GPU_A  C=plastic-phase(phase→det off)→GPU
 echo "======================================================================"
 
 # A': v2 非対称双方向（phase→det=S4事後注入 + det→phase online）
-CUDA_VISIBLE_DEVICES="$GPU_A" T1C_WORK_DIR="/tmp/t1c_v2_A_seed${SEED}" \
+CUDA_VISIBLE_DEVICES="$GPU_A" T1C_WORK_DIR="$ROOT/experiments/transfer/t1c_v2_A_seed${SEED}" \
   "$VENV" scripts/train_t1c_bidir.py --seed "$SEED" --epochs "$EPOCHS" --bidir --phase2det-source s4 --trainable all \
     --assert-init-map "$INIT_MAP" --assert-init-tol "$TOL" \
     > "logs/t1c_v2_A_seed${SEED}.log" 2>&1 &
 pid_a=$!
 
 # C: 可塑検出器 + phase head（phase→det off・det→phase の可塑性単独寄与）
-CUDA_VISIBLE_DEVICES="$GPU_C" T1C_WORK_DIR="/tmp/t1c_v2_C_seed${SEED}" \
+CUDA_VISIBLE_DEVICES="$GPU_C" T1C_WORK_DIR="$ROOT/experiments/transfer/t1c_v2_C_seed${SEED}" \
   "$VENV" scripts/train_t1c_bidir.py --seed "$SEED" --epochs "$EPOCHS" --lambda-phase 1.0 --trainable all \
     > "logs/t1c_v2_C_seed${SEED}.log" 2>&1 &
 pid_c=$!
@@ -39,8 +39,8 @@ pid_c=$!
 wait "$pid_a"; wait "$pid_c"
 echo "[本走] A'/C 完了"
 dst="transfer/t1c_bidir_v2_pilot_seed${SEED}"; mkdir -p "$dst"
-cp -f "/tmp/t1c_v2_A_seed${SEED}/t1c_result.json" "$dst/bidir_s4_result.json"     2>/dev/null || echo "[WARN] A' result 欠損"
-cp -f "/tmp/t1c_v2_C_seed${SEED}/t1c_result.json" "$dst/plasticphase_result.json" 2>/dev/null || echo "[WARN] C result 欠損"
+cp -f "$ROOT/experiments/transfer/t1c_v2_A_seed${SEED}/t1c_result.json" "$dst/bidir_s4_result.json"     2>/dev/null || echo "[WARN] A' result 欠損"
+cp -f "$ROOT/experiments/transfer/t1c_v2_C_seed${SEED}/t1c_result.json" "$dst/plasticphase_result.json" 2>/dev/null || echo "[WARN] C result 欠損"
 cp -f "logs/t1c_v2_A_seed${SEED}.log" "$dst/" 2>/dev/null || true
 cp -f "logs/t1c_v2_C_seed${SEED}.log" "$dst/" 2>/dev/null || true
 

@@ -1653,3 +1653,56 @@ rare は test の方が信頼（[[val_test_significance_gap]]）＝残課題。�
 
 ### 次
 - ② の test 追認は完了（部分再現を正直に確定）。① camt-all の test 追認は要再学習（inj+ctrl×3seed）→ 実施可否はユーザー判断。※誠実性: best-epoch ckpt（final未保存, frozen で best≈final）・数値実測・反転隠さず。
+
+---
+
+## 2026-07-28 検出側 run 成果物の永続化（/tmp 廃止 + per-image predictions 保存）— インフラ改修
+
+### 仮説（何が壊れていたか）
+実験そのものではなくインフラの欠陥。検出側トレーナ（`train_t1b.py` 系）の成果物が `/tmp` にしか
+残らず、再起動・tmpfs 掃除で消えていた。実害は 4 件:
+1. 2026-06-26 H-C-v1 test 評価: ckpt 不在の seed を S0-frozen で恒等代替。
+2. 2026-07-13 AlignDETR per-class: S0 ckpt が andrew に不在、test 未実施。
+3. 2026-07 clsbias-PE: efros で ckpt 探索ヒット 0、整合ゲートを再検証できず。
+4. 同上: anesthesia frame の Syringe FP/FN 集計が不能、失敗機序が推測どまり。
+
+3・4 は **predictions さえ残っていれば ckpt なしで解析できた** → 保存先の永続化に加えて
+per-image 検出結果を既定で残す設計にする。
+
+### 方法（学習・評価ロジックは不変）
+- 保存先: `/tmp/...` → `experiments/transfer/<run_name>/`（工程側 `ExperimentManager` と同一規約）。
+  `checkpoints/` `predictions/` `logs/` + config.yaml / command.sh / git_commit.txt /
+  metrics.json / per_class_ap.json / notes.md / server.txt。
+- predictions: COCO detection results を **既定 on** で保存（init=warm-start 恒等点と best epoch は必須、
+  全 epoch は `--save-predictions-all`）。**score 閾値の足切りはせず**、image_id ごと top-k=300
+  （eval recipe の `select_box_nums_for_evaluation` と同一上限）。
+- `eval_detection()` は `collect_predictions=True` のときだけ 3-tuple を返す（既定 arity 不変 →
+  既存呼び出しは無改変で動く）。AP 算出に使われた `CocoEvaluator.predictions["bbox"]` の実体を
+  そのまま保存するので、モデル出力からの再構成（xywh↔xyxy 往復）による誤差が入らない。
+- logs: `logs/val_metrics_by_epoch.json`（epoch 別 mAP + per-class + best_epoch + init）を
+  **git 追跡対象**にした（`.gitignore` に明示例外）。ckpt が失われてもコミット済みログで解析が完結する。
+
+### 結果（実測・スモーク検証）
+- **AP 再現 bit-exact**: 保存 predictions から COCO eval を再実行 → 差 **0.000e+00**（init / best 双方）。
+  smoke（20 枚）0.8876398918 と、**val 全 1515 枚 0.7302938995**（= S0-frozen seed42 の記録値 0.7303 と整合）
+  の両方で一致。
+- **inj/ctrl の init 完全一致を実測**: init 予測の SHA-256 が両者一致
+  （`83fe1d82…c791b2`）。注入層 zero-init=恒等という §4.6 の比較前提を、初めて数値でなく
+  **予測バイト列で**裏づけた。ランチャーが本走ごとに自動検証・記録するようにした。
+- **top-k=300 は恒等変換**: 検出数は 1 画像あたり厳密に 300（= 上限）で、打ち切りは発生しない。
+- **実測サイズ**: val 全 1515 枚・検出 454,500（厳密に 300/枚）で gzip 後 **12.6 MB**
+  （非圧縮 69.8 MB・圧縮率 0.18）= 8.1 KB/枚。**1 run あたり約 25 MB**、test 1 本は約 35 MB。
+
+### 解釈
+実害 1（ckpt 不在 seed）の構造がスモークで再現した: frozen 検出器では init を超える epoch が無く、
+その場合 best ckpt が生成されない。これは値としては正しい（best = init）が、成果物が「無い」ため
+後から追認できない。init ckpt は warm-start ckpt から決定的に再構成できるので重複保存はせず、
+**best predictions は必ず出力し `best_is_init: true` で代替であることを明示**する方針にした
+（隠さず表面化する）。実害 3・4 の型（別ホストで探索ヒット 0）については、
+`eval_phase2det_test.py` / `run_t1b.sh` / `run_b1.sh` にあった特定ホストの絶対パス固定
+（`/home/ubuntu/slocal2/m2`）も併せて解消した。
+
+### 次
+- 以降の T1b 系 run は predictions を持つので、Syringe FP/FN の内訳・工程遷移近傍の層別解析
+  （gate の rare 逆害機序）を ckpt なしで実施できる。実害 4 の宿題に着手可能。
+- 既存の消失済み run は復元できない（再学習が必要）。本改修は再発防止であって遡及修復ではない。

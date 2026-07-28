@@ -56,8 +56,8 @@ run() {  # $1=gpu $2=workdir $3=logfile $4(optional)=--zero-ctx
       > "$log" 2>&1
 }
 
-INJ_WORK=/tmp/t1b_ca_seed${SEED}
-CTRL_WORK=/tmp/t1b_ca_zeroctx_seed${SEED}
+INJ_WORK=${ROOT}/experiments/transfer/t1b_ca_seed${SEED}
+CTRL_WORK=${ROOT}/experiments/transfer/t1b_ca_zeroctx_seed${SEED}
 INJ_LOG="logs/t1b_ca_seed${SEED}.log"
 CTRL_LOG="logs/t1b_ca_zeroctx_seed${SEED}.log"
 
@@ -80,6 +80,12 @@ else
   pid_ctrl=$!
   wait "$pid_inj"; wait "$pid_ctrl"
 fi
+
+# §4.6 の比較前提（注入層 zero-init=恒等 → inj/ctrl の init 予測は完全一致）を実測で記録。
+# 一致しなければ warm-start か恒等性が壊れており、Δ を注入効果と解釈できない。
+"$VENV" scripts/run_artifacts.py --verify-init-identity "$INJ_WORK" "$CTRL_WORK" \
+  > "logs/t1b_ca_seed${SEED}_init_identity.json" \
+  || echo "[WARN] inj/ctrl の init 予測が不一致（恒等性の破れを疑え）"
 
 echo "================ 完了・回収用サマリ ================"
 for tag in "$INJ_WORK" "$CTRL_WORK"; do

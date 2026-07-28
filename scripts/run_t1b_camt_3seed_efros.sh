@@ -78,9 +78,9 @@ CUDA_VISIBLE_DEVICES="$GPU_INJ" "$VENV" -c \
 for S in "${SEEDS[@]}"; do
   echo ""
   echo "############### seed$S ###############"
-  MEAS=/tmp/t1b_${TAG}_measure_seed${S}
+  MEAS=${ROOT}/experiments/transfer/t1b_${TAG}_measure_seed${S}
   echo "[measure seed$S] init mAP を実測（--epochs 0, GPU$GPU_INJ）..."
-  run_one "$S" "$GPU_INJ" "$MEAS" "logs/t1b_${TAG}_measure_seed${S}.log" --epochs 0
+  run_one "$S" "$GPU_INJ" "$MEAS" "logs/t1b_${TAG}_measure_seed${S}.log" --epochs 0 --no-save-predictions
   INIT="$(extract_init_map "$MEAS/t1b_result.json")"
   echo "[measure seed$S] init mAP=$INIT"
   "$VENV" - "$INIT" "$INIT_LO" "$INIT_HI" "$S" <<'PY'
@@ -92,8 +92,8 @@ if not (lo <= v <= hi):
 print(f"[measure seed{s}] 健全帯チェック OK")
 PY
 
-  INJ=/tmp/t1b_${TAG}_seed${S}
-  CTRL=/tmp/t1b_${TAG}_zeroctx_seed${S}
+  INJ=${ROOT}/experiments/transfer/t1b_${TAG}_seed${S}
+  CTRL=${ROOT}/experiments/transfer/t1b_${TAG}_zeroctx_seed${S}
   echo "[seed$S 本走] inj(GPU$GPU_INJ) ∥ ctrl(GPU$GPU_CTRL) 並列起動（epochs=$EPOCHS）..."
   run_one "$S" "$GPU_INJ" "$INJ" "logs/t1b_${TAG}_seed${S}.log" \
     --epochs "$EPOCHS" --assert-init-map "$INIT" --assert-init-tol "$ASSERT_INIT_TOL" &
@@ -103,6 +103,12 @@ PY
   pid_ctrl=$!
   wait "$pid_inj"; wait "$pid_ctrl"
   echo "[seed$S 本走] 完了"
+
+  # §4.6 の比較前提（注入層 zero-init=恒等 → inj/ctrl の init 予測は完全一致）を実測で記録する。
+  # 一致しなければ warm-start か恒等性が壊れており、Δ を注入効果と解釈できない。
+  "$VENV" scripts/run_artifacts.py --verify-init-identity "$INJ" "$CTRL" \
+    > "logs/t1b_${TAG}_init_identity_seed${S}.json" \
+    || echo "[WARN] seed$S: inj/ctrl の init 予測が不一致（恒等性の破れを疑え）"
 
   dst="transfer/t1b_${TAG}_seed${S}_efros"
   mkdir -p "$dst"
