@@ -415,3 +415,51 @@ S4 に進む前に、再現性を確保するか、確保できないなら run 
 run 間ノイズを分散推定に正しく取り込む設計変更が必要と考える。**この判断はユーザーに委ねる。**
 
 ---
+
+## S4-1: 手 mask のフレーム水準被覆率（GPU 不要・実測）
+
+実装: `scripts/analysis/s4_hand_coverage.py` / 出力: `json/s4_hand_coverage.json`, `csv/s4_hand_coverage.csv`
+
+分母の定義: **canonical（`egosurgery_tool/instances_{split}.json`）の画像数 = 15,437**。
+分子: そのフレームに手クラスの segmentation 付き annotation が **1 件以上**あるフレーム数（`ann >= 1` 基準）。
+join は **basename**（COCO の `file_name` は出所間で形式が違い、そのままでは交差 0 になる）。
+手 mask は README の警告に従い `handtool_seg_5cls/by_split/{split}_toolhand_withmask.json` を使用
+（`merged_annotations.json` は dangling 1,404 件・空画像 6,618 枚のため使わない）。
+
+| split | canonical | 手 mask `ann≥1` | cov_frame(mask) | 手 bbox `ann≥1` | cov_frame(bbox) | 幾何マッチ率 | クラス食い違い率 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| train | 9,657 | 5,668 | **0.5869** | 9,627 | 0.9969 | 0.8986 | 0.0017 (18/10,413) |
+| val | 1,515 | 1,344 | **0.8871** | 1,515 | 1.0000 | 0.9992 | 0.0000 |
+| test | 4,265 | 2,094 | **0.4910** | 4,255 | 0.9977 | 0.9982 | 0.0000 |
+| **合計** | **15,437** | **9,106** | **0.5899** | **15,397** | **0.9974** | **0.9347** (16,939/18,123) | **0.0011** (18/16,939) |
+
+幾何マッチは IoU ≥ 0.5、分母は canonical に載るフレーム上の手 mask annotation 数。
+クラス食い違いの分母は matched（16,939）。食い違い 18 件はすべて train で、
+内訳は「First Person's Right/Left Hand が Other hands 側の bbox にマッチ」（9/7/1/1 件）。
+
+### ★ 指示書 §1.5 との差異（事実を採用し明記する）
+
+**1. 手 mask は 2 クラスしか無い。** `handtool_seg_5cls` の 5 クラスは
+「First Person's Left Hand」「First Person's Right Hand」（手 2 クラス）＋
+「Left Hand Tool」「Right Hand Tool」「Two Hands Tool」（術具 3 クラス）である。
+**"Other hands" に対応する mask が存在しない。**
+指示書 §1.5 の「手 bbox: 4 クラス（自左 / 自右 / 他左 / 他右）」は **bbox 側の記述としては正しい**
+（実測で 4 クラス確認）が、**mask 側を 4 クラスで作ることはできない**。
+
+**2. 手 mask のフレーム水準被覆率は 0.5899 で、術具（指示書が示す 0.9728）より大幅に低い。**
+しかも split 依存が強い（train 0.5869 / val 0.8871 / **test 0.4910**）。
+**test では半分以上のフレームに手 mask が 1 件も無い。**
+
+一方クラス食い違い率 0.0011 は術具の 0.10% と同水準であり、**手 bbox と手 mask の対応づけ自体は健全**。
+
+### S4 設計への影響
+
+- 系統 8（`+handROI(mask)`）は、mask が無いフレームで bbox にフォールバックする設計になる。
+  フォールバックはフレーム水準で **train 41.3% / val 11.3% / test 50.9%** に達する
+  （G-2 の術具は box 水準で train 14.1% / val 24.1% / test 11.7% だった）。
+  **test で約半分の フレームが `handROI(mask) = handROI(bbox)` になるため、(8−7) のコントラストは
+  G-2 の val 以上に強く希釈される。**
+- 系統 7（bbox）を 4 クラス、系統 8（mask）を 2 クラスで作ると、**(8−7) が「mask vs bbox」と
+  「2 クラス vs 4 クラス」を交絡する**。(8−7) を「背景除去の効果」として読むには
+  両系統のクラス体系を揃える必要がある。
+
