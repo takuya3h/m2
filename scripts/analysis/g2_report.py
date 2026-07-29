@@ -85,17 +85,29 @@ def load_runs(out: Path) -> tuple[dict, dict]:
 # --------------------------------------------------------------------------- #
 # per-video counts (tp/fp/fn は動画をまたいで加算可能 -> ブートストラップを厳密化)
 # --------------------------------------------------------------------------- #
-def video_counts(preds: list[dict]) -> tuple[list[str], dict]:
-    """per-frame 予測から (動画リスト, 動画別 counts) を作る。
+def video_of(clip_id: str) -> str:
+    """clip_id ('04_1', '10_2') から動画 id ('04', '10') を取り出す。
 
-    counts[vid] = {tp, fp, fn, gt (クラス別), n_correct, n_frames}
+    事前登録の再抽出単位は **動画**であり、セグメントではない
+    (prereg: 「test は 3 動画しかないため CI が広くなる」)。同一動画の
+    セグメントは相関しているため、セグメント単位で再抽出すると CI を
+    過小評価する。
+    """
+    return str(clip_id).split("_")[0]
+
+
+def video_counts(preds: list[dict], level: str = "video") -> tuple[list[str], dict]:
+    """per-frame 予測から (クラスタリスト, クラスタ別 counts) を作る。
+
+    level="video" (既定・事前登録の単位) なら動画単位、"clip" ならセグメント単位。
+    counts[key] = {tp, fp, fn, gt (クラス別), n_correct, n_frames}
     PhaseEvaluator._frame_f1 と同一定義 (プール後に tp/fp/fn を数える) を
     加算可能な形に分解したもの。
     """
     C = len(CLASS_NAMES)
     by_vid: dict[str, dict] = {}
     for r in preds:
-        v = r["clip_id"]
+        v = video_of(r["clip_id"]) if level == "video" else str(r["clip_id"])
         c = by_vid.setdefault(v, {"tp": np.zeros(C, np.int64), "fp": np.zeros(C, np.int64),
                                   "fn": np.zeros(C, np.int64), "gt": np.zeros(C, np.int64),
                                   "n_correct": 0, "n_frames": 0})
@@ -297,9 +309,14 @@ def per_video_fallback(split: str) -> dict:
                         hit = bool(m_full[np.ix_(yy, xx)].astype(bool).any())
                     if not hit:
                         n_fb += 1; rec["n_fallback"] += 1
-        for v, r in per_vid.items():
+        # 事前登録の単位に合わせ、セグメントを動画へ畳み込む
+        merged: dict[str, dict] = {}
+        for k, r in per_vid.items():
+            m = merged.setdefault(video_of(k), {"n_boxes": 0, "n_fallback": 0})
+            m["n_boxes"] += r["n_boxes"]; m["n_fallback"] += r["n_fallback"]
+        for _v, r in merged.items():
             r["fallback_rate"] = r["n_fallback"] / r["n_boxes"] if r["n_boxes"] else None
-        return {"per_video": per_vid, "total_boxes": n_box, "total_fallback": n_fb}
+        return {"per_video": merged, "total_boxes": n_box, "total_fallback": n_fb}
     except Exception as e:  # noqa: BLE001
         return {"error": f"{type(e).__name__}: {e}"}
 
@@ -410,6 +427,8 @@ def main() -> int:
     metric_keys = CLASS_NAMES + ["phase_accuracy", "phase_macro_f1"]
     report: dict = {"validation": val, "prereg_phases": PREREG_PHASES,
                     "bootstrap": {"B": B_BOOT, "seed": BOOT_SEED,
+                                  "cluster_unit": "video (clip_id の '_' 前。"
+                                                  "val=09,10 の 2 本 / test=04,05,07 の 3 本)",
                                   "design": "動画のみ復元抽出、3 seed は各反復内で平均"},
                     "splits": {}}
 
