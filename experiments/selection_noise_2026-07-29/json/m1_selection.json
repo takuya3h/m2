@@ -1,0 +1,76 @@
+{
+  "m1_status": "SKIP（M1-2 / M1-3 / M1-5 / M1-6）。理由: epoch 別 val 履歴が既存成果物に存在しない",
+  "m1_1_epoch_history_availability": {
+    "verdict": "どこにも無い（指示書 M1-1 の第3分岐に該当）",
+    "searched": {
+      "metrics.json": "top-level キーは best_epoch / epochs / hyperparams / in_dim / n_clips / roi_fallback / run / seed / system / test / train_seconds / val。epoch 別履歴なし",
+      "run ディレクトリ": "metrics.json / env.json / server.txt / git_commit.txt / predictions/{val,test}_preds.json のみ。**チェックポイントなし**",
+      "学習ログ (runs_logs/*.log)": "10 epoch ごとの 5 点のみ（ep 10/20/30/40/50）。記録は val_acc のみで、同じ行の loss は **train loss**（val loss ではない）",
+      "TensorBoard events / wandb / *.pth": "0 件"
+    },
+    "why_m1_cannot_run": [
+      "M1-2 は top1_top2_gap・±0.001 以内の epoch 数・後半 50% の sd を要求するが、全 50 epoch の val 曲線が無く 5 点しかない",
+      "M1-3 の R-loss（val loss argmin）と R-mf1（val macro-F1 argmax）は、**val loss と val macro-F1 が epoch 別に一切記録されていない**ため計算不能",
+      "M1-3 の epoch_spread / epoch_sd / val_metric_sd は同一 seed の反復間比較を要求する。best_epoch は 3 群（G-2 / S3 / S4）から取れるが、曲線が無いため 5 規則それぞれで選ばれる epoch を再現できない"
+    ],
+    "consequence": "指示書 M1-1 に従い M1 を SKIP し、**M2 で『epoch 別 val 履歴を保存する』ことを必須要件に加える**。あわせて M2 では 5 規則すべての val_metric_sd を M2 自身の run から測れる設計にする。"
+  },
+  "m1_4_determinism_audit": {
+    "note": "コードから確認。推測なし。ファイルは scripts/train_g2.py",
+    "items": [
+      {
+        "item": "torch.cuda.manual_seed_all",
+        "set": false,
+        "line": null,
+        "comment": "未設定。ただし train_g2.py:172 の torch.manual_seed(args.seed) が CUDA 側も seed するため実質的な欠落ではない"
+      },
+      {
+        "item": "use_deterministic_algorithms",
+        "set": false,
+        "line": null,
+        "comment": "該当行なし"
+      },
+      {
+        "item": "cudnn.deterministic",
+        "set": false,
+        "line": null,
+        "comment": "該当行なし（既定 False）"
+      },
+      {
+        "item": "cudnn.benchmark",
+        "set": false,
+        "line": null,
+        "comment": "該当行なし（既定 False）"
+      },
+      {
+        "item": "worker_init_fn",
+        "set": false,
+        "line": null,
+        "comment": "未設定。**かつ適用外**: train_g2.py は DataLoader を使わない（grep 0 件）。学習ループは Python リスト tr を random.shuffle (:195) して直接反復する (:197)。worker プロセスが存在しない"
+      },
+      {
+        "item": "torch.Generator",
+        "set": false,
+        "line": null,
+        "comment": "未設定。**かつ適用外**（同上・DataLoader 不使用）"
+      },
+      {
+        "item": "PYTHONHASHSEED",
+        "set": false,
+        "line": null,
+        "comment": "未設定。**かつ適用外**（同上・ハッシュ順依存のデータロードが無い）"
+      }
+    ],
+    "seeds_actually_set": {
+      "line": 172,
+      "code": "random.seed(args.seed); np.random.seed(args.seed); torch.manual_seed(args.seed)"
+    },
+    "difference_from_instruction_1_1": "§1.1 は 6 項目を『いずれも未設定』としていた。未設定であることは確認したが、うち worker_init_fn / generator / PYTHONHASHSEED の 3 項目は **この trainer では原理的に非決定性の発生源になり得ない**（DataLoader 不使用）。この点は §1.1 の記載より踏み込んだ事実である。",
+    "remaining_candidate_sources": [
+      "cudnn の非決定的カーネル: tecno_head.py:32-33,51 の nn.Conv1d の backward は atomics を使い得る（最有力候補）",
+      "学習側に autocast は無い（autocast は特徴抽出 build_roi_channels.py:258 のみ）。混合精度は学習の非決定性要因ではない",
+      "TF32 の明示設定は無し（既定に従う）"
+    ],
+    "not_verified": "use_deterministic_algorithms(True) を入れて同一 seed が bit 一致するかは **未検証（UNKNOWN）**"
+  }
+}
