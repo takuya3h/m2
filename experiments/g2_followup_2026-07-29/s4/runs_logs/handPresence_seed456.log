@@ -1,0 +1,14 @@
+Using /home/ubuntu/.cache/torch_extensions/py311_cu118 as PyTorch extensions root...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /home/ubuntu/.cache/torch_extensions/py311_cu118/MultiScaleDeformableAttention/build.ninja...
+Building extension module MultiScaleDeformableAttention...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+ninja: no work to do.
+Loading extension module MultiScaleDeformableAttention...
+[g2] system=handPresence seed=456 in_dim=3844 clips train/val/test=13/3/6 device=cuda
+  ep 10 loss=0.5340 val_acc=0.9274
+  ep 20 loss=0.3587 val_acc=0.9373
+  ep 30 loss=0.2617 val_acc=0.9439
+  ep 40 loss=0.2241 val_acc=0.9360
+  ep 50 loss=0.1901 val_acc=0.9347
+[g2] handPresence_seed456 best_ep=21 val_acc=0.9459 val_f1=0.8005 test_acc=0.8481 test_f1=0.6685 (20s)
