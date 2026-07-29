@@ -74,14 +74,20 @@ def env_info(require_ext: bool) -> dict:
 
 def load_clips(split: str, system: str, roi_dir: Path):
     """(clip_id, feats, labels, frame_ids) を返す。join は frame_id (basename 相当)。"""
+    # NpzFile への添字アクセスは **毎回** zip メンバ全体を読み直して新しい配列を返す。
+    # さらに arr[i] は view なので、その行 1 つが親配列 (train で 148 MB) を丸ごと
+    # メモリに固定する。内包表記の中で参照すると行数ぶん親配列が積み上がり
+    # (train: 9657 x 148 MB ≒ 1.4 TB) OOM する。必ずループ外で 1 回だけ読む。
     r = np.load(REGION_DIR / f"{split}_regiontoken.npz")
-    reg = {str(f): r["region"][i] for i, f in enumerate(r["frame_ids"])}
+    reg_arr = r["region"]
+    reg = {str(f): reg_arr[i] for i, f in enumerate(r["frame_ids"])}
     roi = None
     if system != "base":
         p = roi_dir / f"{split}_{system}.npz"
         assert p.exists(), f"ROI 特徴が無い: {p}"
         a = np.load(p)
-        roi = {str(f): a["roi"][i] for i, f in enumerate(a["frame_ids"])}
+        roi_arr = a["roi"]
+        roi = {str(f): roi_arr[i] for i, f in enumerate(a["frame_ids"])}
 
     man = json.loads((MANIFEST_DIR / f"{split}.json").read_text())
     clips = []
