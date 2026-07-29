@@ -13,7 +13,7 @@ metrics.json に保存しているので、Δ 比較の整合のため /100 し�
 
 Usage:
   python scripts/post_process_detrex.py \
-      --work-dir /tmp/stabledino_work_seed42 \
+      --work-dir experiments/transfer/stabledino_work_seed42 \
       --exp-dir experiments/baselines/s0_019_stabledino_bbox_seed42 \
       --command-sh "<cmd>" --seed 42 --description stabledino_bbox \
       --detector "Stable-DINO" --world-size 2 --server-name philip

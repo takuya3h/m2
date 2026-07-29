@@ -16,7 +16,7 @@ region-token 版と同じ decoder hook を使うため、同一 config/checkpoin
   python scripts/extract_b2a_toolpresence_aligndetr.py \\
     --subset val \\
     --config-file third_party/detrex/projects/align_detr/configs/aligndetr_r50_4scale_12ep_egosurgery_s0_frozen.py \\
-    --checkpoint /tmp/aligndetr_s0frozen_seed42/model_final.pth \\
+    --checkpoint experiments/transfer/aligndetr_s0frozen_seed42/model_final.pth \\
     --out data/processed/b2a_detsignal/aligndetr_s0frozen_seed42/val_toolpresence.npz
 """
 from __future__ import annotations

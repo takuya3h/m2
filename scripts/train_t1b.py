@@ -21,11 +21,21 @@ zero-init=恒等なので warm-start 直後は S0-frozen と一致 → fine-tune
   検出: data/annotations/egosurgery_tool/instances_{train,val}.json + data/raw/ego
   warm-start init: data/external/weights/relation_detr_s0frozen_init_seed42.pth（= s0_016）
 
+成果物（永続・工程側 ExperimentManager と同一規約）:
+  experiments/transfer/<run_name>/
+    checkpoints/best_t1b.pth / predictions/{split}_{inj|ctrl}_{ep-1,best}.json.gz
+    logs/val_metrics_by_epoch.json / config.yaml / command.sh / git_commit.txt
+    metrics.json / per_class_ap.json / t1b_result.json / server.txt
+  ※ 旧実装は /tmp に出していたため再起動で消え、eval-only の追認が反復的に不能になった。
+     predictions を既定 on にしてあるのは、ckpt が失われても per-image 解析（FP/FN 内訳・
+     工程別品質・定性可視化）を後から実行できる状態を担保するため。
+
 実行（.venv-relation-detr, cwd=third_party/Relation-DETR）:
   source .venv-relation-detr/bin/activate && export CUDA_HOME=/usr/local/cuda-11.8
   python /abs/scripts/train_t1b.py --seed 42 --epochs 6
   python /abs/scripts/train_t1b.py --smoke           # 数 step・warm-start mAP 検証
   python /abs/scripts/train_t1b.py --zero-ctx ...     # §4.6 対照（注入効果分離）
+  python /abs/scripts/train_t1b.py --run-name t1b_camt_seed42_inj ...  # 保存先を明示
 """
 from __future__ import annotations
 
@@ -43,8 +53,12 @@ import torch
 
 BODY = Path(os.environ.get("EGO_BODY", Path(__file__).resolve().parents[1]))
 RELDETR = BODY / "third_party" / "Relation-DETR"
+# os.chdir(RELDETR) 後でも scripts/ の兄弟モジュールを import できるよう絶対パスで通す。
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(RELDETR))
 os.chdir(RELDETR)
+
+import run_artifacts as ra  # noqa: E402  (sys.path 追加後に import する必要がある)
 
 PHASECTX_DIR = BODY / "data/processed/phase_context/relation_detr_seed42"
 S0FROZEN_INIT = BODY / "data/external/weights/relation_detr_s0frozen_init_seed42.pth"
@@ -172,7 +186,17 @@ def ctx_for_targets(targets, imgid_to_ctx, device, zero_ctx: bool):
 
 
 @torch.no_grad()
-def eval_detection(model, loader, imgid_to_ctx, device, zero_ctx, limit=None):
+def eval_detection(model, loader, imgid_to_ctx, device, zero_ctx, limit=None,
+                   collect_predictions=False):
+    """val 検出評価。``collect_predictions=True`` のときだけ per-image 予測も返す。
+
+    戻り値の arity を既定では変えない（既存呼び出しは無改変で動く）。
+    ``collect_predictions=True`` では ``(mAP, per_class, preds)`` を返し、``preds`` は
+    ``{"results": COCO detection results, "image_ids": 評価対象 image_id 列}``。
+    ``results`` は **AP 算出に実際に使われた実体そのもの**（``CocoEvaluator.accumulate()``
+    が ``predictions["bbox"]`` を COCO results 形式へ変換して保持する）なので、
+    これを保存して再評価すれば mAP が bit-exact に再現する。
+    """
     from util.coco_eval import CocoEvaluator
     from util.coco_utils import get_coco_api_from_dataset
     model.eval()
@@ -200,7 +224,13 @@ def eval_detection(model, loader, imgid_to_ctx, device, zero_ctx, limit=None):
         vals = prec[:, :, ci, 0, 2]
         vals = vals[vals > -1]
         per_class[name] = float(vals.mean()) if vals.size else float("nan")
-    return float(bbox.stats[0]), per_class
+    if not collect_predictions:
+        return float(bbox.stats[0]), per_class
+    preds = {
+        "results": evaluator.predictions["bbox"],
+        "image_ids": sorted({int(i) for i in evaluator.img_ids}),
+    }
+    return float(bbox.stats[0]), per_class, preds
 
 
 def set_trainable(model, mode: str):
@@ -248,18 +278,47 @@ def main():
     else:
         det_steps_cap = None
 
-    work = Path(os.environ.get("T1B_WORK_DIR",
-                f"/tmp/t1b_work_{'zeroctx' if args.zero_ctx else args.trainable}_seed{args.seed}"))
-    work.mkdir(parents=True, exist_ok=True)
+    # 成果物は experiments/transfer/<run_name>/ に永続化する（旧: /tmp → 消失して
+    # eval-only の追認が反復的に不能になっていた）。T1B_WORK_DIR は明示 override として存置。
+    variant = "ctrl" if args.zero_ctx else "inj"
+    run_name = (args.run_name or os.environ.get("T1B_RUN_NAME")
+                or f"t1b_{args.inject}_{args.trainable}_{variant}_seed{args.seed}")
+    work = ra.resolve_run_dir(run_name, work_dir=os.environ.get("T1B_WORK_DIR"))
+    ra.ensure_layout(work)
+    save_preds = not args.no_save_predictions
+    compress_preds = not args.predictions_no_gzip
     n_phase = sum(p.numel() for n, p in model.named_parameters() if p.requires_grad and "phase" in n)
     n_train = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"[t1b] seed={args.seed} inject={args.inject} trainable={args.trainable} zero_ctx={args.zero_ctx} "
           f"det_steps/ep={det_steps_per_ep} phase_params={n_phase} total_trainable={n_train} "
           f"miss_ctx(tr/va)={miss_tr}/{miss_va} work={work}", flush=True)
+    ra.write_evidence(work, config={
+        "run_name": run_name, "variant": variant, "seed": args.seed, "inject": args.inject,
+        "trainable": args.trainable, "zero_ctx": bool(args.zero_ctx), "epochs": args.epochs,
+        "lr": args.lr, "film_lr": args.film_lr, "phase_source": args.phase_source,
+        "model_cfg": model_cfg, "smoke": bool(args.smoke),
+        "rare_slots": os.environ.get("T1B_RARE_SLOTS"),
+        "warm_start_ckpt": str(detector_ckpt(args.seed)),
+        "eval": {"split": "val", "topk": ra.EVAL_TOPK,
+                 "note": "score 閾値の足切りなし（eval recipe = score_thr 0.0 系）"},
+    })
 
     # warm-start 健全性: 学習前 mAP（FiLM zero-init 恒等 → S0-frozen 水準のはず）
-    init_map, init_per_class = eval_detection(model, det_val, imgid_to_ctx_va, device, args.zero_ctx,
-                                 limit=20 if args.smoke else None)
+    init_map, init_per_class, init_preds = eval_detection(
+        model, det_val, imgid_to_ctx_va, device, args.zero_ctx,
+        limit=20 if args.smoke else None, collect_predictions=True)
+    init_pred_path = None
+    if save_preds:
+        # init（warm-start 恒等点）の予測は必須。恒等性の検証と init 比較の絶対値解析に要る。
+        init_pred_path = ra.save_predictions(
+            work, init_preds["results"], split="val", tag=variant, epoch=-1,
+            compress=compress_preds)
+        ra.save_eval_meta(work, {
+            "split": "val", "ann_file": f"{ANN_DIR}/instances_val.json",
+            "image_ids": init_preds["image_ids"], "topk": ra.EVAL_TOPK,
+            "select_box_nums_for_evaluation": 300, "score_thr": 0.0,
+            "limit": 20 if args.smoke else None,
+        })
     print(f"[t1b] warm-start init mAP={init_map:.4f} (S0-frozen 水準なら warm-start+恒等 OK)", flush=True)
     if args.assert_init_map is not None and abs(init_map - args.assert_init_map) > args.assert_init_tol:
         print(f"[t1b][PREFLIGHT-FAIL] init mAP={init_map:.4f} != "
@@ -304,14 +363,32 @@ def main():
                 sys.exit(1)
         sched.step()
 
-        mAP, per_class = eval_detection(model, det_val, imgid_to_ctx_va, device, args.zero_ctx,
-                                        limit=20 if args.smoke else None)
+        mAP, per_class, preds = eval_detection(
+            model, det_val, imgid_to_ctx_va, device, args.zero_ctx,
+            limit=20 if args.smoke else None, collect_predictions=True)
         print(f"[t1b][ep{epoch}] val mAP={mAP:.4f}", flush=True)
         per_epoch.append({"epoch": epoch, "mAP": mAP, "per_class_coco_map": per_class})
+        if save_preds and args.save_predictions_all:
+            ra.save_predictions(work, preds["results"], split="val", tag=variant, epoch=epoch,
+                                compress=compress_preds)
         if mAP > best["mAP"]:
             best = {"mAP": mAP, "epoch": epoch, "per_class_coco_map": per_class}
             torch.save({"model": model.state_dict(), "epoch": epoch, "seed": args.seed},
-                       work / "best_t1b.pth")
+                       ra.checkpoints_dir(work) / "best_t1b.pth")
+            if save_preds:
+                # best epoch の予測は必須（ckpt が失われても per-image 解析を可能にする）。
+                ra.save_predictions(work, preds["results"], split="val", tag=variant, best=True,
+                                    compress=compress_preds)
+
+    # frozen 検出器では init を超える epoch が無いことがあり、その場合 best ckpt も
+    # best predictions も生成されない（= 過去に「ckpt 不在 seed を恒等代替」が必要になった原因）。
+    # best==init であることを **隠さず明示**したうえで、best predictions は必ず出力する。
+    # init ckpt 自体は warm-start ckpt から決定的に再構成できる（注入層 zero-init=恒等）ため
+    # 187MB/run を重複保存しない。
+    best_is_init = best["epoch"] == -1
+    if save_preds and best_is_init:
+        ra.save_predictions(work, init_preds["results"], split="val", tag=variant, best=True,
+                            compress=compress_preds)
 
     final_eval = per_epoch[-1]  # 最終 epoch（inj/ctrl 同一学習量での公平比較用）
     result = {
@@ -323,15 +400,90 @@ def main():
         "final_epoch": final_eval["epoch"], "final_mAP": final_eval["mAP"],
         "final_per_class_coco_map": final_eval["per_class_coco_map"],
         "per_epoch_eval": per_epoch,
+        "best_is_init": best_is_init, "run_dir": str(work),
         "denominator": "S0-frozen 0.7051±0.0052", "delta_note": "Δ_detection=(T1b − S0-frozen)",
     }
     (work / "t1b_result.json").write_text(json.dumps(result, indent=2, ensure_ascii=False))
+
+    # --- 永続ログ・証跡（ckpt が失われてもコミット済みログだけで解析を完遂できる状態にする） ---
+    epoch_log = {
+        "run_name": run_name, "variant": variant, "split": "val",
+        "seed": args.seed, "inject": args.inject, "trainable": args.trainable,
+        "zero_ctx": bool(args.zero_ctx), "epochs": args.epochs,
+        "init": {"epoch": -1, "mAP": init_map, "per_class_coco_map": init_per_class},
+        # inj / ctrl の init 完全一致（注入層 zero-init=恒等）を後から照合するための指紋。
+        "init_predictions_sha256": (
+            ra.predictions_sha256(init_pred_path) if init_pred_path else None),
+        "init_predictions_file": (init_pred_path.name if init_pred_path else None),
+        "best_epoch": best["epoch"], "best_mAP": best["mAP"],
+        # True = 学習で init を超えず best ckpt が存在しない（best predictions は init の複製）。
+        "best_is_init": best_is_init,
+        "best_checkpoint": (None if best_is_init
+                            else str(ra.checkpoints_dir(work) / "best_t1b.pth")),
+        "final_epoch": final_eval["epoch"], "final_mAP": final_eval["mAP"],
+        "epochs_eval": per_epoch,
+    }
+    ra.save_epoch_log(work, epoch_log)
+    ra.write_metrics(work, {
+        "mAP": best["mAP"], "init_mAP": init_map, "epoch": best["epoch"],
+        "final_mAP": final_eval["mAP"], "final_epoch": final_eval["epoch"],
+        "delta_detection": best["mAP"] - init_map,
+        "best_is_init": best_is_init,
+        "artifacts": ra.artifact_paths(work),
+    })
+    ra.write_per_class_ap(work, best.get("per_class_coco_map", {}))
     print(f"[t1b] DONE best@ep{best['epoch']} mAP={best['mAP']:.4f} (init {init_map:.4f}) -> {work}")
+    if not args.smoke:
+        # 工程側 finalize() と対称: 完了した検出 run の証跡を自動 commit + push（fail-safe）。
+        _autosync_evidence(work, run_name, args.seed, best["mAP"])
     if args.smoke:
         ok = phase_grad_seen and (init_map > 0.5)  # 注入層に勾配 + warm-start mAP 健全
         print(f"[t1b][smoke] phase_grad={phase_grad_seen} init_mAP={init_map:.4f} "
               f"=> {'PASS' if ok else 'FAIL'}")
         sys.exit(0 if ok else 2)
+
+
+def _autosync_evidence(work: Path, run_name: str, seed: int, m_ap: float) -> None:
+    """完了した検出 run の証跡を git_autosync CLI で自動 commit + push する（fail-safe）。
+
+    工程側 ``ExperimentManager.finalize()`` と対称の配線。``exp/*`` ブランチ + deploy key
+    構成時のみ実際に push し、それ以外は no-op。``git_autosync.py`` は top-level が stdlib のみで
+    ファイル直実行できるため、egosurgery 未導入の ``.venv-relation-detr`` からでも動く
+    （内部の egosurgery import は guarded）。predictions/checkpoints は ``.gitignore`` で除外
+    されるため public repo には載らず、追跡対象の証跡テキスト（config.yaml/metrics.json/
+    per_class_ap.json/notes.md/logs/val_metrics_by_epoch.json 等）だけが同期される。
+    同一ホストで並列 seed が走る場合の git index 競合は flock で直列化する（cross-host は
+    各自別ブランチへ push するため無関係）。CLI 自体が常に exit 0・非送出なので学習は止めない。
+    """
+    import fcntl
+    import subprocess
+
+    cli = BODY / "src" / "egosurgery" / "utils" / "git_autosync.py"
+    if not cli.exists():
+        return
+    lock_fh = None
+    try:
+        try:
+            lock_fh = open(BODY / ".git" / "egosurgery-autosync.lock", "w")
+            fcntl.flock(lock_fh, fcntl.LOCK_EX)  # 同一ホストの並列 run を直列化
+        except OSError:
+            lock_fh = None  # ロック不可でも続行（直列化は best-effort）
+        subprocess.run(
+            [sys.executable, str(cli), str(work),
+             "--step", "T1b", "--description", run_name, "--seed", str(seed),
+             "--category", "transfer", "--exp-id", run_name,
+             "--metric-name", "mAP", "--metric-value", f"{m_ap:.6f}"],
+            check=False,
+        )
+    except Exception as exc:  # 自動同期の失敗を学習完了に漏らさない
+        print(f"[t1b] auto-sync skipped (non-fatal): {exc!r}", flush=True)
+    finally:
+        if lock_fh is not None:
+            try:
+                fcntl.flock(lock_fh, fcntl.LOCK_UN)
+                lock_fh.close()
+            except OSError:
+                pass
 
 
 def parse_args():
@@ -352,6 +504,15 @@ def parse_args():
         help="§18.4 L1-2: phase context のソース。real=S4 TeCNO 予測（既定）/ "
         "oracle=phase_manifest からの GT one-hot（注入の上限を測定）",
     )
+    p.add_argument("--run-name", default=None,
+                   help="成果物の保存先 experiments/transfer/<run_name>/。省略時は "
+                        "t1b_{inject}_{trainable}_{inj|ctrl}_seed{seed}（環境変数 T1B_RUN_NAME でも指定可）")
+    p.add_argument("--no-save-predictions", action="store_true",
+                   help="per-image predictions を保存しない（既定は保存する）")
+    p.add_argument("--save-predictions-all", action="store_true",
+                   help="init/best だけでなく全 epoch の predictions を保存する（容量大）")
+    p.add_argument("--predictions-no-gzip", action="store_true",
+                   help="predictions を gzip せず素の .json で保存する")
     p.add_argument("--print-freq", type=int, default=200)
     p.add_argument("--smoke", action="store_true")
     p.add_argument("--assert-init-map", type=float, default=None,

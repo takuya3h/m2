@@ -90,18 +90,18 @@ CUDA_VISIBLE_DEVICES="$GPU_A" "$VENV" -c \
 # ---------------------------------------------------------------------------
 declare -A MEAS_DIR INIT_MAP
 for S in "${SEEDS[@]}"; do
-  MEAS_DIR[$S]="/tmp/hc_measure_seed${S}"
+  MEAS_DIR[$S]="${ROOT}/experiments/transfer/hc_measure_seed${S}"
 done
 
 echo "[measure wave1] seed42(GPU$GPU_A) / seed123(GPU$GPU_B) 並列 measure ..."
-run_one 42  "$GPU_A" "${MEAS_DIR[42]}"  "logs/hc_measure_seed42.log"  --epochs 0 &
+run_one 42  "$GPU_A" "${MEAS_DIR[42]}"  "logs/hc_measure_seed42.log"  --epochs 0 --no-save-predictions &
 pa=$!
-run_one 123 "$GPU_B" "${MEAS_DIR[123]}" "logs/hc_measure_seed123.log" --epochs 0 &
+run_one 123 "$GPU_B" "${MEAS_DIR[123]}" "logs/hc_measure_seed123.log" --epochs 0 --no-save-predictions &
 pb=$!
 wait "$pa"; wait "$pb"
 
 echo "[measure wave2] seed456(GPU$GPU_A) 単独 measure ..."
-run_one 456 "$GPU_A" "${MEAS_DIR[456]}" "logs/hc_measure_seed456.log" --epochs 0
+run_one 456 "$GPU_A" "${MEAS_DIR[456]}" "logs/hc_measure_seed456.log" --epochs 0 --no-save-predictions
 wait
 
 for S in "${SEEDS[@]}"; do
@@ -125,9 +125,9 @@ PY
 # ---------------------------------------------------------------------------
 # Step 2: 本走 wave A = inj（real ctx）
 # ---------------------------------------------------------------------------
-INJ_DIR_42=/tmp/hc_inj_seed42
-INJ_DIR_123=/tmp/hc_inj_seed123
-INJ_DIR_456=/tmp/hc_inj_seed456
+INJ_DIR_42=${ROOT}/experiments/transfer/hc_inj_seed42
+INJ_DIR_123=${ROOT}/experiments/transfer/hc_inj_seed123
+INJ_DIR_456=${ROOT}/experiments/transfer/hc_inj_seed456
 
 echo "[wave A:inj wave1] seed42(GPU$GPU_A) + seed123(GPU$GPU_B) 並列起動 ..."
 run_one 42  "$GPU_A" "$INJ_DIR_42"  "logs/hc_inj_seed42.log" \
@@ -146,9 +146,9 @@ echo "[wave A:inj] 完了"
 # ---------------------------------------------------------------------------
 # Step 3: 本走 wave B = ctrl（zero ctx）
 # ---------------------------------------------------------------------------
-CTRL_DIR_42=/tmp/hc_ctrl_seed42
-CTRL_DIR_123=/tmp/hc_ctrl_seed123
-CTRL_DIR_456=/tmp/hc_ctrl_seed456
+CTRL_DIR_42=${ROOT}/experiments/transfer/hc_ctrl_seed42
+CTRL_DIR_123=${ROOT}/experiments/transfer/hc_ctrl_seed123
+CTRL_DIR_456=${ROOT}/experiments/transfer/hc_ctrl_seed456
 
 echo "[wave B:ctrl wave1] seed42(GPU$GPU_A) + seed123(GPU$GPU_B) 並列起動 ..."
 run_one 42  "$GPU_A" "$CTRL_DIR_42"  "logs/hc_ctrl_seed42.log" \
@@ -171,10 +171,15 @@ echo "================ 完了・回収サマリ ================"
 for S in "${SEEDS[@]}"; do
   dst="transfer/hc_seed${S}"
   mkdir -p "$dst"
-  cp -f "/tmp/hc_inj_seed${S}/t1b_result.json"  "$dst/injected_result.json" 2>/dev/null || echo "[WARN] inj result 欠損 seed$S"
-  cp -f "/tmp/hc_ctrl_seed${S}/t1b_result.json" "$dst/control_result.json"  2>/dev/null || echo "[WARN] ctrl result 欠損 seed$S"
+  cp -f "${ROOT}/experiments/transfer/hc_inj_seed${S}/t1b_result.json"  "$dst/injected_result.json" 2>/dev/null || echo "[WARN] inj result 欠損 seed$S"
+  cp -f "${ROOT}/experiments/transfer/hc_ctrl_seed${S}/t1b_result.json" "$dst/control_result.json"  2>/dev/null || echo "[WARN] ctrl result 欠損 seed$S"
   cp -f "logs/hc_inj_seed${S}.log"   "$dst/" 2>/dev/null || true
   cp -f "logs/hc_ctrl_seed${S}.log"  "$dst/" 2>/dev/null || true
+  # §4.6 の比較前提（注入層 zero-init=恒等 → inj/ctrl の init 予測は完全一致）を実測で記録。
+  "$VENV" scripts/run_artifacts.py --verify-init-identity \
+    "${ROOT}/experiments/transfer/hc_inj_seed${S}" "${ROOT}/experiments/transfer/hc_ctrl_seed${S}" \
+    > "logs/hc_seed${S}_init_identity.json" \
+    || echo "[WARN] seed$S: inj/ctrl の init 予測が不一致（恒等性の破れを疑え）"
   echo "-- seed$S --"
   for f in "$dst/injected_result.json" "$dst/control_result.json"; do
     [ -f "$f" ] && "$VENV" -c "import json;r=json.load(open('$f'));print(f\"  {('inj' if not r['zero_ctx'] else 'ctrl')}: init={r['init_mAP']:.4f} best@ep{r['best_epoch']} mAP={r['mAP']:.4f}\")"

@@ -4,7 +4,8 @@
 #   1. run_t1b_camt_all_3seed_efros.sh を TAG=camt_all_reverify で再走
 #      （INJECT=camt/TRAINABLE=all/EPOCHS=6 は元と完全一致・seed 固定＝val 再現。
 #        別 TAG なので committed evidence transfer/t1b_camt_all_* は上書きしない）。
-#   2. best_t1b.pth（inj+ctrl×3seed）を永続 dir artifacts/ に保全（/tmp 消失の再発防止）。
+#   2. best_t1b.pth（inj+ctrl×3seed）を artifacts/ にも複製（現在は experiments/transfer/
+#      <run>/checkpoints/ が正本。学習出力自体が永続化されたので本 step は二重化のみ）。
 #   3. eval_t1b_test.py --inject camt で整合ゲート(reload→val 再現)→test 評価。
 # 出力: experiments/analysis/t1b_camt_all_test/test_eval.json
 # 所要: trainable=all で ~50min/ep × 6ep × 3seed ≈ 15h（overnight, background 運用）。
@@ -32,7 +33,7 @@ TAG="$RTAG" bash scripts/run_t1b_camt_all_3seed_efros.sh
 echo "[step2] checkpoint を $CKROOT へ保全"
 for S in "${SEEDS[@]}"; do
   for sub in "_seed${S}" "_zeroctx_seed${S}"; do
-    src="/tmp/t1b_${RTAG}${sub}/best_t1b.pth"
+    src="$ROOT/experiments/transfer/t1b_${RTAG}${sub}/checkpoints/best_t1b.pth"
     if [ -f "$src" ]; then
       cp -f "$src" "$CKROOT/t1b_${RTAG}${sub}_best.pth"
       echo "  保全: $src -> $CKROOT/t1b_${RTAG}${sub}_best.pth"
@@ -46,7 +47,7 @@ done
 echo "[step3] test 追認 eval（--inject camt --tag $RTAG）"
 CUDA_VISIBLE_DEVICES="${GPU_EVAL:-0}" PYTHONPATH=src \
   "$VENV" scripts/eval_t1b_test.py \
-    --inject camt --tag "$RTAG" --ckpt-root /tmp --ckpt-name best_t1b.pth \
+    --inject camt --tag "$RTAG" --ckpt-root "$ROOT/experiments/transfer" --ckpt-name best_t1b.pth \
     --seeds "$(IFS=,; echo "${SEEDS[*]}")" \
     --out experiments/analysis/t1b_camt_all_test/test_eval.json
 

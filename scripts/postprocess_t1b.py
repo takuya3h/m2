@@ -1,14 +1,14 @@
 #!/usr/bin/env python
-"""T1b Phase→Det の後処理（本体 .venv）— /tmp work_dir → 証跡組成 + Δ + Notion投稿。
+"""T1b Phase→Det の後処理（本体 .venv）— run dir → 証跡組成 + Δ + Notion投稿。
 
-train_t1b.py（.venv-relation-detr）は seed 毎に注入 run（/tmp/t1b_seed{N}）と §4.6 対照
-run（/tmp/t1b_zeroctx_seed{N}）の t1b_result.json（init_mAP/mAP/per_class）を出す。本スクリプトは
+train_t1b.py（.venv-relation-detr）は seed 毎に注入 run（experiments/transfer/t1b_seed{N}）と §4.6
+対照 run（同 t1b_zeroctx_seed{N}）の t1b_result.json（init_mAP/mAP/per_class）を出す。本スクリプトは
 本体 .venv で両者を読み、**Δ_det=best−init** と **注入純効果=Δ_injected−Δ_control** を計算し、
 ExperimentManager 証跡 experiments/transfer/t1b_phasefilm_{seq}_seed{N} を組成して Notion 台帳に投稿する。
 
 実行:
   .venv/bin/python scripts/postprocess_t1b.py --seed 123        # 単一 seed
-  .venv/bin/python scripts/postprocess_t1b.py                   # /tmp/t1b_seed* を自動検出（全 seed）
+  .venv/bin/python scripts/postprocess_t1b.py                   # transfer/t1b_seed* を自動検出（全 seed）
 """
 from __future__ import annotations
 
@@ -25,13 +25,14 @@ from egosurgery.utils.experiment_manager import ExperimentManager  # noqa: E402
 from egosurgery.utils.notion_logger import log_experiment_to_notion  # noqa: E402
 from egosurgery.utils.server_name import resolve_server_name  # noqa: E402
 
+TRANSFER = PROJ / "experiments" / "transfer"
 DESC = "t1b_phasefilm"
 DENOM = "①学習FiLM phase→det。Δ_det=best−init（init=warm-start S0-frozen, 同一eval）/ 注入純効果=Δ_inj−Δ_ctrl"
 
 
 def discover_seeds() -> list[int]:
     seeds = set()
-    for d in Path("/tmp").glob("t1b_seed*"):
+    for d in TRANSFER.glob("t1b_seed*"):
         m = re.match(r"t1b_seed(\d+)$", d.name)
         if m and (d / "t1b_result.json").exists():
             seeds.add(int(m.group(1)))
@@ -44,8 +45,8 @@ def _load(work: Path) -> dict | None:
 
 
 def process_seed(seed: int, post: bool) -> dict | None:
-    inj = _load(Path(f"/tmp/t1b_seed{seed}"))
-    ctrl = _load(Path(f"/tmp/t1b_zeroctx_seed{seed}"))
+    inj = _load(TRANSFER / f"t1b_seed{seed}")
+    ctrl = _load(TRANSFER / f"t1b_zeroctx_seed{seed}")
     if inj is None:
         print(f"[t1b-post] seed{seed}: 注入 run の result が無い（skip）")
         return None
@@ -80,7 +81,7 @@ def process_seed(seed: int, post: bool) -> dict | None:
     mgr.log_per_class_ap(inj.get("per_class_coco_map", {}))
     (mgr.exp_dir / "notes.md").write_text(
         f"# T1b Phase→Det FiLM 注入 (seed{seed})\n\n"
-        f"warm-start={Path(f'/tmp/t1b_seed{seed}').name} / 対照={'有' if ctrl else '無'}。\n"
+        f"warm-start={(TRANSFER / f't1b_seed{seed}').name} / 対照={'有' if ctrl else '無'}。\n"
         f"- 注入 mAP={inj['mAP']:.4f} (init {inj['init_mAP']:.4f})\n"
         f"- {note_extra}\n\n分母=init mAP（FiLM恒等=warm-start S0-frozen, 同一eval）。{DENOM}\n",
         encoding="utf-8")
@@ -96,13 +97,13 @@ def process_seed(seed: int, post: bool) -> dict | None:
 
 
 def main():
-    ap = argparse.ArgumentParser(description="T1b postprocess: /tmp work → 証跡 + Δ + Notion.")
-    ap.add_argument("--seed", type=int, default=None, help="単一 seed（省略時は /tmp を自動検出）")
+    ap = argparse.ArgumentParser(description="T1b postprocess: run dir → 証跡 + Δ + Notion.")
+    ap.add_argument("--seed", type=int, default=None, help="単一 seed（省略時は experiments/transfer を自動検出）")
     ap.add_argument("--no-notion", action="store_true", help="Notion 投稿しない")
     args = ap.parse_args()
     seeds = [args.seed] if args.seed is not None else discover_seeds()
     if not seeds:
-        print("[t1b-post] 対象 seed なし（/tmp/t1b_seed*/t1b_result.json が無い）")
+        print(f"[t1b-post] 対象 seed なし（{TRANSFER}/t1b_seed*/t1b_result.json が無い）")
         return
     print(f"[t1b-post] seeds={seeds}")
     for s in seeds:

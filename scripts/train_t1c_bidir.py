@@ -205,7 +205,13 @@ def main():
     if args.smoke:
         args.epochs = 1
 
-    work = Path(os.environ.get("T1C_WORK_DIR", f"/tmp/t1c_bidir_seed{args.seed}"))
+    # 成果物は experiments/transfer/ 配下に永続化する（/tmp は再起動で消え、後から
+    # eval-only の追認ができなくなる）。T1C_WORK_DIR は明示 override として存置。
+    _proj = Path(os.environ.get("EGO_BODY", Path(__file__).resolve().parents[1]))
+    work = Path(os.environ.get(
+        "T1C_WORK_DIR", str(_proj / "experiments/transfer" / f"t1c_bidir_seed{args.seed}")))
+    if not work.is_absolute():
+        work = _proj / work
     work.mkdir(parents=True, exist_ok=True)
     n_det = sum(p.numel() for n, p in model.named_parameters() if p.requires_grad)
     n_ph = sum(p.numel() for p in phase_head.parameters())

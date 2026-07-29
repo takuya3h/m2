@@ -38,12 +38,15 @@ from pathlib import Path
 
 import torch
 
-BODY = Path("/home/ubuntu/slocal2/m2")
+# BODY は EGO_BODY / このファイルの位置から解決する。以前は特定ホストの絶対パスを
+# ハードコードしていたため、別サーバーでは ckpt 探索が 0 件になり検証が不能だった。
+BODY = Path(os.environ.get("EGO_BODY", Path(__file__).resolve().parents[1]))
 RELDETR = BODY / "third_party" / "Relation-DETR"
 sys.path.insert(0, str(RELDETR))
 sys.path.insert(0, str(BODY / "scripts"))
 os.chdir(RELDETR)
 
+import run_artifacts as ra  # noqa: E402
 from train_t1b import NUM_PHASES, build_imgid_to_ctx, ctx_for_targets, load_phase_ctx  # noqa: E402
 
 ANN = str(BODY / "data/annotations/egosurgery_tool")
@@ -59,12 +62,25 @@ def s0_ckpt_for(seed: int) -> str:
     return str(RELDETR / f"checkpoints/incoming/seed{seed}/best_ap.pth")
 
 
+def t1b_ckpt_for(run_names: list[str], fallback: str) -> str:
+    """``experiments/transfer/<run>/checkpoints/best_t1b.pth`` を候補順に探す。
+
+    旧 flat レイアウト（run 直下の best_t1b.pth）も :func:`ra.find_checkpoint` が拾うので、
+    保存先変更前に作られた run もそのまま評価できる。
+    """
+    for name in run_names:
+        found = ra.find_checkpoint(ra.resolve_run_dir(name))
+        if found is not None:
+            return str(found)
+    return fallback
+
+
 def hc_ckpt_for(seed: int, tag: str) -> str:
     """H-C-v1 の best_t1b.pth path 解決。学習で改善しなかった seed は存在しない → S0-frozen ckpt で
     恒等代替（H-C 検出器に S0-frozen ckpt を load すると phase 層は missing→zero-init→恒等。
     phase ctx 入力で gate forward すれば学習後 H-C-v1 と厳密等価=学習で動いていないので）。"""
-    p = Path(f"/tmp/hc_{tag}_seed{seed}/best_t1b.pth")
-    return str(p) if p.exists() else s0_ckpt_for(seed)
+    return t1b_ckpt_for([f"hc_{tag}_seed{seed}", f"t1b_hc_all_{tag}_seed{seed}"],
+                        s0_ckpt_for(seed))
 
 
 def models_for_seed(seed: int) -> dict:
@@ -78,9 +94,12 @@ def models_for_seed(seed: int) -> dict:
     if seed == 42:
         # 既存 seed42 互換: t1b_film/t1b_ca の評価キーを残す
         base.update({
-            "t1b_film_inj":  dict(cfg=T1B_CFG, ckpt="/tmp/t1b_film_seed42/best_t1b.pth", phase="real"),
-            "t1b_film_ctrl": dict(cfg=T1B_CFG, ckpt="/tmp/t1b_film_zeroctx_seed42/best_t1b.pth", phase="zero"),
-            "t1b_ca_inj":    dict(cfg=CA_CFG, ckpt=str(BODY / "transfer/t1b_ca_seed42/best_t1b.pth"), phase="real"),
+            "t1b_film_inj":  dict(cfg=T1B_CFG, phase="real", ckpt=t1b_ckpt_for(
+                ["t1b_film_seed42", "t1b_film_all_inj_seed42"], s0)),
+            "t1b_film_ctrl": dict(cfg=T1B_CFG, phase="zero", ckpt=t1b_ckpt_for(
+                ["t1b_film_zeroctx_seed42", "t1b_film_all_ctrl_seed42"], s0)),
+            "t1b_ca_inj":    dict(cfg=CA_CFG, phase="real", ckpt=t1b_ckpt_for(
+                ["t1b_ca_seed42", "t1b_ca_all_inj_seed42"], s0)),
         })
     return base
 
@@ -120,7 +139,11 @@ def register_classes(model, loader):
 
 
 @torch.no_grad()
-def evaluate(model, loader, imgid_to_ctx, device, phase_mode):
+def evaluate(model, loader, imgid_to_ctx, device, phase_mode, collect_predictions=False):
+    """test 検出評価。``collect_predictions=True`` のときだけ per-image 予測も返す。
+
+    ``train_t1b.eval_detection`` と同じ規約（既定の戻り値 arity は変えない）。
+    """
     from util.coco_eval import CocoEvaluator
     from util.coco_utils import get_coco_api_from_dataset
 
@@ -150,7 +173,11 @@ def evaluate(model, loader, imgid_to_ctx, device, phase_mode):
         v = prec[:, :, ci, 0, 2]
         v = v[v > -1]
         per[n] = float(v.mean()) if v.size else float("nan")
-    return float(bbox.stats[0]), per
+    if not collect_predictions:
+        return float(bbox.stats[0]), per
+    preds = {"results": ev.predictions["bbox"],
+             "image_ids": sorted({int(i) for i in ev.img_ids})}
+    return float(bbox.stats[0]), per, preds
 
 
 def main():
@@ -159,6 +186,10 @@ def main():
     ap.add_argument("--seed", type=int, default=42,
                     help="評価対象 seed（42/123/456）。seed42 既存出力は test_eval_{key}.json、"
                          "それ以外は test_eval_{key}_seed{S}.json として保存")
+    ap.add_argument("--no-save-predictions", action="store_true",
+                    help="per-image predictions を保存しない（既定は保存する）")
+    ap.add_argument("--predictions-no-gzip", action="store_true",
+                    help="predictions を gzip せず素の .json で保存する")
     args = ap.parse_args()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     loader = build_test_loader()
@@ -176,14 +207,31 @@ def main():
             continue
         model = load_model(m["cfg"], m["ckpt"], device)
         register_classes(model, loader)
-        mAP, per = evaluate(model, loader, imgid_to_ctx, device, m["phase"])
+        save_preds = not args.no_save_predictions
+        mAP, per, preds = evaluate(model, loader, imgid_to_ctx, device, m["phase"],
+                                   collect_predictions=True)
+        pred_path = None
+        if save_preds:
+            # ckpt を出した run に predictions を戻す（run 外の ckpt は評価専用 run へ）。
+            run_dir = ra.run_dir_for_checkpoint(m["ckpt"], f"test_eval_{key}_seed{args.seed}")
+            ra.ensure_layout(run_dir)
+            pred_path = ra.save_predictions(
+                run_dir, preds["results"], split="test", tag=key, best=True,
+                compress=not args.predictions_no_gzip)
+            ra.save_eval_meta(run_dir, {
+                "split": "test", "ann_file": f"{ANN}/instances_test.json",
+                "image_ids": preds["image_ids"], "topk": ra.EVAL_TOPK,
+                "select_box_nums_for_evaluation": 300, "score_thr": 0.0, "limit": None,
+            })
+            print(f"[test-eval] predictions -> {ra.host_path(pred_path)}", flush=True)
         # H-C-v1 評価時に gate 統計を併記（解釈の助けに）
         gate_stat = {}
         if hasattr(model, "_last_gate_mean") and model._last_gate_mean is not None:
             gate_stat = {"last_gate_mean": model._last_gate_mean,
                          "last_entropy_mean": model._last_entropy_mean}
         res = {"model": key, "seed": args.seed, "split": "test", "ckpt": m["ckpt"], "phase": m["phase"],
-               "mAP": mAP, "per_class_ap": per, **gate_stat}
+               "mAP": mAP, "per_class_ap": per,
+               "predictions": ra.host_path(pred_path) if pred_path else None, **gate_stat}
         # 出力ファイル名: seed42 既存互換のため seed42 のときだけ {key}.json、それ以外は {key}_seed{S}.json
         out_name = f"test_eval_{key}.json" if args.seed == 42 else f"test_eval_{key}_seed{args.seed}.json"
         (OUT_DIR / out_name).write_text(json.dumps(res, indent=2, ensure_ascii=False))

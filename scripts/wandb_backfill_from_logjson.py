@@ -16,7 +16,7 @@ WANDB_PROJECT か引数。
 使い方:
   set -a; source .env; set +a
   python scripts/wandb_backfill_from_logjson.py \
-      --work-dir /tmp/sensex_codino_work_seed42 \
+      --work-dir experiments/transfer/sensex_codino_work_seed42 \
       --run-name sensex_codino_9enc_seed42 \
       --group s0_sensex_codino --seed 42 \
       --tags S0 detector_benchmark sensex_codino mmdet2x backfill

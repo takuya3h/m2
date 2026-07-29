@@ -199,7 +199,14 @@ def main():
     else:
         det_steps_cap = None
 
-    work = Path(os.environ.get("B1_WORK_DIR", f"/tmp/b1_work_{args.weighting}_seed{args.seed}"))
+    # 成果物は experiments/transfer/ 配下に永続化する（/tmp は再起動で消え、後から
+    # eval-only の追認ができなくなる）。B1_WORK_DIR は明示 override として存置。
+    _proj = Path(os.environ.get("EGO_BODY", Path(__file__).resolve().parents[1]))
+    work = Path(os.environ.get(
+        "B1_WORK_DIR",
+        str(_proj / "experiments/transfer" / f"b1_work_{args.weighting}_seed{args.seed}")))
+    if not work.is_absolute():
+        work = _proj / work
     work.mkdir(parents=True, exist_ok=True)
     print(f"[b1] weighting={args.weighting} seed={args.seed} device={device} "
           f"det_steps/ep={det_steps_per_ep} phase_clips={len(train_clips)} R={R} work={work}")
