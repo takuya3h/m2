@@ -1018,6 +1018,77 @@ commit & push すると、各サーバーの keeper が 30 分以内に `$M2DIR/
 
 ---
 
+## 検出側 run の成果物（experiments/transfer/&lt;run_name&gt;/）
+
+**2026-07-28 変更**: 検出側トレーナ（`train_t1b.py` 系）の成果物は `/tmp` ではなく
+`experiments/transfer/<run_name>/` に永続化される。あわせて **per-image の検出結果
+（predictions）を既定で保存**する。
+
+背景: 従来 `/tmp` に出していたため再起動で消え、eval-only の追認が反復的に実行不能に
+なっていた（ckpt 不在 seed の恒等代替 / test 未実施 / FP・FN 集計不能で失敗機序が推測どまり）。
+predictions さえ残っていれば ckpt が無くても解析できるため、オプトインではなく既定 on にした。
+
+### レイアウト（工程側 `ExperimentManager` と同一規約）
+
+```
+experiments/transfer/<run_name>/
+├── checkpoints/best_t1b.pth
+├── predictions/{split}_{inj|ctrl}_ep-1.json.gz   # init（warm-start 恒等点）
+│                {split}_{inj|ctrl}_best.json.gz  # best epoch
+├── logs/val_metrics_by_epoch.json                # epoch 別 mAP + per-class + best_epoch
+│       eval_meta_{split}.json                    # 評価対象 image_id 等
+├── config.yaml  command.sh  git_commit.txt  server.txt
+└── metrics.json  per_class_ap.json  t1b_result.json  notes.md
+```
+
+- `logs/val_metrics_by_epoch.json` と `logs/eval_meta_*.json` は **git 追跡対象**
+  （`.gitignore` に明示例外）。ckpt や predictions が失われてもコミット済みログだけで
+  init 比較・絶対値検証を完遂できる状態を担保する。
+- `checkpoints/` `predictions/` は容量のため git 追跡外（層2 の Syncthing 側で同期）。
+
+### predictions
+
+- 形式は COCO detection results（`[{"image_id", "category_id", "bbox":[x,y,w,h], "score"}, …]`）。
+- **score 閾値での足切りはしない**（eval recipe が `score_thr=0.0` 系のため、足切りすると
+  AP が再現不能になる）。容量対策は image_id ごと **top-k=300**（= `select_box_nums_for_evaluation`
+  と同一上限）で、実測では常に恒等変換。
+- **実測サイズ**（seed42・val 全 1515 枚・検出 454,500 = 厳密に 300/枚）:
+  gzip 後 **12.6 MB**（非圧縮 69.8 MB、圧縮率 0.18）= 8.1 KB/枚。
+  → **1 run あたり約 25 MB**（init + best の val 2 本）。test（4265 枚）は約 35 MB/本。
+
+### 関連フラグ
+
+| フラグ | 意味 |
+| --- | --- |
+| `--run-name NAME` | 保存先 `experiments/transfer/NAME/`（環境変数 `T1B_RUN_NAME` でも可） |
+| `--no-save-predictions` | predictions を保存しない（measure run 等） |
+| `--save-predictions-all` | 全 epoch の predictions を保存（既定は init と best のみ） |
+| `--predictions-no-gzip` | 素の `.json` で保存 |
+| `T1B_WORK_DIR` | 保存先の明示 override（後方互換。相対パスはリポジトリ root 基準） |
+
+### 検証コマンド
+
+```bash
+# predictions から COCO eval を再実行し、記録 mAP と bit-exact 一致するか検証
+.venv-relation-detr/bin/python scripts/verify_predictions_ap.py --run <run_name> --split val --epoch -1
+
+# inj / ctrl の init 予測が完全一致するか（注入層 zero-init=恒等の実測確認）
+.venv-relation-detr/bin/python scripts/run_artifacts.py --verify-init-identity <run_inj> <run_ctrl>
+```
+
+`run_*_3seed_*.sh` 系ランチャーは本走のたびに init 恒等性を自動検証し、
+`logs/<tag>_init_identity*.json` に記録する。
+
+### `best_is_init`
+
+frozen 検出器では init を超える epoch が無いことがあり、その場合 `checkpoints/best_t1b.pth` は
+生成されない（過去に「ckpt 不在 seed を S0-frozen で恒等代替」が必要になった原因）。
+その状況は `metrics.json` / `logs/val_metrics_by_epoch.json` の `best_is_init: true` で明示し、
+best predictions は init の複製として必ず出力する（init ckpt 自体は warm-start ckpt から
+決定的に再構成できるため重複保存しない）。
+
+---
+
 ## 主要ドキュメント
 
 - [`docs/experiment_log.md`](docs/experiment_log.md) — 全実験の「仮説→実験→結果→解釈→次」記録

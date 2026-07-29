@@ -134,7 +134,11 @@ def classify(workdir: str, interval: float) -> dict:
 
 
 def _default_scan_dirs() -> list[str]:
-    pats = ["/tmp/dimaskdino_work_*", "/tmp/*_work_*", "/tmp/reldetr_work_*",
+    # 現行の成果物は experiments/transfer/ 配下。/tmp 側は旧 run が残っている
+    # 環境のための後方互換（新規の書き出し先ではない）。
+    transfer = str(Path(__file__).resolve().parents[1] / "experiments" / "transfer")
+    pats = [f"{transfer}/*_work_*", f"{transfer}/reldetr_work_*", f"{transfer}/t1b_*",
+            "/tmp/dimaskdino_work_*", "/tmp/*_work_*", "/tmp/reldetr_work_*",
             "/tmp/sensex_*work*", "/tmp/stabledino_work_*"]
     found: list[str] = []
     for p in pats:

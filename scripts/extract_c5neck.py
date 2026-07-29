@@ -8,7 +8,7 @@
 出力は純テンソルのみ → 工程側は weights_only=True（安全側）で読める。
 
 実行: .venv/bin/python scripts/extract_c5neck.py \
-        --ckpt /tmp/reldetr_work_..._seed456_*/best_ap.pth --seed 456
+        --ckpt experiments/transfer/reldetr_work_..._seed456_*/best_ap.pth --seed 456
 出力: data/processed/c5neck/c5neck_seed{SEED}.pth
 """
 from __future__ import annotations

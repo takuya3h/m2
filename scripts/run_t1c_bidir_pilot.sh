@@ -29,14 +29,14 @@ echo " A=bidir→GPU$GPU_A  B=phase-frozen→GPU$GPU_B"
 echo "==============================================================="
 
 # A: bidir（両方向 on・可塑）— 恒等ガード付き
-CUDA_VISIBLE_DEVICES="$GPU_A" T1C_WORK_DIR="/tmp/t1c_bidir_A_seed${SEED}" \
+CUDA_VISIBLE_DEVICES="$GPU_A" T1C_WORK_DIR="$ROOT/experiments/transfer/t1c_bidir_A_seed${SEED}" \
   "$VENV" scripts/train_t1c_bidir.py --seed "$SEED" --epochs "$EPOCHS" --bidir --trainable all \
     --assert-init-map "$INIT_MAP" --assert-init-tol "$TOL" \
     > "logs/t1c_bidir_A_seed${SEED}.log" 2>&1 &
 pid_a=$!
 
 # B: phase-frozen baseline（det→phase off: 凍結検出器 + phase head のみ学習・inject off）
-CUDA_VISIBLE_DEVICES="$GPU_B" T1C_WORK_DIR="/tmp/t1c_bidir_B_seed${SEED}" \
+CUDA_VISIBLE_DEVICES="$GPU_B" T1C_WORK_DIR="$ROOT/experiments/transfer/t1c_bidir_B_seed${SEED}" \
   "$VENV" scripts/train_t1c_bidir.py --seed "$SEED" --epochs "$EPOCHS" --lambda-phase 1.0 --trainable film \
     > "logs/t1c_bidir_B_seed${SEED}.log" 2>&1 &
 pid_b=$!
@@ -46,8 +46,8 @@ echo "[本走] A/B 完了"
 
 dst="transfer/t1c_bidir_pilot_seed${SEED}"
 mkdir -p "$dst"
-cp -f "/tmp/t1c_bidir_A_seed${SEED}/t1c_result.json" "$dst/bidir_result.json"       2>/dev/null || echo "[WARN] A result 欠損"
-cp -f "/tmp/t1c_bidir_B_seed${SEED}/t1c_result.json" "$dst/phasefrozen_result.json" 2>/dev/null || echo "[WARN] B result 欠損"
+cp -f "$ROOT/experiments/transfer/t1c_bidir_A_seed${SEED}/t1c_result.json" "$dst/bidir_result.json"       2>/dev/null || echo "[WARN] A result 欠損"
+cp -f "$ROOT/experiments/transfer/t1c_bidir_B_seed${SEED}/t1c_result.json" "$dst/phasefrozen_result.json" 2>/dev/null || echo "[WARN] B result 欠損"
 cp -f "logs/t1c_bidir_A_seed${SEED}.log" "$dst/" 2>/dev/null || true
 cp -f "logs/t1c_bidir_B_seed${SEED}.log" "$dst/" 2>/dev/null || true
 

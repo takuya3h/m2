@@ -21,6 +21,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # scripts/
+import run_artifacts as ra  # noqa: E402
 import train_t1b as t1b  # noqa: E402  (sys.path 追加 + os.chdir(RELDETR) を副作用で行う)
 import torch  # noqa: E402
 
@@ -63,9 +64,27 @@ def load_ckpt_into_model(seed: int, ckpt_path: Path, loader, device, inject: str
     return model.to(device), rm
 
 
-def evaluate(model, loader, split, zero_ctx, device):
+def evaluate(model, loader, split, zero_ctx, device, run_dir=None, tag=None, compress=True):
+    """評価し、``run_dir`` が渡されていれば per-image predictions も永続化する。
+
+    predictions さえ残っていれば ckpt が失われても FP/FN 内訳・工程別品質の解析ができる。
+    eval-only の追認が反復的に不能になった過去の失敗への構造的な手当て。
+    """
     ctx, nmiss = t1b.build_imgid_to_ctx(loader.dataset.coco, t1b.load_phase_ctx(split))
-    mAP, per_class = t1b.eval_detection(model, loader, ctx, device, zero_ctx)
+    if run_dir is None:
+        mAP, per_class = t1b.eval_detection(model, loader, ctx, device, zero_ctx)
+        return mAP, per_class, nmiss
+    mAP, per_class, preds = t1b.eval_detection(
+        model, loader, ctx, device, zero_ctx, collect_predictions=True)
+    ra.ensure_layout(run_dir)
+    ra.save_predictions(run_dir, preds["results"], split=split, tag=tag, best=True,
+                        compress=compress)
+    ra.save_eval_meta(run_dir, {
+        "split": split, "ann_file": loader.dataset.ann_file if hasattr(loader.dataset, "ann_file")
+        else f"{t1b.ANN_DIR}/instances_{split}.json",
+        "image_ids": preds["image_ids"], "topk": ra.EVAL_TOPK,
+        "select_box_nums_for_evaluation": 300, "score_thr": 0.0, "limit": None,
+    })
     return mAP, per_class, nmiss
 
 
@@ -87,7 +106,12 @@ def main():
     ap.add_argument("--tag", default="clsbias_pe")
     ap.add_argument("--inject", choices=["clsbias", "camt"], default="clsbias",
                     help="学習時の注入方式（アーキ再構築の config を決める）")
-    ap.add_argument("--ckpt-root", default="/tmp", help="best_t1b.pth を探す work root")
+    ap.add_argument("--ckpt-root", default=str(ra.TRANSFER_ROOT),
+                    help="best_t1b.pth を探す run root（既定 experiments/transfer）")
+    ap.add_argument("--no-save-predictions", action="store_true",
+                    help="per-image predictions を保存しない（既定は保存する）")
+    ap.add_argument("--predictions-no-gzip", action="store_true",
+                    help="predictions を gzip せず素の .json で保存する")
     ap.add_argument("--ckpt-name", default="best_t1b.pth", help="評価する checkpoint ファイル名（best/final）")
     ap.add_argument("--out", default=str(BODY / "experiments/analysis/t1b_clsbias_pe_test/test_eval.json"))
     args = ap.parse_args()
@@ -95,12 +119,18 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     per_seed = {}
+    save_preds = not args.no_save_predictions
+    compress = not args.predictions_no_gzip
     for seed in seeds:
-        inj_ck = Path(f"{args.ckpt_root}/t1b_{args.tag}_seed{seed}/{args.ckpt_name}")
-        ctrl_ck = Path(f"{args.ckpt_root}/t1b_{args.tag}_zeroctx_seed{seed}/{args.ckpt_name}")
-        for p in (inj_ck, ctrl_ck):
-            if not p.exists():
-                raise FileNotFoundError(f"checkpoint 無し: {p}")
+        # run ディレクトリ配下の checkpoints/ を優先し、旧 flat レイアウトも拾う。
+        inj_run = Path(args.ckpt_root) / f"t1b_{args.tag}_seed{seed}"
+        ctrl_run = Path(args.ckpt_root) / f"t1b_{args.tag}_zeroctx_seed{seed}"
+        inj_ck = ra.find_checkpoint(inj_run, args.ckpt_name)
+        ctrl_ck = ra.find_checkpoint(ctrl_run, args.ckpt_name)
+        for run, p in ((inj_run, inj_ck), (ctrl_run, ctrl_ck)):
+            if p is None:
+                raise FileNotFoundError(
+                    f"checkpoint 無し: {run}/checkpoints/{args.ckpt_name}（旧 flat も不在）")
         stored = BODY / f"transfer/t1b_{args.tag}_seed{seed}_efros"
         inj_stored = json.load(open(stored / "injected_result.json"))
         ctrl_stored = json.load(open(stored / "control_result.json"))
@@ -122,8 +152,15 @@ def main():
 
         print(f"===== seed{seed} TEST 評価 =====", flush=True)
         test_loader = build_loader("test")
-        inj_map, inj_pc, inj_miss = evaluate(inj_model, test_loader, "test", False, device)
-        ctrl_map, ctrl_pc, ctrl_miss = evaluate(ctrl_model, test_loader, "test", True, device)
+        inj_map, inj_pc, inj_miss = evaluate(
+            inj_model, test_loader, "test", False, device,
+            run_dir=inj_run if save_preds else None, tag="inj", compress=compress)
+        ctrl_map, ctrl_pc, ctrl_miss = evaluate(
+            ctrl_model, test_loader, "test", True, device,
+            run_dir=ctrl_run if save_preds else None, tag="ctrl", compress=compress)
+        if save_preds:
+            print(f"  predictions -> {ra.host_path(ra.predictions_dir(inj_run))} / "
+                  f"{ra.host_path(ra.predictions_dir(ctrl_run))}", flush=True)
         delta = {n: inj_pc.get(n, float("nan")) - ctrl_pc.get(n, float("nan")) for n in inj_pc}
         print(f"  test overall mAP: inj={inj_map:.4f} ctrl={ctrl_map:.4f} Δ={inj_map-ctrl_map:+.4f} "
               f"(ctx_miss inj/ctrl={inj_miss}/{ctrl_miss})", flush=True)

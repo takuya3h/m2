@@ -77,16 +77,16 @@ CUDA_VISIBLE_DEVICES="$GPU_A" "$VENV" -c \
 
 # Step 1: measure-only で per-seed init mAP（assert 値固定）
 declare -A MEAS_DIR INIT_MAP
-for S in "${SEEDS[@]}"; do MEAS_DIR[$S]="/tmp/oracle_phase_measure_seed${S}"; done
+for S in "${SEEDS[@]}"; do MEAS_DIR[$S]="${ROOT}/experiments/transfer/oracle_phase_measure_seed${S}"; done
 
 echo "[measure wave1] seed42(GPU$GPU_A) + seed123(GPU$GPU_B) 並列 ..."
-run_one 42  "$GPU_A" "${MEAS_DIR[42]}"  "logs/oracle_phase_measure_seed42.log"  --epochs 0 &
+run_one 42  "$GPU_A" "${MEAS_DIR[42]}"  "logs/oracle_phase_measure_seed42.log"  --epochs 0 --no-save-predictions &
 pa=$!
-run_one 123 "$GPU_B" "${MEAS_DIR[123]}" "logs/oracle_phase_measure_seed123.log" --epochs 0 &
+run_one 123 "$GPU_B" "${MEAS_DIR[123]}" "logs/oracle_phase_measure_seed123.log" --epochs 0 --no-save-predictions &
 pb=$!
 wait "$pa"; wait "$pb"
 echo "[measure wave2] seed456(GPU$GPU_A) 単独 ..."
-run_one 456 "$GPU_A" "${MEAS_DIR[456]}" "logs/oracle_phase_measure_seed456.log" --epochs 0
+run_one 456 "$GPU_A" "${MEAS_DIR[456]}" "logs/oracle_phase_measure_seed456.log" --epochs 0 --no-save-predictions
 
 for S in "${SEEDS[@]}"; do
   INIT_MAP[$S]="$(extract_init_map "${MEAS_DIR[$S]}/t1b_result.json")"
@@ -105,9 +105,9 @@ print("[measure] 全 seed 健全帯 OK")
 PY
 
 # Step 2: wave A = inj (real ctx = oracle GT)
-INJ_DIR_42=/tmp/oracle_phase_inj_seed42
-INJ_DIR_123=/tmp/oracle_phase_inj_seed123
-INJ_DIR_456=/tmp/oracle_phase_inj_seed456
+INJ_DIR_42=${ROOT}/experiments/transfer/oracle_phase_inj_seed42
+INJ_DIR_123=${ROOT}/experiments/transfer/oracle_phase_inj_seed123
+INJ_DIR_456=${ROOT}/experiments/transfer/oracle_phase_inj_seed456
 
 echo "[wave A:inj wave1] seed42(GPU$GPU_A) + seed123(GPU$GPU_B) 並列 ..."
 run_one 42  "$GPU_A" "$INJ_DIR_42"  "logs/oracle_phase_inj_seed42.log" \
@@ -123,9 +123,9 @@ run_one 456 "$GPU_A" "$INJ_DIR_456" "logs/oracle_phase_inj_seed456.log" \
 echo "[wave A:inj] 完了"
 
 # Step 3: wave B = ctrl (zero ctx, oracle/real 無関係に ctx=0)
-CTRL_DIR_42=/tmp/oracle_phase_ctrl_seed42
-CTRL_DIR_123=/tmp/oracle_phase_ctrl_seed123
-CTRL_DIR_456=/tmp/oracle_phase_ctrl_seed456
+CTRL_DIR_42=${ROOT}/experiments/transfer/oracle_phase_ctrl_seed42
+CTRL_DIR_123=${ROOT}/experiments/transfer/oracle_phase_ctrl_seed123
+CTRL_DIR_456=${ROOT}/experiments/transfer/oracle_phase_ctrl_seed456
 
 echo "[wave B:ctrl wave1] seed42(GPU$GPU_A) + seed123(GPU$GPU_B) 並列 ..."
 run_one 42  "$GPU_A" "$CTRL_DIR_42"  "logs/oracle_phase_ctrl_seed42.log" \
@@ -145,10 +145,15 @@ echo "================ 完了・回収サマリ ================"
 for S in "${SEEDS[@]}"; do
   dst="transfer/oracle_phase_seed${S}"
   mkdir -p "$dst"
-  cp -f "/tmp/oracle_phase_inj_seed${S}/t1b_result.json"  "$dst/injected_result.json" 2>/dev/null || echo "[WARN] inj 欠損 seed$S"
-  cp -f "/tmp/oracle_phase_ctrl_seed${S}/t1b_result.json" "$dst/control_result.json"  2>/dev/null || echo "[WARN] ctrl 欠損 seed$S"
+  cp -f "${ROOT}/experiments/transfer/oracle_phase_inj_seed${S}/t1b_result.json"  "$dst/injected_result.json" 2>/dev/null || echo "[WARN] inj 欠損 seed$S"
+  cp -f "${ROOT}/experiments/transfer/oracle_phase_ctrl_seed${S}/t1b_result.json" "$dst/control_result.json"  2>/dev/null || echo "[WARN] ctrl 欠損 seed$S"
   cp -f "logs/oracle_phase_inj_seed${S}.log"   "$dst/" 2>/dev/null || true
   cp -f "logs/oracle_phase_ctrl_seed${S}.log"  "$dst/" 2>/dev/null || true
+  # §4.6 の比較前提（注入層 zero-init=恒等 → inj/ctrl の init 予測は完全一致）を実測で記録。
+  "$VENV" scripts/run_artifacts.py --verify-init-identity \
+    "${ROOT}/experiments/transfer/oracle_phase_inj_seed${S}" "${ROOT}/experiments/transfer/oracle_phase_ctrl_seed${S}" \
+    > "logs/oracle_phase_seed${S}_init_identity.json" \
+    || echo "[WARN] seed$S: inj/ctrl の init 予測が不一致（恒等性の破れを疑え）"
   echo "-- seed$S --"
   for f in "$dst/injected_result.json" "$dst/control_result.json"; do
     [ -f "$f" ] && "$VENV" -c "import json;r=json.load(open('$f'));print(f\"  {('inj' if not r['zero_ctx'] else 'ctrl')}: init={r['init_mAP']:.4f} best@ep{r['best_epoch']} mAP={r['mAP']:.4f}\")"

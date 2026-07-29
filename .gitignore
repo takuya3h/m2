@@ -25,7 +25,11 @@ data/external/**
 
 # === 実験結果（大容量） ===
 experiments/**/checkpoints/
-experiments/**/logs/
+# logs/ はディレクトリごとでなく「中身」を ignore する。ディレクトリ自体を除外すると
+# git の仕様上その配下を再包含できず、epoch 別指標ログを追跡できなくなるため。
+# 追跡する具体的なファイル名は末尾の「Git 管理する例外」で明示する。
+experiments/**/logs/**
+!experiments/**/logs/**/
 experiments/**/predictions/
 experiments/**/visualizations/
 experiments/**/tf_log/
@@ -107,6 +111,11 @@ paper/sections/*.aux
 !experiments/**/notes.md
 # server.txt: 実行サーバー名証跡 (§8.0 条件 (2)・eval_recipe.server_name と整合)。
 !experiments/**/server.txt
+# 検出側 run の epoch 別 val 指標 / 評価メタ。ckpt や predictions が失われても
+# コミット済みログだけで init 比較・絶対値検証を完遂できる状態を担保する（軽量・数十KB）。
+# ファイル名を列挙する形にして、mmengine 等が logs/ に吐く大容量 JSON を巻き込まない。
+!experiments/**/logs/val_metrics_by_epoch.json
+!experiments/**/logs/eval_meta_*.json
 # 学習に使う tool 検出アノテーション（instances_*.json）は再現性のため追跡する。
 # tool/ hand/ の生 COCO コピーは EgoSurgery 公式と重複・大容量のため追跡しない。
 !data/annotations/egosurgery_tool/instances_*.json
@@ -142,7 +151,13 @@ prompts_legacy/
 prompts_n_legacy/
 .notion_sync.json
 experiments/**/.notion_sync.json
-logs/
+# リポジトリ直下の logs/（ランチャーの stdout 置き場）のみ。先頭 / でアンカーしないと
+# experiments/*/logs/ まで巻き込み、epoch 別指標ログが追跡できなくなる。
+/logs/
+
+# === セッションメモリ（.remember/）===
+# 以前は上の無アンカー `logs/` が偶然巻き込んでいたが、アンカー化に伴い明示する。
+.remember/
 
 # === Syncthing (デバイス毎の生成物) ===
 .stignore

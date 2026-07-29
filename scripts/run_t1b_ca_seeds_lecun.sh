@@ -96,11 +96,11 @@ CUDA_VISIBLE_DEVICES="$GPU_A" "$VENV" -c \
 # Step 1: measure-only（--epochs 0）で各 seed の init mAP を実測（並列）
 # ---------------------------------------------------------------------------
 echo "[measure] seed$SEED_A(GPU$GPU_A) / seed$SEED_B(GPU$GPU_B) の init mAP を実測 ..."
-MEAS_A=/tmp/t1b_ca_measure_seed${SEED_A}
-MEAS_B=/tmp/t1b_ca_measure_seed${SEED_B}
-run_one "$SEED_A" "$GPU_A" "$MEAS_A" "logs/t1b_ca_measure_seed${SEED_A}.log" --epochs 0 &
+MEAS_A=${ROOT}/experiments/transfer/t1b_ca_measure_seed${SEED_A}
+MEAS_B=${ROOT}/experiments/transfer/t1b_ca_measure_seed${SEED_B}
+run_one "$SEED_A" "$GPU_A" "$MEAS_A" "logs/t1b_ca_measure_seed${SEED_A}.log" --epochs 0 --no-save-predictions &
 pid_a=$!
-run_one "$SEED_B" "$GPU_B" "$MEAS_B" "logs/t1b_ca_measure_seed${SEED_B}.log" --epochs 0 &
+run_one "$SEED_B" "$GPU_B" "$MEAS_B" "logs/t1b_ca_measure_seed${SEED_B}.log" --epochs 0 --no-save-predictions &
 pid_b=$!
 wait "$pid_a"; wait "$pid_b"
 
@@ -125,7 +125,7 @@ PY
 # ---------------------------------------------------------------------------
 # Step 2: 本走 wave A = inj（real ctx, 両 seed 並列, 実測 init を assert 固定）
 # ---------------------------------------------------------------------------
-INJ_A=/tmp/t1b_ca_seed${SEED_A};  INJ_B=/tmp/t1b_ca_seed${SEED_B}
+INJ_A=${ROOT}/experiments/transfer/t1b_ca_seed${SEED_A};  INJ_B=${ROOT}/experiments/transfer/t1b_ca_seed${SEED_B}
 echo "[wave A:inj] seed$SEED_A(GPU$GPU_A) + seed$SEED_B(GPU$GPU_B) 並列起動 ..."
 run_one "$SEED_A" "$GPU_A" "$INJ_A" "logs/t1b_ca_seed${SEED_A}.log" \
   --epochs "$EPOCHS" --assert-init-map "$INIT_A" --assert-init-tol "$ASSERT_INIT_TOL" &
@@ -139,7 +139,7 @@ echo "[wave A:inj] 完了"
 # ---------------------------------------------------------------------------
 # Step 3: 本走 wave B = ctrl（zero ctx, 両 seed 並列, 同 assert）
 # ---------------------------------------------------------------------------
-CTRL_A=/tmp/t1b_ca_zeroctx_seed${SEED_A};  CTRL_B=/tmp/t1b_ca_zeroctx_seed${SEED_B}
+CTRL_A=${ROOT}/experiments/transfer/t1b_ca_zeroctx_seed${SEED_A};  CTRL_B=${ROOT}/experiments/transfer/t1b_ca_zeroctx_seed${SEED_B}
 echo "[wave B:ctrl] seed$SEED_A(GPU$GPU_A) + seed$SEED_B(GPU$GPU_B) 並列起動 ..."
 run_one "$SEED_A" "$GPU_A" "$CTRL_A" "logs/t1b_ca_zeroctx_seed${SEED_A}.log" \
   --epochs "$EPOCHS" --assert-init-map "$INIT_A" --assert-init-tol "$ASSERT_INIT_TOL" --zero-ctx &
@@ -157,10 +157,15 @@ echo "================ 完了・回収用サマリ ================"
 for S in "$SEED_A" "$SEED_B"; do
   dst="transfer/t1b_ca_seed${S}_lecun"
   mkdir -p "$dst"
-  cp -f "/tmp/t1b_ca_seed${S}/t1b_result.json"        "$dst/injected_result.json" 2>/dev/null || echo "[WARN] inj result 欠損 seed$S"
-  cp -f "/tmp/t1b_ca_zeroctx_seed${S}/t1b_result.json" "$dst/control_result.json"  2>/dev/null || echo "[WARN] ctrl result 欠損 seed$S"
+  cp -f "${ROOT}/experiments/transfer/t1b_ca_seed${S}/t1b_result.json"        "$dst/injected_result.json" 2>/dev/null || echo "[WARN] inj result 欠損 seed$S"
+  cp -f "${ROOT}/experiments/transfer/t1b_ca_zeroctx_seed${S}/t1b_result.json" "$dst/control_result.json"  2>/dev/null || echo "[WARN] ctrl result 欠損 seed$S"
   cp -f "logs/t1b_ca_seed${S}.log"          "$dst/" 2>/dev/null || true
   cp -f "logs/t1b_ca_zeroctx_seed${S}.log"  "$dst/" 2>/dev/null || true
+  # §4.6 の比較前提（注入層 zero-init=恒等 → inj/ctrl の init 予測は完全一致）を実測で記録。
+  "$VENV" scripts/run_artifacts.py --verify-init-identity \
+    "${ROOT}/experiments/transfer/t1b_ca_seed${S}" "${ROOT}/experiments/transfer/t1b_ca_zeroctx_seed${S}" \
+    > "logs/t1b_ca_seed${S}_init_identity.json" \
+    || echo "[WARN] seed$S: inj/ctrl の init 予測が不一致（恒等性の破れを疑え）"
   echo "-- seed$S --"
   for f in "$dst/injected_result.json" "$dst/control_result.json"; do
     [ -f "$f" ] && "$VENV" -c "import json;r=json.load(open('$f'));print(f\"  {('inj' if not r['zero_ctx'] else 'ctrl')}: init={r['init_mAP']:.4f} best@ep{r['best_epoch']} mAP={r['mAP']:.4f}\")"
