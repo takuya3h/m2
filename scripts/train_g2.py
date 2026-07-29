@@ -44,7 +44,11 @@ REGION_DIR = PROJ / "data/processed/t1a_regiontoken/relation_detr_seed42"
 REGION_DIM = 3840
 CLASS_NAMES = ["anesthesia", "closure", "design", "disinfection", "dissection",
                "dressing", "hemostasis", "incision", "irrigation"]
-SYSTEMS = ["base", "bboxROI", "maskROI", "randROI", "shuffleROI"]
+SYSTEMS = ["base", "bboxROI", "maskROI", "randROI", "shuffleROI",
+           # S4: 手チャネル（prereg/s4_hand_prediction.md）
+           "handPresence", "handROIbbox2", "handROIbbox4", "handROImask2",
+           # 系統 9: 術具 ROI に手 ROI を上乗せ。連結済み npz を別途作って読ませる
+           "bboxROI_handROIbbox2"]
 
 
 def env_info(require_ext: bool, *, system: str | None = None,
