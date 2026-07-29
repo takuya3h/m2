@@ -433,11 +433,57 @@ def main():
     })
     ra.write_per_class_ap(work, best.get("per_class_coco_map", {}))
     print(f"[t1b] DONE best@ep{best['epoch']} mAP={best['mAP']:.4f} (init {init_map:.4f}) -> {work}")
+    if not args.smoke:
+        # 工程側 finalize() と対称: 完了した検出 run の証跡を自動 commit + push（fail-safe）。
+        _autosync_evidence(work, run_name, args.seed, best["mAP"])
     if args.smoke:
         ok = phase_grad_seen and (init_map > 0.5)  # 注入層に勾配 + warm-start mAP 健全
         print(f"[t1b][smoke] phase_grad={phase_grad_seen} init_mAP={init_map:.4f} "
               f"=> {'PASS' if ok else 'FAIL'}")
         sys.exit(0 if ok else 2)
+
+
+def _autosync_evidence(work: Path, run_name: str, seed: int, m_ap: float) -> None:
+    """完了した検出 run の証跡を git_autosync CLI で自動 commit + push する（fail-safe）。
+
+    工程側 ``ExperimentManager.finalize()`` と対称の配線。``exp/*`` ブランチ + deploy key
+    構成時のみ実際に push し、それ以外は no-op。``git_autosync.py`` は top-level が stdlib のみで
+    ファイル直実行できるため、egosurgery 未導入の ``.venv-relation-detr`` からでも動く
+    （内部の egosurgery import は guarded）。predictions/checkpoints は ``.gitignore`` で除外
+    されるため public repo には載らず、追跡対象の証跡テキスト（config.yaml/metrics.json/
+    per_class_ap.json/notes.md/logs/val_metrics_by_epoch.json 等）だけが同期される。
+    同一ホストで並列 seed が走る場合の git index 競合は flock で直列化する（cross-host は
+    各自別ブランチへ push するため無関係）。CLI 自体が常に exit 0・非送出なので学習は止めない。
+    """
+    import fcntl
+    import subprocess
+
+    cli = BODY / "src" / "egosurgery" / "utils" / "git_autosync.py"
+    if not cli.exists():
+        return
+    lock_fh = None
+    try:
+        try:
+            lock_fh = open(BODY / ".git" / "egosurgery-autosync.lock", "w")
+            fcntl.flock(lock_fh, fcntl.LOCK_EX)  # 同一ホストの並列 run を直列化
+        except OSError:
+            lock_fh = None  # ロック不可でも続行（直列化は best-effort）
+        subprocess.run(
+            [sys.executable, str(cli), str(work),
+             "--step", "T1b", "--description", run_name, "--seed", str(seed),
+             "--category", "transfer", "--exp-id", run_name,
+             "--metric-name", "mAP", "--metric-value", f"{m_ap:.6f}"],
+            check=False,
+        )
+    except Exception as exc:  # 自動同期の失敗を学習完了に漏らさない
+        print(f"[t1b] auto-sync skipped (non-fatal): {exc!r}", flush=True)
+    finally:
+        if lock_fh is not None:
+            try:
+                fcntl.flock(lock_fh, fcntl.LOCK_UN)
+                lock_fh.close()
+            except OSError:
+                pass
 
 
 def parse_args():

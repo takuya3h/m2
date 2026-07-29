@@ -1,0 +1,90 @@
+{
+  "split": "val",
+  "env": {
+    "torch": "2.1.2+cu118",
+    "cuda": "11.8",
+    "gpu": "NVIDIA RTX A6000",
+    "cudnn": 8700,
+    "commit": "2dc430be82470d6d43ac6689585b865dbb91712e",
+    "host": "efros",
+    "msdeformattn_extension_loaded": true,
+    "ninja": "/home/ubuntu/slocal/m2/.venv-relation-detr/bin/ninja"
+  },
+  "D": 256,
+  "neck_level": 0,
+  "n_frames": 1515,
+  "n_boxes": 4707,
+  "n_fallback_boxes": 1134,
+  "fallback_rate": 0.24091778202676864,
+  "fallback_by_class": {
+    "Skewer": 103,
+    "Gauze": 8,
+    "Scissors": 8,
+    "Tweezers": 7,
+    "Hook": 1,
+    "Forceps": 8,
+    "Mouth Gag": 983,
+    "Syringe": 1,
+    "Raspatory": 4,
+    "Suction Cannula": 8,
+    "Scalpel": 1,
+    "Needle Holders": 2
+  },
+  "total_by_class": {
+    "Skewer": 103,
+    "Syringe": 96,
+    "Tweezers": 950,
+    "Scalpel": 168,
+    "Gauze": 455,
+    "Scissors": 391,
+    "Hook": 147,
+    "Forceps": 154,
+    "Electric Cautery": 101,
+    "Mouth Gag": 990,
+    "Suction Cannula": 509,
+    "Bipolar Forceps": 55,
+    "Raspatory": 76,
+    "Needle Holders": 512
+  },
+  "fallback_rate_by_class": {
+    "Skewer": 1.0,
+    "Syringe": 0.010416666666666666,
+    "Tweezers": 0.007368421052631579,
+    "Scalpel": 0.005952380952380952,
+    "Gauze": 0.017582417582417582,
+    "Scissors": 0.020460358056265986,
+    "Hook": 0.006802721088435374,
+    "Forceps": 0.05194805194805195,
+    "Electric Cautery": 0.0,
+    "Mouth Gag": 0.9929292929292929,
+    "Suction Cannula": 0.015717092337917484,
+    "Bipolar Forceps": 0.0,
+    "Raspatory": 0.05263157894736842,
+    "Needle Holders": 0.00390625
+  },
+  "zero_slot_rate": {
+    "bboxROI": 0.808008800880088,
+    "maskROI": 0.808008800880088,
+    "randROI": 0.808008800880088
+  },
+  "sanity": {
+    "n_boxes_where_mask_equals_bbox": 1134,
+    "matches_fallback_count": true,
+    "n_rand_area_mismatch_gt1px": 0,
+    "norm_median": {
+      "bbox": 10.581587791442871,
+      "mask": 12.979455947875977,
+      "rand": 11.51911449432373
+    },
+    "norm_mean": {
+      "bbox": 10.783648624626826,
+      "mask": 13.844254531601013,
+      "rand": 11.837553504877393
+    }
+  },
+  "coordinate_mapping": {
+    "eval_resize": "model.eval_transform の出力形状を実測 (再計算しない)",
+    "padding": "size_divisible=32、右下パディングのため原点は不変",
+    "feature_coord": "f = orig * scale / stride,  stride = ceil(resized/32)*32 / feat_size"
+  }
+}
