@@ -26,6 +26,7 @@ import shutil
 import subprocess
 import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
@@ -43,12 +44,20 @@ REGION_DIR = PROJ / "data/processed/t1a_regiontoken/relation_detr_seed42"
 REGION_DIM = 3840
 CLASS_NAMES = ["anesthesia", "closure", "design", "disinfection", "dissection",
                "dressing", "hemostasis", "incision", "irrigation"]
-SYSTEMS = ["base", "bboxROI", "maskROI", "randROI"]
+SYSTEMS = ["base", "bboxROI", "maskROI", "randROI", "shuffleROI"]
 
 
-def env_info(require_ext: bool) -> dict:
-    """実行環境を記録する。require_ext=True なら拡張ロードを検証する。"""
+def env_info(require_ext: bool, *, system: str | None = None,
+             seed: int | None = None) -> dict:
+    """実行環境を記録する。require_ext=True なら拡張ロードを検証する。
+
+    system / seed と開始時刻は run 固有の実測値として記録する（S1 の申し送り）。
+    これがあれば、env.json が run ごとに実測されたことをファイルシステムの
+    mtime に依存せず示せる。終了時刻は呼び出し側が `finished_at` として足す。
+    """
     info = {
+        "system": system, "seed": seed,
+        "started_at": datetime.now(timezone.utc).isoformat(),
         "torch": torch.__version__, "cuda_version": torch.version.cuda,
         "cuda_available": torch.cuda.is_available(),
         "gpu": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,
@@ -59,7 +68,9 @@ def env_info(require_ext: bool) -> dict:
         "ninja_on_path": shutil.which("ninja"),
         "python": sys.version.split()[0],
     }
-    # 学習自体は検出器を呼ばないが、特徴が正しい環境で作られたかを追跡できるよう記録する
+    # 学習自体は検出器を呼ばない（TeCNO は MSDeformAttn を通らない）。この値が示すのは
+    # 「この学習プロセスで拡張がロード可能だったか」であって「使われたか」ではない。
+    # 特徴が拡張ありで作られた直接の証拠は Task F 側 json/f_roi_stats_*.json の env にある。
     info["msdeformattn_extension_loaded"] = None
     if require_ext:
         try:
@@ -156,7 +167,7 @@ def main() -> int:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     random.seed(args.seed); np.random.seed(args.seed); torch.manual_seed(args.seed)
 
-    env = env_info(require_ext=True)
+    env = env_info(require_ext=True, system=args.system, seed=args.seed)
     tr = load_clips("train", args.system, roi_dir)
     va = load_clips("val", args.system, roi_dir)
     te = load_clips("test", args.system, roi_dir)
@@ -221,6 +232,7 @@ def main() -> int:
                         "num_f_maps": args.num_f_maps, "smoothing_weight": 0.15},
     }
     (run_dir / "metrics.json").write_text(json.dumps(res, indent=2, ensure_ascii=False))
+    env["finished_at"] = datetime.now(timezone.utc).isoformat()
     (run_dir / "env.json").write_text(json.dumps(env, indent=2, ensure_ascii=False))
     print(f"[g2] {run} best_ep={best_epoch} "
           f"val_acc={val_m['phase_accuracy']:.4f} val_f1={val_m['phase_macro_f1']:.4f} "
