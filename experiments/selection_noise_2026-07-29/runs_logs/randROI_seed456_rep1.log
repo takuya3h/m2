@@ -1,0 +1,16 @@
+Using /home/ubuntu/.cache/torch_extensions/py311_cu118 as PyTorch extensions root...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /home/ubuntu/.cache/torch_extensions/py311_cu118/MultiScaleDeformableAttention/build.ninja...
+Building extension module MultiScaleDeformableAttention...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+ninja: no work to do.
+Loading extension module MultiScaleDeformableAttention...
+[m2] randROI_seed456_rep1 in_dim=7680 clips=13/3/6
+  ep 25 tl=0.2832 vl=1.1687 vacc=0.9571 vmf1=0.8181
+  ep 50 tl=0.1644 vl=1.3698 vacc=0.9465 vmf1=0.8082
+  [R-acc  ] ep=46 val_acc=0.9624 val_mf1=0.8286
+  [R-last ] ep=49 val_acc=0.9465 val_mf1=0.8082
+  [R-loss ] ep=18 val_acc=0.9597 val_mf1=0.8279
+  [R-mf1  ] ep=30 val_acc=0.9617 val_mf1=0.8300
+  [R-topk ] ep=[23, 30, 46] val_acc=0.9624 val_mf1=0.8305
+[m2] randROI_seed456_rep1 done (23s)
