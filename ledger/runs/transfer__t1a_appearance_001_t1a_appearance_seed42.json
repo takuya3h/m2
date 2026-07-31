@@ -1,0 +1,164 @@
+{
+  "aux_seeds": {},
+  "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-07-05T11:00:33+00:00\npython scripts/train_t1a.py --seed 42 --epochs 50 --eval-test --description t1a_appearance\n",
+  "commit": "27ad173f16f4c63a7bbe9160aa9a4b5c1461cb2a",
+  "config_path": "experiments/transfer/t1a_appearance_001_t1a_appearance_seed42/config.yaml",
+  "conflicting_bare_keys": [
+    {
+      "bare_value": 0.9504950495049505,
+      "by_split": {
+        "test": 0.8152403282532239
+      },
+      "key": "accuracy"
+    },
+    {
+      "bare_value": 34.166666666666664,
+      "by_split": {
+        "test": 36.71888893991112
+      },
+      "key": "edit_score"
+    },
+    {
+      "bare_value": 0.7813188712598264,
+      "by_split": {
+        "test": 0.5329958444021909
+      },
+      "key": "jaccard"
+    },
+    {
+      "bare_value": 0.8162734056221386,
+      "by_split": {
+        "test": 0.6307380341321444
+      },
+      "key": "macro_f1"
+    },
+    {
+      "bare_value": 0.4422466422466423,
+      "by_split": {
+        "test": 0.4364032056466436
+      },
+      "key": "seg_f1_10"
+    },
+    {
+      "bare_value": 0.4217338217338218,
+      "by_split": {
+        "test": 0.42005163019059055
+      },
+      "key": "seg_f1_25"
+    },
+    {
+      "bare_value": 0.4217338217338218,
+      "by_split": {
+        "test": 0.2857002344598845
+      },
+      "key": "seg_f1_50"
+    }
+  ],
+  "description": "t1a_appearance",
+  "duplicate_bare_keys": [],
+  "epoch": 30,
+  "eval_recipe": {
+    "effective_batch_size": 1,
+    "gpu_count": 1,
+    "lr_scaling": "none",
+    "server_name": "efros",
+    "split_test_annotations": 12673,
+    "split_test_images": 4265,
+    "split_train_annotations": 32272,
+    "split_train_images": 9657,
+    "split_val_annotations": 4707,
+    "split_val_images": 1515,
+    "test_cfg": {
+      "backbone": "relation_detr_resnet50_frozen_seed42",
+      "coupling": "t1a_regiontoken_concat_gap",
+      "in_dim": 5888,
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "num_f_maps": 64,
+      "num_layers": 8,
+      "num_stages": 2,
+      "region_dim": 3840,
+      "task": "phase",
+      "temporal_head": "tecno"
+    }
+  },
+  "eval_recipe_id": "78e50862a7b3",
+  "excluded": false,
+  "exclusion_reason": null,
+  "gpu": null,
+  "group": "transfer",
+  "harvest_warnings": [],
+  "host": "efros",
+  "host_raw": "efros",
+  "inferred_split": null,
+  "ledger_key": "transfer__t1a_appearance_001_t1a_appearance_seed42",
+  "metrics": {
+    "accuracy": 0.8152403282532239,
+    "accuracy__bare": 0.9504950495049505,
+    "edit_score": 36.71888893991112,
+    "edit_score__bare": 34.166666666666664,
+    "jaccard": 0.5329958444021909,
+    "jaccard__bare": 0.7813188712598264,
+    "macro_f1": 0.6307380341321444,
+    "macro_f1__bare": 0.8162734056221386,
+    "seg_f1_10": 0.4364032056466436,
+    "seg_f1_10__bare": 0.4422466422466423,
+    "seg_f1_25": 0.42005163019059055,
+    "seg_f1_25__bare": 0.4217338217338218,
+    "seg_f1_50": 0.2857002344598845,
+    "seg_f1_50__bare": 0.4217338217338218
+  },
+  "metrics_by_split": {
+    "test": {
+      "accuracy": 0.8152403282532239,
+      "edit_score": 36.71888893991112,
+      "jaccard": 0.5329958444021909,
+      "macro_f1": 0.6307380341321444,
+      "seg_f1_10": 0.4364032056466436,
+      "seg_f1_25": 0.42005163019059055,
+      "seg_f1_50": 0.2857002344598845
+    },
+    "unknown": {
+      "accuracy": 0.9504950495049505,
+      "edit_score": 34.166666666666664,
+      "jaccard": 0.7813188712598264,
+      "macro_f1": 0.8162734056221386,
+      "seg_f1_10": 0.4422466422466423,
+      "seg_f1_25": 0.4217338217338218,
+      "seg_f1_50": 0.4217338217338218
+    }
+  },
+  "notes": "# T1a region-token→工程（Tier-1 主力⭐ TAPIS/GraSP 型・②系統）\n\n凍結 Relation-DETR seed42 の object-query 埋め込み（クラス別 256-d, score 加重）を GAP(2048) に入力 → 素 causal TeCNO。\n勾配は交差させず凍結 region token を渡す。online/causal（未来不使用）。\n\n## 結果（best @epoch 30）\n- accuracy=0.9505 / macro_f1=0.8163\n- edit=34.17 / seg_f1@10/25/50=0.44/0.42/0.42\n\n## 構成\n- seed=42 epochs=50 lr=0.0005 in_dim=5888(=2048+3840) stages=2 layers=8 f_maps=64\n- server=efros / eval recipe=online_causal+jaccard_strict (PHASE_EVAL_PROTOCOL)\n\n## Δ\n- Δ_phase = (T1a − S4 base 0.8986±0.0034[lecun])。同一土台（凍結backbone/GAP/recipe/seed・neck無）。\n- **別サーバー実行時**: 分母は lecun 値流用、サーバー差を §8.0 明文化。\n- 3-seed 揃ったら paired-σ(対seed差) で §10.1 判定（|Δ|>paired-σ かつ同符号で有意）。\n",
+  "notion_page_id": null,
+  "path": "experiments/transfer/t1a_appearance_001_t1a_appearance_seed42",
+  "per_class": {
+    "anesthesia": 1.0,
+    "closure": 0.9609035621198958,
+    "design": 0.9801980198019802,
+    "disinfection": 0.0,
+    "dissection": 0.9568627450980391,
+    "dressing": 0.0,
+    "hemostasis": 0.8761904761904762,
+    "incision": 0.9397590361445782,
+    "irrigation": 0.0
+  },
+  "per_class_kind": "phase_metric",
+  "per_class_nan_classes": [],
+  "per_class_valid_count": 9,
+  "provenance": {
+    "commit": "from_git_commit_txt",
+    "epoch": "from_metrics_json",
+    "host": "from_server_txt",
+    "inferred_split": "not_determinable",
+    "per_class": "from_per_class_ap_json",
+    "seed": "from_dirname",
+    "split": "from_metric_key_prefix",
+    "step": "from_dirname"
+  },
+  "run_id": "t1a_appearance_001_t1a_appearance_seed42",
+  "seed": 42,
+  "seq": 1,
+  "split": "test",
+  "step": "t1a_appearance",
+  "subgroup": null
+}

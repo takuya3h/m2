@@ -1,0 +1,161 @@
+{
+  "aux_seeds": {},
+  "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-07-04T07:26:55+00:00\npython scripts/train_s4_tecno.py --seed 123 --eval-test\n",
+  "commit": "e542421b9cc96766edf57bb688cdf2e900ea332b",
+  "config_path": "experiments/phase1/s4_phase_baseline_059_frozen_tecno_phase_baseline_seed123/config.yaml",
+  "conflicting_bare_keys": [
+    {
+      "bare_value": 0.9095709570957096,
+      "by_split": {
+        "test": 0.7266119577960141
+      },
+      "key": "accuracy"
+    },
+    {
+      "bare_value": 43.055555555555564,
+      "by_split": {
+        "test": 54.906162176478375
+      },
+      "key": "edit_score"
+    },
+    {
+      "bare_value": 0.6786756230381387,
+      "by_split": {
+        "test": 0.3742670760006537
+      },
+      "key": "jaccard"
+    },
+    {
+      "bare_value": 0.7335901047786282,
+      "by_split": {
+        "test": 0.48915343306811154
+      },
+      "key": "macro_f1"
+    },
+    {
+      "bare_value": 0.5142450142450142,
+      "by_split": {
+        "test": 0.5851020408163264
+      },
+      "key": "seg_f1_10"
+    },
+    {
+      "bare_value": 0.5142450142450142,
+      "by_split": {
+        "test": 0.5620408163265306
+      },
+      "key": "seg_f1_25"
+    },
+    {
+      "bare_value": 0.4829059829059828,
+      "by_split": {
+        "test": 0.41954648526077093
+      },
+      "key": "seg_f1_50"
+    }
+  ],
+  "description": "frozen_tecno_phase_baseline",
+  "duplicate_bare_keys": [],
+  "epoch": 33,
+  "eval_recipe": {
+    "effective_batch_size": 1,
+    "gpu_count": 1,
+    "lr_scaling": "none",
+    "server_name": "efros",
+    "split_test_annotations": 12673,
+    "split_test_images": 4265,
+    "split_train_annotations": 32272,
+    "split_train_images": 9657,
+    "split_val_annotations": 4707,
+    "split_val_images": 1515,
+    "test_cfg": {
+      "backbone": "relation_detr_resnet50_frozen_seed42",
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "num_f_maps": 64,
+      "num_layers": 8,
+      "num_stages": 2,
+      "task": "phase",
+      "temporal_head": "tecno"
+    }
+  },
+  "eval_recipe_id": "e98ffddee042",
+  "excluded": false,
+  "exclusion_reason": null,
+  "gpu": null,
+  "group": "phase1",
+  "harvest_warnings": [],
+  "host": "efros",
+  "host_raw": "efros",
+  "inferred_split": null,
+  "ledger_key": "phase1__s4_phase_baseline_059_frozen_tecno_phase_baseline_seed123",
+  "metrics": {
+    "accuracy": 0.7266119577960141,
+    "accuracy__bare": 0.9095709570957096,
+    "edit_score": 54.906162176478375,
+    "edit_score__bare": 43.055555555555564,
+    "jaccard": 0.3742670760006537,
+    "jaccard__bare": 0.6786756230381387,
+    "macro_f1": 0.48915343306811154,
+    "macro_f1__bare": 0.7335901047786282,
+    "seg_f1_10": 0.5851020408163264,
+    "seg_f1_10__bare": 0.5142450142450142,
+    "seg_f1_25": 0.5620408163265306,
+    "seg_f1_25__bare": 0.5142450142450142,
+    "seg_f1_50": 0.41954648526077093,
+    "seg_f1_50__bare": 0.4829059829059828
+  },
+  "metrics_by_split": {
+    "test": {
+      "accuracy": 0.7266119577960141,
+      "edit_score": 54.906162176478375,
+      "jaccard": 0.3742670760006537,
+      "macro_f1": 0.48915343306811154,
+      "seg_f1_10": 0.5851020408163264,
+      "seg_f1_25": 0.5620408163265306,
+      "seg_f1_50": 0.41954648526077093
+    },
+    "unknown": {
+      "accuracy": 0.9095709570957096,
+      "edit_score": 43.055555555555564,
+      "jaccard": 0.6786756230381387,
+      "macro_f1": 0.7335901047786282,
+      "seg_f1_10": 0.5142450142450142,
+      "seg_f1_25": 0.5142450142450142,
+      "seg_f1_50": 0.4829059829059828
+    }
+  },
+  "notes": "# S4 phase baseline (frozen Relation-DETR + causal TeCNO)\n\n凍結源: Relation-DETR seed42 完走 ckpt（Stage1 GAP 2048-d をキャッシュ）。\nonline/causal（未来フレーム不使用）。S4 は結合手法から検出を引いたもの＝単独最適化しない。\n\n## 結果（best @epoch 33）\n- accuracy=0.9096 / macro_f1=0.7336\n- edit=43.06 / seg_f1@10/25/50=0.51/0.51/0.48\n\n## 構成\n- seed=123 epochs=50 lr=0.0005 stages=2 layers=8 f_maps=64\n- server=efros / eval recipe=online_causal+jaccard_strict (PHASE_EVAL_PROTOCOL)\n\n## 次\n- Δ_phase =（結合手法 − この S4）。同一土台（凍結backbone/特徴/recipe/seed）で比較する。\n",
+  "notion_page_id": null,
+  "path": "experiments/phase1/s4_phase_baseline_059_frozen_tecno_phase_baseline_seed123",
+  "per_class": {
+    "anesthesia": 0.968421052631579,
+    "closure": 0.9319552110249785,
+    "design": 1.0,
+    "disinfection": 0.0,
+    "dissection": 0.9350393700787402,
+    "dressing": 0.0,
+    "hemostasis": 0.40740740740740744,
+    "incision": 0.8923076923076922,
+    "irrigation": 0.0
+  },
+  "per_class_kind": "phase_metric",
+  "per_class_nan_classes": [],
+  "per_class_valid_count": 9,
+  "provenance": {
+    "commit": "from_git_commit_txt",
+    "epoch": "from_metrics_json",
+    "host": "from_server_txt",
+    "inferred_split": "not_determinable",
+    "per_class": "from_per_class_ap_json",
+    "seed": "from_dirname",
+    "split": "from_metric_key_prefix",
+    "step": "from_dirname"
+  },
+  "run_id": "s4_phase_baseline_059_frozen_tecno_phase_baseline_seed123",
+  "seed": 123,
+  "seq": 59,
+  "split": "test",
+  "step": "s4_phase_baseline",
+  "subgroup": null
+}

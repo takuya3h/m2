@@ -1,0 +1,99 @@
+{
+  "aux_seeds": {},
+  "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-05-25T15:58:39+00:00\npython /home/ubuntu/slocal2/m2/src/egosurgery/train.py stage=s0_tool_baseline model.detection_head=mask_dino seed=42 experiment.description=maskdino_bbox train.real_detector=true train.epochs=12 train.batch_size=2 train.lr_scaling_mode=linear logging.wandb_enabled=true\n",
+  "commit": "4fa9bfff33430a741d31df785413759deb0353b5",
+  "config_path": "experiments/baselines/s0_001_maskdino_bbox_seed42/config.yaml",
+  "conflicting_bare_keys": [],
+  "description": "maskdino_bbox",
+  "duplicate_bare_keys": [
+    "mAP"
+  ],
+  "epoch": 12,
+  "eval_recipe": {
+    "effective_batch_size": 4,
+    "gpu_count": 2,
+    "lr_scaling": "linear_x2",
+    "server_name": "aolab",
+    "split_test_annotations": 12673,
+    "split_test_images": 4265,
+    "split_train_annotations": 32272,
+    "split_train_images": 9657,
+    "split_val_annotations": 4707,
+    "split_val_images": 1515,
+    "test_cfg": {
+      "max_per_img": 300,
+      "nms_iou": 0.6,
+      "nms_pre": 3000,
+      "score_thr": 1e-08
+    }
+  },
+  "eval_recipe_id": "a63aecae1158",
+  "excluded": false,
+  "exclusion_reason": null,
+  "gpu": null,
+  "group": "baselines",
+  "harvest_warnings": [
+    "host 'aolab' は実サーバーを一意に特定できない。host は null にした。"
+  ],
+  "host": null,
+  "host_raw": "aolab",
+  "inferred_split": null,
+  "ledger_key": "baselines__s0_001_maskdino_bbox_seed42",
+  "metrics": {
+    "AP_common": 0.6021538461538462,
+    "AP_rare": 0.7625,
+    "mAP": 0.668,
+    "mAP_50": 0.793,
+    "mAP_75": 0.729
+  },
+  "metrics_by_split": {
+    "val": {
+      "AP_common": 0.6021538461538462,
+      "AP_rare": 0.7625,
+      "mAP": 0.668,
+      "mAP_50": 0.793,
+      "mAP_75": 0.729
+    }
+  },
+  "notes": "# s0_001_maskdino_bbox_seed42\n\n## 仮説\nCOCO 事前学習済み DINO (dino-4scale_r50, COCO 事前学習) — Mask DINO 枠の代替 を EgoSurgery-Tool（術具 15 クラス）へ fine-tune すれば、§2.5(a) の S0 基準点を実検出器で確立できる。\n\n## 実験設定\n- Detector: DINO (dino-4scale_r50, COCO 事前学習) — Mask DINO 枠の代替\n- Backbone/Neck: ResNet-50 + FPN（COCO 重みから転移、分類ヘッドのみ再初期化）\n- Epochs: 12 / batch=2 / seed=42\n- 評価: val split（/home/ubuntu/slocal2/m2/data/annotations/egosurgery_tool/instances_val.json）COCO mAP\n- パイプライン: mmdet 3.3.0 Runner（spec §2.1 の「Runner 不使用」からは逸脱。実 SOTA の確実な再現を優先した）\n\n## 結果\n- val mAP=66.80 / mAP_50=79.30 / mAP_75=72.90\n- AP_rare=76.25 / AP_common=60.22（best epoch=12）\n\n## 解釈\nper_class_ap.json と visualizations/confusion_matrix.png を参照。\n形状類似ペア（Forceps/Tweezers/Needle Holders/Bipolar Forceps）の\n誤分類傾向は混同行列で確認する。\n\n## 次の行動\n1. 3 seed の平均±標準偏差を /delta で集計し §2.5(a) 基準点として確定する。\n",
+  "notion_page_id": null,
+  "path": "experiments/baselines/s0_001_maskdino_bbox_seed42",
+  "per_class": {
+    "Bipolar Forceps": 0.577,
+    "Electric Cautery": 0.956,
+    "Forceps": 0.307,
+    "Gauze": 0.278,
+    "Hook": 0.58,
+    "Mouth Gag": 0.784,
+    "Needle Holders": 0.818,
+    "Raspatory": 0.473,
+    "Retractor": null,
+    "Scalpel": 0.883,
+    "Scissors": 0.652,
+    "Skewer": 0.899,
+    "Suction Cannula": 0.784,
+    "Syringe": 0.626,
+    "Tweezers": 0.736
+  },
+  "per_class_kind": "tool_ap",
+  "per_class_nan_classes": [
+    "Retractor"
+  ],
+  "per_class_valid_count": 14,
+  "provenance": {
+    "commit": "from_git_commit_txt",
+    "epoch": "from_metrics_json",
+    "host": "from_server_txt",
+    "inferred_split": "not_determinable",
+    "per_class": "from_per_class_ap_json",
+    "seed": "from_dirname",
+    "split": "from_metric_key_prefix",
+    "step": "from_dirname"
+  },
+  "run_id": "s0_001_maskdino_bbox_seed42",
+  "seed": 42,
+  "seq": 1,
+  "split": "val",
+  "step": "s0",
+  "subgroup": null
+}

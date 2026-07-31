@@ -1,0 +1,99 @@
+{
+  "aux_seeds": {},
+  "command": "#!/usr/bin/env bash\n# Relation-DETR (accelerate) 実行コマンド\n# seed=123\ncd /home/ubuntu/slocal2/m2/third_party/Relation-DETR && CUDA_VISIBLE_DEVICES=1 RELDETR_OUTPUT_DIR=/tmp/reldetr_work_s0_frozen_neck_seed123_20260618_191212 RELDETR_EVIDENCE_DIR=/tmp/reldetr_work_s0_frozen_neck_seed123_20260618_191212 RELDETR_S0FROZEN_INIT=/home/ubuntu/slocal2/m2/data/external/weights/relation_detr_s0frozen_init_seed42.pth RELDETR_NUM_EPOCHS=12 RELDETR_BATCH_SIZE=2 RELDETR_NUM_WORKERS=4 RELDETR_LR=1e-4 /home/ubuntu/slocal2/m2/.venv-relation-detr/bin/accelerate launch --num_processes 1 main.py --config-file configs/train_config_egosurgery_s0_frozen_neck.py --seed 123 --mixed-precision fp16\n",
+  "commit": "0129845290227b350ff79f02aa15f06824f444b4",
+  "config_path": null,
+  "conflicting_bare_keys": [],
+  "description": "relationdetr_s0frozen_neck_cocohead",
+  "duplicate_bare_keys": [
+    "mAP"
+  ],
+  "epoch": 12,
+  "eval_recipe": {
+    "description": "relationdetr_s0frozen_neck_cocohead",
+    "effective_batch_size": 2,
+    "gpu_count": 1,
+    "lr_scaling": "linear_x2",
+    "server_name": "lecun",
+    "split_test_annotations": 12673,
+    "split_test_images": 4265,
+    "split_train_annotations": 32272,
+    "split_train_images": 9657,
+    "split_val_annotations": 4707,
+    "split_val_images": 1515,
+    "test_cfg": {
+      "max_per_img": 300,
+      "nms_iou": null,
+      "nms_pre": null,
+      "note": "Relation-DETR topk (NMS-free), select_box_nums=300",
+      "score_thr": 0.0
+    }
+  },
+  "eval_recipe_id": "250424985fbf",
+  "excluded": false,
+  "exclusion_reason": null,
+  "gpu": null,
+  "group": "baselines",
+  "harvest_warnings": [],
+  "host": "lecun",
+  "host_raw": "lecun",
+  "inferred_split": null,
+  "ledger_key": "baselines__s0_frozen_005_relationdetr_s0frozen_neck_cocohead_seed123",
+  "metrics": {
+    "AP_common": 0.689405,
+    "AP_rare": 0.75773,
+    "mAP": 0.699166,
+    "mAP_50": 0.825,
+    "mAP_75": 0.747
+  },
+  "metrics_by_split": {
+    "val": {
+      "AP_common": 0.689405,
+      "AP_rare": 0.75773,
+      "mAP": 0.699166,
+      "mAP_50": 0.825,
+      "mAP_75": 0.747
+    }
+  },
+  "notes": "# s0_frozen_005_relationdetr_s0frozen_neck_cocohead_seed123\n\n検出器: Relation-DETR S0-frozen+neck (accelerate, torch 2.1.2+cu118, .venv-relation-detr)\nseed: 123\n\n## 結果\nmAP=0.6992 / AP_rare=0.7577 / AP_common=0.6894 (best epoch 12)\n\n## per-class AP\nCOCO mAP(0.50:0.95)。engine.py 改修で precision 全 IoU 平均を出力。\nRetractor 等 val 非存在クラスは NaN (AP_rare/common 平均から除外)。\n\n## 初期化\nS0-frozen′ init: Relation-DETR seed42 frozen backbone + COCO-init transformer/head + 共有 C5 線形 neck (trainable, zero-init, 1x1 2048->2048 residual). Backbone frozen freeze_indices=(0,1,2,3); trainable = neck/transformer/heads + c5_neck. trainable_total=29,435,040 (base 25,238,688 + c5_neck 4,196,352). ②特徴レベル系統の Δ_detection 分母。\n\n## tracking\nTensorBoard (train dir/tf_log)。wandb は未使用。\n",
+  "notion_page_id": null,
+  "path": "experiments/baselines/s0_frozen_005_relationdetr_s0frozen_neck_cocohead_seed123",
+  "per_class": {
+    "Bipolar Forceps": 0.7357202022878137,
+    "Electric Cautery": 0.9618343007408772,
+    "Forceps": 0.33633215816916173,
+    "Gauze": 0.27627993677103235,
+    "Hook": 0.5001719427026633,
+    "Mouth Gag": 0.7888830035003225,
+    "Needle Holders": 0.8357030438287684,
+    "Raspatory": 0.6837725316764861,
+    "Retractor": null,
+    "Scalpel": 0.9059060786650766,
+    "Scissors": 0.6801380035458526,
+    "Skewer": 0.923623497052952,
+    "Suction Cannula": 0.8154807305530938,
+    "Syringe": 0.5918373874412145,
+    "Tweezers": 0.7526398346065363
+  },
+  "per_class_kind": "tool_ap",
+  "per_class_nan_classes": [
+    "Retractor"
+  ],
+  "per_class_valid_count": 14,
+  "provenance": {
+    "commit": "from_git_commit_txt",
+    "epoch": "from_metrics_json",
+    "host": "from_server_txt",
+    "inferred_split": "not_determinable",
+    "per_class": "from_per_class_ap_json",
+    "seed": "from_dirname",
+    "split": "from_metric_key_prefix",
+    "step": "from_dirname"
+  },
+  "run_id": "s0_frozen_005_relationdetr_s0frozen_neck_cocohead_seed123",
+  "seed": 123,
+  "seq": 5,
+  "split": "val",
+  "step": "s0_frozen",
+  "subgroup": null
+}

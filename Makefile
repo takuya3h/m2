@@ -1,4 +1,4 @@
-.PHONY: setup test lint s0 s2 s4 s5 s6 eval delta
+.PHONY: setup test lint s0 s2 s4 s5 s6 eval delta ledger ledger-dry
 
 setup:
 	pip install -e ".[dev]"
@@ -37,6 +37,13 @@ delta:
 
 tables:
 	python scripts/export_paper_tables.py
+
+# experiments/ から横断インデックス ledger/ を収穫する（派生物・完全再生成可能）
+ledger:
+	python tools/harvest_ledger.py --write
+
+ledger-dry:
+	python tools/harvest_ledger.py
 
 clean:
 	find . -type d -name __pycache__ -exec rm -rf {} +

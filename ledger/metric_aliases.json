@@ -1,0 +1,42 @@
+{
+  "_comment": "指標キーの表記ゆれ統合表。Step 1 の実測 (573 run) に基づく。canonical は split 接頭辞を剥がした後の名前。",
+  "bare_key_policy": {
+    "_comment": "prefix 無しキー (例: mAP) は、prefix 付き (val/mAP) と値が一致すれば重複として捨てる。一致しなければ <canonical>__bare として両方保持し anomalies.md に記録する。"
+  },
+  "phase_metric_bases": [
+    "accuracy",
+    "edit_score",
+    "frame_acc_inline",
+    "jaccard",
+    "macro_f1",
+    "seg_f1_10",
+    "seg_f1_25",
+    "seg_f1_50"
+  ],
+  "slash_split_prefixes": {
+    "_comment": "スラッシュ形式は split を表す。例: val/mAP -> split=val, canonical=mAP",
+    "observed": [
+      "val"
+    ]
+  },
+  "sticky_variants": {
+    "_comment": "sticky_<metric> / sticky_test_<metric> / <metric>_sticky は sticky_<canonical> に統合",
+    "forms": [
+      "sticky_<metric>",
+      "sticky_test_<metric>",
+      "<metric>_sticky"
+    ]
+  },
+  "task_prefixes_not_split": {
+    "_comment": "★ split ではなくタスク名。phase_accuracy の phase を split と誤認しないこと。根拠: phase_accuracy と test_accuracy が同一 run に 27 件共存する。",
+    "observed": [
+      "phase"
+    ]
+  },
+  "underscore_split_prefixes": {
+    "_comment": "アンダースコア形式で split を表す接頭辞。test_accuracy -> split=test, canonical=accuracy",
+    "observed": [
+      "test"
+    ]
+  }
+}
