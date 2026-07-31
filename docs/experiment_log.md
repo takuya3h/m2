@@ -1312,3 +1312,57 @@ acc/macro-F1 を維持しつつ edit-score / seg-F1 を改善できるか。D-au
 - acc 改善パスは依然 **検出器強化（B2a 上限 +0.0214）**＝ lecun 実行（本 sandbox は mmcv/ckpt 不在で不可）。
 - 証跡: `experiments/transfer/{t1a_boundary_00[123],t1a_base_env_00[123]}` / 集計 `experiments/analysis/t1a_boundary/REPORT.md`
   / コード `scripts/{train_t1a_boundary,sweep_boundary_tau,compare_causal_decode,report_t1a_boundary}.py`。Notion Run台帳へ自動投稿。
+
+---
+
+## 2026-07-31: EgoSurgery-HTS hand_tool_seg データ再構築（案A）
+
+### 仮説
+既存 `EgoSurgery-HTS2/hand_tool_seg`（12,229 frames）は tool split に対する被覆率が
+低く（train 69.62% / val 88.71% / test 49.10%）、この不足フレームは
+別ソース（v1 = `OpenSurgery_Dataset/04_handtool/json_per_video/` の 18,397 frames）に
+実在する可能性がある。また v1 は `categories` 宣言が 4 件のため「4 クラス版」と
+思われていたが、annotation 本体には `category_id=5` が存在する可能性がある。
+
+### 実験
+1. `missing_{train,val,test}.txt` (5,276 frames) を v1 の annotated stems と突合
+2. v1 の `annotations[].category_id` 分布を全 26 セグメントで集計
+3. v1 単独から `build_hand_tool_seg_5cls.py`（案A）で tool split 整合の 5cls JSON を
+   再構築し、`egosurgery_hts2_tool_aligned/hand_tool_seg_v2/` に出力
+4. 生 `EgoSurgery_HTS2/hand_tool_seg/{val,test}.json` と tool split の集合比較で
+   val/test 入れ替わり問題を実データ確認
+
+### 結果
+- **回収率**: 5,276 missing frames のうち **4,816 (91.3%) が v1 に存在**
+  （train 89.7% / val 99.4% / test 92.7%）
+- **v1 のクラス数**: 24/26 セグメントに `category_id=5`（Two Hands Tool）が存在
+  合計 **2,021 件**。生成スクリプト `nomouthgagskewer_stat.py` の
+  `for i in range(1,5)` off-by-one バグにより、メタデータ宣言だけが 4 件だった
+- **再構築後の被覆率**: train **96.88%** (+27.3pt) / val **99.93%** (+11.2pt) /
+  test **96.30%** (+47.2pt)
+- **HTS2 val/test 入替り確認**: 生 HTS2/val (2,094f) の 100% が tool[test] に、
+  生 HTS2/test (1,344f) の 100% が tool[val] に属する。完全な swap を実データで確定
+- **真の欠落 460 frames**: v1 にも v2 にも無い。Mouth Gag / Skewer / 器具なしフレームが
+  パイプラインで構造的除外されたもの（149f Skewer / 102f Mouth Gag / 75f 器具なし 他）
+
+### 解釈
+1. **欠落の主因はデータ消失ではなくメタデータバグ**: v1 のデータ本体は 5cls で
+   完結しており、`{"id":5,"name":"Two Hands Tool"}` を追記するだけで復元可能
+2. **HTS2 の val/test 割当バグは案A の tool-split 整合再構築で自動解消**
+   （fusion 段階での出力ファイル名取り違えが原因）
+3. **真の 460f 欠落は SAM 再実行なしには埋まらない**（Mouth Gag / Skewer 除外ロジック）
+   → 学習時 loss mask で除外が現実解
+
+### 次
+- **loss mask を training loop へ配線**: `hand_tool_seg_v2/loss_mask/{train,val,test}.txt`
+  を Dataset で読み、該当 stem を hand_tool_seg タスクから除外
+- **experiments での切替**: 今後の Δ 実験で hand_tool_seg を使う場合は
+  `hand_tool_seg_v2/` を参照（旧 `hand_tool_seg/` は deprecate 相当）
+- **Notion `notion_ops.log_decision`** にパイプライン切替を記録（別途）
+- 証跡:
+  - 生成物: `data/hts_reconstruction/egosurgery_hts2_tool_aligned/hand_tool_seg_v2/{train,val,test,extra}.json` (計 18,397 frames)
+  - loss mask: `.../hand_tool_seg_v2/loss_mask/{train,val,test}.txt` (計 460 frames)
+  - README: `.../hand_tool_seg_v2/README.md`
+  - 発掘・根本原因調査: `data/hts_reconstruction/handoff_hts_seg_search/work/SUMMARY.md`
+  - 回収レポート: `data/hts_reconstruction/handoff_hts_seg_search/v1_recovery_report.md`
+  - 被覆調査: `data/annotations/egosurgery_hts_frame_coverage_report.md`
