@@ -1,0 +1,67 @@
+{
+  "aux_seeds": {},
+  "command": null,
+  "commit": "a697d90b889622dbc5476a22eee93c8b1cd7ddfa",
+  "config_path": null,
+  "conflicting_bare_keys": [],
+  "description": null,
+  "duplicate_bare_keys": [],
+  "epoch": null,
+  "eval_recipe": null,
+  "eval_recipe_id": null,
+  "excluded": false,
+  "exclusion_reason": null,
+  "gpu": null,
+  "group": "transfer",
+  "harvest_warnings": [
+    "run 名が命名規約 <step>_<seq3>_<desc>_seed<N> に一致しない: b2b_rescore_alpha0.5",
+    "per_class_ap.json が存在しない"
+  ],
+  "host": "lecun",
+  "host_raw": "lecun",
+  "inferred_split": null,
+  "ledger_key": "transfer__b2b_rescore_alpha0.5",
+  "metrics": {
+    "alpha": 0.5,
+    "delta_detection": -0.01185885799294184,
+    "denominator": "frozen (=S0-frozen, same eval)",
+    "mAP_baseline": 0.7301833657733415,
+    "mAP_rescored": 0.7183245077803997,
+    "method": "training_free_phase_prior_rescore",
+    "miss_ctx": 0
+  },
+  "metrics_by_split": {
+    "unknown": {
+      "alpha": 0.5,
+      "delta_detection": -0.01185885799294184,
+      "denominator": "frozen (=S0-frozen, same eval)",
+      "mAP_baseline": 0.7301833657733415,
+      "mAP_rescored": 0.7183245077803997,
+      "method": "training_free_phase_prior_rescore",
+      "miss_ctx": 0
+    }
+  },
+  "notes": "# B2b phase-prior re-scoring (alpha=0.5)\nΔ_detection=-0.0119 (baseline 0.7302 → rescored 0.7183). training-free.\n",
+  "notion_page_id": null,
+  "path": "experiments/transfer/b2b_rescore_alpha0.5",
+  "per_class": null,
+  "per_class_kind": null,
+  "per_class_nan_classes": [],
+  "per_class_valid_count": null,
+  "provenance": {
+    "commit": "from_git_commit_txt",
+    "epoch": "not_determinable",
+    "host": "from_server_txt",
+    "inferred_split": "not_determinable",
+    "per_class": "not_determinable",
+    "seed": "not_determinable",
+    "split": "not_determinable",
+    "step": "not_determinable"
+  },
+  "run_id": "b2b_rescore_alpha0.5",
+  "seed": null,
+  "seq": null,
+  "split": null,
+  "step": null,
+  "subgroup": null
+}

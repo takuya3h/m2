@@ -1,0 +1,66 @@
+{
+  "aux_seeds": {},
+  "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-06-21T22:16:19+00:00\npython scripts/postprocess_t1b.py\n",
+  "commit": "a697d90b889622dbc5476a22eee93c8b1cd7ddfa",
+  "config_path": "experiments/transfer/t1b_phasefilm_002_t1b_phasefilm_seed456/config.yaml",
+  "conflicting_bare_keys": [],
+  "description": "t1b_phasefilm",
+  "duplicate_bare_keys": [],
+  "epoch": -1,
+  "eval_recipe": null,
+  "eval_recipe_id": null,
+  "excluded": false,
+  "exclusion_reason": null,
+  "gpu": null,
+  "group": "transfer",
+  "harvest_warnings": [
+    "per_class_ap.json が空 ({})"
+  ],
+  "host": "lecun",
+  "host_raw": "lecun",
+  "inferred_split": null,
+  "ledger_key": "transfer__t1b_phasefilm_002_t1b_phasefilm_seed456",
+  "metrics": {
+    "control_init_mAP": 0.721658691470358,
+    "control_mAP": 0.721658691470358,
+    "delta_control": 0.0,
+    "delta_detection": 0.0,
+    "init_mAP": 0.721658691470358,
+    "injection_effect": 0.0,
+    "mAP": 0.721658691470358
+  },
+  "metrics_by_split": {
+    "unknown": {
+      "control_init_mAP": 0.721658691470358,
+      "control_mAP": 0.721658691470358,
+      "delta_control": 0.0,
+      "delta_detection": 0.0,
+      "init_mAP": 0.721658691470358,
+      "injection_effect": 0.0,
+      "mAP": 0.721658691470358
+    }
+  },
+  "notes": "# T1b Phase→Det FiLM 注入 (seed456)\n\nwarm-start=t1b_seed456 / 対照=有。\n- 注入 mAP=0.7217 (init 0.7217)\n- Δ_inj=+0.0000 / Δ_ctrl=+0.0000 / 注入純効果=+0.0000\n\n分母=init mAP（FiLM恒等=warm-start S0-frozen, 同一eval）。①学習FiLM phase→det。Δ_det=best−init（init=warm-start S0-frozen, 同一eval）/ 注入純効果=Δ_inj−Δ_ctrl\n",
+  "notion_page_id": null,
+  "path": "experiments/transfer/t1b_phasefilm_002_t1b_phasefilm_seed456",
+  "per_class": {},
+  "per_class_kind": null,
+  "per_class_nan_classes": [],
+  "per_class_valid_count": 0,
+  "provenance": {
+    "commit": "from_git_commit_txt",
+    "epoch": "from_metrics_json",
+    "host": "from_server_txt",
+    "inferred_split": "not_determinable",
+    "per_class": "from_per_class_ap_json",
+    "seed": "from_dirname",
+    "split": "not_determinable",
+    "step": "from_dirname"
+  },
+  "run_id": "t1b_phasefilm_002_t1b_phasefilm_seed456",
+  "seed": 456,
+  "seq": 2,
+  "split": null,
+  "step": "t1b_phasefilm",
+  "subgroup": null
+}

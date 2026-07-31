@@ -1,0 +1,81 @@
+{
+  "aux_seeds": {},
+  "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-05-23T04:59:39+00:00\npython /home/ubuntu/slocal2/egosurgery_multitask/src/egosurgery/train.py stage=s0_tool_baseline model.detection_head=varifocanet seed=456 experiment.description=varifocanet_bbox train.real_detector=true logging.wandb_enabled=true\n",
+  "commit": "d1bcc8a3ca3fa1b19ddfda986fe90105e70feefb",
+  "config_path": "experiments/baselines/_wrong_split_8_2_3/s0_006_varifocanet_bbox_seed456/config.yaml",
+  "conflicting_bare_keys": [],
+  "description": "varifocanet_bbox",
+  "duplicate_bare_keys": [
+    "mAP"
+  ],
+  "epoch": 9,
+  "eval_recipe": null,
+  "eval_recipe_id": null,
+  "excluded": true,
+  "exclusion_reason": "known_bad_split",
+  "gpu": null,
+  "group": "baselines",
+  "harvest_warnings": [],
+  "host": null,
+  "host_raw": null,
+  "inferred_split": null,
+  "ledger_key": "baselines___wrong_split_8_2_3__s0_006_varifocanet_bbox_seed456",
+  "metrics": {
+    "AP_common": 0.26316666666666666,
+    "AP_rare": 0.125,
+    "mAP": 0.272,
+    "mAP_50": 0.399,
+    "mAP_75": 0.293
+  },
+  "metrics_by_split": {
+    "val": {
+      "AP_common": 0.26316666666666666,
+      "AP_rare": 0.125,
+      "mAP": 0.272,
+      "mAP_50": 0.399,
+      "mAP_75": 0.293
+    }
+  },
+  "notes": "# s0_006_varifocanet_bbox_seed456\n\n## 仮説\nCOCO 事前学習済み VarifocalNet (vfnet_r50_fpn, COCO 事前学習) を EgoSurgery-Tool（術具 15 クラス）へ fine-tune すれば、§2.5(a) の S0 基準点を実検出器で確立できる。\n\n## 実験設定\n- Detector: VarifocalNet (vfnet_r50_fpn, COCO 事前学習)\n- Backbone/Neck: ResNet-50 + FPN（COCO 重みから転移、分類ヘッドのみ再初期化）\n- Epochs: 12 / batch=4 / seed=456\n- 評価: val split（/home/ubuntu/slocal2/egosurgery_multitask/data/annotations/egosurgery_tool/instances_val.json）COCO mAP\n- パイプライン: mmdet 3.3.0 Runner（spec §2.1 の「Runner 不使用」からは逸脱。実 SOTA の確実な再現を優先した）\n\n## 結果\n- val mAP=27.20 / mAP_50=39.90 / mAP_75=29.30\n- AP_rare=12.50 / AP_common=26.32（best epoch=9）\n- 完了判定 #4（VarifocalNet mAP ≥ 45.8）: val mAP=27.20 → **未達**\n\n## 解釈\nper_class_ap.json と visualizations/confusion_matrix.png を参照。\n形状類似ペア（Forceps/Tweezers/Needle Holders/Bipolar Forceps）の\n誤分類傾向は混同行列で確認する。\n\n## 次の行動\n1. 3 seed の平均±標準偏差を /delta で集計し §2.5(a) 基準点として確定する。\n",
+  "notion_page_id": null,
+  "path": "experiments/baselines/_wrong_split_8_2_3/s0_006_varifocanet_bbox_seed456",
+  "per_class": {
+    "Bipolar Forceps": 0.002,
+    "Electric Cautery": 0.418,
+    "Forceps": 0.01,
+    "Gauze": 0.111,
+    "Hook": 0.446,
+    "Mouth Gag": null,
+    "Needle Holders": 0.0,
+    "Raspatory": 0.308,
+    "Retractor": 0.057,
+    "Scalpel": 0.627,
+    "Scissors": 0.276,
+    "Skewer": null,
+    "Suction Cannula": 0.461,
+    "Syringe": 0.365,
+    "Tweezers": 0.452
+  },
+  "per_class_kind": "tool_ap",
+  "per_class_nan_classes": [
+    "Mouth Gag",
+    "Skewer"
+  ],
+  "per_class_valid_count": 13,
+  "provenance": {
+    "commit": "from_git_commit_txt",
+    "epoch": "from_metrics_json",
+    "host": "not_determinable",
+    "inferred_split": "not_determinable",
+    "per_class": "from_per_class_ap_json",
+    "seed": "from_dirname",
+    "split": "from_metric_key_prefix",
+    "step": "from_dirname"
+  },
+  "run_id": "s0_006_varifocanet_bbox_seed456",
+  "seed": 456,
+  "seq": 6,
+  "split": "val",
+  "step": "s0",
+  "subgroup": "_wrong_split_8_2_3"
+}
