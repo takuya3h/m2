@@ -1,5 +1,4 @@
 {
-  "aux_seeds": {},
   "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-07-03T10:20:26+00:00\npython scripts/train_b2a.py --tool-source pred --seed 123\n",
   "commit": "bd0609749afdfa2a356ef625a73628cddf38d4a9",
   "config_path": "experiments/transfer/b2a_det2phase_toolpresence_015_b2a_det2phase_toolpresence_seed123/config.yaml",
@@ -40,7 +39,6 @@
   "harvest_warnings": [],
   "host": "efros",
   "host_raw": "efros",
-  "inferred_split": null,
   "ledger_key": "transfer__b2a_det2phase_toolpresence_015_b2a_det2phase_toolpresence_seed123",
   "metrics": {
     "accuracy": 0.935973597359736,
@@ -52,7 +50,7 @@
     "seg_f1_50": 0.443859649122807
   },
   "metrics_by_split": {
-    "unknown": {
+    "val": {
       "accuracy": 0.935973597359736,
       "edit_score": 44.44444444444445,
       "jaccard": 0.7541623607342787,
@@ -76,23 +74,29 @@
     "incision": 0.9393939393939394,
     "irrigation": 0.0
   },
-  "per_class_kind": "phase_metric",
+  "per_class_kind": "phase",
+  "per_class_metric": "F1",
   "per_class_nan_classes": [],
+  "per_class_source": "experiments/transfer/b2a_det2phase_toolpresence_015_b2a_det2phase_toolpresence_seed123/per_class_ap.json",
   "per_class_valid_count": 9,
   "provenance": {
     "commit": "from_git_commit_txt",
     "epoch": "from_metrics_json",
     "host": "from_server_txt",
-    "inferred_split": "not_determinable",
     "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
     "seed": "from_dirname",
-    "split": "not_determinable",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "from_metric_key_prefix",
     "step": "from_dirname"
   },
   "run_id": "b2a_det2phase_toolpresence_015_b2a_det2phase_toolpresence_seed123",
   "seed": 123,
+  "seed_detector": null,
+  "seed_phase": null,
   "seq": 15,
-  "split": null,
+  "split": "val",
   "step": "b2a_det2phase_toolpresence",
   "subgroup": null
 }

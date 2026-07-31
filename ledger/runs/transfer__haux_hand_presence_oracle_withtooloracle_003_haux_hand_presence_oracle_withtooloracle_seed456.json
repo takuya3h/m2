@@ -1,5 +1,4 @@
 {
-  "aux_seeds": {},
   "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-07-02T07:24:51+00:00\npython scripts/train_haux.py --hand-feature-type presence --hand-source oracle --with-tool --tool-source oracle --seed 456\n",
   "commit": "1a52c6fde8120bb62eba920ad3c3d8882f309b72",
   "config_path": "experiments/transfer/haux_hand_presence_oracle_withtooloracle_003_haux_hand_presence_oracle_withtooloracle_seed456/config.yaml",
@@ -42,7 +41,6 @@
   "harvest_warnings": [],
   "host": "efros",
   "host_raw": "efros",
-  "inferred_split": null,
   "ledger_key": "transfer__haux_hand_presence_oracle_withtooloracle_003_haux_hand_presence_oracle_withtooloracle_seed456",
   "metrics": {
     "accuracy": 0.9584158415841584,
@@ -54,7 +52,7 @@
     "seg_f1_50": 0.6370370370370372
   },
   "metrics_by_split": {
-    "unknown": {
+    "val": {
       "accuracy": 0.9584158415841584,
       "edit_score": 55.52380952380952,
       "jaccard": 0.7975680241803478,
@@ -78,23 +76,29 @@
     "incision": 0.9583333333333333,
     "irrigation": 0.0
   },
-  "per_class_kind": "phase_metric",
+  "per_class_kind": "phase",
+  "per_class_metric": "F1",
   "per_class_nan_classes": [],
+  "per_class_source": "experiments/transfer/haux_hand_presence_oracle_withtooloracle_003_haux_hand_presence_oracle_withtooloracle_seed456/per_class_ap.json",
   "per_class_valid_count": 9,
   "provenance": {
     "commit": "from_git_commit_txt",
     "epoch": "from_metrics_json",
     "host": "from_server_txt",
-    "inferred_split": "not_determinable",
     "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
     "seed": "from_dirname",
-    "split": "not_determinable",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "from_metric_key_prefix",
     "step": "from_dirname"
   },
   "run_id": "haux_hand_presence_oracle_withtooloracle_003_haux_hand_presence_oracle_withtooloracle_seed456",
   "seed": 456,
+  "seed_detector": null,
+  "seed_phase": null,
   "seq": 3,
-  "split": null,
+  "split": "val",
   "step": "haux_hand_presence_oracle_withtooloracle",
   "subgroup": null
 }

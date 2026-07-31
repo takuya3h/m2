@@ -200,7 +200,8 @@ def parse_run_name(name: str) -> tuple[dict[str, Any], list[str]]:
         "seq": None,
         "description": None,
         "seed": None,
-        "aux_seeds": {},
+        "seed_detector": None,
+        "seed_phase": None,
     }
     m = RUN_NAME_RE.match(name)
     if not m:
@@ -211,13 +212,20 @@ def parse_run_name(name: str) -> tuple[dict[str, Any], list[str]]:
     out["description"] = m.group("desc")
     out["seed"] = int(m.group("seed"))
 
-    # det42 / p123 のような補助 seed。末尾 seed とは別物なので分けて保持する。
+    # det42 / p123 のような補助 seed。
+    # 後段の paired 統計では比較単位が (検出器 seed, 工程 seed) の組であり、
+    # 末尾 seed だけでは基準点を特定できない。汎用 dict や provenance の文字列に
+    # 落とすと機械的に結合できなくなるため、専用フィールドに分けて保持する。
     aux = {k: int(v) for k, v in AUX_SEED_RE.findall(name)}
+    if "det" in aux:
+        out["seed_detector"] = aux["det"]
+    if "p" in aux:
+        out["seed_phase"] = aux["p"]
     if aux:
-        out["aux_seeds"] = aux
         warnings.append(
             f"ディレクトリ名に補助 seed {aux} が含まれる。"
-            f"seed には末尾の seed{out['seed']} のみを採用した。"
+            f"seed には末尾の seed{out['seed']} のみを採用し、"
+            f"det/p は seed_detector / seed_phase に分離した。"
         )
     return out, warnings
 
@@ -235,8 +243,13 @@ def normalize_metric_key(key: str) -> dict[str, Any]:
         if head in UNDERSCORE_SPLIT_PREFIXES and rest in PHASE_METRIC_BASES:
             return {"canonical": rest, "split": head, "task": "phase", "form": "underscore_split"}
         if head == "phase" and rest in PHASE_METRIC_BASES:
-            # phase_ は split ではなくタスク名
-            return {"canonical": rest, "split": None, "task": "phase", "form": "task_prefix"}
+            # phase_ は split ではなくタスク名。ただし split 自体は学習スクリプトの
+            # コードから確定できる: 全 7 本が best = {**val, ...} で val を採る。
+            #   scripts/train_{s4_tecno,b2a,t1a,haux,taux,t1a_boundary,
+            #                  t1a_regiontraj}.py
+            # 対になる test_* は k.replace("phase_", "test_") で書かれる。
+            return {"canonical": rest, "split": "val", "task": "phase",
+                    "form": "task_prefix_val_by_script"}
         if head == "sticky":
             # sticky_test_accuracy / sticky_accuracy
             sub = normalize_metric_key(rest)
@@ -325,11 +338,25 @@ def harvest_metrics(raw: Any) -> dict[str, Any]:
             flat[f"{canon}__bare"] = value
             by_split["unknown"][canon] = value
 
-    # run 単位の split を決める。証拠が無ければ null。推測しない。
-    evidence = {s for s in by_split if s not in ("unknown",)}
+    # run 単位の split を決める。証拠が無ければ null。推測はしない。
+    #
+    # val と test が共存する run は「val で best を選び、その重みを test でも評価した」
+    # ものであり曖昧ではない。学習スクリプトのコードが一次証拠:
+    #   best = {**val, ...}                        -> primary は val
+    #   test_scalars[k.replace("phase_", "test_")] -> test は --eval-test の追加評価
+    # したがって run 単位の split（= primary な指標の由来）は val で確定する。
+    # 両方の値は metrics_by_split に保持しているので情報は失われない。
+    evidence = {s for s in by_split if s != "unknown"}
     if len(evidence) == 1:
         result["split"] = next(iter(evidence))
         result["split_provenance"] = "from_metric_key_prefix"
+    elif evidence == {"val", "test"}:
+        result["split"] = "val"
+        result["split_provenance"] = "primary_val_by_training_script"
+        result["warnings"].append(
+            "val と test の指標が共存する。primary（best 選択元）は val。"
+            "test 側は metrics_by_split['test'] に保持している。"
+        )
     elif len(evidence) > 1:
         result["warnings"].append(
             f"複数 split の指標が同一 run に共存: {sorted(evidence)}。split は null にした。"
@@ -343,23 +370,64 @@ def harvest_metrics(raw: Any) -> dict[str, Any]:
     return result
 
 
-def infer_split_from_recipe(recipe: dict[str, Any] | None) -> tuple[str | None, str]:
-    """eval_recipe.eval_split があればそれを使う。無ければ推測しない。
+# split を確定するための一次証拠。eval_recipe の split_*_images からの逆引きは
+# 採用しない (3 split 全ての枚数が常に記録されており、どれを使ったかの情報ではない)。
+_SPLIT_ARG_RE = re.compile(r"--(?:eval[-_])?split[= ]+(train|val|test)\b")
+_SPLIT_ANN_RE = re.compile(r"instances_(train|val|test)\.json")
+_EVAL_TEST_FLAG_RE = re.compile(r"--eval[-_]test\b")
 
-    参考値であり、権威ある `split` とは別カラムに入れる。
+
+def split_from_primary_evidence(
+    recipe: dict[str, Any] | None,
+    command: str | None,
+    config_text: str | None,
+) -> tuple[str | None, str]:
+    """command.sh / config.yaml / eval_split キーという一次証拠から split を読む。
+
+    優先順:
+      (c) metrics.json の eval_recipe.eval_split  … 最も明示的
+      (a) command.sh の --split / instances_*.json
+      (b) config.yaml の ann_file / instances_*.json
+    いずれからも取れなければ None (推測しない)。
     """
-    if not isinstance(recipe, dict):
-        return None, "not_determinable"
-    v = recipe.get("eval_split")
-    if isinstance(v, str) and v:
-        return v, "from_eval_recipe_eval_split"
+    if isinstance(recipe, dict):
+        v = recipe.get("eval_split")
+        if isinstance(v, str) and v in {"train", "val", "test"}:
+            return v, "from_eval_split_key"
+
+    if command:
+        m = _SPLIT_ARG_RE.search(command)
+        if m:
+            return m.group(1), "from_command_sh"
+        found = set(_SPLIT_ANN_RE.findall(command))
+        if len(found) == 1:
+            return found.pop(), "from_command_sh"
+
+    if config_text:
+        found = set(_SPLIT_ANN_RE.findall(config_text))
+        if len(found) == 1:
+            return found.pop(), "from_config_yaml"
+
     return None, "not_determinable"
 
 
 def harvest_per_class(path: Path) -> dict[str, Any]:
+    """per_class_ap.json を読み、kind / metric / source を分けて確定する。
+
+    ファイル名は per_class_ap.json だが **中身が F1 の群が 500 run ある**。
+    kind だけでは事故を防げないため metric を明示的に持たせる。
+
+    実測根拠:
+      - 9 クラス (工程名)  … scripts/train_{b2a,t1a,s4_tecno,haux,taux,
+        t1a_boundary,t1a_regiontraj}.py が best.get("phase_per_class_f1", {}) を
+        log_per_class_ap() に渡している  -> metric = "F1"
+      - 15 クラス (術具名) … per_class_coco_map / COCOeval.precision 由来 -> "AP"
+    """
     out: dict[str, Any] = {
         "per_class": None,
         "per_class_kind": None,
+        "per_class_metric": None,
+        "per_class_source": None,
         "per_class_nan_classes": [],
         "per_class_valid_count": None,
         "warnings": [],
@@ -367,6 +435,7 @@ def harvest_per_class(path: Path) -> dict[str, Any]:
     if not path.exists():
         out["warnings"].append("per_class_ap.json が存在しない")
         return out
+    out["per_class_source"] = str(path.relative_to(REPO_ROOT))
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except Exception as exc:  # noqa: BLE001
@@ -383,15 +452,18 @@ def harvest_per_class(path: Path) -> dict[str, Any]:
 
     keys = frozenset(data)
     if keys == TOOL_CLASS_SET:
-        out["per_class_kind"] = "tool_ap"
+        out["per_class_kind"] = "tool"
+        out["per_class_metric"] = "AP"
     elif keys == PHASE_CLASS_SET:
-        # ファイル名は per_class_ap.json だが中身は工程別指標 (AP ではない)。
-        out["per_class_kind"] = "phase_metric"
+        # ファイル名は per_class_ap.json だが中身は工程別 F1 (AP ではない)。
+        out["per_class_kind"] = "phase"
+        out["per_class_metric"] = "F1"
     else:
         out["per_class_kind"] = "unknown"
+        out["per_class_metric"] = "unknown"
         out["warnings"].append(
             f"per_class_ap.json のクラス集合が既知の 2 体系のいずれとも一致しない "
-            f"({len(keys)} クラス)"
+            f"({len(keys)} クラス) -> metric を確定できないため unknown"
         )
 
     nan_classes = sorted(k for k, v in data.items() if _is_nan(v))
@@ -498,18 +570,36 @@ def build_run_record(run_dir: Path) -> dict[str, Any]:
     host = normalize_host(server_txt, m["eval_recipe"])
     warnings.extend(host["warnings"])
 
-    inferred_split, inferred_prov = infer_split_from_recipe(m["eval_recipe"])
-
     commit_txt = _read_text(run_dir / "git_commit.txt")
     commit = commit_txt.strip().split("\n")[0] if commit_txt else None
     command = _read_text(run_dir / "command.sh")
     notes = _read_text(run_dir / "notes.md")
-    config_path = str(rel / "config.yaml") if (run_dir / "config.yaml").exists() else None
+    config_file = run_dir / "config.yaml"
+    config_path = str(rel / "config.yaml") if config_file.exists() else None
+
+    # split の確定。指標キー形式で決まらなかった場合のみ、command.sh / config.yaml /
+    # eval_split キーという一次証拠を読む。いずれも事実であり推測ではない。
+    split = m["split"]
+    split_prov = m["split_provenance"]
+    if split is None:
+        split, split_prov = split_from_primary_evidence(
+            m["eval_recipe"], command, _read_text(config_file) if config_file.exists() else None
+        )
 
     provenance["seed"] = "from_dirname" if name_info["seed"] is not None else "not_determinable"
+    provenance["seed_detector"] = (
+        "from_dirname_det_token" if name_info["seed_detector"] is not None else "not_determinable"
+    )
+    provenance["seed_phase"] = (
+        "from_dirname_p_token" if name_info["seed_phase"] is not None else "not_determinable"
+    )
     provenance["step"] = "from_dirname" if name_info["step"] else "not_determinable"
-    provenance["split"] = m["split_provenance"]
-    provenance["inferred_split"] = inferred_prov
+    provenance["split"] = split_prov
+    provenance["per_class_metric"] = (
+        "from_class_set_and_writer_script"
+        if pc["per_class_metric"] in {"AP", "F1"}
+        else "not_determinable"
+    )
     provenance["host"] = host["provenance"]
     provenance["epoch"] = "from_metrics_json" if m["epoch"] is not None else "not_determinable"
     provenance["commit"] = "from_git_commit_txt" if commit else "not_determinable"
@@ -529,13 +619,15 @@ def build_run_record(run_dir: Path) -> dict[str, Any]:
         "seq": name_info["seq"],
         "description": name_info["description"],
         "seed": name_info["seed"],
-        "aux_seeds": name_info["aux_seeds"],
-        "split": m["split"],
-        "inferred_split": inferred_split,
+        "seed_detector": name_info["seed_detector"],
+        "seed_phase": name_info["seed_phase"],
+        "split": split,
         "metrics": m["metrics"],
         "metrics_by_split": m["metrics_by_split"],
         "per_class": pc["per_class"],
         "per_class_kind": pc["per_class_kind"],
+        "per_class_metric": pc["per_class_metric"],
+        "per_class_source": pc["per_class_source"],
         "per_class_nan_classes": pc["per_class_nan_classes"],
         "per_class_valid_count": pc["per_class_valid_count"],
         "eval_recipe": m["eval_recipe"],
@@ -572,9 +664,12 @@ SCALAR_COLUMNS = [
     "seq",
     "description",
     "seed",
+    "seed_detector",
+    "seed_phase",
     "split",
-    "inferred_split",
     "per_class_kind",
+    "per_class_metric",
+    "per_class_source",
     "per_class_valid_count",
     "eval_recipe_id",
     "host",
@@ -742,6 +837,18 @@ def build_anomalies(records: list[dict[str, Any]], nonstandard: list[tuple[str, 
         paths = sorted({str(Path(r["path"]).parent) for r in rs})
         add(f"| `{reason}` | {len(rs)} | {', '.join(f'`{p}`' for p in paths)} |")
     add("")
+    add("### 1.1 `phase0/_failed_s3_weighted/` の 6 run — 運用上の欠陥")
+    add("")
+    add("**repo 上で失敗が確認できる唯一の run 群だが、Notion 実験Run台帳では")
+    add("`Status='failed'` が 616 行中 0 件。失敗が台帳に反映されない運用上の欠陥がある。**")
+    add("")
+    add("- 6 run とも `metrics.json` が空 `{}` で、学習が完走していない")
+    add("- うち 3 つ（`_004_partial` / `_005_partial` / `_006_partial`）は命名規約にも従わない")
+    add("- 成功 run だけが台帳に載る運用では、失敗率・試行回数・打ち切り理由を")
+    add("  後から復元できない。Δ の解釈（何回試して何回失敗したか）が検証不能になる")
+    add("- 対処案: `ExperimentManager` に失敗時の Status 書き込みを配線する、")
+    add("  または収穫時に `metrics.json` 空を failed として台帳へ補完投稿する")
+    add("")
 
     add("## 2. split を確定できなかった run")
     add("")
@@ -783,17 +890,39 @@ def build_anomalies(records: list[dict[str, Any]], nonstandard: list[tuple[str, 
     add("ファイル名は `per_class_ap.json` だが、中身は 2 つの異なる体系が混在する。")
     add("**横断比較の際に混ぜてはならない。**")
     add("")
-    kinds = Counter(r["per_class_kind"] for r in records)
-    add("| per_class_kind | runs | 内容 |")
-    add("|---|---:|---|")
+    add("**ファイル名が `per_class_ap.json` でありながら中身が F1 の群があるため、")
+    add("`per_class_kind` だけでなく `per_class_metric` を必ず参照すること。**")
+    add("`per_class_source` に読み取り元の相対パスを保持している。")
+    add("")
+    km = Counter((r["per_class_kind"], r["per_class_metric"]) for r in records)
+    add("| per_class_kind | per_class_metric | runs | 内容 | 根拠 |")
+    add("|---|---|---:|---|---|")
     desc = {
-        "tool_ap": "15 クラスの術具 AP（本来の per-class AP）",
-        "phase_metric": "9 クラスの工程別指標（AP ではない。F1 の可能性が高い）",
-        "unknown": "既知の 2 体系のいずれとも一致しない",
-        None: "per_class_ap.json が無い・空・パース失敗",
+        ("tool", "AP"): (
+            "15 クラスの術具 AP",
+            "`per_class_coco_map` / `COCOeval.precision` 由来",
+        ),
+        ("phase", "F1"): (
+            "9 クラスの工程別 **F1**（AP ではない）",
+            "`scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が "
+            "`best.get(\"phase_per_class_f1\", {})` を `log_per_class_ap()` に渡している",
+        ),
+        ("unknown", "unknown"): ("既知の 2 体系のいずれとも一致しない", "確定不能"),
+        (None, None): ("`per_class_ap.json` が無い・空・パース失敗", "—"),
     }
-    for k, v in sorted(kinds.items(), key=lambda x: (-x[1], str(x[0]))):
-        add(f"| `{k}` | {v} | {desc.get(k, '')} |")
+    for k, v in sorted(km.items(), key=lambda x: (-x[1], str(x[0]))):
+        d, why = desc.get(k, ("", ""))
+        add(f"| `{k[0]}` | `{k[1]}` | {v} | {d} | {why} |")
+    add("")
+    unk = [r for r in records if r["per_class_metric"] == "unknown"]
+    add(f"### metric を確定できなかった run: {len(unk)}")
+    add("")
+    if unk:
+        for r in sorted(unk, key=lambda x: x["path"]):
+            n = len(r["per_class"] or {})
+            add(f"- `{r['path']}`（{n} クラス）")
+    else:
+        add("なし。")
     add("")
 
     add("## 5. NaN を含む run")
@@ -844,19 +973,24 @@ def build_anomalies(records: list[dict[str, Any]], nonstandard: list[tuple[str, 
     add("## 7. ディレクトリ名に補助 seed を含む run")
     add("")
     add("`det42` / `p123` のように、末尾の `seed<N>` とは別の seed が名前に含まれる run。")
-    add("`seed` フィールドには**末尾の `seed<N>` のみ**を採用し、補助 seed は")
-    add("`aux_seeds` に分けて保持している。")
+    add("後段の paired 統計では比較単位が **(検出器 seed, 工程 seed) の組**であり、")
+    add("末尾 seed だけでは基準点を特定できない。機械的に結合できるよう")
+    add("`seed_detector` / `seed_phase` の専用フィールドに分離している。")
     add("")
-    aux = [r for r in records if r["aux_seeds"]]
+    aux = [r for r in records if r["seed_detector"] is not None or r["seed_phase"] is not None]
     add(f"該当 {len(aux)} run")
     add("")
     if aux:
-        add("| path | seed (採用) | aux_seeds |")
-        add("|---|---:|---|")
+        add("| path | seed (末尾) | seed_detector | seed_phase |")
+        add("|---|---:|---:|---:|")
         for r in sorted(aux, key=lambda x: x["path"])[:40]:
-            add(f"| `{r['path']}` | {r['seed']} | `{json.dumps(r['aux_seeds'], sort_keys=True)}` |")
+            add(
+                f"| `{r['path']}` | {r['seed']} | "
+                f"{r['seed_detector'] if r['seed_detector'] is not None else '—'} | "
+                f"{r['seed_phase'] if r['seed_phase'] is not None else '—'} |"
+            )
         if len(aux) > 40:
-            add(f"| … 他 {len(aux) - 40} 件 | | |")
+            add(f"| … 他 {len(aux) - 40} 件 | | | |")
     add("")
 
     add("## 8. prefix 無しキーと prefix 付きキーの値が食い違った run")
@@ -874,11 +1008,43 @@ def build_anomalies(records: list[dict[str, Any]], nonstandard: list[tuple[str, 
     add("**取りこぼした run 数は 0**（これらの配下に `metrics.json` は 1 つも無い）。")
     add("個別 adapter は次段階に回す。")
     add("")
-    add("| group | ファイル数 | 備考 |")
-    add("|---|---:|---|")
+    add("| group | ファイル数 | 中身の種別 | 術具 per-class 指標 |")
+    add("|---|---:|---|---|")
+    kindmap = {
+        "analysis": (
+            "EDA レポート / 図 (png) / CSV / JSON",
+            "**あり**: `detector_sanity/reldetr_seed42_val_perclass.json` "
+            "(COCO 形式 `AP`/`AP50`/`AP75`/`AP_s`/`AP_m` 等 13 キー)、"
+            "`signature_subset_detector_compare/results.json` (`per_class` キー)",
+        ),
+        "detector_improve": (
+            "`label_names.txt` / `val_perclass.json`",
+            "**あり**: `augstrong_seed42/val_perclass.json` (COCO 形式 13 キー)",
+        ),
+        "audit": (
+            "`audit_report.json` × 3",
+            "なし (`inject` / `trainable` / `n_trainable_params` 等の学習設定監査)",
+        ),
+        "g2_main_2026-07-29": (
+            "`csv/` `json/` `prereg/` `HANDOVER_lecun.md`",
+            "なし (`f_roi_stats_{val,test}.json` は ROI 統計)",
+        ),
+        "ablations": ("`.gitkeep` のみ", "未着手 scaffold"),
+        "final": ("`.gitkeep` のみ", "未着手 scaffold"),
+    }
     for name, n in nonstandard:
-        note = "未着手 scaffold (.gitkeep のみ)" if n <= 1 else "非 run の成果物。次段階で adapter が必要"
-        add(f"| `{name}` | {n} | {note} |")
+        kind, pc = kindmap.get(name, ("(未調査)", "(未調査)"))
+        add(f"| `{name}` | {n} | {kind} | {pc} |")
+    add("")
+    add("### 次段階への申し送り")
+    add("")
+    add("**現在 `per_class_metric=AP` の run は 62 しか無い。**")
+    add("上表の `val_perclass.json` 系は術具 per-class 指標を含むため、")
+    add("adapter を書けば貴重な追加ソースになる。")
+    add("")
+    add("また `analysis/step_c_coupling_analysis/*.json`（12 ファイル）は")
+    add("`model` / `seed` / **`split`** / `ckpt` / `phase` / `mAP` を持ち、")
+    add("**`split` を明示している**。split が確定できない run の補強材料になりうる。")
     add("")
 
     add("## 10. 警告が出た run の内訳")
@@ -897,6 +1063,83 @@ def build_anomalies(records: list[dict[str, Any]], nonstandard: list[tuple[str, 
     for k, v in wc.most_common():
         add(f"| {k} | {v} |")
     add("")
+
+    add("## 11. 🔴 要対処: 乱数で per-class AP を生成するコードが残っている")
+    add("")
+    add("`src/egosurgery/engines/trainer.py:273-278`")
+    add("")
+    add("```python")
+    add("rng = np.random.default_rng(int(self.cfg.seed))")
+    add("per_class_ap = {")
+    add("    cls: round(float(rng.uniform(0.05, 0.85)), 4) for cls in TOOL_CLASSES")
+    add("}")
+    add("self.manager.log_per_class_ap(per_class_ap)")
+    add("```")
+    add("")
+    add("この dummy Trainer は **乱数を `mAP` として `metrics.json` に書く**。")
+    add("`CLAUDE.md` の「metrics / mAP 等の数値を絶対に捏造しない」に照らして危険。")
+    add("`cfg.experiment.step` が s0/s1/s2 以外のとき dummy Trainer が選ばれる。")
+    add("")
+    add("### 現時点の混入は 0 件（検証済み）")
+    add("")
+    add("`tools/verify_no_dummy_metrics.py` が 2 系統で検査する:")
+    add("")
+    add("1. **語彙照合** — dummy 側の `TOOL_CLASSES` は `Needle_Holders` / `Retractors` /")
+    add("   `Clip_Applier` / `Suction` / `Electrocautery` / `Needle` / `Thread` という")
+    add("   **別の語彙**を使う。実データ 2 体系のどちらとも一致しない。")
+    add("2. **値の再現照合** — 既知 seed で `np.random.default_rng(seed).uniform(0.05, 0.85)`")
+    add("   を再現し、`per_class_ap.json` と完全一致するものを探す。")
+    add("")
+    add("結果: **混入 0 件**。experiments/ の per-class 指標は全て実評価器由来。")
+    add("")
+    add("**このタスクではコードを変更していない。**")
+    add("dummy Trainer の削除またはガード追加は別タスクで検討すること。")
+    add("再検証: `python tools/verify_no_dummy_metrics.py`")
+    add("")
+
+    add("## 12. experiments/README.md と実態の乖離")
+    add("")
+    add("README は step 識別子を **s0〜s9 / a1〜a7（17 種）** と規定しているが、")
+    steps = Counter(r["step"] for r in records if r["step"])
+    add(f"実測は **{len(steps)} 種**。README に無い以下の系統が存在する。")
+    add("")
+    fam = {"b1": [], "b2a": [], "t1a": [], "t1b": [], "taux": [], "haux": [], "hires": []}
+    for s, n in steps.items():
+        for f in fam:
+            if s == f or s.startswith(f + "_"):
+                fam[f].append((s, n))
+                break
+    add("| 系統 | step 識別子の種類 | run 合計 | 例 |")
+    add("|---|---:|---:|---|")
+    for f, items in fam.items():
+        if not items:
+            continue
+        total = sum(n for _, n in items)
+        ex = ", ".join(f"`{s}`" for s, _ in sorted(items, key=lambda x: -x[1])[:2])
+        add(f"| `{f}` | {len(items)} | {total} | {ex} |")
+    add("")
+    add("また README は 6 カテゴリ（`baselines` / `phase0` / `phase1` / `ablations` /")
+    add("`transfer` / `final`）を規定するが、実際に run があるのは 4 つで、")
+    add("`ablations` と `final` は空。逆に README に無い `_smoke_prior` に run がある。")
+    add("")
+    add("**このタスクでは README を変更していない。** 規約の更新は別タスク。")
+    add("")
+
+    add("## 13. run_id の衝突")
+    add("")
+    dup: Counter[str] = Counter(r["run_id"] for r in records)
+    dups = {k: v for k, v in dup.items() if v > 1}
+    add(f"`run_id`（ディレクトリ名）は **{len(dups)} 種が複数箇所で衝突**する。")
+    add("スキーマは `runs/<run_id>.json` を指定しているが、そのままではファイルが")
+    add("上書きされるため、パス由来の `ledger_key` をファイル名に使い、")
+    add("`run_id` はフィールドとして保持した。")
+    add("")
+    if dups:
+        add("| run_id | 箇所数 |")
+        add("|---|---:|")
+        for k, v in sorted(dups.items(), key=lambda x: (-x[1], x[0])):
+            add(f"| `{k}` | {v} |")
+        add("")
 
     return "\n".join(lines) + "\n"
 

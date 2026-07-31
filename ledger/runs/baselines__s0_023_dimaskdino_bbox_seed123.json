@@ -1,5 +1,4 @@
 {
-  "aux_seeds": {},
   "command": "#!/usr/bin/env bash\n# Stable-DINO (detrex) 実行コマンド\n# seed=123\npython train_net_egosurgery.py --config-file /home/ubuntu/slocal2/m2/third_party/DI-MaskDINO/configs/dimaskdino_r50_egosurgery.yaml --num-gpus 2 SEED 123 OUTPUT_DIR /tmp/dimaskdino_work_seed123\n",
   "commit": "4327348e444381f1737309252fb86ad9b5034d6a",
   "config_path": "experiments/baselines/s0_023_dimaskdino_bbox_seed123/config.yaml",
@@ -37,7 +36,6 @@
   "harvest_warnings": [],
   "host": "philip",
   "host_raw": "philip",
-  "inferred_split": null,
   "ledger_key": "baselines__s0_023_dimaskdino_bbox_seed123",
   "metrics": {
     "AP_common": 0.388332,
@@ -75,23 +73,29 @@
     "Syringe": 0.326446,
     "Tweezers": 0.447994
   },
-  "per_class_kind": "tool_ap",
+  "per_class_kind": "tool",
+  "per_class_metric": "AP",
   "per_class_nan_classes": [
     "Retractor"
   ],
+  "per_class_source": "experiments/baselines/s0_023_dimaskdino_bbox_seed123/per_class_ap.json",
   "per_class_valid_count": 14,
   "provenance": {
     "commit": "from_git_commit_txt",
     "epoch": "from_metrics_json",
     "host": "from_server_txt",
-    "inferred_split": "not_determinable",
     "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
     "seed": "from_dirname",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
     "split": "from_metric_key_prefix",
     "step": "from_dirname"
   },
   "run_id": "s0_023_dimaskdino_bbox_seed123",
   "seed": 123,
+  "seed_detector": null,
+  "seed_phase": null,
   "seq": 23,
   "split": "val",
   "step": "s0",

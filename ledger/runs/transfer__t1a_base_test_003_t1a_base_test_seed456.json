@@ -1,59 +1,8 @@
 {
-  "aux_seeds": {},
   "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-07-05T10:40:30+00:00\npython scripts/train_t1a.py --seed 456 --epochs 50 --eval-test --description t1a_base_test\n",
   "commit": "27ad173f16f4c63a7bbe9160aa9a4b5c1461cb2a",
   "config_path": "experiments/transfer/t1a_base_test_003_t1a_base_test_seed456/config.yaml",
-  "conflicting_bare_keys": [
-    {
-      "bare_value": 0.9471947194719472,
-      "by_split": {
-        "test": 0.8382180539273154
-      },
-      "key": "accuracy"
-    },
-    {
-      "bare_value": 40.63492063492063,
-      "by_split": {
-        "test": 53.52448703058459
-      },
-      "key": "edit_score"
-    },
-    {
-      "bare_value": 0.7529534250683285,
-      "by_split": {
-        "test": 0.6118934786380359
-      },
-      "key": "jaccard"
-    },
-    {
-      "bare_value": 0.7963241850462713,
-      "by_split": {
-        "test": 0.6972613012080395
-      },
-      "key": "macro_f1"
-    },
-    {
-      "bare_value": 0.5071225071225071,
-      "by_split": {
-        "test": 0.6041861758736332
-      },
-      "key": "seg_f1_10"
-    },
-    {
-      "bare_value": 0.4968660968660969,
-      "by_split": {
-        "test": 0.5942342392041392
-      },
-      "key": "seg_f1_25"
-    },
-    {
-      "bare_value": 0.47635327635327646,
-      "by_split": {
-        "test": 0.4659897345368704
-      },
-      "key": "seg_f1_50"
-    }
-  ],
+  "conflicting_bare_keys": [],
   "description": "t1a_base_test",
   "duplicate_bare_keys": [],
   "epoch": 19,
@@ -87,26 +36,20 @@
   "exclusion_reason": null,
   "gpu": null,
   "group": "transfer",
-  "harvest_warnings": [],
+  "harvest_warnings": [
+    "val と test の指標が共存する。primary（best 選択元）は val。test 側は metrics_by_split['test'] に保持している。"
+  ],
   "host": "efros",
   "host_raw": "efros",
-  "inferred_split": null,
   "ledger_key": "transfer__t1a_base_test_003_t1a_base_test_seed456",
   "metrics": {
     "accuracy": 0.8382180539273154,
-    "accuracy__bare": 0.9471947194719472,
     "edit_score": 53.52448703058459,
-    "edit_score__bare": 40.63492063492063,
     "jaccard": 0.6118934786380359,
-    "jaccard__bare": 0.7529534250683285,
     "macro_f1": 0.6972613012080395,
-    "macro_f1__bare": 0.7963241850462713,
     "seg_f1_10": 0.6041861758736332,
-    "seg_f1_10__bare": 0.5071225071225071,
     "seg_f1_25": 0.5942342392041392,
-    "seg_f1_25__bare": 0.4968660968660969,
-    "seg_f1_50": 0.4659897345368704,
-    "seg_f1_50__bare": 0.47635327635327646
+    "seg_f1_50": 0.4659897345368704
   },
   "metrics_by_split": {
     "test": {
@@ -118,7 +61,7 @@
       "seg_f1_25": 0.5942342392041392,
       "seg_f1_50": 0.4659897345368704
     },
-    "unknown": {
+    "val": {
       "accuracy": 0.9471947194719472,
       "edit_score": 40.63492063492063,
       "jaccard": 0.7529534250683285,
@@ -142,23 +85,29 @@
     "incision": 0.940119760479042,
     "irrigation": 0.0
   },
-  "per_class_kind": "phase_metric",
+  "per_class_kind": "phase",
+  "per_class_metric": "F1",
   "per_class_nan_classes": [],
+  "per_class_source": "experiments/transfer/t1a_base_test_003_t1a_base_test_seed456/per_class_ap.json",
   "per_class_valid_count": 9,
   "provenance": {
     "commit": "from_git_commit_txt",
     "epoch": "from_metrics_json",
     "host": "from_server_txt",
-    "inferred_split": "not_determinable",
     "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
     "seed": "from_dirname",
-    "split": "from_metric_key_prefix",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "primary_val_by_training_script",
     "step": "from_dirname"
   },
   "run_id": "t1a_base_test_003_t1a_base_test_seed456",
   "seed": 456,
+  "seed_detector": null,
+  "seed_phase": null,
   "seq": 3,
-  "split": "test",
+  "split": "val",
   "step": "t1a_base_test",
   "subgroup": null
 }

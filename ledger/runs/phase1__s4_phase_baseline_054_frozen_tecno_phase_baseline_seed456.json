@@ -1,59 +1,8 @@
 {
-  "aux_seeds": {},
   "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-07-04T07:25:02+00:00\npython scripts/train_s4_tecno.py --seed 456 --eval-test\n",
   "commit": "e542421b9cc96766edf57bb688cdf2e900ea332b",
   "config_path": "experiments/phase1/s4_phase_baseline_054_frozen_tecno_phase_baseline_seed456/config.yaml",
-  "conflicting_bare_keys": [
-    {
-      "bare_value": 0.8937293729372937,
-      "by_split": {
-        "test": 0.7317702227432591
-      },
-      "key": "accuracy"
-    },
-    {
-      "bare_value": 43.5,
-      "by_split": {
-        "test": 42.50695508999035
-      },
-      "key": "edit_score"
-    },
-    {
-      "bare_value": 0.6504359680214252,
-      "by_split": {
-        "test": 0.3848723573723641
-      },
-      "key": "jaccard"
-    },
-    {
-      "bare_value": 0.7087253966163348,
-      "by_split": {
-        "test": 0.4977367486961391
-      },
-      "key": "macro_f1"
-    },
-    {
-      "bare_value": 0.5096296296296297,
-      "by_split": {
-        "test": 0.4640842933525861
-      },
-      "key": "seg_f1_10"
-    },
-    {
-      "bare_value": 0.46444444444444444,
-      "by_split": {
-        "test": 0.45551474819767507
-      },
-      "key": "seg_f1_25"
-    },
-    {
-      "bare_value": 0.43777777777777777,
-      "by_split": {
-        "test": 0.3060604158165134
-      },
-      "key": "seg_f1_50"
-    }
-  ],
+  "conflicting_bare_keys": [],
   "description": "frozen_tecno_phase_baseline",
   "duplicate_bare_keys": [],
   "epoch": 42,
@@ -84,26 +33,20 @@
   "exclusion_reason": null,
   "gpu": null,
   "group": "phase1",
-  "harvest_warnings": [],
+  "harvest_warnings": [
+    "val と test の指標が共存する。primary（best 選択元）は val。test 側は metrics_by_split['test'] に保持している。"
+  ],
   "host": "efros",
   "host_raw": "efros",
-  "inferred_split": null,
   "ledger_key": "phase1__s4_phase_baseline_054_frozen_tecno_phase_baseline_seed456",
   "metrics": {
     "accuracy": 0.7317702227432591,
-    "accuracy__bare": 0.8937293729372937,
     "edit_score": 42.50695508999035,
-    "edit_score__bare": 43.5,
     "jaccard": 0.3848723573723641,
-    "jaccard__bare": 0.6504359680214252,
     "macro_f1": 0.4977367486961391,
-    "macro_f1__bare": 0.7087253966163348,
     "seg_f1_10": 0.4640842933525861,
-    "seg_f1_10__bare": 0.5096296296296297,
     "seg_f1_25": 0.45551474819767507,
-    "seg_f1_25__bare": 0.46444444444444444,
-    "seg_f1_50": 0.3060604158165134,
-    "seg_f1_50__bare": 0.43777777777777777
+    "seg_f1_50": 0.3060604158165134
   },
   "metrics_by_split": {
     "test": {
@@ -115,7 +58,7 @@
       "seg_f1_25": 0.45551474819767507,
       "seg_f1_50": 0.3060604158165134
     },
-    "unknown": {
+    "val": {
       "accuracy": 0.8937293729372937,
       "edit_score": 43.5,
       "jaccard": 0.6504359680214252,
@@ -139,23 +82,29 @@
     "incision": 0.8148148148148149,
     "irrigation": 0.0
   },
-  "per_class_kind": "phase_metric",
+  "per_class_kind": "phase",
+  "per_class_metric": "F1",
   "per_class_nan_classes": [],
+  "per_class_source": "experiments/phase1/s4_phase_baseline_054_frozen_tecno_phase_baseline_seed456/per_class_ap.json",
   "per_class_valid_count": 9,
   "provenance": {
     "commit": "from_git_commit_txt",
     "epoch": "from_metrics_json",
     "host": "from_server_txt",
-    "inferred_split": "not_determinable",
     "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
     "seed": "from_dirname",
-    "split": "from_metric_key_prefix",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "primary_val_by_training_script",
     "step": "from_dirname"
   },
   "run_id": "s4_phase_baseline_054_frozen_tecno_phase_baseline_seed456",
   "seed": 456,
+  "seed_detector": null,
+  "seed_phase": null,
   "seq": 54,
-  "split": "test",
+  "split": "val",
   "step": "s4_phase_baseline",
   "subgroup": null
 }

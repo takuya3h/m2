@@ -1,7 +1,4 @@
 {
-  "aux_seeds": {
-    "p": 20
-  },
   "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-06-29T17:15:16+00:00\npython scripts/train_b2a.py --seed 42 --epochs 50 --drop-gap --tool-source oracle --tool-noise-rate 0.20 --tool-noise-dims 9 --description-override b2a_ro_oracle_scalpelnoise_p020\n",
   "commit": "c4228eddc07a1958959e00e8dff92f007c269755",
   "config_path": "experiments/transfer/b2a_ro_oracle_scalpelnoise_p020_001_b2a_ro_oracle_scalpelnoise_p020_seed42/config.yaml",
@@ -40,11 +37,10 @@
   "gpu": null,
   "group": "transfer",
   "harvest_warnings": [
-    "ディレクトリ名に補助 seed {'p': 20} が含まれる。seed には末尾の seed42 のみを採用した。"
+    "ディレクトリ名に補助 seed {'p': 20} が含まれる。seed には末尾の seed42 のみを採用し、det/p は seed_detector / seed_phase に分離した。"
   ],
   "host": "lecun",
   "host_raw": "lecun",
-  "inferred_split": null,
   "ledger_key": "transfer__b2a_ro_oracle_scalpelnoise_p020_001_b2a_ro_oracle_scalpelnoise_p020_seed42",
   "metrics": {
     "accuracy": 0.9623762376237623,
@@ -56,7 +52,7 @@
     "seg_f1_50": 0.6246913580246914
   },
   "metrics_by_split": {
-    "unknown": {
+    "val": {
       "accuracy": 0.9623762376237623,
       "edit_score": 55.71975916803503,
       "jaccard": 0.8051316286412522,
@@ -80,23 +76,29 @@
     "incision": 0.93841642228739,
     "irrigation": 0.0
   },
-  "per_class_kind": "phase_metric",
+  "per_class_kind": "phase",
+  "per_class_metric": "F1",
   "per_class_nan_classes": [],
+  "per_class_source": "experiments/transfer/b2a_ro_oracle_scalpelnoise_p020_001_b2a_ro_oracle_scalpelnoise_p020_seed42/per_class_ap.json",
   "per_class_valid_count": 9,
   "provenance": {
     "commit": "from_git_commit_txt",
     "epoch": "from_metrics_json",
     "host": "from_server_txt",
-    "inferred_split": "not_determinable",
     "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
     "seed": "from_dirname",
-    "split": "not_determinable",
+    "seed_detector": "not_determinable",
+    "seed_phase": "from_dirname_p_token",
+    "split": "from_metric_key_prefix",
     "step": "from_dirname"
   },
   "run_id": "b2a_ro_oracle_scalpelnoise_p020_001_b2a_ro_oracle_scalpelnoise_p020_seed42",
   "seed": 42,
+  "seed_detector": null,
+  "seed_phase": 20,
   "seq": 1,
-  "split": null,
+  "split": "val",
   "step": "b2a_ro_oracle_scalpelnoise_p020",
   "subgroup": null
 }

@@ -16,15 +16,27 @@
 | `known_bad_split` | 6 | `experiments/baselines/_wrong_split_8_2_3` |
 | `smoke_test` | 7 | `experiments/_smoke_prior`, `experiments/baselines/_smoke_ddq` |
 
+### 1.1 `phase0/_failed_s3_weighted/` の 6 run — 運用上の欠陥
+
+**repo 上で失敗が確認できる唯一の run 群だが、Notion 実験Run台帳では
+`Status='failed'` が 616 行中 0 件。失敗が台帳に反映されない運用上の欠陥がある。**
+
+- 6 run とも `metrics.json` が空 `{}` で、学習が完走していない
+- うち 3 つ（`_004_partial` / `_005_partial` / `_006_partial`）は命名規約にも従わない
+- 成功 run だけが台帳に載る運用では、失敗率・試行回数・打ち切り理由を
+  後から復元できない。Δ の解釈（何回試して何回失敗したか）が検証不能になる
+- 対処案: `ExperimentManager` に失敗時の Status 書き込みを配線する、
+  または収穫時に `metrics.json` 空を failed として台帳へ補完投稿する
+
 ## 2. split を確定できなかった run
 
 指標キーの接頭辞から split を確定できない run。**推測していない**。
 
-確定不能 490 run / 全 573 run
+確定不能 11 run / 全 573 run
 
 | split_provenance | runs |
 |---|---:|
-| `not_determinable` | 490 |
+| `not_determinable` | 11 |
 
 大半は `phase_*` 系の指標しか持たない run である。`phase_` はタスク名であり
 split ではないため、これらの run の評価 split は証拠ファイルからは決まらない。
@@ -43,11 +55,19 @@ split ではないため、これらの run の評価 split は証拠ファイ�
 ファイル名は `per_class_ap.json` だが、中身は 2 つの異なる体系が混在する。
 **横断比較の際に混ぜてはならない。**
 
-| per_class_kind | runs | 内容 |
-|---|---:|---|
-| `phase_metric` | 500 | 9 クラスの工程別指標（AP ではない。F1 の可能性が高い） |
-| `tool_ap` | 62 | 15 クラスの術具 AP（本来の per-class AP） |
-| `None` | 11 | per_class_ap.json が無い・空・パース失敗 |
+**ファイル名が `per_class_ap.json` でありながら中身が F1 の群があるため、
+`per_class_kind` だけでなく `per_class_metric` を必ず参照すること。**
+`per_class_source` に読み取り元の相対パスを保持している。
+
+| per_class_kind | per_class_metric | runs | 内容 | 根拠 |
+|---|---|---:|---|---|
+| `phase` | `F1` | 500 | 9 クラスの工程別 **F1**（AP ではない） | `scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が `best.get("phase_per_class_f1", {})` を `log_per_class_ap()` に渡している |
+| `tool` | `AP` | 62 | 15 クラスの術具 AP | `per_class_coco_map` / `COCOeval.precision` 由来 |
+| `None` | `None` | 11 | `per_class_ap.json` が無い・空・パース失敗 | — |
+
+### metric を確定できなかった run: 0
+
+なし。
 
 ## 5. NaN を含む run
 
@@ -93,86 +113,60 @@ split ではないため、これらの run の評価 split は証拠ファイ�
 ## 7. ディレクトリ名に補助 seed を含む run
 
 `det42` / `p123` のように、末尾の `seed<N>` とは別の seed が名前に含まれる run。
-`seed` フィールドには**末尾の `seed<N>` のみ**を採用し、補助 seed は
-`aux_seeds` に分けて保持している。
+後段の paired 統計では比較単位が **(検出器 seed, 工程 seed) の組**であり、
+末尾 seed だけでは基準点を特定できない。機械的に結合できるよう
+`seed_detector` / `seed_phase` の専用フィールドに分離している。
 
 該当 101 run
 
-| path | seed (採用) | aux_seeds |
-|---|---:|---|
-| `experiments/transfer/b2a_base_oracle_noise_p010_001_b2a_base_oracle_noise_p010_seed42` | 42 | `{"p": 10}` |
-| `experiments/transfer/b2a_base_oracle_noise_p010_002_b2a_base_oracle_noise_p010_seed123` | 123 | `{"p": 10}` |
-| `experiments/transfer/b2a_base_oracle_noise_p010_003_b2a_base_oracle_noise_p010_seed456` | 456 | `{"p": 10}` |
-| `experiments/transfer/b2a_base_oracle_noise_p020_001_b2a_base_oracle_noise_p020_seed42` | 42 | `{"p": 20}` |
-| `experiments/transfer/b2a_base_oracle_noise_p020_002_b2a_base_oracle_noise_p020_seed123` | 123 | `{"p": 20}` |
-| `experiments/transfer/b2a_base_oracle_noise_p020_003_b2a_base_oracle_noise_p020_seed456` | 456 | `{"p": 20}` |
-| `experiments/transfer/b2a_base_oracle_noise_p030_001_b2a_base_oracle_noise_p030_seed42` | 42 | `{"p": 30}` |
-| `experiments/transfer/b2a_base_oracle_noise_p030_002_b2a_base_oracle_noise_p030_seed123` | 123 | `{"p": 30}` |
-| `experiments/transfer/b2a_base_oracle_noise_p030_003_b2a_base_oracle_noise_p030_seed456` | 456 | `{"p": 30}` |
-| `experiments/transfer/b2a_base_oracle_top3noise_p010_001_b2a_base_oracle_top3noise_p010_seed42` | 42 | `{"p": 10}` |
-| `experiments/transfer/b2a_base_oracle_top3noise_p010_002_b2a_base_oracle_top3noise_p010_seed123` | 123 | `{"p": 10}` |
-| `experiments/transfer/b2a_base_oracle_top3noise_p010_003_b2a_base_oracle_top3noise_p010_seed456` | 456 | `{"p": 10}` |
-| `experiments/transfer/b2a_base_oracle_top3noise_p020_001_b2a_base_oracle_top3noise_p020_seed42` | 42 | `{"p": 20}` |
-| `experiments/transfer/b2a_base_oracle_top3noise_p020_002_b2a_base_oracle_top3noise_p020_seed123` | 123 | `{"p": 20}` |
-| `experiments/transfer/b2a_base_oracle_top3noise_p020_003_b2a_base_oracle_top3noise_p020_seed456` | 456 | `{"p": 20}` |
-| `experiments/transfer/b2a_base_oracle_top3noise_p030_001_b2a_base_oracle_top3noise_p030_seed42` | 42 | `{"p": 30}` |
-| `experiments/transfer/b2a_base_oracle_top3noise_p030_002_b2a_base_oracle_top3noise_p030_seed123` | 123 | `{"p": 30}` |
-| `experiments/transfer/b2a_base_oracle_top3noise_p030_003_b2a_base_oracle_top3noise_p030_seed456` | 456 | `{"p": 30}` |
-| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p010_001_b2a_ro_oracle_bipolarnoise_p010_seed42` | 42 | `{"p": 10}` |
-| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p010_002_b2a_ro_oracle_bipolarnoise_p010_seed123` | 123 | `{"p": 10}` |
-| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p010_003_b2a_ro_oracle_bipolarnoise_p010_seed456` | 456 | `{"p": 10}` |
-| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p020_001_b2a_ro_oracle_bipolarnoise_p020_seed42` | 42 | `{"p": 20}` |
-| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p020_002_b2a_ro_oracle_bipolarnoise_p020_seed123` | 123 | `{"p": 20}` |
-| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p020_003_b2a_ro_oracle_bipolarnoise_p020_seed456` | 456 | `{"p": 20}` |
-| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p030_001_b2a_ro_oracle_bipolarnoise_p030_seed42` | 42 | `{"p": 30}` |
-| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p030_002_b2a_ro_oracle_bipolarnoise_p030_seed123` | 123 | `{"p": 30}` |
-| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p030_003_b2a_ro_oracle_bipolarnoise_p030_seed456` | 456 | `{"p": 30}` |
-| `experiments/transfer/b2a_ro_oracle_bsnoise_p010_001_b2a_ro_oracle_bsnoise_p010_seed42` | 42 | `{"p": 10}` |
-| `experiments/transfer/b2a_ro_oracle_bsnoise_p010_002_b2a_ro_oracle_bsnoise_p010_seed123` | 123 | `{"p": 10}` |
-| `experiments/transfer/b2a_ro_oracle_bsnoise_p010_003_b2a_ro_oracle_bsnoise_p010_seed456` | 456 | `{"p": 10}` |
-| `experiments/transfer/b2a_ro_oracle_bsnoise_p020_001_b2a_ro_oracle_bsnoise_p020_seed42` | 42 | `{"p": 20}` |
-| `experiments/transfer/b2a_ro_oracle_bsnoise_p020_002_b2a_ro_oracle_bsnoise_p020_seed123` | 123 | `{"p": 20}` |
-| `experiments/transfer/b2a_ro_oracle_bsnoise_p020_003_b2a_ro_oracle_bsnoise_p020_seed456` | 456 | `{"p": 20}` |
-| `experiments/transfer/b2a_ro_oracle_bsnoise_p030_001_b2a_ro_oracle_bsnoise_p030_seed42` | 42 | `{"p": 30}` |
-| `experiments/transfer/b2a_ro_oracle_bsnoise_p030_002_b2a_ro_oracle_bsnoise_p030_seed123` | 123 | `{"p": 30}` |
-| `experiments/transfer/b2a_ro_oracle_bsnoise_p030_003_b2a_ro_oracle_bsnoise_p030_seed456` | 456 | `{"p": 30}` |
-| `experiments/transfer/b2a_ro_oracle_nhnoise_p010_001_b2a_ro_oracle_nhnoise_p010_seed42` | 42 | `{"p": 10}` |
-| `experiments/transfer/b2a_ro_oracle_nhnoise_p010_002_b2a_ro_oracle_nhnoise_p010_seed123` | 123 | `{"p": 10}` |
-| `experiments/transfer/b2a_ro_oracle_nhnoise_p010_003_b2a_ro_oracle_nhnoise_p010_seed456` | 456 | `{"p": 10}` |
-| `experiments/transfer/b2a_ro_oracle_nhnoise_p020_001_b2a_ro_oracle_nhnoise_p020_seed42` | 42 | `{"p": 20}` |
-| … 他 61 件 | | |
+| path | seed (末尾) | seed_detector | seed_phase |
+|---|---:|---:|---:|
+| `experiments/transfer/b2a_base_oracle_noise_p010_001_b2a_base_oracle_noise_p010_seed42` | 42 | — | 10 |
+| `experiments/transfer/b2a_base_oracle_noise_p010_002_b2a_base_oracle_noise_p010_seed123` | 123 | — | 10 |
+| `experiments/transfer/b2a_base_oracle_noise_p010_003_b2a_base_oracle_noise_p010_seed456` | 456 | — | 10 |
+| `experiments/transfer/b2a_base_oracle_noise_p020_001_b2a_base_oracle_noise_p020_seed42` | 42 | — | 20 |
+| `experiments/transfer/b2a_base_oracle_noise_p020_002_b2a_base_oracle_noise_p020_seed123` | 123 | — | 20 |
+| `experiments/transfer/b2a_base_oracle_noise_p020_003_b2a_base_oracle_noise_p020_seed456` | 456 | — | 20 |
+| `experiments/transfer/b2a_base_oracle_noise_p030_001_b2a_base_oracle_noise_p030_seed42` | 42 | — | 30 |
+| `experiments/transfer/b2a_base_oracle_noise_p030_002_b2a_base_oracle_noise_p030_seed123` | 123 | — | 30 |
+| `experiments/transfer/b2a_base_oracle_noise_p030_003_b2a_base_oracle_noise_p030_seed456` | 456 | — | 30 |
+| `experiments/transfer/b2a_base_oracle_top3noise_p010_001_b2a_base_oracle_top3noise_p010_seed42` | 42 | — | 10 |
+| `experiments/transfer/b2a_base_oracle_top3noise_p010_002_b2a_base_oracle_top3noise_p010_seed123` | 123 | — | 10 |
+| `experiments/transfer/b2a_base_oracle_top3noise_p010_003_b2a_base_oracle_top3noise_p010_seed456` | 456 | — | 10 |
+| `experiments/transfer/b2a_base_oracle_top3noise_p020_001_b2a_base_oracle_top3noise_p020_seed42` | 42 | — | 20 |
+| `experiments/transfer/b2a_base_oracle_top3noise_p020_002_b2a_base_oracle_top3noise_p020_seed123` | 123 | — | 20 |
+| `experiments/transfer/b2a_base_oracle_top3noise_p020_003_b2a_base_oracle_top3noise_p020_seed456` | 456 | — | 20 |
+| `experiments/transfer/b2a_base_oracle_top3noise_p030_001_b2a_base_oracle_top3noise_p030_seed42` | 42 | — | 30 |
+| `experiments/transfer/b2a_base_oracle_top3noise_p030_002_b2a_base_oracle_top3noise_p030_seed123` | 123 | — | 30 |
+| `experiments/transfer/b2a_base_oracle_top3noise_p030_003_b2a_base_oracle_top3noise_p030_seed456` | 456 | — | 30 |
+| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p010_001_b2a_ro_oracle_bipolarnoise_p010_seed42` | 42 | — | 10 |
+| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p010_002_b2a_ro_oracle_bipolarnoise_p010_seed123` | 123 | — | 10 |
+| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p010_003_b2a_ro_oracle_bipolarnoise_p010_seed456` | 456 | — | 10 |
+| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p020_001_b2a_ro_oracle_bipolarnoise_p020_seed42` | 42 | — | 20 |
+| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p020_002_b2a_ro_oracle_bipolarnoise_p020_seed123` | 123 | — | 20 |
+| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p020_003_b2a_ro_oracle_bipolarnoise_p020_seed456` | 456 | — | 20 |
+| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p030_001_b2a_ro_oracle_bipolarnoise_p030_seed42` | 42 | — | 30 |
+| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p030_002_b2a_ro_oracle_bipolarnoise_p030_seed123` | 123 | — | 30 |
+| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p030_003_b2a_ro_oracle_bipolarnoise_p030_seed456` | 456 | — | 30 |
+| `experiments/transfer/b2a_ro_oracle_bsnoise_p010_001_b2a_ro_oracle_bsnoise_p010_seed42` | 42 | — | 10 |
+| `experiments/transfer/b2a_ro_oracle_bsnoise_p010_002_b2a_ro_oracle_bsnoise_p010_seed123` | 123 | — | 10 |
+| `experiments/transfer/b2a_ro_oracle_bsnoise_p010_003_b2a_ro_oracle_bsnoise_p010_seed456` | 456 | — | 10 |
+| `experiments/transfer/b2a_ro_oracle_bsnoise_p020_001_b2a_ro_oracle_bsnoise_p020_seed42` | 42 | — | 20 |
+| `experiments/transfer/b2a_ro_oracle_bsnoise_p020_002_b2a_ro_oracle_bsnoise_p020_seed123` | 123 | — | 20 |
+| `experiments/transfer/b2a_ro_oracle_bsnoise_p020_003_b2a_ro_oracle_bsnoise_p020_seed456` | 456 | — | 20 |
+| `experiments/transfer/b2a_ro_oracle_bsnoise_p030_001_b2a_ro_oracle_bsnoise_p030_seed42` | 42 | — | 30 |
+| `experiments/transfer/b2a_ro_oracle_bsnoise_p030_002_b2a_ro_oracle_bsnoise_p030_seed123` | 123 | — | 30 |
+| `experiments/transfer/b2a_ro_oracle_bsnoise_p030_003_b2a_ro_oracle_bsnoise_p030_seed456` | 456 | — | 30 |
+| `experiments/transfer/b2a_ro_oracle_nhnoise_p010_001_b2a_ro_oracle_nhnoise_p010_seed42` | 42 | — | 10 |
+| `experiments/transfer/b2a_ro_oracle_nhnoise_p010_002_b2a_ro_oracle_nhnoise_p010_seed123` | 123 | — | 10 |
+| `experiments/transfer/b2a_ro_oracle_nhnoise_p010_003_b2a_ro_oracle_nhnoise_p010_seed456` | 456 | — | 10 |
+| `experiments/transfer/b2a_ro_oracle_nhnoise_p020_001_b2a_ro_oracle_nhnoise_p020_seed42` | 42 | — | 20 |
+| … 他 61 件 | | | |
 
 ## 8. prefix 無しキーと prefix 付きキーの値が食い違った run
 
-該当 27 run（食い違いがあれば両方を保持している）
+該当 0 run（食い違いがあれば両方を保持している）
 
-- `experiments/phase1/s4_phase_baseline_044_frozen_tecno_phase_baseline_seed42`: `[{"key": "accuracy", "bare_value": 0.904950495049505, "by_split": {"test": 0.7638921453692848}}, {"key": "edit_score", "bare_value": 42.323232323232325, "by_split": {"test": 42.86948724219451}}, {"key": "jaccard", "bare_value": 0.6437220707441275, "by_split": {"test": 0.4340480112133478}}, {"key": "macro_f1", "bare_value": 0.7037869747452711, "by_split": {"test": 0.5455032007630578}}, {"key": "seg_f1_10", "bare_value": 0.4960558936218165, "by_split": {"test": 0.5140279300125847}}, {"key": "seg_f1_25", "bare_value": 0.4845616407482532, "by_split": {"test": 0.48436244062842526}}, {"key": "seg_f1_50", "bare_value": 0.3959882803696191, "by_split": {"test": 0.3457841107457476}}]`
-- `experiments/phase1/s4_phase_baseline_045_frozen_tecno_phase_baseline_seed42`: `[{"key": "accuracy", "bare_value": 0.9148514851485149, "by_split": {"test": 0.7718640093786635}}, {"key": "edit_score", "bare_value": 43.88888888888889, "by_split": {"test": 30.02623488893512}}, {"key": "jaccard", "bare_value": 0.7187030719378921, "by_split": {"test": 0.4260420138582295}}, {"key": "macro_f1", "bare_value": 0.7701303805384035, "by_split": {"test": 0.5380027875171514}}, {"key": "seg_f1_10", "bare_value": 0.5090909090909091, "by_split": {"test": 0.39553730265397774}}, {"key": "seg_f1_25", "bare_value": 0.48484848484848486, "by_split": {"test": 0.3746915414025693}}, {"key": "seg_f1_50", "bare_value": 0.43939393939393945, "by_split": {"test": 0.21773748403836066}}]`
-- `experiments/phase1/s4_phase_baseline_046_frozen_tecno_phase_baseline_seed123`: `[{"key": "accuracy", "bare_value": 0.8917491749174917, "by_split": {"test": 0.811957796014068}}, {"key": "edit_score", "bare_value": 37.28654970760234, "by_split": {"test": 40.931874990474164}}, {"key": "jaccard", "bare_value": 0.6241655876164166, "by_split": {"test": 0.4472762328866372}}, {"key": "macro_f1", "bare_value": 0.694838845820316, "by_split": {"test": 0.5506544189675069}}, {"key": "seg_f1_10", "bare_value": 0.4145124716553288, "by_split": {"test": 0.4810320665493079}}, {"key": "seg_f1_25", "bare_value": 0.400907029478458, "by_split": {"test": 0.46653481067274166}}, {"key": "seg_f1_50", "bare_value": 0.31700680272108844, "by_split": {"test": 0.3172720996858928}}]`
-- `experiments/phase1/s4_phase_baseline_047_frozen_tecno_phase_baseline_seed123`: `[{"key": "accuracy", "bare_value": 0.9122112211221122, "by_split": {"test": 0.7873388042203986}}, {"key": "edit_score", "bare_value": 40.239316239316246, "by_split": {"test": 29.740999740999744}}, {"key": "jaccard", "bare_value": 0.6812336671374198, "by_split": {"test": 0.45375975236025934}}, {"key": "macro_f1", "bare_value": 0.7323610356186087, "by_split": {"test": 0.5563461966077813}}, {"key": "seg_f1_10", "bare_value": 0.4263038548752835, "by_split": {"test": 0.3995170907869321}}, {"key": "seg_f1_25", "bare_value": 0.39909297052154197, "by_split": {"test": 0.39169816074577984}}, {"key": "seg_f1_50", "bare_value": 0.308843537414966, "by_split": {"test": 0.23921642731166537}}]`
-- `experiments/phase1/s4_phase_baseline_048_frozen_tecno_phase_baseline_seed456`: `[{"key": "accuracy", "bare_value": 0.8963696369636963, "by_split": {"test": 0.8105509964830012}}, {"key": "edit_score", "bare_value": 40.888888888888886, "by_split": {"test": 44.274551444362764}}, {"key": "jaccard", "bare_value": 0.6346341848981408, "by_split": {"test": 0.462786424906394}}, {"key": "macro_f1", "bare_value": 0.694503384922233, "by_split": {"test": 0.5575637024781585}}, {"key": "seg_f1_10", "bare_value": 0.43871506049228204, "by_split": {"test": 0.5044575522516699}}, {"key": "seg_f1_25", "bare_value": 0.41034626616604086, "by_split": {"test": 0.4910085829203476}}, {"key": "seg_f1_50", "bare_value": 0.3481852315394243, "by_split": {"test": 0.3390621633268693}}]`
-- `experiments/phase1/s4_phase_baseline_049_frozen_tecno_phase_baseline_seed456`: `[{"key": "accuracy", "bare_value": 0.9155115511551155, "by_split": {"test": 0.7524032825322392}}, {"key": "edit_score", "bare_value": 48.433048433048434, "by_split": {"test": 45.92123769338959}}, {"key": "jaccard", "bare_value": 0.6856488442916397, "by_split": {"test": 0.4399887902880658}}, {"key": "macro_f1", "bare_value": 0.7343478846754862, "by_split": {"test": 0.5433594623816483}}, {"key": "seg_f1_10", "bare_value": 0.5656565656565656, "by_split": {"test": 0.5303864025434092}}, {"key": "seg_f1_25", "bare_value": 0.5525846702317291, "by_split": {"test": 0.5172957256596288}}, {"key": "seg_f1_50", "bare_value": 0.49613784907902553, "by_split": {"test": 0.36175987065568876}}]`
-- `experiments/phase1/s4_phase_baseline_050_frozen_tecno_phase_baseline_seed42`: `[{"key": "accuracy", "bare_value": 0.8943894389438944, "by_split": {"test": 0.7535756154747948}}, {"key": "edit_score", "bare_value": 34.53968253968254, "by_split": {"test": 41.72633181844391}}, {"key": "jaccard", "bare_value": 0.6361511932415491, "by_split": {"test": 0.3805011634381095}}, {"key": "macro_f1", "bare_value": 0.6817126885167962, "by_split": {"test": 0.49513884612348696}}, {"key": "seg_f1_10", "bare_value": 0.39999999999999997, "by_split": {"test": 0.4661608022204316}}, {"key": "seg_f1_25", "bare_value": 0.3666666666666667, "by_split": {"test": 0.4332900587936848}}, {"key": "seg_f1_50", "bare_value": 0.29583333333333334, "by_split": {"test": 0.2751738442713463}}]`
-- `experiments/phase1/s4_phase_baseline_051_frozen_tecno_phase_baseline_seed42`: `[{"key": "accuracy", "bare_value": 0.9161716171617161, "by_split": {"test": 0.8133645955451348}}, {"key": "edit_score", "bare_value": 36.41025641025641, "by_split": {"test": 47.17583487295627}}, {"key": "jaccard", "bare_value": 0.6948700682016542, "by_split": {"test": 0.4394688769656825}}, {"key": "macro_f1", "bare_value": 0.7478153737859431, "by_split": {"test": 0.5521899923682838}}, {"key": "seg_f1_10", "bare_value": 0.415499533146592, "by_split": {"test": 0.5286462353970459}}, {"key": "seg_f1_25", "bare_value": 0.415499533146592, "by_split": {"test": 0.5147573465081571}}, {"key": "seg_f1_50", "bare_value": 0.3485060690943044, "by_split": {"test": 0.3726991233938895}}]`
-- `experiments/phase1/s4_phase_baseline_052_frozen_tecno_phase_baseline_seed123`: `[{"key": "accuracy", "bare_value": 0.9042904290429042, "by_split": {"test": 0.7660023446658851}}, {"key": "edit_score", "bare_value": 43.77777777777777, "by_split": {"test": 39.43003955968352}}, {"key": "jaccard", "bare_value": 0.6648188924984354, "by_split": {"test": 0.3704756803042274}}, {"key": "macro_f1", "bare_value": 0.7184213787124055, "by_split": {"test": 0.48190035768354067}}, {"key": "seg_f1_10", "bare_value": 0.5035521454958795, "by_split": {"test": 0.44449528318552806}}, {"key": "seg_f1_25", "bare_value": 0.5035521454958795, "by_split": {"test": 0.41298645216251123}}, {"key": "seg_f1_50", "bare_value": 0.4549587951122478, "by_split": {"test": 0.27017866186152234}}]`
-- `experiments/phase1/s4_phase_baseline_053_frozen_tecno_phase_baseline_seed123`: `[{"key": "accuracy", "bare_value": 0.900990099009901, "by_split": {"test": 0.7901524032825322}}, {"key": "edit_score", "bare_value": 48.06060606060606, "by_split": {"test": 46.86278407208639}}, {"key": "jaccard", "bare_value": 0.6459664915676043, "by_split": {"test": 0.4072919531427772}}, {"key": "macro_f1", "bare_value": 0.7134424041822957, "by_split": {"test": 0.520053988407163}}, {"key": "seg_f1_10", "bare_value": 0.5369075369075369, "by_split": {"test": 0.5271123834149044}}, {"key": "seg_f1_25", "bare_value": 0.5217560217560218, "by_split": {"test": 0.49852248591744397}}, {"key": "seg_f1_50", "bare_value": 0.45066045066045063, "by_split": {"test": 0.3573208770687762}}]`
-- `experiments/phase1/s4_phase_baseline_054_frozen_tecno_phase_baseline_seed456`: `[{"key": "accuracy", "bare_value": 0.8937293729372937, "by_split": {"test": 0.7317702227432591}}, {"key": "edit_score", "bare_value": 43.5, "by_split": {"test": 42.50695508999035}}, {"key": "jaccard", "bare_value": 0.6504359680214252, "by_split": {"test": 0.3848723573723641}}, {"key": "macro_f1", "bare_value": 0.7087253966163348, "by_split": {"test": 0.4977367486961391}}, {"key": "seg_f1_10", "bare_value": 0.5096296296296297, "by_split": {"test": 0.4640842933525861}}, {"key": "seg_f1_25", "bare_value": 0.46444444444444444, "by_split": {"test": 0.45551474819767507}}, {"key": "seg_f1_50", "bare_value": 0.43777777777777777, "by_split": {"test": 0.3060604158165134}}]`
-- `experiments/phase1/s4_phase_baseline_055_frozen_tecno_phase_baseline_seed456`: `[{"key": "accuracy", "bare_value": 0.9036303630363036, "by_split": {"test": 0.8105509964830012}}, {"key": "edit_score", "bare_value": 38.61988304093567, "by_split": {"test": 45.27615283267457}}, {"key": "jaccard", "bare_value": 0.6664483442570189, "by_split": {"test": 0.43865906361352214}}, {"key": "macro_f1", "bare_value": 0.7307028022659036, "by_split": {"test": 0.5454772729991842}}, {"key": "seg_f1_10", "bare_value": 0.4240981240981241, "by_split": {"test": 0.5246086230067923}}, {"key": "seg_f1_25", "bare_value": 0.4240981240981241, "by_split": {"test": 0.5103171576283705}}, {"key": "seg_f1_50", "bare_value": 0.39307359307359313, "by_split": {"test": 0.3683181383410217}}]`
-- `experiments/phase1/s4_phase_baseline_056_frozen_tecno_phase_baseline_seed42`: `[{"key": "accuracy", "bare_value": 0.8983498349834983, "by_split": {"test": 0.7289566236811255}}, {"key": "edit_score", "bare_value": 36.060606060606055, "by_split": {"test": 48.455819426615314}}, {"key": "jaccard", "bare_value": 0.6320600948777605, "by_split": {"test": 0.3324124472763859}}, {"key": "macro_f1", "bare_value": 0.6693452134103115, "by_split": {"test": 0.429824974761169}}, {"key": "seg_f1_10", "bare_value": 0.5002249212775528, "by_split": {"test": 0.5285040001457911}}, {"key": "seg_f1_25", "bare_value": 0.48268106162843, "by_split": {"test": 0.4901044229402438}}, {"key": "seg_f1_50", "bare_value": 0.3868645973909131, "by_split": {"test": 0.34386127968217517}}]`
-- `experiments/phase1/s4_phase_baseline_057_frozen_tecno_phase_baseline_seed42`: `[{"key": "accuracy", "bare_value": 0.9254125412541254, "by_split": {"test": 0.7971864009378663}}, {"key": "edit_score", "bare_value": 49.0, "by_split": {"test": 46.19690602727311}}, {"key": "jaccard", "bare_value": 0.7226118416313183, "by_split": {"test": 0.4348582181317794}}, {"key": "macro_f1", "bare_value": 0.7716705349405126, "by_split": {"test": 0.5475319104850003}}, {"key": "seg_f1_10", "bare_value": 0.6074074074074075, "by_split": {"test": 0.5361730387267368}}, {"key": "seg_f1_25", "bare_value": 0.6074074074074075, "by_split": {"test": 0.5191205321161924}}, {"key": "seg_f1_50", "bare_value": 0.5444444444444444, "by_split": {"test": 0.3723594813224918}}]`
-- `experiments/phase1/s4_phase_baseline_058_frozen_tecno_phase_baseline_seed123`: `[{"key": "accuracy", "bare_value": 0.8739273927392739, "by_split": {"test": 0.738569753810082}}, {"key": "edit_score", "bare_value": 47.03703703703704, "by_split": {"test": 48.20261437908497}}, {"key": "jaccard", "bare_value": 0.6170343892105222, "by_split": {"test": 0.3622958427596263}}, {"key": "macro_f1", "bare_value": 0.6935602920898358, "by_split": {"test": 0.4759455928434414}}, {"key": "seg_f1_10", "bare_value": 0.5300236406619385, "by_split": {"test": 0.5203768104801733}}, {"key": "seg_f1_25", "bare_value": 0.5133569739952719, "by_split": {"test": 0.48487059098718}}, {"key": "seg_f1_50", "bare_value": 0.4708037825059102, "by_split": {"test": 0.3195681255478398}}]`
-- `experiments/phase1/s4_phase_baseline_059_frozen_tecno_phase_baseline_seed123`: `[{"key": "accuracy", "bare_value": 0.9095709570957096, "by_split": {"test": 0.7266119577960141}}, {"key": "edit_score", "bare_value": 43.055555555555564, "by_split": {"test": 54.906162176478375}}, {"key": "jaccard", "bare_value": 0.6786756230381387, "by_split": {"test": 0.3742670760006537}}, {"key": "macro_f1", "bare_value": 0.7335901047786282, "by_split": {"test": 0.48915343306811154}}, {"key": "seg_f1_10", "bare_value": 0.5142450142450142, "by_split": {"test": 0.5851020408163264}}, {"key": "seg_f1_25", "bare_value": 0.5142450142450142, "by_split": {"test": 0.5620408163265306}}, {"key": "seg_f1_50", "bare_value": 0.4829059829059828, "by_split": {"test": 0.41954648526077093}}]`
-- `experiments/phase1/s4_phase_baseline_060_frozen_tecno_phase_baseline_seed456`: `[{"key": "accuracy", "bare_value": 0.8917491749174917, "by_split": {"test": 0.7528722157092614}}, {"key": "edit_score", "bare_value": 43.5, "by_split": {"test": 46.775850039396836}}, {"key": "jaccard", "bare_value": 0.6605047609477738, "by_split": {"test": 0.38760852925223077}}, {"key": "macro_f1", "bare_value": 0.7229598486716059, "by_split": {"test": 0.4996362999225271}}, {"key": "seg_f1_10", "bare_value": 0.4962962962962963, "by_split": {"test": 0.5382823537599609}}, {"key": "seg_f1_25", "bare_value": 0.4962962962962963, "by_split": {"test": 0.5176566795420537}}, {"key": "seg_f1_50", "bare_value": 0.43777777777777777, "by_split": {"test": 0.36989838883669135}}]`
-- `experiments/phase1/s4_phase_baseline_061_frozen_tecno_phase_baseline_seed456`: `[{"key": "accuracy", "bare_value": 0.9135313531353135, "by_split": {"test": 0.7992966002344666}}, {"key": "edit_score", "bare_value": 47.333333333333336, "by_split": {"test": 38.57396640826874}}, {"key": "jaccard", "bare_value": 0.6927705149358749, "by_split": {"test": 0.42969905123227403}}, {"key": "macro_f1", "bare_value": 0.7451167588231498, "by_split": {"test": 0.5375889313115498}}, {"key": "seg_f1_10", "bare_value": 0.5652173913043478, "by_split": {"test": 0.4884330925352596}}, {"key": "seg_f1_25", "bare_value": 0.5507246376811594, "by_split": {"test": 0.4698572411420709}}, {"key": "seg_f1_50", "bare_value": 0.4794685990338164, "by_split": {"test": 0.31443068455452355}}]`
-- `experiments/transfer/t1a_appearance_001_t1a_appearance_seed42`: `[{"key": "accuracy", "bare_value": 0.9504950495049505, "by_split": {"test": 0.8152403282532239}}, {"key": "edit_score", "bare_value": 34.166666666666664, "by_split": {"test": 36.71888893991112}}, {"key": "jaccard", "bare_value": 0.7813188712598264, "by_split": {"test": 0.5329958444021909}}, {"key": "macro_f1", "bare_value": 0.8162734056221386, "by_split": {"test": 0.6307380341321444}}, {"key": "seg_f1_10", "bare_value": 0.4422466422466423, "by_split": {"test": 0.4364032056466436}}, {"key": "seg_f1_25", "bare_value": 0.4217338217338218, "by_split": {"test": 0.42005163019059055}}, {"key": "seg_f1_50", "bare_value": 0.4217338217338218, "by_split": {"test": 0.2857002344598845}}]`
-- `experiments/transfer/t1a_appearance_002_t1a_appearance_seed123`: `[{"key": "accuracy", "bare_value": 0.9465346534653465, "by_split": {"test": 0.822274325908558}}, {"key": "edit_score", "bare_value": 35.58201058201058, "by_split": {"test": 38.92806878655936}}, {"key": "jaccard", "bare_value": 0.7545956697859814, "by_split": {"test": 0.5495297093699452}}, {"key": "macro_f1", "bare_value": 0.7969645008052287, "by_split": {"test": 0.6269775859327538}}, {"key": "seg_f1_10", "bare_value": 0.45122870496004824, "by_split": {"test": 0.4679942802614981}}, {"key": "seg_f1_25", "bare_value": 0.45122870496004824, "by_split": {"test": 0.46041086266796927}}, {"key": "seg_f1_50", "bare_value": 0.4213779586913915, "by_split": {"test": 0.3334460357888958}}]`
-- `experiments/transfer/t1a_appearance_003_t1a_appearance_seed456`: `[{"key": "accuracy", "bare_value": 0.9504950495049505, "by_split": {"test": 0.8091441969519344}}, {"key": "edit_score", "bare_value": 59.37500000000001, "by_split": {"test": 45.87958717933045}}, {"key": "jaccard", "bare_value": 0.7754857216065117, "by_split": {"test": 0.5203276867077553}}, {"key": "macro_f1", "bare_value": 0.8125506379442964, "by_split": {"test": 0.6042656475610072}}, {"key": "seg_f1_10", "bare_value": 0.6573099415204678, "by_split": {"test": 0.5449042181261506}}, {"key": "seg_f1_25", "bare_value": 0.6573099415204678, "by_split": {"test": 0.5314518297854735}}, {"key": "seg_f1_50", "bare_value": 0.6456140350877194, "by_split": {"test": 0.3972677341277229}}]`
-- `experiments/transfer/t1a_base_test_001_t1a_base_test_seed42`: `[{"key": "accuracy", "bare_value": 0.9471947194719472, "by_split": {"test": 0.8173505275498242}}, {"key": "edit_score", "bare_value": 34.51219512195122, "by_split": {"test": 53.23652935000309}}, {"key": "jaccard", "bare_value": 0.7611425277318641, "by_split": {"test": 0.5690620284081881}}, {"key": "macro_f1", "bare_value": 0.80276861640554, "by_split": {"test": 0.6700748330236684}}, {"key": "seg_f1_10", "bare_value": 0.4507936507936509, "by_split": {"test": 0.602266268826371}}, {"key": "seg_f1_25", "bare_value": 0.4406926406926408, "by_split": {"test": 0.5849625840674434}}, {"key": "seg_f1_50", "bare_value": 0.43059163059163064, "by_split": {"test": 0.45644714407502135}}]`
-- `experiments/transfer/t1a_base_test_002_t1a_base_test_seed123`: `[{"key": "accuracy", "bare_value": 0.9485148514851485, "by_split": {"test": 0.8302461899179366}}, {"key": "edit_score", "bare_value": 31.80457052797478, "by_split": {"test": 50.18577313934339}}, {"key": "jaccard", "bare_value": 0.7671249201454028, "by_split": {"test": 0.600514260719424}}, {"key": "macro_f1", "bare_value": 0.8066393348436439, "by_split": {"test": 0.6932970793785072}}, {"key": "seg_f1_10", "bare_value": 0.4294131794131794, "by_split": {"test": 0.5557877670026393}}, {"key": "seg_f1_25", "bare_value": 0.42015392015392017, "by_split": {"test": 0.546365354679116}}, {"key": "seg_f1_50", "bare_value": 0.39237614237614243, "by_split": {"test": 0.5208924572071675}}]`
-- `experiments/transfer/t1a_base_test_003_t1a_base_test_seed456`: `[{"key": "accuracy", "bare_value": 0.9471947194719472, "by_split": {"test": 0.8382180539273154}}, {"key": "edit_score", "bare_value": 40.63492063492063, "by_split": {"test": 53.52448703058459}}, {"key": "jaccard", "bare_value": 0.7529534250683285, "by_split": {"test": 0.6118934786380359}}, {"key": "macro_f1", "bare_value": 0.7963241850462713, "by_split": {"test": 0.6972613012080395}}, {"key": "seg_f1_10", "bare_value": 0.5071225071225071, "by_split": {"test": 0.6041861758736332}}, {"key": "seg_f1_25", "bare_value": 0.4968660968660969, "by_split": {"test": 0.5942342392041392}}, {"key": "seg_f1_50", "bare_value": 0.47635327635327646, "by_split": {"test": 0.4659897345368704}}]`
-- `experiments/transfer/t1a_regiontraj_test_001_t1a_regiontraj_test_seed42`: `[{"key": "accuracy", "bare_value": 0.9511551155115512, "by_split": {"test": 0.8600234466588511}}, {"key": "edit_score", "bare_value": 41.449275362318836, "by_split": {"test": 45.54551332669573}}, {"key": "jaccard", "bare_value": 0.7827713529196976, "by_split": {"test": 0.5655965566740991}}, {"key": "macro_f1", "bare_value": 0.8165861788493901, "by_split": {"test": 0.6358997765060056}}, {"key": "seg_f1_10", "bare_value": 0.5586854460093896, "by_split": {"test": 0.5518406007267392}}, {"key": "seg_f1_25", "bare_value": 0.5492957746478874, "by_split": {"test": 0.5499466613327999}}, {"key": "seg_f1_50", "bare_value": 0.5027386541471048, "by_split": {"test": 0.4003046137947128}}, {"key": "sticky_accuracy", "bare_value": 0.928052805280528, "by_split": {"test": 0.7395076201641266}}, {"key": "sticky_edit_score", "bare_value": 54.19047619047618, "by_split": {"test": 54.6362894502116}}, {"key": "sticky_jaccard", "bare_value": 0.7320788809612998, "by_split": {"test": 0.4069962731219658}}, {"key": "sticky_macro_f1", "bare_value": 0.7812961310103008, "by_split": {"test": 0.5142457076274282}}, {"key": "sticky_seg_f1_10", "bare_value": 0.6503703703703704, "by_split": {"test": 0.6110046828437633}}, {"key": "sticky_seg_f1_25", "bare_value": 0.6503703703703704, "by_split": {"test": 0.6110046828437633}}, {"key": "sticky_seg_f1_50", "bare_value": 0.5866666666666666, "by_split": {"test": 0.4605683269476372}}]`
-- `experiments/transfer/t1a_regiontraj_test_002_t1a_regiontraj_test_seed123`: `[{"key": "accuracy", "bare_value": 0.9491749174917492, "by_split": {"test": 0.8295427901524033}}, {"key": "edit_score", "bare_value": 32.36111111111111, "by_split": {"test": 52.381027187801095}}, {"key": "jaccard", "bare_value": 0.7702997958299107, "by_split": {"test": 0.48198069096990376}}, {"key": "macro_f1", "bare_value": 0.8083721689809815, "by_split": {"test": 0.5705131725695836}}, {"key": "seg_f1_10", "bare_value": 0.4477495107632094, "by_split": {"test": 0.5905192336342778}}, {"key": "seg_f1_25", "bare_value": 0.4386170906718853, "by_split": {"test": 0.5844855636006079}}, {"key": "seg_f1_50", "bare_value": 0.3961513372472277, "by_split": {"test": 0.44776484610112927}}, {"key": "sticky_accuracy", "bare_value": 0.9485148514851485, "by_split": {"test": 0.8096131301289566}}, {"key": "sticky_edit_score", "bare_value": 45.370370370370374, "by_split": {"test": 59.66200466200467}}, {"key": "sticky_jaccard", "bare_value": 0.7707461842287983, "by_split": {"test": 0.4583712132986175}}, {"key": "sticky_macro_f1", "bare_value": 0.8081364735701284, "by_split": {"test": 0.5534502794354794}}, {"key": "sticky_seg_f1_10", "bare_value": 0.5622950819672131, "by_split": {"test": 0.6536052961173734}}, {"key": "sticky_seg_f1_25", "bare_value": 0.5513661202185792, "by_split": {"test": 0.6405439255680802}}, {"key": "sticky_seg_f1_50", "bare_value": 0.49877049180327865, "by_split": {"test": 0.4953480050098407}}]`
-- `experiments/transfer/t1a_regiontraj_test_003_t1a_regiontraj_test_seed456`: `[{"key": "accuracy", "bare_value": 0.9425742574257425, "by_split": {"test": 0.8011723329425556}}, {"key": "edit_score", "bare_value": 43.91534391534392, "by_split": {"test": 52.706669111394376}}, {"key": "jaccard", "bare_value": 0.7543336032980965, "by_split": {"test": 0.5033580350884154}}, {"key": "macro_f1", "bare_value": 0.7994252532653761, "by_split": {"test": 0.5916665718334579}}, {"key": "seg_f1_10", "bare_value": 0.5523895673149405, "by_split": {"test": 0.5888564415100728}}, {"key": "seg_f1_25", "bare_value": 0.5424393185587215, "by_split": {"test": 0.576893234016139}}, {"key": "seg_f1_50", "bare_value": 0.5021860394994723, "by_split": {"test": 0.4481053552282603}}, {"key": "sticky_accuracy", "bare_value": 0.932013201320132, "by_split": {"test": 0.8091441969519344}}, {"key": "sticky_edit_score", "bare_value": 52.22222222222223, "by_split": {"test": 62.743657308874695}}, {"key": "sticky_jaccard", "bare_value": 0.7179455498622082, "by_split": {"test": 0.5035662359292181}}, {"key": "sticky_macro_f1", "bare_value": 0.7697527677989501, "by_split": {"test": 0.5911093862873065}}, {"key": "sticky_seg_f1_10", "bare_value": 0.6191919191919192, "by_split": {"test": 0.6585406099276868}}, {"key": "sticky_seg_f1_25", "bare_value": 0.6070707070707071, "by_split": {"test": 0.6452749695739364}}, {"key": "sticky_seg_f1_50", "bare_value": 0.5411616161616162, "by_split": {"test": 0.500209111719324}}]`
 
 ## 9. 標準規約 (1 run 1 dir) に従わない群
 
@@ -180,23 +174,103 @@ split ではないため、これらの run の評価 split は証拠ファイ�
 **取りこぼした run 数は 0**（これらの配下に `metrics.json` は 1 つも無い）。
 個別 adapter は次段階に回す。
 
-| group | ファイル数 | 備考 |
-|---|---:|---|
-| `ablations` | 1 | 未着手 scaffold (.gitkeep のみ) |
-| `analysis` | 86 | 非 run の成果物。次段階で adapter が必要 |
-| `audit` | 3 | 非 run の成果物。次段階で adapter が必要 |
-| `detector_improve` | 5 | 非 run の成果物。次段階で adapter が必要 |
-| `final` | 1 | 未着手 scaffold (.gitkeep のみ) |
-| `g2_main_2026-07-29` | 5 | 非 run の成果物。次段階で adapter が必要 |
+| group | ファイル数 | 中身の種別 | 術具 per-class 指標 |
+|---|---:|---|---|
+| `ablations` | 1 | `.gitkeep` のみ | 未着手 scaffold |
+| `analysis` | 86 | EDA レポート / 図 (png) / CSV / JSON | **あり**: `detector_sanity/reldetr_seed42_val_perclass.json` (COCO 形式 `AP`/`AP50`/`AP75`/`AP_s`/`AP_m` 等 13 キー)、`signature_subset_detector_compare/results.json` (`per_class` キー) |
+| `audit` | 3 | `audit_report.json` × 3 | なし (`inject` / `trainable` / `n_trainable_params` 等の学習設定監査) |
+| `detector_improve` | 5 | `label_names.txt` / `val_perclass.json` | **あり**: `augstrong_seed42/val_perclass.json` (COCO 形式 13 キー) |
+| `final` | 1 | `.gitkeep` のみ | 未着手 scaffold |
+| `g2_main_2026-07-29` | 5 | `csv/` `json/` `prereg/` `HANDOVER_lecun.md` | なし (`f_roi_stats_{val,test}.json` は ROI 統計) |
+
+### 次段階への申し送り
+
+**現在 `per_class_metric=AP` の run は 62 しか無い。**
+上表の `val_perclass.json` 系は術具 per-class 指標を含むため、
+adapter を書けば貴重な追加ソースになる。
+
+また `analysis/step_c_coupling_analysis/*.json`（12 ファイル）は
+`model` / `seed` / **`split`** / `ckpt` / `phase` / `mAP` を持ち、
+**`split` を明示している**。split が確定できない run の補強材料になりうる。
 
 ## 10. 警告が出た run の内訳
 
 | 警告 | 件数 |
 |---|---:|
-| ディレクトリ名に補助 seed {...} が含まれる。seed には末尾の seed<N> のみを採用した。 | 101 |
+| ディレクトリ名に補助 seed {...} が含まれる。seed には末尾の seed<N> のみを採用し、det/p は seed_detector / seed_phase に分離した。 | 101 |
+| val と test の指標が共存する。primary（best 選択元）は val。test 側は metrics_by_split['...'] に保持している。 | 27 |
 | host '...' は実サーバーを一意に特定できない。host は null にした。 | 10 |
 | per_class_ap.json が空 ({...}) | 8 |
 | run 名が命名規約 <step>_<seq3>_<desc>_seed<N> に一致しない | 6 |
 | metrics.json が空 ({...}) | 6 |
 | per_class_ap.json が存在しない | 3 |
+
+## 11. 🔴 要対処: 乱数で per-class AP を生成するコードが残っている
+
+`src/egosurgery/engines/trainer.py:273-278`
+
+```python
+rng = np.random.default_rng(int(self.cfg.seed))
+per_class_ap = {
+    cls: round(float(rng.uniform(0.05, 0.85)), 4) for cls in TOOL_CLASSES
+}
+self.manager.log_per_class_ap(per_class_ap)
+```
+
+この dummy Trainer は **乱数を `mAP` として `metrics.json` に書く**。
+`CLAUDE.md` の「metrics / mAP 等の数値を絶対に捏造しない」に照らして危険。
+`cfg.experiment.step` が s0/s1/s2 以外のとき dummy Trainer が選ばれる。
+
+### 現時点の混入は 0 件（検証済み）
+
+`tools/verify_no_dummy_metrics.py` が 2 系統で検査する:
+
+1. **語彙照合** — dummy 側の `TOOL_CLASSES` は `Needle_Holders` / `Retractors` /
+   `Clip_Applier` / `Suction` / `Electrocautery` / `Needle` / `Thread` という
+   **別の語彙**を使う。実データ 2 体系のどちらとも一致しない。
+2. **値の再現照合** — 既知 seed で `np.random.default_rng(seed).uniform(0.05, 0.85)`
+   を再現し、`per_class_ap.json` と完全一致するものを探す。
+
+結果: **混入 0 件**。experiments/ の per-class 指標は全て実評価器由来。
+
+**このタスクではコードを変更していない。**
+dummy Trainer の削除またはガード追加は別タスクで検討すること。
+再検証: `python tools/verify_no_dummy_metrics.py`
+
+## 12. experiments/README.md と実態の乖離
+
+README は step 識別子を **s0〜s9 / a1〜a7（17 種）** と規定しているが、
+実測は **156 種**。README に無い以下の系統が存在する。
+
+| 系統 | step 識別子の種類 | run 合計 | 例 |
+|---|---:|---:|---|
+| `b1` | 1 | 6 | `b1_mtl` |
+| `b2a` | 74 | 265 | `b2a_det2phase_toolpresence`, `b2a_ro_oracle_noise000` |
+| `t1a` | 56 | 132 | `t1a_deep_3s10l96f`, `t1a_region_only` |
+| `t1b` | 1 | 2 | `t1b_phasefilm` |
+| `taux` | 5 | 15 | `taux_mingru_nonek3`, `taux_tecno_deltak3` |
+| `haux` | 6 | 18 | `haux_hand_count_oracle`, `haux_hand_geom_oracle` |
+| `hires` | 9 | 9 | `hires_relation_detr_augstrong_hires_seed42_p123`, `hires_relation_detr_augstrong_hires_seed42_p42` |
+
+また README は 6 カテゴリ（`baselines` / `phase0` / `phase1` / `ablations` /
+`transfer` / `final`）を規定するが、実際に run があるのは 4 つで、
+`ablations` と `final` は空。逆に README に無い `_smoke_prior` に run がある。
+
+**このタスクでは README を変更していない。** 規約の更新は別タスク。
+
+## 13. run_id の衝突
+
+`run_id`（ディレクトリ名）は **6 種が複数箇所で衝突**する。
+スキーマは `runs/<run_id>.json` を指定しているが、そのままではファイルが
+上書きされるため、パス由来の `ledger_key` をファイル名に使い、
+`run_id` はフィールドとして保持した。
+
+| run_id | 箇所数 |
+|---|---:|
+| `s0_001_maskdino_bbox_seed42` | 3 |
+| `s0_002_maskdino_bbox_seed123` | 3 |
+| `s0_003_maskdino_bbox_seed456` | 3 |
+| `s0_004_varifocanet_bbox_seed42` | 3 |
+| `s0_005_varifocanet_bbox_seed123` | 3 |
+| `s0_006_varifocanet_bbox_seed456` | 3 |
 

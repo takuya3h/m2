@@ -1,5 +1,4 @@
 {
-  "aux_seeds": {},
   "command": "#!/usr/bin/env bash\n# Relation-DETR (accelerate) 実行コマンド\n# seed=123\naccelerate launch --num_processes 2 main.py --config-file configs/train_config_egosurgery_seed123.py --seed 123 --mixed-precision fp16\n",
   "commit": "4327348e444381f1737309252fb86ad9b5034d6a",
   "config_path": "experiments/baselines/s0_017_relationdetr_bbox_seed123/config.yaml",
@@ -37,7 +36,6 @@
   "harvest_warnings": [],
   "host": "philip",
   "host_raw": "philip",
-  "inferred_split": null,
   "ledger_key": "baselines__s0_017_relationdetr_bbox_seed123",
   "metrics": {
     "AP_common": 0.724839,
@@ -75,23 +73,29 @@
     "Syringe": 0.5730520423297708,
     "Tweezers": 0.7812822846195138
   },
-  "per_class_kind": "tool_ap",
+  "per_class_kind": "tool",
+  "per_class_metric": "AP",
   "per_class_nan_classes": [
     "Retractor"
   ],
+  "per_class_source": "experiments/baselines/s0_017_relationdetr_bbox_seed123/per_class_ap.json",
   "per_class_valid_count": 14,
   "provenance": {
     "commit": "from_git_commit_txt",
     "epoch": "from_metrics_json",
     "host": "from_server_txt",
-    "inferred_split": "not_determinable",
     "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
     "seed": "from_dirname",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
     "split": "from_metric_key_prefix",
     "step": "from_dirname"
   },
   "run_id": "s0_017_relationdetr_bbox_seed123",
   "seed": 123,
+  "seed_detector": null,
+  "seed_phase": null,
   "seq": 17,
   "split": "val",
   "step": "s0",

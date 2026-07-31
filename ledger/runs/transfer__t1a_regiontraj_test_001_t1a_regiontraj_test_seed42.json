@@ -1,108 +1,8 @@
 {
-  "aux_seeds": {},
   "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-07-05T10:39:36+00:00\npython scripts/train_t1a_regiontraj.py --seed 42 --epochs 50 --eval-test --description t1a_regiontraj_test\n",
   "commit": "27ad173f16f4c63a7bbe9160aa9a4b5c1461cb2a",
   "config_path": "experiments/transfer/t1a_regiontraj_test_001_t1a_regiontraj_test_seed42/config.yaml",
-  "conflicting_bare_keys": [
-    {
-      "bare_value": 0.9511551155115512,
-      "by_split": {
-        "test": 0.8600234466588511
-      },
-      "key": "accuracy"
-    },
-    {
-      "bare_value": 41.449275362318836,
-      "by_split": {
-        "test": 45.54551332669573
-      },
-      "key": "edit_score"
-    },
-    {
-      "bare_value": 0.7827713529196976,
-      "by_split": {
-        "test": 0.5655965566740991
-      },
-      "key": "jaccard"
-    },
-    {
-      "bare_value": 0.8165861788493901,
-      "by_split": {
-        "test": 0.6358997765060056
-      },
-      "key": "macro_f1"
-    },
-    {
-      "bare_value": 0.5586854460093896,
-      "by_split": {
-        "test": 0.5518406007267392
-      },
-      "key": "seg_f1_10"
-    },
-    {
-      "bare_value": 0.5492957746478874,
-      "by_split": {
-        "test": 0.5499466613327999
-      },
-      "key": "seg_f1_25"
-    },
-    {
-      "bare_value": 0.5027386541471048,
-      "by_split": {
-        "test": 0.4003046137947128
-      },
-      "key": "seg_f1_50"
-    },
-    {
-      "bare_value": 0.928052805280528,
-      "by_split": {
-        "test": 0.7395076201641266
-      },
-      "key": "sticky_accuracy"
-    },
-    {
-      "bare_value": 54.19047619047618,
-      "by_split": {
-        "test": 54.6362894502116
-      },
-      "key": "sticky_edit_score"
-    },
-    {
-      "bare_value": 0.7320788809612998,
-      "by_split": {
-        "test": 0.4069962731219658
-      },
-      "key": "sticky_jaccard"
-    },
-    {
-      "bare_value": 0.7812961310103008,
-      "by_split": {
-        "test": 0.5142457076274282
-      },
-      "key": "sticky_macro_f1"
-    },
-    {
-      "bare_value": 0.6503703703703704,
-      "by_split": {
-        "test": 0.6110046828437633
-      },
-      "key": "sticky_seg_f1_10"
-    },
-    {
-      "bare_value": 0.6503703703703704,
-      "by_split": {
-        "test": 0.6110046828437633
-      },
-      "key": "sticky_seg_f1_25"
-    },
-    {
-      "bare_value": 0.5866666666666666,
-      "by_split": {
-        "test": 0.4605683269476372
-      },
-      "key": "sticky_seg_f1_50"
-    }
-  ],
+  "conflicting_bare_keys": [],
   "description": "t1a_regiontraj_test",
   "duplicate_bare_keys": [],
   "epoch": 33,
@@ -136,40 +36,27 @@
   "exclusion_reason": null,
   "gpu": null,
   "group": "transfer",
-  "harvest_warnings": [],
+  "harvest_warnings": [
+    "val と test の指標が共存する。primary（best 選択元）は val。test 側は metrics_by_split['test'] に保持している。"
+  ],
   "host": "efros",
   "host_raw": "efros",
-  "inferred_split": null,
   "ledger_key": "transfer__t1a_regiontraj_test_001_t1a_regiontraj_test_seed42",
   "metrics": {
     "accuracy": 0.8600234466588511,
-    "accuracy__bare": 0.9511551155115512,
     "edit_score": 45.54551332669573,
-    "edit_score__bare": 41.449275362318836,
     "jaccard": 0.5655965566740991,
-    "jaccard__bare": 0.7827713529196976,
     "macro_f1": 0.6358997765060056,
-    "macro_f1__bare": 0.8165861788493901,
     "seg_f1_10": 0.5518406007267392,
-    "seg_f1_10__bare": 0.5586854460093896,
     "seg_f1_25": 0.5499466613327999,
-    "seg_f1_25__bare": 0.5492957746478874,
     "seg_f1_50": 0.4003046137947128,
-    "seg_f1_50__bare": 0.5027386541471048,
     "sticky_accuracy": 0.7395076201641266,
-    "sticky_accuracy__bare": 0.928052805280528,
     "sticky_edit_score": 54.6362894502116,
-    "sticky_edit_score__bare": 54.19047619047618,
     "sticky_jaccard": 0.4069962731219658,
-    "sticky_jaccard__bare": 0.7320788809612998,
     "sticky_macro_f1": 0.5142457076274282,
-    "sticky_macro_f1__bare": 0.7812961310103008,
     "sticky_seg_f1_10": 0.6110046828437633,
-    "sticky_seg_f1_10__bare": 0.6503703703703704,
     "sticky_seg_f1_25": 0.6110046828437633,
-    "sticky_seg_f1_25__bare": 0.6503703703703704,
-    "sticky_seg_f1_50": 0.4605683269476372,
-    "sticky_seg_f1_50__bare": 0.5866666666666666
+    "sticky_seg_f1_50": 0.4605683269476372
   },
   "metrics_by_split": {
     "test": {
@@ -188,7 +75,7 @@
       "sticky_seg_f1_25": 0.6110046828437633,
       "sticky_seg_f1_50": 0.4605683269476372
     },
-    "unknown": {
+    "val": {
       "accuracy": 0.9511551155115512,
       "edit_score": 41.449275362318836,
       "jaccard": 0.7827713529196976,
@@ -219,23 +106,29 @@
     "incision": 0.9611940298507462,
     "irrigation": 0.0
   },
-  "per_class_kind": "phase_metric",
+  "per_class_kind": "phase",
+  "per_class_metric": "F1",
   "per_class_nan_classes": [],
+  "per_class_source": "experiments/transfer/t1a_regiontraj_test_001_t1a_regiontraj_test_seed42/per_class_ap.json",
   "per_class_valid_count": 9,
   "provenance": {
     "commit": "from_git_commit_txt",
     "epoch": "from_metrics_json",
     "host": "from_server_txt",
-    "inferred_split": "not_determinable",
     "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
     "seed": "from_dirname",
-    "split": "from_metric_key_prefix",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "primary_val_by_training_script",
     "step": "from_dirname"
   },
   "run_id": "t1a_regiontraj_test_001_t1a_regiontraj_test_seed42",
   "seed": 42,
+  "seed_detector": null,
+  "seed_phase": null,
   "seq": 1,
-  "split": "test",
+  "split": "val",
   "step": "t1a_regiontraj_test",
   "subgroup": null
 }
