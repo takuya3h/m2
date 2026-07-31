@@ -1,5 +1,4 @@
 {
-  "aux_seeds": {},
   "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-05-28T08:13:08+00:00\npython /home/ubuntu/slocal2/m2/src/egosurgery/train.py stage=s0_tool_baseline model.detection_head=ddq seed=42 experiment.description=ddq_bbox train.real_detector=true train.epochs=12 train.batch_size=2 train.lr_scaling_mode=linear logging.wandb_enabled=true\n",
   "commit": "4327348e444381f1737309252fb86ad9b5034d6a",
   "config_path": "experiments/baselines/s0_010_ddq_bbox_seed42/config.yaml",
@@ -35,7 +34,6 @@
   "harvest_warnings": [],
   "host": "philip",
   "host_raw": "philip",
-  "inferred_split": null,
   "ledger_key": "baselines__s0_010_ddq_bbox_seed42",
   "metrics": {
     "AP_common": 0.6583076923076923,
@@ -73,23 +71,29 @@
     "Syringe": 0.59,
     "Tweezers": 0.783
   },
-  "per_class_kind": "tool_ap",
+  "per_class_kind": "tool",
+  "per_class_metric": "AP",
   "per_class_nan_classes": [
     "Retractor"
   ],
+  "per_class_source": "experiments/baselines/s0_010_ddq_bbox_seed42/per_class_ap.json",
   "per_class_valid_count": 14,
   "provenance": {
     "commit": "from_git_commit_txt",
     "epoch": "from_metrics_json",
     "host": "from_server_txt",
-    "inferred_split": "not_determinable",
     "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
     "seed": "from_dirname",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
     "split": "from_metric_key_prefix",
     "step": "from_dirname"
   },
   "run_id": "s0_010_ddq_bbox_seed42",
   "seed": 42,
+  "seed_detector": null,
+  "seed_phase": null,
   "seq": 10,
   "split": "val",
   "step": "s0",

@@ -1,5 +1,4 @@
 {
-  "aux_seeds": {},
   "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-06-16T19:52:13+00:00\npython scripts/train_s4_tecno.py --seed 456 --epochs 50\n",
   "commit": "0129845290227b350ff79f02aa15f06824f444b4",
   "config_path": "experiments/phase1/s4_phase_baseline_002_frozen_tecno_phase_baseline_seed456/config.yaml",
@@ -37,7 +36,6 @@
   "harvest_warnings": [],
   "host": "lecun",
   "host_raw": "lecun",
-  "inferred_split": null,
   "ledger_key": "phase1__s4_phase_baseline_002_frozen_tecno_phase_baseline_seed456",
   "metrics": {
     "accuracy": 0.8957095709570957,
@@ -48,7 +46,7 @@
     "seg_f1_50": 0.42926155969634233
   },
   "metrics_by_split": {
-    "unknown": {
+    "val": {
       "accuracy": 0.8957095709570957,
       "edit_score": 45.50877192982457,
       "macro_f1": 0.6865808205142976,
@@ -71,23 +69,29 @@
     "incision": 0.8313253012048193,
     "irrigation": 0.0
   },
-  "per_class_kind": "phase_metric",
+  "per_class_kind": "phase",
+  "per_class_metric": "F1",
   "per_class_nan_classes": [],
+  "per_class_source": "experiments/phase1/s4_phase_baseline_002_frozen_tecno_phase_baseline_seed456/per_class_ap.json",
   "per_class_valid_count": 9,
   "provenance": {
     "commit": "from_git_commit_txt",
     "epoch": "from_metrics_json",
     "host": "from_server_txt",
-    "inferred_split": "not_determinable",
     "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
     "seed": "from_dirname",
-    "split": "not_determinable",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "from_metric_key_prefix",
     "step": "from_dirname"
   },
   "run_id": "s4_phase_baseline_002_frozen_tecno_phase_baseline_seed456",
   "seed": 456,
+  "seed_detector": null,
+  "seed_phase": null,
   "seq": 2,
-  "split": null,
+  "split": "val",
   "step": "s4_phase_baseline",
   "subgroup": null
 }

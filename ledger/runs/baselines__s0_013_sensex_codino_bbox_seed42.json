@@ -1,5 +1,4 @@
 {
-  "aux_seeds": {},
   "command": "python tools/train.py /home/ubuntu/slocal2/m2/third_party/Co-DETR/projects/configs/co_dino/co_dino_5scale_9encoder_lsj_r50_egosurgery.py --work-dir /tmp/sensex_codino_work_seed42 --seed 42 --launcher pytorch --resume-from epoch_7.pth\n",
   "commit": "4327348e444381f1737309252fb86ad9b5034d6a",
   "config_path": "experiments/baselines/s0_013_sensex_codino_bbox_seed42/config.yaml",
@@ -44,7 +43,6 @@
   "harvest_warnings": [],
   "host": "philip",
   "host_raw": "philip",
-  "inferred_split": null,
   "ledger_key": "baselines__s0_013_sensex_codino_bbox_seed42",
   "metrics": {
     "AP_common": 0.7142500000000002,
@@ -88,23 +86,29 @@
     "Syringe": 0.592,
     "Tweezers": 0.763
   },
-  "per_class_kind": "tool_ap",
+  "per_class_kind": "tool",
+  "per_class_metric": "AP",
   "per_class_nan_classes": [
     "Retractor"
   ],
+  "per_class_source": "experiments/baselines/s0_013_sensex_codino_bbox_seed42/per_class_ap.json",
   "per_class_valid_count": 14,
   "provenance": {
     "commit": "from_git_commit_txt",
     "epoch": "not_determinable",
     "host": "from_server_txt",
-    "inferred_split": "not_determinable",
     "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
     "seed": "from_dirname",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
     "split": "from_metric_key_prefix",
     "step": "from_dirname"
   },
   "run_id": "s0_013_sensex_codino_bbox_seed42",
   "seed": 42,
+  "seed_detector": null,
+  "seed_phase": null,
   "seq": 13,
   "split": "val",
   "step": "s0",

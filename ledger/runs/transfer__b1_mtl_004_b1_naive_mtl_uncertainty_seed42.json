@@ -1,5 +1,4 @@
 {
-  "aux_seeds": {},
   "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-06-21T07:28:39+00:00\npython scripts/postprocess_b1.py --work /tmp/b1_work_uncertainty_seed42 --weighting uncertainty --seed 42\n",
   "commit": "a697d90b889622dbc5476a22eee93c8b1cd7ddfa",
   "config_path": "experiments/transfer/b1_mtl_004_b1_naive_mtl_uncertainty_seed42/config.yaml",
@@ -16,7 +15,6 @@
   "harvest_warnings": [],
   "host": "lecun",
   "host_raw": "lecun",
-  "inferred_split": null,
   "ledger_key": "transfer__b1_mtl_004_b1_naive_mtl_uncertainty_seed42",
   "metrics": {
     "accuracy": 0.8719471947194719,
@@ -33,17 +31,19 @@
   },
   "metrics_by_split": {
     "unknown": {
+      "mAP": 0.709288038609014,
+      "sigma2_d": 15.593472480773926,
+      "sigma2_p": 0.8756247758865356
+    },
+    "val": {
       "accuracy": 0.8719471947194719,
       "edit_score": 38.82539682539683,
       "frame_acc_inline": 0.8719471947194719,
       "jaccard": 0.6151767771279671,
-      "mAP": 0.709288038609014,
       "macro_f1": 0.6972017263561004,
       "seg_f1_10": 0.40444444444444444,
       "seg_f1_25": 0.3666666666666667,
-      "seg_f1_50": 0.35555555555555557,
-      "sigma2_d": 15.593472480773926,
-      "sigma2_p": 0.8756247758865356
+      "seg_f1_50": 0.35555555555555557
     }
   },
   "notes": "# b1_mtl_004_b1_naive_mtl_uncertainty_seed42\n\n作成日時: 2026-06-21T07:28:39+00:00\n\n## 仮説\n（ここに記入）\n\n## 実験設定\n- Category: transfer\n- Step: b1_mtl\n- Seed: 42\n- Config: （config.yaml を参照）\n\n## 結果\n（実験完了後に記入）\n\n## 解釈\n（結果の意味、期待との差、原因の仮説）\n\n## 次の行動\n1.\n",
@@ -66,25 +66,31 @@
     "Syringe": 0.6022525086094382,
     "Tweezers": 0.7606836553353146
   },
-  "per_class_kind": "tool_ap",
+  "per_class_kind": "tool",
+  "per_class_metric": "AP",
   "per_class_nan_classes": [
     "Retractor"
   ],
+  "per_class_source": "experiments/transfer/b1_mtl_004_b1_naive_mtl_uncertainty_seed42/per_class_ap.json",
   "per_class_valid_count": 14,
   "provenance": {
     "commit": "from_git_commit_txt",
     "epoch": "not_determinable",
     "host": "from_server_txt",
-    "inferred_split": "not_determinable",
     "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
     "seed": "from_dirname",
-    "split": "not_determinable",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "from_metric_key_prefix",
     "step": "from_dirname"
   },
   "run_id": "b1_mtl_004_b1_naive_mtl_uncertainty_seed42",
   "seed": 42,
+  "seed_detector": null,
+  "seed_phase": null,
   "seq": 4,
-  "split": null,
+  "split": "val",
   "step": "b1_mtl",
   "subgroup": null
 }
