@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""experiments/ を走査して機械可読な横断インデックス (ledger/) を収穫する。
+"""experiments/ を走査して機械可読な横断インデックス (runindex/) を収穫する。
 
 設計原則
 --------
@@ -10,13 +10,13 @@
 
 二段構え
 --------
-  Stage 1: experiments/**/metrics.json  ->  ledger/runs/<ledger_key>.json
-  Stage 2: ledger/runs/*.json           ->  ledger/index.csv
+  Stage 1: experiments/**/metrics.json  ->  runindex/runs/<ledger_key>.json
+  Stage 2: runindex/runs/*.json           ->  runindex/index.csv
 
 使い方
 ------
-  python tools/harvest_ledger.py            # dry-run (書き出さない)
-  python tools/harvest_ledger.py --write    # ledger/ を再生成
+  python tools/harvest_runindex.py            # dry-run (書き出さない)
+  python tools/harvest_runindex.py --write    # runindex/ を再生成
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 EXPERIMENTS = REPO_ROOT / "experiments"
-LEDGER = REPO_ROOT / "ledger"
+RUNINDEX = REPO_ROOT / "runindex"
 
 # --------------------------------------------------------------------------- #
 # 除外規約
@@ -370,6 +370,21 @@ def harvest_metrics(raw: Any) -> dict[str, Any]:
     return result
 
 
+# 正本 M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）の §16.7.1 に、
+# 評価 split についての明示的な記録がある:
+#
+#   「§8 訓練スクリプトに関する補足: val_evaluator の ann_file は
+#     instances_val.json、prefix='val'（mmdet_config.py:314-320）のため、
+#     metrics.json / per_class_ap.json はすべて val split の数値。
+#     test split は未評価（最終報告用に温存、Δ 判定は val で行う設計）。」
+#
+#   ローカル写し: docs/m2_plan_rewrite/sections/19_epoch_16.md L161
+#                 docs/m2_plan_rewrite/m2_plan_v2_full.md L1561
+#
+# これを split の既定値とする。ただし後から --eval-test が実装され、
+# test_* キーを持つ run が 27 件出現している（正本の記述の例外。anomalies.md 参照）。
+PLAN_DEFAULT_SPLIT_PROVENANCE = "from_plan_section_16_7"
+
 # split を確定するための一次証拠。eval_recipe の split_*_images からの逆引きは
 # 採用しない (3 split 全ての枚数が常に記録されており、どれを使ったかの情報ではない)。
 _SPLIT_ARG_RE = re.compile(r"--(?:eval[-_])?split[= ]+(train|val|test)\b")
@@ -577,14 +592,21 @@ def build_run_record(run_dir: Path) -> dict[str, Any]:
     config_file = run_dir / "config.yaml"
     config_path = str(rel / "config.yaml") if config_file.exists() else None
 
-    # split の確定。指標キー形式で決まらなかった場合のみ、command.sh / config.yaml /
-    # eval_split キーという一次証拠を読む。いずれも事実であり推測ではない。
+    # split の確定。順に一次証拠を当たり、最後に正本の既定へ落とす。
+    #   1. 指標キー形式（val/ … / test_ … / phase_ … + 学習スクリプトのコード）
+    #   2. command.sh / config.yaml / eval_recipe.eval_split
+    #   3. 正本 M2研究計画 §16.7 の既定（下記）
+    # いずれも事実であり推測ではない。
     split = m["split"]
     split_prov = m["split_provenance"]
     if split is None:
         split, split_prov = split_from_primary_evidence(
             m["eval_recipe"], command, _read_text(config_file) if config_file.exists() else None
         )
+    if split is None and m["metrics"]:
+        # 正本の既定。指標が 1 つでもある run にのみ適用する
+        # （metrics.json が空の run は「評価されていない」ので null のまま）。
+        split, split_prov = "val", PLAN_DEFAULT_SPLIT_PROVENANCE
 
     provenance["seed"] = "from_dirname" if name_info["seed"] is not None else "not_determinable"
     provenance["seed_detector"] = (
@@ -678,23 +700,78 @@ SCALAR_COLUMNS = [
     "commit",
     "epoch",
     "notion_page_id",
+    "has_test",
     "n_harvest_warnings",
 ]
 
 
 def build_index(records: list[dict[str, Any]]) -> tuple[list[str], list[dict[str, Any]]]:
+    """index.csv の列を組み立てる。
+
+    `metric.<name>` は **primary（= split 列が指す側。実質 val）** の値。
+    既存列の意味は変えない（後方互換）。
+
+    test 側の値は `metric_test.<name>` として **別列**に展開する。
+    これが無いと「split 列が val 一色 -> test 評価は存在しない」と誤読される。
+    実測では 27 run が test 評価を持ち、val とは大きく乖離する。
+    """
     metric_keys: set[str] = set()
+    test_keys: set[str] = set()
     for r in records:
         metric_keys.update(r["metrics"].keys())
+        test_keys.update((r["metrics_by_split"] or {}).get("test", {}).keys())
+
     metric_cols = [f"metric.{k}" for k in sorted(metric_keys)]
-    header = SCALAR_COLUMNS + metric_cols
+    test_cols = [f"metric_test.{k}" for k in sorted(test_keys)]
+    header = SCALAR_COLUMNS + metric_cols + test_cols
 
     rows = []
     for r in sorted(records, key=lambda x: x["ledger_key"]):
         row = {c: r.get(c) for c in SCALAR_COLUMNS}
         row["n_harvest_warnings"] = len(r["harvest_warnings"])
+        row["has_test"] = bool((r["metrics_by_split"] or {}).get("test"))
         for k, v in r["metrics"].items():
             row[f"metric.{k}"] = v
+        for k, v in (r["metrics_by_split"] or {}).get("test", {}).items():
+            row[f"metric_test.{k}"] = v
+        rows.append(row)
+    return header, rows
+
+
+def build_val_test_pairs(records: list[dict[str, Any]]) -> tuple[list[str], list[dict[str, Any]]]:
+    """test 評価を持つ run の val/test 対応表（anomalies/val_test_pairs.csv）。
+
+    index.csv を横に見るだけでは val と test の乖離が読み取りにくいため、
+    該当 run だけを縦持ちで別出しする。
+    """
+    names: set[str] = set()
+    targets = [r for r in records if (r["metrics_by_split"] or {}).get("test")]
+    for r in targets:
+        by = r["metrics_by_split"]
+        names.update(by.get("val", {}).keys() & by.get("test", {}).keys())
+
+    header = ["ledger_key", "path", "group", "step", "seed", "excluded"]
+    for n in sorted(names):
+        header += [f"val.{n}", f"test.{n}", f"delta.{n}"]
+
+    rows = []
+    for r in sorted(targets, key=lambda x: x["ledger_key"]):
+        by = r["metrics_by_split"]
+        row = {
+            "ledger_key": r["ledger_key"],
+            "path": r["path"],
+            "group": r["group"],
+            "step": r["step"],
+            "seed": r["seed"],
+            "excluded": r["excluded"],
+        }
+        for n in sorted(names):
+            v = by.get("val", {}).get(n)
+            t = by.get("test", {}).get(n)
+            row[f"val.{n}"] = v
+            row[f"test.{n}"] = t
+            if isinstance(v, (int, float)) and isinstance(t, (int, float)):
+                row[f"delta.{n}"] = round(t - v, 6)
         rows.append(row)
     return header, rows
 
@@ -702,15 +779,15 @@ def build_index(records: list[dict[str, Any]]) -> tuple[list[str], list[dict[str
 # --------------------------------------------------------------------------- #
 # 出力
 # --------------------------------------------------------------------------- #
-LEDGER_README = """# ledger/ — experiments/ から収穫した横断インデックス
+RUNINDEX_README = """# runindex/ — experiments/ から収穫した横断インデックス
 
 **これは派生物です。手で編集しないでください。**
 
 ```bash
-make ledger      # ledger/ 全体をゼロから再生成する
+make runindex      # runindex/ 全体をゼロから再生成する
 ```
 
-生成元は `tools/harvest_ledger.py`。入力は `experiments/**` のみで、
+生成元は `tools/harvest_runindex.py`。入力は `experiments/**` のみで、
 出力は入力が同じなら常に同じになります (冪等)。
 
 ## ファイル
@@ -722,16 +799,34 @@ make ledger      # ledger/ 全体をゼロから再生成する
 | `host_aliases.json` | host 正規化の対応表 |
 | `metric_aliases.json` | 指標名の表記ゆれ統合表 |
 | `anomalies.md` | 規約から外れたもの・判断を保留したものの一覧 (人間が読む) |
+| `anomalies/val_test_pairs.csv` | test 評価を持つ run の val/test 対応表 (縦持ち) |
+
+## index.csv の列
+
+| 列 | 意味 |
+|---|---|
+| `metric.<name>` | **primary (= `split` 列が指す側。実質 val) の値** |
+| `metric_test.<name>` | **test 側の値**。別列なので既存列の意味は変わらない |
+| `has_test` | test 評価を持つか。`true` の run だけ `metric_test.*` が埋まる |
+
+`metric.*` だけを見ると test 評価の存在に気づけません。
+val と test は大きく乖離するため、下流解析では `has_test` で分岐してください。
+乖離の実測は `anomalies.md` §13.1 と `anomalies/val_test_pairs.csv` にあります。
 
 ## 注意
 
 - `runs/*.json` のファイル名は `run_id` (ディレクトリ名) ではなく
   `ledger_key` (experiments/ からの相対パス由来) です。
   ディレクトリ名は 6 種が 3 箇所ずつ衝突するためです。
-- `split` は指標キーの接頭辞から確定できた場合のみ入ります。
-  確定できない場合は `null` です。**推測値は入れません。**
+- `split` は次の順で確定します。**推測値は入れません。**
+  1. 指標キーの形式 (`val/…` / `test_…` / `phase_…` + 学習スクリプトのコード)
+  2. `command.sh` / `config.yaml` / `eval_recipe.eval_split`
+  3. 正本 M2研究計画 §16.7 の既定 (`metrics.json` は全て val)
+  由来は `provenance.split` に入ります。指標が 1 つも無い run は `null` です。
 - 元データの `NaN` は標準 JSON として不正なため `null` に変換しています。
   どのクラスが `NaN` だったかは `per_class_nan_classes` に保持しています。
+- `per_class_ap.json` は名前に反して **中身が F1 の群が 500 run** あります。
+  必ず `per_class_metric` 列 (`AP` / `F1` / `unknown`) で判別してください。
 """
 
 METRIC_ALIASES = {
@@ -771,10 +866,10 @@ METRIC_ALIASES = {
 }
 
 
-def write_ledger(records: list[dict[str, Any]], anomalies: str) -> None:
-    runs_dir = LEDGER / "runs"
-    if LEDGER.exists():
-        shutil.rmtree(LEDGER)
+def write_runindex(records: list[dict[str, Any]], anomalies: str) -> None:
+    runs_dir = RUNINDEX / "runs"
+    if RUNINDEX.exists():
+        shutil.rmtree(RUNINDEX)
     runs_dir.mkdir(parents=True)
 
     for r in records:
@@ -789,21 +884,30 @@ def write_ledger(records: list[dict[str, Any]], anomalies: str) -> None:
         json.loads(p.read_text(encoding="utf-8")) for p in sorted(runs_dir.glob("*.json"))
     ]
     header, rows = build_index(reloaded)
-    with (LEDGER / "index.csv").open("w", encoding="utf-8", newline="") as fh:
+    with (RUNINDEX / "index.csv").open("w", encoding="utf-8", newline="") as fh:
         writer = csv.DictWriter(fh, fieldnames=header, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
-    (LEDGER / "README.md").write_text(LEDGER_README, encoding="utf-8")
-    (LEDGER / "host_aliases.json").write_text(
+    # test 評価を持つ run の val/test 対応表（縦持ち）
+    anomalies_dir = RUNINDEX / "anomalies"
+    anomalies_dir.mkdir(exist_ok=True)
+    ph, pr = build_val_test_pairs(reloaded)
+    with (anomalies_dir / "val_test_pairs.csv").open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=ph, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(pr)
+
+    (RUNINDEX / "README.md").write_text(RUNINDEX_README, encoding="utf-8")
+    (RUNINDEX / "host_aliases.json").write_text(
         json.dumps(HOST_ALIASES, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
-    (LEDGER / "metric_aliases.json").write_text(
+    (RUNINDEX / "metric_aliases.json").write_text(
         json.dumps(METRIC_ALIASES, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
-    (LEDGER / "anomalies.md").write_text(anomalies, encoding="utf-8")
+    (RUNINDEX / "anomalies.md").write_text(anomalies, encoding="utf-8")
 
 
 # --------------------------------------------------------------------------- #
@@ -815,7 +919,7 @@ def build_anomalies(records: list[dict[str, Any]], nonstandard: list[tuple[str, 
 
     add("# anomalies — 規約から外れたもの・判断を保留したもの")
     add("")
-    add("`tools/harvest_ledger.py` が自動生成する。手で編集しない。")
+    add("`tools/harvest_runindex.py` が自動生成する。手で編集しない。")
     add("")
 
     add("## 1. 除外した run")
@@ -863,9 +967,16 @@ def build_anomalies(records: list[dict[str, Any]], nonstandard: list[tuple[str, 
     for k, v in prov.most_common():
         add(f"| `{k}` | {v} |")
     add("")
-    add("大半は `phase_*` 系の指標しか持たない run である。`phase_` はタスク名であり")
-    add("split ではないため、これらの run の評価 split は証拠ファイルからは決まらない。")
+    add("残るのは **`metrics.json` が空 `{}` の run** である。指標が 1 つも無いため")
+    add("「どの split で評価したか」が原理的に存在しない。正本 §16.7 の既定（§13）も")
+    add("指標を持つ run にのみ適用しており、これらには適用していない。")
     add("")
+    if nosplit:
+        add("| path | excluded | exclusion_reason |")
+        add("|---|---|---|")
+        for r in sorted(nosplit, key=lambda x: x["path"]):
+            add(f"| `{r['path']}` | {r['excluded']} | `{r['exclusion_reason']}` |")
+        add("")
 
     add("## 3. host を確定できなかった run")
     add("")
@@ -1094,7 +1205,82 @@ def build_anomalies(records: list[dict[str, Any]], nonstandard: list[tuple[str, 
     add("")
     add("**このタスクではコードを変更していない。**")
     add("dummy Trainer の削除またはガード追加は別タスクで検討すること。")
-    add("再検証: `python tools/verify_no_dummy_metrics.py`")
+    add("再検証: `python tools/verify_no_dummy_metrics.py`（`make runindex` に組込済）")
+    add("")
+    add("### 11.1 🔴 検査の死角 — mAP を持つが術具 per-class を持たない run")
+    add("")
+    add("上の 2 系統（語彙照合・値再現）は **`per_class_ap.json` に依存する**。")
+    add("mAP 系の指標を持つのに術具 per-class（15 クラス）を持たない run は、")
+    add("どちらの検査でも判定できない。**個別確認が要る対象**として列挙する。")
+    add("")
+    blind = [
+        r
+        for r in records
+        if r["per_class_metric"] != "AP"
+        and any("mAP" in k for k in (r["metrics"] or {}))
+    ]
+    add(f"該当 {len(blind)} run")
+    add("")
+    if blind:
+        add("| path | mAP 系のキー | entrypoint | commit |")
+        add("|---|---|---|---|")
+        for r in sorted(blind, key=lambda x: x["path"]):
+            mk = ", ".join(f"`{k}`" for k in sorted(k for k in r["metrics"] if "mAP" in k))
+            cmd = r["command"] or ""
+            m = re.search(r"(?:python3?|bash)\s+(\S+\.(?:py|sh))", cmd)
+            entry = f"`{m.group(1)}`" if m else "—"
+            commit = (r["commit"] or "")[:10] or "—"
+            add(f"| `{r['path']}` | {mk} | {entry} | `{commit}` |")
+        add("")
+    add("`tools/verify_no_dummy_metrics.py --strict` はこの死角が 1 件でもあれば")
+    add("異常終了する。`make runindex` は非 strict で実行し、警告として表示する。")
+    add("")
+    add("#### 11.1.1 `t1b_phasefilm_{001,002}` の個別確認結果")
+    add("")
+    add("3 つの独立した検証（コード経路 / 値の性質 / 証跡の整合）を、いずれも")
+    add("「実評価器由来である」という主張を**反証する**目的で実施した。")
+    add("**3/3 が反証に失敗し、`real_evaluator`（確信度 high）で一致した。**")
+    add("")
+    add("反証を退けた根拠:")
+    add("")
+    add("1. **到達不能性** — `command.sh` は `python scripts/postprocess_t1b.py`。")
+    add("   dummy Trainer は `src/egosurgery/train.py::_select_trainer` 経由でしか")
+    add("   選ばれず、それは `python -m egosurgery.train` でしか実行されない。")
+    add("2. **値域の外** — seed 0..100000 を全探索した結果、")
+    add("   `np.random.default_rng(s).uniform(0.05,0.85,15).mean()` の最大値は")
+    add("   **0.6907**（seed 98115）。**0.70 を超える seed は 1 つも存在しない**。")
+    add("   観測値 0.7292 / 0.7217 は生成器の到達可能範囲の外にある。")
+    add("   直接照合でも seed123 -> 0.45405 / seed456 -> 0.43498 で不一致。")
+    add("3. **精度の不整合** — dummy は各クラス AP を 4 桁、mAP を 6 桁に丸める")
+    add("   (`trainer.py:276,299`)。観測値は `0.7291778095772903` と float64 の全桁。")
+    add("4. **キー形状の不一致** — dummy が返すのは `val/loss` `val/accuracy`")
+    add("   `val/mAP` `mAP` のみ。観測されたのは `control_init_mAP` `delta_control`")
+    add("   `injection_effect` 等で、契約が異なる。")
+    add("5. **`epoch = -1`** — dummy は `for epoch in range(1, epochs+1)` なので")
+    add("   0 以下を出せない。-1 は「warm-start init が best」を表す番兵値。")
+    add("6. **ビットレベル再現** — `transfer/t1b_camt_all_seed456_efros/`")
+    add("   `injected_result.json` の `init_per_class_coco_map` を `np.nanmean` すると")
+    add("   **0.7216586914703580 と完全一致**。実 COCO per-class AP から再構成できる。")
+    add("   その per-class は EgoSurgery-Tool の 15 クラスで `Retractor = NaN`（GT 0 件）。")
+    add("")
+    add("**ただし証跡としては不完全である（3 レンズが独立に指摘）:**")
+    add("")
+    add("- 🔴 **一次成果物が消失** — `postprocess_t1b.py` が読む")
+    add("  `experiments/transfer/t1b_seed{123,456}/t1b_result.json` が存在せず、")
+    add("  commit もされていない。再現には元データが要る。")
+    add("- 🔴 **provenance の欠陥** — `git_commit.txt` は `a697d90` を記録するが、")
+    add("  **その commit に `scripts/postprocess_t1b.py` は存在しない**")
+    add("  (`git ls-tree -r a697d90 | grep t1b` が 0 件)。記録された commit では")
+    add("  この run を再現できない。")
+    add("- 🔴 **数値が退化している** — `mAP == init_mAP` かつ")
+    add("  `delta_detection = delta_control = injection_effect = 0.0`、`epoch = -1`。")
+    add("  これは T1b の訓練効果ではなく **warm-start(S0-frozen) 時点の評価**を")
+    add("  そのまま記録したもの。改善の証拠として引用してはならない。")
+    add("- `eval_recipe` が両 `metrics.json` に不在。学習/評価ログも残っていない")
+    add("  （兄弟の camt / clsbias 系にはログがある）。")
+    add("")
+    add("**結論**: 捏造値ではない（dummy Trainer 由来ではない）が、")
+    add("**再現不能かつ Δ=0 の退化した記録**であり、解析に使う前に上記 3 点の解消が要る。")
     add("")
 
     add("## 12. experiments/README.md と実態の乖離")
@@ -1125,7 +1311,116 @@ def build_anomalies(records: list[dict[str, Any]], nonstandard: list[tuple[str, 
     add("**このタスクでは README を変更していない。** 規約の更新は別タスク。")
     add("")
 
-    add("## 13. run_id の衝突")
+    add("## 13. 正本 §16.7 の既定と、その例外である test 評価 run")
+    add("")
+    add("M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 に記録がある:")
+    add("")
+    add("> **§8 訓練スクリプトに関する補足**: val_evaluator の ann_file は")
+    add("> `instances_val.json`、`prefix='val'`（mmdet_config.py:314-320）のため、")
+    add("> `metrics.json` / `per_class_ap.json` はすべて **val split の数値**。")
+    add("> test split は未評価（最終報告用に温存、Δ 判定は val で行う設計）。")
+    add("")
+    add("ローカル写し: `docs/m2_plan_rewrite/sections/19_epoch_16.md` L161 /")
+    add("`docs/m2_plan_rewrite/m2_plan_v2_full.md` L1561")
+    add("")
+    add("これを split の既定値とし、`provenance.split = from_plan_section_16_7` を記録する。")
+    add("ただし **指標が 1 つもない run には適用しない**（評価されていないため null のまま）。")
+    add("")
+    plan_default = [r for r in records if r["provenance"].get("split") == "from_plan_section_16_7"]
+    add(f"既定を適用した run: {len(plan_default)}")
+    add("")
+    if plan_default:
+        add("| path | 指標キー |")
+        add("|---|---|")
+        for r in sorted(plan_default, key=lambda x: x["path"]):
+            ks = ", ".join(f"`{k}`" for k in sorted((r["metrics"] or {}).keys())[:6])
+            add(f"| `{r['path']}` | {ks} |")
+        add("")
+
+    add("### 13.1 🔴 正本の記述の例外 — test 評価を持つ run")
+    add("")
+    add("正本は「test split は未評価」と述べているが、その後 `--eval-test` が実装され、")
+    add("**test 側の数値を持つ run が実在する**。正本の記述はこの時点より前のもの。")
+    add("")
+    tested = [r for r in records if (r["metrics_by_split"] or {}).get("test")]
+    add(f"該当 {len(tested)} run。全件の val/test 対応表は `anomalies/val_test_pairs.csv`。")
+    add("")
+    add("**index.csv の `metric.<name>` 列は primary(val) の値である。**")
+    add("test 側は `metric_test.<name>` 列に別出ししてある（`has_test` 列で絞り込める）。")
+    add("この分離が無いと「split 列が val 一色 → test 評価は存在しない」と誤読される。")
+    add("")
+    # val/test の乖離を実測で示す
+    diffs: dict[str, list[float]] = defaultdict(list)
+    vals: dict[str, list[float]] = defaultdict(list)
+    tests: dict[str, list[float]] = defaultdict(list)
+    for r in tested:
+        by = r["metrics_by_split"]
+        for n in by.get("val", {}).keys() & by.get("test", {}).keys():
+            v, t = by["val"][n], by["test"][n]
+            if isinstance(v, (int, float)) and isinstance(t, (int, float)):
+                vals[n].append(v)
+                tests[n].append(t)
+                diffs[n].append(t - v)
+    if diffs:
+        add("#### val / test の乖離（実測・全 %d run）" % len(tested))
+        add("")
+        add("| 指標 | val 平均 | test 平均 | 差 (test - val) | n |")
+        add("|---|---:|---:|---:|---:|")
+        for n in sorted(diffs, key=lambda x: sum(diffs[x]) / len(diffs[x])):
+            nv = sum(vals[n]) / len(vals[n])
+            nt = sum(tests[n]) / len(tests[n])
+            add(f"| `{n}` | {nv:.4f} | {nt:.4f} | {nt - nv:+.4f} | {len(diffs[n])} |")
+        add("")
+    add("| path | seed | excluded |")
+    add("|---|---:|---|")
+    for r in sorted(tested, key=lambda x: x["path"]):
+        add(f"| `{r['path']}` | {r['seed']} | {r['excluded']} |")
+    add("")
+
+    add("## 14. Notion 実験Run台帳との照合 — 母数は未確定（結論保留）")
+    add("")
+    add("台帳の行数について 2 つの実測値がある。**母数が確定するまで差分の結論は出さない。**")
+    add("")
+    add("| 出所 | 実測 | 計測方法 |")
+    add("|---|---:|---|")
+    add("| ユーザー側 | 616 | `COUNT(*)` |")
+    add("| Claude Code (MCP) | **739** | `SELECT COUNT(*)` via query_data_sources |")
+    add("")
+    add("### 排除できた原因")
+    add("")
+    add("| 仮説 | 検証結果 |")
+    add("|---|---|")
+    add("| 複数データソース | ❌ **データソースは 1 つ**（`collection://7bcf9406-…`） |")
+    add("| フィルタ付きビューを見ていた | ❌ **ビューは 1 つ**（\"Default view\"）で Status 昇順ソートのみ・**フィルタなし** |")
+    add("| 同名 DB の重複 | ❌ ワークスペース検索で `実験Run台帳` は **1 件のみ** |")
+    add("")
+    add("### 残る候補（未検証）")
+    add("")
+    add("- **計測時点の差**（台帳が増加した）: 作成日分布を取るクエリが")
+    add("  Notion のクエリ利用上限に達し実行できなかった")
+    add("- **アーカイブ行の扱い**: MCP の SQL モードは `is_archived` を受け付けず、")
+    add("  アーカイブ行を含むか否かが仕様上未定義")
+    add("")
+    add("### 確定した事実")
+    add("")
+    add("| 項目 | 実測 |")
+    add("|---|---:|")
+    add("| 総行数（MCP 計測） | 739 |")
+    add("| ユニークな Name | 738 |")
+    add("| `Name LIKE '%_seed%'`（run 形式） | 712 |")
+    add("| 散文タイトルの行 | 27 |")
+    add("| **Status = `failed`** | **0** |")
+    add("| Status = completed / planned / running / null | 733 / 4 / 1 / 1 |")
+    add("")
+    add("**`failed` が 0 件であることは母数と無関係に確定している。**")
+    add("repo 側には `metrics.json` が空の失敗 run が 6 件あるため、§1.1 の")
+    add("運用欠陥（失敗が台帳に反映されない）はこの時点で成立する。")
+    add("")
+    add("run_id 単位の 3 分類（記録漏れ / 成果物消失 / 数値の食い違い）は、")
+    add("クエリ上限のため **未実施**。推測で埋めていない。")
+    add("")
+
+    add("## 15. run_id の衝突")
     add("")
     dup: Counter[str] = Counter(r["run_id"] for r in records)
     dups = {k: v for k, v in dup.items() if v > 1}
@@ -1158,7 +1453,7 @@ def find_nonstandard_groups() -> list[tuple[str, int]]:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--write", action="store_true", help="ledger/ を実際に書き出す")
+    ap.add_argument("--write", action="store_true", help="runindex/ を実際に書き出す")
     args = ap.parse_args()
 
     run_dirs = sorted({p.parent for p in EXPERIMENTS.rglob("metrics.json")})
@@ -1208,9 +1503,9 @@ def main() -> int:
         print(f"  {name:24s} {n} ファイル")
 
     if args.write:
-        write_ledger(records, anomalies)
-        n_runs = len(list((LEDGER / "runs").glob("*.json")))
-        with (LEDGER / "index.csv").open(encoding="utf-8") as fh:
+        write_runindex(records, anomalies)
+        n_runs = len(list((RUNINDEX / "runs").glob("*.json")))
+        with (RUNINDEX / "index.csv").open(encoding="utf-8") as fh:
             n_rows = sum(1 for _ in csv.DictReader(fh))
         print(f"\n[書き出し完了] runs/*.json = {n_runs}, index.csv = {n_rows} 行")
     else:
