@@ -1,8 +1,16 @@
 {
+  "arm": "injection",
   "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-07-02T07:26:52+00:00\npython scripts/train_taux.py --temporal-kernel tecno --temporal-feature delta --seed 123\n",
   "commit": "1a52c6fde8120bb62eba920ad3c3d8882f309b72",
   "config_path": "experiments/transfer/taux_tecno_deltak3_002_taux_tecno_deltak3_seed123/config.yaml",
   "conflicting_bare_keys": [],
+  "control_note_value": 0.8986,
+  "control_of": "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42",
+  "delta_declaration": {
+    "denominator_value_lecun": "0.8986±0.0028",
+    "note": "Δ_phase = (T-aux − S4 base 0.8986±0.0028). 問いB は temporal_feature=none 固定で kernel を変え、問いA は temporal_kernel=tecno 固定で feature を変える（核と時間加工を交絡させない）。",
+    "phase_denominator": "s4_phase_baseline (frozen_tecno_phase_baseline)"
+  },
   "description": "taux_tecno_deltak3",
   "duplicate_bare_keys": [],
   "epoch": 25,
@@ -37,6 +45,9 @@
   "eval_recipe_id": "1066ae78f50e",
   "excluded": false,
   "exclusion_reason": null,
+  "experiment_id": "transfer/taux_tecno_deltak3/taux_tecno_deltak3@val~relation_detr_seed42",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_tag": "relation_detr_seed42",
   "gpu": null,
   "group": "transfer",
   "harvest_warnings": [],
@@ -63,8 +74,10 @@
       "seg_f1_50": 0.33620689655172403
     }
   },
+  "metrics_primary_split": "val",
   "notes": "# T-aux 系統② region-token→工程 時系列軸スイープ（T-1〜6）\n\n凍結 Relation-DETR seed42 の object-query 埋め込み（クラス別 256-d, score 加重）を主入力に、工程認識の時系列軸のみを振る。GAP(2048) は常に生、時間加工は注入信号（target=region）にのみ適用。online/causal（未来不使用・先頭は複製 pad）。\n\n- temporal_kernel = **tecno**（tecno=causal dilated TCN / mingru=線形再帰 / mamba=選択的 SSM）\n- temporal_feature = **delta**（k=3; movavg=移動平均 / delta=差分 / window=stack×k / none=生）\n\n## 公平比較（交絡回避・§6 / §8.1）\n- 問いB（核比較）: **temporal_feature=none 固定**で kernel だけを変える。\n- 問いA（時間加工）: **temporal_kernel=tecno 固定**で temporal_feature だけを変える。\n- 両者を同時に動かして「核 × 時間加工」を交絡させない。GAP は常に生・neck 無し。\n\n## 結果（best @epoch 25）\n- accuracy=0.9347 / macro_f1=0.7914\n- edit=35.13 / seg_f1@10/25/50=0.39/0.37/0.34\n\n## 構成\n- seed=123 epochs=50 lr=0.0005 in_dim=5888 stages=2 layers=8 f_maps=64 region_only=False add_toolpresence=False\n- server=efros / eval recipe=online_causal+jaccard_strict (PHASE_EVAL_PROTOCOL)\n\n## Δ\n- Δ_phase = (T-aux − S4 base 0.8986±0.0028[lecun])。同一土台（凍結backbone/GAP/recipe/seed・neck無）。\n- **別サーバー実行時**: 分母は lecun 値流用、サーバー差を §8.0 明文化。\n- 3-seed 揃ったら paired-σ(対seed差) で §10.1 判定（|Δ|>paired-σ かつ同符号で有意）。\n",
   "notion_page_id": null,
+  "pairing_provenance": "from_config_yaml",
   "path": "experiments/transfer/taux_tecno_deltak3_002_taux_tecno_deltak3_seed123",
   "per_class": {
     "anesthesia": 0.9849246231155778,
@@ -83,9 +96,11 @@
   "per_class_source": "experiments/transfer/taux_tecno_deltak3_002_taux_tecno_deltak3_seed123/per_class_ap.json",
   "per_class_valid_count": 9,
   "provenance": {
+    "aux_token": "no_aux_token",
     "commit": "from_git_commit_txt",
     "epoch": "from_metrics_json",
     "host": "from_server_txt",
+    "name": "from_dirname_step_seq_desc_seed",
     "per_class": "from_per_class_ap_json",
     "per_class_metric": "from_class_set_and_writer_script",
     "seed": "from_dirname",

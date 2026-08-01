@@ -1,8 +1,12 @@
 {
+  "arm": "unknown",
   "command": "#!/usr/bin/env bash\n# Stable-DINO (detrex) 実行コマンド\n# seed=456\npython train_net_egosurgery.py --config-file /home/ubuntu/slocal2/m2/third_party/DI-MaskDINO/configs/dimaskdino_r50_egosurgery.yaml --num-gpus 2 SEED 456 OUTPUT_DIR /tmp/dimaskdino_work_seed456\n",
   "commit": "4327348e444381f1737309252fb86ad9b5034d6a",
   "config_path": "experiments/baselines/s0_024_dimaskdino_bbox_seed456/config.yaml",
   "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
   "description": "dimaskdino_bbox",
   "duplicate_bare_keys": [
     "mAP"
@@ -31,6 +35,9 @@
   "eval_recipe_id": "1cf2eece1cd3",
   "excluded": false,
   "exclusion_reason": null,
+  "experiment_id": "baselines/s0/dimaskdino_bbox@val",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_tag": null,
   "gpu": null,
   "group": "baselines",
   "harvest_warnings": [],
@@ -53,8 +60,10 @@
       "mAP_75": 0.512261
     }
   },
+  "metrics_primary_split": "val",
   "notes": "# s0_024_dimaskdino_bbox_seed456\n\n検出器: DI-MaskDINO (detrex, torch 2.1.2+cu118, .venv-detectron2)\nseed: 456\n\n## 結果\nmAP=0.4285 / AP_rare=0.4949 / AP_common=0.4174 (best eval #12)\n\n## 初期化\nDINO R50 COCO 12ep 重み (backbone+transformer)、class_embed は 80->15 で再初期化 (他検出器の COCO fine-tune と同条件)。\n",
   "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
   "path": "experiments/baselines/s0_024_dimaskdino_bbox_seed456",
   "per_class": {
     "Bipolar Forceps": 0.379968,
@@ -81,9 +90,11 @@
   "per_class_source": "experiments/baselines/s0_024_dimaskdino_bbox_seed456/per_class_ap.json",
   "per_class_valid_count": 14,
   "provenance": {
+    "aux_token": "no_aux_token",
     "commit": "from_git_commit_txt",
     "epoch": "from_metrics_json",
     "host": "from_server_txt",
+    "name": "from_dirname_step_seq_desc_seed",
     "per_class": "from_per_class_ap_json",
     "per_class_metric": "from_class_set_and_writer_script",
     "seed": "from_dirname",

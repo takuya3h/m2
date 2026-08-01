@@ -1,8 +1,12 @@
 {
+  "arm": "unknown",
   "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-05-22T06:20:12+00:00\npython /home/ubuntu/slocal2/egosurgery_multitask/src/egosurgery/train.py stage=s0_tool_baseline model.detection_head=varifocanet seed=42 experiment.description=varifocanet_bbox logging.wandb_enabled=true model.backbone=dinov2_vits14_reg data.img_size=392 data.batch_size=8 train.epochs=8 train.freeze_backbone=true optimizer.lr=0.001 logging.wandb_enabled=false\n",
   "commit": "af1fc587e97529756d7235daa071d98442fea151",
   "config_path": "experiments/_smoke_prior/s0_004_varifocanet_bbox_seed42/config.yaml",
   "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
   "description": "varifocanet_bbox",
   "duplicate_bare_keys": [
     "mAP"
@@ -12,6 +16,9 @@
   "eval_recipe_id": null,
   "excluded": true,
   "exclusion_reason": "smoke_test",
+  "experiment_id": "_smoke_prior/s0/varifocanet_bbox@val",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_tag": null,
   "gpu": null,
   "group": "_smoke_prior",
   "harvest_warnings": [],
@@ -34,8 +41,10 @@
       "mAP_75": 0.006755873488074087
     }
   },
+  "metrics_primary_split": "val",
   "notes": "# s0_004_varifocanet_bbox_seed42\n\n作成日時: 2026-05-22T06:20:12+00:00\n\n## 仮説\n（ここに記入）\n\n## 実験設定\n- Category: baselines\n- Step: s0\n- Seed: 42\n- Config: （config.yaml を参照）\n\n## 結果\n（実験完了後に記入）\n\n## 解釈\n（結果の意味、期待との差、原因の仮説）\n\n## 次の行動\n1.\n",
   "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
   "path": "experiments/_smoke_prior/s0_004_varifocanet_bbox_seed42",
   "per_class": {
     "Bipolar Forceps": 0.0,
@@ -60,9 +69,11 @@
   "per_class_source": "experiments/_smoke_prior/s0_004_varifocanet_bbox_seed42/per_class_ap.json",
   "per_class_valid_count": 15,
   "provenance": {
+    "aux_token": "no_aux_token",
     "commit": "from_git_commit_txt",
     "epoch": "from_metrics_json",
     "host": "not_determinable",
+    "name": "from_dirname_step_seq_desc_seed",
     "per_class": "from_per_class_ap_json",
     "per_class_metric": "from_class_set_and_writer_script",
     "seed": "from_dirname",

@@ -1,8 +1,12 @@
 {
+  "arm": "unknown",
   "command": null,
   "commit": "a697d90b889622dbc5476a22eee93c8b1cd7ddfa",
   "config_path": null,
   "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
   "description": null,
   "duplicate_bare_keys": [],
   "epoch": null,
@@ -10,6 +14,9 @@
   "eval_recipe_id": null,
   "excluded": false,
   "exclusion_reason": null,
+  "experiment_id": null,
+  "experiment_id_provenance": "not_determinable",
+  "frozen_source_tag": null,
   "gpu": null,
   "group": "transfer",
   "harvest_warnings": [
@@ -22,25 +29,23 @@
   "metrics": {
     "alpha": 2.0,
     "delta_detection": -0.07263869632412223,
-    "denominator": "frozen (=S0-frozen, same eval)",
     "mAP_baseline": 0.7301833657733415,
     "mAP_rescored": 0.6575446694492193,
-    "method": "training_free_phase_prior_rescore",
     "miss_ctx": 0
   },
   "metrics_by_split": {
     "unknown": {
       "alpha": 2.0,
       "delta_detection": -0.07263869632412223,
-      "denominator": "frozen (=S0-frozen, same eval)",
       "mAP_baseline": 0.7301833657733415,
       "mAP_rescored": 0.6575446694492193,
-      "method": "training_free_phase_prior_rescore",
       "miss_ctx": 0
     }
   },
+  "metrics_primary_split": null,
   "notes": "# B2b phase-prior re-scoring (alpha=2.0)\nΔ_detection=-0.0726 (baseline 0.7302 → rescored 0.6575). training-free.\n",
   "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
   "path": "experiments/transfer/b2b_rescore_alpha2.0",
   "per_class": null,
   "per_class_kind": null,
@@ -49,9 +54,11 @@
   "per_class_source": null,
   "per_class_valid_count": null,
   "provenance": {
+    "aux_token": "no_aux_token",
     "commit": "from_git_commit_txt",
     "epoch": "not_determinable",
     "host": "from_server_txt",
+    "name": "not_determinable",
     "per_class": "not_determinable",
     "per_class_metric": "not_determinable",
     "seed": "not_determinable",

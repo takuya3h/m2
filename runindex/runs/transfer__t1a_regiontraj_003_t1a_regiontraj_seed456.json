@@ -1,8 +1,17 @@
 {
+  "arm": "injection",
   "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-07-05T10:33:52+00:00\npython scripts/train_t1a_regiontraj.py --seed 456 --epochs 50\n",
   "commit": "27ad173f16f4c63a7bbe9160aa9a4b5c1461cb2a",
   "config_path": "experiments/transfer/t1a_regiontraj_003_t1a_regiontraj_seed456/config.yaml",
   "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": "transfer/t1a_regiontoken/t1a_regiontoken@val~relation_detr_seed42",
+  "delta_declaration": {
+    "maintain_metric": "accuracy / macro_f1",
+    "note": "Δ = (RegionTraj − T1a base[同env]) per-seed paired-σ §10.1。",
+    "phase_denominator": "t1a_regiontoken base (同env efros paired)",
+    "primary_metric": "edit_score / seg_f1@{10,25,50}"
+  },
   "description": "t1a_regiontraj",
   "duplicate_bare_keys": [],
   "epoch": 36,
@@ -34,6 +43,9 @@
   "eval_recipe_id": "0695cee60ff7",
   "excluded": false,
   "exclusion_reason": null,
+  "experiment_id": "transfer/t1a_regiontraj/t1a_regiontraj@val~relation_detr_seed42",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_tag": "relation_detr_seed42",
   "gpu": null,
   "group": "transfer",
   "harvest_warnings": [],
@@ -74,8 +86,10 @@
       "sticky_seg_f1_50": 0.5595238095238094
     }
   },
+  "metrics_primary_split": "val",
   "notes": "# T1a-RegionTrajectory（Temporal Object-Set Fusion・COUPLING §4.1）\n\nregion-token(15×256) を Set encoder（共有MLP+class埋め込み+attention pool）で集約→tool-presence と gated residual→causal temporal attention→TeCNO+boundary head。online/causal。\n\n## 結果（best @epoch 36・val）\n### plain decode\n- acc=0.9498 / macro_f1=0.8095\n- edit=39.06 / seg_f1@10/25/50=0.538/0.530/0.468\n### sticky decode（τ=0.5）\n- acc=0.9545 / macro_f1=0.8054\n- edit=52.00 / seg_f1@10/25/50=0.620/0.620/0.560\n\n## 構成\n- seed=456 epochs=50 lr=0.0005 d_model=256 tok_dim=128 pres_dim=64 stages=2 layers=8\n- set_encoder=on gated_residual=True temporal_attn=True boundary(w=1.0 pos_w=14.70 tau=0.5)\n- server=efros / recipe=online_causal+jaccard_strict\n\n## Δ\n- Δ=(RegionTraj − T1a base[同env efros])。主指標 edit/seg-F1、維持 acc/macro-F1。3-seed paired-σ §10.1。\n",
   "notion_page_id": null,
+  "pairing_provenance": "from_config_yaml",
   "path": "experiments/transfer/t1a_regiontraj_003_t1a_regiontraj_seed456",
   "per_class": {
     "anesthesia": 0.9949238578680203,
@@ -94,9 +108,11 @@
   "per_class_source": "experiments/transfer/t1a_regiontraj_003_t1a_regiontraj_seed456/per_class_ap.json",
   "per_class_valid_count": 9,
   "provenance": {
+    "aux_token": "no_aux_token",
     "commit": "from_git_commit_txt",
     "epoch": "from_metrics_json",
     "host": "from_server_txt",
+    "name": "from_dirname_step_seq_desc_seed",
     "per_class": "from_per_class_ap_json",
     "per_class_metric": "from_class_set_and_writer_script",
     "seed": "from_dirname",

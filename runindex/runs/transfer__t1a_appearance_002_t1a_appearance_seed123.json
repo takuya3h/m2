@@ -1,8 +1,16 @@
 {
+  "arm": "injection",
   "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-07-05T11:00:34+00:00\npython scripts/train_t1a.py --seed 123 --epochs 50 --eval-test --description t1a_appearance\n",
   "commit": "27ad173f16f4c63a7bbe9160aa9a4b5c1461cb2a",
   "config_path": "experiments/transfer/t1a_appearance_002_t1a_appearance_seed123/config.yaml",
   "conflicting_bare_keys": [],
+  "control_note_value": 0.8986,
+  "control_of": "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42",
+  "delta_declaration": {
+    "denominator_value_lecun": "0.8986±0.0034",
+    "note": "Δ_phase = (T1a − S4 base). 別サーバー実行時は lecun 分母を流用し サーバー差を §8.0 明文化（同一 ckpt・同一前処理ゆえ差は TeCNO 学習数値のみ）。",
+    "phase_denominator": "s4_phase_baseline (frozen_tecno_phase_baseline)"
+  },
   "description": "t1a_appearance",
   "duplicate_bare_keys": [],
   "epoch": 31,
@@ -34,6 +42,9 @@
   "eval_recipe_id": "78e50862a7b3",
   "excluded": false,
   "exclusion_reason": null,
+  "experiment_id": "transfer/t1a_appearance/t1a_appearance@val~relation_detr_seed42",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_tag": "relation_detr_seed42",
   "gpu": null,
   "group": "transfer",
   "harvest_warnings": [
@@ -43,13 +54,13 @@
   "host_raw": "efros",
   "ledger_key": "transfer__t1a_appearance_002_t1a_appearance_seed123",
   "metrics": {
-    "accuracy": 0.822274325908558,
-    "edit_score": 38.92806878655936,
-    "jaccard": 0.5495297093699452,
-    "macro_f1": 0.6269775859327538,
-    "seg_f1_10": 0.4679942802614981,
-    "seg_f1_25": 0.46041086266796927,
-    "seg_f1_50": 0.3334460357888958
+    "accuracy": 0.9465346534653465,
+    "edit_score": 35.58201058201058,
+    "jaccard": 0.7545956697859814,
+    "macro_f1": 0.7969645008052287,
+    "seg_f1_10": 0.45122870496004824,
+    "seg_f1_25": 0.45122870496004824,
+    "seg_f1_50": 0.4213779586913915
   },
   "metrics_by_split": {
     "test": {
@@ -71,8 +82,10 @@
       "seg_f1_50": 0.4213779586913915
     }
   },
+  "metrics_primary_split": "val",
   "notes": "# T1a region-token→工程（Tier-1 主力⭐ TAPIS/GraSP 型・②系統）\n\n凍結 Relation-DETR seed42 の object-query 埋め込み（クラス別 256-d, score 加重）を GAP(2048) に入力 → 素 causal TeCNO。\n勾配は交差させず凍結 region token を渡す。online/causal（未来不使用）。\n\n## 結果（best @epoch 31）\n- accuracy=0.9465 / macro_f1=0.7970\n- edit=35.58 / seg_f1@10/25/50=0.45/0.45/0.42\n\n## 構成\n- seed=123 epochs=50 lr=0.0005 in_dim=5888(=2048+3840) stages=2 layers=8 f_maps=64\n- server=efros / eval recipe=online_causal+jaccard_strict (PHASE_EVAL_PROTOCOL)\n\n## Δ\n- Δ_phase = (T1a − S4 base 0.8986±0.0034[lecun])。同一土台（凍結backbone/GAP/recipe/seed・neck無）。\n- **別サーバー実行時**: 分母は lecun 値流用、サーバー差を §8.0 明文化。\n- 3-seed 揃ったら paired-σ(対seed差) で §10.1 判定（|Δ|>paired-σ かつ同符号で有意）。\n",
   "notion_page_id": null,
+  "pairing_provenance": "from_config_yaml",
   "path": "experiments/transfer/t1a_appearance_002_t1a_appearance_seed123",
   "per_class": {
     "anesthesia": 0.9948717948717948,
@@ -91,9 +104,11 @@
   "per_class_source": "experiments/transfer/t1a_appearance_002_t1a_appearance_seed123/per_class_ap.json",
   "per_class_valid_count": 9,
   "provenance": {
+    "aux_token": "no_aux_token",
     "commit": "from_git_commit_txt",
     "epoch": "from_metrics_json",
     "host": "from_server_txt",
+    "name": "from_dirname_step_seq_desc_seed",
     "per_class": "from_per_class_ap_json",
     "per_class_metric": "from_class_set_and_writer_script",
     "seed": "from_dirname",

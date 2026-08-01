@@ -1,8 +1,16 @@
 {
+  "arm": "injection",
   "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-06-29T17:31:09+00:00\npython scripts/train_t1a.py --seed 42 --epochs 50 --add-toolpresence --toolpresence-source oracle --tool-noise-rate 0.10 --description t1a_combined_oracle_noise_p010\n",
   "commit": "c4228eddc07a1958959e00e8dff92f007c269755",
   "config_path": "experiments/transfer/t1a_combined_oracle_noise_p010_001_t1a_combined_oracle_noise_p010_seed42/config.yaml",
   "conflicting_bare_keys": [],
+  "control_note_value": 0.8986,
+  "control_of": "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42",
+  "delta_declaration": {
+    "denominator_value_lecun": "0.8986±0.0034",
+    "note": "Δ_phase = (T1a − S4 base). 別サーバー実行時は lecun 分母を流用し サーバー差を §8.0 明文化（同一 ckpt・同一前処理ゆえ差は TeCNO 学習数値のみ）。",
+    "phase_denominator": "s4_phase_baseline (frozen_tecno_phase_baseline)"
+  },
   "description": "t1a_combined_oracle_noise_p010",
   "duplicate_bare_keys": [],
   "epoch": 28,
@@ -34,10 +42,13 @@
   "eval_recipe_id": "25494806e106",
   "excluded": false,
   "exclusion_reason": null,
+  "experiment_id": "transfer/t1a_combined_oracle_noise_p010/t1a_combined_oracle_noise_p010@val~relation_detr_seed42",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_tag": "relation_detr_seed42",
   "gpu": null,
   "group": "transfer",
   "harvest_warnings": [
-    "ディレクトリ名に補助 seed {'p': 10} が含まれる。seed には末尾の seed42 のみを採用し、det/p は seed_detector / seed_phase に分離した。"
+    "ディレクトリ名の p010 は seed ではない。command.sh が --tool-noise-rate を渡しており、ノイズ率 0.01 を指す。seed_phase には入れない。"
   ],
   "host": "lecun",
   "host_raw": "lecun",
@@ -62,8 +73,10 @@
       "seg_f1_50": 0.44362519201228884
     }
   },
+  "metrics_primary_split": "val",
   "notes": "# T1a region-token→工程（Tier-1 主力⭐ TAPIS/GraSP 型・②系統）\n\n凍結 Relation-DETR seed42 の object-query 埋め込み（クラス別 256-d, score 加重）を GAP(2048) に入力 → 素 causal TeCNO。\n勾配は交差させず凍結 region token を渡す。online/causal（未来不使用）。\n\n## 結果（best @epoch 28）\n- accuracy=0.9465 / macro_f1=0.8015\n- edit=36.62 / seg_f1@10/25/50=0.47/0.47/0.44\n\n## 構成\n- seed=42 epochs=50 lr=0.0005 in_dim=5903(=2048+3840) stages=2 layers=8 f_maps=64\n- server=lecun / eval recipe=online_causal+jaccard_strict (PHASE_EVAL_PROTOCOL)\n\n## Δ\n- Δ_phase = (T1a − S4 base 0.8986±0.0034[lecun])。同一土台（凍結backbone/GAP/recipe/seed・neck無）。\n- **別サーバー実行時**: 分母は lecun 値流用、サーバー差を §8.0 明文化。\n- 3-seed 揃ったら paired-σ(対seed差) で §10.1 判定（|Δ|>paired-σ かつ同符号で有意）。\n",
   "notion_page_id": null,
+  "pairing_provenance": "from_config_yaml",
   "path": "experiments/transfer/t1a_combined_oracle_noise_p010_001_t1a_combined_oracle_noise_p010_seed42",
   "per_class": {
     "anesthesia": 1.0,
@@ -82,21 +95,23 @@
   "per_class_source": "experiments/transfer/t1a_combined_oracle_noise_p010_001_t1a_combined_oracle_noise_p010_seed42/per_class_ap.json",
   "per_class_valid_count": 9,
   "provenance": {
+    "aux_token": "p_token_is_noise_rate_by_command_sh",
     "commit": "from_git_commit_txt",
     "epoch": "from_metrics_json",
     "host": "from_server_txt",
+    "name": "from_dirname_step_seq_desc_seed",
     "per_class": "from_per_class_ap_json",
     "per_class_metric": "from_class_set_and_writer_script",
     "seed": "from_dirname",
     "seed_detector": "not_determinable",
-    "seed_phase": "from_dirname_p_token",
+    "seed_phase": "not_determinable",
     "split": "from_metric_key_prefix",
     "step": "from_dirname"
   },
   "run_id": "t1a_combined_oracle_noise_p010_001_t1a_combined_oracle_noise_p010_seed42",
   "seed": 42,
   "seed_detector": null,
-  "seed_phase": 10,
+  "seed_phase": null,
   "seq": 1,
   "split": "val",
   "step": "t1a_combined_oracle_noise_p010",

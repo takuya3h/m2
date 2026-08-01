@@ -1,8 +1,12 @@
 {
+  "arm": "unknown",
   "command": "#!/usr/bin/env bash\n# Relation-DETR (accelerate) 実行コマンド\n# seed=456\naccelerate launch --num_processes 2 main.py --config-file configs/train_config_egosurgery_seed456.py --seed 456 --mixed-precision fp16\n",
   "commit": "4327348e444381f1737309252fb86ad9b5034d6a",
   "config_path": "experiments/baselines/s0_018_relationdetr_bbox_seed456/config.yaml",
   "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
   "description": "relationdetr_bbox",
   "duplicate_bare_keys": [
     "mAP"
@@ -31,9 +35,14 @@
   "eval_recipe_id": "b66459018a92",
   "excluded": false,
   "exclusion_reason": null,
+  "experiment_id": "baselines/s0/relationdetr_bbox@val",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_tag": null,
   "gpu": null,
   "group": "baselines",
-  "harvest_warnings": [],
+  "harvest_warnings": [
+    "config.yaml のパースに失敗: ParserError"
+  ],
   "host": "philip",
   "host_raw": "philip",
   "ledger_key": "baselines__s0_018_relationdetr_bbox_seed456",
@@ -53,8 +62,10 @@
       "mAP_75": 0.776
     }
   },
+  "metrics_primary_split": "val",
   "notes": "# s0_018_relationdetr_bbox_seed456\n\n検出器: Relation-DETR (accelerate, torch 2.1.2+cu118, .venv-relation-detr)\nseed: 456\n\n## 結果\nmAP=0.7220 / AP_rare=0.7363 / AP_common=0.7197 (best epoch 12)\n\n## per-class AP\nCOCO mAP(0.50:0.95)。engine.py 改修で precision 全 IoU 平均を出力。\nRetractor 等 val 非存在クラスは NaN (AP_rare/common 平均から除外)。\n\n## 初期化\nRelation-DETR R50 COCO 1x 重み (backbone+transformer)、class head は 91->15 で再初期化 (他検出器の COCO fine-tune と同条件)。\n\n## tracking\nTensorBoard (train dir/tf_log)。wandb は未使用。\n",
   "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
   "path": "experiments/baselines/s0_018_relationdetr_bbox_seed456",
   "per_class": {
     "Bipolar Forceps": 0.7744026564821828,
@@ -81,9 +92,11 @@
   "per_class_source": "experiments/baselines/s0_018_relationdetr_bbox_seed456/per_class_ap.json",
   "per_class_valid_count": 14,
   "provenance": {
+    "aux_token": "no_aux_token",
     "commit": "from_git_commit_txt",
     "epoch": "from_metrics_json",
     "host": "from_server_txt",
+    "name": "from_dirname_step_seq_desc_seed",
     "per_class": "from_per_class_ap_json",
     "per_class_metric": "from_class_set_and_writer_script",
     "seed": "from_dirname",
