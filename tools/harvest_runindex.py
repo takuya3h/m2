@@ -1980,6 +1980,16 @@ DETERMINISM_COLUMNS = [
     *DETERMINISM_CHECKS.keys(),
     "num_workers",
     "shuffle",
+    # DataLoader を使わないなら worker_init_fn / generator の欠落は該当しない。
+    # 自前スクリプトはメモリ上のリストを random.shuffle で並べ替えている。
+    "uses_dataloader",
+    "shuffle_via_random_shuffle",
+    # 実行時に os.environ["PYTHONHASHSEED"] を設定しても、CPython の
+    # ハッシュ乱択はインタプリタ起動時に確定済みなので現行プロセスには効かない。
+    "pythonhashseed_effective",
+    # mmengine の randomness に deterministic=False を渡すなど、
+    # フレームワーク側の決定化を **明示的に無効化**しているか
+    "explicitly_disables_determinism",
     "missing_required",
     "can_be_deterministic",
 ]
@@ -2054,6 +2064,10 @@ def build_determinism_audit(
             row["uses_cuda"] = None
             row["num_workers"] = None
             row["shuffle"] = None
+            row["uses_dataloader"] = None
+            row["shuffle_via_random_shuffle"] = None
+            row["pythonhashseed_effective"] = None
+            row["explicitly_disables_determinism"] = None
             row["missing_required"] = ""
             row["can_be_deterministic"] = None
             rows.append(row)
@@ -2084,6 +2098,15 @@ def build_determinism_audit(
         )
         row["num_workers"] = ",".join(sorted(set(_NUM_WORKERS_RE.findall(text)))) or ""
         row["shuffle"] = ",".join(sorted(set(_SHUFFLE_RE.findall(text)))) or ""
+        row["uses_dataloader"] = bool(re.search(r"\bDataLoader\s*\(", text))
+        row["shuffle_via_random_shuffle"] = bool(re.search(r"random\.shuffle\s*\(", text))
+        # os.environ への代入は起動後なので効かない。シェル側の export だけが有効。
+        row["pythonhashseed_effective"] = bool(
+            re.search(r"export\s+PYTHONHASHSEED|PYTHONHASHSEED=\S+\s+(?:python|accelerate)", text)
+        )
+        row["explicitly_disables_determinism"] = bool(
+            re.search(r"deterministic\s*=\s*False", text)
+        )
         missing = [k for k in DETERMINISM_REQUIRED if not row[k]]
         row["missing_required"] = ",".join(missing)
         # uses_cuda の正規表現検出は取りこぼしうる（委譲先で .to(device) する等）。
@@ -4130,9 +4153,33 @@ def build_anomalies(
         for r in sorted(miss, key=lambda x: (x["file_state"], x["script"])):
             add(f"| `{r['script']}` | `{r['file_state']}` | {r['n_runs']} |")
         add("")
-        add("`empty` は 0 バイトの scaffold、`missing` は repo に実体が無いもの")
-        add("（detectron2 / detrex 系の entrypoint。`third_party/` は同期対象外）。")
-        add("**`missing` の run については決定性を確認できない。**")
+        add("`empty` は 0 バイトの scaffold、`missing` は**この worktree に**実体が無いもの。")
+        add("")
+        add("`missing` は「存在しない」ではなく「`third_party/` が同期対象外」である")
+        add("（`.stglobalignore` が `third_party` を除外。入れ子 `.git` を含むため）。")
+        add("本体側 `/home/ubuntu/slocal2/m2/third_party/` には Co-DETR / DAC-DETR /")
+        add("DI-MaskDINO / MaskDINO / Mr.DETR / Relation-DETR / Stable-DINO / detrex がある。")
+        add("**したがってこれらの run の決定性は runindex 単独では確認できない。**")
+        add("")
+        add("### 26.2.1 第三者 entrypoint について分かっていること")
+        add("")
+        add("本体側の実体を読んだ範囲では、制御の状況は自前スクリプトと異なる:")
+        add("")
+        add("| entrypoint | 状況 |")
+        add("|---|---|")
+        add("| Relation-DETR | `main.py:123-127` に **完全な決定性ブロック**（`use_deterministic_algorithms` / `worker_init_fn` / `generator`）がある。ただし `--use-deterministic-algorithms` フラグでゲートされており、該当 run の `command.sh` は渡していない。さらに `--mixed-precision fp16` で走っている |")
+        add("| detrex | detectron2 の `default_setup` が seed 系と `worker_init_fn` を張るが、`cudnn.deterministic` と `use_deterministic_algorithms` は設定しない |")
+        add("")
+        add("**フラグ 1 つで決定的にできる経路が存在するのに使われていない**、というのが")
+        add("Relation-DETR 経路の状況である。")
+        add("")
+        add("### 26.2.2 監査表を読むときの注意")
+        add("")
+        add("| 列 | 注意 |")
+        add("|---|---|")
+        add("| `dataloader_worker_init_fn` / `dataloader_generator` | **DataLoader を使わないスクリプトには該当しない。** 自前スクリプト 8 本は `DataLoader` を一切使わず、メモリ上の clip リストを `random.shuffle` で並べ替えている。`uses_dataloader` 列で判別すること |")
+        add("| `pythonhashseed` | `os.environ[\"PYTHONHASHSEED\"]` への**実行時代入は効かない**。CPython のハッシュ乱択はインタプリタ起動時に確定するため、既に走っているプロセスには影響しない。実効性は `pythonhashseed_effective` 列（シェル側の export を検出）で見ること。**実測では 0 / 20** |")
+        add("| `explicitly_disables_determinism` | `src/egosurgery/engines/mmdet_trainer.py` は `mmcfg.randomness = dict(..., deterministic=False, ...)` を明示指定し、**mmengine 側の決定化を止めている**。制御が「無い」のではなく「切っている」 |")
         add("")
 
     add("### 26.3 影響範囲の定量 — within-seed と between-seed の比較")
