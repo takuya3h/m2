@@ -2496,7 +2496,7 @@ BACKLOG = """# backlog — 本タスクの範囲外として起票した未着�
 | B-18 | σ 規約の 2 系統併存 | `pstdev` 系 48 箇所（§10.1 判定・レポート層）と `stdev`/`ddof=1` 系 16 箇所（`scripts/analysis/*` の解析・監査層）が併存（§21.2）。**Δ の規約を監査する `delta_convention_audit.py` 自身が判定側と違うσを使っている** | 正本 §10.1 でσを定義したうえで、どちらかに寄せる |
 | ~~B-19~~ | ~~空の Δ scaffold~~ | **解決済み**。`scripts/compute_delta.py` / `scripts/export_paper_tables.py` / `tools/generate_delta_report.py` は 3 つとも 0 バイトで scaffold コミット `af1fc58` 以来未実装だったため削除し、`make delta` / `make tables` を `runindex/` への案内に置き換えた（利用者の判断による） | — |
 | B-20 | 🔴 **学習の非決定性が制御されていない（棚卸し完了）** | 同一 commit・同一 config・同一コマンド・同一 host の再実行が再現しない（`s4_phase_baseline_015` vs `_017` で macro_f1 が 0.7406 vs 0.6572）。**欠陥は 1 スクリプト固有ではなく体系的**で、CUDA を使う 13 本のうち `cuda_manual_seed` / `use_deterministic_algorithms` / `cudnn_deterministic` / `worker_init_fn` / `PYTHONHASHSEED` を設定している本は **0 本**（§26.1）。影響 run は 500。`control_of` を持つ 136 実験のうち **123 の σ が `mixed_with_nondeterminism`**（§26.4） | 学習コードの変更 + 再実行にあたるため本タスクでは触れない。**これを直さない限り paired-σ は seed 効果を測れない**。GPU 時間の判断が要る |
-| B-21 | 「全 seed 同符号」条件の定義（**判断待ち**） | dedup 後は「seed 平均どうしの符号が揃うか」を見ている。元の条件文が個々の run の符号を意図していた可能性がある。また n=3 では偶然一致確率が 25% あり検出力の裏付けとして弱い（§27） | 正本 §10.1 で定義を明確にする。harvester は定義を変えずに現状を出力している |
+| B-21 | 「全 seed 同符号」条件の定義（**判断: 保留**） | dedup 後は「seed 平均どうしの符号が揃うか」を見ている（§27）。**利用者の判断で定義変更は保留**（2026-08-01）。理由は「σ の 123/136 が `mixed_with_nondeterminism` である以上、どの定義を採っても σ が汚染されているため、条件の定義より **B-20 の非決定性の解消が先**」。実測（accuracy / 134 実験）: 現状の seed 平均基準 125、全 run 組合せの厳格基準 124、符号一致率 100% は 124 | **B-20 の解消後に定義を決める。**それまで `delta_same_sign_<metric>`（seed 平均ベース）と `delta_n_seeds_<metric>` を出し続ける |
 | B-22 | `engines/` の空 scaffold | `hooks.py` / `stage_b_trainer.py` / `stage_c_trainer.py` / `stage_d_trainer.py` / `validator.py` が 0 バイト（§26.2）。B-19 で削除した Δ scaffold と同じパターン | 使う予定が無ければ削除、あるなら実装 |
 | B-23 | `train_net_egosurgery.py` が repo に無い | 3 run がこれを entrypoint にしているが実体が無い（`third_party/` は同期対象外）。`tools/train.py` も同様に 1 run（§26.2） | これらの run の決定性は確認できない。detectron2/detrex 側の配置を記録するか、run を除外対象にするか |
 | B-11 | `logs/phase3seed_results.tsv` の欠落 | `scripts/paired_sigma_3seed.py` はこの TSV の `arm` 列（frozen / augstrong）を読んで paired-σ を出す設計だが、ファイルが repo に存在しない（`.gitignore` 対象）。arm 情報自体は `config.yaml` の `frozen_source.*` に残っており `frozen_source_tag` として収穫済み | TSV の復元、または `paired_sigma_3seed.py` を `runindex` 由来に切り替える |
@@ -4159,7 +4159,25 @@ def build_anomalies(
     add("")
     add("現状は `delta_same_sign_<metric>`（seed 平均ベース）を出しており、")
     add("`delta_n_seeds_<metric>` で何個の符号を見たかが分かる。")
-    add("**定義を変えるかどうかは正本側の判断**である（backlog B-21）。")
+    add("")
+    add("### 27.3 判断: **保留**（2026-08-01）")
+    add("")
+    add("利用者の判断により定義変更は保留となった。理由:")
+    add("")
+    add("> σ の 123/136 が `mixed_with_nondeterminism` である以上、")
+    add("> どの定義を採っても σ そのものが汚染されている。")
+    add("> **条件の定義より B-20（非決定性の解消）が先。**")
+    add("")
+    add("参考として 3 案の実測値（`accuracy` / 134 実験）:")
+    add("")
+    add("| 案 | 定義 | 同符号となる実験数 |")
+    add("|---|---|---:|")
+    add("| 現状 | seed 平均どうしの Δ の符号が揃う | **125** |")
+    add("| 厳格 | 全 run 組合せの差の符号が揃う | 124 |")
+    add("| 連続量 | 符号一致率（中央値 1.000 / 最小 0.529） | 一致率 100% が 124 |")
+    add("")
+    add("3 案の差は 1 件しかない。**定義の選択より σ の汚染の方が影響が大きい**")
+    add("という判断は実測に整合している。")
     add("")
 
     return "\n".join(lines) + "\n"
