@@ -1,8 +1,12 @@
 {
+  "arm": "unknown",
   "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-06-20T21:19:47+00:00\npython scripts/postprocess_b1.py --work /tmp/b1_work_fixed_seed42 --weighting fixed --seed 42\n",
   "commit": "a697d90b889622dbc5476a22eee93c8b1cd7ddfa",
   "config_path": "experiments/transfer/b1_mtl_001_b1_naive_mtl_fixed_seed42/config.yaml",
   "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
   "description": "b1_naive_mtl_fixed",
   "duplicate_bare_keys": [],
   "epoch": null,
@@ -10,6 +14,9 @@
   "eval_recipe_id": null,
   "excluded": false,
   "exclusion_reason": null,
+  "experiment_id": "transfer/b1_mtl/b1_naive_mtl_fixed@val",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_tag": null,
   "gpu": null,
   "group": "transfer",
   "harvest_warnings": [],
@@ -42,8 +49,10 @@
       "seg_f1_50": 0.44152046783625726
     }
   },
+  "metrics_primary_split": "val",
   "notes": "# b1_mtl_001_b1_naive_mtl_fixed_seed42\n\n作成日時: 2026-06-20T21:19:47+00:00\n\n## 仮説\n（ここに記入）\n\n## 実験設定\n- Category: transfer\n- Step: b1_mtl\n- Seed: 42\n- Config: （config.yaml を参照）\n\n## 結果\n（実験完了後に記入）\n\n## 解釈\n（結果の意味、期待との差、原因の仮説）\n\n## 次の行動\n1.\n",
   "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
   "path": "experiments/transfer/b1_mtl_001_b1_naive_mtl_fixed_seed42",
   "per_class": {
     "Bipolar Forceps": 0.7865299759234162,

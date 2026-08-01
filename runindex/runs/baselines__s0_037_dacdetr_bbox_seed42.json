@@ -1,8 +1,12 @@
 {
+  "arm": "unknown",
   "command": "torchrun --nproc_per_node=2 --master_port=29521 main.py --output_dir /tmp/dac_work_seed42 --coco_path data/egosurgery_coco --dataset_file coco --num_classes 15 --finetune /home/ubuntu/slocal2/m2/data/external/weights/dac_cdn_ice_r50_12ep/checkpoint0011.pth --with_box_refine --two_stage --dim_feedforward 2048 --num_queries_one2one 900 --epochs 12 --lr_drop 11 --dropout 0.0 --mixed_selection --look_forward_twice --batch_size 2 --num_workers 2 --seed 42\n",
   "commit": "4327348e444381f1737309252fb86ad9b5034d6a",
   "config_path": "experiments/baselines/s0_037_dacdetr_bbox_seed42/config.yaml",
   "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
   "description": "dacdetr_bbox",
   "duplicate_bare_keys": [
     "mAP"
@@ -47,6 +51,9 @@
   "eval_recipe_id": "e82672cdfc7d",
   "excluded": false,
   "exclusion_reason": null,
+  "experiment_id": "baselines/s0/dacdetr_bbox@val",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_tag": null,
   "gpu": null,
   "group": "baselines",
   "harvest_warnings": [],
@@ -75,8 +82,10 @@
       "tool_mAP": 0.7165147626742786
     }
   },
+  "metrics_primary_split": "val",
   "notes": "# s0_037_dacdetr_bbox_seed42\n\n## 仮説\nDAC-DETR (Divide-And-Conquer DETR, NeurIPS 2023) を EgoSurgery-Tool に統一 recipe\nで fine-tune する。auxiliary decoder (cross-attention 特化 + one-to-many 割当) により\nquery の object 集約が改善し、特に小型・希少術具 (Skewer/Syringe) の AP 向上を期待。\n評価する構成は dac_cdn_ice = DAC + CDN(対照denoising) + ICE(IoU関連loss / align系)。\n\n## 実験設定\n- Detector: DAC-DETR / dac_cdn_ice (ResNet-50, enc6/dec6, num_queries_one2one=900)\n- Epochs: 12 / per-GPU batch=2 / seed=42\n- DDP: 2 GPU (RTX 6000 Ada, philip) → effective_bs=4\n- Optimizer: AdamW lr=0.0002 (backbone 2e-05), wd=0.0001,\n  scheduler=StepLR drop@11\n- 事前重み: dac_cdn_ice_r50_12ep_coco (official, COCO AP 50.9); class_embed 91->15 reinit, bbox-only\n- データ split: EgoSurgery 公式 (train 9657 / val 1515 / test 4265)、評価=val、bbox-only\n- 評価: pycocotools COCOeval (test_coco_eval_bbox)。per-class AP は COCOeval.precision\n  から IoU0.5:0.95/area=all/maxDet=100 で抽出 (mmdet 系と同定義)\n\n## 結果\n- val mAP=0.7165, mAP_50=0.8357, mAP_75=0.7660\n- AP_rare=0.7778, AP_common=0.7063 (best epoch=11)\n\n## 解釈\n- 他検出器 (judge #6) との Δ 比較は compare_judge6.py で集計。\n- val 非存在クラス (Retractor 等) は per-class AP=NaN として rare/common 平均から除外。\n",
   "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
   "path": "experiments/baselines/s0_037_dacdetr_bbox_seed42",
   "per_class": {
     "Bipolar Forceps": 0.7602468669356394,

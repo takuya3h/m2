@@ -120,58 +120,87 @@
 - `experiments/transfer/b2b_rescore_alpha1.0`
 - `experiments/transfer/b2b_rescore_alpha2.0`
 
-## 7. ディレクトリ名に補助 seed を含む run
+## 7. ディレクトリ名の `det<N>` / `p<N>` トークン — 大半は seed ではない
 
-`det42` / `p123` のように、末尾の `seed<N>` とは別の seed が名前に含まれる run。
-後段の paired 統計では比較単位が **(検出器 seed, 工程 seed) の組**であり、
-末尾 seed だけでは基準点を特定できない。機械的に結合できるよう
-`seed_detector` / `seed_phase` の専用フィールドに分離している。
+### 7.1 🔴 修正済みの誤読: `p010` は seed ではなくノイズ率
 
-該当 101 run
+以前の実装は `(det|p)(\d+)` にマッチした数値を無条件に補助 seed として扱い、
+**81 run に `seed_phase` を付けていた。うち 72 件は誤り**である。
+
+一次証拠 (`command.sh` の実引数):
+
+```
+b2a_base_oracle_noise_p010_001_b2a_base_oracle_noise_p010_seed42/command.sh
+  python scripts/train_b2a.py --seed 42 --epochs 50 --tool-source oracle \
+    --tool-noise-rate 0.10 --description-override b2a_base_oracle_noise_p010
+```
+
+`p010` は `--tool-noise-rate 0.10`、すなわち**ノイズ率 0.10** であって seed ではない。
+これを seed とみなすと、ノイズ水準という**条件**が反復軸に誤分類され、
+`experiment_id` から剥がされて noise 0.10 / 0.20 / 0.30 が 1 実験に混ざる。
+
+現在の判定は `command.sh` を一次証拠にする:
+
+| 条件 | 判定 | provenance |
+|---|---|---|
+| `--tool-noise-rate` を持つ | ノイズ率。seed ではない | `p_token_is_noise_rate_by_command_sh` |
+| `p<N>` == 末尾 `seed<N>` | 工程学習の seed (反復軸) | `p_token_equals_run_seed` |
+| どちらでもない | **確定不能。null にする** | `p_token_not_determinable` |
+| `det<N>` | 凍結検出器の指定 = **条件**。反復軸ではない | `det_token_is_backbone_condition` |
+
+ノイズ系を除いた 27 run すべてで `p<N> == seed` であることを実測で確認した。
+
+### 7.2 現在の内訳
+
+| aux_token_provenance | run 数 |
+|---|---:|
+
+`seed_detector` または `seed_phase` が実際に付いた run: **29**
 
 | path | seed (末尾) | seed_detector | seed_phase |
 |---|---:|---:|---:|
-| `experiments/transfer/b2a_base_oracle_noise_p010_001_b2a_base_oracle_noise_p010_seed42` | 42 | — | 10 |
-| `experiments/transfer/b2a_base_oracle_noise_p010_002_b2a_base_oracle_noise_p010_seed123` | 123 | — | 10 |
-| `experiments/transfer/b2a_base_oracle_noise_p010_003_b2a_base_oracle_noise_p010_seed456` | 456 | — | 10 |
-| `experiments/transfer/b2a_base_oracle_noise_p020_001_b2a_base_oracle_noise_p020_seed42` | 42 | — | 20 |
-| `experiments/transfer/b2a_base_oracle_noise_p020_002_b2a_base_oracle_noise_p020_seed123` | 123 | — | 20 |
-| `experiments/transfer/b2a_base_oracle_noise_p020_003_b2a_base_oracle_noise_p020_seed456` | 456 | — | 20 |
-| `experiments/transfer/b2a_base_oracle_noise_p030_001_b2a_base_oracle_noise_p030_seed42` | 42 | — | 30 |
-| `experiments/transfer/b2a_base_oracle_noise_p030_002_b2a_base_oracle_noise_p030_seed123` | 123 | — | 30 |
-| `experiments/transfer/b2a_base_oracle_noise_p030_003_b2a_base_oracle_noise_p030_seed456` | 456 | — | 30 |
-| `experiments/transfer/b2a_base_oracle_top3noise_p010_001_b2a_base_oracle_top3noise_p010_seed42` | 42 | — | 10 |
-| `experiments/transfer/b2a_base_oracle_top3noise_p010_002_b2a_base_oracle_top3noise_p010_seed123` | 123 | — | 10 |
-| `experiments/transfer/b2a_base_oracle_top3noise_p010_003_b2a_base_oracle_top3noise_p010_seed456` | 456 | — | 10 |
-| `experiments/transfer/b2a_base_oracle_top3noise_p020_001_b2a_base_oracle_top3noise_p020_seed42` | 42 | — | 20 |
-| `experiments/transfer/b2a_base_oracle_top3noise_p020_002_b2a_base_oracle_top3noise_p020_seed123` | 123 | — | 20 |
-| `experiments/transfer/b2a_base_oracle_top3noise_p020_003_b2a_base_oracle_top3noise_p020_seed456` | 456 | — | 20 |
-| `experiments/transfer/b2a_base_oracle_top3noise_p030_001_b2a_base_oracle_top3noise_p030_seed42` | 42 | — | 30 |
-| `experiments/transfer/b2a_base_oracle_top3noise_p030_002_b2a_base_oracle_top3noise_p030_seed123` | 123 | — | 30 |
-| `experiments/transfer/b2a_base_oracle_top3noise_p030_003_b2a_base_oracle_top3noise_p030_seed456` | 456 | — | 30 |
-| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p010_001_b2a_ro_oracle_bipolarnoise_p010_seed42` | 42 | — | 10 |
-| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p010_002_b2a_ro_oracle_bipolarnoise_p010_seed123` | 123 | — | 10 |
-| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p010_003_b2a_ro_oracle_bipolarnoise_p010_seed456` | 456 | — | 10 |
-| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p020_001_b2a_ro_oracle_bipolarnoise_p020_seed42` | 42 | — | 20 |
-| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p020_002_b2a_ro_oracle_bipolarnoise_p020_seed123` | 123 | — | 20 |
-| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p020_003_b2a_ro_oracle_bipolarnoise_p020_seed456` | 456 | — | 20 |
-| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p030_001_b2a_ro_oracle_bipolarnoise_p030_seed42` | 42 | — | 30 |
-| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p030_002_b2a_ro_oracle_bipolarnoise_p030_seed123` | 123 | — | 30 |
-| `experiments/transfer/b2a_ro_oracle_bipolarnoise_p030_003_b2a_ro_oracle_bipolarnoise_p030_seed456` | 456 | — | 30 |
-| `experiments/transfer/b2a_ro_oracle_bsnoise_p010_001_b2a_ro_oracle_bsnoise_p010_seed42` | 42 | — | 10 |
-| `experiments/transfer/b2a_ro_oracle_bsnoise_p010_002_b2a_ro_oracle_bsnoise_p010_seed123` | 123 | — | 10 |
-| `experiments/transfer/b2a_ro_oracle_bsnoise_p010_003_b2a_ro_oracle_bsnoise_p010_seed456` | 456 | — | 10 |
-| `experiments/transfer/b2a_ro_oracle_bsnoise_p020_001_b2a_ro_oracle_bsnoise_p020_seed42` | 42 | — | 20 |
-| `experiments/transfer/b2a_ro_oracle_bsnoise_p020_002_b2a_ro_oracle_bsnoise_p020_seed123` | 123 | — | 20 |
-| `experiments/transfer/b2a_ro_oracle_bsnoise_p020_003_b2a_ro_oracle_bsnoise_p020_seed456` | 456 | — | 20 |
-| `experiments/transfer/b2a_ro_oracle_bsnoise_p030_001_b2a_ro_oracle_bsnoise_p030_seed42` | 42 | — | 30 |
-| `experiments/transfer/b2a_ro_oracle_bsnoise_p030_002_b2a_ro_oracle_bsnoise_p030_seed123` | 123 | — | 30 |
-| `experiments/transfer/b2a_ro_oracle_bsnoise_p030_003_b2a_ro_oracle_bsnoise_p030_seed456` | 456 | — | 30 |
-| `experiments/transfer/b2a_ro_oracle_nhnoise_p010_001_b2a_ro_oracle_nhnoise_p010_seed42` | 42 | — | 10 |
-| `experiments/transfer/b2a_ro_oracle_nhnoise_p010_002_b2a_ro_oracle_nhnoise_p010_seed123` | 123 | — | 10 |
-| `experiments/transfer/b2a_ro_oracle_nhnoise_p010_003_b2a_ro_oracle_nhnoise_p010_seed456` | 456 | — | 10 |
-| `experiments/transfer/b2a_ro_oracle_nhnoise_p020_001_b2a_ro_oracle_nhnoise_p020_seed42` | 42 | — | 20 |
-| … 他 61 件 | | | |
+| `experiments/transfer/hires_relation_detr_augstrong_hires_seed42_p123_001_hires_relation_detr_augstrong_hires_seed42_p123_seed123` | 123 | — | 123 |
+| `experiments/transfer/hires_relation_detr_augstrong_hires_seed42_p42_001_hires_relation_detr_augstrong_hires_seed42_p42_seed42` | 42 | — | 42 |
+| `experiments/transfer/hires_relation_detr_augstrong_hires_seed42_p456_001_hires_relation_detr_augstrong_hires_seed42_p456_seed456` | 456 | — | 456 |
+| `experiments/transfer/hires_relation_detr_augstrong_seed42_p123_001_hires_relation_detr_augstrong_seed42_p123_seed123` | 123 | — | 123 |
+| `experiments/transfer/hires_relation_detr_augstrong_seed42_p42_001_hires_relation_detr_augstrong_seed42_p42_seed42` | 42 | — | 42 |
+| `experiments/transfer/hires_relation_detr_augstrong_seed42_p456_001_hires_relation_detr_augstrong_seed42_p456_seed456` | 456 | — | 456 |
+| `experiments/transfer/hires_relation_detr_seed42_p123_001_hires_relation_detr_seed42_p123_seed123` | 123 | — | 123 |
+| `experiments/transfer/hires_relation_detr_seed42_p42_001_hires_relation_detr_seed42_p42_seed42` | 42 | — | 42 |
+| `experiments/transfer/hires_relation_detr_seed42_p456_001_hires_relation_detr_seed42_p456_seed456` | 456 | — | 456 |
+| `experiments/transfer/t1a_3seed_det123_p123_aug_001_t1a_3seed_det123_p123_aug_seed123` | 123 | 123 | 123 |
+| `experiments/transfer/t1a_3seed_det123_p123_frozen_001_t1a_3seed_det123_p123_frozen_seed123` | 123 | 123 | 123 |
+| `experiments/transfer/t1a_3seed_det123_p42_aug_001_t1a_3seed_det123_p42_aug_seed42` | 42 | 123 | 42 |
+| `experiments/transfer/t1a_3seed_det123_p42_frozen_001_t1a_3seed_det123_p42_frozen_seed42` | 42 | 123 | 42 |
+| `experiments/transfer/t1a_3seed_det123_p456_aug_001_t1a_3seed_det123_p456_aug_seed456` | 456 | 123 | 456 |
+| `experiments/transfer/t1a_3seed_det123_p456_frozen_001_t1a_3seed_det123_p456_frozen_seed456` | 456 | 123 | 456 |
+| `experiments/transfer/t1a_3seed_det42_aug_001_t1a_3seed_det42_aug_seed42` | 42 | 42 | — |
+| `experiments/transfer/t1a_3seed_det42_frozen_001_t1a_3seed_det42_frozen_seed42` | 42 | 42 | — |
+| `experiments/transfer/t1a_3seed_det42_p123_aug_001_t1a_3seed_det42_p123_aug_seed123` | 123 | 42 | 123 |
+| `experiments/transfer/t1a_3seed_det42_p123_frozen_001_t1a_3seed_det42_p123_frozen_seed123` | 123 | 42 | 123 |
+| `experiments/transfer/t1a_3seed_det42_p42_aug_001_t1a_3seed_det42_p42_aug_seed42` | 42 | 42 | 42 |
+| `experiments/transfer/t1a_3seed_det42_p42_frozen_001_t1a_3seed_det42_p42_frozen_seed42` | 42 | 42 | 42 |
+| `experiments/transfer/t1a_3seed_det42_p456_aug_001_t1a_3seed_det42_p456_aug_seed456` | 456 | 42 | 456 |
+| `experiments/transfer/t1a_3seed_det42_p456_frozen_001_t1a_3seed_det42_p456_frozen_seed456` | 456 | 42 | 456 |
+| `experiments/transfer/t1a_3seed_det456_p123_aug_001_t1a_3seed_det456_p123_aug_seed123` | 123 | 456 | 123 |
+| `experiments/transfer/t1a_3seed_det456_p123_frozen_001_t1a_3seed_det456_p123_frozen_seed123` | 123 | 456 | 123 |
+| `experiments/transfer/t1a_3seed_det456_p42_aug_001_t1a_3seed_det456_p42_aug_seed42` | 42 | 456 | 42 |
+| `experiments/transfer/t1a_3seed_det456_p42_frozen_001_t1a_3seed_det456_p42_frozen_seed42` | 42 | 456 | 42 |
+| `experiments/transfer/t1a_3seed_det456_p456_aug_001_t1a_3seed_det456_p456_aug_seed456` | 456 | 456 | 456 |
+| `experiments/transfer/t1a_3seed_det456_p456_frozen_001_t1a_3seed_det456_p456_frozen_seed456` | 456 | 456 | 456 |
+
+### 7.3 🔴 未解決: `noise000` という名前が実態と食い違う
+
+`b2a_ro_oracle_noise000` は名前が「ノイズ 0.00」を意味するように読めるが、
+12 run の `command.sh` が渡している `--tool-noise-rate` は実際には
+**0.05 / 0.10 / 0.20 / 0.30 の 4 通り**である。
+
+- 名前を信じて「ゼロノイズの対照」として使うと、**4 水準の混合**と比較することになる。
+- `description` が 1 つしか無いため、`experiment_id` はこの 12 run を 1 実験に束ねる。
+  `n_command_variants` 列が 4 になるので機械的には検出できるが、
+  **この実験の集約値 (mean / pstd) は 4 条件の混合であり、意味を持たない**。
+- 規約と実データのどちらを正とするかは harvester が決めることではないため、
+  ここに記録するに留める。ディレクトリ名の改名は `experiments/` の変更にあたる。
 
 ## 8. prefix 無しキーと prefix 付きキーの値が食い違った run
 
@@ -207,12 +236,18 @@ adapter を書けば貴重な追加ソースになる。
 
 | 警告 | 件数 |
 |---|---:|
-| ディレクトリ名に補助 seed {...} が含まれる。seed には末尾の seed<N> のみを採用し、det/p は seed_detector / seed_phase に分離した。 | 101 |
 | val と test の指標が共存する。primary（best 選択元）は val。test 側は metrics_by_split['...'] に保持している。 | 27 |
+| ディレクトリ名の p010 は seed ではない。command.sh が --tool-noise-rate を渡しており、ノイズ率 0.01 を指す。seed_phase には入れない。 | 24 |
+| ディレクトリ名の p020 は seed ではない。command.sh が --tool-noise-rate を渡しており、ノイズ率 0.02 を指す。seed_phase には入れない。 | 24 |
+| ディレクトリ名の p030 は seed ではない。command.sh が --tool-noise-rate を渡しており、ノイズ率 0.03 を指す。seed_phase には入れない。 | 24 |
+| config.yaml のパースに失敗: ConstructorError | 15 |
 | host '...' は実サーバーを一意に特定できない。host は null にした。 | 10 |
 | per_class_ap.json が空 ({...}) | 8 |
+| 同一 (group, step, description, split) 内で eval_recipe_id が 2 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #None で分離した。 | 6 |
+| 同一 (group, step, description, split) 内で eval_recipe_id が 2 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #a63aecae で分離した。 | 6 |
 | run 名が命名規約 <step>_<seq3>_<desc>_seed<N> に一致しない | 6 |
 | metrics.json が空 ({...}) | 6 |
+| config.yaml のパースに失敗: ParserError | 3 |
 | per_class_ap.json が存在しない | 3 |
 
 ## 11. 🔴 要対処: 乱数で per-class AP を生成するコードが残っている
@@ -476,4 +511,229 @@ run_id 単位の 3 分類（記録漏れ / 成果物消失 / 数値の食い違�
 | `s0_004_varifocanet_bbox_seed42` | 3 |
 | `s0_005_varifocanet_bbox_seed123` | 3 |
 | `s0_006_varifocanet_bbox_seed456` | 3 |
+
+## 16. 🔴 修正済み: primary 指標に test の値が入っていた
+
+### 16.1 症状
+
+`has_test = true` の **27 run** で、`metrics.<name>`（primary）に
+val ではなく **test の値**が入っていた。`split` 列は `val` のままだったため、
+**「val と名乗る test の値」**という最も危険な不整合になっていた。
+`index.csv` の `metric.*` と `metric_test.*` が全 27 run で完全一致し、
+Δ が全て 0.00 に見えていた。
+
+### 16.2 原因
+
+`harvest_metrics()` が「どの split が primary か」を決める **前に**
+primary の入れ物を埋めていた。同じ canonical 名を複数 split が書くと
+`metrics.json` のキー順で **後に来た側が勝つ**。
+`phase_accuracy` → `test_accuracy` の順に並ぶため test が残っていた。
+
+```python
+# 誤: split 判定より前に flat を埋めていた
+if info['split']:
+    by_split[info['split']][canon] = value
+    flat[canon] = value          # <- 後勝ちで test が primary になる
+...
+evidence = {s for s in by_split if s != 'unknown'}   # <- 判定はこの後
+```
+
+追補 G で `split` の既定を val と宣言した時点で、宣言（`split` 列）と
+実体（`metrics`）が別の場所で決まる構造が顕在化した。
+
+### 16.3 対処
+
+1. primary split を **先に**決め、その後で `flat` を充填する順序に変更した。
+2. `metrics_primary_split` 列を追加し、`metrics` の出所を機械可読にした。
+3. `tools/verify_runindex.py` を追加し `make runindex` に組み込んだ。
+   C1〜C3 が同型の退行を検出する（`split` 列と出所の不一致、Δ が全て 0）。
+
+## 17. 実験単位 (`experiment_id`) の導入と、その限界
+
+`runs/*.json` には seed をまたいで run を束ねるフィールドが 1 つも無く、
+573 run は「573 個の孤立した run」であって「N 個の実験」ではなかった。
+seed 集約も Δ も paired-σ も機械的に計算できない状態だったため、
+**run 名から機械的に導ける実験単位**を定義した。
+
+```
+experiment_id = <group>/<step>/<description(反復軸トークン除去)>@<split>~<frozen_source_tag>
+                （同一 ID 内で eval_recipe_id が食い違う場合は #<hash8> を付与）
+```
+
+### 17.0 🔴 名前にも command.sh にも現れない条件軸がある
+
+`s4_phase_baseline` の 55 run は当初「同一条件の 18 反復」に見えたが、そうではない。
+真の条件軸は `config.yaml` の `frozen_source.cache_dir`（凍結特徴の抽出元）で **7 通り**あり、
+これは環境変数 `RELDETR_FROZEN_TAG` で与えられるため
+**run 名にも `command.sh` にも `eval_recipe` にも現れない**。
+
+```python
+# scripts/train_s4_tecno.py
+_FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
+```
+
+`eval_recipe_id` は phase1/s4 の 61 run すべてで同一（`test_cfg.backbone` が
+リテラル固定のため条件差が原理的に現れない）。つまり `eval_recipe_id` による分離だけでは
+この交絡を防げない。`frozen_source_tag` を `experiment_id` に含めることで分離している。
+
+- 実験数: **169** / run 数 573
+- `experiment_id` を付けられなかった run: 6
+  （run 名が命名規約に一致しない run）
+- `eval_recipe_id` の食い違いで分離した base: 12
+  - `baselines/s0/maskdino_bbox@val` -> ['None', 'a63aecae1158']
+  - `baselines/s0/maskdino_bbox@val` -> ['None', 'a63aecae1158']
+  - `baselines/s0/maskdino_bbox@val` -> ['None', 'a63aecae1158']
+  - `baselines/s0/varifocanet_bbox@val` -> ['None', 'a63aecae1158']
+  - `baselines/s0/varifocanet_bbox@val` -> ['None', 'a63aecae1158']
+  - `baselines/s0/varifocanet_bbox@val` -> ['None', 'a63aecae1158']
+
+### 17.1 🔴 限界: 名前が条件を一意に表さない実験がある
+
+`experiment_id` は run 名から導く以上、**名前が条件を表していない場合は
+異なる条件の run を 1 実験に束ねてしまう**。検出のため次の 2 列を出している。
+
+| 列 | 意味 | 異常の徴候 |
+|---|---|---|
+| `n_command_variants` | seed/description を除いた `command.sh` 引数の種類数 | **> 1 なら条件が混在** |
+| `runs_per_seed_max` | 同一 seed の run 数の最大 | > 1 なら再実行か条件違いが混在 |
+
+実データで判明している最悪の例は §7.3 の `b2a_ro_oracle_noise000`
+（1 つの名前に 4 通りのノイズ率）。**この実験の集約値は使ってはならない。**
+
+### 17.2 🔴 逆向きの限界: 同一条件が別 experiment_id に分裂しうる
+
+`step` は `ExperimentManager` に渡された文字列でしかなく
+（`src/egosurgery/utils/experiment_id.py`）、同じ条件でも起動経路が違えば別の値になる。
+`description` / `split` / `frozen_source_tag` が一致しているのに `step` だけが違う組を
+機械的に検出した結果が次である。**同一条件が分裂している候補**として扱うこと。
+
+該当 **3 組**
+
+| group / description / split / frozen_source | 分裂した experiment_id |
+|---|---|
+| `baselines` / `maskdino_bbox` / `val` / `None` | `baselines/s0/maskdino_bbox@val#None`<br>`baselines/s0/maskdino_bbox@val#a63aecae` |
+| `baselines` / `varifocanet_bbox` / `val` / `None` | `baselines/s0/varifocanet_bbox@val#None`<br>`baselines/s0/varifocanet_bbox@val#a63aecae` |
+| `transfer` / `b2a_det2phase_toolpresence` / `val` / `relation_detr_seed42` | `transfer/b2a_det2phase/b2a_det2phase_toolpresence@val~relation_detr_seed42`<br>`transfer/b2a_det2phase_toolpresence/b2a_det2phase_toolpresence@val~relation_detr_seed42` |
+
+これらを 1 実験として束ねるべきかは、起動経路が同一かどうかの判断を伴うため
+harvester では決めない。`experiments.csv` では別行のままにしてある。
+
+## 18. 対照ペア (`arm` / `control_of`) — 確定できた範囲
+
+### 18.1 一次証拠の探索結果
+
+| 証拠源 | 結果 |
+|---|---|
+| `command.sh` の `--control` / `--baseline` / `--inject` / `--arm` | **0 件**。引数による対照指定は存在しない |
+| **`config.yaml` の `delta:` ブロック** | **441 run** が保有。`phase_denominator` が分母を名指しする |
+| `notes.md` の `## Δ` 節 | 439 run が保有。同じ内容を散文で書いたもの |
+
+`config.yaml` の記述例（機械可読）:
+
+```yaml
+delta:
+  phase_denominator: s4_phase_baseline (frozen_tecno_phase_baseline)
+  denominator_value_lecun: 0.8986±0.0034
+  note: Δ_phase = (T1a − S4 base). 別サーバー実行時は lecun 分母を流用し …
+```
+
+### 18.2 対照名の同定と、その裏付け
+
+`config.yaml` の `delta.phase_denominator` は分母を **文字列で名指し**する。
+実データに現れる 4 通り:
+
+| 宣言 | run 数 | 解釈 |
+|---|---:|---|
+| `s4_phase_baseline (frozen_tecno_phase_baseline)` | 430 | step + description |
+| `t1a_regiontoken base (同env efros paired)` | 6 | step のみ（括弧は散文） |
+| `t1a_regiontoken base (同一環境 efros で再学習・paired)` | 3 | 同上 |
+| `S0-frozen (=init mAP, within-run)` | 2 | **同一 run 内の初期値**。対照 run は存在しない |
+
+#### 🔴 散文からの同定は誤る — config の宣言に従属させた
+
+`notes.md` は分母を `T1a base[同env efros]` と書く。名前の近さだけで読むと
+`step=t1a_base_env` に見えるが、**同じ run の `config.yaml` は
+`t1a_regiontoken base` と宣言している**。両者は別の実験である。
+そのため証拠の優先順を `config.yaml` → `notes.md` に固定した。
+
+#### 🔴 同じ基準点が 2 通りのσで引用されている
+
+`S4 base` は `±0.0034` (397 run) と `±0.0028` (33 run) の 2 通りで引用されている。
+実測すると **同一の 3 run** に対する母集団σ (0.002766) と標本σ (0.003387) であり、
+比は √(3/2) = 1.2247 である。
+§10.1 の改善判定は `|Δ| > 1σ` を条件とするため、
+**どちらのσを採るかで有意・非有意の判定が変わりうる**。σの規約は正本で統一が要る。
+
+#### 分母が複数実験に該当するときの切り分け
+
+`frozen_source_tag` で実験を分けた結果、`s4_phase_baseline` は 7 実験になった。
+分母の宣言は 1 つなので、そのままでは確定しない。切り分けは 2 段構えで行う。
+
+1. **凍結特徴ソースの一致** — `notes.md` が対照の条件を
+   「同一土台（凍結backbone/GAP/recipe/seed・neck無し）」と明記している。
+   凍結 backbone を揃えるのは研究者自身が宣言した規則なので、
+   注入 run と同じ `frozen_source_tag` を持つ実験を分母とする。
+2. **引用値による照合** — 1 で決まらないときのみ、
+   `denominator_value_lecun` 等の引用値を再現する部分集合を探す。
+
+### 18.3 確定できた件数
+
+| 分類 | run 数 |
+|---|---:|
+| `injection_from_config_yaml` | 439 |
+| `no_denominator_declared` | 132 |
+| `baseline` | 17 |
+| `within_run_baseline` | 2 |
+
+**分母を宣言している run はすべて実験に解決できた（未解決 0 件）。**
+
+`no_denominator_declared` の run は `config.yaml` にも `notes.md` にも
+分母の記載が無い。推測で埋めず `control_of` は null のままにしてある。
+
+#### 🔴 paired-σ がほぼ計算できない
+
+`notes.md` は 439 run で「3-seed 揃ったら **paired-σ(対seed差)** で §10.1 判定」と
+書いているが、実際に `paired` で計算できた実験は **わずか 1 件**である。
+
+理由は基準点実験の構成にある:
+`phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42` は
+**17 run / 3 seed（1 つの seed に最大 7 run）**であり、
+seed ごとに 1 本ずつ対応させることができない。
+どの run を代表とするかを決める規約はどの証跡ファイルにも無い。
+
+したがって残り 155 実験は `unpaired`（平均の差のみ）とし、
+**`delta_pstd_*` は空欄**にしてある。対応が取れない以上 paired-σ は定義できず、
+それらしい数値を入れることは捏造にあたる。
+**§10.1 の `|Δ| > 1σ` 判定は、現状の証跡では実行できない。**
+
+### 18.4 `arm=control` を使っていない理由
+
+スキーマは `injection` / `control` / `baseline` / `unknown` を許すが、
+**自らを「対照」と宣言している run は 1 件も無い**。
+実在するのは「Δ の基準点として参照されている実験」であり、これを `baseline` とした。
+`control` を使うと、存在しない設計意図を捏造することになる。
+
+### 18.5 Δ の計算方式
+
+- `paired`: 注入側・対照側とも **seed ごとにちょうど 1 run** で seed 集合が一致するとき。
+  seed ごとの差を取り、その平均を `delta_<metric>`、母集団σを `delta_pstd_<metric>` とする。
+- `unpaired`: 上記を満たさないとき。平均の差だけを出し、
+  **`delta_pstd_<metric>` は空欄**にする（対応が取れない以上 paired-σ は定義できない）。
+- どちらで計算したかは `delta_method` 列に必ず記録する。混同してはならない。
+
+## 19. `per_class.csv` を使うときの必須の注意
+
+per-class の値は 573 個の JSON に分散していて横断分析に使えなかったため、
+`runindex/per_class.csv` に long 形式（1 行 = 1 run × 1 クラス）で 1 ファイル化した。
+
+- `per_class_kind=tool` : 62 run × 15 クラス（術具 **AP**）
+- `per_class_kind=phase`: 500 run × 9 クラス（工程 **F1**）
+
+**この 2 つを混ぜて集計してはならない。** 指標の種類が違う（AP と F1）。
+ファイル名は両方とも `per_class_ap.json` なので、名前では判別できない。
+必ず `per_class_kind` / `per_class_metric` で分離すること。
+
+`value` が空欄の行は元が `NaN` だったもので、`is_nan=True` が立っている。
+術具側の `NaN` は **val split に GT が 1 件も無いクラス**を意味する（0 ではない）。
+平均を取るときは `nanmean` 相当（空欄を除外）にすること。
 

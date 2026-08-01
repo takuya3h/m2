@@ -1,8 +1,12 @@
 {
+  "arm": "unknown",
   "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-05-23T04:59:39+00:00\npython /home/ubuntu/slocal2/egosurgery_multitask/src/egosurgery/train.py stage=s0_tool_baseline model.detection_head=varifocanet seed=456 experiment.description=varifocanet_bbox train.real_detector=true logging.wandb_enabled=true\n",
   "commit": "d1bcc8a3ca3fa1b19ddfda986fe90105e70feefb",
   "config_path": "experiments/baselines/_wrong_split_8_2_3/s0_006_varifocanet_bbox_seed456/config.yaml",
   "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
   "description": "varifocanet_bbox",
   "duplicate_bare_keys": [
     "mAP"
@@ -12,9 +16,14 @@
   "eval_recipe_id": null,
   "excluded": true,
   "exclusion_reason": "known_bad_split",
+  "experiment_id": "baselines/s0/varifocanet_bbox@val#None",
+  "experiment_id_provenance": "from_run_name_split_by_eval_recipe",
+  "frozen_source_tag": null,
   "gpu": null,
   "group": "baselines",
-  "harvest_warnings": [],
+  "harvest_warnings": [
+    "同一 (group, step, description, split) 内で eval_recipe_id が 2 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #None で分離した。"
+  ],
   "host": null,
   "host_raw": null,
   "ledger_key": "baselines___wrong_split_8_2_3__s0_006_varifocanet_bbox_seed456",
@@ -34,8 +43,10 @@
       "mAP_75": 0.293
     }
   },
+  "metrics_primary_split": "val",
   "notes": "# s0_006_varifocanet_bbox_seed456\n\n## 仮説\nCOCO 事前学習済み VarifocalNet (vfnet_r50_fpn, COCO 事前学習) を EgoSurgery-Tool（術具 15 クラス）へ fine-tune すれば、§2.5(a) の S0 基準点を実検出器で確立できる。\n\n## 実験設定\n- Detector: VarifocalNet (vfnet_r50_fpn, COCO 事前学習)\n- Backbone/Neck: ResNet-50 + FPN（COCO 重みから転移、分類ヘッドのみ再初期化）\n- Epochs: 12 / batch=4 / seed=456\n- 評価: val split（/home/ubuntu/slocal2/egosurgery_multitask/data/annotations/egosurgery_tool/instances_val.json）COCO mAP\n- パイプライン: mmdet 3.3.0 Runner（spec §2.1 の「Runner 不使用」からは逸脱。実 SOTA の確実な再現を優先した）\n\n## 結果\n- val mAP=27.20 / mAP_50=39.90 / mAP_75=29.30\n- AP_rare=12.50 / AP_common=26.32（best epoch=9）\n- 完了判定 #4（VarifocalNet mAP ≥ 45.8）: val mAP=27.20 → **未達**\n\n## 解釈\nper_class_ap.json と visualizations/confusion_matrix.png を参照。\n形状類似ペア（Forceps/Tweezers/Needle Holders/Bipolar Forceps）の\n誤分類傾向は混同行列で確認する。\n\n## 次の行動\n1. 3 seed の平均±標準偏差を /delta で集計し §2.5(a) 基準点として確定する。\n",
   "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
   "path": "experiments/baselines/_wrong_split_8_2_3/s0_006_varifocanet_bbox_seed456",
   "per_class": {
     "Bipolar Forceps": 0.002,

@@ -1,8 +1,15 @@
 {
+  "arm": "injection",
   "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-07-02T07:25:16+00:00\npython scripts/train_haux.py --hand-feature-type presence --hand-source oracle --shuffle-hand --seed 123\n",
   "commit": "1a52c6fde8120bb62eba920ad3c3d8882f309b72",
   "config_path": "experiments/transfer/haux_hand_presence_oracle_shuffle_002_haux_hand_presence_oracle_shuffle_seed123/config.yaml",
   "conflicting_bare_keys": [],
+  "control_note_value": 0.8986,
+  "control_of": "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42",
+  "delta_declaration": {
+    "note": "Δ_phase = (H-aux − S4 base 0.8986±0.0028). 土台は素 TeCNO・neck 無しで一致、変える軸は手特徴 1 点。",
+    "phase_denominator": "s4_phase_baseline (frozen_tecno_phase_baseline)"
+  },
   "description": "haux_hand_presence_oracle_shuffle",
   "duplicate_bare_keys": [],
   "epoch": 48,
@@ -36,6 +43,9 @@
   "eval_recipe_id": "1f1c57947be2",
   "excluded": false,
   "exclusion_reason": null,
+  "experiment_id": "transfer/haux_hand_presence_oracle_shuffle/haux_hand_presence_oracle_shuffle@val~relation_detr_seed42",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_tag": "relation_detr_seed42",
   "gpu": null,
   "group": "transfer",
   "harvest_warnings": [],
@@ -62,8 +72,10 @@
       "seg_f1_50": 0.35326797385620917
     }
   },
+  "metrics_primary_split": "val",
   "notes": "# STEP D-aux 系統① 手情報→工程（det→phase・①信号レベル）\n\n手特徴 `presence`（4-d, source=oracle）を GAP(2048) に入力連結 → 素 causal TeCNO。①は勾配を交差させず信号のみ渡す。online/causal。\n§4.3 shuffle control: 手特徴の frame 対応を破壊（容量効果 vs 真の相関）。\n\n## 結果（best @epoch 48）\n- accuracy=0.9056 / macro_f1=0.7189\n- edit=39.17 / seg_f1@10/25/50=0.41/0.40/0.35\n\n## 構成\n- seed=123 epochs=50 lr=0.0005 in_dim=2052 stages=2 layers=8 f_maps=64\n- server=efros / eval recipe=online_causal+jaccard_strict (PHASE_EVAL_PROTOCOL)\n\n## Δ\n- Δ_phase = (H-aux − S4 base 0.8986±0.0028)。同一土台（凍結backbone/GAP/recipe/seed・neck無し）。\n- 3-seed 揃ったら paired-σ(対seed差) で §10.1 判定（|Δ|>paired-σ かつ同符号で有意）。\n",
   "notion_page_id": null,
+  "pairing_provenance": "from_config_yaml",
   "path": "experiments/transfer/haux_hand_presence_oracle_shuffle_002_haux_hand_presence_oracle_shuffle_seed123",
   "per_class": {
     "anesthesia": 0.9171270718232044,

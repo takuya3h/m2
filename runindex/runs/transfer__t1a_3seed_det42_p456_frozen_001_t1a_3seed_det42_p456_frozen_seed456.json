@@ -1,8 +1,16 @@
 {
+  "arm": "injection",
   "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-07-03T02:08:11+00:00\npython scripts/train_t1a.py --description t1a_3seed_det42_p456_frozen --seed 456\n",
   "commit": "bd0609749afdfa2a356ef625a73628cddf38d4a9",
   "config_path": "experiments/transfer/t1a_3seed_det42_p456_frozen_001_t1a_3seed_det42_p456_frozen_seed456/config.yaml",
   "conflicting_bare_keys": [],
+  "control_note_value": 0.8986,
+  "control_of": "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42",
+  "delta_declaration": {
+    "denominator_value_lecun": "0.8986±0.0034",
+    "note": "Δ_phase = (T1a − S4 base). 別サーバー実行時は lecun 分母を流用し サーバー差を §8.0 明文化（同一 ckpt・同一前処理ゆえ差は TeCNO 学習数値のみ）。",
+    "phase_denominator": "s4_phase_baseline (frozen_tecno_phase_baseline)"
+  },
   "description": "t1a_3seed_det42_p456_frozen",
   "duplicate_bare_keys": [],
   "epoch": 23,
@@ -34,11 +42,12 @@
   "eval_recipe_id": "78e50862a7b3",
   "excluded": false,
   "exclusion_reason": null,
+  "experiment_id": "transfer/t1a_3seed_det42_frozen/t1a_3seed_det42_frozen@val~relation_detr_seed42",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_tag": "relation_detr_seed42",
   "gpu": null,
   "group": "transfer",
-  "harvest_warnings": [
-    "ディレクトリ名に補助 seed {'det': 42} が含まれる。seed には末尾の seed456 のみを採用し、det/p は seed_detector / seed_phase に分離した。"
-  ],
+  "harvest_warnings": [],
   "host": "efros",
   "host_raw": "efros",
   "ledger_key": "transfer__t1a_3seed_det42_p456_frozen_001_t1a_3seed_det42_p456_frozen_seed456",
@@ -62,8 +71,10 @@
       "seg_f1_50": 0.45294117647058824
     }
   },
+  "metrics_primary_split": "val",
   "notes": "# T1a region-token→工程（Tier-1 主力⭐ TAPIS/GraSP 型・②系統）\n\n凍結 Relation-DETR seed42 の object-query 埋め込み（クラス別 256-d, score 加重）を GAP(2048) に入力 → 素 causal TeCNO。\n勾配は交差させず凍結 region token を渡す。online/causal（未来不使用）。\n\n## 結果（best @epoch 23）\n- accuracy=0.9465 / macro_f1=0.8016\n- edit=38.82 / seg_f1@10/25/50=0.48/0.47/0.45\n\n## 構成\n- seed=456 epochs=50 lr=0.0005 in_dim=5888(=2048+3840) stages=2 layers=8 f_maps=64\n- server=efros / eval recipe=online_causal+jaccard_strict (PHASE_EVAL_PROTOCOL)\n\n## Δ\n- Δ_phase = (T1a − S4 base 0.8986±0.0034[lecun])。同一土台（凍結backbone/GAP/recipe/seed・neck無）。\n- **別サーバー実行時**: 分母は lecun 値流用、サーバー差を §8.0 明文化。\n- 3-seed 揃ったら paired-σ(対seed差) で §10.1 判定（|Δ|>paired-σ かつ同符号で有意）。\n",
   "notion_page_id": null,
+  "pairing_provenance": "from_config_yaml",
   "path": "experiments/transfer/t1a_3seed_det42_p456_frozen_001_t1a_3seed_det42_p456_frozen_seed456",
   "per_class": {
     "anesthesia": 1.0,
@@ -89,14 +100,14 @@
     "per_class_metric": "from_class_set_and_writer_script",
     "seed": "from_dirname",
     "seed_detector": "from_dirname_det_token",
-    "seed_phase": "not_determinable",
+    "seed_phase": "from_dirname_p_token",
     "split": "from_metric_key_prefix",
     "step": "from_dirname"
   },
   "run_id": "t1a_3seed_det42_p456_frozen_001_t1a_3seed_det42_p456_frozen_seed456",
   "seed": 456,
   "seed_detector": 42,
-  "seed_phase": null,
+  "seed_phase": 456,
   "seq": 1,
   "split": "val",
   "step": "t1a_3seed_det42_p456_frozen",

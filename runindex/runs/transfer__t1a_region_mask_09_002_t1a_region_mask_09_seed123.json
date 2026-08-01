@@ -1,8 +1,16 @@
 {
+  "arm": "injection",
   "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-06-29T07:47:57+00:00\npython scripts/train_t1a.py --seed 123 --epochs 50 --mask-region-tool-dim 9 --description t1a_region_mask_09\n",
   "commit": "c4228eddc07a1958959e00e8dff92f007c269755",
   "config_path": "experiments/transfer/t1a_region_mask_09_002_t1a_region_mask_09_seed123/config.yaml",
   "conflicting_bare_keys": [],
+  "control_note_value": 0.8986,
+  "control_of": "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42",
+  "delta_declaration": {
+    "denominator_value_lecun": "0.8986±0.0034",
+    "note": "Δ_phase = (T1a − S4 base). 別サーバー実行時は lecun 分母を流用し サーバー差を §8.0 明文化（同一 ckpt・同一前処理ゆえ差は TeCNO 学習数値のみ）。",
+    "phase_denominator": "s4_phase_baseline (frozen_tecno_phase_baseline)"
+  },
   "description": "t1a_region_mask_09",
   "duplicate_bare_keys": [],
   "epoch": 37,
@@ -34,6 +42,9 @@
   "eval_recipe_id": "78e50862a7b3",
   "excluded": false,
   "exclusion_reason": null,
+  "experiment_id": "transfer/t1a_region_mask_09/t1a_region_mask_09@val~relation_detr_seed42",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_tag": "relation_detr_seed42",
   "gpu": null,
   "group": "transfer",
   "harvest_warnings": [],
@@ -60,8 +71,10 @@
       "seg_f1_50": 0.3784313725490196
     }
   },
+  "metrics_primary_split": "val",
   "notes": "# T1a region-token→工程（Tier-1 主力⭐ TAPIS/GraSP 型・②系統）\n\n凍結 Relation-DETR seed42 の object-query 埋め込み（クラス別 256-d, score 加重）を GAP(2048) に入力 → 素 causal TeCNO。\n勾配は交差させず凍結 region token を渡す。online/causal（未来不使用）。\n\n## 結果（best @epoch 37）\n- accuracy=0.9393 / macro_f1=0.7985\n- edit=34.16 / seg_f1@10/25/50=0.44/0.42/0.38\n\n## 構成\n- seed=123 epochs=50 lr=0.0005 in_dim=5888(=2048+3840) stages=2 layers=8 f_maps=64\n- server=lecun / eval recipe=online_causal+jaccard_strict (PHASE_EVAL_PROTOCOL)\n\n## Δ\n- Δ_phase = (T1a − S4 base 0.8986±0.0034[lecun])。同一土台（凍結backbone/GAP/recipe/seed・neck無）。\n- **別サーバー実行時**: 分母は lecun 値流用、サーバー差を §8.0 明文化。\n- 3-seed 揃ったら paired-σ(対seed差) で §10.1 判定（|Δ|>paired-σ かつ同符号で有意）。\n",
   "notion_page_id": null,
+  "pairing_provenance": "from_config_yaml",
   "path": "experiments/transfer/t1a_region_mask_09_002_t1a_region_mask_09_seed123",
   "per_class": {
     "anesthesia": 0.9896907216494846,

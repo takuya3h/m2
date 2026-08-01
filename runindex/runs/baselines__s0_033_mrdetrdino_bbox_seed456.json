@@ -1,8 +1,12 @@
 {
+  "arm": "unknown",
   "command": "#!/usr/bin/env bash\n# Stable-DINO (detrex) 実行コマンド\n# seed=456\nprojects/train_net_egosurgery.py --config-file /home/ubuntu/slocal2/m2/third_party/Mr.DETR/projects/mr_detr_dino/configs/deformable_detr_r50_two_stage_12ep_egosurgery.py --num-gpus 2 train.seed=456\n",
   "commit": "4327348e444381f1737309252fb86ad9b5034d6a",
   "config_path": "experiments/baselines/s0_033_mrdetrdino_bbox_seed456/config.yaml",
   "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
   "description": "mrdetrdino_bbox",
   "duplicate_bare_keys": [
     "mAP"
@@ -31,9 +35,14 @@
   "eval_recipe_id": "1cf2eece1cd3",
   "excluded": false,
   "exclusion_reason": null,
+  "experiment_id": "baselines/s0/mrdetrdino_bbox@val",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_tag": null,
   "gpu": null,
   "group": "baselines",
-  "harvest_warnings": [],
+  "harvest_warnings": [
+    "config.yaml のパースに失敗: ConstructorError"
+  ],
   "host": "philip",
   "host_raw": "philip",
   "ledger_key": "baselines__s0_033_mrdetrdino_bbox_seed456",
@@ -53,8 +62,10 @@
       "mAP_75": 0.781183
     }
   },
+  "metrics_primary_split": "val",
   "notes": "# s0_033_mrdetrdino_bbox_seed456\n\n検出器: Mr.DETR-DINO (detrex, torch 2.1.2+cu118, .venv-detectron2)\nseed: 456\n\n## 結果\nmAP=0.7211 / AP_rare=0.7699 / AP_common=0.7129 (best eval #12)\n\n## 初期化\nDINO R50 COCO 12ep 重み (backbone+transformer)、class_embed は 80->15 で再初期化 (他検出器の COCO fine-tune と同条件)。\n",
   "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
   "path": "experiments/baselines/s0_033_mrdetrdino_bbox_seed456",
   "per_class": {
     "Bipolar Forceps": 0.77941,

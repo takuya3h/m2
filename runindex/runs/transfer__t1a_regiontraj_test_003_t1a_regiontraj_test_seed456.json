@@ -1,8 +1,17 @@
 {
+  "arm": "injection",
   "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-07-05T10:40:30+00:00\npython scripts/train_t1a_regiontraj.py --seed 456 --epochs 50 --eval-test --description t1a_regiontraj_test\n",
   "commit": "27ad173f16f4c63a7bbe9160aa9a4b5c1461cb2a",
   "config_path": "experiments/transfer/t1a_regiontraj_test_003_t1a_regiontraj_test_seed456/config.yaml",
   "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": "transfer/t1a_regiontoken/t1a_regiontoken@val~relation_detr_seed42",
+  "delta_declaration": {
+    "maintain_metric": "accuracy / macro_f1",
+    "note": "Δ = (RegionTraj − T1a base[同env]) per-seed paired-σ §10.1。",
+    "phase_denominator": "t1a_regiontoken base (同env efros paired)",
+    "primary_metric": "edit_score / seg_f1@{10,25,50}"
+  },
   "description": "t1a_regiontraj_test",
   "duplicate_bare_keys": [],
   "epoch": 26,
@@ -34,6 +43,9 @@
   "eval_recipe_id": "0695cee60ff7",
   "excluded": false,
   "exclusion_reason": null,
+  "experiment_id": "transfer/t1a_regiontraj_test/t1a_regiontraj_test@val~relation_detr_seed42",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_tag": "relation_detr_seed42",
   "gpu": null,
   "group": "transfer",
   "harvest_warnings": [
@@ -43,20 +55,20 @@
   "host_raw": "efros",
   "ledger_key": "transfer__t1a_regiontraj_test_003_t1a_regiontraj_test_seed456",
   "metrics": {
-    "accuracy": 0.8011723329425556,
-    "edit_score": 52.706669111394376,
-    "jaccard": 0.5033580350884154,
-    "macro_f1": 0.5916665718334579,
-    "seg_f1_10": 0.5888564415100728,
-    "seg_f1_25": 0.576893234016139,
-    "seg_f1_50": 0.4481053552282603,
-    "sticky_accuracy": 0.8091441969519344,
-    "sticky_edit_score": 62.743657308874695,
-    "sticky_jaccard": 0.5035662359292181,
-    "sticky_macro_f1": 0.5911093862873065,
-    "sticky_seg_f1_10": 0.6585406099276868,
-    "sticky_seg_f1_25": 0.6452749695739364,
-    "sticky_seg_f1_50": 0.500209111719324
+    "accuracy": 0.9425742574257425,
+    "edit_score": 43.91534391534392,
+    "jaccard": 0.7543336032980965,
+    "macro_f1": 0.7994252532653761,
+    "seg_f1_10": 0.5523895673149405,
+    "seg_f1_25": 0.5424393185587215,
+    "seg_f1_50": 0.5021860394994723,
+    "sticky_accuracy": 0.932013201320132,
+    "sticky_edit_score": 52.22222222222223,
+    "sticky_jaccard": 0.7179455498622082,
+    "sticky_macro_f1": 0.7697527677989501,
+    "sticky_seg_f1_10": 0.6191919191919192,
+    "sticky_seg_f1_25": 0.6070707070707071,
+    "sticky_seg_f1_50": 0.5411616161616162
   },
   "metrics_by_split": {
     "test": {
@@ -92,8 +104,10 @@
       "sticky_seg_f1_50": 0.5411616161616162
     }
   },
+  "metrics_primary_split": "val",
   "notes": "# T1a-RegionTrajectory（Temporal Object-Set Fusion・COUPLING §4.1）\n\nregion-token(15×256) を Set encoder（共有MLP+class埋め込み+attention pool）で集約→tool-presence と gated residual→causal temporal attention→TeCNO+boundary head。online/causal。\n\n## 結果（best @epoch 26・val）\n### plain decode\n- acc=0.9426 / macro_f1=0.7994\n- edit=43.92 / seg_f1@10/25/50=0.552/0.542/0.502\n### sticky decode（τ=0.5）\n- acc=0.9320 / macro_f1=0.7698\n- edit=52.22 / seg_f1@10/25/50=0.619/0.607/0.541\n\n## 構成\n- seed=456 epochs=50 lr=0.0005 d_model=256 tok_dim=128 pres_dim=64 stages=2 layers=8\n- set_encoder=on gated_residual=True temporal_attn=True boundary(w=1.0 pos_w=14.70 tau=0.5)\n- server=efros / recipe=online_causal+jaccard_strict\n\n## Δ\n- Δ=(RegionTraj − T1a base[同env efros])。主指標 edit/seg-F1、維持 acc/macro-F1。3-seed paired-σ §10.1。\n",
   "notion_page_id": null,
+  "pairing_provenance": "from_config_yaml",
   "path": "experiments/transfer/t1a_regiontraj_test_003_t1a_regiontraj_test_seed456",
   "per_class": {
     "anesthesia": 0.9949238578680203,
