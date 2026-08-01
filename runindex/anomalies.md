@@ -8,7 +8,7 @@
 **明文化されていない**。以下はディレクトリ名の意味からの判断であり、
 規約に基づくものではない。**除外規約の明文化を推奨する。**
 
-除外 19 run / 全 573 run（削除ではなくフラグ）
+除外 19 run / 全 615 run（削除ではなくフラグ）
 
 | exclusion_reason | runs | 対象 |
 |---|---:|---|
@@ -32,7 +32,7 @@
 
 指標キーの接頭辞から split を確定できない run。**推測していない**。
 
-確定不能 6 run / 全 573 run
+確定不能 6 run / 全 615 run
 
 | split_provenance | runs |
 |---|---:|
@@ -53,11 +53,11 @@
 
 ## 3. host を確定できなかった run
 
-確定不能 28 run
+確定不能 58 run
 
 | host_raw | runs | 理由 |
 |---|---:|---|
-| `None` | 18 | server.txt 欠損かつ eval_recipe.server_name 無し |
+| `None` | 48 | server.txt 欠損かつ eval_recipe.server_name 無し |
 | `aolab` | 10 | philip / ilya の双方が返すコンテナ内 hostname のため一意に特定不能 |
 
 ## 4. per_class_ap.json のクラス体系が 2 種類ある
@@ -71,7 +71,7 @@
 
 | per_class_kind | per_class_metric | runs | 内容 | 根拠 |
 |---|---|---:|---|---|
-| `phase` | `F1` | 500 | 9 クラスの工程別 **F1**（AP ではない） | `scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が `best.get("phase_per_class_f1", {})` を `log_per_class_ap()` に渡している |
+| `phase` | `F1` | 542 | 9 クラスの工程別 **F1**（AP ではない） | `scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が `best.get("phase_per_class_f1", {})` を `log_per_class_ap()` に渡している |
 | `tool` | `AP` | 62 | 15 クラスの術具 AP | `per_class_coco_map` / `COCOeval.precision` 由来 |
 | `None` | `None` | 11 | `per_class_ap.json` が無い・空・パース失敗 | — |
 
@@ -236,18 +236,28 @@ adapter を書けば貴重な追加ソースになる。
 
 | 警告 | 件数 |
 |---|---:|
-| val と test の指標が共存する。primary（best 選択元）は val。test 側は metrics_by_split['...'] に保持している。 | 27 |
+| val と test の指標が共存する。primary（best 選択元）は val。test 側は metrics_by_split['...'] に保持している。 | 69 |
 | ディレクトリ名の p010 は seed ではない。command.sh が --tool-noise-rate を渡しており、ノイズ率 0.01 を指す。seed_phase には入れない。 | 24 |
 | ディレクトリ名の p020 は seed ではない。command.sh が --tool-noise-rate を渡しており、ノイズ率 0.02 を指す。seed_phase には入れない。 | 24 |
 | ディレクトリ名の p030 は seed ではない。command.sh が --tool-noise-rate を渡しており、ノイズ率 0.03 を指す。seed_phase には入れない。 | 24 |
 | config.yaml のパースに失敗: ConstructorError | 15 |
 | host '...' は実サーバーを一意に特定できない。host は null にした。 | 10 |
+| run 名に seq (3 桁連番) が無い別系統の命名: base_seed<N>。step には description を充てた。 | 9 |
+| run 名に seq (3 桁連番) が無い別系統の命名: bboxROI_seed<N>。step には description を充てた。 | 9 |
 | per_class_ap.json が空 ({...}) | 8 |
 | 同一 (group, step, description, split) 内で eval_recipe_id が 2 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #None で分離した。 | 6 |
 | 同一 (group, step, description, split) 内で eval_recipe_id が 2 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #a63aecae で分離した。 | 6 |
 | run 名が命名規約 <step>_<seq3>_<desc>_seed<N> に一致しない | 6 |
 | metrics.json が空 ({...}) | 6 |
 | config.yaml のパースに失敗: ParserError | 3 |
+| run 名に seq (3 桁連番) が無い別系統の命名: shuffleROI_seed<N>。step には description を充てた。 | 3 |
+| run 名に seq (3 桁連番) が無い別系統の命名: bboxROI_handROIbbox2_seed<N>。step には description を充てた。 | 3 |
+| run 名に seq (3 桁連番) が無い別系統の命名: handPresence_seed<N>。step には description を充てた。 | 3 |
+| run 名に seq (3 桁連番) が無い別系統の命名: handROIbbox2_seed<N>。step には description を充てた。 | 3 |
+| run 名に seq (3 桁連番) が無い別系統の命名: handROIbbox4_seed<N>。step には description を充てた。 | 3 |
+| run 名に seq (3 桁連番) が無い別系統の命名: handROImask2_seed<N>。step には description を充てた。 | 3 |
+| run 名に seq (3 桁連番) が無い別系統の命名: maskROI_seed<N>。step には description を充てた。 | 3 |
+| run 名に seq (3 桁連番) が無い別系統の命名: randROI_seed<N>。step には description を充てた。 | 3 |
 | per_class_ap.json が存在しない | 3 |
 
 ## 11. 🔴 要対処: 乱数で per-class AP を生成するコードが残っている
@@ -351,7 +361,7 @@ mAP 系の指標を持つのに術具 per-class（15 クラス）を持たない
 ## 12. experiments/README.md と実態の乖離
 
 README は step 識別子を **s0〜s9 / a1〜a7（17 種）** と規定しているが、
-実測は **156 種**。README に無い以下の系統が存在する。
+実測は **166 種**。README に無い以下の系統が存在する。
 
 | 系統 | step 識別子の種類 | run 合計 | 例 |
 |---|---:|---:|---|
@@ -388,9 +398,9 @@ M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 �
 
 | path | 指標キー |
 |---|---|
-| `experiments/transfer/b2b_rescore_alpha0.5` | `alpha`, `delta_detection`, `denominator`, `mAP_baseline`, `mAP_rescored`, `method` |
-| `experiments/transfer/b2b_rescore_alpha1.0` | `alpha`, `delta_detection`, `denominator`, `mAP_baseline`, `mAP_rescored`, `method` |
-| `experiments/transfer/b2b_rescore_alpha2.0` | `alpha`, `delta_detection`, `denominator`, `mAP_baseline`, `mAP_rescored`, `method` |
+| `experiments/transfer/b2b_rescore_alpha0.5` | `alpha`, `delta_detection`, `mAP_baseline`, `mAP_rescored`, `miss_ctx` |
+| `experiments/transfer/b2b_rescore_alpha1.0` | `alpha`, `delta_detection`, `mAP_baseline`, `mAP_rescored`, `miss_ctx` |
+| `experiments/transfer/b2b_rescore_alpha2.0` | `alpha`, `delta_detection`, `mAP_baseline`, `mAP_rescored`, `miss_ctx` |
 | `experiments/transfer/t1b_phasefilm_001_t1b_phasefilm_seed123` | `control_init_mAP`, `control_mAP`, `delta_control`, `delta_detection`, `init_mAP`, `injection_effect` |
 | `experiments/transfer/t1b_phasefilm_002_t1b_phasefilm_seed456` | `control_init_mAP`, `control_mAP`, `delta_control`, `delta_detection`, `init_mAP`, `injection_effect` |
 
@@ -399,33 +409,75 @@ M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 �
 正本は「test split は未評価」と述べているが、その後 `--eval-test` が実装され、
 **test 側の数値を持つ run が実在する**。正本の記述はこの時点より前のもの。
 
-該当 27 run。全件の val/test 対応表は `anomalies/val_test_pairs.csv`。
+該当 69 run。全件の val/test 対応表は `anomalies/val_test_pairs.csv`。
 
 **index.csv の `metric.<name>` 列は primary(val) の値である。**
 test 側は `metric_test.<name>` 列に別出ししてある（`has_test` 列で絞り込める）。
 この分離が無いと「split 列が val 一色 → test 評価は存在しない」と誤読される。
 
-#### val / test の乖離（実測・全 27 run）
+#### val / test の乖離（実測・全 69 run）
 
 | 指標 | val 平均 | test 平均 | 差 (test - val) | n |
 |---|---:|---:|---:|---:|
+| `edit_score` | 42.7135 | 41.8604 | -0.8531 | 69 |
 | `sticky_jaccard` | 0.7403 | 0.4563 | -0.2839 | 3 |
-| `jaccard` | 0.6982 | 0.4571 | -0.2411 | 27 |
 | `sticky_macro_f1` | 0.7864 | 0.5529 | -0.2335 | 3 |
-| `macro_f1` | 0.7490 | 0.5587 | -0.1903 | 27 |
+| `jaccard` | 0.7509 | 0.5616 | -0.1893 | 69 |
 | `sticky_accuracy` | 0.9362 | 0.7861 | -0.1501 | 3 |
-| `accuracy` | 0.9183 | 0.7900 | -0.1283 | 27 |
-| `seg_f1_50` | 0.4325 | 0.3580 | -0.0745 | 27 |
+| `macro_f1` | 0.7906 | 0.6496 | -0.1410 | 69 |
+| `seg_f1_50` | 0.4806 | 0.3596 | -0.1210 | 69 |
+| `accuracy` | 0.9406 | 0.8328 | -0.1078 | 69 |
 | `sticky_seg_f1_50` | 0.5422 | 0.4854 | -0.0568 | 3 |
-| `seg_f1_25` | 0.4819 | 0.4979 | +0.0160 | 27 |
-| `seg_f1_10` | 0.4945 | 0.5155 | +0.0211 | 27 |
+| `seg_f1_25` | 0.5093 | 0.4851 | -0.0242 | 69 |
+| `seg_f1_10` | 0.5179 | 0.4984 | -0.0195 | 69 |
 | `sticky_seg_f1_25` | 0.6029 | 0.6323 | +0.0293 | 3 |
 | `sticky_seg_f1_10` | 0.6106 | 0.6411 | +0.0304 | 3 |
-| `edit_score` | 41.3984 | 44.7763 | +3.3779 | 27 |
 | `sticky_edit_score` | 50.5944 | 59.0140 | +8.4196 | 3 |
 
 | path | seed | excluded |
 |---|---:|---|
+| `experiments/g2_followup_2026-07-29/s3/runs/base_seed123` | 123 | False |
+| `experiments/g2_followup_2026-07-29/s3/runs/base_seed42` | 42 | False |
+| `experiments/g2_followup_2026-07-29/s3/runs/base_seed456` | 456 | False |
+| `experiments/g2_followup_2026-07-29/s3/runs/bboxROI_seed123` | 123 | False |
+| `experiments/g2_followup_2026-07-29/s3/runs/bboxROI_seed42` | 42 | False |
+| `experiments/g2_followup_2026-07-29/s3/runs/bboxROI_seed456` | 456 | False |
+| `experiments/g2_followup_2026-07-29/s3/runs/shuffleROI_seed123` | 123 | False |
+| `experiments/g2_followup_2026-07-29/s3/runs/shuffleROI_seed42` | 42 | False |
+| `experiments/g2_followup_2026-07-29/s3/runs/shuffleROI_seed456` | 456 | False |
+| `experiments/g2_followup_2026-07-29/s4/runs/base_seed123` | 123 | False |
+| `experiments/g2_followup_2026-07-29/s4/runs/base_seed42` | 42 | False |
+| `experiments/g2_followup_2026-07-29/s4/runs/base_seed456` | 456 | False |
+| `experiments/g2_followup_2026-07-29/s4/runs/bboxROI_handROIbbox2_seed123` | 123 | False |
+| `experiments/g2_followup_2026-07-29/s4/runs/bboxROI_handROIbbox2_seed42` | 42 | False |
+| `experiments/g2_followup_2026-07-29/s4/runs/bboxROI_handROIbbox2_seed456` | 456 | False |
+| `experiments/g2_followup_2026-07-29/s4/runs/bboxROI_seed123` | 123 | False |
+| `experiments/g2_followup_2026-07-29/s4/runs/bboxROI_seed42` | 42 | False |
+| `experiments/g2_followup_2026-07-29/s4/runs/bboxROI_seed456` | 456 | False |
+| `experiments/g2_followup_2026-07-29/s4/runs/handPresence_seed123` | 123 | False |
+| `experiments/g2_followup_2026-07-29/s4/runs/handPresence_seed42` | 42 | False |
+| `experiments/g2_followup_2026-07-29/s4/runs/handPresence_seed456` | 456 | False |
+| `experiments/g2_followup_2026-07-29/s4/runs/handROIbbox2_seed123` | 123 | False |
+| `experiments/g2_followup_2026-07-29/s4/runs/handROIbbox2_seed42` | 42 | False |
+| `experiments/g2_followup_2026-07-29/s4/runs/handROIbbox2_seed456` | 456 | False |
+| `experiments/g2_followup_2026-07-29/s4/runs/handROIbbox4_seed123` | 123 | False |
+| `experiments/g2_followup_2026-07-29/s4/runs/handROIbbox4_seed42` | 42 | False |
+| `experiments/g2_followup_2026-07-29/s4/runs/handROIbbox4_seed456` | 456 | False |
+| `experiments/g2_followup_2026-07-29/s4/runs/handROImask2_seed123` | 123 | False |
+| `experiments/g2_followup_2026-07-29/s4/runs/handROImask2_seed42` | 42 | False |
+| `experiments/g2_followup_2026-07-29/s4/runs/handROImask2_seed456` | 456 | False |
+| `experiments/g2_main_2026-07-29_lecun/runs/base_seed123` | 123 | False |
+| `experiments/g2_main_2026-07-29_lecun/runs/base_seed42` | 42 | False |
+| `experiments/g2_main_2026-07-29_lecun/runs/base_seed456` | 456 | False |
+| `experiments/g2_main_2026-07-29_lecun/runs/bboxROI_seed123` | 123 | False |
+| `experiments/g2_main_2026-07-29_lecun/runs/bboxROI_seed42` | 42 | False |
+| `experiments/g2_main_2026-07-29_lecun/runs/bboxROI_seed456` | 456 | False |
+| `experiments/g2_main_2026-07-29_lecun/runs/maskROI_seed123` | 123 | False |
+| `experiments/g2_main_2026-07-29_lecun/runs/maskROI_seed42` | 42 | False |
+| `experiments/g2_main_2026-07-29_lecun/runs/maskROI_seed456` | 456 | False |
+| `experiments/g2_main_2026-07-29_lecun/runs/randROI_seed123` | 123 | False |
+| `experiments/g2_main_2026-07-29_lecun/runs/randROI_seed42` | 42 | False |
+| `experiments/g2_main_2026-07-29_lecun/runs/randROI_seed456` | 456 | False |
 | `experiments/phase1/s4_phase_baseline_044_frozen_tecno_phase_baseline_seed42` | 42 | False |
 | `experiments/phase1/s4_phase_baseline_045_frozen_tecno_phase_baseline_seed42` | 42 | False |
 | `experiments/phase1/s4_phase_baseline_046_frozen_tecno_phase_baseline_seed123` | 123 | False |
@@ -498,13 +550,19 @@ run_id 単位の 3 分類（記録漏れ / 成果物消失 / 数値の食い違�
 
 ## 15. run_id の衝突
 
-`run_id`（ディレクトリ名）は **6 種が複数箇所で衝突**する。
+`run_id`（ディレクトリ名）は **12 種が複数箇所で衝突**する。
 スキーマは `runs/<run_id>.json` を指定しているが、そのままではファイルが
 上書きされるため、パス由来の `ledger_key` をファイル名に使い、
 `run_id` はフィールドとして保持した。
 
 | run_id | 箇所数 |
 |---|---:|
+| `base_seed123` | 3 |
+| `base_seed42` | 3 |
+| `base_seed456` | 3 |
+| `bboxROI_seed123` | 3 |
+| `bboxROI_seed42` | 3 |
+| `bboxROI_seed456` | 3 |
 | `s0_001_maskdino_bbox_seed42` | 3 |
 | `s0_002_maskdino_bbox_seed123` | 3 |
 | `s0_003_maskdino_bbox_seed456` | 3 |
@@ -576,7 +634,22 @@ _FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
 リテラル固定のため条件差が原理的に現れない）。つまり `eval_recipe_id` による分離だけでは
 この交絡を防げない。`frozen_source_tag` を `experiment_id` に含めることで分離している。
 
-- 実験数: **169** / run 数 573
+`b2a` / `t1a` 系では同じ情報が `frozen_source.gap_cache` /
+`frozen_source.tool_signal_cache` というキー名で入っているため、3 つのキーを順に見ている。
+
+#### 🔴 証跡ファイルの記述が実態と食い違う（凍結源）
+
+`s4_phase_baseline` の `notes.md` は **55 件すべてで**
+「凍結源: Relation-DETR seed42」と断言するが、`config.yaml` の実際の
+`frozen_source.cache_dir` がそれと異なる run が **38 件**ある
+（うち 24 件は検出器 seed が 123 / 456）。`config.yaml` の `frozen_source.seed` も
+`42` がハードコードされており同様に信用できない。
+いずれも `scripts/train_s4_tecno.py` の固定文字列に由来する。
+
+**したがって `frozen_source_tag` はキャッシュのパスからのみ導き、
+`frozen_source.seed` と `notes.md` の記述は採用していない。**
+
+- 実験数: **181** / run 数 615
 - `experiment_id` を付けられなかった run: 6
   （run 名が命名規約に一致しない run）
 - `eval_recipe_id` の食い違いで分離した base: 12
@@ -681,7 +754,7 @@ delta:
 | 分類 | run 数 |
 |---|---:|
 | `injection_from_config_yaml` | 439 |
-| `no_denominator_declared` | 132 |
+| `no_denominator_declared` | 174 |
 | `baseline` | 17 |
 | `within_run_baseline` | 2 |
 
@@ -727,7 +800,7 @@ per-class の値は 573 個の JSON に分散していて横断分析に使え�
 `runindex/per_class.csv` に long 形式（1 行 = 1 run × 1 クラス）で 1 ファイル化した。
 
 - `per_class_kind=tool` : 62 run × 15 クラス（術具 **AP**）
-- `per_class_kind=phase`: 500 run × 9 クラス（工程 **F1**）
+- `per_class_kind=phase`: 542 run × 9 クラス（工程 **F1**）
 
 **この 2 つを混ぜて集計してはならない。** 指標の種類が違う（AP と F1）。
 ファイル名は両方とも `per_class_ap.json` なので、名前では判別できない。
@@ -736,4 +809,37 @@ per-class の値は 573 個の JSON に分散していて横断分析に使え�
 `value` が空欄の行は元が `NaN` だったもので、`is_nan=True` が立っている。
 術具側の `NaN` は **val split に GT が 1 件も無いクラス**を意味する（0 ではない）。
 平均を取るときは `nanmean` 相当（空欄を除外）にすること。
+
+## 20. metrics.json / 命名規約に 2 系統ある
+
+`g2_followup_2026-07-29` / `g2_main_2026-07-29_lecun` 群 (42 run) は
+他の群と **スキーマも命名も違う**。
+
+| 観点 | 主系統 | g2_* 系統 |
+|---|---|---|
+| ディレクトリ名 | `<step>_<seq3>_<desc>_seed<N>` | `<desc>_seed<N>`（seq が無い） |
+| split の表現 | `val/<metric>` / `phase_<metric>` | `"val": {"phase_<metric>": …}` の入れ子 |
+| per-class | `per_class_ap.json` | `val.phase_per_class_f1`（metrics.json 内） |
+| 付随ファイル | `command.sh` / `config.yaml` / `notes.md` / `git_commit.txt` | `env.json` のみ |
+
+両方を収穫できるようにした。出所は次の列で区別できる。
+
+- `provenance.name` … `from_dirname_step_seq_desc_seed` / `from_dirname_desc_seed_no_seq`
+- `per_class_source` … `…/per_class_ap.json` か `…/metrics.json#val.phase_per_class_f1`
+
+**この群には `config.yaml` が無いため対照宣言も凍結源も取れない。**
+`control_of` は null、`frozen_source_tag` も null である。
+`metrics.json` の `system` フィールド（`base` / `bboxROI` / `shuffleROI`）が
+arm を表している可能性があるが、対照関係を明示した記録ではないため採用していない。
+値は `attributes` に保持してある。
+
+### 20.1 🔴 指標でないものが `metric.*` 列に入っていた（修正済み）
+
+`metrics.json` のネスト値と文字列値がそのまま `metrics` に入っていたため、
+`index.csv` に `metric.val = {'phase_accuracy': …}` のような
+**辞書リテラル**や `metric.system = base` のような文字列が書かれていた。
+旧 573 run でも `b2b_rescore_*` の `denominator` / `method` が文字列で入っていた。
+
+「指標とは数値である」という不変条件を実装に入れ、
+数値以外は `attributes` / `metrics_nested` に分離した（情報は捨てていない）。
 

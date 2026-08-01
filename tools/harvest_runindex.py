@@ -78,6 +78,10 @@ PHASE_METRIC_BASES = {
 # split とみなしてよい接頭辞 (アンダースコア形式)
 UNDERSCORE_SPLIT_PREFIXES = {"test"}
 
+# metrics.json のトップレベルが `"val": {...}` のように split で入れ子になる形式
+# (g2_* 群)。スラッシュ形式 `val/<metric>` と意味は同じ。
+SPLIT_NAMES = {"train", "val", "test"}
+
 # 指標本体ではないメタキー
 META_KEYS = {"eval_recipe", "eval_recipe_detection", "eval_recipe_phase", "epoch"}
 
@@ -141,6 +145,9 @@ HOST_ALIASES: dict[str, dict[str, Any]] = {
 }
 
 RUN_NAME_RE = re.compile(r"^(?P<step>.+?)_(?P<seq>\d{3})_(?P<desc>.+)_seed(?P<seed>\d+)$")
+# seq を持たない別系統の命名 (g2_* 群: base_seed42 / bboxROI_seed123 / shuffleROI_seed456)。
+# ExperimentManager を経由せずに作られた run。step は description と同じものを充てる。
+RUN_NAME_NOSEQ_RE = re.compile(r"^(?P<desc>.+?)_seed(?P<seed>\d+)$")
 
 # --------------------------------------------------------------------------- #
 # ディレクトリ名の det<N> / p<N> トークン
@@ -195,6 +202,11 @@ def _is_nan(v: Any) -> bool:
     return isinstance(v, float) and math.isnan(v)
 
 
+def _is_number(v: Any) -> bool:
+    """指標として扱える数値か。bool は数値ではなく状態フラグなので除く。"""
+    return isinstance(v, (int, float)) and not isinstance(v, bool)
+
+
 def _stable_hash(obj: Any) -> str:
     payload = json.dumps(obj, sort_keys=True, ensure_ascii=False, allow_nan=False)
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:12]
@@ -231,15 +243,31 @@ def parse_run_name(name: str, command: str | None = None) -> tuple[dict[str, Any
         "seed_detector": None,
         "seed_phase": None,
         "aux_token_provenance": "no_aux_token",
+        "name_provenance": "not_determinable",
     }
     m = RUN_NAME_RE.match(name)
-    if not m:
-        warnings.append(f"run 名が命名規約 <step>_<seq3>_<desc>_seed<N> に一致しない: {name}")
-        return out, warnings
-    out["step"] = m.group("step")
-    out["seq"] = int(m.group("seq"))
-    out["description"] = m.group("desc")
-    out["seed"] = int(m.group("seed"))
+    if m:
+        out["step"] = m.group("step")
+        out["seq"] = int(m.group("seq"))
+        out["description"] = m.group("desc")
+        out["seed"] = int(m.group("seed"))
+        out["name_provenance"] = "from_dirname_step_seq_desc_seed"
+    else:
+        m2 = RUN_NAME_NOSEQ_RE.match(name)
+        if not m2:
+            warnings.append(f"run 名が命名規約 <step>_<seq3>_<desc>_seed<N> に一致しない: {name}")
+            return out, warnings
+        # seq が無い系統。seq は「条件」ではなく単なる実行カウンタなので
+        # (src/egosurgery/utils/experiment_id.py)、欠けていても実験単位は作れる。
+        out["step"] = m2.group("desc")
+        out["seq"] = None
+        out["description"] = m2.group("desc")
+        out["seed"] = int(m2.group("seed"))
+        out["name_provenance"] = "from_dirname_desc_seed_no_seq"
+        warnings.append(
+            f"run 名に seq (3 桁連番) が無い別系統の命名: {name}。"
+            f"step には description を充てた。"
+        )
 
     cmd = command or ""
     det = AUX_DET_RE.search(name)
@@ -353,13 +381,31 @@ def harvest_metrics(raw: Any) -> dict[str, Any]:
     by_split: dict[str, dict[str, Any]] = defaultdict(dict)
     bare: dict[str, Any] = {}
     nested: dict[str, Any] = {}
+    attributes: dict[str, Any] = {}
 
     for key, value in raw.items():
         if key in META_KEYS:
             continue
-        if isinstance(value, (dict, list)):
-            # eval_recipe 以外のネスト値は指標として扱わず原文のみ保持
+        if isinstance(value, dict):
+            # `"val": {"phase_accuracy": ...}` 形式（g2_* 群）。
+            # `val/phase_accuracy` というスラッシュ形式と意味は同じで表記だけが違う。
+            if key in SPLIT_NAMES and any(_is_number(v) for v in value.values()):
+                for mk, mv in value.items():
+                    if _is_number(mv):
+                        # 外側のキーが split を表すので内側の split 判定は使わない
+                        by_split[key][normalize_metric_key(mk)["canonical"]] = mv
+                    else:
+                        nested[f"{key}.{mk}"] = _denan(mv)
+                continue
             nested[key] = _denan(value)
+            continue
+        if isinstance(value, list):
+            nested[key] = _denan(value)
+            continue
+        if not _is_number(value):
+            # 指標は数値である。"system": "base" のような文字列を metrics に入れると
+            # index.csv の metric.* 列に文字列が混ざり、集約も比較もできなくなる。
+            attributes[key] = value
             continue
         info = normalize_metric_key(key)
         canon = info["canonical"]
@@ -408,7 +454,9 @@ def harvest_metrics(raw: Any) -> dict[str, Any]:
         result["split_provenance"] = "ambiguous_multiple_splits"
 
     # primary が決まってから flat を充填する。上書き衝突は起こり得ない。
-    flat: dict[str, Any] = dict(nested)
+    # flat は **数値のみ**。ネスト値を混ぜると index.csv の metric.* 列に
+    # 辞書リテラルが書かれてしまう（metrics_nested に分けて保持している）。
+    flat: dict[str, Any] = {}
     if primary is not None:
         flat.update(by_split[primary])
     else:
@@ -439,6 +487,9 @@ def harvest_metrics(raw: Any) -> dict[str, Any]:
 
     # metrics の出所を機械可読に残す。回帰テストはこの列を突き合わせて検証する。
     result["metrics_primary_split"] = primary
+    # 情報は捨てない。指標として扱えないものは別フィールドで保持する。
+    result["metrics_nested"] = _denan(dict(sorted(nested.items())))
+    result["attributes"] = _denan(dict(sorted(attributes.items())))
 
     result["metrics"] = _denan(dict(sorted(flat.items())))
     result["metrics_by_split"] = _denan(
@@ -563,6 +614,44 @@ def harvest_per_class(path: Path) -> dict[str, Any]:
     out["per_class_nan_classes"] = nan_classes
     out["per_class_valid_count"] = len(data) - len(nan_classes)
     return out
+
+
+def harvest_per_class_from_nested(
+    nested: dict[str, Any], run_dir: Path
+) -> dict[str, Any] | None:
+    """per_class_ap.json を持たない群 (g2_*) の per-class を metrics.json から拾う。
+
+    `metrics.json` の `"val": {"phase_per_class_f1": {...}}` に入っている。
+    値は F1 (ファイル名 per_class_ap.json の群と同じく AP ではない)。
+    出所が違うので per_class_source で区別できるようにする。
+    """
+    if not nested:
+        return None
+    # primary は val。無ければ test。
+    for split in ("val", "test", "train"):
+        key = f"{split}.phase_per_class_f1"
+        data = nested.get(key)
+        if not isinstance(data, dict) or not data:
+            continue
+        keys = frozenset(data)
+        kind = "phase" if keys == PHASE_CLASS_SET else "unknown"
+        warnings: list[str] = []
+        if kind == "unknown":
+            warnings.append(
+                f"metrics.json の {key} のクラス集合が既知の工程 9 クラスと一致しない "
+                f"({len(keys)} クラス) -> metric を確定できないため unknown"
+            )
+        nan_classes = sorted(k for k, v in data.items() if _is_nan(v))
+        return {
+            "per_class": _denan(dict(sorted(data.items()))),
+            "per_class_kind": kind,
+            "per_class_metric": "F1" if kind == "phase" else "unknown",
+            "per_class_source": f"{run_dir.relative_to(REPO_ROOT)}/metrics.json#{key}",
+            "per_class_nan_classes": nan_classes,
+            "per_class_valid_count": len(data) - len(nan_classes),
+            "warnings": warnings,
+        }
+    return None
 
 
 def harvest_config(path: Path) -> dict[str, Any]:
@@ -702,6 +791,10 @@ def build_run_record(run_dir: Path) -> dict[str, Any]:
     warnings.extend(m["warnings"])
 
     pc = harvest_per_class(run_dir / "per_class_ap.json")
+    # per_class_ap.json を持たない群 (g2_*) は metrics.json の
+    # <split>.phase_per_class_f1 に per-class を入れている。出所は provenance で区別する。
+    if pc["per_class"] is None:
+        pc = harvest_per_class_from_nested(m["metrics_nested"], run_dir) or pc
     warnings.extend(pc["warnings"])
 
     server_txt = _read_text(run_dir / "server.txt")
@@ -740,6 +833,8 @@ def build_run_record(run_dir: Path) -> dict[str, Any]:
         "from_dirname_p_token" if name_info["seed_phase"] is not None else "not_determinable"
     )
     provenance["step"] = "from_dirname" if name_info["step"] else "not_determinable"
+    provenance["name"] = name_info["name_provenance"]
+    provenance["aux_token"] = name_info["aux_token_provenance"]
     provenance["split"] = split_prov
     provenance["per_class_metric"] = (
         "from_class_set_and_writer_script"
@@ -1599,7 +1694,9 @@ BACKLOG = """# backlog — 本タスクの範囲外として起票した未着�
 | B-10 | paired-σ が計算できない | 基準点実験が 17 run / 3 seed（1 seed に最大 7 run）のため、seed ごとの対応が取れず paired-σ が定義できない（§18.3）。`notes.md` は 439 run で paired-σ 判定を宣言しているが実行不能 | seed ごとの代表 run を決める規約が要る（どの再実行を採るか） |
 | B-11 | `logs/phase3seed_results.tsv` の欠落 | `scripts/paired_sigma_3seed.py` はこの TSV の `arm` 列（frozen / augstrong）を読んで paired-σ を出す設計だが、ファイルが repo に存在しない（`.gitignore` 対象）。arm 情報自体は `config.yaml` の `frozen_source.*` に残っており `frozen_source_tag` として収穫済み | TSV の復元、または `paired_sigma_3seed.py` を `runindex` 由来に切り替える |
 | B-12 | 573 run の外側にある inj/ctrl ペア | `transfer/*_efros/` と `experiments/transfer/{hc,oracle_phase}_seed*/` に `injected_result.json` / `control_result.json` の対が 18 組あるが、`metrics.json` を持たないため収穫対象外。真の注入/対照ペアはここにある | 非標準群の adapter（B-6）と同じ作業 |
-| B-13 | 同一条件が別 `experiment_id` に分裂する 3 組 | `description` / `split` / `frozen_source_tag` が同じで `step` だけ違う組が 3 組ある（§17.2）。うち 2 組は `eval_recipe_id` による意図的分離 | 起動経路が同一かの判断が要るため harvester では決めない |
+| B-13 | 同一条件が別 `experiment_id` に分裂する組 | `description` / `split` / `frozen_source_tag` が同じで `step` だけ違う組がある（§17.2）。多くは `eval_recipe_id` による意図的分離 | 起動経路が同一かの判断が要るため harvester では決めない |
+| B-14 | `notes.md` の凍結源記載が虚偽 | `s4_phase_baseline` の 55 件すべてが「凍結源: Relation-DETR seed42」と書くが、実際の `frozen_source.cache_dir` が違う run が 38 件（うち 24 件は seed 123/456）。`scripts/train_s4_tecno.py` の固定 f-string に由来。`config.yaml` の `frozen_source.seed` も 42 ハードコード | 学習コードの変更にあたるため本タスクでは触れない。過去の `notes.md` は `experiments/` 配下なので修正不可 |
+| B-15 | g2_* 群に対照宣言が無い | 42 run が `config.yaml` を持たないため `control_of` を確定できない（§20）。`metrics.json` の `system` フィールド（base / bboxROI / shuffleROI）が arm を表す可能性はあるが、対照関係の明示ではない | 実験設計の意図を確認したうえで、`system` を arm として採用してよいか決める |
 """
 
 METRIC_ALIASES = {
@@ -2345,6 +2442,21 @@ def build_anomalies(
     add("リテラル固定のため条件差が原理的に現れない）。つまり `eval_recipe_id` による分離だけでは")
     add("この交絡を防げない。`frozen_source_tag` を `experiment_id` に含めることで分離している。")
     add("")
+    add("`b2a` / `t1a` 系では同じ情報が `frozen_source.gap_cache` /")
+    add("`frozen_source.tool_signal_cache` というキー名で入っているため、3 つのキーを順に見ている。")
+    add("")
+    add("#### 🔴 証跡ファイルの記述が実態と食い違う（凍結源）")
+    add("")
+    add("`s4_phase_baseline` の `notes.md` は **55 件すべてで**")
+    add("「凍結源: Relation-DETR seed42」と断言するが、`config.yaml` の実際の")
+    add("`frozen_source.cache_dir` がそれと異なる run が **38 件**ある")
+    add("（うち 24 件は検出器 seed が 123 / 456）。`config.yaml` の `frozen_source.seed` も")
+    add("`42` がハードコードされており同様に信用できない。")
+    add("いずれも `scripts/train_s4_tecno.py` の固定文字列に由来する。")
+    add("")
+    add("**したがって `frozen_source_tag` はキャッシュのパスからのみ導き、")
+    add("`frozen_source.seed` と `notes.md` の記述は採用していない。**")
+    add("")
     exps = {r["experiment_id"] for r in records if r.get("experiment_id")}
     add(f"- 実験数: **{len(exps)}** / run 数 {len(records)}")
     add(f"- `experiment_id` を付けられなかった run: {sum(1 for r in records if not r.get('experiment_id'))}")
@@ -2542,6 +2654,41 @@ def build_anomalies(
     add("`value` が空欄の行は元が `NaN` だったもので、`is_nan=True` が立っている。")
     add("術具側の `NaN` は **val split に GT が 1 件も無いクラス**を意味する（0 ではない）。")
     add("平均を取るときは `nanmean` 相当（空欄を除外）にすること。")
+    add("")
+
+    # ---------------------------------------------------------------- #
+    add("## 20. metrics.json / 命名規約に 2 系統ある")
+    add("")
+    add("`g2_followup_2026-07-29` / `g2_main_2026-07-29_lecun` 群 (42 run) は")
+    add("他の群と **スキーマも命名も違う**。")
+    add("")
+    add("| 観点 | 主系統 | g2_* 系統 |")
+    add("|---|---|---|")
+    add("| ディレクトリ名 | `<step>_<seq3>_<desc>_seed<N>` | `<desc>_seed<N>`（seq が無い） |")
+    add("| split の表現 | `val/<metric>` / `phase_<metric>` | `\"val\": {\"phase_<metric>\": …}` の入れ子 |")
+    add("| per-class | `per_class_ap.json` | `val.phase_per_class_f1`（metrics.json 内） |")
+    add("| 付随ファイル | `command.sh` / `config.yaml` / `notes.md` / `git_commit.txt` | `env.json` のみ |")
+    add("")
+    add("両方を収穫できるようにした。出所は次の列で区別できる。")
+    add("")
+    add("- `provenance.name` … `from_dirname_step_seq_desc_seed` / `from_dirname_desc_seed_no_seq`")
+    add("- `per_class_source` … `…/per_class_ap.json` か `…/metrics.json#val.phase_per_class_f1`")
+    add("")
+    add("**この群には `config.yaml` が無いため対照宣言も凍結源も取れない。**")
+    add("`control_of` は null、`frozen_source_tag` も null である。")
+    add("`metrics.json` の `system` フィールド（`base` / `bboxROI` / `shuffleROI`）が")
+    add("arm を表している可能性があるが、対照関係を明示した記録ではないため採用していない。")
+    add("値は `attributes` に保持してある。")
+    add("")
+    add("### 20.1 🔴 指標でないものが `metric.*` 列に入っていた（修正済み）")
+    add("")
+    add("`metrics.json` のネスト値と文字列値がそのまま `metrics` に入っていたため、")
+    add("`index.csv` に `metric.val = {'phase_accuracy': …}` のような")
+    add("**辞書リテラル**や `metric.system = base` のような文字列が書かれていた。")
+    add("旧 573 run でも `b2b_rescore_*` の `denominator` / `method` が文字列で入っていた。")
+    add("")
+    add("「指標とは数値である」という不変条件を実装に入れ、")
+    add("数値以外は `attributes` / `metrics_nested` に分離した（情報は捨てていない）。")
     add("")
 
     return "\n".join(lines) + "\n"
