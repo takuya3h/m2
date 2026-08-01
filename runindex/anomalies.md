@@ -1352,20 +1352,46 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 
 | 制御項目 | 設定している本数 |
 |---|---:|
-| `random_seed` | 11 / 13 |
-| `numpy_seed` | 11 / 13 |
-| `torch_manual_seed` | 11 / 13 |
-| `cuda_manual_seed` | 0 / 13 |
+| `random_seed` | 13 / 13 |
+| `numpy_seed` | 13 / 13 |
+| `torch_manual_seed` | 13 / 13 |
+| `cuda_manual_seed` | 2 / 13 |
 | `use_deterministic_algorithms` | 0 / 13 |
-| `cudnn_deterministic` | 0 / 13 |
-| `cudnn_benchmark` | 0 / 13 |
-| `pythonhashseed` | 0 / 13 |
+| `cudnn_deterministic` | 2 / 13 |
+| `cudnn_benchmark` | 2 / 13 |
+| `pythonhashseed` | 2 / 13 |
 | `dataloader_worker_init_fn` | 0 / 13 |
 | `dataloader_generator` | 0 / 13 |
 | `cublas_workspace_config` | 0 / 13 |
 
-`random.seed` / `np.random.seed` / `torch.manual_seed`（CPU 側）は揃っているが、
-**GPU 側の制御は 1 本も無い**。欠陥は 1 スクリプト固有ではなく体系的である。
+**`torch.use_deterministic_algorithms` はどのスクリプトも呼んでいない。**
+これが無い限り GPU 上で bit 単位の再現は保証されないため、
+`can_be_deterministic` は全件 `False` になる。
+
+### 26.1.1 制御の張り方が 2 系統に分かれている
+
+`seed_setup_via` 列で区別できる。
+
+| seed_setup_via | 本数 | 意味 |
+|---|---:|---|
+| `direct` | 11 | ファイル内で直接 seed を張る（`scripts/train_*.py` 系）|
+| `seed_everything` | 1 | `src/egosurgery/utils/seed.py` のヘルパ経由 |
+| `seed_everything+delegates_to_engines` | 3 | ヘルパを呼びつつ更に委譲もする |
+| `delegates_to_engines` | 1 | 自分では触らず trainer に委譲（`src/egosurgery/train.py`）|
+| `none` | 4 | seed を張らない |
+
+**`seed_everything()` は 6 項目を設定している**
+（`random` / `PYTHONHASHSEED` / `numpy` / `torch.manual_seed` /
+`torch.cuda.manual_seed_all` / `cudnn.deterministic=True` / `cudnn.benchmark=False`）。
+したがって Hydra 経路（`src/egosurgery/`）は `scripts/train_*.py` 系より制御が厚い。
+
+> ⚠️ **この表はファイル単位の静的解析である。** 委譲は 1 段だけ追っている
+> （`seed_everything` の呼び出しと `_select_trainer` 系の委譲）。
+> `src/egosurgery/train.py` の行は `delegates_to_engines` であり、
+> 実際の制御状況は委譲先 `engines/*_trainer.py` の行を見ること。
+
+一方 `scripts/train_*.py` 系（**`direct`**、run 数で見て大半）は
+CPU 側 3 種のみで **GPU 側の制御が 1 つも無い**。
 
 影響を受ける run: **500**（CUDA 学習スクリプトが entrypoint の run）
 
@@ -1452,25 +1478,40 @@ harvester は判定を消さずに `sigma_interpretation` で印を付けるに�
 | 「全 seed 同符号」の対象 | 個々の run の Δ | **seed 平均どうしの Δ** |
 | 符号を見る個数 | run 数（対照側は最大 7）| seed 数（通常 3） |
 
-### 27.2 論点
+### 27.2 🔴 そもそも正本に「同符号」の規定は無い
 
-1. **元の条件文が何を意図していたか。** `notes.md` は
-   「3-seed 揃ったら paired-σ(対seed差) で §10.1 判定」と書いており、
-   3 つの符号を見ることを想定していたように読める。
-   その意味では現在の実装（seed 平均 3 つの符号）は意図に沿う。
-2. **しかし平均は符号のばらつきを隠す。** 同一 seed 内で Δ の符号が
+`docs/m2_plan_rewrite/` を全文検索しても **「同符号」は 0 件**である。
+この条件は 2026-06-20 の運用判断として実験ログに導入された:
+
+> `docs/experiment_log.md:527`
+> 「`scripts/analyze_phase_coupling.py` を **paired-σ 判定に改修**
+> （matched 差の有意性を base 群σでなく **対seed差σ + 全seed同符号**で判定）」
+
+### 27.3 論点
+
+1. **既存実装は「個々の run の Δ」の符号を見ている。**
+   `scripts/report_t1a_boundary.py:57-61` / `report_daux_paired.py:66-73` /
+   `analyze_t1a_factorial_ablation.py:124-125` はいずれも
+   `d = [vals[s] - base[s] for s in SEEDS]`（seed ごとに 1 run）である。
+   **平均してから符号を見る実装はリポジトリ内に無い**
+   （`paired_sigma_3seed.py` は平均するが、平均する軸は phase_seed で
+   符号を見る軸 detector_seed とは別軸）。
+   したがって現在の runindex の方式（符号軸と同じ軸を mean で畳んでから
+   符号を見る）には**先例が無い**。
+2. **平均は符号のばらつきを隠す。** 同一 seed 内で Δ の符号が
    割れていても、平均の符号は片方に決まる。§25 のとおり同一条件反復の
    ばらつきが大きいため、これは実際に起こりうる。
 3. **n=3 の同符号条件は偶然一致しやすい。** 効果が無くても
    3 つの符号が揃う確率は 2 × (1/2)^3 = **25%**。
-   σ 条件と組み合わせても、n=3 では検出力の裏付けとして弱い。
+   σ 条件と併せた偶然通過率も σ 条件単独からわずかしか下がらず、
+   n=3 では検出力の裏付けとして弱い。
 4. 代替案としては「全 run の Δ の符号が揃う」（より厳しい）、
    「符号一致率を出す」（連続量にする）などがありうる。
 
 現状は `delta_same_sign_<metric>`（seed 平均ベース）を出しており、
 `delta_n_seeds_<metric>` で何個の符号を見たかが分かる。
 
-### 27.3 判断: **保留**（2026-08-01）
+### 27.4 判断: **保留**（2026-08-01）
 
 利用者の判断により定義変更は保留となった。理由:
 

@@ -1959,10 +1959,20 @@ DETERMINISM_REQUIRED = (
     "cudnn_deterministic",
 )
 
+# 決定性制御をまとめて張るヘルパ。呼び出し元にはこの内容が効くので、
+# ファイル単位の正規表現だけで判定すると **委譲先を見落として過小評価する**。
+# 実際 src/egosurgery/ の Hydra 経路は seed_everything() 経由で
+# cuda_manual_seed / cudnn_deterministic / PYTHONHASHSEED を設定している。
+SEED_HELPERS: dict[str, str] = {
+    "seed_everything": "src/egosurgery/utils/seed.py",
+}
+
 DETERMINISM_COLUMNS = [
     "script",
     # ok = 中身がある / empty = 0 バイトの scaffold / missing = repo に無い
     "file_state",
+    # 直接記述か、ヘルパ経由か
+    "seed_setup_via",
     "uses_cuda",
     "n_runs",
     "n_steps",
@@ -2040,6 +2050,7 @@ def build_determinism_audit(
         if not text:
             for k in DETERMINISM_CHECKS:
                 row[k] = None
+            row["seed_setup_via"] = None
             row["uses_cuda"] = None
             row["num_workers"] = None
             row["shuffle"] = None
@@ -2051,14 +2062,34 @@ def build_determinism_audit(
         row["uses_cuda"] = bool(re.search(r'device\s*\(\s*["\']cuda|\.cuda\(\)|to\(\s*["\']cuda', text))
         for k, pat in DETERMINISM_CHECKS.items():
             row[k] = bool(re.search(pat, text))
+
+        # 委譲を 1 段だけ追う。ヘルパを呼んでいればその設定内容を合成する。
+        via = []
+        for fn, helper_path in SEED_HELPERS.items():
+            if not re.search(rf"\b{re.escape(fn)}\s*\(", text):
+                continue
+            helper = _read_text(REPO_ROOT / helper_path)
+            if not helper:
+                continue
+            via.append(fn)
+            for k, pat in DETERMINISM_CHECKS.items():
+                if re.search(pat, helper):
+                    row[k] = True
+        # Hydra entrypoint は自分では乱数を触らず trainer に委譲する。
+        # 呼び出し元の行だけを見ると「設定ゼロ」に見えるので明示する。
+        if re.search(r"_select_trainer|StageATrainer|PhaseTrainer|MMDetTrainer", text):
+            via.append("delegates_to_engines")
+        row["seed_setup_via"] = (
+            "+".join(via) if via else ("direct" if row["torch_manual_seed"] else "none")
+        )
         row["num_workers"] = ",".join(sorted(set(_NUM_WORKERS_RE.findall(text)))) or ""
         row["shuffle"] = ",".join(sorted(set(_SHUFFLE_RE.findall(text)))) or ""
         missing = [k for k in DETERMINISM_REQUIRED if not row[k]]
         row["missing_required"] = ",".join(missing)
-        # CUDA を使わないなら GPU 側の制御は要らない
-        row["can_be_deterministic"] = (not missing) if row["uses_cuda"] else bool(
-            row["torch_manual_seed"]
-        )
+        # uses_cuda の正規表現検出は取りこぼしうる（委譲先で .to(device) する等）。
+        # 「CUDA を使わないから GPU 制御は不要」と判定すると偽の OK を出すので、
+        # 必須項目が 1 つでも欠けていれば決定的になり得ないとする（保守側）。
+        row["can_be_deterministic"] = not missing
         rows.append(row)
     return DETERMINISM_COLUMNS, rows
 
@@ -4042,8 +4073,44 @@ def build_anomalies(
     for k in DETERMINISM_CHECKS:
         add(f"| `{k}` | {sum(1 for r in cuda if r.get(k))} / {len(cuda)} |")
     add("")
-    add("`random.seed` / `np.random.seed` / `torch.manual_seed`（CPU 側）は揃っているが、")
-    add("**GPU 側の制御は 1 本も無い**。欠陥は 1 スクリプト固有ではなく体系的である。")
+    add("**`torch.use_deterministic_algorithms` はどのスクリプトも呼んでいない。**")
+    add("これが無い限り GPU 上で bit 単位の再現は保証されないため、")
+    add("`can_be_deterministic` は全件 `False` になる。")
+    add("")
+    add("### 26.1.1 制御の張り方が 2 系統に分かれている")
+    add("")
+    add("`seed_setup_via` 列で区別できる。")
+    add("")
+    via = Counter(r.get("seed_setup_via") for r in dr_ if r.get("seed_setup_via"))
+    add("| seed_setup_via | 本数 | 意味 |")
+    add("|---|---:|---|")
+    add(f"| `direct` | {via.get('direct', 0)} | ファイル内で直接 seed を張る（`scripts/train_*.py` 系）|")
+    add(
+        f"| `seed_everything` | {via.get('seed_everything', 0)} | "
+        "`src/egosurgery/utils/seed.py` のヘルパ経由 |"
+    )
+    add(
+        f"| `seed_everything+delegates_to_engines` | {via.get('seed_everything+delegates_to_engines', 0)} | "
+        "ヘルパを呼びつつ更に委譲もする |"
+    )
+    add(
+        f"| `delegates_to_engines` | {via.get('delegates_to_engines', 0)} | "
+        "自分では触らず trainer に委譲（`src/egosurgery/train.py`）|"
+    )
+    add(f"| `none` | {via.get('none', 0)} | seed を張らない |")
+    add("")
+    add("**`seed_everything()` は 6 項目を設定している**")
+    add("（`random` / `PYTHONHASHSEED` / `numpy` / `torch.manual_seed` /")
+    add("`torch.cuda.manual_seed_all` / `cudnn.deterministic=True` / `cudnn.benchmark=False`）。")
+    add("したがって Hydra 経路（`src/egosurgery/`）は `scripts/train_*.py` 系より制御が厚い。")
+    add("")
+    add("> ⚠️ **この表はファイル単位の静的解析である。** 委譲は 1 段だけ追っている")
+    add("> （`seed_everything` の呼び出しと `_select_trainer` 系の委譲）。")
+    add("> `src/egosurgery/train.py` の行は `delegates_to_engines` であり、")
+    add("> 実際の制御状況は委譲先 `engines/*_trainer.py` の行を見ること。")
+    add("")
+    add("一方 `scripts/train_*.py` 系（**`direct`**、run 数で見て大半）は")
+    add("CPU 側 3 種のみで **GPU 側の制御が 1 つも無い**。")
     add("")
     n_cuda_runs = sum(r.get("n_runs", 0) for r in cuda)
     add(f"影響を受ける run: **{n_cuda_runs}**（CUDA 学習スクリプトが entrypoint の run）")
@@ -4142,25 +4209,40 @@ def build_anomalies(
     add("| 「全 seed 同符号」の対象 | 個々の run の Δ | **seed 平均どうしの Δ** |")
     add("| 符号を見る個数 | run 数（対照側は最大 7）| seed 数（通常 3） |")
     add("")
-    add("### 27.2 論点")
+    add("### 27.2 🔴 そもそも正本に「同符号」の規定は無い")
     add("")
-    add("1. **元の条件文が何を意図していたか。** `notes.md` は")
-    add("   「3-seed 揃ったら paired-σ(対seed差) で §10.1 判定」と書いており、")
-    add("   3 つの符号を見ることを想定していたように読める。")
-    add("   その意味では現在の実装（seed 平均 3 つの符号）は意図に沿う。")
-    add("2. **しかし平均は符号のばらつきを隠す。** 同一 seed 内で Δ の符号が")
+    add("`docs/m2_plan_rewrite/` を全文検索しても **「同符号」は 0 件**である。")
+    add("この条件は 2026-06-20 の運用判断として実験ログに導入された:")
+    add("")
+    add("> `docs/experiment_log.md:527`")
+    add("> 「`scripts/analyze_phase_coupling.py` を **paired-σ 判定に改修**")
+    add("> （matched 差の有意性を base 群σでなく **対seed差σ + 全seed同符号**で判定）」")
+    add("")
+    add("### 27.3 論点")
+    add("")
+    add("1. **既存実装は「個々の run の Δ」の符号を見ている。**")
+    add("   `scripts/report_t1a_boundary.py:57-61` / `report_daux_paired.py:66-73` /")
+    add("   `analyze_t1a_factorial_ablation.py:124-125` はいずれも")
+    add("   `d = [vals[s] - base[s] for s in SEEDS]`（seed ごとに 1 run）である。")
+    add("   **平均してから符号を見る実装はリポジトリ内に無い**")
+    add("   （`paired_sigma_3seed.py` は平均するが、平均する軸は phase_seed で")
+    add("   符号を見る軸 detector_seed とは別軸）。")
+    add("   したがって現在の runindex の方式（符号軸と同じ軸を mean で畳んでから")
+    add("   符号を見る）には**先例が無い**。")
+    add("2. **平均は符号のばらつきを隠す。** 同一 seed 内で Δ の符号が")
     add("   割れていても、平均の符号は片方に決まる。§25 のとおり同一条件反復の")
     add("   ばらつきが大きいため、これは実際に起こりうる。")
     add("3. **n=3 の同符号条件は偶然一致しやすい。** 効果が無くても")
     add("   3 つの符号が揃う確率は 2 × (1/2)^3 = **25%**。")
-    add("   σ 条件と組み合わせても、n=3 では検出力の裏付けとして弱い。")
+    add("   σ 条件と併せた偶然通過率も σ 条件単独からわずかしか下がらず、")
+    add("   n=3 では検出力の裏付けとして弱い。")
     add("4. 代替案としては「全 run の Δ の符号が揃う」（より厳しい）、")
     add("   「符号一致率を出す」（連続量にする）などがありうる。")
     add("")
     add("現状は `delta_same_sign_<metric>`（seed 平均ベース）を出しており、")
     add("`delta_n_seeds_<metric>` で何個の符号を見たかが分かる。")
     add("")
-    add("### 27.3 判断: **保留**（2026-08-01）")
+    add("### 27.4 判断: **保留**（2026-08-01）")
     add("")
     add("利用者の判断により定義変更は保留となった。理由:")
     add("")
