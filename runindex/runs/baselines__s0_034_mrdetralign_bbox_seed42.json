@@ -1,5 +1,6 @@
 {
   "arm": "unknown",
+  "attributes": {},
   "command": "#!/usr/bin/env bash\n# Stable-DINO (detrex) 実行コマンド\n# seed=42\nprojects/train_net_egosurgery.py --config-file /home/ubuntu/slocal2/m2/third_party/Mr.DETR/projects/mr_detr_align/configs/deformable_detr_r50_two_stage_12ep_egosurgery.py --num-gpus 2 train.seed=42\n",
   "commit": "4327348e444381f1737309252fb86ad9b5034d6a",
   "config_path": "experiments/baselines/s0_034_mrdetralign_bbox_seed42/config.yaml",
@@ -63,6 +64,7 @@
       "mAP_75": 0.774615
     }
   },
+  "metrics_nested": {},
   "metrics_primary_split": "val",
   "notes": "# s0_034_mrdetralign_bbox_seed42\n\n検出器: Mr.DETR-Align (detrex, torch 2.1.2+cu118, .venv-detectron2)\nseed: 42\n\n## 結果\nmAP=0.7200 / AP_rare=0.7661 / AP_common=0.7123 (best eval #12)\n\n## 初期化\nDINO R50 COCO 12ep 重み (backbone+transformer)、class_embed は 80->15 で再初期化 (他検出器の COCO fine-tune と同条件)。\n",
   "notion_page_id": null,

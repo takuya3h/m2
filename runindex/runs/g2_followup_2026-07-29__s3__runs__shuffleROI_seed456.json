@@ -1,5 +1,14 @@
 {
   "arm": "unknown",
+  "attributes": {
+    "best_epoch": 21,
+    "epochs": 50,
+    "in_dim": 7680,
+    "run": "shuffleROI_seed456",
+    "seed": 456,
+    "system": "shuffleROI",
+    "train_seconds": 22.593547344207764
+  },
   "command": null,
   "commit": null,
   "config_path": null,
@@ -56,6 +65,66 @@
       "seg_f1_50": 0.4965352449223417
     }
   },
+  "metrics_nested": {
+    "hyperparams": {
+      "lr": 0.0005,
+      "num_f_maps": 64,
+      "num_layers": 8,
+      "num_stages": 2,
+      "smoothing_weight": 0.15,
+      "weight_decay": 0.01
+    },
+    "n_clips": {
+      "test": 6,
+      "train": 13,
+      "val": 3
+    },
+    "roi_fallback": {},
+    "test.phase_per_class_f1": {
+      "anesthesia": 0.9917355371900827,
+      "closure": 0.9171249762943297,
+      "design": 0.9491525423728815,
+      "disinfection": 0.0,
+      "dissection": 0.7089783281733746,
+      "dressing": 0.0,
+      "hemostasis": 0.6471734892787525,
+      "incision": 0.9290322580645161,
+      "irrigation": 0.46428571428571436
+    },
+    "test.phase_per_class_jaccard": {
+      "anesthesia": 0.9836065573770492,
+      "closure": 0.8469352014010508,
+      "design": 0.9032258064516129,
+      "disinfection": 0.0,
+      "dissection": 0.5491606714628298,
+      "dressing": 0.0,
+      "hemostasis": 0.4783861671469741,
+      "incision": 0.8674698795180723,
+      "irrigation": 0.3023255813953488
+    },
+    "val.phase_per_class_f1": {
+      "anesthesia": 1.0,
+      "closure": 0.9583333333333333,
+      "design": 0.9852216748768473,
+      "disinfection": 0.0,
+      "dissection": 0.9523809523809524,
+      "dressing": 0.0,
+      "hemostasis": 0.7659574468085106,
+      "incision": 0.9457831325301205,
+      "irrigation": 0.0
+    },
+    "val.phase_per_class_jaccard": {
+      "anesthesia": 1.0,
+      "closure": 0.92,
+      "design": 0.970873786407767,
+      "disinfection": 0.0,
+      "dissection": 0.9090909090909091,
+      "dressing": 0.0,
+      "hemostasis": 0.6206896551724138,
+      "incision": 0.8971428571428571,
+      "irrigation": 0.0
+    }
+  },
   "metrics_primary_split": "val",
   "notes": null,
   "notion_page_id": null,
@@ -85,7 +154,7 @@
     "name": "from_dirname_desc_seed_no_seq",
     "per_class": "from_per_class_ap_json",
     "per_class_metric": "from_class_set_and_writer_script",
-    "seed": "from_dirname",
+    "seed": "from_dirname_verified_by_metrics_json",
     "seed_detector": "not_determinable",
     "seed_phase": "not_determinable",
     "split": "primary_val_by_training_script",
@@ -93,7 +162,7 @@
   },
   "run_id": "shuffleROI_seed456",
   "seed": 456,
-  "seed_agreement": "unverified_no_other_evidence",
+  "seed_agreement": "agree",
   "seed_command": null,
   "seed_config": null,
   "seed_detector": null,

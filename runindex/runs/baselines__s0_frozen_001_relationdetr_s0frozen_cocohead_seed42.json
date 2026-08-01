@@ -1,5 +1,6 @@
 {
   "arm": "unknown",
+  "attributes": {},
   "command": "#!/usr/bin/env bash\n# Relation-DETR (accelerate) 実行コマンド\n# seed=42\ncd /home/ubuntu/slocal2/m2/third_party/Relation-DETR && CUDA_VISIBLE_DEVICES=0 RELDETR_OUTPUT_DIR=/tmp/reldetr_work_s0_frozen_seed42_20260616_204720 RELDETR_EVIDENCE_DIR=/tmp/reldetr_work_s0_frozen_seed42_20260616_204720 RELDETR_S0FROZEN_INIT=/home/ubuntu/slocal2/m2/data/external/weights/relation_detr_s0frozen_init_seed42.pth RELDETR_NUM_EPOCHS=12 RELDETR_BATCH_SIZE=2 RELDETR_NUM_WORKERS=4 RELDETR_LR=1e-4 /home/ubuntu/slocal2/m2/.venv-relation-detr/bin/accelerate launch --num_processes 1 main.py --config-file configs/train_config_egosurgery_s0_frozen.py --seed 42 --mixed-precision fp16\n",
   "commit": "0129845290227b350ff79f02aa15f06824f444b4",
   "config_path": null,
@@ -61,6 +62,7 @@
       "mAP_75": 0.756
     }
   },
+  "metrics_nested": {},
   "metrics_primary_split": "val",
   "notes": "# s0_frozen_001_relationdetr_s0frozen_cocohead_seed42\n\n検出器: Relation-DETR S0-frozen (accelerate, torch 2.1.2+cu118, .venv-relation-detr)\nseed: 42\n\n## 結果\nmAP=0.7100 / AP_rare=0.7625 / AP_common=0.7013 (best epoch 12)\n\n## per-class AP\nCOCO mAP(0.50:0.95)。engine.py 改修で precision 全 IoU 平均を出力。\nRetractor 等 val 非存在クラスは NaN (AP_rare/common 平均から除外)。\n\n## 初期化\nS0-frozen init: Relation-DETR seed42 frozen backbone + COCO-init transformer/head (merged checkpoint: /home/ubuntu/slocal2/m2/data/external/weights/relation_detr_s0frozen_init_seed42.pth). Backbone is frozen with freeze_indices=(0,1,2,3); trainable parts are neck/transformer/detection heads.\n\n## tracking\nTensorBoard (train dir/tf_log)。wandb は未使用。\n",
   "notion_page_id": null,

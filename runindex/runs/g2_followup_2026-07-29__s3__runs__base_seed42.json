@@ -1,5 +1,14 @@
 {
   "arm": "unknown",
+  "attributes": {
+    "best_epoch": 18,
+    "epochs": 50,
+    "in_dim": 3840,
+    "run": "base_seed42",
+    "seed": 42,
+    "system": "base",
+    "train_seconds": 21.015536546707153
+  },
   "command": null,
   "commit": null,
   "config_path": null,
@@ -56,6 +65,66 @@
       "seg_f1_50": 0.44285714285714284
     }
   },
+  "metrics_nested": {
+    "hyperparams": {
+      "lr": 0.0005,
+      "num_f_maps": 64,
+      "num_layers": 8,
+      "num_stages": 2,
+      "smoothing_weight": 0.15,
+      "weight_decay": 0.01
+    },
+    "n_clips": {
+      "test": 6,
+      "train": 13,
+      "val": 3
+    },
+    "roi_fallback": {},
+    "test.phase_per_class_f1": {
+      "anesthesia": 0.9917355371900827,
+      "closure": 0.9068554396423248,
+      "design": 0.9473684210526316,
+      "disinfection": 0.0,
+      "dissection": 0.7046301224055348,
+      "dressing": 0.0,
+      "hemostasis": 0.7312775330396476,
+      "incision": 0.9245283018867925,
+      "irrigation": 0.4806201550387597
+    },
+    "test.phase_per_class_jaccard": {
+      "anesthesia": 0.9836065573770492,
+      "closure": 0.8295841854124063,
+      "design": 0.9,
+      "disinfection": 0.0,
+      "dissection": 0.5439605587510271,
+      "dressing": 0.0,
+      "hemostasis": 0.5763888888888888,
+      "incision": 0.8596491228070176,
+      "irrigation": 0.3163265306122449
+    },
+    "val.phase_per_class_f1": {
+      "anesthesia": 1.0,
+      "closure": 0.9541918755401901,
+      "design": 0.9751243781094527,
+      "disinfection": 0.0,
+      "dissection": 0.9628180039138944,
+      "dressing": 0.0,
+      "hemostasis": 0.7659574468085106,
+      "incision": 0.9464285714285714,
+      "irrigation": 0.0
+    },
+    "val.phase_per_class_jaccard": {
+      "anesthesia": 1.0,
+      "closure": 0.912396694214876,
+      "design": 0.9514563106796117,
+      "disinfection": 0.0,
+      "dissection": 0.9283018867924528,
+      "dressing": 0.0,
+      "hemostasis": 0.6206896551724138,
+      "incision": 0.8983050847457628,
+      "irrigation": 0.0
+    }
+  },
   "metrics_primary_split": "val",
   "notes": null,
   "notion_page_id": null,
@@ -85,7 +154,7 @@
     "name": "from_dirname_desc_seed_no_seq",
     "per_class": "from_per_class_ap_json",
     "per_class_metric": "from_class_set_and_writer_script",
-    "seed": "from_dirname",
+    "seed": "from_dirname_verified_by_metrics_json",
     "seed_detector": "not_determinable",
     "seed_phase": "not_determinable",
     "split": "primary_val_by_training_script",
@@ -93,7 +162,7 @@
   },
   "run_id": "base_seed42",
   "seed": 42,
-  "seed_agreement": "unverified_no_other_evidence",
+  "seed_agreement": "agree",
   "seed_command": null,
   "seed_config": null,
   "seed_detector": null,

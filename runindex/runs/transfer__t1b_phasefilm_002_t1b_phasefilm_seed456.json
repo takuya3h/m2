@@ -1,5 +1,6 @@
 {
   "arm": "injection",
+  "attributes": {},
   "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-06-21T22:16:19+00:00\npython scripts/postprocess_t1b.py\n",
   "commit": "a697d90b889622dbc5476a22eee93c8b1cd7ddfa",
   "config_path": "experiments/transfer/t1b_phasefilm_002_t1b_phasefilm_seed456/config.yaml",
@@ -49,6 +50,7 @@
       "mAP": 0.721658691470358
     }
   },
+  "metrics_nested": {},
   "metrics_primary_split": null,
   "notes": "# T1b Phase→Det FiLM 注入 (seed456)\n\nwarm-start=t1b_seed456 / 対照=有。\n- 注入 mAP=0.7217 (init 0.7217)\n- Δ_inj=+0.0000 / Δ_ctrl=+0.0000 / 注入純効果=+0.0000\n\n分母=init mAP（FiLM恒等=warm-start S0-frozen, 同一eval）。①学習FiLM phase→det。Δ_det=best−init（init=warm-start S0-frozen, 同一eval）/ 注入純効果=Δ_inj−Δ_ctrl\n",
   "notion_page_id": null,

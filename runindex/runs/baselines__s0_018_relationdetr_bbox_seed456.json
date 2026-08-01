@@ -1,5 +1,6 @@
 {
   "arm": "unknown",
+  "attributes": {},
   "command": "#!/usr/bin/env bash\n# Relation-DETR (accelerate) 実行コマンド\n# seed=456\naccelerate launch --num_processes 2 main.py --config-file configs/train_config_egosurgery_seed456.py --seed 456 --mixed-precision fp16\n",
   "commit": "4327348e444381f1737309252fb86ad9b5034d6a",
   "config_path": "experiments/baselines/s0_018_relationdetr_bbox_seed456/config.yaml",
@@ -63,6 +64,7 @@
       "mAP_75": 0.776
     }
   },
+  "metrics_nested": {},
   "metrics_primary_split": "val",
   "notes": "# s0_018_relationdetr_bbox_seed456\n\n検出器: Relation-DETR (accelerate, torch 2.1.2+cu118, .venv-relation-detr)\nseed: 456\n\n## 結果\nmAP=0.7220 / AP_rare=0.7363 / AP_common=0.7197 (best epoch 12)\n\n## per-class AP\nCOCO mAP(0.50:0.95)。engine.py 改修で precision 全 IoU 平均を出力。\nRetractor 等 val 非存在クラスは NaN (AP_rare/common 平均から除外)。\n\n## 初期化\nRelation-DETR R50 COCO 1x 重み (backbone+transformer)、class head は 91->15 で再初期化 (他検出器の COCO fine-tune と同条件)。\n\n## tracking\nTensorBoard (train dir/tf_log)。wandb は未使用。\n",
   "notion_page_id": null,

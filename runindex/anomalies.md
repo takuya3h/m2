@@ -639,10 +639,10 @@ _FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
 
 #### 🔴 証跡ファイルの記述が実態と食い違う（凍結源）
 
-`s4_phase_baseline` の `notes.md` は **55 件すべてで**
+`s4_phase_baseline` の `notes.md` は **61 件すべてで**
 「凍結源: Relation-DETR seed42」と断言するが、`config.yaml` の実際の
 `frozen_source.cache_dir` がそれと異なる run が **38 件**ある
-（うち 24 件は検出器 seed が 123 / 456）。`config.yaml` の `frozen_source.seed` も
+（step `s4_phase_baseline` の run 総数は 61）。`config.yaml` の `frozen_source.seed` も
 `42` がハードコードされており同様に信用できない。
 いずれも `scripts/train_s4_tecno.py` の固定文字列に由来する。
 
@@ -994,13 +994,14 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 
 §17.0 の「`notes.md` の凍結源 seed 記載が虚偽」を受けて、
 **run 自身の学習 seed** が汚染されていないかを全件突き合わせた。
-証拠は `command.sh` の `--seed` / `seed=` と `config.yaml` の `seed`。
+証拠は `command.sh` の `--seed` / `seed=`、`config.yaml` の `seed`、
+そして `metrics.json` の `seed`（g2_* 群は前 2 つを持たないため）。
 `notes.md` は虚偽の実績があるため証拠に使っていない。
 
 | seed_agreement | run 数 | 意味 |
 |---|---:|---|
-| `agree` | 567 | ディレクトリ名と他証拠が一致 |
-| `unverified_no_other_evidence` | 42 | `command.sh` も `config.yaml` も無い（g2_* 群） |
+| `agree` | 609 | ディレクトリ名と他証拠が一致 |
+| `unverified_no_other_evidence` | 0 | `command.sh` も `config.yaml` も無い（g2_* 群） |
 | `no_seed_in_dirname` | 6 | 命名規約外 |
 | **`conflict`** | **0** | **食い違い** |
 

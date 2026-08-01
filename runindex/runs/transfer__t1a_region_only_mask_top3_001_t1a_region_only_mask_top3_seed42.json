@@ -1,5 +1,6 @@
 {
   "arm": "injection",
+  "attributes": {},
   "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-06-29T08:54:25+00:00\npython scripts/train_t1a.py --seed 42 --epochs 50 --region-only --mask-region-tool-dims 0,6,9 --description t1a_region_only_mask_top3\n",
   "commit": "c4228eddc07a1958959e00e8dff92f007c269755",
   "config_path": "experiments/transfer/t1a_region_only_mask_top3_001_t1a_region_only_mask_top3_seed42/config.yaml",
@@ -72,6 +73,7 @@
       "seg_f1_50": 0.33150803998261624
     }
   },
+  "metrics_nested": {},
   "metrics_primary_split": "val",
   "notes": "# T1a region-token→工程（Tier-1 主力⭐ TAPIS/GraSP 型・②系統）\n\n凍結 Relation-DETR seed42 の object-query 埋め込み（クラス別 256-d, score 加重）を GAP(2048) に 連結せず単独で入力 → 素 causal TeCNO。\n勾配は交差させず凍結 region token を渡す。online/causal（未来不使用）。\n\n## 結果（best @epoch 39）\n- accuracy=0.8990 / macro_f1=0.6820\n- edit=35.51 / seg_f1@10/25/50=0.38/0.37/0.33\n\n## 構成\n- seed=42 epochs=50 lr=0.0005 in_dim=3840 stages=2 layers=8 f_maps=64\n- server=lecun / eval recipe=online_causal+jaccard_strict (PHASE_EVAL_PROTOCOL)\n\n## Δ\n- Δ_phase = (T1a − S4 base 0.8986±0.0034[lecun])。同一土台（凍結backbone/GAP/recipe/seed・neck無）。\n- **別サーバー実行時**: 分母は lecun 値流用、サーバー差を §8.0 明文化。\n- 3-seed 揃ったら paired-σ(対seed差) で §10.1 判定（|Δ|>paired-σ かつ同符号で有意）。\n",
   "notion_page_id": null,
