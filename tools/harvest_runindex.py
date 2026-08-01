@@ -1328,6 +1328,13 @@ EXPERIMENT_SCALAR_COLUMNS = [
     "control_note_value",
     "delta_method",
     "delta_sigma_source",
+    "delta_dedup_rule",
+    # §10.1 判定（主指標について）。σ の規約が repo 内で割れているため両方出す。
+    "verdict_metric",
+    "verdict_10_1",
+    "verdict_10_1_sstd",
+    "verdict_10_1_agree",
+    "verdict_10_1_reason",
     "n_command_variants",
 ]
 
@@ -1347,6 +1354,40 @@ def _agg(values: list[float]) -> dict[str, float | None]:
         "max": max(values),
         "n": len(values),
     }
+
+
+# --------------------------------------------------------------------------- #
+# seed ごとに複数 run がある場合の代表値の取り方
+#
+# 対照実験 (s4_phase_baseline) は 1 つの seed に最大 7 run を持つ。畳まないと
+# seed ごとの対応が付かず paired-σ が計算できない (136 実験中 131 が計算不能)。
+#
+# 既定は **mean**。理由:
+#   - 順序に依存しない（seq / 時刻の記録が信用できない run がある）
+#   - 特定の 1 本を選ばないので「どれを選ぶか」の恣意性が入らない
+#   - 再実行のばらつきを捨てずに平均へ織り込む
+#
+# ★ "best"（比較する指標が最良の run を選ぶ）は **実装しない**。
+#   比較対象の指標そのもので代表を選ぶと Δ が系統的に偏る（選択バイアス）。
+#   対照側で best を選べば Δ は小さく、注入側で選べば大きく出る。
+#   研究公正性の観点から提供しない。
+# --------------------------------------------------------------------------- #
+DEDUP_RULES = ("mean", "latest", "first")
+DEFAULT_DEDUP_RULE = "mean"
+
+
+def _reduce_by_seed(
+    pairs: list[tuple[int | None, float]], rule: str
+) -> float | None:
+    """(seq, value) の列を seed 代表値 1 つに畳む。"""
+    if not pairs:
+        return None
+    if len(pairs) == 1:
+        return pairs[0][1]
+    if rule == "mean":
+        return statistics.mean(v for _, v in pairs)
+    ordered = sorted(pairs, key=lambda x: (x[0] is None, x[0]))
+    return ordered[-1][1] if rule == "latest" else ordered[0][1]
 
 
 def _pool_sigma(a: float | None, b: float | None) -> float | None:
@@ -1404,7 +1445,46 @@ def _command_signature(command: str | None, seed: int | None = None) -> str:
     return " ".join(out)
 
 
-def build_experiments(records: list[dict[str, Any]]) -> tuple[list[str], list[dict[str, Any]]]:
+def _verdict_10_1(
+    delta: float | None, sigma: float | None, same_sign: bool | None
+) -> tuple[str, str]:
+    """§10.1 の改善判定。**2 条件**を両方満たしたときだけ significant。
+
+        |mean(Δ)| > σ  かつ  全 seed 同符号
+
+    根拠 (リポジトリ内の実装 7 箇所が同じ 2 条件で書いている):
+      scripts/paired_sigma_3seed.py:7 / analyze_t1a_factorial_ablation.py:13 /
+      report_t1a_boundary.py:5 / report_daux_paired.py:114 /
+      run_haux_oracle_gate.sh:14 / run_taux_problemA.sh:76 /
+      src/egosurgery/utils/transfer_delta_report.py
+
+    同符号は seed ごとの Δ が無いと判定できないので、unpaired では
+    **undecidable** にする（σ 条件だけで significant と言ってはいけない）。
+    """
+    if delta is None or sigma is None:
+        return "undecidable", "Δ または σ が無い"
+    if same_sign is None:
+        return "undecidable", "unpaired のため同符号条件を判定できない"
+    if sigma == 0:
+        return "undecidable", "σ = 0（ばらつきを測れていない）"
+    if abs(delta) <= sigma:
+        return "not_significant", "|Δ| <= σ"
+    if not same_sign:
+        return "not_significant", "全 seed 同符号ではない"
+    return "significant", "|Δ| > σ かつ全 seed 同符号"
+
+
+def _primary_metric(row: dict[str, Any], available: set[str]) -> str | None:
+    """その実験の主指標。工程系は accuracy、検出系は mAP。"""
+    for m in ("accuracy", "mAP", "tool_mAP"):
+        if m in available and row.get(f"{m}_mean") is not None:
+            return m
+    return None
+
+
+def build_experiments(
+    records: list[dict[str, Any]], dedup_rule: str = DEFAULT_DEDUP_RULE
+) -> tuple[list[str], list[dict[str, Any]]]:
     groups: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for r in records:
         if r.get("experiment_id"):
@@ -1427,11 +1507,12 @@ def build_experiments(records: list[dict[str, Any]]) -> tuple[list[str], list[di
             if not vals:
                 continue
             per_metric[name] = _agg(vals)
-            s: dict[int, list[float]] = defaultdict(list)
+            # (seq, value) で持つ。seq は latest / first の代表選択に要る。
+            s: dict[int, list[tuple[int | None, float]]] = defaultdict(list)
             for r in rs:
                 v = r["metrics"].get(name)
                 if isinstance(v, (int, float)) and r["seed"] is not None:
-                    s[r["seed"]].append(v)
+                    s[r["seed"]].append((r.get("seq"), v))
             per_seed[name] = dict(s)
         agg_by_exp[eid] = per_metric
         seedvals_by_exp[eid] = per_seed
@@ -1485,6 +1566,12 @@ def build_experiments(records: list[dict[str, Any]]) -> tuple[list[str], list[di
             "n_command_variants": len(cmd_sigs),
             "delta_method": "",
             "delta_sigma_source": "",
+            "delta_dedup_rule": "",
+            "verdict_metric": "",
+            "verdict_10_1": "",
+            "verdict_10_1_sstd": "",
+            "verdict_10_1_agree": "",
+            "verdict_10_1_reason": "",
         }
         for m, a in agg_by_exp[eid].items():
             row[f"{m}_mean"] = a["mean"]
@@ -1509,9 +1596,14 @@ def build_experiments(records: list[dict[str, Any]]) -> tuple[list[str], list[di
                 # 対応が付かないので paired 比較から外すだけであり、
                 # seed 集合の完全一致を要求する必要はない（それは過度に厳しい）。
                 # 除外した seed は paired_feasibility.csv に記録する。
-                common = {s for s in set(a) & set(b) if len(a[s]) == 1 and len(b[s]) == 1}
+                #
+                # seed ごとに複数 run がある場合は DEFAULT_DEDUP_RULE で 1 本に畳む。
+                # 畳まないと 136 実験中 131 が paired 不能のままになる。
+                common = set(a) & set(b)
                 if len(common) >= 2:
-                    diffs = [a[s][0] - b[s][0] for s in sorted(common)]
+                    ra = {s: _reduce_by_seed(a[s], dedup_rule) for s in common}
+                    rb = {s: _reduce_by_seed(b[s], dedup_rule) for s in common}
+                    diffs = [ra[s] - rb[s] for s in sorted(common)]
                     delta = statistics.mean(diffs)
                     pstd = statistics.pstdev(diffs)
                     sstd = statistics.stdev(diffs) if len(diffs) > 1 else None
@@ -1541,8 +1633,146 @@ def build_experiments(records: list[dict[str, Any]]) -> tuple[list[str], list[di
             # paired と unpaired を混同してはならないので両方出たら併記する。
             row["delta_method"] = ",".join(sorted(methods))
             row["delta_sigma_source"] = ",".join(sorted(sources))
+            row["delta_dedup_rule"] = dedup_rule if "paired" in methods else ""
+
+            # §10.1 判定（主指標について）。σ の規約が割れているので両方出す。
+            pm = _primary_metric(row, set(agg_by_exp[eid]))
+            if pm:
+                row["verdict_metric"] = pm
+                v_p, reason = _verdict_10_1(
+                    row.get(f"delta_{pm}"),
+                    row.get(f"delta_pstd_{pm}"),
+                    row.get(f"delta_same_sign_{pm}"),
+                )
+                v_s, _ = _verdict_10_1(
+                    row.get(f"delta_{pm}"),
+                    row.get(f"delta_sstd_{pm}"),
+                    row.get(f"delta_same_sign_{pm}"),
+                )
+                row["verdict_10_1"] = v_p
+                row["verdict_10_1_sstd"] = v_s
+                row["verdict_10_1_agree"] = v_p == v_s
+                row["verdict_10_1_reason"] = reason
         rows.append(row)
     return header, rows
+
+
+VERDICT_COLUMNS = [
+    "experiment_id",
+    "metric",
+    "arm",
+    "control_of",
+    "delta_method",
+    "delta_dedup_rule",
+    "n_seeds",
+    "delta",
+    "pstd",
+    "sstd",
+    "ratio_pstd",
+    "ratio_sstd",
+    "same_sign",
+    "verdict_pstd",
+    "verdict_sstd",
+    "agree",
+    "reason",
+]
+
+
+def build_verdicts(exp_rows: list[dict[str, Any]]) -> tuple[list[str], list[dict[str, Any]]]:
+    """1 行 = 1 実験 × 1 指標 の §10.1 判定表（long 形式）。
+
+    experiments.csv の `verdict_10_1` は主指標 1 つだけなので、
+    全指標の判定はここで縦持ちにする。
+    母集団σ (ddof=0) と標本σ (ddof=1) の両方で判定し `agree` で突き合わせる。
+    """
+    rows = []
+    for r in exp_rows:
+        metrics = sorted(
+            k[len("delta_") :]
+            for k in r
+            if k.startswith("delta_")
+            and not k.startswith(("delta_pstd_", "delta_sstd_", "delta_same_sign_", "delta_n_seeds_"))
+            and k not in {"delta_method", "delta_sigma_source", "delta_dedup_rule"}
+            and isinstance(r.get(k), (int, float))
+        )
+        for m in metrics:
+            d = r.get(f"delta_{m}")
+            ps = r.get(f"delta_pstd_{m}")
+            ss = r.get(f"delta_sstd_{m}")
+            sign = r.get(f"delta_same_sign_{m}")
+            vp, reason = _verdict_10_1(d, ps, sign)
+            vs, _ = _verdict_10_1(d, ss, sign)
+            rows.append(
+                {
+                    "experiment_id": r["experiment_id"],
+                    "metric": m,
+                    "arm": r.get("arm"),
+                    "control_of": r.get("control_of"),
+                    "delta_method": r.get("delta_method"),
+                    "delta_dedup_rule": r.get("delta_dedup_rule"),
+                    "n_seeds": r.get(f"delta_n_seeds_{m}"),
+                    "delta": d,
+                    "pstd": ps,
+                    "sstd": ss,
+                    "ratio_pstd": abs(d) / ps if d is not None and ps else None,
+                    "ratio_sstd": abs(d) / ss if d is not None and ss else None,
+                    "same_sign": sign,
+                    "verdict_pstd": vp,
+                    "verdict_sstd": vs,
+                    "agree": vp == vs,
+                    "reason": reason,
+                }
+            )
+    return VERDICT_COLUMNS, rows
+
+
+DEDUP_SENSITIVITY_COLUMNS = [
+    "experiment_id",
+    "metric",
+    "dedup_rule",
+    "delta",
+    "pstd",
+    "ratio_pstd",
+    "same_sign",
+    "verdict_pstd",
+]
+
+
+def build_dedup_sensitivity(
+    records: list[dict[str, Any]],
+) -> tuple[list[str], list[dict[str, Any]]]:
+    """代表値の取り方 (mean / latest / first) で Δ と判定がどれだけ動くか。
+
+    既定は mean。恣意的な選択が結論を変えていないことを確認するために、
+    他の規則でも計算して並べる。**"best" は選択バイアスを生むので出さない。**
+    """
+    rows = []
+    for rule in DEDUP_RULES:
+        _h, exp_rows = build_experiments(records, dedup_rule=rule)
+        for r in exp_rows:
+            if r.get("delta_method") != "paired":
+                continue
+            pm = r.get("verdict_metric")
+            if not pm:
+                continue
+            d = r.get(f"delta_{pm}")
+            ps = r.get(f"delta_pstd_{pm}")
+            sign = r.get(f"delta_same_sign_{pm}")
+            v, _ = _verdict_10_1(d, ps, sign)
+            rows.append(
+                {
+                    "experiment_id": r["experiment_id"],
+                    "metric": pm,
+                    "dedup_rule": rule,
+                    "delta": d,
+                    "pstd": ps,
+                    "ratio_pstd": abs(d) / ps if d is not None and ps else None,
+                    "same_sign": sign,
+                    "verdict_pstd": v,
+                }
+            )
+    rows.sort(key=lambda x: (x["experiment_id"], x["metric"], x["dedup_rule"]))
+    return DEDUP_SENSITIVITY_COLUMNS, rows
 
 
 # --------------------------------------------------------------------------- #
@@ -1867,13 +2097,15 @@ make runindex      # runindex/ 全体をゼロから再生成する
 |---|---|
 | `index.csv` | 1 行 = 1 **run** の横断インデックス。`runs/*.json` から導出 |
 | `per_class.csv` | 1 行 = 1 run × 1 クラス。per-class を long 形式で 1 ファイル化 |
-| `experiments.csv` | 1 行 = 1 **実験**（seed 集約 + 対照 Δ）。論文 Table の 1 行に対応 |
+| `experiments.csv` | 1 行 = 1 **実験**（seed 集約 + 対照 Δ + §10.1 判定）。論文 Table の 1 行に対応 |
+| `verdicts.csv` | 1 行 = 1 実験 × 1 指標 の §10.1 判定（母集団σ / 標本σ の両方） |
 | `runs/<ledger_key>.json` | 正規化済みの run 記録 |
 | `host_aliases.json` | host 正規化の対応表 |
 | `metric_aliases.json` | 指標名の表記ゆれ統合表 |
 | `anomalies.md` | 規約から外れたもの・判断を保留したものの一覧 (人間が読む) |
 | `anomalies/val_test_pairs.csv` | test 評価を持つ run の val/test 対応表 (縦持ち) |
 | `anomalies/paired_feasibility.csv` | paired-σ の宣言と実行可能性の差 (1 行 = 1 実験) |
+| `anomalies/dedup_sensitivity.csv` | seed 代表値の取り方 (mean/latest/first) で判定が動くかの感度分析 |
 | `anomalies/backlog.md` | 本タスクの範囲外として起票した未着手事項 |
 
 ## index.csv の列
@@ -1984,7 +2216,8 @@ BACKLOG = """# backlog — 本タスクの範囲外として起票した未着�
 | B-16 | seed 789 / 1000 の非対称な拡張 | 全 615 run 中 12 run だけが seed 789/1000 を持ち、その 12 件すべてが `scripts/run_l3_seed5_extension.sh`（「3-seed→5-seed 化、paired-σ 強化」）の産物。同スクリプトは**注入側 6 variant のみを拡張し対照 (S4 baseline) を呼んでいない**ため片側だけ 5-seed になった。paired は共通 seed で取るので計算自体は成立する | 対照側も 5-seed 化するか、789/1000 を解析から外すかの判断 |
 | B-17 | `t1a_regiontraj` 系 3 実験の分母 | `config.yaml` は分母を `t1a_regiontoken base (同env efros paired)` と宣言しているが、`t1a_base_env`（efros・seeds 42/123/456・1 run/seed、config は `server_name` 以外一致）へ付け替えると追加計算なしで完全な paired になるという指摘がある | 分母の付け替えは研究上の判断。`config.yaml` の宣言に反するため harvester では変更しない |
 | B-18 | σ 規約の 2 系統併存 | `pstdev` 系 48 箇所（§10.1 判定・レポート層）と `stdev`/`ddof=1` 系 16 箇所（`scripts/analysis/*` の解析・監査層）が併存（§21.2）。**Δ の規約を監査する `delta_convention_audit.py` 自身が判定側と違うσを使っている** | 正本 §10.1 でσを定義したうえで、どちらかに寄せる |
-| B-19 | `compute_delta.py` / `export_paper_tables.py` が空ファイル | 0 バイトの scaffold。`Makefile` の `delta` / `tables` ターゲットは何もしない | `experiments.csv` から再実装できる（Δ・σ・同符号は既に揃っている） |
+| B-19 | `compute_delta.py` / `export_paper_tables.py` / `tools/generate_delta_report.py` が空ファイル | 3 つとも **0 バイト**で、scaffold コミット `af1fc58` 以来一度も実装されていない。`make delta` / `make tables` は無言で成功して何もしない。一方 Δ を実装した生きたコードは 4 つある（`scripts/analysis/delta_allrun_recompute.py` 23KB / `delta_convention_audit.py` 27KB / `src/egosurgery/metrics/delta.py` 14KB / `utils/transfer_delta_report.py` 11KB） | 空 scaffold を消して `runindex` に一本化するか、`experiments.csv` / `verdicts.csv` を読む薄い実装に置き換えるかの判断 |
+| B-20 | 🔴 **学習の非決定性が制御されていない** | 同一 commit・同一 config・同一コマンド・同一 host の再実行が再現しない（`s4_phase_baseline_015` vs `_017` で macro_f1 が 0.7406 vs 0.6572）。**within-seed σ が between-seed σ を全指標で上回る**（比 1.34〜2.45）。原因は `scripts/train_s4_tecno.py:192-195` が CPU 側の seed しか設定せず、`torch.cuda.manual_seed_all` / `use_deterministic_algorithms` / `cudnn.deterministic` / `worker_init_fn` / `PYTHONHASHSEED` が皆無なこと（§25） | 学習コードの変更にあたるため本タスクでは触れない。**これを直さない限り paired-σ は seed 効果を測れない**ので、優先度は高い |
 | B-11 | `logs/phase3seed_results.tsv` の欠落 | `scripts/paired_sigma_3seed.py` はこの TSV の `arm` 列（frozen / augstrong）を読んで paired-σ を出す設計だが、ファイルが repo に存在しない（`.gitignore` 対象）。arm 情報自体は `config.yaml` の `frozen_source.*` に残っており `frozen_source_tag` として収穫済み | TSV の復元、または `paired_sigma_3seed.py` を `runindex` 由来に切り替える |
 | B-12 | 573 run の外側にある inj/ctrl ペア | `transfer/*_efros/` と `experiments/transfer/{hc,oracle_phase}_seed*/` に `injected_result.json` / `control_result.json` の対が 18 組あるが、`metrics.json` を持たないため収穫対象外。真の注入/対照ペアはここにある | 非標準群の adapter（B-6）と同じ作業 |
 | B-13 | 同一条件が別 `experiment_id` に分裂する組 | `description` / `split` / `frozen_source_tag` が同じで `step` だけ違う組がある（§17.2）。多くは `eval_recipe_id` による意図的分離 | 起動経路が同一かの判断が要るため harvester では決めない |
@@ -2066,6 +2299,13 @@ def write_runindex(records: list[dict[str, Any]], anomalies: str) -> None:
         writer.writeheader()
         writer.writerows(er)
 
+    # 1 行 = 1 実験 × 1 指標 の §10.1 判定表
+    vh, vr = build_verdicts(er)
+    with (RUNINDEX / "verdicts.csv").open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=vh, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(vr)
+
     # test 評価を持つ run の val/test 対応表（縦持ち）
     anomalies_dir = RUNINDEX / "anomalies"
     anomalies_dir.mkdir(exist_ok=True)
@@ -2081,6 +2321,13 @@ def write_runindex(records: list[dict[str, Any]], anomalies: str) -> None:
         writer = csv.DictWriter(fh, fieldnames=fh_, lineterminator="\n")
         writer.writeheader()
         writer.writerows(fr)
+
+    # 代表値の取り方で結論が動かないことの確認
+    dh, dr = build_dedup_sensitivity(reloaded)
+    with (anomalies_dir / "dedup_sensitivity.csv").open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=dh, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(dr)
 
     (anomalies_dir / "backlog.md").write_text(BACKLOG, encoding="utf-8")
 
@@ -3085,14 +3332,39 @@ def build_anomalies(
     add("")
     add("**「Δ の規約を監査する」スクリプト自身が、判定側と違うσを使っている。**")
     add("")
-    add("正本の研究計画（`docs/m2_plan_rewrite/`）は §10.1 の 1σ を")
-    add("「同一 eval recipe での 3-seed std」としか書いておらず、**どちらか明示していない**。")
-    add("したがって「どちらを使うべきか」の規範的根拠はリポジトリ内に存在しない。")
+    add("### 21.2.1 🔴 **明文の規約は ddof=1、実装は ddof=0** — 両者が逆を向いている")
     add("")
-    add("`abs_delta_over_sigma_<metric>` は **母集団σ**（`delta_pstd_<metric>`）を分母にした。")
-    add("§10.1 判定の実装側と揃えたためである。標本σで見たい場合は")
-    add("`delta_sstd_<metric>` で割り直すこと（両方出してある）。")
-    add("**規約の確定は正本側の作業であり、harvester が決めることではない（backlog B-9）。**")
+    add("正本の研究計画（`docs/m2_plan_rewrite/`）は §10.1 の 1σ を")
+    add("「同一 eval recipe での 3-seed std」としか書かず種類を明示していないが、")
+    add("**スコープを限った明示宣言は複数あり、そのすべてが ddof=1（標本σ）を指す**:")
+    add("")
+    add("| 出典 | 記述 |")
+    add("|---|---|")
+    add("| `scripts/analyze_phase_coupling.py:21` | 「改善主張は §10.1 に従い \\|Δ\\| > 1σ のときのみ。**1σ は base 3-seed の標本(n-1)標準偏差**」 |")
+    add("| `src/egosurgery/metrics/delta.py:111,131` | 「標準偏差は**不偏標準偏差（ddof=1）**」/ `arr.std(ddof=1)` |")
+    add("| `docs/experiment_log.md:1742` | 「n=3, **ddof=1**」 |")
+    add("")
+    add("**実験ログの数値も ddof=1 で書かれている**（実測で照合）:")
+    add("")
+    add("```")
+    add("docs/experiment_log.md:440   S4' = acc 0.9142 ± 0.0017")
+    add("  実測 (s4_phase_baseline_004/005/006 _neck):")
+    add("    mean = 0.9142")
+    add("    pstdev (ddof=0) = 0.001426   -> 0.0014  ✗ 一致しない")
+    add("    stdev  (ddof=1) = 0.001746   -> 0.0017  ✅ 一致")
+    add("```")
+    add("")
+    add("一方 §10.1 の**判定を実装している** 7 箇所は `pstdev`（ddof=0）である。")
+    add("つまり **文書が定めた規約と、判定コードが使っている規約が食い違っている。**")
+    add("これは「どちらか未定」ではなく「二つが並存し矛盾している」状態である。")
+    add("")
+    add("`abs_delta_over_sigma_<metric>` と `verdict_10_1` は **母集団σ**（ddof=0）を分母に、")
+    add("`verdict_10_1_sstd` は **標本σ**（ddof=1）を分母にしている。")
+    add("**どちらを正本とするかは harvester が決めることではない**ため両方出し、")
+    add("結論が食い違う実験を `verdict_10_1_agree = False` で列挙している（backlog B-9 / B-18）。")
+    add("")
+    add("なお件数の数え方に注意: 上の「48 / 16」は docstring・コメント・print 文を含む")
+    add("全 grep ヒットである。実コード行だけに絞ると概ね 21 / 15 になる。")
     add("")
     add("なお `notes.md` / `config.yaml` の `0.8986±0.0034` は書き出し時に計算された値ではなく、")
     add("`scripts/train_*.py` にハードコードされた文字列リテラルである。")
@@ -3266,6 +3538,193 @@ def build_anomalies(
     add("したがって Δ の分母は cache パス基準で正しく分離されている。")
     add("**残るリスクは cache パス自体が実行時の実態と違う場合**だが、")
     add("これを検証できる証跡（実行時の環境変数の記録）は repo に存在しない。")
+    add("")
+
+    # ---------------------------------------------------------------- #
+    add("## 24. seed 代表値の畳み込み (dedup) と §10.1 判定")
+    add("")
+    add("### 24.1 代表値の取り方")
+    add("")
+    add("対照実験は 1 つの seed に最大 7 run を持つため、畳まないと seed 対応が付かず")
+    add("paired-σ を計算できなかった（§22）。`experiments.csv` の Δ は")
+    add(f"**`{DEFAULT_DEDUP_RULE}`** を既定として seed ごとに 1 値へ畳んでいる")
+    add("（`delta_dedup_rule` 列に記録）。")
+    add("")
+    add("| 規則 | 内容 | 採否 |")
+    add("|---|---|---|")
+    add("| `mean` | seed 内の全 run の平均 | **既定** |")
+    add("| `latest` | seq が最大の run | 感度分析のみ |")
+    add("| `first` | seq が最小の run | 感度分析のみ |")
+    add("| `best` | 比較する指標が最良の run | **実装しない** |")
+    add("")
+    add("`mean` を既定にした理由:")
+    add("")
+    add("1. 順序に依存しない（`git_commit.txt` や seq の記録が信用できない run がある）")
+    add("2. 特定の 1 本を選ばないので「どれを選ぶか」の恣意性が入らない")
+    add("3. 再実行のばらつきを捨てずに平均へ織り込む")
+    add("")
+    add("**`best` を実装しない理由**: 比較する指標そのもので代表を選ぶと Δ が")
+    add("系統的に偏る（選択バイアス）。対照側で best を選べば Δ は大きく、")
+    add("注入側で選べば小さく出る。研究公正性の観点から提供しない。")
+    add("")
+    add("### 24.2 代表値の取り方は結論を変えない（感度分析）")
+    add("")
+    dh_, dr_ = build_dedup_sensitivity(records)
+    if dr_:
+        piv: dict[str, dict[str, str]] = defaultdict(dict)
+        dlt: dict[str, dict[str, float]] = defaultdict(dict)
+        for r in dr_:
+            piv[r["experiment_id"]][r["dedup_rule"]] = r["verdict_pstd"]
+            if isinstance(r.get("delta"), (int, float)):
+                dlt[r["experiment_id"]][r["dedup_rule"]] = r["delta"]
+        same = sum(1 for v in piv.values() if len(set(v.values())) == 1)
+        add(f"3 規則すべてで §10.1 判定が一致する実験: **{same} / {len(piv)}**")
+        add("")
+        diffs = [
+            abs(d["mean"] - d[k])
+            for d in dlt.values()
+            for k in ("latest", "first")
+            if "mean" in d and k in d
+        ]
+        if diffs:
+            add(f"ただし Δ の値自体は動く（`mean` との差の最大 = **{max(diffs):.6f}**）。")
+            add("判定が変わらないのは σ も同時にスケールするためである。")
+            add("**Δ の絶対値を引用するときは `delta_dedup_rule` を併記すること。**")
+        add("")
+        add("全件は `anomalies/dedup_sensitivity.csv`。")
+        add("")
+    add("### 24.3 §10.1 判定の結果")
+    add("")
+    add("判定条件は 2 つ（§21.3）。**両方**満たしたときだけ `significant`。")
+    add("")
+    add("> `|mean(Δ)| > σ` **かつ** `全 seed 同符号`")
+    add("")
+    if exp_rows:
+        vp = Counter(r.get("verdict_10_1") for r in exp_rows if r.get("verdict_10_1"))
+        vs = Counter(r.get("verdict_10_1_sstd") for r in exp_rows if r.get("verdict_10_1_sstd"))
+        add("| 判定 | 母集団σ (ddof=0) | 標本σ (ddof=1) |")
+        add("|---|---:|---:|")
+        for k in ("significant", "not_significant", "undecidable"):
+            add(f"| `{k}` | {vp.get(k, 0)} | {vs.get(k, 0)} |")
+        add("")
+        flip = [r for r in exp_rows if r.get("verdict_10_1") and not r.get("verdict_10_1_agree")]
+        add(f"**σ の規約で結論が変わる実験: {len(flip)} 件**")
+        add("")
+        for r in flip:
+            m = r["verdict_metric"]
+            add(f"- `{r['experiment_id']}`（指標 `{m}`）")
+            add(
+                f"  - Δ = {r.get(f'delta_{m}'):+.6f} / "
+                f"母集団σ = {r.get(f'delta_pstd_{m}'):.6f} -> **{r['verdict_10_1']}** / "
+                f"標本σ = {r.get(f'delta_sstd_{m}'):.6f} -> **{r['verdict_10_1_sstd']}**"
+            )
+        add("")
+        und = [r for r in exp_rows if r.get("verdict_10_1") == "undecidable"]
+        if und:
+            add(f"`undecidable` は {len(und)} 件。いずれも paired にできない実験である。")
+            for r in und:
+                add(f"- `{r['experiment_id']}` … {r.get('verdict_10_1_reason')}")
+            add("")
+        ns = [r for r in exp_rows if r.get("verdict_10_1") == "not_significant"]
+        if ns:
+            same_sign_fail = sum(
+                1
+                for r in ns
+                if r.get("verdict_10_1_reason") == "全 seed 同符号ではない"
+            )
+            add(
+                f"`not_significant` {len(ns)} 件のうち **{same_sign_fail} 件は同符号条件で落ちている**"
+                "（σ 条件は満たしている）。"
+            )
+            add("σ だけを見て有意と判断すると誤る典型である。")
+            add("")
+    add("全指標の判定は `runindex/verdicts.csv`（1 行 = 1 実験 × 1 指標）。")
+    add("")
+
+    # ---------------------------------------------------------------- #
+    add("## 25. 🔴🔴 最重要: paired-σ は seed 効果ではなく**非決定性**を測っている")
+    add("")
+    add("§24 で paired-σ が計算できるようになったが、**その σ が何を測っているか**には")
+    add("重大な但し書きがある。Δ を解釈する前に必ず読むこと。")
+    add("")
+    add("### 25.1 同一条件が再現しない（実測）")
+    add("")
+    add("`s4_phase_baseline_015` と `_017` は次がすべて一致する:")
+    add("")
+    add("| 項目 | 値 |")
+    add("|---|---|")
+    add("| `git_commit.txt` | `bd0609749afdfa2a`（両者同一） |")
+    add("| `config.yaml` の sha256 | `9cf8c2dde6920f01`（バイト一致） |")
+    add("| `command.sh` | `python scripts/train_s4_tecno.py --seed 42`（同一） |")
+    add("| `server.txt` | `efros`（同一） |")
+    add("")
+    add("それでも結果は違う:")
+    add("")
+    add("```")
+    add("phase_accuracy   0.9042904290429042  vs  0.8970297029702970   (Δ = 0.00726)")
+    add("phase_macro_f1   0.7405981456025096  vs  0.6571673826301749   (Δ = 0.08343)")
+    add("epoch (best)     49                  vs  31")
+    add("```")
+    add("")
+    add("### 25.2 seed は分散を制御できていない")
+    add("")
+    add("対照実験（17 run / seed42×7・123×5・456×5）で、")
+    add("**同一 seed 内のばらつきが seed 間のばらつきを全指標で上回る**:")
+    add("")
+    add("| 指標 | within-seed σ | between-seed σ | 比 |")
+    add("|---|---:|---:|---:|")
+    add("| accuracy | 0.004647 | 0.003385 | **1.37** |")
+    add("| macro_f1 | 0.020214 | 0.008879 | **2.28** |")
+    add("| jaccard | 0.019112 | 0.007814 | **2.45** |")
+    add("| edit_score | 1.981335 | 1.478973 | **1.34** |")
+    add("| seg_f1_50 | 0.031471 | 0.019595 | **1.61** |")
+    add("")
+    add("### 25.3 原因 — GPU の決定性が一切制御されていない")
+    add("")
+    add("```python")
+    add("# scripts/train_s4_tecno.py:192-195")
+    add('device = torch.device("cuda" if torch.cuda.is_available() else "cpu")')
+    add("random.seed(args.seed)")
+    add("np.random.seed(args.seed)")
+    add("torch.manual_seed(args.seed)      # ← CPU 側のみ")
+    add("```")
+    add("")
+    add("`torch.cuda.manual_seed_all` / `torch.use_deterministic_algorithms` /")
+    add("`cudnn.deterministic` / DataLoader の `worker_init_fn` / `generator` /")
+    add("`PYTHONHASHSEED` は **1 つも設定されていない**。")
+    add("さらに 50 epoch の best-of-N 選択（`:263`）が非決定性を増幅する")
+    add("（best epoch が 31〜50 に散る）。")
+    add("")
+    add("リポジトリ自身の診断ツール `scripts/analysis/diag_same_seed_variance.py` も")
+    add("同じ結論を出す: `N1 VERDICT: CONFIG_DIFF + UNCONTROLLED_NONDETERMINISM`。")
+    add("")
+    add("### 25.4 Δ の解釈への含意")
+    add("")
+    add("1. **paired-σ は「seed を変えたときの変動」ではなく「同じ設定で回し直したときの")
+    add("   変動」を主に測っている。** §10.1 の「3-seed の σ」という想定は成立していない。")
+    add("2. `significant` と出た実験も、**測っているのは注入効果 + 非決定性**である。")
+    add("   Δ が within-seed σ（accuracy で 0.0046）より小さい主張は特に慎重に扱うこと。")
+    add("3. seed ごとに **1 本を選ぶ**代表規約（`latest` / `first` / mtime 最大）は、")
+    add("   within-seed 分布から 1 標本を引くことに等しい。")
+    add("   **`mean` を既定にしたのはこの理由による**（within-seed ノイズを平均で潰す）。")
+    add("   同じ発想はリポジトリ内に先例がある —")
+    add("   `scripts/paired_sigma_3seed.py:5`「phase_seed を平均 → phase 学習の非決定性を除去」。")
+    add("")
+    add("### 25.5 代表選択の規約がリポジトリ内で 4 つに割れている")
+    add("")
+    add("| 方式 | 出典 |")
+    add("|---|---|")
+    add("| seq 最大 | `src/egosurgery/utils/transfer_delta_report.py:55,86-87` |")
+    add("| mtime 最大 | `scripts/report_daux_paired.py:12-13,43-47` |")
+    add("| 辞書順末尾 | `scripts/report_t1a_boundary.py:46-49` / `compare_causal_decode.py:76` |")
+    add("| 代表を選ばず平均 | `scripts/paired_sigma_3seed.py:5,59-60` |")
+    add("| **規約を決めないと明記** | `scripts/analysis/delta_allrun_recompute.py:4-10` |")
+    add("")
+    add("なお mtime 方式は使えない。`metrics.json` の mtime は git チェックアウト時刻")
+    add("（全件 2026-07-31 14:49）であり実験の新旧を表していない。")
+    add("")
+    add("**根本対処は「非決定性を制御して再実行する」ことであり、")
+    add("代表値の選び方を工夫することではない。**（backlog B-20）")
     add("")
 
     return "\n".join(lines) + "\n"
