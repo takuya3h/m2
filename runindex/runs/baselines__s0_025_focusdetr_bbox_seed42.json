@@ -1,5 +1,6 @@
 {
   "arm": "unknown",
+  "attributes": {},
   "command": "#!/usr/bin/env bash\n# Stable-DINO (detrex) 実行コマンド\n# seed=42\ntools/train_net_egosurgery.py --config-file focus_detr_r50_4scale_12ep_egosurgery.py --num-gpus 2 train.seed=42\n",
   "commit": "4327348e444381f1737309252fb86ad9b5034d6a",
   "config_path": "experiments/baselines/s0_025_focusdetr_bbox_seed42/config.yaml",
@@ -63,6 +64,7 @@
       "mAP_75": 0.753831
     }
   },
+  "metrics_nested": {},
   "metrics_primary_split": "val",
   "notes": "# s0_025_focusdetr_bbox_seed42\n\n検出器: Focus-DETR (detrex, torch 2.1.2+cu118, .venv-detectron2)\nseed: 42\n\n## 結果\nmAP=0.6894 / AP_rare=0.7707 / AP_common=0.6759 (best eval #5)\n\n## 初期化\nDINO R50 COCO 12ep 重み (backbone+transformer)、class_embed は 80->15 で再初期化 (他検出器の COCO fine-tune と同条件)。\n",
   "notion_page_id": null,

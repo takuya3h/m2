@@ -1,5 +1,6 @@
 {
   "arm": "injection",
+  "attributes": {},
   "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-07-02T11:56:05+00:00\npython scripts/train_t1a_boundary.py --seed 123\n",
   "commit": "1a52c6fde8120bb62eba920ad3c3d8882f309b72",
   "config_path": "experiments/transfer/t1a_boundary_002_t1a_boundary_seed123/config.yaml",
@@ -87,6 +88,7 @@
       "sticky_seg_f1_50": 0.4707070707070707
     }
   },
+  "metrics_nested": {},
   "metrics_primary_split": "val",
   "notes": "# T1a-Boundary（region-token→工程 + 因果 boundary head・over-seg / edit-score 改善）\n\nSTEP C 改善提案書 §4.1/§8。T1a base の共有 stage-1 trunk から class-agnostic boundary head を分岐し、phase-change 教師（±1）で BCE 監督。online/causal（未来不使用）。\n\n## 結果（best @epoch 30・val）\n### plain decode（per-frame argmax = T1a base と同一推論）\n- accuracy=0.9452 / macro_f1=0.7980\n- edit=33.24 / seg_f1@10/25/50=0.427/0.427/0.396\n### sticky decode（因果 boundary-gated・τ=0.5）\n- accuracy=0.6449 / macro_f1=0.6124\n- edit=49.00 / seg_f1@10/25/50=0.553/0.537/0.471\n\n## 構成\n- seed=123 epochs=50 lr=0.0005 in_dim=5888(=2048+3840) stages=2 layers=8 f_maps=64\n- boundary: weight=1.0 pos_weight=14.70 dilate=1 tau=0.5\n- server=efros / eval recipe=online_causal+jaccard_strict (PHASE_EVAL_PROTOCOL)\n\n## Δ\n- Δ = (T1a-Boundary − T1a base[同env efros])。主指標 edit/seg-F1、維持 acc/macro-F1。\n- 3-seed 揃ったら paired-σ(対seed差) §10.1 判定。plain=trunk 正則化 / sticky=+因果 decode。\n",
   "notion_page_id": null,

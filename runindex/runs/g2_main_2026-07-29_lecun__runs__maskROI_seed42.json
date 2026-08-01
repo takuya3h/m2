@@ -1,5 +1,14 @@
 {
   "arm": "unknown",
+  "attributes": {
+    "best_epoch": 39,
+    "epochs": 50,
+    "in_dim": 7680,
+    "run": "maskROI_seed42",
+    "seed": 42,
+    "system": "maskROI",
+    "train_seconds": 23.03399658203125
+  },
   "command": null,
   "commit": "ca280645c5da13574e6b2ce0e460ac858663ab69",
   "config_path": null,
@@ -56,6 +65,79 @@
       "seg_f1_50": 0.6199233716475095
     }
   },
+  "metrics_nested": {
+    "hyperparams": {
+      "lr": 0.0005,
+      "num_f_maps": 64,
+      "num_layers": 8,
+      "num_stages": 2,
+      "smoothing_weight": 0.15,
+      "weight_decay": 0.01
+    },
+    "n_clips": {
+      "test": 6,
+      "train": 13,
+      "val": 3
+    },
+    "roi_fallback": {
+      "test": {
+        "D": 256,
+        "fallback_rate": 0.11709934506430995
+      },
+      "train": {
+        "D": 256,
+        "fallback_rate": 0.14114402578086266
+      },
+      "val": {
+        "D": 256,
+        "fallback_rate": 0.24091778202676864
+      }
+    },
+    "test.phase_per_class_f1": {
+      "anesthesia": 0.9519650655021834,
+      "closure": 0.9456050453291289,
+      "design": 0.923076923076923,
+      "disinfection": 0.0,
+      "dissection": 0.8483171968649147,
+      "dressing": 0.0,
+      "hemostasis": 0.772626931567329,
+      "incision": 0.9436201780415431,
+      "irrigation": 0.55
+    },
+    "test.phase_per_class_jaccard": {
+      "anesthesia": 0.9083333333333333,
+      "closure": 0.896822429906542,
+      "design": 0.8571428571428571,
+      "disinfection": 0.0,
+      "dissection": 0.7365892714171337,
+      "dressing": 0.0,
+      "hemostasis": 0.6294964028776978,
+      "incision": 0.8932584269662921,
+      "irrigation": 0.3793103448275862
+    },
+    "val.phase_per_class_f1": {
+      "anesthesia": 0.9948717948717948,
+      "closure": 0.969485614646905,
+      "design": 0.9852216748768473,
+      "disinfection": 0.0,
+      "dissection": 0.9782608695652174,
+      "dressing": 0.0,
+      "hemostasis": 0.9636363636363636,
+      "incision": 0.967551622418879,
+      "irrigation": 0.0
+    },
+    "val.phase_per_class_jaccard": {
+      "anesthesia": 0.9897959183673469,
+      "closure": 0.9407783417935702,
+      "design": 0.970873786407767,
+      "disinfection": 0.0,
+      "dissection": 0.9574468085106383,
+      "dressing": 0.0,
+      "hemostasis": 0.9298245614035088,
+      "incision": 0.9371428571428572,
+      "irrigation": 0.0
+    }
+  },
   "metrics_primary_split": "val",
   "notes": null,
   "notion_page_id": null,
@@ -85,7 +167,7 @@
     "name": "from_dirname_desc_seed_no_seq",
     "per_class": "from_per_class_ap_json",
     "per_class_metric": "from_class_set_and_writer_script",
-    "seed": "from_dirname",
+    "seed": "from_dirname_verified_by_metrics_json",
     "seed_detector": "not_determinable",
     "seed_phase": "not_determinable",
     "split": "primary_val_by_training_script",
@@ -93,7 +175,7 @@
   },
   "run_id": "maskROI_seed42",
   "seed": 42,
-  "seed_agreement": "unverified_no_other_evidence",
+  "seed_agreement": "agree",
   "seed_command": null,
   "seed_config": null,
   "seed_detector": null,

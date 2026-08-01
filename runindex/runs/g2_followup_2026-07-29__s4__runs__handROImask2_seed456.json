@@ -1,5 +1,14 @@
 {
   "arm": "unknown",
+  "attributes": {
+    "best_epoch": 37,
+    "epochs": 50,
+    "in_dim": 4352,
+    "run": "handROImask2_seed456",
+    "seed": 456,
+    "system": "handROImask2",
+    "train_seconds": 19.987566471099854
+  },
   "command": null,
   "commit": null,
   "config_path": null,
@@ -56,6 +65,66 @@
       "seg_f1_50": 0.3915343915343916
     }
   },
+  "metrics_nested": {
+    "hyperparams": {
+      "lr": 0.0005,
+      "num_f_maps": 64,
+      "num_layers": 8,
+      "num_stages": 2,
+      "smoothing_weight": 0.15,
+      "weight_decay": 0.01
+    },
+    "n_clips": {
+      "test": 6,
+      "train": 13,
+      "val": 3
+    },
+    "roi_fallback": {},
+    "test.phase_per_class_f1": {
+      "anesthesia": 0.9663865546218487,
+      "closure": 0.9033215809983299,
+      "design": 0.9508196721311476,
+      "disinfection": 0.0,
+      "dissection": 0.688,
+      "dressing": 0.0,
+      "hemostasis": 0.7455357142857143,
+      "incision": 0.9259259259259259,
+      "irrigation": 0.375
+    },
+    "test.phase_per_class_jaccard": {
+      "anesthesia": 0.9349593495934959,
+      "closure": 0.823688663282572,
+      "design": 0.90625,
+      "disinfection": 0.0,
+      "dissection": 0.524390243902439,
+      "dressing": 0.0,
+      "hemostasis": 0.594306049822064,
+      "incision": 0.8620689655172413,
+      "irrigation": 0.23076923076923078
+    },
+    "val.phase_per_class_f1": {
+      "anesthesia": 0.9948717948717948,
+      "closure": 0.9567474048442905,
+      "design": 0.9852216748768473,
+      "disinfection": 0.0,
+      "dissection": 0.9557522123893806,
+      "dressing": 0.0,
+      "hemostasis": 0.8316831683168316,
+      "incision": 0.940119760479042,
+      "irrigation": 0.0
+    },
+    "val.phase_per_class_jaccard": {
+      "anesthesia": 0.9897959183673469,
+      "closure": 0.9170812603648425,
+      "design": 0.970873786407767,
+      "disinfection": 0.0,
+      "dissection": 0.9152542372881356,
+      "dressing": 0.0,
+      "hemostasis": 0.711864406779661,
+      "incision": 0.8870056497175142,
+      "irrigation": 0.0
+    }
+  },
   "metrics_primary_split": "val",
   "notes": null,
   "notion_page_id": null,
@@ -85,7 +154,7 @@
     "name": "from_dirname_desc_seed_no_seq",
     "per_class": "from_per_class_ap_json",
     "per_class_metric": "from_class_set_and_writer_script",
-    "seed": "from_dirname",
+    "seed": "from_dirname_verified_by_metrics_json",
     "seed_detector": "not_determinable",
     "seed_phase": "not_determinable",
     "split": "primary_val_by_training_script",
@@ -93,7 +162,7 @@
   },
   "run_id": "handROImask2_seed456",
   "seed": 456,
-  "seed_agreement": "unverified_no_other_evidence",
+  "seed_agreement": "agree",
   "seed_command": null,
   "seed_config": null,
   "seed_detector": null,

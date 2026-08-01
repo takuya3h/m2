@@ -1,5 +1,6 @@
 {
   "arm": "unknown",
+  "attributes": {},
   "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-07-03T02:04:41+00:00\npython scripts/train_s4_tecno.py --seed 123\n",
   "commit": "bd0609749afdfa2a356ef625a73628cddf38d4a9",
   "config_path": "experiments/phase1/s4_phase_baseline_020_frozen_tecno_phase_baseline_seed123/config.yaml",
@@ -65,6 +66,7 @@
       "seg_f1_50": 0.4797008547008547
     }
   },
+  "metrics_nested": {},
   "metrics_primary_split": "val",
   "notes": "# S4 phase baseline (frozen Relation-DETR + causal TeCNO)\n\n凍結源: Relation-DETR seed42 完走 ckpt（Stage1 GAP 2048-d をキャッシュ）。\nonline/causal（未来フレーム不使用）。S4 は結合手法から検出を引いたもの＝単独最適化しない。\n\n## 結果（best @epoch 47）\n- accuracy=0.9135 / macro_f1=0.7491\n- edit=49.39 / seg_f1@10/25/50=0.56/0.56/0.48\n\n## 構成\n- seed=123 epochs=50 lr=0.0005 stages=2 layers=8 f_maps=64\n- server=efros / eval recipe=online_causal+jaccard_strict (PHASE_EVAL_PROTOCOL)\n\n## 次\n- Δ_phase =（結合手法 − この S4）。同一土台（凍結backbone/特徴/recipe/seed）で比較する。\n",
   "notion_page_id": null,

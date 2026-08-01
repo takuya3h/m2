@@ -1,5 +1,14 @@
 {
   "arm": "unknown",
+  "attributes": {
+    "best_epoch": 48,
+    "epochs": 50,
+    "in_dim": 4864,
+    "run": "handROIbbox4_seed42",
+    "seed": 42,
+    "system": "handROIbbox4",
+    "train_seconds": 22.405832767486572
+  },
   "command": null,
   "commit": null,
   "config_path": null,
@@ -56,6 +65,66 @@
       "seg_f1_50": 0.3653978871370176
     }
   },
+  "metrics_nested": {
+    "hyperparams": {
+      "lr": 0.0005,
+      "num_f_maps": 64,
+      "num_layers": 8,
+      "num_stages": 2,
+      "smoothing_weight": 0.15,
+      "weight_decay": 0.01
+    },
+    "n_clips": {
+      "test": 6,
+      "train": 13,
+      "val": 3
+    },
+    "roi_fallback": {},
+    "test.phase_per_class_f1": {
+      "anesthesia": 0.9833333333333333,
+      "closure": 0.8978834014110657,
+      "design": 0.9508196721311476,
+      "disinfection": 0.0,
+      "dissection": 0.6705446853516659,
+      "dressing": 0.0,
+      "hemostasis": 0.7483588621444202,
+      "incision": 0.9201277955271565,
+      "irrigation": 0.24242424242424243
+    },
+    "test.phase_per_class_jaccard": {
+      "anesthesia": 0.9672131147540983,
+      "closure": 0.8146900269541779,
+      "design": 0.90625,
+      "disinfection": 0.0,
+      "dissection": 0.5043754972155927,
+      "dressing": 0.0,
+      "hemostasis": 0.5979020979020979,
+      "incision": 0.8520710059171598,
+      "irrigation": 0.13793103448275862
+    },
+    "val.phase_per_class_f1": {
+      "anesthesia": 1.0,
+      "closure": 0.9568221070811744,
+      "design": 0.9801980198019802,
+      "disinfection": 0.0,
+      "dissection": 0.9538763493621196,
+      "dressing": 0.0,
+      "hemostasis": 0.8,
+      "incision": 0.9365558912386707,
+      "irrigation": 0.0
+    },
+    "val.phase_per_class_jaccard": {
+      "anesthesia": 1.0,
+      "closure": 0.9172185430463576,
+      "design": 0.9611650485436893,
+      "disinfection": 0.0,
+      "dissection": 0.9118198874296435,
+      "dressing": 0.0,
+      "hemostasis": 0.6666666666666666,
+      "incision": 0.8806818181818182,
+      "irrigation": 0.0
+    }
+  },
   "metrics_primary_split": "val",
   "notes": null,
   "notion_page_id": null,
@@ -85,7 +154,7 @@
     "name": "from_dirname_desc_seed_no_seq",
     "per_class": "from_per_class_ap_json",
     "per_class_metric": "from_class_set_and_writer_script",
-    "seed": "from_dirname",
+    "seed": "from_dirname_verified_by_metrics_json",
     "seed_detector": "not_determinable",
     "seed_phase": "not_determinable",
     "split": "primary_val_by_training_script",
@@ -93,7 +162,7 @@
   },
   "run_id": "handROIbbox4_seed42",
   "seed": 42,
-  "seed_agreement": "unverified_no_other_evidence",
+  "seed_agreement": "agree",
   "seed_command": null,
   "seed_config": null,
   "seed_detector": null,

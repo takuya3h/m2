@@ -369,6 +369,8 @@ def harvest_metrics(raw: Any) -> dict[str, Any]:
     result: dict[str, Any] = {
         "metrics": {},
         "metrics_by_split": {},
+        "metrics_nested": {},
+        "attributes": {},
         "metrics_primary_split": None,
         "split": None,
         "split_provenance": "not_determinable",
@@ -864,11 +866,23 @@ def build_run_record(run_dir: Path) -> dict[str, Any]:
     # notes.md は seed を書くが虚偽の実績があるため、証拠は command.sh と config.yaml。
     seed_cmd = seed_from_command(command)
     seed_cfg = cfg["seed_config"]
+    # g2_* 群は command.sh も config.yaml も持たないが metrics.json に seed を書く。
+    # 数値だが指標ではないので attributes へ退避してある。証拠としては使える。
+    seed_mtr = m["attributes"].get("seed")
+    seed_mtr = seed_mtr if isinstance(seed_mtr, int) else None
     seed_dir = name_info["seed"]
     if seed_dir is None:
         seed_prov, seed_agree = "not_determinable", "no_seed_in_dirname"
     else:
-        others = {k: v for k, v in (("command_sh", seed_cmd), ("config_yaml", seed_cfg)) if v is not None}
+        others = {
+            k: v
+            for k, v in (
+                ("command_sh", seed_cmd),
+                ("config_yaml", seed_cfg),
+                ("metrics_json", seed_mtr),
+            )
+            if v is not None
+        }
         if not others:
             seed_prov, seed_agree = "from_dirname", "unverified_no_other_evidence"
         elif all(v == seed_dir for v in others.values()):
@@ -930,6 +944,11 @@ def build_run_record(run_dir: Path) -> dict[str, Any]:
         "metrics_primary_split": m["metrics_primary_split"],
         "metrics": m["metrics"],
         "metrics_by_split": m["metrics_by_split"],
+        # 指標として扱えなかった値。捨てずにここへ退避する（絶対規則: 情報を捨てない）。
+        #   metrics_nested … metrics.json のネスト値 (hyperparams / n_clips 等)
+        #   attributes     … 文字列や、数値でも指標ではない実行メタデータ (seed / epochs 等)
+        "metrics_nested": m["metrics_nested"],
+        "attributes": m["attributes"],
         "per_class": pc["per_class"],
         "per_class_kind": pc["per_class_kind"],
         "per_class_metric": pc["per_class_metric"],
@@ -2728,10 +2747,24 @@ def build_anomalies(
     add("")
     add("#### 🔴 証跡ファイルの記述が実態と食い違う（凍結源）")
     add("")
-    add("`s4_phase_baseline` の `notes.md` は **55 件すべてで**")
+    n_s4 = sum(1 for r in records if r["step"] == "s4_phase_baseline")
+    n_claim = sum(
+        1
+        for r in records
+        if r["step"] == "s4_phase_baseline" and "凍結源" in (r.get("notes") or "")
+    )
+    n_contra = sum(
+        1
+        for r in records
+        if r["step"] == "s4_phase_baseline"
+        and "凍結源" in (r.get("notes") or "")
+        and r.get("frozen_source_tag")
+        and r["frozen_source_tag"] != "relation_detr_seed42"
+    )
+    add(f"`s4_phase_baseline` の `notes.md` は **{n_claim} 件すべてで**")
     add("「凍結源: Relation-DETR seed42」と断言するが、`config.yaml` の実際の")
-    add("`frozen_source.cache_dir` がそれと異なる run が **38 件**ある")
-    add("（うち 24 件は検出器 seed が 123 / 456）。`config.yaml` の `frozen_source.seed` も")
+    add(f"`frozen_source.cache_dir` がそれと異なる run が **{n_contra} 件**ある")
+    add(f"（step `s4_phase_baseline` の run 総数は {n_s4}）。`config.yaml` の `frozen_source.seed` も")
     add("`42` がハードコードされており同様に信用できない。")
     add("いずれも `scripts/train_s4_tecno.py` の固定文字列に由来する。")
     add("")
@@ -3169,7 +3202,8 @@ def build_anomalies(
     add("")
     add("§17.0 の「`notes.md` の凍結源 seed 記載が虚偽」を受けて、")
     add("**run 自身の学習 seed** が汚染されていないかを全件突き合わせた。")
-    add("証拠は `command.sh` の `--seed` / `seed=` と `config.yaml` の `seed`。")
+    add("証拠は `command.sh` の `--seed` / `seed=`、`config.yaml` の `seed`、")
+    add("そして `metrics.json` の `seed`（g2_* 群は前 2 つを持たないため）。")
     add("`notes.md` は虚偽の実績があるため証拠に使っていない。")
     add("")
     agree = Counter(r.get("seed_agreement") for r in records)

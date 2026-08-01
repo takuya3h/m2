@@ -1,5 +1,6 @@
 {
   "arm": "unknown",
+  "attributes": {},
   "command": "#!/usr/bin/env bash\n# Stable-DINO (detrex) 実行コマンド\n# seed=42\npython train_net_egosurgery.py --config-file /home/ubuntu/slocal2/m2/third_party/DI-MaskDINO/configs/dimaskdino_r50_egosurgery.yaml --num-gpus 2 SEED 42 OUTPUT_DIR /tmp/dimaskdino_work_seed42\n",
   "commit": "4327348e444381f1737309252fb86ad9b5034d6a",
   "config_path": "experiments/baselines/s0_022_dimaskdino_bbox_seed42/config.yaml",
@@ -61,6 +62,7 @@
       "mAP_75": 0.390953
     }
   },
+  "metrics_nested": {},
   "metrics_primary_split": "val",
   "notes": "# s0_022_dimaskdino_bbox_seed42\n\n検出器: DI-MaskDINO (detrex, torch 2.1.2+cu118, .venv-detectron2)\nseed: 42\n\n## 結果\nmAP=0.3337 / AP_rare=0.2234 / AP_common=0.3521 (best eval #11)\n\n## 初期化\nDINO R50 COCO 12ep 重み (backbone+transformer)、class_embed は 80->15 で再初期化 (他検出器の COCO fine-tune と同条件)。\n",
   "notion_page_id": null,

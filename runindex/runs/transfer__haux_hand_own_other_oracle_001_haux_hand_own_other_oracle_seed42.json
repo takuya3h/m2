@@ -1,5 +1,6 @@
 {
   "arm": "injection",
+  "attributes": {},
   "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-07-02T07:23:58+00:00\npython scripts/train_haux.py --hand-feature-type own_other --hand-source oracle --seed 42\n",
   "commit": "1a52c6fde8120bb62eba920ad3c3d8882f309b72",
   "config_path": "experiments/transfer/haux_hand_own_other_oracle_001_haux_hand_own_other_oracle_seed42/config.yaml",
@@ -73,6 +74,7 @@
       "seg_f1_50": 0.4434865900383141
     }
   },
+  "metrics_nested": {},
   "metrics_primary_split": "val",
   "notes": "# STEP D-aux 系統① 手情報→工程（det→phase・①信号レベル）\n\n手特徴 `own_other`（16-d, source=oracle）を GAP(2048) に入力連結 → 素 causal TeCNO。①は勾配を交差させず信号のみ渡す。online/causal。\n\n\n## 結果（best @epoch 38）\n- accuracy=0.9010 / macro_f1=0.6715\n- edit=39.49 / seg_f1@10/25/50=0.48/0.48/0.44\n\n## 構成\n- seed=42 epochs=50 lr=0.0005 in_dim=2064 stages=2 layers=8 f_maps=64\n- server=efros / eval recipe=online_causal+jaccard_strict (PHASE_EVAL_PROTOCOL)\n\n## Δ\n- Δ_phase = (H-aux − S4 base 0.8986±0.0028)。同一土台（凍結backbone/GAP/recipe/seed・neck無し）。\n- 3-seed 揃ったら paired-σ(対seed差) で §10.1 判定（|Δ|>paired-σ かつ同符号で有意）。\n",
   "notion_page_id": null,
