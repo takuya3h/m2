@@ -21,8 +21,10 @@ primary の入れ物を埋めていたこと (同じ canonical 名を複数 spli
   C3 split と出所の一致    : split 列と metrics_primary_split が食い違わないか
   C4 index.csv の件数      : runs/*.json と 1:1 か
   C5 per_class.csv の整合  : 行数・NaN 件数・クラス数が一次データと一致するか
-  C6 experiments.csv の整合: run 数の総和・eval_recipe_id の単一性・Δ の妥当性
+  C6 experiments.csv の整合: run 数の総和・eval_recipe_id の単一性・Δ と σ の妥当性
   C7 標準 JSON            : 裸の NaN / Infinity が混入していないか
+  C8 paired 実行可能性     : paired-σ の宣言と実際に計算できる件数が記録されているか
+  C9 seed の突き合わせ     : ディレクトリ名の seed が command.sh / config.yaml と一致するか
 
 使い方
 ------
@@ -273,12 +275,88 @@ def check_experiments(runs: list[dict[str, Any]], c: Check) -> None:
     if bad_method:
         problems.append(f"delta_method と Δ の有無が食い違う experiment: {len(bad_method)}")
 
+    # Δ を持つなら σ も必ず揃っていること。σ 欠落は「有意性を判定できない Δ」であり、
+    # 過去に delta_pstd_* が 136 実験中 2 件しか埋まっていない状態があった。
+    sigma_missing = []
+    for r in rows:
+        for k in delta_cols:
+            if not r.get(k):
+                continue
+            m = k[len("delta_") :]
+            if not r.get(f"delta_pstd_{m}"):
+                sigma_missing.append(f"{r['experiment_id']}: {k} に σ が無い")
+                break
+    if sigma_missing:
+        problems.append(f"Δ を持つのに delta_pstd_* が空の experiment: {len(sigma_missing)}")
+
+    # σ の出所が Δ の有無と一致していること
+    bad_src = [
+        r["experiment_id"]
+        for r in rows
+        if bool(r.get("delta_sigma_source")) != any(r.get(k) for k in delta_cols)
+    ]
+    if bad_src:
+        problems.append(f"delta_sigma_source と Δ の有無が食い違う experiment: {len(bad_src)}")
+
+    n_with_sigma = sum(
+        1 for r in rows if any(r.get(f"delta_pstd_{k[len('delta_'):]}") for k in delta_cols)
+    )
     c.add(
         "C6",
         "experiments.csv の整合",
         not problems,
-        f"{len(rows)} experiment / {total_runs} run を集約",
+        f"{len(rows)} experiment / {total_runs} run を集約, "
+        f"σ 付きの Δ を持つ experiment = {n_with_sigma}",
+        problems + sigma_missing[:5],
+    )
+
+
+def check_paired_feasibility(runs: list[dict[str, object]], c: Check) -> None:
+    """C8: paired 宣言と実行可能性の差が記録されていること。"""
+    path = RUNINDEX / "anomalies" / "paired_feasibility.csv"
+    if not path.exists():
+        c.add("C8", "paired_feasibility.csv", False, "ファイルが無い")
+        return
+    with path.open(encoding="utf-8") as fh:
+        rows = list(csv.DictReader(fh))
+    exp = {r.get("control_of") for r in runs if r.get("control_of")}
+    problems = []
+    if not rows:
+        problems.append("行が無い")
+    # 記録された control_of が実在すること
+    unknown = [r["control_of"] for r in rows if r["control_of"] and r["control_of"] not in exp]
+    if unknown:
+        problems.append(f"実在しない control_of を参照する行: {len(unknown)}")
+    now = sum(1 for r in rows if r["pairable_now"] == "True")
+    after = sum(1 for r in rows if r["pairable_after_dedup"] == "True")
+    declared = sum(1 for r in rows if r["paired_declared"] == "True")
+    c.add(
+        "C8",
+        "paired_feasibility.csv",
+        not problems,
+        f"{len(rows)} 実験: paired 宣言 {declared} / 現状 paired 可能 {now} / "
+        f"seed 畳み込み後に可能 {after}",
         problems,
+    )
+
+
+def check_seed_agreement(runs: list[dict[str, object]], c: Check) -> None:
+    """C9: ディレクトリ名の seed が他の一次証拠と食い違わないこと。"""
+    conflict = [
+        r["ledger_key"]
+        for r in runs
+        if r.get("seed_agreement") == "conflict"
+    ]
+    counts: dict[str, int] = {}
+    for r in runs:
+        k = str(r.get("seed_agreement"))
+        counts[k] = counts.get(k, 0) + 1
+    c.add(
+        "C9",
+        "seed の突き合わせ (dirname vs command.sh vs config.yaml)",
+        not conflict,
+        ", ".join(f"{k}={v}" for k, v in sorted(counts.items())),
+        conflict,
     )
 
 
@@ -309,6 +387,8 @@ def main() -> int:
     check_index_rows(runs, c)
     check_per_class(runs, c)
     check_experiments(runs, c)
+    check_paired_feasibility(runs, c)
+    check_seed_agreement(runs, c)
     check_json_strict(c)
 
     if args.json:

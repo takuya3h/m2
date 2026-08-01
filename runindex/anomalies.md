@@ -843,3 +843,199 @@ arm を表している可能性があるが、対照関係を明示した記録�
 「指標とは数値である」という不変条件を実装に入れ、
 数値以外は `attributes` / `metrics_nested` に分離した（情報は捨てていない）。
 
+## 21. σ の定義 — 母集団σと標本σを両方出す
+
+`<metric>_pstd` が母集団σか標本σか判別できず、`|Δ| > 1σ` 判定が
+規約次第で反転しうる状態だった（§18.2）。両方を明示的に出すことにした。
+
+| 列 | 定義 | Python |
+|---|---|---|
+| `<metric>_pstd` | **母集団σ** (ddof=0) | `statistics.pstdev` |
+| `<metric>_sstd` | **標本σ** (ddof=1) | `statistics.stdev` |
+| `<metric>_n` | 集約した値の個数 | |
+| `delta_pstd_<metric>` | Δ の母集団σ | paired: 差の pstdev / unpaired: √(σ_inj²+σ_ctl²) |
+| `delta_sstd_<metric>` | Δ の標本σ | 同上を標本σで |
+| `abs_delta_over_sigma_<metric>` | **\|Δ\| / `delta_pstd_<metric>`** | 母集団σ基準 |
+
+### 21.1 規約の違いが実際の判定に与える影響（実測）
+
+`accuracy` について両方の規約で判定件数を出した。
+
+| 閾値 | 母集団σ基準 | 標本σ基準 | 判定が反転 |
+|---|---:|---:|---:|
+| 1σ | 124 | 124 | **0** |
+| 2σ | 122 | 122 | **0** |
+| 3σ | 117 | 114 | **3** |
+
+対象 134 実験。標本σ/母集団σ の実測中央値 = **1.0531**。
+
+**§10.1 が使う 1σ 基準では、現在の実データで判定は 1 件も反転しない。**
+理由は σ の合成にある。注入側は n=3（比 √(3/2)=1.2247）だが
+対照側は n が大きく（比が 1 に近い）、合成 σ では差が薄まる。
+
+ただし `notes.md` に手書きされた `0.8986±0.0028` と `±0.0034` は
+**単一の集計値そのもの**なので 22% の差がそのまま出る。
+手書きの値を引用するときは規約の確認が要る。
+
+### 21.2 🔴 リポジトリ内に σ の規約が **2 系統併存**している
+
+`scripts/` と `src/` を実測した結果:
+
+| 規約 | 出現箇所 | 主な使用層 |
+|---|---:|---|
+| 母集団σ (`pstdev` / `pvariance`) | **48** | §10.1 判定・レポート生成 |
+| 標本σ (`statistics.stdev` / `ddof=1`) | **16** | 解析・監査 (`scripts/analysis/*`) |
+
+**§10.1 の判定を実装している箇所は母集団σで一致している:**
+
+| ファイル:行 | 記述 |
+|---|---|
+| `scripts/paired_sigma_3seed.py:7,80` | \|mean(Δ)\| > pstdev(Δ) かつ 全 detector_seed 同符号 |
+| `scripts/analyze_t1a_factorial_ablation.py:13,81` | §10.1: \|meanΔ\|>pstdev かつ全 seed 同符号 |
+| `scripts/report_t1a_boundary.py:5,59` | \|mean\|>pstdev かつ 3-seed 同符号 |
+| `scripts/report_daux_paired.py:69,114` | \|mean\|>pstdev かつ 3-seed 同符号 |
+| `src/egosurgery/utils/transfer_delta_report.py` | pstdev（haux/taux 系レポートの単一情報源） |
+| `scripts/run_haux_oracle_gate.sh:14` / `run_taux_problemA.sh:76` | 同上 |
+
+**一方、解析・監査層は標本σを使っている:**
+`scripts/analysis/delta_allrun_recompute.py:157` / `delta_convention_audit.py:132` /
+`g1_power_analysis.py:68` / `g2_report.py:166,179,452`（`np.std(..., ddof=1)`）/
+`scripts/analyze_phase_coupling.py:93,154,162`。
+
+**「Δ の規約を監査する」スクリプト自身が、判定側と違うσを使っている。**
+
+正本の研究計画（`docs/m2_plan_rewrite/`）は §10.1 の 1σ を
+「同一 eval recipe での 3-seed std」としか書いておらず、**どちらか明示していない**。
+したがって「どちらを使うべきか」の規範的根拠はリポジトリ内に存在しない。
+
+`abs_delta_over_sigma_<metric>` は **母集団σ**（`delta_pstd_<metric>`）を分母にした。
+§10.1 判定の実装側と揃えたためである。標本σで見たい場合は
+`delta_sstd_<metric>` で割り直すこと（両方出してある）。
+**規約の確定は正本側の作業であり、harvester が決めることではない（backlog B-9）。**
+
+なお `notes.md` / `config.yaml` の `0.8986±0.0034` は書き出し時に計算された値ではなく、
+`scripts/train_*.py` にハードコードされた文字列リテラルである。
+値が更新されない構造なので、引用するときは実測と突き合わせること
+（`experiments.csv` の `control_note_value` 列に保持してある）。
+
+また `scripts/compute_delta.py` と `scripts/export_paper_tables.py` は
+**0 バイトの空ファイル**（未実装 scaffold）である。`Makefile` の `delta` /
+`tables` ターゲットはこれらを呼ぶので、現状では何もしない。
+
+### 21.3 🔴 §10.1 は σ 条件だけではない — **同符号条件**がある
+
+上記 7 箇所すべてが判定を **2 条件**で書いている:
+
+> `|mean(Δ)| > pstdev(Δ)` **かつ** `全 seed 同符号`
+
+第 2 条件は seed ごとの Δ が要るので **paired のときしか判定できない**。
+`delta_same_sign_<metric>` 列に出しているが、埋まるのは paired の実験だけである。
+
+**したがって `unpaired_pooled` の 131 実験は、σ 条件は評価できても
+§10.1 の判定を完成させることができない。**
+`abs_delta_over_sigma_*` が大きくても「§10.1 で有意」と結論してはいけない。
+
+## 22. paired-σ の宣言と実行可能性の乖離
+
+全件は `anomalies/paired_feasibility.csv`（1 行 = 1 実験）。
+
+- `control_of` が確定した実験: **136**
+- そのうち `notes.md` / `config.yaml` が **paired-σ 判定を宣言**: **136**
+- 実際に paired-σ を計算できる: **5**
+- **seed ごとに代表 1 本を選ぶ規約を入れれば計算できる: 134**
+
+### 22.1 何が paired を阻んでいるか
+
+| 原因 | 実験数 |
+|---|---:|
+| `control_multi_run_per_seed` | 125 |
+| `both_multi_run_per_seed` | 6 |
+| `(阻害なし)` | 5 |
+
+**支配的原因は対照実験の再実行が畳まれていないこと**であり、
+注入側の seed 記録誤りではない（§23 のとおり seed の食い違いは 0 件）。
+
+注入側 run 439 本のうち、対照に同じ seed が存在するのは **427 本**。
+残り 12 本は対照側に対応する seed が無く、畳んでも paired にできない。
+
+### 22.2 🔴 「paired と宣言されているが unpaired でしか計算できない実験」
+
+**131 実験**が該当する。§10.1 の判定を paired-σ で行ったと
+読める記述が `notes.md` にあるが、実際にはできていない。
+
+| 阻害原因 | 実験数 | 代表例 |
+|---|---:|---|
+| `control_multi_run_per_seed` | 125 | `transfer/b2a_base_oracle_noise_p010/b2a_base_oracle_noise_p010@val~relation_detr_seed42` |
+| `both_multi_run_per_seed` | 6 | `transfer/b2a_det2phase_oracletool/b2a_det2phase_oracletool@val~relation_detr_seed42` |
+
+現在の `experiments.csv` はこれらを `delta_method=unpaired` /
+`delta_sigma_source=unpaired_pooled` と明示している。
+unpaired の σ は paired-σ より大きく出る保守的な推定なので、
+**σ 条件については unpaired で満たせば paired でも満たす**（逆は言えない）。
+ただし §21.3 のとおり **同符号条件は unpaired では判定できない**ため、
+これらの実験について §10.1 の判定を完成させることはできない。
+
+### 22.3 paired が成立した実験の §10.1 判定
+
+現時点で paired-σ を計算できるのは **5 実験**。
+`accuracy` について 2 条件を両方適用した結果は次のとおり。
+
+| experiment_id | Δacc | \|Δ\|/σ | 同符号 | §10.1 |
+|---|---:|---:|---|---|
+| `transfer/hires_relation_detr_augstrong_hires_seed42/hires_relation_detr_augstrong_hires_seed42@val~relation_detr_augstrong_hires_seed42` | +0.04004 | 13.49 | ✓ | **有意** |
+| `transfer/b2a_det2phase_toolpresence/b2a_det2phase_toolpresence@val~relation_detr_augstrong_hires_seed42` | +0.02354 | 10.49 | ✓ | **有意** |
+| `transfer/t1a_boundary/t1a_boundary@val~relation_detr_seed42` | -0.00242 | 0.88 | ✗ | 非有意 |
+| `transfer/t1a_regiontraj/t1a_regiontraj@val~relation_detr_seed42` | -0.00088 | 0.29 | ✗ | 非有意 |
+| `transfer/t1a_regiontraj_test/t1a_regiontraj_test@val~relation_detr_seed42` | -0.00066 | 0.28 | ✗ | 非有意 |
+
+これが現在の証跡で**実際に完成できる §10.1 判定のすべて**である。
+
+## 23. seed の出所 — run の学習 seed に誤りは無い
+
+§17.0 の「`notes.md` の凍結源 seed 記載が虚偽」を受けて、
+**run 自身の学習 seed** が汚染されていないかを全件突き合わせた。
+証拠は `command.sh` の `--seed` / `seed=` と `config.yaml` の `seed`。
+`notes.md` は虚偽の実績があるため証拠に使っていない。
+
+| seed_agreement | run 数 | 意味 |
+|---|---:|---|
+| `agree` | 567 | ディレクトリ名と他証拠が一致 |
+| `unverified_no_other_evidence` | 42 | `command.sh` も `config.yaml` も無い（g2_* 群） |
+| `no_seed_in_dirname` | 6 | 命名規約外 |
+| **`conflict`** | **0** | **食い違い** |
+
+**食い違いは 0 件。** したがって Δ の seed 対応が誤っている可能性は排除できる。
+§17.0 の誤記は**凍結検出器の seed** の話であって、run の学習 seed ではない。
+
+### 23.1 `frozen_source.seed` は信用できない（実測）
+
+- `config.yaml` に `frozen_source.seed` を持つ run: **500**
+- そのうち実際の cache パスと**矛盾**する run: **48**
+
+矛盾例: 宣言は `seed: 42` だが cache は `relation_detr_augstrong_seed123`。
+`frozen_source_tag` は cache パスからのみ導いており、この宣言は採用していない。
+値は矛盾検出のためだけに `frozen_source_seed_declared` に保持している。
+
+### 23.2 分母が `s4_phase_baseline` である実験の一覧
+
+`s4_phase_baseline` を `control_of` に持つ実験は **133**、run は **430**。
+
+- 分母 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_augstrong_hires_seed42` … 2 実験
+- 分母 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_augstrong_seed123` … 2 実験
+- 分母 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_augstrong_seed42` … 4 実験
+- 分母 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_augstrong_seed456` … 2 実験
+- 分母 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed123` … 2 実験
+- 分母 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42` … 119 実験
+- 分母 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed456` … 2 実験
+
+§17.0 の凍結源誤記は**この分母実験そのもの**で起きている。ただし:
+
+1. `frozen_source_tag` は `config.yaml` の cache パスから導いており、
+   誤っている `notes.md` / `frozen_source.seed` は使っていない。
+2. `experiment_id` は `frozen_source_tag` を含むので、
+   異なる凍結源の run は**別の分母実験**に分かれている。
+
+したがって Δ の分母は cache パス基準で正しく分離されている。
+**残るリスクは cache パス自体が実行時の実態と違う場合**だが、
+これを検証できる証跡（実行時の環境変数の記録）は repo に存在しない。
+

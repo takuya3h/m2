@@ -85,6 +85,18 @@ SPLIT_NAMES = {"train", "val", "test"}
 # 指標本体ではないメタキー
 META_KEYS = {"eval_recipe", "eval_recipe_detection", "eval_recipe_phase", "epoch"}
 
+# 数値だが指標ではない実行メタデータ。metrics に入れると experiments.csv に
+# seed_mean / delta_seed / abs_delta_over_sigma_seed といった無意味な列が生える。
+# 値は attributes に保持するので情報は失われない。
+NON_METRIC_NUMERIC_KEYS = {
+    "seed",
+    "epochs",
+    "best_epoch",
+    "in_dim",
+    "train_seconds",
+    "n_clips",
+}
+
 # per_class_ap.json のクラス体系判定用
 TOOL_CLASS_SET = frozenset(
     {
@@ -402,9 +414,10 @@ def harvest_metrics(raw: Any) -> dict[str, Any]:
         if isinstance(value, list):
             nested[key] = _denan(value)
             continue
-        if not _is_number(value):
+        if not _is_number(value) or key in NON_METRIC_NUMERIC_KEYS:
             # 指標は数値である。"system": "base" のような文字列を metrics に入れると
             # index.csv の metric.* 列に文字列が混ざり、集約も比較もできなくなる。
+            # 数値でも seed / epochs のような実行メタデータは指標ではない。
             attributes[key] = value
             continue
         info = normalize_metric_key(key)
@@ -673,6 +686,8 @@ def harvest_config(path: Path) -> dict[str, Any]:
     out: dict[str, Any] = {
         "delta_declaration": None,
         "frozen_source_tag": None,
+        "seed_config": None,
+        "frozen_source_seed_declared": None,
         "warnings": [],
     }
     if not path.exists():
@@ -689,12 +704,32 @@ def harvest_config(path: Path) -> dict[str, Any]:
     if isinstance(d, dict):
         out["delta_declaration"] = _denan(d)
 
+    # run 自身の学習 seed。ディレクトリ名の seed<N> と突き合わせる。
+    if _is_number(data.get("seed")):
+        out["seed_config"] = int(data["seed"])
+
     fs = data.get("frozen_source")
     if isinstance(fs, dict):
         cache = fs.get("cache_dir") or fs.get("gap_cache") or fs.get("tool_signal_cache")
         if isinstance(cache, str) and cache.strip():
             out["frozen_source_tag"] = cache.rstrip("/").split("/")[-1]
+        # ★ frozen_source.seed は信用できない。scripts/train_s4_tecno.py が
+        #   42 をハードコードしており、cache_dir と矛盾する run が実在する。
+        #   実態はキャッシュのパスから取り、こちらは矛盾検出のためだけに保持する。
+        if _is_number(fs.get("seed")):
+            out["frozen_source_seed_declared"] = int(fs["seed"])
     return out
+
+
+# command.sh から run 自身の seed を取る。argparse 形式と Hydra 形式の両方。
+_CMD_SEED_RE = re.compile(r"(?:--seed[= ]+|(?<![\w.])seed=)(\d+)")
+
+
+def seed_from_command(command: str | None) -> int | None:
+    if not command:
+        return None
+    found = {int(m) for m in _CMD_SEED_RE.findall(command)}
+    return found.pop() if len(found) == 1 else None
 
 
 def normalize_host(server_txt: str | None, recipe: dict[str, Any] | None) -> dict[str, Any]:
@@ -825,7 +860,28 @@ def build_run_record(run_dir: Path) -> dict[str, Any]:
         # （metrics.json が空の run は「評価されていない」ので null のまま）。
         split, split_prov = "val", PLAN_DEFAULT_SPLIT_PROVENANCE
 
-    provenance["seed"] = "from_dirname" if name_info["seed"] is not None else "not_determinable"
+    # seed の出所と、他の一次証拠との突き合わせ。
+    # notes.md は seed を書くが虚偽の実績があるため、証拠は command.sh と config.yaml。
+    seed_cmd = seed_from_command(command)
+    seed_cfg = cfg["seed_config"]
+    seed_dir = name_info["seed"]
+    if seed_dir is None:
+        seed_prov, seed_agree = "not_determinable", "no_seed_in_dirname"
+    else:
+        others = {k: v for k, v in (("command_sh", seed_cmd), ("config_yaml", seed_cfg)) if v is not None}
+        if not others:
+            seed_prov, seed_agree = "from_dirname", "unverified_no_other_evidence"
+        elif all(v == seed_dir for v in others.values()):
+            seed_prov = "from_dirname_verified_by_" + "_and_".join(sorted(others))
+            seed_agree = "agree"
+        else:
+            seed_prov, seed_agree = "from_dirname_conflicting_evidence", "conflict"
+            warnings.append(
+                f"ディレクトリ名の seed{seed_dir} が他の証拠と食い違う: "
+                + ", ".join(f"{k}={v}" for k, v in sorted(others.items()))
+                + "。ディレクトリ名を採用したが要確認。"
+            )
+    provenance["seed"] = seed_prov
     provenance["seed_detector"] = (
         "from_dirname_det_token" if name_info["seed_detector"] is not None else "not_determinable"
     )
@@ -860,6 +916,11 @@ def build_run_record(run_dir: Path) -> dict[str, Any]:
         "seq": name_info["seq"],
         "description": name_info["description"],
         "seed": name_info["seed"],
+        # seed の突き合わせ用（§4）。notes.md は証拠に使わない（虚偽の実績がある）。
+        "seed_command": seed_cmd,
+        "seed_config": seed_cfg,
+        "seed_agreement": seed_agree,
+        "frozen_source_seed_declared": cfg["frozen_source_seed_declared"],
         "seed_detector": name_info["seed_detector"],
         "seed_phase": name_info["seed_phase"],
         "split": split,
@@ -1247,17 +1308,38 @@ EXPERIMENT_SCALAR_COLUMNS = [
     "pairing_provenance",
     "control_note_value",
     "delta_method",
+    "delta_sigma_source",
     "n_command_variants",
 ]
 
 
-def _agg(values: list[float]) -> dict[str, float]:
+def _agg(values: list[float]) -> dict[str, float | None]:
+    """seed 集約。σ は **母集団σと標本σの両方**を出す。
+
+    n=3 では両者の比が sqrt(3/2)=1.2247 あり、|Δ| > 1σ 判定の結論が反転しうる。
+    どちらか一方だけを出すと、下流でどちらの規約か判別できなくなる
+    (実際に notes.md が同じ基準点を ±0.0028 と ±0.0034 の 2 通りで引用していた)。
+    """
     return {
         "mean": statistics.mean(values),
-        "pstd": statistics.pstdev(values),
+        "pstd": statistics.pstdev(values),  # 母集団σ (ddof=0)
+        "sstd": statistics.stdev(values) if len(values) > 1 else None,  # 標本σ (ddof=1)
         "min": min(values),
         "max": max(values),
+        "n": len(values),
     }
+
+
+def _pool_sigma(a: float | None, b: float | None) -> float | None:
+    """独立 2 群の差の σ: sqrt(σ_inj^2 + σ_ctl^2)。
+
+    seed ごとの対応が取れない (unpaired) ときの合成。seed 由来の変動が
+    相殺されないため **paired-σ より大きくなる**（= 有意になりにくい）。
+    したがって unpaired で有意なら paired でも有意だが、逆は言えない。
+    """
+    if a is None or b is None:
+        return None
+    return math.sqrt(a * a + b * b)
 
 
 def _command_signature(command: str | None, seed: int | None = None) -> str:
@@ -1338,9 +1420,17 @@ def build_experiments(records: list[dict[str, Any]]) -> tuple[list[str], list[di
     used_metrics = sorted({m for a in agg_by_exp.values() for m in a})
     header = list(EXPERIMENT_SCALAR_COLUMNS)
     for m in used_metrics:
-        header += [f"{m}_mean", f"{m}_pstd", f"{m}_min", f"{m}_max"]
+        header += [f"{m}_mean", f"{m}_pstd", f"{m}_sstd", f"{m}_min", f"{m}_max", f"{m}_n"]
     for m in used_metrics:
-        header += [f"delta_{m}", f"delta_pstd_{m}"]
+        header += [
+            f"delta_{m}",
+            f"delta_pstd_{m}",
+            f"delta_sstd_{m}",
+            f"abs_delta_over_sigma_{m}",
+            # §10.1 の第 2 条件（全 seed 同符号）。paired のときだけ判定できる。
+            f"delta_same_sign_{m}",
+            f"delta_n_seeds_{m}",
+        ]
 
     rows = []
     for eid in sorted(groups):
@@ -1375,12 +1465,15 @@ def build_experiments(records: list[dict[str, Any]]) -> tuple[list[str], list[di
             "control_note_value": note_vals[0] if len(note_vals) == 1 else "",
             "n_command_variants": len(cmd_sigs),
             "delta_method": "",
+            "delta_sigma_source": "",
         }
         for m, a in agg_by_exp[eid].items():
             row[f"{m}_mean"] = a["mean"]
             row[f"{m}_pstd"] = a["pstd"]
+            row[f"{m}_sstd"] = a["sstd"]
             row[f"{m}_min"] = a["min"]
             row[f"{m}_max"] = a["max"]
+            row[f"{m}_n"] = a["n"]
 
         ctrl = controls[0] if len(controls) == 1 else None
         if ctrl and ctrl in agg_by_exp:
@@ -1388,27 +1481,47 @@ def build_experiments(records: list[dict[str, Any]]) -> tuple[list[str], list[di
             os_ = seedvals_by_exp[eid]
             # paired: 双方とも seed ごとにちょうど 1 run で、seed 集合が一致するとき
             methods: set[str] = set()
+            sources: set[str] = set()
             for m in agg_by_exp[eid]:
                 if m not in agg_by_exp[ctrl]:
                     continue
                 a, b = os_.get(m, {}), cs.get(m, {})
-                common = set(a) & set(b)
-                pairable = (
-                    common
-                    and set(a) == set(b)
-                    and all(len(a[s]) == 1 and len(b[s]) == 1 for s in common)
-                )
-                if pairable:
+                # paired は **共通 seed（積集合）**で取る。片側にしか無い seed は
+                # 対応が付かないので paired 比較から外すだけであり、
+                # seed 集合の完全一致を要求する必要はない（それは過度に厳しい）。
+                # 除外した seed は paired_feasibility.csv に記録する。
+                common = {s for s in set(a) & set(b) if len(a[s]) == 1 and len(b[s]) == 1}
+                if len(common) >= 2:
                     diffs = [a[s][0] - b[s][0] for s in sorted(common)]
-                    row[f"delta_{m}"] = statistics.mean(diffs)
-                    row[f"delta_pstd_{m}"] = statistics.pstdev(diffs)
+                    delta = statistics.mean(diffs)
+                    pstd = statistics.pstdev(diffs)
+                    sstd = statistics.stdev(diffs) if len(diffs) > 1 else None
+                    # §10.1 は |mean(Δ)| > σ に加えて **全 seed 同符号**も要求する。
+                    # unpaired では seed ごとの Δ が無く判定できないため paired 限定。
+                    row[f"delta_same_sign_{m}"] = all(d > 0 for d in diffs) or all(
+                        d < 0 for d in diffs
+                    )
+                    row[f"delta_n_seeds_{m}"] = len(diffs)
                     methods.add("paired")
+                    sources.add("paired")
                 else:
-                    row[f"delta_{m}"] = agg_by_exp[eid][m]["mean"] - agg_by_exp[ctrl][m]["mean"]
-                    # 対応が取れない以上 paired-σ は定義できない。捏造せず空欄。
+                    delta = agg_by_exp[eid][m]["mean"] - agg_by_exp[ctrl][m]["mean"]
+                    # seed の対応が取れないので、独立 2 群として σ を合成する。
+                    # paired-σ より大きく出る保守的な推定であることを
+                    # delta_sigma_source 列で明示する。
+                    pstd = _pool_sigma(agg_by_exp[eid][m]["pstd"], agg_by_exp[ctrl][m]["pstd"])
+                    sstd = _pool_sigma(agg_by_exp[eid][m]["sstd"], agg_by_exp[ctrl][m]["sstd"])
                     methods.add("unpaired")
+                    sources.add("unpaired_pooled")
+                row[f"delta_{m}"] = delta
+                row[f"delta_pstd_{m}"] = pstd
+                row[f"delta_sstd_{m}"] = sstd
+                # σ=0 は「有意」ではなく「ばらつきを測れていない」なので比を出さない
+                if pstd:
+                    row[f"abs_delta_over_sigma_{m}"] = abs(delta) / pstd
             # paired と unpaired を混同してはならないので両方出たら併記する。
             row["delta_method"] = ",".join(sorted(methods))
+            row["delta_sigma_source"] = ",".join(sorted(sources))
         rows.append(row)
     return header, rows
 
@@ -1432,6 +1545,9 @@ SCALAR_COLUMNS = [
     "seq",
     "description",
     "seed",
+    "seed_command",
+    "seed_config",
+    "seed_agreement",
     "seed_detector",
     "seed_phase",
     "split",
@@ -1524,6 +1640,139 @@ def build_val_test_pairs(records: list[dict[str, Any]]) -> tuple[list[str], list
     return header, rows
 
 
+PAIRED_FEASIBILITY_COLUMNS = [
+    "experiment_id",
+    "control_of",
+    "paired_declared",
+    "pairable_now",
+    "blocking_reason",
+    "pairable_after_dedup",
+    "dedup_rule",
+    "n_runs_injection",
+    "n_seeds_injection",
+    "seeds_injection",
+    "runs_per_seed_max_injection",
+    "n_runs_control",
+    "n_seeds_control",
+    "seeds_control",
+    "runs_per_seed_max_control",
+    "seed_set_match",
+    "n_seeds_common",
+    "n_seeds_paired_now",
+    "seeds_only_in_injection",
+    "seeds_only_in_control",
+    "n_runs_injection_pairable",
+]
+
+# notes.md / config.yaml が paired-σ 判定を宣言しているか
+PAIRED_DECLARED_RE = re.compile(r"paired[-\s]?(?:σ|sigma)|対seed差")
+
+
+def build_paired_feasibility(
+    records: list[dict[str, Any]],
+) -> tuple[list[str], list[dict[str, Any]]]:
+    """paired-σ が計算できるか / できないなら何が阻んでいるかを全件出力する。
+
+    notes.md は「3-seed 揃ったら paired-σ(対seed差) で §10.1 判定」と宣言するが、
+    実際に seed 対応が取れる実験はごく少数である。宣言と実行可能性の差を
+    実験ごとに機械可読な形で残す（§10.1 の結論に影響しうるため）。
+
+    `pairable_after_dedup` は「seed ごとに代表 1 本を選ぶ規約」を入れた場合に
+    paired 可能になるかを示す。代表の選び方は
+    src/egosurgery/utils/transfer_delta_report.py が seq 最大（最新の再実行）を
+    採っているので、それに倣った場合を計算する。**この規約は s4 系には
+    明文化されていない**ため、あくまで「入れれば可能になる」の試算である。
+    """
+    by_exp: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for r in records:
+        if r.get("experiment_id"):
+            by_exp[r["experiment_id"]].append(r)
+
+    rows = []
+    for eid in sorted(by_exp):
+        rs = by_exp[eid]
+        controls = sorted({r["control_of"] for r in rs if r.get("control_of")})
+        if len(controls) != 1:
+            continue
+        ctrl = controls[0]
+        crs = by_exp.get(ctrl)
+        declared = any(
+            PAIRED_DECLARED_RE.search(
+                (r.get("notes") or "") + json.dumps(r.get("delta_declaration") or {}, ensure_ascii=False)
+            )
+            for r in rs
+        )
+        base = {
+            "experiment_id": eid,
+            "control_of": ctrl,
+            "paired_declared": declared,
+            "n_runs_injection": len(rs),
+        }
+        if not crs:
+            rows.append(
+                {
+                    **base,
+                    "pairable_now": False,
+                    "blocking_reason": "control_experiment_not_in_index",
+                    "pairable_after_dedup": False,
+                    "dedup_rule": "",
+                    "n_runs_injection_pairable": 0,
+                }
+            )
+            continue
+
+        ia = Counter(r["seed"] for r in rs if r["seed"] is not None)
+        ib = Counter(r["seed"] for r in crs if r["seed"] is not None)
+        imax = max(ia.values()) if ia else 0
+        cmax = max(ib.values()) if ib else 0
+        match = set(ia) == set(ib)
+        # paired は共通 seed（積集合）で取る。両側とも 1 本ずつある seed の数。
+        common = set(ia) & set(ib)
+        usable = {s for s in common if ia[s] == 1 and ib[s] == 1}
+
+        if not ia or not ib:
+            reason = "seed_missing"
+        elif not common:
+            reason = "no_common_seed"
+        elif len(usable) >= 2:
+            reason = ""
+        elif cmax > 1 and imax > 1:
+            reason = "both_multi_run_per_seed"
+        elif cmax > 1:
+            reason = "control_multi_run_per_seed"
+        elif imax > 1:
+            reason = "injection_multi_run_per_seed"
+        else:
+            reason = "too_few_common_seeds"
+
+        # seed ごとに 1 本へ畳んだ場合、共通 seed が 2 つ以上あれば paired になる
+        after = len(common) >= 2
+        rows.append(
+            {
+                **base,
+                "pairable_now": reason == "",
+                "blocking_reason": reason,
+                "pairable_after_dedup": after,
+                "dedup_rule": "one_run_per_seed_by_max_seq" if after and reason else "",
+                "n_seeds_injection": len(ia),
+                "seeds_injection": ",".join(str(s) for s in sorted(ia)),
+                "runs_per_seed_max_injection": imax,
+                "n_runs_control": len(crs),
+                "n_seeds_control": len(ib),
+                "seeds_control": ",".join(str(s) for s in sorted(ib)),
+                "runs_per_seed_max_control": cmax,
+                "seed_set_match": match,
+                "n_seeds_common": len(common),
+                "n_seeds_paired_now": len(usable),
+                "seeds_only_in_injection": ",".join(str(s) for s in sorted(set(ia) - set(ib))),
+                "seeds_only_in_control": ",".join(str(s) for s in sorted(set(ib) - set(ia))),
+                # 畳めば対応が付く注入側 run の本数（対照に同じ seed があるもの）
+                "n_runs_injection_pairable": sum(n for s, n in ia.items() if s in ib),
+            }
+        )
+    return PAIRED_FEASIBILITY_COLUMNS, rows
+
+
 PER_CLASS_COLUMNS = [
     "ledger_key",
     "group",
@@ -1605,6 +1854,7 @@ make runindex      # runindex/ 全体をゼロから再生成する
 | `metric_aliases.json` | 指標名の表記ゆれ統合表 |
 | `anomalies.md` | 規約から外れたもの・判断を保留したものの一覧 (人間が読む) |
 | `anomalies/val_test_pairs.csv` | test 評価を持つ run の val/test 対応表 (縦持ち) |
+| `anomalies/paired_feasibility.csv` | paired-σ の宣言と実行可能性の差 (1 行 = 1 実験) |
 | `anomalies/backlog.md` | 本タスクの範囲外として起票した未着手事項 |
 
 ## index.csv の列
@@ -1647,14 +1897,34 @@ val と test は大きく乖離するため、下流解析では `has_test` で�
 | `runs_per_seed_max` | 同一 seed の run 数の最大。**> 1 は再実行か条件混在の徴候** |
 | `n_command_variants` | `command.sh` 引数の種類数。**> 1 なら条件が混在している** |
 | `hosts` | 使われた host。**複数なら交絡の可能性がある** |
-| `<metric>_mean` / `_pstd` / `_min` / `_max` | seed 集約 |
+| `<metric>_mean` / `_min` / `_max` / `_n` | seed 集約 |
+| `<metric>_pstd` / `<metric>_sstd` | **母集団σ (ddof=0) / 標本σ (ddof=1)** |
 | `arm` / `control_of` | 注入 / 対照。`control_of` は対照実験の `experiment_id` |
-| `delta_<metric>` / `delta_pstd_<metric>` | `control_of` が確定した実験のみ |
+| `delta_<metric>` | Δ = 注入 − 対照。`control_of` が確定した実験のみ |
+| `delta_pstd_<metric>` / `delta_sstd_<metric>` | Δ の σ（母集団 / 標本） |
+| `abs_delta_over_sigma_<metric>` | **\\|Δ\\| / `delta_pstd_<metric>`**（母集団σ基準） |
 | `delta_method` | `paired` か `unpaired` か。**混同してはいけません** |
+| `delta_sigma_source` | `paired` / `unpaired_pooled` |
 | `control_note_value` | `notes.md` に引用されている基準値（実測との突き合わせ用） |
 
-`delta_pstd_*` は `delta_method=paired` のときだけ入ります。
-対応が取れない場合に paired-σ は定義できないため、空欄にしてあります。
+### σ の読み方（必読）
+
+`delta_method` によって σ の意味が変わります。
+
+| `delta_sigma_source` | σ の定義 |
+|---|---|
+| `paired` | seed ごとの差の σ。seed 由来の変動が相殺される |
+| `unpaired_pooled` | √(σ_注入² + σ_対照²)。**paired-σ より大きく出る保守的な推定** |
+
+したがって **`unpaired_pooled` で有意なら `paired` でも有意**です（逆は言えません）。
+
+現状 **136 実験中 134 が `unpaired_pooled`** です。対照実験に同一 seed の
+再実行が畳まれずに残っているためで、詳細と全件は
+`anomalies.md` §22 と `anomalies/paired_feasibility.csv` にあります。
+
+母集団σと標本σは n=3 で √(3/2)=1.2247 倍違いますが、**実データでは
+1σ / 2σ 基準の判定は 1 件も変わりません**（§21.1）。判定に標本σを使いたい場合は
+`delta_sstd_<metric>` で割り直してください。
 
 ## 注意
 
@@ -1691,7 +1961,11 @@ BACKLOG = """# backlog — 本タスクの範囲外として起票した未着�
 | B-7 | `ledger_key` フィールド名の改名 | `ledger/` → `runindex/` の改名後も、フィールド名 `ledger_key` は 573 個の JSON と `index.csv` 第 1 列に残っている | スキーマ変更になるため利用側の合意が要る |
 | B-8 | `b2a_ro_oracle_noise000` の名前と実態の食い違い | 名前は noise 0.00 を示すが `--tool-noise-rate` は 0.05/0.10/0.20/0.30 の 4 通り（§7.3）。原因は `scripts/run_b2a_ro_oracle_noise_sweep.sh` のタグ生成が `bc` に依存しており、`bc` 不在時に全水準が `000` に潰れること。実測 accuracy も 0.9549 / 0.9435 / 0.9023 / 0.8106 と水準に応じて単調減衰しており、4 水準であることを独立に裏付ける | ディレクトリ名の改名は `experiments/` の変更にあたるため不可。正本側での扱いを決める必要がある |
 | B-9 | σ の規約統一 | `S4 base` が母集団σ `±0.0028` と標本σ `±0.0034` の 2 通りで引用されている（§18.2）。`|Δ| > 1σ` 判定の結論が変わりうる | 正本 §10.1 でどちらを採るかを定める |
-| B-10 | paired-σ が計算できない | 基準点実験が 17 run / 3 seed（1 seed に最大 7 run）のため、seed ごとの対応が取れず paired-σ が定義できない（§18.3）。`notes.md` は 439 run で paired-σ 判定を宣言しているが実行不能 | seed ごとの代表 run を決める規約が要る（どの再実行を採るか） |
+| B-10 | **paired-σ を可能にする「seed ごとの代表 run」規約** | 実測（§22）: `control_of` が確定した 136 実験の**全て**が paired-σ 判定を宣言しているが、実際に計算できるのは **2 実験**。阻害原因は `control_multi_run_per_seed` 119 / `seed_set_differs` 9 / 両方 4 / `both_multi_run_per_seed` 2。**seed ごとに代表 1 本を選ぶ規約を 1 つ足せば 125 実験で計算可能になる**（残り 11 は seed 集合が違うため不可）。注入側 439 run のうち 427 run は対照に同一 seed が存在する | 代表の選び方を決める（`transfer_delta_report.py` は seq 最大＝最新の再実行を採る実装がある）。決まれば harvester 側は機械的に適用できる |
+| B-16 | seed 789 / 1000 の非対称な拡張 | 全 615 run 中 12 run だけが seed 789/1000 を持ち、その 12 件すべてが `scripts/run_l3_seed5_extension.sh`（「3-seed→5-seed 化、paired-σ 強化」）の産物。同スクリプトは**注入側 6 variant のみを拡張し対照 (S4 baseline) を呼んでいない**ため片側だけ 5-seed になった。paired は共通 seed で取るので計算自体は成立する | 対照側も 5-seed 化するか、789/1000 を解析から外すかの判断 |
+| B-17 | `t1a_regiontraj` 系 3 実験の分母 | `config.yaml` は分母を `t1a_regiontoken base (同env efros paired)` と宣言しているが、`t1a_base_env`（efros・seeds 42/123/456・1 run/seed、config は `server_name` 以外一致）へ付け替えると追加計算なしで完全な paired になるという指摘がある | 分母の付け替えは研究上の判断。`config.yaml` の宣言に反するため harvester では変更しない |
+| B-18 | σ 規約の 2 系統併存 | `pstdev` 系 48 箇所（§10.1 判定・レポート層）と `stdev`/`ddof=1` 系 16 箇所（`scripts/analysis/*` の解析・監査層）が併存（§21.2）。**Δ の規約を監査する `delta_convention_audit.py` 自身が判定側と違うσを使っている** | 正本 §10.1 でσを定義したうえで、どちらかに寄せる |
+| B-19 | `compute_delta.py` / `export_paper_tables.py` が空ファイル | 0 バイトの scaffold。`Makefile` の `delta` / `tables` ターゲットは何もしない | `experiments.csv` から再実装できる（Δ・σ・同符号は既に揃っている） |
 | B-11 | `logs/phase3seed_results.tsv` の欠落 | `scripts/paired_sigma_3seed.py` はこの TSV の `arm` 列（frozen / augstrong）を読んで paired-σ を出す設計だが、ファイルが repo に存在しない（`.gitignore` 対象）。arm 情報自体は `config.yaml` の `frozen_source.*` に残っており `frozen_source_tag` として収穫済み | TSV の復元、または `paired_sigma_3seed.py` を `runindex` 由来に切り替える |
 | B-12 | 573 run の外側にある inj/ctrl ペア | `transfer/*_efros/` と `experiments/transfer/{hc,oracle_phase}_seed*/` に `injected_result.json` / `control_result.json` の対が 18 組あるが、`metrics.json` を持たないため収穫対象外。真の注入/対照ペアはここにある | 非標準群の adapter（B-6）と同じ作業 |
 | B-13 | 同一条件が別 `experiment_id` に分裂する組 | `description` / `split` / `frozen_source_tag` が同じで `step` だけ違う組がある（§17.2）。多くは `eval_recipe_id` による意図的分離 | 起動経路が同一かの判断が要るため harvester では決めない |
@@ -1781,6 +2055,13 @@ def write_runindex(records: list[dict[str, Any]], anomalies: str) -> None:
         writer = csv.DictWriter(fh, fieldnames=ph, lineterminator="\n")
         writer.writeheader()
         writer.writerows(pr)
+
+    # paired-σ の実行可能性（宣言と実態の差）
+    fh_, fr = build_paired_feasibility(reloaded)
+    with (anomalies_dir / "paired_feasibility.csv").open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=fh_, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(fr)
 
     (anomalies_dir / "backlog.md").write_text(BACKLOG, encoding="utf-8")
 
@@ -2689,6 +2970,268 @@ def build_anomalies(
     add("")
     add("「指標とは数値である」という不変条件を実装に入れ、")
     add("数値以外は `attributes` / `metrics_nested` に分離した（情報は捨てていない）。")
+    add("")
+
+    # ---------------------------------------------------------------- #
+    add("## 21. σ の定義 — 母集団σと標本σを両方出す")
+    add("")
+    add("`<metric>_pstd` が母集団σか標本σか判別できず、`|Δ| > 1σ` 判定が")
+    add("規約次第で反転しうる状態だった（§18.2）。両方を明示的に出すことにした。")
+    add("")
+    add("| 列 | 定義 | Python |")
+    add("|---|---|---|")
+    add("| `<metric>_pstd` | **母集団σ** (ddof=0) | `statistics.pstdev` |")
+    add("| `<metric>_sstd` | **標本σ** (ddof=1) | `statistics.stdev` |")
+    add("| `<metric>_n` | 集約した値の個数 | |")
+    add("| `delta_pstd_<metric>` | Δ の母集団σ | paired: 差の pstdev / unpaired: √(σ_inj²+σ_ctl²) |")
+    add("| `delta_sstd_<metric>` | Δ の標本σ | 同上を標本σで |")
+    add("| `abs_delta_over_sigma_<metric>` | **\\|Δ\\| / `delta_pstd_<metric>`** | 母集団σ基準 |")
+    add("")
+    add("### 21.1 規約の違いが実際の判定に与える影響（実測）")
+    add("")
+    add("`accuracy` について両方の規約で判定件数を出した。")
+    add("")
+    exp_rows = None
+    try:
+        _h, exp_rows = build_experiments(records)
+    except Exception:  # noqa: BLE001
+        exp_rows = None
+    if exp_rows:
+        pairs = [
+            (r.get("delta_accuracy"), r.get("delta_pstd_accuracy"), r.get("delta_sstd_accuracy"))
+            for r in exp_rows
+            if isinstance(r.get("delta_accuracy"), (int, float))
+            and r.get("delta_pstd_accuracy")
+            and r.get("delta_sstd_accuracy")
+        ]
+        add("| 閾値 | 母集団σ基準 | 標本σ基準 | 判定が反転 |")
+        add("|---|---:|---:|---:|")
+        for k in (1, 2, 3):
+            p = sum(1 for d, ps, ss in pairs if abs(d) / ps >= k)
+            s = sum(1 for d, ps, ss in pairs if abs(d) / ss >= k)
+            fl = sum(1 for d, ps, ss in pairs if abs(d) / ps >= k and abs(d) / ss < k)
+            add(f"| {k}σ | {p} | {s} | **{fl}** |")
+        add("")
+        if pairs:
+            ratios = sorted(ss / ps for _, ps, ss in pairs)
+            med = ratios[len(ratios) // 2]
+            add(f"対象 {len(pairs)} 実験。標本σ/母集団σ の実測中央値 = **{med:.4f}**。")
+        add("")
+    add("**§10.1 が使う 1σ 基準では、現在の実データで判定は 1 件も反転しない。**")
+    add("理由は σ の合成にある。注入側は n=3（比 √(3/2)=1.2247）だが")
+    add("対照側は n が大きく（比が 1 に近い）、合成 σ では差が薄まる。")
+    add("")
+    add("ただし `notes.md` に手書きされた `0.8986±0.0028` と `±0.0034` は")
+    add("**単一の集計値そのもの**なので 22% の差がそのまま出る。")
+    add("手書きの値を引用するときは規約の確認が要る。")
+    add("")
+    add("### 21.2 🔴 リポジトリ内に σ の規約が **2 系統併存**している")
+    add("")
+    add("`scripts/` と `src/` を実測した結果:")
+    add("")
+    add("| 規約 | 出現箇所 | 主な使用層 |")
+    add("|---|---:|---|")
+    add("| 母集団σ (`pstdev` / `pvariance`) | **48** | §10.1 判定・レポート生成 |")
+    add("| 標本σ (`statistics.stdev` / `ddof=1`) | **16** | 解析・監査 (`scripts/analysis/*`) |")
+    add("")
+    add("**§10.1 の判定を実装している箇所は母集団σで一致している:**")
+    add("")
+    add("| ファイル:行 | 記述 |")
+    add("|---|---|")
+    add("| `scripts/paired_sigma_3seed.py:7,80` | \\|mean(Δ)\\| > pstdev(Δ) かつ 全 detector_seed 同符号 |")
+    add("| `scripts/analyze_t1a_factorial_ablation.py:13,81` | §10.1: \\|meanΔ\\|>pstdev かつ全 seed 同符号 |")
+    add("| `scripts/report_t1a_boundary.py:5,59` | \\|mean\\|>pstdev かつ 3-seed 同符号 |")
+    add("| `scripts/report_daux_paired.py:69,114` | \\|mean\\|>pstdev かつ 3-seed 同符号 |")
+    add("| `src/egosurgery/utils/transfer_delta_report.py` | pstdev（haux/taux 系レポートの単一情報源） |")
+    add("| `scripts/run_haux_oracle_gate.sh:14` / `run_taux_problemA.sh:76` | 同上 |")
+    add("")
+    add("**一方、解析・監査層は標本σを使っている:**")
+    add("`scripts/analysis/delta_allrun_recompute.py:157` / `delta_convention_audit.py:132` /")
+    add("`g1_power_analysis.py:68` / `g2_report.py:166,179,452`（`np.std(..., ddof=1)`）/")
+    add("`scripts/analyze_phase_coupling.py:93,154,162`。")
+    add("")
+    add("**「Δ の規約を監査する」スクリプト自身が、判定側と違うσを使っている。**")
+    add("")
+    add("正本の研究計画（`docs/m2_plan_rewrite/`）は §10.1 の 1σ を")
+    add("「同一 eval recipe での 3-seed std」としか書いておらず、**どちらか明示していない**。")
+    add("したがって「どちらを使うべきか」の規範的根拠はリポジトリ内に存在しない。")
+    add("")
+    add("`abs_delta_over_sigma_<metric>` は **母集団σ**（`delta_pstd_<metric>`）を分母にした。")
+    add("§10.1 判定の実装側と揃えたためである。標本σで見たい場合は")
+    add("`delta_sstd_<metric>` で割り直すこと（両方出してある）。")
+    add("**規約の確定は正本側の作業であり、harvester が決めることではない（backlog B-9）。**")
+    add("")
+    add("なお `notes.md` / `config.yaml` の `0.8986±0.0034` は書き出し時に計算された値ではなく、")
+    add("`scripts/train_*.py` にハードコードされた文字列リテラルである。")
+    add("値が更新されない構造なので、引用するときは実測と突き合わせること")
+    add("（`experiments.csv` の `control_note_value` 列に保持してある）。")
+    add("")
+    add("また `scripts/compute_delta.py` と `scripts/export_paper_tables.py` は")
+    add("**0 バイトの空ファイル**（未実装 scaffold）である。`Makefile` の `delta` /")
+    add("`tables` ターゲットはこれらを呼ぶので、現状では何もしない。")
+    add("")
+    add("### 21.3 🔴 §10.1 は σ 条件だけではない — **同符号条件**がある")
+    add("")
+    add("上記 7 箇所すべてが判定を **2 条件**で書いている:")
+    add("")
+    add("> `|mean(Δ)| > pstdev(Δ)` **かつ** `全 seed 同符号`")
+    add("")
+    add("第 2 条件は seed ごとの Δ が要るので **paired のときしか判定できない**。")
+    add("`delta_same_sign_<metric>` 列に出しているが、埋まるのは paired の実験だけである。")
+    add("")
+    add("**したがって `unpaired_pooled` の 131 実験は、σ 条件は評価できても")
+    add("§10.1 の判定を完成させることができない。**")
+    add("`abs_delta_over_sigma_*` が大きくても「§10.1 で有意」と結論してはいけない。")
+    add("")
+
+    # ---------------------------------------------------------------- #
+    add("## 22. paired-σ の宣言と実行可能性の乖離")
+    add("")
+    add("全件は `anomalies/paired_feasibility.csv`（1 行 = 1 実験）。")
+    add("")
+    fh_, fr = build_paired_feasibility(records)
+    if fr:
+        declared = sum(1 for r in fr if r.get("paired_declared"))
+        now = sum(1 for r in fr if r.get("pairable_now"))
+        after = sum(1 for r in fr if r.get("pairable_after_dedup"))
+        add(f"- `control_of` が確定した実験: **{len(fr)}**")
+        add(f"- そのうち `notes.md` / `config.yaml` が **paired-σ 判定を宣言**: **{declared}**")
+        add(f"- 実際に paired-σ を計算できる: **{now}**")
+        add(f"- **seed ごとに代表 1 本を選ぶ規約を入れれば計算できる: {after}**")
+        add("")
+        add("### 22.1 何が paired を阻んでいるか")
+        add("")
+        add("| 原因 | 実験数 |")
+        add("|---|---:|")
+        for k, v in Counter(r.get("blocking_reason") or "(阻害なし)" for r in fr).most_common():
+            add(f"| `{k}` | {v} |")
+        add("")
+        add("**支配的原因は対照実験の再実行が畳まれていないこと**であり、")
+        add("注入側の seed 記録誤りではない（§23 のとおり seed の食い違いは 0 件）。")
+        add("")
+        tot = sum(r.get("n_runs_injection", 0) for r in fr)
+        pab = sum(r.get("n_runs_injection_pairable", 0) for r in fr)
+        add(f"注入側 run {tot} 本のうち、対照に同じ seed が存在するのは **{pab} 本**。")
+        add(f"残り {tot - pab} 本は対照側に対応する seed が無く、畳んでも paired にできない。")
+        add("")
+        add("### 22.2 🔴 「paired と宣言されているが unpaired でしか計算できない実験」")
+        add("")
+        mism = [r for r in fr if r.get("paired_declared") and not r.get("pairable_now")]
+        add(f"**{len(mism)} 実験**が該当する。§10.1 の判定を paired-σ で行ったと")
+        add("読める記述が `notes.md` にあるが、実際にはできていない。")
+        add("")
+        add("| 阻害原因 | 実験数 | 代表例 |")
+        add("|---|---:|---|")
+        byr: dict[str, list[str]] = defaultdict(list)
+        for r in mism:
+            byr[r.get("blocking_reason") or ""].append(r["experiment_id"])
+        for k, v in sorted(byr.items(), key=lambda x: -len(x[1])):
+            add(f"| `{k}` | {len(v)} | `{sorted(v)[0]}` |")
+        add("")
+        add("現在の `experiments.csv` はこれらを `delta_method=unpaired` /")
+        add("`delta_sigma_source=unpaired_pooled` と明示している。")
+        add("unpaired の σ は paired-σ より大きく出る保守的な推定なので、")
+        add("**σ 条件については unpaired で満たせば paired でも満たす**（逆は言えない）。")
+        add("ただし §21.3 のとおり **同符号条件は unpaired では判定できない**ため、")
+        add("これらの実験について §10.1 の判定を完成させることはできない。")
+        add("")
+        add("### 22.3 paired が成立した実験の §10.1 判定")
+        add("")
+        pr = [r for r in fr if r.get("pairable_now")]
+        add(f"現時点で paired-σ を計算できるのは **{len(pr)} 実験**。")
+        add("`accuracy` について 2 条件を両方適用した結果は次のとおり。")
+        add("")
+        if exp_rows:
+            paired_rows = [
+                r
+                for r in exp_rows
+                if r.get("delta_method") == "paired"
+                and isinstance(r.get("delta_accuracy"), (int, float))
+            ]
+            if paired_rows:
+                add("| experiment_id | Δacc | \\|Δ\\|/σ | 同符号 | §10.1 |")
+                add("|---|---:|---:|---|---|")
+                for r in sorted(paired_rows, key=lambda x: -abs(x["delta_accuracy"])):
+                    ratio = r.get("abs_delta_over_sigma_accuracy")
+                    same = r.get("delta_same_sign_accuracy")
+                    ok = bool(ratio and ratio > 1 and same)
+                    add(
+                        f"| `{r['experiment_id']}` | {r['delta_accuracy']:+.5f} | "
+                        f"{ratio:.2f} | {'✓' if same else '✗'} | "
+                        f"{'**有意**' if ok else '非有意'} |"
+                    )
+                add("")
+        add("これが現在の証跡で**実際に完成できる §10.1 判定のすべて**である。")
+        add("")
+
+    # ---------------------------------------------------------------- #
+    add("## 23. seed の出所 — run の学習 seed に誤りは無い")
+    add("")
+    add("§17.0 の「`notes.md` の凍結源 seed 記載が虚偽」を受けて、")
+    add("**run 自身の学習 seed** が汚染されていないかを全件突き合わせた。")
+    add("証拠は `command.sh` の `--seed` / `seed=` と `config.yaml` の `seed`。")
+    add("`notes.md` は虚偽の実績があるため証拠に使っていない。")
+    add("")
+    agree = Counter(r.get("seed_agreement") for r in records)
+    add("| seed_agreement | run 数 | 意味 |")
+    add("|---|---:|---|")
+    add(f"| `agree` | {agree.get('agree', 0)} | ディレクトリ名と他証拠が一致 |")
+    add(
+        f"| `unverified_no_other_evidence` | {agree.get('unverified_no_other_evidence', 0)} | "
+        "`command.sh` も `config.yaml` も無い（g2_* 群） |"
+    )
+    add(f"| `no_seed_in_dirname` | {agree.get('no_seed_in_dirname', 0)} | 命名規約外 |")
+    add(f"| **`conflict`** | **{agree.get('conflict', 0)}** | **食い違い** |")
+    add("")
+    add("**食い違いは 0 件。** したがって Δ の seed 対応が誤っている可能性は排除できる。")
+    add("§17.0 の誤記は**凍結検出器の seed** の話であって、run の学習 seed ではない。")
+    add("")
+    add("### 23.1 `frozen_source.seed` は信用できない（実測）")
+    add("")
+    fsd = [r for r in records if r.get("frozen_source_seed_declared") is not None]
+    contra = [
+        r
+        for r in fsd
+        if r.get("frozen_source_tag")
+        and f"seed{r['frozen_source_seed_declared']}" not in r["frozen_source_tag"]
+    ]
+    add(f"- `config.yaml` に `frozen_source.seed` を持つ run: **{len(fsd)}**")
+    add(f"- そのうち実際の cache パスと**矛盾**する run: **{len(contra)}**")
+    add("")
+    add("矛盾例: 宣言は `seed: 42` だが cache は `relation_detr_augstrong_seed123`。")
+    add("`frozen_source_tag` は cache パスからのみ導いており、この宣言は採用していない。")
+    add("値は矛盾検出のためだけに `frozen_source_seed_declared` に保持している。")
+    add("")
+    add("### 23.2 分母が `s4_phase_baseline` である実験の一覧")
+    add("")
+    s4c = sorted(
+        {
+            r["control_of"]
+            for r in records
+            if r.get("control_of") and "s4_phase_baseline" in r["control_of"]
+        }
+    )
+    s4exp: dict[str, set[str]] = defaultdict(set)
+    for r in records:
+        if r.get("control_of") in s4c and r.get("experiment_id"):
+            s4exp[r["control_of"]].add(r["experiment_id"])
+    n_exp = sum(len(v) for v in s4exp.values())
+    n_run = sum(1 for r in records if r.get("control_of") in s4c)
+    add(f"`s4_phase_baseline` を `control_of` に持つ実験は **{n_exp}**、run は **{n_run}**。")
+    add("")
+    for c in s4c:
+        add(f"- 分母 `{c}` … {len(s4exp[c])} 実験")
+    add("")
+    add("§17.0 の凍結源誤記は**この分母実験そのもの**で起きている。ただし:")
+    add("")
+    add("1. `frozen_source_tag` は `config.yaml` の cache パスから導いており、")
+    add("   誤っている `notes.md` / `frozen_source.seed` は使っていない。")
+    add("2. `experiment_id` は `frozen_source_tag` を含むので、")
+    add("   異なる凍結源の run は**別の分母実験**に分かれている。")
+    add("")
+    add("したがって Δ の分母は cache パス基準で正しく分離されている。")
+    add("**残るリスクは cache パス自体が実行時の実態と違う場合**だが、")
+    add("これを検証できる証跡（実行時の環境変数の記録）は repo に存在しない。")
     add("")
 
     return "\n".join(lines) + "\n"
