@@ -1335,6 +1335,9 @@ EXPERIMENT_SCALAR_COLUMNS = [
     "verdict_10_1_sstd",
     "verdict_10_1_agree",
     "verdict_10_1_reason",
+    # σ が何を測っているか（§2 の within/between 比から機械的に決める）
+    "sigma_interpretation",
+    "sigma_within_over_between",
     "n_command_variants",
 ]
 
@@ -1393,9 +1396,13 @@ def _reduce_by_seed(
 def _pool_sigma(a: float | None, b: float | None) -> float | None:
     """独立 2 群の差の σ: sqrt(σ_inj^2 + σ_ctl^2)。
 
-    seed ごとの対応が取れない (unpaired) ときの合成。seed 由来の変動が
-    相殺されないため **paired-σ より大きくなる**（= 有意になりにくい）。
-    したがって unpaired で有意なら paired でも有意だが、逆は言えない。
+    seed ごとの対応が取れない (unpaired) ときの合成。seed で対応が付く分の
+    変動が相殺されないため **paired-σ より大きくなる**（= 有意になりにくい）。
+    したがって unpaired で σ 条件を満たせば paired でも満たすが、逆は言えない。
+
+    ★ ここでいう σ は「seed 間のばらつき」ではない。学習が決定的でないため
+      同一条件反復のばらつきが混ざっている（anomalies §25 / §26）。
+      どちらが支配的かは sigma_interpretation 列で判別する。
     """
     if a is None or b is None:
         return None
@@ -1517,6 +1524,15 @@ def build_experiments(
         agg_by_exp[eid] = per_metric
         seedvals_by_exp[eid] = per_seed
 
+    # §2 の within/between 比を (experiment_id, metric) で引けるようにする。
+    # σ が seed 効果を測っているかの判定に使う。
+    _wh, _wr = build_within_vs_between(records)
+    wb: dict[tuple[str, str], float] = {
+        (r["experiment_id"], r["metric"]): r["ratio_within_over_between"]
+        for r in _wr
+        if r["ratio_within_over_between"] is not None
+    }
+
     used_metrics = sorted({m for a in agg_by_exp.values() for m in a})
     header = list(EXPERIMENT_SCALAR_COLUMNS)
     for m in used_metrics:
@@ -1572,6 +1588,8 @@ def build_experiments(
             "verdict_10_1_sstd": "",
             "verdict_10_1_agree": "",
             "verdict_10_1_reason": "",
+            "sigma_interpretation": "unknown",
+            "sigma_within_over_between": "",
         }
         for m, a in agg_by_exp[eid].items():
             row[f"{m}_mean"] = a["mean"]
@@ -1653,6 +1671,23 @@ def build_experiments(
                 row["verdict_10_1_sstd"] = v_s
                 row["verdict_10_1_agree"] = v_p == v_s
                 row["verdict_10_1_reason"] = reason
+
+                # σ が seed 効果を測っているのか、同一条件反復のばらつきも
+                # 混ざっているのかを判定する。注入側と対照側の**両方**を見る
+                # （Δ の σ は両者の合成であり、片方でも逆転していれば mixed）。
+                ratios = [
+                    wb[(e, pm)]
+                    for e in (eid, ctrl)
+                    if (e, pm) in wb
+                ]
+                if not ratios:
+                    row["sigma_interpretation"] = "unknown"
+                else:
+                    worst = max(ratios)
+                    row["sigma_within_over_between"] = worst
+                    row["sigma_interpretation"] = (
+                        "mixed_with_nondeterminism" if worst >= 1 else "seed_effect"
+                    )
         rows.append(row)
     return header, rows
 
@@ -1889,6 +1924,231 @@ def build_val_test_pairs(records: list[dict[str, Any]]) -> tuple[list[str], list
     return header, rows
 
 
+# --------------------------------------------------------------------------- #
+# §1 決定性制御の棚卸し
+#
+# 同一 commit・同一 config・同一コマンド・同一 host の再実行が再現しない
+# （anomalies §25）。原因は学習スクリプトが GPU の決定性を制御していないこと。
+# 同じ欠陥が他のスクリプトにもあるかを機械的に棚卸しする。
+#
+# ★ ここで見ているのは **静的なコードの記述だけ**である。
+#   実際に決定的かどうかを実行して確かめてはいない（再実行はしない方針）。
+# --------------------------------------------------------------------------- #
+SCRIPTS_DIR = REPO_ROOT / "scripts"
+SRC_DIR = REPO_ROOT / "src"
+
+DETERMINISM_CHECKS: dict[str, str] = {
+    "random_seed": r"\brandom\.seed\s*\(",
+    "numpy_seed": r"\bnp\.random\.seed\s*\(|\bnumpy\.random\.seed\s*\(|default_rng\s*\(",
+    "torch_manual_seed": r"\btorch\.manual_seed\s*\(",
+    "cuda_manual_seed": r"\btorch\.cuda\.manual_seed(?:_all)?\s*\(",
+    "use_deterministic_algorithms": r"\btorch\.use_deterministic_algorithms\s*\(",
+    "cudnn_deterministic": r"cudnn\.deterministic\s*=",
+    "cudnn_benchmark": r"cudnn\.benchmark\s*=",
+    "pythonhashseed": r"PYTHONHASHSEED",
+    "dataloader_worker_init_fn": r"worker_init_fn\s*=",
+    "dataloader_generator": r"\bgenerator\s*=\s*(?:g\b|torch\.Generator|gen\b)",
+    "cublas_workspace_config": r"CUBLAS_WORKSPACE_CONFIG",
+}
+
+# 「これが揃わないと GPU 上で決定的になり得ない」項目
+DETERMINISM_REQUIRED = (
+    "torch_manual_seed",
+    "cuda_manual_seed",
+    "use_deterministic_algorithms",
+    "cudnn_deterministic",
+)
+
+DETERMINISM_COLUMNS = [
+    "script",
+    # ok = 中身がある / empty = 0 バイトの scaffold / missing = repo に無い
+    "file_state",
+    "uses_cuda",
+    "n_runs",
+    "n_steps",
+    "steps",
+    *DETERMINISM_CHECKS.keys(),
+    "num_workers",
+    "shuffle",
+    "missing_required",
+    "can_be_deterministic",
+]
+
+_ENTRYPOINT_RE = re.compile(r"(?:python3?|bash)\s+(\S+\.(?:py|sh))")
+_NUM_WORKERS_RE = re.compile(r"num_workers\s*=\s*([^,)\s]+)")
+_SHUFFLE_RE = re.compile(r"shuffle\s*=\s*([^,)\s]+)")
+
+
+def _entrypoint_of(command: str | None) -> str | None:
+    """command.sh の entrypoint を **リポジトリ相対**に正規化する。
+
+    command.sh には絶対パス (/home/ubuntu/slocal2/m2/scripts/train_b2a.py) と
+    相対パス (scripts/train_b2a.py) が混在する。正規化しないと同じスクリプトが
+    2 行に分かれて run 数が割れる。
+    """
+    if not command:
+        return None
+    m = _ENTRYPOINT_RE.search(command)
+    if not m:
+        return None
+    path = m.group(1)
+    # 絶対パスは既知のプロジェクトルート以降を残す
+    for marker in ("/m2/", "/egosurgery_multitask/"):
+        if marker in path:
+            path = path.split(marker, 1)[1]
+            break
+    return path.lstrip("./")
+
+
+def build_determinism_audit(
+    records: list[dict[str, Any]],
+) -> tuple[list[str], list[dict[str, Any]]]:
+    """学習スクリプトごとの決定性制御の有無と、影響を受ける run / step を出す。"""
+    # entrypoint -> run
+    by_script: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for r in records:
+        ep = _entrypoint_of(r.get("command"))
+        if ep:
+            by_script[ep].append(r)
+
+    # 監査対象: entrypoint に現れた全スクリプト + scripts/train_*.py
+    #         + Hydra entrypoint が委譲する実装 (src/egosurgery/train.py は
+    #           自身では CUDA を触らず engines/trainer.py に委譲する)
+    targets: set[str] = set(by_script)
+    if SCRIPTS_DIR.is_dir():
+        targets |= {f"scripts/{p.name}" for p in sorted(SCRIPTS_DIR.glob("train_*.py"))}
+    eng = SRC_DIR / "egosurgery" / "engines"
+    if eng.is_dir():
+        targets |= {
+            str(p.relative_to(REPO_ROOT)) for p in sorted(eng.glob("*.py")) if p.name != "__init__.py"
+        }
+
+    rows = []
+    for name in sorted(targets):
+        cand = REPO_ROOT / name
+        text = _read_text(cand) if cand.exists() else None
+        runs = by_script.get(name, [])
+        steps = sorted({r["step"] for r in runs if r["step"]})
+
+        row: dict[str, Any] = {
+            "script": name,
+            "file_state": "ok" if text else ("empty" if cand.exists() else "missing"),
+            "n_runs": len(runs),
+            "n_steps": len(steps),
+            "steps": ",".join(steps[:12]) + (" …" if len(steps) > 12 else ""),
+        }
+        if not text:
+            for k in DETERMINISM_CHECKS:
+                row[k] = None
+            row["uses_cuda"] = None
+            row["num_workers"] = None
+            row["shuffle"] = None
+            row["missing_required"] = ""
+            row["can_be_deterministic"] = None
+            rows.append(row)
+            continue
+
+        row["uses_cuda"] = bool(re.search(r'device\s*\(\s*["\']cuda|\.cuda\(\)|to\(\s*["\']cuda', text))
+        for k, pat in DETERMINISM_CHECKS.items():
+            row[k] = bool(re.search(pat, text))
+        row["num_workers"] = ",".join(sorted(set(_NUM_WORKERS_RE.findall(text)))) or ""
+        row["shuffle"] = ",".join(sorted(set(_SHUFFLE_RE.findall(text)))) or ""
+        missing = [k for k in DETERMINISM_REQUIRED if not row[k]]
+        row["missing_required"] = ",".join(missing)
+        # CUDA を使わないなら GPU 側の制御は要らない
+        row["can_be_deterministic"] = (not missing) if row["uses_cuda"] else bool(
+            row["torch_manual_seed"]
+        )
+        rows.append(row)
+    return DETERMINISM_COLUMNS, rows
+
+
+# --------------------------------------------------------------------------- #
+# §2 within-seed と between-seed のばらつきの比較
+#
+# 「3-seed の σ」が seed 効果を測っているという前提が成り立つのは
+# within < between のときだけである。逆転していれば σ は
+# 「同一条件の再実行のばらつき」を主に測っている。
+# --------------------------------------------------------------------------- #
+WITHIN_BETWEEN_COLUMNS = [
+    "experiment_id",
+    "group",
+    "step",
+    "metric",
+    "n_runs",
+    "n_seeds",
+    "n_seeds_with_repeats",
+    "within_seed_sd",
+    "between_seed_sd",
+    "ratio_within_over_between",
+    "within_exceeds_between",
+    "within_seed_range_max",
+    "between_seed_range",
+    # ★ 交絡の指標。>1 なら同一 experiment_id に異なる条件の run が混ざっており、
+    #   within-seed のばらつきは「非決定性」ではなく「条件差」を測っている。
+    "n_command_variants",
+    "within_is_confounded_by_condition",
+]
+
+
+def build_within_vs_between(
+    records: list[dict[str, Any]],
+) -> tuple[list[str], list[dict[str, Any]]]:
+    """同一 seed の反復がある実験について within / between のσを比べる。
+
+    within_seed_sd  … seed ごとの母集団σを、反復がある seed について平均したもの
+    between_seed_sd … seed 平均どうしの母集団σ
+    比が 1 を超える = σ が seed 効果ではなく非決定性を主に測っている。
+    """
+    by_exp: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for r in records:
+        if r.get("experiment_id"):
+            by_exp[r["experiment_id"]].append(r)
+
+    rows = []
+    for eid in sorted(by_exp):
+        rs = by_exp[eid]
+        seeds = Counter(r["seed"] for r in rs if r["seed"] is not None)
+        if not seeds or max(seeds.values()) < 2:
+            continue  # 反復が無ければ within は定義できない
+        metric_names = sorted(
+            {k for r in rs for k, v in r["metrics"].items() if _is_number(v)}
+        )
+        n_variants = len({_command_signature(r.get("command"), r.get("seed")) for r in rs})
+        for m in metric_names:
+            per_seed: dict[int, list[float]] = defaultdict(list)
+            for r in rs:
+                v = r["metrics"].get(m)
+                if _is_number(v) and r["seed"] is not None:
+                    per_seed[r["seed"]].append(v)
+            reps = {s: v for s, v in per_seed.items() if len(v) > 1}
+            means = [statistics.mean(v) for v in per_seed.values() if v]
+            if not reps or len(means) < 2:
+                continue
+            within = statistics.mean(statistics.pstdev(v) for v in reps.values())
+            between = statistics.pstdev(means)
+            rows.append(
+                {
+                    "experiment_id": eid,
+                    "group": rs[0]["group"],
+                    "step": rs[0]["step"],
+                    "metric": m,
+                    "n_runs": len(rs),
+                    "n_seeds": len(per_seed),
+                    "n_seeds_with_repeats": len(reps),
+                    "within_seed_sd": within,
+                    "between_seed_sd": between,
+                    "ratio_within_over_between": (within / between) if between else None,
+                    "within_exceeds_between": bool(between and within > between),
+                    "within_seed_range_max": max(max(v) - min(v) for v in reps.values()),
+                    "between_seed_range": max(means) - min(means),
+                    "n_command_variants": n_variants,
+                    "within_is_confounded_by_condition": n_variants > 1,
+                }
+            )
+    return WITHIN_BETWEEN_COLUMNS, rows
+
+
 PAIRED_FEASIBILITY_COLUMNS = [
     "experiment_id",
     "control_of",
@@ -2106,6 +2366,8 @@ make runindex      # runindex/ 全体をゼロから再生成する
 | `anomalies/val_test_pairs.csv` | test 評価を持つ run の val/test 対応表 (縦持ち) |
 | `anomalies/paired_feasibility.csv` | paired-σ の宣言と実行可能性の差 (1 行 = 1 実験) |
 | `anomalies/dedup_sensitivity.csv` | seed 代表値の取り方 (mean/latest/first) で判定が動くかの感度分析 |
+| `anomalies/determinism_audit.csv` | 学習スクリプトの決定性制御の棚卸し (1 行 = 1 スクリプト) |
+| `anomalies/within_vs_between_seed.csv` | 同一条件反復と seed 間のばらつきの比較 (1 行 = 1 実験 × 1 指標) |
 | `anomalies/backlog.md` | 本タスクの範囲外として起票した未着手事項 |
 
 ## index.csv の列
@@ -2164,10 +2426,26 @@ val と test は大きく乖離するため、下流解析では `has_test` で�
 
 | `delta_sigma_source` | σ の定義 |
 |---|---|
-| `paired` | seed ごとの差の σ。seed 由来の変動が相殺される |
+| `paired` | seed ごとの差の σ。seed で対応が付く分の変動が相殺される |
 | `unpaired_pooled` | √(σ_注入² + σ_対照²)。**paired-σ より大きく出る保守的な推定** |
 
-したがって **`unpaired_pooled` で有意なら `paired` でも有意**です（逆は言えません）。
+したがって **`unpaired_pooled` で σ 条件を満たせば `paired` でも満たします**（逆は言えません）。
+
+> ### ⚠️ σ は「seed 間のばらつき」ではありません
+>
+> **σ は「同一条件の反復のばらつき」と「seed を変えたときのばらつき」を
+> 合成したもの**です。学習が決定的でないため、同じ設定で回し直すだけで
+> 結果が変わります（`anomalies.md` §25 / §26）。
+>
+> `sigma_interpretation` 列で判別してください。
+>
+> | 値 | 意味 |
+> |---|---|
+> | `seed_effect` | 同一条件反復のばらつき < seed 間のばらつき。σ は概ね seed 効果 |
+> | `mixed_with_nondeterminism` | **逆転している。σ は主に非決定性を測っている** |
+> | `unknown` | 反復が無く判定できない |
+>
+> 実測では `control_of` を持つ 136 実験のうち **123 が `mixed_with_nondeterminism`** です。
 
 現状 **136 実験中 134 が `unpaired_pooled`** です。対照実験に同一 seed の
 再実行が畳まれずに残っているためで、詳細と全件は
@@ -2217,7 +2495,10 @@ BACKLOG = """# backlog — 本タスクの範囲外として起票した未着�
 | B-17 | `t1a_regiontraj` 系 3 実験の分母 | `config.yaml` は分母を `t1a_regiontoken base (同env efros paired)` と宣言しているが、`t1a_base_env`（efros・seeds 42/123/456・1 run/seed、config は `server_name` 以外一致）へ付け替えると追加計算なしで完全な paired になるという指摘がある | 分母の付け替えは研究上の判断。`config.yaml` の宣言に反するため harvester では変更しない |
 | B-18 | σ 規約の 2 系統併存 | `pstdev` 系 48 箇所（§10.1 判定・レポート層）と `stdev`/`ddof=1` 系 16 箇所（`scripts/analysis/*` の解析・監査層）が併存（§21.2）。**Δ の規約を監査する `delta_convention_audit.py` 自身が判定側と違うσを使っている** | 正本 §10.1 でσを定義したうえで、どちらかに寄せる |
 | ~~B-19~~ | ~~空の Δ scaffold~~ | **解決済み**。`scripts/compute_delta.py` / `scripts/export_paper_tables.py` / `tools/generate_delta_report.py` は 3 つとも 0 バイトで scaffold コミット `af1fc58` 以来未実装だったため削除し、`make delta` / `make tables` を `runindex/` への案内に置き換えた（利用者の判断による） | — |
-| B-20 | 🔴 **学習の非決定性が制御されていない** | 同一 commit・同一 config・同一コマンド・同一 host の再実行が再現しない（`s4_phase_baseline_015` vs `_017` で macro_f1 が 0.7406 vs 0.6572）。**within-seed σ が between-seed σ を全指標で上回る**（比 1.34〜2.45）。原因は `scripts/train_s4_tecno.py:192-195` が CPU 側の seed しか設定せず、`torch.cuda.manual_seed_all` / `use_deterministic_algorithms` / `cudnn.deterministic` / `worker_init_fn` / `PYTHONHASHSEED` が皆無なこと（§25） | 学習コードの変更にあたるため本タスクでは触れない。**これを直さない限り paired-σ は seed 効果を測れない**ので、優先度は高い |
+| B-20 | 🔴 **学習の非決定性が制御されていない（棚卸し完了）** | 同一 commit・同一 config・同一コマンド・同一 host の再実行が再現しない（`s4_phase_baseline_015` vs `_017` で macro_f1 が 0.7406 vs 0.6572）。**欠陥は 1 スクリプト固有ではなく体系的**で、CUDA を使う 13 本のうち `cuda_manual_seed` / `use_deterministic_algorithms` / `cudnn_deterministic` / `worker_init_fn` / `PYTHONHASHSEED` を設定している本は **0 本**（§26.1）。影響 run は 500。`control_of` を持つ 136 実験のうち **123 の σ が `mixed_with_nondeterminism`**（§26.4） | 学習コードの変更 + 再実行にあたるため本タスクでは触れない。**これを直さない限り paired-σ は seed 効果を測れない**。GPU 時間の判断が要る |
+| B-21 | 「全 seed 同符号」条件の定義（**判断待ち**） | dedup 後は「seed 平均どうしの符号が揃うか」を見ている。元の条件文が個々の run の符号を意図していた可能性がある。また n=3 では偶然一致確率が 25% あり検出力の裏付けとして弱い（§27） | 正本 §10.1 で定義を明確にする。harvester は定義を変えずに現状を出力している |
+| B-22 | `engines/` の空 scaffold | `hooks.py` / `stage_b_trainer.py` / `stage_c_trainer.py` / `stage_d_trainer.py` / `validator.py` が 0 バイト（§26.2）。B-19 で削除した Δ scaffold と同じパターン | 使う予定が無ければ削除、あるなら実装 |
+| B-23 | `train_net_egosurgery.py` が repo に無い | 3 run がこれを entrypoint にしているが実体が無い（`third_party/` は同期対象外）。`tools/train.py` も同様に 1 run（§26.2） | これらの run の決定性は確認できない。detectron2/detrex 側の配置を記録するか、run を除外対象にするか |
 | B-11 | `logs/phase3seed_results.tsv` の欠落 | `scripts/paired_sigma_3seed.py` はこの TSV の `arm` 列（frozen / augstrong）を読んで paired-σ を出す設計だが、ファイルが repo に存在しない（`.gitignore` 対象）。arm 情報自体は `config.yaml` の `frozen_source.*` に残っており `frozen_source_tag` として収穫済み | TSV の復元、または `paired_sigma_3seed.py` を `runindex` 由来に切り替える |
 | B-12 | 573 run の外側にある inj/ctrl ペア | `transfer/*_efros/` と `experiments/transfer/{hc,oracle_phase}_seed*/` に `injected_result.json` / `control_result.json` の対が 18 組あるが、`metrics.json` を持たないため収穫対象外。真の注入/対照ペアはここにある | 非標準群の adapter（B-6）と同じ作業 |
 | B-13 | 同一条件が別 `experiment_id` に分裂する組 | `description` / `split` / `frozen_source_tag` が同じで `step` だけ違う組がある（§17.2）。多くは `eval_recipe_id` による意図的分離 | 起動経路が同一かの判断が要るため harvester では決めない |
@@ -2321,6 +2602,22 @@ def write_runindex(records: list[dict[str, Any]], anomalies: str) -> None:
         writer = csv.DictWriter(fh, fieldnames=fh_, lineterminator="\n")
         writer.writeheader()
         writer.writerows(fr)
+
+    # 学習スクリプトの決定性制御の棚卸し（§1）
+    ah, ar = build_determinism_audit(reloaded)
+    with (anomalies_dir / "determinism_audit.csv").open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=ah, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(ar)
+
+    # within-seed と between-seed のばらつきの比較（§2）
+    wh, wr = build_within_vs_between(reloaded)
+    with (anomalies_dir / "within_vs_between_seed.csv").open(
+        "w", encoding="utf-8", newline=""
+    ) as fh:
+        writer = csv.DictWriter(fh, fieldnames=wh, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(wr)
 
     # 代表値の取り方で結論が動かないことの確認
     dh, dr = build_dedup_sensitivity(reloaded)
@@ -3725,6 +4022,144 @@ def build_anomalies(
     add("")
     add("**根本対処は「非決定性を制御して再実行する」ことであり、")
     add("代表値の選び方を工夫することではない。**（backlog B-20）")
+    add("")
+
+    # ---------------------------------------------------------------- #
+    add("## 26. 非決定性の棚卸しと影響範囲")
+    add("")
+    add("§25 の欠陥が `train_s4_tecno.py` 固有かを全スクリプトで確認した。")
+    add("全件は `anomalies/determinism_audit.csv`。")
+    add("")
+    add("### 26.1 🔴 決定的になり得る学習スクリプトは **1 本も無い**")
+    add("")
+    dh_, dr_ = build_determinism_audit(records)
+    cuda = [r for r in dr_ if r.get("uses_cuda")]
+    add(f"監査 {len(dr_)} スクリプト / うち CUDA を使う **{len(cuda)}** 本 / ")
+    add(f"`can_be_deterministic = True` は **{sum(1 for r in dr_ if r.get('can_be_deterministic'))}** 本。")
+    add("")
+    add("| 制御項目 | 設定している本数 |")
+    add("|---|---:|")
+    for k in DETERMINISM_CHECKS:
+        add(f"| `{k}` | {sum(1 for r in cuda if r.get(k))} / {len(cuda)} |")
+    add("")
+    add("`random.seed` / `np.random.seed` / `torch.manual_seed`（CPU 側）は揃っているが、")
+    add("**GPU 側の制御は 1 本も無い**。欠陥は 1 スクリプト固有ではなく体系的である。")
+    add("")
+    n_cuda_runs = sum(r.get("n_runs", 0) for r in cuda)
+    add(f"影響を受ける run: **{n_cuda_runs}**（CUDA 学習スクリプトが entrypoint の run）")
+    add("")
+    add("| スクリプト | run 数 | 欠落している必須項目 |")
+    add("|---|---:|---|")
+    for r in sorted(cuda, key=lambda x: -x.get("n_runs", 0)):
+        if r.get("n_runs"):
+            add(f"| `{r['script']}` | {r['n_runs']} | `{r['missing_required']}` |")
+    add("")
+    add("### 26.2 監査できなかったもの")
+    add("")
+    miss = [r for r in dr_ if r.get("file_state") != "ok"]
+    if miss:
+        add("| スクリプト | 状態 | run 数 |")
+        add("|---|---|---:|")
+        for r in sorted(miss, key=lambda x: (x["file_state"], x["script"])):
+            add(f"| `{r['script']}` | `{r['file_state']}` | {r['n_runs']} |")
+        add("")
+        add("`empty` は 0 バイトの scaffold、`missing` は repo に実体が無いもの")
+        add("（detectron2 / detrex 系の entrypoint。`third_party/` は同期対象外）。")
+        add("**`missing` の run については決定性を確認できない。**")
+        add("")
+
+    add("### 26.3 影響範囲の定量 — within-seed と between-seed の比較")
+    add("")
+    add("全件は `anomalies/within_vs_between_seed.csv`（1 行 = 1 実験 × 1 指標）。")
+    add("")
+    wh_, wr_ = build_within_vs_between(records)
+    if wr_:
+        exceed = [r for r in wr_ if r["within_exceeds_between"]]
+        conf = [r for r in exceed if r["within_is_confounded_by_condition"]]
+        clean = [r for r in exceed if not r["within_is_confounded_by_condition"]]
+        add(f"- 反復がある (実験 × 指標) の組: **{len(wr_)}**")
+        add(f"- そのうち **within > between**: **{len(exceed)}**")
+        add(f"  - 条件混在の交絡あり: {len(conf)}")
+        add(f"  - 交絡なし（純粋に非決定性）: **{len(clean)}**")
+        add("")
+        add("**⚠️ 単純に「47 件で within が上回る」と読んではいけない。**")
+        add("`b2a_ro_oracle_noise000` のように 1 つの名前に 4 水準の条件が混ざっている実験")
+        add("（§7.3）では、within-seed のばらつきは非決定性ではなく**条件差**である。")
+        add("`within_is_confounded_by_condition` 列で切り分けること。")
+        add("")
+        add("| step | 組数 | 比の中央値 | 比の最大 |")
+        add("|---|---:|---:|---:|")
+        bystep: dict[str, list[float]] = defaultdict(list)
+        for r in clean:
+            bystep[str(r["step"])].append(r["ratio_within_over_between"])
+        for s, v in sorted(bystep.items(), key=lambda x: -statistics.median(x[1])):
+            add(f"| `{s}` | {len(v)} | {statistics.median(v):.3f} | {max(v):.3f} |")
+        add("")
+        add("### 26.4 🔴 汚染された 1 つの分母が 117 実験に伝播している")
+        add("")
+        add("Δ の σ は注入側と対照側の**合成**なので、対照が汚染されていれば")
+        add("それを分母に使う全実験の σ が汚染される。")
+        add("")
+        add("対照実験 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42`")
+        add("の within/between 比は **accuracy 1.373 / macro_f1 2.277**（交絡なし）。")
+        add("この実験を `control_of` に持つ実験がその比を継承する。")
+        add("")
+    if exp_rows:
+        si = Counter(
+            r.get("sigma_interpretation") for r in exp_rows if r.get("control_of")
+        )
+        add("| `sigma_interpretation` | 実験数 |")
+        add("|---|---:|")
+        for k in ("mixed_with_nondeterminism", "seed_effect", "unknown"):
+            add(f"| `{k}` | {si.get(k, 0)} |")
+        add("")
+        add(f"**`control_of` を持つ {sum(si.values())} 実験のうち "
+            f"{si.get('mixed_with_nondeterminism', 0)} の σ は seed 効果を測っていない。**")
+        add("")
+        sig_mixed = sum(
+            1
+            for r in exp_rows
+            if r.get("verdict_10_1") == "significant"
+            and r.get("sigma_interpretation") == "mixed_with_nondeterminism"
+        )
+        add(f"うち `verdict_10_1 = significant` は **{sig_mixed}** 件。")
+        add("これらは「§10.1 の条件は満たすが、σ が想定どおりのものではない」状態である。")
+        add("**判定を無効とするか、非決定性を制御して再実行するかは研究上の判断**であり、")
+        add("harvester は判定を消さずに `sigma_interpretation` で印を付けるに留める。")
+        add("")
+
+    # ---------------------------------------------------------------- #
+    add("## 27. 論点: 「全 seed 同符号」条件は dedup 後も同じ意味か")
+    add("")
+    add("**これは判断を仰ぐための論点整理であり、harvester は定義を変えていない。**")
+    add("")
+    add("### 27.1 何が変わったか")
+    add("")
+    add("§24 で seed ごとに複数 run がある場合 `mean` で畳むようにした。その結果:")
+    add("")
+    add("| | 畳み込み前 | 畳み込み後（現在） |")
+    add("|---|---|---|")
+    add("| 「全 seed 同符号」の対象 | 個々の run の Δ | **seed 平均どうしの Δ** |")
+    add("| 符号を見る個数 | run 数（対照側は最大 7）| seed 数（通常 3） |")
+    add("")
+    add("### 27.2 論点")
+    add("")
+    add("1. **元の条件文が何を意図していたか。** `notes.md` は")
+    add("   「3-seed 揃ったら paired-σ(対seed差) で §10.1 判定」と書いており、")
+    add("   3 つの符号を見ることを想定していたように読める。")
+    add("   その意味では現在の実装（seed 平均 3 つの符号）は意図に沿う。")
+    add("2. **しかし平均は符号のばらつきを隠す。** 同一 seed 内で Δ の符号が")
+    add("   割れていても、平均の符号は片方に決まる。§25 のとおり同一条件反復の")
+    add("   ばらつきが大きいため、これは実際に起こりうる。")
+    add("3. **n=3 の同符号条件は偶然一致しやすい。** 効果が無くても")
+    add("   3 つの符号が揃う確率は 2 × (1/2)^3 = **25%**。")
+    add("   σ 条件と組み合わせても、n=3 では検出力の裏付けとして弱い。")
+    add("4. 代替案としては「全 run の Δ の符号が揃う」（より厳しい）、")
+    add("   「符号一致率を出す」（連続量にする）などがありうる。")
+    add("")
+    add("現状は `delta_same_sign_<metric>`（seed 平均ベース）を出しており、")
+    add("`delta_n_seeds_<metric>` で何個の符号を見たかが分かる。")
+    add("**定義を変えるかどうかは正本側の判断**である（backlog B-21）。")
     add("")
 
     return "\n".join(lines) + "\n"

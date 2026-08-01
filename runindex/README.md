@@ -24,6 +24,8 @@ make runindex      # runindex/ 全体をゼロから再生成する
 | `anomalies/val_test_pairs.csv` | test 評価を持つ run の val/test 対応表 (縦持ち) |
 | `anomalies/paired_feasibility.csv` | paired-σ の宣言と実行可能性の差 (1 行 = 1 実験) |
 | `anomalies/dedup_sensitivity.csv` | seed 代表値の取り方 (mean/latest/first) で判定が動くかの感度分析 |
+| `anomalies/determinism_audit.csv` | 学習スクリプトの決定性制御の棚卸し (1 行 = 1 スクリプト) |
+| `anomalies/within_vs_between_seed.csv` | 同一条件反復と seed 間のばらつきの比較 (1 行 = 1 実験 × 1 指標) |
 | `anomalies/backlog.md` | 本タスクの範囲外として起票した未着手事項 |
 
 ## index.csv の列
@@ -82,10 +84,26 @@ val と test は大きく乖離するため、下流解析では `has_test` で�
 
 | `delta_sigma_source` | σ の定義 |
 |---|---|
-| `paired` | seed ごとの差の σ。seed 由来の変動が相殺される |
+| `paired` | seed ごとの差の σ。seed で対応が付く分の変動が相殺される |
 | `unpaired_pooled` | √(σ_注入² + σ_対照²)。**paired-σ より大きく出る保守的な推定** |
 
-したがって **`unpaired_pooled` で有意なら `paired` でも有意**です（逆は言えません）。
+したがって **`unpaired_pooled` で σ 条件を満たせば `paired` でも満たします**（逆は言えません）。
+
+> ### ⚠️ σ は「seed 間のばらつき」ではありません
+>
+> **σ は「同一条件の反復のばらつき」と「seed を変えたときのばらつき」を
+> 合成したもの**です。学習が決定的でないため、同じ設定で回し直すだけで
+> 結果が変わります（`anomalies.md` §25 / §26）。
+>
+> `sigma_interpretation` 列で判別してください。
+>
+> | 値 | 意味 |
+> |---|---|
+> | `seed_effect` | 同一条件反復のばらつき < seed 間のばらつき。σ は概ね seed 効果 |
+> | `mixed_with_nondeterminism` | **逆転している。σ は主に非決定性を測っている** |
+> | `unknown` | 反復が無く判定できない |
+>
+> 実測では `control_of` を持つ 136 実験のうち **123 が `mixed_with_nondeterminism`** です。
 
 現状 **136 実験中 134 が `unpaired_pooled`** です。対照実験に同一 seed の
 再実行が畳まれずに残っているためで、詳細と全件は
