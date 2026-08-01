@@ -1418,9 +1418,33 @@ CPU 側 3 種のみで **GPU 側の制御が 1 つも無い**。
 | `tools/train_net_egosurgery.py` | `missing` | 3 |
 | `train_net_egosurgery.py` | `missing` | 3 |
 
-`empty` は 0 バイトの scaffold、`missing` は repo に実体が無いもの
-（detectron2 / detrex 系の entrypoint。`third_party/` は同期対象外）。
-**`missing` の run については決定性を確認できない。**
+`empty` は 0 バイトの scaffold、`missing` は**この worktree に**実体が無いもの。
+
+`missing` は「存在しない」ではなく「`third_party/` が同期対象外」である
+（`.stglobalignore` が `third_party` を除外。入れ子 `.git` を含むため）。
+本体側 `/home/ubuntu/slocal2/m2/third_party/` には Co-DETR / DAC-DETR /
+DI-MaskDINO / MaskDINO / Mr.DETR / Relation-DETR / Stable-DINO / detrex がある。
+**したがってこれらの run の決定性は runindex 単独では確認できない。**
+
+### 26.2.1 第三者 entrypoint について分かっていること
+
+本体側の実体を読んだ範囲では、制御の状況は自前スクリプトと異なる:
+
+| entrypoint | 状況 |
+|---|---|
+| Relation-DETR | `main.py:123-127` に **完全な決定性ブロック**（`use_deterministic_algorithms` / `worker_init_fn` / `generator`）がある。ただし `--use-deterministic-algorithms` フラグでゲートされており、該当 run の `command.sh` は渡していない。さらに `--mixed-precision fp16` で走っている |
+| detrex | detectron2 の `default_setup` が seed 系と `worker_init_fn` を張るが、`cudnn.deterministic` と `use_deterministic_algorithms` は設定しない |
+
+**フラグ 1 つで決定的にできる経路が存在するのに使われていない**、というのが
+Relation-DETR 経路の状況である。
+
+### 26.2.2 監査表を読むときの注意
+
+| 列 | 注意 |
+|---|---|
+| `dataloader_worker_init_fn` / `dataloader_generator` | **DataLoader を使わないスクリプトには該当しない。** 自前スクリプト 8 本は `DataLoader` を一切使わず、メモリ上の clip リストを `random.shuffle` で並べ替えている。`uses_dataloader` 列で判別すること |
+| `pythonhashseed` | `os.environ["PYTHONHASHSEED"]` への**実行時代入は効かない**。CPython のハッシュ乱択はインタプリタ起動時に確定するため、既に走っているプロセスには影響しない。実効性は `pythonhashseed_effective` 列（シェル側の export を検出）で見ること。**実測では 0 / 20** |
+| `explicitly_disables_determinism` | `src/egosurgery/engines/mmdet_trainer.py` は `mmcfg.randomness = dict(..., deterministic=False, ...)` を明示指定し、**mmengine 側の決定化を止めている**。制御が「無い」のではなく「切っている」 |
 
 ### 26.3 影響範囲の定量 — within-seed と between-seed の比較
 
