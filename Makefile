@@ -32,11 +32,29 @@ s6:
 eval:
 	bash scripts/eval.sh
 
+# Δ / σ / §10.1 判定は runindex/ に一本化した。
+# scripts/compute_delta.py と scripts/export_paper_tables.py は
+# scaffold コミット af1fc58 以来 0 バイトのまま一度も実装されず、
+# make delta / make tables が無言で成功する状態だったため削除した。
 delta:
-	python scripts/compute_delta.py
+	@echo "Δ と σ と §10.1 判定は runindex/ に集約されています。"
+	@echo ""
+	@echo "  runindex/experiments.csv  1 行 = 1 実験"
+	@echo "      delta_<metric>              Δ = 注入 − 対照"
+	@echo "      delta_pstd_ / delta_sstd_   Δ の母集団σ / 標本σ"
+	@echo "      verdict_10_1                §10.1 判定 (母集団σ基準)"
+	@echo "      verdict_10_1_sstd           同 (標本σ基準)"
+	@echo "      delta_method / delta_dedup_rule"
+	@echo ""
+	@echo "  runindex/verdicts.csv     1 行 = 1 実験 × 1 指標の判定"
+	@echo ""
+	@echo "再生成: make runindex     読む前の注意: runindex/anomalies.md §21-25"
 
 tables:
-	python scripts/export_paper_tables.py
+	@echo "論文表の材料は runindex/verdicts.csv にあります。"
+	@echo "  experiment_id / metric / delta / pstd / sstd / same_sign / verdict_*"
+	@echo ""
+	@echo "再生成: make runindex"
 
 # experiments/ から横断インデックス runindex/ を収穫する（派生物・完全再生成可能）
 # 収穫のたびに 2 系統の検査を回す:
