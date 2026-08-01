@@ -1340,3 +1340,134 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 **根本対処は「非決定性を制御して再実行する」ことであり、
 代表値の選び方を工夫することではない。**（backlog B-20）
 
+## 26. 非決定性の棚卸しと影響範囲
+
+§25 の欠陥が `train_s4_tecno.py` 固有かを全スクリプトで確認した。
+全件は `anomalies/determinism_audit.csv`。
+
+### 26.1 🔴 決定的になり得る学習スクリプトは **1 本も無い**
+
+監査 28 スクリプト / うち CUDA を使う **13** 本 / 
+`can_be_deterministic = True` は **0** 本。
+
+| 制御項目 | 設定している本数 |
+|---|---:|
+| `random_seed` | 11 / 13 |
+| `numpy_seed` | 11 / 13 |
+| `torch_manual_seed` | 11 / 13 |
+| `cuda_manual_seed` | 0 / 13 |
+| `use_deterministic_algorithms` | 0 / 13 |
+| `cudnn_deterministic` | 0 / 13 |
+| `cudnn_benchmark` | 0 / 13 |
+| `pythonhashseed` | 0 / 13 |
+| `dataloader_worker_init_fn` | 0 / 13 |
+| `dataloader_generator` | 0 / 13 |
+| `cublas_workspace_config` | 0 / 13 |
+
+`random.seed` / `np.random.seed` / `torch.manual_seed`（CPU 側）は揃っているが、
+**GPU 側の制御は 1 本も無い**。欠陥は 1 スクリプト固有ではなく体系的である。
+
+影響を受ける run: **500**（CUDA 学習スクリプトが entrypoint の run）
+
+| スクリプト | run 数 | 欠落している必須項目 |
+|---|---:|---|
+| `scripts/train_b2a.py` | 265 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
+| `scripts/train_t1a.py` | 132 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
+| `scripts/train_s4_tecno.py` | 61 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
+| `scripts/train_haux.py` | 18 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
+| `scripts/train_taux.py` | 15 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
+| `scripts/train_t1a_regiontraj.py` | 6 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
+| `scripts/train_t1a_boundary.py` | 3 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
+
+### 26.2 監査できなかったもの
+
+| スクリプト | 状態 | run 数 |
+|---|---|---:|
+| `src/egosurgery/engines/hooks.py` | `empty` | 0 |
+| `src/egosurgery/engines/stage_b_trainer.py` | `empty` | 0 |
+| `src/egosurgery/engines/stage_c_trainer.py` | `empty` | 0 |
+| `src/egosurgery/engines/stage_d_trainer.py` | `empty` | 0 |
+| `src/egosurgery/engines/validator.py` | `empty` | 0 |
+| `tools/train.py` | `missing` | 1 |
+| `tools/train_net_egosurgery.py` | `missing` | 3 |
+| `train_net_egosurgery.py` | `missing` | 3 |
+
+`empty` は 0 バイトの scaffold、`missing` は repo に実体が無いもの
+（detectron2 / detrex 系の entrypoint。`third_party/` は同期対象外）。
+**`missing` の run については決定性を確認できない。**
+
+### 26.3 影響範囲の定量 — within-seed と between-seed の比較
+
+全件は `anomalies/within_vs_between_seed.csv`（1 行 = 1 実験 × 1 指標）。
+
+- 反復がある (実験 × 指標) の組: **98**
+- そのうち **within > between**: **47**
+  - 条件混在の交絡あり: 36
+  - 交絡なし（純粋に非決定性）: **11**
+
+**⚠️ 単純に「47 件で within が上回る」と読んではいけない。**
+`b2a_ro_oracle_noise000` のように 1 つの名前に 4 水準の条件が混ざっている実験
+（§7.3）では、within-seed のばらつきは非決定性ではなく**条件差**である。
+`within_is_confounded_by_condition` 列で切り分けること。
+
+| step | 組数 | 比の中央値 | 比の最大 |
+|---|---:|---:|---:|
+| `t1a_3seed_det42_aug` | 4 | 2.119 | 2.150 |
+| `b2a_det2phase_toolpresence` | 2 | 1.423 | 1.439 |
+| `base` | 2 | 1.192 | 1.260 |
+| `t1a_3seed_det42_frozen` | 3 | 1.128 | 1.271 |
+
+### 26.4 🔴 汚染された 1 つの分母が 117 実験に伝播している
+
+Δ の σ は注入側と対照側の**合成**なので、対照が汚染されていれば
+それを分母に使う全実験の σ が汚染される。
+
+対照実験 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42`
+の within/between 比は **accuracy 1.373 / macro_f1 2.277**（交絡なし）。
+この実験を `control_of` に持つ実験がその比を継承する。
+
+| `sigma_interpretation` | 実験数 |
+|---|---:|
+| `mixed_with_nondeterminism` | 123 |
+| `seed_effect` | 8 |
+| `unknown` | 5 |
+
+**`control_of` を持つ 136 実験のうち 123 の σ は seed 効果を測っていない。**
+
+うち `verdict_10_1 = significant` は **115** 件。
+これらは「§10.1 の条件は満たすが、σ が想定どおりのものではない」状態である。
+**判定を無効とするか、非決定性を制御して再実行するかは研究上の判断**であり、
+harvester は判定を消さずに `sigma_interpretation` で印を付けるに留める。
+
+## 27. 論点: 「全 seed 同符号」条件は dedup 後も同じ意味か
+
+**これは判断を仰ぐための論点整理であり、harvester は定義を変えていない。**
+
+### 27.1 何が変わったか
+
+§24 で seed ごとに複数 run がある場合 `mean` で畳むようにした。その結果:
+
+| | 畳み込み前 | 畳み込み後（現在） |
+|---|---|---|
+| 「全 seed 同符号」の対象 | 個々の run の Δ | **seed 平均どうしの Δ** |
+| 符号を見る個数 | run 数（対照側は最大 7）| seed 数（通常 3） |
+
+### 27.2 論点
+
+1. **元の条件文が何を意図していたか。** `notes.md` は
+   「3-seed 揃ったら paired-σ(対seed差) で §10.1 判定」と書いており、
+   3 つの符号を見ることを想定していたように読める。
+   その意味では現在の実装（seed 平均 3 つの符号）は意図に沿う。
+2. **しかし平均は符号のばらつきを隠す。** 同一 seed 内で Δ の符号が
+   割れていても、平均の符号は片方に決まる。§25 のとおり同一条件反復の
+   ばらつきが大きいため、これは実際に起こりうる。
+3. **n=3 の同符号条件は偶然一致しやすい。** 効果が無くても
+   3 つの符号が揃う確率は 2 × (1/2)^3 = **25%**。
+   σ 条件と組み合わせても、n=3 では検出力の裏付けとして弱い。
+4. 代替案としては「全 run の Δ の符号が揃う」（より厳しい）、
+   「符号一致率を出す」（連続量にする）などがありうる。
+
+現状は `delta_same_sign_<metric>`（seed 平均ベース）を出しており、
+`delta_n_seeds_<metric>` で何個の符号を見たかが分かる。
+**定義を変えるかどうかは正本側の判断**である（backlog B-21）。
+
