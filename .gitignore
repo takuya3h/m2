@@ -120,6 +120,18 @@ paper/sections/*.aux
 # tool/ hand/ の生 COCO コピーは EgoSurgery 公式と重複・大容量のため追跡しない。
 !data/annotations/egosurgery_tool/instances_*.json
 
+# === G-2 本実験（experiments/g2_main_*/）===
+# 抽出特徴の npz は大容量（3 split × 3 系統で 681MB）。activate さえ守れば
+# build_roi_channels.py で決定論的に再生成でき、ホスト間ビット一致を実測済みなので追跡しない。
+experiments/**/*.npz
+# per-frame 予測は本実験の必須証跡（12 run 合計 4.5MB）。これがあれば ckpt が無くても
+# per-phase の内訳とクラスタ・ブートストラップを再学習なしで再計算できる。
+# 検出側 run の大容量 predictions を巻き込まないよう、パスとファイル名を限定して例外化する。
+!experiments/g2_main_*/runs/*/predictions/
+experiments/g2_main_*/runs/*/predictions/*
+!experiments/g2_main_*/runs/*/predictions/val_preds.json
+!experiments/g2_main_*/runs/*/predictions/test_preds.json
+
 # === third_party (外部 fork: MaskDINO 等) ===
 third_party/
 
