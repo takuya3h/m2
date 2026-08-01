@@ -15,13 +15,15 @@ make runindex      # runindex/ 全体をゼロから再生成する
 |---|---|
 | `index.csv` | 1 行 = 1 **run** の横断インデックス。`runs/*.json` から導出 |
 | `per_class.csv` | 1 行 = 1 run × 1 クラス。per-class を long 形式で 1 ファイル化 |
-| `experiments.csv` | 1 行 = 1 **実験**（seed 集約 + 対照 Δ）。論文 Table の 1 行に対応 |
+| `experiments.csv` | 1 行 = 1 **実験**（seed 集約 + 対照 Δ + §10.1 判定）。論文 Table の 1 行に対応 |
+| `verdicts.csv` | 1 行 = 1 実験 × 1 指標 の §10.1 判定（母集団σ / 標本σ の両方） |
 | `runs/<ledger_key>.json` | 正規化済みの run 記録 |
 | `host_aliases.json` | host 正規化の対応表 |
 | `metric_aliases.json` | 指標名の表記ゆれ統合表 |
 | `anomalies.md` | 規約から外れたもの・判断を保留したものの一覧 (人間が読む) |
 | `anomalies/val_test_pairs.csv` | test 評価を持つ run の val/test 対応表 (縦持ち) |
 | `anomalies/paired_feasibility.csv` | paired-σ の宣言と実行可能性の差 (1 行 = 1 実験) |
+| `anomalies/dedup_sensitivity.csv` | seed 代表値の取り方 (mean/latest/first) で判定が動くかの感度分析 |
 | `anomalies/backlog.md` | 本タスクの範囲外として起票した未着手事項 |
 
 ## index.csv の列

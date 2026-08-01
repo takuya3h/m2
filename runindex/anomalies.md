@@ -863,11 +863,11 @@ arm を表している可能性があるが、対照関係を明示した記録�
 
 | 閾値 | 母集団σ基準 | 標本σ基準 | 判定が反転 |
 |---|---:|---:|---:|
-| 1σ | 124 | 124 | **0** |
-| 2σ | 122 | 122 | **0** |
-| 3σ | 117 | 114 | **3** |
+| 1σ | 126 | 124 | **2** |
+| 2σ | 124 | 123 | **1** |
+| 3σ | 120 | 118 | **2** |
 
-対象 134 実験。標本σ/母集団σ の実測中央値 = **1.0531**。
+対象 134 実験。標本σ/母集団σ の実測中央値 = **1.2247**。
 
 **§10.1 が使う 1σ 基準では、現在の実データで判定は 1 件も反転しない。**
 理由は σ の合成にある。注入側は n=3（比 √(3/2)=1.2247）だが
@@ -904,14 +904,39 @@ arm を表している可能性があるが、対照関係を明示した記録�
 
 **「Δ の規約を監査する」スクリプト自身が、判定側と違うσを使っている。**
 
-正本の研究計画（`docs/m2_plan_rewrite/`）は §10.1 の 1σ を
-「同一 eval recipe での 3-seed std」としか書いておらず、**どちらか明示していない**。
-したがって「どちらを使うべきか」の規範的根拠はリポジトリ内に存在しない。
+### 21.2.1 🔴 **明文の規約は ddof=1、実装は ddof=0** — 両者が逆を向いている
 
-`abs_delta_over_sigma_<metric>` は **母集団σ**（`delta_pstd_<metric>`）を分母にした。
-§10.1 判定の実装側と揃えたためである。標本σで見たい場合は
-`delta_sstd_<metric>` で割り直すこと（両方出してある）。
-**規約の確定は正本側の作業であり、harvester が決めることではない（backlog B-9）。**
+正本の研究計画（`docs/m2_plan_rewrite/`）は §10.1 の 1σ を
+「同一 eval recipe での 3-seed std」としか書かず種類を明示していないが、
+**スコープを限った明示宣言は複数あり、そのすべてが ddof=1（標本σ）を指す**:
+
+| 出典 | 記述 |
+|---|---|
+| `scripts/analyze_phase_coupling.py:21` | 「改善主張は §10.1 に従い \|Δ\| > 1σ のときのみ。**1σ は base 3-seed の標本(n-1)標準偏差**」 |
+| `src/egosurgery/metrics/delta.py:111,131` | 「標準偏差は**不偏標準偏差（ddof=1）**」/ `arr.std(ddof=1)` |
+| `docs/experiment_log.md:1742` | 「n=3, **ddof=1**」 |
+
+**実験ログの数値も ddof=1 で書かれている**（実測で照合）:
+
+```
+docs/experiment_log.md:440   S4' = acc 0.9142 ± 0.0017
+  実測 (s4_phase_baseline_004/005/006 _neck):
+    mean = 0.9142
+    pstdev (ddof=0) = 0.001426   -> 0.0014  ✗ 一致しない
+    stdev  (ddof=1) = 0.001746   -> 0.0017  ✅ 一致
+```
+
+一方 §10.1 の**判定を実装している** 7 箇所は `pstdev`（ddof=0）である。
+つまり **文書が定めた規約と、判定コードが使っている規約が食い違っている。**
+これは「どちらか未定」ではなく「二つが並存し矛盾している」状態である。
+
+`abs_delta_over_sigma_<metric>` と `verdict_10_1` は **母集団σ**（ddof=0）を分母に、
+`verdict_10_1_sstd` は **標本σ**（ddof=1）を分母にしている。
+**どちらを正本とするかは harvester が決めることではない**ため両方出し、
+結論が食い違う実験を `verdict_10_1_agree = False` で列挙している（backlog B-9 / B-18）。
+
+なお件数の数え方に注意: 上の「48 / 16」は docstring・コメント・print 文を含む
+全 grep ヒットである。実コード行だけに絞ると概ね 21 / 15 になる。
 
 なお `notes.md` / `config.yaml` の `0.8986±0.0034` は書き出し時に計算された値ではなく、
 `scripts/train_*.py` にハードコードされた文字列リテラルである。
@@ -982,11 +1007,140 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 
 | experiment_id | Δacc | \|Δ\|/σ | 同符号 | §10.1 |
 |---|---:|---:|---|---|
+| `transfer/b2a_ro_oracle_nhnoise_p010/b2a_ro_oracle_nhnoise_p010@val~relation_detr_seed42` | +0.07068 | 26.75 | ✓ | **有意** |
+| `transfer/b2a_regiononly_oracle/b2a_regiononly_oracle@val~relation_detr_seed42` | +0.06980 | 20.28 | ✓ | **有意** |
+| `transfer/b2a_ro_oracle_nhnoise_p020/b2a_ro_oracle_nhnoise_p020@val~relation_detr_seed42` | +0.06980 | 32.74 | ✓ | **有意** |
+| `transfer/b2a_ro_oracle_nhnoise_p030/b2a_ro_oracle_nhnoise_p030@val~relation_detr_seed42` | +0.06826 | 36.63 | ✓ | **有意** |
+| `transfer/b2a_ro_oracle_scalpelnoise_p010/b2a_ro_oracle_scalpelnoise_p010@val~relation_detr_seed42` | +0.06782 | 27.32 | ✓ | **有意** |
+| `transfer/t1a_3seed_det456_frozen/t1a_3seed_det456_frozen@val~relation_detr_seed456` | +0.06425 | 6.00 | ✓ | **有意** |
+| `transfer/b2a_ro_oracle_scalpelnoise_p020/b2a_ro_oracle_scalpelnoise_p020@val~relation_detr_seed42` | +0.06342 | 32.80 | ✓ | **有意** |
+| `transfer/b2a_oracle_mask_03/b2a_oracle_mask_03@val~relation_detr_seed42` | +0.06276 | 15.46 | ✓ | **有意** |
+| `transfer/b2a_oracle_mask_02/b2a_oracle_mask_02@val~relation_detr_seed42` | +0.06210 | 11.26 | ✓ | **有意** |
+| `transfer/b2a_oracle_mask_04/b2a_oracle_mask_04@val~relation_detr_seed42` | +0.06188 | 15.54 | ✓ | **有意** |
+| `transfer/b2a_oracle_mask_08/b2a_oracle_mask_08@val~relation_detr_seed42` | +0.06188 | 12.30 | ✓ | **有意** |
+| `transfer/b2a_oracle_mask_11/b2a_oracle_mask_11@val~relation_detr_seed42` | +0.06166 | 12.83 | ✓ | **有意** |
+| `transfer/b2a_oracle_mask_01/b2a_oracle_mask_01@val~relation_detr_seed42` | +0.06144 | 12.13 | ✓ | **有意** |
+| `transfer/b2a_oracle_mask_05/b2a_oracle_mask_05@val~relation_detr_seed42` | +0.06100 | 10.05 | ✓ | **有意** |
+| `transfer/b2a_oracle_mask_10/b2a_oracle_mask_10@val~relation_detr_seed42` | +0.06100 | 10.11 | ✓ | **有意** |
+| `transfer/b2a_oracle_mask_12/b2a_oracle_mask_12@val~relation_detr_seed42` | +0.06100 | 11.45 | ✓ | **有意** |
+| `transfer/b2a_ro_oracle_bipolarnoise_p010/b2a_ro_oracle_bipolarnoise_p010@val~relation_detr_seed42` | +0.06100 | 15.85 | ✓ | **有意** |
+| `transfer/t1a_3seed_det123_frozen/t1a_3seed_det123_frozen@val~relation_detr_seed123` | +0.06084 | 14.27 | ✓ | **有意** |
+| `transfer/b2a_oracle_mask_14/b2a_oracle_mask_14@val~relation_detr_seed42` | +0.06078 | 15.24 | ✓ | **有意** |
+| `transfer/haux_hand_presence_oracle_withtooloracle/haux_hand_presence_oracle_withtooloracle@val~relation_detr_seed42` | +0.06012 | 11.77 | ✓ | **有意** |
+| `transfer/b2a_oracle_mask_13/b2a_oracle_mask_13@val~relation_detr_seed42` | +0.05990 | 13.77 | ✓ | **有意** |
+| `transfer/b2a_det2phase_oracletool/b2a_det2phase_oracletool@val~relation_detr_seed42` | +0.05979 | 11.42 | ✓ | **有意** |
+| `transfer/b2a_oracle_mask_07/b2a_oracle_mask_07@val~relation_detr_seed42` | +0.05968 | 12.41 | ✓ | **有意** |
+| `transfer/b2a_ro_oracle_scalpelnoise_p030/b2a_ro_oracle_scalpelnoise_p030@val~relation_detr_seed42` | +0.05946 | 30.75 | ✓ | **有意** |
+| `transfer/b2a_oracle_mask_06/b2a_oracle_mask_06@val~relation_detr_seed42` | +0.05594 | 18.12 | ✓ | **有意** |
+| `transfer/b2a_ro_oracle_bsnoise_p010/b2a_ro_oracle_bsnoise_p010@val~relation_detr_seed42` | +0.05572 | 59.86 | ✓ | **有意** |
+| `transfer/b2a_ro_oracle_bipolarnoise_p020/b2a_ro_oracle_bipolarnoise_p020@val~relation_detr_seed42` | +0.05550 | 11.88 | ✓ | **有意** |
+| `transfer/b2a_ro_oracle_top3noise_p010/b2a_ro_oracle_top3noise_p010@val~relation_detr_seed42` | +0.05462 | 25.76 | ✓ | **有意** |
+| `transfer/taux_tecno_windowk3/taux_tecno_windowk3@val~relation_detr_seed42` | +0.05374 | 23.06 | ✓ | **有意** |
+| `transfer/taux_mingru_nonek3/taux_mingru_nonek3@val~relation_detr_seed42` | +0.05286 | 15.91 | ✓ | **有意** |
+| `transfer/t1a_region_mask_02/t1a_region_mask_02@val~relation_detr_seed42` | +0.05264 | 12.05 | ✓ | **有意** |
+| `transfer/t1a_appearance/t1a_appearance@val~relation_detr_seed42` | +0.05242 | 15.25 | ✓ | **有意** |
+| `transfer/t1a_region_mask_14/t1a_region_mask_14@val~relation_detr_seed42` | +0.05220 | 14.16 | ✓ | **有意** |
+| `transfer/taux_tecno_nonek3/taux_tecno_nonek3@val~relation_detr_seed42` | +0.05220 | 12.57 | ✓ | **有意** |
+| `transfer/t1a_region_mask_03/t1a_region_mask_03@val~relation_detr_seed42` | +0.05198 | 15.81 | ✓ | **有意** |
+| `transfer/t1a_region_mask_05/t1a_region_mask_05@val~relation_detr_seed42` | +0.05198 | 25.37 | ✓ | **有意** |
+| `transfer/t1a_region_mask_08/t1a_region_mask_08@val~relation_detr_seed42` | +0.05198 | 18.91 | ✓ | **有意** |
+| `transfer/t1a_region_mask_12/t1a_region_mask_12@val~relation_detr_seed42` | +0.05176 | 15.86 | ✓ | **有意** |
+| `transfer/t1a_region_mask_13/t1a_region_mask_13@val~relation_detr_seed42` | +0.05176 | 18.06 | ✓ | **有意** |
+| `transfer/b2a_regiononly_mask_03/b2a_regiononly_mask_03@val~relation_detr_seed42` | +0.05154 | 16.60 | ✓ | **有意** |
+| `transfer/t1a_regiontoken/t1a_regiontoken@val~relation_detr_seed42` | +0.05154 | 23.73 | ✓ | **有意** |
+| `transfer/t1a_3seed_det42_frozen/t1a_3seed_det42_frozen@val~relation_detr_seed42` | +0.05143 | 18.39 | ✓ | **有意** |
+| `transfer/t1a_region_only/t1a_region_only@val~relation_detr_seed42` | +0.05132 | 13.21 | ✓ | **有意** |
+| `transfer/b2a_regiononly_mask_07/b2a_regiononly_mask_07@val~relation_detr_seed42` | +0.05110 | 14.66 | ✓ | **有意** |
+| `transfer/hires_relation_detr_seed42/hires_relation_detr_seed42@val~relation_detr_seed42` | +0.05110 | 17.83 | ✓ | **有意** |
+| `transfer/t1a_combined_oracle_noise_p030/t1a_combined_oracle_noise_p030@val~relation_detr_seed42` | +0.05110 | 15.58 | ✓ | **有意** |
+| `transfer/t1a_region_mask_11/t1a_region_mask_11@val~relation_detr_seed42` | +0.05110 | 30.67 | ✓ | **有意** |
+| `transfer/t1a_base_test/t1a_base_test@val~relation_detr_seed42` | +0.05088 | 14.17 | ✓ | **有意** |
+| `transfer/t1a_base_env/t1a_base_env@val~relation_detr_seed42` | +0.05088 | 19.11 | ✓ | **有意** |
+| `transfer/t1a_deep_3s10l96f/t1a_deep_3s10l96f@val~relation_detr_seed42` | +0.05066 | 10.34 | ✓ | **有意** |
+| `transfer/t1a_region_mask_01/t1a_region_mask_01@val~relation_detr_seed42` | +0.05066 | 17.05 | ✓ | **有意** |
+| `transfer/t1a_combined_oracle/t1a_combined_oracle@val~relation_detr_seed42` | +0.05044 | 11.37 | ✓ | **有意** |
+| `transfer/t1a_combined_oracle_noise_p010/t1a_combined_oracle_noise_p010@val~relation_detr_seed42` | +0.05044 | 13.34 | ✓ | **有意** |
+| `transfer/b2a_oracle_mask_09/b2a_oracle_mask_09@val~relation_detr_seed42` | +0.05022 | 9.72 | ✓ | **有意** |
+| `transfer/t1a_region_mask_04/t1a_region_mask_04@val~relation_detr_seed42` | +0.05022 | 15.12 | ✓ | **有意** |
+| `transfer/b2a_regiononly_mask_02/b2a_regiononly_mask_02@val~relation_detr_seed42` | +0.05000 | 12.27 | ✓ | **有意** |
+| `transfer/b2a_ro_oracle_bipolarnoise_p030/b2a_ro_oracle_bipolarnoise_p030@val~relation_detr_seed42` | +0.05000 | 14.64 | ✓ | **有意** |
+| `transfer/t1a_b2a_combined/t1a_b2a_combined@val~relation_detr_seed42` | +0.04978 | 11.60 | ✓ | **有意** |
+| `transfer/b2a_oracle_mask_00/b2a_oracle_mask_00@val~relation_detr_seed42` | +0.04978 | 8.21 | ✓ | **有意** |
+| `transfer/b2a_regiononly_mask_13/b2a_regiononly_mask_13@val~relation_detr_seed42` | +0.04978 | 12.93 | ✓ | **有意** |
+| `transfer/t1a_combined_oracle_noise_p020/t1a_combined_oracle_noise_p020@val~relation_detr_seed42` | +0.04978 | 12.73 | ✓ | **有意** |
+| `transfer/t1a_region_mask_07/t1a_region_mask_07@val~relation_detr_seed42` | +0.04978 | 13.17 | ✓ | **有意** |
+| `transfer/b2a_regiononly_mask_05/b2a_regiononly_mask_05@val~relation_detr_seed42` | +0.04956 | 47.64 | ✓ | **有意** |
+| `transfer/b2a_regiononly_mask_14/b2a_regiononly_mask_14@val~relation_detr_seed42` | +0.04934 | 12.65 | ✓ | **有意** |
+| `transfer/b2a_regiononly_mask_12/b2a_regiononly_mask_12@val~relation_detr_seed42` | +0.04890 | 20.58 | ✓ | **有意** |
+| `transfer/b2a_regiononly_pred/b2a_regiononly_pred@val~relation_detr_seed42` | +0.04890 | 10.85 | ✓ | **有意** |
+| `transfer/b2a_regiononly_mask_08/b2a_regiononly_mask_08@val~relation_detr_seed42` | +0.04846 | 9.90 | ✓ | **有意** |
+| `transfer/b2a_regiononly_mask_04/b2a_regiononly_mask_04@val~relation_detr_seed42` | +0.04846 | 11.09 | ✓ | **有意** |
+| `transfer/t1a_region_mask_10/t1a_region_mask_10@val~relation_detr_seed42` | +0.04669 | 13.12 | ✓ | **有意** |
+| `transfer/t1a_region_mask_06/t1a_region_mask_06@val~relation_detr_seed42` | +0.04647 | 18.60 | ✓ | **有意** |
+| `transfer/taux_tecno_movavgk3/taux_tecno_movavgk3@val~relation_detr_seed42` | +0.04625 | 20.25 | ✓ | **有意** |
+| `transfer/b2a_base_oracle_top3noise_p010/b2a_base_oracle_top3noise_p010@val~relation_detr_seed42` | +0.04471 | 7.54 | ✓ | **有意** |
+| `transfer/b2a_det2phase_toolpresence/b2a_det2phase_toolpresence@val~relation_detr_seed123` | +0.04389 | 10.49 | ✓ | **有意** |
+| `transfer/t1a_region_mask_09/t1a_region_mask_09@val~relation_detr_seed42` | +0.04339 | 25.88 | ✓ | **有意** |
+| `transfer/b2a_regiononly_mask_11/b2a_regiononly_mask_11@val~relation_detr_seed42` | +0.04295 | 13.71 | ✓ | **有意** |
+| `transfer/b2a_ro_oracle_bsnoise_p020/b2a_ro_oracle_bsnoise_p020@val~relation_detr_seed42` | +0.04295 | 11.37 | ✓ | **有意** |
+| `transfer/t1a_3seed_det123_aug/t1a_3seed_det123_aug@val~relation_detr_augstrong_seed123` | +0.04279 | 6.67 | ✓ | **有意** |
+| `transfer/b2a_regiononly_mask_01/b2a_regiononly_mask_01@val~relation_detr_seed42` | +0.04273 | 16.05 | ✓ | **有意** |
+| `transfer/t1a_region_mask_00/t1a_region_mask_00@val~relation_detr_seed42` | +0.04251 | 15.50 | ✓ | **有意** |
+| `transfer/b2a_regiononly_mask_09/b2a_regiononly_mask_09@val~relation_detr_seed42` | +0.04207 | 12.32 | ✓ | **有意** |
+| `transfer/b2a_mask_dim_05/b2a_mask_dim_05@val~relation_detr_seed42` | +0.04097 | 5.06 | ✓ | **有意** |
+| `transfer/b2a_regiononly_mask_10/b2a_regiononly_mask_10@val~relation_detr_seed42` | +0.04097 | 29.38 | ✓ | **有意** |
+| `transfer/b2a_mask_dim_03/b2a_mask_dim_03@val~relation_detr_seed42` | +0.04031 | 7.07 | ✓ | **有意** |
+| `transfer/b2a_det2phase_toolpresence/b2a_det2phase_toolpresence@val~relation_detr_seed42` | +0.04013 | 10.18 | ✓ | **有意** |
+| `transfer/b2a_det2phase/b2a_det2phase_toolpresence@val~relation_detr_seed42` | +0.04009 | 11.27 | ✓ | **有意** |
+| `transfer/b2a_mask_dim_12/b2a_mask_dim_12@val~relation_detr_seed42` | +0.04009 | 14.58 | ✓ | **有意** |
+| `transfer/b2a_mask_dim_13/b2a_mask_dim_13@val~relation_detr_seed42` | +0.04009 | 14.15 | ✓ | **有意** |
 | `transfer/hires_relation_detr_augstrong_hires_seed42/hires_relation_detr_augstrong_hires_seed42@val~relation_detr_augstrong_hires_seed42` | +0.04004 | 13.49 | ✓ | **有意** |
+| `transfer/b2a_mask_dim_01/b2a_mask_dim_01@val~relation_detr_seed42` | +0.03987 | 16.40 | ✓ | **有意** |
+| `transfer/t1a_shuffle_oracle/t1a_shuffle_oracle@val~relation_detr_seed42` | +0.03987 | 8.88 | ✓ | **有意** |
+| `transfer/b2a_mask_dim_14/b2a_mask_dim_14@val~relation_detr_seed42` | +0.03965 | 10.76 | ✓ | **有意** |
+| `transfer/b2a_mask_dim_08/b2a_mask_dim_08@val~relation_detr_seed42` | +0.03921 | 9.91 | ✓ | **有意** |
+| `transfer/b2a_mask_dim_04/b2a_mask_dim_04@val~relation_detr_seed42` | +0.03899 | 5.04 | ✓ | **有意** |
+| `transfer/hires_relation_detr_augstrong_seed42/hires_relation_detr_augstrong_seed42@val~relation_detr_augstrong_seed42` | +0.03868 | 38.97 | ✓ | **有意** |
+| `transfer/t1a_3seed_det42_aug/t1a_3seed_det42_aug@val~relation_detr_augstrong_seed42` | +0.03857 | 29.20 | ✓ | **有意** |
+| `transfer/b2a_mask_dim_11/b2a_mask_dim_11@val~relation_detr_seed42` | +0.03833 | 5.59 | ✓ | **有意** |
+| `transfer/b2a_mask_dim_02/b2a_mask_dim_02@val~relation_detr_seed42` | +0.03811 | 15.35 | ✓ | **有意** |
+| `transfer/b2a_det2phase_toolpresence/b2a_det2phase_toolpresence@val~relation_detr_seed456` | +0.03784 | 3.47 | ✓ | **有意** |
+| `transfer/b2a_base_oracle_noise_p010/b2a_base_oracle_noise_p010@val~relation_detr_seed42` | +0.03701 | 5.69 | ✓ | **有意** |
+| `transfer/b2a_base_oracle_top3noise_p020/b2a_base_oracle_top3noise_p020@val~relation_detr_seed42` | +0.03635 | 7.40 | ✓ | **有意** |
+| `transfer/t1a_shuffle/t1a_shuffle@val~relation_detr_seed42` | -0.03625 | 9.97 | ✓ | **有意** |
+| `transfer/b2a_mask_dim_07/b2a_mask_dim_07@val~relation_detr_seed42` | +0.03547 | 5.50 | ✓ | **有意** |
+| `transfer/b2a_mask_dim_10/b2a_mask_dim_10@val~relation_detr_seed42` | +0.03525 | 5.61 | ✓ | **有意** |
+| `transfer/t1a_3seed_det456_aug/t1a_3seed_det456_aug@val~relation_detr_augstrong_seed456` | +0.03454 | 18.83 | ✓ | **有意** |
+| `transfer/b2a_mask_dim_06/b2a_mask_dim_06@val~relation_detr_seed42` | +0.03437 | 9.45 | ✓ | **有意** |
+| `transfer/taux_tecno_deltak3/taux_tecno_deltak3@val~relation_detr_seed42` | +0.03327 | 5.74 | ✓ | **有意** |
+| `transfer/b2a_ro_oracle_top3noise_p020/b2a_ro_oracle_top3noise_p020@val~relation_detr_seed42` | +0.03195 | 28.32 | ✓ | **有意** |
+| `transfer/b2a_mask_dim_00/b2a_mask_dim_00@val~relation_detr_seed42` | +0.03151 | 10.61 | ✓ | **有意** |
+| `transfer/b2a_mask_dim_09/b2a_mask_dim_09@val~relation_detr_seed42` | +0.03063 | 10.10 | ✓ | **有意** |
+| `transfer/b2a_base_oracle_top3noise_p030/b2a_base_oracle_top3noise_p030@val~relation_detr_seed42` | +0.03041 | 4.87 | ✓ | **有意** |
+| `transfer/b2a_regiononly_mask_00/b2a_regiononly_mask_00@val~relation_detr_seed42` | +0.02887 | 11.63 | ✓ | **有意** |
+| `transfer/b2a_regiononly_mask_06/b2a_regiononly_mask_06@val~relation_detr_seed42` | +0.02887 | 13.36 | ✓ | **有意** |
+| `transfer/b2a_det2phase_toolpresence/b2a_det2phase_toolpresence@val~relation_detr_augstrong_seed123` | +0.02673 | 2.70 | ✓ | **有意** |
+| `transfer/b2a_det2phase_toolpresence/b2a_det2phase_toolpresence@val~relation_detr_augstrong_seed42` | +0.02493 | 16.96 | ✓ | **有意** |
+| `transfer/b2a_oracle_mask_top3_joint/b2a_oracle_mask_top3_joint@val~relation_detr_seed42` | +0.02403 | 15.70 | ✓ | **有意** |
+| `transfer/t1a_combined_region_top3_mask/t1a_combined_region_top3_mask@val~relation_detr_seed42` | +0.02403 | 7.29 | ✓ | **有意** |
 | `transfer/b2a_det2phase_toolpresence/b2a_det2phase_toolpresence@val~relation_detr_augstrong_hires_seed42` | +0.02354 | 10.49 | ✓ | **有意** |
+| `transfer/b2a_det2phase_toolpresence/b2a_det2phase_toolpresence@val~relation_detr_augstrong_seed456` | +0.02134 | 6.07 | ✓ | **有意** |
+| `transfer/t1a_region_mask_top3/t1a_region_mask_top3@val~relation_detr_seed42` | +0.01941 | 4.87 | ✓ | **有意** |
+| `transfer/b2a_base_oracle_noise_p020/b2a_base_oracle_noise_p020@val~relation_detr_seed42` | +0.01897 | 2.64 | ✓ | **有意** |
+| `transfer/b2a_ro_oracle_bsnoise_p030/b2a_ro_oracle_bsnoise_p030@val~relation_detr_seed42` | +0.01897 | 7.90 | ✓ | **有意** |
+| `transfer/b2a_regiononly_oracle_mask_top3/b2a_regiononly_oracle_mask_top3@val~relation_detr_seed42` | -0.01799 | 2.60 | ✓ | **有意** |
+| `transfer/haux_hand_geom_oracle/haux_hand_geom_oracle@val~relation_detr_seed42` | +0.01391 | 2.03 | ✓ | **有意** |
+| `transfer/b2a_base_oracle_noise_p030/b2a_base_oracle_noise_p030@val~relation_detr_seed42` | +0.01237 | 3.62 | ✓ | **有意** |
+| `transfer/haux_hand_presence_oracle/haux_hand_presence_oracle@val~relation_detr_seed42` | +0.00665 | 0.74 | ✗ | 非有意 |
+| `transfer/b2a_ro_oracle_noise000/b2a_ro_oracle_noise000@val~relation_detr_seed42` | +0.00605 | 1.06 | ✓ | **有意** |
+| `transfer/b2a_ro_oracle_top3noise_p030/b2a_ro_oracle_top3noise_p030@val~relation_detr_seed42` | +0.00291 | 0.25 | ✗ | 非有意 |
 | `transfer/t1a_boundary/t1a_boundary@val~relation_detr_seed42` | -0.00242 | 0.88 | ✗ | 非有意 |
+| `transfer/haux_hand_count_oracle/haux_hand_count_oracle@val~relation_detr_seed42` | +0.00225 | 0.40 | ✗ | 非有意 |
+| `transfer/haux_hand_own_other_oracle/haux_hand_own_other_oracle@val~relation_detr_seed42` | +0.00225 | 1.02 | ✗ | 非有意 |
+| `transfer/haux_hand_presence_oracle_shuffle/haux_hand_presence_oracle_shuffle@val~relation_detr_seed42` | +0.00181 | 0.27 | ✗ | 非有意 |
 | `transfer/t1a_regiontraj/t1a_regiontraj@val~relation_detr_seed42` | -0.00088 | 0.29 | ✗ | 非有意 |
 | `transfer/t1a_regiontraj_test/t1a_regiontraj_test@val~relation_detr_seed42` | -0.00066 | 0.28 | ✗ | 非有意 |
+| `transfer/t1a_region_only_mask_top3/t1a_region_only_mask_top3@val~relation_detr_seed42` | +0.00049 | 0.21 | ✗ | 非有意 |
 
 これが現在の証跡で**実際に完成できる §10.1 判定のすべて**である。
 
@@ -1039,4 +1193,150 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 したがって Δ の分母は cache パス基準で正しく分離されている。
 **残るリスクは cache パス自体が実行時の実態と違う場合**だが、
 これを検証できる証跡（実行時の環境変数の記録）は repo に存在しない。
+
+## 24. seed 代表値の畳み込み (dedup) と §10.1 判定
+
+### 24.1 代表値の取り方
+
+対照実験は 1 つの seed に最大 7 run を持つため、畳まないと seed 対応が付かず
+paired-σ を計算できなかった（§22）。`experiments.csv` の Δ は
+**`mean`** を既定として seed ごとに 1 値へ畳んでいる
+（`delta_dedup_rule` 列に記録）。
+
+| 規則 | 内容 | 採否 |
+|---|---|---|
+| `mean` | seed 内の全 run の平均 | **既定** |
+| `latest` | seq が最大の run | 感度分析のみ |
+| `first` | seq が最小の run | 感度分析のみ |
+| `best` | 比較する指標が最良の run | **実装しない** |
+
+`mean` を既定にした理由:
+
+1. 順序に依存しない（`git_commit.txt` や seq の記録が信用できない run がある）
+2. 特定の 1 本を選ばないので「どれを選ぶか」の恣意性が入らない
+3. 再実行のばらつきを捨てずに平均へ織り込む
+
+**`best` を実装しない理由**: 比較する指標そのもので代表を選ぶと Δ が
+系統的に偏る（選択バイアス）。対照側で best を選べば Δ は大きく、
+注入側で選べば小さく出る。研究公正性の観点から提供しない。
+
+### 24.2 代表値の取り方は結論を変えない（感度分析）
+
+3 規則すべてで §10.1 判定が一致する実験: **134 / 134**
+
+ただし Δ の値自体は動く（`mean` との差の最大 = **0.093175**）。
+判定が変わらないのは σ も同時にスケールするためである。
+**Δ の絶対値を引用するときは `delta_dedup_rule` を併記すること。**
+
+全件は `anomalies/dedup_sensitivity.csv`。
+
+### 24.3 §10.1 判定の結果
+
+判定条件は 2 つ（§21.3）。**両方**満たしたときだけ `significant`。
+
+> `|mean(Δ)| > σ` **かつ** `全 seed 同符号`
+
+| 判定 | 母集団σ (ddof=0) | 標本σ (ddof=1) |
+|---|---:|---:|
+| `significant` | 125 | 124 |
+| `not_significant` | 9 | 10 |
+| `undecidable` | 2 | 2 |
+
+**σ の規約で結論が変わる実験: 1 件**
+
+- `transfer/b2a_ro_oracle_noise000/b2a_ro_oracle_noise000@val~relation_detr_seed42`（指標 `accuracy`）
+  - Δ = +0.006046 / 母集団σ = 0.005726 -> **significant** / 標本σ = 0.007013 -> **not_significant**
+
+`undecidable` は 2 件。いずれも paired にできない実験である。
+- `transfer/t1a_probe_aug/t1a_probe_aug@val~relation_detr_augstrong_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/t1a_probe_frozen/t1a_probe_frozen@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+
+`not_significant` 9 件のうち **1 件は同符号条件で落ちている**（σ 条件は満たしている）。
+σ だけを見て有意と判断すると誤る典型である。
+
+全指標の判定は `runindex/verdicts.csv`（1 行 = 1 実験 × 1 指標）。
+
+## 25. 🔴🔴 最重要: paired-σ は seed 効果ではなく**非決定性**を測っている
+
+§24 で paired-σ が計算できるようになったが、**その σ が何を測っているか**には
+重大な但し書きがある。Δ を解釈する前に必ず読むこと。
+
+### 25.1 同一条件が再現しない（実測）
+
+`s4_phase_baseline_015` と `_017` は次がすべて一致する:
+
+| 項目 | 値 |
+|---|---|
+| `git_commit.txt` | `bd0609749afdfa2a`（両者同一） |
+| `config.yaml` の sha256 | `9cf8c2dde6920f01`（バイト一致） |
+| `command.sh` | `python scripts/train_s4_tecno.py --seed 42`（同一） |
+| `server.txt` | `efros`（同一） |
+
+それでも結果は違う:
+
+```
+phase_accuracy   0.9042904290429042  vs  0.8970297029702970   (Δ = 0.00726)
+phase_macro_f1   0.7405981456025096  vs  0.6571673826301749   (Δ = 0.08343)
+epoch (best)     49                  vs  31
+```
+
+### 25.2 seed は分散を制御できていない
+
+対照実験（17 run / seed42×7・123×5・456×5）で、
+**同一 seed 内のばらつきが seed 間のばらつきを全指標で上回る**:
+
+| 指標 | within-seed σ | between-seed σ | 比 |
+|---|---:|---:|---:|
+| accuracy | 0.004647 | 0.003385 | **1.37** |
+| macro_f1 | 0.020214 | 0.008879 | **2.28** |
+| jaccard | 0.019112 | 0.007814 | **2.45** |
+| edit_score | 1.981335 | 1.478973 | **1.34** |
+| seg_f1_50 | 0.031471 | 0.019595 | **1.61** |
+
+### 25.3 原因 — GPU の決定性が一切制御されていない
+
+```python
+# scripts/train_s4_tecno.py:192-195
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+random.seed(args.seed)
+np.random.seed(args.seed)
+torch.manual_seed(args.seed)      # ← CPU 側のみ
+```
+
+`torch.cuda.manual_seed_all` / `torch.use_deterministic_algorithms` /
+`cudnn.deterministic` / DataLoader の `worker_init_fn` / `generator` /
+`PYTHONHASHSEED` は **1 つも設定されていない**。
+さらに 50 epoch の best-of-N 選択（`:263`）が非決定性を増幅する
+（best epoch が 31〜50 に散る）。
+
+リポジトリ自身の診断ツール `scripts/analysis/diag_same_seed_variance.py` も
+同じ結論を出す: `N1 VERDICT: CONFIG_DIFF + UNCONTROLLED_NONDETERMINISM`。
+
+### 25.4 Δ の解釈への含意
+
+1. **paired-σ は「seed を変えたときの変動」ではなく「同じ設定で回し直したときの
+   変動」を主に測っている。** §10.1 の「3-seed の σ」という想定は成立していない。
+2. `significant` と出た実験も、**測っているのは注入効果 + 非決定性**である。
+   Δ が within-seed σ（accuracy で 0.0046）より小さい主張は特に慎重に扱うこと。
+3. seed ごとに **1 本を選ぶ**代表規約（`latest` / `first` / mtime 最大）は、
+   within-seed 分布から 1 標本を引くことに等しい。
+   **`mean` を既定にしたのはこの理由による**（within-seed ノイズを平均で潰す）。
+   同じ発想はリポジトリ内に先例がある —
+   `scripts/paired_sigma_3seed.py:5`「phase_seed を平均 → phase 学習の非決定性を除去」。
+
+### 25.5 代表選択の規約がリポジトリ内で 4 つに割れている
+
+| 方式 | 出典 |
+|---|---|
+| seq 最大 | `src/egosurgery/utils/transfer_delta_report.py:55,86-87` |
+| mtime 最大 | `scripts/report_daux_paired.py:12-13,43-47` |
+| 辞書順末尾 | `scripts/report_t1a_boundary.py:46-49` / `compare_causal_decode.py:76` |
+| 代表を選ばず平均 | `scripts/paired_sigma_3seed.py:5,59-60` |
+| **規約を決めないと明記** | `scripts/analysis/delta_allrun_recompute.py:4-10` |
+
+なお mtime 方式は使えない。`metrics.json` の mtime は git チェックアウト時刻
+（全件 2026-07-31 14:49）であり実験の新旧を表していない。
+
+**根本対処は「非決定性を制御して再実行する」ことであり、
+代表値の選び方を工夫することではない。**（backlog B-20）
 
