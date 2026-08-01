@@ -21,6 +21,7 @@ make runindex      # runindex/ 全体をゼロから再生成する
 | `metric_aliases.json` | 指標名の表記ゆれ統合表 |
 | `anomalies.md` | 規約から外れたもの・判断を保留したものの一覧 (人間が読む) |
 | `anomalies/val_test_pairs.csv` | test 評価を持つ run の val/test 対応表 (縦持ち) |
+| `anomalies/paired_feasibility.csv` | paired-σ の宣言と実行可能性の差 (1 行 = 1 実験) |
 | `anomalies/backlog.md` | 本タスクの範囲外として起票した未着手事項 |
 
 ## index.csv の列
@@ -63,14 +64,34 @@ val と test は大きく乖離するため、下流解析では `has_test` で�
 | `runs_per_seed_max` | 同一 seed の run 数の最大。**> 1 は再実行か条件混在の徴候** |
 | `n_command_variants` | `command.sh` 引数の種類数。**> 1 なら条件が混在している** |
 | `hosts` | 使われた host。**複数なら交絡の可能性がある** |
-| `<metric>_mean` / `_pstd` / `_min` / `_max` | seed 集約 |
+| `<metric>_mean` / `_min` / `_max` / `_n` | seed 集約 |
+| `<metric>_pstd` / `<metric>_sstd` | **母集団σ (ddof=0) / 標本σ (ddof=1)** |
 | `arm` / `control_of` | 注入 / 対照。`control_of` は対照実験の `experiment_id` |
-| `delta_<metric>` / `delta_pstd_<metric>` | `control_of` が確定した実験のみ |
+| `delta_<metric>` | Δ = 注入 − 対照。`control_of` が確定した実験のみ |
+| `delta_pstd_<metric>` / `delta_sstd_<metric>` | Δ の σ（母集団 / 標本） |
+| `abs_delta_over_sigma_<metric>` | **\|Δ\| / `delta_pstd_<metric>`**（母集団σ基準） |
 | `delta_method` | `paired` か `unpaired` か。**混同してはいけません** |
+| `delta_sigma_source` | `paired` / `unpaired_pooled` |
 | `control_note_value` | `notes.md` に引用されている基準値（実測との突き合わせ用） |
 
-`delta_pstd_*` は `delta_method=paired` のときだけ入ります。
-対応が取れない場合に paired-σ は定義できないため、空欄にしてあります。
+### σ の読み方（必読）
+
+`delta_method` によって σ の意味が変わります。
+
+| `delta_sigma_source` | σ の定義 |
+|---|---|
+| `paired` | seed ごとの差の σ。seed 由来の変動が相殺される |
+| `unpaired_pooled` | √(σ_注入² + σ_対照²)。**paired-σ より大きく出る保守的な推定** |
+
+したがって **`unpaired_pooled` で有意なら `paired` でも有意**です（逆は言えません）。
+
+現状 **136 実験中 134 が `unpaired_pooled`** です。対照実験に同一 seed の
+再実行が畳まれずに残っているためで、詳細と全件は
+`anomalies.md` §22 と `anomalies/paired_feasibility.csv` にあります。
+
+母集団σと標本σは n=3 で √(3/2)=1.2247 倍違いますが、**実データでは
+1σ / 2σ 基準の判定は 1 件も変わりません**（§21.1）。判定に標本σを使いたい場合は
+`delta_sstd_<metric>` で割り直してください。
 
 ## 注意
 

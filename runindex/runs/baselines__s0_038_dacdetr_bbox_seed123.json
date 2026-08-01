@@ -53,6 +53,7 @@
   "exclusion_reason": null,
   "experiment_id": "baselines/s0/dacdetr_bbox@val",
   "experiment_id_provenance": "from_run_name",
+  "frozen_source_seed_declared": null,
   "frozen_source_tag": null,
   "gpu": null,
   "group": "baselines",
@@ -63,16 +64,12 @@
   "metrics": {
     "AP_common": 0.7058831884994007,
     "AP_rare": 0.7822516402080837,
-    "best_epoch": 11,
     "mAP": 0.7167929673149268,
     "mAP_50": 0.8378348257579977,
     "mAP_75": 0.766379989895025,
     "tool_mAP": 0.7167929673149268
   },
   "metrics_by_split": {
-    "unknown": {
-      "best_epoch": 11
-    },
     "val": {
       "AP_common": 0.7058831884994007,
       "AP_rare": 0.7822516402080837,
@@ -119,7 +116,7 @@
     "name": "from_dirname_step_seq_desc_seed",
     "per_class": "from_per_class_ap_json",
     "per_class_metric": "from_class_set_and_writer_script",
-    "seed": "from_dirname",
+    "seed": "from_dirname_verified_by_command_sh_and_config_yaml",
     "seed_detector": "not_determinable",
     "seed_phase": "not_determinable",
     "split": "from_metric_key_prefix",
@@ -127,6 +124,9 @@
   },
   "run_id": "s0_038_dacdetr_bbox_seed123",
   "seed": 123,
+  "seed_agreement": "agree",
+  "seed_command": 123,
+  "seed_config": 123,
   "seed_detector": null,
   "seed_phase": null,
   "seq": 38,
