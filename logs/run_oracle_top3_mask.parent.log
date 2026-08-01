@@ -1,0 +1,24 @@
+================ B2a-oracle Top3 mask (9 run, 2GPU 並列) ================
+ 対象 dim: 0 Bipolar, 6 Needle Holders, 9 Scalpel（L2-4 Top3 寄与）
+ 比較: B2a oracle 5-seed mean 0.9583 から、各 dim mask で どれだけ落ちるか
+==========================================================================
+[seed 42] wave 1: dim 0(GPU0) + dim 6(GPU1) ...
+[seed 42] wave 2: dim 9(GPU0) ...
+[seed 123] wave 1: dim 0(GPU0) + dim 6(GPU1) ...
+[seed 123] wave 2: dim 9(GPU0) ...
+[seed 456] wave 1: dim 0(GPU0) + dim 6(GPU1) ...
+[seed 456] wave 2: dim 9(GPU0) ...
+
+================ 完了 ================
+-- b2a_oracle_mask_00 --
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_oracle_mask_00_001_b2a_oracle_mask_00_seed42
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_oracle_mask_00_002_b2a_oracle_mask_00_seed123
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_oracle_mask_00_003_b2a_oracle_mask_00_seed456
+-- b2a_oracle_mask_06 --
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_oracle_mask_06_001_b2a_oracle_mask_06_seed42
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_oracle_mask_06_002_b2a_oracle_mask_06_seed123
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_oracle_mask_06_003_b2a_oracle_mask_06_seed456
+-- b2a_oracle_mask_09 --
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_oracle_mask_09_001_b2a_oracle_mask_09_seed42
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_oracle_mask_09_002_b2a_oracle_mask_09_seed123
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_oracle_mask_09_003_b2a_oracle_mask_09_seed456

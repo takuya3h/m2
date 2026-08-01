@@ -1,0 +1,400 @@
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/albumentations/core/validation.py:114: UserWarning: ShiftScaleRotate is a special case of Affine transform. Please use Affine transform instead.
+  original_init(self, **validated_kwargs)
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:109: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:140: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:177: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:208: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+Using /home/ubuntu/.cache/torch_extensions/py311_cu118 as PyTorch extensions root...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /home/ubuntu/.cache/torch_extensions/py311_cu118/MultiScaleDeformableAttention/build.ninja...
+Building extension module MultiScaleDeformableAttention...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+loading annotations into memory...
+Done (t=0.36s)
+creating index...
+index created!
+Using [0, 0.5, 0.6299605249474365, 0.7937005259840997, 1.0, 1.259921049894873, 1.5874010519681991, 2.0, inf] as bins for aspect ratio quantization
+Count of instances per bin: [9618]
+loading annotations into memory...
+Done (t=0.02s)
+creating index...
+index created!
+ninja: no work to do.
+Loading extension module MultiScaleDeformableAttention...
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+The model and loaded state dict do not match exactly
+Missing keys: c5_neck.weight, c5_neck.bias, phase_head.stage1.conv_in.weight, phase_head.stage1.conv_in.bias, phase_head.stage1.layers.0.conv_dilated.weight, phase_head.stage1.layers.0.conv_dilated.bias, phase_head.stage1.layers.0.conv_1x1.weight, phase_head.stage1.layers.0.conv_1x1.bias, phase_head.stage1.layers.1.conv_dilated.weight, phase_head.stage1.layers.1.conv_dilated.bias, phase_head.stage1.layers.1.conv_1x1.weight, phase_head.stage1.layers.1.conv_1x1.bias, phase_head.stage1.layers.2.conv_dilated.weight, phase_head.stage1.layers.2.conv_dilated.bias, phase_head.stage1.layers.2.conv_1x1.weight, phase_head.stage1.layers.2.conv_1x1.bias, phase_head.stage1.layers.3.conv_dilated.weight, phase_head.stage1.layers.3.conv_dilated.bias, phase_head.stage1.layers.3.conv_1x1.weight, phase_head.stage1.layers.3.conv_1x1.bias, phase_head.stage1.layers.4.conv_dilated.weight, phase_head.stage1.layers.4.conv_dilated.bias, phase_head.stage1.layers.4.conv_1x1.weight, phase_head.stage1.layers.4.conv_1x1.bias, phase_head.stage1.layers.5.conv_dilated.weight, phase_head.stage1.layers.5.conv_dilated.bias, phase_head.stage1.layers.5.conv_1x1.weight, phase_head.stage1.layers.5.conv_1x1.bias, phase_head.stage1.layers.6.conv_dilated.weight, phase_head.stage1.layers.6.conv_dilated.bias, phase_head.stage1.layers.6.conv_1x1.weight, phase_head.stage1.layers.6.conv_1x1.bias, phase_head.stage1.layers.7.conv_dilated.weight, phase_head.stage1.layers.7.conv_dilated.bias, phase_head.stage1.layers.7.conv_1x1.weight, phase_head.stage1.layers.7.conv_1x1.bias, phase_head.stage1.conv_out.weight, phase_head.stage1.conv_out.bias, phase_head.refine_stages.0.conv_in.weight, phase_head.refine_stages.0.conv_in.bias, phase_head.refine_stages.0.layers.0.conv_dilated.weight, phase_head.refine_stages.0.layers.0.conv_dilated.bias, phase_head.refine_stages.0.layers.0.conv_1x1.weight, phase_head.refine_stages.0.layers.0.conv_1x1.bias, phase_head.refine_stages.0.layers.1.conv_dilated.weight, phase_head.refine_stages.0.layers.1.conv_dilated.bias, phase_head.refine_stages.0.layers.1.conv_1x1.weight, phase_head.refine_stages.0.layers.1.conv_1x1.bias, phase_head.refine_stages.0.layers.2.conv_dilated.weight, phase_head.refine_stages.0.layers.2.conv_dilated.bias, phase_head.refine_stages.0.layers.2.conv_1x1.weight, phase_head.refine_stages.0.layers.2.conv_1x1.bias, phase_head.refine_stages.0.layers.3.conv_dilated.weight, phase_head.refine_stages.0.layers.3.conv_dilated.bias, phase_head.refine_stages.0.layers.3.conv_1x1.weight, phase_head.refine_stages.0.layers.3.conv_1x1.bias, phase_head.refine_stages.0.layers.4.conv_dilated.weight, phase_head.refine_stages.0.layers.4.conv_dilated.bias, phase_head.refine_stages.0.layers.4.conv_1x1.weight, phase_head.refine_stages.0.layers.4.conv_1x1.bias, phase_head.refine_stages.0.layers.5.conv_dilated.weight, phase_head.refine_stages.0.layers.5.conv_dilated.bias, phase_head.refine_stages.0.layers.5.conv_1x1.weight, phase_head.refine_stages.0.layers.5.conv_1x1.bias, phase_head.refine_stages.0.layers.6.conv_dilated.weight, phase_head.refine_stages.0.layers.6.conv_dilated.bias, phase_head.refine_stages.0.layers.6.conv_1x1.weight, phase_head.refine_stages.0.layers.6.conv_1x1.bias, phase_head.refine_stages.0.layers.7.conv_dilated.weight, phase_head.refine_stages.0.layers.7.conv_dilated.bias, phase_head.refine_stages.0.layers.7.conv_1x1.weight, phase_head.refine_stages.0.layers.7.conv_1x1.bias, phase_head.refine_stages.0.conv_out.weight, phase_head.refine_stages.0.conv_out.bias
+
+Size mismatch keys: transformer.decoder.class_head.0.weight, transformer.decoder.class_head.0.bias, transformer.decoder.class_head.1.weight, transformer.decoder.class_head.1.bias, transformer.decoder.class_head.2.weight, transformer.decoder.class_head.2.bias, transformer.decoder.class_head.3.weight, transformer.decoder.class_head.3.bias, transformer.decoder.class_head.4.weight, transformer.decoder.class_head.4.bias, transformer.decoder.class_head.5.weight, transformer.decoder.class_head.5.bias, transformer.encoder_class_head.weight, transformer.encoder_class_head.bias, transformer.hybrid_class_head.weight, transformer.hybrid_class_head.bias, denoising_generator.label_encoder.weight
++------------------------------------------+----------------+---------------------+
+| key name                                 | shape in model | shape in state dict |
++------------------------------------------+----------------+---------------------+
+| transformer.decoder.class_head.0.weight  | (15, 256)      | (91, 256)           |
+| transformer.decoder.class_head.0.bias    | (15,)          | (91,)               |
+| transformer.decoder.class_head.1.weight  | (15, 256)      | (91, 256)           |
+| transformer.decoder.class_head.1.bias    | (15,)          | (91,)               |
+| transformer.decoder.class_head.2.weight  | (15, 256)      | (91, 256)           |
+| transformer.decoder.class_head.2.bias    | (15,)          | (91,)               |
+| transformer.decoder.class_head.3.weight  | (15, 256)      | (91, 256)           |
+| transformer.decoder.class_head.3.bias    | (15,)          | (91,)               |
+| transformer.decoder.class_head.4.weight  | (15, 256)      | (91, 256)           |
+| transformer.decoder.class_head.4.bias    | (15,)          | (91,)               |
+| transformer.decoder.class_head.5.weight  | (15, 256)      | (91, 256)           |
+| transformer.decoder.class_head.5.bias    | (15,)          | (91,)               |
+| transformer.encoder_class_head.weight    | (15, 256)      | (91, 256)           |
+| transformer.encoder_class_head.bias      | (15,)          | (91,)               |
+| transformer.hybrid_class_head.weight     | (15, 256)      | (91, 256)           |
+| transformer.hybrid_class_head.bias       | (15,)          | (91,)               |
++------------------------------------------+----------------+---------------------+
+| denoising_generator.label_encoder.weight | (15, 256)      | (91, 256)           |
++------------------------------------------+----------------+---------------------+
+
+[b1] weighting=fixed seed=456 device=cuda det_steps/ep=4809 phase_clips=13 R=89 work=/tmp/b1_work_fixed_seed456
+[b1][ep0 0/4809] L=77.097 L_det=72.550 L_phase=4.547 0.7it/s eta_ep=111m
+[b1][ep0 200/4809] L=56.805 L_det=56.805 L_phase=- 1.7it/s eta_ep=45m
+[b1][ep0 400/4809] L=29.432 L_det=29.432 L_phase=- 1.8it/s eta_ep=42m
+[b1][ep0 600/4809] L=34.111 L_det=34.111 L_phase=- 1.8it/s eta_ep=39m
+[b1][ep0 800/4809] L=37.293 L_det=37.293 L_phase=- 1.8it/s eta_ep=37m
+[b1][ep0 1000/4809] L=23.423 L_det=23.423 L_phase=- 1.8it/s eta_ep=35m
+[b1][ep0 1200/4809] L=16.770 L_det=16.770 L_phase=- 1.8it/s eta_ep=33m
+[b1][ep0 1400/4809] L=27.249 L_det=27.249 L_phase=- 1.8it/s eta_ep=31m
+[b1][ep0 1600/4809] L=20.305 L_det=20.305 L_phase=- 1.8it/s eta_ep=29m
+[b1][ep0 1800/4809] L=20.531 L_det=20.531 L_phase=- 1.8it/s eta_ep=27m
+[b1][ep0 2000/4809] L=16.830 L_det=16.830 L_phase=- 1.8it/s eta_ep=25m
+[b1][ep0 2200/4809] L=17.766 L_det=17.766 L_phase=- 1.8it/s eta_ep=24m
+[b1][ep0 2400/4809] L=22.264 L_det=22.264 L_phase=- 1.8it/s eta_ep=22m
+[b1][ep0 2600/4809] L=16.290 L_det=16.290 L_phase=- 1.8it/s eta_ep=20m
+[b1][ep0 2800/4809] L=20.138 L_det=20.138 L_phase=- 1.8it/s eta_ep=18m
+[b1][ep0 3000/4809] L=17.253 L_det=17.253 L_phase=- 1.8it/s eta_ep=16m
+[b1][ep0 3200/4809] L=27.108 L_det=27.108 L_phase=- 1.9it/s eta_ep=14m
+[b1][ep0 3400/4809] L=32.185 L_det=32.185 L_phase=- 1.9it/s eta_ep=13m
+[b1][ep0 3600/4809] L=25.188 L_det=25.188 L_phase=- 1.9it/s eta_ep=11m
+[b1][ep0 3800/4809] L=18.616 L_det=18.616 L_phase=- 1.9it/s eta_ep=9m
+[b1][ep0 4000/4809] L=35.699 L_det=35.699 L_phase=- 1.9it/s eta_ep=7m
+[b1][ep0 4200/4809] L=29.622 L_det=29.622 L_phase=- 1.9it/s eta_ep=5m
+[b1][ep0 4400/4809] L=23.817 L_det=23.817 L_phase=- 1.9it/s eta_ep=4m
+[b1][ep0 4600/4809] L=21.038 L_det=21.038 L_phase=- 1.9it/s eta_ep=2m
+[b1][ep0 4800/4809] L=20.599 L_det=20.599 L_phase=- 1.9it/s eta_ep=0m
+Accumulating evaluation results...
+DONE (t=4.32s).
+[b1][ep0] val mAP=0.6384 phase_acc=0.6759
+[b1][ep1 0/4809] L=24.228 L_det=21.737 L_phase=2.491 1.7it/s eta_ep=47m
+[b1][ep1 200/4809] L=16.701 L_det=16.701 L_phase=- 1.9it/s eta_ep=41m
+[b1][ep1 400/4809] L=24.263 L_det=24.263 L_phase=- 1.9it/s eta_ep=40m
+[b1][ep1 600/4809] L=29.863 L_det=29.863 L_phase=- 1.9it/s eta_ep=38m
+[b1][ep1 800/4809] L=18.003 L_det=18.003 L_phase=- 1.8it/s eta_ep=36m
+[b1][ep1 1000/4809] L=23.436 L_det=23.436 L_phase=- 1.8it/s eta_ep=34m
+[b1][ep1 1200/4809] L=12.928 L_det=12.928 L_phase=- 1.8it/s eta_ep=33m
+[b1][ep1 1400/4809] L=27.653 L_det=27.653 L_phase=- 1.8it/s eta_ep=31m
+[b1][ep1 1600/4809] L=19.923 L_det=19.923 L_phase=- 1.8it/s eta_ep=29m
+[b1][ep1 1800/4809] L=26.850 L_det=26.850 L_phase=- 1.8it/s eta_ep=27m
+[b1][ep1 2000/4809] L=29.162 L_det=29.162 L_phase=- 1.8it/s eta_ep=25m
+[b1][ep1 2200/4809] L=20.933 L_det=20.933 L_phase=- 1.8it/s eta_ep=24m
+[b1][ep1 2400/4809] L=16.337 L_det=16.337 L_phase=- 1.8it/s eta_ep=22m
+[b1][ep1 2600/4809] L=25.936 L_det=25.936 L_phase=- 1.8it/s eta_ep=20m
+[b1][ep1 2800/4809] L=20.524 L_det=20.524 L_phase=- 1.8it/s eta_ep=18m
+[b1][ep1 3000/4809] L=28.997 L_det=28.997 L_phase=- 1.8it/s eta_ep=16m
+[b1][ep1 3200/4809] L=20.428 L_det=20.428 L_phase=- 1.8it/s eta_ep=15m
+[b1][ep1 3400/4809] L=21.585 L_det=21.585 L_phase=- 1.8it/s eta_ep=13m
+[b1][ep1 3600/4809] L=22.554 L_det=22.554 L_phase=- 1.8it/s eta_ep=11m
+[b1][ep1 3800/4809] L=28.742 L_det=28.742 L_phase=- 1.8it/s eta_ep=9m
+[b1][ep1 4000/4809] L=16.111 L_det=16.111 L_phase=- 1.8it/s eta_ep=7m
+[b1][ep1 4200/4809] L=15.043 L_det=15.043 L_phase=- 1.8it/s eta_ep=6m
+[b1][ep1 4400/4809] L=22.600 L_det=22.600 L_phase=- 1.8it/s eta_ep=4m
+[b1][ep1 4600/4809] L=27.751 L_det=27.751 L_phase=- 1.8it/s eta_ep=2m
+[b1][ep1 4800/4809] L=12.132 L_det=12.132 L_phase=- 1.8it/s eta_ep=0m
+Accumulating evaluation results...
+DONE (t=4.25s).
+[b1][ep1] val mAP=0.6878 phase_acc=0.6389
+[b1][ep2 0/4809] L=12.868 L_det=12.414 L_phase=0.454 1.5it/s eta_ep=53m
+[b1][ep2 200/4809] L=18.019 L_det=18.019 L_phase=- 1.8it/s eta_ep=42m
+[b1][ep2 400/4809] L=33.132 L_det=33.132 L_phase=- 1.8it/s eta_ep=40m
+[b1][ep2 600/4809] L=24.861 L_det=24.861 L_phase=- 1.8it/s eta_ep=38m
+[b1][ep2 800/4809] L=11.837 L_det=11.837 L_phase=- 1.8it/s eta_ep=36m
+[b1][ep2 1000/4809] L=26.404 L_det=26.404 L_phase=- 1.8it/s eta_ep=35m
+[b1][ep2 1200/4809] L=18.292 L_det=18.292 L_phase=- 1.8it/s eta_ep=33m
+[b1][ep2 1400/4809] L=17.633 L_det=17.633 L_phase=- 1.8it/s eta_ep=31m
+[b1][ep2 1600/4809] L=15.950 L_det=15.950 L_phase=- 1.8it/s eta_ep=29m
+[b1][ep2 1800/4809] L=15.942 L_det=15.942 L_phase=- 1.8it/s eta_ep=27m
+[b1][ep2 2000/4809] L=15.064 L_det=15.064 L_phase=- 1.8it/s eta_ep=26m
+[b1][ep2 2200/4809] L=15.012 L_det=15.012 L_phase=- 1.8it/s eta_ep=24m
+[b1][ep2 2400/4809] L=18.386 L_det=18.386 L_phase=- 1.8it/s eta_ep=22m
+[b1][ep2 2600/4809] L=25.250 L_det=25.250 L_phase=- 1.8it/s eta_ep=20m
+[b1][ep2 2800/4809] L=20.483 L_det=20.483 L_phase=- 1.8it/s eta_ep=18m
+[b1][ep2 3000/4809] L=20.391 L_det=20.391 L_phase=- 1.8it/s eta_ep=17m
+[b1][ep2 3200/4809] L=23.074 L_det=23.074 L_phase=- 1.8it/s eta_ep=15m
+[b1][ep2 3400/4809] L=36.201 L_det=36.201 L_phase=- 1.8it/s eta_ep=13m
+[b1][ep2 3600/4809] L=25.429 L_det=25.429 L_phase=- 1.8it/s eta_ep=11m
+[b1][ep2 3800/4809] L=10.623 L_det=10.623 L_phase=- 1.8it/s eta_ep=9m
+[b1][ep2 4000/4809] L=18.190 L_det=18.190 L_phase=- 1.8it/s eta_ep=7m
+[b1][ep2 4200/4809] L=20.355 L_det=20.355 L_phase=- 1.8it/s eta_ep=6m
+[b1][ep2 4400/4809] L=17.776 L_det=17.776 L_phase=- 1.8it/s eta_ep=4m
+[b1][ep2 4600/4809] L=22.424 L_det=22.424 L_phase=- 1.8it/s eta_ep=2m
+[b1][ep2 4800/4809] L=17.174 L_det=17.174 L_phase=- 1.8it/s eta_ep=0m
+Accumulating evaluation results...
+DONE (t=4.55s).
+[b1][ep2] val mAP=0.6612 phase_acc=0.7597
+[b1][ep3 0/4809] L=12.581 L_det=11.315 L_phase=1.266 1.7it/s eta_ep=47m
+[b1][ep3 200/4809] L=19.257 L_det=19.257 L_phase=- 1.8it/s eta_ep=43m
+[b1][ep3 400/4809] L=26.828 L_det=26.828 L_phase=- 1.8it/s eta_ep=41m
+[b1][ep3 600/4809] L=18.474 L_det=18.474 L_phase=- 1.8it/s eta_ep=39m
+[b1][ep3 800/4809] L=19.180 L_det=19.180 L_phase=- 1.8it/s eta_ep=37m
+[b1][ep3 1000/4809] L=18.396 L_det=18.396 L_phase=- 1.8it/s eta_ep=35m
+[b1][ep3 1200/4809] L=7.543 L_det=7.543 L_phase=- 1.8it/s eta_ep=33m
+[b1][ep3 1400/4809] L=18.919 L_det=18.919 L_phase=- 1.8it/s eta_ep=31m
+[b1][ep3 1600/4809] L=17.661 L_det=17.661 L_phase=- 1.8it/s eta_ep=30m
+[b1][ep3 1800/4809] L=36.151 L_det=36.151 L_phase=- 1.8it/s eta_ep=28m
+[b1][ep3 2000/4809] L=20.840 L_det=20.840 L_phase=- 1.8it/s eta_ep=26m
+[b1][ep3 2200/4809] L=23.091 L_det=23.091 L_phase=- 1.8it/s eta_ep=24m
+[b1][ep3 2400/4809] L=24.918 L_det=24.918 L_phase=- 1.8it/s eta_ep=22m
+[b1][ep3 2600/4809] L=25.559 L_det=25.559 L_phase=- 1.8it/s eta_ep=20m
+[b1][ep3 2800/4809] L=27.434 L_det=27.434 L_phase=- 1.8it/s eta_ep=19m
+[b1][ep3 3000/4809] L=19.953 L_det=19.953 L_phase=- 1.8it/s eta_ep=17m
+[b1][ep3 3200/4809] L=20.929 L_det=20.929 L_phase=- 1.8it/s eta_ep=15m
+[b1][ep3 3400/4809] L=14.873 L_det=14.873 L_phase=- 1.8it/s eta_ep=13m
+[b1][ep3 3600/4809] L=18.042 L_det=18.042 L_phase=- 1.8it/s eta_ep=11m
+[b1][ep3 3800/4809] L=21.600 L_det=21.600 L_phase=- 1.8it/s eta_ep=9m
+[b1][ep3 4000/4809] L=25.259 L_det=25.259 L_phase=- 1.8it/s eta_ep=8m
+[b1][ep3 4200/4809] L=15.050 L_det=15.050 L_phase=- 1.8it/s eta_ep=6m
+[b1][ep3 4400/4809] L=23.811 L_det=23.811 L_phase=- 1.8it/s eta_ep=4m
+[b1][ep3 4600/4809] L=25.001 L_det=25.001 L_phase=- 1.8it/s eta_ep=2m
+[b1][ep3 4800/4809] L=11.269 L_det=11.269 L_phase=- 1.8it/s eta_ep=0m
+Accumulating evaluation results...
+DONE (t=4.66s).
+[b1][ep3] val mAP=0.6859 phase_acc=0.8455
+[b1][ep4 0/4809] L=25.544 L_det=24.755 L_phase=0.789 1.3it/s eta_ep=61m
+[b1][ep4 200/4809] L=12.771 L_det=12.771 L_phase=- 1.8it/s eta_ep=44m
+[b1][ep4 400/4809] L=9.044 L_det=9.044 L_phase=- 1.8it/s eta_ep=42m
+[b1][ep4 600/4809] L=25.484 L_det=25.484 L_phase=- 1.8it/s eta_ep=40m
+[b1][ep4 800/4809] L=25.919 L_det=25.919 L_phase=- 1.8it/s eta_ep=38m
+[b1][ep4 1000/4809] L=17.975 L_det=17.975 L_phase=- 1.8it/s eta_ep=36m
+[b1][ep4 1200/4809] L=11.468 L_det=11.468 L_phase=- 1.8it/s eta_ep=34m
+[b1][ep4 1400/4809] L=23.441 L_det=23.441 L_phase=- 1.8it/s eta_ep=32m
+[b1][ep4 1600/4809] L=21.258 L_det=21.258 L_phase=- 1.8it/s eta_ep=30m
+[b1][ep4 1800/4809] L=19.008 L_det=19.008 L_phase=- 1.8it/s eta_ep=28m
+[b1][ep4 2000/4809] L=15.973 L_det=15.973 L_phase=- 1.8it/s eta_ep=27m
+[b1][ep4 2200/4809] L=22.263 L_det=22.263 L_phase=- 1.8it/s eta_ep=25m
+[b1][ep4 2400/4809] L=23.947 L_det=23.947 L_phase=- 1.8it/s eta_ep=23m
+[b1][ep4 2600/4809] L=24.212 L_det=24.212 L_phase=- 1.8it/s eta_ep=21m
+[b1][ep4 2800/4809] L=17.752 L_det=17.752 L_phase=- 1.8it/s eta_ep=19m
+[b1][ep4 3000/4809] L=11.172 L_det=11.172 L_phase=- 1.8it/s eta_ep=17m
+[b1][ep4 3200/4809] L=12.104 L_det=12.104 L_phase=- 1.8it/s eta_ep=15m
+[b1][ep4 3400/4809] L=11.398 L_det=11.398 L_phase=- 1.8it/s eta_ep=13m
+[b1][ep4 3600/4809] L=16.259 L_det=16.259 L_phase=- 1.8it/s eta_ep=11m
+[b1][ep4 3800/4809] L=22.134 L_det=22.134 L_phase=- 1.8it/s eta_ep=10m
+[b1][ep4 4000/4809] L=16.454 L_det=16.454 L_phase=- 1.8it/s eta_ep=8m
+[b1][ep4 4200/4809] L=17.841 L_det=17.841 L_phase=- 1.8it/s eta_ep=6m
+[b1][ep4 4400/4809] L=19.260 L_det=19.260 L_phase=- 1.8it/s eta_ep=4m
+[b1][ep4 4600/4809] L=10.364 L_det=10.364 L_phase=- 1.8it/s eta_ep=2m
+[b1][ep4 4800/4809] L=14.790 L_det=14.790 L_phase=- 1.8it/s eta_ep=0m
+Accumulating evaluation results...
+DONE (t=4.48s).
+[b1][ep4] val mAP=0.6876 phase_acc=0.8112
+[b1][ep5 0/4809] L=18.366 L_det=16.908 L_phase=1.458 1.2it/s eta_ep=67m
+[b1][ep5 200/4809] L=29.532 L_det=29.532 L_phase=- 1.7it/s eta_ep=44m
+[b1][ep5 400/4809] L=19.910 L_det=19.910 L_phase=- 1.7it/s eta_ep=42m
+[b1][ep5 600/4809] L=15.591 L_det=15.591 L_phase=- 1.8it/s eta_ep=40m
+[b1][ep5 800/4809] L=19.356 L_det=19.356 L_phase=- 1.8it/s eta_ep=38m
+[b1][ep5 1000/4809] L=21.366 L_det=21.366 L_phase=- 1.8it/s eta_ep=36m
+[b1][ep5 1200/4809] L=18.494 L_det=18.494 L_phase=- 1.8it/s eta_ep=34m
+[b1][ep5 1400/4809] L=13.910 L_det=13.910 L_phase=- 1.8it/s eta_ep=32m
+[b1][ep5 1600/4809] L=19.407 L_det=19.407 L_phase=- 1.8it/s eta_ep=30m
+[b1][ep5 1800/4809] L=12.244 L_det=12.244 L_phase=- 1.8it/s eta_ep=28m
+[b1][ep5 2000/4809] L=15.578 L_det=15.578 L_phase=- 1.8it/s eta_ep=26m
+[b1][ep5 2200/4809] L=14.024 L_det=14.024 L_phase=- 1.8it/s eta_ep=25m
+[b1][ep5 2400/4809] L=20.553 L_det=20.553 L_phase=- 1.8it/s eta_ep=23m
+[b1][ep5 2600/4809] L=24.089 L_det=24.089 L_phase=- 1.8it/s eta_ep=21m
+[b1][ep5 2800/4809] L=15.996 L_det=15.996 L_phase=- 1.8it/s eta_ep=19m
+[b1][ep5 3000/4809] L=18.736 L_det=18.736 L_phase=- 1.8it/s eta_ep=17m
+[b1][ep5 3200/4809] L=15.383 L_det=15.383 L_phase=- 1.8it/s eta_ep=15m
+[b1][ep5 3400/4809] L=28.252 L_det=28.252 L_phase=- 1.8it/s eta_ep=13m
+[b1][ep5 3600/4809] L=21.907 L_det=21.907 L_phase=- 1.8it/s eta_ep=11m
+[b1][ep5 3800/4809] L=17.844 L_det=17.844 L_phase=- 1.8it/s eta_ep=9m
+[b1][ep5 4000/4809] L=22.149 L_det=22.149 L_phase=- 1.8it/s eta_ep=8m
+[b1][ep5 4200/4809] L=17.394 L_det=17.394 L_phase=- 1.8it/s eta_ep=6m
+[b1][ep5 4400/4809] L=10.891 L_det=10.891 L_phase=- 1.8it/s eta_ep=4m
+[b1][ep5 4600/4809] L=23.261 L_det=23.261 L_phase=- 1.8it/s eta_ep=2m
+[b1][ep5 4800/4809] L=13.632 L_det=13.632 L_phase=- 1.8it/s eta_ep=0m
+Accumulating evaluation results...
+DONE (t=4.19s).
+[b1][ep5] val mAP=0.6729 phase_acc=0.8343
+[b1][ep6 0/4809] L=14.979 L_det=14.228 L_phase=0.751 1.3it/s eta_ep=63m
+[b1][ep6 200/4809] L=21.187 L_det=21.187 L_phase=- 1.7it/s eta_ep=44m
+[b1][ep6 400/4809] L=19.690 L_det=19.690 L_phase=- 1.8it/s eta_ep=42m
+[b1][ep6 600/4809] L=19.174 L_det=19.174 L_phase=- 1.8it/s eta_ep=40m
+[b1][ep6 800/4809] L=11.407 L_det=11.407 L_phase=- 1.8it/s eta_ep=38m
+[b1][ep6 1000/4809] L=20.912 L_det=20.912 L_phase=- 1.8it/s eta_ep=36m
+[b1][ep6 1200/4809] L=11.267 L_det=11.267 L_phase=- 1.8it/s eta_ep=34m
+[b1][ep6 1400/4809] L=17.455 L_det=17.455 L_phase=- 1.8it/s eta_ep=32m
+[b1][ep6 1600/4809] L=18.819 L_det=18.819 L_phase=- 1.8it/s eta_ep=30m
+[b1][ep6 1800/4809] L=15.348 L_det=15.348 L_phase=- 1.8it/s eta_ep=28m
+[b1][ep6 2000/4809] L=9.951 L_det=9.951 L_phase=- 1.8it/s eta_ep=27m
+[b1][ep6 2200/4809] L=11.135 L_det=11.135 L_phase=- 1.8it/s eta_ep=25m
+[b1][ep6 2400/4809] L=10.913 L_det=10.913 L_phase=- 1.8it/s eta_ep=23m
+[b1][ep6 2600/4809] L=16.891 L_det=16.891 L_phase=- 1.8it/s eta_ep=21m
+[b1][ep6 2800/4809] L=19.141 L_det=19.141 L_phase=- 1.8it/s eta_ep=19m
+[b1][ep6 3000/4809] L=15.029 L_det=15.029 L_phase=- 1.8it/s eta_ep=17m
+[b1][ep6 3200/4809] L=21.524 L_det=21.524 L_phase=- 1.8it/s eta_ep=15m
+[b1][ep6 3400/4809] L=17.165 L_det=17.165 L_phase=- 1.8it/s eta_ep=13m
+[b1][ep6 3600/4809] L=22.907 L_det=22.907 L_phase=- 1.8it/s eta_ep=11m
+[b1][ep6 3800/4809] L=26.054 L_det=26.054 L_phase=- 1.8it/s eta_ep=10m
+[b1][ep6 4000/4809] L=22.977 L_det=22.977 L_phase=- 1.8it/s eta_ep=8m
+[b1][ep6 4200/4809] L=22.113 L_det=22.113 L_phase=- 1.8it/s eta_ep=6m
+[b1][ep6 4400/4809] L=13.451 L_det=13.451 L_phase=- 1.8it/s eta_ep=4m
+[b1][ep6 4600/4809] L=17.345 L_det=17.345 L_phase=- 1.8it/s eta_ep=2m
+[b1][ep6 4800/4809] L=23.829 L_det=23.829 L_phase=- 1.8it/s eta_ep=0m
+Accumulating evaluation results...
+DONE (t=4.26s).
+[b1][ep6] val mAP=0.6928 phase_acc=0.8343
+[b1][ep7 0/4809] L=14.926 L_det=14.240 L_phase=0.686 1.4it/s eta_ep=58m
+[b1][ep7 200/4809] L=21.005 L_det=21.005 L_phase=- 1.7it/s eta_ep=44m
+[b1][ep7 400/4809] L=11.100 L_det=11.100 L_phase=- 1.7it/s eta_ep=42m
+[b1][ep7 600/4809] L=10.760 L_det=10.760 L_phase=- 1.7it/s eta_ep=40m
+[b1][ep7 800/4809] L=16.796 L_det=16.796 L_phase=- 1.8it/s eta_ep=38m
+[b1][ep7 1000/4809] L=19.885 L_det=19.885 L_phase=- 1.7it/s eta_ep=36m
+[b1][ep7 1200/4809] L=15.075 L_det=15.075 L_phase=- 1.8it/s eta_ep=34m
+[b1][ep7 1400/4809] L=32.271 L_det=32.271 L_phase=- 1.8it/s eta_ep=32m
+[b1][ep7 1600/4809] L=16.012 L_det=16.012 L_phase=- 1.8it/s eta_ep=30m
+[b1][ep7 1800/4809] L=15.497 L_det=15.497 L_phase=- 1.8it/s eta_ep=29m
+[b1][ep7 2000/4809] L=14.054 L_det=14.054 L_phase=- 1.8it/s eta_ep=27m
+[b1][ep7 2200/4809] L=15.231 L_det=15.231 L_phase=- 1.8it/s eta_ep=25m
+[b1][ep7 2400/4809] L=11.929 L_det=11.929 L_phase=- 1.8it/s eta_ep=23m
+[b1][ep7 2600/4809] L=14.259 L_det=14.259 L_phase=- 1.8it/s eta_ep=21m
+[b1][ep7 2800/4809] L=10.808 L_det=10.808 L_phase=- 1.8it/s eta_ep=19m
+[b1][ep7 3000/4809] L=21.390 L_det=21.390 L_phase=- 1.8it/s eta_ep=17m
+[b1][ep7 3200/4809] L=15.730 L_det=15.730 L_phase=- 1.8it/s eta_ep=15m
+[b1][ep7 3400/4809] L=10.015 L_det=10.015 L_phase=- 1.8it/s eta_ep=13m
+[b1][ep7 3600/4809] L=20.235 L_det=20.235 L_phase=- 1.8it/s eta_ep=11m
+[b1][ep7 3800/4809] L=12.148 L_det=12.148 L_phase=- 1.8it/s eta_ep=10m
+[b1][ep7 4000/4809] L=17.856 L_det=17.856 L_phase=- 1.8it/s eta_ep=8m
+[b1][ep7 4200/4809] L=20.141 L_det=20.141 L_phase=- 1.8it/s eta_ep=6m
+[b1][ep7 4400/4809] L=22.637 L_det=22.637 L_phase=- 1.8it/s eta_ep=4m
+[b1][ep7 4600/4809] L=33.823 L_det=33.823 L_phase=- 1.8it/s eta_ep=2m
+[b1][ep7 4800/4809] L=23.091 L_det=23.091 L_phase=- 1.8it/s eta_ep=0m
+Accumulating evaluation results...
+DONE (t=4.66s).
+[b1][ep7] val mAP=0.6606 phase_acc=0.8561
+[b1][ep8 0/4809] L=10.951 L_det=10.584 L_phase=0.368 1.3it/s eta_ep=64m
+[b1][ep8 200/4809] L=21.937 L_det=21.937 L_phase=- 1.7it/s eta_ep=44m
+[b1][ep8 400/4809] L=17.653 L_det=17.653 L_phase=- 1.8it/s eta_ep=42m
+[b1][ep8 600/4809] L=22.400 L_det=22.400 L_phase=- 1.8it/s eta_ep=40m
+[b1][ep8 800/4809] L=13.794 L_det=13.794 L_phase=- 1.8it/s eta_ep=38m
+[b1][ep8 1000/4809] L=11.160 L_det=11.160 L_phase=- 1.8it/s eta_ep=36m
+[b1][ep8 1200/4809] L=11.215 L_det=11.215 L_phase=- 1.8it/s eta_ep=34m
+[b1][ep8 1400/4809] L=19.937 L_det=19.937 L_phase=- 1.8it/s eta_ep=32m
+[b1][ep8 1600/4809] L=21.737 L_det=21.737 L_phase=- 1.8it/s eta_ep=30m
+[b1][ep8 1800/4809] L=24.375 L_det=24.375 L_phase=- 1.8it/s eta_ep=29m
+[b1][ep8 2000/4809] L=21.361 L_det=21.361 L_phase=- 1.8it/s eta_ep=27m
+[b1][ep8 2200/4809] L=17.955 L_det=17.955 L_phase=- 1.8it/s eta_ep=25m
+[b1][ep8 2400/4809] L=20.176 L_det=20.176 L_phase=- 1.8it/s eta_ep=23m
+[b1][ep8 2600/4809] L=22.411 L_det=22.411 L_phase=- 1.8it/s eta_ep=21m
+[b1][ep8 2800/4809] L=15.754 L_det=15.754 L_phase=- 1.8it/s eta_ep=19m
+[b1][ep8 3000/4809] L=15.785 L_det=15.785 L_phase=- 1.8it/s eta_ep=17m
+[b1][ep8 3200/4809] L=20.343 L_det=20.343 L_phase=- 1.8it/s eta_ep=15m
+[b1][ep8 3400/4809] L=19.969 L_det=19.969 L_phase=- 1.8it/s eta_ep=13m
+[b1][ep8 3600/4809] L=16.212 L_det=16.212 L_phase=- 1.8it/s eta_ep=11m
+[b1][ep8 3800/4809] L=15.820 L_det=15.820 L_phase=- 1.8it/s eta_ep=10m
+[b1][ep8 4000/4809] L=14.959 L_det=14.959 L_phase=- 1.8it/s eta_ep=8m
+[b1][ep8 4200/4809] L=13.740 L_det=13.740 L_phase=- 1.8it/s eta_ep=6m
+[b1][ep8 4400/4809] L=18.803 L_det=18.803 L_phase=- 1.8it/s eta_ep=4m
+[b1][ep8 4600/4809] L=17.045 L_det=17.045 L_phase=- 1.8it/s eta_ep=2m
+[b1][ep8 4800/4809] L=14.957 L_det=14.957 L_phase=- 1.8it/s eta_ep=0m
+Accumulating evaluation results...
+DONE (t=4.52s).
+[b1][ep8] val mAP=0.6991 phase_acc=0.8350
+[b1][ep9 0/4809] L=9.349 L_det=8.946 L_phase=0.404 1.4it/s eta_ep=59m
+[b1][ep9 200/4809] L=12.460 L_det=12.460 L_phase=- 1.7it/s eta_ep=44m
+[b1][ep9 400/4809] L=23.171 L_det=23.171 L_phase=- 1.8it/s eta_ep=42m
+[b1][ep9 600/4809] L=15.105 L_det=15.105 L_phase=- 1.8it/s eta_ep=40m
+[b1][ep9 800/4809] L=15.746 L_det=15.746 L_phase=- 1.8it/s eta_ep=38m
+[b1][ep9 1000/4809] L=19.041 L_det=19.041 L_phase=- 1.8it/s eta_ep=36m
+[b1][ep9 1200/4809] L=14.964 L_det=14.964 L_phase=- 1.8it/s eta_ep=34m
+[b1][ep9 1400/4809] L=15.729 L_det=15.729 L_phase=- 1.8it/s eta_ep=32m
+[b1][ep9 1600/4809] L=13.123 L_det=13.123 L_phase=- 1.8it/s eta_ep=30m
+[b1][ep9 1800/4809] L=22.309 L_det=22.309 L_phase=- 1.8it/s eta_ep=28m
+[b1][ep9 2000/4809] L=23.233 L_det=23.233 L_phase=- 1.8it/s eta_ep=27m
+[b1][ep9 2200/4809] L=19.756 L_det=19.756 L_phase=- 1.8it/s eta_ep=25m
+[b1][ep9 2400/4809] L=24.962 L_det=24.962 L_phase=- 1.8it/s eta_ep=23m
+[b1][ep9 2600/4809] L=11.160 L_det=11.160 L_phase=- 1.8it/s eta_ep=21m
+[b1][ep9 2800/4809] L=20.040 L_det=20.040 L_phase=- 1.8it/s eta_ep=19m
+[b1][ep9 3000/4809] L=15.483 L_det=15.483 L_phase=- 1.8it/s eta_ep=17m
+[b1][ep9 3200/4809] L=12.633 L_det=12.633 L_phase=- 1.8it/s eta_ep=15m
+[b1][ep9 3400/4809] L=19.471 L_det=19.471 L_phase=- 1.8it/s eta_ep=13m
+[b1][ep9 3600/4809] L=22.499 L_det=22.499 L_phase=- 1.8it/s eta_ep=11m
+[b1][ep9 3800/4809] L=17.740 L_det=17.740 L_phase=- 1.8it/s eta_ep=10m
+[b1][ep9 4000/4809] L=13.913 L_det=13.913 L_phase=- 1.8it/s eta_ep=8m
+[b1][ep9 4200/4809] L=24.268 L_det=24.268 L_phase=- 1.8it/s eta_ep=6m
+[b1][ep9 4400/4809] L=16.633 L_det=16.633 L_phase=- 1.8it/s eta_ep=4m
+[b1][ep9 4600/4809] L=23.189 L_det=23.189 L_phase=- 1.8it/s eta_ep=2m
+[b1][ep9 4800/4809] L=28.902 L_det=28.902 L_phase=- 1.8it/s eta_ep=0m
+Accumulating evaluation results...
+DONE (t=4.40s).
+[b1][ep9] val mAP=0.6689 phase_acc=0.8719
+[b1][ep10 0/4809] L=15.793 L_det=15.652 L_phase=0.141 1.4it/s eta_ep=58m
+[b1][ep10 200/4809] L=14.657 L_det=14.657 L_phase=- 1.8it/s eta_ep=44m
+[b1][ep10 400/4809] L=11.417 L_det=11.417 L_phase=- 1.8it/s eta_ep=42m
+[b1][ep10 600/4809] L=10.960 L_det=10.960 L_phase=- 1.8it/s eta_ep=40m
+[b1][ep10 800/4809] L=12.377 L_det=12.377 L_phase=- 1.8it/s eta_ep=38m
+[b1][ep10 1000/4809] L=15.399 L_det=15.399 L_phase=- 1.8it/s eta_ep=36m
+[b1][ep10 1200/4809] L=10.354 L_det=10.354 L_phase=- 1.8it/s eta_ep=34m
+[b1][ep10 1400/4809] L=22.519 L_det=22.519 L_phase=- 1.8it/s eta_ep=32m
+[b1][ep10 1600/4809] L=15.035 L_det=15.035 L_phase=- 1.8it/s eta_ep=30m
+[b1][ep10 1800/4809] L=27.144 L_det=27.144 L_phase=- 1.8it/s eta_ep=29m
+[b1][ep10 2000/4809] L=11.487 L_det=11.487 L_phase=- 1.8it/s eta_ep=27m
+[b1][ep10 2200/4809] L=11.417 L_det=11.417 L_phase=- 1.8it/s eta_ep=25m
+[b1][ep10 2400/4809] L=6.568 L_det=6.568 L_phase=- 1.8it/s eta_ep=23m
+[b1][ep10 2600/4809] L=11.473 L_det=11.473 L_phase=- 1.8it/s eta_ep=21m
+[b1][ep10 2800/4809] L=15.791 L_det=15.791 L_phase=- 1.8it/s eta_ep=19m
+[b1][ep10 3000/4809] L=16.350 L_det=16.350 L_phase=- 1.8it/s eta_ep=17m
+[b1][ep10 3200/4809] L=13.151 L_det=13.151 L_phase=- 1.8it/s eta_ep=15m
+[b1][ep10 3400/4809] L=15.039 L_det=15.039 L_phase=- 1.8it/s eta_ep=13m
+[b1][ep10 3600/4809] L=14.205 L_det=14.205 L_phase=- 1.8it/s eta_ep=11m
+[b1][ep10 3800/4809] L=22.250 L_det=22.250 L_phase=- 1.8it/s eta_ep=10m
+[b1][ep10 4000/4809] L=10.348 L_det=10.348 L_phase=- 1.8it/s eta_ep=8m
+[b1][ep10 4200/4809] L=12.972 L_det=12.972 L_phase=- 1.8it/s eta_ep=6m
+[b1][ep10 4400/4809] L=14.662 L_det=14.662 L_phase=- 1.8it/s eta_ep=4m
+[b1][ep10 4600/4809] L=18.421 L_det=18.421 L_phase=- 1.8it/s eta_ep=2m
+[b1][ep10 4800/4809] L=16.581 L_det=16.581 L_phase=- 1.8it/s eta_ep=0m
+Accumulating evaluation results...
+DONE (t=4.55s).
+[b1][ep10] val mAP=0.7035 phase_acc=0.8574
+[b1][ep11 0/4809] L=26.289 L_det=25.859 L_phase=0.430 1.2it/s eta_ep=66m
+[b1][ep11 200/4809] L=16.517 L_det=16.517 L_phase=- 1.7it/s eta_ep=44m
+[b1][ep11 400/4809] L=11.320 L_det=11.320 L_phase=- 1.7it/s eta_ep=42m
+[b1][ep11 600/4809] L=8.443 L_det=8.443 L_phase=- 1.7it/s eta_ep=40m
+[b1][ep11 800/4809] L=20.893 L_det=20.893 L_phase=- 1.7it/s eta_ep=38m
+[b1][ep11 1000/4809] L=11.706 L_det=11.706 L_phase=- 1.7it/s eta_ep=36m
+[b1][ep11 1200/4809] L=16.511 L_det=16.511 L_phase=- 1.7it/s eta_ep=34m
+[b1][ep11 1400/4809] L=12.382 L_det=12.382 L_phase=- 1.7it/s eta_ep=33m
+[b1][ep11 1600/4809] L=13.128 L_det=13.128 L_phase=- 1.7it/s eta_ep=31m
+[b1][ep11 1800/4809] L=11.626 L_det=11.626 L_phase=- 1.7it/s eta_ep=29m
+[b1][ep11 2000/4809] L=12.059 L_det=12.059 L_phase=- 1.7it/s eta_ep=27m
+[b1][ep11 2200/4809] L=14.070 L_det=14.070 L_phase=- 1.8it/s eta_ep=25m
+[b1][ep11 2400/4809] L=19.810 L_det=19.810 L_phase=- 1.8it/s eta_ep=23m
+[b1][ep11 2600/4809] L=14.986 L_det=14.986 L_phase=- 1.8it/s eta_ep=21m
+[b1][ep11 2800/4809] L=12.401 L_det=12.401 L_phase=- 1.8it/s eta_ep=19m
+[b1][ep11 3000/4809] L=12.816 L_det=12.816 L_phase=- 1.8it/s eta_ep=17m
+[b1][ep11 3200/4809] L=19.600 L_det=19.600 L_phase=- 1.8it/s eta_ep=15m
+[b1][ep11 3400/4809] L=15.713 L_det=15.713 L_phase=- 1.8it/s eta_ep=13m
+[b1][ep11 3600/4809] L=7.895 L_det=7.895 L_phase=- 1.8it/s eta_ep=11m
+[b1][ep11 3800/4809] L=15.426 L_det=15.426 L_phase=- 1.8it/s eta_ep=10m
+[b1][ep11 4000/4809] L=12.254 L_det=12.254 L_phase=- 1.8it/s eta_ep=8m
+[b1][ep11 4200/4809] L=14.262 L_det=14.262 L_phase=- 1.8it/s eta_ep=6m
+[b1][ep11 4400/4809] L=18.141 L_det=18.141 L_phase=- 1.8it/s eta_ep=4m
+[b1][ep11 4600/4809] L=15.825 L_det=15.825 L_phase=- 1.8it/s eta_ep=2m
+[b1][ep11 4800/4809] L=16.890 L_det=16.890 L_phase=- 1.8it/s eta_ep=0m
+Accumulating evaluation results...
+DONE (t=4.19s).
+[b1][ep11] val mAP=0.7103 phase_acc=0.8660
+[b1] DONE best@ep11 mAP=0.7103 phase_acc=0.8660 -> /tmp/b1_work_fixed_seed456

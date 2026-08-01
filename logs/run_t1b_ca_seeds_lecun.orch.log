@@ -1,0 +1,25 @@
+================ T1b-CA seed123/456（lecun・固定設定）================
+ inject=ca trainable=film epochs=6 tol=0.02
+ 割当: seed123→GPU0  seed456→GPU1
+ 健全帯: init mAP ∈ [0.65, 0.78]（外れたら中断）
+===============================================================================
+[warmup] MultiScaleDeformableAttention CUDA 拡張を事前ビルド中 ...
+Using /home/ubuntu/.cache/torch_extensions/py311_cu118 as PyTorch extensions root...
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/models/bricks/ms_deform_attn.py:24: UserWarning: Failed to load MultiScaleDeformableAttention C++ extension: Ninja is required to load C++ extensions
+  warnings.warn(f"Failed to load MultiScaleDeformableAttention C++ extension: {e}")
+[warmup] MSDeformAttn ext ready
+[measure] seed123(GPU0) / seed456(GPU1) の init mAP を実測 ...
+[measure] seed123 init mAP=0.7291948117 / seed456 init mAP=0.7216619815
+[measure] 健全帯チェック OK
+[wave A:inj] seed123(GPU0) + seed456(GPU1) 並列起動 ...
+[wave A:inj] 完了
+[wave B:ctrl] seed123(GPU0) + seed456(GPU1) 並列起動 ...
+[wave B:ctrl] 完了
+================ 完了・回収用サマリ ================
+-- seed123 --
+  inj: init=0.7292 best@ep2 mAP=0.7308
+  ctrl: init=0.7292 best@ep-1 mAP=0.7292
+-- seed456 --
+  inj: init=0.7217 best@ep3 mAP=0.7232
+  ctrl: init=0.7217 best@ep3 mAP=0.7219
+次: 集計（inj−ctrl の Δ_det を seed42 と合わせ 3-seed paired-σ で §10.1 判定）。
