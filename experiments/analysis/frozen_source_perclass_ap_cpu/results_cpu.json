@@ -1,0 +1,527 @@
+{
+  "run_id": "39cee4d4-7777-810c-973b-f5f7fc809e57",
+  "host": "philip",
+  "gpu_used": false,
+  "task_a_forensics": {
+    "prev_data_source": {
+      "relationdetr": {
+        "42": "experiments/baselines/s0_016_relationdetr_bbox_seed42/per_class_ap.json",
+        "123": "experiments/baselines/s0_017_relationdetr_bbox_seed123/per_class_ap.json",
+        "456": "experiments/baselines/s0_018_relationdetr_bbox_seed456/per_class_ap.json"
+      },
+      "aligndetr": {
+        "42": "experiments/baselines/s0_028_aligndetr_bbox_seed42/per_class_ap.json",
+        "123": "experiments/baselines/s0_029_aligndetr_bbox_seed123/per_class_ap.json",
+        "456": "experiments/baselines/s0_030_aligndetr_bbox_seed456/per_class_ap.json"
+      },
+      "recipe": "val 1515 images, score_thr=0.0 NMS-free (metrics.json eval_recipe), 3-seed",
+      "note": "compute_R.py (andrew) はこの 6 ファイルの andrew 同期コピー (_legacy_score_thr_0) を参照。philip の原本と同一系列。"
+    },
+    "missing_class": "Retractor",
+    "missing_class_reason": "val split のインスタンス数が 0 のため COCO AP が定義できず NaN。全 6 ファイル (両検出器 x 3 seed) で NaN。黙って落とされた 47pp 級のクラスは存在しない (仮説棄却)。",
+    "missing_class_ap": {
+      "relationdetr": null,
+      "aligndetr": null,
+      "drop_pp": null,
+      "nan_reason": "val_instances=0 (Task F で確認)"
+    },
+    "internal_consistency_per_seed": {
+      "42": {
+        "recomputed_gap_14cls": 0.0106160907085202,
+        "mAP_diff": 0.010615999999999959,
+        "match": true
+      },
+      "123": {
+        "recomputed_gap_14cls": 0.005121439699404,
+        "mAP_diff": 0.005122000000000071,
+        "match": true
+      },
+      "456": {
+        "recomputed_gap_14cls": 0.024808009149019223,
+        "mAP_diff": 0.02480799999999994,
+        "match": true
+      }
+    },
+    "overall_gap_reconstruction": {
+      "prev_pair_recomputed_seed_mean": 0.013515179852314476,
+      "known": 0.0443,
+      "match_prev_pair": false,
+      "correct_pair_seed42_recomputed": 0.04378937642280593,
+      "match_correct_pair": true,
+      "explanation": "known 0.0443 = Rel-DETR seed42 フル FT (0.7303) と AlignDETR S0-frozen seed42 (0.6860) の差。前回 compute_R.py は AlignDETR 側に フル FT の s0_028-030 (val mAP 0.719/0.723/0.697) を使っており、凍結源比較で実際に使われた ckpt (model_final.pth, backbone 全凍結) と別物。"
+    },
+    "align_frozen_percls_from_trainlog": {
+      "Bipolar Forceps": 0.74425,
+      "Electric Cautery": 0.96009,
+      "Forceps": 0.32265,
+      "Gauze": 0.20448,
+      "Hook": 0.48941,
+      "Mouth Gag": 0.80047,
+      "Needle Holders": 0.79984,
+      "Raspatory": 0.68733,
+      "Retractor": NaN,
+      "Scalpel": 0.9184399999999999,
+      "Scissors": 0.6297,
+      "Skewer": 0.93014,
+      "Suction Cannula": 0.80511,
+      "Syringe": 0.57828,
+      "Tweezers": 0.73324
+    },
+    "align_frozen_overall_from_trainlog": 0.6859592857142855,
+    "per_class_drop_pp_correct_pair_seed42": {
+      "Bipolar Forceps": 3.4241910175864088,
+      "Electric Cautery": 1.0699867456535395,
+      "Forceps": 5.956254913072118,
+      "Gauze": 5.611656786632918,
+      "Hook": 10.50047377588471,
+      "Mouth Gag": 0.639463495167869,
+      "Needle Holders": 5.211571191380704,
+      "Raspatory": 14.119941149925408,
+      "Scalpel": -2.0869238618438146,
+      "Scissors": 8.502405490704934,
+      "Skewer": 1.430773976551425,
+      "Suction Cannula": 2.5971641803071988,
+      "Syringe": -0.7529576696540863,
+      "Tweezers": 5.0811258005589615
+    },
+    "verdict": "前回データは内部整合するが ckpt ペアが誤り (AlignDETR フル FT ≠ 凍結源 S0-frozen)。前回の R=-0.11 / generic11=+1.78pp は凍結源比較の分解としては破棄。正しいペアの per-class AP は本ホストの既存 dump から CPU 再計算可能 → GPU 再推論不要。"
+  },
+  "task_a_prime_unified_cpu_cocoeval": {
+    "recipe": "統一 CPU COCOeval (pycocotools, maxDets=[1,10,100], area=all) を両 dump に適用。dump はともに val 1515 images x 300 dets/img, score フィルタ無し (NMS-free)。",
+    "rel_pred": "experiments/analysis/step0_recipe/pred_val_seed42.json",
+    "align_pred": "data/external/weights/aligndetr_s0frozen_seed42_v2/coco_instances_results_val.json",
+    "rel_overall": 0.7302938994613697,
+    "align_overall": 0.6859595500410648,
+    "rel_reproduces_0.7303": true,
+    "align_reproduces_0.6860": true,
+    "align_percls_matches_trainlog": true,
+    "per_class_ap": {
+      "relationdetr": {
+        "Bipolar Forceps": 0.7792682466503553,
+        "Electric Cautery": 0.971639862719925,
+        "Forceps": 0.38464951880382675,
+        "Gauze": 0.2601861259960585,
+        "Hook": 0.5938799397252886,
+        "Mouth Gag": 0.8061249244552545,
+        "Needle Holders": 0.8528155112518273,
+        "Raspatory": 0.832931978705744,
+        "Retractor": NaN,
+        "Scalpel": 0.8982755238394405,
+        "Scissors": 0.7140957939877886,
+        "Skewer": 0.9439812968873805,
+        "Suction Cannula": 0.8319009686598814,
+        "Syringe": 0.5707717919078995,
+        "Tweezers": 0.783593108868504
+      },
+      "aligndetr_s0frozen": {
+        "Bipolar Forceps": 0.7442497433126865,
+        "Electric Cautery": 0.9600861683957423,
+        "Forceps": 0.32265153926065016,
+        "Gauze": 0.20448347988568266,
+        "Hook": 0.4894095583351011,
+        "Mouth Gag": 0.8004730586581094,
+        "Needle Holders": 0.799843974410699,
+        "Raspatory": 0.6873287534028404,
+        "Retractor": NaN,
+        "Scalpel": 0.9184375542920812,
+        "Scissors": 0.6296999152218508,
+        "Skewer": 0.9301408770630857,
+        "Suction Cannula": 0.8051088986692388,
+        "Syringe": 0.5782793589403146,
+        "Tweezers": 0.7332408207268263
+      }
+    },
+    "per_class_drop_pp": {
+      "Bipolar Forceps": 3.501850333766887,
+      "Electric Cautery": 1.1553694324182628,
+      "Forceps": 6.19979795431766,
+      "Gauze": 5.570264611037584,
+      "Hook": 10.447038139018755,
+      "Mouth Gag": 0.5651865797145161,
+      "Needle Holders": 5.297153684112832,
+      "Raspatory": 14.56032253029036,
+      "Scalpel": -2.0162030452640645,
+      "Scissors": 8.43958787659378,
+      "Skewer": 1.3840419824294847,
+      "Suction Cannula": 2.679206999064254,
+      "Syringe": -0.7507567032415063,
+      "Tweezers": 5.03522881416777
+    },
+    "signature3_drop_pp": 2.2609336575385517,
+    "generic11_drop_pp": 5.025935292346447,
+    "R_index_seed42": 0.4498533160547307,
+    "note": "seed42 のみ (AlignDETR S0-frozen は 1 seed しか学習されていない)。R<1 なら signature3 の AP 低下は generic より小さい → AP 欠損ではsignature 特異的な下流崩壊を説明できない。"
+  },
+  "task_b_structure": {
+    "region_token_shape": [
+      1515,
+      3840
+    ],
+    "structure": "A (15 slots x 256d, slot c = sigmoid_score_max_c * embedding[argmax_q])",
+    "score_available_in_npz": false,
+    "score_available_via_dump": true,
+    "frame_ids_aligned": true,
+    "npz_paths": {
+      "relationdetr": "data/processed/t1a_regiontoken/relation_detr_seed42/val_regiontoken.npz",
+      "aligndetr": "data/processed/t1a_regiontoken/aligndetr_s0frozen_seed42/val_regiontoken.npz"
+    }
+  },
+  "task_c_h3": {
+    "per_slot": {
+      "Bipolar Forceps": {
+        "norm_mean_rel": 0.8504605889320374,
+        "norm_mean_alg": 0.800215482711792,
+        "norm_ratio_alg_over_rel": 0.9409201145172119,
+        "zero_rate_rel_1e-6": 0.0,
+        "zero_rate_alg_1e-6": 0.0,
+        "eff_zero_rate_rel_1e-2": 0.0,
+        "eff_zero_rate_alg_1e-2": 0.0
+      },
+      "Electric Cautery": {
+        "norm_mean_rel": 1.5626890659332275,
+        "norm_mean_alg": 1.2315654754638672,
+        "norm_ratio_alg_over_rel": 0.7881065607070923,
+        "zero_rate_rel_1e-6": 0.0,
+        "zero_rate_alg_1e-6": 0.0,
+        "eff_zero_rate_rel_1e-2": 0.0,
+        "eff_zero_rate_alg_1e-2": 0.0
+      },
+      "Forceps": {
+        "norm_mean_rel": 1.8107699155807495,
+        "norm_mean_alg": 1.442340612411499,
+        "norm_ratio_alg_over_rel": 0.7965344190597534,
+        "zero_rate_rel_1e-6": 0.0,
+        "zero_rate_alg_1e-6": 0.0,
+        "eff_zero_rate_rel_1e-2": 0.0,
+        "eff_zero_rate_alg_1e-2": 0.0
+      },
+      "Gauze": {
+        "norm_mean_rel": 4.231623649597168,
+        "norm_mean_alg": 2.888309955596924,
+        "norm_ratio_alg_over_rel": 0.6825535893440247,
+        "zero_rate_rel_1e-6": 0.0,
+        "zero_rate_alg_1e-6": 0.0,
+        "eff_zero_rate_rel_1e-2": 0.0,
+        "eff_zero_rate_alg_1e-2": 0.0
+      },
+      "Hook": {
+        "norm_mean_rel": 1.2780444622039795,
+        "norm_mean_alg": 1.1897573471069336,
+        "norm_ratio_alg_over_rel": 0.9309201240539551,
+        "zero_rate_rel_1e-6": 0.0,
+        "zero_rate_alg_1e-6": 0.0,
+        "eff_zero_rate_rel_1e-2": 0.0,
+        "eff_zero_rate_alg_1e-2": 0.0
+      },
+      "Mouth Gag": {
+        "norm_mean_rel": 9.548614501953125,
+        "norm_mean_alg": 8.050190925598145,
+        "norm_ratio_alg_over_rel": 0.8430742621421814,
+        "zero_rate_rel_1e-6": 0.0,
+        "zero_rate_alg_1e-6": 0.0,
+        "eff_zero_rate_rel_1e-2": 0.0,
+        "eff_zero_rate_alg_1e-2": 0.0
+      },
+      "Needle Holders": {
+        "norm_mean_rel": 5.825443267822266,
+        "norm_mean_alg": 3.275874376296997,
+        "norm_ratio_alg_over_rel": 0.5623390674591064,
+        "zero_rate_rel_1e-6": 0.0,
+        "zero_rate_alg_1e-6": 0.0,
+        "eff_zero_rate_rel_1e-2": 0.0,
+        "eff_zero_rate_alg_1e-2": 0.0
+      },
+      "Raspatory": {
+        "norm_mean_rel": 1.5777302980422974,
+        "norm_mean_alg": 1.6277507543563843,
+        "norm_ratio_alg_over_rel": 1.031704068183899,
+        "zero_rate_rel_1e-6": 0.0,
+        "zero_rate_alg_1e-6": 0.0,
+        "eff_zero_rate_rel_1e-2": 0.0,
+        "eff_zero_rate_alg_1e-2": 0.0
+      },
+      "Retractor": {
+        "norm_mean_rel": 0.6864045858383179,
+        "norm_mean_alg": 1.0972230434417725,
+        "norm_ratio_alg_over_rel": 1.5985077619552612,
+        "zero_rate_rel_1e-6": 0.0,
+        "zero_rate_alg_1e-6": 0.0,
+        "eff_zero_rate_rel_1e-2": 0.0,
+        "eff_zero_rate_alg_1e-2": 0.0
+      },
+      "Scalpel": {
+        "norm_mean_rel": 2.4328725337982178,
+        "norm_mean_alg": 2.1593713760375977,
+        "norm_ratio_alg_over_rel": 0.8875809907913208,
+        "zero_rate_rel_1e-6": 0.0,
+        "zero_rate_alg_1e-6": 0.0,
+        "eff_zero_rate_rel_1e-2": 0.0,
+        "eff_zero_rate_alg_1e-2": 0.0
+      },
+      "Scissors": {
+        "norm_mean_rel": 4.106851100921631,
+        "norm_mean_alg": 3.393435001373291,
+        "norm_ratio_alg_over_rel": 0.8262863755226135,
+        "zero_rate_rel_1e-6": 0.0,
+        "zero_rate_alg_1e-6": 0.0,
+        "eff_zero_rate_rel_1e-2": 0.0,
+        "eff_zero_rate_alg_1e-2": 0.0
+      },
+      "Skewer": {
+        "norm_mean_rel": 1.3704665899276733,
+        "norm_mean_alg": 0.804099440574646,
+        "norm_ratio_alg_over_rel": 0.5867340564727783,
+        "zero_rate_rel_1e-6": 0.0,
+        "zero_rate_alg_1e-6": 0.0,
+        "eff_zero_rate_rel_1e-2": 0.0,
+        "eff_zero_rate_alg_1e-2": 0.0
+      },
+      "Suction Cannula": {
+        "norm_mean_rel": 5.027714252471924,
+        "norm_mean_alg": 4.216311931610107,
+        "norm_ratio_alg_over_rel": 0.8386140465736389,
+        "zero_rate_rel_1e-6": 0.0,
+        "zero_rate_alg_1e-6": 0.0,
+        "eff_zero_rate_rel_1e-2": 0.0,
+        "eff_zero_rate_alg_1e-2": 0.0
+      },
+      "Syringe": {
+        "norm_mean_rel": 1.2860382795333862,
+        "norm_mean_alg": 0.962265133857727,
+        "norm_ratio_alg_over_rel": 0.7482398748397827,
+        "zero_rate_rel_1e-6": 0.0,
+        "zero_rate_alg_1e-6": 0.0,
+        "eff_zero_rate_rel_1e-2": 0.0,
+        "eff_zero_rate_alg_1e-2": 0.0
+      },
+      "Tweezers": {
+        "norm_mean_rel": 8.914946556091309,
+        "norm_mean_alg": 5.058294296264648,
+        "norm_ratio_alg_over_rel": 0.5673947930335999,
+        "zero_rate_rel_1e-6": 0.0,
+        "zero_rate_alg_1e-6": 0.0,
+        "eff_zero_rate_rel_1e-2": 0.0,
+        "eff_zero_rate_alg_1e-2": 0.0
+      }
+    },
+    "score_distribution_from_dump": {
+      "Bipolar Forceps": {
+        "rel_mean": 0.05325164645910263,
+        "rel_p50": 0.02480779029428959,
+        "alg_mean": 0.04222831130027771,
+        "alg_p50": 0.016203321516513824,
+        "rel_gate_pass@0.3": 0.03234323432343234,
+        "alg_gate_pass@0.3": 0.0297029702970297,
+        "rel_gate_pass@0.5": 0.027722772277227723,
+        "alg_gate_pass@0.5": 0.02442244224422442
+      },
+      "Electric Cautery": {
+        "rel_mean": 0.09757812321186066,
+        "rel_p50": 0.032152898609638214,
+        "alg_mean": 0.08234121650457382,
+        "alg_p50": 0.021709702908992767,
+        "rel_gate_pass@0.3": 0.06864686468646865,
+        "alg_gate_pass@0.3": 0.066006600660066,
+        "rel_gate_pass@0.5": 0.066006600660066,
+        "alg_gate_pass@0.5": 0.06534653465346535
+      },
+      "Forceps": {
+        "rel_mean": 0.11408869922161102,
+        "rel_p50": 0.0544072762131691,
+        "alg_mean": 0.07864252477884293,
+        "alg_p50": 0.03243251144886017,
+        "rel_gate_pass@0.3": 0.08712871287128712,
+        "alg_gate_pass@0.3": 0.05478547854785479,
+        "rel_gate_pass@0.5": 0.0627062706270627,
+        "alg_gate_pass@0.5": 0.033663366336633666
+      },
+      "Gauze": {
+        "rel_mean": 0.26888445019721985,
+        "rel_p50": 0.08068382740020752,
+        "alg_mean": 0.240926593542099,
+        "alg_p50": 0.0544576533138752,
+        "rel_gate_pass@0.3": 0.2726072607260726,
+        "alg_gate_pass@0.3": 0.27524752475247527,
+        "rel_gate_pass@0.5": 0.2462046204620462,
+        "alg_gate_pass@0.5": 0.22574257425742575
+      },
+      "Hook": {
+        "rel_mean": 0.07973409444093704,
+        "rel_p50": 0.0266718789935112,
+        "alg_mean": 0.08145681023597717,
+        "alg_p50": 0.023670343682169914,
+        "rel_gate_pass@0.3": 0.06336633663366337,
+        "alg_gate_pass@0.3": 0.06996699669966996,
+        "rel_gate_pass@0.5": 0.050165016501650166,
+        "alg_gate_pass@0.5": 0.050825082508250824
+      },
+      "Mouth Gag": {
+        "rel_mean": 0.6023246645927429,
+        "rel_p50": 0.9034608602523804,
+        "alg_mean": 0.5845078825950623,
+        "alg_p50": 0.8674485087394714,
+        "rel_gate_pass@0.3": 0.6541254125412541,
+        "alg_gate_pass@0.3": 0.6501650165016502,
+        "rel_gate_pass@0.5": 0.6448844884488449,
+        "alg_gate_pass@0.5": 0.6415841584158416
+      },
+      "Needle Holders": {
+        "rel_mean": 0.3640495240688324,
+        "rel_p50": 0.07926388084888458,
+        "alg_mean": 0.3032006621360779,
+        "alg_p50": 0.03914332389831543,
+        "rel_gate_pass@0.3": 0.36237623762376237,
+        "alg_gate_pass@0.3": 0.3214521452145215,
+        "rel_gate_pass@0.5": 0.34917491749174917,
+        "alg_gate_pass@0.5": 0.2996699669966997
+      },
+      "Raspatory": {
+        "rel_mean": 0.09857852756977081,
+        "rel_p50": 0.050169818103313446,
+        "alg_mean": 0.08040459454059601,
+        "alg_p50": 0.0346008762717247,
+        "rel_gate_pass@0.3": 0.058085808580858087,
+        "alg_gate_pass@0.3": 0.061386138613861385,
+        "rel_gate_pass@0.5": 0.05148514851485148,
+        "alg_gate_pass@0.5": 0.04422442244224423
+      },
+      "Retractor": {
+        "rel_mean": 0.04384475573897362,
+        "rel_p50": 0.028569389134645462,
+        "alg_mean": 0.028436681255698204,
+        "alg_p50": 0.018946191295981407,
+        "rel_gate_pass@0.3": 0.009900990099009901,
+        "alg_gate_pass@0.3": 0.0026402640264026403,
+        "rel_gate_pass@0.5": 0.0026402640264026403,
+        "alg_gate_pass@0.5": 0.0006600660066006601
+      },
+      "Scalpel": {
+        "rel_mean": 0.15302376449108124,
+        "rel_p50": 0.041943781077861786,
+        "alg_mean": 0.13462436199188232,
+        "alg_p50": 0.02220005914568901,
+        "rel_gate_pass@0.3": 0.1306930693069307,
+        "alg_gate_pass@0.3": 0.1306930693069307,
+        "rel_gate_pass@0.5": 0.12013201320132014,
+        "alg_gate_pass@0.5": 0.11683168316831684
+      },
+      "Scissors": {
+        "rel_mean": 0.25565269589424133,
+        "rel_p50": 0.051673777401447296,
+        "alg_mean": 0.2484138160943985,
+        "alg_p50": 0.05397175997495651,
+        "rel_gate_pass@0.3": 0.26534653465346536,
+        "alg_gate_pass@0.3": 0.2712871287128713,
+        "rel_gate_pass@0.5": 0.2396039603960396,
+        "alg_gate_pass@0.5": 0.22310231023102312
+      },
+      "Skewer": {
+        "rel_mean": 0.08542139828205109,
+        "rel_p50": 0.022549089044332504,
+        "alg_mean": 0.08254300802946091,
+        "alg_p50": 0.019034599885344505,
+        "rel_gate_pass@0.3": 0.06666666666666667,
+        "alg_gate_pass@0.3": 0.06996699669966996,
+        "rel_gate_pass@0.5": 0.06336633663366337,
+        "alg_gate_pass@0.5": 0.058085808580858087
+      },
+      "Suction Cannula": {
+        "rel_mean": 0.3163420259952545,
+        "rel_p50": 0.051724158227443695,
+        "alg_mean": 0.31784048676490784,
+        "alg_p50": 0.05033421143889427,
+        "rel_gate_pass@0.3": 0.335973597359736,
+        "alg_gate_pass@0.3": 0.3445544554455445,
+        "rel_gate_pass@0.5": 0.31287128712871287,
+        "alg_gate_pass@0.5": 0.3108910891089109
+      },
+      "Syringe": {
+        "rel_mean": 0.08157720416784286,
+        "rel_p50": 0.02602706477046013,
+        "alg_mean": 0.07064254581928253,
+        "alg_p50": 0.01727394573390484,
+        "rel_gate_pass@0.3": 0.06666666666666667,
+        "alg_gate_pass@0.3": 0.06402640264026403,
+        "rel_gate_pass@0.5": 0.066006600660066,
+        "alg_gate_pass@0.5": 0.05742574257425743
+      },
+      "Tweezers": {
+        "rel_mean": 0.5587095618247986,
+        "rel_p50": 0.8111355304718018,
+        "alg_mean": 0.48654207587242126,
+        "alg_p50": 0.5393109321594238,
+        "rel_gate_pass@0.3": 0.6039603960396039,
+        "alg_gate_pass@0.3": 0.5518151815181518,
+        "rel_gate_pass@0.5": 0.572937293729373,
+        "alg_gate_pass@0.5": 0.5069306930693069
+      }
+    },
+    "score_note": "dump (top-300 flatten) の per-image per-class max score。抽出時の s_c と同一定義 (argmax over queries) だが、クラス max が top-300 に入らない画像では過小評価になり得る (両者同条件)。",
+    "signature3_norm_ratio": 0.7969467043876648,
+    "generic11_norm_ratio": 0.7854692935943604,
+    "signature3_gate_pass_delta@0.3": -0.01452145214521451,
+    "criteria": "norm 比が signature3 で顕著に低い → confidence 破壊で H3 支持 / generic で高い → 誤情報充填 / 全て同等 → H3 棄却"
+  },
+  "task_d_raw_preds": {
+    "found": true,
+    "relationdetr": {
+      "path": "experiments/analysis/step0_recipe/pred_val_seed42.json",
+      "min_score": 0.00458,
+      "n_dets": 454500,
+      "dets_per_img": 300
+    },
+    "aligndetr_s0frozen": {
+      "path": "data/external/weights/aligndetr_s0frozen_seed42_v2/coco_instances_results_val.json",
+      "min_score": 0.00291,
+      "n_dets": 454500,
+      "dets_per_img": 300
+    },
+    "usable_for_cpu_eval": true,
+    "gpu_reinference_needed": false
+  },
+  "task_f_mapping": {
+    "category_id_to_name": {
+      "0": "Bipolar Forceps",
+      "1": "Electric Cautery",
+      "2": "Forceps",
+      "3": "Gauze",
+      "4": "Hook",
+      "5": "Mouth Gag",
+      "6": "Needle Holders",
+      "7": "Raspatory",
+      "8": "Retractor",
+      "9": "Scalpel",
+      "10": "Scissors",
+      "11": "Skewer",
+      "12": "Suction Cannula",
+      "13": "Syringe",
+      "14": "Tweezers"
+    },
+    "val_instance_counts": {
+      "Bipolar Forceps": 55,
+      "Electric Cautery": 101,
+      "Forceps": 154,
+      "Gauze": 455,
+      "Hook": 147,
+      "Mouth Gag": 990,
+      "Needle Holders": 512,
+      "Raspatory": 76,
+      "Retractor": 0,
+      "Scalpel": 168,
+      "Scissors": 391,
+      "Skewer": 103,
+      "Suction Cannula": 509,
+      "Syringe": 96,
+      "Tweezers": 950
+    },
+    "signature3_ids": [
+      0,
+      6,
+      9
+    ],
+    "zero_instance_classes": [
+      "Retractor"
+    ],
+    "dim_mapping_note": "抽出スクリプト両版とも slot c = category_id c (0..14 連番, アルファベット順)。dim0=Bipolar Forceps / dim6=Needle Holders / dim9=Scalpel。"
+  }
+}
