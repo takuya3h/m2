@@ -452,6 +452,7 @@ EgoSurgery データの前処理・データセット・augmentation・サンプ
 | `src/egosurgery/datasets/datamodule.py` | `EgoSurgeryDataModule` — train/val/test ローダ統合 |
 | `scripts/preprocess_ego.py` | EgoSurgery → COCO 形式への前処理 CLI |
 | `scripts/generate_copypaste_bank.py` | 稀少クラス crop バンク生成 CLI |
+| `scripts/audit_tool_class_distribution.py` | `egosurgery_tool` の split × クラス分布監査 CLI（`report.json` + CSV を生成） |
 | `tests/test_datasets.py` | データパイプライン統合テスト（6 ケース） |
 
 ### フェーズ II Part 2（Backbone・検出ヘッド・損失）— 完了

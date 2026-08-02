@@ -194,3 +194,25 @@ TeCNO・工程損失/sched・データ(Tool subset 10/2/3)・fps0.5・eval recip
 - フル依存環境（`.venv`: mmcv/mmdet/hydra 込み）でのテスト全パスは efros 上では未検証。
   `.venv` を持つホスト（lecun 等）で `PYTHONPATH=src pytest tests/ -q` を一度回すことを推奨。
 - 消失済みの過去 run は本改修では復元されない（再発防止であって遡及修復ではない）。
+
+---
+
+## 2026-07-28（続き）— planned直近4件の前提2件（p0/l0）実行結果
+
+方針: run台帳 planned直近4件 p0→l0→{l1a,l2}。ユーザ選択=前提2件先行。host=efros / venv=.venv-relation-detr。
+
+### p0_artifact_persistence_and_grad_check — ほぼ完了（3-seed恒等を実測中）
+- [x] (1) /tmp: 主旨達成（残13件は旧挙動コメント/意図的用途。成果物喪失系0）※字義0化は掃除機能を壊すため非推奨→判定基準の扱い要相談
+- [x] (2) predictions既定on: 達成済
+- [x] (3) 勾配フロー: 既存 audit_t1b_l0(film/ca/hc) all_pass=True（zero-init層grad0・out_projのみ非ゼロ）
+- [~] (4) 3-seed恒等: `scripts/verify_p0_init_identity.sh` 実行中（seed42 init mAP=0.7303 恒等健全）。42/123/456完了待ち
+- [ ] 証跡束ね→台帳 completed 更新
+
+### l0_hts_acceptance — 検査完了・verdict=NOT ACCEPTED（完全版 未達）
+- [x] `scripts/audit_l0_hts_acceptance.py` 新規作成・実行 → `experiments/audit/l0_hts_acceptance/acceptance_report.json`
+- [x] C1✗(seg 4頂点=真マスク無) / C2✗(値5=Mouth Gag, Two Hands Tool不在) / C3✗(手46,320≠57,173, 欠落03_1/03_3/12_2/15_2) / C4✓ / C5✓
+- [x] 結論: HTS完全版は未組立（egosurgery_hts空・現行派生は旧世代）。門番として前提未達を正しく検出
+- [ ] 完全版の組立（raw 02_hand 4動画復活→57,173 / 把持関係 raw 04_handtool 5cls / RLE真マスク）= 別タスク・ユーザ判断待ち
+
+### l1a / l2（重GPU・24run）— 未着手（前提未達 + 新規実装要）
+- [ ] 前提: l0完全版組立 + 手mask→det注入機構の設計・実装（train_t1b/haux いずれにも無い第三方向）
