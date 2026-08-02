@@ -1,0 +1,20 @@
+diff --git a/projects/focus_detr/modeling/foreground_supervision.py b/projects/focus_detr/modeling/foreground_supervision.py
+index daea42b..1f92b08 100644
+--- a/projects/focus_detr/modeling/foreground_supervision.py
++++ b/projects/focus_detr/modeling/foreground_supervision.py
+@@ -96,6 +96,15 @@ class GenTargets(nn.Module):
+         cls_logits = cls_logits.reshape((batch_size, -1, class_num))  # [batch_size,h*w,class_num]
+         h_mul_w = cls_logits.shape[1]
+ 
++        # EgoSurgery 適応パッチ: GT box が 0 個 (m==0) のバッチでは areas が空次元
++        # [B,h*w,0] になり torch.min(areas, dim=-1) が "Expected reduction dim 2 to
++        # have non-zero size" で落ちる (本番終盤のデータ依存クラッシュ)。
++        # その場合は全座標を背景 (class index 0) として返す。
++        if gt_boxes.shape[1] == 0:
++            return torch.zeros(
++                (batch_size, h_mul_w, 1), dtype=torch.long, device=cls_logits.device
++            )
++
+         x = coords[:, 0]
+         y = coords[:, 1]
+         l_off = x[None, :, None] - gt_boxes[..., 0][:, None, :]  # [1,h*w,1]-[batch_size,1,m]-->[batch_size,h*w,m]

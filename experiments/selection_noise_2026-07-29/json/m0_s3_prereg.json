@@ -1,0 +1,502 @@
+{
+  "m0_1_verbatim_transcription": {
+    "source_file": "experiments/g2_followup_2026-07-29/prereg/s3_shuffle_prediction.md",
+    "note": "以下は S3 事前登録の該当節の**全文そのまま**（改変なし）",
+    "判定規約（結果を見る前に固定）": "## 判定規約（結果を見る前に固定）\n\n| 結果 | 判定 |\n|---|---|\n| (5−1) 非超過 **かつ** (2−5) 超過 | **PASS** — 2−1 の効果は ROI の情報に帰属する |\n| (5−1) が 2−1 と同程度に超過 | **FAIL** — 効いていたのは次元。2−1 の主張は成立しない |\n| (5−1) が一部超過 | **中間** — 次元と情報の寄与を (2−5)/(2−1) の比で定量化して報告する |",
+    "判定手法": "## 判定手法\n\nS2 で確定した方法を用いる:\n\n- **主判定**: seed 水準の Welch。`SE = sqrt(sd_A²/3 + sd_B²/3)`、Welch の df、\n  `|差| > t(0.975, df) × SE` を「超過」とする\n- **併記**: 動画別の差の符号一致（val 2 動画 / test 3 動画）。\n  帰無仮説下で全動画同符号となる確率は val 0.50 / test 0.25 であり、\n  慣習的な有意水準には原理的に到達しない。**方向の一貫性の証拠としてのみ報告する**\n- **補足**: 動画単位クラスタ・ブートストラップ（B=2,000）。\n  相異なる多重集合が val 3 通り / test 10 通りしかなく解像度不足であることを明記して併記する\n- 主指標は **per-phase F1**。overall accuracy / macro-F1 は併記のみで判定に使わない\n- val と test の両方で評価し、**val だけの結果を結論と呼ばない**",
+    "事前に想定される無効化条件": "## 事前に想定される無効化条件\n\n- 9 run のいずれかで derangement または周辺分布一致の assert が落ちた場合、S3 全体を無効とする\n- 9 run が同一 commit・同一ホストで実行されていない場合、比較を無効とする\n- 新 commit の base / bboxROI が G-2（`ca28064`）の値を再現しない場合、\n  結論を保留し差異を定量化して報告する"
+  },
+  "m0_2_provenance": {
+    "note": "S3 の無効化条件は 3 項目。それぞれの素性を分類する",
+    "conditions": [
+      {
+        "id": 1,
+        "text": "9 run のいずれかで derangement または周辺分布一致の assert が落ちた場合、S3 全体を無効とする",
+        "provenance": "(c) Claude Code が独自に設定",
+        "basis": "指示書 S3-2 は『derangement であることと、チャネルの周辺分布が bboxROI と完全一致することを assert する』を要求しているが、『落ちたら S3 全体を無効とする』という無効化条件までは書いていない。assert 要求から Claude Code が派生させた。",
+        "fired": false
+      },
+      {
+        "id": 2,
+        "text": "9 run が同一 commit・同一ホストで実行されていない場合、比較を無効とする",
+        "provenance": "(b) G-2 の事前登録から継承",
+        "basis": "G-2 事前登録『事前に想定される無効化条件』の第2項『4 系統が同一 commit・同一ホストで実行されていない場合、比較を無効とする』と文言がほぼ同一。あわせて指示書 §0.2『S3・S4 は G-2 本実験と同一ホスト（lecun）・同一 commit で回す』にも対応する。",
+        "fired": false
+      },
+      {
+        "id": 3,
+        "text": "新 commit の base / bboxROI が G-2（ca28064）の値を再現しない場合、結論を保留し差異を定量化して報告する",
+        "provenance": "(c) Claude Code が独自に設定",
+        "basis": "指示書にも G-2 事前登録にも存在しない。S3 の実行設計上 base/bboxROI を新 commit で再学習する必要が生じたため、『再学習した基準系統が元の値を再現するか』を自己検証として Claude Code が追加した。",
+        "fired": true,
+        "is_the_condition_that_fired": true
+      }
+    ],
+    "summary": "発動した条件（#3）は指示書由来でも G-2 事前登録の継承でもなく、**Claude Code が独自に設定したもの**である。すなわち S3 の PASS を保留にしたのは、Claude Code が自分で課した自己検証条件による。"
+  },
+  "m0_3_fired_condition_values": {
+    "condition": "新 commit の base / bboxROI が G-2（ca28064）の値を再現しない",
+    "denominator_note": "同一 seed 差は G-2(commit ca28064) と S3(commit 1eec7ba) の同一 system・同一 seed の run 対。n=6（2 system × 3 seed）。seed 間 sd は G-2 の 3 seed から算出（ddof=1, n=3）。",
+    "per_run_values": [
+      {
+        "system": "base",
+        "seed": 42,
+        "split": "val",
+        "metric": "accuracy",
+        "g2_ca28064": 0.9485148514851485,
+        "s3_1eec7ba": 0.9471947194719472,
+        "delta": -0.0013201320132012473
+      },
+      {
+        "system": "base",
+        "seed": 42,
+        "split": "val",
+        "metric": "macro_f1",
+        "g2_ca28064": 0.8029176916796503,
+        "s3_1eec7ba": 0.8006457536858027,
+        "delta": -0.002271937993847617
+      },
+      {
+        "system": "base",
+        "seed": 42,
+        "split": "test",
+        "metric": "accuracy",
+        "g2_ca28064": 0.8405627198124267,
+        "s3_1eec7ba": 0.841031652989449,
+        "delta": 0.00046893317702234594
+      },
+      {
+        "system": "base",
+        "seed": 42,
+        "split": "test",
+        "metric": "macro_f1",
+        "g2_ca28064": 0.7147103528017937,
+        "s3_1eec7ba": 0.7108769387819717,
+        "delta": -0.003833414019822068
+      },
+      {
+        "system": "base",
+        "seed": 42,
+        "split": "-",
+        "metric": "best_epoch",
+        "g2_ca28064": 18,
+        "s3_1eec7ba": 18,
+        "delta": 0
+      },
+      {
+        "system": "base",
+        "seed": 123,
+        "split": "val",
+        "metric": "accuracy",
+        "g2_ca28064": 0.9498349834983498,
+        "s3_1eec7ba": 0.9511551155115512,
+        "delta": 0.0013201320132013583
+      },
+      {
+        "system": "base",
+        "seed": 123,
+        "split": "val",
+        "metric": "macro_f1",
+        "g2_ca28064": 0.8112815587043665,
+        "s3_1eec7ba": 0.8163181368742238,
+        "delta": 0.005036578169857364
+      },
+      {
+        "system": "base",
+        "seed": 123,
+        "split": "test",
+        "metric": "accuracy",
+        "g2_ca28064": 0.8250879249706917,
+        "s3_1eec7ba": 0.8128956623681125,
+        "delta": -0.012192262602579218
+      },
+      {
+        "system": "base",
+        "seed": 123,
+        "split": "test",
+        "metric": "macro_f1",
+        "g2_ca28064": 0.6708798715424393,
+        "s3_1eec7ba": 0.62601643092835,
+        "delta": -0.04486344061408931
+      },
+      {
+        "system": "base",
+        "seed": 123,
+        "split": "-",
+        "metric": "best_epoch",
+        "g2_ca28064": 23,
+        "s3_1eec7ba": 16,
+        "delta": -7
+      },
+      {
+        "system": "base",
+        "seed": 456,
+        "split": "val",
+        "metric": "accuracy",
+        "g2_ca28064": 0.9471947194719472,
+        "s3_1eec7ba": 0.9478547854785478,
+        "delta": 0.0006600660066006236
+      },
+      {
+        "system": "base",
+        "seed": 456,
+        "split": "val",
+        "metric": "macro_f1",
+        "g2_ca28064": 0.8093624018944808,
+        "s3_1eec7ba": 0.8026832126027957,
+        "delta": -0.006679189291685095
+      },
+      {
+        "system": "base",
+        "seed": 456,
+        "split": "test",
+        "metric": "accuracy",
+        "g2_ca28064": 0.8297772567409144,
+        "s3_1eec7ba": 0.8403282532239156,
+        "delta": 0.010550996483001174
+      },
+      {
+        "system": "base",
+        "seed": 456,
+        "split": "test",
+        "metric": "macro_f1",
+        "g2_ca28064": 0.6966641958684616,
+        "s3_1eec7ba": 0.6763615501562541,
+        "delta": -0.020302645712207523
+      },
+      {
+        "system": "base",
+        "seed": 456,
+        "split": "-",
+        "metric": "best_epoch",
+        "g2_ca28064": 35,
+        "s3_1eec7ba": 21,
+        "delta": -14
+      },
+      {
+        "system": "bboxROI",
+        "seed": 42,
+        "split": "val",
+        "metric": "accuracy",
+        "g2_ca28064": 0.9663366336633663,
+        "s3_1eec7ba": 0.9663366336633663,
+        "delta": 0.0
+      },
+      {
+        "system": "bboxROI",
+        "seed": 42,
+        "split": "val",
+        "metric": "macro_f1",
+        "g2_ca28064": 0.8367567661253744,
+        "s3_1eec7ba": 0.8367389740094835,
+        "delta": -1.7792115890924443e-05
+      },
+      {
+        "system": "bboxROI",
+        "seed": 42,
+        "split": "test",
+        "metric": "accuracy",
+        "g2_ca28064": 0.8951934349355217,
+        "s3_1eec7ba": 0.8879249706916764,
+        "delta": -0.007268464243845307
+      },
+      {
+        "system": "bboxROI",
+        "seed": 42,
+        "split": "test",
+        "metric": "macro_f1",
+        "g2_ca28064": 0.7493854088861405,
+        "s3_1eec7ba": 0.740089880366672,
+        "delta": -0.009295528519468466
+      },
+      {
+        "system": "bboxROI",
+        "seed": 42,
+        "split": "-",
+        "metric": "best_epoch",
+        "g2_ca28064": 37,
+        "s3_1eec7ba": 37,
+        "delta": 0
+      },
+      {
+        "system": "bboxROI",
+        "seed": 123,
+        "split": "val",
+        "metric": "accuracy",
+        "g2_ca28064": 0.9650165016501651,
+        "s3_1eec7ba": 0.9656765676567657,
+        "delta": 0.0006600660066006236
+      },
+      {
+        "system": "bboxROI",
+        "seed": 123,
+        "split": "val",
+        "metric": "macro_f1",
+        "g2_ca28064": 0.8327344538412114,
+        "s3_1eec7ba": 0.8337516155277981,
+        "delta": 0.0010171616865867206
+      },
+      {
+        "system": "bboxROI",
+        "seed": 123,
+        "split": "test",
+        "metric": "accuracy",
+        "g2_ca28064": 0.8949589683470105,
+        "s3_1eec7ba": 0.8933177022274326,
+        "delta": -0.0016412661195779332
+      },
+      {
+        "system": "bboxROI",
+        "seed": 123,
+        "split": "test",
+        "metric": "macro_f1",
+        "g2_ca28064": 0.7439930158413472,
+        "s3_1eec7ba": 0.7496650925030142,
+        "delta": 0.005672076661666914
+      },
+      {
+        "system": "bboxROI",
+        "seed": 123,
+        "split": "-",
+        "metric": "best_epoch",
+        "g2_ca28064": 16,
+        "s3_1eec7ba": 16,
+        "delta": 0
+      },
+      {
+        "system": "bboxROI",
+        "seed": 456,
+        "split": "val",
+        "metric": "accuracy",
+        "g2_ca28064": 0.9636963696369637,
+        "s3_1eec7ba": 0.9623762376237623,
+        "delta": -0.0013201320132013583
+      },
+      {
+        "system": "bboxROI",
+        "seed": 456,
+        "split": "val",
+        "metric": "macro_f1",
+        "g2_ca28064": 0.8292004537873057,
+        "s3_1eec7ba": 0.8294880403577142,
+        "delta": 0.00028758657040850455
+      },
+      {
+        "system": "bboxROI",
+        "seed": 456,
+        "split": "test",
+        "metric": "accuracy",
+        "g2_ca28064": 0.8874560375146542,
+        "s3_1eec7ba": 0.8771395076201641,
+        "delta": -0.010316529894490056
+      },
+      {
+        "system": "bboxROI",
+        "seed": 456,
+        "split": "test",
+        "metric": "macro_f1",
+        "g2_ca28064": 0.7613010658551599,
+        "s3_1eec7ba": 0.7233733110402023,
+        "delta": -0.03792775481495758
+      },
+      {
+        "system": "bboxROI",
+        "seed": 456,
+        "split": "-",
+        "metric": "best_epoch",
+        "g2_ca28064": 17,
+        "s3_1eec7ba": 28,
+        "delta": 11
+      }
+    ],
+    "same_seed_vs_between_seed": [
+      {
+        "split": "val",
+        "metric": "accuracy",
+        "system": "base",
+        "same_seed_abs_delta": [
+          0.0013201320132012473,
+          0.0013201320132013583,
+          0.0006600660066006236
+        ],
+        "same_seed_max": 0.0013201320132013583,
+        "same_seed_rms": 0.0011432678597814167,
+        "between_seed_sd_g2": 0.0013201320132013028,
+        "same_seed_exceeds_between_seed_sd": true
+      },
+      {
+        "split": "val",
+        "metric": "accuracy",
+        "system": "bboxROI",
+        "same_seed_abs_delta": [
+          0.0,
+          0.0006600660066006236,
+          0.0013201320132013583
+        ],
+        "same_seed_max": 0.0013201320132013583,
+        "same_seed_rms": 0.0008521415503206741,
+        "between_seed_sd_g2": 0.0013201320132013028,
+        "same_seed_exceeds_between_seed_sd": true
+      },
+      {
+        "split": "val",
+        "metric": "macro_f1",
+        "system": "base",
+        "same_seed_abs_delta": [
+          0.002271937993847617,
+          0.005036578169857364,
+          0.006679189291685095
+        ],
+        "same_seed_max": 0.006679189291685095,
+        "same_seed_rms": 0.00500467752884349,
+        "between_seed_sd_g2": 0.004381242674196541,
+        "same_seed_exceeds_between_seed_sd": true
+      },
+      {
+        "split": "val",
+        "metric": "macro_f1",
+        "system": "bboxROI",
+        "same_seed_abs_delta": [
+          1.7792115890924443e-05,
+          0.0010171616865867206,
+          0.00028758657040850455
+        ],
+        "same_seed_max": 0.0010171616865867206,
+        "same_seed_rms": 0.0006103661446288187,
+        "between_seed_sd_g2": 0.0037807849414899825,
+        "same_seed_exceeds_between_seed_sd": false
+      },
+      {
+        "split": "test",
+        "metric": "accuracy",
+        "system": "base",
+        "same_seed_abs_delta": [
+          0.00046893317702234594,
+          0.012192262602579218,
+          0.010550996483001174
+        ],
+        "same_seed_max": 0.012192262602579218,
+        "same_seed_rms": 0.009312978264749095,
+        "between_seed_sd_g2": 0.007934999700818755,
+        "same_seed_exceeds_between_seed_sd": true
+      },
+      {
+        "split": "test",
+        "metric": "accuracy",
+        "system": "bboxROI",
+        "same_seed_abs_delta": [
+          0.007268464243845307,
+          0.0016412661195779332,
+          0.010316529894490056
+        ],
+        "same_seed_max": 0.010316529894490056,
+        "same_seed_rms": 0.0073474511681090055,
+        "between_seed_sd_g2": 0.004401065486612282,
+        "same_seed_exceeds_between_seed_sd": true
+      },
+      {
+        "split": "test",
+        "metric": "macro_f1",
+        "system": "base",
+        "same_seed_abs_delta": [
+          0.003833414019822068,
+          0.04486344061408931,
+          0.020302645712207523
+        ],
+        "same_seed_max": 0.04486344061408931,
+        "same_seed_rms": 0.028516783302099516,
+        "between_seed_sd_g2": 0.02202879270575434,
+        "same_seed_exceeds_between_seed_sd": true
+      },
+      {
+        "split": "test",
+        "metric": "macro_f1",
+        "system": "bboxROI",
+        "same_seed_abs_delta": [
+          0.009295528519468466,
+          0.005672076661666914,
+          0.03792775481495758
+        ],
+        "same_seed_max": 0.03792775481495758,
+        "same_seed_rms": 0.022782258370755783,
+        "between_seed_sd_g2": 0.008856535995462286,
+        "same_seed_exceeds_between_seed_sd": true
+      }
+    ],
+    "n_items_where_same_seed_exceeds_between_seed_sd": "7/8",
+    "largest_single_deviation": {
+      "run": "base_seed123",
+      "split": "test",
+      "metric": "macro_f1",
+      "g2": 0.6709,
+      "s3": 0.626,
+      "delta": -0.0449,
+      "between_seed_sd_g2": 0.022,
+      "note": "同 run の test/incision F1 は 0.9143 -> 0.8595 (-0.0548)"
+    },
+    "best_epoch_shifts": [
+      {
+        "system": "base",
+        "seed": 42,
+        "split": "-",
+        "metric": "best_epoch",
+        "g2_ca28064": 18,
+        "s3_1eec7ba": 18,
+        "delta": 0
+      },
+      {
+        "system": "base",
+        "seed": 123,
+        "split": "-",
+        "metric": "best_epoch",
+        "g2_ca28064": 23,
+        "s3_1eec7ba": 16,
+        "delta": -7
+      },
+      {
+        "system": "base",
+        "seed": 456,
+        "split": "-",
+        "metric": "best_epoch",
+        "g2_ca28064": 35,
+        "s3_1eec7ba": 21,
+        "delta": -14
+      },
+      {
+        "system": "bboxROI",
+        "seed": 42,
+        "split": "-",
+        "metric": "best_epoch",
+        "g2_ca28064": 37,
+        "s3_1eec7ba": 37,
+        "delta": 0
+      },
+      {
+        "system": "bboxROI",
+        "seed": 123,
+        "split": "-",
+        "metric": "best_epoch",
+        "g2_ca28064": 16,
+        "s3_1eec7ba": 16,
+        "delta": 0
+      },
+      {
+        "system": "bboxROI",
+        "seed": 456,
+        "split": "-",
+        "metric": "best_epoch",
+        "g2_ca28064": 17,
+        "s3_1eec7ba": 28,
+        "delta": 11
+      }
+    ],
+    "how_far_s3_pass_can_be_trusted": [
+      "S3 の 9 run は commit 1eec7bad・host lecun で単一であり、拡張ロードも全 True。したがって (5-1) と (2-5) の**比較そのものは S3 内部で妥当**である（条件 #2 は発動していない）。",
+      "shuffleROI の構成は厳密に検証済み（不動点 0、行の多重集合と行ノルム分布が厳密一致、列 mean の最大偏差 0.00e+00）。したがって条件 #1 も発動していない。",
+      "発動したのは条件 #3 のみであり、これが刺しているのは『S3 の結果を G-2 の点推定に接続すること』である。S3 内部の対比の妥当性を否定するものではない。",
+      "一方で、同一 seed の再実行差が seed 間 sd を 7/8 項目で上回るという事実は、n=3 の Welch が用いる分散推定が不安定であることを意味する。実際 base の test macro-F1 の sd は G-2 0.0220 / S3 0.0427 と約 2 倍違い、(2-1) test macro-F1 が G-2 で超過・S3 で非超過に転じた。",
+      "定量的な限界: test macro-F1 の (5-1) = +0.0266（3/3 同符号, p=0.394）は 0 と区別できない。したがって『次元の寄与はこの規模まではあり得る』という上限付きの主張しかできず、『次元効果は無い』という断定はできない。",
+      "M2 で反復を増やして分散推定を安定させれば、条件 #3 の保留は解消可能である（本タスクの目的）。"
+    ]
+  }
+}

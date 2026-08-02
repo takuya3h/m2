@@ -154,6 +154,12 @@ experiments/baselines/_aborted_codetr_no_config/
 experiments/baselines/_smoke_e3/
 experiments/phase0/_pre_redo_s0_smoke/
 experiments/phase0/_prior_no_eval_recipe/
+# 孤児 run 退避 (#05-lecun): metrics.json/config.yaml/command.sh/git_commit.txt/
+# notes.md がすべて無く checkpoints のみ・失敗ログも無い 9 run を退避。
+# (transfer/t1a_frozen_src ×6, phase1/s4_phase_baseline_*_aligndetr_010-012 ×3)
+# 削除せずローカル保持: checkpoints は再評価用、logs 欠落自体が「失敗 run が台帳に
+# 載らない」運用欠陥の手がかり。回収可能な指標を持つ nmsfree/hand2det_dev は対象外。
+experiments/_orphan_no_metrics/
 
 # === 退避済みプロンプト (新シリーズで置換済み、ローカル参照用) ===
 prompts_legacy/
