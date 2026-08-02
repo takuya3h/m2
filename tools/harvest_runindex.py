@@ -2558,6 +2558,7 @@ BACKLOG = """# backlog — 本タスクの範囲外として起票した未着�
 | B-13 | 同一条件が別 `experiment_id` に分裂する組 | `description` / `split` / `frozen_source_tag` が同じで `step` だけ違う組がある（§17.2）。多くは `eval_recipe_id` による意図的分離 | 起動経路が同一かの判断が要るため harvester では決めない |
 | B-14 | `notes.md` の凍結源記載が虚偽 | `s4_phase_baseline` の 55 件すべてが「凍結源: Relation-DETR seed42」と書くが、実際の `frozen_source.cache_dir` が違う run が 38 件（うち 24 件は seed 123/456）。`scripts/train_s4_tecno.py` の固定 f-string に由来。`config.yaml` の `frozen_source.seed` も 42 ハードコード | 学習コードの変更にあたるため本タスクでは触れない。過去の `notes.md` は `experiments/` 配下なので修正不可 |
 | B-15 | g2_* 群に対照宣言が無い | 42 run が `config.yaml` を持たないため `control_of` を確定できない（§20）。`metrics.json` の `system` フィールド（base / bboxROI / shuffleROI）が arm を表す可能性はあるが、対照関係の明示ではない | 実験設計の意図を確認したうえで、`system` を arm として採用してよいか決める |
+| B-24 | `_identity_*` 24 run を Δ 分析から隔離する | `experiments/hand2det_dev/_identity_*`（18）と `experiments/transfer/_p0_identity_*`（6）は**初期化恒等性の検証**であり、`epoch=-1` / `mAP == init_mAP`（0.7302938994613697）/ `delta_detection=0.0` が**設計どおりの結果**。efros で 2026-08-02 に回収（commit `3952ac9`）。現状は除外フラグが付かないため解析対象に入り、**Δ=0 が実測値として Δ テーブルに混ざる** | `excluded=true` / `exclusion_reason='identity_check'` を harvester の除外ロジックに追加する。判定条件の候補は `epoch == -1 and mAP == init_mAP and delta_detection == 0.0`（`metrics.json` に 3 つとも入っている）。命名（`_identity_`）に依存させるかは要判断 |
 """
 
 METRIC_ALIASES = {
