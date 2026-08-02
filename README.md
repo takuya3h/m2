@@ -954,6 +954,23 @@ REST Integration トークン（`.env` の `NOTION_API_KEY`）に **全 5 DB（r
 - **意思決定ログ / 失敗知見**: 「方向非対称確定」「CA≈FiLM の機構独立性」等を反映。
 - **「現在の研究状態」ページ**: STEP C 完了・方向非対称確定・次アクション（test split per-class rare 標的化）に更新。
 
+### 2026-07-13 凍結源の per-class AP 分解（台帳 must）— AlignDETR 負転移は signature 術具 AP 欠損で説明できず
+
+Notion 実験Run台帳「凍結源の per-class AP 分解」（S0・must・eval-only）の val 主判定を実施。既存の検証済み
+per_class_ap.json（Relation-DETR / AlignDETR 各 3-seed・score_thr=0.0 NMS-free・val 1515枚）から
+選択性指標 **R=(signature3[Bipolar Forceps/Needle Holders/Scalpel] AP低下)÷(generic11 AP低下)** を seed 毎に再計算
+（新規学習・推論なし）。証跡: `experiments/analysis/frozen_source_signature3_R_index/`。
+
+- **R = −0.11±0.39、seed 間で符号不一致 → 非有意**。signature3 AP低下はほぼゼロ（符号不一致）、
+  generic11 AP低下は全 seed 正・平均+1.78pp。**AlignDETR の検出劣化は signature 術具でなく汎用術具に集中**。
+- → **仮説（負転移=signature術具AP欠損で説明できる）は支持されず**。2026-07-05
+  `signature_subset_detector_compare` の結論（Align劣位は phase 無関係術具に局在）と整合し、凍結源＝Relation-DETR
+  確定判断を追加補強。
+- **未実施（要判断）**: test split(4265) 確認は relationdetr/aligndetr の S0 checkpoint(\*.pth) 6件が本ホスト
+  (andrew) に不在（台帳 Server=philip の資産）のため、philip からの転送が必要。hemostasis F1「0.801→0.179」の
+  downstream 直接検証も `s4_phase_baseline_010-012_..._aligndetr_*`（efros 実行・metrics.json 空の scaffold）が
+  本ホストにないため未検証。Notion 台帳は Status=running・Decision Needed=✓ で更新済み。
+
 ### 2026-07-29 G-2 本実験（ROI チャネル 4 系統 × 3 seed）— 主予測 FAIL・背景除去は効かない（負の結果）
 
 事前登録（`experiments/g2_main_2026-07-29/prereg/g2_prediction.md`、学習前に commit `2dc430b`）に対する

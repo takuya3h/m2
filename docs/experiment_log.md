@@ -1867,6 +1867,38 @@ EgoSurgery-HTS論文(arXiv:2503.18755)でマスク生成手法確定=**SAMにbbo
 - **C03 MISSING内訳**: toolhand/train=動画14、toolhand_withmask/train=動画03,14（§2.6-c確認）。LEAK=0。
 - **C10**: 把持関係の平均継続長7.04frame/切替率0.20（工程自己遷移0.982より速い）→relation版debounce(k=2)事前用意を提言。
 - **次**: [P0]C08ローダにcanonical再フィルタ必須化 / [P1]C11 subsets/を分母にmask/relation実験のΔ測定時S4/B2a/T1a/H-6を同一サブセット再計算（G-4に含む）/ [P3]C05内容一致につき片方削除可(任意)。
+
+## 2026-07-13 凍結源の per-class AP 分解：AlignDETR の det→phase 負転移は signature 術具 AP の欠損で説明できるか（台帳 must・val 主判定・eval-only）
+
+### 仮説
+下流 S4 実験（台帳 s4_001-003 vs s4_010-012）で AlignDETR を凍結源にすると phase 性能が劣化する（負転移）。
+これが **signature3 術具（Bipolar Forceps=hemostasis / Needle Holders=closure / Scalpel=incision）**の検出 AP 欠損で
+説明できるか、選択性指標 **R=(signature3 AP低下)÷(generic12 AP低下)** で判定。証跡
+`experiments/analysis/frozen_source_signature3_R_index/`。
+
+### 方法
+既存の検証済み per_class_ap.json（`experiments/baselines/_legacy_score_thr_0/s0_{016-018}_relationdetr_*`,
+`s0_{028-030}_aligndetr_*`。3-seed・score_thr=0.0 NMS-free・val 1515枚。2026-07-05 に公式 mAP と完全一致サニティ確認済み）
+から R を seed 毎に再計算（新規学習・推論なし）。generic12 は Retractor（val instance=0, AP=NaN）除外で実質11クラス。
+
+### 結果（val, 3-seed paired）
+- **R = −0.11 ± 0.39（pstdev）、seed 間で符号不一致（−0.66 / +0.22 / +0.09）→ 非有意**。
+- signature3 AP低下は平均 −0.11pp（ほぼゼロ、符号不一致）。**generic11 AP低下は平均 +1.78pp・全 seed 正**＝
+  AlignDETR の検出劣化は signature 術具ではなく汎用術具に集中。
+- 副次: Bipolar Forceps 単独 AP低下も平均 +1.35pp だが seed 間符号不一致（seed42 のみ負）。
+
+### 解釈
+**仮説は支持されない**。AlignDETR の det→phase 負転移は検出 AP（signature3 の欠損）では説明できず、
+2026-07-05 `signature_subset_detector_compare` の「Align-DETR の劣位は phase と無関係な術具に局在」と整合。
+凍結源＝Relation-DETR 確定判断への追加根拠。
+
+### 次
+- **未実施（要判断）**: (1) test split(4265) 確認は relationdetr/aligndetr S0 checkpoint(*.pth) が本ホスト(andrew)に
+  不在＝台帳 Server=philip の資産のため、philip からの転送が必要。(2) hemostasis F1「0.801→0.179」downstream 数値は
+  `s4_phase_baseline_010-012_..._aligndetr_*` が空 scaffold（efros 実行・metrics.json 空）で本ホストでは未検証。
+  (3) Primary Metric の「overall mAP 差 −0.0443」の参照元は本ホストの証跡から特定できず未算出。
+  ※誠実性: val 主判定は完了・数値実測、test/downstream 検証は明示的に「未実施」として保留（捏造なし）。
+
 ---
 
 ## 2026-07-29 G-2 本実験（region-token に ROI チャネルを付す 4 系統 × 3 seed）— 主予測 FAIL・負の結果

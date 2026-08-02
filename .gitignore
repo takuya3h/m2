@@ -191,3 +191,6 @@ data/hts_reconstruction/
 # === 特徴量・中間配列（サイズが大きく再生成可能） ===
 *.npz
 *.npy
+
+# 解析の実装本体は追跡する（mmdet が dump する派生 config は上の行で除外済み）
+!experiments/analysis/**/*.py
