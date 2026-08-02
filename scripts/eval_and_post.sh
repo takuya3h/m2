@@ -10,7 +10,7 @@
 #     --seed <int> \
 #     [--step S0] [--tier effort] \
 #     [--recipe "recipe text"] \
-#     [--server aolab] \
+#     [--server <name>] \  # 省略可。NOTION_SERVER_OPTION → SERVERNAME → hostname の順で自動解決
 #     --log-path <path/to/eval.log> \
 #     -- <実 eval コマンド (log は --log-path に redirect される)>
 #
@@ -52,7 +52,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ -z "$NAME" || -z "$SEED" || -z "$LOG" ]]; then
-  echo "usage: eval_and_post.sh --name X --seed N --log-path PATH [--step S0] [--tier effort] [--recipe TEXT] [--server aolab] [--post-only] -- CMD..." >&2
+  echo "usage: eval_and_post.sh --name X --seed N --log-path PATH [--step S0] [--tier effort] [--recipe TEXT] [--server NAME] [--post-only] -- CMD..." >&2
   exit 2
 fi
 

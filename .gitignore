@@ -11,9 +11,6 @@ data/annotations/**/*.json
 data/annotations/egosurgery_hts/**
 !data/annotations/egosurgery_hts/**/
 !data/annotations/egosurgery_hts/**/.gitkeep
-data/annotations/pseudo_labels/**
-!data/annotations/pseudo_labels/**/
-!data/annotations/pseudo_labels/**/.gitkeep
 
 data/processed/**
 !data/processed/**/
@@ -175,3 +172,18 @@ experiments/**/.notion_sync.json
 .stignore
 .stignore.new
 .stfolder/
+
+# === EgoSurgery-HTS 派生バンドル (2026-07-09 持込) ===
+# SAM(vit_h) 生成の派生セグデータ 16GB。SurgerySegmentation/train.py に
+# Neptune API token が平文で含まれるため追跡禁止 (公開リポ)。
+# 調査結果: data/annotations/egosurgery_hts_bundle_audit.md
+data/annotations/HandDataset/
+data/annotations/HandToolDataset/
+data/annotations/SurgerySegmentation/
+
+# === フック生成ログ ===
+# セッション毎に追記されるため、追跡していると全サーバーで恒久的に merge 衝突する。
+.claude/hooks/*.log
+
+# HTS 再構築データ（599MB。生成物であり data/raw と同じ扱い）
+data/hts_reconstruction/
