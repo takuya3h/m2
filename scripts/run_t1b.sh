@@ -14,7 +14,8 @@ SEED="${1:?seed}"
 GPU="${2:-0}"
 shift $(( $# >= 2 ? 2 : 1 )) || true
 
-BODY=/home/ubuntu/slocal2/m2
+# BODY はスクリプト位置から解決する（特定ホストの絶対パス固定は別サーバーで壊れる）。
+BODY="${EGO_BODY:-$(cd "$(dirname "$0")/.." && pwd)}"
 LOG_DIR="$BODY/logs"; mkdir -p "$LOG_DIR"
 TAG="t1b_seed${SEED}"
 for a in "$@"; do [ "$a" = "--zero-ctx" ] && TAG="t1b_zeroctx_seed${SEED}"; done
@@ -24,7 +25,7 @@ LOG="$LOG_DIR/${TAG}.log"
 source "$BODY/.venv-relation-detr/bin/activate"
 export CUDA_HOME="${CUDA_HOME:-/usr/local/cuda-11.8}"
 echo "[run_t1b] seed=$SEED gpu=$GPU tag=$TAG log=$LOG extra=$*"
-CUDA_VISIBLE_DEVICES="$GPU" T1B_WORK_DIR="/tmp/${TAG}" \
+CUDA_VISIBLE_DEVICES="$GPU" T1B_WORK_DIR="$BODY/experiments/transfer/${TAG}" \
   python "$BODY/scripts/train_t1b.py" --seed "$SEED" --epochs 6 "$@" \
     > "$LOG" 2>&1
 echo "[run_t1b] DONE seed=$SEED tag=$TAG"

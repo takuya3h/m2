@@ -75,15 +75,23 @@ class _DecoderCapture:
         self.tokens = self.logits = None
 
 
-def region_vector(cap: _DecoderCapture) -> np.ndarray:
-    """捕捉した (tokens, logits) → クラス別 256-d 埋め込み連結（3840-d）。"""
+def region_vector(cap: _DecoderCapture, mode: str = "region") -> np.ndarray:
+    """捕捉した (tokens, logits) → クラス別 256-d 埋め込み連結（3840-d）。
+
+    factorial-b 成分分解（同一 q*=argmax score で選択、値の合成のみ変える）:
+      - region     : score[q*,c] * tokens[q*]  … appearance × confidence（既定・現行 T1a）
+      - appearance : tokens[q*]                 … appearance のみ（confidence ゲート除去）
+    """
     scores = torch.sigmoid(cap.logits.float())          # (Q,15)
     tokens = cap.tokens.float()                          # (Q,256)
     region = torch.zeros(NUM_TOOLS, EMBED_DIM, dtype=torch.float32)
     qstar = scores.argmax(dim=0)                         # (15,) 各クラス最高スコアの query idx
     for c in range(NUM_TOOLS):
         q = int(qstar[c])
-        region[c] = scores[q, c] * tokens[q]             # score でソフトゲート
+        if mode == "appearance":
+            region[c] = tokens[q]                        # 生 embedding（score ゲート除去）
+        else:
+            region[c] = scores[q, c] * tokens[q]         # score でソフトゲート
     return region.reshape(-1).cpu().numpy()              # (3840,)
 
 
@@ -93,8 +101,12 @@ def main():
     ap.add_argument("--subset", required=True, choices=["train", "val", "test"])
     ap.add_argument("--limit", type=int, default=0, help="先頭 N 件のみ（0=全件, スモーク用）")
     ap.add_argument("--device", default="cuda")
+    ap.add_argument("--mode", choices=["region", "appearance"], default="region",
+                    help="region=appearance×confidence(既定) / appearance=生embedding（factorial-b）")
     args = ap.parse_args()
     device = torch.device(args.device if torch.cuda.is_available() else "cpu")
+    # appearance モードは別タグ dir に出力（現行 region キャッシュを壊さない）
+    out_dir = OUT_DIR if args.mode == "region" else PROJ / f"data/processed/t1a_regiontoken/{_FROZEN_TAG}_appearance"
 
     model = Config(MODEL_CFG).model.eval()
     ckpt = load_checkpoint(CKPT)
@@ -129,7 +141,7 @@ def main():
                 _ = model([img.to(device)])  # eval forward → hook が最終層 (tokens, logits) を捕捉
             if cap.tokens is None or cap.logits is None:
                 raise RuntimeError(f"hook 未発火: region-token を捕捉できません ({fr['frame']})")
-            regs.append(region_vector(cap))
+            regs.append(region_vector(cap, args.mode))
             ids.append(fr["frame"])
             i += 1
             if i % 500 == 0:
@@ -138,8 +150,8 @@ def main():
             break
 
     handle.remove()
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    out = OUT_DIR / f"{args.subset}_regiontoken.npz"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out = out_dir / f"{args.subset}_regiontoken.npz"
     reg_arr = np.stack(regs).astype(np.float32)
     np.savez(out, frame_ids=np.asarray(ids), region=reg_arr)
     nz = (np.abs(reg_arr) > 1e-6).mean()

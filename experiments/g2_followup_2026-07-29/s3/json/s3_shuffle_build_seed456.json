@@ -1,0 +1,72 @@
+{
+  "seed": 456,
+  "src": "experiments/g2_main_2026-07-29_lecun/features",
+  "splits": {
+    "train": {
+      "n_rows": 9657,
+      "n_fixed_points": 0,
+      "n_rows_identical_after_shuffle": 0,
+      "n_all_zero_rows": 39,
+      "note_identical_rows": "全ゼロ行が複数あるため、derangement でも行の値が一致することがある。分母は n_rows。",
+      "exact_invariants": {
+        "row_multiset_equal": true,
+        "row_norm_dist_equal": true
+      },
+      "float_deviation_order_dependence": {
+        "mean_abs_dev_f64": 9.540979117872439e-18,
+        "mean_rel_dev_f64": 1.2873034902178033e-15,
+        "std_abs_dev_f64": 5.551115123125783e-16,
+        "mean_rel_dev_f32": 1.7592050403737557e-06,
+        "col_mean_max_abs_dev_f64": 0.0
+      },
+      "mean_f64": -0.007411600442610598,
+      "std_f64": 0.3031577203483425,
+      "out": "experiments/g2_followup_2026-07-29/s3/features/train_shuffleROI_seed456.npz",
+      "out_md5": "36da46a594a4d436e566e8ed305f825d"
+    },
+    "val": {
+      "n_rows": 1515,
+      "n_fixed_points": 0,
+      "n_rows_identical_after_shuffle": 0,
+      "n_all_zero_rows": 0,
+      "note_identical_rows": "全ゼロ行が複数あるため、derangement でも行の値が一致することがある。分母は n_rows。",
+      "exact_invariants": {
+        "row_multiset_equal": true,
+        "row_norm_dist_equal": true
+      },
+      "float_deviation_order_dependence": {
+        "mean_abs_dev_f64": 2.6020852139652106e-18,
+        "mean_rel_dev_f64": 3.867119517103012e-16,
+        "std_abs_dev_f64": 2.220446049250313e-16,
+        "mean_rel_dev_f32": 7.612529448378123e-07,
+        "col_mean_max_abs_dev_f64": 0.0
+      },
+      "mean_f64": -0.006728742679032893,
+      "std_f64": 0.294754134730429,
+      "out": "experiments/g2_followup_2026-07-29/s3/features/val_shuffleROI_seed456.npz",
+      "out_md5": "33d2d3f2e777406378db5a997cf4bfe7"
+    },
+    "test": {
+      "n_rows": 4265,
+      "n_fixed_points": 0,
+      "n_rows_identical_after_shuffle": 2,
+      "n_all_zero_rows": 84,
+      "note_identical_rows": "全ゼロ行が複数あるため、derangement でも行の値が一致することがある。分母は n_rows。",
+      "exact_invariants": {
+        "row_multiset_equal": true,
+        "row_norm_dist_equal": true
+      },
+      "float_deviation_order_dependence": {
+        "mean_abs_dev_f64": 1.734723475976807e-18,
+        "mean_rel_dev_f64": 3.177742908545114e-16,
+        "std_abs_dev_f64": 4.440892098500626e-16,
+        "mean_rel_dev_f32": 1.791340862992962e-06,
+        "col_mean_max_abs_dev_f64": 0.0
+      },
+      "mean_f64": -0.005458979929786159,
+      "std_f64": 0.2709090997757657,
+      "out": "experiments/g2_followup_2026-07-29/s3/features/test_shuffleROI_seed456.npz",
+      "out_md5": "3b4b0154e19dfc04dee85aa6561c3a9b"
+    }
+  }
+}

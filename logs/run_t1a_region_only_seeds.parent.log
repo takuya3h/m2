@@ -1,0 +1,24 @@
+================ T1a-RegionOnly 3-seed (GAP 削除 ablation) ================
+ DESC=t1a_region_only epochs=50 region_only=True
+ in_dim = 3840 (region のみ・GAP 2048 削除)
+ 比較: T1a base 3-seed (in_dim=5888) との 1 点 ablation
+ 分母: S4 base 0.8986±0.0034 (T1a base mean 0.9483, Δ=+0.0497)
+============================================================================
+[wave 1] seed42(GPU0) + seed123(GPU1) 並列起動 ...
+[wave 1] 完了
+[wave 2] seed456(GPU0) 単独 ...
+[wave 2] 完了
+================ 完了・サマリ ================
+-- seed42 --
+[t1a][epoch 50/50] loss=0.1898  val_acc=0.9419  macroF1=0.7910  edit=32.57  segF1@50=0.39
+[t1a] best @epoch 19: acc=0.9472 macroF1=0.8006
+[t1a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/t1a_region_only_001_t1a_region_only_seed42
+-- seed123 --
+[t1a][epoch 50/50] loss=0.1762  val_acc=0.9432  macroF1=0.7959  edit=35.29  segF1@50=0.39
+[t1a] best @epoch 24: acc=0.9498 macroF1=0.8112
+[t1a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/t1a_region_only_002_t1a_region_only_seed123
+-- seed456 --
+[t1a][epoch 50/50] loss=0.2151  val_acc=0.9274  macroF1=0.7810  edit=35.33  segF1@50=0.35
+[t1a] best @epoch 22: acc=0.9472 macroF1=0.8024
+[t1a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/t1a_region_only_003_t1a_region_only_seed456
+次: experiments/transfer/t1a_region_only_*/metrics.json を集計し、T1a base 3-seed と paired-σ で Δ 判定。

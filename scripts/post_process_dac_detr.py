@@ -18,7 +18,7 @@ per_class_ap.json / notes.md / server.txt / visualizations/confusion_matrix.npyã
 
 Usage:
   python scripts/post_process_dac_detr.py \
-      --work-dir /tmp/dac_work_seed42 \
+      --work-dir experiments/transfer/dac_work_seed42 \
       --exp-dir experiments/baselines/s0_037_dacdetr_bbox_seed42 \
       --command-sh "<cmd>" --seed 42 --description dacdetr_bbox \
       --detector "DAC-DETR" --world-size 2 --server-name philip

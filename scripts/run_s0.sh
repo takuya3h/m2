@@ -128,9 +128,9 @@ run_ddp() {
     local port=$((29500 + seed_idx * 3 + det_idx))
     echo "--- [DDP NPROC=${NPROC} via manual launcher] ${head} seed=${seed} (port=${port}) ---"
 
-    # 各 rank の stdout/stderr は /tmp/s0_<head>_seed<seed>_rank<r>.log へ
+    # 各 rank の stdout/stderr は logs/s0/s0_<head>_seed<seed>_rank<r>.log へ
     # 分離。本番のメインログにはサマリのみ出す。
-    local logdir="/tmp/s0_logs"
+    local logdir="$PROJECT_DIR/logs/s0"
     mkdir -p "$logdir"
     local pids=()
 

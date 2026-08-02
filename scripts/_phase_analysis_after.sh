@@ -22,12 +22,14 @@ ready() { # <tag> : 必要 3 特徴(val)が揃っているか
   && [ -f "data/processed/b2a_detsignal/$1/val_toolpresence.npz" ]
 }
 
-# ---- Method A 3-seed paired-σ（det42/123/456）----
-: > logs/phase3seed_results.tsv
+# ---- Method A 3-seed paired-σ（det42/123/456）phase-seed 3点平均・冪等 ----
+touch logs/phase3seed_results.tsv
 for ds in 42 123 456; do
+  n=$(awk -F'\t' -v s="$ds" '$1==s' logs/phase3seed_results.tsv 2>/dev/null | wc -l)
+  if [ "$n" -ge 18 ]; then log "SKIP det$ds（既に完了 ${n}行・並走分を再利用）"; continue; fi
   if ready "relation_detr_seed${ds}" && ready "relation_detr_augstrong_seed${ds}"; then
-    log "3-seed probe: detector_seed=$ds"
-    bash scripts/_run_phase_probe_3seed.sh "$ds" 42 0 >> logs/phase_analysis.log 2>&1
+    log "3-seed probe: detector_seed=$ds (phase-seed 3点平均)"
+    bash scripts/_run_phase_probe_3seed.sh "$ds" 0 >> logs/phase_analysis.log 2>&1
   else
     log "SKIP detector_seed=$ds（特徴未整備）"
   fi

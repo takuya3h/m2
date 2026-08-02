@@ -1,0 +1,54 @@
+==============================================================================
+signature 部分集合 per-class AP 比較: Relation-DETR vs Align-DETR
+（val COCO bbox AP @ IoU 0.5:0.95, 3seed, §6 統制・paired-σ §10.1）
+==============================================================================
+
+[0] overall mAP（全15クラス平均・参考, metrics.json 由来ではなく AP 平均）
+  Relation-DETR : 72.68±0.34  (seeds ['72.97', '72.86', '72.20'])
+  Align-DETR    : 71.33±1.15  (seeds ['71.91', '72.35', '69.72'])
+
+[subset] signature_narrow (4: anesthesia/closure/design/incision)
+  対象 4クラス: Syringe, Needle Holders, Skewer, Scalpel
+    Relation-DETR : 81.14±0.49  seeds=['81.62', '81.34', '80.47']
+    Align-DETR    : 83.57±0.46  seeds=['84.14', '83.01', '83.57']
+    Δ(Rel−Align) per seed: ['-2.52', '-1.67', '-3.10'] pp
+    → mean=-2.43pp pstdev=0.59pp 同符号=True → ✅有意  (優位: Align-DETR)
+
+[subset] signature_broad (9: +hemostasis/dissection)
+  対象 9クラス: Syringe, Needle Holders, Skewer, Scalpel, Bipolar Forceps, Electric Cautery, Hook, Raspatory, Scissors
+    Relation-DETR : 79.15±0.52  seeds=['79.46', '79.58', '78.41']
+    Align-DETR    : 78.20±1.54  seeds=['78.08', '80.14', '76.37']
+    Δ(Rel−Align) per seed: ['+1.39', '-0.56', '+2.05'] pp
+    → mean=+0.96pp pstdev=1.11pp 同符号=False → ❌非有意（同率圏 / 符号不一致）  (優位: —)
+
+[subset] ubiquitous_ctrl (4: 対照群)
+  対象 4クラス: Gauze, Mouth Gag, Suction Cannula, Tweezers
+    Relation-DETR : 67.06±0.16  seeds=['67.06', '67.25', '66.85']
+    Align-DETR    : 64.97±0.80  seeds=['66.10', '64.33', '64.47']
+    Δ(Rel−Align) per seed: ['+0.96', '+2.92', '+2.38'] pp
+    → mean=+2.09pp pstdev=0.82pp 同符号=True → ✅有意  (優位: Relation-DETR)
+
+[per-class] 3seed 平均 AP（%）  Rel / Align / Δ(Rel−Align)
+  class                    Relation      Align      Δpp  勝者(3seed全一致?)
+  Syringe                     55.64      62.29   -6.65  Align* [signature]
+  Needle Holders              84.62      84.55   +0.07  Rel  [signature]
+  Skewer                      94.03      95.08   -1.04  Align  [signature]
+  Scalpel                     90.28      92.38   -2.09  Align* [signature]
+  Bipolar Forceps             79.34      77.99   +1.35  Rel  [signature]
+  Electric Cautery            96.32      96.26   +0.05  Rel  [signature]
+  Hook                        58.78      56.31   +2.48  Rel  [signature]
+  Raspatory                   82.25      69.39  +12.85  Rel  [signature]
+  Scissors                    71.11      69.52   +1.59  Rel  [signature]
+  Forceps                     36.92      34.96   +1.97  Rel  [generic]
+  Gauze                       27.82      24.85   +2.97  Rel  [ctrl]
+  Mouth Gag                   80.79      79.46   +1.33  Rel* [ctrl]
+  Retractor                     NaN        NaN        —  (val instance 0)
+  Suction Cannula             81.51      79.71   +1.81  Rel* [ctrl]
+  Tweezers                    78.10      75.86   +2.24  Rel* [ctrl]
+  （* = 3seed 全てで同符号＝頑健。tag: signature / ctrl=対照 / generic=Forceps等）
+
+==============================================================================
+解釈の指針: overall で同率圏でも、signature 部分集合で一貫した優位があれば
+det→phase の観点で意味を持つ。逆に signature で非有意なら『検出器差は phase 利得の
+源ではない』ことの証拠になる（利得は §6 統制下の recipe/構造差でなく信号の質）。
+==============================================================================

@@ -918,6 +918,16 @@ S4 base（GAP-only TeCNO 3-seed = acc 0.8983±0.0090 / macro-F1 0.6965、文書�
   → **ボトルネックは時系列核でなく入力信号（per-frame 表現）**。系統①の検出精度ボトルネック(L2-3)と同方向。
 - 実装知見: 純Python 逐次 minGRU は TeCNO の約 30 倍遅い（1run≈25分）。
 
+### 2026-07-04 検出器改善スタディ — 「検出器強化→phase改善」は GAP 経由・val 限定（test で非頑健）
+
+Relation-DETR を efros で強aug(Method A)/高解像(Method C)改善し、phase 転移を **3-seed paired-σ + phase-seed 平均 + test 確認**で厳密評価（`scripts/_detector_full_study.sh` / `_run_phase_probe_3seed.sh` / `paired_sigma_3seed.py` ほか）。**metrics は全て実測**。
+
+- **検出器**: 強aug mAP 0.7303→0.7426/0.745/0.745（3seed 一貫）。hires 0.733（small AP 0.013→0.031 だが large 犠牲で全体微減）。
+- **phase(val)**: S4/GAP のみ **+1.80pp 有意**（3seed 全正）。B2a(tool-presence)/T1a(region) 非有意。hires は全経路で A に劣る。
+- **phase(test, `--eval-test`)**: S4/GAP は **❌非有意**（mean +2.12pp / det42 が +1.76→**−2.49 反転** / σ3.36）。2/3 seed は test でも正だが同符号崩れ。
+- → **検出器改善→phase改善は val で示唆・test で頑健確認に至らず、経路は GAP に限る。B2a oracle gap はどの改善でも非閉塞**。下記 Pillar3「検出器強化」を精緻化: 効くのは **GAP 経由のみ**・test 頑健性は検出器 seed 追加が要。
+- 証跡: `docs/experiment_log.md`(2026-07-03/04), `logs/{phase3seed_results.tsv, paired_sigma_final.txt, hires_probe_summary.txt, s4_test_results.tsv}`, `configs/detector_relation_detr/`。
+
 ### 2026-07-02 T1a-Boundary — over-segmentation は学習 boundary head でなく因果 debounce で回収
 
 STEP C 改善提案 §8「boundary modeling で T1a の edit-score を改善」を実装・実測（`scripts/train_t1a_boundary.py`、
@@ -942,6 +952,38 @@ REST Integration トークン（`.env` の `NOTION_API_KEY`）に **全 5 DB（r
     専用スクリプト `scripts/post_t1b_ca_to_notion.py`（inj/ctrl/純効果を整形して upsert）を追加。
 - **意思決定ログ / 失敗知見**: 「方向非対称確定」「CA≈FiLM の機構独立性」等を反映。
 - **「現在の研究状態」ページ**: STEP C 完了・方向非対称確定・次アクション（test split per-class rare 標的化）に更新。
+
+### 2026-07-29 G-2 本実験（ROI チャネル 4 系統 × 3 seed）— 主予測 FAIL・背景除去は効かない（負の結果）
+
+事前登録（`experiments/g2_main_2026-07-29/prereg/g2_prediction.md`、学習前に commit `2dc430b`）に対する
+12 run を lecun / commit `ca28064` で完走（失敗 0、MSDeformAttn 拡張ロード全 `True`）。
+結果のみの要約は `experiments/g2_main_2026-07-29_lecun/RESULTS.md`、詳細は `docs/experiment_log.md`。
+
+- **主予測 FAIL**: 3(maskROI) > 2(bboxROI) は指定 3 工程 × 2 split の **0/6** で閾値超えせず。
+  むしろ test/incision は**負方向に超過**（−0.03081, 95%CI [−0.05723, −0.00343]）。
+  → 事前登録の判定規約に従い **「背景は region-token のボトルネックではない」**（負の結果）。
+- **ROI チャネル追加自体は有効**: 2−1 が test で incision +0.04384 / closure +0.03902 /
+  dissection +0.14795 / accuracy +0.06073 / macro-F1 +0.05748（いずれも両基準超過）。
+- **最も情報量の大きい所見**: maskROI と randROI が **ほぼ同幅だけ** bbox を下回った
+  （test/incision −0.031 と −0.038）。同面積のランダム形状が真のマスクと同程度に悪化する以上、
+  劣化要因は「背景を除いたこと」でなく「平均する画素を減らしたこと」側にある。
+- **A-5 再現ばらつき基準点（今後の全実験の基準）**: base 3 seed sd =
+  val acc 0.00132 / macroF1 0.00438、test acc 0.00793 / macroF1 0.02203（n=3, ddof=1）。
+- **Task F はホスト間でビット再現**: val / test の抽出統計が efros と全 20 項目・
+  浮動小数 16 桁まで一致（`source .venv-relation-detr/bin/activate` を守れば決定論的）。
+
+#### コード変更
+
+- `scripts/train_g2.py`: `load_clips` の **OOM 欠陥を修正**（commit `ca28064`）。
+  内包表記の中で `NpzFile` へ毎反復アクセスしており、添字アクセスは毎回 zip メンバ全体を
+  読み直して新しい配列を返す。さらに `arr[i]` は view なので 1 行が親配列（train で 148MB）
+  全体をメモリに固定する。train（9657 行）では約 1.4TB 相当となり **1 run も完走不可**だった。
+  配列をループ外で 1 回だけ読むよう修正（値はビット単位で不変・縮小再現の全行比較で確認）。
+- `scripts/analysis/g2_report.py`: **新規**。事前登録の判定規約（Welch の 2 標本 SE と
+  動画単位クラスタ・ブートストラップ B=2000 の AND）をそのまま実装。**結果を見る前に**書かれている。
+  per-phase F1 の再計算が `PhaseEvaluator` と厳密一致することを乱数 30 試行で検証済み
+  （tp/fp/fn は動画をまたいで加算可能なので、per-(run, 動画, クラス) counts の前計算だけで
+  ブートストラップが厳密かつ高速に回る）。クラスタ単位は**動画**（`clip_id` の `_` 前）。
 
 ---
 
@@ -1021,6 +1063,77 @@ root でも不可）。そのためサーバー名は環境変数 `SERVERNAME` �
 **ルールの変更方法:** リポジトリ直下の `.stglobalignore` を phase0 上で編集して
 commit & push すると、各サーバーの keeper が 30 分以内に `$M2DIR/.stignore` へ
 自動反映する（`.stignore` 自体は編集しない。先にマッチした行が勝つ構文に注意）。
+
+---
+
+## 検出側 run の成果物（experiments/transfer/&lt;run_name&gt;/）
+
+**2026-07-28 変更**: 検出側トレーナ（`train_t1b.py` 系）の成果物は `/tmp` ではなく
+`experiments/transfer/<run_name>/` に永続化される。あわせて **per-image の検出結果
+（predictions）を既定で保存**する。
+
+背景: 従来 `/tmp` に出していたため再起動で消え、eval-only の追認が反復的に実行不能に
+なっていた（ckpt 不在 seed の恒等代替 / test 未実施 / FP・FN 集計不能で失敗機序が推測どまり）。
+predictions さえ残っていれば ckpt が無くても解析できるため、オプトインではなく既定 on にした。
+
+### レイアウト（工程側 `ExperimentManager` と同一規約）
+
+```
+experiments/transfer/<run_name>/
+├── checkpoints/best_t1b.pth
+├── predictions/{split}_{inj|ctrl}_ep-1.json.gz   # init（warm-start 恒等点）
+│                {split}_{inj|ctrl}_best.json.gz  # best epoch
+├── logs/val_metrics_by_epoch.json                # epoch 別 mAP + per-class + best_epoch
+│       eval_meta_{split}.json                    # 評価対象 image_id 等
+├── config.yaml  command.sh  git_commit.txt  server.txt
+└── metrics.json  per_class_ap.json  t1b_result.json  notes.md
+```
+
+- `logs/val_metrics_by_epoch.json` と `logs/eval_meta_*.json` は **git 追跡対象**
+  （`.gitignore` に明示例外）。ckpt や predictions が失われてもコミット済みログだけで
+  init 比較・絶対値検証を完遂できる状態を担保する。
+- `checkpoints/` `predictions/` は容量のため git 追跡外（層2 の Syncthing 側で同期）。
+
+### predictions
+
+- 形式は COCO detection results（`[{"image_id", "category_id", "bbox":[x,y,w,h], "score"}, …]`）。
+- **score 閾値での足切りはしない**（eval recipe が `score_thr=0.0` 系のため、足切りすると
+  AP が再現不能になる）。容量対策は image_id ごと **top-k=300**（= `select_box_nums_for_evaluation`
+  と同一上限）で、実測では常に恒等変換。
+- **実測サイズ**（seed42・val 全 1515 枚・検出 454,500 = 厳密に 300/枚）:
+  gzip 後 **12.6 MB**（非圧縮 69.8 MB、圧縮率 0.18）= 8.1 KB/枚。
+  → **1 run あたり約 25 MB**（init + best の val 2 本）。test（4265 枚）は約 35 MB/本。
+
+### 関連フラグ
+
+| フラグ | 意味 |
+| --- | --- |
+| `--run-name NAME` | 保存先 `experiments/transfer/NAME/`（環境変数 `T1B_RUN_NAME` でも可） |
+| `--no-save-predictions` | predictions を保存しない（measure run 等） |
+| `--save-predictions-all` | 全 epoch の predictions を保存（既定は init と best のみ） |
+| `--predictions-no-gzip` | 素の `.json` で保存 |
+| `T1B_WORK_DIR` | 保存先の明示 override（後方互換。相対パスはリポジトリ root 基準） |
+
+### 検証コマンド
+
+```bash
+# predictions から COCO eval を再実行し、記録 mAP と bit-exact 一致するか検証
+.venv-relation-detr/bin/python scripts/verify_predictions_ap.py --run <run_name> --split val --epoch -1
+
+# inj / ctrl の init 予測が完全一致するか（注入層 zero-init=恒等の実測確認）
+.venv-relation-detr/bin/python scripts/run_artifacts.py --verify-init-identity <run_inj> <run_ctrl>
+```
+
+`run_*_3seed_*.sh` 系ランチャーは本走のたびに init 恒等性を自動検証し、
+`logs/<tag>_init_identity*.json` に記録する。
+
+### `best_is_init`
+
+frozen 検出器では init を超える epoch が無いことがあり、その場合 `checkpoints/best_t1b.pth` は
+生成されない（過去に「ckpt 不在 seed を S0-frozen で恒等代替」が必要になった原因）。
+その状況は `metrics.json` / `logs/val_metrics_by_epoch.json` の `best_is_init: true` で明示し、
+best predictions は init の複製として必ず出力する（init ckpt 自体は warm-start ckpt から
+決定的に再構成できるため重複保存しない）。
 
 ---
 

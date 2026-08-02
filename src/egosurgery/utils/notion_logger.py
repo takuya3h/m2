@@ -44,6 +44,7 @@ def log_experiment_to_notion(
     tier: str = "must",
     primary_metric: str = "tool bbox mAP / AP_50 / AP_75 / AP_rare / AP_common (COCO bbox @ IoU=0.5:0.95)",
     extra_result_text: str | None = None,
+    name_override: str | None = None,
 ) -> dict | None:
     """実験フォルダの内容を Notion 実験Run台帳に投稿する。
 
@@ -55,6 +56,8 @@ def log_experiment_to_notion(
         tier: "must" / "effort" / "cut".
         primary_metric: Primary Metric テキスト列の値。
         extra_result_text: Result 列の末尾に追記する自由テキスト。
+        name_override: Notion の Name（冪等キー）に使う名前。既定は exp_dir.name。
+            run ディレクトリ名が汎用的で他実験と衝突しうる場合に接頭辞を付けるために使う。
 
     Returns:
         Notion 側のレスポンス dict、または失敗時 None。
@@ -70,6 +73,7 @@ def log_experiment_to_notion(
             tier=tier,
             primary_metric=primary_metric,
             extra_result_text=extra_result_text,
+            name_override=name_override,
         )
     except Exception as exc:  # noqa: BLE001 — Notion 失敗で学習を巻き込まない
         logger.warning("Notion logging skipped: %s", exc)
@@ -84,6 +88,7 @@ def _log_impl(
     tier: str,
     primary_metric: str,
     extra_result_text: str | None,
+    name_override: str | None = None,
 ) -> dict | None:
     api_key = os.environ.get("NOTION_API_KEY", "").strip()
     db_id = os.environ.get("NOTION_DB_ID", "").strip()
@@ -93,7 +98,7 @@ def _log_impl(
         )
         return None
 
-    name = exp_dir.name
+    name = name_override or exp_dir.name
     metrics = _read_json(exp_dir / "metrics.json")
     eval_recipe = metrics.get("eval_recipe") if isinstance(metrics, dict) else {}
     commit = _read_text(exp_dir / "git_commit.txt").strip()
@@ -110,8 +115,14 @@ def _log_impl(
         or (server_name if server_name and server_name != "unknown" else None)
     )
 
-    result_text = _format_result(metrics, extra_result_text)
+    # 成果物の所在（ホスト名付き絶対パス）を Result 末尾に載せる。Artifacts 列は
+    # url 型で 1 本しか持てないので、checkpoints/predictions/logs の内訳はここへ。
+    artifacts_text = _format_artifacts(exp_dir, server_name)
+    result_text = _clip_rich_text(
+        _format_result(metrics, "\n".join(x for x in (extra_result_text, artifacts_text) if x))
+    )
     eval_recipe_text = _format_eval_recipe(eval_recipe)
+    artifacts_url = _artifact_url(exp_dir, server_name)
     gpu_config_text = _format_gpu_config(server_name)
     started_iso, finished_iso = _resolve_started_finished(exp_dir, status)
     seed = _parse_seed_from_name(name)
@@ -132,6 +143,7 @@ def _log_impl(
             eval_recipe_text=eval_recipe_text,
             gpu_config_text=gpu_config_text,
             finished_iso=finished_iso,
+            artifacts_url=artifacts_url,
         )
 
     return _create_page(
@@ -150,7 +162,7 @@ def _log_impl(
         eval_recipe_text=eval_recipe_text,
         gpu_config_text=gpu_config_text,
         commit=commit,
-        exp_dir=exp_dir,
+        artifacts_url=artifacts_url,
     )
 
 
@@ -195,7 +207,7 @@ def _create_page(
     eval_recipe_text: str,
     gpu_config_text: str,
     commit: str,
-    exp_dir: Path,
+    artifacts_url: str,
 ) -> dict:
     import requests
 
@@ -209,7 +221,7 @@ def _create_page(
         "Eval Recipe": {"rich_text": [{"text": {"content": eval_recipe_text}}]},
         "GPU Config": {"rich_text": [{"text": {"content": gpu_config_text}}]},
         "Commit": {"rich_text": [{"text": {"content": commit}}]},
-        "Artifacts": {"url": f"file://{exp_dir.resolve()}"},
+        "Artifacts": {"url": artifacts_url},
         "Decision Needed": {"checkbox": False},
     }
     if server_option:
@@ -243,6 +255,7 @@ def _update_page(
     eval_recipe_text: str,
     gpu_config_text: str,
     finished_iso: str | None,
+    artifacts_url: str | None = None,
 ) -> dict:
     import requests
 
@@ -252,6 +265,9 @@ def _update_page(
         "Eval Recipe": {"rich_text": [{"text": {"content": eval_recipe_text}}]},
         "GPU Config": {"rich_text": [{"text": {"content": gpu_config_text}}]},
     }
+    if artifacts_url:
+        # 再投稿時も所在を最新化する（別ホストへ移した run を追跡できるように）。
+        properties["Artifacts"] = {"url": artifacts_url}
     if finished_iso:
         properties["Finished"] = {"date": {"start": finished_iso}}
 
@@ -312,6 +328,52 @@ def _format_result(metrics: dict, extra: str | None) -> str:
     if extra:
         base = f"{base}\n{extra}"
     return base
+
+
+# ----------------------------------------------------------------------------
+# Artifacts（成果物の所在）
+# ----------------------------------------------------------------------------
+
+_RICH_TEXT_LIMIT = 2000  # Notion API の rich_text 1 要素あたりの上限
+
+
+def _clip_rich_text(text: str, limit: int = _RICH_TEXT_LIMIT) -> str:
+    """Notion の rich_text 上限に収める。超過は末尾を落として明示する。
+
+    上限超過は API エラーになり投稿ごと失敗するので、静かに切り詰めるのではなく
+    切り詰めた事実を本文に残す（記録の欠落を隠さない）。
+    """
+    if len(text) <= limit:
+        return text
+    mark = "\n…(truncated)"
+    return text[: limit - len(mark)] + mark
+
+
+def _artifact_url(exp_dir: Path, server_name: str) -> str:
+    """Artifacts (url) 列の値。``file://<host>/<絶対パス>`` でホストを明示する。
+
+    マルチサーバ運用では「どのサーバーにある成果物か」が判別できないと台帳から
+    実物へ辿り着けない。file URL の authority 部にホスト名を入れて所在を一意にする。
+    """
+    return f"file://{server_name}{exp_dir.resolve()}"
+
+
+def _format_artifacts(exp_dir: Path, server_name: str) -> str:
+    """checkpoints / predictions / logs の所在を ``<host>:<絶対パス>`` で列挙する。
+
+    Artifacts 列は url 型で 1 本しか持てないため、サブディレクトリの内訳は
+    Result 列の末尾に載せる。存在するものだけを、実ファイル数付きで書く
+    （「あるはずだが空」を台帳上で見分けられるようにするため）。
+    """
+    exp_dir = exp_dir.resolve()
+    lines = [f"Artifacts @ {server_name}", f"  run_dir: {exp_dir}"]
+    for sub in ("checkpoints", "predictions", "logs"):
+        d = exp_dir / sub
+        if not d.is_dir():
+            continue
+        n = sum(1 for p in d.rglob("*") if p.is_file())
+        lines.append(f"  {sub}: {d} ({n} files)")
+    return "\n".join(lines)
 
 
 def _format_eval_recipe(recipe: dict) -> str:

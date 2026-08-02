@@ -1,0 +1,95 @@
+{
+  "split": "train",
+  "env": {
+    "torch": "2.1.2+cu118",
+    "cuda": "11.8",
+    "gpu": "NVIDIA RTX A6000",
+    "cudnn": 8700,
+    "commit": "c7747c03b7bd4bde3b9f2c4a8e2a26619bf33bd3",
+    "host": "lecun",
+    "msdeformattn_extension_loaded": true,
+    "ninja": "/home/ubuntu/slocal2/m2/.venv-relation-detr/bin/ninja"
+  },
+  "D": 256,
+  "neck_level": 0,
+  "n_frames": 9657,
+  "n_boxes": 32272,
+  "n_fallback_boxes": 4555,
+  "fallback_rate": 0.14114402578086266,
+  "fallback_by_class": {
+    "Skewer": 212,
+    "Tweezers": 119,
+    "Scalpel": 20,
+    "Gauze": 40,
+    "Scissors": 67,
+    "Needle Holders": 68,
+    "Syringe": 12,
+    "Mouth Gag": 3780,
+    "Suction Cannula": 68,
+    "Raspatory": 33,
+    "Bipolar Forceps": 10,
+    "Retractor": 27,
+    "Forceps": 68,
+    "Hook": 26,
+    "Electric Cautery": 5
+  },
+  "total_by_class": {
+    "Skewer": 212,
+    "Syringe": 344,
+    "Gauze": 4596,
+    "Tweezers": 6467,
+    "Scalpel": 739,
+    "Scissors": 1780,
+    "Bipolar Forceps": 446,
+    "Needle Holders": 3031,
+    "Mouth Gag": 3807,
+    "Suction Cannula": 3134,
+    "Raspatory": 654,
+    "Forceps": 2534,
+    "Electric Cautery": 1404,
+    "Retractor": 2079,
+    "Hook": 1045
+  },
+  "fallback_rate_by_class": {
+    "Skewer": 1.0,
+    "Syringe": 0.03488372093023256,
+    "Gauze": 0.008703220191470844,
+    "Tweezers": 0.018401113344672954,
+    "Scalpel": 0.02706359945872801,
+    "Scissors": 0.037640449438202245,
+    "Bipolar Forceps": 0.02242152466367713,
+    "Needle Holders": 0.022434839986803037,
+    "Mouth Gag": 0.9929078014184397,
+    "Suction Cannula": 0.02169751116783663,
+    "Raspatory": 0.05045871559633028,
+    "Forceps": 0.026835043409629045,
+    "Electric Cautery": 0.0035612535612535613,
+    "Retractor": 0.012987012987012988,
+    "Hook": 0.024880382775119617
+  },
+  "zero_slot_rate": {
+    "bboxROI": 0.8015532774153464,
+    "maskROI": 0.8015532774153464,
+    "randROI": 0.8015532774153464
+  },
+  "sanity": {
+    "n_boxes_where_mask_equals_bbox": 4555,
+    "matches_fallback_count": true,
+    "n_rand_area_mismatch_gt1px": 0,
+    "norm_median": {
+      "bbox": 10.725420951843262,
+      "mask": 13.009621620178223,
+      "rand": 11.784196853637695
+    },
+    "norm_mean": {
+      "bbox": 10.92748075906865,
+      "mask": 14.041149601879603,
+      "rand": 12.117832318945693
+    }
+  },
+  "coordinate_mapping": {
+    "eval_resize": "model.eval_transform の出力形状を実測 (再計算しない)",
+    "padding": "size_divisible=32、右下パディングのため原点は不変",
+    "feature_coord": "f = orig * scale / stride,  stride = ceil(resized/32)*32 / feat_size"
+  }
+}

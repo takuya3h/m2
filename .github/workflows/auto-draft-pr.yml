@@ -1,0 +1,38 @@
+name: auto-draft-pr
+on:
+  push:
+    branches: ['exp/**']
+# checkout のみ default token を使う。PR 作成は下の AUTOSYNC_PR_TOKEN(PAT) で行う
+# （default GITHUB_TOKEN は repo 設定で PR 作成不可＝"Actions is not permitted to create PRs"。
+#  fine-grained PAT なら org トグルを触らず・Actions に承認権限を与えずに PR 作成できる）。
+permissions:
+  contents: read
+# 同一ブランチへの連続 push が 'pr list' ガードを両方すり抜けて二重 PR を作るのを防ぐ。
+concurrency:
+  group: auto-draft-pr-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  draft-pr:
+    # ブランチ削除の push では checkout が失敗しノイズ run になるため実行しない。
+    if: ${{ github.event.deleted == false }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Open or update draft PR to phase0
+        env:
+          # fine-grained PAT（m2 の Pull requests: Read and write のみ）を Actions secret に。
+          # 未設定なら明示エラーで気付けるようにする（サイレント失敗させない）。
+          GH_TOKEN: ${{ secrets.AUTOSYNC_PR_TOKEN }}
+        run: |
+          if [ -z "${GH_TOKEN}" ]; then
+            echo "::error::secret AUTOSYNC_PR_TOKEN が未設定。fine-grained PAT を設定してください（README §5.5 Step 3）。"
+            exit 1
+          fi
+          BR="${GITHUB_REF_NAME}"
+          if gh pr list --head "$BR" --base phase0 --state open --json number --jq '.[0].number' | grep -q .; then
+            echo "PR exists; push auto-updates it."
+          else
+            gh pr create --draft --base phase0 --head "$BR" \
+              --title "auto: ${BR} → phase0" \
+              --body "自動起票（実験成果の phase0 統合候補）。**merge は人手**でレビュー後に。val→test 検証と Δ 有意性を確認すること。"
+          fi
