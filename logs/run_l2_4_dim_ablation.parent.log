@@ -1,0 +1,91 @@
+================ §18.4 L2-4 15-d ablation (45 run, 2GPU 並列) ================
+ 各 dim を 0 mask して B2a を 50 epoch 学習、phase acc 低下から寄与度を測定
+ 比較: B2a base 3-seed (mean phase acc 0.9369) と paired-σ
+===============================================================================
+[dim 0+1, seed 42] GPU0+1 並列起動 ...
+[dim 0+1, seed 123] GPU0+1 並列起動 ...
+[dim 0+1, seed 456] GPU0+1 並列起動 ...
+[dim 2+3, seed 42] GPU0+1 並列起動 ...
+[dim 2+3, seed 123] GPU0+1 並列起動 ...
+[dim 2+3, seed 456] GPU0+1 並列起動 ...
+[dim 4+5, seed 42] GPU0+1 並列起動 ...
+[dim 4+5, seed 123] GPU0+1 並列起動 ...
+[dim 4+5, seed 456] GPU0+1 並列起動 ...
+[dim 6+7, seed 42] GPU0+1 並列起動 ...
+[dim 6+7, seed 123] GPU0+1 並列起動 ...
+[dim 6+7, seed 456] GPU0+1 並列起動 ...
+[dim 8+9, seed 42] GPU0+1 並列起動 ...
+[dim 8+9, seed 123] GPU0+1 並列起動 ...
+[dim 8+9, seed 456] GPU0+1 並列起動 ...
+[dim 10+11, seed 42] GPU0+1 並列起動 ...
+[dim 10+11, seed 123] GPU0+1 並列起動 ...
+[dim 10+11, seed 456] GPU0+1 並列起動 ...
+[dim 12+13, seed 42] GPU0+1 並列起動 ...
+[dim 12+13, seed 123] GPU0+1 並列起動 ...
+[dim 12+13, seed 456] GPU0+1 並列起動 ...
+[dim 14+15, seed 42] GPU0+1 並列起動 ...
+[dim 14+15, seed 123] GPU0+1 並列起動 ...
+[dim 14+15, seed 456] GPU0+1 並列起動 ...
+
+================ L2-4 全 45 run 完走 ================
+-- b2a_mask_dim_00 --
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_00_001_b2a_mask_dim_00_seed42
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_00_002_b2a_mask_dim_00_seed123
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_00_003_b2a_mask_dim_00_seed456
+-- b2a_mask_dim_01 --
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_01_001_b2a_mask_dim_01_seed42
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_01_002_b2a_mask_dim_01_seed123
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_01_003_b2a_mask_dim_01_seed456
+-- b2a_mask_dim_02 --
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_02_001_b2a_mask_dim_02_seed42
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_02_002_b2a_mask_dim_02_seed123
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_02_003_b2a_mask_dim_02_seed456
+-- b2a_mask_dim_03 --
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_03_001_b2a_mask_dim_03_seed42
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_03_002_b2a_mask_dim_03_seed123
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_03_003_b2a_mask_dim_03_seed456
+-- b2a_mask_dim_04 --
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_04_001_b2a_mask_dim_04_seed42
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_04_002_b2a_mask_dim_04_seed123
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_04_003_b2a_mask_dim_04_seed456
+-- b2a_mask_dim_05 --
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_05_001_b2a_mask_dim_05_seed42
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_05_002_b2a_mask_dim_05_seed123
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_05_003_b2a_mask_dim_05_seed456
+-- b2a_mask_dim_06 --
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_06_001_b2a_mask_dim_06_seed42
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_06_002_b2a_mask_dim_06_seed123
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_06_003_b2a_mask_dim_06_seed456
+-- b2a_mask_dim_07 --
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_07_001_b2a_mask_dim_07_seed42
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_07_002_b2a_mask_dim_07_seed123
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_07_003_b2a_mask_dim_07_seed456
+-- b2a_mask_dim_08 --
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_08_001_b2a_mask_dim_08_seed42
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_08_002_b2a_mask_dim_08_seed123
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_08_003_b2a_mask_dim_08_seed456
+-- b2a_mask_dim_09 --
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_09_001_b2a_mask_dim_09_seed42
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_09_002_b2a_mask_dim_09_seed123
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_09_003_b2a_mask_dim_09_seed456
+-- b2a_mask_dim_10 --
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_10_001_b2a_mask_dim_10_seed42
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_10_002_b2a_mask_dim_10_seed123
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_10_003_b2a_mask_dim_10_seed456
+-- b2a_mask_dim_11 --
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_11_001_b2a_mask_dim_11_seed42
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_11_002_b2a_mask_dim_11_seed123
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_11_003_b2a_mask_dim_11_seed456
+-- b2a_mask_dim_12 --
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_12_001_b2a_mask_dim_12_seed42
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_12_002_b2a_mask_dim_12_seed123
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_12_003_b2a_mask_dim_12_seed456
+-- b2a_mask_dim_13 --
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_13_001_b2a_mask_dim_13_seed42
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_13_002_b2a_mask_dim_13_seed123
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_13_003_b2a_mask_dim_13_seed456
+-- b2a_mask_dim_14 --
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_14_001_b2a_mask_dim_14_seed42
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_14_002_b2a_mask_dim_14_seed123
+[b2a] evidence written -> /home/ubuntu/slocal2/m2/experiments/transfer/b2a_mask_dim_14_003_b2a_mask_dim_14_seed456
+次: experiments/transfer/b2a_mask_dim_*/metrics.json を集計し、tool クラス別寄与度を可視化。

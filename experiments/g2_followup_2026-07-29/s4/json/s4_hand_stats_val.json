@@ -1,0 +1,61 @@
+{
+  "split": "val",
+  "env": {
+    "torch": "2.1.2+cu118",
+    "cuda": "11.8",
+    "gpu": "NVIDIA RTX A6000",
+    "cudnn": 8700,
+    "commit": "1ae0a9663ec1487667da3881d326d458f32a13ee",
+    "host": "lecun",
+    "msdeformattn_extension_loaded": true,
+    "ninja": "/home/ubuntu/slocal2/m2/.venv-relation-detr/bin/ninja"
+  },
+  "D": 256,
+  "neck_level": 0,
+  "n_frames": 1515,
+  "hand_bbox_classes_4": [
+    "Own hands left",
+    "Own hands right",
+    "Other hands left",
+    "Other hands right"
+  ],
+  "hand_bbox_classes_2": [
+    "Own hands left",
+    "Own hands right"
+  ],
+  "mask_hand_classes_2": [
+    "Own hands left",
+    "Own hands right"
+  ],
+  "n_frames_with_any_hand_mask": 1344,
+  "frame_cov_hand_mask": 0.8871287128712871,
+  "n_boxes_2cls": 2972,
+  "n_fallback_boxes_2cls": 328,
+  "fallback_rate_2cls": 0.11036339165545088,
+  "fallback_by_class": {
+    "Own hands left": 164,
+    "Own hands right": 164
+  },
+  "total_by_class": {
+    "Own hands left": 1505,
+    "Own hands right": 1467
+  },
+  "zero_rate": {
+    "handPresence": 0.0,
+    "handROIbbox2": 0.025082508250825083,
+    "handROIbbox4": 0.22062706270627064,
+    "handROImask2": 0.025082508250825083
+  },
+  "sanity": {
+    "n_boxes_where_mask_equals_bbox": 328,
+    "matches_fallback_count": true
+  },
+  "denominators": {
+    "fallback_rate_2cls": "分母 = 2cls（Own hands left/right）の手 GT box 総数",
+    "frame_cov_hand_mask": "分母 = この split の manifest フレーム数"
+  },
+  "coordinate_mapping": {
+    "eval_resize": "model.eval_transform の出力形状を実測 (再計算しない)",
+    "padding": "size_divisible=32、右下パディングのため原点は不変"
+  }
+}

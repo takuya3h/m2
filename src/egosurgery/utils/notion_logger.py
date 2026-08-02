@@ -44,6 +44,7 @@ def log_experiment_to_notion(
     tier: str = "must",
     primary_metric: str = "tool bbox mAP / AP_50 / AP_75 / AP_rare / AP_common (COCO bbox @ IoU=0.5:0.95)",
     extra_result_text: str | None = None,
+    name_override: str | None = None,
 ) -> dict | None:
     """実験フォルダの内容を Notion 実験Run台帳に投稿する。
 
@@ -55,6 +56,8 @@ def log_experiment_to_notion(
         tier: "must" / "effort" / "cut".
         primary_metric: Primary Metric テキスト列の値。
         extra_result_text: Result 列の末尾に追記する自由テキスト。
+        name_override: Notion の Name（冪等キー）に使う名前。既定は exp_dir.name。
+            run ディレクトリ名が汎用的で他実験と衝突しうる場合に接頭辞を付けるために使う。
 
     Returns:
         Notion 側のレスポンス dict、または失敗時 None。
@@ -70,6 +73,7 @@ def log_experiment_to_notion(
             tier=tier,
             primary_metric=primary_metric,
             extra_result_text=extra_result_text,
+            name_override=name_override,
         )
     except Exception as exc:  # noqa: BLE001 — Notion 失敗で学習を巻き込まない
         logger.warning("Notion logging skipped: %s", exc)
@@ -84,6 +88,7 @@ def _log_impl(
     tier: str,
     primary_metric: str,
     extra_result_text: str | None,
+    name_override: str | None = None,
 ) -> dict | None:
     api_key = os.environ.get("NOTION_API_KEY", "").strip()
     db_id = os.environ.get("NOTION_DB_ID", "").strip()
@@ -93,7 +98,7 @@ def _log_impl(
         )
         return None
 
-    name = exp_dir.name
+    name = name_override or exp_dir.name
     metrics = _read_json(exp_dir / "metrics.json")
     eval_recipe = metrics.get("eval_recipe") if isinstance(metrics, dict) else {}
     commit = _read_text(exp_dir / "git_commit.txt").strip()
