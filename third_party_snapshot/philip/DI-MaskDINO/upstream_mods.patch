@@ -1,0 +1,13 @@
+diff --git a/train_net.py b/train_net.py
+index daee2fd..e929830 100644
+--- a/train_net.py
++++ b/train_net.py
+@@ -17,7 +17,7 @@ import copy
+ import itertools
+ import logging
+ import os
+-os.environ['CUDA_VISIBLE_DEVICES']='0, 1, 2, 3'
++# os.environ['CUDA_VISIBLE_DEVICES']='0, 1, 2, 3'  # disabled for EgoSurgery (launcher controls GPUs)
+ ids = [0, 1, 2, 3]
+ import warnings
+ warnings.filterwarnings("ignore")
