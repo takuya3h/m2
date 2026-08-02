@@ -954,6 +954,38 @@ per_class_ap.json（Relation-DETR / AlignDETR 各 3-seed・score_thr=0.0 NMS-fre
   downstream 直接検証も `s4_phase_baseline_010-012_..._aligndetr_*`（efros 実行・metrics.json 空の scaffold）が
   本ホストにないため未検証。Notion 台帳は Status=running・Decision Needed=✓ で更新済み。
 
+### 2026-07-29 G-2 本実験（ROI チャネル 4 系統 × 3 seed）— 主予測 FAIL・背景除去は効かない（負の結果）
+
+事前登録（`experiments/g2_main_2026-07-29/prereg/g2_prediction.md`、学習前に commit `2dc430b`）に対する
+12 run を lecun / commit `ca28064` で完走（失敗 0、MSDeformAttn 拡張ロード全 `True`）。
+結果のみの要約は `experiments/g2_main_2026-07-29_lecun/RESULTS.md`、詳細は `docs/experiment_log.md`。
+
+- **主予測 FAIL**: 3(maskROI) > 2(bboxROI) は指定 3 工程 × 2 split の **0/6** で閾値超えせず。
+  むしろ test/incision は**負方向に超過**（−0.03081, 95%CI [−0.05723, −0.00343]）。
+  → 事前登録の判定規約に従い **「背景は region-token のボトルネックではない」**（負の結果）。
+- **ROI チャネル追加自体は有効**: 2−1 が test で incision +0.04384 / closure +0.03902 /
+  dissection +0.14795 / accuracy +0.06073 / macro-F1 +0.05748（いずれも両基準超過）。
+- **最も情報量の大きい所見**: maskROI と randROI が **ほぼ同幅だけ** bbox を下回った
+  （test/incision −0.031 と −0.038）。同面積のランダム形状が真のマスクと同程度に悪化する以上、
+  劣化要因は「背景を除いたこと」でなく「平均する画素を減らしたこと」側にある。
+- **A-5 再現ばらつき基準点（今後の全実験の基準）**: base 3 seed sd =
+  val acc 0.00132 / macroF1 0.00438、test acc 0.00793 / macroF1 0.02203（n=3, ddof=1）。
+- **Task F はホスト間でビット再現**: val / test の抽出統計が efros と全 20 項目・
+  浮動小数 16 桁まで一致（`source .venv-relation-detr/bin/activate` を守れば決定論的）。
+
+#### コード変更
+
+- `scripts/train_g2.py`: `load_clips` の **OOM 欠陥を修正**（commit `ca28064`）。
+  内包表記の中で `NpzFile` へ毎反復アクセスしており、添字アクセスは毎回 zip メンバ全体を
+  読み直して新しい配列を返す。さらに `arr[i]` は view なので 1 行が親配列（train で 148MB）
+  全体をメモリに固定する。train（9657 行）では約 1.4TB 相当となり **1 run も完走不可**だった。
+  配列をループ外で 1 回だけ読むよう修正（値はビット単位で不変・縮小再現の全行比較で確認）。
+- `scripts/analysis/g2_report.py`: **新規**。事前登録の判定規約（Welch の 2 標本 SE と
+  動画単位クラスタ・ブートストラップ B=2000 の AND）をそのまま実装。**結果を見る前に**書かれている。
+  per-phase F1 の再計算が `PhaseEvaluator` と厳密一致することを乱数 30 試行で検証済み
+  （tp/fp/fn は動画をまたいで加算可能なので、per-(run, 動画, クラス) counts の前計算だけで
+  ブートストラップが厳密かつ高速に回る）。クラスタ単位は**動画**（`clip_id` の `_` 前）。
+
 ---
 
 ## Claude Code 連携（`.claude/`）

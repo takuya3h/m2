@@ -1,0 +1,33 @@
+================ §18.4 L1-2 oracle-phase 3-seed × inj/ctrl ================
+ inject=ca trainable=film epochs=6 phase_source=oracle
+ 比較: T1b-CA (real phase) の純効果 +0.00178 と paired-σ で比較
+ 期待: oracle で改善しなければ → §7.5 撤退ライン最終確定（査読防御完成）
+===========================================================================
+[warmup] MSDeformAttn ext build ...
+Using /home/ubuntu/.cache/torch_extensions/py311_cu118 as PyTorch extensions root...
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/models/bricks/ms_deform_attn.py:24: UserWarning: Failed to load MultiScaleDeformableAttention C++ extension: Ninja is required to load C++ extensions
+  warnings.warn(f"Failed to load MultiScaleDeformableAttention C++ extension: {e}")
+[warmup] OK
+[measure wave1] seed42(GPU0) + seed123(GPU1) 並列 ...
+[measure wave2] seed456(GPU0) 単独 ...
+[measure] seed42 init mAP=0.7303082182
+[measure] seed123 init mAP=0.7291948117
+[measure] seed456 init mAP=0.7216619815
+[measure] 全 seed 健全帯 OK
+[wave A:inj wave1] seed42(GPU0) + seed123(GPU1) 並列 ...
+[wave A:inj wave2] seed456(GPU0) ...
+[wave A:inj] 完了
+[wave B:ctrl wave1] seed42(GPU0) + seed123(GPU1) 並列 ...
+[wave B:ctrl wave2] seed456(GPU0) ...
+[wave B:ctrl] 完了
+================ 完了・回収サマリ ================
+-- seed42 --
+  inj: init=0.7303 best@ep0 mAP=0.7354
+  ctrl: init=0.7303 best@ep-1 mAP=0.7303
+-- seed123 --
+  inj: init=0.7292 best@ep5 mAP=0.7326
+  ctrl: init=0.7292 best@ep-1 mAP=0.7292
+-- seed456 --
+  inj: init=0.7217 best@ep5 mAP=0.7255
+  ctrl: init=0.7217 best@ep3 mAP=0.7219
+次: T1b-CA real (+0.00178) と paired-σ で oracle 効果差を確定。

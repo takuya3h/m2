@@ -1706,6 +1706,7 @@ per-image 検出結果を既定で残す設計にする。
 - 以降の T1b 系 run は predictions を持つので、Syringe FP/FN の内訳・工程遷移近傍の層別解析
   （gate の rare 逆害機序）を ckpt なしで実施できる。実害 4 の宿題に着手可能。
 - 既存の消失済み run は復元できない（再学習が必要）。本改修は再発防止であって遡及修復ではない。
+
 ## 2026-07-13 凍結源の per-class AP 分解：AlignDETR の det→phase 負転移は signature 術具 AP の欠損で説明できるか（台帳 must・val 主判定・eval-only）
 
 ### 仮説
@@ -1736,3 +1737,70 @@ per-image 検出結果を既定で残す設計にする。
   `s4_phase_baseline_010-012_..._aligndetr_*` が空 scaffold（efros 実行・metrics.json 空）で本ホストでは未検証。
   (3) Primary Metric の「overall mAP 差 −0.0443」の参照元は本ホストの証跡から特定できず未算出。
   ※誠実性: val 主判定は完了・数値実測、test/downstream 検証は明示的に「未実施」として保留（捏造なし）。
+
+---
+
+## 2026-07-29 G-2 本実験（region-token に ROI チャネルを付す 4 系統 × 3 seed）— 主予測 FAIL・負の結果
+
+実行: lecun / commit `ca280645c5da13574e6b2ce0e460ac858663ab69` / 12 run 完走（失敗 0）。
+成果物 `experiments/g2_main_2026-07-29_lecun/`（結果のみの要約は同ディレクトリ `RESULTS.md`）。
+
+### 仮説（事前登録 `prereg/g2_prediction.md`、学習前に commit `2dc430b`）
+術具の充填率 median は 0.204 で、bbox 内の約 80% は背景画素。背景を除けば region-token の
+表現が改善するはず。予測 1（主）: 3(maskROI) > 2(bboxROI)。予測 2: 効果は incision /
+hemostasis / closure に局在。予測 3: (2−1) > (3−2)。予測 4: 4(randROI) ≈ 2。
+判定は **Welch の 2 標本 SE と 動画単位クラスタ・ブートストラップ(B=2000) の AND**、主指標は per-phase F1。
+
+### 方法
+4 系統 = base(3840) / +bboxROI / +maskROI / +randROI（いずれも 15cls × D=256 を連結して 7680）。
+特徴は凍結 Relation-DETR（seed42 `best_ap.pth`, md5 `6a898a76…`）の neck level0。
+box は canonical VBS の GT（検出予測は使わない）、mask は `tool_seg_noskewer` を IoU≥0.5 で幾何マッチ、
+randROI は同面積・同重心の連結ブロブ（形状 seed 20260729 固定 → 3 seed で同一形状）。
+学習は TeCNO 2stage/8layer/64 f_maps、lr 5e-4、wd 0.01、50 epoch、smoothing 0.15、best は val accuracy。
+
+### 結果（実測）
+- **Task F は efros と完全再現**: val / test の抽出統計が **全 20 項目・浮動小数 16 桁まで一致**
+  （`norm_mean[mask]=13.844254531601013` 等）。mask 源・座標変換・乱数形状までビット同一。
+  fallback率 train 0.1411 / val 0.2409 / test 0.1171（分母 = 各 split の GT box 総数）。
+- **3−2（背景除去の純効果）= 主予測 FAIL**: 指定 3 工程 × 2 split の **0/6** で「3 > 2」が閾値超えせず。
+  むしろ **test/incision が負方向に超過**（−0.03081、95%CI [−0.05723, −0.00343]）。
+- **2−1（チャネル追加そのもの）は明確に有効**: test で incision +0.04384、closure +0.03902、
+  dissection +0.14795、accuracy +0.06073、macro-F1 +0.05748 が両基準を超過。
+- **4−2 も負方向に超過**: test/incision −0.03821（95%CI [−0.06207, −0.00292]）。
+  4 が 2 を上回った項目はゼロ → 事前登録の無効化条件は**発動しない**。
+- 予測 3（(2−1) > (3−2)）は val / test とも成立。予測 2 の局在は指定内 0 / 指定外 0 で該当なし。
+- **A-5 base 3seed sd（今後の基準点）**: val acc 0.00132 / macroF1 0.00438、
+  test acc 0.00793 / macroF1 0.02203（n=3, ddof=1）。
+
+### 解釈
+事前登録の判定規約に従い **FAIL = 負の結果「背景は region-token のボトルネックではない」**。
+最も情報量が大きいのは、maskROI と randROI が **ほぼ同じ幅だけ bbox を下回った**こと
+（test/incision で −0.031 と −0.038）。真のマスクと同面積のランダム形状が同程度に悪化する以上、
+劣化要因は「背景を除いたこと」ではなく「平均する画素を減らしたこと」側にある。
+予測 4 は「4 が 2 を**上回る**」場合（画素数減少や正則化が効く）を想定していたが、実際は
+**両方が 2 を下回る**形で現れた。すなわち box 内の背景画素は雑音ではなく、情報を担っているか、
+少なくとも平均の安定性に寄与している。ROI チャネルを足すこと自体は効くが、絞り込みは逆効果。
+
+### 制約（誠実性）
+- ブートストラップの解像度が原理的に粗い。クラスタは val 2 動画 / test 3 動画しかなく、
+  復元抽出の相異なる多重集合は **val 3 通り / test 10 通り**しかない。CI 端点に `+0.00000` が
+  頻出するのはこのため。事前登録の設計に由来する制約であり実行上の欠陥ではない。
+- val は fallback率 0.2409（うち 23.07pt が Mouth Gag / Skewer = マスクが原理的に無いクラス）で
+  約 1/4 の box が `maskROI = bboxROI` になるため、val の mask vs bbox コントラストは構造的に弱い。
+- A-3 の相関は val n=2 で `UNKNOWN`、test n=3 は係数を算出したが **n=3 では解釈しない**。
+- クラスタ単位は**動画**（事前登録の明記に従う）。セグメント単位だと同一動画内の相関で CI を過小評価する。
+
+### 次
+- 「絞り込みが逆効果」を直接検証するなら、ROI 面積を段階的に変える ablation（bbox → 縮小率 r の
+  中心クロップ）で、mask/rand と同じ劣化曲線に乗るかを見るのが最短。乗れば面積説が確定する。
+- 3−2 の val 希釈を外して読みたい場合、Mouth Gag / Skewer を除いた部分集合での再解析が可能
+  （per-frame 予測を全 run 保存済みなので再学習不要）。
+
+### 付随して発見・修正した欠陥
+`scripts/train_g2.py` の `load_clips` が内包表記の中で `NpzFile` へ毎反復アクセスしていた。
+NpzFile への添字アクセスは毎回 zip メンバ全体を読み直して新しい配列を返し、さらに `arr[i]` は
+view なので 1 行が親配列（train で 148MB）全体をメモリに固定する。結果 train（9657 行）では
+約 1.4TB 相当となり **1 run も完走できなかった**（実測: スモークが RSS 45GB まで肥大、
+300 行の縮小再現で親配列 300 個 / RSS 1.35GB を確認）。配列をループ外で 1 回だけ読むよう修正
+（commit `ca28064`、値はビット単位で不変であることを縮小再現の全行厳密比較で確認）。
+引継書が「他ユーザーとの GPU 競合」としていたスモーク OOM は、実際にはこの欠陥が原因だった。

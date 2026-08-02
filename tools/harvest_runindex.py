@@ -1,0 +1,4412 @@
+#!/usr/bin/env python3
+"""experiments/ を走査して機械可読な横断インデックス (runindex/) を収穫する。
+
+設計原則
+--------
+1. 値を捏造しない。判定できないものは null + provenance="not_determinable"。
+2. 情報を捨てない。除外は削除ではなくフラグ (excluded / exclusion_reason)。
+3. experiments/ 配下は読み取り専用。一切変更しない。
+4. 完全に再生成可能。出力に時刻・乱数・絶対パスを含めない (冪等性)。
+
+二段構え
+--------
+  Stage 1: experiments/**/metrics.json  ->  runindex/runs/<ledger_key>.json
+  Stage 2: runindex/runs/*.json           ->  runindex/index.csv
+
+使い方
+------
+  python tools/harvest_runindex.py            # dry-run (書き出さない)
+  python tools/harvest_runindex.py --write    # runindex/ を再生成
+"""
+
+from __future__ import annotations
+
+import argparse
+import csv
+import hashlib
+import json
+import math
+import re
+import shutil
+import statistics
+import sys
+from collections import Counter, defaultdict
+from pathlib import Path
+from typing import Any
+
+import yaml
+
+REPO_ROOT = Path(__file__).resolve().parent.parent
+EXPERIMENTS = REPO_ROOT / "experiments"
+RUNINDEX = REPO_ROOT / "runindex"
+
+# --------------------------------------------------------------------------- #
+# 除外規約
+#
+# experiments/README.md には `_` 接頭辞が「解析対象外」を意味するという規約が
+# 明文化されていない (2026-07-31 時点)。そのため下記は「ディレクトリ名の意味
+# からの判断」であり、規約に基づくものではない。anomalies.md にもその旨を記す。
+# --------------------------------------------------------------------------- #
+EXCLUSION_RULES: list[tuple[str, str]] = [
+    ("_smoke_prior", "smoke_test"),
+    ("_smoke_ddq", "smoke_test"),
+    ("_wrong_split_8_2_3", "known_bad_split"),
+    ("_failed_s3_weighted", "failed_run"),
+]
+
+# --------------------------------------------------------------------------- #
+# 指標キーの正規化
+#
+# Step 1 の実測で判明した構造:
+#   - "val/<metric>"   : スラッシュ形式。split = val (284 key 出現)
+#   - "test_<metric>"  : アンダースコア形式。split = test (27 key 出現)
+#   - "phase_<metric>" : ★ split ではない。工程認識タスクの接頭辞 (506 key 出現)
+#     根拠: phase_accuracy と test_accuracy が同一 run に 27 件共存する。
+#           同じ run が 2 つの split を同時に持つことはあり得ない。
+# --------------------------------------------------------------------------- #
+PHASE_METRIC_BASES = {
+    "accuracy",
+    "edit_score",
+    "jaccard",
+    "macro_f1",
+    "seg_f1_10",
+    "seg_f1_25",
+    "seg_f1_50",
+    "frame_acc_inline",
+}
+
+# split とみなしてよい接頭辞 (アンダースコア形式)
+UNDERSCORE_SPLIT_PREFIXES = {"test"}
+
+# metrics.json のトップレベルが `"val": {...}` のように split で入れ子になる形式
+# (g2_* 群)。スラッシュ形式 `val/<metric>` と意味は同じ。
+SPLIT_NAMES = {"train", "val", "test"}
+
+# 指標本体ではないメタキー
+META_KEYS = {"eval_recipe", "eval_recipe_detection", "eval_recipe_phase", "epoch"}
+
+# 数値だが指標ではない実行メタデータ。metrics に入れると experiments.csv に
+# seed_mean / delta_seed / abs_delta_over_sigma_seed といった無意味な列が生える。
+# 値は attributes に保持するので情報は失われない。
+NON_METRIC_NUMERIC_KEYS = {
+    "seed",
+    "epochs",
+    "best_epoch",
+    "in_dim",
+    "train_seconds",
+    "n_clips",
+}
+
+# per_class_ap.json のクラス体系判定用
+TOOL_CLASS_SET = frozenset(
+    {
+        "Bipolar Forceps",
+        "Electric Cautery",
+        "Forceps",
+        "Gauze",
+        "Hook",
+        "Mouth Gag",
+        "Needle Holders",
+        "Raspatory",
+        "Retractor",
+        "Scalpel",
+        "Scissors",
+        "Skewer",
+        "Suction Cannula",
+        "Syringe",
+        "Tweezers",
+    }
+)
+PHASE_CLASS_SET = frozenset(
+    {
+        "anesthesia",
+        "closure",
+        "design",
+        "disinfection",
+        "dissection",
+        "dressing",
+        "hemostasis",
+        "incision",
+        "irrigation",
+    }
+)
+
+# --------------------------------------------------------------------------- #
+# host 正規化
+#
+# server.txt / eval_recipe.server_name に現れる生の値を実サーバー名へ写す。
+# "aolab" は philip と ilya の双方が返すコンテナ内 hostname であり、
+# 実サーバーを一意に特定できないため null にする (推測しない)。
+# GPU 型番はどの証拠ファイルにも記録が無いため gpu は基本 null。
+# --------------------------------------------------------------------------- #
+HOST_ALIASES: dict[str, dict[str, Any]] = {
+    "lecun": {"host": "lecun", "gpu": None, "note": "そのまま採用"},
+    "efros": {"host": "efros", "gpu": None, "note": "そのまま採用"},
+    "philip": {"host": "philip", "gpu": None, "note": "そのまま採用"},
+    "bengio": {"host": "bengio", "gpu": None, "note": "そのまま採用"},
+    "andrew": {"host": "andrew", "gpu": None, "note": "そのまま採用"},
+    "ilya": {"host": "ilya", "gpu": None, "note": "そのまま採用"},
+    "aolab": {
+        "host": None,
+        "gpu": None,
+        "note": (
+            "philip と ilya はいずれもコンテナ内 hostname が aolab を返すため "
+            "実サーバーを特定できない。host は null、原文は host_raw に保持する。"
+        ),
+    },
+}
+
+RUN_NAME_RE = re.compile(r"^(?P<step>.+?)_(?P<seq>\d{3})_(?P<desc>.+)_seed(?P<seed>\d+)$")
+# seq を持たない別系統の命名 (g2_* 群: base_seed42 / bboxROI_seed123 / shuffleROI_seed456)。
+# ExperimentManager を経由せずに作られた run。step は description と同じものを充てる。
+RUN_NAME_NOSEQ_RE = re.compile(r"^(?P<desc>.+?)_seed(?P<seed>\d+)$")
+
+# --------------------------------------------------------------------------- #
+# ディレクトリ名の det<N> / p<N> トークン
+#
+# ★ これらは seed とは限らない。command.sh の実引数が一次証拠:
+#
+#   b2a_base_oracle_noise_p010 ->
+#     python scripts/train_b2a.py --seed 42 --tool-noise-rate 0.10
+#       --description-override b2a_base_oracle_noise_p010
+#     => p010 は **ノイズ率 0.10** であって seed ではない。
+#
+#   t1a_3seed_det123_p456_aug_001_..._seed456 ->
+#     python scripts/train_t1a.py --description t1a_3seed_det123_p456_aug --seed 456
+#     => p456 は --seed 456 と一致する。工程学習の seed（= 反復軸）。
+#        det123 は凍結検出器チェックポイントの指定（= 条件。反復軸ではない）。
+#
+# 実測: ノイズ系を除いた 27 run すべてで p<N> == seed（27/27）。
+#       ノイズ系 72 run はすべて --tool-noise-rate を持つ。
+# --------------------------------------------------------------------------- #
+AUX_DET_RE = re.compile(r"(?:^|_)det(\d+)(?:_|$)")
+AUX_P_RE = re.compile(r"(?:^|_)p(\d+)(?:_|$)")
+# ノイズ率を指定している run は p<N> をノイズ率として読む
+NOISE_ARG_RE = re.compile(r"--(?:tool-)?noise(?:-rate)?[= ]")
+
+
+# --------------------------------------------------------------------------- #
+# ユーティリティ
+# --------------------------------------------------------------------------- #
+def _read_text(path: Path) -> str | None:
+    if not path.exists():
+        return None
+    try:
+        return path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return None
+
+
+def _denan(obj: Any) -> Any:
+    """NaN / Infinity を None に落として標準 JSON として妥当にする。"""
+    if isinstance(obj, float):
+        if math.isnan(obj) or math.isinf(obj):
+            return None
+        return obj
+    if isinstance(obj, dict):
+        return {k: _denan(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_denan(v) for v in obj]
+    return obj
+
+
+def _is_nan(v: Any) -> bool:
+    return isinstance(v, float) and math.isnan(v)
+
+
+def _is_number(v: Any) -> bool:
+    """指標として扱える数値か。bool は数値ではなく状態フラグなので除く。"""
+    return isinstance(v, (int, float)) and not isinstance(v, bool)
+
+
+def _stable_hash(obj: Any) -> str:
+    payload = json.dumps(obj, sort_keys=True, ensure_ascii=False, allow_nan=False)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:12]
+
+
+def ledger_key_of(rel_path: Path) -> str:
+    """runs/<key>.json のファイル名。dirname は 6 種が衝突するためパス由来にする。"""
+    return str(rel_path).replace("/", "__")
+
+
+# --------------------------------------------------------------------------- #
+# 収穫ロジック
+# --------------------------------------------------------------------------- #
+def classify_exclusion(rel_path: Path) -> tuple[bool, str | None]:
+    for part in rel_path.parts:
+        for marker, reason in EXCLUSION_RULES:
+            if part == marker:
+                return True, reason
+    return False, None
+
+
+def parse_run_name(name: str, command: str | None = None) -> tuple[dict[str, Any], list[str]]:
+    """ディレクトリ名から step / seq / desc / seed を取り出す。
+
+    補助 seed (det<N> / p<N>) は **command.sh の実引数を一次証拠にして**判定する。
+    名前の見た目だけで seed だと決めない (b2a_*_noise_p010 の p010 はノイズ率)。
+    """
+    warnings: list[str] = []
+    out: dict[str, Any] = {
+        "step": None,
+        "seq": None,
+        "description": None,
+        "seed": None,
+        "seed_detector": None,
+        "seed_phase": None,
+        "aux_token_provenance": "no_aux_token",
+        "name_provenance": "not_determinable",
+    }
+    m = RUN_NAME_RE.match(name)
+    if m:
+        out["step"] = m.group("step")
+        out["seq"] = int(m.group("seq"))
+        out["description"] = m.group("desc")
+        out["seed"] = int(m.group("seed"))
+        out["name_provenance"] = "from_dirname_step_seq_desc_seed"
+    else:
+        m2 = RUN_NAME_NOSEQ_RE.match(name)
+        if not m2:
+            warnings.append(f"run 名が命名規約 <step>_<seq3>_<desc>_seed<N> に一致しない: {name}")
+            return out, warnings
+        # seq が無い系統。seq は「条件」ではなく単なる実行カウンタなので
+        # (src/egosurgery/utils/experiment_id.py)、欠けていても実験単位は作れる。
+        out["step"] = m2.group("desc")
+        out["seq"] = None
+        out["description"] = m2.group("desc")
+        out["seed"] = int(m2.group("seed"))
+        out["name_provenance"] = "from_dirname_desc_seed_no_seq"
+        warnings.append(
+            f"run 名に seq (3 桁連番) が無い別系統の命名: {name}。"
+            f"step には description を充てた。"
+        )
+
+    cmd = command or ""
+    det = AUX_DET_RE.search(name)
+    p = AUX_P_RE.search(name)
+
+    # det<N>: 凍結検出器チェックポイントの seed。**条件**であって反復軸ではない。
+    # experiment_id からは剥がさない（剥がすと別 backbone の run が混ざる）。
+    if det:
+        out["seed_detector"] = int(det.group(1))
+
+    if p:
+        if NOISE_ARG_RE.search(cmd):
+            # --tool-noise-rate を持つ -> p<N> はノイズ率。seed ではない。
+            out["aux_token_provenance"] = "p_token_is_noise_rate_by_command_sh"
+            warnings.append(
+                f"ディレクトリ名の p{p.group(1)} は seed ではない。"
+                f"command.sh が --tool-noise-rate を渡しており、ノイズ率 "
+                f"0.{p.group(1)[:2] if len(p.group(1)) == 3 else p.group(1)} を指す。"
+                f"seed_phase には入れない。"
+            )
+        elif int(p.group(1)) == out["seed"]:
+            # p<N> == 末尾 seed -> 工程学習の seed（反復軸）。
+            out["seed_phase"] = int(p.group(1))
+            out["aux_token_provenance"] = "p_token_equals_run_seed"
+        else:
+            # 一次証拠が無い。推測しない。
+            out["aux_token_provenance"] = "p_token_not_determinable"
+            warnings.append(
+                f"ディレクトリ名の p{p.group(1)} が末尾 seed{out['seed']} と一致せず、"
+                f"command.sh にノイズ引数も無い。seed か否かを確定できないため "
+                f"seed_phase は null にした。"
+            )
+    if det:
+        out["aux_token_provenance"] = (
+            out["aux_token_provenance"] + "+det_token_is_backbone_condition"
+            if p
+            else "det_token_is_backbone_condition"
+        )
+    return out, warnings
+
+
+def normalize_metric_key(key: str) -> dict[str, Any]:
+    """指標キーを (canonical, split, task) へ分解する。推測はしない。"""
+    # スラッシュ形式: "<split>/<metric>"
+    if "/" in key:
+        prefix, rest = key.split("/", 1)
+        return {"canonical": rest, "split": prefix, "task": None, "form": "slash"}
+
+    # アンダースコア形式。第 1 トークンが split か task かを厳密に判定する。
+    head, _, rest = key.partition("_")
+    if rest:
+        if head in UNDERSCORE_SPLIT_PREFIXES and rest in PHASE_METRIC_BASES:
+            return {"canonical": rest, "split": head, "task": "phase", "form": "underscore_split"}
+        if head == "phase" and rest in PHASE_METRIC_BASES:
+            # phase_ は split ではなくタスク名。ただし split 自体は学習スクリプトの
+            # コードから確定できる: 全 7 本が best = {**val, ...} で val を採る。
+            #   scripts/train_{s4_tecno,b2a,t1a,haux,taux,t1a_boundary,
+            #                  t1a_regiontraj}.py
+            # 対になる test_* は k.replace("phase_", "test_") で書かれる。
+            return {"canonical": rest, "split": "val", "task": "phase",
+                    "form": "task_prefix_val_by_script"}
+        if head == "sticky":
+            # sticky_test_accuracy / sticky_accuracy
+            sub = normalize_metric_key(rest)
+            return {
+                "canonical": f"sticky_{sub['canonical']}",
+                "split": sub["split"],
+                "task": sub["task"],
+                "form": "sticky",
+            }
+
+    # 末尾 _sticky 形式 (phase_accuracy_sticky)
+    if key.endswith("_sticky"):
+        sub = normalize_metric_key(key[: -len("_sticky")])
+        return {
+            "canonical": f"sticky_{sub['canonical']}",
+            "split": sub["split"],
+            "task": sub["task"],
+            "form": "sticky_suffix",
+        }
+
+    return {"canonical": key, "split": None, "task": None, "form": "bare"}
+
+
+def harvest_metrics(raw: Any) -> dict[str, Any]:
+    """metrics.json を正規化する。"""
+    result: dict[str, Any] = {
+        "metrics": {},
+        "metrics_by_split": {},
+        "metrics_nested": {},
+        "attributes": {},
+        "metrics_primary_split": None,
+        "split": None,
+        "split_provenance": "not_determinable",
+        "epoch": None,
+        "eval_recipe": None,
+        "warnings": [],
+        "duplicate_bare_keys": [],
+        "conflicting_bare_keys": [],
+    }
+    if not isinstance(raw, dict):
+        result["warnings"].append(f"metrics.json が dict ではない: {type(raw).__name__}")
+        return result
+    if not raw:
+        result["warnings"].append("metrics.json が空 ({})")
+        return result
+
+    result["epoch"] = raw.get("epoch") if isinstance(raw.get("epoch"), int) else None
+    recipe = raw.get("eval_recipe")
+    if isinstance(recipe, dict):
+        result["eval_recipe"] = _denan(recipe)
+
+    by_split: dict[str, dict[str, Any]] = defaultdict(dict)
+    bare: dict[str, Any] = {}
+    nested: dict[str, Any] = {}
+    attributes: dict[str, Any] = {}
+
+    for key, value in raw.items():
+        if key in META_KEYS:
+            continue
+        if isinstance(value, dict):
+            # `"val": {"phase_accuracy": ...}` 形式（g2_* 群）。
+            # `val/phase_accuracy` というスラッシュ形式と意味は同じで表記だけが違う。
+            if key in SPLIT_NAMES and any(_is_number(v) for v in value.values()):
+                for mk, mv in value.items():
+                    if _is_number(mv):
+                        # 外側のキーが split を表すので内側の split 判定は使わない
+                        by_split[key][normalize_metric_key(mk)["canonical"]] = mv
+                    else:
+                        nested[f"{key}.{mk}"] = _denan(mv)
+                continue
+            nested[key] = _denan(value)
+            continue
+        if isinstance(value, list):
+            nested[key] = _denan(value)
+            continue
+        if not _is_number(value) or key in NON_METRIC_NUMERIC_KEYS:
+            # 指標は数値である。"system": "base" のような文字列を metrics に入れると
+            # index.csv の metric.* 列に文字列が混ざり、集約も比較もできなくなる。
+            # 数値でも seed / epochs のような実行メタデータは指標ではない。
+            attributes[key] = value
+            continue
+        info = normalize_metric_key(key)
+        canon = info["canonical"]
+        if info["split"]:
+            by_split[info["split"]][canon] = value
+        else:
+            bare[canon] = value
+
+    # ------------------------------------------------------------------ #
+    # primary split を **先に** 決める。
+    #
+    # ここを後回しにすると primary の入れ物 (flat) を primary が決まる前に
+    # 埋めることになり、同じ canonical 名を複数 split が書く run
+    # (phase_accuracy と test_accuracy が共存する 27 run) で
+    # 「metrics.json のキー順で後に来た側が勝つ」= test が primary に入る。
+    # split 列は val のままなので「val と名乗る test の値」という最悪の形になる。
+    # 実際にこの退行が起きていたため、決定 -> 充填の順序を固定する。
+    # ------------------------------------------------------------------ #
+    #
+    # val と test が共存する run は「val で best を選び、その重みを test でも評価した」
+    # ものであり曖昧ではない。学習スクリプトのコードが一次証拠:
+    #   best = {**val, ...}                        -> primary は val
+    #   test_scalars[k.replace("phase_", "test_")] -> test は --eval-test の追加評価
+    # したがって run 単位の split（= primary な指標の由来）は val で確定する。
+    # 両方の値は metrics_by_split に保持しているので情報は失われない。
+    primary: str | None = None
+    evidence = {s for s in by_split if s != "unknown"}
+    if len(evidence) == 1:
+        primary = next(iter(evidence))
+        result["split"] = primary
+        result["split_provenance"] = "from_metric_key_prefix"
+    elif evidence == {"val", "test"}:
+        primary = "val"
+        result["split"] = primary
+        result["split_provenance"] = "primary_val_by_training_script"
+        result["warnings"].append(
+            "val と test の指標が共存する。primary（best 選択元）は val。"
+            "test 側は metrics_by_split['test'] に保持している。"
+        )
+    elif len(evidence) > 1:
+        # 実測 0 件。将来出現したときに黙って誤った primary を作らないための分岐。
+        result["warnings"].append(
+            f"複数 split の指標が同一 run に共存: {sorted(evidence)}。split は null にした。"
+            "metrics には <split>__<metric> として split 名を残したまま入れる。"
+        )
+        result["split_provenance"] = "ambiguous_multiple_splits"
+
+    # primary が決まってから flat を充填する。上書き衝突は起こり得ない。
+    # flat は **数値のみ**。ネスト値を混ぜると index.csv の metric.* 列に
+    # 辞書リテラルが書かれてしまう（metrics_nested に分けて保持している）。
+    flat: dict[str, Any] = {}
+    if primary is not None:
+        flat.update(by_split[primary])
+    else:
+        for s in sorted(evidence):
+            for k, v in by_split[s].items():
+                flat[f"{s}__{k}"] = v
+
+    # prefix 無しキーは、prefix 付きと一致すれば重複とみなす。不一致なら両方残す。
+    for canon, value in bare.items():
+        matched_splits = [s for s, d in by_split.items() if canon in d]
+        if not matched_splits:
+            flat.setdefault(canon, value)
+            by_split["unknown"][canon] = value
+            continue
+        agree = all(by_split[s][canon] == value for s in matched_splits)
+        if agree:
+            result["duplicate_bare_keys"].append(canon)
+        else:
+            result["conflicting_bare_keys"].append(
+                {
+                    "key": canon,
+                    "bare_value": _denan(value),
+                    "by_split": {s: _denan(by_split[s][canon]) for s in matched_splits},
+                }
+            )
+            flat[f"{canon}__bare"] = value
+            by_split["unknown"][canon] = value
+
+    # metrics の出所を機械可読に残す。回帰テストはこの列を突き合わせて検証する。
+    result["metrics_primary_split"] = primary
+    # 情報は捨てない。指標として扱えないものは別フィールドで保持する。
+    result["metrics_nested"] = _denan(dict(sorted(nested.items())))
+    result["attributes"] = _denan(dict(sorted(attributes.items())))
+
+    result["metrics"] = _denan(dict(sorted(flat.items())))
+    result["metrics_by_split"] = _denan(
+        {s: dict(sorted(d.items())) for s, d in sorted(by_split.items())}
+    )
+    return result
+
+
+# 正本 M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）の §16.7.1 に、
+# 評価 split についての明示的な記録がある:
+#
+#   「§8 訓練スクリプトに関する補足: val_evaluator の ann_file は
+#     instances_val.json、prefix='val'（mmdet_config.py:314-320）のため、
+#     metrics.json / per_class_ap.json はすべて val split の数値。
+#     test split は未評価（最終報告用に温存、Δ 判定は val で行う設計）。」
+#
+#   ローカル写し: docs/m2_plan_rewrite/sections/19_epoch_16.md L161
+#                 docs/m2_plan_rewrite/m2_plan_v2_full.md L1561
+#
+# これを split の既定値とする。ただし後から --eval-test が実装され、
+# test_* キーを持つ run が 27 件出現している（正本の記述の例外。anomalies.md 参照）。
+PLAN_DEFAULT_SPLIT_PROVENANCE = "from_plan_section_16_7"
+
+# split を確定するための一次証拠。eval_recipe の split_*_images からの逆引きは
+# 採用しない (3 split 全ての枚数が常に記録されており、どれを使ったかの情報ではない)。
+_SPLIT_ARG_RE = re.compile(r"--(?:eval[-_])?split[= ]+(train|val|test)\b")
+_SPLIT_ANN_RE = re.compile(r"instances_(train|val|test)\.json")
+_EVAL_TEST_FLAG_RE = re.compile(r"--eval[-_]test\b")
+
+
+def split_from_primary_evidence(
+    recipe: dict[str, Any] | None,
+    command: str | None,
+    config_text: str | None,
+) -> tuple[str | None, str]:
+    """command.sh / config.yaml / eval_split キーという一次証拠から split を読む。
+
+    優先順:
+      (c) metrics.json の eval_recipe.eval_split  … 最も明示的
+      (a) command.sh の --split / instances_*.json
+      (b) config.yaml の ann_file / instances_*.json
+    いずれからも取れなければ None (推測しない)。
+    """
+    if isinstance(recipe, dict):
+        v = recipe.get("eval_split")
+        if isinstance(v, str) and v in {"train", "val", "test"}:
+            return v, "from_eval_split_key"
+
+    if command:
+        m = _SPLIT_ARG_RE.search(command)
+        if m:
+            return m.group(1), "from_command_sh"
+        found = set(_SPLIT_ANN_RE.findall(command))
+        if len(found) == 1:
+            return found.pop(), "from_command_sh"
+
+    if config_text:
+        found = set(_SPLIT_ANN_RE.findall(config_text))
+        if len(found) == 1:
+            return found.pop(), "from_config_yaml"
+
+    return None, "not_determinable"
+
+
+def harvest_per_class(path: Path) -> dict[str, Any]:
+    """per_class_ap.json を読み、kind / metric / source を分けて確定する。
+
+    ファイル名は per_class_ap.json だが **中身が F1 の群が 500 run ある**。
+    kind だけでは事故を防げないため metric を明示的に持たせる。
+
+    実測根拠:
+      - 9 クラス (工程名)  … scripts/train_{b2a,t1a,s4_tecno,haux,taux,
+        t1a_boundary,t1a_regiontraj}.py が best.get("phase_per_class_f1", {}) を
+        log_per_class_ap() に渡している  -> metric = "F1"
+      - 15 クラス (術具名) … per_class_coco_map / COCOeval.precision 由来 -> "AP"
+    """
+    out: dict[str, Any] = {
+        "per_class": None,
+        "per_class_kind": None,
+        "per_class_metric": None,
+        "per_class_source": None,
+        "per_class_nan_classes": [],
+        "per_class_valid_count": None,
+        "warnings": [],
+    }
+    if not path.exists():
+        out["warnings"].append("per_class_ap.json が存在しない")
+        return out
+    out["per_class_source"] = str(path.relative_to(REPO_ROOT))
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:  # noqa: BLE001
+        out["warnings"].append(f"per_class_ap.json のパースに失敗: {exc}")
+        return out
+    if not isinstance(data, dict):
+        out["warnings"].append(f"per_class_ap.json が dict ではない: {type(data).__name__}")
+        return out
+    if not data:
+        out["warnings"].append("per_class_ap.json が空 ({})")
+        out["per_class"] = {}
+        out["per_class_valid_count"] = 0
+        return out
+
+    keys = frozenset(data)
+    if keys == TOOL_CLASS_SET:
+        out["per_class_kind"] = "tool"
+        out["per_class_metric"] = "AP"
+    elif keys == PHASE_CLASS_SET:
+        # ファイル名は per_class_ap.json だが中身は工程別 F1 (AP ではない)。
+        out["per_class_kind"] = "phase"
+        out["per_class_metric"] = "F1"
+    else:
+        out["per_class_kind"] = "unknown"
+        out["per_class_metric"] = "unknown"
+        out["warnings"].append(
+            f"per_class_ap.json のクラス集合が既知の 2 体系のいずれとも一致しない "
+            f"({len(keys)} クラス) -> metric を確定できないため unknown"
+        )
+
+    nan_classes = sorted(k for k, v in data.items() if _is_nan(v))
+    out["per_class"] = _denan(dict(sorted(data.items())))
+    out["per_class_nan_classes"] = nan_classes
+    out["per_class_valid_count"] = len(data) - len(nan_classes)
+    return out
+
+
+def harvest_per_class_from_nested(
+    nested: dict[str, Any], run_dir: Path
+) -> dict[str, Any] | None:
+    """per_class_ap.json を持たない群 (g2_*) の per-class を metrics.json から拾う。
+
+    `metrics.json` の `"val": {"phase_per_class_f1": {...}}` に入っている。
+    値は F1 (ファイル名 per_class_ap.json の群と同じく AP ではない)。
+    出所が違うので per_class_source で区別できるようにする。
+    """
+    if not nested:
+        return None
+    # primary は val。無ければ test。
+    for split in ("val", "test", "train"):
+        key = f"{split}.phase_per_class_f1"
+        data = nested.get(key)
+        if not isinstance(data, dict) or not data:
+            continue
+        keys = frozenset(data)
+        kind = "phase" if keys == PHASE_CLASS_SET else "unknown"
+        warnings: list[str] = []
+        if kind == "unknown":
+            warnings.append(
+                f"metrics.json の {key} のクラス集合が既知の工程 9 クラスと一致しない "
+                f"({len(keys)} クラス) -> metric を確定できないため unknown"
+            )
+        nan_classes = sorted(k for k, v in data.items() if _is_nan(v))
+        return {
+            "per_class": _denan(dict(sorted(data.items()))),
+            "per_class_kind": kind,
+            "per_class_metric": "F1" if kind == "phase" else "unknown",
+            "per_class_source": f"{run_dir.relative_to(REPO_ROOT)}/metrics.json#{key}",
+            "per_class_nan_classes": nan_classes,
+            "per_class_valid_count": len(data) - len(nan_classes),
+            "warnings": warnings,
+        }
+    return None
+
+
+def harvest_config(path: Path) -> dict[str, Any]:
+    """config.yaml から **機械可読な** 対照宣言と条件軸を取り出す。
+
+    実測で判明した 2 つの重要な事実:
+
+    1. `delta:` ブロックが 441/573 run にあり、`phase_denominator` が
+       対照 family を文字列で明示している。
+       例: `phase_denominator: s4_phase_baseline (frozen_tecno_phase_baseline)`
+       notes.md の散文より遥かに強い一次証拠。
+
+    2. `frozen_source.cache_dir` が凍結特徴の抽出元を示す **条件軸**である。
+       これは環境変数 RELDETR_FROZEN_TAG で与えられるため
+       command.sh にもディレクトリ名にも現れない
+       (scripts/train_s4_tecno.py の _FROZEN_SRC = os.environ.get(...))。
+       これを experiment_id に入れないと、異なる backbone の run が 1 実験に混ざる。
+    """
+    out: dict[str, Any] = {
+        "delta_declaration": None,
+        "frozen_source_tag": None,
+        "seed_config": None,
+        "frozen_source_seed_declared": None,
+        "warnings": [],
+    }
+    if not path.exists():
+        return out
+    try:
+        data = yaml.safe_load(path.read_text(encoding="utf-8", errors="replace"))
+    except Exception as exc:  # noqa: BLE001
+        out["warnings"].append(f"config.yaml のパースに失敗: {type(exc).__name__}")
+        return out
+    if not isinstance(data, dict):
+        return out
+
+    d = data.get("delta")
+    if isinstance(d, dict):
+        out["delta_declaration"] = _denan(d)
+
+    # run 自身の学習 seed。ディレクトリ名の seed<N> と突き合わせる。
+    if _is_number(data.get("seed")):
+        out["seed_config"] = int(data["seed"])
+
+    fs = data.get("frozen_source")
+    if isinstance(fs, dict):
+        cache = fs.get("cache_dir") or fs.get("gap_cache") or fs.get("tool_signal_cache")
+        if isinstance(cache, str) and cache.strip():
+            out["frozen_source_tag"] = cache.rstrip("/").split("/")[-1]
+        # ★ frozen_source.seed は信用できない。scripts/train_s4_tecno.py が
+        #   42 をハードコードしており、cache_dir と矛盾する run が実在する。
+        #   実態はキャッシュのパスから取り、こちらは矛盾検出のためだけに保持する。
+        if _is_number(fs.get("seed")):
+            out["frozen_source_seed_declared"] = int(fs["seed"])
+    return out
+
+
+# command.sh から run 自身の seed を取る。argparse 形式と Hydra 形式の両方。
+_CMD_SEED_RE = re.compile(r"(?:--seed[= ]+|(?<![\w.])seed=)(\d+)")
+
+
+def seed_from_command(command: str | None) -> int | None:
+    if not command:
+        return None
+    found = {int(m) for m in _CMD_SEED_RE.findall(command)}
+    return found.pop() if len(found) == 1 else None
+
+
+def normalize_host(server_txt: str | None, recipe: dict[str, Any] | None) -> dict[str, Any]:
+    raw_txt = server_txt.strip() if isinstance(server_txt, str) else None
+    raw_recipe = None
+    if isinstance(recipe, dict):
+        v = recipe.get("server_name")
+        raw_recipe = v.strip() if isinstance(v, str) else None
+
+    warnings: list[str] = []
+    if raw_txt and raw_recipe and raw_txt != raw_recipe:
+        warnings.append(
+            f"server.txt ({raw_txt!r}) と eval_recipe.server_name ({raw_recipe!r}) が不一致。"
+            f"server.txt を優先した。"
+        )
+    raw = raw_txt or raw_recipe
+    provenance = (
+        "from_server_txt" if raw_txt else ("from_eval_recipe" if raw_recipe else "not_determinable")
+    )
+    if raw is None:
+        return {
+            "host": None,
+            "host_raw": None,
+            "gpu": None,
+            "provenance": "not_determinable",
+            "warnings": warnings,
+        }
+    alias = HOST_ALIASES.get(raw)
+    if alias is None:
+        warnings.append(f"host_aliases.json に無い値: {raw!r}。host は null にした。")
+        return {
+            "host": None,
+            "host_raw": raw,
+            "gpu": None,
+            "provenance": "unknown_alias",
+            "warnings": warnings,
+        }
+    if alias["host"] is None:
+        warnings.append(f"host {raw!r} は実サーバーを一意に特定できない。host は null にした。")
+    return {
+        "host": alias["host"],
+        "host_raw": raw,
+        "gpu": alias["gpu"],
+        "provenance": provenance,
+        "warnings": warnings,
+    }
+
+
+RECIPE_ID_KEYS = (
+    "test_cfg",
+    "split_train_images",
+    "split_val_images",
+    "split_test_images",
+    "split_train_annotations",
+    "split_val_annotations",
+    "split_test_annotations",
+    "effective_batch_size",
+    "gpu_count",
+    "lr_scaling",
+)
+
+
+def eval_recipe_id(recipe: dict[str, Any] | None) -> str | None:
+    """同一評価条件の run を束ねる安定ハッシュ。server_name は条件に含めない。"""
+    if not isinstance(recipe, dict):
+        return None
+    subset = {k: recipe[k] for k in RECIPE_ID_KEYS if k in recipe}
+    if not subset:
+        return None
+    return _stable_hash(_denan(subset))
+
+
+def build_run_record(run_dir: Path) -> dict[str, Any]:
+    rel = run_dir.relative_to(REPO_ROOT)
+    rel_from_exp = run_dir.relative_to(EXPERIMENTS)
+    warnings: list[str] = []
+    provenance: dict[str, str] = {}
+
+    excluded, reason = classify_exclusion(rel_from_exp)
+
+    # command.sh は補助 seed トークンの意味を確定する一次証拠なので先に読む。
+    command = _read_text(run_dir / "command.sh")
+
+    name_info, name_warn = parse_run_name(run_dir.name, command)
+    warnings.extend(name_warn)
+
+    try:
+        raw_metrics = json.loads((run_dir / "metrics.json").read_text(encoding="utf-8"))
+    except Exception as exc:  # noqa: BLE001
+        raw_metrics = None
+        warnings.append(f"metrics.json のパースに失敗: {exc}")
+
+    m = harvest_metrics(raw_metrics if raw_metrics is not None else {})
+    warnings.extend(m["warnings"])
+
+    pc = harvest_per_class(run_dir / "per_class_ap.json")
+    # per_class_ap.json を持たない群 (g2_*) は metrics.json の
+    # <split>.phase_per_class_f1 に per-class を入れている。出所は provenance で区別する。
+    if pc["per_class"] is None:
+        pc = harvest_per_class_from_nested(m["metrics_nested"], run_dir) or pc
+    warnings.extend(pc["warnings"])
+
+    server_txt = _read_text(run_dir / "server.txt")
+    host = normalize_host(server_txt, m["eval_recipe"])
+    warnings.extend(host["warnings"])
+
+    commit_txt = _read_text(run_dir / "git_commit.txt")
+    commit = commit_txt.strip().split("\n")[0] if commit_txt else None
+    notes = _read_text(run_dir / "notes.md")
+    config_file = run_dir / "config.yaml"
+    config_path = str(rel / "config.yaml") if config_file.exists() else None
+    cfg = harvest_config(config_file)
+    warnings.extend(cfg["warnings"])
+
+    # split の確定。順に一次証拠を当たり、最後に正本の既定へ落とす。
+    #   1. 指標キー形式（val/ … / test_ … / phase_ … + 学習スクリプトのコード）
+    #   2. command.sh / config.yaml / eval_recipe.eval_split
+    #   3. 正本 M2研究計画 §16.7 の既定（下記）
+    # いずれも事実であり推測ではない。
+    split = m["split"]
+    split_prov = m["split_provenance"]
+    if split is None:
+        split, split_prov = split_from_primary_evidence(
+            m["eval_recipe"], command, _read_text(config_file) if config_file.exists() else None
+        )
+    if split is None and m["metrics"]:
+        # 正本の既定。指標が 1 つでもある run にのみ適用する
+        # （metrics.json が空の run は「評価されていない」ので null のまま）。
+        split, split_prov = "val", PLAN_DEFAULT_SPLIT_PROVENANCE
+
+    # seed の出所と、他の一次証拠との突き合わせ。
+    # notes.md は seed を書くが虚偽の実績があるため、証拠は command.sh と config.yaml。
+    seed_cmd = seed_from_command(command)
+    seed_cfg = cfg["seed_config"]
+    # g2_* 群は command.sh も config.yaml も持たないが metrics.json に seed を書く。
+    # 数値だが指標ではないので attributes へ退避してある。証拠としては使える。
+    seed_mtr = m["attributes"].get("seed")
+    seed_mtr = seed_mtr if isinstance(seed_mtr, int) else None
+    seed_dir = name_info["seed"]
+    if seed_dir is None:
+        seed_prov, seed_agree = "not_determinable", "no_seed_in_dirname"
+    else:
+        others = {
+            k: v
+            for k, v in (
+                ("command_sh", seed_cmd),
+                ("config_yaml", seed_cfg),
+                ("metrics_json", seed_mtr),
+            )
+            if v is not None
+        }
+        if not others:
+            seed_prov, seed_agree = "from_dirname", "unverified_no_other_evidence"
+        elif all(v == seed_dir for v in others.values()):
+            seed_prov = "from_dirname_verified_by_" + "_and_".join(sorted(others))
+            seed_agree = "agree"
+        else:
+            seed_prov, seed_agree = "from_dirname_conflicting_evidence", "conflict"
+            warnings.append(
+                f"ディレクトリ名の seed{seed_dir} が他の証拠と食い違う: "
+                + ", ".join(f"{k}={v}" for k, v in sorted(others.items()))
+                + "。ディレクトリ名を採用したが要確認。"
+            )
+    provenance["seed"] = seed_prov
+    provenance["seed_detector"] = (
+        "from_dirname_det_token" if name_info["seed_detector"] is not None else "not_determinable"
+    )
+    provenance["seed_phase"] = (
+        "from_dirname_p_token" if name_info["seed_phase"] is not None else "not_determinable"
+    )
+    provenance["step"] = "from_dirname" if name_info["step"] else "not_determinable"
+    provenance["name"] = name_info["name_provenance"]
+    provenance["aux_token"] = name_info["aux_token_provenance"]
+    provenance["split"] = split_prov
+    provenance["per_class_metric"] = (
+        "from_class_set_and_writer_script"
+        if pc["per_class_metric"] in {"AP", "F1"}
+        else "not_determinable"
+    )
+    provenance["host"] = host["provenance"]
+    provenance["epoch"] = "from_metrics_json" if m["epoch"] is not None else "not_determinable"
+    provenance["commit"] = "from_git_commit_txt" if commit else "not_determinable"
+    provenance["per_class"] = (
+        "from_per_class_ap_json" if pc["per_class"] is not None else "not_determinable"
+    )
+
+    record: dict[str, Any] = {
+        "ledger_key": ledger_key_of(rel_from_exp),
+        "run_id": run_dir.name,
+        "group": rel_from_exp.parts[0],
+        "subgroup": rel_from_exp.parts[1] if len(rel_from_exp.parts) > 2 else None,
+        "path": str(rel),
+        "excluded": excluded,
+        "exclusion_reason": reason,
+        "step": name_info["step"],
+        "seq": name_info["seq"],
+        "description": name_info["description"],
+        "seed": name_info["seed"],
+        # seed の突き合わせ用（§4）。notes.md は証拠に使わない（虚偽の実績がある）。
+        "seed_command": seed_cmd,
+        "seed_config": seed_cfg,
+        "seed_agreement": seed_agree,
+        "frozen_source_seed_declared": cfg["frozen_source_seed_declared"],
+        "seed_detector": name_info["seed_detector"],
+        "seed_phase": name_info["seed_phase"],
+        "split": split,
+        # metrics の各値がどの split から来たか。null なら split 接頭辞付きの指標が
+        # 1 つも無い（= metrics は bare キーのみ、または空）。
+        # split 列との整合は tools/verify_runindex.py が毎回検査する。
+        "metrics_primary_split": m["metrics_primary_split"],
+        "metrics": m["metrics"],
+        "metrics_by_split": m["metrics_by_split"],
+        # 指標として扱えなかった値。捨てずにここへ退避する（絶対規則: 情報を捨てない）。
+        #   metrics_nested … metrics.json のネスト値 (hyperparams / n_clips 等)
+        #   attributes     … 文字列や、数値でも指標ではない実行メタデータ (seed / epochs 等)
+        "metrics_nested": m["metrics_nested"],
+        "attributes": m["attributes"],
+        "per_class": pc["per_class"],
+        "per_class_kind": pc["per_class_kind"],
+        "per_class_metric": pc["per_class_metric"],
+        "per_class_source": pc["per_class_source"],
+        "per_class_nan_classes": pc["per_class_nan_classes"],
+        "per_class_valid_count": pc["per_class_valid_count"],
+        "eval_recipe": m["eval_recipe"],
+        "eval_recipe_id": eval_recipe_id(m["eval_recipe"]),
+        # config.yaml 由来。対照宣言と、名前にも command.sh にも現れない条件軸。
+        "delta_declaration": cfg["delta_declaration"],
+        "frozen_source_tag": cfg["frozen_source_tag"],
+        "host": host["host"],
+        "host_raw": host["host_raw"],
+        "gpu": host["gpu"],
+        "commit": commit,
+        "command": command,
+        "notes": notes,
+        "config_path": config_path,
+        "epoch": m["epoch"],
+        "notion_page_id": None,
+        "provenance": dict(sorted(provenance.items())),
+        "harvest_warnings": warnings,
+        "duplicate_bare_keys": sorted(m["duplicate_bare_keys"]),
+        "conflicting_bare_keys": m["conflicting_bare_keys"],
+    }
+    return record
+
+
+# --------------------------------------------------------------------------- #
+# §3.1 experiment_id — seed を束ねる単位
+#
+# runs/*.json には seed をまたいで run を束ねるフィールドが 1 つも無かった。
+# そのため 573 run は「573 個の孤立した run」であって「N 個の実験」ではなく、
+# seed 集約も Δ も paired-σ も機械的に計算できない状態だった。
+#
+# 実験 ID = group + step + description(反復軸トークンを除去) + split
+#   - seed / seed_phase は含めない（それが反復軸だから）
+#   - seed_detector (det<N>) と名前中の seed<N> は **含める**
+#     （凍結検出器チェックポイントの指定 = 条件であって反復軸ではない）
+#   - split を含める（val と test を同一実験に混ぜない）
+#   - 同一 ID 内で eval_recipe_id が食い違う場合は #<hash> を付けて分離する
+#     （評価条件が違う run を束ねてはならない）
+# --------------------------------------------------------------------------- #
+def normalize_description(desc: str | None, seed_phase: int | None) -> str | None:
+    """description から反復軸のトークンだけを取り除く。
+
+    p<N> は seed_phase として確定できたときにだけ剥がす
+    （b2a_*_noise_p010 のような「ノイズ率」は条件なので残す）。
+    """
+    if desc is None:
+        return None
+    out = desc
+    if seed_phase is not None:
+        out = re.sub(rf"(?:^|_)p{seed_phase}(?=_|$)", "_", out)
+    out = re.sub(r"_+", "_", out).strip("_")
+    return out or desc
+
+
+def assign_experiment_ids(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """各 record に experiment_id を振る。戻り値は eval_recipe 分離の記録。"""
+    base_of: dict[str, str] = {}
+    for r in records:
+        if r["step"] is None:
+            r["experiment_id"] = None
+            r["experiment_id_provenance"] = "not_determinable"
+            continue
+        # step にも同じ正規化を掛ける。多くの family では step == description であり、
+        # description からだけ p<N> を剥がすと step 側に残った seed が実験を分裂させる
+        # (t1a_3seed_det123_p{42,123,456}_aug が 3 つの単一 seed 実験になっていた)。
+        ns = normalize_description(r["step"], r["seed_phase"])
+        nd = normalize_description(r["description"], r["seed_phase"])
+        base = f"{r['group']}/{ns}/{nd}@{r['split']}"
+        # 凍結特徴の抽出元は環境変数 RELDETR_FROZEN_TAG で与えられるため
+        # run 名にも command.sh にも現れない。config.yaml だけが持つ条件軸なので
+        # ここで分離しないと異なる backbone の run が 1 実験に混ざる。
+        if r.get("frozen_source_tag"):
+            base += f"~{r['frozen_source_tag']}"
+        base_of[r["ledger_key"]] = base
+
+    # eval_recipe_id が食い違う base を分離する
+    recipes: dict[str, set[str]] = defaultdict(set)
+    for r in records:
+        b = base_of.get(r["ledger_key"])
+        if b is not None:
+            recipes[b].add(str(r["eval_recipe_id"]))
+
+    split_records: list[dict[str, Any]] = []
+    for r in records:
+        b = base_of.get(r["ledger_key"])
+        if b is None:
+            continue
+        if len(recipes[b]) > 1:
+            rid = str(r["eval_recipe_id"])
+            r["experiment_id"] = f"{b}#{rid[:8]}"
+            r["experiment_id_provenance"] = "from_run_name_split_by_eval_recipe"
+            r["harvest_warnings"].append(
+                f"同一 (group, step, description, split) 内で eval_recipe_id が "
+                f"{len(recipes[b])} 通りに食い違う。評価条件が違う run を束ねないため "
+                f"experiment_id を #{rid[:8]} で分離した。"
+            )
+            split_records.append({"base": b, "recipes": sorted(recipes[b])})
+        else:
+            r["experiment_id"] = b
+            r["experiment_id_provenance"] = "from_run_name"
+    return split_records
+
+
+# --------------------------------------------------------------------------- #
+# §3.2 arm / control_of — Δ を計算可能にする対照ペア
+#
+# 一次証拠の探索結果 (573 run 全走査):
+#   - command.sh に --control / --baseline / --inject / --arm 引数は **0 件**
+#   - notes.md に "## Δ" 節を持つ run が **439 件**あり、そこに対照が明記されている
+#       例: 「Δ_phase = (B2a − S4 base 0.8986±0.0034)。同一土台(...)」
+#           「Δ = (T1a-Boundary − T1a base[同env efros])」
+#   - 参照先は "S4 base" (430 件) と "T1a base" (9 件) の 2 つだけ
+#
+# "S4 base" の同定は **数値照合で確定**した:
+#   phase1/s4_phase_baseline を host=lecun・seed ごと最小 seq の 3 run に絞ると
+#     mean   = 0.898570  -> notes の 0.8986 と一致
+#     pstdev = 0.002766  -> notes の ±0.0028 と一致
+#     stdev  = 0.003387  -> notes の ±0.0034 と一致 (= pstdev * sqrt(3/2))
+#   同じ 3 run が母集団σと標本σの 2 通りで引用されている (anomalies 参照)。
+#
+# "T1a base[同env efros]" は step t1a_base_env (efros, seed 42/123/456) に対応する。
+# こちらは数値の裏付けが無く、名前と host の一致による同定である。
+# --------------------------------------------------------------------------- #
+DELTA_SECTION_RE = re.compile(r"^##+\s*Δ.*?$(.*?)(?=^##|\Z)", re.M | re.S)
+# Δ 節 / delta ブロックに書かれた基準値 (mean±sigma)
+CONTROL_VALUE_RE = re.compile(r"([01]\.\d{3,4})\s*±\s*([0-9.]+)")
+# 分母宣言の先頭トークン (= step) と、括弧内が識別子なら description
+DENOM_RE = re.compile(r"^\s*(?P<step>[A-Za-z0-9_.-]+)(?:\s+base)?\s*(?:\((?P<paren>[^)]*)\))?")
+IDENTIFIER_RE = re.compile(r"^[a-z0-9_]+$")
+
+
+def _parse_denominator(text: str) -> dict[str, Any]:
+    """config.yaml の `delta.phase_denominator` を (step, description) に分解する。
+
+    実データに現れる 4 通り:
+      "s4_phase_baseline (frozen_tecno_phase_baseline)"  -> step + description
+      "t1a_regiontoken base (同env efros paired)"        -> step のみ (括弧は散文)
+      "t1a_regiontoken base (同一環境 efros で再学習・paired)" -> 同上
+      "S0-frozen (=init mAP, within-run)"                -> run ではなく同一 run 内の初期値
+    """
+    s = (text or "").strip()
+    if "within-run" in s or "within_run" in s:
+        return {"kind": "within_run", "step": None, "description": None}
+    m = DENOM_RE.match(s)
+    if not m:
+        return {"kind": "unparseable", "step": None, "description": None}
+    paren = (m.group("paren") or "").strip()
+    desc = paren if IDENTIFIER_RE.match(paren) else None
+    return {"kind": "run_reference", "step": m.group("step"), "description": desc}
+
+
+def assign_arms(records: list[dict[str, Any]]) -> dict[str, Any]:
+    """対照ペア (arm / control_of) を一次証拠から決める。確定できなければ null。
+
+    証拠の優先順:
+      1. config.yaml の `delta.phase_denominator` … **機械可読な明示宣言**。441 run が保有
+      2. notes.md の `## Δ` 節 … 散文。1 が無い run の補完に使う
+
+    ★ 1 を先に見るのは重要である。notes.md の「T1a base[同env efros]」を
+      名前の近さから step t1a_base_env と読むと **誤る**。
+      config.yaml は分母を `t1a_regiontoken base (同env efros paired)` と
+      明示しており、正しい対照は t1a_regiontoken である。
+      散文からの同定は config の宣言に従属させる。
+    """
+    exps: dict[str, dict[str, Any]] = {}
+    for r in records:
+        eid = r.get("experiment_id")
+        if not eid:
+            continue
+        exps.setdefault(
+            eid,
+            {
+                "step": r["step"],
+                "description": normalize_description(r["description"], r["seed_phase"]),
+                "frozen_source_tag": r.get("frozen_source_tag"),
+                "runs": [],
+            },
+        )["runs"].append(r)
+
+    def _quoted_subset(runs: list[dict[str, Any]], host: str | None) -> list[float]:
+        """host を絞り、seed ごとに最小 seq を 1 本ずつ採った accuracy の列。"""
+        per_seed: dict[int, tuple[int, float]] = {}
+        for r in runs:
+            if host is not None and r["host"] != host:
+                continue
+            v = r["metrics"].get("accuracy")
+            if isinstance(v, (int, float)) and r["seed"] is not None:
+                if r["seed"] not in per_seed or r["seq"] < per_seed[r["seed"]][0]:
+                    per_seed[r["seed"]] = (r["seq"], v)
+        return [acc for _, acc in per_seed.values()]
+
+    def _quoted_subset_mean(runs: list[dict[str, Any]], host: str | None) -> float | None:
+        vals = _quoted_subset(runs, host)
+        return statistics.mean(vals) if len(vals) > 1 else None
+
+    resolved: dict[str, str] = {}
+    unresolved: list[str] = []
+    checks: list[dict[str, Any]] = []
+    cache: dict[tuple[str, str | None, float | None, str | None], str | None] = {}
+
+    def resolve(
+        step: str, desc: str | None, quoted: float | None, frozen_tag: str | None
+    ) -> str | None:
+        key = (step, desc, quoted, frozen_tag)
+        if key in cache:
+            return cache[key]
+        cands = [
+            eid
+            for eid, e in exps.items()
+            if e["step"] == step and (desc is None or e["description"] == desc)
+        ]
+        # 凍結特徴のソースが同じ実験に絞る。
+        # notes.md が対照の条件を「同一土台（凍結backbone/GAP/recipe/seed・neck無し）」と
+        # 明記しているため、凍結 backbone を揃えるのは研究者自身が宣言した規則である。
+        # （frozen_source_tag で実験を分けた以上、これをしないと分母が確定しない）
+        if len(cands) > 1 and frozen_tag:
+            same = [eid for eid in cands if exps[eid]["frozen_source_tag"] == frozen_tag]
+            if len(same) == 1:
+                cache[key] = same[0]
+                return same[0]
+            if same:
+                cands = same
+        result: str | None = None
+        if len(cands) == 1:
+            result = cands[0]
+        elif len(cands) > 1 and quoted is not None:
+            # 複数候補は引用された基準値で切り分ける（名前だけでは決めない）
+            hit = []
+            for eid in cands:
+                for host in (None, "lecun", "efros"):
+                    got = _quoted_subset_mean(exps[eid]["runs"], host)
+                    if got is not None and abs(round(got, 4) - quoted) < 5e-5:
+                        hit.append((eid, host, got))
+                        break
+            if len(hit) == 1:
+                result = hit[0][0]
+                vals = _quoted_subset(exps[result]["runs"], hit[0][1])
+                checks.append(
+                    {
+                        "denominator": f"{step} ({desc})" if desc else step,
+                        "experiment_id": result,
+                        "quoted_mean": quoted,
+                        "reproduced_mean": round(hit[0][2], 4),
+                        "reproduced_from": f"host={hit[0][1]}, seed ごと最小 seq",
+                        "population_sigma": round(statistics.pstdev(vals), 4) if len(vals) > 1 else None,
+                        "sample_sigma": round(statistics.stdev(vals), 4) if len(vals) > 1 else None,
+                        "n_candidates": len(cands),
+                        "matched": True,
+                    }
+                )
+            else:
+                unresolved.append(
+                    f"分母 {step!r} が {len(cands)} 実験に該当し、"
+                    f"引用値 {quoted} で切り分けても {len(hit)} 件に絞られた。対照を確定できない。"
+                )
+        elif len(cands) > 1:
+            unresolved.append(
+                f"分母 {step!r} が {len(cands)} 実験に該当し、"
+                f"引用値も無いため切り分けられない。対照を確定できない。"
+            )
+        else:
+            unresolved.append(f"分母 {step!r} に該当する実験が experiments/ に無い。")
+        cache[key] = result
+        return result
+
+    stats: Counter[str] = Counter()
+    for r in records:
+        r["arm"] = "unknown"
+        r["control_of"] = None
+        r["pairing_provenance"] = "not_determinable"
+        r["control_note_value"] = None
+
+        eid = r.get("experiment_id")
+        decl = r.get("delta_declaration")
+
+        denom_text = None
+        prov = None
+        if isinstance(decl, dict):
+            for k in ("phase_denominator", "denominator", "detection_denominator"):
+                v = decl.get(k)
+                if isinstance(v, str) and v.strip():
+                    denom_text, prov = v, "from_config_yaml"
+                    break
+        if denom_text is None:
+            sec = DELTA_SECTION_RE.search(r.get("notes") or "")
+            if sec:
+                mm = re.search(r"[−-]\s*([A-Za-z0-9_.-]+\s*base)", sec.group(1))
+                if mm:
+                    denom_text, prov = mm.group(1), "from_notes"
+
+        # 引用された基準値（config の denominator_value_* / note、なければ notes 本文）
+        quoted = None
+        blob = ""
+        if isinstance(decl, dict):
+            blob = " ".join(str(v) for v in decl.values())
+        if not blob:
+            sec = DELTA_SECTION_RE.search(r.get("notes") or "")
+            blob = sec.group(1) if sec else ""
+        vm = CONTROL_VALUE_RE.search(blob)
+        if vm:
+            quoted = float(vm.group(1))
+            r["control_note_value"] = quoted
+
+        if denom_text is None:
+            stats["no_denominator_declared"] += 1
+            continue
+
+        parsed = _parse_denominator(denom_text)
+        if parsed["kind"] == "within_run":
+            # 同一 run 内の初期値との比較。対照 run は存在しない。
+            r["arm"] = "injection"
+            r["pairing_provenance"] = "within_run_baseline"
+            stats["within_run_baseline"] += 1
+            continue
+        if parsed["kind"] != "run_reference" or not parsed["step"]:
+            stats["denominator_unparseable"] += 1
+            continue
+
+        target = resolve(
+            parsed["step"], parsed["description"], quoted, r.get("frozen_source_tag")
+        )
+        if target is None:
+            stats["denominator_unresolvable"] += 1
+            continue
+        resolved[denom_text] = target
+        if target == eid:
+            r["arm"] = "baseline"
+            r["pairing_provenance"] = prov
+            stats["baseline_self"] += 1
+            continue
+        r["arm"] = "injection"
+        r["control_of"] = target
+        r["pairing_provenance"] = prov
+        stats[f"injection_{prov}"] += 1
+
+    # 対照として参照された実験自身に baseline を立てる
+    targets = set(resolved.values())
+    for r in records:
+        if r.get("experiment_id") in targets and r["arm"] == "unknown":
+            r["arm"] = "baseline"
+            r["pairing_provenance"] = "referenced_as_denominator"
+            stats["baseline"] += 1
+
+    return {
+        "resolved": resolved,
+        "unresolved": sorted(set(unresolved)),
+        "value_checks": checks,
+        "stats": dict(stats),
+    }
+
+
+# --------------------------------------------------------------------------- #
+# §3.3 experiments.csv — 1 行 = 1 実験 (= 論文 Table の 1 行)
+# --------------------------------------------------------------------------- #
+EXPERIMENT_SCALAR_COLUMNS = [
+    "experiment_id",
+    "group",
+    "step",
+    "description",
+    "split",
+    "eval_recipe_id",
+    "n_runs",
+    "n_seeds",
+    "seeds",
+    "runs_per_seed_max",
+    "hosts",
+    "n_runs_excluded",
+    "per_class_kind",
+    "per_class_metric",
+    "arm",
+    "control_of",
+    "pairing_provenance",
+    "control_note_value",
+    "delta_method",
+    "delta_sigma_source",
+    "delta_dedup_rule",
+    # §10.1 判定（主指標について）。σ の規約が repo 内で割れているため両方出す。
+    "verdict_metric",
+    "verdict_10_1",
+    "verdict_10_1_sstd",
+    "verdict_10_1_agree",
+    "verdict_10_1_reason",
+    # σ が何を測っているか（§2 の within/between 比から機械的に決める）
+    "sigma_interpretation",
+    "sigma_within_over_between",
+    "n_command_variants",
+]
+
+
+def _agg(values: list[float]) -> dict[str, float | None]:
+    """seed 集約。σ は **母集団σと標本σの両方**を出す。
+
+    n=3 では両者の比が sqrt(3/2)=1.2247 あり、|Δ| > 1σ 判定の結論が反転しうる。
+    どちらか一方だけを出すと、下流でどちらの規約か判別できなくなる
+    (実際に notes.md が同じ基準点を ±0.0028 と ±0.0034 の 2 通りで引用していた)。
+    """
+    return {
+        "mean": statistics.mean(values),
+        "pstd": statistics.pstdev(values),  # 母集団σ (ddof=0)
+        "sstd": statistics.stdev(values) if len(values) > 1 else None,  # 標本σ (ddof=1)
+        "min": min(values),
+        "max": max(values),
+        "n": len(values),
+    }
+
+
+# --------------------------------------------------------------------------- #
+# seed ごとに複数 run がある場合の代表値の取り方
+#
+# 対照実験 (s4_phase_baseline) は 1 つの seed に最大 7 run を持つ。畳まないと
+# seed ごとの対応が付かず paired-σ が計算できない (136 実験中 131 が計算不能)。
+#
+# 既定は **mean**。理由:
+#   - 順序に依存しない（seq / 時刻の記録が信用できない run がある）
+#   - 特定の 1 本を選ばないので「どれを選ぶか」の恣意性が入らない
+#   - 再実行のばらつきを捨てずに平均へ織り込む
+#
+# ★ "best"（比較する指標が最良の run を選ぶ）は **実装しない**。
+#   比較対象の指標そのもので代表を選ぶと Δ が系統的に偏る（選択バイアス）。
+#   対照側で best を選べば Δ は小さく、注入側で選べば大きく出る。
+#   研究公正性の観点から提供しない。
+# --------------------------------------------------------------------------- #
+DEDUP_RULES = ("mean", "latest", "first")
+DEFAULT_DEDUP_RULE = "mean"
+
+
+def _reduce_by_seed(
+    pairs: list[tuple[int | None, float]], rule: str
+) -> float | None:
+    """(seq, value) の列を seed 代表値 1 つに畳む。"""
+    if not pairs:
+        return None
+    if len(pairs) == 1:
+        return pairs[0][1]
+    if rule == "mean":
+        return statistics.mean(v for _, v in pairs)
+    ordered = sorted(pairs, key=lambda x: (x[0] is None, x[0]))
+    return ordered[-1][1] if rule == "latest" else ordered[0][1]
+
+
+def _pool_sigma(a: float | None, b: float | None) -> float | None:
+    """独立 2 群の差の σ: sqrt(σ_inj^2 + σ_ctl^2)。
+
+    seed ごとの対応が取れない (unpaired) ときの合成。seed で対応が付く分の
+    変動が相殺されないため **paired-σ より大きくなる**（= 有意になりにくい）。
+    したがって unpaired で σ 条件を満たせば paired でも満たすが、逆は言えない。
+
+    ★ ここでいう σ は「seed 間のばらつき」ではない。学習が決定的でないため
+      同一条件反復のばらつきが混ざっている（anomalies §25 / §26）。
+      どちらが支配的かは sigma_interpretation 列で判別する。
+    """
+    if a is None or b is None:
+        return None
+    return math.sqrt(a * a + b * b)
+
+
+def _command_signature(command: str | None, seed: int | None = None) -> str:
+    """command.sh の最終行から seed 由来・環境由来の差を除いた引数列。
+
+    同一 experiment_id 内に **異なるハイパーパラメータの run** が混ざっていないかを
+    見るための指紋。b2a_ro_oracle_noise000 は名前が 1 つなのに
+    --tool-noise-rate が 0.05/0.10/0.20/0.30 の 4 通り存在する (anomalies §7.3)。
+
+    seed が変われば必ず変わるもの（seed 値そのもの、seed を含む作業ディレクトリ、
+    DDP の master_port）は条件差ではないので落とす。落とし損ねると
+    「3 seed = 3 条件」に見えて偽陽性を大量に出す。
+    """
+    if not command:
+        return ""
+    line = [ln for ln in command.strip().split("\n") if ln.strip() and not ln.startswith("#")]
+    if not line:
+        return ""
+    toks = line[-1].split()
+    out, skip = [], False
+    for t in toks:
+        if skip:
+            skip = False
+            continue
+        # argparse 形式: --seed 42
+        if t in {"--seed", "--description", "--description-override"}:
+            skip = True
+            continue
+        # Hydra 形式: seed=42 / experiment.description=foo
+        if re.fullmatch(r"(?:\S+\.)?(?:seed|description)=\S*", t):
+            continue
+        # seed を名前に含む作業ディレクトリ (/tmp/dac_work_seed42)
+        if re.search(r"seed\d+", t):
+            continue
+        # DDP の待ち受けポートは環境差
+        if t.startswith("--master_port"):
+            continue
+        # 位置引数として渡された seed 値そのもの
+        if seed is not None and t == str(seed):
+            continue
+        # 絶対パスは環境差なので除く（同一条件を別サーバーで回すと差が出る）
+        out.append(re.sub(r"(/[^\s]*/)(?=[^/\s]+\.py\b)", "", t))
+    return " ".join(out)
+
+
+def _verdict_10_1(
+    delta: float | None, sigma: float | None, same_sign: bool | None
+) -> tuple[str, str]:
+    """§10.1 の改善判定。**2 条件**を両方満たしたときだけ significant。
+
+        |mean(Δ)| > σ  かつ  全 seed 同符号
+
+    根拠 (リポジトリ内の実装 7 箇所が同じ 2 条件で書いている):
+      scripts/paired_sigma_3seed.py:7 / analyze_t1a_factorial_ablation.py:13 /
+      report_t1a_boundary.py:5 / report_daux_paired.py:114 /
+      run_haux_oracle_gate.sh:14 / run_taux_problemA.sh:76 /
+      src/egosurgery/utils/transfer_delta_report.py
+
+    同符号は seed ごとの Δ が無いと判定できないので、unpaired では
+    **undecidable** にする（σ 条件だけで significant と言ってはいけない）。
+    """
+    if delta is None or sigma is None:
+        return "undecidable", "Δ または σ が無い"
+    if same_sign is None:
+        return "undecidable", "unpaired のため同符号条件を判定できない"
+    if sigma == 0:
+        return "undecidable", "σ = 0（ばらつきを測れていない）"
+    if abs(delta) <= sigma:
+        return "not_significant", "|Δ| <= σ"
+    if not same_sign:
+        return "not_significant", "全 seed 同符号ではない"
+    return "significant", "|Δ| > σ かつ全 seed 同符号"
+
+
+def _primary_metric(row: dict[str, Any], available: set[str]) -> str | None:
+    """その実験の主指標。工程系は accuracy、検出系は mAP。"""
+    for m in ("accuracy", "mAP", "tool_mAP"):
+        if m in available and row.get(f"{m}_mean") is not None:
+            return m
+    return None
+
+
+def build_experiments(
+    records: list[dict[str, Any]], dedup_rule: str = DEFAULT_DEDUP_RULE
+) -> tuple[list[str], list[dict[str, Any]]]:
+    groups: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for r in records:
+        if r.get("experiment_id"):
+            groups[r["experiment_id"]].append(r)
+
+    metric_names: set[str] = set()
+    for rs in groups.values():
+        for r in rs:
+            metric_names.update(k for k, v in r["metrics"].items() if isinstance(v, (int, float)))
+    metric_names = set(sorted(metric_names))
+
+    # 集約値をいったん全部作ってから Δ を計算する (対照の集約が要るため)
+    agg_by_exp: dict[str, dict[str, dict[str, float]]] = {}
+    seedvals_by_exp: dict[str, dict[str, dict[int, list[float]]]] = {}
+    for eid, rs in groups.items():
+        per_metric: dict[str, dict[str, float]] = {}
+        per_seed: dict[str, dict[int, list[float]]] = {}
+        for name in metric_names:
+            vals = [r["metrics"][name] for r in rs if isinstance(r["metrics"].get(name), (int, float))]
+            if not vals:
+                continue
+            per_metric[name] = _agg(vals)
+            # (seq, value) で持つ。seq は latest / first の代表選択に要る。
+            s: dict[int, list[tuple[int | None, float]]] = defaultdict(list)
+            for r in rs:
+                v = r["metrics"].get(name)
+                if isinstance(v, (int, float)) and r["seed"] is not None:
+                    s[r["seed"]].append((r.get("seq"), v))
+            per_seed[name] = dict(s)
+        agg_by_exp[eid] = per_metric
+        seedvals_by_exp[eid] = per_seed
+
+    # §2 の within/between 比を (experiment_id, metric) で引けるようにする。
+    # σ が seed 効果を測っているかの判定に使う。
+    _wh, _wr = build_within_vs_between(records)
+    wb: dict[tuple[str, str], float] = {
+        (r["experiment_id"], r["metric"]): r["ratio_within_over_between"]
+        for r in _wr
+        if r["ratio_within_over_between"] is not None
+    }
+
+    used_metrics = sorted({m for a in agg_by_exp.values() for m in a})
+    header = list(EXPERIMENT_SCALAR_COLUMNS)
+    for m in used_metrics:
+        header += [f"{m}_mean", f"{m}_pstd", f"{m}_sstd", f"{m}_min", f"{m}_max", f"{m}_n"]
+    for m in used_metrics:
+        header += [
+            f"delta_{m}",
+            f"delta_pstd_{m}",
+            f"delta_sstd_{m}",
+            f"abs_delta_over_sigma_{m}",
+            # §10.1 の第 2 条件（全 seed 同符号）。paired のときだけ判定できる。
+            f"delta_same_sign_{m}",
+            f"delta_n_seeds_{m}",
+        ]
+
+    rows = []
+    for eid in sorted(groups):
+        rs = groups[eid]
+        first = rs[0]
+        seeds = sorted({r["seed"] for r in rs if r["seed"] is not None})
+        seed_counts = Counter(r["seed"] for r in rs if r["seed"] is not None)
+        hosts = sorted({r["host"] for r in rs if r["host"]})
+        arms = sorted({r["arm"] for r in rs})
+        controls = sorted({r["control_of"] for r in rs if r["control_of"]})
+        note_vals = sorted({r["control_note_value"] for r in rs if r["control_note_value"]})
+        cmd_sigs = {_command_signature(r.get("command"), r.get("seed")) for r in rs}
+
+        row: dict[str, Any] = {
+            "experiment_id": eid,
+            "group": first["group"],
+            "step": first["step"],
+            "description": normalize_description(first["description"], first["seed_phase"]),
+            "split": first["split"],
+            "eval_recipe_id": first["eval_recipe_id"],
+            "n_runs": len(rs),
+            "n_seeds": len(seeds),
+            "seeds": ",".join(str(s) for s in seeds),
+            "runs_per_seed_max": max(seed_counts.values()) if seed_counts else 0,
+            "hosts": ",".join(hosts),
+            "n_runs_excluded": sum(1 for r in rs if r["excluded"]),
+            "per_class_kind": ",".join(sorted({str(r["per_class_kind"]) for r in rs})),
+            "per_class_metric": ",".join(sorted({str(r["per_class_metric"]) for r in rs})),
+            "arm": ",".join(arms),
+            "control_of": controls[0] if len(controls) == 1 else "",
+            "pairing_provenance": ",".join(sorted({r["pairing_provenance"] for r in rs})),
+            "control_note_value": note_vals[0] if len(note_vals) == 1 else "",
+            "n_command_variants": len(cmd_sigs),
+            "delta_method": "",
+            "delta_sigma_source": "",
+            "delta_dedup_rule": "",
+            "verdict_metric": "",
+            "verdict_10_1": "",
+            "verdict_10_1_sstd": "",
+            "verdict_10_1_agree": "",
+            "verdict_10_1_reason": "",
+            "sigma_interpretation": "unknown",
+            "sigma_within_over_between": "",
+        }
+        for m, a in agg_by_exp[eid].items():
+            row[f"{m}_mean"] = a["mean"]
+            row[f"{m}_pstd"] = a["pstd"]
+            row[f"{m}_sstd"] = a["sstd"]
+            row[f"{m}_min"] = a["min"]
+            row[f"{m}_max"] = a["max"]
+            row[f"{m}_n"] = a["n"]
+
+        ctrl = controls[0] if len(controls) == 1 else None
+        if ctrl and ctrl in agg_by_exp:
+            cs = seedvals_by_exp[ctrl]
+            os_ = seedvals_by_exp[eid]
+            # paired: 双方とも seed ごとにちょうど 1 run で、seed 集合が一致するとき
+            methods: set[str] = set()
+            sources: set[str] = set()
+            for m in agg_by_exp[eid]:
+                if m not in agg_by_exp[ctrl]:
+                    continue
+                a, b = os_.get(m, {}), cs.get(m, {})
+                # paired は **共通 seed（積集合）**で取る。片側にしか無い seed は
+                # 対応が付かないので paired 比較から外すだけであり、
+                # seed 集合の完全一致を要求する必要はない（それは過度に厳しい）。
+                # 除外した seed は paired_feasibility.csv に記録する。
+                #
+                # seed ごとに複数 run がある場合は DEFAULT_DEDUP_RULE で 1 本に畳む。
+                # 畳まないと 136 実験中 131 が paired 不能のままになる。
+                common = set(a) & set(b)
+                if len(common) >= 2:
+                    ra = {s: _reduce_by_seed(a[s], dedup_rule) for s in common}
+                    rb = {s: _reduce_by_seed(b[s], dedup_rule) for s in common}
+                    diffs = [ra[s] - rb[s] for s in sorted(common)]
+                    delta = statistics.mean(diffs)
+                    pstd = statistics.pstdev(diffs)
+                    sstd = statistics.stdev(diffs) if len(diffs) > 1 else None
+                    # §10.1 は |mean(Δ)| > σ に加えて **全 seed 同符号**も要求する。
+                    # unpaired では seed ごとの Δ が無く判定できないため paired 限定。
+                    row[f"delta_same_sign_{m}"] = all(d > 0 for d in diffs) or all(
+                        d < 0 for d in diffs
+                    )
+                    row[f"delta_n_seeds_{m}"] = len(diffs)
+                    methods.add("paired")
+                    sources.add("paired")
+                else:
+                    delta = agg_by_exp[eid][m]["mean"] - agg_by_exp[ctrl][m]["mean"]
+                    # seed の対応が取れないので、独立 2 群として σ を合成する。
+                    # paired-σ より大きく出る保守的な推定であることを
+                    # delta_sigma_source 列で明示する。
+                    pstd = _pool_sigma(agg_by_exp[eid][m]["pstd"], agg_by_exp[ctrl][m]["pstd"])
+                    sstd = _pool_sigma(agg_by_exp[eid][m]["sstd"], agg_by_exp[ctrl][m]["sstd"])
+                    methods.add("unpaired")
+                    sources.add("unpaired_pooled")
+                row[f"delta_{m}"] = delta
+                row[f"delta_pstd_{m}"] = pstd
+                row[f"delta_sstd_{m}"] = sstd
+                # σ=0 は「有意」ではなく「ばらつきを測れていない」なので比を出さない
+                if pstd:
+                    row[f"abs_delta_over_sigma_{m}"] = abs(delta) / pstd
+            # paired と unpaired を混同してはならないので両方出たら併記する。
+            row["delta_method"] = ",".join(sorted(methods))
+            row["delta_sigma_source"] = ",".join(sorted(sources))
+            row["delta_dedup_rule"] = dedup_rule if "paired" in methods else ""
+
+            # §10.1 判定（主指標について）。σ の規約が割れているので両方出す。
+            pm = _primary_metric(row, set(agg_by_exp[eid]))
+            if pm:
+                row["verdict_metric"] = pm
+                v_p, reason = _verdict_10_1(
+                    row.get(f"delta_{pm}"),
+                    row.get(f"delta_pstd_{pm}"),
+                    row.get(f"delta_same_sign_{pm}"),
+                )
+                v_s, _ = _verdict_10_1(
+                    row.get(f"delta_{pm}"),
+                    row.get(f"delta_sstd_{pm}"),
+                    row.get(f"delta_same_sign_{pm}"),
+                )
+                row["verdict_10_1"] = v_p
+                row["verdict_10_1_sstd"] = v_s
+                row["verdict_10_1_agree"] = v_p == v_s
+                row["verdict_10_1_reason"] = reason
+
+                # σ が seed 効果を測っているのか、同一条件反復のばらつきも
+                # 混ざっているのかを判定する。注入側と対照側の**両方**を見る
+                # （Δ の σ は両者の合成であり、片方でも逆転していれば mixed）。
+                ratios = [
+                    wb[(e, pm)]
+                    for e in (eid, ctrl)
+                    if (e, pm) in wb
+                ]
+                if not ratios:
+                    row["sigma_interpretation"] = "unknown"
+                else:
+                    worst = max(ratios)
+                    row["sigma_within_over_between"] = worst
+                    row["sigma_interpretation"] = (
+                        "mixed_with_nondeterminism" if worst >= 1 else "seed_effect"
+                    )
+        rows.append(row)
+    return header, rows
+
+
+VERDICT_COLUMNS = [
+    "experiment_id",
+    "metric",
+    "arm",
+    "control_of",
+    "delta_method",
+    "delta_dedup_rule",
+    "n_seeds",
+    "delta",
+    "pstd",
+    "sstd",
+    "ratio_pstd",
+    "ratio_sstd",
+    "same_sign",
+    "verdict_pstd",
+    "verdict_sstd",
+    "agree",
+    "reason",
+]
+
+
+def build_verdicts(exp_rows: list[dict[str, Any]]) -> tuple[list[str], list[dict[str, Any]]]:
+    """1 行 = 1 実験 × 1 指標 の §10.1 判定表（long 形式）。
+
+    experiments.csv の `verdict_10_1` は主指標 1 つだけなので、
+    全指標の判定はここで縦持ちにする。
+    母集団σ (ddof=0) と標本σ (ddof=1) の両方で判定し `agree` で突き合わせる。
+    """
+    rows = []
+    for r in exp_rows:
+        metrics = sorted(
+            k[len("delta_") :]
+            for k in r
+            if k.startswith("delta_")
+            and not k.startswith(("delta_pstd_", "delta_sstd_", "delta_same_sign_", "delta_n_seeds_"))
+            and k not in {"delta_method", "delta_sigma_source", "delta_dedup_rule"}
+            and isinstance(r.get(k), (int, float))
+        )
+        for m in metrics:
+            d = r.get(f"delta_{m}")
+            ps = r.get(f"delta_pstd_{m}")
+            ss = r.get(f"delta_sstd_{m}")
+            sign = r.get(f"delta_same_sign_{m}")
+            vp, reason = _verdict_10_1(d, ps, sign)
+            vs, _ = _verdict_10_1(d, ss, sign)
+            rows.append(
+                {
+                    "experiment_id": r["experiment_id"],
+                    "metric": m,
+                    "arm": r.get("arm"),
+                    "control_of": r.get("control_of"),
+                    "delta_method": r.get("delta_method"),
+                    "delta_dedup_rule": r.get("delta_dedup_rule"),
+                    "n_seeds": r.get(f"delta_n_seeds_{m}"),
+                    "delta": d,
+                    "pstd": ps,
+                    "sstd": ss,
+                    "ratio_pstd": abs(d) / ps if d is not None and ps else None,
+                    "ratio_sstd": abs(d) / ss if d is not None and ss else None,
+                    "same_sign": sign,
+                    "verdict_pstd": vp,
+                    "verdict_sstd": vs,
+                    "agree": vp == vs,
+                    "reason": reason,
+                }
+            )
+    return VERDICT_COLUMNS, rows
+
+
+DEDUP_SENSITIVITY_COLUMNS = [
+    "experiment_id",
+    "metric",
+    "dedup_rule",
+    "delta",
+    "pstd",
+    "ratio_pstd",
+    "same_sign",
+    "verdict_pstd",
+]
+
+
+def build_dedup_sensitivity(
+    records: list[dict[str, Any]],
+) -> tuple[list[str], list[dict[str, Any]]]:
+    """代表値の取り方 (mean / latest / first) で Δ と判定がどれだけ動くか。
+
+    既定は mean。恣意的な選択が結論を変えていないことを確認するために、
+    他の規則でも計算して並べる。**"best" は選択バイアスを生むので出さない。**
+    """
+    rows = []
+    for rule in DEDUP_RULES:
+        _h, exp_rows = build_experiments(records, dedup_rule=rule)
+        for r in exp_rows:
+            if r.get("delta_method") != "paired":
+                continue
+            pm = r.get("verdict_metric")
+            if not pm:
+                continue
+            d = r.get(f"delta_{pm}")
+            ps = r.get(f"delta_pstd_{pm}")
+            sign = r.get(f"delta_same_sign_{pm}")
+            v, _ = _verdict_10_1(d, ps, sign)
+            rows.append(
+                {
+                    "experiment_id": r["experiment_id"],
+                    "metric": pm,
+                    "dedup_rule": rule,
+                    "delta": d,
+                    "pstd": ps,
+                    "ratio_pstd": abs(d) / ps if d is not None and ps else None,
+                    "same_sign": sign,
+                    "verdict_pstd": v,
+                }
+            )
+    rows.sort(key=lambda x: (x["experiment_id"], x["metric"], x["dedup_rule"]))
+    return DEDUP_SENSITIVITY_COLUMNS, rows
+
+
+# --------------------------------------------------------------------------- #
+# index.csv (Stage 2: runs/*.json から導出する)
+# --------------------------------------------------------------------------- #
+SCALAR_COLUMNS = [
+    "ledger_key",
+    "run_id",
+    "experiment_id",
+    "arm",
+    "control_of",
+    "pairing_provenance",
+    "group",
+    "subgroup",
+    "path",
+    "excluded",
+    "exclusion_reason",
+    "step",
+    "seq",
+    "description",
+    "seed",
+    "seed_command",
+    "seed_config",
+    "seed_agreement",
+    "seed_detector",
+    "seed_phase",
+    "split",
+    "metrics_primary_split",
+    "frozen_source_tag",
+    "per_class_kind",
+    "per_class_metric",
+    "per_class_source",
+    "per_class_valid_count",
+    "eval_recipe_id",
+    "host",
+    "host_raw",
+    "gpu",
+    "commit",
+    "epoch",
+    "notion_page_id",
+    "has_test",
+    "n_harvest_warnings",
+]
+
+
+def build_index(records: list[dict[str, Any]]) -> tuple[list[str], list[dict[str, Any]]]:
+    """index.csv の列を組み立てる。
+
+    `metric.<name>` は **primary（= split 列が指す側。実質 val）** の値。
+    既存列の意味は変えない（後方互換）。
+
+    test 側の値は `metric_test.<name>` として **別列**に展開する。
+    これが無いと「split 列が val 一色 -> test 評価は存在しない」と誤読される。
+    実測では 27 run が test 評価を持ち、val とは大きく乖離する。
+    """
+    metric_keys: set[str] = set()
+    test_keys: set[str] = set()
+    for r in records:
+        metric_keys.update(r["metrics"].keys())
+        test_keys.update((r["metrics_by_split"] or {}).get("test", {}).keys())
+
+    metric_cols = [f"metric.{k}" for k in sorted(metric_keys)]
+    test_cols = [f"metric_test.{k}" for k in sorted(test_keys)]
+    header = SCALAR_COLUMNS + metric_cols + test_cols
+
+    rows = []
+    for r in sorted(records, key=lambda x: x["ledger_key"]):
+        row = {c: r.get(c) for c in SCALAR_COLUMNS}
+        row["n_harvest_warnings"] = len(r["harvest_warnings"])
+        row["has_test"] = bool((r["metrics_by_split"] or {}).get("test"))
+        for k, v in r["metrics"].items():
+            row[f"metric.{k}"] = v
+        for k, v in (r["metrics_by_split"] or {}).get("test", {}).items():
+            row[f"metric_test.{k}"] = v
+        rows.append(row)
+    return header, rows
+
+
+def build_val_test_pairs(records: list[dict[str, Any]]) -> tuple[list[str], list[dict[str, Any]]]:
+    """test 評価を持つ run の val/test 対応表（anomalies/val_test_pairs.csv）。
+
+    index.csv を横に見るだけでは val と test の乖離が読み取りにくいため、
+    該当 run だけを縦持ちで別出しする。
+    """
+    names: set[str] = set()
+    targets = [r for r in records if (r["metrics_by_split"] or {}).get("test")]
+    for r in targets:
+        by = r["metrics_by_split"]
+        names.update(by.get("val", {}).keys() & by.get("test", {}).keys())
+
+    header = ["ledger_key", "path", "group", "step", "seed", "excluded"]
+    for n in sorted(names):
+        header += [f"val.{n}", f"test.{n}", f"delta.{n}"]
+
+    rows = []
+    for r in sorted(targets, key=lambda x: x["ledger_key"]):
+        by = r["metrics_by_split"]
+        row = {
+            "ledger_key": r["ledger_key"],
+            "path": r["path"],
+            "group": r["group"],
+            "step": r["step"],
+            "seed": r["seed"],
+            "excluded": r["excluded"],
+        }
+        for n in sorted(names):
+            v = by.get("val", {}).get(n)
+            t = by.get("test", {}).get(n)
+            row[f"val.{n}"] = v
+            row[f"test.{n}"] = t
+            if isinstance(v, (int, float)) and isinstance(t, (int, float)):
+                row[f"delta.{n}"] = round(t - v, 6)
+        rows.append(row)
+    return header, rows
+
+
+# --------------------------------------------------------------------------- #
+# §1 決定性制御の棚卸し
+#
+# 同一 commit・同一 config・同一コマンド・同一 host の再実行が再現しない
+# （anomalies §25）。原因は学習スクリプトが GPU の決定性を制御していないこと。
+# 同じ欠陥が他のスクリプトにもあるかを機械的に棚卸しする。
+#
+# ★ ここで見ているのは **静的なコードの記述だけ**である。
+#   実際に決定的かどうかを実行して確かめてはいない（再実行はしない方針）。
+# --------------------------------------------------------------------------- #
+SCRIPTS_DIR = REPO_ROOT / "scripts"
+SRC_DIR = REPO_ROOT / "src"
+
+DETERMINISM_CHECKS: dict[str, str] = {
+    "random_seed": r"\brandom\.seed\s*\(",
+    "numpy_seed": r"\bnp\.random\.seed\s*\(|\bnumpy\.random\.seed\s*\(|default_rng\s*\(",
+    "torch_manual_seed": r"\btorch\.manual_seed\s*\(",
+    "cuda_manual_seed": r"\btorch\.cuda\.manual_seed(?:_all)?\s*\(",
+    "use_deterministic_algorithms": r"\btorch\.use_deterministic_algorithms\s*\(",
+    "cudnn_deterministic": r"cudnn\.deterministic\s*=",
+    "cudnn_benchmark": r"cudnn\.benchmark\s*=",
+    "pythonhashseed": r"PYTHONHASHSEED",
+    "dataloader_worker_init_fn": r"worker_init_fn\s*=",
+    "dataloader_generator": r"\bgenerator\s*=\s*(?:g\b|torch\.Generator|gen\b)",
+    "cublas_workspace_config": r"CUBLAS_WORKSPACE_CONFIG",
+}
+
+# 「これが揃わないと GPU 上で決定的になり得ない」項目
+DETERMINISM_REQUIRED = (
+    "torch_manual_seed",
+    "cuda_manual_seed",
+    "use_deterministic_algorithms",
+    "cudnn_deterministic",
+)
+
+# 決定性制御をまとめて張るヘルパ。呼び出し元にはこの内容が効くので、
+# ファイル単位の正規表現だけで判定すると **委譲先を見落として過小評価する**。
+# 実際 src/egosurgery/ の Hydra 経路は seed_everything() 経由で
+# cuda_manual_seed / cudnn_deterministic / PYTHONHASHSEED を設定している。
+SEED_HELPERS: dict[str, str] = {
+    "seed_everything": "src/egosurgery/utils/seed.py",
+}
+
+DETERMINISM_COLUMNS = [
+    "script",
+    # ok = 中身がある / empty = 0 バイトの scaffold / missing = repo に無い
+    "file_state",
+    # 直接記述か、ヘルパ経由か
+    "seed_setup_via",
+    "uses_cuda",
+    "n_runs",
+    "n_steps",
+    "steps",
+    *DETERMINISM_CHECKS.keys(),
+    "num_workers",
+    "shuffle",
+    # DataLoader を使わないなら worker_init_fn / generator の欠落は該当しない。
+    # 自前スクリプトはメモリ上のリストを random.shuffle で並べ替えている。
+    "uses_dataloader",
+    "shuffle_via_random_shuffle",
+    # 実行時に os.environ["PYTHONHASHSEED"] を設定しても、CPython の
+    # ハッシュ乱択はインタプリタ起動時に確定済みなので現行プロセスには効かない。
+    "pythonhashseed_effective",
+    # mmengine の randomness に deterministic=False を渡すなど、
+    # フレームワーク側の決定化を **明示的に無効化**しているか
+    "explicitly_disables_determinism",
+    "missing_required",
+    "can_be_deterministic",
+]
+
+_ENTRYPOINT_RE = re.compile(r"(?:python3?|bash)\s+(\S+\.(?:py|sh))")
+_NUM_WORKERS_RE = re.compile(r"num_workers\s*=\s*([^,)\s]+)")
+_SHUFFLE_RE = re.compile(r"shuffle\s*=\s*([^,)\s]+)")
+
+
+def _entrypoint_of(command: str | None) -> str | None:
+    """command.sh の entrypoint を **リポジトリ相対**に正規化する。
+
+    command.sh には絶対パス (/home/ubuntu/slocal2/m2/scripts/train_b2a.py) と
+    相対パス (scripts/train_b2a.py) が混在する。正規化しないと同じスクリプトが
+    2 行に分かれて run 数が割れる。
+    """
+    if not command:
+        return None
+    m = _ENTRYPOINT_RE.search(command)
+    if not m:
+        return None
+    path = m.group(1)
+    # 絶対パスは既知のプロジェクトルート以降を残す
+    for marker in ("/m2/", "/egosurgery_multitask/"):
+        if marker in path:
+            path = path.split(marker, 1)[1]
+            break
+    return path.lstrip("./")
+
+
+def build_determinism_audit(
+    records: list[dict[str, Any]],
+) -> tuple[list[str], list[dict[str, Any]]]:
+    """学習スクリプトごとの決定性制御の有無と、影響を受ける run / step を出す。"""
+    # entrypoint -> run
+    by_script: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for r in records:
+        ep = _entrypoint_of(r.get("command"))
+        if ep:
+            by_script[ep].append(r)
+
+    # 監査対象: entrypoint に現れた全スクリプト + scripts/train_*.py
+    #         + Hydra entrypoint が委譲する実装 (src/egosurgery/train.py は
+    #           自身では CUDA を触らず engines/trainer.py に委譲する)
+    targets: set[str] = set(by_script)
+    if SCRIPTS_DIR.is_dir():
+        targets |= {f"scripts/{p.name}" for p in sorted(SCRIPTS_DIR.glob("train_*.py"))}
+    eng = SRC_DIR / "egosurgery" / "engines"
+    if eng.is_dir():
+        targets |= {
+            str(p.relative_to(REPO_ROOT)) for p in sorted(eng.glob("*.py")) if p.name != "__init__.py"
+        }
+
+    rows = []
+    for name in sorted(targets):
+        cand = REPO_ROOT / name
+        text = _read_text(cand) if cand.exists() else None
+        runs = by_script.get(name, [])
+        steps = sorted({r["step"] for r in runs if r["step"]})
+
+        row: dict[str, Any] = {
+            "script": name,
+            "file_state": "ok" if text else ("empty" if cand.exists() else "missing"),
+            "n_runs": len(runs),
+            "n_steps": len(steps),
+            "steps": ",".join(steps[:12]) + (" …" if len(steps) > 12 else ""),
+        }
+        if not text:
+            for k in DETERMINISM_CHECKS:
+                row[k] = None
+            row["seed_setup_via"] = None
+            row["uses_cuda"] = None
+            row["num_workers"] = None
+            row["shuffle"] = None
+            row["uses_dataloader"] = None
+            row["shuffle_via_random_shuffle"] = None
+            row["pythonhashseed_effective"] = None
+            row["explicitly_disables_determinism"] = None
+            row["missing_required"] = ""
+            row["can_be_deterministic"] = None
+            rows.append(row)
+            continue
+
+        row["uses_cuda"] = bool(re.search(r'device\s*\(\s*["\']cuda|\.cuda\(\)|to\(\s*["\']cuda', text))
+        for k, pat in DETERMINISM_CHECKS.items():
+            row[k] = bool(re.search(pat, text))
+
+        # 委譲を 1 段だけ追う。ヘルパを呼んでいればその設定内容を合成する。
+        via = []
+        for fn, helper_path in SEED_HELPERS.items():
+            if not re.search(rf"\b{re.escape(fn)}\s*\(", text):
+                continue
+            helper = _read_text(REPO_ROOT / helper_path)
+            if not helper:
+                continue
+            via.append(fn)
+            for k, pat in DETERMINISM_CHECKS.items():
+                if re.search(pat, helper):
+                    row[k] = True
+        # Hydra entrypoint は自分では乱数を触らず trainer に委譲する。
+        # 呼び出し元の行だけを見ると「設定ゼロ」に見えるので明示する。
+        if re.search(r"_select_trainer|StageATrainer|PhaseTrainer|MMDetTrainer", text):
+            via.append("delegates_to_engines")
+        row["seed_setup_via"] = (
+            "+".join(via) if via else ("direct" if row["torch_manual_seed"] else "none")
+        )
+        row["num_workers"] = ",".join(sorted(set(_NUM_WORKERS_RE.findall(text)))) or ""
+        row["shuffle"] = ",".join(sorted(set(_SHUFFLE_RE.findall(text)))) or ""
+        row["uses_dataloader"] = bool(re.search(r"\bDataLoader\s*\(", text))
+        row["shuffle_via_random_shuffle"] = bool(re.search(r"random\.shuffle\s*\(", text))
+        # os.environ への代入は起動後なので効かない。シェル側の export だけが有効。
+        row["pythonhashseed_effective"] = bool(
+            re.search(r"export\s+PYTHONHASHSEED|PYTHONHASHSEED=\S+\s+(?:python|accelerate)", text)
+        )
+        row["explicitly_disables_determinism"] = bool(
+            re.search(r"deterministic\s*=\s*False", text)
+        )
+        missing = [k for k in DETERMINISM_REQUIRED if not row[k]]
+        row["missing_required"] = ",".join(missing)
+        # uses_cuda の正規表現検出は取りこぼしうる（委譲先で .to(device) する等）。
+        # 「CUDA を使わないから GPU 制御は不要」と判定すると偽の OK を出すので、
+        # 必須項目が 1 つでも欠けていれば決定的になり得ないとする（保守側）。
+        row["can_be_deterministic"] = not missing
+        rows.append(row)
+    return DETERMINISM_COLUMNS, rows
+
+
+# --------------------------------------------------------------------------- #
+# §2 within-seed と between-seed のばらつきの比較
+#
+# 「3-seed の σ」が seed 効果を測っているという前提が成り立つのは
+# within < between のときだけである。逆転していれば σ は
+# 「同一条件の再実行のばらつき」を主に測っている。
+# --------------------------------------------------------------------------- #
+WITHIN_BETWEEN_COLUMNS = [
+    "experiment_id",
+    "group",
+    "step",
+    "metric",
+    "n_runs",
+    "n_seeds",
+    "n_seeds_with_repeats",
+    "within_seed_sd",
+    "between_seed_sd",
+    "ratio_within_over_between",
+    "within_exceeds_between",
+    "within_seed_range_max",
+    "between_seed_range",
+    # ★ 交絡の指標。>1 なら同一 experiment_id に異なる条件の run が混ざっており、
+    #   within-seed のばらつきは「非決定性」ではなく「条件差」を測っている。
+    "n_command_variants",
+    "within_is_confounded_by_condition",
+]
+
+
+def build_within_vs_between(
+    records: list[dict[str, Any]],
+) -> tuple[list[str], list[dict[str, Any]]]:
+    """同一 seed の反復がある実験について within / between のσを比べる。
+
+    within_seed_sd  … seed ごとの母集団σを、反復がある seed について平均したもの
+    between_seed_sd … seed 平均どうしの母集団σ
+    比が 1 を超える = σ が seed 効果ではなく非決定性を主に測っている。
+    """
+    by_exp: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for r in records:
+        if r.get("experiment_id"):
+            by_exp[r["experiment_id"]].append(r)
+
+    rows = []
+    for eid in sorted(by_exp):
+        rs = by_exp[eid]
+        seeds = Counter(r["seed"] for r in rs if r["seed"] is not None)
+        if not seeds or max(seeds.values()) < 2:
+            continue  # 反復が無ければ within は定義できない
+        metric_names = sorted(
+            {k for r in rs for k, v in r["metrics"].items() if _is_number(v)}
+        )
+        n_variants = len({_command_signature(r.get("command"), r.get("seed")) for r in rs})
+        for m in metric_names:
+            per_seed: dict[int, list[float]] = defaultdict(list)
+            for r in rs:
+                v = r["metrics"].get(m)
+                if _is_number(v) and r["seed"] is not None:
+                    per_seed[r["seed"]].append(v)
+            reps = {s: v for s, v in per_seed.items() if len(v) > 1}
+            means = [statistics.mean(v) for v in per_seed.values() if v]
+            if not reps or len(means) < 2:
+                continue
+            within = statistics.mean(statistics.pstdev(v) for v in reps.values())
+            between = statistics.pstdev(means)
+            rows.append(
+                {
+                    "experiment_id": eid,
+                    "group": rs[0]["group"],
+                    "step": rs[0]["step"],
+                    "metric": m,
+                    "n_runs": len(rs),
+                    "n_seeds": len(per_seed),
+                    "n_seeds_with_repeats": len(reps),
+                    "within_seed_sd": within,
+                    "between_seed_sd": between,
+                    "ratio_within_over_between": (within / between) if between else None,
+                    "within_exceeds_between": bool(between and within > between),
+                    "within_seed_range_max": max(max(v) - min(v) for v in reps.values()),
+                    "between_seed_range": max(means) - min(means),
+                    "n_command_variants": n_variants,
+                    "within_is_confounded_by_condition": n_variants > 1,
+                }
+            )
+    return WITHIN_BETWEEN_COLUMNS, rows
+
+
+PAIRED_FEASIBILITY_COLUMNS = [
+    "experiment_id",
+    "control_of",
+    "paired_declared",
+    "pairable_now",
+    "blocking_reason",
+    "pairable_after_dedup",
+    "dedup_rule",
+    "n_runs_injection",
+    "n_seeds_injection",
+    "seeds_injection",
+    "runs_per_seed_max_injection",
+    "n_runs_control",
+    "n_seeds_control",
+    "seeds_control",
+    "runs_per_seed_max_control",
+    "seed_set_match",
+    "n_seeds_common",
+    "n_seeds_paired_now",
+    "seeds_only_in_injection",
+    "seeds_only_in_control",
+    "n_runs_injection_pairable",
+]
+
+# notes.md / config.yaml が paired-σ 判定を宣言しているか
+PAIRED_DECLARED_RE = re.compile(r"paired[-\s]?(?:σ|sigma)|対seed差")
+
+
+def build_paired_feasibility(
+    records: list[dict[str, Any]],
+) -> tuple[list[str], list[dict[str, Any]]]:
+    """paired-σ が計算できるか / できないなら何が阻んでいるかを全件出力する。
+
+    notes.md は「3-seed 揃ったら paired-σ(対seed差) で §10.1 判定」と宣言するが、
+    実際に seed 対応が取れる実験はごく少数である。宣言と実行可能性の差を
+    実験ごとに機械可読な形で残す（§10.1 の結論に影響しうるため）。
+
+    `pairable_after_dedup` は「seed ごとに代表 1 本を選ぶ規約」を入れた場合に
+    paired 可能になるかを示す。代表の選び方は
+    src/egosurgery/utils/transfer_delta_report.py が seq 最大（最新の再実行）を
+    採っているので、それに倣った場合を計算する。**この規約は s4 系には
+    明文化されていない**ため、あくまで「入れれば可能になる」の試算である。
+    """
+    by_exp: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for r in records:
+        if r.get("experiment_id"):
+            by_exp[r["experiment_id"]].append(r)
+
+    rows = []
+    for eid in sorted(by_exp):
+        rs = by_exp[eid]
+        controls = sorted({r["control_of"] for r in rs if r.get("control_of")})
+        if len(controls) != 1:
+            continue
+        ctrl = controls[0]
+        crs = by_exp.get(ctrl)
+        declared = any(
+            PAIRED_DECLARED_RE.search(
+                (r.get("notes") or "") + json.dumps(r.get("delta_declaration") or {}, ensure_ascii=False)
+            )
+            for r in rs
+        )
+        base = {
+            "experiment_id": eid,
+            "control_of": ctrl,
+            "paired_declared": declared,
+            "n_runs_injection": len(rs),
+        }
+        if not crs:
+            rows.append(
+                {
+                    **base,
+                    "pairable_now": False,
+                    "blocking_reason": "control_experiment_not_in_index",
+                    "pairable_after_dedup": False,
+                    "dedup_rule": "",
+                    "n_runs_injection_pairable": 0,
+                }
+            )
+            continue
+
+        ia = Counter(r["seed"] for r in rs if r["seed"] is not None)
+        ib = Counter(r["seed"] for r in crs if r["seed"] is not None)
+        imax = max(ia.values()) if ia else 0
+        cmax = max(ib.values()) if ib else 0
+        match = set(ia) == set(ib)
+        # paired は共通 seed（積集合）で取る。両側とも 1 本ずつある seed の数。
+        common = set(ia) & set(ib)
+        usable = {s for s in common if ia[s] == 1 and ib[s] == 1}
+
+        if not ia or not ib:
+            reason = "seed_missing"
+        elif not common:
+            reason = "no_common_seed"
+        elif len(usable) >= 2:
+            reason = ""
+        elif cmax > 1 and imax > 1:
+            reason = "both_multi_run_per_seed"
+        elif cmax > 1:
+            reason = "control_multi_run_per_seed"
+        elif imax > 1:
+            reason = "injection_multi_run_per_seed"
+        else:
+            reason = "too_few_common_seeds"
+
+        # seed ごとに 1 本へ畳んだ場合、共通 seed が 2 つ以上あれば paired になる
+        after = len(common) >= 2
+        rows.append(
+            {
+                **base,
+                "pairable_now": reason == "",
+                "blocking_reason": reason,
+                "pairable_after_dedup": after,
+                "dedup_rule": "one_run_per_seed_by_max_seq" if after and reason else "",
+                "n_seeds_injection": len(ia),
+                "seeds_injection": ",".join(str(s) for s in sorted(ia)),
+                "runs_per_seed_max_injection": imax,
+                "n_runs_control": len(crs),
+                "n_seeds_control": len(ib),
+                "seeds_control": ",".join(str(s) for s in sorted(ib)),
+                "runs_per_seed_max_control": cmax,
+                "seed_set_match": match,
+                "n_seeds_common": len(common),
+                "n_seeds_paired_now": len(usable),
+                "seeds_only_in_injection": ",".join(str(s) for s in sorted(set(ia) - set(ib))),
+                "seeds_only_in_control": ",".join(str(s) for s in sorted(set(ib) - set(ia))),
+                # 畳めば対応が付く注入側 run の本数（対照に同じ seed があるもの）
+                "n_runs_injection_pairable": sum(n for s, n in ia.items() if s in ib),
+            }
+        )
+    return PAIRED_FEASIBILITY_COLUMNS, rows
+
+
+PER_CLASS_COLUMNS = [
+    "ledger_key",
+    "group",
+    "step",
+    "seed",
+    "split",
+    "host",
+    "excluded",
+    "per_class_kind",
+    "per_class_metric",
+    "class_name",
+    "value",
+    "is_nan",
+]
+
+
+def build_per_class_long(records: list[dict[str, Any]]) -> tuple[list[str], list[dict[str, Any]]]:
+    """per_class を long 形式（1 行 = 1 run × 1 クラス）に展開する。
+
+    per-class の値は runs/*.json にしか無く、index.csv には件数しか出ていない。
+    横断分析のたびに 573 ファイルを開くのは実務上使えないため、1 ファイルで配布する。
+
+    ★ tool (AP, 15 クラス) と phase (F1, 9 クラス) は **絶対に混ぜて集計しない**。
+      同一ファイルに入れるが per_class_kind / per_class_metric で必ず分離できる。
+
+    NaN は空欄にして標準 CSV として妥当にし、「元が NaN だった」という情報は
+    is_nan 列に保持する（GT 不在クラスの意味を失わないため）。
+    """
+    rows = []
+    for r in sorted(records, key=lambda x: x["ledger_key"]):
+        pc = r.get("per_class")
+        if not pc:
+            continue
+        nan_set = set(r.get("per_class_nan_classes") or [])
+        for cls in sorted(pc):
+            rows.append(
+                {
+                    "ledger_key": r["ledger_key"],
+                    "group": r["group"],
+                    "step": r["step"],
+                    "seed": r["seed"],
+                    "split": r["split"],
+                    "host": r["host"],
+                    "excluded": r["excluded"],
+                    "per_class_kind": r["per_class_kind"],
+                    "per_class_metric": r["per_class_metric"],
+                    "class_name": cls,
+                    # _denan 済みなので NaN は None。CSV では空欄になる。
+                    "value": pc[cls],
+                    "is_nan": cls in nan_set,
+                }
+            )
+    return PER_CLASS_COLUMNS, rows
+
+
+# --------------------------------------------------------------------------- #
+# 出力
+# --------------------------------------------------------------------------- #
+RUNINDEX_README = """# runindex/ — experiments/ から収穫した横断インデックス
+
+**これは派生物です。手で編集しないでください。**
+
+```bash
+make runindex      # runindex/ 全体をゼロから再生成する
+```
+
+生成元は `tools/harvest_runindex.py`。入力は `experiments/**` のみで、
+出力は入力が同じなら常に同じになります (冪等)。
+
+## ファイル
+
+| ファイル | 内容 |
+|---|---|
+| `index.csv` | 1 行 = 1 **run** の横断インデックス。`runs/*.json` から導出 |
+| `per_class.csv` | 1 行 = 1 run × 1 クラス。per-class を long 形式で 1 ファイル化 |
+| `experiments.csv` | 1 行 = 1 **実験**（seed 集約 + 対照 Δ + §10.1 判定）。論文 Table の 1 行に対応 |
+| `verdicts.csv` | 1 行 = 1 実験 × 1 指標 の §10.1 判定（母集団σ / 標本σ の両方） |
+| `runs/<ledger_key>.json` | 正規化済みの run 記録 |
+| `host_aliases.json` | host 正規化の対応表 |
+| `metric_aliases.json` | 指標名の表記ゆれ統合表 |
+| `anomalies.md` | 規約から外れたもの・判断を保留したものの一覧 (人間が読む) |
+| `anomalies/val_test_pairs.csv` | test 評価を持つ run の val/test 対応表 (縦持ち) |
+| `anomalies/paired_feasibility.csv` | paired-σ の宣言と実行可能性の差 (1 行 = 1 実験) |
+| `anomalies/dedup_sensitivity.csv` | seed 代表値の取り方 (mean/latest/first) で判定が動くかの感度分析 |
+| `anomalies/determinism_audit.csv` | 学習スクリプトの決定性制御の棚卸し (1 行 = 1 スクリプト) |
+| `anomalies/within_vs_between_seed.csv` | 同一条件反復と seed 間のばらつきの比較 (1 行 = 1 実験 × 1 指標) |
+| `anomalies/backlog.md` | 本タスクの範囲外として起票した未着手事項 |
+
+## index.csv の列
+
+| 列 | 意味 |
+|---|---|
+| `metric.<name>` | **primary (= `split` 列が指す側。実質 val) の値** |
+| `metric_test.<name>` | **test 側の値**。別列なので既存列の意味は変わらない |
+| `has_test` | test 評価を持つか。`true` の run だけ `metric_test.*` が埋まる |
+| `metrics_primary_split` | `metric.*` が実際にどの split 由来か。`split` 列と一致する |
+| `experiment_id` | seed 集約の単位。`experiments.csv` と結合するキー |
+| `arm` / `control_of` | 注入か対照か / 対照とする実験 |
+| `frozen_source_tag` | 凍結特徴の抽出元。**run 名にも `command.sh` にも現れない条件軸** |
+
+`metric.*` だけを見ると test 評価の存在に気づけません。
+val と test は大きく乖離するため、下流解析では `has_test` で分岐してください。
+乖離の実測は `anomalies.md` §13.1 と `anomalies/val_test_pairs.csv` にあります。
+
+## per_class.csv（目的①: per-class の横断分析）
+
+`ledger_key` で `index.csv` と結合できます。単独でも分析できるよう
+`group` / `step` / `seed` / `split` / `host` / `excluded` を再掲しています。
+
+> **⚠️ `tool` と `phase` を混ぜて集計しないでください。**
+> `per_class_kind=tool` は術具 15 クラスの **AP**、
+> `per_class_kind=phase` は工程 9 クラスの **F1** です。指標の種類が違います。
+> 元ファイルはどちらも `per_class_ap.json` という名前なので、名前では判別できません。
+> 必ず `per_class_kind` / `per_class_metric` で分離してください。
+
+`value` が空欄の行は元が `NaN`（`is_nan=true`）。術具側の `NaN` は
+**val split に GT が 1 件も無いクラス**であり 0 ではありません。
+
+## experiments.csv（目的②: 機構・条件の横断比較と回帰）
+
+1 行 = 1 実験 = seed をまたいで束ねた 1 条件。
+
+| 列 | 意味 |
+|---|---|
+| `n_runs` / `n_seeds` / `seeds` | 集約した run 数・seed 数・seed 一覧 |
+| `runs_per_seed_max` | 同一 seed の run 数の最大。**> 1 は再実行か条件混在の徴候** |
+| `n_command_variants` | `command.sh` 引数の種類数。**> 1 なら条件が混在している** |
+| `hosts` | 使われた host。**複数なら交絡の可能性がある** |
+| `<metric>_mean` / `_min` / `_max` / `_n` | seed 集約 |
+| `<metric>_pstd` / `<metric>_sstd` | **母集団σ (ddof=0) / 標本σ (ddof=1)** |
+| `arm` / `control_of` | 注入 / 対照。`control_of` は対照実験の `experiment_id` |
+| `delta_<metric>` | Δ = 注入 − 対照。`control_of` が確定した実験のみ |
+| `delta_pstd_<metric>` / `delta_sstd_<metric>` | Δ の σ（母集団 / 標本） |
+| `abs_delta_over_sigma_<metric>` | **\\|Δ\\| / `delta_pstd_<metric>`**（母集団σ基準） |
+| `delta_method` | `paired` か `unpaired` か。**混同してはいけません** |
+| `delta_sigma_source` | `paired` / `unpaired_pooled` |
+| `control_note_value` | `notes.md` に引用されている基準値（実測との突き合わせ用） |
+
+### σ の読み方（必読）
+
+`delta_method` によって σ の意味が変わります。
+
+| `delta_sigma_source` | σ の定義 |
+|---|---|
+| `paired` | seed ごとの差の σ。seed で対応が付く分の変動が相殺される |
+| `unpaired_pooled` | √(σ_注入² + σ_対照²)。**paired-σ より大きく出る保守的な推定** |
+
+したがって **`unpaired_pooled` で σ 条件を満たせば `paired` でも満たします**（逆は言えません）。
+
+> ### ⚠️ σ は「seed 間のばらつき」ではありません
+>
+> **σ は「同一条件の反復のばらつき」と「seed を変えたときのばらつき」を
+> 合成したもの**です。学習が決定的でないため、同じ設定で回し直すだけで
+> 結果が変わります（`anomalies.md` §25 / §26）。
+>
+> `sigma_interpretation` 列で判別してください。
+>
+> | 値 | 意味 |
+> |---|---|
+> | `seed_effect` | 同一条件反復のばらつき < seed 間のばらつき。σ は概ね seed 効果 |
+> | `mixed_with_nondeterminism` | **逆転している。σ は主に非決定性を測っている** |
+> | `unknown` | 反復が無く判定できない |
+>
+> 実測では `control_of` を持つ 136 実験のうち **123 が `mixed_with_nondeterminism`** です。
+
+現状 **136 実験中 134 が `unpaired_pooled`** です。対照実験に同一 seed の
+再実行が畳まれずに残っているためで、詳細と全件は
+`anomalies.md` §22 と `anomalies/paired_feasibility.csv` にあります。
+
+母集団σと標本σは n=3 で √(3/2)=1.2247 倍違いますが、**実データでは
+1σ / 2σ 基準の判定は 1 件も変わりません**（§21.1）。判定に標本σを使いたい場合は
+`delta_sstd_<metric>` で割り直してください。
+
+## 注意
+
+- `runs/*.json` のファイル名は `run_id` (ディレクトリ名) ではなく
+  `ledger_key` (experiments/ からの相対パス由来) です。
+  ディレクトリ名は 6 種が 3 箇所ずつ衝突するためです。
+- `split` は次の順で確定します。**推測値は入れません。**
+  1. 指標キーの形式 (`val/…` / `test_…` / `phase_…` + 学習スクリプトのコード)
+  2. `command.sh` / `config.yaml` / `eval_recipe.eval_split`
+  3. 正本 M2研究計画 §16.7 の既定 (`metrics.json` は全て val)
+  由来は `provenance.split` に入ります。指標が 1 つも無い run は `null` です。
+- 元データの `NaN` は標準 JSON として不正なため `null` に変換しています。
+  どのクラスが `NaN` だったかは `per_class_nan_classes` に保持しています。
+- `per_class_ap.json` は名前に反して **中身が F1 の群が 500 run** あります。
+  必ず `per_class_metric` 列 (`AP` / `F1` / `unknown`) で判別してください。
+"""
+
+BACKLOG = """# backlog — 本タスクの範囲外として起票した未着手事項
+
+**これは派生物です。手で編集しないでください**（`tools/harvest_runindex.py` が生成）。
+
+指示書 #02 §0「明示的にやらないこと」に該当するため、着手せず記録だけしたもの。
+いずれも価値はあるが**監査・整備であって分析可能性を上げない**ため、
+分析基盤（`index.csv` / `per_class.csv` / `experiments.csv`）の完成を優先した。
+
+| # | 事項 | 分かっていること | 着手の前提 |
+|---|---|---|---|
+| B-1 | 573 run の `git_commit.txt` 実在性の全件検査 | `t1b_phasefilm_{001,002}` は記録された commit `a697d90` に `scripts/postprocess_t1b.py` が存在せず、**記録された commit では再現できない**ことが確認済み。他 571 run は未検査 | 全件 `git cat-file` する走査を書く。`experiments/` は読み取りのみ |
+| B-2 | `b2b_rescore_alpha{0.5,1.0,2.0}` の entrypoint 特定 | `verify_no_dummy_metrics.py` の死角スキャンが新規に検出。`command.sh` に python 呼び出しが無く、どのコードが mAP を書いたか不明 | 3 run の `command.sh` / `notes.md` / ログを個別に読む |
+| B-3 | Notion 実験Run台帳との run_id 単位の突合 | 母数が 616 か 739 か未確定（§14）。データソース重複・フィルタ付きビュー・DB 重複はいずれも排除済み。`Status='failed'` が 0 件であることは母数に依らず確定 | Notion のクエリ利用上限の解除、または `.env` の `NOTION_API_KEY` 使用の承認 |
+| B-4 | dummy Trainer の除去 | `src/egosurgery/engines/trainer.py` が乱数で per-class AP を生成し `mAP` として書く。混入は現時点 0 件と検証済みだが**コードは残っている**（§11） | 学習コードの変更にあたるため、本タスクでは触れない |
+| B-5 | `experiments/README.md` の更新 | 規定は 17 種の step 識別子だが実データには 156 種ある（§12）。観測された family は b1 / b2a / b2b / t1a / t1b / taux / haux / hires | README は規約側の文書であり、実データに合わせて書き換えるかは方針判断 |
+| B-6 | 非標準群の adapter | `analysis` / `detector_improve` / `audit` / `ablations` / `final` / `g2_main_*` は `metrics.json` を持たず収穫できない（§9）。取りこぼした run は 0 件（そもそも run 構造ではない） | 群ごとにファイル形式が違うため個別の読み取りが要る |
+| B-7 | `ledger_key` フィールド名の改名 | `ledger/` → `runindex/` の改名後も、フィールド名 `ledger_key` は 573 個の JSON と `index.csv` 第 1 列に残っている | スキーマ変更になるため利用側の合意が要る |
+| B-8 | `b2a_ro_oracle_noise000` の名前と実態の食い違い | 名前は noise 0.00 を示すが `--tool-noise-rate` は 0.05/0.10/0.20/0.30 の 4 通り（§7.3）。原因は `scripts/run_b2a_ro_oracle_noise_sweep.sh` のタグ生成が `bc` に依存しており、`bc` 不在時に全水準が `000` に潰れること。実測 accuracy も 0.9549 / 0.9435 / 0.9023 / 0.8106 と水準に応じて単調減衰しており、4 水準であることを独立に裏付ける | ディレクトリ名の改名は `experiments/` の変更にあたるため不可。正本側での扱いを決める必要がある |
+| B-9 | σ の規約統一（**判断: 保留**） | `S4 base` が母集団σ `±0.0028` と標本σ `±0.0034` の 2 通りで引用されている（§18.2）。**利用者の判断で「両方出し続ける」ことになった**（2026-08-01）。`experiments.csv` は `verdict_10_1`（母集団σ）と `verdict_10_1_sstd`（標本σ）を並べ、食い違いを `verdict_10_1_agree=False` で検出する。実測では主指標で 1 件、全指標で 4 件のみ食い違う | **論文に数値を出す段階で必ず決める。**それまでは両方を保持する |
+| B-10 | **paired-σ を可能にする「seed ごとの代表 run」規約** | 実測（§22）: `control_of` が確定した 136 実験の**全て**が paired-σ 判定を宣言しているが、実際に計算できるのは **2 実験**。阻害原因は `control_multi_run_per_seed` 119 / `seed_set_differs` 9 / 両方 4 / `both_multi_run_per_seed` 2。**seed ごとに代表 1 本を選ぶ規約を 1 つ足せば 125 実験で計算可能になる**（残り 11 は seed 集合が違うため不可）。注入側 439 run のうち 427 run は対照に同一 seed が存在する | 代表の選び方を決める（`transfer_delta_report.py` は seq 最大＝最新の再実行を採る実装がある）。決まれば harvester 側は機械的に適用できる |
+| B-16 | seed 789 / 1000 の非対称な拡張 | 全 615 run 中 12 run だけが seed 789/1000 を持ち、その 12 件すべてが `scripts/run_l3_seed5_extension.sh`（「3-seed→5-seed 化、paired-σ 強化」）の産物。同スクリプトは**注入側 6 variant のみを拡張し対照 (S4 baseline) を呼んでいない**ため片側だけ 5-seed になった。paired は共通 seed で取るので計算自体は成立する | 対照側も 5-seed 化するか、789/1000 を解析から外すかの判断 |
+| B-17 | `t1a_regiontraj` 系 3 実験の分母 | `config.yaml` は分母を `t1a_regiontoken base (同env efros paired)` と宣言しているが、`t1a_base_env`（efros・seeds 42/123/456・1 run/seed、config は `server_name` 以外一致）へ付け替えると追加計算なしで完全な paired になるという指摘がある | 分母の付け替えは研究上の判断。`config.yaml` の宣言に反するため harvester では変更しない |
+| B-18 | σ 規約の 2 系統併存 | `pstdev` 系 48 箇所（§10.1 判定・レポート層）と `stdev`/`ddof=1` 系 16 箇所（`scripts/analysis/*` の解析・監査層）が併存（§21.2）。**Δ の規約を監査する `delta_convention_audit.py` 自身が判定側と違うσを使っている** | 正本 §10.1 でσを定義したうえで、どちらかに寄せる |
+| ~~B-19~~ | ~~空の Δ scaffold~~ | **解決済み**。`scripts/compute_delta.py` / `scripts/export_paper_tables.py` / `tools/generate_delta_report.py` は 3 つとも 0 バイトで scaffold コミット `af1fc58` 以来未実装だったため削除し、`make delta` / `make tables` を `runindex/` への案内に置き換えた（利用者の判断による） | — |
+| B-20 | 🔴 **学習の非決定性が制御されていない（棚卸し完了）** | 同一 commit・同一 config・同一コマンド・同一 host の再実行が再現しない（`s4_phase_baseline_015` vs `_017` で macro_f1 が 0.7406 vs 0.6572）。**欠陥は 1 スクリプト固有ではなく体系的**で、CUDA を使う 13 本のうち `cuda_manual_seed` / `use_deterministic_algorithms` / `cudnn_deterministic` / `worker_init_fn` / `PYTHONHASHSEED` を設定している本は **0 本**（§26.1）。影響 run は 500。`control_of` を持つ 136 実験のうち **123 の σ が `mixed_with_nondeterminism`**（§26.4） | 学習コードの変更 + 再実行にあたるため本タスクでは触れない。**これを直さない限り paired-σ は seed 効果を測れない**。GPU 時間の判断が要る |
+| B-21 | 「全 seed 同符号」条件の定義（**判断: 保留**） | dedup 後は「seed 平均どうしの符号が揃うか」を見ている（§27）。**利用者の判断で定義変更は保留**（2026-08-01）。理由は「σ の 123/136 が `mixed_with_nondeterminism` である以上、どの定義を採っても σ が汚染されているため、条件の定義より **B-20 の非決定性の解消が先**」。実測（accuracy / 134 実験）: 現状の seed 平均基準 125、全 run 組合せの厳格基準 124、符号一致率 100% は 124 | **B-20 の解消後に定義を決める。**それまで `delta_same_sign_<metric>`（seed 平均ベース）と `delta_n_seeds_<metric>` を出し続ける |
+| B-22 | `engines/` の空 scaffold | `hooks.py` / `stage_b_trainer.py` / `stage_c_trainer.py` / `stage_d_trainer.py` / `validator.py` が 0 バイト（§26.2）。B-19 で削除した Δ scaffold と同じパターン | 使う予定が無ければ削除、あるなら実装 |
+| B-23 | `train_net_egosurgery.py` が repo に無い | 3 run がこれを entrypoint にしているが実体が無い（`third_party/` は同期対象外）。`tools/train.py` も同様に 1 run（§26.2） | これらの run の決定性は確認できない。detectron2/detrex 側の配置を記録するか、run を除外対象にするか |
+| B-11 | `logs/phase3seed_results.tsv` の欠落 | `scripts/paired_sigma_3seed.py` はこの TSV の `arm` 列（frozen / augstrong）を読んで paired-σ を出す設計だが、ファイルが repo に存在しない（`.gitignore` 対象）。arm 情報自体は `config.yaml` の `frozen_source.*` に残っており `frozen_source_tag` として収穫済み | TSV の復元、または `paired_sigma_3seed.py` を `runindex` 由来に切り替える |
+| B-12 | 573 run の外側にある inj/ctrl ペア | `transfer/*_efros/` と `experiments/transfer/{hc,oracle_phase}_seed*/` に `injected_result.json` / `control_result.json` の対が 18 組あるが、`metrics.json` を持たないため収穫対象外。真の注入/対照ペアはここにある | 非標準群の adapter（B-6）と同じ作業 |
+| B-13 | 同一条件が別 `experiment_id` に分裂する組 | `description` / `split` / `frozen_source_tag` が同じで `step` だけ違う組がある（§17.2）。多くは `eval_recipe_id` による意図的分離 | 起動経路が同一かの判断が要るため harvester では決めない |
+| B-14 | `notes.md` の凍結源記載が虚偽 | `s4_phase_baseline` の 55 件すべてが「凍結源: Relation-DETR seed42」と書くが、実際の `frozen_source.cache_dir` が違う run が 38 件（うち 24 件は seed 123/456）。`scripts/train_s4_tecno.py` の固定 f-string に由来。`config.yaml` の `frozen_source.seed` も 42 ハードコード | 学習コードの変更にあたるため本タスクでは触れない。過去の `notes.md` は `experiments/` 配下なので修正不可 |
+| B-15 | g2_* 群に対照宣言が無い | 42 run が `config.yaml` を持たないため `control_of` を確定できない（§20）。`metrics.json` の `system` フィールド（base / bboxROI / shuffleROI）が arm を表す可能性はあるが、対照関係の明示ではない | 実験設計の意図を確認したうえで、`system` を arm として採用してよいか決める |
+"""
+
+METRIC_ALIASES = {
+    "_comment": (
+        "指標キーの表記ゆれ統合表。Step 1 の実測 (573 run) に基づく。"
+        "canonical は split 接頭辞を剥がした後の名前。"
+    ),
+    "slash_split_prefixes": {
+        "_comment": "スラッシュ形式は split を表す。例: val/mAP -> split=val, canonical=mAP",
+        "observed": ["val"],
+    },
+    "underscore_split_prefixes": {
+        "_comment": (
+            "アンダースコア形式で split を表す接頭辞。"
+            "test_accuracy -> split=test, canonical=accuracy"
+        ),
+        "observed": sorted(UNDERSCORE_SPLIT_PREFIXES),
+    },
+    "task_prefixes_not_split": {
+        "_comment": (
+            "★ split ではなくタスク名。phase_accuracy の phase を split と誤認しないこと。"
+            "根拠: phase_accuracy と test_accuracy が同一 run に 27 件共存する。"
+        ),
+        "observed": ["phase"],
+    },
+    "phase_metric_bases": sorted(PHASE_METRIC_BASES),
+    "sticky_variants": {
+        "_comment": "sticky_<metric> / sticky_test_<metric> / <metric>_sticky は sticky_<canonical> に統合",
+        "forms": ["sticky_<metric>", "sticky_test_<metric>", "<metric>_sticky"],
+    },
+    "bare_key_policy": {
+        "_comment": (
+            "prefix 無しキー (例: mAP) は、prefix 付き (val/mAP) と値が一致すれば重複として"
+            "捨てる。一致しなければ <canonical>__bare として両方保持し anomalies.md に記録する。"
+        )
+    },
+}
+
+
+def write_runindex(records: list[dict[str, Any]], anomalies: str) -> None:
+    runs_dir = RUNINDEX / "runs"
+    if RUNINDEX.exists():
+        shutil.rmtree(RUNINDEX)
+    runs_dir.mkdir(parents=True)
+
+    for r in records:
+        out = runs_dir / f"{r['ledger_key']}.json"
+        out.write_text(
+            json.dumps(r, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False) + "\n",
+            encoding="utf-8",
+        )
+
+    # Stage 2: runs/*.json を読み直して index を作る (二段構え)
+    reloaded = [
+        json.loads(p.read_text(encoding="utf-8")) for p in sorted(runs_dir.glob("*.json"))
+    ]
+    header, rows = build_index(reloaded)
+    with (RUNINDEX / "index.csv").open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=header, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(rows)
+
+    # per-class を long 形式で 1 ファイルに配布する（目的①）
+    pch, pcr = build_per_class_long(reloaded)
+    with (RUNINDEX / "per_class.csv").open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=pch, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(pcr)
+
+    # 1 行 = 1 実験（seed 集約 + 対照 Δ）（目的②）
+    eh, er = build_experiments(reloaded)
+    with (RUNINDEX / "experiments.csv").open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=eh, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(er)
+
+    # 1 行 = 1 実験 × 1 指標 の §10.1 判定表
+    vh, vr = build_verdicts(er)
+    with (RUNINDEX / "verdicts.csv").open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=vh, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(vr)
+
+    # test 評価を持つ run の val/test 対応表（縦持ち）
+    anomalies_dir = RUNINDEX / "anomalies"
+    anomalies_dir.mkdir(exist_ok=True)
+    ph, pr = build_val_test_pairs(reloaded)
+    with (anomalies_dir / "val_test_pairs.csv").open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=ph, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(pr)
+
+    # paired-σ の実行可能性（宣言と実態の差）
+    fh_, fr = build_paired_feasibility(reloaded)
+    with (anomalies_dir / "paired_feasibility.csv").open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=fh_, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(fr)
+
+    # 学習スクリプトの決定性制御の棚卸し（§1）
+    ah, ar = build_determinism_audit(reloaded)
+    with (anomalies_dir / "determinism_audit.csv").open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=ah, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(ar)
+
+    # within-seed と between-seed のばらつきの比較（§2）
+    wh, wr = build_within_vs_between(reloaded)
+    with (anomalies_dir / "within_vs_between_seed.csv").open(
+        "w", encoding="utf-8", newline=""
+    ) as fh:
+        writer = csv.DictWriter(fh, fieldnames=wh, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(wr)
+
+    # 代表値の取り方で結論が動かないことの確認
+    dh, dr = build_dedup_sensitivity(reloaded)
+    with (anomalies_dir / "dedup_sensitivity.csv").open("w", encoding="utf-8", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=dh, lineterminator="\n")
+        writer.writeheader()
+        writer.writerows(dr)
+
+    (anomalies_dir / "backlog.md").write_text(BACKLOG, encoding="utf-8")
+
+    (RUNINDEX / "README.md").write_text(RUNINDEX_README, encoding="utf-8")
+    (RUNINDEX / "host_aliases.json").write_text(
+        json.dumps(HOST_ALIASES, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    (RUNINDEX / "metric_aliases.json").write_text(
+        json.dumps(METRIC_ALIASES, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    (RUNINDEX / "anomalies.md").write_text(anomalies, encoding="utf-8")
+
+
+# --------------------------------------------------------------------------- #
+# anomalies.md
+# --------------------------------------------------------------------------- #
+def build_anomalies(
+    records: list[dict[str, Any]],
+    nonstandard: list[tuple[str, int]],
+    recipe_splits: list[dict[str, Any]] | None = None,
+    pairing: dict[str, Any] | None = None,
+) -> str:
+    lines: list[str] = []
+    add = lines.append
+
+    add("# anomalies — 規約から外れたもの・判断を保留したもの")
+    add("")
+    add("`tools/harvest_runindex.py` が自動生成する。手で編集しない。")
+    add("")
+
+    add("## 1. 除外した run")
+    add("")
+    add("`experiments/README.md` に `_` 接頭辞が「解析対象外」を意味するという規約は")
+    add("**明文化されていない**。以下はディレクトリ名の意味からの判断であり、")
+    add("規約に基づくものではない。**除外規約の明文化を推奨する。**")
+    add("")
+    excl = [r for r in records if r["excluded"]]
+    by_reason: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for r in excl:
+        by_reason[r["exclusion_reason"]].append(r)
+    add(f"除外 {len(excl)} run / 全 {len(records)} run（削除ではなくフラグ）")
+    add("")
+    add("| exclusion_reason | runs | 対象 |")
+    add("|---|---:|---|")
+    for reason in sorted(by_reason):
+        rs = by_reason[reason]
+        paths = sorted({str(Path(r["path"]).parent) for r in rs})
+        add(f"| `{reason}` | {len(rs)} | {', '.join(f'`{p}`' for p in paths)} |")
+    add("")
+    add("### 1.1 `phase0/_failed_s3_weighted/` の 6 run — 運用上の欠陥")
+    add("")
+    add("**repo 上で失敗が確認できる唯一の run 群だが、Notion 実験Run台帳では")
+    add("`Status='failed'` が 616 行中 0 件。失敗が台帳に反映されない運用上の欠陥がある。**")
+    add("")
+    add("- 6 run とも `metrics.json` が空 `{}` で、学習が完走していない")
+    add("- うち 3 つ（`_004_partial` / `_005_partial` / `_006_partial`）は命名規約にも従わない")
+    add("- 成功 run だけが台帳に載る運用では、失敗率・試行回数・打ち切り理由を")
+    add("  後から復元できない。Δ の解釈（何回試して何回失敗したか）が検証不能になる")
+    add("- 対処案: `ExperimentManager` に失敗時の Status 書き込みを配線する、")
+    add("  または収穫時に `metrics.json` 空を failed として台帳へ補完投稿する")
+    add("")
+
+    add("## 2. split を確定できなかった run")
+    add("")
+    add("指標キーの接頭辞から split を確定できない run。**推測していない**。")
+    add("")
+    nosplit = [r for r in records if r["split"] is None]
+    add(f"確定不能 {len(nosplit)} run / 全 {len(records)} run")
+    add("")
+    prov = Counter(r["provenance"]["split"] for r in nosplit)
+    add("| split_provenance | runs |")
+    add("|---|---:|")
+    for k, v in prov.most_common():
+        add(f"| `{k}` | {v} |")
+    add("")
+    add("残るのは **`metrics.json` が空 `{}` の run** である。指標が 1 つも無いため")
+    add("「どの split で評価したか」が原理的に存在しない。正本 §16.7 の既定（§13）も")
+    add("指標を持つ run にのみ適用しており、これらには適用していない。")
+    add("")
+    if nosplit:
+        add("| path | excluded | exclusion_reason |")
+        add("|---|---|---|")
+        for r in sorted(nosplit, key=lambda x: x["path"]):
+            add(f"| `{r['path']}` | {r['excluded']} | `{r['exclusion_reason']}` |")
+        add("")
+
+    add("## 3. host を確定できなかった run")
+    add("")
+    nohost = [r for r in records if r["host"] is None]
+    add(f"確定不能 {len(nohost)} run")
+    add("")
+    add("| host_raw | runs | 理由 |")
+    add("|---|---:|---|")
+    hc = Counter(r["host_raw"] for r in nohost)
+    for k, v in sorted(hc.items(), key=lambda x: (-x[1], str(x[0]))):
+        if k is None:
+            why = "server.txt 欠損かつ eval_recipe.server_name 無し"
+        elif k == "aolab":
+            why = "philip / ilya の双方が返すコンテナ内 hostname のため一意に特定不能"
+        else:
+            why = "host_aliases.json に無い値"
+        add(f"| `{k}` | {v} | {why} |")
+    add("")
+
+    add("## 4. per_class_ap.json のクラス体系が 2 種類ある")
+    add("")
+    add("ファイル名は `per_class_ap.json` だが、中身は 2 つの異なる体系が混在する。")
+    add("**横断比較の際に混ぜてはならない。**")
+    add("")
+    add("**ファイル名が `per_class_ap.json` でありながら中身が F1 の群があるため、")
+    add("`per_class_kind` だけでなく `per_class_metric` を必ず参照すること。**")
+    add("`per_class_source` に読み取り元の相対パスを保持している。")
+    add("")
+    km = Counter((r["per_class_kind"], r["per_class_metric"]) for r in records)
+    add("| per_class_kind | per_class_metric | runs | 内容 | 根拠 |")
+    add("|---|---|---:|---|---|")
+    desc = {
+        ("tool", "AP"): (
+            "15 クラスの術具 AP",
+            "`per_class_coco_map` / `COCOeval.precision` 由来",
+        ),
+        ("phase", "F1"): (
+            "9 クラスの工程別 **F1**（AP ではない）",
+            "`scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が "
+            "`best.get(\"phase_per_class_f1\", {})` を `log_per_class_ap()` に渡している",
+        ),
+        ("unknown", "unknown"): ("既知の 2 体系のいずれとも一致しない", "確定不能"),
+        (None, None): ("`per_class_ap.json` が無い・空・パース失敗", "—"),
+    }
+    for k, v in sorted(km.items(), key=lambda x: (-x[1], str(x[0]))):
+        d, why = desc.get(k, ("", ""))
+        add(f"| `{k[0]}` | `{k[1]}` | {v} | {d} | {why} |")
+    add("")
+    unk = [r for r in records if r["per_class_metric"] == "unknown"]
+    add(f"### metric を確定できなかった run: {len(unk)}")
+    add("")
+    if unk:
+        for r in sorted(unk, key=lambda x: x["path"]):
+            n = len(r["per_class"] or {})
+            add(f"- `{r['path']}`（{n} クラス）")
+    else:
+        add("なし。")
+    add("")
+
+    add("## 5. NaN を含む run")
+    add("")
+    add("`NaN` は標準 JSON として不正なため出力では `null` に変換した。")
+    add("どのクラスが `NaN` だったかは `per_class_nan_classes` に保持している。")
+    add("")
+    add("### NaN の意味（コードとデータから確定済み）")
+    add("")
+    add("**「そのクラスがその評価 split の GT に存在せず、AP が定義できない」**")
+    add("")
+    add("根拠 3 点:")
+    add("")
+    add("1. `scripts/post_process_sensex_codino.py:97` が全クラスを `float('nan')` で初期化し、")
+    add("   mmdet のログ表に現れたクラスだけを上書きする。mmdet は COCO の precision が")
+    add("   `-1`（GT 無し）のとき `nan` を出力する。")
+    add("2. `data/annotations/egosurgery_tool/instances_val.json` を全数集計すると")
+    add("   **`Retractor` の GT が val split に 0 件**（train 2079 / val 0 / test 325）。")
+    add("3. NaN になるクラスの組が run 群と完全に対応する（下表）。split が壊れている")
+    add("   `_wrong_split_8_2_3` の run だけ NaN のクラスが違うことは、")
+    add("   「NaN = その split に GT が無い」以外では説明できない。")
+    add("")
+    nan_pat: dict[tuple[str, ...], list[str]] = defaultdict(list)
+    for r in records:
+        if r["per_class_nan_classes"]:
+            nan_pat[tuple(r["per_class_nan_classes"])].append(r["path"])
+    add("| NaN のクラス | runs | 該当群 |")
+    add("|---|---:|---|")
+    for k, v in sorted(nan_pat.items(), key=lambda x: -len(x[1])):
+        groups = sorted({str(Path(p).parent) for p in v})
+        add(f"| {', '.join(f'`{c}`' for c in k)} | {len(v)} | {', '.join(f'`{g}`' for g in groups)} |")
+    add("")
+    add("### 平均の取り方への含意")
+    add("")
+    add("`NaN` を 0 として平均すると mAP を過小評価する。`per_class_valid_count` を")
+    add("分母に使うこと（15 固定にしない）。")
+    add("")
+
+    add("## 6. 命名規約から外れた run")
+    add("")
+    odd = [r for r in records if r["step"] is None]
+    add(f"`<step>_<seq3>_<desc>_seed<N>` に一致しない run: {len(odd)}")
+    add("")
+    for r in sorted(odd, key=lambda x: x["path"]):
+        add(f"- `{r['path']}`")
+    add("")
+
+    add("## 7. ディレクトリ名の `det<N>` / `p<N>` トークン — 大半は seed ではない")
+    add("")
+    add("### 7.1 🔴 修正済みの誤読: `p010` は seed ではなくノイズ率")
+    add("")
+    add("以前の実装は `(det|p)(\\d+)` にマッチした数値を無条件に補助 seed として扱い、")
+    add("**81 run に `seed_phase` を付けていた。うち 72 件は誤り**である。")
+    add("")
+    add("一次証拠 (`command.sh` の実引数):")
+    add("")
+    add("```")
+    add("b2a_base_oracle_noise_p010_001_b2a_base_oracle_noise_p010_seed42/command.sh")
+    add("  python scripts/train_b2a.py --seed 42 --epochs 50 --tool-source oracle \\")
+    add("    --tool-noise-rate 0.10 --description-override b2a_base_oracle_noise_p010")
+    add("```")
+    add("")
+    add("`p010` は `--tool-noise-rate 0.10`、すなわち**ノイズ率 0.10** であって seed ではない。")
+    add("これを seed とみなすと、ノイズ水準という**条件**が反復軸に誤分類され、")
+    add("`experiment_id` から剥がされて noise 0.10 / 0.20 / 0.30 が 1 実験に混ざる。")
+    add("")
+    add("現在の判定は `command.sh` を一次証拠にする:")
+    add("")
+    add("| 条件 | 判定 | provenance |")
+    add("|---|---|---|")
+    add("| `--tool-noise-rate` を持つ | ノイズ率。seed ではない | `p_token_is_noise_rate_by_command_sh` |")
+    add("| `p<N>` == 末尾 `seed<N>` | 工程学習の seed (反復軸) | `p_token_equals_run_seed` |")
+    add("| どちらでもない | **確定不能。null にする** | `p_token_not_determinable` |")
+    add("| `det<N>` | 凍結検出器の指定 = **条件**。反復軸ではない | `det_token_is_backbone_condition` |")
+    add("")
+    add("ノイズ系を除いた 27 run すべてで `p<N> == seed` であることを実測で確認した。")
+    add("")
+    aux_prov = Counter(
+        r.get("aux_token_provenance") for r in records if r.get("aux_token_provenance")
+    )
+    add("### 7.2 現在の内訳")
+    add("")
+    add("| aux_token_provenance | run 数 |")
+    add("|---|---:|")
+    for k, n in sorted(aux_prov.items(), key=lambda x: -x[1]):
+        if k == "no_aux_token":
+            continue
+        add(f"| `{k}` | {n} |")
+    add("")
+    aux = [r for r in records if r["seed_detector"] is not None or r["seed_phase"] is not None]
+    add(f"`seed_detector` または `seed_phase` が実際に付いた run: **{len(aux)}**")
+    add("")
+    if aux:
+        add("| path | seed (末尾) | seed_detector | seed_phase |")
+        add("|---|---:|---:|---:|")
+        for r in sorted(aux, key=lambda x: x["path"])[:40]:
+            add(
+                f"| `{r['path']}` | {r['seed']} | "
+                f"{r['seed_detector'] if r['seed_detector'] is not None else '—'} | "
+                f"{r['seed_phase'] if r['seed_phase'] is not None else '—'} |"
+            )
+        if len(aux) > 40:
+            add(f"| … 他 {len(aux) - 40} 件 | | | |")
+    add("")
+    add("### 7.3 🔴 未解決: `noise000` という名前が実態と食い違う")
+    add("")
+    add("`b2a_ro_oracle_noise000` は名前が「ノイズ 0.00」を意味するように読めるが、")
+    add("12 run の `command.sh` が渡している `--tool-noise-rate` は実際には")
+    add("**0.05 / 0.10 / 0.20 / 0.30 の 4 通り**である。")
+    add("")
+    add("- 名前を信じて「ゼロノイズの対照」として使うと、**4 水準の混合**と比較することになる。")
+    add("- `description` が 1 つしか無いため、`experiment_id` はこの 12 run を 1 実験に束ねる。")
+    add("  `n_command_variants` 列が 4 になるので機械的には検出できるが、")
+    add("  **この実験の集約値 (mean / pstd) は 4 条件の混合であり、意味を持たない**。")
+    add("- 規約と実データのどちらを正とするかは harvester が決めることではないため、")
+    add("  ここに記録するに留める。ディレクトリ名の改名は `experiments/` の変更にあたる。")
+    add("")
+
+    add("## 8. prefix 無しキーと prefix 付きキーの値が食い違った run")
+    add("")
+    conf = [r for r in records if r["conflicting_bare_keys"]]
+    add(f"該当 {len(conf)} run（食い違いがあれば両方を保持している）")
+    add("")
+    for r in sorted(conf, key=lambda x: x["path"]):
+        add(f"- `{r['path']}`: `{json.dumps(r['conflicting_bare_keys'], ensure_ascii=False)}`")
+    add("")
+
+    add("## 9. 標準規約 (1 run 1 dir) に従わない群")
+    add("")
+    add("`metrics.json` を持たないため run として収穫していない。")
+    add("**取りこぼした run 数は 0**（これらの配下に `metrics.json` は 1 つも無い）。")
+    add("個別 adapter は次段階に回す。")
+    add("")
+    add("| group | ファイル数 | 中身の種別 | 術具 per-class 指標 |")
+    add("|---|---:|---|---|")
+    kindmap = {
+        "analysis": (
+            "EDA レポート / 図 (png) / CSV / JSON",
+            "**あり**: `detector_sanity/reldetr_seed42_val_perclass.json` "
+            "(COCO 形式 `AP`/`AP50`/`AP75`/`AP_s`/`AP_m` 等 13 キー)、"
+            "`signature_subset_detector_compare/results.json` (`per_class` キー)",
+        ),
+        "detector_improve": (
+            "`label_names.txt` / `val_perclass.json`",
+            "**あり**: `augstrong_seed42/val_perclass.json` (COCO 形式 13 キー)",
+        ),
+        "audit": (
+            "`audit_report.json` × 3",
+            "なし (`inject` / `trainable` / `n_trainable_params` 等の学習設定監査)",
+        ),
+        "g2_main_2026-07-29": (
+            "`csv/` `json/` `prereg/` `HANDOVER_lecun.md`",
+            "なし (`f_roi_stats_{val,test}.json` は ROI 統計)",
+        ),
+        "ablations": ("`.gitkeep` のみ", "未着手 scaffold"),
+        "final": ("`.gitkeep` のみ", "未着手 scaffold"),
+    }
+    for name, n in nonstandard:
+        kind, pc = kindmap.get(name, ("(未調査)", "(未調査)"))
+        add(f"| `{name}` | {n} | {kind} | {pc} |")
+    add("")
+    add("### 次段階への申し送り")
+    add("")
+    add("**現在 `per_class_metric=AP` の run は 62 しか無い。**")
+    add("上表の `val_perclass.json` 系は術具 per-class 指標を含むため、")
+    add("adapter を書けば貴重な追加ソースになる。")
+    add("")
+    add("また `analysis/step_c_coupling_analysis/*.json`（12 ファイル）は")
+    add("`model` / `seed` / **`split`** / `ckpt` / `phase` / `mAP` を持ち、")
+    add("**`split` を明示している**。split が確定できない run の補強材料になりうる。")
+    add("")
+
+    add("## 10. 警告が出た run の内訳")
+    add("")
+    wc: Counter[str] = Counter()
+    for r in records:
+        for w in r["harvest_warnings"]:
+            # 可変部分を落として集計する
+            key = re.sub(r"\{[^}]*\}", "{...}", w)
+            key = re.sub(r"'[^']*'", "'...'", key)
+            key = re.sub(r"seed\d+", "seed<N>", key)
+            key = re.sub(r": .*$", "", key) if key.startswith("run 名が") else key
+            wc[key] += 1
+    add("| 警告 | 件数 |")
+    add("|---|---:|")
+    for k, v in wc.most_common():
+        add(f"| {k} | {v} |")
+    add("")
+
+    add("## 11. 🔴 要対処: 乱数で per-class AP を生成するコードが残っている")
+    add("")
+    add("`src/egosurgery/engines/trainer.py:273-278`")
+    add("")
+    add("```python")
+    add("rng = np.random.default_rng(int(self.cfg.seed))")
+    add("per_class_ap = {")
+    add("    cls: round(float(rng.uniform(0.05, 0.85)), 4) for cls in TOOL_CLASSES")
+    add("}")
+    add("self.manager.log_per_class_ap(per_class_ap)")
+    add("```")
+    add("")
+    add("この dummy Trainer は **乱数を `mAP` として `metrics.json` に書く**。")
+    add("`CLAUDE.md` の「metrics / mAP 等の数値を絶対に捏造しない」に照らして危険。")
+    add("`cfg.experiment.step` が s0/s1/s2 以外のとき dummy Trainer が選ばれる。")
+    add("")
+    add("### 現時点の混入は 0 件（検証済み）")
+    add("")
+    add("`tools/verify_no_dummy_metrics.py` が 2 系統で検査する:")
+    add("")
+    add("1. **語彙照合** — dummy 側の `TOOL_CLASSES` は `Needle_Holders` / `Retractors` /")
+    add("   `Clip_Applier` / `Suction` / `Electrocautery` / `Needle` / `Thread` という")
+    add("   **別の語彙**を使う。実データ 2 体系のどちらとも一致しない。")
+    add("2. **値の再現照合** — 既知 seed で `np.random.default_rng(seed).uniform(0.05, 0.85)`")
+    add("   を再現し、`per_class_ap.json` と完全一致するものを探す。")
+    add("")
+    add("結果: **混入 0 件**。experiments/ の per-class 指標は全て実評価器由来。")
+    add("")
+    add("**このタスクではコードを変更していない。**")
+    add("dummy Trainer の削除またはガード追加は別タスクで検討すること。")
+    add("再検証: `python tools/verify_no_dummy_metrics.py`（`make runindex` に組込済）")
+    add("")
+    add("### 11.1 🔴 検査の死角 — mAP を持つが術具 per-class を持たない run")
+    add("")
+    add("上の 2 系統（語彙照合・値再現）は **`per_class_ap.json` に依存する**。")
+    add("mAP 系の指標を持つのに術具 per-class（15 クラス）を持たない run は、")
+    add("どちらの検査でも判定できない。**個別確認が要る対象**として列挙する。")
+    add("")
+    blind = [
+        r
+        for r in records
+        if r["per_class_metric"] != "AP"
+        and any("mAP" in k for k in (r["metrics"] or {}))
+    ]
+    add(f"該当 {len(blind)} run")
+    add("")
+    if blind:
+        add("| path | mAP 系のキー | entrypoint | commit |")
+        add("|---|---|---|---|")
+        for r in sorted(blind, key=lambda x: x["path"]):
+            mk = ", ".join(f"`{k}`" for k in sorted(k for k in r["metrics"] if "mAP" in k))
+            cmd = r["command"] or ""
+            m = re.search(r"(?:python3?|bash)\s+(\S+\.(?:py|sh))", cmd)
+            entry = f"`{m.group(1)}`" if m else "—"
+            commit = (r["commit"] or "")[:10] or "—"
+            add(f"| `{r['path']}` | {mk} | {entry} | `{commit}` |")
+        add("")
+    add("`tools/verify_no_dummy_metrics.py --strict` はこの死角が 1 件でもあれば")
+    add("異常終了する。`make runindex` は非 strict で実行し、警告として表示する。")
+    add("")
+    add("#### 11.1.1 `t1b_phasefilm_{001,002}` の個別確認結果")
+    add("")
+    add("3 つの独立した検証（コード経路 / 値の性質 / 証跡の整合）を、いずれも")
+    add("「実評価器由来である」という主張を**反証する**目的で実施した。")
+    add("**3/3 が反証に失敗し、`real_evaluator`（確信度 high）で一致した。**")
+    add("")
+    add("反証を退けた根拠:")
+    add("")
+    add("1. **到達不能性** — `command.sh` は `python scripts/postprocess_t1b.py`。")
+    add("   dummy Trainer は `src/egosurgery/train.py::_select_trainer` 経由でしか")
+    add("   選ばれず、それは `python -m egosurgery.train` でしか実行されない。")
+    add("2. **値域の外** — seed 0..100000 を全探索した結果、")
+    add("   `np.random.default_rng(s).uniform(0.05,0.85,15).mean()` の最大値は")
+    add("   **0.6907**（seed 98115）。**0.70 を超える seed は 1 つも存在しない**。")
+    add("   観測値 0.7292 / 0.7217 は生成器の到達可能範囲の外にある。")
+    add("   直接照合でも seed123 -> 0.45405 / seed456 -> 0.43498 で不一致。")
+    add("3. **精度の不整合** — dummy は各クラス AP を 4 桁、mAP を 6 桁に丸める")
+    add("   (`trainer.py:276,299`)。観測値は `0.7291778095772903` と float64 の全桁。")
+    add("4. **キー形状の不一致** — dummy が返すのは `val/loss` `val/accuracy`")
+    add("   `val/mAP` `mAP` のみ。観測されたのは `control_init_mAP` `delta_control`")
+    add("   `injection_effect` 等で、契約が異なる。")
+    add("5. **`epoch = -1`** — dummy は `for epoch in range(1, epochs+1)` なので")
+    add("   0 以下を出せない。-1 は「warm-start init が best」を表す番兵値。")
+    add("6. **ビットレベル再現** — `transfer/t1b_camt_all_seed456_efros/`")
+    add("   `injected_result.json` の `init_per_class_coco_map` を `np.nanmean` すると")
+    add("   **0.7216586914703580 と完全一致**。実 COCO per-class AP から再構成できる。")
+    add("   その per-class は EgoSurgery-Tool の 15 クラスで `Retractor = NaN`（GT 0 件）。")
+    add("")
+    add("**ただし証跡としては不完全である（3 レンズが独立に指摘）:**")
+    add("")
+    add("- 🔴 **一次成果物が消失** — `postprocess_t1b.py` が読む")
+    add("  `experiments/transfer/t1b_seed{123,456}/t1b_result.json` が存在せず、")
+    add("  commit もされていない。再現には元データが要る。")
+    add("- 🔴 **provenance の欠陥** — `git_commit.txt` は `a697d90` を記録するが、")
+    add("  **その commit に `scripts/postprocess_t1b.py` は存在しない**")
+    add("  (`git ls-tree -r a697d90 | grep t1b` が 0 件)。記録された commit では")
+    add("  この run を再現できない。")
+    add("- 🔴 **数値が退化している** — `mAP == init_mAP` かつ")
+    add("  `delta_detection = delta_control = injection_effect = 0.0`、`epoch = -1`。")
+    add("  これは T1b の訓練効果ではなく **warm-start(S0-frozen) 時点の評価**を")
+    add("  そのまま記録したもの。改善の証拠として引用してはならない。")
+    add("- `eval_recipe` が両 `metrics.json` に不在。学習/評価ログも残っていない")
+    add("  （兄弟の camt / clsbias 系にはログがある）。")
+    add("")
+    add("**結論**: 捏造値ではない（dummy Trainer 由来ではない）が、")
+    add("**再現不能かつ Δ=0 の退化した記録**であり、解析に使う前に上記 3 点の解消が要る。")
+    add("")
+
+    add("## 12. experiments/README.md と実態の乖離")
+    add("")
+    add("README は step 識別子を **s0〜s9 / a1〜a7（17 種）** と規定しているが、")
+    steps = Counter(r["step"] for r in records if r["step"])
+    add(f"実測は **{len(steps)} 種**。README に無い以下の系統が存在する。")
+    add("")
+    fam = {"b1": [], "b2a": [], "t1a": [], "t1b": [], "taux": [], "haux": [], "hires": []}
+    for s, n in steps.items():
+        for f in fam:
+            if s == f or s.startswith(f + "_"):
+                fam[f].append((s, n))
+                break
+    add("| 系統 | step 識別子の種類 | run 合計 | 例 |")
+    add("|---|---:|---:|---|")
+    for f, items in fam.items():
+        if not items:
+            continue
+        total = sum(n for _, n in items)
+        ex = ", ".join(f"`{s}`" for s, _ in sorted(items, key=lambda x: -x[1])[:2])
+        add(f"| `{f}` | {len(items)} | {total} | {ex} |")
+    add("")
+    add("また README は 6 カテゴリ（`baselines` / `phase0` / `phase1` / `ablations` /")
+    add("`transfer` / `final`）を規定するが、実際に run があるのは 4 つで、")
+    add("`ablations` と `final` は空。逆に README に無い `_smoke_prior` に run がある。")
+    add("")
+    add("**このタスクでは README を変更していない。** 規約の更新は別タスク。")
+    add("")
+
+    add("## 13. 正本 §16.7 の既定と、その例外である test 評価 run")
+    add("")
+    add("M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 に記録がある:")
+    add("")
+    add("> **§8 訓練スクリプトに関する補足**: val_evaluator の ann_file は")
+    add("> `instances_val.json`、`prefix='val'`（mmdet_config.py:314-320）のため、")
+    add("> `metrics.json` / `per_class_ap.json` はすべて **val split の数値**。")
+    add("> test split は未評価（最終報告用に温存、Δ 判定は val で行う設計）。")
+    add("")
+    add("ローカル写し: `docs/m2_plan_rewrite/sections/19_epoch_16.md` L161 /")
+    add("`docs/m2_plan_rewrite/m2_plan_v2_full.md` L1561")
+    add("")
+    add("これを split の既定値とし、`provenance.split = from_plan_section_16_7` を記録する。")
+    add("ただし **指標が 1 つもない run には適用しない**（評価されていないため null のまま）。")
+    add("")
+    plan_default = [r for r in records if r["provenance"].get("split") == "from_plan_section_16_7"]
+    add(f"既定を適用した run: {len(plan_default)}")
+    add("")
+    if plan_default:
+        add("| path | 指標キー |")
+        add("|---|---|")
+        for r in sorted(plan_default, key=lambda x: x["path"]):
+            ks = ", ".join(f"`{k}`" for k in sorted((r["metrics"] or {}).keys())[:6])
+            add(f"| `{r['path']}` | {ks} |")
+        add("")
+
+    add("### 13.1 🔴 正本の記述の例外 — test 評価を持つ run")
+    add("")
+    add("正本は「test split は未評価」と述べているが、その後 `--eval-test` が実装され、")
+    add("**test 側の数値を持つ run が実在する**。正本の記述はこの時点より前のもの。")
+    add("")
+    tested = [r for r in records if (r["metrics_by_split"] or {}).get("test")]
+    add(f"該当 {len(tested)} run。全件の val/test 対応表は `anomalies/val_test_pairs.csv`。")
+    add("")
+    add("**index.csv の `metric.<name>` 列は primary(val) の値である。**")
+    add("test 側は `metric_test.<name>` 列に別出ししてある（`has_test` 列で絞り込める）。")
+    add("この分離が無いと「split 列が val 一色 → test 評価は存在しない」と誤読される。")
+    add("")
+    # val/test の乖離を実測で示す
+    diffs: dict[str, list[float]] = defaultdict(list)
+    vals: dict[str, list[float]] = defaultdict(list)
+    tests: dict[str, list[float]] = defaultdict(list)
+    for r in tested:
+        by = r["metrics_by_split"]
+        for n in by.get("val", {}).keys() & by.get("test", {}).keys():
+            v, t = by["val"][n], by["test"][n]
+            if isinstance(v, (int, float)) and isinstance(t, (int, float)):
+                vals[n].append(v)
+                tests[n].append(t)
+                diffs[n].append(t - v)
+    if diffs:
+        add("#### val / test の乖離（実測・全 %d run）" % len(tested))
+        add("")
+        add("| 指標 | val 平均 | test 平均 | 差 (test - val) | n |")
+        add("|---|---:|---:|---:|---:|")
+        for n in sorted(diffs, key=lambda x: sum(diffs[x]) / len(diffs[x])):
+            nv = sum(vals[n]) / len(vals[n])
+            nt = sum(tests[n]) / len(tests[n])
+            add(f"| `{n}` | {nv:.4f} | {nt:.4f} | {nt - nv:+.4f} | {len(diffs[n])} |")
+        add("")
+    add("| path | seed | excluded |")
+    add("|---|---:|---|")
+    for r in sorted(tested, key=lambda x: x["path"]):
+        add(f"| `{r['path']}` | {r['seed']} | {r['excluded']} |")
+    add("")
+
+    add("## 14. Notion 実験Run台帳との照合 — 母数は未確定（結論保留）")
+    add("")
+    add("台帳の行数について 2 つの実測値がある。**母数が確定するまで差分の結論は出さない。**")
+    add("")
+    add("| 出所 | 実測 | 計測方法 |")
+    add("|---|---:|---|")
+    add("| ユーザー側 | 616 | `COUNT(*)` |")
+    add("| Claude Code (MCP) | **739** | `SELECT COUNT(*)` via query_data_sources |")
+    add("")
+    add("### 排除できた原因")
+    add("")
+    add("| 仮説 | 検証結果 |")
+    add("|---|---|")
+    add("| 複数データソース | ❌ **データソースは 1 つ**（`collection://7bcf9406-…`） |")
+    add("| フィルタ付きビューを見ていた | ❌ **ビューは 1 つ**（\"Default view\"）で Status 昇順ソートのみ・**フィルタなし** |")
+    add("| 同名 DB の重複 | ❌ ワークスペース検索で `実験Run台帳` は **1 件のみ** |")
+    add("")
+    add("### 残る候補（未検証）")
+    add("")
+    add("- **計測時点の差**（台帳が増加した）: 作成日分布を取るクエリが")
+    add("  Notion のクエリ利用上限に達し実行できなかった")
+    add("- **アーカイブ行の扱い**: MCP の SQL モードは `is_archived` を受け付けず、")
+    add("  アーカイブ行を含むか否かが仕様上未定義")
+    add("")
+    add("### 確定した事実")
+    add("")
+    add("| 項目 | 実測 |")
+    add("|---|---:|")
+    add("| 総行数（MCP 計測） | 739 |")
+    add("| ユニークな Name | 738 |")
+    add("| `Name LIKE '%_seed%'`（run 形式） | 712 |")
+    add("| 散文タイトルの行 | 27 |")
+    add("| **Status = `failed`** | **0** |")
+    add("| Status = completed / planned / running / null | 733 / 4 / 1 / 1 |")
+    add("")
+    add("**`failed` が 0 件であることは母数と無関係に確定している。**")
+    add("repo 側には `metrics.json` が空の失敗 run が 6 件あるため、§1.1 の")
+    add("運用欠陥（失敗が台帳に反映されない）はこの時点で成立する。")
+    add("")
+    add("run_id 単位の 3 分類（記録漏れ / 成果物消失 / 数値の食い違い）は、")
+    add("クエリ上限のため **未実施**。推測で埋めていない。")
+    add("")
+
+    add("## 15. run_id の衝突")
+    add("")
+    dup: Counter[str] = Counter(r["run_id"] for r in records)
+    dups = {k: v for k, v in dup.items() if v > 1}
+    add(f"`run_id`（ディレクトリ名）は **{len(dups)} 種が複数箇所で衝突**する。")
+    add("スキーマは `runs/<run_id>.json` を指定しているが、そのままではファイルが")
+    add("上書きされるため、パス由来の `ledger_key` をファイル名に使い、")
+    add("`run_id` はフィールドとして保持した。")
+    add("")
+    if dups:
+        add("| run_id | 箇所数 |")
+        add("|---|---:|")
+        for k, v in sorted(dups.items(), key=lambda x: (-x[1], x[0])):
+            add(f"| `{k}` | {v} |")
+        add("")
+
+    # ---------------------------------------------------------------- #
+    add("## 16. 🔴 修正済み: primary 指標に test の値が入っていた")
+    add("")
+    add("### 16.1 症状")
+    add("")
+    add("`has_test = true` の **27 run** で、`metrics.<name>`（primary）に")
+    add("val ではなく **test の値**が入っていた。`split` 列は `val` のままだったため、")
+    add("**「val と名乗る test の値」**という最も危険な不整合になっていた。")
+    add("`index.csv` の `metric.*` と `metric_test.*` が全 27 run で完全一致し、")
+    add("Δ が全て 0.00 に見えていた。")
+    add("")
+    add("### 16.2 原因")
+    add("")
+    add("`harvest_metrics()` が「どの split が primary か」を決める **前に**")
+    add("primary の入れ物を埋めていた。同じ canonical 名を複数 split が書くと")
+    add("`metrics.json` のキー順で **後に来た側が勝つ**。")
+    add("`phase_accuracy` → `test_accuracy` の順に並ぶため test が残っていた。")
+    add("")
+    add("```python")
+    add("# 誤: split 判定より前に flat を埋めていた")
+    add("if info['split']:")
+    add("    by_split[info['split']][canon] = value")
+    add("    flat[canon] = value          # <- 後勝ちで test が primary になる")
+    add("...")
+    add("evidence = {s for s in by_split if s != 'unknown'}   # <- 判定はこの後")
+    add("```")
+    add("")
+    add("追補 G で `split` の既定を val と宣言した時点で、宣言（`split` 列）と")
+    add("実体（`metrics`）が別の場所で決まる構造が顕在化した。")
+    add("")
+    add("### 16.3 対処")
+    add("")
+    add("1. primary split を **先に**決め、その後で `flat` を充填する順序に変更した。")
+    add("2. `metrics_primary_split` 列を追加し、`metrics` の出所を機械可読にした。")
+    add("3. `tools/verify_runindex.py` を追加し `make runindex` に組み込んだ。")
+    add("   C1〜C3 が同型の退行を検出する（`split` 列と出所の不一致、Δ が全て 0）。")
+    add("")
+
+    # ---------------------------------------------------------------- #
+    add("## 17. 実験単位 (`experiment_id`) の導入と、その限界")
+    add("")
+    add("`runs/*.json` には seed をまたいで run を束ねるフィールドが 1 つも無く、")
+    add("573 run は「573 個の孤立した run」であって「N 個の実験」ではなかった。")
+    add("seed 集約も Δ も paired-σ も機械的に計算できない状態だったため、")
+    add("**run 名から機械的に導ける実験単位**を定義した。")
+    add("")
+    add("```")
+    add("experiment_id = <group>/<step>/<description(反復軸トークン除去)>@<split>~<frozen_source_tag>")
+    add("                （同一 ID 内で eval_recipe_id が食い違う場合は #<hash8> を付与）")
+    add("```")
+    add("")
+    add("### 17.0 🔴 名前にも command.sh にも現れない条件軸がある")
+    add("")
+    add("`s4_phase_baseline` の 55 run は当初「同一条件の 18 反復」に見えたが、そうではない。")
+    add("真の条件軸は `config.yaml` の `frozen_source.cache_dir`（凍結特徴の抽出元）で **7 通り**あり、")
+    add("これは環境変数 `RELDETR_FROZEN_TAG` で与えられるため")
+    add("**run 名にも `command.sh` にも `eval_recipe` にも現れない**。")
+    add("")
+    add("```python")
+    add("# scripts/train_s4_tecno.py")
+    add('_FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")')
+    add("```")
+    add("")
+    add("`eval_recipe_id` は phase1/s4 の 61 run すべてで同一（`test_cfg.backbone` が")
+    add("リテラル固定のため条件差が原理的に現れない）。つまり `eval_recipe_id` による分離だけでは")
+    add("この交絡を防げない。`frozen_source_tag` を `experiment_id` に含めることで分離している。")
+    add("")
+    add("`b2a` / `t1a` 系では同じ情報が `frozen_source.gap_cache` /")
+    add("`frozen_source.tool_signal_cache` というキー名で入っているため、3 つのキーを順に見ている。")
+    add("")
+    add("#### 🔴 証跡ファイルの記述が実態と食い違う（凍結源）")
+    add("")
+    n_s4 = sum(1 for r in records if r["step"] == "s4_phase_baseline")
+    n_claim = sum(
+        1
+        for r in records
+        if r["step"] == "s4_phase_baseline" and "凍結源" in (r.get("notes") or "")
+    )
+    n_contra = sum(
+        1
+        for r in records
+        if r["step"] == "s4_phase_baseline"
+        and "凍結源" in (r.get("notes") or "")
+        and r.get("frozen_source_tag")
+        and r["frozen_source_tag"] != "relation_detr_seed42"
+    )
+    add(f"`s4_phase_baseline` の `notes.md` は **{n_claim} 件すべてで**")
+    add("「凍結源: Relation-DETR seed42」と断言するが、`config.yaml` の実際の")
+    add(f"`frozen_source.cache_dir` がそれと異なる run が **{n_contra} 件**ある")
+    add(f"（step `s4_phase_baseline` の run 総数は {n_s4}）。`config.yaml` の `frozen_source.seed` も")
+    add("`42` がハードコードされており同様に信用できない。")
+    add("いずれも `scripts/train_s4_tecno.py` の固定文字列に由来する。")
+    add("")
+    add("**したがって `frozen_source_tag` はキャッシュのパスからのみ導き、")
+    add("`frozen_source.seed` と `notes.md` の記述は採用していない。**")
+    add("")
+    exps = {r["experiment_id"] for r in records if r.get("experiment_id")}
+    add(f"- 実験数: **{len(exps)}** / run 数 {len(records)}")
+    add(f"- `experiment_id` を付けられなかった run: {sum(1 for r in records if not r.get('experiment_id'))}")
+    add("  （run 名が命名規約に一致しない run）")
+    if recipe_splits:
+        add(f"- `eval_recipe_id` の食い違いで分離した base: {len(recipe_splits)}")
+        for s in recipe_splits[:6]:
+            add(f"  - `{s['base']}` -> {s['recipes']}")
+    else:
+        add("- `eval_recipe_id` の食い違いによる分離: 0 件")
+    add("")
+    add("### 17.1 🔴 限界: 名前が条件を一意に表さない実験がある")
+    add("")
+    add("`experiment_id` は run 名から導く以上、**名前が条件を表していない場合は")
+    add("異なる条件の run を 1 実験に束ねてしまう**。検出のため次の 2 列を出している。")
+    add("")
+    add("| 列 | 意味 | 異常の徴候 |")
+    add("|---|---|---|")
+    add("| `n_command_variants` | seed/description を除いた `command.sh` 引数の種類数 | **> 1 なら条件が混在** |")
+    add("| `runs_per_seed_max` | 同一 seed の run 数の最大 | > 1 なら再実行か条件違いが混在 |")
+    add("")
+    add("実データで判明している最悪の例は §7.3 の `b2a_ro_oracle_noise000`")
+    add("（1 つの名前に 4 通りのノイズ率）。**この実験の集約値は使ってはならない。**")
+    add("")
+    add("### 17.2 🔴 逆向きの限界: 同一条件が別 experiment_id に分裂しうる")
+    add("")
+    add("`step` は `ExperimentManager` に渡された文字列でしかなく")
+    add("（`src/egosurgery/utils/experiment_id.py`）、同じ条件でも起動経路が違えば別の値になる。")
+    add("`description` / `split` / `frozen_source_tag` が一致しているのに `step` だけが違う組を")
+    add("機械的に検出した結果が次である。**同一条件が分裂している候補**として扱うこと。")
+    add("")
+    by_cond: dict[tuple[str, str | None, str | None, str | None], set[str]] = defaultdict(set)
+    for r in records:
+        if not r.get("experiment_id"):
+            continue
+        key = (
+            r["group"],
+            normalize_description(r["description"], r["seed_phase"]),
+            r["split"],
+            r.get("frozen_source_tag"),
+        )
+        by_cond[key].add(r["experiment_id"])
+    splits = {k: v for k, v in by_cond.items() if len(v) > 1}
+    if splits:
+        add(f"該当 **{len(splits)} 組**")
+        add("")
+        add("| group / description / split / frozen_source | 分裂した experiment_id |")
+        add("|---|---|")
+        for k, v in sorted(splits.items(), key=lambda x: str(x[0])):
+            head = f"`{k[0]}` / `{k[1]}` / `{k[2]}` / `{k[3]}`"
+            add(f"| {head} | " + "<br>".join(f"`{e}`" for e in sorted(v)) + " |")
+        add("")
+        add("これらを 1 実験として束ねるべきかは、起動経路が同一かどうかの判断を伴うため")
+        add("harvester では決めない。`experiments.csv` では別行のままにしてある。")
+    else:
+        add("該当なし（0 組）。")
+    add("")
+
+    # ---------------------------------------------------------------- #
+    add("## 18. 対照ペア (`arm` / `control_of`) — 確定できた範囲")
+    add("")
+    add("### 18.1 一次証拠の探索結果")
+    add("")
+    add("| 証拠源 | 結果 |")
+    add("|---|---|")
+    add("| `command.sh` の `--control` / `--baseline` / `--inject` / `--arm` | **0 件**。引数による対照指定は存在しない |")
+    add("| **`config.yaml` の `delta:` ブロック** | **441 run** が保有。`phase_denominator` が分母を名指しする |")
+    add("| `notes.md` の `## Δ` 節 | 439 run が保有。同じ内容を散文で書いたもの |")
+    add("")
+    add("`config.yaml` の記述例（機械可読）:")
+    add("")
+    add("```yaml")
+    add("delta:")
+    add("  phase_denominator: s4_phase_baseline (frozen_tecno_phase_baseline)")
+    add("  denominator_value_lecun: 0.8986±0.0034")
+    add("  note: Δ_phase = (T1a − S4 base). 別サーバー実行時は lecun 分母を流用し …")
+    add("```")
+    add("")
+    if pairing:
+        add("### 18.2 対照名の同定と、その裏付け")
+        add("")
+        add("`config.yaml` の `delta.phase_denominator` は分母を **文字列で名指し**する。")
+        add("実データに現れる 4 通り:")
+        add("")
+        add("| 宣言 | run 数 | 解釈 |")
+        add("|---|---:|---|")
+        add("| `s4_phase_baseline (frozen_tecno_phase_baseline)` | 430 | step + description |")
+        add("| `t1a_regiontoken base (同env efros paired)` | 6 | step のみ（括弧は散文） |")
+        add("| `t1a_regiontoken base (同一環境 efros で再学習・paired)` | 3 | 同上 |")
+        add("| `S0-frozen (=init mAP, within-run)` | 2 | **同一 run 内の初期値**。対照 run は存在しない |")
+        add("")
+        add("#### 🔴 散文からの同定は誤る — config の宣言に従属させた")
+        add("")
+        add("`notes.md` は分母を `T1a base[同env efros]` と書く。名前の近さだけで読むと")
+        add("`step=t1a_base_env` に見えるが、**同じ run の `config.yaml` は")
+        add("`t1a_regiontoken base` と宣言している**。両者は別の実験である。")
+        add("そのため証拠の優先順を `config.yaml` → `notes.md` に固定した。")
+        add("")
+        if pairing.get("value_checks"):
+            add("#### 引用された基準値との照合")
+            add("")
+            for c in pairing["value_checks"]:
+                mark = "✅ 一致" if c["matched"] else "❌ 不一致"
+                add(f"**`{c['denominator']}`** -> `{c['experiment_id']}`")
+                add("")
+                add(f"- 候補数: {c['n_candidates']} 実験（引用値で切り分けた）")
+                add(f"- 引用値: `{c['quoted_mean']}`")
+                add(f"- 再現値: `{c['reproduced_mean']}` ({c['reproduced_from']}) … {mark}")
+                add(f"- 母集団σ = `{c['population_sigma']}` / 標本σ = `{c['sample_sigma']}`")
+                add("")
+        add("#### 🔴 同じ基準点が 2 通りのσで引用されている")
+        add("")
+        add("`S4 base` は `±0.0034` (397 run) と `±0.0028` (33 run) の 2 通りで引用されている。")
+        add("実測すると **同一の 3 run** に対する母集団σ (0.002766) と標本σ (0.003387) であり、")
+        add("比は √(3/2) = 1.2247 である。")
+        add("§10.1 の改善判定は `|Δ| > 1σ` を条件とするため、")
+        add("**どちらのσを採るかで有意・非有意の判定が変わりうる**。σの規約は正本で統一が要る。")
+        add("")
+        add("#### 分母が複数実験に該当するときの切り分け")
+        add("")
+        add("`frozen_source_tag` で実験を分けた結果、`s4_phase_baseline` は 7 実験になった。")
+        add("分母の宣言は 1 つなので、そのままでは確定しない。切り分けは 2 段構えで行う。")
+        add("")
+        add("1. **凍結特徴ソースの一致** — `notes.md` が対照の条件を")
+        add("   「同一土台（凍結backbone/GAP/recipe/seed・neck無し）」と明記している。")
+        add("   凍結 backbone を揃えるのは研究者自身が宣言した規則なので、")
+        add("   注入 run と同じ `frozen_source_tag` を持つ実験を分母とする。")
+        add("2. **引用値による照合** — 1 で決まらないときのみ、")
+        add("   `denominator_value_lecun` 等の引用値を再現する部分集合を探す。")
+        add("")
+        add("### 18.3 確定できた件数")
+        add("")
+        st = pairing.get("stats") or {}
+        add("| 分類 | run 数 |")
+        add("|---|---:|")
+        for k, v in sorted(st.items(), key=lambda x: -x[1]):
+            add(f"| `{k}` | {v} |")
+        add("")
+        if pairing.get("unresolved"):
+            for u in pairing["unresolved"]:
+                add(f"- 未解決: {u}")
+        else:
+            add("**分母を宣言している run はすべて実験に解決できた（未解決 0 件）。**")
+        add("")
+        add("`no_denominator_declared` の run は `config.yaml` にも `notes.md` にも")
+        add("分母の記載が無い。推測で埋めず `control_of` は null のままにしてある。")
+        add("")
+        add("#### 🔴 paired-σ がほぼ計算できない")
+        add("")
+        add("`notes.md` は 439 run で「3-seed 揃ったら **paired-σ(対seed差)** で §10.1 判定」と")
+        add("書いているが、実際に `paired` で計算できた実験は **わずか 1 件**である。")
+        add("")
+        add("理由は基準点実験の構成にある:")
+        add("`phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42` は")
+        add("**17 run / 3 seed（1 つの seed に最大 7 run）**であり、")
+        add("seed ごとに 1 本ずつ対応させることができない。")
+        add("どの run を代表とするかを決める規約はどの証跡ファイルにも無い。")
+        add("")
+        add("したがって残り 155 実験は `unpaired`（平均の差のみ）とし、")
+        add("**`delta_pstd_*` は空欄**にしてある。対応が取れない以上 paired-σ は定義できず、")
+        add("それらしい数値を入れることは捏造にあたる。")
+        add("**§10.1 の `|Δ| > 1σ` 判定は、現状の証跡では実行できない。**")
+        add("")
+    add("### 18.4 `arm=control` を使っていない理由")
+    add("")
+    add("スキーマは `injection` / `control` / `baseline` / `unknown` を許すが、")
+    add("**自らを「対照」と宣言している run は 1 件も無い**。")
+    add("実在するのは「Δ の基準点として参照されている実験」であり、これを `baseline` とした。")
+    add("`control` を使うと、存在しない設計意図を捏造することになる。")
+    add("")
+    add("### 18.5 Δ の計算方式")
+    add("")
+    add("- `paired`: 注入側・対照側とも **seed ごとにちょうど 1 run** で seed 集合が一致するとき。")
+    add("  seed ごとの差を取り、その平均を `delta_<metric>`、母集団σを `delta_pstd_<metric>` とする。")
+    add("- `unpaired`: 上記を満たさないとき。平均の差だけを出し、")
+    add("  **`delta_pstd_<metric>` は空欄**にする（対応が取れない以上 paired-σ は定義できない）。")
+    add("- どちらで計算したかは `delta_method` 列に必ず記録する。混同してはならない。")
+    add("")
+
+    # ---------------------------------------------------------------- #
+    add("## 19. `per_class.csv` を使うときの必須の注意")
+    add("")
+    add("per-class の値は 573 個の JSON に分散していて横断分析に使えなかったため、")
+    add("`runindex/per_class.csv` に long 形式（1 行 = 1 run × 1 クラス）で 1 ファイル化した。")
+    add("")
+    n_tool = sum(1 for r in records if r["per_class_kind"] == "tool")
+    n_phase = sum(1 for r in records if r["per_class_kind"] == "phase")
+    add(f"- `per_class_kind=tool` : {n_tool} run × 15 クラス（術具 **AP**）")
+    add(f"- `per_class_kind=phase`: {n_phase} run × 9 クラス（工程 **F1**）")
+    add("")
+    add("**この 2 つを混ぜて集計してはならない。** 指標の種類が違う（AP と F1）。")
+    add("ファイル名は両方とも `per_class_ap.json` なので、名前では判別できない。")
+    add("必ず `per_class_kind` / `per_class_metric` で分離すること。")
+    add("")
+    add("`value` が空欄の行は元が `NaN` だったもので、`is_nan=True` が立っている。")
+    add("術具側の `NaN` は **val split に GT が 1 件も無いクラス**を意味する（0 ではない）。")
+    add("平均を取るときは `nanmean` 相当（空欄を除外）にすること。")
+    add("")
+
+    # ---------------------------------------------------------------- #
+    add("## 20. metrics.json / 命名規約に 2 系統ある")
+    add("")
+    add("`g2_followup_2026-07-29` / `g2_main_2026-07-29_lecun` 群 (42 run) は")
+    add("他の群と **スキーマも命名も違う**。")
+    add("")
+    add("| 観点 | 主系統 | g2_* 系統 |")
+    add("|---|---|---|")
+    add("| ディレクトリ名 | `<step>_<seq3>_<desc>_seed<N>` | `<desc>_seed<N>`（seq が無い） |")
+    add("| split の表現 | `val/<metric>` / `phase_<metric>` | `\"val\": {\"phase_<metric>\": …}` の入れ子 |")
+    add("| per-class | `per_class_ap.json` | `val.phase_per_class_f1`（metrics.json 内） |")
+    add("| 付随ファイル | `command.sh` / `config.yaml` / `notes.md` / `git_commit.txt` | `env.json` のみ |")
+    add("")
+    add("両方を収穫できるようにした。出所は次の列で区別できる。")
+    add("")
+    add("- `provenance.name` … `from_dirname_step_seq_desc_seed` / `from_dirname_desc_seed_no_seq`")
+    add("- `per_class_source` … `…/per_class_ap.json` か `…/metrics.json#val.phase_per_class_f1`")
+    add("")
+    add("**この群には `config.yaml` が無いため対照宣言も凍結源も取れない。**")
+    add("`control_of` は null、`frozen_source_tag` も null である。")
+    add("`metrics.json` の `system` フィールド（`base` / `bboxROI` / `shuffleROI`）が")
+    add("arm を表している可能性があるが、対照関係を明示した記録ではないため採用していない。")
+    add("値は `attributes` に保持してある。")
+    add("")
+    add("### 20.1 🔴 指標でないものが `metric.*` 列に入っていた（修正済み）")
+    add("")
+    add("`metrics.json` のネスト値と文字列値がそのまま `metrics` に入っていたため、")
+    add("`index.csv` に `metric.val = {'phase_accuracy': …}` のような")
+    add("**辞書リテラル**や `metric.system = base` のような文字列が書かれていた。")
+    add("旧 573 run でも `b2b_rescore_*` の `denominator` / `method` が文字列で入っていた。")
+    add("")
+    add("「指標とは数値である」という不変条件を実装に入れ、")
+    add("数値以外は `attributes` / `metrics_nested` に分離した（情報は捨てていない）。")
+    add("")
+
+    # ---------------------------------------------------------------- #
+    add("## 21. σ の定義 — 母集団σと標本σを両方出す")
+    add("")
+    add("`<metric>_pstd` が母集団σか標本σか判別できず、`|Δ| > 1σ` 判定が")
+    add("規約次第で反転しうる状態だった（§18.2）。両方を明示的に出すことにした。")
+    add("")
+    add("| 列 | 定義 | Python |")
+    add("|---|---|---|")
+    add("| `<metric>_pstd` | **母集団σ** (ddof=0) | `statistics.pstdev` |")
+    add("| `<metric>_sstd` | **標本σ** (ddof=1) | `statistics.stdev` |")
+    add("| `<metric>_n` | 集約した値の個数 | |")
+    add("| `delta_pstd_<metric>` | Δ の母集団σ | paired: 差の pstdev / unpaired: √(σ_inj²+σ_ctl²) |")
+    add("| `delta_sstd_<metric>` | Δ の標本σ | 同上を標本σで |")
+    add("| `abs_delta_over_sigma_<metric>` | **\\|Δ\\| / `delta_pstd_<metric>`** | 母集団σ基準 |")
+    add("")
+    add("### 21.1 規約の違いが実際の判定に与える影響（実測）")
+    add("")
+    add("`accuracy` について両方の規約で判定件数を出した。")
+    add("")
+    exp_rows = None
+    try:
+        _h, exp_rows = build_experiments(records)
+    except Exception:  # noqa: BLE001
+        exp_rows = None
+    if exp_rows:
+        pairs = [
+            (r.get("delta_accuracy"), r.get("delta_pstd_accuracy"), r.get("delta_sstd_accuracy"))
+            for r in exp_rows
+            if isinstance(r.get("delta_accuracy"), (int, float))
+            and r.get("delta_pstd_accuracy")
+            and r.get("delta_sstd_accuracy")
+        ]
+        add("| 閾値 | 母集団σ基準 | 標本σ基準 | 判定が反転 |")
+        add("|---|---:|---:|---:|")
+        for k in (1, 2, 3):
+            p = sum(1 for d, ps, ss in pairs if abs(d) / ps >= k)
+            s = sum(1 for d, ps, ss in pairs if abs(d) / ss >= k)
+            fl = sum(1 for d, ps, ss in pairs if abs(d) / ps >= k and abs(d) / ss < k)
+            add(f"| {k}σ | {p} | {s} | **{fl}** |")
+        add("")
+        if pairs:
+            ratios = sorted(ss / ps for _, ps, ss in pairs)
+            med = ratios[len(ratios) // 2]
+            add(f"対象 {len(pairs)} 実験。標本σ/母集団σ の実測中央値 = **{med:.4f}**。")
+        add("")
+    add("**§10.1 が使う 1σ 基準では、現在の実データで判定は 1 件も反転しない。**")
+    add("理由は σ の合成にある。注入側は n=3（比 √(3/2)=1.2247）だが")
+    add("対照側は n が大きく（比が 1 に近い）、合成 σ では差が薄まる。")
+    add("")
+    add("ただし `notes.md` に手書きされた `0.8986±0.0028` と `±0.0034` は")
+    add("**単一の集計値そのもの**なので 22% の差がそのまま出る。")
+    add("手書きの値を引用するときは規約の確認が要る。")
+    add("")
+    add("### 21.2 🔴 リポジトリ内に σ の規約が **2 系統併存**している")
+    add("")
+    add("`scripts/` と `src/` を実測した結果:")
+    add("")
+    add("| 規約 | 出現箇所 | 主な使用層 |")
+    add("|---|---:|---|")
+    add("| 母集団σ (`pstdev` / `pvariance`) | **48** | §10.1 判定・レポート生成 |")
+    add("| 標本σ (`statistics.stdev` / `ddof=1`) | **16** | 解析・監査 (`scripts/analysis/*`) |")
+    add("")
+    add("**§10.1 の判定を実装している箇所は母集団σで一致している:**")
+    add("")
+    add("| ファイル:行 | 記述 |")
+    add("|---|---|")
+    add("| `scripts/paired_sigma_3seed.py:7,80` | \\|mean(Δ)\\| > pstdev(Δ) かつ 全 detector_seed 同符号 |")
+    add("| `scripts/analyze_t1a_factorial_ablation.py:13,81` | §10.1: \\|meanΔ\\|>pstdev かつ全 seed 同符号 |")
+    add("| `scripts/report_t1a_boundary.py:5,59` | \\|mean\\|>pstdev かつ 3-seed 同符号 |")
+    add("| `scripts/report_daux_paired.py:69,114` | \\|mean\\|>pstdev かつ 3-seed 同符号 |")
+    add("| `src/egosurgery/utils/transfer_delta_report.py` | pstdev（haux/taux 系レポートの単一情報源） |")
+    add("| `scripts/run_haux_oracle_gate.sh:14` / `run_taux_problemA.sh:76` | 同上 |")
+    add("")
+    add("**一方、解析・監査層は標本σを使っている:**")
+    add("`scripts/analysis/delta_allrun_recompute.py:157` / `delta_convention_audit.py:132` /")
+    add("`g1_power_analysis.py:68` / `g2_report.py:166,179,452`（`np.std(..., ddof=1)`）/")
+    add("`scripts/analyze_phase_coupling.py:93,154,162`。")
+    add("")
+    add("**「Δ の規約を監査する」スクリプト自身が、判定側と違うσを使っている。**")
+    add("")
+    add("### 21.2.1 🔴 **明文の規約は ddof=1、実装は ddof=0** — 両者が逆を向いている")
+    add("")
+    add("正本の研究計画（`docs/m2_plan_rewrite/`）は §10.1 の 1σ を")
+    add("「同一 eval recipe での 3-seed std」としか書かず種類を明示していないが、")
+    add("**スコープを限った明示宣言は複数あり、そのすべてが ddof=1（標本σ）を指す**:")
+    add("")
+    add("| 出典 | 記述 |")
+    add("|---|---|")
+    add("| `scripts/analyze_phase_coupling.py:21` | 「改善主張は §10.1 に従い \\|Δ\\| > 1σ のときのみ。**1σ は base 3-seed の標本(n-1)標準偏差**」 |")
+    add("| `src/egosurgery/metrics/delta.py:111,131` | 「標準偏差は**不偏標準偏差（ddof=1）**」/ `arr.std(ddof=1)` |")
+    add("| `docs/experiment_log.md:1742` | 「n=3, **ddof=1**」 |")
+    add("")
+    add("**実験ログの数値も ddof=1 で書かれている**（実測で照合）:")
+    add("")
+    add("```")
+    add("docs/experiment_log.md:440   S4' = acc 0.9142 ± 0.0017")
+    add("  実測 (s4_phase_baseline_004/005/006 _neck):")
+    add("    mean = 0.9142")
+    add("    pstdev (ddof=0) = 0.001426   -> 0.0014  ✗ 一致しない")
+    add("    stdev  (ddof=1) = 0.001746   -> 0.0017  ✅ 一致")
+    add("```")
+    add("")
+    add("一方 §10.1 の**判定を実装している** 7 箇所は `pstdev`（ddof=0）である。")
+    add("つまり **文書が定めた規約と、判定コードが使っている規約が食い違っている。**")
+    add("これは「どちらか未定」ではなく「二つが並存し矛盾している」状態である。")
+    add("")
+    add("`abs_delta_over_sigma_<metric>` と `verdict_10_1` は **母集団σ**（ddof=0）を分母に、")
+    add("`verdict_10_1_sstd` は **標本σ**（ddof=1）を分母にしている。")
+    add("**どちらを正本とするかは harvester が決めることではない**ため両方出し、")
+    add("結論が食い違う実験を `verdict_10_1_agree = False` で列挙している（backlog B-9 / B-18）。")
+    add("")
+    add("なお件数の数え方に注意: 上の「48 / 16」は docstring・コメント・print 文を含む")
+    add("全 grep ヒットである。実コード行だけに絞ると概ね 21 / 15 になる。")
+    add("")
+    add("なお `notes.md` / `config.yaml` の `0.8986±0.0034` は書き出し時に計算された値ではなく、")
+    add("`scripts/train_*.py` にハードコードされた文字列リテラルである。")
+    add("値が更新されない構造なので、引用するときは実測と突き合わせること")
+    add("（`experiments.csv` の `control_note_value` 列に保持してある）。")
+    add("")
+    add("また `scripts/compute_delta.py` と `scripts/export_paper_tables.py` は")
+    add("**0 バイトの空ファイル**（未実装 scaffold）である。`Makefile` の `delta` /")
+    add("`tables` ターゲットはこれらを呼ぶので、現状では何もしない。")
+    add("")
+    add("### 21.3 🔴 §10.1 は σ 条件だけではない — **同符号条件**がある")
+    add("")
+    add("上記 7 箇所すべてが判定を **2 条件**で書いている:")
+    add("")
+    add("> `|mean(Δ)| > pstdev(Δ)` **かつ** `全 seed 同符号`")
+    add("")
+    add("第 2 条件は seed ごとの Δ が要るので **paired のときしか判定できない**。")
+    add("`delta_same_sign_<metric>` 列に出しているが、埋まるのは paired の実験だけである。")
+    add("")
+    add("**したがって `unpaired_pooled` の 131 実験は、σ 条件は評価できても")
+    add("§10.1 の判定を完成させることができない。**")
+    add("`abs_delta_over_sigma_*` が大きくても「§10.1 で有意」と結論してはいけない。")
+    add("")
+
+    # ---------------------------------------------------------------- #
+    add("## 22. paired-σ の宣言と実行可能性の乖離")
+    add("")
+    add("全件は `anomalies/paired_feasibility.csv`（1 行 = 1 実験）。")
+    add("")
+    fh_, fr = build_paired_feasibility(records)
+    if fr:
+        declared = sum(1 for r in fr if r.get("paired_declared"))
+        now = sum(1 for r in fr if r.get("pairable_now"))
+        after = sum(1 for r in fr if r.get("pairable_after_dedup"))
+        add(f"- `control_of` が確定した実験: **{len(fr)}**")
+        add(f"- そのうち `notes.md` / `config.yaml` が **paired-σ 判定を宣言**: **{declared}**")
+        add(f"- 実際に paired-σ を計算できる: **{now}**")
+        add(f"- **seed ごとに代表 1 本を選ぶ規約を入れれば計算できる: {after}**")
+        add("")
+        add("### 22.1 何が paired を阻んでいるか")
+        add("")
+        add("| 原因 | 実験数 |")
+        add("|---|---:|")
+        for k, v in Counter(r.get("blocking_reason") or "(阻害なし)" for r in fr).most_common():
+            add(f"| `{k}` | {v} |")
+        add("")
+        add("**支配的原因は対照実験の再実行が畳まれていないこと**であり、")
+        add("注入側の seed 記録誤りではない（§23 のとおり seed の食い違いは 0 件）。")
+        add("")
+        tot = sum(r.get("n_runs_injection", 0) for r in fr)
+        pab = sum(r.get("n_runs_injection_pairable", 0) for r in fr)
+        add(f"注入側 run {tot} 本のうち、対照に同じ seed が存在するのは **{pab} 本**。")
+        add(f"残り {tot - pab} 本は対照側に対応する seed が無く、畳んでも paired にできない。")
+        add("")
+        add("### 22.2 🔴 「paired と宣言されているが unpaired でしか計算できない実験」")
+        add("")
+        mism = [r for r in fr if r.get("paired_declared") and not r.get("pairable_now")]
+        add(f"**{len(mism)} 実験**が該当する。§10.1 の判定を paired-σ で行ったと")
+        add("読める記述が `notes.md` にあるが、実際にはできていない。")
+        add("")
+        add("| 阻害原因 | 実験数 | 代表例 |")
+        add("|---|---:|---|")
+        byr: dict[str, list[str]] = defaultdict(list)
+        for r in mism:
+            byr[r.get("blocking_reason") or ""].append(r["experiment_id"])
+        for k, v in sorted(byr.items(), key=lambda x: -len(x[1])):
+            add(f"| `{k}` | {len(v)} | `{sorted(v)[0]}` |")
+        add("")
+        add("現在の `experiments.csv` はこれらを `delta_method=unpaired` /")
+        add("`delta_sigma_source=unpaired_pooled` と明示している。")
+        add("unpaired の σ は paired-σ より大きく出る保守的な推定なので、")
+        add("**σ 条件については unpaired で満たせば paired でも満たす**（逆は言えない）。")
+        add("ただし §21.3 のとおり **同符号条件は unpaired では判定できない**ため、")
+        add("これらの実験について §10.1 の判定を完成させることはできない。")
+        add("")
+        add("### 22.3 paired が成立した実験の §10.1 判定")
+        add("")
+        pr = [r for r in fr if r.get("pairable_now")]
+        add(f"現時点で paired-σ を計算できるのは **{len(pr)} 実験**。")
+        add("`accuracy` について 2 条件を両方適用した結果は次のとおり。")
+        add("")
+        if exp_rows:
+            paired_rows = [
+                r
+                for r in exp_rows
+                if r.get("delta_method") == "paired"
+                and isinstance(r.get("delta_accuracy"), (int, float))
+            ]
+            if paired_rows:
+                add("| experiment_id | Δacc | \\|Δ\\|/σ | 同符号 | §10.1 |")
+                add("|---|---:|---:|---|---|")
+                for r in sorted(paired_rows, key=lambda x: -abs(x["delta_accuracy"])):
+                    ratio = r.get("abs_delta_over_sigma_accuracy")
+                    same = r.get("delta_same_sign_accuracy")
+                    ok = bool(ratio and ratio > 1 and same)
+                    add(
+                        f"| `{r['experiment_id']}` | {r['delta_accuracy']:+.5f} | "
+                        f"{ratio:.2f} | {'✓' if same else '✗'} | "
+                        f"{'**有意**' if ok else '非有意'} |"
+                    )
+                add("")
+        add("これが現在の証跡で**実際に完成できる §10.1 判定のすべて**である。")
+        add("")
+
+    # ---------------------------------------------------------------- #
+    add("## 23. seed の出所 — run の学習 seed に誤りは無い")
+    add("")
+    add("§17.0 の「`notes.md` の凍結源 seed 記載が虚偽」を受けて、")
+    add("**run 自身の学習 seed** が汚染されていないかを全件突き合わせた。")
+    add("証拠は `command.sh` の `--seed` / `seed=`、`config.yaml` の `seed`、")
+    add("そして `metrics.json` の `seed`（g2_* 群は前 2 つを持たないため）。")
+    add("`notes.md` は虚偽の実績があるため証拠に使っていない。")
+    add("")
+    agree = Counter(r.get("seed_agreement") for r in records)
+    add("| seed_agreement | run 数 | 意味 |")
+    add("|---|---:|---|")
+    add(f"| `agree` | {agree.get('agree', 0)} | ディレクトリ名と他証拠が一致 |")
+    add(
+        f"| `unverified_no_other_evidence` | {agree.get('unverified_no_other_evidence', 0)} | "
+        "`command.sh` も `config.yaml` も無い（g2_* 群） |"
+    )
+    add(f"| `no_seed_in_dirname` | {agree.get('no_seed_in_dirname', 0)} | 命名規約外 |")
+    add(f"| **`conflict`** | **{agree.get('conflict', 0)}** | **食い違い** |")
+    add("")
+    add("**食い違いは 0 件。** したがって Δ の seed 対応が誤っている可能性は排除できる。")
+    add("§17.0 の誤記は**凍結検出器の seed** の話であって、run の学習 seed ではない。")
+    add("")
+    add("### 23.1 `frozen_source.seed` は信用できない（実測）")
+    add("")
+    fsd = [r for r in records if r.get("frozen_source_seed_declared") is not None]
+    contra = [
+        r
+        for r in fsd
+        if r.get("frozen_source_tag")
+        and f"seed{r['frozen_source_seed_declared']}" not in r["frozen_source_tag"]
+    ]
+    add(f"- `config.yaml` に `frozen_source.seed` を持つ run: **{len(fsd)}**")
+    add(f"- そのうち実際の cache パスと**矛盾**する run: **{len(contra)}**")
+    add("")
+    add("矛盾例: 宣言は `seed: 42` だが cache は `relation_detr_augstrong_seed123`。")
+    add("`frozen_source_tag` は cache パスからのみ導いており、この宣言は採用していない。")
+    add("値は矛盾検出のためだけに `frozen_source_seed_declared` に保持している。")
+    add("")
+    add("### 23.2 分母が `s4_phase_baseline` である実験の一覧")
+    add("")
+    s4c = sorted(
+        {
+            r["control_of"]
+            for r in records
+            if r.get("control_of") and "s4_phase_baseline" in r["control_of"]
+        }
+    )
+    s4exp: dict[str, set[str]] = defaultdict(set)
+    for r in records:
+        if r.get("control_of") in s4c and r.get("experiment_id"):
+            s4exp[r["control_of"]].add(r["experiment_id"])
+    n_exp = sum(len(v) for v in s4exp.values())
+    n_run = sum(1 for r in records if r.get("control_of") in s4c)
+    add(f"`s4_phase_baseline` を `control_of` に持つ実験は **{n_exp}**、run は **{n_run}**。")
+    add("")
+    for c in s4c:
+        add(f"- 分母 `{c}` … {len(s4exp[c])} 実験")
+    add("")
+    add("§17.0 の凍結源誤記は**この分母実験そのもの**で起きている。ただし:")
+    add("")
+    add("1. `frozen_source_tag` は `config.yaml` の cache パスから導いており、")
+    add("   誤っている `notes.md` / `frozen_source.seed` は使っていない。")
+    add("2. `experiment_id` は `frozen_source_tag` を含むので、")
+    add("   異なる凍結源の run は**別の分母実験**に分かれている。")
+    add("")
+    add("したがって Δ の分母は cache パス基準で正しく分離されている。")
+    add("**残るリスクは cache パス自体が実行時の実態と違う場合**だが、")
+    add("これを検証できる証跡（実行時の環境変数の記録）は repo に存在しない。")
+    add("")
+
+    # ---------------------------------------------------------------- #
+    add("## 24. seed 代表値の畳み込み (dedup) と §10.1 判定")
+    add("")
+    add("### 24.1 代表値の取り方")
+    add("")
+    add("対照実験は 1 つの seed に最大 7 run を持つため、畳まないと seed 対応が付かず")
+    add("paired-σ を計算できなかった（§22）。`experiments.csv` の Δ は")
+    add(f"**`{DEFAULT_DEDUP_RULE}`** を既定として seed ごとに 1 値へ畳んでいる")
+    add("（`delta_dedup_rule` 列に記録）。")
+    add("")
+    add("| 規則 | 内容 | 採否 |")
+    add("|---|---|---|")
+    add("| `mean` | seed 内の全 run の平均 | **既定** |")
+    add("| `latest` | seq が最大の run | 感度分析のみ |")
+    add("| `first` | seq が最小の run | 感度分析のみ |")
+    add("| `best` | 比較する指標が最良の run | **実装しない** |")
+    add("")
+    add("`mean` を既定にした理由:")
+    add("")
+    add("1. 順序に依存しない（`git_commit.txt` や seq の記録が信用できない run がある）")
+    add("2. 特定の 1 本を選ばないので「どれを選ぶか」の恣意性が入らない")
+    add("3. 再実行のばらつきを捨てずに平均へ織り込む")
+    add("")
+    add("**`best` を実装しない理由**: 比較する指標そのもので代表を選ぶと Δ が")
+    add("系統的に偏る（選択バイアス）。対照側で best を選べば Δ は大きく、")
+    add("注入側で選べば小さく出る。研究公正性の観点から提供しない。")
+    add("")
+    add("### 24.2 代表値の取り方は結論を変えない（感度分析）")
+    add("")
+    dh_, dr_ = build_dedup_sensitivity(records)
+    if dr_:
+        piv: dict[str, dict[str, str]] = defaultdict(dict)
+        dlt: dict[str, dict[str, float]] = defaultdict(dict)
+        for r in dr_:
+            piv[r["experiment_id"]][r["dedup_rule"]] = r["verdict_pstd"]
+            if isinstance(r.get("delta"), (int, float)):
+                dlt[r["experiment_id"]][r["dedup_rule"]] = r["delta"]
+        same = sum(1 for v in piv.values() if len(set(v.values())) == 1)
+        add(f"3 規則すべてで §10.1 判定が一致する実験: **{same} / {len(piv)}**")
+        add("")
+        diffs = [
+            abs(d["mean"] - d[k])
+            for d in dlt.values()
+            for k in ("latest", "first")
+            if "mean" in d and k in d
+        ]
+        if diffs:
+            add(f"ただし Δ の値自体は動く（`mean` との差の最大 = **{max(diffs):.6f}**）。")
+            add("判定が変わらないのは σ も同時にスケールするためである。")
+            add("**Δ の絶対値を引用するときは `delta_dedup_rule` を併記すること。**")
+        add("")
+        add("全件は `anomalies/dedup_sensitivity.csv`。")
+        add("")
+    add("### 24.3 §10.1 判定の結果")
+    add("")
+    add("判定条件は 2 つ（§21.3）。**両方**満たしたときだけ `significant`。")
+    add("")
+    add("> `|mean(Δ)| > σ` **かつ** `全 seed 同符号`")
+    add("")
+    if exp_rows:
+        vp = Counter(r.get("verdict_10_1") for r in exp_rows if r.get("verdict_10_1"))
+        vs = Counter(r.get("verdict_10_1_sstd") for r in exp_rows if r.get("verdict_10_1_sstd"))
+        add("| 判定 | 母集団σ (ddof=0) | 標本σ (ddof=1) |")
+        add("|---|---:|---:|")
+        for k in ("significant", "not_significant", "undecidable"):
+            add(f"| `{k}` | {vp.get(k, 0)} | {vs.get(k, 0)} |")
+        add("")
+        flip = [r for r in exp_rows if r.get("verdict_10_1") and not r.get("verdict_10_1_agree")]
+        add(f"**σ の規約で結論が変わる実験: {len(flip)} 件**")
+        add("")
+        for r in flip:
+            m = r["verdict_metric"]
+            add(f"- `{r['experiment_id']}`（指標 `{m}`）")
+            add(
+                f"  - Δ = {r.get(f'delta_{m}'):+.6f} / "
+                f"母集団σ = {r.get(f'delta_pstd_{m}'):.6f} -> **{r['verdict_10_1']}** / "
+                f"標本σ = {r.get(f'delta_sstd_{m}'):.6f} -> **{r['verdict_10_1_sstd']}**"
+            )
+        add("")
+        und = [r for r in exp_rows if r.get("verdict_10_1") == "undecidable"]
+        if und:
+            add(f"`undecidable` は {len(und)} 件。いずれも paired にできない実験である。")
+            for r in und:
+                add(f"- `{r['experiment_id']}` … {r.get('verdict_10_1_reason')}")
+            add("")
+        ns = [r for r in exp_rows if r.get("verdict_10_1") == "not_significant"]
+        if ns:
+            same_sign_fail = sum(
+                1
+                for r in ns
+                if r.get("verdict_10_1_reason") == "全 seed 同符号ではない"
+            )
+            add(
+                f"`not_significant` {len(ns)} 件のうち **{same_sign_fail} 件は同符号条件で落ちている**"
+                "（σ 条件は満たしている）。"
+            )
+            add("σ だけを見て有意と判断すると誤る典型である。")
+            add("")
+    add("全指標の判定は `runindex/verdicts.csv`（1 行 = 1 実験 × 1 指標）。")
+    add("")
+
+    # ---------------------------------------------------------------- #
+    add("## 25. 🔴🔴 最重要: paired-σ は seed 効果ではなく**非決定性**を測っている")
+    add("")
+    add("§24 で paired-σ が計算できるようになったが、**その σ が何を測っているか**には")
+    add("重大な但し書きがある。Δ を解釈する前に必ず読むこと。")
+    add("")
+    add("### 25.1 同一条件が再現しない（実測）")
+    add("")
+    add("`s4_phase_baseline_015` と `_017` は次がすべて一致する:")
+    add("")
+    add("| 項目 | 値 |")
+    add("|---|---|")
+    add("| `git_commit.txt` | `bd0609749afdfa2a`（両者同一） |")
+    add("| `config.yaml` の sha256 | `9cf8c2dde6920f01`（バイト一致） |")
+    add("| `command.sh` | `python scripts/train_s4_tecno.py --seed 42`（同一） |")
+    add("| `server.txt` | `efros`（同一） |")
+    add("")
+    add("それでも結果は違う:")
+    add("")
+    add("```")
+    add("phase_accuracy   0.9042904290429042  vs  0.8970297029702970   (Δ = 0.00726)")
+    add("phase_macro_f1   0.7405981456025096  vs  0.6571673826301749   (Δ = 0.08343)")
+    add("epoch (best)     49                  vs  31")
+    add("```")
+    add("")
+    add("### 25.2 seed は分散を制御できていない")
+    add("")
+    add("対照実験（17 run / seed42×7・123×5・456×5）で、")
+    add("**同一 seed 内のばらつきが seed 間のばらつきを全指標で上回る**:")
+    add("")
+    add("| 指標 | within-seed σ | between-seed σ | 比 |")
+    add("|---|---:|---:|---:|")
+    add("| accuracy | 0.004647 | 0.003385 | **1.37** |")
+    add("| macro_f1 | 0.020214 | 0.008879 | **2.28** |")
+    add("| jaccard | 0.019112 | 0.007814 | **2.45** |")
+    add("| edit_score | 1.981335 | 1.478973 | **1.34** |")
+    add("| seg_f1_50 | 0.031471 | 0.019595 | **1.61** |")
+    add("")
+    add("### 25.3 原因 — GPU の決定性が一切制御されていない")
+    add("")
+    add("```python")
+    add("# scripts/train_s4_tecno.py:192-195")
+    add('device = torch.device("cuda" if torch.cuda.is_available() else "cpu")')
+    add("random.seed(args.seed)")
+    add("np.random.seed(args.seed)")
+    add("torch.manual_seed(args.seed)      # ← CPU 側のみ")
+    add("```")
+    add("")
+    add("`torch.cuda.manual_seed_all` / `torch.use_deterministic_algorithms` /")
+    add("`cudnn.deterministic` / DataLoader の `worker_init_fn` / `generator` /")
+    add("`PYTHONHASHSEED` は **1 つも設定されていない**。")
+    add("さらに 50 epoch の best-of-N 選択（`:263`）が非決定性を増幅する")
+    add("（best epoch が 31〜50 に散る）。")
+    add("")
+    add("リポジトリ自身の診断ツール `scripts/analysis/diag_same_seed_variance.py` も")
+    add("同じ結論を出す: `N1 VERDICT: CONFIG_DIFF + UNCONTROLLED_NONDETERMINISM`。")
+    add("")
+    add("### 25.4 Δ の解釈への含意")
+    add("")
+    add("1. **paired-σ は「seed を変えたときの変動」ではなく「同じ設定で回し直したときの")
+    add("   変動」を主に測っている。** §10.1 の「3-seed の σ」という想定は成立していない。")
+    add("2. `significant` と出た実験も、**測っているのは注入効果 + 非決定性**である。")
+    add("   Δ が within-seed σ（accuracy で 0.0046）より小さい主張は特に慎重に扱うこと。")
+    add("3. seed ごとに **1 本を選ぶ**代表規約（`latest` / `first` / mtime 最大）は、")
+    add("   within-seed 分布から 1 標本を引くことに等しい。")
+    add("   **`mean` を既定にしたのはこの理由による**（within-seed ノイズを平均で潰す）。")
+    add("   同じ発想はリポジトリ内に先例がある —")
+    add("   `scripts/paired_sigma_3seed.py:5`「phase_seed を平均 → phase 学習の非決定性を除去」。")
+    add("")
+    add("### 25.5 代表選択の規約がリポジトリ内で 4 つに割れている")
+    add("")
+    add("| 方式 | 出典 |")
+    add("|---|---|")
+    add("| seq 最大 | `src/egosurgery/utils/transfer_delta_report.py:55,86-87` |")
+    add("| mtime 最大 | `scripts/report_daux_paired.py:12-13,43-47` |")
+    add("| 辞書順末尾 | `scripts/report_t1a_boundary.py:46-49` / `compare_causal_decode.py:76` |")
+    add("| 代表を選ばず平均 | `scripts/paired_sigma_3seed.py:5,59-60` |")
+    add("| **規約を決めないと明記** | `scripts/analysis/delta_allrun_recompute.py:4-10` |")
+    add("")
+    add("なお mtime 方式は使えない。`metrics.json` の mtime は git チェックアウト時刻")
+    add("（全件 2026-07-31 14:49）であり実験の新旧を表していない。")
+    add("")
+    add("**根本対処は「非決定性を制御して再実行する」ことであり、")
+    add("代表値の選び方を工夫することではない。**（backlog B-20）")
+    add("")
+
+    # ---------------------------------------------------------------- #
+    add("## 26. 非決定性の棚卸しと影響範囲")
+    add("")
+    add("§25 の欠陥が `train_s4_tecno.py` 固有かを全スクリプトで確認した。")
+    add("全件は `anomalies/determinism_audit.csv`。")
+    add("")
+    add("### 26.1 🔴 決定的になり得る学習スクリプトは **1 本も無い**")
+    add("")
+    dh_, dr_ = build_determinism_audit(records)
+    cuda = [r for r in dr_ if r.get("uses_cuda")]
+    add(f"監査 {len(dr_)} スクリプト / うち CUDA を使う **{len(cuda)}** 本 / ")
+    add(f"`can_be_deterministic = True` は **{sum(1 for r in dr_ if r.get('can_be_deterministic'))}** 本。")
+    add("")
+    add("| 制御項目 | 設定している本数 |")
+    add("|---|---:|")
+    for k in DETERMINISM_CHECKS:
+        add(f"| `{k}` | {sum(1 for r in cuda if r.get(k))} / {len(cuda)} |")
+    add("")
+    add("**`torch.use_deterministic_algorithms` はどのスクリプトも呼んでいない。**")
+    add("これが無い限り GPU 上で bit 単位の再現は保証されないため、")
+    add("`can_be_deterministic` は全件 `False` になる。")
+    add("")
+    add("### 26.1.1 制御の張り方が 2 系統に分かれている")
+    add("")
+    add("`seed_setup_via` 列で区別できる。")
+    add("")
+    via = Counter(r.get("seed_setup_via") for r in dr_ if r.get("seed_setup_via"))
+    add("| seed_setup_via | 本数 | 意味 |")
+    add("|---|---:|---|")
+    add(f"| `direct` | {via.get('direct', 0)} | ファイル内で直接 seed を張る（`scripts/train_*.py` 系）|")
+    add(
+        f"| `seed_everything` | {via.get('seed_everything', 0)} | "
+        "`src/egosurgery/utils/seed.py` のヘルパ経由 |"
+    )
+    add(
+        f"| `seed_everything+delegates_to_engines` | {via.get('seed_everything+delegates_to_engines', 0)} | "
+        "ヘルパを呼びつつ更に委譲もする |"
+    )
+    add(
+        f"| `delegates_to_engines` | {via.get('delegates_to_engines', 0)} | "
+        "自分では触らず trainer に委譲（`src/egosurgery/train.py`）|"
+    )
+    add(f"| `none` | {via.get('none', 0)} | seed を張らない |")
+    add("")
+    add("**`seed_everything()` は 6 項目を設定している**")
+    add("（`random` / `PYTHONHASHSEED` / `numpy` / `torch.manual_seed` /")
+    add("`torch.cuda.manual_seed_all` / `cudnn.deterministic=True` / `cudnn.benchmark=False`）。")
+    add("したがって Hydra 経路（`src/egosurgery/`）は `scripts/train_*.py` 系より制御が厚い。")
+    add("")
+    add("> ⚠️ **この表はファイル単位の静的解析である。** 委譲は 1 段だけ追っている")
+    add("> （`seed_everything` の呼び出しと `_select_trainer` 系の委譲）。")
+    add("> `src/egosurgery/train.py` の行は `delegates_to_engines` であり、")
+    add("> 実際の制御状況は委譲先 `engines/*_trainer.py` の行を見ること。")
+    add("")
+    add("一方 `scripts/train_*.py` 系（**`direct`**、run 数で見て大半）は")
+    add("CPU 側 3 種のみで **GPU 側の制御が 1 つも無い**。")
+    add("")
+    n_cuda_runs = sum(r.get("n_runs", 0) for r in cuda)
+    add(f"影響を受ける run: **{n_cuda_runs}**（CUDA 学習スクリプトが entrypoint の run）")
+    add("")
+    add("| スクリプト | run 数 | 欠落している必須項目 |")
+    add("|---|---:|---|")
+    for r in sorted(cuda, key=lambda x: -x.get("n_runs", 0)):
+        if r.get("n_runs"):
+            add(f"| `{r['script']}` | {r['n_runs']} | `{r['missing_required']}` |")
+    add("")
+    add("### 26.2 監査できなかったもの")
+    add("")
+    miss = [r for r in dr_ if r.get("file_state") != "ok"]
+    if miss:
+        add("| スクリプト | 状態 | run 数 |")
+        add("|---|---|---:|")
+        for r in sorted(miss, key=lambda x: (x["file_state"], x["script"])):
+            add(f"| `{r['script']}` | `{r['file_state']}` | {r['n_runs']} |")
+        add("")
+        add("`empty` は 0 バイトの scaffold、`missing` は**この worktree に**実体が無いもの。")
+        add("")
+        add("`missing` は「存在しない」ではなく「`third_party/` が同期対象外」である")
+        add("（`.stglobalignore` が `third_party` を除外。入れ子 `.git` を含むため）。")
+        add("本体側 `/home/ubuntu/slocal2/m2/third_party/` には Co-DETR / DAC-DETR /")
+        add("DI-MaskDINO / MaskDINO / Mr.DETR / Relation-DETR / Stable-DINO / detrex がある。")
+        add("**したがってこれらの run の決定性は runindex 単独では確認できない。**")
+        add("")
+        add("### 26.2.1 第三者 entrypoint について分かっていること")
+        add("")
+        add("本体側の実体を読んだ範囲では、制御の状況は自前スクリプトと異なる:")
+        add("")
+        add("| entrypoint | 状況 |")
+        add("|---|---|")
+        add("| Relation-DETR | `main.py:123-127` に **完全な決定性ブロック**（`use_deterministic_algorithms` / `worker_init_fn` / `generator`）がある。ただし `--use-deterministic-algorithms` フラグでゲートされており、該当 run の `command.sh` は渡していない。さらに `--mixed-precision fp16` で走っている |")
+        add("| detrex | detectron2 の `default_setup` が seed 系と `worker_init_fn` を張るが、`cudnn.deterministic` と `use_deterministic_algorithms` は設定しない |")
+        add("")
+        add("**フラグ 1 つで決定的にできる経路が存在するのに使われていない**、というのが")
+        add("Relation-DETR 経路の状況である。")
+        add("")
+        add("### 26.2.2 監査表を読むときの注意")
+        add("")
+        add("| 列 | 注意 |")
+        add("|---|---|")
+        add("| `dataloader_worker_init_fn` / `dataloader_generator` | **DataLoader を使わないスクリプトには該当しない。** 自前スクリプト 8 本は `DataLoader` を一切使わず、メモリ上の clip リストを `random.shuffle` で並べ替えている。`uses_dataloader` 列で判別すること |")
+        add("| `pythonhashseed` | `os.environ[\"PYTHONHASHSEED\"]` への**実行時代入は効かない**。CPython のハッシュ乱択はインタプリタ起動時に確定するため、既に走っているプロセスには影響しない。実効性は `pythonhashseed_effective` 列（シェル側の export を検出）で見ること。**実測では 0 / 20** |")
+        add("| `explicitly_disables_determinism` | `src/egosurgery/engines/mmdet_trainer.py` は `mmcfg.randomness = dict(..., deterministic=False, ...)` を明示指定し、**mmengine 側の決定化を止めている**。制御が「無い」のではなく「切っている」 |")
+        add("")
+
+    add("### 26.3 影響範囲の定量 — within-seed と between-seed の比較")
+    add("")
+    add("全件は `anomalies/within_vs_between_seed.csv`（1 行 = 1 実験 × 1 指標）。")
+    add("")
+    wh_, wr_ = build_within_vs_between(records)
+    if wr_:
+        exceed = [r for r in wr_ if r["within_exceeds_between"]]
+        conf = [r for r in exceed if r["within_is_confounded_by_condition"]]
+        clean = [r for r in exceed if not r["within_is_confounded_by_condition"]]
+        add(f"- 反復がある (実験 × 指標) の組: **{len(wr_)}**")
+        add(f"- そのうち **within > between**: **{len(exceed)}**")
+        add(f"  - 条件混在の交絡あり: {len(conf)}")
+        add(f"  - 交絡なし（純粋に非決定性）: **{len(clean)}**")
+        add("")
+        add("**⚠️ 単純に「47 件で within が上回る」と読んではいけない。**")
+        add("`b2a_ro_oracle_noise000` のように 1 つの名前に 4 水準の条件が混ざっている実験")
+        add("（§7.3）では、within-seed のばらつきは非決定性ではなく**条件差**である。")
+        add("`within_is_confounded_by_condition` 列で切り分けること。")
+        add("")
+        add("| step | 組数 | 比の中央値 | 比の最大 |")
+        add("|---|---:|---:|---:|")
+        bystep: dict[str, list[float]] = defaultdict(list)
+        for r in clean:
+            bystep[str(r["step"])].append(r["ratio_within_over_between"])
+        for s, v in sorted(bystep.items(), key=lambda x: -statistics.median(x[1])):
+            add(f"| `{s}` | {len(v)} | {statistics.median(v):.3f} | {max(v):.3f} |")
+        add("")
+        add("### 26.4 🔴 汚染された 1 つの分母が 117 実験に伝播している")
+        add("")
+        add("Δ の σ は注入側と対照側の**合成**なので、対照が汚染されていれば")
+        add("それを分母に使う全実験の σ が汚染される。")
+        add("")
+        add("対照実験 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42`")
+        add("の within/between 比は **accuracy 1.373 / macro_f1 2.277**（交絡なし）。")
+        add("この実験を `control_of` に持つ実験がその比を継承する。")
+        add("")
+    if exp_rows:
+        si = Counter(
+            r.get("sigma_interpretation") for r in exp_rows if r.get("control_of")
+        )
+        add("| `sigma_interpretation` | 実験数 |")
+        add("|---|---:|")
+        for k in ("mixed_with_nondeterminism", "seed_effect", "unknown"):
+            add(f"| `{k}` | {si.get(k, 0)} |")
+        add("")
+        add(f"**`control_of` を持つ {sum(si.values())} 実験のうち "
+            f"{si.get('mixed_with_nondeterminism', 0)} の σ は seed 効果を測っていない。**")
+        add("")
+        sig_mixed = sum(
+            1
+            for r in exp_rows
+            if r.get("verdict_10_1") == "significant"
+            and r.get("sigma_interpretation") == "mixed_with_nondeterminism"
+        )
+        add(f"うち `verdict_10_1 = significant` は **{sig_mixed}** 件。")
+        add("これらは「§10.1 の条件は満たすが、σ が想定どおりのものではない」状態である。")
+        add("**判定を無効とするか、非決定性を制御して再実行するかは研究上の判断**であり、")
+        add("harvester は判定を消さずに `sigma_interpretation` で印を付けるに留める。")
+        add("")
+
+    # ---------------------------------------------------------------- #
+    add("## 27. 論点: 「全 seed 同符号」条件は dedup 後も同じ意味か")
+    add("")
+    add("**これは判断を仰ぐための論点整理であり、harvester は定義を変えていない。**")
+    add("")
+    add("### 27.1 何が変わったか")
+    add("")
+    add("§24 で seed ごとに複数 run がある場合 `mean` で畳むようにした。その結果:")
+    add("")
+    add("| | 畳み込み前 | 畳み込み後（現在） |")
+    add("|---|---|---|")
+    add("| 「全 seed 同符号」の対象 | 個々の run の Δ | **seed 平均どうしの Δ** |")
+    add("| 符号を見る個数 | run 数（対照側は最大 7）| seed 数（通常 3） |")
+    add("")
+    add("### 27.2 🔴 そもそも正本に「同符号」の規定は無い")
+    add("")
+    add("`docs/m2_plan_rewrite/` を全文検索しても **「同符号」は 0 件**である。")
+    add("この条件は 2026-06-20 の運用判断として実験ログに導入された:")
+    add("")
+    add("> `docs/experiment_log.md:527`")
+    add("> 「`scripts/analyze_phase_coupling.py` を **paired-σ 判定に改修**")
+    add("> （matched 差の有意性を base 群σでなく **対seed差σ + 全seed同符号**で判定）」")
+    add("")
+    add("### 27.3 論点")
+    add("")
+    add("1. **既存実装は「個々の run の Δ」の符号を見ている。**")
+    add("   `scripts/report_t1a_boundary.py:57-61` / `report_daux_paired.py:66-73` /")
+    add("   `analyze_t1a_factorial_ablation.py:124-125` はいずれも")
+    add("   `d = [vals[s] - base[s] for s in SEEDS]`（seed ごとに 1 run）である。")
+    add("   **平均してから符号を見る実装はリポジトリ内に無い**")
+    add("   （`paired_sigma_3seed.py` は平均するが、平均する軸は phase_seed で")
+    add("   符号を見る軸 detector_seed とは別軸）。")
+    add("   したがって現在の runindex の方式（符号軸と同じ軸を mean で畳んでから")
+    add("   符号を見る）には**先例が無い**。")
+    add("2. **平均は符号のばらつきを隠す。** 同一 seed 内で Δ の符号が")
+    add("   割れていても、平均の符号は片方に決まる。§25 のとおり同一条件反復の")
+    add("   ばらつきが大きいため、これは実際に起こりうる。")
+    add("3. **n=3 の同符号条件は偶然一致しやすい。** 効果が無くても")
+    add("   3 つの符号が揃う確率は 2 × (1/2)^3 = **25%**。")
+    add("   σ 条件と併せた偶然通過率も σ 条件単独からわずかしか下がらず、")
+    add("   n=3 では検出力の裏付けとして弱い。")
+    add("4. 代替案としては「全 run の Δ の符号が揃う」（より厳しい）、")
+    add("   「符号一致率を出す」（連続量にする）などがありうる。")
+    add("")
+    add("現状は `delta_same_sign_<metric>`（seed 平均ベース）を出しており、")
+    add("`delta_n_seeds_<metric>` で何個の符号を見たかが分かる。")
+    add("")
+    add("### 27.4 判断: **保留**（2026-08-01）")
+    add("")
+    add("利用者の判断により定義変更は保留となった。理由:")
+    add("")
+    add("> σ の 123/136 が `mixed_with_nondeterminism` である以上、")
+    add("> どの定義を採っても σ そのものが汚染されている。")
+    add("> **条件の定義より B-20（非決定性の解消）が先。**")
+    add("")
+    add("参考として 3 案の実測値（`accuracy` / 134 実験）:")
+    add("")
+    add("| 案 | 定義 | 同符号となる実験数 |")
+    add("|---|---|---:|")
+    add("| 現状 | seed 平均どうしの Δ の符号が揃う | **125** |")
+    add("| 厳格 | 全 run 組合せの差の符号が揃う | 124 |")
+    add("| 連続量 | 符号一致率（中央値 1.000 / 最小 0.529） | 一致率 100% が 124 |")
+    add("")
+    add("3 案の差は 1 件しかない。**定義の選択より σ の汚染の方が影響が大きい**")
+    add("という判断は実測に整合している。")
+    add("")
+
+    return "\n".join(lines) + "\n"
+
+
+# --------------------------------------------------------------------------- #
+def find_nonstandard_groups() -> list[tuple[str, int]]:
+    out = []
+    for d in sorted(EXPERIMENTS.iterdir()):
+        if not d.is_dir():
+            continue
+        if any(d.rglob("metrics.json")):
+            continue
+        out.append((d.name, sum(1 for f in d.rglob("*") if f.is_file())))
+    return out
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--write", action="store_true", help="runindex/ を実際に書き出す")
+    args = ap.parse_args()
+
+    run_dirs = sorted({p.parent for p in EXPERIMENTS.rglob("metrics.json")})
+    records = [build_run_record(d) for d in run_dirs]
+    records.sort(key=lambda r: r["ledger_key"])
+
+    # §3: 実験単位と対照ペアを振る（run 単位の収穫が全部終わってから）
+    recipe_splits = assign_experiment_ids(records)
+    pairing = assign_arms(records)
+
+    nonstandard = find_nonstandard_groups()
+    anomalies = build_anomalies(records, nonstandard, recipe_splits, pairing)
+
+    # ---- レポート ----
+    ok = [r for r in records if not r["harvest_warnings"]]
+    warned = [r for r in records if r["harvest_warnings"]]
+    excluded = [r for r in records if r["excluded"]]
+    nosplit = [r for r in records if r["split"] is None]
+    nohost = [r for r in records if r["host"] is None]
+
+    print("=" * 72)
+    print(f"走査した run 数        : {len(records)}")
+    print(f"  警告なしで収穫       : {len(ok)}")
+    print(f"  警告ありで収穫       : {len(warned)}")
+    print("  収穫失敗             : 0  (metrics.json のパース失敗は 0 件)")
+    print(f"除外フラグ付き         : {len(excluded)}  (削除ではなくフラグ)")
+    print(f"  解析対象             : {len(records) - len(excluded)}")
+    print(f"split 確定不能         : {len(nosplit)}")
+    print(f"host 確定不能          : {len(nohost)}")
+    print(f"非標準構造の群         : {len(nonstandard)}  (取りこぼし run 数 = 0)")
+    print("=" * 72)
+
+    print("\n[除外の内訳]")
+    for reason, n in Counter(r["exclusion_reason"] for r in excluded).most_common():
+        print(f"  {reason:24s} {n}")
+
+    print("\n[per_class_kind の内訳]")
+    for k, n in Counter(r["per_class_kind"] for r in records).most_common():
+        print(f"  {str(k):24s} {n}")
+
+    print("\n[split の内訳]")
+    for k, n in Counter(r["split"] for r in records).most_common():
+        print(f"  {str(k):24s} {n}")
+
+    print("\n[host の内訳]")
+    for k, n in Counter(r["host"] for r in records).most_common():
+        print(f"  {str(k):24s} {n}")
+
+    print("\n[非標準構造の群]")
+    for name, n in nonstandard:
+        print(f"  {name:24s} {n} ファイル")
+
+    exps = {r["experiment_id"] for r in records if r.get("experiment_id")}
+    print("\n[実験単位 (§3)]")
+    print(f"  experiment 数           : {len(exps)}")
+    print(f"  experiment_id 未確定 run: {sum(1 for r in records if not r.get('experiment_id'))}")
+    print(f"  eval_recipe で分離した base: {len(recipe_splits)}")
+    print("\n[対照ペア (§3.2)]")
+    for k, v in sorted((pairing.get("stats") or {}).items(), key=lambda x: -x[1]):
+        print(f"  {k:32s} {v}")
+    for name, eid in sorted((pairing.get("resolved") or {}).items()):
+        print(f"  解決: {name!r} -> {eid}")
+    for u in pairing.get("unresolved") or []:
+        print(f"  未解決: {u}")
+
+    if args.write:
+        write_runindex(records, anomalies)
+        n_runs = len(list((RUNINDEX / "runs").glob("*.json")))
+        with (RUNINDEX / "index.csv").open(encoding="utf-8") as fh:
+            n_rows = sum(1 for _ in csv.DictReader(fh))
+        print(f"\n[書き出し完了] runs/*.json = {n_runs}, index.csv = {n_rows} 行")
+    else:
+        print("\n" + "=" * 72)
+        print("DRY-RUN: 何も書き出していない。書き出すには --write を付ける。")
+        print("=" * 72)
+        print("\n---------------- anomalies.md (全文) ----------------\n")
+        print(anomalies)
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
