@@ -1,0 +1,72 @@
+{
+  "question": "AlignDETR の det→phase 負転移は signature 術具 AP の欠損で説明できるか",
+  "signature3": [
+    "Bipolar Forceps",
+    "Needle Holders",
+    "Scalpel"
+  ],
+  "generic12_used": [
+    "Electric Cautery",
+    "Forceps",
+    "Gauze",
+    "Hook",
+    "Mouth Gag",
+    "Raspatory",
+    "Scissors",
+    "Skewer",
+    "Suction Cannula",
+    "Syringe",
+    "Tweezers"
+  ],
+  "excluded_classes": [
+    "Retractor"
+  ],
+  "excluded_reason": "val instance数=0 のため AP=NaN（既存 signature_subset_detector_compare と同じ扱い）",
+  "note": "generic は台帳定義上12クラスだが Retractor 除外により実質11クラス",
+  "per_seed": {
+    "seeds": [
+      42,
+      123,
+      456
+    ],
+    "signature3_AP_drop_pp": [
+      -1.0876538842922354,
+      0.137743919696387,
+      0.28103208009391256
+    ],
+    "generic11_AP_drop_pp": [
+      1.6477716949822716,
+      0.6142530745524036,
+      3.080737869849561
+    ],
+    "R": [
+      -0.660075596397435,
+      0.22424620307640916,
+      0.09122232788589571
+    ]
+  },
+  "R_mean": -0.11486902181171003,
+  "R_pstdev": 0.38932548043276083,
+  "same_sign_all_seeds": false,
+  "significant_paired_sigma": false,
+  "bipolar_forceps_AP_drop_pp_per_seed": [
+    -1.0343089824135898,
+    1.9375117610193948,
+    3.155165648218272
+  ],
+  "bipolar_forceps_AP_drop_pp_mean": 1.3527894756080259,
+  "source": {
+    "relation_detr_dirs": {
+      "42": "experiments/baselines/_legacy_score_thr_0/s0_016_relationdetr_bbox_seed42",
+      "123": "experiments/baselines/_legacy_score_thr_0/s0_017_relationdetr_bbox_seed123",
+      "456": "experiments/baselines/_legacy_score_thr_0/s0_018_relationdetr_bbox_seed456"
+    },
+    "align_detr_dirs": {
+      "42": "experiments/baselines/_legacy_score_thr_0/s0_028_aligndetr_bbox_seed42",
+      "123": "experiments/baselines/_legacy_score_thr_0/s0_029_aligndetr_bbox_seed123",
+      "456": "experiments/baselines/_legacy_score_thr_0/s0_030_aligndetr_bbox_seed456"
+    },
+    "split": "val (1515 images) — eval_recipe score_thr=0.0 NMS-free, 3-seed"
+  },
+  "test_split_status": "未実施: relationdetr/aligndetr S0 checkpoint(*.pth) が本ホスト(andrew)に不在。Notion台帳の Server=philip 資産のため、test(4265)split分解には philip からの転送が必要。"
+}

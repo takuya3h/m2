@@ -452,6 +452,7 @@ EgoSurgery データの前処理・データセット・augmentation・サンプ
 | `src/egosurgery/datasets/datamodule.py` | `EgoSurgeryDataModule` — train/val/test ローダ統合 |
 | `scripts/preprocess_ego.py` | EgoSurgery → COCO 形式への前処理 CLI |
 | `scripts/generate_copypaste_bank.py` | 稀少クラス crop バンク生成 CLI |
+| `scripts/audit_tool_class_distribution.py` | `egosurgery_tool` の split × クラス分布監査 CLI（`report.json` + CSV を生成） |
 | `tests/test_datasets.py` | データパイプライン統合テスト（6 ケース） |
 
 ### フェーズ II Part 2（Backbone・検出ヘッド・損失）— 完了
@@ -862,6 +863,22 @@ T1a-Deep の負の結果（時系列容量は寄与なし）を受けて、T1a �
 
 **証跡**: `experiments/audit/t1b_l0_audit_{film,ca,hc}_seed42/audit_report.json` / Notion 意思決定ログ「§18.4 L0 監査 3 variant 全 PASS: §7.5 撤退ラインの査読防御強化」(38bee4d4-7777-8131-87de-e57c2bfb19dd)
 
+### 2026-07-31 手アノテーション系の整理 — `egosurgery_hand4` を退避（run 0 件の scaffold）
+
+`data/annotations/` 配下の手系 3 パスが 1 本の生成チェーンの各段だったことを実測で確定し、未使用段を退避した。
+
+- **生成チェーン**: `egosurgery_tool/instances_*`（術具15・原本）＋ `egosurgery_tool_hand/{train,val,test}.json`（手4・原本、
+  `egosurgery_tool/hand/` はここへの **symlink**）→ `build_tool_hand_coco.py` → `egosurgery_tool_hand/instances_*`（19クラス統合）
+  → `build_hand_coco.py` → `egosurgery_hand4/instances_*`（手4・id 0-3・bbox only）。
+- **使用実績**: 現役学習は `egosurgery_tool`（config.yaml 59 件）。`egosurgery_tool_hand` は直接学習した run が
+  全て phase0 アーカイブ配下だが、`build_oracle_handfeature.py` → `experiments/transfer/haux_*`（18 run）の
+  oracle 手特徴の供給源として**現役**。`egosurgery_hand4` は **run 0 件**。
+- **対応**: `egosurgery_hand4/` を `data/annotations/_deprecated/egosurgery_hand4/` へ退避し `DEPRECATED.md` を同梱
+  （経緯・代替・戻し方を記載）。`configs/stage/s2_hand_independent.yaml` の前提データ注記に退避と再生成手順を追記。
+  実験値への影響なし（run 0 件）。復元は `mv` か `python scripts/build_hand_coco.py`（手 box 計 46,320 が検証基準）。
+- **注意**: 上記 3 パスの `segmentation` は全て bbox 由来の矩形ダミー。マスクが要る場合は
+  `data/hts_reconstruction/egosurgery_hts2_tool_aligned/hand_tool_seg_v2/` を使う。
+
 ### 2026-07-01 STEP D-aux 実装 — 系統①手情報 / 系統②時系列 のインフラ構築（実行は lecun）
 
 補助信号探索プロンプト `prompts/ Claude_code_prompt_hand_temporal` を実装。**コード実装 + GT だけで動く
@@ -936,6 +953,23 @@ REST Integration トークン（`.env` の `NOTION_API_KEY`）に **全 5 DB（r
     専用スクリプト `scripts/post_t1b_ca_to_notion.py`（inj/ctrl/純効果を整形して upsert）を追加。
 - **意思決定ログ / 失敗知見**: 「方向非対称確定」「CA≈FiLM の機構独立性」等を反映。
 - **「現在の研究状態」ページ**: STEP C 完了・方向非対称確定・次アクション（test split per-class rare 標的化）に更新。
+
+### 2026-07-13 凍結源の per-class AP 分解（台帳 must）— AlignDETR 負転移は signature 術具 AP 欠損で説明できず
+
+Notion 実験Run台帳「凍結源の per-class AP 分解」（S0・must・eval-only）の val 主判定を実施。既存の検証済み
+per_class_ap.json（Relation-DETR / AlignDETR 各 3-seed・score_thr=0.0 NMS-free・val 1515枚）から
+選択性指標 **R=(signature3[Bipolar Forceps/Needle Holders/Scalpel] AP低下)÷(generic11 AP低下)** を seed 毎に再計算
+（新規学習・推論なし）。証跡: `experiments/analysis/frozen_source_signature3_R_index/`。
+
+- **R = −0.11±0.39、seed 間で符号不一致 → 非有意**。signature3 AP低下はほぼゼロ（符号不一致）、
+  generic11 AP低下は全 seed 正・平均+1.78pp。**AlignDETR の検出劣化は signature 術具でなく汎用術具に集中**。
+- → **仮説（負転移=signature術具AP欠損で説明できる）は支持されず**。2026-07-05
+  `signature_subset_detector_compare` の結論（Align劣位は phase 無関係術具に局在）と整合し、凍結源＝Relation-DETR
+  確定判断を追加補強。
+- **未実施（要判断）**: test split(4265) 確認は relationdetr/aligndetr の S0 checkpoint(\*.pth) 6件が本ホスト
+  (andrew) に不在（台帳 Server=philip の資産）のため、philip からの転送が必要。hemostasis F1「0.801→0.179」の
+  downstream 直接検証も `s4_phase_baseline_010-012_..._aligndetr_*`（efros 実行・metrics.json 空の scaffold）が
+  本ホストにないため未検証。Notion 台帳は Status=running・Decision Needed=✓ で更新済み。
 
 ### 2026-07-29 G-2 本実験（ROI チャネル 4 系統 × 3 seed）— 主予測 FAIL・背景除去は効かない（負の結果）
 

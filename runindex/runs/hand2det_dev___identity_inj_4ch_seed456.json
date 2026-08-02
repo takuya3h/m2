@@ -1,0 +1,94 @@
+{
+  "arm": "unknown",
+  "attributes": {
+    "best_is_init": true,
+    "inject_grad_seen": false
+  },
+  "command": "#!/usr/bin/env bash\n# 自動生成: この run を起動したコマンドの記録\n# 生成日時: 2026-07-28T10:09:42+00:00\npython scripts/train_hand2det.py --seed 456 --hand-channels 4 --trainable film --epochs 0\n",
+  "commit": "0ea33cac653285d21f5d06acfd6a3cef4cfe0394",
+  "config_path": "experiments/hand2det_dev/_identity_inj_4ch_seed456/config.yaml",
+  "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
+  "description": "_identity_inj_4ch",
+  "duplicate_bare_keys": [],
+  "epoch": -1,
+  "eval_recipe": null,
+  "eval_recipe_id": null,
+  "excluded": false,
+  "exclusion_reason": null,
+  "experiment_id": "hand2det_dev/identity_inj_4ch/identity_inj_4ch@val",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_seed_declared": null,
+  "frozen_source_tag": null,
+  "gpu": null,
+  "group": "hand2det_dev",
+  "harvest_warnings": [
+    "run 名に seq (3 桁連番) が無い別系統の命名: _identity_inj_4ch_seed456。step には description を充てた。",
+    "per_class_ap.json が空 ({})"
+  ],
+  "host": "efros",
+  "host_raw": "efros",
+  "ledger_key": "hand2det_dev___identity_inj_4ch_seed456",
+  "metrics": {
+    "delta_detection": 0.0,
+    "final_epoch": -1,
+    "final_mAP": 0.721658691470358,
+    "init_mAP": 0.721658691470358,
+    "mAP": 0.721658691470358
+  },
+  "metrics_by_split": {
+    "unknown": {
+      "delta_detection": 0.0,
+      "final_epoch": -1,
+      "final_mAP": 0.721658691470358,
+      "init_mAP": 0.721658691470358,
+      "mAP": 0.721658691470358
+    }
+  },
+  "metrics_nested": {
+    "artifacts": {
+      "checkpoints": "efros:/home/ubuntu/slocal/m2/experiments/hand2det_dev/_identity_inj_4ch_seed456/checkpoints",
+      "logs": "efros:/home/ubuntu/slocal/m2/experiments/hand2det_dev/_identity_inj_4ch_seed456/logs",
+      "predictions": "efros:/home/ubuntu/slocal/m2/experiments/hand2det_dev/_identity_inj_4ch_seed456/predictions",
+      "run_dir": "efros:/home/ubuntu/slocal/m2/experiments/hand2det_dev/_identity_inj_4ch_seed456"
+    }
+  },
+  "metrics_primary_split": null,
+  "notes": null,
+  "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
+  "path": "experiments/hand2det_dev/_identity_inj_4ch_seed456",
+  "per_class": {},
+  "per_class_kind": null,
+  "per_class_metric": null,
+  "per_class_nan_classes": [],
+  "per_class_source": "experiments/hand2det_dev/_identity_inj_4ch_seed456/per_class_ap.json",
+  "per_class_valid_count": 0,
+  "provenance": {
+    "aux_token": "no_aux_token",
+    "commit": "from_git_commit_txt",
+    "epoch": "from_metrics_json",
+    "host": "from_server_txt",
+    "name": "from_dirname_desc_seed_no_seq",
+    "per_class": "from_per_class_ap_json",
+    "per_class_metric": "not_determinable",
+    "seed": "from_dirname_verified_by_command_sh_and_config_yaml",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "from_plan_section_16_7",
+    "step": "from_dirname"
+  },
+  "run_id": "_identity_inj_4ch_seed456",
+  "seed": 456,
+  "seed_agreement": "agree",
+  "seed_command": 456,
+  "seed_config": 456,
+  "seed_detector": null,
+  "seed_phase": null,
+  "seq": null,
+  "split": "val",
+  "step": "_identity_inj_4ch",
+  "subgroup": null
+}

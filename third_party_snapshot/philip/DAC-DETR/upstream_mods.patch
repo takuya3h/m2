@@ -1,0 +1,135 @@
+diff --git a/engine.py b/engine.py
+index cab6c43..d1fc9bd 100644
+--- a/engine.py
++++ b/engine.py
+@@ -256,6 +256,26 @@ def evaluate(
+     if coco_evaluator is not None:
+         if "bbox" in postprocessors.keys():
+             stats["coco_eval_bbox"] = coco_evaluator.coco_eval["bbox"].stats.tolist()
++            # --- per-class AP を COCOeval precision から抽出し dump (EgoSurgery rare/common 集計用) ---
++            # AP = IoU 0.5:0.95 / area=all / maxDet=100 の平均 (mmdet 等の per-class AP と同定義)。
++            try:
++                if utils.is_main_process() and output_dir:
++                    import json as _json
++                    ce = coco_evaluator.coco_eval["bbox"]
++                    prec = ce.eval["precision"]  # [T,R,K,A,M]
++                    cat_ids = list(ce.params.catIds)
++                    id2name = {c["id"]: c["name"] for c in base_ds.loadCats(cat_ids)}
++                    per_class = {}
++                    for k, cid in enumerate(cat_ids):
++                        pr = prec[:, :, k, 0, -1]
++                        pr = pr[pr > -1]
++                        per_class[id2name.get(cid, str(cid))] = (
++                            float(pr.mean()) if pr.size else float("nan")
++                        )
++                    with open(os.path.join(output_dir, "per_class_ap_egosurgery.json"), "w") as _f:
++                        _json.dump(per_class, _f, indent=2)
++            except Exception as _e:  # 証跡の本筋(coco_eval_bbox)は壊さない
++                print(f"[per-class-ap] WARN: {_e}")
+         if "segm" in postprocessors.keys():
+             stats["coco_eval_masks"] = coco_evaluator.coco_eval["segm"].stats.tolist()
+     if panoptic_res is not None:
+diff --git a/main.py b/main.py
+index a403624..3f93993 100644
+--- a/main.py
++++ b/main.py
+@@ -207,6 +207,14 @@ def get_args_parser():
+     # dataset parameters
+     parser.add_argument("--dataset_file", default="coco")
+     parser.add_argument("--coco_path", default="./data/coco", type=str)
++    parser.add_argument(
++        "--num_classes", default=None, type=int,
++        help="override num_classes for custom datasets (EgoSurgery=15)",
++    )
++    parser.add_argument(
++        "--finetune", default="", type=str,
++        help="COCO-pretrained checkpoint to fine-tune from; drops shape-mismatched keys (e.g. class_embed 91->N)",
++    )
+     parser.add_argument("--coco_panoptic_path", type=str)
+     parser.add_argument("--remove_difficult", action="store_true")
+ 
+@@ -376,6 +384,26 @@ def main(args):
+         model_without_ddp.detr.load_state_dict(checkpoint["model"])
+ 
+     output_dir = Path(args.output_dir)
++    # --- COCO 事前学習重みからの fine-tune (他検出器と統一recipe) ---
++    # 形状不一致キー(class_embed 91->15 等)を除外して strict=False ロード。
++    # optimizer/lr_scheduler/epoch は読み込まない (start_epoch=0 のまま新規学習扱い)。
++    if args.finetune and os.path.exists(args.finetune):
++        print(f"[finetune] loading COCO-pretrained weights from {args.finetune}")
++        ft_ckpt = torch.load(args.finetune, map_location="cpu")
++        ft_src = ft_ckpt["model"] if "model" in ft_ckpt else ft_ckpt
++        ft_model_sd = model_without_ddp.state_dict()
++        ft_keep, ft_drop = {}, []
++        for k, v in ft_src.items():
++            if k in ft_model_sd and ft_model_sd[k].shape == v.shape:
++                ft_keep[k] = v
++            else:
++                ft_drop.append(k)
++        ft_missing, ft_unexpected = model_without_ddp.load_state_dict(ft_keep, strict=False)
++        ft_missing = [k for k in ft_missing if not (k.endswith("total_params") or k.endswith("total_ops"))]
++        print(f"[finetune] loaded {len(ft_keep)} tensors; dropped {len(ft_drop)} mismatch/unknown keys")
++        print(f"[finetune] dropped sample: {ft_drop[:4]}")
++        print(f"[finetune] reinit(missing) count: {len(ft_missing)}; sample: {ft_missing[:4]}")
++
+     if args.resume and os.path.exists(args.resume):
+         if args.resume.startswith("https"):
+             checkpoint = torch.hub.load_state_dict_from_url(
+diff --git a/models/backbone.py b/models/backbone.py
+index 35371a5..5191c28 100644
+--- a/models/backbone.py
++++ b/models/backbone.py
+@@ -18,6 +18,7 @@
+ """
+ Backbone modules.
+ """
++import os
+ from collections import OrderedDict
+ 
+ import torch
+@@ -138,8 +139,14 @@ class Backbone(BackboneBase):
+             pretrained=False,
+             norm_layer=norm_layer,
+         )
+-        model_path = './initmodel/resnet50-19c8e357.pth'
+-        backbone.load_state_dict(torch.load(model_path), strict=False)
++        # ImageNet 事前重みはローカルにあれば読む。COCO 重みから fine-tune する場合は
++        # backbone も後段で上書きされるため、ファイル欠如時は skip して構築を続行する。
++        model_path = os.environ.get('DAC_RESNET50_INIT', './initmodel/resnet50-19c8e357.pth')
++        if os.path.exists(model_path):
++            backbone.load_state_dict(torch.load(model_path), strict=False)
++        elif is_main_process():
++            print(f"[backbone] WARN: ImageNet init not found ({model_path}); "
++                  f"relying on --finetune/--resume for backbone weights")
+         assert name not in ("resnet18", "resnet34"), "number of channels are hard coded"
+         super().__init__(backbone, train_backbone, return_interm_layers)
+         if dilation:
+diff --git a/models/deformable_detr.py b/models/deformable_detr.py
+index ed1249a..0d3b22c 100644
+--- a/models/deformable_detr.py
++++ b/models/deformable_detr.py
+@@ -928,6 +928,9 @@ def build(args):
+     num_classes = 20 if args.dataset_file != "coco" else 91
+     if args.dataset_file == "coco_panoptic":
+         num_classes = 250
++    # EgoSurgery 等のカスタムデータ用に num_classes を明示上書き可能にする
++    if getattr(args, "num_classes", None) is not None:
++        num_classes = args.num_classes
+     device = torch.device(args.device)
+ 
+     backbone = build_backbone(args)
+diff --git a/models/ops/MultiScaleDeformableAttention.egg-info/SOURCES.txt b/models/ops/MultiScaleDeformableAttention.egg-info/SOURCES.txt
+index 60096be..028c6ae 100644
+--- a/models/ops/MultiScaleDeformableAttention.egg-info/SOURCES.txt
++++ b/models/ops/MultiScaleDeformableAttention.egg-info/SOURCES.txt
+@@ -1,7 +1,7 @@
+ setup.py
+-/root/paddlejob/workspace/env_run/models/ops/src/vision.cpp
+-/root/paddlejob/workspace/env_run/models/ops/src/cpu/ms_deform_attn_cpu.cpp
+-/root/paddlejob/workspace/env_run/models/ops/src/cuda/ms_deform_attn_cuda.cu
++/home/ubuntu/slocal2/m2/third_party/DAC-DETR/models/ops/src/vision.cpp
++/home/ubuntu/slocal2/m2/third_party/DAC-DETR/models/ops/src/cpu/ms_deform_attn_cpu.cpp
++/home/ubuntu/slocal2/m2/third_party/DAC-DETR/models/ops/src/cuda/ms_deform_attn_cuda.cu
+ MultiScaleDeformableAttention.egg-info/PKG-INFO
+ MultiScaleDeformableAttention.egg-info/SOURCES.txt
+ MultiScaleDeformableAttention.egg-info/dependency_links.txt

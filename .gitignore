@@ -11,9 +11,6 @@ data/annotations/**/*.json
 data/annotations/egosurgery_hts/**
 !data/annotations/egosurgery_hts/**/
 !data/annotations/egosurgery_hts/**/.gitkeep
-data/annotations/pseudo_labels/**
-!data/annotations/pseudo_labels/**/
-!data/annotations/pseudo_labels/**/.gitkeep
 
 data/processed/**
 !data/processed/**/
@@ -157,6 +154,12 @@ experiments/baselines/_aborted_codetr_no_config/
 experiments/baselines/_smoke_e3/
 experiments/phase0/_pre_redo_s0_smoke/
 experiments/phase0/_prior_no_eval_recipe/
+# 孤児 run 退避 (#05-lecun): metrics.json/config.yaml/command.sh/git_commit.txt/
+# notes.md がすべて無く checkpoints のみ・失敗ログも無い 9 run を退避。
+# (transfer/t1a_frozen_src ×6, phase1/s4_phase_baseline_*_aligndetr_010-012 ×3)
+# 削除せずローカル保持: checkpoints は再評価用、logs 欠落自体が「失敗 run が台帳に
+# 載らない」運用欠陥の手がかり。回収可能な指標を持つ nmsfree/hand2det_dev は対象外。
+experiments/_orphan_no_metrics/
 
 # === 退避済みプロンプト (新シリーズで置換済み、ローカル参照用) ===
 prompts_legacy/
@@ -175,3 +178,25 @@ experiments/**/.notion_sync.json
 .stignore
 .stignore.new
 .stfolder/
+
+# === EgoSurgery-HTS 派生バンドル (2026-07-09 持込) ===
+# SAM(vit_h) 生成の派生セグデータ 16GB。SurgerySegmentation/train.py に
+# Neptune API token が平文で含まれるため追跡禁止 (公開リポ)。
+# 調査結果: data/annotations/egosurgery_hts_bundle_audit.md
+data/annotations/HandDataset/
+data/annotations/HandToolDataset/
+data/annotations/SurgerySegmentation/
+
+# === フック生成ログ ===
+# セッション毎に追記されるため、追跡していると全サーバーで恒久的に merge 衝突する。
+.claude/hooks/*.log
+
+# HTS 再構築データ（599MB。生成物であり data/raw と同じ扱い）
+data/hts_reconstruction/
+
+# === 特徴量・中間配列（サイズが大きく再生成可能） ===
+*.npz
+*.npy
+
+# 解析の実装本体は追跡する（mmdet が dump する派生 config は上の行で除外済み）
+!experiments/analysis/**/*.py

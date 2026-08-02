@@ -1,0 +1,123 @@
+{
+  "arm": "unknown",
+  "attributes": {
+    "reeval_mode": "nms_free_score_thr_0",
+    "source_ckpt": "best_val_mAP_epoch_12.pth",
+    "source_exp": "experiments/baselines/s0_001_maskdino_bbox_seed42"
+  },
+  "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-07-03T07:49:36+00:00\npython scripts/reeval_s0_nms_free.py --exp-dir experiments/baselines/s0_001_maskdino_bbox_seed42\n",
+  "commit": "1a52c6fde8120bb62eba920ad3c3d8882f309b72",
+  "config_path": "experiments/baselines/s0_014_maskdino_bbox_nmsfree_seed42/config.yaml",
+  "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
+  "description": "maskdino_bbox_nmsfree",
+  "duplicate_bare_keys": [
+    "mAP"
+  ],
+  "epoch": 0,
+  "eval_recipe": {
+    "effective_batch_size": 1,
+    "gpu_count": 1,
+    "lr_scaling": "eval_only",
+    "server_name": "andrew",
+    "split_test_annotations": 12673,
+    "split_test_images": 4265,
+    "split_train_annotations": 32272,
+    "split_train_images": 9657,
+    "split_val_annotations": 4707,
+    "split_val_images": 1515,
+    "test_cfg": {
+      "max_per_img": 300,
+      "nms_iou": null,
+      "nms_pre": null,
+      "note": "Reeval: NMS-free (score_thr=0.0, no NMS)",
+      "score_thr": 0.0
+    }
+  },
+  "eval_recipe_id": "03208d3e6637",
+  "excluded": false,
+  "exclusion_reason": null,
+  "experiment_id": "baselines/s0/maskdino_bbox_nmsfree@val",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_seed_declared": null,
+  "frozen_source_tag": null,
+  "gpu": null,
+  "group": "baselines",
+  "harvest_warnings": [],
+  "host": "andrew",
+  "host_raw": "andrew",
+  "ledger_key": "baselines__s0_014_maskdino_bbox_nmsfree_seed42",
+  "metrics": {
+    "AP_common": 0.5966153846153845,
+    "AP_rare": 0.7745,
+    "mAP": 0.665,
+    "mAP_50": 0.79,
+    "mAP_75": 0.724
+  },
+  "metrics_by_split": {
+    "val": {
+      "AP_common": 0.5966153846153845,
+      "AP_rare": 0.7745,
+      "mAP": 0.665,
+      "mAP_50": 0.79,
+      "mAP_75": 0.724
+    }
+  },
+  "metrics_nested": {},
+  "metrics_primary_split": "val",
+  "notes": "# s0_014_maskdino_bbox_nmsfree_seed42\n\n作成日時: 2026-07-03T07:49:36+00:00\n\n## 仮説\n（ここに記入）\n\n## 実験設定\n- Category: baselines\n- Step: s0\n- Seed: 42\n- Config: （config.yaml を参照）\n\n## 結果\n（実験完了後に記入）\n\n## 解釈\n（結果の意味、期待との差、原因の仮説）\n\n## 次の行動\n1.\n\n\n## 再評価 (NMS-free)\n- 元実験: `s0_001_maskdino_bbox_seed42`\n- source_ckpt: `best_val_mAP_epoch_12.pth`\n- test_cfg: score_thr=0.0, nms=None, nms_pre=None (NMS_FREE_TEST_CFG)\n- val mAP=0.6650 / AP_rare=0.7745 / AP_common=0.5966\n",
+  "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
+  "path": "experiments/baselines/s0_014_maskdino_bbox_nmsfree_seed42",
+  "per_class": {
+    "Bipolar Forceps": 0.527,
+    "Electric Cautery": 0.951,
+    "Forceps": 0.303,
+    "Gauze": 0.264,
+    "Hook": 0.576,
+    "Mouth Gag": 0.787,
+    "Needle Holders": 0.815,
+    "Raspatory": 0.45,
+    "Retractor": null,
+    "Scalpel": 0.901,
+    "Scissors": 0.652,
+    "Skewer": 0.927,
+    "Suction Cannula": 0.781,
+    "Syringe": 0.622,
+    "Tweezers": 0.749
+  },
+  "per_class_kind": "tool",
+  "per_class_metric": "AP",
+  "per_class_nan_classes": [
+    "Retractor"
+  ],
+  "per_class_source": "experiments/baselines/s0_014_maskdino_bbox_nmsfree_seed42/per_class_ap.json",
+  "per_class_valid_count": 14,
+  "provenance": {
+    "aux_token": "no_aux_token",
+    "commit": "from_git_commit_txt",
+    "epoch": "from_metrics_json",
+    "host": "from_server_txt",
+    "name": "from_dirname_step_seq_desc_seed",
+    "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
+    "seed": "from_dirname",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "from_metric_key_prefix",
+    "step": "from_dirname"
+  },
+  "run_id": "s0_014_maskdino_bbox_nmsfree_seed42",
+  "seed": 42,
+  "seed_agreement": "unverified_no_other_evidence",
+  "seed_command": null,
+  "seed_config": null,
+  "seed_detector": null,
+  "seed_phase": null,
+  "seq": 14,
+  "split": "val",
+  "step": "s0",
+  "subgroup": null
+}

@@ -1,0 +1,23 @@
+epochs: 0
+eval:
+  note: eval recipe = score_thr 0.0 / NMS 無 / top-k 300（config 準拠・不変）
+  split: val
+  topk: 300
+hand_channels: 5
+inject_lr: 0.0005
+injection: C5 zero-init 1x1 conv 残差（RelationDETRHandPrior.hand_prior）
+leak_boundary: Tier0/1 のみ（手 mask ＋把持フラグ）。Tier2/3(接触・tool) 禁止・混入不可
+lr: 0.0001
+model_cfg: configs/relation_detr/relation_detr_resnet50_egosurgery_hand2det.py
+run_name: hand2det_5ch_film_ctrl_seed123
+seed: 123
+smoke: false
+synth_hw:
+- 128
+- 128
+synth_mask: true
+tier: Tier1/L1a
+trainable: film
+variant: ctrl
+warm_start_ckpt: /home/ubuntu/slocal/m2/third_party/Relation-DETR/checkpoints/incoming/seed123/best_ap.pth
+zero_ctx: true

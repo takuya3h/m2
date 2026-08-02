@@ -1,0 +1,122 @@
+{
+  "arm": "unknown",
+  "attributes": {},
+  "command": "#!/usr/bin/env bash\n# Stable-DINO (detrex) 実行コマンド\n# seed=456\npython tools/train_net_egosurgery.py --config-file /home/ubuntu/slocal2/m2/third_party/Stable-DINO/projects/stabledino/configs/stabledino_r50_4scale_12ep_egosurgery.py --num-gpus 2 train.seed=456 train.output_dir=/tmp/stabledino_work_seed456\n",
+  "commit": "4327348e444381f1737309252fb86ad9b5034d6a",
+  "config_path": "experiments/baselines/_legacy_score_thr_0/s0_021_stabledino_bbox_seed456/config.yaml",
+  "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
+  "description": "stabledino_bbox",
+  "duplicate_bare_keys": [
+    "mAP"
+  ],
+  "epoch": 12,
+  "eval_recipe": {
+    "description": "stabledino_bbox",
+    "effective_batch_size": 4,
+    "gpu_count": 2,
+    "lr_scaling": "linear_x2",
+    "server_name": "philip",
+    "split_test_annotations": 12673,
+    "split_test_images": 4265,
+    "split_train_annotations": 32272,
+    "split_train_images": 9657,
+    "split_val_annotations": 4707,
+    "split_val_images": 1515,
+    "test_cfg": {
+      "max_per_img": 300,
+      "nms_iou": null,
+      "nms_pre": null,
+      "note": "DINO topk (NMS-free), select_box_nums=300",
+      "score_thr": 0.0
+    }
+  },
+  "eval_recipe_id": "1cf2eece1cd3",
+  "excluded": false,
+  "exclusion_reason": null,
+  "experiment_id": "baselines/s0/stabledino_bbox@val",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_seed_declared": null,
+  "frozen_source_tag": null,
+  "gpu": null,
+  "group": "baselines",
+  "harvest_warnings": [
+    "config.yaml のパースに失敗: ConstructorError"
+  ],
+  "host": "philip",
+  "host_raw": "philip",
+  "ledger_key": "baselines___legacy_score_thr_0__s0_021_stabledino_bbox_seed456",
+  "metrics": {
+    "AP_common": 0.716397,
+    "AP_rare": 0.741816,
+    "mAP": 0.720028,
+    "mAP_50": 0.851265,
+    "mAP_75": 0.781674
+  },
+  "metrics_by_split": {
+    "val": {
+      "AP_common": 0.716397,
+      "AP_rare": 0.741816,
+      "mAP": 0.720028,
+      "mAP_50": 0.851265,
+      "mAP_75": 0.781674
+    }
+  },
+  "metrics_nested": {},
+  "metrics_primary_split": "val",
+  "notes": "# s0_021_stabledino_bbox_seed456\n\n検出器: Stable-DINO (detrex, torch 2.1.2+cu118, .venv-detectron2)\nseed: 456\n\n## 結果\nmAP=0.7200 / AP_rare=0.7418 / AP_common=0.7164 (best eval #12)\n\n## 初期化\nDINO R50 COCO 12ep 重み (backbone+transformer)、class_embed は 80->15 で再初期化 (他検出器の COCO fine-tune と同条件)。\n",
+  "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
+  "path": "experiments/baselines/_legacy_score_thr_0/s0_021_stabledino_bbox_seed456",
+  "per_class": {
+    "Bipolar Forceps": 0.803673,
+    "Electric Cautery": 0.957582,
+    "Forceps": 0.316519,
+    "Gauze": 0.275154,
+    "Hook": 0.609206,
+    "Mouth Gag": 0.786879,
+    "Needle Holders": 0.844398,
+    "Raspatory": 0.819851,
+    "Retractor": null,
+    "Scalpel": 0.924988,
+    "Scissors": 0.705761,
+    "Skewer": 0.940572,
+    "Suction Cannula": 0.800471,
+    "Syringe": 0.54306,
+    "Tweezers": 0.752282
+  },
+  "per_class_kind": "tool",
+  "per_class_metric": "AP",
+  "per_class_nan_classes": [
+    "Retractor"
+  ],
+  "per_class_source": "experiments/baselines/_legacy_score_thr_0/s0_021_stabledino_bbox_seed456/per_class_ap.json",
+  "per_class_valid_count": 14,
+  "provenance": {
+    "aux_token": "no_aux_token",
+    "commit": "from_git_commit_txt",
+    "epoch": "from_metrics_json",
+    "host": "from_server_txt",
+    "name": "from_dirname_step_seq_desc_seed",
+    "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
+    "seed": "from_dirname_verified_by_command_sh",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "from_metric_key_prefix",
+    "step": "from_dirname"
+  },
+  "run_id": "s0_021_stabledino_bbox_seed456",
+  "seed": 456,
+  "seed_agreement": "agree",
+  "seed_command": 456,
+  "seed_config": null,
+  "seed_detector": null,
+  "seed_phase": null,
+  "seq": 21,
+  "split": "val",
+  "step": "s0",
+  "subgroup": "_legacy_score_thr_0"
+}

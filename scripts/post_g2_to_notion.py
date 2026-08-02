@@ -26,7 +26,6 @@ sys.path.insert(0, str(PROJ / "src"))
 
 from egosurgery.utils.notion_logger import log_experiment_to_notion  # noqa: E402
 
-SYSTEMS = ["base", "bboxROI", "maskROI", "randROI"]
 SEEDS = [42, 123, 456]
 PREREG_PHASES = ["incision", "hemostasis", "closure"]
 
@@ -36,7 +35,7 @@ PRIMARY_METRIC = (
 )
 
 
-def result_text(m: dict, system: str) -> str:
+def result_text(m: dict, system: str, note: str = "") -> str:
     """val / test の実測値を Result 列向けに整形する。"""
     lines = [
         f"system={system} seed={m['seed']} in_dim={m['in_dim']} "
@@ -58,10 +57,8 @@ def result_text(m: dict, system: str) -> str:
             + " ".join(f"{k}={v['fallback_rate']:.4f}" for k, v in sorted(fb.items())
                        if v.get("fallback_rate") is not None)
         )
-    lines.append(
-        "事前登録: prereg/g2_prediction.md（学習前 commit 2dc430b・未改変）。"
-        "主予測 3>2 は 0/6 で閾値超えせず FAIL = 負の結果。詳細は RESULTS.md"
-    )
+    if note:
+        lines.append(note)
     return "\n".join(lines)
 
 
@@ -70,11 +67,23 @@ def main() -> int:
     ap.add_argument("--out", required=True, help="$OUT（runs/ を含むディレクトリ）")
     ap.add_argument("--dry-run", action="store_true",
                     help="投稿せず Name と Result をプレビュー（認証不要）")
+    ap.add_argument("--prefix", default="g2_",
+                    help="台帳の Name 接頭辞。Name は冪等キーなので実験群ごとに分ける")
+    ap.add_argument("--note", default=(
+        "事前登録: prereg/g2_prediction.md（学習前 commit 2dc430b・未改変）。"
+        "主予測 3>2 は 0/6 で閾値超えせず FAIL = 負の結果。詳細は RESULTS.md"),
+        help="Result 末尾に付す注記（事前登録と判定へのポインタ）")
     args = ap.parse_args()
     out = Path(args.out)
+    # 系統は runs/ から自動発見する（S3 の shuffleROI・S4 の手系統に対応）
+    systems = sorted({d.name.rsplit("_seed", 1)[0]
+                      for d in (out / "runs").glob("*_seed*") if d.is_dir()})
+    if not systems:
+        print(f"[warn] {out/'runs'} に run が無い")
+        return 1
 
     posted = skipped = 0
-    for system in SYSTEMS:
+    for system in systems:
         for seed in SEEDS:
             d = out / "runs" / f"{system}_seed{seed}"
             if not (d / "metrics.json").exists():
@@ -92,8 +101,8 @@ def main() -> int:
             if not sv.exists() and env.get("host"):
                 sv.write_text(env["host"] + "\n")
 
-            name = f"g2_{system}_seed{seed}"
-            txt = result_text(m, system)
+            name = f"{args.prefix}{system}_seed{seed}"
+            txt = result_text(m, system, args.note)
             if args.dry_run:
                 print(f"\n■ {name}  [step=B tier=must server={env.get('host')}]")
                 print("\n".join("  " + x for x in txt.splitlines()))

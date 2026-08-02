@@ -1315,6 +1315,58 @@ acc/macro-F1 を維持しつつ edit-score / seg-F1 を改善できるか。D-au
 
 ---
 
+## 2026-07-31: EgoSurgery-HTS hand_tool_seg データ再構築（案A）
+
+### 仮説
+既存 `EgoSurgery-HTS2/hand_tool_seg`（12,229 frames）は tool split に対する被覆率が
+低く（train 69.62% / val 88.71% / test 49.10%）、この不足フレームは
+別ソース（v1 = `OpenSurgery_Dataset/04_handtool/json_per_video/` の 18,397 frames）に
+実在する可能性がある。また v1 は `categories` 宣言が 4 件のため「4 クラス版」と
+思われていたが、annotation 本体には `category_id=5` が存在する可能性がある。
+
+### 実験
+1. `missing_{train,val,test}.txt` (5,276 frames) を v1 の annotated stems と突合
+2. v1 の `annotations[].category_id` 分布を全 26 セグメントで集計
+3. v1 単独から `build_hand_tool_seg_5cls.py`（案A）で tool split 整合の 5cls JSON を
+   再構築し、`egosurgery_hts2_tool_aligned/hand_tool_seg_v2/` に出力
+4. 生 `EgoSurgery_HTS2/hand_tool_seg/{val,test}.json` と tool split の集合比較で
+   val/test 入れ替わり問題を実データ確認
+
+### 結果
+- **回収率**: 5,276 missing frames のうち **4,816 (91.3%) が v1 に存在**
+  （train 89.7% / val 99.4% / test 92.7%）
+- **v1 のクラス数**: 24/26 セグメントに `category_id=5`（Two Hands Tool）が存在
+  合計 **2,021 件**。生成スクリプト `nomouthgagskewer_stat.py` の
+  `for i in range(1,5)` off-by-one バグにより、メタデータ宣言だけが 4 件だった
+- **再構築後の被覆率**: train **96.88%** (+27.3pt) / val **99.93%** (+11.2pt) /
+  test **96.30%** (+47.2pt)
+- **HTS2 val/test 入替り確認**: 生 HTS2/val (2,094f) の 100% が tool[test] に、
+  生 HTS2/test (1,344f) の 100% が tool[val] に属する。完全な swap を実データで確定
+- **真の欠落 460 frames**: v1 にも v2 にも無い。Mouth Gag / Skewer / 器具なしフレームが
+  パイプラインで構造的除外されたもの（149f Skewer / 102f Mouth Gag / 75f 器具なし 他）
+
+### 解釈
+1. **欠落の主因はデータ消失ではなくメタデータバグ**: v1 のデータ本体は 5cls で
+   完結しており、`{"id":5,"name":"Two Hands Tool"}` を追記するだけで復元可能
+2. **HTS2 の val/test 割当バグは案A の tool-split 整合再構築で自動解消**
+   （fusion 段階での出力ファイル名取り違えが原因）
+3. **真の 460f 欠落は SAM 再実行なしには埋まらない**（Mouth Gag / Skewer 除外ロジック）
+   → 学習時 loss mask で除外が現実解
+
+### 次
+- **loss mask を training loop へ配線**: `hand_tool_seg_v2/loss_mask/{train,val,test}.txt`
+  を Dataset で読み、該当 stem を hand_tool_seg タスクから除外
+- **experiments での切替**: 今後の Δ 実験で hand_tool_seg を使う場合は
+  `hand_tool_seg_v2/` を参照（旧 `hand_tool_seg/` は deprecate 相当）
+- **Notion `notion_ops.log_decision`** にパイプライン切替を記録（別途）
+- 証跡:
+  - 生成物: `data/hts_reconstruction/egosurgery_hts2_tool_aligned/hand_tool_seg_v2/{train,val,test,extra}.json` (計 18,397 frames)
+  - loss mask: `.../hand_tool_seg_v2/loss_mask/{train,val,test}.txt` (計 460 frames)
+  - README: `.../hand_tool_seg_v2/README.md`
+  - 発掘・根本原因調査: `data/hts_reconstruction/handoff_hts_seg_search/work/SUMMARY.md`
+  - 回収レポート: `data/hts_reconstruction/handoff_hts_seg_search/v1_recovery_report.md`
+  - 被覆調査: `data/annotations/egosurgery_hts_frame_coverage_report.md`
+
 ## 2026-07-03 検出器改善 → phase 転移の 3-seed 検証（Method A: strong aug）
 
 ### 仮説
@@ -1706,6 +1758,146 @@ per-image 検出結果を既定で残す設計にする。
 - 以降の T1b 系 run は predictions を持つので、Syringe FP/FN の内訳・工程遷移近傍の層別解析
   （gate の rare 逆害機序）を ckpt なしで実施できる。実害 4 の宿題に着手可能。
 - 既存の消失済み run は復元できない（再学習が必要）。本改修は再発防止であって遡及修復ではない。
+
+## 2026-07-28（続き） — planned直近4件の前提2件（p0 仕上げ / l0 HTS受入）
+
+### 仮説
+run台帳 planned 直近4件 = p0(成果物永続化+配線検証) → l0(HTS完全版受入C1–C8) →
+{l1a, l2}(手mask→det oracle注入・各12run) は依存連鎖。ユーザ選択で前提2件を先行。
+把持関係(04_handtool)を使う l1a/l2 の前に、GT完全版が受入基準を満たすことが前提。
+
+### 実験と結果
+**p0**: 判定量(1)/tmp=0件は字義でなく主旨で達成済（残13件は全て旧挙動コメント/意図的用途
+=wheelキャッシュ・アラート・旧run掃除glob、成果物喪失系0）。(2)predictions既定on=達成済。
+(3)勾配フロー=既存 `audit_t1b_l0.py`(film/ca/hc・seed42)が **all_pass=True**、zero-init層は
+grad_norm=0・活性out_projのみ非ゼロ（注入経路にのみ勾配）を実証済。(4)3-seed恒等=
+`scripts/verify_p0_init_identity.sh` 新規（フル学習なし・--epochs 0でinj/ctrl init予測のbit-exact一致）
+で 42/123/456 を実測中。seed42 inj: warm-start init mAP=**0.7303**（seed42既知値と一致・恒等健全）。
+
+**l0**: `scripts/audit_l0_hts_acceptance.py` 新規（C1–C8, CPU）を実行 → **NOT ACCEPTED（完全版 未達）**。
+- C1 ✗: 現行 egosurgery_tool_hand の seg は100%4頂点(bbox相当)=真マスク無し（master同様の旧世代）。
+- C2 ✗: egosurgery_tool_hand は19クラスで値5=Mouth Gag。Two Hands Tool 不在（正本源 raw 04_handtool 5clsは値5=Two Hands Tool・399件保持）。
+- C3 ✗: 手インスタンス **46,320**（目標57,173）。**欠落4動画=03_1/03_3/12_2/15_2**（raw 02_hand は正確に57,173）。
+- C4 ✓: train/val/test は frame も video も非共有（動画単位リーク無し）。
+- C5 ✓: images 9657/1515/4265 が公式split一致。C6/C7/C8=報告値。
+
+### 解釈
+**現行 data/annotations の派生GT（hand4/tool_hand）は不完全な旧世代**で、HTS公式GT「完全版」は
+まだ組み立てられていない（egosurgery_hts は空）。l0受入検査が門番として正しく機能し、
+**l1a/l2 の前提（完全版把持関係GT）が未達であることを検出**した。捏造せず未達を明示。
+
+### 次
+- p0: 3-seed恒等 JSON 完了を待ち証跡束ね→台帳 completed。
+- l0: 完全版の**組立が必要**（raw 02_hand から4動画復活で57,173、把持関係は raw 04_handtool 5cls=Two Hands Tool採用、真マスクRLE化）。これは「受入検査」の範囲外＝別タスク。ユーザ判断待ち。
+- l1a/l2: 完全版組立 + 手mask→det注入機構の設計・実装が前提（本セッション対象外）。
+
+## 2026-07-29 — l0b: raw bundle 来歴監査（読み取り専用・CPU）
+
+### 仮説
+完全版GT組立の設計確定のため raw bundle を監査（組立はしない）。核心=raw に真のインスタンスマスクが実在するか、SAM(bbox由来)指紋が無いか。
+
+### 実験と結果（`scripts/audit_l0b_raw_provenance.py` / `experiments/analysis/hts_raw_provenance_2026-07-29/`）
+- Task2: 03_tool/04_handtool は100% RLE真マスク・充填率 median 0.30/0.41（矩形でない）＝形式は(a)。但し master は矩形のみで「派生時に真マスク挿入」＝生成来歴 未文書化。
+- Task3(SAM指紋): 04_handtool マスク外接矩形 vs master原bbox = 内包率 median **1.0**(mean0.987)・IoU median **0.926**≈SAM参照0.927。**bbox由来生成の署名が明確**。7/10 SAMの鋭いピーク(内包0.879)とは完全一致せず→**判定不能(bbox由来疑い濃厚)**。pseudo_labelsバンドルはリポ内に実体無し(空.gitkeep)。raw coco日付=2025-02。
+- C6: HTI∧phase共存=9,106（dissection3540/closure3332/incision873/hemostasis663/anesthesia380/...）。
+- C7: 03_tool 14cls_cleaned は Tool15 から Mouth Gag 除外の14。Bipolar Forceps は Forceps に非統合（独立）。
+- C8: 手正本推奨=**raw 02_hand**(57,173/25セグ)。hand4=tool_hand手=46,320/22セグ(同世代・subset)。**raw02 vs hand4 bbox完全一致0%・幾何IoU median 0.523＝座標系不一致**。03_3はどの世代にも手GT無し(復活不能)、12_2は16枚のみ。
+- Task5: init mAP 0.7271(warm-start源=収束済full検出器 incoming/best_ap.pth) vs S0-frozen 0.7051(frozen+COCO-head再学習)は**別ckpt**。recipe/split同一で差は分母系統違い。ΔはL2でも inj−ctrl(paired)で測り0.7051と直接比較しない。
+
+### 解釈
+完全版組立は**条件付き可**。手bbox一本化/欠落復活/クラス/split/phaseは安全に進む。だが**マスクの来歴が未確認でbbox由来署名あり**＝真マスク版HTS・L2 oracle手maskは来歴確認まで進めてはならない(7/11の再来リスク)。raw02と派生の座標系不一致も要再導出。
+
+### 次
+- OpenSurgery原本のマスク生成来歴（配布物/生成スクリプト）の入手→Task3の断定。
+- 来歴クリア後に raw02 座標で完全版を組立→l0再検査。並行: 手mask→det注入機構の先行実装(別セッションで進行中)。
+
+## 2026-07-29 — 手mask→det 注入機構の先行実装（合成マスク・データ非依存・並行）
+
+### 仮説/目的
+L2/L1a の最長ポール＝手mask→det注入機構を実データを待たず合成マスクで実装・検証（本番学習はしない）。
+
+### 実装（新規, 検証は親が独立実測）
+- `third_party/Relation-DETR/models/detectors/relation_detr_handprior.py`: `HandPriorInject`(zero-init・**bias無** 1x1 conv 残差, 注入点=C5=FiLMと同一・neck直前) + `RelationDETRHandPrior`。名前空間 `hand_prior.*`。
+- config `..._hand2det.py`(4/5ch は env `HAND2DET_HAND_CHANNELS` 切替・機構不変), `scripts/train_hand2det.py`(train_t1b最小改変・合成マスク), `scripts/audit_l2_hand2det_l0.py`(5チェック), `scripts/verify_hand2det_init_identity.sh`。
+- `param_dict.py` に `finetune_hand2det()` 追加（注入枝を `hand_prior` で選択）。既存 学習/eval/optimizer は不変。
+
+### 検証結果（親が実物確認）
+- 恒等: 4ch/5ch×seed42/123/456 の6構成すべて `identical=True`、SHA/init_mAP が clean検出器と完全一致(seed42 32da8d7e/0.730294)。
+- 配線audit: 4ch/5ch とも all_pass=True。injection_wiring grad(mask)=0.719/0.433>0・対照(注入0)=**厳密0**・only_inject=True。gradient_flow/loss_at_init/nan_inf/overfit も True。
+- 1epoch完走: film 0.7303→0.7303(inject_grad=True) / all 0.7303→0.6842(best@ep-1,合成ランダムマスク＋全FT想定通り劣化)。
+- Tierガード: hand_channels∈{4,5} 固定・6ch以上 assert 拒否（tool非混入をコード保証）。成果物 `experiments/hand2det_dev/`。
+
+### 解釈/次
+機構は健全に配線済み。**本番は受入検査(A)＋完全版GT組立が通るまで開始しない**。実データ投入時の要変更: (1)合成→実oracle手maskローダ, (2)**座標系整合**(実手maskをpreprocess resize/pad後のC5空間へ), (3)把持フラグ定義確定, (4)val実mask eval, (5)early-stop config化。**要確認: 注入点をCNN backbone C5と解釈(FiLM準拠)。transformer encoder出力を意図なら再指定要**。
+
+## 2026-07-29（続き）— ユーザ確定情報の反映＋座標系診断
+
+### Task3 確定 / L2解除 / L1a無効化
+EgoSurgery-HTS論文(arXiv:2503.18755)でマスク生成手法確定=**SAMにbbox promptでマスク生成**、HTI術具=手セグとIoU最大の術具。監査の実測(内包≈1.0/IoU median0.926)はデータ設計そのもの→**Task3=SAM由来で確定**。
+- **L2安全・ブロッカー解除**: 手マスクは手bbox由来→術具非リーク。4ch(手mask のみ)は前提健全。
+- **L1a無効**: HTIはGT術具bboxの決定論的関数=リーク。5ch(把持フラグ)版は使用禁止。`train_hand2det.py`に5ch既定拒否ガード追加(`--allow-leaky-hti`は機構検証再現のみ・EgoSurgery-HTS引用)。C5注入点は正(機構パリティ)。第2注入機構(neck多スケール or decoder query)を事前計画。
+
+### 座標系不一致の診断(`scripts/diag_hand_coord_mismatch.py` / `hand_coord_mismatch.json`)
+- raw02とhand4は**同一ピクセル空間**(共に1920×1080)。cat: raw02=hand4+1。
+- per-axis相似変換(最小二乗・37,006組): scale(0.935,0.883)/offset(62.0,66.9)。**IoUは変換で改善せず悪化 median 0.518→0.437**、手数一致フレーム62.3%のみ。
+- **判定=別世代の独立アノテーション**(座標規約違いではない)。**写像だけで欠落動画復活は不可**→完全版はraw02正本で全downstream再導出が必要(hand4/tool_hand写像流用不可)。
+
+## 2026-07-29（続き）— タスク1正本確定＋タスク3 実データ配線(L2 4ch)
+
+### タスク1: 正本＝raw02（tool整合性で確定）
+`scripts/diag_hand_tool_consistency.py`。同一tool box(egosurgery_tool_hand=EDA同一)に手を入替え接触統計を再現。hand4は参照値完全再現(overlap0.561/near0.596)＝計算忠実(出所=stats_extra.json 18_hand_tool_contact・hand4世代)。**raw02が全指標で勝利**: overlap0.603/near0.646/mean_max_iou0.181/能動接触0.934/中心距離267px。時刻ずれ無し(IoU peak=offset0, ±で単調低下)。→**正本=raw02(整合性・完全性とも勝ち)**。
+
+### タスク2(方針): L2をL2a(手bbox注入・SAM/HTS組立不要)→L2b(手mask・後回し)に分解。HTSフル組立はL2のクリティカルパス外。Δはpaired inj−ctrlなので手アノテ出所変更は注入信号のみに影響・三角形保持。
+
+### タスク3: B の4ch実装にraw02手bboxを配線(矩形ラスタライズ・元1920×1080正規化→module area-interpでC5整合)
+- `train_hand2det.py`: `real_hand_masks()`＋dispatcher`hand_prior_tensor()`＋`--hand-source synth|real`追加。手bboxのみ描画(tool非リーク維持)。CPU単体検証OK(raw02索引19,432・val300/300ヒット・prior非ゼロ・zero対照0)。`audit_l2_hand2det_l0.py`/`verify_hand2det_init_identity.sh`にも--hand-source配線。
+- **実データ配線ガード再実行**: 配線audit 4ch real seed42 **ALL PASS**(injection_wiring mask=0.595/zero=0・gradient_flow/loss_at_init/nan_inf/overfit 全True)。恒等3-seed(real)実行中。**本実験は未実行**(指示どおり)。
+- 実験前の要確認: 座標整合の視覚検証(元→C5空間), 手不在フレーム(03_3等)のzero prior妥当性, batch>1 padding時の整合(evalはtransforms=None同寸で問題無)。
+
+## 2026-07-28（続き）— EgoSurgery-HTS 受入監査 C01–C11（静的解析・GPU不要）
+
+`scripts/audit_hts_acceptance.py`（uv一時環境+pycocotoolsで実行、`.venv`無しのefros対応）。合成データselftestで孤児ann/split混入/signature欠落の**検出能力を先に確認(ALL PASS)**してから本番投入。成果物: `reports/hts_audit/`（report.md/summary.json/CSV17件/subsets15件）。全数値実測・推測0件。
+
+- **判定**: C01 OK/C02 OK/C03 WARN/C04 OK/C05 OK/C06 WARN/C07 OK/**C08 FAIL**/C09 OK/C10 OK/C11 OK。
+- **§2.6事前情報の反証/確認**（§7・事実採用）:
+  - §2.6-b『孤児ann濃厚』は**反証**: 実測 orphan=0。train_toolhand(7847img)→withmask(5668img)で削除された2179枚は**空アノテ画像**でありアノテ付きではない（孤児未発生）。
+  - §2.6-h **確認**: HTS tools==project instances（basename正規化後IDENTICAL_CONTENT×3、差はfile_nameパス接頭辞のみ。naiveハッシュはDIFFERENT誤判定）→**I4維持可**。
+- **不変量**: I1=**保持(基底)/サブセット限定**（tool_bbox総=**15,437**完全一致・phase被覆1.0だが mask/relation はC11サブセットのみ）。I2=**定義は保持/PNG層は要再フィルタ**（C03 LEAK=0だが handtool_masks_5cls/train が val/test を**6,340枚混在**=C08 FAIL）。
+- **ゲート**: G-1 実行可（C07 which_tool復元率0.937・内包率中央値0.998、45次元設計可。Own=10238≫Other=23=0.22%→**助手手取得不可・限界明記要**）。G-2 実行可だが**交絡注意**（C06 mask外接矩形 vs bbox IoU中央値**0.860<0.90**、充填率中央値0.19=背景除去余地大／Suction Cannula0.10・Needle Holders0.12。**Mouth Gag/Skewerはmask実体0件**→per-phaseからdesign脱落=§2.6-f確認。対照『mask由来box版T1a』必須）。G-3 **要再定義**（maskはSAM×box由来→oracleはGT boxと近い→「前景/背景分離の効果」へ）。G-4 **拡張test split案推奨**（C04: 動画17-22にdisinfection115/irrigation321/dressing196が存在、ただし17-22はbbox/mask無し→S4/B2aのみ拡張可）。
+- **C03 MISSING内訳**: toolhand/train=動画14、toolhand_withmask/train=動画03,14（§2.6-c確認）。LEAK=0。
+- **C10**: 把持関係の平均継続長7.04frame/切替率0.20（工程自己遷移0.982より速い）→relation版debounce(k=2)事前用意を提言。
+- **次**: [P0]C08ローダにcanonical再フィルタ必須化 / [P1]C11 subsets/を分母にmask/relation実験のΔ測定時S4/B2a/T1a/H-6を同一サブセット再計算（G-4に含む）/ [P3]C05内容一致につき片方削除可(任意)。
+
+## 2026-07-13 凍結源の per-class AP 分解：AlignDETR の det→phase 負転移は signature 術具 AP の欠損で説明できるか（台帳 must・val 主判定・eval-only）
+
+### 仮説
+下流 S4 実験（台帳 s4_001-003 vs s4_010-012）で AlignDETR を凍結源にすると phase 性能が劣化する（負転移）。
+これが **signature3 術具（Bipolar Forceps=hemostasis / Needle Holders=closure / Scalpel=incision）**の検出 AP 欠損で
+説明できるか、選択性指標 **R=(signature3 AP低下)÷(generic12 AP低下)** で判定。証跡
+`experiments/analysis/frozen_source_signature3_R_index/`。
+
+### 方法
+既存の検証済み per_class_ap.json（`experiments/baselines/_legacy_score_thr_0/s0_{016-018}_relationdetr_*`,
+`s0_{028-030}_aligndetr_*`。3-seed・score_thr=0.0 NMS-free・val 1515枚。2026-07-05 に公式 mAP と完全一致サニティ確認済み）
+から R を seed 毎に再計算（新規学習・推論なし）。generic12 は Retractor（val instance=0, AP=NaN）除外で実質11クラス。
+
+### 結果（val, 3-seed paired）
+- **R = −0.11 ± 0.39（pstdev）、seed 間で符号不一致（−0.66 / +0.22 / +0.09）→ 非有意**。
+- signature3 AP低下は平均 −0.11pp（ほぼゼロ、符号不一致）。**generic11 AP低下は平均 +1.78pp・全 seed 正**＝
+  AlignDETR の検出劣化は signature 術具ではなく汎用術具に集中。
+- 副次: Bipolar Forceps 単独 AP低下も平均 +1.35pp だが seed 間符号不一致（seed42 のみ負）。
+
+### 解釈
+**仮説は支持されない**。AlignDETR の det→phase 負転移は検出 AP（signature3 の欠損）では説明できず、
+2026-07-05 `signature_subset_detector_compare` の「Align-DETR の劣位は phase と無関係な術具に局在」と整合。
+凍結源＝Relation-DETR 確定判断への追加根拠。
+
+### 次
+- **未実施（要判断）**: (1) test split(4265) 確認は relationdetr/aligndetr S0 checkpoint(*.pth) が本ホスト(andrew)に
+  不在＝台帳 Server=philip の資産のため、philip からの転送が必要。(2) hemostasis F1「0.801→0.179」downstream 数値は
+  `s4_phase_baseline_010-012_..._aligndetr_*` が空 scaffold（efros 実行・metrics.json 空）で本ホストでは未検証。
+  (3) Primary Metric の「overall mAP 差 −0.0443」の参照元は本ホストの証跡から特定できず未算出。
+  ※誠実性: val 主判定は完了・数値実測、test/downstream 検証は明示的に「未実施」として保留（捏造なし）。
 
 ---
 
