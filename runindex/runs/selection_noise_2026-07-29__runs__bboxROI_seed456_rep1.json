@@ -1,0 +1,439 @@
+{
+  "arm": "unknown",
+  "attributes": {
+    "epochs": 50,
+    "in_dim": 7680,
+    "run": "bboxROI_seed456_rep1",
+    "seed": 456,
+    "system": "bboxROI",
+    "train_seconds": 21.942713737487793
+  },
+  "command": null,
+  "commit": "50bbba6a26ffa0aa12728d887ac3619793b28199",
+  "config_path": null,
+  "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
+  "description": null,
+  "duplicate_bare_keys": [],
+  "epoch": null,
+  "eval_recipe": null,
+  "eval_recipe_id": null,
+  "excluded": false,
+  "exclusion_reason": null,
+  "experiment_id": null,
+  "experiment_id_provenance": "not_determinable",
+  "frozen_source_seed_declared": null,
+  "frozen_source_tag": null,
+  "gpu": null,
+  "group": "selection_noise_2026-07-29",
+  "harvest_warnings": [
+    "run 名が命名規約 <step>_<seq3>_<desc>_seed<N> に一致しない: bboxROI_seed456_rep1",
+    "per_class_ap.json が存在しない"
+  ],
+  "host": "lecun",
+  "host_raw": "lecun",
+  "ledger_key": "selection_noise_2026-07-29__runs__bboxROI_seed456_rep1",
+  "metrics": {
+    "rep": 1
+  },
+  "metrics_by_split": {
+    "unknown": {
+      "rep": 1
+    }
+  },
+  "metrics_nested": {
+    "hyperparams": {
+      "lr": 0.0005,
+      "num_f_maps": 64,
+      "num_layers": 8,
+      "num_stages": 2,
+      "smoothing_weight": 0.15,
+      "topk": 3,
+      "weight_decay": 0.01
+    },
+    "n_clips": {
+      "test": 6,
+      "train": 13,
+      "val": 3
+    },
+    "rules": {
+      "R-acc": {
+        "selected_epoch": 23,
+        "test": {
+          "phase_accuracy": 0.9090269636576788,
+          "phase_edit_score": 43.096291286192844,
+          "phase_jaccard": 0.6791732932104245,
+          "phase_macro_f1": 0.7451406971959311,
+          "phase_per_class_f1": {
+            "anesthesia": 0.9874476987447698,
+            "closure": 0.9563310069790628,
+            "design": 0.9666666666666667,
+            "disinfection": 0.0,
+            "dissection": 0.8707241226121722,
+            "dressing": 0.0,
+            "hemostasis": 0.768888888888889,
+            "incision": 0.9565217391304347,
+            "irrigation": 0.45454545454545453
+          },
+          "phase_per_class_jaccard": {
+            "anesthesia": 0.9752066115702479,
+            "closure": 0.9163163928162018,
+            "design": 0.9354838709677419,
+            "disinfection": 0.0,
+            "dissection": 0.7710464201416207,
+            "dressing": 0.0,
+            "hemostasis": 0.6245487364620939,
+            "incision": 0.9166666666666666,
+            "irrigation": 0.29411764705882354
+          },
+          "phase_seg_f1_10": 0.5238843906997404,
+          "phase_seg_f1_25": 0.5124180650390413,
+          "phase_seg_f1_50": 0.37621833724555936
+        },
+        "test_loss": 1.3606514806548755,
+        "val": {
+          "phase_accuracy": 0.9623762376237623,
+          "phase_edit_score": 52.28758169934641,
+          "phase_jaccard": 0.8020656097018589,
+          "phase_macro_f1": 0.8281587985111141,
+          "phase_per_class_f1": {
+            "anesthesia": 0.9948717948717948,
+            "closure": 0.9685314685314685,
+            "design": 0.9852216748768473,
+            "disinfection": 0.0,
+            "dissection": 0.9725490196078431,
+            "dressing": 0.0,
+            "hemostasis": 0.9142857142857143,
+            "incision": 0.9616519174041299,
+            "irrigation": 0.0
+          },
+          "phase_per_class_jaccard": {
+            "anesthesia": 0.9897959183673469,
+            "closure": 0.9389830508474576,
+            "design": 0.970873786407767,
+            "disinfection": 0.0,
+            "dissection": 0.9465648854961832,
+            "dressing": 0.0,
+            "hemostasis": 0.8421052631578947,
+            "incision": 0.9261363636363636,
+            "irrigation": 0.0
+          },
+          "phase_seg_f1_10": 0.6267419962335216,
+          "phase_seg_f1_25": 0.6267419962335216,
+          "phase_seg_f1_50": 0.6041431261770245
+        },
+        "val_loss": 1.151183341940244
+      },
+      "R-last": {
+        "selected_epoch": 49,
+        "test": {
+          "phase_accuracy": 0.883704572098476,
+          "phase_edit_score": 48.451431356322814,
+          "phase_jaccard": 0.673162555866008,
+          "phase_macro_f1": 0.7436089520655234,
+          "phase_per_class_f1": {
+            "anesthesia": 0.9702127659574469,
+            "closure": 0.9323135755258126,
+            "design": 1.0,
+            "disinfection": 0.0,
+            "dissection": 0.8106280193236716,
+            "dressing": 0.0,
+            "hemostasis": 0.8076923076923077,
+            "incision": 0.9415384615384614,
+            "irrigation": 0.4864864864864865
+          },
+          "phase_per_class_jaccard": {
+            "anesthesia": 0.9421487603305785,
+            "closure": 0.8732091690544412,
+            "design": 1.0,
+            "disinfection": 0.0,
+            "dissection": 0.6815597075548334,
+            "dressing": 0.0,
+            "hemostasis": 0.6774193548387096,
+            "incision": 0.8895348837209303,
+            "irrigation": 0.32142857142857145
+          },
+          "phase_seg_f1_10": 0.5940899645520107,
+          "phase_seg_f1_25": 0.5830448600415598,
+          "phase_seg_f1_50": 0.45162938516073825
+        },
+        "test_loss": 1.6086995378136635,
+        "val": {
+          "phase_accuracy": 0.9518151815181518,
+          "phase_edit_score": 41.734417344173444,
+          "phase_jaccard": 0.7760841693865375,
+          "phase_macro_f1": 0.8125944084506352,
+          "phase_per_class_f1": {
+            "anesthesia": 0.9896907216494846,
+            "closure": 0.9594477998274374,
+            "design": 0.9852216748768473,
+            "disinfection": 0.0,
+            "dissection": 0.9615763546798028,
+            "dressing": 0.0,
+            "hemostasis": 0.8367346938775511,
+            "incision": 0.9554896142433233,
+            "irrigation": 0.0
+          },
+          "phase_per_class_jaccard": {
+            "anesthesia": 0.9795918367346939,
+            "closure": 0.9220563847429519,
+            "design": 0.970873786407767,
+            "disinfection": 0.0,
+            "dissection": 0.9259962049335864,
+            "dressing": 0.0,
+            "hemostasis": 0.7192982456140351,
+            "incision": 0.9147727272727273,
+            "irrigation": 0.0
+          },
+          "phase_seg_f1_10": 0.5323232323232324,
+          "phase_seg_f1_25": 0.5121212121212122,
+          "phase_seg_f1_50": 0.48181818181818176
+        },
+        "val_loss": 1.3471555312474568
+      },
+      "R-loss": {
+        "selected_epoch": 24,
+        "test": {
+          "phase_accuracy": 0.9005861664712779,
+          "phase_edit_score": 42.35187496629144,
+          "phase_jaccard": 0.6586253130555036,
+          "phase_macro_f1": 0.7374893742068083,
+          "phase_per_class_f1": {
+            "anesthesia": 0.9789029535864978,
+            "closure": 0.9526085225009956,
+            "design": 0.8923076923076922,
+            "disinfection": 0.0,
+            "dissection": 0.8562358276643992,
+            "dressing": 0.0,
+            "hemostasis": 0.7379454926624738,
+            "incision": 0.9440993788819876,
+            "irrigation": 0.5378151260504201
+          },
+          "phase_per_class_jaccard": {
+            "anesthesia": 0.9586776859504132,
+            "closure": 0.9095057034220533,
+            "design": 0.8055555555555556,
+            "disinfection": 0.0,
+            "dissection": 0.7486122125297383,
+            "dressing": 0.0,
+            "hemostasis": 0.584717607973422,
+            "incision": 0.8941176470588236,
+            "irrigation": 0.367816091954023
+          },
+          "phase_seg_f1_10": 0.5125510350330807,
+          "phase_seg_f1_25": 0.5023062605556331,
+          "phase_seg_f1_50": 0.3672333782674042
+        },
+        "test_loss": 1.3712942078709602,
+        "val": {
+          "phase_accuracy": 0.9623762376237623,
+          "phase_edit_score": 50.486111111111114,
+          "phase_jaccard": 0.8047018992169576,
+          "phase_macro_f1": 0.8297266660992892,
+          "phase_per_class_f1": {
+            "anesthesia": 0.9948717948717948,
+            "closure": 0.967741935483871,
+            "design": 0.9852216748768473,
+            "disinfection": 0.0,
+            "dissection": 0.9733464955577492,
+            "dressing": 0.0,
+            "hemostasis": 0.9285714285714285,
+            "incision": 0.9583333333333333,
+            "irrigation": 0.0
+          },
+          "phase_per_class_jaccard": {
+            "anesthesia": 0.9897959183673469,
+            "closure": 0.9375,
+            "design": 0.970873786407767,
+            "disinfection": 0.0,
+            "dissection": 0.948076923076923,
+            "dressing": 0.0,
+            "hemostasis": 0.8666666666666667,
+            "incision": 0.92,
+            "irrigation": 0.0
+          },
+          "phase_seg_f1_10": 0.6045112781954888,
+          "phase_seg_f1_25": 0.6045112781954888,
+          "phase_seg_f1_50": 0.5928153717627401
+        },
+        "val_loss": 1.145961195230484
+      },
+      "R-mf1": {
+        "selected_epoch": 30,
+        "test": {
+          "phase_accuracy": 0.9052754982415006,
+          "phase_edit_score": 42.65575460953612,
+          "phase_jaccard": 0.6567410821575204,
+          "phase_macro_f1": 0.7305715171825045,
+          "phase_per_class_f1": {
+            "anesthesia": 0.9874476987447698,
+            "closure": 0.9555202541699761,
+            "design": 0.9090909090909091,
+            "disinfection": 0.0,
+            "dissection": 0.8641864634692963,
+            "dressing": 0.0,
+            "hemostasis": 0.762114537444934,
+            "incision": 0.9363057324840763,
+            "irrigation": 0.4299065420560748
+          },
+          "phase_per_class_jaccard": {
+            "anesthesia": 0.9752066115702479,
+            "closure": 0.914828897338403,
+            "design": 0.8333333333333334,
+            "disinfection": 0.0,
+            "dissection": 0.760852407261247,
+            "dressing": 0.0,
+            "hemostasis": 0.6156583629893239,
+            "incision": 0.8802395209580839,
+            "irrigation": 0.27380952380952384
+          },
+          "phase_seg_f1_10": 0.5187403993855607,
+          "phase_seg_f1_25": 0.507868236900495,
+          "phase_seg_f1_50": 0.36556750298685786
+        },
+        "test_loss": 1.4512919125457604,
+        "val": {
+          "phase_accuracy": 0.9610561056105611,
+          "phase_edit_score": 46.732026143790854,
+          "phase_jaccard": 0.8078845980816001,
+          "phase_macro_f1": 0.8315640964122087,
+          "phase_per_class_f1": {
+            "anesthesia": 0.9948717948717948,
+            "closure": 0.9643788010425718,
+            "design": 0.9852216748768473,
+            "disinfection": 0.0,
+            "dissection": 0.9733990147783251,
+            "dressing": 0.0,
+            "hemostasis": 0.9541284403669724,
+            "incision": 0.9489489489489489,
+            "irrigation": 0.0
+          },
+          "phase_per_class_jaccard": {
+            "anesthesia": 0.9897959183673469,
+            "closure": 0.9312080536912751,
+            "design": 0.970873786407767,
+            "disinfection": 0.0,
+            "dissection": 0.9481765834932822,
+            "dressing": 0.0,
+            "hemostasis": 0.9122807017543859,
+            "incision": 0.9028571428571428,
+            "irrigation": 0.0
+          },
+          "phase_seg_f1_10": 0.5711864406779661,
+          "phase_seg_f1_25": 0.5598870056497175,
+          "phase_seg_f1_50": 0.5598870056497175
+        },
+        "val_loss": 1.2206663837035496
+      },
+      "R-topk": {
+        "selected_epoch": [
+          23,
+          24,
+          48
+        ],
+        "test": {
+          "phase_accuracy": 0.8973036342321219,
+          "phase_edit_score": 42.305555555555564,
+          "phase_jaccard": 0.6710049517019032,
+          "phase_macro_f1": 0.7400901277765553,
+          "phase_per_class_f1": {
+            "anesthesia": 0.9831932773109243,
+            "closure": 0.9507680189050807,
+            "design": 0.9836065573770492,
+            "disinfection": 0.0,
+            "dissection": 0.843273231622746,
+            "dressing": 0.0,
+            "hemostasis": 0.736842105263158,
+            "incision": 0.9503105590062112,
+            "irrigation": 0.4727272727272727
+          },
+          "phase_per_class_jaccard": {
+            "anesthesia": 0.9669421487603306,
+            "closure": 0.9061561561561562,
+            "design": 0.967741935483871,
+            "disinfection": 0.0,
+            "dissection": 0.7290167865707434,
+            "dressing": 0.0,
+            "hemostasis": 0.5833333333333334,
+            "incision": 0.9053254437869822,
+            "irrigation": 0.30952380952380953
+          },
+          "phase_seg_f1_10": 0.5176363543030209,
+          "phase_seg_f1_25": 0.5081301814635147,
+          "phase_seg_f1_50": 0.3649582916249583
+        },
+        "test_loss": 1.430841390043497,
+        "val": {
+          "phase_accuracy": 0.9630363036303631,
+          "phase_edit_score": 48.954248366013076,
+          "phase_jaccard": 0.8057448392356046,
+          "phase_macro_f1": 0.8302888733795127,
+          "phase_per_class_f1": {
+            "anesthesia": 0.9948717948717948,
+            "closure": 0.9685863874345549,
+            "design": 0.9852216748768473,
+            "disinfection": 0.0,
+            "dissection": 0.9733464955577492,
+            "dressing": 0.0,
+            "hemostasis": 0.9285714285714285,
+            "incision": 0.9614243323442137,
+            "irrigation": 0.0
+          },
+          "phase_per_class_jaccard": {
+            "anesthesia": 0.9897959183673469,
+            "closure": 0.9390862944162437,
+            "design": 0.970873786407767,
+            "disinfection": 0.0,
+            "dissection": 0.948076923076923,
+            "dressing": 0.0,
+            "hemostasis": 0.8666666666666667,
+            "incision": 0.9257142857142857,
+            "irrigation": 0.0
+          },
+          "phase_seg_f1_10": 0.5949959644874899,
+          "phase_seg_f1_25": 0.5949959644874899,
+          "phase_seg_f1_50": 0.5836965294592414
+        },
+        "val_loss": 1.1974482138951619
+      }
+    }
+  },
+  "metrics_primary_split": null,
+  "notes": null,
+  "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
+  "path": "experiments/selection_noise_2026-07-29/runs/bboxROI_seed456_rep1",
+  "per_class": null,
+  "per_class_kind": null,
+  "per_class_metric": null,
+  "per_class_nan_classes": [],
+  "per_class_source": null,
+  "per_class_valid_count": null,
+  "provenance": {
+    "aux_token": "no_aux_token",
+    "commit": "from_git_commit_txt",
+    "epoch": "not_determinable",
+    "host": "from_server_txt",
+    "name": "not_determinable",
+    "per_class": "not_determinable",
+    "per_class_metric": "not_determinable",
+    "seed": "not_determinable",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "from_plan_section_16_7",
+    "step": "not_determinable"
+  },
+  "run_id": "bboxROI_seed456_rep1",
+  "seed": null,
+  "seed_agreement": "no_seed_in_dirname",
+  "seed_command": null,
+  "seed_config": null,
+  "seed_detector": null,
+  "seed_phase": null,
+  "seq": null,
+  "split": "val",
+  "step": null,
+  "subgroup": "runs"
+}
