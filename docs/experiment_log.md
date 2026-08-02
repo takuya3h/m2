@@ -1366,6 +1366,7 @@ acc/macro-F1 を維持しつつ edit-score / seg-F1 を改善できるか。D-au
   - 発掘・根本原因調査: `data/hts_reconstruction/handoff_hts_seg_search/work/SUMMARY.md`
   - 回収レポート: `data/hts_reconstruction/handoff_hts_seg_search/v1_recovery_report.md`
   - 被覆調査: `data/annotations/egosurgery_hts_frame_coverage_report.md`
+
 ## 2026-07-03 検出器改善 → phase 転移の 3-seed 検証（Method A: strong aug）
 
 ### 仮説
