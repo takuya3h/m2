@@ -1,0 +1,94 @@
+{
+  "split": "test",
+  "env": {
+    "torch": "2.1.2+cu118",
+    "cuda": "11.8",
+    "gpu": "NVIDIA RTX A6000",
+    "cudnn": 8700,
+    "commit": "c7747c03b7bd4bde3b9f2c4a8e2a26619bf33bd3",
+    "host": "lecun",
+    "msdeformattn_extension_loaded": true,
+    "ninja": "/home/ubuntu/slocal2/m2/.venv-relation-detr/bin/ninja"
+  },
+  "D": 256,
+  "neck_level": 0,
+  "n_frames": 4265,
+  "n_boxes": 12673,
+  "n_fallback_boxes": 1484,
+  "fallback_rate": 0.11709934506430995,
+  "fallback_by_class": {
+    "Syringe": 4,
+    "Scalpel": 6,
+    "Retractor": 19,
+    "Tweezers": 42,
+    "Forceps": 109,
+    "Gauze": 8,
+    "Needle Holders": 11,
+    "Scissors": 28,
+    "Skewer": 29,
+    "Mouth Gag": 1187,
+    "Suction Cannula": 29,
+    "Raspatory": 3,
+    "Hook": 7,
+    "Bipolar Forceps": 2
+  },
+  "total_by_class": {
+    "Syringe": 141,
+    "Gauze": 1644,
+    "Scalpel": 159,
+    "Tweezers": 2595,
+    "Retractor": 325,
+    "Electric Cautery": 162,
+    "Forceps": 3375,
+    "Scissors": 565,
+    "Hook": 157,
+    "Raspatory": 84,
+    "Needle Holders": 1286,
+    "Skewer": 29,
+    "Mouth Gag": 1188,
+    "Suction Cannula": 768,
+    "Bipolar Forceps": 195
+  },
+  "fallback_rate_by_class": {
+    "Syringe": 0.028368794326241134,
+    "Gauze": 0.004866180048661801,
+    "Scalpel": 0.03773584905660377,
+    "Tweezers": 0.016184971098265895,
+    "Retractor": 0.05846153846153846,
+    "Electric Cautery": 0.0,
+    "Forceps": 0.032296296296296295,
+    "Scissors": 0.049557522123893805,
+    "Hook": 0.044585987261146494,
+    "Raspatory": 0.03571428571428571,
+    "Needle Holders": 0.008553654743390357,
+    "Skewer": 1.0,
+    "Mouth Gag": 0.9991582491582491,
+    "Suction Cannula": 0.037760416666666664,
+    "Bipolar Forceps": 0.010256410256410256
+  },
+  "zero_slot_rate": {
+    "bboxROI": 0.8356701836654943,
+    "maskROI": 0.8356701836654943,
+    "randROI": 0.8356701836654943
+  },
+  "sanity": {
+    "n_boxes_where_mask_equals_bbox": 1484,
+    "matches_fallback_count": true,
+    "n_rand_area_mismatch_gt1px": 0,
+    "norm_median": {
+      "bbox": 10.601983070373535,
+      "mask": 13.345172882080078,
+      "rand": 11.65770149230957
+    },
+    "norm_mean": {
+      "bbox": 10.730017263511357,
+      "mask": 13.855808467935727,
+      "rand": 11.905814769621157
+    }
+  },
+  "coordinate_mapping": {
+    "eval_resize": "model.eval_transform の出力形状を実測 (再計算しない)",
+    "padding": "size_divisible=32、右下パディングのため原点は不変",
+    "feature_coord": "f = orig * scale / stride,  stride = ceil(resized/32)*32 / feat_size"
+  }
+}

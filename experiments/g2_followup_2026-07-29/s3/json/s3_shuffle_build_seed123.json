@@ -1,0 +1,72 @@
+{
+  "seed": 123,
+  "src": "experiments/g2_main_2026-07-29_lecun/features",
+  "splits": {
+    "train": {
+      "n_rows": 9657,
+      "n_fixed_points": 0,
+      "n_rows_identical_after_shuffle": 0,
+      "n_all_zero_rows": 39,
+      "note_identical_rows": "全ゼロ行が複数あるため、derangement でも行の値が一致することがある。分母は n_rows。",
+      "exact_invariants": {
+        "row_multiset_equal": true,
+        "row_norm_dist_equal": true
+      },
+      "float_deviation_order_dependence": {
+        "mean_abs_dev_f64": 1.5612511283791264e-17,
+        "mean_rel_dev_f64": 2.1064966203564054e-15,
+        "std_abs_dev_f64": 5.551115123125783e-17,
+        "mean_rel_dev_f32": 0.0,
+        "col_mean_max_abs_dev_f64": 0.0
+      },
+      "mean_f64": -0.007411600442610598,
+      "std_f64": 0.3031577203483425,
+      "out": "experiments/g2_followup_2026-07-29/s3/features/train_shuffleROI_seed123.npz",
+      "out_md5": "29b3997b191557b632ae57dfac3470f2"
+    },
+    "val": {
+      "n_rows": 1515,
+      "n_fixed_points": 0,
+      "n_rows_identical_after_shuffle": 0,
+      "n_all_zero_rows": 0,
+      "note_identical_rows": "全ゼロ行が複数あるため、derangement でも行の値が一致することがある。分母は n_rows。",
+      "exact_invariants": {
+        "row_multiset_equal": true,
+        "row_norm_dist_equal": true
+      },
+      "float_deviation_order_dependence": {
+        "mean_abs_dev_f64": 2.6020852139652106e-18,
+        "mean_rel_dev_f64": 3.867119517103012e-16,
+        "std_abs_dev_f64": 1.1102230246251565e-16,
+        "mean_rel_dev_f32": 0.0,
+        "col_mean_max_abs_dev_f64": 0.0
+      },
+      "mean_f64": -0.006728742679032893,
+      "std_f64": 0.294754134730429,
+      "out": "experiments/g2_followup_2026-07-29/s3/features/val_shuffleROI_seed123.npz",
+      "out_md5": "4970f05aa18d2958f21e2c72ccb2fb84"
+    },
+    "test": {
+      "n_rows": 4265,
+      "n_fixed_points": 0,
+      "n_rows_identical_after_shuffle": 0,
+      "n_all_zero_rows": 84,
+      "note_identical_rows": "全ゼロ行が複数あるため、derangement でも行の値が一致することがある。分母は n_rows。",
+      "exact_invariants": {
+        "row_multiset_equal": true,
+        "row_norm_dist_equal": true
+      },
+      "float_deviation_order_dependence": {
+        "mean_abs_dev_f64": 6.071532165918825e-18,
+        "mean_rel_dev_f64": 1.11221001799079e-15,
+        "std_abs_dev_f64": 6.661338147750939e-16,
+        "mean_rel_dev_f32": 1.0236233502816927e-06,
+        "col_mean_max_abs_dev_f64": 0.0
+      },
+      "mean_f64": -0.005458979929786159,
+      "std_f64": 0.2709090997757657,
+      "out": "experiments/g2_followup_2026-07-29/s3/features/test_shuffleROI_seed123.npz",
+      "out_md5": "c84e226a7ce7b6bc4fa5ab8453011096"
+    }
+  }
+}

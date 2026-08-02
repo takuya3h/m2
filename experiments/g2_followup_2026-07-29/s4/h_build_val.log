@@ -1,0 +1,25 @@
+Using /home/ubuntu/.cache/torch_extensions/py311_cu118 as PyTorch extensions root...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /home/ubuntu/.cache/torch_extensions/py311_cu118/MultiScaleDeformableAttention/build.ninja...
+Building extension module MultiScaleDeformableAttention...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+ninja: no work to do.
+Loading extension module MultiScaleDeformableAttention...
+[guard] OK {'torch': '2.1.2+cu118', 'cuda': '11.8', 'gpu': 'NVIDIA RTX A6000', 'cudnn': 8700, 'commit': '1ae0a9663ec1487667da3881d326d458f32a13ee', 'host': 'lecun', 'msdeformattn_extension_loaded': True, 'ninja': '/home/ubuntu/slocal2/m2/.venv-relation-detr/bin/ninja'}
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+  500/1515 frames
+  1000/1515 frames
+  1500/1515 frames
+  saved val_handPresence.npz (1515, 4)  zero_rate=0.0000
+  saved val_handROIbbox2.npz (1515, 512)  zero_rate=0.0251
+  saved val_handROIbbox4.npz (1515, 1024)  zero_rate=0.2206
+  saved val_handROImask2.npz (1515, 512)  zero_rate=0.0251
+
+[val] D=256 frames=1515 mask有フレーム=1344 (0.8871) 2cls boxes=2972 fallback=328 (0.1104) 一致=True

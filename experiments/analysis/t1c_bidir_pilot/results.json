@@ -1,0 +1,44 @@
+{
+  "pilot": "t1c_bidir seed42 (n=1)",
+  "bidir": {
+    "init_det": 0.7302938994613697,
+    "final_det": 0.7067207302845536,
+    "det_traj": [
+      0.7303,
+      0.6932,
+      0.6885,
+      0.696,
+      0.6931,
+      0.7109,
+      0.7067
+    ],
+    "phase_traj": [
+      0.0277,
+      0.3802,
+      0.5743,
+      0.3472,
+      0.3089,
+      0.3281,
+      0.3281
+    ],
+    "phase_best": 0.5742574257425742,
+    "phase_mean": 0.3778,
+    "final_phase": 0.32805280528052805
+  },
+  "phasefrozen_baseline": {
+    "final_det": 0.7296018598886518,
+    "final_phase": 0.368976897689769,
+    "phase_mean": 0.3788
+  },
+  "det_baselines": {
+    "camt_all_ctrl": 0.7109577358973539,
+    "camt_all_inj": 0.7181371584855104,
+    "S0_frozen": 0.7302938994613697
+  },
+  "delta": {
+    "phase2det_vs_ctrl_pp": -0.42,
+    "phase2det_vs_S0_pp": -2.36,
+    "det2phase_vs_frozen_pp": -4.09
+  },
+  "verdict": "naive symmetric bidirectional co-training は相互改善せず（det 劣化・phase 不安定）。negative result。val 評価・n=1。"
+}

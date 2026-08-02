@@ -199,6 +199,8 @@ class PhaseTrainer:
         self._write_metrics(best)
         self._write_notes(best, history)
         self._finalize_wandb(best)
+        if self.manager is not None:
+            self.manager.finalize(metric=("phase_accuracy", float(best["phase_accuracy"])))
         print(f"[S3] best: {{epoch={best['epoch']}, acc={best['phase_accuracy']:.4f}}}")
         return best
 

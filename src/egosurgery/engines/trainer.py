@@ -229,6 +229,11 @@ class Trainer:
         final_metrics = self._attach_delta_placeholder(final_metrics)
         self.logger.log_metrics(final_metrics)
         self.logger.finish()
+        # 実験完了 → 証跡 dir を自動 git 同期（graceful・失敗は no-op）。
+        if self.manager is not None:
+            mean_ap = final_metrics.get("mAP")
+            metric = ("mAP", float(mean_ap)) if mean_ap is not None else None
+            self.manager.finalize(metric=metric)
         return final_metrics
 
     def run(self) -> dict:

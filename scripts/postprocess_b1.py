@@ -10,7 +10,7 @@ train_b1_mtl.py（.venv-relation-detr）は egosurgery を import できない�
   3. 両 eval_recipe（検出 NMS-free / 工程 PHASE_EVAL_PROTOCOL）を metrics.json に併記。
 両 Δ（vs S0-frozen′ / S4′）は 3-seed 揃ったあと paired-σ で別途集計する。
 
-実行: .venv/bin/python scripts/postprocess_b1.py --work /tmp/b1_work_fixed_seed42 --weighting fixed --seed 42
+実行: .venv/bin/python scripts/postprocess_b1.py --work experiments/transfer/b1_work_fixed_seed42 --weighting fixed --seed 42
 """
 from __future__ import annotations
 

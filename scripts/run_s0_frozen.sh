@@ -14,10 +14,10 @@ RELDETR_DIR="$PROJECT_DIR/third_party/Relation-DETR"
 REL_VENV="$PROJECT_DIR/.venv-relation-detr"
 PROJECT_PY="$PROJECT_DIR/.venv/bin/python"
 INIT_CKPT="${RELDETR_S0FROZEN_INIT:-$PROJECT_DIR/data/external/weights/relation_detr_s0frozen_init_seed42.pth}"
-LOG_DIR="${S0_FROZEN_LOG_DIR:-/tmp/s0_frozen_logs}"
+LOG_DIR="${S0_FROZEN_LOG_DIR:-$PROJECT_DIR/logs/s0_frozen}"
 STAMP="$(date +%Y%m%d_%H%M%S)"
 DESC="relationdetr_s0frozen_cocohead"
-SERVER_NAME="${SERVER_NAME:-$(hostname)}"
+SERVER_NAME="${SERVER_NAME:-${SERVERNAME:-$(hostname)}}"
 RELDETR_NUM_EPOCHS="${RELDETR_NUM_EPOCHS:-12}"
 RELDETR_BATCH_SIZE="${RELDETR_BATCH_SIZE:-2}"
 RELDETR_NUM_WORKERS="${RELDETR_NUM_WORKERS:-4}"
@@ -73,7 +73,7 @@ next_exp_dir() {
 
 launch_seed() {
     local seed="$1" gpu="$2"
-    local workdir="/tmp/reldetr_work_s0_frozen_seed${seed}_${STAMP}"
+    local workdir="$PROJECT_DIR/experiments/transfer/reldetr_work_s0_frozen_seed${seed}_${STAMP}"
     local expdir
     expdir="$(next_exp_dir "$seed")"
     mkdir -p "$workdir" "$expdir"

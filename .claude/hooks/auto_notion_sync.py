@@ -54,10 +54,15 @@ def _should_fire_post_tool_use(payload: dict) -> bool:
 def _sweep() -> int:
     """sync_experiments_to_notion.py を timeout 付きで実行。例外も握り潰す（fail-open）。"""
     try:
-        # .env を source した上で sweep を呼ぶ
+        # .env を source した上で sweep を呼ぶ。
+        # python は .venv/bin/python があればそれ、無ければ python3/python に fallback
+        # （efros 等 venv 無しホストで sweep が黙って死ぬのを防ぐ。sync スクリプトは
+        #  自前で sys.path に src を追加するため PYTHONPATH は不要）。
         cmd = (
             "if [ -f .env ]; then set -a; source .env; set +a; fi; "
-            ".venv/bin/python scripts/sync_experiments_to_notion.py 2>&1 || true"
+            "PY=$([ -x .venv/bin/python ] && echo .venv/bin/python "
+            "|| command -v python3 || command -v python); "
+            '"$PY" scripts/sync_experiments_to_notion.py 2>&1 || true'
         )
         result = subprocess.run(
             ["bash", "-c", cmd],

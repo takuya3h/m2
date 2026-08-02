@@ -50,6 +50,8 @@ from egosurgery.utils.server_name import resolve_server_name
 if TYPE_CHECKING:  # 型注釈専用。実行時は import しない。
     from omegaconf import DictConfig
 
+    from egosurgery.utils.git_autosync import AutoSyncResult
+
 # experiments/ 配下で許可されるカテゴリ。
 VALID_CATEGORIES = ("baselines", "phase0", "phase1", "ablations", "transfer", "final")
 
@@ -229,6 +231,54 @@ class ExperimentManager:
             ap_dict: クラス別 AP 辞書。
         """
         self._dump_json(self._require_exp_dir() / "per_class_ap.json", ap_dict)
+
+    def finalize(
+        self, *, metric: tuple[str, float] | None = None, push: bool = True
+    ) -> "AutoSyncResult | None":
+        """実験完了時に証跡ディレクトリを自動 commit + push する（graceful）。
+
+        :mod:`egosurgery.utils.git_autosync` を遅延 import し、この実験の
+        ``exp_dir`` だけを provenance 付きで commit + push する（``exp/*``
+        ブランチ上かつ deploy key 構成時のみ実際に push し、それ以外は no-op）。
+        学習ループを止めないため、``exp_dir`` 未確定・``git_autosync`` の
+        import 失敗・その他あらゆる例外でも送出せず ``None`` を返す。
+
+        Args:
+            metric: ``(name, value)`` の組。commit メッセージの provenance に
+                使う代表指標。``None`` なら指標なしで整形される。
+            push: ``False`` なら commit のみで push しない。
+
+        Returns:
+            :class:`~egosurgery.utils.git_autosync.AutoSyncResult`。
+            no-op（``exp_dir`` 未確定 / import 失敗 / 例外）の場合は ``None``。
+
+        Notes:
+            ``git_autosync`` はここで遅延 import する。これにより当該モジュール
+            未配置・多 venv 環境でも本メソッド呼び出し自体は学習を止めない。
+        """
+        if self.exp_dir is None:
+            return None
+        try:
+            from egosurgery.utils import git_autosync
+
+            metric_name, metric_value = metric if metric is not None else (None, None)
+            return git_autosync.commit_and_push_evidence(
+                self.exp_dir,
+                meta={
+                    "category": self.category,
+                    "step": self.step,
+                    "description": self.description,
+                    "seed": self.seed,
+                    "exp_id": self.exp_id,
+                    "metric_name": metric_name,
+                    "metric_value": metric_value,
+                },
+                extra_paths=["docs/experiment_log.md"],
+                push=push,
+            )
+        except Exception:
+            # fail-safe: 自動同期の失敗を学習ループに漏らさない。
+            return None
 
     # ------------------------------------------------------------------ #
     # 内部ヘルパ

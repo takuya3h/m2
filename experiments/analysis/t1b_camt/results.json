@@ -1,0 +1,292 @@
+{
+  "compare_at": "final",
+  "note": "検出は train/val split のみ（test split 無し）→ held-out 評価は val per-class AP。",
+  "init_map_inj_vs_ctrl": {
+    "42": [
+      0.7302938994613697,
+      0.7302938994613697
+    ],
+    "123": [
+      0.7291778095772903,
+      0.7291778095772903
+    ],
+    "456": [
+      0.721658691470358,
+      0.721658691470358
+    ]
+  },
+  "overall_mAP": {
+    "inj": {
+      "42": 0.7296494868955022,
+      "123": 0.7293640882172309,
+      "456": 0.7211662375620362
+    },
+    "ctrl": {
+      "42": 0.7292130185808179,
+      "123": 0.727471949880197,
+      "456": 0.7219344857141804
+    },
+    "delta_pp": [
+      0.044,
+      0.189,
+      -0.077
+    ],
+    "mean_pp": 0.052,
+    "pstd_pp": 0.109,
+    "significant": false,
+    "non_degraded": true
+  },
+  "rare_tools": {
+    "Bipolar Forceps": {
+      "deltas_pp": [
+        -0.45,
+        0.146,
+        -0.758
+      ],
+      "mean_pp": -0.354,
+      "pstd_pp": 0.375,
+      "significant": false,
+      "is_rare": true
+    },
+    "Scalpel": {
+      "deltas_pp": [
+        1.253,
+        1.134,
+        0.285
+      ],
+      "mean_pp": 0.891,
+      "pstd_pp": 0.431,
+      "significant": true,
+      "is_rare": true
+    },
+    "Skewer": {
+      "deltas_pp": [
+        -0.2,
+        1.17,
+        -0.205
+      ],
+      "mean_pp": 0.255,
+      "pstd_pp": 0.647,
+      "significant": false,
+      "is_rare": true
+    },
+    "Syringe": {
+      "deltas_pp": [
+        -0.258,
+        0.051,
+        0.181
+      ],
+      "mean_pp": -0.009,
+      "pstd_pp": 0.184,
+      "significant": false,
+      "is_rare": true
+    }
+  },
+  "rare_mean_delta_pp": 0.196,
+  "rare_significant_up": [
+    "Scalpel"
+  ],
+  "rare_trajectory_epochs": [
+    -1,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "rare_trajectory_delta_pp": {
+    "Bipolar Forceps": [
+      0.0,
+      -0.22,
+      -0.67,
+      -0.04,
+      -0.74,
+      -0.64,
+      -0.35
+    ],
+    "Scalpel": [
+      0.0,
+      0.34,
+      0.46,
+      0.68,
+      0.4,
+      0.74,
+      0.89
+    ],
+    "Skewer": [
+      0.0,
+      0.13,
+      0.15,
+      0.59,
+      0.23,
+      0.32,
+      0.26
+    ],
+    "Syringe": [
+      0.0,
+      1.04,
+      0.41,
+      0.21,
+      -0.16,
+      -0.08,
+      -0.01
+    ]
+  },
+  "all_perclass": {
+    "Bipolar Forceps": {
+      "deltas_pp": [
+        -0.45,
+        0.146,
+        -0.758
+      ],
+      "mean_pp": -0.354,
+      "pstd_pp": 0.375,
+      "significant": false,
+      "is_rare": true
+    },
+    "Electric Cautery": {
+      "deltas_pp": [
+        -0.188,
+        0.04,
+        0.06
+      ],
+      "mean_pp": -0.029,
+      "pstd_pp": 0.113,
+      "significant": false,
+      "is_rare": false
+    },
+    "Forceps": {
+      "deltas_pp": [
+        0.269,
+        0.137,
+        -0.221
+      ],
+      "mean_pp": 0.062,
+      "pstd_pp": 0.207,
+      "significant": false,
+      "is_rare": false
+    },
+    "Gauze": {
+      "deltas_pp": [
+        0.076,
+        -0.189,
+        -0.795
+      ],
+      "mean_pp": -0.302,
+      "pstd_pp": 0.365,
+      "significant": false,
+      "is_rare": false
+    },
+    "Hook": {
+      "deltas_pp": [
+        -0.106,
+        0.412,
+        0.132
+      ],
+      "mean_pp": 0.146,
+      "pstd_pp": 0.212,
+      "significant": false,
+      "is_rare": false
+    },
+    "Mouth Gag": {
+      "deltas_pp": [
+        0.025,
+        -0.032,
+        -0.011
+      ],
+      "mean_pp": -0.006,
+      "pstd_pp": 0.024,
+      "significant": false,
+      "is_rare": false
+    },
+    "Needle Holders": {
+      "deltas_pp": [
+        -0.019,
+        -0.153,
+        -0.117
+      ],
+      "mean_pp": -0.096,
+      "pstd_pp": 0.056,
+      "significant": true,
+      "is_rare": false
+    },
+    "Raspatory": {
+      "deltas_pp": [
+        0.047,
+        -0.06,
+        0.361
+      ],
+      "mean_pp": 0.116,
+      "pstd_pp": 0.178,
+      "significant": false,
+      "is_rare": false
+    },
+    "Scalpel": {
+      "deltas_pp": [
+        1.253,
+        1.134,
+        0.285
+      ],
+      "mean_pp": 0.891,
+      "pstd_pp": 0.431,
+      "significant": true,
+      "is_rare": true
+    },
+    "Scissors": {
+      "deltas_pp": [
+        0.099,
+        -0.076,
+        -0.208
+      ],
+      "mean_pp": -0.062,
+      "pstd_pp": 0.126,
+      "significant": false,
+      "is_rare": false
+    },
+    "Skewer": {
+      "deltas_pp": [
+        -0.2,
+        1.17,
+        -0.205
+      ],
+      "mean_pp": 0.255,
+      "pstd_pp": 0.647,
+      "significant": false,
+      "is_rare": true
+    },
+    "Suction Cannula": {
+      "deltas_pp": [
+        0.041,
+        0.019,
+        0.115
+      ],
+      "mean_pp": 0.058,
+      "pstd_pp": 0.041,
+      "significant": true,
+      "is_rare": false
+    },
+    "Syringe": {
+      "deltas_pp": [
+        -0.258,
+        0.051,
+        0.181
+      ],
+      "mean_pp": -0.009,
+      "pstd_pp": 0.184,
+      "significant": false,
+      "is_rare": true
+    },
+    "Tweezers": {
+      "deltas_pp": [
+        0.022,
+        0.049,
+        0.105
+      ],
+      "mean_pp": 0.058,
+      "pstd_pp": 0.035,
+      "significant": true,
+      "is_rare": false
+    }
+  }
+}
