@@ -156,3 +156,7 @@ logs/
 data/annotations/HandDataset/
 data/annotations/HandToolDataset/
 data/annotations/SurgerySegmentation/
+
+# === フック生成ログ ===
+# セッション毎に追記されるため、追跡していると全サーバーで恒久的に merge 衝突する。
+.claude/hooks/*.log
