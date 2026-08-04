@@ -8,13 +8,16 @@
 **明文化されていない**。以下はディレクトリ名の意味からの判断であり、
 規約に基づくものではない。**除外規約の明文化を推奨する。**
 
-除外 19 run / 全 720 run（削除ではなくフラグ）
+除外 48 run / 全 749 run（削除ではなくフラグ）
 
 | exclusion_reason | runs | 対象 |
 |---|---:|---|
 | `failed_run` | 6 | `experiments/phase0/_failed_s3_weighted` |
+| `identity_check` | 24 | `experiments/hand2det_dev`, `experiments/transfer` |
 | `known_bad_split` | 6 | `experiments/baselines/_wrong_split_8_2_3` |
+| `mislabeled_arm_all_not_film` | 2 | `experiments/transfer` |
 | `smoke_test` | 7 | `experiments/_smoke_prior`, `experiments/baselines/_smoke_ddq` |
+| `wrong_frozen_source` | 3 | `experiments/phase1` |
 
 ### 1.1 `phase0/_failed_s3_weighted/` の 6 run — 運用上の欠陥
 
@@ -32,10 +35,11 @@
 
 指標キーの接頭辞から split を確定できない run。**推測していない**。
 
-確定不能 6 run / 全 720 run
+確定不能 35 run / 全 749 run
 
 | split_provenance | runs |
 |---|---:|
+| `not_determinable_no_eval_recipe` | 29 |
 | `not_determinable` | 6 |
 
 残るのは **`metrics.json` が空 `{}` の run** である。指標が 1 つも無いため
@@ -50,14 +54,43 @@
 | `experiments/phase0/_failed_s3_weighted/s3_001_phase_frame_seed42` | True | `failed_run` |
 | `experiments/phase0/_failed_s3_weighted/s3_002_phase_frame_seed123` | True | `failed_run` |
 | `experiments/phase0/_failed_s3_weighted/s3_003_phase_frame_seed456` | True | `failed_run` |
+| `transfer/hc_seed123` | False | `None` |
+| `transfer/hc_seed42` | False | `None` |
+| `transfer/hc_seed456` | False | `None` |
+| `transfer/oracle_phase_seed123` | False | `None` |
+| `transfer/oracle_phase_seed42` | False | `None` |
+| `transfer/oracle_phase_seed456` | False | `None` |
+| `transfer/t1b_ca_seed123_lecun` | False | `None` |
+| `transfer/t1b_ca_seed42` | False | `None` |
+| `transfer/t1b_ca_seed42_bengio` | False | `None` |
+| `transfer/t1b_ca_seed456_lecun` | False | `None` |
+| `transfer/t1b_ca_zeroctx_seed42` | False | `None` |
+| `transfer/t1b_camt_all_seed123_efros` | False | `None` |
+| `transfer/t1b_camt_all_seed42_efros` | False | `None` |
+| `transfer/t1b_camt_all_seed456_efros` | False | `None` |
+| `transfer/t1b_camt_seed123_efros` | False | `None` |
+| `transfer/t1b_camt_seed42_efros` | False | `None` |
+| `transfer/t1b_camt_seed456_efros` | False | `None` |
+| `transfer/t1b_clsbias_pe_seed123_efros` | False | `None` |
+| `transfer/t1b_clsbias_pe_seed42_efros` | False | `None` |
+| `transfer/t1b_clsbias_pe_seed456_efros` | False | `None` |
+| `transfer/t1b_clsbias_seed123_efros` | False | `None` |
+| `transfer/t1b_clsbias_seed42_efros` | False | `None` |
+| `transfer/t1b_clsbias_seed456_efros` | False | `None` |
+| `transfer/t1b_filmonly_seed123` | False | `None` |
+| `transfer/t1b_filmonly_seed42` | False | `None` |
+| `transfer/t1b_filmonly_seed456` | False | `None` |
+| `transfer/t1b_seed42_bengio` | False | `None` |
+| `transfer/t1c_bidir_pilot_seed42` | False | `None` |
+| `transfer/t1c_bidir_v2_pilot_seed42` | False | `None` |
 
 ## 3. host を確定できなかった run
 
-確定不能 28 run
+確定不能 41 run
 
 | host_raw | runs | 理由 |
 |---|---:|---|
-| `None` | 18 | server.txt 欠損かつ eval_recipe.server_name 無し |
+| `None` | 31 | server.txt 欠損かつ eval_recipe.server_name 無し |
 | `aolab` | 10 | philip / ilya の双方が返すコンテナ内 hostname のため一意に特定不能 |
 
 ## 4. per_class_ap.json のクラス体系が 2 種類ある
@@ -72,8 +105,9 @@
 | per_class_kind | per_class_metric | runs | 内容 | 根拠 |
 |---|---|---:|---|---|
 | `phase` | `F1` | 545 | 9 クラスの工程別 **F1**（AP ではない） | `scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が `best.get("phase_per_class_f1", {})` を `log_per_class_ap()` に渡している |
-| `None` | `None` | 109 | `per_class_ap.json` が無い・空・パース失敗 | — |
+| `None` | `None` | 117 | `per_class_ap.json` が無い・空・パース失敗 | — |
 | `tool` | `AP` | 66 | 15 クラスの術具 AP | `per_class_coco_map` / `COCOeval.precision` 由来 |
+| `coco_map` | `AP` | 21 |  |  |
 
 ### metric を確定できなかった run: 0
 
@@ -101,7 +135,7 @@
 
 | NaN のクラス | runs | 該当群 |
 |---|---:|---|
-| `Retractor` | 54 | `experiments/baselines`, `experiments/baselines/_legacy_score_thr_0`, `experiments/baselines/_smoke_ddq`, `experiments/hand2det_dev`, `experiments/transfer` |
+| `Retractor` | 75 | `experiments/baselines`, `experiments/baselines/_legacy_score_thr_0`, `experiments/baselines/_smoke_ddq`, `experiments/hand2det_dev`, `experiments/transfer`, `transfer` |
 | `Mouth Gag`, `Skewer` | 6 | `experiments/baselines/_wrong_split_8_2_3` |
 
 ### 平均の取り方への含意
@@ -324,6 +358,7 @@ adapter を書けば貴重な追加ソースになる。
 | 同一 (group, step, description, split) 内で eval_recipe_id が 2 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #a63aecae で分離した。 | 6 |
 | metrics.json が空 ({...}) | 6 |
 | ディレクトリ名の p0 が末尾 seed<N> と一致せず、command.sh にノイズ引数も無い。seed か否かを確定できないため seed_phase は null にした。 | 6 |
+| run 名に seq (3 桁連番) が無い別系統の命名: t1b_ca_seed<N>。step には description を充てた。 | 4 |
 | config.yaml のパースに失敗: ParserError | 3 |
 | run 名に seq (3 桁連番) が無い別系統の命名: shuffleROI_seed<N>。step には description を充てた。 | 3 |
 | run 名に seq (3 桁連番) が無い別系統の命名: bboxROI_handROIbbox2_seed<N>。step には description を充てた。 | 3 |
@@ -341,9 +376,20 @@ adapter を書けば貴重な追加ソースになる。
 | run 名に seq (3 桁連番) が無い別系統の命名: _identity_inj_5ch_seed<N>。step には description を充てた。 | 3 |
 | run 名に seq (3 桁連番) が無い別系統の命名: _p0_identity_ctrl_seed<N>。step には description を充てた。 | 3 |
 | run 名に seq (3 桁連番) が無い別系統の命名: _p0_identity_inj_seed<N>。step には description を充てた。 | 3 |
+| run 名に seq (3 桁連番) が無い別系統の命名: hc_seed<N>。step には description を充てた。 | 3 |
+| run 名に seq (3 桁連番) が無い別系統の命名: oracle_phase_seed<N>。step には description を充てた。 | 3 |
+| run 名に seq (3 桁連番) が無い別系統の命名: t1b_camt_all_seed<N>。step には description を充てた。 | 3 |
+| run 名に seq (3 桁連番) が無い別系統の命名: t1b_camt_seed<N>。step には description を充てた。 | 3 |
+| run 名に seq (3 桁連番) が無い別系統の命名: t1b_clsbias_pe_seed<N>。step には description を充てた。 | 3 |
+| run 名に seq (3 桁連番) が無い別系統の命名: t1b_clsbias_seed<N>。step には description を充てた。 | 3 |
+| run 名に seq (3 桁連番) が無い別系統の命名: t1b_filmonly_seed<N>。step には description を充てた。 | 3 |
 | run 名に seq (3 桁連番) が無い別系統の命名: hand2det_1ep_4ch_all_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: hand2det_1ep_4ch_film_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: hand2det_4ch_film_inj_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: t1b_ca_zeroctx_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: t1b_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: t1c_bidir_pilot_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: t1c_bidir_v2_pilot_seed<N>。step には description を充てた。 | 1 |
 
 ## 11. 🔴 要対処: 乱数で per-class AP を生成するコードが残っている
 
@@ -383,7 +429,7 @@ dummy Trainer の削除またはガード追加は別タスクで検討するこ
 mAP 系の指標を持つのに術具 per-class（15 クラス）を持たない run は、
 どちらの検査でも判定できない。**個別確認が要る対象**として列挙する。
 
-該当 31 run
+該当 39 run
 
 | path | mAP 系のキー | entrypoint | commit |
 |---|---|---|---|
@@ -418,6 +464,14 @@ mAP 系の指標を持つのに術具 per-class（15 クラス）を持たない
 | `experiments/transfer/b2b_rescore_alpha2.0` | `mAP_baseline`, `mAP_rescored` | — | `a697d90b88` |
 | `experiments/transfer/t1b_phasefilm_001_t1b_phasefilm_seed123` | `control_init_mAP`, `control_mAP`, `init_mAP`, `mAP` | `scripts/postprocess_t1b.py` | `a697d90b88` |
 | `experiments/transfer/t1b_phasefilm_002_t1b_phasefilm_seed456` | `control_init_mAP`, `control_mAP`, `init_mAP`, `mAP` | `scripts/postprocess_t1b.py` | `a697d90b88` |
+| `transfer/hc_seed42` | `control_init_mAP`, `control_mAP`, `init_mAP`, `mAP` | — | `—` |
+| `transfer/t1b_ca_zeroctx_seed42` | `init_mAP`, `mAP` | — | `—` |
+| `transfer/t1b_camt_all_seed123_efros` | `control_init_mAP`, `control_mAP`, `final_mAP`, `init_mAP`, `mAP` | — | `—` |
+| `transfer/t1b_camt_all_seed42_efros` | `control_init_mAP`, `control_mAP`, `final_mAP`, `init_mAP`, `mAP` | — | `—` |
+| `transfer/t1b_camt_all_seed456_efros` | `control_init_mAP`, `control_mAP`, `final_mAP`, `init_mAP`, `mAP` | — | `—` |
+| `transfer/t1b_camt_seed42_efros` | `control_init_mAP`, `control_mAP`, `final_mAP`, `init_mAP`, `mAP` | — | `—` |
+| `transfer/t1b_clsbias_seed456_efros` | `control_init_mAP`, `control_mAP`, `final_mAP`, `init_mAP`, `mAP` | — | `—` |
+| `transfer/t1b_seed42_bengio` | `control_init_mAP`, `control_mAP`, `init_mAP`, `mAP` | — | `—` |
 
 `tools/verify_no_dummy_metrics.py --strict` はこの死角が 1 件でもあれば
 異常終了する。`make runindex` は非 strict で実行し、警告として表示する。
@@ -472,14 +526,14 @@ mAP 系の指標を持つのに術具 per-class（15 クラス）を持たない
 ## 12. experiments/README.md と実態の乖離
 
 README は step 識別子を **s0〜s9 / a1〜a7（17 種）** と規定しているが、
-実測は **177 種**。README に無い以下の系統が存在する。
+実測は **189 種**。README に無い以下の系統が存在する。
 
 | 系統 | step 識別子の種類 | run 合計 | 例 |
 |---|---:|---:|---|
 | `b1` | 1 | 6 | `b1_mtl` |
 | `b2a` | 74 | 265 | `b2a_det2phase_toolpresence`, `b2a_ro_oracle_noise000` |
 | `t1a` | 56 | 132 | `t1a_deep_3s10l96f`, `t1a_region_only` |
-| `t1b` | 1 | 2 | `t1b_phasefilm` |
+| `t1b` | 9 | 23 | `t1b_ca`, `t1b_camt_all` |
 | `taux` | 5 | 15 | `taux_mingru_nonek3`, `taux_tecno_deltak3` |
 | `haux` | 6 | 18 | `haux_hand_count_oracle`, `haux_hand_geom_oracle` |
 | `hires` | 9 | 9 | `hires_relation_detr_augstrong_hires_seed42_p123`, `hires_relation_detr_augstrong_hires_seed42_p42` |
@@ -859,7 +913,7 @@ _FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
 **したがって `frozen_source_tag` はキャッシュのパスからのみ導き、
 `frozen_source.seed` と `notes.md` の記述は採用していない。**
 
-- 実験数: **194** / run 数 720
+- 実験数: **206** / run 数 749
 - `experiment_id` を付けられなかった run: 78
   （run 名が命名規約に一致しない run）
 - `eval_recipe_id` の食い違いで分離した base: 12
@@ -964,7 +1018,7 @@ delta:
 | 分類 | run 数 |
 |---|---:|
 | `injection_from_config_yaml` | 439 |
-| `no_denominator_declared` | 279 |
+| `no_denominator_declared` | 308 |
 | `baseline` | 17 |
 | `within_run_baseline` | 2 |
 
@@ -1365,7 +1419,7 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 | seed_agreement | run 数 | 意味 |
 |---|---:|---|
 | `agree` | 639 | ディレクトリ名と他証拠が一致 |
-| `unverified_no_other_evidence` | 3 | `command.sh` も `config.yaml` も無い（g2_* 群） |
+| `unverified_no_other_evidence` | 32 | `command.sh` も `config.yaml` も無い（g2_* 群） |
 | `no_seed_in_dirname` | 78 | 命名規約外 |
 | **`conflict`** | **0** | **食い違い** |
 
@@ -1663,7 +1717,7 @@ Relation-DETR 経路の状況である。
 
 全件は `anomalies/within_vs_between_seed.csv`（1 行 = 1 実験 × 1 指標）。
 
-- 反復がある (実験 × 指標) の組: **98**
+- 反復がある (実験 × 指標) の組: **101**
 - そのうち **within > between**: **47**
   - 条件混在の交絡あり: 36
   - 交絡なし（純粋に非決定性）: **11**

@@ -47,12 +47,56 @@ RUNINDEX = REPO_ROOT / "runindex"
 # 明文化されていない (2026-07-31 時点)。そのため下記は「ディレクトリ名の意味
 # からの判断」であり、規約に基づくものではない。anomalies.md にもその旨を記す。
 # --------------------------------------------------------------------------- #
+# 判定は 3 層。優先順は allowlist > run 単位 > ディレクトリ単位（classify_exclusion 参照）。
+#
+# ⚠️ 前方一致に一括変更してはならない。`_legacy_score_thr_0` は `_` 接頭辞だが
+#    11 検出器の S0 基準点の唯一の証跡であり、除外すると解析から消える
+#    (backlog B-28 / BL-legacy-prefix-must-not-exclude)。
+#    マーカー末尾が `_` のものだけ前方一致にしている (backlog B-29)。
 EXCLUSION_RULES: list[tuple[str, str]] = [
+    # 既存 4 件（減らさない）
     ("_smoke_prior", "smoke_test"),
     ("_smoke_ddq", "smoke_test"),
     ("_wrong_split_8_2_3", "known_bad_split"),
     ("_failed_s3_weighted", "failed_run"),
+    # lecun の退避 8 種。いずれも完全一致では拾えていなかった (B-29)。
+    # `_smoke_prior_simplehead` は `_smoke_prior` とは別ディレクトリである点に注意。
+    ("_smoke_v2_part3", "smoke_test"),
+    ("_smoke_prior_simplehead", "smoke_test"),
+    ("_smoke_e3", "smoke_test"),
+    ("_pre_redo_s0_smoke", "smoke_test"),
+    ("_prior_no_eval_recipe", "superseded"),
+    ("_failed_num_workers_zero", "failed_run"),
+    ("_aborted_codetr_no_config", "aborted_run"),
+    ("_aborted_s0_cuda_visible_misconfig", "aborted_run"),
+    # 初期化恒等性の検証 (B-24)。マーカー自体が可変長のため末尾 `_` で前方一致にする。
+    ("_identity_", "identity_check"),
+    ("_p0_identity_", "identity_check"),
 ]
+
+# 🔴 `_` 接頭辞だが除外してはいけないディレクトリ (B-28)。EXCLUSION_RULES より優先する。
+EXCLUSION_ALLOWLIST: frozenset[str] = frozenset(
+    {
+        "_legacy_score_thr_0",
+        # 現状 metrics.json を持たないため走査されないが、規約の意図を明示しておく。
+        "_orphan_no_metrics",
+    }
+)
+
+# 個別 run の隔離（run ディレクトリ名の完全一致）。
+# harvester は INVALID.md を読まないため、無効判定はここに書く必要がある。
+RUN_EXCLUSIONS: dict[str, str] = {
+    # 宣言と実体が食い違う凍結源で走った 3 run (B-25 / B-27)。
+    # 一次証拠: evidence/aligndetr_s0frozen_incident_20260703/
+    "s4_phase_baseline_010_frozen_tecno_phase_baseline_aligndetr_seed42": "wrong_frozen_source",
+    "s4_phase_baseline_011_frozen_tecno_phase_baseline_aligndetr_seed123": "wrong_frozen_source",
+    "s4_phase_baseline_012_frozen_tecno_phase_baseline_aligndetr_seed456": "wrong_frozen_source",
+    # step='t1b_phasefilm' / arm='injection' と記録されているが実体は trainable=all / 3ep
+    # の注入なし run (B-26)。数値自体は正しく、誤っているのはラベルのみ。
+    # 対照情報として参照する場合は B-26 の本文と当該 metrics.json を直接見ること。
+    "t1b_phasefilm_001_t1b_phasefilm_seed123": "mislabeled_arm_all_not_film",
+    "t1b_phasefilm_002_t1b_phasefilm_seed456": "mislabeled_arm_all_not_film",
+}
 
 # --------------------------------------------------------------------------- #
 # 指標キーの正規化
@@ -233,10 +277,29 @@ def ledger_key_of(rel_path: Path) -> str:
 # 収穫ロジック
 # --------------------------------------------------------------------------- #
 def classify_exclusion(rel_path: Path) -> tuple[bool, str | None]:
+    """run を解析対象から外すかを判定する。
+
+    優先順:
+      1. allowlist に載るディレクトリを通るなら **除外しない**（B-28）
+      2. run 名が RUN_EXCLUSIONS に一致するなら除外
+      3. パス構成要素が EXCLUSION_RULES に一致するなら除外
+         マーカー末尾が ``_`` のものは前方一致、それ以外は完全一致（B-29）
+    """
+    # 1) 除外してはいけないものを最優先で救う。
+    if any(part in EXCLUSION_ALLOWLIST for part in rel_path.parts):
+        return False, None
+
+    # 2) run 単位の隔離。
+    reason = RUN_EXCLUSIONS.get(rel_path.name)
+    if reason is not None:
+        return True, reason
+
+    # 3) ディレクトリ単位の除外。
     for part in rel_path.parts:
-        for marker, reason in EXCLUSION_RULES:
-            if part == marker:
-                return True, reason
+        for marker, marker_reason in EXCLUSION_RULES:
+            hit = part.startswith(marker) if marker.endswith("_") else part == marker
+            if hit:
+                return True, marker_reason
     return False, None
 
 
@@ -973,8 +1036,213 @@ def build_run_record(run_dir: Path) -> dict[str, Any]:
         "harvest_warnings": warnings,
         "duplicate_bare_keys": sorted(m["duplicate_bare_keys"]),
         "conflicting_bare_keys": m["conflicting_bare_keys"],
+        # experiments/ 配下は 6 点証跡が揃っている前提。直下 transfer/ と区別する（B-12）。
+        "evidence_completeness": "full",
+        "metrics_source": "metrics_json",
     }
     return record
+
+
+# --------------------------------------------------------------------------- #
+# B-12 / BL-runs-outside-experiments-dir — 直下 transfer/ の取り込み
+#
+# 直下 transfer/ の 29 run は 6 点証跡を 1 つも持たず、result.json だけがある。
+# metrics.json / eval_recipe / git_commit.txt / server.txt が存在しないため、
+# **無いものは生成せず null のまま**取り込み、evidence_completeness で区別する。
+# 詳細な棚卸しは docs/runindex_instr10_stage1_transfer_inventory_ilya_2026-08-04.md。
+# --------------------------------------------------------------------------- #
+TRANSFER_LEGACY = REPO_ROOT / "transfer"
+
+# 注入側 / 対照側の result ファイル名。群ごとに命名が違うので候補で受ける。
+_TL_INJECTED = (
+    "injected_result.json",
+    "injection_t1b_result.json",
+    "t1b_result.json",
+    "bidir_result.json",
+    "bidir_s4_result.json",
+)
+_TL_CONTROL = (
+    "control_result.json",
+    "zeroctx_t1b_result.json",
+    "phasefrozen_result.json",
+    "plasticphase_result.json",
+)
+# ディレクトリ名の接尾辞から分かるホスト。付いていない run は判別不能（null）。
+_TL_HOST_SUFFIX = ("efros", "lecun", "bengio", "philip", "andrew", "ilya")
+
+
+def _tl_first(run_dir: Path, names: tuple[str, ...]) -> tuple[dict | None, str | None]:
+    for n in names:
+        p = run_dir / n
+        if p.exists():
+            try:
+                return json.loads(p.read_text(encoding="utf-8")), n
+            except Exception:  # noqa: BLE001
+                return None, n
+    return None, None
+
+
+def _tl_map(d: dict | None) -> dict[str, Any]:
+    """result.json の指標を index の metric 名へ写す。無いキーは入れない。"""
+    if not isinstance(d, dict):
+        return {}
+    out: dict[str, Any] = {}
+    # 検出側。t1c 群は final_det_mAP / init_det_mAP という別名を使う。
+    for src, dst in (
+        ("mAP", "mAP"),
+        ("init_mAP", "init_mAP"),
+        ("final_mAP", "final_mAP"),
+        ("final_det_mAP", "mAP"),
+        ("init_det_mAP", "init_mAP"),
+        ("final_epoch", "final_epoch"),
+    ):
+        v = d.get(src)
+        if isinstance(v, (int, float)) and dst not in out:
+            out[dst] = v
+    # 工程側（t1c 群のみ）。accuracy 列に載せる。
+    v = d.get("final_phase_acc")
+    if isinstance(v, (int, float)):
+        out["accuracy"] = v
+    return out
+
+
+def build_transfer_legacy_record(run_dir: Path) -> dict[str, Any]:
+    rel = run_dir.relative_to(REPO_ROOT)
+    warnings: list[str] = []
+    provenance: dict[str, str] = {}
+
+    inj, inj_file = _tl_first(run_dir, _TL_INJECTED)
+    ctrl, ctrl_file = _tl_first(run_dir, _TL_CONTROL)
+    if inj is None and ctrl is None:
+        warnings.append("result.json を 1 つも読めなかった")
+
+    primary = inj if inj is not None else ctrl
+    metrics = _tl_map(primary)
+    if ctrl is not None:
+        cm = _tl_map(ctrl)
+        if "mAP" in cm:
+            metrics["control_mAP"] = cm["mAP"]
+        if "init_mAP" in cm:
+            metrics["control_init_mAP"] = cm["init_mAP"]
+    # Δ は result.json 内で完結する引き算なので算出してよい（σ は別問題）。
+    if "mAP" in metrics and "init_mAP" in metrics:
+        metrics["delta_detection"] = metrics["mAP"] - metrics["init_mAP"]
+    if "control_mAP" in metrics and "control_init_mAP" in metrics:
+        metrics["delta_control"] = metrics["control_mAP"] - metrics["control_init_mAP"]
+        if "delta_detection" in metrics:
+            metrics["injection_effect"] = metrics["delta_detection"] - metrics["delta_control"]
+
+    # host はディレクトリ名の接尾辞からのみ分かる。無ければ判別不能。
+    # 接尾辞は実験条件ではなく実行ホストの印なので、step/seed の解釈前に外す
+    # （外さないと `..._seed42_efros` から step を取れず experiments.csv に載らない）。
+    host = None
+    name_for_parse = run_dir.name
+    for suf in _TL_HOST_SUFFIX:
+        if run_dir.name.endswith(f"_{suf}"):
+            host = suf
+            name_for_parse = run_dir.name[: -(len(suf) + 1)]
+            break
+
+    name_info, name_warn = parse_run_name(name_for_parse, None)
+    warnings.extend(name_warn)
+
+    # per_class。best_epoch=-1 の run は {} を返す仕様なので「欠損ではなく結果」。
+    pc_raw = (primary or {}).get("per_class_coco_map") or (primary or {}).get(
+        "final_det_per_class_coco_map"
+    )
+    # NaN は標準 JSON として不正なので None へ落とし、どのクラスかは別に保持する。
+    pc_nan = sorted(k for k, v in (pc_raw or {}).items() if _is_nan(v))
+    per_class = _denan(pc_raw) if isinstance(pc_raw, dict) and pc_raw else None
+    provenance["per_class"] = (
+        f"from_{inj_file or ctrl_file}#per_class_coco_map"
+        if per_class is not None
+        else "empty_in_result_json_best_epoch_minus_1"
+    )
+
+    provenance["name"] = (
+        "from_dirname_host_suffix_stripped" if host else "from_dirname"
+    )
+    provenance["host"] = (
+        "from_dirname_suffix" if host else "not_determinable_no_server_txt_and_no_suffix"
+    )
+    provenance["commit"] = "not_determinable_no_git_commit_txt"
+    provenance["eval_recipe"] = "not_determinable_no_metrics_json"
+    provenance["metrics"] = f"from_{inj_file}" if inj_file else "not_determinable"
+    provenance["split"] = "not_determinable_no_eval_recipe"
+    provenance["seed"] = "from_dirname" if name_info["seed"] is not None else "not_determinable"
+    provenance["step"] = "from_dirname" if name_info["step"] else "not_determinable"
+
+    return {
+        "ledger_key": str(rel).replace("/", "__"),
+        "run_id": run_dir.name,
+        "group": "transfer_legacy",
+        "subgroup": None,
+        "path": str(rel),
+        "excluded": False,
+        "exclusion_reason": None,
+        "step": name_info["step"],
+        "seq": name_info["seq"],
+        "description": name_info["description"],
+        "seed": name_info["seed"],
+        "seed_command": None,
+        "seed_config": None,
+        "seed_agreement": "unverified_no_other_evidence",
+        "frozen_source_seed_declared": None,
+        "seed_detector": name_info["seed_detector"],
+        "seed_phase": name_info["seed_phase"],
+        "split": None,
+        "metrics_primary_split": None,
+        "metrics": _denan(metrics),
+        "metrics_by_split": {},
+        "metrics_nested": {},
+        # 指標以外（trainable / inject / epochs / zero_ctx / denominator 等）は捨てない。
+        "attributes": _denan(
+            {
+                k: v
+                for k, v in (primary or {}).items()
+                if not isinstance(v, (dict, list)) and k not in metrics
+            }
+        ),
+        "per_class": per_class,
+        "per_class_kind": "coco_map" if per_class is not None else None,
+        "per_class_metric": "AP" if per_class is not None else None,
+        "per_class_source": (
+            f"{rel}/{inj_file or ctrl_file}#per_class_coco_map" if per_class is not None else None
+        ),
+        "per_class_nan_classes": pc_nan,
+        "per_class_valid_count": (
+            sum(1 for v in per_class.values() if v is not None) if per_class is not None else None
+        ),
+        # 🔴 無いものは生成しない。eval_recipe が無いので同一条件の束ねができない。
+        "eval_recipe": None,
+        "eval_recipe_id": None,
+        "delta_declaration": None,
+        "frozen_source_tag": None,
+        "host": host,
+        "host_raw": host,
+        "gpu": None,
+        "commit": None,
+        "command": None,
+        "notes": _read_text(run_dir / "README.txt"),
+        "config_path": None,
+        "epoch": _denan((primary or {}).get("best_epoch")),
+        "notion_page_id": None,
+        "provenance": dict(sorted(provenance.items())),
+        "harvest_warnings": warnings,
+        "duplicate_bare_keys": [],
+        "conflicting_bare_keys": {},
+        "evidence_completeness": "result_json_only",
+        "metrics_source": "result_json",
+    }
+
+
+def build_transfer_legacy_records() -> list[dict[str, Any]]:
+    if not TRANSFER_LEGACY.is_dir():
+        return []
+    dirs = sorted(
+        d for d in TRANSFER_LEGACY.iterdir() if d.is_dir() and any(d.glob("*result*.json"))
+    )
+    return [build_transfer_legacy_record(d) for d in dirs]
 
 
 # --------------------------------------------------------------------------- #
@@ -1328,6 +1596,10 @@ EXPERIMENT_SCALAR_COLUMNS = [
     "control_note_value",
     "delta_method",
     "delta_sigma_source",
+    # 🔴 σ の系統。delta_sigma_source（paired / unpaired_pooled）とは軸が違う。
+    #   paired_delta … 対照実験の宣言があり delta_pstd_* を使う（既存 720 run の主経路）
+    #   within_run_seed_spread … run 内で対照が引かれた指標の seed 間 σ（B-12 / B-18）
+    "sigma_source",
     "delta_dedup_rule",
     # §10.1 判定（主指標について）。σ の規約が repo 内で割れているため両方出す。
     "verdict_metric",
@@ -1582,6 +1854,7 @@ def build_experiments(
             "n_command_variants": len(cmd_sigs),
             "delta_method": "",
             "delta_sigma_source": "",
+            "sigma_source": "",
             "delta_dedup_rule": "",
             "verdict_metric": "",
             "verdict_10_1": "",
@@ -1651,6 +1924,8 @@ def build_experiments(
             # paired と unpaired を混同してはならないので両方出たら併記する。
             row["delta_method"] = ",".join(sorted(methods))
             row["delta_sigma_source"] = ",".join(sorted(sources))
+            if any(k.startswith("delta_pstd_") and row.get(k) is not None for k in row):
+                row["sigma_source"] = "paired_delta"
             row["delta_dedup_rule"] = dedup_rule if "paired" in methods else ""
 
             # §10.1 判定（主指標について）。σ の規約が割れているので両方出す。
@@ -1688,6 +1963,15 @@ def build_experiments(
                     row["sigma_interpretation"] = (
                         "mixed_with_nondeterminism" if worst >= 1 else "seed_effect"
                     )
+
+        # B-12 / B-18: 対照実験の宣言が無く paired σ を出せない実験でも、
+        # run 内で対照が引かれた指標があれば seed 間 σ で §10.1 を判定する。
+        # 出所を必ず列に残す（どちらの σ か分からない行を作らない）。
+        if not row["sigma_source"]:
+            for m in WITHIN_RUN_VERDICT_METRICS:
+                if isinstance(row.get(f"{m}_pstd"), (int, float)):
+                    row["sigma_source"] = "within_run_seed_spread"
+                    break
         rows.append(row)
     return header, rows
 
@@ -1695,6 +1979,10 @@ def build_experiments(
 VERDICT_COLUMNS = [
     "experiment_id",
     "metric",
+    # 🔴 σ の出所。B-18（σ 規約の併存）の再発を防ぐため必ず埋める。
+    #   paired_delta           … 対照実験が宣言された実験の delta_pstd_*（実験間の paired Δ の σ）
+    #   within_run_seed_spread … run 内で対照が引かれた指標の seed 間 σ（{metric}_pstd）
+    "sigma_source",
     "arm",
     "control_of",
     "delta_method",
@@ -1713,6 +2001,57 @@ VERDICT_COLUMNS = [
 ]
 
 
+# run 内で既に対照が引かれており、seed 間 σ で §10.1 を判定してよい指標。
+# ここに delta_detection / delta_control を入れてはならない（対照が引かれていない）。
+WITHIN_RUN_VERDICT_METRICS = ("injection_effect",)
+
+
+def _within_run_verdicts(r: dict[str, Any]) -> list[dict[str, Any]]:
+    """対照実験の宣言が無い実験を、run 内で引かれた指標の seed 間 σ で判定する。
+
+    同符号は `{m}_min` / `{m}_max` から見る（seed ごとの値と等価）。
+    0 は同符号とみなさない — §10.1 は「改善が全 seed で観測される」ことを求めており、
+    差が 0 の seed は改善を示していないため。
+    """
+    out = []
+    for m in WITHIN_RUN_VERDICT_METRICS:
+        d = r.get(f"{m}_mean")
+        if not isinstance(d, (int, float)):
+            continue
+        ps = r.get(f"{m}_pstd")
+        ss = r.get(f"{m}_sstd")
+        lo, hi = r.get(f"{m}_min"), r.get(f"{m}_max")
+        if isinstance(lo, (int, float)) and isinstance(hi, (int, float)):
+            same_sign = (lo > 0 and hi > 0) or (lo < 0 and hi < 0)
+        else:
+            same_sign = None
+        vp, reason = _verdict_10_1(d, ps, same_sign)
+        vs, _ = _verdict_10_1(d, ss, same_sign)
+        out.append(
+            {
+                "experiment_id": r["experiment_id"],
+                "metric": m,
+                "sigma_source": "within_run_seed_spread",
+                "arm": r.get("arm"),
+                "control_of": r.get("control_of"),
+                "delta_method": "within_run",
+                "delta_dedup_rule": "",
+                "n_seeds": r.get(f"{m}_n"),
+                "delta": d,
+                "pstd": ps,
+                "sstd": ss,
+                "ratio_pstd": abs(d) / ps if ps else None,
+                "ratio_sstd": abs(d) / ss if ss else None,
+                "same_sign": same_sign,
+                "verdict_pstd": vp,
+                "verdict_sstd": vs,
+                "agree": vp == vs,
+                "reason": reason,
+            }
+        )
+    return out
+
+
 def build_verdicts(exp_rows: list[dict[str, Any]]) -> tuple[list[str], list[dict[str, Any]]]:
     """1 行 = 1 実験 × 1 指標 の §10.1 判定表（long 形式）。
 
@@ -1722,6 +2061,14 @@ def build_verdicts(exp_rows: list[dict[str, Any]]) -> tuple[list[str], list[dict
     """
     rows = []
     for r in exp_rows:
+        # B-12 / B-18: transfer_legacy は対照実験が宣言されておらず delta_pstd_* が
+        # 計算されない。ただし injection_effect は result.json 内で既に
+        # Δ_inj − Δ_ctrl が引かれた値なので、その seed 間 σ で §10.1 を判定できる。
+        # 対照が引かれていない delta_detection / delta_control は判定対象にしない
+        # （mAP と同種の生の値であり、§10.1 の Δ ではない）。
+        if r.get("group") == "transfer_legacy":
+            rows.extend(_within_run_verdicts(r))
+            continue
         metrics = sorted(
             k[len("delta_") :]
             for k in r
@@ -1741,6 +2088,7 @@ def build_verdicts(exp_rows: list[dict[str, Any]]) -> tuple[list[str], list[dict
                 {
                     "experiment_id": r["experiment_id"],
                     "metric": m,
+                    "sigma_source": "paired_delta",
                     "arm": r.get("arm"),
                     "control_of": r.get("control_of"),
                     "delta_method": r.get("delta_method"),
@@ -1850,6 +2198,10 @@ SCALAR_COLUMNS = [
     "notion_page_id",
     "has_test",
     "n_harvest_warnings",
+    # 証跡の完全性。720 run は 'full'、直下 transfer/ の 29 run は 'result_json_only'
+    # （metrics.json / eval_recipe / git_commit / server.txt を持たない）。B-12。
+    "evidence_completeness",
+    "metrics_source",
 ]
 
 
@@ -2523,6 +2875,18 @@ val と test は大きく乖離するため、下流解析では `has_test` で�
   どのクラスが `NaN` だったかは `per_class_nan_classes` に保持しています。
 - `per_class_ap.json` は名前に反して **中身が F1 の群が 500 run** あります。
   必ず `per_class_metric` 列 (`AP` / `F1` / `unknown`) で判別してください。
+
+## 生成ホストによる差異
+
+harvester はディスクを走査するため、**どのホストで `make runindex` を
+実行するかで結果が変わる**（backlog B-29 / BL-exclusion-rules-exact-match）。
+
+本 runindex は **ilya（ディスク 720 = git 追跡 720、退避 0）**で生成している。
+lecun / efros / Andrew には git 管理外の退避 run（`.gitignore:143-162` で除外、
+合計 ~5.6GB）がディスク上に存在し、そこで生成すると
+`superseded` / `aborted_run` の除外が追加で現れる。
+
+**再生成は ilya で行うこと。** 他ホストで回すと index が食い違う。
 """
 
 BACKLOG = """# backlog — 本タスクの範囲外として起票した未着手事項
@@ -2533,37 +2897,42 @@ BACKLOG = """# backlog — 本タスクの範囲外として起票した未着�
 いずれも価値はあるが**監査・整備であって分析可能性を上げない**ため、
 分析基盤（`index.csv` / `per_class.csv` / `experiments.csv`）の完成を優先した。
 
-| # | 事項 | 分かっていること | 着手の前提 |
-|---|---|---|---|
-| B-1 | 573 run の `git_commit.txt` 実在性の全件検査 | `t1b_phasefilm_{001,002}` は記録された commit `a697d90` に `scripts/postprocess_t1b.py` が存在せず、**記録された commit では再現できない**ことが確認済み。他 571 run は未検査 | 全件 `git cat-file` する走査を書く。`experiments/` は読み取りのみ |
-| B-2 | `b2b_rescore_alpha{0.5,1.0,2.0}` の entrypoint 特定 | `verify_no_dummy_metrics.py` の死角スキャンが新規に検出。`command.sh` に python 呼び出しが無く、どのコードが mAP を書いたか不明 | 3 run の `command.sh` / `notes.md` / ログを個別に読む |
-| B-3 | Notion 実験Run台帳との run_id 単位の突合 | 母数が 616 か 739 か未確定（§14）。データソース重複・フィルタ付きビュー・DB 重複はいずれも排除済み。`Status='failed'` が 0 件であることは母数に依らず確定 | Notion のクエリ利用上限の解除、または `.env` の `NOTION_API_KEY` 使用の承認 |
-| B-4 | dummy Trainer の除去 | `src/egosurgery/engines/trainer.py` が乱数で per-class AP を生成し `mAP` として書く。混入は現時点 0 件と検証済みだが**コードは残っている**（§11） | 学習コードの変更にあたるため、本タスクでは触れない |
-| B-5 | `experiments/README.md` の更新 | 規定は 17 種の step 識別子だが実データには 156 種ある（§12）。観測された family は b1 / b2a / b2b / t1a / t1b / taux / haux / hires | README は規約側の文書であり、実データに合わせて書き換えるかは方針判断 |
-| B-6 | 非標準群の adapter | `analysis` / `detector_improve` / `audit` / `ablations` / `final` / `g2_main_*` は `metrics.json` を持たず収穫できない（§9）。取りこぼした run は 0 件（そもそも run 構造ではない） | 群ごとにファイル形式が違うため個別の読み取りが要る |
-| B-7 | `ledger_key` フィールド名の改名 | `ledger/` → `runindex/` の改名後も、フィールド名 `ledger_key` は 573 個の JSON と `index.csv` 第 1 列に残っている | スキーマ変更になるため利用側の合意が要る |
-| B-8 | `b2a_ro_oracle_noise000` の名前と実態の食い違い | 名前は noise 0.00 を示すが `--tool-noise-rate` は 0.05/0.10/0.20/0.30 の 4 通り（§7.3）。原因は `scripts/run_b2a_ro_oracle_noise_sweep.sh` のタグ生成が `bc` に依存しており、`bc` 不在時に全水準が `000` に潰れること。実測 accuracy も 0.9549 / 0.9435 / 0.9023 / 0.8106 と水準に応じて単調減衰しており、4 水準であることを独立に裏付ける | ディレクトリ名の改名は `experiments/` の変更にあたるため不可。正本側での扱いを決める必要がある |
-| B-9 | σ の規約統一（**判断: 保留**） | `S4 base` が母集団σ `±0.0028` と標本σ `±0.0034` の 2 通りで引用されている（§18.2）。**利用者の判断で「両方出し続ける」ことになった**（2026-08-01）。`experiments.csv` は `verdict_10_1`（母集団σ）と `verdict_10_1_sstd`（標本σ）を並べ、食い違いを `verdict_10_1_agree=False` で検出する。実測では主指標で 1 件、全指標で 4 件のみ食い違う | **論文に数値を出す段階で必ず決める。**それまでは両方を保持する |
-| B-10 | **paired-σ を可能にする「seed ごとの代表 run」規約** | 実測（§22）: `control_of` が確定した 136 実験の**全て**が paired-σ 判定を宣言しているが、実際に計算できるのは **2 実験**。阻害原因は `control_multi_run_per_seed` 119 / `seed_set_differs` 9 / 両方 4 / `both_multi_run_per_seed` 2。**seed ごとに代表 1 本を選ぶ規約を 1 つ足せば 125 実験で計算可能になる**（残り 11 は seed 集合が違うため不可）。注入側 439 run のうち 427 run は対照に同一 seed が存在する | 代表の選び方を決める（`transfer_delta_report.py` は seq 最大＝最新の再実行を採る実装がある）。決まれば harvester 側は機械的に適用できる |
-| B-16 | seed 789 / 1000 の非対称な拡張 | 全 615 run 中 12 run だけが seed 789/1000 を持ち、その 12 件すべてが `scripts/run_l3_seed5_extension.sh`（「3-seed→5-seed 化、paired-σ 強化」）の産物。同スクリプトは**注入側 6 variant のみを拡張し対照 (S4 baseline) を呼んでいない**ため片側だけ 5-seed になった。paired は共通 seed で取るので計算自体は成立する | 対照側も 5-seed 化するか、789/1000 を解析から外すかの判断 |
-| B-17 | `t1a_regiontraj` 系 3 実験の分母 | `config.yaml` は分母を `t1a_regiontoken base (同env efros paired)` と宣言しているが、`t1a_base_env`（efros・seeds 42/123/456・1 run/seed、config は `server_name` 以外一致）へ付け替えると追加計算なしで完全な paired になるという指摘がある | 分母の付け替えは研究上の判断。`config.yaml` の宣言に反するため harvester では変更しない |
-| B-18 | σ 規約の 2 系統併存 | `pstdev` 系 48 箇所（§10.1 判定・レポート層）と `stdev`/`ddof=1` 系 16 箇所（`scripts/analysis/*` の解析・監査層）が併存（§21.2）。**Δ の規約を監査する `delta_convention_audit.py` 自身が判定側と違うσを使っている** | 正本 §10.1 でσを定義したうえで、どちらかに寄せる |
-| ~~B-19~~ | ~~空の Δ scaffold~~ | **解決済み**。`scripts/compute_delta.py` / `scripts/export_paper_tables.py` / `tools/generate_delta_report.py` は 3 つとも 0 バイトで scaffold コミット `af1fc58` 以来未実装だったため削除し、`make delta` / `make tables` を `runindex/` への案内に置き換えた（利用者の判断による） | — |
-| B-20 | 🔴 **学習の非決定性が制御されていない（棚卸し完了）** | 同一 commit・同一 config・同一コマンド・同一 host の再実行が再現しない（`s4_phase_baseline_015` vs `_017` で macro_f1 が 0.7406 vs 0.6572）。**欠陥は 1 スクリプト固有ではなく体系的**で、CUDA を使う 13 本のうち `cuda_manual_seed` / `use_deterministic_algorithms` / `cudnn_deterministic` / `worker_init_fn` / `PYTHONHASHSEED` を設定している本は **0 本**（§26.1）。影響 run は 500。`control_of` を持つ 136 実験のうち **123 の σ が `mixed_with_nondeterminism`**（§26.4） | 学習コードの変更 + 再実行にあたるため本タスクでは触れない。**これを直さない限り paired-σ は seed 効果を測れない**。GPU 時間の判断が要る |
-| B-21 | 「全 seed 同符号」条件の定義（**判断: 保留**） | dedup 後は「seed 平均どうしの符号が揃うか」を見ている（§27）。**利用者の判断で定義変更は保留**（2026-08-01）。理由は「σ の 123/136 が `mixed_with_nondeterminism` である以上、どの定義を採っても σ が汚染されているため、条件の定義より **B-20 の非決定性の解消が先**」。実測（accuracy / 134 実験）: 現状の seed 平均基準 125、全 run 組合せの厳格基準 124、符号一致率 100% は 124 | **B-20 の解消後に定義を決める。**それまで `delta_same_sign_<metric>`（seed 平均ベース）と `delta_n_seeds_<metric>` を出し続ける |
-| B-22 | `engines/` の空 scaffold | `hooks.py` / `stage_b_trainer.py` / `stage_c_trainer.py` / `stage_d_trainer.py` / `validator.py` が 0 バイト（§26.2）。B-19 で削除した Δ scaffold と同じパターン | 使う予定が無ければ削除、あるなら実装 |
-| B-23 | `train_net_egosurgery.py` が repo に無い | 3 run がこれを entrypoint にしているが実体が無い（`third_party/` は同期対象外）。`tools/train.py` も同様に 1 run（§26.2） | これらの run の決定性は確認できない。detectron2/detrex 側の配置を記録するか、run を除外対象にするか |
-| B-11 | `logs/phase3seed_results.tsv` の欠落 | `scripts/paired_sigma_3seed.py` はこの TSV の `arm` 列（frozen / augstrong）を読んで paired-σ を出す設計だが、ファイルが repo に存在しない（`.gitignore` 対象）。arm 情報自体は `config.yaml` の `frozen_source.*` に残っており `frozen_source_tag` として収穫済み | TSV の復元、または `paired_sigma_3seed.py` を `runindex` 由来に切り替える |
-| B-12 | 573 run の外側にある inj/ctrl ペア | `transfer/*_efros/` と `experiments/transfer/{hc,oracle_phase}_seed*/` に `injected_result.json` / `control_result.json` の対が 18 組あるが、`metrics.json` を持たないため収穫対象外。真の注入/対照ペアはここにある | 非標準群の adapter（B-6）と同じ作業 |
-| B-13 | 同一条件が別 `experiment_id` に分裂する組 | `description` / `split` / `frozen_source_tag` が同じで `step` だけ違う組がある（§17.2）。多くは `eval_recipe_id` による意図的分離 | 起動経路が同一かの判断が要るため harvester では決めない |
-| B-14 | `notes.md` の凍結源記載が虚偽 | `s4_phase_baseline` の 55 件すべてが「凍結源: Relation-DETR seed42」と書くが、実際の `frozen_source.cache_dir` が違う run が 38 件（うち 24 件は seed 123/456）。`scripts/train_s4_tecno.py` の固定 f-string に由来。`config.yaml` の `frozen_source.seed` も 42 ハードコード | 学習コードの変更にあたるため本タスクでは触れない。過去の `notes.md` は `experiments/` 配下なので修正不可 |
-| B-15 | g2_* 群に対照宣言が無い | 42 run が `config.yaml` を持たないため `control_of` を確定できない（§20）。`metrics.json` の `system` フィールド（base / bboxROI / shuffleROI）が arm を表す可能性はあるが、対照関係の明示ではない | 実験設計の意図を確認したうえで、`system` を arm として採用してよいか決める |
-| B-24 | `_identity_*` 24 run を Δ 分析から隔離する | `experiments/hand2det_dev/_identity_*`（18）と `experiments/transfer/_p0_identity_*`（6）は**初期化恒等性の検証**であり、`epoch=-1` / `mAP == init_mAP`（0.7302938994613697）/ `delta_detection=0.0` が**設計どおりの結果**。efros で 2026-08-02 に回収（commit `3952ac9`）。現状は除外フラグが付かないため解析対象に入り、**Δ=0 が実測値として Δ テーブルに混ざる** | `excluded=true` / `exclusion_reason='identity_check'` を harvester の除外ロジックに追加する。判定条件の候補は `epoch == -1 and mAP == init_mAP and delta_detection == 0.0`（`metrics.json` に 3 つとも入っている）。命名（`_identity_`）に依存させるかは要判断 |
-| B-25 | 🔴 **凍結源の記述が 1 run の内部で矛盾している（+ 依拠キャッシュの破棄）** | `experiments/phase1/s4_phase_baseline_{010,011,012}_frozen_tecno_phase_baseline_aligndetr_seed{42,123,456}`（philip の成果。`891953c` に含まれ phase0 未マージ、PR #10 で回収予定）で、同一 run の 7 点証跡の**内部が直接矛盾**している。**ディレクトリ名** = `aligndetr` / **`command.sh`** = `train_s4_tecno_aligndetr.py` / **`config.yaml`** = `cache_dir .../aligndetr_seed42` に対し、**`notes.md` 見出し** = 「frozen Relation-DETR」/ **`metrics.json`** = `eval_recipe.test_cfg.backbone = relation_detr_resnet50_frozen_seed42`。3 対 2 で aligndetr 側が優勢に見えるが、**優勢だった側も実体と異なっていた**。philip の実測（B-27）により、実体は AlignDETR ではあるが **S0-frozen ではなく 2026-05-31 の通常学習 ckpt** と確定した。したがって `notes.md`（relation_detr）も `config.yaml`（align_detr の S0-frozen）も、**どちらも実体を正しく記述していない**。2026-07-03 15:55 の S0-frozen 学習が NCCL ALLREDUCE タイムアウト（`SeqNum=1`）で失敗し、`entry5.sh` が代替 ckpt で走らせたため（17:10〜17:20:02 に特徴を再抽出 → 17:20:54 / 17:21:02 / 17:21:09 に run 010 / 011 / 012 起動）。当初 ilya は「`.npz` のバイトサイズ（train 79458316 / val 12465940 / test 35092940）が Relation-DETR 版と完全一致するため中身では判別できず、`/tmp/queue_runner/train_s4_tecno_aligndetr.py` も消失しており断定不能」と報告したが、philip が `/tmp` の揮発物を保全したことで確定した。依拠した特徴キャッシュ `aligndetr_seed42` は 2026-07-05 に `.discarded_20260705` へリネームされている（破棄理由が記録されない構造問題そのものは B-27 で別途起票）。**本 run は philip が `INVALID.md` で無効と記録済み（`684eb42`）。一次証拠: `evidence/aligndetr_s0frozen_incident_20260703/`（19 ファイル。`entry5.sh` / `train_s4_tecno_aligndetr.py` / NCCL 失敗ログを含む）。**一方で **数値記録は健全**（2026-08-02 ilya 実測）: checkpoint の指標と `metrics.json` が 3 seed とも小数点以下全桁まで一致（seed42 `epoch=49` / `acc=0.8567656765676568` / `macro_f1=0.6351559658149464`、seed123 `epoch=36` / `acc=0.8422442244224423` / `macro_f1=0.5828472115684166`、seed456 `epoch=44` / `acc=0.8402640264026403` / `macro_f1=0.5929150228940421`）、`per_class_ap.json` も checkpoint の `phase_per_class_f1` と完全一致。**→ 不一致は指標側ではなくメタ情報（実験条件の記述）側にある。** 付随して判明: (1) この 3 run は philip の成果（`server.txt=philip` / `config.yaml` の `server_name: philip`）であり、ilya の「`891953c` 側の未回収成果」という報告は誤りで PR #10 が本筋。(2) `git_commit.txt` の `1a52c6f` は ilya が 2026-07-01 06:06 に clone した直後の HEAD であり**実行コードを指していない**（B-1 と同型）。(3) 凍結源は 3 run とも seed42 固定で、run 名の `_seed123` / `_seed456` は TeCNO 側の seed のみを指す（Δ の σ を seed 間分散として解釈する際に影響する） | **B-14 と根本原因が同一**（`train_s4_tecno*.py` の固定 f-string）。ただし B-14 が数えた `s4_phase_baseline` 55 件は runindex 収録分であり、phase0 未マージの本 3 run は**含まれていない**。また B-14 が `notes.md` / `config.yaml` の齟齬を指すのに対し、本件は **`metrics.json` の `eval_recipe` にまで誤りが波及**している点と、**依拠キャッシュが破棄済み**である点が新規。**runindex では `excluded=true` / `exclusion_reason='wrong_frozen_source'` とすべき**（philip の `INVALID.md` と整合させる）。着手は PR #10 のマージ後。`experiments/` 配下は実験時の記録として書き換えない。破棄の経緯は B-27 で判明済みのため、この 3 run を Δ の基準点に**使わないことは確定**。同型の既出: B-8（`b2a_ro_oracle_noise000` の名前と実態の食い違い）/ B-14 / B-24（arm 取り違え）。**run 名・メタ記述から実験条件を推定してはならない。** |
-| B-26 | 🔴 **`postprocess_t1b.py` のグロブが arm を取り違えている** | `scripts/postprocess_t1b.py:35` が `TRANSFER.glob("t1b_seed*")` を読み、**`trainable=all` / 3ep の run を `t1b_phasefilm_*` という名前で登録**している。実際の film arm（`trainable=film` / 6ep / `film_params=266880`）は `experiments/` に一件も登録されていない。実測による裏付け（2026-08-02, Bengio + 解析側）: 登録済み `t1b_phasefilm_001_seed123` は `epoch=-1` / `mAP=0.729178` で、`logs/t1b_seed123.log`（all/3ep, best=-1, mAP=0.7292）と一致し、`logs/t1b_film_seed123.log`（film/6ep, best=ep5, mAP=0.7314）とは不一致。`config.yaml` も `trainable: all` / `epochs: 3` と記載。**`experiments.csv` 上で `arm='injection'` と記録されているが、実体は注入なしの all arm である。** 未登録の film 6 run（seed 42/123/456 × inj/ctrl）は `logs/t1b_film_*` にログのみ残り、構造化結果 `t1b_result.json` は `/tmp` 出力（当時の `run_t1b.sh` が `T1B_WORK_DIR=/tmp/${TAG}` 固定）のため Bengio 側では消失済み。影響: runindex 上の `t1b_phasefilm` 2 run は step 名・arm ともに誤り。ただし README / Notion に記録された T1b-FiLM の純効果（s42/123/456）は film の実測値であり、**STEP B の分析結論には影響しない。登録経路だけが取り違えていた。**なお s456 の純効果はログ（`:.4f` 丸め）からは +0.0003 と読めるが既存記載は +0.0002 で、原本 JSON 由来の後者が正しい可能性が高い | `postprocess_t1b.py` のグロブと step 名の対応を修正する。既存 2 run は `step='t1b_all'` 等の正しい名前へ付け替えるか、`excluded` + `exclusion_reason='mislabeled_arm'` とするか要判断（`experiments/` 配下は変更不可のため runindex 側での扱いを決める）。**data そのものは書き換えない**（実験時の記録として保存する）。film 6 run の登録は、原本 `t1b_result.json` が lecun の `/tmp/t1b_film_*` に残っているかを先に確認してから（残っていれば 16 桁精度・per-class AP・`lr`/`film_lr` が無損失で回収でき、ログからの復元が不要になる）。同型の既出: B-8（`b2a_ro_oracle_noise000` の名前と実態の食い違い）/ B-14（`notes.md` の記載と実体の乖離）。**run 名から実験条件を推定してはならない。** また B-1 が指摘する「`t1b_phasefilm_{001,002}` は記録 commit `a697d90` では再現できない」も同じ登録経路に由来する（`postprocess_t1b.py` の初出は `ba3df41` で `a697d90` には存在しない。実測で確認済み） |
-| B-27 | 🔴 **破棄されたキャッシュに理由が記録されない** | `data/processed/**/*.discarded_*` が 3 件あるが破棄理由がどこにも無い（`data/processed/` が `.gitignore` 対象のため `git log -S` も効かない）。2026-08-02 に `aligndetr_seed42.discarded_20260705` の理由を再構成できたのは、`/tmp` の揮発性ファイル（`queue_runner/entry5.sh` / `aligndetr_s0frozen_logs/`）が偶然 40 日間生き残っていたためで、**再起動していれば永久に判明しなかった**。再構成の結果: 2026-07-03 15:55 の AlignDETR-S0-frozen 学習が NCCL ALLREDUCE タイムアウト（`SeqNum=1`）で失敗し、17:08 の `entry5.sh` が 2026-05-31 の通常学習 ckpt で代替した。その特徴で走った TeCNO 3 run（`s4_phase_baseline_{010,011,012}_..._aligndetr_seed{42,123,456}`）は宣言している S0-frozen 条件で走っておらず **無効**と判定（2026-08-02）。`excluded=true` / `exclusion_reason='wrong_frozen_source'` とすべき。残る 2 件（07-06 の `t1a_regiontoken` / `b2a_detsignal`）は理由**判別不能**だが、後継との npz 内容が md5 で不一致（同サイズ・同形状）であることは実測済み | 破棄時に `DISCARDED.md` を同梱する運用（`data/annotations/_deprecated/` と同じ方式）。2026-08-02 に 3 件へ遡って作成し、`.gitignore:15` が追跡を阻むため追跡コピーを `evidence/discarded_caches/` に置いた。実行痕跡は `evidence/aligndetr_s0frozen_incident_20260703/` に保全。B-8 / B-14 / B-24 / B-25 / B-26 と同じく宣言と実体の食い違いだが、本件は**実験条件そのものが意図と異なっていた**ケースであり、記録の誤りではなく実験の無効を意味する点が異なる |
-| B-28 | 🔴 **`_legacy_score_thr_0/` は `_` 接頭辞だが除外してはいけない** | `experiments/baselines/_legacy_score_thr_0/` の 33 run は退避規約と同じ `_` 接頭辞を持つが、**除外すると 11 検出器の S0 基準点の証跡が失われる**。実測（2026-08-02 / ilya / 統合ブランチ `chore/integrate-20260802`）: `experiments/baselines/s0_007_codetr_bbox_seed42/` は `metrics.json` を**持たない**（22 ファイル＝Syncthing 由来の `checkpoints` / `logs` / `predictions` のみ）のに対し、`experiments/baselines/_legacy_score_thr_0/s0_007_codetr_bbox_seed42/` は **7 点証跡フルセットを持つ**。legacy にしか証跡が無い `description` は 11 件（`aligndetr_bbox` / `codetr_bbox` / `dacdetr_bbox` / `dimaskdino_bbox` / `focusdetr_bbox` / `mrdetralign_bbox` / `mrdetrdino_bbox` / `relationdetr_bbox` / `stabledino_bbox` / `relationdetr_s0frozen_cocohead` / `relationdetr_s0frozen_neck_cocohead`）で、**直下に同じ `description` を持つ run は 0 件**。二重計上は起きていない: legacy の `experiment_id` は `eval_recipe` が異なるため非 legacy と重複せず、`experiment_id` の衝突は 0 件。`run_id` 重複 12 件はすべて `_smoke_prior` / `_wrong_split_8_2_3`（両方 `excluded=True`）と g2 の `base_*` / `bboxROI_*`（別グループ）で、legacy 由来は 0 件。導入は Andrew の `421e400`。なお `_` 接頭辞なのに `excluded=False` の run は全体で **57 件**あり、内訳は `_legacy_score_thr_0` 33（**除外してはいけない**）/ `_identity_*` 18 + `_p0_identity_*` 6（**B-24 が隔離対象として挙げているもの**）。**同じ `_` 接頭辞に正反対の要求が同居している。** | 🔴 **`EXCLUSION_RULES` を前方一致へ変更する際の直接の危険。** 現行は 4 マーカー（`_smoke_prior` / `_smoke_ddq` / `_wrong_split_8_2_3` / `_failed_s3_weighted`）の**完全一致**（`tools/harvest_runindex.py:50` および `classify_exclusion()` の `part == marker`）。`_` の一括除外や前方一致の対象に `_legacy` を含めてはならない。対処の候補: **(a)** `EXCLUSION_RULES` を明示リスト（除外すべきものだけを列挙）に保つ。前方一致にする場合も `_legacy_score_thr_0` を明示的に除外対象外とする。**(b)** ディレクトリ名を `legacy_score_thr_0`（`_` なし）へ改名する。ただし既存の `run_id` / `experiment_id` が変わるため影響範囲の確認が必要。**(c)** 退避と保管を接頭辞で区別する規約を作る（例: 退避は `_x_`、保管は `_keep_`）。関連: **B-24**（`_identity_*` 24 run は逆に隔離すべき）と**正反対の方向**の問題であり、`EXCLUSION_RULES` に触れる変更は両方を同時に満たす必要がある。`EXCLUSION_RULES` の問題そのものは **B-29** で起票済み。前方一致化の際は本エントリ（B-28）を必ず参照すること。 |
-| B-29 | 🔴 **`EXCLUSION_RULES` が完全一致のみのため退避 run が解析対象に混入する** | `tools/harvest_runindex.py:50` の `EXCLUSION_RULES` は 4 マーカーのみ（`_smoke_prior` / `_smoke_ddq` / `_wrong_split_8_2_3` / `_failed_s3_weighted`）で、`classify_exclusion()` はパス構成要素の**完全一致**（`part == marker`）で判定する。そのため規約上の退避ディレクトリでも、この 4 つに文字列一致しない限り `excluded=False` のまま解析対象に入る。実測（2026-08-02 / ilya / 統合ブランチ `chore/integrate-20260802` の 720 run）: **`_` 接頭辞なのに `excluded=False` の run は 57 件**（`_legacy_score_thr_0` 33（Andrew の `421e400` 由来）/ `_identity_*` 18 / `_p0_identity_*` 6）。一方 `excluded=True` は 19 件のみ（`smoke_test` 7 / `known_bad_split` 6 / `failed_run` 6）。また harvester は git ではなく**ディスクを走査する**ため、「git で退避した＝解析から除外される」は成り立たない。二層は独立している（lecun 実測: ディスク 721 / git 追跡 687 / 差 34。ただしその 34 は git 上の退避であって runindex の除外とは別の話）。 | 🔴 **対処の際の必須参照**: **B-28**（`_legacy_score_thr_0` の 33 run は `_` 接頭辞だが**除外してはいけない**。11 検出器の S0 基準点の唯一の証跡であり、前方一致や `_` 一括除外を入れると消える）/ **B-24**（`_identity_*` 24 run は `excluded=true` / `exclusion_reason='identity_check'` とすべき。efros 起票）。対処の候補: **(a)** 除外すべきものを明示リストで列挙し続ける（現行方式の維持＋追加）→ 退避 dir を増やすたびに追記が必要で、漏れが再発する。**(b)** 前方一致にしたうえで `_legacy_score_thr_0` を明示的に対象外にする → B-28 の危険は回避できるが、例外が増えると同じ問題に戻る。**(c)** 退避と保管を接頭辞で区別する規約を作る（例: 退避 `_x_` / 保管 `_keep_`）→ 最も堅牢だが、既存ディレクトリの改名と `run_id` / `experiment_id` の変更を伴う。関連: **B-28**（逆方向の問題であり、**B-29 を直すと B-28 が壊れる**関係にある）。 |
+| id | # | 事項 | 分かっていること | 着手の前提 |
+|---|---|---|---|---|
+| BL-git-commit-existence-audit | B-1 | 573 run の `git_commit.txt` 実在性の全件検査 | `t1b_phasefilm_{001,002}` は記録された commit `a697d90` に `scripts/postprocess_t1b.py` が存在せず、**記録された commit では再現できない**ことが確認済み。他 571 run は未検査 | 全件 `git cat-file` する走査を書く。`experiments/` は読み取りのみ |
+| BL-b2b-rescore-entrypoint-unknown | B-2 | `b2b_rescore_alpha{0.5,1.0,2.0}` の entrypoint 特定 | `verify_no_dummy_metrics.py` の死角スキャンが新規に検出。`command.sh` に python 呼び出しが無く、どのコードが mAP を書いたか不明 | 3 run の `command.sh` / `notes.md` / ログを個別に読む |
+| BL-notion-ledger-reconciliation | B-3 | Notion 実験Run台帳との run_id 単位の突合 | 母数が 616 か 739 か未確定（§14）。データソース重複・フィルタ付きビュー・DB 重複はいずれも排除済み。`Status='failed'` が 0 件であることは母数に依らず確定 | Notion のクエリ利用上限の解除、または `.env` の `NOTION_API_KEY` 使用の承認 |
+| BL-dummy-trainer-removal | B-4 | dummy Trainer の除去 | `src/egosurgery/engines/trainer.py` が乱数で per-class AP を生成し `mAP` として書く。混入は現時点 0 件と検証済みだが**コードは残っている**（§11） | 学習コードの変更にあたるため、本タスクでは触れない |
+| BL-experiments-readme-outdated | B-5 | `experiments/README.md` の更新 | 規定は 17 種の step 識別子だが実データには 156 種ある（§12）。観測された family は b1 / b2a / b2b / t1a / t1b / taux / haux / hires | README は規約側の文書であり、実データに合わせて書き換えるかは方針判断 |
+| BL-nonstandard-group-adapter | B-6 | 非標準群の adapter | `analysis` / `detector_improve` / `audit` / `ablations` / `final` / `g2_main_*` は `metrics.json` を持たず収穫できない（§9）。取りこぼした run は 0 件（そもそも run 構造ではない） | 群ごとにファイル形式が違うため個別の読み取りが要る |
+| BL-ledger-key-rename | B-7 | `ledger_key` フィールド名の改名 | `ledger/` → `runindex/` の改名後も、フィールド名 `ledger_key` は 573 個の JSON と `index.csv` 第 1 列に残っている | スキーマ変更になるため利用側の合意が要る |
+| BL-b2a-oracle-noise-name-mismatch | B-8 | `b2a_ro_oracle_noise000` の名前と実態の食い違い | 名前は noise 0.00 を示すが `--tool-noise-rate` は 0.05/0.10/0.20/0.30 の 4 通り（§7.3）。原因は `scripts/run_b2a_ro_oracle_noise_sweep.sh` のタグ生成が `bc` に依存しており、`bc` 不在時に全水準が `000` に潰れること。実測 accuracy も 0.9549 / 0.9435 / 0.9023 / 0.8106 と水準に応じて単調減衰しており、4 水準であることを独立に裏付ける | ディレクトリ名の改名は `experiments/` の変更にあたるため不可。正本側での扱いを決める必要がある |
+| BL-sigma-convention-unification | B-9 | σ の規約統一（**判断: 保留**） | `S4 base` が母集団σ `±0.0028` と標本σ `±0.0034` の 2 通りで引用されている（§18.2）。**利用者の判断で「両方出し続ける」ことになった**（2026-08-01）。`experiments.csv` は `verdict_10_1`（母集団σ）と `verdict_10_1_sstd`（標本σ）を並べ、食い違いを `verdict_10_1_agree=False` で検出する。実測では主指標で 1 件、全指標で 4 件のみ食い違う | **論文に数値を出す段階で必ず決める。**それまでは両方を保持する |
+| BL-paired-sigma-representative-run | B-10 | **paired-σ を可能にする「seed ごとの代表 run」規約** | 実測（§22）: `control_of` が確定した 136 実験の**全て**が paired-σ 判定を宣言しているが、実際に計算できるのは **2 実験**。阻害原因は `control_multi_run_per_seed` 119 / `seed_set_differs` 9 / 両方 4 / `both_multi_run_per_seed` 2。**seed ごとに代表 1 本を選ぶ規約を 1 つ足せば 125 実験で計算可能になる**（残り 11 は seed 集合が違うため不可）。注入側 439 run のうち 427 run は対照に同一 seed が存在する | 代表の選び方を決める（`transfer_delta_report.py` は seq 最大＝最新の再実行を採る実装がある）。決まれば harvester 側は機械的に適用できる |
+| BL-asymmetric-seed-extension | B-16 | seed 789 / 1000 の非対称な拡張 | 全 615 run 中 12 run だけが seed 789/1000 を持ち、その 12 件すべてが `scripts/run_l3_seed5_extension.sh`（「3-seed→5-seed 化、paired-σ 強化」）の産物。同スクリプトは**注入側 6 variant のみを拡張し対照 (S4 baseline) を呼んでいない**ため片側だけ 5-seed になった。paired は共通 seed で取るので計算自体は成立する | 対照側も 5-seed 化するか、789/1000 を解析から外すかの判断 |
+| BL-t1a-regiontraj-denominator | B-17 | `t1a_regiontraj` 系 3 実験の分母 | `config.yaml` は分母を `t1a_regiontoken base (同env efros paired)` と宣言しているが、`t1a_base_env`（efros・seeds 42/123/456・1 run/seed、config は `server_name` 以外一致）へ付け替えると追加計算なしで完全な paired になるという指摘がある | 分母の付け替えは研究上の判断。`config.yaml` の宣言に反するため harvester では変更しない |
+| BL-two-sigma-conventions | B-18 | σ 規約の 2 系統併存 | `pstdev` 系 48 箇所（§10.1 判定・レポート層）と `stdev`/`ddof=1` 系 16 箇所（`scripts/analysis/*` の解析・監査層）が併存（§21.2）。**Δ の規約を監査する `delta_convention_audit.py` 自身が判定側と違うσを使っている**。**2026-08-04 に 3 系統目が加わった（ilya）。** `transfer_legacy` の 29 run は対照実験が宣言されておらず（`arm='unknown'` / `control_of=''`）`delta_pstd_*` が計算されないため、**run 内で対照が引かれた `injection_effect`（= Δ_inj − Δ_ctrl）の seed 間 σ（`injection_effect_pstd`）で §10.1 を判定している**。`sigma_source` 列（`paired_delta` / `within_run_seed_spread`）で出所を区別しており（`verdicts.csv` 1038 行の内訳: `paired_delta` 1027 / `within_run_seed_spread` 11）、σ を持つのに出所が空の行は 0 件だが、**σ の定義が 2 種類ある状態そのものは解消されていない**。判定に載せるのは `injection_effect` のみで、対照が引かれていない `delta_detection` / `delta_control` は `WITHIN_RUN_VERDICT_METRICS` から意図的に外している（`mAP` と同種の生の値であり §10.1 の Δ ではない）。なお `eval_recipe_id` が null の 199 run のうち、同じ構造（`arm='unknown'` で `delta_pstd` なし）の実験は**既存 720 run 側にも 34 件ある**（`g2_*` 30 / `hand2det_dev` 6 等）ため、この 3 系統目は transfer_legacy 固有ではなく、既存側にも同じ扱いを広げるかは未決。詳細は `docs/runindex_transfer_legacy_sigma_investigation_ilya_2026-08-04.md`。**2026-08-04 時点で σ に関する列は 4 系統ある。** ①`{metric}_pstd` / `{metric}_sstd` … seed 間の σ（母集団 / 標本）、②`delta_pstd_{metric}` / `delta_sstd_{metric}` … 実験間 paired Δ の σ、③`sigma_source` … σ の系統（`paired_delta` / `within_run_seed_spread`）、④`delta_sigma_source` … paired σ の計算方法（`paired` / `unpaired_pooled`）。③と④は軸が直交する（どの σ を使ったか vs paired σ をどう計算したか）ため別列にしているが、**列が増えたこと自体が「どの σ を見ればよいか」を分かりにくくしている**。統合はできないが、README で「§10.1 の判定に使うのはどれか」を明示する必要がある | 正本 §10.1 でσを定義したうえで、どちらかに寄せる |
+| ~~BL-empty-delta-scaffold~~ | ~~B-19~~ | ~~空の Δ scaffold~~ | **解決済み**。`scripts/compute_delta.py` / `scripts/export_paper_tables.py` / `tools/generate_delta_report.py` は 3 つとも 0 バイトで scaffold コミット `af1fc58` 以来未実装だったため削除し、`make delta` / `make tables` を `runindex/` への案内に置き換えた（利用者の判断による） | — |
+| BL-nondeterministic-training | B-20 | 🔴 **学習の非決定性が制御されていない（棚卸し完了）** | 同一 commit・同一 config・同一コマンド・同一 host の再実行が再現しない（`s4_phase_baseline_015` vs `_017` で macro_f1 が 0.7406 vs 0.6572）。**欠陥は 1 スクリプト固有ではなく体系的**で、CUDA を使う 13 本のうち `cuda_manual_seed` / `use_deterministic_algorithms` / `cudnn_deterministic` / `worker_init_fn` / `PYTHONHASHSEED` を設定している本は **0 本**（§26.1）。影響 run は 500。`control_of` を持つ 136 実験のうち **123 の σ が `mixed_with_nondeterminism`**（§26.4） | 学習コードの変更 + 再実行にあたるため本タスクでは触れない。**これを直さない限り paired-σ は seed 効果を測れない**。GPU 時間の判断が要る |
+| BL-same-sign-condition-definition | B-21 | 「全 seed 同符号」条件の定義（**判断: 保留**） | dedup 後は「seed 平均どうしの符号が揃うか」を見ている（§27）。**利用者の判断で定義変更は保留**（2026-08-01）。理由は「σ の 123/136 が `mixed_with_nondeterminism` である以上、どの定義を採っても σ が汚染されているため、条件の定義より **B-20 の非決定性の解消が先**」。実測（accuracy / 134 実験）: 現状の seed 平均基準 125、全 run 組合せの厳格基準 124、符号一致率 100% は 124 | **B-20 の解消後に定義を決める。**それまで `delta_same_sign_<metric>`（seed 平均ベース）と `delta_n_seeds_<metric>` を出し続ける |
+| BL-empty-engines-scaffold | B-22 | `engines/` の空 scaffold | `hooks.py` / `stage_b_trainer.py` / `stage_c_trainer.py` / `stage_d_trainer.py` / `validator.py` が 0 バイト（§26.2）。B-19 で削除した Δ scaffold と同じパターン | 使う予定が無ければ削除、あるなら実装 |
+| BL-missing-entrypoint-script | B-23 | `train_net_egosurgery.py` が repo に無い | 3 run がこれを entrypoint にしているが実体が無い（`third_party/` は同期対象外）。`tools/train.py` も同様に 1 run（§26.2） | これらの run の決定性は確認できない。detectron2/detrex 側の配置を記録するか、run を除外対象にするか |
+| BL-phase3seed-tsv-missing | B-11 | `logs/phase3seed_results.tsv` の欠落 | `scripts/paired_sigma_3seed.py` はこの TSV の `arm` 列（frozen / augstrong）を読んで paired-σ を出す設計だが、ファイルが repo に存在しない（`.gitignore` 対象）。arm 情報自体は `config.yaml` の `frozen_source.*` に残っており `frozen_source_tag` として収穫済み | TSV の復元、または `paired_sigma_3seed.py` を `runindex` 由来に切り替える |
+| BL-runs-outside-experiments-dir | B-12 | 573 run の外側にある inj/ctrl ペア | `transfer/*_efros/` と `experiments/transfer/{hc,oracle_phase}_seed*/` に `injected_result.json` / `control_result.json` の対が 18 組あるが、`metrics.json` を持たないため収穫対象外。真の注入/対照ペアはここにある。**2026-08-04 に (a) 走査範囲の拡大で対処した（ilya）。** 直下 `transfer/` の **29 run** を `group='transfer_legacy'` として取り込み、`evidence_completeness='result_json_only'` / `metrics_source='result_json'` でフラグ化している。**6 点証跡が 0 件のため `eval_recipe_id` / `commit` は全 29 件 null、`host` は 16/29 のみ判別可能（efros 12 / lecun 2 / bengio 2、残り 13 は null）。** `per_class` は injected 側が空（`best_epoch=-1`）の 8 run で null。**σ を計算できないため `verdicts.csv` には載せていない**（`eval_recipe_id` が null で同一条件の束ねが定義できず、`delta_pstd_*` は全件 null）。`experiments.csv` には 12 実験として載る。null の理由は各 run の `provenance` に記録した（`not_determinable_no_git_commit_txt` 等）。**`hc_*` 3 run と `oracle_phase_*` 3 run は phase→det 方向の実測であり、研究計画が「実質空白」と記録していた領域そのものだった。** 実測（注入純効果 = Δ_inj − Δ_ctrl）: `oracle_phase`（`inject=ca`）seed42 **+0.005132** / seed123 **+0.003437** / seed456 **+0.003529**、`hc`（`inject=hc`）seed42 **+0.000000** / seed123 **+0.000873** / seed456 **+0.000334**。**σ が無いため §10.1 の判定は行っていない。** なお指示書が「`hc_*` 10 / `oracle_phase_*` 9」としていたのは `/tmp` 原本のファイル単位の数で、ディレクトリ単位では各 3。棚卸しの全文は `docs/runindex_instr10_stage1_transfer_inventory_ilya_2026-08-04.md` | 非標準群の adapter（B-6）と同じ作業 |
+| BL-experiment-id-split | B-13 | 同一条件が別 `experiment_id` に分裂する組 | `description` / `split` / `frozen_source_tag` が同じで `step` だけ違う組がある（§17.2）。多くは `eval_recipe_id` による意図的分離 | 起動経路が同一かの判断が要るため harvester では決めない |
+| BL-notes-frozen-source-false | B-14 | `notes.md` の凍結源記載が虚偽 | `s4_phase_baseline` の 55 件すべてが「凍結源: Relation-DETR seed42」と書くが、実際の `frozen_source.cache_dir` が違う run が 38 件（うち 24 件は seed 123/456）。`scripts/train_s4_tecno.py` の固定 f-string に由来。`config.yaml` の `frozen_source.seed` も 42 ハードコード | 学習コードの変更にあたるため本タスクでは触れない。過去の `notes.md` は `experiments/` 配下なので修正不可 |
+| BL-g2-no-control-declaration | B-15 | g2_* 群に対照宣言が無い | 42 run が `config.yaml` を持たないため `control_of` を確定できない（§20）。`metrics.json` の `system` フィールド（base / bboxROI / shuffleROI）が arm を表す可能性はあるが、対照関係の明示ではない | 実験設計の意図を確認したうえで、`system` を arm として採用してよいか決める |
+| BL-identity-runs-not-excluded | B-24 | `_identity_*` 24 run を Δ 分析から隔離する | `experiments/hand2det_dev/_identity_*`（18）と `experiments/transfer/_p0_identity_*`（6）は**初期化恒等性の検証**であり、`epoch=-1` / `mAP == init_mAP`（0.7302938994613697）/ `delta_detection=0.0` が**設計どおりの結果**。efros で 2026-08-02 に回収（commit `3952ac9`）。現状は除外フラグが付かないため解析対象に入り、**Δ=0 が実測値として Δ テーブルに混ざる** | `excluded=true` / `exclusion_reason='identity_check'` を harvester の除外ロジックに追加する。判定条件の候補は `epoch == -1 and mAP == init_mAP and delta_detection == 0.0`（`metrics.json` に 3 つとも入っている）。命名（`_identity_`）に依存させるかは要判断 |
+| BL-frozen-source-self-contradiction | B-25 | 🔴 **凍結源の記述が 1 run の内部で矛盾している（+ 依拠キャッシュの破棄）** | `experiments/phase1/s4_phase_baseline_{010,011,012}_frozen_tecno_phase_baseline_aligndetr_seed{42,123,456}`（philip の成果。`891953c` に含まれ phase0 未マージ、PR #10 で回収予定）で、同一 run の 7 点証跡の**内部が直接矛盾**している。**ディレクトリ名** = `aligndetr` / **`command.sh`** = `train_s4_tecno_aligndetr.py` / **`config.yaml`** = `cache_dir .../aligndetr_seed42` に対し、**`notes.md` 見出し** = 「frozen Relation-DETR」/ **`metrics.json`** = `eval_recipe.test_cfg.backbone = relation_detr_resnet50_frozen_seed42`。3 対 2 で aligndetr 側が優勢に見えるが、**優勢だった側も実体と異なっていた**。philip の実測（B-27）により、実体は AlignDETR ではあるが **S0-frozen ではなく 2026-05-31 の通常学習 ckpt** と確定した。したがって `notes.md`（relation_detr）も `config.yaml`（align_detr の S0-frozen）も、**どちらも実体を正しく記述していない**。2026-07-03 15:55 の S0-frozen 学習が NCCL ALLREDUCE タイムアウト（`SeqNum=1`）で失敗し、`entry5.sh` が代替 ckpt で走らせたため（17:10〜17:20:02 に特徴を再抽出 → 17:20:54 / 17:21:02 / 17:21:09 に run 010 / 011 / 012 起動）。当初 ilya は「`.npz` のバイトサイズ（train 79458316 / val 12465940 / test 35092940）が Relation-DETR 版と完全一致するため中身では判別できず、`/tmp/queue_runner/train_s4_tecno_aligndetr.py` も消失しており断定不能」と報告したが、philip が `/tmp` の揮発物を保全したことで確定した。依拠した特徴キャッシュ `aligndetr_seed42` は 2026-07-05 に `.discarded_20260705` へリネームされている（破棄理由が記録されない構造問題そのものは B-27 で別途起票）。**本 run は philip が `INVALID.md` で無効と記録済み（`684eb42`）。一次証拠: `evidence/aligndetr_s0frozen_incident_20260703/`（19 ファイル。`entry5.sh` / `train_s4_tecno_aligndetr.py` / NCCL 失敗ログを含む）。**一方で **数値記録は健全**（2026-08-02 ilya 実測）: checkpoint の指標と `metrics.json` が 3 seed とも小数点以下全桁まで一致（seed42 `epoch=49` / `acc=0.8567656765676568` / `macro_f1=0.6351559658149464`、seed123 `epoch=36` / `acc=0.8422442244224423` / `macro_f1=0.5828472115684166`、seed456 `epoch=44` / `acc=0.8402640264026403` / `macro_f1=0.5929150228940421`）、`per_class_ap.json` も checkpoint の `phase_per_class_f1` と完全一致。**→ 不一致は指標側ではなくメタ情報（実験条件の記述）側にある。** 付随して判明: (1) この 3 run は philip の成果（`server.txt=philip` / `config.yaml` の `server_name: philip`）であり、ilya の「`891953c` 側の未回収成果」という報告は誤りで PR #10 が本筋。(2) `git_commit.txt` の `1a52c6f` は ilya が 2026-07-01 06:06 に clone した直後の HEAD であり**実行コードを指していない**（B-1 と同型）。(3) 凍結源は 3 run とも seed42 固定で、run 名の `_seed123` / `_seed456` は TeCNO 側の seed のみを指す（Δ の σ を seed 間分散として解釈する際に影響する） | **B-14 と根本原因が同一**（`train_s4_tecno*.py` の固定 f-string）。ただし B-14 が数えた `s4_phase_baseline` 55 件は runindex 収録分であり、phase0 未マージの本 3 run は**含まれていない**。また B-14 が `notes.md` / `config.yaml` の齟齬を指すのに対し、本件は **`metrics.json` の `eval_recipe` にまで誤りが波及**している点と、**依拠キャッシュが破棄済み**である点が新規。**runindex では `excluded=true` / `exclusion_reason='wrong_frozen_source'` とすべき**（philip の `INVALID.md` と整合させる）。着手は PR #10 のマージ後。`experiments/` 配下は実験時の記録として書き換えない。破棄の経緯は B-27 で判明済みのため、この 3 run を Δ の基準点に**使わないことは確定**。同型の既出: B-8（`b2a_ro_oracle_noise000` の名前と実態の食い違い）/ B-14 / B-24（arm 取り違え）。**run 名・メタ記述から実験条件を推定してはならない。** |
+| BL-postprocess-t1b-arm | B-26 | 🔴 **`postprocess_t1b.py` のグロブが arm を取り違えている** | `scripts/postprocess_t1b.py:35` が `TRANSFER.glob("t1b_seed*")` を読み、**`trainable=all` / 3ep の run を `t1b_phasefilm_*` という名前で登録**している。実際の film arm（`trainable=film` / 6ep / `film_params=266880`）は `experiments/` に一件も登録されていない。実測による裏付け（2026-08-02, Bengio + 解析側）: 登録済み `t1b_phasefilm_001_seed123` は `epoch=-1` / `mAP=0.729178` で、`logs/t1b_seed123.log`（all/3ep, best=-1, mAP=0.7292）と一致し、`logs/t1b_film_seed123.log`（film/6ep, best=ep5, mAP=0.7314）とは不一致。`config.yaml` も `trainable: all` / `epochs: 3` と記載。**`experiments.csv` 上で `arm='injection'` と記録されているが、実体は注入なしの all arm である。** 未登録の film 6 run（seed 42/123/456 × inj/ctrl）は `logs/t1b_film_*` にログのみ残り、構造化結果 `t1b_result.json` は `/tmp` 出力（当時の `run_t1b.sh` が `T1B_WORK_DIR=/tmp/${TAG}` 固定）のため Bengio 側では消失済み。影響: runindex 上の `t1b_phasefilm` 2 run は step 名・arm ともに誤り。ただし README / Notion に記録された T1b-FiLM の純効果（s42/123/456）は film の実測値であり、**STEP B の分析結論には影響しない。登録経路だけが取り違えていた。**なお s456 の純効果はログ（`:.4f` 丸め）からは +0.0003 と読めるが既存記載は +0.0002 で、原本 JSON 由来の後者が正しい可能性が高い。**2026-08-04 追記（ilya 実測）**: この 2 run は `trainable=all` / 3ep の実測記録であり、**誤っているのは step 名と arm のラベルであって数値ではない**（seed123: `epoch=-1` / `mAP=0.7291778095772903`、seed456: `epoch=-1` / `mAP=0.721658691470358`。いずれも `init_mAP` と同値で `delta_detection=0.0`）。「all arm では 3ep で init を超えなかった」という**対照情報として参照する場合は、runindex ではなく本エントリと `experiments/transfer/t1b_phasefilm_{001,002}/metrics.json` を直接見ること**。`excluded=true` / `exclusion_reason='mislabeled_arm_all_not_film'` としているのは、`step='t1b_phasefilm'` / `arm='injection'` というラベルのまま Δ 分析に載せると FiLM の効果と誤読されるため。**また、根本原因はグロブではなく `run_t1b.sh` の TAG 命名と `DESC` の定数化にある（B-32 参照）。本エントリの見出し「グロブが arm を取り違えている」は不正確で、グロブだけを直しても再発する。** | `postprocess_t1b.py` のグロブと step 名の対応を修正する。既存 2 run は `step='t1b_all'` 等の正しい名前へ付け替えるか、`excluded` + `exclusion_reason='mislabeled_arm'` とするか要判断（`experiments/` 配下は変更不可のため runindex 側での扱いを決める）。**data そのものは書き換えない**（実験時の記録として保存する）。film 6 run の登録は、原本 `t1b_result.json` が lecun の `/tmp/t1b_film_*` に残っているかを先に確認してから（残っていれば 16 桁精度・per-class AP・`lr`/`film_lr` が無損失で回収でき、ログからの復元が不要になる）。同型の既出: B-8（`b2a_ro_oracle_noise000` の名前と実態の食い違い）/ B-14（`notes.md` の記載と実体の乖離）。**run 名から実験条件を推定してはならない。** また B-1 が指摘する「`t1b_phasefilm_{001,002}` は記録 commit `a697d90` では再現できない」も同じ登録経路に由来する（`postprocess_t1b.py` の初出は `ba3df41` で `a697d90` には存在しない。実測で確認済み） |
+| BL-discarded-cache-no-reason | B-27 | 🔴 **破棄されたキャッシュに理由が記録されない** | `data/processed/**/*.discarded_*` が 3 件あるが破棄理由がどこにも無い（`data/processed/` が `.gitignore` 対象のため `git log -S` も効かない）。2026-08-02 に `aligndetr_seed42.discarded_20260705` の理由を再構成できたのは、`/tmp` の揮発性ファイル（`queue_runner/entry5.sh` / `aligndetr_s0frozen_logs/`）が偶然 40 日間生き残っていたためで、**再起動していれば永久に判明しなかった**。再構成の結果: 2026-07-03 15:55 の AlignDETR-S0-frozen 学習が NCCL ALLREDUCE タイムアウト（`SeqNum=1`）で失敗し、17:08 の `entry5.sh` が 2026-05-31 の通常学習 ckpt で代替した。その特徴で走った TeCNO 3 run（`s4_phase_baseline_{010,011,012}_..._aligndetr_seed{42,123,456}`）は宣言している S0-frozen 条件で走っておらず **無効**と判定（2026-08-02）。`excluded=true` / `exclusion_reason='wrong_frozen_source'` とすべき。残る 2 件（07-06 の `t1a_regiontoken` / `b2a_detsignal`）は理由**判別不能**だが、後継との npz 内容が md5 で不一致（同サイズ・同形状）であることは実測済み | 破棄時に `DISCARDED.md` を同梱する運用（`data/annotations/_deprecated/` と同じ方式）。2026-08-02 に 3 件へ遡って作成し、`.gitignore:15` が追跡を阻むため追跡コピーを `evidence/discarded_caches/` に置いた。実行痕跡は `evidence/aligndetr_s0frozen_incident_20260703/` に保全。B-8 / B-14 / B-24 / B-25 / B-26 と同じく宣言と実体の食い違いだが、本件は**実験条件そのものが意図と異なっていた**ケースであり、記録の誤りではなく実験の無効を意味する点が異なる |
+| BL-legacy-prefix-must-not-exclude | B-28 | 🔴 **`_legacy_score_thr_0/` は `_` 接頭辞だが除外してはいけない** | `experiments/baselines/_legacy_score_thr_0/` の 33 run は退避規約と同じ `_` 接頭辞を持つが、**除外すると 11 検出器の S0 基準点の証跡が失われる**。実測（2026-08-02 / ilya / 統合ブランチ `chore/integrate-20260802`）: `experiments/baselines/s0_007_codetr_bbox_seed42/` は `metrics.json` を**持たない**（22 ファイル＝Syncthing 由来の `checkpoints` / `logs` / `predictions` のみ）のに対し、`experiments/baselines/_legacy_score_thr_0/s0_007_codetr_bbox_seed42/` は **7 点証跡フルセットを持つ**。legacy にしか証跡が無い `description` は 11 件（`aligndetr_bbox` / `codetr_bbox` / `dacdetr_bbox` / `dimaskdino_bbox` / `focusdetr_bbox` / `mrdetralign_bbox` / `mrdetrdino_bbox` / `relationdetr_bbox` / `stabledino_bbox` / `relationdetr_s0frozen_cocohead` / `relationdetr_s0frozen_neck_cocohead`）で、**直下に同じ `description` を持つ run は 0 件**。二重計上は起きていない: legacy の `experiment_id` は `eval_recipe` が異なるため非 legacy と重複せず、`experiment_id` の衝突は 0 件。`run_id` 重複 12 件はすべて `_smoke_prior` / `_wrong_split_8_2_3`（両方 `excluded=True`）と g2 の `base_*` / `bboxROI_*`（別グループ）で、legacy 由来は 0 件。導入は Andrew の `421e400`。なお `_` 接頭辞なのに `excluded=False` の run は全体で **57 件**あり、内訳は `_legacy_score_thr_0` 33（**除外してはいけない**）/ `_identity_*` 18 + `_p0_identity_*` 6（**B-24 が隔離対象として挙げているもの**）。**同じ `_` 接頭辞に正反対の要求が同居している。** | 🔴 **`EXCLUSION_RULES` を前方一致へ変更する際の直接の危険。** 現行は 4 マーカー（`_smoke_prior` / `_smoke_ddq` / `_wrong_split_8_2_3` / `_failed_s3_weighted`）の**完全一致**（`tools/harvest_runindex.py:50` および `classify_exclusion()` の `part == marker`）。`_` の一括除外や前方一致の対象に `_legacy` を含めてはならない。対処の候補: **(a)** `EXCLUSION_RULES` を明示リスト（除外すべきものだけを列挙）に保つ。前方一致にする場合も `_legacy_score_thr_0` を明示的に除外対象外とする。**(b)** ディレクトリ名を `legacy_score_thr_0`（`_` なし）へ改名する。ただし既存の `run_id` / `experiment_id` が変わるため影響範囲の確認が必要。**(c)** 退避と保管を接頭辞で区別する規約を作る（例: 退避は `_x_`、保管は `_keep_`）。関連: **B-24**（`_identity_*` 24 run は逆に隔離すべき）と**正反対の方向**の問題であり、`EXCLUSION_RULES` に触れる変更は両方を同時に満たす必要がある。`EXCLUSION_RULES` の問題そのものは **B-29** で起票済み。前方一致化の際は本エントリ（B-28）を必ず参照すること。 |
+| BL-exclusion-rules-exact-match | B-29 | 🔴 **`EXCLUSION_RULES` が完全一致のみのため退避 run が解析対象に混入する** | `tools/harvest_runindex.py:50` の `EXCLUSION_RULES` は 4 マーカーのみ（`_smoke_prior` / `_smoke_ddq` / `_wrong_split_8_2_3` / `_failed_s3_weighted`）で、`classify_exclusion()` はパス構成要素の**完全一致**（`part == marker`）で判定する。そのため規約上の退避ディレクトリでも、この 4 つに文字列一致しない限り `excluded=False` のまま解析対象に入る。実測（2026-08-02 / ilya / 統合ブランチ `chore/integrate-20260802` の 720 run）: **`_` 接頭辞なのに `excluded=False` の run は 57 件**（`_legacy_score_thr_0` 33（Andrew の `421e400` 由来）/ `_identity_*` 18 / `_p0_identity_*` 6）。一方 `excluded=True` は 19 件のみ（`smoke_test` 7 / `known_bad_split` 6 / `failed_run` 6）。また harvester は git ではなく**ディスクを走査する**ため、「git で退避した＝解析から除外される」は成り立たない。二層は独立している（lecun 実測: ディスク 721 / git 追跡 687 / 差 34。ただしその 34 は git 上の退避であって runindex の除外とは別の話）。 | 🔴 **対処の際の必須参照**: **B-28**（`_legacy_score_thr_0` の 33 run は `_` 接頭辞だが**除外してはいけない**。11 検出器の S0 基準点の唯一の証跡であり、前方一致や `_` 一括除外を入れると消える）/ **B-24**（`_identity_*` 24 run は `excluded=true` / `exclusion_reason='identity_check'` とすべき。efros 起票）。対処の候補: **(a)** 除外すべきものを明示リストで列挙し続ける（現行方式の維持＋追加）→ 退避 dir を増やすたびに追記が必要で、漏れが再発する。**(b)** 前方一致にしたうえで `_legacy_score_thr_0` を明示的に対象外にする → B-28 の危険は回避できるが、例外が増えると同じ問題に戻る。**(c)** 退避と保管を接頭辞で区別する規約を作る（例: 退避 `_x_` / 保管 `_keep_`）→ 最も堅牢だが、既存ディレクトリの改名と `run_id` / `experiment_id` の変更を伴う。関連: **B-28**（逆方向の問題であり、**B-29 を直すと B-28 が壊れる**関係にある）。 |
+| BL-sync-alert-message-inaccurate | B-30 | **`m2-sync.sh` のアラート文言「phase0更新失敗（未コミット変更と衝突）」が不正確** | 実際の失敗原因は「未追跡ファイルの上書き拒否」であり、追跡ファイルの変更ではない。2026-08-04 に未整備 5 ノード（`Hinton` / `adam` / `DL-Station` / `he` / `ian`）を調査したところ、5 台とも **追跡ファイルの変更 0 件**で、`git status` に出ていたのはすべて未追跡ファイル（Syncthing 由来の `logs/eval_meta_val.json` と `logs/val_metrics_by_epoch.json`）だった。件数は `Hinton` / `adam` / `DL-Station` / `he` が各 58 件、`ian` が 4 件。git は未追跡ファイルの上書きを**バイト単位で同一でも拒否する**ため `git merge --ff-only origin/phase0` が失敗し続けていた（アラート 28〜32 件 / 台）。`ian` だけ成功していたのは未追跡 4 件が phase0 に存在しなかったため。文言が誤っていたため、調査するまで「未コミットの成果が眠っている」と誤読された（実際は 5 台とも未追跡 `metrics.json` 0 件で、固有の実験成果はゼロ）。 | git のエラー出力を判別して文言を分ける。`untracked working tree files would be overwritten by merge` → 「未追跡ファイルと衝突（Syncthing 由来の可能性）」、`Your local changes to the following files would be overwritten` → 「未コミット変更と衝突」。なお `m2-sync.sh` は `~/bin/keeper.sh` から呼ばれる**外部管理スクリプト**であり、リポジトリの `scripts/sync/m2-sync.sh` を変更しても各ホストには自動配布されない。配布方法の確認が先に必要。 |
+| BL-hostname-container-id-in-alerts | B-31 | **`SERVERNAME` 未設定のホストで、アラートログにコンテナ ID が記録され追跡不能になる** | `m2-sync.sh` は `SRV="${SERVERNAME:-$(hostname)}"` でホスト名を解決する。`DL-Station` は `hostname` がコンテナ ID `084f3b0911a2` を返すため、`SERVERNAME` 未設定の状態でアラート 29 件がこの ID で記録され、2026-08-03 時点ではどのマシンか判別できなかった（2026-08-04 に特定）。同じ問題は `philip` / `ilya` にもある（両者とも `hostname` が `aolab` を返す）が、こちらは `SERVERNAME` が設定済みのため顕在化していない。2026-08-04 時点で `SERVERNAME` 未設定だったのは `Hinton` / `adam` / `DL-Station` / `he` / `ian` / `efros` / `Andrew` の 7 台。うち `Hinton` / `adam` / `he` / `ian` / `efros` / `Andrew` は `hostname` が論理名と一致するためフォールバックしても正しい値になり、実害は `DL-Station` のみだった。 | 全ノードで `SERVERNAME` を設定する（2026-08-04 に未整備 5 ノードで実施）。加えて防御として、`hostname` が 12 桁の 16 進数（コンテナ ID の形式）に一致する場合はアラート行に警告を添えるか、そもそもアラートを出さずに設定不備として別扱いにする。判定は `[[ "$SRV" =~ ^[0-9a-f]{12}$ ]]` で足りる。 |
+| BL-run-t1b-tag-ignores-arm | B-32 | 🔴 **`run_t1b.sh` の TAG が `--trainable` を反映しないため、arm が出力先に現れない** | `scripts/run_t1b.sh:20-21` の TAG は `--zero-ctx` の有無しか見ておらず、`--trainable film` でも `--trainable all` でも**出力先は同じ `t1b_seed{N}`** になる（`T1B_WORK_DIR="$BODY/experiments/transfer/${TAG}"`、:28）。加えて `scripts/postprocess_t1b.py` の `DESC = "t1b_phasefilm"`（:29）と `step="t1b_phasefilm"`（:69, :71）が**定数**のため、グロブが何を拾っても必ず `t1b_phasefilm` の名前で登録される。**B-26 が「グロブの取り違え」としたのは不正確で、根本原因は TAG と `DESC` の設計にある。グロブだけを直しても再発する。** 履歴で確認した意図（2026-08-04 / ilya）: `postprocess_t1b.py` の初出 `ba3df41` の docstring は「`train_t1b.py` は seed 毎に注入 run（`/tmp/t1b_seed{N}`）と §4.6 対照 run（`/tmp/t1b_zeroctx_seed{N}`）の `t1b_result.json` を出す」と述べており、`DENOM` も「①学習FiLM phase→det」と書いている。**グロブは「`train_t1b.py` の出力ディレクトリを拾う」意味しかなく、arm を選別する意図は元から無い。** `0ea33ca` は `/tmp` → `experiments/transfer/` の移行のみでパターンは不変。副次的に判明: `run_t1b.sh:29` で `--epochs 6` が固定されているのに登録済み 2 run は `epochs=3` であり、**`run_t1b.sh` 経由ではない起動があった**ことを示すが経路は**判別不能**（`command.sh` は `postprocess_t1b.py` が組成したもので実際の起動コマンドではない）。これは B-1 と同型。 | **(i)** TAG に `--trainable` を反映させる（例: `t1b_film_seed{N}` / `t1b_all_seed{N}`）、または **(ii)** `postprocess_t1b.py` の `DESC` を実データの `trainable` から決める。**(i) が根本的**だが `run_t1b.sh` は**学習の起動スクリプト**であり、指示書 #10 の「学習・評価コードには触れない」範囲を超える。現在 `experiments/transfer/t1b_seed*` は **0 件**で即座の影響はなく、修正は将来の再実行に対する予防である。着手時は `scripts/run_t1b.sh` / `scripts/postprocess_t1b.py` の 2 箇所を同時に直すこと（片方だけでは再発する）。関連: **B-26**（同じ事象を index 側から見たもの。既存 2 run は `mislabeled_arm_all_not_film` で除外済み）/ **B-1**（記録 commit で再現できない run）。 |
+| BL-backlog-pipe-breaks-columns | B-33 | 🔴 **BACKLOG の Markdown 表に半角パイプを含む本文を書くと列数が壊れる** | 2026-08-04 の B-18 追記で `paired_delta` と `within_run_seed_spread` を**半角パイプ文字で区切って**書いたところ、それがセル区切りと解釈され、当該行だけ列数が 6 になり表全体で `{8, 7}` の 2 種類になった（区切り文字数ベース）。**`py_compile` は通る** — BACKLOG は Python から見れば単なる文字列であり、構文チェックは表構造の破損を一切検出しない。AST 検証（`ast.literal_eval` で `BACKLOG` の値を取り出し、先頭が `BL-` の行を `str.split` して列数を数える）でのみ検出できた。**バッククォートで囲んでもエスケープされない**点に注意（コード片として書いても表は壊れる）。同種の事故は **2026-08-02 にも発生**しており（B-29 起票時に行末の閉じ区切りを落とし、列数が 3 になった）、**2 回とも AST 検証だけが捕まえている**。 | **(i)** 本文で区切りが必要なときは `/` や全角に置換する運用を `runindex/README.md` に明記する、または **(ii)** BACKLOG を Markdown 表ではなく構造化データ（`list[dict]` 等）で持ち、`backlog.md` はそこから生成する。**(ii) が根本的**だが既存 34 エントリの移行が要る。当面は **`make runindex` に AST 検証を組み込み、列数が 1 種類でなければ `exit 1` とするのが安価**（現状は人間が検証コマンドを手で流しており、流し忘れると壊れたまま commit される）。関連: B-18（この事故が起きた対象エントリ）。 |
+| BL-ledger-key-namespace-collision | B-34 | 🔴 **`ledger_key` の名前空間が `transfer` と `transfer_legacy` で重なる** | `ledger_key` はパス区切りを `__` に置換して作る。直下 `transfer/hc_seed42` は `str(rel)` から、`experiments/transfer/hc_seed42` は `str(rel_from_exp)` から作られるため、**どちらも `transfer__hc_seed42` になる**。2026-08-04 時点で `index.csv` の `ledger_key` 重複は **0 件（実測）** で実害は出ていないが、これは両者の run 名がたまたま重ならないためであり、規約で保証されているわけではない。将来 `experiments/transfer/` に直下 `transfer/` と同名の run が作られると、`runindex/runs/<ledger_key>.json` が**静かに上書きされる**（例外も警告も出ない）。`index.csv` 側は 1 行しか出ないため、run が 1 件消えたことに気づけない。 | `transfer_legacy` の `ledger_key` を `transfer_legacy__` 接頭辞にする（`build_transfer_legacy_record` の `str(rel).replace("/", "__")` を変更）。既存の `runs/*.json` のファイル名が 29 件変わるため、**再生成時に 29 件の rename が発生する（削除ではないことを commit メッセージに明記すること）**。`index.csv` の `ledger_key` を参照している外部の記録（`docs/` 配下の報告書等）があれば追随が必要。あわせて、`ledger_key` の重複を検出したら警告する検査を harvester に入れておくと同種の事故を防げる。関連: B-12（この取り込みを行ったエントリ）/ B-7（`ledger_key` のフィールド名改名）。 |
 """
 
 METRIC_ALIASES = {
@@ -4337,6 +4706,8 @@ def main() -> int:
 
     run_dirs = sorted({p.parent for p in EXPERIMENTS.rglob("metrics.json")})
     records = [build_run_record(d) for d in run_dirs]
+    # B-12: 直下 transfer/ は metrics.json を持たないため別経路で取り込む。
+    records += build_transfer_legacy_records()
     records.sort(key=lambda r: r["ledger_key"])
 
     # §3: 実験単位と対照ペアを振る（run 単位の収穫が全部終わってから）

@@ -37,6 +37,7 @@
     }
   },
   "eval_recipe_id": "03208d3e6637",
+  "evidence_completeness": "full",
   "excluded": false,
   "exclusion_reason": null,
   "experiment_id": "baselines/s0/maskdino_bbox_nmsfree@val",
@@ -67,6 +68,7 @@
   },
   "metrics_nested": {},
   "metrics_primary_split": "val",
+  "metrics_source": "metrics_json",
   "notes": "# s0_015_maskdino_bbox_nmsfree_seed123\n\n作成日時: 2026-07-03T07:52:54+00:00\n\n## 仮説\n（ここに記入）\n\n## 実験設定\n- Category: baselines\n- Step: s0\n- Seed: 123\n- Config: （config.yaml を参照）\n\n## 結果\n（実験完了後に記入）\n\n## 解釈\n（結果の意味、期待との差、原因の仮説）\n\n## 次の行動\n1.\n\n\n## 再評価 (NMS-free)\n- 元実験: `s0_002_maskdino_bbox_seed123`\n- source_ckpt: `best_val_mAP_epoch_12.pth`\n- test_cfg: score_thr=0.0, nms=None, nms_pre=None (NMS_FREE_TEST_CFG)\n- val mAP=0.6800 / AP_rare=0.7600 / AP_common=0.6154\n",
   "notion_page_id": null,
   "pairing_provenance": "not_determinable",

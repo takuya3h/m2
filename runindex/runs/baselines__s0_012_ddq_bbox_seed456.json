@@ -32,6 +32,7 @@
     }
   },
   "eval_recipe_id": "a63aecae1158",
+  "evidence_completeness": "full",
   "excluded": false,
   "exclusion_reason": null,
   "experiment_id": "baselines/s0/ddq_bbox@val",
@@ -62,6 +63,7 @@
   },
   "metrics_nested": {},
   "metrics_primary_split": "val",
+  "metrics_source": "metrics_json",
   "notes": "# s0_012_ddq_bbox_seed456\n\n## 仮説\nCOCO 事前学習済み DINO (dino-4scale_r50, COCO 事前学習) — Mask DINO 枠の代替 を EgoSurgery-Tool（術具 15 クラス）へ fine-tune すれば、§2.5(a) の S0 基準点を実検出器で確立できる。\n\n## 実験設定\n- Detector: DINO (dino-4scale_r50, COCO 事前学習) — Mask DINO 枠の代替\n- Backbone/Neck: ResNet-50 + FPN（COCO 重みから転移、分類ヘッドのみ再初期化）\n- Epochs: 12 / batch=2 / seed=456\n- 評価: val split（/home/ubuntu/slocal2/m2/data/annotations/egosurgery_tool/instances_val.json）COCO mAP\n- パイプライン: mmdet 3.3.0 Runner（spec §2.1 の「Runner 不使用」からは逸脱。実 SOTA の確実な再現を優先した）\n\n## 結果\n- val mAP=71.90 / mAP_50=84.70 / mAP_75=78.00\n- AP_rare=76.70 / AP_common=65.66（best epoch=12）\n\n## 解釈\nper_class_ap.json と visualizations/confusion_matrix.png を参照。\n形状類似ペア（Forceps/Tweezers/Needle Holders/Bipolar Forceps）の\n誤分類傾向は混同行列で確認する。\n\n## 次の行動\n1. 3 seed の平均±標準偏差を /delta で集計し §2.5(a) 基準点として確定する。\n",
   "notion_page_id": null,
   "pairing_provenance": "not_determinable",
