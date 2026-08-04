@@ -8,13 +8,16 @@
 **明文化されていない**。以下はディレクトリ名の意味からの判断であり、
 規約に基づくものではない。**除外規約の明文化を推奨する。**
 
-除外 19 run / 全 720 run（削除ではなくフラグ）
+除外 48 run / 全 720 run（削除ではなくフラグ）
 
 | exclusion_reason | runs | 対象 |
 |---|---:|---|
 | `failed_run` | 6 | `experiments/phase0/_failed_s3_weighted` |
+| `identity_check` | 24 | `experiments/hand2det_dev`, `experiments/transfer` |
 | `known_bad_split` | 6 | `experiments/baselines/_wrong_split_8_2_3` |
+| `mislabeled_arm_all_not_film` | 2 | `experiments/transfer` |
 | `smoke_test` | 7 | `experiments/_smoke_prior`, `experiments/baselines/_smoke_ddq` |
+| `wrong_frozen_source` | 3 | `experiments/phase1` |
 
 ### 1.1 `phase0/_failed_s3_weighted/` の 6 run — 運用上の欠陥
 
