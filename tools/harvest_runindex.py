@@ -1596,6 +1596,10 @@ EXPERIMENT_SCALAR_COLUMNS = [
     "control_note_value",
     "delta_method",
     "delta_sigma_source",
+    # 🔴 σ の系統。delta_sigma_source（paired / unpaired_pooled）とは軸が違う。
+    #   paired_delta … 対照実験の宣言があり delta_pstd_* を使う（既存 720 run の主経路）
+    #   within_run_seed_spread … run 内で対照が引かれた指標の seed 間 σ（B-12 / B-18）
+    "sigma_source",
     "delta_dedup_rule",
     # §10.1 判定（主指標について）。σ の規約が repo 内で割れているため両方出す。
     "verdict_metric",
@@ -1850,6 +1854,7 @@ def build_experiments(
             "n_command_variants": len(cmd_sigs),
             "delta_method": "",
             "delta_sigma_source": "",
+            "sigma_source": "",
             "delta_dedup_rule": "",
             "verdict_metric": "",
             "verdict_10_1": "",
@@ -1919,6 +1924,8 @@ def build_experiments(
             # paired と unpaired を混同してはならないので両方出たら併記する。
             row["delta_method"] = ",".join(sorted(methods))
             row["delta_sigma_source"] = ",".join(sorted(sources))
+            if any(k.startswith("delta_pstd_") and row.get(k) is not None for k in row):
+                row["sigma_source"] = "paired_delta"
             row["delta_dedup_rule"] = dedup_rule if "paired" in methods else ""
 
             # §10.1 判定（主指標について）。σ の規約が割れているので両方出す。
@@ -1956,6 +1963,15 @@ def build_experiments(
                     row["sigma_interpretation"] = (
                         "mixed_with_nondeterminism" if worst >= 1 else "seed_effect"
                     )
+
+        # B-12 / B-18: 対照実験の宣言が無く paired σ を出せない実験でも、
+        # run 内で対照が引かれた指標があれば seed 間 σ で §10.1 を判定する。
+        # 出所を必ず列に残す（どちらの σ か分からない行を作らない）。
+        if not row["sigma_source"]:
+            for m in WITHIN_RUN_VERDICT_METRICS:
+                if isinstance(row.get(f"{m}_pstd"), (int, float)):
+                    row["sigma_source"] = "within_run_seed_spread"
+                    break
         rows.append(row)
     return header, rows
 
@@ -1963,6 +1979,10 @@ def build_experiments(
 VERDICT_COLUMNS = [
     "experiment_id",
     "metric",
+    # 🔴 σ の出所。B-18（σ 規約の併存）の再発を防ぐため必ず埋める。
+    #   paired_delta           … 対照実験が宣言された実験の delta_pstd_*（実験間の paired Δ の σ）
+    #   within_run_seed_spread … run 内で対照が引かれた指標の seed 間 σ（{metric}_pstd）
+    "sigma_source",
     "arm",
     "control_of",
     "delta_method",
@@ -1981,6 +2001,57 @@ VERDICT_COLUMNS = [
 ]
 
 
+# run 内で既に対照が引かれており、seed 間 σ で §10.1 を判定してよい指標。
+# ここに delta_detection / delta_control を入れてはならない（対照が引かれていない）。
+WITHIN_RUN_VERDICT_METRICS = ("injection_effect",)
+
+
+def _within_run_verdicts(r: dict[str, Any]) -> list[dict[str, Any]]:
+    """対照実験の宣言が無い実験を、run 内で引かれた指標の seed 間 σ で判定する。
+
+    同符号は `{m}_min` / `{m}_max` から見る（seed ごとの値と等価）。
+    0 は同符号とみなさない — §10.1 は「改善が全 seed で観測される」ことを求めており、
+    差が 0 の seed は改善を示していないため。
+    """
+    out = []
+    for m in WITHIN_RUN_VERDICT_METRICS:
+        d = r.get(f"{m}_mean")
+        if not isinstance(d, (int, float)):
+            continue
+        ps = r.get(f"{m}_pstd")
+        ss = r.get(f"{m}_sstd")
+        lo, hi = r.get(f"{m}_min"), r.get(f"{m}_max")
+        if isinstance(lo, (int, float)) and isinstance(hi, (int, float)):
+            same_sign = (lo > 0 and hi > 0) or (lo < 0 and hi < 0)
+        else:
+            same_sign = None
+        vp, reason = _verdict_10_1(d, ps, same_sign)
+        vs, _ = _verdict_10_1(d, ss, same_sign)
+        out.append(
+            {
+                "experiment_id": r["experiment_id"],
+                "metric": m,
+                "sigma_source": "within_run_seed_spread",
+                "arm": r.get("arm"),
+                "control_of": r.get("control_of"),
+                "delta_method": "within_run",
+                "delta_dedup_rule": "",
+                "n_seeds": r.get(f"{m}_n"),
+                "delta": d,
+                "pstd": ps,
+                "sstd": ss,
+                "ratio_pstd": abs(d) / ps if ps else None,
+                "ratio_sstd": abs(d) / ss if ss else None,
+                "same_sign": same_sign,
+                "verdict_pstd": vp,
+                "verdict_sstd": vs,
+                "agree": vp == vs,
+                "reason": reason,
+            }
+        )
+    return out
+
+
 def build_verdicts(exp_rows: list[dict[str, Any]]) -> tuple[list[str], list[dict[str, Any]]]:
     """1 行 = 1 実験 × 1 指標 の §10.1 判定表（long 形式）。
 
@@ -1990,9 +2061,13 @@ def build_verdicts(exp_rows: list[dict[str, Any]]) -> tuple[list[str], list[dict
     """
     rows = []
     for r in exp_rows:
-        # B-12: transfer_legacy は eval_recipe_id が null で同一条件の束ねが定義できず、
-        # σ を出せない。§10.1 の判定は σ を要するため判定表には載せない。
+        # B-12 / B-18: transfer_legacy は対照実験が宣言されておらず delta_pstd_* が
+        # 計算されない。ただし injection_effect は result.json 内で既に
+        # Δ_inj − Δ_ctrl が引かれた値なので、その seed 間 σ で §10.1 を判定できる。
+        # 対照が引かれていない delta_detection / delta_control は判定対象にしない
+        # （mAP と同種の生の値であり、§10.1 の Δ ではない）。
         if r.get("group") == "transfer_legacy":
+            rows.extend(_within_run_verdicts(r))
             continue
         metrics = sorted(
             k[len("delta_") :]
@@ -2013,6 +2088,7 @@ def build_verdicts(exp_rows: list[dict[str, Any]]) -> tuple[list[str], list[dict
                 {
                     "experiment_id": r["experiment_id"],
                     "metric": m,
+                    "sigma_source": "paired_delta",
                     "arm": r.get("arm"),
                     "control_of": r.get("control_of"),
                     "delta_method": r.get("delta_method"),
@@ -2835,7 +2911,7 @@ BACKLOG = """# backlog — 本タスクの範囲外として起票した未着�
 | BL-paired-sigma-representative-run | B-10 | **paired-σ を可能にする「seed ごとの代表 run」規約** | 実測（§22）: `control_of` が確定した 136 実験の**全て**が paired-σ 判定を宣言しているが、実際に計算できるのは **2 実験**。阻害原因は `control_multi_run_per_seed` 119 / `seed_set_differs` 9 / 両方 4 / `both_multi_run_per_seed` 2。**seed ごとに代表 1 本を選ぶ規約を 1 つ足せば 125 実験で計算可能になる**（残り 11 は seed 集合が違うため不可）。注入側 439 run のうち 427 run は対照に同一 seed が存在する | 代表の選び方を決める（`transfer_delta_report.py` は seq 最大＝最新の再実行を採る実装がある）。決まれば harvester 側は機械的に適用できる |
 | BL-asymmetric-seed-extension | B-16 | seed 789 / 1000 の非対称な拡張 | 全 615 run 中 12 run だけが seed 789/1000 を持ち、その 12 件すべてが `scripts/run_l3_seed5_extension.sh`（「3-seed→5-seed 化、paired-σ 強化」）の産物。同スクリプトは**注入側 6 variant のみを拡張し対照 (S4 baseline) を呼んでいない**ため片側だけ 5-seed になった。paired は共通 seed で取るので計算自体は成立する | 対照側も 5-seed 化するか、789/1000 を解析から外すかの判断 |
 | BL-t1a-regiontraj-denominator | B-17 | `t1a_regiontraj` 系 3 実験の分母 | `config.yaml` は分母を `t1a_regiontoken base (同env efros paired)` と宣言しているが、`t1a_base_env`（efros・seeds 42/123/456・1 run/seed、config は `server_name` 以外一致）へ付け替えると追加計算なしで完全な paired になるという指摘がある | 分母の付け替えは研究上の判断。`config.yaml` の宣言に反するため harvester では変更しない |
-| BL-two-sigma-conventions | B-18 | σ 規約の 2 系統併存 | `pstdev` 系 48 箇所（§10.1 判定・レポート層）と `stdev`/`ddof=1` 系 16 箇所（`scripts/analysis/*` の解析・監査層）が併存（§21.2）。**Δ の規約を監査する `delta_convention_audit.py` 自身が判定側と違うσを使っている** | 正本 §10.1 でσを定義したうえで、どちらかに寄せる |
+| BL-two-sigma-conventions | B-18 | σ 規約の 2 系統併存 | `pstdev` 系 48 箇所（§10.1 判定・レポート層）と `stdev`/`ddof=1` 系 16 箇所（`scripts/analysis/*` の解析・監査層）が併存（§21.2）。**Δ の規約を監査する `delta_convention_audit.py` 自身が判定側と違うσを使っている**。**2026-08-04 に 3 系統目が加わった（ilya）。** `transfer_legacy` の 29 run は対照実験が宣言されておらず（`arm='unknown'` / `control_of=''`）`delta_pstd_*` が計算されないため、**run 内で対照が引かれた `injection_effect`（= Δ_inj − Δ_ctrl）の seed 間 σ（`injection_effect_pstd`）で §10.1 を判定している**。`sigma_source` 列（`paired_delta` / `within_run_seed_spread`）で出所を区別しており（`verdicts.csv` 1038 行の内訳: `paired_delta` 1027 / `within_run_seed_spread` 11）、σ を持つのに出所が空の行は 0 件だが、**σ の定義が 2 種類ある状態そのものは解消されていない**。判定に載せるのは `injection_effect` のみで、対照が引かれていない `delta_detection` / `delta_control` は `WITHIN_RUN_VERDICT_METRICS` から意図的に外している（`mAP` と同種の生の値であり §10.1 の Δ ではない）。なお `eval_recipe_id` が null の 199 run のうち、同じ構造（`arm='unknown'` で `delta_pstd` なし）の実験は**既存 720 run 側にも 34 件ある**（`g2_*` 30 / `hand2det_dev` 6 等）ため、この 3 系統目は transfer_legacy 固有ではなく、既存側にも同じ扱いを広げるかは未決。詳細は `docs/runindex_transfer_legacy_sigma_investigation_ilya_2026-08-04.md` | 正本 §10.1 でσを定義したうえで、どちらかに寄せる |
 | ~~BL-empty-delta-scaffold~~ | ~~B-19~~ | ~~空の Δ scaffold~~ | **解決済み**。`scripts/compute_delta.py` / `scripts/export_paper_tables.py` / `tools/generate_delta_report.py` は 3 つとも 0 バイトで scaffold コミット `af1fc58` 以来未実装だったため削除し、`make delta` / `make tables` を `runindex/` への案内に置き換えた（利用者の判断による） | — |
 | BL-nondeterministic-training | B-20 | 🔴 **学習の非決定性が制御されていない（棚卸し完了）** | 同一 commit・同一 config・同一コマンド・同一 host の再実行が再現しない（`s4_phase_baseline_015` vs `_017` で macro_f1 が 0.7406 vs 0.6572）。**欠陥は 1 スクリプト固有ではなく体系的**で、CUDA を使う 13 本のうち `cuda_manual_seed` / `use_deterministic_algorithms` / `cudnn_deterministic` / `worker_init_fn` / `PYTHONHASHSEED` を設定している本は **0 本**（§26.1）。影響 run は 500。`control_of` を持つ 136 実験のうち **123 の σ が `mixed_with_nondeterminism`**（§26.4） | 学習コードの変更 + 再実行にあたるため本タスクでは触れない。**これを直さない限り paired-σ は seed 効果を測れない**。GPU 時間の判断が要る |
 | BL-same-sign-condition-definition | B-21 | 「全 seed 同符号」条件の定義（**判断: 保留**） | dedup 後は「seed 平均どうしの符号が揃うか」を見ている（§27）。**利用者の判断で定義変更は保留**（2026-08-01）。理由は「σ の 123/136 が `mixed_with_nondeterminism` である以上、どの定義を採っても σ が汚染されているため、条件の定義より **B-20 の非決定性の解消が先**」。実測（accuracy / 134 実験）: 現状の seed 平均基準 125、全 run 組合せの厳格基準 124、符号一致率 100% は 124 | **B-20 の解消後に定義を決める。**それまで `delta_same_sign_<metric>`（seed 平均ベース）と `delta_n_seeds_<metric>` を出し続ける |
