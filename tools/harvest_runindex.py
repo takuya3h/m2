@@ -1036,8 +1036,213 @@ def build_run_record(run_dir: Path) -> dict[str, Any]:
         "harvest_warnings": warnings,
         "duplicate_bare_keys": sorted(m["duplicate_bare_keys"]),
         "conflicting_bare_keys": m["conflicting_bare_keys"],
+        # experiments/ 配下は 6 点証跡が揃っている前提。直下 transfer/ と区別する（B-12）。
+        "evidence_completeness": "full",
+        "metrics_source": "metrics_json",
     }
     return record
+
+
+# --------------------------------------------------------------------------- #
+# B-12 / BL-runs-outside-experiments-dir — 直下 transfer/ の取り込み
+#
+# 直下 transfer/ の 29 run は 6 点証跡を 1 つも持たず、result.json だけがある。
+# metrics.json / eval_recipe / git_commit.txt / server.txt が存在しないため、
+# **無いものは生成せず null のまま**取り込み、evidence_completeness で区別する。
+# 詳細な棚卸しは docs/runindex_instr10_stage1_transfer_inventory_ilya_2026-08-04.md。
+# --------------------------------------------------------------------------- #
+TRANSFER_LEGACY = REPO_ROOT / "transfer"
+
+# 注入側 / 対照側の result ファイル名。群ごとに命名が違うので候補で受ける。
+_TL_INJECTED = (
+    "injected_result.json",
+    "injection_t1b_result.json",
+    "t1b_result.json",
+    "bidir_result.json",
+    "bidir_s4_result.json",
+)
+_TL_CONTROL = (
+    "control_result.json",
+    "zeroctx_t1b_result.json",
+    "phasefrozen_result.json",
+    "plasticphase_result.json",
+)
+# ディレクトリ名の接尾辞から分かるホスト。付いていない run は判別不能（null）。
+_TL_HOST_SUFFIX = ("efros", "lecun", "bengio", "philip", "andrew", "ilya")
+
+
+def _tl_first(run_dir: Path, names: tuple[str, ...]) -> tuple[dict | None, str | None]:
+    for n in names:
+        p = run_dir / n
+        if p.exists():
+            try:
+                return json.loads(p.read_text(encoding="utf-8")), n
+            except Exception:  # noqa: BLE001
+                return None, n
+    return None, None
+
+
+def _tl_map(d: dict | None) -> dict[str, Any]:
+    """result.json の指標を index の metric 名へ写す。無いキーは入れない。"""
+    if not isinstance(d, dict):
+        return {}
+    out: dict[str, Any] = {}
+    # 検出側。t1c 群は final_det_mAP / init_det_mAP という別名を使う。
+    for src, dst in (
+        ("mAP", "mAP"),
+        ("init_mAP", "init_mAP"),
+        ("final_mAP", "final_mAP"),
+        ("final_det_mAP", "mAP"),
+        ("init_det_mAP", "init_mAP"),
+        ("final_epoch", "final_epoch"),
+    ):
+        v = d.get(src)
+        if isinstance(v, (int, float)) and dst not in out:
+            out[dst] = v
+    # 工程側（t1c 群のみ）。accuracy 列に載せる。
+    v = d.get("final_phase_acc")
+    if isinstance(v, (int, float)):
+        out["accuracy"] = v
+    return out
+
+
+def build_transfer_legacy_record(run_dir: Path) -> dict[str, Any]:
+    rel = run_dir.relative_to(REPO_ROOT)
+    warnings: list[str] = []
+    provenance: dict[str, str] = {}
+
+    inj, inj_file = _tl_first(run_dir, _TL_INJECTED)
+    ctrl, ctrl_file = _tl_first(run_dir, _TL_CONTROL)
+    if inj is None and ctrl is None:
+        warnings.append("result.json を 1 つも読めなかった")
+
+    primary = inj if inj is not None else ctrl
+    metrics = _tl_map(primary)
+    if ctrl is not None:
+        cm = _tl_map(ctrl)
+        if "mAP" in cm:
+            metrics["control_mAP"] = cm["mAP"]
+        if "init_mAP" in cm:
+            metrics["control_init_mAP"] = cm["init_mAP"]
+    # Δ は result.json 内で完結する引き算なので算出してよい（σ は別問題）。
+    if "mAP" in metrics and "init_mAP" in metrics:
+        metrics["delta_detection"] = metrics["mAP"] - metrics["init_mAP"]
+    if "control_mAP" in metrics and "control_init_mAP" in metrics:
+        metrics["delta_control"] = metrics["control_mAP"] - metrics["control_init_mAP"]
+        if "delta_detection" in metrics:
+            metrics["injection_effect"] = metrics["delta_detection"] - metrics["delta_control"]
+
+    # host はディレクトリ名の接尾辞からのみ分かる。無ければ判別不能。
+    # 接尾辞は実験条件ではなく実行ホストの印なので、step/seed の解釈前に外す
+    # （外さないと `..._seed42_efros` から step を取れず experiments.csv に載らない）。
+    host = None
+    name_for_parse = run_dir.name
+    for suf in _TL_HOST_SUFFIX:
+        if run_dir.name.endswith(f"_{suf}"):
+            host = suf
+            name_for_parse = run_dir.name[: -(len(suf) + 1)]
+            break
+
+    name_info, name_warn = parse_run_name(name_for_parse, None)
+    warnings.extend(name_warn)
+
+    # per_class。best_epoch=-1 の run は {} を返す仕様なので「欠損ではなく結果」。
+    pc_raw = (primary or {}).get("per_class_coco_map") or (primary or {}).get(
+        "final_det_per_class_coco_map"
+    )
+    # NaN は標準 JSON として不正なので None へ落とし、どのクラスかは別に保持する。
+    pc_nan = sorted(k for k, v in (pc_raw or {}).items() if _is_nan(v))
+    per_class = _denan(pc_raw) if isinstance(pc_raw, dict) and pc_raw else None
+    provenance["per_class"] = (
+        f"from_{inj_file or ctrl_file}#per_class_coco_map"
+        if per_class is not None
+        else "empty_in_result_json_best_epoch_minus_1"
+    )
+
+    provenance["name"] = (
+        "from_dirname_host_suffix_stripped" if host else "from_dirname"
+    )
+    provenance["host"] = (
+        "from_dirname_suffix" if host else "not_determinable_no_server_txt_and_no_suffix"
+    )
+    provenance["commit"] = "not_determinable_no_git_commit_txt"
+    provenance["eval_recipe"] = "not_determinable_no_metrics_json"
+    provenance["metrics"] = f"from_{inj_file}" if inj_file else "not_determinable"
+    provenance["split"] = "not_determinable_no_eval_recipe"
+    provenance["seed"] = "from_dirname" if name_info["seed"] is not None else "not_determinable"
+    provenance["step"] = "from_dirname" if name_info["step"] else "not_determinable"
+
+    return {
+        "ledger_key": str(rel).replace("/", "__"),
+        "run_id": run_dir.name,
+        "group": "transfer_legacy",
+        "subgroup": None,
+        "path": str(rel),
+        "excluded": False,
+        "exclusion_reason": None,
+        "step": name_info["step"],
+        "seq": name_info["seq"],
+        "description": name_info["description"],
+        "seed": name_info["seed"],
+        "seed_command": None,
+        "seed_config": None,
+        "seed_agreement": "unverified_no_other_evidence",
+        "frozen_source_seed_declared": None,
+        "seed_detector": name_info["seed_detector"],
+        "seed_phase": name_info["seed_phase"],
+        "split": None,
+        "metrics_primary_split": None,
+        "metrics": _denan(metrics),
+        "metrics_by_split": {},
+        "metrics_nested": {},
+        # 指標以外（trainable / inject / epochs / zero_ctx / denominator 等）は捨てない。
+        "attributes": _denan(
+            {
+                k: v
+                for k, v in (primary or {}).items()
+                if not isinstance(v, (dict, list)) and k not in metrics
+            }
+        ),
+        "per_class": per_class,
+        "per_class_kind": "coco_map" if per_class is not None else None,
+        "per_class_metric": "AP" if per_class is not None else None,
+        "per_class_source": (
+            f"{rel}/{inj_file or ctrl_file}#per_class_coco_map" if per_class is not None else None
+        ),
+        "per_class_nan_classes": pc_nan,
+        "per_class_valid_count": (
+            sum(1 for v in per_class.values() if v is not None) if per_class is not None else None
+        ),
+        # 🔴 無いものは生成しない。eval_recipe が無いので同一条件の束ねができない。
+        "eval_recipe": None,
+        "eval_recipe_id": None,
+        "delta_declaration": None,
+        "frozen_source_tag": None,
+        "host": host,
+        "host_raw": host,
+        "gpu": None,
+        "commit": None,
+        "command": None,
+        "notes": _read_text(run_dir / "README.txt"),
+        "config_path": None,
+        "epoch": _denan((primary or {}).get("best_epoch")),
+        "notion_page_id": None,
+        "provenance": dict(sorted(provenance.items())),
+        "harvest_warnings": warnings,
+        "duplicate_bare_keys": [],
+        "conflicting_bare_keys": {},
+        "evidence_completeness": "result_json_only",
+        "metrics_source": "result_json",
+    }
+
+
+def build_transfer_legacy_records() -> list[dict[str, Any]]:
+    if not TRANSFER_LEGACY.is_dir():
+        return []
+    dirs = sorted(
+        d for d in TRANSFER_LEGACY.iterdir() if d.is_dir() and any(d.glob("*result*.json"))
+    )
+    return [build_transfer_legacy_record(d) for d in dirs]
 
 
 # --------------------------------------------------------------------------- #
@@ -1785,6 +1990,10 @@ def build_verdicts(exp_rows: list[dict[str, Any]]) -> tuple[list[str], list[dict
     """
     rows = []
     for r in exp_rows:
+        # B-12: transfer_legacy は eval_recipe_id が null で同一条件の束ねが定義できず、
+        # σ を出せない。§10.1 の判定は σ を要するため判定表には載せない。
+        if r.get("group") == "transfer_legacy":
+            continue
         metrics = sorted(
             k[len("delta_") :]
             for k in r
@@ -1913,6 +2122,10 @@ SCALAR_COLUMNS = [
     "notion_page_id",
     "has_test",
     "n_harvest_warnings",
+    # 証跡の完全性。720 run は 'full'、直下 transfer/ の 29 run は 'result_json_only'
+    # （metrics.json / eval_recipe / git_commit / server.txt を持たない）。B-12。
+    "evidence_completeness",
+    "metrics_source",
 ]
 
 
@@ -2629,7 +2842,7 @@ BACKLOG = """# backlog — 本タスクの範囲外として起票した未着�
 | BL-empty-engines-scaffold | B-22 | `engines/` の空 scaffold | `hooks.py` / `stage_b_trainer.py` / `stage_c_trainer.py` / `stage_d_trainer.py` / `validator.py` が 0 バイト（§26.2）。B-19 で削除した Δ scaffold と同じパターン | 使う予定が無ければ削除、あるなら実装 |
 | BL-missing-entrypoint-script | B-23 | `train_net_egosurgery.py` が repo に無い | 3 run がこれを entrypoint にしているが実体が無い（`third_party/` は同期対象外）。`tools/train.py` も同様に 1 run（§26.2） | これらの run の決定性は確認できない。detectron2/detrex 側の配置を記録するか、run を除外対象にするか |
 | BL-phase3seed-tsv-missing | B-11 | `logs/phase3seed_results.tsv` の欠落 | `scripts/paired_sigma_3seed.py` はこの TSV の `arm` 列（frozen / augstrong）を読んで paired-σ を出す設計だが、ファイルが repo に存在しない（`.gitignore` 対象）。arm 情報自体は `config.yaml` の `frozen_source.*` に残っており `frozen_source_tag` として収穫済み | TSV の復元、または `paired_sigma_3seed.py` を `runindex` 由来に切り替える |
-| BL-runs-outside-experiments-dir | B-12 | 573 run の外側にある inj/ctrl ペア | `transfer/*_efros/` と `experiments/transfer/{hc,oracle_phase}_seed*/` に `injected_result.json` / `control_result.json` の対が 18 組あるが、`metrics.json` を持たないため収穫対象外。真の注入/対照ペアはここにある | 非標準群の adapter（B-6）と同じ作業 |
+| BL-runs-outside-experiments-dir | B-12 | 573 run の外側にある inj/ctrl ペア | `transfer/*_efros/` と `experiments/transfer/{hc,oracle_phase}_seed*/` に `injected_result.json` / `control_result.json` の対が 18 組あるが、`metrics.json` を持たないため収穫対象外。真の注入/対照ペアはここにある。**2026-08-04 に (a) 走査範囲の拡大で対処した（ilya）。** 直下 `transfer/` の **29 run** を `group='transfer_legacy'` として取り込み、`evidence_completeness='result_json_only'` / `metrics_source='result_json'` でフラグ化している。**6 点証跡が 0 件のため `eval_recipe_id` / `commit` は全 29 件 null、`host` は 16/29 のみ判別可能（efros 12 / lecun 2 / bengio 2、残り 13 は null）。** `per_class` は injected 側が空（`best_epoch=-1`）の 8 run で null。**σ を計算できないため `verdicts.csv` には載せていない**（`eval_recipe_id` が null で同一条件の束ねが定義できず、`delta_pstd_*` は全件 null）。`experiments.csv` には 12 実験として載る。null の理由は各 run の `provenance` に記録した（`not_determinable_no_git_commit_txt` 等）。**`hc_*` 3 run と `oracle_phase_*` 3 run は phase→det 方向の実測であり、研究計画が「実質空白」と記録していた領域そのものだった。** 実測（注入純効果 = Δ_inj − Δ_ctrl）: `oracle_phase`（`inject=ca`）seed42 **+0.005132** / seed123 **+0.003437** / seed456 **+0.003529**、`hc`（`inject=hc`）seed42 **+0.000000** / seed123 **+0.000873** / seed456 **+0.000334**。**σ が無いため §10.1 の判定は行っていない。** なお指示書が「`hc_*` 10 / `oracle_phase_*` 9」としていたのは `/tmp` 原本のファイル単位の数で、ディレクトリ単位では各 3。棚卸しの全文は `docs/runindex_instr10_stage1_transfer_inventory_ilya_2026-08-04.md` | 非標準群の adapter（B-6）と同じ作業 |
 | BL-experiment-id-split | B-13 | 同一条件が別 `experiment_id` に分裂する組 | `description` / `split` / `frozen_source_tag` が同じで `step` だけ違う組がある（§17.2）。多くは `eval_recipe_id` による意図的分離 | 起動経路が同一かの判断が要るため harvester では決めない |
 | BL-notes-frozen-source-false | B-14 | `notes.md` の凍結源記載が虚偽 | `s4_phase_baseline` の 55 件すべてが「凍結源: Relation-DETR seed42」と書くが、実際の `frozen_source.cache_dir` が違う run が 38 件（うち 24 件は seed 123/456）。`scripts/train_s4_tecno.py` の固定 f-string に由来。`config.yaml` の `frozen_source.seed` も 42 ハードコード | 学習コードの変更にあたるため本タスクでは触れない。過去の `notes.md` は `experiments/` 配下なので修正不可 |
 | BL-g2-no-control-declaration | B-15 | g2_* 群に対照宣言が無い | 42 run が `config.yaml` を持たないため `control_of` を確定できない（§20）。`metrics.json` の `system` フィールド（base / bboxROI / shuffleROI）が arm を表す可能性はあるが、対照関係の明示ではない | 実験設計の意図を確認したうえで、`system` を arm として採用してよいか決める |
@@ -4413,6 +4626,8 @@ def main() -> int:
 
     run_dirs = sorted({p.parent for p in EXPERIMENTS.rglob("metrics.json")})
     records = [build_run_record(d) for d in run_dirs]
+    # B-12: 直下 transfer/ は metrics.json を持たないため別経路で取り込む。
+    records += build_transfer_legacy_records()
     records.sort(key=lambda r: r["ledger_key"])
 
     # §3: 実験単位と対照ペアを振る（run 単位の収穫が全部終わってから）

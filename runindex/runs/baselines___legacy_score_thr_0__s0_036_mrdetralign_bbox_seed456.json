@@ -34,6 +34,7 @@
     }
   },
   "eval_recipe_id": "1cf2eece1cd3",
+  "evidence_completeness": "full",
   "excluded": false,
   "exclusion_reason": null,
   "experiment_id": "baselines/s0/mrdetralign_bbox@val",
@@ -66,6 +67,7 @@
   },
   "metrics_nested": {},
   "metrics_primary_split": "val",
+  "metrics_source": "metrics_json",
   "notes": "# s0_036_mrdetralign_bbox_seed456\n\n検出器: Mr.DETR-Align (detrex, torch 2.1.2+cu118, .venv-detectron2)\nseed: 456\n\n## 結果\nmAP=0.7195 / AP_rare=0.7721 / AP_common=0.7107 (best eval #12)\n\n## 初期化\nDINO R50 COCO 12ep 重み (backbone+transformer)、class_embed は 80->15 で再初期化 (他検出器の COCO fine-tune と同条件)。\n",
   "notion_page_id": null,
   "pairing_provenance": "not_determinable",
