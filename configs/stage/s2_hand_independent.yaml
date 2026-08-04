@@ -23,6 +23,9 @@
 #   data/annotations/egosurgery_hand4/instances_{train,val,test}.json を生成しておくこと
 #   （19 クラス統合 COCO から手 4 クラスを抽出し category_id 15-18 → 0-3 に remap。
 #    images は全画像保持・annotations は手のみ・bbox only）。
+#   ※ 2026-07-31: run 0 件のため実データは data/annotations/_deprecated/egosurgery_hand4/ へ
+#     退避済み。この config を実行する前に `python scripts/build_hand_coco.py` で再生成するか、
+#     退避先から戻すこと。詳細は _deprecated/egosurgery_hand4/DEPRECATED.md。
 #
 # 【成功基準（runbook）】hand mAP > 65 / own vs other 正答率 > 90% /
 #   L vs R 正答率 > 95%。
