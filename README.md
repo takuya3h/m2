@@ -1037,6 +1037,11 @@ dlsta / ilya / philip）でこのリポジトリは **2 層で自動同期**さ�
   agent forwarding 経由の ssh）。
 - 運用は **1 サーバー = 1 ブランチ**（`exp/<サーバー名>-<テーマ>`）。統合の幹は `phase0`。
   phase0 の更新を取り込むときは各自のブランチ上で `git merge phase0`。
+- ホスト名とブランチ名の対応（2026-08-04 時点）:
+  `lecun` / `efros` / `philip` / `Andrew` / `Bengio` は `exp/<名前>-wip-20260703`、
+  `ilya` は `exp/ilya-wip-20260804`（`exp/aolab-wip-20260703` は
+  `hostname=aolab` 由来の旧名で、2026-08-04 以降は使わない）、
+  `hinton` / `adam` / `dlstation` / `he` / `ian` は `exp/<名前>-wip-20260804`。
 
 ### サーバー名の解決（`$(hostname)` を直接使わない）
 
