@@ -42,6 +42,7 @@
     }
   },
   "eval_recipe_id": "0695cee60ff7",
+  "evidence_completeness": "full",
   "excluded": false,
   "exclusion_reason": null,
   "experiment_id": "transfer/t1a_regiontraj/t1a_regiontraj@val~relation_detr_seed42",
@@ -90,6 +91,7 @@
   },
   "metrics_nested": {},
   "metrics_primary_split": "val",
+  "metrics_source": "metrics_json",
   "notes": "# T1a-RegionTrajectory（Temporal Object-Set Fusion・COUPLING §4.1）\n\nregion-token(15×256) を Set encoder（共有MLP+class埋め込み+attention pool）で集約→tool-presence と gated residual→causal temporal attention→TeCNO+boundary head。online/causal。\n\n## 結果（best @epoch 31・val）\n### plain decode\n- acc=0.9459 / macro_f1=0.8089\n- edit=40.41 / seg_f1@10/25/50=0.536/0.528/0.471\n### sticky decode（τ=0.5）\n- acc=0.9327 / macro_f1=0.7922\n- edit=49.85 / seg_f1@10/25/50=0.585/0.573/0.476\n\n## 構成\n- seed=42 epochs=50 lr=0.0005 d_model=256 tok_dim=128 pres_dim=64 stages=2 layers=8\n- set_encoder=on gated_residual=True temporal_attn=True boundary(w=1.0 pos_w=14.70 tau=0.5)\n- server=efros / recipe=online_causal+jaccard_strict\n\n## Δ\n- Δ=(RegionTraj − T1a base[同env efros])。主指標 edit/seg-F1、維持 acc/macro-F1。3-seed paired-σ §10.1。\n",
   "notion_page_id": null,
   "pairing_provenance": "from_config_yaml",

@@ -127,3 +127,15 @@ val と test は大きく乖離するため、下流解析では `has_test` で�
   どのクラスが `NaN` だったかは `per_class_nan_classes` に保持しています。
 - `per_class_ap.json` は名前に反して **中身が F1 の群が 500 run** あります。
   必ず `per_class_metric` 列 (`AP` / `F1` / `unknown`) で判別してください。
+
+## 生成ホストによる差異
+
+harvester はディスクを走査するため、**どのホストで `make runindex` を
+実行するかで結果が変わる**（backlog B-29 / BL-exclusion-rules-exact-match）。
+
+本 runindex は **ilya（ディスク 720 = git 追跡 720、退避 0）**で生成している。
+lecun / efros / Andrew には git 管理外の退避 run（`.gitignore:143-162` で除外、
+合計 ~5.6GB）がディスク上に存在し、そこで生成すると
+`superseded` / `aborted_run` の除外が追加で現れる。
+
+**再生成は ilya で行うこと。** 他ホストで回すと index が食い違う。
