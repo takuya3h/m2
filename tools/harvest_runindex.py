@@ -1596,6 +1596,10 @@ EXPERIMENT_SCALAR_COLUMNS = [
     "control_note_value",
     "delta_method",
     "delta_sigma_source",
+    # 🔴 σ の系統。delta_sigma_source（paired / unpaired_pooled）とは軸が違う。
+    #   paired_delta … 対照実験の宣言があり delta_pstd_* を使う（既存 720 run の主経路）
+    #   within_run_seed_spread … run 内で対照が引かれた指標の seed 間 σ（B-12 / B-18）
+    "sigma_source",
     "delta_dedup_rule",
     # §10.1 判定（主指標について）。σ の規約が repo 内で割れているため両方出す。
     "verdict_metric",
@@ -1850,6 +1854,7 @@ def build_experiments(
             "n_command_variants": len(cmd_sigs),
             "delta_method": "",
             "delta_sigma_source": "",
+            "sigma_source": "",
             "delta_dedup_rule": "",
             "verdict_metric": "",
             "verdict_10_1": "",
@@ -1919,6 +1924,8 @@ def build_experiments(
             # paired と unpaired を混同してはならないので両方出たら併記する。
             row["delta_method"] = ",".join(sorted(methods))
             row["delta_sigma_source"] = ",".join(sorted(sources))
+            if any(k.startswith("delta_pstd_") and row.get(k) is not None for k in row):
+                row["sigma_source"] = "paired_delta"
             row["delta_dedup_rule"] = dedup_rule if "paired" in methods else ""
 
             # §10.1 判定（主指標について）。σ の規約が割れているので両方出す。
@@ -1956,6 +1963,15 @@ def build_experiments(
                     row["sigma_interpretation"] = (
                         "mixed_with_nondeterminism" if worst >= 1 else "seed_effect"
                     )
+
+        # B-12 / B-18: 対照実験の宣言が無く paired σ を出せない実験でも、
+        # run 内で対照が引かれた指標があれば seed 間 σ で §10.1 を判定する。
+        # 出所を必ず列に残す（どちらの σ か分からない行を作らない）。
+        if not row["sigma_source"]:
+            for m in WITHIN_RUN_VERDICT_METRICS:
+                if isinstance(row.get(f"{m}_pstd"), (int, float)):
+                    row["sigma_source"] = "within_run_seed_spread"
+                    break
         rows.append(row)
     return header, rows
 
@@ -1963,6 +1979,10 @@ def build_experiments(
 VERDICT_COLUMNS = [
     "experiment_id",
     "metric",
+    # 🔴 σ の出所。B-18（σ 規約の併存）の再発を防ぐため必ず埋める。
+    #   paired_delta           … 対照実験が宣言された実験の delta_pstd_*（実験間の paired Δ の σ）
+    #   within_run_seed_spread … run 内で対照が引かれた指標の seed 間 σ（{metric}_pstd）
+    "sigma_source",
     "arm",
     "control_of",
     "delta_method",
@@ -1981,6 +2001,57 @@ VERDICT_COLUMNS = [
 ]
 
 
+# run 内で既に対照が引かれており、seed 間 σ で §10.1 を判定してよい指標。
+# ここに delta_detection / delta_control を入れてはならない（対照が引かれていない）。
+WITHIN_RUN_VERDICT_METRICS = ("injection_effect",)
+
+
+def _within_run_verdicts(r: dict[str, Any]) -> list[dict[str, Any]]:
+    """対照実験の宣言が無い実験を、run 内で引かれた指標の seed 間 σ で判定する。
+
+    同符号は `{m}_min` / `{m}_max` から見る（seed ごとの値と等価）。
+    0 は同符号とみなさない — §10.1 は「改善が全 seed で観測される」ことを求めており、
+    差が 0 の seed は改善を示していないため。
+    """
+    out = []
+    for m in WITHIN_RUN_VERDICT_METRICS:
+        d = r.get(f"{m}_mean")
+        if not isinstance(d, (int, float)):
+            continue
+        ps = r.get(f"{m}_pstd")
+        ss = r.get(f"{m}_sstd")
+        lo, hi = r.get(f"{m}_min"), r.get(f"{m}_max")
+        if isinstance(lo, (int, float)) and isinstance(hi, (int, float)):
+            same_sign = (lo > 0 and hi > 0) or (lo < 0 and hi < 0)
+        else:
+            same_sign = None
+        vp, reason = _verdict_10_1(d, ps, same_sign)
+        vs, _ = _verdict_10_1(d, ss, same_sign)
+        out.append(
+            {
+                "experiment_id": r["experiment_id"],
+                "metric": m,
+                "sigma_source": "within_run_seed_spread",
+                "arm": r.get("arm"),
+                "control_of": r.get("control_of"),
+                "delta_method": "within_run",
+                "delta_dedup_rule": "",
+                "n_seeds": r.get(f"{m}_n"),
+                "delta": d,
+                "pstd": ps,
+                "sstd": ss,
+                "ratio_pstd": abs(d) / ps if ps else None,
+                "ratio_sstd": abs(d) / ss if ss else None,
+                "same_sign": same_sign,
+                "verdict_pstd": vp,
+                "verdict_sstd": vs,
+                "agree": vp == vs,
+                "reason": reason,
+            }
+        )
+    return out
+
+
 def build_verdicts(exp_rows: list[dict[str, Any]]) -> tuple[list[str], list[dict[str, Any]]]:
     """1 行 = 1 実験 × 1 指標 の §10.1 判定表（long 形式）。
 
@@ -1990,9 +2061,13 @@ def build_verdicts(exp_rows: list[dict[str, Any]]) -> tuple[list[str], list[dict
     """
     rows = []
     for r in exp_rows:
-        # B-12: transfer_legacy は eval_recipe_id が null で同一条件の束ねが定義できず、
-        # σ を出せない。§10.1 の判定は σ を要するため判定表には載せない。
+        # B-12 / B-18: transfer_legacy は対照実験が宣言されておらず delta_pstd_* が
+        # 計算されない。ただし injection_effect は result.json 内で既に
+        # Δ_inj − Δ_ctrl が引かれた値なので、その seed 間 σ で §10.1 を判定できる。
+        # 対照が引かれていない delta_detection / delta_control は判定対象にしない
+        # （mAP と同種の生の値であり、§10.1 の Δ ではない）。
         if r.get("group") == "transfer_legacy":
+            rows.extend(_within_run_verdicts(r))
             continue
         metrics = sorted(
             k[len("delta_") :]
@@ -2013,6 +2088,7 @@ def build_verdicts(exp_rows: list[dict[str, Any]]) -> tuple[list[str], list[dict
                 {
                     "experiment_id": r["experiment_id"],
                     "metric": m,
+                    "sigma_source": "paired_delta",
                     "arm": r.get("arm"),
                     "control_of": r.get("control_of"),
                     "delta_method": r.get("delta_method"),
@@ -2835,7 +2911,7 @@ BACKLOG = """# backlog — 本タスクの範囲外として起票した未着�
 | BL-paired-sigma-representative-run | B-10 | **paired-σ を可能にする「seed ごとの代表 run」規約** | 実測（§22）: `control_of` が確定した 136 実験の**全て**が paired-σ 判定を宣言しているが、実際に計算できるのは **2 実験**。阻害原因は `control_multi_run_per_seed` 119 / `seed_set_differs` 9 / 両方 4 / `both_multi_run_per_seed` 2。**seed ごとに代表 1 本を選ぶ規約を 1 つ足せば 125 実験で計算可能になる**（残り 11 は seed 集合が違うため不可）。注入側 439 run のうち 427 run は対照に同一 seed が存在する | 代表の選び方を決める（`transfer_delta_report.py` は seq 最大＝最新の再実行を採る実装がある）。決まれば harvester 側は機械的に適用できる |
 | BL-asymmetric-seed-extension | B-16 | seed 789 / 1000 の非対称な拡張 | 全 615 run 中 12 run だけが seed 789/1000 を持ち、その 12 件すべてが `scripts/run_l3_seed5_extension.sh`（「3-seed→5-seed 化、paired-σ 強化」）の産物。同スクリプトは**注入側 6 variant のみを拡張し対照 (S4 baseline) を呼んでいない**ため片側だけ 5-seed になった。paired は共通 seed で取るので計算自体は成立する | 対照側も 5-seed 化するか、789/1000 を解析から外すかの判断 |
 | BL-t1a-regiontraj-denominator | B-17 | `t1a_regiontraj` 系 3 実験の分母 | `config.yaml` は分母を `t1a_regiontoken base (同env efros paired)` と宣言しているが、`t1a_base_env`（efros・seeds 42/123/456・1 run/seed、config は `server_name` 以外一致）へ付け替えると追加計算なしで完全な paired になるという指摘がある | 分母の付け替えは研究上の判断。`config.yaml` の宣言に反するため harvester では変更しない |
-| BL-two-sigma-conventions | B-18 | σ 規約の 2 系統併存 | `pstdev` 系 48 箇所（§10.1 判定・レポート層）と `stdev`/`ddof=1` 系 16 箇所（`scripts/analysis/*` の解析・監査層）が併存（§21.2）。**Δ の規約を監査する `delta_convention_audit.py` 自身が判定側と違うσを使っている** | 正本 §10.1 でσを定義したうえで、どちらかに寄せる |
+| BL-two-sigma-conventions | B-18 | σ 規約の 2 系統併存 | `pstdev` 系 48 箇所（§10.1 判定・レポート層）と `stdev`/`ddof=1` 系 16 箇所（`scripts/analysis/*` の解析・監査層）が併存（§21.2）。**Δ の規約を監査する `delta_convention_audit.py` 自身が判定側と違うσを使っている**。**2026-08-04 に 3 系統目が加わった（ilya）。** `transfer_legacy` の 29 run は対照実験が宣言されておらず（`arm='unknown'` / `control_of=''`）`delta_pstd_*` が計算されないため、**run 内で対照が引かれた `injection_effect`（= Δ_inj − Δ_ctrl）の seed 間 σ（`injection_effect_pstd`）で §10.1 を判定している**。`sigma_source` 列（`paired_delta` / `within_run_seed_spread`）で出所を区別しており（`verdicts.csv` 1038 行の内訳: `paired_delta` 1027 / `within_run_seed_spread` 11）、σ を持つのに出所が空の行は 0 件だが、**σ の定義が 2 種類ある状態そのものは解消されていない**。判定に載せるのは `injection_effect` のみで、対照が引かれていない `delta_detection` / `delta_control` は `WITHIN_RUN_VERDICT_METRICS` から意図的に外している（`mAP` と同種の生の値であり §10.1 の Δ ではない）。なお `eval_recipe_id` が null の 199 run のうち、同じ構造（`arm='unknown'` で `delta_pstd` なし）の実験は**既存 720 run 側にも 34 件ある**（`g2_*` 30 / `hand2det_dev` 6 等）ため、この 3 系統目は transfer_legacy 固有ではなく、既存側にも同じ扱いを広げるかは未決。詳細は `docs/runindex_transfer_legacy_sigma_investigation_ilya_2026-08-04.md`。**2026-08-04 時点で σ に関する列は 4 系統ある。** ①`{metric}_pstd` / `{metric}_sstd` … seed 間の σ（母集団 / 標本）、②`delta_pstd_{metric}` / `delta_sstd_{metric}` … 実験間 paired Δ の σ、③`sigma_source` … σ の系統（`paired_delta` / `within_run_seed_spread`）、④`delta_sigma_source` … paired σ の計算方法（`paired` / `unpaired_pooled`）。③と④は軸が直交する（どの σ を使ったか vs paired σ をどう計算したか）ため別列にしているが、**列が増えたこと自体が「どの σ を見ればよいか」を分かりにくくしている**。統合はできないが、README で「§10.1 の判定に使うのはどれか」を明示する必要がある | 正本 §10.1 でσを定義したうえで、どちらかに寄せる |
 | ~~BL-empty-delta-scaffold~~ | ~~B-19~~ | ~~空の Δ scaffold~~ | **解決済み**。`scripts/compute_delta.py` / `scripts/export_paper_tables.py` / `tools/generate_delta_report.py` は 3 つとも 0 バイトで scaffold コミット `af1fc58` 以来未実装だったため削除し、`make delta` / `make tables` を `runindex/` への案内に置き換えた（利用者の判断による） | — |
 | BL-nondeterministic-training | B-20 | 🔴 **学習の非決定性が制御されていない（棚卸し完了）** | 同一 commit・同一 config・同一コマンド・同一 host の再実行が再現しない（`s4_phase_baseline_015` vs `_017` で macro_f1 が 0.7406 vs 0.6572）。**欠陥は 1 スクリプト固有ではなく体系的**で、CUDA を使う 13 本のうち `cuda_manual_seed` / `use_deterministic_algorithms` / `cudnn_deterministic` / `worker_init_fn` / `PYTHONHASHSEED` を設定している本は **0 本**（§26.1）。影響 run は 500。`control_of` を持つ 136 実験のうち **123 の σ が `mixed_with_nondeterminism`**（§26.4） | 学習コードの変更 + 再実行にあたるため本タスクでは触れない。**これを直さない限り paired-σ は seed 効果を測れない**。GPU 時間の判断が要る |
 | BL-same-sign-condition-definition | B-21 | 「全 seed 同符号」条件の定義（**判断: 保留**） | dedup 後は「seed 平均どうしの符号が揃うか」を見ている（§27）。**利用者の判断で定義変更は保留**（2026-08-01）。理由は「σ の 123/136 が `mixed_with_nondeterminism` である以上、どの定義を採っても σ が汚染されているため、条件の定義より **B-20 の非決定性の解消が先**」。実測（accuracy / 134 実験）: 現状の seed 平均基準 125、全 run 組合せの厳格基準 124、符号一致率 100% は 124 | **B-20 の解消後に定義を決める。**それまで `delta_same_sign_<metric>`（seed 平均ベース）と `delta_n_seeds_<metric>` を出し続ける |
@@ -2855,6 +2931,8 @@ BACKLOG = """# backlog — 本タスクの範囲外として起票した未着�
 | BL-sync-alert-message-inaccurate | B-30 | **`m2-sync.sh` のアラート文言「phase0更新失敗（未コミット変更と衝突）」が不正確** | 実際の失敗原因は「未追跡ファイルの上書き拒否」であり、追跡ファイルの変更ではない。2026-08-04 に未整備 5 ノード（`Hinton` / `adam` / `DL-Station` / `he` / `ian`）を調査したところ、5 台とも **追跡ファイルの変更 0 件**で、`git status` に出ていたのはすべて未追跡ファイル（Syncthing 由来の `logs/eval_meta_val.json` と `logs/val_metrics_by_epoch.json`）だった。件数は `Hinton` / `adam` / `DL-Station` / `he` が各 58 件、`ian` が 4 件。git は未追跡ファイルの上書きを**バイト単位で同一でも拒否する**ため `git merge --ff-only origin/phase0` が失敗し続けていた（アラート 28〜32 件 / 台）。`ian` だけ成功していたのは未追跡 4 件が phase0 に存在しなかったため。文言が誤っていたため、調査するまで「未コミットの成果が眠っている」と誤読された（実際は 5 台とも未追跡 `metrics.json` 0 件で、固有の実験成果はゼロ）。 | git のエラー出力を判別して文言を分ける。`untracked working tree files would be overwritten by merge` → 「未追跡ファイルと衝突（Syncthing 由来の可能性）」、`Your local changes to the following files would be overwritten` → 「未コミット変更と衝突」。なお `m2-sync.sh` は `~/bin/keeper.sh` から呼ばれる**外部管理スクリプト**であり、リポジトリの `scripts/sync/m2-sync.sh` を変更しても各ホストには自動配布されない。配布方法の確認が先に必要。 |
 | BL-hostname-container-id-in-alerts | B-31 | **`SERVERNAME` 未設定のホストで、アラートログにコンテナ ID が記録され追跡不能になる** | `m2-sync.sh` は `SRV="${SERVERNAME:-$(hostname)}"` でホスト名を解決する。`DL-Station` は `hostname` がコンテナ ID `084f3b0911a2` を返すため、`SERVERNAME` 未設定の状態でアラート 29 件がこの ID で記録され、2026-08-03 時点ではどのマシンか判別できなかった（2026-08-04 に特定）。同じ問題は `philip` / `ilya` にもある（両者とも `hostname` が `aolab` を返す）が、こちらは `SERVERNAME` が設定済みのため顕在化していない。2026-08-04 時点で `SERVERNAME` 未設定だったのは `Hinton` / `adam` / `DL-Station` / `he` / `ian` / `efros` / `Andrew` の 7 台。うち `Hinton` / `adam` / `he` / `ian` / `efros` / `Andrew` は `hostname` が論理名と一致するためフォールバックしても正しい値になり、実害は `DL-Station` のみだった。 | 全ノードで `SERVERNAME` を設定する（2026-08-04 に未整備 5 ノードで実施）。加えて防御として、`hostname` が 12 桁の 16 進数（コンテナ ID の形式）に一致する場合はアラート行に警告を添えるか、そもそもアラートを出さずに設定不備として別扱いにする。判定は `[[ "$SRV" =~ ^[0-9a-f]{12}$ ]]` で足りる。 |
 | BL-run-t1b-tag-ignores-arm | B-32 | 🔴 **`run_t1b.sh` の TAG が `--trainable` を反映しないため、arm が出力先に現れない** | `scripts/run_t1b.sh:20-21` の TAG は `--zero-ctx` の有無しか見ておらず、`--trainable film` でも `--trainable all` でも**出力先は同じ `t1b_seed{N}`** になる（`T1B_WORK_DIR="$BODY/experiments/transfer/${TAG}"`、:28）。加えて `scripts/postprocess_t1b.py` の `DESC = "t1b_phasefilm"`（:29）と `step="t1b_phasefilm"`（:69, :71）が**定数**のため、グロブが何を拾っても必ず `t1b_phasefilm` の名前で登録される。**B-26 が「グロブの取り違え」としたのは不正確で、根本原因は TAG と `DESC` の設計にある。グロブだけを直しても再発する。** 履歴で確認した意図（2026-08-04 / ilya）: `postprocess_t1b.py` の初出 `ba3df41` の docstring は「`train_t1b.py` は seed 毎に注入 run（`/tmp/t1b_seed{N}`）と §4.6 対照 run（`/tmp/t1b_zeroctx_seed{N}`）の `t1b_result.json` を出す」と述べており、`DENOM` も「①学習FiLM phase→det」と書いている。**グロブは「`train_t1b.py` の出力ディレクトリを拾う」意味しかなく、arm を選別する意図は元から無い。** `0ea33ca` は `/tmp` → `experiments/transfer/` の移行のみでパターンは不変。副次的に判明: `run_t1b.sh:29` で `--epochs 6` が固定されているのに登録済み 2 run は `epochs=3` であり、**`run_t1b.sh` 経由ではない起動があった**ことを示すが経路は**判別不能**（`command.sh` は `postprocess_t1b.py` が組成したもので実際の起動コマンドではない）。これは B-1 と同型。 | **(i)** TAG に `--trainable` を反映させる（例: `t1b_film_seed{N}` / `t1b_all_seed{N}`）、または **(ii)** `postprocess_t1b.py` の `DESC` を実データの `trainable` から決める。**(i) が根本的**だが `run_t1b.sh` は**学習の起動スクリプト**であり、指示書 #10 の「学習・評価コードには触れない」範囲を超える。現在 `experiments/transfer/t1b_seed*` は **0 件**で即座の影響はなく、修正は将来の再実行に対する予防である。着手時は `scripts/run_t1b.sh` / `scripts/postprocess_t1b.py` の 2 箇所を同時に直すこと（片方だけでは再発する）。関連: **B-26**（同じ事象を index 側から見たもの。既存 2 run は `mislabeled_arm_all_not_film` で除外済み）/ **B-1**（記録 commit で再現できない run）。 |
+| BL-backlog-pipe-breaks-columns | B-33 | 🔴 **BACKLOG の Markdown 表に半角パイプを含む本文を書くと列数が壊れる** | 2026-08-04 の B-18 追記で `paired_delta` と `within_run_seed_spread` を**半角パイプ文字で区切って**書いたところ、それがセル区切りと解釈され、当該行だけ列数が 6 になり表全体で `{8, 7}` の 2 種類になった（区切り文字数ベース）。**`py_compile` は通る** — BACKLOG は Python から見れば単なる文字列であり、構文チェックは表構造の破損を一切検出しない。AST 検証（`ast.literal_eval` で `BACKLOG` の値を取り出し、先頭が `BL-` の行を `str.split` して列数を数える）でのみ検出できた。**バッククォートで囲んでもエスケープされない**点に注意（コード片として書いても表は壊れる）。同種の事故は **2026-08-02 にも発生**しており（B-29 起票時に行末の閉じ区切りを落とし、列数が 3 になった）、**2 回とも AST 検証だけが捕まえている**。 | **(i)** 本文で区切りが必要なときは `/` や全角に置換する運用を `runindex/README.md` に明記する、または **(ii)** BACKLOG を Markdown 表ではなく構造化データ（`list[dict]` 等）で持ち、`backlog.md` はそこから生成する。**(ii) が根本的**だが既存 34 エントリの移行が要る。当面は **`make runindex` に AST 検証を組み込み、列数が 1 種類でなければ `exit 1` とするのが安価**（現状は人間が検証コマンドを手で流しており、流し忘れると壊れたまま commit される）。関連: B-18（この事故が起きた対象エントリ）。 |
+| BL-ledger-key-namespace-collision | B-34 | 🔴 **`ledger_key` の名前空間が `transfer` と `transfer_legacy` で重なる** | `ledger_key` はパス区切りを `__` に置換して作る。直下 `transfer/hc_seed42` は `str(rel)` から、`experiments/transfer/hc_seed42` は `str(rel_from_exp)` から作られるため、**どちらも `transfer__hc_seed42` になる**。2026-08-04 時点で `index.csv` の `ledger_key` 重複は **0 件（実測）** で実害は出ていないが、これは両者の run 名がたまたま重ならないためであり、規約で保証されているわけではない。将来 `experiments/transfer/` に直下 `transfer/` と同名の run が作られると、`runindex/runs/<ledger_key>.json` が**静かに上書きされる**（例外も警告も出ない）。`index.csv` 側は 1 行しか出ないため、run が 1 件消えたことに気づけない。 | `transfer_legacy` の `ledger_key` を `transfer_legacy__` 接頭辞にする（`build_transfer_legacy_record` の `str(rel).replace("/", "__")` を変更）。既存の `runs/*.json` のファイル名が 29 件変わるため、**再生成時に 29 件の rename が発生する（削除ではないことを commit メッセージに明記すること）**。`index.csv` の `ledger_key` を参照している外部の記録（`docs/` 配下の報告書等）があれば追随が必要。あわせて、`ledger_key` の重複を検出したら警告する検査を harvester に入れておくと同種の事故を防げる。関連: B-12（この取り込みを行ったエントリ）/ B-7（`ledger_key` のフィールド名改名）。 |
 """
 
 METRIC_ALIASES = {
