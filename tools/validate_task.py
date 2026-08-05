@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -21,6 +22,17 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = REPO_ROOT / "tasks" / "_schema" / "spec.schema.json"
 TASKS_DIR = REPO_ROOT / "tasks"
+EXPERIMENTS_CSV = REPO_ROOT / "runindex" / "experiments.csv"
+CONVENTIONS_PATH = REPO_ROOT / "context" / "conventions.md"
+COL_EXPERIMENT_ID = "experiment_id"
+COL_GROUP = "group"
+COL_N_SEEDS = "n_seeds"
+COL_SIGMA_SOURCE = "sigma_source"
+COL_DELTA_SIGMA_SOURCE = "delta_sigma_source"
+_ANCHOR_RE = re.compile(r'<a id="([a-z0-9_]+)"></a>')
+_SIGMA_DEFAULT_RE = re.compile(
+    r"series:\s*(\w+).*?sigma_source:\s*(\w+).*?delta_sigma_source:\s*(\w+)", re.S
+)
 
 _NUMBER_RE = re.compile(r"(?<![\w.-])(\d+\.\d+|\d{4,})(?![\w.-])")
 _ALLOW_NUMBER_PATHS = {
@@ -121,6 +133,141 @@ def _iter_task_dirs(only: str | None) -> list[Path]:
         if not dirs:
             raise SystemExit(f"task が見つかりません: {only}")
     return dirs
+
+
+def conventions_anchors() -> set[str]:
+    if not CONVENTIONS_PATH.exists():
+        return set()
+    return set(_ANCHOR_RE.findall(CONVENTIONS_PATH.read_text(encoding="utf-8")))
+
+
+def conventions_sigma_defaults() -> dict[str, str]:
+    """conventions.md#sigma の既定値ブロックを読む。"""
+    if not CONVENTIONS_PATH.exists():
+        return {}
+    match = _SIGMA_DEFAULT_RE.search(CONVENTIONS_PATH.read_text(encoding="utf-8"))
+    if not match:
+        return {}
+    return {"series": match.group(1), "sigma_source": match.group(2), "delta_sigma_source": match.group(3)}
+
+
+def resolve_sigma_policy(spec: dict, defaults: dict[str, str]) -> dict[str, str]:
+    """明示指定をconventionsの既定より優先し、完全なdictを返す。"""
+    explicit = spec.get("inputs", {}).get("sigma_policy") or {}
+    resolved = dict(defaults)
+    resolved.update({key: value for key, value in explicit.items() if value is not None})
+    return resolved
+
+
+def all_task_ids_in_history() -> dict[str, list[str]]:
+    """全refの履歴に現れたtasks/<id>/spec.yamlを集める。"""
+    output = subprocess.run(
+        ["git", "log", "--all", "--name-only", "--diff-filter=A", "--pretty=format:%H", "--", "tasks/*/spec.yaml"],
+        cwd=REPO_ROOT, capture_output=True, text=True, check=False,
+    ).stdout
+    found: dict[str, list[str]] = {}
+    current = ""
+    for line in output.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        if re.fullmatch(r"[0-9a-f]{40}", line):
+            current = line
+            continue
+        parts = line.split("/")
+        if len(parts) >= 2 and parts[0] == "tasks":
+            found.setdefault(parts[1], []).append(current)
+    return found
+
+
+def task_id_conflicts(task_id: str, existing: dict[str, list[str]], self_ref: str) -> list[str]:
+    """同じtask_idを追加したcommitが複数なら衝突とみなす。"""
+    del self_ref
+    commits = existing.get(task_id, [])
+    return commits if len(commits) > 1 else []
+
+
+def _csv_rows(path: Path) -> list[dict[str, str]]:
+    import csv
+    with path.open(newline="", encoding="utf-8") as file_handle:
+        return list(csv.DictReader(file_handle))
+
+
+def validate_l2(spec: dict) -> list[Finding]:
+    findings: list[Finding] = []
+    task_id = spec.get("meta", {}).get("task_id", "")
+    conflicts = task_id_conflicts(task_id, all_task_ids_in_history(), self_ref="HEAD")
+    if conflicts:
+        findings.append(Finding("L2-1", "meta.task_id", f"複数コミットで追加されています: {conflicts}"))
+
+    anchors = conventions_anchors()
+    if not anchors:
+        findings.append(Finding("L2-5", "contract.inject_verbatim", "context/conventions.md が読めません"))
+    for ref in spec.get("contract", {}).get("inject_verbatim", []):
+        anchor = ref.split("#", 1)[1]
+        if anchors and anchor not in anchors:
+            findings.append(Finding("L2-5", "contract.inject_verbatim", f"アンカー {anchor} が存在しません"))
+
+    for key, paths in (
+        ("inputs.data.split_files", spec.get("inputs", {}).get("data", {}).get("split_files", [])),
+        ("inputs.code.entrypoints", spec.get("inputs", {}).get("code", {}).get("entrypoints", [])),
+        ("inputs.caches", spec.get("inputs", {}).get("caches", []) or []),
+    ):
+        for path in paths:
+            if not (REPO_ROOT / path).exists():
+                findings.append(Finding("L2-7", key, f"存在しません: {path}"))
+
+    denominator = spec.get("inputs", {}).get("denominator")
+    if denominator and EXPERIMENTS_CSV.exists() and COL_EXPERIMENT_ID != "UNKNOWN":
+        rows = _csv_rows(EXPERIMENTS_CSV)
+        group, experiment_id = denominator["ref"].split(":", 1)[1].split("/", 1)
+        matches = [row for row in rows if row.get(COL_EXPERIMENT_ID) == experiment_id and row.get(COL_GROUP) == group]
+        if not matches:
+            findings.append(Finding("L2-2", "inputs.denominator.ref", f"experiments.csv に {group}/{experiment_id} がありません"))
+        else:
+            row = matches[0]
+            needed = denominator.get("require", {}).get("n_seeds")
+            if needed and COL_N_SEEDS != "UNKNOWN":
+                try:
+                    actual = int(float(row.get(COL_N_SEEDS, "0") or 0))
+                except ValueError:
+                    actual = 0
+                bound = int(needed.lstrip(">=< "))
+                if actual < bound:
+                    findings.append(Finding("L2-3", "inputs.denominator.require.n_seeds", f"実測 {actual} が要求 {needed} を満たしません"))
+            resolved = resolve_sigma_policy(spec, conventions_sigma_defaults())
+            for policy_key, column in (("sigma_source", COL_SIGMA_SOURCE), ("delta_sigma_source", COL_DELTA_SIGMA_SOURCE)):
+                actual_value = row.get(column)
+                resolved_value = resolved.get(policy_key)
+                if actual_value and resolved_value and actual_value != resolved_value:
+                    findings.append(Finding("L2-4", f"inputs.sigma_policy.{policy_key}", f"分母の実値 {actual_value} と解決値 {resolved_value} が不一致"))
+    _warn_conventions_rev(spec)
+    _warn_population_drift(spec)
+    return findings
+
+
+def _warn_conventions_rev(spec: dict) -> None:
+    revision = spec.get("contract", {}).get("conventions_rev")
+    if not revision:
+        return
+    changed = subprocess.run(
+        ["git", "diff", "--name-only", f"{revision}..HEAD", "--", "context/conventions.md"],
+        cwd=REPO_ROOT, capture_output=True, text=True, check=False,
+    ).stdout.strip()
+    if changed:
+        print(f"WARN [L2-6] conventions.md が {revision} 以降に変更されています。差分を確認してください", file=sys.stderr)
+
+
+def _warn_population_drift(spec: dict) -> None:
+    counts = spec.get("meta", {}).get("created_from", {}).get("counts", {})
+    for name, key in (("index.csv", "index"), ("experiments.csv", "experiments"), ("verdicts.csv", "verdicts")):
+        path = REPO_ROOT / "runindex" / name
+        if not path.exists():
+            continue
+        actual = sum(1 for _ in path.open(encoding="utf-8")) - 1
+        expected = counts.get(key)
+        if expected is not None and actual != expected:
+            print(f"WARN [L2-8] {name}: 起票時 {expected} → 現在 {actual}（分母が動いています）", file=sys.stderr)
 
 
 def main() -> int:

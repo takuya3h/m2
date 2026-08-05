@@ -2,7 +2,11 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
-from validate_task import validate_l1  # noqa: E402
+from validate_task import (  # noqa: E402
+    resolve_sigma_policy,
+    task_id_conflicts,
+    validate_l1,
+)
 
 
 def _minimal_impl_spec() -> dict:
@@ -99,3 +103,37 @@ def test_verbatim_number_in_intent_fails():
     spec["intent"]["decision_at_stake"] = "分母は 0.8983 なので比較する"
     findings = validate_l1(spec, dir_name="T-2026-08-03-example-task")
     assert "L1-5" in _ids(findings)
+
+
+def test_sigma_policy_defaults_are_inherited():
+    spec = _minimal_impl_spec()
+    resolved = resolve_sigma_policy(spec, defaults={
+        "series": "pstd",
+        "sigma_source": "paired_delta",
+        "delta_sigma_source": "paired",
+    })
+    assert resolved == {
+        "series": "pstd",
+        "sigma_source": "paired_delta",
+        "delta_sigma_source": "paired",
+    }
+
+
+def test_sigma_policy_explicit_overrides_default():
+    spec = _minimal_impl_spec()
+    spec["inputs"]["sigma_policy"] = {"series": "sstd"}
+    resolved = resolve_sigma_policy(spec, defaults={
+        "series": "pstd",
+        "sigma_source": "paired_delta",
+        "delta_sigma_source": "paired",
+    })
+    assert resolved["series"] == "sstd"
+    assert resolved["sigma_source"] == "paired_delta"
+
+
+def test_task_id_conflict_detected():
+    existing = {"T-2026-08-03-example-task": ["origin/exp/lecun-foo", "other"]}
+    conflicts = task_id_conflicts(
+        "T-2026-08-03-example-task", existing, self_ref="HEAD"
+    )
+    assert conflicts
