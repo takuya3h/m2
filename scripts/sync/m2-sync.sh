@@ -90,3 +90,26 @@ if [ "$BR" != "$MAIN" ] && git rev-parse --verify -q "origin/$BR" >/dev/null; th
     fi
   fi
 fi
+
+# --- auto-PR: push した内容を phase0 へ向けた Draft PR にする ---
+# Draft なので誤マージされない。人間が Draft を外すとマージ可能になる。
+# gh が無い / 認証されていない環境では静かに skip する。
+if [ "$BR" != "$MAIN" ] && command -v gh >/dev/null 2>&1; then
+  AHEAD_MAIN=$(git rev-list --count "origin/$MAIN..HEAD" 2>/dev/null || echo 0)
+  if [ "$AHEAD_MAIN" != "0" ] && git rev-parse --verify -q "origin/$BR" >/dev/null; then
+    # gh 呼び出しの失敗（ネットワーク断・認証切れ等）を "0" と誤判定して
+    # 重複起票しないよう、初期値を -1 にする。
+    EXISTING=$(gh pr list --head "$BR" --state open --json number --jq 'length' 2>/dev/null || echo -1)
+    if [ "$EXISTING" = "0" ]; then
+      if gh pr create --draft --base "$MAIN" --head "$BR" \
+           --title "auto: ${BR} -> ${MAIN}" \
+           --body "m2-sync.sh による自動起票（$(date '+%F %T')）。${AHEAD_MAIN} commits。
+
+内容を確認し、問題なければ Draft を外してください。" >/dev/null 2>&1; then
+        alert "auto-PR: ${BR} -> ${MAIN} (${AHEAD_MAIN} commits, draft)"
+      else
+        alert "auto-PR失敗: ${BR} -> ${MAIN} (${AHEAD_MAIN} commits)"
+      fi
+    fi
+  fi
+fi
