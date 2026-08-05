@@ -131,9 +131,28 @@ def test_sigma_policy_explicit_overrides_default():
     assert resolved["sigma_source"] == "paired_delta"
 
 
-def test_task_id_conflict_detected():
-    existing = {"T-2026-08-03-example-task": ["origin/exp/lecun-foo", "other"]}
-    conflicts = task_id_conflicts(
-        "T-2026-08-03-example-task", existing, self_ref="HEAD"
-    )
-    assert conflicts
+def test_task_id_single_ref_is_not_conflict():
+    identities = {"2026-08-05T09:00:00Z": ["refs/remotes/origin/phase0"]}
+    assert task_id_conflicts("T-2026-08-05-example-task", identities) == []
+
+
+def test_task_id_same_created_at_across_refs_is_not_conflict():
+    """squash merge 後に旧ブランチが残っている状態の回帰テスト。"""
+    identities = {
+        "2026-08-05T09:00:00Z": [
+            "refs/remotes/origin/phase0",
+            "refs/remotes/origin/feat/task-contract-bootstrap",
+        ]
+    }
+    assert task_id_conflicts("T-2026-08-05-example-task", identities) == []
+
+
+def test_task_id_differing_created_at_is_conflict():
+    """別ホストが同じ task_id を独立に起票した状態。"""
+    identities = {
+        "2026-08-05T09:00:00Z": ["refs/remotes/origin/phase0"],
+        "2026-08-05T11:30:00Z": ["refs/remotes/origin/exp/lecun-foo"],
+    }
+    conflicts = task_id_conflicts("T-2026-08-05-example-task", identities)
+    assert len(conflicts) == 2
+    assert any("phase0" in c for c in conflicts)
