@@ -159,32 +159,55 @@ def resolve_sigma_policy(spec: dict, defaults: dict[str, str]) -> dict[str, str]
     return resolved
 
 
-def all_task_ids_in_history() -> dict[str, list[str]]:
-    """全refの履歴に現れたtasks/<id>/spec.yamlを集める。"""
-    output = subprocess.run(
-        ["git", "log", "--all", "--name-only", "--diff-filter=A", "--pretty=format:%H", "--", "tasks/*/spec.yaml"],
+def _origin_refs() -> list[str]:
+    """refs/remotes/origin 配下の ref 名を返す。origin/HEAD は除く。"""
+    out = subprocess.run(
+        ["git", "for-each-ref", "--format=%(refname)", "refs/remotes/origin"],
         cwd=REPO_ROOT, capture_output=True, text=True, check=False,
     ).stdout
-    found: dict[str, list[str]] = {}
-    current = ""
-    for line in output.splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        if re.fullmatch(r"[0-9a-f]{40}", line):
-            current = line
-            continue
-        parts = line.split("/")
-        if len(parts) >= 2 and parts[0] == "tasks":
-            found.setdefault(parts[1], []).append(current)
-    return found
+    refs = [line.strip() for line in out.splitlines() if line.strip()]
+    return [ref for ref in refs if not ref.endswith("/HEAD")]
 
 
-def task_id_conflicts(task_id: str, existing: dict[str, list[str]], self_ref: str) -> list[str]:
-    """同じtask_idを追加したcommitが複数なら衝突とみなす。"""
-    del self_ref
-    commits = existing.get(task_id, [])
-    return commits if len(commits) > 1 else []
+def task_identity_on_refs(task_id: str) -> dict[str, list[str]]:
+    """task_id を含む ref を meta.created_at 別に集める。
+
+    戻り値は created_at をキー、その値を持つ ref のリストを値とする dict。
+    ref に spec.yaml が無い場合と、解析できない場合はその ref を無視する。
+    """
+    spec_path = f"tasks/{task_id}/spec.yaml"
+    identities: dict[str, list[str]] = {}
+    for ref in _origin_refs():
+        shown = subprocess.run(
+            ["git", "show", f"{ref}:{spec_path}"],
+            cwd=REPO_ROOT, capture_output=True, text=True, check=False,
+        )
+        if shown.returncode != 0:
+            continue
+        try:
+            data = yaml.safe_load(shown.stdout) or {}
+        except yaml.YAMLError:
+            continue
+        if not isinstance(data, dict):
+            continue
+        created_at = str(data.get("meta", {}).get("created_at", "") or "")
+        if created_at:
+            identities.setdefault(created_at, []).append(ref)
+    return identities
+
+
+def task_id_conflicts(task_id: str, identities: dict[str, list[str]]) -> list[str]:
+    """同じ task_id が異なる meta.created_at で複数 ref に存在すれば衝突とみなす。
+
+    squash merge や rebase merge で同一 task が複数 ref に現れるのは正常なので、
+    created_at が一致する限り衝突としない。
+    """
+    if len(identities) <= 1:
+        return []
+    return [
+        f"{created_at} <- {', '.join(sorted(refs))}"
+        for created_at, refs in sorted(identities.items())
+    ]
 
 
 def _csv_rows(path: Path) -> list[dict[str, str]]:
@@ -196,9 +219,16 @@ def _csv_rows(path: Path) -> list[dict[str, str]]:
 def validate_l2(spec: dict) -> list[Finding]:
     findings: list[Finding] = []
     task_id = spec.get("meta", {}).get("task_id", "")
-    conflicts = task_id_conflicts(task_id, all_task_ids_in_history(), self_ref="HEAD")
+    conflicts = task_id_conflicts(task_id, task_identity_on_refs(task_id))
     if conflicts:
-        findings.append(Finding("L2-1", "meta.task_id", f"複数コミットで追加されています: {conflicts}"))
+        findings.append(
+            Finding(
+                "L2-1",
+                "meta.task_id",
+                "同じ task_id が異なる created_at で複数の ref に存在します: "
+                + "; ".join(conflicts),
+            )
+        )
 
     anchors = conventions_anchors()
     if not anchors:
