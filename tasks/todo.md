@@ -216,3 +216,87 @@ TeCNO・工程損失/sched・データ(Tool subset 10/2/3)・fps0.5・eval recip
 
 ### l1a / l2（重GPU・24run）— 未着手（前提未達 + 新規実装要）
 - [ ] 前提: l0完全版組立 + 手mask→det注入機構の設計・実装（train_t1b/haux いずれにも無い第三方向）
+
+---
+
+## 2026-08-05 — TASK 契約システム ブートストラップ
+
+task_id: `T-2026-08-03-task-contract-bootstrap`
+
+### 計画
+
+- [x] 1. `tasks/` 骨格、自己契約の `SPEC.md`、規約 README を作成する
+- [x] 2. 一次情報を確認し、`context/conventions.md` と README を実値で作成する
+- [x] 3. Draft 2020-12 JSON Schema を追加し、dev 依存へ `jsonschema>=4` を追加する
+- [x] 4. validator L1 と単体テストを実装し、静的検証を通す
+- [x] 5. runindex の実列を確認して validator L2 を実装し、参照解決テストを通す
+- [x] 6. `make task-validate` ターゲットを追加して動作確認する
+- [x] 7. exp / impl / analysis のテンプレートを追加し、L1 の hard finding がないことを確認する
+- [x] 8. `.claude/skills/task/SKILL.md` を追加する
+- [x] 9. root の対象6ファイルを移動せず棚卸しし、参照・由来・提案を記録する
+- [x] 10. 自己適用 `spec.yaml` / `RESULT.md` を作成し、近接テスト・全テスト・禁止領域無変更を検証する
+- [x] 11. コード変更内容と現在の実装状態を `README.md` に記録する
+- [x] 12. 指定単位で commit し、承認後に push と PR 作成を行う
+
+### 成功基準
+
+- `make task-validate TASK=T-2026-08-03-task-contract-bootstrap` が exit 0
+- `tests/test_validate_task.py` が全件 passし、テスト数の実測を `RESULT.md` に記録
+- `python -m pytest tests/ -q` の結果を実測で報告
+- `context/conventions.md` のアンカーが7個で、禁止されたプレースホルダがない
+- テンプレート3種と `/task` skill が存在する
+- `runindex/`、既存 `experiments/`、`transfer/`、`data/splits/`、`tools/harvest_runindex.py` に変更がない
+
+---
+
+## 2026-08-05 — `OPERATION.md` 現行実装追従
+
+### 計画
+
+- [x] 1. 現行 `OPERATION.md` と同期・GitHub・runindex 関連実装を突合する
+- [x] 2. auto-merge 設定済みの現在のライフサイクルへ最小差分で更新する
+- [x] 3. 記載コマンド、ファイル参照、文書内整合性を検証する
+- [x] 4. 読者視点で手順の曖昧さを確認し、必要箇所を修正する
+
+### 成功基準
+
+- `OPERATION.md` の commit / push / PR / auto-merge / runindex / 全台取り込みの記述が現行実装と一致する
+- 廃止済みの手動マージ手順や「未自動化」の記述が残っていない
+- 実在しないスクリプトやコマンドを記載しない
+- 変更範囲は `OPERATION.md`、必須の進捗記録、コード変更時のみ必要な文書に限定する
+
+---
+
+## 2026-08-05 — `README.md` 現行実装追従
+
+### 計画
+
+- [x] 1. README の証跡・実験管理・同期記述を現行実装と突合する
+- [x] 2. auto-sync / Draft PR / GitHub auto-merge / keeper の責務を反映する
+- [x] 3. `OPERATION.md` との重複を抑え、README を全体像の正本として整える
+- [x] 4. コマンド・参照・内部整合性を検証し、初見 Reader Test を通す
+
+### 成功基準
+
+- README の認証・commit・push・PR・merge・全台取り込みが現行実装と一致する
+- 必須証跡、`git_autosync`、`ExperimentManager.finalize()` の説明が実装と一致する
+- 廃止済みの PAT / Mac 経由 push / 手動 `git merge phase0` を正規手順として残さない
+- 詳細 runbook は `OPERATION.md` へ委譲し、README 内の矛盾や架空参照がない
+
+---
+
+## 2026-08-05 — README の Task Contract System 詳細化
+
+### 計画
+
+- [x] 1. schema・validator・テンプレート・Makefile・自己契約を現行実装と突合する
+- [x] 2. 目的、契約構造、L1/L2、標準ライフサイクル、コマンドを README に記載する
+- [x] 3. 失敗時の読み方と Codex / Claude の利用境界を明確化する
+- [x] 4. コマンド・参照・内部整合性を検証し、初見 Reader Test を通す
+
+### 成功基準
+
+- 初見の利用者がテンプレートから task を起票し、L1/L2 を検証できる
+- validator の対象、終了コード、結果ファイルの説明が実装と一致する
+- 自己契約の達成済み事項と既知の未達を捏造せず `RESULT.md` に委譲する
+- README の記載だけで「起票→検証→実行→結果確認」の全体像が分かる

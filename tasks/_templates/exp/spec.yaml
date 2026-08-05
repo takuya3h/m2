@@ -1,0 +1,73 @@
+spec_version: 1
+meta:
+  task_id: "T-YYYY-MM-DD-slug"
+  kind: exp
+  title: ""
+  origin: claude-app
+  chat_url: ""
+  created_at: "YYYY-MM-DDTHH:MM:SSZ"
+  created_from:
+    runindex_commit: ""
+    counts: {index: 0, experiments: 0, verdicts: 0}
+  depends_on: []
+  amendments: []
+intent:
+  question: ""
+  decision_at_stake: ""
+  hypothesis: ""
+  related:
+    backlog: []
+inputs:
+  denominator:
+    ref: "exp:group/experiment_id"
+    metric: ""
+    require: {n_seeds: ">=3", sigma: present, split: val}
+  frozen_source:
+    ref: "run:group/run_name"
+    verify: ckpt_sha256
+  data:
+    dataset: ""
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt", "data/splits/ego_test.txt"]
+  caches: []
+  code:
+    entrypoints: []
+contract:
+  inject_verbatim:
+    - conventions#split
+    - conventions#eval_recipe
+    - conventions#frozen_source
+    - conventions#sigma
+    - conventions#prohibitions
+    - conventions#env_p0
+  conventions_rev: ""
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "", gpu: false, est: ""}
+    - {id: B, name: "", gpu: true, est: ""}
+  gates:
+    - {id: G1, after: A, check: "", on_fail: stop}
+  env:
+    venv: ".venv-relation-detr"
+    preflight: [venv_active, cuda_ext_loaded, deterministic_flags]
+  resources: {server: "", gpu: 2, est_hours: 0, runs: 0}
+prereg:
+  prediction: ""
+  primary_endpoint: ""
+  decision_rule: ""
+  stop_conditions: []
+  committed_at: null
+  commit: null
+outputs:
+  expected_runs: 0
+  must_have: [metrics.json, per_class_ap.json, notes.md, config.yaml]
+  destination: "experiments/transfer/"
+  stamp: {task_id_in: config.yaml}
+  acceptance: []
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [denominator_moved, frozen_source_hash_mismatch]

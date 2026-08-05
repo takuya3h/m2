@@ -1,0 +1,46 @@
+spec_version: 1
+meta:
+  task_id: "T-2026-08-03-task-contract-bootstrap"
+  kind: impl
+  title: "TASK 契約システムのブートストラップ"
+  origin: claude-app
+  created_at: "2026-08-03T00:00:00Z"
+  created_from:
+    runindex_commit: "762a5c8"
+    counts: {index: 749, experiments: 206, verdicts: 1038}
+intent:
+  question: "アプリで立てた指示を、機械検証可能な契約として CLI に渡せるか"
+  decision_at_stake: "往路を自動化するか、手渡しを続けるか"
+  related:
+    backlog: ["BL-git-commit-existence-audit"]
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["tools/validate_task.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#naming]
+  conventions_rev: "8b17c4d"
+  prohibitions: [no_split_redefine, no_raw_write, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "スキーマと validator", gpu: false}
+    - {id: B, name: "テンプレートと skill", gpu: false}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md, root_inventory.md]
+  destination: "tools/"
+  acceptance:
+    - "make task-validate が exit 0"
+    - "pytest tests/test_validate_task.py が 11 passed"
+    - "context/conventions.md にアンカーが 7 個ある"
+    - "tasks/_templates/ に 3 種そろっている"
+    - ".claude/skills/task/SKILL.md が存在する"
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]

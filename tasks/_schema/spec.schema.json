@@ -1,0 +1,273 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/takuya3h/m2/tasks/_schema/spec.schema.json",
+  "title": "TASK contract",
+  "type": "object",
+  "required": ["spec_version", "meta", "intent", "inputs", "contract", "plan", "outputs", "governance"],
+  "additionalProperties": false,
+  "properties": {
+    "spec_version": { "const": 1 },
+    "meta": {
+      "type": "object",
+      "required": ["task_id", "kind", "title", "origin", "created_at", "created_from"],
+      "additionalProperties": false,
+      "properties": {
+        "task_id": { "type": "string", "pattern": "^T-[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9-]{3,60}$" },
+        "kind": { "enum": ["impl", "exp", "analysis"] },
+        "title": { "type": "string", "minLength": 1 },
+        "origin": { "enum": ["claude-app", "cli", "human"] },
+        "chat_url": { "type": "string" },
+        "created_at": { "type": "string" },
+        "created_from": {
+          "type": "object",
+          "required": ["runindex_commit", "counts"],
+          "additionalProperties": false,
+          "properties": {
+            "runindex_commit": { "type": "string", "minLength": 7 },
+            "counts": {
+              "type": "object",
+              "required": ["index", "experiments", "verdicts"],
+              "additionalProperties": false,
+              "properties": {
+                "index": { "type": "integer" },
+                "experiments": { "type": "integer" },
+                "verdicts": { "type": "integer" }
+              }
+            }
+          }
+        },
+        "supersedes": { "type": "array", "items": { "type": "string" } },
+        "depends_on": { "type": "array", "items": { "type": "string" } },
+        "amendments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["date", "reason"],
+            "additionalProperties": false,
+            "properties": {
+              "date": { "type": "string" },
+              "reason": { "type": "string" },
+              "diff": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "intent": {
+      "type": "object",
+      "required": ["question", "decision_at_stake"],
+      "additionalProperties": false,
+      "properties": {
+        "question": { "type": "string", "minLength": 1 },
+        "decision_at_stake": { "type": "string", "minLength": 1 },
+        "hypothesis": { "type": "string" },
+        "related": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "decision_log": { "type": "array", "items": { "type": "string" } },
+            "lessons": { "type": "array", "items": { "type": "string" } },
+            "plan_sections": { "type": "array", "items": { "type": "string" } },
+            "backlog": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "inputs": {
+      "type": "object",
+      "required": ["data", "code"],
+      "additionalProperties": false,
+      "properties": {
+        "denominator": {
+          "type": "object",
+          "required": ["ref", "metric"],
+          "additionalProperties": false,
+          "properties": {
+            "ref": { "type": "string", "pattern": "^exp:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$" },
+            "metric": { "type": "string" },
+            "require": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "n_seeds": { "type": "string" },
+                "sigma": { "enum": ["present", "any"] },
+                "split": { "enum": ["train", "val", "test"] }
+              }
+            }
+          }
+        },
+        "sigma_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "series": { "enum": ["pstd", "sstd"] },
+            "sigma_source": { "enum": ["paired_delta", "within_run_seed_spread"] },
+            "delta_sigma_source": { "enum": ["paired", "unpaired_pooled"] }
+          }
+        },
+        "frozen_source": {
+          "type": "object",
+          "required": ["ref"],
+          "additionalProperties": false,
+          "properties": {
+            "ref": { "type": "string", "pattern": "^run:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$" },
+            "verify": { "enum": ["ckpt_sha256", "none"] }
+          }
+        },
+        "data": {
+          "type": "object",
+          "required": ["dataset", "split_files"],
+          "additionalProperties": false,
+          "properties": {
+            "dataset": { "type": "string" },
+            "split_files": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+          }
+        },
+        "caches": { "type": "array", "items": { "type": "string" } },
+        "code": {
+          "type": "object",
+          "required": ["entrypoints"],
+          "additionalProperties": false,
+          "properties": {
+            "entrypoints": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+          }
+        }
+      }
+    },
+    "contract": {
+      "type": "object",
+      "required": ["inject_verbatim", "conventions_rev", "prohibitions", "verbatim_forbidden"],
+      "additionalProperties": false,
+      "properties": {
+        "inject_verbatim": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "pattern": "^conventions#[a-z0-9_]+$" }
+        },
+        "conventions_rev": { "type": "string", "minLength": 7 },
+        "prohibitions": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "verbatim_forbidden": { "const": true }
+      }
+    },
+    "plan": {
+      "type": "object",
+      "required": ["phases", "env"],
+      "additionalProperties": false,
+      "properties": {
+        "phases": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "name", "gpu"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "gpu": { "type": "boolean" },
+              "est": { "type": "string" }
+            }
+          }
+        },
+        "gates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "after", "check", "on_fail"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string" },
+              "after": { "type": "string" },
+              "check": { "type": "string" },
+              "threshold": { "type": "string" },
+              "on_fail": { "enum": ["stop", "ask", "skip"] }
+            }
+          }
+        },
+        "env": {
+          "type": "object",
+          "required": ["venv", "preflight"],
+          "additionalProperties": false,
+          "properties": {
+            "venv": { "type": "string" },
+            "preflight": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "resources": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "server": { "type": "string" },
+            "gpu": { "type": "integer" },
+            "est_hours": { "type": "number" },
+            "runs": { "type": "integer" }
+          }
+        },
+        "parallelism": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "waves": { "type": "integer" },
+            "per_wave": { "type": "integer" }
+          }
+        }
+      }
+    },
+    "prereg": {
+      "type": "object",
+      "required": ["prediction", "primary_endpoint", "decision_rule", "stop_conditions"],
+      "additionalProperties": false,
+      "properties": {
+        "prediction": { "type": "string", "minLength": 1 },
+        "primary_endpoint": { "type": "string", "minLength": 1 },
+        "decision_rule": { "type": "string", "minLength": 1 },
+        "stop_conditions": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "committed_at": { "type": ["string", "null"] },
+        "commit": { "type": ["string", "null"] }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "required": ["must_have", "destination", "acceptance"],
+      "additionalProperties": false,
+      "properties": {
+        "expected_runs": { "type": "integer" },
+        "must_have": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "destination": { "type": "string" },
+        "stamp": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "task_id_in": { "type": "string" } }
+        },
+        "acceptance": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "report_to": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "governance": {
+      "type": "object",
+      "required": ["deviations_required", "integrity"],
+      "additionalProperties": false,
+      "properties": {
+        "decisions_required": { "type": "array", "items": { "type": "string" } },
+        "deviations_required": { "const": true },
+        "integrity": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "escalate_if": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "meta": { "properties": { "kind": { "const": "exp" } } } } },
+      "then": { "required": ["prereg"] }
+    },
+    {
+      "if": { "properties": { "meta": { "properties": { "kind": { "const": "exp" } } } } },
+      "then": {
+        "properties": {
+          "inputs": { "required": ["denominator", "data", "code"] },
+          "outputs": { "required": ["expected_runs", "must_have", "destination", "stamp", "acceptance"] }
+        }
+      }
+    }
+  ]
+}

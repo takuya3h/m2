@@ -1,4 +1,4 @@
-.PHONY: setup test lint s0 s2 s4 s5 s6 eval delta runindex runindex-dry runindex-strict
+.PHONY: setup test lint s0 s2 s4 s5 s6 eval delta runindex runindex-dry runindex-strict task-validate
 
 setup:
 	pip install -e ".[dev]"
@@ -79,6 +79,9 @@ runindex-strict:
 	python tools/harvest_runindex.py --write
 	python tools/verify_runindex.py
 	python tools/verify_no_dummy_metrics.py --strict
+
+task-validate:
+	@.venv/bin/python tools/validate_task.py $(if $(TASK),--task $(TASK),) --level $(if $(LEVEL),$(LEVEL),l2)
 
 clean:
 	find . -type d -name __pycache__ -exec rm -rf {} +
