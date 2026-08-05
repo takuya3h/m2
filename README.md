@@ -1170,3 +1170,17 @@ best predictions は init の複製として必ず出力する（init ckpt 自�
 - [`docs/secrets_and_tracking.md`](docs/secrets_and_tracking.md) — `.env.gpg` 暗号化運用 + W&B / Notion 認証
 - [`experiments/analysis/step_c_coupling_analysis/REPORT.md`](experiments/analysis/step_c_coupling_analysis/REPORT.md) — STEP C 本編（val・27 §）: 結合機構の解明・実証・最良結合法の設計
 - [`experiments/analysis/step_c_coupling_analysis/TEST_EVAL_REPORT.md`](experiments/analysis/step_c_coupling_analysis/TEST_EVAL_REPORT.md) — STEP C test split 確証: 方向非対称は本番データで保たれるか
+
+### TASK 契約システム（2026-08-05）
+
+Claude アプリ等の作業依頼を `tasks/<task_id>/spec.yaml` として受け渡す契約基盤を実装した。
+
+- Draft 2020-12 schema: `tasks/_schema/spec.schema.json`
+- L1/L2 validator: `tools/validate_task.py`
+- 実行: `make task-validate`、個別指定は `TASK=<task_id>`
+- 規約の逐語供給源: `context/conventions.md`
+- 起票テンプレート: `tasks/_templates/{exp,impl,analysis}/`
+- Claude CLI skill: `.claude/skills/task/SKILL.md`
+
+自己契約 `T-2026-08-03-task-contract-bootstrap` はL1+L2検証を通過済み。
+詳細な検証結果と既知の未達は同taskの `RESULT.md` を参照する。
