@@ -216,3 +216,33 @@ TeCNO・工程損失/sched・データ(Tool subset 10/2/3)・fps0.5・eval recip
 
 ### l1a / l2（重GPU・24run）— 未着手（前提未達 + 新規実装要）
 - [ ] 前提: l0完全版組立 + 手mask→det注入機構の設計・実装（train_t1b/haux いずれにも無い第三方向）
+
+---
+
+## 2026-08-05 — TASK 契約システム ブートストラップ
+
+task_id: `T-2026-08-03-task-contract-bootstrap`
+
+### 計画
+
+- [ ] 1. `tasks/` 骨格、自己契約の `SPEC.md`、規約 README を作成する
+- [ ] 2. 一次情報を確認し、`context/conventions.md` と README を実値で作成する
+- [ ] 3. Draft 2020-12 JSON Schema を追加し、dev 依存へ `jsonschema>=4` を追加する
+- [ ] 4. validator L1 と単体テストを実装し、静的検証を通す
+- [ ] 5. runindex の実列を確認して validator L2 を実装し、参照解決テストを通す
+- [ ] 6. `make task-validate` ターゲットを追加して動作確認する
+- [ ] 7. exp / impl / analysis のテンプレートを追加し、L1 の hard finding がないことを確認する
+- [ ] 8. `.claude/skills/task/SKILL.md` を追加する
+- [ ] 9. root の対象6ファイルを移動せず棚卸しし、参照・由来・提案を記録する
+- [ ] 10. 自己適用 `spec.yaml` / `RESULT.md` を作成し、近接テスト・全テスト・禁止領域無変更を検証する
+- [ ] 11. コード変更内容と現在の実装状態を `README.md` に記録する
+- [ ] 12. 指定単位で commit し、承認後に push と PR 作成を行う
+
+### 成功基準
+
+- `make task-validate TASK=T-2026-08-03-task-contract-bootstrap` が exit 0
+- `tests/test_validate_task.py` が全件 passし、テスト数の実測を `RESULT.md` に記録
+- `python -m pytest tests/ -q` の結果を実測で報告
+- `context/conventions.md` のアンカーが7個で、禁止されたプレースホルダがない
+- テンプレート3種と `/task` skill が存在する
+- `runindex/`、既存 `experiments/`、`transfer/`、`data/splits/`、`tools/harvest_runindex.py` に変更がない
