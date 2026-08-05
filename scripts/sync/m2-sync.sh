@@ -39,6 +39,36 @@ else
     alert "ローカル${MAIN}が分岐(${MAIN}に直接コミットした?)"
 fi
 
+# --- auto-merge: phase0 の更新を作業ブランチへ取り込む ---
+# auto-push より前に置く。merge してから push すれば 1 ループで両方片付く。
+# 条件: 作業ブランチ上 / 追跡変更 0 件 / behind > 0 / 未追跡が阻害しない
+# 安全策: rm は自動化しない（内容同一の判定と退避は人間が行う）。衝突したら即 abort。
+if [ "$BR" != "$MAIN" ]; then
+  BEHIND=$(git rev-list --count "HEAD..origin/$MAIN" 2>/dev/null || echo 0)
+  if [ "$BEHIND" != "0" ]; then
+    # grep -c は該当 0 件で exit 1 を返すため || true が要る。
+    DIRTY=$(git status --porcelain | grep -vc '^??' || true)
+    if [ "${DIRTY:-0}" != "0" ]; then
+      alert "auto-merge skip: 追跡変更 ${DIRTY} 件 (behind ${BEHIND})"
+    else
+      # 未追跡ファイルが取り込み先にも存在すると git は上書きを拒む。
+      # 事前に集合の積を取って判定する（rm はしない）。
+      BLOCKED=$(comm -12 \
+        <(git ls-files --others --exclude-standard | sort) \
+        <(git ls-tree -r --name-only "origin/$MAIN" | sort) | wc -l | tr -d ' ')
+      if [ "$BLOCKED" != "0" ]; then
+        alert "auto-merge skip: 未追跡 ${BLOCKED} 件が阻害 (behind ${BEHIND}) 手動対応が必要"
+      elif git merge --no-edit -q "origin/$MAIN" 2>/dev/null; then
+        alert "auto-merge: ${BR} <- origin/${MAIN} (${BEHIND} commits)"
+      else
+        # conflicted state を残すと次ループから毎回失敗し続けるので必ず戻す。
+        git merge --abort 2>/dev/null
+        alert "auto-merge失敗(abort済): ${BR} <- origin/${MAIN} 手動対応が必要"
+      fi
+    fi
+  fi
+fi
+
 # --- auto-push: コミット済みで未 push のものを自分の作業ブランチへ送る ---
 # 2026-08-02 に lecun で 72 run（selection_noise）が 1 か月未 push だった。
 # commit は自動化しない。push だけを自動化する。
