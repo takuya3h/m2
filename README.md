@@ -10,7 +10,7 @@ EgoSurgery データセット上で、手術器具検出・セグメンテーシ
 本プロジェクトは以下の 7 つの原則の上に構築されている。
 
 1. **`src/` と `configs/` と `experiments/` を絶対に分ける** — コード・設定・実験結果の混在は再現性を壊す。
-2. **すべての実験に「証拠」を残す** — 各実験フォルダには最低限 `config.yaml` / `command.sh` / `git_commit.txt` / `metrics.json` / `notes.md` を自動保存する。
+2. **すべての実験に「証拠」を残す** — 6 点の必須証跡（`config.yaml` / `command.sh` / `git_commit.txt` / `metrics.json` / `per_class_ap.json` / `notes.md`）と実行ホスト `server.txt` を自動保存する。
 3. **`data/` は Git 管理しない** — ただし `data/splits/` と `data/README.md` は Git 管理する。
 4. **Phase-0 / Phase-1 の 2 フェーズ構成を構造に反映** — mask アノテーション依存のモジュールを条件付きとして分離する。
 5. **S0〜S9 のステップと実験を対応づける** — 連番付き命名規則で Δ 基準点の追跡性を担保する。
@@ -19,15 +19,14 @@ EgoSurgery データセット上で、手術器具検出・セグメンテーシ
 
 ---
 
-## セットアップ
+## セットアップ（軽量開発用）
 
 ```bash
 # 依存関係のインストール（開発用ツールを含む）
 pip install -e ".[dev]"
 
-# 環境変数の設定（W&B / データルート / 事前学習重み）
-cp .env.example .env
-# .env を編集して WANDB_API_KEY などを設定する
+# W&B / Notion 認証を暗号化 .env.gpg から現在のシェルへロード
+source scripts/load_env.sh
 ```
 
 `uv` を用いる場合:
@@ -36,6 +35,10 @@ cp .env.example .env
 uv venv
 uv pip install -e ".[dev]"
 ```
+
+平文 `.env` は commit しない。新規ホストでの暗号化環境の準備と復旧手順は
+[`docs/secrets_and_tracking.md`](docs/secrets_and_tracking.md) を参照。
+GPU 本実験には、以下の「推奨セットアップ」で CUDA / mmcv / mmdet / Mamba まで導入する。
 
 ### 推奨セットアップ（uv 仮想環境 + CUDA + mm系 + Mamba）
 
@@ -143,15 +146,18 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 ```bash
 git clone git@github.com:takuya3h/m2.git egosurgery_multitask
 cd egosurgery_multitask
-git checkout phase2   # 最新の作業ブランチ
 ```
+
+`phase0` は統合幹であり、実験を直接実行しない。各ホストでは
+[`docs/host_autosync_onboarding.md`](docs/host_autosync_onboarding.md) に従って、
+割り当て済みの `exp/<サーバー名>-<テーマ>` ブランチへ切り替えてから実験する。
 
 ### 3. Python 環境のセットアップ
 
 ```bash
 bash scripts/setup_env.sh         # venv 作成〜全依存導入〜import 検証まで自動
 source .venv/bin/activate
-PYTHONPATH=src .venv/bin/python -m pytest tests/ -q   # 28/28 パスを確認
+PYTHONPATH=src .venv/bin/python -m pytest tests/ -q
 ```
 
 ### 4. データセットの取得と配置
@@ -188,28 +194,25 @@ python scripts/build_tool_hand_coco.py
 **注意**: `data/splits/ego_*.txt` は git 管理されており、論文準拠の動画 ID リストが
 入っている（変更禁止）。`scripts/preprocess_ego.py` を独自実行する場合は
 最後に `assert_paper_split()` が走り、論文 Table 3a と一致しない場合 `AssertionError`
-で停止する（再発防止策、§15.3 参照）。
+で停止する（再発防止策、M2研究計画 §15.3 参照）。
 
 ### 5. 環境変数とトークン
 
 ```bash
-cp .env.example .env
-# .env を編集:
-#   WANDB_API_KEY=<your_api_key>     # W&B 記録を有効にする場合
-#   WANDB_PROJECT=egosurgery_multitask
-#   DATA_ROOT=/abs/path/to/data       # data/ を別パスにしたい場合のみ
-#   # --- Notion 連携（M2研究運用ハブ・任意）---
-#   NOTION_API_KEY=secret_xxxxxxxx    # https://www.notion.so/profile/integrations で発行
-#   NOTION_DB_ID=ef4ccd02-0a97-41af-814e-9acc44e1e0d3   # 実験Run台帳の database id（後述・collection idでない）
-#   NOTION_SERVER_OPTION=lecun        # Run台帳 Server 列（実行サーバー名）
+source scripts/load_env.sh
 ```
 
-W&B を使わない場合は `logging.wandb_enabled=false` を CLI override で渡せる。
+標準運用では `scripts/load_env.sh` が暗号化済み `.env.gpg` を復号し、W&B と Notion の
+認証情報を現在のシェルへ読み込む。平文 `.env` は秘密情報なので commit しない。
+本実験前は `WANDB_API_KEY` と `NOTION_API_KEY` が読み込まれたことを確認する。
+認証が無い場合、追跡処理は学習を止めず no-op になるが、本実験の正規運用ではない。
+意図的に W&B を無効化するスモークでは `logging.wandb_enabled=false` を CLI override で渡せる。
 
 ### Notion 連携（運用ハブ駆動・コンテキスト削減）
 
 研究運用を Notion「**M2研究運用ハブ**」に連動させ、マスターの「M2研究計画」（長文）を毎回読まずに
-DB 駆動で回す。**ID レジストリ `configs/notion.yaml`（非秘密・コミット可）/ token は `.env`**。
+DB 駆動で回す。**ID レジストリ `configs/notion.yaml` は非秘密・commit 可、token は
+暗号化 `.env.gpg` から `scripts/load_env.sh` が現在のシェルへ読み込む**。
 `NOTION_API_KEY` 未設定なら全 no-op（研究フローを止めない）。詳細 → [`docs/notion_integration.md`](docs/notion_integration.md)。
 
 - **書く（自動記録）**:
@@ -230,7 +233,7 @@ DB 駆動で回す。**ID レジストリ `configs/notion.yaml`（非秘密・�
 ### 6. 動作確認（sanity check）
 
 ```bash
-# (a) 単体テスト（28 ケースが全パスすること）
+# (a) 単体テスト
 PYTHONPATH=src .venv/bin/python -m pytest tests/ -q
 
 # (b) Hydra config の resolve 確認（学習しない）
@@ -272,8 +275,8 @@ bash scripts/run_s3.sh   # S3: phase 認識、~10 分（軽量）
 - **ResNet50 ImageNet 重み**: S3 で初回 `tv_models.resnet50(weights=...)` が自動 DL（~/.cache/torch/hub/checkpoints/、97MB）。
 - **Mask DINO / Detectron2**: S0 では mmdet の `dino-4scale_r50` で代替するため、third_party の Mask DINO は必須ではない（オプション）。
 - **GPU が 1 枚しか無い場合**: `run_s0.sh` は GPU 数を自動検出し逐次実行へフォールバックするが、合計時間は約 2 倍。
-- **失敗実験の保存**: `experiments/_smoke_prior/` `experiments/baselines/_wrong_split_8_2_3/` `experiments/phase0/_failed_s3_weighted/` は過去の失敗ランの証跡。**消さずに残す**（研究 integrity の物理証拠、§15 参照）。
-- **研究計画との整合**: M2 研究計画は Notion ページ（社内）に存在。本リポジトリの §15.4 が研究計画への波及項目を集約しているので、計画書を更新する際の参照点とする。
+- **失敗実験の保存**: `experiments/_smoke_prior/` `experiments/baselines/_wrong_split_8_2_3/` `experiments/phase0/_failed_s3_weighted/` は過去の失敗ランの証跡。**消さずに残す**（研究 integrity の物理証拠、M2研究計画 §15 参照）。
+- **研究計画との整合**: M2研究計画は Notion ページ（社内）に存在。同計画 §15.4 が研究計画への波及項目を集約しているので、計画書を更新する際の参照点とする。
 
 ### 基本依存（requirements.txt）
 
@@ -347,7 +350,7 @@ egosurgery_multitask/
 - `utils/` — seed 固定・チェックポイント・**実験管理（ExperimentManager）**
 - `analysis/` — 埋め込み・失敗事例・注意マップ・ロングテール解析
 
-### `experiments/` の 6 カテゴリ
+### `ExperimentManager` が生成する `experiments/` の 6 カテゴリ
 
 `baselines/` `phase0/` `phase1/` `ablations/` `transfer/` `final/` の 6 つ。
 個別の実験フォルダは手作業で作らず、`ExperimentManager` が実行時に自動生成する。
@@ -404,12 +407,15 @@ make tables  # 論文用テーブルの書き出し
 
 実装済みファイル:
 
+以下の `§15.x` 表記は README 内の節ではなく、Notion 上の「M2研究計画」を指す。
+
 | ファイル | 役割 |
 |---|---|
 | `src/egosurgery/utils/seed.py` | 全乱数生成器の seed 固定 |
 | `src/egosurgery/utils/git_utils.py` | git commit hash の取得・保存 |
 | `src/egosurgery/utils/experiment_id.py` | 連番付き実験 ID の採番 |
-| `src/egosurgery/utils/experiment_manager.py` | 実験フォルダ・証拠ファイルの自動生成（§14 対応で `server.txt` を併記、`log_eval_recipe()` で metrics.json に eval_recipe を併記） |
+| `src/egosurgery/utils/experiment_manager.py` | 実験フォルダ・必須証跡の生成と終了処理（`server.txt`、eval recipe、証跡限定 auto-sync） |
+| `src/egosurgery/utils/git_autosync.py` | `exp/*` 上の証跡だけを安全検査して commit / deploy key push（秘密・5 MiB 超・対象外パスを拒否） |
 | `src/egosurgery/utils/eval_recipe.py` | locked-down test_cfg / 論文公式 split サイズ / `build_eval_recipe()`（§15.3 G1） |
 | `src/egosurgery/utils/server_name.py` | 実行サーバー名の単一情報源（環境変数 → cfg → hostname の優先順位） |
 | `src/egosurgery/utils/logging.py` | `ExperimentLogger` — W&B + ローカルの二重ロギング（W&B 不在時はフォールバック） |
@@ -425,18 +431,26 @@ make tables  # 論文用テーブルの書き出し
 動作確認:
 
 ```bash
-# 統合テスト（5 ケース全パス）
-PYTHONPATH=src pytest tests/test_pipeline.py -v
+# 統合テスト
+PYTHONPATH=src .venv/bin/python -m pytest tests/test_pipeline.py -v
 
 # ダミー学習の実行 — experiments/baselines/s0_001_tool_baseline_seed42/ を自動生成
-PYTHONPATH=src python -m egosurgery.train \
+PYTHONPATH=src .venv/bin/python -m egosurgery.train \
     stage=s0_tool_baseline seed=42 train.epochs=2 logging.wandb_enabled=false
 ```
 
 学習後、実験フォルダには `config.yaml` / `command.sh` / `git_commit.txt` /
 `metrics.json`（per-class AP の集約・Δ 計算枠を含む）/ `per_class_ap.json`（15 クラス）/
 `notes.md` と `logs/` `checkpoints/` `predictions/` `visualizations/` が自動保存される。
+さらに実行ホストを `server.txt` に保存する。
 同一ステップで再実行すると連番が `s0_002_...` と自動で進む。
+
+学習終了時の `ExperimentManager.finalize()` は、この実験ディレクトリと
+`docs/experiment_log.md` だけを commit 対象にする。実 push は `exp/*` ブランチかつ
+ホスト別 deploy key がある場合に限られ、秘密らしい内容、5 MiB 超の単一ファイル、
+対象外パスを検出すると安全側に停止する。`EGOSURGERY_AUTOSYNC=0` で無効化でき、
+同期失敗は学習結果を失敗扱いにせず `~/claude-sync/sync-alerts.log` に残す。
+`scripts/train_t1b.py` も非スモーク実行の終了時に同等の auto-sync を行う。
 
 ### フェーズ II Part 1（データパイプライン）— 完了
 
@@ -502,9 +516,11 @@ S0（術具検出ベースライン）の評価指標・トレーナー・実行
 （train 7427 / val 2230 / test 4265 枚、val は train から 2 動画を hold-out）と
 `data/splits/ego_*.txt` を生成済み。`datasets/constants.py` は実データの
 正しい 15 クラスへ更新済み。
+この 2230 枚は当時の hold-out split で、後続の T1b 評価に使う公式 val 1515 枚とは
+評価集合が異なるため、両者の数値は直接比較しない。
 
 ```bash
-PYTHONPATH=src pytest tests/ -v          # 全 23 テストパス
+PYTHONPATH=src pytest tests/ -v          # 当時の全 23 テストがパス
 # S0 6 実験（実検出器・GPU 実学習）— mmdet で COCO 重みから fine-tune:
 bash scripts/run_s0.sh
 # スモーク（内蔵 SimpleDetectionHead・小データ・1 epoch）:
@@ -550,7 +566,7 @@ VFNet seed42 を test split で post-hoc 評価: **test mAP 0.388 / test AP_rare
 - 数値捏造はせず実測値で記録（CLAUDE.md「研究インテグリティ」厳守）。
 - 他 8 判定は達成: #1 完走 / #2 命名通り存在 / #3 証拠ファイル一式 / #5 Mask DINO 計測
   / #6 15 クラス per-class AP / #7 3 seed 統計算出可能 / #8 W&B 記録（1500+ uploads/run）
-  / #9 pytest 28/28 パス。
+  / #9 当時の pytest 28/28 パス。
 
 ### フェーズ II Part 4（S2 手検出 + S3 工程認識）— 実装完了 / 一部判定未達
 
@@ -592,7 +608,7 @@ S3 は検出器とデカップル設計のため判定 #2 後半「tool mAP の 
 - #2 hand mAP>65 & tool mAP S0±1pt → ✗（上記）
 - #3 S3 3 experiments saved → ✓
 - #4 Phase 指標 metrics.json 記録 + loss 減少 → ✓（loss 1.39→0.97 全 seed）
-- #5 `pytest tests/ -v` 28/28 → ✓
+- #5 当時の `pytest tests/ -v` 28/28 → ✓
 
 ### 未実装（フェーズ II Part 5 以降）
 
@@ -811,7 +827,7 @@ REPORT §5 #3 推奨「時系列 region-token 強化」の最小実装。T1a bas
 
 **新規実装**:
 - `scripts/train_t1a.py`: `--description` 引数追加（既存パラメータで容量制御）
-- `scripts/run_t1a_deep_seeds.sh`: 3-seed 並列実行（.env source 込み・自動投稿対応）
+- `scripts/run_t1a_deep_seeds.sh`: 3-seed 並列実行（`load_env.sh` による認証ロード込み・自動投稿対応）
 
 **証跡**: `experiments/transfer/t1a_deep_3s10l96f_{001,002,003}_*/{metrics.json,notes.md,checkpoints/best_tecno.pth}` / Notion 実験 Run台帳 3 件 + 意思決定ログ「T1a-Deep（時系列容量拡張）3-seed 結果: 容量拡張は寄与なし」(38bee4d4-7777-819a-8c6b-e6c6efa7e177)。
 
@@ -945,7 +961,7 @@ STEP C 改善提案 §8「boundary modeling で T1a の edit-score を改善」�
 
 ### 2026-06-23 Notion 連携 — 全 5 DB 共有完了・STEP B/C を全件反映
 
-REST Integration トークン（`.env` の `NOTION_API_KEY`）に **全 5 DB（run_ledger / decision_log / lessons / procedure_docs / prompt_library）が共有済み**。
+REST Integration トークン（`.env.gpg` からロードする `NOTION_API_KEY`）に **全 5 DB（run_ledger / decision_log / lessons / procedure_docs / prompt_library）が共有済み**。
 `notion_ops.log_decision` / `log_lesson` も REST で正常に動作する（2026-06-23 確認）。
 
 - **実験Run台帳**: STEP B 17 件 + T1b-CA 6 件 = **計 23 件を Notion へ投稿**（冪等 upsert）。
@@ -1028,16 +1044,40 @@ per_class_ap.json（Relation-DETR / AlignDETR 各 3-seed・score_thr=0.0 NMS-fre
 
 研究サーバー 11 台（he / adam / hinton / lecun / efros / bengio / ian / andrew /
 dlsta / ilya / philip）でこのリポジトリは **2 層で自動同期**されている。
-セットアップ・運用・障害対応の詳細は `~/slocal2/sync/m2-sync-setup.md`（リポジトリ外）を参照。
+日常運用、状態確認、停止条件、復旧の正本は [`OPERATION.md`](OPERATION.md)、
+新規ホストの設定は [`docs/host_autosync_onboarding.md`](docs/host_autosync_onboarding.md) を参照。
 
 ### 層1: git 管理ファイル（コード・設定・ドキュメント）
 
-- 各サーバーの常駐 `keeper` が **30 分毎に `origin/phase0` を自動 fetch** する
-  （GitHub private `takuya3h/m2` がハブ。fetch は読み取り専用 PAT、push は Mac の
-  agent forwarding 経由の ssh）。
-- 運用は **1 サーバー = 1 ブランチ**（`exp/<サーバー名>-<テーマ>`）。統合の幹は `phase0`。
-  phase0 の更新を取り込むときは各自のブランチ上で `git merge phase0`。
-- ホスト名とブランチ名の対応（2026-08-04 時点）:
+通常のライフサイクルは次のとおり。
+
+1. trainer 終了時に `ExperimentManager.finalize()` が必須証跡を限定 commit / push する。
+2. 常駐 `keeper` の `m2-sync.sh` または GitHub Actions が、`exp/*` から `phase0` への
+   Draft PR を既存 PR と重複しないよう作成する。
+3. 人が差分を確認して Draft を解除し、その PR の auto-merge を有効にする。
+4. 必須チェックと保護規則を満たすと、GitHub が **merge commit** 方式で `phase0` へ統合する
+   （squash merge は使わない）。リポジトリの auto-merge 機能は設定済み。
+5. 各サーバーの `keeper` が約 30 分ごとに fetch し、追跡対象が clean、未追跡 blocker なし、
+   `origin/phase0` より behind の場合に限って作業ブランチへ自動 merge する。
+   conflict 時は merge を abort してログへ残し、自動解決しない。既存の ahead commit は
+   現在ブランチが remote 登録済みなら自動 push する。
+
+安全境界:
+
+- trainer 側 auto-sync は `exp/*` とホスト別 deploy key が前提で、実験ディレクトリと
+  `docs/experiment_log.md` 以外を stage しない。force-push は行わない。
+- keeper は通常変更を新規 commit せず、削除・force-push・conflict の自動解決を行わない。
+  ただし手元で作った commit は自動 push の対象になり得るため、WIP を安易に commit しない。
+- fetch は GitHub の SSH remote、各ホストからの push は各ホスト専用 deploy key を使う。
+  サーバー共通 PAT と Mac の agent forwarding は使わない。
+- GitHub Actions の Draft PR 作成だけは repository secret `AUTOSYNC_PR_TOKEN` を使う。
+- 同期異常は `~/claude-sync/sync-alerts.log` と `journalctl --user -u keeper` で確認する。
+- `runindex/` は `ilya` だけが手動更新し、その後は同じ PR / auto-merge 経路で全台へ配る。
+
+運用は **1 サーバー = 1 ブランチ**（`exp/<サーバー名>-<テーマ>`）、統合の幹は `phase0`。
+論理サーバー名は小文字を標準とするが、以下の既存 remote branch 名は作成時の大小文字と
+`dlstation` 接頭辞をそのまま保持する。
+ホスト名とブランチ名の対応（2026-08-04 時点）:
   `lecun` / `efros` / `philip` / `Andrew` / `Bengio` は `exp/<名前>-wip-20260703`、
   `ilya` は `exp/ilya-wip-20260804`（`exp/aolab-wip-20260703` は
   `hostname=aolab` 由来の旧名で、2026-08-04 以降は使わない）、
@@ -1048,13 +1088,13 @@ dlsta / ilya / philip）でこのリポジトリは **2 層で自動同期**さ�
 `hostname` はコンテナ由来で実サーバー名と一致しない。**philip と ilya はどちらも
 `hostname=aolab`** を返す。しかも hostname 自体はコンテナ内から変更できない
 （`sethostname(2)` に CAP_SYS_ADMIN が要るが、バウンディングセットから落ちているため
-root でも不可）。そのためサーバー名は環境変数 `SERVERNAME` を単一情報源とする。
+root でも不可）。そのため論理サーバー名を明示的に設定する。
 
 - Python: `egosurgery.utils.server_name.resolve_server_name()`
   （`SERVERNAME` → `EGOSURGERY_SERVER_NAME` → Hydra `logging.server_name` → hostname）
-- shell: `"${SERVERNAME:-$(hostname)}"`。`SERVER_NAME`（アンダースコア有）は別変数なので注意。
-- 各サーバーの `~/.zshrc` で `export SERVERNAME=<名前>` する。未設定なら hostname に
-  フォールバックするため、既存ノードの動作は壊れない。
+- `m2-sync.sh`: `SERVERNAME` → リポジトリ直下 `.servername` → hostname
+- 新規ホストでは login shell と systemd の両方で解決できるよう、`.profile` / `.zshenv` と
+  `.servername` を設定する。`SERVER_NAME`（アンダースコア有）は別変数なので注意。
 
 同期アラート（`~/claude-sync/sync-alerts.log`）の発信元表記もこの規則に従う。
 
@@ -1083,9 +1123,9 @@ root でも不可）。そのためサーバー名は環境変数 `SERVERNAME` �
 - `wandb/`（クラウドに記録済み）
 - 退避フォルダ `experiments/baselines/_*`・`experiments/phase0/_*`（ローカル証跡）
 
-**ルールの変更方法:** リポジトリ直下の `.stglobalignore` を phase0 上で編集して
-commit & push すると、各サーバーの keeper が 30 分以内に `$M2DIR/.stignore` へ
-自動反映する（`.stignore` 自体は編集しない。先にマッチした行が勝つ構文に注意）。
+**ルールの変更方法:** リポジトリ直下の `.stglobalignore` を作業ブランチで編集・commit し、
+通常の PR / auto-merge 経路で `phase0` へ統合する。各サーバーの keeper が 30 分以内に
+`$M2DIR/.stignore` へ自動反映する（`.stignore` 自体は編集しない。先にマッチした行が勝つ構文に注意）。
 
 ---
 
@@ -1162,6 +1202,9 @@ best predictions は init の複製として必ず出力する（init ckpt 自�
 
 ## 主要ドキュメント
 
+- [`OPERATION.md`](OPERATION.md) — 実験証跡の自動同期、Draft PR、auto-merge、keeper の運用正本
+- [`docs/host_autosync_onboarding.md`](docs/host_autosync_onboarding.md) — 新規ホストの auto-sync 導入手順
+- [`runindex/README.md`](runindex/README.md) — `ilya` を単一 writer とする実験 run index の規約
 - [`docs/experiment_log.md`](docs/experiment_log.md) — 全実験の「仮説→実験→結果→解釈→次」記録
 - [`docs/idea_log.md`](docs/idea_log.md) — アイデアログ
 - [`docs/decision_log.md`](docs/decision_log.md) — 設計判断の記録
@@ -1171,16 +1214,142 @@ best predictions は init の複製として必ず出力する（init ckpt 自�
 - [`experiments/analysis/step_c_coupling_analysis/REPORT.md`](experiments/analysis/step_c_coupling_analysis/REPORT.md) — STEP C 本編（val・27 §）: 結合機構の解明・実証・最良結合法の設計
 - [`experiments/analysis/step_c_coupling_analysis/TEST_EVAL_REPORT.md`](experiments/analysis/step_c_coupling_analysis/TEST_EVAL_REPORT.md) — STEP C test split 確証: 方向非対称は本番データで保たれるか
 
-### TASK 契約システム（2026-08-05）
+## TASK 契約システム
 
-Claude アプリ等の作業依頼を `tasks/<task_id>/spec.yaml` として受け渡す契約基盤を実装した。
+Claude アプリ、CLI、人が起票した作業依頼を、会話だけでなく
+`tasks/<task_id>/spec.yaml` という**機械検証可能な契約**で受け渡す仕組み。
+実装・実験・解析の目的、入力、禁止事項、実行順、成果物、受入基準、
+人に判断を戻す条件を実行前に固定し、指示と結果を `task_id` で追跡する。
+運用の正本は [`tasks/README.md`](tasks/README.md) を参照。
 
-- Draft 2020-12 schema: `tasks/_schema/spec.schema.json`
-- L1/L2 validator: `tools/validate_task.py`
-- 実行: `make task-validate`、個別指定は `TASK=<task_id>`
-- 規約の逐語供給源: `context/conventions.md`
-- 起票テンプレート: `tasks/_templates/{exp,impl,analysis}/`
-- Claude CLI skill: `.claude/skills/task/SKILL.md`
+### 何を防ぐ仕組みか
 
-自己契約 `T-2026-08-03-task-contract-bootstrap` はL1+L2検証を通過済み。
-詳細な検証結果と既知の未達は同taskの `RESULT.md` を参照する。
+- 分母、split、sigma 規約などを会話へ転記して古くする
+- 同名 run や複数ブランチ間で参照先を取り違える
+- 結果を見た後で仮説・判定基準を書き換える
+- agent が未回答の研究判断を推測して GPU 実験を開始する
+- 指示から逸脱したのに、結果報告へ記録が残らない
+
+このため、数値の直書きではなく `exp:<group>/<experiment_id>`、
+凍結源は `run:<group>/<run_name>`、規約は `conventions#<anchor>` で参照する。
+commit 後の契約は上書きせず、変更理由を `meta.amendments` へ追記する。
+
+### ディレクトリと task 種別
+
+```text
+tasks/<task_id>/
+├── spec.yaml   # 機械可読の契約。validator の入力
+├── SPEC.md     # 人が読む背景・手順・完了判定
+├── prereg.md   # kind=exp のみ。学習開始前に commit
+└── RESULT.md   # 解決結果、成果物、受入判定、逸脱、申し送り
+```
+
+`task_id` は `T-YYYY-MM-DD-<slug>`。slug は英小文字・数字・ハイフンのみで
+3〜60文字とし、並行ブランチで衝突する連番は使わない。
+
+| `meta.kind` | 用途 | 追加契約・完了条件 |
+|---|---|---|
+| `impl` | コード・ツール・文書の実装 | `outputs.acceptance` を満たし、テストと commit が完了 |
+| `exp` | GPU 学習・評価 | `prereg`、分母、expected runs、task_id stamp が必須。runindex に task_id 付きで現れるまで |
+| `analysis` | 集計・レポート作成 | 指定先にレポートがあり、すべての数値を実測へ遡れるまで |
+
+起票元は [`tasks/_templates/`](tasks/_templates/) の `impl` / `exp` / `analysis`。
+各テンプレートには `spec.yaml`、`SPEC.md`、`RESULT.md` がある。`kind: exp` は
+これらに加えて `prereg.md` を起票時に作り、学習開始前に commit する。
+現行の `tasks/_templates/exp/` には `prereg.md` が未同梱なので、コピー後に別途作成が必要。
+機械判定の正本は `spec.yaml` の `prereg`、`prereg.md` は同内容を人が確認するための文書とし、
+両者を一致させる。現行 validator は両者の一致を自動検査しない。
+
+### `spec.yaml` の構成
+
+Schema は JSON Schema Draft 2020-12 の
+[`tasks/_schema/spec.schema.json`](tasks/_schema/spec.schema.json)。
+未定義キーは拒否され、トップレベルでは次を契約する。
+
+| セクション | 内容 |
+|---|---|
+| `meta` | task_id、kind、起票元、起票時刻、runindex commit・行数、依存・改訂履歴 |
+| `intent` | 答える問い、判断対象、仮説、関連する決定・教訓・backlog |
+| `inputs` | 分母、sigma policy、凍結源、split、cache、実行 entrypoint |
+| `contract` | 逐語注入する規約、規約 revision、禁止事項、数値直書き禁止 |
+| `plan` | phase、gate、venv、preflight、GPU資源、並列 wave |
+| `prereg` | `exp` の事前予測、primary endpoint、判定規則、停止条件、事前 commit |
+| `outputs` | 必須成果物、保存先、run 数、task_id stamp、受入基準、報告先 |
+| `governance` | 人が答える判断、逸脱記録、研究 integrity、escalation 条件 |
+
+`contract.inject_verbatim` の供給源は
+[`context/conventions.md`](context/conventions.md)。split、評価 recipe、凍結源、
+sigma、禁止事項、venv、命名規則をアンカー単位で実行直前に読み、要約せず注入する。
+spec が `inputs.sigma_policy` を省略した場合は同文書の `conventions#sigma` を継承する。
+
+### L1 / L2 / L3 検証
+
+| 層 | 実行主体 | 主な検査 | 失敗時 |
+|---|---|---|---|
+| L1 | `tools/validate_task.py` | Schema、task_id とディレクトリ名、半角パイプ、名前空間、禁止された数値直書き | `FAIL`、exit 1 |
+| L2 | `tools/validate_task.py` | task_id の履歴衝突、規約アンカー、split・entrypoint・cache の実在、runindex 分母、seed 数、sigma 整合 | `FAIL`、exit 1 |
+| L3 | `/task` を実行する Claude CLI、または同手順を実施する agent / 人 | venv、CUDA 拡張、決定性、prereg の時系列、未回答判断、出力先権限 | 1件でも赤なら GPU 実行前に停止 |
+
+L2 では、起票後に `context/conventions.md` が変わった場合を `L2-6`、
+runindex の母集団件数が動いた場合を `L2-8` として `WARN` する。
+WARN 単独では validator の exit code は 0 だが、`/task` 実行時は内容を提示して
+続行可否を人に確認する。手動実行でも同じで、WARN は人の明示判断まで停止する。
+現在の Python validator が自動化するのは L1/L2 までで、
+L3、凍結 checkpoint の SHA-256 照合、実行、`RESULT.md` 記入は `/task` 手順の責務。
+
+### 標準ライフサイクル
+
+1. 作業種別に合う `tasks/_templates/<kind>/` を
+   `tasks/T-YYYY-MM-DD-<slug>/` へコピーする。
+2. `spec.yaml` と `SPEC.md` を埋める。起票時点の runindex commit と3 CSVの行数を
+   `meta.created_from` に記録し、参照には必ず名前空間を付ける。
+3. `kind: exp` は予測・primary endpoint・判定規則・停止条件を `prereg` /
+   `prereg.md` に書き、**学習開始前に commit** する。
+4. L1、続いて L2 を実行する。FAIL は推測で直さず、契約の起票者へ戻す。
+5. Claude CLI では `/task T-YYYY-MM-DD-slug` を使う。他の agent は
+   `.claude/skills/task/SKILL.md` と `tasks/README.md` の同じ順序を手動で守る。
+6. phase を順番に実行し、各 gate の `stop` / `ask` / `skip` に従う。
+   `governance.decisions_required` が未回答なら agent は自分で決めない。
+7. 成果物へ `outputs.stamp.task_id_in` の task_id を刻み、指示書と run を結ぶ。
+8. `RESULT.md` に参照解決、gate、成果物、受入判定、未解決事項、数値の出所を記録する。
+   `deviations` は必須で、逸脱が無い場合も「なし」と明記して commit する。
+
+### 検証コマンド
+
+```bash
+# 例: impl task を起票（TASK_ID は実際の値へ置き換える）
+TASK_ID=T-2026-08-05-example-task
+cp -R tasks/_templates/impl "tasks/$TASK_ID"
+
+# 全 task を L2 まで検証（既定）
+make task-validate
+
+# 1 task のみ
+make task-validate TASK=T-2026-08-03-task-contract-bootstrap
+
+# 起票直後の L1 のみ
+make task-validate TASK=T-2026-08-03-task-contract-bootstrap LEVEL=l1
+
+# validator 自体の回帰テスト
+.venv/bin/python -m pytest tests/test_validate_task.py -q
+```
+
+validator は `tasks/` 直下の `_` で始まらないディレクトリを対象とし、
+`spec.yaml` が無いものは `SKIP` する。最終行の `N task(s), M failed` と
+プロセスの exit code を両方確認する。現行 validator は `SPEC.md` / `prereg.md` /
+`RESULT.md` の存在自体は検査しないため、実行者がライフサイクル上で確認する。
+`RESULT.md` の判定欄は現行テンプレート上 `PASS` / `FAIL` / `PARTIAL` だが、
+その選択自体も validator は判定しない。上記 kind 別の完了条件と全受入基準を満たす場合だけ
+`PASS` とし、未達があれば `PARTIAL` または `FAIL` の理由を本文に残す。
+
+### 現在の実装状態と既知の制約（2026-08-05）
+
+自己契約 [`T-2026-08-03-task-contract-bootstrap`](tasks/T-2026-08-03-task-contract-bootstrap/)
+は、現在の専用テストで **11 passed**、L1/L2 で **1 task、0 failed**。
+一方、同 task の [`RESULT.md`](tasks/T-2026-08-03-task-contract-bootstrap/RESULT.md) は
+ブートストラップ時点の全回帰テスト失敗と既存未追跡成果物を明示して `PARTIAL` 判定のまま残す。
+これは履歴証跡なので成功へ書き換えない。
+
+また、`context/conventions.md` では Relation-DETR 凍結源 checkpoint の正本 SHA-256 と
+`select_box_nums_for_evaluation` の転記元が `UNKNOWN`。該当する `exp` task は
+実行時に実ファイルから SHA-256 を記録し、未確定値を推測で補完してはならない。

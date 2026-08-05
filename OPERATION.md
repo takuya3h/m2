@@ -1,4 +1,4 @@
-# 実験運用の手引き（2026-08-05 版）
+# 実験運用の手引き（2026-08-05 auto-sync 反映版）
 
 本ドキュメントは 2026-08-02〜05 の全サーバー同期作業で確定した運用を記録する。
 `README.md` のサーバー間同期セクションと重複する部分があるが、
@@ -12,15 +12,32 @@
 
 | 層 | 対象 | 経路 | 到達時間 | 人手 |
 |---|---|---|---|:--:|
-| **Syncthing** | `checkpoints/` `logs/` `predictions/` `visualizations/` `*.pth` `*.pt` `*.npy` | 自動（星型・中心 philip） | **28 秒**（2026-08-04 実測・全 10 台） | **0** |
-| **git** | 6 点証跡・コード・設定・`runindex/` | commit → push → PR → phase0 → 各台が merge | 人間の作業次第 | **3 段階** |
+| **Syncthing** | `checkpoints/` `logs/` `predictions/` `visualizations/` `*.pth` `*.pt` `*.npy` | 自動（星型・中心 philip） | **28 秒**（2026-08-04 実測・philip から他 10 台） | **0** |
+| **git** | 6 点必須証跡 + `server.txt`・コード・設定・`runindex/` | 限定 commit/push → Draft PR → review → GitHub auto-merge → 各台が取り込み | 通常 30 分以内（review 後） | **PR ごとに review** |
 | どちらでもない | `.git` `.env` `data/raw` `wandb` `third_party` `data/hts_reconstruction` | — | — | — |
 
 `.stignore`（各台）は `.stglobalignore`（phase0）から keeper が 30 分以内に自動反映する。
 **2026-08-04 の伝播テストで、11 台すべてで正しく効いていることを確認済み**
-（git 管理の 4 証跡は Syncthing で配られなかった）。
+（git 管理の証跡は Syncthing で配られなかった）。
 
-### 6 点証跡（`ExperimentManager` が自動生成）
+`logs/` は原則 Syncthing 対象だが、`.gitignore` で明示許可した小さな評価証跡
+（例: `logs/val_metrics_by_epoch.json`）だけは git にも載る。
+
+git 側の自動化は二つに分かれる。
+
+- `ExperimentManager.finalize()` / 配線済み ad-hoc trainer:
+  完了 run の証跡ディレクトリだけを auto-commit + auto-push
+- keeper が 30 分ごとに実行する `m2-sync.sh`:
+  `phase0` の取り込み、既存 commit の auto-push、Draft PR の自動起票
+
+🔴 `m2-sync.sh` は新しい commit を作らない。実験完了フック未配線のスクリプト、
+途中終了した run、ガードで skip/abort された run は人手で確認する。
+
+本書では、`m2-sync.sh` が `origin/phase0` を作業ブランチへ取り込む処理を
+「作業ブランチ auto-merge」、GitHub が PR を `phase0` へ統合する処理を
+「GitHub auto-merge」と呼び分ける。
+
+### 6 点必須証跡 + 実行ホスト（`ExperimentManager` が自動生成）
 
 ```
 experiments/<group>/<step>_<seq>_<desc>_seed<N>/
@@ -29,8 +46,8 @@ experiments/<group>/<step>_<seq>_<desc>_seed<N>/
   ├ command.sh         実行コマンド
   ├ git_commit.txt     commit hash
   ├ per_class_ap.json  クラス別の値
-  ├ notes.md           人手のメモ
-  └ server.txt         実行ホスト（SERVERNAME から）
+  ├ notes.md           ファイルは自動生成、内容は必要時に人手追記
+  └ server.txt         追加証跡: 実行ホスト（SERVERNAME から）
 ```
 
 ---
@@ -39,13 +56,15 @@ experiments/<group>/<step>_<seq>_<desc>_seed<N>/
 
 | ブランチ | 用途 | 誰が |
 |---|---|---|
-| **`phase0`** | **統合の幹。保護ブランチ**（PR が唯一の経路・`enforce_admins: true`） | 統合時のみ |
+| **`phase0`** | **統合の幹。保護ブランチ**（PR が唯一の経路・`enforce_admins: true`・auto-merge 設定済み） | GitHub が統合 |
 | `exp/<サーバー名>-wip-<日付>` | **各サーバーの定位置。常にここにいる** | そのサーバー |
 | `chore/*` `feat/*` | 一時作業（PR 用）。マージ後に削除 | 必要時 |
 | `master` `docs/plan-rewrite-2026-06` | 歴史的記録。触らない | — |
 
-**`exp/*` は実験ごとに切らない。消さない。** そのサーバーは常に同じブランチにいる。
+**`exp/*` は実験ごとに切らない。消さない。** 実験実行時は、そのサーバーの
+定位置ブランチを使う。`chore/*` / `feat/*` はコード・文書作業中だけの例外。
 日付は「ブランチを作った日」で、実験の日付ではない。
+既存ブランチ名は歴史的な大小文字を含むため、推測せず下表を正とする。
 
 ### ホスト名とブランチの対応（2026-08-05 時点）
 
@@ -76,75 +95,156 @@ experiments/<group>/<step>_<seq>_<desc>_seed<N>/
 | # | 段階 | 誰が | 自動 |
 |:--:|---|---|:--:|
 | 1 | 実験の実行 | Claude Code に依頼 | — |
-| 2 | 6 点証跡の生成 | `ExperimentManager` | **自動** |
-| 3 | `checkpoints` / `logs` が全台へ | Syncthing | **自動（28 秒）** |
-| 4 | **commit** | **あなた** | — |
-| 5 | **push** | **あなた** | — 🔴 飛ばすと消失リスク |
-| 6 | **PR 作成** | **あなた** | — |
-| 7 | **PR マージ** | **あなた（Web UI）** | — |
-| 8 | **`make runindex`** | **ilya でのみ** → PR → マージ | — |
-| 9 | 各台が取り込み | MacBook から一括 | — |
+| 2 | 6 点必須証跡 + `server.txt` の生成 | `ExperimentManager` | **自動** |
+| 3 | 証跡限定 commit + push | `git_autosync` | **自動（条件成立時）** |
+| 4 | `checkpoints` / `logs` が全台へ | Syncthing | **自動（28 秒）** |
+| 5 | Draft PR 作成 | `m2-sync.sh` または GitHub Actions | **自動** |
+| 6 | 内容確認・Draft 解除・auto-merge 有効化 | **あなた** | review gate |
+| 7 | `phase0` へ merge commit | GitHub | **自動** |
+| 8 | **`make runindex`** | **ilya でのみ** → 5〜7 をもう一度実行 | — |
+| 9 | 更新済み `phase0` を各台が取り込み | keeper / `m2-sync.sh` | **自動（30 分ごと）** |
 | 10 | 分析 | Claude Desktop が raw URL から読む | — |
 
-### 4〜5（commit と push）
+### 3（証跡の auto-commit + auto-push）
 
-    cd /home/ubuntu/slocal2/m2
-    git status --porcelain experiments/ | head
+通常の trainer は完了時に `ExperimentManager.finalize()` を呼ぶ。
+`train_t1b.py` も非 smoke run の完了時に同等のフックを直接呼ぶ。
+自動化が実際に動く条件は次のとおり。
 
-    # 🔴 git add -A を使わない。パス明示 + --dry-run で実測
-    git add --dry-run experiments/<group>/<run>
-    du -sh experiments/<group>/<run>
+- 現在ブランチが `exp/*`
+- ホスト別 deploy key の push 設定が存在する
+- run の証跡ディレクトリに差分がある
+- secret path/content scan を通過し、stage 対象に 5 MiB 超のファイルがない
 
-    git add experiments/<group>/<run>
+stage 対象はその run の証跡ディレクトリに限定される。`git add -A` は使わず、
+非 fast-forward 時も force-push しない。失敗は学習を止めず、
+`~/claude-sync/sync-alerts.log` に残る。
+
+完了後の確認:
+
     git status --short
-    git commit -m "exp(<step>): <一行で内容>"
-    git push origin $(git branch --show-current)
+    git log -1 --format='%h %s'
+    tail -20 ~/claude-sync/sync-alerts.log
 
-### 6〜7（PR）
+`EGOSURGERY_AUTOSYNC=0`、`exp/*` 外、deploy key 未設定、smoke run、
+未配線 ad-hoc trainer では自動 commit されない。
 
-    gh pr list --head $(git branch --show-current) --state open   # 重複を先に確認
-    gh pr create --base phase0 --head $(git branch --show-current) \
-      --title "..." --body "..."
+### auto-sync が働かなかった場合の再実行
 
-マージは GitHub Web UI で **Create a merge commit**（Squash は使わない）。
+手動の `git add` で安全ガードを迂回しない。同じ `git_autosync` CLI を使う。
+実在する値を `RUN` / `STEP` / `DESC` / `SEED` に設定してから実行する。
+
+    (
+      set -eu
+      : "${RUN:?set RUN to the evidence directory}"
+      : "${STEP:?set STEP}"
+      : "${DESC:?set DESC}"
+      : "${SEED:?set SEED}"
+      test -d "$RUN"
+      test -n "$(git branch --show-current)"
+      OUT=$(.venv/bin/python src/egosurgery/utils/git_autosync.py "$RUN" \
+        --repo-root "$PWD" --step "$STEP" --description "$DESC" --seed "$SEED")
+      printf '%s\n' "$OUT"
+      case "$OUT" in
+        *"ok=True action=pushed"*) ;;
+        *) echo "STOP: auto-sync did not push; inspect sync-alerts.log" >&2; exit 1 ;;
+      esac
+    )
+
+この CLI は sync 失敗でもプロセス自体は exit 0 にするため、`action=pushed` の確認が必須。
+すでに commit 済みなら keeper の次回 auto-push を待つ。
+
+### 5〜7（Draft PR → review → GitHub auto-merge）
+
+keeper から呼ばれる `m2-sync.sh` は 30 分ごと、GitHub Actions は `exp/**` への
+push ごとに、open PR がなければ `phase0` 向け Draft PR を起票する。
+先に成功した側の PR を使い、もう一方は既存 PR を検出して何もしない。
+`m2-sync.sh` の失敗は `sync-alerts.log`、Actions の失敗は GitHub Actions 画面で確認する。
+
+    (
+      set -eu
+      BR=$(git branch --show-current)
+      test -n "$BR"
+      PR=$(gh pr list --head "$BR" --base phase0 --state open --json number --jq '.[0].number')
+      if [ -z "$PR" ]; then
+        echo "STOP: Draft PR 未作成。Actions または次の keeper loop を確認" >&2
+        exit 1
+      fi
+      IS_DRAFT=$(gh pr view "$PR" --json isDraft --jq .isDraft)
+      if [ "$IS_DRAFT" = "true" ]; then
+        gh pr ready "$PR"
+      fi
+      gh pr merge --auto --merge "$PR"
+    )
+
+リポジトリの auto-merge は設定済み。人手の責務は、数値と証跡をレビューし、
+Draft を解除して PR ごとの auto-merge を有効にするところまで。
+統合方式は **merge commit**（`--merge`）とし、Squash は使わない。
+すでに auto-merge が有効な PR では最後のコマンドは不要。
+
+review では、必須証跡の存在、数値が `metrics.json` / `per_class_ap.json` と一致すること、
+秘密・大容量ファイルが混入していないこと、実験条件と研究インテグリティを確認する。
+PR が未作成なら Actions の失敗と `sync-alerts.log` を確認し、次の keeper loop を待つ。
 
 ### 8（runindex の再生成）
 
-🔴 **ilya でのみ実行する。**
+🔴 **関連する実験 PR が `phase0` に揃った後、ilya でのみ実行する。**
 
-    # ilya
-    git fetch origin && git merge origin/phase0
-    make runindex
-    git status --porcelain runindex/
+    (
+      set -e
+      SRV="${SERVERNAME:-}"
+      if [ -z "$SRV" ] && [ -f .servername ]; then SRV=$(sed -n '1p' .servername); fi
+      test "$SRV" = "ilya"
+      test "$(git branch --show-current)" = "exp/ilya-wip-20260804"
+      test -z "$(git status --porcelain)"
+      git fetch -q origin
+      test "$(git rev-list --count HEAD..origin/phase0)" = "0"
 
-    # 冪等性の確認（必須）
-    make runindex && git status --porcelain runindex/ > /tmp/a
-    make runindex && git status --porcelain runindex/ > /tmp/b
-    diff /tmp/a /tmp/b && echo "IDEMPOTENT OK"
+      # git 管理外 metrics.json が 1 件でもあれば harvester 汚染なので停止
+      EXTRA=$(comm -23 \
+        <(find experiments -type f -name metrics.json -print | sort) \
+        <(git ls-files 'experiments/**/metrics.json' | sort))
+      test -z "$EXTRA"
 
-    git add runindex/ && git commit -m "chore(runindex): regenerate"
-    git push origin exp/ilya-wip-20260804
-    # → PR → マージ
+      source .venv/bin/activate
+      make runindex
+      SNAP=$(mktemp -d)
+      cp -a runindex "$SNAP/runindex.first"
+      make runindex
+      diff -qr "$SNAP/runindex.first" runindex
+      echo "IDEMPOTENT OK"
+
+      git add --dry-run -- runindex/
+      git add -- runindex/
+      git diff --cached --stat
+      git commit -m "chore(runindex): regenerate"
+    )
+
+keeper が 30 分以内に auto-push + Draft PR 作成する。急ぐ場合だけ、現在ブランチを
+確認して `git push origin "HEAD:refs/heads/exp/ilya-wip-20260804"`。
+その後は 5〜7（review → Draft 解除 → GitHub auto-merge）をもう一度通し、
+runindex PR の merge 完了を確認してから分析へ進む。
 
 **なぜ ilya か**: harvester は git ではなく**ディスクを走査する**。
 lecun / efros / andrew には git 管理外の退避 run が存在し
 （`.gitignore:143-162` で除外・合計 ~5.6GB）、そこで回すと index が食い違う。
-ilya はディスク 720 = git 追跡 720 で差がゼロ（backlog B-29）。
+2026-08-04 の監査では ilya だけがディスクと git 追跡 run の差ゼロだった
+（`runindex/anomalies/backlog.md` B-29）。上の `EXTRA` 検査で毎回この前提を再確認する。
 
-### 9（全台取り込み）— MacBook から
+### 9（各台への `phase0` 取り込み）
 
-    for h in lecun efros philip ilya bengio andrew he adam hinton ian dlsta; do
-      printf "%-9s " "$h"
-      ssh -o ClearAllForwardings=yes -o BatchMode=yes "$h" '
-        cd ~/slocal2/m2 2>/dev/null || cd ~/slocal/m2
-        git fetch -q origin
-        B=$(git log --oneline HEAD..origin/phase0 | wc -l | tr -d " ")
-        if [ "$B" != "0" ]; then
-          git merge -q origin/phase0 2>&1 | tail -2
-          git push -q origin $(git branch --show-current) 2>/dev/null
-        fi
-        echo "behind=$(git log --oneline HEAD..origin/phase0 | wc -l | tr -d " ")"'
-    done
+keeper が 30 分ごとに `m2-sync.sh` を実行する。作業ブランチに追跡変更がなく、
+未追跡ファイルが取り込みを阻害しなければ、`origin/phase0` を自動 merge し、
+その merge commit も auto-push する。通常は MacBook からの一括 merge は不要。
+
+各ホストでの確認:
+
+    git fetch -q origin
+    git rev-list --count HEAD..origin/phase0
+    tail -20 ~/claude-sync/sync-alerts.log
+
+`behind=0` 相当（上の count が `0`）なら取り込み済み。追跡変更、未追跡阻害、
+merge conflict がある場合は自動操作を止め、アラートを残す。削除や force 操作はしない。
 
 ---
 
@@ -152,73 +252,85 @@ ilya はディスク 720 = git 追跡 720 で差がゼロ（backlog B-29）。
 
 | # | 落とし穴 | 実例 | 対策 |
 |:--:|---|---|---|
-| **1** | **push を飛ばす** | lecun で 72 run（`selection_noise`）が **1 か月未 push**。唯一の実際の消失リスクだった | 実験セット完了ごとに push |
+| **1** | **auto-sync の失敗を見落とす** | lecun で 72 run（`selection_noise`）が **1 か月未 push**。自動化前の唯一の実際の消失リスクだった | 完了後に `git status` と `sync-alerts.log` を確認 |
 | **2** | **`/tmp` を出力先にする** | T1b-FiLM の構造化結果が消失（Bengio 側）。lecun の `/tmp` に原本が残っていたため救出できたが、**再起動していれば永久に失われていた** | 出力先を `experiments/` 配下に |
-| **3** | **`ExperimentManager` を通さない** | Bengio の T1b が直叩きで走り `experiments/` に登録されず、**runindex から見えなかった** | 起動は `ExperimentManager` 経由で |
+| **3** | **`ExperimentManager` / autosync 配線を通さない** | Bengio の T1b が直叩きで走り `experiments/` に登録されず、**runindex から見えなかった** | 原則 `ExperimentManager`、ad-hoc trainer は `git_autosync` を明示配線 |
 | **4** | **`git add -A` / `git add experiments/`** | efros で `*.npz` 414MB、philip で `data/hts_reconstruction/` 599MB がコミット可能な状態だった | パス明示 + `--dry-run` でサイズ確認 |
 | **5** | **他ホストで `make runindex`** | lecun で回すと退避 34 run が解析対象に混入する（B-29） | ilya でのみ |
-| **6** | **証跡の取りこぼし** | lecun で `git_commit.txt` / `server.txt` が 102 件未追跡。`g2_followup` 30 run の `commit` / `host` が runindex 上で全滅していた | commit 時に `git status` を確認 |
+| **6** | **証跡の取りこぼし** | lecun で `git_commit.txt` / `server.txt` が 102 件未追跡。`g2_followup` 30 run の `commit` / `host` が runindex 上で全滅していた | finalize 後と手動 commit 時に `git status` を確認 |
 | **7** | **`third_party` はどこにも乗らない** | git にも Syncthing にも乗らず、philip の 9 fork / efros 31 実装 / lecun 28 / Bengio 22 が各 1 台にしか無かった | 変更したら `third_party_snapshot/<host>/` に保全 |
+| **8** | **Draft のまま待つ** | Draft PR は GitHub auto-merge の対象にならない | review 後に Draft 解除 + PR ごとの auto-merge 有効化 |
 
 ### 未追跡ファイルが merge を止めることがある
 
 Syncthing が配ったファイルと、他ホストが git に回収した同じファイルが
 同じパスを占めると、**git は内容がバイト単位で同一でも上書きを拒否する**。
 
-    # 阻害要因の判定
-    git ls-files --others --exclude-standard | while read -r f; do
-      if git rev-parse "origin/phase0:$f" >/dev/null 2>&1; then
-        [ "$(git hash-object "$f")" = "$(git rev-parse "origin/phase0:$f")" ] \
-          && echo "SAME $f" || echo "DIFF $f"
-      fi
-    done | tee /tmp/ov.txt | awk '{print $1}' | sort | uniq -c
+まず最新 ref を取得し、NUL 区切りで阻害パスと内容一致を**表示だけ**する。
 
-🔴 **`DIFF` が 1 件でもあれば停止**。`SAME` のみなら:
+    git fetch -q origin
+    .venv/bin/python - <<'PY'
+    import os
+    import subprocess
 
-    grep '^SAME ' /tmp/ov.txt | cut -d' ' -f2- > /tmp/same.txt
-    tar czf /tmp/ov_backup.tgz -T /tmp/same.txt      # 必ずバックアップ
-    xargs -a /tmp/same.txt rm -- && git merge origin/phase0
+    def git_bytes(*args: str) -> bytes:
+        return subprocess.check_output(["git", *args])
 
-⚠️ **`rm` と `merge` を `&&` で連結する。** Syncthing が約 40 秒で巻き戻すため
-（lecun の実測では 264ms で完了し先行できる）。
+    untracked = set(git_bytes("ls-files", "-z", "--others", "--exclude-standard").split(b"\0"))
+    incoming = set(git_bytes("ls-tree", "-rz", "--name-only", "origin/phase0").split(b"\0"))
+    for raw in sorted((untracked & incoming) - {b""}):
+        path = os.fsdecode(raw)
+        local = subprocess.check_output(["git", "hash-object", "--", path], text=True).strip()
+        remote = subprocess.check_output(
+            ["git", "rev-parse", f"origin/phase0:{path}"], text=True
+        ).strip()
+        print("SAME" if local == remote else "DIFF", repr(path))
+    PY
 
-### 削除の挙動は「起点」で変わる
-
-| 状況 | 結果 |
-|---|---|
-| **片側だけの削除**（他ホストが原本を保持） | **約 40 秒で巻き戻る** |
-| **同期された削除**（正規の削除操作として発信） | **伝播する。巻き戻らない** |
-
-上の回避策（`&&` 連結）が必要なのは前者のみ。
-実験成果を意図的に削除するときは通常の `rm` でよい。
+🔴 **`DIFF` が 1 件でもあれば停止する。`SAME` のみでも自動削除しない。**
+Syncthing 下の削除は他ホストへ伝播する場合と復元される場合があり、時間差に依存する
+手順は安全保証にならない。削除が必要なら、対象・影響範囲・永続バックアップ・戻し方を
+日本語で提示して明示承認を得た後、個別に処理する。keeper は常に skip のまま保つ。
 
 ---
 
-## 5. 便利なスクリプト（MacBook）
+## 5. 状態確認と障害対応
 
-### 全台の状態確認（読み取り専用）
+旧手順が依存していた MacBook ローカルの一括管理スクリプトはリポジトリ管理外である。
+本書の正規手順や実装根拠にはせず、以下のリポジトリ標準コマンドで確認する。
 
-    ./check_all_hosts.sh
+### 各ホストの非破壊チェック
 
-3 つの表を出す。**「🔴 要確認」に何も出なければ全台正常。**
+`git fetch` はワークツリーを変えないが、remote-tracking ref と `FETCH_HEAD` は更新する。
 
-| 自動検出するもの |
-|---|
-| `phase0` をチェックアウト中（規約違反） |
-| 追跡ファイルの変更が残っている |
-| `index.csv` / backlog の行数が期待と違う |
-| stash が残っている |
-| remote が SSH でない |
-| 非対話シェルで `SERVERNAME` が未設定 |
-| syncthing / keeper が動いていない |
+    (
+      set -e
+      BR=$(git branch --show-current)
+      test -n "$BR"
+      git status --short
+      printf 'branch=%s\n' "$BR"
+      git fetch -q origin
+      printf 'behind_phase0=%s\n' "$(git rev-list --count HEAD..origin/phase0)"
+      if git rev-parse --verify -q "origin/$BR" >/dev/null; then
+        printf 'ahead_remote=%s\n' "$(git rev-list --count "origin/$BR..HEAD")"
+      else
+        echo 'remote_branch=MISSING'
+      fi
+      tail -50 ~/claude-sync/sync-alerts.log
+    )
 
-### 全台の状態を揃える
+確認するもの:
 
-    ./sync_all_hosts.sh              # dry-run
-    ./sync_all_hosts.sh --apply      # 実行
+- 現在ブランチがそのホストの定位置 `exp/*`
+- 追跡変更が残っていない
+- `origin/phase0` に対する behind が `0`
+- remote branch に対する ahead が `0`
+- `auto-merge skip` / `auto-push失敗` / `auto-PR失敗` /
+  `git_autosync aborted` が未解決でない
 
-定位置ブランチへの復帰・`SERVERNAME` の設定・`phase0` の取り込みを行う。
-**追跡ファイルに変更があるホストは skip** し、`DIFF` があれば停止する。
+keeper は衝突、追跡変更、未追跡阻害を検出すると安全側に skip/abort する。
+アラートの原因を解消した後、次の 30 分ループを待つ。削除が必要なケースは
+前節の非破壊診断を行い、`DIFF` があれば停止する。
 
 ---
 
@@ -237,16 +349,35 @@ Syncthing が配ったファイルと、他ホストが git に回収した同�
 
 ### remote
 
-全 11 台が SSH（`git@github.com:takuya3h/m2.git`）。PAT は 2026-08-04 に削除済み。
+fetch remote は SSH（`git@github.com:takuya3h/m2.git`）。
+各ホストの push は `exp/*` 用 deploy key を repo-local の `pushurl` /
+`core.sshCommand` に設定する。サーバーに置かれていた汎用 PAT は 2026-08-04 に削除済み。
+GitHub Actions の Draft PR 起票は、サーバーの PAT ではなく repository secret
+`AUTOSYNC_PR_TOKEN` を使う。
 
 ### keeper / Syncthing
 
-各台で `~/bin/keeper.sh` が 30 分ごとに動く。行うのは以下のみ。
+各台で `~/bin/keeper.sh` が 30 分ごとに動く。現在の役割:
 
-- 作業ブランチ上: `git fetch -q origin phase0:phase0`（ワークツリー不干渉）
+- Syncthing と philip 向け SSH tunnel の死活監視
+- `m2-sync.sh` と `.stignore` の自己更新
 - `phase0` 上: `git merge --ff-only origin/phase0`
+- 作業ブランチ上: clean なら `origin/phase0` を auto-merge
+- remote に登録済みの作業ブランチ: 現在ブランチ上の commit 済み差分を auto-push
+- `phase0` より ahead かつ open PR なし: Draft PR を自動起票
 
-**`commit` / `push` / 作業ブランチ上の `merge` は自動化されていない。**
+`m2-sync.sh` が行わないもの:
+
+- 新しい commit の作成（実験証跡 commit は `git_autosync` の責務）
+- ファイル削除、force-push、conflict の自動解決
+- Draft 解除、研究内容のレビュー、PR ごとの auto-merge 有効化
+
+keeper の auto-push は実験証跡だけに限定されない。現在の remote 登録済み作業ブランチが
+`origin/<現在ブランチ>` より ahead なら、コード・文書・runindex の commit も送る。
+したがって、作りかけを commit したまま定位置ブランチに残さない。
+
+`m2-sync.sh` のサーバー名解決順は `SERVERNAME` → repo 直下 `.servername` →
+`hostname`。`philip` / `ilya` では `.servername` も正しく設定する。
 
 ---
 
@@ -259,7 +390,7 @@ Syncthing が配ったファイルと、他ホストが git に回収した同�
 | `index.csv` | 1 run | 「この run は何だったか」 |
 | **`experiments.csv`** | **1 実験**（seed 集約後） | **論文 Table の 1 行。Δ・σ・判定** |
 | `per_class.csv` | 1 run × 1 クラス | クラス別の内訳 |
-| `verdicts.csv` | 1 実験 × 1 指標 | §10.1 の有意判定 |
+| `verdicts.csv` | 1 実験 × 1 指標 | 「M2研究計画」§10.1 の有意判定 |
 
 ⚠️ **raw URL はキャッシュされる。** 最新を確実に読むには commit SHA を直指定する。
 
@@ -274,7 +405,7 @@ SHA は `gh api repos/takuya3h/m2/commits/phase0 --jq .sha` で取れる。
 | # | 論点 | 選択肢 |
 |:--:|---|---|
 | 1 | **σ 規約（ddof）** | 標本σ（推奨）/ 母集団σ / 併記 |
-| 2 | push の自動化 | keeper に「コミット済みなら push」を追加するか |
+| 2 | ad-hoc trainer の autosync 配線範囲 | 未配線スクリプトを順次 `ExperimentManager` 化 / 直接配線 / 手動維持 |
 | 3 | 定期同期の頻度 | 週次 / 月次 / behind 閾値超過時 / 手動 |
 | 4 | `third_party` の恒久管理 | submodule / `src/` 移設 / 別リポジトリ / snapshot 継続 |
 | 5 | `logs/` の二重管理 | git 追跡と Syncthing 同期の境界事故 |
@@ -288,6 +419,9 @@ SHA は `gh api repos/takuya3h/m2/commits/phase0 --jq .sha` で取れる。
 |---|---|
 | `README.md` | サーバー間同期の全体設計（層 1 / 層 2） |
 | `docs/host_autosync_onboarding.md` | keeper / Syncthing の導入手順 |
+| `docs/sync_automation_instr15_stage3_ilya_2026-08-05.md` | 作業ブランチ auto-merge の実装・実測 |
+| `docs/sync_automation_instr15_stage4_ilya_2026-08-05.md` | auto-PR の実装・実測 |
+| `docs/third_party_sync_design_2026-08-05.md` | `third_party` 同期の選択肢と現行方針 |
 | `docs/host_dev_env_setup.md` | 開発 CLI ツールの構築手順（2026-07-01 の記録） |
 | `docs/sync_instr09_lecun_2026-08-02.md` | 同期作業 #09 の経緯 |
 | `docs/sync_phase0_merge_lecun_2026-08-02.md` | phase0 取り込みの完全記録・Syncthing の挙動 |
