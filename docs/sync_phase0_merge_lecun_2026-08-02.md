@@ -97,7 +97,39 @@ SAME 54 / DIFF 0
 結果として「削除 →（別要因で merge 中断）→ 再 merge」という手順を踏むと、
 **中断している間に復元され、2 回目の merge も同じ衝突で失敗する**。
 
-### 2.2 `auto_notion_sync.log` の再書き込み
+### 2.2 削除の挙動は「起点」で変わる（2026-08-04 追記）
+
+§2.1 で記録した「Syncthing が `rm` を約 40 秒で巻き戻す」現象には条件がある。
+
+| 状況 | 結果 |
+|---|---|
+| **片側だけの削除**（他ホストが原本を保持している） | **約 40 秒で巻き戻される** |
+| **同期された削除**（正規の削除操作として発信） | **伝播する。巻き戻らない** |
+
+2026-08-04 の伝播テストで実測した。lecun が
+`experiments/_smoke_proptest_20260804_223211/{checkpoints,logs}` を
+削除したところ、6ms で完了し、60 秒後も巻き戻されなかった。
+
+§2.1 の事例は「phase0 の merge を通すために、他ホストが原本を持ったまま
+lecun のローカルだけを消した」ケースであり、Syncthing から見れば
+**欠損**にあたるため復元が飛んできた。今回は削除自体が意図として
+ピアへ伝播している。
+
+**したがって §2.1 の回避策（`rm` と `merge` を単一コマンドで連続実行）が
+必要なのは前者の場合のみである。** 実験成果を意図的に削除するときは
+通常の `rm` でよい。
+
+#### 伝播テストの実測値（参考）
+
+| 層 | 到達時間 | 対象 |
+|---|---|---|
+| Syncthing | **28 秒で全 10 台**（md5 完全一致） | `checkpoints/*.pth` / `logs/*.log` |
+| git | 未到達（phase0 未マージのため。設計どおり） | `metrics.json` / `server.txt` / `git_commit.txt` / `notes.md` |
+
+`.stignore` が全 11 台で正しく効いており、git 管理の 4 証跡は
+Syncthing で配られなかった。二層の境界が保たれていることを確認した。
+
+### 2.3 `auto_notion_sync.log` の再書き込み
 `.claude/hooks/auto_notion_sync.log` は Notion 同期フックが動作するたびに追記されるため、
 `git restore` で破棄しても時間が経つと再び変更され、
 `Your local changes to the following files would be overwritten by merge` で merge が中断する。
