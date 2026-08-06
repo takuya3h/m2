@@ -322,6 +322,7 @@ b2a_base_oracle_noise_p010_001_b2a_base_oracle_noise_p010_seed42/command.sh
 | group | ファイル数 | 中身の種別 | 術具 per-class 指標 |
 |---|---:|---|---|
 | `_orphan_no_metrics` | 9 | (未調査) | (未調査) |
+| `_smoke_proptest_20260804_223211` | 0 | (未調査) | (未調査) |
 | `ablations` | 1 | `.gitkeep` のみ | 未着手 scaffold |
 | `analysis` | 96 | EDA レポート / 図 (png) / CSV / JSON | **あり**: `detector_sanity/reldetr_seed42_val_perclass.json` (COCO 形式 `AP`/`AP50`/`AP75`/`AP_s`/`AP_m` 等 13 キー)、`signature_subset_detector_compare/results.json` (`per_class` キー) |
 | `audit` | 3 | `audit_report.json` × 3 | なし (`inject` / `trainable` / `n_trainable_params` 等の学習設定監査) |
