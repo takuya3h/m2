@@ -39,11 +39,20 @@ slug は英小文字・数字・ハイフンのみ。3〜60 文字。
 
 | 層 | 内容 | 依存 | 所要 |
 |---|---|---|---|
-| L1 | スキーマ・書式・パイプ混入・task_id 一意 | なし | 1 秒 |
-| L2 | 参照解決（分母・凍結源・split・規約版・sigma_policy 継承） | runindex | 数秒 |
+| L1 | スキーマ・書式・パイプ混入・task_id とディレクトリ名の一致 | なし | 1 秒 |
+| L2 | 参照解決（分母・凍結源・split・規約版・sigma_policy 継承）と task_id の重複 | runindex, git | 数秒 |
 | L3 | 実行直前（venv・CUDA 拡張・prereg commit 時刻・decisions 回答） | GPU ホスト | 数十秒 |
 
 L1・L2 は GPU 不要。起票直後に回すこと。
+
+## task_id の重複検出の範囲
+
+L2-1 は `refs/remotes/origin` 配下の各 ref にある `spec.yaml` を読み、
+`meta.created_at` が食い違う場合のみ衝突とみなす。
+squash merge や rebase merge で同じ task が複数 ref に現れるのは正常なので発火しない。
+
+**限界**: 衝突しているブランチを fetch していないホストでは検出できない。
+検出は fetch 済みの範囲に限られる。偽陽性を避けるための意図的な設計である。
 
 ## prompts/ との関係
 

@@ -1287,7 +1287,7 @@ spec が `inputs.sigma_policy` を省略した場合は同文書の `conventions
 | 層 | 実行主体 | 主な検査 | 失敗時 |
 |---|---|---|---|
 | L1 | `tools/validate_task.py` | Schema、task_id とディレクトリ名、半角パイプ、名前空間、禁止された数値直書き | `FAIL`、exit 1 |
-| L2 | `tools/validate_task.py` | task_id の履歴衝突、規約アンカー、split・entrypoint・cache の実在、runindex 分母、seed 数、sigma 整合 | `FAIL`、exit 1 |
+| L2 | `tools/validate_task.py` | `refs/remotes/origin` 間での task_id 重複、規約アンカー、split・entrypoint・cache の実在、runindex 分母、seed 数、sigma 整合 | `FAIL`、exit 1 |
 | L3 | `/task` を実行する Claude CLI、または同手順を実施する agent / 人 | venv、CUDA 拡張、決定性、prereg の時系列、未回答判断、出力先権限 | 1件でも赤なら GPU 実行前に停止 |
 
 L2 では、起票後に `context/conventions.md` が変わった場合を `L2-6`、
