@@ -39,7 +39,19 @@ CLI は実行直前にこのファイルから原文を読み、指示に差し�
 同定パスは `third_party/Relation-DETR/checkpoints/incoming/seed42/best_ap.pth`。
 転記元: `docs/experiment_log.md` の STEP 0-2、および `configs/stage/s4_phase_baseline.yaml`。
 
-凍結源を変更してはならない。変更が必要な場合は別 task で判断を記録し、同じ凍結源を使う比較群と分母を再構成する。checkpoint の正本 SHA-256 は `UNKNOWN（転記元未特定）`。実行時に対象ファイルから計算し、契約の解決結果へ記録する。
+凍結源を変更してはならない。変更が必要な場合は別 task で判断を記録し、同じ凍結源を使う比較群と分母を再構成する。
+
+checkpoint の正本 SHA-256 は次のとおり。
+
+    03936318f9d45ac956fa928278cff9a869d3c2583e86b3af3ac1bbd27675e824
+
+サイズは 195421066 bytes。転記元は 2026-08-06 に実施した11ホストの ssh 一括監査であり、
+11 ホスト全てで SHA-256 が一致し、mtime もナノ秒まで同一であった。
+`third_party/` は git の追跡対象外だが、実体はホスト間で同期されている。
+
+`verify: ckpt_sha256` は全ホストで実行可能である。照合に失敗した場合は
+`no_frozen_change` の違反として扱い、実行を中止して人へ escalate する。
+skip する経路は設けない。
 
 <a id="sigma"></a>
 ## sigma
@@ -62,6 +74,17 @@ sigma に関する列は 4 系統ある（backlog B-18）。
 この既定は暫定である。正本（ddof=0 / ddof=1）は未決定であり、
 決定され次第ここを変更する。変更時は過去の task を横断で再判定できるよう、
 `RESULT.md` に解決済み sigma_policy が記録されていることを前提とする。
+
+### 判定規約の表記
+
+判定規約を `spec.yaml` や `prereg.md` に書くときは、絶対値を `abs(...)` の関数形で書く。
+縦線による絶対値記法は markdown 表のセル区切りと衝突し、表を壊すため使わない
+（backlog B-33 と同型の事故）。
+
+    正: abs(delta) / sigma >= 1 かつ 全 seed 同符号
+    誤: 縦線で delta を囲む記法
+
+同じ理由で、区切りを表したいときは `/` かスラッシュ区切りの語を使う。
 
 <a id="prohibitions"></a>
 ## prohibitions
@@ -106,4 +129,5 @@ activate を省略すると CUDA 拡張が読み込まれず、無言で CPU 実
 
 | 日付 | commit | 変更 |
 |---|---|---|
-| 2026-08-03 | （このコミット） | 新規作成。アンカー 7 節を定義 |
+| 2026-08-03 | 8b17c4d | 新規作成。アンカー 7 節を定義 |
+| 2026-08-06 | cac8147 | frozen_source の SHA-256 正本値を確定。sigma 節に判定規約の abs() 表記ルールを追加 |

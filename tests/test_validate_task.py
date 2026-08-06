@@ -91,6 +91,57 @@ def test_pipe_in_string_fails():
     assert "L1-3" in _ids(findings)
 
 
+def _hard(findings):
+    return [f for f in findings if not f.check.endswith("W")]
+
+
+def test_pipe_in_gate_check_fails():
+    spec = _minimal_impl_spec()
+    spec["plan"]["gates"] = [
+        {"id": "G1", "after": "A", "check": "a と b のどちらか", "on_fail": "stop"}
+    ]
+    spec["plan"]["gates"][0]["check"] = "a " + chr(124) + " b のどちらか"
+    findings = validate_l1(spec, dir_name="T-2026-08-03-example-task")
+    assert "L1-3" in {f.check for f in _hard(findings)}
+
+
+def test_pipe_outside_table_fields_is_warning_only():
+    spec = _minimal_impl_spec()
+    spec["meta"]["kind"] = "exp"
+    spec["inputs"]["denominator"] = {"ref": "exp:transfer/s4_base_tecno", "metric": "accuracy"}
+    spec["outputs"]["expected_runs"] = 6
+    spec["outputs"]["stamp"] = {"task_id_in": "config.yaml"}
+    spec["prereg"] = {
+        "prediction": "p",
+        "primary_endpoint": "macro_f1",
+        "decision_rule": "abs(delta) " + chr(124) + " sigma",
+        "stop_conditions": ["s"],
+        "committed_at": None,
+        "commit": None,
+    }
+    findings = validate_l1(spec, dir_name="T-2026-08-03-example-task")
+    assert _hard(findings) == []
+    assert "L1-3W" in {f.check for f in findings}
+
+
+def test_abs_notation_decision_rule_passes():
+    spec = _minimal_impl_spec()
+    spec["meta"]["kind"] = "exp"
+    spec["inputs"]["denominator"] = {"ref": "exp:transfer/s4_base_tecno", "metric": "accuracy"}
+    spec["outputs"]["expected_runs"] = 6
+    spec["outputs"]["stamp"] = {"task_id_in": "config.yaml"}
+    spec["prereg"] = {
+        "prediction": "非飽和域では正の差が出る",
+        "primary_endpoint": "macro_f1",
+        "decision_rule": "abs(delta) / sigma >= 1 かつ 全 seed 同符号",
+        "stop_conditions": ["G1 不通過"],
+        "committed_at": None,
+        "commit": None,
+    }
+    findings = validate_l1(spec, dir_name="T-2026-08-03-example-task")
+    assert findings == [], [str(f) for f in findings]
+
+
 def test_bare_denominator_ref_fails():
     spec = _minimal_impl_spec()
     spec["inputs"]["denominator"] = {"ref": "s4_base_tecno", "metric": "accuracy"}

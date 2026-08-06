@@ -21,8 +21,6 @@ inputs:
     ref: "exp:group/experiment_id"
     metric: ""
     require: {n_seeds: ">=3", sigma: present, split: val}
-  sigma_policy:
-    series: pstd
   data:
     dataset: ""
     split_files: ["data/splits/ego_val.txt"]

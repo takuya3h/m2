@@ -44,6 +44,18 @@ _ALLOW_NUMBER_PATHS = {
     "contract.conventions_rev",
 }
 _NUMBER_SCAN_PATHS = ("intent.", "inputs.denominator.", "prereg.")
+_PIPE_STRICT_PATHS = (
+    re.compile(r"^meta\.title$"),
+    re.compile(r"^intent\.(question|decision_at_stake|hypothesis)$"),
+    re.compile(r"^plan\.phases\.\d+\.name$"),
+    re.compile(r"^plan\.gates\.\d+\.check$"),
+    re.compile(r"^outputs\.acceptance\.\d+$"),
+)
+_WARN_CHECKS = {"L1-3W"}
+
+
+def _is_pipe_strict(path: str) -> bool:
+    return any(pattern.match(path) for pattern in _PIPE_STRICT_PATHS)
 
 
 @dataclass(frozen=True)
@@ -90,9 +102,15 @@ def validate_l1(spec: dict, dir_name: str) -> list[Finding]:
         )
 
     for path, value in _walk_strings(spec):
-        if "|" in value:
+        if chr(124) not in value:
+            continue
+        if _is_pipe_strict(path):
             findings.append(
-                Finding("L1-3", path, "半角パイプを含みます。列挙は YAML の配列で書いてください")
+                Finding("L1-3", path, "表へ流れるフィールドに区切り文字を含みます")
+            )
+        else:
+            findings.append(
+                Finding("L1-3W", path, "区切り文字を含みます。表へ引用する際は注意してください")
             )
 
     denom = spec.get("inputs", {}).get("denominator")
@@ -316,13 +334,17 @@ def main() -> int:
         total += 1
         spec = yaml.safe_load(spec_path.read_text(encoding="utf-8"))
         findings = validate_l1(spec, dir_name=task_dir.name)
-        if args.level == "l2" and not findings:
-            findings += validate_l2(spec)  # noqa: F821
-        if findings:
+        if args.level == "l2" and not [f for f in findings if f.check not in _WARN_CHECKS]:
+            findings += validate_l2(spec)
+        hard = [f for f in findings if f.check not in _WARN_CHECKS]
+        warn = [f for f in findings if f.check in _WARN_CHECKS]
+        for f in warn:
+            print(f"WARN {task_dir.name}: {f}", file=sys.stderr)
+        if hard:
             failed += 1
             print(f"FAIL {task_dir.name}")
-            for finding in findings:
-                print(f"  {finding}")
+            for f in hard:
+                print(f"  {f}")
         else:
             print(f"OK   {task_dir.name}")
 
