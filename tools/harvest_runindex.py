@@ -753,6 +753,9 @@ def harvest_config(path: Path) -> dict[str, Any]:
         "frozen_source_tag": None,
         "seed_config": None,
         "frozen_source_seed_declared": None,
+        # 契約 (tasks/<task_id>/spec.yaml) と run を結ぶ鍵。無ければ空文字
+        # （未設定と未測定は違うので UNKNOWN にはしない）。
+        "task_id": "",
         "warnings": [],
     }
     if not path.exists():
@@ -768,6 +771,10 @@ def harvest_config(path: Path) -> dict[str, Any]:
     d = data.get("delta")
     if isinstance(d, dict):
         out["delta_declaration"] = _denan(d)
+
+    tid = data.get("task_id")
+    if isinstance(tid, str) and tid.strip():
+        out["task_id"] = tid.strip()
 
     # run 自身の学習 seed。ディレクトリ名の seed<N> と突き合わせる。
     if _is_number(data.get("seed")):
@@ -1023,6 +1030,7 @@ def build_run_record(run_dir: Path) -> dict[str, Any]:
         # config.yaml 由来。対照宣言と、名前にも command.sh にも現れない条件軸。
         "delta_declaration": cfg["delta_declaration"],
         "frozen_source_tag": cfg["frozen_source_tag"],
+        "task_id": cfg["task_id"],
         "host": host["host"],
         "host_raw": host["host_raw"],
         "gpu": host["gpu"],
@@ -1218,6 +1226,8 @@ def build_transfer_legacy_record(run_dir: Path) -> dict[str, Any]:
         "eval_recipe_id": None,
         "delta_declaration": None,
         "frozen_source_tag": None,
+        # config.yaml を持たない群（B-12）。task_id は取れないので空文字。
+        "task_id": "",
         "host": host,
         "host_raw": host,
         "gpu": None,
@@ -1587,6 +1597,8 @@ EXPERIMENT_SCALAR_COLUMNS = [
     "seeds",
     "runs_per_seed_max",
     "hosts",
+    # index.csv の task_id（単数）を実験単位で distinct・カンマ結合したもの。
+    "task_ids",
     "n_runs_excluded",
     "per_class_kind",
     "per_class_metric",
@@ -1827,6 +1839,7 @@ def build_experiments(
         seeds = sorted({r["seed"] for r in rs if r["seed"] is not None})
         seed_counts = Counter(r["seed"] for r in rs if r["seed"] is not None)
         hosts = sorted({r["host"] for r in rs if r["host"]})
+        task_ids = sorted({r["task_id"] for r in rs if r.get("task_id")})
         arms = sorted({r["arm"] for r in rs})
         controls = sorted({r["control_of"] for r in rs if r["control_of"]})
         note_vals = sorted({r["control_note_value"] for r in rs if r["control_note_value"]})
@@ -1844,6 +1857,7 @@ def build_experiments(
             "seeds": ",".join(str(s) for s in seeds),
             "runs_per_seed_max": max(seed_counts.values()) if seed_counts else 0,
             "hosts": ",".join(hosts),
+            "task_ids": ",".join(task_ids),
             "n_runs_excluded": sum(1 for r in rs if r["excluded"]),
             "per_class_kind": ",".join(sorted({str(r["per_class_kind"]) for r in rs})),
             "per_class_metric": ",".join(sorted({str(r["per_class_metric"]) for r in rs})),
@@ -2196,6 +2210,8 @@ SCALAR_COLUMNS = [
     "commit",
     "epoch",
     "notion_page_id",
+    # 契約 (tasks/<task_id>/spec.yaml) と run を結ぶ鍵。config.yaml に無ければ空文字。
+    "task_id",
     "has_test",
     "n_harvest_warnings",
     # 証跡の完全性。720 run は 'full'、直下 transfer/ の 29 run は 'result_json_only'

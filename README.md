@@ -1214,6 +1214,20 @@ best predictions は init の複製として必ず出力する（init ckpt 自�
 - [`experiments/analysis/step_c_coupling_analysis/REPORT.md`](experiments/analysis/step_c_coupling_analysis/REPORT.md) — STEP C 本編（val・27 §）: 結合機構の解明・実証・最良結合法の設計
 - [`experiments/analysis/step_c_coupling_analysis/TEST_EVAL_REPORT.md`](experiments/analysis/step_c_coupling_analysis/TEST_EVAL_REPORT.md) — STEP C test split 確証: 方向非対称は本番データで保たれるか
 
+## runindex と context の再生成
+
+実験証跡から横断インデックス `runindex/` を作り、そこから外部の面（Claude アプリの
+プロジェクト知識）向けの軽量ビュー `context/auto/` を作る、2 段階の再生成パイプライン。
+
+```bash
+make runindex   # experiments/ から runindex/ を再生成（正本の更新）
+make context    # runindex/ から context/auto/ を再生成。make runindex の直後に実行する
+```
+
+`context/auto/` は `runindex/` 単体だと大きすぎて外部の面に載らないための縮尺図であり、
+判断・解釈・評価は含まない（詳細は [`context/README.md`](context/README.md)）。
+`make context-check` で手編集・再生成漏れを検出できる。
+
 ## TASK 契約システム
 
 Claude アプリ、CLI、人が起票した作業依頼を、会話だけでなく

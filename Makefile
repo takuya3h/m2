@@ -80,6 +80,15 @@ runindex-strict:
 	python tools/verify_runindex.py
 	python tools/verify_no_dummy_metrics.py --strict
 
+# runindex/ から軽量ビュー context/auto/ を冪等に生成する（派生物・完全再生成可能）。
+# make runindex の直後に実行すること。
+.PHONY: context context-check
+context:
+	@.venv/bin/python tools/build_context.py
+
+context-check:
+	@.venv/bin/python tools/build_context.py --check
+
 task-validate:
 	@.venv/bin/python tools/validate_task.py $(if $(TASK),--task $(TASK),) --level $(if $(LEVEL),$(LEVEL),l2)
 
