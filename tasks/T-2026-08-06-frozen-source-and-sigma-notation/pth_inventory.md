@@ -80,3 +80,27 @@
 指示どおり実列名を使った代用（推測での置き換え）はせず、`UNKNOWN` のまま記録し
 Task 2 を部分完了とする。3件の `wrong_frozen_source` run の特定と、その凍結源記載の
 転記（Step 3）は本 Task では未実施。
+
+## 未追跡 smoke ディレクトリの実測（2026-08-06、Task 6）
+
+`git status --porcelain experiments/transfer/` で未追跡（`??`）と確認された3件:
+
+- `experiments/transfer/_smoke_artifacts_ctrl/`
+- `experiments/transfer/_smoke_artifacts_inj/`
+- `experiments/transfer/_smoke_fullval/`
+
+`runindex/index.csv` を `ledger_key` および `path` 列で全文検索したが、3件とも
+**1件もヒットしない**（`excluded` 済み run としても含まれていない）。各ディレクトリの
+中身は `checkpoints/` `logs/` `predictions/` のみで、`config.yaml` と `metrics.json` が
+存在しない。これは `make runindex`（`harvest_runindex.py`）が run として認識するために
+必要な最低要件を満たしていないためと考えられ、収穫対象外であることと整合する。
+
+| 観測 | 判定 |
+|---|---|
+| index に載っている | いいえ（0件） |
+| 除外済みとして載っている | いいえ（0件） |
+| index に無く除外にも無い | **該当**。`config.yaml`/`metrics.json` を欠き収穫要件未達のため |
+
+**結論:** ホスト間で `runindex` が割れるリスクは無い（そもそも収穫されないため、
+未追跡ホストの有無に関わらず全ホストで同じ結果になる）。backlog 起票は不要と判断する。
+
