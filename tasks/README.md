@@ -30,6 +30,28 @@ slug は英小文字・数字・ハイフンのみ。3〜60 文字。
 5. **判断は載せず、要求として載せる** — CLI が決めてはいけないことは
    `governance.decisions_required` に置く。未回答なら実行を止める。
 
+## 契約の受け取り
+
+外部で起票された契約は次の一操作で取り込む。
+
+    make task-fetch SRC=<path or url>
+
+取得、展開、L1 と L2 の検証までを行う。検証に失敗した場合は展開を巻き戻すため、
+`tasks/` に不完全な契約が残らない。成功した場合のみ次の操作が表示される。
+
+入力は区切り付きテキスト（バンドル）。先頭行が形式と区切りを宣言し、
+`spec.yaml` と `SPEC.md`（`kind: exp` では `prereg.md` も）を 1 ファイルへまとめる。
+
+    #!TASK-BUNDLE v1 delim=<40 文字以上の区切り>
+    <delim> FILE spec.yaml
+    ...
+    <delim> FILE SPEC.md
+    ...
+    <delim> END
+
+区切りが本文と衝突した入力は受け付けずに失敗する。既存の契約から組み立て直すには
+`python tools/fetch_task.py --pack tasks/<task_id>` を使う。
+
 ## 検証
 
     make task-validate                  # tasks/ 配下すべて

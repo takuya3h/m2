@@ -100,6 +100,12 @@ task-validate:
 task-preflight:
 	@python tools/preflight_task.py --task $(TASK)
 
+# 外部で起票された契約を一操作で取り込む。取得・展開・検証までを行い、
+# 検証に失敗した場合は設置を巻き戻すため tasks/ に不完全な契約が残らない。
+.PHONY: task-fetch
+task-fetch:
+	@.venv/bin/python tools/fetch_task.py --src $(SRC)
+
 clean:
 	find . -type d -name __pycache__ -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
