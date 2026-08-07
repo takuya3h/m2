@@ -247,24 +247,62 @@ def check_decisions(spec: dict) -> Check:
     return Check("P6", CHECK_NAMES["P6"], "FAIL", f"未回答 {len(pending)} 件: {items}")
 
 
-def check_destination(spec: dict) -> Check:
-    """P7. outputs.destination へ書き込み、削除できることを確かめる。"""
-    dest_rel = spec.get("outputs", {}).get("destination", "")
-    if not dest_rel:
-        return Check("P7", CHECK_NAMES["P7"], "SKIP", "契約に outputs.destination の記載なし")
-    dest = REPO_ROOT / dest_rel
-    if not dest.is_dir():
-        return Check("P7", CHECK_NAMES["P7"], "FAIL", f"存在しないか非ディレクトリ: {dest_rel}")
+def _probe_writable(directory: Path) -> str | None:
+    """実際に書いて消せるかを確かめる。駄目な場合だけ理由を返す。"""
     try:
-        handle, name = tempfile.mkstemp(dir=dest, prefix=".preflight_probe_")
+        handle, name = tempfile.mkstemp(dir=directory, prefix=".preflight_probe_")
         os.close(handle)
         probe = Path(name)
         probe.unlink()
         if probe.exists():
-            return Check("P7", CHECK_NAMES["P7"], "FAIL", f"probe を削除できない: {dest_rel}")
+            return "probe を削除できない"
     except OSError as exc:
-        return Check("P7", CHECK_NAMES["P7"], "FAIL", f"{dest_rel} へ書き込めない: {exc}")
-    return Check("P7", CHECK_NAMES["P7"], "PASS", f"{dest_rel} へ書き込みと削除ができた")
+        return str(exc)
+    return None
+
+
+def check_destination(spec: dict) -> Check:
+    """P7. outputs.destination へ書き込めることを確かめる。
+
+    出力先がまだ存在しない場合もある。新しい出力領域を作る契約では、
+    destination はその契約自身の成果物であり実行前には存在しない。
+    存在しないことだけを理由に FAIL とすると、そうした契約すべてで偽陽性になる。
+    そこで**最も近い既存の祖先**へ probe し、作成できるかどうかで判定する。
+    **検査が実体を作ってはならない**（実行前検査は環境を変えない）。
+    """
+    dest_rel = spec.get("outputs", {}).get("destination", "")
+    if not dest_rel:
+        return Check("P7", CHECK_NAMES["P7"], "SKIP", "契約に outputs.destination の記載なし")
+    dest = REPO_ROOT / dest_rel
+
+    if dest.is_dir():
+        reason = _probe_writable(dest)
+        if reason:
+            return Check("P7", CHECK_NAMES["P7"], "FAIL", f"{dest_rel} へ書き込めない: {reason}")
+        return Check("P7", CHECK_NAMES["P7"], "PASS", f"{dest_rel} へ書き込みと削除ができた")
+
+    if dest.exists():
+        return Check("P7", CHECK_NAMES["P7"], "FAIL", f"ディレクトリではありません: {dest_rel}")
+
+    ancestor = dest.parent
+    while not ancestor.is_dir() and ancestor != ancestor.parent:
+        ancestor = ancestor.parent
+    if not ancestor.is_dir():
+        return Check("P7", CHECK_NAMES["P7"], "FAIL", f"既存の親が見つかりません: {dest_rel}")
+    reason = _probe_writable(ancestor)
+    if reason:
+        return Check(
+            "P7",
+            CHECK_NAMES["P7"],
+            "FAIL",
+            f"{dest_rel} を作成できない（{ancestor.relative_to(REPO_ROOT)} へ書き込めない: {reason}）",
+        )
+    return Check(
+        "P7",
+        CHECK_NAMES["P7"],
+        "PASS",
+        f"{dest_rel} は未作成だが作成可能（{ancestor.relative_to(REPO_ROOT)} へ書き込みと削除ができた）",
+    )
 
 
 def check_contract(task_id: str) -> Check:
