@@ -79,3 +79,49 @@ def test_report_is_machine_readable():
 def test_report_is_stable_across_runs():
     checks = [Check("P1", "venv_active", "PASS", "VIRTUAL_ENV=/x/.venv")]
     assert format_report(checks) == format_report(checks)
+
+
+def test_destination_that_can_be_created_passes(tmp_path, monkeypatch):
+    """まだ存在しないが作成できる出力先は PASS とする。
+
+    新しい出力領域を作る契約では destination が実行前に存在しない。
+    それを FAIL にすると、そうした契約すべてで偽陽性になる。
+    """
+    import preflight_task
+
+    monkeypatch.setattr(preflight_task, "REPO_ROOT", tmp_path)
+    (tmp_path / "docs").mkdir()
+    spec = {"outputs": {"destination": "docs/sessions/"}}
+    check = preflight_task.check_destination(spec)
+    assert check.status == "PASS", check.detail
+    assert "作成" in check.detail
+    # 検査が実体を作ってしまわないこと
+    assert not (tmp_path / "docs" / "sessions").exists()
+
+
+def test_destination_that_cannot_be_created_fails(tmp_path, monkeypatch):
+    """親も存在せず作成できない出力先は FAIL のままとする。陽性対照の対。"""
+    import preflight_task
+
+    monkeypatch.setattr(preflight_task, "REPO_ROOT", tmp_path)
+    readonly = tmp_path / "locked"
+    readonly.mkdir()
+    readonly.chmod(0o500)
+    spec = {"outputs": {"destination": "locked/nested/"}}
+    try:
+        check = preflight_task.check_destination(spec)
+        assert check.status == "FAIL", check.detail
+    finally:
+        readonly.chmod(0o700)
+
+
+def test_existing_destination_still_probed(tmp_path, monkeypatch):
+    """既存の出力先は従来どおり実際に書いて消す検査を行う。"""
+    import preflight_task
+
+    monkeypatch.setattr(preflight_task, "REPO_ROOT", tmp_path)
+    (tmp_path / "tools").mkdir()
+    spec = {"outputs": {"destination": "tools/"}}
+    check = preflight_task.check_destination(spec)
+    assert check.status == "PASS"
+    assert "書き込みと削除" in check.detail
