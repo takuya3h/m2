@@ -207,3 +207,25 @@ def test_task_id_differing_created_at_is_conflict():
     conflicts = task_id_conflicts("T-2026-08-05-example-task", identities)
     assert len(conflicts) == 2
     assert any("phase0" in c for c in conflicts)
+
+
+def test_newline_in_task_id_is_rejected():
+    """終端一致に改行が紛れ込む経路を塞ぐ。
+
+    Python の $ は文字列末尾の改行に一致するため、改行入り識別子が
+    検証を素通りしうる。fetch_task.py で実際に見つかった欠陥の水平展開。
+    """
+    spec = _minimal_impl_spec()
+    evil = "T-2026-08-03-example-task\nmalicious"
+    spec["meta"]["task_id"] = evil
+    findings = validate_l1(spec, dir_name=evil)
+    assert _hard(findings), "改行入り task_id が素通りしました"
+
+
+def test_trailing_newline_only_is_rejected():
+    """末尾の改行だけでも拒否する。これが実際に悪用できた形である。"""
+    spec = _minimal_impl_spec()
+    evil = "T-2026-08-03-example-task\n"
+    spec["meta"]["task_id"] = evil
+    findings = validate_l1(spec, dir_name=evil)
+    assert _hard(findings), "末尾改行つき task_id が素通りしました"
