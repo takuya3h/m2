@@ -6,41 +6,43 @@
     generated_from:        runindex/
     generated_from_commit: 12cc0e82d8663f234f1d5898b05a30e0ace5758f
     generated_from_date:   2026-08-06T11:58:50+00:00
-    runindex_counts:       index=749 experiments=206 verdicts=1038
+    runindex_counts:       index=784 experiments=215 verdicts=1038
 
 このファイルは runindex から機械的に生成されたものです。
 判断・解釈・評価は含みません。研究方針は context/plan_mirror.md を参照してください。
 
 ## 母集団
 
-- 総 run 数: 749
-- 除外: 48
-  - failed_run: 6
+- 総 run 数: 784
+- 除外: 82
+  - aborted_run: 4
+  - failed_run: 11
   - identity_check: 24
   - known_bad_split: 6
   - mislabeled_arm_all_not_film: 2
-  - smoke_test: 7
+  - smoke_test: 26
+  - superseded: 6
   - wrong_frozen_source: 3
 
 host 別内訳:
-  - (null): 41
+  - (null): 74
   - andrew: 3
   - bengio: 2
   - efros: 206
-  - lecun: 466
-  - philip: 31
+  - lecun: 467
+  - philip: 32
 
 ## 実験
 
-- 総数: 206
+- 総数: 215
 - control_of を持つ数: 136
 group 別内訳:
   - _smoke_prior: 2
-  - baselines: 19
+  - baselines: 26
   - g2_followup_2026-07-29: 8
   - g2_main_2026-07-29_lecun: 4
   - hand2det_dev: 9
-  - phase0: 1
+  - phase0: 3
   - phase1: 10
   - transfer: 141
   - transfer_legacy: 12
@@ -48,7 +50,7 @@ group 別内訳:
 ## 判定
 
 verdict_10_1 の値別件数:
-  - (空): 70
+  - (空): 79
   - not_significant: 9
   - significant: 125
   - undecidable: 2
@@ -59,9 +61,9 @@ verdict_10_1 の値別件数:
 sigma_interpretation の値別件数:
   - mixed_with_nondeterminism: 123
   - seed_effect: 8
-  - unknown: 75
+  - unknown: 84
 sigma_source の値別件数:
-  - (空): 58
+  - (空): 67
   - paired_delta: 136
   - within_run_seed_spread: 12
 
@@ -73,7 +75,7 @@ sigma_source の値別件数:
 
 ## 契約
 
-- task_id を持つ run: 0 / 749 (0.0%)
+- task_id を持つ run: 1 / 784 (0.1%)
 
 ## 参照先
 
