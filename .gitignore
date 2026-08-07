@@ -223,3 +223,12 @@ package.json
 
 # サーバー名の単一情報源（m2-sync.sh が読む）。ホストごとに中身が違うため追跡しない。
 .servername
+
+# === 対話の生記録は版管理へ入れない ===
+# 秘匿情報が混入しうるため。抽出物（docs/sessions/digest/）のみを追跡する。
+# 生の記録は各実装系の既定の保存先（~/.claude/projects/ など repo 外）に残る。
+#
+# 🔴 repo 全体の `*.jsonl` は書かない。`.jsonl` は本 repo で現に使われている
+#    データ形式であり（experiments/**/logs/val_metrics.jsonl）、広く除外すると
+#    将来追跡すべき jsonl を静かに取りこぼす。backlog B-28 と同型の危険である。
+docs/sessions/raw/
