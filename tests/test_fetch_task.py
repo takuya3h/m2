@@ -178,3 +178,110 @@ def test_keeps_task_when_validation_passes(tmp_path, monkeypatch):
     assert fetch_task.fetch(str(bundle)) == 0
     installed = tasks_dir / "T-2026-08-09-example-task"
     assert sorted(p.name for p in installed.iterdir()) == ["SPEC.md", "spec.yaml"]
+
+
+def test_task_id_with_trailing_newline_is_rejected():
+    """Python の $ は末尾改行の直前にも一致する。\\Z で弾けていること。
+
+    改行入りの task_id は make のレシピを分断し、別の契約を検証させたうえで
+    exit 0 を返させる経路がある（検証バイパス）。
+    """
+    spec = 'spec_version: 1\nmeta:\n  task_id: "T-2026-08-09-valid\\n"\n'
+    with pytest.raises(BundleError, match="task_id の形式"):
+        task_id_from_spec(spec)
+
+
+def test_task_id_with_embedded_newline_is_rejected():
+    spec = 'spec_version: 1\nmeta:\n  task_id: "T-2026-08-09-a\\nb"\n'
+    with pytest.raises(BundleError, match="task_id の形式"):
+        task_id_from_spec(spec)
+
+
+def test_does_not_delete_a_directory_it_did_not_create(tmp_path, monkeypatch):
+    """ensure_absent の後に横から同名ディレクトリが出来ても、それを消さない。
+
+    巻き戻しの対象はこの run が作ったものだけである。既存データを消してはならない。
+    """
+    import shutil as shutil_mod
+
+    import fetch_task
+
+    tasks_dir = tmp_path / "tasks"
+    tasks_dir.mkdir()
+    monkeypatch.setattr(fetch_task, "TASKS_DIR", tasks_dir)
+
+    victim = tasks_dir / "T-2026-08-09-example-task"
+    real_mkdir = Path.mkdir
+
+    def racing_mkdir(self, *a, **k):
+        # installed.mkdir() の直前に横から作られた状況を再現する
+        if self == victim and not victim.exists():
+            real_mkdir(victim, parents=True)
+            (victim / "IMPORTANT.md").write_text("既存データ\n", encoding="utf-8")
+        return real_mkdir(self, *a, **k)
+
+    monkeypatch.setattr(Path, "mkdir", racing_mkdir)
+
+    bundle = tmp_path / "bundle.txt"
+    bundle.write_text(pack_bundle({"spec.yaml": SPEC_YAML, "SPEC.md": SPEC_MD}), encoding="utf-8")
+
+    assert fetch_task.fetch(str(bundle)) == 1
+    assert (victim / "IMPORTANT.md").read_text(encoding="utf-8") == "既存データ\n"
+    shutil_mod.rmtree(victim, ignore_errors=True)
+
+
+def test_keyboard_interrupt_during_validation_rolls_back(tmp_path, monkeypatch):
+    """検証中の Ctrl-C でも設置を残さない。KeyboardInterrupt は Exception ではない。"""
+    import fetch_task
+
+    tasks_dir = tmp_path / "tasks"
+    tasks_dir.mkdir()
+    monkeypatch.setattr(fetch_task, "TASKS_DIR", tasks_dir)
+
+    def _interrupt(_task_id):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(fetch_task, "_validate", _interrupt)
+
+    bundle = tmp_path / "bundle.txt"
+    bundle.write_text(pack_bundle({"spec.yaml": SPEC_YAML, "SPEC.md": SPEC_MD}), encoding="utf-8")
+
+    with pytest.raises(KeyboardInterrupt):
+        fetch_task.fetch(str(bundle))
+    assert list(tasks_dir.iterdir()) == []
+
+
+def test_system_exit_during_validation_rolls_back(tmp_path, monkeypatch):
+    """SIGTERM は SystemExit へ変換される。これも巻き戻しの経路に載ること。"""
+    import fetch_task
+
+    tasks_dir = tmp_path / "tasks"
+    tasks_dir.mkdir()
+    monkeypatch.setattr(fetch_task, "TASKS_DIR", tasks_dir)
+    monkeypatch.setattr(fetch_task, "_validate", lambda _t: (_ for _ in ()).throw(SystemExit(143)))
+
+    bundle = tmp_path / "bundle.txt"
+    bundle.write_text(pack_bundle({"spec.yaml": SPEC_YAML, "SPEC.md": SPEC_MD}), encoding="utf-8")
+
+    with pytest.raises(SystemExit):
+        fetch_task.fetch(str(bundle))
+    assert list(tasks_dir.iterdir()) == []
+
+
+def test_rollback_reports_failure_instead_of_claiming_cleanliness(tmp_path, capsys):
+    """消し切れなかった場合に「痕跡は残していません」と書かないこと。"""
+    import fetch_task
+
+    leftover = tmp_path / "T-2026-08-09-leftover"
+    leftover.mkdir()
+
+    def _fake_rmtree(_path, ignore_errors=False):
+        return None  # 消せなかった状況を再現する
+
+    original = fetch_task.shutil.rmtree
+    fetch_task.shutil.rmtree = _fake_rmtree
+    try:
+        assert fetch_task.rollback(leftover) is False
+    finally:
+        fetch_task.shutil.rmtree = original
+    assert "巻き戻しに失敗しました" in capsys.readouterr().err

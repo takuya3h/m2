@@ -23,6 +23,7 @@ import argparse
 import re
 import secrets
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -45,7 +46,10 @@ _HEADER_RE = re.compile(
 ALLOWED_FILES = ("spec.yaml", "SPEC.md", "prereg.md")
 REQUIRED_FILES = ("spec.yaml", "SPEC.md")
 # ディレクトリ名に使うため、任意の文字列を受け入れてはならない。
-_TASK_ID_RE = re.compile(r"^T-\d{4}-\d{2}-\d{2}-[a-z0-9-]+$")
+# 🔴 終端は $ ではなく \Z を使う。Python の $ は**末尾の改行の直前にも一致する**ため、
+#    "T-2026-08-03-x\n" のような値を通してしまう。改行入りの task_id は
+#    make のレシピを分断し、別の契約を検証させたうえで exit 0 を返させる経路がある。
+_TASK_ID_RE = re.compile(r"^T-\d{4}-\d{2}-\d{2}-[a-z0-9-]+\Z")
 _URL_RE = re.compile(r"^https?://", re.I)
 
 
@@ -200,6 +204,38 @@ def _validate(task_id: str) -> tuple[int, str]:
     return proc.returncode, (proc.stdout or "") + (proc.stderr or "")
 
 
+def rollback(installed: Path) -> bool:
+    """設置を巻き戻し、**本当に消えたことを確かめる**。
+
+    消えたかどうかを見ずに「痕跡は残していません」と書いてはならない。
+    消し切れなかった場合は、その事実と残った場所をそのまま報告する。
+    """
+    shutil.rmtree(installed, ignore_errors=True)
+    if installed.exists():
+        print(
+            f"巻き戻しに失敗しました。手で確認してください: {installed}",
+            file=sys.stderr,
+        )
+        return False
+    return True
+
+
+def _install_sigterm_handler() -> None:
+    """SIGTERM を SystemExit へ変換し、巻き戻しの経路に載せる。
+
+    既定では SIGTERM は例外を起こさずプロセスを終わらせるため、
+    設置済みの契約が残ってしまう。
+    """
+
+    def _raise(_signum, _frame):
+        raise SystemExit(143)
+
+    try:
+        signal.signal(signal.SIGTERM, _raise)
+    except (ValueError, OSError):  # 主スレッド以外では登録できない
+        pass
+
+
 def fetch(src: str) -> int:
     try:
         text = read_source(src)
@@ -210,10 +246,10 @@ def fetch(src: str) -> int:
         print(f"取り込みを中止しました: {exc}", file=sys.stderr)
         return 1
 
+    _install_sigterm_handler()
     installed = TASKS_DIR / task_id
-    # 設置に一歩でも踏み込んだら、以後どんな失敗の仕方をしても必ず巻き戻す。
-    # 検証の失敗だけでなく、複写や検証コマンド自体が例外で落ちた場合も痕跡を残さない。
-    entered = False
+    # この run が作ったディレクトリだけを巻き戻す。既にあったものには触れない。
+    owned = False
     try:
         # 一時ディレクトリは成否にかかわらず必ず消える。tasks/ へは検証の直前まで書かない。
         with tempfile.TemporaryDirectory(prefix=".task_fetch_") as tmp:
@@ -222,24 +258,51 @@ def fetch(src: str) -> int:
             for name, body in files.items():
                 (staging / name).write_text(body, encoding="utf-8")
 
-            entered = True
-            shutil.copytree(staging, installed)
+            # 名前をアトミックに確保する。既にあれば FileExistsError になり、
+            # **この run が作っていない**ディレクトリなので巻き戻しの対象にしない。
+            # ensure_absent と copytree の間に横から作られた場合の取り違えを防ぐ。
+            try:
+                installed.mkdir(parents=True)
+            except FileExistsError:
+                print(
+                    f"取り込みを中止しました: 同名の契約が既にあります: tasks/{task_id}（上書きしません）",
+                    file=sys.stderr,
+                )
+                return 1
+            owned = True
+            shutil.copytree(staging, installed, dirs_exist_ok=True)
 
         code, output = _validate(task_id)
-    except Exception as exc:  # noqa: BLE001
-        if entered:
-            shutil.rmtree(installed, ignore_errors=True)
+    # 🔴 Exception ではなく BaseException を捕まえる。Ctrl-C（KeyboardInterrupt）や
+    #    SIGTERM（上で SystemExit へ変換）は Exception を継承しないため、
+    #    Exception だけでは検証中の中断で設置が残る。
+    except BaseException as exc:
+        if owned:
+            cleaned = rollback(installed)
+        else:
+            cleaned = True
+        if isinstance(exc, (KeyboardInterrupt, SystemExit)):
+            print(
+                f"中断されました。tasks/{task_id} は"
+                + ("巻き戻しました" if cleaned else "巻き戻せませんでした"),
+                file=sys.stderr,
+            )
+            raise
         print(f"取り込み中に失敗しました: {type(exc).__name__}: {exc}", file=sys.stderr)
-        print(f"tasks/{task_id} は巻き戻しました（痕跡は残していません）", file=sys.stderr)
+        if cleaned:
+            print(f"tasks/{task_id} は巻き戻しました（痕跡は残していません）", file=sys.stderr)
         return 1
 
     if code != 0:
-        shutil.rmtree(installed, ignore_errors=True)
+        cleaned = rollback(installed)
         print(output.rstrip(), file=sys.stderr)
-        print(
-            f"検証に失敗したため tasks/{task_id} を巻き戻しました（痕跡は残していません）",
-            file=sys.stderr,
-        )
+        if cleaned:
+            print(
+                f"検証に失敗したため tasks/{task_id} を巻き戻しました（痕跡は残していません）",
+                file=sys.stderr,
+            )
+        else:
+            print(f"検証に失敗しました: tasks/{task_id}", file=sys.stderr)
         return 1
 
     print(output.rstrip())
