@@ -44,18 +44,22 @@ _ALLOW_NUMBER_PATHS = {
     "contract.conventions_rev",
 }
 _NUMBER_SCAN_PATHS = ("intent.", "inputs.denominator.", "prereg.")
+# 🔴 終端は $ ではなく \Z を使い、照合は fullmatch で行う。
+#    Python の $ は**文字列末尾の改行の直前にも一致する**ため、$ と match の組み合わせは
+#    改行を含む値を通してしまう（fetch_task.py で実際に悪用可能な欠陥として見つかった形）。
+#    ここは内部の経路文字列を見る箇所だが、書き方を検証系全体で揃える。
 _PIPE_STRICT_PATHS = (
-    re.compile(r"^meta\.title$"),
-    re.compile(r"^intent\.(question|decision_at_stake|hypothesis)$"),
-    re.compile(r"^plan\.phases\.\d+\.name$"),
-    re.compile(r"^plan\.gates\.\d+\.check$"),
-    re.compile(r"^outputs\.acceptance\.\d+$"),
+    re.compile(r"meta\.title\Z"),
+    re.compile(r"intent\.(question|decision_at_stake|hypothesis)\Z"),
+    re.compile(r"plan\.phases\.\d+\.name\Z"),
+    re.compile(r"plan\.gates\.\d+\.check\Z"),
+    re.compile(r"outputs\.acceptance\.\d+\Z"),
 )
 _WARN_CHECKS = {"L1-3W"}
 
 
 def _is_pipe_strict(path: str) -> bool:
-    return any(pattern.match(path) for pattern in _PIPE_STRICT_PATHS)
+    return any(pattern.fullmatch(path) for pattern in _PIPE_STRICT_PATHS)
 
 
 @dataclass(frozen=True)

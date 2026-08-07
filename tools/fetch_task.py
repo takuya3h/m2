@@ -38,9 +38,10 @@ TASKS_DIR = REPO_ROOT / "tasks"
 BUNDLE_MAGIC = "#!TASK-BUNDLE"
 BUNDLE_VERSION = "v1"
 MIN_DELIM_LEN = 40
-_DELIM_RE = re.compile(r"^[A-Za-z0-9_-]+$")
+# 終端は $ ではなく \Z。$ は末尾の改行の直前にも一致するため、検証の門番には使わない。
+_DELIM_RE = re.compile(r"[A-Za-z0-9_-]+\Z")
 _HEADER_RE = re.compile(
-    rf"^{re.escape(BUNDLE_MAGIC)}\s+(?P<version>v\d+)\s+delim=(?P<delim>\S+)\s*$"
+    rf"{re.escape(BUNDLE_MAGIC)}\s+(?P<version>v\d+)\s+delim=(?P<delim>\S+)\s*\Z"
 )
 # 取り込みを認めるファイル。契約そのものだけを受け取り、実行後の成果物は受け取らない。
 ALLOWED_FILES = ("spec.yaml", "SPEC.md", "prereg.md")
@@ -68,7 +69,7 @@ def parse_bundle(text: str) -> dict[str, str]:
     if header_index is None:
         raise BundleError("入力が空です")
 
-    header = _HEADER_RE.match(lines[header_index].strip())
+    header = _HEADER_RE.fullmatch(lines[header_index].strip())
     if not header:
         raise BundleError(
             f"先頭行が {BUNDLE_MAGIC} {BUNDLE_VERSION} delim=<区切り> の形式ではありません"
@@ -79,7 +80,7 @@ def parse_bundle(text: str) -> dict[str, str]:
     delim = header.group("delim")
     if len(delim) < MIN_DELIM_LEN:
         raise BundleError(f"区切りが短すぎます（{len(delim)} 文字、{MIN_DELIM_LEN} 文字以上が必要）")
-    if not _DELIM_RE.match(delim):
+    if not _DELIM_RE.fullmatch(delim):
         raise BundleError("区切りに使えない文字が含まれます（英数字とハイフンと下線のみ）")
 
     files: dict[str, list[str]] = {}
@@ -141,7 +142,7 @@ def task_id_from_spec(spec_text: str) -> str:
     task_id = (data.get("meta") or {}).get("task_id")
     if not task_id or not isinstance(task_id, str):
         raise BundleError("spec.yaml に meta.task_id がありません")
-    if not _TASK_ID_RE.match(task_id):
+    if not _TASK_ID_RE.fullmatch(task_id):
         raise BundleError(f"task_id の形式が規約に合いません: {task_id!r}")
     return task_id
 
@@ -166,7 +167,7 @@ def pack_bundle(files: dict[str, str], delim: str | None = None) -> str:
 
     if delim is None:
         delim = secrets.token_hex(24)
-    if len(delim) < MIN_DELIM_LEN or not _DELIM_RE.match(delim):
+    if len(delim) < MIN_DELIM_LEN or not _DELIM_RE.fullmatch(delim):
         raise BundleError("区切りが要件を満たしません")
     for name, body in files.items():
         if delim in body:
