@@ -40,12 +40,12 @@ ECMA-262 ではなく Python の `$` の意味論（末尾改行の直前にも�
 | `tools/validate_task.py:119` | 無名 | `exp:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+` | `fullmatch` | なし | 拒否 | 安全 |
 | `tools/validate_task.py:126` | 無名 | `run:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+` | `fullmatch` | なし | 拒否 | 安全 |
 | `tools/validate_task.py:32` | `_ANCHOR_RE` | `<a id="([a-z0-9_]+)"></a>` | `findall` | なし | 該当なし | 抽出用。門番ではない |
-| `tools/validate_task.py:37` | `_NUMBER_RE` | `(?<!…)(\d+\.\d+\|\d{4,})(?!…)` | `search` | なし | 該当なし | 検出用。部分一致が目的 |
+| `tools/validate_task.py:37` | `_NUMBER_RE` | 小数または 4 桁以上の数値を選択で拾う。前後は否定先読み | `search` | なし | 該当なし | 検出用。部分一致が目的 |
 | `tools/fetch_task.py:41` | `_DELIM_RE` | `^[A-Za-z0-9_-]+$` | `match` | `$` | 通る | 要修正（後述） |
 | `tools/fetch_task.py:43` | `_HEADER_RE` | `…delim=(?P<delim>\S+)\s*$` | `match` | `$` | 到達不能 | 要修正（予防） |
 | `tools/fetch_task.py:52` | `_TASK_ID_RE` | `^T-\d{4}-\d{2}-\d{2}-[a-z0-9-]+\Z` | `match` | `\Z` | 拒否 | 前 task で修正済み |
 | `tools/fetch_task.py:53` | `_URL_RE` | `^https?://` | `match` | なし | 該当なし | 接頭辞判定が目的 |
-| `tools/build_context.py:45` | `_BACKLOG_ID_RE` | `^\|\s*(~~)?(BL-…)` | `match` | なし | 該当なし | 接頭辞判定が目的 |
+| `tools/build_context.py:45` | `_BACKLOG_ID_RE` | 行頭の表区切りに続く `BL-` 識別子 | `match` | なし | 該当なし | 接頭辞判定が目的 |
 | `tools/preflight_task.py:113,117,118` | 無名 | 節・SHA・パスの抽出 | `search` | — | 該当なし | 抽出用。門番ではない |
 
 `_PIPE_STRICT_PATHS` を「影響なし」とした理由。これらは**契約の入力値ではなく、
