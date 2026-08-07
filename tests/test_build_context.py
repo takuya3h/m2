@@ -63,3 +63,26 @@ def test_no_entries_when_backlog_empty():
     entries, skipped = _parse_backlog_entries("")
     assert entries == []
     assert skipped == 0
+
+
+def test_stamp_uses_runindex_commit_not_head():
+    """生成元は HEAD ではなく runindex の最終更新 commit である。
+
+    context/auto/ を commit すると HEAD が進むため、HEAD を基準にすると
+    生成物が自分自身の commit で陳腐化し、検査が常時失敗する。
+    """
+    from build_context import resolve_stamp_source
+
+    source = resolve_stamp_source()
+    assert source["path"] == "runindex/"
+    assert source["commit"]
+    assert source["date"]
+
+
+def test_stamp_is_stable_when_only_head_moves():
+    """runindex が変わらない限り、スタンプは変化しない。"""
+    from build_context import resolve_stamp_source
+
+    first = resolve_stamp_source()
+    second = resolve_stamp_source()
+    assert first == second

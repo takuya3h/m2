@@ -51,10 +51,26 @@ def _run_git(args: list[str]) -> str:
     ).stdout.strip()
 
 
+STAMP_PATH = "runindex/"
+
+
+def resolve_stamp_source() -> dict[str, str]:
+    """生成物のスタンプ元を返す。
+
+    context/auto/ は runindex/ の投影であり、HEAD の状態ではない。
+    HEAD を使うと context/auto/ 自身の commit で陳腐化するため、
+    runindex/ を最後に変更した commit を基準にする。
+    """
+    out = _run_git(["log", "-1", "--format=%H%x09%cI", "--", STAMP_PATH])
+    if not out:
+        return {"path": STAMP_PATH, "commit": "UNKNOWN", "date": "UNKNOWN"}
+    commit, date = out.split("\t", 1)
+    return {"path": STAMP_PATH, "commit": commit, "date": date}
+
+
 def _commit_info() -> tuple[str, str]:
-    commit = _run_git(["rev-parse", "HEAD"])
-    date = _run_git(["log", "-1", "--format=%cI"])
-    return commit, date
+    source = resolve_stamp_source()
+    return source["commit"], source["date"]
 
 
 def _rows(name: str) -> list[dict[str, str]]:
@@ -116,7 +132,8 @@ def _parse_backlog_entries(text: str) -> tuple[list[dict[str, Any]], int]:
 
 
 def build_state() -> str:
-    commit, date = _commit_info()
+    source = resolve_stamp_source()
+    commit, date = source["commit"], source["date"]
     index_rows = _rows("index.csv")
     exp_rows = _rows("experiments.csv")
     verdict_rows = _rows("verdicts.csv")
@@ -128,6 +145,7 @@ def build_state() -> str:
         "",
         "# STATE — 数値の現在地",
         "",
+        f"    generated_from:        {source['path']}",
         f"    generated_from_commit: {commit}",
         f"    generated_from_date:   {date}",
         f"    runindex_counts:       index={n_index} experiments={n_exp} verdicts={n_verdict}",
@@ -234,13 +252,15 @@ def build_state() -> str:
 
 
 def build_open_questions() -> str:
-    commit, date = _commit_info()
+    source = resolve_stamp_source()
+    commit, date = source["commit"], source["date"]
     lines: list[str] = [
         DECLARATION,
         CHECK_NOTICE,
         "",
         "# open_questions — 未解決事項",
         "",
+        f"    generated_from:        {source['path']}",
         f"    generated_from_commit: {commit}",
         f"    generated_from_date:   {date}",
         "",
@@ -322,7 +342,8 @@ def _write_csv(
 ) -> None:
     with path.open("w", newline="", encoding="utf-8") as fh:
         fh.write(
-            f"# {DECLARATION[5:-4].strip()} generated_from_commit={commit} generated_from_date={date}\n"
+            f"# {DECLARATION[5:-4].strip()} generated_from={STAMP_PATH}"
+            f" generated_from_commit={commit} generated_from_date={date}\n"
         )
         writer = csv.DictWriter(fh, fieldnames=columns)
         writer.writeheader()
