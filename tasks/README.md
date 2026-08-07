@@ -63,6 +63,17 @@ slug は英小文字・数字・ハイフンのみ。3〜60 文字。
 
 ## 検証
 
+**契約を扱う前に、そのホストで一度 `make setup` を実行すること。**
+検証は `jsonschema` と `PyYAML` に依存しており、未導入のホストでは
+`make task-validate` が依存不足で失敗する。
+
+    make setup                          # dev 依存を .venv へ導入し、読み込みまで確認する
+
+`make setup` は導入先を `.venv/bin/python` に明示し、導入手段が無ければ
+明確なエラーで停止する。素の `pip` へは退避しない（別の環境へ入るため）。
+導入後に読み込みを確認するので、**「導入済み」の表示だけで成功と判断しない。**
+何度実行しても到達する状態は同じである。
+
     make task-validate                  # tasks/ 配下すべて
     make task-validate TASK=<task_id>   # 1 件だけ
     make task-preflight TASK=<task_id>  # 実行直前（L3）
@@ -144,6 +155,13 @@ squash merge や rebase merge で同じ task が複数 ref に現れるのは正
 | ホスト | 差分 | 影響 |
 |---|---|---|
 | efros | repo パスが他ホストの標準と異なる | ホスト横断スクリプトでパスを決め打ちすると失敗する。実行時に確認すること |
+| lecun | `.venv` に導入コマンドが無い。`.venv/bin/pip` が存在せず `python -m pip` も `No module named pip` を返す | `.venv` を activate しても `pip` は pyenv の shim に解決される。**導入は成功を表示しながら別の環境へ入る。** 導入には `make setup` を使うこと |
+
+依存の導入は、ホストによって仮想環境の作られ方が異なるため一様ではない。
+上表の lecun は 2026-08-07 の実測である（`.venv` 有効時に `which python` は
+`.venv/bin/python` を指すが `which pip` は `~/.pyenv/shims/pip` を指す、という
+非対称な状態）。**「導入済みと表示された」ことを、仮想環境に入った根拠にしてはならない。**
+読み込みまで確認して初めて成功とする。他ホストの状態は未検証である。
 
 凍結源 ckpt は 2026-08-06 時点で 11 ホスト中 11 ホストに存在し、SHA-256 は全一致。
 mtime もナノ秒まで同一である。`third_party/` は git の追跡対象外だが、実体は
@@ -159,3 +177,25 @@ mtime もナノ秒まで同一である。`third_party/` は git の追跡対象
 
 同じ型の誤りは検索語でも起きる。秘匿の混入を `sk-` で探すと `task-id` に一致する。
 **検査が対象を検査できているかを、陽性と陰性の両方で確かめること。**
+
+## 自動同期の確認方法
+
+自動同期の記録は**中断時にのみ書かれる**。成功時も見送り時も書かれないため、
+**記録が無いことは不発火を意味しない。**
+
+記録が書かれるのは、staging の失敗・秘匿の検出・容量超過・commit の失敗・
+push の失敗のときだけである。見送り（作業ブランチが `exp/*` でない、配備鍵が未構成、
+staging の差分が空、緊急停止の環境変数が有効）では何も書かれない。成功でも書かれない。
+
+発火の確認には、生成された commit の履歴と遠隔との差を見る。
+
+    git log --oneline -5
+    git rev-list --count origin/$(git branch --show-current)..HEAD
+
+自動で作られた commit は件名の末尾に自動同期の印が付くため、履歴から探せる。
+
+    git log --oneline --grep='auto-sync'
+
+2026-08-07 に lecun で実測した例では、発火して commit と送出まで到達したにもかかわらず
+記録は 0 件のままだった。**記録の有無を発火の判定に使ってはならない。**
+詳細は未解決事項の一覧の `BL-autosync-log-only-on-abort` を参照。
