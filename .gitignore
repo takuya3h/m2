@@ -161,6 +161,20 @@ experiments/phase0/_prior_no_eval_recipe/
 # 載らない」運用欠陥の手がかり。回収可能な指標を持つ nmsfree/hand2det_dev は対象外。
 experiments/_orphan_no_metrics/
 
+# === 動作確認用の一時成果物（収穫対象外）===
+# 2026-08-06 の実測（T-2026-08-06-frozen-source-and-sigma-notation / pth_inventory.md）で、
+# 次の 3 件は index.csv に 1 件もヒットせず、config.yaml と metrics.json を持たないため
+# harvest_runindex.py の収穫要件を満たさないことが確認済み。
+# **削除はしない**（checkpoints を将来の検証に使える）。
+#
+# 🔴 `experiments/**/_smoke_*/` のような広い書き方にしてはならない。それは
+#    experiments/_smoke_prior/（追跡 36 ファイル・index.csv に 6 run 収録）にも一致し、
+#    そこへ後から加わる証跡を静かに取りこぼす。backlog B-28 と同型の危険である。
+#    無視するのは実測で収穫対象外と確認できたものだけに限る。
+experiments/transfer/_smoke_artifacts_ctrl/
+experiments/transfer/_smoke_artifacts_inj/
+experiments/transfer/_smoke_fullval/
+
 # === 退避済みプロンプト (新シリーズで置換済み、ローカル参照用) ===
 prompts_legacy/
 prompts_n_legacy/
