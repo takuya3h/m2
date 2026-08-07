@@ -120,3 +120,71 @@ Syncthing の星型トポロジ（各ノード → philip、`keeper.sh` の記�
 
 この未 commit 変更は本 task の作業開始前から存在しており、本 task では触れていない
 （禁止事項ではないが、本 task の変更対象ではないため）。処理は別 task の対象とする。
+
+---
+
+## 再監査（2026-08-08）
+
+実施 task: `T-2026-08-08-stdin-intake-and-anchor-cleanup`（Phase C）
+実測ホスト: `ilya`（`hostname` は `aolab`、IP `172.17.0.14`）
+**このフェーズも読み取り専用。他ホストへは一切書き込んでいない。**
+
+### 到達手段の実測
+
+| 項目 | 実測 |
+|---|---|
+| `~/.ssh/config` の定義 | `philip` と `github.com` の 2 件のみ |
+| `ProxyJump` / `ProxyCommand` | **いずれも定義なし**（迂回経路が存在しない） |
+| 名前解決（`getent hosts`） | 11 ホスト全て NG |
+| 経路 | 自ホスト `172.17.0.14`、default gw `172.17.0.1`（Docker bridge） |
+
+### 到達できたホスト
+
+**0 台。** 前回（2026-08-07）と同じ結果である。
+
+### 到達できなかったホスト
+
+| ホスト | 実測した理由 |
+|---|---|
+| `philip` | `ssh: connect to host 192.168.196.150 port 50072: No route to host` |
+| 他 10 ホスト（`lecun` `ilya` `bengio` `andrew` `he` `adam` `hinton` `ian` `dlsta` `efros`） | `ssh: Could not resolve hostname <host>: Name or service not known` |
+
+**到達できないことは伝播の欠落を意味しない。** 実測ホストの
+ネットワーク位置（Docker bridge 上）から他ホストへの経路と名前解決が無い、という
+実測ホスト側の制約である。他ホストの状態は依然として **UNKNOWN** である。
+
+### 実測ホスト側の keeper の現況
+
+| 部品 | 実測 |
+|---|---|
+| keeper 本体 | 稼働中。**1 プロセス**（PID 73082、起動は 7月04） |
+| syncthing | 稼働中（2 プロセス） |
+| philip への SSH トンネル | **未稼働**（`ps` で `ssh -N -L 22001` に該当なし） |
+| `origin/phase0` への追従 | behind 0 |
+
+> 前回の監査では `pgrep -af 'ssh.*-L 22001'` が検査コマンド自身に一致する偽陽性を起こした。
+> 今回は keeper の計数でも `pgrep -c -f 'bin/keeper.sh'` が同じ理由で 3 を返したため、
+> `ps -eo args` と文字クラスによる自己除外で数え直して 1 と確定した。
+> **検査コマンド自身が検査対象に混入する誤りは繰り返し起きる。**
+
+### 前回の申し送りの解決を確認
+
+前回の監査は「auto-merge が 30 分ごとにスキップされ続けている」と記録し、
+原因を未 commit の追跡変更 1 件（`tasks/T-2026-08-03-task-contract-bootstrap/SPEC.md` の
+行末空白除去）と特定していた。`T-2026-08-08-regex-audit-and-cleanup` でこれを破棄し、
+未追跡の smoke ディレクトリ 3 件を無視設定へ入れた結果、**auto-merge は実際に動いた**。
+
+    2026-08-07 14:25:16 [ilya] auto-merge skip: 追跡変更 1 件 (behind 1)
+    2026-08-07 17:55:45 [ilya] auto-merge: feat/regex-audit-and-cleanup <- origin/phase0 (1 commits)
+    2026-08-07 17:55:48 [ilya] auto-push: feat/regex-audit-and-cleanup (1 commits)
+
+前回「次の 30 分周期を待つ必要がある」として未検証にしていた項目は、これで実測により解決した。
+
+### 結論
+
+到達範囲は前回から広がっていない。**到達できた 0 台 / 到達できなかった 11 台**であり、
+他ホストの伝播状況は引き続き **UNKNOWN** である。監査を完遂するには、LAN に到達できる
+ホスト（`philip` など）から同じ手順を回す必要がある。
+
+実測ホスト自身については、git 追跡物の伝播（GitHub 経由）と keeper の自動追従が
+**動いていることを確認できた**。これは 1 台分の実測であり、全台の実測ではない。

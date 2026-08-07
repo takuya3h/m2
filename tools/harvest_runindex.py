@@ -200,10 +200,14 @@ HOST_ALIASES: dict[str, dict[str, Any]] = {
     },
 }
 
-RUN_NAME_RE = re.compile(r"^(?P<step>.+?)_(?P<seq>\d{3})_(?P<desc>.+)_seed(?P<seed>\d+)$")
+# 終端は $ ではなく \Z を使い、照合は fullmatch で行う。Python の $ は**文字列末尾の
+# 改行の直前にも一致する**ため、末尾に改行を持つディレクトリ名が「改行を落とした値」で
+# 捕獲されてしまう（実測: "…_seed42\n" が seed='42' として通る）。異なる 2 つの
+# ディレクトリが同じ ledger_key へ潰れうるため、検証系と同じ書き方に揃える。
+RUN_NAME_RE = re.compile(r"(?P<step>.+?)_(?P<seq>\d{3})_(?P<desc>.+)_seed(?P<seed>\d+)\Z")
 # seq を持たない別系統の命名 (g2_* 群: base_seed42 / bboxROI_seed123 / shuffleROI_seed456)。
 # ExperimentManager を経由せずに作られた run。step は description と同じものを充てる。
-RUN_NAME_NOSEQ_RE = re.compile(r"^(?P<desc>.+?)_seed(?P<seed>\d+)$")
+RUN_NAME_NOSEQ_RE = re.compile(r"(?P<desc>.+?)_seed(?P<seed>\d+)\Z")
 
 # --------------------------------------------------------------------------- #
 # ディレクトリ名の det<N> / p<N> トークン
@@ -320,7 +324,7 @@ def parse_run_name(name: str, command: str | None = None) -> tuple[dict[str, Any
         "aux_token_provenance": "no_aux_token",
         "name_provenance": "not_determinable",
     }
-    m = RUN_NAME_RE.match(name)
+    m = RUN_NAME_RE.fullmatch(name)
     if m:
         out["step"] = m.group("step")
         out["seq"] = int(m.group("seq"))
@@ -328,7 +332,7 @@ def parse_run_name(name: str, command: str | None = None) -> tuple[dict[str, Any
         out["seed"] = int(m.group("seed"))
         out["name_provenance"] = "from_dirname_step_seq_desc_seed"
     else:
-        m2 = RUN_NAME_NOSEQ_RE.match(name)
+        m2 = RUN_NAME_NOSEQ_RE.fullmatch(name)
         if not m2:
             warnings.append(f"run 名が命名規約 <step>_<seq3>_<desc>_seed<N> に一致しない: {name}")
             return out, warnings
@@ -1359,7 +1363,7 @@ DELTA_SECTION_RE = re.compile(r"^##+\s*Δ.*?$(.*?)(?=^##|\Z)", re.M | re.S)
 CONTROL_VALUE_RE = re.compile(r"([01]\.\d{3,4})\s*±\s*([0-9.]+)")
 # 分母宣言の先頭トークン (= step) と、括弧内が識別子なら description
 DENOM_RE = re.compile(r"^\s*(?P<step>[A-Za-z0-9_.-]+)(?:\s+base)?\s*(?:\((?P<paren>[^)]*)\))?")
-IDENTIFIER_RE = re.compile(r"^[a-z0-9_]+$")
+IDENTIFIER_RE = re.compile(r"[a-z0-9_]+\Z")
 
 
 def _parse_denominator(text: str) -> dict[str, Any]:
@@ -1378,7 +1382,7 @@ def _parse_denominator(text: str) -> dict[str, Any]:
     if not m:
         return {"kind": "unparseable", "step": None, "description": None}
     paren = (m.group("paren") or "").strip()
-    desc = paren if IDENTIFIER_RE.match(paren) else None
+    desc = paren if IDENTIFIER_RE.fullmatch(paren) else None
     return {"kind": "run_reference", "step": m.group("step"), "description": desc}
 
 

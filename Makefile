@@ -106,6 +106,12 @@ task-preflight:
 task-fetch:
 	@.venv/bin/python tools/fetch_task.py --src $(SRC)
 
+# 供給元が外部のテキスト面で、実行ホストへファイルを置けない場合に使う。
+# 貼り付けで完結し、中間ファイルを作らないため失敗しても何も残らない。
+.PHONY: task-paste
+task-paste:
+	@.venv/bin/python tools/fetch_task.py --src -
+
 clean:
 	find . -type d -name __pycache__ -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
