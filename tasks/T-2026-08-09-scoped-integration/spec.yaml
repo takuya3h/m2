@@ -1,0 +1,70 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-09-scoped-integration"
+  kind: impl
+  title: "派生物を除いた範囲で統合を起票し、実行ホストに残る退避物を棚卸しする"
+  origin: claude-app
+  created_at: "2026-08-09T18:00:00Z"
+  created_from:
+    runindex_commit: "12cc0e8"
+    counts: {index: 749, experiments: 206, verdicts: 1038}
+  depends_on: ["T-2026-08-09-wiring-followup-and-integration"]
+  amendments: []
+
+intent:
+  question: "派生物を除いた範囲だけを統合し、実行ホスト固有の残置物を持ち込まずに済むか"
+  decision_at_stake: "実行ホストの索引を全ホストの正本とするか、各ホストで再生成させるか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["tools/harvest_runindex.py"]
+
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#naming]
+  conventions_rev: "d422b08"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "統合範囲の切り出しと起票", gpu: false, est: "50m"}
+    - {id: B, name: "実行ホストに残る退避物の棚卸し", gpu: false, est: "40m"}
+    - {id: C, name: "自己契約と完了判定", gpu: false, est: "20m"}
+  gates:
+    - id: G1
+      after: A
+      check: "切り出した範囲に派生物が含まれないことを実測で確認した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "残置物を移動も削除もせず、所在と由来だけを記録した"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md, leftover_inventory.md]
+  destination: "tasks/"
+  acceptance:
+    - "統合用の分岐が統合先から派生している"
+    - "切り出した範囲に索引と軽量ビューが含まれない"
+    - "一次証跡と契約と道具の変更が含まれている"
+    - "統合の起票が作られ本文に範囲の一覧がある"
+    - "実行ホストに残る退避物の所在と由来が記録されている"
+    - "退避物が移動も削除もされていない"
+    - "make task-validate が exit 0"
+    - "make task-preflight が exit 0"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [derived_artifact_in_scope, leftover_moved_or_deleted]
