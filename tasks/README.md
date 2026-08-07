@@ -63,6 +63,17 @@ slug は英小文字・数字・ハイフンのみ。3〜60 文字。
 
 ## 検証
 
+**契約を扱う前に、そのホストで一度 `make setup` を実行すること。**
+検証は `jsonschema` と `PyYAML` に依存しており、未導入のホストでは
+`make task-validate` が依存不足で失敗する。
+
+    make setup                          # dev 依存を .venv へ導入し、読み込みまで確認する
+
+`make setup` は導入先を `.venv/bin/python` に明示し、導入手段が無ければ
+明確なエラーで停止する。素の `pip` へは退避しない（別の環境へ入るため）。
+導入後に読み込みを確認するので、**「導入済み」の表示だけで成功と判断しない。**
+何度実行しても到達する状態は同じである。
+
     make task-validate                  # tasks/ 配下すべて
     make task-validate TASK=<task_id>   # 1 件だけ
     make task-preflight TASK=<task_id>  # 実行直前（L3）
