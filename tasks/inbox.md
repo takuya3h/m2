@@ -28,6 +28,12 @@
 - [ ] 2026-08-08 [cc] 第二の実装系の hook 設定の様式が公開情報から判明せず、走査で代替した。様式が判明したら登録へ切り替える（tools/session_digest.py の sweep_codex）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] P7 が「これから作る出力先」を FAIL にしていた。新しい出力領域を作る契約で必ず出る偽陽性で、修正済み（tools/preflight_task.py）
+- [ ] 2026-08-09 [cc] 下書き起票が全ホストで失敗している。secret は設定済みだが 401 で、ワークフローは未設定しか検出せず「未設定」と誤誘導する。失効の検出を足すのは別 task（.github/workflows/auto-draft-pr.yml）
+- [ ] 2026-08-09 [cc] 索引の行数がホスト依存。収穫器はディスクを走査するため退避 34 件の有無で分母が動く。解析対象は不変だが L2-8 の WARN が今後も出る。運用方針が未決（runindex/index.csv）
+- [ ] 2026-08-09 [cc] 配線確認 run は接頭辞を外すだけでは足りず description の指定も要る。接頭辞は索引から消し、既定名は本走と同一グループに束ねる。命名規約への昇格を提案（T-2026-08-09-run-wiring-verification）
+- [ ] 2026-08-09 [cc] GPU を使う契約なのに plan.env.preflight に cuda_ext_loaded が無く P2 が SKIP。env_p0 は記録を要求しており検査器と規約に隙間がある（tasks/_templates/impl/spec.yaml）
+- [ ] 2026-08-09 [cc] 検査コマンドの誤りが本 task でも 2 件。sync-alerts.log の不在を不発火と判定する条件と、cwd 不足で拡張 import が偽陰性になる条件（T-2026-08-09-run-wiring-verification §10 D-1/D-2）
+- [ ] 2026-08-09 [cc] 生成した run の後始末が未決。残すか除外規則を足すか、notes.md を埋めるかの 4 点（experiments/baselines/s0_040_wiring_verification_seed42/）
 
 ## 処理済み
 
