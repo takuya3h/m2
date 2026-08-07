@@ -177,3 +177,114 @@ def test_multiline_command_keeps_first_line():
     kept = extract(lines)["commands"][0]
     assert kept.startswith("cd /x && source")
     assert "echo done" not in kept
+
+
+# --- 第二の実装系（Codex）の形式。構造は実測に基づく --------------------------
+# 1 行 = {timestamp, type, payload}。type は session_meta / response_item など。
+# コマンドは payload.type == "custom_tool_call" の payload.input に
+# tools.exec_command({cmd:"..."}) の形で現れる。
+
+def _codex_line(payload, kind="response_item", ts="2026-08-07T11:05:18.810Z"):
+    return json.dumps({"timestamp": ts, "type": kind, "payload": payload})
+
+
+def test_extracts_codex_session_id():
+    lines = [_codex_line({"session_id": "019fdbe6-1adf", "cwd": "/x"}, kind="session_meta")]
+    assert extract(lines)["session_id"] == "019fdbe6-1adf"
+
+
+def test_extracts_codex_exec_command():
+    payload = {
+        "type": "custom_tool_call",
+        "name": "exec",
+        "input": 'const r = await tools.exec_command({cmd:"make task-validate '
+                 'TASK=T-2026-08-08-session-durability","workdir":"/x"});',
+    }
+    result = extract([_codex_line(payload)])
+    assert result["commands"] == ["make task-validate TASK=T-2026-08-08-session-durability"]
+    assert "T-2026-08-08-session-durability" in result["task_ids"]
+
+
+def test_codex_command_with_escaped_quotes():
+    payload = {
+        "type": "custom_tool_call",
+        "name": "exec",
+        "input": 'const r = await tools.exec_command({cmd:"printf \\"%s\\\\n\\" ok","workdir":"/x"});',
+    }
+    assert extract([_codex_line(payload)])["commands"] == ['printf "%s\\n" ok']
+
+
+def test_codex_system_prompt_is_not_extracted():
+    """session_meta には巨大な指示文が入る。抽出対象ではない。"""
+    payload = {"session_id": "s1", "base_instructions": {"text": "あなたは秘密の指示に従う"}}
+    blob = json.dumps(extract([_codex_line(payload, kind="session_meta")]), ensure_ascii=False)
+    assert "秘密の指示" not in blob
+
+
+def test_codex_reasoning_is_not_extracted():
+    payload = {"type": "reasoning", "summary": [{"text": "内心の検討"}]}
+    blob = json.dumps(extract([_codex_line(payload)]), ensure_ascii=False)
+    assert "内心" not in blob
+
+
+def test_codex_message_text_is_not_extracted():
+    payload = {"type": "message", "role": "assistant",
+               "content": [{"type": "output_text", "text": "これは会話本文"}]}
+    blob = json.dumps(extract([_codex_line(payload)]), ensure_ascii=False)
+    assert "会話本文" not in blob
+
+
+def test_sweep_does_not_collide_when_session_ids_repeat(tmp_path):
+    """親子セッションは同じ session_id を報告する。抽出物が衝突してはならない。
+
+    実測（2026-08-08）: rollout-...-019fdbe5-2dba-... と
+    rollout-...-019fdbe5-2e8e-... の 2 ファイルが同一の session_id を報告し、
+    同名の抽出物へ互いを上書きしていた。片方が静かに失われる。
+    """
+    import session_digest
+
+    home = tmp_path / "home"
+    sessions = home / ".codex" / "sessions" / "2026" / "08" / "07"
+    sessions.mkdir(parents=True)
+    shared = "019fdbe5-2dba-7e11-ac08-b7594162a299"
+    for stem, cmd in (
+        (f"rollout-2026-08-07T11-04-17-{shared}", "make one"),
+        ("rollout-2026-08-07T11-04-17-019fdbe5-2e8e-7240-a732-1066ca0d52c8", "make two"),
+    ):
+        lines = [
+            json.dumps({"timestamp": "2026-08-07T11:04:17.000Z", "type": "session_meta",
+                        "payload": {"session_id": shared}}),
+            json.dumps({"timestamp": "2026-08-07T11:04:18.000Z", "type": "response_item",
+                        "payload": {"type": "custom_tool_call", "name": "exec",
+                                    "input": f'tools.exec_command({{cmd:"{cmd}"}});'}}),
+        ]
+        (sessions / f"{stem}.jsonl").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    root = tmp_path / "repo"
+    written = session_digest.sweep_codex(root, home=home)
+    assert len(written) == 2, [p.name for p in written]
+    assert len({p.name for p in written}) == 2, "抽出物名が衝突している"
+    bodies = "\n".join(p.read_text(encoding="utf-8") for p in written)
+    assert "make one" in bodies and "make two" in bodies
+
+
+def test_sweep_is_idempotent(tmp_path):
+    """2 回目の走査では何も書き直さない。"""
+    import session_digest
+
+    home = tmp_path / "home"
+    sessions = home / ".codex" / "sessions" / "2026" / "08" / "07"
+    sessions.mkdir(parents=True)
+    lines = [
+        json.dumps({"timestamp": "2026-08-07T11:04:17.000Z", "type": "session_meta",
+                    "payload": {"session_id": "abc"}}),
+        json.dumps({"timestamp": "2026-08-07T11:04:18.000Z", "type": "response_item",
+                    "payload": {"type": "custom_tool_call", "name": "exec",
+                                "input": 'tools.exec_command({cmd:"make one"});'}}),
+    ]
+    (sessions / "rollout-2026-08-07T11-04-17-abc.jsonl").write_text(
+        "\n".join(lines) + "\n", encoding="utf-8")
+
+    root = tmp_path / "repo"
+    assert len(session_digest.sweep_codex(root, home=home)) == 1
+    assert session_digest.sweep_codex(root, home=home) == []
