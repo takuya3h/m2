@@ -4,8 +4,8 @@
 # open_questions — 未解決事項
 
     generated_from:        runindex/
-    generated_from_commit: 12cc0e82d8663f234f1d5898b05a30e0ace5758f
-    generated_from_date:   2026-08-06T11:58:50+00:00
+    generated_from_commit: 100abd04901218403c291f0eca460bac15680890
+    generated_from_date:   2026-08-07T21:24:10+00:00
 
 backlog（`tools/harvest_runindex.py` の `BACKLOG`）から抽出した未解決事項の一覧。
 本文は載せない。詳細は `runindex/anomalies/backlog.md` を参照。
@@ -46,5 +46,7 @@ backlog（`tools/harvest_runindex.py` の `BACKLOG`）から抽出した未解�
 | BL-backlog-pipe-breaks-columns | B-33 | 🔴 | BACKLOG の Markdown 表に半角パイプを含む本文を書くと列数が壊れる |
 | BL-ledger-key-namespace-collision | B-34 | 🔴 | `ledger_key` の名前空間が `transfer` と `transfer_legacy` で重なる |
 | BL-third-party-drift-detection | B-35 |  | `third_party/` の drift 検出（配布はしない方針で確定） |
+| BL-harvester-scan-is-host-dependent | B-36 | 🔴 | 収穫器はディスクを走査するため、同じ commit でもホストによって索引の行数が変わる |
+| BL-autosync-log-only-on-abort | B-37 | 🔴 | 自動同期の記録は中断時にのみ書かれるため、記録が無いことは不発火を意味しない |
 
 解決済みとして除外: 1 件

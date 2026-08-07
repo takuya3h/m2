@@ -4,8 +4,8 @@
 # STATE — 数値の現在地
 
     generated_from:        runindex/
-    generated_from_commit: 12cc0e82d8663f234f1d5898b05a30e0ace5758f
-    generated_from_date:   2026-08-06T11:58:50+00:00
+    generated_from_commit: 100abd04901218403c291f0eca460bac15680890
+    generated_from_date:   2026-08-07T21:24:10+00:00
     runindex_counts:       index=784 experiments=215 verdicts=1038
 
 このファイルは runindex から機械的に生成されたものです。
@@ -69,8 +69,8 @@ sigma_source の値別件数:
 
 ## 未解決
 
-- backlog 総数: 35（未解決 34 / 解決済み 1）
-- 未解決のうち 🔴 マーカーあり: 9
+- backlog 総数: 37（未解決 36 / 解決済み 1）
+- 未解決のうち 🔴 マーカーあり: 11
 - slug 一覧: context/auto/open_questions.md を参照
 
 ## 契約
