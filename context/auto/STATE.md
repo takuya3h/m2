@@ -3,8 +3,9 @@
 
 # STATE — 数値の現在地
 
-    generated_from_commit: 2b353f62b880687ba299cffcc2912902b616cbd6
-    generated_from_date:   2026-08-06T12:07:41+00:00
+    generated_from:        runindex/
+    generated_from_commit: 12cc0e82d8663f234f1d5898b05a30e0ace5758f
+    generated_from_date:   2026-08-06T11:58:50+00:00
     runindex_counts:       index=749 experiments=206 verdicts=1038
 
 このファイルは runindex から機械的に生成されたものです。
