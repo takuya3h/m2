@@ -32,18 +32,39 @@ slug は英小文字・数字・ハイフンのみ。3〜60 文字。
 
 ## 検証
 
-    make task-validate                 # tasks/ 配下すべて
-    make task-validate TASK=<task_id>  # 1 件だけ
+    make task-validate                  # tasks/ 配下すべて
+    make task-validate TASK=<task_id>   # 1 件だけ
+    make task-preflight TASK=<task_id>  # 実行直前（L3）
 
-検証は 3 層。
+検証は 3 層。いずれも機械検証であり、散文による判断は含まない。
 
 | 層 | 内容 | 依存 | 所要 |
 |---|---|---|---|
 | L1 | スキーマ・書式・パイプ混入・task_id とディレクトリ名の一致 | なし | 1 秒 |
 | L2 | 参照解決（分母・凍結源・split・規約版・sigma_policy 継承）と task_id の重複 | runindex, git | 数秒 |
-| L3 | 実行直前（venv・CUDA 拡張・prereg commit 時刻・decisions 回答） | GPU ホスト | 数十秒 |
+| L3 | 実行直前（venv・拡張・prereg 時刻・凍結源・decisions・書き込み権限） | 実行環境 | 数秒 |
 
 L1・L2 は GPU 不要。起票直後に回すこと。
+L3 は実行環境そのものを検査するため、**実行するホストで、実行する直前に**回すこと。
+
+### L3 の PASS と SKIP は違う
+
+`make task-preflight` は各検査を `PASS` / `SKIP` / `FAIL` のいずれかで報告する。
+
+| 状態 | 意味 |
+|---|---|
+| `PASS` | 検査を実行し、合格した |
+| `SKIP` | **検査を実行していない。** 契約に列挙されていないか、その kind の対象外か、判定基準が未確定 |
+| `FAIL` | 検査を実行し、不合格だった |
+
+**`SKIP` を「合格」と読んではならない。** 終了コードは `FAIL` が 1 件でもあれば非ゼロ、
+`SKIP` は終了コードを変えない。どの検査がどの条件で実行されるかは
+`tools/preflight_task.py` の適用規則が決める（契約の `meta.kind` と
+`plan.env.preflight` の記載に従う）。
+
+`make` はレシピ失敗時に自身の終了コード 2 を返す。検査器そのものの終了コード
+（`FAIL` があれば 1）を見たい場合は `python tools/preflight_task.py --task <task_id>`
+を直接実行する。
 
 ## task_id の重複検出の範囲
 

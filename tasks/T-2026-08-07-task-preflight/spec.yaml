@@ -1,0 +1,73 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-07-task-preflight"
+  kind: impl
+  title: "実行直前の検査を機械化し、複数の実装系で同一の結果になるようにする"
+  origin: claude-app
+  created_at: "2026-08-07T09:00:00Z"
+  created_from:
+    runindex_commit: "2b353f6"
+    counts: {index: 749, experiments: 206, verdicts: 1038}
+  depends_on: ["T-2026-08-06-make-context"]
+  amendments: []
+
+intent:
+  question: "実行直前の検査を散文から機械へ移し、実装系が変わっても同じ結果になるか"
+  decision_at_stake: "契約の検証を実装系の遵守に委ねるか、決定論的な検査へ移すか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["tools/validate_task.py"]
+
+contract:
+  inject_verbatim: [conventions#env_p0, conventions#frozen_source, conventions#prohibitions]
+  conventions_rev: "1201f4f"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "現状確認と検査項目の実測", gpu: false, est: "30m"}
+    - {id: B, name: "検査器の実装と検証", gpu: false, est: "90m"}
+    - {id: C, name: "手順書の縮約と実装系の相互運用", gpu: false, est: "60m"}
+  gates:
+    - id: G1
+      after: A
+      check: "検査対象の環境変数と凍結源の同定方法を実測で確認した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "検査器が未実施と合格を区別して出力することを実行して確認した"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "二つの実装系で検査器の出力が一致することを実行して確認した"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tools/"
+  acceptance:
+    - "make task-preflight が契約を読み、検査結果を機械可読な形式で出力する"
+    - "契約に列挙されていない検査は未実施として明示され、合格と区別される"
+    - "検査が一つでも失敗すれば終了コードが非ゼロになる"
+    - "手順書が検査器の呼び出しへ置き換えられ、散文による判断が残っていない"
+    - "第二の実装系からも同じ手順で契約を実行できる"
+    - "二つの実装系で検査器の出力が一致する"
+    - "make task-validate が exit 0"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [agent_output_mismatch, venv_detection_unreliable]

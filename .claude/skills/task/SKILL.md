@@ -5,6 +5,15 @@ description: tasks/<task_id>/ の契約を解決・検証・実行する。ユ�
 
 # task — TASK 契約の実行
 
+## 実装系について
+
+この手順は実装系に依存しない。Claude Code では `/task <task_id>`、
+Codex では `$task` または本ファイルを読ませることで同じ手順を実行できる。
+
+検査は `make task-validate` と `make task-preflight` が行う。
+**判断を実装系に委ねる箇所は無い。** 手順書が求めるのはコマンドの実行と、
+終了コードに従った停止だけである。
+
 ## 使い方
 
     /task T-YYYY-MM-DD-slug
@@ -38,18 +47,16 @@ WARN が出た場合は、内容をユーザーに提示してから続行の可
 
 ### 4. L3 プリフライト（実行直前）
 
-| 検査 | 落ちる事故 |
-|---|---|
-| `plan.env.venv` が activate されている | CUDA 拡張の無言フォールバック |
-| `preflight` の各項目（cuda_ext_loaded / deterministic_flags） | 同上・非決定性 |
-| `kind: exp` かつ `prereg.commit` が学習開始より前 | 結果を見てから予測を書く |
-| `governance.decisions_required` が空、または回答済み | CLI の越権 |
-| `outputs.destination` に書き込み権限がある | 実行後の書き込み失敗 |
+    make task-preflight TASK=<task_id>
 
-**1 つでも赤なら GPU を 1 本も回さない。**
+**終了コードが 0 でなければ、ここで停止して報告する。** 出力をそのまま提示すること。
+検査項目を自分で判断してはならない。何を検査するかは契約と検査器が決める。
 
-`decisions_required` が未回答なら、その項目をユーザーに提示して停止する。
-自分で決めてはならない。
+`SKIP` は「合格」ではなく「実行されなかった」を意味する。SKIP された項目があれば、
+その一覧を報告に含める。
+
+`P6 decisions_answered` が FAIL なら、出力に列挙された項目をユーザーへ提示して停止する。
+**自分で決めてはならない。**
 
 ### 5. 実行する
 
