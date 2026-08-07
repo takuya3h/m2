@@ -34,6 +34,11 @@
 - [ ] 2026-08-09 [cc] GPU を使う契約なのに plan.env.preflight に cuda_ext_loaded が無く P2 が SKIP。env_p0 は記録を要求しており検査器と規約に隙間がある（tasks/_templates/impl/spec.yaml）
 - [ ] 2026-08-09 [cc] 検査コマンドの誤りが本 task でも 2 件。sync-alerts.log の不在を不発火と判定する条件と、cwd 不足で拡張 import が偽陰性になる条件（T-2026-08-09-run-wiring-verification §10 D-1/D-2）
 - [ ] 2026-08-09 [cc] 生成した run の後始末が未決。残すか除外規則を足すか、notes.md を埋めるかの 4 点（experiments/baselines/s0_040_wiring_verification_seed42/）
+- [ ] 2026-08-09 [cc] 起票者の走査コマンドが zsh の変数展開修飾子に食われて無言で空を返した。bash では再現しない。ホスト横断のコマンドは変数参照を波括弧で囲むこと（T-2026-08-09-wiring-followup-and-integration §7 D-1）
+- [ ] 2026-08-09 [cc] make setup は既存で、その中身が問題の当事者だった。素の pip が pyenv の shim へ解決され導入先が別環境になる。直した結果 .venv へ初めて届くため、依存の追加は dry-run で確認してから実行した（Makefile）
+- [ ] 2026-08-09 [cc] make setup の他ホストでの動作が未検証。uv も .venv 内 pip も無いホストでは停止する。統合後に各台で一度回して結果を持ち寄る必要がある（tasks/README.md）
+- [ ] 2026-08-09 [cc] 資格情報の失効検出は 401 の経路のみ検証済み。有効な資格情報が無いため通過経路は未検証。再発行後に起票の成功確認が要る（.github/workflows/auto-draft-pr.yml）
+- [ ] 2026-08-09 [cc] 索引の同一性をどう扱うか未定。走査を git 追跡下に限る / 退避一覧を規約化 / 正本ホストを定める の 3 案を B-36 に記載（runindex/anomalies/backlog.md）
 
 ## 処理済み
 
