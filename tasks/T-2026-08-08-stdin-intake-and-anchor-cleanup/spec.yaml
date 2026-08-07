@@ -1,0 +1,73 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-08-stdin-intake-and-anchor-cleanup"
+  kind: impl
+  title: "契約の取り込みを標準入力へ対応させ、収穫器に残る終端一致を揃える"
+  origin: claude-app
+  created_at: "2026-08-08T14:00:00Z"
+  created_from:
+    runindex_commit: "12cc0e8"
+    counts: {index: 749, experiments: 206, verdicts: 1038}
+  depends_on: ["T-2026-08-08-regex-audit-and-cleanup"]
+  amendments: []
+
+intent:
+  question: "契約の受け渡しを中間ファイルなしで完結させ、終端一致の統一を残らず適用できるか"
+  decision_at_stake: "起票から取り込みまでの手数を減らすか、現在の受け渡し手順を維持するか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["tools/fetch_task.py"]
+
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#naming]
+  conventions_rev: "d422b08"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "標準入力からの取り込み", gpu: false, est: "60m"}
+    - {id: B, name: "収穫器の終端一致の統一", gpu: false, est: "40m"}
+    - {id: C, name: "到達可能な範囲での伝播監査", gpu: false, est: "40m"}
+  gates:
+    - id: G1
+      after: A
+      check: "標準入力から取り込めることと、失敗時に痕跡が残らないことを実行して確認した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "収穫器の再生成で行数と除外内訳が変わらないことを実測した"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "到達できたホストの範囲を実測し、到達できない範囲を未確認として区別した"
+      on_fail: ask
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tools/"
+  acceptance:
+    - "標準入力からの取り込みが一つの操作で完結する"
+    - "標準入力からの取り込みが失敗した場合に作業領域へ痕跡が残らない"
+    - "収穫器の終端一致が他の検証系と同じ書き方に揃っている"
+    - "収穫器の再生成で行数と除外内訳が変わらない"
+    - "到達できたホストと到達できないホストが区別して記録されている"
+    - "make task-validate が exit 0"
+    - "make task-preflight が exit 0"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [harvester_output_changed, stdin_intake_leaves_residue]
