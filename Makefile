@@ -92,6 +92,14 @@ context-check:
 task-validate:
 	@.venv/bin/python tools/validate_task.py $(if $(TASK),--task $(TASK),) --level $(if $(LEVEL),$(LEVEL),l2)
 
+# 実行直前検査（L3）。契約を読み、実行環境に依存する検査だけを機械的に行う。
+# 🔴 ここで .venv/bin/python を使ってはならない。preflight は「venv が有効か」を
+#    検査するものであり、Makefile 側で venv を固定すると activate していなくても
+#    通ってしまう（実測済み）。PATH 上の python で現在の環境をそのまま検査する。
+.PHONY: task-preflight
+task-preflight:
+	@python tools/preflight_task.py --task $(TASK)
+
 clean:
 	find . -type d -name __pycache__ -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
