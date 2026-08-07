@@ -285,3 +285,36 @@ def test_rollback_reports_failure_instead_of_claiming_cleanliness(tmp_path, caps
     finally:
         fetch_task.shutil.rmtree = original
     assert "巻き戻しに失敗しました" in capsys.readouterr().err
+
+
+def test_src_dash_reads_stdin(monkeypatch):
+    """--src - は標準入力からバンドルを読む。"""
+    import io
+
+    from fetch_task import read_source
+
+    monkeypatch.setattr("sys.stdin", io.StringIO("#!TASK-BUNDLE v1 delim=X\n"))
+    text = read_source("-")
+    assert text.startswith("#!TASK-BUNDLE")
+
+
+def test_stdin_empty_input_is_rejected(monkeypatch):
+    """空の標準入力は拒否する。"""
+    import io
+
+    from fetch_task import BundleError, read_source
+
+    monkeypatch.setattr("sys.stdin", io.StringIO(""))
+    with pytest.raises(BundleError):
+        read_source("-")
+
+
+def test_stdin_whitespace_only_is_rejected(monkeypatch):
+    """空白のみの標準入力も拒否する。空でないことだけを見ると素通りする。"""
+    import io
+
+    from fetch_task import BundleError, read_source
+
+    monkeypatch.setattr("sys.stdin", io.StringIO("   \n\n  \n"))
+    with pytest.raises(BundleError):
+        read_source("-")

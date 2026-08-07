@@ -52,6 +52,8 @@ REQUIRED_FILES = ("spec.yaml", "SPEC.md")
 #    make のレシピを分断し、別の契約を検証させたうえで exit 0 を返させる経路がある。
 _TASK_ID_RE = re.compile(r"^T-\d{4}-\d{2}-\d{2}-[a-z0-9-]+\Z")
 _URL_RE = re.compile(r"^https?://", re.I)
+# --src - のとき標準入力から読む。中間ファイルを作らずに貼り付けで完結させるため。
+STDIN_MARKER = "-"
 
 
 class BundleError(Exception):
@@ -183,7 +185,18 @@ def pack_bundle(files: dict[str, str], delim: str | None = None) -> str:
 
 
 def read_source(src: str) -> str:
-    """ローカルファイルまたは URL からバンドルを読む。"""
+    """バンドルを読む。`-` は標準入力、それ以外はローカルファイルまたは URL。
+
+    入力の取得方法だけがここで分かれる。取り込みの流れ（一時ディレクトリへの展開・
+    設置・検証・巻き戻し）は取得方法によらず共通であり、複製しない。
+    """
+    if src == STDIN_MARKER:
+        text = sys.stdin.read()
+        # 空でないことだけを見ると、空白だけの貼り付けが素通りして
+        # 「先頭行が形式ではありません」という分かりにくい失敗になる。
+        if not text.strip():
+            raise BundleError("標準入力が空です。バンドルを貼り付けてから入力を終了してください")
+        return text
     if _URL_RE.match(src):
         with urllib.request.urlopen(src, timeout=60) as response:  # noqa: S310
             return response.read().decode("utf-8")
@@ -316,7 +329,7 @@ def fetch(src: str) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--src", help="バンドルのパスまたは URL")
+    parser.add_argument("--src", help="バンドルのパスまたは URL。- を渡すと標準入力から読む")
     parser.add_argument("--pack", help="この契約ディレクトリからバンドルを組み立てて標準出力へ書く")
     args = parser.parse_args()
 
