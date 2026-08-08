@@ -28,6 +28,19 @@
 - [ ] 2026-08-08 [cc] 第二の実装系の hook 設定の様式が公開情報から判明せず、走査で代替した。様式が判明したら登録へ切り替える（tools/session_digest.py の sweep_codex）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] P7 が「これから作る出力先」を FAIL にしていた。新しい出力領域を作る契約で必ず出る偽陽性で、修正済み（tools/preflight_task.py）
+- [ ] 2026-08-09 [cc] 下書き起票が全ホストで失敗している。secret は設定済みだが 401 で、ワークフローは未設定しか検出せず「未設定」と誤誘導する。失効の検出を足すのは別 task（.github/workflows/auto-draft-pr.yml）
+- [ ] 2026-08-09 [cc] 索引の行数がホスト依存。収穫器はディスクを走査するため退避 34 件の有無で分母が動く。解析対象は不変だが L2-8 の WARN が今後も出る。運用方針が未決（runindex/index.csv）
+- [ ] 2026-08-09 [cc] 配線確認 run は接頭辞を外すだけでは足りず description の指定も要る。接頭辞は索引から消し、既定名は本走と同一グループに束ねる。命名規約への昇格を提案（T-2026-08-09-run-wiring-verification）
+- [ ] 2026-08-09 [cc] GPU を使う契約なのに plan.env.preflight に cuda_ext_loaded が無く P2 が SKIP。env_p0 は記録を要求しており検査器と規約に隙間がある（tasks/_templates/impl/spec.yaml）
+- [ ] 2026-08-09 [cc] 検査コマンドの誤りが本 task でも 2 件。sync-alerts.log の不在を不発火と判定する条件と、cwd 不足で拡張 import が偽陰性になる条件（T-2026-08-09-run-wiring-verification §10 D-1/D-2）
+- [ ] 2026-08-09 [cc] 生成した run の後始末が未決。残すか除外規則を足すか、notes.md を埋めるかの 4 点（experiments/baselines/s0_040_wiring_verification_seed42/）
+- [ ] 2026-08-09 [cc] 起票者の走査コマンドが zsh の変数展開修飾子に食われて無言で空を返した。bash では再現しない。ホスト横断のコマンドは変数参照を波括弧で囲むこと（T-2026-08-09-wiring-followup-and-integration §7 D-1）
+- [ ] 2026-08-09 [cc] make setup は既存で、その中身が問題の当事者だった。素の pip が pyenv の shim へ解決され導入先が別環境になる。直した結果 .venv へ初めて届くため、依存の追加は dry-run で確認してから実行した（Makefile）
+- [ ] 2026-08-09 [cc] make setup の他ホストでの動作が未検証。uv も .venv 内 pip も無いホストでは停止する。統合後に各台で一度回して結果を持ち寄る必要がある（tasks/README.md）
+- [ ] 2026-08-09 [cc] 資格情報の失効検出は 401 の経路のみ検証済み。有効な資格情報が無いため通過経路は未検証。再発行後に起票の成功確認が要る（.github/workflows/auto-draft-pr.yml）
+- [ ] 2026-08-09 [cc] 索引の同一性をどう扱うか未定。走査を git 追跡下に限る / 退避一覧を規約化 / 正本ホストを定める の 3 案を B-36 に記載（runindex/anomalies/backlog.md）
+- [ ] 2026-08-09 [cc] 下書きの起票は経路が 2 つある。ワークフローは 401 で失敗し続けるが m2-sync.sh は成功している。前 task の「起票されていない」は測定が 1 分早すぎたための誤りだった。二重経路を残すかの判断が要る（PR #51）
+- [ ] 2026-08-09 [cx] 派生物を除いた PR #52 を起票した。既存 PR #51 の扱いと、退避物を持たないどのホストを索引の正本にするかは未決（T-2026-08-09-scoped-integration）
 
 ## 処理済み
 

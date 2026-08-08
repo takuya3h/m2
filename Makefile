@@ -1,7 +1,27 @@
 .PHONY: setup test lint s0 s2 s4 s5 s6 eval delta runindex runindex-dry runindex-strict task-validate
 
+# 導入先の仮想環境を明示する。素の `pip` / `python` は使わない。
+# ホストによっては venv を activate しても `pip` が pyenv の shim へ解決され、
+# 導入が成功を表示しながら別の環境へ入る（tasks/README.md「ホスト環境の既知差」）。
+VENV_PY := .venv/bin/python
+
 setup:
-	pip install -e ".[dev]"
+	@test -x "$(VENV_PY)" || { \
+	  echo "ERROR: $(VENV_PY) が無い。README の「推奨セットアップ」で .venv を作ること" >&2; \
+	  exit 1; }
+	@if command -v uv >/dev/null 2>&1; then \
+	  echo "導入手段: uv（--python $(VENV_PY) で導入先を明示）"; \
+	  uv pip install --python "$(VENV_PY)" -e ".[dev]" || exit 1; \
+	elif "$(VENV_PY)" -m pip --version >/dev/null 2>&1; then \
+	  echo "導入手段: $(VENV_PY) -m pip"; \
+	  "$(VENV_PY)" -m pip install -e ".[dev]" || exit 1; \
+	else \
+	  echo "ERROR: 導入手段が無い。uv も $(VENV_PY) 内の pip も見つからない" >&2; \
+	  echo "       素の pip へは退避しない。別の環境へ入るため" >&2; \
+	  exit 1; \
+	fi
+	@echo "確認: 仮想環境から読み込めるか（導入の成功表示だけでは足りない）"
+	@"$(VENV_PY)" -c "import jsonschema, yaml; print('読み込み OK')"
 
 test:
 	pytest tests/ -v --cov=src/egosurgery

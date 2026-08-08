@@ -1,0 +1,77 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-09-wiring-followup-and-integration"
+  kind: impl
+  title: "配線検証の後始末と、そこで判明した環境差と失効の記録"
+  origin: claude-app
+  created_at: "2026-08-09T12:00:00Z"
+  created_from:
+    runindex_commit: "12cc0e8"
+    counts: {index: 749, experiments: 206, verdicts: 1038}
+  depends_on: ["T-2026-08-09-run-wiring-verification"]
+  amendments: []
+
+intent:
+  question: "配線検証で判明した環境差と失効を記録し、成果を全ホストへ行き渡らせられるか"
+  decision_at_stake: "検証結果を共有資産にするか、実行ホストの手元に留めるか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["tools/harvest_runindex.py"]
+
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#naming, conventions#env_p0]
+  conventions_rev: "d422b08"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "統合範囲の確認", gpu: false, est: "20m"}
+    - {id: B, name: "配線検証の後始末", gpu: false, est: "30m"}
+    - {id: C, name: "判明した事項の記録", gpu: false, est: "50m"}
+    - {id: D, name: "依存導入と失効検出の仕組み", gpu: false, est: "50m"}
+    - {id: E, name: "統合と自己契約", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "統合対象の変更集合が想定と一致し、想定外の変更が含まれないことを確認した"
+      on_fail: stop
+    - id: G2
+      after: C
+      check: "収穫器の再生成で未解決事項の一覧以外が変化しないことを実測した"
+      on_fail: stop
+    - id: G3
+      after: D
+      check: "依存導入の手順が実行ホストで動くことを確認した"
+      on_fail: ask
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tools/"
+  acceptance:
+    - "統合対象の変更集合が列挙され想定外が含まれない"
+    - "配線検証の成果物の記述が雛形のままでなくなる"
+    - "収穫器が走査するホストに依存する性質が未解決事項として起票される"
+    - "依存導入の手順がホストによって異なることが既知差として記録される"
+    - "自動同期の記録が成功時には書かれない性質が文書化される"
+    - "依存を一括導入する手順が用意され実行ホストで動く"
+    - "資格情報の失効が未設定と区別して報告される"
+    - "make task-validate が exit 0"
+    - "make task-preflight が exit 0"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [unexpected_commits_in_range, harvester_output_changed_beyond_backlog]

@@ -24,8 +24,32 @@ jobs:
           # 未設定なら明示エラーで気付けるようにする（サイレント失敗させない）。
           GH_TOKEN: ${{ secrets.AUTOSYNC_PR_TOKEN }}
         run: |
+          # 未設定の検出。
           if [ -z "${GH_TOKEN}" ]; then
             echo "::error::secret AUTOSYNC_PR_TOKEN が未設定。fine-grained PAT を設定してください（README §5.5 Step 3）。"
+            exit 1
+          fi
+          # 失効の検出。未設定と失効は別の状態であり、同じ文言で報告すると原因の特定が遅れる。
+          # 2026-08-07 の実測では全ホストの run が 401 で失敗していたにもかかわらず、
+          # 出ていた文言は「未設定」を指しており、secret は設定済みだった。
+          # 値そのものは出力しない。応答の種別だけで文言を分ける。
+          probe_failed=0
+          probe=$(gh api "repos/${GITHUB_REPOSITORY}" --jq '.full_name' 2>&1) || probe_failed=1
+          if [ "${probe_failed}" = "1" ]; then
+            case "${probe}" in
+              *"HTTP 401"*|*"Bad credentials"*)
+                echo "::error::secret AUTOSYNC_PR_TOKEN は設定されているが無効。失効・取り消し・値の誤りのいずれか。fine-grained PAT を再発行して secret を更新してください（README §5.5 Step 3）。"
+                ;;
+              *"HTTP 403"*)
+                echo "::error::secret AUTOSYNC_PR_TOKEN は有効だが権限が足りない。${GITHUB_REPOSITORY} に対する Pull requests の Read and write を付与してください。"
+                ;;
+              *"HTTP 404"*)
+                echo "::error::secret AUTOSYNC_PR_TOKEN が ${GITHUB_REPOSITORY} へ到達できない。fine-grained PAT の対象リポジトリの選択を確認してください。"
+                ;;
+              *)
+                echo "::error::資格情報の確認に失敗した。応答の種別を判別できない: ${probe}"
+                ;;
+            esac
             exit 1
           fi
           BR="${GITHUB_REF_NAME}"
