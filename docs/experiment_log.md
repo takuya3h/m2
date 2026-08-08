@@ -1965,3 +1965,27 @@ view なので 1 行が親配列（train で 148MB）全体をメモリに固定
 300 行の縮小再現で親配列 300 個 / RSS 1.35GB を確認）。配列をループ外で 1 回だけ読むよう修正
 （commit `ca28064`、値はビット単位で不変であることを縮小再現の全行厳密比較で確認）。
 引継書が「他ユーザーとの GPU 競合」としていたスモーク OOM は、実際にはこの欠陥が原因だった。
+
+---
+
+## 2026-08-08 — 三台目ホストでの最小学習・配線再現
+
+### 仮説
+
+前例と同一の極小設定を bengio で実行すれば、最小学習、task ID 刻印、自動記録、自動送出がホストを変えても再現する。
+
+### 実験
+
+GPU 0 を `CUDA_VISIBLE_DEVICES=0` で固定し、`s0_tool_baseline`、画像16枚、1 epoch、224四方、backbone凍結、内蔵 `SimpleDetectionHead`、seed 42で実行した。契約 ID は `T-2026-08-10-third-host-verification`。前例との設定一致のため W&B は無効。本 run は配線確認であり、性能測定ではない。
+
+### 結果
+
+12秒で exit 0。成果物は `experiments/baselines/s0_041_wiring_verification_seed42/`。必須7点が揃い、`config.yaml:103` に task ID、`server.txt` に bengio が記録された。`metrics.json` の `mAP` は 4.98194465959574e-05、`val/AP_rare` は 0.0003487361261717018。自動同期 commit `5f7e255` が作成され、遠隔との差0まで送出された。
+
+### 解釈
+
+最小学習と自動記録・送出の配線は通常のSSH鍵を使う三台目ホストでも再現した。数値は極小学習と SimpleDetectionHead の副産物であり、検出性能の主張には使えない。学習 run の送出時点では下書きPRは作られず、Actions run `31240000157` は無効な `AUTOSYNC_PR_TOKEN` として失敗した。最終 task 送出後は常駐スクリプトが Draft PR #53 を起票した。
+
+### 次
+
+bengio で生成した751 runの索引は追跡外退避物0件で、749からの増分2件も説明済み。正本として採用するかを利用者が判断する。Actions経由の起票はトークン更新後に再検証する。

@@ -1,0 +1,76 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-10-third-host-verification"
+  kind: impl
+  title: "三台目のホストで基盤と配線を再現し、索引の正本を作る"
+  origin: claude-app
+  created_at: "2026-08-10T09:00:00Z"
+  created_from:
+    runindex_commit: "12cc0e8"
+    counts: {index: 749, experiments: 206, verdicts: 1038}
+  depends_on: ["T-2026-08-09-scoped-integration"]
+  amendments: []
+
+intent:
+  question: "基盤と配線が実行ホストを変えても同じように働き、退避物を含まない索引を作れるか"
+  decision_at_stake: "索引の正本を特定のホストで生成する方式を採るか、各ホストの差異を許容するか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["tools/harvest_runindex.py"]
+
+contract:
+  inject_verbatim: [conventions#env_p0, conventions#prohibitions, conventions#naming]
+  conventions_rev: "1201f4f"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "基盤の再現性の確認", gpu: false, est: "40m"}
+    - {id: B, name: "最小の学習と配線の再現", gpu: true, est: "40m"}
+    - {id: C, name: "索引の正本の生成", gpu: false, est: "40m"}
+  gates:
+    - id: G1
+      after: A
+      check: "依存の一括導入が働き、検証系が動くことを実行して確認した"
+      on_fail: ask
+    - id: G2
+      after: B
+      check: "成果物が生成され設定に契約の識別子が刻まれたことを確認した"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "索引に退避物が含まれないことを実測で確認した"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md, host_parity.md]
+  destination: "experiments/"
+  stamp: {task_id_in: config.yaml}
+  acceptance:
+    - "依存の一括導入がこのホストで働く"
+    - "検証系と実行前検査が動く"
+    - "最小の学習が完走し成果物が生成される"
+    - "生成された設定に契約の識別子が含まれる"
+    - "自動同期の発火または不発火の理由が実測で記録されている"
+    - "索引に退避物が含まれず行数が実測で説明できる"
+    - "軽量ビューの整合検査が通る"
+    - "make task-validate が exit 0"
+    - "make task-preflight が exit 0"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [setup_failed_on_this_host, index_contains_leftovers, autosync_not_reproduced]

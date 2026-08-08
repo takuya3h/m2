@@ -8,7 +8,7 @@
 **明文化されていない**。以下はディレクトリ名の意味からの判断であり、
 規約に基づくものではない。**除外規約の明文化を推奨する。**
 
-除外 48 run / 全 749 run（削除ではなくフラグ）
+除外 48 run / 全 751 run（削除ではなくフラグ）
 
 | exclusion_reason | runs | 対象 |
 |---|---:|---|
@@ -35,7 +35,7 @@
 
 指標キーの接頭辞から split を確定できない run。**推測していない**。
 
-確定不能 35 run / 全 749 run
+確定不能 35 run / 全 751 run
 
 | split_provenance | runs |
 |---|---:|
@@ -106,7 +106,7 @@
 |---|---|---:|---|---|
 | `phase` | `F1` | 545 | 9 クラスの工程別 **F1**（AP ではない） | `scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が `best.get("phase_per_class_f1", {})` を `log_per_class_ap()` に渡している |
 | `None` | `None` | 117 | `per_class_ap.json` が無い・空・パース失敗 | — |
-| `tool` | `AP` | 66 | 15 クラスの術具 AP | `per_class_coco_map` / `COCOeval.precision` 由来 |
+| `tool` | `AP` | 68 | 15 クラスの術具 AP | `per_class_coco_map` / `COCOeval.precision` 由来 |
 | `coco_map` | `AP` | 21 |  |  |
 
 ### metric を確定できなかった run: 0
@@ -914,7 +914,7 @@ _FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
 **したがって `frozen_source_tag` はキャッシュのパスからのみ導き、
 `frozen_source.seed` と `notes.md` の記述は採用していない。**
 
-- 実験数: **206** / run 数 749
+- 実験数: **207** / run 数 751
 - `experiment_id` を付けられなかった run: 78
   （run 名が命名規約に一致しない run）
 - `eval_recipe_id` の食い違いで分離した base: 12
@@ -1019,7 +1019,7 @@ delta:
 | 分類 | run 数 |
 |---|---:|
 | `injection_from_config_yaml` | 439 |
-| `no_denominator_declared` | 308 |
+| `no_denominator_declared` | 310 |
 | `baseline` | 17 |
 | `within_run_baseline` | 2 |
 
@@ -1064,7 +1064,7 @@ seed ごとに 1 本ずつ対応させることができない。
 per-class の値は 573 個の JSON に分散していて横断分析に使えなかったため、
 `runindex/per_class.csv` に long 形式（1 行 = 1 run × 1 クラス）で 1 ファイル化した。
 
-- `per_class_kind=tool` : 66 run × 15 クラス（術具 **AP**）
+- `per_class_kind=tool` : 68 run × 15 クラス（術具 **AP**）
 - `per_class_kind=phase`: 545 run × 9 クラス（工程 **F1**）
 
 **この 2 つを混ぜて集計してはならない。** 指標の種類が違う（AP と F1）。
@@ -1419,7 +1419,7 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 
 | seed_agreement | run 数 | 意味 |
 |---|---:|---|
-| `agree` | 639 | ディレクトリ名と他証拠が一致 |
+| `agree` | 641 | ディレクトリ名と他証拠が一致 |
 | `unverified_no_other_evidence` | 32 | `command.sh` も `config.yaml` も無い（g2_* 群） |
 | `no_seed_in_dirname` | 78 | 命名規約外 |
 | **`conflict`** | **0** | **食い違い** |
