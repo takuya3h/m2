@@ -3,6 +3,16 @@
 出典: `prompts/research_pivot_summary_and_roadmap.md`（正本は Notion）。
 作成: 2026-06-15 / サーバー: lecun（RTX A6000 ×2）。
 
+## 2026-08-08 — T-2026-08-10-third-host-verification
+
+- [x] 契約・既存教訓を読み、L1/L2 検証を通す
+- [x] WARN の conventions 差分を確認し、逐語参照を解決する
+- [x] L3 プリフライトを通す
+- [x] Phase A: 基盤の再現性を実測し、G1 を評価する
+- [x] Phase B: 利用者承認後に最小学習を実行し、G2 を評価する
+- [x] Phase C: 索引と軽量ビューを再生成し、G3 を評価する
+- [x] 自己検証・RESULT・受け皿・commit・送出を完了する
+
 ## 現状の重要な制約（実地調査で判明）
 
 - このサーバー（lecun）は新設環境。検出ベンチは別サーバー（bengio/philip）で実施。

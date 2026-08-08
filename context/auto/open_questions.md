@@ -4,8 +4,8 @@
 # open_questions — 未解決事項
 
     generated_from:        runindex/
-    generated_from_commit: 12cc0e82d8663f234f1d5898b05a30e0ace5758f
-    generated_from_date:   2026-08-06T11:58:50+00:00
+    generated_from_commit: 64576f3feb110a3db8642e06c59c7503b7d7740f
+    generated_from_date:   2026-08-08T04:48:37+00:00
 
 backlog（`tools/harvest_runindex.py` の `BACKLOG`）から抽出した未解決事項の一覧。
 本文は載せない。詳細は `runindex/anomalies/backlog.md` を参照。
