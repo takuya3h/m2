@@ -1,0 +1,77 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-10-conventions-survey"
+  kind: impl
+  title: "命名と配置と外部連携の実態を測り、変更前に依存関係を明らかにする"
+  origin: claude-app
+  created_at: "2026-08-10T12:00:00Z"
+  created_from:
+    runindex_commit: "12cc0e8"
+    counts: {index: 749, experiments: 206, verdicts: 1038}
+  depends_on: ["T-2026-08-09-scoped-integration"]
+  amendments: []
+
+intent:
+  question: "分岐名と配置と識別子を変えたとき、何が連動して壊れるか"
+  decision_at_stake: "変更を安全に行える範囲を確定するか、現状の命名を維持するか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["tools/harvest_runindex.py"]
+
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#naming]
+  conventions_rev: "1201f4f"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "作業一覧の更新経路の特定", gpu: false, est: "30m"}
+    - {id: B, name: "ホスト固有の内容を持つ追跡物の洗い出し", gpu: false, est: "40m"}
+    - {id: C, name: "分岐名に依存する箇所の全数調査", gpu: false, est: "50m"}
+    - {id: D, name: "計算機の識別子の実態", gpu: false, est: "30m"}
+    - {id: E, name: "外部記録との連携の実態", gpu: false, est: "40m"}
+  gates:
+    - id: G1
+      after: A
+      check: "作業一覧を書き換えている主体を実測で特定した"
+      on_fail: ask
+    - id: G2
+      after: C
+      check: "分岐名に依存する箇所を列挙し、探索の漏れがないことを別の手段で確かめた"
+      on_fail: stop
+    - id: G3
+      after: E
+      check: "外部連携の設定の所在を、秘匿値を出力せずに記録した"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md, survey.md]
+  destination: "tasks/"
+  acceptance:
+    - "作業一覧を書き換えている主体が特定されるか未確定と明記されている"
+    - "ホスト固有の内容を持つ追跡物が列挙されている"
+    - "分岐名に依存する箇所が漏れなく列挙されている"
+    - "分岐名を変えたときに連動して壊れる箇所が明示されている"
+    - "計算機の識別子の重複の原因が実測で説明されている"
+    - "外部連携の設定の所在が秘匿値を含まずに記録されている"
+    - "変更は一切行われていない"
+    - "make task-validate が exit 0"
+    - "make task-preflight が exit 0"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [secret_value_printed, unexpected_write_detected]
