@@ -131,7 +131,9 @@ CUDA_VISIBLE_DEVICES=0 .venv/bin/python -m egosurgery.train \
 
 ### 自動同期
 
-自動同期は commit `5f7e255` を生成し、遠隔との差0まで送出した。時間を置いて再確認しても open PR は0件。GitHub Actions run `31240000157` は `AUTOSYNC_PR_TOKEN` が無効な状態として exit 1 だった。資格情報の値には触れていない。
+学習 run の自動同期は commit `5f7e255` を生成し、遠隔との差0まで送出した。索引再生成後まで再確認しても open PR は0件。GitHub Actions run `31240000157` は `AUTOSYNC_PR_TOKEN` が無効な状態として exit 1 だった。
+
+最終 task commit `8083d5d` の push から45秒後、常駐 `m2-sync.sh` が Draft PR #53 を起票した。同じ push の Actions run `31240620351` は無効なトークンで失敗した。資格情報の値には触れていない。
 
 **G2: PASS。** 必須成果物7点と task ID 刻印を実測した。自動記録と自動送出は再現し、起票不成立の理由も Actions の生ログで確認した。
 
@@ -200,3 +202,4 @@ run 数は749から751へ増加した。追加は統合で加わった `s0_040_w
 |---|---|
 | `5f7e255` | 最小 wiring verification run の7点証跡を自動記録・送出 |
 | `64576f3` | 退避物を含まない索引と軽量ビュー、host parity を記録 |
+| `8083d5d` | RESULT、実験ログ、受け皿、最終 context provenance を記録 |

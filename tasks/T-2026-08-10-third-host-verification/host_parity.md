@@ -35,6 +35,6 @@ bengio では `jsonschema` と `yaml` の読み込み成功、`torch 2.1.2+cu118
 | ホスト | 鍵の種類 | 自動記録 | 自動送出 | 起票 |
 |---|---|---|---|---|
 | lecun | 配備鍵 | 成功。commit `25ea5ef` | 成功 | 常駐スクリプトが PR 51 を起票。Actionsは401で失敗 |
-| bengio | 通常のSSH鍵 | 成功。commit `5f7e255` | 成功。遠隔との差0 | open PRなし。Actions run `31240000157` は無効なトークンで失敗 |
+| bengio | 通常のSSH鍵 | 成功。commit `5f7e255` | 成功。遠隔との差0 | 最終task送出後に常駐スクリプトが PR 53 を起票。Actionsは無効なトークンで失敗 |
 
-bengio の最初の確認は学習直後、再確認は索引再生成後に行った。どちらも open PR は0件だった。資格情報の値そのものには触れていない。
+bengio の学習直後と索引再生成後の確認では open PR は0件だった。最終 task commit の push から45秒後に Draft PR #53 が現れた。資格情報の値そのものには触れていない。

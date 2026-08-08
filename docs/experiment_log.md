@@ -1984,7 +1984,7 @@ GPU 0 を `CUDA_VISIBLE_DEVICES=0` で固定し、`s0_tool_baseline`、画像16�
 
 ### 解釈
 
-最小学習と自動記録・送出の配線は通常のSSH鍵を使う三台目ホストでも再現した。数値は極小学習と SimpleDetectionHead の副産物であり、検出性能の主張には使えない。下書きPRは作られず、Actions run `31240000157` は無効な `AUTOSYNC_PR_TOKEN` として失敗した。
+最小学習と自動記録・送出の配線は通常のSSH鍵を使う三台目ホストでも再現した。数値は極小学習と SimpleDetectionHead の副産物であり、検出性能の主張には使えない。学習 run の送出時点では下書きPRは作られず、Actions run `31240000157` は無効な `AUTOSYNC_PR_TOKEN` として失敗した。最終 task 送出後は常駐スクリプトが Draft PR #53 を起票した。
 
 ### 次
 
