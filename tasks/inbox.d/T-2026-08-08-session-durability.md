@@ -1,0 +1,2 @@
+- [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
+- [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）

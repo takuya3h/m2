@@ -109,6 +109,16 @@ context:
 context-check:
 	@.venv/bin/python tools/build_context.py --check
 
+# tasks/inbox.d/ から判断の受け皿 tasks/inbox.md を冪等に生成する。
+# 契約ごとに別ファイルへ書くため、並行実行しても元の記録は衝突しない。
+# 集約結果が併合で衝突した場合は make inbox で再生成すれば解消する。
+.PHONY: inbox inbox-check
+inbox:
+	@.venv/bin/python tools/build_inbox.py
+
+inbox-check:
+	@.venv/bin/python tools/build_inbox.py --check
+
 task-validate:
 	@.venv/bin/python tools/validate_task.py $(if $(TASK),--task $(TASK),) --level $(if $(LEVEL),$(LEVEL),l2)
 
