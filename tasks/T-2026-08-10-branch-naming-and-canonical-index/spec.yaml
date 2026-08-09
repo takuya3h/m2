@@ -1,0 +1,76 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-10-branch-naming-and-canonical-index"
+  kind: impl
+  title: "定位置分岐の命名を整理し、索引の正本の作り方を規約として残す"
+  origin: claude-app
+  created_at: "2026-08-10T18:00:00Z"
+  created_from:
+    runindex_commit: "12cc0e8"
+    counts: {index: 749, experiments: 206, verdicts: 1038}
+  depends_on: ["T-2026-08-10-conventions-survey"]
+  amendments: []
+
+intent:
+  question: "接頭辞を保ったまま命名を整理し、移行手順と正本の規約を残せるか"
+  decision_at_stake: "命名の統一を仕組みへ落とすか、現行の不揃いを維持するか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["tools/harvest_runindex.py"]
+
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#naming]
+  conventions_rev: "1201f4f"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "影響箇所の再確認と対応表の確定", gpu: false, est: "40m"}
+    - {id: B, name: "生成規則と移行補助の実装", gpu: false, est: "60m"}
+    - {id: C, name: "手順書と正本規約の更新", gpu: false, est: "50m"}
+    - {id: D, name: "自己契約と起票", gpu: false, est: "20m"}
+  gates:
+    - id: G1
+      after: A
+      check: "接頭辞を保つ場合に変更が要る箇所を実測で絞り込んだ"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "新しい名前が自動同期の条件を満たすことを実装を呼び出して確認した"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "手順書の記述が新しい命名と矛盾しないことを確認した"
+      on_fail: ask
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md, migration_plan.md]
+  destination: "scripts/"
+  acceptance:
+    - "接頭辞を保つ場合に変更が要る箇所が実測で列挙されている"
+    - "分岐名の生成規則が新しい命名に従う"
+    - "新しい名前が自動同期の条件を満たすことが確認されている"
+    - "移行を補助する手順が用意され、遠隔の参照を先に作る順序になっている"
+    - "手順書が新しい命名に更新されている"
+    - "索引の正本の作り方が規約として書かれている"
+    - "過去の記録と実験証跡が書き換えられていない"
+    - "make task-validate が exit 0"
+    - "make task-preflight が exit 0"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [guard_rejects_new_name, historical_record_modified]
