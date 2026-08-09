@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（39 件）
+## 未処理（46 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -28,6 +28,13 @@
 - [ ] 2026-08-09 [cc] efros で分析成果物87ファイルを取り込んだ（重い中間生成物reextract 45Mは除外、秘匿値なし確認済み）。G3で索引が751→788へ変化したが、原因は本コミットではなく `.gitignore` 済み実験ディレクトリ（baselines/_aborted_*, transfer/_smoke_* 等37件）を収穫器がgitignoreを無視してファイルシステム直接スキャンで拾ったことと実測で切り分けた。既知の「索引の行数がホスト依存」問題（2026-08-09 [cc] 上欄）の具体的発生源の一つと考えられる。正本ホストでの `.gitignore` 整合性確認を推奨（T-2026-08-10-analysis-artifact-integration）
 - [ ] 2026-08-09 [cc] repro_variance_2026-07-29/reextract/（115M、.npz×5）はefrosに`.gitignore`済みのまま残っており、他の重い中間生成物（features/ npz 258M超、baselines等 pth 3.4G超）とあわせ正本には存在しない。再生成可能だが取得手段は未検討（T-2026-08-10-analysis-artifact-integration §6）
 - [ ] 2026-08-09 [cx] 定位置分岐は `exp/<logical-host>` に統一し、索引は全 path が Git 追跡下の clean host で生成したものを正本とする。実ホスト切替と旧 remote ref の扱いは統合後の別作業（T-2026-08-10-branch-naming-and-canonical-index）
+- [ ] 2026-08-09 [cc] 追跡外 0 件の lecun で索引を再生成し、wandb_run_id と wandb_run_url の 2 列が加わった。751 行 × 89 列の全セルを連結した指紋が一致し、既存の値は 1 文字も変わっていない（T-2026-08-11-canonical-index-refresh）
+- [ ] 2026-08-09 [cc] 正本の anomalies.md が古かった。analysis 96→176 と audit 3→8 は 64576f3 以降に統合された追跡下のファイルで、ホスト固有の汚れではない。SPEC はこの差分を予告していなかった（runindex/anomalies.md）
+- [ ] 2026-08-09 [cc] 個別 JSON の生成経路が 2 系統あり、transfer_legacy の 29 件だけ新しい 2 キーが出力されない。index.csv は全行が 2 列を持つため解析には影響しないが、JSON を直接読むと群によって鍵の有無が違う（tools/harvest_runindex.py）
+- [ ] 2026-08-09 [cc] 同じ出所から作られる生成物どうしが食い違いうる。open_questions.md には B-38 があり backlog.md には無かった。make runindex と make context を対にする規約が明文化されていない（runindex/anomalies/backlog.md）
+- [ ] 2026-08-09 [cc] 正本の鮮度を測る手段が無い。context/auto は generated_from_commit を持つが runindex 側には無く、いつの disk 状態を反映しているか再生成するまで分からない（runindex/）
+- [ ] 2026-08-09 [cc] 追加された 2 列は全行で空。遡っての対応づけは禁止のため行っておらず、過去分を埋めるには外部サービスへの問い合わせを許す別契約が要る（T-2026-08-11-canonical-index-refresh §8-4）
+- [ ] 2026-08-09 [cc] 軽量ビューの来歴スタンプが常に 1 commit 遅れる。make context は runindex に触れた最後の commit を刻むため、索引を commit した直後は必ず context-check が失敗する。順序を入れ替えても解消せず、2 段 commit で収束させた（T-2026-08-11-canonical-index-refresh §5-4b）
 - [ ] 2026-08-09 [cc] 起票者の検査コマンドの誤りが本 task で 3 件。G2 の新列検出が既存列 run_id を巻き込む / zsh の tail 修飾子で走査が空を返す / 秘匿の正規表現が大文字小文字を区別する（T-2026-08-11-identity-tracking-and-harvest-scope §5.1）
 - [ ] 2026-08-09 [cc] 受け皿を契約ごとに分割した。旧方式は併合で必ず衝突し、新方式は元の記録が衝突 0 件、集約結果の衝突は make inbox で解消できることを実際に併合して確認した（T-2026-08-11-inbox-per-task-split）
 - [ ] 2026-08-09 [cc] 移行時点の 34 件のうち 21 件は契約の識別子を持たず _unassigned へ入れた。参照にパスや PR 番号を書くのは様式どおりで誤りではないが、集約時に契約へ結びつかない（tasks/inbox.d/_unassigned.md）
