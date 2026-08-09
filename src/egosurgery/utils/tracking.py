@@ -15,12 +15,19 @@ CLAUDE.md「W&B で必ず全実験を追跡」を、認証や wandb 導入の有
 """
 from __future__ import annotations
 
+import json
 import logging
 import os
+from pathlib import Path
 from typing import Any
 
 logger = logging.getLogger(__name__)
 _run: Any = None
+
+# 実験フォルダへ置く W&B run 識別子の証跡。既存の証跡（server.txt / git_commit.txt /
+# metrics.json）と同じく run ディレクトリ直下のフラットファイルに揃える。単値ではなく
+# id / url / project / entity の組なので JSON にする。
+RUN_IDENTITY_FILE = "wandb_run.json"
 
 
 def enabled() -> bool:
@@ -28,8 +35,14 @@ def enabled() -> bool:
 
 
 def init(name: str, *, config: dict | None = None, group: str | None = None,
-         job_type: str | None = None) -> Any:
-    """W&B run を開始（認証/導入が無ければ no-op で None を返す）。"""
+         job_type: str | None = None, exp_dir: "str | Path | None" = None) -> Any:
+    """W&B run を開始（認証/導入が無ければ no-op で None を返す）。
+
+    Args:
+        exp_dir: 渡された場合、run 開始に成功したときだけ
+            :data:`RUN_IDENTITY_FILE` を書き、証跡と外部記録を結ぶ。
+            no-op のときは何も書かない（空ファイルも作らない）。
+    """
     global _run
     if not enabled():
         logger.info("wandb 追跡 skip（WANDB_API_KEY 未設定）。source scripts/load_env.sh で有効化。")
@@ -46,11 +59,60 @@ def init(name: str, *, config: dict | None = None, group: str | None = None,
             name=name, group=group, job_type=job_type,
             config=config or {}, reinit=True,
         )
+        if exp_dir is not None:
+            record_run_identity(exp_dir)
         return _run
     except Exception as exc:  # noqa: BLE001
         logger.warning("wandb.init 失敗 → 追跡 skip: %s", exc)
         _run = None
         return None
+
+
+def record_run_identity(exp_dir: "str | Path") -> bool:
+    """外部記録が有効なとき、run の識別子と参照先を証跡へ書く。
+
+    証跡と W&B を後から機械的に辿れるようにするための対応付け。遡っての紐付けは
+    行わない（今後の run から結ばれる）。
+
+    Args:
+        exp_dir: 実験フォルダ。``RUN_IDENTITY_FILE`` をこの直下へ置く。
+
+    Returns:
+        書いたら ``True``、書かなかったら ``False``。
+
+    Notes:
+        - run が無い（``WANDB_API_KEY`` 未設定 / wandb 未導入 / init 失敗）ときは
+          **何も書かない**。空の JSON も作らない。索引側は「ファイルが無い＝空欄」
+          として扱うため、空ファイルを置くと空欄と区別できなくなる。
+        - 書くのは id / url / project / entity / name だけで、**資格情報は書かない**。
+        - 失敗しても例外を投げない。外部サービスが落ちていても学習は続くべきである。
+    """
+    if _run is None:
+        return False
+    try:
+        info: dict[str, str] = {}
+        for key, attr in (
+            ("run_id", "id"),
+            ("run_url", "url"),
+            ("project", "project"),
+            ("entity", "entity"),
+            ("run_name", "name"),
+        ):
+            value = getattr(_run, attr, None)
+            if value:
+                info[key] = str(value)
+        # 識別子が取れないなら書かない。中途半端な証跡は空欄より紛らわしい。
+        if not info.get("run_id"):
+            logger.warning("wandb run id を取得できず → 識別子の証跡は書かない")
+            return False
+        path = Path(exp_dir) / RUN_IDENTITY_FILE
+        path.write_text(
+            json.dumps(info, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
+        return True
+    except Exception as exc:  # noqa: BLE001 — 追跡の失敗で学習を止めない
+        logger.warning("wandb run 識別子の記録に失敗 → skip（学習は継続）: %s", exc)
+        return False
 
 
 def log(metrics: dict, *, step: int | None = None) -> None:

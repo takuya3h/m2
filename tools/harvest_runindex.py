@@ -854,6 +854,46 @@ def normalize_host(server_txt: str | None, recipe: dict[str, Any] | None) -> dic
     }
 
 
+
+# --------------------------------------------------------------------------- #
+# 外部記録（W&B）との対応
+#
+# tracking.record_run_identity() が実験フォルダ直下へ置く wandb_run.json を読む。
+# 外部記録が無効だった run にはファイル自体が存在しない（空ファイルは作られない）
+# 設計なので、「ファイルが無い＝空欄」で扱える。遡っての対応づけは行わないため、
+# 本変更より前の run は全て空欄になるのが正しい。
+# --------------------------------------------------------------------------- #
+TRACKING_FILE = "wandb_run.json"
+
+
+def harvest_tracking(run_dir: Path) -> dict[str, Any]:
+    """wandb_run.json から run 識別子と参照先を読む。無ければ空。"""
+    raw = _read_text(run_dir / TRACKING_FILE)
+    if raw is None:
+        return {"wandb_run_id": None, "wandb_run_url": None, "warnings": []}
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        return {
+            "wandb_run_id": None,
+            "wandb_run_url": None,
+            "warnings": [f"{TRACKING_FILE} を読めない（JSON 不正）: {exc}"],
+        }
+    if not isinstance(data, dict):
+        return {
+            "wandb_run_id": None,
+            "wandb_run_url": None,
+            "warnings": [f"{TRACKING_FILE} の中身が dict でない: {type(data).__name__}"],
+        }
+    rid = data.get("run_id")
+    url = data.get("run_url")
+    return {
+        "wandb_run_id": str(rid) if rid else None,
+        "wandb_run_url": str(url) if url else None,
+        "warnings": [],
+    }
+
+
 RECIPE_ID_KEYS = (
     "test_cfg",
     "split_train_images",
@@ -911,6 +951,9 @@ def build_run_record(run_dir: Path) -> dict[str, Any]:
     server_txt = _read_text(run_dir / "server.txt")
     host = normalize_host(server_txt, m["eval_recipe"])
     warnings.extend(host["warnings"])
+
+    tracking_ids = harvest_tracking(run_dir)
+    warnings.extend(tracking_ids["warnings"])
 
     commit_txt = _read_text(run_dir / "git_commit.txt")
     commit = commit_txt.strip().split("\n")[0] if commit_txt else None
@@ -1038,6 +1081,9 @@ def build_run_record(run_dir: Path) -> dict[str, Any]:
         "host": host["host"],
         "host_raw": host["host_raw"],
         "gpu": host["gpu"],
+        # 外部記録との対応。遡及しないため、本変更より前の run は空欄になる。
+        "wandb_run_id": tracking_ids["wandb_run_id"],
+        "wandb_run_url": tracking_ids["wandb_run_url"],
         "commit": commit,
         "command": command,
         "notes": notes,
@@ -2222,6 +2268,10 @@ SCALAR_COLUMNS = [
     # （metrics.json / eval_recipe / git_commit / server.txt を持たない）。B-12。
     "evidence_completeness",
     "metrics_source",
+    # 証跡 (wandb_run.json) と外部記録 (W&B) を結ぶ鍵。外部記録が無効な run では空。
+    # 遡っての対応づけは行わないため、本列の導入時点の run は全て空である。
+    "wandb_run_id",
+    "wandb_run_url",
 ]
 
 
