@@ -168,13 +168,13 @@ case "$CUR" in
       else
         git merge --abort 2>/dev/null || true
         echo "  CONFLICT → 中断(abort 済)。手動で 'git merge phase0' 解決、"
-        echo "            または新規に 'git switch -c exp/${SERVER}-<theme> phase0' で作り直し"
+        echo "            または 'bash scripts/sync/new_experiment_branch.sh <logical-host>' で作り直し"
       fi
     fi
     ;;
   *)
     echo "  WARN: 現在 '$CUR' は exp/* ではありません → auto-sync は guard#2 で skip されます。"
-    echo "        'git switch -c exp/${SERVER}-<theme> phase0' などで exp/* ブランチに移ってから運用してください。"
+    echo "        'bash scripts/sync/new_experiment_branch.sh <logical-host>' で exp/* ブランチへ移ってから運用してください。"
     ;;
 esac
 

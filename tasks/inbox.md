@@ -44,6 +44,8 @@
 - [ ] 2026-08-08 [cx] bengio 生成索引は751 run、追跡外退避物0件、749からの増分2件を説明済みで正本候補の条件を満たす。正本採用は未決。自動記録と送出は通常鍵で成功し、常駐スクリプトがDraft PR 53を起票したが、Actionsは無効なトークンで失敗（T-2026-08-10-third-host-verification）
 - [ ] 2026-08-09 [cc] efros で分析成果物87ファイルを取り込んだ（重い中間生成物reextract 45Mは除外、秘匿値なし確認済み）。G3で索引が751→788へ変化したが、原因は本コミットではなく `.gitignore` 済み実験ディレクトリ（baselines/_aborted_*, transfer/_smoke_* 等37件）を収穫器がgitignoreを無視してファイルシステム直接スキャンで拾ったことと実測で切り分けた。既知の「索引の行数がホスト依存」問題（2026-08-09 [cc] 上欄）の具体的発生源の一つと考えられる。正本ホストでの `.gitignore` 整合性確認を推奨（T-2026-08-10-analysis-artifact-integration）
 - [ ] 2026-08-09 [cc] repro_variance_2026-07-29/reextract/（115M、.npz×5）はefrosに`.gitignore`済みのまま残っており、他の重い中間生成物（features/ npz 258M超、baselines等 pth 3.4G超）とあわせ正本には存在しない。再生成可能だが取得手段は未検討（T-2026-08-10-analysis-artifact-integration §6）
+- [ ] 2026-08-09 [cx] 定位置分岐は `exp/<logical-host>` に統一し、索引は全 path が Git 追跡下の clean host で生成したものを正本とする。実ホスト切替と旧 remote ref の扱いは統合後の別作業（T-2026-08-10-branch-naming-and-canonical-index）
+
 
 ## 処理済み
 

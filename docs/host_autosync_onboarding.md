@@ -20,7 +20,7 @@ andrew (2026-07-13) で実証した「deploy key 設定 → 有効化 → 実験
 ```mermaid
 flowchart TD
     S([新ホストを導入]) --> P0{"exp/* branch にいる?"}
-    P0 -- いいえ --> SW["git switch -c exp/host-theme phase0<br/>（コード込み・P3 merge 不要）"]
+    P0 -- いいえ --> SW["new_experiment_branch.sh logical-host<br/>（コード込み・P3 merge 不要）"]
     P0 -- はい --> P1{"setup script が作業ツリーにある?"}
     SW --> P4
     P1 -- ない --> BOOT["bootstrap: fetch → git show FETCH_HEAD → install"]
@@ -31,7 +31,7 @@ flowchart TD
     VER -- "Hi takuya3h!" --> FIXK["ユーザー鍵優先 → -F /dev/null・登録確認"]
     FIXK --> VER
     OK1 --> DEP{"次の実験は未プッシュ commit に依存?"}
-    DEP -- しない --> NB["git switch -c exp/host-theme phase0"]
+    DEP -- しない --> NB["new_experiment_branch.sh logical-host"]
     DEP -- する --> ACT["作業を commit/stash → --activate"]
     NB --> P4
     ACT --> AR{"--activate 結果"}
@@ -46,11 +46,19 @@ flowchart TD
 
 作業 branch が `exp/*` であることが auto-sync の前提（guard #2）。
 
-- **`exp/<host>-*` にいる** → PHASE 1 へ。
+- **`exp/<logical-host>` にいる** → PHASE 1 へ。
 - **いない** → phase0 から作る（この branch は phase0 由来＝**コード込み**なので PHASE 3 の merge 不要）:
   ```bash
-  git switch -c exp/<host>-<theme> phase0
+  bash scripts/sync/new_experiment_branch.sh <logical-host>
   ```
+
+既存の定位置分岐を新しい名前へ移す場合は、作業ツリーを clean にして次を使う。
+helper は `origin/exp/<logical-host>` を先に作ってから local branch を改名し、旧remoteは残す。
+
+```bash
+bash scripts/sync/rename_host_branch.sh --dry-run <logical-host>
+bash scripts/sync/rename_host_branch.sh <logical-host>
+```
 
 ## PHASE 1 — セットアップスクリプトを取得
 
@@ -100,7 +108,7 @@ bash scripts/sync/setup_host_autosync.sh --verify
 
 - **次の実験が現 branch の未プッシュ commit に依存しない（ケース C）** → クリーンに作り直す:
   ```bash
-  git switch -c exp/<host>-<theme> phase0   # 衝突なし → PHASE 4
+  bash scripts/sync/new_experiment_branch.sh <logical-host>   # 衝突なし → PHASE 4
   ```
 - **依存する（ケース B）** → 現 branch で有効化:
   1. 作業を commit / stash してツリーをクリーンに。
