@@ -150,7 +150,7 @@ cd egosurgery_multitask
 
 `phase0` は統合幹であり、実験を直接実行しない。各ホストでは
 [`docs/host_autosync_onboarding.md`](docs/host_autosync_onboarding.md) に従って、
-割り当て済みの `exp/<サーバー名>-<テーマ>` ブランチへ切り替えてから実験する。
+割り当て済みの `exp/<論理ホスト名>` ブランチへ切り替えてから実験する。
 
 ### 3. Python 環境のセットアップ
 
@@ -1072,16 +1072,13 @@ dlsta / ilya / philip）でこのリポジトリは **2 層で自動同期**さ�
   サーバー共通 PAT と Mac の agent forwarding は使わない。
 - GitHub Actions の Draft PR 作成だけは repository secret `AUTOSYNC_PR_TOKEN` を使う。
 - 同期異常は `~/claude-sync/sync-alerts.log` と `journalctl --user -u keeper` で確認する。
-- `runindex/` は `ilya` だけが手動更新し、その後は同じ PR / auto-merge 経路で全台へ配る。
+- `runindex/` は追跡外 run が 0 件のホストだけが手動更新し、その後は同じ PR / auto-merge 経路で全台へ配る。
 
-運用は **1 サーバー = 1 ブランチ**（`exp/<サーバー名>-<テーマ>`）、統合の幹は `phase0`。
-論理サーバー名は小文字を標準とするが、以下の既存 remote branch 名は作成時の大小文字と
-`dlstation` 接頭辞をそのまま保持する。
-ホスト名とブランチ名の対応（2026-08-04 時点）:
-  `lecun` / `efros` / `philip` / `Andrew` / `Bengio` は `exp/<名前>-wip-20260703`、
-  `ilya` は `exp/ilya-wip-20260804`（`exp/aolab-wip-20260703` は
-  `hostname=aolab` 由来の旧名で、2026-08-04 以降は使わない）、
-  `hinton` / `adam` / `dlstation` / `he` / `ian` は `exp/<名前>-wip-20260804`。
+運用は **1 サーバー = 1 定位置ブランチ**（`exp/<論理ホスト名>`）、統合の幹は `phase0`。
+論理ホスト名は小文字英数とハイフンのみ、2〜20文字で、日付と `wip` を含めない。
+対応は `lecun` / `efros` / `philip` / `andrew` / `ilya` / `bengio` / `he` /
+`adam` / `hinton` / `ian` / `dlsta`。既存分岐からの移行手順と旧名は
+[`migration_plan.md`](tasks/T-2026-08-10-branch-naming-and-canonical-index/migration_plan.md) を参照する。
 
 ### サーバー名の解決（`$(hostname)` を直接使わない）
 
