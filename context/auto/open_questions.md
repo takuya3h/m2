@@ -48,5 +48,6 @@ backlog（`tools/harvest_runindex.py` の `BACKLOG`）から抽出した未解�
 | BL-third-party-drift-detection | B-35 |  | `third_party/` の drift 検出（配布はしない方針で確定） |
 | BL-harvester-scan-is-host-dependent | B-36 | 🔴 | 収穫器はディスクを走査するため、同じ commit でもホストによって索引の行数が変わる |
 | BL-autosync-log-only-on-abort | B-37 | 🔴 | 自動同期の記録は中断時にのみ書かれるため、記録が無いことは不発火を意味しない |
+| BL-ignore-does-not-protect-index | B-38 | 🔴 | 版管理の無視設定は索引を保護しない。収穫器はファイルシステムを直接走査し、無視設定を参照しない |
 
 解決済みとして除外: 1 件
