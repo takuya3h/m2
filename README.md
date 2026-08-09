@@ -208,6 +208,35 @@ source scripts/load_env.sh
 認証が無い場合、追跡処理は学習を止めず no-op になるが、本実験の正規運用ではない。
 意図的に W&B を無効化するスモークでは `logging.wandb_enabled=false` を CLI override で渡せる。
 
+#### 論理サーバー名 `SERVERNAME` の注入（各ホストで 1 回）
+
+`resolve_server_name()` は `SERVERNAME` → `EGOSURGERY_SERVER_NAME` →
+`cfg.logging.server_name` → `socket.gethostname()` の順で解決し、結果を実験フォルダの
+`server.txt` へ書く。最後の砦の `gethostname()` はコンテナ環境で衝突する（ilya と philip は
+いずれも `aolab` を返す）ため、**各ホストで論理名を明示する**。
+
+```bash
+bash scripts/sync/setup_host_servername.sh --dry-run bengio   # 空実行（何も書かない）
+bash scripts/sync/setup_host_servername.sh bengio             # 適用（冪等）
+bash scripts/sync/setup_host_servername.sh --verify           # 現在の解決結果のみ表示
+```
+
+- 論理名は小文字英数とハイフン、2〜20 文字。先頭と末尾はハイフン以外。
+- 既に同じ値が宣言済みのファイルは skip する。**異なる値が宣言されていれば上書きせず終了する**
+  （改名は既存の宣言を手で除いてから）。
+- 書き込み先は `~/.zshenv` / `~/.profile` / `~/.bashrc` の 3 つ。標識付きブロックを追記するだけで、
+  既存行は書き換えない。戻すときは `# >>> egosurgery SERVERNAME >>>` から
+  `# <<< egosurgery SERVERNAME <<<` までの 3 行を削除する。
+
+**なぜ `~/.zshenv` が主経路か。** ログインシェルは zsh であり、zsh は `~/.zshenv` を
+対話・非対話・ログイン・スクリプトの全形態で無条件に読む。bash にはこれに相当する
+利用者ファイルが無い（`~/.bashrc` は非対話で早期 return、`~/.profile` はログインシェル限定）。
+学習が対話シェルから起動されるとは限らないため、全形態を覆える `~/.zshenv` を主経路に据える。
+
+**既知の限界。** `env -i bash -c` のように環境を空にした非対話 bash は、どの利用者ファイルでも
+覆えない（`BASH_ENV` 自体が環境変数のため clean env からは設定できない）。覆うなら
+`/etc/environment`（PAM 経由・要 root・システム全体）か、起動側での明示 export が要る。
+
 ### Notion 連携（運用ハブ駆動・コンテキスト削減）
 
 研究運用を Notion「**M2研究運用ハブ**」に連動させ、マスターの「M2研究計画」（長文）を毎回読まずに
