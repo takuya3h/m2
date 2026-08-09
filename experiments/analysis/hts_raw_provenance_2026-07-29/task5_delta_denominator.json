@@ -1,0 +1,16 @@
+{
+  "t1b_warmstart_init_mAP": {
+    "seed42": 0.7303,
+    "seed123": 0.729,
+    "seed456": 0.722,
+    "mean": 0.7271
+  },
+  "warmstart_ckpt": "third_party/Relation-DETR/checkpoints/incoming/seed{S}/best_ap.pth (= 収束済み 15クラス Relation-DETR 検出器。train_t1b.py L147-152)",
+  "s0_frozen_denominator": {
+    "value": "0.7051 ± 0.0042",
+    "source": "experiments/baselines/s0_frozen_00{1,2,3}_relationdetr_s0frozen_cocohead_seed* (= backbone 凍結 + COCO-init head を frozen-source 手順で再学習した検出器)"
+  },
+  "eval_recipe": "両者とも公式 score_thr=0.0 / NMS 無 / top-k=300・同一 split(val 1515)。recipe 差は無い。",
+  "explanation": "約2.2pt差は eval recipe/split の不一致ではなく『別 checkpoint』に起因。0.7271=収束済み full 検出器(warm-start源)、0.7051=frozen-backbone+COCO-head 再学習の S0-frozen。T1b/L2 の Δ は inj−ctrl(両者とも warm-start源 0.7271 から)で測る paired 量であり、絶対 mAP を 0.7051 と直接比較してはならない(分母が別系統=4分母運用)。",
+  "caution": "L2/L1a の陽性主張は『同一 warm-start・同一 recipe の ctrl との paired 差』で行い、S0-frozen 0.7051 とは混同しない。DeltaCalculator の recipe 整合検証を必ず通すこと。"
+}

@@ -1,0 +1,701 @@
+{
+  "task": "D1_delta_convention_audit",
+  "inventory": {
+    "n_metric_rows": 5171,
+    "n_runs_by_system": {
+      "other": 36,
+      "s4": 61,
+      "b2a": 257,
+      "oracle-tool": 8,
+      "h6": 18,
+      "t1a": 132
+    }
+  },
+  "D1_2_s4_baselines": {
+    "n_s4_runs": 61,
+    "n_val": 43,
+    "n_test": 18,
+    "value_range": {
+      "min": 0.8699669966996699,
+      "max": 0.9254125412541254
+    },
+    "combinations_producing_0.8986": [
+      {
+        "runs": [
+          "s4_phase_baseline_001_frozen_tecno_phase_baseline_seed42",
+          "s4_phase_baseline_002_frozen_tecno_phase_baseline_seed456",
+          "s4_phase_baseline_003_frozen_tecno_phase_baseline_seed123"
+        ],
+        "seeds": [
+          "42",
+          "456",
+          "123"
+        ],
+        "mean": 0.8985698569856986,
+        "residual": -3.0143014301375892e-05,
+        "is_canonical_seed_triple": true
+      },
+      {
+        "runs": [
+          "s4_phase_baseline_001_frozen_tecno_phase_baseline_seed42",
+          "s4_phase_baseline_003_frozen_tecno_phase_baseline_seed123",
+          "s4_phase_baseline_021_frozen_tecno_phase_baseline_seed456"
+        ],
+        "seeds": [
+          "42",
+          "123",
+          "456"
+        ],
+        "mean": 0.8985698569856986,
+        "residual": -3.0143014301375892e-05,
+        "is_canonical_seed_triple": true
+      },
+      {
+        "runs": [
+          "s4_phase_baseline_001_frozen_tecno_phase_baseline_seed42",
+          "s4_phase_baseline_009_frozen_tecno_phase_necktransfer_seed456",
+          "s4_phase_baseline_019_frozen_tecno_phase_baseline_seed123"
+        ],
+        "seeds": [
+          "42",
+          "456",
+          "123"
+        ],
+        "mean": 0.8985698569856986,
+        "residual": -3.0143014301375892e-05,
+        "is_canonical_seed_triple": true
+      },
+      {
+        "runs": [
+          "s4_phase_baseline_001_frozen_tecno_phase_baseline_seed42",
+          "s4_phase_baseline_025_frozen_tecno_phase_baseline_seed123",
+          "s4_phase_baseline_054_frozen_tecno_phase_baseline_seed456"
+        ],
+        "seeds": [
+          "42",
+          "123",
+          "456"
+        ],
+        "mean": 0.8985698569856986,
+        "residual": -3.0143014301375892e-05,
+        "is_canonical_seed_triple": true
+      },
+      {
+        "runs": [
+          "s4_phase_baseline_001_frozen_tecno_phase_baseline_seed42",
+          "s4_phase_baseline_037_frozen_tecno_phase_baseline_seed456",
+          "s4_phase_baseline_053_frozen_tecno_phase_baseline_seed123"
+        ],
+        "seeds": [
+          "42",
+          "456",
+          "123"
+        ],
+        "mean": 0.8985698569856986,
+        "residual": -3.0143014301375892e-05,
+        "is_canonical_seed_triple": true
+      }
+    ],
+    "n_combinations_producing_0.8986": 349,
+    "step_c_coupling_value": {
+      "val_accuracy_3seed_mean": 0.8928492849284929,
+      "test_accuracy_3seed_mean": 0.8068776865963267,
+      "source": "experiments/analysis/step_c_coupling_analysis/test_eval_det2phase.json",
+      "note": "0.8928 の出所。run ディレクトリの metrics.json とは別の再評価"
+    }
+  },
+  "D1_3_H_base": {
+    "baseline_runs": [
+      "s4_phase_baseline_001_frozen_tecno_phase_baseline_seed42",
+      "s4_phase_baseline_002_frozen_tecno_phase_baseline_seed456",
+      "s4_phase_baseline_003_frozen_tecno_phase_baseline_seed123"
+    ],
+    "baseline_mean": 0.8985698569856986,
+    "matches_quoted_0.8986": true,
+    "systems": {
+      "b2a": {
+        "runs": [
+          "b2a_det2phase_001_b2a_det2phase_toolpresence_seed42",
+          "b2a_det2phase_002_b2a_det2phase_toolpresence_seed123",
+          "b2a_det2phase_003_b2a_det2phase_toolpresence_seed456"
+        ],
+        "seeds": [
+          "42",
+          "123",
+          "456"
+        ],
+        "mean": 0.9368536853685369,
+        "delta_vs_baseline": 0.03828382838283828,
+        "quoted_delta": 0.0383,
+        "residual": 1.6171617161719887e-05,
+        "status": "EXACT"
+      },
+      "t1a": {
+        "runs": [
+          "t1a_regiontoken_001_t1a_regiontoken_seed42",
+          "t1a_regiontoken_002_t1a_regiontoken_seed123",
+          "t1a_regiontoken_003_t1a_regiontoken_seed456"
+        ],
+        "seeds": [
+          "42",
+          "123",
+          "456"
+        ],
+        "mean": 0.9482948294829483,
+        "delta_vs_baseline": 0.04972497249724972,
+        "quoted_delta": 0.0497,
+        "residual": -2.4972497249718673e-05,
+        "status": "EXACT"
+      }
+    }
+  },
+  "D1_3_h6_baseline_search": {
+    "h6_runs": [
+      "haux_hand_presence_oracle_withtooloracle_001_haux_hand_presence_oracle_withtooloracle_seed42",
+      "haux_hand_presence_oracle_withtooloracle_002_haux_hand_presence_oracle_withtooloracle_seed123",
+      "haux_hand_presence_oracle_withtooloracle_003_haux_hand_presence_oracle_withtooloracle_seed456"
+    ],
+    "h6_mean": 0.9568756875687568,
+    "delta_vs_S4_baseline": 0.05830583058305827,
+    "note_S4_baseline": "S4 を分母にすると +0.0583 となり引用値 +0.0004 と一致しない",
+    "implied_baseline_for_quoted_delta": 0.9564756875687569,
+    "oracle_tool_combinations_matching": [
+      {
+        "runs": [
+          "b2a_det2phase_oracletool_006_b2a_det2phase_oracletool_seed42",
+          "b2a_det2phase_oracletool_007_b2a_det2phase_oracletool_seed123",
+          "b2a_det2phase_oracletool_008_b2a_det2phase_oracletool_seed456"
+        ],
+        "seeds": [
+          "42",
+          "123",
+          "456"
+        ],
+        "mean": 0.9564356435643564,
+        "residual": -4.0044004400496824e-05,
+        "is_canonical_seed_triple": true
+      },
+      {
+        "runs": [
+          "b2a_det2phase_oracletool_001_b2a_det2phase_oracletool_seed789",
+          "b2a_det2phase_oracletool_004_b2a_det2phase_oracletool_seed42",
+          "b2a_det2phase_oracletool_006_b2a_det2phase_oracletool_seed42"
+        ],
+        "seeds": [
+          "789",
+          "42",
+          "42"
+        ],
+        "mean": 0.9564356435643564,
+        "residual": -4.0044004400496824e-05,
+        "is_canonical_seed_triple": false
+      },
+      {
+        "runs": [
+          "b2a_det2phase_oracletool_002_b2a_det2phase_oracletool_seed1000",
+          "b2a_det2phase_oracletool_004_b2a_det2phase_oracletool_seed42",
+          "b2a_det2phase_oracletool_005_b2a_det2phase_oracletool_seed456"
+        ],
+        "seeds": [
+          "1000",
+          "42",
+          "456"
+        ],
+        "mean": 0.9564356435643564,
+        "residual": -4.0044004400496824e-05,
+        "is_canonical_seed_triple": false
+      }
+    ],
+    "n_matching": 3,
+    "status": "EXPLAINED"
+  },
+  "D1_3_oracle_tool_audit": {
+    "n_oracle_tool_runs": 8,
+    "acc_exact_matches": [],
+    "n_acc_exact": 0,
+    "acc_near_matches": [
+      {
+        "runs": [
+          "b2a_det2phase_oracletool_002_b2a_det2phase_oracletool_seed1000",
+          "b2a_det2phase_oracletool_003_b2a_det2phase_oracletool_seed123",
+          "b2a_det2phase_oracletool_008_b2a_det2phase_oracletool_seed456"
+        ],
+        "seeds": [
+          "1000",
+          "123",
+          "456"
+        ],
+        "mean": 0.9581958195819582,
+        "residual": -0.00010418041804183265,
+        "is_canonical_seed_triple": false
+      },
+      {
+        "runs": [
+          "b2a_det2phase_oracletool_002_b2a_det2phase_oracletool_seed1000",
+          "b2a_det2phase_oracletool_006_b2a_det2phase_oracletool_seed42",
+          "b2a_det2phase_oracletool_007_b2a_det2phase_oracletool_seed123"
+        ],
+        "seeds": [
+          "1000",
+          "42",
+          "123"
+        ],
+        "mean": 0.9581958195819582,
+        "residual": -0.00010418041804183265,
+        "is_canonical_seed_triple": false
+      },
+      {
+        "runs": [
+          "b2a_det2phase_oracletool_001_b2a_det2phase_oracletool_seed789",
+          "b2a_det2phase_oracletool_005_b2a_det2phase_oracletool_seed456",
+          "b2a_det2phase_oracletool_006_b2a_det2phase_oracletool_seed42"
+        ],
+        "seeds": [
+          "789",
+          "456",
+          "42"
+        ],
+        "mean": 0.9584158415841584,
+        "residual": 0.00011584158415833823,
+        "is_canonical_seed_triple": false
+      }
+    ],
+    "n_acc_near": 42,
+    "f1_matches": [
+      {
+        "runs": [
+          "b2a_det2phase_oracletool_003_b2a_det2phase_oracletool_seed123",
+          "b2a_det2phase_oracletool_004_b2a_det2phase_oracletool_seed42",
+          "b2a_det2phase_oracletool_005_b2a_det2phase_oracletool_seed456"
+        ],
+        "seeds": [
+          "123",
+          "42",
+          "456"
+        ],
+        "mean": 0.8230453441585834,
+        "residual": 4.53441585834824e-05,
+        "is_canonical_seed_triple": true
+      },
+      {
+        "runs": [
+          "b2a_det2phase_oracletool_001_b2a_det2phase_oracletool_seed789",
+          "b2a_det2phase_oracletool_004_b2a_det2phase_oracletool_seed42",
+          "b2a_det2phase_oracletool_006_b2a_det2phase_oracletool_seed42"
+        ],
+        "seeds": [
+          "789",
+          "42",
+          "42"
+        ],
+        "mean": 0.8230498095635407,
+        "residual": 4.9809563540725854e-05,
+        "is_canonical_seed_triple": false
+      },
+      {
+        "runs": [
+          "b2a_det2phase_oracletool_002_b2a_det2phase_oracletool_seed1000",
+          "b2a_det2phase_oracletool_003_b2a_det2phase_oracletool_seed123",
+          "b2a_det2phase_oracletool_004_b2a_det2phase_oracletool_seed42"
+        ],
+        "seeds": [
+          "1000",
+          "123",
+          "42"
+        ],
+        "mean": 0.8230791050109358,
+        "residual": 7.910501093588707e-05,
+        "is_canonical_seed_triple": false
+      }
+    ],
+    "n_f1_matches": 12,
+    "status": "NEAR",
+    "ambiguity_note": "複数の組み合わせが同じ丸め値を与えるため、引用値がどの組み合わせ由来かは一意に定まらない"
+  },
+  "D1_4_conventions": {
+    "K1": {
+      "label": "S4(全val run平均) / val / accuracy",
+      "baseline": 0.9031027084608914,
+      "split": "val",
+      "table": {
+        "b2a": {
+          "n_seeds": 3,
+          "mean": 0.9397780993206053,
+          "delta": 0.03667539085971394,
+          "sd": 0.0010611096093551735,
+          "MDE": 0.0026359419498320344,
+          "exceeds_MDE": true
+        },
+        "t1a": {
+          "n_seeds": 3,
+          "mean": 0.9423207317435764,
+          "delta": 0.03921802328268509,
+          "sd": 0.001169813924729492,
+          "MDE": 0.002905978393283964,
+          "exceeds_MDE": true
+        },
+        "h6": {
+          "n_seeds": 3,
+          "mean": 0.9112577924459112,
+          "delta": 0.008155083985019851,
+          "sd": 0.004402273178865797,
+          "MDE": 0.010935850966277184,
+          "exceeds_MDE": false
+        },
+        "oracle-tool": {
+          "n_seeds": 3,
+          "mean": 0.9565456545654566,
+          "delta": 0.05344294610456524,
+          "sd": 0.0029946441339529593,
+          "MDE": 0.007439107164717848,
+          "exceeds_MDE": true
+        }
+      }
+    },
+    "K2": {
+      "label": "S4(全val run平均) / val / macro-F1",
+      "baseline": 0.7133100491279168,
+      "split": "val",
+      "table": {
+        "b2a": {
+          "n_seeds": 3,
+          "mean": 0.7877451468555473,
+          "delta": 0.07443509772763046,
+          "sd": 0.001379964388055938,
+          "MDE": 0.0034280209958341802,
+          "exceeds_MDE": true
+        },
+        "t1a": {
+          "n_seeds": 3,
+          "mean": 0.7954810101706846,
+          "delta": 0.08217096104276778,
+          "sd": 0.002430216723892654,
+          "MDE": 0.006036991987646624,
+          "exceeds_MDE": true
+        },
+        "h6": {
+          "n_seeds": 3,
+          "mean": 0.7295027041447608,
+          "delta": 0.01619265501684397,
+          "sd": 0.01259882408649502,
+          "MDE": 0.031297208728820906,
+          "exceeds_MDE": false
+        },
+        "oracle-tool": {
+          "n_seeds": 3,
+          "mean": 0.823265041725752,
+          "delta": 0.10995499259783514,
+          "sd": 0.003273182288103494,
+          "MDE": 0.00813103418025053,
+          "exceeds_MDE": true
+        }
+      }
+    },
+    "K3": {
+      "label": "S4(全test run平均) / test / accuracy",
+      "baseline": 0.9034103410341034,
+      "split": "test",
+      "table": {
+        "b2a": {
+          "status": "UNKNOWN",
+          "n": 0
+        },
+        "t1a": {
+          "n_seeds": 3,
+          "mean": 0.9481481481481482,
+          "delta": 0.044737807114044736,
+          "sd": 0.0014315527169742098,
+          "MDE": 0.0035561734874509903,
+          "exceeds_MDE": true
+        },
+        "h6": {
+          "status": "UNKNOWN",
+          "n": 0
+        },
+        "oracle-tool": {
+          "status": "UNKNOWN",
+          "n": 0
+        }
+      }
+    },
+    "K4": {
+      "label": "S4(全test run平均) / test / macro-F1",
+      "baseline": 0.72039062795078,
+      "split": "test",
+      "table": {
+        "b2a": {
+          "status": "UNKNOWN",
+          "n": 0
+        },
+        "t1a": {
+          "n_seeds": 3,
+          "mean": 0.8062115868625408,
+          "delta": 0.08582095891176078,
+          "sd": 0.004943692637040629,
+          "MDE": 0.0122808112320933,
+          "exceeds_MDE": true
+        },
+        "h6": {
+          "status": "UNKNOWN",
+          "n": 0
+        },
+        "oracle-tool": {
+          "status": "UNKNOWN",
+          "n": 0
+        }
+      }
+    },
+    "K1'": {
+      "label": "S4 canonical triple (=0.8986) / val / accuracy",
+      "baseline": 0.8985698569856986,
+      "split": "val",
+      "table": {
+        "b2a": {
+          "n_seeds": 3,
+          "mean": 0.9397780993206053,
+          "delta": 0.04120824233490672,
+          "sd": 0.0010611096093551735,
+          "MDE": 0.0026359419498320344,
+          "exceeds_MDE": true
+        },
+        "t1a": {
+          "n_seeds": 3,
+          "mean": 0.9423207317435764,
+          "delta": 0.04375087475787787,
+          "sd": 0.001169813924729492,
+          "MDE": 0.002905978393283964,
+          "exceeds_MDE": true
+        },
+        "h6": {
+          "n_seeds": 3,
+          "mean": 0.9112577924459112,
+          "delta": 0.01268793546021263,
+          "sd": 0.004402273178865797,
+          "MDE": 0.010935850966277184,
+          "exceeds_MDE": true
+        },
+        "oracle-tool": {
+          "n_seeds": 3,
+          "mean": 0.9565456545654566,
+          "delta": 0.057975797579758015,
+          "sd": 0.0029946441339529593,
+          "MDE": 0.007439107164717848,
+          "exceeds_MDE": true
+        }
+      }
+    },
+    "K2'": {
+      "label": "S4 canonical triple / val / macro-F1",
+      "baseline": 0.7085920057975603,
+      "split": "val",
+      "table": {
+        "b2a": {
+          "n_seeds": 3,
+          "mean": 0.7877451468555473,
+          "delta": 0.07915314105798699,
+          "sd": 0.001379964388055938,
+          "MDE": 0.0034280209958341802,
+          "exceeds_MDE": true
+        },
+        "t1a": {
+          "n_seeds": 3,
+          "mean": 0.7954810101706846,
+          "delta": 0.0868890043731243,
+          "sd": 0.002430216723892654,
+          "MDE": 0.006036991987646624,
+          "exceeds_MDE": true
+        },
+        "h6": {
+          "n_seeds": 3,
+          "mean": 0.7295027041447608,
+          "delta": 0.020910698347200496,
+          "sd": 0.01259882408649502,
+          "MDE": 0.031297208728820906,
+          "exceeds_MDE": false
+        },
+        "oracle-tool": {
+          "n_seeds": 3,
+          "mean": 0.823265041725752,
+          "delta": 0.11467303592819167,
+          "sd": 0.003273182288103494,
+          "MDE": 0.00813103418025053,
+          "exceeds_MDE": true
+        }
+      }
+    }
+  },
+  "D1_5_detection": {
+    "n_s0_runs": 42,
+    "quoted_S0_frozen": 0.7051,
+    "combinations_matching_0.7051_tol5e-5": [
+      {
+        "runs": [
+          "s0_030_aligndetr_bbox_seed456",
+          "s0_035_mrdetralign_bbox_seed123",
+          "s0_frozen_005_relationdetr_s0frozen_neck_cocohead_seed123"
+        ],
+        "seeds": [
+          "456",
+          "123",
+          "123"
+        ],
+        "mean": 0.7050996666666667,
+        "residual": -3.333333332689037e-07,
+        "is_canonical_seed_triple": false
+      },
+      {
+        "runs": [
+          "s0_025_focusdetr_bbox_seed42",
+          "s0_027_focusdetr_bbox_seed456",
+          "s0_034_mrdetralign_bbox_seed42"
+        ],
+        "seeds": [
+          "42",
+          "456",
+          "42"
+        ],
+        "mean": 0.7051003333333333,
+        "residual": 3.33333333379926e-07,
+        "is_canonical_seed_triple": false
+      },
+      {
+        "runs": [
+          "s0_025_focusdetr_bbox_seed42",
+          "s0_frozen_001_relationdetr_s0frozen_cocohead_seed42",
+          "s0_frozen_004_relationdetr_s0frozen_neck_cocohead_seed42"
+        ],
+        "seeds": [
+          "42",
+          "42",
+          "42"
+        ],
+        "mean": 0.7050983333333333,
+        "residual": -1.6666666666775853e-06,
+        "is_canonical_seed_triple": false
+      },
+      {
+        "runs": [
+          "s0_011_ddq_bbox_seed123",
+          "s0_026_focusdetr_bbox_seed123",
+          "s0_030_aligndetr_bbox_seed456"
+        ],
+        "seeds": [
+          "123",
+          "123",
+          "456"
+        ],
+        "mean": 0.705095,
+        "residual": -4.999999999921734e-06,
+        "is_canonical_seed_triple": false
+      },
+      {
+        "runs": [
+          "s0_021_stabledino_bbox_seed456",
+          "s0_025_focusdetr_bbox_seed42",
+          "s0_027_focusdetr_bbox_seed456"
+        ],
+        "seeds": [
+          "456",
+          "42",
+          "456"
+        ],
+        "mean": 0.70511,
+        "residual": 1.0000000000065512e-05,
+        "is_canonical_seed_triple": false
+      }
+    ],
+    "n_matching_strict": 25,
+    "n_matching_loose_tol5e-4": 223,
+    "uniquely_identified": false,
+    "ambiguity_note": "組み合わせが複数ある場合、引用値がどの run 集合由来かは一意に定まらない。件数をそのまま報告する。",
+    "p0_init_map": {
+      "42": 0.730294,
+      "123": 0.729178,
+      "456": 0.721659
+    },
+    "p0_init_mean": 0.7270436666666666,
+    "difference": 0.021943666666666695,
+    "status": "EXPLAINED_AMBIGUOUS",
+    "note": "p0 init mAP は verify_p0_init_identity.sh が train_t1b.py --epochs 0 で 測った init 時点の値。S0-frozen は experiments/baselines/s0_* の run 由来。同一 checkpoint・同一 eval recipe かはコードから断定できない場合 UNEXPLAINED とする。"
+  },
+  "D1_6_errata": [
+    {
+      "quoted_name": "S4_base_accuracy",
+      "quoted_value": 0.8986,
+      "quoted_source": "研究計画 §1.2",
+      "recomputed": 0.8985698569856986,
+      "best_match_convention": "S4 canonical triple (001-003) val accuracy 3-seed 平均",
+      "residual": -3.0143014301375892e-05,
+      "status": "EXACT"
+    },
+    {
+      "quoted_name": "B2a_delta",
+      "quoted_value": 0.0383,
+      "quoted_source": "研究計画 §1.2",
+      "recomputed": 0.03828382838283828,
+      "best_match_convention": "canonical triple 平均 − S4 canonical triple 平均 (val accuracy)",
+      "residual": -1.6171617161719887e-05,
+      "status": "EXACT"
+    },
+    {
+      "quoted_name": "T1a_delta",
+      "quoted_value": 0.0497,
+      "quoted_source": "研究計画 §1.2",
+      "recomputed": 0.04972497249724972,
+      "best_match_convention": "canonical triple 平均 − S4 canonical triple 平均 (val accuracy)",
+      "residual": 2.4972497249718673e-05,
+      "status": "EXACT"
+    },
+    {
+      "quoted_name": "H6_delta",
+      "quoted_value": 0.0004,
+      "quoted_source": "研究計画 §1.2",
+      "recomputed": 0.00044004400440045277,
+      "best_match_convention": "haux canonical triple − oracle-tool 3-run 平均 (val accuracy)",
+      "residual": -4.004400440045275e-05,
+      "status": "EXACT"
+    },
+    {
+      "quoted_name": "oracle_tool_acc",
+      "quoted_value": 0.9583,
+      "quoted_source": "研究計画 §1.2",
+      "recomputed": 0.9581958195819582,
+      "best_match_convention": "oracle-tool 3-run 平均 (val accuracy)",
+      "residual": 0.00010418041804183265,
+      "status": "NEAR"
+    },
+    {
+      "quoted_name": "oracle_tool_macroF1",
+      "quoted_value": 0.823,
+      "quoted_source": "研究計画 §1.2",
+      "recomputed": 0.8230453441585834,
+      "best_match_convention": "oracle-tool 3-run 平均 (val macro-F1)",
+      "residual": -4.53441585834824e-05,
+      "status": "EXACT"
+    },
+    {
+      "quoted_name": "S0_frozen_mAP",
+      "quoted_value": 0.7051,
+      "quoted_source": "研究計画 §13.0'",
+      "recomputed": 0.7050996666666667,
+      "best_match_convention": "s0_* 3-run 平均 (val mAP)",
+      "residual": 3.333333332689037e-07,
+      "status": "EXACT"
+    }
+  ],
+  "D1_7_recommendation": {
+    "recommended_convention": "K1'（S4 canonical triple = 0.8986 を分母、val、accuracy）",
+    "rationale": [
+      "引用値 S4 0.8986 / B2a +0.0383 / T1a +0.0497 がこの規約で残差 5e-5 未満で再現する",
+      "H-6 の +0.0004 のみ分母が oracle-tool であり、系統ごとに分母が違うことが実測で判明した",
+      "分母が系統ごとに異なる現状は、論文の Table で『Δ が何に対する差か』を一意に書けない"
+    ],
+    "caveats": [
+      "H-6 を S4 基準に統一すると Δ は +0.0583 になり、引用値 +0.0004 と両立しない",
+      "oracle-tool の引用値は複数の組み合わせが同じ丸め値を与え一意に定まらない",
+      "val は 2 動画・test は 3 動画で、いずれも動画数が少なく MDE が大きい"
+    ],
+    "rewrite_needed_count": 0,
+    "decision": "決定はユーザが行う。本監査は選択肢と根拠の提示に留める。"
+  }
+}

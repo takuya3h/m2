@@ -1,0 +1,261 @@
+{
+  "task": "T3_oracle_canonical",
+  "T3_1_n_oracle_tool_val_runs": 8,
+  "T3_2_origins": {
+    "quoted_0.9583": {
+      "target": 0.958196,
+      "n_combinations": 2,
+      "n_canonical_and_min_seq": 0,
+      "uniquely_determined": false,
+      "canonical_min_seq_candidates": [],
+      "all_candidates_top5": [
+        {
+          "runs": [
+            "b2a_det2phase_oracletool_002_b2a_det2phase_oracletool_seed1000",
+            "b2a_det2phase_oracletool_003_b2a_det2phase_oracletool_seed123",
+            "b2a_det2phase_oracletool_008_b2a_det2phase_oracletool_seed456"
+          ],
+          "seeds": [
+            "1000",
+            "123",
+            "456"
+          ],
+          "mean": 0.9581958195819582,
+          "residual": -1.8041804183965837e-07,
+          "all_canonical_seeds": false,
+          "distinct_canonical_triple": false,
+          "is_min_seq_family": false
+        },
+        {
+          "runs": [
+            "b2a_det2phase_oracletool_002_b2a_det2phase_oracletool_seed1000",
+            "b2a_det2phase_oracletool_006_b2a_det2phase_oracletool_seed42",
+            "b2a_det2phase_oracletool_007_b2a_det2phase_oracletool_seed123"
+          ],
+          "seeds": [
+            "1000",
+            "42",
+            "123"
+          ],
+          "mean": 0.9581958195819582,
+          "residual": -1.8041804183965837e-07,
+          "all_canonical_seeds": false,
+          "distinct_canonical_triple": false,
+          "is_min_seq_family": false
+        }
+      ]
+    },
+    "h6_denominator": {
+      "target": 0.956436,
+      "n_combinations": 3,
+      "n_canonical_and_min_seq": 0,
+      "uniquely_determined": false,
+      "canonical_min_seq_candidates": [],
+      "all_candidates_top5": [
+        {
+          "runs": [
+            "b2a_det2phase_oracletool_006_b2a_det2phase_oracletool_seed42",
+            "b2a_det2phase_oracletool_007_b2a_det2phase_oracletool_seed123",
+            "b2a_det2phase_oracletool_008_b2a_det2phase_oracletool_seed456"
+          ],
+          "seeds": [
+            "42",
+            "123",
+            "456"
+          ],
+          "mean": 0.9564356435643564,
+          "residual": -3.5643564355591906e-07,
+          "all_canonical_seeds": true,
+          "distinct_canonical_triple": true,
+          "is_min_seq_family": false
+        },
+        {
+          "runs": [
+            "b2a_det2phase_oracletool_001_b2a_det2phase_oracletool_seed789",
+            "b2a_det2phase_oracletool_004_b2a_det2phase_oracletool_seed42",
+            "b2a_det2phase_oracletool_006_b2a_det2phase_oracletool_seed42"
+          ],
+          "seeds": [
+            "789",
+            "42",
+            "42"
+          ],
+          "mean": 0.9564356435643564,
+          "residual": -3.5643564355591906e-07,
+          "all_canonical_seeds": false,
+          "distinct_canonical_triple": false,
+          "is_min_seq_family": false
+        },
+        {
+          "runs": [
+            "b2a_det2phase_oracletool_002_b2a_det2phase_oracletool_seed1000",
+            "b2a_det2phase_oracletool_004_b2a_det2phase_oracletool_seed42",
+            "b2a_det2phase_oracletool_005_b2a_det2phase_oracletool_seed456"
+          ],
+          "seeds": [
+            "1000",
+            "42",
+            "456"
+          ],
+          "mean": 0.9564356435643564,
+          "residual": -3.5643564355591906e-07,
+          "all_canonical_seeds": false,
+          "distinct_canonical_triple": false,
+          "is_min_seq_family": false
+        }
+      ]
+    }
+  },
+  "T3_3_h6_delta_by_denominator": [
+    {
+      "denominator": "oracle-tool 0.958196",
+      "denominator_value": 0.958196,
+      "h6_mean": 0.956876,
+      "delta": -0.0013200000000000989,
+      "MDE_h6": 0.01094,
+      "exceeds_MDE": false,
+      "quoted_delta": 0.0004,
+      "matches_quoted": false
+    },
+    {
+      "denominator": "oracle-tool 0.956436",
+      "denominator_value": 0.956436,
+      "h6_mean": 0.956876,
+      "delta": 0.00043999999999999595,
+      "MDE_h6": 0.01094,
+      "exceeds_MDE": false,
+      "quoted_delta": 0.0004,
+      "matches_quoted": true
+    },
+    {
+      "denominator": "S4 canonical 0.898570",
+      "denominator_value": 0.89857,
+      "h6_mean": 0.956876,
+      "delta": 0.05830599999999997,
+      "MDE_h6": 0.01094,
+      "exceeds_MDE": true,
+      "quoted_delta": 0.0004,
+      "matches_quoted": false
+    }
+  ],
+  "T3_4_run_selection_swing": {
+    "b2a": {
+      "canonical_triple_runs": [
+        "b2a_det2phase_001_b2a_det2phase_toolpresence_seed42",
+        "b2a_det2phase_002_b2a_det2phase_toolpresence_seed123",
+        "b2a_det2phase_003_b2a_det2phase_toolpresence_seed456"
+      ],
+      "n_all_canonical_seed_runs": 255,
+      "mean_canonical_triple": 0.9368536853685369,
+      "mean_all_canonical_runs": 0.939773506762441,
+      "delta_canonical_triple": 0.03828368536853688,
+      "delta_all_runs_same_denominator": 0.041203506762441,
+      "difference_numerator_only": -0.0029198213939041207,
+      "difference_numerator_only_exceeds_MDE": true,
+      "ratio_to_MDE_numerator_only": 1.1059929522364094,
+      "delta_all_runs_and_baseline": 0.036296647448602615,
+      "difference_both": 0.0019870379199342647,
+      "difference_both_exceeds_MDE": false,
+      "ratio_to_MDE_both": 0.7526658787629791,
+      "MDE": 0.00264,
+      "difference": -0.0029198213939041207,
+      "difference_exceeds_MDE": true,
+      "ratio_to_MDE": 1.1059929522364094
+    },
+    "t1a": {
+      "canonical_triple_runs": [
+        "t1a_regiontoken_001_t1a_regiontoken_seed42",
+        "t1a_regiontoken_002_t1a_regiontoken_seed123",
+        "t1a_regiontoken_003_t1a_regiontoken_seed456"
+      ],
+      "n_all_canonical_seed_runs": 115,
+      "mean_canonical_triple": 0.9482948294829483,
+      "mean_all_canonical_runs": 0.9423676280671546,
+      "delta_canonical_triple": 0.04972482948294832,
+      "delta_all_runs_same_denominator": 0.04379762806715459,
+      "difference_numerator_only": 0.005927201415793726,
+      "difference_numerator_only_exceeds_MDE": true,
+      "ratio_to_MDE_numerator_only": 2.0368389744995623,
+      "delta_all_runs_and_baseline": 0.03889076875331621,
+      "difference_both": 0.010834060729632111,
+      "difference_both_exceeds_MDE": true,
+      "ratio_to_MDE_both": 3.7230449242722035,
+      "MDE": 0.00291,
+      "difference": 0.005927201415793726,
+      "difference_exceeds_MDE": true,
+      "ratio_to_MDE": 2.0368389744995623
+    },
+    "h6": {
+      "canonical_triple_runs": [
+        "haux_hand_presence_oracle_withtooloracle_001_haux_hand_presence_oracle_withtooloracle_seed42",
+        "haux_hand_presence_oracle_withtooloracle_002_haux_hand_presence_oracle_withtooloracle_seed123",
+        "haux_hand_presence_oracle_withtooloracle_003_haux_hand_presence_oracle_withtooloracle_seed456"
+      ],
+      "n_all_canonical_seed_runs": 18,
+      "mean_canonical_triple": 0.9568756875687568,
+      "mean_all_canonical_runs": 0.9112577924459112,
+      "delta_canonical_triple": 0.05830568756875687,
+      "delta_all_runs_same_denominator": 0.012687792445911228,
+      "difference_numerator_only": 0.04561789512284564,
+      "difference_numerator_only_exceeds_MDE": true,
+      "ratio_to_MDE_numerator_only": 4.169825879601978,
+      "delta_all_runs_and_baseline": 0.0077809331320728425,
+      "difference_both": 0.05052475443668403,
+      "difference_both_exceeds_MDE": true,
+      "ratio_to_MDE_both": 4.6183504969546645,
+      "MDE": 0.01094,
+      "difference": 0.04561789512284564,
+      "difference_exceeds_MDE": true,
+      "ratio_to_MDE": 4.169825879601978
+    },
+    "oracle-tool": {
+      "canonical_triple_runs": [
+        "b2a_det2phase_oracletool_001_b2a_det2phase_oracletool_seed789",
+        "b2a_det2phase_oracletool_002_b2a_det2phase_oracletool_seed1000",
+        "b2a_det2phase_oracletool_003_b2a_det2phase_oracletool_seed123"
+      ],
+      "n_all_canonical_seed_runs": 6,
+      "mean_canonical_triple": 0.9606160616061606,
+      "mean_all_canonical_runs": 0.9565456545654565,
+      "delta_canonical_triple": 0.06204606160616066,
+      "delta_all_runs_same_denominator": 0.0579756545654565,
+      "difference_numerator_only": 0.00407040704070416,
+      "difference_numerator_only_exceeds_MDE": false,
+      "ratio_to_MDE_numerator_only": 0.5470977205247527,
+      "delta_all_runs_and_baseline": 0.05306879525161812,
+      "difference_both": 0.008977266354542546,
+      "difference_both_exceeds_MDE": true,
+      "ratio_to_MDE_both": 1.2066218218471163,
+      "MDE": 0.00744,
+      "difference": 0.00407040704070416,
+      "difference_exceeds_MDE": false,
+      "ratio_to_MDE": 0.5470977205247527
+    }
+  },
+  "T3_4_summary": {
+    "n_systems_whose_swing_exceeds_MDE": 3,
+    "interpretation": "canonical triple を規約に含めるか否かで動く Δ が MDE を超える系統数。1 つでも超えるなら、規約は『どの run を canonical とするか』を明示しなければ結論が変わりうる。"
+  },
+  "T3_5_recommendation": {
+    "oracle_tool_canonical_recommendation": "UNDETERMINED",
+    "rationale": [
+      "どちらの目標値も canonical seed 3 つ組かつ最小連番では一意に定まらない"
+    ],
+    "canonical_run_spec_should_be_in_convention": true,
+    "h6_denominator_options": {
+      "keep_oracle_tool": {
+        "delta": 0.00043999999999999595,
+        "matches_quoted_0.0004": true,
+        "rewrite_count": 0,
+        "problem": "系統ごとに分母が異なる状態が残り、論文で Δ の定義を一意に書けない"
+      },
+      "unify_to_S4": {
+        "delta": 0.05830599999999997,
+        "matches_quoted_0.0004": false,
+        "rewrite_count": 1,
+        "problem": "H-6 の引用値 +0.0004 が +0.0583 に変わり、既存記述 1 件の書き換えが必要"
+      }
+    },
+    "decision": "決定はユーザが行う。本タスクは候補と根拠の提示に留める。"
+  }
+}

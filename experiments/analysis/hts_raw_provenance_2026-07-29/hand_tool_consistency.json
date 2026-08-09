@@ -1,0 +1,88 @@
+{
+  "reference_EDA": {
+    "frac_overlap_iou>0.1": 0.561,
+    "frac_near_dist<0.15diag": 0.596,
+    "active_phase_contact": 0.959,
+    "source": "hand4 世代(egosurgery_tool_hand)で算出=stats_extra.json"
+  },
+  "tool_boxes_source": "egosurgery_tool_hand tool IDs（EDA と同一）",
+  "contact_stats_hand4": {
+    "n_tool_boxes": 49652,
+    "frac_overlap_iou>0.1": 0.561,
+    "frac_near_dist<0.15diag": 0.596,
+    "mean_max_iou_tool_hand": 0.162,
+    "median_min_center_dist_px": 286.1,
+    "frames_with_contact": 13608,
+    "active_phase_contact_rate": 0.893,
+    "contact_rate_by_phase": {
+      "anesthesia": 0.842,
+      "closure": 0.832,
+      "design": 0.849,
+      "dissection": 0.944,
+      "dressing": 0.8,
+      "hemostasis": 0.96,
+      "incision": 0.936,
+      "irrigation": 0.834
+    }
+  },
+  "contact_stats_raw02": {
+    "n_tool_boxes": 49652,
+    "frac_overlap_iou>0.1": 0.603,
+    "frac_near_dist<0.15diag": 0.646,
+    "mean_max_iou_tool_hand": 0.181,
+    "median_min_center_dist_px": 267.0,
+    "frames_with_contact": 14284,
+    "active_phase_contact_rate": 0.934,
+    "contact_rate_by_phase": {
+      "anesthesia": 0.948,
+      "closure": 0.891,
+      "design": 0.906,
+      "dissection": 0.972,
+      "dressing": 0.843,
+      "hemostasis": 0.953,
+      "incision": 0.979,
+      "irrigation": 0.936
+    }
+  },
+  "timeshift_iou_by_offset": {
+    "0": {
+      "n": 41202,
+      "median_iou": 0.5988
+    },
+    "1": {
+      "n": 38220,
+      "median_iou": 0.4376
+    },
+    "-1": {
+      "n": 38737,
+      "median_iou": 0.4664
+    },
+    "2": {
+      "n": 37265,
+      "median_iou": 0.4027
+    },
+    "-2": {
+      "n": 37789,
+      "median_iou": 0.4173
+    },
+    "5": {
+      "n": 35748,
+      "median_iou": 0.3563
+    },
+    "-5": {
+      "n": 36394,
+      "median_iou": 0.3749
+    },
+    "10": {
+      "n": 34802,
+      "median_iou": 0.3219
+    },
+    "-10": {
+      "n": 36022,
+      "median_iou": 0.3938
+    }
+  },
+  "timeshift_peak_offset": 0,
+  "verdict_canonical": "raw02",
+  "note": "接触統計が高い方=手が tool により整合=正本。時刻ずれは peak_offset≠0 なら該当。"
+}

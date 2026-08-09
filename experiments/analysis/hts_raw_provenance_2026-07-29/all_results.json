@@ -1,0 +1,256 @@
+{
+  "task1_overview": {
+    "root": "/home/ubuntu/slocal/m2/data/raw/OpenSurgery_Dataset",
+    "subsets": {
+      "00_master_annotations": {
+        "json": 15
+      },
+      "01_frames": {
+        "jpg": 27535
+      },
+      "02_hand": {
+        "png": 54371,
+        "json": 29
+      },
+      "03_tool": {
+        "json": 35
+      },
+      "04_handtool": {
+        "png": 18397,
+        "json": 32
+      }
+    },
+    "note": "00_master=json(seg=矩形), 01_frames=jpg, 02_hand=PNG(手バイナリ)+json, 03_tool=json(RLE), 04_handtool=PNG(マルチクラス)+json(RLE)"
+  },
+  "task2_seg_format": {
+    "03_tool_14cls": {
+      "seg_types": {
+        "rle": 34251
+      },
+      "polygon_vertex_hist": {},
+      "fill_ratio(mask_area/mask_bbox)": {
+        "min": 0.0368,
+        "q1": 0.186,
+        "median": 0.2985,
+        "q3": 0.5029,
+        "max": 0.8119,
+        "mean": 0.3468,
+        "n": 400
+      }
+    },
+    "04_handtool_5cls": {
+      "seg_types": {
+        "rle": 21949
+      },
+      "polygon_vertex_hist": {},
+      "fill_ratio(mask_area/mask_bbox)": {
+        "min": 0.0526,
+        "q1": 0.2746,
+        "median": 0.4129,
+        "q3": 0.5406,
+        "max": 0.7773,
+        "mean": 0.4069,
+        "n": 400
+      }
+    },
+    "00_master": {
+      "seg_types": {
+        "polygon": 400
+      },
+      "polygon_vertex_hist": {
+        "4": 400
+      }
+    },
+    "_verdict": {
+      "real_masks_exist_in_derived": true,
+      "master_is_rect_only": true,
+      "class": "(a) 形式上は真マスク(RLE)実在。ただし master に無く『派生時に挿入』のため生成来歴の確認が必須"
+    }
+  },
+  "task3_sam_fingerprint": {
+    "03_tool_14cls": {
+      "iou_vs_master_bbox": {
+        "min": 0.1821,
+        "q1": 0.7844,
+        "median": 0.887,
+        "q3": 0.9475,
+        "max": 0.9989,
+        "mean": 0.8473,
+        "n": 1500
+      },
+      "inclusion_vs_master_bbox": {
+        "min": 0.5506,
+        "q1": 0.963,
+        "median": 0.9884,
+        "q3": 0.9986,
+        "max": 1.0,
+        "mean": 0.9686,
+        "n": 1500
+      }
+    },
+    "04_handtool_5cls": {
+      "iou_vs_master_bbox": {
+        "min": 0.3451,
+        "q1": 0.88,
+        "median": 0.9258,
+        "q3": 0.952,
+        "max": 0.9932,
+        "mean": 0.9026,
+        "n": 1500
+      },
+      "inclusion_vs_master_bbox": {
+        "min": 0.711,
+        "q1": 0.9929,
+        "median": 1.0,
+        "q3": 1.0,
+        "max": 1.0,
+        "mean": 0.987,
+        "n": 1500
+      }
+    },
+    "_reference_SAM_fingerprint": {
+      "inclusion_mean": 0.879,
+      "iou_median": 0.927
+    },
+    "_verdict": {
+      "inclusion_high_containment": true,
+      "matches_sharp_sam_peak": false,
+      "assessment": "判定不能→要追加証拠。master が矩形のみで派生に真マスクがある=マスクは箱から生成された可能性。内包率が箱にほぼ完全内包(高集中)なら bbox 由来生成の疑いが濃厚。ただし 7/10 SAM の鋭い指紋(内包0.879/IoU0.927)とは完全一致せず分布は広い。生成方法の来歴書が無い限りクリア不可。"
+    }
+  },
+  "task4_c6_phase_coexist": {
+    "hti_frames": 9106,
+    "phase_frames": 17233,
+    "coexist_frames": 9106,
+    "per_phase": {
+      "dissection": 3540,
+      "closure": 3332,
+      "incision": 873,
+      "hemostasis": 663,
+      "anesthesia": 380,
+      "design": 137,
+      "irrigation": 117,
+      "dressing": 64
+    },
+    "note": "join は basename。image_id join は test 約7割誤接続の既知バグ回避のため不可。"
+  },
+  "task4_c7_class_map": {
+    "tool15": [
+      "Bipolar Forceps",
+      "Electric Cautery",
+      "Forceps",
+      "Gauze",
+      "Hook",
+      "Mouth Gag",
+      "Needle Holders",
+      "Raspatory",
+      "Retractor",
+      "Scalpel",
+      "Scissors",
+      "Skewer",
+      "Suction Cannula",
+      "Syringe",
+      "Tweezers"
+    ],
+    "raw_14cls_cleaned": [
+      "Bipolar Forceps",
+      "Electric Cautery",
+      "Forceps",
+      "Gauze",
+      "Hook",
+      "Needle Holders",
+      "Raspatory",
+      "Retractor",
+      "Scalpel",
+      "Scissors",
+      "Skewer",
+      "Suction Cannula",
+      "Syringe",
+      "Tweezers"
+    ],
+    "dropped_from_raw14(=Tool15にありraw14に無い)": [
+      "Mouth Gag"
+    ],
+    "extra_in_raw14": [],
+    "bipolar_merged_into_forceps": false,
+    "mapping": {
+      "Bipolar Forceps": "Bipolar Forceps",
+      "Electric Cautery": "Electric Cautery",
+      "Forceps": "Forceps",
+      "Gauze": "Gauze",
+      "Hook": "Hook",
+      "Mouth Gag": "Mouth Gag",
+      "Needle Holders": "Needle Holders",
+      "Raspatory": "Raspatory",
+      "Retractor": "Retractor",
+      "Scalpel": "Scalpel",
+      "Scissors": "Scissors",
+      "Skewer": "Skewer",
+      "Suction Cannula": "Suction Cannula",
+      "Syringe": "Syringe",
+      "Tweezers": "Tweezers"
+    }
+  },
+  "task4_c8_hand_canonical": {
+    "raw02_hand": {
+      "instances": 57173,
+      "images": 19560,
+      "videos": 25,
+      "video_img_counts_03_12_15": {
+        "03_1": 414,
+        "03_2": 4002,
+        "12_1": 2366,
+        "12_2": 16,
+        "15_1": 1626,
+        "15_2": 634
+      }
+    },
+    "egosurgery_hand4": {
+      "instances": 46320,
+      "images": 15437,
+      "videos": 22,
+      "missing_vs_raw02": [
+        "03_1",
+        "12_2",
+        "15_2"
+      ]
+    },
+    "note_toolhand": "egosurgery_tool_hand の手は egosurgery_hand4 と件数/動画/画像すべて同一(46320/15437/22)=同世代",
+    "03_3_status": "raw02 にも 03_3 の手アノテは存在しない（frames はあるが GT 無し→復活不能）",
+    "raw02_vs_hand4": {
+      "common_frames": 15357,
+      "raw02_only_frames": 4075,
+      "hand4_only_frames": 40,
+      "geom_iou_best": {
+        "min": 0.0,
+        "q1": 0.1862,
+        "median": 0.5229,
+        "q3": 0.8805,
+        "max": 0.9964,
+        "mean": 0.5162,
+        "n": 9079
+      },
+      "exact_match_pct": 0.0
+    },
+    "_verdict": {
+      "recommended_canonical": "raw 02_hand（最完全: 57,173 / 25 セグメント / 欠落は 03_3 のみ＝どの世代にも無い）",
+      "reason": "hand4/tool_hand は 46,320/22セグメントの subset かつ raw02 と座標系が異なる(bbox 完全一致≈0%)。世代混在は S0 の Δ 基準点を汚染するため、raw02 を正本に一本化しdownstream を全て raw02 座標で再導出すること。12_2 は 16 枚のみ・03_3 は復活不能。"
+    }
+  },
+  "task5_delta_denominator": {
+    "t1b_warmstart_init_mAP": {
+      "seed42": 0.7303,
+      "seed123": 0.729,
+      "seed456": 0.722,
+      "mean": 0.7271
+    },
+    "warmstart_ckpt": "third_party/Relation-DETR/checkpoints/incoming/seed{S}/best_ap.pth (= 収束済み 15クラス Relation-DETR 検出器。train_t1b.py L147-152)",
+    "s0_frozen_denominator": {
+      "value": "0.7051 ± 0.0042",
+      "source": "experiments/baselines/s0_frozen_00{1,2,3}_relationdetr_s0frozen_cocohead_seed* (= backbone 凍結 + COCO-init head を frozen-source 手順で再学習した検出器)"
+    },
+    "eval_recipe": "両者とも公式 score_thr=0.0 / NMS 無 / top-k=300・同一 split(val 1515)。recipe 差は無い。",
+    "explanation": "約2.2pt差は eval recipe/split の不一致ではなく『別 checkpoint』に起因。0.7271=収束済み full 検出器(warm-start源)、0.7051=frozen-backbone+COCO-head 再学習の S0-frozen。T1b/L2 の Δ は inj−ctrl(両者とも warm-start源 0.7271 から)で測る paired 量であり、絶対 mAP を 0.7051 と直接比較してはならない(分母が別系統=4分母運用)。",
+    "caution": "L2/L1a の陽性主張は『同一 warm-start・同一 recipe の ctrl との paired 差』で行い、S0-frozen 0.7051 とは混同しない。DeltaCalculator の recipe 整合検証を必ず通すこと。"
+  }
+}
