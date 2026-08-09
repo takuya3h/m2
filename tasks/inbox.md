@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（34 件）
+## 未処理（39 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -29,6 +29,11 @@
 - [ ] 2026-08-09 [cc] repro_variance_2026-07-29/reextract/（115M、.npz×5）はefrosに`.gitignore`済みのまま残っており、他の重い中間生成物（features/ npz 258M超、baselines等 pth 3.4G超）とあわせ正本には存在しない。再生成可能だが取得手段は未検討（T-2026-08-10-analysis-artifact-integration §6）
 - [ ] 2026-08-09 [cx] 定位置分岐は `exp/<logical-host>` に統一し、索引は全 path が Git 追跡下の clean host で生成したものを正本とする。実ホスト切替と旧 remote ref の扱いは統合後の別作業（T-2026-08-10-branch-naming-and-canonical-index）
 - [ ] 2026-08-09 [cc] 起票者の検査コマンドの誤りが本 task で 3 件。G2 の新列検出が既存列 run_id を巻き込む / zsh の tail 修飾子で走査が空を返す / 秘匿の正規表現が大文字小文字を区別する（T-2026-08-11-identity-tracking-and-harvest-scope §5.1）
+- [ ] 2026-08-09 [cc] 受け皿を契約ごとに分割した。旧方式は併合で必ず衝突し、新方式は元の記録が衝突 0 件、集約結果の衝突は make inbox で解消できることを実際に併合して確認した（T-2026-08-11-inbox-per-task-split）
+- [ ] 2026-08-09 [cc] 移行時点の 34 件のうち 21 件は契約の識別子を持たず _unassigned へ入れた。参照にパスや PR 番号を書くのは様式どおりで誤りではないが、集約時に契約へ結びつかない（tasks/inbox.d/_unassigned.md）
+- [ ] 2026-08-09 [cc] SPEC が自己矛盾していた。§0 は tasks/README.md を触るなと書き、Task 4 と判定 9 は同ファイルの変更を要求する。§0 の当該節は前 task からの写し取りと判断し、利用者の承認を得て Task 4 に従った（T-2026-08-11-inbox-per-task-split §5 D-3）
+- [ ] 2026-08-09 [cc] 手順書に受け皿へ書く指示が元から無かった。指示は各 SPEC 側にあり、実装系の手順書には存在しない構造だった。今回 SKILL.md へ追加したが、SPEC 側の重複した指示をどうするかは未決（.claude/skills/task/SKILL.md）
+- [ ] 2026-08-09 [cc] 集約結果に日時を書かない設計にした。壁時計を使うと --check が手による編集と時刻の経過を区別できなくなる。既存の build_context.py は生成物に日時を刻んでおり、方式が揃っていない（tools/build_inbox.py）
 - [ ] 2026-08-09 [cc] lecun の退避物 34 件を ~/m2-archive/20260811 へ移し、索引が正本と md5 完全一致・追跡外 0 件になった。lecun も正本を生成できる条件を満たした（T-2026-08-11-leftover-relocation）
 - [ ] 2026-08-09 [cc] zsh の変数展開修飾子による事故が 2 task 連続。$VAR: の直後の 1 文字が修飾子名だと無言で書き換わる（:t と :r で被弾）。ホスト横断のコマンドは ${VAR} で囲むこと（T-2026-08-11-leftover-relocation §10 D-8）
 - [ ] 2026-08-09 [cc] 下書き起票が全ホストで失敗している。secret は設定済みだが 401 で、ワークフローは未設定しか検出せず「未設定」と誤誘導する。失効の検出を足すのは別 task（.github/workflows/auto-draft-pr.yml）
