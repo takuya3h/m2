@@ -1,0 +1,46 @@
+{
+  "raw02_hand": {
+    "instances": 57173,
+    "images": 19560,
+    "videos": 25,
+    "video_img_counts_03_12_15": {
+      "03_1": 414,
+      "03_2": 4002,
+      "12_1": 2366,
+      "12_2": 16,
+      "15_1": 1626,
+      "15_2": 634
+    }
+  },
+  "egosurgery_hand4": {
+    "instances": 46320,
+    "images": 15437,
+    "videos": 22,
+    "missing_vs_raw02": [
+      "03_1",
+      "12_2",
+      "15_2"
+    ]
+  },
+  "note_toolhand": "egosurgery_tool_hand の手は egosurgery_hand4 と件数/動画/画像すべて同一(46320/15437/22)=同世代",
+  "03_3_status": "raw02 にも 03_3 の手アノテは存在しない（frames はあるが GT 無し→復活不能）",
+  "raw02_vs_hand4": {
+    "common_frames": 15357,
+    "raw02_only_frames": 4075,
+    "hand4_only_frames": 40,
+    "geom_iou_best": {
+      "min": 0.0,
+      "q1": 0.1862,
+      "median": 0.5229,
+      "q3": 0.8805,
+      "max": 0.9964,
+      "mean": 0.5162,
+      "n": 9079
+    },
+    "exact_match_pct": 0.0
+  },
+  "_verdict": {
+    "recommended_canonical": "raw 02_hand（最完全: 57,173 / 25 セグメント / 欠落は 03_3 のみ＝どの世代にも無い）",
+    "reason": "hand4/tool_hand は 46,320/22セグメントの subset かつ raw02 と座標系が異なる(bbox 完全一致≈0%)。世代混在は S0 の Δ 基準点を汚染するため、raw02 を正本に一本化しdownstream を全て raw02 座標で再導出すること。12_2 は 16 枚のみ・03_3 は復活不能。"
+  }
+}

@@ -1,0 +1,241 @@
+{
+  "task": "T5_phase_coverage",
+  "join_rule": "basename から拡張子を除去し phase CSV の Frame 列と突き合わせる (image_id join は使わない)",
+  "phase_label_sources": {
+    "project_dir": "/home/ubuntu/slocal/m2/data/annotations/egosurgery_phase",
+    "project_segments": [
+      "01_1",
+      "02_1",
+      "03_2",
+      "03_3",
+      "04_1",
+      "04_2",
+      "05_1",
+      "05_2",
+      "06_1",
+      "06_2",
+      "07_1",
+      "07_2",
+      "08_1",
+      "08_2",
+      "09_1",
+      "10_1",
+      "10_2",
+      "11_1",
+      "12_1",
+      "13_1",
+      "14_1",
+      "14_2",
+      "15_1"
+    ],
+    "hts_dir": "/home/ubuntu/slocal/m2/data/raw/OpenSurgery_Dataset/05_egosurgery_hts/egosurgery_tool_bbox/annotations/phase",
+    "combined_segments": [
+      "01_1",
+      "02_1",
+      "03_2",
+      "03_3",
+      "04_1",
+      "04_2",
+      "05_1",
+      "05_2",
+      "06_1",
+      "06_2",
+      "07_1",
+      "07_2",
+      "08_1",
+      "08_2",
+      "09_1",
+      "10_1",
+      "10_2",
+      "11_1",
+      "12_1",
+      "13_1",
+      "14_1",
+      "14_2",
+      "15_1",
+      "17_1",
+      "18_1",
+      "18_2",
+      "19_1",
+      "19_2",
+      "19_3",
+      "19_4",
+      "19_5",
+      "19_6",
+      "20_2",
+      "20_4",
+      "20_5",
+      "20_6",
+      "20_7",
+      "20_8",
+      "21_1",
+      "21_2",
+      "21_3",
+      "21_4",
+      "21_5",
+      "22_1",
+      "22_2",
+      "22_3"
+    ],
+    "n_labeled_frames_combined": 30782
+  },
+  "phases": [
+    "anesthesia",
+    "closure",
+    "design",
+    "disinfection",
+    "dissection",
+    "dressing",
+    "hemostasis",
+    "incision",
+    "irrigation"
+  ],
+  "rare_phases": [
+    "disinfection",
+    "dressing",
+    "irrigation"
+  ],
+  "per_split": {
+    "train": {
+      "canonical": {
+        "dissection": 3832,
+        "closure": 3595,
+        "hemostasis": 825,
+        "irrigation": 93,
+        "incision": 763,
+        "anesthesia": 281,
+        "design": 245,
+        "dressing": 12,
+        "disinfection": 11
+      },
+      "ht_subset": {
+        "dissection": 2267,
+        "hemostasis": 441,
+        "closure": 2020,
+        "irrigation": 45,
+        "incision": 591,
+        "anesthesia": 186,
+        "design": 108,
+        "dressing": 10
+      }
+    },
+    "val": {
+      "canonical": {
+        "anesthesia": 98,
+        "incision": 170,
+        "dissection": 506,
+        "closure": 557,
+        "design": 103,
+        "dressing": 24,
+        "hemostasis": 57
+      },
+      "ht_subset": {
+        "anesthesia": 97,
+        "incision": 170,
+        "dissection": 506,
+        "closure": 499,
+        "hemostasis": 56,
+        "design": 16
+      }
+    },
+    "test": {
+      "canonical": {
+        "closure": 2444,
+        "dissection": 1102,
+        "dressing": 83,
+        "incision": 163,
+        "irrigation": 84,
+        "hemostasis": 239,
+        "anesthesia": 120,
+        "design": 30
+      },
+      "ht_subset": {
+        "dissection": 767,
+        "incision": 112,
+        "closure": 813,
+        "irrigation": 72,
+        "hemostasis": 166,
+        "dressing": 54,
+        "anesthesia": 97,
+        "design": 13
+      }
+    }
+  },
+  "rare_phase_detail": {
+    "train": {
+      "disinfection": {
+        "canonical": 11,
+        "ht_subset": 0
+      },
+      "dressing": {
+        "canonical": 12,
+        "ht_subset": 10
+      },
+      "irrigation": {
+        "canonical": 93,
+        "ht_subset": 45
+      }
+    },
+    "val": {
+      "disinfection": {
+        "canonical": 0,
+        "ht_subset": 0
+      },
+      "dressing": {
+        "canonical": 24,
+        "ht_subset": 0
+      },
+      "irrigation": {
+        "canonical": 0,
+        "ht_subset": 0
+      }
+    },
+    "test": {
+      "disinfection": {
+        "canonical": 0,
+        "ht_subset": 0
+      },
+      "dressing": {
+        "canonical": 83,
+        "ht_subset": 54
+      },
+      "irrigation": {
+        "canonical": 84,
+        "ht_subset": 72
+      }
+    }
+  },
+  "excluded_segments": {
+    "segments": [
+      "03_1",
+      "12_2",
+      "15_2"
+    ],
+    "n_frames": 463,
+    "phase_distribution": {
+      "__UNLABELED__": 463
+    },
+    "rare_phase_frames": {
+      "disinfection": 0,
+      "dressing": 0,
+      "irrigation": 0
+    },
+    "phase_label_available": {
+      "03_1": false,
+      "03_3": true,
+      "12_2": false,
+      "15_2": false
+    }
+  },
+  "within_canonical_segment_gap": {
+    "n_frames": 3660,
+    "phase_distribution": {
+      "__UNLABELED__": 3660
+    },
+    "rare_phase_frames": {
+      "disinfection": 0,
+      "dressing": 0,
+      "irrigation": 0
+    }
+  }
+}

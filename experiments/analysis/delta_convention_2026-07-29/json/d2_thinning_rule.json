@@ -1,0 +1,154 @@
+{
+  "task": "D2_verify_thinning_rule",
+  "hypothesis": "H-e: canonical split = phase ラベルを持つフレーム",
+  "counts": {
+    "P": 19560,
+    "canonical_A": 15437,
+    "excluded_segment": 463,
+    "unused_within_canonical_segment": 3660,
+    "phase_labeled_total": 30782
+  },
+  "direction_1_unlabeled_in_canonical": {
+    "n": 0,
+    "examples": [],
+    "expected_if_He": 0
+  },
+  "direction_2_labeled_not_in_canonical": {
+    "within_population_P": {
+      "n": 0,
+      "examples": [],
+      "expected_if_He": 0
+    },
+    "all_phase_csv": {
+      "n": 15345,
+      "examples": [
+        "01_1_0001",
+        "01_1_0002",
+        "01_1_0003",
+        "01_1_0004",
+        "01_1_0005",
+        "01_1_0006",
+        "01_1_0007",
+        "01_1_0008",
+        "01_1_0009",
+        "01_1_0010",
+        "01_1_0011",
+        "01_1_0012",
+        "01_1_0013",
+        "01_1_0014",
+        "01_1_0015",
+        "01_1_0016",
+        "01_1_0122",
+        "01_1_0123",
+        "01_1_0130",
+        "01_1_0142"
+      ],
+      "note": "phase CSV は動画 17-22 など母集団 P の外側も含むため、この値は 0 にならない。H-e の検定は P 内で行う。",
+      "segments": [
+        "01_1",
+        "02_1",
+        "03_2",
+        "03_3",
+        "04_1",
+        "04_2",
+        "05_1",
+        "05_2",
+        "06_1",
+        "06_2",
+        "07_1",
+        "07_2",
+        "08_1",
+        "08_2",
+        "09_1",
+        "10_1",
+        "10_2",
+        "11_1",
+        "12_1",
+        "13_1",
+        "14_1",
+        "14_2",
+        "15_1",
+        "17_1",
+        "18_1",
+        "18_2",
+        "19_1",
+        "19_2",
+        "19_3",
+        "19_4",
+        "19_5",
+        "19_6",
+        "20_2",
+        "20_4",
+        "20_5",
+        "20_6",
+        "20_7",
+        "20_8",
+        "21_1",
+        "21_2"
+      ]
+    }
+  },
+  "manifest_cross_check": {
+    "manifest_not_in_canonical": 0,
+    "canonical_not_in_manifest": 0,
+    "manifest_size": 15437,
+    "unlabeled_in_manifest": 0
+  },
+  "crosstab": {
+    "canonical": {
+      "labeled": 15437
+    },
+    "unused_within_canonical_segment": {
+      "unlabeled": 3660
+    },
+    "excluded_segment": {
+      "unlabeled": 463
+    }
+  },
+  "unused_frames_detection_value": {
+    "n_unused": 3660,
+    "n_unused_with_tool_ann": 3391,
+    "tool_ann_total": 8798,
+    "by_class": {
+      "Tweezers": 1859,
+      "Gauze": 1175,
+      "Mouth Gag": 1009,
+      "Forceps": 1001,
+      "Retractor": 890,
+      "Suction Cannula": 742,
+      "Suture, Suture Needle": 516,
+      "Needle Holders": 473,
+      "Nasogastric Tube": 187,
+      "Scissors": 175,
+      "Raspatory": 127,
+      "Hook": 123,
+      "Malleable Retractor": 121,
+      "Scalpel": 59,
+      "Electric Cautery": 56,
+      "Chisel": 53,
+      "Petri Dish": 48,
+      "Trephine": 40,
+      "Drill": 33,
+      "Hammer": 28,
+      "Bipolar Forceps": 17,
+      "Spoon": 16,
+      "Screwdriver": 16,
+      "Ruler": 14,
+      "BiClamp": 8,
+      "Syringe": 6,
+      "Cup": 6
+    },
+    "signature_tools": {
+      "Bipolar Forceps": 17,
+      "Scalpel": 59,
+      "Needle Holders": 473
+    },
+    "rare_tools": {
+      "Skewer": 0,
+      "Mouth Gag": 1009
+    },
+    "usage_note": "これらは phase 評価には使えない (ラベルが無い) が、検出器の学習データとしては使える量である。ただし使用すると S0-frozen が変わり I4 を破るため現時点では採用不可。将来「凍結源を取り直す」判断をする場合の材料として記録する。"
+  },
+  "verdict": "H-e 確定",
+  "action": "間引き規則は「phase ラベルの有無」。母集団 P の内側では canonical と phase ラベル保持フレームが完全一致する。M3 の「規則不明」を訂正する。"
+}

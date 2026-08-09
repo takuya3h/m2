@@ -1,0 +1,90 @@
+{
+  "hand_channels": 5,
+  "tier": "Tier1/L1a",
+  "seed": 42,
+  "trainable": "film",
+  "n_trainable_params": 10240,
+  "elapsed_min": 1.0212294646694013,
+  "all_pass": true,
+  "checks": {
+    "1_gradient_flow": {
+      "loss_value": 24.91851806640625,
+      "loss_is_finite": true,
+      "n_trainable_params": 1,
+      "n_issues": 0,
+      "issues": [],
+      "inject_param_grad_norms": [
+        {
+          "name": "hand_prior.proj.weight",
+          "grad_norm": 0.667704701423645
+        }
+      ],
+      "inject_grad_nonzero_count": 1,
+      "inject_grad_total": 1,
+      "pass": true
+    },
+    "2_loss_at_init": {
+      "n_samples": 3,
+      "loss_values": [
+        13.471283912658691,
+        11.652316093444824,
+        8.056746482849121
+      ],
+      "loss_mean": 11.060115496317545,
+      "loss_std": 2.249789627962377,
+      "all_finite": true,
+      "pass": true
+    },
+    "3_nan_inf_hook": {
+      "n_steps": 5,
+      "loss_trajectory": [
+        11.751873016357422,
+        10.921995162963867,
+        26.16670799255371,
+        17.53243637084961,
+        22.102153778076172
+      ],
+      "all_finite": true,
+      "nan_inf_hits": [],
+      "n_nan_inf_hits": 0,
+      "pass": true
+    },
+    "4_overfit_one_batch": {
+      "n_steps": 50,
+      "init_loss": 10.765369415283203,
+      "final_loss": 3.4614691734313965,
+      "loss_reduction_pct": 67.84625738418903,
+      "min_loss": 3.4614691734313965,
+      "trajectory_first_5": [
+        10.765369415283203,
+        24.285730361938477,
+        18.87986183166504,
+        15.369420051574707,
+        14.126543045043945
+      ],
+      "trajectory_last_5": [
+        3.9227473735809326,
+        3.624519109725952,
+        3.601905584335327,
+        3.4766416549682617,
+        3.4614691734313965
+      ],
+      "trainable_for_this_check": "all",
+      "pass": true,
+      "note_threshold": "容量試験(trainable=all)。注入 isolation は checks 1/5(film) が別途証明"
+    },
+    "5_injection_wiring": {
+      "inject_grad_norm_with_mask": 0.4334713816642761,
+      "inject_grad_norm_zero_ctrl": 0.0,
+      "loss_with_mask": 14.331840515136719,
+      "loss_zero_ctrl": 30.091463088989258,
+      "n_non_inject_trainable_params": 0,
+      "inject_grad_nonzero_with_mask": true,
+      "inject_grad_zero_when_ctrl_zero": true,
+      "only_injection_path_trainable": true,
+      "pass": true,
+      "interpretation": "注入経路のみ勾配・0 対照で厳密 0 → 配線正常（tool 非依存の手側残差が正しく効いている）"
+    }
+  },
+  "interpretation": "L0 監査 PASS = 手 mask→det 注入機構の配線が正常（合成マスク・本番学習ではない）"
+}

@@ -1,0 +1,817 @@
+{
+  "task": "N3_delta_allrun_recompute",
+  "pool_composition": {
+    "measurement": {
+      "s4": {
+        "n_families": 3,
+        "families": {
+          "s4_phase_baseline|frozen_tecno_phase_baseline": 37,
+          "s4_phase_baseline|frozen_tecno_phase_baseline_neck": 3,
+          "s4_phase_baseline|frozen_tecno_phase_necktransfer": 3
+        }
+      },
+      "b2a": {
+        "n_families": 73,
+        "families": {
+          "b2a_base_oracle_noise_p010|b2a_base_oracle_noise_p010": 3,
+          "b2a_base_oracle_noise_p020|b2a_base_oracle_noise_p020": 3,
+          "b2a_base_oracle_noise_p030|b2a_base_oracle_noise_p030": 3,
+          "b2a_base_oracle_top3noise_p010|b2a_base_oracle_top3noise_p010": 3,
+          "b2a_base_oracle_top3noise_p020|b2a_base_oracle_top3noise_p020": 3,
+          "b2a_base_oracle_top3noise_p030|b2a_base_oracle_top3noise_p030": 3,
+          "b2a_det2phase|b2a_det2phase_toolpresence": 3,
+          "b2a_det2phase_toolpresence|b2a_det2phase_toolpresence": 32,
+          "b2a_mask_dim_00|b2a_mask_dim_00": 3,
+          "b2a_mask_dim_01|b2a_mask_dim_01": 3,
+          "b2a_mask_dim_02|b2a_mask_dim_02": 3,
+          "b2a_mask_dim_03|b2a_mask_dim_03": 3,
+          "b2a_mask_dim_04|b2a_mask_dim_04": 3,
+          "b2a_mask_dim_05|b2a_mask_dim_05": 3,
+          "b2a_mask_dim_06|b2a_mask_dim_06": 3,
+          "b2a_mask_dim_07|b2a_mask_dim_07": 3,
+          "b2a_mask_dim_08|b2a_mask_dim_08": 3,
+          "b2a_mask_dim_09|b2a_mask_dim_09": 3,
+          "b2a_mask_dim_10|b2a_mask_dim_10": 3,
+          "b2a_mask_dim_11|b2a_mask_dim_11": 3,
+          "b2a_mask_dim_12|b2a_mask_dim_12": 3,
+          "b2a_mask_dim_13|b2a_mask_dim_13": 3,
+          "b2a_mask_dim_14|b2a_mask_dim_14": 3,
+          "b2a_oracle_mask_00|b2a_oracle_mask_00": 3,
+          "b2a_oracle_mask_01|b2a_oracle_mask_01": 3,
+          "b2a_oracle_mask_02|b2a_oracle_mask_02": 3,
+          "b2a_oracle_mask_03|b2a_oracle_mask_03": 3,
+          "b2a_oracle_mask_04|b2a_oracle_mask_04": 3,
+          "b2a_oracle_mask_05|b2a_oracle_mask_05": 3,
+          "b2a_oracle_mask_06|b2a_oracle_mask_06": 3,
+          "b2a_oracle_mask_07|b2a_oracle_mask_07": 3,
+          "b2a_oracle_mask_08|b2a_oracle_mask_08": 3,
+          "b2a_oracle_mask_09|b2a_oracle_mask_09": 3,
+          "b2a_oracle_mask_10|b2a_oracle_mask_10": 3,
+          "b2a_oracle_mask_11|b2a_oracle_mask_11": 3,
+          "b2a_oracle_mask_12|b2a_oracle_mask_12": 3,
+          "b2a_oracle_mask_13|b2a_oracle_mask_13": 3,
+          "b2a_oracle_mask_14|b2a_oracle_mask_14": 3,
+          "b2a_oracle_mask_top3_joint|b2a_oracle_mask_top3_joint": 3,
+          "b2a_regiononly_mask_00|b2a_regiononly_mask_00": 3,
+          "b2a_regiononly_mask_01|b2a_regiononly_mask_01": 3,
+          "b2a_regiononly_mask_02|b2a_regiononly_mask_02": 3,
+          "b2a_regiononly_mask_03|b2a_regiononly_mask_03": 3,
+          "b2a_regiononly_mask_04|b2a_regiononly_mask_04": 3,
+          "b2a_regiononly_mask_05|b2a_regiononly_mask_05": 3,
+          "b2a_regiononly_mask_06|b2a_regiononly_mask_06": 3,
+          "b2a_regiononly_mask_07|b2a_regiononly_mask_07": 3,
+          "b2a_regiononly_mask_08|b2a_regiononly_mask_08": 3,
+          "b2a_regiononly_mask_09|b2a_regiononly_mask_09": 3,
+          "b2a_regiononly_mask_10|b2a_regiononly_mask_10": 3,
+          "b2a_regiononly_mask_11|b2a_regiononly_mask_11": 3,
+          "b2a_regiononly_mask_12|b2a_regiononly_mask_12": 3,
+          "b2a_regiononly_mask_13|b2a_regiononly_mask_13": 3,
+          "b2a_regiononly_mask_14|b2a_regiononly_mask_14": 3,
+          "b2a_regiononly_oracle|b2a_regiononly_oracle": 3,
+          "b2a_regiononly_oracle_mask_top3|b2a_regiononly_oracle_mask_top3": 3,
+          "b2a_regiononly_pred|b2a_regiononly_pred": 3,
+          "b2a_ro_oracle_bipolarnoise_p010|b2a_ro_oracle_bipolarnoise_p010": 3,
+          "b2a_ro_oracle_bipolarnoise_p020|b2a_ro_oracle_bipolarnoise_p020": 3,
+          "b2a_ro_oracle_bipolarnoise_p030|b2a_ro_oracle_bipolarnoise_p030": 3,
+          "b2a_ro_oracle_bsnoise_p010|b2a_ro_oracle_bsnoise_p010": 3,
+          "b2a_ro_oracle_bsnoise_p020|b2a_ro_oracle_bsnoise_p020": 3,
+          "b2a_ro_oracle_bsnoise_p030|b2a_ro_oracle_bsnoise_p030": 3,
+          "b2a_ro_oracle_nhnoise_p010|b2a_ro_oracle_nhnoise_p010": 3,
+          "b2a_ro_oracle_nhnoise_p020|b2a_ro_oracle_nhnoise_p020": 3,
+          "b2a_ro_oracle_nhnoise_p030|b2a_ro_oracle_nhnoise_p030": 3,
+          "b2a_ro_oracle_noise000|b2a_ro_oracle_noise000": 12,
+          "b2a_ro_oracle_scalpelnoise_p010|b2a_ro_oracle_scalpelnoise_p010": 3,
+          "b2a_ro_oracle_scalpelnoise_p020|b2a_ro_oracle_scalpelnoise_p020": 3,
+          "b2a_ro_oracle_scalpelnoise_p030|b2a_ro_oracle_scalpelnoise_p030": 3,
+          "b2a_ro_oracle_top3noise_p010|b2a_ro_oracle_top3noise_p010": 3,
+          "b2a_ro_oracle_top3noise_p020|b2a_ro_oracle_top3noise_p020": 3,
+          "b2a_ro_oracle_top3noise_p030|b2a_ro_oracle_top3noise_p030": 3
+        }
+      },
+      "t1a": {
+        "n_families": 53,
+        "families": {
+          "t1a_3seed_det123_p123_aug|t1a_3seed_det123_p123_aug": 1,
+          "t1a_3seed_det123_p123_frozen|t1a_3seed_det123_p123_frozen": 1,
+          "t1a_3seed_det123_p42_aug|t1a_3seed_det123_p42_aug": 1,
+          "t1a_3seed_det123_p42_frozen|t1a_3seed_det123_p42_frozen": 1,
+          "t1a_3seed_det123_p456_aug|t1a_3seed_det123_p456_aug": 1,
+          "t1a_3seed_det123_p456_frozen|t1a_3seed_det123_p456_frozen": 1,
+          "t1a_3seed_det42_aug|t1a_3seed_det42_aug": 1,
+          "t1a_3seed_det42_frozen|t1a_3seed_det42_frozen": 1,
+          "t1a_3seed_det42_p123_aug|t1a_3seed_det42_p123_aug": 1,
+          "t1a_3seed_det42_p123_frozen|t1a_3seed_det42_p123_frozen": 1,
+          "t1a_3seed_det42_p42_aug|t1a_3seed_det42_p42_aug": 1,
+          "t1a_3seed_det42_p42_frozen|t1a_3seed_det42_p42_frozen": 1,
+          "t1a_3seed_det42_p456_aug|t1a_3seed_det42_p456_aug": 1,
+          "t1a_3seed_det42_p456_frozen|t1a_3seed_det42_p456_frozen": 1,
+          "t1a_3seed_det456_p123_aug|t1a_3seed_det456_p123_aug": 1,
+          "t1a_3seed_det456_p123_frozen|t1a_3seed_det456_p123_frozen": 1,
+          "t1a_3seed_det456_p42_aug|t1a_3seed_det456_p42_aug": 1,
+          "t1a_3seed_det456_p42_frozen|t1a_3seed_det456_p42_frozen": 1,
+          "t1a_3seed_det456_p456_aug|t1a_3seed_det456_p456_aug": 1,
+          "t1a_3seed_det456_p456_frozen|t1a_3seed_det456_p456_frozen": 1,
+          "t1a_b2a_combined|t1a_b2a_combined": 3,
+          "t1a_base_env|t1a_base_env": 3,
+          "t1a_boundary|t1a_boundary": 3,
+          "t1a_combined_oracle|t1a_combined_oracle": 3,
+          "t1a_combined_oracle_noise_p010|t1a_combined_oracle_noise_p010": 3,
+          "t1a_combined_oracle_noise_p020|t1a_combined_oracle_noise_p020": 3,
+          "t1a_combined_oracle_noise_p030|t1a_combined_oracle_noise_p030": 3,
+          "t1a_combined_region_top3_mask|t1a_combined_region_top3_mask": 3,
+          "t1a_deep_3s10l96f|t1a_deep_3s10l96f": 5,
+          "t1a_probe_aug|t1a_probe_aug": 1,
+          "t1a_probe_frozen|t1a_probe_frozen": 1,
+          "t1a_region_mask_00|t1a_region_mask_00": 3,
+          "t1a_region_mask_01|t1a_region_mask_01": 3,
+          "t1a_region_mask_02|t1a_region_mask_02": 3,
+          "t1a_region_mask_03|t1a_region_mask_03": 3,
+          "t1a_region_mask_04|t1a_region_mask_04": 3,
+          "t1a_region_mask_05|t1a_region_mask_05": 3,
+          "t1a_region_mask_06|t1a_region_mask_06": 3,
+          "t1a_region_mask_07|t1a_region_mask_07": 3,
+          "t1a_region_mask_08|t1a_region_mask_08": 3,
+          "t1a_region_mask_09|t1a_region_mask_09": 3,
+          "t1a_region_mask_10|t1a_region_mask_10": 3,
+          "t1a_region_mask_11|t1a_region_mask_11": 3,
+          "t1a_region_mask_12|t1a_region_mask_12": 3,
+          "t1a_region_mask_13|t1a_region_mask_13": 3,
+          "t1a_region_mask_14|t1a_region_mask_14": 3,
+          "t1a_region_mask_top3|t1a_region_mask_top3": 3,
+          "t1a_region_only|t1a_region_only": 5,
+          "t1a_region_only_mask_top3|t1a_region_only_mask_top3": 3,
+          "t1a_regiontoken|t1a_regiontoken": 5,
+          "t1a_regiontraj|t1a_regiontraj": 3,
+          "t1a_shuffle|t1a_shuffle": 5,
+          "t1a_shuffle_oracle|t1a_shuffle_oracle": 3
+        }
+      },
+      "h6": {
+        "n_families": 6,
+        "families": {
+          "haux_hand_count_oracle|haux_hand_count_oracle": 3,
+          "haux_hand_geom_oracle|haux_hand_geom_oracle": 3,
+          "haux_hand_own_other_oracle|haux_hand_own_other_oracle": 3,
+          "haux_hand_presence_oracle|haux_hand_presence_oracle": 3,
+          "haux_hand_presence_oracle_shuffle|haux_hand_presence_oracle_shuffle": 3,
+          "haux_hand_presence_oracle_withtooloracle|haux_hand_presence_oracle_withtooloracle": 3
+        }
+      },
+      "oracle-tool": {
+        "n_families": 1,
+        "families": {
+          "b2a_det2phase_oracletool|b2a_det2phase_oracletool": 8
+        }
+      }
+    },
+    "why_it_matters": "『系統の標準 seed 全 run』(R-all) は、系統プールに複数の実験 family が 混在する場合、別実験を束ねてしまう。実測では h6 に 6 family が含まれ、うち H-6 本体は haux_hand_presence_oracle_withtooloracle のみ (acc 0.955-0.958)、残り 5 family は ablation (acc 0.887-0.914)。したがって R-all における h6 の有意判定の変化は 『n を増やした統計的効果』ではなく『別実験を混ぜた artifact』である。同一実験のまま n を増やす比較には R-family を使う。"
+  },
+  "N1_verdict_dependency": {
+    "n1_verdict": "CONFIG_DIFF + UNCONTROLLED_NONDETERMINISM (両立)",
+    "implication": "N1 は CONFIG_DIFF と UNCONTROLLED_NONDETERMINISM の両立と判定された。したがって R-all / R-all-dedup が束ねる run は『同一設定の独立반復』ではなく、別ホスト・別コミットの run を含む。n を増やして得た CI/MDE は 『設定差を含んだばらつき』であり、純粋な統計的検出力の向上とは言えない。R-triple は逆に、条件は近いが n=3 で分散を過小評価しうる。"
+  },
+  "MDE_formula": "MDE = t(0.975, n-1) * pooled_sd * sqrt(2/n)  (n = min(系統 n, 分母 n))",
+  "t_crit_note": "df<=20 は数表、df>20 は正規近似 z=1.959964*(1+(z^2+1)/(4df))",
+  "N3_1_conventions": {
+    "R-triple": {
+      "baseline_system": "s4",
+      "baseline_selection": "s4_phase_baseline_00{1,2,3} の 3 run",
+      "baseline": {
+        "n": 3,
+        "mean": 0.8985698569856986,
+        "sd": 0.0033871956696018865,
+        "se": 0.001955598331642584,
+        "ci95_halfwidth": 0.008414261028436959,
+        "ci95": [
+          0.8901555959572616,
+          0.9069841180141356
+        ]
+      },
+      "table": {
+        "s4": {
+          "selection": "s4_phase_baseline_00{1,2,3} の 3 run",
+          "n": 3,
+          "mean": 0.8985698569856986,
+          "sd": 0.0033871956696018865,
+          "ci95_halfwidth": 0.008414261028436959,
+          "ci95": [
+            0.8901555959572616,
+            0.9069841180141356
+          ],
+          "denominator_n": 3,
+          "denominator_mean": 0.8985698569856986,
+          "delta": 0.0,
+          "pooled_sd": 0.0033871956696018865,
+          "n_used_for_MDE": 3,
+          "MDE": 0.011899562063762933,
+          "exceeds_MDE": false
+        },
+        "b2a": {
+          "selection": "b2a_det2phase_000{1,2,3} の 3 run",
+          "n": 3,
+          "mean": 0.9368536853685369,
+          "sd": 0.0013740369633439683,
+          "ci95_halfwidth": 0.0034132972523715746,
+          "ci95": [
+            0.9334403881161653,
+            0.9402669826209085
+          ],
+          "denominator_n": 3,
+          "denominator_mean": 0.8985698569856986,
+          "delta": 0.03828382838283828,
+          "pooled_sd": 0.002584673294713017,
+          "n_used_for_MDE": 3,
+          "MDE": 0.009080219534114819,
+          "exceeds_MDE": true
+        },
+        "t1a": {
+          "selection": "t1a_regiontoken_000{1,2,3} の 3 run",
+          "n": 3,
+          "mean": 0.9482948294829483,
+          "sd": 0.0016611296887284563,
+          "ci95_halfwidth": 0.0041264751630632176,
+          "ci95": [
+            0.9441683543198851,
+            0.9524213046460115
+          ],
+          "denominator_n": 3,
+          "denominator_mean": 0.8985698569856986,
+          "delta": 0.04972497249724972,
+          "pooled_sd": 0.0026676250061566814,
+          "n_used_for_MDE": 3,
+          "MDE": 0.009371637312980617,
+          "exceeds_MDE": true
+        },
+        "h6": {
+          "selection": "haux_hand_presence_oracle_withtooloracle_000{1,2,3} の 3 run",
+          "n": 3,
+          "mean": 0.9568756875687568,
+          "sd": 0.002121815348953355,
+          "ci95_halfwidth": 0.005270881856770911,
+          "ci95": [
+            0.9516048057119859,
+            0.9621465694255278
+          ],
+          "denominator_n": 3,
+          "denominator_mean": 0.8985698569856986,
+          "delta": 0.05830583058305827,
+          "pooled_sd": 0.00282623379068539,
+          "n_used_for_MDE": 3,
+          "MDE": 0.009928846066019442,
+          "exceeds_MDE": true
+        },
+        "oracle-tool": {
+          "selection": "b2a_det2phase_oracletool_000{1,2,3} の 3 run",
+          "n": 3,
+          "mean": 0.9606160616061606,
+          "sd": 0.0010082674796382536,
+          "ci95_halfwidth": 0.002504675427020033,
+          "ci95": [
+            0.9581113861791406,
+            0.9631207370331807
+          ],
+          "denominator_n": 3,
+          "denominator_mean": 0.8985698569856986,
+          "delta": 0.062046204620462064,
+          "pooled_sd": 0.0024989695691090205,
+          "n_used_for_MDE": 3,
+          "MDE": 0.008779133650275007,
+          "exceeds_MDE": true
+        }
+      }
+    },
+    "R-family": {
+      "baseline_system": "s4",
+      "baseline_selection": "family=s4_phase_baseline|frozen_tecno_phase_baseline の標準 seed 全 run",
+      "baseline": {
+        "n": 37,
+        "mean": 0.9027027027027027,
+        "sd": 0.010420846253558614,
+        "se": 0.0017131765709498628,
+        "ci95_halfwidth": 0.003470656615111145,
+        "ci95": [
+          0.8992320460875916,
+          0.9061733593178138
+        ]
+      },
+      "table": {
+        "s4": {
+          "selection": "family=s4_phase_baseline|frozen_tecno_phase_baseline の標準 seed 全 run",
+          "n": 37,
+          "mean": 0.9027027027027027,
+          "sd": 0.010420846253558614,
+          "ci95_halfwidth": 0.003470656615111145,
+          "ci95": [
+            0.8992320460875916,
+            0.9061733593178138
+          ],
+          "denominator_n": 37,
+          "denominator_mean": 0.9027027027027027,
+          "delta": 0.0,
+          "pooled_sd": 0.010420846253558614,
+          "n_used_for_MDE": 37,
+          "MDE": 0.00490824965543008,
+          "exceeds_MDE": false
+        },
+        "b2a": {
+          "selection": "family=b2a_det2phase|b2a_det2phase_toolpresence の標準 seed 全 run",
+          "n": 3,
+          "mean": 0.9368536853685369,
+          "sd": 0.0013740369633439683,
+          "ci95_halfwidth": 0.0034132972523715746,
+          "ci95": [
+            0.9334403881161653,
+            0.9402669826209085
+          ],
+          "denominator_n": 37,
+          "denominator_mean": 0.9027027027027027,
+          "delta": 0.03415098266583416,
+          "pooled_sd": 0.010147804110670173,
+          "n_used_for_MDE": 3,
+          "MDE": 0.03565026547167888,
+          "exceeds_MDE": false
+        },
+        "t1a": {
+          "selection": "family=t1a_regiontoken|t1a_regiontoken の標準 seed 全 run",
+          "n": 3,
+          "mean": 0.9482948294829483,
+          "sd": 0.0016611296887284563,
+          "ci95_halfwidth": 0.0041264751630632176,
+          "ci95": [
+            0.9441683543198851,
+            0.9524213046460115
+          ],
+          "denominator_n": 37,
+          "denominator_mean": 0.9027027027027027,
+          "delta": 0.0455921267802456,
+          "pooled_sd": 0.010150063550146643,
+          "n_used_for_MDE": 3,
+          "MDE": 0.03565820311181017,
+          "exceeds_MDE": true
+        },
+        "h6": {
+          "selection": "family=haux_hand_presence_oracle_withtooloracle|haux_hand_presence_oracle_withtooloracle の標準 seed 全 run",
+          "n": 3,
+          "mean": 0.9568756875687568,
+          "sd": 0.002121815348953355,
+          "ci95_halfwidth": 0.005270881856770911,
+          "ci95": [
+            0.9516048057119859,
+            0.9621465694255278
+          ],
+          "denominator_n": 37,
+          "denominator_mean": 0.9027027027027027,
+          "delta": 0.05417298486605415,
+          "pooled_sd": 0.01015458092089366,
+          "n_used_for_MDE": 3,
+          "MDE": 0.03567407309359232,
+          "exceeds_MDE": true
+        },
+        "oracle-tool": {
+          "selection": "family=b2a_det2phase_oracletool|b2a_det2phase_oracletool の標準 seed 全 run",
+          "n": 6,
+          "mean": 0.9565456545654565,
+          "sd": 0.0031632706422575433,
+          "ci95_halfwidth": 0.0033196491628809622,
+          "ci95": [
+            0.9532260054025755,
+            0.9598653037283374
+          ],
+          "denominator_n": 37,
+          "denominator_mean": 0.9027027027027027,
+          "delta": 0.053842951862753785,
+          "pooled_sd": 0.009827061596939638,
+          "n_used_for_MDE": 6,
+          "MDE": 0.014584599680099014,
+          "exceeds_MDE": true
+        }
+      }
+    },
+    "R-all": {
+      "baseline_system": "s4",
+      "baseline_selection": "標準 seed (42/123/456) の全 run",
+      "baseline": {
+        "n": 43,
+        "mean": 0.9034768593138384,
+        "sd": 0.010248839722761062,
+        "se": 0.0015629334052890704,
+        "ci95_halfwidth": 0.0031515718284757977,
+        "ci95": [
+          0.9003252874853626,
+          0.9066284311423142
+        ]
+      },
+      "table": {
+        "s4": {
+          "selection": "標準 seed (42/123/456) の全 run",
+          "n": 43,
+          "mean": 0.9034768593138384,
+          "sd": 0.010248839722761062,
+          "ci95_halfwidth": 0.0031515718284757977,
+          "ci95": [
+            0.9003252874853626,
+            0.9066284311423142
+          ],
+          "denominator_n": 43,
+          "denominator_mean": 0.9034768593138384,
+          "delta": 0.0,
+          "pooled_sd": 0.010248839722761062,
+          "n_used_for_MDE": 43,
+          "MDE": 0.004456995622623446,
+          "exceeds_MDE": false
+        },
+        "b2a": {
+          "selection": "標準 seed (42/123/456) の全 run",
+          "n": 255,
+          "mean": 0.939773506762441,
+          "sd": 0.021343260858381143,
+          "ci95_halfwidth": 0.0026321059575168666,
+          "ci95": [
+            0.9371414008049241,
+            0.9424056127199578
+          ],
+          "denominator_n": 43,
+          "denominator_mean": 0.9034768593138384,
+          "delta": 0.036296647448602615,
+          "pooled_sd": 0.020144533596539258,
+          "n_used_for_MDE": 43,
+          "MDE": 0.008760415860555421,
+          "exceeds_MDE": true
+        },
+        "t1a": {
+          "selection": "標準 seed (42/123/456) の全 run",
+          "n": 115,
+          "mean": 0.9423676280671546,
+          "sd": 0.017316760483667936,
+          "ci95_halfwidth": 0.0031985454368669178,
+          "ci95": [
+            0.9391690826302876,
+            0.9455661735040215
+          ],
+          "denominator_n": 43,
+          "denominator_mean": 0.9034768593138384,
+          "delta": 0.03889076875331621,
+          "pooled_sd": 0.015729448971919444,
+          "n_used_for_MDE": 43,
+          "MDE": 0.0068403923868990985,
+          "exceeds_MDE": true
+        },
+        "h6": {
+          "selection": "標準 seed (42/123/456) の全 run",
+          "n": 18,
+          "mean": 0.9112577924459112,
+          "sd": 0.022244059920598826,
+          "ci95_halfwidth": 0.01106171297228184,
+          "ci95": [
+            0.9001960794736293,
+            0.9223195054181931
+          ],
+          "denominator_n": 43,
+          "denominator_mean": 0.9034768593138384,
+          "delta": 0.0077809331320728425,
+          "pooled_sd": 0.014742533581449462,
+          "n_used_for_MDE": 18,
+          "MDE": 0.010368011076893125,
+          "exceeds_MDE": false
+        },
+        "oracle-tool": {
+          "selection": "標準 seed (42/123/456) の全 run",
+          "n": 6,
+          "mean": 0.9565456545654565,
+          "sd": 0.0031632706422575433,
+          "ci95_halfwidth": 0.0033196491628809622,
+          "ci95": [
+            0.9532260054025755,
+            0.9598653037283374
+          ],
+          "denominator_n": 43,
+          "denominator_mean": 0.9034768593138384,
+          "delta": 0.05306879525161812,
+          "pooled_sd": 0.009743145395850765,
+          "n_used_for_MDE": 6,
+          "MDE": 0.014460057446646744,
+          "exceeds_MDE": true
+        }
+      }
+    },
+    "R-all-dedup": {
+      "baseline_system": "s4",
+      "baseline_selection": "標準 seed ごとに平均して 1 点に畳む",
+      "baseline": {
+        "n": 3,
+        "mean": 0.9031027084608914,
+        "sd": 0.003565550991815558,
+        "se": 0.0020585718249340494,
+        "ci95_halfwidth": 0.008857320238267963,
+        "ci95": [
+          0.8942453882226233,
+          0.9119600286991594
+        ]
+      },
+      "table": {
+        "s4": {
+          "selection": "標準 seed ごとに平均して 1 点に畳む",
+          "n": 3,
+          "mean": 0.9031027084608914,
+          "sd": 0.003565550991815558,
+          "ci95_halfwidth": 0.008857320238267963,
+          "ci95": [
+            0.8942453882226233,
+            0.9119600286991594
+          ],
+          "denominator_n": 3,
+          "denominator_mean": 0.9031027084608914,
+          "delta": 0.0,
+          "pooled_sd": 0.003565550991815558,
+          "n_used_for_MDE": 3,
+          "MDE": 0.012526142407240247,
+          "exceeds_MDE": false
+        },
+        "b2a": {
+          "selection": "標準 seed ごとに平均して 1 点に畳む",
+          "n": 3,
+          "mean": 0.9397780993206053,
+          "sd": 0.0010611096093551735,
+          "ci95_halfwidth": 0.002635942562463953,
+          "ci95": [
+            0.9371421567581414,
+            0.9424140418830692
+          ],
+          "denominator_n": 3,
+          "denominator_mean": 0.9031027084608914,
+          "delta": 0.03667539085971394,
+          "pooled_sd": 0.002630504464765532,
+          "n_used_for_MDE": 3,
+          "MDE": 0.009241229084696488,
+          "exceeds_MDE": true
+        },
+        "t1a": {
+          "selection": "標準 seed ごとに平均して 1 点に畳む",
+          "n": 3,
+          "mean": 0.9423207317435764,
+          "sd": 0.001169813924729492,
+          "ci95_halfwidth": 0.002905979068676349,
+          "ci95": [
+            0.9394147526749,
+            0.9452267108122528
+          ],
+          "denominator_n": 3,
+          "denominator_mean": 0.9031027084608914,
+          "delta": 0.03921802328268509,
+          "pooled_sd": 0.0026534523260959416,
+          "n_used_for_MDE": 3,
+          "MDE": 0.009321847249918672,
+          "exceeds_MDE": true
+        },
+        "h6": {
+          "selection": "標準 seed ごとに平均して 1 点に畳む",
+          "n": 3,
+          "mean": 0.9112577924459112,
+          "sd": 0.004402273178865797,
+          "ci95_halfwidth": 0.010935853507930788,
+          "ci95": [
+            0.9003219389379804,
+            0.922193645953842
+          ],
+          "denominator_n": 3,
+          "denominator_mean": 0.9031027084608914,
+          "delta": 0.008155083985019851,
+          "pooled_sd": 0.004005818456732537,
+          "n_used_for_MDE": 3,
+          "MDE": 0.014072846682535604,
+          "exceeds_MDE": false
+        },
+        "oracle-tool": {
+          "selection": "標準 seed ごとに平均して 1 点に畳む",
+          "n": 3,
+          "mean": 0.9565456545654566,
+          "sd": 0.0029946441339529593,
+          "ci95_halfwidth": 0.007439108893676445,
+          "ci95": [
+            0.9491065456717801,
+            0.9639847634591331
+          ],
+          "denominator_n": 3,
+          "denominator_mean": 0.9031027084608914,
+          "delta": 0.05344294610456524,
+          "pooled_sd": 0.0032924950542298297,
+          "n_used_for_MDE": 3,
+          "MDE": 0.011566869193312736,
+          "exceeds_MDE": true
+        }
+      }
+    }
+  },
+  "N3_2_mde_shrink": {
+    "s4": {
+      "MDE_R_triple": 0.011899562063762933,
+      "MDE_R_all": 0.004456995622623446,
+      "ratio_all_over_triple": 0.37455123127565204,
+      "n_triple": 3,
+      "n_all": 43
+    },
+    "b2a": {
+      "MDE_R_triple": 0.009080219534114819,
+      "MDE_R_all": 0.008760415860555421,
+      "ratio_all_over_triple": 0.964780182642294,
+      "n_triple": 3,
+      "n_all": 255
+    },
+    "t1a": {
+      "MDE_R_triple": 0.009371637312980617,
+      "MDE_R_all": 0.0068403923868990985,
+      "ratio_all_over_triple": 0.7299036612764024,
+      "n_triple": 3,
+      "n_all": 115
+    },
+    "h6": {
+      "MDE_R_triple": 0.009928846066019442,
+      "MDE_R_all": 0.010368011076893125,
+      "ratio_all_over_triple": 1.0442312236440734,
+      "n_triple": 3,
+      "n_all": 18
+    },
+    "oracle-tool": {
+      "MDE_R_triple": 0.008779133650275007,
+      "MDE_R_all": 0.014460057446646744,
+      "ratio_all_over_triple": 1.6470938958986894,
+      "n_triple": 3,
+      "n_all": 6
+    }
+  },
+  "N3_3_significance_flips": [
+    {
+      "system": "b2a",
+      "exceeds_MDE_by_convention": {
+        "R-triple": true,
+        "R-family": false,
+        "R-all": true,
+        "R-all-dedup": true
+      },
+      "delta_by_convention": {
+        "R-triple": 0.03828382838283828,
+        "R-family": 0.03415098266583416,
+        "R-all": 0.036296647448602615,
+        "R-all-dedup": 0.03667539085971394
+      },
+      "linked_claim": "B2a の tool-presence 注入効果"
+    },
+    {
+      "system": "h6",
+      "exceeds_MDE_by_convention": {
+        "R-triple": true,
+        "R-family": true,
+        "R-all": false,
+        "R-all-dedup": false
+      },
+      "delta_by_convention": {
+        "R-triple": 0.05830583058305827,
+        "R-family": 0.05417298486605415,
+        "R-all": 0.0077809331320728425,
+        "R-all-dedup": 0.008155083985019851
+      },
+      "linked_claim": "H-6 の +0.0004 →「手は術具に対して冗長」という結論"
+    }
+  ],
+  "N3_4_h6_by_denominator": [
+    {
+      "denominator": "oracle-tool 0.958196 (固定値)",
+      "denominator_value": 0.958196,
+      "denominator_n": "固定値 (n 不明)",
+      "h6_numerator": "R-all",
+      "h6_n": 18,
+      "h6_mean": 0.9112577924459112,
+      "delta": -0.04693820755408884,
+      "MDE": 0.01106171297228184,
+      "n_used_for_MDE": 18,
+      "exceeds_MDE": true
+    },
+    {
+      "denominator": "oracle-tool 0.956436 (固定値)",
+      "denominator_value": 0.956436,
+      "denominator_n": "固定値 (n 不明)",
+      "h6_numerator": "R-all",
+      "h6_n": 18,
+      "h6_mean": 0.9112577924459112,
+      "delta": -0.045178207554088745,
+      "MDE": 0.01106171297228184,
+      "n_used_for_MDE": 18,
+      "exceeds_MDE": true
+    },
+    {
+      "denominator": "oracle-tool (R-all)",
+      "denominator_value": 0.9565456545654565,
+      "denominator_n": 6,
+      "h6_numerator": "R-all",
+      "h6_n": 18,
+      "h6_mean": 0.9112577924459112,
+      "delta": -0.045287862119545275,
+      "MDE": 0.029106216907125514,
+      "n_used_for_MDE": 6,
+      "exceeds_MDE": true
+    },
+    {
+      "denominator": "S4 (R-all)",
+      "denominator_value": 0.9034768593138384,
+      "denominator_n": 43,
+      "h6_numerator": "R-all",
+      "h6_n": 18,
+      "h6_mean": 0.9112577924459112,
+      "delta": 0.0077809331320728425,
+      "MDE": 0.010368011076893125,
+      "n_used_for_MDE": 18,
+      "exceeds_MDE": false
+    },
+    {
+      "denominator": "oracle-tool 0.956436 (固定値)",
+      "denominator_value": 0.956436,
+      "h6_numerator": "R-triple",
+      "h6_n": 3,
+      "h6_mean": 0.9568756875687568,
+      "delta": 0.00043968756875689685,
+      "MDE": 0.009928846066019442,
+      "note": "前タスクの値 (+0.000440) と対応する組み合わせ"
+    }
+  ],
+  "N3_5_errata_v2": [
+    {
+      "quoted_name": "S4_base_accuracy",
+      "quoted_value": 0.8986,
+      "R-triple": 0.8985698569856986,
+      "R-family": 0.9027027027027027,
+      "R-all": 0.9034768593138384,
+      "R-all-dedup": 0.9031027084608914,
+      "status": "CHANGED"
+    },
+    {
+      "quoted_name": "B2a_delta",
+      "quoted_value": 0.0383,
+      "R-triple": 0.03828382838283828,
+      "R-family": 0.03415098266583416,
+      "R-all": 0.036296647448602615,
+      "R-all-dedup": 0.03667539085971394,
+      "status": "SIGNIFICANCE_FLIPPED"
+    },
+    {
+      "quoted_name": "T1a_delta",
+      "quoted_value": 0.0497,
+      "R-triple": 0.04972497249724972,
+      "R-family": 0.0455921267802456,
+      "R-all": 0.03889076875331621,
+      "R-all-dedup": 0.03921802328268509,
+      "status": "CHANGED"
+    },
+    {
+      "quoted_name": "H6_delta",
+      "quoted_value": 0.0004,
+      "R-triple": 0.05830583058305827,
+      "R-family": 0.05417298486605415,
+      "R-all": 0.0077809331320728425,
+      "R-all-dedup": 0.008155083985019851,
+      "status": "SIGNIFICANCE_FLIPPED"
+    },
+    {
+      "quoted_name": "oracle_tool_acc",
+      "quoted_value": 0.9583,
+      "R-triple": 0.9606160616061606,
+      "R-family": 0.9565456545654565,
+      "R-all": 0.9565456545654565,
+      "R-all-dedup": 0.9565456545654566,
+      "status": "CHANGED"
+    },
+    {
+      "quoted_name": "oracle_tool_macroF1",
+      "quoted_value": 0.823,
+      "R-triple": null,
+      "R-family": null,
+      "R-all": null,
+      "R-all-dedup": null,
+      "status": "NOT_RECOMPUTED"
+    },
+    {
+      "quoted_name": "S0_frozen_mAP",
+      "quoted_value": 0.7051,
+      "R-triple": null,
+      "R-family": null,
+      "R-all": null,
+      "R-all-dedup": null,
+      "status": "NOT_RECOMPUTED"
+    }
+  ],
+  "N3_6_recommendation": {
+    "note": "検出力・恣意性・書き換え件数のトレードオフ",
+    "R-triple": {
+      "pros": "条件が最も近い (同一 family・連番)",
+      "cons": "n=3 で sd と MDE が不安定。run 選択が恣意的に見える"
+    },
+    "R-all": {
+      "pros": "n が増え CI が縮む",
+      "cons": "別ホスト・別コミットの run を混ぜる (N1)。ablation 派生 run も混入"
+    },
+    "R-all-dedup": {
+      "pros": "seed あたり 1 点で seed 数=3 を保ちつつ重複を吸収",
+      "cons": "同上の混入問題は残る"
+    },
+    "decision": "決定はユーザが行う。本タスクは候補と根拠の提示に留める。"
+  }
+}

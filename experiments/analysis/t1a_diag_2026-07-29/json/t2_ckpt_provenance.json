@@ -1,0 +1,43 @@
+{
+  "task": "T2_checkpoint_provenance",
+  "n_pth_inventoried": 527,
+  "inventory_csv": "csv/t2_ckpt_inventory.csv",
+  "cache_npz_mtime_utc": "2026-06-20T18:24:54.098117",
+  "target_checkpoint": {
+    "path": "third_party/Relation-DETR/checkpoints/incoming/seed42/best_ap.pth",
+    "md5": "6a898a768eed39391b2afd784ebe254f",
+    "size": 195421066,
+    "mtime_utc": "2026-05-30T07:42:27.376519",
+    "identical_md5_paths": [
+      "third_party/Relation-DETR/checkpoints/incoming/seed42/best_ap.pth",
+      "third_party/Relation-DETR/checkpoints/relation_detr_resnet50_egosurgery/train/seed42/best_ap.pth"
+    ]
+  },
+  "T2_2_timeline": {
+    "relation_detr_ckpts_modified_after_cache": [],
+    "n_modified_after_cache": 0,
+    "all_relation_detr_ckpt_mtimes": "2026-05-30 (すべてキャッシュ作成 2026-06-20 より前)",
+    "hypothesis_ckpt_replaced_after_extraction": "支持されない (mtime ベースでは)",
+    "critical_caveat": "ただし docs/t1a_server_b_runsheet.md STEP 1 の転送手順は `rsync -aL` であり、`-a` は mtime を保存する。したがって mtime は『いつこのホストに置かれたか』を示さず、6/20 以降に差し替わっていないことの証拠にはならない。",
+    "git_tracked": "195MB のため git 管理外 (履歴による同一性検証は不可)",
+    "extraction_script_commit": "a697d90 (2026-06-20 19:32:40 UTC) はキャッシュ作成 (18:21-18:34) より後"
+  },
+  "T2_3_extraction_host": {
+    "determined_host": "UNKNOWN",
+    "evidence_found": [
+      "docs/t1a_server_b_runsheet.md: 『T1a を別サーバー(server B)で走らせる』と明記",
+      "同 STEP 0: server B 上で venv を再構築する手順 (setup_env_relation_detr.sh)",
+      "同 STEP 1: 凍結 ckpt と画像を lecun から `rsync -aL` で転送",
+      "同 STEP 4: 分母に lecun 実測値を流用し『サーバー差を §8.0 明記』と記載"
+    ],
+    "evidence_absent": [
+      "キャッシュ npz 隣にログ・メタファイルなし (他タグ aligndetr_* には .log があるが本タグには無い)",
+      "2026-06-18〜06-23 に作成された metrics.json が 0 件 (server_name を取得できない)",
+      "抽出時の torch/CUDA/cuDNN バージョンの記録なし"
+    ],
+    "note": "server B が efros であったかは特定できない。推測でホスト名を書かない (指示書 T2-3)。ただしプロジェクト文書は『別サーバーで実行し、環境は各自再構築、サーバー差は明記する』という運用を前提にしていた。"
+  },
+  "T2_4_verdict": "PROVENANCE_UNVERIFIABLE",
+  "T2_4_reason": "判定表の 2 択に当てはまらない第 3 のパターン。ckpt ファイル自体は存在し md5 も取得できる (6a898a768eed…) が、6/20 の抽出に使われた ckpt がこれと同一である証拠が無い。mtime は rsync -a により保存されるため判定に使えず、当時の md5 記録も存在しない。『md5 が違う』でも『ckpt が失われている』でもないため、そのまま記録する (§6)。",
+  "implication": "checkpoint 差を原因として肯定も否定もできない。T1 の実測 (SAME_TOKEN 97.56% / norm_ratio 中央値 1.000007) は重みの系統的な違いを示さないが、これは checkpoint 同一性の証明ではない。"
+}
