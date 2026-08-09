@@ -1,0 +1,73 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-10-analysis-artifact-integration"
+  kind: impl
+  title: "特定ホストにのみ残る分析成果物を、重い中間物を除いて共有可能にする"
+  origin: claude-app
+  created_at: "2026-08-10T21:00:00Z"
+  created_from:
+    runindex_commit: "12cc0e8"
+    counts: {index: 749, experiments: 206, verdicts: 1038}
+  depends_on: ["T-2026-08-10-third-host-verification"]
+  amendments: []
+
+intent:
+  question: "特定ホストに閉じた分析結果を、秘匿と肥大を避けて共有できるか"
+  decision_at_stake: "分析結果を全ホストと分析側から読める資産にするか、生成ホストに留めるか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["tools/harvest_runindex.py"]
+
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#naming]
+  conventions_rev: "1201f4f"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "対象の棚卸しと除外の確定", gpu: false, est: "40m"}
+    - {id: B, name: "秘匿と肥大の検査", gpu: false, est: "40m"}
+    - {id: C, name: "取り込みと索引への影響の確認", gpu: false, est: "40m"}
+  gates:
+    - id: G1
+      after: A
+      check: "対象と除外対象を容量つきで列挙し、除外の理由を実測で示した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "秘匿らしき内容が含まれないことを、一致内容を目視して確認した"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "取り込みによって索引が変化しないことを実測で確認した"
+      on_fail: ask
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md, artifact_inventory.md]
+  destination: "tasks/"
+  acceptance:
+    - "対象と除外対象が容量つきで列挙されている"
+    - "重い中間生成物が取り込まれていない"
+    - "秘匿らしき内容が含まれないことが目視で確認されている"
+    - "取り込みによって索引が変化しない"
+    - "既存の追跡物が変更も削除もされていない"
+    - "make task-validate が exit 0"
+    - "make task-preflight が exit 0"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [secret_found_in_artifact, index_changed_by_artifacts, existing_file_modified]

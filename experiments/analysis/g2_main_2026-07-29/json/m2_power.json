@@ -1,0 +1,193 @@
+{
+  "task": "M2_g1_power_analysis",
+  "status": "SKIP(prescribed method) + PARTIAL(seed-level measured)",
+  "prescribed_method": "per-frame 予測を 9,106 枚部分集合に限定し動画単位クラスタ・ブートストラップ (B=2,000)",
+  "prescribed_method_status": "SKIP",
+  "prescribed_method_reason": "per-frame の phase 予測がリポジトリ上に存在しない (UNKNOWN)。phase trainer は preds=logits.argmax(0) を評価器に渡した直後に破棄し、各 run の predictions/ は ExperimentManager が作成するのみで書き込まれない。",
+  "searched_paths": [
+    {
+      "pattern": "experiments/phase1/s4_phase_baseline_*/predictions/",
+      "n_paths": 64
+    },
+    {
+      "pattern": "experiments/transfer/b2a_det2phase_*/predictions/",
+      "n_paths": 43
+    },
+    {
+      "pattern": "experiments/transfer/t1a_regiontoken_*/predictions/",
+      "n_paths": 5
+    },
+    {
+      "pattern": "experiments/transfer/haux_hand_presence_oracle_withtooloracle_*/predictions/",
+      "n_paths": 3
+    },
+    {
+      "pattern": "**/phase_val_preds*.json",
+      "n_paths": 0
+    }
+  ],
+  "per_frame_predictions_found": [],
+  "actually_measured": {
+    "quantity": "seed 水準のペア差分 (3-seed) から算出した MDE",
+    "differs_from_prescribed": [
+      "分母は canonical 15,437 枚であり 9,106 枚部分集合ではない",
+      "変動源は seed のみで、動画単位のリサンプルを含まない",
+      "したがってここでの MDE は真の MDE の下限 (真値はこれ以上)"
+    ],
+    "alpha": 0.05,
+    "n_seeds": 3,
+    "t_crit_df2": 4.302652,
+    "source": "experiments/analysis/step_c_coupling_analysis/test_eval_det2phase.json"
+  },
+  "mde": {
+    "val:b2a-s4:accuracy": {
+      "diffs_by_seed": {
+        "42": 0.04356435643564349,
+        "123": 0.042244224422442245,
+        "456": 0.04422442244224423
+      },
+      "mean_diff": 0.04334433443344332,
+      "sd_paired_diff": 0.0010082674796382414,
+      "MDE_alpha0.05_n3": 0.0025046748448965023,
+      "detectable": true
+    },
+    "val:b2a-s4:macro_f1": {
+      "diffs_by_seed": {
+        "42": 0.10576803805960566,
+        "123": 0.10266043967505434,
+        "456": 0.048211708397811526
+      },
+      "mean_diff": 0.08554672871082385,
+      "sd_paired_diff": 0.0323703892200835,
+      "MDE_alpha0.05_n3": 0.08041249096731946,
+      "detectable": true
+    },
+    "val:t1a-s4:accuracy": {
+      "diffs_by_seed": {
+        "42": 0.05610561056105601,
+        "123": 0.058745874587458724,
+        "456": 0.055445544554455384
+      },
+      "mean_diff": 0.05676567656765671,
+      "sd_paired_diff": 0.0017463705023528947,
+      "MDE_alpha0.05_n3": 0.004338224087800544,
+      "detectable": true
+    },
+    "val:t1a-s4:macro_f1": {
+      "diffs_by_seed": {
+        "42": 0.1211158715607934,
+        "123": 0.1339869831795445,
+        "456": 0.0661884899067735
+      },
+      "mean_diff": 0.10709711488237046,
+      "sd_paired_diff": 0.03600768080036694,
+      "MDE_alpha0.05_n3": 0.08944802261806602,
+      "detectable": true
+    },
+    "val:t1a-b2a:accuracy": {
+      "diffs_by_seed": {
+        "42": 0.012541254125412515,
+        "123": 0.01650165016501648,
+        "456": 0.011221122112211157
+      },
+      "mean_diff": 0.013421342134213384,
+      "sd_paired_diff": 0.0027480739266879813,
+      "MDE_alpha0.05_n3": 0.006826592918142039,
+      "detectable": true
+    },
+    "val:t1a-b2a:macro_f1": {
+      "diffs_by_seed": {
+        "42": 0.015347833501187735,
+        "123": 0.031326543504490156,
+        "456": 0.01797678150896198
+      },
+      "mean_diff": 0.021550386171546625,
+      "sd_paired_diff": 0.008567834093616907,
+      "MDE_alpha0.05_n3": 0.021283676170165126,
+      "detectable": true
+    },
+    "test:b2a-s4:accuracy": {
+      "diffs_by_seed": {
+        "42": 0.003048065650644749,
+        "123": -0.003516998827667095,
+        "456": -0.02368112543962486
+      },
+      "mean_diff": -0.008050019538882403,
+      "sd_paired_diff": 0.013929236219594644,
+      "MDE_alpha0.05_n3": 0.034602135120293254,
+      "detectable": false
+    },
+    "test:b2a-s4:macro_f1": {
+      "diffs_by_seed": {
+        "42": 0.03845266889936638,
+        "123": 0.02342548179165138,
+        "456": 0.015408018215034569
+      },
+      "mean_diff": 0.025762056302017444,
+      "sd_paired_diff": 0.011698660890144135,
+      "MDE_alpha0.05_n3": 0.029061079765293662,
+      "detectable": false
+    },
+    "test:t1a-s4:accuracy": {
+      "diffs_by_seed": {
+        "42": 0.02203985932004693,
+        "123": 0.019460726846424414,
+        "456": 0.036342321219226204
+      },
+      "mean_diff": 0.025947635795232515,
+      "sd_paired_diff": 0.009093959251996001,
+      "MDE_alpha0.05_n3": 0.022590643295527645,
+      "detectable": true
+    },
+    "test:t1a-s4:macro_f1": {
+      "diffs_by_seed": {
+        "42": 0.15836968728834,
+        "123": 0.1688867112899166,
+        "456": 0.1651574185258896
+      },
+      "mean_diff": 0.1641379390347154,
+      "sd_paired_diff": 0.005332115179469424,
+      "MDE_alpha0.05_n3": 0.013245706154184017,
+      "detectable": true
+    },
+    "test:t1a-b2a:accuracy": {
+      "diffs_by_seed": {
+        "42": 0.01899179366940218,
+        "123": 0.02297772567409151,
+        "456": 0.060023446658851065
+      },
+      "mean_diff": 0.03399765533411492,
+      "sd_paired_diff": 0.022626936912572483,
+      "MDE_alpha0.05_n3": 0.056208417752712105,
+      "detectable": false
+    },
+    "test:t1a-b2a:macro_f1": {
+      "diffs_by_seed": {
+        "42": 0.11991701838897362,
+        "123": 0.14546122949826523,
+        "456": 0.14974940031085504
+      },
+      "mean_diff": 0.13837588273269796,
+      "sd_paired_diff": 0.01612899119208949,
+      "MDE_alpha0.05_n3": 0.04006662847727494,
+      "detectable": true
+    }
+  },
+  "h6_runs_found": {
+    "42": "experiments/transfer/haux_hand_presence_oracle_withtooloracle_001_haux_hand_presence_oracle_withtooloracle_seed42",
+    "123": "experiments/transfer/haux_hand_presence_oracle_withtooloracle_002_haux_hand_presence_oracle_withtooloracle_seed123",
+    "456": "experiments/transfer/haux_hand_presence_oracle_withtooloracle_003_haux_hand_presence_oracle_withtooloracle_seed456"
+  },
+  "verdict": "NOT_MEASURABLE",
+  "note": "MDE(0.002505) が H-6 の Δ(0.0004) の 6 倍。**G-1 は「H-6 を上回るか」を判定できない**。設計変更か撤退の検討が必要",
+  "regeneration_path": {
+    "feasible": true,
+    "requirements": [
+      "checkpoints/best_tecno.pth (B2a/T1a/H-6/S4 の 3-seed 分が存在)",
+      "data/processed/{b2a_detsignal,t1a_regiontoken,oracle_*} のキャッシュ特徴",
+      "data/processed/phase_manifest/{split}.json (frame ID と GT)",
+      "scripts/eval_det2phase_test.py のローダ (IN_DIM: s4=2048/b2a=2063/t1a=5888)"
+    ],
+    "note": "推論を回せば basename 単位の予測を生成でき、本来の M2 を実施可能。本タスクでは未実施。"
+  }
+}

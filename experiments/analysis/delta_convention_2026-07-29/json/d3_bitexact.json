@@ -1,0 +1,136 @@
+{
+  "old_path": "data/processed/t1a_regiontoken/relation_detr_seed42/val_regiontoken.npz",
+  "new_path": "experiments/analysis/delta_convention_2026-07-29/reextract/val_regiontoken.npz",
+  "old_keys": [
+    "frame_ids",
+    "region"
+  ],
+  "new_keys": [
+    "frame_ids",
+    "region"
+  ],
+  "keys_match": true,
+  "n_frames_old": 1515,
+  "n_frames_new": 1515,
+  "frame_ids_equal": true,
+  "array_key": "region",
+  "shape_old": [
+    1515,
+    3840
+  ],
+  "shape_new": [
+    1515,
+    3840
+  ],
+  "dtype_old": "float32",
+  "dtype_new": "float32",
+  "shape_match": true,
+  "dtype_match": true,
+  "bit_exact": false,
+  "max_abs_diff": 1.5553455203771591,
+  "mean_abs_diff": 0.0020635670877279196,
+  "n_elements": 5817600,
+  "n_mismatch_elements": 5817579,
+  "mismatch_element_frac": 0.9999963902640264,
+  "rel_err_quantiles": {
+    "p50": 0.01062016059103775,
+    "p90": 0.0768058445624673,
+    "p99": 1.332125752431966,
+    "p99.9": 13.372130990048243,
+    "max": 46076.80936145975
+  },
+  "n_frames": 1515,
+  "n_frames_bit_exact": 0,
+  "n_frames_differing": 1515,
+  "frame_exact_frac": 0.0,
+  "verdict": "FAIL",
+  "reason": "丸め誤差を超える差。G-2 に進まない。原因調査を別タスクとして起票すべき",
+  "addendum_root_cause_evidence": {
+    "determinism_within_current_env": {
+      "method": "同一環境・同一コマンドで val を 2 回抽出し比較",
+      "bit_exact": true,
+      "max_abs_diff": 0.0,
+      "interpretation": "抽出は現環境で決定的。差の原因は非決定性ではない"
+    },
+    "distribution_similarity": {
+      "corrcoef": 0.9997912058503075,
+      "cache": {
+        "absmax": 4.117701053619385,
+        "mean": 0.0011168608907610178,
+        "std": 0.39486366510391235
+      },
+      "reextract": {
+        "absmax": 4.091495037078857,
+        "mean": 0.0011166133917868137,
+        "std": 0.39482975006103516
+      }
+    },
+    "cross_tag_comparison": {
+      "aligndetr_s0frozen_seed42.discarded_20260706": {
+        "bit_exact": false,
+        "max_abs_diff": 5.498262643814087
+      },
+      "aligndetr_s0frozen_seed42": {
+        "bit_exact": false,
+        "max_abs_diff": 5.497338175773621
+      },
+      "relation_detr_augstrong_hires_seed42": {
+        "bit_exact": false,
+        "max_abs_diff": 3.4985995292663574
+      },
+      "relation_detr_augstrong_seed123": {
+        "bit_exact": false,
+        "max_abs_diff": 6.076524019241333
+      },
+      "relation_detr_augstrong_seed42": {
+        "bit_exact": false,
+        "max_abs_diff": 3.1100407540798187
+      },
+      "relation_detr_augstrong_seed456": {
+        "bit_exact": false,
+        "max_abs_diff": 5.581668734550476
+      },
+      "relation_detr_seed123": {
+        "bit_exact": false,
+        "max_abs_diff": 5.7396345138549805
+      },
+      "relation_detr_seed42": {
+        "bit_exact": false,
+        "max_abs_diff": 1.5553455203771591
+      },
+      "relation_detr_seed42_appearance": {
+        "bit_exact": false,
+        "max_abs_diff": 6.863648131489754
+      },
+      "relation_detr_seed456": {
+        "bit_exact": false,
+        "max_abs_diff": 5.814892649650574
+      }
+    },
+    "script_logic_unchanged": {
+      "checked": "git diff a697d90(2026-06-20 追加コミット) HEAD -- scripts/extract_t1a_regiontoken.py",
+      "region_mode_formula": "region[c] = scores[q,c] * tokens[q] は変更なし",
+      "changes": "env 上書き (RELDETR_FROZEN_TAG / RELDETR_EXTRACT_CKPT) と --mode 分岐の追加のみ"
+    },
+    "extraction_env_not_recorded": "キャッシュ隣に抽出時の環境ログは存在しない (log ファイルなし)",
+    "measured_only": "以上は実測事実のみ。根本原因の断定は行っていない (D3-7 の規定により別タスクとして起票)"
+  },
+  "environment_correction": {
+    "finding": "検証済み環境は .venv ではなく .venv-relation-detr であった",
+    ".venv-relation-detr": {
+      "python": "3.11.4",
+      "torch": "2.1.2+cu118",
+      "cuda_available": true,
+      "created": "2026-07-02",
+      "matches_CLAUDE_md": true
+    },
+    ".venv": {
+      "python": "3.12.13",
+      "torch": "2.13.0+cu130",
+      "cuda_available": false,
+      "created": "2026-07-29 12:43 (本セッションの uv run が副次生成)",
+      "matches_CLAUDE_md": false
+    },
+    "consequence": "D3-2 の pip install は不要。実行していない (依存関係を変更していない)"
+  }
+}

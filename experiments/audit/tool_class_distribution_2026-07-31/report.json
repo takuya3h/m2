@@ -1,0 +1,420 @@
+{
+  "audit": "egosurgery_tool_class_distribution",
+  "date": "2026-07-31",
+  "git_commit": "b6b25e1520b7ac9d372484c9b076c00a9ee49792",
+  "ann_dir": "data/annotations/egosurgery_tool",
+  "script": "scripts/audit_tool_class_distribution.py",
+  "categories_identical_across_splits": true,
+  "num_classes_defined": 15,
+  "class_names": [
+    "Bipolar Forceps",
+    "Electric Cautery",
+    "Forceps",
+    "Gauze",
+    "Hook",
+    "Mouth Gag",
+    "Needle Holders",
+    "Raspatory",
+    "Retractor",
+    "Scalpel",
+    "Scissors",
+    "Skewer",
+    "Suction Cannula",
+    "Syringe",
+    "Tweezers"
+  ],
+  "filename_overlap_between_splits": {
+    "train&val": 0,
+    "train&test": 0,
+    "val&test": 0
+  },
+  "totals": {
+    "annotations": 49652,
+    "images": 15437,
+    "videos": 15
+  },
+  "hand_bbox": {
+    "train": {
+      "images": 9627,
+      "annotations": 27726,
+      "num_categories": 4
+    },
+    "val": {
+      "images": 1515,
+      "annotations": 4918,
+      "num_categories": 4
+    },
+    "test": {
+      "images": 4255,
+      "annotations": 13676,
+      "num_categories": 4
+    }
+  },
+  "hand_instances_total": 46320,
+  "paper_crosscheck": {
+    "reference": {
+      "source": "arXiv:2406.03095v4 (EgoSurgery-Tool) Table 3(a) / §Dataset Statistics",
+      "checked_on": "2026-07-31",
+      "images": 15437,
+      "tool_instances": 49652,
+      "hand_instances": 46320,
+      "num_tool_classes": 15,
+      "split_images": {
+        "train": 9657,
+        "val": 1515,
+        "test": 4265
+      },
+      "split_videos": {
+        "train": 10,
+        "val": 2,
+        "test": 3
+      }
+    },
+    "all_match": true,
+    "num_cells_compared": 55,
+    "mismatches": []
+  },
+  "splits": {
+    "train": {
+      "file": "data/annotations/egosurgery_tool/instances_train.json",
+      "categories": {
+        "0": "Bipolar Forceps",
+        "1": "Electric Cautery",
+        "2": "Forceps",
+        "3": "Gauze",
+        "4": "Hook",
+        "5": "Mouth Gag",
+        "6": "Needle Holders",
+        "7": "Raspatory",
+        "8": "Retractor",
+        "9": "Scalpel",
+        "10": "Scissors",
+        "11": "Skewer",
+        "12": "Suction Cannula",
+        "13": "Syringe",
+        "14": "Tweezers"
+      },
+      "num_categories_defined": 15,
+      "num_categories_present": 15,
+      "absent_categories": [],
+      "num_images": 9657,
+      "num_annotations": 32272,
+      "num_videos": 10,
+      "images_without_annotation": 39,
+      "mean_boxes_per_image": 3.3418,
+      "degenerate_boxes": 0,
+      "iscrowd_annotations": 0,
+      "per_class": {
+        "Bipolar Forceps": {
+          "category_id": 0,
+          "annotations": 446,
+          "images": 446
+        },
+        "Electric Cautery": {
+          "category_id": 1,
+          "annotations": 1404,
+          "images": 1396
+        },
+        "Forceps": {
+          "category_id": 2,
+          "annotations": 2534,
+          "images": 1476
+        },
+        "Gauze": {
+          "category_id": 3,
+          "annotations": 4596,
+          "images": 4034
+        },
+        "Hook": {
+          "category_id": 4,
+          "annotations": 1045,
+          "images": 807
+        },
+        "Mouth Gag": {
+          "category_id": 5,
+          "annotations": 3807,
+          "images": 3805
+        },
+        "Needle Holders": {
+          "category_id": 6,
+          "annotations": 3031,
+          "images": 2987
+        },
+        "Raspatory": {
+          "category_id": 7,
+          "annotations": 654,
+          "images": 651
+        },
+        "Retractor": {
+          "category_id": 8,
+          "annotations": 2079,
+          "images": 1196
+        },
+        "Scalpel": {
+          "category_id": 9,
+          "annotations": 739,
+          "images": 738
+        },
+        "Scissors": {
+          "category_id": 10,
+          "annotations": 1780,
+          "images": 1778
+        },
+        "Skewer": {
+          "category_id": 11,
+          "annotations": 212,
+          "images": 211
+        },
+        "Suction Cannula": {
+          "category_id": 12,
+          "annotations": 3134,
+          "images": 3130
+        },
+        "Syringe": {
+          "category_id": 13,
+          "annotations": 344,
+          "images": 327
+        },
+        "Tweezers": {
+          "category_id": 14,
+          "annotations": 6467,
+          "images": 5764
+        }
+      }
+    },
+    "val": {
+      "file": "data/annotations/egosurgery_tool/instances_val.json",
+      "categories": {
+        "0": "Bipolar Forceps",
+        "1": "Electric Cautery",
+        "2": "Forceps",
+        "3": "Gauze",
+        "4": "Hook",
+        "5": "Mouth Gag",
+        "6": "Needle Holders",
+        "7": "Raspatory",
+        "8": "Retractor",
+        "9": "Scalpel",
+        "10": "Scissors",
+        "11": "Skewer",
+        "12": "Suction Cannula",
+        "13": "Syringe",
+        "14": "Tweezers"
+      },
+      "num_categories_defined": 15,
+      "num_categories_present": 14,
+      "absent_categories": [
+        "Retractor"
+      ],
+      "num_images": 1515,
+      "num_annotations": 4707,
+      "num_videos": 2,
+      "images_without_annotation": 0,
+      "mean_boxes_per_image": 3.1069,
+      "degenerate_boxes": 0,
+      "iscrowd_annotations": 0,
+      "per_class": {
+        "Bipolar Forceps": {
+          "category_id": 0,
+          "annotations": 55,
+          "images": 53
+        },
+        "Electric Cautery": {
+          "category_id": 1,
+          "annotations": 101,
+          "images": 101
+        },
+        "Forceps": {
+          "category_id": 2,
+          "annotations": 154,
+          "images": 130
+        },
+        "Gauze": {
+          "category_id": 3,
+          "annotations": 455,
+          "images": 316
+        },
+        "Hook": {
+          "category_id": 4,
+          "annotations": 147,
+          "images": 100
+        },
+        "Mouth Gag": {
+          "category_id": 5,
+          "annotations": 990,
+          "images": 989
+        },
+        "Needle Holders": {
+          "category_id": 6,
+          "annotations": 512,
+          "images": 510
+        },
+        "Raspatory": {
+          "category_id": 7,
+          "annotations": 76,
+          "images": 75
+        },
+        "Retractor": {
+          "category_id": 8,
+          "annotations": 0,
+          "images": 0
+        },
+        "Scalpel": {
+          "category_id": 9,
+          "annotations": 168,
+          "images": 168
+        },
+        "Scissors": {
+          "category_id": 10,
+          "annotations": 391,
+          "images": 390
+        },
+        "Skewer": {
+          "category_id": 11,
+          "annotations": 103,
+          "images": 103
+        },
+        "Suction Cannula": {
+          "category_id": 12,
+          "annotations": 509,
+          "images": 507
+        },
+        "Syringe": {
+          "category_id": 13,
+          "annotations": 96,
+          "images": 96
+        },
+        "Tweezers": {
+          "category_id": 14,
+          "annotations": 950,
+          "images": 825
+        }
+      }
+    },
+    "test": {
+      "file": "data/annotations/egosurgery_tool/instances_test.json",
+      "categories": {
+        "0": "Bipolar Forceps",
+        "1": "Electric Cautery",
+        "2": "Forceps",
+        "3": "Gauze",
+        "4": "Hook",
+        "5": "Mouth Gag",
+        "6": "Needle Holders",
+        "7": "Raspatory",
+        "8": "Retractor",
+        "9": "Scalpel",
+        "10": "Scissors",
+        "11": "Skewer",
+        "12": "Suction Cannula",
+        "13": "Syringe",
+        "14": "Tweezers"
+      },
+      "num_categories_defined": 15,
+      "num_categories_present": 15,
+      "absent_categories": [],
+      "num_images": 4265,
+      "num_annotations": 12673,
+      "num_videos": 3,
+      "images_without_annotation": 84,
+      "mean_boxes_per_image": 2.9714,
+      "degenerate_boxes": 0,
+      "iscrowd_annotations": 0,
+      "per_class": {
+        "Bipolar Forceps": {
+          "category_id": 0,
+          "annotations": 195,
+          "images": 195
+        },
+        "Electric Cautery": {
+          "category_id": 1,
+          "annotations": 162,
+          "images": 162
+        },
+        "Forceps": {
+          "category_id": 2,
+          "annotations": 3375,
+          "images": 1613
+        },
+        "Gauze": {
+          "category_id": 3,
+          "annotations": 1644,
+          "images": 1508
+        },
+        "Hook": {
+          "category_id": 4,
+          "annotations": 157,
+          "images": 130
+        },
+        "Mouth Gag": {
+          "category_id": 5,
+          "annotations": 1188,
+          "images": 1188
+        },
+        "Needle Holders": {
+          "category_id": 6,
+          "annotations": 1286,
+          "images": 1257
+        },
+        "Raspatory": {
+          "category_id": 7,
+          "annotations": 84,
+          "images": 83
+        },
+        "Retractor": {
+          "category_id": 8,
+          "annotations": 325,
+          "images": 224
+        },
+        "Scalpel": {
+          "category_id": 9,
+          "annotations": 159,
+          "images": 159
+        },
+        "Scissors": {
+          "category_id": 10,
+          "annotations": 565,
+          "images": 565
+        },
+        "Skewer": {
+          "category_id": 11,
+          "annotations": 29,
+          "images": 29
+        },
+        "Suction Cannula": {
+          "category_id": 12,
+          "annotations": 768,
+          "images": 762
+        },
+        "Syringe": {
+          "category_id": 13,
+          "annotations": 141,
+          "images": 141
+        },
+        "Tweezers": {
+          "category_id": 14,
+          "annotations": 2595,
+          "images": 2497
+        }
+      }
+    }
+  },
+  "findings": [
+    {
+      "id": "F1_val_missing_retractor",
+      "severity": "P1",
+      "known_since": "docs/m2_plan_rewrite/source_current.md §33 (2026/05/29) — 本監査は再導出",
+      "detail": "val に Retractor のアノテーションが 0 件。COCOeval は該当クラス AP を -1 とし mAP 平均から除外するため、val の mAP は実質 14 クラス平均、test は 15 クラス平均となり 分母が一致しない。val と test の mAP を直接比較してはならない。これは配布データの欠損ではなく EgoSurgery-Tool 論文 Table 3(a) が Retractor val=0 と 明記する公式 split の性質である。既知の派生問題として mmdet_components.py:87 が GT 不在クラスの NaN を 0.0 に倒して 算入するため AP_common に約 -4.6pt の押し下げバイアスが乗る（source_current.md §33）。"
+    },
+    {
+      "id": "F2_class_imbalance",
+      "severity": "P2",
+      "detail": "train の最多/最少クラス比が約 30 倍（Tweezers 6467 / Skewer 212）。val の rare クラス（Bipolar 55 / Raspatory 76 / Syringe 96 箱）は per-class AP の分散が大きく、|Δ| > 1σ 判定には試行反復が必要。"
+    },
+    {
+      "id": "F3_empty_images",
+      "severity": "P3",
+      "detail": "箱ゼロ画像が train 39 / test 84 枚存在（val は 0）。空アノテーション画像を学習・評価で除外するか否かで実効サンプル数が変わる。"
+    }
+  ]
+}

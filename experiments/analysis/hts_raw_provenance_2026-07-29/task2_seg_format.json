@@ -1,0 +1,45 @@
+{
+  "03_tool_14cls": {
+    "seg_types": {
+      "rle": 34251
+    },
+    "polygon_vertex_hist": {},
+    "fill_ratio(mask_area/mask_bbox)": {
+      "min": 0.0368,
+      "q1": 0.186,
+      "median": 0.2985,
+      "q3": 0.5029,
+      "max": 0.8119,
+      "mean": 0.3468,
+      "n": 400
+    }
+  },
+  "04_handtool_5cls": {
+    "seg_types": {
+      "rle": 21949
+    },
+    "polygon_vertex_hist": {},
+    "fill_ratio(mask_area/mask_bbox)": {
+      "min": 0.0526,
+      "q1": 0.2746,
+      "median": 0.4129,
+      "q3": 0.5406,
+      "max": 0.7773,
+      "mean": 0.4069,
+      "n": 400
+    }
+  },
+  "00_master": {
+    "seg_types": {
+      "polygon": 400
+    },
+    "polygon_vertex_hist": {
+      "4": 400
+    }
+  },
+  "_verdict": {
+    "real_masks_exist_in_derived": true,
+    "master_is_rect_only": true,
+    "class": "(a) 形式上は真マスク(RLE)実在。ただし master に無く『派生時に挿入』のため生成来歴の確認が必須"
+  }
+}

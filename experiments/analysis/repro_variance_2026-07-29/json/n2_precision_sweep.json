@@ -1,0 +1,104 @@
+{
+  "task": "N2_precision_sweep",
+  "old_cache": "data/processed/t1a_regiontoken/relation_detr_seed42/val_regiontoken.npz",
+  "results": {
+    "P00": {
+      "path": "experiments/analysis/repro_variance_2026-07-29/reextract/val_P00.npz",
+      "settings": {
+        "matmul_tf32": false,
+        "cudnn_tf32": false,
+        "ext": "fallback"
+      },
+      "bit_exact": false,
+      "n_frames": 1515,
+      "n_frames_bit_exact": 0,
+      "frac_SAME_TOKEN": 0.9756215621562156,
+      "frac_NEAR": 0.015093509350935093,
+      "frac_FLIPPED": 0.009284928492849285,
+      "max_abs_diff": 1.5553455203771591,
+      "mean_abs_diff": 0.0020635670877279196,
+      "rel_err_median_absA_gt_0.1": 0.007148366036157232,
+      "absmax": 4.091495037078857
+    },
+    "P01": {
+      "path": "experiments/analysis/repro_variance_2026-07-29/reextract/val_P01.npz",
+      "settings": {
+        "matmul_tf32": false,
+        "cudnn_tf32": true,
+        "ext": "fallback"
+      },
+      "bit_exact": false,
+      "n_frames": 1515,
+      "n_frames_bit_exact": 0,
+      "frac_SAME_TOKEN": 0.9756215621562156,
+      "frac_NEAR": 0.015093509350935093,
+      "frac_FLIPPED": 0.009284928492849285,
+      "max_abs_diff": 1.5553455203771591,
+      "mean_abs_diff": 0.0020635670877279196,
+      "rel_err_median_absA_gt_0.1": 0.007148366036157232,
+      "absmax": 4.091495037078857
+    },
+    "P10": {
+      "path": "experiments/analysis/repro_variance_2026-07-29/reextract/val_P10.npz",
+      "settings": {
+        "matmul_tf32": true,
+        "cudnn_tf32": false,
+        "ext": "fallback"
+      },
+      "bit_exact": false,
+      "n_frames": 1515,
+      "n_frames_bit_exact": 0,
+      "frac_SAME_TOKEN": 0.9756215621562156,
+      "frac_NEAR": 0.015093509350935093,
+      "frac_FLIPPED": 0.009284928492849285,
+      "max_abs_diff": 1.5553455203771591,
+      "mean_abs_diff": 0.0020635670877279196,
+      "rel_err_median_absA_gt_0.1": 0.007148366036157232,
+      "absmax": 4.091495037078857
+    },
+    "P11": {
+      "path": "experiments/analysis/repro_variance_2026-07-29/reextract/val_P11.npz",
+      "settings": {
+        "matmul_tf32": true,
+        "cudnn_tf32": true,
+        "ext": "fallback"
+      },
+      "bit_exact": false,
+      "n_frames": 1515,
+      "n_frames_bit_exact": 0,
+      "frac_SAME_TOKEN": 0.9756215621562156,
+      "frac_NEAR": 0.015093509350935093,
+      "frac_FLIPPED": 0.009284928492849285,
+      "max_abs_diff": 1.5553455203771591,
+      "mean_abs_diff": 0.0020635670877279196,
+      "rel_err_median_absA_gt_0.1": 0.007148366036157232,
+      "absmax": 4.091495037078857
+    },
+    "with_cuda_ext": {
+      "path": "experiments/analysis/repro_variance_2026-07-29/reextract/val_with_cuda_ext.npz",
+      "settings": {
+        "matmul_tf32": false,
+        "cudnn_tf32": true,
+        "ext": "CUDA拡張(既定TF32)"
+      },
+      "bit_exact": true,
+      "n_frames": 1515,
+      "n_frames_bit_exact": 1515,
+      "frac_SAME_TOKEN": 1.0,
+      "frac_NEAR": 0.0,
+      "frac_FLIPPED": 0.0,
+      "max_abs_diff": 0.0,
+      "mean_abs_diff": 0.0,
+      "rel_err_median_absA_gt_0.1": 0.0,
+      "absmax": 4.117701053619385
+    }
+  },
+  "bit_exact_configs": [
+    "with_cuda_ext"
+  ],
+  "tf32_sweep_verdict": "EXT_CONFIRMED",
+  "interpretation": {
+    "TF32": "2x2 の TF32 スイープはいずれも旧キャッシュと bit-exact にならず、設定間の差もほとんど無い → TF32 は本件の原因ではない (棄却)。",
+    "root_cause": "旧キャッシュと bit-exact 一致したのは MSDeformAttn の CUDA 拡張をロードして抽出した場合のみ。拡張のロードには ninja が PATH 上にある必要があり、ninja は .venv-relation-detr/bin にしか無い。venv を activate せず .venv-relation-detr/bin/python を直接呼ぶと ninja が見つからず拡張ロードに失敗し、PyTorch フォールバック実装に落ちる。フォールバックは全デコーダ層で数値が変わるため region-token が再現しない。"
+  }
+}
