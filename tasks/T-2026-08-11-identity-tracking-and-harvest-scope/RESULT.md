@@ -399,7 +399,26 @@ WARN はユーザーへ提示し、続行の承認を得てから実行に入っ
 （`crontab` 未導入、systemd の該当ユニットなし、常駐は zsh 起動の `keeper.sh`）。
 将来 cron や systemd から学習を起動するなら、`/etc/environment` か起動側の明示 export が要る。
 
-### 6.4 B-36 と B-38 は同時に検討すること
+### 6.4 PR #58 は `tasks/inbox.md` で衝突している（未解消）
+
+本 task の実行中に `origin/phase0` が 7 commit 進んだ（別ホストが PR #56 と #57 を統合した。
+SPEC §0 が予告していた並行作業にあたる）。その結果 PR #58 は `mergeable: CONFLICTING` である。
+
+| 項目 | 実測 |
+|---|---|
+| 衝突するファイル | **`tasks/inbox.md` の 1 件のみ**（`git merge-tree` で確認） |
+| 衝突の性質 | 双方が末尾へ追記しただけの追記どうしの衝突 |
+| 起票時の `origin/phase0` | `63edc44` |
+| 現在の `origin/phase0` | `c8dc178` |
+
+**解消していない。** 禁止事項 9「統合する」に該当するため、実行者の判断で
+`origin/phase0` を取り込むことはしなかった。
+
+同型の衝突は既に `e050aa9 merge: keep inbox entries from both contracts` で
+「双方の行を残す」形で解消された前例がある。本 PR も同じ扱いで解消できる見込みだが、
+判断は統合を行う者に委ねる。
+
+### 6.5 B-36 と B-38 は同時に検討すること
 
 根本原因が同一のため、片方だけ直しても他方は残る。対処案もそれぞれ 3 案あり重なっている。
 
