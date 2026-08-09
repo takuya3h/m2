@@ -1,0 +1,109 @@
+{
+  "task": "M3_split_thinning_rule",
+  "counts": {
+    "P": 19560,
+    "A": 15437,
+    "excluded_segment_frames": 463,
+    "unused": 3660,
+    "expected_unused": 3660,
+    "count_matches_expected": true
+  },
+  "H_a_temporal_subsampling": {
+    "adopted_consecutive_diff_top": {
+      "1": 14402,
+      "2": 526,
+      "3": 154,
+      "4": 86,
+      "5": 46,
+      "6": 27,
+      "7": 24,
+      "8": 19,
+      "9": 14,
+      "10": 13
+    },
+    "modal_step_overall": [
+      1,
+      14402
+    ],
+    "mean_mod_concentration": null,
+    "n_segments_with_periodicity_check": 0
+  },
+  "H_b_quality_filter": {
+    "bbox_area_unused": {
+      "n": 8798,
+      "mean": 123085.23471243464,
+      "median": 74700.0,
+      "min": 529.0,
+      "max": 1869384.0,
+      "sd": 143412.7870443368
+    },
+    "bbox_area_adopted": {
+      "n": 57690,
+      "mean": 146167.5483619345,
+      "median": 102345.0,
+      "min": 84.0,
+      "max": 1708640.0,
+      "sd": 147827.91411138294
+    },
+    "median_relative_difference": 0.27011578484537596,
+    "criterion": "相対差 > 0.30 で支持"
+  },
+  "H_c_annotation_missing": {
+    "unused_frames": 3660,
+    "unused_with_tool_ann>=1": 3391,
+    "unused_with_tool_ann_rate": 0.9265027322404371,
+    "unused_present_in_hands_file": 3583,
+    "unused_with_hand_ann>=1": 3544,
+    "tool_ann_stats_unused": {
+      "n": 3660,
+      "mean": 2.403825136612022,
+      "median": 2.0,
+      "min": 0,
+      "max": 12,
+      "sd": 1.5680907395275403
+    },
+    "tool_ann_stats_adopted": {
+      "n": 15437,
+      "mean": 3.7371250890717107,
+      "median": 3,
+      "min": 0,
+      "max": 15,
+      "sd": 1.7531531141441667
+    }
+  },
+  "H_d_segment_edge": {
+    "unused_at_segment_edge_10pct": 900,
+    "unused_total": 3660,
+    "edge_rate": 0.2459016393442623,
+    "baseline_if_uniform": 0.2
+  },
+  "phase_distribution": {
+    "unused": {
+      "__UNLABELED__": 3660
+    },
+    "adopted": {
+      "closure": 6596,
+      "dissection": 5440,
+      "hemostasis": 1121,
+      "incision": 1096,
+      "anesthesia": 499,
+      "design": 378,
+      "irrigation": 177,
+      "dressing": 119,
+      "disinfection": 11
+    },
+    "rare_in_unused": {
+      "disinfection": 0,
+      "dressing": 0,
+      "irrigation": 0
+    }
+  },
+  "hypotheses_supported": [
+    "H-b 境界値 (相対差 0.270、基準 0.30 に未達だが小さくない)"
+  ],
+  "rule_verdict": "H-b 境界値 (相対差 0.270、基準 0.30 に未達だが小さくない)",
+  "expansion_verdict": "拡張不可",
+  "n_labeled_unused_frames": 0,
+  "verdict": "H-b 境界値 (相対差 0.270、基準 0.30 に未達だが小さくない) / 評価枠拡張: 拡張不可",
+  "action": "未採用 3660 枚は tool ann を 3391 枚 (92.7%) 持つが、**phase ラベルが 1 件も存在しない**（該当セグメントの CSV が提供されていない）。工程評価には使えないため以後この論点は閉じる。※ 指示書 M3-4 の判定表は「ann の有無」で分岐するが、実データは 「ann はあるが phase ラベルが無い」という表に無いパターンだった。"
+}
