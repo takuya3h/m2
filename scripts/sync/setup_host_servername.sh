@@ -44,6 +44,21 @@ END_MARK="# <<< egosurgery SERVERNAME <<<"
 # 主経路 ~/.zshenv を先頭に置く。順序は「全形態を覆う順」。
 TARGETS=("$HOME/.zshenv" "$HOME/.profile" "$HOME/.bashrc")
 
+# --- シェル形態別プローブ（センチネルで値だけを取り出す） -------------------- #
+# 対話シェル (-i) は /etc/bash.bashrc の案内文を stdout に混ぜる。生の出力を値として
+# 比較すると、機能は正しいのに検査だけが落ちる。センチネルで囲って抽出する。
+probe_shell() {
+  local sh_cmd="$1" out
+  # shellcheck disable=SC2086
+  out="$(env -i HOME="$HOME" $sh_cmd 'printf "__SN__%s__SN__" "${SERVERNAME:-未設定}"' 2>/dev/null)" || {
+    printf '(起動失敗)'; return 0; }
+  if [[ "$out" =~ __SN__(.*)__SN__ ]]; then
+    printf '%s' "${BASH_REMATCH[1]}"
+  else
+    printf '(取得失敗)'
+  fi
+}
+
 DRY_RUN=0
 VERIFY_ONLY=0
 NAME=""
@@ -72,21 +87,6 @@ if [ "$VERIFY_ONLY" -eq 1 ]; then
   done
   exit 0
 fi
-
-# --- シェル形態別プローブ（センチネルで値だけを取り出す） -------------------- #
-# 対話シェル (-i) は /etc/bash.bashrc の案内文を stdout に混ぜる。生の出力を値として
-# 比較すると、機能は正しいのに検査だけが落ちる。センチネルで囲って抽出する。
-probe_shell() {
-  local sh_cmd="$1" out
-  # shellcheck disable=SC2086
-  out="$(env -i HOME="$HOME" $sh_cmd 'printf "__SN__%s__SN__" "${SERVERNAME:-未設定}"' 2>/dev/null)" || {
-    printf '(起動失敗)'; return 0; }
-  if [[ "$out" =~ __SN__(.*)__SN__ ]]; then
-    printf '%s' "${BASH_REMATCH[1]}"
-  else
-    printf '(取得失敗)'
-  fi
-}
 
 # --- 論理名の妥当性検査 ------------------------------------------------------ #
 if [ "$NAME_GIVEN" -eq 0 ] || [ -z "$NAME" ]; then
