@@ -1,0 +1,68 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-11-canonical-index-refresh"
+  kind: impl
+  title: "外部記録の列を含む索引を、条件を満たすホストで生成して正本とする"
+  origin: claude-app
+  created_at: "2026-08-11T15:00:00Z"
+  created_from:
+    runindex_commit: "12cc0e8"
+    counts: {index: 749, experiments: 206, verdicts: 1038}
+  depends_on: ["T-2026-08-11-inbox-per-task-split"]
+  amendments: []
+
+intent:
+  question: "追加された列を含む索引を、条件を満たすホストで生成して配れるか"
+  decision_at_stake: "索引の正本をいつ更新するか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["tools/harvest_runindex.py"]
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "正本を生成できる条件の確認", gpu: false, est: "20m"}
+    - {id: B, name: "生成と検査", gpu: false, est: "30m"}
+    - {id: C, name: "記録と起票", gpu: false, est: "20m"}
+  gates:
+    - id: G1
+      after: A
+      check: "追跡外の経路を持つ行が無いことを実測で確認した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "既存の値が変わらず、追加された列だけが増えたことを実測で確認した"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "runindex/"
+  acceptance:
+    - "追跡外の経路を持つ行が無いホストで生成されている"
+    - "追加された列が索引に存在する"
+    - "既存の列の値が一件も変わっていない"
+    - "軽量ビューが索引と整合している"
+    - "make task-validate が exit 0"
+    - "make task-preflight が exit 0"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [untracked_path_found, existing_values_changed]
