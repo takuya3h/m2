@@ -1,0 +1,1 @@
+- [ ] 2026-08-09 [cx] 定位置分岐は `exp/<logical-host>` に統一し、索引は全 path が Git 追跡下の clean host で生成したものを正本とする。実ホスト切替と旧 remote ref の扱いは統合後の別作業（T-2026-08-10-branch-naming-and-canonical-index）
