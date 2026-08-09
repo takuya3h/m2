@@ -57,30 +57,31 @@ experiments/<group>/<step>_<seq>_<desc>_seed<N>/
 | ブランチ | 用途 | 誰が |
 |---|---|---|
 | **`phase0`** | **統合の幹。保護ブランチ**（PR が唯一の経路・`enforce_admins: true`・auto-merge 設定済み） | GitHub が統合 |
-| `exp/<サーバー名>-wip-<日付>` | **各サーバーの定位置。常にここにいる** | そのサーバー |
+| `exp/<論理ホスト名>` | **各サーバーの定位置。常にここにいる** | そのサーバー |
 | `chore/*` `feat/*` | 一時作業（PR 用）。マージ後に削除 | 必要時 |
 | `master` `docs/plan-rewrite-2026-06` | 歴史的記録。触らない | — |
 
 **`exp/*` は実験ごとに切らない。消さない。** 実験実行時は、そのサーバーの
 定位置ブランチを使う。`chore/*` / `feat/*` はコード・文書作業中だけの例外。
-日付は「ブランチを作った日」で、実験の日付ではない。
-既存ブランチ名は歴史的な大小文字を含むため、推測せず下表を正とする。
+論理ホスト名は小文字英数とハイフンのみ、2〜20文字とする。日付と `wip` は含めない。既存分岐の移行は `scripts/sync/rename_host_branch.sh` を使い、remote ref を先に作る。
 
-### ホスト名とブランチの対応（2026-08-05 時点）
+### ホスト名と移行後の定位置ブランチ
 
 | SSH 名 | `hostname` | `SERVERNAME` | ブランチ | 実験 run |
 |---|---|---|---|---:|
-| lecun | `lecun` | `lecun` | `exp/lecun-wip-20260703` | **464** |
-| efros | `efros` | `efros` | `exp/efros-wip-20260703` | **194** |
-| philip | `aolab` | `philip` | `exp/philip-wip-20260703` | **31** |
-| andrew | `Andrew` | `andrew` | `exp/Andrew-wip-20260703` | **3** |
-| ilya | `aolab` | `ilya` | `exp/ilya-wip-20260804` | 0（統合担当） |
-| bengio | `Bengio` | `bengio` | `exp/Bengio-wip-20260703` | 0 |
-| he | `he` | `he` | `exp/he-wip-20260804` | 0 |
-| adam | `adam` | `adam` | `exp/adam-wip-20260804` | 0 |
-| hinton | `Hinton` | `hinton` | `exp/hinton-wip-20260804` | 0 |
-| ian | `ian` | `ian` | `exp/ian-wip-20260804` | 0 |
-| dlsta | `084f3b0911a2` | `dlstation` | `exp/dlstation-wip-20260804` | 0 |
+| lecun | `lecun` | `lecun` | `exp/lecun` | **464** |
+| efros | `efros` | `efros` | `exp/efros` | **194** |
+| philip | `aolab` | `philip` | `exp/philip` | **31** |
+| andrew | `Andrew` | `andrew` | `exp/andrew` | **3** |
+| ilya | `aolab` | `ilya` | `exp/ilya` | 0（統合担当） |
+| bengio | `Bengio` | `bengio` | `exp/bengio` | 0 |
+| he | `he` | `he` | `exp/he` | 0 |
+| adam | `adam` | `adam` | `exp/adam` | 0 |
+| hinton | `Hinton` | `hinton` | `exp/hinton` | 0 |
+| ian | `ian` | `ian` | `exp/ian` | 0 |
+| dlsta | `084f3b0911a2` | `dlstation` | `exp/dlsta` | 0 |
+
+実際の分岐切替は別作業で行う。現在値と移行順序は `tasks/T-2026-08-10-branch-naming-and-canonical-index/migration_plan.md` を参照する。
 
 **philip と ilya は `hostname` が同じ `aolab`。** 別 IP（`.150` / `.63`）の別マシンで、
 `SERVERNAME` で区別する。`exp/aolab-wip-20260703` は ilya の旧ブランチで、
@@ -101,7 +102,7 @@ experiments/<group>/<step>_<seq>_<desc>_seed<N>/
 | 5 | Draft PR 作成 | `m2-sync.sh` または GitHub Actions | **自動** |
 | 6 | 内容確認・Draft 解除・auto-merge 有効化 | **あなた** | review gate |
 | 7 | `phase0` へ merge commit | GitHub | **自動** |
-| 8 | **`make runindex`** | **ilya でのみ** → 5〜7 をもう一度実行 | — |
+| 8 | **`make runindex`** | **全 path が Git 追跡下の clean host** → 5〜7 をもう一度実行 | — |
 | 9 | 更新済み `phase0` を各台が取り込み | keeper / `m2-sync.sh` | **自動（30 分ごと）** |
 | 10 | 分析 | Claude Desktop が raw URL から読む | — |
 
@@ -188,14 +189,16 @@ PR が未作成なら Actions の失敗と `sync-alerts.log` を確認し、次�
 
 ### 8（runindex の再生成）
 
-🔴 **関連する実験 PR が `phase0` に揃った後、ilya でのみ実行する。**
+🔴 **関連する実験 PR が `phase0` に揃った後、追跡外 run が 0 件のホストでのみ実行する。**
 
+```bash
     (
       set -e
       SRV="${SERVERNAME:-}"
       if [ -z "$SRV" ] && [ -f .servername ]; then SRV=$(sed -n '1p' .servername); fi
-      test "$SRV" = "ilya"
-      test "$(git branch --show-current)" = "exp/ilya-wip-20260804"
+      test -n "$SRV"
+      BR=$(git branch --show-current)
+      case "$BR" in exp/*) ;; *) echo "STOP: canonical exp/* branch ではありません" >&2; exit 1 ;; esac
       test -z "$(git status --porcelain)"
       git fetch -q origin
       test "$(git rev-list --count HEAD..origin/phase0)" = "0"
@@ -214,22 +217,44 @@ PR が未作成なら Actions の失敗と `sync-alerts.log` を確認し、次�
       diff -qr "$SNAP/runindex.first" runindex
       echo "IDEMPOTENT OK"
 
+      # index.csv の全 path が Git 追跡下であることを確認する
+      python - <<PY
+import csv
+import subprocess
+
+with open("runindex/index.csv", encoding="utf-8-sig", newline="") as f:
+    rows = list(csv.DictReader(f))
+untracked = []
+for row in rows:
+    path = (row.get("path") or "").strip()
+    if not path or subprocess.run(
+        ["git", "ls-files", "--error-unmatch", "--", path],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    ).returncode:
+        untracked.append(path or "(空)")
+if untracked:
+    print("STOP: 追跡外 path", *untracked, sep="\n  ")
+    raise SystemExit(1)
+print(f"TRACKED PATHS OK: {len(rows)}")
+PY
+
       git add --dry-run -- runindex/
       git add -- runindex/
       git diff --cached --stat
       git commit -m "chore(runindex): regenerate"
     )
+```
 
 keeper が 30 分以内に auto-push + Draft PR 作成する。急ぐ場合だけ、現在ブランチを
-確認して `git push origin "HEAD:refs/heads/exp/ilya-wip-20260804"`。
+確認して `git push origin "HEAD:refs/heads/$BR"`。
 その後は 5〜7（review → Draft 解除 → GitHub auto-merge）をもう一度通し、
 runindex PR の merge 完了を確認してから分析へ進む。
 
-**なぜ ilya か**: harvester は git ではなく**ディスクを走査する**。
-lecun / efros / andrew には git 管理外の退避 run が存在し
-（`.gitignore:143-162` で除外・合計 ~5.6GB）、そこで回すと index が食い違う。
-2026-08-04 の監査では ilya だけがディスクと git 追跡 run の差ゼロだった
-（`runindex/anomalies/backlog.md` B-29）。上の `EXTRA` 検査で毎回この前提を再確認する。
+**なぜ clean host か**: harvester は git ではなく**ディスクを走査する**。
+lecun / efros / andrew には Git 管理外の退避 run が存在し、そこで回すと index が食い違う。
+2026-08-08 の実測では bengio の 751 run 全件が Git 追跡下だった。
+ホスト名を固定せず、上の全 path 検査で毎回この前提を確認する。
 
 ### 9（各台への `phase0` 取り込み）
 
@@ -256,7 +281,7 @@ merge conflict がある場合は自動操作を止め、アラートを残す�
 | **2** | **`/tmp` を出力先にする** | T1b-FiLM の構造化結果が消失（Bengio 側）。lecun の `/tmp` に原本が残っていたため救出できたが、**再起動していれば永久に失われていた** | 出力先を `experiments/` 配下に |
 | **3** | **`ExperimentManager` / autosync 配線を通さない** | Bengio の T1b が直叩きで走り `experiments/` に登録されず、**runindex から見えなかった** | 原則 `ExperimentManager`、ad-hoc trainer は `git_autosync` を明示配線 |
 | **4** | **`git add -A` / `git add experiments/`** | efros で `*.npz` 414MB、philip で `data/hts_reconstruction/` 599MB がコミット可能な状態だった | パス明示 + `--dry-run` でサイズ確認 |
-| **5** | **他ホストで `make runindex`** | lecun で回すと退避 34 run が解析対象に混入する（B-29） | ilya でのみ |
+| **5** | **追跡外 run を持つホストで `make runindex`** | lecun で回すと退避 34 run が解析対象に混入する（B-29） | 全 path が Git 追跡下の clean host でのみ実行 |
 | **6** | **証跡の取りこぼし** | lecun で `git_commit.txt` / `server.txt` が 102 件未追跡。`g2_followup` 30 run の `commit` / `host` が runindex 上で全滅していた | finalize 後と手動 commit 時に `git status` を確認 |
 | **7** | **`third_party` はどこにも乗らない** | git にも Syncthing にも乗らず、philip の 9 fork / efros 31 実装 / lecun 28 / Bengio 22 が各 1 台にしか無かった | 変更したら `third_party_snapshot/<host>/` に保全 |
 | **8** | **Draft のまま待つ** | Draft PR は GitHub auto-merge の対象にならない | review 後に Draft 解除 + PR ごとの auto-merge 有効化 |
