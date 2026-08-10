@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（5 件）
+## 申し送り（9 件）
 
 ### T-2026-08-13-implementation-history-index
 
@@ -16,22 +16,35 @@
 - context/auto/ は build_context.py と build_taskindex.py が共有する。生成器を足すときは、その生成器が自分の出力だけを検査すること
 - tests/test_branch_naming.py に既存の ruff 指摘 I001（import の並び）が 1 件残っている。本 task では触れていない
 
-## 断定できなかった事項（1 件）
+### T-2026-08-14-bundle-attachment-transport
+
+- .env.example は 17 行目に SERVERNAME=bengio を含んだままである。c61a673 は暗号文だけを直しテンプレートを直していないため、写すと『全台が同じ論理名を名乗る』事故が再発する。テンプレートの修正は本契約の Files 範囲外のため文書化にとどめた
+- 配布台帳に task_id が空の行が 1 件ある（status も空）。read_notion_bundle は superseded 以外を live として扱うため、識別子が空の行が候補に残る構造になっている。実害は未確認
+- 添付の参照先の期限は 60 分と実測したが、期限切れからの再試行は試験でのみ検査した。実地で 60 分待って期限切れを起こす検査は行っていない
+- 確認用の行 T-2026-08-14-probe-attachment を台帳へ残した（status=superseded、印つき）。不要なら削除してよい
+
+## 断定できなかった事項（4 件）
 
 ### T-2026-08-13-implementation-history-index
 
 - 他ホスト（lecun 以外）では load_env.sh の修正を実行していない。lecun 上の zsh と bash の双方でのみ実測した
 
-## 起票者の誤りの型（3 件）
+### T-2026-08-14-bundle-attachment-transport
+
+- 他ホストでの添付取り込みは未実測。bengio 上でのみ実測した
+- 添付が複数ある行の扱いは未実測。実装は最初の file ブロックを採るが、そうした行を作って確かめてはいない
+- 外部の連携機能（起票者が使う面）が添付をどう置くかは未実測。実行者は API 経由で置いた
+
+## 起票者の誤りの型（8 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 0 |
-| `asserted_without_measuring` | 1 |
-| `self_contradiction` | 2 |
+| `asserted_without_measuring` | 2 |
+| `self_contradiction` | 4 |
 | `shell_assumption` | 0 |
 
-合計 3 件（対を持つ契約 1 件から）
+合計 8 件（対を持つ契約 2 件から）
 
