@@ -142,6 +142,13 @@ task-fetch:
 task-paste:
 	@.venv/bin/python tools/fetch_task.py --src -
 
+# 起票者が配布台帳へ置いた契約を、識別子だけで取り込む。貼り付けを必要としない。
+# 本文の要約値が台帳の記載と一致しない場合は取り込まずに失敗する。
+# 資格情報が要るため、先に source scripts/load_env.sh を実行しておくこと。
+.PHONY: task-notion
+task-notion:
+	@.venv/bin/python tools/fetch_task.py --notion $(TASK)
+
 clean:
 	find . -type d -name __pycache__ -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete

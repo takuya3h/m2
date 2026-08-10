@@ -20,6 +20,9 @@ make task-validate が常時 FAIL するためである。
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
+import os
 import re
 import secrets
 import shutil
@@ -27,6 +30,7 @@ import signal
 import subprocess
 import sys
 import tempfile
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -54,6 +58,14 @@ _TASK_ID_RE = re.compile(r"^T-\d{4}-\d{2}-\d{2}-[a-z0-9-]+\Z")
 _URL_RE = re.compile(r"^https?://", re.I)
 # --src - のとき標準入力から読む。中間ファイルを作らずに貼り付けで完結させるため。
 STDIN_MARKER = "-"
+# 配布台帳から取る取得元の書式。取得方法だけが分かれ、取り込みの流れは共通である。
+NOTION_SOURCE_PREFIX = "notion:"
+# API の版と基底 URL は既存実装（src/egosurgery/utils/notion_logger.py）に揃える。
+NOTION_VERSION = "2022-06-28"
+NOTION_API_BASE = "https://api.notion.com/v1"
+# 配布先の識別子は登録簿を単一の情報源とする。コードへ直書きしない。
+NOTION_REGISTRY = REPO_ROOT / "configs" / "notion.yaml"
+NOTION_REGISTRY_KEY = "task_distribution"
 
 
 class BundleError(Exception):
@@ -184,12 +196,140 @@ def pack_bundle(files: dict[str, str], delim: str | None = None) -> str:
     return "\n".join(parts) + "\n"
 
 
+def _notion_database_id() -> str:
+    """配布先の識別子を登録簿から読む。コードへ直書きしない。"""
+    try:
+        registry = yaml.safe_load(NOTION_REGISTRY.read_text(encoding="utf-8")) or {}
+    except OSError as exc:
+        raise BundleError(f"登録簿を読めません: {NOTION_REGISTRY}: {exc}") from exc
+    db_id = (registry.get("databases") or {}).get(NOTION_REGISTRY_KEY)
+    if not db_id:
+        raise BundleError(
+            f"登録簿に配布先がありません: databases.{NOTION_REGISTRY_KEY}"
+            f"（{NOTION_REGISTRY.relative_to(REPO_ROOT)}）"
+        )
+    return str(db_id)
+
+
+def _notion_call(url: str, body: dict | None = None) -> dict:
+    """配布台帳への 1 回の呼び出し。**HTTP を触るのはここだけ。**
+
+    試験はこの関数だけを差し替える。資格情報は見出しにのみ載せ、返さない。
+    """
+    api_key = os.environ.get("NOTION_API_KEY", "").strip()
+    request = urllib.request.Request(  # noqa: S310
+        url,
+        method="POST" if body is not None else "GET",
+        data=json.dumps(body).encode() if body is not None else None,
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Notion-Version": NOTION_VERSION,
+            "Content-Type": "application/json",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            return json.loads(response.read())
+    except urllib.error.HTTPError as exc:
+        detail = (exc.read() or b"").decode("utf-8", "replace")
+        # 応答本文に資格情報は載らない。載せているのは見出しだけである。
+        raise BundleError(f"配布台帳への照会が失敗しました: HTTP {exc.code} {detail[:200]}") from exc
+    except OSError as exc:
+        raise BundleError(f"配布台帳へ到達できません: {exc}") from exc
+
+
+def _plain_text(prop: dict | None) -> str:
+    """title / rich_text のどちらでも本文を取り出す。"""
+    if not prop:
+        return ""
+    items = prop.get("title") or prop.get("rich_text") or []
+    return "".join(item.get("plain_text", "") for item in items)
+
+
+def read_notion_bundle(task_id: str) -> str:
+    """配布台帳から契約のバンドル本文を取り出す。
+
+    要約値が列と一致しない本文は**受け付けない**。台帳が本文を改変した場合に
+    壊れた契約を取り込まないための門番であり、省略できる経路は設けない。
+    """
+    if not os.environ.get("NOTION_API_KEY", "").strip():
+        raise BundleError(
+            "NOTION_API_KEY が未設定です。source scripts/load_env.sh を先に実行してください"
+        )
+
+    db_id = _notion_database_id()
+    found = _notion_call(
+        f"{NOTION_API_BASE}/databases/{db_id}/query",
+        {"filter": {"property": "task_id", "title": {"equals": task_id}}, "page_size": 20},
+    )
+    rows = found.get("results") or []
+    # 置き換え済みの行は候補から外す。残った行が 1 件でなければ黙って選ばない。
+    live = [r for r in rows if _select_name(r, "status") != "superseded"]
+    if not live:
+        superseded = len(rows) - len(live)
+        extra = f"（置き換え済みの行が {superseded} 件あります）" if superseded else ""
+        raise BundleError(f"配布台帳に契約が見つかりません: {task_id}{extra}")
+    if len(live) > 1:
+        raise BundleError(
+            f"配布台帳に同じ識別子の行が {len(live)} 件あります: {task_id}。"
+            "古い行の status を superseded にしてください"
+        )
+
+    page = live[0]
+    declared = _plain_text((page.get("properties") or {}).get("sha256")).strip()
+    if not declared:
+        raise BundleError(
+            f"要約値の列が空です: {task_id}。照合できない本文は取り込みません"
+        )
+
+    parts: list[str] = []
+    cursor: str | None = None
+    while True:
+        url = f"{NOTION_API_BASE}/blocks/{page['id']}/children?page_size=100"
+        if cursor:
+            url += f"&start_cursor={cursor}"
+        chunk = _notion_call(url)
+        for block in chunk.get("results") or []:
+            if block.get("type") == "code":
+                parts.extend(
+                    item.get("plain_text", "")
+                    for item in (block["code"].get("rich_text") or [])
+                )
+        if not chunk.get("has_more"):
+            break
+        cursor = chunk.get("next_cursor")
+
+    text = "".join(parts)
+    if not text:
+        raise BundleError(f"配布台帳の本文が空です: {task_id}")
+
+    actual = hashlib.sha256(text.encode()).hexdigest()
+    if actual != declared:
+        raise BundleError(
+            f"要約値が一致しません: {task_id}\n"
+            f"  台帳の記載: {declared}\n"
+            f"  取得した本文: {actual}\n"
+            "台帳が本文を改変した可能性があります。取り込みません"
+        )
+    return text
+
+
+def _select_name(row: dict, prop: str) -> str | None:
+    """select 列の値を取り出す。無ければ None。"""
+    value = (row.get("properties") or {}).get(prop) or {}
+    selected = value.get("select")
+    return selected.get("name") if isinstance(selected, dict) else None
+
+
 def read_source(src: str) -> str:
-    """バンドルを読む。`-` は標準入力、それ以外はローカルファイルまたは URL。
+    """バンドルを読む。`-` は標準入力、`notion:<task_id>` は配布台帳、
+    それ以外はローカルファイルまたは URL。
 
     入力の取得方法だけがここで分かれる。取り込みの流れ（一時ディレクトリへの展開・
     設置・検証・巻き戻し）は取得方法によらず共通であり、複製しない。
     """
+    if src.startswith(NOTION_SOURCE_PREFIX):
+        return read_notion_bundle(src[len(NOTION_SOURCE_PREFIX):])
     if src == STDIN_MARKER:
         text = sys.stdin.read()
         # 空でないことだけを見ると、空白だけの貼り付けが素通りして
@@ -331,6 +471,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--src", help="バンドルのパスまたは URL。- を渡すと標準入力から読む")
     parser.add_argument("--pack", help="この契約ディレクトリからバンドルを組み立てて標準出力へ書く")
+    parser.add_argument("--notion", help="配布台帳から task_id で取り込む")
     args = parser.parse_args()
 
     if args.pack:
@@ -350,8 +491,12 @@ def main() -> int:
             return 1
         return 0
 
+    if args.notion:
+        # 取得元だけが違う。取り込み・検証・巻き戻しは --src と同じ経路を通る。
+        return fetch(NOTION_SOURCE_PREFIX + args.notion)
+
     if not args.src:
-        parser.error("--src または --pack が要ります")
+        parser.error("--src / --pack / --notion のいずれかが要ります")
     return fetch(args.src)
 
 
