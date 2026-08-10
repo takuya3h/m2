@@ -33,6 +33,23 @@ git 側の自動化は二つに分かれる。
 🔴 `m2-sync.sh` は新しい commit を作らない。実験完了フック未配線のスクリプト、
 途中終了した run、ガードで skip/abort された run は人手で確認する。
 
+#### 自動化を一時的に止める（TASK 契約の実行中など）
+
+`m2-sync.sh` は実行者の操作なしで作業ブランチへ書き込む。「統合しない」を守る必要が
+あるとき（TASK 契約の実行中など）は、リポジトリ直下に目印を置いて止める。
+
+    touch .sync-pause      # 止める
+    rm -f .sync-pause      # 戻す（忘れるとそのホストだけ同期が止まったままになる）
+
+置いてある間、`m2-sync.sh` は fetch も merge も push も PR 起票も行わず、毎ループ
+`sync-alerts.log` へ「一時停止中」とだけ記録する。keeper 自体は止まらないので、
+目印を消せば次のループから元に戻る。目印は `.gitignore` 済みで `.stignore` の総取り
+規則にも落ちるため、**置いた 1 台にだけ効く。**
+
+この抑止は `origin/phase0` に届いてから効く（keeper が毎ループ `origin/phase0` から
+`~/bin/m2-sync.sh` を自己更新するため）。稼働中の版が対応済みかは
+`grep -c sync-pause ~/bin/m2-sync.sh` で確かめる。`0` なら未対応で、目印を置いても止まらない。
+
 本書では、`m2-sync.sh` が `origin/phase0` を作業ブランチへ取り込む処理を
 「作業ブランチ auto-merge」、GitHub が PR を `phase0` へ統合する処理を
 「GitHub auto-merge」と呼び分ける。
