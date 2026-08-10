@@ -29,6 +29,27 @@ source scripts/load_env.sh    # .env.gpg を復号 → 現在のシェルに env
 - `load_env.sh` は **source** すること（env を現在シェルに入れるため）。
 - パスフレーズが無ければ明確なエラーで停止（誤って平文を扱わない）。
 
+### 編集と再暗号化の順序（この順を守る）
+
+`.env` を書き換えたら、**読み込み直す前に再暗号化する**。順序を逆にすると伝播しない。
+
+```bash
+$EDITOR .env                  # 1) 平文を編集する
+bash scripts/encrypt_env.sh   # 2) 先に再暗号化する（飛ばすと編集は他マシンへ伝わらない）
+git add .env.gpg && git commit -m "chore(secrets): rotate" && git push
+source scripts/load_env.sh    # 3) 読み込み直す
+```
+
+`load_env.sh` は平文が暗号文と食い違うとき、**上書きせず警告する**（2026-08-10 変更）。
+以前は読み込みのたびに平文を上書きしていたため、`.env` への編集が黙って消えていた。
+警告が出たら、どちらを正とするかを選ぶ:
+
+- **暗号文を正とする**（他マシンで鍵が更新された）: `rm .env` してから `source scripts/load_env.sh`
+- **手元の編集を正とする**: `bash scripts/encrypt_env.sh` で再暗号化して commit
+
+**警告を放置すると、そのマシンだけ古い資格情報で走り続ける。** 上書きしない代償なので、
+出たら必ずどちらかを選ぶこと。
+
 ## 自動追跡の配線状況
 | 系統 | スクリプト | W&B | Notion |
 |---|---|---|---|
