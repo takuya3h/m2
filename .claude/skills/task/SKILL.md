@@ -26,6 +26,14 @@ Codex では `$task` または本ファイルを読ませることで同じ手�
 - `tasks/<task_id>/SPEC.md`
 - `kind: exp` なら `tasks/<task_id>/prereg.md`
 
+契約が `tasks/<task_id>/` に無い場合、配布台帳から取得する。
+
+    source scripts/load_env.sh    # 資格情報が要る
+    make task-notion TASK=<task_id>
+
+取得と検証までを行う。失敗したらそこで停止し、出力をそのまま報告する。
+**本文の要約値が一致しない場合は取り込まない。** 台帳が本文を改変した可能性がある。
+
 ### 2. 検証する（L1 + L2）
 
     make task-validate TASK=<task_id>
