@@ -66,10 +66,20 @@ NOTION_API_BASE = "https://api.notion.com/v1"
 # 配布先の識別子は登録簿を単一の情報源とする。コードへ直書きしない。
 NOTION_REGISTRY = REPO_ROOT / "configs" / "notion.yaml"
 NOTION_REGISTRY_KEY = "task_distribution"
+# 添付は行の列ではなく、ページの子の file ブロックとして置かれる。
+# 実測（2026-08-10）: 配布台帳の列に files 型は無い。既存 4 行の file ブロックは 0 件。
+NOTION_FILE_BLOCK = "file"
+# 参照先は署名つきで、取得のたびに変わる。実測の期限は 60 分。
+# 期限切れは「ブロックから取り直して再試行」で回復する。
+ATTACHMENT_RETRY = 1
 
 
 class BundleError(Exception):
     """バンドルの形式・内容が受け入れられないことを示す。"""
+
+
+class AttachmentExpired(BundleError):
+    """添付の参照先が期限切れであることを示す。取り直せば回復する。"""
 
 
 def parse_bundle(text: str) -> dict[str, str]:
@@ -246,6 +256,95 @@ def _plain_text(prop: dict | None) -> str:
     return "".join(item.get("plain_text", "") for item in items)
 
 
+def _iter_child_blocks(page_id: str):
+    """ページの子ブロックを頁送りしながら順に返す。
+
+    添付の探索と本文の収集の両方が使う。頁送りを二度書かないための括り出しである。
+    """
+    cursor: str | None = None
+    while True:
+        url = f"{NOTION_API_BASE}/blocks/{page_id}/children?page_size=100"
+        if cursor:
+            url += f"&start_cursor={cursor}"
+        chunk = _notion_call(url)
+        yield from chunk.get("results") or []
+        if not chunk.get("has_more"):
+            return
+        cursor = chunk.get("next_cursor")
+
+
+def _scan_children(page_id: str) -> tuple[str | None, str]:
+    """子ブロックを**一度だけ**走査し、(添付の参照先, 本文) を返す。
+
+    添付の探索と本文の収集で別々に頁送りすると、添付を持たない既存の行でも
+    呼び出しが倍になる。一度の走査で両方を集める。
+    """
+    url: str | None = None
+    parts: list[str] = []
+    for block in _iter_child_blocks(page_id):
+        kind = block.get("type")
+        if kind == NOTION_FILE_BLOCK and url is None:
+            holder = block.get(NOTION_FILE_BLOCK) or {}
+            inner = holder.get(holder.get("type")) or {}
+            if inner.get("url"):
+                url = str(inner["url"])
+        elif kind == "code":
+            parts.extend(
+                item.get("plain_text", "")
+                for item in (block["code"].get("rich_text") or [])
+            )
+    return url, "".join(parts)
+
+
+def _attachment_url(page_id: str) -> str | None:
+    """添付の参照先を取り直す。**期限切れからの再試行にだけ使う。**
+
+    参照先は取得のたびに変わるため、呼ぶたびに新しいものが返る。
+    """
+    return _scan_children(page_id)[0]
+
+
+def _download_attachment(url: str) -> str:
+    """添付の参照先から本文を取得する。
+
+    **資格情報は送らない。** 参照先は外部の保管先が発行した署名つきであり、
+    台帳の資格情報を必要としない。ここに見出しを付けると、資格情報が
+    台帳以外のあて先へ渡る。
+    """
+    request = urllib.request.Request(url, method="GET")  # noqa: S310
+    try:
+        with urllib.request.urlopen(request, timeout=60) as response:  # noqa: S310
+            return response.read().decode("utf-8")
+    except urllib.error.HTTPError as exc:
+        # 期限切れは取り直しで回復する。それ以外は回復しないので区別する。
+        if exc.code in (401, 403):
+            raise AttachmentExpired(f"添付の参照先が期限切れです: HTTP {exc.code}") from exc
+        raise BundleError(f"添付を取得できません: HTTP {exc.code}") from exc
+    except OSError as exc:
+        raise BundleError(f"添付の参照先へ到達できません: {exc}") from exc
+    except UnicodeDecodeError as exc:
+        raise BundleError(f"添付を UTF-8 として読めません: {exc}") from exc
+
+
+def _read_attachment(page_id: str, url: str) -> str:
+    """添付から本文を取得する。期限切れのときだけ取り直して再試行する。
+
+    **黙って本文へ落ちない。** 添付があるのに取得できないのは、
+    本文から読み直してよい状態ではない。
+    """
+    for attempt in range(ATTACHMENT_RETRY + 1):
+        try:
+            return _download_attachment(url)
+        except AttachmentExpired:
+            if attempt == ATTACHMENT_RETRY:
+                raise
+            refreshed = _attachment_url(page_id)
+            if not refreshed:
+                raise
+            url = refreshed
+    raise BundleError("添付の再試行が尽きました")  # 到達しない
+
+
 def read_notion_bundle(task_id: str) -> str:
     """配布台帳から契約のバンドル本文を取り出す。
 
@@ -282,26 +381,16 @@ def read_notion_bundle(task_id: str) -> str:
             f"要約値の列が空です: {task_id}。照合できない本文は取り込みません"
         )
 
-    parts: list[str] = []
-    cursor: str | None = None
-    while True:
-        url = f"{NOTION_API_BASE}/blocks/{page['id']}/children?page_size=100"
-        if cursor:
-            url += f"&start_cursor={cursor}"
-        chunk = _notion_call(url)
-        for block in chunk.get("results") or []:
-            if block.get("type") == "code":
-                parts.extend(
-                    item.get("plain_text", "")
-                    for item in (block["code"].get("rich_text") or [])
-                )
-        if not chunk.get("has_more"):
-            break
-        cursor = chunk.get("next_cursor")
-
-    text = "".join(parts)
+    # 添付を優先する。外部の記法解釈を受けないため確実であり、既存の行は添付を
+    # 持たないので挙動が変わらない（実測 2026-08-10: 既存 4 行の file ブロックは 0 件）。
+    # 添付が無い行だけが従来の本文の経路へ落ちる。
+    attachment, body = _scan_children(page["id"])
+    if attachment is not None:
+        text, source = _read_attachment(page["id"], attachment), "添付"
+    else:
+        text, source = body, "本文"
     if not text:
-        raise BundleError(f"配布台帳の本文が空です: {task_id}")
+        raise BundleError(f"配布台帳の{source}が空です: {task_id}")
 
     actual = hashlib.sha256(text.encode()).hexdigest()
     if actual != declared:
