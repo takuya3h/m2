@@ -67,8 +67,8 @@ sigma_source の値別件数:
 
 ## 未解決
 
-- backlog 総数: 38（未解決 37 / 解決済み 1）
-- 未解決のうち 🔴 マーカーあり: 12
+- backlog 総数: 39（未解決 38 / 解決済み 1）
+- 未解決のうち 🔴 マーカーあり: 13
 - slug 一覧: context/auto/open_questions.md を参照
 
 ## 契約
