@@ -341,6 +341,7 @@ export して常駐を止める必要があるが、他の作業へ影響する�
 | 2 | `/databases/{id}/query` を GET で呼び HTTP 400。POST が要る。既存の `_notion_call` を使って直した |
 | 3 | **終了コードの検査が空振りしていた。** `${PIPESTATUS[0]}` は bash の書式で、zsh では `pipestatus`（小文字・1 始まり）である。`exit=` が空のまま「非ゼロを確認した」ことになりかけた。パイプを外して `$?` を直接測り直した（SPEC §0 の「対話シェルは bash ではない」と注意 5 が当たった） |
 | 4 | `result.yaml` の `issuer_defects.type` に語彙外の値（`unmeasurable_as_written` / `environment_violates_prohibition`）を書き、`task-validate` が `exit 2` になった。スキーマ `tasks/_schema/result.schema.json` を読まずに書いたのが原因。許される 4 語彙のうち、いずれも本質は「起票者が確かめずに断定した」ため `asserted_without_measuring` へ写した。`shell_assumption` は使っていない。`${PIPESTATUS[0]}` の件は**起票者が §0 で警告していたのに実行者が踏んだ**ものであり、起票者の誤りではないためである |
+| 5 | 検査を `for t in "task-validate TASK=..."; do make $t; done` の形で回し、`exit 2` を得た。**zsh は変数展開で単語分割をしない**ため、`make $t` は文字列全体を 1 つの target 名として渡す。bash なら 2 語に分割されて動く。契約や実装ではなく検査ループ側の誤りで、個別に実行し直すと 5 検査すべて `exit 0` だった。再現も確認済み（`make ${=t}` なら通る）。**本 task で shell の差に起因する検査の空振りは 2 件目**である（1 件目は `${PIPESTATUS[0]}`） |
 
 ---
 
