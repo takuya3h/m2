@@ -14,9 +14,17 @@
 #     環境変数 EGOSURGERY_ENV_PASSPHRASE_FILE で変更可。
 #   - .env.gpg がリポに存在（scripts/encrypt_env.sh で生成・commit 済み）。
 # ============================================================================
+# 基点はこのスクリプト自身の場所から決める。**関数の外で解決すること。**
+# zsh は既定で FUNCTION_ARGZERO が有効なため、関数の内側では $0 が関数名になる。
+# その結果 dirname が "." に落ち、repo ではなくカレントディレクトリの 1 つ上を指す
+# （2026-08-10 実測: zsh の関数内で $0=_egosurgery_load_env / BASH_SOURCE=未定義 →
+#  基点が /home/ubuntu/slocal2 になり .env.gpg に到達しなかった）。
+# ファイルの最上位なら zsh の $0 も bash の BASH_SOURCE[0] もスクリプトの場所を指す。
+_egosurgery_env_self="${BASH_SOURCE[0]:-$0}"
+
 _egosurgery_load_env() {
   local root pf
-  root="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." && pwd)"
+  root="$(cd "$(dirname "${_egosurgery_env_self}")/.." && pwd)"
   pf="${EGOSURGERY_ENV_PASSPHRASE_FILE:-$HOME/.config/egosurgery/env-passphrase}"
 
   if [ ! -f "$root/.env.gpg" ]; then
@@ -40,3 +48,4 @@ _egosurgery_load_env() {
   echo "[load_env] .env をロード（WANDB_API_KEY=$([ -n "${WANDB_API_KEY:-}" ] && echo set || echo unset) / NOTION_API_KEY=$([ -n "${NOTION_API_KEY:-}" ] && echo set || echo unset)）"
 }
 _egosurgery_load_env
+unset _egosurgery_env_self
