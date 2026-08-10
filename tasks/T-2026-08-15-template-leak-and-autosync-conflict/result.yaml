@@ -1,0 +1,46 @@
+# 完了報告の構造化された対。散文（RESULT.md）とは別に、実行者が事実だけを書く。
+result_version: 1
+task_id: "T-2026-08-15-template-leak-and-autosync-conflict"
+status: pass
+host: "lecun"
+branch: "feat/template-and-autosync"
+pr: null
+merged: false
+
+gates:
+  - {id: G1, verdict: pass}
+  - {id: G2, verdict: pass}
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 298
+
+deviations: 3
+
+issuer_defects:
+  - type: self_contradiction
+    note: "禁止 4 が runindex/** の手編集を禁じる一方、Task 1 Step 5 は起票を指示する。この repo の起票先 backlog.md は runindex/ 配下にある。投影の出所が生成器の BACKLOG 定数（ast.literal_eval で読む）だと実装で確かめ、生成器だけを編集して解決した"
+  - type: self_contradiction
+    note: "禁止 9 が統合を禁じる一方、判定 8 は無効時に書き込むことの確認を求める。契約の分岐で測ると自分で禁止 9 を破る。HOME を差し替えた隔離環境で実物のスクリプトを走らせて解決した"
+  - type: self_contradiction
+    note: "判定 15「禁止領域が無変更」と判定 5「件数が増える」が両立しない。件数が現れる投影 context/auto/open_questions.md は禁止 4 の領域にある。禁止を「手による編集」と読み、make context による生成として解決した"
+  - type: check_does_not_check
+    note: "判定 6・7 はリポジトリ側の実装に対して成立するが、稼働中の常駐処理が抑止対象になっていることを確かめない。~/bin/m2-sync.sh は keeper が origin/phase0 から自己更新するため、phase0 に届くまで抑止は効かない（実測 grep -c = 0）。契約の目的『実行中に書き込ませない』はこの判定群を満たしても達成されない"
+
+followups:
+  - "抑止は origin/phase0 に届いてから効く。届くまでは目印を置いても常駐処理は止まらない。各ホストへの反映は keeper の自己更新に依存する（最短 2 ループ / 最大 60 分）"
+  - "目印の解除忘れを自動で検知する手段が無い。sync-alerts.log に毎ループ『一時停止中』と出るのみで、見なければ気付けない"
+  - "B-39 に着手するには、コメント中の例示に具体名を許すかを先に決める必要がある。決めないと configs/default.yaml の扱いが定まらない（値は間接参照のため写しても誤らない）"
+  - "共有設定の DINOV2_WEIGHTS が雛形の記入例のままである（値は出力していない。存在と性質のみ）。全台へ同じ内容が配られるため、どのホストでも同じはずである。暗号設定の変更は本契約の禁止 2 に当たるため触れていない"
+
+unknowns:
+  - "他ホストでは本修正のいずれも実行していない。テンプレートの修正も常駐処理の抑止も lecun 上でのみ実測した"
+  - "契約の取り込み操作そのものは実行していない。作業開始時点で未追跡ファイルとして作業ツリーに存在した。要約値の照合が通ったかは測れず UNKNOWN。記法が壊れずに届いたことのみ実測した"
+  - "過去に雛形を写して環境を作ったホストのローカル .env に SERVERNAME が残っていないかは未測定。共有の暗号設定には無い（鍵 6 個）"
+
+commits:
+  - "2e3b6e8"
+  - "04a6201"
+  - "7bc08aa"
+  - "df75c30"
