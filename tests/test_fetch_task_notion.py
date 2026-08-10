@@ -120,3 +120,150 @@ def test_credential_is_not_included_in_the_error(monkeypatch):
     with pytest.raises(fetch_task.BundleError) as exc:
         fetch_task.read_notion_bundle("T-2099-01-01-no-such-task")
     assert "SECRET-VALUE-MUST-NOT-LEAK" not in str(exc.value)
+
+
+# --------------------------------------------------------------------------- #
+# 添付からの取り込み
+#
+# 実測（2026-08-10・配布台帳）にもとづく形。添付は行の列ではなく**ページの子の
+# file ブロック**として置かれる。台帳の列に files 型は存在しない。
+# 参照先は署名つきで**取得のたびに変わり、期限は 60 分**である。
+# --------------------------------------------------------------------------- #
+
+ATTACH_URL = "https://example.invalid/probe_bundle.txt?signature=REDACTED"
+
+
+def _file_block(url: str = ATTACH_URL, expiry: str = "2026-08-10T21:00:00.000Z") -> dict:
+    return {
+        "type": "file",
+        "file": {"type": "file", "file": {"url": url, "expiry_time": expiry}},
+    }
+
+
+def _mixed_blocks(*blocks: dict, has_more: bool = False, cursor: str | None = None) -> dict:
+    return {"results": list(blocks), "has_more": has_more, "next_cursor": cursor}
+
+
+def _install_blocks(monkeypatch, *, rows, children):
+    """query と children の応答を差し替える。children は呼ばれるたびに 1 つ取り出す。"""
+    seen: list[str] = []
+    remaining = list(children)
+
+    def fake(url: str, body=None):
+        seen.append(url)
+        if "/query" in url:
+            return {"results": rows}
+        if "/children" in url:
+            return remaining.pop(0) if len(remaining) > 1 else remaining[0]
+        raise AssertionError(f"想定外の URL: {url}")
+
+    monkeypatch.setattr(fetch_task, "_notion_call", fake)
+    return seen
+
+
+def test_attachment_is_preferred_over_body(monkeypatch):
+    """添付と本文の両方がある行では、添付から読む。"""
+    attached = "#!TASK-BUNDLE v1 delim=A\n添付の本文\n"
+    sha = hashlib.sha256(attached.encode()).hexdigest()
+    body_block = {"type": "code", "code": {"rich_text": [{"plain_text": "本文の側\n"}]}}
+    _install_blocks(
+        monkeypatch,
+        rows=[_page(sha)],
+        children=[_mixed_blocks(_file_block(), body_block)],
+    )
+    monkeypatch.setattr(fetch_task, "_download_attachment", lambda url: attached)
+    assert fetch_task.read_notion_bundle("T-2026-01-01-probe") == attached
+
+
+def test_body_path_is_unchanged_without_attachment(monkeypatch):
+    """添付が無い行は従来どおり本文から集める。既存の行の挙動を変えない。"""
+    text = "#!TASK-BUNDLE v1 delim=B\n"
+    sha = hashlib.sha256(text.encode()).hexdigest()
+    code_block = {"type": "code", "code": {"rich_text": [{"plain_text": text}]}}
+    _install_blocks(monkeypatch, rows=[_page(sha)], children=[_mixed_blocks(code_block)])
+    assert fetch_task.read_notion_bundle("T-2026-01-01-probe") == text
+
+
+def test_attachment_sha256_mismatch_is_rejected(monkeypatch):
+    """添付でも要約値が一致しなければ受け付けない。"""
+    _install_blocks(
+        monkeypatch,
+        rows=[_page(hashlib.sha256(b"declared-something-else").hexdigest())],
+        children=[_mixed_blocks(_file_block())],
+    )
+    monkeypatch.setattr(fetch_task, "_download_attachment", lambda url: "取得した別の本文\n")
+    with pytest.raises(fetch_task.BundleError) as exc:
+        fetch_task.read_notion_bundle("T-2026-01-01-probe")
+    assert "要約値" in str(exc.value)
+
+
+def test_attachment_download_failure_fails_with_reason(monkeypatch):
+    """取得に失敗したら、理由の分かる失敗にする。黙って本文へ落ちない。"""
+    _install_blocks(
+        monkeypatch,
+        rows=[_page("0" * 64)],
+        children=[_mixed_blocks(_file_block())],
+    )
+
+    def boom(url):
+        raise fetch_task.BundleError("添付を取得できません: HTTP 500")
+
+    monkeypatch.setattr(fetch_task, "_download_attachment", boom)
+    with pytest.raises(fetch_task.BundleError) as exc:
+        fetch_task.read_notion_bundle("T-2026-01-01-probe")
+    assert "添付" in str(exc.value)
+
+
+def test_expired_attachment_url_is_refetched_and_retried(monkeypatch):
+    """参照先が期限切れなら、ブロックから取り直して再試行する。
+
+    実測: 参照先は取得のたびに変わる。期限切れは取り直しで回復する。
+    """
+    fresh = "https://example.invalid/probe_bundle.txt?signature=FRESH"
+    attached = "#!TASK-BUNDLE v1 delim=C\n再試行で取れた本文\n"
+    sha = hashlib.sha256(attached.encode()).hexdigest()
+    _install_blocks(
+        monkeypatch,
+        rows=[_page(sha)],
+        children=[
+            _mixed_blocks(_file_block(ATTACH_URL)),   # 1 回目: 期限切れの参照先
+            _mixed_blocks(_file_block(fresh)),        # 取り直し: 新しい参照先
+        ],
+    )
+    tried: list[str] = []
+
+    def flaky(url):
+        tried.append(url)
+        if url == ATTACH_URL:
+            raise fetch_task.AttachmentExpired("参照先の期限が切れています")
+        return attached
+
+    monkeypatch.setattr(fetch_task, "_download_attachment", flaky)
+    assert fetch_task.read_notion_bundle("T-2026-01-01-probe") == attached
+    assert tried == [ATTACH_URL, fresh], "取り直した参照先で再試行していない"
+
+
+def test_attachment_download_does_not_send_credentials(monkeypatch):
+    """署名つきの参照先へ資格情報を送らない。送れば外部へ漏れる。"""
+    monkeypatch.setenv("NOTION_API_KEY", "SECRET-VALUE-MUST-NOT-LEAK")
+    captured: dict = {}
+
+    class FakeResponse:
+        def read(self):
+            return b"#!TASK-BUNDLE v1 delim=D\n"
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    def fake_urlopen(request, timeout=None):
+        captured["headers"] = dict(getattr(request, "headers", {}) or {})
+        return FakeResponse()
+
+    monkeypatch.setattr(fetch_task.urllib.request, "urlopen", fake_urlopen)
+    fetch_task._download_attachment(ATTACH_URL)
+    joined = " ".join(f"{k}:{v}" for k, v in captured["headers"].items())
+    assert "SECRET-VALUE-MUST-NOT-LEAK" not in joined
+    assert not any(k.lower() == "authorization" for k in captured["headers"])
