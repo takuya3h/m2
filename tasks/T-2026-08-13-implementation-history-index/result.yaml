@@ -1,0 +1,45 @@
+# 完了報告の構造化された対。散文（RESULT.md）とは別に、実行者が事実だけを書く。
+# 本 task がこの様式の最初の利用者である。
+result_version: 1
+task_id: "T-2026-08-13-implementation-history-index"
+status: pass
+host: "lecun"
+branch: "feat/implementation-history"
+pr: null
+merged: false
+
+gates:
+  - {id: G1, verdict: pass}
+  - {id: G2, verdict: pass}
+  - {id: G3, verdict: pass}
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 292
+
+deviations: 3
+
+issuer_defects:
+  - type: self_contradiction
+    note: "禁止 6 が context/auto/** を挙げる一方で Task 2 は同じ場所へ生成させる。判定 20 を素直に読むと自分の成果物で不合格になる。禁止を『手による編集』と読んで解決した"
+  - type: self_contradiction
+    note: "判定 10 が context-check の exit 0 を要求するが、Files に tools/build_context.py が無い。既存の検査は context/auto/ の全ファイルを走査するため、変更なしでは新しい出力を差分と見なして必ず非ゼロになる"
+  - type: asserted_without_measuring
+    note: "Task 3 Step 2 が『復号先を平文の設定ファイル以外にする』を推奨としたが、平文を読む実行コードは 34 箇所あり、すべて fail-open のため無言で資格情報が載らなくなる。同型の事故は s0_010-012 で既に起きている"
+
+followups:
+  - "配布台帳の本契約の行は、本文が markdown として解釈されて壊れたままである。要約値の照合が働いて取り込みは拒まれた。起票者がコードブロックとして貼り直すこと"
+  - "他ホストの .env は本修正より前に作られている。鍵を更新すると警告が出るので、rm .env して再実行するか再暗号化するかを必ず選ぶこと。放置するとそのホストだけ古い資格情報で走り続ける"
+  - "平文 .env の権限が 600 になるのは新規作成時だけである。既に .env を持つホストは 664 のまま変わらない。各ホストで chmod 600 .env を実行すること"
+  - "context/auto/ は build_context.py と build_taskindex.py が共有する。生成器を足すときは、その生成器が自分の出力だけを検査すること"
+  - "tests/test_branch_naming.py に既存の ruff 指摘 I001（import の並び）が 1 件残っている。本 task では触れていない"
+
+unknowns:
+  - "他ホスト（lecun 以外）では load_env.sh の修正を実行していない。lecun 上の zsh と bash の双方でのみ実測した"
+
+commits:
+  - "9a2e2fc"
+  - "8254d6a"
+  - "48a6b66"
+  - "b2675e3"

@@ -119,6 +119,16 @@ inbox:
 inbox-check:
 	@.venv/bin/python tools/build_inbox.py --check
 
+# tasks/*/result.yaml から実装の投影を冪等に生成する。
+# 散文（RESULT.md）は読まない。構造化された対と契約だけを読む。
+# context/auto/ は build_context.py と共有するため、各生成器は自分の出力だけを検査する。
+.PHONY: taskindex taskindex-check
+taskindex:
+	@.venv/bin/python tools/build_taskindex.py
+
+taskindex-check:
+	@.venv/bin/python tools/build_taskindex.py --check
+
 task-validate:
 	@.venv/bin/python tools/validate_task.py $(if $(TASK),--task $(TASK),) --level $(if $(LEVEL),$(LEVEL),l2)
 

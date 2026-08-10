@@ -368,10 +368,12 @@ def check(dest: Path) -> int:
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
         generate_all(tmp_path)
-        existing = {p.name for p in dest.iterdir()} if dest.exists() else set()
+        # 🔴 **自分が作る出力だけ**を検査する。context/auto/ は build_taskindex.py と
+        #    共有しており、existing を混ぜると相手の出力を「再生成すると存在しなくなる」
+        #    として差分に数えてしまう（実測で確認済み）。各生成器が自分の出力を持つ。
         fresh = {p.name for p in tmp_path.iterdir()}
         diffs: list[str] = []
-        for name in sorted(existing | fresh):
+        for name in sorted(fresh):
             old_path, new_path = dest / name, tmp_path / name
             old = old_path.read_text(encoding="utf-8") if old_path.exists() else None
             new = new_path.read_text(encoding="utf-8") if new_path.exists() else None

@@ -21,6 +21,8 @@ import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = REPO_ROOT / "tasks" / "_schema" / "spec.schema.json"
+# 完了報告の構造化された対。契約と違い、起票直後には存在しない。
+RESULT_SCHEMA_PATH = REPO_ROOT / "tasks" / "_schema" / "result.schema.json"
 TASKS_DIR = REPO_ROOT / "tasks"
 EXPERIMENTS_CSV = REPO_ROOT / "runindex" / "experiments.csv"
 CONVENTIONS_PATH = REPO_ROOT / "context" / "conventions.md"
@@ -145,6 +147,54 @@ def validate_l1(spec: dict, dir_name: str) -> list[Finding]:
                         f"数値リテラル {hit.group(0)} が直書きされています。参照で書いてください",
                     )
                 )
+    return findings
+
+
+def _load_result_schema() -> dict:
+    return json.loads(RESULT_SCHEMA_PATH.read_text(encoding="utf-8"))
+
+
+def load_result(task_dir: Path) -> dict | None:
+    """完了報告の対を読む。**無い場合は None**（起票直後には存在しない）。"""
+    path = task_dir / "result.yaml"
+    if not path.exists():
+        return None
+    return yaml.safe_load(path.read_text(encoding="utf-8"))
+
+
+def validate_result(result: dict, dir_name: str) -> list[Finding]:
+    """完了報告の対を検査する。**散文からは何も読まない。**
+
+    対が存在するときだけ呼ぶ。呼び出し側が有無を判断する。
+    """
+    findings: list[Finding] = []
+
+    try:
+        from jsonschema import Draft202012Validator
+    except ImportError:  # pragma: no cover
+        raise SystemExit("jsonschema が必要です: pip install 'jsonschema>=4'")
+    validator = Draft202012Validator(_load_result_schema())
+    for err in sorted(validator.iter_errors(result), key=lambda e: list(e.path)):
+        path = "result.yaml:" + (".".join(str(p) for p in err.path) or "(root)")
+        findings.append(Finding("L1-6", path, err.message))
+
+    if result.get("task_id") != dir_name:
+        findings.append(
+            Finding("L1-7", "result.yaml:task_id", f"ディレクトリ名 {dir_name} と一致しません")
+        )
+
+    # 部分的な達成や停止を、理由なく記録させない。
+    if result.get("status") in ("partial", "stopped"):
+        has_reason = bool(result.get("unknowns")) or bool(result.get("followups"))
+        if not has_reason:
+            findings.append(
+                Finding(
+                    "L1-8",
+                    "result.yaml:status",
+                    f"status が {result['status']} ですが理由がありません。"
+                    "unknowns か followups に書いてください",
+                )
+            )
     return findings
 
 
@@ -338,6 +388,10 @@ def main() -> int:
         total += 1
         spec = yaml.safe_load(spec_path.read_text(encoding="utf-8"))
         findings = validate_l1(spec, dir_name=task_dir.name)
+        # 完了報告の対は**あれば**検査する。無い契約を失敗にしない。
+        result = load_result(task_dir)
+        if result is not None:
+            findings += validate_result(result, dir_name=task_dir.name)
         if args.level == "l2" and not [f for f in findings if f.check not in _WARN_CHECKS]:
             findings += validate_l2(spec)
         hard = [f for f in findings if f.check not in _WARN_CHECKS]
