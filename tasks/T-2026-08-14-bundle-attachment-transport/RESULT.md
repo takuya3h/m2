@@ -340,6 +340,7 @@ export して常駐を止める必要があるが、他の作業へ影響する�
 | 1 | 試験ファイルに書きかけの関数を残して構文エラーにした。同じ内容は別の試験が担っていたため削除した |
 | 2 | `/databases/{id}/query` を GET で呼び HTTP 400。POST が要る。既存の `_notion_call` を使って直した |
 | 3 | **終了コードの検査が空振りしていた。** `${PIPESTATUS[0]}` は bash の書式で、zsh では `pipestatus`（小文字・1 始まり）である。`exit=` が空のまま「非ゼロを確認した」ことになりかけた。パイプを外して `$?` を直接測り直した（SPEC §0 の「対話シェルは bash ではない」と注意 5 が当たった） |
+| 4 | `result.yaml` の `issuer_defects.type` に語彙外の値（`unmeasurable_as_written` / `environment_violates_prohibition`）を書き、`task-validate` が `exit 2` になった。スキーマ `tasks/_schema/result.schema.json` を読まずに書いたのが原因。許される 4 語彙のうち、いずれも本質は「起票者が確かめずに断定した」ため `asserted_without_measuring` へ写した。`shell_assumption` は使っていない。`${PIPESTATUS[0]}` の件は**起票者が §0 で警告していたのに実行者が踏んだ**ものであり、起票者の誤りではないためである |
 
 ---
 

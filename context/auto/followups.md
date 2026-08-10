@@ -42,7 +42,7 @@
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 0 |
-| `asserted_without_measuring` | 2 |
+| `asserted_without_measuring` | 4 |
 | `self_contradiction` | 4 |
 | `shell_assumption` | 0 |
 

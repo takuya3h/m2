@@ -23,11 +23,11 @@ issuer_defects:
     note: "Task 1 Step 3 は確認用の行を superseded にせよと言うが、G2 正常系はその行から取り込めと言う。read_notion_bundle は設計上 superseded の行を候補から除外するため両立しない。確認用の行の状態を一時的に戻して測り、直後に superseded へ復した"
   - type: self_contradiction
     note: "Task 1 の Files が『台帳へ確認用の行を作り、確認後に印を付ける』としながら、同じ Task の Step 3 が『この段階は起票者が行う』としている。担当が定まらない。確認用の行は存在しなかったため、判断を仰いだうえで実行者が作成した"
-  - type: unmeasurable_as_written
+  - type: asserted_without_measuring
     note: "実行ホストを lecun と指定しているが、実行環境は bengio である。ホスト固有の前提は本 task には無かったため bengio で実行した"
   - type: asserted_without_measuring
     note: "『添付が同じ忠実性を持つかは未測定である』は正しいが、添付の置き場所（行の列か、ページの子か）も未測定のまま『行に添付があれば』と書かれている。台帳の列に files 型は存在せず、添付はページの子の file ブロックとしてしか置けない"
-  - type: environment_violates_prohibition
+  - type: asserted_without_measuring
     note: "禁止 9 は統合を禁じるが、常駐の m2-sync.sh が 30 分毎に作業分岐へ origin/phase0 を自動 merge する。20:06:40 に auto-merge が実行され、実行者の操作なしに merge commit 9d89a7b が入った。契約が環境の既定動作と衝突している"
 
 followups:
