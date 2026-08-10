@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/takuya3h/m2/tasks/_schema/result.schema.json",
+  "title": "TASK result",
+  "description": "完了報告の構造化された対。RESULT.md の散文を解析して作ってはならない。実行者が事実だけを書く。",
+  "type": "object",
+  "required": [
+    "result_version",
+    "task_id",
+    "status",
+    "host",
+    "branch",
+    "gates",
+    "tests",
+    "deviations",
+    "issuer_defects",
+    "followups",
+    "unknowns",
+    "commits"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "result_version": { "const": 1 },
+    "task_id": {
+      "type": "string",
+      "description": "ディレクトリ名と一致すること。終端は \\Z 相当（末尾改行を通さない）。",
+      "pattern": "^T-[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9-]{3,60}(?![\\s\\S])"
+    },
+    "status": {
+      "enum": ["pass", "partial", "stopped"],
+      "description": "pass 以外のときは理由を unknowns か followups に置くこと。"
+    },
+    "host": { "type": "string", "minLength": 1 },
+    "branch": { "type": "string", "minLength": 1 },
+    "pr": {
+      "type": ["integer", "null"],
+      "description": "起票していない場合は null。"
+    },
+    "merged": { "type": "boolean" },
+    "gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "verdict"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "verdict": { "enum": ["pass", "ask", "stop", "skip"] }
+        }
+      }
+    },
+    "tests": {
+      "type": "object",
+      "required": ["before_failed", "after_failed", "after_passed"],
+      "additionalProperties": false,
+      "properties": {
+        "before_failed": { "type": "integer", "minimum": 0 },
+        "after_failed": { "type": "integer", "minimum": 0 },
+        "after_passed": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "deviations": { "type": "integer", "minimum": 0 },
+    "issuer_defects": {
+      "type": "array",
+      "description": "起票者の誤り。無かった場合は空配列にし、その旨を RESULT へ書く。",
+      "items": {
+        "type": "object",
+        "required": ["type", "note"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "enum": [
+              "check_does_not_check",
+              "asserted_without_measuring",
+              "self_contradiction",
+              "shell_assumption"
+            ]
+          },
+          "note": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "followups": {
+      "type": "array",
+      "description": "申し送りの本文。要約せずに書く。",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "unknowns": {
+      "type": "array",
+      "description": "断定できなかった事項。",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "commits": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 7 }
+    }
+  }
+}
