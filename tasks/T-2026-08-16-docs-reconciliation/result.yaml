@@ -1,0 +1,44 @@
+# 完了報告の構造化された対。散文（RESULT.md）とは別に、実行者が事実だけを書く。
+result_version: 1
+task_id: "T-2026-08-16-docs-reconciliation"
+status: pass
+host: "lecun"
+branch: "feat/docs-reconciliation"
+pr: null
+merged: false
+
+gates:
+  - {id: G1, verdict: pass}
+  - {id: G2, verdict: pass}
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 314
+
+deviations: 4
+
+issuer_defects:
+  - type: check_does_not_check
+    note: "Phase A Step 2 が示す実態の測り方 grep -E '^[a-z-]+:' Makefile が数字を含むターゲットに一致しない。22 件と出るが実際は 27 件で、落ちた s0 s2 s4 s5 s6 がそのまま『存在しない操作』の誤検出になった。SPEC が 15 task 連続で起きていると警告した型が、SPEC 自身の測定コマンドに入っていた"
+  - type: check_does_not_check
+    note: "判定 5『検査が実在を確かめる／現行手順の文書が通る』は、検査の対象一覧が正しいことを確かめない。対象が 42 件でなく 25 件へ落ちていても通るため合格する。実際に落ちたが、判定ではなく件数の表示で気付いた"
+  - type: asserted_without_measuring
+    note: "実行ホストを bengio と断定しているが、契約は lecun へ配布され lecun で実行された。起票時に配布先を測っていない。測定対象がホストに依存しないため作業内容は変えていない"
+
+followups:
+  - "検査はコードとして書かれた箇所しか見ない。バッククォートを付けずに散文へ書かれた操作名や経路は検出できない。誤検出を避けるための設計だが、検出漏れは残る"
+  - "検査が確かめるのは実在だけである。手順の順序・前提条件・説明の内容が実装と合っているかは人が読むしかない。docs_audit.md 末尾に確かめない範囲を明記した"
+  - "docs/m2_plan_rewrite/ 25 件を記録として扱ったが、現行の計画は外部の運用ハブにある。両者の重複と役割分担は未整理である"
+  - "除外の印は 7 箇所ある。印を足すときは docs_audit.md の全件表も更新すること。表の中はセル内へ置く。行末に足すと列が増える"
+
+unknowns:
+  - "散文へバッククォート無しで書かれた操作名や経路がいくつあるかは未測定。検出漏れの規模が分からない"
+  - "記録として分類した 735 件の内容が実態と合っているかは確かめていない。過去の記述が現在と食い違うのは当然であり対象外とした"
+  - "他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した"
+
+commits:
+  - "97aa2bc"
+  - "452650b"
+  - "5fd7505"
+  - "29492b1"
