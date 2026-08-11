@@ -1,0 +1,76 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-11-issuer-defect-detector"
+  kind: impl
+  title: "起票者の誤りを、過去の実例を教師にして機械で捕まえる"
+  origin: claude-app
+  created_at: "2026-08-11T14:30:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-11-artifact-merge-and-pause"]
+  amendments: []
+
+intent:
+  question: "起票者の誤りのうち、機械で捕まえられるのはどれか"
+  decision_at_stake: "文言による自制を続けるか、様式と検査で強制するか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["tools/validate_task.py"]
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "過去の誤りを教師データにする", gpu: false, est: "40m"}
+    - {id: B, name: "契約の静的検査を実装する", gpu: false, est: "60m"}
+    - {id: C, name: "様式で陽性対照を強制する", gpu: false, est: "50m"}
+    - {id: D, name: "実行直前でも同じ検査を回す", gpu: false, est: "20m"}
+  gates:
+    - id: G1
+      after: A
+      check: "過去の誤りを全件抽出し、機械で捕まえられるものと捕まえられないものに分けて件数を出した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "検査が教師データの何件を検出したかを測り、検出しない記述を誤検出しないことも確かめた"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "新しい様式の必須項目が空のとき失敗し、既存の契約が落ちないことを双方で測った"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tools/"
+  acceptance:
+    - "過去の誤りが型ごとに件数として出る"
+    - "検査が教師データに対する検出率を出す"
+    - "検査が違反しない記述を誤検出しない"
+    - "捕まえられない型が明示される"
+    - "完了判定に陽性対照の欄が無ければ検証が失敗する"
+    - "既存の契約が新しい必須項目で落ちない"
+    - "実行直前にも同じ検査が回る"
+    - "make task-validate が exit 0"
+    - "make task-preflight が exit 0"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [detector_detects_nothing, existing_contracts_break, ledger_row_corrupted]
