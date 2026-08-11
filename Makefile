@@ -134,9 +134,12 @@ taskindex-check:
 # 現行手順の文書に書かれた操作と経路が実在するかを確かめる。
 # 対象は docs/docs_audit.md の分類表で「現行手順」とした文書だけ。記録は見ない。
 # 確かめるのは実在だけで、手順の順序や前提条件は対象外である（docs_audit.md 末尾に明記）。
-.PHONY: docs-check
+.PHONY: docs-check agent-check
 docs-check:
 	@.venv/bin/python tools/check_docs.py
+
+agent-check:
+	@.venv/bin/python tools/check_agent_docs.py
 
 task-validate:
 	@.venv/bin/python tools/validate_task.py $(if $(TASK),--task $(TASK),) --level $(if $(LEVEL),$(LEVEL),l2)
@@ -177,10 +180,8 @@ task-report:
 
 # 契約の取り込み開始を一つの操作にまとめる（分岐の作成から契約の展開まで）。
 # 分岐名は識別子から機械的に導く（feat/<slug>）。**人が打たない。**
-# **先に source の 2 行が要る。** make はサブシェルでレシピを動かすため、
-# 呼び出し元のシェルへ環境を返せない。ここをまとめることは原理的にできない。
-#   source .venv/bin/activate && source scripts/load_env.sh
-#   make task-start TASK=T-YYYY-MM-DD-slug
+# 読み込みと操作を同じ命令に入れ、命令間のシェル状態に依存させない。
+#   source .venv/bin/activate && source scripts/load_env.sh && make task-start TASK=T-YYYY-MM-DD-slug
 .PHONY: task-start
 task-start:
 	@bash scripts/task_start.sh $(TASK)
