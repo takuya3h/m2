@@ -1,0 +1,52 @@
+result_version: 2
+task_id: "T-2026-08-11-codex-parity"
+status: partial
+host: "efros"
+branch: "feat/codex-parity"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "Codexの別命令ではPROBEとVIRTUAL_ENVが未設定になり、1命令へ連結するとVIRTUAL_ENVが設定された。保持した対話zshでは2回の入力後も両方が残り、preflightも非連結exit 2、連結exit 0となった"
+  - id: G2
+    verdict: pass
+    note: "分離したsourceとmakeの陽性対照はexit 1、同じ行の陰性対照はexit 0、対象0件はexit 1だった。専用試験6件と全69文書のagent-checkはexit 0で、skill内のmake操作集合も減っていない"
+  - id: G3
+    verdict: ask
+    note: "PR起票と台帳へのtask-reportは、報告を版管理へ記録した後に実行するため現時点では未測定"
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 361
+
+deviations:
+  - type: environment
+    note: "sudo -n true がパスワード要求で exit 1 となったため、契約の想定外時手順に従って sysctl の一時変更を実施しなかった。開始値は記録し、設定が変わっていないことを終了前にも再測定した"
+  - type: environment
+    note: "現在のCodexは approval_policy=never であり、資格情報なしのHTTPS到達確認は HTTP/2 200 で承認入力を求められなかった。起票時に記録された承認要求とは実行構成が異なるため、実測値を優先した"
+  - type: spec_defect
+    note: "Task 4のFiles欄はskillとtasks/READMEだけを挙げる一方、Task 5は同じgit ls-files集合の全69文書を検査するよう求める。実装後の検査で他の4文書にも真陽性が出たため、検査を弱めず追加文書を最小修正した"
+
+issuer_defects:
+  - type: shell_assumption
+    note: "現行手順はsourceで読み込んだ仮想環境と資格情報が次の命令へ残る前提で、sourceとmakeを別行にしていた。指示どおりCodexへ別命令として渡すとPROBEもVIRTUAL_ENVも未設定になり、preflightはvenv_active FAILで停止した"
+  - type: self_contradiction
+    note: "Task 4の変更ファイルはskillとtasks/READMEの2文書だけと指定したが、Task 5はMakefileとdocsを含む同じ69文書を検査対象にするよう要求した。指示どおり全体検査すると追加4文書が違反となり、列挙ファイルだけではG2を通せなかった"
+  - type: check_does_not_check
+    note: "隔離の原因を測る手順は現在値を記録した後、常にkernel.unprivileged_userns_cloneを1へ設定する。今回の開始値は既に1だったため、仮にsudoできても同じ値の再設定となり、隔離命令が通るかの因果対照を作れない"
+
+followups:
+  - "全テストに開始前から存在する5失敗がある。評価レシピ期待値1件とResearchLogger 4件で、本taskの失敗数は増えていないが、別taskで解消する"
+  - "通信時の承認有無はapproval_policyに依存する。手順書の『求められることがある』という条件付き表現を維持し、構成ごとの実測を混同しない"
+
+unknowns:
+  - "sudo不可のため、user namespace設定を一時変更した場合に旧sandbox構成のbwrap起動失敗が解消するかは未測定"
+  - "PR番号と台帳返却結果は現時点で未測定。G3実行後に更新する"
+
+commits:
+  - "e13291f"
+  - "fbf7bad"
+  - "3cd3cf7"
