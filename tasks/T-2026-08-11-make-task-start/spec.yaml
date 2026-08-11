@@ -1,0 +1,68 @@
+spec_version: 1
+meta:
+  task_id: "T-2026-08-11-make-task-start"
+  kind: impl
+  title: "契約の取り込み開始を一つの操作にまとめる"
+  origin: claude-app
+  created_at: "2026-08-11T14:40:00Z"
+  created_from:
+    runindex_commit: "44697d9"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: []
+  amendments: []
+intent:
+  question: "契約を受け取るたびに手で並べている取り込み前の操作を、一つの操作にまとめられるか。まとめたときに、途中で失敗しても痕跡が残らない状態にできるか"
+  decision_at_stake: "契約を出す頻度が上がるほど、取り込みの手数と取り違えの危険が積み上がる。ここを固定するか、都度手で並べ続けるか"
+  related:
+    backlog: ["BL-sync-alert-message-inaccurate"]
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "Makefile"
+      - "scripts/"
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "既存の仕組みを実測する", gpu: false, est: "40m"}
+    - {id: B, name: "取り込み開始の操作を実装する", gpu: false, est: "50m"}
+    - {id: C, name: "正常系と異常系を陽性対照つきで検査する", gpu: false, est: "50m"}
+    - {id: D, name: "文書化と総括", gpu: false, est: "20m"}
+  gates:
+    - id: G1
+      after: A
+      check: "追記位置を実測で決め、既存レシピの内側に入らないことを行番号で確かめた"
+      on_fail: stop
+    - id: G2
+      after: C
+      check: "異常系のすべてで停止することと、停止後に痕跡が残らないことを実測で確かめた"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md]
+  destination: "scripts/"
+  acceptance:
+    - "一つの操作で分岐の作成から契約の展開までが完了し、成功後の状態が実測で確認されている"
+    - "異常系のそれぞれについて、停止することと痕跡が残らないことが実測で示されている"
+    - "既存の Makefile レシピが変更されていないことが差分で示されている"
+    - "資格情報の値が出力にも記録にも現れていない"
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "失敗時に痕跡を残さない実装が、既存の仕組みの制約により成立しないと判明した場合"
+    - "既存レシピを変更せずに追記する方法が無いと判明した場合"

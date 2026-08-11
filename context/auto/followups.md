@@ -6,7 +6,24 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（27 件）
+## 申し送り（38 件）
+
+### T-2026-08-11-make-task-start
+
+- データに触れない契約が意味のないプレースホルダを書き続けている。既存 30 契約のうち 29 本が data/splits/ego_val.txt を検証を通すためだけに書いており、entrypoints にデータ関連の経路を含むのは 1 本だけである。スキーマを緩めるか kind で必須を分けるか慣行として残すかの三択で、本 task では直していない
+- 起票側の自己検査にスキーマ検証が含まれていない。本契約は初回配布時にそれで検証に落ちた。落ちる欄は取り込み時まで分からないため、起票側で jsonschema を回すか pack して検証するかを決める必要がある
+- 既存の分岐 10 件は導出規則と食い違うが改名しない。統合済みや PR 進行中のものがあるためで、今後作る分岐が規則に従う。過去の分岐から規則を推定してはならない
+- make task-start は .sync-pause を置く側だけを担い、消す側は担わない。報告まで終えたら rm -f .sync-pause を実行者が行う必要があり、消し忘れるとそのホストだけ自動同期が止まったままになる
+- 統合されるまでは、task-start が作った分岐に task_start.sh が存在しない。分岐の起点が origin/phase0 であり、そこにまだ本変更が無いためである。統合後は解消する
+
+### T-2026-08-11-split-and-recipe-audit
+
+- S0 の検出器比較表は 6 種類の eval_recipe_id に跨る。score_thr が 1e-08 と 0.0 の 2 系統に分かれており、9 検出器の mAP の幅 0.6973 から 0.7268 を検出器の優劣として読むことはできない。統一条件での再評価は 9 検出器 × 3 seed = 27 run
+- experiments/baselines/_legacy_score_thr_0 の 33 run は excluded=False かつ exclusion_reason も空で、解析対象 703 件に含まれている。除外すると 9 検出器の記録が索引から消えるため、除外の可否は単純ではない。runindex と harvest_runindex.py は本契約の禁止事項のため触れていない
+- recipes_match は注入対照ペアに対して構造的に必ず False を返す。実験の独立変数であるモデル構造が test_cfg に入っており評価条件と同じ dict を共有しているためである。対照ペアの評価条件の検査には使えないことを規約に明記する必要がある
+- 実運用の Δ 集計は照合を通っていない。recipes_match を呼ぶのは delta.py だけで、その呼び出し元は学習時の trainer.py である。harvest_runindex.py は eval_recipe_id で experiment_id を分離するのみで、description が違えば分離も起きない
+- 工程 503 run の split_train_images は定数 PAPER_SPLIT_SIZES の転記である。値は実体と一致しており誤ってはいないが、分割を取り違えても同じ値が記録される。記録の一致を分割の一致の証拠として使ってはならない
+- 検出と工程の双方で最良 epoch を検証 split で選び、主たる報告値も検証 split である。試験側の値を持つのは解析対象 703 run のうち 69 run のみで、選択と報告が同じ split の上で閉じている
 
 ### T-2026-08-13-implementation-history-index
 
@@ -53,7 +70,22 @@
 - 秘匿の検査が見るのは NOTION_API_KEY と WANDB_API_KEY の 2 つと、既知の接頭辞である。資格情報を増やしたら SECRET_ENV_KEYS へ足すこと。足し忘れても検査は通るため気付けない
 - 送信の時点で壁時計を使っている（completed_at）。生成物ではないため冪等の検査には影響しないが、投影に壁時計を入れない方針とは別の判断である
 
-## 断定できなかった事項（16 件）
+## 断定できなかった事項（25 件）
+
+### T-2026-08-11-make-task-start
+
+- 分岐が存在しない 7 契約について、統合後に削除されたのか最初から別名だったのかは判別していない。現存する分岐だけを対象に導出規則との一致を測った
+- feat/analysis-artifacts は T-2026-08-10-analysis-artifact-integration の短縮に見えるが、語が artifacts と artifact で異なるため集合の包含では対応しない。目視で対応づけず、対応しないものとして数えた
+- 巻き戻しが git checkout や git branch -D に失敗した場合の挙動は、失敗を人工的に起こしていないため実測していない。実装は残った場所を出力して続けるが、その経路は通っていない
+- 他ホストでは本契約を実行していない。lecun 上でのみ実測した
+
+### T-2026-08-11-split-and-recipe-audit
+
+- S0 の 27 run を再評価だけで済ませられるか、再学習が要るかは checkpoint の現存に依存する。本契約は読み取りのみのため確認していない。再学習が要る場合は規模が大きく変わる
+- baselines/s0/maskdino_bbox@val と baselines/s0/varifocanet_bbox@val はこの experiment_id では experiments.csv に存在しなかった。別名で集約されているのか集約対象外なのかは特定していない
+- score_thr が 0.0 と 1e-08 で mAP がどれだけ変わるかは測っていない。両者とも実質的に全検出を残す設定だが、差が無視できるかは再評価しなければ言えない
+- tests の before は本契約で測っていない。コードを 1 行も変更していないため after と同一と扱った。after は実測で 5 failed / 359 passed であり、分岐元の origin/phase0 の状態と一致する
+- 他ホストでは本契約を実行していない。lecun 上でのみ実測した
 
 ### T-2026-08-13-implementation-history-index
 
@@ -89,16 +121,16 @@
 - 台帳の他の行が変わっていないことは、触れた行を限定した事実からしか言えていない。全行の内容を送信前後で突き合わせてはいない
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
 
-## 起票者の誤りの型（18 件）
+## 起票者の誤りの型（25 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 5 |
-| `asserted_without_measuring` | 5 |
+| `check_does_not_check` | 7 |
+| `asserted_without_measuring` | 9 |
 | `self_contradiction` | 8 |
-| `shell_assumption` | 0 |
+| `shell_assumption` | 1 |
 
-合計 18 件（対を持つ契約 6 件から）
+合計 25 件（対を持つ契約 8 件から）
 
