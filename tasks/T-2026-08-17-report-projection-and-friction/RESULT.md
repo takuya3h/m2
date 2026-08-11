@@ -262,7 +262,7 @@ P5 `frozen_source_hash`（`kind=impl` のため対象外）。**SKIP は合格�
 | 14 | 調査対象を変更していない | 差分 0 件 | ✅ |
 | 15 | 契約検証が通る | exit 0 | ✅ |
 | 16 | 実行前検査が通る | exit 0 | ✅ |
-| 17 | 試験が不変か減った | 開始前 `5 failed / 314 passed` → 終了後 `5 failed / **342 passed**`。増分 28 は本 task の新規試験で、失敗は同じ 5 件 | ✅ |
+| 17 | 試験が不変か減った | 開始前 `5 failed / 314 passed` → 終了後 `5 failed / **343 passed**`。増分 29 は本 task の新規試験で、失敗は同じ 5 件 | ✅ |
 | 18 | 禁止領域が無変更 | `experiments` `transfer` `data/splits` `context/conventions.md` すべて出力なし。過去の完了報告の変更 0 件 | ✅ |
 | 19 | 抑止の目印を解除した | 起票の後に実施（§9） | ✅ |
 
