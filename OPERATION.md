@@ -468,4 +468,4 @@ SHA は `gh api repos/takuya3h/m2/commits/phase0 --jq .sha` で取れる。
 | `docs/sync_instr09_lecun_2026-08-02.md` | 同期作業 #09 の経緯 |
 | `docs/sync_phase0_merge_lecun_2026-08-02.md` | phase0 取り込みの完全記録・Syncthing の挙動 |
 | `runindex/README.md` | runindex の生成規則・ホストによる差異 |
-| `runindex/anomalies/backlog.md` | 分析基盤の既知の課題（34 件） |
+| `runindex/anomalies/backlog.md` | 分析基盤の既知の課題（**現在値は `context/auto/STATE.md` が出す**。数は増え続けるためここには書かない） |

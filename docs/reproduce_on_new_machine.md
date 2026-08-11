@@ -84,12 +84,20 @@ CUDA_HOME=/usr/local/cuda-11.8 bash scripts/setup_env_relation_detr.sh
 各 `setup_*.sh` の末尾で自動検証が走るが、加えて次を確認する:
 
 ```bash
-.venv/bin/python -m pytest tests/ -q          # 99 テスト収集
+.venv/bin/python -m pytest tests/ -q          # 2026-08-11 の実測で 319 テスト収集
 ```
 
-- **99 テスト収集**。既知の 1 件 `test_mmdet_trainer_eval_recipe_in_metrics` は
-  **証跡不整合による既知 fail（環境非依存）**で、これは赤のままで正常。それ以外が
-  パスすれば環境健全とみなす（捏造禁止: この既知 fail を隠さず報告すること）。
+- **既知の失敗は 5 件ある。この 5 件以外がパスすれば環境健全とみなす。**
+  いずれも**環境非依存**であることを実測で確かめてある（2026-08-11 / lecun）。
+
+  | テスト | 性質 |
+  |---|---|
+  | `test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics` | 証跡不整合による既知 fail |
+  | `test_research_logger.py` の 4 件 | Notion 記録まわりの実装と試験の不一致。`log_run` が `None` を返し `log_experiment_to_notion` が呼ばれない。`origin/phase0` の時点から失敗している（`B-40` として起票済み） |
+
+  **数は増える。** テスト件数と既知の失敗の一覧は、書かれた時点の実測でしかない。
+  食い違ったら**この文書ではなく実測を信じ、文書を直すこと**（捏造禁止: 既知 fail を
+  隠さず報告する）。
 - `.venv/bin/python` で `torch.cuda.is_available()` が `True`、`mmcv` / `mmdet` /
   `mamba_ssm` / `causal_conv1d` が import でき、`egosurgery` が解決できることを確認。
   （スラッシュコマンド `/env-check` が使えるならそれでもよい。）
