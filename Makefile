@@ -129,6 +129,13 @@ taskindex:
 taskindex-check:
 	@.venv/bin/python tools/build_taskindex.py --check
 
+# 現行手順の文書に書かれた操作と経路が実在するかを確かめる。
+# 対象は docs/docs_audit.md の分類表で「現行手順」とした文書だけ。記録は見ない。
+# 確かめるのは実在だけで、手順の順序や前提条件は対象外である（docs_audit.md 末尾に明記）。
+.PHONY: docs-check
+docs-check:
+	@.venv/bin/python tools/check_docs.py
+
 task-validate:
 	@.venv/bin/python tools/validate_task.py $(if $(TASK),--task $(TASK),) --level $(if $(LEVEL),$(LEVEL),l2)
 

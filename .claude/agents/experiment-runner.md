@@ -12,7 +12,7 @@ model: sonnet
 
 - 実行前に `.venv` が有効か、CUDA が利用可能かを確認する。
 - 学習エントリーポイントは `PYTHONPATH=src .venv/bin/python -m egosurgery.train`、
-  または `scripts/run_sX.sh`（`S0_EXTRA_ARGS` で構成を渡す）。
+  または `scripts/run_sX.sh`（`S0_EXTRA_ARGS` で構成を渡す）。 <!-- docs-check: ignore-line -->
 - **長時間ジョブは必ず `run_in_background: true` で起動**し、Monitor で
   進捗（`[S0][epoch` 等）と失敗シグネチャ（`Traceback|Error|AssertionError|
   CUDA out of memory|Killed`）の両方を grep 監視する。成功マーカーだけを見ない。

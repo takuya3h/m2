@@ -33,7 +33,7 @@ Look in this order and use the first match:
 
 1. `.claude/incidents.md`
 2. `INCIDENTS.md` at repo root
-3. `docs/incidents.md`
+3. `docs/incidents.md` <!-- docs-check: ignore-line -->
 
 If none exist and you are about to make a non-trivial change, ask the user
 whether one should be created.
