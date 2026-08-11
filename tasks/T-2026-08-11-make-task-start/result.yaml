@@ -1,0 +1,58 @@
+# 完了報告の構造化された対。散文（RESULT.md）とは別に、実行者が事実だけを書く。
+result_version: 2
+task_id: "T-2026-08-11-make-task-start"
+status: pass
+host: "lecun"
+branch: "feat/make-task-start"
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "追記位置を Makefile 178 行目の直前と決め、直前の行が空行でタブ始まりでないことを cat -A で確認してから挿入した。差分は追加 10 行のみで削除行は 0 件であり、既存レシピの内側には入っていない"
+  - id: G2
+    verdict: pass
+    note: "異常系 5 通りすべてで停止し、分岐も契約ディレクトリも残らなかった。痕跡確認が空振りでないことは、意図的に分岐を作って検出できることと消えることの両方を確かめて示した"
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 359
+
+deviations:
+  - type: spec_defect
+    note: "検査記録を作業ツリーの外で取り、最後に audit へ移した。SPEC は tasks 配下へ case ごとに書けと指示するが、その書き込み自体が作業ツリーを汚し、スクリプトは段階 4 で汚れを検知して停止する。指示どおり実行すると case 4 と 5 は意図した経路に到達せず、本命の case 5 を一度も測れない"
+  - type: judgement
+    note: "正常系の検査に実契約 T-2026-08-11-s0-reevaluation-feasibility を使った。SPEC が想定した未取り込みの probe 行 4 件はすべて superseded で取得できなかったためである。取り込みは台帳を変更しないため後続に影響せず、検査後に分岐と展開物を片付けて元の分岐へ戻った"
+  - type: judgement
+    note: "二度実行の初回測定を破棄して測り直した。正常系の成功後は origin/phase0 から作られた分岐にいるため task_start.sh がまだ存在せず 127 が返る。実装の欠陥ではなく測定の副作用であり、統合後は解消する。元の分岐へ戻ってから測り直した"
+  - type: environment
+    note: "PIPESTATUS を使った case 2 の終了コード測定が空文字になったため、パイプを使わずに測り直した。対話シェルが zsh であり配列の添字による終了コードの取得が効かないためで、SPEC の注意書きどおりだった"
+  - type: judgement
+    note: "Makefile のレシピに TASK が空のときの番人を置かなかった。SPEC は置けと書くが、既存の task 系ターゲットはいずれも番人を持たず値の検査を呼び先へ委ねている。スクリプトが使い方を出して 2 で停止し make も停止するため要件は満たされる"
+  - type: judgement
+    note: "context/auto の 3 ファイルを make taskindex で生成し、変更に含めた。SPEC の想定変更範囲は Makefile と新規スクリプトと文書と tasks 配下のみだが、手順書は報告を書いたあと投影に現れることを確かめるよう求めている。手編集ではなく生成であり、禁止事項が挙げる src や runindex にも該当しない"
+  - type: judgement
+    note: "meta.created_from.runindex_commit を UNKNOWN から実測した 44697d9 へ置換した。SPEC が定める手順であり逸脱ではないが、契約ファイルそのものへの変更であるため記録に残す。conventions_rev は d422b08 で一致しており置換していない"
+
+issuer_defects:
+  - type: check_does_not_check
+    note: "検査の記録手順が、その検査自身を壊している。case ごとの記録を tasks 配下へ書けと指示するが、書いた瞬間に作業ツリーが汚れ、スクリプトは段階 4 の汚れ検知で停止する。case 4 と 5 は意図した経路を通らず、本命である巻き戻しの検証が一度も行われない"
+  - type: asserted_without_measuring
+    note: "分岐名は識別子から日付を剥がしたものだと書いたが、これは過去の分岐名からの推測だった。契約 30 件を集合演算で測ると規則に従うのは 13 件で、分岐が現存する 23 件のうち 10 件は人が短縮していた。規則は守られていたのではなく守られていなかった"
+  - type: asserted_without_measuring
+    note: "正常系の検査に台帳の未取り込み契約を使えと書いたが、未取り込み 5 件のうち 4 件は superseded で取得できなかった。使えるのは実契約 1 件だけで、検査用の行を用意したつもりが実際には使えない状態になっていた"
+
+followups:
+  - "データに触れない契約が意味のないプレースホルダを書き続けている。既存 30 契約のうち 29 本が data/splits/ego_val.txt を検証を通すためだけに書いており、entrypoints にデータ関連の経路を含むのは 1 本だけである。スキーマを緩めるか kind で必須を分けるか慣行として残すかの三択で、本 task では直していない"
+  - "起票側の自己検査にスキーマ検証が含まれていない。本契約は初回配布時にそれで検証に落ちた。落ちる欄は取り込み時まで分からないため、起票側で jsonschema を回すか pack して検証するかを決める必要がある"
+  - "既存の分岐 10 件は導出規則と食い違うが改名しない。統合済みや PR 進行中のものがあるためで、今後作る分岐が規則に従う。過去の分岐から規則を推定してはならない"
+  - "make task-start は .sync-pause を置く側だけを担い、消す側は担わない。報告まで終えたら rm -f .sync-pause を実行者が行う必要があり、消し忘れるとそのホストだけ自動同期が止まったままになる"
+  - "統合されるまでは、task-start が作った分岐に task_start.sh が存在しない。分岐の起点が origin/phase0 であり、そこにまだ本変更が無いためである。統合後は解消する"
+
+unknowns:
+  - "分岐が存在しない 7 契約について、統合後に削除されたのか最初から別名だったのかは判別していない。現存する分岐だけを対象に導出規則との一致を測った"
+  - "feat/analysis-artifacts は T-2026-08-10-analysis-artifact-integration の短縮に見えるが、語が artifacts と artifact で異なるため集合の包含では対応しない。目視で対応づけず、対応しないものとして数えた"
+  - "巻き戻しが git checkout や git branch -D に失敗した場合の挙動は、失敗を人工的に起こしていないため実測していない。実装は残った場所を出力して続けるが、その経路は通っていない"
+  - "他ホストでは本契約を実行していない。lecun 上でのみ実測した"
+
+commits: []
