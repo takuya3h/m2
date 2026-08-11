@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """runindex から軽量ビュー context/auto/ を冪等に生成する。
 
-判断・解釈・評価は書かない。壁時計は使わず、HEAD のコミット日時と commit を使う。
+判断・解釈・評価は書かない。壁時計は使わず、**正本の内容の要約値**を来歴として刻む。
 """
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ import argparse
 import ast
 import csv
 import difflib
+import hashlib
 import re
 import subprocess
 import sys
@@ -54,23 +55,34 @@ def _run_git(args: list[str]) -> str:
 STAMP_PATH = "runindex/"
 
 
+# スタンプの材料。build_context が実際に読む 3 つの正本だけを対象にする。
+STAMP_SOURCES = ("index.csv", "experiments.csv", "verdicts.csv")
+
+
 def resolve_stamp_source() -> dict[str, str]:
-    """生成物のスタンプ元を返す。
+    """生成物のスタンプ元を返す。**内容から作る。git を見ない。**
 
-    context/auto/ は runindex/ の投影であり、HEAD の状態ではない。
-    HEAD を使うと context/auto/ 自身の commit で陳腐化するため、
-    runindex/ を最後に変更した commit を基準にする。
+    かつては「runindex/ に触れた最後の commit」を刻んでいた。これは
+    **索引を記録した瞬間に古くなる。** 索引と投影を同じ commit に入れると、
+    その commit 自身が「最後に触れた commit」になり、再生成したスタンプが
+    記録済みの値と食い違って `--check` が落ちる。順序を入れ替えても解消しない
+    （スタンプは常に直前の commit を指すため）。実測は
+    `tasks/T-2026-08-11-canonical-index-refresh/RESULT.md` の §5-4b にある。
+
+    内容の要約値なら、記録したかどうかに左右されない。同じ索引からは常に同じ値になり、
+    索引を記録する前でも後でも検査が通る。「どの状態を見ているか」を示すという
+    本来の目的にも、commit 識別子より直接に答える。
     """
-    out = _run_git(["log", "-1", "--format=%H%x09%cI", "--", STAMP_PATH])
-    if not out:
-        return {"path": STAMP_PATH, "commit": "UNKNOWN", "date": "UNKNOWN"}
-    commit, date = out.split("\t", 1)
-    return {"path": STAMP_PATH, "commit": commit, "date": date}
+    digest = hashlib.sha256()
+    for name in STAMP_SOURCES:
+        path = RUNINDEX_DIR / name
+        if path.exists():
+            digest.update(path.read_bytes())
+    return {"path": STAMP_PATH, "digest": digest.hexdigest()[:12]}
 
 
-def _commit_info() -> tuple[str, str]:
-    source = resolve_stamp_source()
-    return source["commit"], source["date"]
+def _stamp_digest() -> str:
+    return resolve_stamp_source()["digest"]
 
 
 def _rows(name: str) -> list[dict[str, str]]:
@@ -133,7 +145,6 @@ def _parse_backlog_entries(text: str) -> tuple[list[dict[str, Any]], int]:
 
 def build_state() -> str:
     source = resolve_stamp_source()
-    commit, date = source["commit"], source["date"]
     index_rows = _rows("index.csv")
     exp_rows = _rows("experiments.csv")
     verdict_rows = _rows("verdicts.csv")
@@ -146,8 +157,7 @@ def build_state() -> str:
         "# STATE — 数値の現在地",
         "",
         f"    generated_from:        {source['path']}",
-        f"    generated_from_commit: {commit}",
-        f"    generated_from_date:   {date}",
+        f"    generated_from_digest: {source['digest']}",
         f"    runindex_counts:       index={n_index} experiments={n_exp} verdicts={n_verdict}",
         "",
         "このファイルは runindex から機械的に生成されたものです。",
@@ -253,7 +263,6 @@ def build_state() -> str:
 
 def build_open_questions() -> str:
     source = resolve_stamp_source()
-    commit, date = source["commit"], source["date"]
     lines: list[str] = [
         DECLARATION,
         CHECK_NOTICE,
@@ -261,8 +270,7 @@ def build_open_questions() -> str:
         "# open_questions — 未解決事項",
         "",
         f"    generated_from:        {source['path']}",
-        f"    generated_from_commit: {commit}",
-        f"    generated_from_date:   {date}",
+        f"    generated_from_digest: {source['digest']}",
         "",
         "backlog（`tools/harvest_runindex.py` の `BACKLOG`）から抽出した未解決事項の一覧。",
         "本文は載せない。詳細は `runindex/anomalies/backlog.md` を参照。",
@@ -337,13 +345,11 @@ def build_verdicts_summary() -> list[dict[str, str]]:
     return out
 
 
-def _write_csv(
-    path: Path, columns: list[str], rows: list[dict[str, str]], commit: str, date: str
-) -> None:
+def _write_csv(path: Path, columns: list[str], rows: list[dict[str, str]]) -> None:
     with path.open("w", newline="", encoding="utf-8") as fh:
         fh.write(
             f"# {DECLARATION[5:-4].strip()} generated_from={STAMP_PATH}"
-            f" generated_from_commit={commit} generated_from_date={date}\n"
+            f" generated_from_digest={_stamp_digest()}\n"
         )
         writer = csv.DictWriter(fh, fieldnames=columns)
         writer.writeheader()
@@ -353,14 +359,13 @@ def _write_csv(
 
 def generate_all(dest: Path) -> None:
     dest.mkdir(parents=True, exist_ok=True)
-    commit, date = _commit_info()
     (dest / "STATE.md").write_text(build_state(), encoding="utf-8")
     (dest / "open_questions.md").write_text(build_open_questions(), encoding="utf-8")
     _write_csv(
-        dest / "experiments_summary.csv", EXP_SUMMARY_COLUMNS, build_experiments_summary(), commit, date
+        dest / "experiments_summary.csv", EXP_SUMMARY_COLUMNS, build_experiments_summary()
     )
     _write_csv(
-        dest / "verdicts_summary.csv", VERDICT_SUMMARY_COLUMNS, build_verdicts_summary(), commit, date
+        dest / "verdicts_summary.csv", VERDICT_SUMMARY_COLUMNS, build_verdicts_summary()
     )
 
 
