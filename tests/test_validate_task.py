@@ -267,3 +267,151 @@ def test_conventions_rev_warning_does_not_depend_on_denominator(capsys):
     """注入対象が変わっていないかの確認は分母と無関係に意味がある。"""
     validate_task._warn_conventions_rev({"contract": {"conventions_rev": "1201f4f"}})
     assert "L2-6" in capsys.readouterr().err
+
+
+# --------------------------------- 様式の版 2 と 3（陽性対照の強制）
+#
+# 判定が通ったことは、その判定が働いていることを意味しない。**空振りかどうかは
+# 判定の外から確かめるしかない。** 版で分岐して既存の契約と報告を落とさない。
+
+import json  # noqa: E402
+
+from validate_task import POSITIVE_CONTROL_COLUMN, validate_spec_md  # noqa: E402
+
+_TABLE_HEAD = f"| # | 判定 | 期待 | {POSITIVE_CONTROL_COLUMN} |\n|---|---|---|---|\n"
+
+
+def _spec_md(tmp_path: Path, body: str) -> Path:
+    (tmp_path / "SPEC.md").write_text(f"# x\n\n## 完了判定\n\n{body}", encoding="utf-8")
+    return tmp_path
+
+
+def test_v2_filled_positive_control_column_passes(tmp_path):
+    body = _TABLE_HEAD + "| 1 | 検査が通る | exit 0 | 規則を 1 つ外すと落ちることを測った |\n"
+    assert validate_spec_md({"spec_version": 2}, _spec_md(tmp_path, body)) == []
+
+
+def test_v2_empty_positive_control_column_fails(tmp_path):
+    """欄が空なら失敗する。**これが強制の本体である。**"""
+    body = _TABLE_HEAD + "| 1 | 検査が通る | exit 0 |  |\n"
+    findings = validate_spec_md({"spec_version": 2}, _spec_md(tmp_path, body))
+    assert [f.check for f in findings] == ["L1-9"]
+    assert POSITIVE_CONTROL_COLUMN in findings[0].message
+
+
+def test_v2_missing_column_fails(tmp_path):
+    body = "| # | 判定 | 期待 |\n|---|---|---|\n| 1 | 検査が通る | exit 0 |\n"
+    findings = validate_spec_md({"spec_version": 2}, _spec_md(tmp_path, body))
+    assert [f.check for f in findings] == ["L1-9"]
+
+
+def test_v2_missing_table_fails(tmp_path):
+    findings = validate_spec_md({"spec_version": 2}, _spec_md(tmp_path, "表が無い。\n"))
+    assert [f.check for f in findings] == ["L1-9"]
+
+
+def test_v2_dash_counts_as_filled(tmp_path):
+    """適用外の明示は書き手の判断として通す。**欄が見えていることが目的である。**"""
+    body = _TABLE_HEAD + "| 1 | 契約検証が通る | exit 0 | — |\n"
+    assert validate_spec_md({"spec_version": 2}, _spec_md(tmp_path, body)) == []
+
+
+def test_v1_without_column_is_untouched(tmp_path):
+    """既存の契約を落とさない。**過去を書き換えて通す方法は採らない。**"""
+    body = "| # | 判定 | 期待 |\n|---|---|---|\n| 1 | 検査が通る | exit 0 |\n"
+    assert validate_spec_md({"spec_version": 1}, _spec_md(tmp_path, body)) == []
+    assert validate_spec_md({}, _spec_md(tmp_path, body)) == []
+
+
+def _result_validator():
+    from jsonschema import Draft202012Validator
+
+    path = Path(__file__).resolve().parents[1] / "tasks" / "_schema" / "result.schema.json"
+    return Draft202012Validator(json.loads(path.read_text(encoding="utf-8")))
+
+
+def _result(**over) -> dict:
+    base = {
+        "task_id": "T-2026-08-11-positive-control",
+        "status": "pass",
+        "host": "h",
+        "branch": "b",
+        "pr": None,
+        "merged": False,
+        "gates": [{"id": "G1", "verdict": "pass", "note": "実測した"}],
+        "tests": {"before_failed": 5, "after_failed": 5, "after_passed": 404},
+        "deviations": [{"type": "judgement", "note": "n"}],
+        "issuer_defects": [],
+        "followups": [],
+        "unknowns": [],
+        "commits": ["abc1234"],
+    }
+    base.update(over)
+    return base
+
+
+_PC = [{"judgement": "判定 4", "breaking_input": "規則を 1 つ外す", "observed": "11/16 から 10/16 へ落ちた"}]
+
+
+def test_result_v3_with_positive_controls_passes():
+    assert not list(_result_validator().iter_errors(
+        _result(result_version=3, positive_controls=_PC)
+    ))
+
+
+def test_result_v3_without_positive_controls_fails():
+    """項目そのものが無ければ失敗する。"""
+    errors = list(_result_validator().iter_errors(_result(result_version=3)))
+    assert any("positive_controls" in e.message for e in errors)
+
+
+def test_result_v3_empty_positive_controls_fails():
+    """空配列も失敗する。**空にできるなら強制になっていない。**"""
+    errors = list(_result_validator().iter_errors(
+        _result(result_version=3, positive_controls=[])
+    ))
+    assert any("non-empty" in e.message for e in errors)
+
+
+def test_result_v3_empty_observed_fails():
+    """実測の欄が空なら失敗する。期待だけ書いて測らないことを許さない。"""
+    bad = [{"judgement": "a", "breaking_input": "b", "observed": ""}]
+    errors = list(_result_validator().iter_errors(
+        _result(result_version=3, positive_controls=bad)
+    ))
+    assert any("non-empty" in e.message for e in errors)
+
+
+def test_result_v3_inherits_v2_requirements():
+    """版 3 は版 2 の要件を含む。**minimum で受けているため const 2 に戻すと失われる。**"""
+    errors = list(_result_validator().iter_errors(
+        _result(result_version=3, positive_controls=_PC,
+                gates=[{"id": "G1", "verdict": "pass"}])
+    ))
+    assert any("note" in e.message for e in errors)
+
+
+def test_result_v1_and_v2_do_not_require_positive_controls():
+    """既存の報告が落ちない。**過去の記録は教師データであり履歴である。**"""
+    validator = _result_validator()
+    assert not list(validator.iter_errors(_result(result_version=2)))
+    assert not list(validator.iter_errors(
+        _result(result_version=1, deviations=3, gates=[{"id": "G1", "verdict": "pass"}])
+    ))
+
+
+def test_v2_ignores_indented_example_table(tmp_path):
+    """字下げされた例示の表を本物と誤認しない。
+
+    契約は新しい欄の書き方を字下げして載せる。それを拾うと、後続の行が表でないため
+    走査が即座に終わり、**本物の完了判定表を一度も検査しないまま合格する。**
+    本契約の SPEC.md で実際に起きた。ここで固定する。
+    """
+    body = (
+        f"    | # | 判定 | 期待 | {POSITIVE_CONTROL_COLUMN} |\n\n"
+        "本物の表は次である。\n\n"
+        + _TABLE_HEAD
+        + "| 1 | 検査が通る | exit 0 |  |\n"
+    )
+    findings = validate_spec_md({"spec_version": 2}, _spec_md(tmp_path, body))
+    assert [f.check for f in findings] == ["L1-9"], "例示を拾って本物を検査していない"

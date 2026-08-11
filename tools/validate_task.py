@@ -59,6 +59,13 @@ _PIPE_STRICT_PATHS = (
 )
 _WARN_CHECKS = {"L1-3W"}
 
+# 完了判定の表の見出しと、陽性対照の欄の名。様式の版 2 以降で欄を必須にする。
+# 🔴 先頭に空白を許してはならない。字下げされた行は markdown の code block であり、
+#    契約は新しい欄の書き方を字下げした例示として載せる。`^\s*\|` と書くと**例示の表を
+#    本物の完了判定表と誤認し、本物を一度も検査しない**（本契約の SPEC.md で実際に起きた）。
+_ACCEPTANCE_HEADER = re.compile(r"^\|\s*#\s*\|\s*判定\s*\|")
+POSITIVE_CONTROL_COLUMN = "空振りでないことの確認"
+
 
 def _is_pipe_strict(path: str) -> bool:
     return any(pattern.fullmatch(path) for pattern in _PIPE_STRICT_PATHS)
@@ -193,6 +200,71 @@ def validate_result(result: dict, dir_name: str) -> list[Finding]:
                     "result.yaml:status",
                     f"status が {result['status']} ですが理由がありません。"
                     "unknowns か followups に書いてください",
+                )
+            )
+    return findings
+
+
+def validate_spec_md(spec: dict, task_dir: Path) -> list[Finding]:
+    """完了判定の表に陽性対照の欄があることを検査する（様式の版 2 以降）。
+
+    判定が通ったことは、その判定が働いていることを意味しない。**空振りかどうかは
+    判定の外から確かめるしかない。** そこで各判定に「何を入力すれば失敗するはずか」を
+    書く欄を設け、空なら通さない。
+
+    版 1 の契約には適用しない。**過去の契約を書き換えて通す方法は採らない。**
+    既存 35 件はすべて版 1 であり、この検査で落ちる契約は 0 件である（実測）。
+
+    欄に「—」と書くことは許す。適用外であることの明示は書き手の判断であり、
+    **欄が見えていること自体が目的である。** 中身の妥当性はここでは判定できない。
+    """
+    if int(spec.get("spec_version", 1)) < 2:
+        return []
+
+    path = task_dir / "SPEC.md"
+    if not path.exists():
+        return [Finding("L1-9", "SPEC.md", "様式の版 2 は SPEC.md を必要とします")]
+
+    lines = path.read_text(encoding="utf-8").splitlines()
+    header_index = next(
+        (i for i, line in enumerate(lines) if _ACCEPTANCE_HEADER.match(line)), None
+    )
+    if header_index is None:
+        return [
+            Finding(
+                "L1-9",
+                "SPEC.md",
+                "完了判定の表が見つかりません（見出しは | # | 判定 | ... の形）",
+            )
+        ]
+
+    header = [c.strip() for c in lines[header_index].strip().strip("|").split("|")]
+    column = next((i for i, c in enumerate(header) if POSITIVE_CONTROL_COLUMN in c), None)
+    if column is None:
+        return [
+            Finding(
+                "L1-9",
+                f"SPEC.md:{header_index + 1}",
+                f"完了判定の表に「{POSITIVE_CONTROL_COLUMN}」の欄がありません",
+            )
+        ]
+
+    findings: list[Finding] = []
+    for index in range(header_index + 1, len(lines)):
+        stripped = lines[index].strip()
+        if not stripped.startswith("|"):
+            break
+        cells = [c.strip() for c in stripped.strip("|").split("|")]
+        if all(set(c) <= set("-: ") for c in cells):
+            continue
+        if not cells or not re.fullmatch(r"\d+", cells[0]):
+            continue
+        if column >= len(cells) or not cells[column]:
+            findings.append(
+                Finding(
+                    "L1-9",
+                    f"SPEC.md:{index + 1}",
+                    f"判定 {cells[0]} の「{POSITIVE_CONTROL_COLUMN}」が空です",
                 )
             )
     return findings
@@ -397,6 +469,8 @@ def main() -> int:
         total += 1
         spec = yaml.safe_load(spec_path.read_text(encoding="utf-8"))
         findings = validate_l1(spec, dir_name=task_dir.name)
+        # 完了判定の表の様式。版 1 の契約には適用しない（既存 35 件はすべて版 1）。
+        findings += validate_spec_md(spec, task_dir)
         # 完了報告の対は**あれば**検査する。無い契約を失敗にしない。
         result = load_result(task_dir)
         if result is not None:
