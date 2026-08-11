@@ -39,6 +39,20 @@ def test_makefile_comment_example_is_checked():
     assert len(check_text("Makefile", text)) == 1
 
 
+def test_fenced_commands_are_checked_across_comments_and_blank_lines():
+    text = (
+        "```bash\n"
+        "source ~/.nvm/nvm.sh\n"
+        "\n"
+        "# 後続操作\n"
+        "node --version\n"
+        "```\n"
+    )
+    violations = check_text("setup.md", text)
+    assert len(violations) == 1
+    assert violations[0].next_line == 5
+
+
 def test_explicit_empty_targets_fail(capsys):
     assert main(["--path"]) == 1
     payload = json.loads(capsys.readouterr().out)

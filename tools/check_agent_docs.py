@@ -89,16 +89,26 @@ def check_text(path: str, text: str) -> list[Violation]:
     for index, command in enumerate(commands[:-1]):
         if command is None or not _ends_with_source(command):
             continue
-        next_command = commands[index + 1]
-        if next_command is None or next_command.startswith("#"):
+        next_index = index + 1
+        if fence_states[index]:
+            while next_index < len(lines):
+                if lines[next_index].lstrip().startswith("```"):
+                    next_index = len(lines)
+                    break
+                candidate = commands[next_index]
+                if candidate is not None and not candidate.startswith("#"):
+                    break
+                next_index += 1
+        if next_index >= len(lines):
             continue
-        if fence_states[index] != fence_states[index + 1]:
+        next_command = commands[next_index]
+        if next_command is None or next_command.startswith("#"):
             continue
         violations.append(
             Violation(
                 path=path,
                 line=index + 1,
-                next_line=index + 2,
+                next_line=next_index + 1,
                 command=command,
                 next_command=next_command,
             )
