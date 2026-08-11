@@ -4,6 +4,8 @@ task_id: "T-2026-08-11-make-task-start"
 status: pass
 host: "lecun"
 branch: "feat/make-task-start"
+pr: 77
+merged: false
 
 gates:
   - id: G1
@@ -55,4 +57,6 @@ unknowns:
   - "巻き戻しが git checkout や git branch -D に失敗した場合の挙動は、失敗を人工的に起こしていないため実測していない。実装は残った場所を出力して続けるが、その経路は通っていない"
   - "他ホストでは本契約を実行していない。lecun 上でのみ実測した"
 
-commits: []
+commits:
+  - "12fba85"
+  - "11b83f9"
