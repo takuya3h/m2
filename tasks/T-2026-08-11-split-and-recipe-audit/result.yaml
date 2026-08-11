@@ -4,6 +4,8 @@ task_id: "T-2026-08-11-split-and-recipe-audit"
 status: pass
 host: "lecun"
 branch: "feat/split-and-recipe-audit"
+pr: 76
+merged: false
 
 gates:
   - id: G1
@@ -60,4 +62,5 @@ unknowns:
   - "tests の before は本契約で測っていない。コードを 1 行も変更していないため after と同一と扱った。after は実測で 5 failed / 359 passed であり、分岐元の origin/phase0 の状態と一致する"
   - "他ホストでは本契約を実行していない。lecun 上でのみ実測した"
 
-commits: []
+commits:
+  - "f0c75a0"
