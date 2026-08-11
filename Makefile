@@ -141,6 +141,15 @@ docs-check:
 agent-check:
 	@.venv/bin/python tools/check_agent_docs.py
 
+# 禁止領域へ触れた変更を、生成物を除いて検査する。**契約ごとに命令を書かない。**
+# 生成物は禁止領域の内側にあるため、素朴に「差分が空」を求めると生成と両立しない。
+# 除外する場所は生成器の実装から取るため、生成物が増えても検査が古くならない。
+# 生成物への手編集はここでは捕まらない。taskindex-check / inbox-check で捕まる。
+# 起点は BASE で変えられる（既定 origin/phase0）。起点が誤れば通さずに失敗する。
+.PHONY: forbidden-check
+forbidden-check:
+	@.venv/bin/python tools/check_forbidden.py $(if $(BASE),--base $(BASE),)
+
 task-validate:
 	@.venv/bin/python tools/validate_task.py $(if $(TASK),--task $(TASK),) --level $(if $(LEVEL),$(LEVEL),l2)
 

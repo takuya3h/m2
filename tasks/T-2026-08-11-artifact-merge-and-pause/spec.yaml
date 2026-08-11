@@ -1,0 +1,74 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-11-artifact-merge-and-pause"
+  kind: impl
+  title: "生成物の合流と抑止の解除を、実装系と併合の双方で成り立つ形にする"
+  origin: claude-app
+  created_at: "2026-08-11T13:00:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-11-codex-parity"]
+  amendments: []
+
+intent:
+  question: "生成物の合流と抑止の解除を、人の手作業なしに成り立たせられるか"
+  decision_at_stake: "生成物を版管理へ入れ続けるか、合流の方式を変えるか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["tools/build_taskindex.py"]
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "生成物の合流を実測する", gpu: false, est: "60m"}
+    - {id: B, name: "禁止領域の検査を道具にする", gpu: false, est: "50m"}
+    - {id: C, name: "抑止の解除と手順書", gpu: false, est: "50m"}
+  gates:
+    - id: G1
+      after: A
+      check: "合流の方式ごとに、衝突の有無と再生成後の検査と他ホストでの追加設定の要否を実測して比べた"
+      on_fail: ask
+    - id: G2
+      after: B
+      check: "禁止領域の検査が生成物を除外し、生成物でない違反を検出することを双方で測った"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "抑止の解除が削除以外の手段で効くことを、抑止中と解除後の双方で測った"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tools/"
+  acceptance:
+    - "生成物の合流で人が手作業をしなくてよい"
+    - "禁止領域の検査が道具として呼び出せる"
+    - "検査が生成物を除外する"
+    - "検査が生成物でない違反を検出する"
+    - "抑止の解除が削除以外の手段で行える"
+    - "履歴を読む操作に頁送りの回避が要ることを検査が強制する"
+    - "make task-validate が exit 0"
+    - "make task-preflight が exit 0"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [merge_strategy_needs_per_host_setup, pause_cannot_be_released, ledger_row_corrupted]

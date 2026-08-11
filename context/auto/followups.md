@@ -6,7 +6,14 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（53 件）
+## 申し送り（57 件）
+
+### T-2026-08-11-artifact-merge-and-pause
+
+- tools/build_context.py は出力ファイル名を定数ではなくリテラルで持っている （STATE.md / open_questions.md / experiments_summary.csv / verdicts_summary.csv）。 本契約では禁止 5 により同ファイルを変更できないため、ディレクトリ定数 AUTO_DIR だけで 成立する設計にした。context/auto/ の外へ生成物が増えた場合、検査の除外が追随しない。 定数化するか、生成器が自分の出力一覧を返す口を持つかの判断が要る。
+- 禁止領域の既定一覧（runindex/ context/auto/ experiments/ transfer/ data/ と context/conventions.md tools/harvest_runindex.py tools/build_context.py）は tools/check_forbidden.py が持っている。契約ごとに禁止領域が異なる場合の広げ方は 決めていない。現状は起点を変える引数しか無い。
+- 頁送りの規則は fenced block の中身をすべて命令として扱う既存の実装の上に乗っている。 mermaid や json の block も命令として走査されるため、将来 git の下位命令名を含む図が 増えると誤検出になりうる。block の言語指定で対象を絞るかの判断が要る。
+- 抑止の解除を別名へ移す方式にしたが、退避した .sync-pause.released は追跡外のまま repo 直下に残る。溜まっても害は無いが、掃除の規約は決めていない。
 
 ### T-2026-08-11-codex-parity
 
@@ -94,7 +101,13 @@
 - 秘匿の検査が見るのは NOTION_API_KEY と WANDB_API_KEY の 2 つと、既知の接頭辞である。資格情報を増やしたら SECRET_ENV_KEYS へ足すこと。足し忘れても検査は通るため気付けない
 - 送信の時点で壁時計を使っている（completed_at）。生成物ではないため冪等の検査には影響しないが、投影に壁時計を入れない方針とは別の判断である
 
-## 断定できなかった事項（35 件）
+## 断定できなかった事項（38 件）
+
+### T-2026-08-11-artifact-merge-and-pause
+
+- 削除が実行基盤に拒否される環境の再現条件。SPEC は前 task でそれが起きたと述べているが、 本ホストでは削除も別名への移動も成功するため、拒否そのものは再現していない。 別名へ移す方式が両方の環境で成立することだけを測った。
+- 稼働中の常駐処理が新しい規約（別名での解除）を反映する時期。keeper は origin/phase0 から 自己更新するため、本契約が統合されるまで他ホストには届かない。届いた後の挙動は測れない。
+- union で併合した後に再生成を忘れた場合、投影に重複が残ったまま検査が exit 1 になる。 その状態で気付かず進んだときの影響は測っていない。
 
 ### T-2026-08-11-codex-parity
 
@@ -164,16 +177,16 @@
 - 台帳の他の行が変わっていないことは、触れた行を限定した事実からしか言えていない。全行の内容を送信前後で突き合わせてはいない
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
 
-## 起票者の誤りの型（36 件）
+## 起票者の誤りの型（39 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 10 |
-| `asserted_without_measuring` | 12 |
+| `check_does_not_check` | 12 |
+| `asserted_without_measuring` | 13 |
 | `self_contradiction` | 11 |
 | `shell_assumption` | 3 |
 
-合計 36 件（対を持つ契約 11 件から）
+合計 39 件（対を持つ契約 12 件から）
 

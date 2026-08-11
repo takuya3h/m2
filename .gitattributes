@@ -1,0 +1,17 @@
+# 生成物は全契約で共有される。並行して契約を回すと、併合のたびに必ず衝突する。
+# 行を統合する組み込みの方式（union）を使うと衝突しない。**各ホストでの設定が要らない。**
+#
+# 併合の後は再生成すること。union は両側の行を残すため、そのままでは重複が残る。
+# 再生成すれば正本へ戻り、検査が exit 0 になる（2026-08-11 実測）。
+#
+#     make taskindex && make inbox
+#
+# 片側を採る方式（merge=ours）は採らない。組み込みではなく
+# `git config merge.ours.driver true` を各ホストで要し、設定が無いと属性が黙って
+# 無効になって衝突する（実測: 設定なし exit 1・衝突 1 件 / 設定あり exit 0）。
+# 追跡から外す方式も採らない。起票者が投影を読めなくなる。
+#
+# 実測の詳細は tasks/T-2026-08-11-artifact-merge-and-pause/RESULT.md を参照。
+
+context/auto/** merge=union
+tasks/inbox.md merge=union
