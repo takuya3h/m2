@@ -229,3 +229,41 @@ def test_trailing_newline_only_is_rejected():
     spec["meta"]["task_id"] = evil
     findings = validate_l1(spec, dir_name=evil)
     assert _hard(findings), "末尾改行つき task_id が素通りしました"
+
+
+import validate_task  # noqa: E402
+
+# --- L2-8 母集団の移動 -----------------------------------------------------
+#
+# 契約を起票してから実行されるまでに母集団は動く。**分母を宣言しない契約では、
+# その差は判定に影響しない。** それでも毎回警告が出ると、実行のたびに承認を求める
+# ことになり、本当に見るべき警告（注入対象の変更）が埋もれる。
+
+_IMPOSSIBLE_COUNTS = {"index": 1, "experiments": 1, "verdicts": 1}
+
+
+def _spec_with_counts(*, denominator: bool) -> dict:
+    spec = {
+        "meta": {"created_from": {"counts": dict(_IMPOSSIBLE_COUNTS)}},
+        "inputs": {"data": {"dataset": "x"}},
+    }
+    if denominator:
+        spec["inputs"]["denominator"] = {"ref": "exp:transfer/example"}
+    return spec
+
+
+def test_population_drift_is_silent_without_denominator(capsys):
+    validate_task._warn_population_drift(_spec_with_counts(denominator=False))
+    assert "L2-8" not in capsys.readouterr().err
+
+
+def test_population_drift_warns_with_denominator(capsys):
+    """陰性側だけを見て満足しない。宣言した契約では従来どおり出ること。"""
+    validate_task._warn_population_drift(_spec_with_counts(denominator=True))
+    assert "L2-8" in capsys.readouterr().err
+
+
+def test_conventions_rev_warning_does_not_depend_on_denominator(capsys):
+    """注入対象が変わっていないかの確認は分母と無関係に意味がある。"""
+    validate_task._warn_conventions_rev({"contract": {"conventions_rev": "1201f4f"}})
+    assert "L2-6" in capsys.readouterr().err

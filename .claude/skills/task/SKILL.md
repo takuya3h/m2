@@ -119,7 +119,7 @@ WARN が出た場合は、内容をユーザーに提示してから続行の可
 
 書いたら投影に現れることを確かめる。
 
-    make taskindex         # context/auto/tasks_summary.csv と followups.md を生成
+    make taskindex         # context/auto/ の tasks_summary.csv / followups.md / results_recent.md を生成
     make taskindex-check   # 差分が無ければ exit 0
 
 **`deviations` セクションを空にしてはならない。** 指示書どおりに実行できなかった箇所、
