@@ -6,3 +6,4 @@
 - [ ] 2026-08-11 [cc] 様式による強制は spec_version 2 以降にしか効かない。既存の版 1 の契約 34 件では docs-reconciliation#2 の型（判定が空振りかを問わない）は検出されない（tools/validate_task.py）
 - [ ] 2026-08-11 [cc] 検査の見出しの正規表現が字下げされた例示の表を本物と誤認していた。markdown の 4 字下げは code block であり `^\s*|` と書くと本物を一度も検査しない。試験で固定した（tests/test_validate_task.py）
 - [ ] 2026-08-11 [cc] semantic 23 件（全体の 59%）を将来捕まえられるかは未測定。実装の挙動を解決する道具を持てば structural へ移る型があるかもしれないが試していない（tasks/T-2026-08-11-issuer-defect-detector/RESULT.md）
+- [ ] 2026-08-11 [cc] 抑止の退避先 .sync-pause.released が .gitignore に載っていない（git check-ignore で確認）。.sync-pause だけが無視されるため退避すると git status に ?? で残り、git add -A で誤って commit され得る。無視の対象に含めるかが未決（.gitignore）
