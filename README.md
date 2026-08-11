@@ -1326,9 +1326,9 @@ spec が `inputs.sigma_policy` を省略した場合は同文書の `conventions
 
 | 層 | 実行主体 | 主な検査 | 失敗時 |
 |---|---|---|---|
-| L1 | `tools/validate_task.py` | Schema、task_id とディレクトリ名、半角パイプ、名前空間、禁止された数値直書き | `FAIL`、exit 1 |
+| L1 | `tools/validate_task.py` | Schema、task_id とディレクトリ名、半角パイプ、名前空間、禁止された数値直書き、完了判定の陽性対照の欄（L1-9、様式の版 2 以降） | `FAIL`、exit 1 |
 | L2 | `tools/validate_task.py` | `refs/remotes/origin` 間での task_id 重複、規約アンカー、split・entrypoint・cache の実在、runindex 分母、seed 数、sigma 整合 | `FAIL`、exit 1 |
-| L3 | `/task` を実行する Claude CLI、または同手順を実施する agent / 人 | venv、CUDA 拡張、決定性、prereg の時系列、未回答判断、出力先権限 | 1件でも赤なら GPU 実行前に停止 |
+| L3 | `/task` を実行する Claude CLI、または同手順を実施する agent / 人 | venv、CUDA 拡張、決定性、prereg の時系列、未回答判断、出力先権限、契約の静的検査（P9、**警告**） | 1件でも赤なら GPU 実行前に停止 |
 
 L2 では、起票後に `context/conventions.md` が変わった場合を `L2-6`、
 runindex の母集団件数が動いた場合を `L2-8` として `WARN` する。
@@ -1338,6 +1338,26 @@ WARN 単独では validator の exit code は 0 だが、`/task` 実行時は内
 L3、凍結 checkpoint の SHA-256 照合、実行、`RESULT.md` 記入は `/task` 手順の責務。
 エージェント向け文書のシェル命令は `make agent-check` で検査し、仮想環境や資格情報の
 読み込みと後続操作が別命令へ分かれていないことを確認する。
+
+### 起票者の誤りの検出（`make spec-check`）
+
+起票者の検査が検証対象を検証していない誤りが 20 task 連続で起きた。手順書の注意項目は
+守られず、**文言による自制は働かなかったため機械にした。** 正解データは
+`tasks/*/result.yaml` の `issuer_defects` に型つきで残った 39 件である。
+
+`tools/check_spec.py` は契約の `SPEC.md` と `spec.yaml` を走査し、8 規則で該当を出す。
+検出可能性で 3 分類した結果は `syntactic` 3 件・`structural` 13 件・`semantic` 23 件で、
+検査の対象は前 2 者の 16 件、うち **11 件を検出する**（実測）。
+`semantic` は意味論であり構文でも構造でも捕まらない。**捕まえられない型が明示されている
+こと自体が成果である。**
+
+    make spec-check TASK=<task_id>    # 契約 1 件（TASK を付けて使う）
+
+各規則は `issuer_defects` の実例を裏付けに持つ。**裏付けの無い規則を足すと分母が動き、
+検出率が意味を失う。** 命令の取り出しは `tools/check_agent_docs.py`、生成物の解決は
+`tools/check_forbidden.py` へ委譲し、判定を複製しない。
+4 層の設計と分類の理由は [`tasks/README.md`](tasks/README.md) と
+[`tasks/T-2026-08-11-issuer-defect-detector/defects.md`](tasks/T-2026-08-11-issuer-defect-detector/defects.md)。
 
 ### 標準ライフサイクル
 
