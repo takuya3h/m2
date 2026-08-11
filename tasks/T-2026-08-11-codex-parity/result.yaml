@@ -3,7 +3,7 @@ task_id: "T-2026-08-11-codex-parity"
 status: partial
 host: "efros"
 branch: "feat/codex-parity"
-pr: null
+pr: 80
 merged: false
 
 gates:
@@ -15,7 +15,7 @@ gates:
     note: "分離したsourceとmakeの陽性対照はexit 1、同じ行の陰性対照はexit 0、対象0件はexit 1だった。専用試験6件と全69文書のagent-checkはexit 0で、skill内のmake操作集合も減っていない"
   - id: G3
     verdict: ask
-    note: "PR起票と台帳へのtask-reportは、報告を版管理へ記録した後に実行するため現時点では未測定"
+    note: "Draft PR 80はphase0向けに起票済みで、統合と自動統合は無効。台帳へのtask-reportは、PR番号を含む報告を版管理へ記録した後に実行するため現時点では未測定"
 
 tests:
   before_failed: 5
@@ -44,7 +44,7 @@ followups:
 
 unknowns:
   - "sudo不可のため、user namespace設定を一時変更した場合に旧sandbox構成のbwrap起動失敗が解消するかは未測定"
-  - "PR番号と台帳返却結果は現時点で未測定。G3実行後に更新する"
+  - "台帳返却結果は現時点で未測定。G3実行後に更新する"
 
 commits:
   - "e13291f"
