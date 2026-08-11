@@ -3,7 +3,7 @@ task_id: "T-2026-08-11-artifact-merge-and-pause"
 status: pass
 host: "lecun"
 branch: "feat/artifact-merge-and-pause"
-pr: null
+pr: 81
 merged: false
 
 gates:
@@ -126,4 +126,9 @@ unknowns:
     union で併合した後に再生成を忘れた場合、投影に重複が残ったまま検査が exit 1 になる。
     その状態で気付かず進んだときの影響は測っていない。
 
-commits: []
+commits:
+  - "5db8a09"
+  - "5d6e9af"
+  - "cea514e"
+  - "1ac8d23"
+  - "002e6ae"
