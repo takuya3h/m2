@@ -213,13 +213,9 @@ git config --global user.email
 # philip 上
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 
-# 新シェルを起動するか source で反映
-source ~/.nvm/nvm.sh
-
-# 本サーバーと同じバージョンを導入
-nvm install 20.20.2
-nvm alias default 20
-node --version   # v20.20.2
+# 新シェルを起動するか、source と後続操作を同じ命令で実行
+source ~/.nvm/nvm.sh && nvm install 20.20.2 && nvm alias default 20 && node --version
+# 期待: v20.20.2
 ```
 
 ### 4.2. Rust (cargo)
@@ -227,8 +223,7 @@ node --version   # v20.20.2
 ```bash
 # philip 上
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-source $HOME/.cargo/env
-rustc --version
+source $HOME/.cargo/env && rustc --version
 ```
 
 ### 4.3. uv (Python tool runner)
@@ -236,8 +231,7 @@ rustc --version
 ```bash
 # philip 上
 curl -LsSf https://astral.sh/uv/install.sh | sh
-source $HOME/.local/bin/env 2>/dev/null || export PATH="$HOME/.local/bin:$PATH"
-uv --version
+source $HOME/.local/bin/env 2>/dev/null || export PATH="$HOME/.local/bin:$PATH"; uv --version
 ```
 
 ---

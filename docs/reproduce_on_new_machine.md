@@ -166,13 +166,10 @@ notes/experiment_log に明文化する（同一 ckpt・同一前処理ゆえ差
 
 ```bash
 # 1) 検出器 venv で region-token 抽出（JIT ビルドは初回 forward で走る）
-source .venv-relation-detr/bin/activate
-export CUDA_HOME=/usr/local/cuda-11.8
-CUDA_VISIBLE_DEVICES=0 python scripts/extract_t1a_regiontoken.py --subset val --limit 8   # スモーク
+CUDA_HOME=/usr/local/cuda-11.8 CUDA_VISIBLE_DEVICES=0 .venv-relation-detr/bin/python scripts/extract_t1a_regiontoken.py --subset val --limit 8   # スモーク
 for sub in train val test; do
-  CUDA_VISIBLE_DEVICES=0 python scripts/extract_t1a_regiontoken.py --subset "$sub" --limit 0
+  CUDA_HOME=/usr/local/cuda-11.8 CUDA_VISIBLE_DEVICES=0 .venv-relation-detr/bin/python scripts/extract_t1a_regiontoken.py --subset "$sub" --limit 0
 done
-deactivate
 
 # 2) 本体 venv で TeCNO 学習（3-seed）
 .venv/bin/python scripts/train_t1a.py --smoke          # 疎通

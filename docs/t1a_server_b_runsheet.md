@@ -25,14 +25,11 @@ GAP）。**変える軸は region-token を見せるか否かの 1 点**。
 
 ## STEP 2: region-token 抽出（検出器 venv）
 ```bash
-source .venv-relation-detr/bin/activate
-export CUDA_HOME=/usr/local/cuda-11.8
-CUDA_VISIBLE_DEVICES=0 python scripts/extract_t1a_regiontoken.py --subset val --limit 8   # スモーク
+CUDA_HOME=/usr/local/cuda-11.8 CUDA_VISIBLE_DEVICES=0 .venv-relation-detr/bin/python scripts/extract_t1a_regiontoken.py --subset val --limit 8   # スモーク
 #   → "saved 8 x 3840 ... nonzero frac=1.000" が出れば hook 配線 OK
 for sub in train val test; do
-  CUDA_VISIBLE_DEVICES=0 python scripts/extract_t1a_regiontoken.py --subset "$sub" --limit 0
+  CUDA_HOME=/usr/local/cuda-11.8 CUDA_VISIBLE_DEVICES=0 .venv-relation-detr/bin/python scripts/extract_t1a_regiontoken.py --subset "$sub" --limit 0
 done
-deactivate
 ```
 出力: `data/processed/t1a_regiontoken/relation_detr_seed42/{train,val,test}_regiontoken.npz`。
 （任意の健全性確認: region を (N,15,256) に整形し per-class norm 最大が、その frame に実在する器具クラスと一致するか。）

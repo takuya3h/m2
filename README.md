@@ -1336,6 +1336,8 @@ WARN 単独では validator の exit code は 0 だが、`/task` 実行時は内
 続行可否を人に確認する。手動実行でも同じで、WARN は人の明示判断まで停止する。
 現在の Python validator が自動化するのは L1/L2 までで、
 L3、凍結 checkpoint の SHA-256 照合、実行、`RESULT.md` 記入は `/task` 手順の責務。
+エージェント向け文書のシェル命令は `make agent-check` で検査し、仮想環境や資格情報の
+読み込みと後続操作が別命令へ分かれていないことを確認する。
 
 ### 標準ライフサイクル
 
