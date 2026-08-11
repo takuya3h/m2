@@ -1,0 +1,61 @@
+# 完了報告の構造化された対。散文（RESULT.md）とは別に、実行者が事実だけを書く。
+# **本 task が版 2 の最初の利用者である。**
+result_version: 2
+task_id: "T-2026-08-17-report-projection-and-friction"
+status: pass
+host: "lecun"
+branch: "feat/report-projection"
+pr: 74
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "投影に転記された 45 件の記述が result.yaml の原文と 1 件も食い違わなかった。2 回生成して md5 一致、taskindex-check は exit 0。陽性対照として 1 行を手で足すと非ゼロへ変わり、再生成で 0 へ戻った"
+  - id: G2
+    verdict: pass
+    note: "分母を宣言しない本 task では L2-8 が 0 件で exit 0。分母を宣言した一時契約では L2-8 が 3 件発火した。片方だけでなく両方向を実物で測った"
+  - id: G3
+    verdict: pass
+    note: "索引を再生成した直後・索引を記録した直後・投影を記録した直後の 3 時点すべてで context-check が exit 0。従来は 2 番目の時点で必ず落ちていた"
+  - id: G4
+    verdict: pass
+    note: "research_logger と tracking への差分が origin/phase0 との比較でも作業ツリーでも 0 件。調査のみで実装は変更していない"
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 343
+
+deviations:
+  - type: spec_defect
+    note: "G1 は Phase A の直後の評価を求めるが、その検査は本 task 自身の完了報告を必要とする。報告は Task 8 で書くため、Phase A 直後に評価すると未測定の値を書くことになり禁止 10 に触れる。機械的な部分（転記の原文一致・冪等・手による編集の検出）を Phase A 直後に実測し、報告を使う照合は報告を書いた後に行った"
+  - type: judgement
+    note: "投影の生成物を列挙している文書 5 箇所（Makefile・context/README.md・tasks/README.md・task の SKILL.md）を、指示に無いが同時に直した。前契約で「数の主張は機械検査を通過したまま古くなる」と実測しているため、投影を足した時点で直さなければ必ず古くなる"
+  - type: judgement
+    note: "G2 の陽性対照に使った一時契約は L2-2（分母の参照解決）で FAIL したまま L2-8 の発火を確認した。参照は exp:<group>/<experiment_id> の形式を要求するが、実在の実験 id は @val や 2 段の / を含むため完全に通る一時契約を作れなかった。警告は L1 通過後の L2 段で出るため、発火の確認には足りている"
+
+issuer_defects:
+  - type: self_contradiction
+    note: "G1 が Phase A の直後に「本 task 自身の完了報告を拡張した様式で書き、投影を生成する」ことを求める一方、報告の作成は Task 8 に置かれている。指示どおり Phase A の直後に評価しようとすると、まだ測っていないゲートの判定や試験の件数を書くことになり、禁止 10「未測定の値を書かない」と衝突する"
+  - type: check_does_not_check
+    note: "Task 6 Step 2 が案を読むために示した探し方 grep -rn スタンプ ... | head は、表示用の切り詰めによって肝心の案の一覧（3 案が並ぶ行）を落とす。指示どおり実行すると案を読まずに選ぶことになり、SPEC 自身が注意 3 で禁じた「記録を作る流れに表示用の切り詰めを混ぜない」を起票者が犯している"
+
+followups:
+  - "results_recent.md の上限は 5 件である。契約が増えると古い順に載らなくなる。超えた分の在り処は冒頭に書いてあるが、上限そのものの妥当性は運用してから見直すこと"
+  - "版 1 の報告 4 件は gates[].note を持たないため、投影では「記述なし。様式 v1」と出る。遡って埋めない方針だが、読む側にとっては当面この 4 件だけ中身が薄い"
+  - "issuer_defects[].note の下限 80 字は既存 15 件の分布から決めた。件数が増えたら分布を測り直すこと。下限は結果を書かない記述を拒むためのものであり、字数を稼がせるためではない"
+  - "index.csv の wandb_run_id は全 751 行が空である。列を揃えたのは経路の食い違いを消すためで、値が入るのは wandb_run.json を残す run が現れてからである"
+  - "test_research_logger の 4 件は B-40 として起票済みだが未着手のままである。原因は特定した（§Phase D）。直し方の判断は log_run の戻り値の規約を決めることから始まる"
+
+unknowns:
+  - "外部記録へ過去に実際に送信されたかは確かめられなかった。API へは到達でき認証も通ったが、現在の資格情報の entity 配下には project が 0 件で、目的の project も存在しない。資格情報と entity は eef6687 で更新されており、過去の送信先は現在の資格情報からは辿れない。手元に 319 の痕跡があることは送信の証拠にならない"
+  - "手元の wandb/ にある 319 の run ディレクトリはいずれも offline-run- ではないため、実行時は送信する設定だったと読める。ただし送信が成功したかは手元の痕跡からは判定できない"
+  - "他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した"
+
+commits:
+  - "4bc643a"
+  - "d1dfe82"
+  - "a43eeda"
+  - "44697d9"
+  - "ac80bd1"

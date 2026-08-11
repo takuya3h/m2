@@ -1248,6 +1248,13 @@ def build_transfer_legacy_record(run_dir: Path) -> dict[str, Any]:
         "frozen_source_seed_declared": None,
         "seed_detector": name_info["seed_detector"],
         "seed_phase": name_info["seed_phase"],
+        # 外部記録との対応。**主経路と同じ出所から取る。**
+        # ここに列が無いと、索引には列があるのに個別記録には無いという食い違いが残り、
+        # 読む側は「対応が無い」のか「経路が違って書かれなかった」のか区別できない。
+        # 2026-08-11 の実測では 751 件中 29 件（すべて transfer_legacy）が列を持たなかった。
+        # 値は harvest_tracking が決める。wandb_run.json が無い run は空欄になるのが正しく、
+        # **遡って対応づけはしない。**
+        **{k: v for k, v in harvest_tracking(run_dir).items() if k != "warnings"},
         "split": None,
         "metrics_primary_split": None,
         "metrics": _denan(metrics),

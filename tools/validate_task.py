@@ -361,6 +361,15 @@ def _warn_conventions_rev(spec: dict) -> None:
 
 
 def _warn_population_drift(spec: dict) -> None:
+    """母集団が起票時から動いたことを告げる。**分母を宣言する契約に限る。**
+
+    契約を起票してから実行されるまでに母集団は必ず動く。分母を宣言しない契約では
+    その差は判定に影響しないため、警告しても実行者にできることが無い。それでも出すと
+    実行のたびに承認を求めることになり、**本当に見るべき警告が埋もれる**
+    （注入対象が変わったことを告げる L2-6 は分母と無関係に意味があるので残す）。
+    """
+    if "denominator" not in (spec.get("inputs") or {}):
+        return
     counts = spec.get("meta", {}).get("created_from", {}).get("counts", {})
     for name, key in (("index.csv", "index"), ("experiments.csv", "experiments"), ("verdicts.csv", "verdicts")):
         path = REPO_ROOT / "runindex" / name

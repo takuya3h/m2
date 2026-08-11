@@ -9,7 +9,7 @@
 | 種別 | 場所 | ファイル | 生成 |
 |---|---|---|---|
 | 自動生成 | `context/auto/` | `STATE.md`, `experiments_summary.csv`, `verdicts_summary.csv`, `open_questions.md` | `make context`（`runindex/` から） |
-| 自動生成 | `context/auto/` | `tasks_summary.csv`, `followups.md` | `make taskindex`（`tasks/*/result.yaml` から） |
+| 自動生成 | `context/auto/` | `tasks_summary.csv`, `followups.md`, `results_recent.md` | `make taskindex`（`tasks/*/result.yaml` から） |
 | **人手管理** | `context/` 直下 | `conventions.md` | 手で書く。生成は触らない |
 
 自動生成側（`context/auto/`）は手で編集しない。人手管理側は自動生成の対象にしない。
@@ -18,7 +18,7 @@
 
     make runindex   # runindex/ を再生成（正本の更新）
     make context    # runindex/ から context/auto/ を再生成（make runindex の直後に実行する）
-    make taskindex  # tasks/*/result.yaml から tasks_summary.csv と followups.md を再生成
+    make taskindex  # tasks/*/result.yaml から tasks_summary.csv / followups.md / results_recent.md を再生成
 
 `context/auto/` を手で編集したかどうかは次で検出できる。
 
@@ -29,9 +29,15 @@
 全ファイルを走査すると他方の出力を「未知の差分」として数えてしまう。生成器を足すときも
 同じ方針にすること。
 
-冪等性がある（同じ commit 状態なら `make context` を何度実行しても差分ゼロ）。
-壁時計は使わず、各ファイルの先頭に `generated_from_commit` / `generated_from_date`
-（HEAD のコミット・コミット日時）を埋め込むことで「どの状態を見ているか」を示す。
+冪等性がある（同じ `runindex/` からは `make context` を何度実行しても差分ゼロ）。
+壁時計は使わず、各ファイルの先頭に `generated_from_digest`（正本 3 ファイルの内容の
+要約値）を埋め込むことで「どの状態を見ているか」を示す。
+
+**来歴に commit を使わない。** かつては `runindex/` に触れた最後の commit を刻んでいたが、
+索引と投影を同じ commit へ入れると、その commit 自身が「最後に触れた commit」になり、
+再生成した値が記録済みの値と食い違って**検査が常に 1 つ遅れた**。順序を入れ替えても
+解消しない。内容の要約値なら記録したかどうかに左右されず、索引を記録する前でも後でも
+検査が通る。
 
 ## `STATE.md` に判断を書かない理由
 

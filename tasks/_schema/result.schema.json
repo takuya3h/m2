@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/takuya3h/m2/tasks/_schema/result.schema.json",
   "title": "TASK result",
-  "description": "完了報告の構造化された対。RESULT.md の散文を解析して作ってはならない。実行者が事実だけを書く。",
+  "description": "完了報告の構造化された対。RESULT.md の散文を解析して作ってはならない。実行者が事実だけを書く。版 1 は件数だけを持つ旧様式、版 2 は中身を持つ拡張様式。**過去の報告に版 2 の要件を遡って適用しない。**",
   "type": "object",
   "required": [
     "result_version",
@@ -20,7 +20,10 @@
   ],
   "additionalProperties": false,
   "properties": {
-    "result_version": { "const": 1 },
+    "result_version": {
+      "enum": [1, 2],
+      "description": "1=旧様式（件数のみ）。2=拡張様式（gates[].note と deviations の一覧を要求）。"
+    },
     "task_id": {
       "type": "string",
       "description": "ディレクトリ名と一致すること。終端は \\Z 相当（末尾改行を通さない）。",
@@ -45,7 +48,12 @@
         "additionalProperties": false,
         "properties": {
           "id": { "type": "string", "minLength": 1 },
-          "verdict": { "enum": ["pass", "ask", "stop", "skip"] }
+          "verdict": { "enum": ["pass", "ask", "stop", "skip"] },
+          "note": {
+            "type": "string",
+            "minLength": 1,
+            "description": "**何を実測したか。** 判定の根拠であって、ゲートの文言の写しではない。版 2 では必須。"
+          }
         }
       }
     },
@@ -59,7 +67,27 @@
         "after_passed": { "type": "integer", "minimum": 0 }
       }
     },
-    "deviations": { "type": "integer", "minimum": 0 },
+    "deviations": {
+      "description": "版 1 は件数（整数）。版 2 は一覧。空にしてはならない。逸脱が無い場合も、その旨を 1 件書く。",
+      "oneOf": [
+        { "type": "integer", "minimum": 0 },
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type", "note"],
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "enum": ["spec_defect", "environment", "judgement"],
+                "description": "spec_defect=契約の誤りによる / environment=実行環境の差による / judgement=判断が必要だった。列挙にない型が要る場合は完了時に提案として報告し、勝手に増やさない。"
+              },
+              "note": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      ]
+    },
     "issuer_defects": {
       "type": "array",
       "description": "起票者の誤り。無かった場合は空配列にし、その旨を RESULT へ書く。",
@@ -76,7 +104,11 @@
               "shell_assumption"
             ]
           },
-          "note": { "type": "string", "minLength": 1 }
+          "note": {
+            "type": "string",
+            "minLength": 1,
+            "description": "**何が誤っていたか**と**指示どおり実行すると何が起きたか**の 2 つを含むこと。版 2 では 80 字以上を要求する。"
+          }
         }
       }
     },
@@ -94,5 +126,42 @@
       "type": "array",
       "items": { "type": "string", "minLength": 7 }
     }
-  }
+  },
+  "allOf": [
+    {
+      "description": "版 2 の追加要件。**版 1 には適用しない。**",
+      "if": {
+        "properties": { "result_version": { "const": 2 } },
+        "required": ["result_version"]
+      },
+      "then": {
+        "properties": {
+          "gates": {
+            "items": { "required": ["id", "verdict", "note"] }
+          },
+          "deviations": {
+            "type": "array",
+            "minItems": 1
+          },
+          "issuer_defects": {
+            "items": {
+              "properties": {
+                "note": { "minLength": 80 }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "版 1 は件数のまま。一覧を書くなら版 2 を名乗ること。",
+      "if": {
+        "properties": { "result_version": { "const": 1 } },
+        "required": ["result_version"]
+      },
+      "then": {
+        "properties": { "deviations": { "type": "integer" } }
+      }
+    }
+  ]
 }

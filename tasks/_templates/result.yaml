@@ -2,8 +2,11 @@
 # **散文を解析して作らない。** 解釈は捏造を生む。
 #
 # 検証: make task-validate（対が無い契約は失敗にしない）
-# 投影: make taskindex → context/auto/tasks_summary.csv と followups.md
-result_version: 1
+# 投影: make taskindex → context/auto/tasks_summary.csv / followups.md / results_recent.md
+#
+# 版 2 は中身を持つ。件数だけでは「何が誤っていたか」が伝わらず、読む側が
+# 散文を人手で転記するしかなかったため広げた。**版 1 の過去の報告は直さない。**
+result_version: 2
 task_id: "T-YYYY-MM-DD-slug"        # ディレクトリ名と一致すること
 status: pass                         # pass / partial / stopped
 host: ""
@@ -12,8 +15,9 @@ pr: null                             # 起票していなければ null
 merged: false
 
 # ゲートの判定。verdict は pass / ask / stop / skip
+# note には **何を実測したか** を書く。ゲートの文言を写さない。版 2 では必須。
 gates:
-  - {id: G1, verdict: pass}
+  - {id: G1, verdict: pass, note: ""}
 
 # 試験の件数。開始前を先に測ること。
 tests:
@@ -21,7 +25,13 @@ tests:
   after_failed: 0
   after_passed: 0
 
-deviations: 0                        # 逸脱の件数
+# 逸脱の一覧。**空にしない。** 逸脱が無い場合も、その旨を 1 件書く。
+# type は 3 種に固定。列挙にない型が要るときは完了時に提案として報告し、勝手に増やさない。
+#   spec_defect   契約の誤りによる
+#   environment   実行環境の差による
+#   judgement     判断が必要だった
+deviations:
+  - {type: judgement, note: ""}
 
 # 起票者の誤り。type は 4 種に固定。**空にしない。**
 # 無かった場合は [] とし、無かったことを RESULT に書く。
@@ -29,6 +39,9 @@ deviations: 0                        # 逸脱の件数
 #   asserted_without_measuring 確かめずに断定した
 #   self_contradiction         契約の内部で矛盾した
 #   shell_assumption           実行環境と異なるシェルを前提にした
+#
+# note は **何が誤っていたか** と **指示どおり実行すると何が起きたか** の 2 つを含む。
+# 版 2 では 80 字以上。結果を書かない記述を拒むための下限であって、字数を稼ぐためではない。
 issuer_defects: []
 
 # 申し送りの本文。要約しない。

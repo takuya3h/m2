@@ -65,18 +65,19 @@ def test_no_entries_when_backlog_empty():
     assert skipped == 0
 
 
-def test_stamp_uses_runindex_commit_not_head():
-    """生成元は HEAD ではなく runindex の最終更新 commit である。
+def test_stamp_names_runindex_as_its_source():
+    """生成元は runindex/ である。**値は commit ではなく内容の要約値。**
 
-    context/auto/ を commit すると HEAD が進むため、HEAD を基準にすると
-    生成物が自分自身の commit で陳腐化し、検査が常時失敗する。
+    かつては runindex/ の最終更新 commit を刻んでいたが、索引と投影を同じ commit へ
+    入れるとその commit 自身が最終更新になり、再生成した値が記録済みの値と食い違って
+    検査が常に 1 つ遅れた。内容から作れば記録したかどうかに左右されない。
     """
     from build_context import resolve_stamp_source
 
     source = resolve_stamp_source()
     assert source["path"] == "runindex/"
-    assert source["commit"]
-    assert source["date"]
+    assert source["digest"]
+    assert "commit" not in source and "date" not in source
 
 
 def test_stamp_is_stable_when_only_head_moves():
@@ -86,3 +87,72 @@ def test_stamp_is_stable_when_only_head_moves():
     first = resolve_stamp_source()
     second = resolve_stamp_source()
     assert first == second
+
+
+# --- 来歴のスタンプ ---------------------------------------------------------
+#
+# 索引に触れた最後の commit をスタンプすると、**索引を記録した瞬間に古くなる。**
+# 生成 → 索引と投影を commit → 検査、の順で必ず 1 つ遅れ、検査が落ちる。
+# 内容そのものから作れば commit の順序に依存しない。
+
+import hashlib  # noqa: E402
+
+import build_context  # noqa: E402
+
+
+def _fake_runindex(tmp_path, index_body="a\n1\n"):
+    d = tmp_path / "runindex"
+    d.mkdir(parents=True)
+    (d / "index.csv").write_text(index_body, encoding="utf-8")
+    (d / "experiments.csv").write_text("b\n2\n", encoding="utf-8")
+    (d / "verdicts.csv").write_text("c\n3\n", encoding="utf-8")
+    return d
+
+
+def test_stamp_is_derived_from_content(tmp_path, monkeypatch):
+    d = _fake_runindex(tmp_path)
+    monkeypatch.setattr(build_context, "RUNINDEX_DIR", d)
+    source = build_context.resolve_stamp_source()
+    assert "digest" in source
+    assert source["digest"] != "UNKNOWN"
+
+
+def test_stamp_changes_when_content_changes(tmp_path, monkeypatch):
+    d = _fake_runindex(tmp_path)
+    monkeypatch.setattr(build_context, "RUNINDEX_DIR", d)
+    before = build_context.resolve_stamp_source()["digest"]
+    (d / "index.csv").write_text("a\n1\n2\n", encoding="utf-8")
+    after = build_context.resolve_stamp_source()["digest"]
+    assert before != after
+
+
+def test_stamp_is_stable_for_identical_content(tmp_path, monkeypatch):
+    """同じ内容なら同じ値。commit したかどうかに左右されない。"""
+    d1 = _fake_runindex(tmp_path / "one")
+    d2 = _fake_runindex(tmp_path / "two")
+    monkeypatch.setattr(build_context, "RUNINDEX_DIR", d1)
+    a = build_context.resolve_stamp_source()["digest"]
+    monkeypatch.setattr(build_context, "RUNINDEX_DIR", d2)
+    b = build_context.resolve_stamp_source()["digest"]
+    assert a == b
+
+
+def test_stamp_does_not_use_git(tmp_path, monkeypatch):
+    """git を呼ばない。呼ぶと作業ツリーの記録状態に依存して遅れが戻る。"""
+    d = _fake_runindex(tmp_path)
+    monkeypatch.setattr(build_context, "RUNINDEX_DIR", d)
+
+    def _boom(*args, **kwargs):
+        raise AssertionError("スタンプの算出で git を呼んではならない")
+
+    monkeypatch.setattr(build_context, "_run_git", _boom)
+    assert build_context.resolve_stamp_source()["digest"]
+
+
+def test_stamp_is_sha256_of_the_three_sources(tmp_path, monkeypatch):
+    d = _fake_runindex(tmp_path)
+    monkeypatch.setattr(build_context, "RUNINDEX_DIR", d)
+    expect = hashlib.sha256()
+    for name in ("index.csv", "experiments.csv", "verdicts.csv"):
+        expect.update((d / name).read_bytes())
+    assert build_context.resolve_stamp_source()["digest"] == expect.hexdigest()[:12]
