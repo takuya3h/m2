@@ -1,0 +1,131 @@
+========================================================================
+1. 領域注釈 3 種の規模（実測）
+========================================================================
+
+--- hand_seg ---
+  train images=  9627 anns=  27726 ann>=1 の image=  9627 cats=  4 列挙のみで注釈0件=    0
+    categories: ["First Person's Left Hand", "First Person's Right Hand", "Other Person's Left Hand", "Other Person's Right Hand"]
+  val   images=  1515 anns=   4918 ann>=1 の image=  1515 cats=  4 列挙のみで注釈0件=    0
+  test  images=  4255 anns=  13676 ann>=1 の image=  4255 cats=  4 列挙のみで注釈0件=    0
+  extra images=  4035 anns=  10853 ann>=1 の image=  4035 cats=  4 列挙のみで注釈0件=    0
+
+--- tool_seg ---
+  train images=  9528 anns=  30493 ann>=1 の image=  9528 cats= 31 列挙のみで注釈0件=    0
+    categories: ['BiClamp', 'Bipolar Forceps', 'Chisel', 'Cup', 'Drill', 'Electric Cautery', 'Forceps', 'Gauze', 'Hammer', 'Hook', 'Kidney Dish', 'Malleable Retractor', 'Mouth Gag', 'Nasogastric Tube', 'Needle Holders', 'Pen', 'Petri Dish', 'Raspatory', 'Retractor', 'Ruler', 'Scalpel', 'Scissors', 'Screwdriver', 'Skewer', 'Spoon', 'Suction Cannula', 'Suction Tube', 'Suture, Suture Needle', 'Syringe', 'Trephine', 'Tweezers']
+  val   images=  1512 anns=   3733 ann>=1 の image=  1512 cats= 31 列挙のみで注釈0件=    0
+  test  images=  3927 anns=  11574 ann>=1 の image=  3927 cats= 31 列挙のみで注釈0件=    0
+  extra images=  3532 anns=   8337 ann>=1 の image=  3532 cats= 31 列挙のみで注釈0件=    0
+
+--- hand_tool_seg ---
+  train images=  9356 anns=  32408 ann>=1 の image=  9356 cats=  5 列挙のみで注釈0件=    0
+    categories: ["First Person's Left Hand", "First Person's Right Hand", 'Left Hand Tool', 'Right Hand Tool', 'Two Hands Tool']
+  val   images=  1514 anns=   5653 ann>=1 の image=  1514 cats=  5 列挙のみで注釈0件=    0
+  test  images=  4107 anns=  14081 ann>=1 の image=  4107 cats=  5 列挙のみで注釈0件=    0
+  extra images=  3420 anns=   9945 ann>=1 の image=  3420 cats=  5 列挙のみで注釈0件=    0
+
+========================================================================
+2. 術具 bbox split との集合差（両方向）
+========================================================================
+  tool train: 9657 frames
+  tool val  : 1515 frames
+  tool test : 4265 frames
+  tool 合計: 15437
+
+--- hand_seg vs 術具 bbox ---
+  train 被覆=  9627/  9657 ( 99.69%) | 術具にあり注釈なし=   30 | 注釈にあり術具外=    0
+  val   被覆=  1515/  1515 (100.00%) | 術具にあり注釈なし=    0 | 注釈にあり術具外=    0
+  test  被覆=  4255/  4265 ( 99.77%) | 術具にあり注釈なし=   10 | 注釈にあり術具外=    0
+  3 split 合計 被覆=15397/15437
+  extra（術具 split 外の拡張フレーム）= 4035  うち術具集合と交差=0
+
+--- tool_seg vs 術具 bbox ---
+  train 被覆=  9528/  9657 ( 98.66%) | 術具にあり注釈なし=  129 | 注釈にあり術具外=    0
+  val   被覆=  1512/  1515 ( 99.80%) | 術具にあり注釈なし=    3 | 注釈にあり術具外=    0
+  test  被覆=  3927/  4265 ( 92.08%) | 術具にあり注釈なし=  338 | 注釈にあり術具外=    0
+  3 split 合計 被覆=14967/15437
+  extra（術具 split 外の拡張フレーム）= 3532  うち術具集合と交差=0
+
+--- hand_tool_seg vs 術具 bbox ---
+  train 被覆=  9356/  9657 ( 96.88%) | 術具にあり注釈なし=  301 | 注釈にあり術具外=    0
+  val   被覆=  1514/  1515 ( 99.93%) | 術具にあり注釈なし=    1 | 注釈にあり術具外=    0
+  test  被覆=  4107/  4265 ( 96.30%) | 術具にあり注釈なし=  158 | 注釈にあり術具外=    0
+  3 split 合計 被覆=14977/15437
+  extra（術具 split 外の拡張フレーム）= 3420  うち術具集合と交差=0
+
+========================================================================
+3. 分割を跨ぐフレームの重複（陽性対照つき）
+========================================================================
+  hand_seg       {'train∩val': 0, 'train∩test': 0, 'val∩test': 0}
+  tool_seg       {'train∩val': 0, 'train∩test': 0, 'val∩test': 0}
+  hand_tool_seg  {'train∩val': 0, 'train∩test': 0, 'val∩test': 0}
+
+  --- 動画（セグメント）単位 ---
+  hand_tool_seg  {'train∩val': 0, 'train∩test': 0, 'val∩test': 0}
+    train: ['01_1', '02_1', '03_2', '06_1', '06_2', '08_1', '08_2', '11_1', '12_1', '13_1', '14_1', '14_2', '15_1']
+    val: ['09_1', '10_1', '10_2']
+    test: ['04_1', '04_2', '05_1', '05_2', '07_1', '07_2']
+
+  陽性対照: val の識別子 '10_1_1434' を train へ 1 件注入 → {'train∩val': 1, 'train∩test': 0, 'val∩test': 0}
+  陽性対照 成立（1 件だけ検出）
+
+========================================================================
+4. 注釈が無いフレーム（loss_mask）の実数と内訳 — Q5
+========================================================================
+  DEFAULT_ROOT: data/annotations/egosurgery_hts/hand_tool_seg/loss_mask  存在
+  train 件数= 301 セグメント別={'01_1': 1, '02_1': 1, '03_2': 21, '06_1': 14, '06_2': 10, '08_1': 64, '08_2': 31, '11_1': 7, '12_1': 124, '13_1': 13, '14_1': 5, '14_2': 4, '15_1': 6}
+  val   件数=   1 セグメント別={'10_1': 1}
+  test  件数= 158 セグメント別={'04_1': 10, '05_1': 16, '05_2': 8, '07_1': 78, '07_2': 46}
+  合計=460  （SPEC の主張 460 と一致）
+
+  --- loss_mask は「術具 split にあり hand_tool_seg 注釈が無い」集合と一致するか ---
+  train 導出= 301 loss_mask= 301 一致=はい 差=0
+  val   導出=   1 loss_mask=   1 一致=はい 差=0
+  test  導出= 158 loss_mask= 158 一致=はい 差=0
+
+  --- 除外フレームの術具クラス内訳（Q5 の核心） ---
+  クラス                        除外      全体      除外率
+  Syringe                    32     564    5.67%
+  Forceps                   122    3219    3.79%
+  Hook                       35    1037    3.38%
+  Suction Cannula           140    4399    3.18%
+  Gauze                     178    5858    3.04%
+  Scalpel                    31    1065    2.91%
+  Mouth Gag                 164    5982    2.74%
+  Needle Holders            123    4754    2.59%
+  Tweezers                  136    9086    1.50%
+  Bipolar Forceps             8     694    1.15%
+  Electric Cautery           18    1659    1.08%
+  Retractor                  10    1420    0.70%
+  Raspatory                   5     809    0.62%
+  Scissors                    9    2733    0.33%
+  Skewer                      0     343    0.00%
+  除外フレームのうち術具の箱が 1 つも無いもの: 6
+  除外フレームの術具個数分布: {0: 6, 1: 128, 2: 176, 3: 88, 4: 45, 5: 15, 6: 2}
+
+  除外フレームのクラス集合（上位 12）:
+      59  ['Mouth Gag']
+      38  ['Mouth Gag', 'Suction Cannula']
+      36  ['Forceps']
+      26  ['Gauze', 'Syringe']
+      22  ['Mouth Gag', 'Needle Holders']
+      20  ['Forceps', 'Gauze']
+      19  ['Needle Holders', 'Tweezers']
+      15  ['Gauze']
+      13  ['Gauze', 'Needle Holders', 'Tweezers']
+      12  ['Electric Cautery', 'Gauze', 'Hook', 'Suction Cannula', 'Tweezers']
+      12  ['Forceps', 'Needle Holders', 'Tweezers']
+      11  ['Forceps', 'Needle Holders', 'Suction Cannula', 'Tweezers']
+
+  --- 除外フレームの工程内訳 ---
+  工程ラベルを持つフレーム総数: 17233
+  除外 460 のうち工程ラベル無し: 0
+  工程                   除外    術具split全体      除外率
+  disinfection          1           11    9.09%
+  irrigation           15          177    8.47%
+  anesthesia           34          499    6.81%
+  dressing              6          119    5.04%
+  incision             43         1096    3.92%
+  closure             257         6596    3.90%
+  dissection           90         5440    1.65%
+  hemostasis           14         1121    1.25%
+  design                0          378    0.00%
