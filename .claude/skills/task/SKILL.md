@@ -68,6 +68,34 @@ WARN が出た場合は、内容をユーザーに提示してから続行の可
 
 ### 5. 実行する
 
+#### 実行前に自動同期を止める（契約の禁止事項を守るため）
+
+常駐する `m2-sync.sh` は 30 分ごとに **実行者の操作なしで作業分岐へ `origin/phase0` を
+統合し、push し、Draft PR を作る。** 契約は「統合しない / 自動統合を有効化しない」を
+禁止事項に置くため、実行者がどれだけ気を付けても守れない。実際に統合された記録がある
+（`~/claude-sync/sync-alerts.log` の `auto-merge: feat/canonical-index-refresh <- origin/phase0`）。
+
+**目印のファイルを置いて止める。**
+
+    touch .sync-pause             # 実行前に置く
+
+置いてある間、`m2-sync.sh` は分岐へ一切書き込まず、毎ループ記録だけ残す。
+常駐処理そのものは止まらないので、消せば次のループから元に戻る。
+目印は `.gitignore` 済みで、同期の総取り規則 `**` にも落ちるため **その 1 台にだけ効く。**
+
+    rm -f .sync-pause             # 報告まで終えたら必ず消す
+
+🔴 **消し忘れると、そのホストだけ自動同期が止まったままになる。** 他ホストの更新が
+入らず、commit も push されない。止まっていることは記録に出る。
+
+    grep '一時停止中' ~/claude-sync/sync-alerts.log | tail -3
+
+**この抑止は `origin/phase0` に届いてから効く。** keeper は毎ループ `origin/phase0` から
+`~/bin/m2-sync.sh` を自己更新するため、phase0 に無い版は稼働中の常駐処理に反映されない。
+届く前は目印を置いても止まらない。稼働中の版が対応済みかは次で確かめる。
+
+    grep -c sync-pause ~/bin/m2-sync.sh    # 0 なら未対応
+
 - `plan.phases` の順に実行する。
 - `plan.gates` は `after` で指定されたフェーズの直後に評価する。
   - `on_fail: stop` — 停止して報告

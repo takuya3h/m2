@@ -232,3 +232,9 @@ package.json
 #    データ形式であり（experiments/**/logs/val_metrics.jsonl）、広く除外すると
 #    将来追跡すべき jsonl を静かに取りこぼす。backlog B-28 と同型の危険である。
 docs/sessions/raw/
+
+# === 常駐同期の一時停止マーカー ===
+# 契約の実行中だけ置き、終わったら消す（scripts/sync/m2-sync.sh が読む）。
+# ホストごとの状態であり全台で共有しない。行末にコメントを書かないこと
+# （パターンが壊れる）。検証: git check-ignore .sync-pause
+.sync-pause
