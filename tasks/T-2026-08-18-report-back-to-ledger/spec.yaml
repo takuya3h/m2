@@ -1,0 +1,70 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-18-report-back-to-ledger"
+  kind: impl
+  title: "完了報告を配布台帳へ送り返し、起票者が即座に読めるようにする"
+  origin: claude-app
+  created_at: "2026-08-18T09:00:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-17-report-projection-and-friction"]
+  amendments: []
+
+intent:
+  question: "完了報告を人が転記せずに起票者へ届けられるか"
+  decision_at_stake: "報告の受け渡しを仕組みにするか、転記を続けるか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["tools/fetch_task.py"]
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "送り返しの経路の実装", gpu: false, est: "70m"}
+    - {id: B, name: "秘匿の検査と冪等の確認", gpu: false, est: "50m"}
+    - {id: C, name: "手順への組み込み", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "送った本文を読み戻して一文字も違わないことを要約値で確認した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "秘匿らしき内容を含む報告を送らずに拒むことを、含む場合と含まない場合の双方で確認した"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tools/"
+  acceptance:
+    - "識別子だけで完了報告を台帳へ送れる"
+    - "送った本文が読み戻しで変わらない"
+    - "秘匿らしき内容を含む報告は送られない"
+    - "同じ報告を二度送っても行が壊れない"
+    - "台帳の既存の行と本文が壊れない"
+    - "手順書に送り返しの操作が書かれている"
+    - "make task-validate が exit 0"
+    - "make task-preflight が exit 0"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [secret_would_be_sent, ledger_row_corrupted]
