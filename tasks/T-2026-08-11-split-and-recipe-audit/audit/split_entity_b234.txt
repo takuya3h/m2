@@ -1,0 +1,36 @@
+===== Step 2: 動画 ID の重なり（別系統） =====
+10 /tmp/vid_train.txt
+ 2 /tmp/vid_val.txt
+ 3 /tmp/vid_test.txt
+15 total
+train∩val: []
+train∩test: []
+val∩test: []
+
+===== Step 3: data/splits/ego_*.txt の実内容 =====
+--- train ---
+10 data/splits/ego_train.txt
+01
+02
+03
+--- val ---
+2 data/splits/ego_val.txt
+09
+10
+--- test ---
+3 data/splits/ego_test.txt
+04
+05
+07
+train 行数 10 実体動画 10 splits にのみ [] 実体にのみ []
+val 行数 2 実体動画 2 splits にのみ [] 実体にのみ []
+test 行数 3 実体動画 3 splits にのみ [] 実体にのみ []
+
+===== Step 4: 検出注釈の実測サイズと重なり =====
+train instances_train.json images 9657 anns 32272 videos ['01', '02', '03', '06', '08', '11', '12', '13', '14', '15'] 内部重複 0
+val instances_val.json images 1515 anns 4707 videos ['09', '10'] 内部重複 0
+test instances_test.json images 4265 anns 12673 videos ['04', '05', '07'] 内部重複 0
+実在した split: {'train': 9657, 'val': 1515, 'test': 4265}
+test train 重なり 0 []
+test val 重なり 0 []
+train val 重なり 0 []
