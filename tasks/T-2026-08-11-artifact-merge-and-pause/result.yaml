@@ -1,0 +1,129 @@
+result_version: 2
+task_id: "T-2026-08-11-artifact-merge-and-pause"
+status: pass
+host: "lecun"
+branch: "feat/artifact-merge-and-pause"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      使い捨ての分岐 2 本を隔離した作業ツリーに作り、生成物の衝突を再現した（投影 2 件と
+      集約結果 1 件が衝突・merge exit 1）。方式ごとに 3 基準を実測した。既定のままは衝突。
+      union は衝突 0・再生成後に taskindex-check と inbox-check がともに exit 0・組み込みで
+      各ホストの設定が不要。ours は設定が無いと属性が黙って無効になり衝突する（exit 1）。
+      3 基準すべてを満たす union を採り、設定を置いた状態で同じ再現をやり直して
+      衝突 0 件を確かめた。
+  - id: G2
+    verdict: pass
+    note: >-
+      除外の側は起点を HEAD~1 にして実在の生成物差分で測り、changed=23 / excluded=4 /
+      checked=19 / exit 0 を得た。除外された 4 件の内訳も出力される。違反の側は
+      context/conventions.md へ 1 行足して exit 1 と違反の明示を得て、git checkout -- で
+      戻し git status が空であることを確かめた。起点が誤っている場合は exit 2 で通さない。
+  - id: G3
+    verdict: pass
+    note: >-
+      実装は目印の存在だけを見ている（[ -f "$M2DIR/.sync-pause" ]）ことを読んで確かめ、
+      稼働中の版が repo 側とバイト一致であることも確かめた。HOME を差し替えた隔離の場で
+      実物のスクリプトを走らせ双方向を測った。抑止があるとき分岐の先頭は d0ae955 のまま
+      behind も 1 のまま。別名へ移した後は de00ce8 へ進み behind が 0 になり、記録に
+      auto-merge と auto-push が出た。中身を変える方式は中身が読まれないため成立しない。
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 383
+
+deviations:
+  - type: judgement
+    note: >-
+      生成物の一覧を SPEC 指定の grep で取ると 3 生成器のうち build_taskindex.py からしか
+      一致しなかったため、生成器の定数（build_taskindex.AUTO_DIR / build_context.AUTO_DIR /
+      build_inbox.INBOX_FILE）を読み込む方法へ変えた。禁止 5 が build_context.py の変更を
+      禁じているため、同ファイルに定数を足さずに既存の AUTO_DIR だけで成立する設計にした。
+  - type: judgement
+    note: >-
+      SPEC Task 3 Step 3 の「make taskindex してから検査」は清潔な作業ツリーでは生成器が
+      差分を作らず excluded=0 の空振りになる。生成物を手編集して差分を作る代わりに、
+      起点を HEAD~1 にして実在の生成物差分（4 件）で除外を発火させた。手編集を避ける判断。
+  - type: judgement
+    note: >-
+      SPEC Task 5 の Files に挙がる scripts/sync/m2-sync.sh は変更していない。実装が既に
+      存在の検査であり別名へ移すだけで解けるため変更が不要であり、かつ稼働中の版は
+      origin/phase0 から自己更新するため repo の変更はこの契約の中では効かない。
+  - type: judgement
+    note: >-
+      tasks/README.md から本契約の RESULT.md を指す記述を書いたところ docs-check が
+      「実在しない経路」として弾いた（当時 RESULT.md は未作成）。実在し同じ実測を記した
+      .gitattributes を指すように変えた。検査を弱めていない。
+  - type: judgement
+    note: >-
+      頁送りの規則で既存文書 3 件が通らなかったため、規則を弱めず文書側を直した。うち 1 件は
+      mermaid の図の見出しで、同じ文書内の実際の命令を写したものだったため両方を直した。
+  - type: environment
+    note: >-
+      自己検証を for ループで回した際、zsh が変数展開で単語分割しないため make が引数つきの
+      文字列を 1 つのターゲット名として受け取り失敗した（SPEC の申し送りが警告していた挙動）。
+      task-validate と task-preflight を個別に実行し直し、いずれも exit 0 を得た。
+  - type: environment
+    note: >-
+      ours の測定の初回で git checkout -B が未コミット変更のため失敗しており、意図した起点で
+      走っていなかった。終了コードを見る前に命令が本当に走ったかを確かめる規則に従って
+      状態を確認し、清潔な起点から測り直した。結果は同じだった。union 側も同様に測り直した。
+
+issuer_defects:
+  - type: check_does_not_check
+    note: >-
+      Task 1 Step 2 の生成物一覧の取り方（grep -n "NAME = \|_NAME\b" を 3 生成器へ）は 9 件を
+      返すがすべて build_taskindex.py からで、build_inbox.py と build_context.py は 0 件である。
+      指示どおり一覧を作ると生成物 8 件のうち 3 件しか拾えず、tasks/inbox.md と build_context
+      由来の 4 件が漏れる。Phase B Step 1 が「Task 1 Step 2 と同じ取り方にする」と指示している
+      ため、誤りがそのまま検査器の除外一覧へ伝播し、生成物が違反として検出されることになる。
+  - type: check_does_not_check
+    note: >-
+      Task 3 Step 3 は「make taskindex && python tools/check_forbidden.py で生成物だけの差分では
+      0」を期待するが、清潔な作業ツリーでは生成器が差分を作らないため excluded=0 のまま exit 0 に
+      なる。指示どおり実行しても除外が効いていることを一切示せない空振りの検査である。実際に
+      実行したところ生成器は差分を作らず、起点を HEAD~1 に変えて初めて除外の発火を測れた。
+  - type: asserted_without_measuring
+    note: >-
+      Task 3 Step 5 は script_exit と make_exit について「両方を記録する。値が異なることを
+      前提とする」と書くが、実測ではどちらも 0 で標準出力もバイト一致だった。差が出る根拠は
+      示されていない。指示どおり「異なる」を前提に読むと、同一であることを異常と誤読しかねない。
+
+followups:
+  - >-
+    tools/build_context.py は出力ファイル名を定数ではなくリテラルで持っている
+    （STATE.md / open_questions.md / experiments_summary.csv / verdicts_summary.csv）。
+    本契約では禁止 5 により同ファイルを変更できないため、ディレクトリ定数 AUTO_DIR だけで
+    成立する設計にした。context/auto/ の外へ生成物が増えた場合、検査の除外が追随しない。
+    定数化するか、生成器が自分の出力一覧を返す口を持つかの判断が要る。
+  - >-
+    禁止領域の既定一覧（runindex/ context/auto/ experiments/ transfer/ data/ と
+    context/conventions.md tools/harvest_runindex.py tools/build_context.py）は
+    tools/check_forbidden.py が持っている。契約ごとに禁止領域が異なる場合の広げ方は
+    決めていない。現状は起点を変える引数しか無い。
+  - >-
+    頁送りの規則は fenced block の中身をすべて命令として扱う既存の実装の上に乗っている。
+    mermaid や json の block も命令として走査されるため、将来 git の下位命令名を含む図が
+    増えると誤検出になりうる。block の言語指定で対象を絞るかの判断が要る。
+  - >-
+    抑止の解除を別名へ移す方式にしたが、退避した .sync-pause.released は追跡外のまま
+    repo 直下に残る。溜まっても害は無いが、掃除の規約は決めていない。
+
+unknowns:
+  - >-
+    削除が実行基盤に拒否される環境の再現条件。SPEC は前 task でそれが起きたと述べているが、
+    本ホストでは削除も別名への移動も成功するため、拒否そのものは再現していない。
+    別名へ移す方式が両方の環境で成立することだけを測った。
+  - >-
+    稼働中の常駐処理が新しい規約（別名での解除）を反映する時期。keeper は origin/phase0 から
+    自己更新するため、本契約が統合されるまで他ホストには届かない。届いた後の挙動は測れない。
+  - >-
+    union で併合した後に再生成を忘れた場合、投影に重複が残ったまま検査が exit 1 になる。
+    その状態で気付かず進んだときの影響は測っていない。
+
+commits: []
