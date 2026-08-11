@@ -227,3 +227,13 @@ def test_results_recent_is_deterministic_and_has_no_wall_clock(tmp_path):
     text = build_taskindex.render_results_recent(rows)
     assert text == build_taskindex.render_results_recent(rows)
     assert not re.search(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}", text)
+
+
+def test_summary_deviations_is_a_count_even_for_version_2(tmp_path):
+    """要約表は 1 契約 1 行で走査するもの。一覧をそのまま入れると表が読めなくなる。"""
+    tasks = _make_v2(tmp_path, ["T-2026-02-02-beta"])
+    csv_text = build_taskindex.render_summary(build_taskindex.collect(tasks))
+    line = [ln for ln in csv_text.splitlines() if ln.startswith("T-2026-02-02-beta")][0]
+    header = [ln for ln in csv_text.splitlines() if ln.startswith("task_id")][0].split(",")
+    assert dict(zip(header, line.split(",")))["deviations"] == "1"
+    assert DEVIATION_NOTE not in csv_text

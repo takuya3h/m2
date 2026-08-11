@@ -73,6 +73,13 @@ DEFECT_TYPES = [
 ]
 
 
+def _deviation_count(value: object) -> object:
+    """版 1 は件数、版 2 は一覧。要約表には常に件数を出す。"""
+    if isinstance(value, list):
+        return len(value)
+    return "" if value is None else value
+
+
 def collect(tasks_dir: Path) -> list[dict]:
     """対を持つ契約だけを集める。対が無い契約は行に現れない。
 
@@ -111,7 +118,10 @@ def collect(tasks_dir: Path) -> list[dict]:
             "gates_stop": verdicts.get("stop", 0),
             "tests_before_failed": tests.get("before_failed", ""),
             "tests_after_failed": tests.get("after_failed", ""),
-            "deviations": result.get("deviations", ""),
+            # 要約表は 1 契約 1 行で走査するためのものなので、**件数だけ**を出す。
+            # 版 2 の一覧をそのまま入れると 1 セルに数百字が入り、表として読めなくなる。
+            # 中身は results_recent.md が原文のまま転記する。
+            "deviations": _deviation_count(result.get("deviations")),
             "n_issuer_defects": len(result.get("issuer_defects") or []),
             "n_followups": len(result.get("followups") or []),
             "n_unknowns": len(result.get("unknowns") or []),
