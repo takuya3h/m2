@@ -4,7 +4,7 @@ task_id: "T-2026-08-18-report-back-to-ledger"
 status: pass
 host: "lecun"
 branch: "feat/report-back"
-pr: null
+pr: 75
 merged: false
 
 gates:
@@ -39,4 +39,5 @@ unknowns:
   - "台帳の他の行が変わっていないことは、触れた行を限定した事実からしか言えていない。全行の内容を送信前後で突き合わせてはいない"
   - "他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した"
 
-commits: []
+commits:
+  - "c43fb11"
