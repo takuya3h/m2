@@ -11,7 +11,7 @@
 
 ## T-2026-08-17-report-projection-and-friction
 
-状態 `pass` / ホスト `lecun` / 起票 `なし` / 様式 `v2`
+状態 `pass` / ホスト `lecun` / 起票 `74` / 様式 `v2`
 
 ### ゲート
 
