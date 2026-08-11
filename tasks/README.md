@@ -31,6 +31,16 @@ slug は英小文字・数字・ハイフンのみ。3〜60 文字。
 5. **判断は載せず、要求として載せる** — CLI が決めてはいけないことは
    `governance.decisions_required` に置く。未回答なら実行を止める。
 
+## 命令の書き方
+
+実装系によっては命令ごとに新しいシェルが起きる。前の命令で読み込んだ
+仮想環境や資格情報は次へ引き継がれない。したがって手順書のすべての命令は
+単独で実行して完結する形で書き、読み込みは同じ命令の中に入れる。
+
+- シェル: 引き継がれない実装系がある。命令は単独で完結させる。
+- 通信: 外部への通信で承認を求められることがある。承認して進む。
+- 履歴: 頁送りが無いホストがある。履歴を読む操作は `git --no-pager` を使う。
+
 ## 契約の受け取り
 
 外部で起票された契約は次の一操作で取り込む。
@@ -64,20 +74,17 @@ slug は英小文字・数字・ハイフンのみ。3〜60 文字。
 
 起票者が配布台帳へ置いた契約は、識別子だけで取り込める。
 
-    source scripts/load_env.sh    # 資格情報が要る
-    make task-notion TASK=<task_id>
+    source scripts/load_env.sh && make task-notion TASK=<task_id>
 
 端末を操作できない場合の主経路である。貼り付けを必要としない。
 配布先は `configs/notion.yaml` の `databases.task_distribution` を単一の情報源とする。
 
 **取り込みの前に並べていた操作は一つにまとまっている。**
 
-    source .venv/bin/activate && source scripts/load_env.sh
-    make task-start TASK=<task_id>
+    source .venv/bin/activate && source scripts/load_env.sh && make task-start TASK=<task_id>
 
-分岐の作成・同期の抑止・契約の取り込みまでを行う。**`source` の 2 行は残る。**
-make はサブシェルでレシピを動かすため、呼び出し元のシェルへ環境を返せない。
-ここをまとめることは原理的にできないので、2 行目以降だけをまとめてある。
+分岐の作成・同期の抑止・契約の取り込みまでを行う。仮想環境と資格情報の読み込みも
+同じ命令に含め、命令間のシェル状態へ依存しない。
 
 **まとめた理由は手数ではない。分岐名を人が打たないためである。** 分岐名は識別子から
 機械的に導く（`T-YYYY-MM-DD-<slug>` → `feat/<slug>`）。手で打つとずれる。2026-08-11 の
@@ -126,7 +133,7 @@ make はサブシェルでレシピを動かすため、呼び出し元のシェ
 
     make task-validate                  # tasks/ 配下すべて
     make task-validate TASK=<task_id>   # 1 件だけ
-    make task-preflight TASK=<task_id>  # 実行直前（L3）
+    source .venv/bin/activate && make task-preflight TASK=<task_id>  # 実行直前（L3）
 
 検証は 3 層。いずれも機械検証であり、散文による判断は含まない。
 
@@ -271,7 +278,7 @@ merge が失敗し続けていた）。
 
 ## 完了報告を台帳へ送り返す
 
-    make task-report TASK=<task_id>
+    source scripts/load_env.sh && make task-report TASK=<task_id>
 
 契約は台帳から届く。**同じ経路を逆向きに使って報告を返す。** 起票者は台帳を即座に
 読めるため、人が転記する必要がない。投影（`context/auto/results_recent.md`）は索引の
@@ -409,12 +416,12 @@ staging の差分が空、緊急停止の環境変数が有効）では何も書
 
 発火の確認には、生成された commit の履歴と遠隔との差を見る。
 
-    git log --oneline -5
+    git --no-pager log --oneline -5
     git rev-list --count origin/$(git branch --show-current)..HEAD
 
 自動で作られた commit は件名の末尾に自動同期の印が付くため、履歴から探せる。
 
-    git log --oneline --grep='auto-sync'
+    git --no-pager log --oneline --grep='auto-sync'
 
 2026-08-07 に lecun で実測した例では、発火して commit と送出まで到達したにもかかわらず
 記録は 0 件のままだった。**記録の有無を発火の判定に使ってはならない。**
