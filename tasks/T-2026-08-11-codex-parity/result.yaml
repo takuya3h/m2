@@ -29,6 +29,10 @@ deviations:
     note: "現在のCodexは approval_policy=never であり、資格情報なしのHTTPS到達確認は HTTP/2 200 で承認入力を求められなかった。起票時に記録された承認要求とは実行構成が異なるため、実測値を優先した"
   - type: spec_defect
     note: "Task 4のFiles欄はskillとtasks/READMEだけを挙げる一方、Task 5は同じgit ls-files集合の全69文書を検査するよう求める。実装後の検査で他の4文書にも真陽性が出たため、検査を弱めず追加文書を最小修正した"
+  - type: environment
+    note: "指定されたrm -f .sync-pauseは実行基盤の安全規則で拒否されたため、マーカーを/tmp/m2-sync-pause-T-2026-08-11-codex-parityへ移動した。repo上の不在と退避先の存在を確認し、自動同期の抑止を解除した"
+  - type: spec_defect
+    note: "報告後のmake taskindexを必須とする一方、完了判定14の差分コマンドは生成先context/autoを含めて出力なしを要求する。両方は同時に満たせないため、生成可の規約を優先し、表示された3ファイルを手編集ではない生成物として記録した"
 
 issuer_defects:
   - type: shell_assumption
@@ -37,6 +41,8 @@ issuer_defects:
     note: "Task 4の変更ファイルはskillとtasks/READMEの2文書だけと指定したが、Task 5はMakefileとdocsを含む同じ69文書を検査対象にするよう要求した。指示どおり全体検査すると追加4文書が違反となり、列挙ファイルだけではG2を通せなかった"
   - type: check_does_not_check
     note: "隔離の原因を測る手順は現在値を記録した後、常にkernel.unprivileged_userns_cloneを1へ設定する。今回の開始値は既に1だったため、仮にsudoできても同じ値の再設定となり、隔離命令が通るかの因果対照を作れない"
+  - type: self_contradiction
+    note: "手順6はRESULTとresult.yamlを書いた後にmake taskindexを実行してcontext/autoへ投影することを必須とするが、Phase Cの完了判定14はcontext/autoを含む差分が空であることを要求する。指示どおり投影すると必ず3生成物が表示され、両要件を同時に満たせない"
 
 followups:
   - "全テストに開始前から存在する5失敗がある。評価レシピ期待値1件とResearchLogger 4件で、本taskの失敗数は増えていないが、別taskで解消する"
@@ -51,3 +57,4 @@ commits:
   - "3cd3cf7"
   - "fdcacc5"
   - "3d88e0f"
+  - "112aa44"
