@@ -1,0 +1,7 @@
+- [ ] 2026-08-11 [cc] 補助損失の無効化方式が未決。フレーム単位フラグなら主課題の母集団は 15,437 のまま基準点と揃うが、manifest から落とすと 14,977 に縮み既存の全基準点と揃わなくなる（src/egosurgery/datasets/loss_mask.py）
+- [ ] 2026-08-11 [cc] 容量一致対照を置くかが未決。neck 追加の前例は工程側で paired Δ +0.017432 / 4.850σ / 全 seed 同符号のため、置かないと補助信号の効果と容量増を分離できない（runindex/experiments.csv）
+- [ ] 2026-08-11 [cc] 希少工程で補助教師が 2〜3 倍薄い（irrigation 8.47% / anesthesia 6.81%、全体 2.98%）。効果を工程別に分解して報告するか、希少工程の結論を保留するかの判断が要る（tasks/T-2026-08-11-hts-comparability-audit/audit/hts_entity.txt）
+- [ ] 2026-08-11 [cc] 検出側 S0-frozen を分母に使うかが未決。control_of の分母として索引に 0 回しか現れず、既存の検出 Δ は同一 run 内の inj−ctrl で測られている。unpaired の絶対値比較になる（runindex/experiments.csv）
+- [ ] 2026-08-11 [cc] loss_mask.py の docstring が Skewer と Mouth Gag の構造的除外を原因として述べるが実測と食い違う（Skewer 0/343）。件数 460 と挙動は正しく、誤りは原因の説明のみ。修正は別契約（src/egosurgery/datasets/loss_mask.py）
+- [ ] 2026-08-11 [cc] hts_next6_2026-07-29 の「分母を 9,106 へ変更し既存 Δ を全て再計算せよ」という要求は 07-31 の再構築で不要になったが、当該レポートに訂正が入っていない。読んだ人が古い結論を採る恐れ（experiments/analysis/hts_next6_2026-07-29/REPORT.md）
+- [ ] 2026-08-11 [cc] 補助ヘッドは工程側 test_cfg の時系列ヘッド構成キーを変えない形で足す必要がある。変えると recipes_match が False を返し Δ の計算自体が拒否される（src/egosurgery/utils/eval_recipe.py）

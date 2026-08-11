@@ -1,0 +1,69 @@
+spec_version: 1
+meta:
+  task_id: "T-2026-08-11-hts-comparability-audit"
+  kind: analysis
+  title: "補助信号を足す実験が既存の基準点と比較できるかを測る"
+  origin: claude-app
+  created_at: "2026-08-11T16:20:00Z"
+  created_from:
+    runindex_commit: "44697d9"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-11-split-and-recipe-audit"]
+  amendments: []
+intent:
+  question: "手と術具の領域注釈を教師に加えた実験は、既存の工程認識と検出の基準点に対して、補助信号を足したこと以外の条件を揃えたまま差を測れるか。揃わない条件があるならそれは何か"
+  decision_at_stake: "把持関係を補助信号にする設計へ進む前に、比較の土台が成立するかを確定する。成立しない条件があれば、基準点の取り直しが要るか、設計側で回避できるかを決める"
+  related:
+    backlog: ["BL-exclusion-rules-exact-match"]
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "src/egosurgery/datasets/loss_mask.py"
+      - "src/egosurgery/utils/eval_recipe.py"
+      - "tools/harvest_runindex.py"
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "既存の監査で答えが出ている範囲を確定する", gpu: false, est: "40m"}
+    - {id: B, name: "答えが無い範囲だけを実測する", gpu: false, est: "50m"}
+    - {id: C, name: "基準点との条件一致度を測る", gpu: false, est: "50m"}
+    - {id: D, name: "総括と設計への申し送り", gpu: false, est: "20m"}
+  gates:
+    - id: G1
+      after: A
+      check: "問いの一覧に対し、既存の監査で答えが出ているものと出ていないものを両方向の集合差で仕分けた"
+      on_fail: ask
+    - id: G2
+      after: B
+      check: "走査はシンボリックリンクを辿る方法で行い、件数ゼロの判定は別の探し方と直接確認で裏づけた"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-11-hts-comparability-audit/"
+  acceptance:
+    - "問いの一覧の全項目について、既存の監査の出典か実測値か UNKNOWN のいずれかが対応している"
+    - "領域注釈の対象範囲と、術具および工程の対象範囲との差が両方向で示されている"
+    - "補助信号を足す以外の条件のうち、揃うものと揃わないものが根拠つきで分類されている"
+    - "既存のどの基準点と比較できるかが、基準点ごとに可否と理由つきで示されている"
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "領域注釈の分割が術具や工程の分割と食い違い、同一土台での比較が成立しないと判明した場合"
+    - "注釈の欠落が特定のクラスや工程に偏っており、補助信号の効果と交絡すると判明した場合"
