@@ -1,0 +1,63 @@
+# 完了報告の構造化された対。散文（RESULT.md）とは別に、実行者が事実だけを書く。
+result_version: 2
+task_id: "T-2026-08-11-split-and-recipe-audit"
+status: pass
+host: "lecun"
+branch: "feat/split-and-recipe-audit"
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "index.csv 751 行それぞれが指すディレクトリの実在を評価し、欠落 0 件を得た。experiments 207 / verdicts 1038 も同時に数えた。0 件という結果は対象が実在することの確認を伴っている"
+  - id: G2
+    verdict: pass
+    note: "重複検査に既存の frame_id を 1 件複製した入力を与え、期待どおり 1 件だけ検出された。検査が空振りしていないことを確かめたうえで、実データでの split 跨ぎ重複 0 件を得ている"
+  - id: G3
+    verdict: pass
+    note: "照合関数に誤った split サイズを与えると False を返した。照合そのものは機能している。ただしゼロ同士は True を返し、素通りする仕組みは実在した。該当は codetr の 3 run のみで工程側は 0 件"
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 359
+
+deviations:
+  - type: spec_defect
+    note: "Phase B Step 1 の走査を書き換えた。SPEC の Path.rglob は symlink のディレクトリを辿らず、動画 15 本が全て symlink であるため画像 0 枚・跨ぎ 0 件を返す。指示どおり実行すると何も測らずに分割は健全と結論する。find -L と os.walk(followlinks=True) の 2 系統で測り直した"
+  - type: judgement
+    note: "conventions_rev が起票時 UNKNOWN だったため、context/conventions.md の現在の commit d422b08 を実測して原文の引用に用いた。版を確定しなければ inject_verbatim の原文がどの時点のものか記録に残らないためである"
+  - type: judgement
+    note: "Phase D Step 5 の照合を自分で実装した。SPEC は control_of 列と experiment_id 列の存在確認までしか書いておらず、実際の照合手順が無い。experiment_id から index.csv 経由で run のパスを引き metrics.json を読む経路を組んだ"
+  - type: judgement
+    note: "一度出した 136 件不一致という結果の解釈を訂正した。最初は差分キーを 5 個に絞ったため原因が見えず、評価条件の不一致と読みかけた。recipes_match の実装を読んで実効比較キーの全てで取り直し、原因がモデル構造パラメータだと判明した"
+  - type: spec_defect
+    note: "工程用の注釈ファイルが存在しないことを、SPEC のように ls して終わらせずに追跡した。不在は工程 503 run が記録する 9657 の出所という核心に直結しており、そこで止めると定数の転記であることに気付けない"
+  - type: environment
+    note: "Phase D Step 4 の直前で文脈が上限に達し、圧縮して再開した。audit 配下の実測ファイルと作業ツリーが残っていたため測り直しは発生していない。再開後に再測した値は無く、報告の数値は全て一度だけ測ったものである"
+
+issuer_defects:
+  - type: shell_assumption
+    note: "Phase B Step 1 が Path.rglob で画像を数えるが、動画ディレクトリ 15 本は全て symlink であり rglob は辿らない。指示どおり実行すると画像 0 枚・split 跨ぎ 0 件という自明な 0 が返り、それを健全の証拠として読むと分割を一度も測らないまま健全と結論する"
+  - type: asserted_without_measuring
+    note: "recipes_match について split サイズの一致を見ると書いたが、実装は test_cfg の実効キー全比較と GPU 構成も見る。SPEC 自身が実装を読まずに書いたと断っており実装に従ったが、この記述だけを信じると対照ペアの不一致 136 件を評価条件の食い違いと誤読する"
+  - type: check_does_not_check
+    note: "工程側の注釈ファイルの有無を ls させるだけで、存在しない場合に 9657 がどこから来たのかを問うていない。実際には実測経路の config が実体の無いプレースホルダを指しており、503 run の 9657 は定数 PAPER_SPLIT_SIZES の転記だった。ls の結果を見るだけではこれに到達しない"
+  - type: asserted_without_measuring
+    note: "除外規則の取りこぼしを退避 run が解析対象に混入しうる問題として書いたが、実測では同一 experiment_id の新旧混在は 0 件だった。起きていたのは混入ではなく、9 検出器の唯一の記録が退避配下にあり除外されないまま S0 の比較表を構成しているという別の形である"
+
+followups:
+  - "S0 の検出器比較表は 6 種類の eval_recipe_id に跨る。score_thr が 1e-08 と 0.0 の 2 系統に分かれており、9 検出器の mAP の幅 0.6973 から 0.7268 を検出器の優劣として読むことはできない。統一条件での再評価は 9 検出器 × 3 seed = 27 run"
+  - "experiments/baselines/_legacy_score_thr_0 の 33 run は excluded=False かつ exclusion_reason も空で、解析対象 703 件に含まれている。除外すると 9 検出器の記録が索引から消えるため、除外の可否は単純ではない。runindex と harvest_runindex.py は本契約の禁止事項のため触れていない"
+  - "recipes_match は注入対照ペアに対して構造的に必ず False を返す。実験の独立変数であるモデル構造が test_cfg に入っており評価条件と同じ dict を共有しているためである。対照ペアの評価条件の検査には使えないことを規約に明記する必要がある"
+  - "実運用の Δ 集計は照合を通っていない。recipes_match を呼ぶのは delta.py だけで、その呼び出し元は学習時の trainer.py である。harvest_runindex.py は eval_recipe_id で experiment_id を分離するのみで、description が違えば分離も起きない"
+  - "工程 503 run の split_train_images は定数 PAPER_SPLIT_SIZES の転記である。値は実体と一致しており誤ってはいないが、分割を取り違えても同じ値が記録される。記録の一致を分割の一致の証拠として使ってはならない"
+  - "検出と工程の双方で最良 epoch を検証 split で選び、主たる報告値も検証 split である。試験側の値を持つのは解析対象 703 run のうち 69 run のみで、選択と報告が同じ split の上で閉じている"
+
+unknowns:
+  - "S0 の 27 run を再評価だけで済ませられるか、再学習が要るかは checkpoint の現存に依存する。本契約は読み取りのみのため確認していない。再学習が要る場合は規模が大きく変わる"
+  - "baselines/s0/maskdino_bbox@val と baselines/s0/varifocanet_bbox@val はこの experiment_id では experiments.csv に存在しなかった。別名で集約されているのか集約対象外なのかは特定していない"
+  - "score_thr が 0.0 と 1e-08 で mAP がどれだけ変わるかは測っていない。両者とも実質的に全検出を残す設定だが、差が無視できるかは再評価しなければ言えない"
+  - "tests の before は本契約で測っていない。コードを 1 行も変更していないため after と同一と扱った。after は実測で 5 failed / 359 passed であり、分岐元の origin/phase0 の状態と一致する"
+  - "他ホストでは本契約を実行していない。lecun 上でのみ実測した"
+
+commits: []
