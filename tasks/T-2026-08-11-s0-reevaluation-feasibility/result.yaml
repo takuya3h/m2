@@ -4,6 +4,8 @@ task_id: "T-2026-08-11-s0-reevaluation-feasibility"
 status: pass
 host: "lecun"
 branch: "feat/s0-reevaluation-feasibility"
+pr: 78
+merged: false
 
 gates:
   - id: G1
@@ -59,4 +61,5 @@ unknowns:
   - "eval_recipe 内に記録された seed キーが何に使われるかは実装で追えていない。4 run のみが持つ"
   - "他ホストでは本契約を実行していない。lecun 上でのみ実測した"
 
-commits: []
+commits:
+  - "ae1930a"
