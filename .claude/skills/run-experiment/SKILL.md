@@ -25,7 +25,7 @@ PYTHONPATH=src .venv/bin/python -m egosurgery.train \
   train.freeze_backbone=true logging.wandb_enabled=false
 ```
 
-`scripts/run_sX.sh` は環境変数 `S0_EXTRA_ARGS` で同様の override を一括適用できる。
+`scripts/run_sX.sh` は環境変数 `S0_EXTRA_ARGS` で同様の override を一括適用できる。 <!-- docs-check: ignore-line -->
 
 ## 3. 本実行
 

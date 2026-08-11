@@ -18,6 +18,6 @@ argument-hint: <stage> [smoke|full] (例: s0_tool_baseline smoke)
    `\[S0\]\[epoch|Traceback|Error|OOM|completed` 等の進捗・失敗シグネチャを監視する。
 5. 実行コマンドは
    `PYTHONPATH=src .venv/bin/python -m egosurgery.train stage=<stage> seed=42 <override>`。
-   研究計画に従い、本番は seed 42/123/456 の 3 回（または `scripts/run_sX.sh`）で回す。
+   研究計画に従い、本番は seed 42/123/456 の 3 回（または `scripts/run_sX.sh`）で回す。 <!-- docs-check: ignore-line -->
 6. 完了後、`experiments/` に生成されたフォルダと `metrics.json` の主要値を要約する。
    **mAP 等の数値は実測値のみを報告し、捏造しない。**

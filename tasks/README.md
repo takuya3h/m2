@@ -8,7 +8,8 @@ Claude アプリ等で起票された作業依頼を、機械検証可能な契�
     ├── spec.yaml    機械可読の契約（検証対象）
     ├── SPEC.md      人が読む本文
     ├── prereg.md    kind=exp のみ。学習開始より前に commit する
-    └── RESULT.md    CLI が埋めて返す
+    ├── RESULT.md    CLI が埋めて返す（散文）
+    └── result.yaml  同じ結果の機械可読の対（投影の入力）
 
 ## task_id
 
@@ -182,6 +183,44 @@ merge が失敗し続けていた）。
 
 記録する前に伏せ字が効いていることを確かめる。一致が出たときは**何に一致したのかを目視する。**
 伏せ字済みの表記そのものに一致しているだけのこともある。詳細 → `docs/sessions/README.md`。
+
+## 完了報告
+
+完了報告は 2 つある。**同じ結果を、人が読む形と機械が読む形で別々に書く。**
+
+| ファイル | 何を書くか |
+|---|---|
+| `RESULT.md` | 散文。解決した参照、判断の理由、実測の経緯 |
+| `result.yaml` | 事実だけの対。様式は `tasks/_schema/result.schema.json`、雛形は `tasks/_templates/result.yaml` |
+
+散文から値を機械で抜こうとしない。**書き手が最初から対で書く。**
+`result.yaml` の必須項目は `result_version` `task_id` `status` `host` `branch`
+`gates` `tests` `deviations` `issuer_defects` `followups` `unknowns` `commits` である。
+
+`issuer_defects.type` は 4 語のいずれか。**起票者を改善するための記録であり、
+件数を隠さない。**
+
+| 型 | 意味 |
+|---|---|
+| `check_does_not_check` | 検査が検証対象を検証していない |
+| `asserted_without_measuring` | 測らずに断定した |
+| `self_contradiction` | 同じ契約の中で両立しない指示がある |
+| `shell_assumption` | 対話シェルの違いを踏まえていない |
+
+## 投影
+
+`result.yaml` から一覧が生成される。**手で編集しない。**
+
+    make taskindex         # context/auto/tasks_summary.csv と followups.md を生成
+    make taskindex-check   # 生成物に差分が無ければ exit 0
+
+| 生成物 | 中身 |
+|---|---|
+| `context/auto/tasks_summary.csv` | 1 行 = 1 契約。状態・ホスト・PR・ゲート・試験・件数 |
+| `context/auto/followups.md` | 申し送り、断定できなかった事項、起票者の誤りの型別件数 |
+
+投影に壁時計は入れない。**時間の経過と手による編集を区別するため**であり、
+`--check` の差分は必ず後者を意味する。
 
 ## 判断の受け皿
 

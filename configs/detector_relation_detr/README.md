@@ -8,7 +8,7 @@
 
 | 項目 | 値 |
 |---|---|
-| モデル | Relation-DETR ResNet50（`configs/relation_detr/relation_detr_resnet50_egosurgery.py`, 15クラス） |
+| モデル | Relation-DETR ResNet50（`configs/relation_detr/relation_detr_resnet50_egosurgery.py`, 15クラス。正本は third_party 配下 <!-- docs-check: ignore-line -->） |
 | 初期化 | COCO 事前学習 `relation_detr_resnet50_800_1333_coco_1x.pth`（class head のみ 91→15 で再初期化） |
 | epochs | 12（LR step @10, ×0.1） |
 | batch | per-GPU 2 × **2 GPU DDP = 実効 bs 4** |

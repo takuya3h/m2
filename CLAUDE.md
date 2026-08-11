@@ -21,7 +21,7 @@ CV 研究プロジェクト。S0〜S9 の段階的実験と Δ（相互改善幅
   通してあるが、明示する場合は `PYTHONPATH=src`。
 - 学習エントリーポイント: `python -m egosurgery.train stage=<stage> ...`（Hydra）。
   `cfg.experiment.step` が s0/s1/s2 なら `StageATrainer`、それ以外は dummy `Trainer`。
-- ステージ実験は `scripts/run_sX.sh`。スモークは環境変数 `S0_EXTRA_ARGS` で
+- ステージ実験は `scripts/run_sX.sh`。スモークは環境変数 `S0_EXTRA_ARGS` で <!-- docs-check: ignore-line -->
   小構成（vit-S・少データ・少 epoch）を渡す。
 - 長時間 GPU 学習は **background 実行 + Monitor 監視**で運用する。
 - 実験は `experiments/baselines/` 等が空の scaffold 状態から、`ExperimentManager`
@@ -51,10 +51,13 @@ CV 研究プロジェクト。S0〜S9 の段階的実験と Δ（相互改善幅
 
 ## .claude/ ツール（このプロジェクト用）
 
-- スラッシュコマンド: `/run-stage` `/verify-phase` `/delta` `/exp-report`
-  `/new-hypothesis` `/env-check`
-- サブエージェント: `experiment-runner` `delta-analyst` `trace-debugger` `paper-writer`
-- スキル: `run-experiment` `add-model-component`
+- スラッシュコマンド（8）: `/run-stage` `/verify-phase` `/delta` `/exp-report`
+  `/new-hypothesis` `/env-check` `/log` `/promote-to-master`
+- サブエージェント（5）: `experiment-runner` `delta-analyst` `trace-debugger`
+  `paper-writer` `notion-archivist`
+- スキル（4）: **`task`（TASK 契約の実行。この手順が中心である。Claude Code は
+  `/task <task_id>`、Codex は `$task` か `.claude/skills/task/SKILL.md` を読ませる）**
+  `run-experiment` `add-model-component` `avoid-past-failures`
 - フック: `src/`・`tests/` の Python 編集時に ruff で軽量チェック
 
 ## ツール方針

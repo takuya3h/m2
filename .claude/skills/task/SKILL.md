@@ -106,7 +106,21 @@ WARN が出た場合は、内容をユーザーに提示してから続行の可
 
 ### 6. 報告する
 
-`tasks/<task_id>/RESULT.md` を埋めて commit する。
+報告は 2 つ書く。**同じ結果を、人が読む形と機械が読む形で別々に書く。**
+
+| ファイル | 何を書くか |
+|---|---|
+| `tasks/<task_id>/RESULT.md` | 散文。解決した参照、判断の理由、実測の経緯 |
+| `tasks/<task_id>/result.yaml` | 事実だけの対。様式 `tasks/_schema/result.schema.json`、雛形 `tasks/_templates/result.yaml` |
+
+散文から値を機械で抜こうとしない。**書き手が最初から対で書く。**
+`issuer_defects` を空にしない。型は `check_does_not_check`
+`asserted_without_measuring` `self_contradiction` `shell_assumption` の 4 語である。
+
+書いたら投影に現れることを確かめる。
+
+    make taskindex         # context/auto/tasks_summary.csv と followups.md を生成
+    make taskindex-check   # 差分が無ければ exit 0
 
 **`deviations` セクションを空にしてはならない。** 指示書どおりに実行できなかった箇所、
 自分で判断した箇所を必ず書く。逸脱が無い場合は「なし」と明記する。

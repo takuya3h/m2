@@ -398,8 +398,8 @@ make s4      # S4: temporal
 make s5      # S5: object token
 make s6      # S6: bidirectional
 make eval    # 評価
-make delta   # Δ（基準点比較）の算出
-make tables  # 論文用テーブルの書き出し
+make delta   # Δ・σ・§10.1 判定が runindex/ のどこにあるかを表示（算出はしない）
+make tables  # 論文表の材料が runindex/verdicts.csv にあることを表示（書き出しはしない）
 ```
 
 `make s0` は内部で `bash scripts/run_s0.sh` を呼び、`ExperimentManager` が
@@ -539,7 +539,7 @@ S0（術具検出ベースライン）の評価指標・トレーナー・実行
 | `src/egosurgery/train.py` | トレーナールーティング（s0/s1/s2 × `train.real_detector` → MMDetTrainer、それ以外 → StageATrainer） |
 | `configs/stage/s0_tool_baseline.yaml` | S0 設定（`real_detector=true`・12 epoch・長尾対策・data 契約） |
 | `scripts/run_s0.sh` | 実検出器 6 実験（maskdino/varifocanet × 3 seed）を 2 GPU・3 波で実行（`.venv` 自動有効化） |
-| `tests/test_metrics.py` / `tests/test_pipeline.py` | 評価指標 4 件 + StageATrainer 2 件のテスト |
+| `tests/test_metrics.py` / `tests/test_pipeline.py` | 評価指標 8 件 + StageATrainer 10 件のテスト（2026-08-11 実測） |
 
 実 EgoSurgery COCO アノテーションから `data/annotations/egosurgery_tool/instances_*.json`
 （train 7427 / val 2230 / test 4265 枚、val は train から 2 動画を hold-out）と

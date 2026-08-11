@@ -50,5 +50,6 @@ backlog（`tools/harvest_runindex.py` の `BACKLOG`）から抽出した未解�
 | BL-autosync-log-only-on-abort | B-37 | 🔴 | 自動同期の記録は中断時にのみ書かれるため、記録が無いことは不発火を意味しない |
 | BL-ignore-does-not-protect-index | B-38 | 🔴 | 版管理の無視設定は索引を保護しない。収穫器はファイルシステムを直接走査し、無視設定を参照しない |
 | BL-shared-config-host-value-unchecked | B-39 | 🔴 | 共有配布物にホスト固有値が混ざっていないことを機械的に検査する仕組みが無い |
+| BL-research-logger-tests-fail | B-40 | 🔴 | Notion 記録の試験 4 件が phase0 で失敗し続けている |
 
 解決済みとして除外: 1 件
