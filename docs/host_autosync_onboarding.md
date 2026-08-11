@@ -23,7 +23,7 @@ flowchart TD
     P0 -- いいえ --> SW["new_experiment_branch.sh logical-host<br/>（コード込み・P3 merge 不要）"]
     P0 -- はい --> P1{"setup script が作業ツリーにある?"}
     SW --> P4
-    P1 -- ない --> BOOT["bootstrap: fetch → git show FETCH_HEAD → install"]
+    P1 -- ない --> BOOT["bootstrap: fetch → git --no-pager show FETCH_HEAD → install"]
     P1 -- ある --> P2
     BOOT --> P2["PHASE2 段階1: deploy key<br/>bash setup_host_autosync.sh<br/>（aolab は SERVERNAME= 前置）"]
     P2 --> VER{"--verify"}
@@ -68,7 +68,7 @@ keeper は phase0 の *ref* だけ進め作業ツリーは触らないため、�
 - **無い** → phase0 から当該ファイルだけ取り出す:
   ```bash
   git fetch origin phase0
-  git show FETCH_HEAD:scripts/sync/setup_host_autosync.sh > /tmp/setup.sh
+  git --no-pager show FETCH_HEAD:scripts/sync/setup_host_autosync.sh > /tmp/setup.sh
   grep -c -- '--activate' /tmp/setup.sh   # >=1 で v2
   mkdir -p scripts/sync
   install -m 755 /tmp/setup.sh scripts/sync/setup_host_autosync.sh

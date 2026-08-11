@@ -1,10 +1,20 @@
 #!/usr/bin/env python3
-"""エージェント向け文書のシェル命令が単独で完結することを検査する。"""
+"""エージェント向け文書のシェル命令が単独で完結することを検査する。
+
+検査は 2 つある。
+
+1. 読み込み（`source`）と直後の操作が別の命令に分かれていないこと。
+   実装系によっては命令ごとに新しいシェルが起きるため、分かれていると引き継がれない。
+2. 履歴を読む操作に頁送りの回避（`--no-pager`）があること。
+   対話用の頁送りが無いホストがあり、そこでは命令が失敗する。**失敗しても
+   終了コードを見る検査は空振りする**ため、文書の側で回避を強制する。
+"""
 
 from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -26,6 +36,12 @@ PLAIN_COMMAND_PREFIXES = (
 )
 
 
+# 既定で頁送りへ流す git の下位命令。頁送りが無いホストではここが失敗する。
+PAGER_SUBCOMMANDS = ("log", "show", "diff", "blame", "shortlog", "whatchanged")
+_GIT_CALL = re.compile(r"\bgit\b((?:\s+-[^\s]+)*)\s+([a-z][a-z-]*)")
+_SUBSTITUTION = re.compile(r"\$\([^()]*\)|`[^`]*`")
+
+
 @dataclass(frozen=True)
 class Violation:
     path: str
@@ -33,6 +49,14 @@ class Violation:
     next_line: int
     command: str
     next_command: str
+
+
+@dataclass(frozen=True)
+class PagerViolation:
+    path: str
+    line: int
+    command: str
+    subcommand: str
 
 
 def discover_documents() -> list[Path]:
@@ -116,15 +140,52 @@ def check_text(path: str, text: str) -> list[Violation]:
     return violations
 
 
-def check_documents(paths: list[Path]) -> tuple[list[Violation], list[str]]:
+def check_pager_text(path: str, text: str) -> list[PagerViolation]:
+    """履歴を読む操作に頁送りの回避が無い箇所を検出する。
+
+    命令の置換（``$(...)`` と逆引用符）の内側は見ない。標準出力が端末でないため
+    git は頁送りへ流さず、実際に失敗しないためである。
+    """
     violations = []
+    in_fence = False
+    for index, line in enumerate(text.splitlines()):
+        if line.lstrip().startswith("```"):
+            in_fence = not in_fence
+            continue
+        command = _command(line, in_fence=in_fence)
+        if command is None:
+            continue
+        scanned = _SUBSTITUTION.sub(" ", command)
+        for options, subcommand in _GIT_CALL.findall(scanned):
+            if subcommand not in PAGER_SUBCOMMANDS:
+                continue
+            if "--no-pager" in options or re.search(r"(?<![\w-])-P(?![\w-])", options):
+                continue
+            violations.append(
+                PagerViolation(
+                    path=path,
+                    line=index + 1,
+                    command=command,
+                    subcommand=subcommand,
+                )
+            )
+    return violations
+
+
+def check_documents(
+    paths: list[Path],
+) -> tuple[list[Violation], list[PagerViolation], list[str]]:
+    violations = []
+    pager_violations = []
     errors = []
     for path in paths:
         if not path.is_file():
             errors.append(f"対象の文書が存在しない: {path}")
             continue
-        violations.extend(check_text(str(path), path.read_text(encoding="utf-8")))
-    return violations, errors
+        text = path.read_text(encoding="utf-8")
+        violations.extend(check_text(str(path), text))
+        pager_violations.extend(check_pager_text(str(path), text))
+    return violations, pager_violations, errors
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -137,18 +198,20 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     paths = discover_documents() if args.path is None else [Path(p) for p in args.path]
-    violations, errors = check_documents(paths)
+    violations, pager_violations, errors = check_documents(paths)
     if not paths:
         errors.append("検査対象が 0 件")
 
+    failed = bool(violations or pager_violations or errors)
     payload = {
-        "status": "fail" if violations or errors else "pass",
+        "status": "fail" if failed else "pass",
         "targets": len(paths),
         "violations": [asdict(item) for item in violations],
+        "pager_violations": [asdict(item) for item in pager_violations],
         "errors": errors,
     }
     print(json.dumps(payload, ensure_ascii=False, sort_keys=True))
-    return 1 if violations or errors else 0
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":
