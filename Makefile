@@ -175,6 +175,16 @@ task-notion:
 task-report:
 	@.venv/bin/python tools/report_task.py $(TASK)
 
+# 契約の取り込み開始を一つの操作にまとめる（分岐の作成から契約の展開まで）。
+# 分岐名は識別子から機械的に導く（feat/<slug>）。**人が打たない。**
+# **先に source の 2 行が要る。** make はサブシェルでレシピを動かすため、
+# 呼び出し元のシェルへ環境を返せない。ここをまとめることは原理的にできない。
+#   source .venv/bin/activate && source scripts/load_env.sh
+#   make task-start TASK=T-YYYY-MM-DD-slug
+.PHONY: task-start
+task-start:
+	@bash scripts/task_start.sh $(TASK)
+
 clean:
 	find . -type d -name __pycache__ -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
