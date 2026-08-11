@@ -398,8 +398,8 @@ make s4      # S4: temporal
 make s5      # S5: object token
 make s6      # S6: bidirectional
 make eval    # 評価
-make delta   # Δ（基準点比較）の算出
-make tables  # 論文用テーブルの書き出し
+make delta   # Δ・σ・§10.1 判定が runindex/ のどこにあるかを表示（算出はしない）
+make tables  # 論文表の材料が runindex/verdicts.csv にあることを表示（書き出しはしない）
 ```
 
 `make s0` は内部で `bash scripts/run_s0.sh` を呼び、`ExperimentManager` が
