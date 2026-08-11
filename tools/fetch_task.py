@@ -69,6 +69,11 @@ NOTION_REGISTRY_KEY = "task_distribution"
 # 添付は行の列ではなく、ページの子の file ブロックとして置かれる。
 # 実測（2026-08-10）: 配布台帳の列に files 型は無い。既存 4 行の file ブロックは 0 件。
 NOTION_FILE_BLOCK = "file"
+
+# 送り返した報告のブロックに付ける目印。**契約本文と読み分けるために要る。**
+# 目印が無いと、本文で配布された行に報告を足したとき、_scan_children が
+# すべての code ブロックを連結して契約本文と報告を混ぜてしまう。
+REPORT_SENTINEL = "#!TASK-REPORT v1"
 # 参照先は署名つきで、取得のたびに変わる。実測の期限は 60 分。
 # 期限切れは「ブロックから取り直して再試行」で回復する。
 ATTACHMENT_RETRY = 1
@@ -221,6 +226,33 @@ def _notion_database_id() -> str:
     return str(db_id)
 
 
+def _notion_call_method(method: str, url: str, body: dict | None = None) -> dict:
+    """メソッドを指定して 1 回呼ぶ。PATCH と DELETE は送り返しが使う。
+
+    **HTTP を触るのはこの関数だけである。** 試験はここを差し替える。
+    """
+    api_key = os.environ.get("NOTION_API_KEY", "").strip()
+    request = urllib.request.Request(  # noqa: S310
+        url,
+        method=method,
+        data=json.dumps(body).encode() if body is not None else None,
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Notion-Version": NOTION_VERSION,
+            "Content-Type": "application/json",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            return json.loads(response.read())
+    except urllib.error.HTTPError as exc:
+        detail = (exc.read() or b"").decode("utf-8", "replace")
+        # 応答本文に資格情報は載らない。載せているのは見出しだけである。
+        raise BundleError(f"配布台帳への照会が失敗しました: HTTP {exc.code} {detail[:200]}") from exc
+    except OSError as exc:
+        raise BundleError(f"配布台帳へ到達できません: {exc}") from exc
+
+
 def _notion_call(url: str, body: dict | None = None) -> dict:
     """配布台帳への 1 回の呼び出し。**HTTP を触るのはここだけ。**
 
@@ -289,10 +321,13 @@ def _scan_children(page_id: str) -> tuple[str | None, str]:
             if inner.get("url"):
                 url = str(inner["url"])
         elif kind == "code":
-            parts.extend(
+            text = "".join(
                 item.get("plain_text", "")
                 for item in (block["code"].get("rich_text") or [])
             )
+            # 送り返された報告は契約本文ではない。目印で読み分ける。
+            if not text.startswith(REPORT_SENTINEL):
+                parts.append(text)
     return url, "".join(parts)
 
 
@@ -345,6 +380,31 @@ def _read_attachment(page_id: str, url: str) -> str:
     raise BundleError("添付の再試行が尽きました")  # 到達しない
 
 
+def find_ledger_row(task_id: str) -> dict:
+    """台帳から識別子に対応する行を 1 件だけ特定する。
+
+    取り込みと送り返しの**両方が使う**。行の選び方が二か所にあると食い違うため
+    括り出してある。置き換え済みの行は候補から外し、残りが 1 件でなければ選ばない。
+    """
+    db_id = _notion_database_id()
+    found = _notion_call(
+        f"{NOTION_API_BASE}/databases/{db_id}/query",
+        {"filter": {"property": "task_id", "title": {"equals": task_id}}, "page_size": 20},
+    )
+    rows = found.get("results") or []
+    live = [r for r in rows if _select_name(r, "status") != "superseded"]
+    if not live:
+        superseded = len(rows) - len(live)
+        extra = f"（置き換え済みの行が {superseded} 件あります）" if superseded else ""
+        raise BundleError(f"配布台帳に契約が見つかりません: {task_id}{extra}")
+    if len(live) > 1:
+        raise BundleError(
+            f"配布台帳に同じ識別子の行が {len(live)} 件あります: {task_id}。"
+            "古い行の status を superseded にしてください"
+        )
+    return live[0]
+
+
 def read_notion_bundle(task_id: str) -> str:
     """配布台帳から契約のバンドル本文を取り出す。
 
@@ -356,25 +416,7 @@ def read_notion_bundle(task_id: str) -> str:
             "NOTION_API_KEY が未設定です。source scripts/load_env.sh を先に実行してください"
         )
 
-    db_id = _notion_database_id()
-    found = _notion_call(
-        f"{NOTION_API_BASE}/databases/{db_id}/query",
-        {"filter": {"property": "task_id", "title": {"equals": task_id}}, "page_size": 20},
-    )
-    rows = found.get("results") or []
-    # 置き換え済みの行は候補から外す。残った行が 1 件でなければ黙って選ばない。
-    live = [r for r in rows if _select_name(r, "status") != "superseded"]
-    if not live:
-        superseded = len(rows) - len(live)
-        extra = f"（置き換え済みの行が {superseded} 件あります）" if superseded else ""
-        raise BundleError(f"配布台帳に契約が見つかりません: {task_id}{extra}")
-    if len(live) > 1:
-        raise BundleError(
-            f"配布台帳に同じ識別子の行が {len(live)} 件あります: {task_id}。"
-            "古い行の status を superseded にしてください"
-        )
-
-    page = live[0]
+    page = find_ledger_row(task_id)
     declared = _plain_text((page.get("properties") or {}).get("sha256")).strip()
     if not declared:
         raise BundleError(

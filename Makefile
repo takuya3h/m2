@@ -168,6 +168,13 @@ task-paste:
 task-notion:
 	@.venv/bin/python tools/fetch_task.py --notion $(TASK)
 
+# 完了報告を配布台帳へ送り返す。取り込みと同じ経路を逆向きに使う。
+# **送る前に秘匿を検査する。** 外部へ送るのは一方向で取り消せない。
+# 資格情報が要るため、先に source scripts/load_env.sh を実行しておくこと。
+.PHONY: task-report
+task-report:
+	@.venv/bin/python tools/report_task.py $(TASK)
+
 clean:
 	find . -type d -name __pycache__ -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
