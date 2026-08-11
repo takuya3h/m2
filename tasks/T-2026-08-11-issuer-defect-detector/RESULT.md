@@ -2,6 +2,7 @@
 
 **task_id:** `T-2026-08-11-issuer-defect-detector`
 **実行ホスト:** `lecun`  **分岐:** `feat/issuer-defect-detector`  **status:** pass
+**PR:** #82（`phase0` へ Draft で起票。**統合していない**）
 
 機械可読の対は `result.yaml`。教師データは `defects.md`。
 **散文と対は別々に書いてある。** 散文から値を抜いて対を作っていない。
