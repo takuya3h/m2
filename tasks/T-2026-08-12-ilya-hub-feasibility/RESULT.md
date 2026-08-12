@@ -39,10 +39,10 @@ Syncthingは2プロセス、keeperは1プロセスだった。外から見える
 | 15 | 判定1–14の空欄 | 0。測れない外部番号・住所はUNKNOWN |
 | 16 | 中心要件表 | 下表に記載。中心にすべきかの判断は記載しない |
 | 17 | 変更範囲 | 契約ディレクトリ、判断受け皿、上位指示の `tasks/todo.md`、抑止目印だけ |
-| 18 | 分岐送出 | UNKNOWN（後続Stepで更新） |
-| 19 | PR | UNKNOWN（後続Stepで更新） |
-| 20 | 同期抑止解除 | UNKNOWN（報告直前の後続Stepで更新） |
-| 21 | 台帳報告 | UNKNOWN（後続Stepで更新） |
+| 18 | 分岐送出 | 上流設定済み。`HEAD...@{upstream}`は`0 0`でahead 0 |
+| 19 | PR | #93、OPEN、非Draft、base `phase0`、head `feat/ilya-hub-feasibility` |
+| 20 | 同期抑止解除 | `released`。repo直下から消え、`/tmp`へ退避済み |
+| 21 | 台帳報告 | 初回`make task-report`はexit 0。最終成果物を再送する |
 
 ## 中心の要件
 
@@ -93,3 +93,4 @@ Syncthingは2プロセス、keeperは1プロセスだった。外から見える
 
 `contract.conventions_rev`の実測は `d422b08` で、契約記載と一致した。
 
+PR: #93（OPEN、非Draft）。初回台帳報告はexit 0、報告6307バイト、置換ブロック0。

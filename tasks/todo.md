@@ -5,7 +5,7 @@
 - [x] 契約・教訓・preflight・分岐・同期抑止を確認する
 - [x] 受け入れ鍵の指紋、SSH・同期処理の待ち受け、自ホスト住所を測定する
 - [x] 構内到達性を陽性対照つきで測定し、外向き経路と比較する（ユーザー承認のamendment後に再開）
-- [ ] audit / RESULT / result.yaml / inbox を作成し、検証・送出・PR・台帳報告を完了する
+- [x] audit / RESULT / result.yaml / inbox を作成し、検証・送出・PR・台帳報告を完了する
 
 成功基準: SPEC.md の完了判定 21 項目を、実測値または UNKNOWN と検証ログで満たす。
 

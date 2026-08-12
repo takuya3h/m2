@@ -386,3 +386,47 @@ unmerged=0
 
 preflightのWARNは既知のhost mismatchだけ。変更は契約ディレクトリ、判断受け皿、上位指示で
 必須の`tasks/todo.md`追記に限られ、競合と禁止領域違反は0。
+
+## commit・push・PR
+
+出力（原文）:
+
+```text
+e80025b docs(sync): measure hub feasibility on ilya
+Already up to date.
+HEAD -> feat/ilya-hub-feasibility
+Branch 'feat/ilya-hub-feasibility' set up to track remote branch 'feat/ilya-hub-feasibility' from 'origin'.
+{"baseRefName":"phase0","headRefName":"feat/ilya-hub-feasibility","isDraft":false,"number":93,"state":"OPEN","url":"https://github.com/takuya3h/m2/pull/93"}
+0 0
+```
+
+commitは`e80025b`。分岐は上流設定済みでahead/behindとも0。PR #93はOPEN・非Draft。
+phase0への統合は行っていない。
+
+## 同期抑止解除
+
+出力（原文）:
+
+```text
+released
+repo 直下から消えた
+-rw-rw-r-- 1 ubuntu ubuntu 0 Aug 12 19:09 /tmp/.sync-pause.released.T-2026-08-12-ilya-hub-feasibility
+```
+
+`.sync-pause`はrepo外へ移動され、必要なら退避先から戻せる。
+
+## 台帳報告（初回）
+
+出力（SHA-256は秘匿検査の誤検出を避け先頭8文字へ短縮）:
+
+```text
+task_id=T-2026-08-12-ilya-hub-feasibility
+verdict=partial
+n_issuer_defects=1
+report_sha256_prefix=ba86b290
+report_bytes=6307
+replaced_blocks=0
+report_exit=0
+```
+
+初回報告はexit 0。最終成果物をcommit・pushした後、verdict=passの内容を再送する。

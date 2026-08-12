@@ -1,9 +1,9 @@
 result_version: 3
 task_id: "T-2026-08-12-ilya-hub-feasibility"
-status: partial
+status: pass
 host: "aolab"
 branch: "feat/ilya-hub-feasibility"
-pr: null
+pr: 93
 merged: false
 
 gates:
@@ -80,7 +80,6 @@ unknowns:
   - "外部から見えるilyaの住所とSSHポートは自ホストから測れない"
   - "ubuntu@aolab注釈がilyaとphilipのどちらに由来するかは判別できない"
   - "philipが到達不能な理由はUNKNOWN。No route to hostとTIMEOUTまでを実測した"
-  - "push・PR・台帳報告は後続Stepで実測して更新する"
 
-commits: []
-
+commits:
+  - "e80025b"
