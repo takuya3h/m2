@@ -1,0 +1,74 @@
+spec_version: 2
+
+meta:
+  task_id: "T-2026-08-11-sandbox-and-host-inventory"
+  kind: analysis
+  title: "隔離が作れない原因と、ホストごとの設定のばらつきを測る"
+  origin: claude-app
+  created_at: "2026-08-11T15:30:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-11-issuer-defect-detector"]
+  amendments: []
+
+intent:
+  question: "第二の実装系が隔離を作れない原因は何か。ホストごとの設定はどれだけばらついているか"
+  decision_at_stake: "第二の実装系の常用を続けるか、第一の実装系へ戻すか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["scripts/sync/setup_host_autosync.sh"]
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "隔離が作れない原因を測る", gpu: false, est: "50m"}
+    - {id: B, name: "到達できるホストで同じことを測る", gpu: false, est: "30m"}
+    - {id: C, name: "設定のばらつきを棚卸しする", gpu: false, est: "40m"}
+  gates:
+    - id: G1
+      after: A
+      check: "隔離の失敗が道具の側か環境の側かを、道具を介さない方法でも測って切り分けた"
+      on_fail: ask
+    - id: G2
+      after: B
+      check: "到達できたホストと到達できなかったホストを列挙し、到達できた各ホストで同じ測り方をした"
+      on_fail: ask
+    - id: G3
+      after: C
+      check: "設定の実体がある場所を repo の外まで含めて探し、配布の経路を特定したか特定できない理由を書いた"
+      on_fail: ask
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/"
+  acceptance:
+    - "隔離が作れない原因が特定される、または特定できない理由が書かれる"
+    - "道具を介さない方法でも名前空間の作成を測った結果がある"
+    - "到達できたホストと到達できなかったホストが列挙される"
+    - "各ホストの実装系の版が一覧になる"
+    - "各ホストの頁送りの設定が一覧になる"
+    - "共有領域の配布の経路が特定される、または特定できない理由が書かれる"
+    - "設定を一切変更していないことが確かめられる"
+    - "make task-validate が exit 0"
+    - "make task-preflight が exit 0"
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [settings_changed_unintentionally, credentials_exposed, ledger_row_corrupted]
