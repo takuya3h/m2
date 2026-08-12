@@ -1,0 +1,48 @@
+result_version: 1
+task_id: "T-2026-08-12-sync-audit-bengio"
+status: pass
+host: "bengio"
+branch: "feat/sync-audit-bengio"
+pr: null
+merged: false
+
+gates:
+  - {id: G1, verdict: pass}
+  - {id: G2, verdict: pass}
+  - {id: G3, verdict: pass}
+
+tests:
+  before_failed: 7
+  after_failed: 7
+  after_passed: 421
+
+deviations: 5
+
+issuer_defects:
+  - type: check_does_not_check
+    note: "秘匿検査の式 apikey|password|token|secret の apikey が区切りを含まないため API_KEY と api-key に一致しない。本プロジェクトの実際の変数名は NOTION_API_KEY と WANDB_API_KEY でいずれも区切りを含む。陽性対照で確認: password を仕込むと 4 から 5 へ増えるが NOTION_API_KEY を仕込んでも 5 のまま増えない。強化版で再検査した結果、実際の一覧では一致は同じ 4 件のファイル名のみで結論は変わらない"
+  - type: check_does_not_check
+    note: "Task 2 Step 1 の ps -eo args と grep -c による稼働数の計測が 3 を返すが実数は 1 である。角括弧は grep 自身の自己一致しか防がず、計測側シェルのコマドラインに文字列が載れば一致する。SPEC 自身が pgrep -f を禁じた理由と同じ機序。argv を精査し自分と祖先を除外して数え直した"
+  - type: check_does_not_check
+    note: "Task 5 Step 5 の find with -name syncthing*.log が 0 件を返すが ~/.syncthing.log は 10730567 バイトで実在する。先頭のドットがあるため syncthing で始まる名前に一致しない。注意 1 に従い別の探し方で確認して両方の場所を記録した"
+  - type: asserted_without_measuring
+    note: "Task 4 Step 3 は三分類 OPEN と REFUSED と TIMEOUT で集計させるが、実測では philip が TIMEOUT ではなく OSERROR:No_route_to_host を返した。経路なしをより精確に示すため潰さず第 4 の分類として記録した。集計の OTHER が受け皿になっているため合計の照合は成立する"
+
+followups:
+  - "P9 spec_lint の host_mismatch は偽陽性である。rule_host_mismatch が生の socket.gethostname()（Bengio）を宣言値（bengio）と大文字小文字を区別して比較しており、プロジェクト内の正規化 resolve_server_name() を使っていない。hostname の大文字小文字が論理名と異なるホストで必ず誤検出する"
+  - "同じ根本原因で tests/test_check_spec.py::test_self_contract_has_no_hit と tests/test_preflight_task.py::test_spec_lint_passes_on_clean_contract が失敗する。両者は SELF_TASK に T-2026-08-11-issuer-defect-detector を固定で読み、その契約が実行ホストを lecun と宣言しているため lecun 以外のすべてのホストで失敗する。本契約のディレクトリを一時退避しても失敗することを実測で確認した"
+  - ".stversions が 0 件である。経路が復旧して遠隔側の版が流れ込んだ場合、局所の版を戻す手段が同期処理側に無い。復旧前に退避が要るかの判断材料になる"
+  - "衝突ファイルが 10 件あり発生元は he と adam が 08-03、ilya が 08-05 と 08-06、dlsta が 08-05 である。復旧時にこれらがどう扱われるかは未確認"
+  - "~/claude-sync/sync-alerts.log は git 側の操作のみを記録しており同期処理の停止時期を判定できない。同期処理の記録は ~/.syncthing.log と ~/.tunnel.log にある。~/.tunnel.log には時刻印が無い"
+  - "inventory.tsv は 2531 行で他ホストの同名ファイルとの突き合わせ用である。他ホストの同契約の結果と付き合わせて初めて分岐量が出る"
+
+unknowns:
+  - "他ホストの claude-sync の内容と分岐量。他ホストへの読み取り以外の命令は禁止のため測っていない"
+  - "philip が停止しているのか経路のみが遮断されているのか。No route to host は経路上の応答であり機器の状態を直接示さない"
+  - "復旧予定（2 週間以降とされる記録）は実測していない"
+  - "停止の正確な時刻。推定は 2026-08-06 だがトンネルの記録に時刻印が無く分単位では確定できない"
+  - "局所版と遠隔版のどちらが新しいか。遠隔を読めないため比較不能"
+  - "待ち受けの一覧。ss も netstat も不在で測る手段が無かった。零行ではない"
+  - "他 9 台の 22000 が拒否される理由。コンテナ間の遮断か待ち受け不在かを bengio からは切り分けられない"
+
+commits: []

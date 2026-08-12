@@ -1,0 +1,88 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-12-sync-audit-bengio"
+  kind: analysis
+  title: "設定共有の停止について、測定系の健全性を担保したうえで到達性と分岐を実測する（bengio）"
+  origin: claude-app
+  created_at: "2026-08-12T04:30:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: []
+  amendments: []
+
+intent:
+  question: "設定共有ディレクトリの内容が全ホストへ渡らなくなっている。中心を一台に置く星型の構成で、その中心が停止していることが原因か。そうであるとして、停止期間に各ホストの内容はどこまで分岐し、経路を復旧させたとき何が失われうるか"
+  decision_at_stake: "中心の復旧を待つか、中心を別のホストへ移すか、あるいは別の経路へ切り替えるか。またその前に、復旧によって消えうるものを退避する必要があるか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/sync/keeper.sh"
+      - "scripts/sync/m2-sync.sh"
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "測定系の健全性、常駐処理の実装、自ホストの実態", gpu: false, est: "80m"}
+    - {id: B, name: "他ホストへの到達可否の切り分け", gpu: false, est: "40m"}
+    - {id: C, name: "設定共有の分岐と復旧時に失われうるものの見積り", gpu: false, est: "40m"}
+    - {id: D, name: "検証と報告", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "到達性を測る道具に、開いている先と閉じている先と経路の無い先を与え、三通りの結果が実際に出し分けられることを確認した。あわせて版管理側の経路が生きていることを確認した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "対象一覧を複数の出所から集めて件数を記録し、測定した件数が対象数と一致することを確認した。接続を拒まれた場合と経路が無い場合を区別して記録した"
+      on_fail: ask
+    - id: G3
+      after: C
+      check: "設定共有の一覧に内容と資格情報が含まれていないことを検査で確認した"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-12-sync-audit-bengio/"
+  acceptance:
+    - "到達性の道具が三通りの結果を出し分けることを陽性対照で示し、期待と実測の双方を記載している"
+    - "中心となるホストの決め方を常駐処理の実装から読み取り、該当する記述を引用している"
+    - "同期処理と中継の稼働状況を、検索命令自身に一致しない方法で数えている"
+    - "他ホストへの到達可否を、拒否と経路なしに区別して全対象について記録している"
+    - "対象一覧の出所と件数を記載し、既知の構成より少ない場合はその旨を明記している"
+    - "設定共有の一覧が名前と大きさと更新時刻と要約値のみからなり、内容を含まない"
+    - "停止時期を二つの独立した情報から推定し、整合または食い違いを記載している"
+    - "件数が零と判定した項目について、実在の確認と別の探し方による再確認を併記している"
+    - "測れなかった項目が UNKNOWN として明示され、作業ツリーの変更が契約の範囲に限られている"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "測定系の陽性対照が期待どおりの結果を返さず、到達性の結論が信用できない場合"
+    - "版管理側の経路も落ちており、同期の不具合と切り分けられない場合"
+    - "中心として想定していたホストへ到達できてしまい、原因の見立てが崩れる場合"
+    - "読み取りのみの契約であるにもかかわらず、変更を伴わなければ測れない項目が生じた場合"
+    - "設定共有の一覧に資格情報が混入し、外部へ送れない状態になった場合"

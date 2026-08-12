@@ -1,0 +1,7 @@
+- [ ] 2026-08-12 [cc] 星型の中心 philip（192.168.196.150）へは両ポートとも No route to host。他 9 台は SSH 50072 が OPEN で機器までは届く。同一構内へ届かないのに外部の版管理へは届く非対称がある（tasks/T-2026-08-12-sync-audit-bengio/audit.md）
+- [ ] 2026-08-12 [cc] 停止は 2026-08-06 と推定。二つの独立した情報が整合する。遠隔由来の最後の衝突が 08-06 16:22 UTC、トンネルの連続失敗 263 回を 30 分周期で逆算して 08-06 20:41 UTC（同上）
+- [ ] 2026-08-12 [cc] .stversions が 0 件。経路が復旧して遠隔版が流れ込んだ場合、局所版を戻す手段が同期処理側に無い。claude-sync は 2532 ファイルで衝突が 10 件残る（tasks/T-2026-08-12-sync-audit-bengio/inventory.tsv）
+- [ ] 2026-08-12 [cc] 同期処理は健在で局所 22000 は OPEN。設定は globalAnnounce=false かつ relays=false で、philip への経路は tcp://127.0.0.1:22001 すなわち中継トンネル前提に組まれている（~/.local/state/syncthing/config.xml）
+- [ ] 2026-08-12 [cc] bengio は ~/.tunnel_to_philip を持つためトンネル維持の対象だが ssh プロセスは 0 件。keeper.sh は 30 分ごとに試行し失敗を追記し続けている（~/bin/keeper.sh 13-19 行）
+- [ ] 2026-08-12 [cc] spec_lint の host_mismatch が偽陽性。生の gethostname()（Bengio）と宣言値（bengio）を大文字小文字を区別して比べ、resolve_server_name() を使っていない。同じ原因で test_self_contract_has_no_hit と test_spec_lint_passes_on_clean_contract が lecun 以外の全ホストで失敗する（tools/check_spec.py rule_host_mismatch）
+- [ ] 2026-08-12 [cc] 起票者の検査に取りこぼしが 3 件。秘匿検査の apikey が API_KEY に一致しない、ps と grep による稼働数が計測側シェルに自己混入して 3 を返す（実数 1）、find の syncthing*.log が先頭ドットの .syncthing.log を見落とす（T-2026-08-12-sync-audit-bengio §6.1）
