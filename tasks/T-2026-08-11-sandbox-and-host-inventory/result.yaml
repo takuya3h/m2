@@ -1,0 +1,300 @@
+result_version: 3
+task_id: "T-2026-08-11-sandbox-and-host-inventory"
+status: pass
+host: "lecun"
+branch: "feat/sandbox-and-host-inventory"
+pr: 91
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      隔離の失敗を道具を介さない方法でも測り、環境の側であることを確定した。unshare 命令の
+      3 種（user / user+map-root / mount）すべてが Operation not permitted で exit 1。
+      python の libc 直接呼び出しでも CLONE_NEWUSER と CLONE_NEWNS の両方が EPERM。
+      homebrew の bwrap（0.11.2、権限 555）と第二の実装系に同梱の bwrap（権限 775）の
+      両方でも失敗。系の標準の場所（/usr/bin /usr/local/bin）には実体が無い。
+      合計 4 経路すべてが失敗し、道具の在処や権限ビットでは説明できない。
+      kernel.unprivileged_userns_clone は 1、max_user_namespaces は 255595 で許可されている。
+      残る候補は Seccomp（filter モード、1 フィルタ）と AppArmor（docker-default enforce）の
+      2 つだが、どちらが効いているかは切り分けられない（後述の unknowns）。
+  - id: G2
+    verdict: pass
+    note: >-
+      到達できたホストと到達できなかったホストを列挙した。TCP の 50072 は 10 台中 9 台が
+      OPEN で philip のみ No route to host。認証まで通るのは bengio と efros の 2 台のみ
+      （設定に項目と鍵があるのがこの 2 台と philip だけ）。到達できた 2 台では 39 行の
+      同一の手順書を流し、測り方を変えていない。カーネルが 5.15.0-185 / 6.8.0-136 /
+      5.15.0-179 と異なるにもかかわらず名前空間の結果は 3 台とも同一であった。
+      残る 8 台は鍵も設定の項目も無く一切測れないため UNKNOWN とした。
+  - id: G3
+    verdict: pass
+    note: >-
+      設定の実体がある場所を repo の外まで含めて探し、配布の経路を特定した。
+      共有領域 ~/claude-sync は git の作業ツリーではなく（.git 不在）、動いている
+      syncthing の 2 プロセスが配布している（設定に folder id=claude-sync
+      path=/home/ubuntu/claude-sync type=sendreceive 共有相手 11 台）。rsync と unison は
+      0 件。各実装系の設定は共有領域を指す symlink であり、~/.codex に 6 件、~/.claude に
+      5 件、~/.agents 自体が 1 件で合計 12 件。張る手順は
+      docs/host_dev_env_setup.md:578-587 に文書化されている。ただし実際の張り方は
+      文書と一部食い違う（後述）。目印（.stfolder）だけで断定していない。
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 423
+
+positive_controls:
+  - judgement: "判定 1 道具を介さず名前空間を測った"
+    breaking_input: "3 種のうち一つでも成功すれば原因は道具の側だと分かる"
+    observed: >-
+      3 種すべてが exit 1。さらに python の libc 直接呼び出しと、homebrew と同梱の
+      2 つの bwrap でも失敗した。**合計 4 経路が同じ結果を返したため、道具の側の
+      説明は成立しない。** 1 経路だけでは道具の欠陥と区別できなかった。
+  - judgement: "判定 4 制限の候補を網羅的に探した"
+    breaking_input: "異質な探し方で追加の項目が出るかを見る"
+    observed: >-
+      sysctl -a への grep は 12 行を返したが、find /proc/sys は
+      unprivileged_userns_apparmor_policy を追加で見つけた。**この項目は grep の出力に
+      含まれない。** root 専用（-rw------- root:root）で読めないため sysctl が列挙しない。
+      同じ探し方の変種では見つからなかった。
+  - judgement: "判定 7 ホストの一覧が正しい"
+    breaking_input: "決め打ちの語と正本の device 一覧を突き合わせる"
+    observed: >-
+      SPEC が指定した語は 5 個だが syncthing の device は 11 台。**bengio を含む 6 台が
+      漏れる。** bengio は ~/.ssh/config に実在し、認証が通る 2 台のうちの 1 台である。
+      repo 側の grep だけでは最も関係の深いホストを落としていた。
+  - judgement: "判定 9 到達できた各ホストで同じ測定"
+    breaking_input: "手順書を 1 つに固定して 3 台へ流し、測り方の差を排除する"
+    observed: >-
+      同一の 39 行の手順書を lecun / bengio / efros で実行した。カーネルが
+      5.15.0-185 / 6.8.0-136 / 5.15.0-179 と異なるのに名前空間の結果は 3 台とも同一。
+      **1 台だけでは「この環境固有」と「容器の制限」を区別できなかった。**
+  - judgement: "判定 10 版の一覧が出る"
+    breaking_input: "PATH 経由と実体経由で版を比べる"
+    observed: >-
+      PATH 経由では bengio と efros が「不在」になるが、package.json を直接読むと
+      **3 台すべて 0.147.0** だった。**測り方で結論が逆になった。**
+      不在に見えたのは非対話ログインで nvm が初期化されず PATH に入らないためである
+      （nvm の既定 node は 3 台とも 20 と設定されている）。
+  - judgement: "判定 11 頁送りの一覧が出る"
+    breaking_input: "設定の有無と道具の有無を別々に測る"
+    observed: >-
+      core.pager は lecun のみ cat が設定され（git config --get の exit 0）、bengio と
+      efros は未設定（exit 1）。**しかし less は 3 台すべて不在である。**
+      設定だけを見ると 2 台が危険に見えるが、道具が無いため git は頁送りへ流せない。
+  - judgement: "判定 12 配布の経路を調べた"
+    breaking_input: "目印だけでなく動いているものと文書の手順を突き合わせる"
+    observed: >-
+      .stfolder の目印に加え、/proc から syncthing の 2 プロセス（監視親と実働子）を
+      確かめ、設定に folder id=claude-sync があることを確かめ、張る手順が
+      docs/host_dev_env_setup.md:578-587 にあることを確かめた。**目印だけなら
+      rsync や unison でも同じ目印は説明できなかった**（両者は 0 件と実測）。
+  - judgement: "判定 13 何も変更していない"
+    breaking_input: "作業ツリーの差分と利用者の領域の設定の時刻を見る"
+    observed: >-
+      作業ツリーの差分は記録と生成物のみ（本契約のディレクトリ / 受け皿 / 投影 3 件と
+      集約結果 1 件）。生成物は forbidden-check が excluded 4 として除外し violations 0。
+      禁止 6 は手で編集することを禁じており生成は許している。設定 3 件（~/.gitconfig
+      2026-07-29 / ~/.codex/config.toml 2026-08-11 21:59 / ~/.claude/settings.json
+      2026-08-11 05:49）はすべて本契約の開始（15:28）より前で、**設定ファイルは 1 件も
+      差分に現れていない**。**ただし bengio の /tmp/sp.txt に 92 バイトを書き込んだ**
+      （逸脱として報告。設定ではない）。
+
+deviations:
+  - type: judgement
+    note: >-
+      unshare を python の libc 直接呼び出しでも測った（4 経路目）。SPEC は unshare 命令と
+      bwrap の 2 経路しか指示していないが、命令と道具の両方が同じ実装を経由する可能性を
+      排除するため、syscall を直接叩く経路を加えた。CLONE_NEWUSER と CLONE_NEWNS の
+      両方が EPERM であった。
+  - type: judgement
+    note: >-
+      第二の実装系が同梱する bwrap を発見し、それでも測った。SPEC は「道具の在処 =
+      利用者の領域の下」という起票者の前提を置くが、第二の実装系は
+      codex-linux-x64/vendor/x86_64-unknown-linux-musl/codex-resources/bwrap を同梱しており
+      homebrew の bwrap を使わない。同梱物でも失敗したため在処は原因でないと確定できた。
+  - type: judgement
+    note: >-
+      SPEC Task 1 Step 2 の command -v -a bwrap が zsh で落ちるため whence -a を使った。
+      さらに whence -a は同じ経路を 7 行返した（PATH に homebrew の bin が 7 回重複）。
+      重複を畳んでから件数を出した。
+  - type: judgement
+    note: >-
+      AppArmor の状態を /proc/self/attr/current から読んだ。SPEC の前提は
+      /sys/kernel/security/apparmor を見ていると読めるが、容器内では securityfs が
+      未マウントで不在（mount の件数 0）。/proc 経由なら docker-default (enforce) が読める。
+  - type: judgement
+    note: >-
+      実装系の版を codex --version ではなく package.json から直接読んだ。PATH 経由では
+      到達できた 2 台で「不在」になるが、実体は 3 台すべてに存在する。
+      測り方を変えなければ「版が測れない」で終わっていた。
+  - type: judgement
+    note: >-
+      到達できた 2 台へ同じ測定を流すため 39 行の共通の手順書を作り、標準入力から渡した。
+      SPEC は「測り方を変えない」を求めるが手順書の形は指定していない。
+      1 つの手順書に固定することで測り方の差を構造的に排除した。
+  - type: environment
+    note: >-
+      **bengio の /tmp/sp.txt に 92 バイトを書き込んだ。禁止 3（他ホストの状態を変更する）に
+      触れる。** 手順書から遠隔への書き込みを除く sed が置換文字列のスラッシュで失敗し、
+      さらに検証の grep が 2> を含む行を除外していたため「書き込みは無い」と表示されて
+      気付かなかった。**探している行そのものを除外する空振りの検査だった。**
+      消すこと自体がさらなる書き込みになるため報告に留め、以後の手順書は python で
+      確実に置換し全行を目で確かめた。設定の変更ではない。
+  - type: environment
+    note: >-
+      変数名に path を使い zsh の特殊変数を壊した。zsh では path は PATH に結び付いた
+      配列であり、代入すると PATH が置き換わる。表の生成中に awk と stat と readlink が
+      command not found になった。陽性対照（zsh -c 'path=/tmp; echo $PATH'）で挙動を
+      確かめ、変数名を変えて測り直した。PATH は次の命令で健全に戻っていることを確認した。
+  - type: judgement
+    note: >-
+      /proc/1/ns/* が読めない（Permission denied）のに比較を行い、全 7 項目を「異なる」と
+      表示した。実測値と「読めない」という文字列を比べていた。**両側が取れたかを先に
+      確かめる形へ直し、比較できない項目は「比較できない」と表示するようにした。**
+      代わりに利用者名前空間の inode が初期名前空間の既知の値（4026531837）と一致する
+      ことと uid_map が恒等写像であることで、入れ子の外にいることを示した。
+  - type: judgement
+    note: >-
+      find ~/.agents -type f が 0 を返したが、~/.agents は symlink であり find は既定で
+      辿らない。find -L で 955 件を得た。**前契約で起票者が犯した「rglob が symlink を
+      辿らない」と同じ型を実行者が踏んだ。**
+  - type: judgement
+    note: >-
+      頁送りの測定で echo "core_pager=$(...); pager_exit=$?" と 1 行にまとめ、$? が
+      文字列内で評価されるため終了コードの取得を壊した。SPEC の原文は 2 命令に分けており
+      正しい。2 命令へ戻して測り直し、設定の有無を exit 0 と 1 で区別した。
+  - type: judgement
+    note: >-
+      共有領域の内容の一致は件数までしか測っていない。3 台とも 2532 ファイルだが、
+      要約値は比べていない。ただし claude-sync/codex/config.toml と
+      claude-sync/settings.json の大きさが efros だけ異なることを見つけた
+      （901/901/1008 と 14419/14419/14440）。件数の一致は内容の一致を意味しない。
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: >-
+      起票者の表は「別の制限（強制アクセス制御）| 該当する項目が存在しない」と断定するが、
+      実測では AppArmor が docker-default (enforce) で動いている（自プロセスと init の
+      両方、到達できた 3 台すべて）。/sys/kernel/security/apparmor は容器内で securityfs が
+      未マウントのため不在であり、そこを見て「無い」と結論したと読める。
+      /proc/self/attr/current を読めば分かる。さらに
+      /proc/sys/kernel/unprivileged_userns_apparmor_policy が実在する（root 専用で
+      読めないため sysctl -a に現れない）。指示どおり「MAC は無い」を前提にすると、
+      原因の候補から AppArmor が落ち、seccomp だけを疑うことになる。
+  - type: asserted_without_measuring
+    note: >-
+      起票者の表は「実装系の版 | 3 台で 3 つの版（0.144 / 0.146 / 0.147）」と断定するが、
+      到達できた 3 台の package.json を直接読むと **すべて 0.147.0** である。
+      codex --version が失敗するのは版の違いではなく、非対話ログインで nvm が初期化されず
+      PATH に入らないためである（nvm の既定 node は 3 台とも 20 と設定されている）。
+      指示どおり「3 版ある」を前提にすると、存在しないばらつきを直そうとする。
+      0.144 と 0.146 の出所は本契約では検証できない（到達できた 3 台には無い）。
+  - type: check_does_not_check
+    note: >-
+      Task 3 Step 1 の repo 側の探し方が名前を 5 個（efros lecun ilya philip dlsta）に
+      決め打ちしている。正本である syncthing の device は 11 台であり、
+      **bengio を含む 6 台が漏れる**（adam andrew bengio he hinton ian）。
+      bengio は ~/.ssh/config に項目を持ち、鍵で認証が通る 2 台のうちの 1 台であり、
+      本契約で最も測定価値が高いホストである。SPEC 自身が注意 5「対象の一覧そのものが
+      正しいかを確かめる」と注意 7「同じ探し方の変種を並べない」を書きながら、
+      探す語を決め打ちしている。指示どおり repo 側だけを見ると bengio を測らずに終わる。
+  - type: shell_assumption
+    note: >-
+      Task 1 Step 2 の command -v -a bwrap は bash の書式であり、zsh では
+      (eval):3: command not found: -v で落ちる。SPEC 自身が「実行環境の対話シェルは
+      bash ではない」と警告している。zsh では whence -a を使う。指示どおり実行すると
+      「別の実体があるか」を確かめる部分が実行されず、経路の順序も記録できない。
+      なお whence -a は PATH の重複により同じ経路を 7 行返すため、重複を畳む必要がある。
+  - type: self_contradiction
+    note: >-
+      Task 5 Step 2 は ps -eo args | grep -i "syncthing\|rsync\|unison" を指示し、
+      「プロセスの一覧は ps -eo args から取る。検索コマンド自身に一致する方法を使わない」と
+      注意を添えている。しかし同じ SPEC の「前契約で確定した環境の事実」の表が
+      「ps -eo args | grep -c は自己一致する。/proc/*/cmdline を読み、自分と祖先を除いて
+      数える」と明記している。**指示された方法が、同じ SPEC が確定したとする事実と
+      矛盾し、添えられた注意を満たさない。** 指示どおり実行すると同期処理の稼働数を
+      誤って数える。/proc 方式で数え直して 2 件（監視親と実働子）を得た。
+
+followups:
+  - >-
+    第二の実装系が隔離を作れない原因は環境の側であり、道具の在処や権限ビットではない。
+    到達できた 3 台すべてで unshare の 3 種と bwrap の 2 実装が失敗する。
+    kernel.unprivileged_userns_clone は 1 で許可されているため、残る候補は Seccomp
+    （filter モード、1 フィルタ）と AppArmor（docker-default enforce）である。
+    容器の起動時の設定（seccomp プロファイルの指定など）は容器の外にあり本契約では読めない。
+  - >-
+    第二の実装系は自前の bwrap を同梱している
+    （codex-linux-x64/vendor/x86_64-unknown-linux-musl/codex-resources/bwrap、権限 775）。
+    実装の原路は linux-sandbox/src/bwrap.rs と bundled_bwrap.rs と sandboxing/src/landlock.rs
+    であり、bubblewrap 49 件・landlock 38 件・seccomp 16 件の文字列を持つ。
+    landlock を使う経路があるなら bwrap を必要としない可能性があるが、
+    どの条件でどちらを選ぶかは実装の文字列からは読めない。
+  - >-
+    第一の実装系はこの呼び出し経路で隔離を使っていない。設定 3 件（~/.claude/settings.json、
+    .claude/settings.local.json、.claude/settings.json）に sandbox の語が 0 件であり、
+    親プロセスの系列も zsh -c から claude -c へ直につながり bwrap を経由しない。
+    利用者名前空間の inode は初期名前空間の値であり入れ子の外にいる。
+    これが「第一の実装系では動く」ことの説明である。
+  - >-
+    版のばらつきは到達できた 3 台には無い（すべて 0.147.0）。ばらついているのは
+    導入の時刻（lecun 08-07 23:18 / bengio 08-08 03:40 / efros 08-11 16:11、最大 4 日）と
+    非対話ログインでの nvm の初期化である。更新の経路は
+    docs/host_dev_env_setup.md:245-249 の npm install -g（文書には 0.133.0 の例が残る）と、
+    codex 自身の check_for_update_on_startup の 2 つが候補である。
+  - >-
+    頁送りは lecun のみ core.pager=cat を設定し、bengio と efros は未設定である。
+    ただし less が 3 台すべて不在であるため、未設定のホストでも git は頁送りへ流せない。
+    設定を揃えるべきかは、less を導入する予定があるかで変わる。
+  - >-
+    配布の経路は syncthing であり、各実装系の設定は共有領域を指す symlink である
+    （~/.codex 6 件、~/.claude 5 件、~/.agents 自体が 1 件、合計 12 件）。
+    張る手順は docs/host_dev_env_setup.md:578-587 にある。ただし実際の張り方は文書と
+    食い違う箇所がある。文書は ~/.claude/CLAUDE.md を ~/.agents/AGENTS.md へ張るとするが、
+    実測では claude-sync/CLAUDE.md を直接指している。文書は ~/.codex/skills/my_skills を
+    張るとするが、実測では skills.bak/my_skills にある。
+  - >-
+    共有領域の内容が efros で分岐している（claude-sync/codex/config.toml が 901 と 1008、
+    claude-sync/settings.json が 14419 と 14440）。同期が止まっているため配布されていない。
+    件数は 3 台とも 2532 で一致するが、内容の一致は測っていない。
+  - >-
+    bengio の /tmp/sp.txt（92 バイト、2 行）を本契約が作った。禁止 3 に触れる。
+    消すこと自体がさらなる書き込みになるため残してある。掃除の可否の判断が要る。
+
+unknowns:
+  - >-
+    Seccomp と AppArmor のどちらが名前空間の作成を塞いでいるか。strace は不在、dmesg は
+    read kernel buffer failed: Operation not permitted で読めず、ausearch と auditctl も
+    不在である。フィルタを外して比べるのは設定の変更（禁止 1）にあたる。
+    切り分けには dmesg か監査記録の読み取り権限、strace、または容器を別の設定で
+    起動して比べることのいずれかが要る。
+  - >-
+    /proc/sys/kernel/unprivileged_userns_apparmor_policy の値。実在するが root 専用
+    （-rw------- root:root）で読めない。この値が 0 なら AppArmor が原因である可能性が高いが、
+    読めないため断定できない。
+  - >-
+    到達できない 8 台（adam andrew dlsta he hinton ian ilya philip）の状態。
+    philip は 3 ポートすべて No route to host、残る 7 台は 50072 が OPEN だが鍵も
+    ~/.ssh/config の項目も無いため認証できない。名前空間・版・頁送り・共有領域の
+    いずれも UNKNOWN である。「他も同じはず」とは書かない。
+  - >-
+    起票者が観測した 0.144 と 0.146 の出所。到達できた 3 台はすべて 0.147.0 であり、
+    別のホストか別の時点の観測と考えられるが確かめる手段が無い。
+  - >-
+    版が違うと何が変わるか。変更履歴が手元に無く、npm の配布物にも同梱されていない。
+    確かめる手段が無い。
+  - >-
+    共有領域の内容の一致。件数は 3 台とも 2532 だが要約値を比べていない。
+    efros の 2 ファイルだけ大きさが違うことは確かめたが、全体でどれだけ分岐しているかは
+    測っていない。測るには 3 台で同じ要約値の計算を流す必要がある。
+  - >-
+    symlink 構造を実際に作った主体。docs/host_dev_env_setup.md に手順はあるが、
+    scripts/sync/setup_host_autosync.sh は ln -s を 0 件しか持たない。
+    誰がいつ張ったかは repo からは特定できない。
+
+commits:
+  - "82f0f8b"
+  - "6a09624"
+  - "6a31d19"
