@@ -53,9 +53,9 @@
 | 15 | 1–14の空欄 | 0。すべて実測値あり |
 | 16 | 目印・稼働版・中継 | SHA-256前後一致、keeper 2250バイト、`ssh -N -L=0` |
 | 17 | 変更範囲 | 公開鍵、本契約、判断受け皿、上位指示の`tasks/todo.md`、Skillが正規生成した投影4件だけ |
-| 18 | 分岐送出 | UNKNOWN（後続Stepで更新） |
-| 19 | PR | UNKNOWN（後続Stepで更新） |
-| 20 | 抑止解除 | UNKNOWN（報告直前の後続Stepで更新） |
+| 18 | 分岐送出 | 上流設定済み、ahead/behind=`0 0` |
+| 19 | PR | #96、OPEN、非Draft、base=`phase0`、head=`feat/submit-hub-key-ilya` |
+| 20 | 抑止解除 | `released`。repo直下から消え、`/tmp`へ退避済み |
 | 21 | 台帳報告 | UNKNOWN（後続Stepで更新） |
 
 ## 4. 陽性対照

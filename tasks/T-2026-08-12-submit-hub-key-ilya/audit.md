@@ -264,3 +264,34 @@ unmerged=0
 公開鍵の指紋は導出時と一致し、`PRIVATE`一致0・1行。秘匿語の一致は契約の検査式と
 SSH認証拒否メッセージだけで資格情報値は0件。Skillに従い`context/auto/`の3投影と
 `tasks/inbox.md`を正規生成し、再生成差分なしを確認した。
+
+## commit・push・PRと最終非変更確認
+
+出力（原文）:
+
+```text
+806abe4 feat(sync): submit tunnel public key for ilya
+HEAD -> feat/submit-hub-key-ilya
+0 0
+{"baseRefName":"phase0","headRefName":"feat/submit-hub-key-ilya","isDraft":false,"number":96,"state":"OPEN","url":"https://github.com/takuya3h/m2/pull/96"}
+37fb7d0f97c4032052072940aacb4eed59494c70b725b06a473acf4e83e1c025  /home/ubuntu/.tunnel_to_philip
+603a6cc89cd98ed6e2def545c7b0bee362de7eb6a05ac2d6b97759a4bb93e503  /home/ubuntu/bin/keeper.sh
+ssh -N -L=0
+keeper.sh=1
+zzz_no_such_process=0
+```
+
+PR #96はOPEN・非Draft。上流との差は0。phase0へ統合していない。目印・稼働版・中継数は
+変更前と一致した。
+
+## 同期抑止解除
+
+出力（原文）:
+
+```text
+released
+repo 直下から消えた
+-rw-rw-r-- 1 ubuntu ubuntu 0 Aug 12 21:02 /tmp/.sync-pause.released.T-2026-08-12-submit-hub-key-ilya
+```
+
+抑止はrepo外へ移動され、必要なら退避先から戻せる。
