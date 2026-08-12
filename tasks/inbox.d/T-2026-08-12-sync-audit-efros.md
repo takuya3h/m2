@@ -1,0 +1,10 @@
+- [ ] 2026-08-12 [cc] philip だけが両ポートとも No route to host。他 9 台は SSH 50072 が OPEN で 22000 は REFUSED（RST が返る＝アドレスは生存）。構内全体でも外向きでもなく、落ちているのは中心 1 台と経路のみ（tasks/T-2026-08-12-sync-audit-efros/audit.md の Task 4）
+- [ ] 2026-08-12 [cc] 停止時刻は 2026-08-06T20:23:41Z。~/.syncthing.log の Lost device connection が直接の記録で、~/.tunnel.log からの逆算 20:42:09Z との差 18 分 28 秒は keeper の 1 ループ未満。二つの情報源は整合した（tasks/T-2026-08-12-sync-audit-efros/RESULT.md の 3.2）
+- [ ] 2026-08-12 [cc] efros が Established した相手は 27 件すべて philip、かつ 27 件すべて connection.remote=127.0.0.1:22001。他 9 台へ直接繋がった記録が 1 件も無い。星型は設計どおり機能しており中心の喪失は同期の全損（~/.syncthing.log）
+- [ ] 2026-08-12 [cc] 両フォルダとも versioning.type=(none)。maxConflicts=10 のため両側編集は .sync-conflict-* に残るが、他ホストで削除されたファイルは復旧時にこちらでも消え戻せない。.stversions は 0 件（~/.local/state/syncthing/config.xml）
+- [ ] 2026-08-12 [cc] 中心の名前とアドレスは keeper.sh:16,19 に直書き（ubuntu@192.168.196.150 -p 50072）。稼働実体と正本の差は 0 行。設定や環境変数では動かせず、中心の移動にはコード変更と各ノードへの ~/.tunnel_to_philip の配り直しが要る（scripts/sync/keeper.sh）
+- [ ] 2026-08-12 [cc] globalAnnounceEnabled=false かつ relaysEnabled=false。中心を失ったとき迂回する経路が構成上存在しない（~/.local/state/syncthing/config.xml）
+- [ ] 2026-08-12 [cc] efros 側の未伝播の分岐は 171 ファイル 2044979 バイト。110 が再生成可能キャッシュ、59 が 2026-08-11T16:11:59 の一括導入物、1 が追記ログで、実体のある局所設定は codex/config.toml（1008 バイト）1 件のみ（tasks/T-2026-08-12-sync-audit-efros/inventory.tsv）
+- [ ] 2026-08-12 [cc] 全 11 台の一覧は syncthing 設定にしか無い。~/.ssh/config は philip と lecun の 2 台、/etc/hosts は自ホストのみで、出所を 1 つに絞ると対象一覧が 10 台から 2 台へ縮む（~/.ssh/config, /etc/hosts）
+- [ ] 2026-08-12 [cc] efros には ss も netstat も lsof も無い。待ち受けの確認は /proc/net/tcp を直接読む必要があり、SPEC の「零行なら手段が無かった」に従うと測れるものを UNKNOWN と報告することになる（tasks/T-2026-08-12-sync-audit-efros/RESULT.md の 4.1）
+- [ ] 2026-08-12 [cc] SPEC Task 6 Step 5/6 の変更範囲指定が tasks/README.md:283-288 と食い違う。README は抽出物を契約の記録と一緒に commit することを求め、未追跡放置が merge --ff-only を壊す実測（B-30、5 台）を根拠に挙げている。本契約では契約の commit を SPEC どおりに保ち、抽出物を別 commit に分けて両立させた（tasks/README.md）
