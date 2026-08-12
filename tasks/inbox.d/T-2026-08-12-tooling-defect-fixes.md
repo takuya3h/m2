@@ -1,0 +1,1 @@
+- [ ] 2026-08-12 [human] 契約自身の未追跡物を停止対象から除外し、G1 は再現項目の前後比較へ訂正。欠陥 2 は api-key と小文字 password に限定し、NOTION/W&B は回帰対照へ変更（T-2026-08-12-tooling-defect-fixes）

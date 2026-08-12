@@ -56,9 +56,10 @@ SECRET_ENV_KEYS = ("NOTION_API_KEY", "WANDB_API_KEY")
 # 外部サービスの鍵に多い接頭辞。値そのものが手元に無くても形で気付ける。
 SECRET_PATTERNS = (
     ("Notion の内部鍵", re.compile(r"\b(?:secret_|ntn_)[A-Za-z0-9]{20,}")),
-    ("W&B の鍵らしい 40 桁", re.compile(r"(?<![0-9a-f])[0-9a-f]{40}(?![0-9a-f])")),
     ("鍵らしい代入", re.compile(
-        r"\b[A-Za-z_]*(?:API_KEY|SECRET|TOKEN|PASSWORD|PASSPHRASE)[A-Za-z_]*\s*[:=]\s*['\"]?\S{12,}"
+        r"\b[A-Za-z0-9_-]*(?:API[-_]?KEY|SECRET|TOKEN|PASSWORD|PASSPHRASE)"
+        r"[A-Za-z0-9_-]*\s*[:=]\s*['\"]?\S{12,}",
+        re.IGNORECASE,
     )),
 )
 
@@ -123,12 +124,24 @@ def load_report(task_id: str, tasks_dir: Path | None = None) -> tuple[str, dict]
 
 
 def _rich_text(text: str) -> list[dict]:
-    """上限ごとに切って rich_text の要素へ並べる。
+    """UTF-16 単位の上限ごとに切って rich_text の要素へ並べる。
 
     取得時は要素が連結されて返るため、**境界の位置を覚える必要はない**
     （2026-08-12 に 5364 バイト・3 分割で実測）。
     """
-    chunks = [text[i:i + RICH_TEXT_LIMIT] for i in range(0, len(text), RICH_TEXT_LIMIT)] or [""]
+    chunks: list[str] = []
+    current: list[str] = []
+    units = 0
+    for char in text:
+        char_units = 2 if ord(char) > 0xFFFF else 1
+        if current and units + char_units > RICH_TEXT_LIMIT:
+            chunks.append("".join(current))
+            current = []
+            units = 0
+        current.append(char)
+        units += char_units
+    if current or not chunks:
+        chunks.append("".join(current))
     return [{"type": "text", "text": {"content": c}} for c in chunks]
 
 

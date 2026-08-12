@@ -31,8 +31,6 @@ from check_spec import (  # noqa: E402
     load_contract,
 )
 
-SELF_TASK = "T-2026-08-11-issuer-defect-detector"
-
 # 教師データ（`defects.md` の syntactic と structural の全件）と、捕まえるべき規則。
 # 規則が無いもの（None）は実装していない型である。**空欄にせず理由を残す。**
 TEACHER: tuple[tuple[str, str | None, int | None, str], ...] = (
@@ -249,11 +247,20 @@ def test_negative_control_gate_at_last_phase(tmp_path):
     assert _rules_hit(_contract(tmp_path, "# x\n", spec)) == set()
 
 
-def test_self_contract_has_no_hit():
-    """本契約自身が該当しない。**最初の実運用である。**"""
-    payload = check([load_contract(SELF_TASK)])
+def test_clean_contract_has_no_hit(tmp_path):
+    """特定の実在契約に依存しない最小契約では該当しない。"""
+    payload = check([_contract(tmp_path, "# clean contract\n")])
     assert payload["hits"] == 0, payload["findings"]
     assert payload["status"] == "pass"
+
+
+def test_host_mismatch_ignores_case_but_detects_other_host(tmp_path, monkeypatch):
+    """大小文字だけの差を通し、別ホストは引き続き捕まえる。"""
+    monkeypatch.setattr(socket, "gethostname", lambda: "efros")
+    case_only = _contract(tmp_path, "# x\n\n**実行ホスト:** `Efros`\n")
+    assert "host_mismatch" not in _rules_hit(case_only)
+    other = _contract(tmp_path, "# x\n\n**実行ホスト:** `different-host`\n")
+    assert "host_mismatch" in _rules_hit(other)
 
 
 # ------------------------------------------------------------------- 検出率

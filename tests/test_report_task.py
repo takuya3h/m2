@@ -79,6 +79,23 @@ def test_short_env_value_is_not_matched():
     assert R.scan_secrets("status は pass です", env={"NOTION_API_KEY": "pass"}) == []
 
 
+@pytest.mark.parametrize(
+    ("name", "text", "should_stop"),
+    [
+        ("hex40_should_pass", "commit " + "0123456789abcdef" * 2 + "01234567 を参照", False),
+        ("plain_should_pass", "これは普通の文章である", False),
+        ("dash_should_stop", "api-key: " + "z" * 40, True),
+        ("lower_password_stop", "password=" + "q" * 20, True),
+        ("notion_should_stop", "NOTION_API_KEY=" + "x" * 40, True),
+        ("wandb_should_stop", "WANDB_API_KEY=" + "y" * 40, True),
+        ("report_like", "九台すべてが Permission denied (publickey,password) を返した。", False),
+    ],
+)
+def test_secret_scan_regression_controls(name, text, should_stop):
+    """履歴識別子と報告文を通し、資格情報の代入だけを止める。"""
+    assert bool(R.scan_secrets(text, env={})) is should_stop, name
+
+
 def test_send_refuses_when_secret_present(tmp_path, monkeypatch):
     body = "# 報告\n\nkey: secret_" + "b" * 32 + "\n"
     tasks = _make_task(tmp_path, body=body)
@@ -219,6 +236,22 @@ def test_body_is_split_but_rejoins(tmp_path, monkeypatch):
     assert all(len(i["text"]["content"]) <= R.RICH_TEXT_LIMIT for i in items)
     joined = "".join(i["text"]["content"] for i in items)
     assert joined == R.REPORT_SENTINEL + "\n" + body
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        "\U0001f534" * 1001,
+        "あ" * 1999 + "\U0001f534" + "い",
+        "あ" * 4501,
+    ],
+)
+def test_rich_text_uses_utf16_units_and_rejoins(body):
+    """受け側の UTF-16 単位上限を守り、文字を壊さず元へ戻せる。"""
+    items = R._rich_text(body)
+    chunks = [item["text"]["content"] for item in items]
+    assert all(len(chunk.encode("utf-16-le")) // 2 <= R.RICH_TEXT_LIMIT for chunk in chunks)
+    assert "".join(chunks) == body
 
 
 def test_report_block_is_not_read_as_contract_body():

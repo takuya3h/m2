@@ -1,0 +1,85 @@
+result_version: 3
+task_id: "T-2026-08-12-tooling-defect-fixes"
+status: pass
+host: "efros"
+branch: "feat/tooling-defect-fixes"
+pr: 92
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      訂正後の範囲で修正前の hex40 偽陽性、api-key と小文字 password の偽陰性、
+      UTF-16 2,010 units の上限超過、Efros 対 efros の host_mismatch 1 件を実測した。
+      NOTION_API_KEY と WANDB_API_KEY は修正前から各 1 finding で、回帰対照へ変更した。
+  - id: G2
+    verdict: pass
+    note: >-
+      秘匿七件は全件期待どおりだった。UTF-16 の元入力と三境界は各切片が最大 2,000 units
+      以下で、四入力すべてを連結すると元本文へ戻った。
+  - id: G3
+    verdict: pass
+    note: >-
+      修正後は Efros 対 efros が 0 findings、別ホストが 1 finding。本契約 P9 は PASS。
+      対象試験は 2 failed から 0 failed、全体は 7 failed から既存 5 failed へ減った。
+
+tests:
+  before_failed: 7
+  after_failed: 5
+  after_passed: 430
+
+deviations:
+  - type: judgement
+    note: >-
+      実行者による機能範囲の逸脱はない。ユーザー訂正は起票者欠陥への対処として適用した。
+      プロジェクト最上位指示がコード変更後の README 更新を必須とするため、契約 Files 欄外の
+      README.md に現在の実装状態だけを追記した。
+  - type: spec_defect
+    note: >-
+      task スキルが要求する taskindex-check と inbox-check は、新規 result.yaml と inbox 原本の
+      未投影差分を検出してどちらも exit 2 だった。一方、本契約の禁止 8 は make taskindex と
+      make inbox による生成物の再生成を明示禁止するため、差分を解消せず原本だけを記録した。
+
+issuer_defects:
+  - type: self_contradiction
+    note: >-
+      前提節が make task-start による本契約自身の取り込みを未追跡物として停止対象にしていたが、
+      Task 5 Step 5 は本契約ディレクトリを許容しており、同一契約内で不整合だった。指示どおり
+      判定すると正常な task-start の直後に必ず停止するため、ユーザー訂正で契約自身を除外した。
+  - type: asserted_without_measuring
+    note: >-
+      欠陥 2 の根拠は前契約の報告本文に対する grep 式の実測で、report_task.py の秘匿検査を
+      測っていなかった。実測では NOTION_API_KEY と WANDB_API_KEY は既に検出され、実際の
+      取りこぼしは api-key と小文字 password に限られたため、ユーザー訂正で範囲を狭めた。
+
+positive_controls:
+  - judgement: "秘匿検査が通す本文と止める代入を区別する"
+    breaking_input: "api-key または小文字 password に 12 文字以上の値を代入する"
+    observed: >-
+      api-key と小文字 password は各 1 finding。裸の 40 桁 hex、普通文、認証失敗の表示は
+      0 findings。NOTION_API_KEY と WANDB_API_KEY は修正前後とも各 1 finding だった。
+  - judgement: "rich_text の各切片が UTF-16 2,000 units 以下で連結可能"
+    breaking_input: "基本多言語面外の文字を境界へ置き、符号位置だけで 2,000 文字に切る"
+    observed: >-
+      旧実装は 2,010 units、修正後は元入力と三境界すべて最大 2,000 units 以下で、
+      四入力すべて joined=True だった。
+  - judgement: "host_mismatch が大小文字だけの差を無視し別ホストを検出する"
+    breaking_input: "実ホスト efros に対し宣言 Efros と different-host をそれぞれ与える"
+    observed: >-
+      Efros は修正前 1 finding から修正後 0 findings、different-host は修正前後とも 1 finding。
+      一時契約は測定後に削除した。
+  - judgement: "追加試験が旧実装を実際に破る"
+    breaking_input: "追加試験だけを入れ、tools の修正前実装へ当てる"
+    observed: "6 failed, 58 passed。修正後の同範囲は 64 passed。"
+
+followups:
+  - >-
+      対象外の 5 failures は engine の既存証跡 score_thr 不一致 1 件と、空 metrics を
+      completed 投稿しない research logger 現行仕様と試験期待の不一致 4 件。
+
+unknowns: []
+
+commits:
+  - "5710104"
+  - "7839210"
