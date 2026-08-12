@@ -235,3 +235,26 @@ Task 3 Step 2 は `(ss -ltn 2>/dev/null || netstat -ltn 2>/dev/null || echo "手
 
 `inventory.tsv` は**他ホストの同名ファイルと突き合わせるためのもの**である。
 要約値は sha256 の先頭 16 文字。
+
+---
+
+## 10. 抑止の設置と解除（実測）
+
+    07:28  touch .sync-pause                       設置
+    07:41  常駐処理が記録: 「一時停止中: /home/ubuntu/slocal2/m2/.sync-pause があるため
+                            分岐へ書き込まない（消せば再開）」
+    07:28 以降の auto-merge / auto-push            0 件
+    07:11 （設置前）                                auto-merge と auto-push が各 1 件
+
+**抑止は実際に効いた。** 目印を置いただけで止まったことを、記録の側から確認している
+（置いたのに止まっていなければ `auto-merge` が周期ごとに出るはずだが、出ていない）。
+稼働中の `~/bin/m2-sync.sh` が抑止に対応していることは `grep -c sync-pause` = **2** で
+事前に確認した（0 なら未対応）。
+
+解除は削除ではなく移動で行った。
+
+    mv .sync-pause /tmp/.sync-pause.released.T-2026-08-12-sync-audit-andrew   → released
+    ls -la .sync-pause                                                        → repo 直下から消えた
+
+**退避先: `/tmp/.sync-pause.released.T-2026-08-12-sync-audit-andrew`。**
+repo 直下に未追跡ファイルを残していない。

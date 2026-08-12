@@ -66,6 +66,9 @@ positive_controls:
   - judgement: "退避ディレクトリ .stversions が 0 件"
     breaking_input: "別の探し方を 3 通り与える"
     observed: "find -type d / ls -a 直下 / 種類を問わない find -name のいずれも 0。設定の versioning 要素 3 件は中身が空で無効"
+  - judgement: "抑止の目印 .sync-pause が常駐処理の自動統合を実際に止めた"
+    breaking_input: "目印を置いたまま 30 分周期を跨ぐ。止まっていなければ auto-merge / auto-push が記録に出る"
+    observed: "2026-08-12 07:41:02 に「一時停止中: .sync-pause があるため分岐へ書き込まない」が記録され、設置 07:28 以降の auto-merge / auto-push は 0 件。設置前の 07:11 には両方が出ていた"
 
 followups:
   - "中心 philip（192.168.196.150）は両ポートとも No route to host。他の 9 台は SSH 50072 が OPEN で機器は生きて届く。落ちているのは単一ホストへの経路のみで、構内全体でも外向きでもない"
