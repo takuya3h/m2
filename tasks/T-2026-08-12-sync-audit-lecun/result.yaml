@@ -1,0 +1,212 @@
+result_version: 3
+task_id: "T-2026-08-12-sync-audit-lecun"
+status: pass
+host: "lecun"
+branch: "feat/sync-audit-lecun"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      到達性の道具に開いている先・閉じている先・経路の無い先を与え、三通りが出し分けられる
+      ことを確かめた。A_open=OPEN / B_closed=REFUSED / C_noroute=TIMEOUT で期待と全一致。
+      192.0.2.1 は RFC 5737 の TEST-NET-1 であり意図的に経路を持たない。あわせて版管理側の
+      経路が生きていることを確かめた（git ls-remote が refs/heads/phase0 を 1 行返し exit=0、
+      値は a85cf78）。したがって「全ホストへ到達できない」という結果は道具の欠陥でも
+      外向き通信の全面障害でも説明できない。
+  - id: G2
+    verdict: pass
+    note: >-
+      対象一覧を三つの出所から集めた（ssh_count=4 / hosts_count=7 うち遠隔 0 / stcfg_count=11）。
+      和集合は遠隔 10 台で、既知の構成 11 台は遠隔 10 台と自ホストの内訳であり一覧は縮んで
+      いない。10 台 x 3 ポート = 30 件を測り、分類の合計 30 = 行数 30 = 対象数 30 で一致した。
+      三分類は OPEN 9（すべて 50072）/ REFUSED 18（22000 と 22001）/ TIMEOUT 0 /
+      OSERROR:No_route_to_host 3（philip の 3 ポートすべて）。TIMEOUT=0 は grep と python の
+      2 経路で確認した（awk による確認は引用の誤りで走っておらず、空振りだった）。
+      拒否は機器まで届いていること、経路なしは機器まで届かないことを意味する。
+  - id: G3
+    verdict: pass
+    note: >-
+      一覧に内容と資格情報が含まれないことを検査で確かめた。語の検査は 4 件該当したが、
+      4 件すべてが第 1 列（経路名）にのみ現れ、第 2 列以降には現れない（tokenizers.md /
+      secrets.md / tokens.css / chart-tokens.css というファイル名の語である）。
+      さらに列の型を検査し、2531 行すべてが 4 列、第 2 列は整数、第 3 列は ISO 時刻、
+      第 4 列は 16 桁の hex であることを確かめた。したがって一覧は名前と大きさと更新時刻と
+      要約値のみからなり内容を含まない。識別子は先頭 7 文字のみで API キーは読んでいない。
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 423
+
+positive_controls:
+  - judgement: "判定 1 プローブが三通りを出し分けた"
+    breaking_input: "開いている先・閉じている先・経路の無い先の三種を与える"
+    observed: >-
+      A_open=OPEN / B_closed=REFUSED / C_noroute=TIMEOUT。三通りすべてが期待と一致した。
+      **これを先に示さなければ「全部つながらない」が道具の欠陥かどうか判定できない。**
+  - judgement: "判定 2 版管理側の経路が生きている"
+    breaking_input: "外向きの通信が全面的に落ちていれば ls-remote が失敗する"
+    observed: >-
+      参照が 1 行返り exit=0（refs/heads/phase0 = a85cf78）。外向きは生きている。
+      同期の不具合と通信全体の障害を切り分けられた。
+  - judgement: "判定 3 常駐処理の稼働数"
+    breaking_input: "同じ対象を別の方法で数え、値が一致するかを見る"
+    observed: >-
+      角括弧法は keeper.sh を 2 件、ssh -L を 1 件と数えたが、/proc/*/cmdline を読み
+      自分と祖先を除くと 1 件と 0 件だった。**食い違ったため角括弧法が無効だと判明した。**
+      原因はこの環境で測定命令の全文が別プロセスの args に埋め込まれることである。
+  - judgement: "判定 11 と 12 三分類の合計と TIMEOUT=0"
+    breaking_input: "分類の合計と行数と対象数を突き合わせる。零の項目は別の探し方で確かめる"
+    observed: >-
+      30 = 30 = 30 で一致。TIMEOUT=0 は grep と python の 2 経路で確認した。
+      **awk による 3 経路目は引用の誤りで走っておらず、それでも wc -l が 0 を返すため
+      見た目には確認できたように見える空振りだった。** 有効な確認は 2 経路である。
+  - judgement: "判定 14 一覧に内容が含まれない"
+    breaking_input: "語の検査が 0 でない場合に、名前の語か値の混入かを区別する"
+    observed: >-
+      検査は 4 件該当した（0 ではない）。列ごとに調べると 4 件すべて第 1 列のみで、
+      第 2 列以降には現れなかった。**検査が 4 を返したこと自体が、この検査が空振りでは
+      ないことを示している。** 加えて 2531 行すべての列の型が想定どおりだった。
+  - judgement: "判定 16 停止時期の推定"
+    breaking_input: "独立した情報源が食い違えば、単一の情報源への依存が露見する"
+    observed: >-
+      A 最新の衝突ファイル 2026-08-06 16:22:24 / B 他ホストの最終行 20:20:11 /
+      C トンネルの連続失敗からの導出 21:05:26 / D syncthing の最後の同期 20:20:23。
+      幅は 4 時間 43 分で整合した。順序も A <= B・D <= C で意味を持つ。
+      **接続喪失の瞬間は 2026-08-06 20:24:02 として直接記録に残っていた。**
+
+deviations:
+  - type: judgement
+    note: >-
+      待ち受けの一覧を /proc/net/tcp と /proc/net/tcp6 から復号して取った（状態 0A = LISTEN）。
+      SPEC Task 3 Step 2 が想定した ss と netstat は未導入であり、lsof も無い（command -v で
+      3 件すべて確認）。指示どおりの命令は「手段なし」の 1 行を返すだけで一覧が得られない。
+      別の探し方として /proc を読み、LISTEN 16 件を得た。
+  - type: judgement
+    note: >-
+      常駐処理と同期処理の稼働数を /proc/*/cmdline から自分と祖先を除いて数え直した。
+      SPEC 指定の角括弧法（ps -eo args | grep -c "[k]eeper.sh"）はこの環境で自己一致し、
+      keeper を 2 件（実際 1 件）、ssh -L を 1 件（実際 0 件）と誤って数える。
+      両方の値と食い違いの原因を audit.md に記録した。
+  - type: judgement
+    note: >-
+      停止時期の情報源を四つに増やした（SPEC は二つ以上を要求）。四つ目の ~/.syncthing.log は
+      SPEC の find が拾えなかったが、keeper.sh 24 行の追記先を読んで場所を特定した。
+      これが接続喪失の瞬間（2026-08-06 20:24:02）を直接記録した唯一の情報源である。
+  - type: judgement
+    note: >-
+      Task 4 で測るポートを 2 つから 3 つへ増やした（22000 と 22001 に 50072 を追加）。
+      50072 は keeper.sh 16 行が実際に使う経路であり、実装から得た値である。
+      これにより「機器までは届くが syncthing の口だけが転送されていない」ことが分かった。
+  - type: judgement
+    note: >-
+      復旧時に他ホストの版と衝突しうるファイル数を追加で測った（SPEC Task 5 Step 4 は
+      更新時刻の分布のみを求める）。接続喪失の時刻を境に数え、172 件・約 2.0 MB を得た。
+      決定事項が「復旧によって消えうるものを退避する必要があるか」であり、分布だけでは
+      その判断の材料にならないため測った。
+  - type: judgement
+    note: >-
+      versioning の設定を追加で読み、.stversions が 0 件である理由を確定させた
+      （両フォルダの versioning.type が空 = 版の退避は設定で無効）。
+      これを測らなければ「0 件」の理由が UNKNOWN のまま残った。
+  - type: environment
+    note: >-
+      sync-alerts.log のホスト名に大文字の変種（Hinton / Bengio / Andrew）があり、最初に
+      使った正規表現 [a-z0-9]+ が 108 行を黙って落とした。緩い正規表現で 16 ラベル・871 行を
+      確認し直した。**他ホストの最終行が hinton の 2026-08-06 20:20:11 であるという結論は
+      変わらなかったが、落としたことを記録する。**
+  - type: environment
+    note: >-
+      本契約のプローブが観測対象に痕跡を残した。127.0.0.1:22000 への TCP 接続により
+      ~/.syncthing.log に 1 行（2026-08-12 08:17:25 WRN Failed TLS handshake）が書かれた。
+      読み取りのみの契約であり状態は変えていないが、**観測が対象のログを 1 行伸ばした**
+      事実として記録する。
+  - type: judgement
+    note: >-
+      本分岐に契約の範囲外の commit が 1 件ある（212dedf docs(sessions): record digest from
+      lecun）。前契約で作った digest の commit が PR #82 のマージ後に push されて取り残され、
+      phase0 へ届かなくなったため、ユーザーの指示（commit する）を満たすよう本分岐へ
+      cherry-pick した。**本契約の作業を始める前の操作であり、作業ツリーには残っていない。**
+
+issuer_defects:
+  - type: check_does_not_check
+    note: >-
+      Task 5 Step 5 の find ~ -maxdepth 3 -name "syncthing*.log" は 0 件を返すが、
+      ~/.syncthing.log は 31137 行で実在する。-name のパターンが先頭の . に一致しないためである。
+      このファイルは接続喪失の瞬間（2026-08-06 20:24:02 Lost device connection device=GO2U7PF）と
+      その後 5 日間の空白を直接記録した唯一の情報源であり、停止時期の最も強い証拠である。
+      指示どおり実行して件数だけを見ると「同期処理のログは別の場所に無い」と誤読し、
+      最も強い証拠を落としたまま二つの弱い情報源だけで推定することになる。
+  - type: check_does_not_check
+    note: >-
+      Task 2 Step 1 の ps -eo args | grep -c "[k]eeper.sh" と Task 3 Step 1 の
+      grep -c "[s]sh .*-L" は、この実行環境では測定命令の全文が別プロセスの args に
+      埋め込まれるため自己一致する。実測では keeper を 2 件（実際 1 件）、ssh -L を 1 件
+      （実際 0 件）と数えた。SPEC は pgrep -f を過去 2 回の発生を理由に禁じたが、
+      その回避策である角括弧法も同じ理由で無効である。角括弧は grep 自身を除くだけで、
+      コマンド全文を args に持つ別プロセスは除けない。指示どおり数えると常駐処理が
+      二重起動しており中継も動いていると誤読する。
+  - type: asserted_without_measuring
+    note: >-
+      Task 3 Step 2 は ss か netstat のいずれかがあることを前提に「零行なら手段が無かった
+      ということ」と書くが、この環境には ss も netstat も lsof も無い（command -v で 3 件すべて
+      未導入を確認）。指示どおり実行すると "手段なし" の 1 行が返り、待ち受けの一覧が
+      一切得られない。その場合の代替の指示は無い。待ち受けの一覧は「22000 は待ち受けているが
+      22001 は存在しない」という結論の根拠であり、これが取れないと Task 3 Step 3 の
+      REFUSED の意味を確定できない。
+  - type: self_contradiction
+    note: >-
+      Task 5 Step 3 は Expected を 0 と断定しながら、同じ Step の中で「ファイル名に該当語が
+      ある場合はその行を残しつつ、一覧が名前と要約値のみで内容を含まないことを明記する」と
+      0 でない場合の扱いを書いている。実測は 4 件であり、4 件すべてがファイル名の語だった。
+      Expected 0 を判定基準として素直に読むと、正常な状態（tokenizers.md や secrets.md が
+      存在する）で不合格になる。判定は語の件数ではなく列の構造で行うべきである。
+
+followups:
+  - >-
+    この実行環境では ps と grep による自己一致の回避が原理的に成立しない。測定命令の全文が
+    /usr/bin/zsh -c ... eval '<命令全文>' という形で別プロセスの args に現れるため、
+    角括弧法も pgrep -f と同じく誤った件数を返す。プロセスを数える手順は /proc/*/cmdline を
+    読み自分と祖先を除く形へ統一するのが確実である。手順書の該当箇所を直すかの判断が要る。
+  - >-
+    ss も netstat も lsof も無い環境では待ち受けの一覧を /proc/net/tcp と /proc/net/tcp6 から
+    復号する必要がある。状態 0A が LISTEN、アドレスはリトルエンディアンの hex である。
+    手順書に代替として書いておくかの判断が要る。
+  - >-
+    停止期間に自ホストで更新された 172 件のうち、人が触る設定に当たるのは settings.json
+    （14419 バイト、2026-08-11T05:49:59）と codex/config.toml（901 バイト、2026-08-11T21:59:17）
+    である。残る 170 件は codex/plugins/cache/ 配下の自動生成物である。
+    版の退避は設定で無効（versioning.type が空）であり、上書きされた旧版は残らない。
+    衝突ファイルの機構は働いている（過去 10 件の実績）。
+  - >-
+    他 10 台とは一度も直接接続していない（Established secure connection の相手は 21 件すべて
+    philip）。一方で 9 台の SSH ポート 50072 は OPEN であり機器までは届く。
+    大域探索と中継は設定で無効（globalAnnounceEnabled=false / relaysEnabled=false）。
+    経路の選択肢に関する事実であり、方針の判断はユーザーが行う。
+  - >-
+    sync-alerts.log に現れるホストのラベルは 16 種（大文字の変種を含む）で、syncthing の
+    device 11 台と一致しない。dlstation（ログ）と dlsta（syncthing）、084f3b0911a2
+    （コンテナ識別子）、aolab はラベルの対応が付いていない。ホスト名の正本を決めるかの判断が要る。
+
+unknowns:
+  - >-
+    他ホストの状態。同じ内容の契約を複数ホストで並行実行しているため、他ホストの測定結果は
+    見えない。停止期間に他ホスト側で何がどれだけ変更されたかは自ホストからは測れない。
+    復旧時に衝突する相手側の件数は UNKNOWN である。
+  - >-
+    philip の停止の原因と復旧時期。記録では「ハード側の理由で停止し復旧は 2 週間以降」と
+    されているが、本契約が測れたのは「lecun から philip の 3 ポートすべてへ経路が無い」
+    ことだけである。停止の理由そのものは UNKNOWN。
+  - >-
+    22000 が 9 台すべてで REFUSED である正確な理由。keeper.sh 14 行のコメント
+    「コンテナ間は SSH(50072) しか通らない」と整合するが、転送の設定そのものは
+    自ホストから読めない。REFUSED は機器まで届いていることだけを示す。
+  - >-
+    2026-08-06 20:24:02 の接続喪失から philip が完全に到達不能になるまでの経過。
+    ~/.tunnel.log は時刻を持たないため、Connection reset や Timeout の段階が
+    いつ起きたかは行の順序からしか読めない。各段階の時刻は UNKNOWN。
+
+commits: []
