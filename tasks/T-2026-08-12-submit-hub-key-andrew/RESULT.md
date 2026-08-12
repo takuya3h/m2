@@ -128,4 +128,15 @@ sigma に関する列は 4 系統ある（backlog B-18）。
 
 ## 7. 送出・PR・台帳
 
-送出前。commit、PR番号、上流状態、抑止解除、台帳送信結果は送出後に追記する。
+| # | 完了判定 | 実測値 |
+|---|---|---|
+| 15 | 14項目に実測値または UNKNOWN | 上表に空欄なし、UNKNOWN なし |
+| 16 | 目印・稼働版・中継数 | 前後一致。詳細は「6. 禁止領域の前後比較」 |
+| 17 | 変更範囲 | `forbidden-check` は changed 12 / checked 8 / excluded 4 / violations 0。unmerged 0 |
+| 18 | 分岐送出 | 上流との差 `0 0`、phase0 に対して ahead 1 / behind 0 |
+| 19 | PR | **#97**、OPEN、非Draft、base `phase0`、head `feat/submit-hub-key-andrew` |
+| 20 | 抑止解除 | PENDING |
+| 21 | 台帳送信 | PENDING |
+
+記録 commit は `02e651b feat(sync): submit tunnel public key for andrew`。
+PR: https://github.com/takuya3h/m2/pull/97
