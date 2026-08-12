@@ -180,3 +180,18 @@ pytest_exit=1
 
 - `tests/test_engines.py` 1 件: 既存 S0 証跡の `score_thr=0.0` と試験期待 `1e-8` の不一致。
 - `tests/test_research_logger.py` 4 件: 空または欠落した `metrics.json` を completed として投稿しない現行実装と、投稿を期待する試験の不一致。
+
+## 11. 実地送信
+
+同期抑止を解除し、認証環境を読み込んだ同一コマンドで `make task-report` を実行した。
+
+```text
+released
+repo 直下から消えた
+verdict=pass
+n_issuer_defects=2
+replaced_blocks=0
+exit=0
+```
+
+資格情報の値は出力・記録していない。本契約で修正した秘匿検査と UTF-16 分割を通る最初の実地送信に成功した。

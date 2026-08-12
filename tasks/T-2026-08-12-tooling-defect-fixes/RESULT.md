@@ -62,8 +62,8 @@ L3 プリフライトは `5 PASS / 0 WARN / 4 SKIP / 0 FAIL`。SKIP は
 | 16 | PASS。未併合 0、禁止領域 violations 0。変更は道具・試験・契約・専用 inbox と必須 README 更新。 |
 | 17 | PASS。`origin/feat/tooling-defect-fixes` を上流に設定し、push 後の ahead は 0。 |
 | 18 | PASS。PR #92、OPEN、非 Draft。新規作成。 |
-| 19 | UNKNOWN。報告送信直前まで同期抑止を維持中。 |
-| 20 | UNKNOWN。`make task-report` 実行前。 |
+| 19 | PASS。`.sync-pause` を `/tmp` へ退避し、repo 直下から消えたことを確認した。 |
+| 20 | PASS。最初の実地 `make task-report` は exit 0、verdict pass、issuer defects 2、replaced blocks 0。 |
 
 ## 5. 試験
 
@@ -91,10 +91,16 @@ pass / skip 数の差は、一時 worktree に現行 repo の未追跡データ 
   対処として適用した。
 - プロジェクト最上位指示がコード変更後の README 更新を必須とするため、契約 Files 欄外の
   `README.md` に現在の実装状態を追記した。
+- task スキルの投影整合性確認として `taskindex-check` と `inbox-check` を実行し、どちらも
+  新規原本の未投影差分を検出して exit 2 だった。本契約の禁止 8 が `make taskindex` と
+  `make inbox` による再生成を明示禁止するため、生成物は更新していない。
 
 ## 8. 未解決と配布
 
 - PR: #92（OPEN、非 Draft）
 - implementation commit: `5710104`
-- 台帳送信: UNKNOWN
+- report commit: `7839210`
+- 同期抑止: 解除済み（repo 直下に `.sync-pause` なし）
+- 台帳送信: exit 0。`verdict=pass`、`n_issuer_defects=2`、`replaced_blocks=0`
+- 投影チェック: `taskindex-check=2`、`inbox-check=2`。契約禁止により再生成せず。
 - 残存 5 テストは本契約の対象外であり、変更していない。

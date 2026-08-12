@@ -35,6 +35,11 @@ deviations:
       実行者による機能範囲の逸脱はない。ユーザー訂正は起票者欠陥への対処として適用した。
       プロジェクト最上位指示がコード変更後の README 更新を必須とするため、契約 Files 欄外の
       README.md に現在の実装状態だけを追記した。
+  - type: spec_defect
+    note: >-
+      task スキルが要求する taskindex-check と inbox-check は、新規 result.yaml と inbox 原本の
+      未投影差分を検出してどちらも exit 2 だった。一方、本契約の禁止 8 は make taskindex と
+      make inbox による生成物の再生成を明示禁止するため、差分を解消せず原本だけを記録した。
 
 issuer_defects:
   - type: self_contradiction
@@ -73,8 +78,8 @@ followups:
       対象外の 5 failures は engine の既存証跡 score_thr 不一致 1 件と、空 metrics を
       completed 投稿しない research logger 現行仕様と試験期待の不一致 4 件。
 
-unknowns:
-  - "台帳送信結果は現時点で UNKNOWN。実測後に更新する。"
+unknowns: []
 
 commits:
   - "5710104"
+  - "7839210"
