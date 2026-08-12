@@ -1,0 +1,84 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-12-hub-from-marker"
+  kind: impl
+  title: "常駐処理の正本から中心の直書きを外し、目印から導出する形に変える（配置は行わない）"
+  origin: claude-app
+  created_at: "2026-08-12T21:00:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-12-ilya-hub-feasibility"]
+  amendments: []
+
+intent:
+  question: "設定共有を五台で復旧させるにあたり、中心を別のホストへ移す必要がある。ところが中心の名前と住所と目印の名前が常駐処理の実装に定数で直書きされている。これを目印から導出する形に変え、目印を持たないノードは中継を張らないようにできるか。既存の目印でも従来どおり動く後方互換を保てるか"
+  decision_at_stake: "中心を変えるたびに実装を書き換える運用を続けるか、目印で切り替えられる形にするか。後者が成立すれば、次に中心が落ちたときも各ノードの目印を替えるだけで移せる"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/sync/keeper.sh"
+      - "scripts/sync/m2-sync.sh"
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "実装を読み、変更前の挙動と稼働中の実体を記録する", gpu: false, est: "40m"}
+    - {id: B, name: "中心を目印から導出する形に変え、四通りの対照で確かめる", gpu: false, est: "80m"}
+    - {id: C, name: "検証、送出、報告", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "正本と稼働中の実体の同一性を行数で確かめ、中心に関わる箇所を洗い出して件数を記録した。変更前の挙動を実装から読み取り、中継を実際に張らずに表にした"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "目印が旧名のとき、新名のとき、無いとき、複数あるときの四通りで、期待どおりに解決されることを確かめた。その際に中継を一本も張っていないことを、稼働数の陰性対照で示した。稼働中の実体と目印が無変更であることを大きさと更新時刻で確かめた"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-12-hub-from-marker/"
+  acceptance:
+    - "中心の名前と住所が判定に使われる箇所から消えており、残る場合はそれが判定に影響しない理由を実装の該当行で説明している"
+    - "目印を持たないノードが中継を張らないことを対照で示している"
+    - "既存の目印でも従来どおり解決されることを対照で示し、後方互換を壊していない"
+    - "目印が複数あるときの挙動を決めて記録している"
+    - "四通りの対照を実際に中継を張らずに行い、その方法を記載している"
+    - "中継の稼働数が変更前と同じであることを、検索命令自身に一致しない方法で示している"
+    - "稼働中の実体と目印が無変更であることを大きさと更新時刻で示している"
+    - "構文検査を通しており、終了コードを記載している"
+    - "次の契約で必要になる目印の書式と配置の手順を記しており、いつ配置するかは書いていない"
+    - "変更が正本と契約の範囲に限られ、試験の失敗が増えていない"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "四通りの対照が期待どおりの結果を返さない場合"
+    - "中継の稼働数が変更前より増えており、実際に張ってしまった疑いがある場合"
+    - "稼働中の実体または目印が変わってしまった場合"
+    - "構文検査が通らない場合"
+    - "後方互換と住所の解決が両立せず、いずれかを諦める必要が生じた場合"

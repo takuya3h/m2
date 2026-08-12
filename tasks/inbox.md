@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（204 件）
+## 未処理（210 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -173,6 +173,11 @@
 - [ ] 2026-08-12 [cc] 到達できたのは bengio と efros の 2 台のみ。philip は経路なし（現在も正しい）、残る 7 台は TCP は届くが鍵も設定の項目も無い。8 台の状態は一切 UNKNOWN（tasks/T-2026-08-11-sandbox-and-host-inventory/result.yaml）
 - [ ] 2026-08-12 [cc] 本契約が bengio の /tmp/sp.txt（92 バイト）を作った。禁止 3 に触れる。消すこと自体がさらなる書き込みになるため残してある。掃除の可否の判断が要る（tasks/T-2026-08-11-sandbox-and-host-inventory/result.yaml）
 - [ ] 2026-08-12 [cc] SPEC Task 5 Step 2 が ps -eo args | grep を指示するが、同じ SPEC の「前契約で確定した環境の事実」の表が同じ方法を自己一致すると明記している。手順書側の矛盾を直すかは未決（.claude/skills/task/SKILL.md）
+- [ ] 2026-08-12 [cc] ilyaの受け入れ一覧は2件で、目標4台 efros・lecun・bengio・andrewを直接示す注釈は0件。契約の判定規則では4台すべてに登録が要る（tasks/T-2026-08-12-ilya-hub-feasibility/audit.md）
+- [ ] 2026-08-12 [cc] ilyaのコンテナ内ではSSH 22番とSyncthing 22000番がLISTEN。Syncthing=2、keeper=1。外から見える住所とSSH番号はUNKNOWN（tasks/T-2026-08-12-ilya-hub-feasibility/RESULT.md）
+- [ ] 2026-08-12 [cc] 過去2回の「ilyaは構内へ出られない」は今日の値と食い違う。他ノード10台のうちphilipを除く9台の50072番がOPENで、目標4台もすべて含む。philipだけ22000番No route to host・50072番TIMEOUT（tasks/T-2026-08-12-ilya-hub-feasibility/audit.md）
+- [ ] 2026-08-12 [cc] 9台へilya-to-philip鍵を指定した認証は全件Permission denied。SSH口への到達と鍵認証成功は別であり、鍵の生成・配布・変更は行っていない（tasks/T-2026-08-12-ilya-hub-feasibility/audit.md）
+- [ ] 2026-08-12 [cc] 到達性の陽性対照は当初TIMEOUT固定だったが、ilyaではNetwork is unreachableを即時に返した。ユーザー承認のamendmentで両者を経路なしとして許容して再開した（tasks/T-2026-08-12-ilya-hub-feasibility/spec.yaml）
 - [ ] 2026-08-12 [cc] 星型の中心 philip（192.168.196.150）へは両ポートとも No route to host。他 9 台は SSH 50072 が OPEN で機器までは届く。同一構内へ届かないのに外部の版管理へは届く非対称がある（tasks/T-2026-08-12-sync-audit-bengio/audit.md）
 - [ ] 2026-08-12 [cc] 停止は 2026-08-06 と推定。二つの独立した情報が整合する。遠隔由来の最後の衝突が 08-06 16:22 UTC、トンネルの連続失敗 263 回を 30 分周期で逆算して 08-06 20:41 UTC（同上）
 - [ ] 2026-08-12 [cc] .stversions が 0 件。経路が復旧して遠隔版が流れ込んだ場合、局所版を戻す手段が同期処理側に無い。claude-sync は 2532 ファイルで衝突が 10 件残る（tasks/T-2026-08-12-sync-audit-bengio/inventory.tsv）
@@ -202,6 +207,7 @@
 - [ ] 2026-08-12 [cc] ss も netstat も lsof も無い。待ち受けの一覧は /proc/net/tcp と /proc/net/tcp6 の状態 0A から復号した（LISTEN 16 件）。手順書に代替を書くかは未決（tools/preflight_task.py）
 - [ ] 2026-08-12 [cc] sync-alerts.log のホストのラベルは 16 種（大文字の変種を含む）で syncthing の device 11 台と一致しない。dlstation と dlsta、084f3b0911a2（コンテナ識別子）、aolab の対応が付いていない。ホスト名の正本が未決（~/claude-sync/sync-alerts.log）
 - [ ] 2026-08-12 [cc] 読み取りのみの契約でもプローブは痕跡を残す。127.0.0.1:22000 への TCP 接続で ~/.syncthing.log に 1 行（Failed TLS handshake）が書かれた。状態は変えていない
+- [ ] 2026-08-12 [human] 契約自身の未追跡物を停止対象から除外し、G1 は再現項目の前後比較へ訂正。欠陥 2 は api-key と小文字 password に限定し、NOTION/W&B は回帰対照へ変更（T-2026-08-12-tooling-defect-fixes）
 - [ ] 2026-08-12 [cc] 中継の鍵 id_ed25519_bengiotophilip（ED25519、指紋 SHA256:FsFyZQKu…）は philip 専用。遠隔 10 台へ認証を測り AUTH_OK 0 / DENIED 9 / NOCONN 1。認証が通るホストは一台も無い（tasks/T-2026-08-12-tunnel-key-audit-bengio/audit.md）
 - [ ] 2026-08-12 [cc] 拒否は鍵を提示したうえでのものと確認。詳細出力で実鍵は Offering public key まで到達し、/dev/null は Trying private key で止まる。口が開いていることと鍵が通ることは別だと実測で分かれた（同上）
 - [ ] 2026-08-12 [cc] bengio の受け入れ一覧は authorized_keys の 3 行のみ。遠隔ノード由来は philip-to-bengio と lecuntobengio の 2 件で、残る 8 台は登録が無い。bengio を中心にするなら 8 台分の登録追加が要る（~/.ssh/authorized_keys）

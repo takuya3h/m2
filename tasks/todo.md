@@ -1,7 +1,27 @@
 # TODO — 研究ピボット「分析ファースト」のセットアップ
 
+## 2026-08-12 — T-2026-08-12-ilya-hub-feasibility
+
+- [x] 契約・教訓・preflight・分岐・同期抑止を確認する
+- [x] 受け入れ鍵の指紋、SSH・同期処理の待ち受け、自ホスト住所を測定する
+- [x] 構内到達性を陽性対照つきで測定し、外向き経路と比較する（ユーザー承認のamendment後に再開）
+- [x] audit / RESULT / result.yaml / inbox を作成し、検証・送出・PR・台帳報告を完了する
+
+成功基準: SPEC.md の完了判定 21 項目を、実測値または UNKNOWN と検証ログで満たす。
+
 出典: `prompts/research_pivot_summary_and_roadmap.md`（正本は Notion）。
 作成: 2026-06-15 / サーバー: lecun（RTX A6000 ×2）。
+
+## 2026-08-12 — T-2026-08-12-hub-from-marker
+
+- [x] 契約検証・`conventions#prohibitions` の逐語参照解決・L3 プリフライトを通す
+- [x] Phase A: 正本と稼働版、中心定数、目印、中継数の変更前証跡を `audit.md` に記録し G1 を判定する
+- [x] Phase B: `scripts/sync/keeper.sh` を目印から中心を導出する最小実装へ変更する
+- [x] Phase B: 偽の HOME による四通りの対照、構文検査、中継数・稼働版・本物の目印の無変更を実測し G2 を判定する
+- [x] Phase C: `RESULT.md` / `result.yaml` / 判断受け皿 / `README.md` を更新し、近接テスト・全テスト・禁止領域検査を通す
+- [x] 契約指定どおり commit・push・PR・台帳報告を行い、`.sync-pause` を解除する
+
+成功基準: 契約の完了判定 19 項目を実測値または `UNKNOWN` で埋め、稼働中の `~/bin/keeper.sh`、本物の `~/.tunnel_to_*`、常駐処理を一切変更せず、試験失敗を増やさない。
 
 ## 2026-08-11 — T-2026-08-11-codex-parity
 
