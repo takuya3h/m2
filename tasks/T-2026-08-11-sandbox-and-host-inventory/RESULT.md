@@ -216,7 +216,7 @@ P5 `frozen_source_hash`（同）。
 | 16 | 静的検査が通る | `make spec-check` **exit 0**（8 規則すべてに該当なし） |
 | 17 | 試験が不変 | 開始前 **5 failed / 423 passed** を先に測った。終了後 **5 failed / 423 passed**。内訳も同一 |
 | 18 | 禁止領域が無変更 | `make forbidden-check` **exit 0**、violations 0、生成物の除外件数も出力 |
-| 19 | 抑止を解除した | 後述（Step 7 の実測） |
+| 19 | 抑止を解除した | **消えた。** `/tmp/.sync-pause.released.T-2026-08-11-sandbox-and-host-inventory` へ移動（repo 外）。移動後の作業ツリーは**空**。削除は使っていない |
 
 ### 作業ツリーの差分の全件（判定 13 の内訳）
 
@@ -341,3 +341,14 @@ python の libc 直接呼び出し（4 経路目）、同梱の bwrap での測�
 | 13 | 演算装置を使う | 使っていない |
 | 14 | 未測定の値を書く | `UNKNOWN` として明示（7 件） |
 | 15 | 統合する。自動統合を有効化する | 行っていない。抑止の目印を置いた状態で作業した |
+
+---
+
+## 9. 報告と起票
+
+| 項目 | 実測 |
+|---|---|
+| PR | **#91**（`phase0` へ Draft。**統合していない**） |
+| 台帳への返送 | `exit=0`、`report_bytes=21702`、`n_issuer_defects=5`、`replaced_blocks=0` |
+| 抑止の解除 | `/tmp` へ移動。repo 直下から消え、作業ツリーは空 |
+| commit | `82f0f8b` `6a09624` `6a31d19` |
