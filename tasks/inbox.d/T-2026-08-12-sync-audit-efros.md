@@ -8,3 +8,5 @@
 - [ ] 2026-08-12 [cc] 全 11 台の一覧は syncthing 設定にしか無い。~/.ssh/config は philip と lecun の 2 台、/etc/hosts は自ホストのみで、出所を 1 つに絞ると対象一覧が 10 台から 2 台へ縮む（~/.ssh/config, /etc/hosts）
 - [ ] 2026-08-12 [cc] efros には ss も netstat も lsof も無い。待ち受けの確認は /proc/net/tcp を直接読む必要があり、SPEC の「零行なら手段が無かった」に従うと測れるものを UNKNOWN と報告することになる（tasks/T-2026-08-12-sync-audit-efros/RESULT.md の 4.1）
 - [ ] 2026-08-12 [cc] SPEC Task 6 Step 5/6 の変更範囲指定が tasks/README.md:283-288 と食い違う。README は抽出物を契約の記録と一緒に commit することを求め、未追跡放置が merge --ff-only を壊す実測（B-30、5 台）を根拠に挙げている。本契約では契約の commit を SPEC どおりに保ち、抽出物を別 commit に分けて両立させた（tasks/README.md）
+- [ ] 2026-08-12 [cc] tools/report_task.py の秘匿検査が git のコミットハッシュを W&B の鍵と誤判定する。40 桁 16 進という形が同一で判定材料が足りない。本契約では origin/phase0 の完全形 4 箇所で送信が止まり短縮形に直して再送した。git ハッシュは報告に頻出するため偽陽性は構造的に起きる（tools/report_task.py）
+- [ ] 2026-08-12 [cc] tools/report_task.py:131 の _rich_text が本文を Python のコードポイントで 2000 ごとに切るが Notion の上限は UTF-16 コード単位。BMP 外の文字を含む切片だけが超過し HTTP 400 になる。本契約では chunk[2] が codepoints=2000 / utf16=2001 となり API の指した rich_text[2] と添字まで一致した。UTF-16 単位で切れば直る（tools/report_task.py）

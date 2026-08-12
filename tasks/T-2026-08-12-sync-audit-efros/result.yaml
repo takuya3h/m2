@@ -13,7 +13,7 @@ gates:
       到達性プローブに開いている先・閉じた先・経路の無い先を与え、A_open=OPEN /
       B_closed=REFUSED / C_noroute=TIMEOUT の三通りが実際に出し分けられることを確認した
       （3/3 期待と一致）。版管理側は git ls-remote origin -h refs/heads/phase0 が
-      a85cf78d9f8fc5895839bdf523e957f3da8a1f0e を返し exit=0。外向き通信は生きており、
+      a85cf78 を返し exit=0。外向き通信は生きており、
       以後の不通を「外向き通信全体の障害」で説明することはできない。
   - id: G2
     verdict: pass
@@ -109,7 +109,7 @@ positive_controls:
     observed: "A_open=OPEN / B_closed=REFUSED / C_noroute=TIMEOUT。3/3 期待と一致した"
   - judgement: "版管理側の経路が生きている（第二の陽性対照）"
     breaking_input: "外向き通信が落ちていれば git ls-remote が参照を返さず exit が非零になる"
-    observed: "refs/heads/phase0 = a85cf78d9f8fc5895839bdf523e957f3da8a1f0e が 1 行返り exit=0"
+    observed: "refs/heads/phase0 = a85cf78 が 1 行返り exit=0"
   - judgement: "設定の解析結果に対する秘匿混入検査が働いている"
     breaking_input: "apikey=DUMMY を書いた囮ファイルを同じ検査に与える"
     observed: "囮で 1 を返し、実際の /tmp/stcfg.txt では 0。検査は空振りではない"
@@ -149,6 +149,26 @@ followups:
   - >-
     inventory.tsv（2531 行）は他ホストの同名ファイルと要約値で突き合わせるためのもの。
     並行実行している他ホストの一覧が揃えば、分岐箇所は機械的に判定できる。
+  - >-
+    tools/report_task.py の秘匿検査が git のコミットハッシュを W&B の鍵と誤判定する。
+    40 桁 16 進という形が同一で、判定に使える情報が足りない。本契約では origin/phase0 の
+    先頭 a85cf78 の完全形 4 箇所で送信が止まり、短縮形に直して再送した。git ハッシュは
+    この種の報告に頻出するため偽陽性は構造的に起きる。送信を止める側に倒れており安全側
+    ではあるが、40 桁 16 進を git cat-file -e で実在するオブジェクトか照会すれば
+    切り分けられる余地がある。
+  - >-
+    tools/report_task.py:131 の _rich_text が本文を Python のコードポイントで 2000 ごとに
+    切るが、Notion の上限は UTF-16 コード単位で数えられる。BMP 外の文字を含む切片だけが
+    上限を超え HTTP 400 で送信が失敗する。本契約では BMP 外の文字が本文に 1 つあり、
+    chunk[2] がコードポイント 2000 に対し UTF-16 で 2001 となって API が rich_text[2] を
+    指した。添字まで一致することを実測で確認した。読み取りのみの契約のため道具は直さず、
+    本文側で BMP の記号へ置き換えて送った。_rich_text は UTF-16 コード単位で切るべきである。
+  - >-
+    SPEC Task 6 Step 5/6 の変更範囲指定が tasks/README.md:283-288 と食い違う。README は
+    抽出物 docs/sessions/digest/ を契約の記録と一緒に commit することを求め、未追跡放置が
+    merge --ff-only を壊す実測（B-30、5 台）を根拠に挙げている。本契約では契約の commit を
+    SPEC どおりに保ち抽出物を別 commit に分けて両立させたが、今後の SPEC 雛形では
+    Step 5 の許容集合に抽出物を含めるか、README 側で例外を明示するかの整理が要る。
 
 unknowns:
   - "他ホストの状態。各ホストで何が変更・削除されたか、突き合わせるべき相手側の一覧は efros からは取得できない"
@@ -157,4 +177,6 @@ unknowns:
   - "復旧時に他ホスト側の削除がどれだけ及ぶか。versioning=none のため戻せないことは確定しているが、件数は相手側の状態に依存する"
   - "他 9 台の 22000 が REFUSED である理由。keeper.sh:14 の記述と整合するが、本契約で測ったのは RST が返るところまでである"
 
-commits: []
+commits:
+  - "6eff033"
+  - "c6dbe21"

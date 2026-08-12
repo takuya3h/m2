@@ -59,7 +59,7 @@
 
 出力:
 
-    a85cf78d9f8fc5895839bdf523e957f3da8a1f0e	refs/heads/phase0
+    a85cf78	refs/heads/phase0
     exit=0
 
 参照が 1 行返り `exit=0`。**外向きの通信そのものは生きている。**
