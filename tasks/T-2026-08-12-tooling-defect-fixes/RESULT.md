@@ -60,8 +60,8 @@ L3 プリフライトは `5 PASS / 0 WARN / 4 SKIP / 0 FAIL`。SKIP は
 | 14 | PASS。残存は engine 証跡 1 件、research logger の空 metrics 仕様 4 件。 |
 | 15 | PASS。この表の 1〜14 にすべて実測値を記載した。 |
 | 16 | PASS。未併合 0、禁止領域 violations 0。変更は道具・試験・契約・専用 inbox と必須 README 更新。 |
-| 17 | UNKNOWN。push 前。 |
-| 18 | UNKNOWN。PR 作成前。 |
+| 17 | PASS。`origin/feat/tooling-defect-fixes` を上流に設定し、push 後の ahead は 0。 |
+| 18 | PASS。PR #92、OPEN、非 Draft。新規作成。 |
 | 19 | UNKNOWN。報告送信直前まで同期抑止を維持中。 |
 | 20 | UNKNOWN。`make task-report` 実行前。 |
 
@@ -94,7 +94,7 @@ pass / skip 数の差は、一時 worktree に現行 repo の未追跡データ 
 
 ## 8. 未解決と配布
 
-- PR: UNKNOWN
-- commit: UNKNOWN
+- PR: #92（OPEN、非 Draft）
+- implementation commit: `5710104`
 - 台帳送信: UNKNOWN
 - 残存 5 テストは本契約の対象外であり、変更していない。
