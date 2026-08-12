@@ -176,3 +176,69 @@ Task 3 Step 4 は「通らないはずの鍵を与えて `REACHABLE` が返ら�
 `SKIP` された項目（合格ではなく実行されなかった）: `P2 cuda_ext_loaded`、
 `P3 deterministic_flags`（いずれも `plan.env.preflight` に記載なし）、
 `P4 prereg_committed`、`P5 frozen_source_hash`（いずれも `kind=analysis` のため対象外）。
+
+---
+
+## 9. 終盤の判定（完了判定 14 から 17）
+
+### 14 送信前の自己検査
+
+    RESULT.md   bmp_over=0 hex40=0
+    result.yaml bmp_over=0 hex40=0
+    audit.md    bmp_over=0 hex40=0
+    inbox.d の記録 bmp_over=0 hex40=0
+
+**両方とも零。** 基本多言語面の外の文字と四十桁の十六進はいずれの報告ファイルにも無い。
+履歴の識別子は短縮形のみを使った。
+
+### 15 作業ツリーの変更が契約の範囲に限られる
+
+    make forbidden-check
+    {"base": "origin/phase0", "changed": 14, "checked": 14, "errors": [], "excluded": 0,
+     "excluded_paths": [], "generated_directories": ["context/auto/"],
+     "generated_files": ["tasks/inbox.md"], "status": "pass", "violations": []}
+    exit=0
+
+    git --no-pager status --porcelain
+    ?? tasks/T-2026-08-12-tunnel-key-audit-andrew/
+    ?? tasks/inbox.d/T-2026-08-12-tunnel-key-audit-andrew.md
+    2 行
+
+    unmerged=0
+
+**契約のディレクトリと受け皿の 2 件のみ。** 範囲外の未追跡物は無く、前契約のような
+別 commit への切り分けは不要であった。`.sync-pause` は `.gitignore` 済みのため
+一覧に現れない（実在は `ls -la` で確認済み）。
+
+### 16 抑止の解除
+
+    mv .sync-pause /tmp/.sync-pause.released.T-2026-08-12-tunnel-key-audit-andrew
+    released
+    ls -la .sync-pause  ->  repo 直下から消えた
+
+**退避先: `/tmp/.sync-pause.released.T-2026-08-12-tunnel-key-audit-andrew`。**
+削除ではなく移動で解除し、repo 直下に未追跡ファイルを残していない。
+
+抑止が実際に効いていたことの確認:
+
+    2026-08-12 11:41:36 [andrew] 一時停止中: /home/ubuntu/slocal2/m2/.sync-pause があるため分岐へ書き込まない（消せば再開）
+    設置（11:33）以降の auto-merge / auto-push 件数 = 0
+
+**常駐処理による統合は本契約の実行中に発生していない。**
+
+### 17 報告が台帳へ返っている
+
+    make task-report TASK=T-2026-08-12-tunnel-key-audit-andrew; echo "exit=$?"
+    {
+      "task_id": "T-2026-08-12-tunnel-key-audit-andrew",
+      "verdict": "pass",
+      "n_issuer_defects": 2,
+      "report_sha256": "8b08ea0c4c6dbae4 ...（先頭 16 文字のみ記載）",
+      "report_bytes": 13751,
+      "replaced_blocks": 0
+    }
+    exit=0
+
+**終了コードは 0。** 前契約では配管を通したために zsh の配列添字で取得できなかったが、
+本契約の SPEC は配管を挟まない書き方を指示しており、そのまま取得できた。
+秘匿の検査は `make task-report` の内側にあり、停止していない。
