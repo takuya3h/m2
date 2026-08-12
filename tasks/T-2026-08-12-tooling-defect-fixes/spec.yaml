@@ -1,0 +1,89 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-12-tooling-defect-fixes"
+  kind: impl
+  title: "監査で判明した道具の欠陥四件を、真陽性を保ったまま直す（efros）"
+  origin: claude-app
+  created_at: "2026-08-12T13:00:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-12-tunnel-key-audit-efros"]
+  amendments: []
+
+intent:
+  question: "契約を運ぶ道具に四つの欠陥が見つかった。送信前の秘匿検査が履歴の識別子を鍵と誤認して送信を止める一方、区切りを含む変数名の資格情報を取りこぼす。本文を切る単位が受け側と食い違い、基本多言語面の外の文字を含むと拒否される。検査と試験が自ホスト名と特定の契約に依存し、一台を除く全ホストで警告と失敗が出続ける。捕まえるべきものを捕まえたまま、これらを直せるか"
+  decision_at_stake: "以後のすべての契約が同じ回避を書き続けるか、道具の側を直して回避を不要にするか。とくに資格情報の取りこぼしは気づかないまま外部へ出る経路であり、放置してよいかどうか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "tools/report_task.py"
+      - "tools/check_spec.py"
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "修正前に四つの欠陥が実際に発火することを測る", gpu: false, est: "40m"}
+    - {id: B, name: "秘匿検査と本文の切り出しを直す", gpu: false, est: "70m"}
+    - {id: C, name: "自ホスト名と特定の契約への依存を外す", gpu: false, est: "40m"}
+    - {id: D, name: "検証、送出、報告", gpu: false, est: "40m"}
+  gates:
+    - id: G1
+      after: A
+      check: "修正前の実装で、偽陽性と偽陰性と切る単位の食い違いと警告の発生がいずれも再現することを実測した。再現しない場合は前提が違うため停止する"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "修正後に、通るべき入力が通り、止まるべき入力が止まることを両方向の対照で確かめた。切片を連結すると元の本文に戻ることを境界の入力で確かめた"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "自ホストの契約では警告が出ず、別ホストの契約では警告が出ることを確かめた。試験の失敗が減った件数と残った件数と残った理由を記録した"
+      on_fail: ask
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-12-tooling-defect-fixes/"
+  acceptance:
+    - "修正前に四つの欠陥が発火することを実測し、修正後に同じ入力で結果が変わったことを併記している"
+    - "秘匿検査が区切りを含む変数名を捕まえ、履歴の識別子を鍵とみなさないことを両方向の対照で示している"
+    - "名前だけの出現では止めず値が続く形でのみ止めることを、報告に似た本文で確かめている"
+    - "本文の切片が受け側の数え方で上限以下であり、連結すると元に戻ることを境界の入力で示している"
+    - "自ホストの契約で警告が出ず、別ホストの契約では警告が出ることを示し、検査を壊していないことを確かめている"
+    - "試験の失敗が減った件数と残った件数と残った理由を記載している"
+    - "足した試験が、修正前の実装では落ちることを確かめている"
+    - "変更が道具と試験と本契約の範囲に限られ、検査を無効化または緩和していない"
+    - "分岐が送出され、PR の番号と下書きの別が記載されている"
+    - "報告の送信が、本契約で直した道具を通った実地の結果として記録されている"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "修正前に欠陥が再現せず、直す対象が起票者の想定と違う場合"
+    - "修正後に真陽性が止まらなくなり、検査を壊した疑いが生じた場合"
+    - "切片を連結しても元の本文に戻らず、文字を壊している場合"
+    - "試験の失敗が本契約の対象より多く減った、または増えた場合"
+    - "分岐が契約用ではなく定位置のまま作業する状態になっている場合"

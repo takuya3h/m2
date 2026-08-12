@@ -1415,3 +1415,11 @@ validator は `tasks/` 直下の `_` で始まらないディレクトリを対�
 また、`context/conventions.md` では Relation-DETR 凍結源 checkpoint の正本 SHA-256 と
 `select_box_nums_for_evaluation` の転記元が `UNKNOWN`。該当する `exp` task は
 実行時に実ファイルから SHA-256 を記録し、未確定値を推測で補完してはならない。
+
+### TASK 報告道具の境界処理（2026-08-12）
+
+`tools/report_task.py` の送信前検査は、資格情報名に続く代入値を大小文字および `_` / `-`
+区切りを吸収して検出する。裸の 40 桁 hex は履歴識別子として許可し、環境にある資格情報値の
+直接照合は維持する。Notion `rich_text` は受け側と同じ UTF-16 単位で 2,000 以下に分割し、
+基本多言語面外の文字も壊さず連結できる。`host_mismatch` はホスト名の大小文字を区別せず、
+別ホストの宣言は引き続き警告する。回帰試験はこれらの通過・停止を両方向で固定している。
