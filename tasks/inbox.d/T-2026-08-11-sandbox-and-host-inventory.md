@@ -1,0 +1,13 @@
+- [ ] 2026-08-12 [cc] 隔離が作れない原因は環境の側で確定。unshare 3 種・python の libc 直接呼び出し・homebrew の bwrap・同梱の bwrap の 4 経路すべてが失敗。kernel.unprivileged_userns_clone=1 で許可されており道具の在処も権限ビットも原因ではない（tasks/T-2026-08-11-sandbox-and-host-inventory/RESULT.md）
+- [ ] 2026-08-12 [cc] 残る候補は Seccomp（filter モード・1 フィルタ）と AppArmor（docker-default enforce）の 2 つ。切り分けには dmesg か監査記録の読み取り権限、strace、または別の起動設定での比較が要る。unprivileged_userns_apparmor_policy は実在するが root 専用で読めない（tasks/T-2026-08-11-sandbox-and-host-inventory/result.yaml）
+- [ ] 2026-08-12 [cc] 起票者の「強制アクセス制御の項目が存在しない」は誤り。AppArmor は 3 台すべてで docker-default (enforce)。/sys/kernel/security/apparmor は容器内で securityfs 未マウントのため不在だが /proc/self/attr/current で読める（tasks/T-2026-08-11-sandbox-and-host-inventory/RESULT.md）
+- [ ] 2026-08-12 [cc] 起票者の「3 台で 3 つの版（0.144/0.146/0.147）」は到達できた 3 台では成立しない。package.json を直読すると全て 0.147.0。codex --version が失敗するのは非対話ログインで nvm が初期化されず PATH に入らないためで、版の違いではない（tasks/T-2026-08-11-sandbox-and-host-inventory/RESULT.md）
+- [ ] 2026-08-12 [cc] 第一の実装系は隔離を使っていない。設定 3 件に sandbox の語が 0 件、親の系列に bwrap 無し、利用者名前空間は初期のもの（inode 4026531837）。これが動く理由である（.claude/settings.json）
+- [ ] 2026-08-12 [cc] 第二の実装系は自前の bwrap を同梱する（codex-resources/bwrap、権限 775）。実装は landlock の経路も持つ（文字列で bubblewrap 49・landlock 38・seccomp 16）が、どの条件で選ぶかは読めない（~/.nvm/versions/node/v20.20.2/lib/node_modules/@openai/codex）
+- [ ] 2026-08-12 [cc] 配布の経路は syncthing で特定。各実装系の設定は共有領域を指す symlink（~/.codex 6 件・~/.claude 5 件・~/.agents 自体 1 件 = 12 件）。張る手順は docs/host_dev_env_setup.md:578-587。ただし実際の張り方は文書と食い違う箇所がある（docs/host_dev_env_setup.md）
+- [ ] 2026-08-12 [cc] 共有領域の内容が efros で分岐している（codex/config.toml が 901 対 1008、settings.json が 14419 対 14440）。同期が止まっているため配布されていない。件数は 3 台とも 2532 で一致するが内容の一致は測っていない（~/claude-sync）
+- [ ] 2026-08-12 [cc] 頁送りは lecun のみ core.pager=cat を設定。bengio と efros は未設定。ただし less が 3 台すべて不在なので未設定でも git は頁送りへ流せない。設定を揃えるかは less の導入予定で変わる（~/.gitconfig）
+- [ ] 2026-08-12 [cc] 版の更新に一斉の仕組みは無い。導入時刻が lecun 08-07 23:18 / bengio 08-08 03:40 / efros 08-11 16:11 と最大 4 日ずれる。経路の候補は docs の npm install -g（例は 0.133.0）と codex の check_for_update_on_startup（docs/host_dev_env_setup.md）
+- [ ] 2026-08-12 [cc] 到達できたのは bengio と efros の 2 台のみ。philip は経路なし（現在も正しい）、残る 7 台は TCP は届くが鍵も設定の項目も無い。8 台の状態は一切 UNKNOWN（tasks/T-2026-08-11-sandbox-and-host-inventory/result.yaml）
+- [ ] 2026-08-12 [cc] 本契約が bengio の /tmp/sp.txt（92 バイト）を作った。禁止 3 に触れる。消すこと自体がさらなる書き込みになるため残してある。掃除の可否の判断が要る（tasks/T-2026-08-11-sandbox-and-host-inventory/result.yaml）
+- [ ] 2026-08-12 [cc] SPEC Task 5 Step 2 が ps -eo args | grep を指示するが、同じ SPEC の「前契約で確定した環境の事実」の表が同じ方法を自己一致すると明記している。手順書側の矛盾を直すかは未決（.claude/skills/task/SKILL.md）

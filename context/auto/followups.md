@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（94 件）
+## 申し送り（102 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -55,6 +55,17 @@
 - maskdino_bbox@val と varifocanet_bbox@val は #None と #a63aecae に分離されている。#None 側は _wrong_split_8_2_3 由来で全件 excluded であり、表に混ぜてはならない。前 task で所在不明としたのはこの分離子のためだった
 - 予測は後処理の後で保存されている。1 画像 300 箱に切られ score の最小も 0.0117 であるため、max_per_img や nms_pre を増やす方向にも score_thr を下げる方向にも再採点できない。予測の保存は再評価の代替にならない
 - scripts/reeval_s0_nms_free.py は後処理を差し替えて評価のみを走らせる経路として実在し、codetr で 2026-07-03 に実行された痕跡がある。入力は best.pth であり重みを要する
+
+### T-2026-08-11-sandbox-and-host-inventory
+
+- 第二の実装系が隔離を作れない原因は環境の側であり、道具の在処や権限ビットではない。 到達できた 3 台すべてで unshare の 3 種と bwrap の 2 実装が失敗する。 kernel.unprivileged_userns_clone は 1 で許可されているため、残る候補は Seccomp （filter モード、1 フィルタ）と AppArmor（docker-default enforce）である。 容器の起動時の設定（seccomp プロファイルの指定など）は容器の外にあり本契約では読めない。
+- 第二の実装系は自前の bwrap を同梱している （codex-linux-x64/vendor/x86_64-unknown-linux-musl/codex-resources/bwrap、権限 775）。 実装の原路は linux-sandbox/src/bwrap.rs と bundled_bwrap.rs と sandboxing/src/landlock.rs であり、bubblewrap 49 件・landlock 38 件・seccomp 16 件の文字列を持つ。 landlock を使う経路があるなら bwrap を必要としない可能性があるが、 どの条件でどちらを選ぶかは実装の文字列からは読めない。
+- 第一の実装系はこの呼び出し経路で隔離を使っていない。設定 3 件（~/.claude/settings.json、 .claude/settings.local.json、.claude/settings.json）に sandbox の語が 0 件であり、 親プロセスの系列も zsh -c から claude -c へ直につながり bwrap を経由しない。 利用者名前空間の inode は初期名前空間の値であり入れ子の外にいる。 これが「第一の実装系では動く」ことの説明である。
+- 版のばらつきは到達できた 3 台には無い（すべて 0.147.0）。ばらついているのは 導入の時刻（lecun 08-07 23:18 / bengio 08-08 03:40 / efros 08-11 16:11、最大 4 日）と 非対話ログインでの nvm の初期化である。更新の経路は docs/host_dev_env_setup.md:245-249 の npm install -g（文書には 0.133.0 の例が残る）と、 codex 自身の check_for_update_on_startup の 2 つが候補である。
+- 頁送りは lecun のみ core.pager=cat を設定し、bengio と efros は未設定である。 ただし less が 3 台すべて不在であるため、未設定のホストでも git は頁送りへ流せない。 設定を揃えるべきかは、less を導入する予定があるかで変わる。
+- 配布の経路は syncthing であり、各実装系の設定は共有領域を指す symlink である （~/.codex 6 件、~/.claude 5 件、~/.agents 自体が 1 件、合計 12 件）。 張る手順は docs/host_dev_env_setup.md:578-587 にある。ただし実際の張り方は文書と 食い違う箇所がある。文書は ~/.claude/CLAUDE.md を ~/.agents/AGENTS.md へ張るとするが、 実測では claude-sync/CLAUDE.md を直接指している。文書は ~/.codex/skills/my_skills を 張るとするが、実測では skills.bak/my_skills にある。
+- 共有領域の内容が efros で分岐している（claude-sync/codex/config.toml が 901 と 1008、 claude-sync/settings.json が 14419 と 14440）。同期が止まっているため配布されていない。 件数は 3 台とも 2532 で一致するが、内容の一致は測っていない。
+- bengio の /tmp/sp.txt（92 バイト、2 行）を本契約が作った。禁止 3 に触れる。 消すこと自体がさらなる書き込みになるため残してある。掃除の可否の判断が要る。
 
 ### T-2026-08-11-split-and-recipe-audit
 
@@ -156,7 +167,7 @@
 - 秘匿の検査が見るのは NOTION_API_KEY と WANDB_API_KEY の 2 つと、既知の接頭辞である。資格情報を増やしたら SECRET_ENV_KEYS へ足すこと。足し忘れても検査は通るため気付けない
 - 送信の時点で壁時計を使っている（completed_at）。生成物ではないため冪等の検査には影響しないが、投影に壁時計を入れない方針とは別の判断である
 
-## 断定できなかった事項（70 件）
+## 断定できなかった事項（77 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -196,6 +207,16 @@
 - codetr の再評価予測は 4265 件で test split の画像数に一致するが、experiment_id は @val である。この再評価がどの split で走ったかは本契約の対象外とし特定していない。比較表の mAP は metrics.json 由来でありこの予測とは別である
 - eval_recipe 内に記録された seed キーが何に使われるかは実装で追えていない。4 run のみが持つ
 - 他ホストでは本契約を実行していない。lecun 上でのみ実測した
+
+### T-2026-08-11-sandbox-and-host-inventory
+
+- Seccomp と AppArmor のどちらが名前空間の作成を塞いでいるか。strace は不在、dmesg は read kernel buffer failed: Operation not permitted で読めず、ausearch と auditctl も 不在である。フィルタを外して比べるのは設定の変更（禁止 1）にあたる。 切り分けには dmesg か監査記録の読み取り権限、strace、または容器を別の設定で 起動して比べることのいずれかが要る。
+- /proc/sys/kernel/unprivileged_userns_apparmor_policy の値。実在するが root 専用 （-rw------- root:root）で読めない。この値が 0 なら AppArmor が原因である可能性が高いが、 読めないため断定できない。
+- 到達できない 8 台（adam andrew dlsta he hinton ian ilya philip）の状態。 philip は 3 ポートすべて No route to host、残る 7 台は 50072 が OPEN だが鍵も ~/.ssh/config の項目も無いため認証できない。名前空間・版・頁送り・共有領域の いずれも UNKNOWN である。「他も同じはず」とは書かない。
+- 起票者が観測した 0.144 と 0.146 の出所。到達できた 3 台はすべて 0.147.0 であり、 別のホストか別の時点の観測と考えられるが確かめる手段が無い。
+- 版が違うと何が変わるか。変更履歴が手元に無く、npm の配布物にも同梱されていない。 確かめる手段が無い。
+- 共有領域の内容の一致。件数は 3 台とも 2532 だが要約値を比べていない。 efros の 2 ファイルだけ大きさが違うことは確かめたが、全体でどれだけ分岐しているかは 測っていない。測るには 3 台で同じ要約値の計算を流す必要がある。
+- symlink 構造を実際に作った主体。docs/host_dev_env_setup.md に手順はあるが、 scripts/sync/setup_host_autosync.sh は ln -s を 0 件しか持たない。 誰がいつ張ったかは repo からは特定できない。
 
 ### T-2026-08-11-split-and-recipe-audit
 
@@ -282,16 +303,16 @@
 - 台帳の他の行が変わっていないことは、触れた行を限定した事実からしか言えていない。全行の内容を送信前後で突き合わせてはいない
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
 
-## 起票者の誤りの型（62 件）
+## 起票者の誤りの型（67 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 25 |
-| `asserted_without_measuring` | 17 |
-| `self_contradiction` | 17 |
-| `shell_assumption` | 3 |
+| `check_does_not_check` | 26 |
+| `asserted_without_measuring` | 19 |
+| `self_contradiction` | 18 |
+| `shell_assumption` | 4 |
 
-合計 62 件（対を持つ契約 18 件から）
+合計 67 件（対を持つ契約 19 件から）
 
