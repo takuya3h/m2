@@ -2,6 +2,7 @@
 
 **task_id:** `T-2026-08-11-sandbox-and-host-inventory`  **kind:** `analysis`
 **実行ホスト:** `lecun`  **分岐:** `feat/sandbox-and-host-inventory`  **status:** pass
+**PR:** #91（`phase0` へ Draft で起票。**統合していない**）
 
 **調査のみ。原因が分かっても直していない。** 機械可読の対は `result.yaml`。
 到達できた 3 台（lecun / bengio / efros）で**同一の 39 行の手順書**を流した。
