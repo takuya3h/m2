@@ -1,0 +1,10 @@
+- [ ] 2026-08-12 [cc] 中心は philip（192.168.196.150）で、実装に埋め込まれている。トンネルは ~/.tunnel_to_philip が存在するノードのみが張り、ローカル 22001 を philip の 127.0.0.1:22000 へ SSH 50072 で転送する。稼働中の keeper.sh は正本とバイト一致（scripts/sync/keeper.sh:13-19）
+- [ ] 2026-08-12 [cc] philip だけが 3 ポート（22000/22001/50072）すべて No route to host。他 9 台は 50072 が OPEN で 22000/22001 が REFUSED。REFUSED は機器まで届いていることを意味する。非対称は「構内 vs 外」ではなく「philip vs それ以外」である（tasks/T-2026-08-12-sync-audit-lecun/audit.md）
+- [ ] 2026-08-12 [cc] 接続喪失の瞬間は 2026-08-06 20:24:02（Lost device connection device=GO2U7PF）。以後 2026-08-07 から 08-11 まで syncthing のログは 0 行。四つの独立した情報が幅 4 時間 43 分で整合した（~/.syncthing.log）
+- [ ] 2026-08-12 [cc] Established secure connection の相手は 21 件すべて philip。他 10 台とは一度も直接接続していない。大域探索と中継は設定で無効（globalAnnounceEnabled=false / relaysEnabled=false）（~/.local/state/syncthing/config.xml）
+- [ ] 2026-08-12 [cc] 停止後に自ホストで更新された設定共有のファイルは 172 件・約 2.0 MB。うち人が触る設定は settings.json（14419 バイト、08-11 05:49）と codex/config.toml（901 バイト、08-11 21:59）の 2 件で、残る 170 件は codex/plugins/cache/ の自動生成物（tasks/T-2026-08-12-sync-audit-lecun/inventory.tsv）
+- [ ] 2026-08-12 [cc] 版の退避は両フォルダで設定が空（versioning.type なし）。.stversions は 0 件で、上書きされた旧版は残らない。衝突ファイルの機構は働いており過去 10 件の実績がある（最新 20260806-162224）（~/.local/state/syncthing/config.xml）
+- [ ] 2026-08-12 [cc] この環境では ps と grep による自己一致の回避が原理的に成立しない。測定命令の全文が別プロセスの args（/usr/bin/zsh -c ... eval '...'）に現れるため角括弧法も pgrep -f と同じく誤る。keeper を 2 件（実際 1）、ssh -L を 1 件（実際 0）と数えた。/proc/*/cmdline を読み自分と祖先を除く形が確実（.claude/skills/task/SKILL.md）
+- [ ] 2026-08-12 [cc] ss も netstat も lsof も無い。待ち受けの一覧は /proc/net/tcp と /proc/net/tcp6 の状態 0A から復号した（LISTEN 16 件）。手順書に代替を書くかは未決（tools/preflight_task.py）
+- [ ] 2026-08-12 [cc] sync-alerts.log のホストのラベルは 16 種（大文字の変種を含む）で syncthing の device 11 台と一致しない。dlstation と dlsta、084f3b0911a2（コンテナ識別子）、aolab の対応が付いていない。ホスト名の正本が未決（~/claude-sync/sync-alerts.log）
+- [ ] 2026-08-12 [cc] 読み取りのみの契約でもプローブは痕跡を残す。127.0.0.1:22000 への TCP 接続で ~/.syncthing.log に 1 行（Failed TLS handshake）が書かれた。状態は変えていない
