@@ -229,15 +229,40 @@ lecun 以外の全ホストで必ず失敗する。本契約に起因しない�
 
 ### Step 7 commit
 
-（下記に実測を記す）
+| # | hash | 内容 |
+|---|---|---|
+| 1 | **`ee9421c`** | `docs(sync): audit tunnel key distribution on efros`。契約 5 ファイルと受け皿 |
+| 2 | （下記） | 本節のハッシュと返送結果の記録 |
 
-### Step 8 抑止の解除
+commit 後の作業ツリーは **0 件（clean）**。
 
-（下記に実測を記す）
+### Step 8 抑止の解除（削除ではなく移動）
+
+    mv .sync-pause /tmp/.sync-pause.released.T-2026-08-12-tunnel-key-audit-efros  →  released
+    ls -la .sync-pause  →  repo 直下から消えた
+    退避先: -rw-rw-r-- 1 ubuntu ubuntu 0  8月 12 11:10
+
+退避先が repo の外であるため、追跡外の残骸は作業ツリーに残らない（**0 件**）。
 
 ### Step 9 報告の返送
 
-（下記に実測を記す）
+**一度で送信できた。**
+
+    {
+      "task_id": "T-2026-08-12-tunnel-key-audit-efros",
+      "verdict": "pass",
+      "n_issuer_defects": 1,
+      "report_sha256": "5ba19c3f4ec48402fb43acd9e449b27207a982fe5fbd3987d3e8054bc09d8217",
+      "report_bytes": 18946,
+      "replaced_blocks": 0
+    }
+    exit=0
+
+前契約では返送が 2 回止まった（秘匿検査が git のハッシュを鍵と誤認、
+および切り分けの単位が UTF-16 でなかったための上限超過）。
+**本 SPEC はその 2 件を Step 6 の自己検査として取り込んでおり、
+送信前に零であることを確かめたため一度で通った。**
+**報告が次の契約の品質を上げた実例である。**
 
 ### 完了判定 13〜17 の実測値
 
@@ -246,8 +271,8 @@ lecun 以外の全ホストで必ず失敗する。本契約に起因しない�
 | 13 | 12 項目すべてに実測値または UNKNOWN がある | **空欄なし**（§2 の 12 行） |
 | 14 | 送信前の自己検査が両方とも零 | `bmp_over=0` / `hex40=0` を 4 ファイルすべてで確認。囮による陽性対照は `1` / `1` |
 | 15 | 作業ツリーの変更が契約の範囲に限られる | `forbidden-check` **pass / violations 0 / errors 0**（changed 6 / checked 6）。未追跡は契約の 2 経路のみ。`runindex/` `context/auto/` `experiments/` はいずれも 0 件。未解決 0 |
-| 16 | 抑止が repo 直下から消えている | 下記に実測 |
-| 17 | 報告が台帳へ返っている | 下記に実測 |
+| 16 | 抑止が repo 直下から消えている | `released` / `repo 直下から消えた`。退避先は `/tmp/.sync-pause.released.T-2026-08-12-tunnel-key-audit-efros`（**repo 外**）。作業ツリーの残骸 0 件 |
+| 17 | 報告が台帳へ返っている | **一度で `exit=0`**。`verdict: pass` / `report_bytes: 18946` / `n_issuer_defects: 1`。前契約では 2 回止まったが、本 SPEC が予防手順を取り込んだため停止しなかった |
 
 ---
 
