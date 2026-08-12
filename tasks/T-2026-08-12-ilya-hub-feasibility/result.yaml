@@ -1,0 +1,86 @@
+result_version: 3
+task_id: "T-2026-08-12-ilya-hub-feasibility"
+status: partial
+host: "aolab"
+branch: "feat/ilya-hub-feasibility"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      受け入れ一覧は既定2候補を集合として調べ、実在1ファイル・空でない2行を得た。
+      指紋と注釈だけを記録し、目標4台を直接示す注釈は0件。LISTEN復号は7ポートを得て、
+      一時ソケットが開いている間True、閉じるとFalseだった。SSH 22番とSyncthing 22000番はLISTEN。
+  - id: G2
+    verdict: pass
+    note: >-
+      ユーザー承認のamendment後、OPEN・REFUSED・経路なしを陽性対照で出し分けた。
+      他ノード10台の2ポート計20組はOPEN 9・REFUSED 9・経路なし2で合計一致。
+      目標4台の50072番はすべてOPEN。known_hostsはサイズ1956・mtime同一で無変更だった。
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+
+deviations:
+  - type: environment
+    note: >-
+      当初の経路なし陽性対照はTIMEOUTを期待したが、ilyaのカーネルは
+      OSERROR:Network_is_unreachableを即時に返した。一度停止し、ユーザー承認後に
+      両者を同値な経路なし分類とするamendmentを契約へ追加して再開した。
+  - type: judgement
+    note: >-
+      三出所から得た他ノード10台について、既存の同期監査と同じくSyncthing 22000番と
+      SSH 50072番の両方、計20組を測った。目標4台を名前とIPで対応づけ、分類合計も確認した。
+  - type: judgement
+    note: >-
+      上位指示に従いtasks/todo.mdへ計画を追記しCodegraphを初期化した。Codegraph生成物は
+      自身のgitignoreで差分に入らない。CLIにwatchが無いため編集後のsyncで代替した。
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: >-
+      Task 3 Step 2は経路のない192.0.2.1が必ずTIMEOUTを返すと固定し、それ以外なら停止する
+      よう指示していた。ilyaではOSERROR:Network_is_unreachableが返り、指示どおりでは
+      経路なしを正しく即時判定できる測定器を不合格にして本対象を測れない。ユーザー承認の
+      amendmentで、TIMEOUTまたはNetwork_is_unreachableを経路なしとして許容する形へ直した。
+
+positive_controls:
+  - judgement: "LISTEN復号が実際の待ち受けを検出する"
+    breaking_input: "一時ソケットを開いてから閉じ、同じポートを復号結果へ照合する"
+    observed: "開いている間while_open=True、閉じた後after_close=False"
+  - judgement: "到達性がOPEN・REFUSED・経路なしを出し分ける"
+    breaking_input: "開いたlocalhost、閉じた同ポート、192.0.2.1を与える"
+    observed: "OPEN・REFUSED・OSERROR:Network_is_unreachable。amendment後の三分類と一致"
+  - judgement: "プロセス計数が検索自身に汚染されない"
+    breaking_input: "存在しない語zzz_no_such_processを同じ方法で数える"
+    observed: "0。Syncthingは2、keeper.shは1"
+  - judgement: "秘匿検査が鍵本文型を検出する"
+    breaking_input: "秘密鍵ヘッダーを1行持つ囮ファイルへ同じ正規表現を適用する"
+    observed: "囮1件を検出。監査本文の一致はsshd説明とSSHエラー中のpassword語だけ"
+  - judgement: "SSH測定が禁止領域のknown_hostsを書き換えない"
+    breaking_input: "未知9ホストへaccept-newで接続し、隔離先と禁止領域を前後比較する"
+    observed: "隔離先9行。~/.ssh/known_hostsはサイズ1956・mtime 2026-08-03 22:14:59.236043451 +0000で同一"
+
+followups:
+  - >-
+      ilyaの受け入れ一覧は2件だが、目標4台を直接示す注釈は0件。契約の判定規則では
+      efros・lecun・bengio・andrewの4台すべてに登録が要る。鍵の生成・配布は本契約で行っていない。
+  - >-
+      過去2回の「ilyaは構内へ出られない」は今日の値と食い違う。philipを除く9台の50072番はOPENで、
+      目標4台も含む。中心の候補がilyaだけに限定されるという前提は今日の実測では成立しない。
+  - >-
+      9台へilya-to-philip鍵を指定すると全件Permission deniedだった。TCP/SSH口への到達と
+      認証成功は別であり、専用の対別鍵が存在するかは本契約で総当たりしていない。
+
+unknowns:
+  - "外部から見えるilyaの住所とSSHポートは自ホストから測れない"
+  - "ubuntu@aolab注釈がilyaとphilipのどちらに由来するかは判別できない"
+  - "philipが到達不能な理由はUNKNOWN。No route to hostとTIMEOUTまでを実測した"
+  - "push・PR・台帳報告は後続Stepで実測して更新する"
+
+commits: []
+
