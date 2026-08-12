@@ -1,0 +1,7 @@
+- [ ] 2026-08-12 [cc] 中継の鍵 id_ed25519_bengiotophilip（ED25519、指紋 SHA256:FsFyZQKu…）は philip 専用。遠隔 10 台へ認証を測り AUTH_OK 0 / DENIED 9 / NOCONN 1。認証が通るホストは一台も無い（tasks/T-2026-08-12-tunnel-key-audit-bengio/audit.md）
+- [ ] 2026-08-12 [cc] 拒否は鍵を提示したうえでのものと確認。詳細出力で実鍵は Offering public key まで到達し、/dev/null は Trying private key で止まる。口が開いていることと鍵が通ることは別だと実測で分かれた（同上）
+- [ ] 2026-08-12 [cc] bengio の受け入れ一覧は authorized_keys の 3 行のみ。遠隔ノード由来は philip-to-bengio と lecuntobengio の 2 件で、残る 8 台は登録が無い。bengio を中心にするなら 8 台分の登録追加が要る（~/.ssh/authorized_keys）
+- [ ] 2026-08-12 [cc] 鍵の名前が実体と食い違う。id_rsa_bengiotolecun と id_rsa_bengiotophilip は名前に rsa を含むが実体は ED25519。名前から種別を推定してはならない（~/.ssh/）
+- [ ] 2026-08-12 [cc] philip 向けに鍵が 2 本併存する。ssh config は id_rsa_bengiotophilip を指定し、中継は id_ed25519_bengiotophilip を使う。どちらが正かは未確認（~/.ssh/config）
+- [ ] 2026-08-12 [cc] 起票者の誤りが 3 件。Task 2 Step 3 の照合が自分自身へ入れるかしか測らない、Task 3 Step 2 の accept-new が禁止 2 の ~/.ssh 変更に触れる、陰性対照と本測定が同じ文言で区別できない（T-2026-08-12-tunnel-key-audit-bengio §6.1）
+- [ ] 2026-08-12 [cc] 本結果は bengio 側から見た片方向のみ。他ノードの中継鍵の指紋と、受け入れ一覧の 2 件が相手の中継鍵と同一かは測れず UNKNOWN。双方向の対応づけは全ホストの結果を突き合わせて初めて確定する（同上 §7）

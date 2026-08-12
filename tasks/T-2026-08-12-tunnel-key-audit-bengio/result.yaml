@@ -1,0 +1,45 @@
+result_version: 1
+task_id: "T-2026-08-12-tunnel-key-audit-bengio"
+status: pass
+host: "bengio"
+branch: "feat/tunnel-key-audit-bengio"
+pr: null
+merged: false
+
+gates:
+  - {id: G1, verdict: pass}
+  - {id: G2, verdict: pass}
+
+tests:
+  before_failed: 7
+  after_failed: 7
+  after_passed: 421
+
+deviations: 6
+
+issuer_defects:
+  - type: check_does_not_check
+    note: "Task 2 Step 3 の照合が主張する問いに答えていない。中継の鍵 id_ed25519_bengiotophilip はコメントが ubuntu@Bengio であり自ホストが出て行くための鍵である。それを自分の受け入れ一覧と照合しても自分自身へ入れるかしか分からない。中心になれるかを決めるのは他ノードの鍵が登録されているかである。指示どおりの照合（結果 0）も記録したうえで、手元の鍵と受け入れ一覧を集合として突き合わせ、遠隔ノード由来の登録が 2 件であることを測った"
+  - type: self_contradiction
+    note: "Task 3 Step 2 の命令が禁止 2 と衝突する。StrictHostKeyChecking=accept-new は未知のホスト鍵を ~/.ssh/known_hosts へ書き込むが、禁止 2 は ~/.ssh 配下の変更を禁じている。意図を保つため UserKnownHostsFile を一時領域へ向け、実行前後で known_hosts の要約値と更新時刻が不変であることを測って示した"
+  - type: asserted_without_measuring
+    note: "Task 3 Step 2 の陰性対照と本測定がいずれも Permission denied という同じ文言を返すため、それだけでは鍵を提示したうえでの拒否か提示せずの拒否かを区別できない。詳細出力で分けたところ、実鍵は Offering public key まで到達しており、/dev/null は Trying private key で止まって提示に至らないことが分かった"
+
+followups:
+  - "中継の鍵は philip 専用である。九台すべてで Permission denied となり、認証が通るホストは一台も無い。中心を別ホストへ移すには鍵の登録を追加する作業が別途必要になる"
+  - "bengio の受け入れ一覧は 3 行のみで、遠隔ノード由来は philip-to-bengio と lecuntobengio の 2 件である。残る 8 台は bengio に鍵を登録していない。bengio を中心にするなら 8 台分の登録追加が要る"
+  - "鍵の名前が実体と食い違う。id_rsa_bengiotolecun と id_rsa_bengiotophilip は名前に rsa を含むが実体はいずれも ED25519 である。名前から種別を推定してはならない"
+  - "~/.ssh/config は philip に id_rsa_bengiotophilip を指定するが、中継が使う鍵は id_ed25519_bengiotophilip である。philip 向けに 2 本の鍵が併存しており、どちらが正かは未確認"
+  - "受け入れ一覧の philip-to-bengio と lecuntobengio が、それらのホストの中継用の鍵と同一かは bengio からは判定できない。相手側の目印を読む必要がある"
+  - "本結果は bengio 側から見た片方向のみである。他ホストで同契約が並行実行されているため、双方向の対応づけは全ホストの結果を突き合わせて初めて確定する"
+
+unknowns:
+  - "他ノードが持つ中継の鍵の指紋。他ホストでは echo 以外を実行できないため測っていない"
+  - "philip-to-bengio と lecuntobengio がそれらのホストの中継用の鍵かどうか。bengio からは指紋しか見えず相手側の目印を読めない"
+  - "bengio が 192.168.196.x 帯からどの住所で見えるか。自ホストは 172.17.0.15 しか持たず外から見た住所は自分では測れない"
+  - "他の 8 台が bengio へ入れるか。相手側から測る必要がある"
+  - "利用者名が ubuntu 以外で通る可能性。既定の ubuntu のみで測った"
+  - "philip が停止しているのか経路のみが遮断されているのか。前契約と同じく bengio からは区別できない"
+  - "中心を移した場合に同期処理側の再設定が要るか。共有相手の登録が全台で済んでいるという前提は SPEC が再測定不要としているため測っていない"
+
+commits: []
