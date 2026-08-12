@@ -1,0 +1,73 @@
+result_version: 3
+task_id: "T-2026-08-12-tunnel-key-audit-andrew"
+status: pass
+host: "Andrew"
+branch: "exp/andrew"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "指紋の照合に実在する指紋 2 種を与えて 1、存在しない指紋を与えて 0 を得た。識別している。秘匿の検査には鍵の書き出しを模した囮を与えて 1 を得た。記録本体の値由来の一致は 0 で、検出された 2 件は sshd_config の注釈行に現れる語であり名前である"
+  - id: G2
+    verdict: pass
+    note: "通らないはずの鍵として /dev/null と用途の違う実在の鍵の 2 通りを到達できた住所へ与え、いずれも REACHABLE を返さなかった。対象一覧は ssh_config 2 件・/etc/hosts 7 行・同期設定 11 アドレスの 3 出所から集め、構内 10 台+自ホスト=11 台。測定 10 対象で AUTH_OK0+DENIED9+NOCONN1=10=total_lines と一致した"
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+
+deviations:
+  - type: judgement
+    note: "Task 3 Step 2 の StrictHostKeyChecking=accept-new を StrictHostKeyChecking=no と UserKnownHostsFile=/dev/null に替えた。accept-new は未知の宛先を known_hosts へ書き込み、禁止 2 に触れるため。認証の測定内容は変わらず、無変更は測定前後の要約値の一致で示した"
+  - type: judgement
+    note: "Task 3 Step 4 の陽性対照を、指示された /dev/null に加えて用途の違う実在の鍵でも実施した。/dev/null は鍵として読み込めず鍵を渡さない場合に近いため、実在するが登録されていない鍵のほうが対照として強いと判断した。結果は両方とも不通で一致"
+  - type: judgement
+    note: "Task 2 Step 3 の照合を、指示された中継鍵 1 件だけでなく手元の 4 鍵すべてについて実施した。零を別の探し方で確かめるため。4 件とも 0 であった"
+  - type: environment
+    note: "Task 2 Step 4 の ip -4 addr show は ip コマンドが不在で実行できなかった。SPEC の代替である /proc/net/fib_trie へ落として測った"
+
+issuer_defects:
+  - type: self_contradiction
+    note: "Task 3 Step 2 は StrictHostKeyChecking=accept-new を必ず付けるよう指示するが、この選択肢は未知の宛先の公開鍵を ~/.ssh/known_hosts へ書き込む。同じ SPEC の禁止 2 は ~/.ssh/** の変更を禁じている。実測では十台のうち known_hosts に既知なのは 192.168.196.150 のみで残り九台は未知であり、指示どおり実行すると九件の書き込みが発生して禁止 2 に触れる。指示に従えば禁止に触れ、禁止を守れば指示に従えない"
+  - type: check_does_not_check
+    note: "Task 3 Step 4 の陽性対照は、通らないはずの鍵で REACHABLE が返らないことを確かめるものだが、到達できる九台ではどの鍵でも Permission denied になるため、鍵による識別が働いていることを示さない。鍵を無視して常に拒否する壊れ方でも同じ結果になり区別がつかない。対照が意味を持つのは正しい鍵で通る宛先が一つでもある場合に限られるが、その宛先である philip は経路の消失で到達できない"
+
+positive_controls:
+  - judgement: "中継の鍵が自ホストの受け入れ一覧に無い（照合 0）"
+    breaking_input: "authorized_keys に実在する指紋を同じ照合に与える。常に 0 を返す壊れ方なら 0 が返る"
+    observed: "実在する 2 指紋でいずれも 1、存在しない指紋で 0。識別している"
+  - judgement: "記録に鍵の値が含まれない"
+    breaking_input: "鍵の書き出しを模した囮の行を同じ検査に通す"
+    observed: "囮で 1 を返した。記録本体の値由来の一致は 0。検出された 2 件は sshd_config の注釈行の語で名前である"
+  - judgement: "他の九台へ認証が通らない（AUTH_OK=0）"
+    breaking_input: "通らないはずの鍵を到達できた住所へ与える。返れば鍵が効いていないか測定が壊れている"
+    observed: "/dev/null と用途の違う実在の鍵の 2 通りとも Permission denied。REACHABLE は返らず"
+  - judgement: "認証の測定が空振りでない"
+    breaking_input: "成功を示す語を別の探し方で数える"
+    observed: "REACHABLE の出現 0、Welcome と Last login の出現 0。三通りで零が一致した"
+  - judgement: "~/.ssh/ を変更していない"
+    breaking_input: "書き込みが起きれば要約値も更新時刻も動く"
+    observed: "測定前後とも sha256 先頭 16 が 66ecff7020e05c5b、mtime 7月3 00:47、size 1956 で同一"
+  - judgement: "正しい鍵なら認証が通る"
+    breaking_input: "登録済みの鍵で到達できる宛先へ接続する"
+    observed: "UNKNOWN。実績のある唯一の宛先である philip が No route to host で到達できず、到達できる九台では正しい鍵が手元に無い"
+
+followups:
+  - "中継に使われている鍵は id_ed25519_andrewtophilip で指紋は SHA256:i7+kCZH9Yb2oX5TOd/u/AqAqvyQk0G7Yu//7BFd2G3k。この鍵で他の九台へ SSH した結果、認証が通った先は 0 件で、九台すべてが Permission denied publickey password であった"
+  - "自ホストの authorized_keys は 2 行のみで、登録は ubuntu@aolab の RSA と dakyo-mba@dmba.local の ED25519。中継の鍵の指紋は含まれず、照合は 0。自ホストは現状のままでは中心になれない"
+  - "中継の目印は .tunnel_to_philip の 1 件のみで、他ホスト向けの目印は 0 件。known_hosts に載っている構内の宛先も philip のみで残り九台は未知。星型は経路だけでなく鍵の配布でも星型である"
+  - "前契約の結論では同期処理側の設定変更は不要だが、鍵の側は必要である。どのホストを中心にするにせよ、各ノードの公開鍵を新しい中心の authorized_keys へ登録する作業が要る"
+  - "~/.ssh/config の Host philip は IdentityFile に RSA 版を指定しているが、中継の目印が指すのは ED25519 版である。常駐処理は別名を経由せず住所へ直接つなぎ -i を明示するため、実際に使われるのは ED25519 版である"
+  - "本契約はデータも分割も一度も参照していない。no_split_redefine と no_raw_write と no_frozen_change は本契約では成立しようがない"
+
+unknowns:
+  - "正しい鍵なら認証が通るという向きの対照。実績のある唯一の宛先である philip が到達不能で、到達できる九台では正しい鍵が手元に無い"
+  - "自ホストが他ノードからどの住所で見えるか。自ホストは 172.17.0.26 のみを持ち、外側での対応付けは容器の内側から観測できない"
+  - "authorized_keys の ubuntu@aolab が philip と ilya のどちらか。前契約で hostname が aolab を返すのは 2 台と判明しており、指紋だけでは判別できない"
+  - "外から見える 50072 と sshd の待受 22 の対応付け。sshd_config の Port は注釈のままで既定値であり、転送は容器の外側の設定で読めない"
+  - "他ホスト側の authorized_keys の中身、および他ホストが互いに認証できるか。他ホストで echo 以外を実行しない契約のため測れない"
+
+commits: []
