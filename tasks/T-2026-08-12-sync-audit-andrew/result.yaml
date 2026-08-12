@@ -33,6 +33,8 @@ deviations:
     note: "Task 5 Step 5 の find パターンが主たる記録に一致しないため、パターンを広げて ~/.syncthing.log を読み、停止時刻の主たる根拠とした"
   - type: judgement
     note: "停止時期の第三の裏取りとして、SPEC が求めていない ~/.tunnel.log の連続失敗行数と keeper の sleep 1800 周期の突き合わせを行った。時刻を持たない記録からの導出であり直接の測定ではないと明記した"
+  - type: environment
+    note: "make task-report の終了コードを ${PIPESTATUS[0]} で読んだが、対話シェルが zsh のため配列の添字による取得ができず空文字が返った。終了コードは UNKNOWN とし、取り直しのための再送はしていない。送信は一方向で取り消せないため。成否は返却された JSON で確認した"
 
 issuer_defects:
   - type: check_does_not_check
@@ -84,5 +86,6 @@ unknowns:
   - "他ホスト側の分岐量。読み取り専用かつ他ホストで命令を実行しない契約のため測れない。推測で埋めていない"
   - "philip が停止した理由と復旧の見込み。本ホストからは測れない"
   - "9 台の 22000 が REFUSED である理由。待受が外側の住所に出ていないことは確かだが、各機の内部設定は本ホストからは読めない"
+  - "make task-report の終了コード。zsh では配列の添字で取得できず空文字が返った。再送はしていないため UNKNOWN。返却 JSON は verdict=pass / report_bytes=18765 を示している"
 
 commits: ["2d53e7b"]

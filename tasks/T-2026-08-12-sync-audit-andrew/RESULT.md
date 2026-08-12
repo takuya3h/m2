@@ -258,3 +258,34 @@ Task 3 Step 2 は `(ss -ltn 2>/dev/null || netstat -ltn 2>/dev/null || echo "手
 
 **退避先: `/tmp/.sync-pause.released.T-2026-08-12-sync-audit-andrew`。**
 repo 直下に未追跡ファイルを残していない。
+
+---
+
+## 11. 報告の返送（Task 6 Step 8）
+
+    make task-report TASK=T-2026-08-12-sync-audit-andrew
+
+    {
+      "task_id": "T-2026-08-12-sync-audit-andrew",
+      "verdict": "pass",
+      "n_issuer_defects": 4,
+      "report_sha256": "4c34c0f93d08d50b00e7ef203191f9370a2f1b80436efb4e2e502eb7b8cf25fa",
+      "report_bytes": 18765,
+      "replaced_blocks": 0
+    }
+
+**終了コードは取得できなかった（UNKNOWN）。** 出力を `tail` に通したうえで
+`${PIPESTATUS[0]}` を読んだが、対話シェルは zsh であり配列の添字による終了コードの取得は
+使えない（SPEC 冒頭の申し送りが述べているとおり）。空文字が返った。
+
+**取り直しのために再送はしていない。** 外部への送信は一方向で取り消せず、終了コードを得る
+ためだけに再度送るのは割に合わないと判断した。送信そのものの成否は、上の JSON
+（`verdict`・`report_sha256`・`report_bytes`）が返っていることをもって確認している。
+秘匿の検査は `make task-report` の内側にあり、停止していない。
+
+### 完了判定 19・20 の確定
+
+| # | 判定 | 実測 |
+|:--:|---|---|
+| 19 | 抑止が repo 直下から消えている | `released`／`ls -la .sync-pause` → repo 直下から消えた。退避先 `/tmp/.sync-pause.released.T-2026-08-12-sync-audit-andrew` |
+| 20 | 報告が台帳へ返っている | 上記 JSON が返った（`verdict: pass` / `report_bytes: 18765`）。**終了コードは zsh の制約により UNKNOWN** |
