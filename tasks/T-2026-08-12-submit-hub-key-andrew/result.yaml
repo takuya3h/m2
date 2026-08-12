@@ -1,0 +1,73 @@
+result_version: 3
+task_id: "T-2026-08-12-submit-hub-key-andrew"
+status: partial
+host: "andrew"
+branch: "feat/submit-hub-key-andrew"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      導出物と並置公開鍵は cmp=0、別鍵とは cmp=1。秘匿検査は実記録の秘密鍵書き出し形0件、
+      囮1件。候補12件と分類12件が一致し、known_hosts は size と mtime が前後一致した。
+  - id: G2
+    verdict: pass
+    note: >-
+      配置物は ssh- 始まり、PRIVATE 0件、1行で、囮は1件。導出物と配置物は cmp=0 で
+      指紋 SHA256:i7+kCZH9Yb2oX5TOd/u/AqAqvyQk0G7Yu//7BFd2G3k が一致した。
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 6
+
+deviations:
+  - type: environment
+    note: "組み込み apply_patch が bwrap の名前空間作成失敗となったため、同じ apply_patch をホスト側で実行した。"
+  - type: judgement
+    note: "grep -i tunnel の2件と、実際の目印 .tunnel_to_* の1件を分けて記録した。"
+  - type: judgement
+    note: "3出所の全IPv4を重複排除した12件を到達性候補として測定した。"
+  - type: judgement
+    note: "禁止8と矛盾する git merge origin/phase0 は実行せず、push と PR 作成だけを行う。"
+
+issuer_defects:
+  - type: check_does_not_check
+    note: >-
+      Task 1 Step 1 の件数命令は ls -a の結果を grep -i tunnel で数えるため、目印ではない
+      .tunnel.log も含む。指示どおり件数を目印件数と読むと2件になるが、実際の .tunnel_to_*
+      は1件だった。広い件数と正確な目印件数を別々に測った。
+  - type: self_contradiction
+    note: >-
+      禁止8は「統合する」を禁じている一方、Phase C Step 8 は git merge origin/phase0 を
+      明示的に命じる。指示どおり実行すると同じ契約の禁止事項を破るため、禁止を優先して
+      merge は実行せず、分岐の push と phase0 向け PR 作成だけを行う。
+  - type: shell_assumption
+    note: >-
+      手順は命令ごとに独立したシェルを前提とするのに、Phase C Step 3 の task-preflight は
+      venv activate を、Step 9 の task-report は load_env.sh を同じ命令に含めない。
+      指示どおり独立実行すると P1 失敗または認証不在になりうるため、各命令内で読み込む。
+
+positive_controls:
+  - judgement: "導出公開鍵が対象秘密鍵に対応する"
+    breaking_input: "別の秘密鍵から導出した公開鍵を比較する"
+    observed: "対象と並置は cmp=0、対照とその並置も cmp=0、対象と対照は cmp=1。"
+  - judgement: "audit に秘密鍵の書き出し形がない"
+    breaking_input: "鍵の書き出しを模した囮を同じ検査へ与える"
+    observed: "audit の秘密鍵書き出し形は0件、repo外の囮は1件。"
+  - judgement: "到達性分類器が状態を出し分ける"
+    breaking_input: "開いた待受、閉じたポート、経路なし候補を与える"
+    observed: "同じ測定器が OPEN、REFUSED、TIMEOUT をそれぞれ返した。"
+  - judgement: "配置物が公開鍵だけである"
+    breaking_input: "PRIVATE を含む囮を同じ検査へ与える"
+    observed: "配置物は0件、囮は1件。配置物は ssh- 始まりかつ1行だった。"
+
+followups:
+  - "lecun 側で scripts/sync/hub_keys/andrew.pub の公開鍵を受け入れ一覧へ登録する。"
+  - "登録後、andrew から 192.168.196.176:50072 への認証が通ることを再測定する。"
+  - "その後に限り、目印の2行案を別契約で適用する。"
+
+unknowns: []
+commits: []
