@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（102 件）
+## 申し送り（105 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -76,6 +76,11 @@
 - 工程 503 run の split_train_images は定数 PAPER_SPLIT_SIZES の転記である。値は実体と一致しており誤ってはいないが、分割を取り違えても同じ値が記録される。記録の一致を分割の一致の証拠として使ってはならない
 - 検出と工程の双方で最良 epoch を検証 split で選び、主たる報告値も検証 split である。試験側の値を持つのは解析対象 703 run のうち 69 run のみで、選択と報告が同じ split の上で閉じている
 
+### T-2026-08-12-hub-from-marker
+
+- 次契約では非中心ノードに `.tunnel_to_lecun` を置き、1 行目にノード固有の鍵パス、 2 行目にそのノードから到達できる lecun の住所を書く。lecun 自身には目印を置かない。
+- 正本の配置、稼働 keeper の PID 単位の停止と再起動、鍵と目印の変更は本契約では行っていない。
+
 ### T-2026-08-12-sync-audit-bengio
 
 - P9 spec_lint の host_mismatch は偽陽性である。rule_host_mismatch が生の socket.gethostname()（Bengio）を宣言値（bengio）と大文字小文字を区別して比較しており、プロジェクト内の正規化 resolve_server_name() を使っていない。hostname の大文字小文字が論理名と異なるホストで必ず誤検出する
@@ -103,6 +108,10 @@
 - 停止期間に自ホストで更新された 172 件のうち、人が触る設定に当たるのは settings.json （14419 バイト、2026-08-11T05:49:59）と codex/config.toml（901 バイト、2026-08-11T21:59:17） である。残る 170 件は codex/plugins/cache/ 配下の自動生成物である。 版の退避は設定で無効（versioning.type が空）であり、上書きされた旧版は残らない。 衝突ファイルの機構は働いている（過去 10 件の実績）。
 - 他 10 台とは一度も直接接続していない（Established secure connection の相手は 21 件すべて philip）。一方で 9 台の SSH ポート 50072 は OPEN であり機器までは届く。 大域探索と中継は設定で無効（globalAnnounceEnabled=false / relaysEnabled=false）。 経路の選択肢に関する事実であり、方針の判断はユーザーが行う。
 - sync-alerts.log に現れるホストのラベルは 16 種（大文字の変種を含む）で、syncthing の device 11 台と一致しない。dlstation（ログ）と dlsta（syncthing）、084f3b0911a2 （コンテナ識別子）、aolab はラベルの対応が付いていない。ホスト名の正本を決めるかの判断が要る。
+
+### T-2026-08-12-tooling-defect-fixes
+
+- 対象外の 5 failures は engine の既存証跡 score_thr 不一致 1 件と、空 metrics を completed 投稿しない research logger 現行仕様と試験期待の不一致 4 件。
 
 ### T-2026-08-12-tunnel-key-audit-bengio
 
@@ -167,7 +176,7 @@
 - 秘匿の検査が見るのは NOTION_API_KEY と WANDB_API_KEY の 2 つと、既知の接頭辞である。資格情報を増やしたら SECRET_ENV_KEYS へ足すこと。足し忘れても検査は通るため気付けない
 - 送信の時点で壁時計を使っている（completed_at）。生成物ではないため冪等の検査には影響しないが、投影に壁時計を入れない方針とは別の判断である
 
-## 断定できなかった事項（77 件）
+## 断定できなかった事項（79 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -225,6 +234,11 @@
 - score_thr が 0.0 と 1e-08 で mAP がどれだけ変わるかは測っていない。両者とも実質的に全検出を残す設定だが、差が無視できるかは再評価しなければ言えない
 - tests の before は本契約で測っていない。コードを 1 行も変更していないため after と同一と扱った。after は実測で 5 failed / 359 passed であり、分岐元の origin/phase0 の状態と一致する
 - 他ホストでは本契約を実行していない。lecun 上でのみ実測した
+
+### T-2026-08-12-hub-from-marker
+
+- 分岐送出、PR、同期抑止解除、台帳返却は未実施。
+- lecun が他ノードから到達可能な住所は本契約では再測定していない。
 
 ### T-2026-08-12-sync-audit-bengio
 
@@ -303,16 +317,16 @@
 - 台帳の他の行が変わっていないことは、触れた行を限定した事実からしか言えていない。全行の内容を送信前後で突き合わせてはいない
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
 
-## 起票者の誤りの型（67 件）
+## 起票者の誤りの型（70 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 26 |
-| `asserted_without_measuring` | 19 |
-| `self_contradiction` | 18 |
+| `check_does_not_check` | 27 |
+| `asserted_without_measuring` | 20 |
+| `self_contradiction` | 19 |
 | `shell_assumption` | 4 |
 
-合計 67 件（対を持つ契約 19 件から）
+合計 70 件（対を持つ契約 21 件から）
 

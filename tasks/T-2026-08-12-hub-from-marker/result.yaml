@@ -1,0 +1,66 @@
+result_version: 3
+task_id: "T-2026-08-12-hub-from-marker"
+status: partial
+host: "lecun"
+branch: "feat/hub-from-marker"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      正本と稼働版は各 34 行、2250 bytes、差分出力 0 行だった。中心関連は 5 行、
+      自ホストの目印は 1 件で、変更前の中継数は 0、keeper は 1、陰性対照は 0 だった。
+  - id: G2
+    verdict: pass
+    note: >-
+      resolver 関数だけを偽 HOME で評価し、旧名、新名、無し、複数の四対照が期待どおりだった。
+      変更後も中継数 0、keeper 1、陰性対照 0 で、稼働版と本物の目印の size と mtime は不変だった。
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 434
+
+deviations:
+  - type: judgement
+    note: >-
+      複数目印は辞書順の最初の一件を選び、旧形式は中心名を SSH 別名に使い、新形式の任意の
+      2 行目で住所を明示する設計を選んだ。上位指示により契約 Files 欄外の README.md、
+      tasks/todo.md、tasks/lessons.md も更新した。
+  - type: environment
+    note: >-
+      Codegraph は初期化済みだが導入版に watch が無かった。偽 HOME の初回評価は zsh の未一致
+      glob で一件未測定となったため、対象の shebang と同じ Bash で四件すべて再測定した。
+
+issuer_defects:
+  - type: check_does_not_check
+    note: >-
+      Task 2 Step 2 の `grep ...; echo "count=$?"` は一致件数ではなく grep の終了コードしか
+      出力しないため、0 件と複数件の件数を示せない。指示どおりでは count=1 が「一致なし」を
+      表すだけなので、終了コード `grep_exit=1` と `grep -c` の一致 0 件を分けて実測した。
+
+positive_controls:
+  - judgement: "構文検査が壊れた shell 入力を拒否する"
+    breaking_input: "`if then` という不正構文を sh -n へ与える"
+    observed: "Syntax error を出し syntax_break_exit=2 になった。"
+  - judgement: "固定中心の残存検索が中心名または旧住所を検出する"
+    breaking_input: "`ubuntu@192.168.196.150 philip` を検索入力へ与える"
+    observed: "入力行を出力し hardcode_break_exit=0 になった。"
+  - judgement: "resolver が接続に必要な鍵パスの欠落を拒否する"
+    breaking_input: "空の `.tunnel_to_lecun` を偽 HOME に置く"
+    observed: "empty_key_rejected を返し、中継対象として解決しなかった。"
+
+followups:
+  - >-
+      次契約では非中心ノードに `.tunnel_to_lecun` を置き、1 行目にノード固有の鍵パス、
+      2 行目にそのノードから到達できる lecun の住所を書く。lecun 自身には目印を置かない。
+  - >-
+      正本の配置、稼働 keeper の PID 単位の停止と再起動、鍵と目印の変更は本契約では行っていない。
+
+unknowns:
+  - "分岐送出、PR、同期抑止解除、台帳返却は未実施。"
+  - "lecun が他ノードから到達可能な住所は本契約では再測定していない。"
+
+commits: []

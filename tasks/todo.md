@@ -3,6 +3,17 @@
 出典: `prompts/research_pivot_summary_and_roadmap.md`（正本は Notion）。
 作成: 2026-06-15 / サーバー: lecun（RTX A6000 ×2）。
 
+## 2026-08-12 — T-2026-08-12-hub-from-marker
+
+- [x] 契約検証・`conventions#prohibitions` の逐語参照解決・L3 プリフライトを通す
+- [x] Phase A: 正本と稼働版、中心定数、目印、中継数の変更前証跡を `audit.md` に記録し G1 を判定する
+- [x] Phase B: `scripts/sync/keeper.sh` を目印から中心を導出する最小実装へ変更する
+- [x] Phase B: 偽の HOME による四通りの対照、構文検査、中継数・稼働版・本物の目印の無変更を実測し G2 を判定する
+- [x] Phase C: `RESULT.md` / `result.yaml` / 判断受け皿 / `README.md` を更新し、近接テスト・全テスト・禁止領域検査を通す
+- [ ] 契約指定どおり commit・push・Draft PR・台帳報告を行い、`.sync-pause` を解除する
+
+成功基準: 契約の完了判定 19 項目を実測値または `UNKNOWN` で埋め、稼働中の `~/bin/keeper.sh`、本物の `~/.tunnel_to_*`、常駐処理を一切変更せず、試験失敗を増やさない。
+
 ## 2026-08-11 — T-2026-08-11-codex-parity
 
 - [x] 契約・既存教訓を読み、実行計画と成功条件を確定する
