@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（108 件）
+## 申し送り（110 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -86,6 +86,11 @@
 - ilyaの受け入れ一覧は2件だが、目標4台を直接示す注釈は0件。契約の判定規則では efros・lecun・bengio・andrewの4台すべてに登録が要る。鍵の生成・配布は本契約で行っていない。
 - 過去2回の「ilyaは構内へ出られない」は今日の値と食い違う。philipを除く9台の50072番はOPENで、 目標4台も含む。中心の候補がilyaだけに限定されるという前提は今日の実測では成立しない。
 - 9台へilya-to-philip鍵を指定すると全件Permission deniedだった。TCP/SSH口への到達と 認証成功は別であり、専用の対別鍵が存在するかは本契約で総当たりしていない。
+
+### T-2026-08-12-submit-hub-key-ilya
+
+- lecun側の次契約ではscripts/sync/hub_keys/ilya.pubを受け入れ一覧へ登録し、登録後に 192.168.196.176:50072へ同じ秘密鍵でREACHABLEが返ることを再測定する。
+- ilya側の目印案は1行目/home/ubuntu/.ssh/id_ed25519_ilyatophilip、2行目192.168.196.176。 本契約では目印を作成・変更していない。
 
 ### T-2026-08-12-sync-audit-bengio
 
@@ -182,7 +187,7 @@
 - 秘匿の検査が見るのは NOTION_API_KEY と WANDB_API_KEY の 2 つと、既知の接頭辞である。資格情報を増やしたら SECRET_ENV_KEYS へ足すこと。足し忘れても検査は通るため気付けない
 - 送信の時点で壁時計を使っている（completed_at）。生成物ではないため冪等の検査には影響しないが、投影に壁時計を入れない方針とは別の判断である
 
-## 断定できなかった事項（81 件）
+## 断定できなかった事項（84 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -250,6 +255,12 @@
 - 外部から見えるilyaの住所とSSHポートは自ホストから測れない
 - ubuntu@aolab注釈がilyaとphilipのどちらに由来するかは判別できない
 - philipが到達不能な理由はUNKNOWN。No route to hostとTIMEOUTまでを実測した
+
+### T-2026-08-12-submit-hub-key-ilya
+
+- lecun側で登録作業がいつ実施されるかはUNKNOWN
+- 登録後に同じ鍵で認証が通るかは次契約までUNKNOWN
+- push・PR・同期抑止解除・台帳報告は後続Stepで実測して更新する
 
 ### T-2026-08-12-sync-audit-bengio
 
@@ -328,16 +339,16 @@
 - 台帳の他の行が変わっていないことは、触れた行を限定した事実からしか言えていない。全行の内容を送信前後で突き合わせてはいない
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
 
-## 起票者の誤りの型（71 件）
+## 起票者の誤りの型（73 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 27 |
+| `check_does_not_check` | 28 |
 | `asserted_without_measuring` | 21 |
-| `self_contradiction` | 19 |
+| `self_contradiction` | 20 |
 | `shell_assumption` | 4 |
 
-合計 71 件（対を持つ契約 22 件から）
+合計 73 件（対を持つ契約 23 件から）
 
