@@ -1,0 +1,85 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-12-ilya-hub-feasibility"
+  kind: analysis
+  title: "ilya を中心に据えられるかを、受け入れ側の登録と待ち受けと構内到達性から実測する"
+  origin: claude-app
+  created_at: "2026-08-12T20:00:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: []
+  amendments:
+    - date: "2026-08-12"
+      reason: "ilya では経路なし対照が TIMEOUT でなく OSERROR:Network_is_unreachable を即時に返したため、ユーザー承認のうえ同値な経路なし分類として許容する"
+      diff: "Task 3 Step 2 の陽性対照で、経路なしを TIMEOUT または OSERROR:Network_is_unreachable とする"
+
+intent:
+  question: "設定共有を五台で復旧させる方針になった。そのうち一台は過去二度の実測で構内へ出られないことが分かっている。中継は各ノードが中心へ接続する形なので、出られないノードは中心以外になれず、逆に中心は入られる側である。このホストは目標の四台を受け入れているか。入られる側として口と待ち受けが機能しているか。過去の実測は今日も成り立つか"
+  decision_at_stake: "五台での復旧にあたり、このホストを中心に据えられるか。据える場合、追加で登録が要る台数はいくつか。据えられない場合、この一台を目標から外すか、別の経路を用意するか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/sync/keeper.sh"
+      - "scripts/sync/m2-sync.sh"
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "受け入れ側の登録と、入られる側としての機能", gpu: false, est: "60m"}
+    - {id: B, name: "構内への到達可否を今日の値で確かめる", gpu: false, est: "40m"}
+    - {id: C, name: "検証、送出、報告", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "受け入れ一覧の註釈から、目標の四台それぞれについて入れるかを判定し、判別できないものを区別した。待ち受けの復号が空振りでないことを、一時的に作った待ち受けが現れて閉じると消えることで確かめた"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "到達性の測定で、開いている先と閉じている先と経路の無い先の三通りが出し分けられることを確かめた。過去の実測との一致または食い違いを記録した。測定の前後で受け入れの控えが無変更であることを確かめた"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-12-ilya-hub-feasibility/"
+  acceptance:
+    - "受け入れ一覧を集合として探し、設定が指す場所を確かめたうえで件数を記録している"
+    - "目標の四台それぞれについて入れるかを註釈から判定し、判別できないものを区別している"
+    - "追加で登録が要る台数を算出している"
+    - "待ち受けを復号し、口と同期処理の両方について有無を記録している。稼働数は検索命令自身に一致しない方法で数えている"
+    - "構内への到達可否を今日の値で確かめ、過去の実測との一致または食い違いを記載している"
+    - "外向きの経路との対比を記録し、測定命令の副作用が禁止領域に及んでいないことを前後の比較で示している"
+    - "中心の要件を満たすかを表にしており、中心にすべきかの判断は書いていない"
+    - "測れなかった項目が UNKNOWN として明示され、分岐が送出され PR の番号が記載されている"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "待ち受けの復号または到達性の陽性対照が期待どおりの結果を返さない場合"
+    - "測定命令の副作用で受け入れの控えが変わってしまった場合"
+    - "外向きの経路も落ちており、報告を送出できない場合"
+    - "読み取りのみの契約であるにもかかわらず、変更を伴わなければ測れない項目が生じた場合"
+    - "分岐が契約用ではなく定位置のまま作業する状態になっている場合"

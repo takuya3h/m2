@@ -1,0 +1,5 @@
+- [ ] 2026-08-12 [cc] ilyaの受け入れ一覧は2件で、目標4台 efros・lecun・bengio・andrewを直接示す注釈は0件。契約の判定規則では4台すべてに登録が要る（tasks/T-2026-08-12-ilya-hub-feasibility/audit.md）
+- [ ] 2026-08-12 [cc] ilyaのコンテナ内ではSSH 22番とSyncthing 22000番がLISTEN。Syncthing=2、keeper=1。外から見える住所とSSH番号はUNKNOWN（tasks/T-2026-08-12-ilya-hub-feasibility/RESULT.md）
+- [ ] 2026-08-12 [cc] 過去2回の「ilyaは構内へ出られない」は今日の値と食い違う。他ノード10台のうちphilipを除く9台の50072番がOPENで、目標4台もすべて含む。philipだけ22000番No route to host・50072番TIMEOUT（tasks/T-2026-08-12-ilya-hub-feasibility/audit.md）
+- [ ] 2026-08-12 [cc] 9台へilya-to-philip鍵を指定した認証は全件Permission denied。SSH口への到達と鍵認証成功は別であり、鍵の生成・配布・変更は行っていない（tasks/T-2026-08-12-ilya-hub-feasibility/audit.md）
+- [ ] 2026-08-12 [cc] 到達性の陽性対照は当初TIMEOUT固定だったが、ilyaではNetwork is unreachableを即時に返した。ユーザー承認のamendmentで両者を経路なしとして許容して再開した（tasks/T-2026-08-12-ilya-hub-feasibility/spec.yaml）
