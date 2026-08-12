@@ -4,19 +4,37 @@
 #         （作業ツリーのブランチに依存しないよう、git オブジェクトから直接展開する）
 # 起動:   nohup ~/bin/keeper.sh >/dev/null 2>&1 &   （flock で多重起動防止。.zshrc から毎回呼んで安全）
 # 役割:   (1) syncthing の起動・死活監視 (2) m2-sync.sh の30分毎実行 (3) m2-sync.sh の自己更新
+resolve_tunnel() {
+  TUNNEL_MARKER=
+  for candidate in "$HOME"/.tunnel_to_*; do
+    if [ -f "$candidate" ]; then
+      TUNNEL_MARKER=$candidate
+      break
+    fi
+  done
+  [ -n "$TUNNEL_MARKER" ] || return 1
+
+  HUB_NAME=${TUNNEL_MARKER##*/}
+  HUB_NAME=${HUB_NAME#.tunnel_to_}
+  TUNNEL_KEY=$(sed -n '1p' "$TUNNEL_MARKER")
+  HUB_ADDRESS=$(sed -n '2p' "$TUNNEL_MARKER")
+  [ -n "$HUB_ADDRESS" ] || HUB_ADDRESS=$HUB_NAME
+  [ -n "$HUB_NAME" ] && [ -n "$TUNNEL_KEY" ]
+}
+
 exec 9>~/.keeper.lock
 flock -n 9 || exit 0
 
 M2DIR=$([ -d ~/slocal2 ] && echo ~/slocal2/m2 || echo ~/slocal/m2)
 
 while true; do
-  # hub(philip)へのSSHトンネル維持（~/.tunnel_to_philip が存在するノードのみ。中身=秘密鍵パス）
-  # コンテナ間はSSH(50072)しか通らないため、syncthingは星型(各ノード→philip)で接続する
-  if [ -f ~/.tunnel_to_philip ] && ! pgrep -f 'ssh.*-L 22001:127.0.0.1:22000' >/dev/null; then
-    nohup ssh -N -L 22001:127.0.0.1:22000 -p 50072 -i "$(cat ~/.tunnel_to_philip)" \
+  # .tunnel_to_* を辞書順で一つ選び、ファイル名から中心を導出する。目印が無ければ張らない。
+  # 1行目は秘密鍵パス、任意の2行目は中心の住所。2行目が無い旧形式では中心名をSSH別名に使う。
+  if resolve_tunnel && ! pgrep -f 'ssh.*-L 22001:127.0.0.1:22000' >/dev/null; then
+    nohup ssh -N -L 22001:127.0.0.1:22000 -p 50072 -i "$TUNNEL_KEY" \
       -o StrictHostKeyChecking=accept-new -o ExitOnForwardFailure=yes \
       -o ServerAliveInterval=30 -o ServerAliveCountMax=3 \
-      ubuntu@192.168.196.150 >>~/.tunnel.log 2>&1 9>&- &
+      ubuntu@"$HUB_ADDRESS" >>~/.tunnel.log 2>&1 9>&- &
   fi
   # syncthing が入っていて動いていなければ起動（未インストールならスキップ）
   # 9>&- : ロックFDを子に継承させない（継承するとkeeper再起動時にflockが永久に失敗する）

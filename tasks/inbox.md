@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（204 件）
+## 未処理（205 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -202,6 +202,7 @@
 - [ ] 2026-08-12 [cc] ss も netstat も lsof も無い。待ち受けの一覧は /proc/net/tcp と /proc/net/tcp6 の状態 0A から復号した（LISTEN 16 件）。手順書に代替を書くかは未決（tools/preflight_task.py）
 - [ ] 2026-08-12 [cc] sync-alerts.log のホストのラベルは 16 種（大文字の変種を含む）で syncthing の device 11 台と一致しない。dlstation と dlsta、084f3b0911a2（コンテナ識別子）、aolab の対応が付いていない。ホスト名の正本が未決（~/claude-sync/sync-alerts.log）
 - [ ] 2026-08-12 [cc] 読み取りのみの契約でもプローブは痕跡を残す。127.0.0.1:22000 への TCP 接続で ~/.syncthing.log に 1 行（Failed TLS handshake）が書かれた。状態は変えていない
+- [ ] 2026-08-12 [human] 契約自身の未追跡物を停止対象から除外し、G1 は再現項目の前後比較へ訂正。欠陥 2 は api-key と小文字 password に限定し、NOTION/W&B は回帰対照へ変更（T-2026-08-12-tooling-defect-fixes）
 - [ ] 2026-08-12 [cc] 中継の鍵 id_ed25519_bengiotophilip（ED25519、指紋 SHA256:FsFyZQKu…）は philip 専用。遠隔 10 台へ認証を測り AUTH_OK 0 / DENIED 9 / NOCONN 1。認証が通るホストは一台も無い（tasks/T-2026-08-12-tunnel-key-audit-bengio/audit.md）
 - [ ] 2026-08-12 [cc] 拒否は鍵を提示したうえでのものと確認。詳細出力で実鍵は Offering public key まで到達し、/dev/null は Trying private key で止まる。口が開いていることと鍵が通ることは別だと実測で分かれた（同上）
 - [ ] 2026-08-12 [cc] bengio の受け入れ一覧は authorized_keys の 3 行のみ。遠隔ノード由来は philip-to-bengio と lecuntobengio の 2 件で、残る 8 台は登録が無い。bengio を中心にするなら 8 台分の登録追加が要る（~/.ssh/authorized_keys）
