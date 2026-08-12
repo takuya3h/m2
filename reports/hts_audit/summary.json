@@ -1,0 +1,225 @@
+{
+  "hts_root": "data/raw/OpenSurgery_Dataset/05_egosurgery_hts",
+  "project_root": ".",
+  "seed": 42,
+  "checks": {
+    "C01": {
+      "status": "OK",
+      "measured": {
+        "n_json": 156,
+        "n_taxonomies": 5,
+        "signature_present": {
+          "Scalpel": true,
+          "Needle Holders": true,
+          "Bipolar Forceps": true
+        }
+      },
+      "notes": [
+        "HTS配下 JSON 総数 = 156",
+        "tool_seg_noskewer categories = 31",
+        "signature 3術具 in 31cls = {'Scalpel': True, 'Needle Holders': True, 'Bipolar Forceps': True}"
+      ],
+      "outputs": [
+        "csv/c01_inventory.csv",
+        "csv/c01_taxonomy.csv",
+        "csv/c01_map_31_to_15.csv"
+      ]
+    },
+    "C02": {
+      "status": "OK",
+      "measured": {
+        "max_orphan": 0,
+        "max_dup": 0
+      },
+      "notes": [],
+      "outputs": [
+        "csv/c02_integrity.csv"
+      ]
+    },
+    "C03": {
+      "status": "WARN",
+      "measured": {
+        "leaks": 0,
+        "missing": 3,
+        "base_total": 15437,
+        "tool_bbox_per_split": {
+          "test": 4265,
+          "train": 9657,
+          "val": 1515
+        }
+      },
+      "notes": [
+        "LEAK=0 MISSING=3 未parse file_name=0",
+        "tool_bbox 総フレーム=15437 (内訳 {'test': 4265, 'train': 9657, 'val': 1515}) ← I1 の基底",
+        "MISSING 内訳: toolhand/train:動画14, toolhand_withmask/train:動画03, toolhand_withmask/train:動画14",
+        "MISSING は WARN. C11 の分母設計に反映せよ (tool_bbox基底は保持, 欠落は toolhand_withmask の派生タスクのみ)"
+      ],
+      "outputs": [
+        "csv/c03_frame_matrix.csv",
+        "csv/c03_split_conformance.csv"
+      ]
+    },
+    "C04": {
+      "status": "OK",
+      "measured": {
+        "gap": {
+          "disinfection": {
+            "01-15": 125,
+            "17-22": 115
+          },
+          "dressing": {
+            "01-15": 321,
+            "17-22": 196
+          },
+          "irrigation": {
+            "01-15": 217,
+            "17-22": 321
+          }
+        },
+        "b_has_gap": true,
+        "n_header_types": 1
+      },
+      "notes": [
+        "phase CSV ヘッダ種別 = [(['Frame', 'Phase'], 46)]",
+        "評価ギャップ3工程 (train01-15 / 17-22): {'disinfection': {'01-15': 125, '17-22': 115}, 'dressing': {'01-15': 321, '17-22': 196}, 'irrigation': {'01-15': 217, '17-22': 321}}",
+        "動画17-22 に評価ギャップ工程あり -> G-4 は『拡張 test split』案を強く推奨 (ただし17-22 は bbox/mask 無し -> S4/B2a のみ拡張可)"
+      ],
+      "outputs": [
+        "csv/c04_phase_per_file.csv",
+        "csv/c04_phase_distribution.csv"
+      ]
+    },
+    "C05": {
+      "status": "OK",
+      "measured": {
+        "verdicts": [
+          "IDENTICAL_CONTENT",
+          "IDENTICAL_CONTENT",
+          "IDENTICAL_CONTENT"
+        ]
+      },
+      "notes": [
+        "[train] basename正規化後は内容一致 (差はfile_name形式のみ: HTS_fn=01_1_0124.jpg / PROJ_fn=train/01/01_1_0124.jpg / img数一致=True / ann数一致=True)",
+        "[val] basename正規化後は内容一致 (差はfile_name形式のみ: HTS_fn=09_1_0213.jpg / PROJ_fn=val/09/09_1_0213.jpg / img数一致=True / ann数一致=True)",
+        "[test] basename正規化後は内容一致 (差はfile_name形式のみ: HTS_fn=04_1_0511.jpg / PROJ_fn=test/04/04_1_0511.jpg / img数一致=True / ann数一致=True)",
+        "全 split basename正規化後は同一内容 -> I4 は無改修維持可 (HTS tool bbox は project instances と同一フレーム/同一bbox, file_name のパス接頭辞のみ相違). 片方削除で容量節約可"
+      ],
+      "outputs": [
+        "csv/c05_duplicate_check.csv"
+      ]
+    },
+    "C06": {
+      "status": "WARN",
+      "measured": {
+        "iou_median": 0.8595196302944491,
+        "fill_median": 0.19223231765645518,
+        "matched": 51318,
+        "unmatched": 8896,
+        "absent_15cls_masks": [
+          "Mouth Gag",
+          "Skewer"
+        ]
+      },
+      "notes": [
+        "matched=51318 unmatched=8896 n_masks=60214",
+        "IoU中央値=0.8595196302944491",
+        "充填率中央値=0.19223231765645518",
+        "noskewer mask 実体を持つ15クラス=13/15, 実体0件の15クラス=['Mouth Gag', 'Skewer']",
+        "IoU中央値<0.90 -> G-2のΔが『mask効果』か『box定義変更』か交絡. 対照実験『mask由来boxで作ったbbox版T1a』が必須",
+        "実体0件の術具 ['Mouth Gag', 'Skewer'] は G-2 の per-phase 分析から脱落 (Skewer=design工程signature0.997, Mouth Gag). §2.6-f 確認",
+        "充填率が1に近い術具=背景除去効果小/低い術具(細長)=G-2期待効果大 (分布はG-2効果量の事前予測子)"
+      ],
+      "outputs": [
+        "csv/c06_mask_bbox_geometry.csv",
+        "csv/c06_fill_ratio_by_class.csv"
+      ]
+    },
+    "C07": {
+      "status": "OK",
+      "measured": {
+        "n_sampled": 9680,
+        "containment_p50": 0.9982602531413233,
+        "frac_ge05": 0.9366735537190083,
+        "frac_ambiguous": 0.08016528925619834,
+        "hand_own": 10238,
+        "hand_other": 23,
+        "other_ratio": 0.0022414969301237696
+      },
+      "notes": [
+        "実サンプル tool mask 数 = 9680 (上限 rle_sample=4000/split)",
+        "内包率分位 = {5: 0.23655772104718567, 25: 0.985230013408771, 50: 0.9982602531413233, 75: 1.0, 95: 1.0}",
+        "内包率>=0.5 割合 = 0.9366735537190083",
+        "margin<0.2 (曖昧) 割合 = 0.08016528925619834",
+        "手対応 Own=10238 Other=23 (Other比率=0.0022414969301237696, 内包率>=0.5 のみ集計)",
+        "Other対応ほぼ0 (Other比率0.22%) -> 助手手のrelationは事実上取得不可. 論文の限界として明記が必要"
+      ],
+      "outputs": [
+        "csv/c07_which_tool_recovery.csv",
+        "csv/c07_hand_class_correspondence.csv"
+      ]
+    },
+    "C08": {
+      "status": "FAIL",
+      "measured": {
+        "per_split": {
+          "train": 11308,
+          "test": 4637,
+          "val": 1703
+        },
+        "leak_png": 6340
+      },
+      "notes": [
+        "PNG枚数 canonical別 = {'train': 11308, 'test': 4637, 'val': 1703}",
+        "val/test 混在 6340枚 -> ディレクトリ名を信用したローダは即リーク. canonical split による再フィルタを必須要件に"
+      ],
+      "outputs": [
+        "csv/c08_png_split.csv"
+      ]
+    },
+    "C09": {
+      "status": "OK",
+      "measured": {
+        "nonzero_cells": 41,
+        "train_sparse_lt10": 13,
+        "train_effective": 24
+      },
+      "notes": [
+        "非ゼロセル数(全split, 内包率>=0.5) = 41",
+        "train で 10例未満のセル数 = 13",
+        "train 非ゼロセル数 = 37",
+        "B2aでは15次元中12次元がノイズ・利得129%を上位3次元が支配. relationでも同型を想定し実用セル数を明示"
+      ],
+      "outputs": [
+        "csv/c09_cooccurrence.csv"
+      ]
+    },
+    "C10": {
+      "status": "OK",
+      "measured": {
+        "mean_run_length": 7.040849206439562,
+        "mean_switch_rate": 0.2013467469412597
+      },
+      "notes": [
+        "平均継続長(全系列平均)=7.040849206439562 フレーム, 平均切替率=0.2013467469412597",
+        "比較: 既存工程の自己遷移率0.982 (粘性大), サンプリング0.5fps",
+        "継続長が短ければT1aのflicker由来過分節(edit 41.08->37.07)が再発 -> 因果 min-segment debounce(k=2) の relation版を事前用意すべき"
+      ],
+      "outputs": [
+        "csv/c10_temporal_stability.csv"
+      ]
+    },
+    "C11": {
+      "status": "OK",
+      "measured": {
+        "n_rows": 15
+      },
+      "notes": [
+        "★ このフレームリストを分母に S4/B2a/T1a/H-6 を同一集合で再計算しない限り, 新Δは既存 +0.0383/+0.0497/+0.0004 と比較不能 (I1 の破れ). 再計算は G-4 に含める"
+      ],
+      "outputs": [
+        "csv/c11_coverage.csv",
+        "subsets/subset_{task}_{split}.txt"
+      ]
+    }
+  }
+}

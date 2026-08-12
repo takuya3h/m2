@@ -13,6 +13,11 @@
 これは内部で各 block 出力を捕捉し、``reshape=True`` で ViT の (B, N, C) を
 2D 特徴マップ (B, C, H, W) へ patch グリッドとして整形する
 （register token と CLS は除外される）。
+
+【SyncBatchNorm 方針・§13.2 (b)(iv)】
+    DINOv2 ViT 本体は LayerNorm 主体で BatchNorm を持たない。
+    ``SyncBatchNorm`` 変換の対象外。さらに S0 では backbone を frozen で使う
+    ため、BatchNorm 統計の更新自体が起きない。
 """
 
 from __future__ import annotations

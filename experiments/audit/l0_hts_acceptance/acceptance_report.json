@@ -1,0 +1,144 @@
+{
+  "run": "l0_hts_acceptance_2026-07-28",
+  "target": "HTS(Hand-Tool-Seg)公式GT完全版 候補=現行 data/annotations 派生",
+  "main_criteria": [
+    "C1_polygon_points",
+    "C2_value5_two_hands_tool",
+    "C3_hand_total_57173",
+    "C4_leakage_fingerprint"
+  ],
+  "main_pass": false,
+  "checks": {
+    "C1_polygon_points": {
+      "pass": false,
+      "toolhand_seg_types": {
+        "polygon": 3000
+      },
+      "toolhand_vertex_hist": {
+        "4": 3000
+      },
+      "raw04_seg_types": {
+        "rle": 3000
+      },
+      "master_seg_types": {
+        "polygon": 3000
+      },
+      "master_vertex_hist": {
+        "4": 3000
+      },
+      "note": "master は 100% 4 頂点矩形(bbox 相当)=真マスク不可。HTS は RLE/多頂点でなければ FAIL。"
+    },
+    "C2_value5_two_hands_tool": {
+      "pass": false,
+      "toolhand_cat5_name": "Mouth Gag",
+      "toolhand_cat5_count": 3807,
+      "raw04_cat5_name": "Two Hands Tool",
+      "raw04_cat5_count": 399,
+      "note": "HTS 把持関係 GT に Two Hands Tool(=5) が必要。現行 egosurgery_tool_hand が 19クラス(手混在)で値5=Mouth Gag なら不合格。正本源 raw 04_handtool 5cls は値5=Two Hands Tool を保持。"
+    },
+    "C3_hand_total_57173": {
+      "pass": false,
+      "hand_instances_current": 46320,
+      "hand_instances_target": 57173,
+      "raw02_hand_total": 57173,
+      "segments_present": 22,
+      "segments_raw": 26,
+      "missing_videos": [
+        "03_1",
+        "03_3",
+        "12_2",
+        "15_2"
+      ],
+      "missing_videos_expected": [
+        "03_1",
+        "03_3",
+        "12_2",
+        "15_2"
+      ],
+      "note": "完全版は欠落4動画(03_1/03_3/12_2/15_2)を復活し 26 セグメント総手数=57,173 が要件。"
+    },
+    "C4_leakage_fingerprint": {
+      "pass": true,
+      "frame_overlap": {
+        "train∩val": 0,
+        "train∩test": 0,
+        "val∩test": 0
+      },
+      "video_overlap": {
+        "train∩val": [],
+        "train∩test": [],
+        "val∩test": []
+      },
+      "note": "同一 frame も同一 video も split 跨ぎで共有しないこと（動画単位リークの封じ）。"
+    },
+    "C5_official_split": {
+      "pass": true,
+      "image_counts": {
+        "train": 9657,
+        "val": 1515,
+        "test": 4265
+      },
+      "official": {
+        "train": 9657,
+        "val": 1515,
+        "test": 4265
+      }
+    },
+    "C6_phase_coexist": {
+      "pass": null,
+      "phase_video_segments": 23,
+      "hts_video_segments": 22,
+      "coexist_video_segments": 22,
+      "note": "報告値（合否対象外）。frame 粒度の共存数は完全版組立時に再算出。"
+    },
+    "C7_class_map": {
+      "pass": null,
+      "hand4_categories": {
+        "0": "Own hands left",
+        "1": "Own hands right",
+        "2": "Other hands left",
+        "3": "Other hands right"
+      },
+      "toolhand_categories": {
+        "0": "Bipolar Forceps",
+        "1": "Electric Cautery",
+        "2": "Forceps",
+        "3": "Gauze",
+        "4": "Hook",
+        "5": "Mouth Gag",
+        "6": "Needle Holders",
+        "7": "Raspatory",
+        "8": "Retractor",
+        "9": "Scalpel",
+        "10": "Scissors",
+        "11": "Skewer",
+        "12": "Suction Cannula",
+        "13": "Syringe",
+        "14": "Tweezers",
+        "15": "Own hands left",
+        "16": "Own hands right",
+        "17": "Other hands left",
+        "18": "Other hands right"
+      },
+      "raw04_5cls_categories": {
+        "1": "First Person's Left Hand",
+        "2": "First Person's Right Hand",
+        "3": "Left Hand Tool",
+        "4": "Right Hand Tool",
+        "5": "Two Hands Tool"
+      },
+      "note": "報告（合否対象外）。完全版のクラス対応表の正本化に用いる。"
+    },
+    "C8_hand_bbox_source": {
+      "pass": null,
+      "candidates": {
+        "egosurgery_hand4": "4クラス手・現行派生（22セグメント・46,320）",
+        "raw_02_hand_json_per_video": "手 正本 57,173（26セグメント・欠落なし）",
+        "master_38cls": "seg=4頂点矩形(bbox相当)・手id 10/11/21/22"
+      },
+      "recommended_canonical": "raw_02_hand_json_per_video（完全性・欠落なし）",
+      "note": "報告/決定（合否対象外）。"
+    }
+  },
+  "verdict": "NOT ACCEPTED (完全版 未達)"
+}

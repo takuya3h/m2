@@ -1,0 +1,6 @@
+- [ ] 2026-08-11 [cc] 生成物の合流は union を採用。併合の後に再生成を忘れると投影に重複が残る。再生成を強制する仕組みを置くかは未決（.gitattributes）
+- [ ] 2026-08-11 [cc] build_context.py が出力名を定数ではなくリテラルで持つため、検査の除外はディレクトリ定数 AUTO_DIR に頼っている。context/auto/ の外へ生成物が増えると追随しない（tools/build_context.py）
+- [ ] 2026-08-11 [cc] 禁止領域の既定一覧は check_forbidden.py が持つ。契約ごとに禁止領域が異なる場合の広げ方が未決。現状は起点を変える引数のみ（tools/check_forbidden.py）
+- [ ] 2026-08-11 [cc] 頁送りの規則は fenced block の中身を全て命令として扱う既存実装に乗る。mermaid の図で 1 件検出されたため文書側を直した。block の言語指定で絞るかが未決（tools/check_agent_docs.py）
+- [ ] 2026-08-11 [cc] 抑止の解除を別名へ移す方式にしたが、退避した .sync-pause.released が追跡外のまま残る。掃除の規約が未決（scripts/sync/m2-sync.sh）
+- [ ] 2026-08-11 [cc] 削除が拒否される環境そのものは本ホストで再現しない。別名への移動が両環境で成立することだけを測った。再現条件は UNKNOWN（.claude/skills/task/SKILL.md）

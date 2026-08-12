@@ -1,0 +1,80 @@
+spec_version: 1
+meta:
+  task_id: "T-2026-08-11-split-and-recipe-audit"
+  kind: analysis
+  title: "tool と phase の split 整合性および eval_recipe の実効性を実測する"
+  origin: claude-app
+  created_at: "2026-08-11T11:52:30Z"
+  created_from:
+    runindex_commit: "12cc0e8"
+    counts: {index: 749, experiments: 206, verdicts: 1038}
+  depends_on: []
+  amendments: []
+intent:
+  question: "これまでの実験で使ってきた split と評価条件は、記録の上でも実体の上でも一貫していたか。特に工程側の split には検証機構が無く、記録された split サイズがゼロのまま照合を素通りしている恐れがある"
+  decision_at_stake: "既存の基準点と、それを分母として得た全ての差分を、そのまま論文の数値として使ってよいか。使えない範囲がある場合、どこまで再取得が要るか"
+  related:
+    backlog: ["BL-exclusion-rules-exact-match", "BL-legacy-prefix-must-not-exclude", "BL-frozen-source-self-contradiction"]
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files:
+      - "data/splits/ego_train.txt"
+      - "data/splits/ego_val.txt"
+      - "data/splits/ego_test.txt"
+  code:
+    entrypoints:
+      - "src/egosurgery/utils/eval_recipe.py"
+      - "src/egosurgery/datasets/phase_dataset.py"
+      - "src/egosurgery/engines/phase_trainer.py"
+      - "tools/harvest_runindex.py"
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "母集団と前提の確定", gpu: false, est: "20m"}
+    - {id: B, name: "データ実体の分割整合性", gpu: false, est: "40m"}
+    - {id: C, name: "工程ラベルの母集団", gpu: false, est: "40m"}
+    - {id: D, name: "評価条件の記録と照合の実効性", gpu: false, est: "50m"}
+    - {id: E, name: "評価手順の構造的な偏り", gpu: false, est: "30m"}
+    - {id: F, name: "総括と起票", gpu: false, est: "20m"}
+  gates:
+    - id: G1
+      after: A
+      check: "index の各行が指すディレクトリの実在件数を数え、欠落が何件かを記録した"
+      on_fail: ask
+    - id: G2
+      after: B
+      check: "重複検査に合成した重複入りの入力を与え、実際に検出されることを確認した"
+      on_fail: stop
+    - id: G3
+      after: D
+      check: "照合関数に不一致な入力を与え、実際に不一致と判定されることを確認した"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-11-split-and-recipe-audit/"
+  acceptance:
+    - "Phase A から E の全ての検査項目について、実測値または UNKNOWN が RESULT に記載されている"
+    - "件数ゼロと判定した項目は、対象が実在することの確認と、別の探し方による再確認を併記している"
+    - "陽性対照を置いた検査は、期待した結果と実際に得られた結果の両方を記載している"
+    - "既存の基準点をそのまま使ってよいかについて、実測に基づく結論と根拠が記載されている"
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "分割の実体が定義と食い違い、既存の基準点が汚染されている可能性が生じた場合"
+    - "評価条件の照合が素通りしていたことが確認され、既存の差分の妥当性が崩れる場合"
+    - "読み取りのみの契約であるにもかかわらず、変更を伴わなければ測れない項目が生じた場合"

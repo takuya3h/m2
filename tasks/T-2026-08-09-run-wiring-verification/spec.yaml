@@ -1,0 +1,77 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-09-run-wiring-verification"
+  kind: impl
+  title: "最小の学習を一本走らせ、自動同期と識別子の刻印が働くことを確かめる"
+  origin: claude-app
+  created_at: "2026-08-09T09:00:00Z"
+  created_from:
+    runindex_commit: "12cc0e8"
+    counts: {index: 749, experiments: 206, verdicts: 1038}
+  depends_on: ["T-2026-08-08-session-durability"]
+  amendments: []
+
+intent:
+  question: "学習の完了時に自動同期が働き、契約と成果物が識別子で結ばれるか"
+  decision_at_stake: "配線を信頼して運用へ入れるか、手作業での取り込みを続けるか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["tools/harvest_runindex.py"]
+
+contract:
+  inject_verbatim: [conventions#env_p0, conventions#prohibitions, conventions#naming]
+  conventions_rev: "d422b08"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "事前確認と最小設定の特定", gpu: false, est: "30m"}
+    - {id: B, name: "最小の学習を一本走らせる", gpu: true, est: "60m"}
+    - {id: C, name: "自動同期の発火状況の実測", gpu: false, est: "30m"}
+    - {id: D, name: "索引への反映と検査系の未確認経路", gpu: false, est: "40m"}
+  gates:
+    - id: G1
+      after: A
+      check: "配備鍵での遠隔参照が成功し、空いている演算装置を特定した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "成果物が生成され、設定に契約の識別子が刻まれたことを確認した"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "自動同期が働いたか、働かなかった理由のいずれかを実測で記録した"
+      on_fail: ask
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  expected_runs: 1
+  must_have: [RESULT.md]
+  destination: "experiments/"
+  stamp: {task_id_in: config.yaml}
+  acceptance:
+    - "配備鍵での遠隔参照が成功する"
+    - "最小の学習が一本完走し成果物が生成される"
+    - "生成された設定に契約の識別子が含まれる"
+    - "自動同期の発火または不発火の理由が実測で記録されている"
+    - "索引に契約の識別子を持つ行が現れる"
+    - "軽量ビューの契約充足率が更新される"
+    - "make task-validate が exit 0"
+    - "make task-preflight が exit 0"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [remote_reference_failed, other_user_gpu_touched, index_row_count_unexpected]

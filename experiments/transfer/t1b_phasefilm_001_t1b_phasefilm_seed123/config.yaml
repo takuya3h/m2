@@ -1,0 +1,17 @@
+experiment:
+  category: transfer
+  step: t1b_phasefilm
+  description: t1b_phasefilm
+seed: 123
+method:
+  name: t1b_phase_to_det
+  system: ①predictive_interaction/FiLM
+  direction: phase->det
+  ref: MT4MTL-KD-style §4.6 (FiLM下限)
+  warm_start: s0_01{6,7,8} best_ap.pth
+  trainable: all
+  epochs: 3
+delta:
+  denominator: S0-frozen (=init mAP, within-run)
+  note: ①学習FiLM phase→det。Δ_det=best−init（init=warm-start S0-frozen, 同一eval）/ 注入純効果=Δ_inj−Δ_ctrl
+server_name: lecun

@@ -1,0 +1,135 @@
+result_version: 2
+task_id: "T-2026-08-11-hts-comparability-audit"
+status: pass
+host: "lecun"
+branch: "feat/hts-comparability-audit"
+pr: 79
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      10 問すべてを答えあり/部分的/答え無しに仕分け、両方向の集合差を取った。想定 5 経路は
+      全て実在（想定→実体の差 0）。実体側の走査で想定に無い監査物を 5 経路検出
+      （g2_followup_2026-07-29・g2_main_2026-07-29_lecun・g2_main の HANDOVER・annotations_eda・
+      tool_class_distribution_2026-07-31）。既存監査が測っていて 10 問に無い項目を 10 件列挙した。
+  - id: G2
+    verdict: pass
+    note: >-
+      走査は symlink を辿る方法で行った。陽性対照は symlink を走査の途中に置き、find -L と
+      os.walk が probe.bin を検出し pathlib.rglob が検出しないことを確認（assert 成立）。
+      分割跨ぎ重複 0 件の判定には、val の識別子 10_1_1434 を train へ 1 件注入して
+      ちょうど 1 件検出される陽性対照を置いた。件数 0 の grep は zsh のグロブ展開失敗が
+      原因と特定し、引用して再実行して 25 件を得た。
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 359
+
+deviations:
+  - type: judgement
+    note: >-
+      SPEC Phase B Step 3 は「Q1 から Q3 が Phase A で埋まっていれば省略」とするが、既存監査は
+      2026-07-29/07-30 に raw バンドルを読んだもので、実体は 2026-07-31 に
+      data/annotations/egosurgery_hts/ として tool_split 整合で再構築されていた。SPEC の
+      「既存の監査が古く注釈が更新されている場合は測り直す」に従い全問を実測した。その結果、
+      既存監査 2 本の食い違い（59.0% と 97.02%）が 97.02% で決着した。
+  - type: judgement
+    note: >-
+      tests の件数を開始前に測っていない。src/ と tests/ を一切変更していないため
+      before = after として 5 failed / 359 passed を記録した。git status で作業ツリーの
+      変更が tasks/ 配下のみであることを裏づけている。
+  - type: environment
+    note: >-
+      常駐処理 m2-sync.sh が本 task 開始直前の 16:03 に別分岐
+      feat/s0-reevaluation-feasibility へ origin/phase0 を自動統合し push した記録がある。
+      実行者の逸脱ではない。本分岐では作業開始時に .sync-pause を置き、稼働中の版が
+      対応済み（grep -c sync-pause ~/bin/m2-sync.sh = 2）であることを確認した。
+  - type: environment
+    note: >-
+      SPEC 記載の grep -rln ... --include=*.md ... は実行シェル zsh がグロブを展開して失敗し
+      no matches found となり 0 件を返した。引用して再実行し 25 件を得た。
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: >-
+      SPEC 冒頭の「先に確定していること（再検証しない）」で「hand_tool_seg の生成経路は
+      Mouth Gag と Skewer と器具なしフレームを構造的に除外する」と断定した。実測では
+      Skewer の除外率は 0.00%（0/343）、器具の箱が 1 つも無いフレームは 460 中 6 枚、
+      Mouth Gag は 2.74% で全体基準 2.98% より低い。指示どおり再検証せずに信じていれば、
+      交絡源を Skewer と読み違えたまま設計判断に進んでいた。実際の偏りは希少工程にあり
+      （irrigation 8.47%・anesthesia 6.81%）、向きが逆である。
+  - type: self_contradiction
+    note: >-
+      SPEC は同じ事実について再検証を禁じる記述と要求する記述を両方持つ。冒頭は 460 フレームの
+      構造的除外を「先に確定していること（再検証しない）」に置くが、Phase B Step 4 は
+      「実装とデータの両方を読み、実数と内訳を出す」「Skewer と Mouth Gag に偏っているという
+      記述が実データで確かめられるかを見る」と再検証を要求する。前者に従えば測らず後者に従えば測る。
+      実際に測った結果、前者の記述が誤りだった。後者に従ったため誤りを検出できた。
+  - type: shell_assumption
+    note: >-
+      SPEC Phase A Step 2 の grep コマンドが --include=*.md を引用していない。実行シェルは
+      zsh であり、グロブが展開に失敗して no matches found となり 0 件を返す。指示どおり実行し
+      件数だけを見ると「領域注釈の監査物が 1 件も無い」と誤読する。SPEC 自身が注意 8 で
+      「変数の直後に記号が続く場合は波括弧で囲む。実行シェルは bash ではない」と警告しながら、
+      自らのコマンドが同種の罠を踏んでいる。引用して再実行し 25 件を得た。
+
+followups:
+  - >-
+    src/egosurgery/datasets/loss_mask.py の docstring 3-6 行目が
+    「hand_tool_seg の生成パイプラインは Mouth Gag / Skewer / 器具なしフレームを構造的に除外する」
+    と述べているが、実測と食い違う。Skewer の除外率は 0.00%（0/343）、器具なしは 460 中 6 枚である。
+    460 という件数と配置は正しく、ローダの挙動（テキストを読むだけ）にも誤りは無い。誤っているのは
+    原因の説明のみ。docstring の修正が要る。本 task は読み取りのみの契約のため変更していない。
+  - >-
+    src/ と configs/ で EgoSurgery-HTS を参照するのは loss_mask.py のみで、load_loss_mask には
+    呼び出し元が 1 つも無い。除外機構は書かれているが学習経路に配線されていない。補助課題を
+    実装する際に、フレーム単位の有効フラグで補助損失だけを 0 にする方式（母集団 15,437 を保つ）か、
+    manifest から落とす方式（母集団が 14,977 に縮み全基準点と揃わなくなる）かを決める必要がある。
+  - >-
+    補助注釈が無い 460 枚は希少工程に偏る。irrigation 15/177 = 8.47%、anesthesia 34/499 = 6.81%、
+    dressing 6/119 = 5.04%、disinfection 1/11 = 9.09% で、全体基準 2.98% の 2〜3 倍である。
+    補助教師が最も薄いのは工程認識が最も弱い希少工程であり、効果が出なかった場合に
+    「補助信号が無効」と「その工程に補助教師が無い」を分離できない。効果を工程別に分解して
+    報告するか、希少工程の結論を保留するかの判断が要る。
+  - >-
+    工程側 test_cfg には時系列ヘッドの構成キー（temporal_head / num_stages / num_layers /
+    num_f_maps / backbone）が入っており、recipes_match は記述用キーを除く全実効キーを比較する。
+    補助課題の追加でこれらが変わると DeltaCalculator が InconsistentRecipeError を送出し、
+    Δ の計算そのものが拒否される。補助ヘッドは工程側の時系列ヘッド構成を変えない形で足す必要がある。
+  - >-
+    neck 追加の前例を seed 対応で実測した結果、工程側は paired Δ = +0.017432 / 4.850σ /
+    全 seed 同符号 True で判定規約を満たし、検出側は +0.004404 / 1.221σ だが seed 123 が負で
+    同符号 False のため規約を満たさない。補助ヘッドの容量増は neck と同型の交絡になり得るため、
+    「補助ヘッドはあるが補助教師を与えない」容量一致対照の腕を置くかどうかの判断が要る。
+  - >-
+    検出側の S0-frozen は control_of の分母として索引に 0 回しか現れない。既存の検出 Δ は
+    同一 run 内の inj − ctrl（paired）で測られており、S0-frozen との比較は unpaired の
+    絶対値比較という前例の無い使い方になる。§13 の 4 分母運用（0.7271 と 0.7051 は別 checkpoint）
+    に照らして、どの分母を使うかの判断が要る。
+  - >-
+    既存監査 hts_next6_2026-07-29 は被覆率 0.5899 を根拠に T1 を FAIL と判定し、
+    「分母を canonical 15,437 ではなく HT subset 9,106 に変更し、既存 Δ を 9,106 枚上で
+    全て再計算しなければ比較できない」という設計変更を要求している。この要求は 2026-07-31 の
+    再構築（json_per_video から tool_split 整合で再生成）によって不要になっている。
+    当該レポートに後続の訂正が入っていないため、読んだ人が古い結論を採る恐れがある。
+
+unknowns:
+  - >-
+    補助課題を足したモデルの実測値。本 task は読み取りのみで学習・評価を行わない契約であり、
+    比較の土台が成立するかだけを測った。
+  - >-
+    補助ヘッドが実際にどれだけ容量を増やすか。補助ヘッドが未設計・未実装のため測れない。
+    neck 追加の前例（工程 4.850σ / 検出 1.221σ・符号不一致）を代理指標として提示した。
+  - >-
+    baselines/s0_frozen の frozen_source_tag が索引上で空である理由。S0-frozen 自身が
+    凍結源の生成側であるためと解釈できるが、実装で確かめていないため断定しない。
+  - >-
+    同一 seed でも結果が再現しない既知の現象の現在値。experiments/g2_followup_2026-07-29 に
+    記述があるが本 task では再測していない。本 task の paired Δ の pstd（工程 0.003594 /
+    検出 0.003607）はこのばらつきを含んだ値である。
+
+commits:
+  - "69e9772"

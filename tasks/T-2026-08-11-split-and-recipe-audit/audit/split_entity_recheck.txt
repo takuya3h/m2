@@ -1,0 +1,34 @@
+===== 別の探し方 1: find でファイル数 =====
+data/raw/ego 配下の全ファイル: 3
+画像らしき拡張子: 0
+symlink: 15
+ディレクトリ: 4
+
+===== 別の探し方 2: 動画ディレクトリの中身 =====
+--- data/raw/ego/train/01 ---
+lrwxrwxrwx 1 ubuntu ubuntu 56  6月 15 00:24 data/raw/ego/train/01 -> /home/ubuntu/slocal2/EgoSurgery/images/by_split/train/01
+  項目数: 913
+--- data/raw/ego/val/09 ---
+lrwxrwxrwx 1 ubuntu ubuntu 54  6月 15 00:24 data/raw/ego/val/09 -> /home/ubuntu/slocal2/EgoSurgery/images/by_split/val/09
+  項目数: 518
+--- data/raw/ego/test/04 ---
+lrwxrwxrwx 1 ubuntu ubuntu 55  6月 15 00:24 data/raw/ego/test/04 -> /home/ubuntu/slocal2/EgoSurgery/images/by_split/test/04
+  項目数: 1329
+
+===== data/raw そのものの状態 =====
+total 20
+drwxrwxr-x 5 ubuntu ubuntu 4096  7月 29 18:22 .
+drwxrwxr-x 8 ubuntu ubuntu 4096  6月 15 09:25 ..
+drwxrwxr-x 8 ubuntu ubuntu 4096  7月 29 13:05 OpenSurgery_Dataset
+drwxrwxr-x 5 ubuntu ubuntu 4096  6月 14 22:58 ego
+4.3G	data/raw
+
+===== data/ 全体（何が実在するか） =====
+README.md
+annotations
+eval_staging
+external
+processed
+raw
+splits
+data/processed: 14 項目

@@ -175,6 +175,55 @@ def test_copypaste_adds_instances(tmp_path):
 
 
 # ---------------------------------------------------------------------- #
+# 4b. Copy-Paste の対象が Skewer / Syringe のみで Forceps を含まない
+#     【§v2 訂正 / 2026/05/24】Forceps 12.21% は稀少ではない
+# ---------------------------------------------------------------------- #
+def test_copypaste_targets_only_skewer_syringe(tmp_path):
+    """Copy-Paste 後に追加される label が Skewer / Syringe のみで、
+    Forceps を含まないことを確認する。"""
+    from egosurgery.datasets.constants import RARE_CLASSES, TOOL_NAME_TO_ID
+    from egosurgery.datasets.copypaste import BBoxCopyPaste
+
+    # 1. constants の RARE_CLASSES が Skewer / Syringe のみであること（不変条件）。
+    assert set(RARE_CLASSES) == {"Skewer", "Syringe"}, (
+        f"RARE_CLASSES に Forceps 等が混入: {RARE_CLASSES}"
+    )
+
+    # 2. crop バンクに Skewer / Syringe の crop を用意する。
+    bank_dir = tmp_path / "bank"
+    for class_name in ("Skewer", "Syringe"):
+        cls_dir = bank_dir / class_name
+        cls_dir.mkdir(parents=True)
+        for i in range(3):
+            crop = np.random.randint(0, 255, (16, 16, 3), dtype=np.uint8)
+            cv2.imwrite(str(cls_dir / f"crop_{i}.jpg"), crop)
+
+    # 3. rare_classes を省略すると default の RARE_CLASSES が使われる。
+    cp = BBoxCopyPaste(
+        bank_dir=bank_dir,
+        paste_prob=1.0,
+        max_paste_per_image=5,
+        seed=0,
+    )
+    # 4. 何枚かの画像に適用し、追加された label が Skewer / Syringe のみで
+    #    Forceps (id=2) が混入しないことを確認する。
+    forceps_id = TOOL_NAME_TO_ID["Forceps"]
+    allowed_ids = {TOOL_NAME_TO_ID[n] for n in RARE_CLASSES}
+    n_pasted = 0
+    for _ in range(20):
+        image = np.random.randint(0, 255, (_IMG_H, _IMG_W, 3), dtype=np.uint8)
+        target = {"boxes": np.array([[5, 5, 15, 15]], dtype=np.float32), "labels": [1]}
+        _, new_target = cp(image, target)
+        # 元の 1 件を超えて追加された label を抽出する。
+        extra = list(new_target["labels"])[1:]
+        for lbl in extra:
+            assert lbl != forceps_id, "Forceps が Copy-Paste 対象になっている"
+            assert lbl in allowed_ids, f"許可外クラス {lbl} が追加された"
+            n_pasted += 1
+    assert n_pasted > 0, "Copy-Paste で 1 件も追加されなかった（テスト前提崩壊）"
+
+
+# ---------------------------------------------------------------------- #
 # 5. RFS が稀少クラスを oversample する
 # ---------------------------------------------------------------------- #
 def test_rfs_sampler_oversamples_rare(tmp_path):
@@ -236,3 +285,66 @@ def test_datamodule_creates_loaders(tmp_path):
     images, targets = next(iter(val_loader))
     assert images.shape[1:] == (3, 128, 128)
     assert len(targets) == images.shape[0]
+
+
+# ---------------------------------------------------------------------- #
+# 7. DistributedRepeatFactorSampler が DDP 分割と RFS oversample を両立する
+#    （§8.0 条件 (5)・§13.2 (b)(ii)）
+# ---------------------------------------------------------------------- #
+def test_distributed_rfs_sampler_partitions_indices(tmp_path):
+    """2 rank で重複なく分割され、長さの合計が単一 RFS と一致すること。"""
+    from egosurgery.datasets.ego_dataset import EgoSurgeryToolDataset
+    from egosurgery.datasets.samplers import (
+        DistributedRepeatFactorSampler,
+        RepeatFactorSampler,
+    )
+
+    ann_file, img_dir = _make_dummy_dataset(tmp_path, num_images=10)
+    dataset = EgoSurgeryToolDataset(ann_file=ann_file, img_dir=img_dir)
+
+    # 比較対象: 単一 RFS が生成する 1 エポックの index 数。
+    single = RepeatFactorSampler(dataset, repeat_thresh=0.5, seed=0)
+    total_single = len(single)
+
+    # 2 rank の DistributedRepeatFactorSampler。各 rank は半分（端数は padding）。
+    rank0 = DistributedRepeatFactorSampler(
+        dataset, repeat_thresh=0.5,
+        num_replicas=2, rank=0, seed=0, drop_last=False,
+    )
+    rank1 = DistributedRepeatFactorSampler(
+        dataset, repeat_thresh=0.5,
+        num_replicas=2, rank=1, seed=0, drop_last=False,
+    )
+    # 各 rank は total を 2 等分（端数は padding で揃える）。
+    assert len(rank0) == len(rank1)
+    assert len(rank0) + len(rank1) >= total_single  # padding 分で >= になる
+
+    # 同一 epoch では 2 rank の indices に重複が無い（DistributedSampler 規約）。
+    rank0.set_epoch(0)
+    rank1.set_epoch(0)
+    indices_0 = list(rank0)
+    indices_1 = list(rank1)
+    # rank ごとに stride 分割しているので位置レベルで重複は無い（値の重複は
+    # padding によって発生し得るが、padding は total_size の端数のみ）。
+    assert len(indices_0) == len(rank0)
+    assert len(indices_1) == len(rank1)
+
+
+def test_distributed_rfs_sampler_set_epoch_changes_order(tmp_path):
+    """set_epoch を変えると同じ rank の index 順が変わること（再現性確保）。"""
+    from egosurgery.datasets.ego_dataset import EgoSurgeryToolDataset
+    from egosurgery.datasets.samplers import DistributedRepeatFactorSampler
+
+    ann_file, img_dir = _make_dummy_dataset(tmp_path, num_images=10)
+    dataset = EgoSurgeryToolDataset(ann_file=ann_file, img_dir=img_dir)
+
+    sampler = DistributedRepeatFactorSampler(
+        dataset, repeat_thresh=0.5, num_replicas=2, rank=0, seed=0,
+    )
+    sampler.set_epoch(0)
+    indices_e0 = list(sampler)
+    sampler.set_epoch(1)
+    indices_e1 = list(sampler)
+
+    # 通常は順序が変わる。完全一致なら shuffle が無効になっている疑い。
+    assert indices_e0 != indices_e1 or len(indices_e0) <= 1

@@ -1,0 +1,50 @@
+spec_version: 2
+meta:
+  task_id: "T-YYYY-MM-DD-slug"
+  kind: analysis
+  title: ""
+  origin: claude-app
+  chat_url: ""
+  created_at: "YYYY-MM-DDTHH:MM:SSZ"
+  created_from:
+    runindex_commit: ""
+    counts: {index: 0, experiments: 0, verdicts: 0}
+  depends_on: []
+  amendments: []
+intent:
+  question: ""
+  decision_at_stake: ""
+  related:
+    backlog: []
+inputs:
+  denominator:
+    ref: "exp:group/experiment_id"
+    metric: ""
+    require: {n_seeds: ">=3", sigma: present, split: val}
+  data:
+    dataset: ""
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: []
+contract:
+  inject_verbatim: [conventions#sigma, conventions#prohibitions]
+  conventions_rev: ""
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "", gpu: false, est: ""}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [REPORT.md]
+  destination: "experiments/analysis/name/"
+  acceptance: []
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: []

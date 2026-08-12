@@ -1,0 +1,74 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-13-implementation-history-index"
+  kind: impl
+  title: "実装の完了報告を構造化し、投影として読めるようにする"
+  origin: claude-app
+  created_at: "2026-08-13T09:00:00Z"
+  created_from:
+    runindex_commit: "12cc0e8"
+    counts: {index: 749, experiments: 206, verdicts: 1038}
+  depends_on: ["T-2026-08-12-contract-distribution-via-notion"]
+  amendments: []
+
+intent:
+  question: "実装の履歴を、全文を読まずに把握できる形へ落とせるか"
+  decision_at_stake: "完了報告を散文だけに留めるか、構造化した対を持たせるか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["tools/build_context.py"]
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "完了報告の様式と検証", gpu: false, est: "60m"}
+    - {id: B, name: "投影の生成", gpu: false, est: "60m"}
+    - {id: C, name: "資格情報の読み込みが編集を消す問題", gpu: false, est: "40m"}
+  gates:
+    - id: G1
+      after: A
+      check: "様式に沿わない記述を検証器が拒むことを、通る例と通らない例の双方で確認した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "投影が冪等であり、手による編集を検出できることを実行して確認した"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "編集した内容が読み込みで失われないことを、失われる場合と比較して確認した"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tools/"
+  acceptance:
+    - "完了報告に構造化された対がある"
+    - "様式に沿わない記述が検証で拒まれる"
+    - "投影が生成され冪等である"
+    - "申し送りが一箇所に集約される"
+    - "起票者の誤りの型が数えられる"
+    - "編集した内容が読み込みで失われない"
+    - "make task-validate が exit 0"
+    - "make task-preflight が exit 0"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [existing_results_altered, secret_value_printed]

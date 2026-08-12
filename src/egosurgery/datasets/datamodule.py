@@ -37,7 +37,10 @@ from torch.utils.data import DataLoader, SequentialSampler
 from egosurgery.datasets.constants import RARE_CLASSES
 from egosurgery.datasets.copypaste import BBoxCopyPaste
 from egosurgery.datasets.ego_dataset import EgoSurgeryToolDataset
-from egosurgery.datasets.samplers import RepeatFactorSampler
+from egosurgery.datasets.samplers import (
+    DistributedRepeatFactorSampler,
+    RepeatFactorSampler,
+)
 from egosurgery.datasets.transforms import get_train_transforms, get_val_transforms
 
 
@@ -58,16 +61,26 @@ def detection_collate_fn(batch):
 class EgoSurgeryDataModule:
     """EgoSurgery 用の train/val/test DataLoader を管理するモジュール。"""
 
-    def __init__(self, cfg) -> None:
+    def __init__(self, cfg, world_size: int = 1, rank: int = 0) -> None:
         """
         Args:
             cfg: ``cfg.data.*`` を持つ OmegaConf 設定。
+            world_size: DDP の総プロセス数。単一 GPU=1（既定）、DDP 2 GPU=2
+                （§13.2 (b)(ii)）。
+            rank: 自プロセスの rank（[0, world_size)）。
         """
         self.cfg = cfg
+        self.world_size = int(world_size)
+        self.rank = int(rank)
+        self.is_distributed = self.world_size > 1
         self.train_dataset: EgoSurgeryToolDataset | None = None
         self.val_dataset: EgoSurgeryToolDataset | None = None
         self.test_dataset: EgoSurgeryToolDataset | None = None
-        self._train_sampler: RepeatFactorSampler | None = None
+        # train_sampler は RepeatFactorSampler または DistributedRepeatFactorSampler。
+        # DDP 時に val/test も DistributedSampler になるため、_eval_sampler 群も保持。
+        self._train_sampler = None
+        self._val_sampler = None
+        self._test_sampler = None
 
     # ------------------------------------------------------------------ #
     # セットアップ
@@ -96,9 +109,28 @@ class EgoSurgeryDataModule:
                 limit=limit,
             )
             if bool(data.get("use_rfs", False)):
-                self._train_sampler = RepeatFactorSampler(
+                # DDP 2 GPU 実行時は RFS と DistributedSampler の二重適用を避けるため、
+                # DistributedRepeatFactorSampler に切り替える（§13.2 (b)(ii)）。
+                # 単一 GPU 時は通常の RepeatFactorSampler（従来挙動）。
+                rfs_thresh = float(data.get("repeat_thresh", 0.001))
+                if self.is_distributed:
+                    self._train_sampler = DistributedRepeatFactorSampler(
+                        self.train_dataset,
+                        repeat_thresh=rfs_thresh,
+                        num_replicas=self.world_size,
+                        rank=self.rank,
+                    )
+                else:
+                    self._train_sampler = RepeatFactorSampler(
+                        self.train_dataset, repeat_thresh=rfs_thresh,
+                    )
+            elif self.is_distributed:
+                # RFS 無効でも DDP 時は DistributedSampler が必要。
+                self._train_sampler = torch.utils.data.distributed.DistributedSampler(
                     self.train_dataset,
-                    repeat_thresh=float(data.get("repeat_thresh", 0.001)),
+                    num_replicas=self.world_size,
+                    rank=self.rank,
+                    shuffle=True,
                 )
 
         val_cfg = data.get("val", None)
@@ -112,6 +144,15 @@ class EgoSurgeryDataModule:
                 phase_ann_file=val_cfg.get("phase_ann_file", None),
                 limit=limit,
             )
+            if self.is_distributed:
+                # DDP 評価では shuffle=False の DistributedSampler を使い、
+                # 各 rank で重複なく val を分担する。集約は呼び出し側で行う。
+                self._val_sampler = torch.utils.data.distributed.DistributedSampler(
+                    self.val_dataset,
+                    num_replicas=self.world_size,
+                    rank=self.rank,
+                    shuffle=False,
+                )
 
         test_cfg = data.get("test", None)
         if test_cfg is not None:
@@ -124,6 +165,13 @@ class EgoSurgeryDataModule:
                 phase_ann_file=test_cfg.get("phase_ann_file", None),
                 limit=limit,
             )
+            if self.is_distributed:
+                self._test_sampler = torch.utils.data.distributed.DistributedSampler(
+                    self.test_dataset,
+                    num_replicas=self.world_size,
+                    rank=self.rank,
+                    shuffle=False,
+                )
 
     # ------------------------------------------------------------------ #
     # DataLoader
@@ -141,23 +189,27 @@ class EgoSurgeryDataModule:
         )
 
     def val_dataloader(self) -> DataLoader:
-        """評価用 DataLoader（SequentialSampler、augmentation なし）を返す。"""
+        """評価用 DataLoader を返す。DDP 時は DistributedSampler、
+        単一 GPU 時は SequentialSampler（augmentation なし）。"""
         if self.val_dataset is None:
             raise RuntimeError("setup() を先に呼び、val データを設定してください。")
+        sampler = self._val_sampler if self._val_sampler is not None else SequentialSampler(self.val_dataset)
         return self._build_loader(
             self.val_dataset,
-            sampler=SequentialSampler(self.val_dataset),
+            sampler=sampler,
             shuffle=False,
             drop_last=False,
         )
 
     def test_dataloader(self) -> DataLoader:
-        """テスト用 DataLoader（SequentialSampler）を返す。"""
+        """テスト用 DataLoader を返す。DDP 時は DistributedSampler、
+        単一 GPU 時は SequentialSampler。"""
         if self.test_dataset is None:
             raise RuntimeError("setup() を先に呼び、test データを設定してください。")
+        sampler = self._test_sampler if self._test_sampler is not None else SequentialSampler(self.test_dataset)
         return self._build_loader(
             self.test_dataset,
-            sampler=SequentialSampler(self.test_dataset),
+            sampler=sampler,
             shuffle=False,
             drop_last=False,
         )

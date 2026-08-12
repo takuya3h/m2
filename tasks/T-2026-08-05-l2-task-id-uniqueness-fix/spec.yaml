@@ -1,0 +1,63 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-05-l2-task-id-uniqueness-fix"
+  kind: impl
+  title: "L2-1 の task_id 一意性検査を ref ベースへ置換する"
+  origin: claude-app
+  created_at: "2026-08-05T09:00:00Z"
+  created_from:
+    runindex_commit: "762a5c8"
+    counts: {index: 749, experiments: 206, verdicts: 1038}
+  depends_on: ["T-2026-08-03-task-contract-bootstrap"]
+  amendments: []
+
+intent:
+  question: "L2-1 は squash merge のあとでも偽陽性を出さずに task_id の重複を検出できるか"
+  decision_at_stake: "契約検証を信頼して運用へ入れるか、L2-1 を無効化するか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["tools/validate_task.py"]
+
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#naming]
+  conventions_rev: "8b17c4d"
+  prohibitions: [no_split_redefine, no_raw_write, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "現状診断と失敗するテストの追加", gpu: false, est: "15m"}
+    - {id: B, name: "ref ベース実装への置換と検証", gpu: false, est: "20m"}
+  gates:
+    - id: G1
+      after: A
+      check: "追加した3テストのうち少なくとも1つが置換前の実装で失敗することを実行して確認した"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tools/"
+  acceptance:
+    - "make task-validate が exit 0"
+    - "tests/test_validate_task.py が全件 pass し、実測件数を RESULT へ記録した"
+    - "refs/remotes/origin 配下に同一 task を含む ref が複数あっても L2-1 が発火しない"
+    - "created_at が異なる同名 task_id では L2-1 が発火する"
+    - "all_task_ids_in_history が削除され、参照が残っていない"
+    - "README の L2 説明が ref ベースの記述へ更新された"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [validator_behaviour_host_dependent]

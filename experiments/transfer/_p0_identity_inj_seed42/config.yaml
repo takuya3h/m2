@@ -1,0 +1,18 @@
+epochs: 0
+eval:
+  note: score 閾値の足切りなし（eval recipe = score_thr 0.0 系）
+  split: val
+  topk: 300
+film_lr: 0.0005
+inject: clsbias
+lr: 0.0001
+model_cfg: configs/relation_detr/relation_detr_resnet50_egosurgery_t1b_clsbias.py
+phase_source: real
+rare_slots: null
+run_name: t1b_clsbias_film_inj_seed42
+seed: 42
+smoke: false
+trainable: film
+variant: inj
+warm_start_ckpt: /home/ubuntu/slocal/m2/third_party/Relation-DETR/checkpoints/incoming/seed42/best_ap.pth
+zero_ctx: false

@@ -1,0 +1,7 @@
+- [ ] 2026-08-09 [cc] 追跡外 0 件の lecun で索引を再生成し、wandb_run_id と wandb_run_url の 2 列が加わった。751 行 × 89 列の全セルを連結した指紋が一致し、既存の値は 1 文字も変わっていない（T-2026-08-11-canonical-index-refresh）
+- [ ] 2026-08-09 [cc] 正本の anomalies.md が古かった。analysis 96→176 と audit 3→8 は 64576f3 以降に統合された追跡下のファイルで、ホスト固有の汚れではない。SPEC はこの差分を予告していなかった（runindex/anomalies.md）
+- [ ] 2026-08-09 [cc] 個別 JSON の生成経路が 2 系統あり、transfer_legacy の 29 件だけ新しい 2 キーが出力されない。index.csv は全行が 2 列を持つため解析には影響しないが、JSON を直接読むと群によって鍵の有無が違う（tools/harvest_runindex.py）
+- [ ] 2026-08-09 [cc] 同じ出所から作られる生成物どうしが食い違いうる。open_questions.md には B-38 があり backlog.md には無かった。make runindex と make context を対にする規約が明文化されていない（runindex/anomalies/backlog.md）
+- [ ] 2026-08-09 [cc] 正本の鮮度を測る手段が無い。context/auto は generated_from_commit を持つが runindex 側には無く、いつの disk 状態を反映しているか再生成するまで分からない（runindex/）
+- [ ] 2026-08-09 [cc] 追加された 2 列は全行で空。遡っての対応づけは禁止のため行っておらず、過去分を埋めるには外部サービスへの問い合わせを許す別契約が要る（T-2026-08-11-canonical-index-refresh §8-4）
+- [ ] 2026-08-09 [cc] 軽量ビューの来歴スタンプが常に 1 commit 遅れる。make context は runindex に触れた最後の commit を刻むため、索引を commit した直後は必ず context-check が失敗する。順序を入れ替えても解消せず、2 段 commit で収束させた（T-2026-08-11-canonical-index-refresh §5-4b）

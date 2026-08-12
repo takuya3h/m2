@@ -14,10 +14,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import numpy as np
-
 # GUI バックエンド非依存（ヘッドレス環境で保存するため）。
 import matplotlib
+import numpy as np
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402

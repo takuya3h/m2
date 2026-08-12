@@ -1,0 +1,81 @@
+# requirements.relation_detr.lock.txt — .venv-relation-detr 厳密版（正本）
+# 用途: 検出器(Relation-DETR)側の推論・抽出環境。①系統の検出器 forward（S0-frozen 推論 /
+#       Stage1 GAP 抽出 / B2a tool-presence / T1a region-token）と B1 統合トレーナーが使う。
+# 生成: uv pip freeze --python .venv-relation-detr/bin/python  (2026-06-20, lecun / Python 3.11.4)
+# 注意: torch/torchvision は cu118 wheel。導入時は次の extra index が必須:
+#       --extra-index-url https://download.pytorch.org/whl/cu118
+#       MS-Deform-Attn は実行時 JIT ビルド（ninja 同梱・CUDA_HOME=/usr/local/cuda-11.8 が必要）。
+# 再構築: bash scripts/setup_env_relation_detr.sh
+#
+absl-py==2.4.0
+accelerate==1.14.0
+albucore==0.0.24
+albumentations==2.0.8
+annotated-doc==0.0.4
+annotated-types==0.7.0
+antlr4-python3-runtime==4.9.3
+anyio==4.13.0
+astunparse==1.6.3
+certifi==2022.12.7
+charset-normalizer==2.1.1
+click==8.4.1
+filelock==3.29.0
+fsspec==2026.4.0
+fvcore==0.1.5.post20221221
+grpcio==1.81.1
+h11==0.16.0
+hf-xet==1.5.1
+httpcore==1.0.9
+httpx==0.28.1
+huggingface-hub==1.19.0
+idna==3.4
+iopath==0.1.10
+jinja2==3.1.6
+markdown-it-py==4.2.0
+markdown==3.10.2
+markupsafe==3.0.3
+mdurl==0.1.2
+mpmath==1.3.0
+networkx==3.6.1
+ninja==1.13.0
+numpy==1.26.4
+omegaconf==2.3.1
+opencv-python-headless==4.13.0.92
+packaging==26.2
+pillow==12.2.0
+platformdirs==4.10.0
+portalocker==3.2.0
+protobuf==7.35.1
+psutil==7.2.2
+pycocotools==2.0.11
+pydantic-core==2.46.4
+pydantic==2.13.4
+pygments==2.20.0
+pyyaml==6.0.3
+requests==2.28.1
+rich==15.0.0
+safetensors==0.8.0
+scipy==1.17.1
+setuptools==79.0.1
+shellingham==1.5.4
+simsimd==6.5.16
+six==1.17.0
+stringzilla==4.6.2
+sympy==1.14.0
+tabulate==0.10.0
+tensorboard-data-server==0.7.2
+tensorboard==2.20.0
+termcolor==3.3.0
+terminaltables==3.1.10
+torch==2.1.2+cu118
+torchvision==0.16.2+cu118
+tqdm==4.68.2
+triton==2.1.0
+typer==0.25.1
+typing-extensions==4.15.0
+typing-inspection==0.4.2
+urllib3==1.26.13
+werkzeug==3.1.8
+wheel==0.47.0
+yacs==0.1.8
+yapf==0.43.0

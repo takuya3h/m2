@@ -1,0 +1,81 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-17-report-projection-and-friction"
+  kind: impl
+  title: "完了報告を投影から読めるようにし、検証の摩擦と派生物の食い違いを解く"
+  origin: claude-app
+  created_at: "2026-08-17T09:00:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-16-docs-reconciliation"]
+  amendments: []
+
+intent:
+  question: "完了報告の中身を投影から読めるようにし、運用の摩擦を減らせるか"
+  decision_at_stake: "報告を人が転記し続けるか、投影で読める形にするか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["tools/build_taskindex.py"]
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "完了報告の様式の拡張と投影への転記", gpu: false, est: "70m"}
+    - {id: B, name: "検証の摩擦の軽減", gpu: false, est: "50m"}
+    - {id: C, name: "派生物どうしの食い違いの解消", gpu: false, est: "60m"}
+    - {id: D, name: "未解決事項の原因調査", gpu: false, est: "50m"}
+  gates:
+    - id: G1
+      after: A
+      check: "拡張した様式で書いた報告が投影へ転記され、要約されずに読めることを確認した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "分母を宣言しない契約で母集団の警告が出ず、宣言する契約では出ることを両方向で確認した"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "同じ出所から生成される派生物どうしが食い違わないことを確認した"
+      on_fail: stop
+    - id: G4
+      after: D
+      check: "調査のみを行い、対象の実装を変更していないことを確認した"
+      on_fail: ask
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tools/"
+  acceptance:
+    - "完了報告の様式が評価に必要な記述を持つ"
+    - "投影が報告の記述を要約せずに転記する"
+    - "分母を宣言しない契約で母集団の警告が出ない"
+    - "分母を宣言する契約では従来どおり警告が出る"
+    - "数の主張の扱いが規約として書かれている"
+    - "同じ出所から生成される派生物が揃っている"
+    - "既存の失敗する試験の原因が記録されている"
+    - "外部記録への送信実績が記録されている"
+    - "make task-validate が exit 0"
+    - "make task-preflight が exit 0"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [projection_summarizes_prose, existing_index_values_changed]

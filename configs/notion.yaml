@@ -1,0 +1,31 @@
+# Notion 連携の ID レジストリ（M2研究運用ハブ）。
+#
+# ここに置くのは **ページ/DB の ID のみ**（秘密情報ではない）。認証トークン
+# (NOTION_API_KEY) は .env に置き、ここには絶対に書かない。
+#
+# 使い方:
+#   - 自動記録(REST): src/egosurgery/utils/notion_ops.py が本ファイルを読む。
+#     NOTION_DB_<KEY>（大文字）環境変数があればそちらを優先（上書き可能）。
+#   - 対話読み取り(MCP): Claude は下の page/db を直接 fetch/query する（CLAUDE.md 参照）。
+#
+# token の Notion Integration には、これら全 DB/ページを share しておくこと。
+
+# --- 管理データベース（実験Run台帳の DB は notion_logger が NOTION_DB_ID で使う既存物）---
+databases:
+  run_ledger:     ef4ccd02-0a97-41af-814e-9acc44e1e0d3   # 実験Run台帳（結果の自動記録）
+  decision_log:   c3f27d4a-0d9f-4c52-adb9-1137efac38b6   # 意思決定ログ（方針変更）
+  lessons:        9f6d6a56-0244-4977-84d3-7c55e9b32768   # 失敗知見・教訓（再発防止）
+  procedure_docs: 5b8d9c8d-fa78-49c1-a1de-fd9d03b318a2   # 実験手順書
+  prompt_library: 1c60213a-bf84-4a91-ab50-7eefcb4cffea   # プロンプトライブラリ
+  task_distribution: 3af70553-8f2d-45de-972a-c64b3127bb1a   # TASK配布（契約の受け渡し）
+
+# --- まず読むページ（コンテキスト削減: 全計画でなくこれらを読む）---
+pages:
+  ops_hub:        36bee4d4-7777-819c-8495-e48d1a71e500   # M2研究運用ハブ（軽量な入口）
+  current_state:  36bee4d4-7777-815d-90e7-e669503f994b   # 現在の研究状態（最優先で読む）
+  ops_rules:      36bee4d4-7777-81e1-aea0-f9b509aab850   # 運用ルール
+  context_pack_template: 36bee4d4-7777-8159-97dd-d8d34a0e833b  # LLMコンテキストパック雛形
+  plan_master:    361ee4d4-7777-804f-b7e6-c023cf50267d   # M2研究計画（マスター・長文。スライスのみ読む）
+
+# Step select の許容値（全 DB 共通）。STEP A-D の結合実験は当面 S5/S6 系へ寄せず "B" を使う方針も可。
+step_options: [S0, S1, S2, S3, S4, S5, S6, S7, S7.5, S8, S9]

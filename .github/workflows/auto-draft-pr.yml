@@ -1,0 +1,62 @@
+name: auto-draft-pr
+on:
+  push:
+    branches: ['exp/**']
+# checkout のみ default token を使う。PR 作成は下の AUTOSYNC_PR_TOKEN(PAT) で行う
+# （default GITHUB_TOKEN は repo 設定で PR 作成不可＝"Actions is not permitted to create PRs"。
+#  fine-grained PAT なら org トグルを触らず・Actions に承認権限を与えずに PR 作成できる）。
+permissions:
+  contents: read
+# 同一ブランチへの連続 push が 'pr list' ガードを両方すり抜けて二重 PR を作るのを防ぐ。
+concurrency:
+  group: auto-draft-pr-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  draft-pr:
+    # ブランチ削除の push では checkout が失敗しノイズ run になるため実行しない。
+    if: ${{ github.event.deleted == false }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Open or update draft PR to phase0
+        env:
+          # fine-grained PAT（m2 の Pull requests: Read and write のみ）を Actions secret に。
+          # 未設定なら明示エラーで気付けるようにする（サイレント失敗させない）。
+          GH_TOKEN: ${{ secrets.AUTOSYNC_PR_TOKEN }}
+        run: |
+          # 未設定の検出。
+          if [ -z "${GH_TOKEN}" ]; then
+            echo "::error::secret AUTOSYNC_PR_TOKEN が未設定。fine-grained PAT を設定してください（README §5.5 Step 3）。"
+            exit 1
+          fi
+          # 失効の検出。未設定と失効は別の状態であり、同じ文言で報告すると原因の特定が遅れる。
+          # 2026-08-07 の実測では全ホストの run が 401 で失敗していたにもかかわらず、
+          # 出ていた文言は「未設定」を指しており、secret は設定済みだった。
+          # 値そのものは出力しない。応答の種別だけで文言を分ける。
+          probe_failed=0
+          probe=$(gh api "repos/${GITHUB_REPOSITORY}" --jq '.full_name' 2>&1) || probe_failed=1
+          if [ "${probe_failed}" = "1" ]; then
+            case "${probe}" in
+              *"HTTP 401"*|*"Bad credentials"*)
+                echo "::error::secret AUTOSYNC_PR_TOKEN は設定されているが無効。失効・取り消し・値の誤りのいずれか。fine-grained PAT を再発行して secret を更新してください（README §5.5 Step 3）。"
+                ;;
+              *"HTTP 403"*)
+                echo "::error::secret AUTOSYNC_PR_TOKEN は有効だが権限が足りない。${GITHUB_REPOSITORY} に対する Pull requests の Read and write を付与してください。"
+                ;;
+              *"HTTP 404"*)
+                echo "::error::secret AUTOSYNC_PR_TOKEN が ${GITHUB_REPOSITORY} へ到達できない。fine-grained PAT の対象リポジトリの選択を確認してください。"
+                ;;
+              *)
+                echo "::error::資格情報の確認に失敗した。応答の種別を判別できない: ${probe}"
+                ;;
+            esac
+            exit 1
+          fi
+          BR="${GITHUB_REF_NAME}"
+          if gh pr list --head "$BR" --base phase0 --state open --json number --jq '.[0].number' | grep -q .; then
+            echo "PR exists; push auto-updates it."
+          else
+            gh pr create --draft --base phase0 --head "$BR" \
+              --title "auto: ${BR} → phase0" \
+              --body "自動起票（実験成果の phase0 統合候補）。**merge は人手**でレビュー後に。val→test 検証と Δ 有意性を確認すること。"
+          fi

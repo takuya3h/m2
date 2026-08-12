@@ -1,0 +1,149 @@
+{
+  "denominator_definition": "cov_frame の分母 = canonical (egosurgery_tool/instances_{split}.json) の画像数。分子 = そのフレームに手クラス(mask cat 1,2)の segmentation 付き annotation が **1 件以上**あるフレーム数（ann>=1 基準）。",
+  "class_system_note": "手 mask は 2 クラス（First Person's Left/Right Hand）しか無い。手 bbox は 4 クラス （Own/Other × Left/Right）。すなわち mask 側に 'Other hands' が存在しない。指示書 §1.5 の『手 bbox 4 クラス』は bbox 側の記述としては正しいが、mask 側を 4 クラスで作ることはできない。",
+  "splits": {
+    "train": {
+      "n_canonical_frames": 9657,
+      "n_frames_with_hand_mask_ann_ge1": 5668,
+      "cov_frame_hand_mask": 0.5869317593455524,
+      "n_frames_with_hand_bbox_ann_ge1": 9627,
+      "cov_frame_hand_bbox": 0.9968934451693072,
+      "n_mask_frames_outside_canonical": 0,
+      "n_bbox_frames_outside_canonical": 0,
+      "mask_source": {
+        "json": "/home/ubuntu/slocal2/m2/data/annotations/egosurgery_hts/handtool_seg_5cls/by_split/train_toolhand_withmask.json",
+        "n_images_in_json": 5668,
+        "n_ann_all_5cls": 21949,
+        "n_hand_ann_with_seg": 11588,
+        "n_hand_ann_without_seg": 0,
+        "ann_count_by_category": {
+          "1:First Person's Left Hand": 5810,
+          "2:First Person's Right Hand": 5778,
+          "3:(tool)": 4954,
+          "4:(tool)": 5008,
+          "5:(tool)": 399
+        }
+      },
+      "bbox_source": {
+        "json": "/home/ubuntu/slocal2/m2/data/annotations/egosurgery_hts/hand_bbox/by_split/train.json",
+        "n_images_in_json": 9627,
+        "n_ann": 27726
+      },
+      "geometric_match": {
+        "iou_threshold": 0.5,
+        "denominator": "canonical に載るフレーム上の手 mask annotation 数",
+        "n_mask_ann": 11588,
+        "n_matched": 10413,
+        "match_rate": 0.8986020020711081,
+        "n_class_mismatch": 18,
+        "class_mismatch_rate_of_matched": 0.001728608470181504,
+        "mismatch_pairs": {
+          "mask2(First Person's Right Hand)->bbox3(Other hands left)": 9,
+          "mask1(First Person's Left Hand)->bbox4(Other hands right)": 7,
+          "mask2(First Person's Right Hand)->bbox4(Other hands right)": 1,
+          "mask1(First Person's Left Hand)->bbox3(Other hands left)": 1
+        },
+        "unmatched_by_mask_class": {
+          "mask2(First Person's Right Hand)": 568,
+          "mask1(First Person's Left Hand)": 607
+        }
+      }
+    },
+    "val": {
+      "n_canonical_frames": 1515,
+      "n_frames_with_hand_mask_ann_ge1": 1344,
+      "cov_frame_hand_mask": 0.8871287128712871,
+      "n_frames_with_hand_bbox_ann_ge1": 1515,
+      "cov_frame_hand_bbox": 1.0,
+      "n_mask_frames_outside_canonical": 0,
+      "n_bbox_frames_outside_canonical": 0,
+      "mask_source": {
+        "json": "/home/ubuntu/slocal2/m2/data/annotations/egosurgery_hts/handtool_seg_5cls/by_split/val_toolhand_withmask.json",
+        "n_images_in_json": 1344,
+        "n_ann_all_5cls": 5006,
+        "n_hand_ann_with_seg": 2646,
+        "n_hand_ann_without_seg": 0,
+        "ann_count_by_category": {
+          "1:First Person's Left Hand": 1342,
+          "2:First Person's Right Hand": 1304,
+          "3:(tool)": 1080,
+          "4:(tool)": 1094,
+          "5:(tool)": 186
+        }
+      },
+      "bbox_source": {
+        "json": "/home/ubuntu/slocal2/m2/data/annotations/egosurgery_hts/hand_bbox/by_split/val.json",
+        "n_images_in_json": 1515,
+        "n_ann": 4918
+      },
+      "geometric_match": {
+        "iou_threshold": 0.5,
+        "denominator": "canonical に載るフレーム上の手 mask annotation 数",
+        "n_mask_ann": 2646,
+        "n_matched": 2644,
+        "match_rate": 0.999244142101285,
+        "n_class_mismatch": 0,
+        "class_mismatch_rate_of_matched": 0.0,
+        "mismatch_pairs": {},
+        "unmatched_by_mask_class": {
+          "mask1(First Person's Left Hand)": 1,
+          "mask2(First Person's Right Hand)": 1
+        }
+      }
+    },
+    "test": {
+      "n_canonical_frames": 4265,
+      "n_frames_with_hand_mask_ann_ge1": 2094,
+      "cov_frame_hand_mask": 0.4909730363423212,
+      "n_frames_with_hand_bbox_ann_ge1": 4255,
+      "cov_frame_hand_bbox": 0.9976553341148886,
+      "n_mask_frames_outside_canonical": 0,
+      "n_bbox_frames_outside_canonical": 0,
+      "mask_source": {
+        "json": "/home/ubuntu/slocal2/m2/data/annotations/egosurgery_hts/handtool_seg_5cls/by_split/test_toolhand_withmask.json",
+        "n_images_in_json": 2094,
+        "n_ann_all_5cls": 7220,
+        "n_hand_ann_with_seg": 3889,
+        "n_hand_ann_without_seg": 0,
+        "ann_count_by_category": {
+          "1:First Person's Left Hand": 1976,
+          "2:First Person's Right Hand": 1913,
+          "3:(tool)": 1501,
+          "4:(tool)": 1599,
+          "5:(tool)": 231
+        }
+      },
+      "bbox_source": {
+        "json": "/home/ubuntu/slocal2/m2/data/annotations/egosurgery_hts/hand_bbox/by_split/test.json",
+        "n_images_in_json": 4255,
+        "n_ann": 13676
+      },
+      "geometric_match": {
+        "iou_threshold": 0.5,
+        "denominator": "canonical に載るフレーム上の手 mask annotation 数",
+        "n_mask_ann": 3889,
+        "n_matched": 3882,
+        "match_rate": 0.9982000514271021,
+        "n_class_mismatch": 0,
+        "class_mismatch_rate_of_matched": 0.0,
+        "mismatch_pairs": {},
+        "unmatched_by_mask_class": {
+          "mask2(First Person's Right Hand)": 3,
+          "mask1(First Person's Left Hand)": 4
+        }
+      }
+    }
+  },
+  "total": {
+    "n_canonical_frames": 15437,
+    "n_frames_with_hand_mask_ann_ge1": 9106,
+    "cov_frame_hand_mask": 0.5898814536503206,
+    "n_frames_with_hand_bbox_ann_ge1": 15397,
+    "cov_frame_hand_bbox": 0.9974088229578286,
+    "n_mask_ann": 18123,
+    "n_matched": 16939,
+    "match_rate": 0.934668653092755,
+    "n_class_mismatch": 18,
+    "class_mismatch_rate_of_matched": 0.0010626365192750458
+  }
+}

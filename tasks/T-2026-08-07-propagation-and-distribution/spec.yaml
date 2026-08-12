@@ -1,0 +1,75 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-07-propagation-and-distribution"
+  kind: impl
+  title: "全ホストへの伝播を実測し、契約の配布経路と軽量ビューの鮮度判定を整える"
+  origin: claude-app
+  created_at: "2026-08-07T12:00:00Z"
+  created_from:
+    runindex_commit: "2b353f6"
+    counts: {index: 749, experiments: 206, verdicts: 1038}
+  depends_on: ["T-2026-08-07-task-preflight"]
+  amendments: []
+
+intent:
+  question: "契約と規約が全ホストへ届き、外部の面へ配る経路が手作業なしで閉じるか"
+  decision_at_stake: "配布と伝播を仕組みへ移すか、当面は手作業のまま運用するか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["tools/build_context.py"]
+
+contract:
+  inject_verbatim: [conventions#frozen_source, conventions#prohibitions, conventions#naming]
+  conventions_rev: "d422b08"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "全ホストへの伝播状況の実測", gpu: false, est: "40m"}
+    - {id: B, name: "軽量ビューの鮮度判定の修正", gpu: false, est: "60m"}
+    - {id: C, name: "契約の配布経路の整備", gpu: false, est: "90m"}
+    - {id: D, name: "規約への追記と自己適用", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "全ホストで追跡対象の到達状況を実測し、欠落の有無を確認した"
+      on_fail: ask
+    - id: G2
+      after: B
+      check: "軽量ビューの検査が連続する二回の実行で安定することを確認した"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "配布経路が一つの操作で完結し、失敗時に痕跡を残さないことを確認した"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md, propagation_audit.md]
+  destination: "tools/"
+  acceptance:
+    - "全ホストの到達状況が表として記録されている"
+    - "軽量ビューの検査が親コミットの前進だけでは失敗しなくなる"
+    - "軽量ビューの検査が内容の手編集では失敗する"
+    - "配布経路が一つの操作で取得から検証まで完結する"
+    - "配布に失敗した場合に作業領域へ痕跡が残らない"
+    - "凍結源の規約に適用時の扱いが明記されている"
+    - "make task-validate が exit 0"
+    - "make task-preflight が exit 0"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [propagation_gap_found, distribution_leaves_residue]

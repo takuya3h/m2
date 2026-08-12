@@ -9,6 +9,12 @@ stride 4 / 8 / 16 / 32 の階層特徴を要求するため、本モジュール
     adapter = ViTAdapter(embed_dim=1024, out_channels=256, num_outs=4)
     ms_features = adapter(backbone_features)   # backbone_features: List[(B,C,h,w)]
     # ms_features: List[Tensor] — stride 4, 8, 16, 32 の 4 段階 (B, 256, H/s, W/s)
+
+【SyncBatchNorm 方針・§13.2 (b)(iv)】
+    本モジュールは Conv + GroupNorm 構成（実装によっては BatchNorm を含む）。
+    BatchNorm を含む場合のみ ``SyncBatchNorm`` 変換の対象になる。判定は
+    ``MMDetTrainer._build_model()`` が ``any(isinstance(m, nn.BatchNorm*) ...)``
+    で行うため、本モジュール側で特別な対応は不要。
 """
 
 from __future__ import annotations

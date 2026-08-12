@@ -1,0 +1,51 @@
+{
+  "03_tool_14cls": {
+    "iou_vs_master_bbox": {
+      "min": 0.1821,
+      "q1": 0.7844,
+      "median": 0.887,
+      "q3": 0.9475,
+      "max": 0.9989,
+      "mean": 0.8473,
+      "n": 1500
+    },
+    "inclusion_vs_master_bbox": {
+      "min": 0.5506,
+      "q1": 0.963,
+      "median": 0.9884,
+      "q3": 0.9986,
+      "max": 1.0,
+      "mean": 0.9686,
+      "n": 1500
+    }
+  },
+  "04_handtool_5cls": {
+    "iou_vs_master_bbox": {
+      "min": 0.3451,
+      "q1": 0.88,
+      "median": 0.9258,
+      "q3": 0.952,
+      "max": 0.9932,
+      "mean": 0.9026,
+      "n": 1500
+    },
+    "inclusion_vs_master_bbox": {
+      "min": 0.711,
+      "q1": 0.9929,
+      "median": 1.0,
+      "q3": 1.0,
+      "max": 1.0,
+      "mean": 0.987,
+      "n": 1500
+    }
+  },
+  "_reference_SAM_fingerprint": {
+    "inclusion_mean": 0.879,
+    "iou_median": 0.927
+  },
+  "_verdict": {
+    "inclusion_high_containment": true,
+    "matches_sharp_sam_peak": false,
+    "assessment": "判定不能→要追加証拠。master が矩形のみで派生に真マスクがある=マスクは箱から生成された可能性。内包率が箱にほぼ完全内包(高集中)なら bbox 由来生成の疑いが濃厚。ただし 7/10 SAM の鋭い指紋(内包0.879/IoU0.927)とは完全一致せず分布は広い。生成方法の来歴書が無い限りクリア不可。"
+  }
+}

@@ -1,0 +1,28 @@
+--- a/engine.py
++++ b/engine.py
+@@ -256,6 +256,25 @@
+     if coco_evaluator is not None:
+         if "bbox" in postprocessors.keys():
+             stats["coco_eval_bbox"] = coco_evaluator.coco_eval["bbox"].stats.tolist()
++            # --- per-class AP を COCOeval precision から抽出し dump (EgoSurgery rare/common 集計用) ---
++            # AP = IoU 0.5:0.95 / area=all / maxDet=100 の平均 (mmdet 等の per-class AP と同定義)。
++            try:
++                if utils.is_main_process() and output_dir:
++                    import json as _json
++                    ce = coco_evaluator.coco_eval["bbox"]
++                    prec = ce.eval["precision"]  # [T,R,K,A,M]
++                    cat_ids = list(ce.params.catIds)
++                    id2name = {c["id"]: c["name"] for c in base_ds.loadCats(cat_ids)}
++                    per_class = {}
++                    for k, cid in enumerate(cat_ids):
++                        pr = prec[:, :, k, 0, -1]
++                        pr = pr[pr > -1]
++                        per_class[id2name.get(cid, str(cid))] = (
++                            float(pr.mean()) if pr.size else float("nan")
++                        )
++                    with open(os.path.join(output_dir, "per_class_ap_egosurgery.json"), "w") as _f:
++                        _json.dump(per_class, _f, indent=2)
++            except Exception as _e:  # 証跡の本筋(coco_eval_bbox)は壊さない
++                print(f"[per-class-ap] WARN: {_e}")
+         if "segm" in postprocessors.keys():
+             stats["coco_eval_masks"] = coco_evaluator.coco_eval["segm"].stats.tolist()

@@ -21,7 +21,7 @@ CV 研究プロジェクト。S0〜S9 の段階的実験と Δ（相互改善幅
   通してあるが、明示する場合は `PYTHONPATH=src`。
 - 学習エントリーポイント: `python -m egosurgery.train stage=<stage> ...`（Hydra）。
   `cfg.experiment.step` が s0/s1/s2 なら `StageATrainer`、それ以外は dummy `Trainer`。
-- ステージ実験は `scripts/run_sX.sh`。スモークは環境変数 `S0_EXTRA_ARGS` で
+- ステージ実験は `scripts/run_sX.sh`。スモークは環境変数 `S0_EXTRA_ARGS` で <!-- docs-check: ignore-line -->
   小構成（vit-S・少データ・少 epoch）を渡す。
 - 長時間 GPU 学習は **background 実行 + Monitor 監視**で運用する。
 - 実験は `experiments/baselines/` 等が空の scaffold 状態から、`ExperimentManager`
@@ -51,13 +51,40 @@ CV 研究プロジェクト。S0〜S9 の段階的実験と Δ（相互改善幅
 
 ## .claude/ ツール（このプロジェクト用）
 
-- スラッシュコマンド: `/run-stage` `/verify-phase` `/delta` `/exp-report`
-  `/new-hypothesis` `/env-check`
-- サブエージェント: `experiment-runner` `delta-analyst` `trace-debugger` `paper-writer`
-- スキル: `run-experiment` `add-model-component`
+- スラッシュコマンド（8）: `/run-stage` `/verify-phase` `/delta` `/exp-report`
+  `/new-hypothesis` `/env-check` `/log` `/promote-to-master`
+- サブエージェント（5）: `experiment-runner` `delta-analyst` `trace-debugger`
+  `paper-writer` `notion-archivist`
+- スキル（4）: **`task`（TASK 契約の実行。この手順が中心である。Claude Code は
+  `/task <task_id>`、Codex は `$task` か `.claude/skills/task/SKILL.md` を読ませる）**
+  `run-experiment` `add-model-component` `avoid-past-failures`
 - フック: `src/`・`tests/` の Python 編集時に ruff で軽量チェック
 
 ## ツール方針
 
-- `uv` でパッケージ・仮想環境管理、`Hydra` で設定管理、`W&B` で実験追跡。
+- `uv` でパッケージ・仮想環境管理、`Hydra` で設定管理、`W&B` で**必ず**全ての実験を追跡。
+- **認証・追跡の起点**: 実験前に `source scripts/load_env.sh`（暗号化 `.env.gpg` を gpg 復号して env にロード）。
+  これで W&B（`egosurgery.utils.tracking` 配線済）と Notion 認証が揃い**自動追跡・自動記録**が有効化。
+  平文 `.env` は **絶対に commit しない**（公開リポ）。秘密の運用は `docs/secrets_and_tracking.md`。
+  新規 trainer を書くときは `tracking.init/log/finish` を必ず配線する（無認証なら no-op）。
 - 構造的な調査（呼び出し関係・定義位置・影響範囲）は CodeGraph MCP を優先。
+## Notion 連携（運用ハブ駆動・コンテキスト削減）
+
+研究運用は Notion「**M2研究運用ハブ**」を入口にする。**マスターの「M2研究計画」（長文）は毎回読まない**。
+ID レジストリは `configs/notion.yaml`（非秘密）、認証 `NOTION_API_KEY`/`NOTION_DB_ID` は `.env`。詳細は `docs/notion_integration.md`。
+
+**読む（MCP・コンテキスト削減）**: セッションで必要なときだけ、次の順で**スライスのみ**取得する:
+1. `pages.current_state`「現在の研究状態」（最優先・小）を MCP fetch。
+2. 該当 step の構造化行を `scripts/notion_context_pack.py --step <S0..S9/B>` で抽出
+   （意思決定/失敗知見/プロンプト/手順書の関連行のみ）。
+3. 「M2研究計画」は**該当 §セクションだけ** MCP fetch（全文を渡さない）。
+「研究計画に基づいて答えて」と指示されたら、上記でハブ→該当計画スライスを**必ず**参照して答える。
+
+**書く（自動記録・運用ループ §1-6）**:
+- 実験完了 → 実験Run台帳に自動投稿（`notion_logger.log_experiment_to_notion` 配線済 / バックフィルは `scripts/post_experiments_to_notion.py`）。
+- 方針変更 → `egosurgery.utils.notion_ops.log_decision(...)`（意思決定ログ）。
+- 再発防止の失敗 → `notion_ops.log_lesson(...)`（失敗知見・教訓）。
+- 再利用プロンプト → `notion_ops.save_prompt(...)`（プロンプトライブラリ）。
+- いずれも `NOTION_API_KEY` 未設定なら no-op（研究フローを止めない）。Name 冪等（同名は update）。
+- 高レベル計画本文への反映は週次/マイルストーン単位（毎回はしない）。
+- `tasks/lessons.md` に記録した教訓は、再発防止性があれば `notion_ops.log_lesson` でハブにも上げる。

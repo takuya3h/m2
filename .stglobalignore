@@ -1,0 +1,68 @@
+// ============================================================================
+// .stglobalignore — Syncthing 同期ルール（「gitignoreされた実験成果物だけ同期」）
+// 仕組み: 先にマッチした行が勝つ。除外 → !同期対象 → **(残り全部を無視) の順。
+// 反映:   phase0 上でこのファイルを編集して commit & push すると、各サーバーの
+//         keeper が30分以内に $M2DIR/.stignore へ自動反映する。
+// ============================================================================
+
+// --- 絶対に同期しない（VCS・秘密情報・環境依存物）---
+.git
+.env
+.env.*
+*passphrase*
+*.key
+.venv*
+venv*
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+.gitkeep
+.vscode
+.idea
+*.swp
+*~
+.DS_Store
+.ipynb_checkpoints
+.claude
+
+// --- git 追跡ファイルとの二重管理を防ぐ除外（includeより先に書く）---
+data/annotations/egosurgery_tool/instances_*.json
+
+// --- 同期しない判断をしたもの（必要なら該当行を消して !付きで下の同期対象へ）---
+// data/raw          : 生データセット（巨大・各サーバーで個別配置）
+// data/external     : 外部データ（同上）
+// third_party       : 外部fork（入れ子.gitを含むため同期不可。各サーバーでclone）
+// wandb             : W&Bローカルラン（クラウドに記録済み・巨大）
+// prompts_legacy 等 : ローカル参照用の退避物
+// 退避フォルダ（~5.6GB のローカル証跡。全台複製を避ける）:
+experiments/baselines/_*
+experiments/phase0/_*
+
+// --- 同期対象: gitignore された実験成果物 ---
+!experiments/**/checkpoints
+!experiments/**/logs
+!experiments/**/predictions
+!experiments/**/visualizations
+!experiments/**/tf_log
+!experiments/**/training*.log
+!experiments/**/*.npy
+!experiments/**/*.pt
+!experiments/**/*.pth
+!experiments/**/*.py
+!experiments/**/last_checkpoint
+!experiments/**/20[0-9][0-9][0-9]*
+!.notion_sync.json
+!*.pth
+!*.pt
+!*.ckpt
+!*.onnx
+!*.safetensors
+!outputs
+!logs
+!data/processed
+!data/annotations/egosurgery_hts
+!data/annotations/**/*.json
+
+// --- 上記以外は全て同期しない（git管理ファイルはgit経由で同期される）---
+**

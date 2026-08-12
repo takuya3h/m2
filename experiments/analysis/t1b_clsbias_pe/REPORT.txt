@@ -1,0 +1,43 @@
+# T1b-clsbias_pe 効果判定（inj−ctrl, 3-seed paired-σ / val per-class AP / compare@final）
+
+## init mAP（inj/ctrl 恒等ガード: 一致が健全）
+- seed42: inj=0.7303 ctrl=0.7303 diff=0.0000
+- seed123: inj=0.7292 ctrl=0.7292 diff=0.0000
+- seed456: inj=0.7217 ctrl=0.7217 diff=0.0000
+
+## overall mAP（@final）
+- inj  : s42=0.7323 / s123=0.7323 / s456=0.7234
+- ctrl : s42=0.7303 / s123=0.7292 / s456=0.7217
+- Δ(inj−ctrl) mean=+0.228pp pstd=0.057 有意=YES 非劣化=OK
+
+## rare∧工程特異術具 per-class AP Δ（★=注入対象 slot 0/9/11/13, @final）
+| tool | Δseed42 | Δseed123 | Δseed456 | mean(pp) | pstd | 有意 |
+|---|---:|---:|---:|---:|---:|:--:|
+| ★Bipolar Forceps | +0.00 | -0.00 | -0.00 | **-0.00** | 0.00 | — |
+| ★Scalpel | +1.64 | +1.36 | +0.63 | **+1.21** | 0.42 | ✅ |
+| ★Skewer | +0.68 | +1.29 | +0.33 | **+0.77** | 0.39 | ✅ |
+| ★Syringe | +0.53 | +1.63 | +1.48 | **+1.21** | 0.49 | ✅ |
+
+rare 4 平均 Δ = **+0.797pp** / 有意 inj>ctrl = ['Scalpel', 'Skewer', 'Syringe']
+
+## rare-4 epoch 別 Δ 軌跡（inj−ctrl mean over seeds, pp）
+| tool | ep-1 | ep0 | ep1 | ep2 | ep3 | ep4 | ep5 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Bipolar Forceps | +0.00 | -0.00 | -0.00 | -0.00 | -0.00 | -0.00 | -0.00 |
+| Scalpel | +0.00 | +0.94 | +1.09 | +1.17 | +1.18 | +1.20 | +1.21 |
+| Skewer | +0.00 | +0.68 | +0.72 | +0.75 | +0.75 | +0.77 | +0.77 |
+| Syringe | +0.00 | +1.50 | +1.37 | +1.33 | +1.23 | +1.23 | +1.21 |
+
+## 非 rare 術具（注入対象外＝理想は中立, @final）
+| tool | mean(pp) | 有意 |
+|---|---:|:--:|
+| Electric Cautery | -0.00 | — |
+| Forceps | +0.00 | — |
+| Gauze | +0.00 | ⚠ |
+| Hook | +0.00 | — |
+| Mouth Gag | -0.00 | ⚠ |
+| Needle Holders | +0.00 | — |
+| Raspatory | -0.00 | — |
+| Scissors | +0.00 | — |
+| Suction Cannula | +0.00 | — |
+| Tweezers | +0.00 | — |

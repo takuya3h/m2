@@ -1,19 +1,45 @@
-# === データ ===
-data/raw/
+# === データ（中身は ignore・フォルダ構造のみ .gitkeep で保持）===
+# 各ディレクトリで:
+#   <dir>/**             ← 中身を全て ignore
+#   !<dir>/**/           ← ただし子ディレクトリ自体は traverse させる（.gitkeep を見つけるため）
+#   !<dir>/**/.gitkeep   ← .gitkeep だけは追跡
+data/raw/**
+!data/raw/**/
+!data/raw/**/.gitkeep
+
 data/annotations/**/*.json
-data/annotations/egosurgery_hts/
-data/annotations/pseudo_labels/
-data/processed/
-data/external/
+data/annotations/egosurgery_hts/**
+!data/annotations/egosurgery_hts/**/
+!data/annotations/egosurgery_hts/**/.gitkeep
+
+data/processed/**
+!data/processed/**/
+!data/processed/**/.gitkeep
+
+data/external/**
+!data/external/**/
+!data/external/**/.gitkeep
 
 # === 実験結果（大容量） ===
 experiments/**/checkpoints/
-experiments/**/logs/
+# logs/ はディレクトリごとでなく「中身」を ignore する。ディレクトリ自体を除外すると
+# git の仕様上その配下を再包含できず、epoch 別指標ログを追跡できなくなるため。
+# 追跡する具体的なファイル名は末尾の「Git 管理する例外」で明示する。
+experiments/**/logs/**
+!experiments/**/logs/**/
 experiments/**/predictions/
 experiments/**/visualizations/
+experiments/**/tf_log/
+experiments/**/training*.log
 experiments/**/*.npy
 experiments/**/*.pt
 experiments/**/*.pth
+# mmdet/mmengine が実験フォルダ内に dump する派生ファイル群は再現性に
+# 寄与しない (config.yaml + git_commit.txt + command.sh があれば十分)。
+experiments/**/*.py
+experiments/**/last_checkpoint
+# mmengine の実時間スタンプ付きログディレクトリ (例: 20260525_155843/)
+experiments/**/20[0-9][0-9][0-9]*/
 
 # === モデル重み ===
 *.pth
@@ -34,8 +60,8 @@ dist/
 build/
 
 # === 仮想環境 ===
-.venv/
-venv/
+.venv*/
+venv*/
 
 # === IDE ===
 .vscode/
@@ -47,8 +73,15 @@ venv/
 # === Jupyter ===
 .ipynb_checkpoints/
 
-# === 環境変数 ===
+# === 環境変数・秘密情報 ===
+# 注意: gitignore は行末コメント非対応（# は行頭のみ）。パターンは単独行で書く。
+# 平文の秘密(.env / .env.local 等)は commit 禁止。暗号文 .env.gpg とテンプレ .env.example のみ許可。
 .env
+.env.*
+!.env.example
+!.env.gpg
+*passphrase*
+*.key
 
 # === LaTeX ===
 paper/*.aux
@@ -73,6 +106,28 @@ paper/sections/*.aux
 !experiments/**/metrics.json
 !experiments/**/per_class_ap.json
 !experiments/**/notes.md
+# server.txt: 実行サーバー名証跡 (§8.0 条件 (2)・eval_recipe.server_name と整合)。
+!experiments/**/server.txt
+# 検出側 run の epoch 別 val 指標 / 評価メタ。ckpt や predictions が失われても
+# コミット済みログだけで init 比較・絶対値検証を完遂できる状態を担保する（軽量・数十KB）。
+# ファイル名を列挙する形にして、mmengine 等が logs/ に吐く大容量 JSON を巻き込まない。
+!experiments/**/logs/val_metrics_by_epoch.json
+!experiments/**/logs/eval_meta_*.json
+# 学習に使う tool 検出アノテーション（instances_*.json）は再現性のため追跡する。
+# tool/ hand/ の生 COCO コピーは EgoSurgery 公式と重複・大容量のため追跡しない。
+!data/annotations/egosurgery_tool/instances_*.json
+
+# === G-2 本実験（experiments/g2_main_*/）===
+# 抽出特徴の npz は大容量（3 split × 3 系統で 681MB）。activate さえ守れば
+# build_roi_channels.py で決定論的に再生成でき、ホスト間ビット一致を実測済みなので追跡しない。
+experiments/**/*.npz
+# per-frame 予測は本実験の必須証跡（12 run 合計 4.5MB）。これがあれば ckpt が無くても
+# per-phase の内訳とクラスタ・ブートストラップを再学習なしで再計算できる。
+# 検出側 run の大容量 predictions を巻き込まないよう、パスとファイル名を限定して例外化する。
+!experiments/g2_main_*/runs/*/predictions/
+experiments/g2_main_*/runs/*/predictions/*
+!experiments/g2_main_*/runs/*/predictions/val_preds.json
+!experiments/g2_main_*/runs/*/predictions/test_preds.json
 
 # === third_party (外部 fork: MaskDINO 等) ===
 third_party/
@@ -82,3 +137,104 @@ outputs/
 
 # === Claude Code（個人設定のみ除外。commands/agents/skills は共有）===
 .claude/settings.local.json
+# 別セッションが作成した git worktree 跡（履歴外、ローカルのみ）
+.claude/worktrees/
+
+# === 退避フォルダ (S0 やり直しの過程で生まれたローカル証跡) ===
+# 容量が大きい (合計 ~5.6GB) ため git 履歴には載せず、ローカルに保持して
+# 再現性検証・監査用の参照点とする。
+experiments/baselines/_aborted_s0_cuda_visible_misconfig/
+experiments/baselines/_failed_num_workers_zero/
+experiments/baselines/_smoke_prior_simplehead/
+experiments/baselines/_smoke_v2_part3/
+# 本セッションで生まれた退避フォルダ:
+# - _aborted_codetr_no_config: Co-DETR config 不在で setup() 失敗した旧 s0_007-009
+# - _smoke_e3: 手動 launcher 動作検証用スモーク (検証成功後に本番起動)
+experiments/baselines/_aborted_codetr_no_config/
+experiments/baselines/_smoke_e3/
+experiments/phase0/_pre_redo_s0_smoke/
+experiments/phase0/_prior_no_eval_recipe/
+# 孤児 run 退避 (#05-lecun): metrics.json/config.yaml/command.sh/git_commit.txt/
+# notes.md がすべて無く checkpoints のみ・失敗ログも無い 9 run を退避。
+# (transfer/t1a_frozen_src ×6, phase1/s4_phase_baseline_*_aligndetr_010-012 ×3)
+# 削除せずローカル保持: checkpoints は再評価用、logs 欠落自体が「失敗 run が台帳に
+# 載らない」運用欠陥の手がかり。回収可能な指標を持つ nmsfree/hand2det_dev は対象外。
+experiments/_orphan_no_metrics/
+
+# === 動作確認用の一時成果物（収穫対象外）===
+# 2026-08-06 の実測（T-2026-08-06-frozen-source-and-sigma-notation / pth_inventory.md）で、
+# 次の 3 件は index.csv に 1 件もヒットせず、config.yaml と metrics.json を持たないため
+# harvest_runindex.py の収穫要件を満たさないことが確認済み。
+# **削除はしない**（checkpoints を将来の検証に使える）。
+#
+# 🔴 `experiments/**/_smoke_*/` のような広い書き方にしてはならない。それは
+#    experiments/_smoke_prior/（追跡 36 ファイル・index.csv に 6 run 収録）にも一致し、
+#    そこへ後から加わる証跡を静かに取りこぼす。backlog B-28 と同型の危険である。
+#    無視するのは実測で収穫対象外と確認できたものだけに限る。
+experiments/transfer/_smoke_artifacts_ctrl/
+experiments/transfer/_smoke_artifacts_inj/
+experiments/transfer/_smoke_fullval/
+
+# === 退避済みプロンプト (新シリーズで置換済み、ローカル参照用) ===
+prompts_legacy/
+prompts_n_legacy/
+.notion_sync.json
+experiments/**/.notion_sync.json
+# リポジトリ直下の logs/（ランチャーの stdout 置き場）のみ。先頭 / でアンカーしないと
+# experiments/*/logs/ まで巻き込み、epoch 別指標ログが追跡できなくなる。
+/logs/
+
+# === セッションメモリ（.remember/）===
+# 以前は上の無アンカー `logs/` が偶然巻き込んでいたが、アンカー化に伴い明示する。
+.remember/
+
+# === Syncthing (デバイス毎の生成物) ===
+.stignore
+.stignore.new
+.stfolder/
+
+# === EgoSurgery-HTS 派生バンドル (2026-07-09 持込) ===
+# SAM(vit_h) 生成の派生セグデータ 16GB。SurgerySegmentation/train.py に
+# Neptune API token が平文で含まれるため追跡禁止 (公開リポ)。
+# 調査結果: data/annotations/egosurgery_hts_bundle_audit.md
+data/annotations/HandDataset/
+data/annotations/HandToolDataset/
+data/annotations/SurgerySegmentation/
+
+# === フック生成ログ ===
+# セッション毎に追記されるため、追跡していると全サーバーで恒久的に merge 衝突する。
+.claude/hooks/*.log
+
+# HTS 再構築データ（599MB。生成物であり data/raw と同じ扱い）
+data/hts_reconstruction/
+
+# === 特徴量・中間配列（サイズが大きく再生成可能） ===
+*.npz
+*.npy
+
+# 解析の実装本体は追跡する（mmdet が dump する派生 config は上の行で除外済み）
+!experiments/analysis/**/*.py
+
+
+# 手動追加
+node_modules/
+package-lock.json
+package.json
+
+# サーバー名の単一情報源（m2-sync.sh が読む）。ホストごとに中身が違うため追跡しない。
+.servername
+
+# === 対話の生記録は版管理へ入れない ===
+# 秘匿情報が混入しうるため。抽出物（docs/sessions/digest/）のみを追跡する。
+# 生の記録は各実装系の既定の保存先（~/.claude/projects/ など repo 外）に残る。
+#
+# 🔴 repo 全体の `*.jsonl` は書かない。`.jsonl` は本 repo で現に使われている
+#    データ形式であり（experiments/**/logs/val_metrics.jsonl）、広く除外すると
+#    将来追跡すべき jsonl を静かに取りこぼす。backlog B-28 と同型の危険である。
+docs/sessions/raw/
+
+# === 常駐同期の一時停止マーカー ===
+# 契約の実行中だけ置き、終わったら消す（scripts/sync/m2-sync.sh が読む）。
+# ホストごとの状態であり全台で共有しない。行末にコメントを書かないこと
+# （パターンが壊れる）。検証: git check-ignore .sync-pause
+.sync-pause

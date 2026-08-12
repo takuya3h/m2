@@ -1,0 +1,265 @@
+diff --git a/optimizer/param_dict.py b/optimizer/param_dict.py
+index cfb47b8..bcfb9ed 100644
+--- a/optimizer/param_dict.py
++++ b/optimizer/param_dict.py
+@@ -146,3 +146,190 @@ def finetune_backbone_and_linear_projection(model, lr):
+             "weight_decay": 0,
+         },
+     ]
++
++
++def finetune_b1_mtl(model, lr, phase_lr=5e-4):
++    """B1 素朴MTL 用 param group（②特徴レベル結合）。
++
++    検出枝は ``finetune_backbone_and_linear_projection`` と同じ分類（共有 ``c5_neck`` は
++    検出主 LR=lr の ``other`` 群に入り S0-frozen′ と一致）。工程枝（``phase_head.*``）は
++    S4′ と揃えて ``phase_lr=5e-4`` の独立群、Kendall&Gal の ``log_var_*`` は weight_decay=0 の
++    独立群に分離する。これにより共有 neck の LR は検出側に固定（B1 のアンカー）。
++    """
++    linear_keywords = ("reference_points", "sampling_offsets")
++    norm_bias_keywords = ("norm", "bias")
++    backbone, backbone_norm = [], []
++    linear_projection, linear_projection_norm = [], []
++    other, other_norm = [], []
++    phase_head, log_var = [], []
++    for name, parameters in model.named_parameters():
++        if not parameters.requires_grad:
++            continue
++        # 工程枝・不確実性重みを最優先で分離（検出分類より前に振り分ける）。
++        if match_name_keywords(name, "phase_head"):
++            phase_head.append(parameters)
++        elif match_name_keywords(name, "log_var"):
++            log_var.append(parameters)
++        elif (
++            match_name_keywords(name, "backbone")
++            and not match_name_keywords(name, linear_keywords)
++            and match_name_keywords(name, norm_bias_keywords)
++        ):
++            backbone_norm.append(parameters)
++        elif (
++            match_name_keywords(name, "backbone")
++            and not match_name_keywords(name, linear_keywords)
++            and not match_name_keywords(name, norm_bias_keywords)
++        ):
++            backbone.append(parameters)
++        elif (
++            not match_name_keywords(name, "backbone")
++            and match_name_keywords(name, linear_keywords)
++            and match_name_keywords(name, norm_bias_keywords)
++        ):
++            linear_projection_norm.append(parameters)
++        elif (
++            not match_name_keywords(name, "backbone")
++            and match_name_keywords(name, linear_keywords)
++            and not match_name_keywords(name, norm_bias_keywords)
++        ):
++            linear_projection.append(parameters)
++        elif match_name_keywords(name, norm_bias_keywords):
++            other_norm.append(parameters)
++        else:
++            other.append(parameters)
++
++    groups = [
++        {"params": other},
++        {"params": backbone, "lr": lr * 0.1},
++        {"params": backbone_norm, "lr": lr * 0.1, "weight_decay": 0},
++        {"params": linear_projection, "lr": lr * 0.1},
++        {"params": linear_projection_norm, "lr": lr * 0.1, "weight_decay": 0},
++        {"params": other_norm, "weight_decay": 0},
++        {"params": phase_head, "lr": phase_lr},
++    ]
++    if log_var:  # weighting='uncertainty' のときのみ存在
++        groups.append({"params": log_var, "lr": phase_lr, "weight_decay": 0})
++    return groups
++
++
++def finetune_t1b(model, lr, film_lr=5e-4):
++    """T1b Phase→Det 用 param group（①予測相互作用・FiLM 注入）。
++
++    検出枝は ``finetune_backbone_and_linear_projection`` と同分類（warm-start, S0-frozen と同じ
++    分類で fine-tune）。注入枝（FiLM の ``phase_film.*`` / CA の ``phase_embed|phase_attn|phase_norm.*``）は
++    zero-init の新規 module ゆえ ``phase`` で一括し独立 ``film_lr`` 群にする（base 検出器に ``phase`` を
++    含む param は無いので film/ca どちらでも安全）。トレーナーが ``requires_grad=False`` で凍結した層は
++    自動的に除外される（film-only 学習に対応）。
++    """
++    linear_keywords = ("reference_points", "sampling_offsets")
++    norm_bias_keywords = ("norm", "bias")
++    backbone, backbone_norm = [], []
++    linear_projection, linear_projection_norm = [], []
++    other, other_norm = [], []
++    phase_params = []
++    for name, parameters in model.named_parameters():
++        if not parameters.requires_grad:
++            continue
++        if match_name_keywords(name, "phase"):
++            phase_params.append(parameters)
++        elif (
++            match_name_keywords(name, "backbone")
++            and not match_name_keywords(name, linear_keywords)
++            and match_name_keywords(name, norm_bias_keywords)
++        ):
++            backbone_norm.append(parameters)
++        elif (
++            match_name_keywords(name, "backbone")
++            and not match_name_keywords(name, linear_keywords)
++            and not match_name_keywords(name, norm_bias_keywords)
++        ):
++            backbone.append(parameters)
++        elif (
++            not match_name_keywords(name, "backbone")
++            and match_name_keywords(name, linear_keywords)
++            and match_name_keywords(name, norm_bias_keywords)
++        ):
++            linear_projection_norm.append(parameters)
++        elif (
++            not match_name_keywords(name, "backbone")
++            and match_name_keywords(name, linear_keywords)
++            and not match_name_keywords(name, norm_bias_keywords)
++        ):
++            linear_projection.append(parameters)
++        elif match_name_keywords(name, norm_bias_keywords):
++            other_norm.append(parameters)
++        else:
++            other.append(parameters)
++
++    groups = [
++        {"params": backbone, "lr": lr * 0.1},
++        {"params": backbone_norm, "lr": lr * 0.1, "weight_decay": 0},
++        {"params": linear_projection, "lr": lr * 0.1},
++        {"params": linear_projection_norm, "lr": lr * 0.1, "weight_decay": 0},
++        {"params": other_norm, "weight_decay": 0},
++        {"params": phase_params, "lr": film_lr},
++    ]
++    if other:  # film-only 時は空になり得る
++        groups.insert(0, {"params": other})
++    return groups
++
++
++def finetune_hand2det(model, lr, inject_lr=5e-4):
++    """Hand-mask→Det 用 param group（L2/L1a・C5 zero-init 残差注入）。
++
++    finetune_t1b と同一分類だが、注入枝を ``phase`` ではなく ``hand_prior``（zero-init 1x1 conv）で
++    一括し独立 ``inject_lr`` 群にする（base 検出器に ``hand_prior`` を含む param は無い）。
++    トレーナーが ``requires_grad=False`` で凍結した層は自動除外される（film-only=注入のみ学習に対応）。
++    """
++    linear_keywords = ("reference_points", "sampling_offsets")
++    norm_bias_keywords = ("norm", "bias")
++    backbone, backbone_norm = [], []
++    linear_projection, linear_projection_norm = [], []
++    other, other_norm = [], []
++    inject_params = []
++    for name, parameters in model.named_parameters():
++        if not parameters.requires_grad:
++            continue
++        if match_name_keywords(name, "hand_prior"):
++            inject_params.append(parameters)
++        elif (
++            match_name_keywords(name, "backbone")
++            and not match_name_keywords(name, linear_keywords)
++            and match_name_keywords(name, norm_bias_keywords)
++        ):
++            backbone_norm.append(parameters)
++        elif (
++            match_name_keywords(name, "backbone")
++            and not match_name_keywords(name, linear_keywords)
++            and not match_name_keywords(name, norm_bias_keywords)
++        ):
++            backbone.append(parameters)
++        elif (
++            not match_name_keywords(name, "backbone")
++            and match_name_keywords(name, linear_keywords)
++            and match_name_keywords(name, norm_bias_keywords)
++        ):
++            linear_projection_norm.append(parameters)
++        elif (
++            not match_name_keywords(name, "backbone")
++            and match_name_keywords(name, linear_keywords)
++            and not match_name_keywords(name, norm_bias_keywords)
++        ):
++            linear_projection.append(parameters)
++        elif match_name_keywords(name, norm_bias_keywords):
++            other_norm.append(parameters)
++        else:
++            other.append(parameters)
++
++    groups = [
++        {"params": backbone, "lr": lr * 0.1},
++        {"params": backbone_norm, "lr": lr * 0.1, "weight_decay": 0},
++        {"params": linear_projection, "lr": lr * 0.1},
++        {"params": linear_projection_norm, "lr": lr * 0.1, "weight_decay": 0},
++        {"params": other_norm, "weight_decay": 0},
++        {"params": inject_params, "lr": inject_lr},
++    ]
++    if other:  # film-only（注入のみ）時は空になり得る
++        groups.insert(0, {"params": other})
++    return groups
+diff --git a/transforms/presets.py b/transforms/presets.py
+index 4f6a716..b131ceb 100644
+--- a/transforms/presets.py
++++ b/transforms/presets.py
+@@ -162,6 +162,24 @@ strong_album = T.Compose([
+ 
+ scales_1200 = [int(t * 1.5) for t in [480, 512, 544, 576, 608, 640, 672, 704, 736, 768, 800]]
+ 
++# detr プリセットを高解像度化したもの（aug 種類は detr と同一・解像度のみ 1 軸変更）。
++# Method B（解像度単独）用。scales_1200=720..1200 / max_size=2000。
++detr_1200 = T.Compose([
++    T.RandomHorizontalFlip(),
++    T.RandomChoice([
++        T.RandomShortestSize(min_size=scales_1200, max_size=2000, antialias=True),
++        T.Compose([
++            T.RandomShortestSize([600, 750, 900], antialias=True),
++            RandomSizeCrop(576, 900),
++            T.RandomShortestSize(min_size=scales_1200, max_size=2000, antialias=True),
++        ]),
++    ]),
++    T.PILToTensor(),
++    T.ConvertImageDtype(torch.float),
++    T.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
++    T.SanitizeBoundingBox(labels_getter=labels_getter),
++])
++
+ strong_album_1200_2000 = T.Compose([
+     T.RandomChoice([
+         T.RandomShortestSize(min_size=scales_1200, max_size=2000, antialias=True),
+diff --git a/util/engine.py b/util/engine.py
+index a9dfcfb..56b58c5 100644
+--- a/util/engine.py
++++ b/util/engine.py
+@@ -179,6 +179,36 @@ def evaluate_acc(model, data_loader, epoch, accelerator=None):
+     metric_names += ["AR_1", "AR_10", "AR_100", "AR-s", "AR-m", "AR-l"]
+     metric_dict = dict(zip(metric_names, coco_evaluator.coco_eval["bbox"].stats))
+     accelerator.log({f"val/{k}": v for k, v in metric_dict.items()}, step=epoch)
++
++    # EgoSurgery 証跡用: per-class を COCO mAP(IoU=0.50:0.95) で書き出す。
++    # 上の表示テーブルは ap50 (precision[0,...]) だが、他検出器の per_class_ap.json は
++    # COCO mAP なので、precision[:,...].mean() (全 IoU 閾値平均) で揃える。
++    # 出力先は output_dir/per_class_coco_map.json (best 更新と無関係に毎 epoch 上書き)。
++    # rank0 のみ書く。失敗しても学習を巻き込まない。
++    try:
++        import json as _json
++        import os as _os
++
++        if accelerator.is_main_process:
++            prec = coco_evaluator.coco_eval["bbox"].eval["precision"]
++            pc = {}
++            for cat_idx, cat_name in enumerate(cat_names):
++                # [T(all IoU), R, K=cat_idx, A=0(all area), M=2(maxDet100)]
++                vals = prec[:, :, cat_idx, 0, 2]
++                vals = vals[vals > -1]
++                pc[cat_name] = float(vals.mean()) if vals.size else float("nan")
++            # best epoch と最終 epoch が一致しない場合があるので epoch 毎に別ファイルで
++            # 残し、post-process が overall_coco_mAP 最大のものを選ぶ。
++            _odir = _os.environ.get("RELDETR_EVIDENCE_DIR", ".")
++            _os.makedirs(_os.path.join(_odir, "per_class_coco_map"), exist_ok=True)
++            _fp = _os.path.join(_odir, "per_class_coco_map", f"epoch_{int(epoch):03d}.json")
++            with open(_fp, "w") as _f:
++                _json.dump({"epoch": int(epoch), "per_class_coco_map": pc,
++                            "overall_coco_mAP": float(coco_evaluator.coco_eval["bbox"].stats[0])},
++                           _f, ensure_ascii=False, indent=2)
++    except Exception as _exc:  # noqa: BLE001
++        logger.info(f"per_class_coco_map dump skipped: {_exc}")
++
+     return coco_evaluator
+ 
+ 

@@ -1,0 +1,14 @@
+name: "codetr"
+# mmdet projects/CO-DETR の CoDETR 設定（§4.2・§13.2 S0・§9 #6）。
+# 位置づけ: 長尾対照（Mask DINO vs Co-DETR の APr 比較）。
+num_queries: 300
+with_box_refine: true
+as_two_stage: true
+use_lsj: false
+eval_module: "detr"
+# collaborative hybrid assignment: one-to-many 補助 ATSS ヘッド併用。
+# 長尾 query quench 緩和の核（§4.2）。
+aux_heads:
+  enabled: true
+# Phase-0 は bbox-only（mask 不要）。
+mask_on: false

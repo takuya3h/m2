@@ -1,0 +1,192 @@
+{
+  "arm": "unknown",
+  "attributes": {
+    "best_epoch": 18,
+    "epochs": 50,
+    "in_dim": 3840,
+    "run": "base_seed42",
+    "seed": 42,
+    "system": "base",
+    "train_seconds": 22.38256549835205
+  },
+  "command": null,
+  "commit": "ca280645c5da13574e6b2ce0e460ac858663ab69",
+  "config_path": null,
+  "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
+  "description": "base",
+  "duplicate_bare_keys": [],
+  "epoch": null,
+  "eval_recipe": null,
+  "eval_recipe_id": null,
+  "evidence_completeness": "full",
+  "excluded": false,
+  "exclusion_reason": null,
+  "experiment_id": "g2_main_2026-07-29_lecun/base/base@val",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_seed_declared": null,
+  "frozen_source_tag": null,
+  "gpu": null,
+  "group": "g2_main_2026-07-29_lecun",
+  "harvest_warnings": [
+    "run 名に seq (3 桁連番) が無い別系統の命名: base_seed42。step には description を充てた。",
+    "val と test の指標が共存する。primary（best 選択元）は val。test 側は metrics_by_split['test'] に保持している。"
+  ],
+  "host": "lecun",
+  "host_raw": "lecun",
+  "ledger_key": "g2_main_2026-07-29_lecun__runs__base_seed42",
+  "metrics": {
+    "accuracy": 0.9485148514851485,
+    "edit_score": 38.29059829059829,
+    "jaccard": 0.7619742888277796,
+    "macro_f1": 0.8029176916796503,
+    "seg_f1_10": 0.4910714285714286,
+    "seg_f1_25": 0.4806547619047619,
+    "seg_f1_50": 0.4702380952380953
+  },
+  "metrics_by_split": {
+    "test": {
+      "accuracy": 0.8405627198124267,
+      "edit_score": 45.45641556511122,
+      "jaccard": 0.6297875870939362,
+      "macro_f1": 0.7147103528017937,
+      "seg_f1_10": 0.5511618920935495,
+      "seg_f1_25": 0.5377714928991851,
+      "seg_f1_50": 0.4052042141104413
+    },
+    "val": {
+      "accuracy": 0.9485148514851485,
+      "edit_score": 38.29059829059829,
+      "jaccard": 0.7619742888277796,
+      "macro_f1": 0.8029176916796503,
+      "seg_f1_10": 0.4910714285714286,
+      "seg_f1_25": 0.4806547619047619,
+      "seg_f1_50": 0.4702380952380953
+    }
+  },
+  "metrics_nested": {
+    "hyperparams": {
+      "lr": 0.0005,
+      "num_f_maps": 64,
+      "num_layers": 8,
+      "num_stages": 2,
+      "smoothing_weight": 0.15,
+      "weight_decay": 0.01
+    },
+    "n_clips": {
+      "test": 6,
+      "train": 13,
+      "val": 3
+    },
+    "roi_fallback": {
+      "test": {
+        "D": 256,
+        "fallback_rate": 0.11709934506430995
+      },
+      "train": {
+        "D": 256,
+        "fallback_rate": 0.14114402578086266
+      },
+      "val": {
+        "D": 256,
+        "fallback_rate": 0.24091778202676864
+      }
+    },
+    "test.phase_per_class_f1": {
+      "anesthesia": 0.9917355371900827,
+      "closure": 0.9065524944154877,
+      "design": 0.9473684210526316,
+      "disinfection": 0.0,
+      "dissection": 0.7016042780748664,
+      "dressing": 0.0,
+      "hemostasis": 0.7248908296943232,
+      "incision": 0.9303797468354431,
+      "irrigation": 0.5151515151515152
+    },
+    "test.phase_per_class_jaccard": {
+      "anesthesia": 0.9836065573770492,
+      "closure": 0.829077289751447,
+      "design": 0.9,
+      "disinfection": 0.0,
+      "dissection": 0.5403624382207578,
+      "dressing": 0.0,
+      "hemostasis": 0.5684931506849316,
+      "incision": 0.8698224852071006,
+      "irrigation": 0.3469387755102041
+    },
+    "val.phase_per_class_f1": {
+      "anesthesia": 1.0,
+      "closure": 0.9542709232096634,
+      "design": 0.9751243781094527,
+      "disinfection": 0.0,
+      "dissection": 0.9656526005888126,
+      "dressing": 0.0,
+      "hemostasis": 0.7789473684210527,
+      "incision": 0.9464285714285714,
+      "irrigation": 0.0
+    },
+    "val.phase_per_class_jaccard": {
+      "anesthesia": 1.0,
+      "closure": 0.9125412541254125,
+      "design": 0.9514563106796117,
+      "disinfection": 0.0,
+      "dissection": 0.9335863377609108,
+      "dressing": 0.0,
+      "hemostasis": 0.6379310344827587,
+      "incision": 0.8983050847457628,
+      "irrigation": 0.0
+    }
+  },
+  "metrics_primary_split": "val",
+  "metrics_source": "metrics_json",
+  "notes": null,
+  "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
+  "path": "experiments/g2_main_2026-07-29_lecun/runs/base_seed42",
+  "per_class": {
+    "anesthesia": 1.0,
+    "closure": 0.9542709232096634,
+    "design": 0.9751243781094527,
+    "disinfection": 0.0,
+    "dissection": 0.9656526005888126,
+    "dressing": 0.0,
+    "hemostasis": 0.7789473684210527,
+    "incision": 0.9464285714285714,
+    "irrigation": 0.0
+  },
+  "per_class_kind": "phase",
+  "per_class_metric": "F1",
+  "per_class_nan_classes": [],
+  "per_class_source": "experiments/g2_main_2026-07-29_lecun/runs/base_seed42/metrics.json#val.phase_per_class_f1",
+  "per_class_valid_count": 9,
+  "provenance": {
+    "aux_token": "no_aux_token",
+    "commit": "from_git_commit_txt",
+    "epoch": "not_determinable",
+    "host": "from_server_txt",
+    "name": "from_dirname_desc_seed_no_seq",
+    "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
+    "seed": "from_dirname_verified_by_metrics_json",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "primary_val_by_training_script",
+    "step": "from_dirname"
+  },
+  "run_id": "base_seed42",
+  "seed": 42,
+  "seed_agreement": "agree",
+  "seed_command": null,
+  "seed_config": null,
+  "seed_detector": null,
+  "seed_phase": null,
+  "seq": null,
+  "split": "val",
+  "step": "base",
+  "subgroup": "runs",
+  "task_id": "",
+  "wandb_run_id": null,
+  "wandb_run_url": null
+}

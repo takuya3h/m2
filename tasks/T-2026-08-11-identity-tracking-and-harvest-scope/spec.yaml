@@ -1,0 +1,75 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-11-identity-tracking-and-harvest-scope"
+  kind: impl
+  title: "計算機の論理名を注入し、外部記録との対応を索引へ載せ、収穫の範囲を明らかにする"
+  origin: claude-app
+  created_at: "2026-08-11T09:00:00Z"
+  created_from:
+    runindex_commit: "12cc0e8"
+    counts: {index: 749, experiments: 206, verdicts: 1038}
+  depends_on: ["T-2026-08-10-branch-naming-and-canonical-index"]
+  amendments: []
+
+intent:
+  question: "実行元の識別と外部記録への対応を、証跡から機械的に辿れるようにできるか"
+  decision_at_stake: "対応付けを仕組みへ落とすか、人の記憶に頼り続けるか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["tools/harvest_runindex.py"]
+
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#naming, conventions#env_p0]
+  conventions_rev: "d422b08"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "論理名の注入経路の整備", gpu: false, est: "60m"}
+    - {id: B, name: "外部記録への対応を証跡と索引へ", gpu: false, est: "70m"}
+    - {id: C, name: "収穫の範囲と記録方針の明文化", gpu: false, est: "50m"}
+  gates:
+    - id: G1
+      after: A
+      check: "論理名が未設定のときと設定したときで、証跡に書かれる値が変わることを実行して確認した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "外部記録が無効なときに列が空となり、有効なときに値が入る経路を実装から確認した"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "収穫の対象が無視設定と一致しないことを実測で示し、記録した"
+      on_fail: ask
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tools/"
+  acceptance:
+    - "論理名を注入する手順が用意され、設定の有無で証跡の値が変わる"
+    - "外部記録の識別子を証跡へ書く経路がある"
+    - "索引が外部記録の識別子を列として持つ"
+    - "外部記録が無効な run では当該列が空になる"
+    - "収穫の対象が無視設定と一致しないことが未解決事項として記録されている"
+    - "対話記録の抽出物の追跡方針が文書化されている"
+    - "既存の索引の行数と数値が変わらない"
+    - "make task-validate が exit 0"
+    - "make task-preflight が exit 0"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [existing_index_values_changed, secret_value_printed]

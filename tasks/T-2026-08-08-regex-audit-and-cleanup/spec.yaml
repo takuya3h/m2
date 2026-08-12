@@ -1,0 +1,70 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-08-regex-audit-and-cleanup"
+  kind: impl
+  title: "終端一致の脆弱性を水平展開で潰し、作業領域と記録の食い違いを解消する"
+  origin: claude-app
+  created_at: "2026-08-08T09:00:00Z"
+  created_from:
+    runindex_commit: "12cc0e8"
+    counts: {index: 749, experiments: 206, verdicts: 1038}
+  depends_on: ["T-2026-08-07-propagation-and-distribution"]
+  amendments: []
+
+intent:
+  question: "検証系の終端一致に同型の脆弱性が他にも潜んでいないか"
+  decision_at_stake: "これまでの検証結果を信頼できるとみなすか、再検証が必要とみなすか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["tools/validate_task.py"]
+
+contract:
+  inject_verbatim: [conventions#frozen_source, conventions#prohibitions, conventions#naming]
+  conventions_rev: "d422b08"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "終端一致の棚卸しと再現", gpu: false, est: "40m"}
+    - {id: B, name: "脆弱性の修正と回帰", gpu: false, est: "50m"}
+    - {id: C, name: "作業領域の整理と記録の訂正", gpu: false, est: "50m"}
+  gates:
+    - id: G1
+      after: A
+      check: "検証系の各所で終端一致の挙動を実測し、悪用可能な箇所を特定した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "改行を含む入力が検証を素通りしないことを実行して確認した"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md, regex_audit.md]
+  destination: "tools/"
+  acceptance:
+    - "検証系の終端一致の棚卸し結果が表として記録されている"
+    - "改行を含む入力が検証を素通りしない"
+    - "動作確認用の未追跡ディレクトリが無視設定へ追加されている"
+    - "整形のみの未コミット差分が解消されている"
+    - "伝播経路の実体が文書へ反映されている"
+    - "凍結源の取り違え候補について除外理由が実測で特定されている"
+    - "make task-validate が exit 0"
+    - "make task-preflight が exit 0"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [additional_bypass_found, exclusion_reason_unresolved]

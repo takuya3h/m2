@@ -1,0 +1,41 @@
+diff --git a/util/engine.py b/util/engine.py
+index a9dfcfb..56b58c5 100644
+--- a/util/engine.py
++++ b/util/engine.py
+@@ -179,6 +179,36 @@ def evaluate_acc(model, data_loader, epoch, accelerator=None):
+     metric_names += ["AR_1", "AR_10", "AR_100", "AR-s", "AR-m", "AR-l"]
+     metric_dict = dict(zip(metric_names, coco_evaluator.coco_eval["bbox"].stats))
+     accelerator.log({f"val/{k}": v for k, v in metric_dict.items()}, step=epoch)
++
++    # EgoSurgery 証跡用: per-class を COCO mAP(IoU=0.50:0.95) で書き出す。
++    # 上の表示テーブルは ap50 (precision[0,...]) だが、他検出器の per_class_ap.json は
++    # COCO mAP なので、precision[:,...].mean() (全 IoU 閾値平均) で揃える。
++    # 出力先は output_dir/per_class_coco_map.json (best 更新と無関係に毎 epoch 上書き)。
++    # rank0 のみ書く。失敗しても学習を巻き込まない。
++    try:
++        import json as _json
++        import os as _os
++
++        if accelerator.is_main_process:
++            prec = coco_evaluator.coco_eval["bbox"].eval["precision"]
++            pc = {}
++            for cat_idx, cat_name in enumerate(cat_names):
++                # [T(all IoU), R, K=cat_idx, A=0(all area), M=2(maxDet100)]
++                vals = prec[:, :, cat_idx, 0, 2]
++                vals = vals[vals > -1]
++                pc[cat_name] = float(vals.mean()) if vals.size else float("nan")
++            # best epoch と最終 epoch が一致しない場合があるので epoch 毎に別ファイルで
++            # 残し、post-process が overall_coco_mAP 最大のものを選ぶ。
++            _odir = _os.environ.get("RELDETR_EVIDENCE_DIR", ".")
++            _os.makedirs(_os.path.join(_odir, "per_class_coco_map"), exist_ok=True)
++            _fp = _os.path.join(_odir, "per_class_coco_map", f"epoch_{int(epoch):03d}.json")
++            with open(_fp, "w") as _f:
++                _json.dump({"epoch": int(epoch), "per_class_coco_map": pc,
++                            "overall_coco_mAP": float(coco_evaluator.coco_eval["bbox"].stats[0])},
++                           _f, ensure_ascii=False, indent=2)
++    except Exception as _exc:  # noqa: BLE001
++        logger.info(f"per_class_coco_map dump skipped: {_exc}")
++
+     return coco_evaluator
+ 
+ 

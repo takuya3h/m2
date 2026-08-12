@@ -43,16 +43,18 @@ HAND_CLASSES: list[dict] = [
 ]
 
 # --- 手術工程 9 クラス（phase id 0..8、S3 以降で使用） -------------------- #
+# 実 CSV (data/annotations/egosurgery_phase/*.csv) の Phase 列に出現する
+# 9 ラベルをアルファベット順で固定（CSV に id は無いため当方で割り当てる）。
 PHASE_CLASSES: list[dict] = [
-    {"id": 0, "name": "Preparation"},
-    {"id": 1, "name": "Draping"},
-    {"id": 2, "name": "Incision"},
-    {"id": 3, "name": "Dissection"},
-    {"id": 4, "name": "Hemostasis"},
-    {"id": 5, "name": "Irrigation"},
-    {"id": 6, "name": "Closure"},
-    {"id": 7, "name": "Dressing"},
-    {"id": 8, "name": "Completion"},
+    {"id": 0, "name": "anesthesia"},
+    {"id": 1, "name": "closure"},
+    {"id": 2, "name": "design"},
+    {"id": 3, "name": "disinfection"},
+    {"id": 4, "name": "dissection"},
+    {"id": 5, "name": "dressing"},
+    {"id": 6, "name": "hemostasis"},
+    {"id": 7, "name": "incision"},
+    {"id": 8, "name": "irrigation"},
 ]
 
 NUM_TOOL_CLASSES = len(TOOL_CLASSES)   # 15
@@ -62,8 +64,11 @@ NUM_PHASE_CLASSES = len(PHASE_CLASSES)  # 9
 # 形状が似て混同しやすいクラス（confusion matrix / Compensation factor 対象）。
 CONFUSABLE_CLASSES = ["Forceps", "Tweezers", "Needle Holders", "Bipolar Forceps"]
 
-# 稀少クラス（Copy-Paste / RFS の優先対象）。研究計画 §7 の長尾分析に基づく。
-RARE_CLASSES = ["Skewer", "Syringe", "Forceps"]
+# 稀少クラス（Copy-Paste / RFS の優先対象）。
+# 【2026/05/24 v2 訂正】Forceps の出現割合は 12.21%（旧誤記 1.22%）で
+# 実際にはトップ3頻出クラス。稀少クラスは Skewer (0.7%) と Syringe (1.17%) の
+# 2 クラスのみとする。Forceps は形状類似ペア（CONFUSABLE_CLASSES）に残す。
+RARE_CLASSES = ["Skewer", "Syringe"]
 
 
 def _build_maps(classes: list[dict]) -> tuple[dict, dict]:

@@ -120,3 +120,90 @@ class RepeatFactorSampler(Sampler):
                 # アノテーションの無い画像は等倍。
                 factors.append(1.0)
         return factors
+
+
+class DistributedRepeatFactorSampler(Sampler):
+    """RFS と ``DistributedSampler`` を統合した DDP 対応 sampler（§13.2 (b)(ii)）。
+
+    通常の RFS で生成したエポック単位の index 列を rank 間で重複なく分割する。
+    これにより RFS の oversample 効果（稀少クラス画像を複数回サンプリング）と
+    DDP の rank 分割（各 rank が異なる subset を学習）を 1 つの sampler で
+    両立させる。
+
+    使い方:
+        sampler = DistributedRepeatFactorSampler(
+            dataset, repeat_thresh=0.001,
+            num_replicas=world_size, rank=rank,
+        )
+        loader = DataLoader(dataset, sampler=sampler, batch_size=per_gpu_bs)
+
+    Notes:
+        単一 GPU 時に DDP と同じ呼び出し側コードで動かしたい場合は、
+        ``num_replicas=1, rank=0`` を渡せば通常の RFS と等価になる。
+        各 epoch の最初に ``set_epoch(epoch)`` を呼ぶこと（標準
+        ``DistributedSampler`` と同じ規約）。
+    """
+
+    def __init__(
+        self,
+        dataset,
+        repeat_thresh: float = 0.001,
+        num_replicas: int = 1,
+        rank: int = 0,
+        shuffle: bool = True,
+        seed: int = 0,
+        drop_last: bool = False,
+    ) -> None:
+        if num_replicas < 1:
+            raise ValueError(f"num_replicas は 1 以上である必要があります: {num_replicas}")
+        if not 0 <= rank < num_replicas:
+            raise ValueError(f"rank は [0, {num_replicas}) の範囲: {rank}")
+        # RFS 本体をコンポジションで保持。set_epoch を委譲する。
+        self._rfs = RepeatFactorSampler(
+            dataset,
+            repeat_thresh=repeat_thresh,
+            shuffle=shuffle,
+            seed=seed,
+        )
+        self.num_replicas = int(num_replicas)
+        self.rank = int(rank)
+        self.drop_last = bool(drop_last)
+        self._epoch = 0
+
+        # 1 rank 当たりのサンプル数。drop_last=False の場合は端数を切り上げ、
+        # __iter__ で頭から padding して全 rank の長さを揃える（DistributedSampler と同規約）。
+        total = len(self._rfs)
+        if self.drop_last:
+            self._num_samples = total // self.num_replicas
+        else:
+            self._num_samples = math.ceil(total / self.num_replicas)
+        self.total_size = self._num_samples * self.num_replicas
+
+    # ------------------------------------------------------------------ #
+    # Sampler プロトコル
+    # ------------------------------------------------------------------ #
+    def __iter__(self):
+        # RFS が epoch ごとに違う順序で index を返すので、毎エポック再列挙する。
+        self._rfs.set_epoch(self._epoch)
+        indices = list(self._rfs)
+
+        if not self.drop_last:
+            # padding（不足分を頭から繰り返して total_size に揃える）。
+            padding = self.total_size - len(indices)
+            if padding > 0:
+                indices = indices + indices[:padding]
+        else:
+            indices = indices[: self.total_size]
+
+        # rank ごとに stride で分割（DistributedSampler と同じ方式）。
+        indices = indices[self.rank : self.total_size : self.num_replicas]
+        assert len(indices) == self._num_samples
+        return iter(indices)
+
+    def __len__(self) -> int:
+        return self._num_samples
+
+    def set_epoch(self, epoch: int) -> None:
+        """エポック番号を設定する（DistributedSampler と同規約）。"""
+        self._epoch = int(epoch)
+        self._rfs.set_epoch(epoch)

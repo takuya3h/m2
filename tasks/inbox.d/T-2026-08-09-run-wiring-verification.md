@@ -1,0 +1,2 @@
+- [ ] 2026-08-09 [cc] 配線確認 run は接頭辞を外すだけでは足りず description の指定も要る。接頭辞は索引から消し、既定名は本走と同一グループに束ねる。命名規約への昇格を提案（T-2026-08-09-run-wiring-verification）
+- [ ] 2026-08-09 [cc] 検査コマンドの誤りが本 task でも 2 件。sync-alerts.log の不在を不発火と判定する条件と、cwd 不足で拡張 import が偽陰性になる条件（T-2026-08-09-run-wiring-verification §10 D-1/D-2）

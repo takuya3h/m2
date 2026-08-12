@@ -1,0 +1,70 @@
+spec_version: 1
+meta:
+  task_id: "T-2026-08-11-s0-reevaluation-feasibility"
+  kind: analysis
+  title: "S0 検出器比較の再評価が学習なしで可能かを測る"
+  origin: claude-app
+  created_at: "2026-08-11T14:10:00Z"
+  created_from:
+    runindex_commit: "44697d9"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-11-split-and-recipe-audit"]
+  amendments: []
+intent:
+  question: "検出器の比較表を同一の評価条件で作り直すことは、学習をやり直さずに可能か。可能なら何が残っていて何が足りないか"
+  decision_at_stake: "比較表を作り直すか、条件差を明記して載せるか、表そのものを落とすか。この三択を決めるための材料を得る"
+  related:
+    backlog: ["BL-exclusion-rules-exact-match", "BL-legacy-prefix-must-not-exclude"]
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "src/egosurgery/utils/eval_recipe.py"
+      - "src/egosurgery/engines/mmdet_trainer.py"
+      - "tools/harvest_runindex.py"
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "比較表の対象一覧を確定する", gpu: false, est: "15m"}
+    - {id: B, name: "評価条件の系統差の中身を開く", gpu: false, est: "20m"}
+    - {id: C, name: "重みと予測の残存を測る", gpu: false, est: "25m"}
+    - {id: D, name: "再評価の経路と規模を測る", gpu: false, est: "20m"}
+    - {id: E, name: "総括と三択の材料", gpu: false, est: "15m"}
+  gates:
+    - id: G1
+      after: A
+      check: "対象一覧を索引側と実体側の二経路で作り、件数の差を記録した"
+      on_fail: ask
+    - id: G2
+      after: C
+      check: "走査がシンボリックリンクを辿れることを既知の実在物で確かめ、件数ゼロの対象は直接確認で裏を取った"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-11-s0-reevaluation-feasibility/"
+  acceptance:
+    - "対象となる検出器と run の一覧が、索引側と実体側の両方から作られ、差が記録されている"
+    - "評価条件の系統差が、どのキーがどう違うかまで開かれている"
+    - "重みと予測の残存が run ごとに記録され、件数ゼロの判定は直接確認で裏づけられている"
+    - "学習をやり直さずに再評価できるか否かの結論と、その根拠が記載されている"
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "重みも予測も残っておらず、再評価に学習のやり直しが必要と判明した場合"
+    - "対象一覧が索引側と実体側で食い違い、比較表の構成そのものが確定できない場合"

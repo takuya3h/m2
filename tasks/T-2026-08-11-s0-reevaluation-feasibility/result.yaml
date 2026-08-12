@@ -1,0 +1,65 @@
+# 完了報告の構造化された対。散文（RESULT.md）とは別に、実行者が事実だけを書く。
+result_version: 2
+task_id: "T-2026-08-11-s0-reevaluation-feasibility"
+status: pass
+host: "lecun"
+branch: "feat/s0-reevaluation-feasibility"
+pr: 78
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "対象一覧を索引側 55 と実体側 61 の二経路で作り、集合差を両方向で取った。実体にのみ 6 件、索引にのみ 0 件。差の 6 件は重複ではなく同じ run の成果物側であり、内容まで確認して記録した"
+  - id: G2
+    verdict: pass
+    note: "走査が symlink を辿ることを既知の実在物で確かめた。SPEC の対照は symlink を走査の根に置いており rglob も検出したため、途中に置き直して find -L と os.walk が検出し rglob が検出しないことを示した。重み 0 件の run は直接確認で裏を取った"
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 359
+
+deviations:
+  - type: judgement
+    note: "G1 が ask に該当したが記録して続行した。SPEC 本文が件数と内容を記録し以降どちらの一覧を使うかを明記して続行すると定めているためである。索引側を同一性の基準とし、実体側の同名ディレクトリを成果物の探索先とする和集合を使った"
+  - type: spec_defect
+    note: "陽性対照を組み直した。SPEC の対照は symlink を走査の根に置いており rglob も検出してしまう。根として渡された symlink 自体は rglob も解決するためで、前 task で問題になった途中のディレクトリが symlink という状況を再現していない"
+  - type: spec_defect
+    note: "Phase C の走査対象を索引パスから和集合へ広げた。索引パスのみでは重みを持つ run が 11 件しか見つからず、codetr の 1.13 GB の重み 3 件を見落とす。索引は証跡側を指しており成果物は別ディレクトリにある"
+  - type: judgement
+    note: "和集合による二重計上を検出し固有ディレクトリ単位で測り直した。maskdino と varifocanet の #None と #a63aecae が同じ実体ディレクトリを共有するため、run 単位では重みが二重に数えられ 20 run 13.6 GB になっていた。正しくは 14 ディレクトリ 10.0 GB である"
+  - type: spec_defect
+    note: "予測の判定条件を .pkl のみに絞った。SPEC の条件は predictions ディレクトリ配下という位置で判定するため、eval.log や mmdet_config.py まで予測として数えてしまう。1 run を直接見て確かめたうえで直した"
+  - type: judgement
+    note: "context/auto の 3 ファイルを make taskindex で生成し変更に含めた。SPEC の Phase E は変更が tasks 配下のみであることを期待するが、手順書は報告を書いたあと投影に現れることを確かめるよう求めている。手編集ではなく生成であり禁止事項にも該当しない"
+  - type: judgement
+    note: "meta.created_from.runindex_commit を UNKNOWN から実測した 44697d9 へ置換した。SPEC が定める手順であり逸脱ではないが、契約ファイルそのものへの変更であるため記録に残す。conventions_rev は d422b08 で一致しており置換していない"
+
+issuer_defects:
+  - type: check_does_not_check
+    note: "走査能力の陽性対照が、確かめたい性質を確かめていない。symlink を走査の根に置いているため rglob も検出してしまい、前 task の致命的欠陥である途中のディレクトリが symlink という状況を再現しない。この対照を通しても、後続の走査が安全である保証は得られない"
+  - type: check_does_not_check
+    note: "Phase C の成果物走査が索引パスのみを対象としている。索引は 6 点証跡のディレクトリを指しており重みは別の同名ディレクトリにあるため、指示どおり実行すると重みを持つ run は 11 件しか見つからず codetr の 1.13 GB 三件を見落とす。起票者が最も恐れた誤結論そのものである"
+  - type: asserted_without_measuring
+    note: "6 種類の eval_recipe_id を 6 種類の評価条件として扱ったが、実装では id は split サイズと GPU 構成も含む 10 キーのハッシュである。後処理の設定だけで数えると 4 系統であり、dacdetr の topk 記法を NMS-free と読めば実効的には 2 系統にすぎない"
+  - type: asserted_without_measuring
+    note: "系統差が検出器の実力差と分離できないと書いたが、同一検出器 maskdino が両系統で評価されている実例が既に存在した。その差は 0.000333 で σ の 0.05 倍であり、検出器間の幅 約 4.6σ と比べて無視できる。分離は再評価なしで可能だった"
+
+followups:
+  - "比較表の首位 relationdetr を含む 9 検出器の重みが lecun に無い。philip で学習され 6 点証跡だけが転送されている。philip に現存するかは lecun からは測れないため UNKNOWN であり、確認には別ホストでの実測が要る"
+  - "系統差 0.05σ は maskdino 1 検出器での測定である。NMS-free 化の効き方が検出器によって違う可能性は否定できず、他検出器への一般化は UNKNOWN。表に載せる際はこの限界を併記する必要がある"
+  - "sensex_codino_bbox@val は 1 seed しかないのに比較表に載っている。他の検出器は 3 seed であり、seed 間のばらつきを持たない行が 1 つ混ざっている"
+  - "maskdino_bbox@val と varifocanet_bbox@val は #None と #a63aecae に分離されている。#None 側は _wrong_split_8_2_3 由来で全件 excluded であり、表に混ぜてはならない。前 task で所在不明としたのはこの分離子のためだった"
+  - "予測は後処理の後で保存されている。1 画像 300 箱に切られ score の最小も 0.0117 であるため、max_per_img や nms_pre を増やす方向にも score_thr を下げる方向にも再採点できない。予測の保存は再評価の代替にならない"
+  - "scripts/reeval_s0_nms_free.py は後処理を差し替えて評価のみを走らせる経路として実在し、codetr で 2026-07-03 に実行された痕跡がある。入力は best.pth であり重みを要する"
+
+unknowns:
+  - "philip に対象 9 検出器の重みが現存するかは測っていない。本契約は lecun 単一ホストの読み取りのみであり、他ホストのディスクには触れられない"
+  - "1 run あたりの学習所要時間は読めない。重みが無い run には logs ディレクトリが無く、推定値は書かない"
+  - "codetr の再評価予測は 4265 件で test split の画像数に一致するが、experiment_id は @val である。この再評価がどの split で走ったかは本契約の対象外とし特定していない。比較表の mAP は metrics.json 由来でありこの予測とは別である"
+  - "eval_recipe 内に記録された seed キーが何に使われるかは実装で追えていない。4 run のみが持つ"
+  - "他ホストでは本契約を実行していない。lecun 上でのみ実測した"
+
+commits:
+  - "ae1930a"

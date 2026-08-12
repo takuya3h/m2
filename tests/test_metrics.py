@@ -139,8 +139,10 @@ def test_ap_rare_common_split(tmp_path):
 
     assert results["AP_rare"] == np.mean(rare)
     assert results["AP_common"] == np.mean(common)
-    # 稀少 3 クラス + 残り 12 クラス = 15。
-    assert len(rare) == 3 and len(common) == 12
+    # 【2026/05/24 v2 訂正】Forceps 12.21% は稀少ではないため、
+    # 稀少クラスは Skewer / Syringe の 2 クラスのみ。残り 13 クラス = 15。
+    assert len(rare) == len(RARE_CLASSES) == 2
+    assert len(common) == 15 - len(RARE_CLASSES) == 13
 
 
 # ---------------------------------------------------------------------- #
@@ -158,3 +160,99 @@ def test_confusion_matrix_shape(tmp_path):
     assert cm.shape == (4, 4)
     # 予測 = GT なので similar ペアは対角に乗る。
     assert cm.trace() == cm.sum()
+
+
+# ---------------------------------------------------------------------- #
+# 5. PhaseEvaluator: 基本動作 (S3)
+# ---------------------------------------------------------------------- #
+def test_phase_evaluator_basic():
+    """PhaseEvaluator が accuracy / macro F1 / per-class F1 を計算できる。"""
+    from egosurgery.metrics.phase import PhaseEvaluator
+
+    ev = PhaseEvaluator(num_classes=9, class_names=[f"p{i}" for i in range(9)])
+    # 完全一致: accuracy=1, F1=1
+    ev.update([0, 1, 2, 3, 4, 5, 6, 7, 8], [0, 1, 2, 3, 4, 5, 6, 7, 8], "vid_perfect")
+    res = ev.compute()
+    assert res["phase_accuracy"] == 1.0
+    assert res["phase_macro_f1"] == 1.0
+    assert all(v == 1.0 for v in res["phase_per_class_f1"].values())
+
+    # 半分誤分類
+    ev2 = PhaseEvaluator(num_classes=9)
+    ev2.update([0, 0, 0, 0], [0, 1, 0, 1], "vid")
+    res2 = ev2.compute()
+    assert 0.0 < res2["phase_accuracy"] < 1.0
+
+
+# ---------------------------------------------------------------------- #
+# 6. Edit score (Levenshtein on segment-label sequences)
+# ---------------------------------------------------------------------- #
+def test_edit_score():
+    """edit_score が 0〜100 の範囲で返り、完全一致で 100、完全不一致で低値。"""
+    from egosurgery.metrics.phase import edit_score
+
+    # 完全一致 (segment labels も一致)
+    s = edit_score([0, 0, 1, 1, 2], [0, 0, 1, 1, 2], norm=True)
+    assert s == 100.0
+
+    # ラベル列が完全に異なる: pred segs=[0], gt segs=[1] -> dist 1 / max(1,1) = 100*(1-1) = 0
+    s2 = edit_score([0, 0, 0], [1, 1, 1], norm=True)
+    assert 0.0 <= s2 <= 100.0
+    assert s2 == 0.0
+
+    # フレーム単位で異なるがセグメントラベル列が一致 → 100
+    s3 = edit_score([0, 1, 1, 2], [0, 0, 1, 2], norm=True)
+    assert s3 == 100.0
+
+
+# ---------------------------------------------------------------------- #
+# 7. Segmental F1@k (IoU 閾値ごと)
+# ---------------------------------------------------------------------- #
+def test_segmental_f1():
+    """segmental_f1 が 0-1 の範囲を返し、完全一致で 1、完全不一致で 0。"""
+    from egosurgery.metrics.phase import segmental_f1
+
+    for thr in (0.10, 0.25, 0.50):
+        # 完全一致
+        assert segmental_f1([0, 0, 1, 1, 2, 2], [0, 0, 1, 1, 2, 2], thr) == 1.0
+        # ラベル違いで一致ゼロ
+        assert segmental_f1([0, 0, 0], [1, 1, 1], thr) == 0.0
+        # 部分一致 (IoU=0.5 で thr=0.10 / 0.25 / 0.50 とも 1 GT セグメント該当)
+        v = segmental_f1([0, 0, 0, 0, 0, 1], [0, 0, 0, 1, 1, 1], thr)
+        assert 0.0 <= v <= 1.0
+
+
+# ---------------------------------------------------------------------- #
+# 8. Jaccard (per-class IoU の macro 平均, §4.2 / TeCNO 系の標準指標)
+# ---------------------------------------------------------------------- #
+def test_phase_jaccard():
+    """phase_jaccard が per-class IoU=TP/(TP+FP+FN) の macro 平均であること。"""
+    from egosurgery.metrics.phase import PhaseEvaluator
+
+    # 完全一致 → Jaccard = 1
+    ev = PhaseEvaluator(num_classes=2, class_names=["a", "b"])
+    ev.update([0, 0, 1, 1], [0, 0, 1, 1], "v")
+    r = ev.compute()
+    assert r["phase_jaccard"] == 1.0
+    assert all(v == 1.0 for v in r["phase_per_class_jaccard"].values())
+
+    # 手計算: gts=[0,0,1,1], preds=[0,1,1,1]
+    #   class a: TP=1 FP=0 FN=1 -> J = 1/2 = 0.5
+    #   class b: TP=2 FP=1 FN=0 -> J = 2/3
+    #   macro = (0.5 + 2/3) / 2
+    ev2 = PhaseEvaluator(num_classes=2, class_names=["a", "b"])
+    ev2.update([0, 1, 1, 1], [0, 0, 1, 1], "v")
+    r2 = ev2.compute()
+    assert abs(r2["phase_per_class_jaccard"]["a"] - 0.5) < 1e-9
+    assert abs(r2["phase_per_class_jaccard"]["b"] - 2 / 3) < 1e-9
+    assert abs(r2["phase_jaccard"] - (0.5 + 2 / 3) / 2) < 1e-9
+    # Jaccard と F1 の関係: J = F1 / (2 - F1)
+    for c in ("a", "b"):
+        f1 = r2["phase_per_class_f1"][c]
+        assert abs(r2["phase_per_class_jaccard"][c] - f1 / (2 - f1)) < 1e-9
+
+    # GT 不在クラスは macro から除外される（macro_f1 と同条件）
+    ev3 = PhaseEvaluator(num_classes=3, class_names=["a", "b", "c"])
+    ev3.update([0, 1], [0, 1], "v")  # クラス c は GT/pred とも不在
+    r3 = ev3.compute()
+    assert r3["phase_jaccard"] == 1.0  # 存在する a,b のみで平均 → 1.0

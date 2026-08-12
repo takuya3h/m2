@@ -1,0 +1,782 @@
+{
+  "1_split_shift": {
+    "tool_class_dist_per_split": {
+      "train": {
+        "Skewer": 212,
+        "Syringe": 344,
+        "Gauze": 4596,
+        "Tweezers": 6467,
+        "Scalpel": 739,
+        "Scissors": 1780,
+        "Bipolar Forceps": 446,
+        "Needle Holders": 3031,
+        "Mouth Gag": 3807,
+        "Suction Cannula": 3134,
+        "Raspatory": 654,
+        "Forceps": 2534,
+        "Electric Cautery": 1404,
+        "Retractor": 2079,
+        "Hook": 1045
+      },
+      "val": {
+        "Skewer": 103,
+        "Syringe": 96,
+        "Tweezers": 950,
+        "Scalpel": 168,
+        "Gauze": 455,
+        "Scissors": 391,
+        "Hook": 147,
+        "Forceps": 154,
+        "Electric Cautery": 101,
+        "Mouth Gag": 990,
+        "Suction Cannula": 509,
+        "Bipolar Forceps": 55,
+        "Raspatory": 76,
+        "Needle Holders": 512
+      },
+      "test": {
+        "Syringe": 141,
+        "Gauze": 1644,
+        "Scalpel": 159,
+        "Tweezers": 2595,
+        "Retractor": 325,
+        "Electric Cautery": 162,
+        "Forceps": 3375,
+        "Scissors": 565,
+        "Hook": 157,
+        "Raspatory": 84,
+        "Needle Holders": 1286,
+        "Skewer": 29,
+        "Mouth Gag": 1188,
+        "Suction Cannula": 768,
+        "Bipolar Forceps": 195
+      }
+    },
+    "phase_frames_per_split": {
+      "train": {
+        "design": 245,
+        "anesthesia": 281,
+        "incision": 763,
+        "dissection": 3832,
+        "hemostasis": 825,
+        "closure": 3595,
+        "irrigation": 93,
+        "disinfection": 11,
+        "dressing": 12
+      },
+      "val": {
+        "design": 103,
+        "anesthesia": 98,
+        "incision": 170,
+        "dissection": 506,
+        "hemostasis": 57,
+        "closure": 557,
+        "dressing": 24
+      },
+      "test": {
+        "anesthesia": 120,
+        "incision": 163,
+        "dissection": 1102,
+        "hemostasis": 239,
+        "irrigation": 84,
+        "closure": 2444,
+        "design": 30,
+        "dressing": 83
+      }
+    },
+    "js_divergence_bits": {
+      "tool_js_train_val": 0.0628,
+      "tool_js_train_test": 0.0643,
+      "tool_js_val_test": 0.1327,
+      "phase_js_train_val": 0.0339,
+      "phase_js_train_test": 0.0464,
+      "phase_js_val_test": 0.0708
+    }
+  },
+  "2_class_video_coverage": {
+    "per_class": {
+      "Bipolar Forceps": {
+        "total_inst": 696,
+        "n_videos": 12,
+        "max_single_video_share": 0.208,
+        "in_train": true,
+        "in_val": true,
+        "in_test": true,
+        "split_inst": {
+          "train": 446,
+          "val": 55,
+          "test": 195
+        }
+      },
+      "Electric Cautery": {
+        "total_inst": 1667,
+        "n_videos": 8,
+        "max_single_video_share": 0.765,
+        "in_train": true,
+        "in_val": true,
+        "in_test": true,
+        "split_inst": {
+          "train": 1404,
+          "val": 101,
+          "test": 162
+        }
+      },
+      "Forceps": {
+        "total_inst": 6063,
+        "n_videos": 13,
+        "max_single_video_share": 0.487,
+        "in_train": true,
+        "in_val": true,
+        "in_test": true,
+        "split_inst": {
+          "train": 2534,
+          "val": 154,
+          "test": 3375
+        }
+      },
+      "Gauze": {
+        "total_inst": 6695,
+        "n_videos": 15,
+        "max_single_video_share": 0.228,
+        "in_train": true,
+        "in_val": true,
+        "in_test": true,
+        "split_inst": {
+          "train": 4596,
+          "val": 455,
+          "test": 1644
+        }
+      },
+      "Hook": {
+        "total_inst": 1349,
+        "n_videos": 6,
+        "max_single_video_share": 0.404,
+        "in_train": true,
+        "in_val": true,
+        "in_test": true,
+        "split_inst": {
+          "train": 1045,
+          "val": 147,
+          "test": 157
+        }
+      },
+      "Mouth Gag": {
+        "total_inst": 5985,
+        "n_videos": 5,
+        "max_single_video_share": 0.232,
+        "in_train": true,
+        "in_val": true,
+        "in_test": true,
+        "split_inst": {
+          "train": 3807,
+          "val": 990,
+          "test": 1188
+        }
+      },
+      "Needle Holders": {
+        "total_inst": 4829,
+        "n_videos": 12,
+        "max_single_video_share": 0.141,
+        "in_train": true,
+        "in_val": true,
+        "in_test": true,
+        "split_inst": {
+          "train": 3031,
+          "val": 512,
+          "test": 1286
+        }
+      },
+      "Raspatory": {
+        "total_inst": 814,
+        "n_videos": 8,
+        "max_single_video_share": 0.371,
+        "in_train": true,
+        "in_val": true,
+        "in_test": true,
+        "split_inst": {
+          "train": 654,
+          "val": 76,
+          "test": 84
+        }
+      },
+      "Retractor": {
+        "total_inst": 2404,
+        "n_videos": 7,
+        "max_single_video_share": 0.431,
+        "in_train": true,
+        "in_val": false,
+        "in_test": true,
+        "split_inst": {
+          "train": 2079,
+          "test": 325
+        }
+      },
+      "Scalpel": {
+        "total_inst": 1066,
+        "n_videos": 15,
+        "max_single_video_share": 0.136,
+        "in_train": true,
+        "in_val": true,
+        "in_test": true,
+        "split_inst": {
+          "train": 739,
+          "val": 168,
+          "test": 159
+        }
+      },
+      "Scissors": {
+        "total_inst": 2736,
+        "n_videos": 15,
+        "max_single_video_share": 0.144,
+        "in_train": true,
+        "in_val": true,
+        "in_test": true,
+        "split_inst": {
+          "train": 1780,
+          "val": 391,
+          "test": 565
+        }
+      },
+      "Skewer": {
+        "total_inst": 344,
+        "n_videos": 9,
+        "max_single_video_share": 0.247,
+        "in_train": true,
+        "in_val": true,
+        "in_test": true,
+        "split_inst": {
+          "train": 212,
+          "val": 103,
+          "test": 29
+        }
+      },
+      "Suction Cannula": {
+        "total_inst": 4411,
+        "n_videos": 10,
+        "max_single_video_share": 0.206,
+        "in_train": true,
+        "in_val": true,
+        "in_test": true,
+        "split_inst": {
+          "train": 3134,
+          "val": 509,
+          "test": 768
+        }
+      },
+      "Syringe": {
+        "total_inst": 581,
+        "n_videos": 15,
+        "max_single_video_share": 0.115,
+        "in_train": true,
+        "in_val": true,
+        "in_test": true,
+        "split_inst": {
+          "train": 344,
+          "val": 96,
+          "test": 141
+        }
+      },
+      "Tweezers": {
+        "total_inst": 10012,
+        "n_videos": 15,
+        "max_single_video_share": 0.118,
+        "in_train": true,
+        "in_val": true,
+        "in_test": true,
+        "split_inst": {
+          "train": 6467,
+          "val": 950,
+          "test": 2595
+        }
+      }
+    },
+    "eval_gaps_missing_train_or_test": []
+  },
+  "3_tool_to_phase_bound": {
+    "note": "GT tool-presence からのフレーム単位 phase 予測（時間情報なし）。B2a 信号上限の目安。",
+    "train_fit_acc": 0.9326,
+    "train_macro_f1": 0.6746,
+    "n_train": 9657,
+    "val_acc": 0.9518,
+    "val_macro_f1": 0.6456,
+    "n_val": 1515,
+    "test_acc": 0.7517,
+    "test_macro_f1": 0.5291,
+    "n_test": 4265,
+    "test_majority_baseline_acc": 0.573,
+    "mutual_information_bits": {
+      "Needle Holders": 0.5223,
+      "Scalpel": 0.3224,
+      "Syringe": 0.2048,
+      "Bipolar Forceps": 0.1843,
+      "Scissors": 0.1677,
+      "Electric Cautery": 0.1468,
+      "Suction Cannula": 0.1441,
+      "Skewer": 0.1419,
+      "Tweezers": 0.0964,
+      "Retractor": 0.0888,
+      "Gauze": 0.0804,
+      "Hook": 0.0769,
+      "Forceps": 0.0606,
+      "Raspatory": 0.0412,
+      "Mouth Gag": 0.0359
+    }
+  },
+  "4_phase_confusability_cosine": [
+    {
+      "a": "anesthesia",
+      "b": "irrigation",
+      "cosine": 0.818
+    },
+    {
+      "a": "dissection",
+      "b": "hemostasis",
+      "cosine": 0.81
+    },
+    {
+      "a": "closure",
+      "b": "dressing",
+      "cosine": 0.716
+    },
+    {
+      "a": "dissection",
+      "b": "closure",
+      "cosine": 0.594
+    },
+    {
+      "a": "dissection",
+      "b": "dressing",
+      "cosine": 0.575
+    },
+    {
+      "a": "hemostasis",
+      "b": "closure",
+      "cosine": 0.563
+    },
+    {
+      "a": "incision",
+      "b": "dissection",
+      "cosine": 0.55
+    },
+    {
+      "a": "incision",
+      "b": "hemostasis",
+      "cosine": 0.547
+    },
+    {
+      "a": "dissection",
+      "b": "irrigation",
+      "cosine": 0.527
+    },
+    {
+      "a": "hemostasis",
+      "b": "irrigation",
+      "cosine": 0.527
+    }
+  ],
+  "5_tool_cooccurrence": {
+    "top_pmi": [
+      {
+        "a": "Electric Cautery",
+        "b": "Retractor",
+        "frames": 584,
+        "pmi": 1.936,
+        "p(b|a)": 0.352,
+        "p(a|b)": 0.411
+      },
+      {
+        "a": "Raspatory",
+        "b": "Retractor",
+        "frames": 243,
+        "pmi": 1.707,
+        "p(b|a)": 0.3,
+        "p(a|b)": 0.171
+      },
+      {
+        "a": "Electric Cautery",
+        "b": "Forceps",
+        "frames": 1037,
+        "pmi": 1.584,
+        "p(b|a)": 0.625,
+        "p(a|b)": 0.322
+      },
+      {
+        "a": "Electric Cautery",
+        "b": "Hook",
+        "frames": 311,
+        "pmi": 1.481,
+        "p(b|a)": 0.187,
+        "p(a|b)": 0.3
+      },
+      {
+        "a": "Hook",
+        "b": "Scissors",
+        "frames": 457,
+        "pmi": 1.316,
+        "p(b|a)": 0.441,
+        "p(a|b)": 0.167
+      },
+      {
+        "a": "Raspatory",
+        "b": "Suction Cannula",
+        "frames": 478,
+        "pmi": 1.052,
+        "p(b|a)": 0.591,
+        "p(a|b)": 0.109
+      },
+      {
+        "a": "Gauze",
+        "b": "Hook",
+        "frames": 796,
+        "pmi": 1.016,
+        "p(b|a)": 0.136,
+        "p(a|b)": 0.768
+      },
+      {
+        "a": "Forceps",
+        "b": "Retractor",
+        "frames": 575,
+        "pmi": 0.957,
+        "p(b|a)": 0.179,
+        "p(a|b)": 0.405
+      },
+      {
+        "a": "Hook",
+        "b": "Suction Cannula",
+        "frames": 561,
+        "pmi": 0.925,
+        "p(b|a)": 0.541,
+        "p(a|b)": 0.128
+      },
+      {
+        "a": "Bipolar Forceps",
+        "b": "Gauze",
+        "frames": 493,
+        "pmi": 0.905,
+        "p(b|a)": 0.71,
+        "p(a|b)": 0.084
+      },
+      {
+        "a": "Mouth Gag",
+        "b": "Raspatory",
+        "frames": 549,
+        "pmi": 0.808,
+        "p(b|a)": 0.092,
+        "p(a|b)": 0.679
+      },
+      {
+        "a": "Electric Cautery",
+        "b": "Gauze",
+        "frames": 1097,
+        "pmi": 0.801,
+        "p(b|a)": 0.661,
+        "p(a|b)": 0.187
+      },
+      {
+        "a": "Bipolar Forceps",
+        "b": "Hook",
+        "frames": 79,
+        "pmi": 0.761,
+        "p(b|a)": 0.114,
+        "p(a|b)": 0.076
+      },
+      {
+        "a": "Scissors",
+        "b": "Suction Cannula",
+        "frames": 1278,
+        "pmi": 0.715,
+        "p(b|a)": 0.468,
+        "p(a|b)": 0.291
+      },
+      {
+        "a": "Bipolar Forceps",
+        "b": "Suction Cannula",
+        "frames": 312,
+        "pmi": 0.658,
+        "p(b|a)": 0.45,
+        "p(a|b)": 0.071
+      }
+    ],
+    "top_frequency": [
+      {
+        "a": "Needle Holders",
+        "b": "Tweezers",
+        "frames": 3719,
+        "pmi": 0.41,
+        "p(b|a)": 0.782,
+        "p(a|b)": 0.409
+      },
+      {
+        "a": "Gauze",
+        "b": "Tweezers",
+        "frames": 3585,
+        "pmi": 0.056,
+        "p(b|a)": 0.612,
+        "p(a|b)": 0.395
+      },
+      {
+        "a": "Mouth Gag",
+        "b": "Tweezers",
+        "frames": 3094,
+        "pmi": -0.186,
+        "p(b|a)": 0.517,
+        "p(a|b)": 0.341
+      },
+      {
+        "a": "Suction Cannula",
+        "b": "Tweezers",
+        "frames": 2292,
+        "pmi": -0.176,
+        "p(b|a)": 0.521,
+        "p(a|b)": 0.252
+      },
+      {
+        "a": "Mouth Gag",
+        "b": "Suction Cannula",
+        "frames": 2080,
+        "pmi": 0.287,
+        "p(b|a)": 0.348,
+        "p(a|b)": 0.473
+      },
+      {
+        "a": "Scissors",
+        "b": "Tweezers",
+        "frames": 2045,
+        "pmi": 0.346,
+        "p(b|a)": 0.748,
+        "p(a|b)": 0.225
+      },
+      {
+        "a": "Mouth Gag",
+        "b": "Needle Holders",
+        "frames": 2042,
+        "pmi": 0.149,
+        "p(b|a)": 0.341,
+        "p(a|b)": 0.43
+      },
+      {
+        "a": "Gauze",
+        "b": "Suction Cannula",
+        "frames": 1941,
+        "pmi": 0.218,
+        "p(b|a)": 0.331,
+        "p(a|b)": 0.441
+      },
+      {
+        "a": "Forceps",
+        "b": "Gauze",
+        "frames": 1900,
+        "pmi": 0.637,
+        "p(b|a)": 0.59,
+        "p(a|b)": 0.324
+      },
+      {
+        "a": "Forceps",
+        "b": "Tweezers",
+        "frames": 1704,
+        "pmi": -0.153,
+        "p(b|a)": 0.529,
+        "p(a|b)": 0.188
+      },
+      {
+        "a": "Mouth Gag",
+        "b": "Scissors",
+        "frames": 1335,
+        "pmi": 0.334,
+        "p(b|a)": 0.223,
+        "p(a|b)": 0.488
+      },
+      {
+        "a": "Scissors",
+        "b": "Suction Cannula",
+        "frames": 1278,
+        "pmi": 0.715,
+        "p(b|a)": 0.468,
+        "p(a|b)": 0.291
+      },
+      {
+        "a": "Gauze",
+        "b": "Scissors",
+        "frames": 1169,
+        "pmi": 0.173,
+        "p(b|a)": 0.2,
+        "p(a|b)": 0.428
+      },
+      {
+        "a": "Gauze",
+        "b": "Needle Holders",
+        "frames": 1165,
+        "pmi": -0.631,
+        "p(b|a)": 0.199,
+        "p(a|b)": 0.245
+      },
+      {
+        "a": "Electric Cautery",
+        "b": "Gauze",
+        "frames": 1097,
+        "pmi": 0.801,
+        "p(b|a)": 0.661,
+        "p(a|b)": 0.187
+      }
+    ]
+  },
+  "6_bbox_geometry": {
+    "center_bias": {
+      "median_cx": 0.537,
+      "median_cy": 0.518,
+      "frac_center_third": 0.283
+    },
+    "per_class": {
+      "Bipolar Forceps": {
+        "median_cx": 0.712,
+        "median_cy": 0.631,
+        "median_aspect_w_over_h": 2.27,
+        "median_rel_area_pct": 8.5
+      },
+      "Electric Cautery": {
+        "median_cx": 0.719,
+        "median_cy": 0.41,
+        "median_aspect_w_over_h": 2.76,
+        "median_rel_area_pct": 8.75
+      },
+      "Forceps": {
+        "median_cx": 0.491,
+        "median_cy": 0.67,
+        "median_aspect_w_over_h": 0.94,
+        "median_rel_area_pct": 2.23
+      },
+      "Gauze": {
+        "median_cx": 0.556,
+        "median_cy": 0.431,
+        "median_aspect_w_over_h": 1.06,
+        "median_rel_area_pct": 5.17
+      },
+      "Hook": {
+        "median_cx": 0.492,
+        "median_cy": 0.245,
+        "median_aspect_w_over_h": 0.74,
+        "median_rel_area_pct": 2.14
+      },
+      "Mouth Gag": {
+        "median_cx": 0.55,
+        "median_cy": 0.511,
+        "median_aspect_w_over_h": 0.95,
+        "median_rel_area_pct": 13.03
+      },
+      "Needle Holders": {
+        "median_cx": 0.647,
+        "median_cy": 0.744,
+        "median_aspect_w_over_h": 1.36,
+        "median_rel_area_pct": 7.41
+      },
+      "Raspatory": {
+        "median_cx": 0.647,
+        "median_cy": 0.729,
+        "median_aspect_w_over_h": 1.26,
+        "median_rel_area_pct": 7.12
+      },
+      "Retractor": {
+        "median_cx": 0.461,
+        "median_cy": 0.281,
+        "median_aspect_w_over_h": 0.92,
+        "median_rel_area_pct": 2.07
+      },
+      "Scalpel": {
+        "median_cx": 0.639,
+        "median_cy": 0.522,
+        "median_aspect_w_over_h": 1.26,
+        "median_rel_area_pct": 5.65
+      },
+      "Scissors": {
+        "median_cx": 0.618,
+        "median_cy": 0.641,
+        "median_aspect_w_over_h": 1.26,
+        "median_rel_area_pct": 4.9
+      },
+      "Skewer": {
+        "median_cx": 0.66,
+        "median_cy": 0.619,
+        "median_aspect_w_over_h": 1.33,
+        "median_rel_area_pct": 7.73
+      },
+      "Suction Cannula": {
+        "median_cx": 0.46,
+        "median_cy": 0.3,
+        "median_aspect_w_over_h": 1.07,
+        "median_rel_area_pct": 4.89
+      },
+      "Syringe": {
+        "median_cx": 0.573,
+        "median_cy": 0.657,
+        "median_aspect_w_over_h": 0.79,
+        "median_rel_area_pct": 3.03
+      },
+      "Tweezers": {
+        "median_cx": 0.373,
+        "median_cy": 0.516,
+        "median_aspect_w_over_h": 1.58,
+        "median_rel_area_pct": 4.42
+      }
+    }
+  },
+  "7_quality": {
+    "n_boxes": 49652,
+    "flags": {
+      "touches_border(truncation)": 17010
+    },
+    "sampling_stride": {
+      "median_stride": 1,
+      "mode_stride": 1,
+      "p90_stride": 1
+    }
+  },
+  "8_hand": {
+    "hand_by_phase": {
+      "disinfection": {
+        "frac_with_hand": 1.0,
+        "frac_hand_and_tool": 0.0,
+        "mean_hands_per_frame": 2
+      },
+      "design": {
+        "frac_with_hand": 0.648,
+        "frac_hand_and_tool": 0.63,
+        "mean_hands_per_frame": 1.53
+      },
+      "anesthesia": {
+        "frac_with_hand": 0.563,
+        "frac_hand_and_tool": 0.563,
+        "mean_hands_per_frame": 1.64
+      },
+      "incision": {
+        "frac_with_hand": 0.696,
+        "frac_hand_and_tool": 0.696,
+        "mean_hands_per_frame": 2.04
+      },
+      "dissection": {
+        "frac_with_hand": 0.699,
+        "frac_hand_and_tool": 0.699,
+        "mean_hands_per_frame": 2.12
+      },
+      "hemostasis": {
+        "frac_with_hand": 0.736,
+        "frac_hand_and_tool": 0.735,
+        "mean_hands_per_frame": 2.38
+      },
+      "irrigation": {
+        "frac_with_hand": 0.525,
+        "frac_hand_and_tool": 0.452,
+        "mean_hands_per_frame": 1.51
+      },
+      "closure": {
+        "frac_with_hand": 0.545,
+        "frac_hand_and_tool": 0.545,
+        "mean_hands_per_frame": 1.28
+      },
+      "dressing": {
+        "frac_with_hand": 0.101,
+        "frac_hand_and_tool": 0.084,
+        "mean_hands_per_frame": 0.16
+      }
+    }
+  }
+}

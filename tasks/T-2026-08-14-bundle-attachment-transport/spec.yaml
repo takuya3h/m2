@@ -1,0 +1,70 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-14-bundle-attachment-transport"
+  kind: impl
+  title: "契約の本文を添付として渡し、外部の記法解釈を受けない経路を作る"
+  origin: claude-app
+  created_at: "2026-08-14T09:00:00Z"
+  created_from:
+    runindex_commit: "12cc0e8"
+    counts: {index: 749, experiments: 206, verdicts: 1038}
+  depends_on: ["T-2026-08-13-implementation-history-index"]
+  amendments: []
+
+intent:
+  question: "本文を添付として渡せば、外部の記法解釈を受けずに契約を配れるか"
+  decision_at_stake: "配布の書き込み側を仕組みにするか、貼り付けを続けるか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["tools/fetch_task.py"]
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "添付の往復の忠実性", gpu: false, est: "50m"}
+    - {id: B, name: "取り込み経路への追加", gpu: false, est: "60m"}
+    - {id: C, name: "運用手順の追記", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "添付として置いた本文が取得後も一文字も変わらないことを要約値で確認した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "識別子だけで添付から取り込め、失敗時に痕跡が残らないことを確認した"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tools/"
+  acceptance:
+    - "添付として置いた本文が取得後も変わらない"
+    - "識別子だけで添付から契約を取り込める"
+    - "本文の置き方が二通りある場合に優先順が定まっている"
+    - "取り込みに失敗した場合に作業領域へ痕跡が残らない"
+    - "資格情報が出力にも記録にも含まれない"
+    - "鍵の更新後に各ホストで必要な操作が文書化されている"
+    - "make task-validate が exit 0"
+    - "make task-preflight が exit 0"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [roundtrip_mismatch, secret_value_printed]

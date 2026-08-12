@@ -1,0 +1,74 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-11-inbox-per-task-split"
+  kind: impl
+  title: "受け皿を task ごとの独立した記録へ分け、並行作業での衝突を構造的に無くす"
+  origin: claude-app
+  created_at: "2026-08-11T12:00:00Z"
+  created_from:
+    runindex_commit: "12cc0e8"
+    counts: {index: 749, experiments: 206, verdicts: 1038}
+  depends_on: ["T-2026-08-11-leftover-relocation"]
+  amendments: []
+
+intent:
+  question: "受け皿を分割すれば、並行して進む作業が同じ場所を書き換えずに済むか"
+  decision_at_stake: "衝突の解消を人手で続けるか、構造で起きないようにするか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["tools/build_context.py"]
+
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#naming]
+  conventions_rev: "d422b08"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "既存の項目の移行", gpu: false, est: "50m"}
+    - {id: B, name: "集約の仕組みと検査", gpu: false, est: "50m"}
+    - {id: C, name: "衝突が起きないことの実演と手順の更新", gpu: false, est: "50m"}
+  gates:
+    - id: G1
+      after: A
+      check: "移行の前後で項目が一件も失われていないことを本文の照合で確認した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "集約が冪等であり、手による編集を検出できることを実行して確認した"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "分割前なら衝突する状況で、分割後は衝突しないことを実際に併合して確認した"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tools/"
+  acceptance:
+    - "既存の項目が task ごとの記録へ移されている"
+    - "移行の前後で項目が一件も失われていない"
+    - "集約が冪等である"
+    - "集約結果への手による編集を検出できる"
+    - "並行して別の task が書いても衝突しないことが実演されている"
+    - "起票と実行の手順が新しい置き場を指している"
+    - "make task-validate が exit 0"
+    - "make task-preflight が exit 0"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [entry_lost_during_migration, conflict_still_occurs]

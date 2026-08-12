@@ -29,11 +29,20 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 
+from egosurgery.datasets.constants import RARE_CLASSES as _RARE_CLASSES
 from egosurgery.datasets.constants import TOOL_CATEGORY_IDS
 
 
 class EgoSurgeryToolDataset(Dataset):
-    """EgoSurgery-Tool の COCO 形式 bbox データセット。"""
+    """EgoSurgery-Tool の COCO 形式 bbox データセット。
+
+    Class attributes:
+        RARE_CLASSES: 稀少クラス名のタプル（AP_rare / Copy-Paste 対象）。
+            constants.RARE_CLASSES (Skewer / Syringe) の凍結スナップショット。
+            §v2 訂正で Forceps (12.21%) は AP_common 側に分類。
+    """
+
+    RARE_CLASSES: tuple[str, ...] = tuple(_RARE_CLASSES)
 
     def __init__(
         self,

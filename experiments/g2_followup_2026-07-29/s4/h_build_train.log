@@ -1,0 +1,41 @@
+Using /home/ubuntu/.cache/torch_extensions/py311_cu118 as PyTorch extensions root...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /home/ubuntu/.cache/torch_extensions/py311_cu118/MultiScaleDeformableAttention/build.ninja...
+Building extension module MultiScaleDeformableAttention...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+ninja: no work to do.
+Loading extension module MultiScaleDeformableAttention...
+[guard] OK {'torch': '2.1.2+cu118', 'cuda': '11.8', 'gpu': 'NVIDIA RTX A6000', 'cudnn': 8700, 'commit': '1ae0a9663ec1487667da3881d326d458f32a13ee', 'host': 'lecun', 'msdeformattn_extension_loaded': True, 'ninja': '/home/ubuntu/slocal2/m2/.venv-relation-detr/bin/ninja'}
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+  500/9657 frames
+  1000/9657 frames
+  1500/9657 frames
+  2000/9657 frames
+  2500/9657 frames
+  3000/9657 frames
+  3500/9657 frames
+  4000/9657 frames
+  4500/9657 frames
+  5000/9657 frames
+  5500/9657 frames
+  6000/9657 frames
+  6500/9657 frames
+  7000/9657 frames
+  7500/9657 frames
+  8000/9657 frames
+  8500/9657 frames
+  9000/9657 frames
+  9500/9657 frames
+  saved train_handPresence.npz (9657, 4)  zero_rate=0.0031
+  saved train_handROIbbox2.npz (9657, 512)  zero_rate=0.1175
+  saved train_handROIbbox4.npz (9657, 1024)  zero_rate=0.3114
+  saved train_handROImask2.npz (9657, 512)  zero_rate=0.1175
+
+[train] D=256 frames=9657 mask有フレーム=5668 (0.5869) 2cls boxes=17151 fallback=6755 (0.3939) 一致=True

@@ -1,0 +1,29 @@
+{
+  "epoch": 11,
+  "eval_recipe": {
+    "description": "relationdetr_s0frozen_cocohead",
+    "effective_batch_size": 2,
+    "gpu_count": 1,
+    "lr_scaling": "linear_x2",
+    "server_name": "lecun",
+    "split_test_annotations": 12673,
+    "split_test_images": 4265,
+    "split_train_annotations": 32272,
+    "split_train_images": 9657,
+    "split_val_annotations": 4707,
+    "split_val_images": 1515,
+    "test_cfg": {
+      "max_per_img": 300,
+      "nms_iou": null,
+      "nms_pre": null,
+      "note": "Relation-DETR topk (NMS-free), select_box_nums=300",
+      "score_thr": 0.0
+    }
+  },
+  "mAP": 0.705687,
+  "val/AP_common": 0.698649,
+  "val/AP_rare": 0.747916,
+  "val/mAP": 0.705687,
+  "val/mAP_50": 0.832,
+  "val/mAP_75": 0.749
+}

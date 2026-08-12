@@ -1,0 +1,73 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-11-codex-parity"
+  kind: impl
+  title: "手順書を実装系のシェル挙動に依存しない形へ直す"
+  origin: claude-app
+  created_at: "2026-08-11T07:30:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-18-report-back-to-ledger"]
+  amendments: []
+
+intent:
+  question: "第二の実装系でも契約の取り込みから報告の返却まで通るか"
+  decision_at_stake: "手順書を実装系非依存にするか、実装系ごとに手順を分けるか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: [".claude/skills/task/SKILL.md"]
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "実装系の差を実測する", gpu: false, est: "60m"}
+    - {id: B, name: "手順書を単独の実行で完結する形へ直し検査を足す", gpu: false, est: "70m"}
+    - {id: C, name: "第二の実装系だけで契約を通す", gpu: false, est: "50m"}
+  gates:
+    - id: G1
+      after: A
+      check: "シェルの状態が引き継がれない実装系があることを、引き継がれる場合と引き継がれない場合の双方で測った"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "新しい検査が違反する記述を検出し、違反しない記述を誤検出しないことを双方で測った"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "第二の実装系だけで契約の検証から報告の返却まで通ることを実測した"
+      on_fail: ask
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: ".claude/skills/task/"
+  acceptance:
+    - "手順書のコマンド例が単独の実行で完結する"
+    - "実装系の差が手順書に書かれている"
+    - "新しい検査が違反する記述を検出する"
+    - "新しい検査が違反しない記述を誤検出しない"
+    - "第二の実装系だけで契約の検証と実行と報告の返却が通る"
+    - "make task-validate が exit 0"
+    - "make task-preflight が exit 0"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [shell_state_not_persistent, sandbox_requires_privilege, secret_would_be_sent, ledger_row_corrupted]

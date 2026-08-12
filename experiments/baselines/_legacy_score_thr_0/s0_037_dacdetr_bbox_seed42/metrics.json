@@ -1,0 +1,47 @@
+{
+  "val/mAP": 0.7165147626742786,
+  "val/mAP_50": 0.8357210513055029,
+  "val/mAP_75": 0.7659897792574065,
+  "val/AP_rare": 0.7778488520466481,
+  "val/AP_common": 0.7062924144455501,
+  "val/tool_mAP": 0.7165147626742786,
+  "mAP": 0.7165147626742786,
+  "best_epoch": 11,
+  "epoch": 12,
+  "eval_recipe": {
+    "framework": "dac_detr_deformable_standalone",
+    "config_name": "r50_deformplus_cdn_ice_ep12_egosurgery",
+    "detector_variant": "dac_cdn_ice (DAC + CDN denoising + ICE/IoU-aware = +Align)",
+    "backbone": "ResNet-50",
+    "encoder_num_layers": 6,
+    "decoder_num_layers": 6,
+    "num_queries_one2one": 900,
+    "gpu_count": 2,
+    "per_gpu_batch_size": 2,
+    "effective_batch_size": 4,
+    "lr": 0.0002,
+    "lr_backbone": 2e-05,
+    "lr_scaling": "native_2e-4 (= unified 1e-4 x linear_x2)",
+    "optimizer": "AdamW",
+    "weight_decay": 0.0001,
+    "scheduler": "StepLR drop@11",
+    "epochs": 12,
+    "seed": 42,
+    "server_name": "philip",
+    "split_train_images": 9657,
+    "split_val_images": 1515,
+    "split_test_images": 4265,
+    "eval_split": "val",
+    "finetune_from": "dac_cdn_ice_r50_12ep_coco (official, COCO AP 50.9); class_embed 91->15 reinit, bbox-only",
+    "test_cfg": {
+      "topk": 300,
+      "note": "DETR topk (NMS-free)"
+    },
+    "rare_classes": [
+      "Skewer",
+      "Syringe"
+    ],
+    "num_classes": 15,
+    "description": "dacdetr_bbox"
+  }
+}

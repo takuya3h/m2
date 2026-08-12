@@ -1,0 +1,71 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-06-frozen-source-and-sigma-notation"
+  kind: impl
+  title: "凍結源の正本ハッシュを固定し、判定規約の表記と L1-3 の対象を整合させる"
+  origin: claude-app
+  created_at: "2026-08-06T10:00:00Z"
+  created_from:
+    runindex_commit: "762a5c8"
+    counts: {index: 749, experiments: 206, verdicts: 1038}
+  depends_on: ["T-2026-08-05-l2-task-id-uniqueness-fix"]
+  amendments: []
+
+intent:
+  question: "kind exp の契約を起票できる状態まで規約と検証を整合させられるか"
+  decision_at_stake: "本命の手軸再検証を契約経由で回すか、従来の手渡しに戻すか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["tools/validate_task.py"]
+
+contract:
+  inject_verbatim: [conventions#frozen_source, conventions#sigma, conventions#prohibitions]
+  conventions_rev: "8b17c4d"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "凍結源の正本固定と紛らわしい候補の棚卸し", gpu: false, est: "30m"}
+    - {id: B, name: "判定規約の表記統一と L1-3 の対象限定", gpu: false, est: "40m"}
+    - {id: C, name: "テンプレート修正と環境差の記録", gpu: false, est: "20m"}
+  gates:
+    - id: G1
+      after: A
+      check: "実測した凍結源ハッシュが監査記録の値と一致した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "判定規約を abs 記法で書いた契約が検証を通ることを実行して確認した"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "context/"
+  acceptance:
+    - "conventions の凍結源節に UNKNOWN が残っていない"
+    - "conventions の sigma 節に判定規約の表記ルールが明記されている"
+    - "判定規約に abs 記法を書いた契約が L1 を通る"
+    - "表へ流れるフィールドに区切り文字を書いた契約は L1 で FAIL する"
+    - "表へ流れないフィールドの区切り文字は警告となり exit code を変えない"
+    - "analysis テンプレートが sigma policy を明示せず継承に任せている"
+    - "smoke 系の未追跡ディレクトリが runindex 上でどう扱われているかを実測記録した"
+    - "tasks の README にホスト環境の既知差が記録されている"
+    - "make task-validate が exit 0"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [frozen_source_hash_mismatch, unexpected_pth_candidate]

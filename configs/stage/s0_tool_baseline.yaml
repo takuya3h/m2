@@ -4,10 +4,11 @@
 # `# @package _global_` 指定により、本ファイルの内容はグローバル名前空間
 # （cfg.experiment / cfg.train / ...）へ直接マージされ default.yaml を上書きする。
 #
-# data セクションは EgoSurgeryDataModule の契約（train/val/test サブ辞書）に
-# 合わせた構造で記述する。スモーク実行は CLI override で行う:
-#   model.backbone=dinov2_vits14_reg data.limit=16 data.img_size=224 \
-#   train.epochs=1 train.freeze_backbone=true data.num_workers=0
+# S0 基準点は実検出器（VarifocalNet / DINO）を mmdet で COCO 重みから
+# fine-tune して確立する（train.real_detector=true → MMDetTrainer）。
+# 内蔵 SimpleDetectionHead でのスモークは CLI override で行う:
+#   train.real_detector=false model.backbone=dinov2_vits14_reg data.limit=16 \
+#   data.img_size=224 train.epochs=1 train.freeze_backbone=true data.num_workers=0
 
 experiment:
   category: "baselines"
@@ -16,11 +17,12 @@ experiment:
 
 model:
   num_classes: 15
-  backbone: dinov2_vitl14_reg     # build_backbone が文字列を解決
+  backbone: dinov2_vitl14_reg     # build_backbone が文字列を解決（内蔵ヘッド時）
   detection_head: mask_dino       # run_s0.sh で varifocanet に切替えて並走
 
 train:
-  epochs: 100
+  real_detector: true             # true: MMDetTrainer（実 VFNet/DINO）/ false: 内蔵ヘッド
+  epochs: 12                      # mmdet VFNet 1x / DINO 12e スケジュールに整合
   batch_size: 4
   num_workers: 8
   amp: true
@@ -61,6 +63,11 @@ exo:
   enabled: false
 
 # データ（EgoSurgeryDataModule の契約に準拠）
+# 【DDP 注記・§8.0 条件 (5)・§13.2 (b)(ii)】
+#   batch_size は **per-GPU batch size**。DDP 2 GPU 実行時は
+#   effective batch size = gpu_count × batch_size となり、eval_recipe に記録される。
+#   use_rfs=true のとき、DataModule(world_size>1) は RFS と DistributedSampler の
+#   二重適用を避けるため DistributedRepeatFactorSampler に切り替える。
 data:
   img_size: 518
   batch_size: 4
@@ -72,8 +79,10 @@ data:
   use_copypaste: false            # crop バンク生成後に true へ
   limit: null                     # スモーク用の画像数上限
   copypaste:
+    # 2026/05/24 v2 訂正: Forceps は 12.21% の頻出クラスのため Copy-Paste 対象外。
+    # 稀少クラス（§3.3）= Skewer 0.7% / Syringe 1.17% の 2 クラスのみ。
     bank_dir: "data/processed/copypaste_bank/"
-    rare_classes: ["Skewer", "Syringe", "Forceps"]
+    rare_classes: ["Skewer", "Syringe"]
     paste_prob: 0.5
     max_paste_per_image: 3
   train:

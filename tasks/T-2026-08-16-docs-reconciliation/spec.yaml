@@ -1,0 +1,70 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-16-docs-reconciliation"
+  kind: impl
+  title: "運用文書を現在の実態へ合わせ、書かれた手順が実在することを機械で確かめる"
+  origin: claude-app
+  created_at: "2026-08-16T09:00:00Z"
+  created_from:
+    runindex_commit: "12cc0e8"
+    counts: {index: 749, experiments: 206, verdicts: 1038}
+  depends_on: ["T-2026-08-15-template-leak-and-autosync-conflict"]
+  amendments: []
+
+intent:
+  question: "運用文書に書かれた手順が、現在の実態と一致しているか"
+  decision_at_stake: "文書を実態へ合わせるか、食い違ったまま運用するか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["tools/fetch_task.py"]
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "文書と実態の食い違いの棚卸し", gpu: false, est: "60m"}
+    - {id: B, name: "現行手順の更新", gpu: false, est: "60m"}
+    - {id: C, name: "書かれた手順が実在することの検査", gpu: false, est: "40m"}
+  gates:
+    - id: G1
+      after: A
+      check: "食い違いを一覧にし、現行手順と過去の記録を分類して提示した"
+      on_fail: ask
+    - id: G2
+      after: C
+      check: "文書に現れる操作と経路が実在することを機械で確かめた"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md, docs_audit.md]
+  destination: "docs/"
+  acceptance:
+    - "文書と実態の食い違いが一覧になっている"
+    - "現行手順と過去の記録が分類されている"
+    - "現行手順を述べる記述が実態と一致する"
+    - "過去の記録が書き換えられていない"
+    - "文書に現れる操作が実在することを機械で確かめている"
+    - "確かめられなかった記述が明示されている"
+    - "make task-validate が exit 0"
+    - "make task-preflight が exit 0"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [historical_record_modified, doc_claims_nonexistent_command]

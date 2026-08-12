@@ -43,6 +43,60 @@ from egosurgery.datasets.constants import (  # noqa: E402
 SPLITS = ("train", "val", "test")
 _IMAGE_SUFFIXES = (".jpg", ".jpeg", ".png")
 
+# 論文 Fujii+ 2024 (EgoSurgery-Tool) Table 3a 公式 split サイズ。
+# 生成された instances_{split}.json をこの数値と突き合わせ、
+# split 定義の取り違え（過去に発生: 8/2/3 videos の独自再分割）を防ぐ。
+PAPER_SPLIT_SIZES = {
+    "train": {"images": 9657, "annotations": 32272, "videos": 10},
+    "val":   {"images": 1515, "annotations":  4707, "videos":  2},
+    "test":  {"images": 4265, "annotations": 12673, "videos":  3},
+}
+
+
+def assert_paper_split(output_dir: Path, strict: bool = True) -> None:
+    """生成された instances_{split}.json が論文 Table 3a と一致するか検証する。
+
+    Args:
+        output_dir: ``data/`` ルート（instances_*.json は
+            ``{output_dir}/annotations/egosurgery_tool/`` に置かれる）。
+        strict: ``True`` で不一致時に AssertionError、``False`` で警告のみ。
+
+    Raises:
+        AssertionError: ``strict=True`` で論文値と不一致のとき。
+    """
+    ann_dir = Path(output_dir) / "annotations" / "egosurgery_tool"
+    problems: list[str] = []
+    for split, expected in PAPER_SPLIT_SIZES.items():
+        path = ann_dir / f"instances_{split}.json"
+        if not path.exists():
+            problems.append(f"{path} が存在しない")
+            continue
+        d = json.loads(path.read_text(encoding="utf-8"))
+        n_img = len(d.get("images", []))
+        n_ann = len(d.get("annotations", []))
+        n_vid = len({img["file_name"].split("/")[-1].split("_")[0]
+                     for img in d.get("images", [])})
+        if (n_img, n_ann, n_vid) != (
+            expected["images"], expected["annotations"], expected["videos"]
+        ):
+            problems.append(
+                f"  {split}: images={n_img} ann={n_ann} videos={n_vid} "
+                f"(期待 {expected['images']}/{expected['annotations']}/"
+                f"{expected['videos']})"
+            )
+    if problems:
+        msg = (
+            "split 整合性違反 (論文 Fujii+ 2024 Table 3a との不一致):\n"
+            + "\n".join(problems)
+            + "\ndata/splits/ego_*.txt の動画 ID リストを論文準拠で修正してください "
+            "(train=10 videos / val={09,10} / test={04,05,07})。"
+        )
+        if strict:
+            raise AssertionError(msg)
+        print(f"[WARN] {msg}")
+    else:
+        print("[OK] instances_*.json が論文 Table 3a と完全一致")
+
 
 # --------------------------------------------------------------------- #
 # 引数
@@ -239,6 +293,9 @@ def main(argv: list[str] | None = None) -> None:
         print(f"  工程 JSON 出力: {phase_path} (videos={len(phases)})")
 
         report_distribution(split, class_distribution(coco))
+
+    # 論文 Table 3a との一致を検証（split 定義の取り違え再発を防ぐ最後の砦）。
+    assert_paper_split(args.output_dir, strict=True)
 
     print("\n前処理が完了しました。")
 

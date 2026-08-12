@@ -1,0 +1,73 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-06-make-context"
+  kind: impl
+  title: "runindex から軽量ビューを生成し、外部の面が実測値を読めるようにする"
+  origin: claude-app
+  created_at: "2026-08-06T14:00:00Z"
+  created_from:
+    runindex_commit: "762a5c8"
+    counts: {index: 749, experiments: 206, verdicts: 1038}
+  depends_on: ["T-2026-08-06-frozen-source-and-sigma-notation"]
+  amendments: []
+
+intent:
+  question: "runindex の実測値を、外部の面が読める軽量ビューへ冪等に投影できるか"
+  decision_at_stake: "分析の面を repo の外へ開くか、CLI 内に閉じたままにするか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["tools/harvest_runindex.py"]
+
+contract:
+  inject_verbatim: [conventions#sigma, conventions#prohibitions, conventions#naming]
+  conventions_rev: "1201f4f"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values]
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "実測による事前確認と並行作業の点検", gpu: false, est: "20m"}
+    - {id: B, name: "収穫器への task 識別子列の追加", gpu: false, est: "40m"}
+    - {id: C, name: "軽量ビューの生成器と検証系の実装", gpu: false, est: "90m"}
+  gates:
+    - id: G1
+      after: A
+      check: "収穫器に対する未マージの変更が他に無いことを確認した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "列追加の前後で index の行数と除外内訳が変わらないことを実測した"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "生成を二度実行して差分がゼロであり、総容量が上限内に収まった"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "context/auto/"
+  acceptance:
+    - "make context が exit 0 で四つのファイルを生成する"
+    - "make context を二度実行して差分がゼロである"
+    - "make context-check が手編集を検出して失敗する"
+    - "context auto の総容量が上限内である"
+    - "index に task 識別子の列が追加され、行数と除外内訳が不変である"
+    - "生成物の先頭に自動生成の宣言と反映元の識別子がある"
+    - "make task-validate が exit 0"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [index_row_count_changed, concurrent_harvester_change]

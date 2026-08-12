@@ -1,0 +1,1 @@
+python tools/train.py /home/ubuntu/slocal2/m2/third_party/Co-DETR/projects/configs/co_dino/co_dino_5scale_9encoder_lsj_r50_egosurgery.py --work-dir /tmp/sensex_codino_work_seed42 --seed 42 --launcher pytorch --resume-from epoch_7.pth
