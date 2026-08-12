@@ -1,0 +1,9 @@
+- [ ] 2026-08-12 [cc] 鍵は対ごとに配られている。命名が宛先を含むこと（efrostophilip / efrostolecun）、手元 5 鍵すべてが自ホストの authorized_keys に無いこと、中継の鍵が他 9 台のどこにも通らないこと（AUTH_OK=0 / DENIED=9）の三つが一致する。共有鍵方式ではない（tasks/T-2026-08-12-tunnel-key-audit-efros/audit.md）
+- [ ] 2026-08-12 [cc] efros の authorized_keys は 3 行のみ。dakyo-mba@dmba.local（利用者の Mac）、ubuntu@aolab、ubuntu@lecun。philip の鍵も他 6 台の鍵も入っていない。efros を中心にするには最低 8 台分の登録追加が要る（~/.ssh/authorized_keys）
+- [ ] 2026-08-12 [cc] efros の住所は 172.17.0.21 のみで容器の内側。他ノードが居る 192.168.196.x の帯に出ていない。物理側に 50072 の転送があるかは自ホストからは測れず UNKNOWN。転送が無ければ鍵を配っても他ノードから到達できない（/proc/net/fib_trie, /etc/hosts, hostname -I の三通りが一致）
+- [ ] 2026-08-12 [cc] efros から入っていけるのは lecun のみ。専用鍵 id_rsa_efrostolecun で REACHABLE。同じ lecun が中継の鍵では Permission denied を返すため、鍵で識別できていることも同時に示された。philip は経路が無く判定不能、他 8 台は専用鍵が存在しない（tasks/T-2026-08-12-tunnel-key-audit-efros/audit.md の Task 3）
+- [ ] 2026-08-12 [cc] 口が開いていることと鍵が通ることは別であると実測で確定した。前契約で 9 台の 50072 が OPEN だったが、本契約では同じ 9 台が Permission denied を返す。中心の移設は設定変更では済まず鍵の配布を伴う（tasks/T-2026-08-12-tunnel-key-audit-efros/RESULT.md の 3.1）
+- [ ] 2026-08-12 [cc] SPEC の禁止 2（~/.ssh/** を変更しない）と Task 3 Step 2 の accept-new が衝突する。指示どおり実行すると known_hosts へ書き込む。書き込み先を /tmp へ逃がして測ったところ迂回先が 9 件から 17 件へ増え、SPEC のままなら 8 件が ~/.ssh/ に入っていたことが確定した。UserKnownHostsFile の指定を SPEC 側に含めるべき（tasks/T-2026-08-12-tunnel-key-audit-efros/RESULT.md の 4.1）
+- [ ] 2026-08-12 [cc] ~/.ssh/config の philip 用 IdentityFile が macOS の経路 /Users/dakyo-mba/.ssh/id_rsa_efrostophilip を指しており、このホストに存在しない。別名 ssh philip では指定した鍵が読めない。中継は keeper.sh が経路を直接与えるためこの別名を使わず、同期停止の原因ではない（~/.ssh/config）
+- [ ] 2026-08-12 [cc] id_ed25519_github.pub の注釈が ubuntu@lecun。efros の鍵なら ubuntu@efros になるはずで lecun からの複製を示唆するが、注釈は自己申告であり断定しない。github 用で中継には使わないため本契約の判断には影響しない（~/.ssh/id_ed25519_github.pub）
+- [ ] 2026-08-12 [cc] 前契約で報告した道具の 2 件（BMP 外の文字・40 桁 16 進）は本 SPEC に予防手順として取り込まれ、Task 4 Step 6 の自己検査になった。前契約で報告した起票者の誤り 3 件の型も前提節に事実として書き込まれ、本契約では繰り返されていない（tasks/T-2026-08-12-tunnel-key-audit-efros/SPEC.md）

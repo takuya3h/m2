@@ -1,0 +1,125 @@
+result_version: 3
+task_id: "T-2026-08-12-tunnel-key-audit-efros"
+status: pass
+host: "efros"
+branch: "feat/tunnel-key-audit-efros"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      指紋の照合が空振りでないことを、受け入れ一覧に実在する別の指紋を与えて確かめた
+      （中継の鍵は 0、実在する指紋は 1）。秘匿の検査が働くことを、鍵の書き出しを模した囮
+      （BEGIN OPENSSH PRIVATE KEY の行）で確かめた（囮で 1）。記録に対する検査の一致 2 件は
+      sshd_config のオプション名で値ではないことを一件ずつ実体で確認した。base64 の形の
+      一致 1 件も検査模様を文章に書いた箇所で、一致長は 4 文字（実鍵は 68 文字以上）。
+  - id: G2
+    verdict: pass
+    note: >-
+      通らないはずの鍵として /dev/null を、到達できた宛先 lecun へ与え、Permission denied で
+      REACHABLE が 0 件であることを確かめた。鍵の代理が接続不能（ssh-add -l が Error
+      connecting to agent）であることも測り、-i が識別を決めていることを裏づけた。同じ lecun が
+      専用鍵では REACHABLE を返す。対象一覧は三つの出所から集め、和集合の他ノード 10 台に対し
+      測定 10 件、AUTH_OK 0 + DENIED 9 + NOCONN 1 = 10 で合計が一致した。
+
+tests:
+  before_failed: 7
+  after_failed: 7
+  after_passed: 417
+
+deviations:
+  - type: spec_defect
+    note: >-
+      Task 3 Step 2 の命令に -o UserKnownHostsFile=/tmp/kh_audit.txt を足した。SPEC の
+      accept-new は新規ホストへの接続時に ~/.ssh/known_hosts へ書き込み、禁止 2 と衝突するため。
+      既存の known_hosts を /tmp へ複製してから使い、無人で止まらないという意図を保った。
+      迂回しなければ 8 件の書き込みが ~/.ssh/ に入っていたことを実測で確認している。
+  - type: judgement
+    note: >-
+      SPEC にない追加測定を行った。中継の鍵だけでは結果が Permission denied 一色になり
+      「efros はどこへ入れるか」の判断材料にならないため、専用鍵 id_rsa_efrostolecun で
+      lecun を測り REACHABLE を得た。同じ宛先が鍵によって異なる結果を返すことが、
+      測定が鍵で識別できていることの裏づけにもなった。
+  - type: judgement
+    note: >-
+      鍵の代理の状態を測った。SPEC は要求していないが、-i /dev/null の陽性対照が代理経由で
+      迂回されていないことを示すために必要と判断した。SSH_AUTH_SOCK は設定されているが
+      実体の靴下が無く、代理は使えないことを確認した。
+  - type: judgement
+    note: >-
+      手元 5 鍵すべてについて受け入れ照合を行った。SPEC は中継の鍵 1 件のみを求めているが、
+      共有鍵方式かどうかの判定には全件が要ると判断した。5 件すべて 0 であり、
+      名前が対ごとであることと一致した。
+  - type: judgement
+    note: >-
+      ip コマンドが不在のため住所の測定を /proc/net/fib_trie と /etc/hosts と hostname -I の
+      三通りで行い、いずれも 172.17.0.21 で一致することを確認した。SPEC が fib_trie を
+      代替として挙げているため、その範囲内である。
+
+issuer_defects:
+  - type: self_contradiction
+    note: >-
+      禁止 2 は ~/.ssh/** を変更することを禁じているが、Task 3 Step 2 の命令は
+      -o StrictHostKeyChecking=accept-new を含み、新規ホストへ接続したときに
+      ~/.ssh/known_hosts へ書き込む。efros は他 8 台へ接続したことがないため、指示どおり
+      実行すれば必ず書き込みが起きて禁止に違反する。書き込み先を /tmp へ逃がして測定した
+      ところ、その迂回先は 9 件から 17 件へ 8 件増えた。接続が成立した 9 台のうち lecun のみ
+      既知で残り 8 台分が新規に書かれた計算と一致する。SPEC のままならこの 8 件が
+      ~/.ssh/known_hosts に入っていた。UserKnownHostsFile の指定を SPEC 側に含めるべきである。
+
+positive_controls:
+  - judgement: "指紋の照合が空振りでない"
+    breaking_input: "受け入れ一覧に実在する別の指紋を同じ照合にかける"
+    observed: "中継の鍵は 0、実在する指紋は 1。常に零を返す壊れ方はしていない"
+  - judgement: "記録に対する秘匿の検査が働いている"
+    breaking_input: "鍵の書き出しを模した囮の行を含む一時ファイルを同じ検査にかける"
+    observed: "囮で 1。実際の記録の一致 2 件は sshd_config のオプション名で値ではないことを実体で確認"
+  - judgement: "記録に鍵素材が混入していない"
+    breaking_input: "base64 の長い塊が現れれば混入。実鍵なら 68 文字以上になる"
+    observed: "一致 1 件、その一致長は 4 文字。検査模様を文章に書いた箇所であり鍵素材ではない"
+  - judgement: "認証の測定が鍵で識別している"
+    breaking_input: "到達できる同じ宛先 lecun へ、通らないはずの鍵 /dev/null を与える"
+    observed: "Permission denied で REACHABLE の件数は 0。同じ lecun が専用鍵では REACHABLE"
+  - judgement: "その対照が鍵の代理で迂回されていない"
+    breaking_input: "代理に鍵が載っていれば -i を無視して認証が通りうる"
+    observed: "SSH_AUTH_SOCK は設定されているが ssh-add -l が Error connecting to agent。代理は使えない"
+  - judgement: "禁止 2 を破っていない"
+    breaking_input: "測定が ~/.ssh/known_hosts へ書けば大きさか要約値か更新時刻が動く"
+    observed: "測定前後で size 2934 と mtime 1785352326 と要約値の先頭 4a1587d6 が完全一致。迂回先は 9 から 17 へ増えており書き込み自体は確かに起きた"
+  - judgement: "自動同期の抑止が届いている"
+    breaking_input: "稼働中の m2-sync.sh に sync-pause の参照が無ければ抑止は効かない"
+    observed: "grep -c sync-pause ~/bin/m2-sync.sh が 2。零ではない"
+
+followups:
+  - >-
+    鍵は対ごとに配られている。命名が宛先を含むこと、手元 5 鍵すべてが自ホストの
+    authorized_keys に無いこと、中継の鍵が他 9 台のどこにも通らないことの三つが一致する。
+    中心の移設は設定の変更では済まず鍵の配布を伴う。
+  - >-
+    efros が受け入れているのは 3 者のみ（利用者の Mac、aolab、lecun）。efros を中心にするには
+    最低 8 台分の登録追加が要る。加えて efros の住所は 172.17.0.21 で容器の内側にあり、
+    物理側に 50072 の転送があるかは自ホストからは測れない。転送が無ければ鍵を配っても届かない。
+  - >-
+    efros から入っていけるのは lecun のみ（専用鍵で REACHABLE）。philip は経路が無く判定不能。
+    他 8 台は専用鍵が存在せず Permission denied。lecun を中心にできるかは他の 9 台から lecun へ
+    入れるかに依存し、efros からは測れない。
+  - >-
+    ~/.ssh/config の philip 用 IdentityFile が macOS の経路 /Users/dakyo-mba/ を指しており
+    このホストに存在しない。別名 ssh philip では指定した鍵が読めない。ただし中継はこの別名を
+    使わず keeper.sh が経路を直接与えるため、同期停止の原因ではない。
+  - >-
+    id_ed25519_github.pub の注釈が ubuntu@lecun である。efros の鍵なら ubuntu@efros に
+    なるはずで、lecun で作った鍵が複製された可能性を示唆する。注釈は自己申告であり断定しない。
+    github 用であり中継には使わないため本契約の判断には影響しない。
+
+unknowns:
+  - "efros が他ノードからどの住所で見えるか。物理側に 50072 の転送があるかは外からしか測れない"
+  - "philip へ認証が通るか。経路が無いため判定不能。鍵の有無ではなく経路の問題である"
+  - "lecun を中心にできるか。efros から lecun へ入れることは測ったが、他の 9 台から入れるかは測れない"
+  - "他ノードの authorized_keys の中身。他ホストでの命令実行は echo のみ許可されており読めない"
+  - "id_ed25519_github.pub の注釈が ubuntu@lecun である理由。注釈は自己申告であり経緯は測れない"
+  - "~/.ssh/config の philip 用 IdentityFile が存在しない経路を指している経緯"
+
+commits: []
