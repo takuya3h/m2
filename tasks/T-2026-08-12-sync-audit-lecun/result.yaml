@@ -70,6 +70,12 @@ positive_controls:
       検査は 4 件該当した（0 ではない）。列ごとに調べると 4 件すべて第 1 列のみで、
       第 2 列以降には現れなかった。**検査が 4 を返したこと自体が、この検査が空振りでは
       ないことを示している。** 加えて 2531 行すべての列の型が想定どおりだった。
+  - judgement: "判定 19 抑止が repo 直下から消えている"
+    breaking_input: "退避先を repo の内側にすると追跡外ファイルとして残る"
+    observed: >-
+      /tmp へ移した後 git status --porcelain が空になった。**前契約は repo 直下へ退避する
+      方式で、その退避先が .gitignore に載っていないため本契約の取り込みを本日 08:03 に
+      停止させた。** repo の外へ移す本 SPEC の方式では残らない。
   - judgement: "判定 16 停止時期の推定"
     breaking_input: "独立した情報源が食い違えば、単一の情報源への依存が露見する"
     observed: >-
@@ -209,4 +215,5 @@ unknowns:
     ~/.tunnel.log は時刻を持たないため、Connection reset や Timeout の段階が
     いつ起きたかは行の順序からしか読めない。各段階の時刻は UNKNOWN。
 
-commits: []
+commits:
+  - "21be7c2"

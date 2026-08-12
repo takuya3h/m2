@@ -145,8 +145,16 @@ B と D は同一事象の両面である（届いた行そのものが D の同
 | 16 | 停止時期を二つ以上の独立した情報から推定 | **四つ**（A `16:22:24` / B `20:20:11` / C `21:05:26` / D `20:20:23`、すべて 2026-08-06）。**整合**（幅 4 時間 43 分）。接続喪失の瞬間 **2026-08-06 20:24:02** |
 | 17 | 16 項目すべてに実測値または UNKNOWN | **空欄なし。** UNKNOWN は `result.yaml` の `unknowns` に 4 件を明示 |
 | 18 | 作業ツリーの変更が契約の範囲に限られる | **2 行**。`tasks/T-2026-08-12-sync-audit-lecun/` と `tasks/inbox.d/T-2026-08-12-sync-audit-lecun.md`。`make forbidden-check` は `pass`（changed 8 / checked 8 / violations 0）。unmerged **0** |
-| 19 | 抑止が repo 直下から消えている | Step 7 の実測を後述 |
-| 20 | 報告が台帳へ返っている | Step 8 の実測を後述 |
+| 19 | 抑止が repo 直下から消えている | **消えた。** `/tmp/.sync-pause.released.T-2026-08-12-sync-audit-lecun` へ移動（repo 外）。移動後の作業ツリーは**空**。削除は使っていない |
+| 20 | 報告が台帳へ返っている | **返った。** `exit=0`、`report_bytes=17415`、`report_sha256=635f67c8…`、`n_issuer_defects=4`、`replaced_blocks=0` |
+
+### 抑止の解除について
+
+SPEC は退避先を `/tmp/.sync-pause.released.<task_id>` と指定した。**これは前契約からの改善である。**
+前契約（`T-2026-08-11-artifact-merge-and-pause`）は repo 直下へ `.sync-pause.released` として
+退避する方式で、その退避先が `.gitignore` に載っていないため追跡外ファイルとして残り、
+**本契約の取り込み（`make task-start`）を作業ツリーの汚れとして停止させた**（本日 08:03 に発生）。
+repo の外へ移す本 SPEC の方式では、移動後の `git status --porcelain` が**空**になる。
 
 ### 復旧時に消えうるもの（判断の材料）
 
