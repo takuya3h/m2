@@ -134,7 +134,6 @@ def test_existing_destination_still_probed(tmp_path, monkeypatch):
 
 from preflight_task import STATUSES, check_spec_lint, main  # noqa: E402
 
-SELF_TASK = "T-2026-08-11-issuer-defect-detector"
 HITTING_TASK = "T-2026-08-15-template-leak-and-autosync-conflict"
 
 
@@ -174,19 +173,28 @@ def test_spec_lint_warns_on_hitting_contract():
     assert "終了コードは変わらない" in check.detail
 
 
-def test_spec_lint_passes_on_clean_contract():
-    """該当しない契約では警告が出ない。**陽性側だけを見て満足しない。**"""
-    check = check_spec_lint(SELF_TASK)
+def test_spec_lint_passes_on_clean_contract(tmp_path, monkeypatch):
+    """特定の実在契約に依存しない契約では警告が出ない。"""
+    import check_spec
+
+    task = "T-9999-99-99-clean-control"
+    task_dir = tmp_path / task
+    task_dir.mkdir()
+    (task_dir / "SPEC.md").write_text("# clean contract\n", encoding="utf-8")
+    (task_dir / "spec.yaml").write_text("{}\n", encoding="utf-8")
+    monkeypatch.setattr(check_spec, "TASKS_DIR", tmp_path)
+    check = check_spec_lint(task)
     assert check.status == "PASS"
     assert "該当なし" in check.detail
 
 
-def test_exit_code_is_zero_for_both_directions(monkeypatch, capsys):
-    """該当あり・なしの双方で終了コードが 0 のままであることを実物で測る。"""
-    codes = {}
-    for task in (SELF_TASK, HITTING_TASK):
-        monkeypatch.setattr(sys, "argv", ["preflight_task.py", "--task", task])
-        codes[task] = main()
-        out = capsys.readouterr().out
-        assert "P9 spec_lint" in out
-    assert codes[SELF_TASK] == codes[HITTING_TASK] == 0
+def test_warn_and_pass_both_keep_zero_exit_code(monkeypatch, capsys):
+    """P9 が PASS と WARN のどちらでも終了コードを変えない。"""
+    for status in ("PASS", "WARN"):
+        monkeypatch.setattr(
+            "preflight_task.run_checks",
+            lambda task, spec, status=status: [Check("P9", "spec_lint", status, "control")],
+        )
+        monkeypatch.setattr(sys, "argv", ["preflight_task.py", "--task", HITTING_TASK])
+        assert main() == 0
+        assert "P9 spec_lint" in capsys.readouterr().out

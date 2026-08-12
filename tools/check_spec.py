@@ -311,7 +311,7 @@ def rule_host_mismatch(c: Contract) -> list[Finding]:
         if not match:
             continue
         declared = match.group(1).strip()
-        if declared != actual:
+        if declared.casefold() != actual.casefold():
             found.append(
                 Finding(
                     c.task,
