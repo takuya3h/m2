@@ -72,7 +72,7 @@ def test_report_is_machine_readable():
     for line in lines:
         parts = line.split(None, 3)
         assert parts[0].startswith("P")
-        assert parts[2] in {"PASS", "SKIP", "FAIL"}
+        assert parts[2] in {"PASS", "WARN", "SKIP", "FAIL"}
     assert "RESULT:" in text
 
 
@@ -125,3 +125,68 @@ def test_existing_destination_still_probed(tmp_path, monkeypatch):
     check = preflight_task.check_destination(spec)
     assert check.status == "PASS"
     assert "書き込みと削除" in check.detail
+
+
+# ------------------------------------------------ 層 4（実行直前の警告）
+#
+# 起票者が層 1 を回し忘れても、実行の直前に出る。**二重の網である。**
+# 契約の誤りは実行者の責任ではないため、**終了コードを変えない。**
+
+from preflight_task import STATUSES, check_spec_lint, main  # noqa: E402
+
+SELF_TASK = "T-2026-08-11-issuer-defect-detector"
+HITTING_TASK = "T-2026-08-15-template-leak-and-autosync-conflict"
+
+
+def test_warn_is_neither_pass_nor_fail():
+    """WARN は合格でも失敗でもない。**SKIP と PASS を区別しているのと同じ扱いにする。**"""
+    assert "WARN" in STATUSES
+    checks = [
+        Check("P1", "venv_active", "PASS", ""),
+        Check("P9", "spec_lint", "WARN", "2 件が該当"),
+    ]
+    counts = summarize(checks)
+    assert counts["PASS"] == 1
+    assert counts["WARN"] == 1
+    assert counts["FAIL"] == 0
+
+
+def test_warn_does_not_change_exit_code():
+    """判定は FAIL の数のみで決まる。**WARN をいくら足しても終了コードは動かない。**"""
+    passing = [Check("P1", "venv_active", "PASS", "")]
+    warning = passing + [Check("P9", "spec_lint", "WARN", "2 件が該当")]
+    assert summarize(passing)["FAIL"] == summarize(warning)["FAIL"] == 0
+    failing = warning + [Check("P6", "decisions_answered", "FAIL", "未回答")]
+    assert summarize(failing)["FAIL"] == 1
+
+
+def test_report_shows_warn_count():
+    """警告の件数が合計に出る。**出ない警告は警告になっていない。**"""
+    text = format_report([Check("P9", "spec_lint", "WARN", "2 件が該当")])
+    assert "1 WARN" in text
+
+
+def test_spec_lint_warns_on_hitting_contract():
+    """該当する契約では警告が出る。"""
+    check = check_spec_lint(HITTING_TASK)
+    assert check.status == "WARN"
+    assert "forbidden_vs_output" in check.detail or "integration" in check.detail
+    assert "終了コードは変わらない" in check.detail
+
+
+def test_spec_lint_passes_on_clean_contract():
+    """該当しない契約では警告が出ない。**陽性側だけを見て満足しない。**"""
+    check = check_spec_lint(SELF_TASK)
+    assert check.status == "PASS"
+    assert "該当なし" in check.detail
+
+
+def test_exit_code_is_zero_for_both_directions(monkeypatch, capsys):
+    """該当あり・なしの双方で終了コードが 0 のままであることを実物で測る。"""
+    codes = {}
+    for task in (SELF_TASK, HITTING_TASK):
+        monkeypatch.setattr(sys, "argv", ["preflight_task.py", "--task", task])
+        codes[task] = main()
+        out = capsys.readouterr().out
+        assert "P9 spec_lint" in out
+    assert codes[SELF_TASK] == codes[HITTING_TASK] == 0

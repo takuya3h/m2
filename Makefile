@@ -150,6 +150,15 @@ agent-check:
 forbidden-check:
 	@.venv/bin/python tools/check_forbidden.py $(if $(BASE),--base $(BASE),)
 
+# 契約の本文から起票者の既知の誤りを検出する（層 1）。**文言では防げないので機械にした。**
+# 規則は tasks/*/result.yaml の issuer_defects を裏付けに持つ。裏付けの無い規則を
+# 足すと検出率の分母が動くため足さない。分類と理由は defects.md にある。
+# TASK を指定して使うこと。**省略すると全契約を回すため過去の契約が該当して非ゼロになる**
+# （実際に誤りがあったのだから正常である）。host_mismatch は実行対象の契約でのみ意味を持つ。
+.PHONY: spec-check
+spec-check:
+	@.venv/bin/python tools/check_spec.py $(if $(TASK),--task $(TASK),)
+
 task-validate:
 	@.venv/bin/python tools/validate_task.py $(if $(TASK),--task $(TASK),) --level $(if $(LEVEL),$(LEVEL),l2)
 

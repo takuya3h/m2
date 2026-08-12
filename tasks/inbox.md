@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（136 件）
+## 未処理（145 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -115,6 +115,15 @@
 - [ ] 2026-08-11 [cc] loss_mask.py の docstring が Skewer と Mouth Gag の構造的除外を原因として述べるが実測と食い違う（Skewer 0/343）。件数 460 と挙動は正しく、誤りは原因の説明のみ。修正は別契約（src/egosurgery/datasets/loss_mask.py）
 - [ ] 2026-08-11 [cc] hts_next6_2026-07-29 の「分母を 9,106 へ変更し既存 Δ を全て再計算せよ」という要求は 07-31 の再構築で不要になったが、当該レポートに訂正が入っていない。読んだ人が古い結論を採る恐れ（experiments/analysis/hts_next6_2026-07-29/REPORT.md）
 - [ ] 2026-08-11 [cc] 補助ヘッドは工程側 test_cfg の時系列ヘッド構成キーを変えない形で足す必要がある。変えると recipes_match が False を返し Δ の計算自体が拒否される（src/egosurgery/utils/eval_recipe.py）
+- [ ] 2026-08-11 [cc] 教師データは網羅ではない。報告を持つ契約は 35 件中 12 件で 23 件は空白。過去の報告は書き換えないため（禁止 8）検出器が見つけた記録漏れ 11 件は分母に反映されない。網羅性を上げる手段が未決（tasks/T-2026-08-11-issuer-defect-detector/defects.md）
+- [ ] 2026-08-11 [cc] files_vs_check の規則が未実装（教師データ 2 件）。各検査が「自分が何を走査するか」を返す口が要る。check_docs.py の PATHLIKE と check_agent_docs.py の DOC_PATTERNS を公開形へ揃えれば実装できる（tools/check_spec.py）
+- [ ] 2026-08-11 [cc] make spec-check は省略時に全契約を回して非ゼロになる。過去の契約が該当するのは正常だが、CI へ入れるなら TASK 必須か起点指定が要る。現状は手順書の記述のみで機械では強制していない（Makefile）
+- [ ] 2026-08-11 [cc] host_mismatch は実行対象の契約でのみ意味を持つ。完了済み契約を別ホストから走らせると必ず該当する（codex-parity は efros 宣言、lecun で該当）。適用範囲を実装で絞る方法が未決（tools/check_spec.py）
+- [ ] 2026-08-11 [cc] 3 分類の定義が host_mismatch の型を持たない。本文の宣言と実行環境の照合は構文でも契約どうしの矛盾でもないが機械で検出できる。分類の定義を広げるかが未決（tasks/T-2026-08-11-issuer-defect-detector/defects.md）
+- [ ] 2026-08-11 [cc] 様式による強制は spec_version 2 以降にしか効かない。既存の版 1 の契約 34 件では docs-reconciliation#2 の型（判定が空振りかを問わない）は検出されない（tools/validate_task.py）
+- [ ] 2026-08-11 [cc] 検査の見出しの正規表現が字下げされた例示の表を本物と誤認していた。markdown の 4 字下げは code block であり `^\s*|` と書くと本物を一度も検査しない。試験で固定した（tests/test_validate_task.py）
+- [ ] 2026-08-11 [cc] semantic 23 件（全体の 59%）を将来捕まえられるかは未測定。実装の挙動を解決する道具を持てば structural へ移る型があるかもしれないが試していない（tasks/T-2026-08-11-issuer-defect-detector/RESULT.md）
+- [ ] 2026-08-11 [cc] 抑止の退避先 .sync-pause.released が .gitignore に載っていない（git check-ignore で確認）。.sync-pause だけが無視されるため退避すると git status に ?? で残り、git add -A で誤って commit され得る。無視の対象に含めるかが未決（.gitignore）
 - [ ] 2026-08-11 [cc] 追跡下の文書 777 件を分類し、42 件を現行手順とした。判定の基準は「いま読んで従うものか」で、迷うものは記録として扱い触らなかった（同 §2）
 - [ ] 2026-08-11 [cc] 当初 9 件を食い違いとして提示したが 2 件は誤りだった。make s0 s2 s4 s5 s6 は実在し、README の元の記述が正しかった。書き換えを元へ戻した（同 §3）
 - [ ] 2026-08-11 [cc] 誤りの原因は SPEC が示した測り方 grep -E "^[a-z-]+:" Makefile が数字を含むターゲットに一致しないこと。22 件と出るが実際は 27 件で、落ちた 5 件がそのまま誤検出になった（同 §3）

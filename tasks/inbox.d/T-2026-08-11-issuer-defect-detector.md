@@ -1,0 +1,9 @@
+- [ ] 2026-08-11 [cc] 教師データは網羅ではない。報告を持つ契約は 35 件中 12 件で 23 件は空白。過去の報告は書き換えないため（禁止 8）検出器が見つけた記録漏れ 11 件は分母に反映されない。網羅性を上げる手段が未決（tasks/T-2026-08-11-issuer-defect-detector/defects.md）
+- [ ] 2026-08-11 [cc] files_vs_check の規則が未実装（教師データ 2 件）。各検査が「自分が何を走査するか」を返す口が要る。check_docs.py の PATHLIKE と check_agent_docs.py の DOC_PATTERNS を公開形へ揃えれば実装できる（tools/check_spec.py）
+- [ ] 2026-08-11 [cc] make spec-check は省略時に全契約を回して非ゼロになる。過去の契約が該当するのは正常だが、CI へ入れるなら TASK 必須か起点指定が要る。現状は手順書の記述のみで機械では強制していない（Makefile）
+- [ ] 2026-08-11 [cc] host_mismatch は実行対象の契約でのみ意味を持つ。完了済み契約を別ホストから走らせると必ず該当する（codex-parity は efros 宣言、lecun で該当）。適用範囲を実装で絞る方法が未決（tools/check_spec.py）
+- [ ] 2026-08-11 [cc] 3 分類の定義が host_mismatch の型を持たない。本文の宣言と実行環境の照合は構文でも契約どうしの矛盾でもないが機械で検出できる。分類の定義を広げるかが未決（tasks/T-2026-08-11-issuer-defect-detector/defects.md）
+- [ ] 2026-08-11 [cc] 様式による強制は spec_version 2 以降にしか効かない。既存の版 1 の契約 34 件では docs-reconciliation#2 の型（判定が空振りかを問わない）は検出されない（tools/validate_task.py）
+- [ ] 2026-08-11 [cc] 検査の見出しの正規表現が字下げされた例示の表を本物と誤認していた。markdown の 4 字下げは code block であり `^\s*|` と書くと本物を一度も検査しない。試験で固定した（tests/test_validate_task.py）
+- [ ] 2026-08-11 [cc] semantic 23 件（全体の 59%）を将来捕まえられるかは未測定。実装の挙動を解決する道具を持てば structural へ移る型があるかもしれないが試していない（tasks/T-2026-08-11-issuer-defect-detector/RESULT.md）
+- [ ] 2026-08-11 [cc] 抑止の退避先 .sync-pause.released が .gitignore に載っていない（git check-ignore で確認）。.sync-pause だけが無視されるため退避すると git status に ?? で残り、git add -A で誤って commit され得る。無視の対象に含めるかが未決（.gitignore）

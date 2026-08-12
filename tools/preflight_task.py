@@ -26,7 +26,9 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[1]
 TASKS_DIR = REPO_ROOT / "tasks"
 CONVENTIONS_PATH = REPO_ROOT / "context" / "conventions.md"
-STATUSES = ("PASS", "SKIP", "FAIL")
+# WARN は「合格でも失敗でもない」第 4 の状態である。SKIP と PASS を区別しているのと
+# 同じ理由で、警告と合格も区別する。**WARN は終了コードを変えない**（判定は FAIL の数のみ）。
+STATUSES = ("PASS", "WARN", "SKIP", "FAIL")
 
 CHECK_NAMES = {
     "P1": "venv_active",
@@ -37,8 +39,9 @@ CHECK_NAMES = {
     "P6": "decisions_answered",
     "P7": "destination_writable",
     "P8": "contract_valid",
+    "P9": "spec_lint",
 }
-ALWAYS = {"P1", "P6", "P7", "P8"}
+ALWAYS = {"P1", "P6", "P7", "P8", "P9"}
 EXP_ONLY = {"P4", "P5"}
 LISTED_ONLY = {"P2": "cuda_ext_loaded", "P3": "deterministic_flags"}
 
@@ -97,7 +100,8 @@ def format_report(checks: list[Check]) -> str:
     counts = summarize(checks)
     lines.append("")
     lines.append(
-        f"RESULT: {counts['PASS']} PASS / {counts['SKIP']} SKIP / {counts['FAIL']} FAIL"
+        f"RESULT: {counts['PASS']} PASS / {counts['WARN']} WARN / "
+        f"{counts['SKIP']} SKIP / {counts['FAIL']} FAIL"
     )
     return "\n".join(lines)
 
@@ -325,6 +329,46 @@ def check_contract(task_id: str) -> Check:
     )
 
 
+def check_spec_lint(task_id: str) -> Check:
+    """P9. 層 1 の検査を実行直前でも回す（二重の網）。
+
+    **失敗させない。警告として出す。** 起票者が層 1 を回し忘れた分をここで拾う。
+    判定は `tools/check_spec.py` へ委譲する。**規則をここに複製しない。**
+
+    該当があっても終了コードは変わらない。契約の誤りは実行者の責任ではなく、
+    実行を止める根拠にもならない。**気付かせることだけが目的である。**
+    """
+    tools_dir = str(REPO_ROOT / "tools")
+    if tools_dir not in sys.path:
+        sys.path.insert(0, tools_dir)
+    try:
+        import check_spec
+    except ImportError as exc:  # pragma: no cover - 実装が欠けた場合のみ
+        return Check("P9", CHECK_NAMES["P9"], "SKIP", f"check_spec.py を読み込めない: {exc}")
+
+    payload = check_spec.check([check_spec.load_contract(task_id)])
+    if payload["errors"]:
+        return Check("P9", CHECK_NAMES["P9"], "SKIP", "; ".join(payload["errors"]))
+    if not payload["findings"]:
+        return Check(
+            "P9",
+            CHECK_NAMES["P9"],
+            "PASS",
+            f"規則 {payload['rules_checked']} 件を検査し該当なし",
+        )
+    where = ", ".join(
+        f"{f['rule']}@{f['file']}:{f['line']}" for f in payload["findings"][:5]
+    )
+    more = "" if len(payload["findings"]) <= 5 else f" ほか {len(payload['findings']) - 5} 件"
+    return Check(
+        "P9",
+        CHECK_NAMES["P9"],
+        "WARN",
+        f"規則 {payload['rules_checked']} 件のうち {payload['hits']} 件が該当: {where}{more}"
+        "（終了コードは変わらない）",
+    )
+
+
 def run_checks(task_id: str, spec: dict) -> list[Check]:
     applicable = decide_applicability(spec)
     checks: list[Check] = []
@@ -348,6 +392,8 @@ def run_checks(task_id: str, spec: dict) -> list[Check]:
             checks.append(check_destination(spec))
         elif cid == "P8":
             checks.append(check_contract(task_id))
+        elif cid == "P9":
+            checks.append(check_spec_lint(task_id))
     return checks
 
 

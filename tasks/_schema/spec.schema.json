@@ -6,7 +6,10 @@
   "required": ["spec_version", "meta", "intent", "inputs", "contract", "plan", "outputs", "governance"],
   "additionalProperties": false,
   "properties": {
-    "spec_version": { "const": 1 },
+    "spec_version": {
+      "enum": [1, 2],
+      "description": "1=旧様式。2=完了判定の表に「空振りでないことの確認」の欄を要求する様式。**版 1 の契約に版 2 の要件を遡って適用しない。**"
+    },
     "meta": {
       "type": "object",
       "required": ["task_id", "kind", "title", "origin", "created_at", "created_from"],

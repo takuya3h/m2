@@ -21,8 +21,8 @@
   "additionalProperties": false,
   "properties": {
     "result_version": {
-      "enum": [1, 2],
-      "description": "1=旧様式（件数のみ）。2=拡張様式（gates[].note と deviations の一覧を要求）。"
+      "enum": [1, 2, 3],
+      "description": "1=旧様式（件数のみ）。2=拡張様式（gates[].note と deviations の一覧を要求）。3=陽性対照の記録を要求する様式。版 3 は版 2 の要件をすべて含む。"
     },
     "task_id": {
       "type": "string",
@@ -112,6 +112,32 @@
         }
       }
     },
+    "positive_controls": {
+      "type": "array",
+      "description": "主要な判定が空振りでないことの確認。**何を入力すれば失敗するはずか**と**実際に失敗したか**を対で書く。版 3 では必須で空にしてはならない。判定が通ったことは、その判定が働いていることを意味しない。",
+      "items": {
+        "type": "object",
+        "required": ["judgement", "breaking_input", "observed"],
+        "additionalProperties": false,
+        "properties": {
+          "judgement": {
+            "type": "string",
+            "minLength": 1,
+            "description": "どの判定について測ったか。完了判定の番号か名で示す。"
+          },
+          "breaking_input": {
+            "type": "string",
+            "minLength": 1,
+            "description": "**何を入力すれば失敗するはずか。** 期待であって実測ではない。"
+          },
+          "observed": {
+            "type": "string",
+            "minLength": 1,
+            "description": "**実際に何が起きたか。** 実測である。測っていない場合は UNKNOWN と書く。"
+          }
+        }
+      }
+    },
     "followups": {
       "type": "array",
       "description": "申し送りの本文。要約せずに書く。",
@@ -129,9 +155,9 @@
   },
   "allOf": [
     {
-      "description": "版 2 の追加要件。**版 1 には適用しない。**",
+      "description": "版 2 の追加要件。**版 1 には適用しない。** 版 3 は版 2 の上に足すため minimum で受ける（const 2 にすると版 3 が版 2 の要件を失う）。",
       "if": {
-        "properties": { "result_version": { "const": 2 } },
+        "properties": { "result_version": { "minimum": 2 } },
         "required": ["result_version"]
       },
       "then": {
@@ -151,6 +177,17 @@
             }
           }
         }
+      }
+    },
+    {
+      "description": "版 3 の追加要件。**版 1 と版 2 には適用しない。** 過去の報告を書き換えて通す方法は採らない（教師データであり履歴である）。",
+      "if": {
+        "properties": { "result_version": { "const": 3 } },
+        "required": ["result_version"]
+      },
+      "then": {
+        "required": ["positive_controls"],
+        "properties": { "positive_controls": { "minItems": 1 } }
       }
     },
     {
