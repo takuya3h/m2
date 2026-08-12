@@ -158,7 +158,7 @@ P5 `frozen_source_hash`（同）。
 | 版管理か | **いいえ**（`.git` 不在、`git rev-parse` が失敗） |
 | 設定の参照方法 | **共有領域を指す symlink**。`~/.codex` 6 件 / `~/.claude` 5 件 / `~/.agents` 自体が 1 件 = **12 件** |
 | 張る手順 | `docs/host_dev_env_setup.md:578-587` に文書化 |
-| 3 台の構造 | **同一**（`config.toml` `skills` `settings.json` `CLOUD.md` の 4 件を確認） |
+| 3 台の構造 | **同一**（`config.toml` `skills` `settings.json` `CLAUDE.md` の 4 件を確認） |
 
 **経路は特定できた。ただし実際の張り方は文書と食い違う箇所がある。**
 
