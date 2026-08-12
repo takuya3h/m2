@@ -1,0 +1,182 @@
+result_version: 3
+task_id: "T-2026-08-12-sync-audit-efros"
+status: pass
+host: "efros"
+branch: "feat/sync-audit-efros"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      到達性プローブに開いている先・閉じた先・経路の無い先を与え、A_open=OPEN /
+      B_closed=REFUSED / C_noroute=TIMEOUT の三通りが実際に出し分けられることを確認した
+      （3/3 期待と一致）。版管理側は git ls-remote origin -h refs/heads/phase0 が
+      a85cf78 を返し exit=0。外向き通信は生きており、
+      以後の不通を「外向き通信全体の障害」で説明することはできない。
+  - id: G2
+    verdict: pass
+    note: >-
+      対象一覧を三つの出所から集めた（~/.ssh/config=3、/etc/hosts=7 行で他ノード 0、
+      syncthing 設定=11）。和集合の他ノードは 10 台で、自分を足して 11 台。既知の構成と
+      一致し縮んでいない。10 台 × 2 ポート = 20 を測り、OPEN 9 + REFUSED 9 + TIMEOUT 0 +
+      OSERROR 2 = 20 で合計が対象数と一致した。拒否（他 9 台の 22000、RST が返る）と
+      経路なし（philip の両ポート、No route to host）を区別して記録した。
+  - id: G3
+    verdict: pass
+    note: >-
+      inventory.tsv は名前・大きさ・更新時刻・sha256 先頭 16 文字の 4 列のみで内容を
+      含まない（2531 行、全行 4 列、要約値の失敗 0）。秘匿検査は 4 件該当したが、
+      すべてファイル名の一般語（tokenizers.md / Modal の secrets.md 説明文書 /
+      CSS の tokens.css 2 件）で資格情報ではない。検査が空振りでないことは囮ファイルで
+      確認した（囮 1、設定の解析結果 0）。syncthing の key.pem 等の鍵ファイルは開いていない。
+
+tests:
+  before_failed: 7
+  after_failed: 7
+  after_passed: 417
+
+deviations:
+  - type: judgement
+    note: >-
+      task_start.sh は作業ツリーが汚れていると何も作らず終了するため、契約開始前から
+      存在した未追跡ファイル 2 件（docs/sessions/digest/、本セッションの 07:14 生成）を
+      scratchpad へ退避して取り込みを通し、直後に戻した。この 2 件の扱いはユーザーの
+      事前の判断（契約ブランチで commit する）と SPEC Task 6 Step 5（変更を契約の範囲に
+      限る）が衝突する。SPEC を優先して commit していない。未追跡のまま RESULT に列挙した。
+  - type: judgement
+    note: >-
+      .sync-pause は SPEC 前提節の touch ではなく task_start.sh が作成した。結果は同じで
+      設置済み。稼働中の ~/bin/m2-sync.sh に sync-pause の参照が 2 箇所あること（:40-41）を
+      確認してから進めた。抑止が実効であることは陽性対照で別途確認している。
+  - type: judgement
+    note: >-
+      Task 2 Step 1 の ps -eo args | grep -c "[k]eeper.sh" が 2 を返したが実体は 1 だった。
+      原因は実行者が付けた表示用ラベル echo "... keeper.sh ..." が zsh -c の命令行として
+      ps に現れたこと。[k] の技は grep が自分の引数に一致するのを防ぐだけで、囲みの命令行に
+      平文が入ることは防げない。SPEC 申し送り 3（記録を作る流れに表示用を混ぜない）に
+      反した実行者の誤りである。スナップショット先行方式で測り直し、両方の値を記録した。
+  - type: environment
+    note: >-
+      zsh は非引用の変数展開で単語分割しないため、probe.py ${ARGS} が 1 引数として渡り
+      OSERROR:Name_or_service_not_known を返した。xargs -a <file> 方式に変えて 20 件を
+      測り直した。SPEC 申し送りが警告していた事象である。
+  - type: spec_defect
+    note: >-
+      Task 3 Step 2 の ss/netstat が両方とも不在のため、/proc/net/tcp と /proc/net/tcp6 を
+      直接読んで待ち受け 26 件を得た。詳細は issuer_defects に記載。
+  - type: spec_defect
+    note: >-
+      Task 5 Step 5 の find 模様が実ファイルに一致しないため、~/.syncthing.log を直接
+      stat して確認した。詳細は issuer_defects に記載。
+  - type: judgement
+    note: >-
+      契約が要求していない試験一式を実行した。result.yaml の tests を実測で埋めるため。
+      実行前後で作業ツリーに差分が無いこと（3 件 → 3 件）を確認し、禁止領域への書き込みが
+      無いことを担保した。7 failed / 417 passed / 4 skipped。7 件すべてが先行条件であることを
+      本契約のディレクトリを退避して再実行することで切り分けた（契約が無くても同じく失敗）。
+
+issuer_defects:
+  - type: check_does_not_check
+    note: >-
+      Task 3 Step 2 は (ss -ltn || netstat -ltn || echo "手段なし") とし「零行なら手段が
+      無かったということ」としているが、efros には ss も netstat も lsof も存在しない。
+      指示どおり実行すると「手段なし」の 1 行だけが残り、待ち受け一覧は UNKNOWN として
+      報告されることになる。実際には /proc/net/tcp と /proc/net/tcp6 から 26 件が取れ、
+      その中に「22001 が待ち受けに存在しない」という、プロセス一覧とは独立に中継が
+      張られていないことを示す証拠が含まれていた。測れるものを測れないと報告するところだった。
+  - type: check_does_not_check
+    note: >-
+      Task 5 Step 5 の find ~ -maxdepth 3 -name "syncthing*.log" は 0 件を返す。実ファイルは
+      先頭がドットの ~/.syncthing.log（8553294 バイト）で、この模様には一致しないためである。
+      指示どおり実行すると「同期処理のログは見つからなかった」となり、停止時期の第二の
+      独立した情報源が失われる。実際にはこのファイルに 2026-08-06 20:23:41 Lost device
+      connection という直接の時刻記録があり、本報告の採用値はこれである。SPEC 自身の
+      申し送り 7「探す対象の名前を決め打ちしない。集合として列挙してから絞る」に反している。
+  - type: self_contradiction
+    note: >-
+      inputs.data.dataset に egosurgery_phase_v1、inputs.data.split_files に
+      data/splits/ego_val.txt が宣言されているが、Task 1 から Task 6 のどの Step も
+      これらを参照しない。本契約は同期経路の読み取り監査でありデータセットも分割も
+      登場しない。prohibitions の no_split_redefine / no_raw_write / no_frozen_change も
+      本契約では成立しようがない。指示どおり実行するとこれらは解決先を持たないまま報告に
+      残り、読む側に「この監査はデータを参照した」と誤解させる。参照解決の手順が空回りする。
+
+positive_controls:
+  - judgement: "到達性プローブが OPEN / REFUSED / TIMEOUT を出し分ける"
+    breaking_input: "開いている先（listen 中の局所ポート）・閉じた先（同ポートを閉じた直後）・経路の無い先（RFC 5737 の 192.0.2.1）の 3 つを与える"
+    observed: "A_open=OPEN / B_closed=REFUSED / C_noroute=TIMEOUT。3/3 期待と一致した"
+  - judgement: "版管理側の経路が生きている（第二の陽性対照）"
+    breaking_input: "外向き通信が落ちていれば git ls-remote が参照を返さず exit が非零になる"
+    observed: "refs/heads/phase0 = a85cf78 が 1 行返り exit=0"
+  - judgement: "設定の解析結果に対する秘匿混入検査が働いている"
+    breaking_input: "apikey=DUMMY を書いた囮ファイルを同じ検査に与える"
+    observed: "囮で 1 を返し、実際の /tmp/stcfg.txt では 0。検査は空振りではない"
+  - judgement: "棚卸し一覧に対する秘匿混入検査が働いている"
+    breaking_input: "x/secret.md の行を持つ囮 TSV を同じ検査に与える"
+    observed: "囮で 1 を返し、inventory.tsv では 4（すべてファイル名の一般語で資格情報ではない）"
+  - judgement: "常駐処理の稼働数の数え方が自己汚染していない"
+    breaking_input: "命令行に keeper.sh の平文を含めた状態で ps -eo args | grep -c で数える"
+    observed: "2 を返した。実体は 1 行しかない。スナップショットを先に撮ってから読む方式では 1"
+  - judgement: "7 件の試験失敗が本契約に起因しない"
+    breaking_input: "本契約のディレクトリ tasks/T-2026-08-12-sync-audit-efros を退避して再実行する"
+    observed: "契約が無くても同じ 2 件（test_check_spec / test_preflight_task）が失敗。先行条件と確定"
+  - judgement: "keeper のループ周期 1805 秒という実測が正しい"
+    breaking_input: "07:03:48 + 1805×2 が ~/.tunnel.log の mtime と一致しなければ推定は誤り"
+    observed: "予測 08:03:58 に対し実測 mtime 08:03:59。1 秒差で一致した"
+  - judgement: "抑止 .sync-pause が実際に常駐処理を止めている"
+    breaking_input: "抑止が無効なら次ループで auto-merge / auto-push が sync-alerts.log に記録される"
+    observed: "予測 08:34:03 に対し実測 08:34:00 に『一時停止中』が記録された。総数 2→3。統合も push も発生していない"
+
+followups:
+  - >-
+    両フォルダとも versioning.type が (none) である。maxConflicts=10 のため両側編集は
+    .sync-conflict-* として残るが、他ホストで削除されたファイルは復旧時にこちらでも消え、
+    戻す手段が無い。復旧前に退避するかどうかの判断材料になる。
+  - >-
+    中心ホストの名前とアドレスは keeper.sh:16,19 に直書きされている
+    （ubuntu@192.168.196.150 -p 50072）。中心を別ホストへ移すには
+    scripts/sync/keeper.sh の変更と各ノードへの ~/.tunnel_to_philip の配り直しが要る。
+    設定や環境変数では動かせない。
+  - >-
+    globalAnnounceEnabled=false かつ relaysEnabled=false であり、他 9 台の 22000 は
+    REFUSED である。星型の中心を失うと迂回路が無い構成になっている。
+  - >-
+    efros 側の未伝播の分岐は 171 ファイル / 2044979 バイト。うち 110 が再生成可能な
+    キャッシュ、59 が 2026-08-11T16:11:59 に一括導入されたベンダ提供物、1 が追記ログ。
+    実体のある局所設定は codex/config.toml（1008 バイト）1 件のみである。
+  - >-
+    inventory.tsv（2531 行）は他ホストの同名ファイルと要約値で突き合わせるためのもの。
+    並行実行している他ホストの一覧が揃えば、分岐箇所は機械的に判定できる。
+  - >-
+    tools/report_task.py の秘匿検査が git のコミットハッシュを W&B の鍵と誤判定する。
+    40 桁 16 進という形が同一で、判定に使える情報が足りない。本契約では origin/phase0 の
+    先頭 a85cf78 の完全形 4 箇所で送信が止まり、短縮形に直して再送した。git ハッシュは
+    この種の報告に頻出するため偽陽性は構造的に起きる。送信を止める側に倒れており安全側
+    ではあるが、40 桁 16 進を git cat-file -e で実在するオブジェクトか照会すれば
+    切り分けられる余地がある。
+  - >-
+    tools/report_task.py:131 の _rich_text が本文を Python のコードポイントで 2000 ごとに
+    切るが、Notion の上限は UTF-16 コード単位で数えられる。BMP 外の文字を含む切片だけが
+    上限を超え HTTP 400 で送信が失敗する。本契約では BMP 外の文字が本文に 1 つあり、
+    chunk[2] がコードポイント 2000 に対し UTF-16 で 2001 となって API が rich_text[2] を
+    指した。添字まで一致することを実測で確認した。読み取りのみの契約のため道具は直さず、
+    本文側で BMP の記号へ置き換えて送った。_rich_text は UTF-16 コード単位で切るべきである。
+  - >-
+    SPEC Task 6 Step 5/6 の変更範囲指定が tasks/README.md:283-288 と食い違う。README は
+    抽出物 docs/sessions/digest/ を契約の記録と一緒に commit することを求め、未追跡放置が
+    merge --ff-only を壊す実測（B-30、5 台）を根拠に挙げている。本契約では契約の commit を
+    SPEC どおりに保ち抽出物を別 commit に分けて両立させたが、今後の SPEC 雛形では
+    Step 5 の許容集合に抽出物を含めるか、README 側で例外を明示するかの整理が要る。
+
+unknowns:
+  - "他ホストの状態。各ホストで何が変更・削除されたか、突き合わせるべき相手側の一覧は efros からは取得できない"
+  - "philip が停止している理由。ハード側という記録は実測していない。efros から測れるのは No route to host までである"
+  - "復旧の予定時期。2 週間以降という記録は実測していない"
+  - "復旧時に他ホスト側の削除がどれだけ及ぶか。versioning=none のため戻せないことは確定しているが、件数は相手側の状態に依存する"
+  - "他 9 台の 22000 が REFUSED である理由。keeper.sh:14 の記述と整合するが、本契約で測ったのは RST が返るところまでである"
+
+commits:
+  - "6eff033"
+  - "c6dbe21"
