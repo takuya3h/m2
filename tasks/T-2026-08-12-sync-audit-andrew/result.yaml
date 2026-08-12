@@ -1,0 +1,85 @@
+result_version: 3
+task_id: "T-2026-08-12-sync-audit-andrew"
+status: pass
+host: "Andrew"
+branch: "exp/andrew"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "プローブに開いた口・閉じた口・経路の無い先を与え OPEN/REFUSED/TIMEOUT の 3 種が期待どおり出た（3/3 一致）。版管理側は ls-remote が refs/heads/phase0=a85cf78 を 1 行返し exit=0"
+  - id: G2
+    verdict: pass
+    note: "対象一覧は ssh_config 2 件・/etc/hosts 7 行・同期設定 11 アドレスの 3 出所から集め、構内 10 台+自ホスト=11 台で既知の構成と一致。20 対象を測り OPEN9+REFUSED9+TIMEOUT0+OTHER2=20=total。REFUSED（届くが閉）と No route to host（経路なし）を分けて記録した"
+  - id: G3
+    verdict: pass
+    note: "inventory.tsv の列数の種類は 1 で 4 列のみ（名前・大きさ・更新時刻・要約値）。秘匿検査の該当 4 件はすべてファイル名で値ではない。陽性対照でダミー行を 1 件検出し検査が働くことを確認"
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+
+deviations:
+  - type: judgement
+    note: "Task 3 Step 1 の中継計数が検索命令自身に一致して偽陽性 1 を返したため、ps の保存と保存物の走査の 2 命令に分けて測り直した。値は 1 から 0 へ変わった"
+  - type: judgement
+    note: "Task 3 Step 2 で ss も netstat も存在せず待受一覧を取得できなかった。UNKNOWN とし、代替として 127.0.0.1 の 22001/22000/8384 へ直接接続して補った。起動もインストールもしていない"
+  - type: environment
+    note: "自分が書いた awk 命令で zsh のクォートが壊れ awk が起動しないまま件数=0 という偽の零を得た。別の書き方で測り直し、閾値 2000-01-01 で総件数 2496 が返ることを陽性対照として確認した"
+  - type: judgement
+    note: "Task 5 Step 5 の find パターンが主たる記録に一致しないため、パターンを広げて ~/.syncthing.log を読み、停止時刻の主たる根拠とした"
+  - type: judgement
+    note: "停止時期の第三の裏取りとして、SPEC が求めていない ~/.tunnel.log の連続失敗行数と keeper の sleep 1800 周期の突き合わせを行った。時刻を持たない記録からの導出であり直接の測定ではないと明記した"
+
+issuer_defects:
+  - type: check_does_not_check
+    note: "Task 3 Step 1 の `ps -eo args | grep -c \"[s]sh .*-L\"` は指示どおり実行すると 1 を返すが、該当行は実行中の対話シェルの包みそのもので中継のプロセスではない。指示どおり進めれば「中継は 1 本張られている」と結論し、本契約の核心である「中継が張られていない」を取り違える。申し送りが pgrep -f について警告した誤りと同型の欠陥を、Step 1 の命令自身が持っている。ps の出力を先に保存し別命令で走査して 0 と確定した"
+  - type: check_does_not_check
+    note: "Task 5 Step 5 の `find ~ -maxdepth 3 -name \"syncthing*.log\"` は 0 件を返す。同期処理の記録は ~/.syncthing.log で先頭にドットが付くためこのパターンに一致しない。指示どおりなら「同期処理のログは別の場所に無い」と結論し、停止時刻を直接示す唯一の時刻付き記録 39955 行を見落とす。完了判定 16 はその見落としのもとでは達成できない。*syncthing*.log にすると 1 件返ることを実測した"
+  - type: self_contradiction
+    note: "Task 5 Step 3 は秘匿検査に Expected: 0 を課しながら、同じ Step で「ファイル名に該当語がある場合はその行を残しつつ内容を含まないことを明記する」と述べる。該当があってよいなら期待値 0 は成り立たない。実測は 4 件でありすべてファイル名（tokenizers.md / secrets.md / tokens.css / chart-tokens.css）。期待値だけを見て停止すると、秘匿の混入が無いのに G3 で止まる"
+  - type: check_does_not_check
+    note: "Task 3 Step 2 は `(ss -ltn || netstat -ltn || echo \"手段なし\")` の結果について「零行なら手段が無かったということ」と述べるが、末尾の echo があるため行数は必ず 1 以上になり零行は原理的に発生しない。実測も 1 行「手段なし」であった。この判定条件は決して真にならず、記述に従って状態を切り分けることはできない"
+
+positive_controls:
+  - judgement: "到達性プローブが 3 種を出し分ける"
+    breaking_input: "開いた口・閉じた口・経路の無い先の 3 通りを与える。1 つでも期待と違えば到達性の結論は信用できない"
+    observed: "A_open=OPEN / B_closed=REFUSED / C_noroute=TIMEOUT の 3/3 一致"
+  - judgement: "設定抽出に秘匿が含まれない（検査が 0）"
+    breaking_input: "該当語を含む行を同じ検査に通す。また元ファイルに該当が実在するかを確かめる"
+    observed: "ダミー 1 行で 1 を返した。元の config.xml には該当 25 行が実在し抽出物は 0。元から無いので 0 ではない"
+  - judgement: "一覧に秘匿の値が含まれない"
+    breaking_input: "該当語を含む行 x/token.md を同じ検査に通す"
+    observed: "1 を返した。検査は働いている"
+  - judgement: "中継の実プロセスが 0 件"
+    breaking_input: "実在するプロセス名を同じ走査にかける"
+    observed: "同じ走査で keeper.sh を 1 件検出。走査は空振りしていない"
+  - judgement: "停止後に変わったファイルは 1 件"
+    breaking_input: "十分古い閾値を同じ awk に与える"
+    observed: "閾値 2000-01-01 で 2496 件を返し総件数 2496 と一致"
+  - judgement: "版管理側の経路が生きている"
+    breaking_input: "参照が返らなければ外向き通信全体の障害であり同期の問題と切り分けられない"
+    observed: "refs/heads/phase0=a85cf78 が 1 行返り exit=0"
+  - judgement: "退避ディレクトリ .stversions が 0 件"
+    breaking_input: "別の探し方を 3 通り与える"
+    observed: "find -type d / ls -a 直下 / 種類を問わない find -name のいずれも 0。設定の versioning 要素 3 件は中身が空で無効"
+
+followups:
+  - "中心 philip（192.168.196.150）は両ポートとも No route to host。他の 9 台は SSH 50072 が OPEN で機器は生きて届く。落ちているのは単一ホストへの経路のみで、構内全体でも外向きでもない"
+  - "syncthing の接続確立 21 件はすべて philip 宛。他の 9 台へ直接つながった記録は 1 件も無い。星型は設定だけでなく接続履歴でもそうであり、中心が落ちれば他が生きていても全対向が同時に切れる"
+  - "9 台の 22000 はすべて REFUSED で、同期処理の待受は外側の住所に出ていない。経路を変える案はいずれも SSH 50072 を通す前提になる"
+  - "globalAnnounceEnabled=false かつ relaysEnabled=false。外部の発見サーバも中継サーバも使わない設定であり、静的アドレスと同一構内の告知以外に到達手段が無い"
+  - ".stversions が 0 件で版の退避が働いていない。復旧時に衝突として残らない形で上書きされた場合、同期処理からは復元できない"
+  - "本ホストの分岐は sync-alerts.log の 1 件のみ。m2-sync.sh が 30 分ごとに追記する自ホスト由来の記録であり、復旧で失われる固有の成果は無い。既存の衝突ファイル 10 件がすべて sync-alerts.*.log であることから、復旧時にも同じファイルが衝突する見込みが高い"
+  - "inventory.tsv は他ホストの同名ファイルと突き合わせるためのもの。2496 件、要約値は sha256 の先頭 16 文字"
+
+unknowns:
+  - "待ち受けポートの一覧。ss も netstat も存在せず取得できなかった。零行ではなく手段の不在であり、代替として 22000/22001/8384 への直接接続で補った"
+  - "他ホスト側の分岐量。読み取り専用かつ他ホストで命令を実行しない契約のため測れない。推測で埋めていない"
+  - "philip が停止した理由と復旧の見込み。本ホストからは測れない"
+  - "9 台の 22000 が REFUSED である理由。待受が外側の住所に出ていないことは確かだが、各機の内部設定は本ホストからは読めない"
+
+commits: []
