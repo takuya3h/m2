@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（145 件）
+## 未処理（191 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -160,6 +160,52 @@
 - [ ] 2026-08-11 [cc] 実際の資格情報を含む本文は送信 0 回で拒まれ、値も出力されなかった。陽性対照の本文は外部へ送っていない（同 §3 G2）
 - [ ] 2026-08-11 [cc] 送るのは記録して起票したあとと決めた。送信は取り消せないので版管理に残ってから送るほうが安全で、PR 番号まで含んだ報告を送れる（同 §4）
 - [ ] 2026-08-11 [cc] 起票者の誤りは 1 件。列は列挙する一方、どのブロックへ置くと取り込みと混ざるかを問うていない（同 §6）
+- [ ] 2026-08-12 [cc] 星型の中心 philip（192.168.196.150）へは両ポートとも No route to host。他 9 台は SSH 50072 が OPEN で機器までは届く。同一構内へ届かないのに外部の版管理へは届く非対称がある（tasks/T-2026-08-12-sync-audit-bengio/audit.md）
+- [ ] 2026-08-12 [cc] 停止は 2026-08-06 と推定。二つの独立した情報が整合する。遠隔由来の最後の衝突が 08-06 16:22 UTC、トンネルの連続失敗 263 回を 30 分周期で逆算して 08-06 20:41 UTC（同上）
+- [ ] 2026-08-12 [cc] .stversions が 0 件。経路が復旧して遠隔版が流れ込んだ場合、局所版を戻す手段が同期処理側に無い。claude-sync は 2532 ファイルで衝突が 10 件残る（tasks/T-2026-08-12-sync-audit-bengio/inventory.tsv）
+- [ ] 2026-08-12 [cc] 同期処理は健在で局所 22000 は OPEN。設定は globalAnnounce=false かつ relays=false で、philip への経路は tcp://127.0.0.1:22001 すなわち中継トンネル前提に組まれている（~/.local/state/syncthing/config.xml）
+- [ ] 2026-08-12 [cc] bengio は ~/.tunnel_to_philip を持つためトンネル維持の対象だが ssh プロセスは 0 件。keeper.sh は 30 分ごとに試行し失敗を追記し続けている（~/bin/keeper.sh 13-19 行）
+- [ ] 2026-08-12 [cc] spec_lint の host_mismatch が偽陽性。生の gethostname()（Bengio）と宣言値（bengio）を大文字小文字を区別して比べ、resolve_server_name() を使っていない。同じ原因で test_self_contract_has_no_hit と test_spec_lint_passes_on_clean_contract が lecun 以外の全ホストで失敗する（tools/check_spec.py rule_host_mismatch）
+- [ ] 2026-08-12 [cc] 起票者の検査に取りこぼしが 3 件。秘匿検査の apikey が API_KEY に一致しない、ps と grep による稼働数が計測側シェルに自己混入して 3 を返す（実数 1）、find の syncthing*.log が先頭ドットの .syncthing.log を見落とす（T-2026-08-12-sync-audit-bengio §6.1）
+- [ ] 2026-08-12 [cc] philip だけが両ポートとも No route to host。他 9 台は SSH 50072 が OPEN で 22000 は REFUSED（RST が返る＝アドレスは生存）。構内全体でも外向きでもなく、落ちているのは中心 1 台と経路のみ（tasks/T-2026-08-12-sync-audit-efros/audit.md の Task 4）
+- [ ] 2026-08-12 [cc] 停止時刻は 2026-08-06T20:23:41Z。~/.syncthing.log の Lost device connection が直接の記録で、~/.tunnel.log からの逆算 20:42:09Z との差 18 分 28 秒は keeper の 1 ループ未満。二つの情報源は整合した（tasks/T-2026-08-12-sync-audit-efros/RESULT.md の 3.2）
+- [ ] 2026-08-12 [cc] efros が Established した相手は 27 件すべて philip、かつ 27 件すべて connection.remote=127.0.0.1:22001。他 9 台へ直接繋がった記録が 1 件も無い。星型は設計どおり機能しており中心の喪失は同期の全損（~/.syncthing.log）
+- [ ] 2026-08-12 [cc] 両フォルダとも versioning.type=(none)。maxConflicts=10 のため両側編集は .sync-conflict-* に残るが、他ホストで削除されたファイルは復旧時にこちらでも消え戻せない。.stversions は 0 件（~/.local/state/syncthing/config.xml）
+- [ ] 2026-08-12 [cc] 中心の名前とアドレスは keeper.sh:16,19 に直書き（ubuntu@192.168.196.150 -p 50072）。稼働実体と正本の差は 0 行。設定や環境変数では動かせず、中心の移動にはコード変更と各ノードへの ~/.tunnel_to_philip の配り直しが要る（scripts/sync/keeper.sh）
+- [ ] 2026-08-12 [cc] globalAnnounceEnabled=false かつ relaysEnabled=false。中心を失ったとき迂回する経路が構成上存在しない（~/.local/state/syncthing/config.xml）
+- [ ] 2026-08-12 [cc] efros 側の未伝播の分岐は 171 ファイル 2044979 バイト。110 が再生成可能キャッシュ、59 が 2026-08-11T16:11:59 の一括導入物、1 が追記ログで、実体のある局所設定は codex/config.toml（1008 バイト）1 件のみ（tasks/T-2026-08-12-sync-audit-efros/inventory.tsv）
+- [ ] 2026-08-12 [cc] 全 11 台の一覧は syncthing 設定にしか無い。~/.ssh/config は philip と lecun の 2 台、/etc/hosts は自ホストのみで、出所を 1 つに絞ると対象一覧が 10 台から 2 台へ縮む（~/.ssh/config, /etc/hosts）
+- [ ] 2026-08-12 [cc] efros には ss も netstat も lsof も無い。待ち受けの確認は /proc/net/tcp を直接読む必要があり、SPEC の「零行なら手段が無かった」に従うと測れるものを UNKNOWN と報告することになる（tasks/T-2026-08-12-sync-audit-efros/RESULT.md の 4.1）
+- [ ] 2026-08-12 [cc] SPEC Task 6 Step 5/6 の変更範囲指定が tasks/README.md:283-288 と食い違う。README は抽出物を契約の記録と一緒に commit することを求め、未追跡放置が merge --ff-only を壊す実測（B-30、5 台）を根拠に挙げている。本契約では契約の commit を SPEC どおりに保ち、抽出物を別 commit に分けて両立させた（tasks/README.md）
+- [ ] 2026-08-12 [cc] tools/report_task.py の秘匿検査が git のコミットハッシュを W&B の鍵と誤判定する。40 桁 16 進という形が同一で判定材料が足りない。本契約では origin/phase0 の完全形 4 箇所で送信が止まり短縮形に直して再送した。git ハッシュは報告に頻出するため偽陽性は構造的に起きる（tools/report_task.py）
+- [ ] 2026-08-12 [cc] tools/report_task.py:131 の _rich_text が本文を Python のコードポイントで 2000 ごとに切るが Notion の上限は UTF-16 コード単位。BMP 外の文字を含む切片だけが超過し HTTP 400 になる。本契約では chunk[2] が codepoints=2000 / utf16=2001 となり API の指した rich_text[2] と添字まで一致した。UTF-16 単位で切れば直る（tools/report_task.py）
+- [ ] 2026-08-12 [cc] 中心は philip（192.168.196.150）で、実装に埋め込まれている。トンネルは ~/.tunnel_to_philip が存在するノードのみが張り、ローカル 22001 を philip の 127.0.0.1:22000 へ SSH 50072 で転送する。稼働中の keeper.sh は正本とバイト一致（scripts/sync/keeper.sh:13-19）
+- [ ] 2026-08-12 [cc] philip だけが 3 ポート（22000/22001/50072）すべて No route to host。他 9 台は 50072 が OPEN で 22000/22001 が REFUSED。REFUSED は機器まで届いていることを意味する。非対称は「構内 vs 外」ではなく「philip vs それ以外」である（tasks/T-2026-08-12-sync-audit-lecun/audit.md）
+- [ ] 2026-08-12 [cc] 接続喪失の瞬間は 2026-08-06 20:24:02（Lost device connection device=GO2U7PF）。以後 2026-08-07 から 08-11 まで syncthing のログは 0 行。四つの独立した情報が幅 4 時間 43 分で整合した（~/.syncthing.log）
+- [ ] 2026-08-12 [cc] Established secure connection の相手は 21 件すべて philip。他 10 台とは一度も直接接続していない。大域探索と中継は設定で無効（globalAnnounceEnabled=false / relaysEnabled=false）（~/.local/state/syncthing/config.xml）
+- [ ] 2026-08-12 [cc] 停止後に自ホストで更新された設定共有のファイルは 172 件・約 2.0 MB。うち人が触る設定は settings.json（14419 バイト、08-11 05:49）と codex/config.toml（901 バイト、08-11 21:59）の 2 件で、残る 170 件は codex/plugins/cache/ の自動生成物（tasks/T-2026-08-12-sync-audit-lecun/inventory.tsv）
+- [ ] 2026-08-12 [cc] 版の退避は両フォルダで設定が空（versioning.type なし）。.stversions は 0 件で、上書きされた旧版は残らない。衝突ファイルの機構は働いており過去 10 件の実績がある（最新 20260806-162224）（~/.local/state/syncthing/config.xml）
+- [ ] 2026-08-12 [cc] この環境では ps と grep による自己一致の回避が原理的に成立しない。測定命令の全文が別プロセスの args（/usr/bin/zsh -c ... eval '...'）に現れるため角括弧法も pgrep -f と同じく誤る。keeper を 2 件（実際 1）、ssh -L を 1 件（実際 0）と数えた。/proc/*/cmdline を読み自分と祖先を除く形が確実（.claude/skills/task/SKILL.md）
+- [ ] 2026-08-12 [cc] ss も netstat も lsof も無い。待ち受けの一覧は /proc/net/tcp と /proc/net/tcp6 の状態 0A から復号した（LISTEN 16 件）。手順書に代替を書くかは未決（tools/preflight_task.py）
+- [ ] 2026-08-12 [cc] sync-alerts.log のホストのラベルは 16 種（大文字の変種を含む）で syncthing の device 11 台と一致しない。dlstation と dlsta、084f3b0911a2（コンテナ識別子）、aolab の対応が付いていない。ホスト名の正本が未決（~/claude-sync/sync-alerts.log）
+- [ ] 2026-08-12 [cc] 読み取りのみの契約でもプローブは痕跡を残す。127.0.0.1:22000 への TCP 接続で ~/.syncthing.log に 1 行（Failed TLS handshake）が書かれた。状態は変えていない
+- [ ] 2026-08-12 [cc] 中継の鍵 id_ed25519_bengiotophilip（ED25519、指紋 SHA256:FsFyZQKu…）は philip 専用。遠隔 10 台へ認証を測り AUTH_OK 0 / DENIED 9 / NOCONN 1。認証が通るホストは一台も無い（tasks/T-2026-08-12-tunnel-key-audit-bengio/audit.md）
+- [ ] 2026-08-12 [cc] 拒否は鍵を提示したうえでのものと確認。詳細出力で実鍵は Offering public key まで到達し、/dev/null は Trying private key で止まる。口が開いていることと鍵が通ることは別だと実測で分かれた（同上）
+- [ ] 2026-08-12 [cc] bengio の受け入れ一覧は authorized_keys の 3 行のみ。遠隔ノード由来は philip-to-bengio と lecuntobengio の 2 件で、残る 8 台は登録が無い。bengio を中心にするなら 8 台分の登録追加が要る（~/.ssh/authorized_keys）
+- [ ] 2026-08-12 [cc] 鍵の名前が実体と食い違う。id_rsa_bengiotolecun と id_rsa_bengiotophilip は名前に rsa を含むが実体は ED25519。名前から種別を推定してはならない（~/.ssh/）
+- [ ] 2026-08-12 [cc] philip 向けに鍵が 2 本併存する。ssh config は id_rsa_bengiotophilip を指定し、中継は id_ed25519_bengiotophilip を使う。どちらが正かは未確認（~/.ssh/config）
+- [ ] 2026-08-12 [cc] 起票者の誤りが 3 件。Task 2 Step 3 の照合が自分自身へ入れるかしか測らない、Task 3 Step 2 の accept-new が禁止 2 の ~/.ssh 変更に触れる、陰性対照と本測定が同じ文言で区別できない（T-2026-08-12-tunnel-key-audit-bengio §6.1）
+- [ ] 2026-08-12 [cc] 本結果は bengio 側から見た片方向のみ。他ノードの中継鍵の指紋と、受け入れ一覧の 2 件が相手の中継鍵と同一かは測れず UNKNOWN。双方向の対応づけは全ホストの結果を突き合わせて初めて確定する（同上 §7）
+- [ ] 2026-08-12 [cc] 中継に使う鍵は ~/.ssh/id_ed25519_lecuntophilip（ED25519 256、指紋 SHA256:dL4qKLl4、権限 600）。目印 ~/.tunnel_to_philip の中身がこの経路を指す。目印は philip 向けの 1 件のみで .tunnel_to_<他> は存在しない（tasks/T-2026-08-12-tunnel-key-audit-lecun/audit.md）
+- [ ] 2026-08-12 [cc] 中継の鍵は到達できる 9 台すべてで Permission denied。名前の上でも実測の上でも philip 専用である。philip 自身は到達不能で測れない（tasks/T-2026-08-12-tunnel-key-audit-lecun/audit.md）
+- [ ] 2026-08-12 [cc] lecun の受け入れ一覧は 4 件。遠隔 peer 10 台のうち philip・bengio・efros の 3 台を受け入れ、adam・andrew・dlsta・he・hinton・ian・ilya の 7 台は受け入れない。4 件目は dakyo-mba@dmba.local で device 一覧に無く人の端末と読める（~/.ssh/authorized_keys）
+- [ ] 2026-08-12 [cc] lecun から bengio（id_rsa_lecuntobengio）と efros（id_rsa_lecuntoefros）へは既存の鍵で REACHABLE。代理は到達不能なので渡した鍵による成功である。他 7 台へは専用鍵が存在せず、通る鍵があるかは測っていない（~/.ssh/config）
+- [ ] 2026-08-12 [cc] keeper.sh は目印の存在（.tunnel_to_philip）で中継を張るか決める。中心を移すには各ノードに目印を新規作成する必要があり、ファイル名に中心の名を含む形のため名前の付け替えも要る。本契約は禁止 1 により作成していない（scripts/sync/keeper.sh）
+- [ ] 2026-08-12 [cc] ~/.ssh/config の philip の IdentityFile が /Users/dakyo-mba/.ssh/... という macOS の経路で lecun には不在。中継は keeper.sh が経路を明示的に渡すため影響しないが、人が ssh philip を手で叩くと既定の鍵へ落ちる（~/.ssh/config）
+- [ ] 2026-08-12 [cc] 他 7 台へ通らない理由が「鍵が未登録」か「別の利用者名が要る」かは区別できない。いずれも Permission denied (publickey,password) という同じ表示になる。UNKNOWN（tasks/T-2026-08-12-tunnel-key-audit-lecun/result.yaml）
+- [ ] 2026-08-12 [cc] SPEC Task 3 Step 2 の accept-new は ~/.ssh/known_hosts へ追記するため禁止 2 に触れる。書き込まない形へ置き換えた。10 台すべてが未知でありそのまま実行すれば 10 件の追記が起きていた。手順書の該当箇所を直すかは未決（.claude/skills/task/SKILL.md）
+- [ ] 2026-08-12 [cc] 受け入れ一覧の註釈から device への対応づけは自己申告に依る。指紋と相手ホストの対応を相手側で確認していない。註釈を書き換えれば対応は崩れる（~/.ssh/authorized_keys）
+- [ ] 2026-08-12 [cc] 送信前の自己検査は基本多言語面の外の文字を数えるため、キリル文字などの面内の誤字は捕まらない。実際に audit.md へ一箇所混入し目視で見つけた。検査の範囲を広げるかは未決（tasks/T-2026-08-12-tunnel-key-audit-lecun/RESULT.md）
 
 ## 処理済み（0 件）
 
