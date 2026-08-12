@@ -1,0 +1,10 @@
+- [ ] 2026-08-12 [cc] 中継に使う鍵は ~/.ssh/id_ed25519_lecuntophilip（ED25519 256、指紋 SHA256:dL4qKLl4、権限 600）。目印 ~/.tunnel_to_philip の中身がこの経路を指す。目印は philip 向けの 1 件のみで .tunnel_to_<他> は存在しない（tasks/T-2026-08-12-tunnel-key-audit-lecun/audit.md）
+- [ ] 2026-08-12 [cc] 中継の鍵は到達できる 9 台すべてで Permission denied。名前の上でも実測の上でも philip 専用である。philip 自身は到達不能で測れない（tasks/T-2026-08-12-tunnel-key-audit-lecun/audit.md）
+- [ ] 2026-08-12 [cc] lecun の受け入れ一覧は 4 件。遠隔 peer 10 台のうち philip・bengio・efros の 3 台を受け入れ、adam・andrew・dlsta・he・hinton・ian・ilya の 7 台は受け入れない。4 件目は dakyo-mba@dmba.local で device 一覧に無く人の端末と読める（~/.ssh/authorized_keys）
+- [ ] 2026-08-12 [cc] lecun から bengio（id_rsa_lecuntobengio）と efros（id_rsa_lecuntoefros）へは既存の鍵で REACHABLE。代理は到達不能なので渡した鍵による成功である。他 7 台へは専用鍵が存在せず、通る鍵があるかは測っていない（~/.ssh/config）
+- [ ] 2026-08-12 [cc] keeper.sh は目印の存在（.tunnel_to_philip）で中継を張るか決める。中心を移すには各ノードに目印を新規作成する必要があり、ファイル名に中心の名を含む形のため名前の付け替えも要る。本契約は禁止 1 により作成していない（scripts/sync/keeper.sh）
+- [ ] 2026-08-12 [cc] ~/.ssh/config の philip の IdentityFile が /Users/dakyo-mba/.ssh/... という macOS の経路で lecun には不在。中継は keeper.sh が経路を明示的に渡すため影響しないが、人が ssh philip を手で叩くと既定の鍵へ落ちる（~/.ssh/config）
+- [ ] 2026-08-12 [cc] 他 7 台へ通らない理由が「鍵が未登録」か「別の利用者名が要る」かは区別できない。いずれも Permission denied (publickey,password) という同じ表示になる。UNKNOWN（tasks/T-2026-08-12-tunnel-key-audit-lecun/result.yaml）
+- [ ] 2026-08-12 [cc] SPEC Task 3 Step 2 の accept-new は ~/.ssh/known_hosts へ追記するため禁止 2 に触れる。書き込まない形へ置き換えた。10 台すべてが未知でありそのまま実行すれば 10 件の追記が起きていた。手順書の該当箇所を直すかは未決（.claude/skills/task/SKILL.md）
+- [ ] 2026-08-12 [cc] 受け入れ一覧の註釈から device への対応づけは自己申告に依る。指紋と相手ホストの対応を相手側で確認していない。註釈を書き換えれば対応は崩れる（~/.ssh/authorized_keys）
+- [ ] 2026-08-12 [cc] 送信前の自己検査は基本多言語面の外の文字を数えるため、キリル文字などの面内の誤字は捕まらない。実際に audit.md へ一箇所混入し目視で見つけた。検査の範囲を広げるかは未決（tasks/T-2026-08-12-tunnel-key-audit-lecun/RESULT.md）

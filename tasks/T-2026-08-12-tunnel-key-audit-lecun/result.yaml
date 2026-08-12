@@ -1,0 +1,202 @@
+result_version: 3
+task_id: "T-2026-08-12-tunnel-key-audit-lecun"
+status: pass
+host: "lecun"
+branch: "feat/tunnel-key-audit-lecun"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      指紋の照合が空振りでないことを、実在する別の指紋を与えて確かめた。中継の鍵の指紋では
+      0 を返し、受け入れ一覧に実在する philip-to-lecun の指紋では 1 を返した。
+      秘匿の検査が働くことを囮で確かめた。audit.md への検査は 0 で、囮の行を含む一時ファイル
+      への同じ検査は 1 を返した。囮は外部へ送らず削除した。あわせて手元の 6 公開鍵すべてを
+      同じ照合にかけ全件 0 であることを示し、SPEC の照合が構造的に 0 を返すことを明らかにした。
+  - id: G2
+    verdict: pass
+    note: >-
+      認証が通らないはずの鍵（/dev/null）を到達できた住所（bengio）へ与え、REACHABLE が
+      返らないことを確かめた。IdentitiesOnly を付けない形と付ける形の二通りで測り、
+      いずれも REACHABLE の件数が 0 だった。代理の到達性を先に測り Error connecting to agent
+      であることを確かめたため、認証の成否は渡した鍵だけで決まる。対象一覧は三つの出所から
+      集めて 10 台（ssh_count=4 / etc/hosts の遠隔 0 / stcfg_count=11 の和集合）。
+      測定は 10 行で、0 + 9 + 1 = 10 = 対象数として一致した。
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 423
+
+positive_controls:
+  - judgement: "判定 4 記録に鍵の値が含まれない"
+    breaking_input: "鍵の書き出しを模した囮の行を含むファイルに同じ検査をかける"
+    observed: >-
+      本番の audit.md は 0、囮の一時ファイルは 1 を返した。**検査は空振りではない。**
+      囮は repo の外に置き、測定後に削除して外部へ送らないことを確かめた。
+  - judgement: "判定 7 中継の鍵が自ホストに登録されているかの照合"
+    breaking_input: "受け入れ一覧に実在する別の指紋を与える"
+    observed: >-
+      実在する指紋（philip-to-lecun）では 1、中継の鍵の指紋では 0 を返した。照合は
+      常に 0 を返す壊れ方をしていない。**さらに手元 6 公開鍵すべてで 0 だったことから、
+      この照合が構造的に 0 を返すこと（外向き鍵と受け入れ一覧の比較であること）が分かった。**
+  - judgement: "判定 12 通らないはずの鍵で通らない"
+    breaking_input: "鍵として無効なもの（/dev/null）を、認証が通ると分かっている住所へ与える"
+    observed: >-
+      IdentitiesOnly の有無の二通りで REACHABLE の件数が 0。**加えて代理の到達性を先に測り、
+      Error connecting to agent であることを確かめた。** 代理が生きていれば既定の鍵で
+      偶然通り、G2 の停止条件を誤って満たしかねなかった。
+  - judgement: "判定 10 全対象で認証を測り合計が一致した"
+    breaking_input: "三分類の合計と行数と対象数を突き合わせる"
+    observed: >-
+      0 + 9 + 1 = 10 = 10 = 10（分類の合計 / 行数 / 対象数）。分類から漏れた行は無い。
+  - judgement: "禁止 2 を守った（~/.ssh を変更していない）"
+    breaking_input: "SPEC 指定の accept-new をそのまま使えば known_hosts へ追記される"
+    observed: >-
+      測定の前後で known_hosts の要約値が b7dd7291ed3c8b6a292b04d31cef9f16 のまま変わらず、
+      更新時刻も 2026-07-01 09:11:14 のままだった。**書き込まない形へ置き換えたことを
+      要約値で証明した。**
+  - judgement: "判定 8 自ホストの住所"
+    breaking_input: "SPEC 指定の代替命令の出力を、正しく解析した結果と突き合わせる"
+    observed: >-
+      SPEC 指定の grep -A1 は broadcast の 172.17.255.255 を返した。正しく解析すると
+      127.0.0.1 と 172.17.0.22 である。**突き合わせなければ broadcast を住所と誤読していた。**
+
+deviations:
+  - type: judgement
+    note: >-
+      SPEC Task 3 Step 2 の -o StrictHostKeyChecking=accept-new を
+      -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null に置き換えた。
+      accept-new は ~/.ssh/known_hosts へ追記するため禁止 2（~/.ssh の変更）に触れる。
+      測定の前後で要約値と更新時刻が変わっていないことを記録した。
+  - type: judgement
+    note: >-
+      中継の鍵だけでなく ~/.ssh/config が宣言する対応（bengio と efros の専用鍵）でも
+      認証を測った。中継の鍵は philip 専用であり、それだけでは決定事項「どのホストが
+      中心になれるか」に答えられない。追加で 2 件測り、いずれも REACHABLE を得た。
+  - type: judgement
+    note: >-
+      陽性対照に IdentitiesOnly=yes の形を加え、あわせて代理（ssh-agent）の到達性を
+      先に測った。SPEC の対照は鍵を隔離していないため、代理や既定の鍵へ落ちて偶然通る
+      余地がある。本環境では代理が到達不能だったため影響しなかったが、条件を測らずに
+      対照の妥当性を前提にはできない。
+  - type: judgement
+    note: >-
+      Task 2 Step 4 の代替命令が broadcast の住所を返すため、/proc/net/fib_trie を
+      正しく解析し直した（住所は /32 host LOCAL の行の前にある）。あわせて /etc/hosts と
+      経路表で裏づけた。SPEC 指定の出力と正しい結果の両方を記録した。
+  - type: judgement
+    note: >-
+      中継の目印の中身を印字する前に、それが経路か鍵の中身かを大きさ（43 バイト）・行数
+      （1 行）・BEGIN 行の件数（0）で判定した。**印字は取り消せない。** 実装のコメントは
+      読んでいたが、それだけで印字を始めない判断をした。
+  - type: judgement
+    note: >-
+      Task 2 Step 3 の照合に加え、手元の 6 公開鍵すべてを同じ照合にかけた。全件 0 であり、
+      それが正常であること（外向き鍵は自分の受け入れ一覧に置かない）を示した。
+      1 件だけを測ると 0 の意味を読み違える。
+  - type: judgement
+    note: >-
+      全 6 鍵と全 9 台の総当たりは行っていない。~/.ssh/config が宣言する対応に限った。
+      鍵の総当たりは監査の範囲を超えるため、宣言された対応の検証にとどめた。
+      他 7 台へどの鍵なら通るかは測っていない。
+  - type: environment
+    note: >-
+      audit.md の執筆時にキリル文字が一箇所混入したため直した。送信前の自己検査は
+      基本多言語面の外の文字を数えるものであり、キリル文字は面の内側にあるため捕まらない。
+      **検査が捕まえない種類の誤りがあることを記録する。**
+
+issuer_defects:
+  - type: check_does_not_check
+    note: >-
+      Task 2 Step 3 は「中継の鍵が自ホストに登録されているか」を照合し、1 以上なら
+      「自ホストは中心になれる」、0 なら「登録の追加が要る」と結論づける。しかし照合の対象は
+      lecun の外向きの鍵（philip 宛の id_ed25519_lecuntophilip）と lecun の受け入れ一覧であり、
+      鍵は対ごとに別に作られている（外向きが lecuntophilip、受け入れが philip-to-lecun）。
+      外向きの鍵を自分の受け入れ一覧に置く理由が無いため、この照合は構造的に必ず 0 を返す。
+      手元の 6 公開鍵すべてで 0 だったことがそれを示す。指示どおり 0 を読むと「lecun は
+      中心になれない」と結論するが、実際には lecun は philip・bengio・efros の 3 台を
+      受け入れており、答えは同じ Task の Step 2 のデータにある。
+  - type: self_contradiction
+    note: >-
+      禁止 2 が ~/.ssh/** の変更を禁じる一方、Task 3 Step 2 の命令は
+      -o StrictHostKeyChecking=accept-new を含む。accept-new は未知のホスト鍵を
+      ~/.ssh/known_hosts へ追記する動作であり、指示どおり実行すると禁止事項を破る。
+      本測定では 10 台すべてが未知であったため、そのまま実行すれば 10 件の追記が起きていた。
+      書き込まない形へ置き換え、要約値で無変更を証明した。
+  - type: check_does_not_check
+    note: >-
+      Task 2 Step 4 の代替命令 cat /proc/net/fib_trie | grep -A1 "32 host" | head -20 は
+      自ホストの住所ではなく broadcast の住所（127.255.255.255 と 172.17.255.255）を返す。
+      住所は /32 host LOCAL の行の**前**にあるため -A1 の向きが逆である。指示どおり実行して
+      出力を住所と読むと 172.17.255.255 を自ホストの住所と誤る。正しく解析すると
+      127.0.0.1 と 172.17.0.22 である。加えてこの命令は | head -20 の切り詰めを含み、
+      SPEC 自身の注意 3「記録を作る流れに表示用の切り詰めを混ぜない」に反している。
+  - type: check_does_not_check
+    note: >-
+      Task 3 Step 2 は中継の鍵（KEY）だけで全対象を測るよう指示する。しかしこの鍵は
+      philip 専用であり、他の 9 台では必ず Permission denied になる（実測で 9 件すべて）。
+      決定事項は「どのホストが中心になれるか」であり、指示どおり実行すると「どのホストへも
+      認証が通らない」と結論して終わる。~/.ssh/config が宣言する対応（bengio と efros の
+      専用鍵）で測ると 2 台とも REACHABLE であり、答えが逆向きに出る。同 Step は
+      IdentityFile を Step 1 で表示させておきながら、Step 2 で使わせていない。
+  - type: check_does_not_check
+    note: >-
+      Task 3 Step 4 の陽性対照は -i /dev/null を与えるだけで鍵を隔離していない。
+      IdentitiesOnly を付けないと ssh は代理（ssh-agent）や既定の鍵へ落ちるため、
+      有効な鍵が代理に載っていれば REACHABLE が返りうる。その場合 SPEC の
+      escalate_if「通らないはずの鍵で認証が通り、鍵による識別が働いていない疑い」に
+      該当して停止することになるが、原因は鍵の識別ではなく対照の設計である。
+      本環境では SSH_AUTH_SOCK が設定されていながら代理が到達不能（Error connecting to
+      agent）だったため影響しなかった。**その条件を測るよう指示されていない。**
+
+followups:
+  - >-
+    lecun の受け入れ一覧は 4 件で、遠隔の peer 10 台のうち philip・bengio・efros の 3 台を
+    受け入れる。残る 7 台（adam・andrew・dlsta・he・hinton・ian・ilya）は受け入れない。
+    lecun を中心にする場合、7 台分の登録の追加が要る。4 件目は dakyo-mba@dmba.local で
+    device 一覧に無く、人の端末と読める。
+  - >-
+    lecun から bengio と efros へは既存の鍵で認証が通る（実測 REACHABLE）。
+    他の 7 台へは中継の鍵では通らない。専用の鍵が存在しないため、通る鍵があるかは測っていない。
+    中心をどこにするかの判断はユーザーが行う。
+  - >-
+    ~/.ssh/config の philip の IdentityFile が /Users/dakyo-mba/.ssh/... という macOS の経路で
+    あり lecun には不在である。人の端末の設定が写されたものと読める。中継は keeper.sh が
+    経路を明示的に渡すため影響を受けないが、ssh philip を人が手で叩くと既定の鍵へ落ちる。
+  - >-
+    中継の目印は .tunnel_to_philip の 1 件のみである。keeper.sh は目印の存在で中継を張るか
+    決めるため、中心を別のホストへ移すには各ノードに目印を新規作成する必要がある。
+    本契約は禁止 1 により作成していない。実装の分岐条件は目印のファイル名に中心の名を
+    含む形（.tunnel_to_<name>）であり、名前の付け替えも要る。
+  - >-
+    受け入れ一覧の註釈（philip-to-lecun など）から device への対応づけは自己申告に依る。
+    指紋と相手ホストの対応を相手側で確認していない。註釈を書き換えれば対応は崩れる。
+  - >-
+    philip 向けの鍵が 2 本ある（ED25519 が 2026-07-03、RSA が 2026-07-01）。中継が使うのは
+    目印が指す ED25519 の方である。旧い RSA の方が philip でまだ受け入れられているかは
+    到達できないため測れない。
+
+unknowns:
+  - >-
+    他ホストの受け入れ一覧の中身。bengio と efros へ認証が通ることは実測したが、他の 7 台へ
+    通らない理由が「鍵が未登録」なのか「別の利用者名が要る」のかは区別できない。
+    いずれも Permission denied (publickey,password) という同じ表示になる。
+  - >-
+    philip への認証。3 ポートすべて到達不能であるため測れない。中継の鍵が philip で
+    受け入れられているかは UNKNOWN である（停止前は通っていたことが前契約の記録から
+    読めるが、本契約では確かめていない）。
+  - >-
+    他ノードから lecun がどの住所で見えるか。自ホストの住所は 172.17.0.22（容器の内側）で
+    あり、他ノードは 192.168.196.0/24 にある。容器の外側で住所の変換が行われている
+    可能性があるが、その設定は自ホストから読めない。
+  - >-
+    他ホストの測定結果。同じ内容の契約を複数ホストで並行実行しているため見えない。
+    各ノードから新しい中心へ認証が通るかは、そのノードでしか測れない。
+  - >-
+    dakyo-mba@dmba.local の鍵の持ち主。註釈からは人の端末（macOS）と読めるが確認していない。
+
+commits:
+  - "858115a"
