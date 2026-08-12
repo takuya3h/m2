@@ -3,7 +3,7 @@ task_id: "T-2026-08-12-hub-from-marker"
 status: partial
 host: "lecun"
 branch: "feat/hub-from-marker"
-pr: null
+pr: 94
 merged: false
 
 gates:
@@ -60,7 +60,8 @@ followups:
       正本の配置、稼働 keeper の PID 単位の停止と再起動、鍵と目印の変更は本契約では行っていない。
 
 unknowns:
-  - "分岐送出、PR、同期抑止解除、台帳返却は未実施。"
+  - "同期抑止解除、台帳返却は未実施。"
   - "lecun が他ノードから到達可能な住所は本契約では再測定していない。"
 
-commits: []
+commits:
+  - "f6ac77b"

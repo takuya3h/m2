@@ -10,7 +10,7 @@
 - [x] Phase B: `scripts/sync/keeper.sh` を目印から中心を導出する最小実装へ変更する
 - [x] Phase B: 偽の HOME による四通りの対照、構文検査、中継数・稼働版・本物の目印の無変更を実測し G2 を判定する
 - [x] Phase C: `RESULT.md` / `result.yaml` / 判断受け皿 / `README.md` を更新し、近接テスト・全テスト・禁止領域検査を通す
-- [ ] 契約指定どおり commit・push・Draft PR・台帳報告を行い、`.sync-pause` を解除する
+- [ ] 契約指定どおり commit・push・PR・台帳報告を行い、`.sync-pause` を解除する
 
 成功基準: 契約の完了判定 19 項目を実測値または `UNKNOWN` で埋め、稼働中の `~/bin/keeper.sh`、本物の `~/.tunnel_to_*`、常駐処理を一切変更せず、試験失敗を増やさない。
 
