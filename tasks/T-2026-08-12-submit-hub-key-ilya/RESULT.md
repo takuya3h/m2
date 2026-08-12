@@ -56,7 +56,7 @@
 | 18 | 分岐送出 | 上流設定済み、ahead/behind=`0 0` |
 | 19 | PR | #96、OPEN、非Draft、base=`phase0`、head=`feat/submit-hub-key-ilya` |
 | 20 | 抑止解除 | `released`。repo直下から消え、`/tmp`へ退避済み |
-| 21 | 台帳報告 | UNKNOWN（後続Stepで更新） |
+| 21 | 台帳報告 | 初回`make task-report`はexit 0。最終pass成果物を再送する |
 
 ## 4. 陽性対照
 
@@ -91,3 +91,5 @@
 - 登録後に同じ鍵で認証が通るか。次契約で再測定が必要。
 
 ソースコードの変更はなく、公開鍵と記録の追加だけなのでREADME更新は行っていない。
+
+PR #96はOPEN・非Draft。初回台帳報告はexit 0、5665バイト、置換ブロック0。

@@ -295,3 +295,19 @@ repo 直下から消えた
 ```
 
 抑止はrepo外へ移動され、必要なら退避先から戻せる。
+
+## 台帳報告（初回）
+
+出力（SHA-256は先頭8文字へ短縮）:
+
+```text
+task_id=T-2026-08-12-submit-hub-key-ilya
+verdict=partial
+n_issuer_defects=2
+report_sha256_prefix=a1c2daed
+report_bytes=5665
+replaced_blocks=0
+report_exit=0
+```
+
+初回報告はexit 0。最終pass成果物をcommit・push後に再送する。
