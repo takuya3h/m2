@@ -153,8 +153,8 @@ SPEC Task 3 Step 2 の命令は `-o StrictHostKeyChecking=accept-new` を含み�
 | 13 | 12 項目すべてに実測値または UNKNOWN | **空欄なし。** UNKNOWN は `result.yaml` の `unknowns` に 5 件を明示 |
 | 14 | 送信前の自己検査が両方とも零 | **3 ファイルすべて `bmp_over=0` `hex40=0`**（受け皿も零）。記録の追記後に再実行しても零 |
 | 15 | 作業ツリーの変更が契約の範囲に限られる | **2 行**。`tasks/T-2026-08-12-tunnel-key-audit-lecun/` と `tasks/inbox.d/T-2026-08-12-tunnel-key-audit-lecun.md`。`make forbidden-check` は `pass`（changed 6 / checked 6 / violations 0）。unmerged **0**。**契約の範囲外の未追跡物は無い** |
-| 16 | 抑止が repo 直下から消えている | Step 8 の実測を後述 |
-| 17 | 報告が台帳へ返っている | Step 9 の実測を後述 |
+| 16 | 抑止が repo 直下から消えている | **消えた。** `/tmp/.sync-pause.released.T-2026-08-12-tunnel-key-audit-lecun` へ移動（repo 外）。移動後の作業ツリーは**空**。削除は使っていない |
+| 17 | 報告が台帳へ返っている | **返った。** `exit=0`、`report_bytes=18683`、`n_issuer_defects=5`、`replaced_blocks=0` |
 
 ### 秘匿の検査は件数では判定できない
 
