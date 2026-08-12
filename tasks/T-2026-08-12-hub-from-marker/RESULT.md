@@ -42,8 +42,8 @@
 | 15 | 変更範囲 | 契約取り込み前 | 正本・契約成果物・判断受け皿・上位指示の文書のみ |
 | 16 | 分岐送出 | 未実施 | `origin/feat/hub-from-marker` を追跡、ahead 0 |
 | 17 | PR | 未作成 | `#94`、OPEN、Draft ではない |
-| 18 | 同期抑止 | `.sync-pause` あり | UNKNOWN（報告完了後に解除） |
-| 19 | 台帳返却 | 未実施 | UNKNOWN |
+| 18 | 同期抑止 | `.sync-pause` あり | `released`、repo 直下から消失 |
+| 19 | 台帳返却 | 未実施 | 送信待ち |
 
 ## 4. 次契約に必要な情報
 
@@ -88,10 +88,11 @@
 ## 7. 版管理
 
 - commit: `f6ac77b feat(sync): derive hub from marker instead of hardcoded constant`
+- commit: `4186eb7 docs(task): record hub marker PR and verification`
 - PR: `#94`（OPEN、`isDraft=false`）
 - phase0 への取り込み: 未実施
 
 ## 8. 未解決
 
-- 同期抑止解除、台帳返却は未実施。実測後に本報告を更新する。
+- 台帳返却は未実施。実測後に本報告を更新する。
 - lecun が他ノードから到達可能な住所は本契約では再測定していない。新目印の 2 行目は次契約で各ノードから実測する。
