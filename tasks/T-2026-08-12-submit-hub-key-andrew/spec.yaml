@@ -1,0 +1,84 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-12-submit-hub-key-andrew"
+  kind: impl
+  title: "中継用の公開鍵を版管理へ提出し、中心への到達住所を実測する（andrew）"
+  origin: claude-app
+  created_at: "2026-08-12T21:30:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-12-hub-from-marker"]
+  amendments: []
+
+intent:
+  question: "中心を lecun へ移すにあたり、このホストは lecun の受け入れ一覧に登録されていない。既に持っている中継用の秘密鍵から公開鍵を導出し、版管理へ提出できるか。あわせて、目印の二行目に書く中心の住所は、入る側から測るとどの値になるか。中心が他ノードからどう見えるかは中心自身では測れない"
+  decision_at_stake: "新しい鍵を作らずに既存の中継用鍵を流用できるか。中心の住所を確定できるか。確定できない場合、目印に住所を書かず名前の解決に頼るか、別の手段を用意するか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/sync/keeper.sh"
+      - "scripts/sync/m2-sync.sh"
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "中継用の鍵の特定と公開鍵の導出、中心への到達住所の実測", gpu: false, est: "60m"}
+    - {id: B, name: "公開鍵の版管理への提出", gpu: false, est: "30m"}
+    - {id: C, name: "検証、送出、報告", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "導出した公開鍵が秘密鍵に対応することを、並置の公開鍵または別の鍵との差異で確かめた。記録に秘密鍵の値が含まれないことを囮つきの検査で確かめた。中心への到達性を測り、分類の合計が候補数と一致した。測定の前後で受け入れの控えが無変更であることを確かめた"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "版管理へ置いたものが公開鍵だけであることを、先頭の形と秘密鍵の語の不在と行数の三つで確かめ、囮で検査が働くことを示した。指紋が導出時の値と一致した"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-12-submit-hub-key-andrew/"
+  acceptance:
+    - "目印の件数と行数と一行目を記録し、目印そのものを変更していない"
+    - "公開鍵を導出して指紋を記録し、秘密鍵の中身をどこにも含んでいない"
+    - "導出した公開鍵が秘密鍵に対応することを対照つきで示している"
+    - "中心の住所の候補を複数の出所から集め、到達性を測って分類の合計が候補数と一致することを示している"
+    - "どの住所が中心かを確定し、判定に使った材料を明記している。確定できない場合は候補を並べて UNKNOWN としている"
+    - "現時点で認証が通るかを記録しており、通った場合もそれを異常としていない"
+    - "版管理へ置いたものが公開鍵だけであることを三つの検査と囮で示している"
+    - "測定命令の副作用が禁止領域に及んでいないことを、目印と稼働版と中継数の前後比較で示している"
+    - "次の契約で使う情報を書き出しており、目印そのものは作っていない"
+    - "変更が公開鍵と契約の範囲に限られ、分岐が送出され PR の番号が記載されている"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "中継の目印が無い、または目印が指す鍵が実在しない場合"
+    - "公開鍵の導出に合言葉が要り、並置の公開鍵も無い場合"
+    - "版管理へ置こうとしたものが公開鍵でない場合"
+    - "置き場所が既存の構造と衝突する場合"
+    - "目印または稼働中の常駐処理が変わってしまった、あるいは中継の数が増えた場合"

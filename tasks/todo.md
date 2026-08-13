@@ -1,5 +1,50 @@
 # TODO — 研究ピボット「分析ファースト」のセットアップ
 
+## 2026-08-13 — T-2026-08-13-bengio-lecun-zmx-deadman-cutover
+
+- [x] 契約取得、L1/L2検証、逐語参照解決、L3 preflightを完了する
+- [x] Phase A: 依存・旧状態を固定し、host上のzmx 4件を検出してG1 stopを判定する
+- [ ] Phase B: 全控え・dead-man実装・隔離positive controlを完了しG2を判定する
+- [ ] Phase C: armed transactionでbengio一台をlecun中心へ切り替えG3を判定する
+- [ ] Phase D: 双方向probeと1800秒以上の安定性を確認しguard解除後にG4を判定する
+- [x] Phase E: RESULT/result.yaml/audit/inbox/README、検証、commit/push/PR、二段返送とpause解除を完了する
+
+成功基準: G1〜G5と全acceptanceを実測で満たした場合だけpass。失敗時はdead-manまたはtransactionが旧philip状態へ一回だけrollbackし、未測定値と保護外failureはUNKNOWNとして記録する。
+
+## 2026-08-13 — T-2026-08-13-bengio-lecun-deadman-cutover
+
+- [x] 契約を取得・逐語で読み、L1/L2検証・参照解決・L3 preflightを完了する
+- [x] Phase A: 依存・旧状態・SSH session独立性・dead-man対象・秘匿・残余リスクを実測し G1 stopを判定する
+- [ ] Phase B: 開始状態を控え、dead-manを実装し、隔離positive controlを全て通して G2 を判定する
+- [ ] Phase C: armed transactionでbengio一台をlecun中心へ切り替え、G3を判定する
+- [ ] Phase D: 双方向probeと1800秒以上の安定性を実測し、安全なguard解除でG4を判定する
+- [x] Phase E: RESULT/result.yaml/audit/inbox/READMEを記録・検証し、commit・push・PR・同期抑止解除・台帳返送を完了する
+
+成功基準: 契約の G1〜G5 と `outputs.acceptance` を全て実測で満たす。失敗時は一回だけ rollback し、未測定値は `UNKNOWN`、保護外の host停止・再起動・kernel停止・storage障害・guard/transaction同時消失は保護済みとしない。
+
+## 2026-08-13 — T-2026-08-13-bengio-canary-lecun-cutover
+
+- [x] 契約を取得・逐語で読み、L1/L2検証と参照解決を完了する
+- [x] L3 preflightと Phase A の読み取り検査で G1 条件を実測する（独立復旧経路不在で stop）
+- [ ] 独立復旧経路のユーザー確認後、Phase B の控え・staging・rollback陽性対照で G2 を検証する
+- [ ] Phase C で bengio 一台の keeper・marker・SSH中継・device address を一体切替し G3 を検証する
+- [ ] Phase D/E で双方向 probe と 1800 秒以上の canary 安定性を検証する
+- [x] Phase F で RESULT/result.yaml/受け皿・投影を生成・検査し、commit・push・PR・同期抑止解除・台帳返送を完了する
+
+成功基準: 契約の G1〜G5 と `outputs.acceptance` を全て実測で満たし、未測定は `UNKNOWN` と記録する。失敗時は bengio だけを開始時状態へ rollback し、一つでも未充足なら pass としない。
+
+停止判定: G1 `on_fail: stop`。Phase B〜Eは未実施、host設定変更なし、未測定は停止報告で `UNKNOWN` とした。
+
+## 2026-08-12 — T-2026-08-12-submit-hub-key-ilya
+
+- [x] 契約・Skill・教訓・分岐・同期抑止・preflightを確認する
+- [x] 目印と秘密鍵を変更せず、公開鍵を導出して対応関係を対照つきで検証する
+- [x] lecunの住所候補・SSH到達性・登録前認証を測り、禁止領域の無変更を示す
+- [x] 公開鍵とhandoff、RESULT、result.yaml、判断受け皿を作成して検証する
+- [x] commit・push・PR・同期抑止解除・台帳報告を完了する
+
+成功基準: 契約の完了判定21項目を実測値またはUNKNOWNで埋め、秘密鍵の内容、目印、稼働版、常駐処理を変更しない。
+
 ## 2026-08-12 — T-2026-08-12-ilya-hub-feasibility
 
 - [x] 契約・教訓・preflight・分岐・同期抑止を確認する

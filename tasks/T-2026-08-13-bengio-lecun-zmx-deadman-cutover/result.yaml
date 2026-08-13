@@ -1,0 +1,69 @@
+result_version: 3
+task_id: "T-2026-08-13-bengio-lecun-zmx-deadman-cutover"
+status: stopped
+host: "Bengio"
+branch: "feat/bengio-lecun-zmx-deadman-cutover"
+pr: 104
+merged: false
+
+gates:
+  - id: G1
+    verdict: stop
+    note: >-
+      transaction祖先のzmxはPID/tick 472358/62748521へ固定できたが、host全体には同一binaryのzmxが
+      4件存在し、topology probeがhost_zmx_count_not_one:4を返して一意なverified_zmxを拒否した。
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 3
+
+deviations:
+  - type: judgement
+    note: >-
+      topology probe初版はPID 1にもbinary解決を要求したが、契約が固定binary identityを要求する対象は
+      zmxであり、PID 1はcomm、cmdline、start tick、listenerで識別するため、live最終判定前に
+      余分な条件だけを除去した。zmx binary解決不能の拒否条件は維持した。
+  - type: judgement
+    note: "G1 on_fail: stopに従い、Phase BからDとhost変更を実施しなかった。"
+
+issuer_defects: []
+
+positive_controls:
+  - judgement: "direct SSHとverified_zmxを一意に分類する"
+    breaking_input: "session sshdを持つdirect fixtureと、一件のzmxからPID 1 sshdへ届くfixtureを与える"
+    observed: "direct_sshとverified_zmxをそれぞれPASSへ分類した。"
+  - judgement: "複数zmxを拒否する"
+    breaking_input: "host process一覧へ二件目のzmxを追加する"
+    observed: "fixtureをrejectedへ分類し、liveでもhost_zmx_count_not_one:4でexit 1になった。"
+  - judgement: "名前だけのzmxや一般orphanを許可しない"
+    breaking_input: "binary identityを解決不能にしたzmx、またはcommがworkerのPID 1子processを与える"
+    observed: "両fixtureをrejectedへ分類した。"
+  - judgement: "変更対象processはtransaction祖先にいない"
+    breaking_input: "fake祖先へkeeper、Syncthing、port forward付きsshを個別に追加する"
+    observed: "三fixtureすべてをrejectedへ分類した。"
+  - judgement: "zmx identityをPID、tick、binary要約値の組で固定する"
+    breaking_input: "start tickまたはbinary SHA-256だけを変更する"
+    observed: "両方のidentity照合がfalseになった。"
+  - judgement: "listener検査が存在と不存在を区別する"
+    breaking_input: "port 22と不存在port 65534を同じfixtureから走査する"
+    observed: "port 22は1件、port 65534は0件になった。"
+  - judgement: "出力に秘密本文が残らない"
+    breaking_input: "囮secretをtoken代入とargvへ入れる"
+    observed: "入力では1件を検出し、sanitize後は0件になった。"
+  - judgement: "host停止をdead-manの保護対象と断定しない"
+    breaking_input: "host_stoppedをprotectedへ移しunprotectedから外す"
+    observed: "residual risk policyがfalseになった。"
+
+followups:
+  - "hostに存在する4件のzmxを安全に識別し、一意性をどのscopeで定義するかを別契約で決める。"
+  - "既存zmxの停止やsignalが必要なら、対象PIDと影響範囲を明示した別契約で許可する。"
+
+unknowns:
+  - "Phase Bのbackup、dead-man protocol、隔離試験はG1 stopのためUNKNOWN。"
+  - "Phase Cのkeeper、marker、SSH中継、Syncthing device address切替はUNKNOWN。"
+  - "Phase Dの双方向probe、1800秒安定性、commit token、guard解除はUNKNOWN。"
+
+commits:
+  - "05c820b"
+  - "04f8644"

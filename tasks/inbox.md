@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（210 件）
+## 未処理（221 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -178,6 +178,10 @@
 - [ ] 2026-08-12 [cc] 過去2回の「ilyaは構内へ出られない」は今日の値と食い違う。他ノード10台のうちphilipを除く9台の50072番がOPENで、目標4台もすべて含む。philipだけ22000番No route to host・50072番TIMEOUT（tasks/T-2026-08-12-ilya-hub-feasibility/audit.md）
 - [ ] 2026-08-12 [cc] 9台へilya-to-philip鍵を指定した認証は全件Permission denied。SSH口への到達と鍵認証成功は別であり、鍵の生成・配布・変更は行っていない（tasks/T-2026-08-12-ilya-hub-feasibility/audit.md）
 - [ ] 2026-08-12 [cc] 到達性の陽性対照は当初TIMEOUT固定だったが、ilyaではNetwork is unreachableを即時に返した。ユーザー承認のamendmentで両者を経路なしとして許容して再開した（tasks/T-2026-08-12-ilya-hub-feasibility/spec.yaml）
+- [ ] 2026-08-12 [cx] andrew の公開鍵指紋と lecun 住所、登録前の認証拒否を実測し handoff.md に記録した（T-2026-08-12-submit-hub-key-andrew）
+- [ ] 2026-08-12 [cc] ilyaの既存中継鍵から公開鍵を導出し、`scripts/sync/hub_keys/ilya.pub`へ配置した。指紋は`SHA256:5auPdGk/WfnGcmpQ8yygEc6mMv7svH8CzqulBjV3pRo`で並置公開鍵・導出物と一致。秘密鍵本文は記録していない（tasks/T-2026-08-12-submit-hub-key-ilya/audit.md）
+- [ ] 2026-08-12 [cc] lecunの住所はSyncthingの`device name=lecun`対応から`192.168.196.176`と確定し、SSH 50072番はOPEN。登録前認証はPermission denied、exit 255（tasks/T-2026-08-12-submit-hub-key-ilya/handoff.md）
+- [ ] 2026-08-12 [cc] 次契約ではlecun側へ公開鍵を登録後、ilyaから同じ鍵でREACHABLEを再測定する。ilya側の目印案は1行目に既存秘密鍵パス、2行目に`192.168.196.176`。本契約では目印を変更していない（tasks/T-2026-08-12-submit-hub-key-ilya/handoff.md）
 - [ ] 2026-08-12 [cc] 星型の中心 philip（192.168.196.150）へは両ポートとも No route to host。他 9 台は SSH 50072 が OPEN で機器までは届く。同一構内へ届かないのに外部の版管理へは届く非対称がある（tasks/T-2026-08-12-sync-audit-bengio/audit.md）
 - [ ] 2026-08-12 [cc] 停止は 2026-08-06 と推定。二つの独立した情報が整合する。遠隔由来の最後の衝突が 08-06 16:22 UTC、トンネルの連続失敗 263 回を 30 分周期で逆算して 08-06 20:41 UTC（同上）
 - [ ] 2026-08-12 [cc] .stversions が 0 件。経路が復旧して遠隔版が流れ込んだ場合、局所版を戻す手段が同期処理側に無い。claude-sync は 2532 ファイルで衝突が 10 件残る（tasks/T-2026-08-12-sync-audit-bengio/inventory.tsv）
@@ -225,6 +229,13 @@
 - [ ] 2026-08-12 [cc] SPEC Task 3 Step 2 の accept-new は ~/.ssh/known_hosts へ追記するため禁止 2 に触れる。書き込まない形へ置き換えた。10 台すべてが未知でありそのまま実行すれば 10 件の追記が起きていた。手順書の該当箇所を直すかは未決（.claude/skills/task/SKILL.md）
 - [ ] 2026-08-12 [cc] 受け入れ一覧の註釈から device への対応づけは自己申告に依る。指紋と相手ホストの対応を相手側で確認していない。註釈を書き換えれば対応は崩れる（~/.ssh/authorized_keys）
 - [ ] 2026-08-12 [cc] 送信前の自己検査は基本多言語面の外の文字を数えるため、キリル文字などの面内の誤字は捕まらない。実際に audit.md へ一箇所混入し目視で見つけた。検査の範囲を広げるかは未決（tasks/T-2026-08-12-tunnel-key-audit-lecun/RESULT.md）
+- [ ] 2026-08-13 [cx] andrew と ilya の公開鍵を lecun の受け入れ一覧へ登録した。両ホスト側からの認証再測定、lecun の旧目印の扱い、開始時 mode 664 の原因確認が残る（T-2026-08-12-register-hub-keys）
+- [ ] 2026-08-13 [human] bengioはSSH接続でしか操作できず、独立復旧経路のG1条件を満たさないためhost変更前に停止した（T-2026-08-13-bengio-canary-lecun-cutover）
+- [ ] 2026-08-13 [cx] zmx再親化によりtransaction祖先が対話session sshdへ届かずG1停止。session sshd子孫から起動するか契約amendmentが必要（T-2026-08-13-bengio-lecun-deadman-cutover）
+- [ ] 2026-08-13 [cx] host上にzmxが4件あり一意なverified_zmxへ分類できずG1停止。scope定義または既存zmxの扱いを別契約で決める（T-2026-08-13-bengio-lecun-zmx-deadman-cutover）
+- [ ] 2026-08-13 [cx] lecunをmarkerなしの正本keeperへ切り替え、SyncthingとSSH関連状態を維持した。一般ノード一台のcanary切替は別契約で行う（T-2026-08-13-hub-deploy-lecun-marker-cutover）
+- [ ] 2026-08-13 [cx] handoffはlecun marker退避を必須とするが配置SPECは禁止し、markerを残すと正本keeperがssh起動を試みるため配置前に停止した。marker移動許可か中心role実装のどちらかへ契約を整合させる必要がある（T-2026-08-13-hub-deploy-lecun）
+- [ ] 2026-08-13 [cx] 中心lecunを先に確立し一般ノードを一台ずつ更新する。一般ノードは旧keeperだけでなく旧SSH中継も数値PID限定で終了し、接続先記録付き双方向probeまで通す必要がある（T-2026-08-13-hub-role-and-restart）
 
 ## 処理済み（0 件）
 

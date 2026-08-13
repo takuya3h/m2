@@ -1,0 +1,3 @@
+- [ ] 2026-08-12 [cc] ilyaの既存中継鍵から公開鍵を導出し、`scripts/sync/hub_keys/ilya.pub`へ配置した。指紋は`SHA256:5auPdGk/WfnGcmpQ8yygEc6mMv7svH8CzqulBjV3pRo`で並置公開鍵・導出物と一致。秘密鍵本文は記録していない（tasks/T-2026-08-12-submit-hub-key-ilya/audit.md）
+- [ ] 2026-08-12 [cc] lecunの住所はSyncthingの`device name=lecun`対応から`192.168.196.176`と確定し、SSH 50072番はOPEN。登録前認証はPermission denied、exit 255（tasks/T-2026-08-12-submit-hub-key-ilya/handoff.md）
+- [ ] 2026-08-12 [cc] 次契約ではlecun側へ公開鍵を登録後、ilyaから同じ鍵でREACHABLEを再測定する。ilya側の目印案は1行目に既存秘密鍵パス、2行目に`192.168.196.176`。本契約では目印を変更していない（tasks/T-2026-08-12-submit-hub-key-ilya/handoff.md）

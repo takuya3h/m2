@@ -1,0 +1,73 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-08-13-hub-deploy-lecun-marker-cutover"
+  kind: impl
+  title: "lecun の旧 marker を可逆退避し、正本 keeper を marker 無しで起動して中心化する"
+  origin: human
+  created_at: "2026-08-13T09:47:45Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  supersedes: ["T-2026-08-13-hub-deploy-lecun"]
+  depends_on: ["T-2026-08-13-hub-role-and-restart", "T-2026-08-13-hub-deploy-lecun"]
+  amendments: []
+intent:
+  question: "停止報告で確定した矛盾を除き、handoff を正として lecun の旧 marker を控え付きで退避してから正本 keeper を配置し直すと、SSH 中継を持たずに Syncthing と同期処理を監督する中心として稼働できるか"
+  decision_at_stake: "lecun の中心化を完了して一般ノード一台の canary 切替へ進めるか、開始時状態へ rollback して中心化手順を再設計するか"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["scripts/sync/keeper.sh", "scripts/sync/m2-sync.sh", "tasks/T-2026-08-13-hub-role-and-restart/handoff.md", "tasks/T-2026-08-13-hub-deploy-lecun/RESULT.md", "tasks/T-2026-08-13-hub-deploy-lecun/deploy.md"]
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "依存契約と開始状態の固定", gpu: false, est: "25m"}
+    - {id: B, name: "keeper と marker の控え作成", gpu: false, est: "20m"}
+    - {id: C, name: "正本 keeper の配置と marker の可逆退避", gpu: false, est: "15m"}
+    - {id: D, name: "旧 keeper の停止と正本 keeper の起動", gpu: false, est: "20m"}
+    - {id: E, name: "中心稼働の検証と必要時の rollback", gpu: false, est: "25m"}
+    - {id: F, name: "契約検証と送出と台帳返送", gpu: false, est: "30m"}
+  gates:
+    - {id: G1, after: A, check: "停止報告が phase0 に存在し、開始時の keeper、marker、Syncthing、施錠、待ち受けを陽性対照付きの同一 probe で固定した", on_fail: stop}
+    - {id: G2, after: B, check: "keeper と marker の控えが原本とバイト一致し、mode と件数も開始時記録と一致した", on_fail: stop}
+    - {id: G3, after: C, check: "稼働場所の keeper が origin の正本とバイト一致し、marker が home 直下から零件になり、控えは glob 非一致場所に残った", on_fail: stop}
+    - {id: G4, after: D, check: "旧 keeper の数値 PID が消え、新しい一意な PID が正本を実行して施錠を保持した", on_fail: stop}
+    - {id: G5, after: E, check: "SSH 中継と local relay が零件のまま、Syncthing の開始時 PID と待ち受けが維持され、m2-sync が一時停止を記録した", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md, result.yaml, hub-audit.md, hub_state_probe.py, launch_keeper.py]
+  destination: "tasks/T-2026-08-13-hub-deploy-lecun-marker-cutover/"
+  acceptance:
+    - "前契約を停止させた二つの自己矛盾が本契約に残っていないことを、禁止事項と全手順の照合表で示す"
+    - "旧 marker の原本、複製控え、移動後の実体についてバイト一致と mode と件数を記録する"
+    - "正本 keeper の Git blob、staging、稼働場所を三者照合し、配置前の keeper 控えも開始時原本と照合する"
+    - "停止信号は再同定した一つの数値 PID だけへ送り、広域の名前一致停止を使わない"
+    - "新 keeper の PID、PPID、FD、施錠、実行ファイルの要約値を記録し、旧 PID の消滅を確認する"
+    - "home 直下の marker と SSH 中継と local relay が零件であることを二つの異質な測り方で確認する"
+    - "Syncthing の PID と開始 tick と待ち受けが切替前後で一致し、keeper 切替が Syncthing を再起動していないことを示す"
+    - "失敗時は handoff の rollback で keeper と marker と稼働状態を開始時へ戻し、成功時は rollback 未実施と記録する"
+    - "分岐を送出して PR を作り、番号、Draft、base、head、upstream、ahead を完了報告に記録する"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "開始時の marker が一件でない、または停止報告と異なる path で、意味を一意に説明できない場合"
+    - "keeper、marker、authorized_keys、Syncthing の開始時状態を取得できない場合"
+    - "旧 keeper の数値 PID を一意に再同定できない場合"
+    - "TERM 後も旧 PID が消えず、より強い信号が必要な場合"
+    - "正本 keeper 起動後に SSH 中継または local relay が現れた場合"
+    - "Syncthing の PID、開始 tick、待ち受けのいずれかが意図せず変わった場合"
+    - "rollback 後も keeper、marker、Syncthing、施錠の状態が開始時へ戻らない場合"

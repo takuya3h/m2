@@ -1,0 +1,70 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-08-13-bengio-canary-lecun-cutover"
+  kind: impl
+  title: "bengio を最初の一般ノード canary として lecun 中心へ切り替える"
+  origin: human
+  created_at: "2026-08-13T10:58:36Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-13-hub-role-and-restart", "T-2026-08-13-hub-deploy-lecun-marker-cutover"]
+  amendments: []
+intent:
+  question: "lecun の中心稼働を再確認し、bengio の登録済み対別鍵、keeper、marker、SSH中継、Syncthingのdevice addressを可逆的に切り替えると、lecunとの接続と双方向データ到達を保つ最初の一般ノードcanaryとして安定稼働できるか"
+  decision_at_stake: "bengioをcanary passとして残りの一般ノードを一台ずつ切り替えるか、bengioだけを開始時状態へrollbackして一般ノード移行手順を再設計するか"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["scripts/sync/keeper.sh", "scripts/sync/m2-sync.sh", "tasks/T-2026-08-13-hub-role-and-restart/handoff.md", "tasks/T-2026-08-13-hub-deploy-lecun-marker-cutover/RESULT.md", "tasks/T-2026-08-12-sync-audit-bengio/audit.md", "tasks/T-2026-08-12-tunnel-key-audit-bengio/audit.md", "tasks/T-2026-08-12-register-hub-keys/audit.md"]
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "中心とbengioの変更前preflight", gpu: false, est: "35m"}
+    - {id: B, name: "全控えとstagingとrollback試験", gpu: false, est: "30m"}
+    - {id: C, name: "keeper、marker、中継、device addressの一体切替", gpu: false, est: "30m"}
+    - {id: D, name: "接続、双方向データ面、設定不変条件の確認", gpu: false, est: "25m"}
+    - {id: E, name: "一周期のcanary安定性観測", gpu: false, est: "35m"}
+    - {id: F, name: "契約検証、送出、台帳返送", gpu: false, est: "35m"}
+  gates:
+    - {id: G1, after: A, check: "lecunが中心として正常で、bengioの鍵指紋、SSH認証、旧状態、Syncthing device対応、独立復旧経路が全て変更前に確認された", on_fail: stop}
+    - {id: G2, after: B, check: "keeper、全marker、Syncthing設定の控えとrollback入力が開始時実体に一致し、stagingと補助器の陽性対照が通った", on_fail: stop}
+    - {id: G3, after: C, check: "正本keeper一件とlecun向け中継一件が稼働し、markerとlocalhost addressがlecunだけを指し、旧philip経路が零件になった", on_fail: stop}
+    - {id: G4, after: D, check: "Syncthingが同一PIDのままlecun deviceへlocalhost経由で接続し、双方向probeが同一bytesとSHA-256で到達した", on_fail: stop}
+    - {id: G5, after: E, check: "少なくとも一八〇〇秒を隔てた二snapshotでkeeper、中継、Syncthing、接続先、probeが同じ成功状態を保った", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md, result.yaml, canary-audit.md, canary_probe.py, center_probe.py, syncthing_route.py, launch_keeper.py, rollback_canary.py]
+  destination: "tasks/T-2026-08-13-bengio-canary-lecun-cutover/"
+  acceptance:
+    - "変更前にlecunのmarker零、keeper一件、施錠、22000待受を再測定し、bengioからのSSH認証と登録指紋一致を確認する"
+    - "bengioの旧keeper、全marker、Syncthing設定、philipとlecunのdevice objectをmodeと要約値付きで可逆に控える"
+    - "停止信号は再同定したkeeperとSSH中継の数値PIDだけへTERMし、広域停止やKILLを使わない"
+    - "localhost addressをphilip deviceからlecun deviceへREST APIで一件だけ移し、Syncthingを停止または再起動しない"
+    - "新marker一件、新keeper一件、lecun向け中継一件、22001待受、lecun device接続、旧philip経路零件を確認する"
+    - "bengioからlecunとlecunからbengioの二つの契約専用pt probeをbytesとSHA-256で照合し、観測したSyncthing接続先を併記する"
+    - "一八〇〇秒以上の安定性観測を通し、失敗時はbengioだけを開始時keeper、marker、device address、中継へrollbackする"
+    - "分岐を送出してPRを作り、番号、Draft、base、head、upstream、aheadと同期抑止解除を完了報告へ記録する"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "bengioのlocal consoleまたは独立した復旧経路をユーザーが明示確認できない場合"
+    - "lecunの中心状態、鍵指紋、SSH認証、known_hosts不変条件のいずれかが成立しない場合"
+    - "localhost addressがphilipだけに一件ある開始状態でない、またはSyncthing REST版が対応しない場合"
+    - "旧keeperまたは旧SSH中継の数値PIDを一意に再同定できない場合"
+    - "TERMで対象PIDが消えず、より強い信号が必要な場合"
+    - "Syncthingがrestart-requiredを返す、PIDまたは開始tickが変わる、lecun deviceが接続しない場合"
+    - "双方向probeが期限内に一致しない、またはrollback後に開始時状態へ戻らない場合"

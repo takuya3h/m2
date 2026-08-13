@@ -1426,3 +1426,22 @@ validator は `tasks/` 直下の `_` で始まらないディレクトリを対�
 直接照合は維持する。Notion `rich_text` は受け側と同じ UTF-16 単位で 2,000 以下に分割し、
 基本多言語面外の文字も壊さず連結できる。`host_mismatch` はホスト名の大小文字を区別せず、
 別ホストの宣言は引き続き警告する。回帰試験はこれらの通過・停止を両方向で固定している。
+
+### bengio canary の現在状態（2026-08-13）
+
+`T-2026-08-13-bengio-canary-lecun-cutover` で、状態probe、固定SSH中心probe、
+Syncthing granular REST経路切替、keeper起動、rollbackの契約専用補助器を追加し、
+ruffと各self-testを通した。ただし bengio にSSH非依存の復旧経路がないため G1 で停止し、
+keeper、marker、SSH中継、Syncthing device addressは変更していない。再開には
+local console、リモートKVM、親ホストconsoleなど、現在のSSH経路に依存しない復旧手段が必要である。
+
+`T-2026-08-13-bengio-lecun-deadman-cutover` では、選択肢2のdead-man方式で再開する前に
+transactionの祖先を `/proc` から再測定した。Codexはzmx配下でPID 1へ再親化され、対話session
+sshdは別processだったため、契約の「transaction実行元がsession sshd配下」というG1条件を満たさず
+変更前停止した。keeper、marker、SSH中継、Syncthing device addressは未変更。再開にはsession sshd
+子孫からの起動経路、またはzmxを安全な独立性として扱う契約amendmentが必要である。
+
+`T-2026-08-13-bengio-lecun-zmx-deadman-cutover` ではzmx再親化を許可する厳密なtopology probeを
+追加したが、host全体に同一binaryのzmxを4件検出し、一意なverified_zmxというG1条件を満たさず
+変更前停止した。keeper、marker、SSH中継、Syncthing device addressは未変更。再開にはzmx一意性の
+scope、または既存zmxを扱う許可を別契約で定義する必要がある。

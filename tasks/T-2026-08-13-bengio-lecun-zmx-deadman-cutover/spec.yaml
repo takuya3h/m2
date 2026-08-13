@@ -1,0 +1,72 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-08-13-bengio-lecun-zmx-deadman-cutover"
+  kind: impl
+  title: "zmx再親化を検証してbengioをdead-man付きでlecun中心へ切り替える"
+  origin: human
+  created_at: "2026-08-13T12:39:19Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-13-bengio-lecun-deadman-cutover"]
+  amendments: []
+intent:
+  question: "bengioで実測されたzmx再親化を厳密に識別し、host変更と独立したdead-manを変更前に武装すると、失敗時は旧状態へ自動復旧し、成功時だけlecun中心の接続を確定できるか"
+  decision_at_stake: "検証済みzmx経路を許可してbengioを最初の一般ノードcanaryとして残せるか、旧philip経路へ自動復旧して遠隔だけの移行を中止するか"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints: ["scripts/sync/keeper.sh", "scripts/sync/m2-sync.sh", "tasks/T-2026-08-13-bengio-canary-lecun-cutover/RESULT.md", "tasks/T-2026-08-13-bengio-canary-lecun-cutover/canary_probe.py", "tasks/T-2026-08-13-bengio-canary-lecun-cutover/center_probe.py", "tasks/T-2026-08-13-bengio-canary-lecun-cutover/syncthing_route.py", "tasks/T-2026-08-13-bengio-canary-lecun-cutover/rollback_canary.py", "tasks/T-2026-08-13-bengio-lecun-deadman-cutover/RESULT.md", "tasks/T-2026-08-13-bengio-lecun-deadman-cutover/result.yaml", "tasks/T-2026-08-13-bengio-lecun-deadman-cutover/session_probe.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "9cd792b"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "依存状態とzmx実行経路を変更前に固定", gpu: false, est: "35m"}
+    - {id: B, name: "全控えとdead-man実装と隔離rollback試験", gpu: false, est: "60m"}
+    - {id: C, name: "武装済みtransactionでbengioを一体切替", gpu: false, est: "30m"}
+    - {id: D, name: "双方向到達と一周期安定性を確認してguard解除", gpu: false, est: "40m"}
+    - {id: E, name: "結果記録と分岐送出と台帳二段返送", gpu: false, est: "40m"}
+  gates:
+    - {id: G1, after: A, check: "依存task、lecun中心、bengio旧状態、およびdirect SSHまたは一意なzmx再親化の許可条件が全て成立した", on_fail: stop}
+    - {id: G2, after: B, check: "開始状態の控えが一致し、zmx識別、owner消失、lease停止、commit token、二重実行の隔離試験が全て働いた", on_fail: stop}
+    - {id: G3, after: C, check: "guard武装中にkeeper、marker、中継、device addressがlecunだけへ切り替わり、失敗経路は自動rollbackへ接続された", on_fail: stop}
+    - {id: G4, after: D, check: "双方向probeと一八〇〇秒以上の安定性を保ち、成功token検証後にguardだけが安全に解除された", on_fail: stop}
+    - {id: G5, after: E, check: "検証済み結果、dead-man event、残余リスク、PR情報、同期抑止の二段解除、台帳反映が完了した", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md, result.yaml, deadman-audit.md, topology_probe.py, deadman_guard.py, rollback_deadman.py, guarded_cutover.py]
+  destination: "tasks/T-2026-08-13-bengio-lecun-zmx-deadman-cutover/"
+  acceptance:
+    - "ユーザーがzmx再親化を許可する修正版を承認した事実と、host停止、再起動、kernel停止、storage障害は保護外である残余リスクを記録する"
+    - "direct SSH経路または厳密に検証した一意なzmx経路だけを許可し、一般的な孤児processや名前だけのzmxを拒否する"
+    - "zmx、sshd、待受と、変更するkeeper、marker、SSH中継、Syncthing device addressが独立であることを変更前に測る"
+    - "旧keeper、旧marker、Syncthing二device object、config.xml、processとlistenerをmodeとSHA-256付きで秘密を出さず控える"
+    - "dead-manは固定owner PIDとstart tick、要約値で封印したstate、lease、commit tokenを検証し、owner消失またはlease停止でrollbackを一回だけ行う"
+    - "live変更より前にguard readyとarmedのhandshakeを確認し、handshake不成立ならhostを変更しない"
+    - "localhost addressをphilip deviceからlecun deviceへ一件だけ移し、SyncthingのPIDとstart tickを変えない"
+    - "lecun向けmarker、keeper、中継、localhost接続と双方向pt probeを確認し、一八〇〇秒以上同じ状態を保つ"
+    - "失敗時は旧device object、旧marker、旧keeperを復旧し、成功時はcommit token後にguard processとlockだけを残さず解除する"
+    - "同期抑止を保持した初回返送後に解除し、解除結果を最終commit、push、再返送して番号、base、head、upstream、aheadを記録する"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "direct SSHにも検証済みzmx再親化にも分類できない、zmxが複数ある、または実行経路の識別値が途中で変わる場合"
+    - "zmxまたはsshdがkeeper、Syncthing、outbound tunnel、変更対象pathに依存すると判定された場合"
+    - "live変更前にdead-manの隔離試験、state要約、readyまたはarmed handshakeが成立しない場合"
+    - "guardまたはtransactionのPIDとstart tickを一意に固定できない場合"
+    - "旧keeper、旧SSH中継、新keeperまたは新中継を数値PID一件へ再同定できない場合"
+    - "Syncthingがrestart-requiredを返す、PIDまたはstart tickが変わる、lecun deviceが接続しない場合"
+    - "rollback lock取得、device object復旧、旧marker復旧または旧keeper再起動が成立しない場合"
+    - "host再起動、kernel停止、storage障害、guardとtransactionの同時消失が疑われる場合"

@@ -1,0 +1,84 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-12-register-hub-keys"
+  kind: impl
+  title: "中心の受け入れ一覧へ二台の公開鍵を追記し、既存の四件が無傷であることを照合する"
+  origin: claude-app
+  created_at: "2026-08-13T00:00:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-12-submit-hub-key-andrew"]
+  amendments: []
+
+intent:
+  question: "五台での復旧にあたり、二台が中心の受け入れ一覧に登録されていない。両者が版管理へ提出した公開鍵を、既存の登録を一件も失わずに追記できるか。追記の前後で既存の指紋がすべて残り、書式が壊れず、権限が保たれることを確かめられるか"
+  decision_at_stake: "この登録が済めば、残るのは常駐処理の配置と目印の置換だけになる。失敗した場合、現在入れている二台も入れなくなるため、控えからの復旧が必要になる"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/sync/keeper.sh"
+      - "scripts/sync/m2-sync.sh"
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "現状の記録と控えの保存、提出物の照合", gpu: false, est: "40m"}
+    - {id: B, name: "追記と、既存が無傷であることの照合", gpu: false, est: "40m"}
+    - {id: C, name: "検証、送出、報告", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "受け入れ一覧の解析が成功し、現在の登録を指紋と註釈で記録した。控えを版管理へ残し要約値が一致した。提出物の指紋が起票時の値と一致し、追記するものが公開鍵だけであることを三つの検査で確かめた。照合が常に零を返す壊れ方をしていないことを既存の指紋で確かめた"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "追記後に既存の四件がすべて残っていることを、消えた行が空であることで示した。増えた二件の指紋が期待と一致し、全行が解析でき、権限が保たれ、控えとの差が追加だけであることを確かめた"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-12-register-hub-keys/"
+  acceptance:
+    - "追記の前に受け入れ一覧の行数と要約値と権限を記録し、控えを版管理へ残している"
+    - "控えに秘密鍵が含まれないことを囮つきの検査で示している"
+    - "提出された公開鍵の指紋が起票時の値と一致することを二件とも示している"
+    - "追記するものが公開鍵だけであることを先頭の形と秘密鍵の語の不在と行数で示している"
+    - "既に登録されていないことを確かめ、その照合が常に零を返す壊れ方をしていないことを既存の指紋で示している"
+    - "追記後に既存の四件がすべて残っていることを、消えた行が空であることで示している"
+    - "増えた二件の指紋が期待と一致し、全行が解析でき、権限が保たれていることを示している"
+    - "控えとの差が追加だけであり、削除も変更も無いことを示している"
+    - "目印と稼働中の常駐処理と他の鍵と中継数と同期処理が無変更であることを示している"
+    - "疎通が中心側からは測れないことを明記し、変更が契約の範囲に限られ、分岐が送出され PR の番号が記載されている"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "追記により既存の登録が一件でも失われた場合"
+    - "受け入れ一覧の解析が追記の前から失敗している場合"
+    - "提出された公開鍵の指紋が起票時の値と一致しない場合"
+    - "追記しようとしたものが公開鍵でない場合"
+    - "追記後に権限が変わった、または解析できない行が生じた場合"

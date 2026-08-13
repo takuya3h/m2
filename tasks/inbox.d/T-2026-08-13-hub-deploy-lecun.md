@@ -1,0 +1,1 @@
+- [ ] 2026-08-13 [cx] handoffはlecun marker退避を必須とするが配置SPECは禁止し、markerを残すと正本keeperがssh起動を試みるため配置前に停止した。marker移動許可か中心role実装のどちらかへ契約を整合させる必要がある（T-2026-08-13-hub-deploy-lecun）
