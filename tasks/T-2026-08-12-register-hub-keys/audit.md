@@ -417,3 +417,20 @@ final_added_lines=2
 ```
 
 最終記録直前にも6件すべてを解析でき、既存消失0、期待する追加2、控えとの差は追加2だけだった。
+
+### pass 版の台帳返送
+
+```text
+657dc66 657dc66750457a7ea78612344d3077ed8d121288 docs(task): finalize hub key registration result
+{
+  "task_id": "T-2026-08-12-register-hub-keys",
+  "verdict": "pass",
+  "n_issuer_defects": 2,
+  "report_sha256": "0a63863bfbd52f1b387b5f56cb2cb34ce553f2afb2e564e67982b834ff60c490",
+  "report_bytes": 9161,
+  "replaced_blocks": 1
+}
+pass_report_exit=0
+```
+
+版管理済みのpass版を台帳へ返送できた。上記実測を記録した版もcommit・push後に再送する。
