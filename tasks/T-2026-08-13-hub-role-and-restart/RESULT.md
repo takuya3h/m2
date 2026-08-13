@@ -156,5 +156,10 @@ Syncthing死活監視39–43、m2-sync自己更新44–46、`.stignore`反映47�
 | 禁止領域 | changed 7 / checked 7 / violations 0、`forbidden-check=0` |
 | 投影 | `taskindex-check=2`、`inbox-check=2`。禁止9に従い再生成なし |
 | 変更範囲 | status 2行、契約ディレクトリと専用受け皿だけ。unmerged 0、diff-check 0 |
+| 記録commit | `eb4cc94 docs(sync): determine hub role and restart procedure` |
+| 分岐送出 | `feat/hub-role-and-restart` をoriginへpush、upstream設定済み、ahead表示なし |
+| PR | **#99**、OPEN、非Draft、base `phase0`、head `feat/hub-role-and-restart` |
 
-暫定状態。commit、push、PR、抑止解除、台帳返送は未実施。
+PR: https://github.com/takuya3h/m2/pull/99
+
+暫定状態。抑止解除と台帳返送は未実施。

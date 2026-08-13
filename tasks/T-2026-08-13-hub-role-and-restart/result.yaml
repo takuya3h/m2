@@ -3,7 +3,7 @@ task_id: "T-2026-08-13-hub-role-and-restart"
 status: partial
 host: "lecun"
 branch: "feat/hub-role-and-restart"
-pr: null
+pr: 99
 merged: false
 
 gates:
@@ -21,7 +21,7 @@ gates:
 tests:
   before_failed: 0
   after_failed: 0
-  after_passed: 13
+  after_passed: 17
 
 deviations:
   - type: environment
@@ -69,5 +69,7 @@ unknowns:
   - "efrosとbengioのどちらを最初のcanaryにするかは、現地状態を測っていないためUNKNOWN。"
   - "他4ホストの現在のkeeper PID・marker・鍵path・中継状態は、本契約が他ホスト実行を禁じるためUNKNOWN。"
   - "TERMだけで全ホストのkeeperが期限内に終了するかは未実行のためUNKNOWN。"
+  - "同期抑止解除と台帳返送はPR番号記録時点では未実施。"
 
-commits: []
+commits:
+  - "eb4cc94"
