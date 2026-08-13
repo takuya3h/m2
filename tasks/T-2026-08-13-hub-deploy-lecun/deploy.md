@@ -156,3 +156,13 @@ inbox_check_exit=2
 
 `forbidden-check` はchanged 6 / checked 6 / violations 0。投影検査は未反映差分を検出した。
 矛盾確定後のため `make taskindex` と `make inbox` は実行していない。
+
+## 送出と同期抑止解除
+
+```text
+PR #100 OPEN non-Draft base=phase0 head=feat/hub-deploy-lecun
+sync_pause_in_repo=0
+/tmp/.sync-pause.released.T-2026-08-13-hub-deploy-lecun
+```
+
+停止報告分岐をpushし、PRを作成した。`origin/phase0` はmergeしていない。同期抑止はrepo外へ移した。
