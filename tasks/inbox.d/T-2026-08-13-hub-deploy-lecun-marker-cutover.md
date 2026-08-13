@@ -1,0 +1,1 @@
+- [ ] 2026-08-13 [cx] lecunをmarkerなしの正本keeperへ切り替え、SyncthingとSSH関連状態を維持した。一般ノード一台のcanary切替は別契約で行う（T-2026-08-13-hub-deploy-lecun-marker-cutover）
