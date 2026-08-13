@@ -1,7 +1,7 @@
 # RESULT — 把持推論を工程入力へ渡す ctrl/inj 経路を実装
 
 **task_id:** `T-2026-08-11-grasp-inference-injection-impl`  **kind:** `impl`
-**host:** `lecun`  **branch:** `feat/grasp-inference-injection-impl`
+**host:** `lecun`  **branch:** `feat/grasp-inference-injection-impl`  **PR:** #105
 
 ## 1. 解決された参照
 
@@ -206,3 +206,9 @@ train/val各1 clip、1 epochで ctrl/inj を各1本実行し、W&Bへ記録し�
 ## 12. 未解決事項
 
 効果実験と full run 所要時間は本契約外のため `UNKNOWN`。次の事前登録契約で測る。
+
+## 13. 記録と PR
+
+- 実装・監査・報告 commit: `522e169`。
+- branch `feat/grasp-inference-injection-impl` を origin へ push 済み。
+- Draft PR #105。base `phase0`、head `feat/grasp-inference-injection-impl`、未マージ。
