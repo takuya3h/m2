@@ -1,0 +1,1 @@
+- [ ] 2026-08-12 [cx] andrew の公開鍵指紋と lecun 住所、登録前の認証拒否を実測し handoff.md に記録した（T-2026-08-12-submit-hub-key-andrew）

@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（213 件）
+## 未処理（214 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -178,6 +178,7 @@
 - [ ] 2026-08-12 [cc] 過去2回の「ilyaは構内へ出られない」は今日の値と食い違う。他ノード10台のうちphilipを除く9台の50072番がOPENで、目標4台もすべて含む。philipだけ22000番No route to host・50072番TIMEOUT（tasks/T-2026-08-12-ilya-hub-feasibility/audit.md）
 - [ ] 2026-08-12 [cc] 9台へilya-to-philip鍵を指定した認証は全件Permission denied。SSH口への到達と鍵認証成功は別であり、鍵の生成・配布・変更は行っていない（tasks/T-2026-08-12-ilya-hub-feasibility/audit.md）
 - [ ] 2026-08-12 [cc] 到達性の陽性対照は当初TIMEOUT固定だったが、ilyaではNetwork is unreachableを即時に返した。ユーザー承認のamendmentで両者を経路なしとして許容して再開した（tasks/T-2026-08-12-ilya-hub-feasibility/spec.yaml）
+- [ ] 2026-08-12 [cx] andrew の公開鍵指紋と lecun 住所、登録前の認証拒否を実測し handoff.md に記録した（T-2026-08-12-submit-hub-key-andrew）
 - [ ] 2026-08-12 [cc] ilyaの既存中継鍵から公開鍵を導出し、`scripts/sync/hub_keys/ilya.pub`へ配置した。指紋は`SHA256:5auPdGk/WfnGcmpQ8yygEc6mMv7svH8CzqulBjV3pRo`で並置公開鍵・導出物と一致。秘密鍵本文は記録していない（tasks/T-2026-08-12-submit-hub-key-ilya/audit.md）
 - [ ] 2026-08-12 [cc] lecunの住所はSyncthingの`device name=lecun`対応から`192.168.196.176`と確定し、SSH 50072番はOPEN。登録前認証はPermission denied、exit 255（tasks/T-2026-08-12-submit-hub-key-ilya/handoff.md）
 - [ ] 2026-08-12 [cc] 次契約ではlecun側へ公開鍵を登録後、ilyaから同じ鍵でREACHABLEを再測定する。ilya側の目印案は1行目に既存秘密鍵パス、2行目に`192.168.196.176`。本契約では目印を変更していない（tasks/T-2026-08-12-submit-hub-key-ilya/handoff.md）
