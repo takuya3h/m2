@@ -1445,3 +1445,10 @@ sshdは別processだったため、契約の「transaction実行元がsession ss
 追加したが、host全体に同一binaryのzmxを4件検出し、一意なverified_zmxというG1条件を満たさず
 変更前停止した。keeper、marker、SSH中継、Syncthing device addressは未変更。再開にはzmx一意性の
 scope、または既存zmxを扱う許可を別契約で定義する必要がある。
+
+### Andrew→lecun同期切替（2026-08-13）
+
+`T-2026-08-13-andrew-lecun-sync-cutover` でAndrewを旧philip中心からlecun中心へ切り替えた。
+Syncthingを再起動せず、localhost routeをlecun deviceへ一件だけ移し、marker・動的keeper・SSH中継を
+lecunへ揃えた。双方向probeと1805秒超の観測でbytes/SHA-256、process identity、route、接続を確認した。
+backupとprobeは保持し、guardの適用限界と二回の安全停止・修正履歴はtaskのRESULTへ記録している。

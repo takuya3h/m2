@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（129 件）
+## 申し送り（142 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -104,6 +104,16 @@
 - lecun側の次契約ではscripts/sync/hub_keys/ilya.pubを受け入れ一覧へ登録し、登録後に 192.168.196.176:50072へ同じ秘密鍵でREACHABLEが返ることを再測定する。
 - ilya側の目印案は1行目/home/ubuntu/.ssh/id_ed25519_ilyatophilip、2行目192.168.196.176。 本契約では目印を作成・変更していない。
 
+### T-2026-08-12-sync-audit-andrew
+
+- 中心 philip（192.168.196.150）は両ポートとも No route to host。他の 9 台は SSH 50072 が OPEN で機器は生きて届く。落ちているのは単一ホストへの経路のみで、構内全体でも外向きでもない
+- syncthing の接続確立 21 件はすべて philip 宛。他の 9 台へ直接つながった記録は 1 件も無い。星型は設定だけでなく接続履歴でもそうであり、中心が落ちれば他が生きていても全対向が同時に切れる
+- 9 台の 22000 はすべて REFUSED で、同期処理の待受は外側の住所に出ていない。経路を変える案はいずれも SSH 50072 を通す前提になる
+- globalAnnounceEnabled=false かつ relaysEnabled=false。外部の発見サーバも中継サーバも使わない設定であり、静的アドレスと同一構内の告知以外に到達手段が無い
+- .stversions が 0 件で版の退避が働いていない。復旧時に衝突として残らない形で上書きされた場合、同期処理からは復元できない
+- 本ホストの分岐は sync-alerts.log の 1 件のみ。m2-sync.sh が 30 分ごとに追記する自ホスト由来の記録であり、復旧で失われる固有の成果は無い。既存の衝突ファイル 10 件がすべて sync-alerts.*.log であることから、復旧時にも同じファイルが衝突する見込みが高い
+- inventory.tsv は他ホストの同名ファイルと突き合わせるためのもの。2496 件、要約値は sha256 の先頭 16 文字
+
 ### T-2026-08-12-sync-audit-bengio
 
 - P9 spec_lint の host_mismatch は偽陽性である。rule_host_mismatch が生の socket.gethostname()（Bengio）を宣言値（bengio）と大文字小文字を区別して比較しており、プロジェクト内の正規化 resolve_server_name() を使っていない。hostname の大文字小文字が論理名と異なるホストで必ず誤検出する
@@ -135,6 +145,15 @@
 ### T-2026-08-12-tooling-defect-fixes
 
 - 対象外の 5 failures は engine の既存証跡 score_thr 不一致 1 件と、空 metrics を completed 投稿しない research logger 現行仕様と試験期待の不一致 4 件。
+
+### T-2026-08-12-tunnel-key-audit-andrew
+
+- 中継に使われている鍵は id_ed25519_andrewtophilip で指紋は SHA256:i7+kCZH9Yb2oX5TOd/u/AqAqvyQk0G7Yu//7BFd2G3k。この鍵で他の九台へ SSH した結果、認証が通った先は 0 件で、九台すべてが Permission denied publickey password であった
+- 自ホストの authorized_keys は 2 行のみで、登録は ubuntu@aolab の RSA と dakyo-mba@dmba.local の ED25519。中継の鍵の指紋は含まれず、照合は 0。自ホストは現状のままでは中心になれない
+- 中継の目印は .tunnel_to_philip の 1 件のみで、他ホスト向けの目印は 0 件。known_hosts に載っている構内の宛先も philip のみで残り九台は未知。星型は経路だけでなく鍵の配布でも星型である
+- 前契約の結論では同期処理側の設定変更は不要だが、鍵の側は必要である。どのホストを中心にするにせよ、各ノードの公開鍵を新しい中心の authorized_keys へ登録する作業が要る
+- ~/.ssh/config の Host philip は IdentityFile に RSA 版を指定しているが、中継の目印が指すのは ED25519 版である。常駐処理は別名を経由せず住所へ直接つなぎ -i を明示するため、実際に使われるのは ED25519 版である
+- 本契約はデータも分割も一度も参照していない。no_split_redefine と no_raw_write と no_frozen_change は本契約では成立しようがない
 
 ### T-2026-08-12-tunnel-key-audit-bengio
 
@@ -230,7 +249,7 @@
 - 秘匿の検査が見るのは NOTION_API_KEY と WANDB_API_KEY の 2 つと、既知の接頭辞である。資格情報を増やしたら SECRET_ENV_KEYS へ足すこと。足し忘れても検査は通るため気付けない
 - 送信の時点で壁時計を使っている（completed_at）。生成物ではないため冪等の検査には影響しないが、投影に壁時計を入れない方針とは別の判断である
 
-## 断定できなかった事項（100 件）
+## 断定できなかった事項（112 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -309,6 +328,14 @@
 - lecun側で登録作業がいつ実施されるかはUNKNOWN
 - 登録後に同じ鍵で認証が通るかは次契約までUNKNOWN
 
+### T-2026-08-12-sync-audit-andrew
+
+- 待ち受けポートの一覧。ss も netstat も存在せず取得できなかった。零行ではなく手段の不在であり、代替として 22000/22001/8384 への直接接続で補った
+- 他ホスト側の分岐量。読み取り専用かつ他ホストで命令を実行しない契約のため測れない。推測で埋めていない
+- philip が停止した理由と復旧の見込み。本ホストからは測れない
+- 9 台の 22000 が REFUSED である理由。待受が外側の住所に出ていないことは確かだが、各機の内部設定は本ホストからは読めない
+- make task-report の終了コード。zsh では配列の添字で取得できず空文字が返った。再送はしていないため UNKNOWN。返却 JSON は verdict=pass / report_bytes=18765 を示している
+
 ### T-2026-08-12-sync-audit-bengio
 
 - 他ホストの claude-sync の内容と分岐量。他ホストへの読み取り以外の命令は禁止のため測っていない
@@ -334,6 +361,14 @@
 - 22000 が 9 台すべてで REFUSED である正確な理由。keeper.sh 14 行のコメント 「コンテナ間は SSH(50072) しか通らない」と整合するが、転送の設定そのものは 自ホストから読めない。REFUSED は機器まで届いていることだけを示す。
 - 2026-08-06 20:24:02 の接続喪失から philip が完全に到達不能になるまでの経過。 ~/.tunnel.log は時刻を持たないため、Connection reset や Timeout の段階が いつ起きたかは行の順序からしか読めない。各段階の時刻は UNKNOWN。
 
+### T-2026-08-12-tunnel-key-audit-andrew
+
+- 正しい鍵なら認証が通るという向きの対照。実績のある唯一の宛先である philip が到達不能で、到達できる九台では正しい鍵が手元に無い
+- 自ホストが他ノードからどの住所で見えるか。自ホストは 172.17.0.26 のみを持ち、外側での対応付けは容器の内側から観測できない
+- authorized_keys の ubuntu@aolab が philip と ilya のどちらか。前契約で hostname が aolab を返すのは 2 台と判明しており、指紋だけでは判別できない
+- 外から見える 50072 と sshd の待受 22 の対応付け。sshd_config の Port は注釈のままで既定値であり、転送は容器の外側の設定で読めない
+- 他ホスト側の authorized_keys の中身、および他ホストが互いに認証できるか。他ホストで echo 以外を実行しない契約のため測れない
+
 ### T-2026-08-12-tunnel-key-audit-bengio
 
 - 他ノードが持つ中継の鍵の指紋。他ホストでは echo 以外を実行できないため測っていない
@@ -351,6 +386,11 @@
 - 他ノードから lecun がどの住所で見えるか。自ホストの住所は 172.17.0.22（容器の内側）で あり、他ノードは 192.168.196.0/24 にある。容器の外側で住所の変換が行われている 可能性があるが、その設定は自ホストから読めない。
 - 他ホストの測定結果。同じ内容の契約を複数ホストで並行実行しているため見えない。 各ノードから新しい中心へ認証が通るかは、そのノードでしか測れない。
 - dakyo-mba@dmba.local の鍵の持ち主。註釈からは人の端末（macOS）と読めるが確認していない。
+
+### T-2026-08-13-andrew-lecun-sync-cutover
+
+- 容器外のport mapping
+- host停止、kernel停止、storage障害、guardとtransactionの同時消失時のrollback
 
 ### T-2026-08-13-bengio-canary-lecun-cutover
 
@@ -416,16 +456,16 @@
 - 台帳の他の行が変わっていないことは、触れた行を限定した事実からしか言えていない。全行の内容を送信前後で突き合わせてはいない
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
 
-## 起票者の誤りの型（85 件）
+## 起票者の誤りの型（91 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 32 |
+| `check_does_not_check` | 36 |
 | `asserted_without_measuring` | 22 |
-| `self_contradiction` | 24 |
+| `self_contradiction` | 26 |
 | `shell_assumption` | 7 |
 
-合計 85 件（対を持つ契約 31 件から）
+合計 91 件（対を持つ契約 34 件から）
 

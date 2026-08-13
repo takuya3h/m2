@@ -3,10 +3,10 @@
 ## 2026-08-13 — T-2026-08-13-andrew-lecun-sync-cutover
 
 - [x] Andrew固有監査履歴とorigin/phase0を競合なく統合し、契約取得とL1/L2検証を完了する
-- [ ] L3 preflightとPhase Aの読み取り検査で依存・鍵・中心・旧状態・局所差分を実測しG1を判定する
-- [ ] Phase Bで開始状態を封印し、scoped rollback guardの隔離試験を通してG2を判定する
-- [ ] Phase Cで旧状態だけをguard下でlecun中心へ切り替え、Syncthing不変を確認してG3を判定する
-- [ ] Phase Dで双方向probeとkeeper一周期以上の安定性を確認してG4を判定する
+- [x] L3 preflightとPhase Aの読み取り検査で依存・鍵・中心・旧状態・局所差分を実測しG1を判定する
+- [x] Phase Bで開始状態を封印し、scoped rollback guardの隔離試験を通してG2を判定する
+- [x] Phase Cで旧状態だけをguard下でlecun中心へ切り替え、Syncthing不変を確認してG3を判定する
+- [x] Phase Dで双方向probeとkeeper一周期以上の安定性を確認してG4を判定する
 - [ ] Phase EでRESULT/result.yaml/audit/README、検証、push、PR、台帳返送、同期抑止解除を完了する
 
 成功基準: 契約のG1〜G5と全acceptanceを実測で満たす。混在状態やpreflight不一致ではhostを変更せず停止し、live変更後の失敗ではAndrewだけを開始状態へrollbackする。未測定値とguard保護外のhost停止・kernel停止・storage障害はUNKNOWNとして記録する。
