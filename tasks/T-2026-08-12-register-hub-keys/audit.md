@@ -349,3 +349,71 @@ diff_check_exit=0
 ```
 
 変更は契約ディレクトリと契約専用の判断受け皿に限られ、未解決マージはない。
+
+## Phase C — 送出、PR、抑止解除、台帳返送
+
+```text
+53b9d22 53b9d220830f8adbb09bf20d904ee873bbf817d0 feat(sync): register andrew and ilya keys on hub
+```
+
+```text
+To github.com:takuya3h/m2.git
+ * [new branch]      HEAD -> feat/register-hub-keys
+Branch 'feat/register-hub-keys' set up to track remote branch 'feat/register-hub-keys' from 'origin'.
+## feat/register-hub-keys...origin/feat/register-hub-keys
+```
+
+既存PR照合は `[]`。新規作成後:
+
+```text
+https://github.com/takuya3h/m2/pull/98
+[{"baseRefName":"phase0","headRefName":"feat/register-hub-keys","isDraft":false,"number":98,"state":"OPEN","url":"https://github.com/takuya3h/m2/pull/98"}]
+```
+
+PR番号記録commitとpush:
+
+```text
+0e6f3d2 0e6f3d2808f11628a07782b2bd1da0f522a8913c docs(task): record PR for hub key registration
+## feat/register-hub-keys...origin/feat/register-hub-keys
+```
+
+同期抑止解除:
+
+```text
+release_destination_exists=0
+sync_pause_in_repo=0
+-rw-rw-r-- 1 ubuntu ubuntu 0 Aug 13 06:53 /tmp/.sync-pause.released.T-2026-08-12-register-hub-keys
+```
+
+初回台帳返送:
+
+```text
+{
+  "task_id": "T-2026-08-12-register-hub-keys",
+  "verdict": "partial",
+  "n_issuer_defects": 2,
+  "report_sha256": "ee6c00945fad58afabb9cdf9bd79ff5495a577d587ed1753195ce4475d5ef485",
+  "report_bytes": 8283,
+  "replaced_blocks": 0
+}
+initial_report_exit=0
+```
+
+初回返送はPR番号を含む版管理済みの暫定版。最終pass版は最終記録commit後に再送する。
+
+### 最終状態の再照合
+
+```text
+6 /home/ubuntu/.ssh/authorized_keys
+1693 600
+final_nonempty=6
+final_parse_exit=0
+final_parsed=6
+final_missing=0
+final_added=2
+final_diff_exit=1
+final_removed_lines=0
+final_added_lines=2
+```
+
+最終記録直前にも6件すべてを解析でき、既存消失0、期待する追加2、控えとの差は追加2だけだった。

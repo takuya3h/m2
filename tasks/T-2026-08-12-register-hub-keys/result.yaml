@@ -1,6 +1,6 @@
 result_version: 3
 task_id: "T-2026-08-12-register-hub-keys"
-status: partial
+status: pass
 host: "lecun"
 branch: "feat/register-hub-keys"
 pr: 98
@@ -21,7 +21,7 @@ gates:
 tests:
   before_failed: 0
   after_failed: 0
-  after_passed: 18
+  after_passed: 20
 
 deviations:
   - type: spec_defect
@@ -62,7 +62,8 @@ followups:
 
 unknowns:
   - "andrew と ilya からの実際のSSH認証可否は中心ホストから測定できない。"
-  - "同期抑止解除と台帳返送はPR番号記録時点では未実施。"
+  - "開始時にauthorized_keysがmode 664だった原因は本契約では測定していない。"
 
 commits:
   - "53b9d22"
+  - "0e6f3d2"

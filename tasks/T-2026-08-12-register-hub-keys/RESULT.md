@@ -153,9 +153,20 @@ andrew と ilya から実際に入れるかは、このホストからは測れ�
 | 投影 | `taskindex-check=2`、`inbox-check=2`。禁止9に従い再生成なし |
 | 変更範囲 | status 2行、契約ディレクトリと専用受け皿だけ。unmerged 0、`diff-check=0` |
 | 記録commit | `53b9d22 feat(sync): register andrew and ilya keys on hub` |
+| PR記録commit | `0e6f3d2 docs(task): record PR for hub key registration` |
 | 分岐送出 | `feat/register-hub-keys` をoriginへpush、上流設定済み、ahead表示なし |
 | PR | **#98**、OPEN、非Draft、base `phase0`、head `feat/register-hub-keys` |
+| 抑止解除 | repo直下は不存在。`/tmp/.sync-pause.released.T-2026-08-12-register-hub-keys` へ退避 |
+| 台帳返送 | 初回 exit 0、`verdict=partial`、8283 bytes、起票者欠陥2件、置換0件 |
 
 PR: https://github.com/takuya3h/m2/pull/98
 
-暫定状態。同期抑止解除と台帳返送は未実施。
+| # | 最終完了判定 | 実測値 |
+|---|---|---|
+| 14 | 13項目に実測値またはUNKNOWN | 13項目すべて記載、UNKNOWNなし |
+| 15 | 非変更対象 | 目印・keeper bytes・SSH内他項目の表示属性・プロセス件数が前後一致 |
+| 16 | 変更範囲 | 契約ディレクトリと専用受け皿のみ。unmerged 0、禁止違反0 |
+| 17 | 分岐送出 | 上流設定済み、ahead表示なし |
+| 18 | PR | #98、OPEN、非Draft |
+| 19 | 抑止解除 | repo直下に `.sync-pause` なし、契約専用 `/tmp` パスへ退避 |
+| 20 | 台帳返送 | 初回 `task-report=0`。最終pass版は本記録commit後に再送 |
