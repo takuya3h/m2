@@ -3,7 +3,7 @@ task_id: "T-2026-08-13-bengio-lecun-deadman-cutover"
 status: stopped
 host: "Bengio"
 branch: "feat/bengio-lecun-deadman-cutover"
-pr: null
+pr: 103
 merged: false
 
 gates:
@@ -33,6 +33,11 @@ issuer_defects:
       契約は実行主体の祖先が対話session sshdへ直接つながることを前提にしたが、このホストのCodexは
       zmx配下でPID 1へ再親化される。指示どおり祖先を測るとsession sshdは別processとなるため、
       host変更対象から独立した実行環境であってもG1が停止し、Phase B以降へ進めない。
+  - type: self_contradiction
+    note: >-
+      起動直後の指示は.sync-pauseを台帳返送と最終pushまで残すよう要求する一方、Phase Eはpauseを移動してから
+      task-reportするよう要求し、同時には満たせない。指示どおり双方を実行する順序は存在しないため、
+      安全側の開始条件とtaskスキルに従い初回返送後に解除し、解除結果を再push・再返送する。
 
 positive_controls:
   - judgement: "transaction実行元がsession sshd配下にある"
@@ -63,5 +68,5 @@ unknowns:
   - "Phase Cのkeeper、marker、SSH中継、Syncthing device address切替はUNKNOWN。"
   - "Phase Dの双方向probe、1800秒安定性、commit token、guard解除はUNKNOWN。"
 
-commits: []
-
+commits:
+  - "074dd53"

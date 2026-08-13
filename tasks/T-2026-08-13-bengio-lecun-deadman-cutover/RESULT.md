@@ -89,6 +89,9 @@ Phase B以降のhost変更、dead-man武装、rollbackは実施していない�
 - `shell_assumption`: 契約は実行主体の祖先が対話session sshdへ直接つながることを前提にしたが、
   このホストのCodexはzmx配下でPID 1へ再親化される。指示どおり祖先を測るとsession sshdは別processとなり、
   host変更から独立している可能性が高い構成でもG1が必ずstopする。
+- `self_contradiction`: 「起動直後」は `.sync-pause` を台帳返送と最終pushまで残すよう要求するが、
+  Phase Eはpauseを移動してからtask-reportするよう要求し、同時には満たせない。安全側の前者とtaskスキルに従い、
+  初回返送後に解除し、解除結果を最終commit・push・再返送する。
 
 ## 8. 逸脱
 
@@ -109,5 +112,18 @@ G1 stop後に実装していない。backup、state、lease、event、commit tok
 
 ## 10. 送出・台帳
 
-検証、commit、push、PR、同期抑止解除、台帳返送の結果は実測後に追記する。
+| 項目 | 実測 |
+|---|---|
+| task-validate | exit 0、1 task、0 failed |
+| spec-check | exit 0、8 rules、finding 0 |
+| docs-check | exit 0、対象42文書、食い違いなし |
+| forbidden-check | exit 0、changed 13 / checked 9 / excluded 4 / violations 0 |
+| taskindex / inbox | 生成exit 0、taskindex-check / inbox-checkともにexit 0 |
+| 初回commit | `074dd53` |
+| push / upstream | 成功、`origin/feat/bengio-lecun-deadman-cutover` |
+| behind / ahead | 0 / 0 |
+| PR | #103、OPEN、非Draft、base `phase0`、head `feat/bengio-lecun-deadman-cutover` |
+| 同期抑止 | `.sync-pause` 実在、解除は初回台帳返送後 |
+| 台帳返送 | 初回未実施 |
 
+PR: https://github.com/takuya3h/m2/pull/103
