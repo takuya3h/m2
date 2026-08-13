@@ -68,3 +68,10 @@ PIDとstart tickが一致した。Andrew→lecun 116 bytes、lecun→Andrew 115 
 - ruff / py_compile: PASS。
 - remote probe再照合: 116 bytes / 115 bytes、両SHA-256一致。
 - 報告の秘匿検査: RESULT / result.yaml / cutover-audit各0件。
+
+## 送出
+
+- 記録commit: `ff4b1a8`。
+- upstream: `origin/feat/andrew-lecun-sync-cutover`。
+- PR: #106、OPEN、非Draft、base `phase0`、head `feat/andrew-lecun-sync-cutover`。
+- URL: https://github.com/takuya3h/m2/pull/106
