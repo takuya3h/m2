@@ -147,6 +147,6 @@ bengioにlocal console、リモートKVM、仮想基盤console、または親ホ
 | push / upstream / ahead | push成功、`origin/feat/bengio-canary-lecun-cutover`、behind 0 / ahead 0 |
 | PR | #102、OPEN、非Draft、base `phase0`、head `feat/bengio-canary-lecun-cutover` |
 | 同期抑止解除 | repo直下不在、`/tmp/.sync-pause.released.T-2026-08-13-bengio-canary-lecun-cutover` 実在 |
-| 台帳返送 | 最終報告commit後に実施 |
+| 台帳返送 | 初回exit 0、verdict `stopped`、7246 bytes、起票者欠陥0件、置換0件。最終版は最終commit後に再送 |
 
 PR: https://github.com/takuya3h/m2/pull/102

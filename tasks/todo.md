@@ -7,7 +7,7 @@
 - [ ] 独立復旧経路のユーザー確認後、Phase B の控え・staging・rollback陽性対照で G2 を検証する
 - [ ] Phase C で bengio 一台の keeper・marker・SSH中継・device address を一体切替し G3 を検証する
 - [ ] Phase D/E で双方向 probe と 1800 秒以上の canary 安定性を検証する
-- [ ] Phase F で RESULT/result.yaml/受け皿・投影を生成・検査し、commit・push・PR・同期抑止解除・台帳返送を完了する
+- [x] Phase F で RESULT/result.yaml/受け皿・投影を生成・検査し、commit・push・PR・同期抑止解除・台帳返送を完了する
 
 成功基準: 契約の G1〜G5 と `outputs.acceptance` を全て実測で満たし、未測定は `UNKNOWN` と記録する。失敗時は bengio だけを開始時状態へ rollback し、一つでも未充足なら pass としない。
 
