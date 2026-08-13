@@ -109,7 +109,7 @@ G1 `on_fail: stop` に従い、4件から実行者が一つを選ばず、Phase 
 | G2 | UNKNOWN | G1 stopのためbackup、dead-man実装、隔離試験を未実施 |
 | G3 | UNKNOWN | live変更を未実施 |
 | G4 | UNKNOWN | 双方向probeと1800秒観測を未実施 |
-| G5 | UNKNOWN | 停止報告の記録・送出結果は後段で追記 |
+| G5 | skip | G1 stopのためgateとしては未評価。初回返送とpause解除まで完了、最終版は最終commit後に返送 |
 
 ## 6. 陽性対照
 
@@ -149,12 +149,13 @@ rollbackはすべて `UNKNOWN`。
 | docs-check | exit 0、対象42文書、食い違いなし |
 | forbidden-check | exit 0、changed 13 / checked 9 / excluded 4 / violations 0 |
 | taskindex / inbox | 生成exit 0、taskindex-check / inbox-checkともにexit 0 |
-| 初回commit | `05c820b` |
+| 記録commit | `05c820b`、`04f8644`。最終報告更新は後続commit |
 | push / upstream | 成功、`origin/feat/bengio-lecun-zmx-deadman-cutover` |
 | behind / ahead | 0 / 0 |
 | PR | #104、OPEN、非Draft、base `phase0`、head `feat/bengio-lecun-zmx-deadman-cutover` |
-| clean tree | clean |
-| 同期抑止 | `.sync-pause` 実在。初回台帳返送成功まで保持 |
-| 台帳返送 | 初回未実施 |
+| clean tree | 初回返送前にcleanを確認 |
+| 初回台帳返送 | exit 0、verdict `stopped`、7581 bytes、起票者欠陥0件、置換0件 |
+| 同期抑止解除 | `2026-08-13T13:25:59Z`。repo直下不在、契約専用 `/tmp` 退避先実在 |
+| 最終台帳返送 | 最終commit後に実施 |
 
 PR: https://github.com/takuya3h/m2/pull/104

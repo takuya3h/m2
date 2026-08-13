@@ -7,7 +7,7 @@
 - [ ] Phase B: 全控え・dead-man実装・隔離positive controlを完了しG2を判定する
 - [ ] Phase C: armed transactionでbengio一台をlecun中心へ切り替えG3を判定する
 - [ ] Phase D: 双方向probeと1800秒以上の安定性を確認しguard解除後にG4を判定する
-- [ ] Phase E: RESULT/result.yaml/audit/inbox/README、検証、commit/push/PR、二段返送とpause解除でG5を判定する
+- [x] Phase E: RESULT/result.yaml/audit/inbox/README、検証、commit/push/PR、二段返送とpause解除を完了する
 
 成功基準: G1〜G5と全acceptanceを実測で満たした場合だけpass。失敗時はdead-manまたはtransactionが旧philip状態へ一回だけrollbackし、未測定値と保護外failureはUNKNOWNとして記録する。
 
