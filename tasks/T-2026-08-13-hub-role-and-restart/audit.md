@@ -502,3 +502,69 @@ diff_check_exit=0
 ```
 
 変更は契約ディレクトリと専用受け皿だけで、未解決マージはない。
+
+## Phase C — 送出、PR、抑止解除、台帳返送
+
+```text
+eb4cc94 eb4cc94322a8124f09018b84e1cba9d54724f861 docs(sync): determine hub role and restart procedure
+## feat/hub-role-and-restart...origin/feat/hub-role-and-restart
+```
+
+既存PRは0件。新規作成後:
+
+```text
+https://github.com/takuya3h/m2/pull/99
+[{"baseRefName":"phase0","headRefName":"feat/hub-role-and-restart","isDraft":false,"number":99,"state":"OPEN","url":"https://github.com/takuya3h/m2/pull/99"}]
+```
+
+```text
+6f82e0f 6f82e0fba292f2da35687300760c32b1b7338378 docs(task): record PR for hub restart analysis
+## feat/hub-role-and-restart...origin/feat/hub-role-and-restart
+```
+
+同期抑止解除:
+
+```text
+release_destination_exists=0
+sync_pause_in_repo=0
+-rw-rw-r-- 1 ubuntu ubuntu 0 Aug 13 07:43 /tmp/.sync-pause.released.T-2026-08-13-hub-role-and-restart
+```
+
+初回台帳返送:
+
+```text
+{
+  "task_id": "T-2026-08-13-hub-role-and-restart",
+  "verdict": "partial",
+  "n_issuer_defects": 2,
+  "report_sha256": "46c41871fe4be581a6107fd2b556224a0edcd4754319ff73592854a251859ea6",
+  "report_bytes": 8726,
+  "replaced_blocks": 0
+}
+initial_report_exit=0
+```
+
+初回返送はPR番号を含む版管理済みの暫定版。最終pass版は最終記録commit後に再送する。
+
+### 最終状態の無変更再照合
+
+```text
+=== hashes_final ===
+603a6cc89cd98ed6e2def545c7b0bee362de7eb6a05ac2d6b97759a4bb93e503  /home/ubuntu/bin/keeper.sh
+bcf46ba9031a45cb5f22371e6a1e598b2218782f6b0db74ab80ca6fea0aeb25f  /home/ubuntu/bin/m2-sync.sh
+marker_count=1
+e179abd206de589bd220f3b05184b6ff5c9c764daa4624eeb409487498361f46  /home/ubuntu/.tunnel_to_philip
+4e861bdd5c7376d2613300517f2ba7c1412bb2db7abee190c69e05310be1d9db  /home/ubuntu/.ssh/authorized_keys
+=== lock_final ===
+-rw-rw-r-- 1 ubuntu ubuntu 0 Aug 13 07:42 /home/ubuntu/.keeper.lock
+=== processes_final ===
+ssh -N -L=0
+keeper.sh=1
+syncthing=2
+m2-sync=0
+zzz_no_such_process=0
+sync_pause_in_repo=0
+```
+
+契約完了手順で解除した `.sync-pause` を除き、開始時のSHA-256、marker件数、lock属性、
+process件数と全て一致した。

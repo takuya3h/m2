@@ -157,9 +157,19 @@ Syncthing死活監視39–43、m2-sync自己更新44–46、`.stignore`反映47�
 | 投影 | `taskindex-check=2`、`inbox-check=2`。禁止9に従い再生成なし |
 | 変更範囲 | status 2行、契約ディレクトリと専用受け皿だけ。unmerged 0、diff-check 0 |
 | 記録commit | `eb4cc94 docs(sync): determine hub role and restart procedure` |
+| PR記録commit | `6f82e0f docs(task): record PR for hub restart analysis` |
 | 分岐送出 | `feat/hub-role-and-restart` をoriginへpush、upstream設定済み、ahead表示なし |
 | PR | **#99**、OPEN、非Draft、base `phase0`、head `feat/hub-role-and-restart` |
+| 抑止解除 | repo直下は不存在。`/tmp/.sync-pause.released.T-2026-08-13-hub-role-and-restart` へ退避 |
+| 台帳返送 | 初回exit 0、`verdict=partial`、8726 bytes、起票者欠陥2件、置換0件 |
 
 PR: https://github.com/takuya3h/m2/pull/99
 
-暫定状態。抑止解除と台帳返送は未実施。
+| # | 最終完了判定 | 実測値 |
+|---:|---|---|
+| 14 | 13項目に実測値またはUNKNOWN | 上表13項目すべて記載、UNKNOWN 0 |
+| 15 | 開始時との同一性 | 4対象SHA、marker件数、lock属性、5 process件数が一致 |
+| 16 | 変更範囲 | 契約ディレクトリと専用受け皿だけ。unmerged 0、禁止違反0 |
+| 17 | 分岐・PR | upstream差なし。#99 OPEN・非Draft |
+| 18 | 抑止解除 | repo直下に `.sync-pause` なし、契約専用 `/tmp` へ退避 |
+| 19 | 台帳返送 | 初回 `task-report=0`。最終pass版は本記録commit後に再送 |
