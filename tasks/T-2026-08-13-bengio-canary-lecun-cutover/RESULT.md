@@ -143,6 +143,10 @@ bengioにlocal console、リモートKVM、仮想基盤console、または親ホ
 | spec-check | exit 0、8 rules、finding 0 |
 | taskindex / inbox | 生成exit 0、taskindex-check / inbox-checkともにexit 0 |
 | forbidden-check | exit 0、changed 17 / checked 13 / excluded 4 / violations 0 |
-| commit / push / PR | 初稿時点で未実施 |
+| 記録commit | `f90d30e`、最終報告更新は後続commit |
+| push / upstream / ahead | push成功、`origin/feat/bengio-canary-lecun-cutover`、behind 0 / ahead 0 |
+| PR | #102、OPEN、非Draft、base `phase0`、head `feat/bengio-canary-lecun-cutover` |
 | 同期抑止解除 | 報告・push後に実施 |
 | 台帳返送 | 最終報告commit後に実施 |
+
+PR: https://github.com/takuya3h/m2/pull/102
