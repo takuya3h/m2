@@ -1,0 +1,50 @@
+result_version: 3
+task_id: "T-2026-08-13-hub-deploy-lecun"
+status: stopped
+host: "lecun"
+branch: "feat/hub-deploy-lecun"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: stop
+    note: >-
+      handoff188行を全文確認した。handoff59行はmarker退避、74行はmarker0件を要求するが、
+      SPEC禁止4はmarker移動を禁じる。現marker1件は正本resolverの成立条件を満たし、中継は現在0件だった。
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 2
+
+deviations:
+  - type: judgement
+    note: "変更を伴う投影再生成より先にhandoffとの整合性を読み取り専用で検査し、明示停止条件を検出後は追加変更を行わなかった。"
+
+issuer_defects:
+  - type: self_contradiction
+    note: >-
+      handoffを正としてmarkerを退避するよう命じる一方、SPEC禁止4でmarkerの変更・削除・移動を禁じ、後段でもmarker不変を要求する。
+      handoffへ従えば禁止違反となり、markerを残せば正本keeperがssh起動を試みるため、ssh未実行と中継なしも満たせない。
+
+positive_controls:
+  - judgement: "marker存在検査が存在と不存在を区別する"
+    breaking_input: "存在するmarkerと契約専用の不存在pathをtest -fへ与える"
+    observed: "実在markerはexit 0、不存在pathはexit 1。"
+  - judgement: "process走査が存在と不存在を区別する"
+    breaking_input: "実在keeperと不存在語zzz_no_such_processを同じ走査へ与える"
+    observed: "keeper.shは1件、zzz_no_such_processは0件。"
+  - judgement: "LISTEN復号が開いているportと閉じたportを区別する"
+    breaking_input: "同じ復号器で22000、8384、22001を調べる"
+    observed: "22000と8384はLISTEN、22001は不在。"
+
+followups:
+  - "handoffどおりlecun markerの控えと移動を許可し、SPECのmarker変更禁止とmarker不変条件を削除するか判断する。"
+  - "markerを保持する場合は、中心roleではmarkerを無視する実装・設定を別契約で正本化してから配置契約を再起票する。"
+
+unknowns:
+  - "契約をmarker移動許可と中心role実装のどちらで修正するかはUNKNOWN。"
+  - "新版keeperの起動・lock・中心稼働結果は配置前停止のためUNKNOWN。"
+
+commits: []
