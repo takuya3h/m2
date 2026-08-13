@@ -1,0 +1,70 @@
+result_version: 3
+task_id: "T-2026-08-12-register-hub-keys"
+status: pass
+host: "lecun"
+branch: "feat/register-hub-keys"
+pr: 98
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      開始時4件を解析でき、控えは原本とcmp=0、PRIVATE 0件、囮1件。提出物は2件・各1行で、
+      実測指紋が契約値と一致し、新規指紋は二方式で各0件、既存指紋の陽性対照は各1件だった。
+  - id: G2
+    verdict: pass
+    note: >-
+      追記後は非空6件、mode 600、全6件を解析できた。既存の消失0件、期待指紋の追加各1件、
+      控えとの差は削除0件・末尾追加2件だった。
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 20
+
+deviations:
+  - type: spec_defect
+    note: "開始時modeが契約前提600ではなく664だったため、内容と控えの一致を確認後、追記前にchmod 600で是正した。"
+  - type: environment
+    note: "陽性対照の一時ファイル削除に使うrm -fを実行基盤が拒否したため、削除なしで一意な/tmpファイルを使い、囮は残した。"
+  - type: judgement
+    note: "タスク固有の禁止9を優先し、make taskindexとmake inboxは実行せず、投影差分は検査結果としてのみ記録する。"
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: >-
+      契約は追記前のauthorized_keys権限を600と断定し、追記後も600のままとしているが、実測開始値は664だった。
+      指示どおり664を維持するとG2の期待値を満たせないため、内容照合と控え作成後、追記前に600へ是正した。
+  - type: check_does_not_check
+    note: >-
+      非変更検査は目印をls -la、keeperをwc -c、SSH内の他ファイルを一覧属性だけで比較する。
+      指示どおり表示が一致しても同じサイズとmtimeの内容変更は検出できず、内容の完全同一までは断定できない。
+
+positive_controls:
+  - judgement: "控えに秘密鍵の書き出し形がない"
+    breaking_input: "PRIVATEを含む囮を同じgrep検査へ与える"
+    observed: "控えは0件、repo外の囮は1件。"
+  - judgement: "新規二指紋が既登録でない"
+    breaking_input: "既存指紋を同じgrepとawk完全一致検査へ与える"
+    observed: "新規二指紋は両方式で各0件、既存指紋は両方式で1件。"
+  - judgement: "全非空行をssh-keygenが解析できる"
+    breaking_input: "解析不能な行をauthorized_keysへ混ぜる"
+    observed: "UNKNOWN（禁止領域を壊す試験は実施していない）。"
+  - judgement: "追記後も既存四行が残る"
+    breaking_input: "既存行を一件削除または変更する"
+    observed: "UNKNOWN（既存行の削除・変更は禁止のため実施していない）。"
+
+followups:
+  - "andrew と ilya から実際に入れるかは、このホストからは測れない。両ホスト側から認証を再測定する。"
+  - "中心 lecun の目印 /home/ubuntu/.tunnel_to_philip をどう外すかは本契約で変更していない。次の契約で扱う。"
+  - "開始時にauthorized_keysがmode 664だった原因と、再び権限が緩まないかを別途確認する。"
+
+unknowns:
+  - "andrew と ilya からの実際のSSH認証可否は中心ホストから測定できない。"
+  - "開始時にauthorized_keysがmode 664だった原因は本契約では測定していない。"
+
+commits:
+  - "53b9d22"
+  - "0e6f3d2"
+  - "657dc66"
