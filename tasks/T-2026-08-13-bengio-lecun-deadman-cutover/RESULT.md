@@ -72,7 +72,7 @@ Phase B以降のhost変更、dead-man武装、rollbackは実施していない�
 | G2 | UNKNOWN | G1 stopのためbackup、dead-man実装、隔離試験を未実施 |
 | G3 | UNKNOWN | live変更を未実施 |
 | G4 | UNKNOWN | 双方向probeと1800秒観測を未実施 |
-| G5 | UNKNOWN | 停止報告の記録・送出結果は後段で追記 |
+| G5 | skip | G1 stopのためgateとしては未評価。停止報告の記録・送出は完了 |
 
 ## 6. 陽性対照
 
@@ -119,11 +119,11 @@ G1 stop後に実装していない。backup、state、lease、event、commit tok
 | docs-check | exit 0、対象42文書、食い違いなし |
 | forbidden-check | exit 0、changed 13 / checked 9 / excluded 4 / violations 0 |
 | taskindex / inbox | 生成exit 0、taskindex-check / inbox-checkともにexit 0 |
-| 初回commit | `074dd53` |
+| 記録commit | `074dd53`、`b43eae2`。最終報告更新は後続commit |
 | push / upstream | 成功、`origin/feat/bengio-lecun-deadman-cutover` |
 | behind / ahead | 0 / 0 |
 | PR | #103、OPEN、非Draft、base `phase0`、head `feat/bengio-lecun-deadman-cutover` |
-| 同期抑止 | `.sync-pause` 実在、解除は初回台帳返送後 |
-| 台帳返送 | 初回未実施 |
+| 同期抑止解除 | repo直下不在、`/tmp/.sync-pause.released.T-2026-08-13-bengio-lecun-deadman-cutover` 実在 |
+| 台帳返送 | 初回exit 0、verdict `stopped`、6657 bytes、起票者欠陥2件、置換0件。最終版は最終commit後に再送 |
 
 PR: https://github.com/takuya3h/m2/pull/103
