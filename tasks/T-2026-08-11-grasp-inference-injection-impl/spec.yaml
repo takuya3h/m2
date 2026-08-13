@@ -1,0 +1,77 @@
+spec_version: 1
+meta:
+  task_id: "T-2026-08-11-grasp-inference-injection-impl"
+  kind: impl
+  title: "把持の対応を推論させ、その推論結果を工程分類へ渡す仕組みを実装する"
+  origin: claude-app
+  created_at: "2026-08-11T21:30:00Z"
+  created_from:
+    runindex_commit: "44697d9"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-11-hts-comparability-audit"]
+  amendments: []
+intent:
+  question: "手と術具の把持の対応を推論する部分をモデルの内側に持たせ、その推論結果を工程分類の入力へ渡す仕組みを、既存の注入の機構に乗せて作れるか。渡した信号が工程側の出力に実際に届くか"
+  decision_at_stake: "推論結果を渡すことに効果があるかを測る実験の前提を作る。渡した信号が届いていなければ、実験を走らせても差は構造的に生じない。届くことを実装の段階で確かめておく"
+  related:
+    backlog: ["BL-exclusion-rules-exact-match"]
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "src/egosurgery/engines/phase_trainer.py"
+      - "src/egosurgery/datasets/loss_mask.py"
+      - "src/egosurgery/utils/eval_recipe.py"
+      - "configs/stage/"
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "既存の注入の機構を実測して読む", gpu: false, est: "60m"}
+    - {id: B, name: "推論する部分と注入の経路を実装する", gpu: false, est: "80m"}
+    - {id: C, name: "信号が届くことを陽性対照つきで検査する", gpu: false, est: "70m"}
+    - {id: D, name: "ごく短い試走で学習が回ることを確かめる", gpu: true, est: "40m"}
+    - {id: E, name: "次の実験へ渡す材料をまとめる", gpu: false, est: "20m"}
+  gates:
+    - id: G1
+      after: A
+      check: "既存の注入と対照が実装のどこでどう分かれているかを読み、同じ機構に乗せられるかを記録した"
+      on_fail: stop
+    - id: G2
+      after: C
+      check: "渡した信号を変えると工程側の出力が変わることと、対照の腕では変わらないことの双方を確かめた"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "二つの腕の重みの総数が完全に等しいことと、評価条件が基準点と一致することを確かめた"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md]
+  destination: "src/egosurgery/"
+  acceptance:
+    - "渡した信号を変えたときに工程側の出力が変わることが、対照の腕での不変とあわせて実測で示されている"
+    - "二つの腕の重みの総数が完全に一致することが実測で示されている"
+    - "推論する部分の出来を測る値が学習中に記録されることが示されている"
+    - "評価条件が基準点と一致することが、偽の入力での不一致とあわせて示されている"
+    - "学習の母集団が基準点と同一のまま保たれ、注釈の無いフレームでのみ推論側の損失が遮断されることが示されている"
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "既存の注入の機構に乗せられず、工程側の入力へ信号を渡す経路が新たに要ると判明した場合"
+    - "渡した信号が工程側の出力に届かず、届かせる方法が本契約の範囲で見つからない場合"
+    - "他の利用者が計算装置を使用中で、試走を行うと妨げになる場合"

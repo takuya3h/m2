@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（129 件）
+## 申し送り（131 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -19,6 +19,11 @@
 
 - 全テストに開始前から存在する5失敗がある。評価レシピ期待値1件とResearchLogger 4件で、本taskの失敗数は増えていないが、別taskで解消する
 - 通信時の承認有無はapproval_policyに依存する。手順書の『求められることがある』という条件付き表現を維持し、構成ごとの実測を混同しない
+
+### T-2026-08-11-grasp-inference-injection-impl
+
+- neck無し分母phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42に対し、 seed 42/123/456のctrl/inj各3本を別の事前登録契約で実行する。
+- full 50 epochの所要時間を実測し、次契約の装置時間見積もりを更新する。
 
 ### T-2026-08-11-hts-comparability-audit
 
@@ -230,7 +235,7 @@
 - 秘匿の検査が見るのは NOTION_API_KEY と WANDB_API_KEY の 2 つと、既知の接頭辞である。資格情報を増やしたら SECRET_ENV_KEYS へ足すこと。足し忘れても検査は通るため気付けない
 - 送信の時点で壁時計を使っている（completed_at）。生成物ではないため冪等の検査には影響しないが、投影に壁時計を入れない方針とは別の判断である
 
-## 断定できなかった事項（100 件）
+## 断定できなかった事項（102 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -241,6 +246,11 @@
 ### T-2026-08-11-codex-parity
 
 - sudo不可のため、user namespace設定を一時変更した場合に旧sandbox構成のbwrap起動失敗が解消するかは未測定
+
+### T-2026-08-11-grasp-inference-injection-impl
+
+- ctrl/injの効果、3-seed差、sigma、有意性は本契約では未測定。
+- full 50 epochの1 runあたり所要時間は未測定。
 
 ### T-2026-08-11-hts-comparability-audit
 
@@ -416,16 +426,16 @@
 - 台帳の他の行が変わっていないことは、触れた行を限定した事実からしか言えていない。全行の内容を送信前後で突き合わせてはいない
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
 
-## 起票者の誤りの型（85 件）
+## 起票者の誤りの型（87 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 32 |
-| `asserted_without_measuring` | 22 |
-| `self_contradiction` | 24 |
+| `asserted_without_measuring` | 23 |
+| `self_contradiction` | 25 |
 | `shell_assumption` | 7 |
 
-合計 85 件（対を持つ契約 31 件から）
+合計 87 件（対を持つ契約 32 件から）
 

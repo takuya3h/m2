@@ -924,6 +924,24 @@ T1a-Deep の負の結果（時系列容量は寄与なし）を受けて、T1a �
 - **注意**: 上記 3 パスの `segmentation` は全て bbox 由来の矩形ダミー。マスクが要る場合は
   `data/hts_reconstruction/egosurgery_hts2_tool_aligned/hand_tool_seg_v2/` を使う。
 
+### 2026-08-13 把持推論結果を工程入力へ渡す ctrl/inj 経路
+
+`hand_tool_seg` の5クラス有無をフレーム単位で推論し、その sigmoid 出力を causal TeCNO の
+入力へ連結する独立枝を追加した。inj は推論信号、ctrl は同形・同サイズの零信号を渡す。
+工程損失を把持推論器へ逆流させると両腕の学習条件が変わるため、工程へ渡す信号は detach し、
+把持推論器は両腕とも同じ masked BCE だけで学習する。注釈が無い 460 フレームは工程母集団から
+除かず、補助損失だけを零にする。
+
+- モデル: `models/temporal/grasp_inference_injection.py`（既定無効、frame-wise causal 推論）
+- 教師: `datasets/grasp_targets.py`（COCO category 1〜5 を5次元 presenceへ変換）
+- trainer: `scripts/train_grasp_phase_injection.py`（W&B/ExperimentManager/Notion 配線済み）
+- config: `s4_grasp_injection_{ctrl,inj}.yaml`。凍結源は Relation-DETR seed42、neck 無し。
+- 検査: `tests/test_grasp_inference_injection.py` と `scripts/audit_grasp_phase_injection.py`。
+  信号到達、ctrl 不変、重み同数、recipe 陽性対照、loss mask、母集団、5次元指標、因果性、
+  無効時の既存 TeCNO 同一性を検査する。
+
+本変更は実装と1 epoch smoke までで、ctrl/inj の効果比較は未実施。効果は次の事前登録済み実験で測る。
+
 ### 2026-07-01 STEP D-aux 実装 — 系統①手情報 / 系統②時系列 のインフラ構築（実行は lecun）
 
 補助信号探索プロンプト `prompts/ Claude_code_prompt_hand_temporal` を実装。**コード実装 + GT だけで動く
