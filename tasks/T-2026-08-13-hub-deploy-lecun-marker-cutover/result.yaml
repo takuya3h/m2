@@ -1,0 +1,75 @@
+result_version: 3
+task_id: "T-2026-08-13-hub-deploy-lecun-marker-cutover"
+status: partial
+host: "lecun"
+branch: "feat/hub-deploy-lecun-marker-cutover"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "依存三objectはexit 0、不存在objectはexit 128。開始時keeper一件、marker一件、Syncthing二件と22000 LISTENを実測した。"
+  - id: G2
+    verdict: pass
+    note: "keeper控えとmarker控えは各原本とcmp exit 0かつmode一致。backup directoryはmode 700、作成直後のfile一件。"
+  - id: G3
+    verdict: pass
+    note: "Git object staging、正本、配置pathはcmp exit 0。home marker零件、backup内二件でmarker二実体はcmp exit 0。"
+  - id: G4
+    verdict: pass
+    note: "旧PID 1071はTERM後に消滅しlock取得成功。新PID 3967705一件がPPID 1、正本FD255、FD9 lockを保持した。"
+  - id: G5
+    verdict: pass
+    note: "marker、中継、22001は零件。Syncthingの二PIDと開始tick、22000 inode、authorized_keysとknown_hostsは開始時一致しpauseログが145 bytes増加した。"
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 11
+
+deviations:
+  - type: spec_defect
+    note: "git show --output指定がblobをPATHへ保存せず空ファイルを作ったため、同じGit objectを標準出力リダイレクトでstagingし直した。"
+  - type: judgement
+    note: "初回の複合コマンドはcmp失敗を後続sha256sumの成功で隠したため、host変更前に撤回し、staging作成、chmod、cmpを別命令で再実行した。"
+  - type: judgement
+    note: "PR情報はPR作成後にしか実測できないため、初稿をpartialで記録し、PR番号と送出状態の取得後にpassへ更新する二段階記録を採る。"
+  - type: judgement
+    note: "spec-checkはG1の前契約の停止報告を本契約の完了報告と解釈した。同じfindingはL3 WARNとしてユーザー了承済みのため、配布契約を改変して黙らせずexit 2を記録した。"
+
+issuer_defects:
+  - type: shell_assumption
+    note: >-
+      Phase C Step 1のgit show --output=PATH object:pathは、このGit環境ではblobを標準出力へ出してPATHを空ファイルにした。
+      指示どおり実行すると正本と一致しない空stagingができるため、同じGit objectを標準出力リダイレクトで再展開し、cmpとSHAを別々に検証した。
+
+positive_controls:
+  - judgement: "依存object検査が存在と不存在を区別する"
+    breaking_input: "origin/phase0上に存在しないtask IDのRESULT objectを与える"
+    observed: "依存三objectはexit 0、不存在task objectはexit 128。"
+  - judgement: "probeがprocess、listener、markerの存在と不存在を区別する"
+    breaking_input: "不存在process語、不存在marker path、閉じた22001を実在keeper、marker、22000と同じprobeへ与える"
+    observed: "修正後self-testの11項目が全てPASSし、不存在三対照は零または閉として検出された。"
+  - judgement: "keeper控え判定が一致と不一致を区別する"
+    breaking_input: "旧keeper控えに対して内容の異なる正本keeperを比較する"
+    observed: "旧keeperと控えはcmp exit 0、旧keeperと正本はcmp exit 1。"
+  - judgement: "lock判定が保持、解放、再保持を区別する"
+    breaking_input: "keeper停止後の解放lockを非待機取得へ与える"
+    observed: "開始時は取得不可、旧PID停止後はexit 0、新keeper起動後は再び取得不可。"
+  - judgement: "Syncthing維持判定がprocessとlistenerの二経路を使う"
+    breaking_input: "切替前後でPID、開始tick、件数、22000 inodeのいずれかを変える"
+    observed: "二PID、二start tick、件数二、22000 inode 27311444が切替前後で一致した。"
+  - judgement: "launcherが固定path以外の入力を拒否する"
+    breaking_input: "launcherへ禁止された追加引数を一つ与える"
+    observed: "exit 2で拒否し、keeper件数は一件のまま変化しなかった。"
+
+followups:
+  - "一般ノード一台のcanary切替は本契約の面外であり、別契約で実施する。"
+  - "Phase C Step 1のgit show --output前提を起票側で修正する。"
+
+unknowns:
+  - "PR番号、Draft、base、head、upstream、aheadは初稿時点では未測定。"
+  - "台帳返送の結果は初稿時点では未測定。"
+
+commits: []

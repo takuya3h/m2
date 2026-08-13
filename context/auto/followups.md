@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（113 件）
+## 申し送り（123 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -87,6 +87,12 @@
 - 過去2回の「ilyaは構内へ出られない」は今日の値と食い違う。philipを除く9台の50072番はOPENで、 目標4台も含む。中心の候補がilyaだけに限定されるという前提は今日の実測では成立しない。
 - 9台へilya-to-philip鍵を指定すると全件Permission deniedだった。TCP/SSH口への到達と 認証成功は別であり、専用の対別鍵が存在するかは本契約で総当たりしていない。
 
+### T-2026-08-12-register-hub-keys
+
+- andrew と ilya から実際に入れるかは、このホストからは測れない。両ホスト側から認証を再測定する。
+- 中心 lecun の目印 /home/ubuntu/.tunnel_to_philip をどう外すかは本契約で変更していない。次の契約で扱う。
+- 開始時にauthorized_keysがmode 664だった原因と、再び権限が緩まないかを別途確認する。
+
 ### T-2026-08-12-submit-hub-key-andrew
 
 - lecun 側で scripts/sync/hub_keys/andrew.pub の公開鍵を受け入れ一覧へ登録する。
@@ -148,6 +154,22 @@
 - 受け入れ一覧の註釈（philip-to-lecun など）から device への対応づけは自己申告に依る。 指紋と相手ホストの対応を相手側で確認していない。註釈を書き換えれば対応は崩れる。
 - philip 向けの鍵が 2 本ある（ED25519 が 2026-07-03、RSA が 2026-07-01）。中継が使うのは 目印が指す ED25519 の方である。旧い RSA の方が philip でまだ受け入れられているかは 到達できないため測れない。
 
+### T-2026-08-13-hub-deploy-lecun
+
+- handoffどおりlecun markerの控えと移動を許可し、SPECのmarker変更禁止とmarker不変条件を削除するか判断する。
+- markerを保持する場合は、中心roleではmarkerを無視する実装・設定を別契約で正本化してから配置契約を再起票する。
+
+### T-2026-08-13-hub-deploy-lecun-marker-cutover
+
+- 一般ノード一台のcanary切替は本契約の面外であり、別契約で実施する。
+- Phase C Step 1のgit show --output前提を起票側で修正する。
+
+### T-2026-08-13-hub-role-and-restart
+
+- 次契約はlecunを先に更新し、marker 0・keeper 1・flock・Syncthing 22000を確立してから一般ノードを一台ずつ更新する。
+- 一般ノードでは旧keeperに加えて旧SSH中継の数値PIDも終了しないと、正本33行のpgrepが新lecun中継を抑止する。
+- 各一般ノードで使用予定鍵の導出公開鍵指紋をlecun登録値と照合し、双方向.pt probeのSHA-256一致まで確認する。
+
 ### T-2026-08-13-implementation-history-index
 
 - 配布台帳の本契約の行は、本文が markdown として解釈されて壊れたままである。要約値の照合が働いて取り込みは拒まれた。起票者がコードブロックとして貼り直すこと
@@ -193,7 +215,7 @@
 - 秘匿の検査が見るのは NOTION_API_KEY と WANDB_API_KEY の 2 つと、既知の接頭辞である。資格情報を増やしたら SECRET_ENV_KEYS へ足すこと。足し忘れても検査は通るため気付けない
 - 送信の時点で壁時計を使っている（completed_at）。生成物ではないため冪等の検査には影響しないが、投影に壁時計を入れない方針とは別の判断である
 
-## 断定できなかった事項（83 件）
+## 断定できなかった事項（92 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -262,6 +284,11 @@
 - ubuntu@aolab注釈がilyaとphilipのどちらに由来するかは判別できない
 - philipが到達不能な理由はUNKNOWN。No route to hostとTIMEOUTまでを実測した
 
+### T-2026-08-12-register-hub-keys
+
+- andrew と ilya からの実際のSSH認証可否は中心ホストから測定できない。
+- 開始時にauthorized_keysがmode 664だった原因は本契約では測定していない。
+
 ### T-2026-08-12-submit-hub-key-ilya
 
 - lecun側で登録作業がいつ実施されるかはUNKNOWN
@@ -310,6 +337,22 @@
 - 他ホストの測定結果。同じ内容の契約を複数ホストで並行実行しているため見えない。 各ノードから新しい中心へ認証が通るかは、そのノードでしか測れない。
 - dakyo-mba@dmba.local の鍵の持ち主。註釈からは人の端末（macOS）と読めるが確認していない。
 
+### T-2026-08-13-hub-deploy-lecun
+
+- 契約をmarker移動許可と中心role実装のどちらで修正するかはUNKNOWN。
+- 新版keeperの起動・lock・中心稼働結果は配置前停止のためUNKNOWN。
+
+### T-2026-08-13-hub-deploy-lecun-marker-cutover
+
+- PR番号、Draft、base、head、upstream、aheadは初稿時点では未測定。
+- 台帳返送の結果は初稿時点では未測定。
+
+### T-2026-08-13-hub-role-and-restart
+
+- efrosとbengioのどちらを最初のcanaryにするかは、現地状態を測っていないためUNKNOWN。
+- 他4ホストの現在のkeeper PID・marker・鍵path・中継状態は、本契約が他ホスト実行を禁じるためUNKNOWN。
+- TERMだけで全ホストのkeeperが期限内に終了するかは未実行のためUNKNOWN。
+
 ### T-2026-08-13-implementation-history-index
 
 - 他ホスト（lecun 以外）では load_env.sh の修正を実行していない。lecun 上の zsh と bash の双方でのみ実測した
@@ -344,16 +387,16 @@
 - 台帳の他の行が変わっていないことは、触れた行を限定した事実からしか言えていない。全行の内容を送信前後で突き合わせてはいない
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
 
-## 起票者の誤りの型（76 件）
+## 起票者の誤りの型（83 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 29 |
-| `asserted_without_measuring` | 21 |
-| `self_contradiction` | 21 |
-| `shell_assumption` | 5 |
+| `check_does_not_check` | 32 |
+| `asserted_without_measuring` | 22 |
+| `self_contradiction` | 23 |
+| `shell_assumption` | 6 |
 
-合計 76 件（対を持つ契約 24 件から）
+合計 83 件（対を持つ契約 28 件から）
 
