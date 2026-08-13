@@ -3,7 +3,7 @@ task_id: "T-2026-08-12-register-hub-keys"
 status: partial
 host: "lecun"
 branch: "feat/register-hub-keys"
-pr: null
+pr: 98
 merged: false
 
 gates:
@@ -21,7 +21,7 @@ gates:
 tests:
   before_failed: 0
   after_failed: 0
-  after_passed: 13
+  after_passed: 18
 
 deviations:
   - type: spec_defect
@@ -62,6 +62,7 @@ followups:
 
 unknowns:
   - "andrew と ilya からの実際のSSH認証可否は中心ホストから測定できない。"
-  - "commit、push、PR番号、同期抑止解除、台帳返送は暫定報告作成時点では未実施。"
+  - "同期抑止解除と台帳返送はPR番号記録時点では未実施。"
 
-commits: []
+commits:
+  - "53b9d22"

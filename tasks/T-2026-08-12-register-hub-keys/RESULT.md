@@ -152,5 +152,10 @@ andrew と ilya から実際に入れるかは、このホストからは測れ�
 | 禁止領域 | changed 7 / checked 7 / excluded 0 / violations 0、`forbidden-check=0` |
 | 投影 | `taskindex-check=2`、`inbox-check=2`。禁止9に従い再生成なし |
 | 変更範囲 | status 2行、契約ディレクトリと専用受け皿だけ。unmerged 0、`diff-check=0` |
+| 記録commit | `53b9d22 feat(sync): register andrew and ilya keys on hub` |
+| 分岐送出 | `feat/register-hub-keys` をoriginへpush、上流設定済み、ahead表示なし |
+| PR | **#98**、OPEN、非Draft、base `phase0`、head `feat/register-hub-keys` |
 
-暫定状態。commit、push、PR作成、同期抑止解除、台帳返送は未実施。
+PR: https://github.com/takuya3h/m2/pull/98
+
+暫定状態。同期抑止解除と台帳返送は未実施。
