@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（125 件）
+## 申し送り（127 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -159,6 +159,11 @@
 - bengioに現在のSSH経路に依存しないlocal console、KVM、仮想基盤console、または親ホスト操作経路を確保する。
 - 復旧経路確保後にPhase Aを再測定し、明示的肯定を新しく記録してからcanaryを再実行する。
 
+### T-2026-08-13-bengio-lecun-deadman-cutover
+
+- 実際のsession sshd子孫からforeground transactionを起動できる経路を用意する。
+- またはzmxの再親化を安全な独立性として扱う契約amendmentと機械判定を起票者が用意する。
+
 ### T-2026-08-13-hub-deploy-lecun
 
 - handoffどおりlecun markerの控えと移動を許可し、SPECのmarker変更禁止とmarker不変条件を削除するか判断する。
@@ -220,7 +225,7 @@
 - 秘匿の検査が見るのは NOTION_API_KEY と WANDB_API_KEY の 2 つと、既知の接頭辞である。資格情報を増やしたら SECRET_ENV_KEYS へ足すこと。足し忘れても検査は通るため気付けない
 - 送信の時点で壁時計を使っている（completed_at）。生成物ではないため冪等の検査には影響しないが、投影に壁時計を入れない方針とは別の判断である
 
-## 断定できなかった事項（94 件）
+## 断定できなかった事項（97 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -349,6 +354,12 @@
 - G4のlecun device接続と双方向probe結果はUNKNOWN。
 - G5の1800秒canary安定性はUNKNOWN。
 
+### T-2026-08-13-bengio-lecun-deadman-cutover
+
+- Phase Bのbackup、dead-man protocol、隔離試験はG1 stopのためUNKNOWN。
+- Phase Cのkeeper、marker、SSH中継、Syncthing device address切替はUNKNOWN。
+- Phase Dの双方向probe、1800秒安定性、commit token、guard解除はUNKNOWN。
+
 ### T-2026-08-13-hub-deploy-lecun
 
 - 契約をmarker移動許可と中心role実装のどちらで修正するかはUNKNOWN。
@@ -394,7 +405,7 @@
 - 台帳の他の行が変わっていないことは、触れた行を限定した事実からしか言えていない。全行の内容を送信前後で突き合わせてはいない
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
 
-## 起票者の誤りの型（83 件）
+## 起票者の誤りの型（85 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
@@ -402,8 +413,8 @@
 |---|---:|
 | `check_does_not_check` | 32 |
 | `asserted_without_measuring` | 22 |
-| `self_contradiction` | 23 |
-| `shell_assumption` | 6 |
+| `self_contradiction` | 24 |
+| `shell_assumption` | 7 |
 
-合計 83 件（対を持つ契約 29 件から）
+合計 85 件（対を持つ契約 30 件から）
 

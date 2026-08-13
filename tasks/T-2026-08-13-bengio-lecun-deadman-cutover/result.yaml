@@ -1,0 +1,73 @@
+result_version: 3
+task_id: "T-2026-08-13-bengio-lecun-deadman-cutover"
+status: stopped
+host: "Bengio"
+branch: "feat/bengio-lecun-deadman-cutover"
+pr: 103
+merged: false
+
+gates:
+  - id: G1
+    verdict: stop
+    note: >-
+      対話session sshdはPID/tick 487326/70832449で存在したが、live transactionの祖先は
+      python、Codex、zsh、zmx、PID 1 listenerであり、session sshd配下ではなかった。
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 4
+
+deviations:
+  - type: environment
+    note: >-
+      task-startは専用分岐と未追跡契約が既にある状態で再実行されexit 3となったため、
+      分岐とorigin/phase0祖先関係を再測定して既存の正しい開始状態を使用した。
+  - type: environment
+    note: >-
+      pstreeが未導入だったため使用せず、session_probe.pyが/procのstat、cmdline、net/tcpを直接走査した。
+
+issuer_defects:
+  - type: shell_assumption
+    note: >-
+      契約は実行主体の祖先が対話session sshdへ直接つながることを前提にしたが、このホストのCodexは
+      zmx配下でPID 1へ再親化される。指示どおり祖先を測るとsession sshdは別processとなるため、
+      host変更対象から独立した実行環境であってもG1が停止し、Phase B以降へ進めない。
+  - type: self_contradiction
+    note: >-
+      起動直後の指示は.sync-pauseを台帳返送と最終pushまで残すよう要求する一方、Phase Eはpauseを移動してから
+      task-reportするよう要求し、同時には満たせない。指示どおり双方を実行する順序は存在しないため、
+      安全側の開始条件とtaskスキルに従い初回返送後に解除し、解除結果を再push・再返送する。
+
+positive_controls:
+  - judgement: "transaction実行元がsession sshd配下にある"
+    breaking_input: "PID 1のsshd listenerだけを祖先へ置き、対話session sshdを祖先から外す"
+    observed: "listener-only fixtureはsessionとして数えず、live zmx祖先鎖はexit 1になった。"
+  - judgement: "変更対象processがtransaction祖先にいない"
+    breaking_input: "fake祖先鎖へkeeper.shを追加する"
+    observed: "独立性判定がfalseへ反転した。"
+  - judgement: "ownerをPIDとstart tickの組で同定する"
+    breaking_input: "同じPIDのstart tickだけを変更する"
+    observed: "identity_matchesがfalseを返した。"
+  - judgement: "listener検査が存在portと不存在portを区別する"
+    breaking_input: "port 22 fixtureと不存在port 65534を同じparserへ与える"
+    observed: "port 22は1件、port 65534は0件となった。"
+  - judgement: "出力に秘密本文が残らない"
+    breaking_input: "囮secretをtoken代入とargvへ入れる"
+    observed: "入力では1件を検出し、sanitize後は0件になった。"
+  - judgement: "host停止をdead-manの保護対象と断定しない"
+    breaking_input: "host_stoppedをprotectedへ移しunprotectedから外す"
+    observed: "residual risk policyがfalseを返した。"
+
+followups:
+  - "実際のsession sshd子孫からforeground transactionを起動できる経路を用意する。"
+  - "またはzmxの再親化を安全な独立性として扱う契約amendmentと機械判定を起票者が用意する。"
+
+unknowns:
+  - "Phase Bのbackup、dead-man protocol、隔離試験はG1 stopのためUNKNOWN。"
+  - "Phase Cのkeeper、marker、SSH中継、Syncthing device address切替はUNKNOWN。"
+  - "Phase Dの双方向probe、1800秒安定性、commit token、guard解除はUNKNOWN。"
+
+commits:
+  - "074dd53"
+  - "b43eae2"

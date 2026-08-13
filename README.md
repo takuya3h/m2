@@ -1434,3 +1434,9 @@ Syncthing granular REST経路切替、keeper起動、rollbackの契約専用補�
 ruffと各self-testを通した。ただし bengio にSSH非依存の復旧経路がないため G1 で停止し、
 keeper、marker、SSH中継、Syncthing device addressは変更していない。再開には
 local console、リモートKVM、親ホストconsoleなど、現在のSSH経路に依存しない復旧手段が必要である。
+
+`T-2026-08-13-bengio-lecun-deadman-cutover` では、選択肢2のdead-man方式で再開する前に
+transactionの祖先を `/proc` から再測定した。Codexはzmx配下でPID 1へ再親化され、対話session
+sshdは別processだったため、契約の「transaction実行元がsession sshd配下」というG1条件を満たさず
+変更前停止した。keeper、marker、SSH中継、Syncthing device addressは未変更。再開にはsession sshd
+子孫からの起動経路、またはzmxを安全な独立性として扱う契約amendmentが必要である。

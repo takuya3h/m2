@@ -1,5 +1,16 @@
 # TODO — 研究ピボット「分析ファースト」のセットアップ
 
+## 2026-08-13 — T-2026-08-13-bengio-lecun-deadman-cutover
+
+- [x] 契約を取得・逐語で読み、L1/L2検証・参照解決・L3 preflightを完了する
+- [x] Phase A: 依存・旧状態・SSH session独立性・dead-man対象・秘匿・残余リスクを実測し G1 stopを判定する
+- [ ] Phase B: 開始状態を控え、dead-manを実装し、隔離positive controlを全て通して G2 を判定する
+- [ ] Phase C: armed transactionでbengio一台をlecun中心へ切り替え、G3を判定する
+- [ ] Phase D: 双方向probeと1800秒以上の安定性を実測し、安全なguard解除でG4を判定する
+- [x] Phase E: RESULT/result.yaml/audit/inbox/READMEを記録・検証し、commit・push・PR・同期抑止解除・台帳返送を完了する
+
+成功基準: 契約の G1〜G5 と `outputs.acceptance` を全て実測で満たす。失敗時は一回だけ rollback し、未測定値は `UNKNOWN`、保護外の host停止・再起動・kernel停止・storage障害・guard/transaction同時消失は保護済みとしない。
+
 ## 2026-08-13 — T-2026-08-13-bengio-canary-lecun-cutover
 
 - [x] 契約を取得・逐語で読み、L1/L2検証と参照解決を完了する
