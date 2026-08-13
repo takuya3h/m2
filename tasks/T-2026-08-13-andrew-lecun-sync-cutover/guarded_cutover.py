@@ -100,8 +100,19 @@ def wait_file(path: Path, timeout: float, lease_identity: tuple[int, int] | None
 
 
 def unchanged_start(start: dict[str, Any], current: dict[str, Any], route: dict[str, Any]) -> bool:
-    keys = ("keeper", "known_hosts", "syncthing_config")
+    keys = ("keeper", "known_hosts")
     files_same = all(start["files"][key]["sha256"] == current["files"][key]["sha256"] for key in keys)
+    backup_devices = {
+        name: json.loads((BACKUP / f"syncthing-device-{name}.json").read_text(encoding="utf-8"))
+        for name in ("philip", "lecun")
+    }
+    device_objects_same = all(
+        route["devices"][name]["object_sha256"]
+        == hashlib.sha256(
+            json.dumps(backup_devices[name], sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
+        for name in ("philip", "lecun")
+    )
     syncthing_same = [
         (item["pid"], item["start_tick"])
         for item in start["processes"]["syncthing"]["items"]
@@ -111,6 +122,7 @@ def unchanged_start(start: dict[str, Any], current: dict[str, Any], route: dict[
     ]
     return (
         files_same
+        and device_objects_same
         and syncthing_same
         and current["markers"]["count"] == 1
         and current["markers"]["items"][0]["path"] == str(OLD_MARKER)
@@ -296,7 +308,7 @@ def execute() -> dict[str, Any]:
         live_started = True
         added_host_keys = add_center_host_key()
         run_json([sys.executable, str(TASK_DIR / "syncthing_route.py"), "--set-lecun", "--backup-dir", str(BACKUP)])
-        os.replace(OLD_MARKER, BACKUP / "marker.philip.moved")
+        os.replace(OLD_MARKER, BACKUP / f"marker.philip.moved.{int(time.time())}")
         atomic_bytes(NEW_MARKER, f"{KEY}\n192.168.196.176\n".encode(), state["old_marker_mode"] and int(state["old_marker_mode"], 8))
         expected_keeper = deploy_keeper()
         new_keeper_pid = launch_keeper()

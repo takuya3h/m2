@@ -72,13 +72,18 @@ def process_matches(argv: list[str], comm: str) -> dict[str, bool]:
         (comm == "ssh" or "ssh" in basenames)
         and "22001:127.0.0.1:22000" in joined
     )
+    remote_targets = {
+        value.split("@", 1)[-1]
+        for value in argv
+        if value.startswith("ubuntu@") or value in PHILIP_ENDPOINTS + LECUN_ENDPOINTS
+    }
     return {
         "keeper": "keeper.sh" in basenames,
         "m2_sync": "m2-sync.sh" in basenames,
         "syncthing": comm == "syncthing" or "syncthing" in basenames,
         "ssh_local_forward": is_forward,
-        "ssh_forward_philip": is_forward and any(value in joined for value in PHILIP_ENDPOINTS),
-        "ssh_forward_lecun": is_forward and any(value in joined for value in LECUN_ENDPOINTS),
+        "ssh_forward_philip": is_forward and bool(remote_targets.intersection(PHILIP_ENDPOINTS)),
+        "ssh_forward_lecun": is_forward and bool(remote_targets.intersection(LECUN_ENDPOINTS)),
         "absent_control": ABSENT_PROCESS in joined,
     }
 
@@ -342,6 +347,10 @@ def self_test() -> tuple[dict[str, Any], bool]:
     lock_control = temporary_lock_control()
     decoy = "M2_CANARY_DECOY_SECRET_b880f2"
     normal_json = json.dumps(state, sort_keys=True)
+    lecun_forward = process_matches(
+        ["ssh", "-i", "/tmp/key_named_philip", "-L", "22001:127.0.0.1:22000", "ubuntu@192.168.196.176"],
+        "ssh",
+    )
     checks = {
         "listener_open_22000": state["listeners"]["22000"]["count"] > 0,
         "listener_open_8384": state["listeners"]["8384"]["count"] > 0,
@@ -369,6 +378,9 @@ def self_test() -> tuple[dict[str, Any], bool]:
         "route_missing_rejected": route_state([], []) == "missing",
         "decoy_secret_positive_control": secret_hits(decoy, [decoy]) == 1,
         "normal_output_excludes_decoy": secret_hits(normal_json, [decoy]) == 0,
+        "key_name_does_not_misclassify_tunnel": (
+            lecun_forward["ssh_forward_lecun"] and not lecun_forward["ssh_forward_philip"]
+        ),
     }
     passed = all(checks.values())
     return {"self_test": checks, "result": "PASS" if passed else "FAIL", "state": state}, passed

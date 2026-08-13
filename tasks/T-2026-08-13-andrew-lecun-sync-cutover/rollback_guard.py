@@ -137,6 +137,16 @@ def process_argv(pid: int) -> list[str]:
     ]
 
 
+def process_exited(pid: int) -> bool:
+    stat_path = Path("/proc") / str(pid) / "stat"
+    try:
+        raw = stat_path.read_text()
+    except FileNotFoundError:
+        return True
+    state = raw[raw.rfind(")") + 2 :].split()[0]
+    return state == "Z"
+
+
 def ancestor_pids() -> set[int]:
     result: set[int] = set()
     pid = os.getpid()
@@ -154,15 +164,17 @@ def ancestor_pids() -> set[int]:
 def terminate_one(pid: int, required_tokens: tuple[str, ...], label: str) -> dict[str, Any]:
     if pid == 0:
         return {"label": label, "pid": 0, "result": "already_absent"}
+    if process_exited(pid):
+        return {"label": label, "pid": pid, "result": "already_exited"}
     argv = process_argv(pid)
     joined = " ".join(argv)
     if not all(token in joined for token in required_tokens):
         raise RuntimeError(f"PID {pid} no longer matches {label}; TERM not sent")
     os.kill(pid, signal.SIGTERM)
     deadline = time.monotonic() + 20
-    while Path("/proc", str(pid)).exists() and time.monotonic() < deadline:
+    while not process_exited(pid) and time.monotonic() < deadline:
         time.sleep(0.2)
-    if Path("/proc", str(pid)).exists():
+    if not process_exited(pid):
         raise RuntimeError(f"PID {pid} did not exit after TERM; no stronger signal was sent")
     return {"label": label, "pid": pid, "signal": "TERM", "result": "exited"}
 
