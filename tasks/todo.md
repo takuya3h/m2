@@ -1,5 +1,18 @@
 # TODO — 研究ピボット「分析ファースト」のセットアップ
 
+## 2026-08-13 — T-2026-08-13-bengio-canary-lecun-cutover
+
+- [x] 契約を取得・逐語で読み、L1/L2検証と参照解決を完了する
+- [x] L3 preflightと Phase A の読み取り検査で G1 条件を実測する（独立復旧経路不在で stop）
+- [ ] 独立復旧経路のユーザー確認後、Phase B の控え・staging・rollback陽性対照で G2 を検証する
+- [ ] Phase C で bengio 一台の keeper・marker・SSH中継・device address を一体切替し G3 を検証する
+- [ ] Phase D/E で双方向 probe と 1800 秒以上の canary 安定性を検証する
+- [ ] Phase F で RESULT/result.yaml/受け皿・投影を生成・検査し、commit・push・PR・同期抑止解除・台帳返送を完了する
+
+成功基準: 契約の G1〜G5 と `outputs.acceptance` を全て実測で満たし、未測定は `UNKNOWN` と記録する。失敗時は bengio だけを開始時状態へ rollback し、一つでも未充足なら pass としない。
+
+停止判定: G1 `on_fail: stop`。Phase B〜Eは未実施、host設定変更なし、未測定は停止報告で `UNKNOWN` とした。
+
 ## 2026-08-12 — T-2026-08-12-submit-hub-key-ilya
 
 - [x] 契約・Skill・教訓・分岐・同期抑止・preflightを確認する

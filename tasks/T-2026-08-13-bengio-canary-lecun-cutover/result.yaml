@@ -1,0 +1,53 @@
+result_version: 3
+task_id: "T-2026-08-13-bengio-canary-lecun-cutover"
+status: stopped
+host: "bengio"
+branch: "feat/bengio-canary-lecun-cutover"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: stop
+    note: >-
+      bengioとlecunの読み取りpreflightは成立したが、ユーザーは「ssh接続でしか操作できない」と回答した。
+      SSHと独立した復旧経路が無いため、keeper、marker、SSH中継、Syncthingを変更せずG1で停止した。
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 5
+
+deviations:
+  - type: judgement
+    note: "逸脱なし。G1 on_fail: stopに従い、host設定に触れるPhase Bより前に停止した。"
+  - type: environment
+    note: "導入済みCodeGraphにwatchサブコマンドが無いため、initとstatusのup-to-date確認までを実施した。"
+
+issuer_defects: []
+
+positive_controls:
+  - judgement: "processとlistener検査が存在と不存在を区別する"
+    breaking_input: "実在keeper・22000と契約専用の不存在語・22001を同じ走査へ与える"
+    observed: "keeperは1件、22000はLISTEN 1件、不存在語と22001は0件だった。"
+  - judgement: "lock検査が保持中と解放後を区別する"
+    breaking_input: "一時lockを一方で保持した後に非待機取得し、解放後に再取得する"
+    observed: "保持中は取得失敗、解放後は取得成功に反転した。"
+  - judgement: "Syncthing route検査が正常所属と重複・欠落を区別する"
+    breaking_input: "localhost addressをphilipとlecunの両方に与える、または両方から外す"
+    observed: "philip_only、lecun_only、duplicate、missingの4判定を別々に返した。"
+  - judgement: "rollback入力検査が対象外pathと危険PIDを拒否する"
+    breaking_input: "keeper pathを/tmpへ変え、PID 1を入力する"
+    observed: "対象外pathとPID 1をともに拒否し、fake REST復旧は1回だけ呼ばれた。"
+
+followups:
+  - "bengioに現在のSSH経路に依存しないlocal console、KVM、仮想基盤console、または親ホスト操作経路を確保する。"
+  - "復旧経路確保後にPhase Aを再測定し、明示的肯定を新しく記録してからcanaryを再実行する。"
+
+unknowns:
+  - "G2のbackup・staging・rollback入力の実host結果は未実施のためUNKNOWN。"
+  - "G3のkeeper・marker・SSH中継・device address切替結果はUNKNOWN。"
+  - "G4のlecun device接続と双方向probe結果はUNKNOWN。"
+  - "G5の1800秒canary安定性はUNKNOWN。"
+
+commits: []

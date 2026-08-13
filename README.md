@@ -1426,3 +1426,11 @@ validator は `tasks/` 直下の `_` で始まらないディレクトリを対�
 直接照合は維持する。Notion `rich_text` は受け側と同じ UTF-16 単位で 2,000 以下に分割し、
 基本多言語面外の文字も壊さず連結できる。`host_mismatch` はホスト名の大小文字を区別せず、
 別ホストの宣言は引き続き警告する。回帰試験はこれらの通過・停止を両方向で固定している。
+
+### bengio canary の現在状態（2026-08-13）
+
+`T-2026-08-13-bengio-canary-lecun-cutover` で、状態probe、固定SSH中心probe、
+Syncthing granular REST経路切替、keeper起動、rollbackの契約専用補助器を追加し、
+ruffと各self-testを通した。ただし bengio にSSH非依存の復旧経路がないため G1 で停止し、
+keeper、marker、SSH中継、Syncthing device addressは変更していない。再開には
+local console、リモートKVM、親ホストconsoleなど、現在のSSH経路に依存しない復旧手段が必要である。

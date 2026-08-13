@@ -1,0 +1,1 @@
+- [ ] 2026-08-13 [human] bengioはSSH接続でしか操作できず、独立復旧経路のG1条件を満たさないためhost変更前に停止した（T-2026-08-13-bengio-canary-lecun-cutover）

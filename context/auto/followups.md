@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（123 件）
+## 申し送り（125 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -154,6 +154,11 @@
 - 受け入れ一覧の註釈（philip-to-lecun など）から device への対応づけは自己申告に依る。 指紋と相手ホストの対応を相手側で確認していない。註釈を書き換えれば対応は崩れる。
 - philip 向けの鍵が 2 本ある（ED25519 が 2026-07-03、RSA が 2026-07-01）。中継が使うのは 目印が指す ED25519 の方である。旧い RSA の方が philip でまだ受け入れられているかは 到達できないため測れない。
 
+### T-2026-08-13-bengio-canary-lecun-cutover
+
+- bengioに現在のSSH経路に依存しないlocal console、KVM、仮想基盤console、または親ホスト操作経路を確保する。
+- 復旧経路確保後にPhase Aを再測定し、明示的肯定を新しく記録してからcanaryを再実行する。
+
 ### T-2026-08-13-hub-deploy-lecun
 
 - handoffどおりlecun markerの控えと移動を許可し、SPECのmarker変更禁止とmarker不変条件を削除するか判断する。
@@ -215,7 +220,7 @@
 - 秘匿の検査が見るのは NOTION_API_KEY と WANDB_API_KEY の 2 つと、既知の接頭辞である。資格情報を増やしたら SECRET_ENV_KEYS へ足すこと。足し忘れても検査は通るため気付けない
 - 送信の時点で壁時計を使っている（completed_at）。生成物ではないため冪等の検査には影響しないが、投影に壁時計を入れない方針とは別の判断である
 
-## 断定できなかった事項（90 件）
+## 断定できなかった事項（94 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -337,6 +342,13 @@
 - 他ホストの測定結果。同じ内容の契約を複数ホストで並行実行しているため見えない。 各ノードから新しい中心へ認証が通るかは、そのノードでしか測れない。
 - dakyo-mba@dmba.local の鍵の持ち主。註釈からは人の端末（macOS）と読めるが確認していない。
 
+### T-2026-08-13-bengio-canary-lecun-cutover
+
+- G2のbackup・staging・rollback入力の実host結果は未実施のためUNKNOWN。
+- G3のkeeper・marker・SSH中継・device address切替結果はUNKNOWN。
+- G4のlecun device接続と双方向probe結果はUNKNOWN。
+- G5の1800秒canary安定性はUNKNOWN。
+
 ### T-2026-08-13-hub-deploy-lecun
 
 - 契約をmarker移動許可と中心role実装のどちらで修正するかはUNKNOWN。
@@ -393,5 +405,5 @@
 | `self_contradiction` | 23 |
 | `shell_assumption` | 6 |
 
-合計 83 件（対を持つ契約 28 件から）
+合計 83 件（対を持つ契約 29 件から）
 
