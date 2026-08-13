@@ -209,6 +209,7 @@ train/val各1 clip、1 epochで ctrl/inj を各1本実行し、W&Bへ記録し�
 
 ## 13. 記録と PR
 
-- 実装・監査・報告 commit: `522e169`。
+- 実装・監査 commit: `522e169`。PR情報を含む報告 commit: `af60d0c`。
 - branch `feat/grasp-inference-injection-impl` を origin へ push 済み。
 - Draft PR #105。base `phase0`、head `feat/grasp-inference-injection-impl`、未マージ。
+- 初回 `make task-report`: exit 0、verdict `pass`、起票者欠陥2件、report bytes 11644、置換0件。

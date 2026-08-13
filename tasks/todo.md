@@ -7,7 +7,7 @@
 - [x] Phase B で実装前テストを記録し、把持推論・ctrl/inj 注入・新規設定を最小差分で実装する
 - [x] Phase C で信号到達、対照不変、重み同数、recipe、損失遮断、母集団、指標、既存挙動、因果性を陽性対照つきで検証し G2/G3 を判定する
 - [x] Phase D で GPU 空きを確認し、空いている場合だけ ctrl/inj の短い試走を task 配下へ記録する
-- [ ] Phase E で RESULT/result.yaml/inbox/README を作成し、投影・禁止領域・全テストを検証して commit・push・Draft PR・台帳返送・同期抑止解除を完了する
+- [x] Phase E で RESULT/result.yaml/inbox/README を作成し、投影・禁止領域・全テストを検証して commit・push・Draft PR・台帳返送・同期抑止解除を完了する
 
 成功基準: `outputs.acceptance` をすべて実測で満たし、G1〜G3 と近接・全体テストを通し、既存設定・既存注入・禁止領域を変更せず、未測定値を `UNKNOWN` として記録する。
 
