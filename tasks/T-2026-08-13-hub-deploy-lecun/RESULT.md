@@ -102,10 +102,16 @@ markerを残す回避も成立しない。実測でmarkerは1件、1行目非空
 変更・削除・移動を禁じ、後段でもmarker不変を要求する。指示どおりhandoffへ従えば禁止違反となり、
 markerを残せば正本keeperがssh起動を試みるため、「sshを一度も実行しない」「中継なし」も満たせない。
 
+`self_contradiction`: 本SPEC禁止10は統合を禁じる一方、Task 7 Step 6は
+`git merge origin/phase0` を明示的に命じる。指示どおり実行すると同じ契約の禁止事項を破るため、
+停止報告の分岐はmergeせず、そのままpushしてPRを作る。
+
 ## 5. 逸脱
 
 - `judgement`: 変更を伴うPhase A Task 1の投影再生成より先に、正と指定されたhandoffとの
   整合性を読み取り専用で検査した。明示停止条件を検出後は追加変更を行わなかった。
+- `judgement`: 禁止10とTask 7 Step 6の矛盾では禁止を優先し、`git merge origin/phase0` を
+  実行せず、停止報告分岐のpushとPR作成だけを行う。
 
 ## 6. 陽性対照
 

@@ -21,12 +21,18 @@ tests:
 deviations:
   - type: judgement
     note: "変更を伴う投影再生成より先にhandoffとの整合性を読み取り専用で検査し、明示停止条件を検出後は追加変更を行わなかった。"
+  - type: judgement
+    note: "禁止10とTask 7 Step 6の矛盾では禁止を優先し、git merge origin/phase0を実行せず、停止報告分岐のpushとPR作成だけを行う。"
 
 issuer_defects:
   - type: self_contradiction
     note: >-
       handoffを正としてmarkerを退避するよう命じる一方、SPEC禁止4でmarkerの変更・削除・移動を禁じ、後段でもmarker不変を要求する。
       handoffへ従えば禁止違反となり、markerを残せば正本keeperがssh起動を試みるため、ssh未実行と中継なしも満たせない。
+  - type: self_contradiction
+    note: >-
+      SPEC禁止10は統合を禁じる一方、Task 7 Step 6はgit merge origin/phase0を明示的に命じる。
+      指示どおり実行すると同じ契約の禁止事項を破るため、禁止を優先してmergeせず、停止報告分岐のpushとPR作成だけを行う。
 
 positive_controls:
   - judgement: "marker存在検査が存在と不存在を区別する"
