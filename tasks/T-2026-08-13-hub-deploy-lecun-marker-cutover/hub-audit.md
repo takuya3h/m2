@@ -61,6 +61,14 @@
 - inbox-check: exit 0
 - report character checks: four files each had bmp_over 0 and hex40 0
 
+## Branch delivery
+
+- first record commit: `9fbb65c`
+- push: success; upstream `origin/feat/hub-deploy-lecun-marker-cutover`
+- upstream comparison after push: behind 0, ahead 0
+- pull request: 101, OPEN, non-Draft, base `phase0`, head `feat/hub-deploy-lecun-marker-cutover`
+- sync pause release: repo marker absent; contract-specific released marker exists under `/tmp`
+
 {
   "result": "PASS",
   "self_test": {

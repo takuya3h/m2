@@ -215,7 +215,7 @@
 - 秘匿の検査が見るのは NOTION_API_KEY と WANDB_API_KEY の 2 つと、既知の接頭辞である。資格情報を増やしたら SECRET_ENV_KEYS へ足すこと。足し忘れても検査は通るため気付けない
 - 送信の時点で壁時計を使っている（completed_at）。生成物ではないため冪等の検査には影響しないが、投影に壁時計を入れない方針とは別の判断である
 
-## 断定できなかった事項（92 件）
+## 断定できなかった事項（90 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -341,11 +341,6 @@
 
 - 契約をmarker移動許可と中心role実装のどちらで修正するかはUNKNOWN。
 - 新版keeperの起動・lock・中心稼働結果は配置前停止のためUNKNOWN。
-
-### T-2026-08-13-hub-deploy-lecun-marker-cutover
-
-- PR番号、Draft、base、head、upstream、aheadは初稿時点では未測定。
-- 台帳返送の結果は初稿時点では未測定。
 
 ### T-2026-08-13-hub-role-and-restart
 

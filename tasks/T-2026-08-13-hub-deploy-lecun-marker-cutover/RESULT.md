@@ -31,8 +31,8 @@ FD9 lockを保持し、home直下marker、SSH local forwarding、22001 LISTENは
 SyncthingのPID、開始tick、件数、22000 LISTENは切替前後で一致した。成功条件を全て満たしたため
 rollbackは実施していない。
 
-この初稿時点では最終検査、commit、push、PR作成、台帳返送が未実行のため、構造化報告の状態は
-`partial` とする。PR作成後に実測情報で更新する。
+host切替、近接検査、記録commit、push、PR作成、同期抑止解除まで完了した。既知のspec-check
+findingはL3 WARNとして提示し、ユーザー了承を得ている。台帳返送は本報告の最終commit後に実行する。
 
 ## 3. 開始時と終了時
 
@@ -120,8 +120,10 @@ m2-sync一周を確認した。
 | forbidden-check | exit 0、changed 8 / checked 8 / violations 0 |
 | 投影 | 生成exit 0、taskindex-check / inbox-checkともにexit 0 |
 | Python検査 | ruff合格、self-test 11項目PASS、launcher拒否対照exit 2 |
-| commit | 未実行 |
-| push / upstream / ahead | 未実行 |
-| PR | 未作成 |
-| 同期抑止解除 | 未実行。`.sync-pause` を維持中 |
-| 台帳返送 | 未実行 |
+| 記録commit | `9fbb65c`。最終報告更新は後続commit |
+| push / upstream / ahead | push成功、`origin/feat/hub-deploy-lecun-marker-cutover`、remote比 behind 0 / ahead 0 |
+| PR | #101、OPEN、非Draft、base `phase0`、head `feat/hub-deploy-lecun-marker-cutover` |
+| 同期抑止解除 | repo直下なし、`/tmp/.sync-pause.released.T-2026-08-13-hub-deploy-lecun-marker-cutover` あり |
+| 台帳返送 | 最終報告commit後に実行 |
+
+PR: https://github.com/takuya3h/m2/pull/101

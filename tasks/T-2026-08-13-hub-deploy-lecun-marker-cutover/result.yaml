@@ -1,9 +1,9 @@
 result_version: 3
 task_id: "T-2026-08-13-hub-deploy-lecun-marker-cutover"
-status: partial
+status: pass
 host: "lecun"
 branch: "feat/hub-deploy-lecun-marker-cutover"
-pr: null
+pr: 101
 merged: false
 
 gates:
@@ -68,8 +68,7 @@ followups:
   - "一般ノード一台のcanary切替は本契約の面外であり、別契約で実施する。"
   - "Phase C Step 1のgit show --output前提を起票側で修正する。"
 
-unknowns:
-  - "PR番号、Draft、base、head、upstream、aheadは初稿時点では未測定。"
-  - "台帳返送の結果は初稿時点では未測定。"
+unknowns: []
 
-commits: []
+commits:
+  - "9fbb65c"
