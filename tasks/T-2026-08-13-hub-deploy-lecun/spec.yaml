@@ -1,0 +1,89 @@
+spec_version: 2
+
+meta:
+  task_id: "T-2026-08-13-hub-deploy-lecun"
+  kind: impl
+  title: "lecun へ正本 keeper を配置し、旧常駐と旧中継を止め、新版を明示起動して中心化を完了する"
+  origin: claude-app
+  created_at: "2026-08-13T09:30:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-13-hub-role-and-restart"]
+  amendments: []
+
+intent:
+  question: "前契約で確定した手順に従い、lecun で稼働中の旧 keeper を正本の新版へ置き換え、旧常駐と旧中継を数値 PID 限定で止めて新版を明示起動したとき、中心としての稼働（中継を張らず、死活監視・自己更新・実行の各処理が動く状態）へ切り替わるか"
+  decision_at_stake: "五台構成の中心化を lecun で完了できるか。完了すれば次は一般ノードの切替（canary 一台）へ進める。失敗すれば rollback し、handoff の失敗様式のどれに該当したかを次の設計材料にする"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/sync/keeper.sh"
+      - "scripts/sync/m2-sync.sh"
+      - "tasks/T-2026-08-13-hub-role-and-restart/handoff.md"
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "投影の再生成と、handoff の読み込みと事前記録", gpu: false, est: "40m"}
+    - {id: B, name: "控えの作成と新版の配置", gpu: false, est: "25m"}
+    - {id: C, name: "旧常駐と旧中継の停止と、新版の明示起動", gpu: false, est: "30m"}
+    - {id: D, name: "中心としての稼働確認", gpu: false, est: "30m"}
+    - {id: E, name: "検証と送出と報告", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "handoff が実在して全文を読み、そこに書かれた事前条件を一つずつ実測で満たしたことを確かめた。事前記録の要約値・稼働数・待ち受けが揃った"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "配置後の稼働場所と正本の要約値が双方向で一致し、控えの要約値が配置前の稼働版と一致することを確かめた"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "旧の数値 PID が消滅し、施錠が解放され、新版が新しい PID で稼働して施錠を保持していることを確かめた"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-13-hub-deploy-lecun/"
+  acceptance:
+    - "handoff の手順と本 SPEC の食い違いの有無が記録され、食い違いがあれば handoff に従った判断が記録されている"
+    - "配置前の稼働版・正本・控えの三者の要約値と行数が記録され、配置後は稼働場所と正本が双方向で一致している"
+    - "停止はすべて数値 PID に対する TERM で行われ、名前一致による一括停止を使っていない"
+    - "新版の起動が記録済みの起動行と同じ形で行われ、新 PID が施錠を保持し、旧 PID が消滅している"
+    - "中心としての稼働確認（中継を張らないこと、同期処理の待ち受けと稼働数の維持）が実測で示されている"
+    - "各判定に空振りでないことの確認が付き、不在の結論には別の探し方による再確認が併記されている"
+    - "分岐が送出され PR が存在し、番号と Draft の別が報告に記載されている"
+    - "失敗時は handoff の rollback に従って控えを戻した事実が記録されている（成功時はその旨）"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "陽性対照が期待どおりの結果を返さず、測定系の結論が信用できない場合"
+    - "旧 PID へ TERM を送っても消滅せず、追加の強い信号を送るかの判断が必要になった場合"
+    - "新版の起動後に中継を張る挙動が観測され、目印の分岐が働いていない疑いが生じた場合"
+    - "rollback を実行してもなお常駐が稼働しない状態になった場合"
+    - "handoff の手順と本 SPEC が両立せず、どちらに従っても禁止に触れる場合"
