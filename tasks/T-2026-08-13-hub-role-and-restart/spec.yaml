@@ -1,0 +1,84 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-13-hub-role-and-restart"
+  kind: analysis
+  title: "中心側で常駐処理が果たすべき役割と、配置・再起動・復旧の手順を実装から確定する"
+  origin: claude-app
+  created_at: "2026-08-13T08:00:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-12-register-hub-keys"]
+  amendments: []
+
+intent:
+  question: "五台での復旧に残るのは、常駐処理の正本を各台へ配置し、目印を置き換え、動かし直すことである。しかし起票者は次を把握していない。常駐処理は中継のほかに何をしているか。中心では中継が要らないが他の役割は要るのか。目印を外すと中継以外の処理まで止まるのか。置き換えたあとどうすれば新しい版が動き出すのか。五台のうちどれを先に触るべきか"
+  decision_at_stake: "配置と再起動をどの順序でどう行うか。失敗したときにどう戻すか。五台の常駐処理を同時に触るため、誤ると同期が全台で止まり、中継が無い状態では遠隔から直せない"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/sync/keeper.sh"
+      - "scripts/sync/m2-sync.sh"
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "常駐処理の役割と、それを起こす仕組みの確定", gpu: false, est: "70m"}
+    - {id: B, name: "配置の順序と、復旧および疎通確認の手順の決定", gpu: false, est: "50m"}
+    - {id: C, name: "無変更の確認、送出、報告", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "稼働中の版と正本の全文を要約値つきで記録し、周回の処理を行番号つきで列挙して中心で要るかを判定した。目印の有無で分岐する範囲を行番号で示した。常駐処理を起こす仕組みを複数の出所から探し、多重起動の防止と本文の読み直しの有無を実装から判定した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "中心を先に触るか後かを判定し根拠を行番号で示した。一般ノード用と中心用の手順を、事前の記録から戻し方まで書き出した。疎通の確認方法について、それぞれが示すことと示さないことを分けた。失敗の様式と戻し方を列挙した"
+      on_fail: ask
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-13-hub-role-and-restart/"
+  acceptance:
+    - "稼働中の版と正本の全文を記録し、両者の差を行数で判定している"
+    - "周回で行われる処理を行番号つきで列挙し、中心で要るかを判定して不明を UNKNOWN としている"
+    - "目印の有無で分岐する範囲を行番号で示し、分岐の外にある処理を特定している"
+    - "常駐処理を起こす仕組みを複数の出所から探し、件数と場所を記録している"
+    - "多重起動の防止と、実行中に本文を読み直すかどうかを実装の構造から判定している"
+    - "止め方と起こし方の候補を副作用つきで列挙し、実行していない"
+    - "中心を先に触るか後かを判定し、根拠を実装の行番号で示している"
+    - "一般ノード用と中心用の手順を、事前の記録から戻し方まで書き出している"
+    - "疎通の確認方法について、それぞれが示すことと示さないことを分けている"
+    - "開始時と要約値が一致し、プロセスの数が変わっていないことを示している"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "読み取りのみの契約であるにもかかわらず、何かが変わってしまった場合"
+    - "常駐処理を起こす仕組みが見つからず、再起動の方法を確定できない場合"
+    - "起こす仕組みが複数あり、片方を止めても復活する構造だと判明した場合"
+    - "稼働中の版と正本の差が起票者の前提より大きい場合"
+    - "手順を書ききれない項目があり、次の契約で埋める必要が生じた場合"

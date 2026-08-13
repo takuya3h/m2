@@ -1,0 +1,73 @@
+result_version: 3
+task_id: "T-2026-08-13-hub-role-and-restart"
+status: partial
+host: "lecun"
+branch: "feat/hub-role-and-restart"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      keeper稼働版34行と正本52行の全文・SHAを記録し、全文差分47行を測定した。7出所の起動検索は
+      .zshrc:56の1件、keeperはPID 1071/PPID 1、FD9 flock保持、m2-sync中継語0件だった。
+  - id: G2
+    verdict: pass
+    note: >-
+      正本31–50行を根拠にlecun先行・以降一台ずつと決定した。handoffへ中心/一般手順、
+      8疎通確認の証明範囲、双方向probe、9失敗様式とrollbackを記録した。
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 13
+
+deviations:
+  - type: environment
+    note: "ssが未導入だったため、LISTEN確認は/proc/net/tcpと/proc/net/tcp6を読み、8384と22000の2件を実測した。"
+  - type: judgement
+    note: "systemdの名前検索だけでは不十分なため、system/user unit本文、cron、4 shell設定を含む実在7出所を追加検索した。"
+  - type: judgement
+    note: "efrosとbengioのcanary優先順位は実装から決めずUNKNOWNとし、現地preflightで選ぶgateにした。"
+  - type: judgement
+    note: "契約固有の禁止9を優先し、make taskindexとmake inboxは実行せず、未投影差分だけを検査する。"
+
+issuer_defects:
+  - type: check_does_not_check
+    note: >-
+      systemd確認が/etc/systemd/systemのファイル名だけをkeeperで絞るため、別名unitのExecStartにkeeperがあっても検出しない。
+      指示どおり0件でも自動起動なしとは言えず、system/user unit本文とcron・shell設定の実在7出所を全文検索した。
+  - type: check_does_not_check
+    note: >-
+      m2-syncの4語grepが0件でも別名変数・呼出先・設定経由の間接依存は否定しない。
+      指示どおり0件だけで断定せず、同一性確認後に133行全文を読み、同じ検索がkeeperで15件出る陽性対照を取った。
+
+positive_controls:
+  - judgement: "稼働版と正本の差分判定"
+    breaking_input: "内容が異なる二つのkeeperをdiffへ与える"
+    observed: "同一m2-syncは差分0行、異なるkeeperは差分47行。"
+  - judgement: "起動経路検索が記述を検出する"
+    breaking_input: "keeper起動記述を含む設定を検索対象へ与える"
+    observed: ".zshrc:56を1件検出し、他の検索出所は0件。"
+  - judgement: "keeperのflockが多重起動を拒否する"
+    breaking_input: "保持中の.keeper.lockへ非待機lock取得を試す"
+    observed: "PID 1071のFD9にFLOCKを確認し、別probeはexit 1。"
+  - judgement: "m2-sync中継依存検索が空振りでない"
+    breaking_input: "同じ正規表現へ中継実装を持つkeeper正本を与える"
+    observed: "m2-syncは0件、keeper正本は15件。"
+  - judgement: "対象process計数が存在と不存在を区別する"
+    breaking_input: "実在keeperと不存在語zzz_no_such_processを同じ計数器へ与える"
+    observed: "keeper.sh=1、zzz_no_such_process=0。"
+
+followups:
+  - "次契約はlecunを先に更新し、marker 0・keeper 1・flock・Syncthing 22000を確立してから一般ノードを一台ずつ更新する。"
+  - "一般ノードでは旧keeperに加えて旧SSH中継の数値PIDも終了しないと、正本33行のpgrepが新lecun中継を抑止する。"
+  - "各一般ノードで使用予定鍵の導出公開鍵指紋をlecun登録値と照合し、双方向.pt probeのSHA-256一致まで確認する。"
+
+unknowns:
+  - "efrosとbengioのどちらを最初のcanaryにするかは、現地状態を測っていないためUNKNOWN。"
+  - "他4ホストの現在のkeeper PID・marker・鍵path・中継状態は、本契約が他ホスト実行を禁じるためUNKNOWN。"
+  - "TERMだけで全ホストのkeeperが期限内に終了するかは未実行のためUNKNOWN。"
+
+commits: []
