@@ -1,0 +1,86 @@
+result_version: 3
+task_id: "T-2026-08-12-submit-hub-key-ilya"
+status: pass
+host: "aolab"
+branch: "feat/submit-hub-key-ilya"
+pr: 96
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      目印1件から既存鍵の経路を得て公開鍵を導出した。導出物と並置公開鍵は指紋とバイトが一致し、
+      別鍵は異なる指紋だった。lecun候補1件に対し到達結果1件で50072番OPEN。登録前認証は拒否され、
+      known_hostsはサイズ・mtimeとも不変だった。秘匿囮は1件を検出した。
+  - id: G2
+    verdict: pass
+    note: >-
+      配置したilya.pubは94バイト・1行・ssh-ed25519開始・PRIVATE一致0で、導出物とバイト一致し
+      指紋も一致した。PRIVATE語を持つ囮は1件を返した。handoffへ次契約用情報だけを書き、
+      実際の目印とlecun側は変更していない。
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+
+deviations:
+  - type: judgement
+    note: >-
+      /tmp/kh_audit.txtには前契約の9行が残っていたため、タスク専用の
+      /tmp/kh_submit_hub_key_ilya.txtを使用した。禁止領域への追記を避ける目的は同じで、
+      新しい隔離先だけにlecunのホスト鍵1行が入り、~/.ssh/known_hostsは不変だった。
+  - type: judgement
+    note: >-
+      上位指示に従いtasks/todo.mdへ計画を追記した。Codegraphは前タスクで初期化済みだったため
+      再初期化せず、成果物作成後のsyncで索引を更新する。
+  - type: judgement
+    note: >-
+      task Skillに従いmake taskindexとmake inboxでcontext/autoの3投影とtasks/inbox.mdを
+      正規生成した。契約の列挙外だが上位指示が要求する生成物であり、手編集はしていない。
+
+issuer_defects:
+  - type: check_does_not_check
+    note: >-
+      Task 1 Step 1のls -a ~/ | grep -i tunnelは.tunnel.logも数えるため、このホストでは2を返すが、
+      実際の~/.tunnel_to_*目印は1件である。指示どおり2を目印件数と読むと完了判定1を誤る。
+      findで目印パターンだけを別に数え、1件と確定した。
+  - type: self_contradiction
+    note: >-
+      禁止9は外部送信をmake task-reportだけに限定する一方、Task 4 Step 8はgit pushとPR作成を
+      必須にしており同時には守れない。指示どおり送出すると禁止9に触れ、送出しないと完了判定18と19を
+      満たせない。ユーザーへGit履歴に公開鍵が残る影響を説明し、明示承認を得てStep 8を実施する。
+
+positive_controls:
+  - judgement: "導出公開鍵が対象秘密鍵に対応する"
+    breaking_input: "別用途の秘密鍵から同じ方法で公開鍵を導出する"
+    observed: "対象と別用途鍵の指紋は異なりfingerprints_differ=True。対象は並置公開鍵とバイト一致"
+  - judgement: "監査の秘匿検査が秘密鍵型を検出する"
+    breaking_input: "秘密鍵ヘッダー型の1行を持つ囮へ同じ検査を適用する"
+    observed: "囮1件。監査本文の一致1件はSSHの認証方式名で資格情報値ではない"
+  - judgement: "到達性が三分類を出し分ける"
+    breaking_input: "開いたlocalhost、閉じた同ポート、経路のない192.0.2.1を与える"
+    observed: "OPEN、REFUSED、OSERROR:Network_is_unreachableを出し分けた"
+  - judgement: "配置物が公開鍵だけである"
+    breaking_input: "PRIVATE語を含む囮へ同じ検査を適用する"
+    observed: "ilya.pubはPRIVATE一致0・1行・ssh-開始、囮は一致1、導出物とcmp exit 0"
+  - judgement: "測定が目印・keeper・中継を変えていない"
+    breaking_input: "Phase AとPhase CでSHA-256・プロセス数を比較する"
+    observed: "目印とkeeperのSHA-256は一致、keeper=1、ssh -N -L=0、不在語=0"
+
+followups:
+  - >-
+      lecun側の次契約ではscripts/sync/hub_keys/ilya.pubを受け入れ一覧へ登録し、登録後に
+      192.168.196.176:50072へ同じ秘密鍵でREACHABLEが返ることを再測定する。
+  - >-
+      ilya側の目印案は1行目/home/ubuntu/.ssh/id_ed25519_ilyatophilip、2行目192.168.196.176。
+      本契約では目印を作成・変更していない。
+
+unknowns:
+  - "lecun側で登録作業がいつ実施されるかはUNKNOWN"
+  - "登録後に同じ鍵で認証が通るかは次契約までUNKNOWN"
+
+commits:
+  - "806abe4"
+  - "324b72a"

@@ -7,6 +7,7 @@
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
 ## 申し送り（111 件）
+## 申し送り（110 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -92,6 +93,10 @@
 - lecun 側で scripts/sync/hub_keys/andrew.pub の公開鍵を受け入れ一覧へ登録する。
 - 登録後、andrew から 192.168.196.176:50072 への認証が通ることを再測定する。
 - その後に限り、目印の2行案を別契約で適用する。
+### T-2026-08-12-submit-hub-key-ilya
+
+- lecun側の次契約ではscripts/sync/hub_keys/ilya.pubを受け入れ一覧へ登録し、登録後に 192.168.196.176:50072へ同じ秘密鍵でREACHABLEが返ることを再測定する。
+- ilya側の目印案は1行目/home/ubuntu/.ssh/id_ed25519_ilyatophilip、2行目192.168.196.176。 本契約では目印を作成・変更していない。
 
 ### T-2026-08-12-sync-audit-bengio
 
@@ -188,7 +193,7 @@
 - 秘匿の検査が見るのは NOTION_API_KEY と WANDB_API_KEY の 2 つと、既知の接頭辞である。資格情報を増やしたら SECRET_ENV_KEYS へ足すこと。足し忘れても検査は通るため気付けない
 - 送信の時点で壁時計を使っている（completed_at）。生成物ではないため冪等の検査には影響しないが、投影に壁時計を入れない方針とは別の判断である
 
-## 断定できなかった事項（81 件）
+## 断定できなかった事項（83 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -256,6 +261,11 @@
 - 外部から見えるilyaの住所とSSHポートは自ホストから測れない
 - ubuntu@aolab注釈がilyaとphilipのどちらに由来するかは判別できない
 - philipが到達不能な理由はUNKNOWN。No route to hostとTIMEOUTまでを実測した
+
+### T-2026-08-12-submit-hub-key-ilya
+
+- lecun側で登録作業がいつ実施されるかはUNKNOWN
+- 登録後に同じ鍵で認証が通るかは次契約までUNKNOWN
 
 ### T-2026-08-12-sync-audit-bengio
 
@@ -335,6 +345,7 @@
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
 
 ## 起票者の誤りの型（74 件）
+## 起票者の誤りの型（73 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
@@ -346,4 +357,7 @@
 | `shell_assumption` | 5 |
 
 合計 74 件（対を持つ契約 23 件から）
+| `shell_assumption` | 4 |
+
+合計 73 件（対を持つ契約 23 件から）
 
