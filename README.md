@@ -1440,3 +1440,8 @@ transactionの祖先を `/proc` から再測定した。Codexはzmx配下でPID 
 sshdは別processだったため、契約の「transaction実行元がsession sshd配下」というG1条件を満たさず
 変更前停止した。keeper、marker、SSH中継、Syncthing device addressは未変更。再開にはsession sshd
 子孫からの起動経路、またはzmxを安全な独立性として扱う契約amendmentが必要である。
+
+`T-2026-08-13-bengio-lecun-zmx-deadman-cutover` ではzmx再親化を許可する厳密なtopology probeを
+追加したが、host全体に同一binaryのzmxを4件検出し、一意なverified_zmxというG1条件を満たさず
+変更前停止した。keeper、marker、SSH中継、Syncthing device addressは未変更。再開にはzmx一意性の
+scope、または既存zmxを扱う許可を別契約で定義する必要がある。

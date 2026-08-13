@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（220 件）
+## 未処理（221 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -232,6 +232,7 @@
 - [ ] 2026-08-13 [cx] andrew と ilya の公開鍵を lecun の受け入れ一覧へ登録した。両ホスト側からの認証再測定、lecun の旧目印の扱い、開始時 mode 664 の原因確認が残る（T-2026-08-12-register-hub-keys）
 - [ ] 2026-08-13 [human] bengioはSSH接続でしか操作できず、独立復旧経路のG1条件を満たさないためhost変更前に停止した（T-2026-08-13-bengio-canary-lecun-cutover）
 - [ ] 2026-08-13 [cx] zmx再親化によりtransaction祖先が対話session sshdへ届かずG1停止。session sshd子孫から起動するか契約amendmentが必要（T-2026-08-13-bengio-lecun-deadman-cutover）
+- [ ] 2026-08-13 [cx] host上にzmxが4件あり一意なverified_zmxへ分類できずG1停止。scope定義または既存zmxの扱いを別契約で決める（T-2026-08-13-bengio-lecun-zmx-deadman-cutover）
 - [ ] 2026-08-13 [cx] lecunをmarkerなしの正本keeperへ切り替え、SyncthingとSSH関連状態を維持した。一般ノード一台のcanary切替は別契約で行う（T-2026-08-13-hub-deploy-lecun-marker-cutover）
 - [ ] 2026-08-13 [cx] handoffはlecun marker退避を必須とするが配置SPECは禁止し、markerを残すと正本keeperがssh起動を試みるため配置前に停止した。marker移動許可か中心role実装のどちらかへ契約を整合させる必要がある（T-2026-08-13-hub-deploy-lecun）
 - [ ] 2026-08-13 [cx] 中心lecunを先に確立し一般ノードを一台ずつ更新する。一般ノードは旧keeperだけでなく旧SSH中継も数値PID限定で終了し、接続先記録付き双方向probeまで通す必要がある（T-2026-08-13-hub-role-and-restart）

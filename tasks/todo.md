@@ -1,5 +1,16 @@
 # TODO — 研究ピボット「分析ファースト」のセットアップ
 
+## 2026-08-13 — T-2026-08-13-bengio-lecun-zmx-deadman-cutover
+
+- [x] 契約取得、L1/L2検証、逐語参照解決、L3 preflightを完了する
+- [x] Phase A: 依存・旧状態を固定し、host上のzmx 4件を検出してG1 stopを判定する
+- [ ] Phase B: 全控え・dead-man実装・隔離positive controlを完了しG2を判定する
+- [ ] Phase C: armed transactionでbengio一台をlecun中心へ切り替えG3を判定する
+- [ ] Phase D: 双方向probeと1800秒以上の安定性を確認しguard解除後にG4を判定する
+- [x] Phase E: RESULT/result.yaml/audit/inbox/README、検証、commit/push/PR、二段返送とpause解除を完了する
+
+成功基準: G1〜G5と全acceptanceを実測で満たした場合だけpass。失敗時はdead-manまたはtransactionが旧philip状態へ一回だけrollbackし、未測定値と保護外failureはUNKNOWNとして記録する。
+
 ## 2026-08-13 — T-2026-08-13-bengio-lecun-deadman-cutover
 
 - [x] 契約を取得・逐語で読み、L1/L2検証・参照解決・L3 preflightを完了する

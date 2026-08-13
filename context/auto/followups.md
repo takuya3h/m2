@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（127 件）
+## 申し送り（129 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -164,6 +164,11 @@
 - 実際のsession sshd子孫からforeground transactionを起動できる経路を用意する。
 - またはzmxの再親化を安全な独立性として扱う契約amendmentと機械判定を起票者が用意する。
 
+### T-2026-08-13-bengio-lecun-zmx-deadman-cutover
+
+- hostに存在する4件のzmxを安全に識別し、一意性をどのscopeで定義するかを別契約で決める。
+- 既存zmxの停止やsignalが必要なら、対象PIDと影響範囲を明示した別契約で許可する。
+
 ### T-2026-08-13-hub-deploy-lecun
 
 - handoffどおりlecun markerの控えと移動を許可し、SPECのmarker変更禁止とmarker不変条件を削除するか判断する。
@@ -225,7 +230,7 @@
 - 秘匿の検査が見るのは NOTION_API_KEY と WANDB_API_KEY の 2 つと、既知の接頭辞である。資格情報を増やしたら SECRET_ENV_KEYS へ足すこと。足し忘れても検査は通るため気付けない
 - 送信の時点で壁時計を使っている（completed_at）。生成物ではないため冪等の検査には影響しないが、投影に壁時計を入れない方針とは別の判断である
 
-## 断定できなかった事項（97 件）
+## 断定できなかった事項（100 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -360,6 +365,12 @@
 - Phase Cのkeeper、marker、SSH中継、Syncthing device address切替はUNKNOWN。
 - Phase Dの双方向probe、1800秒安定性、commit token、guard解除はUNKNOWN。
 
+### T-2026-08-13-bengio-lecun-zmx-deadman-cutover
+
+- Phase Bのbackup、dead-man protocol、隔離試験はG1 stopのためUNKNOWN。
+- Phase Cのkeeper、marker、SSH中継、Syncthing device address切替はUNKNOWN。
+- Phase Dの双方向probe、1800秒安定性、commit token、guard解除はUNKNOWN。
+
 ### T-2026-08-13-hub-deploy-lecun
 
 - 契約をmarker移動許可と中心role実装のどちらで修正するかはUNKNOWN。
@@ -416,5 +427,5 @@
 | `self_contradiction` | 24 |
 | `shell_assumption` | 7 |
 
-合計 85 件（対を持つ契約 30 件から）
+合計 85 件（対を持つ契約 31 件から）
 
