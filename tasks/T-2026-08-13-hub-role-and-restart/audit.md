@@ -568,3 +568,20 @@ sync_pause_in_repo=0
 
 契約完了手順で解除した `.sync-pause` を除き、開始時のSHA-256、marker件数、lock属性、
 process件数と全て一致した。
+
+### pass版の台帳返送
+
+```text
+cf1b5a9 cf1b5a9e7199911468db6daf91740bebd1b9cfa4 docs(task): finalize hub restart analysis
+{
+  "task_id": "T-2026-08-13-hub-role-and-restart",
+  "verdict": "pass",
+  "n_issuer_defects": 2,
+  "report_sha256": "4e16fc5ad9a38a438c661cb1bca76661656f3456d534714579aeb12913dff1ef",
+  "report_bytes": 9557,
+  "replaced_blocks": 1
+}
+pass_report_exit=0
+```
+
+版管理済みpass版を台帳へ返送できた。この実測を記録した版もcommit・push後に再送する。
