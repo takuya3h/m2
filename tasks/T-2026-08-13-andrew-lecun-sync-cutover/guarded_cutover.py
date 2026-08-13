@@ -273,7 +273,8 @@ def probe_pair(owner: tuple[int, int], sequence: int) -> tuple[dict[str, Any], i
 def execute() -> dict[str, Any]:
     owner_pid, owner_tick = os.getpid(), tick(os.getpid())
     start = json.loads((BACKUP / "start-snapshot.json").read_text(encoding="utf-8"))
-    if not unchanged_start(start, local_snapshot("pre_transaction"), route_snapshot()):
+    current_start = local_snapshot("pre_transaction")
+    if not unchanged_start(start, current_start, route_snapshot()):
         raise RuntimeError("live state no longer matches the sealed old state")
     state = make_state(start)
     atomic_json(STATE, state, exclusive=True)
@@ -301,7 +302,7 @@ def execute() -> dict[str, Any]:
         sys.path.insert(0, str(TASK_DIR))
         import rollback_guard
 
-        old_keeper = start["processes"]["keeper"]["items"][0]
+        old_keeper = current_start["processes"]["keeper"]["items"][0]
         if tick(old_keeper["pid"]) != old_keeper["start_tick"]:
             raise RuntimeError("old keeper identity changed before TERM")
         rollback_guard.terminate_one(old_keeper["pid"], ("keeper.sh",), "old_keeper")
