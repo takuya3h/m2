@@ -166,3 +166,13 @@ sync_pause_in_repo=0
 ```
 
 停止報告分岐をpushし、PRを作成した。`origin/phase0` はmergeしていない。同期抑止はrepo外へ移した。
+
+台帳返送:
+
+```text
+verdict=stopped
+n_issuer_defects=2
+report_bytes=6727
+replaced_blocks=0
+stopped_report_exit=0
+```

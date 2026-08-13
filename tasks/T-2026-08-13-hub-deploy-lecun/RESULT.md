@@ -134,11 +134,12 @@ markerを残せば正本keeperがssh起動を試みるため、「sshを一度�
 | forbidden-check | exit 0、changed 6 / checked 6 / violations 0 |
 | 変更範囲 | 契約ディレクトリと専用受け皿だけ、unmerged 0、diff-check 0 |
 | 投影 | taskindex-check 2 / inbox-check 2。矛盾確定後のため再生成なし |
-| 記録commit | `ebfc4b8`、`5053ce8`、`ae16560` |
+| 記録commit | `ebfc4b8`、`5053ce8`、`ae16560`、`3d597f0` |
 | 分岐送出 | `feat/hub-deploy-lecun` をoriginへpush、upstream設定済み |
 | PR | **#100**、OPEN、非Draft、base `phase0`、head `feat/hub-deploy-lecun` |
 | 同期抑止 | repo直下になし。契約専用 `/tmp` パスへ退避済み |
+| 台帳返送 | exit 0、`verdict=stopped`、6727 bytes、起票者欠陥2件、置換0件 |
 
 PR: https://github.com/takuya3h/m2/pull/100
 
-停止報告作成時点では台帳返送が未実施。
+停止報告を台帳へ返送済み。
