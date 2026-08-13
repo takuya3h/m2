@@ -23,7 +23,12 @@ deviations:
   - {type: judgement, note: "attempt-2は復旧後keeperを再同定せず変更前停止。現在PID+tick再同定へ修正"}
   - {type: environment, note: "CodeGraph watch未対応のためinitとsyncで代替"}
 
-issuer_defects: []
+issuer_defects:
+  - type: check_does_not_check
+    note: >-
+      E4は解除後の常駐再開をsync-alertsの増分で確認するが、m2-sync.shはphase0差分の無い
+      no-op成功時にログを追加しない。marker不在で直接実行exit 0でも増分は零であり、
+      増分の有無だけでは再開と未実行を区別できない。
 
 followups: []
 
@@ -51,3 +56,4 @@ commits:
   - "992a602"
   - "200e1a1"
   - "ff4b1a8"
+  - "d91d23a"

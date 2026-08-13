@@ -51,6 +51,8 @@ PIDとstart tickが一致した。Andrew→lecun 116 bytes、lecun→Andrew 115 
 4. attempt-2は復旧後keeperの新PIDを再同定せず旧PIDを参照し、host変更前に停止した。現在snapshotから
    PID+tickを再同定するよう修正した。attempt-3が最終成功である。
 5. 導入済みCodeGraphに`watch`がなく、`init`と変更後の`sync`で代替した。
+6. 同期抑止解除後に`m2-sync.sh`を直接実行してexit 0を得たが、phase0差分の無いno-opでは
+   `sync-alerts.log`が増えなかった。marker不在と直接実行で再開を確認し、増分検査の空振りを起票者欠陥とした。
 
 ## 残余リスク・UNKNOWN
 
@@ -75,3 +77,12 @@ PIDとstart tickが一致した。Andrew→lecun 116 bytes、lecun→Andrew 115 
 - upstream: `origin/feat/andrew-lecun-sync-cutover`。
 - PR: #106、OPEN、非Draft、base `phase0`、head `feat/andrew-lecun-sync-cutover`。
 - URL: https://github.com/takuya3h/m2/pull/106
+- 初回台帳返送: exit 0、verdict `pass`、4507 bytes、起票者欠陥0件、置換0件。
+- 同期抑止解除: repo直下0件、`/tmp/.sync-pause.released.T-2026-08-13-andrew-lecun-sync-cutover` 1件。
+- 解除後同期処理: 直接実行exit 0。no-opのためsync-alerts増分0件。
+
+## 起票者の誤り
+
+`check_does_not_check` 1件。E4は常駐再開を`sync-alerts`増分で確認するが、実装は差分の無い
+正常no-opではログを追加しない。そのため増分0は「再開して正常終了」と「未実行」を区別できない。
+本taskではmarker不在、退避先実在、直接実行exit 0を別の根拠として用いた。

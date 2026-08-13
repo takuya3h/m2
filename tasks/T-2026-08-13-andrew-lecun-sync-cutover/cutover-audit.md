@@ -12,4 +12,4 @@
 - stability: wall 1805.822468996048 seconds / monotonic 1805.8224699220154 seconds。
 - guard events: ready / armed / disarmed。success attemptのrollbackなし。
 - secrets: 秘密鍵、API key、token、authorized_keys本文、config.xml本文をrepoへ保存していない。
-
+- sync release: repo marker absent、専用/tmp退避先 present、m2-sync直接実行exit 0、no-opのためlog増分0。
