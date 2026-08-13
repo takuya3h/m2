@@ -142,5 +142,19 @@ rollbackはすべて `UNKNOWN`。
 
 ## 10. 送出・台帳
 
-検証、commit、push、PR、同期抑止の二段解除、台帳返送の結果は実測後に追記する。
+| 項目 | 実測 |
+|---|---|
+| task-validate | exit 0、1 task、0 failed |
+| spec-check | exit 0、8 rules、finding 0 |
+| docs-check | exit 0、対象42文書、食い違いなし |
+| forbidden-check | exit 0、changed 13 / checked 9 / excluded 4 / violations 0 |
+| taskindex / inbox | 生成exit 0、taskindex-check / inbox-checkともにexit 0 |
+| 初回commit | `05c820b` |
+| push / upstream | 成功、`origin/feat/bengio-lecun-zmx-deadman-cutover` |
+| behind / ahead | 0 / 0 |
+| PR | #104、OPEN、非Draft、base `phase0`、head `feat/bengio-lecun-zmx-deadman-cutover` |
+| clean tree | clean |
+| 同期抑止 | `.sync-pause` 実在。初回台帳返送成功まで保持 |
+| 台帳返送 | 初回未実施 |
 
+PR: https://github.com/takuya3h/m2/pull/104
