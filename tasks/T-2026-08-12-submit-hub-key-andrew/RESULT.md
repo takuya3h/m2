@@ -135,8 +135,9 @@ sigma に関する列は 4 系統ある（backlog B-18）。
 | 17 | 変更範囲 | `forbidden-check` は changed 12 / checked 8 / excluded 4 / violations 0。unmerged 0 |
 | 18 | 分岐送出 | 上流との差 `0 0`、phase0 に対して ahead 1 / behind 0 |
 | 19 | PR | **#97**、OPEN、非Draft、base `phase0`、head `feat/submit-hub-key-andrew` |
-| 20 | 抑止解除 | PENDING |
-| 21 | 台帳送信 | PENDING |
+| 20 | 抑止解除 | repo直下から消え、`/tmp/.sync-pause.released.T-2026-08-12-submit-hub-key-andrew` に退避済み |
+| 21 | 台帳送信 | 初回 exit 0。`verdict=partial`、`report_bytes=7135`、`n_issuer_defects=3`、`replaced_blocks=0`。最終pass版は本記録commit後に再送する |
 
 記録 commit は `02e651b feat(sync): submit tunnel public key for andrew`。
+PR情報の追記 commit は `f7aa58e docs(task): record PR for andrew key submission`。
 PR: https://github.com/takuya3h/m2/pull/97

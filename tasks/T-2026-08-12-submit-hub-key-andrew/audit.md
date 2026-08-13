@@ -236,3 +236,18 @@ zzz_no_such_process=0
 
 目印の件数・metadata・sha256、稼働版の bytes・sha256、通常の known_hosts、
 中継数と keeper 数は変更前と一致した。
+
+## 同期抑止解除と台帳への初回返送
+
+```text
+repo 直下から消えた
+/tmp/.sync-pause.released.T-2026-08-12-submit-hub-key-andrew
+task_report_exit=0
+verdict=partial
+n_issuer_defects=3
+report_sha256=3ce219915321410e22dc497011549460022d09748da7ab7352cec33884b96770
+report_bytes=7135
+replaced_blocks=0
+```
+
+初回返送後に `result.yaml` を pass へ確定し、最終版は記録 commit 後に再送する。
