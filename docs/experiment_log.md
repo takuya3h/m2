@@ -1989,3 +1989,37 @@ GPU 0 を `CUDA_VISIBLE_DEVICES=0` で固定し、`s0_tool_baseline`、画像16�
 ### 次
 
 bengio で生成した751 runの索引は追跡外退避物0件で、749からの増分2件も説明済み。正本として採用するかを利用者が判断する。Actions経由の起票はトークン更新後に再検証する。
+
+---
+
+## 2026-08-13 — 把持推論→工程注入の実装 smoke
+
+### 仮説
+
+凍結 GAP 特徴から `hand_tool_seg` の5次元 presence を独立に推論し、同形の実信号または零信号を
+causal TeCNO 入力へ連結すれば、ctrl/inj の学習条件と重み数を揃えたまま信号到達を検査できる。
+
+### 実験
+
+task `T-2026-08-11-grasp-inference-injection-impl`。GPU 0（RTX A6000、開始時計算process 0件）で、
+ctrl/inj を各1本、seed 42、train/val各1 clip、1 epochだけ実行した。出力は `tasks/` 配下へ置き、
+W&B へ両 run を記録した。本命の効果実験ではない。
+
+### 結果
+
+両腕とも exit 0、`completed=true`。ctrl は工程損失 4.53012752532959、把持損失
+0.7004557847976685、2.471525396220386秒。inj は工程損失 4.527888298034668、把持損失
+0.7004557847976685、2.211221544072032秒。1 epoch の精度値は評価していない。runindex は総行数
+751で smoke 混入0件だった。
+
+### 解釈
+
+工程損失と把持損失の両方が数値として出て最後まで回る配線は確認できた。信号到達の構造検査では
+inj の入力差による工程出力最大絶対差 0.05775783956050873、ctrl 0.0、学習可能重みは両腕
+528919で一致した。これは効果を示す値ではなく実装の陽性対照である。
+
+### 次
+
+neck無し S4 分母 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42`
+に対し、seed 42/123/456 の ctrl/inj 各3本を別の事前登録契約で実行する。full 50 epoch の所要時間は
+未測定のため `UNKNOWN`。

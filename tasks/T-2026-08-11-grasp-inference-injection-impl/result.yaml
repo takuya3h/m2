@@ -1,0 +1,89 @@
+result_version: 3
+task_id: "T-2026-08-11-grasp-inference-injection-impl"
+status: pass
+host: "lecun"
+branch: "feat/grasp-inference-injection-impl"
+pr: 105
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      既存B2a/T1bを実装から読み、同形の実信号と零信号を工程入力直前で切り替える
+      signal-level経路として既存ファイルを変えずに追加できることを確認した。
+  - id: G2
+    verdict: pass
+    note: >-
+      同じ重みへ二信号を与えた工程出力の最大絶対差はinj 0.05775783956050873、
+      ctrl 0.0だった。
+  - id: G3
+    verdict: pass
+    note: >-
+      学習可能重みはctrl/injとも528919で完全一致し、baseline recipeは両腕と一致、
+      temporal num_layersを変えた偽recipeとは不一致になった。
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 443
+
+deviations:
+  - type: environment
+    note: >-
+      導入済みCodeGraphは初期化済みだったがwatchサブコマンドを持たずunknown commandになったため、
+      静的explore/impactと変更後syncで代替した。
+  - type: spec_defect
+    note: >-
+      契約の同じrun内で対にするという説明は実装と異なり、legacy T1bは同一seedの二run、
+      現行索引はcontrol_ofで別experimentを参照する実態に従った。
+  - type: judgement
+    note: >-
+      無情報信号は零、推論器は凍結GAP上の独立枝、neckは無しを選び、選択理由をRESULTへ記録した。
+  - type: spec_defect
+    note: >-
+      指定どおりmake runindexを実行すると新規trainerが決定性監査生成物へ追加されたが、後段の
+      forbidden-checkはrunindex生成物を除外しなかったため、実行前状態へ戻して両条件を満たした。
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: >-
+      起票者は既存の注入と対照を同じrunの中で対にすると実装未確認のまま断定したが、実測ではlegacy
+      T1bは同一seedの二runであり、現行索引もcontrol_ofで別experimentを参照した。指示どおり同一runの
+      分岐だけを探すと既存機構を誤認するため、実装と索引に従って訂正した。
+  - type: self_contradiction
+    note: >-
+      契約はPhase Dでmake runindexを実行する一方、Phase Eではrunindex差分なしを要求した。新規trainerを
+      追加した状態で生成器を実行すると決定性監査の2生成物が必ず変わり、forbidden-checkも違反として
+      拒否したため、指示を両方満たすには生成確認後に対象2ファイルだけを実行前状態へ戻す必要があった。
+
+positive_controls:
+  - judgement: "信号がinjへ届きctrlでは遮断される"
+    breaking_input: "同じ重みへ零信号と一信号を順に与える"
+    observed: "工程出力の最大絶対差はinj 0.05775783956050873、ctrl 0.0になった。"
+  - judgement: "評価recipeが構成差を検出する"
+    breaking_input: "temporal num_layersを8から9へ変える"
+    observed: "baselineとのrecipes_matchがtrueからfalseへ反転した。"
+  - judgement: "loss maskが把持損失だけを遮断する"
+    breaking_input: "同じlogitsとtargetでvalid maskをfalseからtrueへ変える"
+    observed: "把持損失は0.0から0.6931471824645996へ変わり、工程損失は1.0986123085021973だった。"
+  - judgement: "把持推論と注入を含む経路がcausalである"
+    breaking_input: "時刻5以降の特徴と注入信号だけを変更する"
+    observed: "時刻0から4の把持出力差と工程出力差はともに0.0だった。"
+  - judgement: "無効時に既存TeCNOの挙動を変えない"
+    breaking_input: "featureを無効にし既存TeCNOと同じstate_dictを読み込む"
+    observed: "全stageの最大絶対出力差は0.0だった。"
+
+followups:
+  - >-
+    neck無し分母phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42に対し、
+    seed 42/123/456のctrl/inj各3本を別の事前登録契約で実行する。
+  - "full 50 epochの所要時間を実測し、次契約の装置時間見積もりを更新する。"
+
+unknowns:
+  - "ctrl/injの効果、3-seed差、sigma、有意性は本契約では未測定。"
+  - "full 50 epochの1 runあたり所要時間は未測定。"
+
+commits:
+  - "522e169"
+  - "af60d0c"
