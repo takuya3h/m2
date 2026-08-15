@@ -1,0 +1,78 @@
+spec_version: 1
+meta:
+  task_id: "T-2026-08-15-injection-signal-variants"
+  kind: impl
+  title: "工程分類へ渡す信号の形を選べるようにする"
+  origin: claude-app
+  created_at: "2026-08-15T12:10:00Z"
+  created_from:
+    runindex_commit: "44697d9"
+    counts: {index: 791, experiments: 217, verdicts: 1038}
+  depends_on:
+    - "T-2026-08-15-grasp-injection-effect"
+    - "T-2026-08-15-grasp-head-degeneracy-audit"
+  amendments: []
+intent:
+  question: "当たっている把持の信号が工程分類を悪化させたのはなぜか。渡す信号の形を四通りに選べるようにし、原因を切り分けられる状態を作れるか"
+  decision_at_stake: "注入という機構そのものが有害なのか、渡し方の細部が悪いだけなのかを次の実験で切り分ける。その前提を作る。機構自体が有害なら設計を捨てる"
+  related:
+    backlog: ["BL-harvester-scan-is-host-dependent"]
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "src/egosurgery/models/temporal/grasp_inference_injection.py"
+      - "scripts/train_grasp_phase_injection.py"
+      - "configs/stage/"
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "いま選べる形を実測する", gpu: false, est: "40m"}
+    - {id: B, name: "足りない形を足す", gpu: false, est: "80m"}
+    - {id: C, name: "形ごとに信号が届くことを対照つきで検査する", gpu: false, est: "70m"}
+    - {id: D, name: "ごく短い試走で全ての形が回ることを確かめる", gpu: true, est: "30m"}
+    - {id: E, name: "次の実験へ渡す材料をまとめる", gpu: false, est: "20m"}
+  gates:
+    - id: G1
+      after: A
+      check: "いま受け付けられる値を実装から列挙し、足す必要のある形を確定した"
+      on_fail: stop
+    - id: G2
+      after: C
+      check: "全ての形について、渡す信号を変えると工程側の出力が変わることと、無情報な腕では変わらないことの双方を確かめた"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "全ての腕で学習可能な重みの総数が等しいことを確かめた"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md]
+  destination: "src/egosurgery/"
+  acceptance:
+    - "四つの形それぞれについて、渡す信号を変えると工程側の出力が変わることが実測で示されている"
+    - "全ての腕で学習可能な重みの総数が等しいことが実測で示されている"
+    - "正解を渡す形が上限を測るためだけのものであり、成果として報告してはならないことが明記されている"
+    - "教師の無いフレームで正解を渡す形が何を渡すかが決められ、記録されている"
+    - "全ての形がごく短い試走で最後まで回ることが示されている"
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "四つの形のいずれかが、既存の実装の構造上どうしても足せないと判明した場合"
+    - "腕によって学習可能な重みの総数が揃わず、比較が成立しないと判明した場合"
+    - "他の利用者が計算装置を使用中で、試走を行うと妨げになる場合"

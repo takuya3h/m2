@@ -1,0 +1,114 @@
+{
+  "signal_reachability": {
+    "inj:predicted_sigmoid": {
+      "max_abs_output_delta": 0.004116475582122803,
+      "mean_abs_output_delta": 0.0013157858047634363
+    },
+    "inj:raw_logits": {
+      "max_abs_output_delta": 0.004116475582122803,
+      "mean_abs_output_delta": 0.0013157858047634363
+    },
+    "inj:standardized": {
+      "max_abs_output_delta": 0.004116475582122803,
+      "mean_abs_output_delta": 0.0013157858047634363
+    },
+    "inj:oracle_upper_bound_only": {
+      "max_abs_output_delta": 0.004116475582122803,
+      "mean_abs_output_delta": 0.0013157858047634363
+    },
+    "ctrl:zeros": {
+      "max_abs_output_delta": 0.0,
+      "mean_abs_output_delta": 0.0
+    }
+  },
+  "signal_value_ranges": {
+    "predicted_sigmoid": {
+      "min": 0.3248938024044037,
+      "max": 0.6357425451278687,
+      "per_dim_mean": [
+        0.5002292394638062,
+        0.5228765606880188,
+        0.5121397376060486,
+        0.46306222677230835,
+        0.4322276711463928
+      ],
+      "per_dim_std": [
+        0.04175685718655586,
+        0.06328359246253967,
+        0.04500068351626396,
+        0.040747445076704025,
+        0.058462973684072495
+      ]
+    },
+    "raw_logits": {
+      "min": -0.7313715815544128,
+      "max": 0.5569329261779785,
+      "per_dim_mean": [
+        0.0008150609210133553,
+        0.09284494817256927,
+        0.048947542905807495,
+        -0.14923368394374847,
+        -0.27607813477516174
+      ],
+      "per_dim_std": [
+        0.16802532970905304,
+        0.2565571367740631,
+        0.1813354343175888,
+        0.1654958873987198,
+        0.23931674659252167
+      ]
+    },
+    "standardized": {
+      "min": -2.019314765930176,
+      "max": 1.5285930633544922,
+      "per_dim_mean": [
+        -1.6195993423461914,
+        -1.225053310394287,
+        -0.5866276621818542,
+        -0.7189464569091797,
+        1.0931177139282227
+      ],
+      "per_dim_std": [
+        0.1590258926153183,
+        0.20759539306163788,
+        0.1056659147143364,
+        0.09638753533363342,
+        0.19337916374206543
+      ]
+    },
+    "oracle_upper_bound_only": {
+      "min": 0.0,
+      "max": 1.0,
+      "per_dim_mean": [
+        0.5625,
+        0.46875,
+        0.75,
+        0.53125,
+        0.53125
+      ],
+      "per_dim_std": [
+        0.504016101360321,
+        0.507007360458374,
+        0.4399413466453552,
+        0.507007360458374,
+        0.507007360458374
+      ]
+    }
+  },
+  "trainable_parameter_counts": {
+    "inj:predicted_sigmoid": 528919,
+    "inj:raw_logits": 528919,
+    "inj:standardized": 528919,
+    "inj:oracle_upper_bound_only": 528919,
+    "ctrl:zeros": 528919
+  },
+  "baseline_tecno_parameters": 397138,
+  "count_delta_vs_baseline": {
+    "inj:predicted_sigmoid": 131781,
+    "inj:raw_logits": 131781,
+    "inj:standardized": 131781,
+    "inj:oracle_upper_bound_only": 131781,
+    "ctrl:zeros": 131781
+  },
+  "all_counts_equal": true
+}

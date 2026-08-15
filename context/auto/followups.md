@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（162 件）
+## 申し送り（171 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -253,6 +253,7 @@
 - 種 456 は最良の epoch が 20 と他の 50 と 47 より早く、器具の二次元で全フレーム正へ倒れ、右手が写る次元の曲線下面積も 0.7724 と最も低い。前の実験の対の差にこの種がどう効いたかは本契約では測っていない
 - 前の実験の RESULT は正しさの割合と下見の曲線下面積を並べて上回ったと述べている。結論そのものは本契約の測り直しで支持されたが、その理由づけは指標が違うため成立していない。過去の報告の該当箇所に注記を足すかは起票者の判断とする
 - 有効フレームは 1514 で契約の記載 1515 と 1 だけ違う。把持の教師が付かないフレームが除かれるためで、下見の契約も 1514 で測っており両者は揃っている
+
 ### T-2026-08-15-grasp-injection-effect
 
 - make forbidden-check は run を生成する exp 契約を構造的に通せない。tools/check_forbidden.py の FORBIDDEN_PREFIXES が experiments/ と runindex/ を無条件に禁止領域とし、exp 契約が新規 run を作ることへの例外が無い。本契約では 100 件超の違反が出たが内訳は 6 本の新規 run の証跡と Phase C が要求する make runindex の生成物と B-36 のホスト固有の退避 run であり、不正は無い。既存 run JSON 12 件の変更は harvest_warnings の文言のみで指標は不変であることを実測した。run を作る exp 契約がこの検査を回したのは今回が初めてである
@@ -260,6 +261,13 @@
 - 推論5次元は線形下見以上なので、confidence calibration、信号スケール、ゲート／正則化、phaseに有用な相互情報量を次の設計契約で調べる
 - train_grasp_phase_injection.pyへtask_id上書き経路を設け、runindex harvesterがarmとphase_accuracyを取り込む修正は、学習コードとharvesterの変更を許可する別impl契約へ回す
 - decision ruleのverdictをimprovement_detected / degradation_detected / not_detectedに分け、絶対値ルールと改善仮説の方向不整合を次の契約で解消する
+
+### T-2026-08-15-injection-signal-variants
+
+- 次の実験（効果測定）の材料: 入口は scripts/train_grasp_phase_injection_variants.py（既存スクリプト経由では新しい形は届かない）。設定は s4_grasp_injection_{ctrl,raw_logits,standardized,oracle_upper_bound_only,staged}.yaml。分母は exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42。本番規模の所要時間は UNKNOWN のため冒頭で 1 本実測してから見積もること
+- staged の stage1 の世代数（既定 50）が適切かは未検証。本契約は回ることだけを確かめた
+- 決定性監査が新規スクリプトを非決定と分類した（原本と同一のプロファイル）。cuda_manual_seed 等を揃えるかは既存 34 本すべてに関わる backlog B-20 の範疇
+- oracle_upper_bound_only は上限測定専用であり成果として報告してはならない。名・承認キー・docstring・結果 JSON の印の四重の歯止めを入れた。教師の無いフレームには学習側の正例率を渡すが、埋め値が 0/1 でないため教師の有無は下流から識別可能（漏れは残る）
 
 ### T-2026-08-15-template-leak-and-autosync-conflict
 
@@ -291,7 +299,7 @@
 - 秘匿の検査が見るのは NOTION_API_KEY と WANDB_API_KEY の 2 つと、既知の接頭辞である。資格情報を増やしたら SECRET_ENV_KEYS へ足すこと。足し忘れても検査は通るため気付けない
 - 送信の時点で壁時計を使っている（completed_at）。生成物ではないため冪等の検査には影響しないが、投影に壁時計を入れない方針とは別の判断である
 
-## 断定できなかった事項（122 件）
+## 断定できなかった事項（126 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -498,10 +506,16 @@
 
 - 当たっている把持の信号がなぜ工程分類を悪化させるかの因果機構。本契約では特定していない
 - 種 456 の早い停止と縮退が、前の実験の対の差 -0.004400440044004379 にどれだけ寄与したか。本契約では測っていない
+
 ### T-2026-08-15-grasp-injection-effect
 
 - 把持推論accuracyが高いのにphase accuracyが下がる因果機構は本契約では特定していない
 - disinfection、dressing、irrigationは両腕とも工程別F1/Jaccardが0で、注入効果はUNKNOWN
+
+### T-2026-08-15-injection-signal-variants
+
+- 本番規模（50 世代・全 clip）の一本あたりの所要時間。試走は 2 世代・clip 1 本のみで 1.49〜1.90 秒だった
+- test 側の教師なしフレーム数。本契約は val のみを使うため数えていない
 
 ### T-2026-08-15-template-leak-and-autosync-conflict
 
@@ -527,17 +541,16 @@
 - 台帳の他の行が変わっていないことは、触れた行を限定した事実からしか言えていない。全行の内容を送信前後で突き合わせてはいない
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
 
-## 起票者の誤りの型（102 件）
+## 起票者の誤りの型（103 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 38 |
-| `asserted_without_measuring` | 27 |
+| `asserted_without_measuring` | 28 |
 | `self_contradiction` | 30 |
 | `shell_assumption` | 7 |
 
-合計 99 件（対を持つ契約 39 件から）
-合計 102 件（対を持つ契約 39 件から）
+合計 103 件（対を持つ契約 41 件から）
 
