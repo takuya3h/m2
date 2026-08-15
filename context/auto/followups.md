@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（157 件）
+## 申し送り（162 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -246,6 +246,14 @@
 - 記号 # は逐語の引用では錨の境として最初の出現で二分され、分母の参照では識別子の一部として現れうる。参照を種別によらず解く共通関数が存在せず種別ごとに別経路のため、現時点で解釈を分ける必要は無いと判断した。将来一つの関数へ束ねる時点で表面化する
 - 未追跡のセッション抽出物が docs/sessions/digest/ に 3 件ある（2026-08-02 / 2026-08-12 / 2026-08-15）。前セッション由来で本契約の範囲外のため触れていない。tasks/README.md は未追跡のまま放置すると merge --ff-only が止まると記している（B-30）。記録するかは伏せ字の確認を伴うため起票者の判断を仰ぐ
 
+### T-2026-08-15-grasp-injection-effect
+
+- make forbidden-check は run を生成する exp 契約を構造的に通せない。tools/check_forbidden.py の FORBIDDEN_PREFIXES が experiments/ と runindex/ を無条件に禁止領域とし、exp 契約が新規 run を作ることへの例外が無い。本契約では 100 件超の違反が出たが内訳は 6 本の新規 run の証跡と Phase C が要求する make runindex の生成物と B-36 のホスト固有の退避 run であり、不正は無い。既存 run JSON 12 件の変更は harvest_warnings の文言のみで指標は不変であることを実測した。run を作る exp 契約がこの検査を回したのは今回が初めてである
+- 把持信号注入はpaired mean -0.004400440044004379で全seed悪化したため、現構成を改善手法として進めず、hemostasisのF1差-0.15578752562792192をframe/segment単位で局在化する
+- 推論5次元は線形下見以上なので、confidence calibration、信号スケール、ゲート／正則化、phaseに有用な相互情報量を次の設計契約で調べる
+- train_grasp_phase_injection.pyへtask_id上書き経路を設け、runindex harvesterがarmとphase_accuracyを取り込む修正は、学習コードとharvesterの変更を許可する別impl契約へ回す
+- decision ruleのverdictをimprovement_detected / degradation_detected / not_detectedに分け、絶対値ルールと改善仮説の方向不整合を次の契約で解消する
+
 ### T-2026-08-15-template-leak-and-autosync-conflict
 
 - 抑止は origin/phase0 に届いてから効く。届くまでは目印を置いても常駐処理は止まらない。各ホストへの反映は keeper の自己更新に依存する（最短 2 ループ / 最大 60 分）
@@ -276,7 +284,7 @@
 - 秘匿の検査が見るのは NOTION_API_KEY と WANDB_API_KEY の 2 つと、既知の接頭辞である。資格情報を増やしたら SECRET_ENV_KEYS へ足すこと。足し忘れても検査は通るため気付けない
 - 送信の時点で壁時計を使っている（completed_at）。生成物ではないため冪等の検査には影響しないが、投影に壁時計を入れない方針とは別の判断である
 
-## 断定できなかった事項（120 件）
+## 断定できなかった事項（122 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -479,6 +487,11 @@
 - frozen_source.ref も run:<group>/<run_name> という同型の二区画の文法である。分母と同じ欠陥があるかは本契約の範囲外のため測っていない。UNKNOWN
 - 十件の主指標の幅と計画の揺らぎの倍率（約 29-48 倍）は、σ の概算 0.003-0.005 を既存の記録から引いて求めたものである。σ そのものは本契約で測っていない
 
+### T-2026-08-15-grasp-injection-effect
+
+- 把持推論accuracyが高いのにphase accuracyが下がる因果機構は本契約では特定していない
+- disinfection、dressing、irrigationは両腕とも工程別F1/Jaccardが0で、注入効果はUNKNOWN
+
 ### T-2026-08-15-template-leak-and-autosync-conflict
 
 - 他ホストでは本修正のいずれも実行していない。テンプレートの修正も常駐処理の抑止も lecun 上でのみ実測した
@@ -503,16 +516,16 @@
 - 台帳の他の行が変わっていないことは、触れた行を限定した事実からしか言えていない。全行の内容を送信前後で突き合わせてはいない
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
 
-## 起票者の誤りの型（99 件）
+## 起票者の誤りの型（102 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 37 |
+| `check_does_not_check` | 38 |
 | `asserted_without_measuring` | 27 |
-| `self_contradiction` | 28 |
+| `self_contradiction` | 30 |
 | `shell_assumption` | 7 |
 
-合計 99 件（対を持つ契約 38 件から）
+合計 102 件（対を持つ契約 39 件から）
 
