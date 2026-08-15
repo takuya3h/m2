@@ -42,6 +42,9 @@ prereg:
     - "prereg.md に定めた上限の本数に達した"
     - "計算装置の空きが足りず、足せる本数が算出値を下回った"
   committed_at: "2026-08-11T23:00:00Z"
+  # 事前登録を版管理へ固定した commit。**本文は一字も変えていない。**
+  # 起票者は配布の時点でこの値を知り得ないため、実行者が走らせる前に刻む。
+  commit: "e096b316fc2e63debb0274ea6000909d300f64fa"
 contract:
   inject_verbatim: [conventions#prohibitions]
   conventions_rev: "d422b08"
