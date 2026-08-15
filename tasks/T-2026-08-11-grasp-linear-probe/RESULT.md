@@ -173,3 +173,13 @@ class imbalance と loss、最適化、工程へ渡す前の推論 head を順�
   いずれも上回った。余裕が最も小さいのは次元 1 の +0.083224 である。
 - `.sync-pause` による抑止は 2026-08-15 06:21:31 の常駐処理のループで実際に効き、
   記録に `一時停止中` が出た。**抑止そのものにも対照が取れている。**
+
+### 統合の記録
+
+本契約の成果物は PR #107 として起票し、`phase0` へ merge commit `5636ee7` で統合した。
+統合の直前に `origin/phase0` を取り込んでおり、その取り込みは 2026-08-15 06:51:35 の
+常駐処理による `auto-merge`（27 commits）である。**実行者の逸脱ではなく事実として記録する。**
+union で両側の行が残った生成物は `make taskindex && make inbox` で再生成し、
+`taskindex-check` / `inbox-check` / `forbidden-check` がいずれも exit 0 に戻ることを確かめた。
+PR の差分は 16 file で、`src/` `scripts/` `configs/` `experiments/` `data/` `runindex/`
+`transfer/` への変更は無い。
