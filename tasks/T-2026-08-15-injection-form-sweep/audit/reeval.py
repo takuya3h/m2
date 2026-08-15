@@ -23,7 +23,9 @@ sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from train_grasp_phase_injection import _batch, load_clips  # noqa: E402
-from train_grasp_phase_injection_variants import build_component_cfg_variants  # noqa: E402
+from train_grasp_phase_injection_variants import (  # noqa: E402
+    build_component_cfg_variants,
+)
 
 from egosurgery.datasets.grasp_targets import GRASP_LABEL_NAMES  # noqa: E402
 from egosurgery.metrics.phase import PhaseEvaluator  # noqa: E402
