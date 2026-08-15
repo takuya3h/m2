@@ -1,0 +1,70 @@
+spec_version: 1
+meta:
+  task_id: "T-2026-08-15-config-key-effectiveness-audit"
+  kind: analysis
+  title: "設定に書いてある項目が実際に読まれているかを全て照合する"
+  origin: claude-app
+  created_at: "2026-08-15T14:50:00Z"
+  created_from:
+    runindex_commit: "8c13afb"
+    counts: {index: 851, experiments: 223, verdicts: 1038}
+  depends_on:
+    - "T-2026-08-15-injection-signal-variants"
+  amendments: []
+intent:
+  question: "設定ファイルに書かれている項目のうち、実装から一度も読まれていないものはどれか。逆に、実装が読むのに設定へ書かれていないものはどれか。過去の run の記録は、実際の条件を正しく表しているか"
+  decision_at_stake: "設定にこう書いてあるから条件はこうだった、という読み方が成り立つかどうか。成り立たない項目があれば、それを条件として引用した過去の判断は根拠を失う"
+  related:
+    backlog: ["BL-harvester-scan-is-host-dependent"]
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/"
+      - "src/egosurgery/"
+      - "configs/"
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "設定に現れる項目と実装が読む項目を集める", gpu: false, est: "50m"}
+    - {id: B, name: "読まれていない項目を実挙動で確かめる", gpu: false, est: "60m"}
+    - {id: C, name: "過去の記録への波及を測る", gpu: false, est: "50m"}
+    - {id: D, name: "総括と受け皿への起票", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "設定の側と実装の側の項目を両方向の集合差で突き合わせ、件数を記録した"
+      on_fail: ask
+    - id: G2
+      after: B
+      check: "読まれていないと判定した項目について、値を変えても挙動が変わらないことを実際に走らせて確かめた"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-15-config-key-effectiveness-audit/"
+  acceptance:
+    - "設定に現れる項目と実装が読む項目の集合差が、両方向で件数とともに示されている"
+    - "読まれていないと判定した項目について、値を変えても挙動が変わらないことが実際に走らせて示されている"
+    - "読まれていると判定した項目のうち少なくとも一つについて、値を変えると挙動が変わることが示されている"
+    - "過去の run の記録のうち、条件として引用すると誤りになるものが件数とともに示されている"
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "工程や検出の条件に関わる項目が読まれておらず、過去の判断の根拠が失われると判明した場合"
+    - "読まれていない項目が多数あり、設定の記述全体が条件の記録として使えないと判明した場合"

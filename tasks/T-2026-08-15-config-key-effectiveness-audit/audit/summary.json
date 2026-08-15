@@ -1,0 +1,185 @@
+{
+  "noise_floor": {
+    "original": {
+      "config": "tasks/T-2026-08-15-grasp-injection-effect/audit/run_inj.yaml",
+      "run_a_ok": true,
+      "run_b_ok": true,
+      "max_abs_diff": 0.0,
+      "n_changed": 0,
+      "n_fields": 18
+    },
+    "variants": {
+      "config": "tasks/T-2026-08-15-injection-form-sweep/audit/configs/s4_grasp_injection_inj.yaml",
+      "run_a_ok": true,
+      "run_b_ok": true,
+      "max_abs_diff": 0.0,
+      "n_changed": 0,
+      "n_fields": 18
+    }
+  },
+  "entrypoints": {
+    "original": {
+      "config": "tasks/T-2026-08-15-grasp-injection-effect/audit/run_inj.yaml",
+      "n_leaves": 40,
+      "counts": {
+        "read": 25,
+        "read_metric_affecting": 8,
+        "read_metric_invariant": 2,
+        "read_metric_effect_unmeasured": 15,
+        "unread": 14,
+        "unread_untested": 1,
+        "unknown": 0,
+        "impl_only": 3
+      },
+      "read_metric_affecting": [
+        "grasp_inference.hidden_dim",
+        "model.temporal.dropout",
+        "model.temporal.num_f_maps",
+        "model.temporal.num_layers",
+        "model.temporal.num_stages",
+        "seed",
+        "train.lr",
+        "train.smoothing_weight"
+      ],
+      "read_metric_invariant": [
+        "experiment.category",
+        "experiment.step"
+      ],
+      "read_metric_effect_unmeasured": [
+        "data.feature_cache",
+        "data.phase_manifest",
+        "data.population.train",
+        "data.population.val",
+        "experiment.description",
+        "grasp_inference.annotation_root",
+        "grasp_inference.arm",
+        "grasp_inference.enabled",
+        "grasp_inference.num_classes",
+        "model.input_dim",
+        "model.num_phases",
+        "task_id",
+        "train.epochs",
+        "train.grasp_loss_weight",
+        "train.weight_decay"
+      ],
+      "unread": [
+        "data.population.test",
+        "eval_recipe.inference_protocol",
+        "eval_recipe.jaccard_mode",
+        "eval_recipe.protocol_source",
+        "frozen_source.cache_dir",
+        "frozen_source.checkpoint",
+        "frozen_source.detector",
+        "frozen_source.seed",
+        "grasp_inference.detach_from_phase_loss",
+        "grasp_inference.signal",
+        "logging.wandb_project",
+        "model.component",
+        "train.batch_size",
+        "train.freeze_backbone"
+      ],
+      "unread_untested": [
+        "logging.wandb_enabled"
+      ],
+      "unknown": [],
+      "impl_only": [
+        "device",
+        "smoke_train_clips",
+        "smoke_val_clips"
+      ],
+      "impl_only_cli_injected": [
+        "device",
+        "smoke_train_clips",
+        "smoke_val_clips"
+      ],
+      "control_keys_that_changed": [
+        "grasp_inference.hidden_dim",
+        "seed",
+        "train.lr",
+        "train.smoothing_weight"
+      ]
+    },
+    "variants": {
+      "config": "tasks/T-2026-08-15-injection-form-sweep/audit/configs/s4_grasp_injection_inj.yaml",
+      "n_leaves": 40,
+      "counts": {
+        "read": 26,
+        "read_metric_affecting": 9,
+        "read_metric_invariant": 2,
+        "read_metric_effect_unmeasured": 15,
+        "unread": 13,
+        "unread_untested": 1,
+        "unknown": 0,
+        "impl_only": 4
+      },
+      "read_metric_affecting": [
+        "grasp_inference.hidden_dim",
+        "grasp_inference.signal",
+        "model.temporal.dropout",
+        "model.temporal.num_f_maps",
+        "model.temporal.num_layers",
+        "model.temporal.num_stages",
+        "seed",
+        "train.lr",
+        "train.smoothing_weight"
+      ],
+      "read_metric_invariant": [
+        "experiment.category",
+        "experiment.step"
+      ],
+      "read_metric_effect_unmeasured": [
+        "data.feature_cache",
+        "data.phase_manifest",
+        "data.population.train",
+        "data.population.val",
+        "experiment.description",
+        "grasp_inference.annotation_root",
+        "grasp_inference.arm",
+        "grasp_inference.enabled",
+        "grasp_inference.num_classes",
+        "model.input_dim",
+        "model.num_phases",
+        "task_id",
+        "train.epochs",
+        "train.grasp_loss_weight",
+        "train.weight_decay"
+      ],
+      "unread": [
+        "data.population.test",
+        "eval_recipe.inference_protocol",
+        "eval_recipe.jaccard_mode",
+        "eval_recipe.protocol_source",
+        "frozen_source.cache_dir",
+        "frozen_source.checkpoint",
+        "frozen_source.detector",
+        "frozen_source.seed",
+        "grasp_inference.detach_from_phase_loss",
+        "logging.wandb_project",
+        "model.component",
+        "train.batch_size",
+        "train.freeze_backbone"
+      ],
+      "unread_untested": [
+        "logging.wandb_enabled"
+      ],
+      "unknown": [],
+      "impl_only": [
+        "device",
+        "grasp_inference.staged",
+        "smoke_train_clips",
+        "smoke_val_clips"
+      ],
+      "impl_only_cli_injected": [
+        "device",
+        "smoke_train_clips",
+        "smoke_val_clips"
+      ],
+      "control_keys_that_changed": [
+        "grasp_inference.hidden_dim",
+        "seed",
+        "train.lr",
+        "train.smoothing_weight"
+      ]
+    }
+  }
+}

@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（176 件）
+## 申し送り（184 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -239,6 +239,17 @@
 - 添付の参照先の期限は 60 分と実測したが、期限切れからの再試行は試験でのみ検査した。実地で 60 分待って期限切れを起こす検査は行っていない
 - 確認用の行 T-2026-08-14-probe-attachment を台帳へ残した（status=superseded、印つき）。不要なら削除してよい
 
+### T-2026-08-15-config-key-effectiveness-audit
+
+- 最高優先: frozen_source.cache_dir は実装から読まれないまま index.csv の frozen_source_tag （非 null 569 行）を作っており、harvest_runindex.py:1362-1363 が実験 ID に ~{tag} を付け、 1505-1507 が分母の候補をこのタグで絞っている。索引を条件の照合に使ったすべての判断が、 挙動を決めない設定項目に依存する。data.feature_cache との一致を機械で強制するか、 タグの導出元を読まれる側（data.feature_cache）へ移すこと。現時点の食い違いは 130 run 中 0 件。
+- 高優先: grasp_inference.detach_from_phase_loss が src/ scripts/ の .py に一度も現れない。 設定 6 件が宣言しているだけで、実装は grasp_inference_injection.py の _candidate() 全分岐で 常に .detach() する。注入実験の中核的主張（勾配を工程損失から切り離す）を表す条件が 設定から制御できない。読むようにするか、設定から消すこと。値を false にしても差 0.0 だった。
+- 高優先: eval_recipe.protocol_source / inference_protocol / jaccard_mode の 3 件が読まれず、 実効値は定数 PHASE_EVAL_PROTOCOL（inference_protocol=online_causal, jaccard_mode=strict）。 宣言値と定数が一致していたのは偶然で、食い違ったときに落ちる仕組みが無い。
+- 中優先: model.component が読まれない。入口が build_grasp_phase_injection を直接 import しており、設定は注釈にすぎない。bogus_component に変えても差 0.0。
+- 中優先: 設定に書いた鍵が実装から読まれないことを検出する仕組みが無い。本契約の audit/trace_reads.py（DictConfig の取り出し口を覆って実際に触られた鍵を記録する）を 試験に組み込めば、宣言したのに読まれない鍵を回帰として検出できる。
+- 中優先: configs/stage/*.yaml 20 件中 4 件（s4_grasp_injection_raw_logits / staged / standardized / oracle_upper_bound_only）に "# @package _global_" が無い。現在は OmegaConf.load の直読みのため無害だが、python -m egosurgery.train stage=… で読むと 全キーが stage.* 配下に落ちて一切効かない。潜在的な欠陥として残る。
+- 低優先: train.batch_size / train.freeze_backbone / data.population.test / logging.wandb_enabled / logging.wandb_project は S4 の入口で読まれない（freeze_backbone と wandb_enabled は S0〜S2 の 入口では読まれる）。条件として引用しないよう明示が要る。
+- 低優先: experiments/baselines/_legacy_score_thr_0/ の 18 件は config.yaml が旧様式の python タグを含み機械で読めない。s0_014/015/016_maskdino_bbox_nmsfree_seed* の 3 件は中身が null。 監査対象キーは生文字列でも 0 件だったため今回の結論には影響しない。
+
 ### T-2026-08-15-denominator-ref-resolution-fix
 
 - 識別子の区切りに二系統の方言がある（~ が 146 行 / # が 4 行 / どちらも無いものが 57 行、両方を持つ行は 0）。本契約は文法の側で両方を受けたが、受けたことで方言が固定化する。収穫器側で一つへ寄せるべきだが、寄せると索引の再生成に波及し BL-harvester-scan-is-host-dependent と混ざるため触れていない
@@ -307,7 +318,7 @@
 - 秘匿の検査が見るのは NOTION_API_KEY と WANDB_API_KEY の 2 つと、既知の接頭辞である。資格情報を増やしたら SECRET_ENV_KEYS へ足すこと。足し忘れても検査は通るため気付けない
 - 送信の時点で壁時計を使っている（completed_at）。生成物ではないため冪等の検査には影響しないが、投影に壁時計を入れない方針とは別の判断である
 
-## 断定できなかった事項（129 件）
+## 断定できなかった事項（133 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -505,6 +516,13 @@
 - 添付が複数ある行の扱いは未実測。実装は最初の file ブロックを採るが、そうした行を作って確かめてはいない
 - 外部の連携機能（起票者が使う面）が添付をどう置くかは未実測。実行者は API 経由で置いた
 
+### T-2026-08-15-config-key-effectiveness-audit
+
+- logging.wandb_enabled の指標への影響は UNKNOWN。実行時追跡では両入口とも触られなかったが、 摂動は行っていない（W&B へ実際に投稿させる必要があり外部への副作用を避けた）。
+- S0〜S3 の入口（MMDetTrainer / StageATrainer / PhaseTrainer）については、どの鍵が読まれるかを 実挙動で確かめていない。計算装置を使わずに走らせられないため（禁止 10）。静的解析では logging.wandb_enabled と train.freeze_backbone を読むことが確認できている。
+- 「設定にあり実装が読む」25〜26 件のうち 15 件は、実行時に触られたことは確認したが値を変えた ときの指標への影響を測っていない。読まれていることは確かだが、指標を動かすかは未測定。
+- frozen_source.detector / checkpoint / seed は、突き合わせる相手（実挙動を決める設定）が 存在しないため食い違いを数えていない。「食い違い 0 件」はこれらについては 「照合できなかった」の意であり、「一致を確認した」ではない。
+
 ### T-2026-08-15-denominator-ref-resolution-fix
 
 - frozen_source.ref も run:<group>/<run_name> という同型の二区画の文法である。分母と同じ欠陥があるかは本契約の範囲外のため測っていない。UNKNOWN
@@ -555,16 +573,16 @@
 - 台帳の他の行が変わっていないことは、触れた行を限定した事実からしか言えていない。全行の内容を送信前後で突き合わせてはいない
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
 
-## 起票者の誤りの型（104 件）
+## 起票者の誤りの型（108 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 38 |
-| `asserted_without_measuring` | 29 |
-| `self_contradiction` | 30 |
+| `check_does_not_check` | 39 |
+| `asserted_without_measuring` | 31 |
+| `self_contradiction` | 31 |
 | `shell_assumption` | 7 |
 
-合計 104 件（対を持つ契約 42 件から）
+合計 108 件（対を持つ契約 43 件から）
 

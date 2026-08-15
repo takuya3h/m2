@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（250 件）
+## 未処理（257 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -246,6 +246,13 @@
 - [ ] 2026-08-15 [cc] recipes_match が server_name の相違を警告しつつ True を返す。分母は efros 14 本と lecun 3 本の混在である。本契約では efros のみで求め直して σ への影響が無いことを確かめたが（σ_rep は 0.0052501 から 0.0058171 へ増え結論は不変）、警告が照合の判定に反映されない設計そのものは残る（T-2026-08-11-phase-baseline-power）
 - [ ] 2026-08-15 [cc] 事前登録の commit を刻む手順が未文書化である。P4 prereg_committed は prereg.commit に実在する過去の commit を要求するが、sha は配布の時点で存在せず起票者には書けない。埋められるのは実行者だけで、tasks/README.md にも SKILL.md にも記載が無く前例も無い。本契約が版管理上ただ一つの kind:exp であり、P4 が実運用で走ったのは今回が初めてである（T-2026-08-11-phase-baseline-power）
 - [ ] 2026-08-15 [cc] 捉えたい差の小（0.005）は 9 本を要し、事前登録の上限 6 本では捉えられない。現行の設計では検出できない大きさがあることを本命の実験の設計へ渡す（T-2026-08-11-phase-baseline-power）
+- [ ] 2026-08-15 [cc] **「読まれるか」は鍵の属性ではなく (鍵, 入口) の組の属性である。** grasp_inference.signal は元の入口 train_grasp_phase_injection.py で差 0.0（読まれない）、variants 入口で差 0.0014（読まれる）。logging.wandb_enabled と train.freeze_backbone も S0〜S2 で読まれ S4 で読まれない。**今後「設定にこう書いてあった」と述べるときは入口を必ず併記すること**（T-2026-08-15-config-key-effectiveness-audit）
+- [ ] 2026-08-15 [cc] 索引の frozen_source_tag（非 null 569 行）は frozen_source.cache_dir から作られるが、**この鍵は実装から一度も読まれない**（値を変えても 18 指標が差 0.0）。harvest_runindex.py:1362-1363 が実験 ID に ~{tag} を付け 1505-1507 が分母の候補をこのタグで絞るため、**索引を条件照合に使った判断すべてが挙動を決めない設定に依存している。** 現時点の食い違いは 130 run 中 0 件だが保証する仕組みが無い。導出元を data.feature_cache へ移すか一致を機械で強制する impl 契約を最優先で立てるべきである（T-2026-08-15-config-key-effectiveness-audit）
+- [ ] 2026-08-15 [cc] grasp_inference.detach_from_phase_loss が src/ scripts/ の .py に**一度も現れない**（設定 6 件が宣言するのみ、arm を同じ探し方で引くと 8 件ヒットする対照つき）。注入実験の中核的主張である勾配遮断が設定から制御できず、実装は _candidate() 全分岐で常に detach する。false にしても差 0.0。model.component も鍵アクセス 0 件（T-2026-08-15-config-key-effectiveness-audit）
+- [ ] 2026-08-15 [cc] **過去の記録は「宣言」であって「実効条件」ではない。** 監査 15 項目・出現のべ 1,900 件超で実挙動と食い違うのは 3 件（0.16%、いずれも ctrl 腕で条件に影響なしを 6 通りの実走で確認）だが、40 項目中 14 項目は値を変えても挙動が 1 bit も動かない。**一致は実装が保証しておらず偶然である。** 次に誰かが値を変えたとき記録だけが変わって挙動が変わらない（T-2026-08-15-config-key-effectiveness-audit）
+- [ ] 2026-08-15 [cc] 設定の鍵が読まれないことを検出する仕組みが無い。本契約の audit/trace_reads.py（DictConfig の __getattr__/__getitem__/get を覆い実際に触られた鍵の絶対経路を記録。to_container は内部経路のため無音で、記録用の丸ごと変換が混入しない）を試験に組み込めば回帰として検出できる。**名前の一致では判定できない**ことは実測済み（cfg という名が mmengine の Config や configs/notion.yaml を指す箇所がある）（T-2026-08-15-config-key-effectiveness-audit）
+- [ ] 2026-08-15 [cc] 摂動判定の基準となる揺れは **CPU・seed 固定で 18 指標すべて max_abs_diff=0.0（完全決定的）** だった。SPEC は「非決定の大きさは並行契約で測られている」と揺れの存在を前提にしていたが、少なくとも S4 の grasp 系 smoke 経路では揺れが無い。**摂動で挙動の有無を測る手法は今後も使える**（T-2026-08-15-config-key-effectiveness-audit）
+- [ ] 2026-08-15 [cc] configs/stage/*.yaml 20 件中 4 件（s4_grasp_injection_raw_logits / staged / standardized / oracle_upper_bound_only）に "# @package _global_" が無い。現在は OmegaConf.load 直読みのため無害だが、python -m egosurgery.train stage=… で読むと全キーが stage.* 配下へ落ちて一切効かない。潜在的欠陥として残っている（T-2026-08-15-config-key-effectiveness-audit）
 - [ ] 2026-08-15 [cc] 識別子の区切りに二系統の方言がある。`~<eval_recipe_id>` が 146 行、`#<先頭8桁>` が 4 行、どちらも無いものが 57 行で、両方を持つ行は 0 件。本契約は文法の側で両方を受けたが、受けたことで方言が固定化する。収穫器側で一つへ寄せるべきである。寄せると索引の再生成に波及し BL-harvester-scan-is-host-dependent と混ざるため、本契約では触れていない（T-2026-08-15-denominator-ref-resolution-fix）
 - [ ] 2026-08-15 [cc] 識別子に Python の空値が文字列として混入している。`@None` が 13 行（当該行の split 列は空文字）、`#None` が 2 行で計 15 行。さらに識別子の区画が列の値と一致しない行が 28 件あり、内訳は step 列の先頭下線の脱落 8 件、step 列の `_p123` の脱落 7 件、split の空値 13 件である。本契約は完全形を丸ごと照合するため影響を受けないが、収穫器側の欠陥として残る（T-2026-08-15-denominator-ref-resolution-fix）
 - [ ] 2026-08-15 [cc] 参照の記号 `#` は、逐語の引用では錨の境として最初の出現で二分され（validate_task.py の 1 箇所のみ）、分母の参照では識別子の一部として現れうる。現時点では参照を種別によらず解く共通関数が存在せず種別ごとに別経路のため、解釈を分ける必要は無いと判断した。将来これらを一つの関数へ束ねる時点で、`#` の意味が種別により異なることが表面化する（T-2026-08-15-denominator-ref-resolution-fix）

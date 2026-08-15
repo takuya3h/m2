@@ -1,0 +1,52 @@
+{
+  "entrypoint": "original",
+  "script": "train_grasp_phase_injection.py",
+  "config": "tasks/T-2026-08-15-grasp-injection-effect/audit/run_inj.yaml",
+  "error": null,
+  "accessed": [
+    "data",
+    "data.feature_cache",
+    "data.phase_manifest",
+    "data.population",
+    "data.population.train",
+    "data.population.val",
+    "device",
+    "experiment",
+    "experiment.category",
+    "experiment.description",
+    "experiment.step",
+    "grasp_inference",
+    "grasp_inference.annotation_root",
+    "grasp_inference.arm",
+    "grasp_inference.enabled",
+    "grasp_inference.hidden_dim",
+    "grasp_inference.num_classes",
+    "model",
+    "model.input_dim",
+    "model.num_phases",
+    "model.temporal",
+    "model.temporal.num_f_maps",
+    "model.temporal.num_layers",
+    "model.temporal.num_stages",
+    "seed",
+    "task_id",
+    "train",
+    "train.epochs",
+    "train.grasp_loss_weight",
+    "train.lr",
+    "train.smoothing_weight",
+    "train.weight_decay"
+  ],
+  "n_accessed": 32,
+  "manager_args": [
+    {
+      "base_dir": "/home/ubuntu/slocal2/m2/experiments",
+      "category": "phase1",
+      "step": "s4_grasp_injection",
+      "description": "frozen_tecno_grasp_inference_inj",
+      "seed": 42
+    }
+  ],
+  "notion_posts_intercepted": 1,
+  "experiments_dir_untouched": true
+}

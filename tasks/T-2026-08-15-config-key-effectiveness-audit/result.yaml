@@ -1,0 +1,185 @@
+result_version: 3
+task_id: "T-2026-08-15-config-key-effectiveness-audit"
+status: pass
+host: "lecun"
+branch: "feat/config-key-effectiveness-audit"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      設定側と実装側の項目を両方向の集合差で突き合わせ、件数を記録した。設定側は実際の 66 run が
+      使った 8 設定（inj 腕は葉キー 40）。実装側は src/egosurgery と scripts の .py 242 ファイルを
+      構文木（600 箇所 / 142 経路）と字面（378 箇所 / 127 経路）の二方法で集め、一致 126 経路、
+      片側のみ構文木 16・字面 1。食い違いは実装を読んで裁定し、字面側は docstring の cfg.xxx を
+      読み取りと誤認していた偽陽性 15 件、構文木側は self.cfg を根と判定できない実装バグで
+      self.cfg 経由 174 箇所の取りこぼしと判明。四区分は元の入口で read=25 / unread=14 /
+      unread 摂動未実施=1 / impl_only=3 / unknown=0、variants 入口で 26 / 13 / 1 / 4 / 0。
+      差が大きい（40 中 14 が未読）ため SPEC の想定外表に従い、Phase B の確認範囲を条件として
+      引用されうる高優先度（frozen_source.* / eval_recipe.* / signal / detach_from_phase_loss /
+      model.component / train.batch_size / freeze_backbone / data.population.test）に明記して続行した。
+  - id: G2
+    verdict: pass
+    note: >-
+      判定の基準として同一設定・同一 seed の 2 回実行の差を先に測り、両入口とも 18 指標すべてで
+      max_abs_diff=0.0（完全決定的）を実測した。読まれないと判定した 14 項目は値を変えても
+      18 指標が 1 bit も動かず（差 0.0）、対照として読まれる 4 項目（train.lr 0.550279 /
+      train.smoothing_weight 0.073610 / grasp_inference.hidden_dim 0.308443 / seed 14.5）は
+      すべて変化した。停止条件（読まれる項目でも変わらない）には該当しない。丸ごと渡す経路の
+      下で静的に判定できなかった model.temporal.{num_stages,num_layers,num_f_maps,dropout} も
+      摂動で全て変化し、read と確定して unknown を 0 にした。
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 469
+
+deviations:
+  - type: judgement
+    note: >-
+      契約は探索の入口を configs/ と書いていたが、実際の 66 run の command.sh はすべて
+      tasks/*/audit/ 配下の設定の写しを --config に渡していた。実装の実測に従い、対象を
+      実際に使われた 8 設定に変えた。configs/stage/*.yaml 12 件は参考として集合のみ収集した。
+  - type: judgement
+    note: >-
+      S0〜S3 の入口（MMDetTrainer / StageATrainer / PhaseTrainer）の挙動確認を行っていない。
+      計算装置を使わずに走らせられないため（禁止 10）。静的解析と読み手の特定には含めた。
+  - type: judgement
+    note: >-
+      摂動試験と追跡で WANDB_API_KEY を環境から外して実行した。W&B への投稿という外部への
+      副作用を避けるため。当該入口は cfg.logging.* を読まないので、キー読み取りの測定には影響しない。
+  - type: judgement
+    note: >-
+      非 smoke 経路の追跡で ExperimentManager と log_experiment_to_notion を実行時に差し替えた。
+      experiments/ への書き込みと Notion への投稿を止めるため。学習コードは変更しておらず、
+      git status で src/ scripts/ configs/ experiments/ に変更 0 件を確認した。
+  - type: judgement
+    note: >-
+      logging.wandb_enabled は摂動していない。実挙動を測るには W&B へ実際に投稿させる必要が
+      あるため。実行時追跡では両入口とも触られなかったが、指標への影響は UNKNOWN とした。
+  - type: environment
+    note: >-
+      試験の件数を開始前に測っていない。実行後に一度だけ測った。追跡下のファイルに変更が
+      1 件も無い（追加は tasks/ 配下の未追跡ファイルのみ）ため開始前と同一と書けるが、
+      実測したのは後だけである。
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: >-
+      SPEC が「過去の run は 851 件ある。その記録が条件を正しく表しているかを確かめる」と書いたが、
+      851 は index.csv の行数であって config.yaml を持つ run は 677 件しかない。指示どおり 851 件の
+      記録を照合しようとすると、config.yaml を持たない 63 件（_aborted_* / _failed_* 配下）に対して
+      照合対象が存在せず、件数が合わない。実測では監査対象キーが現れる run は最大 602 件だった。
+  - type: asserted_without_measuring
+    note: >-
+      SPEC が Phase B Step 2 で「非決定の大きさは並行する契約で測られている。本契約では同じ設定で
+      二度走らせた差を先に測り、それを判定の基準にすること」と書き、揺れがある前提を置いていた。
+      実測すると CPU・seed 固定で 18 指標すべて max_abs_diff=0.0 の完全決定であり、揺れは存在しない。
+      指示どおり並行契約の測定値を待って基準にすると、実際より緩い閾値で判定するところだった。
+  - type: self_contradiction
+    note: >-
+      SPEC は「設定に現れるのに実装から読まれていない項目はどれか」を一意に決まる問いとして書き、
+      四つの区分も鍵ごとに一つ決まる前提で組まれている。しかし実装では読まれるかが (鍵, 入口) の
+      組で決まる。grasp_inference.signal は元の入口で差 0.0、variants 入口で差 0.0014 と実測され、
+      同じ鍵が同時に「読まれない」かつ「読まれる」になる。鍵ごとに一区分を割り当てると必ず誤る。
+  - type: check_does_not_check
+    note: >-
+      SPEC 冒頭の前提コマンドは configs/ を実装の探索対象に含めるが、設定が実際に読まれるかを
+      configs/stage/*.yaml で確かめても意味がない。実際の 66 run はその写しを使っており、
+      指示どおり configs/stage/ を摂動しても過去の run の条件は 1 件も再現できない。
+      command.sh を読むまでこの食い違いは検出できなかった。
+
+positive_controls:
+  - judgement: "G2 対照 — 読まれる項目で値を変えると結果が変わる（測り方が生きていること）"
+    breaking_input: "読まれると判定した項目の値を変える。測り方が壊れていれば差 0 のままになるはず"
+    observed: >-
+      train.lr 0.0005→0.005 で max_abs_diff=0.550279、train.smoothing_weight 0.15→0.9 で 0.073610、
+      grasp_inference.hidden_dim 64→32 で 0.308443、seed 42→43 で 14.5。4 項目すべてが変化し、
+      両入口で同一の差を再現した。
+  - judgement: "実行時追跡器が空振りでないこと（trace_reads.py --selftest）"
+    breaking_input: "触っていない鍵を追跡器が記録する、または触った鍵を記録しないなら空振り"
+    observed: >-
+      cfg.a.b / cfg['z'] / cfg.a.get('c') を触ると {a, a.b, a.c, z} を記録し、触っていない
+      untouched.deep は記録されなかった。OmegaConf.to_container は内部経路のため 0 件で無音
+      （記録用の丸ごと変換が読み取りとして混入しないことを確認）。
+  - judgement: "摂動そのものが設定ファイルに反映されていること"
+    breaking_input: "OmegaConf.update が効いていなければ、書き出した設定に新しい値が入らない"
+    observed: >-
+      audit/perturb_cfgs/original__grasp_inference_signal.yaml に signal: raw_logits、
+      original__model_component.yaml に component: bogus_component、
+      original__frozen_source_detector.yaml に detector: align_detr が入っていることを直接確認した。
+      同じ機構で書いた signal が variants 入口では差 0.0014 を生んだため、書き込み自体は有効である。
+  - judgement: "件数 0 の検出（detach_from_phase_loss と model.component が実装に現れない）"
+    breaking_input: "探索器が壊れていれば、実際に読まれている鍵でも 0 件になるはず"
+    observed: >-
+      同じ探し方で arm は 8 件ヒットした（対照）。detach_from_phase_loss はリポジトリ全体で
+      35 件ヒットするが .py は 0 件（設定 6 件と本監査の生成物のみ）。component の鍵アクセス形
+      （.component / ["component"] / get("component")）は .py で 0 件。
+  - judgement: "3 件の食い違い run が実験条件に影響しないこと"
+    breaking_input: "ctrl 腕でも signal が効くなら、signal を変えたとき結果が変わるはず"
+    observed: >-
+      run_ctrl.yaml（arm=ctrl）で signal を zeros / predicted_sigmoid / raw_logits の 3 通り、
+      入口 2 通りの計 6 組み合わせを走らせ、すべて基準との最大差 0。ctrl 腕は
+      phase_signal = torch.zeros_like(candidate) で信号を捨てるため影響しない。
+  - judgement: "非 smoke 経路の追跡が experiments/ と Notion を汚さないこと"
+    breaking_input: "差し替えが効いていなければ experiments/ に新しい run ディレクトリが生まれる"
+    observed: >-
+      git status --porcelain -- experiments/ が空。Notion 投稿は差し替えた関数が 1 回捕捉し、
+      実際の送信は 0 件。差し替え前後で experiments/ 配下に追加・変更は無かった。
+
+followups:
+  - >-
+    最高優先: frozen_source.cache_dir は実装から読まれないまま index.csv の frozen_source_tag
+    （非 null 569 行）を作っており、harvest_runindex.py:1362-1363 が実験 ID に ~{tag} を付け、
+    1505-1507 が分母の候補をこのタグで絞っている。索引を条件の照合に使ったすべての判断が、
+    挙動を決めない設定項目に依存する。data.feature_cache との一致を機械で強制するか、
+    タグの導出元を読まれる側（data.feature_cache）へ移すこと。現時点の食い違いは 130 run 中 0 件。
+  - >-
+    高優先: grasp_inference.detach_from_phase_loss が src/ scripts/ の .py に一度も現れない。
+    設定 6 件が宣言しているだけで、実装は grasp_inference_injection.py の _candidate() 全分岐で
+    常に .detach() する。注入実験の中核的主張（勾配を工程損失から切り離す）を表す条件が
+    設定から制御できない。読むようにするか、設定から消すこと。値を false にしても差 0.0 だった。
+  - >-
+    高優先: eval_recipe.protocol_source / inference_protocol / jaccard_mode の 3 件が読まれず、
+    実効値は定数 PHASE_EVAL_PROTOCOL（inference_protocol=online_causal, jaccard_mode=strict）。
+    宣言値と定数が一致していたのは偶然で、食い違ったときに落ちる仕組みが無い。
+  - >-
+    中優先: model.component が読まれない。入口が build_grasp_phase_injection を直接 import
+    しており、設定は注釈にすぎない。bogus_component に変えても差 0.0。
+  - >-
+    中優先: 設定に書いた鍵が実装から読まれないことを検出する仕組みが無い。本契約の
+    audit/trace_reads.py（DictConfig の取り出し口を覆って実際に触られた鍵を記録する）を
+    試験に組み込めば、宣言したのに読まれない鍵を回帰として検出できる。
+  - >-
+    中優先: configs/stage/*.yaml 20 件中 4 件（s4_grasp_injection_raw_logits / staged /
+    standardized / oracle_upper_bound_only）に "# @package _global_" が無い。現在は
+    OmegaConf.load の直読みのため無害だが、python -m egosurgery.train stage=… で読むと
+    全キーが stage.* 配下に落ちて一切効かない。潜在的な欠陥として残る。
+  - >-
+    低優先: train.batch_size / train.freeze_backbone / data.population.test / logging.wandb_enabled /
+    logging.wandb_project は S4 の入口で読まれない（freeze_backbone と wandb_enabled は S0〜S2 の
+    入口では読まれる）。条件として引用しないよう明示が要る。
+  - >-
+    低優先: experiments/baselines/_legacy_score_thr_0/ の 18 件は config.yaml が旧様式の python
+    タグを含み機械で読めない。s0_014/015/016_maskdino_bbox_nmsfree_seed* の 3 件は中身が null。
+    監査対象キーは生文字列でも 0 件だったため今回の結論には影響しない。
+
+unknowns:
+  - >-
+    logging.wandb_enabled の指標への影響は UNKNOWN。実行時追跡では両入口とも触られなかったが、
+    摂動は行っていない（W&B へ実際に投稿させる必要があり外部への副作用を避けた）。
+  - >-
+    S0〜S3 の入口（MMDetTrainer / StageATrainer / PhaseTrainer）については、どの鍵が読まれるかを
+    実挙動で確かめていない。計算装置を使わずに走らせられないため（禁止 10）。静的解析では
+    logging.wandb_enabled と train.freeze_backbone を読むことが確認できている。
+  - >-
+    「設定にあり実装が読む」25〜26 件のうち 15 件は、実行時に触られたことは確認したが値を変えた
+    ときの指標への影響を測っていない。読まれていることは確かだが、指標を動かすかは未測定。
+  - >-
+    frozen_source.detector / checkpoint / seed は、突き合わせる相手（実挙動を決める設定）が
+    存在しないため食い違いを数えていない。「食い違い 0 件」はこれらについては
+    「照合できなかった」の意であり、「一致を確認した」ではない。
+
+commits: []
