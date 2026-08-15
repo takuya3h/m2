@@ -144,7 +144,7 @@
 
 ## T-2026-08-15-denominator-ref-resolution-fix
 
-状態 `pass` / ホスト `andrew` / 起票 `なし` / 様式 `v3`
+状態 `pass` / ホスト `andrew` / 起票 `109` / 様式 `v3`
 
 ### ゲート
 
