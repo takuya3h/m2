@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（129 件）
+## 申し送り（132 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -19,6 +19,12 @@
 
 - 全テストに開始前から存在する5失敗がある。評価レシピ期待値1件とResearchLogger 4件で、本taskの失敗数は増えていないが、別taskで解消する
 - 通信時の承認有無はapproval_policyに依存する。手順書の『求められることがある』という条件付き表現を維持し、構成ごとの実測を混同しない
+
+### T-2026-08-11-grasp-linear-probe
+
+- 次の契約では陽性対照をclass supportのある対象へ事前登録する。今回のTweezersはtrain 5764/9657、val 825/1515だった。
+- 契約の入力入口を旧phase_trainer.pyではなく、保存済みGAPを読むscripts/train_s4_tecno.pyとS4 configへ更新する。
+- 並行する把持推論実装では次元3/4/5の線形probe ROC-AUC 0.829266/0.743446/0.792754を実用的な上限目安として比較する。
 
 ### T-2026-08-11-hts-comparability-audit
 
@@ -230,7 +236,7 @@
 - 秘匿の検査が見るのは NOTION_API_KEY と WANDB_API_KEY の 2 つと、既知の接頭辞である。資格情報を増やしたら SECRET_ENV_KEYS へ足すこと。足し忘れても検査は通るため気付けない
 - 送信の時点で壁時計を使っている（completed_at）。生成物ではないため冪等の検査には影響しないが、投影に壁時計を入れない方針とは別の判断である
 
-## 断定できなかった事項（100 件）
+## 断定できなかった事項（103 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -241,6 +247,12 @@
 ### T-2026-08-11-codex-parity
 
 - sudo不可のため、user namespace設定を一時変更した場合に旧sandbox構成のbwrap起動失敗が解消するかは未測定
+
+### T-2026-08-11-grasp-linear-probe
+
+- 指定陽性対照any-tool-presenceのval識別性能は全陽性のためUNKNOWN。
+- 把持群と可視性群の難しさの差は、点推定+0.086608がnegative-control群差rangeより小さいためUNKNOWN。
+- test splitのprobe性能は試験側を消費していないためUNKNOWN。
 
 ### T-2026-08-11-hts-comparability-audit
 
@@ -416,16 +428,16 @@
 - 台帳の他の行が変わっていないことは、触れた行を限定した事実からしか言えていない。全行の内容を送信前後で突き合わせてはいない
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
 
-## 起票者の誤りの型（85 件）
+## 起票者の誤りの型（87 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 32 |
-| `asserted_without_measuring` | 22 |
+| `asserted_without_measuring` | 24 |
 | `self_contradiction` | 24 |
 | `shell_assumption` | 7 |
 
-合計 85 件（対を持つ契約 31 件から）
+合計 87 件（対を持つ契約 32 件から）
 

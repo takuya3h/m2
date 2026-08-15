@@ -1,0 +1,3 @@
+- [ ] 2026-08-13 [cx] Relation-DETR seed42の凍結GAPから把持次元3/4/5を線形に読み出せた（ROC-AUC 0.829266/0.743446/0.792754）。並行実装を継続するが、群差は対照の振れ幅未満なので把持群の方が容易とは断定しない（T-2026-08-11-grasp-linear-probe）
+- [ ] 2026-08-13 [cx] 指定陽性対照any-tool-presenceはval 1515/1515全陽性で無効だった。次回はclass supportを事前確認した対象を登録する（T-2026-08-11-grasp-linear-probe）
+- [ ] 2026-08-13 [cx] 契約入口のphase_trainer.pyは旧S3経路で、現行S4の保存特徴入口はscripts/train_s4_tecno.pyだった。次回契約で入口を更新する（T-2026-08-11-grasp-linear-probe）

@@ -1,0 +1,74 @@
+{
+  "method": {
+    "classifier": "StandardScaler + one affine logistic-regression score",
+    "solver": "liblinear",
+    "penalty": "l2",
+    "C": 1.0,
+    "class_weight": "balanced",
+    "max_iter": 2000,
+    "fit_split": "train",
+    "measure_split": "val",
+    "test_used_for_modeling": false,
+    "temporal_information": false
+  },
+  "actual_group_comparison": {
+    "visibility_dimensions": [
+      1,
+      2
+    ],
+    "grasp_dimensions": [
+      3,
+      4,
+      5
+    ],
+    "visibility_mean_roc_auc": 0.7018809750699813,
+    "grasp_mean_roc_auc": 0.7884886477059553,
+    "grasp_minus_visibility_roc_auc": 0.08660767263597402
+  },
+  "negative_controls": {
+    "shuffled_train_teachers": {
+      "auc_mean": 0.47659105330654544,
+      "auc_sample_std": 0.0990146603521231,
+      "auc_min": 0.32144313086017123,
+      "auc_max": 0.6264262729890089,
+      "group_difference_mean": 0.002166298590212649,
+      "group_difference_sample_std": 0.15670568261814646,
+      "group_difference_range": 0.31291878237979465
+    },
+    "random_features": {
+      "auc_mean": 0.49864624688501424,
+      "auc_sample_std": 0.034303848270033,
+      "auc_min": 0.43131251275770566,
+      "auc_max": 0.5476486409681577,
+      "group_difference_mean": 0.021469542494784888,
+      "group_difference_sample_std": 0.05814156507615098,
+      "group_difference_range": 0.11056138483812711
+    }
+  },
+  "prescribed_positive_control": {
+    "target": "any EgoSurgery-Tool annotation",
+    "train_positive": 9618,
+    "train_total": 9657,
+    "val_positive": 1515,
+    "val_total": 1515,
+    "roc_auc": "UNKNOWN",
+    "average_precision": 1.0,
+    "iterations": 18,
+    "convergence_warnings": 0,
+    "reason": "val has [1]",
+    "valid_discrimination_control": false
+  },
+  "supplemental_positive_control": {
+    "target": "tool category 14: Tweezers",
+    "train_positive": 5764,
+    "train_total": 9657,
+    "val_positive": 825,
+    "val_total": 1515,
+    "roc_auc": 0.9212630654369786,
+    "average_precision": 0.93474673038596,
+    "iterations": 11,
+    "convergence_warnings": 0,
+    "reason": "",
+    "valid_discrimination_control": true
+  }
+}
