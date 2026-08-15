@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（171 件）
+## 申し送り（176 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -262,6 +262,14 @@
 - train_grasp_phase_injection.pyへtask_id上書き経路を設け、runindex harvesterがarmとphase_accuracyを取り込む修正は、学習コードとharvesterの変更を許可する別impl契約へ回す
 - decision ruleのverdictをimprovement_detected / degradation_detected / not_detectedに分け、絶対値ルールと改善仮説の方向不整合を次の契約で解消する
 
+### T-2026-08-15-injection-form-sweep
+
+- 判定力を取り戻す再測定を先に行うべきである。ctrl と対象腕を種ごとに隣接して交互に走らせれば、前実験の実測（σ_d 0.0008〜0.0036）の水準に戻る見込みがあり、10 種なら 0.0005〜0.0023 級まで見える。一本 7 秒のため費用はほぼ無い。主たる腕（正解、上限専用）だけに絞れば 20 本で済む
+- σ_d の正本問題への実測の答え: 腕ごとに一括で走らせる（隣接させない）実行では独立仮定 sqrt(2)*σ_rep = 0.0074 が正しく、前実験の 0.0008〜0.0036 は種ごとに隣接して走らせた並びの産物とみられる。実行の順序が対の相関を決める。今後の exp 契約は run の実行順序を SPEC に明記すべきである
+- hemostasis の工程別所見は再現しなかった（前実験 −0.156 悪化 → 本実験 +0.135 改善、いずれも推論した値の腕）。少数種の工程別分解を根拠に設計判断をしてはならない
+- seed 303 だけが主たる腕で負（−0.0172）であり判定を単独で落とした。単体での分解は次の契約へ回す
+- inj 側 3 種のセッション間の差がすべてちょうど +0.0013201（2/1515）で一致した。原因は UNKNOWN。入口スクリプトの違い（原本 vs variants）による乱数消費の差の可能性があり、隣接実行の再測定で同じ入口を使えば切り分けられる
+
 ### T-2026-08-15-injection-signal-variants
 
 - 次の実験（効果測定）の材料: 入口は scripts/train_grasp_phase_injection_variants.py（既存スクリプト経由では新しい形は届かない）。設定は s4_grasp_injection_{ctrl,raw_logits,standardized,oracle_upper_bound_only,staged}.yaml。分母は exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42。本番規模の所要時間は UNKNOWN のため冒頭で 1 本実測してから見積もること
@@ -299,7 +307,7 @@
 - 秘匿の検査が見るのは NOTION_API_KEY と WANDB_API_KEY の 2 つと、既知の接頭辞である。資格情報を増やしたら SECRET_ENV_KEYS へ足すこと。足し忘れても検査は通るため気付けない
 - 送信の時点で壁時計を使っている（completed_at）。生成物ではないため冪等の検査には影響しないが、投影に壁時計を入れない方針とは別の判断である
 
-## 断定できなかった事項（126 件）
+## 断定できなかった事項（129 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -512,6 +520,12 @@
 - 把持推論accuracyが高いのにphase accuracyが下がる因果機構は本契約では特定していない
 - disinfection、dressing、irrigationは両腕とも工程別F1/Jaccardが0で、注入効果はUNKNOWN
 
+### T-2026-08-15-injection-form-sweep
+
+- inj 側 3 種のセッション間の差がすべて +2/1515 フレームで厳密に一致した理由
+- seed 303 が主たる腕で単独負けした中身（工程分解・推論の出来の単体分析は未実施）
+- 隣接実行に戻した場合に σ_d が実際に 0.0008〜0.0036 級へ戻るか。本実験では測っていない
+
 ### T-2026-08-15-injection-signal-variants
 
 - 本番規模（50 世代・全 clip）の一本あたりの所要時間。試走は 2 世代・clip 1 本のみで 1.49〜1.90 秒だった
@@ -541,16 +555,16 @@
 - 台帳の他の行が変わっていないことは、触れた行を限定した事実からしか言えていない。全行の内容を送信前後で突き合わせてはいない
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
 
-## 起票者の誤りの型（103 件）
+## 起票者の誤りの型（104 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 38 |
-| `asserted_without_measuring` | 28 |
+| `asserted_without_measuring` | 29 |
 | `self_contradiction` | 30 |
 | `shell_assumption` | 7 |
 
-合計 103 件（対を持つ契約 41 件から）
+合計 104 件（対を持つ契約 42 件から）
 
