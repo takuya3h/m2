@@ -1,0 +1,479 @@
+{
+  "source": "実装から読み出した",
+  "patterns": {
+    "schema": "^exp:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[A-Za-z0-9_.-]+(?:~[A-Za-z0-9_.-]+|#[A-Za-z0-9_.-]+)?(?![\\s\\S])",
+    "validator": "exp:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[A-Za-z0-9_.-]+(?:~[A-Za-z0-9_.-]+|#[A-Za-z0-9_.-]+)?"
+  },
+  "coverage": {
+    "total": 207,
+    "covered": 207,
+    "uncovered": [],
+    "all_covered": true
+  },
+  "decomposition": {
+    "matches_columns": 179,
+    "total": 207,
+    "mismatch": [
+      {
+        "experiment_id": "hand2det_dev/identity_ctrl_4ch/identity_ctrl_4ch@val",
+        "from_id": [
+          "hand2det_dev",
+          "identity_ctrl_4ch",
+          "identity_ctrl_4ch",
+          "val"
+        ],
+        "from_columns": [
+          "hand2det_dev",
+          "_identity_ctrl_4ch",
+          "identity_ctrl_4ch",
+          "val"
+        ]
+      },
+      {
+        "experiment_id": "hand2det_dev/identity_ctrl_4ch_real/identity_ctrl_4ch_real@val",
+        "from_id": [
+          "hand2det_dev",
+          "identity_ctrl_4ch_real",
+          "identity_ctrl_4ch_real",
+          "val"
+        ],
+        "from_columns": [
+          "hand2det_dev",
+          "_identity_ctrl_4ch_real",
+          "identity_ctrl_4ch_real",
+          "val"
+        ]
+      },
+      {
+        "experiment_id": "hand2det_dev/identity_ctrl_5ch/identity_ctrl_5ch@val",
+        "from_id": [
+          "hand2det_dev",
+          "identity_ctrl_5ch",
+          "identity_ctrl_5ch",
+          "val"
+        ],
+        "from_columns": [
+          "hand2det_dev",
+          "_identity_ctrl_5ch",
+          "identity_ctrl_5ch",
+          "val"
+        ]
+      },
+      {
+        "experiment_id": "hand2det_dev/identity_inj_4ch/identity_inj_4ch@val",
+        "from_id": [
+          "hand2det_dev",
+          "identity_inj_4ch",
+          "identity_inj_4ch",
+          "val"
+        ],
+        "from_columns": [
+          "hand2det_dev",
+          "_identity_inj_4ch",
+          "identity_inj_4ch",
+          "val"
+        ]
+      },
+      {
+        "experiment_id": "hand2det_dev/identity_inj_4ch_real/identity_inj_4ch_real@val",
+        "from_id": [
+          "hand2det_dev",
+          "identity_inj_4ch_real",
+          "identity_inj_4ch_real",
+          "val"
+        ],
+        "from_columns": [
+          "hand2det_dev",
+          "_identity_inj_4ch_real",
+          "identity_inj_4ch_real",
+          "val"
+        ]
+      },
+      {
+        "experiment_id": "hand2det_dev/identity_inj_5ch/identity_inj_5ch@val",
+        "from_id": [
+          "hand2det_dev",
+          "identity_inj_5ch",
+          "identity_inj_5ch",
+          "val"
+        ],
+        "from_columns": [
+          "hand2det_dev",
+          "_identity_inj_5ch",
+          "identity_inj_5ch",
+          "val"
+        ]
+      },
+      {
+        "experiment_id": "phase0/s3/phase_frame@None",
+        "from_id": [
+          "phase0",
+          "s3",
+          "phase_frame",
+          "None"
+        ],
+        "from_columns": [
+          "phase0",
+          "s3",
+          "phase_frame",
+          ""
+        ]
+      },
+      {
+        "experiment_id": "transfer/hires_relation_detr_augstrong_hires_seed42/hires_relation_detr_augstrong_hires_seed42@val~relation_detr_augstrong_hires_seed42",
+        "from_id": [
+          "transfer",
+          "hires_relation_detr_augstrong_hires_seed42",
+          "hires_relation_detr_augstrong_hires_seed42",
+          "val"
+        ],
+        "from_columns": [
+          "transfer",
+          "hires_relation_detr_augstrong_hires_seed42_p123",
+          "hires_relation_detr_augstrong_hires_seed42",
+          "val"
+        ]
+      },
+      {
+        "experiment_id": "transfer/hires_relation_detr_augstrong_seed42/hires_relation_detr_augstrong_seed42@val~relation_detr_augstrong_seed42",
+        "from_id": [
+          "transfer",
+          "hires_relation_detr_augstrong_seed42",
+          "hires_relation_detr_augstrong_seed42",
+          "val"
+        ],
+        "from_columns": [
+          "transfer",
+          "hires_relation_detr_augstrong_seed42_p123",
+          "hires_relation_detr_augstrong_seed42",
+          "val"
+        ]
+      },
+      {
+        "experiment_id": "transfer/hires_relation_detr_seed42/hires_relation_detr_seed42@val~relation_detr_seed42",
+        "from_id": [
+          "transfer",
+          "hires_relation_detr_seed42",
+          "hires_relation_detr_seed42",
+          "val"
+        ],
+        "from_columns": [
+          "transfer",
+          "hires_relation_detr_seed42_p123",
+          "hires_relation_detr_seed42",
+          "val"
+        ]
+      },
+      {
+        "experiment_id": "transfer/p0_identity_ctrl/p0_identity_ctrl@val",
+        "from_id": [
+          "transfer",
+          "p0_identity_ctrl",
+          "p0_identity_ctrl",
+          "val"
+        ],
+        "from_columns": [
+          "transfer",
+          "_p0_identity_ctrl",
+          "p0_identity_ctrl",
+          "val"
+        ]
+      },
+      {
+        "experiment_id": "transfer/p0_identity_inj/p0_identity_inj@val",
+        "from_id": [
+          "transfer",
+          "p0_identity_inj",
+          "p0_identity_inj",
+          "val"
+        ],
+        "from_columns": [
+          "transfer",
+          "_p0_identity_inj",
+          "p0_identity_inj",
+          "val"
+        ]
+      },
+      {
+        "experiment_id": "transfer/t1a_3seed_det123_aug/t1a_3seed_det123_aug@val~relation_detr_augstrong_seed123",
+        "from_id": [
+          "transfer",
+          "t1a_3seed_det123_aug",
+          "t1a_3seed_det123_aug",
+          "val"
+        ],
+        "from_columns": [
+          "transfer",
+          "t1a_3seed_det123_p123_aug",
+          "t1a_3seed_det123_aug",
+          "val"
+        ]
+      },
+      {
+        "experiment_id": "transfer/t1a_3seed_det123_frozen/t1a_3seed_det123_frozen@val~relation_detr_seed123",
+        "from_id": [
+          "transfer",
+          "t1a_3seed_det123_frozen",
+          "t1a_3seed_det123_frozen",
+          "val"
+        ],
+        "from_columns": [
+          "transfer",
+          "t1a_3seed_det123_p123_frozen",
+          "t1a_3seed_det123_frozen",
+          "val"
+        ]
+      },
+      {
+        "experiment_id": "transfer/t1a_3seed_det456_aug/t1a_3seed_det456_aug@val~relation_detr_augstrong_seed456",
+        "from_id": [
+          "transfer",
+          "t1a_3seed_det456_aug",
+          "t1a_3seed_det456_aug",
+          "val"
+        ],
+        "from_columns": [
+          "transfer",
+          "t1a_3seed_det456_p123_aug",
+          "t1a_3seed_det456_aug",
+          "val"
+        ]
+      },
+      {
+        "experiment_id": "transfer/t1a_3seed_det456_frozen/t1a_3seed_det456_frozen@val~relation_detr_seed456",
+        "from_id": [
+          "transfer",
+          "t1a_3seed_det456_frozen",
+          "t1a_3seed_det456_frozen",
+          "val"
+        ],
+        "from_columns": [
+          "transfer",
+          "t1a_3seed_det456_p123_frozen",
+          "t1a_3seed_det456_frozen",
+          "val"
+        ]
+      },
+      {
+        "experiment_id": "transfer_legacy/hc/hc@None",
+        "from_id": [
+          "transfer_legacy",
+          "hc",
+          "hc",
+          "None"
+        ],
+        "from_columns": [
+          "transfer_legacy",
+          "hc",
+          "hc",
+          ""
+        ]
+      },
+      {
+        "experiment_id": "transfer_legacy/oracle_phase/oracle_phase@None",
+        "from_id": [
+          "transfer_legacy",
+          "oracle_phase",
+          "oracle_phase",
+          "None"
+        ],
+        "from_columns": [
+          "transfer_legacy",
+          "oracle_phase",
+          "oracle_phase",
+          ""
+        ]
+      },
+      {
+        "experiment_id": "transfer_legacy/t1b/t1b@None",
+        "from_id": [
+          "transfer_legacy",
+          "t1b",
+          "t1b",
+          "None"
+        ],
+        "from_columns": [
+          "transfer_legacy",
+          "t1b",
+          "t1b",
+          ""
+        ]
+      },
+      {
+        "experiment_id": "transfer_legacy/t1b_ca/t1b_ca@None",
+        "from_id": [
+          "transfer_legacy",
+          "t1b_ca",
+          "t1b_ca",
+          "None"
+        ],
+        "from_columns": [
+          "transfer_legacy",
+          "t1b_ca",
+          "t1b_ca",
+          ""
+        ]
+      },
+      {
+        "experiment_id": "transfer_legacy/t1b_ca_zeroctx/t1b_ca_zeroctx@None",
+        "from_id": [
+          "transfer_legacy",
+          "t1b_ca_zeroctx",
+          "t1b_ca_zeroctx",
+          "None"
+        ],
+        "from_columns": [
+          "transfer_legacy",
+          "t1b_ca_zeroctx",
+          "t1b_ca_zeroctx",
+          ""
+        ]
+      },
+      {
+        "experiment_id": "transfer_legacy/t1b_camt/t1b_camt@None",
+        "from_id": [
+          "transfer_legacy",
+          "t1b_camt",
+          "t1b_camt",
+          "None"
+        ],
+        "from_columns": [
+          "transfer_legacy",
+          "t1b_camt",
+          "t1b_camt",
+          ""
+        ]
+      },
+      {
+        "experiment_id": "transfer_legacy/t1b_camt_all/t1b_camt_all@None",
+        "from_id": [
+          "transfer_legacy",
+          "t1b_camt_all",
+          "t1b_camt_all",
+          "None"
+        ],
+        "from_columns": [
+          "transfer_legacy",
+          "t1b_camt_all",
+          "t1b_camt_all",
+          ""
+        ]
+      },
+      {
+        "experiment_id": "transfer_legacy/t1b_clsbias/t1b_clsbias@None",
+        "from_id": [
+          "transfer_legacy",
+          "t1b_clsbias",
+          "t1b_clsbias",
+          "None"
+        ],
+        "from_columns": [
+          "transfer_legacy",
+          "t1b_clsbias",
+          "t1b_clsbias",
+          ""
+        ]
+      },
+      {
+        "experiment_id": "transfer_legacy/t1b_clsbias_pe/t1b_clsbias_pe@None",
+        "from_id": [
+          "transfer_legacy",
+          "t1b_clsbias_pe",
+          "t1b_clsbias_pe",
+          "None"
+        ],
+        "from_columns": [
+          "transfer_legacy",
+          "t1b_clsbias_pe",
+          "t1b_clsbias_pe",
+          ""
+        ]
+      },
+      {
+        "experiment_id": "transfer_legacy/t1b_filmonly/t1b_filmonly@None",
+        "from_id": [
+          "transfer_legacy",
+          "t1b_filmonly",
+          "t1b_filmonly",
+          "None"
+        ],
+        "from_columns": [
+          "transfer_legacy",
+          "t1b_filmonly",
+          "t1b_filmonly",
+          ""
+        ]
+      },
+      {
+        "experiment_id": "transfer_legacy/t1c_bidir_pilot/t1c_bidir_pilot@None",
+        "from_id": [
+          "transfer_legacy",
+          "t1c_bidir_pilot",
+          "t1c_bidir_pilot",
+          "None"
+        ],
+        "from_columns": [
+          "transfer_legacy",
+          "t1c_bidir_pilot",
+          "t1c_bidir_pilot",
+          ""
+        ]
+      },
+      {
+        "experiment_id": "transfer_legacy/t1c_bidir_v2_pilot/t1c_bidir_v2_pilot@None",
+        "from_id": [
+          "transfer_legacy",
+          "t1c_bidir_v2_pilot",
+          "t1c_bidir_v2_pilot",
+          "None"
+        ],
+        "from_columns": [
+          "transfer_legacy",
+          "t1c_bidir_v2_pilot",
+          "t1c_bidir_v2_pilot",
+          ""
+        ]
+      }
+    ]
+  },
+  "overreach": {
+    "cases": [
+      {
+        "label": "二区画だけの旧い書式",
+        "ref": "exp:phase1/s4_phase_baseline",
+        "schema_accepts": false,
+        "validator_accepts": false,
+        "rejected_by_both": true
+      },
+      {
+        "label": "区画が一つ欠けたもの",
+        "ref": "exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline",
+        "schema_accepts": false,
+        "validator_accepts": false,
+        "rejected_by_both": true
+      },
+      {
+        "label": "分離の記号が無いもの",
+        "ref": "exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline~relation_detr_seed42",
+        "schema_accepts": false,
+        "validator_accepts": false,
+        "rejected_by_both": true
+      },
+      {
+        "label": "許されない記号を含むもの",
+        "ref": "exp:phase1/s4_phase_baseline/frozen tecno@val",
+        "schema_accepts": false,
+        "validator_accepts": false,
+        "rejected_by_both": true
+      },
+      {
+        "label": "末尾に改行が付いたもの",
+        "ref": "exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val\n",
+        "schema_accepts": false,
+        "validator_accepts": false,
+        "rejected_by_both": true
+      }
+    ],
+    "all_rejected": true
+  }
+}

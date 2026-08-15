@@ -129,9 +129,20 @@ def validate_l1(spec: dict, dir_name: str) -> list[Finding]:
     denom = spec.get("inputs", {}).get("denominator")
     if isinstance(denom, dict):
         ref = denom.get("ref", "")
-        if not re.fullmatch(r"exp:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", ref):
+        # 実験の識別子の**完全形**を受ける。段だけの二区画では基準点が一意に定まらない
+        # （群と段の組が一意でない組が実測で 6 件・41 行あり、最多の組は候補が 10 件ある）。
+        if not re.fullmatch(
+            r"exp:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[A-Za-z0-9_.-]+"
+            r"(?:~[A-Za-z0-9_.-]+|#[A-Za-z0-9_.-]+)?",
+            ref,
+        ):
             findings.append(
-                Finding("L1-4", "inputs.denominator.ref", "exp:<group>/<experiment_id> の形式が必要です")
+                Finding(
+                    "L1-4",
+                    "inputs.denominator.ref",
+                    "exp:<experiments.csv の experiment_id 列の完全形> が必要です"
+                    "（例 exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42）",
+                )
             )
     frozen = spec.get("inputs", {}).get("frozen_source")
     if isinstance(frozen, dict):
@@ -394,10 +405,15 @@ def validate_l2(spec: dict) -> list[Finding]:
     denominator = spec.get("inputs", {}).get("denominator")
     if denominator and EXPERIMENTS_CSV.exists() and COL_EXPERIMENT_ID != "UNKNOWN":
         rows = _csv_rows(EXPERIMENTS_CSV)
-        group, experiment_id = denominator["ref"].split(":", 1)[1].split("/", 1)
+        # 参照は識別子の**完全形**である。群を剥ぎ取らない。剥ぎ取ると、群を先頭に含む
+        # 識別子の列とは決して一致せず、L1 を通る参照が L2 で必ず落ちる（排他）。
+        experiment_id = denominator["ref"].split(":", 1)[1]
+        # 群の列との照合は冗長だが残す。識別子の先頭区画は実測で全件が群の列と一致する。
+        # 将来ここが食い違ったときに、黙って解決するより落ちるほうがよい。
+        group = experiment_id.split("/", 1)[0]
         matches = [row for row in rows if row.get(COL_EXPERIMENT_ID) == experiment_id and row.get(COL_GROUP) == group]
         if not matches:
-            findings.append(Finding("L2-2", "inputs.denominator.ref", f"experiments.csv に {group}/{experiment_id} がありません"))
+            findings.append(Finding("L2-2", "inputs.denominator.ref", f"experiments.csv に {experiment_id} がありません"))
         else:
             row = matches[0]
             needed = denominator.get("require", {}).get("n_seeds")
