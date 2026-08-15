@@ -1,0 +1,77 @@
+spec_version: 1
+meta:
+  task_id: "T-2026-08-15-training-determinism"
+  kind: impl
+  title: "同じ種で走らせれば同じ結果になるようにする"
+  origin: claude-app
+  created_at: "2026-08-15T14:30:00Z"
+  created_from:
+    runindex_commit: "8c13afb"
+    counts: {index: 851, experiments: 223, verdicts: 1038}
+  depends_on:
+    - "T-2026-08-15-injection-form-sweep"
+  amendments: []
+intent:
+  question: "同じ種で二度走らせたときに同じ結果が出るようにできるか。できたとき、対にして取る差の揺らぎはどこまで小さくなるか"
+  decision_at_stake: "測りたい効果と同じ大きさの揺らぎが、走らせ直すだけで生じている。これを断たなければ、どの差も判定できない。断てれば既存と今後のすべての判定の力が変わる"
+  related:
+    backlog: ["BL-harvester-scan-is-host-dependent"]
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/train_grasp_phase_injection_variants.py"
+      - "scripts/train_s4_tecno.py"
+      - "src/egosurgery/"
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "いま何が非決定なのかを実測で特定する", gpu: true, est: "60m"}
+    - {id: B, name: "決定的にする", gpu: false, est: "70m"}
+    - {id: C, name: "同じ種で二度走らせて一致することを確かめる", gpu: true, est: "60m"}
+    - {id: D, name: "対の差の揺らぎがどこまで下がるかを測る", gpu: true, est: "50m"}
+    - {id: E, name: "総括と次への申し送り", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "直す前に同じ種で二度走らせ、結果が一致しないことと、その差の大きさを実測した"
+      on_fail: stop
+    - id: G2
+      after: C
+      check: "直した後に同じ種で二度走らせ、指標が完全に一致することを確かめた"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "決定的にする設定を外すと一致しなくなることを確かめ、検査が空振りでないことを示した"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md]
+  destination: "scripts/"
+  acceptance:
+    - "直す前に同じ種で二度走らせた結果が一致しないことと、その差の大きさが実測で示されている"
+    - "直した後に同じ種で二度走らせた結果が完全に一致することが実測で示されている"
+    - "決定的にする設定を外すと一致しなくなることが実測で示されている"
+    - "対にして取る差の揺らぎが直す前と後でどう変わったかが、同じ腕と種で示されている"
+    - "決定的にしたことで学習がどれだけ遅くなったかが実測で示されている"
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "使っている演算のいずれかが決定的な実装を持たず、完全な一致が原理的に得られないと判明した場合"
+    - "決定的にすると学習が現実的でないほど遅くなると判明した場合"
+    - "他の利用者が計算装置を使用中で、学習を行うと妨げになる場合"

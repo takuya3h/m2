@@ -1,0 +1,170 @@
+........................................................................ [ 15%]
+....................................................................F... [ 30%]
+........................................................................ [ 45%]
+........................................................................ [ 60%]
+.................................................F....FFF............... [ 75%]
+........................................................................ [ 90%]
+.............................................                            [100%]
+=================================== FAILURES ===================================
+__________________ test_mmdet_trainer_eval_recipe_in_metrics ___________________
+
+    def test_mmdet_trainer_eval_recipe_in_metrics():
+        """過去の S0 スモーク証跡 (退避済み) の metrics.json に eval_recipe が
+        併記されている。本番 S0 が稼働中の experiments/baselines/ は学習途中で
+        metrics が空の場合があるため、明示的に証跡フォルダ (_smoke_*/) を参照する。"""
+        baselines = _PROJECT_ROOT / "experiments" / "baselines"
+    
+        def _has_recipe(path: Path) -> bool:
+            m = path / "metrics.json"
+            if not m.is_file():
+                return False
+            try:
+                data = json.loads(m.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                return False
+            return bool(data) and "eval_recipe" in data
+    
+        # 退避済みの MMDetTrainer 経由スモーク証跡 (_smoke_* 配下) を優先。
+        # ただし StageATrainer (SimpleDetectionHead) 経由の証跡は eval_recipe を
+        # 持たないので、has_recipe フィルタで除外する。
+        candidates: list[Path] = [
+            d
+            for prior in baselines.glob("_smoke_*")
+            for d in prior.glob("s0_*")
+            if _has_recipe(d)
+        ]
+        # 加えてアクティブな baselines/s0_* も対象（学習中なら空 metrics で除外）。
+        candidates.extend(
+            d
+            for d in baselines.glob("s0_*")
+            if not d.name.startswith("_") and _has_recipe(d)
+        )
+        if not candidates:
+            pytest.skip("検証対象の S0 スモーク証跡が無い (退避フォルダもアクティブ実験も該当なし)")
+        for d in candidates:
+            data = json.loads((d / "metrics.json").read_text(encoding="utf-8"))
+            assert "eval_recipe" in data, f"{d.name} に eval_recipe が無い"
+            r = data["eval_recipe"]
+            # MMDetTrainer 経由の証跡なら必ず公式 split + locked-down test_cfg。
+            assert r.get("split_train_images") == 9657, (
+                f"{d.name}: split_train_images={r.get('split_train_images')} (期待 9657)"
+            )
+>           assert r.get("test_cfg", {}).get("score_thr") == 1e-8
+E           AssertionError: assert 0.0 == 1e-08
+E            +  where 0.0 = <built-in method get of dict object at 0x7b83ec6c5780>('score_thr')
+E            +    where <built-in method get of dict object at 0x7b83ec6c5780> = {'max_per_img': 300, 'nms_iou': None, 'nms_pre': None, 'note': 'Reeval: NMS-free (score_thr=0.0, no NMS)', ...}.get
+E            +      where {'max_per_img': 300, 'nms_iou': None, 'nms_pre': None, 'note': 'Reeval: NMS-free (score_thr=0.0, no NMS)', ...} = <built-in method get of dict object at 0x7b83ec6c5600>('test_cfg', {})
+E            +        where <built-in method get of dict object at 0x7b83ec6c5600> = {'effective_batch_size': 1, 'gpu_count': 1, 'lr_scaling': 'eval_only', 'server_name': 'andrew', ...}.get
+
+tests/test_engines.py:223: AssertionError
+___________________________ test_log_run_idempotent ____________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-ubuntu/pytest-23/test_log_run_idempotent0')
+
+    def test_log_run_idempotent(tmp_path: Path) -> None:
+        """A1: 同じ run を 2 回 log_run → REST create は 1 回のみ."""
+        manager = _fake_manager(tmp_path / "run1")
+        rlog = ResearchLogger(cfg=None, manager=manager)
+    
+        with patch("egosurgery.utils.notion_logger.log_experiment_to_notion") as mocked:
+            mocked.return_value = {"id": "page-abc"}
+            # 1 回目: create → page id 返す + マーカー書く
+>           assert rlog.log_run(step="test") == "page-abc"
+E           AssertionError: assert None == 'page-abc'
+E            +  where None = log_run(step='test')
+E            +    where log_run = <egosurgery.utils.research_logger.ResearchLogger object at 0x7b83cc119890>.log_run
+
+tests/test_research_logger.py:86: AssertionError
+_________________ test_run_logging_invokes_log_run_on_finally __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-ubuntu/pytest-23/test_run_logging_invokes_log_r0')
+
+    def test_run_logging_invokes_log_run_on_finally(tmp_path: Path) -> None:
+        """A4: with ブロック終了時に log_run が呼ばれる."""
+        manager = _fake_manager(tmp_path / "run6")
+        with patch("egosurgery.utils.notion_logger.log_experiment_to_notion") as mocked:
+            mocked.return_value = {"id": "page-X"}
+            with run_logging(cfg=None, manager=manager, step="s0"):
+                pass
+>           assert mocked.call_count == 1
+E           AssertionError: assert 0 == 1
+E            +  where 0 = <MagicMock name='log_experiment_to_notion' id='135805995812560'>.call_count
+
+tests/test_research_logger.py:149: AssertionError
+________________ test_run_logging_no_double_post_on_normal_exit ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-ubuntu/pytest-23/test_run_logging_no_double_pos0')
+
+    def test_run_logging_no_double_post_on_normal_exit(tmp_path: Path) -> None:
+        """A4: 正常終了で finally + atexit が両方走っても、マーカーで 1 回に収束."""
+        manager = _fake_manager(tmp_path / "run7")
+        with patch("egosurgery.utils.notion_logger.log_experiment_to_notion") as mocked:
+            mocked.return_value = {"id": "page-Y"}
+            with run_logging(cfg=None, manager=manager, step="s0"):
+                pass
+            # finally で posted=True になるため、atexit が後で発火しても再投稿しない
+            # ここでは context exit 時点で 1 回のみ呼ばれていることを確認
+>           assert mocked.call_count == 1
+E           AssertionError: assert 0 == 1
+E            +  where 0 = <MagicMock name='log_experiment_to_notion' id='135805995258384'>.call_count
+
+tests/test_research_logger.py:161: AssertionError
+______________ test_run_logging_swallows_exception_in_user_block _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-ubuntu/pytest-23/test_run_logging_swallows_exce0')
+
+    def test_run_logging_swallows_exception_in_user_block(tmp_path: Path) -> None:
+        """ユーザコード例外が出ても finally の log_run は走り、マーカーが書ける."""
+        manager = _fake_manager(tmp_path / "run8")
+        with patch("egosurgery.utils.notion_logger.log_experiment_to_notion") as mocked:
+            mocked.return_value = {"id": "page-Z"}
+            with pytest.raises(ValueError):
+                with run_logging(cfg=None, manager=manager, step="s0"):
+                    raise ValueError("user error")
+>           assert mocked.call_count == 1
+E           AssertionError: assert 0 == 1
+E            +  where 0 = <MagicMock name='log_experiment_to_notion' id='135805874249680'>.call_count
+
+tests/test_research_logger.py:172: AssertionError
+=============================== warnings summary ===============================
+tests/test_models.py::test_dinov2_backbone_forward
+  /home/ubuntu/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+    warnings.warn("xFormers is not available (SwiGLU)")
+
+tests/test_models.py::test_dinov2_backbone_forward
+  /home/ubuntu/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+    warnings.warn("xFormers is not available (Attention)")
+
+tests/test_models.py::test_dinov2_backbone_forward
+  /home/ubuntu/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+    warnings.warn("xFormers is not available (Block)")
+
+tests/test_models.py::test_dinov2_backbone_forward
+  /home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/torch/_utils.py:831: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+    return self.fget.__get__(instance, owner)()
+
+tests/test_models.py::test_build_model_s0
+  /home/ubuntu/slocal2/m2/src/egosurgery/models/heads/mask_dino_head.py:137: RuntimeWarning: Detectron2 / Mask DINO が利用できないため、MaskDINOHead は 無効化されます（forward / predict は None を返します）。
+    warnings.warn(
+
+tests/test_models.py::test_build_model_codetr
+  /home/ubuntu/slocal2/m2/src/egosurgery/models/heads/codetr_head.py:145: RuntimeWarning: CoDETR の構築に失敗したため無効化します: KeyError('CoDETR is not in the mmdet::model registry. Please check whether the value of `CoDETR` is correct or it was registered as expected. More details can be found at https://mmengine.readthedocs.io/en/latest/advanced_tutorials/config.html#import-the-custom-module')
+    warnings.warn(
+
+tests/test_pipeline.py: 14 warnings
+  /home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/wandb/analytics/sentry.py:269: DeprecationWarning: Read the `app_url` setting from the appropriate Settings object.
+    app_url = wandb.util.app_url(tags["base_url"])  # type: ignore[index]
+
+tests/test_pipeline.py::test_stage_a_trainer_setup
+tests/test_pipeline.py::test_stage_a_trainer_one_epoch
+  /home/ubuntu/slocal2/m2/src/egosurgery/engines/stage_a_trainer.py:354: RuntimeWarning: 要求された検出ヘッド 'mask_dino' は本環境で利用できないため、内蔵 SimpleDetectionHead で学習・評価します。
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics - Ass...
+FAILED tests/test_research_logger.py::test_log_run_idempotent - AssertionErro...
+FAILED tests/test_research_logger.py::test_run_logging_invokes_log_run_on_finally
+FAILED tests/test_research_logger.py::test_run_logging_no_double_post_on_normal_exit
+FAILED tests/test_research_logger.py::test_run_logging_swallows_exception_in_user_block
+5 failed, 472 passed, 22 warnings in 13.10s

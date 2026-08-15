@@ -14,6 +14,7 @@
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
 ## 未処理（257 件）
+## 未処理（254 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -272,6 +273,10 @@
 - [ ] 2026-08-15 [cc] oracle_upper_bound_only は上限測定専用で成果として報告してはならない。歯止めは四重: 名にその旨が入る / oracle_upper_bound_acknowledged: true が無いと構築を拒む / docstring と設定に明記 / 結果 JSON に do_not_report の印が残る。教師の無いフレーム（学習側 301 枚実測）には学習側の正例率を渡す。零だと正例率 92.6% の次元で大きく誤り「教師が無い」ことが強く漏れるため。埋め値が 0/1 でないため教師の有無は依然識別可能で、漏れは残る（T-2026-08-15-injection-signal-variants）
 - [ ] 2026-08-15 [cc] make runindex が再生成する決定性監査（runindex/anomalies/）は、スクリプトを足すだけで差分が出る。Phase E の「runindex/ に変更が無いこと」という期待と、Phase D の「make runindex を回せ」という指示は両立しない。forbidden-check が run を作る exp 契約を通せないのと同型で、生成物と無変更検査の境界が契約の雛形で未整理である（T-2026-08-15-injection-signal-variants）
 - [ ] 2026-08-15 [cc] 次の実験の見積もりに要る本番規模の所要時間は UNKNOWN のまま。試走（2 世代・clip 1 本）は 1.49〜1.90 秒、前の実験の既存形は約 7 秒/本。staged は stage1（既定 50 世代）の分が加算されるため、冒頭で 1 本実測してから本数×時間を見積もること（T-2026-08-15-injection-signal-variants）
+- [ ] 2026-08-15 [cc] 学習を決定化した（opt-in、train.deterministic: true）。同じ種なら重みの sha256 まで一致する。支配的な非決定源は cuDNN の畳み込みカーネル選択で、cudnn.deterministic + benchmark=False のみで 50 世代すべて一致した。出荷版は use_deterministic_algorithms(True) + CUBLAS_WORKSPACE_CONFIG も併せ、決定的でない演算は落ちる。減速は 2.15×（6.82 → 14.69 秒/本）。数式不変は CPU 対照で実証（on/off の loss が完全一致）。**次の exp 契約から有効にすべき**（T-2026-08-15-training-determinism）
+- [ ] 2026-08-15 [cc] sweep（#114）の「隣接が相関を生む」仮説は否定された。直す前の隣接実行の σ_d は 0.0074 で一括の 0.0100 と同水準であり、#111 の pstd 0.000823 は n=3 の偶然。**#114 が申し送った隣接実行の再測定は不要**（やっても判定力は戻らない。実測済み）。#111 の負の効果（−0.0044、比 5.345）は見かけの有意であり信じてはならない（T-2026-08-15-training-determinism）
+- [ ] 2026-08-15 [cc] 決定化後も対の差の σ_d は 0.0054519 残る。これは雑音ではなく種×腕の真の交互作用である（seed 42 は +0.009、123/456 は約 −0.002。各測定は厳密で、順序を変えてもビット単位で同一）。検出下限は n=3 で 0.0063、n=10 で 0.0034。0.001 級を見るには種を増やすしかなく、また「平均の差」を主たる終点に置く設計自体の再考（効果の不均一そのものを測る）が要るかもしれない（T-2026-08-15-training-determinism）
+- [ ] 2026-08-15 [cc] 決定化の展開は injection variants 経路のみ。train_s4_tecno.py と検出系（mmdet_trainer.py:501 は deterministic=False 直書き）への展開は別契約。過去の非決定 run と今後の決定化 run は数式は同じだがカーネルが違うため、同じ種でも値が変わる。分母を跨ぐ比較には注意（T-2026-08-15-training-determinism）
 
 ## 処理済み（1 件）
 
