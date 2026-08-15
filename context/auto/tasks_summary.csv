@@ -3,6 +3,7 @@ task_id,kind,status,host,pr,merged,gates_pass,gates_ask,gates_stop,tests_before_
 T-2026-08-11-artifact-merge-and-pause,impl,pass,lecun,81,false,3,0,0,5,5,7,3,4,3,T-2026-08-11-codex-parity
 T-2026-08-11-codex-parity,impl,pass,efros,80,false,3,0,0,5,5,5,4,2,1,T-2026-08-18-report-back-to-ledger
 T-2026-08-11-grasp-linear-probe,analysis,pass,bengio,,false,2,0,0,0,0,6,2,3,3,T-2026-08-11-hts-comparability-audit
+T-2026-08-11-grasp-inference-injection-impl,impl,pass,lecun,105,false,3,0,0,5,5,4,2,2,2,T-2026-08-11-hts-comparability-audit
 T-2026-08-11-hts-comparability-audit,analysis,pass,lecun,79,false,2,0,0,5,5,4,3,7,4,T-2026-08-11-split-and-recipe-audit
 T-2026-08-11-issuer-defect-detector,impl,pass,lecun,82,false,3,0,0,5,5,8,4,6,4,T-2026-08-11-artifact-merge-and-pause
 T-2026-08-11-make-task-start,impl,pass,lecun,77,false,2,0,0,5,5,7,3,5,4,
@@ -14,12 +15,15 @@ T-2026-08-12-ilya-hub-feasibility,analysis,pass,aolab,93,false,2,0,0,0,0,3,1,3,3
 T-2026-08-12-register-hub-keys,impl,pass,lecun,98,false,2,0,0,0,0,3,2,3,2,T-2026-08-12-submit-hub-key-andrew
 T-2026-08-12-submit-hub-key-andrew,impl,pass,andrew,97,false,2,0,0,0,0,4,3,3,0,T-2026-08-12-hub-from-marker
 T-2026-08-12-submit-hub-key-ilya,impl,pass,aolab,96,false,2,0,0,0,0,3,2,2,2,T-2026-08-12-hub-from-marker
+T-2026-08-12-sync-audit-andrew,analysis,pass,Andrew,,false,3,0,0,0,0,6,4,7,5,
 T-2026-08-12-sync-audit-bengio,analysis,pass,bengio,,false,3,0,0,7,7,5,4,6,7,
 T-2026-08-12-sync-audit-efros,analysis,pass,efros,,false,3,0,0,7,7,7,3,8,5,
 T-2026-08-12-sync-audit-lecun,analysis,pass,lecun,,false,3,0,0,5,5,9,4,5,4,
 T-2026-08-12-tooling-defect-fixes,impl,pass,efros,92,false,3,0,0,7,5,2,2,1,0,T-2026-08-12-tunnel-key-audit-efros
+T-2026-08-12-tunnel-key-audit-andrew,analysis,pass,Andrew,,false,2,0,0,0,0,4,2,6,5,T-2026-08-12-sync-audit-andrew
 T-2026-08-12-tunnel-key-audit-bengio,analysis,pass,bengio,,false,2,0,0,7,7,6,3,6,7,T-2026-08-12-sync-audit-bengio
 T-2026-08-12-tunnel-key-audit-lecun,analysis,pass,lecun,,false,2,0,0,5,5,8,5,6,5,T-2026-08-12-sync-audit-lecun
+T-2026-08-13-andrew-lecun-sync-cutover,impl,pass,Andrew,106,false,5,0,0,0,0,3,1,0,2,T-2026-08-12-register-hub-keys T-2026-08-13-hub-deploy-lecun-marker-cutover
 T-2026-08-13-bengio-canary-lecun-cutover,impl,stopped,bengio,102,false,0,0,1,0,0,2,0,2,4,T-2026-08-13-hub-role-and-restart T-2026-08-13-hub-deploy-lecun-marker-cutover
 T-2026-08-13-bengio-lecun-deadman-cutover,impl,stopped,Bengio,103,false,0,0,1,0,0,2,2,2,3,T-2026-08-13-bengio-canary-lecun-cutover
 T-2026-08-13-bengio-lecun-zmx-deadman-cutover,impl,stopped,Bengio,104,false,0,0,1,0,0,2,0,2,3,T-2026-08-13-bengio-lecun-deadman-cutover

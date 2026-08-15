@@ -1,0 +1,84 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-08-13-andrew-lecun-sync-cutover"
+  kind: impl
+  title: "andrewを優先してlecun中心のSyncthing一般ノードとして稼働させる"
+  origin: human
+  created_at: "2026-08-13T14:07:08Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-12-register-hub-keys", "T-2026-08-13-hub-deploy-lecun-marker-cutover"]
+  amendments: []
+intent:
+  question: "lecunに登録済みのandrew専用中継鍵と動的keeperを使い、旧philip経路を可逆的にlecun経路へ切り替えると、Syncthingを再起動せず双方向同期を安定稼働させられるか"
+  decision_at_stake: "andrewをlecun中心の最初の稼働一般ノードとして確定し次のilyaへ進むか、andrewだけを旧状態へ自動復旧して移行手順を直すか"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/sync/keeper.sh"
+      - "scripts/sync/m2-sync.sh"
+      - "tasks/T-2026-08-12-sync-audit-andrew/RESULT.md"
+      - "tasks/T-2026-08-12-sync-audit-andrew/inventory.tsv"
+      - "tasks/T-2026-08-12-tunnel-key-audit-andrew/RESULT.md"
+      - "tasks/T-2026-08-12-submit-hub-key-andrew/RESULT.md"
+      - "tasks/T-2026-08-12-register-hub-keys/RESULT.md"
+      - "tasks/T-2026-08-13-hub-deploy-lecun-marker-cutover/RESULT.md"
+      - "tasks/T-2026-08-13-bengio-canary-lecun-cutover/canary_probe.py"
+      - "tasks/T-2026-08-13-bengio-canary-lecun-cutover/center_probe.py"
+      - "tasks/T-2026-08-13-bengio-canary-lecun-cutover/syncthing_route.py"
+      - "tasks/T-2026-08-13-bengio-canary-lecun-cutover/rollback_canary.py"
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "783657a"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_runindex_hand_edit, no_estimated_values]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "依存、鍵、中心、andrew旧状態の読み取りpreflight", gpu: false, est: "35m"}
+    - {id: B, name: "局所backupとscoped rollback guardの隔離実証", gpu: false, est: "45m"}
+    - {id: C, name: "marker、中継、二device address、keeperの一体切替", gpu: false, est: "30m"}
+    - {id: D, name: "双方向probeと一周期の安定性観測", gpu: false, est: "40m"}
+    - {id: E, name: "検証、結果記録、分岐送出、台帳返送", gpu: false, est: "35m"}
+  gates:
+    - {id: G1, after: A, check: "依存task、lecun中心、andrewからの厳密認証、旧状態または既達成状態、Syncthing経路、局所差分保護が全て実測された", on_fail: stop}
+    - {id: G2, after: B, check: "開始状態の控えが一致し、scopeを契約専用processへ限定したguardのlease失効、成功token、二重実行の隔離試験が働いた", on_fail: stop}
+    - {id: G3, after: C, check: "marker、中継、localhost address、keeperがlecunだけを指し、旧philip経路が零件でSyncthingのprocess identityが不変だった", on_fail: stop}
+    - {id: G4, after: D, check: "二方向の専用probeがbytesとSHA-256で一致し、一周期後もlecun接続と同じprocess identityを保った", on_fail: stop}
+    - {id: G5, after: E, check: "最終検査、結果、guard解除、PR情報、同期抑止解除、台帳返送が完了した", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md, result.yaml, cutover-audit.md, andrew_probe.py, center_probe.py, syncthing_route.py, rollback_guard.py, guarded_cutover.py]
+  destination: "tasks/T-2026-08-13-andrew-lecun-sync-cutover/"
+  acceptance:
+    - "lecun中心とandrewの専用鍵認証を既存のknown_hostsへ書かずに確認し、鍵指紋を過去の提出と登録結果へ照合する"
+    - "andrewのmarker、keeper、Syncthing二device、known_hosts、process、listener、局所差分を変更前に控える"
+    - "旧状態と既達成状態を区別し、混在状態、複数marker、複数中継、想定外device対応では変更前に停止する"
+    - "guardは本契約が起動したprocessと封印済みstateだけを扱い、zmx、sshd、PID一、他task processを計数も変更もしない"
+    - "旧keeperと旧中継を再同定した数値PID一件ずつへTERMし、それ以外へsignalを送らない"
+    - "localhost addressをphilip deviceからlecun deviceへ一件だけ移し、他のdevice属性、folder、共有、ignoreを不変にする"
+    - "動的keeperをphase0のGit objectからatomic配置し、Syncthingを停止または再起動せずlecun向け中継を一件稼働させる"
+    - "andrewとlecunで二方向の専用probeを保持し、bytesとSHA-256、接続先、restart不要を一周期隔てて再確認する"
+    - "失敗時はandrewだけを開始時marker、keeper、known_hosts、二device addressへ復旧し、局所差分backupを保持する"
+    - "分岐を送出して非Draft PRを作り、番号、base、head、upstream、ahead、guard結果、同期抑止解除を完了報告へ記録する"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "andrew専用鍵でlecunへBatchMode認証できない、または過去指紋と一致しない場合"
+    - "lecunがmarker無し中心、keeper施錠、Syncthing稼働、同期待受の状態でない場合"
+    - "andrewが旧状態または既達成状態のどちらにも分類できない場合"
+    - "局所差分の可逆backupに必要な空き容量を確保できない場合"
+    - "guardのreadyとarmed、隔離rollback、state要約、lease反転のいずれかが成立しない場合"
+    - "Syncthingがrestart必要を返す、process identityが変わる、またはgranular RESTが利用できない場合"
+    - "二方向probe、lecun device接続、旧philip経路零件、一周期安定性のいずれかが成立しない場合"
+    - "TERMで対象PIDが消えず、より強いsignalが必要な場合"

@@ -1,0 +1,1 @@
+- [ ] 2026-08-13 [cx] 独立把持枝・ctrl零信号・neck無しで実装済み。次はneck無しS4分母に対するctrl/inj各3 seedの事前登録効果実験を起票する（T-2026-08-11-grasp-inference-injection-impl）
