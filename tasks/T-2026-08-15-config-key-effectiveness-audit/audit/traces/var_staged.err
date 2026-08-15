@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "/home/ubuntu/slocal2/m2/tasks/T-2026-08-15-config-key-effectiveness-audit/audit/trace_reads.py", line 107, in main
+    runpy.run_path(script, run_name="__main__")
+  File "<frozen runpy>", line 291, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/ubuntu/slocal2/m2/scripts/train_grasp_phase_injection_variants.py", line 338, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/ubuntu/slocal2/m2/scripts/train_grasp_phase_injection_variants.py", line 332, in main
+    result = train(cfg, output_dir=output_dir, smoke=args.smoke)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/slocal2/m2/scripts/train_grasp_phase_injection_variants.py", line 209, in train
+    raise ValueError(
+ValueError: smoke stage-1 epochs must be <= 2, got 50

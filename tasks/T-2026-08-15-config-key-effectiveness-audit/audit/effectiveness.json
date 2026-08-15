@@ -1,0 +1,506 @@
+{
+  "noise_floor": {
+    "original": {
+      "config": "tasks/T-2026-08-15-grasp-injection-effect/audit/run_inj.yaml",
+      "run_a_ok": true,
+      "run_b_ok": true,
+      "max_abs_diff": 0.0,
+      "n_changed": 0,
+      "n_fields": 18
+    },
+    "variants": {
+      "config": "tasks/T-2026-08-15-injection-form-sweep/audit/configs/s4_grasp_injection_inj.yaml",
+      "run_a_ok": true,
+      "run_b_ok": true,
+      "max_abs_diff": 0.0,
+      "n_changed": 0,
+      "n_fields": 18
+    }
+  },
+  "results": {
+    "original": {
+      "frozen_source.detector": {
+        "prior_class": "unread",
+        "from": "relation_detr",
+        "to": "align_detr",
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "frozen_source.checkpoint": {
+        "prior_class": "unread",
+        "from": "third_party/Relation-DETR/checkpoints/incoming/seed42/best_ap.pth",
+        "to": "third_party/NOPE/does_not_exist.pth",
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "frozen_source.seed": {
+        "prior_class": "unread",
+        "from": 42,
+        "to": 999,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "frozen_source.cache_dir": {
+        "prior_class": "unread",
+        "from": "data/processed/stage1_features/relation_detr_seed42",
+        "to": "data/processed/NOPE",
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "eval_recipe.protocol_source": {
+        "prior_class": "unread",
+        "from": "PHASE_EVAL_PROTOCOL",
+        "to": "BOGUS_PROTOCOL",
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "eval_recipe.inference_protocol": {
+        "prior_class": "unread",
+        "from": "online_causal",
+        "to": "offline_full",
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "eval_recipe.jaccard_mode": {
+        "prior_class": "unread",
+        "from": "strict",
+        "to": "relaxed",
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "model.component": {
+        "prior_class": "unread",
+        "from": "grasp_phase_injection",
+        "to": "bogus_component",
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "train.batch_size": {
+        "prior_class": "unread",
+        "from": 1,
+        "to": 64,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "train.freeze_backbone": {
+        "prior_class": "unread",
+        "from": true,
+        "to": false,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "data.population.test": {
+        "prior_class": "unread",
+        "from": 4265,
+        "to": 1,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "experiment.category": {
+        "prior_class": "unread",
+        "from": "phase1",
+        "to": "bogus_category",
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "experiment.step": {
+        "prior_class": "unread",
+        "from": "s4_grasp_injection",
+        "to": "s9_bogus",
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "logging.wandb_project": {
+        "prior_class": "unread",
+        "from": "egosurgery_multitask",
+        "to": "bogus_project",
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "grasp_inference.signal": {
+        "prior_class": "entrypoint_dependent",
+        "from": "predicted_sigmoid",
+        "to": "raw_logits",
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "grasp_inference.detach_from_phase_loss": {
+        "prior_class": "unknown",
+        "from": true,
+        "to": false,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "model.temporal.num_stages": {
+        "prior_class": "unknown",
+        "from": 2,
+        "to": 1,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 2.240973472595215,
+        "n_changed": 6,
+        "n_fields": 18
+      },
+      "model.temporal.num_layers": {
+        "prior_class": "unknown",
+        "from": 8,
+        "to": 4,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.3251919050942079,
+        "n_changed": 7,
+        "n_fields": 18
+      },
+      "model.temporal.num_f_maps": {
+        "prior_class": "unknown",
+        "from": 64,
+        "to": 32,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 3.9999999999999982,
+        "n_changed": 4,
+        "n_fields": 18
+      },
+      "model.temporal.dropout": {
+        "prior_class": "unknown",
+        "from": 0.5,
+        "to": 0.1,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.03679227828979492,
+        "n_changed": 1,
+        "n_fields": 18
+      },
+      "train.lr": {
+        "prior_class": "read",
+        "from": 0.0005,
+        "to": 0.005,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.5502793349679456,
+        "n_changed": 8,
+        "n_fields": 18
+      },
+      "train.smoothing_weight": {
+        "prior_class": "read",
+        "from": 0.15,
+        "to": 0.9,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.07361006736755371,
+        "n_changed": 1,
+        "n_fields": 18
+      },
+      "grasp_inference.hidden_dim": {
+        "prior_class": "read",
+        "from": 64,
+        "to": 32,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.30844382414515004,
+        "n_changed": 9,
+        "n_fields": 18
+      },
+      "seed": {
+        "prior_class": "read",
+        "from": 42,
+        "to": 43,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 14.499999999999998,
+        "n_changed": 13,
+        "n_fields": 18
+      }
+    },
+    "variants": {
+      "frozen_source.detector": {
+        "prior_class": "unread",
+        "from": "relation_detr",
+        "to": "align_detr",
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "frozen_source.checkpoint": {
+        "prior_class": "unread",
+        "from": "third_party/Relation-DETR/checkpoints/incoming/seed42/best_ap.pth",
+        "to": "third_party/NOPE/does_not_exist.pth",
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "frozen_source.seed": {
+        "prior_class": "unread",
+        "from": 42,
+        "to": 999,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "frozen_source.cache_dir": {
+        "prior_class": "unread",
+        "from": "data/processed/stage1_features/relation_detr_seed42",
+        "to": "data/processed/NOPE",
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "eval_recipe.protocol_source": {
+        "prior_class": "unread",
+        "from": "PHASE_EVAL_PROTOCOL",
+        "to": "BOGUS_PROTOCOL",
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "eval_recipe.inference_protocol": {
+        "prior_class": "unread",
+        "from": "online_causal",
+        "to": "offline_full",
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "eval_recipe.jaccard_mode": {
+        "prior_class": "unread",
+        "from": "strict",
+        "to": "relaxed",
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "model.component": {
+        "prior_class": "unread",
+        "from": "grasp_phase_injection",
+        "to": "bogus_component",
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "train.batch_size": {
+        "prior_class": "unread",
+        "from": 1,
+        "to": 64,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "train.freeze_backbone": {
+        "prior_class": "unread",
+        "from": true,
+        "to": false,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "data.population.test": {
+        "prior_class": "unread",
+        "from": 4265,
+        "to": 1,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "experiment.category": {
+        "prior_class": "unread",
+        "from": "phase1",
+        "to": "bogus_category",
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "experiment.step": {
+        "prior_class": "unread",
+        "from": "s4_grasp_injection",
+        "to": "s9_bogus",
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "logging.wandb_project": {
+        "prior_class": "unread",
+        "from": "egosurgery_multitask",
+        "to": "bogus_project",
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "grasp_inference.signal": {
+        "prior_class": "entrypoint_dependent",
+        "from": "predicted_sigmoid",
+        "to": "raw_logits",
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0014123916625976562,
+        "n_changed": 1,
+        "n_fields": 18
+      },
+      "grasp_inference.detach_from_phase_loss": {
+        "prior_class": "unknown",
+        "from": true,
+        "to": false,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.0,
+        "n_changed": 0,
+        "n_fields": 18
+      },
+      "model.temporal.num_stages": {
+        "prior_class": "unknown",
+        "from": 2,
+        "to": 1,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 2.240973472595215,
+        "n_changed": 6,
+        "n_fields": 18
+      },
+      "model.temporal.num_layers": {
+        "prior_class": "unknown",
+        "from": 8,
+        "to": 4,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.3251919050942079,
+        "n_changed": 7,
+        "n_fields": 18
+      },
+      "model.temporal.num_f_maps": {
+        "prior_class": "unknown",
+        "from": 64,
+        "to": 32,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 3.9999999999999982,
+        "n_changed": 4,
+        "n_fields": 18
+      },
+      "model.temporal.dropout": {
+        "prior_class": "unknown",
+        "from": 0.5,
+        "to": 0.1,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.03679227828979492,
+        "n_changed": 1,
+        "n_fields": 18
+      },
+      "train.lr": {
+        "prior_class": "read",
+        "from": 0.0005,
+        "to": 0.005,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.5502793349679456,
+        "n_changed": 8,
+        "n_fields": 18
+      },
+      "train.smoothing_weight": {
+        "prior_class": "read",
+        "from": 0.15,
+        "to": 0.9,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.07361006736755371,
+        "n_changed": 1,
+        "n_fields": 18
+      },
+      "grasp_inference.hidden_dim": {
+        "prior_class": "read",
+        "from": 64,
+        "to": 32,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 0.30844382414515004,
+        "n_changed": 9,
+        "n_fields": 18
+      },
+      "seed": {
+        "prior_class": "read",
+        "from": 42,
+        "to": 43,
+        "run_ok": true,
+        "failure": null,
+        "max_abs_diff": 14.499999999999998,
+        "n_changed": 13,
+        "n_fields": 18
+      }
+    }
+  }
+}
