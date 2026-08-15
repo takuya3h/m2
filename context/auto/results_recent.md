@@ -144,7 +144,7 @@
 
 ## T-2026-08-15-grasp-head-degeneracy-audit
 
-状態 `pass` / ホスト `andrew` / 起票 `なし` / 様式 `v3`
+状態 `pass` / ホスト `andrew` / 起票 `112` / 様式 `v3`
 
 ### ゲート
 
