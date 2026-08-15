@@ -1,0 +1,61 @@
+{
+  "task_id": "T-2026-08-15-injection-form-sweep",
+  "seeds": [
+    42,
+    123,
+    456,
+    7,
+    89,
+    101,
+    202,
+    303,
+    404,
+    505
+  ],
+  "seeds_note": "既存の基準点と前の実験の三つ（42/123/456）を含む十個。走らせる前に固定",
+  "arms": {
+    "ctrl": {
+      "config": "tasks/T-2026-08-15-injection-form-sweep/audit/configs/s4_grasp_injection_ctrl.yaml",
+      "source": "configs/stage/s4_grasp_injection_ctrl.yaml",
+      "description": "frozen_tecno_grasp_inference_ctrl",
+      "signal": "zeros",
+      "staged": false
+    },
+    "inferred": {
+      "config": "tasks/T-2026-08-15-injection-form-sweep/audit/configs/s4_grasp_injection_inj.yaml",
+      "source": "configs/stage/s4_grasp_injection_inj.yaml",
+      "description": "frozen_tecno_grasp_inference_inj",
+      "signal": "predicted_sigmoid",
+      "staged": false
+    },
+    "raw_logits": {
+      "config": "tasks/T-2026-08-15-injection-form-sweep/audit/configs/s4_grasp_injection_raw_logits.yaml",
+      "source": "configs/stage/s4_grasp_injection_raw_logits.yaml",
+      "description": "frozen_tecno_grasp_inference_inj_rawlogits",
+      "signal": "raw_logits",
+      "staged": false
+    },
+    "standardized": {
+      "config": "tasks/T-2026-08-15-injection-form-sweep/audit/configs/s4_grasp_injection_standardized.yaml",
+      "source": "configs/stage/s4_grasp_injection_standardized.yaml",
+      "description": "frozen_tecno_grasp_inference_inj_standardized",
+      "signal": "standardized",
+      "staged": false
+    },
+    "oracle": {
+      "config": "tasks/T-2026-08-15-injection-form-sweep/audit/configs/s4_grasp_injection_oracle_upper_bound_only.yaml",
+      "source": "configs/stage/s4_grasp_injection_oracle_upper_bound_only.yaml",
+      "description": "frozen_tecno_grasp_inference_inj_oracle_upper_bound_only",
+      "signal": "oracle_upper_bound_only",
+      "staged": false
+    },
+    "staged": {
+      "config": "tasks/T-2026-08-15-injection-form-sweep/audit/configs/s4_grasp_injection_staged.yaml",
+      "source": "configs/stage/s4_grasp_injection_staged.yaml",
+      "description": "frozen_tecno_grasp_inference_inj_staged",
+      "signal": "predicted_sigmoid",
+      "staged": true
+    }
+  },
+  "n_runs_planned": 60
+}
