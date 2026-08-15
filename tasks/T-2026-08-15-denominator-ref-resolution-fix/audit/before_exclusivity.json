@@ -1,0 +1,45 @@
+{
+  "two_segment": {
+    "ref": "exp:phase1/s4_phase_baseline",
+    "l1_findings": [],
+    "l2_findings": [
+      {
+        "check": "L2-2",
+        "path": "inputs.denominator.ref",
+        "message": "experiments.csv に phase1/s4_phase_baseline がありません"
+      }
+    ],
+    "l1_passes": true,
+    "l2_passes": false,
+    "has_L1_4": false,
+    "has_L2_2": true
+  },
+  "full_form": {
+    "ref": "exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42",
+    "l1_findings": [
+      {
+        "check": "L1-1",
+        "path": "inputs.denominator.ref",
+        "message": "'exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42' does not match '^exp:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?![\\\\s\\\\S])'"
+      },
+      {
+        "check": "L1-4",
+        "path": "inputs.denominator.ref",
+        "message": "exp:<group>/<experiment_id> の形式が必要です"
+      }
+    ],
+    "l2_findings": [
+      {
+        "check": "L2-2",
+        "path": "inputs.denominator.ref",
+        "message": "experiments.csv に phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42 がありません"
+      }
+    ],
+    "l1_passes": false,
+    "l2_passes": false,
+    "has_L1_4": true,
+    "has_L2_2": true
+  },
+  "exclusive": true,
+  "full_form_passes_both": false
+}

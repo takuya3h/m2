@@ -6,6 +6,7 @@ from validate_task import (  # noqa: E402
     resolve_sigma_policy,
     task_id_conflicts,
     validate_l1,
+    validate_l2,
 )
 
 
@@ -108,7 +109,8 @@ def test_pipe_in_gate_check_fails():
 def test_pipe_outside_table_fields_is_warning_only():
     spec = _minimal_impl_spec()
     spec["meta"]["kind"] = "exp"
-    spec["inputs"]["denominator"] = {"ref": "exp:transfer/s4_base_tecno", "metric": "accuracy"}
+    # 文法は識別子の完全形を要求する（REAL_DENOMINATOR_REF は下で定義している）。
+    spec["inputs"]["denominator"] = {"ref": REAL_DENOMINATOR_REF, "metric": "accuracy"}
     spec["outputs"]["expected_runs"] = 6
     spec["outputs"]["stamp"] = {"task_id_in": "config.yaml"}
     spec["prereg"] = {
@@ -127,7 +129,8 @@ def test_pipe_outside_table_fields_is_warning_only():
 def test_abs_notation_decision_rule_passes():
     spec = _minimal_impl_spec()
     spec["meta"]["kind"] = "exp"
-    spec["inputs"]["denominator"] = {"ref": "exp:transfer/s4_base_tecno", "metric": "accuracy"}
+    # 文法は識別子の完全形を要求する（REAL_DENOMINATOR_REF は下で定義している）。
+    spec["inputs"]["denominator"] = {"ref": REAL_DENOMINATOR_REF, "metric": "accuracy"}
     spec["outputs"]["expected_runs"] = 6
     spec["outputs"]["stamp"] = {"task_id_in": "config.yaml"}
     spec["prereg"] = {
@@ -415,3 +418,109 @@ def test_v2_ignores_indented_example_table(tmp_path):
     )
     findings = validate_spec_md({"spec_version": 2}, _spec_md(tmp_path, body))
     assert [f.check for f in findings] == ["L1-9"], "例示を拾って本物を検査していない"
+
+
+# --------------------------------------------------------------------------
+# 第二層 — 分母の参照の解決
+#
+# **これらの試験は索引の実データに依存する。** 下の識別子が
+# `runindex/experiments.csv` から消えれば落ちる。索引が変われば試験も変わる。
+# 依存を隠すと、落ちたときに実装と索引のどちらが原因かを切り分けられない。
+#
+# 第二層の試験は長らくゼロであった。そのため「第一層を通る参照は第二層で必ず落ちる」
+# という排他が、導入時から誰にも気づかれずに残った。ここで固定する。
+# --------------------------------------------------------------------------
+
+# 実在する識別子の完全形（group=phase1 / step=s4_phase_baseline / 種は 3 本）。
+REAL_DENOMINATOR_REF = (
+    "exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42"
+)
+# 同じ群と段を指すが段までしか書かない旧い書式。**今回の回帰そのもの。**
+LEGACY_TWO_SEGMENT_REF = "exp:phase1/s4_phase_baseline"
+
+
+def _exp_spec_with_denominator(ref: str, require: dict | None = None) -> dict:
+    """分母を持つ exp の spec。**分母以外では指摘が出ない形**にしてある。"""
+    spec = _minimal_impl_spec()
+    spec["meta"]["kind"] = "exp"
+    denominator = {"ref": ref, "metric": "macro_f1"}
+    if require is not None:
+        denominator["require"] = require
+    spec["inputs"]["denominator"] = denominator
+    spec["outputs"]["expected_runs"] = 6
+    spec["outputs"]["stamp"] = {"task_id_in": "config.yaml"}
+    spec["prereg"] = {
+        "prediction": "非飽和域では正の差が出る",
+        "primary_endpoint": "macro_f1",
+        "decision_rule": "abs(delta) / sigma >= 1 かつ 全 seed 同符号",
+        "stop_conditions": ["G1 不通過"],
+        "committed_at": None,
+        "commit": None,
+    }
+    return spec
+
+
+def _l2_checks(spec: dict) -> set:
+    return {finding.check for finding in validate_l2(spec)}
+
+
+def test_l2_resolves_real_full_experiment_id():
+    """実在する完全形の参照が第二層を通る。
+
+    参照から群を剥ぎ取ると、群を先頭に含む識別子の列とは決して一致しない。
+    剥ぎ取りが戻れば、この試験が落ちる。
+    """
+    findings = validate_l2(_exp_spec_with_denominator(REAL_DENOMINATOR_REF))
+    hard = [f for f in findings if not f.check.endswith("W")]
+    assert "L2-2" not in {f.check for f in findings}, [str(f) for f in findings]
+    assert hard == [], [str(f) for f in hard]
+
+
+def test_l2_rejects_nonexistent_experiment_id():
+    """実在しない参照は落ちる。**通ることだけを確かめると空振りに気づけない。**"""
+    ref = "exp:phase1/s4_phase_baseline/no_such_description@val~no_such_recipe"
+    assert "L2-2" in _l2_checks(_exp_spec_with_denominator(ref))
+
+
+def test_l2_rejects_legacy_two_segment_ref():
+    """段までしか書かない旧い書式は、**第一層と第二層の双方で**落ちる。
+
+    群と段の組は一意ではない（実測で 6 組・41 行、最多の組は候補 10 件）。
+    通してしまうと実装は先頭の候補を黙って採り、**分母が静かにずれる。**
+
+    第二層だけを見ても足りない。直す前の実装は**どんな参照でも**第二層で落ちたため、
+    第二層の指摘だけでは直す前と直した後を区別できない。区別が付くのは第一層である。
+    直す前はこの書式が第一層を通っていた（それが排他の片側であった）。
+    """
+    spec = _exp_spec_with_denominator(LEGACY_TWO_SEGMENT_REF)
+    assert "L1-4" in _ids(validate_l1(spec, dir_name="T-2026-08-03-example-task"))
+    assert "L2-2" in _l2_checks(spec)
+
+
+def test_l1_accepts_full_form_and_rejects_missing_segment():
+    """第一層は完全形を受け、区画の欠けを拒む。"""
+    ok = validate_l1(
+        _exp_spec_with_denominator(REAL_DENOMINATOR_REF), dir_name="T-2026-08-03-example-task"
+    )
+    assert "L1-4" not in _ids(ok), _ids(ok)
+    assert _hard(ok) == [], [str(f) for f in _hard(ok)]
+
+    # 分割の区画が無い（`@` から先が欠けている）。
+    missing = validate_l1(
+        _exp_spec_with_denominator("exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline"),
+        dir_name="T-2026-08-03-example-task",
+    )
+    assert "L1-4" in _ids(missing), _ids(missing)
+
+
+def test_l2_reads_seed_count_from_resolved_row():
+    """確定した一行から種の数が読める。
+
+    要求を満たす側と満たさない側の双方を見る。**片側だけでは、読めていない場合と
+    区別できない。** 参照した行の種は 3 本である。
+    """
+    satisfied = _l2_checks(_exp_spec_with_denominator(REAL_DENOMINATOR_REF, {"n_seeds": ">=3"}))
+    assert "L2-3" not in satisfied, satisfied
+
+    unsatisfied = _l2_checks(_exp_spec_with_denominator(REAL_DENOMINATOR_REF, {"n_seeds": ">=4"}))
+    assert "L2-3" in unsatisfied, unsatisfied

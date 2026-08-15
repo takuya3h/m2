@@ -1,0 +1,69 @@
+spec_version: 1
+meta:
+  task_id: "T-2026-08-15-denominator-ref-resolution-fix"
+  kind: impl
+  title: "分母の参照が原理的に解決できない欠陥を直し、試験を置く"
+  origin: claude-app
+  created_at: "2026-08-15T07:00:00Z"
+  created_from:
+    runindex_commit: "44697d9"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: []
+  amendments: []
+intent:
+  question: "分母の参照を、索引の実験の識別子と一意に対応づけられる形へ直せるか。直したうえで、旧い書式が落ちることと新しい書式が通ることを試験で固定できるか"
+  decision_at_stake: "実験の契約が一つも起票できない状態を解く。解かなければ、把持の推論結果を工程へ渡す本命の実験も、それ以外のあらゆる実験の契約も出せない"
+  related:
+    backlog: ["BL-harvester-scan-is-host-dependent"]
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "tools/validate_task.py"
+      - "tasks/_schema/spec.schema.json"
+      - "tests/test_validate_task.py"
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "現状を実測で確定する", gpu: false, est: "40m"}
+    - {id: B, name: "参照の解決と文法を直す", gpu: false, est: "50m"}
+    - {id: C, name: "試験を置き、旧書式が落ちることを示す", gpu: false, est: "50m"}
+    - {id: D, name: "総括と受け皿への起票", gpu: false, est: "20m"}
+  gates:
+    - id: G1
+      after: A
+      check: "直す前の時点で、実在する識別子が第一層を一つも通らないことと、第二層が必ず落ちることを実測で示した"
+      on_fail: stop
+    - id: G2
+      after: C
+      check: "新しい書式が通り、旧い二区画の書式が落ちることを、実際に走らせて双方確かめた"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md]
+  destination: "tools/"
+  acceptance:
+    - "実在する実験の識別子が、直した後の文法をすべて通ることが実測で示されている"
+    - "直した後に、実在する識別子で第二層が通り、実在しない識別子と旧い書式では落ちることが示されている"
+    - "新しく置いた試験が、直す前の実装に対しては落ちることが示されている"
+    - "収穫器と索引を変更していないことが差分で示されている"
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "実在する識別子のうち、一つの文法では表しきれないものがあると判明した場合"
+    - "参照の記号が他の種別の参照と衝突し、種別ごとに解釈を分けなければ直せないと判明した場合"

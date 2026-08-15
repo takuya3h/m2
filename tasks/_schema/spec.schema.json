@@ -86,7 +86,7 @@
           "required": ["ref", "metric"],
           "additionalProperties": false,
           "properties": {
-            "ref": { "type": "string", "pattern": "^exp:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?![\\s\\S])" },
+            "ref": { "type": "string", "pattern": "^exp:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[A-Za-z0-9_.-]+(?:~[A-Za-z0-9_.-]+|#[A-Za-z0-9_.-]+)?(?![\\s\\S])" },
             "metric": { "type": "string" },
             "require": {
               "type": "object",

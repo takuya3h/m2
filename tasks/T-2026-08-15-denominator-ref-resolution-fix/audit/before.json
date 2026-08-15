@@ -1,0 +1,106 @@
+{
+  "source": {
+    "experiments_csv": "runindex/experiments.csv",
+    "schema": "tasks/_schema/spec.schema.json",
+    "validator": "tools/validate_task.py"
+  },
+  "grammar_before": {
+    "schema_pattern": "^exp:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?![\\s\\S])",
+    "validator_pattern": "exp:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+",
+    "are_two_independent_sites": true
+  },
+  "counts": {
+    "identifiers_total": 207,
+    "separator_count_2": 207,
+    "identifier_equals_step": 0,
+    "passes_grammar_before_schema": 0,
+    "passes_grammar_before_validator": 0,
+    "ambiguous_group_step_pairs": 6,
+    "ambiguous_rows": 41,
+    "target_candidates": 10
+  },
+  "identifier_prefix_equals_group": 207,
+  "separator_dialects": {
+    "tilde": 146,
+    "hash": 4,
+    "both": 0,
+    "neither": 57,
+    "hash_identifiers": [
+      "baselines/s0/maskdino_bbox@val#None",
+      "baselines/s0/maskdino_bbox@val#a63aecae",
+      "baselines/s0/varifocanet_bbox@val#None",
+      "baselines/s0/varifocanet_bbox@val#a63aecae"
+    ]
+  },
+  "ambiguous_detail": {
+    "_smoke_prior/s0": [
+      "_smoke_prior/s0/maskdino_bbox@val",
+      "_smoke_prior/s0/varifocanet_bbox@val"
+    ],
+    "baselines/s0": [
+      "baselines/s0/aligndetr_bbox@val",
+      "baselines/s0/codetr_bbox@val",
+      "baselines/s0/dacdetr_bbox@val",
+      "baselines/s0/ddq_bbox@val",
+      "baselines/s0/ddq_smoke@val",
+      "baselines/s0/dimaskdino_bbox@val",
+      "baselines/s0/focusdetr_bbox@val",
+      "baselines/s0/maskdino_bbox@val#None",
+      "baselines/s0/maskdino_bbox@val#a63aecae",
+      "baselines/s0/maskdino_bbox_nmsfree@val",
+      "baselines/s0/mrdetralign_bbox@val",
+      "baselines/s0/mrdetrdino_bbox@val",
+      "baselines/s0/relationdetr_bbox@val",
+      "baselines/s0/sensex_codino_bbox@val",
+      "baselines/s0/stabledino_bbox@val",
+      "baselines/s0/varifocanet_bbox@val#None",
+      "baselines/s0/varifocanet_bbox@val#a63aecae",
+      "baselines/s0/wiring_verification@val"
+    ],
+    "baselines/s0_frozen": [
+      "baselines/s0_frozen/relationdetr_s0frozen_cocohead@val",
+      "baselines/s0_frozen/relationdetr_s0frozen_neck_cocohead@val"
+    ],
+    "phase1/s4_phase_baseline": [
+      "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_augstrong_hires_seed42",
+      "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_augstrong_seed123",
+      "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_augstrong_seed42",
+      "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_augstrong_seed456",
+      "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed123",
+      "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42",
+      "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed456",
+      "phase1/s4_phase_baseline/frozen_tecno_phase_baseline_aligndetr@val~aligndetr_seed42",
+      "phase1/s4_phase_baseline/frozen_tecno_phase_baseline_neck@val~relation_detr_seed42",
+      "phase1/s4_phase_baseline/frozen_tecno_phase_necktransfer@val~relation_detr_seed42"
+    ],
+    "transfer/b1_mtl": [
+      "transfer/b1_mtl/b1_naive_mtl_fixed@val",
+      "transfer/b1_mtl/b1_naive_mtl_uncertainty@val"
+    ],
+    "transfer/b2a_det2phase_toolpresence": [
+      "transfer/b2a_det2phase_toolpresence/b2a_det2phase_toolpresence@val~relation_detr_augstrong_hires_seed42",
+      "transfer/b2a_det2phase_toolpresence/b2a_det2phase_toolpresence@val~relation_detr_augstrong_seed123",
+      "transfer/b2a_det2phase_toolpresence/b2a_det2phase_toolpresence@val~relation_detr_augstrong_seed42",
+      "transfer/b2a_det2phase_toolpresence/b2a_det2phase_toolpresence@val~relation_detr_augstrong_seed456",
+      "transfer/b2a_det2phase_toolpresence/b2a_det2phase_toolpresence@val~relation_detr_seed123",
+      "transfer/b2a_det2phase_toolpresence/b2a_det2phase_toolpresence@val~relation_detr_seed42",
+      "transfer/b2a_det2phase_toolpresence/b2a_det2phase_toolpresence@val~relation_detr_seed456"
+    ]
+  },
+  "target": {
+    "group": "phase1",
+    "step": "s4_phase_baseline",
+    "candidates": [
+      "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_augstrong_hires_seed42",
+      "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_augstrong_seed123",
+      "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_augstrong_seed42",
+      "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_augstrong_seed456",
+      "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed123",
+      "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42",
+      "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed456",
+      "phase1/s4_phase_baseline/frozen_tecno_phase_baseline_aligndetr@val~aligndetr_seed42",
+      "phase1/s4_phase_baseline/frozen_tecno_phase_baseline_neck@val~relation_detr_seed42",
+      "phase1/s4_phase_baseline/frozen_tecno_phase_necktransfer@val~relation_detr_seed42"
+    ]
+  }
+}

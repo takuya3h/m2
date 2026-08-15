@@ -1,0 +1,65 @@
+result_version: 3
+task_id: "T-2026-08-15-denominator-ref-resolution-fix"
+status: pass
+host: "andrew"
+branch: "feat/denominator-ref-resolution-fix"
+pr: 109
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "二区画 exp:phase1/s4_phase_baseline は第一層を通り第二層 L2-2 で落ちた。完全形は第一層 L1-1 と L1-4 の双方で落ちた。validate_l1 と validate_l2 に spec を与えて双方向を実際に走らせ、audit/before_exclusivity.json に残した"
+  - id: G2
+    verdict: pass
+    note: "新しい試験は直した後の実装で 5/5 通り、origin/phase0 の detached worktree で復元した直す前の実装に対して 4/5 落ちた。落ちなかった 1 件は実在しない参照を拒む見張りで、直す前は全参照が第二層で落ちるため前後を区別しない"
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 448
+
+deviations:
+  - type: judgement
+    note: "Phase C Step 1 の開始前の失敗件数を Phase B より先に測っていなかった。origin/phase0 の detached worktree を建てて直す前の状態を復元し、事後に基準線を取得した"
+  - type: judgement
+    note: "L2-2 の群の列との照合を残した。識別子の先頭区画は 207/207 が群の列と一致し情報を失わず、将来食い違ったときに黙って解決するより落ちるほうがよいため"
+  - type: spec_defect
+    note: "試験 3 を契約の記載より強化した。第二層だけを見る形では直す前の実装でも通り回帰を検出しないため、第一層の判定を加えた"
+  - type: environment
+    note: "基準線を worktree で測ったため skip が 14 と 0 で食い違う。worktree に data/ 配下の重み・注釈・manifest が無く依存する 14 件が skip された。失敗識別子の集合は前後で完全一致しており比較の妥当性は保たれている"
+  - type: judgement
+    note: "既存試験 2 件の分母の参照を旧二区画から完全形へ更新した。文法を狭めた結果として落ちたためで、Phase C の Files が Modify を許している"
+  - type: judgement
+    note: "tests/test_validate_task.py:252 の exp:transfer/example は旧書式のまま据え置いた。当該箇所は分母の存在しか見ておらず文法検査を経ないため、落ちていない箇所を触らない"
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "契約は Phase C Step 2 の試験 3「旧い二区画の書式で第二層が落ちる」を『今回の回帰そのもの』と位置づけたが、判別できるかを確かめていなかった。指示どおり第二層だけを見る形で置いたところ、直す前の実装でも通った。直す前は参照の形によらず第二層が必ず落ちるため、第二層の指摘だけでは前後を区別できない。第一層の判定を加えて初めて回帰検出器になった。契約自身が Step 3 で空振りの確認を要求していたため、この誤りはその手順で捕まった"
+
+positive_controls:
+  - judgement: "新しい試験が実装の欠陥を検出する"
+    breaking_input: "origin/phase0 の detached worktree へ同じ試験一式を置いて走らせる（直す前の実装）"
+    observed: "5 件中 4 件が落ちた。強化前は 3 件しか落ちず、旧二区画を拒む試験が空振りしていることが判明した"
+  - judgement: "文法を広げすぎていない"
+    breaking_input: "二区画だけ・区画が一つ欠け・分離の記号なし・空白を含む・末尾に改行、の 5 種を与える"
+    observed: "5 種すべてが schema と実装の双方で落ちた。被覆は 207/207 を保っている"
+  - judgement: "第二層が確定した一行から種の数を読む"
+    breaking_input: "require.n_seeds を >=4 にする（参照した行の種は 3 本）"
+    observed: "L2-3 が出た。>=3 では出ない。要求の側だけを変えて指摘が入れ替わるため、行が確定して読めている"
+  - judgement: "収穫器と索引に触れていない"
+    breaking_input: "git diff --name-only に harvest_runindex.py または runindex/ が現れるか"
+    observed: "いずれも現れない。索引の commit も 44697d9 のまま動いていない"
+
+followups:
+  - "識別子の区切りに二系統の方言がある（~ が 146 行 / # が 4 行 / どちらも無いものが 57 行、両方を持つ行は 0）。本契約は文法の側で両方を受けたが、受けたことで方言が固定化する。収穫器側で一つへ寄せるべきだが、寄せると索引の再生成に波及し BL-harvester-scan-is-host-dependent と混ざるため触れていない"
+  - "識別子に Python の空値が文字列として混入している。@None が 13 行、#None が 2 行で計 15 行。あわせて識別子の区画が列の値と一致しない行が 28 件ある（split の空値 13 / step 列の先頭下線の脱落 8 / step 列の _p123 の脱落 7）。完全形を丸ごと照合するため本修正は影響を受けないが、収穫器側の欠陥として残る"
+  - "記号 # は逐語の引用では錨の境として最初の出現で二分され、分母の参照では識別子の一部として現れうる。参照を種別によらず解く共通関数が存在せず種別ごとに別経路のため、現時点で解釈を分ける必要は無いと判断した。将来一つの関数へ束ねる時点で表面化する"
+  - "未追跡のセッション抽出物が docs/sessions/digest/ に 3 件ある（2026-08-02 / 2026-08-12 / 2026-08-15）。前セッション由来で本契約の範囲外のため触れていない。tasks/README.md は未追跡のまま放置すると merge --ff-only が止まると記している（B-30）。記録するかは伏せ字の確認を伴うため起票者の判断を仰ぐ"
+
+unknowns:
+  - "frozen_source.ref も run:<group>/<run_name> という同型の二区画の文法である。分母と同じ欠陥があるかは本契約の範囲外のため測っていない。UNKNOWN"
+  - "十件の主指標の幅と計画の揺らぎの倍率（約 29-48 倍）は、σ の概算 0.003-0.005 を既存の記録から引いて求めたものである。σ そのものは本契約で測っていない"
+
+commits:
+  - "2e5239f"
