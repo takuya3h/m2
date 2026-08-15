@@ -1,0 +1,65 @@
+# 決定的にした無情報の腕の設定（本契約で追加）。既存の設定は無変更。
+# 他の腕も train.deterministic: true を足すだけで同様に決定化できる。
+# @package _global_
+task_id: T-2026-08-15-training-determinism
+
+experiment:
+  category: phase1
+  step: s4_grasp_injection
+  description: frozen_tecno_grasp_inference_ctrl
+
+seed: 42
+
+frozen_source:
+  detector: relation_detr
+  seed: 42
+  checkpoint: third_party/Relation-DETR/checkpoints/incoming/seed42/best_ap.pth
+  cache_dir: data/processed/stage1_features/relation_detr_seed42
+
+model:
+  component: grasp_phase_injection
+  input_dim: 2048
+  num_phases: 9
+  temporal:
+    num_stages: 2
+    num_layers: 8
+    num_f_maps: 64
+    dropout: 0.5
+
+grasp_inference:
+  enabled: true
+  arm: ctrl
+  hidden_dim: 64
+  num_classes: 5
+  signal: zeros
+  detach_from_phase_loss: true
+  annotation_root: data/annotations/egosurgery_hts/hand_tool_seg
+
+train:
+  epochs: 50
+  # 決定的にする（opt-in）。同じ種なら重みまでビット単位で一致する。
+  # 決定的な実装を持たない演算が呼ばれた場合は落ちる（黙って非決定に戻らない）。
+  deterministic: true
+  lr: 0.0005
+  weight_decay: 0.01
+  smoothing_weight: 0.15
+  grasp_loss_weight: 1.0
+  freeze_backbone: true
+  batch_size: 1
+
+data:
+  phase_manifest: data/processed/phase_manifest
+  feature_cache: data/processed/stage1_features/relation_detr_seed42
+  population:
+    train: 9657
+    val: 1515
+    test: 4265
+
+eval_recipe:
+  protocol_source: PHASE_EVAL_PROTOCOL
+  inference_protocol: online_causal
+  jaccard_mode: strict
+
+logging:
+  wandb_project: egosurgery_multitask
+  wandb_enabled: true

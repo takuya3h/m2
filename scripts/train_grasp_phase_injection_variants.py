@@ -34,8 +34,6 @@ PROJ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJ / "src"))
 sys.path.insert(0, str(PROJ / "scripts"))
 
-from egosurgery.utils.experiment_manager import ExperimentManager  # noqa: E402
-from egosurgery.utils.server_name import resolve_server_name  # noqa: E402
 from train_grasp_phase_injection import (  # noqa: E402
     _batch,
     _path,
@@ -51,7 +49,10 @@ from egosurgery.models.temporal.grasp_inference_injection import (  # noqa: E402
     grasp_accuracy_per_class,
     masked_grasp_bce,
 )
+from egosurgery.utils.determinism import enable_determinism  # noqa: E402
+from egosurgery.utils.experiment_manager import ExperimentManager  # noqa: E402
 from egosurgery.utils.grasp_phase_recipe import build_grasp_phase_recipe  # noqa: E402
+from egosurgery.utils.server_name import resolve_server_name  # noqa: E402
 
 # Signal keys forwarded to the model on top of build_component_cfg's set.
 # The signal name deliberately never enters the eval recipe: arms must stay
@@ -142,12 +143,28 @@ def _stage_epochs(model, clips, optimizer, cfg, device, *, epochs, grasp_on, pha
     return last
 
 
-def train(cfg, output_dir: Path | None = None, smoke: bool = False) -> dict:
-    """Train one arm with a selectable signal shape; returns measured facts."""
+def train(
+    cfg,
+    output_dir: Path | None = None,
+    smoke: bool = False,
+    audit: bool = False,
+) -> dict:
+    """Train one arm with a selectable signal shape; returns measured facts.
+
+    ``audit=True`` is measurement plumbing for the determinism contract: like
+    smoke it writes to an explicit directory and never touches
+    ``experiments/`` or the index, but it runs the full epoch count and full
+    data. Training behaviour is identical to the normal path.
+    """
     seed = int(cfg.seed)
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
+    determinism_record = None
+    if bool(cfg.train.get("deterministic", False)):
+        # Opt-in only (禁止 13): the default path stays byte-identical.
+        determinism_record = enable_determinism(seed)
+    else:
+        random.seed(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
     device_name = str(cfg.get("device", "auto"))
     device = torch.device(
         "cuda"
@@ -172,10 +189,13 @@ def train(cfg, output_dir: Path | None = None, smoke: bool = False) -> dict:
     server_name = resolve_server_name(None)
     manager = None
     run_dir = output_dir
-    if smoke:
+    if smoke or audit:
         if run_dir is None:
-            raise ValueError("smoke requires an explicit output directory")
+            raise ValueError("smoke/audit requires an explicit output directory")
         run_dir.mkdir(parents=True, exist_ok=True)
+        if audit:
+            # 重みの一致まで比べられるよう、audit では checkpoint も保存する。
+            (run_dir / "checkpoints").mkdir(exist_ok=True)
     else:
         manager = ExperimentManager(
             base_dir=str(PROJ / "experiments"),
@@ -249,7 +269,7 @@ def train(cfg, output_dir: Path | None = None, smoke: bool = False) -> dict:
             )
             if val["phase_accuracy"] > best["phase_accuracy"]:
                 best = record
-                if not smoke and run_dir is not None:
+                if (not smoke) and run_dir is not None:
                     torch.save(
                         {"model": model.state_dict(), "epoch": epoch + 1},
                         run_dir / "checkpoints" / "best_grasp_phase.pth",
@@ -270,6 +290,7 @@ def train(cfg, output_dir: Path | None = None, smoke: bool = False) -> dict:
         "train_clips": len(train_clips),
         "val_clips": len(val_clips),
         "elapsed_seconds": elapsed,
+        **({"determinism": determinism_record} if determinism_record else {}),
         **({"stage1_epochs": int(cfg.train.epochs_stage1), "stage1_seconds": stage1_seconds} if staged else {}),
         **last_train,
         **{
@@ -277,8 +298,9 @@ def train(cfg, output_dir: Path | None = None, smoke: bool = False) -> dict:
         },
     }
     assert run_dir is not None
-    if smoke:
-        (run_dir / "smoke_metrics.json").write_text(
+    if smoke or audit:
+        name = "audit_metrics.json" if audit else "smoke_metrics.json"
+        (run_dir / name).write_text(
             json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8"
         )
     else:
@@ -310,6 +332,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--seed", type=int)
     parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
     parser.add_argument("--smoke", action="store_true")
+    parser.add_argument(
+        "--audit-dir",
+        help="決定性の測定用。experiments/ を汚さずに全世代を走らせ、ここへ書く",
+    )
+    parser.add_argument(
+        "--deterministic",
+        action="store_true",
+        help="決定的にする（cfg の train.deterministic: true と同じ。既定は現状のまま）",
+    )
     parser.add_argument("--output-dir")
     parser.add_argument("--max-train-clips", type=int, default=1)
     parser.add_argument("--max-val-clips", type=int, default=1)
@@ -328,8 +359,13 @@ def main() -> int:
     cfg.device = args.device
     cfg.smoke_train_clips = args.max_train_clips
     cfg.smoke_val_clips = args.max_val_clips
-    output_dir = _path(args.output_dir) if args.output_dir else None
-    result = train(cfg, output_dir=output_dir, smoke=args.smoke)
+    if args.deterministic:
+        cfg.train.deterministic = True
+    if args.audit_dir:
+        result = train(cfg, output_dir=_path(args.audit_dir), audit=True)
+    else:
+        output_dir = _path(args.output_dir) if args.output_dir else None
+        result = train(cfg, output_dir=output_dir, smoke=args.smoke)
     print(json.dumps(result, indent=2, ensure_ascii=False))
     return 0
 
