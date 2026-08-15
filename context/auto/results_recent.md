@@ -144,7 +144,7 @@
 
 ## T-2026-08-15-grasp-injection-effect
 
-状態 `pass` / ホスト `Andrew` / 起票 `なし` / 様式 `v3`
+状態 `pass` / ホスト `Andrew` / 起票 `111` / 様式 `v3`
 
 ### ゲート
 
