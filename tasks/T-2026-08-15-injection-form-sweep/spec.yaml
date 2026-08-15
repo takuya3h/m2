@@ -1,0 +1,104 @@
+spec_version: 1
+meta:
+  task_id: "T-2026-08-15-injection-form-sweep"
+  kind: exp
+  title: "注入する信号の形を並べて、機構そのものに価値があるかを測る"
+  origin: claude-app
+  created_at: "2026-08-15T12:40:00Z"
+  created_from:
+    runindex_commit: "592a4e1"
+    counts: {index: 791, experiments: 217, verdicts: 1038}
+  depends_on:
+    - "T-2026-08-15-injection-signal-variants"
+    - "T-2026-08-15-grasp-injection-effect"
+    - "T-2026-08-11-phase-baseline-power"
+  amendments: []
+intent:
+  question: "把持の情報を工程分類へ渡すという機構そのものに価値があるか。正解を渡しても改善しないなら機構が有害であり、改善するなら渡し方のどこが悪いかを形の違いから絞り込めるか"
+  hypothesis: "正解を渡した腕が、無情報な信号を渡した腕を上回る"
+  decision_at_stake: "この設計を続けるか捨てるか。正解でも上回らなければ、渡し方をいくら直しても改善しないため捨てる。上回るなら、四つの形の差から次に直す箇所を決める"
+  related:
+    backlog: ["BL-harvester-scan-is-host-dependent"]
+inputs:
+  denominator:
+    ref: "exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42"
+    metric: "accuracy"
+    require:
+      n_seeds: ">=3"
+      sigma: present
+      split: val
+  sigma_policy:
+    series: pstd
+    sigma_source: paired_delta
+    delta_sigma_source: paired
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/train_grasp_phase_injection_variants.py"
+      - "src/egosurgery/models/temporal/grasp_inference_injection.py"
+      - "tools/harvest_runindex.py"
+prereg:
+  prediction: "正解を渡した腕が、無情報な信号を渡した腕を上回る。すなわち対の差が正である"
+  primary_endpoint: "測る側 val の accuracy について、同じ種で対にして取った差。正解を渡した腕から無情報な信号を渡した腕を引く"
+  decision_rule: "対の差の絶対値を対の差の揺らぎで割った値が一以上であり、かつ全ての種で符号が揃うときに効果ありとする。従たる腕についても同じ式を当てるが、確認のための判断には使わず探索として扱う"
+  stop_conditions:
+    - "定めた腕と種の組み合わせをすべて走らせ終えた"
+    - "計算装置が使えず走らせられない"
+    - "学習が落ちて完走しない"
+  # 事前登録を版管理へ固定した commit。本文は一字も変えていない。
+  # 起票者は配布の時点でこの値を知り得ないため、実行者が走らせる前に刻む（SPEC の手順）。
+  commit: "7a6bd3fd66678acd139982e259f2bb28e486ebab"
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "前提を確かめ、事前登録を版管理へ固定する", gpu: false, est: "40m"}
+    - {id: B, name: "六つの腕を十の種で走らせる", gpu: true, est: "2h"}
+    - {id: C, name: "対の差を腕ごとに測る", gpu: false, est: "60m"}
+    - {id: D, name: "総括と次への申し送り", gpu: false, est: "40m"}
+  gates:
+    - id: G1
+      after: A
+      check: "六つの設定と入口が本ホストに在ることを確かめ、事前登録を版管理へ固定してから走らせる前に刻んだ"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "定めた本数がすべて完走し、六つの腕の重みの総数が等しく、評価条件が分母と一致することを確かめた"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "対の差を事前登録の決め方どおりに求め、結果を見てから決め方を変えていない"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md]
+  destination: "experiments/"
+  expected_runs: 60
+  stamp:
+    task_id_in: "metrics.json"
+  acceptance:
+    - "正解を渡した腕と無情報な腕との対の差が、揺らぎと種ごとの符号とともに示されている"
+    - "六つの腕それぞれについて対の差が示され、確認のための判断は正解を渡した腕のみに限られている"
+    - "正解を渡した腕の値が、上限であって成果ではないことが明記されている"
+    - "本実験で達成された検出できる下限が、対の差の揺らぎから算出されている"
+    - "一本あたりの所要時間が実測で記録されている"
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "正解を渡した腕が無情報な腕を上回らず、機構そのものに価値が無いと判明した場合"
+    - "腕によって学習可能な重みの総数が揃わず、差に容量の分が混ざると判明した場合"
+    - "他の利用者が計算装置を使用中で、学習を行うと妨げになる場合"

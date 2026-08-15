@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（246 件）
+## 未処理（250 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -257,6 +257,10 @@
 - [ ] 2026-08-15 [cx] 原ctrl/inj設定のtask_idが旧実装契約のままでCLI上書きも無く、runindexも新stepのarmとphase_accuracyを拾わなかった。task_id上書き経路とharvester対応は変更可能な別impl契約へ回す（T-2026-08-15-grasp-injection-effect）
 - [ ] 2026-08-15 [cx] 絶対値を使うdecision ruleは全seed負でも「効果あり」になるため、improvement_detected / degradation_detected / not_detectedへverdictを方向付きで分ける（T-2026-08-15-grasp-injection-effect）
 - [ ] 2026-08-15 [cc] `make forbidden-check` は run を生成する exp 契約を構造的に通せない。`tools/check_forbidden.py:35` の `FORBIDDEN_PREFIXES` が `experiments/` と `runindex/` を無条件に禁止領域とし、exp 契約が新規 run を作ることへの例外が無いためである。本契約では 100 件超の違反が出たが、内訳は 6 本の新規 run の証跡 42 件・Phase C が明示的に要求する `make runindex` の生成物・B-36 のホスト固有の退避 run であり、不正は一件も無い。既存 run JSON 12 件の変更は `harvest_warnings` の文言のみで指標は不変であることを実測で確かめた。前契約（足す本数 0）で通ったのは run を 1 本も作らなかったからで、**run を作る exp 契約が検査を回したのは今回が初めてである。** L2-2 の排他・P4 の未文書化と同じ型で、検査が category 全体を通せない（T-2026-08-15-grasp-injection-effect）
+- [ ] 2026-08-15 [cc] 六腕×十種=60 本の form sweep は全腕で判定不成立。主たる腕（正解、上限専用・成果ではない）は平均 +0.0061386 / pstd 0.0089343 / 比 0.687 で、9/10 種が正だが seed 303 のみ −0.0172 で同符号が崩れた。設計を捨てる根拠も続ける根拠も得られていない。次は判定力を取り戻す再測定（ctrl と対象腕を種ごとに隣接して交互に走らせる。正解の腕だけなら 20 本・約 2.5 分）を先に行うべきである（T-2026-08-15-injection-form-sweep）
+- [ ] 2026-08-15 [cc] σ_d の正本問題（電力契約の申し送り）に実測の答えが出た。腕ごとに一括で走らせると対の揺らぎは 0.0079〜0.0136 で独立仮定 sqrt(2)*σ_rep=0.0074 と整合し、前実験の 0.0008〜0.0036 は ctrl/inj を種ごとに隣接して走らせた並びの産物とみられる。**実行の順序が対の相関を決める。** 今後の exp 契約は run の実行順序を SPEC に明記すべきである（T-2026-08-15-injection-form-sweep）
+- [ ] 2026-08-15 [cc] 前実験 T-2026-08-15-grasp-injection-effect は再現しなかった。同じ 3 種の inferred−ctrl が前回 −0.0044（全種負・比 5.345）に対し今回 +0.0004。hemostasis の工程別所見も逆転（−0.156 悪化 → +0.135 改善）。同種同腕のセッション間の単腕差は最大 −0.0112 で σ_rep=0.0052 の範囲内。**少数種の実験の結論は、隣接実行でも再現確認を経るまで設計判断に使ってはならない**（T-2026-08-15-injection-form-sweep）
+- [ ] 2026-08-15 [cc] 実行用設定の task_id 置換が三契約連続で必要になっている。configs/ の設定はどの契約の run かを task_id で固定するが、複数の契約が同じ設定を使うたびに audit 配下へ写しを作っている。task_id を CLI から上書きできる経路を設ける impl 契約を検討すべきである（T-2026-08-15-injection-form-sweep）
 - [ ] 2026-08-15 [cc] 前の実験の設定の signal キーは実装のどこからも読まれていない注釈だった。inj の predicted_sigmoid も ctrl の zeros も実挙動（arm で決定）とたまたま一致していただけである。本契約でモデルが signal を読むようにし、未知の値は ValueError で落ちる。四つの形（raw_logits / standardized / oracle_upper_bound_only / staged）を新規実装し、五つの腕の学習可能な重みは 528919 で完全一致（基準点との差 131781）（T-2026-08-15-injection-signal-variants）
 - [ ] 2026-08-15 [cc] oracle_upper_bound_only は上限測定専用で成果として報告してはならない。歯止めは四重: 名にその旨が入る / oracle_upper_bound_acknowledged: true が無いと構築を拒む / docstring と設定に明記 / 結果 JSON に do_not_report の印が残る。教師の無いフレーム（学習側 301 枚実測）には学習側の正例率を渡す。零だと正例率 92.6% の次元で大きく誤り「教師が無い」ことが強く漏れるため。埋め値が 0/1 でないため教師の有無は依然識別可能で、漏れは残る（T-2026-08-15-injection-signal-variants）
 - [ ] 2026-08-15 [cc] make runindex が再生成する決定性監査（runindex/anomalies/）は、スクリプトを足すだけで差分が出る。Phase E の「runindex/ に変更が無いこと」という期待と、Phase D の「make runindex を回せ」という指示は両立しない。forbidden-check が run を作る exp 契約を通せないのと同型で、生成物と無変更検査の境界が契約の雛形で未整理である（T-2026-08-15-injection-signal-variants）

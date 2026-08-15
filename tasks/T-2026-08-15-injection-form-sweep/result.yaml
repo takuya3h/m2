@@ -1,0 +1,67 @@
+result_version: 3
+task_id: "T-2026-08-15-injection-form-sweep"
+status: pass
+host: "andrew"
+branch: "feat/injection-form-sweep"
+pr: 114
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "新しい入口と六つの設定の実在、未知の値と承認なし oracle が落ちること、六つの腕の学習可能重み 528919 の完全一致を実測した。種 10 個（42/123/456/7/89/101/202/303/404/505）を走らせる前に plan.json へ固定し、事前登録を commit 7a6bd3f で版管理へ固定して spec.yaml へ刻んだ。本文の差分は空である"
+  - id: G2
+    verdict: pass
+    note: "60 本すべて完走（腕ごとに 10 本）。評価条件は分母と全件一致し、構成キーを一つ変えた偽の条件 3 件はすべて棄却された。凍結源は全件 relation_detr_seed42、分割は 9657/1515/4265、oracle 10 本すべてに報告不可の印が残っている。索引は 791 から 851 へ +60 で全件 task_id 付き"
+  - id: G3
+    verdict: pass
+    note: "事前登録の決め方（abs(平均)/pstd >= 1 かつ全種同符号）をそのまま当て、結果を見てから変えていない。主たる腕は平均 +0.0061386 / pstd 0.0089343 / 比 0.687 / 同符号 False（負は seed 303 のみ）で不成立。従たる四つも全て不成立で、探索であることを明記した"
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 469
+
+deviations:
+  - type: spec_defect
+    note: "六つの設定の task_id がすべて他契約のもの（ctrl と inj は T-2026-08-11-grasp-inference-injection-impl、他四つは T-2026-08-15-injection-signal-variants）だったため、audit/configs/ に task_id だけ置換した実行用の写しを作って使った。他の全項目が原本と一致することは機械検査で確認した。configs/** は無変更。PR 111 の逸脱と同じ経路である"
+  - type: spec_defect
+    note: "created_from.runindex_commit の記載 592a4e1 に対し現在値は 8c13afb だった。counts は一致しており記載の commit だけが古い。三契約連続の同型である"
+  - type: judgement
+    note: "走らせる順序の指定が無く、腕ごとに一括で走らせた。前実験が種ごとに ctrl/inj を隣接させていたことに走らせた後で気づいた。対の揺らぎが事前登録の想定の 10.9 倍（0.000823 → 0.0089343）になった最有力の容疑であり、腕別の σ_d 0.0079〜0.0136 は電力契約の独立仮定 sqrt(2)*σ_rep = 0.0074248 と整合する。順序が対の相関を決めるという知見は本実験の主要な成果だが、隣接で走らせていれば主たる判定が成立した可能性がある"
+  - type: judgement
+    note: "Phase B Step 1 の所要時間確定の 2 本（通常形とstaged 形、各 seed 42）は本番 run を兼ね、60 本に数えている"
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "SPEC と prereg は『前の実験の三つでは 0.010 級までしか見えなかったが、十なら 0.001 級まで見える見込み』と書いたが、その前提『対の揺らぎが前実験と同程度（0.000823 級）』を支える根拠を測っていなかった。実測の対の揺らぎは 0.0089343 と 10.9 倍で、達成された下限は 0.0057 級に留まり、主たる判定は揺らぎ不足ではなく判定力不足で不成立になった。電力契約が σ_d の正本問題（独立仮定 0.0074 vs 実測 0.0036 の 2.07 倍の乖離）を未解決のまま申し送っており、悪い方（独立仮定側）が現実になった"
+
+positive_controls:
+  - judgement: "評価条件の照合が構成差を検出する"
+    breaking_input: "inference_protocol / temporal_head / backbone を一つずつ変えた偽の条件を分母と照合する"
+    observed: "3 件すべて一致しないと出た。実在する 60 本は全件一致した"
+  - judgement: "oracle の歯止めが効いている"
+    breaking_input: "oracle_upper_bound_acknowledged を外した構築と、未知の signal 値の構築"
+    observed: "双方 ValueError で落ちた。走った oracle 10 本すべてに oracle_upper_bound_only_do_not_report: true が残っている"
+  - judgement: "対の差の集計が転記を挟んでいない"
+    breaking_input: "60 本の metrics.json から機械集計し、腕ごとの本数が 10 に満たなければ assert で落ちる"
+    observed: "全腕 10 本で通過。主たる腕の種ごとの差 10 個がすべて sweep.json に残っている"
+  - judgement: "再現検査が同一条件を比べている"
+    breaking_input: "同じ種・同じ腕のセッション間の単腕差を測る（対ではなく）"
+    observed: "最大 −0.0112（ctrl seed123）で σ_rep 0.0052 の約 2 倍以内。inj 3 種はすべてちょうど +2/1515 で一致し、この一致の理由は UNKNOWN"
+
+followups:
+  - "判定力を取り戻す再測定を先に行うべきである。ctrl と対象腕を種ごとに隣接して交互に走らせれば、前実験の実測（σ_d 0.0008〜0.0036）の水準に戻る見込みがあり、10 種なら 0.0005〜0.0023 級まで見える。一本 7 秒のため費用はほぼ無い。主たる腕（正解、上限専用）だけに絞れば 20 本で済む"
+  - "σ_d の正本問題への実測の答え: 腕ごとに一括で走らせる（隣接させない）実行では独立仮定 sqrt(2)*σ_rep = 0.0074 が正しく、前実験の 0.0008〜0.0036 は種ごとに隣接して走らせた並びの産物とみられる。実行の順序が対の相関を決める。今後の exp 契約は run の実行順序を SPEC に明記すべきである"
+  - "hemostasis の工程別所見は再現しなかった（前実験 −0.156 悪化 → 本実験 +0.135 改善、いずれも推論した値の腕）。少数種の工程別分解を根拠に設計判断をしてはならない"
+  - "seed 303 だけが主たる腕で負（−0.0172）であり判定を単独で落とした。単体での分解は次の契約へ回す"
+  - "inj 側 3 種のセッション間の差がすべてちょうど +0.0013201（2/1515）で一致した。原因は UNKNOWN。入口スクリプトの違い（原本 vs variants）による乱数消費の差の可能性があり、隣接実行の再測定で同じ入口を使えば切り分けられる"
+
+unknowns:
+  - "inj 側 3 種のセッション間の差がすべて +2/1515 フレームで厳密に一致した理由"
+  - "seed 303 が主たる腕で単独負けした中身（工程分解・推論の出来の単体分析は未実施）"
+  - "隣接実行に戻した場合に σ_d が実際に 0.0008〜0.0036 級へ戻るか。本実験では測っていない"
+
+commits:
+  - "7a6bd3f"
+  - "3e15d09"

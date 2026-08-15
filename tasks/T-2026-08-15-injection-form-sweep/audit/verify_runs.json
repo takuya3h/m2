@@ -1,0 +1,73 @@
+{
+  "n_runs": 60,
+  "per_arm_counts": {
+    "ctrl:zeros": 10,
+    "inj:oracle_upper_bound_only": 10,
+    "inj:predicted_sigmoid": 10,
+    "inj:predicted_sigmoid:staged": 10,
+    "inj:raw_logits": 10,
+    "inj:standardized": 10
+  },
+  "all_recipes_match_denominator": true,
+  "recipe_mismatch": [],
+  "all_splits_expected": true,
+  "split_mismatch": [],
+  "all_backbone_frozen_seed42": true,
+  "backbone_mismatch": [],
+  "all_seeds_planned": true,
+  "oracle_runs": 10,
+  "oracle_all_flagged_do_not_report": true,
+  "positive_controls": [
+    {
+      "changed": "inference_protocol",
+      "matches": false
+    },
+    {
+      "changed": "temporal_head",
+      "matches": false
+    },
+    {
+      "changed": "backbone",
+      "matches": false
+    }
+  ],
+  "positive_controls_all_rejected": true,
+  "elapsed_seconds_by_arm": {
+    "ctrl:zeros": {
+      "n": 10,
+      "mean": 6.594847879046574,
+      "min": 6.289002859033644,
+      "max": 7.022270050831139
+    },
+    "inj:oracle_upper_bound_only": {
+      "n": 10,
+      "mean": 6.7188421953469515,
+      "min": 6.400912515353411,
+      "max": 7.011134681291878
+    },
+    "inj:predicted_sigmoid": {
+      "n": 10,
+      "mean": 6.647262091981247,
+      "min": 6.250246088951826,
+      "max": 6.963578209746629
+    },
+    "inj:predicted_sigmoid:staged": {
+      "n": 10,
+      "mean": 8.309185833437368,
+      "min": 8.085026842076331,
+      "max": 8.647476143203676
+    },
+    "inj:raw_logits": {
+      "n": 10,
+      "mean": 6.823963989922777,
+      "min": 6.56941147102043,
+      "max": 7.102597962133586
+    },
+    "inj:standardized": {
+      "n": 10,
+      "mean": 6.705315367458388,
+      "min": 6.47436342202127,
+      "max": 6.908182505983859
+    }
+  }
+}
