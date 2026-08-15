@@ -164,7 +164,8 @@
 - `judgement` — 原設定のtask_idが旧実装契約でCLI上書きも無かったため、禁止されたconfigs/**を変更せず、task audit配下にtask_idだけ置換した実行用設定2件を作成し、他の全項目が原本と一致することを確認した
 - `environment` — 二回のdetached起動は実行基盤がシェル終了時に子processを回収し、run未生成・log 0 byte・GPU processなしだったため、継続PTY実行へ切り替えた。生成run数は6のままである
 - `judgement` — runindex harvesterが新stepのarmをunknown、accuracy_meanを空欄にしたため、変更禁止のharvesterは直さず、Phase Cを6つの生metrics.jsonとbest checkpointのval再評価で測定した
-- `judgement` — 報告の引き渡し（commit / PR / 台帳送信）を別のセッションが行った。その際 tests の件数を実測へ差し替えた。元は before 0 / after 0 / passed 25 であったが audit に裏づける記録が無く、把持注入の試験は 9 件、全体は 448 passed であり、どの部分集合とも一致しなかった。本契約は src/ にも tests/ にも変更を加えていないため before と after は同一で、実測は 5 failed / 448 passed である。失敗 5 件は既存のもので本契約と無関係である（test_research_logger 4 件、test_engines 1 件）。指標と結論には触れていない
+- `environment` — 索引の再生成が過去の退避 run 34 件を同時に投影した。分母は不変であることを実測で確認した。34 件は新しく書かれた副次ファイルの数であり、索引の母集団を増やしたのはユニーク 6 run（索引 9 行）のみで 25 件は元から載っていた。索引から消えた run は 0 件、34 件はすべて除外印つきで、解析対象 excluded=False の増分は 703 から 709 の +6 すなわち本契約の run だけである。合流先は phase0/s2/hand_detection@val が 6 行、baselines/s0/varifocanet_bbox@None が 2 行、baselines/s0/smoke_e3@val が 1 行であった。過去の Δ の分母である control_of の指す先 8 件のうち今回の投影で合流されたものは 0 件で、変化を測る対象が無いため受け皿への起票も要さない。本契約が参照した分母は 17 run・平均 0.8973014948553677・pstd 0.005917073407586465 が投影の前後で一致した。既知の B-36 そのものは本契約では直していない。出所は audit/coprojection.json
+- `judgement` — 報告の引き渡し（commit / PR / 台帳送信）を別のセッションが行った。その際 tests の件数を全体スイートの実測へ差し替えた。元の before 0 / after 0 / passed 25 のうち 25 は誤りではなく、pytest tests/test_grasp_inference_injection.py tests/test_delta.py が 25 passed in 0.85s と実行時間まで再現し、RESULT §9 にも近接テストとして明記されている。差し替えた理由は二つで、他の契約が同じ欄に全体スイートを入れており比較が成り立たないこと、および after_failed 0 が既存の失敗 5 件を落としていることである。本契約は src/ にも tests/ にも変更を加えていないため before と after は同一で、全体は 5 failed / 448 passed、失敗 5 件は既存かつ本契約と無関係である（test_research_logger 4 件、test_engines 1 件）。近接テストの値は RESULT §9 に残した。指標と結論には触れていない
 
 ### 申し送り
 
