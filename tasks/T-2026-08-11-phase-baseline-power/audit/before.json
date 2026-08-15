@@ -1,0 +1,148 @@
+{
+  "experiment_id": "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42",
+  "metric": "metric.accuracy",
+  "counts": {
+    "runs_total": 17,
+    "excluded": 0,
+    "used": 17,
+    "seeds": 3,
+    "per_seed": {
+      "123": 5,
+      "42": 7,
+      "456": 5
+    },
+    "repeated_seed_groups": 3
+  },
+  "exclusion_reasons": {},
+  "seed_column_state": {
+    "seed": {
+      "filled": 17,
+      "values": [
+        "123",
+        "42",
+        "456"
+      ]
+    },
+    "seed_config": {
+      "filled": 17,
+      "values": [
+        "123",
+        "42",
+        "456"
+      ]
+    },
+    "seed_command": {
+      "filled": 17,
+      "values": [
+        "123",
+        "42",
+        "456"
+      ]
+    },
+    "seed_phase": {
+      "filled": 0,
+      "values": []
+    },
+    "seed_detector": {
+      "filled": 0,
+      "values": []
+    }
+  },
+  "seed_columns_agree": true,
+  "reproduction_check": {
+    "mean_measured": 0.8973014948553679,
+    "mean_prereg": 0.8973015,
+    "sd_sstd_measured": 0.006099179663503103,
+    "sd_pstd_measured": 0.005917073407586465,
+    "sd_prereg": 0.0059171,
+    "n_measured": 17,
+    "n_prereg": 17,
+    "prereg_series": "pstd",
+    "matches": true
+  },
+  "anova": {
+    "N": 17,
+    "k": 3,
+    "df_within": 14,
+    "df_between": 2,
+    "SS_within": 0.0003858943178617695,
+    "SS_between": 0.00020930556322126847,
+    "MS_within": 2.7563879847269247e-05,
+    "MS_between": 0.00010465278161063423,
+    "n0": 5.588235294117647,
+    "var_rep": 2.7563879847269247e-05,
+    "var_seed_raw": 1.379485610502321e-05,
+    "var_seed": 1.379485610502321e-05,
+    "clamped_to_zero": false
+  },
+  "sigma": {
+    "sd_rep": 0.005250131412380956,
+    "sd_seed": 0.0037141427146817085,
+    "sd_total_naive": 0.006099179663503103,
+    "ratio_rep_over_seed": 1.4135513402938469
+  },
+  "prediction": {
+    "statement": "同じ種を繰り返した揺らぎが、種を変えた揺らぎの半分より大きい",
+    "threshold": 0.0018570713573408542,
+    "holds": true
+  },
+  "paired": {
+    "formula": "sd_d = sqrt(2) * sd_rep",
+    "estimate": 0.0074248070476301605,
+    "prior_measured": 0.003594,
+    "ratio_estimate_over_prior": 2.065889551371775
+  },
+  "per_seed_detail": {
+    "123": {
+      "n": 5,
+      "mean": 0.8955775577557755,
+      "sd": 0.007773661000890956,
+      "values": [
+        0.8891089108910891,
+        0.8910891089108911,
+        0.8917491749174917,
+        0.8976897689768977,
+        0.9082508250825082
+      ]
+    },
+    "42": {
+      "n": 7,
+      "mean": 0.9013672795851013,
+      "sd": 0.0035516446686972903,
+      "values": [
+        0.8963696369636963,
+        0.897029702970297,
+        0.9003300330033003,
+        0.9023102310231023,
+        0.9042904290429042,
+        0.9042904290429042,
+        0.904950495049505
+      ]
+    },
+    "456": {
+      "n": 5,
+      "mean": 0.8933333333333333,
+      "sd": 0.004137934790404577,
+      "values": [
+        0.8864686468646865,
+        0.8924092409240925,
+        0.8957095709570957,
+        0.8957095709570957,
+        0.8963696369636963
+      ]
+    }
+  },
+  "confounds": {
+    "hosts": [
+      "efros",
+      "lecun"
+    ],
+    "host_counts": {
+      "efros": 14,
+      "lecun": 3
+    },
+    "epoch_min": 31,
+    "epoch_max": 50
+  },
+  "duration_per_run": "UNKNOWN"
+}

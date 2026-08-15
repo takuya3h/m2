@@ -1,0 +1,98 @@
+spec_version: 1
+meta:
+  task_id: "T-2026-08-11-phase-baseline-power"
+  kind: exp
+  title: "工程の基準点の揺らぎを分解し、本命の実験に要る本数を決めて種を足す"
+  origin: claude-app
+  created_at: "2026-08-15T08:10:00Z"
+  created_from:
+    runindex_commit: "44697d9"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on:
+    - "T-2026-08-11-hts-comparability-audit"
+    - "T-2026-08-15-denominator-ref-resolution-fix"
+  amendments: []
+intent:
+  question: "工程の基準点の揺らぎは、種の違いによるものと、同じ種でも再現しない分とに、どう分かれるか。その分解から、本命の実験で狙う大きさの差を捉えるには何本の種が要るか"
+  hypothesis: "同じ種でも再現しない分が無視できない大きさで存在し、種を三つだけ置く設計では、狙う大きさの差を捉えきれない"
+  decision_at_stake: "本命の実験を何本の種で走らせるかを、走らせる前に決める。少なすぎれば結論が出ずに計算資源を捨てることになり、多すぎれば無駄に使う"
+  related:
+    backlog: ["BL-frozen-source-self-contradiction"]
+inputs:
+  denominator:
+    ref: "exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42"
+    metric: "accuracy"
+    require:
+      n_seeds: ">=3"
+      sigma: present
+      split: val
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/train_s4_tecno.py"
+      - "tools/harvest_runindex.py"
+prereg:
+  prediction: "同じ種を繰り返した場合の揺らぎが、種を変えた場合の揺らぎの半分より大きい"
+  primary_endpoint: "基準点の accuracy を、種による分と同じ種でも再現しない分とに分けた二つの揺らぎ、およびそこから算出される必要な種の数"
+  decision_rule: "既存の run から二つの揺らぎを分けて求め、prereg.md に定めた三つの大きさそれぞれについて必要な種の数を算出する。中の大きさを捉えられる本数を本命に要る数とし、既存の種がそれに足りなければ足りない分だけ足す"
+  stop_conditions:
+    - "算出した本数を走らせ終えた"
+    - "prereg.md に定めた上限の本数に達した"
+    - "計算装置の空きが足りず、足せる本数が算出値を下回った"
+  committed_at: "2026-08-11T23:00:00Z"
+  # 事前登録を版管理へ固定した commit。**本文は一字も変えていない。**
+  # 起票者は配布の時点でこの値を知り得ないため、実行者が走らせる前に刻む。
+  commit: "e096b316fc2e63debb0274ea6000909d300f64fa"
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "既存の run から揺らぎを分解する", gpu: false, est: "50m"}
+    - {id: B, name: "要る本数を算出し、足す種を決める", gpu: false, est: "30m"}
+    - {id: C, name: "決めた本数だけ学習する", gpu: true, est: "8h"}
+    - {id: D, name: "分母を締め直し、本命の実験の設計に渡す", gpu: false, est: "40m"}
+  gates:
+    - id: G1
+      after: A
+      check: "同じ種を繰り返した組が既存の run に何組あるかを数え、二つの揺らぎを分けて求められることを確かめた"
+      on_fail: ask
+    - id: G2
+      after: B
+      check: "算出した本数と、その根拠となった値を記録し、走らせる前に確定させた"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "足した run の設定が既存の基準点と同一であることを、評価条件と凍結源の照合で確かめた"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md]
+  destination: "experiments/"
+  expected_runs: 6
+  stamp:
+    task_id_in: "metrics.json"
+  acceptance:
+    - "種による揺らぎと、同じ種でも再現しない揺らぎとが、それぞれ数値で示されている"
+    - "本命の実験に要る種の数が、あらかじめ定めた大きさの差に対して算出されている"
+    - "足した run の設定が既存の基準点と同一であることが、照合の結果とともに示されている"
+    - "締め直した分母の値と、その本数が示されている"
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "同じ種を繰り返した組が既存の run に存在せず、二つの揺らぎを分けられないと判明した場合"
+    - "算出された本数が計算資源の上限を超え、本命の実験が現実的でないと判明した場合"
+    - "他の利用者が計算装置を使用中で、学習を行うと妨げになる場合"
