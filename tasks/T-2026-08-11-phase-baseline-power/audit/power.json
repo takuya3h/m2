@@ -1,0 +1,64 @@
+{
+  "inputs": {
+    "sd_rep": 0.005250131412380956,
+    "sd_seed": 0.0037141427146817085,
+    "existing_seeds": 3
+  },
+  "formula": "n_req = ceil((2 * sigma_d / delta)^2)、下限 1",
+  "deciding_effect": 0.01,
+  "sources": {
+    "分解由来（事前登録の決め方）": {
+      "sigma_d": 0.0074248070476301605,
+      "how": "sd_d = sqrt(2) * sd_rep。両側が同じ種を共有し、再現しない分だけが独立に乗ると見る",
+      "by_effect": {
+        "大 (0.017)": {
+          "n_required": 1,
+          "raw": 0.7630139750109134
+        },
+        "中 (0.01)": {
+          "n_required": 3,
+          "raw": 2.20511038778154
+        },
+        "小 (0.005)": {
+          "n_required": 9,
+          "raw": 8.82044155112616
+        }
+      },
+      "n_for_deciding": 3
+    },
+    "前契約の直接の実測": {
+      "sigma_d": 0.003594,
+      "how": "容量を足したときの対の差の揺らぎとして実測された値",
+      "by_effect": {
+        "大 (0.017)": {
+          "n_required": 1,
+          "raw": 0.1787797370242214
+        },
+        "中 (0.01)": {
+          "n_required": 1,
+          "raw": 0.51667344
+        },
+        "小 (0.005)": {
+          "n_required": 3,
+          "raw": 2.06669376
+        }
+      },
+      "n_for_deciding": 1
+    }
+  },
+  "decision": {
+    "n_required_for_deciding": 3,
+    "existing_seeds": 3,
+    "to_add_raw": 0,
+    "to_add_capped": 0,
+    "cap": 6,
+    "cap_reached": false
+  },
+  "consistency": {
+    "sigma_d_decomposition": 0.0074248070476301605,
+    "sigma_d_prior_measured": 0.003594,
+    "ratio": 2.065889551371775,
+    "implied_correlation_rho": 0.7656927095972726,
+    "note": "独立を仮定した sqrt(2) の式は実測の 2 倍を出す。実測と合わせるには両側の再現しない分に正の相関 rho が要る。同じ種・同じ凍結源・同じ並び順を共有するため正の相関は説明が付く。**どちらが正しいかは本契約では決められない。**"
+  }
+}

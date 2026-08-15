@@ -1,0 +1,42 @@
+{
+  "experiment_id": "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42",
+  "runs_checked": 17,
+  "reference_run": "s4_phase_baseline_001_frozen_tecno_phase_baseline_seed42",
+  "all_recipes_match": true,
+  "mismatched_runs": [],
+  "split_expected": {
+    "split_train_images": 9657,
+    "split_val_images": 1515,
+    "split_test_images": 4265
+  },
+  "all_splits_match": true,
+  "split_mismatched_runs": [],
+  "backbone_expected": "relation_detr_resnet50_frozen_seed42",
+  "all_backbone_match": true,
+  "backbone_mismatched_runs": [],
+  "positive_controls": [
+    {
+      "changed_key": "inference_protocol",
+      "to": "offline_noncausal",
+      "matches": false
+    },
+    {
+      "changed_key": "jaccard_mode",
+      "to": "loose",
+      "matches": false
+    },
+    {
+      "changed_key": "temporal_head",
+      "to": "mstcn",
+      "matches": false
+    },
+    {
+      "changed_key": "backbone",
+      "to": "relation_detr_resnet50_frozen_seed123",
+      "matches": false
+    }
+  ],
+  "positive_controls_all_rejected": true,
+  "added_runs_checked": 0,
+  "added_runs_note": "足す本数が 0 のため、足した run の照合は対象が無い"
+}

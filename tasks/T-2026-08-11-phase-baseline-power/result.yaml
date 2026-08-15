@@ -1,0 +1,68 @@
+result_version: 3
+task_id: "T-2026-08-11-phase-baseline-power"
+status: partial
+host: "andrew"
+branch: "feat/phase-baseline-power-v3"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "基準点は 17 run・除外 0・3 種で、3 種すべてに繰り返しがあった（42 が 7 本、123 と 456 が各 5 本）。釣り合わない一元配置の変量模型で二つの揺らぎを分けて求めた。平均 0.8973015 と pstd 0.0059171 が事前登録の記載と完全一致し、抽出が正しいことを裏づけた"
+  - id: G2
+    verdict: pass
+    note: "中の大きさ 0.010 に要る種の数 3、既存の種 3、足す本数 0 を audit/power.md へ走らせる前に確定させた。分解由来 σ_d=0.0074248 でちょうど 3、前契約の実測 σ_d=0.003594 なら 1 で、どちらの見積もりでも既存の 3 種で足りる"
+  - id: G3
+    verdict: skip
+    note: "足した run が 0 本のため照合の対象が無い。代わりに分母を構成する既存 17 本へ同じ照合をかけ、評価条件・分割・凍結源が全件一致すること、および構成キーを一つずつ変えた偽の条件 4 件がすべて棄却されることを確かめた"
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+
+deviations:
+  - type: spec_defect
+    note: "L3 プリフライトの P4 prereg_committed が FAIL したため停止し、承認を得てから事前登録を commit して sha を spec.yaml に刻んだ。sha は配布の時点で存在せず起票者には書けない。埋め方は tasks/README.md にも SKILL.md にも記載が無く、前例も無い。事前登録の本文は一字も変えていない"
+  - type: environment
+    note: "分岐名は SPEC の feat/phase-baseline-power ではなく feat/phase-baseline-power-v3 である。本契約は三度目の配布で同名の分岐が既に 2 本存在したため、利用者が v3 を指定した"
+  - type: judgement
+    note: "Phase C を 0 本で終えた。GPU を一切使っていない。算出結果が 0 本であり、事前登録の止め方が 0 を上回る本数を禁じているため。利用者へ提示し事前登録に従う判断を得た"
+  - type: judgement
+    note: "Phase C Step 3 の照合を、足した run ではなく分母を構成する既存 17 本に対して行った。対象が無いことを理由に飛ばすと Phase D の締め直しの土台が無検証になるため"
+  - type: judgement
+    note: "Phase A の分解を efros のみ 14 本でも求め直した。recipes_match が server_name の相違を許すため σ_rep がホスト差を含む疑いがあり、結論が交絡の産物でないことを示す必要があったため"
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "SPEC Phase A Step 5 は一本あたりの所要時間を既存の run の記録から読めると想定していたが、記録は存在しない。基準点に属する 55 run すべてが command.sh / config.yaml / git_commit.txt / metrics.json / notes.md / per_class_ap.json / server.txt の 7 ファイルのみで、所要時間もログも持たず wandb_run_id は 17/17 が空である。指示どおり実行すると読める値が無く UNKNOWN になった"
+  - type: self_contradiction
+    note: "outputs.expected_runs を 6 とし Phase D に足す前と足した後を並べる表を求めているが、事前登録の決め方に従って算出すると足す本数は 0 になる。起票者自身が SPEC で分母を厚くしても本命の判定力は上がらないと言い直しており、本数を決める式は対の側から出る。指示どおり実行すると expected_runs を満たせず、締め直しの表は前後が同一になる"
+
+positive_controls:
+  - judgement: "評価条件の照合器が空振りしていない"
+    breaking_input: "分母の基準となる run の構成キーを一つだけ変えた偽の条件を 4 種与える（inference_protocol / jaccard_mode / temporal_head / backbone）"
+    observed: "4 件すべてで一致しないと出た。同時に実在する 17 本は全件一致した"
+  - judgement: "基準点の抽出が正しい行を指している"
+    breaking_input: "事前登録が独立に記した 17 run の平均と標準偏差を突き合わせる"
+    observed: "平均 0.8973015 が完全一致し、pstd 0.0059171 も完全一致した。sstd は 0.0060992 で、事前登録の系統が pstd であることも判明した"
+  - judgement: "σ_rep がホスト差の産物ではない"
+    breaking_input: "lecun の 3 本を除き efros のみ 14 本で分解し直す"
+    observed: "σ_rep は 0.0052501 から 0.0058171 へむしろ増え、σ_seed は 0.0037141 から 0.0037196 でほぼ不変。中の大きさに要る種の数は 3 のまま変わらなかった"
+  - judgement: "文書の値 0.8986 ± 0.0028 の出所の特定"
+    breaking_input: "lecun で測られた 3 本だけで平均と pstd を求め、文書の記載と突き合わせる"
+    observed: "平均 0.8985699（差 0.0000301）、pstd 0.0027656（差 0.0000344）で一致した。文書の値は種ごとに 1 本ずつの測定であり繰り返しを含まない"
+
+followups:
+  - "σ_d の正本が決まっていない。分解由来 0.0074248（両側の再現しない分が独立と仮定）と前契約の直接の実測 0.003594 が 2.066 倍食い違う。実測に合わせるには両側に ρ=0.766 の正の相関が要る。対の両側は同じ種・同じ凍結源・同じ並び順を共有し違うのは注入の有無だけであるから正の相関自体は説明が付くが、どちらが正しいかは本契約では決められない。本命の設計に直結する"
+  - "分母を厚くするかどうかを別契約で判断する。本命の判定力には効かないが、基準点との比較の側には効く。事前登録の決め方の対象外のため本契約では走らせていない"
+  - "run に所要時間が残っていない。基準点の 55 run すべてが 7 ファイル構成で、所要時間もログも W&B の ID も持たない。計画の見積もりが立てられないため ExperimentManager 側の申し送りとする"
+  - "conventions#sigma の正本（ddof=0 / ddof=1）が未決定のままである。本 RESULT は既定に従い pstd を主として sstd を併記した"
+  - "小の大きさ 0.005 は 9 本を要し、事前登録の上限 6 本では捉えられない。現行の設計では検出できない大きさがあることを本命の設計へ渡す"
+  - "recipes_match は server_name の相違を警告しつつ True を返す。分母は efros 14 本と lecun 3 本の混在である。本契約では σ への影響が無いことを確かめたが、警告が照合の判定に反映されない設計そのものは残る"
+
+unknowns:
+  - "一本あたりの学習所要時間。既存の run の記録に存在せず、Phase C を走らせていないため実測する機会も無かった。UNKNOWN"
+
+commits: []
