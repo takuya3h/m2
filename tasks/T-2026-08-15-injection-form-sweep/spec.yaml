@@ -47,7 +47,9 @@ prereg:
     - "定めた腕と種の組み合わせをすべて走らせ終えた"
     - "計算装置が使えず走らせられない"
     - "学習が落ちて完走しない"
-  commit: null
+  # 事前登録を版管理へ固定した commit。本文は一字も変えていない。
+  # 起票者は配布の時点でこの値を知り得ないため、実行者が走らせる前に刻む（SPEC の手順）。
+  commit: "7a6bd3fd66678acd139982e259f2bb28e486ebab"
 contract:
   inject_verbatim: [conventions#prohibitions]
   conventions_rev: "d422b08"
