@@ -13,8 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（224 件）
-## 未処理（222 件）
+## 未処理（225 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -230,10 +229,10 @@
 - [ ] 2026-08-12 [cc] SPEC Task 3 Step 2 の accept-new は ~/.ssh/known_hosts へ追記するため禁止 2 に触れる。書き込まない形へ置き換えた。10 台すべてが未知でありそのまま実行すれば 10 件の追記が起きていた。手順書の該当箇所を直すかは未決（.claude/skills/task/SKILL.md）
 - [ ] 2026-08-12 [cc] 受け入れ一覧の註釈から device への対応づけは自己申告に依る。指紋と相手ホストの対応を相手側で確認していない。註釈を書き換えれば対応は崩れる（~/.ssh/authorized_keys）
 - [ ] 2026-08-12 [cc] 送信前の自己検査は基本多言語面の外の文字を数えるため、キリル文字などの面内の誤字は捕まらない。実際に audit.md へ一箇所混入し目視で見つけた。検査の範囲を広げるかは未決（tasks/T-2026-08-12-tunnel-key-audit-lecun/RESULT.md）
+- [ ] 2026-08-13 [cx] 独立把持枝・ctrl零信号・neck無しで実装済み。次はneck無しS4分母に対するctrl/inj各3 seedの事前登録効果実験を起票する（T-2026-08-11-grasp-inference-injection-impl）
 - [ ] 2026-08-13 [cx] Relation-DETR seed42の凍結GAPから把持次元3/4/5を線形に読み出せた（ROC-AUC 0.829266/0.743446/0.792754）。並行実装を継続するが、群差は対照の振れ幅未満なので把持群の方が容易とは断定しない（T-2026-08-11-grasp-linear-probe）
 - [ ] 2026-08-13 [cx] 指定陽性対照any-tool-presenceはval 1515/1515全陽性で無効だった。次回はclass supportを事前確認した対象を登録する（T-2026-08-11-grasp-linear-probe）
 - [ ] 2026-08-13 [cx] 契約入口のphase_trainer.pyは旧S3経路で、現行S4の保存特徴入口はscripts/train_s4_tecno.pyだった。次回契約で入口を更新する（T-2026-08-11-grasp-linear-probe）
-- [ ] 2026-08-13 [cx] 独立把持枝・ctrl零信号・neck無しで実装済み。次はneck無しS4分母に対するctrl/inj各3 seedの事前登録効果実験を起票する（T-2026-08-11-grasp-inference-injection-impl）
 - [ ] 2026-08-13 [cx] andrew と ilya の公開鍵を lecun の受け入れ一覧へ登録した。両ホスト側からの認証再測定、lecun の旧目印の扱い、開始時 mode 664 の原因確認が残る（T-2026-08-12-register-hub-keys）
 - [ ] 2026-08-13 [human] bengioはSSH接続でしか操作できず、独立復旧経路のG1条件を満たさないためhost変更前に停止した（T-2026-08-13-bengio-canary-lecun-cutover）
 - [ ] 2026-08-13 [cx] zmx再親化によりtransaction祖先が対話session sshdへ届かずG1停止。session sshd子孫から起動するか契約amendmentが必要（T-2026-08-13-bengio-lecun-deadman-cutover）
