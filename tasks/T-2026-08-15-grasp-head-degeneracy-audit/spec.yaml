@@ -1,0 +1,70 @@
+spec_version: 1
+meta:
+  task_id: "T-2026-08-15-grasp-head-degeneracy-audit"
+  kind: analysis
+  title: "把持を推論する部分が定数を出していないかを、下見と同じ土台で測り直す"
+  origin: claude-app
+  created_at: "2026-08-15T11:40:00Z"
+  created_from:
+    runindex_commit: "44697d9"
+    counts: {index: 791, experiments: 217, verdicts: 1038}
+  depends_on:
+    - "T-2026-08-15-grasp-injection-effect"
+    - "T-2026-08-11-grasp-linear-probe"
+  amendments: []
+intent:
+  question: "工程分類へ渡していた五次元の信号は、本当に把持の情報を運んでいたか。それとも偏った教師のもとで多数派を出し続けていただけか"
+  decision_at_stake: "前の実験で検出された負の効果を、当たっている情報が有害だったと読むか、ほとんど情報の無い信号を渡していたと読むか。読み方によって、設計を捨てるか学習を直すかが分かれる"
+  related:
+    backlog: ["BL-harvester-scan-is-host-dependent"]
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "src/egosurgery/models/temporal/grasp_inference_injection.py"
+      - "scripts/train_grasp_phase_injection.py"
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "前の実験の予測を取り出す", gpu: false, est: "40m"}
+    - {id: B, name: "下見と同じ土台で測り直す", gpu: false, est: "50m"}
+    - {id: C, name: "定数を出していないかを直接調べる", gpu: false, est: "40m"}
+    - {id: D, name: "総括と次への申し送り", gpu: false, est: "20m"}
+  gates:
+    - id: G1
+      after: A
+      check: "五つの次元それぞれについて予測の値を取り出し、測る側の正例の割合と件数を実測した"
+      on_fail: stop
+    - id: G2
+      after: C
+      check: "多数派を出し続けるだけの偽の予測を同じ手順に通し、それが下見と同じ土台でどう見えるかを確かめた"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-15-grasp-head-degeneracy-audit/"
+  acceptance:
+    - "五つの次元それぞれについて、下見と同じ土台の値と、正しさの割合の双方が示されている"
+    - "多数派を出し続けるだけの偽の予測を通した値が併記され、実測がそれを上回るか否かが示されている"
+    - "予測の散らばりが次元ごとに示され、定数に近いものがどれかが特定されている"
+    - "前の実験の負の効果を、情報が有害と読むか信号が薄いと読むかについて、実測に基づく結論が示されている"
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "前の実験の予測が保存されておらず、取り出すには学習をやり直すしかないと判明した場合"
+    - "五つの次元のうち複数が定数に近く、渡していた信号に情報がほとんど無かったと判明した場合"
