@@ -1,0 +1,129 @@
+{
+  "splits": {
+    "train": {
+      "feature_path": "data/processed/stage1_features/relation_detr_seed42/train_gap.npz",
+      "feature_bytes": 79458316,
+      "feature_shape": [
+        9657,
+        2048
+      ],
+      "feature_dtype": "float32",
+      "frame_id_dtype": "unicode",
+      "teacher_images": 9356,
+      "teacher_annotations": 32408,
+      "teacher_and_feature": 9356,
+      "teacher_without_feature": 0,
+      "feature_without_teacher": 301,
+      "positive_counts": [
+        8659,
+        8386,
+        7129,
+        7176,
+        952
+      ],
+      "positive_rates": [
+        0.925502351432236,
+        0.8963232150491663,
+        0.7619709277469003,
+        0.7669944420692604,
+        0.10175288584865327
+      ],
+      "direct_example": {
+        "stem": "01_1_0124",
+        "feature_index": 0,
+        "positive_dimensions": [
+          1,
+          2
+        ]
+      }
+    },
+    "val": {
+      "feature_path": "data/processed/stage1_features/relation_detr_seed42/val_gap.npz",
+      "feature_bytes": 12465940,
+      "feature_shape": [
+        1515,
+        2048
+      ],
+      "feature_dtype": "float32",
+      "frame_id_dtype": "unicode",
+      "teacher_images": 1514,
+      "teacher_annotations": 5653,
+      "teacher_and_feature": 1514,
+      "teacher_without_feature": 0,
+      "feature_without_teacher": 1,
+      "positive_counts": [
+        1491,
+        1463,
+        1231,
+        1274,
+        176
+      ],
+      "positive_rates": [
+        0.9848084544253632,
+        0.9663143989431968,
+        0.8130779392338177,
+        0.8414795244385733,
+        0.11624834874504623
+      ],
+      "direct_example": {
+        "stem": "09_1_0213",
+        "feature_index": 0,
+        "positive_dimensions": [
+          1,
+          2,
+          4
+        ]
+      }
+    },
+    "test": {
+      "feature_path": "data/processed/stage1_features/relation_detr_seed42/test_gap.npz",
+      "feature_bytes": 35092940,
+      "feature_shape": [
+        4265,
+        2048
+      ],
+      "feature_dtype": "float32",
+      "frame_id_dtype": "unicode",
+      "teacher_images": 4107,
+      "teacher_annotations": 14081,
+      "teacher_and_feature": 4107,
+      "teacher_without_feature": 0,
+      "feature_without_teacher": 158,
+      "positive_counts": [
+        3816,
+        3663,
+        3107,
+        3136,
+        333
+      ],
+      "positive_rates": [
+        0.929145361577794,
+        0.8918918918918919,
+        0.7565132700267836,
+        0.7635743851960068,
+        0.08108108108108109
+      ],
+      "direct_example": {
+        "stem": "04_1_0511",
+        "feature_index": 0,
+        "positive_dimensions": [
+          1,
+          2,
+          5
+        ]
+      }
+    }
+  },
+  "feature_total_bytes": 127017196,
+  "environment": {
+    "host": "Bengio",
+    "branch": "feat/grasp-linear-probe",
+    "head": "3d182fe861607f091b4d30438fc7984d9f2cb16d",
+    "conventions_rev": "d422b08",
+    "runindex_rev": "44697d9",
+    "python": "Python 3.11.4",
+    "numpy": "1.26.4",
+    "scikit_learn": "1.8.0",
+    "sync_pause": true
+  }
+}

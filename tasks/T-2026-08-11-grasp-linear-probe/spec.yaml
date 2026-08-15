@@ -1,0 +1,68 @@
+spec_version: 1
+meta:
+  task_id: "T-2026-08-11-grasp-linear-probe"
+  kind: analysis
+  title: "把持の対応が凍結特徴から読み取れるかを線形の分類器で測る"
+  origin: claude-app
+  created_at: "2026-08-11T22:10:00Z"
+  created_from:
+    runindex_commit: "44697d9"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-11-hts-comparability-audit"]
+  amendments: []
+intent:
+  question: "凍結された検出器の特徴に、手と術具の把持の対応を読み取れるだけの情報が残っているか。手が写っているかと、その手が器具を持っているかとで、読み取りやすさに差があるか"
+  decision_at_stake: "凍結特徴を入力にして把持を推論させる構成が成立するかを、実装と実験を作り込む前に確かめる。読み取れないなら、推論結果を工程へ渡す設計そのものを見直す必要がある"
+  related:
+    backlog: ["BL-exclusion-rules-exact-match"]
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "src/egosurgery/engines/phase_trainer.py"
+      - "src/egosurgery/datasets/loss_mask.py"
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "凍結特徴と教師の所在を実測する", gpu: false, est: "40m"}
+    - {id: B, name: "線形の分類器で読み取りやすさを測る", gpu: false, est: "50m"}
+    - {id: C, name: "対照を置いて値の意味を確かめる", gpu: false, est: "40m"}
+    - {id: D, name: "総括と設計への申し送り", gpu: false, est: "20m"}
+  gates:
+    - id: G1
+      after: A
+      check: "凍結特徴がファイルとして残っていることと、教師と対応づく件数を実測して記録した"
+      on_fail: ask
+    - id: G2
+      after: C
+      check: "偶然並みの入力では値が偶然並みに落ちることを確かめ、測り方が空回りしていないことを示した"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-11-grasp-linear-probe/"
+  acceptance:
+    - "5 つの次元それぞれについて読み取りやすさの値が示され、正例の割合が併記されている"
+    - "手が写っているかと、器具を持っているかとで、値に差があるか否かが示されている"
+    - "偶然並みの入力と、意味のある入力の双方で測った値が併記されている"
+    - "凍結特徴を入力にして把持を推論させる構成が成立するか否かの判断材料が示されている"
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "凍結特徴がファイルとして残っておらず、計算装置を使わなければ測れないと判明した場合"
+    - "把持に関わる次元の読み取りやすさが偶然並みで、凍結特徴を入力とする構成が成立しないと判明した場合"

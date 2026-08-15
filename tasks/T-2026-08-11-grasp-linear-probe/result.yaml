@@ -1,0 +1,76 @@
+result_version: 3
+task_id: "T-2026-08-11-grasp-linear-probe"
+status: pass
+host: "bengio"
+branch: "feat/grasp-linear-probe"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      relation_detr_seed42の保存済みGAP特徴を直接開き、train/val/testが9657/1515/4265行、
+      各2048 float32であることを確認した。教師から特徴への欠落は全split 0、逆方向は301/1/158だった。
+  - id: G2
+    verdict: pass
+    note: >-
+      seed 42/123/456で教師shuffleと乱数特徴を測り、ROC-AUC全体平均は0.476591と0.498646へ低下した。
+      指定陽性対照はval全陽性で無効だったため結果をUNKNOWNとし、追加Tweezers対照で0.921263を実測した。
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 12
+
+deviations:
+  - type: spec_defect
+    note: "指定陽性対照はval 1515件が全て陽性で識別能力を測れなかった。指定結果をUNKNOWNのまま残し、正負が揃うTweezers有無を追加対照として測った。"
+  - type: spec_defect
+    note: "入力に指定されたphase_trainer.pyは保存済み検出器特徴を読まない旧S3経路だった。象徴名を全体探索し、現行S4が読むrelation_detr_seed42 NPZを使用した。"
+  - type: judgement
+    note: "task固有の書き込み範囲を一般規約のtasks/todo.mdとroot README.md更新より優先し、対象taskディレクトリと専用inbox以外を手編集しなかった。"
+  - type: environment
+    note: "導入済みCodeGraphはindex up-to-dateだったが現行CLIにwatchサブコマンドが無く、status確認までとした。"
+  - type: judgement
+    note: "同期抑止は削除せず改名で解除し、ignore対象外だったreleased markerを契約外差分に残さないため/tmpへ退避した。元の0-byte markerは同パスから復元できる。"
+  - type: judgement
+    note: "再実行では .sync-pause を削除で解除した。解除後の auto-merge/auto-push/Draft PR 作成は常駐処理に委ねる判断をユーザーから得たため、手動 push はしていない。"
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: >-
+      契約はphase_trainer.pyが凍結検出器特徴を読む前提で入口に指定したが、実装はraw imageへImageNet ResNet50を毎回適用する旧経路だった。
+      指示された入口だけに従うと保存特徴なしと誤判定してG1 askになるため、全体探索で現行S4のNPZ経路を解決した。
+  - type: asserted_without_measuring
+    note: >-
+      契約は「術具annotationが1件以上」を当たるはずの陽性対照としたが、valは1515/1515全陽性でROC-AUCを定義できなかった。
+      指示どおり実行するとAP=1.0でも定数陽性と区別できず、検査が空回りするため追加の有効な対照を必要とした。
+
+positive_controls:
+  - judgement: "G1の双方向集合差が欠落方向を区別する"
+    breaking_input: "特徴側に教師を持たないframe IDが含まれれば、特徴のみの集合差が0より大きくなるはずである。"
+    observed: "教師のみは全split 0だった一方、特徴のみはtrain/val/testで301/1/158と検出され、方向を区別した。"
+  - judgement: "G2のprobeが意味のない入力を偶然水準へ落とす"
+    breaking_input: "train教師を動画横断でshuffleするか、特徴を同shapeの乱数へ置換すればROC-AUCが0.5付近へ落ちるはずである。"
+    observed: "3 seed、5次元の全体平均ROC-AUCは教師shuffle 0.476591、乱数特徴0.498646へ低下した。"
+  - judgement: "G2のprobeが検出器特徴内の既知の術具信号を読み出す"
+    breaking_input: "有効な信号を読めない手順なら、正負が揃うTweezers有無もnegative control最大値を超えないはずである。"
+    observed: "Tweezers有無はROC-AUC 0.921263、AP 0.934747で、negative control全値の最大0.626426を上回った。"
+
+  - judgement: "報告した数値が決定的で、再実行しても同じ値になる"
+    breaking_input: "seed 固定が効いていないか非決定的な処理が混じっていれば、同じ環境で run_probe.py を回し直すと生成物が変わるはずである。"
+    observed: "2026-08-15 に最初から回し直し、phase_a.json/probe_result.csv/control.csv/control.txt/summary.json の5件すべてが退避した控えとバイト一致した。"
+
+followups:
+  - "次の契約では陽性対照をclass supportのある対象へ事前登録する。今回のTweezersはtrain 5764/9657、val 825/1515だった。"
+  - "契約の入力入口を旧phase_trainer.pyではなく、保存済みGAPを読むscripts/train_s4_tecno.pyとS4 configへ更新する。"
+  - "並行する把持推論実装では次元3/4/5の線形probe ROC-AUC 0.829266/0.743446/0.792754を実用的な上限目安として比較する。"
+
+unknowns:
+  - "指定陽性対照any-tool-presenceのval識別性能は全陽性のためUNKNOWN。"
+  - "把持群と可視性群の難しさの差は、点推定+0.086608がnegative-control群差rangeより小さいためUNKNOWN。"
+  - "test splitのprobe性能は試験側を消費していないためUNKNOWN。"
+
+commits:
+  - "8ebf4cc"

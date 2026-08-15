@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（144 件）
+## 申し送り（147 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -24,6 +24,12 @@
 
 - neck無し分母phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42に対し、 seed 42/123/456のctrl/inj各3本を別の事前登録契約で実行する。
 - full 50 epochの所要時間を実測し、次契約の装置時間見積もりを更新する。
+
+### T-2026-08-11-grasp-linear-probe
+
+- 次の契約では陽性対照をclass supportのある対象へ事前登録する。今回のTweezersはtrain 5764/9657、val 825/1515だった。
+- 契約の入力入口を旧phase_trainer.pyではなく、保存済みGAPを読むscripts/train_s4_tecno.pyとS4 configへ更新する。
+- 並行する把持推論実装では次元3/4/5の線形probe ROC-AUC 0.829266/0.743446/0.792754を実用的な上限目安として比較する。
 
 ### T-2026-08-11-hts-comparability-audit
 
@@ -254,7 +260,7 @@
 - 秘匿の検査が見るのは NOTION_API_KEY と WANDB_API_KEY の 2 つと、既知の接頭辞である。資格情報を増やしたら SECRET_ENV_KEYS へ足すこと。足し忘れても検査は通るため気付けない
 - 送信の時点で壁時計を使っている（completed_at）。生成物ではないため冪等の検査には影響しないが、投影に壁時計を入れない方針とは別の判断である
 
-## 断定できなかった事項（114 件）
+## 断定できなかった事項（117 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -270,6 +276,12 @@
 
 - ctrl/injの効果、3-seed差、sigma、有意性は本契約では未測定。
 - full 50 epochの1 runあたり所要時間は未測定。
+
+### T-2026-08-11-grasp-linear-probe
+
+- 指定陽性対照any-tool-presenceのval識別性能は全陽性のためUNKNOWN。
+- 把持群と可視性群の難しさの差は、点推定+0.086608がnegative-control群差rangeより小さいためUNKNOWN。
+- test splitのprobe性能は試験側を消費していないためUNKNOWN。
 
 ### T-2026-08-11-hts-comparability-audit
 
@@ -466,16 +478,16 @@
 - 台帳の他の行が変わっていないことは、触れた行を限定した事実からしか言えていない。全行の内容を送信前後で突き合わせてはいない
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
 
-## 起票者の誤りの型（94 件）
+## 起票者の誤りの型（96 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 37 |
-| `asserted_without_measuring` | 23 |
+| `asserted_without_measuring` | 25 |
 | `self_contradiction` | 27 |
 | `shell_assumption` | 7 |
 
-合計 94 件（対を持つ契約 35 件から）
+合計 96 件（対を持つ契約 36 件から）
 
