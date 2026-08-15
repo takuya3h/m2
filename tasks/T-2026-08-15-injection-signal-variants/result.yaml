@@ -3,7 +3,7 @@ task_id: "T-2026-08-15-injection-signal-variants"
 status: pass
 host: "andrew"
 branch: "feat/injection-signal-variants"
-pr: null
+pr: 113
 merged: false
 
 gates:
@@ -60,4 +60,5 @@ unknowns:
   - "本番規模（50 世代・全 clip）の一本あたりの所要時間。試走は 2 世代・clip 1 本のみで 1.49〜1.90 秒だった"
   - "test 側の教師なしフレーム数。本契約は val のみを使うため数えていない"
 
-commits: []
+commits:
+  - "8c13afb"
