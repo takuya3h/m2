@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 39 件）。
-ここに出ない 34 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 41 件）。
+ここに出ない 36 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-08-18-report-back-to-ledger
 
@@ -142,72 +142,36 @@
 - 契約の取り込み操作そのものは実行していない。作業開始時点で未追跡ファイルとして作業ツリーに存在した。要約値の照合が通ったかは測れず UNKNOWN。記法が壊れずに届いたことのみ実測した
 - 過去に雛形を写して環境を作ったホストのローカル .env に SERVERNAME が残っていないかは未測定。共有の暗号設定には無い（鍵 6 個）
 
-## T-2026-08-15-grasp-head-degeneracy-audit
+## T-2026-08-15-injection-signal-variants
 
-状態 `pass` / ホスト `andrew` / 起票 `112` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 五つの次元の予測を丸める前の値で取り出した。予測は保存されておらず、三本すべてに残っていた重みから作り直した。学習はやり直していない。測る側の有効フレームは 1514、正例の割合は 0.9848 / 0.9663 / 0.8131 / 0.8415 / 0.1162、正例数は 1491 / 1463 / 1231 / 1274 / 176 を実測した
-- `G2` pass — 測る側の多数派を全フレームに置いた偽の予測を Phase B と同じ手順へ通し、五つの次元すべてで曲線下面積がちょうど 0.5 に落ちることを確かめた。同時に偽の正しさの割合が多数派の割合と一致することも確認しており、測り方は壊れていない
-
-### 起票者の誤り
-
-（なし）
-
-### 逸脱
-
-- `judgement` — 予測が保存されていなかったが学習はやり直さず、三本すべてに残っていた重みから予測を作り直した。重みは前の実験そのものであるため、やり直すより条件が厳密に一致する。再現の確認として前の実験の集計値を計算し、五つの次元すべてが小数第七位まで一致することを確かめた
-- `environment` — PR 111 が未併合のため本分岐には前の実験の追跡下ファイルが無い。config.yaml を feat/grasp-injection-effect から読み出し audit/configs/ へ証跡として保存した。読み出しは参照のみで前の分岐へは何も書いていない。三つの設定は種を伏せると同一であることを確かめた
-- `judgement` — Phase D の完了判定に PR は含まれていないが、本セッションの他の契約と同じ経路で査読に載せるため分岐を push し PR を作成した。併合はしていない
-
-### 申し送り
-
-- 把持の信号は空ではなかったため、偏りへの対処を入れた学び直しは優先度が下がる。ただし丸めた後の飽和は残るため、較正と信号の尺度は次の設計契約で調べる。本契約では実装していない（禁止 11）
-- 両手で器具の次元は予測の最大値が 0.414121 であり閾値 0.5 を一度も超えない。連続値としては曲線下面積 0.8655 と情報を持つが、尺度が phase 側の重みづけを歪める可能性がある
-- 種 456 は最良の epoch が 20 と他の 50 と 47 より早く、器具の二次元で全フレーム正へ倒れ、右手が写る次元の曲線下面積も 0.7724 と最も低い。前の実験の対の差にこの種がどう効いたかは本契約では測っていない
-- 前の実験の RESULT は正しさの割合と下見の曲線下面積を並べて上回ったと述べている。結論そのものは本契約の測り直しで支持されたが、その理由づけは指標が違うため成立していない。過去の報告の該当箇所に注記を足すかは起票者の判断とする
-- 有効フレームは 1514 で契約の記載 1515 と 1 だけ違う。把持の教師が付かないフレームが除かれるためで、下見の契約も 1514 で測っており両者は揃っている
-
-### 断定できなかったこと
-
-- 当たっている把持の信号がなぜ工程分類を悪化させるかの因果機構。本契約では特定していない
-- 種 456 の早い停止と縮退が、前の実験の対の差 -0.004400440044004379 にどれだけ寄与したか。本契約では測っていない
-## T-2026-08-15-grasp-injection-effect
-
-状態 `pass` / ホスト `Andrew` / 起票 `111` / 様式 `v3`
+状態 `pass` / ホスト `andrew` / 起票 `なし` / 様式 `v3`
 
 ### ゲート
 
-- `G1` pass — 実装・ctrl/inj設定・凍結特徴3 split・教師3 splitが実在し、ctrl/injは各528919重み、基準点との差131781、事前登録commit 34572bb、GPU 2基空きを実測した
-- `G2` pass — ctrl/inj×seed 42/123/456の6本が50 epoch完走し、必須証跡、task_id、凍結源、train/val/test=9657/1515/4265、評価recipeを全件確認し、索引にtask_id付き6行を実測した
-- `G3` pass — inj-ctrlの対差は-0.0033003300/-0.0052805281/-0.0046204620、平均-0.0044004400、paired pstd 0.0008232469、比5.3452248、全seed負であり、事前登録式を変更せず逆方向効果を検出した
+- `G1` pass — signal キーは実装のどこからも読まれておらず、受け付けられる値は存在しなかった。前の実験の設定の predicted_sigmoid / zeros は注釈で、実挙動は arm で決まっていた。どんな値も黙って無視されるため SPEC の指示どおり直し、未知の値は ValueError で落ちる。四つの形はすべて未実装と確定し、すべて足した
+- `G2` pass — 同じ重みで零と一の信号を差し替えると、四つの形すべてで工程側の最終段の出力が動き（max abs delta 0.004116）、無情報な腕ではちょうど零だった。形ごとの候補値が実際に異なることも全対で確かめた（raw_logits は [0,1] に収まらず、standardized は記録した定数どおりの affine、oracle は教師と厳密一致）
+- `G3` pass — 実寸で五つの腕すべてが学習可能な重み 528919 で完全一致し、基準点 TeCNO 397138 との差 131781 も契約の記載と一致した。段階を分ける形の固定は重みの総数を変えないことを試験で固定した
 
 ### 起票者の誤り
 
-- `self_contradiction` — generic task手順はL3非0なら停止を要求する一方、本契約はL3のP4が要求するprereg commitをPhase Aで作る。指示順に実行すると必ずprereg.commit未記入で停止し、利用者がSPEC固有順序を選ばなければPhase Aへ到達できない
-- `check_does_not_check` — validate/preflightはoutputs.stamp.task_id_inを要求しているのに、指定された原設定2件のtask_idが旧契約のままであることを検出しなかった。指示どおり原設定で実行すると6 runが今回taskと結び付かず、索引のexpected_runsを満たせない
-- `self_contradiction` — decision ruleは差の絶対値を用いて通過を効果ありと呼ぶ一方、仮説と意思決定はinjがctrlを上回る改善を問う。今回のように全seedで負でも文字どおりには効果ありとなるため、改善・悪化を区別するverdictが契約に必要である
+- `asserted_without_measuring` — SPEC は signal: predicted_sigmoid を『これが列挙型なら、他の値が既にあるかもしれない』と書いたが、キーは実装のどこからも読まれていない注釈だった。列挙型かどうか以前に、読む者がいなかった。指示どおり実装の分岐箇所から読んだ結果、分岐そのものが存在しないことが確定し、四つの形すべてを新規に実装する必要があった。なお実挙動と注釈の一致は偶然であり、ctrl の signal: zeros も同様に読まれていなかった
 
 ### 逸脱
 
-- `judgement` — 初回L3がP4 prereg_committedで停止した後、ユーザー選択1によりSPEC固有順序を優先し、prereg.mdを先行commitしてspec.yamlへSHAを刻んでからL3を再実行した
-- `judgement` — 原設定のtask_idが旧実装契約でCLI上書きも無かったため、禁止されたconfigs/**を変更せず、task audit配下にtask_idだけ置換した実行用設定2件を作成し、他の全項目が原本と一致することを確認した
-- `environment` — 二回のdetached起動は実行基盤がシェル終了時に子processを回収し、run未生成・log 0 byte・GPU processなしだったため、継続PTY実行へ切り替えた。生成run数は6のままである
-- `judgement` — runindex harvesterが新stepのarmをunknown、accuracy_meanを空欄にしたため、変更禁止のharvesterは直さず、Phase Cを6つの生metrics.jsonとbest checkpointのval再評価で測定した
-- `environment` — 索引の再生成が過去の退避 run 34 件を同時に投影した。分母は不変であることを実測で確認した。34 件は新しく書かれた副次ファイルの数であり、索引の母集団を増やしたのはユニーク 6 run（索引 9 行）のみで 25 件は元から載っていた。索引から消えた run は 0 件、34 件はすべて除外印つきで、解析対象 excluded=False の増分は 703 から 709 の +6 すなわち本契約の run だけである。合流先は phase0/s2/hand_detection@val が 6 行、baselines/s0/varifocanet_bbox@None が 2 行、baselines/s0/smoke_e3@val が 1 行であった。過去の Δ の分母である control_of の指す先 8 件のうち今回の投影で合流されたものは 0 件で、変化を測る対象が無いため受け皿への起票も要さない。本契約が参照した分母は 17 run・平均 0.8973014948553677・pstd 0.005917073407586465 が投影の前後で一致した。既知の B-36 そのものは本契約では直していない。出所は audit/coprojection.json
-- `judgement` — 報告の引き渡し（commit / PR / 台帳送信）を別のセッションが行った。その際 tests の件数を全体スイートの実測へ差し替えた。元の before 0 / after 0 / passed 25 のうち 25 は誤りではなく、pytest tests/test_grasp_inference_injection.py tests/test_delta.py が 25 passed in 0.85s と実行時間まで再現し、RESULT §9 にも近接テストとして明記されている。差し替えた理由は二つで、他の契約が同じ欄に全体スイートを入れており比較が成り立たないこと、および after_failed 0 が既存の失敗 5 件を落としていることである。本契約は src/ にも tests/ にも変更を加えていないため before と after は同一で、全体は 5 failed / 448 passed、失敗 5 件は既存かつ本契約と無関係である（test_research_logger 4 件、test_engines 1 件）。近接テストの値は RESULT §9 に残した。指標と結論には触れていない
+- `spec_defect` — created_from.runindex_commit の記載 44697d9 に対し現在値は 592a4e1 だった。counts（index 791 / experiments 217 / verdicts 1038）は現状と一致しており起票者は更新後の索引を見ている。記載の commit だけが古いと判断し、置換せず続行した
+- `spec_defect` — Phase E は runindex/ に変更が無いことを期待するが、Phase D Step 3 が命じる make runindex が決定性監査を再生成し、新規スクリプトを 34 本目として記録した（anomalies.md と determinism_audit.csv の 2 ファイル、索引本体は不変）。生成と無変更の期待が両立しない。手では編集していない。forbidden-check と同型の構造であり、生成物として保持した
+- `environment` — 試走ループの初回が無音で失敗した。/usr/bin/time がこのホストに無く、出力の濾過と重なって失敗が見えなかった。成果物の実在確認（smoke_metrics.json の有無）で捕まえ、濾過なしで再実行した。この過程で新規スクリプトの import 誤り 2 件（experiment_manager / server_name のモジュール名）と evaluate の写し間違い 1 件（PhaseEvaluator.update の呼び出し形）を修正した
+- `judgement` — staged 設定の epochs_stage1: 50 は smoke の上限 2 を超えるため、新規スクリプトの CLI に --stage1-epochs を追加して 2 に抑えた。新規ファイル内の追加であり解禁範囲である
 
 ### 申し送り
 
-- make forbidden-check は run を生成する exp 契約を構造的に通せない。tools/check_forbidden.py の FORBIDDEN_PREFIXES が experiments/ と runindex/ を無条件に禁止領域とし、exp 契約が新規 run を作ることへの例外が無い。本契約では 100 件超の違反が出たが内訳は 6 本の新規 run の証跡と Phase C が要求する make runindex の生成物と B-36 のホスト固有の退避 run であり、不正は無い。既存 run JSON 12 件の変更は harvest_warnings の文言のみで指標は不変であることを実測した。run を作る exp 契約がこの検査を回したのは今回が初めてである
-- 把持信号注入はpaired mean -0.004400440044004379で全seed悪化したため、現構成を改善手法として進めず、hemostasisのF1差-0.15578752562792192をframe/segment単位で局在化する
-- 推論5次元は線形下見以上なので、confidence calibration、信号スケール、ゲート／正則化、phaseに有用な相互情報量を次の設計契約で調べる
-- train_grasp_phase_injection.pyへtask_id上書き経路を設け、runindex harvesterがarmとphase_accuracyを取り込む修正は、学習コードとharvesterの変更を許可する別impl契約へ回す
-- decision ruleのverdictをimprovement_detected / degradation_detected / not_detectedに分け、絶対値ルールと改善仮説の方向不整合を次の契約で解消する
+- 次の実験（効果測定）の材料: 入口は scripts/train_grasp_phase_injection_variants.py（既存スクリプト経由では新しい形は届かない）。設定は s4_grasp_injection_{ctrl,raw_logits,standardized,oracle_upper_bound_only,staged}.yaml。分母は exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42。本番規模の所要時間は UNKNOWN のため冒頭で 1 本実測してから見積もること
+- staged の stage1 の世代数（既定 50）が適切かは未検証。本契約は回ることだけを確かめた
+- 決定性監査が新規スクリプトを非決定と分類した（原本と同一のプロファイル）。cuda_manual_seed 等を揃えるかは既存 34 本すべてに関わる backlog B-20 の範疇
+- oracle_upper_bound_only は上限測定専用であり成果として報告してはならない。名・承認キー・docstring・結果 JSON の印の四重の歯止めを入れた。教師の無いフレームには学習側の正例率を渡すが、埋め値が 0/1 でないため教師の有無は下流から識別可能（漏れは残る）
 
 ### 断定できなかったこと
 
-- 把持推論accuracyが高いのにphase accuracyが下がる因果機構は本契約では特定していない
-- disinfection、dressing、irrigationは両腕とも工程別F1/Jaccardが0で、注入効果はUNKNOWN
+- 本番規模（50 世代・全 clip）の一本あたりの所要時間。試走は 2 世代・clip 1 本のみで 1.49〜1.90 秒だった
+- test 側の教師なしフレーム数。本契約は val のみを使うため数えていない
 

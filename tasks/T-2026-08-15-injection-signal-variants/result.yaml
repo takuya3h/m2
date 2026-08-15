@@ -1,0 +1,63 @@
+result_version: 3
+task_id: "T-2026-08-15-injection-signal-variants"
+status: pass
+host: "andrew"
+branch: "feat/injection-signal-variants"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "signal キーは実装のどこからも読まれておらず、受け付けられる値は存在しなかった。前の実験の設定の predicted_sigmoid / zeros は注釈で、実挙動は arm で決まっていた。どんな値も黙って無視されるため SPEC の指示どおり直し、未知の値は ValueError で落ちる。四つの形はすべて未実装と確定し、すべて足した"
+  - id: G2
+    verdict: pass
+    note: "同じ重みで零と一の信号を差し替えると、四つの形すべてで工程側の最終段の出力が動き（max abs delta 0.004116）、無情報な腕ではちょうど零だった。形ごとの候補値が実際に異なることも全対で確かめた（raw_logits は [0,1] に収まらず、standardized は記録した定数どおりの affine、oracle は教師と厳密一致）"
+  - id: G3
+    verdict: pass
+    note: "実寸で五つの腕すべてが学習可能な重み 528919 で完全一致し、基準点 TeCNO 397138 との差 131781 も契約の記載と一致した。段階を分ける形の固定は重みの総数を変えないことを試験で固定した"
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 469
+
+deviations:
+  - type: spec_defect
+    note: "created_from.runindex_commit の記載 44697d9 に対し現在値は 592a4e1 だった。counts（index 791 / experiments 217 / verdicts 1038）は現状と一致しており起票者は更新後の索引を見ている。記載の commit だけが古いと判断し、置換せず続行した"
+  - type: spec_defect
+    note: "Phase E は runindex/ に変更が無いことを期待するが、Phase D Step 3 が命じる make runindex が決定性監査を再生成し、新規スクリプトを 34 本目として記録した（anomalies.md と determinism_audit.csv の 2 ファイル、索引本体は不変）。生成と無変更の期待が両立しない。手では編集していない。forbidden-check と同型の構造であり、生成物として保持した"
+  - type: environment
+    note: "試走ループの初回が無音で失敗した。/usr/bin/time がこのホストに無く、出力の濾過と重なって失敗が見えなかった。成果物の実在確認（smoke_metrics.json の有無）で捕まえ、濾過なしで再実行した。この過程で新規スクリプトの import 誤り 2 件（experiment_manager / server_name のモジュール名）と evaluate の写し間違い 1 件（PhaseEvaluator.update の呼び出し形）を修正した"
+  - type: judgement
+    note: "staged 設定の epochs_stage1: 50 は smoke の上限 2 を超えるため、新規スクリプトの CLI に --stage1-epochs を追加して 2 に抑えた。新規ファイル内の追加であり解禁範囲である"
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "SPEC は signal: predicted_sigmoid を『これが列挙型なら、他の値が既にあるかもしれない』と書いたが、キーは実装のどこからも読まれていない注釈だった。列挙型かどうか以前に、読む者がいなかった。指示どおり実装の分岐箇所から読んだ結果、分岐そのものが存在しないことが確定し、四つの形すべてを新規に実装する必要があった。なお実挙動と注釈の一致は偶然であり、ctrl の signal: zeros も同様に読まれていなかった"
+
+positive_controls:
+  - judgement: "未知の signal 値が黙って既定にならない"
+    breaking_input: "signal: predicted_sigmoi（一字欠け）でモデルを構築する"
+    observed: "ValueError で落ちた。修正前は読まれずに黙って既定の挙動になっていた"
+  - judgement: "上限測定専用の形が明示なしで使えない"
+    breaking_input: "oracle_upper_bound_acknowledged を外して構築する"
+    observed: "never be reported を含む ValueError で構築を拒んだ。承認付きでは構築でき、学習結果の JSON に oracle_upper_bound_only_do_not_report: true が残ることを試走で実証した"
+  - judgement: "信号の到達検査が空振りしていない"
+    breaking_input: "無情報な腕（ctrl）に同じ信号差し替えを与える"
+    observed: "四つの形の注入腕は max abs delta 0.004116 で出力が動き、ctrl はちょうど 0.000000 だった"
+  - judgement: "試走が索引を汚していない"
+    breaking_input: "make runindex 後に index.csv から本契約の路径を探す"
+    observed: "該当 0 行、tasks/ 配下を指す行も 0、総行数 791 で不変だった"
+
+followups:
+  - "次の実験（効果測定）の材料: 入口は scripts/train_grasp_phase_injection_variants.py（既存スクリプト経由では新しい形は届かない）。設定は s4_grasp_injection_{ctrl,raw_logits,standardized,oracle_upper_bound_only,staged}.yaml。分母は exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42。本番規模の所要時間は UNKNOWN のため冒頭で 1 本実測してから見積もること"
+  - "staged の stage1 の世代数（既定 50）が適切かは未検証。本契約は回ることだけを確かめた"
+  - "決定性監査が新規スクリプトを非決定と分類した（原本と同一のプロファイル）。cuda_manual_seed 等を揃えるかは既存 34 本すべてに関わる backlog B-20 の範疇"
+  - "oracle_upper_bound_only は上限測定専用であり成果として報告してはならない。名・承認キー・docstring・結果 JSON の印の四重の歯止めを入れた。教師の無いフレームには学習側の正例率を渡すが、埋め値が 0/1 でないため教師の有無は下流から識別可能（漏れは残る）"
+
+unknowns:
+  - "本番規模（50 世代・全 clip）の一本あたりの所要時間。試走は 2 世代・clip 1 本のみで 1.49〜1.90 秒だった"
+  - "test 側の教師なしフレーム数。本契約は val のみを使うため数えていない"
+
+commits: []

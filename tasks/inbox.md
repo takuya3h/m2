@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（238 件）
+## 未処理（246 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -257,6 +257,10 @@
 - [ ] 2026-08-15 [cx] 原ctrl/inj設定のtask_idが旧実装契約のままでCLI上書きも無く、runindexも新stepのarmとphase_accuracyを拾わなかった。task_id上書き経路とharvester対応は変更可能な別impl契約へ回す（T-2026-08-15-grasp-injection-effect）
 - [ ] 2026-08-15 [cx] 絶対値を使うdecision ruleは全seed負でも「効果あり」になるため、improvement_detected / degradation_detected / not_detectedへverdictを方向付きで分ける（T-2026-08-15-grasp-injection-effect）
 - [ ] 2026-08-15 [cc] `make forbidden-check` は run を生成する exp 契約を構造的に通せない。`tools/check_forbidden.py:35` の `FORBIDDEN_PREFIXES` が `experiments/` と `runindex/` を無条件に禁止領域とし、exp 契約が新規 run を作ることへの例外が無いためである。本契約では 100 件超の違反が出たが、内訳は 6 本の新規 run の証跡 42 件・Phase C が明示的に要求する `make runindex` の生成物・B-36 のホスト固有の退避 run であり、不正は一件も無い。既存 run JSON 12 件の変更は `harvest_warnings` の文言のみで指標は不変であることを実測で確かめた。前契約（足す本数 0）で通ったのは run を 1 本も作らなかったからで、**run を作る exp 契約が検査を回したのは今回が初めてである。** L2-2 の排他・P4 の未文書化と同じ型で、検査が category 全体を通せない（T-2026-08-15-grasp-injection-effect）
+- [ ] 2026-08-15 [cc] 前の実験の設定の signal キーは実装のどこからも読まれていない注釈だった。inj の predicted_sigmoid も ctrl の zeros も実挙動（arm で決定）とたまたま一致していただけである。本契約でモデルが signal を読むようにし、未知の値は ValueError で落ちる。四つの形（raw_logits / standardized / oracle_upper_bound_only / staged）を新規実装し、五つの腕の学習可能な重みは 528919 で完全一致（基準点との差 131781）（T-2026-08-15-injection-signal-variants）
+- [ ] 2026-08-15 [cc] oracle_upper_bound_only は上限測定専用で成果として報告してはならない。歯止めは四重: 名にその旨が入る / oracle_upper_bound_acknowledged: true が無いと構築を拒む / docstring と設定に明記 / 結果 JSON に do_not_report の印が残る。教師の無いフレーム（学習側 301 枚実測）には学習側の正例率を渡す。零だと正例率 92.6% の次元で大きく誤り「教師が無い」ことが強く漏れるため。埋め値が 0/1 でないため教師の有無は依然識別可能で、漏れは残る（T-2026-08-15-injection-signal-variants）
+- [ ] 2026-08-15 [cc] make runindex が再生成する決定性監査（runindex/anomalies/）は、スクリプトを足すだけで差分が出る。Phase E の「runindex/ に変更が無いこと」という期待と、Phase D の「make runindex を回せ」という指示は両立しない。forbidden-check が run を作る exp 契約を通せないのと同型で、生成物と無変更検査の境界が契約の雛形で未整理である（T-2026-08-15-injection-signal-variants）
+- [ ] 2026-08-15 [cc] 次の実験の見積もりに要る本番規模の所要時間は UNKNOWN のまま。試走（2 世代・clip 1 本）は 1.49〜1.90 秒、前の実験の既存形は約 7 秒/本。staged は stage1（既定 50 世代）の分が加算されるため、冒頭で 1 本実測してから本数×時間を見積もること（T-2026-08-15-injection-signal-variants）
 
 ## 処理済み（1 件）
 

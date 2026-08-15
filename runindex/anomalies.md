@@ -1660,22 +1660,22 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 
 ### 26.1 🔴 決定的になり得る学習スクリプトは **1 本も無い**
 
-監査 33 スクリプト / うち CUDA を使う **16** 本 / 
+監査 34 スクリプト / うち CUDA を使う **17** 本 / 
 `can_be_deterministic = True` は **0** 本。
 
 | 制御項目 | 設定している本数 |
 |---|---:|
-| `random_seed` | 16 / 16 |
-| `numpy_seed` | 16 / 16 |
-| `torch_manual_seed` | 16 / 16 |
-| `cuda_manual_seed` | 2 / 16 |
-| `use_deterministic_algorithms` | 0 / 16 |
-| `cudnn_deterministic` | 2 / 16 |
-| `cudnn_benchmark` | 2 / 16 |
-| `pythonhashseed` | 2 / 16 |
-| `dataloader_worker_init_fn` | 0 / 16 |
-| `dataloader_generator` | 0 / 16 |
-| `cublas_workspace_config` | 0 / 16 |
+| `random_seed` | 17 / 17 |
+| `numpy_seed` | 17 / 17 |
+| `torch_manual_seed` | 17 / 17 |
+| `cuda_manual_seed` | 2 / 17 |
+| `use_deterministic_algorithms` | 0 / 17 |
+| `cudnn_deterministic` | 2 / 17 |
+| `cudnn_benchmark` | 2 / 17 |
+| `pythonhashseed` | 2 / 17 |
+| `dataloader_worker_init_fn` | 0 / 17 |
+| `dataloader_generator` | 0 / 17 |
+| `cublas_workspace_config` | 0 / 17 |
 
 **`torch.use_deterministic_algorithms` はどのスクリプトも呼んでいない。**
 これが無い限り GPU 上で bit 単位の再現は保証されないため、
@@ -1687,7 +1687,7 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 
 | seed_setup_via | 本数 | 意味 |
 |---|---:|---|
-| `direct` | 14 | ファイル内で直接 seed を張る（`scripts/train_*.py` 系）|
+| `direct` | 15 | ファイル内で直接 seed を張る（`scripts/train_*.py` 系）|
 | `seed_everything` | 1 | `src/egosurgery/utils/seed.py` のヘルパ経由 |
 | `seed_everything+delegates_to_engines` | 3 | ヘルパを呼びつつ更に委譲もする |
 | `delegates_to_engines` | 1 | 自分では触らず trainer に委譲（`src/egosurgery/train.py`）|

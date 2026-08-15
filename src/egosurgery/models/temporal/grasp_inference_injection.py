@@ -1,10 +1,31 @@
 """Causal grasp inference with signal-level injection into phase recognition.
 
 The grasp branch independently predicts five frame-level presences from frozen
-GAP features.  The injected arm concatenates detached sigmoid predictions to
-the phase input; the control arm concatenates zeros of exactly the same shape.
+GAP features.  The injected arm concatenates a detached signal to the phase
+input; the control arm concatenates zeros of exactly the same shape.
 Detaching the signal keeps grasp learning identical in both arms: only the
 masked auxiliary BCE trains the grasp branch.
+
+The shape of the injected signal is selected by ``cfg["signal"]``.  Unknown
+values raise instead of silently falling back: a mislabelled arm in the next
+experiment must fail loudly, not run as the default.
+
+============== =========================================================
+signal          candidate concatenated to the phase input (inj arm)
+============== =========================================================
+predicted_sigmoid  sigmoid of the grasp logits (default, prior behaviour)
+zeros              an all-zero signal (uninformative arm)
+raw_logits         the grasp logits before the sigmoid squashes them
+standardized       sigmoid outputs recentred/rescaled per dimension with
+                   constants measured on the *train* split (never val)
+oracle_upper_bound_only
+                   the ground-truth targets.  UPPER-BOUND MEASUREMENT
+                   ONLY -- this feeds evaluation-side teachers into the
+                   model and MUST NEVER be reported as a result.  It only
+                   answers whether the injection mechanism itself can
+                   help at all.  Requires an explicit acknowledgement key
+                   and per-dimension fill values for unlabelled frames.
+============== =========================================================
 
 Example:
     model = GraspInferenceInjectionModel({"enabled": True, "arm": "inj"})
@@ -20,6 +41,14 @@ import torch.nn.functional as F
 from torch import nn
 
 from egosurgery.models.heads.tecno_head import TeCNO
+
+SIGNAL_MODES = (
+    "predicted_sigmoid",
+    "zeros",
+    "raw_logits",
+    "standardized",
+    "oracle_upper_bound_only",
+)
 
 
 class FramewiseGraspHead(nn.Module):
@@ -60,6 +89,55 @@ class GraspInferenceInjectionModel(nn.Module):
         hidden_dim = int(cfg.get("hidden_dim", 64))
         temporal_cfg = cfg.get("temporal", {})
 
+        # Unknown signal names must fail loudly, never fall back to the
+        # default: a mistyped arm in an experiment would otherwise run as
+        # predicted_sigmoid and be indistinguishable from the real thing.
+        self.signal = str(cfg.get("signal", "predicted_sigmoid"))
+        if self.signal not in SIGNAL_MODES:
+            raise ValueError(
+                f"unknown grasp injection signal: {self.signal!r}; "
+                f"allowed: {SIGNAL_MODES}"
+            )
+
+        def _dim_constants(key: str) -> torch.Tensor:
+            values = cfg.get(key)
+            if values is None:
+                raise ValueError(
+                    f"signal={self.signal!r} requires cfg[{key!r}] with "
+                    f"{num_grasp_classes} per-dimension values"
+                )
+            tensor = torch.as_tensor(list(values), dtype=torch.float32)
+            if tensor.numel() != num_grasp_classes:
+                raise ValueError(
+                    f"cfg[{key!r}] must hold {num_grasp_classes} values, "
+                    f"got {tensor.numel()}"
+                )
+            return tensor.view(1, num_grasp_classes, 1)
+
+        if self.signal == "standardized":
+            # Centre/scale constants must come from the train split; taking
+            # them from the eval side would leak.  The trainer records them.
+            center = _dim_constants("signal_center")
+            scale = _dim_constants("signal_scale")
+            if bool((scale <= 0).any()):
+                raise ValueError("signal_scale must be strictly positive")
+            self.register_buffer("signal_center", center)
+            self.register_buffer("signal_scale", scale)
+        if self.signal == "oracle_upper_bound_only":
+            # UPPER-BOUND MEASUREMENT ONLY.  The acknowledgement key forces
+            # every config that uses ground-truth injection to say so out
+            # loud; without it the model refuses to construct.
+            if cfg.get("oracle_upper_bound_acknowledged") is not True:
+                raise ValueError(
+                    "signal='oracle_upper_bound_only' feeds ground-truth "
+                    "targets into the phase input.  It measures an upper "
+                    "bound and must never be reported as a result.  Set "
+                    "oracle_upper_bound_acknowledged: true to proceed."
+                )
+            self.register_buffer(
+                "oracle_missing_fill", _dim_constants("oracle_missing_fill")
+            )
+
         self.input_dim = input_dim
         self.num_grasp_classes = num_grasp_classes
         self.grasp_head: FramewiseGraspHead | None = None
@@ -85,12 +163,20 @@ class GraspInferenceInjectionModel(nn.Module):
         self,
         features: torch.Tensor,
         injected_signal: torch.Tensor | None = None,
+        grasp_targets: torch.Tensor | None = None,
+        grasp_valid: torch.Tensor | None = None,
     ) -> dict[str, object]:
         """Run grasp inference and phase recognition without future context.
 
         ``injected_signal`` is a test/audit override.  It changes the candidate
         signal in the injected arm, while the control arm still replaces it by
         zeros.  This makes signal reachability directly measurable.
+
+        ``grasp_targets`` (B, C, T) and ``grasp_valid`` (B, T) are consumed
+        only by ``signal='oracle_upper_bound_only'``; that mode raises when
+        they are missing.  Unlabelled frames receive the recorded per-dim
+        fill values -- note the fill is never exactly 0 or 1, so "this frame
+        has no teacher" remains distinguishable downstream.
         """
         if features.ndim != 3 or features.shape[1] != self.input_dim:
             raise ValueError(
@@ -109,7 +195,7 @@ class GraspInferenceInjectionModel(nn.Module):
 
         assert self.grasp_head is not None
         grasp_logits = self.grasp_head(features)
-        candidate = torch.sigmoid(grasp_logits).detach()
+        candidate = self._candidate(grasp_logits, grasp_targets, grasp_valid)
         if injected_signal is not None:
             if injected_signal.shape != candidate.shape:
                 raise ValueError(
@@ -124,6 +210,42 @@ class GraspInferenceInjectionModel(nn.Module):
             "grasp_logits": grasp_logits,
             "phase_input_signal": phase_signal,
         }
+
+    def _candidate(
+        self,
+        grasp_logits: torch.Tensor,
+        grasp_targets: torch.Tensor | None,
+        grasp_valid: torch.Tensor | None,
+    ) -> torch.Tensor:
+        """Shape the signal candidate per ``self.signal``, always detached.
+
+        Every branch is a per-frame operation: no mode may look at future
+        frames, or causality breaks for the phase head downstream.
+        """
+        if self.signal == "predicted_sigmoid":
+            return torch.sigmoid(grasp_logits).detach()
+        if self.signal == "zeros":
+            return torch.zeros_like(grasp_logits)
+        if self.signal == "raw_logits":
+            return grasp_logits.detach()
+        if self.signal == "standardized":
+            probs = torch.sigmoid(grasp_logits).detach()
+            return (probs - self.signal_center) / self.signal_scale
+        # oracle_upper_bound_only -- UPPER-BOUND MEASUREMENT ONLY, never a
+        # reportable result (see the class docstring and the config guard).
+        if grasp_targets is None or grasp_valid is None:
+            raise ValueError(
+                "signal='oracle_upper_bound_only' requires grasp_targets "
+                "and grasp_valid at forward time"
+            )
+        if grasp_targets.shape != grasp_logits.shape:
+            raise ValueError(
+                "oracle targets shape mismatch: "
+                f"expected {tuple(grasp_logits.shape)}, got {tuple(grasp_targets.shape)}"
+            )
+        valid = grasp_valid.to(dtype=torch.bool).unsqueeze(1)
+        fill = self.oracle_missing_fill.expand_as(grasp_targets)
+        return torch.where(valid, grasp_targets.to(grasp_logits.dtype), fill).detach()
 
 
 def masked_grasp_bce(
