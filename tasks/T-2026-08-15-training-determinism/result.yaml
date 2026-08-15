@@ -1,0 +1,61 @@
+result_version: 3
+task_id: "T-2026-08-15-training-determinism"
+status: pass
+host: "andrew"
+branch: "feat/training-determinism"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "決定化なしで同じ種（42）を二度走らせ、best accuracy が 0.9128712871287129 と 0.9042904290429042 で不一致（差 −0.0085809）。世代 1〜5 は 6 桁一致し世代 6 から食い違い、50 世代中 43 世代で不一致だった。乱数系は揃っており、ビットレベルの浮動小数の揺れが量子化された accuracy に現れるまで数世代かかる形である"
+  - id: G2
+    verdict: pass
+    note: "決定化した seed 42 を三度走らせた。三度目は間に非決定の 12 本（約 10 分）を挟んで装置の状態を掻き回した後である。三本とも accuracy が一致し best checkpoint の sha256 も e909ab8d3296481f で一致した。seed 123 / 456 も各二度で重みまで一致し、計 3 種で確認した"
+  - id: G3
+    verdict: pass
+    note: "設定を外した同種二度（G1 と同一コマンド）は −0.0086 で一致しない。対照は効いており、検査は空振りしていない"
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 472
+
+deviations:
+  - type: spec_defect
+    note: "created_from.runindex_commit の記載 8c13afb に対し現在値は 3e15d09 だった。counts は一致しており記載の commit だけが古い。四契約連続の同型である"
+  - type: judgement
+    note: "解禁範囲（乱数と決定性に関わる箇所）に加え、variants スクリプトへ --audit-dir を追加した。experiments/ を汚さず（禁止 10）全 50 世代を走らせる測定（G1 は全世代の実測が必要で smoke は 2 世代上限）を両立させるために必要だった。学習の挙動は不変で、audit 経路は重みの比較のため checkpoint も保存する"
+  - type: judgement
+    note: "G3 の『外すと一致しない』は Phase C で改めて走らせず、G1 の実測（同一コマンド・フラグ無し・二度で −0.0086 不一致）を対照として引いた。同一条件の実測が既にあり、再実行は情報を増やさないため"
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "SPEC は『隣接させると雑音が相関して打ち消し合っていたとみられる』『そうなれば種が三つでも 0.001 級の効果が見える』と書いたが、いずれも測らずに書かれた推測で、実測は双方を否定した。直す前の隣接実行の σ_d は 0.0073568 で一括の 0.0100007 と同水準であり、前実験の 0.000823 は n=3 の偶然だった。決定化後も σ_d は 0.0054519 残り、これは雑音ではなく種×腕の真の交互作用（seed 42 は +0.009、123/456 は約 −0.002）で、n=3 の検出下限は 0.0063 に留まる。SPEC 自身が『再現しないこと自体が重要な知見』と逃げ道を書いており、その通りになった"
+
+positive_controls:
+  - judgement: "決定化の検査が空振りしていない"
+    breaking_input: "決定化を外して同じ種を二度走らせる"
+    observed: "−0.0085809 で不一致。有効時は三度（うち一度は約 10 分と非決定 12 本を挟む）とも重みの sha256 まで一致した"
+  - judgement: "源の特定が one-factor で行われた"
+    breaking_input: "cudnn.deterministic + benchmark=False のみを設定して二度走らせる"
+    observed: "この 2 フラグだけで 50 世代すべてが一致した。支配的な源は cuDNN の畳み込みカーネル選択と確定した"
+  - judgement: "数式が変わっていない"
+    breaking_input: "元から決定的な CPU で、決定化の有無それぞれ同じ種・2 世代を走らせ、値が違えば数式が変わっている"
+    observed: "loss を含む全数値が完全一致（epoch1 loss 3.525164524714152 が両者同一）。変更はカーネル選択と乱数の届き方のみである"
+  - judgement: "検査の出力が索引を汚していない"
+    breaking_input: "make runindex 後に index.csv から training-determinism を含む path を探す"
+    observed: "混入 0 件。総行数 851 で不変"
+
+followups:
+  - "次の exp 契約から train.deterministic: true を明示して有効にすべきである（本契約は opt-in、既定不変・禁止 13）。減速は 2.15×（6.82 → 14.69 秒/本）で桁は変わらない"
+  - "sweep（#114）が申し送った『隣接実行の再測定』は不要になった。隣接しても σ_d は 0.0074 級で判定力は戻らない（実測済み）。代わりに決定化 + 種を増やす。n=10 で 0.0034 級、n=3 で 0.0063 級が検出下限"
+  - "#111 の負の効果（−0.0044、比 5.345）は信じてはならない。真の σ_d 0.0054 級に対し n=3 の平均 −0.0044 の実際の比は 0.8 程度で、当時の pstd 0.000823 が偶然小さく出たことによる見かけの有意である。sweep で再現しなかったこととも整合する"
+  - "種×腕の交互作用が実在する（seed 42 は +0.009、123/456 は約 −0.002、各測定は厳密）。主たる終点を『平均の差』に置く設計自体の再考が要るかもしれない。効果の不均一そのものを測る設計を検討する"
+  - "他の学習経路（train_s4_tecno.py・検出系の mmdet 経路）への決定化の展開は本契約の範囲外。mmdet 経路は deterministic=False が直書きされている（mmdet_trainer.py:501）"
+  - "過去の全 run（非決定）と今後の run（決定化）は数式は同じだがカーネルが違うため、同じ種でも値が変わる。分母を跨いで比べる場合は注意する"
+
+unknowns: []
+
+commits: []
