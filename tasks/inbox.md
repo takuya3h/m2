@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（234 件）
+## 未処理（238 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -249,6 +249,10 @@
 - [ ] 2026-08-15 [cc] 識別子の区切りに二系統の方言がある。`~<eval_recipe_id>` が 146 行、`#<先頭8桁>` が 4 行、どちらも無いものが 57 行で、両方を持つ行は 0 件。本契約は文法の側で両方を受けたが、受けたことで方言が固定化する。収穫器側で一つへ寄せるべきである。寄せると索引の再生成に波及し BL-harvester-scan-is-host-dependent と混ざるため、本契約では触れていない（T-2026-08-15-denominator-ref-resolution-fix）
 - [ ] 2026-08-15 [cc] 識別子に Python の空値が文字列として混入している。`@None` が 13 行（当該行の split 列は空文字）、`#None` が 2 行で計 15 行。さらに識別子の区画が列の値と一致しない行が 28 件あり、内訳は step 列の先頭下線の脱落 8 件、step 列の `_p123` の脱落 7 件、split の空値 13 件である。本契約は完全形を丸ごと照合するため影響を受けないが、収穫器側の欠陥として残る（T-2026-08-15-denominator-ref-resolution-fix）
 - [ ] 2026-08-15 [cc] 参照の記号 `#` は、逐語の引用では錨の境として最初の出現で二分され（validate_task.py の 1 箇所のみ）、分母の参照では識別子の一部として現れうる。現時点では参照を種別によらず解く共通関数が存在せず種別ごとに別経路のため、解釈を分ける必要は無いと判断した。将来これらを一つの関数へ束ねる時点で、`#` の意味が種別により異なることが表面化する（T-2026-08-15-denominator-ref-resolution-fix）
+- [ ] 2026-08-15 [cx] 把持信号注入は3 seedすべてで工程accuracyを下げ、paired mean=-0.0044004400、paired pstd=0.0008232469、比5.3452だった。改善仮説は棄却し、hemostasis悪化の局在化と信号形・較正・ゲートの再設計を優先する（T-2026-08-15-grasp-injection-effect）
+- [ ] 2026-08-15 [cx] 原ctrl/inj設定のtask_idが旧実装契約のままでCLI上書きも無く、runindexも新stepのarmとphase_accuracyを拾わなかった。task_id上書き経路とharvester対応は変更可能な別impl契約へ回す（T-2026-08-15-grasp-injection-effect）
+- [ ] 2026-08-15 [cx] 絶対値を使うdecision ruleは全seed負でも「効果あり」になるため、improvement_detected / degradation_detected / not_detectedへverdictを方向付きで分ける（T-2026-08-15-grasp-injection-effect）
+- [ ] 2026-08-15 [cc] `make forbidden-check` は run を生成する exp 契約を構造的に通せない。`tools/check_forbidden.py:35` の `FORBIDDEN_PREFIXES` が `experiments/` と `runindex/` を無条件に禁止領域とし、exp 契約が新規 run を作ることへの例外が無いためである。本契約では 100 件超の違反が出たが、内訳は 6 本の新規 run の証跡 42 件・Phase C が明示的に要求する `make runindex` の生成物・B-36 のホスト固有の退避 run であり、不正は一件も無い。既存 run JSON 12 件の変更は `harvest_warnings` の文言のみで指標は不変であることを実測で確かめた。前契約（足す本数 0）で通ったのは run を 1 本も作らなかったからで、**run を作る exp 契約が検査を回したのは今回が初めてである。** L2-2 の排他・P4 の未文書化と同じ型で、検査が category 全体を通せない（T-2026-08-15-grasp-injection-effect）
 
 ## 処理済み（1 件）
 

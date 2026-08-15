@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 38 件）。
-ここに出ない 33 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 39 件）。
+ここに出ない 34 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-08-18-report-back-to-ledger
 
@@ -142,37 +142,40 @@
 - 契約の取り込み操作そのものは実行していない。作業開始時点で未追跡ファイルとして作業ツリーに存在した。要約値の照合が通ったかは測れず UNKNOWN。記法が壊れずに届いたことのみ実測した
 - 過去に雛形を写して環境を作ったホストのローカル .env に SERVERNAME が残っていないかは未測定。共有の暗号設定には無い（鍵 6 個）
 
-## T-2026-08-15-denominator-ref-resolution-fix
+## T-2026-08-15-grasp-injection-effect
 
-状態 `pass` / ホスト `andrew` / 起票 `109` / 様式 `v3`
+状態 `pass` / ホスト `Andrew` / 起票 `なし` / 様式 `v3`
 
 ### ゲート
 
-- `G1` pass — 二区画 exp:phase1/s4_phase_baseline は第一層を通り第二層 L2-2 で落ちた。完全形は第一層 L1-1 と L1-4 の双方で落ちた。validate_l1 と validate_l2 に spec を与えて双方向を実際に走らせ、audit/before_exclusivity.json に残した
-- `G2` pass — 新しい試験は直した後の実装で 5/5 通り、origin/phase0 の detached worktree で復元した直す前の実装に対して 4/5 落ちた。落ちなかった 1 件は実在しない参照を拒む見張りで、直す前は全参照が第二層で落ちるため前後を区別しない
+- `G1` pass — 実装・ctrl/inj設定・凍結特徴3 split・教師3 splitが実在し、ctrl/injは各528919重み、基準点との差131781、事前登録commit 34572bb、GPU 2基空きを実測した
+- `G2` pass — ctrl/inj×seed 42/123/456の6本が50 epoch完走し、必須証跡、task_id、凍結源、train/val/test=9657/1515/4265、評価recipeを全件確認し、索引にtask_id付き6行を実測した
+- `G3` pass — inj-ctrlの対差は-0.0033003300/-0.0052805281/-0.0046204620、平均-0.0044004400、paired pstd 0.0008232469、比5.3452248、全seed負であり、事前登録式を変更せず逆方向効果を検出した
 
 ### 起票者の誤り
 
-- `asserted_without_measuring` — 契約は Phase C Step 2 の試験 3「旧い二区画の書式で第二層が落ちる」を『今回の回帰そのもの』と位置づけたが、判別できるかを確かめていなかった。指示どおり第二層だけを見る形で置いたところ、直す前の実装でも通った。直す前は参照の形によらず第二層が必ず落ちるため、第二層の指摘だけでは前後を区別できない。第一層の判定を加えて初めて回帰検出器になった。契約自身が Step 3 で空振りの確認を要求していたため、この誤りはその手順で捕まった
+- `self_contradiction` — generic task手順はL3非0なら停止を要求する一方、本契約はL3のP4が要求するprereg commitをPhase Aで作る。指示順に実行すると必ずprereg.commit未記入で停止し、利用者がSPEC固有順序を選ばなければPhase Aへ到達できない
+- `check_does_not_check` — validate/preflightはoutputs.stamp.task_id_inを要求しているのに、指定された原設定2件のtask_idが旧契約のままであることを検出しなかった。指示どおり原設定で実行すると6 runが今回taskと結び付かず、索引のexpected_runsを満たせない
+- `self_contradiction` — decision ruleは差の絶対値を用いて通過を効果ありと呼ぶ一方、仮説と意思決定はinjがctrlを上回る改善を問う。今回のように全seedで負でも文字どおりには効果ありとなるため、改善・悪化を区別するverdictが契約に必要である
 
 ### 逸脱
 
-- `judgement` — Phase C Step 1 の開始前の失敗件数を Phase B より先に測っていなかった。origin/phase0 の detached worktree を建てて直す前の状態を復元し、事後に基準線を取得した
-- `judgement` — L2-2 の群の列との照合を残した。識別子の先頭区画は 207/207 が群の列と一致し情報を失わず、将来食い違ったときに黙って解決するより落ちるほうがよいため
-- `spec_defect` — 試験 3 を契約の記載より強化した。第二層だけを見る形では直す前の実装でも通り回帰を検出しないため、第一層の判定を加えた
-- `environment` — 基準線を worktree で測ったため skip が 14 と 0 で食い違う。worktree に data/ 配下の重み・注釈・manifest が無く依存する 14 件が skip された。失敗識別子の集合は前後で完全一致しており比較の妥当性は保たれている
-- `judgement` — 既存試験 2 件の分母の参照を旧二区画から完全形へ更新した。文法を狭めた結果として落ちたためで、Phase C の Files が Modify を許している
-- `judgement` — tests/test_validate_task.py:252 の exp:transfer/example は旧書式のまま据え置いた。当該箇所は分母の存在しか見ておらず文法検査を経ないため、落ちていない箇所を触らない
+- `judgement` — 初回L3がP4 prereg_committedで停止した後、ユーザー選択1によりSPEC固有順序を優先し、prereg.mdを先行commitしてspec.yamlへSHAを刻んでからL3を再実行した
+- `judgement` — 原設定のtask_idが旧実装契約でCLI上書きも無かったため、禁止されたconfigs/**を変更せず、task audit配下にtask_idだけ置換した実行用設定2件を作成し、他の全項目が原本と一致することを確認した
+- `environment` — 二回のdetached起動は実行基盤がシェル終了時に子processを回収し、run未生成・log 0 byte・GPU processなしだったため、継続PTY実行へ切り替えた。生成run数は6のままである
+- `judgement` — runindex harvesterが新stepのarmをunknown、accuracy_meanを空欄にしたため、変更禁止のharvesterは直さず、Phase Cを6つの生metrics.jsonとbest checkpointのval再評価で測定した
+- `judgement` — 報告の引き渡し（commit / PR / 台帳送信）を別のセッションが行った。その際 tests の件数を実測へ差し替えた。元は before 0 / after 0 / passed 25 であったが audit に裏づける記録が無く、把持注入の試験は 9 件、全体は 448 passed であり、どの部分集合とも一致しなかった。本契約は src/ にも tests/ にも変更を加えていないため before と after は同一で、実測は 5 failed / 448 passed である。失敗 5 件は既存のもので本契約と無関係である（test_research_logger 4 件、test_engines 1 件）。指標と結論には触れていない
 
 ### 申し送り
 
-- 識別子の区切りに二系統の方言がある（~ が 146 行 / # が 4 行 / どちらも無いものが 57 行、両方を持つ行は 0）。本契約は文法の側で両方を受けたが、受けたことで方言が固定化する。収穫器側で一つへ寄せるべきだが、寄せると索引の再生成に波及し BL-harvester-scan-is-host-dependent と混ざるため触れていない
-- 識別子に Python の空値が文字列として混入している。@None が 13 行、#None が 2 行で計 15 行。あわせて識別子の区画が列の値と一致しない行が 28 件ある（split の空値 13 / step 列の先頭下線の脱落 8 / step 列の _p123 の脱落 7）。完全形を丸ごと照合するため本修正は影響を受けないが、収穫器側の欠陥として残る
-- 記号 # は逐語の引用では錨の境として最初の出現で二分され、分母の参照では識別子の一部として現れうる。参照を種別によらず解く共通関数が存在せず種別ごとに別経路のため、現時点で解釈を分ける必要は無いと判断した。将来一つの関数へ束ねる時点で表面化する
-- 未追跡のセッション抽出物が docs/sessions/digest/ に 3 件ある（2026-08-02 / 2026-08-12 / 2026-08-15）。前セッション由来で本契約の範囲外のため触れていない。tasks/README.md は未追跡のまま放置すると merge --ff-only が止まると記している（B-30）。記録するかは伏せ字の確認を伴うため起票者の判断を仰ぐ
+- make forbidden-check は run を生成する exp 契約を構造的に通せない。tools/check_forbidden.py の FORBIDDEN_PREFIXES が experiments/ と runindex/ を無条件に禁止領域とし、exp 契約が新規 run を作ることへの例外が無い。本契約では 100 件超の違反が出たが内訳は 6 本の新規 run の証跡と Phase C が要求する make runindex の生成物と B-36 のホスト固有の退避 run であり、不正は無い。既存 run JSON 12 件の変更は harvest_warnings の文言のみで指標は不変であることを実測した。run を作る exp 契約がこの検査を回したのは今回が初めてである
+- 把持信号注入はpaired mean -0.004400440044004379で全seed悪化したため、現構成を改善手法として進めず、hemostasisのF1差-0.15578752562792192をframe/segment単位で局在化する
+- 推論5次元は線形下見以上なので、confidence calibration、信号スケール、ゲート／正則化、phaseに有用な相互情報量を次の設計契約で調べる
+- train_grasp_phase_injection.pyへtask_id上書き経路を設け、runindex harvesterがarmとphase_accuracyを取り込む修正は、学習コードとharvesterの変更を許可する別impl契約へ回す
+- decision ruleのverdictをimprovement_detected / degradation_detected / not_detectedに分け、絶対値ルールと改善仮説の方向不整合を次の契約で解消する
 
 ### 断定できなかったこと
 
-- frozen_source.ref も run:<group>/<run_name> という同型の二区画の文法である。分母と同じ欠陥があるかは本契約の範囲外のため測っていない。UNKNOWN
-- 十件の主指標の幅と計画の揺らぎの倍率（約 29-48 倍）は、σ の概算 0.003-0.005 を既存の記録から引いて求めたものである。σ そのものは本契約で測っていない
+- 把持推論accuracyが高いのにphase accuracyが下がる因果機構は本契約では特定していない
+- disinfection、dressing、irrigationは両腕とも工程別F1/Jaccardが0で、注入効果はUNKNOWN
 

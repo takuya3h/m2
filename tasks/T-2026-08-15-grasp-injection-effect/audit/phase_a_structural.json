@@ -1,0 +1,61 @@
+{
+  "signal_reachability": {
+    "inj_max_abs_delta": 0.0577579140663147,
+    "ctrl_max_abs_delta": 0.0
+  },
+  "trainable_parameters": {
+    "A_trainable": 397138,
+    "ctrl_trainable": 528919,
+    "inj_trainable": 528919,
+    "ctrl_minus_A": 131781
+  },
+  "recipes": {
+    "baseline_vs_ctrl": true,
+    "baseline_vs_inj": true,
+    "baseline_vs_false_temporal": false
+  },
+  "loss_masking": {
+    "grasp_loss_masked": 0.0,
+    "grasp_loss_annotated": 0.6931471824645996,
+    "phase_loss_on_masked_frame": 1.0986123085021973
+  },
+  "grasp_accuracy_per_class": {
+    "left_hand": 1.0,
+    "right_hand": 1.0,
+    "left_hand_tool": 1.0,
+    "right_hand_tool": 1.0,
+    "two_hands_tool": 1.0
+  },
+  "population": {
+    "train": {
+      "phase_frames": 9657,
+      "annotated_frames": 9356,
+      "masked_frames": 301,
+      "missing_from_grasp_population": 0,
+      "extra_in_grasp_population": 0,
+      "expected": 9657
+    },
+    "val": {
+      "phase_frames": 1515,
+      "annotated_frames": 1514,
+      "masked_frames": 1,
+      "missing_from_grasp_population": 0,
+      "extra_in_grasp_population": 0,
+      "expected": 1515
+    },
+    "test": {
+      "phase_frames": 4265,
+      "annotated_frames": 4107,
+      "masked_frames": 158,
+      "missing_from_grasp_population": 0,
+      "extra_in_grasp_population": 0,
+      "expected": 4265
+    }
+  },
+  "causality": {
+    "past_grasp_max_abs_delta": 0.0,
+    "past_phase_max_abs_delta": 0.0
+  },
+  "disabled_vs_existing_max_abs_delta": 0.0,
+  "all_pass": true
+}

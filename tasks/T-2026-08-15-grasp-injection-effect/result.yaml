@@ -1,0 +1,68 @@
+result_version: 3
+task_id: "T-2026-08-15-grasp-injection-effect"
+status: pass
+host: "Andrew"
+branch: "feat/grasp-injection-effect"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "実装・ctrl/inj設定・凍結特徴3 split・教師3 splitが実在し、ctrl/injは各528919重み、基準点との差131781、事前登録commit 34572bb、GPU 2基空きを実測した"
+  - id: G2
+    verdict: pass
+    note: "ctrl/inj×seed 42/123/456の6本が50 epoch完走し、必須証跡、task_id、凍結源、train/val/test=9657/1515/4265、評価recipeを全件確認し、索引にtask_id付き6行を実測した"
+  - id: G3
+    verdict: pass
+    note: "inj-ctrlの対差は-0.0033003300/-0.0052805281/-0.0046204620、平均-0.0044004400、paired pstd 0.0008232469、比5.3452248、全seed負であり、事前登録式を変更せず逆方向効果を検出した"
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 448
+
+deviations:
+  - type: judgement
+    note: "初回L3がP4 prereg_committedで停止した後、ユーザー選択1によりSPEC固有順序を優先し、prereg.mdを先行commitしてspec.yamlへSHAを刻んでからL3を再実行した"
+  - type: judgement
+    note: "原設定のtask_idが旧実装契約でCLI上書きも無かったため、禁止されたconfigs/**を変更せず、task audit配下にtask_idだけ置換した実行用設定2件を作成し、他の全項目が原本と一致することを確認した"
+  - type: environment
+    note: "二回のdetached起動は実行基盤がシェル終了時に子processを回収し、run未生成・log 0 byte・GPU processなしだったため、継続PTY実行へ切り替えた。生成run数は6のままである"
+  - type: judgement
+    note: "runindex harvesterが新stepのarmをunknown、accuracy_meanを空欄にしたため、変更禁止のharvesterは直さず、Phase Cを6つの生metrics.jsonとbest checkpointのval再評価で測定した"
+  - type: judgement
+    note: "報告の引き渡し（commit / PR / 台帳送信）を別のセッションが行った。その際 tests の件数を実測へ差し替えた。元は before 0 / after 0 / passed 25 であったが audit に裏づける記録が無く、把持注入の試験は 9 件、全体は 448 passed であり、どの部分集合とも一致しなかった。本契約は src/ にも tests/ にも変更を加えていないため before と after は同一で、実測は 5 failed / 448 passed である。失敗 5 件は既存のもので本契約と無関係である（test_research_logger 4 件、test_engines 1 件）。指標と結論には触れていない"
+
+issuer_defects:
+  - type: self_contradiction
+    note: "generic task手順はL3非0なら停止を要求する一方、本契約はL3のP4が要求するprereg commitをPhase Aで作る。指示順に実行すると必ずprereg.commit未記入で停止し、利用者がSPEC固有順序を選ばなければPhase Aへ到達できない"
+  - type: check_does_not_check
+    note: "validate/preflightはoutputs.stamp.task_id_inを要求しているのに、指定された原設定2件のtask_idが旧契約のままであることを検出しなかった。指示どおり原設定で実行すると6 runが今回taskと結び付かず、索引のexpected_runsを満たせない"
+  - type: self_contradiction
+    note: "decision ruleは差の絶対値を用いて通過を効果ありと呼ぶ一方、仮説と意思決定はinjがctrlを上回る改善を問う。今回のように全seedで負でも文字どおりには効果ありとなるため、改善・悪化を区別するverdictが契約に必要である"
+
+positive_controls:
+  - judgement: "評価recipeの照合が構成差を検出する"
+    breaking_input: "inj設定のtemporal num_layersを1だけ増やした偽条件を与える"
+    observed: "実在ctrl/injは分母と一致し、偽temporal条件だけは分母と一致しなかった"
+  - judgement: "paired decision ruleが符号混在を拒否する"
+    breaking_input: "差ベクトルに正負を混在させた[0.020, -0.010, 0.020]を与える"
+    observed: "same_nonzero_sign=false、abs(mean)/pstd=0.7071067811865476となり判定はFAILした。同符号[0.019, 0.020, 0.021]はPASSした"
+  - judgement: "effect.jsonが転記や再評価のずれを含まない"
+    breaking_input: "6 metrics、9工程、5把持次元のいずれかが保存JSONと異なればassertを失敗させる"
+    observed: "effect_json_matches_raw=true、checked_runs=6、checked_phase_classes=9、checked_grasp_dimensions=5を実測した"
+
+followups:
+  - "make forbidden-check は run を生成する exp 契約を構造的に通せない。tools/check_forbidden.py の FORBIDDEN_PREFIXES が experiments/ と runindex/ を無条件に禁止領域とし、exp 契約が新規 run を作ることへの例外が無い。本契約では 100 件超の違反が出たが内訳は 6 本の新規 run の証跡と Phase C が要求する make runindex の生成物と B-36 のホスト固有の退避 run であり、不正は無い。既存 run JSON 12 件の変更は harvest_warnings の文言のみで指標は不変であることを実測した。run を作る exp 契約がこの検査を回したのは今回が初めてである"
+  - "把持信号注入はpaired mean -0.004400440044004379で全seed悪化したため、現構成を改善手法として進めず、hemostasisのF1差-0.15578752562792192をframe/segment単位で局在化する"
+  - "推論5次元は線形下見以上なので、confidence calibration、信号スケール、ゲート／正則化、phaseに有用な相互情報量を次の設計契約で調べる"
+  - "train_grasp_phase_injection.pyへtask_id上書き経路を設け、runindex harvesterがarmとphase_accuracyを取り込む修正は、学習コードとharvesterの変更を許可する別impl契約へ回す"
+  - "decision ruleのverdictをimprovement_detected / degradation_detected / not_detectedに分け、絶対値ルールと改善仮説の方向不整合を次の契約で解消する"
+
+unknowns:
+  - "把持推論accuracyが高いのにphase accuracyが下がる因果機構は本契約では特定していない"
+  - "disinfection、dressing、irrigationは両腕とも工程別F1/Jaccardが0で、注入効果はUNKNOWN"
+
+commits:
+  - "34572bb"

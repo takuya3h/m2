@@ -1,0 +1,111 @@
+{
+  "task_id": "T-2026-08-15-grasp-injection-effect",
+  "source": "six metrics.json plus deterministic val re-evaluation of six best checkpoints",
+  "split": "val",
+  "seeds": [42, 123, 456],
+  "run_count": 6,
+  "primary_endpoint": {
+    "definition": "inj phase_accuracy - ctrl phase_accuracy, paired by seed",
+    "paired_delta": {
+      "42": -0.0033003300330032292,
+      "123": -0.005280528052805322,
+      "456": -0.0046204620462045876
+    },
+    "mean": -0.004400440044004379,
+    "pstd_ddof0": 0.0008232469497852892,
+    "abs_mean_over_pstd": 5.345224838248179,
+    "signs": [-1, -1, -1],
+    "same_nonzero_sign": true,
+    "decision_rule_pass": true,
+    "direction": "negative",
+    "hypothesis_supported": false,
+    "verdict": "effect_detected_in_opposite_direction"
+  },
+  "arm_accuracy": {
+    "ctrl_per_seed": {
+      "42": 0.8963696369636963,
+      "123": 0.8924092409240925,
+      "456": 0.8996699669966997
+    },
+    "inj_per_seed": {
+      "42": 0.8930693069306931,
+      "123": 0.8871287128712871,
+      "456": 0.8950495049504951
+    },
+    "ctrl_mean": 0.8961496149614963,
+    "ctrl_pstd": 0.0029682590898200017,
+    "inj_mean": 0.8917491749174918,
+    "inj_pstd": 0.0033656894479160327
+  },
+  "grasp_inference_injected_arm": {
+    "left_hand": {
+      "inj_mean": 0.9848084656061552,
+      "inj_pstd": 1.1102230246251565e-16,
+      "linear_probe": 0.645,
+      "inj_mean_minus_probe": 0.3398084656061552
+    },
+    "right_hand": {
+      "inj_mean": 0.9665345850362487,
+      "inj_pstd": 0.0003113633231338767,
+      "linear_probe": 0.759,
+      "inj_mean_minus_probe": 0.20753458503624866
+    },
+    "left_hand_tool": {
+      "inj_mean": 0.8756054618819492,
+      "inj_pstd": 0.04422678280907723,
+      "linear_probe": 0.829,
+      "inj_mean_minus_probe": 0.04660546188194925
+    },
+    "right_hand_tool": {
+      "inj_mean": 0.8560105728872124,
+      "inj_pstd": 0.010498997302844997,
+      "linear_probe": 0.743,
+      "inj_mean_minus_probe": 0.11301057288721239
+    },
+    "two_hands_tool": {
+      "inj_mean": 0.8837516564516599,
+      "inj_pstd": 0.0,
+      "linear_probe": 0.793,
+      "inj_mean_minus_probe": 0.09075165645165983
+    }
+  },
+  "secondary_ctrl_vs_baseline_unpaired_reference": {
+    "baseline_experiment_id": "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42",
+    "baseline_accuracy_mean": 0.8973014948553679,
+    "baseline_accuracy_pstd": 0.005917073407586465,
+    "baseline_n_runs": 17,
+    "baseline_n_seeds": 3,
+    "ctrl_mean": 0.8961496149614963,
+    "ctrl_mean_minus_baseline_mean": -0.0011518798938716657,
+    "note": "unpaired reference only"
+  },
+  "per_phase": {
+    "anesthesia": {"phase_id": 0, "ctrl_f1_mean": 0.8893582798395981, "inj_f1_mean": 0.8962407691601411, "delta_f1_mean": 0.0068824893205429545, "ctrl_jaccard_mean": 0.8027210884353742, "inj_jaccard_mean": 0.819762248333677, "delta_jaccard_mean": 0.017041159898302755},
+    "closure": {"phase_id": 1, "ctrl_f1_mean": 0.9261808287384735, "inj_f1_mean": 0.924573047002895, "delta_f1_mean": -0.0016077817355785544, "ctrl_jaccard_mean": 0.862511275128496, "inj_jaccard_mean": 0.8598765441918307, "delta_jaccard_mean": -0.0026347309366651825},
+    "design": {"phase_id": 2, "ctrl_f1_mean": 1.0, "inj_f1_mean": 0.9967637540453075, "delta_f1_mean": -0.003236245954692555, "ctrl_jaccard_mean": 1.0, "inj_jaccard_mean": 0.9935897435897436, "delta_jaccard_mean": -0.006410256410256425},
+    "disinfection": {"phase_id": 3, "ctrl_f1_mean": 0.0, "inj_f1_mean": 0.0, "delta_f1_mean": 0.0, "ctrl_jaccard_mean": 0.0, "inj_jaccard_mean": 0.0, "delta_jaccard_mean": 0.0},
+    "dissection": {"phase_id": 4, "ctrl_f1_mean": 0.9151000391169472, "inj_f1_mean": 0.9148469288874833, "delta_f1_mean": -0.00025311022946383765, "ctrl_jaccard_mean": 0.8435152270035111, "inj_jaccard_mean": 0.8431666289896421, "delta_jaccard_mean": -0.0003485980138691798},
+    "dressing": {"phase_id": 5, "ctrl_f1_mean": 0.0, "inj_f1_mean": 0.0, "delta_f1_mean": 0.0, "ctrl_jaccard_mean": 0.0, "inj_jaccard_mean": 0.0, "delta_jaccard_mean": 0.0},
+    "hemostasis": {"phase_id": 6, "ctrl_f1_mean": 0.3789881615968573, "inj_f1_mean": 0.22320063596893533, "delta_f1_mean": -0.15578752562792192, "ctrl_jaccard_mean": 0.24326211422985614, "inj_jaccard_mean": 0.13462217514124294, "delta_jaccard_mean": -0.10863993908861323},
+    "incision": {"phase_id": 7, "ctrl_f1_mean": 0.8553858072982412, "inj_f1_mean": 0.8500500500500502, "delta_f1_mean": -0.005335757248191057, "ctrl_jaccard_mean": 0.7475844594594595, "inj_jaccard_mean": 0.7440073322053017, "delta_jaccard_mean": -0.003577127254157745},
+    "irrigation": {"phase_id": 8, "ctrl_f1_mean": 0.0, "inj_f1_mean": 0.0, "delta_f1_mean": 0.0, "ctrl_jaccard_mean": 0.0, "inj_jaccard_mean": 0.0, "delta_jaccard_mean": 0.0}
+  },
+  "elapsed_seconds": {
+    "per_run": {
+      "ctrl_seed42": 6.478691497119144,
+      "inj_seed42": 7.339944418985397,
+      "ctrl_seed123": 6.914426580071449,
+      "inj_seed123": 6.815076003083959,
+      "ctrl_seed456": 6.6095304801128805,
+      "inj_seed456": 6.91641585691832
+    },
+    "mean": 6.845680806048525,
+    "min": 6.478691497119144,
+    "max": 7.339944418985397
+  },
+  "positive_controls": {
+    "decision_rule_passing": {"input": [0.019, 0.02, 0.021], "observed_pass": true},
+    "decision_rule_mixed_sign": {"input": [0.02, -0.01, 0.02], "observed_pass": false},
+    "recipe_false_temporal": {"observed_match": false}
+  }
+}
