@@ -2023,3 +2023,48 @@ inj の入力差による工程出力最大絶対差 0.05775783956050873、ctrl 
 neck無し S4 分母 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42`
 に対し、seed 42/123/456 の ctrl/inj 各3本を別の事前登録契約で実行する。full 50 epoch の所要時間は
 未測定のため `UNKNOWN`。
+
+---
+
+## 2026-08-15 — 把持推論信号の工程分類への注入効果（本命、ctrl/inj × 3 seed）
+
+### 仮説
+
+把持推論の5次元 sigmoid 信号を causal TeCNO へ渡す inj arm は、同形の零信号を渡す ctrl arm
+より val phase accuracy が高い。主終点は同じ seed の `inj - ctrl`。判定は
+`abs(mean paired delta) / paired pstd >= 1` かつ全 seed 同符号（ddof=0）。
+
+### 実験
+
+task `T-2026-08-15-grasp-injection-effect`。凍結源 `relation_detr_seed42`、neckなし、
+train/val/test=9657/1515/4265、online_causal / Jaccard strict、50 epoch、seed 42/123/456。
+ctrl/inj 各3本の計6本を RTX A6000 で完走した。全 run の学習可能重みは528919で一致し、
+best checkpoint と W&B・Notion を含む必須証跡を記録した。test split は使用していない。
+
+### 結果
+
+paired delta は seed42 `-0.0033003300330032292`、seed123 `-0.005280528052805322`、
+seed456 `-0.0046204620462045876`。平均 `-0.004400440044004379`、paired pstd
+`0.0008232469497852892`、比 `5.345224838248179`、全 seed 負だった。事前登録の絶対値ルールは
+PASS したが、方向は仮説と逆で、注入は平均 accuracy を約0.4400 percentage point 下げた。
+
+inj arm の把持 accuracy 3 seed平均は left hand `0.9848084656061552`、right hand
+`0.9665345850362487`、left hand-tool `0.8756054618819492`、right hand-tool
+`0.8560105728872124`、two-hands-tool `0.8837516564516599` で、5次元すべて線形下見以上だった。
+工程別の最大悪化は hemostasis（F1差 `-0.15578752562792192`、Jaccard差
+`-0.10863993908861323`）。anesthesia は小幅改善した。1本の `elapsed_seconds` は平均
+`6.845680806048525` 秒（最小 `6.478691497119144`、最大 `7.339944418985397`）。
+
+### 解釈
+
+改善仮説は棄却された。「検出できず」や「効果なし」ではなく、事前登録ルールで**逆方向の悪化を
+検出**した。把持推論自体は線形下見以上なので、信号が無情報だったことでは説明できない。
+悪化が hemostasis に集中するため、predicted sigmoid の較正、連結後のスケール、phase head の
+過適合、把持 accuracy と phase に有用な情報量のずれを疑う。
+
+### 次
+
+現構成を改善手法として seed 追加するのではなく、hemostasis の frame/segment 単位の局在化、
+confidence calibration、ゲート／正則化、信号の相互情報量を別契約で調べる。また、runindex が
+新 step の `arm` と `phase_accuracy` を拾わない点と、entrypoint に task_id 上書きが無い点を
+別 impl 契約で直す。decision verdict も improvement / degradation / not_detected に分ける。

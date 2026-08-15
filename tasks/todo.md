@@ -1,5 +1,15 @@
 # TODO — 研究ピボット「分析ファースト」のセットアップ
 
+## 2026-08-15 — T-2026-08-15-grasp-injection-effect
+
+- [x] 契約取得、L1/L2 検証、逐語参照解決、L3 preflight を完了する
+- [x] Phase A: 実装・凍結特徴・教師・重み同数・GPU 空きを実測し、事前登録を固定して G1 を判定する
+- [x] Phase B: ctrl/inj を同じ3 seedで計6本走らせ、所要時間・完走・評価条件・母集団・陽性対照を実測して G2 を判定する
+- [x] Phase C: paired delta、母標準偏差、符号、把持推論5次元、基準点差、工程別分解を事前登録どおり測定し G3 を判定する
+- [ ] Phase D: RESULT/result.yaml/inbox/README を記録し、投影・禁止領域・索引を検証して commit・push・PR・台帳返送・同期抑止解除を完了する
+
+成功基準: 6 run が `task_id` 付きで索引に現れ、契約の G1〜G3 と全 acceptance を実測で満たす。未測定値は `UNKNOWN`、停止条件や escalation 条件が成立した場合は推測で進めず、契約どおり記録して停止する。
+
 ## 2026-08-13 — T-2026-08-13-andrew-lecun-sync-cutover
 
 - [x] Andrew固有監査履歴とorigin/phase0を競合なく統合し、契約取得とL1/L2検証を完了する

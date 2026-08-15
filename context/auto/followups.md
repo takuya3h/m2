@@ -253,6 +253,13 @@
 - 種 456 は最良の epoch が 20 と他の 50 と 47 より早く、器具の二次元で全フレーム正へ倒れ、右手が写る次元の曲線下面積も 0.7724 と最も低い。前の実験の対の差にこの種がどう効いたかは本契約では測っていない
 - 前の実験の RESULT は正しさの割合と下見の曲線下面積を並べて上回ったと述べている。結論そのものは本契約の測り直しで支持されたが、その理由づけは指標が違うため成立していない。過去の報告の該当箇所に注記を足すかは起票者の判断とする
 - 有効フレームは 1514 で契約の記載 1515 と 1 だけ違う。把持の教師が付かないフレームが除かれるためで、下見の契約も 1514 で測っており両者は揃っている
+### T-2026-08-15-grasp-injection-effect
+
+- make forbidden-check は run を生成する exp 契約を構造的に通せない。tools/check_forbidden.py の FORBIDDEN_PREFIXES が experiments/ と runindex/ を無条件に禁止領域とし、exp 契約が新規 run を作ることへの例外が無い。本契約では 100 件超の違反が出たが内訳は 6 本の新規 run の証跡と Phase C が要求する make runindex の生成物と B-36 のホスト固有の退避 run であり、不正は無い。既存 run JSON 12 件の変更は harvest_warnings の文言のみで指標は不変であることを実測した。run を作る exp 契約がこの検査を回したのは今回が初めてである
+- 把持信号注入はpaired mean -0.004400440044004379で全seed悪化したため、現構成を改善手法として進めず、hemostasisのF1差-0.15578752562792192をframe/segment単位で局在化する
+- 推論5次元は線形下見以上なので、confidence calibration、信号スケール、ゲート／正則化、phaseに有用な相互情報量を次の設計契約で調べる
+- train_grasp_phase_injection.pyへtask_id上書き経路を設け、runindex harvesterがarmとphase_accuracyを取り込む修正は、学習コードとharvesterの変更を許可する別impl契約へ回す
+- decision ruleのverdictをimprovement_detected / degradation_detected / not_detectedに分け、絶対値ルールと改善仮説の方向不整合を次の契約で解消する
 
 ### T-2026-08-15-template-leak-and-autosync-conflict
 
@@ -491,6 +498,10 @@
 
 - 当たっている把持の信号がなぜ工程分類を悪化させるかの因果機構。本契約では特定していない
 - 種 456 の早い停止と縮退が、前の実験の対の差 -0.004400440044004379 にどれだけ寄与したか。本契約では測っていない
+### T-2026-08-15-grasp-injection-effect
+
+- 把持推論accuracyが高いのにphase accuracyが下がる因果機構は本契約では特定していない
+- disinfection、dressing、irrigationは両腕とも工程別F1/Jaccardが0で、注入効果はUNKNOWN
 
 ### T-2026-08-15-template-leak-and-autosync-conflict
 
@@ -516,16 +527,17 @@
 - 台帳の他の行が変わっていないことは、触れた行を限定した事実からしか言えていない。全行の内容を送信前後で突き合わせてはいない
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
 
-## 起票者の誤りの型（99 件）
+## 起票者の誤りの型（102 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 37 |
+| `check_does_not_check` | 38 |
 | `asserted_without_measuring` | 27 |
-| `self_contradiction` | 28 |
+| `self_contradiction` | 30 |
 | `shell_assumption` | 7 |
 
 合計 99 件（対を持つ契約 39 件から）
+合計 102 件（対を持つ契約 39 件から）
 

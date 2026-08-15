@@ -1,0 +1,60 @@
+{
+  "before_rev": "34572bb",
+  "counts": {
+    "runs_added_total": 15,
+    "runs_added_by_this_contract": 6,
+    "past_runs_coprojected": 9,
+    "all_past_are_excluded": true,
+    "analysis_population_before": 703,
+    "analysis_population_after": 709,
+    "analysis_population_delta": 6
+  },
+  "reconciliation_files_vs_index": {
+    "past_run_json_files_added": 34,
+    "already_in_index": 25,
+    "newly_entered_index_files": 9,
+    "newly_entered_index_unique_runs": 6,
+    "written_but_not_indexed": 0,
+    "index_rows_from_newly_entered": 9,
+    "runs_removed_from_index": 0
+  },
+  "a_merged_into_experiments": {
+    "baselines/s0/smoke_e3@val": 1,
+    "baselines/s0/varifocanet_bbox@None": 2,
+    "phase0/s2/hand_detection@val": 6
+  },
+  "b_past_delta_denominators": [
+    "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_augstrong_hires_seed42",
+    "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_augstrong_seed123",
+    "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_augstrong_seed42",
+    "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_augstrong_seed456",
+    "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed123",
+    "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42",
+    "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed456",
+    "transfer/t1a_regiontoken/t1a_regiontoken@val~relation_detr_seed42"
+  ],
+  "b_denominators_hit": [],
+  "b_denominators_hit_count": 0,
+  "c_affected_denominators": [],
+  "contract_denominator_unchanged": true,
+  "contract_denominator_detail": {
+    "experiment_id": "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42",
+    "before": {
+      "n_runs": 17,
+      "metric": "metric.accuracy",
+      "n_with_metric": 17,
+      "mean": 0.8973014948553677,
+      "pstd": 0.005917073407586465
+    },
+    "after": {
+      "n_runs": 17,
+      "metric": "metric.accuracy",
+      "n_with_metric": 17,
+      "mean": 0.8973014948553677,
+      "pstd": 0.005917073407586465
+    },
+    "n_runs_changed": false,
+    "mean_changed": false,
+    "pstd_changed": false
+  }
+}

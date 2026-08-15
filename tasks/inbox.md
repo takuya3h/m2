@@ -253,6 +253,10 @@
 - [ ] 2026-08-15 [cc] 縮退は連続値ではなく丸めた後にのみ現れる。左手が写る次元は 3 種とも丸め後の正予測率が 1.0000、両手で器具は 3 種とも 0.0000（最大値が 0.414121 で閾値 0.5 を一度も超えない）。一方 連続値は 1514 フレーム中 1512 から 1514 が相異なる値で定数ではない。工程分類へ渡されたのは連続値の側（signal: predicted_sigmoid）である。丸めた後の飽和は較正と信号の尺度の問題として次の設計契約で扱う（T-2026-08-15-grasp-head-degeneracy-audit）
 - [ ] 2026-08-15 [cc] 前の実験 T-2026-08-15-grasp-injection-effect の RESULT は「正しさの割合が下見の曲線下面積を上回った」ことを根拠に雑音注入説を否定していた。結論は本契約の測り直しで支持されたが、理由づけは指標が違うため成立していない。過去の報告の該当箇所へ注記を足すかは起票者の判断とする（T-2026-08-15-grasp-head-degeneracy-audit）
 - [ ] 2026-08-15 [cc] 種 456 は最良の epoch が 20 と他の 50 と 47 より早く、器具の二次元で丸め後が全フレーム正へ倒れ、右手が写る次元の曲線下面積も 0.7724 と 3 種で最も低い。前の実験の対の差 -0.004400440044004379 にこの種がどれだけ寄与したかは本契約では測っていない（T-2026-08-15-grasp-head-degeneracy-audit）
+- [ ] 2026-08-15 [cx] 把持信号注入は3 seedすべてで工程accuracyを下げ、paired mean=-0.0044004400、paired pstd=0.0008232469、比5.3452だった。改善仮説は棄却し、hemostasis悪化の局在化と信号形・較正・ゲートの再設計を優先する（T-2026-08-15-grasp-injection-effect）
+- [ ] 2026-08-15 [cx] 原ctrl/inj設定のtask_idが旧実装契約のままでCLI上書きも無く、runindexも新stepのarmとphase_accuracyを拾わなかった。task_id上書き経路とharvester対応は変更可能な別impl契約へ回す（T-2026-08-15-grasp-injection-effect）
+- [ ] 2026-08-15 [cx] 絶対値を使うdecision ruleは全seed負でも「効果あり」になるため、improvement_detected / degradation_detected / not_detectedへverdictを方向付きで分ける（T-2026-08-15-grasp-injection-effect）
+- [ ] 2026-08-15 [cc] `make forbidden-check` は run を生成する exp 契約を構造的に通せない。`tools/check_forbidden.py:35` の `FORBIDDEN_PREFIXES` が `experiments/` と `runindex/` を無条件に禁止領域とし、exp 契約が新規 run を作ることへの例外が無いためである。本契約では 100 件超の違反が出たが、内訳は 6 本の新規 run の証跡 42 件・Phase C が明示的に要求する `make runindex` の生成物・B-36 のホスト固有の退避 run であり、不正は一件も無い。既存 run JSON 12 件の変更は `harvest_warnings` の文言のみで指標は不変であることを実測で確かめた。前契約（足す本数 0）で通ったのは run を 1 本も作らなかったからで、**run を作る exp 契約が検査を回したのは今回が初めてである。** L2-2 の排他・P4 の未文書化と同じ型で、検査が category 全体を通せない（T-2026-08-15-grasp-injection-effect）
 
 ## 処理済み（1 件）
 
