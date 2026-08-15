@@ -1,0 +1,82 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-12-tunnel-key-audit-andrew"
+  kind: analysis
+  title: "中継に使う鍵の配布状況を実測し、中心を別ホストへ移せるかを確定する（andrew）"
+  origin: claude-app
+  created_at: "2026-08-12T09:30:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-12-sync-audit-andrew"]
+  amendments: []
+
+intent:
+  question: "前契約で、中心となる一台への経路が失われたことが原因と確定した。中心は実装に定数で直書きされており、他の九台へは口が開いていて、共有相手の登録も全台で済んでいる。残る未確定は、中継に使う鍵がどこに配られているかである。各ノードから新しい中心へ実際に認証が通るか。自ホストは受け入れる側として他ノードの鍵を登録しているか"
+  decision_at_stake: "中心を別のホストへ移す案を採れるか。採れる場合、どのホストが中心になれるか。採れない場合、鍵の登録を追加する作業が別途必要になるか"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/sync/keeper.sh"
+      - "scripts/sync/m2-sync.sh"
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "中継の鍵の特定と、受け入れ側の登録状況", gpu: false, est: "50m"}
+    - {id: B, name: "他ホストへの認証可否の実測", gpu: false, est: "40m"}
+    - {id: C, name: "検証と報告", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "鍵の指紋の照合が空振りでないことを、実在する別の指紋を与えて確かめた。秘匿の検査が働くことを、鍵の書き出しを模した囮で確かめた"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "認証が通らないはずの鍵を与えて、実際に通らないことを確かめた。対象一覧を複数の出所から集めて件数を記録し、測定した件数が対象数と一致することを確かめた"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-12-tunnel-key-audit-andrew/"
+  acceptance:
+    - "中継に使う鍵の実体を指紋と経路名で記録し、鍵の中身をどこにも含んでいない"
+    - "自ホストが受け入れる側として登録している鍵を件数と指紋で記録している"
+    - "中継の鍵が自ホストに登録されているかを照合し、陽性対照とともに記載している"
+    - "他ホストへの認証可否を、認証の失敗と接続の失敗に区別して全対象について記録している"
+    - "通らないはずの鍵で通らないことを実測し、測定が空振りでないことを示している"
+    - "件数が零と判定した項目について、実在の確認と別の探し方による再確認を併記している"
+    - "測れなかった項目が UNKNOWN として明示され、作業ツリーの変更が契約の範囲に限られている"
+    - "報告の全ファイルに基本多言語面の外の文字と四十桁の十六進が含まれないことを送信前に確認している"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "陽性対照が期待どおりの結果を返さず、照合または認証の結論が信用できない場合"
+    - "通らないはずの鍵で認証が通り、鍵による識別が働いていない疑いが生じた場合"
+    - "対話的な問い合わせが出て、応答しなければ先へ進めない場合"
+    - "読み取りのみの契約であるにもかかわらず、変更を伴わなければ測れない項目が生じた場合"
+    - "記録に鍵の中身が混入し、外部へ送れない状態になった場合"

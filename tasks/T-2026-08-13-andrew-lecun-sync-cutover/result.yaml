@@ -1,0 +1,59 @@
+result_version: 3
+task_id: "T-2026-08-13-andrew-lecun-sync-cutover"
+status: pass
+host: "Andrew"
+branch: "feat/andrew-lecun-sync-cutover"
+pr: 106
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "依存、鍵、中心、旧状態、局所差分backupを実測"}
+  - {id: G2, verdict: pass, note: "封印stateとscoped guardの隔離対照を実測"}
+  - {id: G3, verdict: pass, note: "lecun marker、route、keeper、中継を一体切替"}
+  - {id: G4, verdict: pass, note: "双方向probeと1805.822秒安定性を実測"}
+  - {id: G5, verdict: pass, note: "検証、送出、台帳返送、同期抑止解除を完了工程で確認"}
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 5
+
+deviations:
+  - {type: judgement, note: "attempt-1の宛先誤分類とzombie終了判定を修正し、限定rollbackで開始状態へ復旧"}
+  - {type: judgement, note: "attempt-2は復旧後keeperを再同定せず変更前停止。現在PID+tick再同定へ修正"}
+  - {type: environment, note: "CodeGraph watch未対応のためinitとsyncで代替"}
+
+issuer_defects:
+  - type: check_does_not_check
+    note: >-
+      E4は解除後の常駐再開をsync-alertsの増分で確認するが、m2-sync.shはphase0差分の無い
+      no-op成功時にログを追加しない。marker不在で直接実行exit 0でも増分は零であり、
+      増分の有無だけでは再開と未実行を区別できない。
+
+followups: []
+
+positive_controls:
+  - judgement: "SSH中継宛先分類"
+    breaking_input: "鍵pathにphilipを含め、remote宛先をlecunにする"
+    observed: "lecun=true、philip=false"
+  - judgement: "guard lockとlease"
+    breaking_input: "二重lock、31秒lease、異なるowner tick"
+    observed: "二重取得拒否、lease_expired、tick mismatch"
+  - judgement: "Syncthing route"
+    breaking_input: "localhost routeを重複または欠落させる"
+    observed: "duplicateとmissingを正常routeから区別"
+  - judgement: "秘匿検査"
+    breaking_input: "囮secretをsnapshot検査へ与える"
+    observed: "囮1件、通常0件"
+
+unknowns:
+  - "容器外のport mapping"
+  - "host停止、kernel停止、storage障害、guardとtransactionの同時消失時のrollback"
+
+commits:
+  - "158808d"
+  - "b21d7ea"
+  - "992a602"
+  - "200e1a1"
+  - "ff4b1a8"
+  - "d91d23a"
