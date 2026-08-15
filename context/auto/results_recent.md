@@ -111,7 +111,7 @@
 
 ## T-2026-08-15-training-determinism
 
-状態 `pass` / ホスト `andrew` / 起票 `なし` / 様式 `v3`
+状態 `pass` / ホスト `andrew` / 起票 `115` / 様式 `v3`
 
 ### ゲート
 
