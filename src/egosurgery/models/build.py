@@ -182,6 +182,21 @@ def build_phase_head(cfg):
     )
 
 
+def build_grasp_phase_injection(cfg):
+    """Build the optional grasp-inference-to-phase temporal component.
+
+    A string resolves through ``configs/model/temporal/<name>.yaml``.  A plain
+    dict or ``DictConfig`` is accepted directly so unit tests need no Hydra
+    composition.
+    """
+    from egosurgery.models.temporal.grasp_inference_injection import (
+        GraspInferenceInjectionModel,
+    )
+
+    component_cfg = _resolve_component_cfg(cfg, "temporal")
+    return GraspInferenceInjectionModel(component_cfg)
+
+
 # --------------------------------------------------------------------- #
 # モデル全体のビルダ
 # --------------------------------------------------------------------- #

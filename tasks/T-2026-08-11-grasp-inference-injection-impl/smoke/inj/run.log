@@ -1,0 +1,70 @@
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
+wandb: Currently logged in as: daky-o7600 to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: WARNING Using a boolean value for 'reinit' is deprecated. Use 'return_previous' or 'finish_previous' instead.
+wandb: Tracking run with wandb version 0.27.0
+wandb: Run data is saved locally in /home/ubuntu/slocal2/m2/wandb/run-20260813_163650-ml3ji7dd
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run frozen_tecno_grasp_inference_inj_seed42
+wandb: ⭐️ View project at https://wandb.ai/daky-o7600/egosurgery_multitask
+wandb: 🚀 View run at https://wandb.ai/daky-o7600/egosurgery_multitask/runs/ml3ji7dd
+[grasp-phase][inj][1/1] phase_loss=4.527888 grasp_loss=0.700456 val_acc=0.000000
+wandb: updating run metadata; uploading console lines 0-0
+wandb: uploading wandb-metadata.json; uploading requirements.txt; uploading output.log; uploading wandb-summary.json; uploading config.yaml
+wandb: uploading requirements.txt; uploading output.log; uploading wandb-summary.json; uploading config.yaml
+wandb: uploading history steps 0-0, summary, console lines 0-0
+wandb:
+wandb: Run history:
+wandb:                          epoch ▁
+wandb:       grasp_accuracy_left_hand ▁
+wandb:  grasp_accuracy_left_hand_tool ▁
+wandb:      grasp_accuracy_right_hand ▁
+wandb: grasp_accuracy_right_hand_tool ▁
+wandb:  grasp_accuracy_two_hands_tool ▁
+wandb:                 phase_accuracy ▁
+wandb:               phase_edit_score ▁
+wandb:                  phase_jaccard ▁
+wandb:                 phase_macro_f1 ▁
+wandb:                             +5 ...
+wandb:
+wandb: Run summary:
+wandb:                          epoch 1
+wandb:       grasp_accuracy_left_hand 0.86293
+wandb:  grasp_accuracy_left_hand_tool 0.44595
+wandb:      grasp_accuracy_right_hand 0.98263
+wandb: grasp_accuracy_right_hand_tool 0.6139
+wandb:  grasp_accuracy_two_hands_tool 0.72201
+wandb:                 phase_accuracy 0
+wandb:               phase_edit_score 0
+wandb:                  phase_jaccard 0
+wandb:                 phase_macro_f1 0
+wandb:                             +5 ...
+wandb:
+wandb: 🚀 View run frozen_tecno_grasp_inference_inj_seed42 at: https://wandb.ai/daky-o7600/egosurgery_multitask/runs/ml3ji7dd
+wandb: ⭐️ View project at: https://wandb.ai/daky-o7600/egosurgery_multitask
+wandb: Synced 5 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20260813_163650-ml3ji7dd/logs
+{
+  "task_id": "T-2026-08-11-grasp-inference-injection-impl",
+  "arm": "inj",
+  "completed": true,
+  "epochs": 1,
+  "device": "cuda",
+  "train_clips": 1,
+  "val_clips": 1,
+  "elapsed_seconds": 2.211221544072032,
+  "train/phase_loss": 4.527888298034668,
+  "train/grasp_loss": 0.7004557847976685,
+  "phase_accuracy": 0.0,
+  "phase_macro_f1": 0.0,
+  "phase_jaccard": 0.0,
+  "phase_edit_score": 0.0,
+  "phase_seg_f1_10": 0.0,
+  "phase_seg_f1_25": 0.0,
+  "phase_seg_f1_50": 0.0,
+  "grasp_accuracy_left_hand": 0.8629343509674072,
+  "grasp_accuracy_right_hand": 0.9826254844665527,
+  "grasp_accuracy_left_hand_tool": 0.44594594836235046,
+  "grasp_accuracy_right_hand_tool": 0.6138995885848999,
+  "grasp_accuracy_two_hands_tool": 0.722007691860199,
+  "epoch": 1
+}
