@@ -34,6 +34,8 @@ deviations:
     note: "導入済みCodeGraphはindex up-to-dateだったが現行CLIにwatchサブコマンドが無く、status確認までとした。"
   - type: judgement
     note: "同期抑止は削除せず改名で解除し、ignore対象外だったreleased markerを契約外差分に残さないため/tmpへ退避した。元の0-byte markerは同パスから復元できる。"
+  - type: judgement
+    note: "再実行では .sync-pause を削除で解除した。解除後の auto-merge/auto-push/Draft PR 作成は常駐処理に委ねる判断をユーザーから得たため、手動 push はしていない。"
 
 issuer_defects:
   - type: asserted_without_measuring
