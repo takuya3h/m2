@@ -3,7 +3,7 @@ task_id: "T-2026-08-15-injection-sweep-deterministic"
 status: pass
 host: "lecun"
 branch: "feat/injection-sweep-deterministic"
-pr: null
+pr: 117
 merged: false
 
 gates:
@@ -201,4 +201,7 @@ unknowns:
     工程ごとの分解と従たる四腕は探索であり、多重性の補正をしていない。anesthesia の比 2.466 と
     raw_logits の比 1.953 は、七工程・四腕を同時に見た中の値であって確認の判断には使えない。
 
-commits: []
+commits:
+  - "6294bca9"
+  - "479806fa"
+  - "7918b5dd"
