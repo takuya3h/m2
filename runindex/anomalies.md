@@ -8,17 +8,15 @@
 **明文化されていない**。以下はディレクトリ名の意味からの判断であり、
 規約に基づくものではない。**除外規約の明文化を推奨する。**
 
-除外 82 run / 全 851 run（削除ではなくフラグ）
+除外 48 run / 全 1177 run（削除ではなくフラグ）
 
 | exclusion_reason | runs | 対象 |
 |---|---:|---|
-| `aborted_run` | 4 | `experiments/baselines/_aborted_codetr_no_config`, `experiments/baselines/_aborted_s0_cuda_visible_misconfig` |
-| `failed_run` | 11 | `experiments/baselines/_failed_num_workers_zero`, `experiments/phase0/_failed_s3_weighted` |
+| `failed_run` | 6 | `experiments/phase0/_failed_s3_weighted` |
 | `identity_check` | 24 | `experiments/hand2det_dev`, `experiments/transfer` |
 | `known_bad_split` | 6 | `experiments/baselines/_wrong_split_8_2_3` |
 | `mislabeled_arm_all_not_film` | 2 | `experiments/transfer` |
-| `smoke_test` | 26 | `experiments/_smoke_prior`, `experiments/baselines/_smoke_ddq`, `experiments/baselines/_smoke_e3`, `experiments/baselines/_smoke_prior_simplehead`, `experiments/baselines/_smoke_v2_part3`, `experiments/phase0/_pre_redo_s0_smoke` |
-| `superseded` | 6 | `experiments/phase0/_prior_no_eval_recipe` |
+| `smoke_test` | 7 | `experiments/_smoke_prior`, `experiments/baselines/_smoke_ddq` |
 | `wrong_frozen_source` | 3 | `experiments/phase1` |
 
 ### 1.1 `phase0/_failed_s3_weighted/` の 6 run — 運用上の欠陥
@@ -37,12 +35,12 @@
 
 指標キーの接頭辞から split を確定できない run。**推測していない**。
 
-確定不能 44 run / 全 851 run
+確定不能 35 run / 全 1177 run
 
 | split_provenance | runs |
 |---|---:|
 | `not_determinable_no_eval_recipe` | 29 |
-| `not_determinable` | 15 |
+| `not_determinable` | 6 |
 
 残るのは **`metrics.json` が空 `{}` の run** である。指標が 1 つも無いため
 「どの split で評価したか」が原理的に存在しない。正本 §16.7 の既定（§13）も
@@ -50,15 +48,6 @@
 
 | path | excluded | exclusion_reason |
 |---|---|---|
-| `experiments/baselines/_aborted_codetr_no_config/s0_007_codetr_bbox_seed42` | True | `aborted_run` |
-| `experiments/baselines/_aborted_codetr_no_config/s0_008_codetr_bbox_seed123` | True | `aborted_run` |
-| `experiments/baselines/_aborted_codetr_no_config/s0_009_codetr_bbox_seed456` | True | `aborted_run` |
-| `experiments/baselines/_aborted_s0_cuda_visible_misconfig/s0_001_maskdino_bbox_seed42` | True | `aborted_run` |
-| `experiments/baselines/_failed_num_workers_zero/s0_001_maskdino_bbox_seed42` | True | `failed_run` |
-| `experiments/baselines/_failed_num_workers_zero/s0_002_maskdino_bbox_seed123` | True | `failed_run` |
-| `experiments/baselines/_failed_num_workers_zero/s0_003_maskdino_bbox_seed456` | True | `failed_run` |
-| `experiments/baselines/_failed_num_workers_zero/s0_005_varifocanet_bbox_seed42` | True | `failed_run` |
-| `experiments/baselines/_failed_num_workers_zero/s0_006_varifocanet_bbox_seed123` | True | `failed_run` |
 | `experiments/phase0/_failed_s3_weighted/_004_partial` | True | `failed_run` |
 | `experiments/phase0/_failed_s3_weighted/_005_partial` | True | `failed_run` |
 | `experiments/phase0/_failed_s3_weighted/_006_partial` | True | `failed_run` |
@@ -97,12 +86,12 @@
 
 ## 3. host を確定できなかった run
 
-確定不能 74 run
+確定不能 41 run
 
 | host_raw | runs | 理由 |
 |---|---:|---|
-| `None` | 46 | server.txt 欠損かつ eval_recipe.server_name 無し |
-| `aolab` | 28 | philip / ilya の双方が返すコンテナ内 hostname のため一意に特定不能 |
+| `None` | 31 | server.txt 欠損かつ eval_recipe.server_name 無し |
+| `aolab` | 10 | philip / ilya の双方が返すコンテナ内 hostname のため一意に特定不能 |
 
 ## 4. per_class_ap.json のクラス体系が 2 種類ある
 
@@ -115,20 +104,14 @@
 
 | per_class_kind | per_class_metric | runs | 内容 | 根拠 |
 |---|---|---:|---|---|
-| `phase` | `F1` | 551 | 9 クラスの工程別 **F1**（AP ではない） | `scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が `best.get("phase_per_class_f1", {})` を `log_per_class_ap()` に渡している |
-| `None` | `None` | 126 | `per_class_ap.json` が無い・空・パース失敗 | — |
-| `tool` | `AP` | 81 | 15 クラスの術具 AP | `per_class_coco_map` / `COCOeval.precision` 由来 |
-| `unknown` | `unknown` | 72 | 既知の 2 体系のいずれとも一致しない | 確定不能 |
+| `phase` | `F1` | 545 | 9 クラスの工程別 **F1**（AP ではない） | `scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が `best.get("phase_per_class_f1", {})` を `log_per_class_ap()` に渡している |
+| `unknown` | `unknown` | 426 | 既知の 2 体系のいずれとも一致しない | 確定不能 |
+| `None` | `None` | 117 | `per_class_ap.json` が無い・空・パース失敗 | — |
+| `tool` | `AP` | 68 | 15 クラスの術具 AP | `per_class_coco_map` / `COCOeval.precision` 由来 |
 | `coco_map` | `AP` | 21 |  |  |
 
-### metric を確定できなかった run: 72
+### metric を確定できなかった run: 426
 
-- `experiments/phase0/_pre_redo_s0_smoke/s2_001_hand_detection_seed42`（19 クラス）
-- `experiments/phase0/_pre_redo_s0_smoke/s2_002_hand_detection_seed123`（19 クラス）
-- `experiments/phase0/_pre_redo_s0_smoke/s2_003_hand_detection_seed456`（19 クラス）
-- `experiments/phase0/_prior_no_eval_recipe/s2_001_hand_detection_seed42`（19 クラス）
-- `experiments/phase0/_prior_no_eval_recipe/s2_002_hand_detection_seed123`（19 クラス）
-- `experiments/phase0/_prior_no_eval_recipe/s2_003_hand_detection_seed456`（19 クラス）
 - `experiments/phase1/s4_grasp_injection_001_frozen_tecno_grasp_inference_ctrl_seed42`（5 クラス）
 - `experiments/phase1/s4_grasp_injection_002_frozen_tecno_grasp_inference_inj_seed42`（5 クラス）
 - `experiments/phase1/s4_grasp_injection_003_frozen_tecno_grasp_inference_ctrl_seed123`（5 クラス）
@@ -195,6 +178,366 @@
 - `experiments/phase1/s4_grasp_injection_064_frozen_tecno_grasp_inference_inj_staged_seed303`（5 クラス）
 - `experiments/phase1/s4_grasp_injection_065_frozen_tecno_grasp_inference_inj_staged_seed404`（5 クラス）
 - `experiments/phase1/s4_grasp_injection_066_frozen_tecno_grasp_inference_inj_staged_seed505`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_067_frozen_tecno_grasp_inference_ctrl_seed1`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_068_frozen_tecno_grasp_inference_ctrl_seed2`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_069_frozen_tecno_grasp_inference_ctrl_seed3`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_070_frozen_tecno_grasp_inference_ctrl_seed4`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_071_frozen_tecno_grasp_inference_ctrl_seed5`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_072_frozen_tecno_grasp_inference_ctrl_seed6`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_073_frozen_tecno_grasp_inference_ctrl_seed7`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_074_frozen_tecno_grasp_inference_ctrl_seed8`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_075_frozen_tecno_grasp_inference_ctrl_seed9`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_076_frozen_tecno_grasp_inference_ctrl_seed10`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_077_frozen_tecno_grasp_inference_ctrl_seed11`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_078_frozen_tecno_grasp_inference_ctrl_seed12`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_079_frozen_tecno_grasp_inference_ctrl_seed13`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_080_frozen_tecno_grasp_inference_ctrl_seed14`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_081_frozen_tecno_grasp_inference_ctrl_seed15`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_082_frozen_tecno_grasp_inference_ctrl_seed16`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_083_frozen_tecno_grasp_inference_ctrl_seed17`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_084_frozen_tecno_grasp_inference_ctrl_seed18`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_085_frozen_tecno_grasp_inference_ctrl_seed19`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_086_frozen_tecno_grasp_inference_ctrl_seed20`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_087_frozen_tecno_grasp_inference_ctrl_seed21`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_088_frozen_tecno_grasp_inference_ctrl_seed22`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_089_frozen_tecno_grasp_inference_ctrl_seed23`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_090_frozen_tecno_grasp_inference_ctrl_seed24`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_091_frozen_tecno_grasp_inference_ctrl_seed25`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_092_frozen_tecno_grasp_inference_ctrl_seed26`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_093_frozen_tecno_grasp_inference_ctrl_seed27`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_094_frozen_tecno_grasp_inference_ctrl_seed28`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_095_frozen_tecno_grasp_inference_ctrl_seed29`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_096_frozen_tecno_grasp_inference_ctrl_seed30`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_097_frozen_tecno_grasp_inference_ctrl_seed31`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_098_frozen_tecno_grasp_inference_ctrl_seed32`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_099_frozen_tecno_grasp_inference_ctrl_seed33`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_100_frozen_tecno_grasp_inference_ctrl_seed34`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_101_frozen_tecno_grasp_inference_ctrl_seed35`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_102_frozen_tecno_grasp_inference_ctrl_seed36`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_103_frozen_tecno_grasp_inference_ctrl_seed37`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_104_frozen_tecno_grasp_inference_ctrl_seed38`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_105_frozen_tecno_grasp_inference_ctrl_seed39`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_106_frozen_tecno_grasp_inference_ctrl_seed40`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_107_frozen_tecno_grasp_inference_ctrl_seed41`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_108_frozen_tecno_grasp_inference_ctrl_seed42`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_109_frozen_tecno_grasp_inference_ctrl_seed43`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_110_frozen_tecno_grasp_inference_ctrl_seed44`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_111_frozen_tecno_grasp_inference_ctrl_seed45`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_112_frozen_tecno_grasp_inference_ctrl_seed46`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_113_frozen_tecno_grasp_inference_ctrl_seed47`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_114_frozen_tecno_grasp_inference_ctrl_seed48`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_115_frozen_tecno_grasp_inference_ctrl_seed49`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_116_frozen_tecno_grasp_inference_ctrl_seed50`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_117_frozen_tecno_grasp_inference_ctrl_seed51`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_118_frozen_tecno_grasp_inference_ctrl_seed52`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_119_frozen_tecno_grasp_inference_ctrl_seed89`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_120_frozen_tecno_grasp_inference_ctrl_seed101`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_121_frozen_tecno_grasp_inference_ctrl_seed123`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_122_frozen_tecno_grasp_inference_ctrl_seed202`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_123_frozen_tecno_grasp_inference_ctrl_seed303`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_124_frozen_tecno_grasp_inference_ctrl_seed404`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_125_frozen_tecno_grasp_inference_ctrl_seed456`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_126_frozen_tecno_grasp_inference_ctrl_seed505`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_127_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed1`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_128_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed2`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_129_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed3`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_130_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed4`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_131_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed5`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_132_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed6`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_133_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed7`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_134_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed8`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_135_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed9`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_136_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed10`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_137_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed11`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_138_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed12`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_139_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed13`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_140_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed14`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_141_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed15`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_142_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed16`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_143_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed17`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_144_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed18`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_145_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed19`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_146_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed20`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_147_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed21`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_148_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed22`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_149_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed23`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_150_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed24`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_151_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed25`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_152_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed26`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_153_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed27`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_154_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed28`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_155_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed29`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_156_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed30`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_157_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed31`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_158_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed32`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_159_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed33`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_160_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed34`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_161_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed35`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_162_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed36`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_163_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed37`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_164_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed38`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_165_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed39`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_166_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed40`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_167_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed41`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_168_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed42`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_169_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed43`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_170_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed44`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_171_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed45`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_172_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed46`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_173_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed47`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_174_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed48`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_175_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed49`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_176_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed50`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_177_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed51`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_178_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed52`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_179_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed89`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_180_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed101`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_181_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed123`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_182_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed202`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_183_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed303`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_184_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed404`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_185_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed456`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_186_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed505`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_187_frozen_tecno_grasp_inference_inj_seed1`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_188_frozen_tecno_grasp_inference_inj_seed2`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_189_frozen_tecno_grasp_inference_inj_seed3`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_190_frozen_tecno_grasp_inference_inj_seed4`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_191_frozen_tecno_grasp_inference_inj_seed5`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_192_frozen_tecno_grasp_inference_inj_seed6`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_193_frozen_tecno_grasp_inference_inj_seed7`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_194_frozen_tecno_grasp_inference_inj_seed8`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_195_frozen_tecno_grasp_inference_inj_seed9`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_196_frozen_tecno_grasp_inference_inj_seed10`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_197_frozen_tecno_grasp_inference_inj_seed11`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_198_frozen_tecno_grasp_inference_inj_seed12`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_199_frozen_tecno_grasp_inference_inj_seed13`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_200_frozen_tecno_grasp_inference_inj_seed14`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_201_frozen_tecno_grasp_inference_inj_seed15`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_202_frozen_tecno_grasp_inference_inj_seed16`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_203_frozen_tecno_grasp_inference_inj_seed17`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_204_frozen_tecno_grasp_inference_inj_seed18`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_205_frozen_tecno_grasp_inference_inj_seed19`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_206_frozen_tecno_grasp_inference_inj_seed20`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_207_frozen_tecno_grasp_inference_inj_seed21`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_208_frozen_tecno_grasp_inference_inj_seed22`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_209_frozen_tecno_grasp_inference_inj_seed23`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_210_frozen_tecno_grasp_inference_inj_seed24`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_211_frozen_tecno_grasp_inference_inj_seed25`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_212_frozen_tecno_grasp_inference_inj_seed26`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_213_frozen_tecno_grasp_inference_inj_seed27`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_214_frozen_tecno_grasp_inference_inj_seed28`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_215_frozen_tecno_grasp_inference_inj_seed29`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_216_frozen_tecno_grasp_inference_inj_seed30`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_217_frozen_tecno_grasp_inference_inj_seed31`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_218_frozen_tecno_grasp_inference_inj_seed32`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_219_frozen_tecno_grasp_inference_inj_seed33`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_220_frozen_tecno_grasp_inference_inj_seed34`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_221_frozen_tecno_grasp_inference_inj_seed35`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_222_frozen_tecno_grasp_inference_inj_seed36`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_223_frozen_tecno_grasp_inference_inj_seed37`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_224_frozen_tecno_grasp_inference_inj_seed38`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_225_frozen_tecno_grasp_inference_inj_seed39`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_226_frozen_tecno_grasp_inference_inj_seed40`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_227_frozen_tecno_grasp_inference_inj_seed41`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_228_frozen_tecno_grasp_inference_inj_seed42`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_229_frozen_tecno_grasp_inference_inj_seed43`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_230_frozen_tecno_grasp_inference_inj_seed44`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_231_frozen_tecno_grasp_inference_inj_seed45`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_232_frozen_tecno_grasp_inference_inj_seed46`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_233_frozen_tecno_grasp_inference_inj_seed47`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_234_frozen_tecno_grasp_inference_inj_seed48`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_235_frozen_tecno_grasp_inference_inj_seed49`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_236_frozen_tecno_grasp_inference_inj_seed50`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_237_frozen_tecno_grasp_inference_inj_seed51`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_238_frozen_tecno_grasp_inference_inj_seed52`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_239_frozen_tecno_grasp_inference_inj_seed89`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_240_frozen_tecno_grasp_inference_inj_seed101`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_241_frozen_tecno_grasp_inference_inj_seed123`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_242_frozen_tecno_grasp_inference_inj_seed202`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_243_frozen_tecno_grasp_inference_inj_seed303`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_244_frozen_tecno_grasp_inference_inj_seed404`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_245_frozen_tecno_grasp_inference_inj_seed456`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_246_frozen_tecno_grasp_inference_inj_seed505`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_247_frozen_tecno_grasp_inference_inj_rawlogits_seed1`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_248_frozen_tecno_grasp_inference_inj_rawlogits_seed2`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_249_frozen_tecno_grasp_inference_inj_rawlogits_seed3`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_250_frozen_tecno_grasp_inference_inj_rawlogits_seed4`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_251_frozen_tecno_grasp_inference_inj_rawlogits_seed5`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_252_frozen_tecno_grasp_inference_inj_rawlogits_seed6`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_253_frozen_tecno_grasp_inference_inj_rawlogits_seed7`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_254_frozen_tecno_grasp_inference_inj_rawlogits_seed8`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_255_frozen_tecno_grasp_inference_inj_rawlogits_seed9`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_256_frozen_tecno_grasp_inference_inj_rawlogits_seed10`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_257_frozen_tecno_grasp_inference_inj_rawlogits_seed11`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_258_frozen_tecno_grasp_inference_inj_rawlogits_seed12`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_259_frozen_tecno_grasp_inference_inj_rawlogits_seed13`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_260_frozen_tecno_grasp_inference_inj_rawlogits_seed14`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_261_frozen_tecno_grasp_inference_inj_rawlogits_seed15`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_262_frozen_tecno_grasp_inference_inj_rawlogits_seed16`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_263_frozen_tecno_grasp_inference_inj_rawlogits_seed17`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_264_frozen_tecno_grasp_inference_inj_rawlogits_seed18`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_265_frozen_tecno_grasp_inference_inj_rawlogits_seed19`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_266_frozen_tecno_grasp_inference_inj_rawlogits_seed20`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_267_frozen_tecno_grasp_inference_inj_rawlogits_seed21`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_268_frozen_tecno_grasp_inference_inj_rawlogits_seed22`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_269_frozen_tecno_grasp_inference_inj_rawlogits_seed23`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_270_frozen_tecno_grasp_inference_inj_rawlogits_seed24`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_271_frozen_tecno_grasp_inference_inj_rawlogits_seed25`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_272_frozen_tecno_grasp_inference_inj_rawlogits_seed26`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_273_frozen_tecno_grasp_inference_inj_rawlogits_seed27`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_274_frozen_tecno_grasp_inference_inj_rawlogits_seed28`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_275_frozen_tecno_grasp_inference_inj_rawlogits_seed29`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_276_frozen_tecno_grasp_inference_inj_rawlogits_seed30`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_277_frozen_tecno_grasp_inference_inj_rawlogits_seed31`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_278_frozen_tecno_grasp_inference_inj_rawlogits_seed32`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_279_frozen_tecno_grasp_inference_inj_rawlogits_seed33`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_280_frozen_tecno_grasp_inference_inj_rawlogits_seed34`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_281_frozen_tecno_grasp_inference_inj_rawlogits_seed35`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_282_frozen_tecno_grasp_inference_inj_rawlogits_seed36`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_283_frozen_tecno_grasp_inference_inj_rawlogits_seed37`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_284_frozen_tecno_grasp_inference_inj_rawlogits_seed38`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_285_frozen_tecno_grasp_inference_inj_rawlogits_seed39`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_286_frozen_tecno_grasp_inference_inj_rawlogits_seed40`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_287_frozen_tecno_grasp_inference_inj_rawlogits_seed41`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_288_frozen_tecno_grasp_inference_inj_rawlogits_seed42`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_289_frozen_tecno_grasp_inference_inj_rawlogits_seed43`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_290_frozen_tecno_grasp_inference_inj_rawlogits_seed44`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_291_frozen_tecno_grasp_inference_inj_rawlogits_seed45`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_292_frozen_tecno_grasp_inference_inj_rawlogits_seed46`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_293_frozen_tecno_grasp_inference_inj_rawlogits_seed47`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_294_frozen_tecno_grasp_inference_inj_rawlogits_seed48`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_295_frozen_tecno_grasp_inference_inj_rawlogits_seed49`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_296_frozen_tecno_grasp_inference_inj_rawlogits_seed50`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_297_frozen_tecno_grasp_inference_inj_rawlogits_seed51`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_298_frozen_tecno_grasp_inference_inj_rawlogits_seed52`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_299_frozen_tecno_grasp_inference_inj_rawlogits_seed89`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_300_frozen_tecno_grasp_inference_inj_rawlogits_seed101`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_301_frozen_tecno_grasp_inference_inj_rawlogits_seed123`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_302_frozen_tecno_grasp_inference_inj_rawlogits_seed202`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_303_frozen_tecno_grasp_inference_inj_rawlogits_seed303`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_304_frozen_tecno_grasp_inference_inj_rawlogits_seed404`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_305_frozen_tecno_grasp_inference_inj_rawlogits_seed456`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_306_frozen_tecno_grasp_inference_inj_rawlogits_seed505`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_307_frozen_tecno_grasp_inference_inj_standardized_seed1`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_308_frozen_tecno_grasp_inference_inj_standardized_seed2`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_309_frozen_tecno_grasp_inference_inj_standardized_seed3`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_310_frozen_tecno_grasp_inference_inj_standardized_seed4`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_311_frozen_tecno_grasp_inference_inj_standardized_seed5`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_312_frozen_tecno_grasp_inference_inj_standardized_seed6`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_313_frozen_tecno_grasp_inference_inj_standardized_seed7`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_314_frozen_tecno_grasp_inference_inj_standardized_seed8`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_315_frozen_tecno_grasp_inference_inj_standardized_seed9`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_316_frozen_tecno_grasp_inference_inj_standardized_seed10`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_317_frozen_tecno_grasp_inference_inj_standardized_seed11`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_318_frozen_tecno_grasp_inference_inj_standardized_seed12`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_319_frozen_tecno_grasp_inference_inj_standardized_seed13`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_320_frozen_tecno_grasp_inference_inj_standardized_seed14`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_321_frozen_tecno_grasp_inference_inj_standardized_seed15`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_322_frozen_tecno_grasp_inference_inj_standardized_seed16`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_323_frozen_tecno_grasp_inference_inj_standardized_seed17`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_324_frozen_tecno_grasp_inference_inj_standardized_seed18`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_325_frozen_tecno_grasp_inference_inj_standardized_seed19`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_326_frozen_tecno_grasp_inference_inj_standardized_seed20`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_327_frozen_tecno_grasp_inference_inj_standardized_seed21`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_328_frozen_tecno_grasp_inference_inj_standardized_seed22`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_329_frozen_tecno_grasp_inference_inj_standardized_seed23`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_330_frozen_tecno_grasp_inference_inj_standardized_seed24`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_331_frozen_tecno_grasp_inference_inj_standardized_seed25`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_332_frozen_tecno_grasp_inference_inj_standardized_seed26`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_333_frozen_tecno_grasp_inference_inj_standardized_seed27`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_334_frozen_tecno_grasp_inference_inj_standardized_seed28`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_335_frozen_tecno_grasp_inference_inj_standardized_seed29`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_336_frozen_tecno_grasp_inference_inj_standardized_seed30`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_337_frozen_tecno_grasp_inference_inj_standardized_seed31`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_338_frozen_tecno_grasp_inference_inj_standardized_seed32`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_339_frozen_tecno_grasp_inference_inj_standardized_seed33`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_340_frozen_tecno_grasp_inference_inj_standardized_seed34`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_341_frozen_tecno_grasp_inference_inj_standardized_seed35`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_342_frozen_tecno_grasp_inference_inj_standardized_seed36`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_343_frozen_tecno_grasp_inference_inj_standardized_seed37`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_344_frozen_tecno_grasp_inference_inj_standardized_seed38`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_345_frozen_tecno_grasp_inference_inj_standardized_seed39`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_346_frozen_tecno_grasp_inference_inj_standardized_seed40`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_347_frozen_tecno_grasp_inference_inj_standardized_seed41`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_348_frozen_tecno_grasp_inference_inj_standardized_seed42`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_349_frozen_tecno_grasp_inference_inj_standardized_seed43`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_350_frozen_tecno_grasp_inference_inj_standardized_seed44`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_351_frozen_tecno_grasp_inference_inj_standardized_seed45`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_352_frozen_tecno_grasp_inference_inj_standardized_seed46`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_353_frozen_tecno_grasp_inference_inj_standardized_seed47`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_354_frozen_tecno_grasp_inference_inj_standardized_seed48`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_355_frozen_tecno_grasp_inference_inj_standardized_seed49`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_356_frozen_tecno_grasp_inference_inj_standardized_seed50`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_357_frozen_tecno_grasp_inference_inj_standardized_seed51`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_358_frozen_tecno_grasp_inference_inj_standardized_seed52`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_359_frozen_tecno_grasp_inference_inj_standardized_seed89`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_360_frozen_tecno_grasp_inference_inj_standardized_seed101`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_361_frozen_tecno_grasp_inference_inj_standardized_seed123`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_362_frozen_tecno_grasp_inference_inj_standardized_seed202`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_363_frozen_tecno_grasp_inference_inj_standardized_seed303`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_364_frozen_tecno_grasp_inference_inj_standardized_seed404`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_365_frozen_tecno_grasp_inference_inj_standardized_seed456`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_366_frozen_tecno_grasp_inference_inj_standardized_seed505`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_367_frozen_tecno_grasp_inference_inj_staged_seed1`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_368_frozen_tecno_grasp_inference_inj_staged_seed2`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_369_frozen_tecno_grasp_inference_inj_staged_seed3`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_370_frozen_tecno_grasp_inference_inj_staged_seed4`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_371_frozen_tecno_grasp_inference_inj_staged_seed5`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_372_frozen_tecno_grasp_inference_inj_staged_seed6`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_373_frozen_tecno_grasp_inference_inj_staged_seed7`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_374_frozen_tecno_grasp_inference_inj_staged_seed8`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_375_frozen_tecno_grasp_inference_inj_staged_seed9`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_376_frozen_tecno_grasp_inference_inj_staged_seed10`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_377_frozen_tecno_grasp_inference_inj_staged_seed11`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_378_frozen_tecno_grasp_inference_inj_staged_seed12`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_379_frozen_tecno_grasp_inference_inj_staged_seed13`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_380_frozen_tecno_grasp_inference_inj_staged_seed14`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_381_frozen_tecno_grasp_inference_inj_staged_seed15`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_382_frozen_tecno_grasp_inference_inj_staged_seed16`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_383_frozen_tecno_grasp_inference_inj_staged_seed17`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_384_frozen_tecno_grasp_inference_inj_staged_seed18`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_385_frozen_tecno_grasp_inference_inj_staged_seed19`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_386_frozen_tecno_grasp_inference_inj_staged_seed20`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_387_frozen_tecno_grasp_inference_inj_staged_seed21`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_388_frozen_tecno_grasp_inference_inj_staged_seed22`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_389_frozen_tecno_grasp_inference_inj_staged_seed23`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_390_frozen_tecno_grasp_inference_inj_staged_seed24`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_391_frozen_tecno_grasp_inference_inj_staged_seed25`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_392_frozen_tecno_grasp_inference_inj_staged_seed26`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_393_frozen_tecno_grasp_inference_inj_staged_seed27`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_394_frozen_tecno_grasp_inference_inj_staged_seed28`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_395_frozen_tecno_grasp_inference_inj_staged_seed29`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_396_frozen_tecno_grasp_inference_inj_staged_seed30`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_397_frozen_tecno_grasp_inference_inj_staged_seed31`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_398_frozen_tecno_grasp_inference_inj_staged_seed32`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_399_frozen_tecno_grasp_inference_inj_staged_seed33`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_400_frozen_tecno_grasp_inference_inj_staged_seed34`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_401_frozen_tecno_grasp_inference_inj_staged_seed35`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_402_frozen_tecno_grasp_inference_inj_staged_seed36`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_403_frozen_tecno_grasp_inference_inj_staged_seed37`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_404_frozen_tecno_grasp_inference_inj_staged_seed38`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_405_frozen_tecno_grasp_inference_inj_staged_seed39`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_406_frozen_tecno_grasp_inference_inj_staged_seed40`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_407_frozen_tecno_grasp_inference_inj_staged_seed41`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_408_frozen_tecno_grasp_inference_inj_staged_seed42`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_409_frozen_tecno_grasp_inference_inj_staged_seed43`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_410_frozen_tecno_grasp_inference_inj_staged_seed44`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_411_frozen_tecno_grasp_inference_inj_staged_seed45`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_412_frozen_tecno_grasp_inference_inj_staged_seed46`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_413_frozen_tecno_grasp_inference_inj_staged_seed47`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_414_frozen_tecno_grasp_inference_inj_staged_seed48`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_415_frozen_tecno_grasp_inference_inj_staged_seed49`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_416_frozen_tecno_grasp_inference_inj_staged_seed50`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_417_frozen_tecno_grasp_inference_inj_staged_seed51`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_418_frozen_tecno_grasp_inference_inj_staged_seed52`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_419_frozen_tecno_grasp_inference_inj_staged_seed89`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_420_frozen_tecno_grasp_inference_inj_staged_seed101`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_421_frozen_tecno_grasp_inference_inj_staged_seed123`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_422_frozen_tecno_grasp_inference_inj_staged_seed202`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_423_frozen_tecno_grasp_inference_inj_staged_seed303`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_424_frozen_tecno_grasp_inference_inj_staged_seed404`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_425_frozen_tecno_grasp_inference_inj_staged_seed456`（5 クラス）
+- `experiments/phase1/s4_grasp_injection_426_frozen_tecno_grasp_inference_inj_staged_seed505`（5 クラス）
 
 ## 5. NaN を含む run
 
@@ -218,8 +561,8 @@
 
 | NaN のクラス | runs | 該当群 |
 |---|---:|---|
-| `Retractor` | 82 | `experiments/baselines`, `experiments/baselines/_legacy_score_thr_0`, `experiments/baselines/_smoke_ddq`, `experiments/baselines/_smoke_e3`, `experiments/baselines/_smoke_v2_part3`, `experiments/hand2det_dev`, `experiments/transfer`, `transfer` |
-| `Mouth Gag`, `Skewer` | 12 | `experiments/baselines/_wrong_split_8_2_3`, `experiments/phase0/_pre_redo_s0_smoke`, `experiments/phase0/_prior_no_eval_recipe` |
+| `Retractor` | 75 | `experiments/baselines`, `experiments/baselines/_legacy_score_thr_0`, `experiments/baselines/_smoke_ddq`, `experiments/hand2det_dev`, `experiments/transfer`, `transfer` |
+| `Mouth Gag`, `Skewer` | 6 | `experiments/baselines/_wrong_split_8_2_3` |
 
 ### 平均の取り方への含意
 
@@ -405,7 +748,6 @@ b2a_base_oracle_noise_p010_001_b2a_base_oracle_noise_p010_seed42/command.sh
 | group | ファイル数 | 中身の種別 | 術具 per-class 指標 |
 |---|---:|---|---|
 | `_orphan_no_metrics` | 9 | (未調査) | (未調査) |
-| `_smoke_proptest_20260804_223211` | 0 | (未調査) | (未調査) |
 | `ablations` | 1 | `.gitkeep` のみ | 未着手 scaffold |
 | `analysis` | 176 | EDA レポート / 図 (png) / CSV / JSON | **あり**: `detector_sanity/reldetr_seed42_val_perclass.json` (COCO 形式 `AP`/`AP50`/`AP75`/`AP_s`/`AP_m` 等 13 キー)、`signature_subset_detector_compare/results.json` (`per_class` キー) |
 | `audit` | 8 | `audit_report.json` × 3 | なし (`inject` / `trainable` / `n_trainable_params` 等の学習設定監査) |
@@ -427,24 +769,22 @@ adapter を書けば貴重な追加ソースになる。
 
 | 警告 | 件数 |
 |---|---:|
+| 複数 split の指標が同一 run に共存: ['...', '...']。split は null にした。metrics には <split>__<metric> として split 名を残したまま入れる。 | 426 |
+| per_class_ap.json のクラス集合が既知の 2 体系のいずれとも一致しない (5 クラス) -> metric を確定できないため unknown | 426 |
 | run 名が命名規約 <step>_<seq3>_<desc>_seed<N> に一致しない | 78 |
 | per_class_ap.json が存在しない | 75 |
 | val と test の指標が共存する。primary（best 選択元）は val。test 側は metrics_by_split['...'] に保持している。 | 69 |
-| 複数 split の指標が同一 run に共存: ['...', '...']。split は null にした。metrics には <split>__<metric> として split 名を残したまま入れる。 | 66 |
-| per_class_ap.json のクラス集合が既知の 2 体系のいずれとも一致しない (5 クラス) -> metric を確定できないため unknown | 66 |
-| per_class_ap.json が空 ({...}) | 43 |
-| host '...' は実サーバーを一意に特定できない。host は null にした。 | 28 |
+| per_class_ap.json が空 ({...}) | 34 |
 | ディレクトリ名の p010 は seed ではない。command.sh が --tool-noise-rate を渡しており、ノイズ率 0.01 を指す。seed_phase には入れない。 | 24 |
 | ディレクトリ名の p020 は seed ではない。command.sh が --tool-noise-rate を渡しており、ノイズ率 0.02 を指す。seed_phase には入れない。 | 24 |
 | ディレクトリ名の p030 は seed ではない。command.sh が --tool-noise-rate を渡しており、ノイズ率 0.03 を指す。seed_phase には入れない。 | 24 |
-| metrics.json が空 ({...}) | 15 |
 | config.yaml のパースに失敗: ConstructorError | 15 |
-| 同一 (group, step, description, split) 内で eval_recipe_id が 3 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #None で分離した。 | 12 |
+| host '...' は実サーバーを一意に特定できない。host は null にした。 | 10 |
 | run 名に seq (3 桁連番) が無い別系統の命名: base_seed<N>。step には description を充てた。 | 9 |
 | run 名に seq (3 桁連番) が無い別系統の命名: bboxROI_seed<N>。step には description を充てた。 | 9 |
-| 同一 (group, step, description, split) 内で eval_recipe_id が 3 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #93cb3159 で分離した。 | 6 |
-| 同一 (group, step, description, split) 内で eval_recipe_id が 3 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #a63aecae で分離した。 | 6 |
-| per_class_ap.json のクラス集合が既知の 2 体系のいずれとも一致しない (19 クラス) -> metric を確定できないため unknown | 6 |
+| 同一 (group, step, description, split) 内で eval_recipe_id が 2 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #None で分離した。 | 6 |
+| 同一 (group, step, description, split) 内で eval_recipe_id が 2 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #a63aecae で分離した。 | 6 |
+| metrics.json が空 ({...}) | 6 |
 | ディレクトリ名の p0 が末尾 seed<N> と一致せず、command.sh にノイズ引数も無い。seed か否かを確定できないため seed_phase は null にした。 | 6 |
 | run 名に seq (3 桁連番) が無い別系統の命名: t1b_ca_seed<N>。step には description を充てた。 | 4 |
 | config.yaml のパースに失敗: ParserError | 3 |
@@ -517,7 +857,7 @@ dummy Trainer の削除またはガード追加は別タスクで検討するこ
 mAP 系の指標を持つのに術具 per-class（15 クラス）を持たない run は、
 どちらの検査でも判定できない。**個別確認が要る対象**として列挙する。
 
-該当 45 run
+該当 39 run
 
 | path | mAP 系のキー | entrypoint | commit |
 |---|---|---|---|
@@ -541,12 +881,6 @@ mAP 系の指標を持つのに術具 per-class（15 クラス）を持たない
 | `experiments/hand2det_dev/_identity_inj_5ch_seed456` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_hand2det.py` | `0ea33cac65` |
 | `experiments/hand2det_dev/hand2det_1ep_4ch_all_seed42` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_hand2det.py` | `0ea33cac65` |
 | `experiments/hand2det_dev/hand2det_4ch_film_inj_seed42` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_hand2det.py` | `0ea33cac65` |
-| `experiments/phase0/_pre_redo_s0_smoke/s2_001_hand_detection_seed42` | `mAP`, `mAP_50`, `mAP_75` | `/home/ubuntu/slocal2/egosurgery_multitask/src/egosurgery/train.py` | `d1bcc8a3ca` |
-| `experiments/phase0/_pre_redo_s0_smoke/s2_002_hand_detection_seed123` | `mAP`, `mAP_50`, `mAP_75` | `/home/ubuntu/slocal2/egosurgery_multitask/src/egosurgery/train.py` | `d1bcc8a3ca` |
-| `experiments/phase0/_pre_redo_s0_smoke/s2_003_hand_detection_seed456` | `mAP`, `mAP_50`, `mAP_75` | `/home/ubuntu/slocal2/egosurgery_multitask/src/egosurgery/train.py` | `d1bcc8a3ca` |
-| `experiments/phase0/_prior_no_eval_recipe/s2_001_hand_detection_seed42` | `mAP`, `mAP_50`, `mAP_75` | `/home/ubuntu/slocal2/egosurgery_multitask/src/egosurgery/train.py` | `d1bcc8a3ca` |
-| `experiments/phase0/_prior_no_eval_recipe/s2_002_hand_detection_seed123` | `mAP`, `mAP_50`, `mAP_75` | `/home/ubuntu/slocal2/egosurgery_multitask/src/egosurgery/train.py` | `d1bcc8a3ca` |
-| `experiments/phase0/_prior_no_eval_recipe/s2_003_hand_detection_seed456` | `mAP`, `mAP_50`, `mAP_75` | `/home/ubuntu/slocal2/egosurgery_multitask/src/egosurgery/train.py` | `d1bcc8a3ca` |
 | `experiments/transfer/_p0_identity_ctrl_seed123` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_t1b.py` | `0ea33cac65` |
 | `experiments/transfer/_p0_identity_ctrl_seed42` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_t1b.py` | `0ea33cac65` |
 | `experiments/transfer/_p0_identity_ctrl_seed456` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_t1b.py` | `0ea33cac65` |
@@ -620,7 +954,7 @@ mAP 系の指標を持つのに術具 per-class（15 クラス）を持たない
 ## 12. experiments/README.md と実態の乖離
 
 README は step 識別子を **s0〜s9 / a1〜a7（17 種）** と規定しているが、
-実測は **191 種**。README に無い以下の系統が存在する。
+実測は **190 種**。README に無い以下の系統が存在する。
 
 | 系統 | step 識別子の種類 | run 合計 | 例 |
 |---|---:|---:|---|
@@ -653,7 +987,7 @@ M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 �
 これを split の既定値とし、`provenance.split = from_plan_section_16_7` を記録する。
 ただし **指標が 1 つもない run には適用しない**（評価されていないため null のまま）。
 
-既定を適用した run: 170
+既定を適用した run: 530
 
 | path | 指標キー |
 |---|---|
@@ -744,6 +1078,366 @@ M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 �
 | `experiments/phase1/s4_grasp_injection_064_frozen_tecno_grasp_inference_inj_staged_seed303` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
 | `experiments/phase1/s4_grasp_injection_065_frozen_tecno_grasp_inference_inj_staged_seed404` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
 | `experiments/phase1/s4_grasp_injection_066_frozen_tecno_grasp_inference_inj_staged_seed505` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_067_frozen_tecno_grasp_inference_ctrl_seed1` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_068_frozen_tecno_grasp_inference_ctrl_seed2` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_069_frozen_tecno_grasp_inference_ctrl_seed3` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_070_frozen_tecno_grasp_inference_ctrl_seed4` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_071_frozen_tecno_grasp_inference_ctrl_seed5` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_072_frozen_tecno_grasp_inference_ctrl_seed6` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_073_frozen_tecno_grasp_inference_ctrl_seed7` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_074_frozen_tecno_grasp_inference_ctrl_seed8` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_075_frozen_tecno_grasp_inference_ctrl_seed9` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_076_frozen_tecno_grasp_inference_ctrl_seed10` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_077_frozen_tecno_grasp_inference_ctrl_seed11` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_078_frozen_tecno_grasp_inference_ctrl_seed12` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_079_frozen_tecno_grasp_inference_ctrl_seed13` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_080_frozen_tecno_grasp_inference_ctrl_seed14` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_081_frozen_tecno_grasp_inference_ctrl_seed15` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_082_frozen_tecno_grasp_inference_ctrl_seed16` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_083_frozen_tecno_grasp_inference_ctrl_seed17` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_084_frozen_tecno_grasp_inference_ctrl_seed18` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_085_frozen_tecno_grasp_inference_ctrl_seed19` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_086_frozen_tecno_grasp_inference_ctrl_seed20` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_087_frozen_tecno_grasp_inference_ctrl_seed21` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_088_frozen_tecno_grasp_inference_ctrl_seed22` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_089_frozen_tecno_grasp_inference_ctrl_seed23` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_090_frozen_tecno_grasp_inference_ctrl_seed24` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_091_frozen_tecno_grasp_inference_ctrl_seed25` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_092_frozen_tecno_grasp_inference_ctrl_seed26` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_093_frozen_tecno_grasp_inference_ctrl_seed27` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_094_frozen_tecno_grasp_inference_ctrl_seed28` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_095_frozen_tecno_grasp_inference_ctrl_seed29` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_096_frozen_tecno_grasp_inference_ctrl_seed30` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_097_frozen_tecno_grasp_inference_ctrl_seed31` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_098_frozen_tecno_grasp_inference_ctrl_seed32` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_099_frozen_tecno_grasp_inference_ctrl_seed33` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_100_frozen_tecno_grasp_inference_ctrl_seed34` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_101_frozen_tecno_grasp_inference_ctrl_seed35` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_102_frozen_tecno_grasp_inference_ctrl_seed36` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_103_frozen_tecno_grasp_inference_ctrl_seed37` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_104_frozen_tecno_grasp_inference_ctrl_seed38` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_105_frozen_tecno_grasp_inference_ctrl_seed39` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_106_frozen_tecno_grasp_inference_ctrl_seed40` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_107_frozen_tecno_grasp_inference_ctrl_seed41` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_108_frozen_tecno_grasp_inference_ctrl_seed42` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_109_frozen_tecno_grasp_inference_ctrl_seed43` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_110_frozen_tecno_grasp_inference_ctrl_seed44` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_111_frozen_tecno_grasp_inference_ctrl_seed45` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_112_frozen_tecno_grasp_inference_ctrl_seed46` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_113_frozen_tecno_grasp_inference_ctrl_seed47` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_114_frozen_tecno_grasp_inference_ctrl_seed48` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_115_frozen_tecno_grasp_inference_ctrl_seed49` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_116_frozen_tecno_grasp_inference_ctrl_seed50` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_117_frozen_tecno_grasp_inference_ctrl_seed51` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_118_frozen_tecno_grasp_inference_ctrl_seed52` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_119_frozen_tecno_grasp_inference_ctrl_seed89` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_120_frozen_tecno_grasp_inference_ctrl_seed101` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_121_frozen_tecno_grasp_inference_ctrl_seed123` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_122_frozen_tecno_grasp_inference_ctrl_seed202` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_123_frozen_tecno_grasp_inference_ctrl_seed303` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_124_frozen_tecno_grasp_inference_ctrl_seed404` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_125_frozen_tecno_grasp_inference_ctrl_seed456` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_126_frozen_tecno_grasp_inference_ctrl_seed505` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_127_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed1` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_128_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed2` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_129_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed3` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_130_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed4` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_131_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed5` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_132_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed6` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_133_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed7` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_134_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed8` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_135_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed9` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_136_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed10` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_137_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed11` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_138_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed12` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_139_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed13` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_140_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed14` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_141_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed15` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_142_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed16` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_143_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed17` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_144_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed18` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_145_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed19` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_146_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed20` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_147_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed21` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_148_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed22` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_149_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed23` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_150_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed24` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_151_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed25` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_152_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed26` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_153_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed27` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_154_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed28` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_155_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed29` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_156_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed30` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_157_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed31` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_158_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed32` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_159_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed33` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_160_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed34` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_161_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed35` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_162_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed36` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_163_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed37` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_164_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed38` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_165_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed39` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_166_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed40` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_167_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed41` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_168_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed42` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_169_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed43` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_170_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed44` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_171_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed45` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_172_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed46` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_173_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed47` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_174_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed48` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_175_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed49` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_176_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed50` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_177_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed51` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_178_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed52` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_179_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed89` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_180_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed101` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_181_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed123` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_182_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed202` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_183_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed303` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_184_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed404` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_185_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed456` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_186_frozen_tecno_grasp_inference_inj_oracle_upper_bound_only_seed505` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_187_frozen_tecno_grasp_inference_inj_seed1` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_188_frozen_tecno_grasp_inference_inj_seed2` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_189_frozen_tecno_grasp_inference_inj_seed3` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_190_frozen_tecno_grasp_inference_inj_seed4` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_191_frozen_tecno_grasp_inference_inj_seed5` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_192_frozen_tecno_grasp_inference_inj_seed6` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_193_frozen_tecno_grasp_inference_inj_seed7` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_194_frozen_tecno_grasp_inference_inj_seed8` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_195_frozen_tecno_grasp_inference_inj_seed9` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_196_frozen_tecno_grasp_inference_inj_seed10` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_197_frozen_tecno_grasp_inference_inj_seed11` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_198_frozen_tecno_grasp_inference_inj_seed12` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_199_frozen_tecno_grasp_inference_inj_seed13` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_200_frozen_tecno_grasp_inference_inj_seed14` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_201_frozen_tecno_grasp_inference_inj_seed15` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_202_frozen_tecno_grasp_inference_inj_seed16` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_203_frozen_tecno_grasp_inference_inj_seed17` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_204_frozen_tecno_grasp_inference_inj_seed18` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_205_frozen_tecno_grasp_inference_inj_seed19` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_206_frozen_tecno_grasp_inference_inj_seed20` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_207_frozen_tecno_grasp_inference_inj_seed21` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_208_frozen_tecno_grasp_inference_inj_seed22` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_209_frozen_tecno_grasp_inference_inj_seed23` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_210_frozen_tecno_grasp_inference_inj_seed24` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_211_frozen_tecno_grasp_inference_inj_seed25` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_212_frozen_tecno_grasp_inference_inj_seed26` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_213_frozen_tecno_grasp_inference_inj_seed27` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_214_frozen_tecno_grasp_inference_inj_seed28` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_215_frozen_tecno_grasp_inference_inj_seed29` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_216_frozen_tecno_grasp_inference_inj_seed30` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_217_frozen_tecno_grasp_inference_inj_seed31` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_218_frozen_tecno_grasp_inference_inj_seed32` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_219_frozen_tecno_grasp_inference_inj_seed33` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_220_frozen_tecno_grasp_inference_inj_seed34` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_221_frozen_tecno_grasp_inference_inj_seed35` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_222_frozen_tecno_grasp_inference_inj_seed36` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_223_frozen_tecno_grasp_inference_inj_seed37` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_224_frozen_tecno_grasp_inference_inj_seed38` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_225_frozen_tecno_grasp_inference_inj_seed39` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_226_frozen_tecno_grasp_inference_inj_seed40` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_227_frozen_tecno_grasp_inference_inj_seed41` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_228_frozen_tecno_grasp_inference_inj_seed42` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_229_frozen_tecno_grasp_inference_inj_seed43` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_230_frozen_tecno_grasp_inference_inj_seed44` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_231_frozen_tecno_grasp_inference_inj_seed45` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_232_frozen_tecno_grasp_inference_inj_seed46` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_233_frozen_tecno_grasp_inference_inj_seed47` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_234_frozen_tecno_grasp_inference_inj_seed48` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_235_frozen_tecno_grasp_inference_inj_seed49` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_236_frozen_tecno_grasp_inference_inj_seed50` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_237_frozen_tecno_grasp_inference_inj_seed51` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_238_frozen_tecno_grasp_inference_inj_seed52` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_239_frozen_tecno_grasp_inference_inj_seed89` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_240_frozen_tecno_grasp_inference_inj_seed101` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_241_frozen_tecno_grasp_inference_inj_seed123` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_242_frozen_tecno_grasp_inference_inj_seed202` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_243_frozen_tecno_grasp_inference_inj_seed303` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_244_frozen_tecno_grasp_inference_inj_seed404` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_245_frozen_tecno_grasp_inference_inj_seed456` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_246_frozen_tecno_grasp_inference_inj_seed505` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_247_frozen_tecno_grasp_inference_inj_rawlogits_seed1` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_248_frozen_tecno_grasp_inference_inj_rawlogits_seed2` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_249_frozen_tecno_grasp_inference_inj_rawlogits_seed3` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_250_frozen_tecno_grasp_inference_inj_rawlogits_seed4` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_251_frozen_tecno_grasp_inference_inj_rawlogits_seed5` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_252_frozen_tecno_grasp_inference_inj_rawlogits_seed6` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_253_frozen_tecno_grasp_inference_inj_rawlogits_seed7` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_254_frozen_tecno_grasp_inference_inj_rawlogits_seed8` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_255_frozen_tecno_grasp_inference_inj_rawlogits_seed9` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_256_frozen_tecno_grasp_inference_inj_rawlogits_seed10` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_257_frozen_tecno_grasp_inference_inj_rawlogits_seed11` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_258_frozen_tecno_grasp_inference_inj_rawlogits_seed12` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_259_frozen_tecno_grasp_inference_inj_rawlogits_seed13` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_260_frozen_tecno_grasp_inference_inj_rawlogits_seed14` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_261_frozen_tecno_grasp_inference_inj_rawlogits_seed15` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_262_frozen_tecno_grasp_inference_inj_rawlogits_seed16` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_263_frozen_tecno_grasp_inference_inj_rawlogits_seed17` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_264_frozen_tecno_grasp_inference_inj_rawlogits_seed18` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_265_frozen_tecno_grasp_inference_inj_rawlogits_seed19` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_266_frozen_tecno_grasp_inference_inj_rawlogits_seed20` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_267_frozen_tecno_grasp_inference_inj_rawlogits_seed21` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_268_frozen_tecno_grasp_inference_inj_rawlogits_seed22` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_269_frozen_tecno_grasp_inference_inj_rawlogits_seed23` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_270_frozen_tecno_grasp_inference_inj_rawlogits_seed24` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_271_frozen_tecno_grasp_inference_inj_rawlogits_seed25` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_272_frozen_tecno_grasp_inference_inj_rawlogits_seed26` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_273_frozen_tecno_grasp_inference_inj_rawlogits_seed27` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_274_frozen_tecno_grasp_inference_inj_rawlogits_seed28` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_275_frozen_tecno_grasp_inference_inj_rawlogits_seed29` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_276_frozen_tecno_grasp_inference_inj_rawlogits_seed30` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_277_frozen_tecno_grasp_inference_inj_rawlogits_seed31` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_278_frozen_tecno_grasp_inference_inj_rawlogits_seed32` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_279_frozen_tecno_grasp_inference_inj_rawlogits_seed33` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_280_frozen_tecno_grasp_inference_inj_rawlogits_seed34` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_281_frozen_tecno_grasp_inference_inj_rawlogits_seed35` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_282_frozen_tecno_grasp_inference_inj_rawlogits_seed36` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_283_frozen_tecno_grasp_inference_inj_rawlogits_seed37` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_284_frozen_tecno_grasp_inference_inj_rawlogits_seed38` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_285_frozen_tecno_grasp_inference_inj_rawlogits_seed39` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_286_frozen_tecno_grasp_inference_inj_rawlogits_seed40` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_287_frozen_tecno_grasp_inference_inj_rawlogits_seed41` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_288_frozen_tecno_grasp_inference_inj_rawlogits_seed42` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_289_frozen_tecno_grasp_inference_inj_rawlogits_seed43` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_290_frozen_tecno_grasp_inference_inj_rawlogits_seed44` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_291_frozen_tecno_grasp_inference_inj_rawlogits_seed45` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_292_frozen_tecno_grasp_inference_inj_rawlogits_seed46` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_293_frozen_tecno_grasp_inference_inj_rawlogits_seed47` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_294_frozen_tecno_grasp_inference_inj_rawlogits_seed48` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_295_frozen_tecno_grasp_inference_inj_rawlogits_seed49` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_296_frozen_tecno_grasp_inference_inj_rawlogits_seed50` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_297_frozen_tecno_grasp_inference_inj_rawlogits_seed51` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_298_frozen_tecno_grasp_inference_inj_rawlogits_seed52` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_299_frozen_tecno_grasp_inference_inj_rawlogits_seed89` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_300_frozen_tecno_grasp_inference_inj_rawlogits_seed101` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_301_frozen_tecno_grasp_inference_inj_rawlogits_seed123` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_302_frozen_tecno_grasp_inference_inj_rawlogits_seed202` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_303_frozen_tecno_grasp_inference_inj_rawlogits_seed303` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_304_frozen_tecno_grasp_inference_inj_rawlogits_seed404` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_305_frozen_tecno_grasp_inference_inj_rawlogits_seed456` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_306_frozen_tecno_grasp_inference_inj_rawlogits_seed505` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_307_frozen_tecno_grasp_inference_inj_standardized_seed1` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_308_frozen_tecno_grasp_inference_inj_standardized_seed2` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_309_frozen_tecno_grasp_inference_inj_standardized_seed3` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_310_frozen_tecno_grasp_inference_inj_standardized_seed4` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_311_frozen_tecno_grasp_inference_inj_standardized_seed5` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_312_frozen_tecno_grasp_inference_inj_standardized_seed6` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_313_frozen_tecno_grasp_inference_inj_standardized_seed7` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_314_frozen_tecno_grasp_inference_inj_standardized_seed8` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_315_frozen_tecno_grasp_inference_inj_standardized_seed9` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_316_frozen_tecno_grasp_inference_inj_standardized_seed10` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_317_frozen_tecno_grasp_inference_inj_standardized_seed11` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_318_frozen_tecno_grasp_inference_inj_standardized_seed12` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_319_frozen_tecno_grasp_inference_inj_standardized_seed13` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_320_frozen_tecno_grasp_inference_inj_standardized_seed14` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_321_frozen_tecno_grasp_inference_inj_standardized_seed15` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_322_frozen_tecno_grasp_inference_inj_standardized_seed16` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_323_frozen_tecno_grasp_inference_inj_standardized_seed17` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_324_frozen_tecno_grasp_inference_inj_standardized_seed18` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_325_frozen_tecno_grasp_inference_inj_standardized_seed19` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_326_frozen_tecno_grasp_inference_inj_standardized_seed20` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_327_frozen_tecno_grasp_inference_inj_standardized_seed21` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_328_frozen_tecno_grasp_inference_inj_standardized_seed22` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_329_frozen_tecno_grasp_inference_inj_standardized_seed23` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_330_frozen_tecno_grasp_inference_inj_standardized_seed24` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_331_frozen_tecno_grasp_inference_inj_standardized_seed25` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_332_frozen_tecno_grasp_inference_inj_standardized_seed26` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_333_frozen_tecno_grasp_inference_inj_standardized_seed27` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_334_frozen_tecno_grasp_inference_inj_standardized_seed28` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_335_frozen_tecno_grasp_inference_inj_standardized_seed29` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_336_frozen_tecno_grasp_inference_inj_standardized_seed30` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_337_frozen_tecno_grasp_inference_inj_standardized_seed31` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_338_frozen_tecno_grasp_inference_inj_standardized_seed32` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_339_frozen_tecno_grasp_inference_inj_standardized_seed33` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_340_frozen_tecno_grasp_inference_inj_standardized_seed34` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_341_frozen_tecno_grasp_inference_inj_standardized_seed35` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_342_frozen_tecno_grasp_inference_inj_standardized_seed36` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_343_frozen_tecno_grasp_inference_inj_standardized_seed37` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_344_frozen_tecno_grasp_inference_inj_standardized_seed38` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_345_frozen_tecno_grasp_inference_inj_standardized_seed39` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_346_frozen_tecno_grasp_inference_inj_standardized_seed40` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_347_frozen_tecno_grasp_inference_inj_standardized_seed41` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_348_frozen_tecno_grasp_inference_inj_standardized_seed42` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_349_frozen_tecno_grasp_inference_inj_standardized_seed43` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_350_frozen_tecno_grasp_inference_inj_standardized_seed44` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_351_frozen_tecno_grasp_inference_inj_standardized_seed45` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_352_frozen_tecno_grasp_inference_inj_standardized_seed46` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_353_frozen_tecno_grasp_inference_inj_standardized_seed47` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_354_frozen_tecno_grasp_inference_inj_standardized_seed48` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_355_frozen_tecno_grasp_inference_inj_standardized_seed49` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_356_frozen_tecno_grasp_inference_inj_standardized_seed50` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_357_frozen_tecno_grasp_inference_inj_standardized_seed51` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_358_frozen_tecno_grasp_inference_inj_standardized_seed52` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_359_frozen_tecno_grasp_inference_inj_standardized_seed89` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_360_frozen_tecno_grasp_inference_inj_standardized_seed101` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_361_frozen_tecno_grasp_inference_inj_standardized_seed123` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_362_frozen_tecno_grasp_inference_inj_standardized_seed202` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_363_frozen_tecno_grasp_inference_inj_standardized_seed303` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_364_frozen_tecno_grasp_inference_inj_standardized_seed404` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_365_frozen_tecno_grasp_inference_inj_standardized_seed456` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_366_frozen_tecno_grasp_inference_inj_standardized_seed505` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_367_frozen_tecno_grasp_inference_inj_staged_seed1` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_368_frozen_tecno_grasp_inference_inj_staged_seed2` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_369_frozen_tecno_grasp_inference_inj_staged_seed3` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_370_frozen_tecno_grasp_inference_inj_staged_seed4` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_371_frozen_tecno_grasp_inference_inj_staged_seed5` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_372_frozen_tecno_grasp_inference_inj_staged_seed6` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_373_frozen_tecno_grasp_inference_inj_staged_seed7` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_374_frozen_tecno_grasp_inference_inj_staged_seed8` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_375_frozen_tecno_grasp_inference_inj_staged_seed9` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_376_frozen_tecno_grasp_inference_inj_staged_seed10` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_377_frozen_tecno_grasp_inference_inj_staged_seed11` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_378_frozen_tecno_grasp_inference_inj_staged_seed12` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_379_frozen_tecno_grasp_inference_inj_staged_seed13` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_380_frozen_tecno_grasp_inference_inj_staged_seed14` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_381_frozen_tecno_grasp_inference_inj_staged_seed15` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_382_frozen_tecno_grasp_inference_inj_staged_seed16` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_383_frozen_tecno_grasp_inference_inj_staged_seed17` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_384_frozen_tecno_grasp_inference_inj_staged_seed18` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_385_frozen_tecno_grasp_inference_inj_staged_seed19` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_386_frozen_tecno_grasp_inference_inj_staged_seed20` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_387_frozen_tecno_grasp_inference_inj_staged_seed21` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_388_frozen_tecno_grasp_inference_inj_staged_seed22` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_389_frozen_tecno_grasp_inference_inj_staged_seed23` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_390_frozen_tecno_grasp_inference_inj_staged_seed24` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_391_frozen_tecno_grasp_inference_inj_staged_seed25` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_392_frozen_tecno_grasp_inference_inj_staged_seed26` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_393_frozen_tecno_grasp_inference_inj_staged_seed27` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_394_frozen_tecno_grasp_inference_inj_staged_seed28` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_395_frozen_tecno_grasp_inference_inj_staged_seed29` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_396_frozen_tecno_grasp_inference_inj_staged_seed30` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_397_frozen_tecno_grasp_inference_inj_staged_seed31` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_398_frozen_tecno_grasp_inference_inj_staged_seed32` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_399_frozen_tecno_grasp_inference_inj_staged_seed33` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_400_frozen_tecno_grasp_inference_inj_staged_seed34` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_401_frozen_tecno_grasp_inference_inj_staged_seed35` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_402_frozen_tecno_grasp_inference_inj_staged_seed36` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_403_frozen_tecno_grasp_inference_inj_staged_seed37` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_404_frozen_tecno_grasp_inference_inj_staged_seed38` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_405_frozen_tecno_grasp_inference_inj_staged_seed39` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_406_frozen_tecno_grasp_inference_inj_staged_seed40` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_407_frozen_tecno_grasp_inference_inj_staged_seed41` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_408_frozen_tecno_grasp_inference_inj_staged_seed42` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_409_frozen_tecno_grasp_inference_inj_staged_seed43` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_410_frozen_tecno_grasp_inference_inj_staged_seed44` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_411_frozen_tecno_grasp_inference_inj_staged_seed45` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_412_frozen_tecno_grasp_inference_inj_staged_seed46` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_413_frozen_tecno_grasp_inference_inj_staged_seed47` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_414_frozen_tecno_grasp_inference_inj_staged_seed48` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_415_frozen_tecno_grasp_inference_inj_staged_seed49` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_416_frozen_tecno_grasp_inference_inj_staged_seed50` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_417_frozen_tecno_grasp_inference_inj_staged_seed51` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_418_frozen_tecno_grasp_inference_inj_staged_seed52` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_419_frozen_tecno_grasp_inference_inj_staged_seed89` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_420_frozen_tecno_grasp_inference_inj_staged_seed101` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_421_frozen_tecno_grasp_inference_inj_staged_seed123` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_422_frozen_tecno_grasp_inference_inj_staged_seed202` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_423_frozen_tecno_grasp_inference_inj_staged_seed303` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_424_frozen_tecno_grasp_inference_inj_staged_seed404` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_425_frozen_tecno_grasp_inference_inj_staged_seed456` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/s4_grasp_injection_426_frozen_tecno_grasp_inference_inj_staged_seed505` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
 | `experiments/selection_noise_2026-07-29/runs/base_seed123_rep1` | `rep` |
 | `experiments/selection_noise_2026-07-29/runs/base_seed123_rep2` | `rep` |
 | `experiments/selection_noise_2026-07-29/runs/base_seed123_rep3` | `rep` |
@@ -974,34 +1668,25 @@ run_id 単位の 3 分類（記録漏れ / 成果物消失 / 数値の食い違�
 
 ## 15. run_id の衝突
 
-`run_id`（ディレクトリ名）は **21 種が複数箇所で衝突**する。
+`run_id`（ディレクトリ名）は **12 種が複数箇所で衝突**する。
 スキーマは `runs/<run_id>.json` を指定しているが、そのままではファイルが
 上書きされるため、パス由来の `ledger_key` をファイル名に使い、
 `run_id` はフィールドとして保持した。
 
 | run_id | 箇所数 |
 |---|---:|
-| `s0_001_maskdino_bbox_seed42` | 7 |
-| `s0_002_maskdino_bbox_seed123` | 6 |
-| `s0_003_maskdino_bbox_seed456` | 6 |
-| `s0_004_varifocanet_bbox_seed42` | 5 |
-| `s0_005_varifocanet_bbox_seed123` | 5 |
-| `s0_006_varifocanet_bbox_seed456` | 5 |
 | `base_seed123` | 3 |
 | `base_seed42` | 3 |
 | `base_seed456` | 3 |
 | `bboxROI_seed123` | 3 |
 | `bboxROI_seed42` | 3 |
 | `bboxROI_seed456` | 3 |
-| `s3_001_phase_frame_seed42` | 3 |
-| `s3_002_phase_frame_seed123` | 3 |
-| `s3_003_phase_frame_seed456` | 3 |
-| `s0_007_codetr_bbox_seed42` | 2 |
-| `s0_008_codetr_bbox_seed123` | 2 |
-| `s0_009_codetr_bbox_seed456` | 2 |
-| `s2_001_hand_detection_seed42` | 2 |
-| `s2_002_hand_detection_seed123` | 2 |
-| `s2_003_hand_detection_seed456` | 2 |
+| `s0_001_maskdino_bbox_seed42` | 3 |
+| `s0_002_maskdino_bbox_seed123` | 3 |
+| `s0_003_maskdino_bbox_seed456` | 3 |
+| `s0_004_varifocanet_bbox_seed42` | 3 |
+| `s0_005_varifocanet_bbox_seed123` | 3 |
+| `s0_006_varifocanet_bbox_seed456` | 3 |
 
 ## 16. 🔴 修正済み: primary 指標に test の値が入っていた
 
@@ -1082,16 +1767,16 @@ _FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
 **したがって `frozen_source_tag` はキャッシュのパスからのみ導き、
 `frozen_source.seed` と `notes.md` の記述は採用していない。**
 
-- 実験数: **221** / run 数 851
+- 実験数: **213** / run 数 1177
 - `experiment_id` を付けられなかった run: 78
   （run 名が命名規約に一致しない run）
-- `eval_recipe_id` の食い違いで分離した base: 24
-  - `baselines/s0/maskdino_bbox@val` -> ['93cb3159bea1', 'None', 'a63aecae1158']
-  - `baselines/s0/maskdino_bbox@val` -> ['93cb3159bea1', 'None', 'a63aecae1158']
-  - `baselines/s0/maskdino_bbox@val` -> ['93cb3159bea1', 'None', 'a63aecae1158']
-  - `baselines/s0/varifocanet_bbox@val` -> ['93cb3159bea1', 'None', 'a63aecae1158']
-  - `baselines/s0/varifocanet_bbox@val` -> ['93cb3159bea1', 'None', 'a63aecae1158']
-  - `baselines/s0/varifocanet_bbox@val` -> ['93cb3159bea1', 'None', 'a63aecae1158']
+- `eval_recipe_id` の食い違いで分離した base: 12
+  - `baselines/s0/maskdino_bbox@val` -> ['None', 'a63aecae1158']
+  - `baselines/s0/maskdino_bbox@val` -> ['None', 'a63aecae1158']
+  - `baselines/s0/maskdino_bbox@val` -> ['None', 'a63aecae1158']
+  - `baselines/s0/varifocanet_bbox@val` -> ['None', 'a63aecae1158']
+  - `baselines/s0/varifocanet_bbox@val` -> ['None', 'a63aecae1158']
+  - `baselines/s0/varifocanet_bbox@val` -> ['None', 'a63aecae1158']
 
 ### 17.1 🔴 限界: 名前が条件を一意に表さない実験がある
 
@@ -1117,8 +1802,8 @@ _FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
 
 | group / description / split / frozen_source | 分裂した experiment_id |
 |---|---|
-| `baselines` / `maskdino_bbox` / `val` / `None` | `baselines/s0/maskdino_bbox@val#93cb3159`<br>`baselines/s0/maskdino_bbox@val#None`<br>`baselines/s0/maskdino_bbox@val#a63aecae` |
-| `baselines` / `varifocanet_bbox` / `val` / `None` | `baselines/s0/varifocanet_bbox@val#93cb3159`<br>`baselines/s0/varifocanet_bbox@val#None`<br>`baselines/s0/varifocanet_bbox@val#a63aecae` |
+| `baselines` / `maskdino_bbox` / `val` / `None` | `baselines/s0/maskdino_bbox@val#None`<br>`baselines/s0/maskdino_bbox@val#a63aecae` |
+| `baselines` / `varifocanet_bbox` / `val` / `None` | `baselines/s0/varifocanet_bbox@val#None`<br>`baselines/s0/varifocanet_bbox@val#a63aecae` |
 | `transfer` / `b2a_det2phase_toolpresence` / `val` / `relation_detr_seed42` | `transfer/b2a_det2phase/b2a_det2phase_toolpresence@val~relation_detr_seed42`<br>`transfer/b2a_det2phase_toolpresence/b2a_det2phase_toolpresence@val~relation_detr_seed42` |
 
 これらを 1 実験として束ねるべきかは、起動経路が同一かどうかの判断を伴うため
@@ -1186,8 +1871,8 @@ delta:
 
 | 分類 | run 数 |
 |---|---:|
+| `no_denominator_declared` | 736 |
 | `injection_from_config_yaml` | 439 |
-| `no_denominator_declared` | 410 |
 | `baseline` | 17 |
 | `within_run_baseline` | 2 |
 
@@ -1232,8 +1917,8 @@ seed ごとに 1 本ずつ対応させることができない。
 per-class の値は 573 個の JSON に分散していて横断分析に使えなかったため、
 `runindex/per_class.csv` に long 形式（1 行 = 1 run × 1 クラス）で 1 ファイル化した。
 
-- `per_class_kind=tool` : 81 run × 15 クラス（術具 **AP**）
-- `per_class_kind=phase`: 551 run × 9 クラス（工程 **F1**）
+- `per_class_kind=tool` : 68 run × 15 クラス（術具 **AP**）
+- `per_class_kind=phase`: 545 run × 9 クラス（工程 **F1**）
 
 **この 2 つを混ぜて集計してはならない。** 指標の種類が違う（AP と F1）。
 ファイル名は両方とも `per_class_ap.json` なので、名前では判別できない。
@@ -1587,7 +2272,7 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 
 | seed_agreement | run 数 | 意味 |
 |---|---:|---|
-| `agree` | 741 | ディレクトリ名と他証拠が一致 |
+| `agree` | 1067 | ディレクトリ名と他証拠が一致 |
 | `unverified_no_other_evidence` | 32 | `command.sh` も `config.yaml` も無い（g2_* 群） |
 | `no_seed_in_dirname` | 78 | 命名規約外 |
 | **`conflict`** | **0** | **食い違い** |
@@ -1597,7 +2282,7 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 
 ### 23.1 `frozen_source.seed` は信用できない（実測）
 
-- `config.yaml` に `frozen_source.seed` を持つ run: **569**
+- `config.yaml` に `frozen_source.seed` を持つ run: **929**
 - そのうち実際の cache パスと**矛盾**する run: **48**
 
 矛盾例: 宣言は `seed: 42` だが cache は `relation_detr_augstrong_seed123`。
@@ -1826,14 +2511,14 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 一方 `scripts/train_*.py` 系（**`direct`**、run 数で見て大半）は
 CPU 側 3 種のみで **GPU 側の制御が 1 つも無い**。
 
-影響を受ける run: **593**（CUDA 学習スクリプトが entrypoint の run）
+影響を受ける run: **953**（CUDA 学習スクリプトが entrypoint の run）
 
 | スクリプト | run 数 | 欠落している必須項目 |
 |---|---:|---|
+| `scripts/train_grasp_phase_injection_variants.py` | 420 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_b2a.py` | 265 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_t1a.py` | 132 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_s4_tecno.py` | 61 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
-| `scripts/train_grasp_phase_injection_variants.py` | 60 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_hand2det.py` | 21 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_haux.py` | 18 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_taux.py` | 15 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
@@ -1888,9 +2573,9 @@ Relation-DETR 経路の状況である。
 
 全件は `anomalies/within_vs_between_seed.csv`（1 行 = 1 実験 × 1 指標）。
 
-- 反復がある (実験 × 指標) の組: **157**
-- そのうち **within > between**: **61**
-  - 条件混在の交絡あり: 50
+- 反復がある (実験 × 指標) の組: **204**
+- そのうち **within > between**: **54**
+  - 条件混在の交絡あり: 43
   - 交絡なし（純粋に非決定性）: **11**
 
 **⚠️ 単純に「47 件で within が上回る」と読んではいけない。**
