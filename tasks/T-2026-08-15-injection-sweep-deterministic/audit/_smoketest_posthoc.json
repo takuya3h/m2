@@ -1,0 +1,87 @@
+[
+  {
+    "run": "experiments/phase1/s4_grasp_injection_029_frozen_tecno_grasp_inference_inj_rawlogits_seed123",
+    "seed": 123,
+    "arm": "inj",
+    "signal": "raw_logits",
+    "staged": false,
+    "checkpoint_epoch": 46,
+    "n_val_frames": 1515,
+    "phase_accuracy_recomputed": 0.8976897689768977,
+    "phase_f1_per_class": {
+      "anesthesia": {
+        "f1": 0.9791666666666666,
+        "support": 98
+      },
+      "closure": {
+        "f1": 0.9266211604095563,
+        "support": 557
+      },
+      "design": {
+        "f1": 1.0,
+        "support": 103
+      },
+      "disinfection": {
+        "f1": null,
+        "support": 0
+      },
+      "dissection": {
+        "f1": 0.9054441260744985,
+        "support": 506
+      },
+      "dressing": {
+        "f1": 0.0,
+        "support": 24
+      },
+      "hemostasis": {
+        "f1": 0.16216216216216217,
+        "support": 57
+      },
+      "incision": {
+        "f1": 0.8888888888888888,
+        "support": 170
+      },
+      "irrigation": {
+        "f1": null,
+        "support": 0
+      }
+    },
+    "grasp_quality": {
+      "left_hand": {
+        "auc": 0.7007844166447963,
+        "average_precision": 0.990265170264969,
+        "accuracy": 0.9848084544253632,
+        "positive_rate": 0.9848084449768066,
+        "n": 1514
+      },
+      "right_hand": {
+        "auc": 0.814013643735006,
+        "average_precision": 0.9908648050201599,
+        "accuracy": 0.9663143989431968,
+        "positive_rate": 0.9663143754005432,
+        "n": 1514
+      },
+      "left_hand_tool": {
+        "auc": 0.8860732605569318,
+        "average_precision": 0.9559809029689383,
+        "accuracy": 0.9075297225891678,
+        "positive_rate": 0.8130779266357422,
+        "n": 1514
+      },
+      "right_hand_tool": {
+        "auc": 0.8305991627420198,
+        "average_precision": 0.9547587194242135,
+        "accuracy": 0.8659180977542933,
+        "positive_rate": 0.8414795398712158,
+        "n": 1514
+      },
+      "two_hands_tool": {
+        "auc": 0.8835439597771436,
+        "average_precision": 0.5854525109157623,
+        "accuracy": 0.8837516512549538,
+        "positive_rate": 0.11624834686517715,
+        "n": 1514
+      }
+    }
+  }
+]

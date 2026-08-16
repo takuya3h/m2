@@ -1,0 +1,102 @@
+spec_version: 1
+meta:
+  task_id: "T-2026-08-15-injection-sweep-deterministic"
+  kind: exp
+  title: "測定を厳密にし、種を増やして注入の効果に決着をつける"
+  origin: claude-app
+  created_at: "2026-08-15T17:10:00Z"
+  created_from:
+    runindex_commit: "3e15d09"
+    counts: {index: 851, experiments: 223, verdicts: 1038}
+  depends_on:
+    - "T-2026-08-15-training-determinism"
+    - "T-2026-08-15-injection-form-sweep"
+    - "T-2026-08-15-config-key-effectiveness-audit"
+  amendments: []
+intent:
+  question: "測定を厳密にし、種を六十に増やしたとき、把持の情報を工程分類へ渡すことに効果はあるか。正解を渡した場合でも効かないなら、この機構に価値は無い"
+  hypothesis: "正解を渡した腕が、無情報な信号を渡した腕を上回る"
+  decision_at_stake: "この設計を続けるか捨てるか。前の実験は揺らぎに阻まれて判定できなかった。測定が厳密になり種が二十倍になった今、決着をつける"
+  related:
+    backlog: ["BL-harvester-scan-is-host-dependent"]
+inputs:
+  denominator:
+    ref: "exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42"
+    metric: "accuracy"
+    require:
+      n_seeds: ">=3"
+      sigma: present
+      split: val
+  sigma_policy:
+    series: pstd
+    sigma_source: paired_delta
+    delta_sigma_source: paired
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/train_grasp_phase_injection_variants.py"
+      - "src/egosurgery/models/temporal/grasp_inference_injection.py"
+      - "tools/harvest_runindex.py"
+prereg:
+  prediction: "正解を渡した腕が、無情報な信号を渡した腕を上回る。すなわち対の差の平均が正である"
+  primary_endpoint: "測る側 val の accuracy について、同じ種で対にして取った差の平均。正解を渡した腕から無情報な信号を渡した腕を引く。種は六十"
+  decision_rule: "対の差の平均の絶対値を、平均の標準誤差で割った値が二以上のときに効果ありとする。標準誤差は対の差の母標準偏差を種の数の平方根で割って求める。全ての種で符号が揃うことは要件としない。種が六十では効果の不均一により原理的に成立しないためである。効果の大きさと符号が揃う種の割合は併せて報告する"
+  stop_conditions:
+    - "定めた腕と種の組み合わせをすべて走らせ終えた"
+    - "計算装置が使えず走らせられない"
+    - "学習が落ちて完走しない"
+  commit: "6294bca9"
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "前提を確かめ、事前登録を版管理へ固定する", gpu: true, est: "60m"}
+    - {id: B, name: "六つの腕を六十の種で走らせる", gpu: true, est: "2h"}
+    - {id: C, name: "対の差を腕ごとに測る", gpu: false, est: "60m"}
+    - {id: D, name: "総括と次への申し送り", gpu: false, est: "40m"}
+  gates:
+    - id: G1
+      after: A
+      check: "測定を厳密にする設定が実際に読まれていることを実挙動で確かめ、同じ種で二度走らせて一致することを示した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "定めた本数がすべて完走し、六つの腕の重みの総数が等しく、評価条件が分母と一致することを確かめた"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "対の差を事前登録の決め方どおりに求め、結果を見てから決め方を変えていない"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md]
+  destination: "experiments/"
+  expected_runs: 360
+  stamp:
+    task_id_in: "metrics.json"
+  acceptance:
+    - "正解を渡した腕と無情報な腕との対の差の平均が、標準誤差と効果の大きさと符号の割合とともに示されている"
+    - "測定を厳密にする設定が実際に読まれていることが実挙動で示されている"
+    - "六つの腕それぞれについて対の差が示され、確認のための判断は正解を渡した腕のみに限られている"
+    - "正解を渡した腕の値が、上限であって成果ではないことが明記されている"
+    - "この設計を続けるか捨てるかの結論が、主たる差だけを根拠に述べられている"
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "正解を渡した腕が無情報な腕を上回らず、機構そのものに価値が無いと判明した場合"
+    - "測定を厳密にする設定が読まれておらず、厳密な測定になっていないと判明した場合"
+    - "他の利用者が計算装置を使用中で、学習を行うと妨げになる場合"

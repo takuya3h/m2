@@ -1,0 +1,125 @@
+{
+  "question": "測定を厳密にする設定が実際に読まれているか（双方向）",
+  "config_key": "train.deterministic（設定ファイルに記述。CLI ではなく設定側で与えた）",
+  "enabled": {
+    "runs": [
+      "det_a",
+      "det_b"
+    ],
+    "checkpoint_sha256_identical": true,
+    "checkpoint_sha256": "e909ab8d3296481f92e4898e4e326389e82e6346a06089a3034bc4d43028f818",
+    "accuracy_identical": true,
+    "max_abs_diff_over_18_metrics": 0.0,
+    "determinism_record_present": true
+  },
+  "disabled": {
+    "runs": [
+      "nondet_a",
+      "nondet_b"
+    ],
+    "checkpoint_sha256_identical": false,
+    "checkpoint_sha256": [
+      "58d2ab928a925d4a7999f7d064f87f86bcb642d6a5124673fef7df465b3ad424",
+      "82f8de5c60eb075cb429ca753146967b24a441a181c3a568321ecfbff978b3ea"
+    ],
+    "accuracy": [
+      0.9062706270627062,
+      0.9075907590759076
+    ],
+    "max_abs_diff_over_18_metrics": 6.255189255189251,
+    "determinism_record_present": false
+  },
+  "cross_host": {
+    "claim": "andrew の determinism 契約が記録した best checkpoint sha256 と一致するか",
+    "andrew_recorded_prefix": "e909ab8d3296481f",
+    "lecun_measured_prefix": "e909ab8d3296481f",
+    "identical": true,
+    "conditions": "無情報の腕・seed 42・全 50 世代・決定化あり（両者同一）"
+  },
+  "timing": {
+    "nondeterministic_elapsed_s": [
+      23.96390957525,
+      24.527012931648642
+    ],
+    "deterministic_elapsed_s": [
+      38.204267827793956,
+      38.190838251728565
+    ],
+    "staged_elapsed_s": 50.39962761569768,
+    "andrew_reference_deterministic_s": 13.4,
+    "note": "lecun は andrew の約 2.85 倍の所要時間。結果はビット単位で同一"
+  },
+  "runs": {
+    "det_a": {
+      "checkpoint_sha256": "e909ab8d3296481f92e4898e4e326389e82e6346a06089a3034bc4d43028f818",
+      "phase_accuracy": 0.8950495049504951,
+      "elapsed_seconds": 38.204267827793956,
+      "determinism": {
+        "deterministic": true,
+        "seed": 42,
+        "cublas_workspace_config": ":4096:8",
+        "torch_use_deterministic_algorithms": true,
+        "cudnn_deterministic": true,
+        "cudnn_benchmark": false
+      },
+      "arm": "ctrl",
+      "signal": "zeros",
+      "staged": false,
+      "epochs": 50
+    },
+    "det_b": {
+      "checkpoint_sha256": "e909ab8d3296481f92e4898e4e326389e82e6346a06089a3034bc4d43028f818",
+      "phase_accuracy": 0.8950495049504951,
+      "elapsed_seconds": 38.190838251728565,
+      "determinism": {
+        "deterministic": true,
+        "seed": 42,
+        "cublas_workspace_config": ":4096:8",
+        "torch_use_deterministic_algorithms": true,
+        "cudnn_deterministic": true,
+        "cudnn_benchmark": false
+      },
+      "arm": "ctrl",
+      "signal": "zeros",
+      "staged": false,
+      "epochs": 50
+    },
+    "nondet_a": {
+      "checkpoint_sha256": "58d2ab928a925d4a7999f7d064f87f86bcb642d6a5124673fef7df465b3ad424",
+      "phase_accuracy": 0.9062706270627062,
+      "elapsed_seconds": 23.96390957525,
+      "determinism": null,
+      "arm": "ctrl",
+      "signal": "zeros",
+      "staged": false,
+      "epochs": 50
+    },
+    "nondet_b": {
+      "checkpoint_sha256": "82f8de5c60eb075cb429ca753146967b24a441a181c3a568321ecfbff978b3ea",
+      "phase_accuracy": 0.9075907590759076,
+      "elapsed_seconds": 24.527012931648642,
+      "determinism": null,
+      "arm": "ctrl",
+      "signal": "zeros",
+      "staged": false,
+      "epochs": 50
+    },
+    "staged_timing": {
+      "checkpoint_sha256": "fda8247093dde8faa13b57bcc37e133c1c9656f778e9dd7741de6d2e3dcc2d42",
+      "phase_accuracy": 0.8937293729372937,
+      "elapsed_seconds": 50.39962761569768,
+      "determinism": {
+        "deterministic": true,
+        "seed": 42,
+        "cublas_workspace_config": ":4096:8",
+        "torch_use_deterministic_algorithms": true,
+        "cudnn_deterministic": true,
+        "cudnn_benchmark": false
+      },
+      "arm": "inj",
+      "signal": "predicted_sigmoid",
+      "staged": true,
+      "epochs": 50
+    }
+  }
+}
