@@ -1,0 +1,110 @@
+{
+  "uninformative": {
+    "config": "tasks/T-2026-08-15-injection-sweep-deterministic/audit/configs/uninformative.yaml",
+    "source": "tasks/T-2026-08-15-injection-form-sweep/audit/configs/s4_grasp_injection_ctrl.yaml",
+    "arm": "ctrl",
+    "signal": "zeros",
+    "staged": false,
+    "epochs": 50,
+    "epochs_stage1": null,
+    "task_id": "T-2026-08-15-injection-sweep-deterministic",
+    "deterministic": true,
+    "feature_cache": "data/processed/stage1_features/relation_detr_seed42",
+    "phase_manifest": "data/processed/phase_manifest",
+    "population": {
+      "train": 9657,
+      "val": 1515,
+      "test": 4265
+    }
+  },
+  "oracle": {
+    "config": "tasks/T-2026-08-15-injection-sweep-deterministic/audit/configs/oracle.yaml",
+    "source": "tasks/T-2026-08-15-injection-form-sweep/audit/configs/s4_grasp_injection_oracle_upper_bound_only.yaml",
+    "arm": "inj",
+    "signal": "oracle_upper_bound_only",
+    "staged": false,
+    "epochs": 50,
+    "epochs_stage1": null,
+    "task_id": "T-2026-08-15-injection-sweep-deterministic",
+    "deterministic": true,
+    "feature_cache": "data/processed/stage1_features/relation_detr_seed42",
+    "phase_manifest": "data/processed/phase_manifest",
+    "population": {
+      "train": 9657,
+      "val": 1515,
+      "test": 4265
+    }
+  },
+  "inferred": {
+    "config": "tasks/T-2026-08-15-injection-sweep-deterministic/audit/configs/inferred.yaml",
+    "source": "tasks/T-2026-08-15-injection-form-sweep/audit/configs/s4_grasp_injection_inj.yaml",
+    "arm": "inj",
+    "signal": "predicted_sigmoid",
+    "staged": false,
+    "epochs": 50,
+    "epochs_stage1": null,
+    "task_id": "T-2026-08-15-injection-sweep-deterministic",
+    "deterministic": true,
+    "feature_cache": "data/processed/stage1_features/relation_detr_seed42",
+    "phase_manifest": "data/processed/phase_manifest",
+    "population": {
+      "train": 9657,
+      "val": 1515,
+      "test": 4265
+    }
+  },
+  "raw_logits": {
+    "config": "tasks/T-2026-08-15-injection-sweep-deterministic/audit/configs/raw_logits.yaml",
+    "source": "tasks/T-2026-08-15-injection-form-sweep/audit/configs/s4_grasp_injection_raw_logits.yaml",
+    "arm": "inj",
+    "signal": "raw_logits",
+    "staged": false,
+    "epochs": 50,
+    "epochs_stage1": null,
+    "task_id": "T-2026-08-15-injection-sweep-deterministic",
+    "deterministic": true,
+    "feature_cache": "data/processed/stage1_features/relation_detr_seed42",
+    "phase_manifest": "data/processed/phase_manifest",
+    "population": {
+      "train": 9657,
+      "val": 1515,
+      "test": 4265
+    }
+  },
+  "standardized": {
+    "config": "tasks/T-2026-08-15-injection-sweep-deterministic/audit/configs/standardized.yaml",
+    "source": "tasks/T-2026-08-15-injection-form-sweep/audit/configs/s4_grasp_injection_standardized.yaml",
+    "arm": "inj",
+    "signal": "standardized",
+    "staged": false,
+    "epochs": 50,
+    "epochs_stage1": null,
+    "task_id": "T-2026-08-15-injection-sweep-deterministic",
+    "deterministic": true,
+    "feature_cache": "data/processed/stage1_features/relation_detr_seed42",
+    "phase_manifest": "data/processed/phase_manifest",
+    "population": {
+      "train": 9657,
+      "val": 1515,
+      "test": 4265
+    }
+  },
+  "staged": {
+    "config": "tasks/T-2026-08-15-injection-sweep-deterministic/audit/configs/staged.yaml",
+    "source": "tasks/T-2026-08-15-injection-form-sweep/audit/configs/s4_grasp_injection_staged.yaml",
+    "arm": "inj",
+    "signal": "predicted_sigmoid",
+    "staged": true,
+    "epochs": 50,
+    "epochs_stage1": 50,
+    "task_id": "T-2026-08-15-injection-sweep-deterministic",
+    "deterministic": true,
+    "feature_cache": "data/processed/stage1_features/relation_detr_seed42",
+    "phase_manifest": "data/processed/phase_manifest",
+    "population": {
+      "train": 9657,
+      "val": 1515,
+      "test": 4265
+    }
+  }
+}
