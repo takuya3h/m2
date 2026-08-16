@@ -1,0 +1,54 @@
+task_id: T-2026-08-15-injection-sweep-deterministic
+experiment:
+  category: phase1
+  step: s4_grasp_injection
+  description: frozen_tecno_grasp_inference_ctrl
+seed: 29
+frozen_source:
+  detector: relation_detr
+  seed: 42
+  checkpoint: third_party/Relation-DETR/checkpoints/incoming/seed42/best_ap.pth
+  cache_dir: data/processed/stage1_features/relation_detr_seed42
+model:
+  component: grasp_phase_injection
+  input_dim: 2048
+  num_phases: 9
+  temporal:
+    num_stages: 2
+    num_layers: 8
+    num_f_maps: 64
+    dropout: 0.5
+grasp_inference:
+  enabled: true
+  arm: ctrl
+  hidden_dim: 64
+  num_classes: 5
+  signal: zeros
+  detach_from_phase_loss: true
+  annotation_root: data/annotations/egosurgery_hts/hand_tool_seg
+train:
+  epochs: 50
+  lr: 0.0005
+  weight_decay: 0.01
+  smoothing_weight: 0.15
+  grasp_loss_weight: 1.0
+  freeze_backbone: true
+  batch_size: 1
+  deterministic: true
+data:
+  phase_manifest: data/processed/phase_manifest
+  feature_cache: data/processed/stage1_features/relation_detr_seed42
+  population:
+    train: 9657
+    val: 1515
+    test: 4265
+eval_recipe:
+  protocol_source: PHASE_EVAL_PROTOCOL
+  inference_protocol: online_causal
+  jaccard_mode: strict
+logging:
+  wandb_project: egosurgery_multitask
+  wandb_enabled: true
+device: auto
+smoke_train_clips: 1
+smoke_val_clips: 1

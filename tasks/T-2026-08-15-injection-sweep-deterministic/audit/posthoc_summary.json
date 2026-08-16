@@ -1,0 +1,126 @@
+{
+  "grasp_quality_inferred_arm": {
+    "left_hand": {
+      "auc_mean": 0.7040047045558373,
+      "ap_mean": 0.9903334363917169,
+      "accuracy_mean": 0.9848084544253625,
+      "positive_rate": 0.9848084449768066,
+      "n_seeds": 60
+    },
+    "right_hand": {
+      "auc_mean": 0.8207317536264906,
+      "ap_mean": 0.9914070324698122,
+      "accuracy_mean": 0.9665455746367243,
+      "positive_rate": 0.9663143754005432,
+      "n_seeds": 60
+    },
+    "left_hand_tool": {
+      "auc_mean": 0.8870352323515313,
+      "ap_mean": 0.9560585294313133,
+      "accuracy_mean": 0.902498899163364,
+      "positive_rate": 0.8130779266357422,
+      "n_seeds": 60
+    },
+    "right_hand_tool": {
+      "auc_mean": 0.8321874182365252,
+      "ap_mean": 0.955731076775809,
+      "accuracy_mean": 0.8622302950242187,
+      "positive_rate": 0.8414795398712158,
+      "n_seeds": 60
+    },
+    "two_hands_tool": {
+      "auc_mean": 0.8784171946482765,
+      "ap_mean": 0.5587081710473206,
+      "accuracy_mean": 0.8844782034346106,
+      "positive_rate": 0.11624834686517715,
+      "n_seeds": 60
+    }
+  },
+  "per_phase_oracle_minus_uninformative": {
+    "anesthesia": {
+      "n": 60,
+      "support": 98,
+      "ctrl_mean": 0.9141471506950616,
+      "oracle_mean": 0.9345023961189728,
+      "diff_mean": 0.020355245423911154,
+      "pstd": 0.06393101413958394,
+      "sem": 0.008253458435625315,
+      "ratio": 2.4662686051764138,
+      "fraction_positive": 0.6333333333333333
+    },
+    "closure": {
+      "n": 60,
+      "support": 557,
+      "ctrl_mean": 0.9291778221500105,
+      "oracle_mean": 0.9294078360938072,
+      "diff_mean": 0.00023001394379666972,
+      "pstd": 0.0060056007607709825,
+      "sem": 0.0007753197243478869,
+      "ratio": 0.29666979514822994,
+      "fraction_positive": 0.5166666666666667
+    },
+    "design": {
+      "n": 60,
+      "support": 103,
+      "ctrl_mean": 0.9982810900923621,
+      "oracle_mean": 0.9991947232527983,
+      "diff_mean": 0.000913633160436228,
+      "pstd": 0.0063368222208321934,
+      "sem": 0.0008180802309720061,
+      "ratio": 1.1168014161040052,
+      "fraction_positive": 0.15
+    },
+    "disinfection": {
+      "n": 0
+    },
+    "dissection": {
+      "n": 60,
+      "support": 506,
+      "ctrl_mean": 0.921121900515007,
+      "oracle_mean": 0.9183915058747367,
+      "diff_mean": -0.002730394640270578,
+      "pstd": 0.010866536088937695,
+      "sem": 0.0014028637767805857,
+      "ratio": 1.9463006212452973,
+      "fraction_positive": 0.36666666666666664
+    },
+    "dressing": {
+      "n": 60,
+      "support": 24,
+      "ctrl_mean": 0.0,
+      "oracle_mean": 0.0,
+      "diff_mean": 0.0,
+      "pstd": 0.0,
+      "sem": 0.0,
+      "ratio": null,
+      "fraction_positive": 0.0,
+      "note": "両腕とも F1=0（差が全て零）。比は 0/0 で判定不能"
+    },
+    "hemostasis": {
+      "n": 60,
+      "support": 57,
+      "ctrl_mean": 0.30598193301067883,
+      "oracle_mean": 0.32560674694207753,
+      "diff_mean": 0.019624813931398647,
+      "pstd": 0.18595936813635236,
+      "sem": 0.024007251195444893,
+      "ratio": 0.8174536006488837,
+      "fraction_positive": 0.5833333333333334
+    },
+    "incision": {
+      "n": 60,
+      "support": 170,
+      "ctrl_mean": 0.8541010512180859,
+      "oracle_mean": 0.8635202002019888,
+      "diff_mean": 0.00941914898390311,
+      "pstd": 0.04034151882003494,
+      "sem": 0.005208067685023614,
+      "ratio": 1.8085688500149366,
+      "fraction_positive": 0.6166666666666667
+    },
+    "irrigation": {
+      "n": 0
+    }
+  },
+  "n_seeds_paired": 60
+}
