@@ -1,0 +1,82 @@
+result_version: 1
+
+meta:
+  task_id: "T-2026-08-22-philip-hub-foundation"
+  kind: impl
+  host: philip
+  branch: feat/philip-hub-foundation
+  base_commit: "8fcbe69"
+  executed_at: "2026-08-22T06:20:00+09:00"
+  verdict: PARTIAL
+
+resolved:
+  conventions_rev_spec: "d422b08"
+  conventions_rev_measured: "1201f4f"
+  inject_verbatim: [conventions#prohibitions]
+  runindex_commit_spec: "f96edc1"
+  runindex_commit_found_in_repo: false
+
+gates:
+  - {id: G1, after: A, verdict: PASS}
+  - {id: G2, after: B, verdict: PASS}
+
+measured:
+  home_entries: 25
+  authorized_keys_entries: 1
+  untracked_baseline_start: 7
+  untracked_baseline_end: 7
+  venv_python: "/home/ubuntu/slocal2/m2/.venv/bin/python"
+  venv_python_version: "3.11.16"
+  torch_version: "2.1.2+cu118"
+  cuda_available: true
+  mmcv_import: "FAIL: libGL.so.1 missing (OS side)"
+  servername_zsh: philip
+  servername_bash_login: philip
+  syncthing_version: "v1.27.10"
+  syncthing_tar_sha256: "c04ffbdedcd1d18ccb4a34a341a6a2b2461082f7a6f43537eb0bba860975fd60"
+  syncthing_tar_sha256_matches_upstream: true
+  syncthing_bin_sha256: "32ab747eb18ff3a01423f9719c5b8a8165da63e60ee9c3f733887464c70ca1dd"
+  syncthing_bin_matches_extracted: true
+  device_id: "3J4TRX4-7ZOHQAY-MNNTGTY-WXYDHFW-OOAWOXQ-7L23IDP-ZJ6KT77-DZOCQQE"
+  device_id_file: "scripts/sync/device_ids/philip.txt"
+  device_id_file_lines: 1
+  preexisting_syncthing_config: false
+  syncthing_processes: 0
+  port_22000_listen: false
+  port_22001_listen: false
+  port_8384_listen: false
+
+validation:
+  task_validate_exit: 0
+  task_validate_warns:
+    - "L2-8 index.csv: 751 -> 749"
+    - "L2-8 experiments.csv: 207 -> 206"
+  context_check_exit: 1
+  context_check_diff_is_stamp_only: true
+  forbidden_check: UNKNOWN
+  taskindex: UNKNOWN
+  taskindex_check: UNKNOWN
+  inbox: UNKNOWN
+  inbox_check: UNKNOWN
+  task_preflight: UNKNOWN
+
+unknown_reason: "Makefile に forbidden-check / taskindex / inbox / taskindex-check / inbox-check / task-preflight のターゲットが存在しない。tasks/inbox.d/ と tasks/inbox.md も存在しない。"
+
+reported_to_ledger: false
+reported_to_ledger_reason: "outputs.report_to は空。NOTION_API_KEY 未設定、scripts/load_env.sh は .env.gpg 不在で失敗する。"
+
+deviations_count: 12
+
+push:
+  attempted: true
+  succeeded: false
+  reason: "Claude Code auto mode classifier に遮断された（Blocked by classifier）。GitHub 認証可否は未測定。"
+  local_commit: "bf6cd4a"
+  remote: "git@github.com:takuya3h/m2.git"
+  pr_number: UNKNOWN
+  gh_available: false
+
+git_identity:
+  was_missing: true
+  set_scope: repo-local
+  user_name: "takuya3h"

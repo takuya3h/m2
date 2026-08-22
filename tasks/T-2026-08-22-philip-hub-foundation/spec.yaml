@@ -1,0 +1,84 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-22-philip-hub-foundation"
+  kind: impl
+  title: "中心となるホストの基盤を作り、同期処理の識別子を版管理へ公開する"
+  origin: claude-app
+  created_at: "2026-08-22T05:00:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: []
+  amendments: []
+
+intent:
+  question: "保守作業で全サーバーが初期化され、常駐処理も同期処理も鍵も識別子も失われた。実測により、外側から中まで届く口は SSH のものだけで、直接の接続はできないことが確定した。よって中継を介した星型を作り直す必要がある。中心となるホストで、実行環境と論理名と同期処理を用意し、新しい識別子を発行して版管理へ公開できるか"
+  decision_at_stake: "中心の基盤が整うかどうか。ここが済めば他ノードが識別子を読んで登録できる。合言葉が失われて契約の取り込みと返送の経路が使えないため、版管理を介した往復で運用を続けられるかも同時に確かめる"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/sync/keeper.sh"
+      - "scripts/sync/m2-sync.sh"
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "1201f4f"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "開始状態の記録、版管理の更新、実行環境と論理名の用意", gpu: false, est: "50m"}
+    - {id: B, name: "同期処理の導入と識別子の発行および公開", gpu: false, est: "40m"}
+    - {id: C, name: "記録と送出", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "開始時の未追跡の件数を控え、分岐を切ったあとも失われていないことを件数で確かめた。実行環境が作られ、経路が仮想環境を指している。論理名が新しいシェルの両方の形態で解決される"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "配布物の要約値と版を記録し、配置物と展開物が一致した。識別子を発行して版管理へ一行で公開した。同期処理が起動しておらず、待ち受けが立っていないことを確かめた"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-22-philip-hub-foundation/"
+  acceptance:
+    - "開始時の家の直下と鍵と受け入れ一覧と未追跡の件数を記録している"
+    - "分岐を切ったあとも未追跡が失われていないことを件数で示している"
+    - "実行環境を作り、経路が仮想環境を指していることを示している"
+    - "論理名の追記内容を記録し、新しいシェルの両方の形態で解決されることを示している"
+    - "同期処理の配布物の版と要約値を記録し、配置物と展開物が一致することを示している"
+    - "識別子を発行し、既存があれば上書きしていない"
+    - "識別子を版管理へ一行で公開している"
+    - "同期処理が起動していないことを待ち受けの不在で示している"
+    - "送信前の秘匿検査を自分で行い、陽性対照つきで示している"
+    - "開始時の未追跡がすべて残っており、変更が契約の範囲に限られ、分岐が送出されている"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "版管理外の未追跡の成果物が失われた場合"
+    - "実行環境を作れず、以降の検証が通らない場合"
+    - "同期処理の配布物を取得できない場合"
+    - "識別子を読み取れず、他ノードへ公開できない場合"
+    - "同期処理が意図せず起動してしまった場合"
