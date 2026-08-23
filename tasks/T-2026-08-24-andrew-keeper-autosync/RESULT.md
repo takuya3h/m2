@@ -412,3 +412,49 @@ SPEC の指示どおり **`RESULT.md` を commit して push する経路**で�
 `m2-sync.sh` 115–132 行の auto-PR は **Draft を起票する。** 抑止を外してから周回が回ると
 `auto: feat/andrew-keeper-autosync -> phase0` という Draft が立ち、二重になる。
 先に手で作れば、auto-PR の条件「開いている PR が 0 件」が偽になり起票されない。
+
+---
+
+## 12. 抑止の解除と最終状態
+
+SPEC Task 4 Step 6 のとおり、**記録して起票したあとで**外した。
+
+    mv .sync-pause /tmp/.sync-pause.released.T-2026-08-24-andrew-keeper-autosync
+    → mv_exit=0 / 「repo 直下から消えた」 / test_f=absent
+
+退避先は `/tmp/.sync-pause.released.T-2026-08-24-andrew-keeper-autosync`（0 バイト）。
+`.sync-pause.released` という開始時からある未追跡ファイルとは**別の名前**にしてある
+（前契約が repo 直下に残したもので、上書きしていない）。
+
+### 反対方向の対照（抑止の分岐が実際に効いていた証明）
+
+§9 の 5 番は「抑止があるとき止まる」を測った。**その裏を取った。**
+
+| | 抑止あり（解除前） | 抑止なし（解除後） |
+|---|---|---|
+| `origin/$BR` | 存在 | 存在 |
+| `ahead` | 1 | 0 |
+| `m2sync_exit` | 0 | 0 |
+| 記録の行数 | 1 → **2**（増えた） | 2 → **2**（増えない） |
+| 「一時停止中」の行 | **2 件** | **2 件のまま** |
+| `auto-push` の行 | 0 件 | 0 件（`ahead=0` のため条件を満たさない） |
+| `git fetch` の痕跡 | 無し（40–43 行で `exit 0`） | **2 回**（`m2-sync.sh` 45 行と 56 行。SSH の警告が 2 回出た） |
+
+**抑止を外すと「一時停止中」の行が増えなくなり、代わりに `git fetch` まで到達した。**
+記録の行を出していたのが 41 行の分岐であることが、両方向で確かめられた。
+
+### 最終状態
+
+| 項目 | 実測値 |
+|---|---|
+| 常駐処理 | `keeper.sh=1 ['40838']` |
+| 中継 | `ssh -N -L=0 []` / `~/.tunnel.log` 不在 |
+| 同期処理 | `syncthing=0 []` / `~/.syncthing.log` 不在 / `~/bin/syncthing` は実行権なし |
+| 対照 | `zzz_none=0` `sshd=1` |
+| 抑止 | repo 直下から消えた |
+| 未追跡 | **3 件**（開始時から在るもの。契約の記録 2 件は commit 済み） |
+| 分岐 | `origin/feat/andrew-keeper-autosync` と同一。`ahead=0 behind=0` |
+
+**次の周回（最大 1800 秒後）以降、版管理の自動同期が有効に働く。**
+`ahead=0 behind=0` かつ PR #128 が開いているため、auto-merge / auto-push / auto-PR は
+いずれも条件を満たさない**はず**である（§10 の未測定 4）。

@@ -35,6 +35,8 @@ tests:
 
 commits:
   - "64e7d50"
+  - "66a069a"
+  - "f7d6b98"
 
 deviations:
   - type: spec_defect
@@ -130,6 +132,14 @@ positive_controls:
       存在し ahead=1。この状態で ~/bin/m2-sync.sh を一度回すと m2sync_exit=0 で、記録は 1 行から 2 行へ
       増えたがどちらも一時停止中の行であり autopush_lines=0、ahead は 1 のままだった。
       抑止が無ければ送出されていた状態で止まっている。
+  - judgement: "完了判定 13 / 19 の抑止の分岐（反対方向の対照）"
+    breaking_input: >-
+      抑止を外してから m2-sync.sh を回す。記録の一時停止中の行を出していたのが 41 行の分岐なら、
+      外したあとは増えないはず。増え続けるなら別の原因である
+    observed: >-
+      mv で外したあとに回すと m2sync_exit=0 で記録は 2 行のまま増えず、一時停止中も 2 件のままだった。
+      代わりに m2-sync.sh 45 行と 56 行の git fetch まで到達して SSH の警告が 2 回出た。
+      ahead=0 behind=0 のため auto-push と auto-merge は条件を満たさず 0 件。
   - judgement: "完了判定 6 の構文検査"
     breaking_input: "構文誤りのある入力を与えれば非零を返すはず"
     observed: >-
