@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（271 件）
+## 未処理（278 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -286,6 +286,13 @@
 - [ ] 2026-08-16 [cc] 把持の推論の質を割合で見ると誤る。`left_hand` は正しさの割合 0.9848 に対し曲線下面積 0.7040（陽性率 0.985）、`two_hands_tool` は割合 0.8845 に対し平均適合率 0.5587（陽性率 0.116）。**run の記録には割合しか残らない**ため、重みから事後に測る必要があった。把持系を今後も測るなら AUC/AP を metrics に残す配線を検討すべきである（T-2026-08-15-injection-sweep-deterministic）
 - [ ] 2026-08-16 [cc] **`make forbidden-check` は `kind: exp` の契約で必ず fail する。** 生成物として除外するのが `context/auto/` と `tasks/inbox.md` だけで、`outputs.destination: "experiments/"` の契約が新規 run を作ることも `make runindex` が `runindex/` を作り直すことも知らないため。本契約では違反 2932 件の内訳を手で確かめ、既存 run の変更・削除が 0 件（`git diff` に M も D も無し）であること、`runindex/` は再生成で同一になることを示して契約違反でないと判定した。**道具を exp 契約に対応させる impl 契約が要る**（T-2026-08-15-injection-sweep-deterministic）
 - [ ] 2026-08-16 [cc] **索引の集約が決定化の有無を混ぜている。** `experiment_id` に `task_id` が入らないため、本契約の 360 本（決定化あり）が前の契約の 66 本（決定化なし）と同じ 6 実験行へ集約された（ctrl/inj は 73 本、他は 70 本）。解析は `task_id` で絞ったので主たる差に影響は無いが、**`experiments.csv` のこの 6 行を条件照合に使うと決定化の有無が混在した集約を見ることになる**。集約の鍵に含めるか、混在を検出して警告すべきである（T-2026-08-15-injection-sweep-deterministic）
+- [ ] 2026-08-23 [cc] ilya には貼り直し先の Python 3.11 実体が一つも無かった（~/.local/share/uv/ ごと不在、システムは 3.12 のみ）。uv python install 3.11 で cpython-3.11.16 を取得して繋ぎ直した。SPEC は「実体が無かった場合」の指示を持たない。残りのホストでも同じ判断が要る（tasks/T-2026-08-22-ilya-node-foundation）
+- [ ] 2026-08-23 [cc] 前契約が「全台で同じはず」とした 10 件の事実のうち 4 件が ilya に当てはまらなかった（uv 実体の不在 / jsonschema は既存 / libGL は問題なく mmdet が読める / fetch 側の SSH は生きている）。次の契約の申し送りは「philip の実測」と明記して配ること（tasks/T-2026-08-22-ilya-node-foundation）
+- [ ] 2026-08-23 [cc] Task 1 Step 5 の Expected「両方が https」は git remote set-url --push では達成できない（pushurl のみ設定される）。残りのホストの契約を配る前に直すか、fetch 側の扱いを決めること（tasks/T-2026-08-22-ilya-node-foundation）
+- [ ] 2026-08-23 [cc] P9 spec_lint の host_mismatch は論理名を使うこの環境では常に該当する。規則は socket.gethostname() と比べるが ilya と philip はともに aolab を返す。SERVERNAME を見るよう規則を直すかの判断が要る（tools/check_spec.py）
+- [ ] 2026-08-23 [cc] tasks/README.md は抽出物を「契約の記録と一緒に含めること」とするが、本契約の禁止 1 は未追跡の成果物を commit することを禁じる。docs/sessions/digest/ の 1 件は未追跡のまま残した。どちらを優先するかが未決（tasks/README.md）
+- [ ] 2026-08-23 [cc] 試験 5 件が失敗したまま。test_engines の score_thr が 0.0 と 1e-08 で不一致、test_research_logger の 4 件は Notion 資格情報が無く log_run が None を返す。本契約の変更とは無関係で、資格情報の復旧待ちか期待値の見直しかが未決（tests/test_research_logger.py）
+- [ ] 2026-08-23 [cc] 版管理には旧版の scripts/sync/hub_keys/ilya.pub（SHA256:5auPdGk/…, ubuntu@aolab, commit 806abe4）が在り、本契約で置き換えた。SPEC Task 3 Step 1 の既存確認は ~/.ssh だけを見ており版管理側を見ない。残りのホストの契約では git show HEAD:scripts/sync/hub_keys/<host>.pub を足すこと（tasks/T-2026-08-22-ilya-node-foundation）
 
 ## 処理済み（1 件）
 

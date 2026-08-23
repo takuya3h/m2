@@ -1,0 +1,73 @@
+result_version: 3
+task_id: "T-2026-08-22-ilya-node-foundation"
+status: pass
+host: "ilya"
+branch: "feat/ilya-node-foundation"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "HEAD=origin/phase0=8eec82e（ahead/behind 0/0）。.venv 修復後 Python 3.11.16 が起動し sys.prefix=/home/ubuntu/slocal2/m2/.venv。du は前後とも 6.2G。zsh -c と bash -lc の両方で SERVERNAME=ilya。git user.name=takuya3h、push url=https://github.com/takuya3h/m2.git。"
+  - id: G2
+    verdict: pass
+    note: "鍵の指紋 SHA256:O4FrUiuT3+JNwIDMduljzPXfS7minab+CkWfg4gDzIQ。公開鍵は先頭 ssh-ed25519 / PRIVATE=0 / 行数=1、囮では PRIVATE=2 / 行数=3 で弾かれた。tar sha256=c04ffbde…75fd60、bin sha256=32ab747e…0ca1dd で中心と一致。device_ids/ilya.txt は 1 行。port 22000/8384 とも待ち受けなし、pgrep -x syncthing 該当なし。"
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 472
+
+deviations:
+  - type: judgement
+    note: "貼り直し先の Python 3.11 実体がホストに一つも無かった（~/.local/share/uv/ ごと不在、システムは 3.12 のみ）。SPEC は無かった場合の指示を持たない。ユーザーへ二択を提示し uv python install 3.11 を選択された上で実行。取得された cpython-3.11.16 は philip の実体と同一版で ABI も一致。.venv の 6.2G は破棄していない。"
+  - type: judgement
+    note: "pyvenv.cfg の home は壊れた pyenv のパスのまま残した。sys.prefix と site-packages はいずれも正しく解決され 477 件の試験が走ったため、動いているものへ触れないほうが差分が小さいと判断した。"
+  - type: spec_defect
+    note: "Task 1 Step 5 の Expected『両方が https』は指示された git remote set-url --push では達成できない。push 経路のみ https へ変更し、fetch 側は SSH で生きていることを実測して残した。"
+  - type: environment
+    note: "task スキルが求める .sync-pause の目印を置いていない。ilya には ~/bin/m2-sync.sh も ~/claude-sync/ も存在せず（保守作業で初期化された）、止める対象が無いため。自動統合の危険は無い。"
+  - type: judgement
+    note: "囮の先頭行を報告へそのまま貼っていない。貼ると自分の秘匿検査が自分の報告に該当を出すため、audit.md では先頭 30 文字を途中で切った。検査の結果の数値はすべて貼ってある。"
+
+  - type: judgement
+    note: "cp の前に scripts/sync/hub_keys/ の中身を測っていなかった。SPEC Task 3 Step 4 は mkdir -p と cp を続けて指示しており手順に『置く前に見る』が無い。そのまま実行して旧版を上書きし、git status の M で気づいた。失われたものは無い（旧版は git 履歴に残り、対応する秘密鍵は初期化で既に失われていた）。"
+
+issuer_defects:
+  - type: self_contradiction
+    note: "Task 1 Step 5 は git remote set-url --push origin https://… を指示した直後に『両方が https になったことを確かめる』を求めるが、この下位命令は remote.origin.pushurl だけを設定し fetch 側の remote.origin.url は変えない。指示どおり実行すると git remote -v は git@…(fetch) と https://…(push) を出力し、Expected を満たせなかった。両方を https にするには git remote set-url origin https://… の併用が要る。"
+  - type: self_contradiction
+    note: "Task 5 Step 1 は『完了判定 17 項目を表にまとめ』と指示するが、SPEC 本文の完了判定表は Task 1〜5 で 22 項目を挙げている（Task 5 の表が 18〜22）。指示どおり 17 項目だけ書くと送出・秘匿検査・未追跡の保全に関する 18〜22 が報告から落ちる。本報告は 22 項目すべてを表にした。"
+
+  - type: check_does_not_check
+    note: "Task 3 Step 1『既存の鍵を確かめる』は ~/.ssh/ だけを走査させ、scripts/sync/hub_keys/ に旧版が在るかを確かめさせない。Step 4 も cp を指示するだけで『置く』と書き『置き換える』とは書いていない。指示どおり実行すると版管理にあった旧版 ilya.pub（SHA256:5auPdGk/WfnGcmpQ8yygEc6mMv7svH8CzqulBjV3pRo, ubuntu@aolab, commit 806abe4）を、それと気づかないまま上書きする。git status が M を出したことから気づいた。"
+
+positive_controls:
+  - judgement: "公開鍵だけを版管理へ置いたことを示す三つの検査（先頭が ssh- / PRIVATE の件数が零 / 行数が一）"
+    breaking_input: "鍵の書き出しを模した 3 行の囮ファイル（版管理外の scratchpad に作成）へ同じ三つの検査をかける"
+    observed: "三つとも弾いた。先頭は '-----BEGIN …' で ssh- ではなく、grep -c PRIVATE は 2、grep -c '' は 3 を返した。本番の ilya.pub はそれぞれ 'ssh-ed25519 AAAAC3NzaC1lZDI1NT' / 0 / 1。"
+  - judgement: "送信前の秘匿検査（BEGIN … PRIVATE / api_key / password / passphrase の形を探す grep）"
+    breaking_input: "鍵の書き出しを模した行と、資格情報を表す語に値を続けた行を 3 種そろえた囮ファイルへ同じ grep をかける"
+    observed: "囮に 4 件該当した。本契約の tasks/T-2026-08-22-ilya-node-foundation/*.md *.yaml には鍵の書き出し行も、語に区切りと値が続く形も無い。"
+  - judgement: "同期処理が起動していないことの判定（/proc/net/tcp の待ち受け走査）"
+    breaking_input: "実際に待ち受けている番号を同じ判定器に問う（22 番。SSH で外から届いていることが独立に確かめられている）"
+    observed: "port_22=LISTEN を返した。判定器は待ち受けを検出できている。その上で port_22000 と port_8384 は '-' であった（count=5）。"
+  - judgement: "配布物・配置物が中心と同じ版であることの要約値照合"
+    breaking_input: "異なる中身に対して sha256sum が異なる値を返すこと。tar（10846484 バイト）と実行ファイル（26730145 バイト）は別物である"
+    observed: "tar は c04ffbde…75fd60、実行ファイルは 32ab747e…0ca1dd と互いに異なる値を返し、それぞれ SPEC の Expected と一致した。"
+
+followups:
+  - "bash -c（非対話・非ログイン）では SERVERNAME が未設定のままである。道具の冒頭に明記された既知の限界で、利用者ファイルでは覆えず /etc/environment（要 root・システム全体）が要る。本契約の範囲外。"
+  - "前契約の事実 10（libGL.so.1 が無く mmcv/mmdet を読み込めない）は ilya では当てはまらなかった。mmdet を要する tests/test_engines.py も収集・実行された。"
+  - "試験 5 件が失敗したままである。tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics（score_thr が 0.0 と 1e-08 で不一致）と tests/test_research_logger.py の 4 件（Notion 資格情報が無く log_run が None を返す）。いずれも本契約の変更とは無関係で、src/ tests/ には一切触れていない。"
+  - "P9 spec_lint の host_mismatch は、論理名を使うこの環境では常に該当する。規則は socket.gethostname() と比べるが ilya と philip はともに aolab を返す。検査器の側の限界であり、起票者の誤りとしては数えていない。"
+  - "登録と起動は行っていない（禁止 4・6）。次の契約で全台の値が揃ってから行う。中心 philip の識別子 3J4TRX4-… は版管理から読み取って SPEC の記載と一致することを確かめた。"
+
+  - "版管理にあった旧版の scripts/sync/hub_keys/ilya.pub（SHA256:5auPdGk/WfnGcmpQ8yygEc6mMv7svH8CzqulBjV3pRo, ubuntu@aolab）を新版で置き換えた。旧版の秘密鍵は初期化で失われており、このホストに存在しない。中心 philip が受け入れ一覧へ入れるべきは新版 SHA256:O4FrUiuT3+JNwIDMduljzPXfS7minab+CkWfg4gDzIQ であり、旧版は無効である。"
+
+unknowns:
+  - "開始前の試験の失敗件数。契約の開始時点では .venv が壊れていて python が起動せず測れなかった。tests.before_failed に置いた 5 は修復直後の実測値であって『開始前』の値ではない。本契約は src/ tests/ を変更していない。"
+  - "~/.ssh/id_ed25519（コメント no comment、SHA256:cdOmPfuBN4wFfTjbvjDIaGgiv3YaHEMLez0td1v5oE4）が何のために置かれた鍵か。git fetch が SSH で通ることから GitHub 向けと推定したが、確かめていない。触れていない。"
+
+commits: []

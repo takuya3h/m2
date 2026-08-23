@@ -6,8 +6,71 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 45 件）。
-ここに出ない 40 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 47 件）。
+ここに出ない 42 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-08-22-philip-hub-foundation
+
+状態 `` / ホスト `` / 起票 `なし` / 様式 `v1`
+
+### ゲート
+
+- `G1` PASS（記述なし。様式 v1）
+- `G2` PASS（記述なし。様式 v1）
+
+### 起票者の誤り
+
+（なし）
+
+### 逸脱
+
+（なし）
+
+### 申し送り
+
+（なし）
+
+### 断定できなかったこと
+
+（なし）
+
+## T-2026-08-22-ilya-node-foundation
+
+状態 `pass` / ホスト `ilya` / 起票 `なし` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — HEAD=origin/phase0=8eec82e（ahead/behind 0/0）。.venv 修復後 Python 3.11.16 が起動し sys.prefix=/home/ubuntu/slocal2/m2/.venv。du は前後とも 6.2G。zsh -c と bash -lc の両方で SERVERNAME=ilya。git user.name=takuya3h、push url=https://github.com/takuya3h/m2.git。
+- `G2` pass — 鍵の指紋 SHA256:O4FrUiuT3+JNwIDMduljzPXfS7minab+CkWfg4gDzIQ。公開鍵は先頭 ssh-ed25519 / PRIVATE=0 / 行数=1、囮では PRIVATE=2 / 行数=3 で弾かれた。tar sha256=c04ffbde…75fd60、bin sha256=32ab747e…0ca1dd で中心と一致。device_ids/ilya.txt は 1 行。port 22000/8384 とも待ち受けなし、pgrep -x syncthing 該当なし。
+
+### 起票者の誤り
+
+- `self_contradiction` — Task 1 Step 5 は git remote set-url --push origin https://… を指示した直後に『両方が https になったことを確かめる』を求めるが、この下位命令は remote.origin.pushurl だけを設定し fetch 側の remote.origin.url は変えない。指示どおり実行すると git remote -v は git@…(fetch) と https://…(push) を出力し、Expected を満たせなかった。両方を https にするには git remote set-url origin https://… の併用が要る。
+- `self_contradiction` — Task 5 Step 1 は『完了判定 17 項目を表にまとめ』と指示するが、SPEC 本文の完了判定表は Task 1〜5 で 22 項目を挙げている（Task 5 の表が 18〜22）。指示どおり 17 項目だけ書くと送出・秘匿検査・未追跡の保全に関する 18〜22 が報告から落ちる。本報告は 22 項目すべてを表にした。
+- `check_does_not_check` — Task 3 Step 1『既存の鍵を確かめる』は ~/.ssh/ だけを走査させ、scripts/sync/hub_keys/ に旧版が在るかを確かめさせない。Step 4 も cp を指示するだけで『置く』と書き『置き換える』とは書いていない。指示どおり実行すると版管理にあった旧版 ilya.pub（SHA256:5auPdGk/WfnGcmpQ8yygEc6mMv7svH8CzqulBjV3pRo, ubuntu@aolab, commit 806abe4）を、それと気づかないまま上書きする。git status が M を出したことから気づいた。
+
+### 逸脱
+
+- `judgement` — 貼り直し先の Python 3.11 実体がホストに一つも無かった（~/.local/share/uv/ ごと不在、システムは 3.12 のみ）。SPEC は無かった場合の指示を持たない。ユーザーへ二択を提示し uv python install 3.11 を選択された上で実行。取得された cpython-3.11.16 は philip の実体と同一版で ABI も一致。.venv の 6.2G は破棄していない。
+- `judgement` — pyvenv.cfg の home は壊れた pyenv のパスのまま残した。sys.prefix と site-packages はいずれも正しく解決され 477 件の試験が走ったため、動いているものへ触れないほうが差分が小さいと判断した。
+- `spec_defect` — Task 1 Step 5 の Expected『両方が https』は指示された git remote set-url --push では達成できない。push 経路のみ https へ変更し、fetch 側は SSH で生きていることを実測して残した。
+- `environment` — task スキルが求める .sync-pause の目印を置いていない。ilya には ~/bin/m2-sync.sh も ~/claude-sync/ も存在せず（保守作業で初期化された）、止める対象が無いため。自動統合の危険は無い。
+- `judgement` — 囮の先頭行を報告へそのまま貼っていない。貼ると自分の秘匿検査が自分の報告に該当を出すため、audit.md では先頭 30 文字を途中で切った。検査の結果の数値はすべて貼ってある。
+- `judgement` — cp の前に scripts/sync/hub_keys/ の中身を測っていなかった。SPEC Task 3 Step 4 は mkdir -p と cp を続けて指示しており手順に『置く前に見る』が無い。そのまま実行して旧版を上書きし、git status の M で気づいた。失われたものは無い（旧版は git 履歴に残り、対応する秘密鍵は初期化で既に失われていた）。
+
+### 申し送り
+
+- bash -c（非対話・非ログイン）では SERVERNAME が未設定のままである。道具の冒頭に明記された既知の限界で、利用者ファイルでは覆えず /etc/environment（要 root・システム全体）が要る。本契約の範囲外。
+- 前契約の事実 10（libGL.so.1 が無く mmcv/mmdet を読み込めない）は ilya では当てはまらなかった。mmdet を要する tests/test_engines.py も収集・実行された。
+- 試験 5 件が失敗したままである。tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics（score_thr が 0.0 と 1e-08 で不一致）と tests/test_research_logger.py の 4 件（Notion 資格情報が無く log_run が None を返す）。いずれも本契約の変更とは無関係で、src/ tests/ には一切触れていない。
+- P9 spec_lint の host_mismatch は、論理名を使うこの環境では常に該当する。規則は socket.gethostname() と比べるが ilya と philip はともに aolab を返す。検査器の側の限界であり、起票者の誤りとしては数えていない。
+- 登録と起動は行っていない（禁止 4・6）。次の契約で全台の値が揃ってから行う。中心 philip の識別子 3J4TRX4-… は版管理から読み取って SPEC の記載と一致することを確かめた。
+- 版管理にあった旧版の scripts/sync/hub_keys/ilya.pub（SHA256:5auPdGk/WfnGcmpQ8yygEc6mMv7svH8CzqulBjV3pRo, ubuntu@aolab）を新版で置き換えた。旧版の秘密鍵は初期化で失われており、このホストに存在しない。中心 philip が受け入れ一覧へ入れるべきは新版 SHA256:O4FrUiuT3+JNwIDMduljzPXfS7minab+CkWfg4gDzIQ であり、旧版は無効である。
+
+### 断定できなかったこと
+
+- 開始前の試験の失敗件数。契約の開始時点では .venv が壊れていて python が起動せず測れなかった。tests.before_failed に置いた 5 は修復直後の実測値であって『開始前』の値ではない。本契約は src/ tests/ を変更していない。
+- ~/.ssh/id_ed25519（コメント no comment、SHA256:cdOmPfuBN4wFfTjbvjDIaGgiv3YaHEMLez0td1v5oE4）が何のために置かれた鍵か。git fetch が SSH で通ることから GitHub 向けと推定したが、確かめていない。触れていない。
 
 ## T-2026-08-18-report-back-to-ledger
 
@@ -108,70 +171,4 @@
 - 記録として分類した 735 件の内容が実態と合っているかは確かめていない。過去の記述が現在と食い違うのは当然であり対象外とした
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
 - OPERATION.md と README.md が述べる「実験に使用中の 4 台」は、このリポジトリからは検証できない。研究サーバー 11 台の名前は全て定位置分岐に実在することを確かめたが、そのうち何台が実際に実験に使われているかは測れない
-
-## T-2026-08-15-training-determinism
-
-状態 `pass` / ホスト `andrew` / 起票 `115` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 決定化なしで同じ種（42）を二度走らせ、best accuracy が 0.9128712871287129 と 0.9042904290429042 で不一致（差 −0.0085809）。世代 1〜5 は 6 桁一致し世代 6 から食い違い、50 世代中 43 世代で不一致だった。乱数系は揃っており、ビットレベルの浮動小数の揺れが量子化された accuracy に現れるまで数世代かかる形である
-- `G2` pass — 決定化した seed 42 を三度走らせた。三度目は間に非決定の 12 本（約 10 分）を挟んで装置の状態を掻き回した後である。三本とも accuracy が一致し best checkpoint の sha256 も e909ab8d3296481f で一致した。seed 123 / 456 も各二度で重みまで一致し、計 3 種で確認した
-- `G3` pass — 設定を外した同種二度（G1 と同一コマンド）は −0.0086 で一致しない。対照は効いており、検査は空振りしていない
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — SPEC は『隣接させると雑音が相関して打ち消し合っていたとみられる』『そうなれば種が三つでも 0.001 級の効果が見える』と書いたが、いずれも測らずに書かれた推測で、実測は双方を否定した。直す前の隣接実行の σ_d は 0.0073568 で一括の 0.0100007 と同水準であり、前実験の 0.000823 は n=3 の偶然だった。決定化後も σ_d は 0.0054519 残り、これは雑音ではなく種×腕の真の交互作用（seed 42 は +0.009、123/456 は約 −0.002）で、n=3 の検出下限は 0.0063 に留まる。SPEC 自身が『再現しないこと自体が重要な知見』と逃げ道を書いており、その通りになった
-
-### 逸脱
-
-- `spec_defect` — created_from.runindex_commit の記載 8c13afb に対し現在値は 3e15d09 だった。counts は一致しており記載の commit だけが古い。四契約連続の同型である
-- `judgement` — 解禁範囲（乱数と決定性に関わる箇所）に加え、variants スクリプトへ --audit-dir を追加した。experiments/ を汚さず（禁止 10）全 50 世代を走らせる測定（G1 は全世代の実測が必要で smoke は 2 世代上限）を両立させるために必要だった。学習の挙動は不変で、audit 経路は重みの比較のため checkpoint も保存する
-- `judgement` — G3 の『外すと一致しない』は Phase C で改めて走らせず、G1 の実測（同一コマンド・フラグ無し・二度で −0.0086 不一致）を対照として引いた。同一条件の実測が既にあり、再実行は情報を増やさないため
-
-### 申し送り
-
-- 次の exp 契約から train.deterministic: true を明示して有効にすべきである（本契約は opt-in、既定不変・禁止 13）。減速は 2.15×（6.82 → 14.69 秒/本）で桁は変わらない
-- sweep（#114）が申し送った『隣接実行の再測定』は不要になった。隣接しても σ_d は 0.0074 級で判定力は戻らない（実測済み）。代わりに決定化 + 種を増やす。n=10 で 0.0034 級、n=3 で 0.0063 級が検出下限
-- #111 の負の効果（−0.0044、比 5.345）は信じてはならない。真の σ_d 0.0054 級に対し n=3 の平均 −0.0044 の実際の比は 0.8 程度で、当時の pstd 0.000823 が偶然小さく出たことによる見かけの有意である。sweep で再現しなかったこととも整合する
-- 種×腕の交互作用が実在する（seed 42 は +0.009、123/456 は約 −0.002、各測定は厳密）。主たる終点を『平均の差』に置く設計自体の再考が要るかもしれない。効果の不均一そのものを測る設計を検討する
-- 他の学習経路（train_s4_tecno.py・検出系の mmdet 経路）への決定化の展開は本契約の範囲外。mmdet 経路は deterministic=False が直書きされている（mmdet_trainer.py:501）
-- 過去の全 run（非決定）と今後の run（決定化）は数式は同じだがカーネルが違うため、同じ種でも値が変わる。分母を跨いで比べる場合は注意する
-
-### 断定できなかったこと
-
-（なし）
-
-## T-2026-08-15-template-leak-and-autosync-conflict
-
-状態 `pass` / ホスト `lecun` / 起票 `71` / 様式 `v1`
-
-### ゲート
-
-- `G1` pass（記述なし。様式 v1）
-- `G2` pass（記述なし。様式 v1）
-
-### 起票者の誤り
-
-- `self_contradiction` — 禁止 4 が runindex/** の手編集を禁じる一方、Task 1 Step 5 は起票を指示する。この repo の起票先 backlog.md は runindex/ 配下にある。投影の出所が生成器の BACKLOG 定数（ast.literal_eval で読む）だと実装で確かめ、生成器だけを編集して解決した
-- `self_contradiction` — 禁止 9 が統合を禁じる一方、判定 8 は無効時に書き込むことの確認を求める。契約の分岐で測ると自分で禁止 9 を破る。HOME を差し替えた隔離環境で実物のスクリプトを走らせて解決した
-- `self_contradiction` — 判定 15「禁止領域が無変更」と判定 5「件数が増える」が両立しない。件数が現れる投影 context/auto/open_questions.md は禁止 4 の領域にある。禁止を「手による編集」と読み、make context による生成として解決した
-- `check_does_not_check` — 判定 6・7 はリポジトリ側の実装に対して成立するが、稼働中の常駐処理が抑止対象になっていることを確かめない。~/bin/m2-sync.sh は keeper が origin/phase0 から自己更新するため、phase0 に届くまで抑止は効かない（実測 grep -c = 0）。契約の目的『実行中に書き込ませない』はこの判定群を満たしても達成されない
-
-### 逸脱
-
-3 件（様式 v1 のため件数のみ。中身は RESULT.md にある）
-
-### 申し送り
-
-- 抑止は origin/phase0 に届いてから効く。届くまでは目印を置いても常駐処理は止まらない。各ホストへの反映は keeper の自己更新に依存する（最短 2 ループ / 最大 60 分）
-- 目印の解除忘れを自動で検知する手段が無い。sync-alerts.log に毎ループ『一時停止中』と出るのみで、見なければ気付けない
-- B-39 に着手するには、コメント中の例示に具体名を許すかを先に決める必要がある。決めないと configs/default.yaml の扱いが定まらない（値は間接参照のため写しても誤らない）
-- 共有設定の DINOV2_WEIGHTS が雛形の記入例のままである（値は出力していない。存在と性質のみ）。全台へ同じ内容が配られるため、どのホストでも同じはずである。暗号設定の変更は本契約の禁止 2 に当たるため触れていない
-
-### 断定できなかったこと
-
-- 他ホストでは本修正のいずれも実行していない。テンプレートの修正も常駐処理の抑止も lecun 上でのみ実測した
-- 契約の取り込み操作そのものは実行していない。作業開始時点で未追跡ファイルとして作業ツリーに存在した。要約値の照合が通ったかは測れず UNKNOWN。記法が壊れずに届いたことのみ実測した
-- 過去に雛形を写して環境を作ったホストのローカル .env に SERVERNAME が残っていないかは未測定。共有の暗号設定には無い（鍵 6 個）
 
