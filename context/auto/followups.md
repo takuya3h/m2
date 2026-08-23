@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（212 件）
+## 申し送り（218 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -338,6 +338,15 @@
 - 秘匿の検査が見るのは NOTION_API_KEY と WANDB_API_KEY の 2 つと、既知の接頭辞である。資格情報を増やしたら SECRET_ENV_KEYS へ足すこと。足し忘れても検査は通るため気付けない
 - 送信の時点で壁時計を使っている（completed_at）。生成物ではないため冪等の検査には影響しないが、投影に壁時計を入れない方針とは別の判断である
 
+### T-2026-08-22-andrew-node-foundation
+
+- 中心（philip）の受け入れ一覧から旧鍵 SHA256:i7+kCZH9Yb2oX5TOd/u/AqAqvyQk0G7Yu//7BFd2G3k （ubuntu@Andrew）を外し、新鍵 SHA256:7yvApjr/qWxBWND60+liGfDGuJMJF7NowRyGZXCu2W0 （andrewtophilip）を入れること。旧鍵に対応する秘密鍵は保守作業で失われており、 誰も持っていない。他台の hub_keys/*.pub にも同じ取り残しがある可能性が高い。
+- andrew の識別子は 3C2LTP7-KZXRYDA-OQ5MVJ5-FKT2ASR-35MMOAD-6DQWKL7-SBMSEK2-UVZB5A4。 scripts/sync/device_ids/andrew.txt に 1 行 64 バイトで公開した。登録と起動は次の契約に譲る。
+- 他台の契約を書くときは、.venv の貼り直し先が存在しない場合の手順を明記すること。 andrew では uv python install 3.11.16 で実体だけを足して ln -sfn で貼り直した。 pyvenv.cfg の home は死んだ pyenv を指したままでも sys.prefix は正しく解決する（実測）。
+- libGL.so.1 が無いため cv2 / mmcv / mmdet が読み込めず、pytest は tests/test_datasets.py の収集段階で止まる（--ignore で回避して測定した）。 tests/test_pipeline.py の 2 件も同じ原因で落ちる。本契約の範囲外だが復旧が要る。
+- tests/test_research_logger.py の 4 件は Notion 連携の模擬が呼ばれず落ちる （assert None == 'page-abc' 等）。scripts/load_env.sh が合言葉の消失で使えず NOTION_API_KEY が無い状態と整合するが、原因を特定してはいない。
+- 実行基盤の分類器が git config user.email（平文アドレス）と git remote set-url を拒む。 他台でも同じ壁に当たる。前者は noreply 形式で通る。後者は利用者の承認か permissions への追加が要る。
+
 ### T-2026-08-22-bengio-node-foundation
 
 - libGL.so.1 が不在で mmcv / mmdet を import できない（ImportError: libGL.so.1）。 本契約の範囲外だが、bengio で学習・評価を回す前に別契約での対処が要る。
@@ -361,7 +370,7 @@
 - tests の失敗 5 件は本契約以前から在るもので内容も無関係である。追跡ファイルを一つも 変更していないため試験対象の木は origin/phase0 と同一であり、前後の実測は同じ値になる。 test_research_logger の 4 件は Notion への記録が None を返すことによる （assert None == 'page-abc'）。scripts/load_env.sh が使えず資格情報が入らない状況と整合する。 test_engines の 1 件は未追跡の理由で落ちており本契約では触れていない。
 - 次の契約（登録と起動）で使う値。識別子は OOOTQMG-2WT55EF-YGX55VM-YWFWVRT-XUSDUUB-3AXCYV4-OVY2X3H-KRFOWA3 （scripts/sync/device_ids/lecun.txt）。中心の受け入れ一覧へ入れる指紋は SHA256:g5TwfvgDPsNhiSd9OXDZoWDj99au1y8yEnW8hmNyqHI （公開鍵は scripts/sync/hub_keys/lecun.pub）。秘密鍵は ~/.ssh/id_ed25519_lecuntophilip にあり当ホストから出していない。
 
-## 断定できなかった事項（143 件）
+## 断定できなかった事項（146 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -623,6 +632,12 @@
 - 台帳の他の行が変わっていないことは、触れた行を限定した事実からしか言えていない。全行の内容を送信前後で突き合わせてはいない
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
 
+### T-2026-08-22-andrew-node-foundation
+
+- fetch 側が git@github.com:takuya3h/m2.git のままである。set-url --push は push 側しか 書き換えず、fetch を変えるのは契約に無い変更のため残した。fetch は現に成功している （配備鍵 id_Andrewdeploy が無い旨の警告は出るが取得できる）。何の鍵で通っているかは 特定していない。
+- tests.before_failed の 0 は測定値ではない。修復前は .venv が壊れており pytest を 起動できなかったため、開始前の件数は測定不能である。after の 7 failed / 457 passed / 4 skipped は tests/test_datasets.py を --ignore で除いた測定値であり、 本契約は src/ と tests/ を一切変更していないためこの 7 件は本契約に起因しない。
+- tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics の assert 0.0 == 1e-08 の原因は特定していない。
+
 ### T-2026-08-22-bengio-node-foundation
 
 - 同期処理を起動したときに 22000/8384 が LISTEN として検出されるか。禁止 6 により未測定。
@@ -638,16 +653,16 @@
 - make forbidden-check が禁止領域の変更を実際に捕まえるかどうか。 禁止領域を意図的に汚す検査は行っていない。
 - test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics が失敗する理由。 本契約の範囲外のため追っていない。
 
-## 起票者の誤りの型（121 件）
+## 起票者の誤りの型（125 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 41 |
-| `asserted_without_measuring` | 36 |
-| `self_contradiction` | 34 |
-| `shell_assumption` | 10 |
+| `asserted_without_measuring` | 38 |
+| `self_contradiction` | 35 |
+| `shell_assumption` | 11 |
 
-合計 121 件（対を持つ契約 49 件から）
+合計 125 件（対を持つ契約 50 件から）
 

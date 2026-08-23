@@ -1,0 +1,4 @@
+- [ ] 2026-08-23 [cc] .venv の貼り直し先が andrew には存在しなかった（~/.local/share/uv/python/ が無く Python 3.11 が一つも無い）。ユーザーへ諮り uv python install 3.11.16 で実体だけを足し ln -sfn で貼り直す承認を得た。uv venv --clear は使わず 6.2G を保持（T-2026-08-22-andrew-node-foundation）
+- [ ] 2026-08-23 [cc] 版管理の scripts/sync/hub_keys/andrew.pub に初期化前の鍵が残っており Create ではなく上書きになった。旧指紋 SHA256:i7+kCZH9Yb2oX5TOd/u/AqAqvyQk0G7Yu//7BFd2G3k は対応する秘密鍵が失われて使えない。中心の受け入れ一覧から外すこと。他台も同じ取り残しの可能性が高い（T-2026-08-22-andrew-node-foundation）
+- [ ] 2026-08-23 [cc] 実行基盤の分類器が git remote set-url を拒み、完了判定 5 の送出の経路が未達のまま。git config user.email も平文アドレスは拒まれ noreply 形式で通した。他台の契約でも同じ壁に当たる（T-2026-08-22-andrew-node-foundation）
+- [ ] 2026-08-23 [cc] SPEC Task 1 Step 5 は set-url --push だけを実行させて「両方が https になったことを確かめる」と書くが、fetch 側も git@ のホストでは原理的に満たせない。起票側の自己矛盾として記録した（T-2026-08-22-andrew-node-foundation）

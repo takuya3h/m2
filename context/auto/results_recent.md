@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 49 件）。
-ここに出ない 44 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 50 件）。
+ここに出ない 45 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-08-22-philip-hub-foundation
 
@@ -141,32 +141,45 @@
 
 - 同期処理を起動したときに 22000/8384 が LISTEN として検出されるか。禁止 6 により未測定。
 
-## T-2026-08-18-report-back-to-ledger
+## T-2026-08-22-andrew-node-foundation
 
-状態 `pass` / ホスト `lecun` / 起票 `75` / 様式 `v2`
+状態 `pass` / ホスト `andrew` / 起票 `125` / 様式 `v3`
 
 ### ゲート
 
-- `G1` pass — 壊れやすい要素を含む 8653 バイトの本文を送って読み戻し、要約値が完全に一致した。末尾 1 文字を変えた本文では要約値が異なることも確かめ、照合が空振りしていないことを示した。確認用の行は superseded にし削除していない
-- `G2` pass — 実際の環境の資格情報を含む本文は拒まれ、外部への送信は 0 回だった。一致の内訳は環境の値そのものと既知の接頭辞の 2 件で、値は出力に含まれない。含まない本文は誤検出なく通った
+- `G1` pass — 版管理の先頭は 8eec82e で origin/phase0 と rev-list --left-right --count が 0 0。 .venv は du -sh で修復前 6.2G 修復後 6.2G、python -V が Python 3.11.16、 which python が /home/ubuntu/slocal2/m2/.venv/bin/python、torch 2.1.2+cu118 cuda_avail True。 zsh -c と bash -lc の双方で SERVERNAME=andrew。 識別は user.name=takuya3h / user.email=160078021+takuya3h@users.noreply.github.com を repo ローカルへ設定。 送出は git remote set-url --push が初回は実行基盤の分類器に拒否されたが、利用者の承認を得て 再実行し成功。git remote -v は fetch=git@github.com:takuya3h/m2.git / push=https://github.com/takuya3h/m2.git。fetch 側は契約に無い変更を避けて git@ のまま残した。
+- `G2` pass — 中心宛の鍵の指紋は SHA256:7yvApjr/qWxBWND60+liGfDGuJMJF7NowRyGZXCu2W0（andrewtophilip）。 版管理側 scripts/sync/hub_keys/andrew.pub の指紋も同一。 三つの検査は head -c 30 が ssh-ed25519 AAAAC3NzaC1lZDI1NT、grep -c PRIVATE が 0、grep -c '' が 1。 囮（scratchpad・版管理外）では順に -----BEGIN OPENSSH … PRIVATE KEY / 2 / 3 を返した。 配布物 sha256 は c04ffbdedcd1d18ccb4a34a341a6a2b2461082f7a6f43537eb0bba860975fd60、 配置物 sha256 は 32ab747eb18ff3a01423f9719c5b8a8165da63e60ee9c3f733887464c70ca1dd で中心と一致。 識別子は 1 行 64 バイトで公開。待ち受けは port_22000=- / port_8384=- / port_22001=- で port_22=LISTEN のみ、pgrep -x syncthing は不在、/proc/*/cmdline 走査は 0 件。
 
 ### 起票者の誤り
 
-- `check_does_not_check` — 台帳の列を 6 つ挙げる一方で、報告の本文をどのブロックへ置くと契約の取り込みと混ざるかを問うていない。指示どおり code ブロックへ置くだけでは、本文で配布された行で _scan_children が契約本文と報告を連結してしまい、以後その契約を取り込めなくなる
+- `self_contradiction` — Task 1 Step 5 は git remote set-url --push だけを実行させたうえで「両方が https に なったことを確かめる」と書くが、--push は push 側しか書き換えないため fetch 側が git@ の ホストではこの期待を原理的に満たせない。andrew は fetch 側も git@github.com:takuya3h/m2.git であり、指示どおり実行しても git remote -v の 2 行のうち 1 行は git@ のまま残る。
+- `asserted_without_measuring` — Task 3 の Files 欄は scripts/sync/hub_keys/andrew.pub を Create と断定するが、実際には 初期化前の鍵が版管理に残っており git status は M を返した。指示どおり cp を実行すると 在ることを知らないまま既存の公開鍵を上書きする。上書き前の値を控える手順が契約に無いため、 実行者が気付かなければ旧指紋 SHA256:i7+kCZH9... は記録されずに消える。
+- `asserted_without_measuring` — 「前契約で確定した事実（全台で同じはず）」の 2 と 5 が andrew では成立しない。2 の ~/.local/share/uv/python/ は存在せず、5 の jsonschema は既に 4.26.0 が入っていた。 2 のほうが危険で、貼り直す先が無いと分かった実行者が uv venv --clear（禁止 7・6.2G を破棄） へ手を伸ばしかねない。契約は「同じ経路が在るかを確かめる」とは書くが、無かった場合に どうするかを書いていない。
+- `shell_assumption` — Task 3 Step 1 の ls -la ~/.ssh/id_ed25519_andrewtophilip* と Task 1 Step 2 の ls -la .venv/bin/python* は 2>&1 付きで書かれているが、このホストのログインシェルは zsh で 既定の nomatch が有効なため、該当が無いとき ls は起動せず (eval):1: no matches found: を シェル自身が返す。ls の「無い」という出力とは別物であり、|| echo を付けなければ 終了状態の解釈を誤る。契約の申し送り 1「無いことと読めないことを区別する」に契約自身が抵触する。
 
 ### 逸脱
 
-- `judgement` — 取り込み側の _scan_children に読み分けを足した。契約は送り返しの経路だけを求めているが、目印が無いと本文で配布された行で契約本文と報告が連結され、取り込みが壊れるためである
-- `judgement` — 往復の確認用に台帳へ新しい行を作った。契約は確認用の本文で測れとだけ書いており行の作成には触れていないが、既存の契約行で試すと本番の行を汚すため別の行を用意した
+- `environment` — .venv の貼り直し先が存在しなかった。SPEC が前提とする ~/.local/share/uv/python/ が無く、 ホスト上に Python 3.11 が一つも無かった（system は 3.12.3）。ユーザーへ諮り uv python install 3.11.16 で philip と同一の実体を導入してから ln -sfn で貼り直す承認を得た。 uv venv --clear は使っていない（禁止 7）。外部通信が 1 回（29.5MiB）発生した。
+- `environment` — git config user.email に直近 commit の平文メールアドレスを書こうとしたが実行基盤の分類器に 拒否された。同じ repo 履歴に現れる GitHub の noreply 形式 160078021+takuya3h@users.noreply.github.com を採った。
+- `environment` — git remote set-url --push origin https://github.com/takuya3h/m2.git が初回は実行基盤の 分類器に拒否された。単独実行でも同じ。迂回は試みず、利用者へ何を・影響範囲・戻し方を示して 承認を得たうえで再実行し成功した。push 側は https になり fetch 側は git@ のまま残した。 fetch を変えるのは契約に無い変更であり、現に fetch は成功しているためである。
+- `environment` — 試験の開始前の件数を測れなかった。.venv が完全に壊れており修復前は pytest を起動できない。 before_failed の 0 は測定値ではない。tests は整数しか受けないため 0 を置き、 測定不能であることを unknowns と RESULT §8 に明記した。
+- `judgement` — 配られた契約ディレクトリ名が em ダッシュを含み task_id と一致しなかったため、 移動ではなく複製で正規名 tasks/T-2026-08-22-andrew-node-foundation へ置いた。 禁止 1（未追跡の移動）を避けるための判断。sha256 の一致を確認済み。
+- `judgement` — scripts/sync/hub_keys/andrew.pub が既存（M）だったため上書きした。旧値の指紋は SHA256:i7+kCZH9Yb2oX5TOd/u/AqAqvyQk0G7Yu//7BFd2G3k（ubuntu@Andrew）で、 対応する秘密鍵はこのホストに存在しない。使えない鍵のため置き換えを正とした。
+- `judgement` — task スキルの手順に従い .sync-pause を置いた。ただし andrew では常駐処理そのものが 初期化で消えており（~/bin が無く keeper.sh も m2-sync.sh も不在）実質的な効果は無い。 報告後に解除する。
+- `judgement` — commit と push の前に利用者の承認を求めた。利用者の運用規則が git commit / push に 事前承認を求めるためである。何を・影響範囲・戻し方を示して承認を得たうえで実行し、 commit eef1d03 / push 成功 / PR #125（base=phase0, OPEN）となった。
 
 ### 申し送り
 
-- 報告の目印 #!TASK-REPORT v1 は取り込み側と送り返し側の両方が知っている。形式を変えるときは両方を同時に直すこと。片方だけ変えると、契約本文と報告が静かに混ざる
-- 秘匿の検査が見るのは NOTION_API_KEY と WANDB_API_KEY の 2 つと、既知の接頭辞である。資格情報を増やしたら SECRET_ENV_KEYS へ足すこと。足し忘れても検査は通るため気付けない
-- 送信の時点で壁時計を使っている（completed_at）。生成物ではないため冪等の検査には影響しないが、投影に壁時計を入れない方針とは別の判断である
+- 中心（philip）の受け入れ一覧から旧鍵 SHA256:i7+kCZH9Yb2oX5TOd/u/AqAqvyQk0G7Yu//7BFd2G3k （ubuntu@Andrew）を外し、新鍵 SHA256:7yvApjr/qWxBWND60+liGfDGuJMJF7NowRyGZXCu2W0 （andrewtophilip）を入れること。旧鍵に対応する秘密鍵は保守作業で失われており、 誰も持っていない。他台の hub_keys/*.pub にも同じ取り残しがある可能性が高い。
+- andrew の識別子は 3C2LTP7-KZXRYDA-OQ5MVJ5-FKT2ASR-35MMOAD-6DQWKL7-SBMSEK2-UVZB5A4。 scripts/sync/device_ids/andrew.txt に 1 行 64 バイトで公開した。登録と起動は次の契約に譲る。
+- 他台の契約を書くときは、.venv の貼り直し先が存在しない場合の手順を明記すること。 andrew では uv python install 3.11.16 で実体だけを足して ln -sfn で貼り直した。 pyvenv.cfg の home は死んだ pyenv を指したままでも sys.prefix は正しく解決する（実測）。
+- libGL.so.1 が無いため cv2 / mmcv / mmdet が読み込めず、pytest は tests/test_datasets.py の収集段階で止まる（--ignore で回避して測定した）。 tests/test_pipeline.py の 2 件も同じ原因で落ちる。本契約の範囲外だが復旧が要る。
+- tests/test_research_logger.py の 4 件は Notion 連携の模擬が呼ばれず落ちる （assert None == 'page-abc' 等）。scripts/load_env.sh が合言葉の消失で使えず NOTION_API_KEY が無い状態と整合するが、原因を特定してはいない。
+- 実行基盤の分類器が git config user.email（平文アドレス）と git remote set-url を拒む。 他台でも同じ壁に当たる。前者は noreply 形式で通る。後者は利用者の承認か permissions への追加が要る。
 
 ### 断定できなかったこと
 
-- 台帳の他の行が変わっていないことは、触れた行を限定した事実からしか言えていない。全行の内容を送信前後で突き合わせてはいない
-- 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
+- fetch 側が git@github.com:takuya3h/m2.git のままである。set-url --push は push 側しか 書き換えず、fetch を変えるのは契約に無い変更のため残した。fetch は現に成功している （配備鍵 id_Andrewdeploy が無い旨の警告は出るが取得できる）。何の鍵で通っているかは 特定していない。
+- tests.before_failed の 0 は測定値ではない。修復前は .venv が壊れており pytest を 起動できなかったため、開始前の件数は測定不能である。after の 7 failed / 457 passed / 4 skipped は tests/test_datasets.py を --ignore で除いた測定値であり、 本契約は src/ と tests/ を一切変更していないためこの 7 件は本契約に起因しない。
+- tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics の assert 0.0 == 1e-08 の原因は特定していない。
 
