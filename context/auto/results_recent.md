@@ -6,10 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 47 件）。
-ここに出ない 42 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
-新しい順に 5 件を載せる（対を持つ契約は全 48 件）。
-ここに出ない 43 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 49 件）。
+ここに出ない 44 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-08-22-philip-hub-foundation
 
@@ -35,6 +33,43 @@
 ### 断定できなかったこと
 
 （なし）
+
+## T-2026-08-22-lecun-node-foundation
+
+状態 `pass` / ホスト `lecun` / 起票 `122` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — HEAD と origin/phase0 がともに 8eec82ec、rev-list --left-right --count が 0 0。 .venv/bin/python は uv 管理の cpython-3.11.16 へ解決でき Python 3.11.16 を返した。 du -sh .venv は前 6.2G / 後 6.2G。uv venv --clear は実行していない。 which python は /home/ubuntu/slocal/m2/.venv/bin/python。 zsh -c と bash -lc がともに SERVERNAME=lecun を返した（設定前は unset）。 git config --local に user.name=takuya3h / user.email=daky.o7600@gmail.com を設定。 git remote -v は fetch/push とも https で、初めから git@ ではなかった。
+- `G2` pass — 鍵の指紋は SHA256:g5TwfvgDPsNhiSd9OXDZoWDj99au1y8yEnW8hmNyqHI (ED25519)。 scripts/sync/hub_keys/lecun.pub の指紋が生成時と一致。 三つの検査は head -c 30 が ssh-ed25519 AAAAC3NzaC1lZDI1NT、PRIVATE が 0 件、行数が 1。 囮に同じ三つをかけると PRIVATE が 2 件、行数 3、先頭は鍵の書き出しの標識行で 三つとも外れた。囮は版管理へ入れていない。 配布物 sha256 は c04ffbdedcd1d18ccb4a34a341a6a2b2461082f7a6f43537eb0bba860975fd60、 配置物 sha256 は 32ab747eb18ff3a01423f9719c5b8a8165da63e60ee9c3f733887464c70ca1dd で いずれも中心の値と一致。syncthing v1.27.10 が表示できた。 scripts/sync/device_ids/lecun.txt は grep -c '' が 1 で OOOTQMG-2WT55EF-YGX55VM-YWFWVRT-XUSDUUB-3AXCYV4-OVY2X3H-KRFOWA3。 port_22000 と port_8384 はいずれも非待ち受け（port_22 は LISTEN）。pgrep -x syncthing は該当なし。
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — SPEC 冒頭が repo を ~/slocal2/m2 と書き、前提でも cd ~/slocal2/m2 を指示するが、 /home/ubuntu/slocal2 は存在しない（ls: cannot access）。実体は /home/ubuntu/slocal/m2 である。 指示どおり実行すると最初の cd が失敗し、以降の git fetch や git checkout -b が 別のディレクトリで走るか set -e 下では即座に止まる。
+- `shell_assumption` — Task 3 Step 1 の for f in ~/.ssh/id_* は、bash ではマッチが無いとき未展開の文字列で 1 回まわり case で落ちて無害に終わるが、ログインシェルの zsh は既定でマッチが無いと no matches found を出してその場でコマンドを失敗させる。本契約は全て失われた新規構築を 前提としており鍵が零件なのは正常な状態である。実際に (eval):1: no matches found: /home/ubuntu/.ssh/id_* が出て既存確認で止まった。 ls -la ~/.ssh/ の一覧で代替して確かめた。
+- `asserted_without_measuring` — Task 2 Step 2 が scripts/sync/setup_host_servername.sh --help を指示し「道具を読んでから 使う」と続けるが、この道具は --help を受け付けず ERROR: 不明なオプション '--help'（--dry-run / --verify のみ） を返す。 指示どおりでは使い方が得られないため、道具の先頭 60 行を直接読んで用法を得た。
+
+### 逸脱
+
+- `spec_defect` — SPEC の repo 位置 ~/slocal2/m2 が存在しないため ~/slocal/m2 で作業した。 ls で ~/slocal2 の不在を確かめてから判断した。
+- `judgement` — SPEC は git checkout -b feat/lecun-node-foundation origin/phase0 を指示するが、 分岐は既に存在し origin/phase0 と同一の先頭を指していた（rev-list が 0 0）。 切り直すと未追跡の扱いに影響が出るため既存の分岐をそのまま使った。
+- `environment` — 契約の取得を手で行っていない。spec.yaml と SPEC.md はセッション開始時点で tasks/T-2026-08-22-lecun-node-foundation/ に未追跡で置かれていた。再取得していない。
+- `environment` — SPEC Task 1 Step 2 の主眼である .venv の貼り直しは、実測の結果壊れていなかったため 実施対象が無かった。jsonschema の導入（Step 3、既に 4.26.0）と git remote set-url --push（Step 5、既に https）も同じ理由で実行していない。
+- `judgement` — 契約は論理名を ~/.zshenv と ~/.profile の 2 つへ置くよう求めるが、道具 scripts/sync/setup_host_servername.sh は ~/.bashrc にも同じ 3 行を置く。 冪等性と戻し方が保証されるため道具をそのまま使った（契約の要求の上位集合）。
+- `judgement` — 陽性対照の生出力に含まれる囮の値（語=値 と 語: 値 の 2 行）と鍵の書き出しの標識行は、 囮であって実在の資格情報ではないが形が該当するため、SPEC の「削る」指示に従い 字面を記述へ置き換えた。件数による証拠は残している。
+
+### 申し送り
+
+- 前契約（philip）の実測 10 件のうち 4 件が lecun では当てはまらず、1 件が半分だけ当たった。 非該当は #1（.venv が壊れた繋がり）、#4（pushurl が SSH）、#5（jsonschema の導入が要る）、 #10（libGL.so.1 が無く mmcv/mmdet を読み込めない。lecun では mmcv 2.1.0 / mmdet 3.3.0 とも import 成功）。半分は #3（~/.gitconfig は在るが user.name/user.email だけが無い）。 他台へ同じ契約を配るときは、前契約の実測を前提ではなく仮説として扱うべきである。
+- P9 spec_lint の separated_source 3 件（SPEC.md:396/399/402）は検査器の側の誤検知である。 SPEC の当該箇所は \ による行継続で source ... && ... を 1 つの命令として書いており 読み込みは引き継がれる。tools/check_spec.py の rule_separated_source が行を \ で結合せず 次行を「次の命令」と見なすため該当が出る。契約の誤りではない。 検査器が行継続を結合するよう直せば、この誤検知は消える。
+- tests の失敗 5 件は本契約以前から在るもので内容も無関係である。追跡ファイルを一つも 変更していないため試験対象の木は origin/phase0 と同一であり、前後の実測は同じ値になる。 test_research_logger の 4 件は Notion への記録が None を返すことによる （assert None == 'page-abc'）。scripts/load_env.sh が使えず資格情報が入らない状況と整合する。 test_engines の 1 件は未追跡の理由で落ちており本契約では触れていない。
+- 次の契約（登録と起動）で使う値。識別子は OOOTQMG-2WT55EF-YGX55VM-YWFWVRT-XUSDUUB-3AXCYV4-OVY2X3H-KRFOWA3 （scripts/sync/device_ids/lecun.txt）。中心の受け入れ一覧へ入れる指紋は SHA256:g5TwfvgDPsNhiSd9OXDZoWDj99au1y8yEnW8hmNyqHI （公開鍵は scripts/sync/hub_keys/lecun.pub）。秘密鍵は ~/.ssh/id_ed25519_lecuntophilip にあり当ホストから出していない。
+
+### 断定できなかったこと
+
+- 配布物の要約値の照合が空振りでないこと。別版を落として不一致になることは確かめていない。 中心と版を揃える要求と禁止事項のため意図的に測っていない。
+- make forbidden-check が禁止領域の変更を実際に捕まえるかどうか。 禁止領域を意図的に汚す検査は行っていない。
+- test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics が失敗する理由。 本契約の範囲外のため追っていない。
 
 ## T-2026-08-22-ilya-node-foundation
 
@@ -73,42 +108,6 @@
 
 - 開始前の試験の失敗件数。契約の開始時点では .venv が壊れていて python が起動せず測れなかった。tests.before_failed に置いた 5 は修復直後の実測値であって『開始前』の値ではない。本契約は src/ tests/ を変更していない。
 - ~/.ssh/id_ed25519（コメント no comment、SHA256:cdOmPfuBN4wFfTjbvjDIaGgiv3YaHEMLez0td1v5oE4）が何のために置かれた鍵か。git fetch が SSH で通ることから GitHub 向けと推定したが、確かめていない。触れていない。
-## T-2026-08-22-lecun-node-foundation
-
-状態 `pass` / ホスト `lecun` / 起票 `122` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — HEAD と origin/phase0 がともに 8eec82ec、rev-list --left-right --count が 0 0。 .venv/bin/python は uv 管理の cpython-3.11.16 へ解決でき Python 3.11.16 を返した。 du -sh .venv は前 6.2G / 後 6.2G。uv venv --clear は実行していない。 which python は /home/ubuntu/slocal/m2/.venv/bin/python。 zsh -c と bash -lc がともに SERVERNAME=lecun を返した（設定前は unset）。 git config --local に user.name=takuya3h / user.email=daky.o7600@gmail.com を設定。 git remote -v は fetch/push とも https で、初めから git@ ではなかった。
-- `G2` pass — 鍵の指紋は SHA256:g5TwfvgDPsNhiSd9OXDZoWDj99au1y8yEnW8hmNyqHI (ED25519)。 scripts/sync/hub_keys/lecun.pub の指紋が生成時と一致。 三つの検査は head -c 30 が ssh-ed25519 AAAAC3NzaC1lZDI1NT、PRIVATE が 0 件、行数が 1。 囮に同じ三つをかけると PRIVATE が 2 件、行数 3、先頭は鍵の書き出しの標識行で 三つとも外れた。囮は版管理へ入れていない。 配布物 sha256 は c04ffbdedcd1d18ccb4a34a341a6a2b2461082f7a6f43537eb0bba860975fd60、 配置物 sha256 は 32ab747eb18ff3a01423f9719c5b8a8165da63e60ee9c3f733887464c70ca1dd で いずれも中心の値と一致。syncthing v1.27.10 が表示できた。 scripts/sync/device_ids/lecun.txt は grep -c '' が 1 で OOOTQMG-2WT55EF-YGX55VM-YWFWVRT-XUSDUUB-3AXCYV4-OVY2X3H-KRFOWA3。 port_22000 と port_8384 はいずれも非待ち受け（port_22 は LISTEN）。pgrep -x syncthing は該当なし。
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — SPEC 冒頭が repo を ~/slocal2/m2 と書き、前提でも cd ~/slocal2/m2 を指示するが、 /home/ubuntu/slocal2 は存在しない（ls: cannot access）。実体は /home/ubuntu/slocal/m2 である。 指示どおり実行すると最初の cd が失敗し、以降の git fetch や git checkout -b が 別のディレクトリで走るか set -e 下では即座に止まる。
-- `shell_assumption` — Task 3 Step 1 の for f in ~/.ssh/id_* は、bash ではマッチが無いとき未展開の文字列で 1 回まわり case で落ちて無害に終わるが、ログインシェルの zsh は既定でマッチが無いと no matches found を出してその場でコマンドを失敗させる。本契約は全て失われた新規構築を 前提としており鍵が零件なのは正常な状態である。実際に (eval):1: no matches found: /home/ubuntu/.ssh/id_* が出て既存確認で止まった。 ls -la ~/.ssh/ の一覧で代替して確かめた。
-- `asserted_without_measuring` — Task 2 Step 2 が scripts/sync/setup_host_servername.sh --help を指示し「道具を読んでから 使う」と続けるが、この道具は --help を受け付けず ERROR: 不明なオプション '--help'（--dry-run / --verify のみ） を返す。 指示どおりでは使い方が得られないため、道具の先頭 60 行を直接読んで用法を得た。
-
-### 逸脱
-
-- `spec_defect` — SPEC の repo 位置 ~/slocal2/m2 が存在しないため ~/slocal/m2 で作業した。 ls で ~/slocal2 の不在を確かめてから判断した。
-- `judgement` — SPEC は git checkout -b feat/lecun-node-foundation origin/phase0 を指示するが、 分岐は既に存在し origin/phase0 と同一の先頭を指していた（rev-list が 0 0）。 切り直すと未追跡の扱いに影響が出るため既存の分岐をそのまま使った。
-- `environment` — 契約の取得を手で行っていない。spec.yaml と SPEC.md はセッション開始時点で tasks/T-2026-08-22-lecun-node-foundation/ に未追跡で置かれていた。再取得していない。
-- `environment` — SPEC Task 1 Step 2 の主眼である .venv の貼り直しは、実測の結果壊れていなかったため 実施対象が無かった。jsonschema の導入（Step 3、既に 4.26.0）と git remote set-url --push（Step 5、既に https）も同じ理由で実行していない。
-- `judgement` — 契約は論理名を ~/.zshenv と ~/.profile の 2 つへ置くよう求めるが、道具 scripts/sync/setup_host_servername.sh は ~/.bashrc にも同じ 3 行を置く。 冪等性と戻し方が保証されるため道具をそのまま使った（契約の要求の上位集合）。
-- `judgement` — 陽性対照の生出力に含まれる囮の値（語=値 と 語: 値 の 2 行）と鍵の書き出しの標識行は、 囮であって実在の資格情報ではないが形が該当するため、SPEC の「削る」指示に従い 字面を記述へ置き換えた。件数による証拠は残している。
-
-### 申し送り
-
-- 前契約（philip）の実測 10 件のうち 4 件が lecun では当てはまらず、1 件が半分だけ当たった。 非該当は #1（.venv が壊れた繋がり）、#4（pushurl が SSH）、#5（jsonschema の導入が要る）、 #10（libGL.so.1 が無く mmcv/mmdet を読み込めない。lecun では mmcv 2.1.0 / mmdet 3.3.0 とも import 成功）。半分は #3（~/.gitconfig は在るが user.name/user.email だけが無い）。 他台へ同じ契約を配るときは、前契約の実測を前提ではなく仮説として扱うべきである。
-- P9 spec_lint の separated_source 3 件（SPEC.md:396/399/402）は検査器の側の誤検知である。 SPEC の当該箇所は \ による行継続で source ... && ... を 1 つの命令として書いており 読み込みは引き継がれる。tools/check_spec.py の rule_separated_source が行を \ で結合せず 次行を「次の命令」と見なすため該当が出る。契約の誤りではない。 検査器が行継続を結合するよう直せば、この誤検知は消える。
-- tests の失敗 5 件は本契約以前から在るもので内容も無関係である。追跡ファイルを一つも 変更していないため試験対象の木は origin/phase0 と同一であり、前後の実測は同じ値になる。 test_research_logger の 4 件は Notion への記録が None を返すことによる （assert None == 'page-abc'）。scripts/load_env.sh が使えず資格情報が入らない状況と整合する。 test_engines の 1 件は未追跡の理由で落ちており本契約では触れていない。
-- 次の契約（登録と起動）で使う値。識別子は OOOTQMG-2WT55EF-YGX55VM-YWFWVRT-XUSDUUB-3AXCYV4-OVY2X3H-KRFOWA3 （scripts/sync/device_ids/lecun.txt）。中心の受け入れ一覧へ入れる指紋は SHA256:g5TwfvgDPsNhiSd9OXDZoWDj99au1y8yEnW8hmNyqHI （公開鍵は scripts/sync/hub_keys/lecun.pub）。秘密鍵は ~/.ssh/id_ed25519_lecuntophilip にあり当ホストから出していない。
-
-### 断定できなかったこと
-
-- 配布物の要約値の照合が空振りでないこと。別版を落として不一致になることは確かめていない。 中心と版を揃える要求と禁止事項のため意図的に測っていない。
-- make forbidden-check が禁止領域の変更を実際に捕まえるかどうか。 禁止領域を意図的に汚す検査は行っていない。
-- test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics が失敗する理由。 本契約の範囲外のため追っていない。
 
 ## T-2026-08-22-bengio-node-foundation
 
@@ -170,75 +169,4 @@
 
 - 台帳の他の行が変わっていないことは、触れた行を限定した事実からしか言えていない。全行の内容を送信前後で突き合わせてはいない
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
-
-## T-2026-08-17-report-projection-and-friction
-
-状態 `pass` / ホスト `lecun` / 起票 `74` / 様式 `v2`
-
-### ゲート
-
-- `G1` pass — 投影に転記された 45 件の記述が result.yaml の原文と 1 件も食い違わなかった。2 回生成して md5 一致、taskindex-check は exit 0。陽性対照として 1 行を手で足すと非ゼロへ変わり、再生成で 0 へ戻った
-- `G2` pass — 分母を宣言しない本 task では L2-8 が 0 件で exit 0。分母を宣言した一時契約では L2-8 が 3 件発火した。片方だけでなく両方向を実物で測った
-- `G3` pass — 索引を再生成した直後・索引を記録した直後・投影を記録した直後の 3 時点すべてで context-check が exit 0。従来は 2 番目の時点で必ず落ちていた
-- `G4` pass — research_logger と tracking への差分が origin/phase0 との比較でも作業ツリーでも 0 件。調査のみで実装は変更していない
-
-### 起票者の誤り
-
-- `self_contradiction` — G1 が Phase A の直後に「本 task 自身の完了報告を拡張した様式で書き、投影を生成する」ことを求める一方、報告の作成は Task 8 に置かれている。指示どおり Phase A の直後に評価しようとすると、まだ測っていないゲートの判定や試験の件数を書くことになり、禁止 10「未測定の値を書かない」と衝突する
-- `check_does_not_check` — Task 6 Step 2 が案を読むために示した探し方 grep -rn スタンプ ... | head は、表示用の切り詰めによって肝心の案の一覧（3 案が並ぶ行）を落とす。指示どおり実行すると案を読まずに選ぶことになり、SPEC 自身が注意 3 で禁じた「記録を作る流れに表示用の切り詰めを混ぜない」を起票者が犯している
-
-### 逸脱
-
-- `spec_defect` — G1 は Phase A の直後の評価を求めるが、その検査は本 task 自身の完了報告を必要とする。報告は Task 8 で書くため、Phase A 直後に評価すると未測定の値を書くことになり禁止 10 に触れる。機械的な部分（転記の原文一致・冪等・手による編集の検出）を Phase A 直後に実測し、報告を使う照合は報告を書いた後に行った
-- `judgement` — 投影の生成物を列挙している文書 5 箇所（Makefile・context/README.md・tasks/README.md・task の SKILL.md）を、指示に無いが同時に直した。前契約で「数の主張は機械検査を通過したまま古くなる」と実測しているため、投影を足した時点で直さなければ必ず古くなる
-- `judgement` — G2 の陽性対照に使った一時契約は L2-2（分母の参照解決）で FAIL したまま L2-8 の発火を確認した。参照は exp:<group>/<experiment_id> の形式を要求するが、実在の実験 id は @val や 2 段の / を含むため完全に通る一時契約を作れなかった。警告は L1 通過後の L2 段で出るため、発火の確認には足りている
-
-### 申し送り
-
-- results_recent.md の上限は 5 件である。契約が増えると古い順に載らなくなる。超えた分の在り処は冒頭に書いてあるが、上限そのものの妥当性は運用してから見直すこと
-- 版 1 の報告 4 件は gates[].note を持たないため、投影では「記述なし。様式 v1」と出る。遡って埋めない方針だが、読む側にとっては当面この 4 件だけ中身が薄い
-- issuer_defects[].note の下限 80 字は既存 15 件の分布から決めた。件数が増えたら分布を測り直すこと。下限は結果を書かない記述を拒むためのものであり、字数を稼がせるためではない
-- index.csv の wandb_run_id は全 751 行が空である。列を揃えたのは経路の食い違いを消すためで、値が入るのは wandb_run.json を残す run が現れてからである
-- test_research_logger の 4 件は B-40 として起票済みだが未着手のままである。原因は特定した（§Phase D）。直し方の判断は log_run の戻り値の規約を決めることから始まる
-
-### 断定できなかったこと
-
-- 外部記録へ過去に実際に送信されたかは確かめられなかった。API へは到達でき認証も通ったが、現在の資格情報の entity 配下には project が 0 件で、目的の project も存在しない。資格情報と entity は eef6687 で更新されており、過去の送信先は現在の資格情報からは辿れない。手元に 319 の痕跡があることは送信の証拠にならない
-- 手元の wandb/ にある 319 の run ディレクトリはいずれも offline-run- ではないため、実行時は送信する設定だったと読める。ただし送信が成功したかは手元の痕跡からは判定できない
-- 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
-
-## T-2026-08-16-docs-reconciliation
-
-状態 `pass` / ホスト `lecun` / 起票 `73` / 様式 `v1`
-
-### ゲート
-
-- `G1` pass（記述なし。様式 v1）
-- `G2` pass（記述なし。様式 v1）
-
-### 起票者の誤り
-
-- `check_does_not_check` — Phase A Step 2 が示す実態の測り方 grep -E '^[a-z-]+:' Makefile が数字を含むターゲットに一致しない。22 件と出るが実際は 27 件で、落ちた s0 s2 s4 s5 s6 がそのまま『存在しない操作』の誤検出になった。SPEC が 15 task 連続で起きていると警告した型が、SPEC 自身の測定コマンドに入っていた
-- `check_does_not_check` — 判定 5『検査が実在を確かめる／現行手順の文書が通る』は、検査の対象一覧が正しいことを確かめない。対象が 42 件でなく 25 件へ落ちていても通るため合格する。実際に落ちたが、判定ではなく件数の表示で気付いた
-- `asserted_without_measuring` — 実行ホストを bengio と断定しているが、契約は lecun へ配布され lecun で実行された。起票時に配布先を測っていない。測定対象がホストに依存しないため作業内容は変えていない
-
-### 逸脱
-
-4 件（様式 v1 のため件数のみ。中身は RESULT.md にある）
-
-### 申し送り
-
-- 検査はコードとして書かれた箇所しか見ない。バッククォートを付けずに散文へ書かれた操作名や経路は検出できない。誤検出を避けるための設計だが、検出漏れは残る
-- 検査が確かめるのは実在だけである。手順の順序・前提条件・説明の内容が実装と合っているかは人が読むしかない。docs_audit.md 末尾に確かめない範囲を明記した
-- docs/m2_plan_rewrite/ 25 件を記録として扱ったが、現行の計画は外部の運用ハブにある。両者の重複と役割分担は未整理である
-- 除外の印は 7 箇所ある。印を足すときは docs_audit.md の全件表も更新すること。表の中はセル内へ置く。行末に足すと列が増える
-- 文書に数を書くときの規約が無い。出所の書かれていない数は原理的に検査できない。OPERATION.md の 34 件・reproduce_on_new_machine.md の 99 テスト・README.md の 4 件と 2 件が、いずれも docs-check を通過したまま古くなっていた
-- B-40 として起票した test_research_logger.py の 4 件は、実装と試験のどちらが正しいかを調べていない。log_run の戻り値の規約を決めるのが先である
-
-### 断定できなかったこと
-
-- 散文へバッククォート無しで書かれた操作名や経路がいくつあるかは未測定。検出漏れの規模が分からない
-- 記録として分類した 735 件の内容が実態と合っているかは確かめていない。過去の記述が現在と食い違うのは当然であり対象外とした
-- 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
-- OPERATION.md と README.md が述べる「実験に使用中の 4 台」は、このリポジトリからは検証できない。研究サーバー 11 台の名前は全て定位置分岐に実在することを確かめたが、そのうち何台が実際に実験に使われているかは測れない
 
