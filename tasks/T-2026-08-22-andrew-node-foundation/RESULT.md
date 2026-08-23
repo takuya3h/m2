@@ -3,7 +3,7 @@
 **実行ホスト:** `andrew`（`hostname` は `Andrew`）
 **分岐:** `feat/andrew-node-foundation`（`origin/phase0` = `8eec82e` から）
 **実行日時:** JST 2026-08-23 22:33〜23:0x
-**status:** `partial`
+**status:** `pass`
 
 実測の全出力は `audit.md` に貼ってある。本書はそこから読み取れる事実と、判断の理由を書く。
 
@@ -76,7 +76,7 @@
 | 19 | 送信前の秘匿検査を自分で行った（陽性対照つき） | 後述 §4。該当 `0` 件（語としての一致のみ、値を伴う形なし）。囮では検出 | OK |
 | 20 | 開始時の未追跡がすべて残っている | 後述 §5 | OK |
 | 21 | 変更が契約の範囲に限られる | `make forbidden-check` → `{"status": "pass", "violations": [], "changed": 7, "errors": []}` | OK |
-| 22 | 分岐が送出され、PR が存在する（番号） | §11 に実測を記す | §11 |
+| 22 | 分岐が送出され、PR が存在する（番号） | commit `eef1d03` / push は https 経路で成功（`* [new branch] HEAD -> feat/andrew-node-foundation`）/ **PR `#125`**（`base=phase0`, `state=OPEN`, `isDraft=false`） | OK |
 
 ---
 
@@ -390,4 +390,66 @@ status_count=10
 
 ## 11. 送出（実測）
 
-（commit / push / PR の実測をここに貼る）
+**利用者へ「何を / 影響範囲 / 戻し方」を示して承認を得たうえで実行した。**
+
+```
+$ git add tasks/T-2026-08-22-andrew-node-foundation/ \
+          tasks/inbox.d/T-2026-08-22-andrew-node-foundation.md \
+          scripts/sync/hub_keys/andrew.pub \
+          scripts/sync/device_ids/andrew.txt \
+          context/auto/ tasks/inbox.md
+
+$ git --no-pager diff --cached --name-status
+M	context/auto/followups.md
+M	context/auto/results_recent.md
+M	context/auto/tasks_summary.csv
+A	scripts/sync/device_ids/andrew.txt
+M	scripts/sync/hub_keys/andrew.pub
+A	tasks/T-2026-08-22-andrew-node-foundation/RESULT.md
+A	tasks/T-2026-08-22-andrew-node-foundation/SPEC.md
+A	tasks/T-2026-08-22-andrew-node-foundation/audit.md
+A	tasks/T-2026-08-22-andrew-node-foundation/result.yaml
+A	tasks/T-2026-08-22-andrew-node-foundation/spec.yaml
+A	tasks/inbox.d/T-2026-08-22-andrew-node-foundation.md
+M	tasks/inbox.md
+```
+
+**`-A` は使っていない。明示した 9 パスだけを `add` した。**
+ステージされなかったのは開始時の未追跡 2 件である:
+
+```
+?? docs/sessions/digest/2026-08-22-bf22ad91-0c56-4705-a6aa-ee24af1feeeb.md
+?? "tasks/T-2026-08-22\342\200\224andrew-node-foundation/"
+```
+
+```
+$ git --no-pager log -1 --format='%h %s'
+eef1d03 feat(sync): build foundation and publish hub key and device id on andrew
+
+$ git push -u origin HEAD
+To https://github.com/takuya3h/m2.git
+ * [new branch]      HEAD -> feat/andrew-node-foundation
+branch 'feat/andrew-node-foundation' set up to track 'origin/feat/andrew-node-foundation'.
+
+$ gh pr list --head feat/andrew-node-foundation --json number,isDraft,state
+[]
+
+$ gh pr create --base phase0 --fill
+https://github.com/takuya3h/m2/pull/125
+
+$ gh pr view 125 --json number,state,isDraft,baseRefName,headRefName,url
+{"baseRefName":"phase0","headRefName":"feat/andrew-node-foundation","isDraft":false,
+ "number":125,"state":"OPEN","url":"https://github.com/takuya3h/m2/pull/125"}
+```
+
+**push は https 経路で成功した。** philip では同じ命令が分類器に遮断され push できていない
+（`local_commit: bf6cd4a` / `succeeded: false`）。andrew では承認を経て通った。
+
+`gh pr create` が出した `Warning: 2 uncommitted changes` は、**上の未追跡 2 件を指す。**
+**契約の禁止 1 に従って意図的に残しているものであり、取り込み漏れではない。**
+
+### 台帳への返送
+
+**行っていない。** SPEC が「`make task-report` は使えない。**台帳へは返さない。
+起票者は版管理から読む**」と定めているためである（秘匿情報の合言葉が失われ
+`scripts/load_env.sh` が失敗する）。

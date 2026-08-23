@@ -36,7 +36,7 @@
 
 ## T-2026-08-22-andrew-node-foundation
 
-状態 `partial` / ホスト `andrew` / 起票 `なし` / 様式 `v3`
+状態 `pass` / ホスト `andrew` / 起票 `125` / 様式 `v3`
 
 ### ゲート
 
@@ -59,7 +59,7 @@
 - `judgement` — 配られた契約ディレクトリ名が em ダッシュを含み task_id と一致しなかったため、 移動ではなく複製で正規名 tasks/T-2026-08-22-andrew-node-foundation へ置いた。 禁止 1（未追跡の移動）を避けるための判断。sha256 の一致を確認済み。
 - `judgement` — scripts/sync/hub_keys/andrew.pub が既存（M）だったため上書きした。旧値の指紋は SHA256:i7+kCZH9Yb2oX5TOd/u/AqAqvyQk0G7Yu//7BFd2G3k（ubuntu@Andrew）で、 対応する秘密鍵はこのホストに存在しない。使えない鍵のため置き換えを正とした。
 - `judgement` — task スキルの手順に従い .sync-pause を置いた。ただし andrew では常駐処理そのものが 初期化で消えており（~/bin が無く keeper.sh も m2-sync.sh も不在）実質的な効果は無い。 報告後に解除する。
-- `judgement` — commit と push を保留した。利用者の運用規則が git commit / push に事前承認を求めるため、 承認を得てから実施する。完了判定 22 は UNKNOWN のままである。
+- `judgement` — commit と push の前に利用者の承認を求めた。利用者の運用規則が git commit / push に 事前承認を求めるためである。何を・影響範囲・戻し方を示して承認を得たうえで実行し、 commit eef1d03 / push 成功 / PR #125（base=phase0, OPEN）となった。
 
 ### 申し送り
 
@@ -72,8 +72,7 @@
 
 ### 断定できなかったこと
 
-- 完了判定 22（分岐の送出と PR 番号）。commit も push も未実施のため PR は存在しない。 利用者の承認待ちである。
-- 完了判定 5（送出の経路）は未達。git remote set-url --push が実行できず push 側は git@github.com:takuya3h/m2.git のまま。https 経路の資格情報自体は揃っている （gh auth status が takuya3h でログイン済み・scopes に repo を含む）が、 実際に https で push が通るかは測っていない。
+- fetch 側が git@github.com:takuya3h/m2.git のままである。set-url --push は push 側しか 書き換えず、fetch を変えるのは契約に無い変更のため残した。fetch は現に成功している （配備鍵 id_Andrewdeploy が無い旨の警告は出るが取得できる）。何の鍵で通っているかは 特定していない。
 - tests.before_failed の 0 は測定値ではない。修復前は .venv が壊れており pytest を 起動できなかったため、開始前の件数は測定不能である。after の 7 failed / 457 passed / 4 skipped は tests/test_datasets.py を --ignore で除いた測定値であり、 本契約は src/ と tests/ を一切変更していないためこの 7 件は本契約に起因しない。
 - tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics の assert 0.0 == 1e-08 の原因は特定していない。
 

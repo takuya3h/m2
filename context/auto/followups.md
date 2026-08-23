@@ -347,7 +347,7 @@
 - tests/test_research_logger.py の 4 件は Notion 連携の模擬が呼ばれず落ちる （assert None == 'page-abc' 等）。scripts/load_env.sh が合言葉の消失で使えず NOTION_API_KEY が無い状態と整合するが、原因を特定してはいない。
 - 実行基盤の分類器が git config user.email（平文アドレス）と git remote set-url を拒む。 他台でも同じ壁に当たる。前者は noreply 形式で通る。後者は利用者の承認か permissions への追加が要る。
 
-## 断定できなかった事項（141 件）
+## 断定できなかった事項（140 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -611,8 +611,7 @@
 
 ### T-2026-08-22-andrew-node-foundation
 
-- 完了判定 22（分岐の送出と PR 番号）。commit も push も未実施のため PR は存在しない。 利用者の承認待ちである。
-- 完了判定 5（送出の経路）は未達。git remote set-url --push が実行できず push 側は git@github.com:takuya3h/m2.git のまま。https 経路の資格情報自体は揃っている （gh auth status が takuya3h でログイン済み・scopes に repo を含む）が、 実際に https で push が通るかは測っていない。
+- fetch 側が git@github.com:takuya3h/m2.git のままである。set-url --push は push 側しか 書き換えず、fetch を変えるのは契約に無い変更のため残した。fetch は現に成功している （配備鍵 id_Andrewdeploy が無い旨の警告は出るが取得できる）。何の鍵で通っているかは 特定していない。
 - tests.before_failed の 0 は測定値ではない。修復前は .venv が壊れており pytest を 起動できなかったため、開始前の件数は測定不能である。after の 7 failed / 457 passed / 4 skipped は tests/test_datasets.py を --ignore で除いた測定値であり、 本契約は src/ と tests/ を一切変更していないためこの 7 件は本契約に起因しない。
 - tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics の assert 0.0 == 1e-08 の原因は特定していない。
 
