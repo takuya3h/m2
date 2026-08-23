@@ -1,0 +1,157 @@
+result_version: 3
+task_id: "T-2026-08-24-lecun-keeper-autosync"
+status: pass
+host: "lecun"
+branch: "feat/lecun-keeper-autosync"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      HEAD と origin/phase0 がともに 3c4c5a60、rev-list --left-right --count が 0 0。
+      marker_count=0、~/.zshrc に keeper|nohup の該当なし、porcelain_count_start=4
+      （契約由来 1 件を含み既存の未追跡は 3 件）。稼働は keeper.sh=0 m2-sync=0
+      syncthing=0 ssh -N -L=0 で、負の対照 zzz_none=0 と正の対照 zsh=1 node=6 を
+      両方向で取った。正本は keeper 9fe9c423002e426e774bf8366f0cb307b5bcc31da0fa1fb15ff603c5f219dd90
+      が 52 行、m2-sync bcf46ba9031a45cb5f22371e6a1e598b2218782f6b0db74ab80ca6fea0aeb25f が 133 行。
+      中継は 33-38 行で resolve_tunnel が 15 行で return 1 して短絡し、同期処理の起動は
+      41-43 行で目印と無関係。版管理の同期は抑止 40-41 行、auto-merge 60-84 行、
+      auto-push 90-107 行で、記録先は ~/claude-sync/sync-alerts.log（11 行、22 行の mkdir -p が親を作る）。
+  - id: G2
+    verdict: pass
+    note: >-
+      配置物と正本の要約値が二対で一致し、git show origin/phase0: からの展開とも一致した。
+      構文検査は bash -n で keeper=0 m2sync=0（SPEC 指示の sh -n は dash のため m2sync=2 を返す）。
+      keeper.sh=1 で PID は 89614。ssh -N -L=0 と syncthing=0 で中継と同期処理は零件、
+      負の対照 zzz_none=0 と正の対照 zsh=2 を取った。~/.keeper.lock が生成され、
+      flock -n が 1 を返して保持中であることまで確かめた（空の錠は 0 で取得できた）。
+      ~/claude-sync/sync-alerts.log は 144 バイトで
+      「2026-08-23 17:53:11 [lecun] 一時停止中: /home/ubuntu/slocal/m2/.sync-pause があるため分岐へ書き込まない（消せば再開）」
+      の 1 行のみ。git status -sb に ahead も behind も付かず先頭は 3c4c5a60 のまま。
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 462
+
+deviations:
+  - type: spec_defect
+    note: >-
+      SPEC 指示の sh -n では m2-sync.sh が非零を返すため、shebang に合わせた bash -n で
+      検査し直した。両方の出力を audit.md に残してある。
+  - type: judgement
+    note: >-
+      ~/bin/syncthing の実行属性を chmod 644 で外した。契約に無い操作であり、
+      Phase B へ進む前にユーザーへ三案を提示して承認を得た。要約値
+      32ab747eb18ff3a01423f9719c5b8a8165da63e60ee9c3f733887464c70ca1dd は前後で同一。
+      次の契約で chmod 755 に戻す必要がある。
+  - type: environment
+    note: >-
+      起動行の追記と常駐処理の起動を実行者が行えなかった。実行基盤の分類器が
+      ~/.zshrc の書き換えと nohup によるデーモン起動を拒否したため、ユーザーが同じ
+      セッション内で実行した。出力は要約せず audit.md へ貼ってある。
+      permissions.allow への追加では解けない（分類器は別層）。
+  - type: judgement
+    note: >-
+      SPEC は git checkout -b feat/lecun-keeper-autosync origin/phase0 を指示するが、
+      分岐は既に存在し origin/phase0 と同一の先頭を指していた（rev-list が 0 0）ため
+      既存の分岐をそのまま使った。
+  - type: environment
+    note: >-
+      契約の取得を手で行っていない。spec.yaml と SPEC.md はセッション開始時点で
+      tasks/T-2026-08-24-lecun-keeper-autosync/ に未追跡で置かれていた。再取得していない。
+  - type: judgement
+    note: >-
+      稼働数の計数に、契約が指示していない正の対照を足した。契約の対照は zzz_none
+      （存在しない語）だけで、これは偽陽性が無いことしか示さない。申し送り 6
+      「対照は両方向で取る」に従い実在する語 zsh と node を足して検出能力を確かめた。
+      契約の指示は削っていない。
+
+issuer_defects:
+  - type: check_does_not_check
+    note: >-
+      Task 2 Step 2 が sh -n による構文検査を指示し「両方が零であること。構文誤りのまま
+      起動すると常駐処理が即座に落ちる」と書くが、両スクリプトの shebang は #!/bin/bash で
+      /bin/sh は dash への繋がりである。m2-sync.sh 75 行はプロセス置換 <(...) を使っており
+      dash では構文誤りになる。指示どおり実行すると
+      「/home/ubuntu/bin/m2-sync.sh: 75: Syntax error: "(" unexpected」が出て m2sync_syntax=2 となり、
+      正常なスクリプトに対して「両方が零」を満たせず Task 2 Step 2 で停止する。
+      実行時に使われるのは shebang の /bin/bash であるため、この検査は起動時に落ちるかを
+      検査していない。bash -n で測り直すと両方 0 だった。
+  - type: self_contradiction
+    note: >-
+      Goal の表が「同期処理の監視、除外規則の反映、版管理の同期」を三十九から五十行とし
+      「これを動かす」と指示するが、その範囲の 41-43 行は監視ではなく起動である
+      （keeper.sh 6 行の役割説明も「syncthing の起動・死活監視」と書いている）。
+      一方で禁止 2 は「同期処理を起動する」を禁じ、判定 11 と G2 は「同期処理が零件」を求める。
+      同じ契約が同じ行を動かせと指示し、その行がすることを禁じている。
+      lecun では test -x が TRUE、pgrep -x syncthing が未稼働で両方の条件が成立するため、
+      指示どおり無改変で起動すると syncthing が起動し禁止 2 に触れ、判定 11 と G2 を満たせない。
+      ~/bin/syncthing は前契約 T-2026-08-22-lecun-node-foundation が置いたものであり、
+      前契約は五台すべてに配置しているため全台で起きると見込まれる。
+
+positive_controls:
+  - judgement: "稼働しているものの計数（中継と同期処理が零件であること）"
+    breaking_input: "実在する語を与える"
+    observed: "zsh=2 と node=6 を検出した。負の対照 zzz_none=0 と合わせて両方向が取れており、零件は真の零件である"
+  - judgement: "構文検査（bash -n が両方 0）"
+    breaking_input: "keeper.sh の写しの末尾に閉じない if を足した囮"
+    observed: "囮は 2 を返し、正本は 0 を返した。囮は版管理へ入れていない"
+  - judgement: "多重起動を防ぐ錠が働いていること"
+    breaking_input: "誰も保持していない錠に対して同じ取得を試す"
+    observed: "keeper の錠は flock -n が 1 で取得できず、空の錠は 0 で取得できた。錠は実際に保持されている"
+  - judgement: "送信前の秘匿検査"
+    breaking_input: "語+区切り+値 の形を 2 行含む囮ファイル"
+    observed: "2 件を検出した（一以上）。囮は版管理へ入れていない"
+  - judgement: "抑止が効いていること（版管理へ書き込まない）"
+    breaking_input: "抑止の目印を外して一周させる"
+    observed: "UNKNOWN。契約は Task 4 Step 6 まで抑止を外さないと定めており、外した後の一周は本契約の範囲外のため測っていない"
+  - judgement: "目印があるときに中継が張られること"
+    breaking_input: "~/.tunnel_to_* を置いて一周させる"
+    observed: "UNKNOWN。禁止 1 が目印の作成を禁じているため測っていない。実装から読み取れる範囲は RESULT.md §9 に記した"
+
+followups:
+  - >-
+    keeper.sh 41-43 行は目印と無関係に syncthing を起動する。目印が制御するのは中継（33 行）だけである。
+    前契約が五台すべてに ~/bin/syncthing を置いたため、無改変で起動すると全台で禁止 2 に触れる。
+    lecun は実行属性を 644 へ落として回避した。他 4 台でも同じ判断が要る。
+  - >-
+    lecun の ~/bin/syncthing は実行属性を外したまま（chmod 644）である。
+    次の契約（登録と起動）で chmod 755 に戻すこと。忘れると同期処理が起動しない。
+    要約値 32ab747eb18ff3a01423f9719c5b8a8165da63e60ee9c3f733887464c70ca1dd は不変である。
+  - >-
+    実行基盤の分類器が ~/.zshrc の書き換えと nohup によるデーモン起動を拒否した。
+    permissions.allow に Edit を足しても解けない（分類器は別層）。
+    常駐処理を立てる契約は実行者だけでは完了できない場合がある。
+    本契約ではユーザーが同じセッション内で実行し、出力を要約せず audit.md へ貼った。
+  - >-
+    禁止 4 に従い生成物を再生成していない。make inbox-check は exit 2 で
+    「差分あり: inbox.md。make inbox で再生成すること。」を報告した。
+    make taskindex-check は exit 0 だった（result.yaml を書く前に測ったため）。
+    全台の統合が済んだあと、一台で一度だけ再生成すること。
+  - >-
+    次の契約で使う値。記録の置き場所は ~/claude-sync/sync-alerts.log。
+    起動行は ( nohup ~/bin/keeper.sh >/dev/null 2>&1 & ) 2>/dev/null を
+    「# >>> m2 keeper >>>」と「# <<< m2 keeper <<<」の標識で囲んで ~/.zshrc の末尾へ置く。
+    目印を置いたときは keeper 33 行の resolve_tunnel が真になり
+    ssh -N -L 22001:127.0.0.1:22000 -p 50072 -i <鍵> で中心へ中継を張る。
+    目印の 1 行目が秘密鍵の位置、2 行目が中心の住所である（17-21 行）。
+  - >-
+    ~/.claude/settings.json が末尾カンマで JSON として壊れており、allow だけでなく
+    deny 20 件と ask 13 件も無効化されていた。ユーザーが修正し、修正後は
+    allow=8 deny=20 ask=13 で読み込めることを確かめた。
+    設定変更のあとに妥当性を検査する習慣が要る。
+
+unknowns:
+  - >-
+    抑止を外した後の一周で auto-merge と auto-push が実際に起きるか。
+    契約は Task 4 Step 6 で抑止を外すと定めており、その後の周回は本契約の範囲外のため測っていない。
+  - >-
+    目印を置いたときに中継が実際に張られるか。禁止 1 が目印の作成を禁じているため測っていない。
+  - >-
+    test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics が失敗する理由。
+    本契約の範囲外のため追っていない。
+
+commits: []
