@@ -126,4 +126,14 @@ spec の記載 `d422b08` と**一致**した。置換は不要。
 
 ## 8. 送出と報告
 
-（§8 は Step 5-6 の実行後に追記する）
+| 項目 | 実測 |
+|---|---|
+| 変更範囲 | `git status --porcelain` = **2 件**。`tasks/T-2026-08-24-syncthing-config-survey/` と `tasks/inbox.d/T-2026-08-24-syncthing-config-survey.md` のみ。**契約のディレクトリと受け皿に限られている** |
+| 開始時の未追跡 | 契約開始時（`task-start` 直後）は **0 件**。それ以前からあった 2 件は `git stash` へ退避しており、**削除も移動もしていない**（§7-7） |
+| commit | `88f6035 docs(sync): survey syncthing config structure and decide setup order`（7 ファイル / 2059 行追加） |
+| push | `origin/feat/syncthing-config-survey` へ新規分岐として送出。追跡設定済み |
+| PR | **#139 OPEN**（`draft=false`、base `phase0`） |
+| 台帳への返送 | `make task-report` **exit=0**。`verdict: pass` / `n_issuer_defects: 4` / `report_bytes: 15201` / `report_sha256: 33e22d0a…` / `replaced_blocks: 0`。**秘匿の検査を通って送出された** |
+| 抑止の解除 | `.sync-pause` は `task_start.sh` が置いたもの。**報告の完了後に解除する** |
+
+**完了判定 21・22 を満たした。**
