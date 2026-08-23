@@ -3,7 +3,7 @@ task_id: "T-2026-08-24-philip-syncthing-hub"
 status: partial
 host: "philip"
 branch: "feat/philip-syncthing-hub"
-pr: null
+pr: 140
 merged: false
 
 gates:
@@ -79,4 +79,5 @@ unknowns:
   - "~/bin/keeper.sh と ~/bin/m2-sync.sh の開始時の要約値。Task1 で ls -la のみを取り sha256sum を取らなかった。終了時は keeper.sh 9fe9c423 / m2-sync.sh bcf46ba9 で、サイズは両方とも開始時と同一。"
   - "ノードから philip の 50072 への到達性。前契約が UNKNOWN として残した事項であり、本契約でも他ホストに触れないため測っていない。"
 
-commits: []
+commits:
+  - "6e4124b feat(sync): configure and start syncthing hub on philip"

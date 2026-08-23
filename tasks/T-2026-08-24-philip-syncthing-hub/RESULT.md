@@ -91,7 +91,20 @@
 
 ## 5. 送出と報告
 
-（このセクションは commit 後に確定する）
+| 項目 | 実測 |
+|---|---|
+| 変更範囲 | **2 件のみ**。`tasks/T-2026-08-24-philip-syncthing-hub/` と `tasks/inbox.d/T-2026-08-24-philip-syncthing-hub.md`。`~/.local/state/` と `~/bin/` は版管理の外、`.sync-pause` は `.gitignore` 済みで現れない |
+| commit | `6e4124b feat(sync): configure and start syncthing hub on philip`（7 files, 1274 insertions） |
+| push | `origin/feat/philip-syncthing-hub` へ新規分岐として送出 |
+| PR | **#140**（`https://github.com/takuya3h/m2/pull/140`、base `phase0`、Draft ではない） |
+| 検証 | `validate_exit=0` / `preflight_exit=0`（4 PASS / 1 WARN / 4 SKIP / 0 FAIL）/ `forbidden_exit=0`（changed 7, checked 7, violations 0） |
+| 秘匿検査 | 囮で 3 件検出・実在しない語で 0 件（陽性対照）。本体では apikey の実値 1 件を検出しマスク。残る 3 件は `encryptionPassword`（空）と `unackedNotificationID` で**名前であって値ではない** |
+| 台帳への返送 | 後述（`make task-report` の終了コード） |
+| 退避 | **0 件**。作業ツリーの未追跡 2 件は前段で commit したため退避していない。戻す対象なし |
+
+`forbidden-check` が `pass` を返した理由: 変更が生成物（`context/auto/`、`tasks/inbox.md`）を
+含まず、契約のディレクトリと受け皿だけに閉じているため。**未追跡のままでは検査対象に入らない**が、
+本報告では commit 済みの状態で 7 件すべてが `checked` になっている。
 
 ## 6. 起票者の誤り
 
