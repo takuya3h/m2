@@ -1,0 +1,125 @@
+result_version: 3
+task_id: "T-2026-08-24-bengio-syncthing-node"
+status: stopped
+host: "bengio"
+branch: "feat/bengio-syncthing-node"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: stop
+    note: >-
+      要約値の記録・実行権 644・目印 0 件・両方向の対照つきの計数・repo 外への控えは満たしたが、
+      中心への認証が通らなかった。ssh -o BatchMode=yes -p 50072 -i ~/.ssh/id_ed25519_bengiotophilip
+      192.168.196.150 'echo REACHABLE' が exit 255 で Permission denied (publickey,password) を返し、
+      REACHABLE は 0 件。TCP は 192.168.196.150:50072 へ接続でき SSH-2.0-OpenSSH_9.6p1 が返るため
+      経路は生きている。ssh -v は Offering public key … SHA256:Ea9ReajNAiOoaixOPnahszJrJug/UvSXI4ZJZjAr6G4
+      を出すが Server accepts key が出ない。中心が受け入れていない。on_fail: stop に従い停止した。
+  - id: G2
+    verdict: skip
+    note: "G1 が stop のため Phase B を実行していない。版揃えも設定の組み立ても行っていない。"
+  - id: G3
+    verdict: skip
+    note: >-
+      G1 が stop のため Phase C を実行していない。SPEC の想定外の表が「認証が通らない場合は
+      目印を作らない」と定めるため、~/.tunnel_to_philip を作っていない。中継 0 件のまま。
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+
+deviations:
+  - type: environment
+    note: >-
+      SPEC §0 の source scripts/load_env.sh && make task-start を実行していない。合言葉が失われており
+      load_env.sh が使えないことは前契約 T-2026-08-22-bengio-node-foundation 以降の既知事項である。
+      分岐 feat/bengio-syncthing-node は既に作られていた。同じ理由で Task 5 Step 5 の make task-report も使えない。
+  - type: judgement
+    note: >-
+      Task 1 Step 3 の apikey の確認で SPEC 指示の grep -o 'apikey>[^<]*' | cut -c1-12 を採らなかった。
+      これは秘匿の実値の先頭 12 文字を画面に出す。要素の件数と値の長さと空かどうかだけを測り、
+      実値は出していない。結果は apikey_elements=1 / len=32 / empty=False で、config.xml を
+      版管理へ置かない判断の根拠になった。
+  - type: judgement
+    note: >-
+      handoff.md を SPEC が指す前契約 tasks/T-2026-08-24-philip-syncthing-hub/ ではなく
+      tasks/T-2026-08-24-syncthing-config-survey/handoff.md から読んだ。前者に handoff.md は実在しない。
+  - type: judgement
+    note: >-
+      抑止 .sync-pause を SPEC §0 の指示どおり作業の最初に置いた。grep -c sync-pause ~/bin/m2-sync.sh は
+      2 を返し、稼働中の版が抑止に対応していることを確かめた。
+  - type: judgement
+    note: >-
+      G1 が fail のため Task 2 以降を実行していない。gates.G1.on_fail は stop であり、SPEC の
+      想定外の表も「中心への認証が通らない → 停止して報告。中継が張れない。目印を作らない」と定める。
+      半端に版を揃えたり設定を組んだりすると、次の実行者が開始状態を測れなくなるため加えていない。
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: >-
+      SPEC は中心が繋げる状態にあることを前提に全 5 タスクを組むが、中心の ~/.ssh/authorized_keys に
+      本ホストの公開鍵が入っているかを誰も測っていない。前契約 T-2026-08-24-philip-syncthing-hub の
+      RESULT.md は完了判定 18 で受け入れ一覧を UNKNOWN と明記しており、その UNKNOWN を埋める契約を
+      挟まずにノード側の契約を起票した。指示どおり実行すると Task 1 Step 6 で必ず停止し、
+      Phase B 以降の作業は一切できない。実際にそうなった。
+  - type: self_contradiction
+    note: >-
+      禁止 1 の但し書きは「中継は中心へ SSH で入る操作だが、中心の状態は変えない。中心で命令を
+      実行してはならない」と定めるが、Task 1 Step 6 は ssh … 192.168.196.150 'echo REACHABLE' を
+      指示する。これは中心での命令の実行そのものである。状態は変えないため実害は無いが、
+      指示どおり実行すると自らの禁止事項に触れる。到達確認だけなら命令を伴わない形が要る。
+  - type: check_does_not_check
+    note: >-
+      Task 1 Step 3 は grep -o 'apikey>[^<]*' ~/.local/state/syncthing/config.xml | head -1 | cut -c1-12
+      を指示し「値が出れば、そのまま置いてはならない」と続ける。しかしこの命令自体が秘匿の実値の
+      先頭 12 文字を画面へ出す。禁止 7「秘匿の値を版管理へ置く」と申し送りの「画面の鍵に注意」の
+      意図に反する。存在の確認は長さと空判定で足り、値を出す必要は無い。
+  - type: shell_assumption
+    note: >-
+      P9 spec_lint が separated_source を 5 件返した（SPEC.md:50,473,476,479,507）。いずれも
+      source .venv/bin/activate \ で行を継続する形である。字下げ区画を 1 行ずつ別のシェルへ渡す
+      実装系では単独の source が壊れた命令になり、続く make が仮想環境なしで走る。
+      終了コードは変わらずプリフライトは exit 0 だった。
+
+positive_controls:
+  - judgement: "稼働しているものの計数が空振りでない"
+    breaking_input: "実在する語（zsh）と実在しない語（zzz_no_such）を同じ走査に掛ける"
+    observed: "zsh=6（開始時）/ zsh=4（停止時）と zzz_no_such=0 に分かれた。走査は両方向で働いている"
+  - judgement: "実行権 644 が本当に起動を止めている"
+    breaking_input: "644 のまま ~/bin/syncthing --version を実行する"
+    observed: "exit 126 permission denied で拒まれた。keeper.sh:41 の [ -x ] が偽になることの裏づけ"
+  - judgement: "中心への認証の失敗が経路の問題ではない"
+    breaking_input: "同じ住所と口へ素の TCP で接続する"
+    observed: "tcp_connect=OK banner='SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.1'。経路は生きており、失敗は認証層である"
+  - judgement: "提示している鍵が版管理へ公開した鍵と同じ対である"
+    breaking_input: "秘密鍵と公開鍵の指紋を別々に取って突き合わせる"
+    observed: "両方とも SHA256:Ea9ReajNAiOoaixOPnahszJrJug/UvSXI4ZJZjAr6G4。本ホスト側に誤りは無い"
+  - judgement: "送信前の秘匿検査が働く"
+    breaking_input: "語=値の形と鍵の書き出し行を含む囮を /tmp に置いて同じ命令を掛ける"
+    observed: "囮で 4 件を返した。本契約の本文の該当は検査命令そのものだけで、語と値が続く形は無い"
+  - judgement: "中心の受け入れ一覧に本ホストの鍵が入っていない"
+    breaking_input: "中心で ssh-keygen -lf ~/.ssh/authorized_keys を取り、指紋の一覧に Ea9Reaj… があるかを見る"
+    observed: "UNKNOWN。禁止 1 により中心で命令を実行できない。ssh -v に Server accepts key が出ないことからの推定である"
+
+followups:
+  - "🔴 中心（philip）で受け入れ一覧を設定する契約を起票して実行すること。scripts/sync/hub_keys/{andrew,bengio,ilya,lecun}.pub の 4 件を ~/.ssh/authorized_keys へ追加する。手本は T-2026-08-12-register-hub-keys（控えを取り、戻し方を先に決め、指紋で照合する形になっている）。これが済むまで四台のノード契約はどれも Task 1 Step 6 で停止する。"
+  - "中心の到達性は解けた。192.168.196.150:50072 は TCP が開いており SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.1 を返す。handoff.md §3.4 が残した「目印の 2 行目に何を書くかは UNKNOWN」は、住所については 192.168.196.150 で正しい。"
+  - "bengio が提示する指紋は SHA256:Ea9ReajNAiOoaixOPnahszJrJug/UvSXI4ZJZjAr6G4。中心側で受け入れ一覧を設定した後、この指紋が入ったことを ssh-keygen -lf で確かめられる。"
+  - "⚠ bengio の syncthing 登録名は Bengio（先頭が大文字）であり bengio ではない。再開時に Task 3 Step 2 で直すこと。"
+  - "共有フォルダの型が未決である。handoff.md §2.3 は「空の側が sendreceive で参加すると中身を消しうる」として中身を持つ台を sendonly、他を receiveonly で始めよと書き、§3.3 #5 は「型は 2.3 の判断に従う」と定める。SPEC Task 3 Step 5 は両方 sendreceive を指示する。SPEC 自身が handoff.md を正とすると定めるため本来は handoff.md が勝つが、中心側は利用者の判断で sendreceive を採っている。ノード側をどちらにするかは未決。"
+  - "bengio の ~/claude-sync/ は 8.0K / 1 件（sync-alerts.log 813 B）。中心も同名のファイルを持つため、sendreceive で繋ぐと上書きか衝突ファイルのどちらかが起きる。どちらが起きたかを次の実行者が記録すること。"
+  - "版が揃っていない。中心 v2.1.3（e8a08fdd…）、bengio v1.27.10（32ab747e… 26730145 B 644）。Task 2 は未実行である。"
+  - "ssh … | grep | head の直後に別の命令を挟むと ${pipestatus[1]} がその命令の終了コードになる。実際に ssh の 255 を 0 と表示してしまった。終了コードは配管を挟まずファイルへ落として取ること。"
+  - "SPEC は handoff.md が前契約 tasks/T-2026-08-24-philip-syncthing-hub/ にあると書くが実在しない。実体は tasks/T-2026-08-24-syncthing-config-survey/handoff.md である。"
+  - "禁止 5 に従い make taskindex と make inbox を実行していない。全台の統合後に一台で一度だけ再生成すること。"
+
+unknowns:
+  - "中心の ~/.ssh/authorized_keys の内容。禁止 1 により中心で命令を実行できないため測れない。ssh -v に Server accepts key が出ないことから、本ホストの鍵が入っていないと推定している。"
+  - "中心と繋がったあとに実際にファイルが届くか。中継が張れないため一切測れていない。"
+  - "共有領域を sendreceive で繋いだときに上書きと衝突ファイルのどちらが起きるか。"
+  - "版を v2.1.3 へ揃えたときに要約値が中心の e8a08fdd… と一致するか。Task 2 未実行のため測れない。"
+  - "make taskindex-check / inbox-check の差分。禁止 5 により再生成していないため記録のみ。"
+
+commits: []
