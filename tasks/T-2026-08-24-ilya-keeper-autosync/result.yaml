@@ -1,0 +1,146 @@
+result_version: 3
+task_id: "T-2026-08-24-ilya-keeper-autosync"
+status: pass
+host: "ilya"
+branch: "feat/ilya-keeper-autosync"
+pr: 129
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      HEAD=3c4c5a6 が fetch 後の origin/phase0=3c4c5a6 と一致。中継の目印 .tunnel_to_* が 0 件。
+      ~/.zshrc は存在・可読・77 行で keeper 0 件 nohup 0 件（起動行なし）。未追跡 3 件。
+      稼働の計数は keeper.sh=0 m2-sync=0 syncthing=0 "ssh -N -L"=0 zzz_none=0 で全て零。
+      起票の対照は存在しない語だけの一方向なので陽性側も取り、sshd=1(pid 1) systemd=0 を得た。
+      keeper.sh は 52 行 9fe9c423… m2-sync.sh は 133 行 bcf46ba9…。分岐は 25〜51 行を表にし、
+      中継は 33〜38 行、同期処理の起動は 41〜43 行と特定。同期の発火条件は 40/45/70/78/80/105 行、
+      記録先は 11 行の ~/claude-sync/sync-alerts.log。
+  - id: G2
+    verdict: pass
+    note: >-
+      配置物と正本の要約値が四箇所で一致（keeper 9fe9c423… m2-sync bcf46ba9… が作業ツリー・
+      origin/phase0・~/bin/ の三者で同値）。構文検査は bash -n で両方 0。起票の sh -n は
+      m2-sync を 2 で落とすが /bin/sh が dash であることによる偽陽性。壊した写しは bash -n が
+      2 を返すので検査は空振りしていない。常駐処理は keeper.sh=1 pid=43963 の一件のみで、
+      二度目を起こしても件数も pid も変わらない。中継 "ssh -N -L"=0 かつ ~/.tunnel.log 不在、
+      同期処理 syncthing=0 かつ ~/.syncthing.log 不在（両行は >> で追記するため不在が
+      未実行の証拠）。~/.keeper.lock 作成。sync-alerts.log に
+      「2026-08-23 17:31:26 [ilya] 一時停止中」が 1 件、分岐は 3c4c5a6 のまま ahead 0。
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+
+deviations:
+  - type: judgement
+    note: >-
+      chmod -x ~/bin/syncthing で keeper.sh 41 行の第一条件を偽にしてから起動した。契約に無い操作。
+      ユーザーへ三案を提示して判断を仰ぎ選ばれた案。755 → 644。要約値 32ab747e… は不変で、
+      実体・識別子・公開鍵には触れていない。次の契約は chmod +x してから同期処理を起動すること。
+  - type: environment
+    note: >-
+      起票の sh -n ではなく bash -n で構文を検査した。/bin/sh が dash で、m2-sync.sh は
+      #!/bin/bash かつ 75 行にプロセス置換があるため sh -n が偽の構文誤りを出す。両方の結果を記録した。
+  - type: environment
+    note: >-
+      Task 3 Step 2 の前景の sleep 5 をこの実行基盤が拒否するため、~/.keeper.lock の出現を
+      最大 10 秒待つ条件待ちに置き換えた。実測 0.0 秒で出現。固定待ちより確実である。
+  - type: environment
+    note: >-
+      ~/.zshrc への追記が Bash の heredoc と編集専用の道具の両方で実行基盤に拒否された。
+      三つ目の機構を試すことは拒否の意図の迂回にあたるため行わず、ユーザーへ提示して
+      ユーザー自身が追記した。私は測るだけである。他台でも同じ拒否が起きうる。
+  - type: judgement
+    note: >-
+      追記を目印ブロック（# >>> egosurgery keeper >>> と # <<< egosurgery keeper <<<）で囲んだ。
+      SPEC は一行だけを示すが、前契約の SERVERNAME ブロックと揃えて後から機械的に消せるようにした。
+      中の一行は SPEC の指示どおりである。
+  - type: judgement
+    note: >-
+      追記に二度失敗し退避から貼り直した。一度目は命令の \n のバックスラッシュが落ちて閉じ目印が
+      <<<n になり末尾の改行も失われた。二度目は復元を伴わず追記だけが走りブロックが二重、
+      起動行が二本になった（84 行）。退避が開始時と同一であることを確かめて貼り直し、
+      確定は 81 行・起動行 1 本。他台では復元を先に行うこと。
+  - type: spec_defect
+    note: >-
+      禁止 4 に従い make taskindex と make inbox を実行していない。taskindex-check と inbox-check
+      の結果は事実として記録するだけで、差分があっても直していない。
+
+issuer_defects:
+  - type: self_contradiction
+    note: >-
+      SPEC の表は keeper.sh 39〜50 行を「同期処理の監視、除外規則の反映、版管理の同期 → これを動かす」
+      と書くが、実装の 41〜43 行は監視ではなく起動である。ilya では [ -x ~/bin/syncthing ] と
+      ! pgrep -x syncthing の両条件が真であり、指示どおり起動すれば一周目で必ず
+      nohup ~/bin/syncthing serve --no-browser が走る。これは禁止 2「同期処理を起動する」、
+      完了判定 11「同期処理が零件」、G2（on_fail: stop）と正面から衝突する。41 行の注釈は
+      「未インストールならスキップ」と書くが、SPEC 自身が「五台すべてで同期処理の実体が揃い」と
+      述べており、起票者は実体があることを知りながらスキップ条件に頼っている。
+  - type: shell_assumption
+    note: >-
+      Task 2 Step 2 は sh -n を指示し「両方が零であること。構文誤りのまま起動すると常駐処理が
+      即座に落ちる」と書く。しかし /bin/sh は dash であり、m2-sync.sh は #!/bin/bash で始まり
+      75 行でプロセス置換 <(...) を使うため、sh -n は exit 2 と偽の構文誤りを出す。指示に忠実な
+      実行者はここで配置が壊れていると読んで停止する。実際は正本も配置も正しく bash -n では両方 0。
+      SPEC の「全台で確定した事実」は対話シェルが zsh であることは書くが sh が dash であることを
+      書いていない。他の四台でも同じことが起きる。
+  - type: check_does_not_check
+    note: >-
+      Task 3 Step 4 は ls -la ~/.keeper.lock だけで「錠が作られていること。これで二重起動が
+      防がれる」と結論するが、存在は働きを意味しない。exec 9>~/.keeper.lock は flock が
+      壊れていてもファイルを作るため、この検査は錠が機能しなくても通る。実際に二度目を起動して
+      件数も pid も変わらないことを確かめて初めて防止を主張できる。
+
+positive_controls:
+  - judgement: "稼働しているものの計数（/proc/*/cmdline 走査）が実在するプロセスを拾う"
+    breaking_input: "起票の対照は存在しない語 zzz_none だけで、計数が常に 0 を返しても合格してしまう。実在する語を与える"
+    observed: "sshd=1 (pid 1) を返した。systemd=0 なのでこの環境の PID 1 は systemd ではなく sshd である"
+  - judgement: "構文検査が構文誤りを検出する"
+    breaking_input: "keeper.sh の 26 行を `if [ 1` に置換した写しを検査させる"
+    observed: "bash -n が exit 2 と『line 53: syntax error: unexpected end of file』を返した。囮は commit していない"
+  - judgement: "多重起動を防ぐ錠が働く"
+    breaking_input: "keeper.sh をもう一度 nohup で起こす"
+    observed: "二度目は即座に終わり keeper.sh=1 ['43963'] のまま。件数も pid も変わらなかった"
+  - judgement: "中継と同期処理が起動していない"
+    breaking_input: "34 行と 42 行はいずれも >>~/.tunnel.log / >>~/.syncthing.log へ追記するため、一度でも走れば記録ファイルが作られる"
+    observed: "~/.tunnel.log と ~/.syncthing.log がいずれも不在。件数 0 と記録の不在の二通りで示せた"
+  - judgement: "抑止が版管理への書き込みを止める"
+    breaking_input: "抑止が効いていなければ ahead>0 で auto-push、behind>0 で auto-merge の記録が出るはず"
+    observed: "sync-alerts.log には「一時停止中」1 件のみ。auto-merge も auto-push も出ず、分岐は 3c4c5a6 のまま ahead 0"
+  - judgement: "秘匿の検査が秘密の形を拾う"
+    breaking_input: "囮を含む一時ファイルを検査対象に加える"
+    observed: "囮を 3 行（鍵の名の語、鍵の書き出しの標識、合言葉の語）与えて decoy_hits=3。すべて拾った。本文側の該当は SPEC.md:319 の検索の型そのもの 1 件のみで値を含まない。囮は消した"
+
+followups:
+  - >-
+    同期処理を起動する次の契約は、先に chmod +x ~/bin/syncthing が要る。本契約で 41 行の
+    起動を止めるため 644 にした。要約値 32ab747eb18ff3a01423f9719c5b8a8165da63e60ee9c3f733887464c70ca1dd は不変。
+  - >-
+    起票者は keeper.sh 41〜43 行の扱いを契約に明記すること。実体を配置済みのホストでは
+    「未インストールならスキップ」が働かず、禁止 2 と完了判定 11 が守れない。他の四台でも同じ。
+  - >-
+    構文検査の指示を sh -n から bash -n へ改めること。/bin/sh が dash のホストで
+    m2-sync.sh が偽の構文誤りを出し、指示に忠実な実行者を停止させる。
+  - >-
+    ~/.zshrc への追記は実行基盤に拒否されうる。他台の契約は、実行者が書けない場合に
+    ユーザーへ手順を渡す経路をあらかじめ用意しておくこと。
+  - >-
+    起動行の四行は他の四台でそのまま使える。ただし printf を使うなら <<<\n' の
+    バックスラッシュを落とさないこと、貼り直すときは必ず先に退避から戻すこと。
+    検算は grep -c 'nohup ~/bin/keeper.sh' ~/.zshrc が 1 であることで行う。
+  - >-
+    keeper の一周目は repo 直下に .stignore（2223 バイト）を作り、~/bin/m2-sync.sh の権限を
+    755 から 775 へ変える（mv が新規ファイルの既定権限を持ち込むため）。いずれも起票に記載が無い。
+
+unknowns:
+  - >-
+    この実行基盤が前景の sleep を拒否する範囲。単独の sleep 5 は拒否されたが、
+    Task 3 Step 4 の対照では複合命令中の sleep 3 が通った。条件を切り分けていない。
+  - >-
+    試験の件数。本契約は src/ と tests/ に一切触れておらず、契約も試験の実行を求めていないため
+    測っていない。tests の三値 0 は「未実行」であって「零件」ではない。
+
+commits: ["680abb1", "cb6a080", "9ca2f01"]
