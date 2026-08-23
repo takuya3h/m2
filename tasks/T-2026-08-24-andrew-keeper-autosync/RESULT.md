@@ -386,3 +386,29 @@ Task 1 Step 2 の対照は `zzz_none`（存在しない語）だけで、「存�
 | 4 | 抑止を外したあと、次の周回（最大 1800 秒後）に何が起きるか | 周期を待っていない。`ahead` と `behind` が 0 で開いている PR が 1 件あるため auto-merge / auto-push / auto-PR はいずれも条件を満たさない**はず**だが、実測ではない |
 | 5 | `git@github.com:takuya3h/m2.git` の fetch を通している鍵 | `~/.zshrc` 68–71 行が `ssh-add ~/.ssh/id_ed25519_github` を実行しており、これが経路と思われるが、`Warning: Identity file ~/.ssh/id_Andrewdeploy not accessible` を出しつつ fetch は exit 0 で通っている。**どの鍵が通したかは照合していない** |
 | 6 | `P9 spec_lint` の `separated_source` 3 件が検査器の行単位判定によるものか | 検査器の実装を読んでいない。3 つとも実際には exit 0 で通ることだけを実測した |
+
+---
+
+## 11. 送出
+
+`make task-report` は使えない（合言葉が失われ `scripts/load_env.sh` が失敗する）。
+SPEC の指示どおり **`RESULT.md` を commit して push する経路**で返した。**起票者は版管理から読む。**
+
+| 項目 | 値 |
+|---|---|
+| commit 1 | `64e7d50` feat(sync): deploy keeper and enable git autosync on andrew（6 files changed, 1452 insertions(+)） |
+| commit 2 | 本節と `result.yaml` の commit / PR 欄の記載 |
+| commit 3 | 抑止の陽性対照（§9 の 5 番）の実測 |
+| push | `push_exit=0`。`* [new branch] HEAD -> feat/andrew-keeper-autosync` |
+| 送出先 | `https://github.com/takuya3h/m2.git`（push 側のみ https。fetch 側は `git@` のまま） |
+| PR | **#128** `feat(sync): deploy keeper and enable git autosync on andrew` → base `phase0`。`isDraft: false` |
+| 作成前の既存 PR | `[]`（0 件。auto-PR と二重にならないことを確かめた） |
+
+`gh pr create` が出した `Warning: 3 uncommitted changes` は、開始時から在る未追跡 3 件を
+指している。**触っていない**（§4）。
+
+### 抑止を外す前に PR を作った理由
+
+`m2-sync.sh` 115–132 行の auto-PR は **Draft を起票する。** 抑止を外してから周回が回ると
+`auto: feat/andrew-keeper-autosync -> phase0` という Draft が立ち、二重になる。
+先に手で作れば、auto-PR の条件「開いている PR が 0 件」が偽になり起票されない。

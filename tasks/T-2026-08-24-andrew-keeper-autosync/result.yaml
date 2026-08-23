@@ -3,7 +3,7 @@ task_id: "T-2026-08-24-andrew-keeper-autosync"
 status: pass
 host: "andrew"
 branch: "feat/andrew-keeper-autosync"
-pr: null
+pr: 128
 merged: false
 
 gates:
@@ -33,7 +33,8 @@ tests:
   after_failed: 7
   after_passed: 457
 
-commits: []
+commits:
+  - "64e7d50"
 
 deviations:
   - type: spec_defect
