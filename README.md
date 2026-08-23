@@ -1247,6 +1247,136 @@ best predictions は init の複製として必ず出力する（init ckpt 自�
 
 ---
 
+### 2026-08-22 横断再集計 — 「完璧な術具検出でも未見手術の工程 accuracy は上がらない／効くのは信号の時間的整形」
+
+GPU 学習なしの読み取り専用セッションで、`experiments/` と `data/processed/` を横断再集計し、
+CPU だけで動くプロキシ実験を行った。
+詳細は [`docs/research_review_and_next_plan_2026-08-22.md`](docs/research_review_and_next_plan_2026-08-22.md)。
+
+**val で見えたこと**
+
+- 未整理だった run 群を集計すると、**オラクル術具存在 15 次元のみ（画像特徴なし）で
+  val acc 0.9666 / macro-F1 0.8375 / edit 64.74 / seg-F1@50 0.724**。
+  現行最良 T1a（0.9483 / 0.8044 / 37.07 / 0.431）との差は分類 +1.83pt に対し
+  **edit +27.67・seg-F1@50 +0.293**（paired-σ 有意）。
+- **GAP は冗長ではなく有害**（削除で acc +0.88pt・3.31σ）。理由は
+  **GAP がクリップ ID を 99.8% 識別できる「動画指紋」**だから（region 97.5 / 予測 presence 71.6 / オラクル 62.9）。
+- 予測 presence は GT の **1.74 倍（val）/ 2.25 倍（test）**ちらつき、誤りの **73.8% は 1 フレームの孤立フリップ**。
+  **因果 HMM forward filter** でちらつきは GT 水準へ戻り（0.596 → 0.355、GT 0.342）、
+  **遅延 2 フレームでオフライン平滑化とほぼ同等**になる。
+
+**test と leave-one-video-out で結論は反転した（最重要）**
+
+- 同じプロキシを test で走らせると、**分節指標は改善する（edit 17.71 → 36.13 = 2.04 倍）が
+  accuracy / macro-F1 は悪化**（−4.9pt / −11.4pt）。悪化は**短い工程**
+  （design 30 frame: 0.795→0.370 / irrigation 84 frame: 0.457→0.081）に局在する。
+- **15 動画 leave-one-video-out**（`docs/analysis_scripts/proxy_lovo_*.py`）で
+  **研究の中心的主張 P1（det→phase は効く）は成立**し、しかも **分節側で桁違いに強い**:
+  GAP のみに対し 予測 presence は accuracy +7.28pt（|m|/SE=2.23・12/15）だが
+  **edit +32.20 / seg-F1@50 +0.338 は 15/15 動画すべてで正**。
+  **GAP を足すと利得が +7.28pt → +1.54pt に削がれる**（GAP は有害）。
+- 一方、**オラクル presence の追加的な優位はほぼ無い**:
+
+  | 指標 | 生 presence | Δ(オラクル − 生) | Δ(因果デノイズ − 生) |
+  |---|---:|---|---|
+  | accuracy | 0.8658 ± 0.1411 | **+0.0022（\|m\|/SE=0.06・10/15）** | −0.0032（9/15） |
+  | edit | 50.73 ± 24.93 | +5.88（9/15） | **+9.11（\|m\|/SE=3.06・12/15）** |
+  | seg-F1@50 | 0.514 ± 0.268 | +0.065（12/15） | **+0.068（\|m\|/SE=3.15・12/15）** |
+
+  → **完璧な術具存在を与えても、予測 presence に対する追加的な accuracy 利得はほぼ無い**（val の「+1.83pt 上限」は val 固有）。
+  一方 **因果デノイズは分節指標を一貫改善し、しかもオラクルより大きく改善する**。
+- **「オラクル presence」は情報量の上限ではない**: 誤りを除く代わりに**連続スコアの段階的情報を捨てている**。
+  LOVO の動画 05 では **closure（動画の 58%）が丸ごと dressing に化ける**
+  — この手術の closure は **Needle Holders をほとんど使わず**、binary presence が dressing と衝突するため。
+  → val の「上限 0.9666」は **presence 精度の上限**であって **検出器が渡せる情報の上限ではない**。
+- **誤りは「量」ではなく「形」で壊す場所が変わる**（介入実験・15 動画 LOVO）:
+  オラクル presence に同じ誤り率 5% で iid ノイズ（ちらつく）と burst ノイズ（持続的に間違う）を与えると、
+  **iid は Δacc −3.02pt / Δedit −18.45**、**burst は Δacc −11.45pt / Δedit −17.77**（ノイズ seed 3 本）。
+  **accuracy 1pt あたりの edit 損失は iid 6.1 / burst 1.6（3.9 倍の選択性）**。
+  **学習をクリーンにして評価側だけ汚すと選択性は 7.0 倍に鋭くなる**
+  （iid は edit を 56.6 → 16.2 と崩壊させるが accuracy は −3.8pt のみ）
+  ＝ **孤立フリップは主に分節を壊し、持続的な誤りは主に分類を壊す**。
+  → 因果デノイズが除去できるのは **ちらつき成分だけ**なので、**分節だけが直る**のは必然。
+- 原因は **術具⇄工程の対応が手術ごとに揺れること**
+  （closure の Needle Holders 0.83/0.92/0.51、Mouth Gag は val で 1.00 だが test で 0.29）。
+  **val は術具⇄工程の対応が異常にきれいな split** である。
+
+- **揺れへの最初の一手（本書で最も安定した改善）**: **工程を弁別しない汎用術具を信号から落とす**と
+  LOVO で macro-F1 が **k=3 で +3.40pt（|m|/SE=2.58・10/15）・k=4 で +2.61pt（3.34σ・10/15）**。
+  落とす術具は **fold ごとに train のみ**の正規化エントロピーで決めており、
+  **15 fold すべてで同一順序**（Gauze → Mouth Gag → Suction Cannula ⇄ Tweezers）＝**事前登録可能な手続き**。
+  汎用術具の在室は工程ではなく**手術（動画）**を符号化している。
+  正式プロトコル（fold ごとに train のみで `H(phase|tool) > 0.45` を判定。該当は
+  Gauze / Mouth Gag / Suction Cannula / Tweezers / Forceps の 5 本）で
+  **acc +1.61pt（|m|/SE=2.37）/ macro-F1 +2.29pt（2.80）**。
+  エントロピーは 0.474 と 0.347 の間に **0.13 のギャップ**があり、しきい値が自然に決まる。
+  **【訂正】因果デノイズとの併用が「4 指標すべて基準超え」という見立ては、順位ベースの k 掃引でしか出ず、
+  しきい値プロトコルでは再現しなかった**（acc +0.51pt・0.47σ）。**2 つの独立した介入として扱う**
+  （分類なら除去・分節ならデノイズ）。ただし hemostasis は併用が最良（0.626→0.691）、
+  dressing は除去のみが最良（0.096→0.145）＝**工程によって最適構成が違う**。
+- **【最も信頼できる知見】術具除去の利得は 6 凍結源すべてで頑健**:
+  LOVO × 6 凍結源で **Δacc は 6/6 で正・範囲 +1.13〜+2.13pt**（5/6 で |m|/SE ≥ 2）。
+  落とす本数も平均 4.9 本と安定し、**強 aug 検出器でも同じだけ効く**（＝検出器を良くしても消えない利得）。
+  ただし **標準 split（train 10 動画）では accuracy は上がらず macro-F1 が大きく上がる**
+  （val +6.36pt / test +1.83pt・accuracy は −0.2 / −0.3pt、落とす本数も 4 本）。
+  → 事前登録の主終点は **macro-F1**、accuracy は非劣化条件に置く。
+  しきい値の感度も測った: **0.30〜0.50 のどの値でも val・test とも macro-F1 が改善**（test +1.57〜+6.56pt）。
+  ただし最良値は val（0.45・4 本）と test（0.50・3 本）で違うので、**成績を見て選んではいけない**。
+- **【重要な補正】「デノイズで edit +9.11」は凍結源 seed42 固有の上振れだった**:
+  6 つの凍結源で LOVO を回すと範囲 **+1.04〜+9.11**（通常 3 seed 平均 +5.46 / 強 aug 3 seed 平均 +3.42）。
+  **符号は 6/6 で正**（符号検定 p=0.031）なので改善自体は凍結源に依らないが、**効果量は 3〜9 倍振れる**。
+- **【訂正】「デノイズは短い工程を潰す」も単一 split の現象だった**: LOVO では design 0.587 → 0.584 とほぼ不変。
+  潰さないための改良案（非対称 HMM / max / 連結）はどれも素の因果デノイズより分節指標が悪い。
+
+- **手法は 15 本中 14 本で多数決ベースラインを +32.6pt 上回る**（|m|/SE=5.70）。
+  **唯一の破綻は動画 14**（presence acc 0.468 < 多数決 0.740）で、
+  **この手術は止血に Bipolar Forceps ではなく Forceps を使う**ため hemostasis の 70% が dissection に化ける
+  — P4 の最も純粋な実例。なお per-video 性能の最良の予測子は意外にも **動画の長さ**（r=−0.778）。
+- **「揺れ」の測り方は未解決（負の結果）**: 動画ごとの `P(tool|phase)` の JS ダイバージェンスは
+  per-video 性能とまったく相関しない（presence 絶対 acc で r=−0.23、n=15）。
+  ずれ最大の 2 本（動画 14・15）が正反対の結果になる。**機序は実在するがまだ測れていない。**
+- **「誤り除去」と「2 値化」を LOVO で分離**: **2 値化そのものは害ではない**（macro-F1 +1.17pt）。
+  **2 値化した信号から誤りを完全に除いても accuracy は上がらない**（−0.11pt）。
+  唯一効いたのは **GT ⊕ 生スコア**（+3.26pt・分散も低下）で、容量対照（生⊕生 −0.05pt / 生⊕乱数 +0.11pt）から
+  **容量の産物ではない**が、時間シャッフルした GT でも +0.94pt 出るため約 3 割は周辺分布由来。
+
+- **運用上の発見**: **工程側の実験は `torch` + `numpy` だけで動く**（`mmcv` / `mamba-ssm` / CUDA 拡張は不要）。
+  一時環境に CPU 版 torch を入れて import・TeCNO forward・
+  **`scripts/train_b2a.py --smoke --drop-gap` の完走**まで実証した（`--smoke` は証跡を残さない）。
+  → 次の実験（E1/E3/E9/E8）は最小環境で即座に着手できる。
+
+- **phase→det のクラス別内訳も補完**: clsbias-PE は **Scalpel +1.48pp / Skewer +1.33pp が test でも有意に保存**、
+  **Syringe だけ val +1.21 → test −0.49 と反転**。除外した Bipolar と非注入 10 術具は厳密中立
+  （phase-排他ゲートが設計どおり働いている数値的確認）。
+
+- **【最重要の訂正】時間方向の受容野を与えるとデノイズ利得は消える**:
+  per-frame 分類器に **8 フレーム分の文脈**を与えるだけで、
+  デノイズの Δedit が **+9.11（3.06σ）→ +0.008（0.01σ）**と消える。
+  同時に生の信号のままでも edit が 50.73 → 58.99 に上がる（**時系列モデルが自力で吸収する**）。
+  **TeCNO の受容野は 128 フレーム**なので、**入力側デノイズは本番でほぼ効かないと予測される**。
+  → **実務提案としてのデノイズは取り下げ、主路は「工程を弁別しない術具を落とす」一本に絞る。**
+  **同じ受容野を与えても術具除去の利得は残る**
+  （K=8 +1.12pt / K=32 +1.48pt / **TeCNO 相当の K=128 では macro-F1 +3.08pt・2.24σ・10/15**）＝
+  **ちらつきは「時間の問題」で時系列モデルが自分で直せるが、揺れる術具は「情報の問題」で直せない。**
+  ※ 科学的主張（誤りの"形"で壊れる場所が変わる）は取り下げない。介入実験で直接示している。
+
+- **方法論上の教訓**: **代理モデルで見えた効果は本番の構造で消えることがある**。
+  「デノイズが分節を改善する」を val・test・LOVO・6 凍結源で確認した後、
+  最後に受容野を与えたら消えた。**代理が本番と構造的に違う軸で必ず対照を取ること。**
+
+**方針（最終）**:
+- **実務上の主路は「工程を弁別しない術具（`H(phase|tool) > 0.45`）を信号から落とす」の一本**。
+  受容野を TeCNO 相当まで与えても利得が残る唯一の介入である。
+- **工程 accuracy のための検出器強化には投資しない**（LOVO でオラクルですら +0.22pt）。
+- **入力側の因果デノイズは実務提案から取り下げ**、E1 は「効かないことを確かめて閉じる」反証テストに格下げ。
+  ※ 科学的主張（誤りの"形"で壊れる場所が変わる）は取り下げない。
+- 最優先は **E−1**（オラクル上限を本番 TeCNO で test 評価・再学習不要・30 分）→
+  **E9**（術具除去・主路）→ **E1**（反証テスト）→ **E8**（本番 TeCNO で LOVO）。
+- 主終点は介入ごとに分ける（除去 → macro-F1 / デノイズ → edit・seg-F1@50）。
+  fold 数の多い判定は `|mean|/SE ≥ 2` + 符号検定。**val 単独の結果は成果として報告しない。**
+- 次の 3 実験の **起票用 TASK 契約ドラフト**は [`docs/task_drafts/`](docs/task_drafts/README.md) にある
+  （`tools/validate_task.py` の L1/L2 を findings 0 で通ることを確認済み）。
+
 ## 主要ドキュメント
 
 - [`OPERATION.md`](OPERATION.md) — 実験証跡の自動同期、Draft PR、auto-merge、keeper の運用正本
@@ -1260,6 +1390,16 @@ best predictions は init の複製として必ず出力する（init ckpt 自�
 - [`docs/secrets_and_tracking.md`](docs/secrets_and_tracking.md) — `.env.gpg` 暗号化運用 + W&B / Notion 認証
 - [`experiments/analysis/step_c_coupling_analysis/REPORT.md`](experiments/analysis/step_c_coupling_analysis/REPORT.md) — STEP C 本編（val・27 §）: 結合機構の解明・実証・最良結合法の設計
 - [`experiments/analysis/step_c_coupling_analysis/TEST_EVAL_REPORT.md`](experiments/analysis/step_c_coupling_analysis/TEST_EVAL_REPORT.md) — STEP C test split 確証: 方向非対称は本番データで保たれるか
+- [`docs/research_review_and_next_plan_2026-08-22.md`](docs/research_review_and_next_plan_2026-08-22.md) — **研究レビューと今後の方針（2026-08-22）**: 全実験の横断再集計（全体・クラス別）、val でのオラクル上限とその **test / LOVO での反転**、presence 信号の時間品質と因果デノイズ、GAP の「動画指紋」性、関連研究調査、次の実験計画 E−1〜E8
+- [`docs/task_drafts/README.md`](docs/task_drafts/README.md) — 次の 3 実験（E−1 / E9 / E1）の **起票用 TASK 契約ドラフト**（`tasks/` へそのまま置ける様式）
+- [`docs/analysis_scripts/README.md`](docs/analysis_scripts/README.md) — GPU 不要の分析スクリプト一式（依存・前提キャッシュ・所要時間・注意）
+- [`docs/analysis_scripts/hmm_presence_filter.py`](docs/analysis_scripts/hmm_presence_filter.py) — 因果 HMM forward filter による tool-presence デノイズの検証（CPU・numpy のみ・読み取り専用）
+- [`docs/analysis_scripts/proxy_phase_presence_denoise.py`](docs/analysis_scripts/proxy_phase_presence_denoise.py) — GPU 不要のプロキシ工程認識器（本体 `PhaseEvaluator` を使用）で presence デノイズの工程側効果を先測り
+- [`docs/analysis_scripts/proxy_lovo_presence.py`](docs/analysis_scripts/proxy_lovo_presence.py) — 15 動画 leave-one-video-out（GPU 不要）。結論が 2〜3 動画の引きに依存していないかを検査する
+- [`docs/analysis_scripts/proxy_noise_structure.py`](docs/analysis_scripts/proxy_noise_structure.py) / [`proxy_lovo_noise_structure.py`](docs/analysis_scripts/proxy_lovo_noise_structure.py) — 同じ誤り率で iid ノイズと burst ノイズを比べる介入実験（誤りの「形」の選択性。後者は 15 動画 LOVO）
+- [`docs/analysis_scripts/proxy_lovo_gap_vs_presence.py`](docs/analysis_scripts/proxy_lovo_gap_vs_presence.py) / [`proxy_lovo_recommended.py`](docs/analysis_scripts/proxy_lovo_recommended.py) / [`proxy_lovo_flicker_scaling.py`](docs/analysis_scripts/proxy_lovo_flicker_scaling.py) — LOVO で P1 を確認 / 推奨構成の 4 腕比較 / 6 凍結源での再現性
+- [`docs/analysis_scripts/hmm_presence_fixed_lag.py`](docs/analysis_scripts/hmm_presence_fixed_lag.py) — 固定ラグ平滑化の品質/遅延曲線（遅延 2 frame でオフライン平滑化と同等）
+- [`docs/analysis_scripts/signal_video_identity_probe.py`](docs/analysis_scripts/signal_video_identity_probe.py) — 各信号が動画 ID をどれだけ符号化しているかの線形 probe（GAP 0.998 / region 0.975 / 予測 presence 0.716 / オラクル presence 0.629）
 
 ## runindex と context の再生成
 

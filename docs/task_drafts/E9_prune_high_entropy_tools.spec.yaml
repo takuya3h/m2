@@ -1,0 +1,126 @@
+# ドラフト（未起票）。起票時は docs/task_drafts/README.md の手順に従うこと。
+spec_version: 2
+meta:
+  task_id: "T-YYYY-MM-DD-prune-high-entropy-tools"
+  kind: exp
+  title: "工程を弁別しない術具を信号から落とすと工程分類は改善するか"
+  origin: claude-app
+  chat_url: ""
+  created_at: "YYYY-MM-DDTHH:MM:SSZ"
+  created_from:
+    runindex_commit: "7918b5dd"       # 起票時点の値へ更新する
+    counts: {index: 1177, experiments: 213, verdicts: 1038}
+  depends_on: []
+  amendments: []
+intent:
+  question: >-
+    凍結検出器の tool-presence 15 次元のうち、工程を弁別しない術具
+    （正規化エントロピー H(phase given tool present) が大きいもの）を落とすと、
+    未見の手術に対する工程分類が改善するか。
+  decision_at_stake: >-
+    改善するなら、det→phase の信号設計は「豊かにする」ではなく「揺れる次元を捨てる」
+    方向へ転換する。改善しないなら、プロキシで見えた利得は TeCNO では吸収済みと結論する。
+  hypothesis: >-
+    改善する。汎用術具の在室パターンは工程ではなく手術（動画）を符号化しており、
+    動画単位 hold-out では過適合源になるため。
+  related:
+    backlog: []
+inputs:
+  denominator:
+    ref: "exp:transfer/b2a_regiononly_pred/b2a_regiononly_pred@val~relation_detr_seed42"
+    metric: "phase_accuracy"
+    require: {n_seeds: ">=3", sigma: present, split: val}
+  frozen_source:
+    ref: "run:baselines/s0_016_relationdetr_bbox_seed42"
+    verify: ckpt_sha256
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt", "data/splits/ego_test.txt"]
+  caches:
+    - "data/processed/b2a_detsignal/relation_detr_seed42/train_toolpresence.npz"
+    - "data/processed/b2a_detsignal/relation_detr_seed42/val_toolpresence.npz"
+    - "data/processed/b2a_detsignal/relation_detr_seed42/test_toolpresence.npz"
+    - "data/processed/oracle_toolpresence/train_oracletool.npz"
+    - "data/processed/oracle_toolpresence/val_oracletool.npz"
+    - "data/processed/oracle_toolpresence/test_oracletool.npz"   # 落とす術具の選定にのみ使う
+    - "data/processed/phase_manifest/train.json"
+    - "data/processed/phase_manifest/val.json"
+    - "data/processed/phase_manifest/test.json"
+  code:
+    entrypoints:
+      - "scripts/train_b2a.py"     # --drop-gap --mask-tool-dims で実行可。コード変更なし
+contract:
+  inject_verbatim:
+    - conventions#split
+    - conventions#eval_recipe
+    - conventions#frozen_source
+    - conventions#sigma
+    - conventions#prohibitions
+    - conventions#env_p0
+  conventions_rev: "d422b087"       # 起票時点の値へ更新する
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - id: A
+      name: "落とす術具を train のみから決め、事前登録を版管理へ固定する"
+      gpu: false
+      est: "30m"
+    - id: B
+      name: "2 腕（全 15 次元 / しきい値超えを除去）を 3 seed で走らせる"
+      gpu: true
+      est: "1h"
+    - id: C
+      name: "val と test の対 seed 差を事前登録どおり測る"
+      gpu: false
+      est: "30m"
+  gates:
+    - id: G1
+      after: A
+      check: >-
+        train のみから H(phase given tool present)/log2(9) を計算し、しきい値を超える術具集合を
+        走らせる前に audit/ へ記録した。集合が本書 本書の『汎用術具を落とす』の節 の想定集合と違う場合も、そのまま使って記録する。
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "6 run が完走し、2 腕の学習可能重み数が入力次元差のぶんだけ違うことを確認した"
+      on_fail: stop
+  env:
+    venv: ".venv"    # 工程側は torch + numpy のみで足りる（2026-08-22 に実証）
+    preflight: [venv_active, deterministic_flags]
+  resources: {server: "", gpu: 1, est_hours: 2, runs: 6}
+prereg:
+  prediction: >-
+    しきい値を超える術具を落とした腕が、全 15 次元の腕を val でも test でも上回る。
+    期待効果量は本書 本書の『凍結源を跨いだ再現性』の節（術具除去の部） の範囲に入る。macro-F1 も改善する。分節指標（edit / seg-F1）はほぼ動かない。
+  primary_endpoint: >-
+    test の phase_macro_f1 について、同じ seed で対にした差（除去腕 − 全次元腕）。
+    seed 42/123/456。phase_accuracy は非劣化条件として同時に測る。
+  decision_rule: >-
+    対の差の平均の絶対値 > 対の差の母標準偏差 かつ 全 seed 同符号（既存の有意性判定の規約）。
+    val でも同じ判定を行うが、主張は test に基づく。
+    edit_score は非劣化条件とする（許容幅は本書 本書の『終点の再定義』の節 に従う）。
+  stop_conditions:
+    - "6 run が完走した"
+    - "計算装置が使えない"
+    - "学習が落ちて完走しない"
+  committed_at: null
+  commit: null
+outputs:
+  expected_runs: 6
+  must_have: [metrics.json, per_class_ap.json, notes.md, config.yaml, command.sh, git_commit.txt, server.txt]
+  destination: "experiments/transfer/"
+  stamp: {task_id_in: config.yaml}
+  acceptance:
+    - "落とした術具集合が audit/ に走らせる前の状態で残っている"
+    - "6 run すべてが task_id 付きで索引に現れる"
+    - "val と test の per-phase F1 を両方報告している"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "落とす術具集合が想定（train のみで四本、動画単位の交差検証で約五本）から大きく外れた場合"
+    - "test で符号が反転した場合（プロキシの結論が本番で覆る）"
+    - "test で符号が反転した場合（プロキシの結論が本番で覆る）"
