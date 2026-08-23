@@ -1,0 +1,7 @@
+- [ ] 2026-08-23 [cc] 🔴 bengio の `~/bin/syncthing` は実行属性を外してある（`chmod -x`）。同期処理を登録・起動する契約では先に `chmod +x ~/bin/syncthing` で戻す。戻さないと keeper は永久に起動しない（`tasks/T-2026-08-24-bengio-keeper-autosync/RESULT.md` §3）
+- [ ] 2026-08-23 [cc] `keeper.sh:41-43` は目印の有無と無関係に `[ -x ~/bin/syncthing ]` だけで同期処理を起動する。契約は中継の抑止と同期処理の抑止を混同しており、他の四台の同一契約でも同じ矛盾が起きる（`result.yaml` issuer_defects[0]）
+- [ ] 2026-08-23 [cc] `sh -n` で bash の正本を検査すると誤った失敗が出る。`/bin/sh` は dash で、`m2-sync.sh:74-76` はプロセス置換 `<(...)` を使う。`bash -n` を使うこと（`result.yaml` issuer_defects[1]）
+- [ ] 2026-08-23 [cc] `/proc/*/cmdline` の部分一致は実行基盤の包み込み（`zsh -c … eval '~/bin/keeper.sh'`）を拾い `keeper.sh=2` と誤る。引数の要素で数えること（`audit.md` Task 3 Step 3）
+- [ ] 2026-08-23 [cc] 実行基盤によっては `nohup … &` `setsid` `cat >> ~/.zshrc` `cp ~/.zshrc` が判定に拒否される。常駐処理を切り離せず、起動行の退避も取れない（`result.yaml` deviations[1][2]）
+- [ ] 2026-08-23 [cc] 記録の置き場所は `~/claude-sync/sync-alerts.log`。SPEC は「失われている」と書くが `m2-sync.sh:22` の `mkdir -p` が自分で作るため探す必要は無い（`RESULT.md` §7）
+- [ ] 2026-08-23 [cc] 禁止 4 に従い `make taskindex` `make inbox` を実行していない。全台の統合後に一台で一度だけ再生成すること
