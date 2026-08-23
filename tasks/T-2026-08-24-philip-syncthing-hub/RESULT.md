@@ -99,7 +99,7 @@
 | PR | **#140**（`https://github.com/takuya3h/m2/pull/140`、base `phase0`、Draft ではない） |
 | 検証 | `validate_exit=0` / `preflight_exit=0`（4 PASS / 1 WARN / 4 SKIP / 0 FAIL）/ `forbidden_exit=0`（changed 7, checked 7, violations 0） |
 | 秘匿検査 | 囮で 3 件検出・実在しない語で 0 件（陽性対照）。本体では apikey の実値 1 件を検出しマスク。残る 3 件は `encryptionPassword`（空）と `unackedNotificationID` で**名前であって値ではない** |
-| 台帳への返送 | 後述（`make task-report` の終了コード） |
+| 台帳への返送 | **`report_exit=0`**。`verdict=partial` / `n_issuer_defects=6` / `report_bytes=11912` / `report_sha256=b4787030…`。終了コードを取り損ねたため一度だけ再実行し、`replaced_blocks` が 0 から 1 になって冪等であることも確かめた（`report_sha256` は同一） |
 | 退避 | **0 件**。作業ツリーの未追跡 2 件は前段で commit したため退避していない。戻す対象なし |
 
 `forbidden-check` が `pass` を返した理由: 変更が生成物（`context/auto/`、`tasks/inbox.md`）を
