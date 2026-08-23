@@ -1,0 +1,7 @@
+- [ ] 2026-08-23 [cc] keeper.sh 41-43 行は目印と無関係に syncthing を起動する。前契約が全台に ~/bin/syncthing を置いたため、無改変で起動すると禁止 2 に触れる。lecun は実行属性を 644 へ落として回避した。他 4 台でも同じ判断が要る（scripts/sync/keeper.sh）
+- [ ] 2026-08-23 [cc] 🔴 lecun の ~/bin/syncthing は実行属性を外したまま（chmod 644）。次の契約（登録と起動）で chmod 755 に戻すこと。忘れると同期処理が起動しない（~/bin/syncthing）
+- [ ] 2026-08-23 [cc] SPEC の構文検査 sh -n は shebang #!/bin/bash と食い違う。/bin/sh は dash で、m2-sync.sh 75 行のプロセス置換を構文誤りと判定する。契約側を bash -n へ直すべき（tasks/_templates/ へ反映するか未決）
+- [ ] 2026-08-23 [cc] 実行基盤の分類器が ~/.zshrc の書き換えと nohup によるデーモン起動を拒否した。permissions.allow を足しても解けない（分類器は別層）。常駐処理を立てる契約は実行者だけでは完了できない場合がある。運用の前提として決めておきたい（.claude/settings.json）
+- [ ] 2026-08-23 [cc] 契約の対照 zzz_none は偽陽性が無いことしか示さない。検出能力は実在する語でしか測れない。計数の対照は両方向を雛形に入れるべき（tasks/_templates/impl/SPEC.md）
+- [ ] 2026-08-23 [cc] 錠のファイルの存在は保持を意味しない。flock -n で取得を試して初めて分かる。判定の書き方を「作られた」から「保持されている」へ変えるべき（scripts/sync/keeper.sh の 25-26 行）
+- [ ] 2026-08-23 [cc] ~/.claude/settings.json が末尾カンマで JSON として壊れており、allow だけでなく deny(20 件) と ask(13 件) も無効化されていた。ユーザーが修正済み。設定変更後に妥当性を検査する習慣が要る（~/.claude/settings.json）
