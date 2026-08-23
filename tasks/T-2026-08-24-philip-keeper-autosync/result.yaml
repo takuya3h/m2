@@ -3,7 +3,7 @@ task_id: "T-2026-08-24-philip-keeper-autosync"
 status: partial
 host: "philip"
 branch: "feat/philip-keeper-autosync"
-pr: null
+pr: 126
 merged: false
 
 gates:
@@ -32,6 +32,8 @@ deviations:
     note: "実行者の測り方に誤りがあった。grep -c PATTERN FILE || echo UNKNOWN は 0 件のとき exit 1 となり 0 と UNKNOWN を両方出す。読めない場合と 0 件を区別して測り直し、訂正の経緯ごと audit.md に残した。"
   - type: spec_defect
     note: "禁止 4 により make taskindex / inbox / taskindex-check / inbox-check を実行していない。task スキルは投影の確認を求めるが本契約の禁止が優先する。本報告が context/auto/ に現れることは未確認。"
+  - type: environment
+    note: "gh pr create を手で実行した。抑止を外せば m2-sync.sh 115 行以降の auto-PR が同じことを自動で行うが、完了判定 18 が PR 番号を求めるため待たずに作成した。PR #126。"
   - type: environment
     note: "make task-report を実行していない。合言葉が失われ scripts/load_env.sh が使えず、outputs.report_to も空であるため。"
   - type: environment
@@ -94,6 +96,6 @@ unknowns:
   - "本報告が context/auto/ の投影に現れるかを確かめていない。禁止 4 により make taskindex / taskindex-check / inbox-check を実行していないため。"
   - "make forbidden-check を通せる状態にできるかは未確認。違反 4 件は禁止 5 が触ることを禁じている未追跡ファイルであり、本契約では消せない。"
   - "P2 cuda_ext_loaded と P3 deterministic_flags は plan.env.preflight に記載が無く SKIP。実行されていない。"
-  - "PR 番号。Phase C の実測で確定する。"
 
-commits: []
+commits:
+  - "6f5e7af feat(sync): deploy keeper and enable git autosync on philip"

@@ -80,8 +80,8 @@ PARTIAL としたのは 2 点。**契約の `sh -n` による構文検査は非�
 | 15 | 送信前の秘匿検査（陽性対照つき） | `hits=1`。中身は `SPEC.md:319` にある検査の正規表現そのもので、鍵の書き出し行でも語＋区切り＋値の形でもない（**件数ではなく形を一件ずつ目視した**）。陽性対照 `control_hits=3`、陰性対照 `neg_hits=0`。囮は `/tmp` にのみ置き削除した（**版管理へ入れていない**）。環境の資格情報 `NOTION_API_KEY` `WANDB_API_KEY` `NOTION_DB_ID` `GITHUB_TOKEN` `GH_TOKEN` はすべて unset で照合対象なし |
 | 16 | 開始時の未追跡がすべて残っている | 開始時 6 件すべて `exists=yes`。commit 前の未追跡は 7 件で、増えた 1 件は本契約が作った `tasks/inbox.d/T-2026-08-24-philip-keeper-autosync.md`。**減っていない** |
 | 17 | 変更が契約の範囲に限られる | 追跡変更は `tasks/T-2026-08-24-philip-keeper-autosync/` と `tasks/inbox.d/<task_id>.md` のみ。`~/bin/` `~/.zshrc` は版管理の外、`.sync-pause` は `.gitignore:240`、`.stignore` は `.gitignore:192` で無視されるため `status` に現れない。**`make forbidden-check` は `exit=2` で fail**。違反 4 件はすべて `data/annotations/**` の**未追跡ファイルで mtime は 2026-07-31**、本契約の 3 週間以上前から在り、Phase A で記録した未追跡 6 件に含まれる。`tools/check_forbidden.py` は `origin/phase0` を起点に未追跡も列挙するため作業ツリーに在る限り必ず fail する。**禁止 5 が削除・移動・commit を禁じているので通すために消さない。記録のみ**。`make taskindex-check` `make inbox-check` は**禁止 4 により実行していない（UNKNOWN）** |
-| 18 | 分岐が送出され、PR が存在する | §8 に実測を記す |
-| 19 | 抑止が repo 直下から消えている | §8 に実測を記す |
+| 18 | 分岐が送出され、PR が存在する | `git push -u origin HEAD` → `* [new branch] HEAD -> feat/philip-keeper-autosync`、**`push_exit=0`**。**PR #126**（`https://github.com/takuya3h/m2/pull/126`、base `phase0`、`pr_exit=0`）。作成前の `gh pr list` は `[]` |
+| 19 | 抑止が repo 直下から消えている | `mv .sync-pause /tmp/.sync-pause.released.T-2026-08-24-philip-keeper-autosync`（`mv_exit=0`）。`ls -la .sync-pause` → **repo 直下から消えた**。退避先に 0 バイトで存在。解除後も `keeper.sh=1 [72428]` `ssh -N -L=0` `syncthing=0` |
 
 ### 追記した起動行（そのまま）
 
@@ -140,6 +140,14 @@ PARTIAL としたのは 2 点。**契約の `sh -n` による構文検査は非�
 | 項目 | 実測 |
 |---|---|
 | 送出先 | `https://github.com/takuya3h/m2.git`（**`git@` ではないので配備鍵は不要**） |
-| `gh` の有無 | `gh_present=yes` |
-| `origin/feat/philip-keeper-autosync` | 開始時 **不在**（auto-push が発火しない状態） |
+| `gh` の有無 | `gh_present=yes`、`gh auth status` は `Logged in to github.com account takuya3h`、`auth_exit=0`（**トークンの値は記録しない**） |
+| `origin/feat/philip-keeper-autosync` | 開始時 **不在** → push により **登録された**。これで auto-push の条件（`m2-sync.sh` 103 行）が満たされた |
 | git 身元 | `user.name=takuya3h`、`user.email` は設定済み、`~/.gitconfig` **存在**（前契約時は不在だった。ユーザーが復旧済み） |
+| commit | `6f5e7af feat(sync): deploy keeper and enable git autosync on philip`（6 files, 1213 insertions）／記録の追記が `HEAD` |
+| push | `* [new branch] HEAD -> feat/philip-keeper-autosync`、**`push_exit=0`** |
+| PR | **#126** `https://github.com/takuya3h/m2/pull/126`（base `phase0`、`pr_exit=0`） |
+| 抑止の解除 | `mv` で `/tmp/.sync-pause.released.T-2026-08-24-philip-keeper-autosync` へ退避。**削除ではなく別名への移動**（実装は存在だけを見る）。`mv_exit=0` |
+| 解除後の状態 | `keeper.sh=1 [72428]`、`ssh -N -L=0`、`syncthing=0`。次の周回（起動から 1800 秒後、およそ 17:58 JST）から auto-merge と auto-push が働く |
+
+`git remote set-url --push origin https://…` と `gh auth setup-git` は**実行していない**。
+送出先が既に `https` で、push が `exit=0` で通ったため不要だった。

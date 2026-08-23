@@ -475,3 +475,76 @@ control=1  (1 が期待)
 ```
 
 **判定**: `BLOCKED=0`。抑止を外したあと、未追跡が auto-merge を阻害することはない。
+
+## Phase C / Task 4 Step 5: commit し、送出する
+```
+$ git --no-pager diff --cached --name-only  （commit 前の staged）
+tasks/T-2026-08-24-philip-keeper-autosync/{RESULT.md,SPEC.md,audit.md,result.yaml,spec.yaml}
+tasks/inbox.d/T-2026-08-24-philip-keeper-autosync.md
+data_staged=0 experiments_staged=0 runindex_staged=0 context_auto_staged=0 inbox_md_staged=0
+
+commit_exit=0
+6f5e7af feat(sync): deploy keeper and enable git autosync on philip
+
+$ git remote -v
+origin	https://github.com/takuya3h/m2.git (fetch)
+origin	https://github.com/takuya3h/m2.git (push)
+
+$ git push -u origin HEAD
+ * [new branch]      HEAD -> feat/philip-keeper-autosync
+branch 'feat/philip-keeper-autosync' set up to track 'origin/feat/philip-keeper-autosync'.
+push_exit=0
+
+$ gh auth status   （トークンの値は出力しない）
+github.com / Logged in to github.com account takuya3h / Active account: true
+Token scopes: 'admin:public_key', 'gist', 'read:org', 'repo'
+auth_exit=0
+
+$ gh pr list --head feat/philip-keeper-autosync --json number,isDraft,state
+[]   （作成前）
+
+$ gh pr create --base phase0 --head feat/philip-keeper-autosync ...
+https://github.com/takuya3h/m2/pull/126
+pr_exit=0
+```
+
+`git remote set-url --push origin https://...` と `gh auth setup-git` は**実行していない**。
+送出先は既に `https://github.com/takuya3h/m2.git` であり、`git@` ではないため配備鍵が不要で、
+push が `exit=0` で通ったため。
+
+## Phase C / Task 4 Step 6: 抑止を外す
+```
+$ ls -la .sync-pause   （解除前）
+-rw-rw-r-- 1 ubuntu ubuntu 0 Aug 23 17:27 .sync-pause
+$ mv .sync-pause /tmp/.sync-pause.released.T-2026-08-24-philip-keeper-autosync
+mv_exit=0
+$ ls -la .sync-pause   （解除後）
+repo 直下から消えた
+退避先: -rw-rw-r-- 1 ubuntu ubuntu 0 Aug 23 17:27 /tmp/.sync-pause.released.T-2026-08-24-philip-keeper-autosync
+
+解除後も常駐処理は生きている:
+keeper.sh =1 [72428]
+ssh -N -L =0 []
+syncthing =0 []
+```
+
+**削除ではなく別名への退避で解除した。** 実装は目印の存在だけを見ている
+（`m2-sync.sh` 40 行 `[ -f "$M2DIR/.sync-pause" ]`）ため、移動でも解ける。
+次の周回（起動から 1800 秒後、およそ 17:58 JST）から auto-merge と auto-push が働く。
+`origin/feat/philip-keeper-autosync` が登録されたので auto-push の条件（103 行）も満たされた。
+
+## Phase C: 記録の追記後に、秘匿と検証を測り直す
+```
+validate_exit=0   （OK / 1 task(s), 0 failed）
+
+hits=4  （追記により 1 → 4 へ増えたので一件ずつ形を見る）
+  1. audit.md:367  — SPEC.md の検査の正規表現を引用した行。秘匿ではない
+  2. audit.md:377  — 環境変数の**名前**と「すべて unset」の記載。値は無い
+  3. SPEC.md:319   — 起票者が書いた検査の正規表現そのもの
+  4. RESULT.md:80  — 完了判定 15 の本文。変数名のみで値は無い
+  → 鍵の書き出し行は無し。語＋区切り＋値の形は無し。削る対象は無い
+
+gho_token_leak=0  （gh のトークンは gh 自身が伏せて出力し、こちらも記録していない）
+```
+
+**前契約の失敗（囮を版管理へ入れた）を再発させないため、追記のたびに測り直した。**
