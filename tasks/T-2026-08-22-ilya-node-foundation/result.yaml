@@ -3,7 +3,7 @@ task_id: "T-2026-08-22-ilya-node-foundation"
 status: pass
 host: "ilya"
 branch: "feat/ilya-node-foundation"
-pr: null
+pr: 124
 merged: false
 
 gates:
@@ -70,4 +70,4 @@ unknowns:
   - "開始前の試験の失敗件数。契約の開始時点では .venv が壊れていて python が起動せず測れなかった。tests.before_failed に置いた 5 は修復直後の実測値であって『開始前』の値ではない。本契約は src/ tests/ を変更していない。"
   - "~/.ssh/id_ed25519（コメント no comment、SHA256:cdOmPfuBN4wFfTjbvjDIaGgiv3YaHEMLez0td1v5oE4）が何のために置かれた鍵か。git fetch が SSH で通ることから GitHub 向けと推定したが、確かめていない。触れていない。"
 
-commits: []
+commits: ["bd3d149"]

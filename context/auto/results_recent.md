@@ -36,7 +36,7 @@
 
 ## T-2026-08-22-ilya-node-foundation
 
-状態 `pass` / ホスト `ilya` / 起票 `なし` / 様式 `v3`
+状態 `pass` / ホスト `ilya` / 起票 `124` / 様式 `v3`
 
 ### ゲート
 

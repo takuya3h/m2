@@ -80,7 +80,7 @@ SPEC は Task 5 Step 1 で「**完了判定 17 項目**」と述べるが、本�
 | 19 | 送信前の秘匿検査を自分で行った（陽性対照つき） | §5 参照。本番 `0` 件相当（形の確認まで実施）、囮 `4` 件 | PASS |
 | 20 | 開始時の未追跡がすべて残っている | 開始 `2` → 終了 `2`（`docs/sessions/digest/2026-08-22-95a3a814-….md` は最後まで未追跡のまま） | PASS |
 | 21 | 変更が契約の範囲に限られる | `make forbidden-check` = `{"status": "pass", "violations": [], "changed": 6}` | PASS |
-| 22 | 分岐が送出され、PR が存在する（番号） | §7 に記載 | §7 参照 |
+| 22 | 分岐が送出され、PR が存在する（番号） | commit `bd3d149`、push 成功、**PR #124**（base `phase0`, state `OPEN`, draft でない） | PASS |
 
 ---
 
@@ -286,7 +286,60 @@ forbidden_exit=0
 
 ### 送出（Task 5 Step 6）
 
-以下は本節の後段に追記する。
+`git add` は明示したものだけを渡した（`-A` は使っていない）。
+
+```
+$ git --no-pager diff --cached --name-status
+M	context/auto/followups.md
+M	context/auto/results_recent.md
+M	context/auto/tasks_summary.csv
+A	scripts/sync/device_ids/ilya.txt
+M	scripts/sync/hub_keys/ilya.pub
+A	tasks/T-2026-08-22-ilya-node-foundation/RESULT.md
+A	tasks/T-2026-08-22-ilya-node-foundation/SPEC.md
+A	tasks/T-2026-08-22-ilya-node-foundation/audit.md
+A	tasks/T-2026-08-22-ilya-node-foundation/result.yaml
+A	tasks/T-2026-08-22-ilya-node-foundation/spec.yaml
+A	tasks/inbox.d/T-2026-08-22-ilya-node-foundation.md
+M	tasks/inbox.md
+$ git --no-pager status --porcelain | grep -v '^[AM]'
+?? docs/sessions/digest/2026-08-22-95a3a814-a765-401a-a2a9-ce915c8cbf05.md
+```
+
+**未追跡の成果物は staged に入っていない。**
+
+```
+$ git commit -F -   （SPEC 指定の表題 + 内訳 5 行）
+[feat/ilya-node-foundation bd3d149] feat(sync): build foundation and publish hub key and device id on ilya
+ 12 files changed, 1772 insertions(+), 76 deletions(-)
+commit_exit=0
+$ git push -u origin HEAD
+To https://github.com/takuya3h/m2.git
+ * [new branch]      HEAD -> feat/ilya-node-foundation
+branch 'feat/ilya-node-foundation' set up to track 'origin/feat/ilya-node-foundation'.
+$ git --no-pager status -sb
+## feat/ilya-node-foundation...origin/feat/ilya-node-foundation
+?? docs/sessions/digest/2026-08-22-95a3a814-a765-401a-a2a9-ce915c8cbf05.md
+```
+
+**push は https 経路（`git remote set-url --push` で直したもの）で通った。**
+前契約 philip では push が遮断され `succeeded: false` で終わっていたが、
+**ilya では成功した。**
+
+```
+$ gh pr list --head feat/ilya-node-foundation --json number,isDraft,state
+[]                                    # 既存の PR は無い
+$ gh pr create --base phase0 --fill
+Warning: 1 uncommitted change         # 未追跡の digest 1 件（意図どおり残している）
+https://github.com/takuya3h/m2/pull/124
+```
+
+**PR 番号: #124**（base `phase0` ← head `feat/ilya-node-foundation`）。
+**完了判定 22 を充足する。**
+
+**台帳へは返していない。**`make task-report` は `scripts/load_env.sh` に依存し、
+本契約の前提どおり合言葉が失われていて使えない。SPEC は
+「**台帳へは返さない。起票者は版管理から読む**」と定めており、それに従った。
 
 ---
 
