@@ -1,0 +1,3 @@
+- [ ] 2026-08-24 [human] keeper.sh 41-43 行が目印と無関係に syncthing を起動するため禁止 2 と衝突する。3 案（実行権を外す／そのまま起動して記録／Phase A で差し戻す）を提示し「~/bin/syncthing の実行権を一時的に外す」を選択。~/bin/ への配置・~/.zshrc への追記・常駐の起動・commit と push も併せて承認（T-2026-08-24-philip-keeper-autosync）
+- [ ] 2026-08-24 [cc] ~/bin/syncthing を 644 へ落とした状態は philip に残る。同期処理を立ち上げる契約で chmod 755 ~/bin/syncthing を戻す必要がある。syncthing を配置済みの他 4 台でも keeper 起動時に同じ矛盾が起きるため、起票側で扱いを決めてほしい（T-2026-08-24-philip-keeper-autosync）
+- [ ] 2026-08-24 [cc] SPEC の構文検査が sh -n を使うが正本は #!/bin/bash でプロセス置換を含むため dash では必ず落ちる。次の起票から bash -n にしたい（T-2026-08-24-philip-keeper-autosync）

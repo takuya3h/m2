@@ -1,0 +1,101 @@
+result_version: 3
+task_id: "T-2026-08-24-philip-keeper-autosync"
+status: partial
+host: "philip"
+branch: "feat/philip-keeper-autosync"
+pr: 126
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "origin/phase0...HEAD が 0/0 で最新。marker_count=0、.zshrc の keeper 該当 0 件（全 77 行）、未追跡 6 件、~/.keeper.lock 不在、~/claude-sync 不在。稼働計数は自己と祖先 15 件を /proc 38 件から除外し keeper.sh=0 m2-sync=0 syncthing=0 'ssh -N -L'=0、陽性対照 zsh=4 陰性対照 zzz_none=0。keeper.sh の分岐を行番号つき（中継 33-38 / syncthing 41-43 / 自己更新 45-46 / 除外規則 48-49 / 同期 50 / 周期 51 / 錠 25-26）で記録。m2-sync.sh の発火条件は抑止 40-43、auto-merge 60-88、auto-push 103-112。"
+  - id: G2
+    verdict: pass
+    note: "配置物と正本の sha256 が一致（keeper 9fe9c423…dd90 / m2-sync bcf46ba9…25f、いずれも origin/phase0 と同一）。bash -n は両方 0、sh -n は m2-sync が 2（dash がプロセス置換を拒否）。keeper.sh=1 pid 72428、'ssh -N -L'=0、syncthing=0。~/.keeper.lock 生成、二つ目を起動しても keeper.sh=1 のまま。~/claude-sync/sync-alerts.log に『一時停止中』1 行、automerge=0 autopush=0、ahead/behind 0/0、HEAD=3c4c5a6 不変。"
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+
+deviations:
+  - type: judgement
+    note: "~/bin/syncthing の実行権を 755→644 へ落として keeper 41 行の -x 判定を偽にし、禁止 2 と完了判定 11 を守った。中身は不変（sha256 一致）。ユーザーへ 3 案を提示し選択を得た。戻し方は chmod 755 ~/bin/syncthing。"
+  - type: spec_defect
+    note: "完了判定 6 の根拠を契約の sh -n から bash -n へ置き換えた。正本の shebang は #!/bin/bash で /bin/sh は dash。sh -n の非零も隠さず記録した。"
+  - type: judgement
+    note: "稼働計数に陽性対照 zsh を、構文検査に壊した写しの陽性対照を追加した。契約は陰性対照しか求めていないが、全項目 0 では検出器の空振りと区別できないため。"
+  - type: judgement
+    note: "flock の実効を二つ目の起動で実測した。錠の存在は錠が効いていることを意味しないため。"
+  - type: judgement
+    note: "実行者の測り方に誤りがあった。grep -c PATTERN FILE || echo UNKNOWN は 0 件のとき exit 1 となり 0 と UNKNOWN を両方出す。読めない場合と 0 件を区別して測り直し、訂正の経緯ごと audit.md に残した。"
+  - type: spec_defect
+    note: "禁止 4 により make taskindex / inbox / taskindex-check / inbox-check を実行していない。task スキルは投影の確認を求めるが本契約の禁止が優先する。本報告が context/auto/ に現れることは未確認。"
+  - type: environment
+    note: "gh pr create を手で実行した。抑止を外せば m2-sync.sh 115 行以降の auto-PR が同じことを自動で行うが、完了判定 18 が PR 番号を求めるため待たずに作成した。PR #126。"
+  - type: environment
+    note: "make task-report を実行していない。合言葉が失われ scripts/load_env.sh が使えず、outputs.report_to も空であるため。"
+  - type: environment
+    note: "make forbidden-check が exit=2 で fail する。違反 4 件はすべて data/annotations/** の未追跡ファイルで mtime 2026-07-31、本契約の 3 週間以上前から存在し Phase A で記録した未追跡 6 件に含まれる。tools/check_forbidden.py は origin/phase0 を起点に未追跡も列挙するため作業ツリーに在る限り必ず fail する。禁止 5 が削除・移動・commit を禁じているので通すために消さず記録のみとした。"
+  - type: judgement
+    note: "実行者が終了コードの取り方を誤った。${PIPESTATUS[0]} を使ったがこのシェルは zsh で配列添字が効かず空文字が出た。SPEC の申し送り #8 が警告していた罠。パイプを使わず出力をファイルへ落として直後に $? を取る形で測り直した。"
+  - type: environment
+    note: "git checkout -b を実行していない。分岐 feat/philip-keeper-autosync はセッション開始時に既に存在し origin/phase0 と 0/0 で一致していた。"
+  - type: environment
+    note: "前契約の未追跡 3 件（experiments/transfer/_smoke_*）が git status から消えたが exists=yes tracked=no であり .gitignore:174-176 の上流追加による表示変化にすぎない。成果物は失われていない。"
+
+issuer_defects:
+  - type: self_contradiction
+    note: "SPEC の分岐表は keeper.sh 39-50 行を『これを動かす』とまとめるが、41-43 行は目印と無関係に [ -x ~/bin/syncthing ] だけを見て syncthing を起動する。philip では前契約が ~/bin/syncthing を mode 755 で配置済みのため、指示どおり keeper を起動すると syncthing が必ず立ち、禁止 2 に触れて完了判定 11『同期処理が零件』が同時に不成立になる。契約の中で両立しない。"
+  - type: shell_assumption
+    note: "SPEC Task 2 Step 2 は sh -n で構文を検査し『両方が零であること』を求めるが、正本の shebang は #!/bin/bash で m2-sync.sh 74-75 行が bash 固有のプロセス置換 <(…) を使う。/bin/sh は dash であるため指示どおり実行すると exit=2 と『75: Syntax error: \"(\" unexpected』が出て、正常な正本が不合格に見え完了判定 6 を原理的に満たせない。"
+  - type: asserted_without_measuring
+    note: "SPEC Task 3 Step 5 は『~/claude-sync/ は失われている。記録の置き場所が無ければ別の場所を探すか UNKNOWN とする』と断定するが、m2-sync.sh 22 行が mkdir -p \"$(dirname \"$LOG\")\" で自分で作る。実測では一周目で ~/claude-sync/sync-alerts.log が生成された。前提を鵜呑みにすると実在する記録を UNKNOWN と誤記する。"
+  - type: check_does_not_check
+    note: "SPEC Task 1 Step 2 は『存在しない語が零を返すことが対照である』とするが、それは陰性対照のみで、全項目が 0 の状況では検出器が壊れていても同じ出力になる。指示どおりでは空振りと真の不在を区別できない。実行者が陽性対照 zsh=4 を足して初めて区別できた。"
+
+positive_controls:
+  - judgement: "プロセス計数が稼働中のものを検出できる"
+    breaking_input: "確実に存在する語 zsh を同じ検出器に通す"
+    observed: "zsh=4 ['47296','47444','53474','67249']。陰性対照 zzz_none=0。検出器は働いている"
+  - judgement: "構文検査が誤りを検出する"
+    breaking_input: "'if true; then' だけの壊した写しを sh -n に通す"
+    observed: "broken_syntax=2。検査器は働いている"
+  - judgement: "flock による多重起動防止が効いている"
+    breaking_input: "keeper.sh を二つ目として起動する"
+    observed: "3 秒後も keeper.sh=1 ['72428'] のまま。二つ目は flock -n を取れず exit 0 で去った"
+  - judgement: "抑止の目印が版管理への書き込みを止める"
+    breaking_input: ".sync-pause を置いた状態で keeper を一周させる"
+    observed: "sync-alerts.log に『一時停止中』1 行、automerge_lines=0 autopush_lines=0、ahead/behind 0/0、HEAD=3c4c5a6 不変"
+  - judgement: "記録の件数計数が『読めない』と『0 件』を区別する"
+    breaking_input: "存在する語 philip と存在しない語 zzz_none_marker を同じ手順で数える"
+    observed: "philip_lines=1、zzz_none_lines=0、log_readable=yes。区別できている"
+  - judgement: "秘匿検査が鍵と資格情報の形を検出する"
+    breaking_input: "囮を含む一時ファイルを同じ正規表現に通す"
+    observed: "control_hits=3（囮 3 行すべてに一致）、陰性対照 neg_hits=0。本文の hits=1 は SPEC.md:319 の検査の正規表現そのもので秘匿ではない。囮は /tmp のみに置き削除した"
+  - judgement: "auto-merge が未追跡に阻害されないこと"
+    breaking_input: "m2-sync.sh 73-75 行と同じ式で未追跡と origin/phase0 のツリーの積を取る"
+    observed: "BLOCKED=0。陽性対照 comm -12 <(Makefile) <(ツリー) = 1、陰性対照 zzz_nonexistent_file = 0。集合の積は働いている"
+
+followups:
+  - "記録の置き場所は ~/claude-sync/sync-alerts.log（m2-sync.sh 11 行）。不在でも 22 行の mkdir -p で自分が作るため、開始前に無いことを理由に UNKNOWN と書かない。"
+  - "起動行は ( nohup ~/bin/keeper.sh >/dev/null 2>&1 & ) 2>/dev/null。flock があるので毎回呼んで安全。"
+  - "目印 ~/.tunnel_to_<hub名> は 1 行目が秘密鍵パス、2 行目が中心の住所（省略時は名前を SSH 別名に使う）。resolve_tunnel は辞書順で最初の 1 件だけを選ぶ。中継は ssh -N -L 22001:127.0.0.1:22000 -p 50072 で ExitOnForwardFailure=yes。"
+  - "philip では ~/bin/syncthing を 644 へ落とした。同期処理を立ち上げる契約で chmod 755 ~/bin/syncthing が要る。忘れると keeper が永遠に syncthing を起動しない。"
+  - "~/bin/syncthing を配置済みの他 4 台でも keeper 起動時に同じ矛盾が起きる。同じ判断が要る。"
+  - "構文検査に sh -n を使わない。正本は bash であり bash -n で検査する。"
+  - "auto-push は origin/$BR が存在するときだけ発火する（103 行）。最初の 1 回は手で push する必要がある。"
+  - ".stignore は keeper 48-49 行が毎ループ origin/phase0:.stglobalignore から再生成する。手で編集しても 30 分以内に消える。"
+  - ".sync-pause は .gitignore:240 と .stignore の総取り規則の両方に落ちるため、抑止は 1 台にだけ効く。"
+  - "make forbidden-check は data/annotations/** の未追跡 4 件（mtime 2026-07-31）により必ず fail する。本契約が作ったものではなく禁止 5 で触れない。全台で同じ結果になるはずなので、起票側で扱いを決めてほしい。"
+  - "auto-merge を阻害する未追跡は BLOCKED=0 で無い。抑止を外せば次の周回から統合が動く。"
+  - "pgrep -af は自分のコマンド行を拾う（本セッションでも再現）。/proc を走査して自己と祖先を除外する方式が確実。"
+
+unknowns:
+  - "本報告が context/auto/ の投影に現れるかを確かめていない。禁止 4 により make taskindex / taskindex-check / inbox-check を実行していないため。"
+  - "make forbidden-check を通せる状態にできるかは未確認。違反 4 件は禁止 5 が触ることを禁じている未追跡ファイルであり、本契約では消せない。"
+  - "P2 cuda_ext_loaded と P3 deterministic_flags は plan.env.preflight に記載が無く SKIP。実行されていない。"
+
+commits:
+  - "6f5e7af feat(sync): deploy keeper and enable git autosync on philip"
