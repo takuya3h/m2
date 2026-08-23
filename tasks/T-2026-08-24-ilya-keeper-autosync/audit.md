@@ -844,3 +844,38 @@ diff_exit=1
 `\n` のバックスラッシュを落とさないこと**、および**貼り直すときは先に退避から
 戻すこと**（さもないと二重になる）。
 
+
+---
+
+## Phase C / Task 4
+
+生の出力は RESULT.md §10 に貼った（同じ内容を二度貼らない）。ここには
+**RESULT.md に収まらなかった、自分の命令の欠陥だけを残す。**
+
+### `${PIPESTATUS[0]}` が空を返した
+
+```
+$ make taskindex-check 2>&1 | tail -20; echo "taskindex_check_exit=${PIPESTATUS[0]}"
+taskindex_check_exit=
+```
+
+**対話シェルは zsh であり、配列は `pipestatus` かつ添字が 1 始まりである。**
+SPEC の「全台で確定した事実」に「`${PIPESTATUS[0]}` のような配列添字は使えない」と
+明記され、申し送り 8 にも「配列添字で終了コードを取らない（前契約の指摘）」とある。
+**警告を読んでいながら同じ形を書いた。** パイプを外し、ファイルへ落として取り直した。
+
+```
+$ make taskindex-check > /tmp/ti_check.txt 2>&1; echo "taskindex_check_exit=$?"
+taskindex_check_exit=0
+```
+
+**このときはまだ result.yaml を書いていなかったため 0 だった。**
+result.yaml と inbox.d を書いた後に取り直すと 2 を返した（RESULT.md §10-3）。
+**検査は書いた後に取ること。**
+
+### 解除の後に周期を裏づけた
+
+作業中に二周し、17:31:26 と 18:01:26 の差がちょうど 1800 秒であった。
+**keeper.sh 51 行の `sleep 1800` が実測で裏づけられた。**
+二周とも抑止が効き、`auto-merge` も `auto-push` も一度も出ていない。
+

@@ -435,3 +435,107 @@ c8388fb7aa3a57eaf47a703c25934a613275d310324ca1e9c53369db6914d3f5  tasks/inbox.md
 | `.stignore`（repo 直下） | 不在 | 2223 バイト（`.gitignore` 済み） |
 | `.sync-pause`（repo 直下） | 不在 | 10-6 で外した |
 
+
+### 10-5. 送出（完了判定 18）
+
+**ユーザーへ「何を / 影響範囲 / 戻し方」を提示し、承認を得てから実行した。**
+
+```
+$ git add tasks/T-2026-08-24-ilya-keeper-autosync/ tasks/inbox.d/T-2026-08-24-ilya-keeper-autosync.md
+$ git --no-pager diff --cached --stat
+ tasks/T-2026-08-24-ilya-keeper-autosync/RESULT.md  | 437 +++++++++++
+ tasks/T-2026-08-24-ilya-keeper-autosync/SPEC.md    | 405 ++++++++++
+ tasks/T-2026-08-24-ilya-keeper-autosync/audit.md   | 846 +++++++++++++++++++++
+ .../T-2026-08-24-ilya-keeper-autosync/result.yaml  | 146 ++++
+ tasks/T-2026-08-24-ilya-keeper-autosync/spec.yaml  |  84 ++
+ tasks/inbox.d/T-2026-08-24-ilya-keeper-autosync.md |   7 +
+ 6 files changed, 1925 insertions(+)
+$ git --no-pager diff --cached --name-only | grep -c 'docs/sessions/digest'
+0
+```
+
+**未追跡の抽出物は staged に入っていない**（禁止 5）。
+
+```
+$ git commit -q -m "feat(sync): deploy keeper and enable git autosync on ilya" && git --no-pager log -1 --format='%h %s'
+680abb1 feat(sync): deploy keeper and enable git autosync on ilya
+$ git remote -v
+origin	git@github.com:takuya3h/m2.git (fetch)
+origin	https://github.com/takuya3h/m2.git (push)
+```
+
+**送出側は既に `https` である**（前契約 T-2026-08-22-ilya-node-foundation で設定済み）。
+`set-url --push` を打ち直す必要は無かった。**取得側は `git@` のままだが `fetch` は通っている。**
+
+```
+$ git push -u origin HEAD
+ * [new branch]      HEAD -> feat/ilya-keeper-autosync
+branch 'feat/ilya-keeper-autosync' set up to track 'origin/feat/ilya-keeper-autosync'.
+$ command -v gh && gh --version | head -1
+gh version 2.98.0 (2026-08-20)
+$ gh pr list --head "$(git branch --show-current)" --json number,isDraft,state
+[]
+$ gh pr create --base phase0 --title "…" --body "…"
+Warning: 2 uncommitted changes
+https://github.com/takuya3h/m2/pull/129
+```
+
+**PR #129**（base `phase0`、下書きではない）。
+`gh auth setup-git` は不要だった（push が資格情報の再設定なしに通ったため）。
+警告の「2 uncommitted changes」は**意図的に残した未追跡の抽出物 2 件**である。
+
+### 10-6. 抑止の解除（完了判定 19）
+
+```
+$ ls -la .sync-pause
+-rw-rw-r-- 1 ubuntu ubuntu 0 Aug 23 17:26 .sync-pause
+$ mv .sync-pause /tmp/.sync-pause.released.T-2026-08-24-ilya-keeper-autosync; echo "mv_exit=$?"
+mv_exit=0
+$ ls -la .sync-pause 2>/dev/null && echo "まだ残っている" || echo "repo 直下から消えた"
+repo 直下から消えた
+$ ls -la /tmp/.sync-pause.released.T-2026-08-24-ilya-keeper-autosync
+-rw-rw-r-- 1 ubuntu ubuntu 0 Aug 23 17:26 /tmp/.sync-pause.released.T-2026-08-24-ilya-keeper-autosync
+```
+
+**削除ではなく別名へ退避した。** 実装は目印の**存在だけ**を見ているため、これで解ける
+（`scripts/sync/m2-sync.sh` 40 行 `[ -f "$M2DIR/.sync-pause" ]`）。
+
+**解除の時点で keeper は動き続けている。**
+
+```
+keeper.sh=1 ['43963']
+ssh -N -L=0 []
+syncthing=0 []
+```
+
+**周期が 1800 秒であることを実測で裏づけた。** 作業中に二周した。
+
+```
+$ cat ~/claude-sync/sync-alerts.log
+2026-08-23 17:31:26 [ilya] 一時停止中: /home/ubuntu/slocal2/m2/.sync-pause があるため分岐へ書き込まない（消せば再開）
+2026-08-23 18:01:26 [ilya] 一時停止中: /home/ubuntu/slocal2/m2/.sync-pause があるため分岐へ書き込まない（消せば再開）
+$ date '+%F %T'
+2026-08-23 18:10:12
+```
+
+**17:31:26 と 18:01:26 の差はちょうど 1800 秒である。** 二周とも抑止が効き、
+**その間 auto-merge も auto-push も一度も起きていない。**
+次の周回は約 18:31:26 で、そこから自動の統合と送出が有効になる。**それは正常である。**
+
+---
+
+## 11. 完了の状態
+
+| 区分 | 判定 |
+|---|---|
+| G1 | **PASS** |
+| G2 | **PASS** |
+| 完了判定 19 項目 | **すべてに実測値**（UNKNOWN は §9-3 の 1 件と、試験を実行していないことの 1 件） |
+| 禁止事項 12 項目 | **いずれにも触れていない。** 禁止 2 との衝突は §8-1 の処置で回避した |
+| 送出 | commit `680abb1`、`origin/feat/ilya-keeper-autosync`、**PR #129**（base `phase0`） |
+| 抑止 | **解除済み**（`/tmp/.sync-pause.released.T-2026-08-24-ilya-keeper-autosync` へ退避） |
+| 台帳への返送 | **していない。** `scripts/load_env.sh` が使えないため、SPEC の定めどおり版管理で届ける |
+
+**試験は実行していない。** 本契約は `src/` と `tests/` に一切触れておらず、契約も
+試験の実行を求めていない。`result.yaml` の `tests` の三値 0 は**「未実行」であって
+「零件」ではない**（`unknowns` に明記した）。
