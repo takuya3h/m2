@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（271 件）
+## 未処理（275 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -286,6 +286,10 @@
 - [ ] 2026-08-16 [cc] 把持の推論の質を割合で見ると誤る。`left_hand` は正しさの割合 0.9848 に対し曲線下面積 0.7040（陽性率 0.985）、`two_hands_tool` は割合 0.8845 に対し平均適合率 0.5587（陽性率 0.116）。**run の記録には割合しか残らない**ため、重みから事後に測る必要があった。把持系を今後も測るなら AUC/AP を metrics に残す配線を検討すべきである（T-2026-08-15-injection-sweep-deterministic）
 - [ ] 2026-08-16 [cc] **`make forbidden-check` は `kind: exp` の契約で必ず fail する。** 生成物として除外するのが `context/auto/` と `tasks/inbox.md` だけで、`outputs.destination: "experiments/"` の契約が新規 run を作ることも `make runindex` が `runindex/` を作り直すことも知らないため。本契約では違反 2932 件の内訳を手で確かめ、既存 run の変更・削除が 0 件（`git diff` に M も D も無し）であること、`runindex/` は再生成で同一になることを示して契約違反でないと判定した。**道具を exp 契約に対応させる impl 契約が要る**（T-2026-08-15-injection-sweep-deterministic）
 - [ ] 2026-08-16 [cc] **索引の集約が決定化の有無を混ぜている。** `experiment_id` に `task_id` が入らないため、本契約の 360 本（決定化あり）が前の契約の 66 本（決定化なし）と同じ 6 実験行へ集約された（ctrl/inj は 73 本、他は 70 本）。解析は `task_id` で絞ったので主たる差に影響は無いが、**`experiments.csv` のこの 6 行を条件照合に使うと決定化の有無が混在した集約を見ることになる**。集約の鍵に含めるか、混在を検出して警告すべきである（T-2026-08-15-injection-sweep-deterministic）
+- [ ] 2026-08-23 [cc] .venv の貼り直し先が andrew には存在しなかった（~/.local/share/uv/python/ が無く Python 3.11 が一つも無い）。ユーザーへ諮り uv python install 3.11.16 で実体だけを足し ln -sfn で貼り直す承認を得た。uv venv --clear は使わず 6.2G を保持（T-2026-08-22-andrew-node-foundation）
+- [ ] 2026-08-23 [cc] 版管理の scripts/sync/hub_keys/andrew.pub に初期化前の鍵が残っており Create ではなく上書きになった。旧指紋 SHA256:i7+kCZH9Yb2oX5TOd/u/AqAqvyQk0G7Yu//7BFd2G3k は対応する秘密鍵が失われて使えない。中心の受け入れ一覧から外すこと。他台も同じ取り残しの可能性が高い（T-2026-08-22-andrew-node-foundation）
+- [ ] 2026-08-23 [cc] 実行基盤の分類器が git remote set-url を拒み、完了判定 5 の送出の経路が未達のまま。git config user.email も平文アドレスは拒まれ noreply 形式で通した。他台の契約でも同じ壁に当たる（T-2026-08-22-andrew-node-foundation）
+- [ ] 2026-08-23 [cc] SPEC Task 1 Step 5 は set-url --push だけを実行させて「両方が https になったことを確かめる」と書くが、fetch 側も git@ のホストでは原理的に満たせない。起票側の自己矛盾として記録した（T-2026-08-22-andrew-node-foundation）
 
 ## 処理済み（1 件）
 

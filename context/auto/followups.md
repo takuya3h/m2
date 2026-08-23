@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（198 件）
+## 申し送り（204 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -338,7 +338,16 @@
 - 秘匿の検査が見るのは NOTION_API_KEY と WANDB_API_KEY の 2 つと、既知の接頭辞である。資格情報を増やしたら SECRET_ENV_KEYS へ足すこと。足し忘れても検査は通るため気付けない
 - 送信の時点で壁時計を使っている（completed_at）。生成物ではないため冪等の検査には影響しないが、投影に壁時計を入れない方針とは別の判断である
 
-## 断定できなかった事項（137 件）
+### T-2026-08-22-andrew-node-foundation
+
+- 中心（philip）の受け入れ一覧から旧鍵 SHA256:i7+kCZH9Yb2oX5TOd/u/AqAqvyQk0G7Yu//7BFd2G3k （ubuntu@Andrew）を外し、新鍵 SHA256:7yvApjr/qWxBWND60+liGfDGuJMJF7NowRyGZXCu2W0 （andrewtophilip）を入れること。旧鍵に対応する秘密鍵は保守作業で失われており、 誰も持っていない。他台の hub_keys/*.pub にも同じ取り残しがある可能性が高い。
+- andrew の識別子は 3C2LTP7-KZXRYDA-OQ5MVJ5-FKT2ASR-35MMOAD-6DQWKL7-SBMSEK2-UVZB5A4。 scripts/sync/device_ids/andrew.txt に 1 行 64 バイトで公開した。登録と起動は次の契約に譲る。
+- 他台の契約を書くときは、.venv の貼り直し先が存在しない場合の手順を明記すること。 andrew では uv python install 3.11.16 で実体だけを足して ln -sfn で貼り直した。 pyvenv.cfg の home は死んだ pyenv を指したままでも sys.prefix は正しく解決する（実測）。
+- libGL.so.1 が無いため cv2 / mmcv / mmdet が読み込めず、pytest は tests/test_datasets.py の収集段階で止まる（--ignore で回避して測定した）。 tests/test_pipeline.py の 2 件も同じ原因で落ちる。本契約の範囲外だが復旧が要る。
+- tests/test_research_logger.py の 4 件は Notion 連携の模擬が呼ばれず落ちる （assert None == 'page-abc' 等）。scripts/load_env.sh が合言葉の消失で使えず NOTION_API_KEY が無い状態と整合するが、原因を特定してはいない。
+- 実行基盤の分類器が git config user.email（平文アドレス）と git remote set-url を拒む。 他台でも同じ壁に当たる。前者は noreply 形式で通る。後者は利用者の承認か permissions への追加が要る。
+
+## 断定できなかった事項（141 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -600,16 +609,23 @@
 - 台帳の他の行が変わっていないことは、触れた行を限定した事実からしか言えていない。全行の内容を送信前後で突き合わせてはいない
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
 
-## 起票者の誤りの型（113 件）
+### T-2026-08-22-andrew-node-foundation
+
+- 完了判定 22（分岐の送出と PR 番号）。commit も push も未実施のため PR は存在しない。 利用者の承認待ちである。
+- 完了判定 5（送出の経路）は未達。git remote set-url --push が実行できず push 側は git@github.com:takuya3h/m2.git のまま。https 経路の資格情報自体は揃っている （gh auth status が takuya3h でログイン済み・scopes に repo を含む）が、 実際に https で push が通るかは測っていない。
+- tests.before_failed の 0 は測定値ではない。修復前は .venv が壊れており pytest を 起動できなかったため、開始前の件数は測定不能である。after の 7 failed / 457 passed / 4 skipped は tests/test_datasets.py を --ignore で除いた測定値であり、 本契約は src/ と tests/ を一切変更していないためこの 7 件は本契約に起因しない。
+- tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics の assert 0.0 == 1e-08 の原因は特定していない。
+
+## 起票者の誤りの型（117 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 40 |
-| `asserted_without_measuring` | 34 |
-| `self_contradiction` | 32 |
-| `shell_assumption` | 7 |
+| `asserted_without_measuring` | 36 |
+| `self_contradiction` | 33 |
+| `shell_assumption` | 8 |
 
-合計 113 件（対を持つ契約 45 件から）
+合計 117 件（対を持つ契約 47 件から）
 
