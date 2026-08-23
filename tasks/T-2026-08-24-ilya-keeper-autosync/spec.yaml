@@ -1,0 +1,84 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-24-ilya-keeper-autosync"
+  kind: impl
+  title: "常駐処理を配置して起動し、中継を張らずに版管理の自動同期だけを動かす（ilya）"
+  origin: claude-app
+  created_at: "2026-08-24T00:00:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-22-ilya-node-foundation"]
+  amendments: []
+
+intent:
+  question: "保守作業で全サーバーが初期化された。基盤の作り直しは進み、五台すべてで実行環境と論理名と同期処理の実体が揃い、鍵の公開鍵と識別子が版管理へ公開された。常駐処理は目印の有無で分岐しており、目印が無ければ中継を起こさず版管理の同期だけを行う。この性質を使って、同期処理を立ち上げる前に版管理の自動同期だけを復活させられるか"
+  decision_at_stake: "契約の成果を版管理へ自動で送れる状態に戻せるか。ここが動けば以後の作業が楽になる。中継と同期処理は全台の識別子の登録が済んでから同時に立ち上げるため、本契約では意図的に動かさない"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/sync/keeper.sh"
+      - "scripts/sync/m2-sync.sh"
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "開始状態の封印と、正本の読解", gpu: false, est: "40m"}
+    - {id: B, name: "正本の配置と起動、版管理の同期の確認", gpu: false, est: "50m"}
+    - {id: C, name: "記録、抑止の解除、送出", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "版管理が最新であることを確かめた。目印の件数と起動行の有無と未追跡の件数を記録し、稼働しているものを対照つきで数えた。目印による分岐の範囲を行番号つきで記録し、版管理の同期の発火条件を読んだ"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "配置物と正本の要約値が一致し、構文検査が通った。常駐処理が一件だけ動き、中継と同期処理が零件である。多重起動を防ぐ錠が作られ、版管理の同期が一周して抑止が効いている"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-24-ilya-keeper-autosync/"
+  acceptance:
+    - "開始時の目印の件数と起動行の有無と未追跡の件数を記録している"
+    - "稼働しているものを、検索命令自身に一致しない方法で数えている"
+    - "目印による分岐の範囲を実装の行番号つきで記録している"
+    - "配置物と正本の要約値が一致し、構文検査を通している"
+    - "起動行の追記内容を記録しており、既存があれば追記していない"
+    - "常駐処理が一件だけ動いていることを識別子つきで示している"
+    - "中継と同期処理が零件であることを示している"
+    - "版管理の同期が一周し、抑止が効いていることを記録の内容で示している"
+    - "生成物を再生成しておらず、検査が差分を報告した場合は記録だけしている"
+    - "開始時の未追跡がすべて残っており、分岐が送出され、抑止が解除されている"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "目印が無いにもかかわらず中継が立った場合"
+    - "同期処理が意図せず起動した場合"
+    - "常駐処理が起動直後に落ち、原因を特定できない場合"
+    - "抑止が効かない版であり、自動の統合が起きうる場合"
+    - "版管理外の未追跡の成果物が失われた場合"
