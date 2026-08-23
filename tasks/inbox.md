@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（271 件）
+## 未処理（278 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -286,6 +286,13 @@
 - [ ] 2026-08-16 [cc] 把持の推論の質を割合で見ると誤る。`left_hand` は正しさの割合 0.9848 に対し曲線下面積 0.7040（陽性率 0.985）、`two_hands_tool` は割合 0.8845 に対し平均適合率 0.5587（陽性率 0.116）。**run の記録には割合しか残らない**ため、重みから事後に測る必要があった。把持系を今後も測るなら AUC/AP を metrics に残す配線を検討すべきである（T-2026-08-15-injection-sweep-deterministic）
 - [ ] 2026-08-16 [cc] **`make forbidden-check` は `kind: exp` の契約で必ず fail する。** 生成物として除外するのが `context/auto/` と `tasks/inbox.md` だけで、`outputs.destination: "experiments/"` の契約が新規 run を作ることも `make runindex` が `runindex/` を作り直すことも知らないため。本契約では違反 2932 件の内訳を手で確かめ、既存 run の変更・削除が 0 件（`git diff` に M も D も無し）であること、`runindex/` は再生成で同一になることを示して契約違反でないと判定した。**道具を exp 契約に対応させる impl 契約が要る**（T-2026-08-15-injection-sweep-deterministic）
 - [ ] 2026-08-16 [cc] **索引の集約が決定化の有無を混ぜている。** `experiment_id` に `task_id` が入らないため、本契約の 360 本（決定化あり）が前の契約の 66 本（決定化なし）と同じ 6 実験行へ集約された（ctrl/inj は 73 本、他は 70 本）。解析は `task_id` で絞ったので主たる差に影響は無いが、**`experiments.csv` のこの 6 行を条件照合に使うと決定化の有無が混在した集約を見ることになる**。集約の鍵に含めるか、混在を検出して警告すべきである（T-2026-08-15-injection-sweep-deterministic）
+- [ ] 2026-08-23 [cc] SPEC の repo 位置 ~/slocal2/m2 が lecun に存在せず、実体は ~/slocal/m2。配布時にホストごとの位置を確かめる仕組みが要る（tasks/T-2026-08-22-lecun-node-foundation/SPEC.md）
+- [ ] 2026-08-23 [cc] 前契約（philip）の実測 10 件のうち lecun では 4 件が非該当・1 件が半分。.venv も push 経路も jsonschema も mmcv/mmdet も生きていた。実測を前提として配ると誤った作業を誘発する（tasks/T-2026-08-22-lecun-node-foundation/RESULT.md）
+- [ ] 2026-08-23 [cc] for f in ~/.ssh/id_* は zsh でマッチ零件のとき no matches found で止まる。「全て失われた」新規構築の契約では零件が正常な状態のため、既存確認の手順が必ず落ちる（tasks/_templates/ へ反映するか未決）
+- [ ] 2026-08-23 [cc] P9 の separated_source は \ 行継続を結合しないための誤検知。検査器が行を結合すれば消える。誤検知が続くと WARN が読み飛ばされる（tools/check_spec.py の rule_separated_source）
+- [ ] 2026-08-23 [cc] tasks/README.md は「抽出物は版管理へ記録する」（git add docs/sessions/digest/）と書くが、本契約の禁止 1 は未追跡の成果物を commit することを禁じる。lecun には未追跡の抽出物が 2 件あり、契約を優先して残した。どちらが優先かが未決（docs/sessions/digest/）
+- [ ] 2026-08-23 [cc] 陽性対照の生出力には囮の値（語=値 の形）と鍵の書き出しの標識行が入る。秘匿検査の「削る」指示と、生出力を要約せず貼る指示が競合する。件数だけを残す方式で回避したが、様式として決めておきたい（tasks/_schema/result.schema.json の positive_controls）
+- [ ] 2026-08-23 [cc] setup_host_servername.sh は --help を受け付けない（--dry-run / --verify のみ）。SPEC が --help を指示する箇所があり、道具側に足すか契約側を直すかが未決（scripts/sync/setup_host_servername.sh）
 
 ## 処理済み（1 件）
 
