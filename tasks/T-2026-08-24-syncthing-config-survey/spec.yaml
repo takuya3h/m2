@@ -1,0 +1,84 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-24-syncthing-config-survey"
+  kind: analysis
+  title: "同期処理の設定の構造と変更手段と共有フォルダの定義を読み、登録と起動の順序を決める"
+  origin: claude-app
+  created_at: "2026-08-24T09:00:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-24-philip-keeper-autosync"]
+  amendments: []
+
+intent:
+  question: "保守作業で全サーバーが初期化され、再構築は実行環境と論理名と識別子と鍵と常駐処理まで進んだ。残るのは同期処理の相互登録と中継と共有フォルダの定義だが、起票者は設定の組み立て方を把握していない。設定を変える手段は何か。常駐させずに変えられるか。旧構成の共有フォルダの定義を版管理の記録から復元できるか。登録と起動をどの順序で行うべきか"
+  decision_at_stake: "五台の同期処理をどう組み立てるか。推測で進めると設定を壊し、全台が止まって遠隔から直せなくなる。共有フォルダの定義は失われているため、何を共有するかを決め直す必要もある"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/sync/keeper.sh"
+      - "scripts/sync/m2-sync.sh"
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "設定の現状と構造の読解、変更手段の確認", gpu: false, est: "60m"}
+    - {id: B, name: "共有フォルダの定義の復元と、登録および起動の順序の決定", gpu: false, est: "60m"}
+    - {id: C, name: "無変更の確認、送出、報告", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "設定の在り処と要約値と権限を記録し、要素の名前と出現数から構造を読んだ。相手と共有フォルダの定義の件数を記録した。設定を変える手段を三つに分けて可否と前提を評価し、常駐なしで読めるかを実測した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "旧構成の共有フォルダの定義を版管理の記録から復元できた範囲で記録し、決めきれないものを区別した。除外規則の正本と反映先を実装から確かめた。登録と起動の順序を根拠つきで判定し、中心用と一般ノード用の手順と失敗の様式を書き出した"
+      on_fail: ask
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-24-syncthing-config-survey/"
+  acceptance:
+    - "設定の在り処と要約値と権限を記録し、秘匿の値を含めていない"
+    - "設定の要素の名前と出現数を記録し、相手と共有フォルダの定義の件数を示している"
+    - "待ち受けと外向きの設定の既定値を記録している"
+    - "設定を変える手段を三つに分けて可否と前提を評価し、常駐なしで読めるかを実測している"
+    - "旧構成の共有フォルダの定義を版管理の記録から復元できた範囲で記録し、決めきれないものを区別している"
+    - "除外規則の正本とその反映先を実装から確かめている"
+    - "登録と起動の順序を判定し、根拠を書いている"
+    - "中心用と一般ノード用の手順を、事前の記録から戻し方まで書き出している"
+    - "疎通の確認方法を、示すことと示さないことに分けて書き、失敗の様式と戻し方を列挙している"
+    - "設定が開始時と要約値で一致し、同期処理が常駐しておらず、報告が台帳へ返っている"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "読み取りのみの契約であるにもかかわらず、設定が変わってしまった場合"
+    - "同期処理が意図せず常駐してしまった場合"
+    - "設定を変える手段がいずれも使えず、次の実装契約を設計できない場合"
+    - "旧構成の共有フォルダの定義が全く復元できず、何を共有すべきか決められない場合"
+    - "台帳への返送が失敗し、経路の問題を切り分けられない場合"

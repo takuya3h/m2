@@ -1,0 +1,90 @@
+result_version: 3
+task_id: "T-2026-08-24-syncthing-config-survey"
+status: pass
+host: "philip"
+branch: "feat/syncthing-config-survey"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "設定は ~/.local/state/syncthing/ の 3 ファイル。config.xml は sha256 abb2fa89… 8494 バイト 600。要素名 105 種を全件記録。実体は device 1 件（name=aolab、識別子は device_ids/philip.txt と一致し他 4 台とは不一致）と folder 1 件（default / /home/ubuntu/Sync）。cli は常駐なしで exit=1、connection refused。"
+  - id: G2
+    verdict: pass
+    note: "旧構成を T-2026-08-12-sync-audit-bengio/audit.md:222-228 から復元（folder_count=2、claude-sync と m2、いずれも sendreceive で 11 台共有、global=false relays=false）。除外規則は .stglobalignore / .stignore / origin/phase0 の三者が sha256 61593e99… で一致。順序は keeper.sh:41-43 が実行権だけで起動することから固定。"
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+
+deviations:
+  - type: judgement
+    note: "~/bin/syncthing の正本を実行せず作業領域へ複製して調べた。実行権を戻すと keeper.sh:41-43 が 30 分以内に起動して禁止 2 に触れるため。複製の sha256 が正本と一致することを提示し、正本の権限は 644 のまま保った。"
+  - type: judgement
+    note: "cli を正本の設定へ向ける前に設定の複製へ向けて試した。cli が設定を書き換える可能性があり禁止 1 は本契約の要であるため。複製が不変であることを確かめてから正本へ向け、正本も前後で sha256 が変わらなかった。"
+  - type: judgement
+    note: "serve --paths を隔離した HOME で実行した。自ホームで実行すると設定や DB を作りうるため。実測では fakehome に何も作られず、設定ファイルの既定の場所が $HOME/.local/state/syncthing であることだけが分かった。"
+  - type: spec_defect
+    note: "契約 Task 5 Step 3 の陽性対照 python(exact_arg) が 0 を返したため、実在する語 zsh で取り直して 3 件を得た。契約の走査そのものの出力も audit.md に併記し、対照が働かなかった事実を消していない。"
+  - type: environment
+    note: "契約が示す awk 系の集計が mawk で空振りした。strtonum は gawk の拡張であり、この環境の awk には無い。/proc/net/tcp を Python で読み直して待ち受けの口を得た。終了コードは 0 のまま出力だけが空になる罠である。"
+  - type: environment
+    note: "ip ss netstat lsof がいずれも存在しない（command -v が exit=1）。住所は hostname -I、待ち受けは /proc/net/tcp の state=0A から取った。SSH が待つ口は 22 であり、契約の言う 50072 は容器の外側の写像である。"
+  - type: environment
+    note: "make task-start が前提検査で停止した（作業ツリーに未追跡 2 件、exit 3）。ユーザーの判断を仰ぎ git stash push -u で退避してから実行し、報告の後に git stash pop で戻す。退避物は消していない（禁止 8 を守るための退避である）。"
+  - type: judgement
+    note: "make taskindex と make inbox を実行していない。task スキルの手順 6 は投影の確認を求めるが、契約の禁止 7 が優越する。結果として本報告が context/auto/ に現れるかは確かめておらず、unknowns に置いた。"
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "「確定した事実（再測定は不要）」が設定の場所について「--home で明示する。既定ではない」と断ずる。隔離した HOME で serve --paths を実行すると設定ファイルは $HOME/.local/state/syncthing/config.xml と表示され、既定の場所であった。指示どおりなら既定でない前提で手順を設計し、次の契約で --home の省略時の挙動を誤って危険視することになった。"
+  - type: check_does_not_check
+    note: "Task 5 Step 3 の陽性対照 python(exact_arg) が 0 を返す。走査は自分と祖先を除外し、この環境の実行は .venv/bin/python であるため、引数の要素が厳密に python と一致する処理は存在しない。指示どおり実行すると、検出器が壊れていても同じ 0 が出るため、同期処理 0 件という結論を裏付けられない。"
+  - type: self_contradiction
+    note: "禁止 2「同期処理を常駐させる」と Task 2 Step 1-3「~/bin/syncthing --help を実行せよ」が philip では両立しない。前契約が禁止 2 を守るために実行権を 644 へ落としており、正本は起動できない。実行権を戻せば keeper.sh:41-43 が 30 分以内に起動するため、指示どおり実行すると禁止 2 に触れる。"
+  - type: asserted_without_measuring
+    note: "「確定した事実」が中心の住所を 192.168.196.150、SSH を 50072 とする。philip は Docker の中にあり、局所で観測できる住所は 172.17.0.13、待ち受けている SSH の口は 22 であった。50072 は容器の外側の写像と解せば矛盾しないが、外からの到達性は禁止 5 のため検証できず、文書側も 172.17.0.20 と食い違う。"
+
+positive_controls:
+  - judgement: "完了判定 20 の走査が同期処理 0 件を検出できている"
+    breaking_input: "実在する処理の名前を与える（zsh）"
+    observed: "zsh=3 件を返した。陰性対照 zzz_no_such は 0 件。契約が用意した python(exact_arg) は 0 を返し対照として働かなかった"
+  - judgement: "設定内の識別子が philip のものであるという照合が働いている"
+    breaking_input: "他 4 台の公開済み識別子と突き合わせる"
+    observed: "philip.txt とは一致、andrew / bengio / ilya / lecun とはいずれも不一致。長さも 63 で一致"
+  - judgement: "cli が常駐を要求するという結論が、設定の場所の誤りに由来していない"
+    breaking_input: "設定の複製へ --home を向けて同じ命令を実行する"
+    observed: "複製に対しても同じ exit=1 と connection refused。設定の場所ではなく REST の接続先が原因であることを示した"
+  - judgement: "禁止 1（設定を変更しない）を守れたという主張が、測っていないだけではない"
+    breaking_input: "cli を実際に設定へ向けて実行し、前後で要約値を取る"
+    observed: "複製・正本とも config.xml の sha256 が abb2fa89… のまま不変。開始時と終了時の 3 ファイルすべてがサイズと権限まで一致"
+  - judgement: "除外規則の反映先が正本と一致しているという判定が働いている"
+    breaking_input: "正本・反映先・origin/phase0 の三者を突き合わせる"
+    observed: "三者とも sha256 61593e99… で一致。反映経路は keeper.sh:48-49 の 1 本のみで、.stignore は .gitignore:192 により版管理外"
+  - judgement: "この機体が philip であるという同定が、契約の記載を写しただけではない"
+    breaking_input: "OS のホスト名と論理名を別々に測り、同期の記録の名乗りと突き合わせる"
+    observed: "hostname=aolab、.servername=philip（.gitignore:225 で版管理外）、sync-alerts.log の名乗りは [philip]。docs/host_autosync_onboarding.md:85,153 が aolab 衝突を既知として記録"
+
+followups:
+  - "同期処理を起動する契約は、philip の ~/bin/syncthing を chmod 755 で戻す必要がある。前契約 T-2026-08-24-philip-keeper-autosync が禁止 2 を守るため 644 へ落とした。戻した瞬間から最大 30 分で、そのときの設定のまま起動する。設定を確定させてから戻すこと。"
+  - "起動前に globalAnnounceEnabled と relaysEnabled を false へ落とすこと。現在の設定は両方 true（既定のまま）だが、旧構成は両方 false であった。落とし忘れたまま 5 台同時に起動すると 5 台が同時に外部の探索網と公開中継へ出る。"
+  - "自分の登録名が name=aolab になっている。philip と ilya は OS のホスト名が同じであるため、論理名へ直さないと 2 台が同名で登録される。論理名は各ホストの .servername が持つ。"
+  - "自動生成された共有フォルダ default（path=/home/ubuntu/Sync）は実体が存在しない。設定から削除するか、以後は --no-default-folder を付けて起動する。"
+  - "旧構成の 11 台の識別子は全て作り直されている（philip は GO2U7PF から 3J4TRX4 へ）。旧記録の識別子を書き写してはならない。現行は scripts/sync/device_ids/*.txt の 5 件。"
+  - "ノードは中心の住所を tcp://127.0.0.1:22001 として登録する。中継 ssh -N -L 22001:127.0.0.1:22000 -p 50072 は .tunnel_to_philip を置くと常駐処理が最大 30 分で張る。目印を置く前に ssh -p 50072 の到達を実測すること。"
+  - "共有フォルダ claude-sync の型は要判断。philip 上は 8.0K・1 ファイルしか無く、他 4 台の中身を測っていない。空の側が sendreceive で参加すると中身を消しうるため、中身を持つ台を sendonly、他を receiveonly で始めるのが安全である。"
+  - "疎通の最も強い確認は、小さなファイルが同じ要約値で相手に現れることである。~/claude-sync/ で測ること。m2 側で測ると .stignore の解釈も同時に検証することになり、失敗の切り分けができない。"
+  - "P9 spec_lint の host_mismatch はこの艦隊では誤検知である。philip と ilya は hostname=aolab を共有し、論理名は .servername が持つ。検査器は socket.gethostname() と本文の宣言だけを比べている。"
+  - "P9 spec_lint の separated_source 5 件も誤検知である。SPEC.md:38,390,393,396,424 はいずれも行末の \\ で次行へ継続する 1 つの命令であり、検査器が行継続を解釈していない。"
+  - "make forbidden-check は data/annotations/_deprecated/egosurgery_hand4/DEPRECATED.md を禁止領域 data/ の内側として指し続ける。2026-07-31 からある未追跡ファイルで、禁止 8 が削除も移動も commit も禁じている。起票者の判断が要る。"
+
+unknowns:
+  - "~/claude-sync/ に何を戻すか。旧構成の 2532 ファイルの中身が版管理に無く、各実装系の設定は各ホストの実体から集める必要があるが、他ホストへ接続できない（禁止 5）。"
+  - "5 台のうちどれが ~/claude-sync/ の中身を持つか。philip 上は 1 ファイルのみ。他ホストを測れないため、空の側が中身を配る事故を防ぐ型を決められない。"
+  - "初回の約 19G を中継越しに流してよいか。帯域も所要時間も測っていない。OPERATION.md:15 の 28 秒は差分同期の実測であり初回全量ではない。"
+  - "中心の住所 192.168.196.150 の到達性。禁止 5 のため他ホストから試せず、容器内からは検証できない。"
+  - "本報告が context/auto/ の投影に現れるか。禁止 7 により make taskindex と make inbox を実行していない。"
+
+commits: []
