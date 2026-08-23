@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（198 件）
+## 申し送り（202 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -338,7 +338,14 @@
 - 秘匿の検査が見るのは NOTION_API_KEY と WANDB_API_KEY の 2 つと、既知の接頭辞である。資格情報を増やしたら SECRET_ENV_KEYS へ足すこと。足し忘れても検査は通るため気付けない
 - 送信の時点で壁時計を使っている（completed_at）。生成物ではないため冪等の検査には影響しないが、投影に壁時計を入れない方針とは別の判断である
 
-## 断定できなかった事項（137 件）
+### T-2026-08-22-lecun-node-foundation
+
+- 前契約（philip）の実測 10 件のうち 4 件が lecun では当てはまらず、1 件が半分だけ当たった。 非該当は #1（.venv が壊れた繋がり）、#4（pushurl が SSH）、#5（jsonschema の導入が要る）、 #10（libGL.so.1 が無く mmcv/mmdet を読み込めない。lecun では mmcv 2.1.0 / mmdet 3.3.0 とも import 成功）。半分は #3（~/.gitconfig は在るが user.name/user.email だけが無い）。 他台へ同じ契約を配るときは、前契約の実測を前提ではなく仮説として扱うべきである。
+- P9 spec_lint の separated_source 3 件（SPEC.md:396/399/402）は検査器の側の誤検知である。 SPEC の当該箇所は \ による行継続で source ... && ... を 1 つの命令として書いており 読み込みは引き継がれる。tools/check_spec.py の rule_separated_source が行を \ で結合せず 次行を「次の命令」と見なすため該当が出る。契約の誤りではない。 検査器が行継続を結合するよう直せば、この誤検知は消える。
+- tests の失敗 5 件は本契約以前から在るもので内容も無関係である。追跡ファイルを一つも 変更していないため試験対象の木は origin/phase0 と同一であり、前後の実測は同じ値になる。 test_research_logger の 4 件は Notion への記録が None を返すことによる （assert None == 'page-abc'）。scripts/load_env.sh が使えず資格情報が入らない状況と整合する。 test_engines の 1 件は未追跡の理由で落ちており本契約では触れていない。
+- 次の契約（登録と起動）で使う値。識別子は OOOTQMG-2WT55EF-YGX55VM-YWFWVRT-XUSDUUB-3AXCYV4-OVY2X3H-KRFOWA3 （scripts/sync/device_ids/lecun.txt）。中心の受け入れ一覧へ入れる指紋は SHA256:g5TwfvgDPsNhiSd9OXDZoWDj99au1y8yEnW8hmNyqHI （公開鍵は scripts/sync/hub_keys/lecun.pub）。秘密鍵は ~/.ssh/id_ed25519_lecuntophilip にあり当ホストから出していない。
+
+## 断定できなかった事項（140 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -600,16 +607,22 @@
 - 台帳の他の行が変わっていないことは、触れた行を限定した事実からしか言えていない。全行の内容を送信前後で突き合わせてはいない
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
 
-## 起票者の誤りの型（113 件）
+### T-2026-08-22-lecun-node-foundation
+
+- 配布物の要約値の照合が空振りでないこと。別版を落として不一致になることは確かめていない。 中心と版を揃える要求と禁止事項のため意図的に測っていない。
+- make forbidden-check が禁止領域の変更を実際に捕まえるかどうか。 禁止領域を意図的に汚す検査は行っていない。
+- test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics が失敗する理由。 本契約の範囲外のため追っていない。
+
+## 起票者の誤りの型（116 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 40 |
-| `asserted_without_measuring` | 34 |
+| `asserted_without_measuring` | 36 |
 | `self_contradiction` | 32 |
-| `shell_assumption` | 7 |
+| `shell_assumption` | 8 |
 
-合計 113 件（対を持つ契約 45 件から）
+合計 116 件（対を持つ契約 47 件から）
 
