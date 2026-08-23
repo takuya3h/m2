@@ -1,0 +1,126 @@
+# ドラフト（未起票）。起票時は docs/task_drafts/README.md の手順に従うこと。
+spec_version: 2
+meta:
+  task_id: "T-YYYY-MM-DD-causal-presence-denoise"
+  kind: exp
+  title: "検出信号を因果的に時間デノイズすると工程の分節品質は改善するか"
+  origin: claude-app
+  chat_url: ""
+  created_at: "YYYY-MM-DDTHH:MM:SSZ"
+  created_from:
+    runindex_commit: "7918b5dd"
+    counts: {index: 1177, experiments: 213, verdicts: 1038}
+  depends_on: []
+  amendments: []
+intent:
+  question: >-
+    凍結検出器の tool-presence を、未来フレームを使わない HMM forward filter で
+    時間デノイズしてから工程モデルへ渡すと、分節指標（edit / seg-F1）は改善するか。
+  decision_at_stake: >-
+    この経路を閉じるか、続けるか。プロキシは閉じるべきと予測している。
+    実測で閉じられれば、同じ問いを再び立てずに済む。
+  hypothesis: >-
+    改善する。予測 presence は GT より大きくちらついており、誤りの多くは 1 フレームの孤立フリップである（本書 本書の『presence 信号の品質』の節・本書の『誤りの時間構造と遅延』の節）。因果フィルタはこの成分を除去できる。
+  related:
+    backlog: []
+inputs:
+  denominator:
+    ref: "exp:transfer/b2a_regiononly_pred/b2a_regiononly_pred@val~relation_detr_seed42"
+    metric: "phase_edit_score"
+    require: {n_seeds: ">=3", sigma: present, split: val}
+  frozen_source:
+    ref: "run:baselines/s0_016_relationdetr_bbox_seed42"
+    verify: ckpt_sha256
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt", "data/splits/ego_test.txt"]
+  caches:
+    - "data/processed/b2a_detsignal/relation_detr_seed42/train_toolpresence.npz"
+    - "data/processed/b2a_detsignal/relation_detr_seed42/val_toolpresence.npz"
+    - "data/processed/b2a_detsignal/relation_detr_seed42/test_toolpresence.npz"
+    - "data/processed/oracle_toolpresence/train_oracletool.npz"   # HMM の当てはめに train のみ使う
+    - "data/processed/phase_manifest/train.json"
+    - "data/processed/phase_manifest/val.json"
+    - "data/processed/phase_manifest/test.json"
+  code:
+    entrypoints:
+      - "docs/analysis_scripts/hmm_presence_filter.py"   # Phase A で scripts/ へ昇格する
+      - "scripts/train_b2a.py"            # --signal-tag を追加（約 5 行）
+contract:
+  inject_verbatim:
+    - conventions#split
+    - conventions#eval_recipe
+    - conventions#frozen_source
+    - conventions#sigma
+    - conventions#prohibitions
+    - conventions#env_p0
+  conventions_rev: "d422b087"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - id: A
+      name: "HMM を train の GT のみで当てはめ、3 split 分のデノイズ済み信号を書き出す"
+      gpu: false
+      est: "30m"
+    - id: B
+      name: "5 腕（生 / L=0 / L=2 / 生⊕L=2 / 一様遷移の陰性対照）を 3 seed で走らせる"
+      gpu: true
+      est: "2h"
+    - id: C
+      name: "val と test の対 seed 差を事前登録どおり測る"
+      gpu: false
+      est: "30m"
+  gates:
+    - id: G1
+      after: A
+      check: >-
+        HMM の遷移行列と emission が train のみから推定されていること、
+        val/test には適用しかしていないことを、生成スクリプトの入出力で確認した。
+        併せてデノイズ後の presence 品質（マクロ F1・遷移回数）を val と test で記録した。
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "15 run が完走し、5 腕の学習可能重み数が入力次元差のぶんだけ違うことを確認した"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active, deterministic_flags]
+  resources: {server: "", gpu: 1, est_hours: 3, runs: 15}
+prereg:
+  prediction: >-
+    デノイズ腕が生腕を test の phase_edit_score と phase_seg_f1_50 で上回る。
+    期待効果量は本書 本書の『凍結源を跨いだ再現性』の節 の範囲とし、特定の値の再現は要求しない。accuracy / macro-F1 は改善しない（悪化しうる）。
+    一様遷移の陰性対照は生腕を上回らない。
+  primary_endpoint: >-
+    test の phase_edit_score と phase_seg_f1_50 について、同じ seed で対にした差
+    （デノイズ腕 − 生腕）。seed 42/123/456。L=0 と L=2 を別々に判定する。
+  decision_rule: >-
+    成功 = test の edit_score と seg_f1_50 がともに
+    「対の差の平均の絶対値 > 対の差の母標準偏差 かつ 全 seed 同符号」を満たし、
+    かつ test accuracy が非劣化であること（許容幅は本書 本書の『終点の再定義』の節 に従う）。
+    陰性対照（一様遷移）が同じ基準を満たしてしまった場合は、利得を遷移事前分布に帰属できない。
+  stop_conditions:
+    - "15 run が完走した"
+    - "計算装置が使えない"
+    - "学習が落ちて完走しない"
+  committed_at: null
+  commit: null
+outputs:
+  expected_runs: 15
+  must_have: [metrics.json, per_class_ap.json, notes.md, config.yaml, command.sh, git_commit.txt, server.txt]
+  destination: "experiments/transfer/"
+  stamp: {task_id_in: config.yaml}
+  acceptance:
+    - "デノイズ済み信号の生成が train GT のみに依存していることを示せる"
+    - "15 run すべてが task_id 付きで索引に現れる"
+    - "短工程（design / irrigation）の per-phase F1 を監視項目として必ず報告する"
+    - "val と test を両方報告し、val 単独の改善を成果として書かない"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "陰性対照（一様遷移）が主腕と同等以上に改善した場合"
+    - "test で edit が改善せず accuracy だけ動いた場合（機序の説明が崩れる）"

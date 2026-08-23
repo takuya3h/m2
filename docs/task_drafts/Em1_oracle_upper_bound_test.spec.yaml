@@ -1,0 +1,105 @@
+# ドラフト（未起票）。起票時は docs/task_drafts/README.md の手順に従うこと。
+spec_version: 2
+meta:
+  task_id: "T-YYYY-MM-DD-oracle-upper-bound-test"
+  kind: analysis
+  title: "val で見えた「オラクル術具存在の上限」は test でも成立するか（再学習なし）"
+  origin: claude-app
+  chat_url: ""
+  created_at: "YYYY-MM-DDTHH:MM:SSZ"
+  created_from:
+    runindex_commit: "7918b5dd"
+    counts: {index: 1177, experiments: 213, verdicts: 1038}
+  depends_on: []
+  amendments: []
+intent:
+  question: >-
+    val でオラクル術具存在（15 次元のみ）が 本書 本書の『det→phase のはしご』の節 の値に達し、現行最良 T1a を大きく上回った。この「上限」は test でも成立するか。
+  decision_at_stake: >-
+    成立するなら「検出精度の向上に伸びしろがある」という読みが維持される。
+    成立しないなら、その読みは val 固有の artifact であり、
+    検出器強化への投資判断を撤回する必要がある。
+  hypothesis: >-
+    成立しない。プロキシ工程認識器では、15 動画 leave-one-video-out で
+    オラクルの追加的な accuracy 利得がほぼゼロ（実質ゼロ）だった。詳細は本書 本書の『leave-one-video-out』の節 を参照する。
+  related:
+    backlog: []
+inputs:
+  denominator:
+    ref: "exp:transfer/b2a_regiononly_pred/b2a_regiononly_pred@val~relation_detr_seed42"
+    metric: "phase_accuracy"
+    require: {n_seeds: ">=3", sigma: present, split: val}
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_test.txt"]
+  caches:
+    - "experiments/transfer/b2a_regiononly_oracle_001_b2a_regiononly_oracle_seed42/checkpoints/best_tecno.pth"
+    - "experiments/transfer/b2a_regiononly_oracle_002_b2a_regiononly_oracle_seed123/checkpoints/best_tecno.pth"
+    - "experiments/transfer/b2a_regiononly_oracle_003_b2a_regiononly_oracle_seed456/checkpoints/best_tecno.pth"
+
+
+  code:
+    entrypoints:
+      - "scripts/train_b2a.py"     # --eval-test 相当の経路（t1a_base_test_* と同じ作法）
+      - "scripts/train_t1a.py"
+contract:
+  inject_verbatim:
+    - conventions#split
+    - conventions#eval_recipe
+    - conventions#sigma
+    - conventions#prohibitions
+  conventions_rev: "d422b087"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - id: A
+      name: "checkpoint を読み戻して val を再評価し、保存済み metrics と一致することを確かめる"
+      gpu: true
+      est: "15m"
+    - id: B
+      name: "同じ checkpoint で test を評価する"
+      gpu: true
+      est: "15m"
+  gates:
+    - id: G1
+      after: A
+      check: >-
+        読み戻した checkpoint の val 再評価が、保存済み metrics.json と一致する
+        （整合ゲート。eval_t1b_test.py が確立した作法）。
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+  resources: {server: "", gpu: 1, est_hours: 0.5, runs: 0}
+prereg:
+  prediction: >-
+    test では オラクル腕と 生 presence 腕の accuracy 差が、
+    val で見えた差よりはるかに小さい（実質ゼロを含む）。差の値は本書 本書の『det→phase のはしご』の節 を参照する。
+    edit / seg-F1 の差は test でも残る。
+  primary_endpoint: >-
+    test の phase_accuracy と phase_edit_score について、
+    同じ seed で対にした差（オラクル腕 − 生 presence 腕）。seed 42/123/456。
+  decision_rule: >-
+    対の差の平均の絶対値 > 対の差の母標準偏差 かつ 全 seed 同符号（既存の有意性判定の規約）。
+    accuracy で不成立なら「オラクル上限は val 固有」と結論する。
+  stop_conditions:
+    - "対象 checkpoint の評価が終わった"
+    - "checkpoint が見つからない（その場合は再学習が必要と記録して停止）"
+  committed_at: null
+  commit: null
+outputs:
+  expected_runs: 0
+  must_have: [metrics.json, notes.md]
+  destination: "experiments/analysis/"
+  stamp: {task_id_in: notes.md}
+  acceptance:
+    - "整合ゲート（val 再評価の一致）を通してから test を測っている"
+    - "checkpoint が欠けている腕は UNKNOWN と明記し、代替しない"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "整合ゲートが通らない（checkpoint と記録が食い違う）"
