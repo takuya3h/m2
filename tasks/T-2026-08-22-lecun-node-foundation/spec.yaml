@@ -1,0 +1,84 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-22-lecun-node-foundation"
+  kind: impl
+  title: "自ホストの基盤を作り、中心宛の鍵の公開鍵と同期処理の識別子を版管理へ公開する（lecun）"
+  origin: claude-app
+  created_at: "2026-08-22T06:00:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-22-philip-hub-foundation"]
+  amendments: []
+
+intent:
+  question: "保守作業で全サーバーが初期化された。中心となるホストの基盤は前契約で整い、識別子が版管理へ公開された。実測により直接の接続はできず、外側から中まで届く口は SSH のものだけであることが確定している。自ホストで実行環境と論理名と同期処理を用意し、中心宛の鍵を作って公開鍵と識別子を版管理へ公開できるか"
+  decision_at_stake: "全ノードの鍵と識別子が揃うかどうか。揃えば中心が受け入れ一覧と登録を組み立てられる。実行環境は壊れた繋がりだけが原因であり、作り直すと大きな成果物を失うため、貼り直しで足りるかも確かめる"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/sync/keeper.sh"
+      - "scripts/sync/m2-sync.sh"
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "実行環境の修復と論理名の設定", gpu: false, est: "50m"}
+    - {id: B, name: "中心宛の鍵の作成と、同期処理の導入および識別子の公開", gpu: false, est: "50m"}
+    - {id: C, name: "記録と送出", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "版管理が最新であることを先頭の記録で確かめた。実行環境が動き、経路が仮想環境を指しており、中身の大きさを破棄していない。論理名が新しいシェルの両方の形態で解決される。版管理の識別と送出の経路を直した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "中心宛の鍵を作り指紋を記録した。版管理へ置いたものが公開鍵だけであることを三つの検査と囮で示した。配布物と配置物の要約値が中心と一致した。識別子を一行で公開し、同期処理が起動していないことを待ち受けの不在で確かめた"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-22-lecun-node-foundation/"
+  acceptance:
+    - "版管理が最新であることを確かめてから判断している"
+    - "開始時の家の直下と鍵と未追跡の件数を記録している"
+    - "実行環境を直し、大きな成果物を破棄していないことを前後の大きさで示している"
+    - "論理名を両方の場所へ置き、新しいシェルの両方の形態で解決されることを示している"
+    - "版管理の識別と送出の経路を直している"
+    - "中心宛の鍵を作り、指紋を記録し、秘密鍵の中身をどこにも含んでいない"
+    - "版管理へ置いたものが公開鍵だけであることを三つの検査と囮で示している"
+    - "配布物と配置物の要約値が中心と一致することを示している"
+    - "識別子を一行で公開し、同期処理が起動していないことを示している"
+    - "開始時の未追跡がすべて残っており、変更が契約の範囲に限られ、分岐が送出されている"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "版管理外の未追跡の成果物が失われた場合"
+    - "実行環境の中身を破棄してしまった場合"
+    - "配布物の要約値が中心と一致しない場合"
+    - "識別子を読み取れず、他ノードへ公開できない場合"
+    - "同期処理が意図せず起動してしまった場合"
