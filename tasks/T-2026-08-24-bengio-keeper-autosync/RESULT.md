@@ -175,7 +175,92 @@ source .venv/bin/activate \
 
 ## 6. 範囲、送出、抑止の解除
 
-（Task 4 Step 4-6 の実測値。実行後に埋める）
+### 判定 16 — 開始時の未追跡がすべて残っている
+
+開始時 10 件を **1 行ずつ完全一致（`grep -Fxc`）で照合**した。件数の一致だけでは
+入れ替わりを見逃す。**10 件すべてが 1 で残っている。失っていない。**
+
+### 判定 17 — 変更が契約の範囲に限られる
+
+`git status --porcelain` は 11 件。増えた 1 件は
+`tasks/inbox.d/T-2026-08-24-bengio-keeper-autosync.md`、契約が書けと定める受け皿である。
+`git diff --cached --name-only` を範囲外の形で絞ると該当 0 件だった。
+
+`~/bin/` `~/.zshrc` `~/.keeper.lock` `~/claude-sync/` は版管理の外なので現れない。
+`.sync-pause`（`.gitignore:240`）と keeper が更新する `.stignore`（`.gitignore:192`）も
+現れない。**keeper の書き込みが未追跡を汚していない。**
+
+**生成物は再生成していない**（§9）。`taskindex-check` = exit 2、`inbox-check` = exit 2。
+差分は本契約の 1 行が増えるだけである。⚠ 最初 `| head -20` を通して測り両方 141 を得たが、
+これは `head` が閉じたことによる SIGPIPE であって判定ではない。`head` を外して測り直した。
+
+### 判定 18 — 送出と PR
+
+SPEC は「送出側が `git@` で始まるなら、配備鍵が要る形である。**鍵は消えている**」と書き、
+`git remote set-url --push origin https://…` を指示する。**bengio ではこの前提が偽だった。**
+
+```
+$ git --no-pager remote -v
+origin	git@github.com:takuya3h/m2.git (fetch)
+origin	git@github.com:takuya3h/m2.git (push)
+$ ssh -o BatchMode=yes -T git@github.com
+Hi takuya3h! You've successfully authenticated, but GitHub does not provide shell access.
+$ gh auth status
+✓ Logged in to github.com account takuya3h   Git operations protocol: ssh
+```
+
+**鍵は消えていない。** https へ切り替えれば動いている経路を壊すため、**実行しなかった。**
+実際に `git@` 経路で push が成功し、判断が裏づいた。
+
+| 項目 | 値 |
+|---|---|
+| commit 1 | `c70d2075 feat(sync): deploy keeper and enable git autosync on bengio`（6 ファイル / 1473 挿入） |
+| push | `git@` 経路で成功。`* [new branch] HEAD -> feat/bengio-keeper-autosync` |
+| PR | **#127** `https://github.com/takuya3h/m2/pull/127` base `phase0` state `OPEN` draft でない |
+| commit 2 | 本節と `result.yaml` の記録を入れた追補 |
+
+`gh pr create` は `Warning: 9 uncommitted changes` を出したが、これは版管理外の成果物
+（開始時からある 9 件）を指すだけで、**触れていない。**
+
+### 判定 19 — 抑止の解除
+
+```
+$ mv .sync-pause /tmp/.sync-pause.released.T-2026-08-24-bengio-keeper-autosync
+mv_exit=0
+$ ls -la .sync-pause
+ls: cannot access '.sync-pause': No such file or directory
+ls_exit=2
+$ ls -la /tmp/.sync-pause.released.T-2026-08-24-bengio-keeper-autosync
+-rw-rw-r-- 1 ubuntu ubuntu 0 Aug 23 17:24 /tmp/…
+```
+
+**repo 直下から消えた。**（削除ではなく別名への退避。実装は存在だけを見るため
+どちらでも解ける。技能書の記載どおり、退避先を repo の外に置いたので未追跡も増えない。）
+
+**ここで版管理の自動同期が有効になった。** 次の周回（起動から 1800 秒後）で
+`auto-merge` と `auto-push`、および下書きの PR の起票が起きうる。**それは正常である。**
+ただし PR は既に #127 として存在するため、`m2-sync.sh:120` の `gh pr list --head` が
+1 を返して起票は行われない。
+
+解除後の作業ツリー（11 件）:
+
+```
+ M README.md                                        ← 開始時からある
+ M docs/experiment_log.md                           ← 開始時からある
+ M tasks/T-2026-08-24-bengio-keeper-autosync/RESULT.md    ← 本節の追補
+ M tasks/T-2026-08-24-bengio-keeper-autosync/result.yaml  ← PR 番号と commit の記録
+?? docs/analysis_scripts/                           ← 開始時からある
+?? docs/research_review_and_next_plan_2026-08-22.md ← 開始時からある
+?? docs/sessions/digest/2026-08-21-538fcc76-…md     ← 開始時からある
+?? docs/sessions/digest/2026-08-21-a0b5f9c6-…md     ← 開始時からある
+?? docs/sessions/digest/2026-08-22-f0627d44-…md     ← 開始時からある
+?? docs/sessions/digest/2026-08-23-a5cc9299-…md     ← 開始時からある
+?? docs/task_drafts/                                ← 開始時からある
+```
+
+開始時の 10 件のうち `?? tasks/T-2026-08-24-bengio-keeper-autosync/` は
+commit `c70d2075` で追跡下に入った。**残る 9 件はすべて手つかずで残っている。
+失ったものは無い。**
 
 ---
 
@@ -204,9 +289,10 @@ source .venv/bin/activate \
 2. **環境** — `nohup … &` と `setsid` が実行基盤に拒否され、実行基盤の背景実行で起動した。切り離せていない。
 3. **環境** — `~/.zshrc` への `cat >>` と退避の `cp` が拒否され、編集道具で同じ変更を行った。退避は取れていない。
 4. **判断** — 抑止の目印を Task 2 Step 4 ではなく Phase A の開始時に置いた（技能書の「実行前に置く」に従った前倒し。keeper は当時 0 件だったので実害は無い）。
-5. **判断** — SPEC の計数（部分一致）と構文検査（`sh -n`）をそのまま採らず、正しい方法で測り直した。両方の出力を残してある。
+5. **判断** — SPEC 指示の `git remote set-url --push origin https://…` を実行しなかった。前提「鍵は消えている」が bengio では偽で、切り替えると動いている経路を壊すため（§6）。
+6. **判断** — SPEC の計数（部分一致）と構文検査（`sh -n`）をそのまま採らず、正しい方法で測り直した。両方の出力を残してある。
 
-**逸脱は「無し」ではない。** 上記 5 件がすべてである。
+**逸脱は「無し」ではない。** 上記 6 件がすべてである。
 
 ---
 
