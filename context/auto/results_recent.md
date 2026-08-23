@@ -36,7 +36,7 @@
 
 ## T-2026-08-22-lecun-node-foundation
 
-状態 `pass` / ホスト `lecun` / 起票 `なし` / 様式 `v3`
+状態 `pass` / ホスト `lecun` / 起票 `122` / 様式 `v3`
 
 ### ゲート
 

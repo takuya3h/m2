@@ -326,7 +326,66 @@ commit 直前の実測（`git status --porcelain`、11 行）:
 
 ## 7. 送出
 
-§7 の実測は commit と push の後に追記する。
+### commit
+
+```
+$ git add tasks/T-2026-08-22-lecun-node-foundation/ tasks/inbox.d/T-2026-08-22-lecun-node-foundation.md \
+          scripts/sync/hub_keys/lecun.pub scripts/sync/device_ids/lecun.txt \
+          context/auto/ tasks/inbox.md
+$ git diff --cached --name-only | grep -c ''
+12
+```
+
+**`-A` は使っていない。** 明示した 8 パスだけを staged にした（展開後 12 ファイル）。
+**開始時の未追跡 3 件は staged に含まれていない。**
+
+```
+$ git --no-pager log -1 --format='%h %s'
+9c1a8b3d feat(sync): build foundation and publish hub key and device id on lecun
+```
+
+`12 files changed, 1811 insertions(+), 75 deletions(-)`
+
+### push
+
+```
+$ git push -u origin HEAD
+ * [new branch]        HEAD -> feat/lecun-node-foundation
+branch 'feat/lecun-node-foundation' set up to track 'origin/feat/lecun-node-foundation'.
+
+$ git --no-pager status -sb | head -1
+## feat/lecun-node-foundation...origin/feat/lecun-node-foundation
+```
+
+**上流と差が無い（ahead/behind の表示なし）。**
+
+### PR
+
+```
+$ gh pr view 122 --json number,state,isDraft,baseRefName,headRefName
+{"baseRefName":"phase0","headRefName":"feat/lecun-node-foundation","isDraft":false,"number":122,"state":"OPEN"}
+```
+
+**PR #122**（`phase0` ベース、`OPEN`、下書きではない）。
+https://github.com/takuya3h/m2/pull/122
+
+`gh pr create` は `Warning: 3 uncommitted changes` を出した。**これは開始時の未追跡 3 件であり、
+契約の禁止 1 に従って意図的に残したものである。**
+
+### 送出後の未追跡
+
+```
+?? docs/sessions/digest/2026-08-22-52ba4658-47af-4d90-85e2-27ab8c014c0f.md
+?? docs/sessions/digest/2026-08-22-7c2986d7-0ce3-48b3-8d32-60a03a93c8d2.md
+?? scripts/sync/hosts/
+```
+
+**開始時の 3 件がそのまま残っている。減っていない。**
+
+### 台帳への返送
+
+**行っていない。** SPEC が「台帳へは返さない。起票者は版管理から読む」と明記しており、
+`scripts/load_env.sh` も使えないため `make task-report` の経路自体が動かない。
 
 ---
 
