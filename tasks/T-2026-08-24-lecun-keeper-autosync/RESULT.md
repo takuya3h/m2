@@ -332,7 +332,104 @@ inbox_check_exit=2
 
 ## 8. 送出と抑止の解除
 
-（commit / push / PR / 抑止の解除の実測をここに記す。）
+### commit
+
+```
+$ git add tasks/T-2026-08-24-lecun-keeper-autosync/ tasks/inbox.d/T-2026-08-24-lecun-keeper-autosync.md
+$ git diff --cached --name-only | grep -c ''
+6
+$ git diff --cached --name-only | grep -c -E 'context/auto/|tasks/inbox\.md'
+0
+```
+
+**`-A` は使っていない。** 明示した 2 パスだけを staged にした（展開後 6 ファイル）。
+**生成物は一つも staged に入っていない**（禁止 4）。
+**開始時の未追跡 3 件も staged に含まれていない。**
+
+```
+$ git --no-pager log -1 --format='%h %s'
+6a7e875e feat(sync): deploy keeper and enable git autosync on lecun
+```
+
+`6 files changed, 1673 insertions(+)`
+
+### 送出の経路
+
+```
+$ git remote -v
+origin	https://github.com/takuya3h/m2.git (fetch)
+origin	https://github.com/takuya3h/m2.git (push)
+```
+
+**両方とも `https` で `git@` ではない。** SPEC Task 4 Step 5 の
+`git remote set-url --push` と `gh auth setup-git` は**不要のため実行していない。**
+
+### push
+
+```
+$ git push -u origin HEAD
+ * [new branch]        HEAD -> feat/lecun-keeper-autosync
+branch 'feat/lecun-keeper-autosync' set up to track 'origin/feat/lecun-keeper-autosync'.
+
+$ git --no-pager status -sb | head -1
+## feat/lecun-keeper-autosync...origin/feat/lecun-keeper-autosync
+```
+
+**上流と差が無い。**
+
+### PR
+
+```
+$ gh pr list --head "$(git branch --show-current)" --json number,isDraft,state
+[]
+$ gh pr view 130 --json number,state,isDraft,baseRefName,headRefName
+{"baseRefName":"phase0","headRefName":"feat/lecun-keeper-autosync","isDraft":false,"number":130,"state":"OPEN"}
+```
+
+**PR #130**（`phase0` ベース、`OPEN`、下書きではない）。
+https://github.com/takuya3h/m2/pull/130
+
+`gh pr create` は `Warning: 3 uncommitted changes` を出した。
+**これは開始時の未追跡 3 件であり、禁止 5 に従って意図的に残したものである。**
+
+### 抑止の解除（判定 19）
+
+```
+$ ls -la .sync-pause
+-rw-rw-r-- 1 ubuntu ubuntu 0 Aug 23 17:32 .sync-pause
+$ mv .sync-pause /tmp/.sync-pause.released.T-2026-08-24-lecun-keeper-autosync
+mv_exit=0
+$ ls -la .sync-pause 2>/dev/null && echo "まだ残っている" || echo "repo 直下から消えた"
+repo 直下から消えた
+$ ls -la /tmp/.sync-pause.released.T-2026-08-24-lecun-keeper-autosync
+-rw-rw-r-- 1 ubuntu ubuntu 0 Aug 23 17:32 /tmp/.sync-pause.released.T-2026-08-24-lecun-keeper-autosync
+```
+
+**repo 直下から消え、退避先に在る。**
+**ここで初めて版管理の自動同期が有効になった。** 次の周回（`sleep 1800` の後）から
+auto-merge と auto-push が起きうる。**それは正常である。**
+
+解除後も常駐処理は動き続けている。
+
+```
+$ flock -n ~/.keeper.lock -c 'echo acquired'
+flock_exit=1        （取得できない = keeper が保持中 = 稼働中）
+```
+
+### 送出後の未追跡
+
+```
+?? docs/sessions/digest/2026-08-22-52ba4658-47af-4d90-85e2-27ab8c014c0f.md
+?? docs/sessions/digest/2026-08-22-7c2986d7-0ce3-48b3-8d32-60a03a93c8d2.md
+?? scripts/sync/hosts/
+```
+
+**開始時の 3 件がそのまま残っている。減っていない。**
+
+### 台帳への返送
+
+**行っていない。** SPEC が `make task-report` を「使えないもの」に挙げ、代替として
+「`RESULT.md` を commit して push する」と定めている。`scripts/load_env.sh` も使えない。
 
 ---
 
@@ -385,4 +482,19 @@ inbox_check_exit=2
 
 ## 11. 状態
 
-（`status` は送出まで終えたあとに確定させる。）
+`status: pass`
+
+**19 項目すべてに実測値がある。UNKNOWN は 1 件も無い。**
+
+**escalate_if の 5 条件はいずれも成立していない。**
+
+| escalate_if | 実測 |
+|---|---|
+| 目印が無いにもかかわらず中継が立った | 立っていない（`ssh -N -L=0`）。目印は `marker_count=0` |
+| 同期処理が意図せず起動した | 起動していない（`syncthing=0`）。**起動しうることを事前に読み取り、承認を得て止めた**（§4） |
+| 常駐処理が起動直後に落ち、原因を特定できない | 落ちていない（`keeper.sh=1` PID 89614、錠を保持中） |
+| 抑止が効かない版であり、自動の統合が起きうる | 対応版である（`grep -c "sync-pause" ~/bin/m2-sync.sh` = `2`）。記録に「一時停止中」が出て、分岐の先頭が動かなかった |
+| 版管理外の未追跡の成果物が失われた | 失われていない（開始時の 3 件がすべて残る） |
+
+**測っていないことは §10 の逸脱と `result.yaml` の `unknowns` に明記した。**
+特に、**抑止を外した後の一周と、目印を置いたときの中継は本契約の範囲外であり測っていない。**
