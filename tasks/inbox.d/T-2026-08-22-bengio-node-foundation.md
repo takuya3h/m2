@@ -1,0 +1,6 @@
+- [ ] 2026-08-23 [cc] bengio には 3.11 系の実体が一つも無く、philip の「uv 管理の実体へ貼り直す」経路が使えなかった。uv python install 3.11 を挟み pyvenv.cfg の home 行も直す必要がある。他台でも同じはず（.venv/pyvenv.cfg）
+- [ ] 2026-08-23 [cc] bengio では配備鍵が消えておらず ssh -T git@github.com が認証を返す。SPEC の「https へ切り替える」前提が不成立で、credential.helper 未設定のため切り替えると動く経路を壊す。全台で前提を実測してから指示すること（tasks/T-2026-08-22-bengio-node-foundation/RESULT.md §4）
+- [ ] 2026-08-23 [cc] SPEC の終了コード取得が bash 様式 ${PIPESTATUS[0]} で zsh では空文字になる。終了コードを見る検査が空振りする。契約の雛形をシェル非依存にするか zsh 様式を併記するかが未決（tasks/_templates/）
+- [ ] 2026-08-23 [cc] 存在確認と実行を && で繋ぐと、不在で ls が exit 2 を返した時点で実行側が短絡して走らない。syncthing generate で実際に起き、道具が壊れて見えた。契約の手順は ; で分けること（tasks/T-2026-08-22-bengio-node-foundation/audit.md）
+- [ ] 2026-08-23 [cc] libGL.so.1 が不在で mmcv / mmdet を import できない。bengio で学習・評価を回す前に別契約での対処が要る（.venv）
+- [ ] 2026-08-23 [cc] hub_keys に philip.pub が無く device_ids は bengio と philip の 2 件のみ。andrew と ilya が揃うまで登録の契約は開始できない（scripts/sync/）

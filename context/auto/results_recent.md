@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 47 件）。
-ここに出ない 42 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 48 件）。
+ここに出ない 43 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-08-22-philip-hub-foundation
 
@@ -70,6 +70,38 @@
 - 配布物の要約値の照合が空振りでないこと。別版を落として不一致になることは確かめていない。 中心と版を揃える要求と禁止事項のため意図的に測っていない。
 - make forbidden-check が禁止領域の変更を実際に捕まえるかどうか。 禁止領域を意図的に汚す検査は行っていない。
 - test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics が失敗する理由。 本契約の範囲外のため追っていない。
+
+## T-2026-08-22-bengio-node-foundation
+
+状態 `pass` / ホスト `bengio` / 起票 `123` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — HEAD=8eec82ec で rev-list --left-right --count HEAD...origin/phase0 が 0 0。 .venv/bin/python -V が Python 3.11.16、which python が .venv 配下、 torch 2.1.2+cu118 / cuda True。du -sh .venv は前後とも 6.2G。 zsh -c と bash -lc の両方で SERVERNAME=bengio。 user.name=takuya3h / user.email=daky.o7600@gmail.com を repo scope へ設定。 送出は git@ のまま維持した（ssh -T git@github.com が認証を返し鍵は消えておらず、 set-url は実行環境の権限判定に拒否された）。deviations 3 を参照。
+- `G2` pass — 鍵の指紋 SHA256:Ea9ReajNAiOoaixOPnahszJrJug/UvSXI4ZJZjAr6G4。 版管理側 bengio.pub は先頭 ssh-ed25519、grep -c PRIVATE=0、grep -c ''=1 で、 囮ではこの 3 つがすべて反転した。 配布物 sha256=c04ffbdedcd1d18ccb4a34a341a6a2b2461082f7a6f43537eb0bba860975fd60、 配置物 sha256=32ab747eb18ff3a01423f9719c5b8a8165da63e60ee9c3f733887464c70ca1dd で いずれも中心の記載と一致。 device_ids/bengio.txt は 1 行で 4NIRI4M-BKF2ELP-QKUSUWG-II6SCOD-SHM3U5J-ZMWUAYN-IA6PXIT-X52VHQO。 port_22000 と port_8384 は非待ち受け、pgrep -x syncthing は exit 1。
+
+### 起票者の誤り
+
+- `shell_assumption` — 終了コードの取得に bash 専用の ${PIPESTATUS[0]} を使っている（SPEC Task 5 Step 3 ほか）。 本実行環境のログインシェルは zsh であり、指示どおり実行すると validate_exit= のように 値が空のまま表示され、終了コードを見る検査が空振りする。zsh は ${pipestatus[1]}。
+- `shell_assumption` — source が単独の命令で終わる書き方になっており、P9 spec_lint の separated_source が SPEC.md:396,399,402 の 3 箇所で該当した。命令ごとに新しいシェルが起きる実装系では 前の命令で読み込んだ仮想環境が次へ引き継がれず、指示どおり実行すると venv 外の python で make が走る。読み込みは同じ命令の中に入れる必要がある。
+
+### 逸脱
+
+- `judgement` — 3.11 系の実体がホストに一つも無く（~/.local/share/uv/python/ も ~/.pyenv/ も不在、 /usr/bin/python3 は 3.12.3）、貼り直す先が存在しなかった。禁止 7 に触れず 6.2G を 守るため uv python install 3.11 で philip と同一パスへ cpython-3.11.16 を用意してから 貼り直した。.venv の中身は触れておらず du は 6.2G のまま。
+- `judgement` — .venv/pyvenv.cfg の home 行が消えた pyenv を指したままでは sys.base_prefix が 解決できず python が起動しないため、退避 /tmp/pyvenv.cfg.bak を取ってから home の 1 行だけを新しい実体へ書き換えた。SPEC は繋がりの貼り直ししか指示していない。
+- `environment` — 送出の経路を https へ切り替えなかった。SPEC Task 1 Step 5 の前提「鍵は消えている」が bengio では不成立で、ssh -T git@github.com が Hi takuya3h! を返し git fetch も成功する。 credential.helper が未設定のため https へ切り替えると動いている経路を壊す。加えて git remote set-url --push は実行環境の権限判定に拒否された。git@ のまま維持した。
+- `environment` — SPEC の終了コード取得 ${PIPESTATUS[0]} は bash の様式で、本実行環境の zsh では 空文字を返す。判定を空振りさせないため ${pipestatus[1]}（小文字・1 始まり）へ 読み替えて実測した。
+
+### 申し送り
+
+- libGL.so.1 が不在で mmcv / mmdet を import できない（ImportError: libGL.so.1）。 本契約の範囲外だが、bengio で学習・評価を回す前に別契約での対処が要る。
+- ~/bin/m2-sync.sh と keeper.sh が bengio に存在せず、pgrep -x でも該当なし。 保守作業で常駐処理も失われている。同期処理の常駐化は全台の値が揃ってからの別契約。
+- scripts/sync/hub_keys/ に philip.pub が無い（andrew.pub / bengio.pub / ilya.pub のみ）。 中心自身のため不要と見られるが、受け入れ一覧を組み立てる契約で前提を確定させること。
+- scripts/sync/device_ids/ は bengio.txt と philip.txt の 2 件のみ。 andrew と ilya の識別子が未公開のため、登録の契約はまだ開始できない。
+
+### 断定できなかったこと
+
+- 同期処理を起動したときに 22000/8384 が LISTEN として検出されるか。禁止 6 により未測定。
 
 ## T-2026-08-18-report-back-to-ledger
 
@@ -135,39 +167,4 @@
 - 外部記録へ過去に実際に送信されたかは確かめられなかった。API へは到達でき認証も通ったが、現在の資格情報の entity 配下には project が 0 件で、目的の project も存在しない。資格情報と entity は eef6687 で更新されており、過去の送信先は現在の資格情報からは辿れない。手元に 319 の痕跡があることは送信の証拠にならない
 - 手元の wandb/ にある 319 の run ディレクトリはいずれも offline-run- ではないため、実行時は送信する設定だったと読める。ただし送信が成功したかは手元の痕跡からは判定できない
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
-
-## T-2026-08-16-docs-reconciliation
-
-状態 `pass` / ホスト `lecun` / 起票 `73` / 様式 `v1`
-
-### ゲート
-
-- `G1` pass（記述なし。様式 v1）
-- `G2` pass（記述なし。様式 v1）
-
-### 起票者の誤り
-
-- `check_does_not_check` — Phase A Step 2 が示す実態の測り方 grep -E '^[a-z-]+:' Makefile が数字を含むターゲットに一致しない。22 件と出るが実際は 27 件で、落ちた s0 s2 s4 s5 s6 がそのまま『存在しない操作』の誤検出になった。SPEC が 15 task 連続で起きていると警告した型が、SPEC 自身の測定コマンドに入っていた
-- `check_does_not_check` — 判定 5『検査が実在を確かめる／現行手順の文書が通る』は、検査の対象一覧が正しいことを確かめない。対象が 42 件でなく 25 件へ落ちていても通るため合格する。実際に落ちたが、判定ではなく件数の表示で気付いた
-- `asserted_without_measuring` — 実行ホストを bengio と断定しているが、契約は lecun へ配布され lecun で実行された。起票時に配布先を測っていない。測定対象がホストに依存しないため作業内容は変えていない
-
-### 逸脱
-
-4 件（様式 v1 のため件数のみ。中身は RESULT.md にある）
-
-### 申し送り
-
-- 検査はコードとして書かれた箇所しか見ない。バッククォートを付けずに散文へ書かれた操作名や経路は検出できない。誤検出を避けるための設計だが、検出漏れは残る
-- 検査が確かめるのは実在だけである。手順の順序・前提条件・説明の内容が実装と合っているかは人が読むしかない。docs_audit.md 末尾に確かめない範囲を明記した
-- docs/m2_plan_rewrite/ 25 件を記録として扱ったが、現行の計画は外部の運用ハブにある。両者の重複と役割分担は未整理である
-- 除外の印は 7 箇所ある。印を足すときは docs_audit.md の全件表も更新すること。表の中はセル内へ置く。行末に足すと列が増える
-- 文書に数を書くときの規約が無い。出所の書かれていない数は原理的に検査できない。OPERATION.md の 34 件・reproduce_on_new_machine.md の 99 テスト・README.md の 4 件と 2 件が、いずれも docs-check を通過したまま古くなっていた
-- B-40 として起票した test_research_logger.py の 4 件は、実装と試験のどちらが正しいかを調べていない。log_run の戻り値の規約を決めるのが先である
-
-### 断定できなかったこと
-
-- 散文へバッククォート無しで書かれた操作名や経路がいくつあるかは未測定。検出漏れの規模が分からない
-- 記録として分類した 735 件の内容が実態と合っているかは確かめていない。過去の記述が現在と食い違うのは当然であり対象外とした
-- 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
-- OPERATION.md と README.md が述べる「実験に使用中の 4 台」は、このリポジトリからは検証できない。研究サーバー 11 台の名前は全て定位置分岐に実在することを確かめたが、そのうち何台が実際に実験に使われているかは測れない
 
