@@ -7,6 +7,7 @@
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
 ## 申し送り（204 件）
+## 申し送り（212 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -348,6 +349,30 @@
 - 実行基盤の分類器が git config user.email（平文アドレス）と git remote set-url を拒む。 他台でも同じ壁に当たる。前者は noreply 形式で通る。後者は利用者の承認か permissions への追加が要る。
 
 ## 断定できなかった事項（140 件）
+### T-2026-08-22-bengio-node-foundation
+
+- libGL.so.1 が不在で mmcv / mmdet を import できない（ImportError: libGL.so.1）。 本契約の範囲外だが、bengio で学習・評価を回す前に別契約での対処が要る。
+- ~/bin/m2-sync.sh と keeper.sh が bengio に存在せず、pgrep -x でも該当なし。 保守作業で常駐処理も失われている。同期処理の常駐化は全台の値が揃ってからの別契約。
+- scripts/sync/hub_keys/ に philip.pub が無い（andrew.pub / bengio.pub / ilya.pub のみ）。 中心自身のため不要と見られるが、受け入れ一覧を組み立てる契約で前提を確定させること。
+- scripts/sync/device_ids/ は bengio.txt と philip.txt の 2 件のみ。 andrew と ilya の識別子が未公開のため、登録の契約はまだ開始できない。
+
+### T-2026-08-22-ilya-node-foundation
+
+- bash -c（非対話・非ログイン）では SERVERNAME が未設定のままである。道具の冒頭に明記された既知の限界で、利用者ファイルでは覆えず /etc/environment（要 root・システム全体）が要る。本契約の範囲外。
+- 前契約の事実 10（libGL.so.1 が無く mmcv/mmdet を読み込めない）は ilya では当てはまらなかった。mmdet を要する tests/test_engines.py も収集・実行された。
+- 試験 5 件が失敗したままである。tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics（score_thr が 0.0 と 1e-08 で不一致）と tests/test_research_logger.py の 4 件（Notion 資格情報が無く log_run が None を返す）。いずれも本契約の変更とは無関係で、src/ tests/ には一切触れていない。
+- P9 spec_lint の host_mismatch は、論理名を使うこの環境では常に該当する。規則は socket.gethostname() と比べるが ilya と philip はともに aolab を返す。検査器の側の限界であり、起票者の誤りとしては数えていない。
+- 登録と起動は行っていない（禁止 4・6）。次の契約で全台の値が揃ってから行う。中心 philip の識別子 3J4TRX4-… は版管理から読み取って SPEC の記載と一致することを確かめた。
+- 版管理にあった旧版の scripts/sync/hub_keys/ilya.pub（SHA256:5auPdGk/WfnGcmpQ8yygEc6mMv7svH8CzqulBjV3pRo, ubuntu@aolab）を新版で置き換えた。旧版の秘密鍵は初期化で失われており、このホストに存在しない。中心 philip が受け入れ一覧へ入れるべきは新版 SHA256:O4FrUiuT3+JNwIDMduljzPXfS7minab+CkWfg4gDzIQ であり、旧版は無効である。
+
+### T-2026-08-22-lecun-node-foundation
+
+- 前契約（philip）の実測 10 件のうち 4 件が lecun では当てはまらず、1 件が半分だけ当たった。 非該当は #1（.venv が壊れた繋がり）、#4（pushurl が SSH）、#5（jsonschema の導入が要る）、 #10（libGL.so.1 が無く mmcv/mmdet を読み込めない。lecun では mmcv 2.1.0 / mmdet 3.3.0 とも import 成功）。半分は #3（~/.gitconfig は在るが user.name/user.email だけが無い）。 他台へ同じ契約を配るときは、前契約の実測を前提ではなく仮説として扱うべきである。
+- P9 spec_lint の separated_source 3 件（SPEC.md:396/399/402）は検査器の側の誤検知である。 SPEC の当該箇所は \ による行継続で source ... && ... を 1 つの命令として書いており 読み込みは引き継がれる。tools/check_spec.py の rule_separated_source が行を \ で結合せず 次行を「次の命令」と見なすため該当が出る。契約の誤りではない。 検査器が行継続を結合するよう直せば、この誤検知は消える。
+- tests の失敗 5 件は本契約以前から在るもので内容も無関係である。追跡ファイルを一つも 変更していないため試験対象の木は origin/phase0 と同一であり、前後の実測は同じ値になる。 test_research_logger の 4 件は Notion への記録が None を返すことによる （assert None == 'page-abc'）。scripts/load_env.sh が使えず資格情報が入らない状況と整合する。 test_engines の 1 件は未追跡の理由で落ちており本契約では触れていない。
+- 次の契約（登録と起動）で使う値。識別子は OOOTQMG-2WT55EF-YGX55VM-YWFWVRT-XUSDUUB-3AXCYV4-OVY2X3H-KRFOWA3 （scripts/sync/device_ids/lecun.txt）。中心の受け入れ一覧へ入れる指紋は SHA256:g5TwfvgDPsNhiSd9OXDZoWDj99au1y8yEnW8hmNyqHI （公開鍵は scripts/sync/hub_keys/lecun.pub）。秘密鍵は ~/.ssh/id_ed25519_lecuntophilip にあり当ホストから出していない。
+
+## 断定できなかった事項（143 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -616,6 +641,22 @@
 - tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics の assert 0.0 == 1e-08 の原因は特定していない。
 
 ## 起票者の誤りの型（117 件）
+### T-2026-08-22-bengio-node-foundation
+
+- 同期処理を起動したときに 22000/8384 が LISTEN として検出されるか。禁止 6 により未測定。
+
+### T-2026-08-22-ilya-node-foundation
+
+- 開始前の試験の失敗件数。契約の開始時点では .venv が壊れていて python が起動せず測れなかった。tests.before_failed に置いた 5 は修復直後の実測値であって『開始前』の値ではない。本契約は src/ tests/ を変更していない。
+- ~/.ssh/id_ed25519（コメント no comment、SHA256:cdOmPfuBN4wFfTjbvjDIaGgiv3YaHEMLez0td1v5oE4）が何のために置かれた鍵か。git fetch が SSH で通ることから GitHub 向けと推定したが、確かめていない。触れていない。
+
+### T-2026-08-22-lecun-node-foundation
+
+- 配布物の要約値の照合が空振りでないこと。別版を落として不一致になることは確かめていない。 中心と版を揃える要求と禁止事項のため意図的に測っていない。
+- make forbidden-check が禁止領域の変更を実際に捕まえるかどうか。 禁止領域を意図的に汚す検査は行っていない。
+- test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics が失敗する理由。 本契約の範囲外のため追っていない。
+
+## 起票者の誤りの型（121 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
@@ -627,4 +668,10 @@
 | `shell_assumption` | 8 |
 
 合計 117 件（対を持つ契約 47 件から）
+| `check_does_not_check` | 41 |
+| `asserted_without_measuring` | 36 |
+| `self_contradiction` | 34 |
+| `shell_assumption` | 10 |
+
+合計 121 件（対を持つ契約 49 件から）
 
