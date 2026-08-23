@@ -6,8 +6,66 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 45 件）。
-ここに出ない 40 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 47 件）。
+ここに出ない 42 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-08-22-philip-hub-foundation
+
+状態 `` / ホスト `` / 起票 `なし` / 様式 `v1`
+
+### ゲート
+
+- `G1` PASS（記述なし。様式 v1）
+- `G2` PASS（記述なし。様式 v1）
+
+### 起票者の誤り
+
+（なし）
+
+### 逸脱
+
+（なし）
+
+### 申し送り
+
+（なし）
+
+### 断定できなかったこと
+
+（なし）
+
+## T-2026-08-22-bengio-node-foundation
+
+状態 `pass` / ホスト `bengio` / 起票 `なし` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — HEAD=8eec82ec で rev-list --left-right --count HEAD...origin/phase0 が 0 0。 .venv/bin/python -V が Python 3.11.16、which python が .venv 配下、 torch 2.1.2+cu118 / cuda True。du -sh .venv は前後とも 6.2G。 zsh -c と bash -lc の両方で SERVERNAME=bengio。 user.name=takuya3h / user.email=daky.o7600@gmail.com を repo scope へ設定。 送出は git@ のまま維持した（ssh -T git@github.com が認証を返し鍵は消えておらず、 set-url は実行環境の権限判定に拒否された）。deviations 3 を参照。
+- `G2` pass — 鍵の指紋 SHA256:Ea9ReajNAiOoaixOPnahszJrJug/UvSXI4ZJZjAr6G4。 版管理側 bengio.pub は先頭 ssh-ed25519、grep -c PRIVATE=0、grep -c ''=1 で、 囮ではこの 3 つがすべて反転した。 配布物 sha256=c04ffbdedcd1d18ccb4a34a341a6a2b2461082f7a6f43537eb0bba860975fd60、 配置物 sha256=32ab747eb18ff3a01423f9719c5b8a8165da63e60ee9c3f733887464c70ca1dd で いずれも中心の記載と一致。 device_ids/bengio.txt は 1 行で 4NIRI4M-BKF2ELP-QKUSUWG-II6SCOD-SHM3U5J-ZMWUAYN-IA6PXIT-X52VHQO。 port_22000 と port_8384 は非待ち受け、pgrep -x syncthing は exit 1。
+
+### 起票者の誤り
+
+- `shell_assumption` — 終了コードの取得に bash 専用の ${PIPESTATUS[0]} を使っている（SPEC Task 5 Step 3 ほか）。 本実行環境のログインシェルは zsh であり、指示どおり実行すると validate_exit= のように 値が空のまま表示され、終了コードを見る検査が空振りする。zsh は ${pipestatus[1]}。
+- `shell_assumption` — source が単独の命令で終わる書き方になっており、P9 spec_lint の separated_source が SPEC.md:396,399,402 の 3 箇所で該当した。命令ごとに新しいシェルが起きる実装系では 前の命令で読み込んだ仮想環境が次へ引き継がれず、指示どおり実行すると venv 外の python で make が走る。読み込みは同じ命令の中に入れる必要がある。
+
+### 逸脱
+
+- `judgement` — 3.11 系の実体がホストに一つも無く（~/.local/share/uv/python/ も ~/.pyenv/ も不在、 /usr/bin/python3 は 3.12.3）、貼り直す先が存在しなかった。禁止 7 に触れず 6.2G を 守るため uv python install 3.11 で philip と同一パスへ cpython-3.11.16 を用意してから 貼り直した。.venv の中身は触れておらず du は 6.2G のまま。
+- `judgement` — .venv/pyvenv.cfg の home 行が消えた pyenv を指したままでは sys.base_prefix が 解決できず python が起動しないため、退避 /tmp/pyvenv.cfg.bak を取ってから home の 1 行だけを新しい実体へ書き換えた。SPEC は繋がりの貼り直ししか指示していない。
+- `environment` — 送出の経路を https へ切り替えなかった。SPEC Task 1 Step 5 の前提「鍵は消えている」が bengio では不成立で、ssh -T git@github.com が Hi takuya3h! を返し git fetch も成功する。 credential.helper が未設定のため https へ切り替えると動いている経路を壊す。加えて git remote set-url --push は実行環境の権限判定に拒否された。git@ のまま維持した。
+- `environment` — SPEC の終了コード取得 ${PIPESTATUS[0]} は bash の様式で、本実行環境の zsh では 空文字を返す。判定を空振りさせないため ${pipestatus[1]}（小文字・1 始まり）へ 読み替えて実測した。
+
+### 申し送り
+
+- libGL.so.1 が不在で mmcv / mmdet を import できない（ImportError: libGL.so.1）。 本契約の範囲外だが、bengio で学習・評価を回す前に別契約での対処が要る。
+- ~/bin/m2-sync.sh と keeper.sh が bengio に存在せず、pgrep -x でも該当なし。 保守作業で常駐処理も失われている。同期処理の常駐化は全台の値が揃ってからの別契約。
+- scripts/sync/hub_keys/ に philip.pub が無い（andrew.pub / bengio.pub / ilya.pub のみ）。 中心自身のため不要と見られるが、受け入れ一覧を組み立てる契約で前提を確定させること。
+- scripts/sync/device_ids/ は bengio.txt と philip.txt の 2 件のみ。 andrew と ilya の識別子が未公開のため、登録の契約はまだ開始できない。
+
+### 断定できなかったこと
+
+- 実際に push できるか（送出の経路を git@ のまま維持したため）。commit 直後に実測して RESULT.md §7 に記す。本 yaml の pr フィールドは起票の結果で更新する。
+- 同期処理を起動したときに 22000/8384 が LISTEN として検出されるか。禁止 6 により未測定。
 
 ## T-2026-08-18-report-back-to-ledger
 
@@ -108,70 +166,4 @@
 - 記録として分類した 735 件の内容が実態と合っているかは確かめていない。過去の記述が現在と食い違うのは当然であり対象外とした
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
 - OPERATION.md と README.md が述べる「実験に使用中の 4 台」は、このリポジトリからは検証できない。研究サーバー 11 台の名前は全て定位置分岐に実在することを確かめたが、そのうち何台が実際に実験に使われているかは測れない
-
-## T-2026-08-15-training-determinism
-
-状態 `pass` / ホスト `andrew` / 起票 `115` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 決定化なしで同じ種（42）を二度走らせ、best accuracy が 0.9128712871287129 と 0.9042904290429042 で不一致（差 −0.0085809）。世代 1〜5 は 6 桁一致し世代 6 から食い違い、50 世代中 43 世代で不一致だった。乱数系は揃っており、ビットレベルの浮動小数の揺れが量子化された accuracy に現れるまで数世代かかる形である
-- `G2` pass — 決定化した seed 42 を三度走らせた。三度目は間に非決定の 12 本（約 10 分）を挟んで装置の状態を掻き回した後である。三本とも accuracy が一致し best checkpoint の sha256 も e909ab8d3296481f で一致した。seed 123 / 456 も各二度で重みまで一致し、計 3 種で確認した
-- `G3` pass — 設定を外した同種二度（G1 と同一コマンド）は −0.0086 で一致しない。対照は効いており、検査は空振りしていない
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — SPEC は『隣接させると雑音が相関して打ち消し合っていたとみられる』『そうなれば種が三つでも 0.001 級の効果が見える』と書いたが、いずれも測らずに書かれた推測で、実測は双方を否定した。直す前の隣接実行の σ_d は 0.0073568 で一括の 0.0100007 と同水準であり、前実験の 0.000823 は n=3 の偶然だった。決定化後も σ_d は 0.0054519 残り、これは雑音ではなく種×腕の真の交互作用（seed 42 は +0.009、123/456 は約 −0.002）で、n=3 の検出下限は 0.0063 に留まる。SPEC 自身が『再現しないこと自体が重要な知見』と逃げ道を書いており、その通りになった
-
-### 逸脱
-
-- `spec_defect` — created_from.runindex_commit の記載 8c13afb に対し現在値は 3e15d09 だった。counts は一致しており記載の commit だけが古い。四契約連続の同型である
-- `judgement` — 解禁範囲（乱数と決定性に関わる箇所）に加え、variants スクリプトへ --audit-dir を追加した。experiments/ を汚さず（禁止 10）全 50 世代を走らせる測定（G1 は全世代の実測が必要で smoke は 2 世代上限）を両立させるために必要だった。学習の挙動は不変で、audit 経路は重みの比較のため checkpoint も保存する
-- `judgement` — G3 の『外すと一致しない』は Phase C で改めて走らせず、G1 の実測（同一コマンド・フラグ無し・二度で −0.0086 不一致）を対照として引いた。同一条件の実測が既にあり、再実行は情報を増やさないため
-
-### 申し送り
-
-- 次の exp 契約から train.deterministic: true を明示して有効にすべきである（本契約は opt-in、既定不変・禁止 13）。減速は 2.15×（6.82 → 14.69 秒/本）で桁は変わらない
-- sweep（#114）が申し送った『隣接実行の再測定』は不要になった。隣接しても σ_d は 0.0074 級で判定力は戻らない（実測済み）。代わりに決定化 + 種を増やす。n=10 で 0.0034 級、n=3 で 0.0063 級が検出下限
-- #111 の負の効果（−0.0044、比 5.345）は信じてはならない。真の σ_d 0.0054 級に対し n=3 の平均 −0.0044 の実際の比は 0.8 程度で、当時の pstd 0.000823 が偶然小さく出たことによる見かけの有意である。sweep で再現しなかったこととも整合する
-- 種×腕の交互作用が実在する（seed 42 は +0.009、123/456 は約 −0.002、各測定は厳密）。主たる終点を『平均の差』に置く設計自体の再考が要るかもしれない。効果の不均一そのものを測る設計を検討する
-- 他の学習経路（train_s4_tecno.py・検出系の mmdet 経路）への決定化の展開は本契約の範囲外。mmdet 経路は deterministic=False が直書きされている（mmdet_trainer.py:501）
-- 過去の全 run（非決定）と今後の run（決定化）は数式は同じだがカーネルが違うため、同じ種でも値が変わる。分母を跨いで比べる場合は注意する
-
-### 断定できなかったこと
-
-（なし）
-
-## T-2026-08-15-template-leak-and-autosync-conflict
-
-状態 `pass` / ホスト `lecun` / 起票 `71` / 様式 `v1`
-
-### ゲート
-
-- `G1` pass（記述なし。様式 v1）
-- `G2` pass（記述なし。様式 v1）
-
-### 起票者の誤り
-
-- `self_contradiction` — 禁止 4 が runindex/** の手編集を禁じる一方、Task 1 Step 5 は起票を指示する。この repo の起票先 backlog.md は runindex/ 配下にある。投影の出所が生成器の BACKLOG 定数（ast.literal_eval で読む）だと実装で確かめ、生成器だけを編集して解決した
-- `self_contradiction` — 禁止 9 が統合を禁じる一方、判定 8 は無効時に書き込むことの確認を求める。契約の分岐で測ると自分で禁止 9 を破る。HOME を差し替えた隔離環境で実物のスクリプトを走らせて解決した
-- `self_contradiction` — 判定 15「禁止領域が無変更」と判定 5「件数が増える」が両立しない。件数が現れる投影 context/auto/open_questions.md は禁止 4 の領域にある。禁止を「手による編集」と読み、make context による生成として解決した
-- `check_does_not_check` — 判定 6・7 はリポジトリ側の実装に対して成立するが、稼働中の常駐処理が抑止対象になっていることを確かめない。~/bin/m2-sync.sh は keeper が origin/phase0 から自己更新するため、phase0 に届くまで抑止は効かない（実測 grep -c = 0）。契約の目的『実行中に書き込ませない』はこの判定群を満たしても達成されない
-
-### 逸脱
-
-3 件（様式 v1 のため件数のみ。中身は RESULT.md にある）
-
-### 申し送り
-
-- 抑止は origin/phase0 に届いてから効く。届くまでは目印を置いても常駐処理は止まらない。各ホストへの反映は keeper の自己更新に依存する（最短 2 ループ / 最大 60 分）
-- 目印の解除忘れを自動で検知する手段が無い。sync-alerts.log に毎ループ『一時停止中』と出るのみで、見なければ気付けない
-- B-39 に着手するには、コメント中の例示に具体名を許すかを先に決める必要がある。決めないと configs/default.yaml の扱いが定まらない（値は間接参照のため写しても誤らない）
-- 共有設定の DINOV2_WEIGHTS が雛形の記入例のままである（値は出力していない。存在と性質のみ）。全台へ同じ内容が配られるため、どのホストでも同じはずである。暗号設定の変更は本契約の禁止 2 に当たるため触れていない
-
-### 断定できなかったこと
-
-- 他ホストでは本修正のいずれも実行していない。テンプレートの修正も常駐処理の抑止も lecun 上でのみ実測した
-- 契約の取り込み操作そのものは実行していない。作業開始時点で未追跡ファイルとして作業ツリーに存在した。要約値の照合が通ったかは測れず UNKNOWN。記法が壊れずに届いたことのみ実測した
-- 過去に雛形を写して環境を作ったホストのローカル .env に SERVERNAME が残っていないかは未測定。共有の暗号設定には無い（鍵 6 個）
 

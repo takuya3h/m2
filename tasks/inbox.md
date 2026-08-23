@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（271 件）
+## 未処理（277 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -286,6 +286,12 @@
 - [ ] 2026-08-16 [cc] 把持の推論の質を割合で見ると誤る。`left_hand` は正しさの割合 0.9848 に対し曲線下面積 0.7040（陽性率 0.985）、`two_hands_tool` は割合 0.8845 に対し平均適合率 0.5587（陽性率 0.116）。**run の記録には割合しか残らない**ため、重みから事後に測る必要があった。把持系を今後も測るなら AUC/AP を metrics に残す配線を検討すべきである（T-2026-08-15-injection-sweep-deterministic）
 - [ ] 2026-08-16 [cc] **`make forbidden-check` は `kind: exp` の契約で必ず fail する。** 生成物として除外するのが `context/auto/` と `tasks/inbox.md` だけで、`outputs.destination: "experiments/"` の契約が新規 run を作ることも `make runindex` が `runindex/` を作り直すことも知らないため。本契約では違反 2932 件の内訳を手で確かめ、既存 run の変更・削除が 0 件（`git diff` に M も D も無し）であること、`runindex/` は再生成で同一になることを示して契約違反でないと判定した。**道具を exp 契約に対応させる impl 契約が要る**（T-2026-08-15-injection-sweep-deterministic）
 - [ ] 2026-08-16 [cc] **索引の集約が決定化の有無を混ぜている。** `experiment_id` に `task_id` が入らないため、本契約の 360 本（決定化あり）が前の契約の 66 本（決定化なし）と同じ 6 実験行へ集約された（ctrl/inj は 73 本、他は 70 本）。解析は `task_id` で絞ったので主たる差に影響は無いが、**`experiments.csv` のこの 6 行を条件照合に使うと決定化の有無が混在した集約を見ることになる**。集約の鍵に含めるか、混在を検出して警告すべきである（T-2026-08-15-injection-sweep-deterministic）
+- [ ] 2026-08-23 [cc] bengio には 3.11 系の実体が一つも無く、philip の「uv 管理の実体へ貼り直す」経路が使えなかった。uv python install 3.11 を挟み pyvenv.cfg の home 行も直す必要がある。他台でも同じはず（.venv/pyvenv.cfg）
+- [ ] 2026-08-23 [cc] bengio では配備鍵が消えておらず ssh -T git@github.com が認証を返す。SPEC の「https へ切り替える」前提が不成立で、credential.helper 未設定のため切り替えると動く経路を壊す。全台で前提を実測してから指示すること（tasks/T-2026-08-22-bengio-node-foundation/RESULT.md §4）
+- [ ] 2026-08-23 [cc] SPEC の終了コード取得が bash 様式 ${PIPESTATUS[0]} で zsh では空文字になる。終了コードを見る検査が空振りする。契約の雛形をシェル非依存にするか zsh 様式を併記するかが未決（tasks/_templates/）
+- [ ] 2026-08-23 [cc] 存在確認と実行を && で繋ぐと、不在で ls が exit 2 を返した時点で実行側が短絡して走らない。syncthing generate で実際に起き、道具が壊れて見えた。契約の手順は ; で分けること（tasks/T-2026-08-22-bengio-node-foundation/audit.md）
+- [ ] 2026-08-23 [cc] libGL.so.1 が不在で mmcv / mmdet を import できない。bengio で学習・評価を回す前に別契約での対処が要る（.venv）
+- [ ] 2026-08-23 [cc] hub_keys に philip.pub が無く device_ids は bengio と philip の 2 件のみ。andrew と ilya が揃うまで登録の契約は開始できない（scripts/sync/）
 
 ## 処理済み（1 件）
 

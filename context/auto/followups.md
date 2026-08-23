@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（198 件）
+## 申し送り（202 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -338,7 +338,14 @@
 - 秘匿の検査が見るのは NOTION_API_KEY と WANDB_API_KEY の 2 つと、既知の接頭辞である。資格情報を増やしたら SECRET_ENV_KEYS へ足すこと。足し忘れても検査は通るため気付けない
 - 送信の時点で壁時計を使っている（completed_at）。生成物ではないため冪等の検査には影響しないが、投影に壁時計を入れない方針とは別の判断である
 
-## 断定できなかった事項（137 件）
+### T-2026-08-22-bengio-node-foundation
+
+- libGL.so.1 が不在で mmcv / mmdet を import できない（ImportError: libGL.so.1）。 本契約の範囲外だが、bengio で学習・評価を回す前に別契約での対処が要る。
+- ~/bin/m2-sync.sh と keeper.sh が bengio に存在せず、pgrep -x でも該当なし。 保守作業で常駐処理も失われている。同期処理の常駐化は全台の値が揃ってからの別契約。
+- scripts/sync/hub_keys/ に philip.pub が無い（andrew.pub / bengio.pub / ilya.pub のみ）。 中心自身のため不要と見られるが、受け入れ一覧を組み立てる契約で前提を確定させること。
+- scripts/sync/device_ids/ は bengio.txt と philip.txt の 2 件のみ。 andrew と ilya の識別子が未公開のため、登録の契約はまだ開始できない。
+
+## 断定できなかった事項（139 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -600,7 +607,12 @@
 - 台帳の他の行が変わっていないことは、触れた行を限定した事実からしか言えていない。全行の内容を送信前後で突き合わせてはいない
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
 
-## 起票者の誤りの型（113 件）
+### T-2026-08-22-bengio-node-foundation
+
+- 実際に push できるか（送出の経路を git@ のまま維持したため）。commit 直後に実測して RESULT.md §7 に記す。本 yaml の pr フィールドは起票の結果で更新する。
+- 同期処理を起動したときに 22000/8384 が LISTEN として検出されるか。禁止 6 により未測定。
+
+## 起票者の誤りの型（115 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
@@ -609,7 +621,7 @@
 | `check_does_not_check` | 40 |
 | `asserted_without_measuring` | 34 |
 | `self_contradiction` | 32 |
-| `shell_assumption` | 7 |
+| `shell_assumption` | 9 |
 
-合計 113 件（対を持つ契約 45 件から）
+合計 115 件（対を持つ契約 47 件から）
 
