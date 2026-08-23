@@ -1,0 +1,6 @@
+- [ ] 2026-08-24 [human] claude-sync の型。handoff が「他4台の中身が未測定のため UNKNOWN、中身を持つ台を sendonly」と残した点を提示し、3案（他4台を測ってから決める／handoff の安全側／SPEC どおり sendreceive）を示して「SPEC どおり sendreceive」を選択。他4台の中身は未測定のままである（T-2026-08-24-philip-syncthing-hub）
+- [ ] 2026-08-24 [human] 起動と同時に syncthing が v1.27.10 から v2.1.3 へ自動更新された件。3案（v2 のまま進め自動更新を止める／v1.27.10 へ戻す／何もせず報告）を示して「v2.1.3 のまま進め、autoUpgradeIntervalH を 0 にする」を選択。契約の Phase B に無い変更を承認（T-2026-08-24-philip-syncthing-hub）
+- [ ] 2026-08-24 [human] 外部通信（stunServer=default / natEnabled=true / crashReportingEnabled=true）が globalAnnounce と relays の無効化だけでは止まらない件。2案（意図に合わせて無効化／変えずに記録）を示して「変えずに記録だけする」を選択。契約の範囲外のため次の契約で扱う（T-2026-08-24-philip-syncthing-hub）
+- [ ] 2026-08-24 [cc] autoUpgradeIntervalH の既定は 12 であり、実行権を戻した瞬間に更新が走る。他 4 台でも同じことが起きる。ノード側の契約は、実行権を戻す前に 0 にしておくか v2 へ揃えるかを先に決めてほしい。中心は既に v2.1.3 である（T-2026-08-24-philip-syncthing-hub）
+- [ ] 2026-08-24 [cc] config.xml には GUI の apikey が実値で入っている。SPEC Task1 Step2 の BEGIN.*PRIVATE の検査では検出できず、指示どおりだと秘匿値が版管理へ入る。控えを版管理へ置かせる契約では、Task4 Step4 と同じ広さの検査を Task1 の側に置いてほしい（T-2026-08-24-philip-syncthing-hub）
+- [ ] 2026-08-24 [cc] 前契約 T-2026-08-24-syncthing-config-survey が origin/phase0 に未マージのため、SPEC が「正とする」と定めた handoff.md が本契約の分岐に存在しない。feat/syncthing-config-survey から読んで進めた。依存契約を正とする指定をするなら、先にマージしてから起票してほしい（T-2026-08-24-philip-syncthing-hub）

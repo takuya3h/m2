@@ -1,0 +1,82 @@
+result_version: 3
+task_id: "T-2026-08-24-philip-syncthing-hub"
+status: partial
+host: "philip"
+branch: "feat/philip-syncthing-hub"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "config.xml abb2fa89 権限600 / syncthing 32ab747e 権限644 を記録。BEGIN.*PRIVATE は 0 件。控えを repo 内と repo 外の両方へ置き、三ファイルとも要約値が開始時と一致。識別子は版管理に 5 件あり philip の値が設定と一致した。"
+  - id: G2
+    verdict: pass
+    note: "global=false relays=false local=true。実体の device は 5 件（自分＋4台、すべて dynamic）。folder は claude-sync と m2 の 2 件で共有相手は各 5、default は削除。xml_ok。権限は 600 のまま。"
+  - id: G3
+    verdict: pass
+    note: "22000 が TCP/QUIC で LISTEN、8384 も LISTEN、22001 は立たず。folder 定義は起動後も 2 件残存。~/claude-sync/ は sync-alerts.log を保持し .stfolder が増えただけで減っていない。起動は keeper 由来の 1 件（monitor+worker の 2 プロセス）。"
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+
+deviations:
+  - type: judgement
+    note: "claude-sync の型。handoff は他4台の中身が未測定のため UNKNOWN とし sendonly/receiveonly を勧めたが、利用者の判断で SPEC どおり sendreceive とした。他4台の中身は依然未測定。"
+  - type: environment
+    note: "起動と同時に syncthing が v1.27.10 から v2.1.3 へ自動更新され、実行ファイルの要約値が 32ab747e から e8a08fdd へ変わった。完了判定 12 を満たせない。設定形式と DB も移行された。"
+  - type: judgement
+    note: "再発防止として autoUpgradeIntervalH を 12 から 0 にした。契約の Phase B に無い変更だが、放置すると 12 時間ごとに更新が走る。"
+  - type: spec_defect
+    note: "起こし方は handoff 2.5（常駐処理に任せる）を正とした。SPEC は手動起動も許したが、SPEC 自身が handoff を正とすると定めている。1760 秒後に keeper が起動した。"
+  - type: environment
+    note: "~/.ssh/authorized_keys の要約値を測れなかった。実行基盤の権限設定が認証情報への接触を拒否した。開始時・終了時とも UNKNOWN。"
+  - type: judgement
+    note: "config.xml.before の apikey を REDACTED-BY-EXECUTOR に置換した。SPEC Step2 は要約値の一致を求めるが、秘匿値を版管理へ置くことになるため一致を捨てた。原本は repo 外の控えに残る。"
+  - type: spec_defect
+    note: "SPEC 禁止6により make taskindex と make inbox を実行していない。SKILL.md 手順6はこれらを求めるが、契約固有の禁止を優先した。投影は更新されていない。"
+  - type: environment
+    note: "外部通信（stunServer=default / natEnabled=true / crashReportingEnabled=true）は有効のまま。契約の範囲外のため利用者の判断で変更せず記録のみとした。"
+
+issuer_defects:
+  - type: check_does_not_check
+    note: "SPEC Task3 Step3 は実行ファイル名で数えて『同期処理が一件』を期待するが、Syncthing は monitor が worker を fork する構成のため正常な単一起動でも必ず 2 を返す。指示どおり実行すると二重起動と誤認して停止・報告することになる。実際に 2 が出たため、親 PID と STMONITORED 環境変数で monitor(122452, 親は keeper 72428) と worker(122530) を切り分ける必要があった。"
+  - type: check_does_not_check
+    note: "SPEC Task1 Step2 の秘匿検査は grep -c 'BEGIN.*PRIVATE' のみで、期待値 0 を確かめて版管理へ置かせる。しかし config.xml には GUI の apikey が実値で入っており、この検査では検出されない。指示どおり実行すると秘匿値がそのまま版管理に入る。実際に Task4 Step4 の広い検査で 1 件検出され、実行者がマスクした。Task4 の検査が Task1 の検査の穴を塞いでいる形になっている。"
+  - type: shell_assumption
+    note: "SPEC Task3 Step6 は tail -30 ~/claude-sync/syncthing.log を読ませるが、起動元である keeper.sh:42 の出力先は ~/.syncthing.log であり、指定されたファイルは存在しない。指示どおり実行すると『記録なし』となり、起動時の異常を見落とす。実際に自動アップグレードの記録は ~/.syncthing.log にしかなく、これを読まなければ本体が入れ替わったことに気づけなかった。"
+  - type: asserted_without_measuring
+    note: "SPEC Task2 Step3 は『全台が空なので sendreceive でよい（前契約で八キロバイトと確認済み）』と断定するが、前契約の handoff は『他 4 台の中身を測っていないため空の側が sendreceive で参加すると中身を消しうる』と明記して型を UNKNOWN として残している。八キロバイトは philip 単独の実測値であり、全台の実測ではない。指示どおり読むと未測定の事項を確定事項と誤認する。"
+  - type: self_contradiction
+    note: "SPEC 禁止1は『他ホストへ接続する。他ホストの状態を変更する』を禁じるが、SPEC が正とすると定めた handoff は『作業前に 5 台とも 644 であることを確かめる』と『事前に全台の find ~/claude-sync -type f の件数を測っておく』を求める。両立しない。本契約では禁止1を優先し、他 4 台の状態は UNKNOWN のままとした。"
+  - type: self_contradiction
+    note: "SPEC Task4 Step1 は『完了判定 16 項目を表にまとめ』と書くが、契約全体の完了判定表は Task1 の 4 件、Task2 の 6 件、Task3 の 6 件、Task4 の 6 件で合計 22 項目ある。指示どおり 16 項目だけ書くと Task4 自身の判定 17 から 22 が報告から抜ける。本報告では 22 項目すべてを表にした。"
+
+positive_controls:
+  - judgement: "プロセスの走査が実際に数えている（Task3 Step1/Step3）"
+    breaking_input: "実在しない語 zzz_no_such を同じ走査に掛ける"
+    observed: "zzz_no_such=0 を返し、同時に実在する zsh=4 を返した。両方向で対照が成立した。"
+  - judgement: "送信前の秘匿検査が実際に秘匿を検出する（Task4 Step4）"
+    breaking_input: "apikey / BEGIN OPENSSH PRIVATE KEY / password を含む囮ファイルを repo 外に作って検査させる"
+    observed: "囮に対し 3 件を検出。実在しない語 zzz_no_such_secret_token では 0 件。囮は削除し commit していない。"
+  - judgement: "待ち受けの走査が立っていない口を立っていないと言える（Task3 Step4）"
+    breaking_input: "中心では立たないはずの 22001 を同じ走査で見る"
+    observed: "port_22001=- を返し、同時に port_22000=LISTEN と port_8384=LISTEN を返した。"
+
+followups:
+  - "中心は v2.1.3 になった。他 4 台は v1.27.10 と推定されるが未測定である。ノード側の契約では、実行権を戻す前に autoUpgradeIntervalH を 0 にしておくか、v2 へ揃える方針を先に決めること。実行権を戻した瞬間に更新が走る。"
+  - "外部通信が globalAnnounce と relays の無効化だけでは止まらない。stunServer=default により外部 STUN へ問い合わせが行き、外から見た住所が解決された（記録に stun.voipstunt.com:3478 と 131.113.39.33:62442）。natEnabled と crashReportingEnabled も有効。止めるかどうかを起票者が決めること。"
+  - "claude-sync の型は sendreceive で確定させたが、他 4 台の中身は未測定のままである。ノード側の契約で最初の一台を繋ぐ前に、その台の find ~/claude-sync -type f の件数を測ること。"
+  - "前契約 T-2026-08-24-syncthing-config-survey が origin/phase0 に未マージのため、handoff.md は feat/syncthing-config-survey から読んだ。本契約の分岐には前契約の成果物が無い。"
+  - "SPEC 禁止6により投影（make taskindex / make inbox）を更新していない。tasks_summary.csv 等に本契約は現れない。"
+
+unknowns:
+  - "他 4 台（lecun / bengio / andrew / ilya）の syncthing のバージョンと実行権。禁止1により測っていない。"
+  - "他 4 台の ~/claude-sync/ の中身の件数。禁止1により測っていない。"
+  - "~/.ssh/authorized_keys の要約値。開始時・終了時とも、実行基盤の権限設定により測れなかった。"
+  - "~/bin/keeper.sh と ~/bin/m2-sync.sh の開始時の要約値。Task1 で ls -la のみを取り sha256sum を取らなかった。終了時は keeper.sh 9fe9c423 / m2-sync.sh bcf46ba9 で、サイズは両方とも開始時と同一。"
+  - "ノードから philip の 50072 への到達性。前契約が UNKNOWN として残した事項であり、本契約でも他ホストに触れないため測っていない。"
+
+commits: []
