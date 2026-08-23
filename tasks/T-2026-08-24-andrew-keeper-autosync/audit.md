@@ -392,3 +392,92 @@ untracked_and_changed_count=4
 ?? tasks/T-2026-08-24-andrew-keeper-autosync/
 ```
 `.stignore` は更新されたが `.gitignore:192` で除外済み。未追跡件数は開始時と同じ 4 件。
+
+## Phase C / Task 4: 記録、抑止の解除、送出
+
+### Step 2: 秘匿の検査（陽性対照を先に取る）
+```
+--- 囮 /tmp/ka_decoy.md に対して ---
+decoy_hits=3   （3 行すべて検出）
+decoy_removed=YES （囮は削除済み。commit していない）
+--- 本番 ---
+tasks/T-2026-08-24-andrew-keeper-autosync/SPEC.md:319:    grep -n -i -E "BEGIN [A-Z ]*PRIVATE|api[_-]?key|password|passphrase" \
+```
+該当 1 件は SPEC 自身が検査手順として載せている正規表現であり、区切りと値が続く形ではない。
+
+### Step 3: 検証
+```
+validate_exit=0
+OK   T-2026-08-24-andrew-keeper-autosync
+
+1 task(s), 0 failed
+forbidden_exit=0
+{"base": "origin/phase0", "changed": 9, "checked": 9, "errors": [], "excluded": 0, "excluded_paths": [], "generated_directories": ["context/auto/"], "generated_files": ["tasks/inbox.md"], "status": "pass", "violations": []}
+taskindex_check_exit=2
+inbox_check_exit=2
+--- 再生成はしていない（禁止 4）。差分の先頭のみ記録 ---
+=== tasks_summary.csv ===
+--- tasks_summary.csv (現在)
++++ tasks_summary.csv (再生成)
+@@ -50,3 +50,4 @@
+ T-2026-08-22-ilya-node-foundation,impl,pass,ilya,124,false,2,0,0,5,5,6,3,6,2,T-2026-08-22-philip-hub-foundation
+ T-2026-08-22-lecun-node-foundation,impl,pass,lecun,122,false,2,0,0,5,5,6,3,4,3,T-2026-08-22-philip-hub-foundation
+--- inbox.md (現在)
++++ inbox.md (再生成)
+@@ -13,7 +13,7 @@
+ このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
+ 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
+ 
+```
+
+### テスト（本契約は src/ tests/ を変更していないため before と after は同一の測定）
+```
+FAILED tests/test_research_logger.py::test_run_logging_no_double_post_on_normal_exit
+FAILED tests/test_research_logger.py::test_run_logging_swallows_exception_in_user_block
+7 failed, 457 passed, 4 skipped, 16 warnings in 8.72s
+```
+
+### Step 5: 送出
+```
+origin	git@github.com:takuya3h/m2.git (fetch)
+origin	https://github.com/takuya3h/m2.git (push)
+9b166a6 docs(tasks): record the pause release and the reverse control on andrew
+f7d6b98 docs(tasks): record the positive control for the sync pause on andrew
+66a069a docs(tasks): record commit 64e7d50, push and PR #128 for the andrew keeper contract
+64e7d50 feat(sync): deploy keeper and enable git autosync on andrew
+3c4c5a6 Merge pull request #125 from takuya3h/feat/andrew-node-foundation
+## feat/andrew-keeper-autosync...origin/feat/andrew-keeper-autosync
+```
+
+### Step 6: 抑止の解除と、その反対方向の対照
+```
+--- 抑止あり（ahead=1, origin/BR 存在）で m2-sync.sh を回した ---
+m2sync_exit=0 / log 1 -> 2 行 / paused_lines=2 / autopush_lines=0 / ahead は 1 のまま
+--- 解除 ---
+mv_exit=0 / repo 直下から消えた / test_f=absent
+-rw-rw-r-- 1 ubuntu ubuntu 0 Aug 23 17:32 /tmp/.sync-pause.released.T-2026-08-24-andrew-keeper-autosync
+--- 抑止なし（ahead=0）で m2-sync.sh を回した ---
+m2sync_exit=0 / log 2 -> 2 行（増えない） / paused_lines=2（増えない）
+Warning: Identity file ... id_Andrewdeploy not accessible が 2 回 = 45 行と 56 行の git fetch まで到達
+--- 記録の全文 ---
+2026-08-23 17:35:22 [andrew] 一時停止中: /home/ubuntu/slocal2/m2/.sync-pause があるため分岐へ書き込まない（消せば再開）
+2026-08-23 18:01:54 [andrew] 一時停止中: /home/ubuntu/slocal2/m2/.sync-pause があるため分岐へ書き込まない（消せば再開）
+```
+
+### 最終状態
+```
+keeper.sh=1 ['40838']
+ssh -N -L=0 []
+syncthing=0 []
+zzz_none=0 []
+sshd=1 ['1']
+tunnel_log=absent
+syncthing_log=absent
+-rw-r--r-- 1 ubuntu ubuntu 26730145 Aug 23 13:54 /home/ubuntu/bin/syncthing
+sync_pause=absent
+untracked=4
+ M tasks/T-2026-08-24-andrew-keeper-autosync/audit.md
+?? .sync-pause.released
+?? docs/sessions/digest/2026-08-22-bf22ad91-0c56-4705-a6aa-ee24af1feeeb.md
+?? docs/sessions/digest/2026-08-23-5d62430b-7545-4769-a54e-673ea88fdc8d.md
+```
