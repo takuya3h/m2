@@ -1,0 +1,89 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-24-philip-syncthing-hub"
+  kind: impl
+  title: "中心の同期処理の設定を組み立て、待ち受けを立てる（他ホストは触らない）"
+  origin: claude-app
+  created_at: "2026-08-24T12:00:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-24-syncthing-config-survey"]
+  amendments: []
+
+intent:
+  question: "保守作業で全サーバーが初期化され、再構築は最終段階に入った。前契約の調査で、設定は直接編集でき常駐は要らないこと、告知と中継の既定値が旧構成と逆であること、起動の引き金が実行ファイルの実行権であることが確定した。中心の設定を整え、四台を相手として登録し、共有フォルダを二つ定義して、待ち受けを立てられるか"
+  decision_at_stake: "中心が受け入れ態勢を整えられるか。ここが済めば各ノードが中継を張って繋ぎに来られる。設定を整える前に起動すると、定まらない状態で同期が走るため、実行権を戻す順序が要になる"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/sync/keeper.sh"
+      - "scripts/sync/m2-sync.sh"
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "開始状態の封印と控えの保存", gpu: false, est: "40m"}
+    - {id: B, name: "設定の組み立て", gpu: false, est: "60m"}
+    - {id: C, name: "起動と待ち受けの確認", gpu: false, est: "40m"}
+    - {id: D, name: "記録、送出、報告", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "設定と実行ファイルの要約値と権限を記録し、実行権が落ちていることを確かめた。設定に秘密鍵の本体が無いことを確かめて控えを版管理へ残した。五台の識別子を版管理から読み、自分の値が設定と一致した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "告知と中継を無効にし、四台を相手として登録し、共有フォルダを二つ定義して使わないものを消した。書式が解析でき、実体の件数が期待どおりで、権限が変わっていない"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "同期処理が一件だけ動き、中心の待ち受けが立ち、中継の口は立っていない。共有フォルダの定義が残り、共有領域の中身が減っていない"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-24-philip-syncthing-hub/"
+  acceptance:
+    - "設定と実行ファイルの要約値と権限を開始時に記録し、控えを版管理へ残している"
+    - "控えに秘密鍵の本体が含まれないことを確かめている"
+    - "五台の識別子を版管理から読み、本文への転記に頼っていない"
+    - "告知と中継を無効にしたことを、要素ごとの値で示している"
+    - "四台を相手として登録し、共有フォルダを二つ定義して使わないものを消している"
+    - "設定の書式が解析でき、権限が変わっていないことを示している"
+    - "実行権を戻す前に設定が整っていたことを、手順の順序で示している"
+    - "同期処理が一件だけ動き、中心の待ち受けが立ち、中継の口が立っていないことを示している"
+    - "共有領域の中身が減っていないことを大きさと件数で示している"
+    - "目印と常駐処理と受け入れ一覧が無変更で、分岐が送出され、報告が台帳へ返っている"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "設定の書式が壊れ、控えから戻す必要が生じた場合"
+    - "中心の待ち受けが立たず、設定か起動のどちらが原因か切り分けられない場合"
+    - "同期処理が二件以上動いてしまった場合"
+    - "共有領域の中身が減った場合"
+    - "版管理から読んだ識別子が設定と一致しない場合"
