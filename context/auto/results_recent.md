@@ -8,6 +8,8 @@
 
 新しい順に 5 件を載せる（対を持つ契約は全 47 件）。
 ここに出ない 42 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 48 件）。
+ここに出ない 43 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-08-22-philip-hub-foundation
 
@@ -71,6 +73,74 @@
 
 - 開始前の試験の失敗件数。契約の開始時点では .venv が壊れていて python が起動せず測れなかった。tests.before_failed に置いた 5 は修復直後の実測値であって『開始前』の値ではない。本契約は src/ tests/ を変更していない。
 - ~/.ssh/id_ed25519（コメント no comment、SHA256:cdOmPfuBN4wFfTjbvjDIaGgiv3YaHEMLez0td1v5oE4）が何のために置かれた鍵か。git fetch が SSH で通ることから GitHub 向けと推定したが、確かめていない。触れていない。
+## T-2026-08-22-lecun-node-foundation
+
+状態 `pass` / ホスト `lecun` / 起票 `122` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — HEAD と origin/phase0 がともに 8eec82ec、rev-list --left-right --count が 0 0。 .venv/bin/python は uv 管理の cpython-3.11.16 へ解決でき Python 3.11.16 を返した。 du -sh .venv は前 6.2G / 後 6.2G。uv venv --clear は実行していない。 which python は /home/ubuntu/slocal/m2/.venv/bin/python。 zsh -c と bash -lc がともに SERVERNAME=lecun を返した（設定前は unset）。 git config --local に user.name=takuya3h / user.email=daky.o7600@gmail.com を設定。 git remote -v は fetch/push とも https で、初めから git@ ではなかった。
+- `G2` pass — 鍵の指紋は SHA256:g5TwfvgDPsNhiSd9OXDZoWDj99au1y8yEnW8hmNyqHI (ED25519)。 scripts/sync/hub_keys/lecun.pub の指紋が生成時と一致。 三つの検査は head -c 30 が ssh-ed25519 AAAAC3NzaC1lZDI1NT、PRIVATE が 0 件、行数が 1。 囮に同じ三つをかけると PRIVATE が 2 件、行数 3、先頭は鍵の書き出しの標識行で 三つとも外れた。囮は版管理へ入れていない。 配布物 sha256 は c04ffbdedcd1d18ccb4a34a341a6a2b2461082f7a6f43537eb0bba860975fd60、 配置物 sha256 は 32ab747eb18ff3a01423f9719c5b8a8165da63e60ee9c3f733887464c70ca1dd で いずれも中心の値と一致。syncthing v1.27.10 が表示できた。 scripts/sync/device_ids/lecun.txt は grep -c '' が 1 で OOOTQMG-2WT55EF-YGX55VM-YWFWVRT-XUSDUUB-3AXCYV4-OVY2X3H-KRFOWA3。 port_22000 と port_8384 はいずれも非待ち受け（port_22 は LISTEN）。pgrep -x syncthing は該当なし。
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — SPEC 冒頭が repo を ~/slocal2/m2 と書き、前提でも cd ~/slocal2/m2 を指示するが、 /home/ubuntu/slocal2 は存在しない（ls: cannot access）。実体は /home/ubuntu/slocal/m2 である。 指示どおり実行すると最初の cd が失敗し、以降の git fetch や git checkout -b が 別のディレクトリで走るか set -e 下では即座に止まる。
+- `shell_assumption` — Task 3 Step 1 の for f in ~/.ssh/id_* は、bash ではマッチが無いとき未展開の文字列で 1 回まわり case で落ちて無害に終わるが、ログインシェルの zsh は既定でマッチが無いと no matches found を出してその場でコマンドを失敗させる。本契約は全て失われた新規構築を 前提としており鍵が零件なのは正常な状態である。実際に (eval):1: no matches found: /home/ubuntu/.ssh/id_* が出て既存確認で止まった。 ls -la ~/.ssh/ の一覧で代替して確かめた。
+- `asserted_without_measuring` — Task 2 Step 2 が scripts/sync/setup_host_servername.sh --help を指示し「道具を読んでから 使う」と続けるが、この道具は --help を受け付けず ERROR: 不明なオプション '--help'（--dry-run / --verify のみ） を返す。 指示どおりでは使い方が得られないため、道具の先頭 60 行を直接読んで用法を得た。
+
+### 逸脱
+
+- `spec_defect` — SPEC の repo 位置 ~/slocal2/m2 が存在しないため ~/slocal/m2 で作業した。 ls で ~/slocal2 の不在を確かめてから判断した。
+- `judgement` — SPEC は git checkout -b feat/lecun-node-foundation origin/phase0 を指示するが、 分岐は既に存在し origin/phase0 と同一の先頭を指していた（rev-list が 0 0）。 切り直すと未追跡の扱いに影響が出るため既存の分岐をそのまま使った。
+- `environment` — 契約の取得を手で行っていない。spec.yaml と SPEC.md はセッション開始時点で tasks/T-2026-08-22-lecun-node-foundation/ に未追跡で置かれていた。再取得していない。
+- `environment` — SPEC Task 1 Step 2 の主眼である .venv の貼り直しは、実測の結果壊れていなかったため 実施対象が無かった。jsonschema の導入（Step 3、既に 4.26.0）と git remote set-url --push（Step 5、既に https）も同じ理由で実行していない。
+- `judgement` — 契約は論理名を ~/.zshenv と ~/.profile の 2 つへ置くよう求めるが、道具 scripts/sync/setup_host_servername.sh は ~/.bashrc にも同じ 3 行を置く。 冪等性と戻し方が保証されるため道具をそのまま使った（契約の要求の上位集合）。
+- `judgement` — 陽性対照の生出力に含まれる囮の値（語=値 と 語: 値 の 2 行）と鍵の書き出しの標識行は、 囮であって実在の資格情報ではないが形が該当するため、SPEC の「削る」指示に従い 字面を記述へ置き換えた。件数による証拠は残している。
+
+### 申し送り
+
+- 前契約（philip）の実測 10 件のうち 4 件が lecun では当てはまらず、1 件が半分だけ当たった。 非該当は #1（.venv が壊れた繋がり）、#4（pushurl が SSH）、#5（jsonschema の導入が要る）、 #10（libGL.so.1 が無く mmcv/mmdet を読み込めない。lecun では mmcv 2.1.0 / mmdet 3.3.0 とも import 成功）。半分は #3（~/.gitconfig は在るが user.name/user.email だけが無い）。 他台へ同じ契約を配るときは、前契約の実測を前提ではなく仮説として扱うべきである。
+- P9 spec_lint の separated_source 3 件（SPEC.md:396/399/402）は検査器の側の誤検知である。 SPEC の当該箇所は \ による行継続で source ... && ... を 1 つの命令として書いており 読み込みは引き継がれる。tools/check_spec.py の rule_separated_source が行を \ で結合せず 次行を「次の命令」と見なすため該当が出る。契約の誤りではない。 検査器が行継続を結合するよう直せば、この誤検知は消える。
+- tests の失敗 5 件は本契約以前から在るもので内容も無関係である。追跡ファイルを一つも 変更していないため試験対象の木は origin/phase0 と同一であり、前後の実測は同じ値になる。 test_research_logger の 4 件は Notion への記録が None を返すことによる （assert None == 'page-abc'）。scripts/load_env.sh が使えず資格情報が入らない状況と整合する。 test_engines の 1 件は未追跡の理由で落ちており本契約では触れていない。
+- 次の契約（登録と起動）で使う値。識別子は OOOTQMG-2WT55EF-YGX55VM-YWFWVRT-XUSDUUB-3AXCYV4-OVY2X3H-KRFOWA3 （scripts/sync/device_ids/lecun.txt）。中心の受け入れ一覧へ入れる指紋は SHA256:g5TwfvgDPsNhiSd9OXDZoWDj99au1y8yEnW8hmNyqHI （公開鍵は scripts/sync/hub_keys/lecun.pub）。秘密鍵は ~/.ssh/id_ed25519_lecuntophilip にあり当ホストから出していない。
+
+### 断定できなかったこと
+
+- 配布物の要約値の照合が空振りでないこと。別版を落として不一致になることは確かめていない。 中心と版を揃える要求と禁止事項のため意図的に測っていない。
+- make forbidden-check が禁止領域の変更を実際に捕まえるかどうか。 禁止領域を意図的に汚す検査は行っていない。
+- test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics が失敗する理由。 本契約の範囲外のため追っていない。
+
+## T-2026-08-22-bengio-node-foundation
+
+状態 `pass` / ホスト `bengio` / 起票 `123` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — HEAD=8eec82ec で rev-list --left-right --count HEAD...origin/phase0 が 0 0。 .venv/bin/python -V が Python 3.11.16、which python が .venv 配下、 torch 2.1.2+cu118 / cuda True。du -sh .venv は前後とも 6.2G。 zsh -c と bash -lc の両方で SERVERNAME=bengio。 user.name=takuya3h / user.email=daky.o7600@gmail.com を repo scope へ設定。 送出は git@ のまま維持した（ssh -T git@github.com が認証を返し鍵は消えておらず、 set-url は実行環境の権限判定に拒否された）。deviations 3 を参照。
+- `G2` pass — 鍵の指紋 SHA256:Ea9ReajNAiOoaixOPnahszJrJug/UvSXI4ZJZjAr6G4。 版管理側 bengio.pub は先頭 ssh-ed25519、grep -c PRIVATE=0、grep -c ''=1 で、 囮ではこの 3 つがすべて反転した。 配布物 sha256=c04ffbdedcd1d18ccb4a34a341a6a2b2461082f7a6f43537eb0bba860975fd60、 配置物 sha256=32ab747eb18ff3a01423f9719c5b8a8165da63e60ee9c3f733887464c70ca1dd で いずれも中心の記載と一致。 device_ids/bengio.txt は 1 行で 4NIRI4M-BKF2ELP-QKUSUWG-II6SCOD-SHM3U5J-ZMWUAYN-IA6PXIT-X52VHQO。 port_22000 と port_8384 は非待ち受け、pgrep -x syncthing は exit 1。
+
+### 起票者の誤り
+
+- `shell_assumption` — 終了コードの取得に bash 専用の ${PIPESTATUS[0]} を使っている（SPEC Task 5 Step 3 ほか）。 本実行環境のログインシェルは zsh であり、指示どおり実行すると validate_exit= のように 値が空のまま表示され、終了コードを見る検査が空振りする。zsh は ${pipestatus[1]}。
+- `shell_assumption` — source が単独の命令で終わる書き方になっており、P9 spec_lint の separated_source が SPEC.md:396,399,402 の 3 箇所で該当した。命令ごとに新しいシェルが起きる実装系では 前の命令で読み込んだ仮想環境が次へ引き継がれず、指示どおり実行すると venv 外の python で make が走る。読み込みは同じ命令の中に入れる必要がある。
+
+### 逸脱
+
+- `judgement` — 3.11 系の実体がホストに一つも無く（~/.local/share/uv/python/ も ~/.pyenv/ も不在、 /usr/bin/python3 は 3.12.3）、貼り直す先が存在しなかった。禁止 7 に触れず 6.2G を 守るため uv python install 3.11 で philip と同一パスへ cpython-3.11.16 を用意してから 貼り直した。.venv の中身は触れておらず du は 6.2G のまま。
+- `judgement` — .venv/pyvenv.cfg の home 行が消えた pyenv を指したままでは sys.base_prefix が 解決できず python が起動しないため、退避 /tmp/pyvenv.cfg.bak を取ってから home の 1 行だけを新しい実体へ書き換えた。SPEC は繋がりの貼り直ししか指示していない。
+- `environment` — 送出の経路を https へ切り替えなかった。SPEC Task 1 Step 5 の前提「鍵は消えている」が bengio では不成立で、ssh -T git@github.com が Hi takuya3h! を返し git fetch も成功する。 credential.helper が未設定のため https へ切り替えると動いている経路を壊す。加えて git remote set-url --push は実行環境の権限判定に拒否された。git@ のまま維持した。
+- `environment` — SPEC の終了コード取得 ${PIPESTATUS[0]} は bash の様式で、本実行環境の zsh では 空文字を返す。判定を空振りさせないため ${pipestatus[1]}（小文字・1 始まり）へ 読み替えて実測した。
+
+### 申し送り
+
+- libGL.so.1 が不在で mmcv / mmdet を import できない（ImportError: libGL.so.1）。 本契約の範囲外だが、bengio で学習・評価を回す前に別契約での対処が要る。
+- ~/bin/m2-sync.sh と keeper.sh が bengio に存在せず、pgrep -x でも該当なし。 保守作業で常駐処理も失われている。同期処理の常駐化は全台の値が揃ってからの別契約。
+- scripts/sync/hub_keys/ に philip.pub が無い（andrew.pub / bengio.pub / ilya.pub のみ）。 中心自身のため不要と見られるが、受け入れ一覧を組み立てる契約で前提を確定させること。
+- scripts/sync/device_ids/ は bengio.txt と philip.txt の 2 件のみ。 andrew と ilya の識別子が未公開のため、登録の契約はまだ開始できない。
+
+### 断定できなかったこと
+
+- 同期処理を起動したときに 22000/8384 が LISTEN として検出されるか。禁止 6 により未測定。
 
 ## T-2026-08-18-report-back-to-ledger
 

@@ -14,6 +14,7 @@
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
 ## 未処理（278 件）
+## 未処理（284 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -293,6 +294,19 @@
 - [ ] 2026-08-23 [cc] tasks/README.md は抽出物を「契約の記録と一緒に含めること」とするが、本契約の禁止 1 は未追跡の成果物を commit することを禁じる。docs/sessions/digest/ の 1 件は未追跡のまま残した。どちらを優先するかが未決（tasks/README.md）
 - [ ] 2026-08-23 [cc] 試験 5 件が失敗したまま。test_engines の score_thr が 0.0 と 1e-08 で不一致、test_research_logger の 4 件は Notion 資格情報が無く log_run が None を返す。本契約の変更とは無関係で、資格情報の復旧待ちか期待値の見直しかが未決（tests/test_research_logger.py）
 - [ ] 2026-08-23 [cc] 版管理には旧版の scripts/sync/hub_keys/ilya.pub（SHA256:5auPdGk/…, ubuntu@aolab, commit 806abe4）が在り、本契約で置き換えた。SPEC Task 3 Step 1 の既存確認は ~/.ssh だけを見ており版管理側を見ない。残りのホストの契約では git show HEAD:scripts/sync/hub_keys/<host>.pub を足すこと（tasks/T-2026-08-22-ilya-node-foundation）
+- [ ] 2026-08-23 [cc] bengio には 3.11 系の実体が一つも無く、philip の「uv 管理の実体へ貼り直す」経路が使えなかった。uv python install 3.11 を挟み pyvenv.cfg の home 行も直す必要がある。他台でも同じはず（.venv/pyvenv.cfg）
+- [ ] 2026-08-23 [cc] bengio では配備鍵が消えておらず ssh -T git@github.com が認証を返す。SPEC の「https へ切り替える」前提が不成立で、credential.helper 未設定のため切り替えると動く経路を壊す。全台で前提を実測してから指示すること（tasks/T-2026-08-22-bengio-node-foundation/RESULT.md §4）
+- [ ] 2026-08-23 [cc] SPEC の終了コード取得が bash 様式 ${PIPESTATUS[0]} で zsh では空文字になる。終了コードを見る検査が空振りする。契約の雛形をシェル非依存にするか zsh 様式を併記するかが未決（tasks/_templates/）
+- [ ] 2026-08-23 [cc] 存在確認と実行を && で繋ぐと、不在で ls が exit 2 を返した時点で実行側が短絡して走らない。syncthing generate で実際に起き、道具が壊れて見えた。契約の手順は ; で分けること（tasks/T-2026-08-22-bengio-node-foundation/audit.md）
+- [ ] 2026-08-23 [cc] libGL.so.1 が不在で mmcv / mmdet を import できない。bengio で学習・評価を回す前に別契約での対処が要る（.venv）
+- [ ] 2026-08-23 [cc] hub_keys に philip.pub が無く device_ids は bengio と philip の 2 件のみ。andrew と ilya が揃うまで登録の契約は開始できない（scripts/sync/）
+- [ ] 2026-08-23 [cc] SPEC の repo 位置 ~/slocal2/m2 が lecun に存在せず、実体は ~/slocal/m2。配布時にホストごとの位置を確かめる仕組みが要る（tasks/T-2026-08-22-lecun-node-foundation/SPEC.md）
+- [ ] 2026-08-23 [cc] 前契約（philip）の実測 10 件のうち lecun では 4 件が非該当・1 件が半分。.venv も push 経路も jsonschema も mmcv/mmdet も生きていた。実測を前提として配ると誤った作業を誘発する（tasks/T-2026-08-22-lecun-node-foundation/RESULT.md）
+- [ ] 2026-08-23 [cc] for f in ~/.ssh/id_* は zsh でマッチ零件のとき no matches found で止まる。「全て失われた」新規構築の契約では零件が正常な状態のため、既存確認の手順が必ず落ちる（tasks/_templates/ へ反映するか未決）
+- [ ] 2026-08-23 [cc] P9 の separated_source は \ 行継続を結合しないための誤検知。検査器が行を結合すれば消える。誤検知が続くと WARN が読み飛ばされる（tools/check_spec.py の rule_separated_source）
+- [ ] 2026-08-23 [cc] tasks/README.md は「抽出物は版管理へ記録する」（git add docs/sessions/digest/）と書くが、本契約の禁止 1 は未追跡の成果物を commit することを禁じる。lecun には未追跡の抽出物が 2 件あり、契約を優先して残した。どちらが優先かが未決（docs/sessions/digest/）
+- [ ] 2026-08-23 [cc] 陽性対照の生出力には囮の値（語=値 の形）と鍵の書き出しの標識行が入る。秘匿検査の「削る」指示と、生出力を要約せず貼る指示が競合する。件数だけを残す方式で回避したが、様式として決めておきたい（tasks/_schema/result.schema.json の positive_controls）
+- [ ] 2026-08-23 [cc] setup_host_servername.sh は --help を受け付けない（--dry-run / --verify のみ）。SPEC が --help を指示する箇所があり、道具側に足すか契約側を直すかが未決（scripts/sync/setup_host_servername.sh）
 
 ## 処理済み（1 件）
 
