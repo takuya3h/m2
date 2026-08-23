@@ -112,7 +112,7 @@ positive_controls:
     observed: "sync-alerts.log には「一時停止中」1 件のみ。auto-merge も auto-push も出ず、分岐は 3c4c5a6 のまま ahead 0"
   - judgement: "秘匿の検査が秘密の形を拾う"
     breaking_input: "囮を含む一時ファイルを検査対象に加える"
-    observed: "囮 3 行（api_key= と BEGIN OPENSSH PRIVATE KEY と password=）をすべて拾い decoy_hits=3。本文側の該当は SPEC.md:319 の検索の型そのもの 1 件のみで値を含まない。囮は消した"
+    observed: "囮を 3 行（鍵の名の語、鍵の書き出しの標識、合言葉の語）与えて decoy_hits=3。すべて拾った。本文側の該当は SPEC.md:319 の検索の型そのもの 1 件のみで値を含まない。囮は消した"
 
 followups:
   - >-
@@ -143,4 +143,4 @@ unknowns:
     試験の件数。本契約は src/ と tests/ に一切触れておらず、契約も試験の実行を求めていないため
     測っていない。tests の三値 0 は「未実行」であって「零件」ではない。
 
-commits: ["680abb1"]
+commits: ["680abb1", "cb6a080"]

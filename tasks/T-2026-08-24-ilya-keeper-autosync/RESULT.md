@@ -336,7 +336,7 @@ tasks/T-2026-08-24-ilya-keeper-autosync/SPEC.md:319:    grep -n -i -E "BEGIN [A-
 **陽性対照。** 検査が空振りでないことを、囮を含む一時ファイルで確かめた。
 
 ```
-$ printf 'api_key=DUMMY_NOT_REAL\n-----BEGIN OPENSSH PRIVATE KEY-----\npassword=x\n' > /tmp/decoy_secret.md
+$ printf '…' > /tmp/decoy_secret.md   # 囮 3 行: 鍵の名の語、鍵の書き出しの標識、合言葉の語
 $ echo "decoy_hits=$(grep -c -i -E '…' /tmp/decoy_secret.md)"
 decoy_hits=3
 $ rm -f /tmp/decoy_secret.md
@@ -344,7 +344,11 @@ $ echo "decoy_removed=$(test -e /tmp/decoy_secret.md && echo NO || echo YES)"
 decoy_removed=YES
 ```
 
-**囮の三行をすべて拾った。検査は働いている。囮は commit していない。**
+**囮の三行をすべて拾った。検査は働いている。囮は消しており commit していない。**
+
+**囮の中身をここに書き写していない。** 生の出力には「語＋区切り＋値」の形と
+鍵の書き出しの標識行が含まれるため、**この検査自身が自分の報告を止める。**
+件数だけを残す方式は前契約（2026-08-23）で受け皿へ起票済みの既知の競合である。
 
 ### 10-2. 検証（完了判定 17 の一部）
 
