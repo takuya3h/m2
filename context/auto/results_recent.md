@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 48 件）。
-ここに出ない 43 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 49 件）。
+ここに出ない 44 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-08-22-philip-hub-foundation
 
@@ -71,6 +71,44 @@
 - make forbidden-check が禁止領域の変更を実際に捕まえるかどうか。 禁止領域を意図的に汚す検査は行っていない。
 - test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics が失敗する理由。 本契約の範囲外のため追っていない。
 
+## T-2026-08-22-ilya-node-foundation
+
+状態 `pass` / ホスト `ilya` / 起票 `124` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — HEAD=origin/phase0=8eec82e（ahead/behind 0/0）。.venv 修復後 Python 3.11.16 が起動し sys.prefix=/home/ubuntu/slocal2/m2/.venv。du は前後とも 6.2G。zsh -c と bash -lc の両方で SERVERNAME=ilya。git user.name=takuya3h、push url=https://github.com/takuya3h/m2.git。
+- `G2` pass — 鍵の指紋 SHA256:O4FrUiuT3+JNwIDMduljzPXfS7minab+CkWfg4gDzIQ。公開鍵は先頭 ssh-ed25519 / PRIVATE=0 / 行数=1、囮では PRIVATE=2 / 行数=3 で弾かれた。tar sha256=c04ffbde…75fd60、bin sha256=32ab747e…0ca1dd で中心と一致。device_ids/ilya.txt は 1 行。port 22000/8384 とも待ち受けなし、pgrep -x syncthing 該当なし。
+
+### 起票者の誤り
+
+- `self_contradiction` — Task 1 Step 5 は git remote set-url --push origin https://… を指示した直後に『両方が https になったことを確かめる』を求めるが、この下位命令は remote.origin.pushurl だけを設定し fetch 側の remote.origin.url は変えない。指示どおり実行すると git remote -v は git@…(fetch) と https://…(push) を出力し、Expected を満たせなかった。両方を https にするには git remote set-url origin https://… の併用が要る。
+- `self_contradiction` — Task 5 Step 1 は『完了判定 17 項目を表にまとめ』と指示するが、SPEC 本文の完了判定表は Task 1〜5 で 22 項目を挙げている（Task 5 の表が 18〜22）。指示どおり 17 項目だけ書くと送出・秘匿検査・未追跡の保全に関する 18〜22 が報告から落ちる。本報告は 22 項目すべてを表にした。
+- `check_does_not_check` — Task 3 Step 1『既存の鍵を確かめる』は ~/.ssh/ だけを走査させ、scripts/sync/hub_keys/ に旧版が在るかを確かめさせない。Step 4 も cp を指示するだけで『置く』と書き『置き換える』とは書いていない。指示どおり実行すると版管理にあった旧版 ilya.pub（SHA256:5auPdGk/WfnGcmpQ8yygEc6mMv7svH8CzqulBjV3pRo, ubuntu@aolab, commit 806abe4）を、それと気づかないまま上書きする。git status が M を出したことから気づいた。
+
+### 逸脱
+
+- `judgement` — 貼り直し先の Python 3.11 実体がホストに一つも無かった（~/.local/share/uv/ ごと不在、システムは 3.12 のみ）。SPEC は無かった場合の指示を持たない。ユーザーへ二択を提示し uv python install 3.11 を選択された上で実行。取得された cpython-3.11.16 は philip の実体と同一版で ABI も一致。.venv の 6.2G は破棄していない。
+- `judgement` — pyvenv.cfg の home は壊れた pyenv のパスのまま残した。sys.prefix と site-packages はいずれも正しく解決され 477 件の試験が走ったため、動いているものへ触れないほうが差分が小さいと判断した。
+- `spec_defect` — Task 1 Step 5 の Expected『両方が https』は指示された git remote set-url --push では達成できない。push 経路のみ https へ変更し、fetch 側は SSH で生きていることを実測して残した。
+- `environment` — task スキルが求める .sync-pause の目印を置いていない。ilya には ~/bin/m2-sync.sh も ~/claude-sync/ も存在せず（保守作業で初期化された）、止める対象が無いため。自動統合の危険は無い。
+- `judgement` — 囮の先頭行を報告へそのまま貼っていない。貼ると自分の秘匿検査が自分の報告に該当を出すため、audit.md では先頭 30 文字を途中で切った。検査の結果の数値はすべて貼ってある。
+- `judgement` — cp の前に scripts/sync/hub_keys/ の中身を測っていなかった。SPEC Task 3 Step 4 は mkdir -p と cp を続けて指示しており手順に『置く前に見る』が無い。そのまま実行して旧版を上書きし、git status の M で気づいた。失われたものは無い（旧版は git 履歴に残り、対応する秘密鍵は初期化で既に失われていた）。
+
+### 申し送り
+
+- bash -c（非対話・非ログイン）では SERVERNAME が未設定のままである。道具の冒頭に明記された既知の限界で、利用者ファイルでは覆えず /etc/environment（要 root・システム全体）が要る。本契約の範囲外。
+- 前契約の事実 10（libGL.so.1 が無く mmcv/mmdet を読み込めない）は ilya では当てはまらなかった。mmdet を要する tests/test_engines.py も収集・実行された。
+- 試験 5 件が失敗したままである。tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics（score_thr が 0.0 と 1e-08 で不一致）と tests/test_research_logger.py の 4 件（Notion 資格情報が無く log_run が None を返す）。いずれも本契約の変更とは無関係で、src/ tests/ には一切触れていない。
+- P9 spec_lint の host_mismatch は、論理名を使うこの環境では常に該当する。規則は socket.gethostname() と比べるが ilya と philip はともに aolab を返す。検査器の側の限界であり、起票者の誤りとしては数えていない。
+- 登録と起動は行っていない（禁止 4・6）。次の契約で全台の値が揃ってから行う。中心 philip の識別子 3J4TRX4-… は版管理から読み取って SPEC の記載と一致することを確かめた。
+- 版管理にあった旧版の scripts/sync/hub_keys/ilya.pub（SHA256:5auPdGk/WfnGcmpQ8yygEc6mMv7svH8CzqulBjV3pRo, ubuntu@aolab）を新版で置き換えた。旧版の秘密鍵は初期化で失われており、このホストに存在しない。中心 philip が受け入れ一覧へ入れるべきは新版 SHA256:O4FrUiuT3+JNwIDMduljzPXfS7minab+CkWfg4gDzIQ であり、旧版は無効である。
+
+### 断定できなかったこと
+
+- 開始前の試験の失敗件数。契約の開始時点では .venv が壊れていて python が起動せず測れなかった。tests.before_failed に置いた 5 は修復直後の実測値であって『開始前』の値ではない。本契約は src/ tests/ を変更していない。
+- ~/.ssh/id_ed25519（コメント no comment、SHA256:cdOmPfuBN4wFfTjbvjDIaGgiv3YaHEMLez0td1v5oE4）が何のために置かれた鍵か。git fetch が SSH で通ることから GitHub 向けと推定したが、確かめていない。触れていない。
+
 ## T-2026-08-22-bengio-node-foundation
 
 状態 `pass` / ホスト `bengio` / 起票 `123` / 様式 `v3`
@@ -130,41 +168,5 @@
 ### 断定できなかったこと
 
 - 台帳の他の行が変わっていないことは、触れた行を限定した事実からしか言えていない。全行の内容を送信前後で突き合わせてはいない
-- 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
-
-## T-2026-08-17-report-projection-and-friction
-
-状態 `pass` / ホスト `lecun` / 起票 `74` / 様式 `v2`
-
-### ゲート
-
-- `G1` pass — 投影に転記された 45 件の記述が result.yaml の原文と 1 件も食い違わなかった。2 回生成して md5 一致、taskindex-check は exit 0。陽性対照として 1 行を手で足すと非ゼロへ変わり、再生成で 0 へ戻った
-- `G2` pass — 分母を宣言しない本 task では L2-8 が 0 件で exit 0。分母を宣言した一時契約では L2-8 が 3 件発火した。片方だけでなく両方向を実物で測った
-- `G3` pass — 索引を再生成した直後・索引を記録した直後・投影を記録した直後の 3 時点すべてで context-check が exit 0。従来は 2 番目の時点で必ず落ちていた
-- `G4` pass — research_logger と tracking への差分が origin/phase0 との比較でも作業ツリーでも 0 件。調査のみで実装は変更していない
-
-### 起票者の誤り
-
-- `self_contradiction` — G1 が Phase A の直後に「本 task 自身の完了報告を拡張した様式で書き、投影を生成する」ことを求める一方、報告の作成は Task 8 に置かれている。指示どおり Phase A の直後に評価しようとすると、まだ測っていないゲートの判定や試験の件数を書くことになり、禁止 10「未測定の値を書かない」と衝突する
-- `check_does_not_check` — Task 6 Step 2 が案を読むために示した探し方 grep -rn スタンプ ... | head は、表示用の切り詰めによって肝心の案の一覧（3 案が並ぶ行）を落とす。指示どおり実行すると案を読まずに選ぶことになり、SPEC 自身が注意 3 で禁じた「記録を作る流れに表示用の切り詰めを混ぜない」を起票者が犯している
-
-### 逸脱
-
-- `spec_defect` — G1 は Phase A の直後の評価を求めるが、その検査は本 task 自身の完了報告を必要とする。報告は Task 8 で書くため、Phase A 直後に評価すると未測定の値を書くことになり禁止 10 に触れる。機械的な部分（転記の原文一致・冪等・手による編集の検出）を Phase A 直後に実測し、報告を使う照合は報告を書いた後に行った
-- `judgement` — 投影の生成物を列挙している文書 5 箇所（Makefile・context/README.md・tasks/README.md・task の SKILL.md）を、指示に無いが同時に直した。前契約で「数の主張は機械検査を通過したまま古くなる」と実測しているため、投影を足した時点で直さなければ必ず古くなる
-- `judgement` — G2 の陽性対照に使った一時契約は L2-2（分母の参照解決）で FAIL したまま L2-8 の発火を確認した。参照は exp:<group>/<experiment_id> の形式を要求するが、実在の実験 id は @val や 2 段の / を含むため完全に通る一時契約を作れなかった。警告は L1 通過後の L2 段で出るため、発火の確認には足りている
-
-### 申し送り
-
-- results_recent.md の上限は 5 件である。契約が増えると古い順に載らなくなる。超えた分の在り処は冒頭に書いてあるが、上限そのものの妥当性は運用してから見直すこと
-- 版 1 の報告 4 件は gates[].note を持たないため、投影では「記述なし。様式 v1」と出る。遡って埋めない方針だが、読む側にとっては当面この 4 件だけ中身が薄い
-- issuer_defects[].note の下限 80 字は既存 15 件の分布から決めた。件数が増えたら分布を測り直すこと。下限は結果を書かない記述を拒むためのものであり、字数を稼がせるためではない
-- index.csv の wandb_run_id は全 751 行が空である。列を揃えたのは経路の食い違いを消すためで、値が入るのは wandb_run.json を残す run が現れてからである
-- test_research_logger の 4 件は B-40 として起票済みだが未着手のままである。原因は特定した（§Phase D）。直し方の判断は log_run の戻り値の規約を決めることから始まる
-
-### 断定できなかったこと
-
-- 外部記録へ過去に実際に送信されたかは確かめられなかった。API へは到達でき認証も通ったが、現在の資格情報の entity 配下には project が 0 件で、目的の project も存在しない。資格情報と entity は eef6687 で更新されており、過去の送信先は現在の資格情報からは辿れない。手元に 319 の痕跡があることは送信の証拠にならない
-- 手元の wandb/ にある 319 の run ディレクトリはいずれも offline-run- ではないため、実行時は送信する設定だったと読める。ただし送信が成功したかは手元の痕跡からは判定できない
 - 他ホストでは本 task の変更を実行していない。lecun 上でのみ実測した
 
