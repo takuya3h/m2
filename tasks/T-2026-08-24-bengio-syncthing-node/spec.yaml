@@ -1,0 +1,89 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-24-bengio-syncthing-node"
+  kind: impl
+  title: "一台目のノードを中心へ繋ぎ、実際にファイルが届くことを確かめる"
+  origin: claude-app
+  created_at: "2026-08-24T14:00:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-24-philip-syncthing-hub"]
+  amendments: []
+
+intent:
+  question: "中心の待ち受けは立ち、四台が相手として登録され、共有フォルダ二件が同期可能になった。本ホストを中心へ繋げるか。中心は起動時の自動更新で版が上がったため、先に版を揃える必要がある。中継を張り、設定を組み立て、起動して、実際にファイルが届くことを確かめられるか"
+  decision_at_stake: "一台目が繋がるか。ここで手順が固まれば残る三台へ同じ形で進められる。繋がらない場合、中心側の設定か中継か版の食い違いのどれが原因かを切り分ける必要がある"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/sync/keeper.sh"
+      - "scripts/sync/m2-sync.sh"
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "開始状態の封印と、中心への認証の確認", gpu: false, est: "40m"}
+    - {id: B, name: "版を中心に揃え、設定を組み立てる", gpu: false, est: "60m"}
+    - {id: C, name: "中継を張り、起動する", gpu: false, est: "60m"}
+    - {id: D, name: "実際に届くことの確認と報告", gpu: false, est: "40m"}
+  gates:
+    - id: G1
+      after: A
+      check: "設定と実行ファイルと常駐処理の要約値を記録し、実行権が落ちていて目印が零件であることを確かめた。稼働を両方向の対照つきで数えた。控えを版管理の外へ取り、中心への認証が通ることを実測した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "中心と同じ版を取得して要約値が一致し、実行権を落としたまま置き換えた。自動更新を止め、告知と中継を無効にし、中心を相手として登録し、共有フォルダ二件を中心と同じ識別子で定義した。書式が解析でき権限が保たれている"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "目印を置いて中継が立ち、その引数に中心の住所が含まれることを確かめた。中継が立ってから実行権を戻し、同期処理が起動して版が中心と同じである。設定の定義が保たれ、自動更新が止まったままである"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-24-bengio-syncthing-node/"
+  acceptance:
+    - "開始状態を要約値で記録し、控えを版管理の外へ取っている"
+    - "中心への認証が通ることを、中継を張る前に実測している"
+    - "中心と同じ版へ揃え、要約値の一致を示している"
+    - "自動更新を止めてから実行権を戻していることを、手順の順序で示している"
+    - "中心を相手として登録し、住所を中継の出口にしている"
+    - "共有フォルダの識別子が中心と同じであることを示している"
+    - "中継が立ってから実行権を戻したことを、待ち受けの実測で示している"
+    - "同期処理が起動し、処理の数を親子関係で切り分けている"
+    - "共有領域の中身が開始時から増えたかを大きさと件数で示している"
+    - "秘匿検査を自分で行い、画面の鍵を版管理へ置いていない"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "中心への認証が中継を張る前から通らない場合"
+    - "中心と同じ版を取得できない、または要約値が一致しない場合"
+    - "中継が立たず、実行権を戻せない場合"
+    - "同期処理が起動しない、または処理が三件以上になった場合"
+    - "共有領域の中身が消えた、または中心の状態が変わった場合"

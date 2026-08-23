@@ -1,0 +1,9 @@
+- [ ] 2026-08-24 [cc] 🔴 中心（philip）の `~/.ssh/authorized_keys` に四台の公開鍵が入っていない。`scripts/sync/hub_keys/{andrew,bengio,ilya,lecun}.pub` を取り込む契約を中心側で起票・実行すること。手本は `T-2026-08-12-register-hub-keys`。**これが済むまで四台のノード契約はどれも Task 1 Step 6 で停止する**（`tasks/T-2026-08-24-bengio-syncthing-node/RESULT.md` §3）
+- [ ] 2026-08-24 [cc] 中心の到達性は解けた。`192.168.196.150:50072` は TCP が開き `SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.1` を返す。`handoff.md` §3.4 の「目印の 2 行目は UNKNOWN」は住所については解決（`audit.md` Task 1 Step 6）
+- [ ] 2026-08-24 [cc] 共有フォルダの型が未決。`handoff.md` §2.3 は「空の側が sendreceive で参加すると中身を消しうる」として sendonly/receiveonly を勧めるが、SPEC は両方 sendreceive を指示し、中心側は利用者判断で sendreceive を採った。ノード側をどちらにするか要決定（`result.yaml` followups）
+- [ ] 2026-08-24 [cc] SPEC Task 1 Step 6 の `ssh … 'echo REACHABLE'` は、同 SPEC の禁止 1「中心で命令を実行してはならない」に触れる。到達確認は命令を伴わない形にすべき（`result.yaml` issuer_defects[1]）
+- [ ] 2026-08-24 [cc] SPEC Task 1 Step 3 の `grep -o 'apikey>[^<]*' | cut -c1-12` は秘匿の実値を画面に出す。存在確認は長さと空判定で足りる（`result.yaml` issuer_defects[2]）
+- [ ] 2026-08-24 [cc] `handoff.md` は SPEC が指す `tasks/T-2026-08-24-philip-syncthing-hub/` には無く、`tasks/T-2026-08-24-syncthing-config-survey/` にある（`RESULT.md` §1）
+- [ ] 2026-08-24 [cc] `ssh … | grep | head` の直後に別の命令を挟むと `${pipestatus[1]}` がその命令の値になる。ssh の 255 を 0 と表示してしまった。終了コードは配管を挟まずファイルへ落として取ること（`audit.md` Task 1 Step 6）
+- [ ] 2026-08-24 [cc] bengio の syncthing 登録名は `Bengio`（先頭が大文字）。再開時に `bengio` へ直すこと（`RESULT.md` §7）
+- [ ] 2026-08-24 [cc] 禁止 5 に従い `make taskindex` `make inbox` を実行していない。全台の統合後に一台で一度だけ再生成すること
