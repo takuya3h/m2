@@ -1,0 +1,194 @@
+result_version: 3
+task_id: "T-2026-08-24-andrew-keeper-autosync"
+status: pass
+host: "andrew"
+branch: "feat/andrew-keeper-autosync"
+pr: 128
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      git fetch origin が exit 0（パイプを外して測り直した）。HEAD も origin/phase0 も
+      3c4c5a6 で ahead=0 behind=0。marker_count=0、~/.zshrc は存在し 77 行で keeper_hits=0、
+      未追跡と変更の合計 4 件。稼働は keeper.sh=0 m2-sync=0 syncthing=0 "ssh -N -L"=0 で
+      陰性対照 zzz_none=0、陽性対照 sshd=1 (pid 1)。目印の分岐は keeper.sh 33-38 行が中継、
+      41-43 行が syncthing 起動、45-46 行が自己更新、48-49 行が .stignore、50 行が m2-sync、
+      51 行が sleep 1800。版管理の同期は m2-sync.sh 40-43 行が抑止、64-88 行が auto-merge、
+      101-110 行が auto-push、115-132 行が auto-PR。
+  - id: G2
+    verdict: pass
+    note: >-
+      配置物 4 つの sha256 が正本と一致し origin/phase0 の git object とも一致
+      (keeper.sh 9fe9c423.../m2-sync.sh bcf46ba9...)。構文検査は sh -n が dash のため
+      m2-sync.sh で exit 2 の偽陽性を出したが、shebang どおりの bash -n では両方 0。
+      keeper.sh=1 ['40838'] の一件のみで "ssh -N -L"=0、syncthing=0、ポート 22000/22001/8384
+      すべて 0。~/.keeper.lock が作られ、二度目の起動でも 1 件のまま、別プロセスの flock -n は
+      exit 1。~/claude-sync/sync-alerts.log に一時停止中の 1 行のみが出て write_lines=0、
+      分岐は 3c4c5a6 のまま ahead=0 behind=0。
+
+tests:
+  before_failed: 7
+  after_failed: 7
+  after_passed: 457
+
+commits:
+  - "64e7d50"
+  - "66a069a"
+  - "f7d6b98"
+  - "9b166a6"
+
+deviations:
+  - type: spec_defect
+    note: >-
+      起動前に chmod -x ~/bin/syncthing を実行した。SPEC には無い操作である。keeper.sh 41-43 行の
+      syncthing 起動は目印では止まらず条件が [ -x ~/bin/syncthing ] のみのため、指示どおり起動すると
+      禁止 2 と完了判定 11 を同時に破る。実装から予見できたので勝手に選ばずユーザーへ諮り承認を得た。
+      削除も移動もしておらず大きさは 26730145 バイトのまま。戻し方は chmod 755 ~/bin/syncthing。
+  - type: environment
+    note: >-
+      ~/.zshrc への追記が実行基盤の分類器に三経路（cat >> / tail / Edit ツール）とも拒否された。
+      回避は試みず、何を・影響範囲・戻し方を示してユーザーへ差し戻し、プロンプトの ! 経由で
+      実行してもらった。結果 77 行から 80 行になり 79-80 行に起動行が入った。
+  - type: spec_defect
+    note: >-
+      構文検査の判定器を sh -n から bash -n へ替えた。本ホストの /bin/sh は dash で m2-sync.sh 75 行の
+      process substitution を構文誤りと判定し exit 2 を返す。両スクリプトの shebang は #!/bin/bash で
+      実際の解釈系は bash である。sh -n の結果もそのまま記録したうえで bash -n（両方 0）を判定に採った。
+  - type: judgement
+    note: >-
+      稼働計数の対照に陽性側を足した。SPEC の対照は存在しない語 zzz_none だけで陰性方向しか見ておらず、
+      計数器が常に 0 を返す故障と区別できない。申し送り 6「対照は両方向で取る」に従い sshd を足し
+      sshd=1 (pid 1) を得て、計数器が生きた処理を検出できることを示した。
+  - type: environment
+    note: >-
+      分岐を作らなかった。SPEC 0 節は git checkout -b を指示するが、セッション開始時点で
+      feat/andrew-keeper-autosync が既に存在し origin/phase0 (3c4c5a6) を指していた。契約ディレクトリも
+      配置済みだった。git fetch origin を exit 0 で通し ahead=0 behind=0 を実測して作り直さなかった。
+  - type: judgement
+    note: >-
+      git fetch の終了コードを測り直した。最初に git fetch origin 2>&1 | tail -5; echo $? と書いて
+      tail の終了コードを拾ってしまい、申し送り 4・7 が警告している罠に自分で落ちた。パイプを外して
+      git fetch origin > file 2>&1; FE=$? で測り直し fetch_exit=0 を得た。誤った測り方をした事実ごと記録する。
+  - type: environment
+    note: >-
+      報告を配布台帳へ送っていない。秘匿の合言葉が失われ scripts/load_env.sh が失敗するため
+      make task-report が使えない。SPEC の指示どおり RESULT.md を commit して push する経路で返す。
+      送信前の秘匿検査は自分で陽性対照つきで行った。
+
+issuer_defects:
+  - type: self_contradiction
+    note: >-
+      SPEC は禁止 2 で同期処理の起動を禁じ完了判定 11 で同期処理が零件であることを求めながら、
+      分岐表では keeper 39-50 行を「これを動かす」側に置く。その範囲の 41-43 行がまさに
+      syncthing を起動する行である。前提「目印が無ければ中継を起こさず版管理の同期だけを行う」は
+      実装と食い違い、目印が制御するのは 33-38 行の中継だけである。指示どおり起動すれば
+      andrew では ~/bin/syncthing が実行権つきで在るため同期処理が立ち上がり、禁止 2 を破る。
+  - type: asserted_without_measuring
+    note: >-
+      SPEC は Task 3 Step 5 で ~/claude-sync/ は失われていると断じ、記録の置き場所が無ければ
+      別の場所を探すか UNKNOWN とせよと指示する。しかし m2-sync.sh 22 行は
+      mkdir -p "$(dirname "$LOG")" を実行しており、無ければ作る。実測では一周目で自動的に作られ
+      記録も残った。起票者は実装を読まずに指示しており、指示どおりなら探す手間をかけるか
+      測れる値を UNKNOWN と書いて報告の質を落とすことになった。
+  - type: shell_assumption
+    note: >-
+      Task 2 Step 2 が sh -n を指定し「両方が零であること」を完了条件に置く。本ホストの /bin/sh は
+      dash であり m2-sync.sh 75 行の process substitution を構文誤りとして exit 2 を返す。
+      両スクリプトの shebang は #!/bin/bash であり keeper 50 行は shebang 経由で起動するため、
+      sh -n は実行されない解釈系で検査している。指示どおりなら正しく動くスクリプトに対して
+      完了条件が永久に達成できず、実行者は誤った構文誤りの報告で停止することになる。
+  - type: check_does_not_check
+    note: >-
+      Task 1 Step 2 の対照は存在しない語 zzz_none だけで、「存在しない語が零を返すことが対照である」と
+      書く。これは偽陽性が無いことしか示さない。計数器が壊れて常に 0 を返す場合も同じ出力になるため、
+      「すべて零」という肝心の結論を支えられない。指示どおりなら、中継や同期処理が実際に動いていても
+      検出できないまま零件と報告しうる。陽性対照 sshd=1 を足して初めて計数器が働くことを示せた。
+
+positive_controls:
+  - judgement: "完了判定 2 / 10 / 11 の稼働計数"
+    breaking_input: "必ず動いている語を渡す。計数器が壊れて常に 0 を返すなら 0 が出るはず"
+    observed: "sshd=1 ['1'] を得た。生きた処理を検出できる。陰性側は zzz_none=0 と systemd=0"
+  - judgement: "完了判定 12 の多重起動を防ぐ錠"
+    breaking_input: "keeper をもう一度起動する。錠が効かなければ keeper.sh=2 になるはず"
+    observed: >-
+      keeper.sh=1 ['40838'] のままだった。別プロセスからの
+      flock -n ~/.keeper.lock -c 'echo ACQUIRED_lock_is_free' は文字列を出さず flock_exit=1
+  - judgement: "完了判定 15 の秘匿の検査"
+    breaking_input: "区切りと値が続く形と鍵の書き出し行を含む囮ファイルを走査させる"
+    observed: "decoy_hits=3 で 3 行すべて検出した。検査は働いている。囮は削除済みで commit していない"
+  - judgement: "完了判定 11 の中継と同期処理が動いていないこと"
+    breaking_input: >-
+      keeper 34 行と 42 行はどちらも >> でログへ追記するため、一度でも走ればファイルが作られるはず
+    observed: >-
+      ~/.tunnel.log も ~/.syncthing.log も不在。対照として同じ >> で作られる
+      ~/claude-sync/sync-alerts.log は 146 バイトで存在するので、>> が実際にファイルを作ることは示せている
+  - judgement: "完了判定 13 の抑止が版管理への書き込みを止めること"
+    breaking_input: >-
+      送出すべきものがある状態（origin/$BR..HEAD > 0）で m2-sync.sh を回す。抑止が無ければ
+      auto-push が走り記録に auto-push 行が出るはず
+    observed: >-
+      auto-push の条件をすべて満たしたうえで測った。origin/feat/andrew-keeper-autosync は push 済みで
+      存在し ahead=1。この状態で ~/bin/m2-sync.sh を一度回すと m2sync_exit=0 で、記録は 1 行から 2 行へ
+      増えたがどちらも一時停止中の行であり autopush_lines=0、ahead は 1 のままだった。
+      抑止が無ければ送出されていた状態で止まっている。
+  - judgement: "完了判定 13 / 19 の抑止の分岐（反対方向の対照）"
+    breaking_input: >-
+      抑止を外してから m2-sync.sh を回す。記録の一時停止中の行を出していたのが 41 行の分岐なら、
+      外したあとは増えないはず。増え続けるなら別の原因である
+    observed: >-
+      mv で外したあとに回すと m2sync_exit=0 で記録は 2 行のまま増えず、一時停止中も 2 件のままだった。
+      代わりに m2-sync.sh 45 行と 56 行の git fetch まで到達して SSH の警告が 2 回出た。
+      ahead=0 behind=0 のため auto-push と auto-merge は条件を満たさず 0 件。
+  - judgement: "完了判定 6 の構文検査"
+    breaking_input: "構文誤りのある入力を与えれば非零を返すはず"
+    observed: >-
+      sh -n ~/bin/m2-sync.sh が exit 2 を返した。検査器は非零を返せる。ただしこの該当は
+      dash の偽陽性であり bash -n では 0 である
+
+followups:
+  - >-
+    keeper.sh 41-43 行の syncthing 起動は目印では止まらない。条件は [ -x ~/bin/syncthing ] のみである。
+    禁止 2 を守るため andrew では起動前に chmod -x ~/bin/syncthing を実行した。同期処理を立ち上げる
+    契約では chmod 755 ~/bin/syncthing に戻すこと。他四台も前契約で ~/bin/syncthing を配置しているため
+    同じ状況のはずであり、同じ手当てが要る。
+  - >-
+    実行基盤の分類器が ~/.zshrc への書き込みを三経路とも拒否する。回避せずユーザーへ差し戻すのが正しい。
+    恒久対応は ~/.claude/settings.json の permissions.allow に Read(//home/ubuntu/.zshrc) と
+    Edit(//home/ubuntu/.zshrc) を置くこと。絶対パスは先頭を // で書く。他台でも同じ壁に当たる。
+  - >-
+    SPEC が指定する sh -n は本ホストでは dash であり m2-sync.sh 75 行の process substitution で
+    exit 2 の偽陽性を出す。両スクリプトの shebang は #!/bin/bash である。次の契約からは bash -n を
+    指定すること。他台でも同じ偽陽性が出る。
+  - >-
+    ~/claude-sync/ は失われていても問題にならない。m2-sync.sh 22 行の mkdir -p が自動で作る。
+    次の契約で「探すか UNKNOWN とせよ」と書く必要はない。記録は ~/claude-sync/sync-alerts.log である。
+  - >-
+    auto-PR は Draft を起票する（m2-sync.sh 115-132 行）。手で PR を作るなら抑止を外す前に作ること。
+    先に外すと auto: <branch> -> phase0 という Draft が立ち、二重になる。
+  - >-
+    m2-sync.sh の論理名は SERVERNAME 環境変数、$M2DIR/.servername、hostname の 3 段で解決する。
+    andrew では nohup 越しでも SERVERNAME=andrew が伝わり、記録の [andrew] が正しく出た。
+
+unknowns:
+  - >-
+    目印 ~/.tunnel_to_philip を置いたときに中継が実際に張れるか。置いていないため実測していない。
+    実装から読める見込みは RESULT.md の 3.4 に書いたが実測ではない。
+  - >-
+    ~/bin/syncthing の実行権を戻したときに同期処理が正常に立ち上がるか。起動していないため未測定。
+  - >-
+    前セッションの未追跡 tasks/T-2026-08-22—andrew-node-foundation/（em ダッシュ）が消えた時期と経緯。
+    本契約の開始時点で既にディスク上に無く、本契約は触れていない。中身はハイフン版として版管理に入っており
+    内容は失われていない。
+  - >-
+    抑止を外したあと次の周回（最大 1800 秒後）に何が起きるか。周期を待っていない。ahead と behind が 0 で
+    開いている PR が存在するため auto-merge / auto-push / auto-PR はいずれも条件を満たさないはずだが実測ではない。
+  - >-
+    git@github.com:takuya3h/m2.git の fetch を通している鍵。~/.zshrc 68-71 行が
+    ssh-add ~/.ssh/id_ed25519_github を実行しておりこれが経路と思われるが、
+    Warning: Identity file ~/.ssh/id_Andrewdeploy not accessible を出しつつ fetch は exit 0 で通っている。
+    どの鍵が通したかは照合していない。
+  - >-
+    P9 spec_lint の separated_source 3 件が検査器の行単位判定によるものか。検査器の実装を読んでいない。
+    3 つとも実際には exit 0 で通ることだけを実測した。
