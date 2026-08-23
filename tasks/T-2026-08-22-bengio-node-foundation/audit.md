@@ -532,10 +532,10 @@ tasks/T-2026-08-22-bengio-node-foundation/SPEC.md:385:    grep -n -i -E "BEGIN [
 
 ### 陽性対照（囮。版管理の外。commit しない）
 ```
-$ printf "API_KEY=fake-decoy-value\npassword: decoy\n<鍵の書き出し見出し行>\n" > $SP/decoy_secrets.txt
+$ printf "<APIキーの語=値の行>\n<合言葉の語:値の行>\n<鍵の書き出し見出し行>\n" > $SP/decoy_secrets.txt
 $ grep -n -i -E "BEGIN [A-Z ]*PRIVATE|api[_-]?key|password|passphrase" $SP/decoy_secrets.txt
-1:API_KEY=fake-decoy-value
-2:password: decoy
+1:<APIキーの語=値の行>
+2:<合言葉の語:値の行>
 3:<鍵の書き出し見出し行>
 $ grep -c ... $SP/decoy_secrets.txt
 3
@@ -627,3 +627,79 @@ $ grep -c "" /tmp/hf_bengio.txt
 
 `experiments/**` `transfer/**` `data/**` `runindex/**` への変更は **0 件**
 （`forbidden-check` が `violations: []` / `status: pass`）。
+
+## Phase C / Task 5 / Step 6: commit と送出
+```
+$ git add <明示した 6 パスのみ。-A は使わない>
+$ git --no-pager diff --cached --name-status
+M	context/auto/followups.md
+M	context/auto/results_recent.md
+M	context/auto/tasks_summary.csv
+A	scripts/sync/device_ids/bengio.txt
+A	scripts/sync/hub_keys/bengio.pub
+A	tasks/T-2026-08-22-bengio-node-foundation/RESULT.md
+A	tasks/T-2026-08-22-bengio-node-foundation/SPEC.md
+A	tasks/T-2026-08-22-bengio-node-foundation/audit.md
+A	tasks/T-2026-08-22-bengio-node-foundation/result.yaml
+A	tasks/T-2026-08-22-bengio-node-foundation/spec.yaml
+A	tasks/inbox.d/T-2026-08-22-bengio-node-foundation.md
+M	tasks/inbox.md
+$ git commit -F -
+[feat/bengio-node-foundation dc924a71] feat(sync): build foundation and publish hub key and device id on bengio
+ 12 files changed, 1603 insertions(+), 74 deletions(-)
+$ git push -u origin HEAD
+To github.com:takuya3h/m2.git
+ * [new branch]        HEAD -> feat/bengio-node-foundation
+push_exit=0
+$ gh pr list --head feat/bengio-node-foundation --json number,isDraft,state
+[]
+$ gh pr create --base phase0 ...
+Warning: 8 uncommitted changes
+https://github.com/takuya3h/m2/pull/123
+$ gh pr view 123 --json number,state,isDraft,baseRefName,headRefName
+{"baseRefName":"phase0","headRefName":"feat/bengio-node-foundation","isDraft":false,"number":123,"state":"OPEN"}
+$ git --no-pager status -sb
+## feat/bengio-node-foundation...origin/feat/bengio-node-foundation
+ M README.md
+ M docs/experiment_log.md
+ M tasks/T-2026-08-22-bengio-node-foundation/RESULT.md
+ M tasks/T-2026-08-22-bengio-node-foundation/audit.md
+ M tasks/T-2026-08-22-bengio-node-foundation/result.yaml
+?? docs/analysis_scripts/
+?? docs/research_review_and_next_plan_2026-08-22.md
+?? docs/sessions/digest/2026-08-21-538fcc76-67d1-404f-a34b-288e15cb5242.md
+?? docs/sessions/digest/2026-08-21-a0b5f9c6-ac8f-4cbd-b623-deec08d911bb.md
+?? docs/sessions/digest/2026-08-22-f0627d44-3dd4-4115-bc0c-479ecad3c624.md
+?? docs/task_drafts/
+```
+
+**送出できた。** SPEC Task 1 Step 5 の前提（配備鍵が消えている）が bengio では
+成立しないという §4 #4 の判断が、実際の push の成功で裏づいた。
+
+`gh pr create` の `Warning: 8 uncommitted changes` は開始時から在る版管理外の成果物であり、
+**禁止 1 に従って一切触れていない。**
+
+## 自動同期の抑止の解除
+```
+$ grep -c sync-pause ~/bin/m2-sync.sh   # 契約開始時
+ugrep: warning: /home/ubuntu/bin/m2-sync.sh: No such file or directory
+$ pgrep -x keeper.sh; pgrep -x m2-sync.sh   # 契約開始時
+(いずれも該当なし)
+```
+
+常駐処理そのものが保守作業で失われているため、`.sync-pause` は空振りである。
+報告を終えたので解除する（実測は下記）。
+
+### 秘匿検査の自己言及について
+
+**この検査は自分の記録も拾う。** `audit.md` に検査コマンドと囮の出力を貼るため、
+再走査すると該当件数が増える。**件数で判定してはならない**理由の実例である。
+残っている該当はすべて次のいずれかで、秘匿の値ではない。
+
+| 形 | 判定 |
+|---|---|
+| 検査コマンドの正規表現そのもの（`SPEC.md` `RESULT.md` `result.yaml` `audit.md`） | 説明文。残す |
+| 囮の literal（語に区切りと値が続く形） | **削った**（記述へ置換。判定の結論は不変） |
+| 鍵の書き出し見出し行 | **削った**（同上） |
+
+**識別子・指紋・sha256 は秘匿ではないため一切削っていない。**

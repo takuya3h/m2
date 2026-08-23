@@ -73,11 +73,11 @@
 | 15 | 識別子を発行 | 発行前 `~/.local/state/syncthing/` は**不在**だったため上書きは起きていない。`generate` が `Device ID: 4NIRI4M-...-X52VHQO` を出力 |
 | 16 | 一行で公開 | `scripts/sync/device_ids/bengio.txt` の `grep -c ''` = **1**。値は `generate` の出力と一致 |
 | 17 | 起動していない | `port_22000=-` `port_8384=-`（`22` のみ LISTEN、待ち受け総数 5）。`pgrep -x syncthing` **exit 1**。`ps -C syncthing` は見出しのみ |
-| 18 | 全項目に実測値 | 本表に `UNKNOWN` は **1 件**（#22 の PR 番号。§7 参照） |
+| 18 | 全項目に実測値 | 本表に `UNKNOWN` は **無い**。測っていない事項は `result.yaml` の `unknowns` と `positive_controls` に UNKNOWN として明示した |
 | 19 | 秘匿検査（陽性対照つき） | §3 |
 | 20 | 開始時の未追跡が残存 | §5 |
 | 21 | 変更が契約の範囲 | §5 |
-| 22 | 送出と PR | §7 |
+| 22 | 送出と PR | commit `dc924a71`、push 成功、**PR #123**（base `phase0`、OPEN、Draft でない） |
 
 ## 3. 送信前の秘匿検査
 
@@ -149,7 +149,53 @@
 
 ## 7. 送出
 
-（本節は commit 直前に確定値へ差し替える。）
+**送出できた。** §4 の #4 で「配備鍵は消えていない」と判断した根拠が実測で裏づいた。
+
+```
+$ git commit -F -   # 明示した 6 パスのみ。-A は使っていない
+[feat/bengio-node-foundation dc924a71] feat(sync): build foundation and publish hub key and device id on bengio
+ 12 files changed, 1603 insertions(+), 74 deletions(-)
+$ git push -u origin HEAD
+To github.com:takuya3h/m2.git
+ * [new branch]        HEAD -> feat/bengio-node-foundation
+push_exit=0
+$ gh pr list --head feat/bengio-node-foundation --json number,isDraft,state
+[]
+$ gh pr create --base phase0 ...
+https://github.com/takuya3h/m2/pull/123
+$ gh pr view 123 --json number,state,isDraft,baseRefName,headRefName
+{"baseRefName":"phase0","headRefName":"feat/bengio-node-foundation","isDraft":false,"number":123,"state":"OPEN"}
+```
+
+| 項目 | 値 |
+|---|---|
+| commit | `dc924a71`（12 files changed, 1603 insertions, 74 deletions） |
+| push | 成功（`git@github.com:takuya3h/m2.git` 経路） |
+| PR | **#123**（base `phase0`、Draft ではない、OPEN） |
+
+`gh pr create` は `Warning: 8 uncommitted changes` を出したが、これは開始時から在る
+版管理外の成果物（未追跡 7 件＋変更 2 件のうち commit 対象外の 2 件）であり、
+**契約の禁止 1 に従って一切触れていない**。
+
+**台帳へは返していない**（`make task-report` は秘匿情報の合言葉が失われて使えず、
+SPEC が「起票者は版管理から読む」と定めているため）。
+
+### commit した 12 ファイル
+
+```
+M	context/auto/followups.md
+M	context/auto/results_recent.md
+M	context/auto/tasks_summary.csv
+A	scripts/sync/device_ids/bengio.txt
+A	scripts/sync/hub_keys/bengio.pub
+A	tasks/T-2026-08-22-bengio-node-foundation/RESULT.md
+A	tasks/T-2026-08-22-bengio-node-foundation/SPEC.md
+A	tasks/T-2026-08-22-bengio-node-foundation/audit.md
+A	tasks/T-2026-08-22-bengio-node-foundation/result.yaml
+A	tasks/T-2026-08-22-bengio-node-foundation/spec.yaml
+A	tasks/inbox.d/T-2026-08-22-bengio-node-foundation.md
+M	tasks/inbox.md
+```
 
 ## 8. 自動同期の抑止と解除
 

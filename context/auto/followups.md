@@ -345,7 +345,7 @@
 - scripts/sync/hub_keys/ に philip.pub が無い（andrew.pub / bengio.pub / ilya.pub のみ）。 中心自身のため不要と見られるが、受け入れ一覧を組み立てる契約で前提を確定させること。
 - scripts/sync/device_ids/ は bengio.txt と philip.txt の 2 件のみ。 andrew と ilya の識別子が未公開のため、登録の契約はまだ開始できない。
 
-## 断定できなかった事項（139 件）
+## 断定できなかった事項（138 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -609,7 +609,6 @@
 
 ### T-2026-08-22-bengio-node-foundation
 
-- 実際に push できるか（送出の経路を git@ のまま維持したため）。commit 直後に実測して RESULT.md §7 に記す。本 yaml の pr フィールドは起票の結果で更新する。
 - 同期処理を起動したときに 22000/8384 が LISTEN として検出されるか。禁止 6 により未測定。
 
 ## 起票者の誤りの型（115 件）

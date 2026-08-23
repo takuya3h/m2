@@ -3,7 +3,7 @@ task_id: "T-2026-08-22-bengio-node-foundation"
 status: pass
 host: "bengio"
 branch: "feat/bengio-node-foundation"
-pr: null
+pr: 123
 merged: false
 
 gates:
@@ -104,9 +104,7 @@ followups:
 
 unknowns:
   - >-
-    実際に push できるか（送出の経路を git@ のまま維持したため）。commit 直後に実測して
-    RESULT.md §7 に記す。本 yaml の pr フィールドは起票の結果で更新する。
-  - >-
     同期処理を起動したときに 22000/8384 が LISTEN として検出されるか。禁止 6 により未測定。
 
-commits: []
+commits:
+  - "dc924a71"
