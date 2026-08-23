@@ -6,8 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（204 件）
-## 申し送り（212 件）
+## 申し送り（218 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -348,7 +347,6 @@
 - tests/test_research_logger.py の 4 件は Notion 連携の模擬が呼ばれず落ちる （assert None == 'page-abc' 等）。scripts/load_env.sh が合言葉の消失で使えず NOTION_API_KEY が無い状態と整合するが、原因を特定してはいない。
 - 実行基盤の分類器が git config user.email（平文アドレス）と git remote set-url を拒む。 他台でも同じ壁に当たる。前者は noreply 形式で通る。後者は利用者の承認か permissions への追加が要る。
 
-## 断定できなかった事項（140 件）
 ### T-2026-08-22-bengio-node-foundation
 
 - libGL.so.1 が不在で mmcv / mmdet を import できない（ImportError: libGL.so.1）。 本契約の範囲外だが、bengio で学習・評価を回す前に別契約での対処が要る。
@@ -372,7 +370,7 @@
 - tests の失敗 5 件は本契約以前から在るもので内容も無関係である。追跡ファイルを一つも 変更していないため試験対象の木は origin/phase0 と同一であり、前後の実測は同じ値になる。 test_research_logger の 4 件は Notion への記録が None を返すことによる （assert None == 'page-abc'）。scripts/load_env.sh が使えず資格情報が入らない状況と整合する。 test_engines の 1 件は未追跡の理由で落ちており本契約では触れていない。
 - 次の契約（登録と起動）で使う値。識別子は OOOTQMG-2WT55EF-YGX55VM-YWFWVRT-XUSDUUB-3AXCYV4-OVY2X3H-KRFOWA3 （scripts/sync/device_ids/lecun.txt）。中心の受け入れ一覧へ入れる指紋は SHA256:g5TwfvgDPsNhiSd9OXDZoWDj99au1y8yEnW8hmNyqHI （公開鍵は scripts/sync/hub_keys/lecun.pub）。秘密鍵は ~/.ssh/id_ed25519_lecuntophilip にあり当ホストから出していない。
 
-## 断定できなかった事項（143 件）
+## 断定できなかった事項（146 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -640,7 +638,6 @@
 - tests.before_failed の 0 は測定値ではない。修復前は .venv が壊れており pytest を 起動できなかったため、開始前の件数は測定不能である。after の 7 failed / 457 passed / 4 skipped は tests/test_datasets.py を --ignore で除いた測定値であり、 本契約は src/ と tests/ を一切変更していないためこの 7 件は本契約に起因しない。
 - tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics の assert 0.0 == 1e-08 の原因は特定していない。
 
-## 起票者の誤りの型（117 件）
 ### T-2026-08-22-bengio-node-foundation
 
 - 同期処理を起動したときに 22000/8384 が LISTEN として検出されるか。禁止 6 により未測定。
@@ -656,22 +653,16 @@
 - make forbidden-check が禁止領域の変更を実際に捕まえるかどうか。 禁止領域を意図的に汚す検査は行っていない。
 - test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics が失敗する理由。 本契約の範囲外のため追っていない。
 
-## 起票者の誤りの型（121 件）
+## 起票者の誤りの型（125 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 40 |
-| `asserted_without_measuring` | 36 |
-| `self_contradiction` | 33 |
-| `shell_assumption` | 8 |
-
-合計 117 件（対を持つ契約 47 件から）
 | `check_does_not_check` | 41 |
-| `asserted_without_measuring` | 36 |
-| `self_contradiction` | 34 |
-| `shell_assumption` | 10 |
+| `asserted_without_measuring` | 38 |
+| `self_contradiction` | 35 |
+| `shell_assumption` | 11 |
 
-合計 121 件（対を持つ契約 49 件から）
+合計 125 件（対を持つ契約 50 件から）
 
