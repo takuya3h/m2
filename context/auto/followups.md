@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（218 件）
+## 申し送り（258 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -370,7 +370,62 @@
 - tests の失敗 5 件は本契約以前から在るもので内容も無関係である。追跡ファイルを一つも 変更していないため試験対象の木は origin/phase0 と同一であり、前後の実測は同じ値になる。 test_research_logger の 4 件は Notion への記録が None を返すことによる （assert None == 'page-abc'）。scripts/load_env.sh が使えず資格情報が入らない状況と整合する。 test_engines の 1 件は未追跡の理由で落ちており本契約では触れていない。
 - 次の契約（登録と起動）で使う値。識別子は OOOTQMG-2WT55EF-YGX55VM-YWFWVRT-XUSDUUB-3AXCYV4-OVY2X3H-KRFOWA3 （scripts/sync/device_ids/lecun.txt）。中心の受け入れ一覧へ入れる指紋は SHA256:g5TwfvgDPsNhiSd9OXDZoWDj99au1y8yEnW8hmNyqHI （公開鍵は scripts/sync/hub_keys/lecun.pub）。秘密鍵は ~/.ssh/id_ed25519_lecuntophilip にあり当ホストから出していない。
 
-## 断定できなかった事項（146 件）
+### T-2026-08-24-andrew-keeper-autosync
+
+- keeper.sh 41-43 行の syncthing 起動は目印では止まらない。条件は [ -x ~/bin/syncthing ] のみである。 禁止 2 を守るため andrew では起動前に chmod -x ~/bin/syncthing を実行した。同期処理を立ち上げる 契約では chmod 755 ~/bin/syncthing に戻すこと。他四台も前契約で ~/bin/syncthing を配置しているため 同じ状況のはずであり、同じ手当てが要る。
+- 実行基盤の分類器が ~/.zshrc への書き込みを三経路とも拒否する。回避せずユーザーへ差し戻すのが正しい。 恒久対応は ~/.claude/settings.json の permissions.allow に Read(//home/ubuntu/.zshrc) と Edit(//home/ubuntu/.zshrc) を置くこと。絶対パスは先頭を // で書く。他台でも同じ壁に当たる。
+- SPEC が指定する sh -n は本ホストでは dash であり m2-sync.sh 75 行の process substitution で exit 2 の偽陽性を出す。両スクリプトの shebang は #!/bin/bash である。次の契約からは bash -n を 指定すること。他台でも同じ偽陽性が出る。
+- ~/claude-sync/ は失われていても問題にならない。m2-sync.sh 22 行の mkdir -p が自動で作る。 次の契約で「探すか UNKNOWN とせよ」と書く必要はない。記録は ~/claude-sync/sync-alerts.log である。
+- auto-PR は Draft を起票する（m2-sync.sh 115-132 行）。手で PR を作るなら抑止を外す前に作ること。 先に外すと auto: <branch> -> phase0 という Draft が立ち、二重になる。
+- m2-sync.sh の論理名は SERVERNAME 環境変数、$M2DIR/.servername、hostname の 3 段で解決する。 andrew では nohup 越しでも SERVERNAME=andrew が伝わり、記録の [andrew] が正しく出た。
+
+### T-2026-08-24-bengio-keeper-autosync
+
+- 🔴 ~/bin/syncthing の実行属性を外してある（chmod -x）。同期処理を登録・起動する次の契約では、先に chmod +x ~/bin/syncthing で戻すこと。戻さないと keeper は永久に同期処理を起動しない。
+- keeper.sh:41-43 は目印の有無と無関係に同期処理を起動する。中継の抑止（目印なし）と同期処理の抑止は別の仕掛けであり、契約は両者を混同していた。他の四台の同一契約でも同じ矛盾が起きる。
+- 記録の置き場所は ~/claude-sync/sync-alerts.log。SPEC は「失われている」と書くが m2-sync.sh:22 の mkdir -p が自分で作るため、探す必要も UNKNOWN にする必要も無い。
+- 起動行は ( nohup ~/bin/keeper.sh >/dev/null 2>&1 & ) 2>/dev/null を ~/.zshrc へ。前後に # >>> egosurgery keeper >>> / # <<< egosurgery keeper <<< の目印を添えた。他台でも同じものを使える。
+- sh -n で bash の正本を検査してはならない。/bin/sh は dash であり、m2-sync.sh の 74-76 行のプロセス置換で誤った失敗が出る。bash -n を使うこと。
+- /proc/*/cmdline の部分一致は実行基盤の包み込み（命令文字列に語が含まれるだけの zsh -c）を拾う。pgrep -af と同じ型の誤検出であり、引数の要素で数えること。
+- 実行基盤によっては nohup … & と setsid が拒否され、常駐処理を切り離せない。~/.zshrc への cat >> と cp も拒否されうる。
+- 本契約は版管理下のコードを一切変更していないため試験は実行していない（tests は 0/0/0）。
+- 「送出側が git@ なら配備鍵が要る形で、鍵は消えている」という前提は bengio では偽である。前契約と合わせて二度目。他台の契約でも実測してから切り替えを判断すること。
+- make taskindex-check / inbox-check を head へ通すと SIGPIPE で 141 になり、真の判定 2 が隠れる。終了コードを測るときは head を挟まないこと。
+
+### T-2026-08-24-ilya-keeper-autosync
+
+- 同期処理を起動する次の契約は、先に chmod +x ~/bin/syncthing が要る。本契約で 41 行の 起動を止めるため 644 にした。要約値 32ab747eb18ff3a01423f9719c5b8a8165da63e60ee9c3f733887464c70ca1dd は不変。
+- 起票者は keeper.sh 41〜43 行の扱いを契約に明記すること。実体を配置済みのホストでは 「未インストールならスキップ」が働かず、禁止 2 と完了判定 11 が守れない。他の四台でも同じ。
+- 構文検査の指示を sh -n から bash -n へ改めること。/bin/sh が dash のホストで m2-sync.sh が偽の構文誤りを出し、指示に忠実な実行者を停止させる。
+- ~/.zshrc への追記は実行基盤に拒否されうる。他台の契約は、実行者が書けない場合に ユーザーへ手順を渡す経路をあらかじめ用意しておくこと。
+- 起動行の四行は他の四台でそのまま使える。ただし printf を使うなら <<<\n' の バックスラッシュを落とさないこと、貼り直すときは必ず先に退避から戻すこと。 検算は grep -c 'nohup ~/bin/keeper.sh' ~/.zshrc が 1 であることで行う。
+- keeper の一周目は repo 直下に .stignore（2223 バイト）を作り、~/bin/m2-sync.sh の権限を 755 から 775 へ変える（mv が新規ファイルの既定権限を持ち込むため）。いずれも起票に記載が無い。
+
+### T-2026-08-24-lecun-keeper-autosync
+
+- keeper.sh 41-43 行は目印と無関係に syncthing を起動する。目印が制御するのは中継（33 行）だけである。 前契約が五台すべてに ~/bin/syncthing を置いたため、無改変で起動すると全台で禁止 2 に触れる。 lecun は実行属性を 644 へ落として回避した。他 4 台でも同じ判断が要る。
+- lecun の ~/bin/syncthing は実行属性を外したまま（chmod 644）である。 次の契約（登録と起動）で chmod 755 に戻すこと。忘れると同期処理が起動しない。 要約値 32ab747eb18ff3a01423f9719c5b8a8165da63e60ee9c3f733887464c70ca1dd は不変である。
+- 実行基盤の分類器が ~/.zshrc の書き換えと nohup によるデーモン起動を拒否した。 permissions.allow に Edit を足しても解けない（分類器は別層）。 常駐処理を立てる契約は実行者だけでは完了できない場合がある。 本契約ではユーザーが同じセッション内で実行し、出力を要約せず audit.md へ貼った。
+- 禁止 4 に従い生成物を再生成していない。make inbox-check は exit 2 で 「差分あり: inbox.md。make inbox で再生成すること。」を報告した。 make taskindex-check は exit 0 だった（result.yaml を書く前に測ったため）。 全台の統合が済んだあと、一台で一度だけ再生成すること。
+- 次の契約で使う値。記録の置き場所は ~/claude-sync/sync-alerts.log。 起動行は ( nohup ~/bin/keeper.sh >/dev/null 2>&1 & ) 2>/dev/null を 「# >>> m2 keeper >>>」と「# <<< m2 keeper <<<」の標識で囲んで ~/.zshrc の末尾へ置く。 目印を置いたときは keeper 33 行の resolve_tunnel が真になり ssh -N -L 22001:127.0.0.1:22000 -p 50072 -i <鍵> で中心へ中継を張る。 目印の 1 行目が秘密鍵の位置、2 行目が中心の住所である（17-21 行）。
+- ~/.claude/settings.json が末尾カンマで JSON として壊れており、allow だけでなく deny 20 件と ask 13 件も無効化されていた。ユーザーが修正し、修正後は allow=8 deny=20 ask=13 で読み込めることを確かめた。 設定変更のあとに妥当性を検査する習慣が要る。
+
+### T-2026-08-24-philip-keeper-autosync
+
+- 記録の置き場所は ~/claude-sync/sync-alerts.log（m2-sync.sh 11 行）。不在でも 22 行の mkdir -p で自分が作るため、開始前に無いことを理由に UNKNOWN と書かない。
+- 起動行は ( nohup ~/bin/keeper.sh >/dev/null 2>&1 & ) 2>/dev/null。flock があるので毎回呼んで安全。
+- 目印 ~/.tunnel_to_<hub名> は 1 行目が秘密鍵パス、2 行目が中心の住所（省略時は名前を SSH 別名に使う）。resolve_tunnel は辞書順で最初の 1 件だけを選ぶ。中継は ssh -N -L 22001:127.0.0.1:22000 -p 50072 で ExitOnForwardFailure=yes。
+- philip では ~/bin/syncthing を 644 へ落とした。同期処理を立ち上げる契約で chmod 755 ~/bin/syncthing が要る。忘れると keeper が永遠に syncthing を起動しない。
+- ~/bin/syncthing を配置済みの他 4 台でも keeper 起動時に同じ矛盾が起きる。同じ判断が要る。
+- 構文検査に sh -n を使わない。正本は bash であり bash -n で検査する。
+- auto-push は origin/$BR が存在するときだけ発火する（103 行）。最初の 1 回は手で push する必要がある。
+- .stignore は keeper 48-49 行が毎ループ origin/phase0:.stglobalignore から再生成する。手で編集しても 30 分以内に消える。
+- .sync-pause は .gitignore:240 と .stignore の総取り規則の両方に落ちるため、抑止は 1 台にだけ効く。
+- make forbidden-check は data/annotations/** の未追跡 4 件（mtime 2026-07-31）により必ず fail する。本契約が作ったものではなく禁止 5 で触れない。全台で同じ結果になるはずなので、起票側で扱いを決めてほしい。
+- auto-merge を阻害する未追跡は BLOCKED=0 で無い。抑止を外せば次の周回から統合が動く。
+- pgrep -af は自分のコマンド行を拾う（本セッションでも再現）。/proc を走査して自己と祖先を除外する方式が確実。
+
+## 断定できなかった事項（164 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -653,16 +708,49 @@
 - make forbidden-check が禁止領域の変更を実際に捕まえるかどうか。 禁止領域を意図的に汚す検査は行っていない。
 - test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics が失敗する理由。 本契約の範囲外のため追っていない。
 
-## 起票者の誤りの型（125 件）
+### T-2026-08-24-andrew-keeper-autosync
+
+- 目印 ~/.tunnel_to_philip を置いたときに中継が実際に張れるか。置いていないため実測していない。 実装から読める見込みは RESULT.md の 3.4 に書いたが実測ではない。
+- ~/bin/syncthing の実行権を戻したときに同期処理が正常に立ち上がるか。起動していないため未測定。
+- 前セッションの未追跡 tasks/T-2026-08-22—andrew-node-foundation/（em ダッシュ）が消えた時期と経緯。 本契約の開始時点で既にディスク上に無く、本契約は触れていない。中身はハイフン版として版管理に入っており 内容は失われていない。
+- 抑止を外したあと次の周回（最大 1800 秒後）に何が起きるか。周期を待っていない。ahead と behind が 0 で 開いている PR が存在するため auto-merge / auto-push / auto-PR はいずれも条件を満たさないはずだが実測ではない。
+- git@github.com:takuya3h/m2.git の fetch を通している鍵。~/.zshrc 68-71 行が ssh-add ~/.ssh/id_ed25519_github を実行しておりこれが経路と思われるが、 Warning: Identity file ~/.ssh/id_Andrewdeploy not accessible を出しつつ fetch は exit 0 で通っている。 どの鍵が通したかは照合していない。
+- P9 spec_lint の separated_source 3 件が検査器の行単位判定によるものか。検査器の実装を読んでいない。 3 つとも実際には exit 0 で通ることだけを実測した。
+
+### T-2026-08-24-bengio-keeper-autosync
+
+- 起動した実体 pid=157746 が本会期の終了後も残るか。nohup による切り離しが実行基盤に拒否されたため測れない。起動行を追記済みなので、失われても次の対話シェルで復旧する。
+- 追記後の ~/.zshrc の構文検査（zsh -n）。実行基盤の判定に拒否されたため未実施。
+- 抑止を外した後の周回で auto-merge / auto-push が実際に働くか。次の周回は 1800 秒後で本報告の時点では測れない。
+- make taskindex-check / inbox-check の差分。禁止 4 により生成物を再生成していないため、検査結果は事実として記録するのみ。
+
+### T-2026-08-24-ilya-keeper-autosync
+
+- この実行基盤が前景の sleep を拒否する範囲。単独の sleep 5 は拒否されたが、 Task 3 Step 4 の対照では複合命令中の sleep 3 が通った。条件を切り分けていない。
+- 試験の件数。本契約は src/ と tests/ に一切触れておらず、契約も試験の実行を求めていないため 測っていない。tests の三値 0 は「未実行」であって「零件」ではない。
+
+### T-2026-08-24-lecun-keeper-autosync
+
+- 抑止を外した後の一周で auto-merge と auto-push が実際に起きるか。 契約は Task 4 Step 6 で抑止を外すと定めており、その後の周回は本契約の範囲外のため測っていない。
+- 目印を置いたときに中継が実際に張られるか。禁止 1 が目印の作成を禁じているため測っていない。
+- test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics が失敗する理由。 本契約の範囲外のため追っていない。
+
+### T-2026-08-24-philip-keeper-autosync
+
+- 本報告が context/auto/ の投影に現れるかを確かめていない。禁止 4 により make taskindex / taskindex-check / inbox-check を実行していないため。
+- make forbidden-check を通せる状態にできるかは未確認。違反 4 件は禁止 5 が触ることを禁じている未追跡ファイルであり、本契約では消せない。
+- P2 cuda_ext_loaded と P3 deterministic_flags は plan.env.preflight に記載が無く SKIP。実行されていない。
+
+## 起票者の誤りの型（141 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 41 |
-| `asserted_without_measuring` | 38 |
-| `self_contradiction` | 35 |
-| `shell_assumption` | 11 |
+| `check_does_not_check` | 45 |
+| `asserted_without_measuring` | 41 |
+| `self_contradiction` | 40 |
+| `shell_assumption` | 15 |
 
-合計 125 件（対を持つ契約 50 件から）
+合計 141 件（対を持つ契約 55 件から）
 

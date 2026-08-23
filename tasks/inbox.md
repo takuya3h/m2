@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（295 件）
+## 未処理（323 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -310,6 +310,34 @@
 - [ ] 2026-08-23 [cc] tasks/README.md は「抽出物は版管理へ記録する」（git add docs/sessions/digest/）と書くが、本契約の禁止 1 は未追跡の成果物を commit することを禁じる。lecun には未追跡の抽出物が 2 件あり、契約を優先して残した。どちらが優先かが未決（docs/sessions/digest/）
 - [ ] 2026-08-23 [cc] 陽性対照の生出力には囮の値（語=値 の形）と鍵の書き出しの標識行が入る。秘匿検査の「削る」指示と、生出力を要約せず貼る指示が競合する。件数だけを残す方式で回避したが、様式として決めておきたい（tasks/_schema/result.schema.json の positive_controls）
 - [ ] 2026-08-23 [cc] setup_host_servername.sh は --help を受け付けない（--dry-run / --verify のみ）。SPEC が --help を指示する箇所があり、道具側に足すか契約側を直すかが未決（scripts/sync/setup_host_servername.sh）
+- [ ] 2026-08-23 [cc] keeper.sh 41-43 行の syncthing 起動は目印では止まらない（条件は `[ -x ~/bin/syncthing ]` のみ）。禁止 2 と完了判定 11 を同時に満たせないため、ユーザーへ諮り起動前に `chmod -x ~/bin/syncthing` で実行権だけを外す承認を得た。同期処理を立ち上げる契約で `chmod 755 ~/bin/syncthing` に戻すこと。他四台も同じ（T-2026-08-24-andrew-keeper-autosync）
+- [ ] 2026-08-23 [cc] 実行基盤の分類器が `~/.zshrc` への追記を三経路（cat >> / tail / Edit ツール）とも拒否した。回避せずユーザーへ差し戻し、プロンプトの `!` 経由で実行してもらって完了。恒久対応は `~/.claude/settings.json` の allow に `Read(//home/ubuntu/.zshrc)` `Edit(//home/ubuntu/.zshrc)` を置くこと。他台でも同じ壁に当たる（T-2026-08-24-andrew-keeper-autosync）
+- [ ] 2026-08-23 [cc] SPEC 指定の `sh -n` は本ホストでは dash であり、m2-sync.sh 75 行の process substitution `<(...)` で exit 2 になる。両スクリプトの shebang は `#!/bin/bash` で実際の解釈系は bash（両方 exit 0）。他台でも同じ偽陽性が出る。検査は `bash -n` にすべき（T-2026-08-24-andrew-keeper-autosync）
+- [ ] 2026-08-23 [cc] 🔴 bengio の `~/bin/syncthing` は実行属性を外してある（`chmod -x`）。同期処理を登録・起動する契約では先に `chmod +x ~/bin/syncthing` で戻す。戻さないと keeper は永久に起動しない（`tasks/T-2026-08-24-bengio-keeper-autosync/RESULT.md` §3）
+- [ ] 2026-08-23 [cc] `keeper.sh:41-43` は目印の有無と無関係に `[ -x ~/bin/syncthing ]` だけで同期処理を起動する。契約は中継の抑止と同期処理の抑止を混同しており、他の四台の同一契約でも同じ矛盾が起きる（`result.yaml` issuer_defects[0]）
+- [ ] 2026-08-23 [cc] `sh -n` で bash の正本を検査すると誤った失敗が出る。`/bin/sh` は dash で、`m2-sync.sh:74-76` はプロセス置換 `<(...)` を使う。`bash -n` を使うこと（`result.yaml` issuer_defects[1]）
+- [ ] 2026-08-23 [cc] `/proc/*/cmdline` の部分一致は実行基盤の包み込み（`zsh -c … eval '~/bin/keeper.sh'`）を拾い `keeper.sh=2` と誤る。引数の要素で数えること（`audit.md` Task 3 Step 3）
+- [ ] 2026-08-23 [cc] 実行基盤によっては `nohup … &` `setsid` `cat >> ~/.zshrc` `cp ~/.zshrc` が判定に拒否される。常駐処理を切り離せず、起動行の退避も取れない（`result.yaml` deviations[1][2]）
+- [ ] 2026-08-23 [cc] 記録の置き場所は `~/claude-sync/sync-alerts.log`。SPEC は「失われている」と書くが `m2-sync.sh:22` の `mkdir -p` が自分で作るため探す必要は無い（`RESULT.md` §7）
+- [ ] 2026-08-23 [cc] 禁止 4 に従い `make taskindex` `make inbox` を実行していない。全台の統合後に一台で一度だけ再生成すること
+- [ ] 2026-08-23 [cc] keeper.sh 41〜43 行が同期処理を起動するため禁止 2・完了判定 11・G2 と衝突した。ユーザー判断で `chmod -x ~/bin/syncthing`（755→644、要約値は不変）により 41 行の第一条件を偽にして起動した。次の契約は `chmod +x` が要る（T-2026-08-24-ilya-keeper-autosync RESULT.md §8-1）
+- [ ] 2026-08-23 [cc] 起票の `sh -n` は `/bin/sh` が dash のため `#!/bin/bash` の m2-sync.sh を偽って不合格にする（75 行のプロセス置換）。`bash -n` では両方 0。他の四台でも同じ（同 §8-2）
+- [ ] 2026-08-23 [cc] Task 3 Step 4 の錠の検査は存在しか見ておらず働きを検査しない。二度目を起こして件数も pid も変わらないことを実測して補った（同 §8-3）
+- [ ] 2026-08-23 [cc] `~/.zshrc` への追記が Bash と編集道具の両方で実行基盤に拒否された。迂回せずユーザーへ手順を渡し、ユーザーが追記した。他台の契約はこの経路を想定しておくこと（同 §9-4）
+- [ ] 2026-08-23 [cc] 起動行の追記に二度失敗した。`printf` の `<<<\n'` のバックスラッシュ落ちと、退避から戻さずに追記してブロックが二重になった件。確定は 81 行・起動行 1 本（同 §9-6）
+- [ ] 2026-08-23 [cc] keeper の一周目は repo 直下に `.stignore`（2223 バイト、gitignore 済み）を作り、`~/bin/m2-sync.sh` の権限を 755→775 に変える。いずれも起票に記載が無い（同 §3）
+- [ ] 2026-08-23 [cc] 禁止 4 に従い生成物を再生成していない。`taskindex-check` と `inbox-check` の結果は事実として記録するだけとした（同 §9-8）
+- [ ] 2026-08-23 [cc] 陽性対照の生出力を貼ると秘匿検査が自分の報告で止まる競合が再発した（2026-08-23 lecun で起票済み）。囮の中身を書かず件数だけ残す方式で回避。様式として決めておきたい（tasks/_schema/result.schema.json の positive_controls）
+- [ ] 2026-08-23 [cc] keeper.sh 41-43 行は目印と無関係に syncthing を起動する。前契約が全台に ~/bin/syncthing を置いたため、無改変で起動すると禁止 2 に触れる。lecun は実行属性を 644 へ落として回避した。他 4 台でも同じ判断が要る（scripts/sync/keeper.sh）
+- [ ] 2026-08-23 [cc] 🔴 lecun の ~/bin/syncthing は実行属性を外したまま（chmod 644）。次の契約（登録と起動）で chmod 755 に戻すこと。忘れると同期処理が起動しない（~/bin/syncthing）
+- [ ] 2026-08-23 [cc] SPEC の構文検査 sh -n は shebang #!/bin/bash と食い違う。/bin/sh は dash で、m2-sync.sh 75 行のプロセス置換を構文誤りと判定する。契約側を bash -n へ直すべき（tasks/_templates/ へ反映するか未決）
+- [ ] 2026-08-23 [cc] 実行基盤の分類器が ~/.zshrc の書き換えと nohup によるデーモン起動を拒否した。permissions.allow を足しても解けない（分類器は別層）。常駐処理を立てる契約は実行者だけでは完了できない場合がある。運用の前提として決めておきたい（.claude/settings.json）
+- [ ] 2026-08-23 [cc] 契約の対照 zzz_none は偽陽性が無いことしか示さない。検出能力は実在する語でしか測れない。計数の対照は両方向を雛形に入れるべき（tasks/_templates/impl/SPEC.md）
+- [ ] 2026-08-23 [cc] 錠のファイルの存在は保持を意味しない。flock -n で取得を試して初めて分かる。判定の書き方を「作られた」から「保持されている」へ変えるべき（scripts/sync/keeper.sh の 25-26 行）
+- [ ] 2026-08-23 [cc] ~/.claude/settings.json が末尾カンマで JSON として壊れており、allow だけでなく deny(20 件) と ask(13 件) も無効化されていた。ユーザーが修正済み。設定変更後に妥当性を検査する習慣が要る（~/.claude/settings.json）
+- [ ] 2026-08-24 [human] keeper.sh 41-43 行が目印と無関係に syncthing を起動するため禁止 2 と衝突する。3 案（実行権を外す／そのまま起動して記録／Phase A で差し戻す）を提示し「~/bin/syncthing の実行権を一時的に外す」を選択。~/bin/ への配置・~/.zshrc への追記・常駐の起動・commit と push も併せて承認（T-2026-08-24-philip-keeper-autosync）
+- [ ] 2026-08-24 [cc] ~/bin/syncthing を 644 へ落とした状態は philip に残る。同期処理を立ち上げる契約で chmod 755 ~/bin/syncthing を戻す必要がある。syncthing を配置済みの他 4 台でも keeper 起動時に同じ矛盾が起きるため、起票側で扱いを決めてほしい（T-2026-08-24-philip-keeper-autosync）
+- [ ] 2026-08-24 [cc] SPEC の構文検査が sh -n を使うが正本は #!/bin/bash でプロセス置換を含むため dash では必ず落ちる。次の起票から bash -n にしたい（T-2026-08-24-philip-keeper-autosync）
 
 ## 処理済み（1 件）
 
