@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（258 件）
+## 申し送り（314 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -379,6 +379,13 @@
 - auto-PR は Draft を起票する（m2-sync.sh 115-132 行）。手で PR を作るなら抑止を外す前に作ること。 先に外すと auto: <branch> -> phase0 という Draft が立ち、二重になる。
 - m2-sync.sh の論理名は SERVERNAME 環境変数、$M2DIR/.servername、hostname の 3 段で解決する。 andrew では nohup 越しでも SERVERNAME=andrew が伝わり、記録の [andrew] が正しく出た。
 
+### T-2026-08-24-andrew-syncthing-node
+
+- 残る二台（ilya / lecun）は本契約と同じ手順で進められる。ただし lecun は repo が ~/slocal/m2 で あり、keeper.sh の M2DIR 判定（[ -d ~/slocal2 ] で分岐）がそちらを選ぶ。目印の 2 行目は 192.168.196.150（handoff.md の 192.168.196.176 ではない）。登録名は bengio・andrew とも 初期値が先頭大文字だったため、ilya / lecun も確かめて小文字へ直すこと。
+- m2 の同期は andrew 側では needFiles=0 / needBytes=0 / errors=0 まで到達した（起動から約 4 分半）。 一方で中心側の completion は needBytes=0 でありながら needItems=1478 が残る。needBytes が零で あるため大きさ零の要素（ディレクトリ等）と解釈したが、中心で命令を実行できないため内訳は 確かめていない。次の契約で中心側から確かめる価値がある。
+- ~/claude-sync の sync-alerts.log は上書きされず衝突ファイルが生まれた。本ホストでは 2 件 （…-160823-3C2LTP7.log と …-160825-3C2LTP7.log、ともに 6016B・46 行）で、bengio 由来の …-131007-4NIRI4M.log も届いた。全 4 台が繋がると台数分増える。中心側で衝突ファイルの 扱いを決める必要がある（前契約の申し送り 3 と同じ）。
+- 禁止 6 により make taskindex / make inbox を実行していない。全台の統合後に一台で一度だけ 回すこと（前契約の申し送り 4 と同じ）。
+
 ### T-2026-08-24-bengio-keeper-autosync
 
 - 🔴 ~/bin/syncthing の実行属性を外してある（chmod -x）。同期処理を登録・起動する次の契約では、先に chmod +x ~/bin/syncthing で戻すこと。戻さないと keeper は永久に同期処理を起動しない。
@@ -392,6 +399,20 @@
 - 「送出側が git@ なら配備鍵が要る形で、鍵は消えている」という前提は bengio では偽である。前契約と合わせて二度目。他台の契約でも実測してから切り替えを判断すること。
 - make taskindex-check / inbox-check を head へ通すと SIGPIPE で 141 になり、真の判定 2 が隠れる。終了コードを測るときは head を挟まないこと。
 
+### T-2026-08-24-bengio-syncthing-node
+
+- 残る三台（andrew / ilya / lecun）の同種契約は本契約の手順がそのまま使える。ただし lecun は repo が ~/slocal/m2 である。
+- 版を揃える手順は確立した。v2.1.3 の配布物 f929eb8e… を展開すると実行ファイルは e8a08fdd8b25…b96c4 27045912 B で中心と完全一致する。自動更新に任せず手で入れ替えて 644 のまま置くこと。
+- 中継が立つまでは目印を置いてから 413 秒だった。常駐処理の周回は毎時 :10:02 と :40:02 である。起動は実行権を 755 にしてから 1082 秒（次の周回）だった。
+- 届いたかは中心で命令を実行せずに確かめられる。自ホストの 127.0.0.1:8384 へ /rest/db/file?folder=<id>&file=<name> を投げ、availability に中心の識別子が現れるかを見る。/rest/db/completion?folder=&device= も使える。合言葉は config.xml の apikey で、変数へ読み込んで画面に出さないこと。
+- m2 の同期は完了を待っていない。13:11:44 時点で global 3720 件 / 40743989547 B に対し残り 1413 件 / 14832654763 B、state=sync-preparing、errors=0。次の契約で完了を確かめること。
+- .stignore は .git を除外している。同期と git の操作は衝突しない。
+- sync-alerts.log は上書きされず衝突ファイル sync-alerts.sync-conflict-20260824-131007-4NIRI4M.log が生まれた。両方の内容が残る。全台が繋がると台数分の衝突ファイルが生まれるため、中心側での扱いを決めること。
+- bengio の syncthing 登録名の初期値は Bengio（先頭が大文字）だった。残る三台も同様の可能性があるため Task 3 Step 2 で必ず確かめること。
+- 起動時に設定は config_version 37 から 52 へ移行され、控えとして config.xml.v37 が残る。要約値は必ず変わるため、無変更の確認は定義の有無で行うこと。
+- SPEC Task 3 Step 5 の「default を消す」を名前で確認すると <defaults> 配下の id="" の folder ひな型を見落とす。確認は最上位の <folder> の列挙で行うこと。ひな型は同期対象ではないため削除しなくてよい。
+- 禁止 5 に従い make taskindex と make inbox を実行していない。全台の統合後に一台で一度だけ再生成すること。
+
 ### T-2026-08-24-ilya-keeper-autosync
 
 - 同期処理を起動する次の契約は、先に chmod +x ~/bin/syncthing が要る。本契約で 41 行の 起動を止めるため 644 にした。要約値 32ab747eb18ff3a01423f9719c5b8a8165da63e60ee9c3f733887464c70ca1dd は不変。
@@ -401,6 +422,15 @@
 - 起動行の四行は他の四台でそのまま使える。ただし printf を使うなら <<<\n' の バックスラッシュを落とさないこと、貼り直すときは必ず先に退避から戻すこと。 検算は grep -c 'nohup ~/bin/keeper.sh' ~/.zshrc が 1 であることで行う。
 - keeper の一周目は repo 直下に .stignore（2223 バイト）を作り、~/bin/m2-sync.sh の権限を 755 から 775 へ変える（mv が新規ファイルの既定権限を持ち込むため）。いずれも起票に記載が無い。
 
+### T-2026-08-24-ilya-syncthing-node
+
+- 残る一台は lecun。版管理の位置が他と違うため、そこだけが未確認として残る。
+- 登録名の初期値は一定ではない。bengio=Bengio、andrew=Andrew、ilya=aolab（hostname そのもの）。lecun では必ず実測し、予想で置換しないこと。
+- 実行基盤（auto mode の分類器）が ~/bin/**、~/.local/state/**、$HOME 直下の目印への書き込みを拒否する。lecun でも同じ壁に当たる。起票時に織り込むこと。
+- 目印 → 中継の待ち時間は周回の位相で決まる（bengio 413 / andrew 1227 / ilya 1358.8 秒）。keeper.sh は sleep 1800 であり、SPEC の『最大六十分』は実装の 2 倍である。
+- 衝突の勝敗はホストで逆転する。ilya では自分の内容が sync-alerts.log として残り、中心側が衝突ファイルになった（andrew は逆）。どちらでも両方残るため中身で確かめること。
+- 中心側 m2 の needItems は needBytes=0 のまま非零になる（andrew 1478 / ilya 571）。中心で命令を実行できないため内訳は UNKNOWN のままである。
+
 ### T-2026-08-24-lecun-keeper-autosync
 
 - keeper.sh 41-43 行は目印と無関係に syncthing を起動する。目印が制御するのは中継（33 行）だけである。 前契約が五台すべてに ~/bin/syncthing を置いたため、無改変で起動すると全台で禁止 2 に触れる。 lecun は実行属性を 644 へ落として回避した。他 4 台でも同じ判断が要る。
@@ -409,6 +439,26 @@
 - 禁止 4 に従い生成物を再生成していない。make inbox-check は exit 2 で 「差分あり: inbox.md。make inbox で再生成すること。」を報告した。 make taskindex-check は exit 0 だった（result.yaml を書く前に測ったため）。 全台の統合が済んだあと、一台で一度だけ再生成すること。
 - 次の契約で使う値。記録の置き場所は ~/claude-sync/sync-alerts.log。 起動行は ( nohup ~/bin/keeper.sh >/dev/null 2>&1 & ) 2>/dev/null を 「# >>> m2 keeper >>>」と「# <<< m2 keeper <<<」の標識で囲んで ~/.zshrc の末尾へ置く。 目印を置いたときは keeper 33 行の resolve_tunnel が真になり ssh -N -L 22001:127.0.0.1:22000 -p 50072 -i <鍵> で中心へ中継を張る。 目印の 1 行目が秘密鍵の位置、2 行目が中心の住所である（17-21 行）。
 - ~/.claude/settings.json が末尾カンマで JSON として壊れており、allow だけでなく deny 20 件と ask 13 件も無効化されていた。ユーザーが修正し、修正後は allow=8 deny=20 ask=13 で読み込めることを確かめた。 設定変更のあとに妥当性を検査する習慣が要る。
+
+### T-2026-08-24-lecun-syncthing-node
+
+- 五台の構成が揃った。philip（中心）+ bengio / andrew / ilya / lecun の四ノードが接続済みで、四台すべての試験ファイルが共有領域に揃った。設定共有の再構築はこれで完了し、残るのは共有領域の中身と実験環境の復旧である。
+- 🔴 同期が experiments/ へ書く。m2 フォルダは repo 全体であり、.stignore は experiments/baselines/_* しか除外しない。実行中に experiments/baselines/s0_002_maskdino_bbox_seed123/.syncthing.epoch_12.pth.tmp が現れた。契約の禁止 11（experiments/** を変更・削除しない）と、契約自身が定義した m2 の同期とが両立しない。次の契約で除外規則を決めること。触っていない。
+- 🔴 待ち時間を過去の実測の幅で上限として扱ってはならない。目印 → 中継は 1569.413 秒で SPEC の記載（最大 1359 秒）を超えた。keeper.sh は sleep 1800 であるから上限は約 1800 秒 + α である。実行権 → 起動も 1746.4 秒かかった。次の契約では実装の周期を根拠に書くこと。
+- 🔴 登録名の初期値は四台とも異なった。bengio=Bengio / andrew=Andrew / ilya=aolab / lecun=lecun（既に正しい）。置換で判定すると「当たらなかった 0 件」と「既に正しい 0 件」を取り違える。読み出しで現在値を確かめてから分岐すること。
+- lecun だけ版管理の位置が ~/slocal/m2 である（他四台は ~/slocal2/m2）。keeper.sh の M2DIR が [ -d ~/slocal2 ] で分岐するため、共有フォルダ m2 の位置さえ写し間違えなければ手順は同一で通った。~/slocal2 が存在しないことを実測して確かめている。
+- repo の規模は開始時点で本ホストが最小であった（du -sb 7652515378 B。ilya 47515332495 / andrew 54745194976）。群れ全体は 42010845130 B / 5256 files であり、本ホストは受け取る量が最も多かった。SPEC の指示どおり完了は待たなかったが、最終観測 20:40:44Z では収束していた（state=idle、localBytes=globalBytes=42010845130、needBytes=0、errors=0、du -sb repo = 48999900426）。起動 20:24:50.932 からの上限は 949 秒である。
+- 衝突は本契約で 2 件生まれた（…-OOOTQMG.log、6534 B / 61 行）。自分の内容（20 行・全 [lecun]）が sync-alerts.log として勝ち、中心側（[ilya] 51 / [bengio] 4 / [philip] 4 / [andrew] 2）が衝突ファイルになった。ilya と同じ向きで andrew とは逆。両方残っている。
+- ~/bin/** と ~/.local/state/** への書き込みは本ホストでは拒否されなかった。ilya では拒否された。ホストの差ではなく実行基盤の状態の差である。一方で ~/.ssh/ の一覧は本ホストでも拒否された。
+- 常駐処理の ssh は -o StrictHostKeyChecking=accept-new を持ち ~/.ssh/known_hosts へ書く（~/.tunnel.log に Permanently added が 1 行）。実行者の操作ではない。実行者の到達確認は隔離先の known_hosts を使っている。
+
+### T-2026-08-24-philip-accept-node-keys
+
+- 台帳への返送が失敗した。make task-report が「配布台帳に契約が見つかりません」で exit 2 を返す。 台帳に本契約の行が無く、depends_on の T-2026-08-24-bengio-syncthing-node の行も無い。照合器は 働いており T-2026-08-24-philip-syncthing-hub は found=True を返す。起票者は台帳ではなく PR #142 で報告を読むこと。台帳へ載せる必要があるなら、行を作ってから再送できる。
+- 疎通はノード側からしか確かめられない。中心で確かめられるのは受け入れ一覧に載っていることまでで ある。禁止 4 により中心から各ノードへ接続もしていない。andrew / bengio / ilya / lecun の各契約で ssh -v を取り Server accepts key が出ることを確かめること。停止した T-2026-08-24-bengio-syncthing-node はこの行が出ないところで止まっていた。再起動は不要で、 受け入れ一覧の変更は次回の接続から効く。
+- ~/.ssh/ の他のファイルの無変更は実行基盤に拒否されて測れなかった。必要なら人が直接測るか、 実行基盤の許可規則に ~/.ssh の読取専用の列挙を加える契約を起票すること。
+- 次の契約は、処理の件数を「稼働したまま」で判定するなら開始時の計数を Task 1 に置くこと。 終了時だけ測る手順では変化の有無を示せない。
+- 受け入れ一覧の権限は本機では 600 であり、SPEC の申し送りにあった 664 ではなかった。以後の契約は ホストごとに実測すること。
 
 ### T-2026-08-24-philip-keeper-autosync
 
@@ -425,7 +475,37 @@
 - auto-merge を阻害する未追跡は BLOCKED=0 で無い。抑止を外せば次の周回から統合が動く。
 - pgrep -af は自分のコマンド行を拾う（本セッションでも再現）。/proc を走査して自己と祖先を除外する方式が確実。
 
-## 断定できなかった事項（164 件）
+### T-2026-08-24-philip-syncthing-hub
+
+- 中心は v2.1.3 になった。他 4 台は v1.27.10 と推定されるが未測定である。ノード側の契約では、実行権を戻す前に autoUpgradeIntervalH を 0 にしておくか、v2 へ揃える方針を先に決めること。実行権を戻した瞬間に更新が走る。
+- 外部通信が globalAnnounce と relays の無効化だけでは止まらない。stunServer=default により外部 STUN へ問い合わせが行き、外から見た住所が解決された（記録に stun.voipstunt.com:3478 と 131.113.39.33:62442）。natEnabled と crashReportingEnabled も有効。止めるかどうかを起票者が決めること。
+- claude-sync の型は sendreceive で確定させたが、他 4 台の中身は未測定のままである。ノード側の契約で最初の一台を繋ぐ前に、その台の find ~/claude-sync -type f の件数を測ること。
+- 前契約 T-2026-08-24-syncthing-config-survey が origin/phase0 に未マージのため、handoff.md は feat/syncthing-config-survey から読んだ。本契約の分岐には前契約の成果物が無い。
+- SPEC 禁止6により投影（make taskindex / make inbox）を更新していない。tasks_summary.csv 等に本契約は現れない。
+
+### T-2026-08-24-syncthing-config-survey
+
+- 同期処理を起動する契約は、philip の ~/bin/syncthing を chmod 755 で戻す必要がある。前契約 T-2026-08-24-philip-keeper-autosync が禁止 2 を守るため 644 へ落とした。戻した瞬間から最大 30 分で、そのときの設定のまま起動する。設定を確定させてから戻すこと。
+- 起動前に globalAnnounceEnabled と relaysEnabled を false へ落とすこと。現在の設定は両方 true（既定のまま）だが、旧構成は両方 false であった。落とし忘れたまま 5 台同時に起動すると 5 台が同時に外部の探索網と公開中継へ出る。
+- 自分の登録名が name=aolab になっている。philip と ilya は OS のホスト名が同じであるため、論理名へ直さないと 2 台が同名で登録される。論理名は各ホストの .servername が持つ。
+- 自動生成された共有フォルダ default（path=/home/ubuntu/Sync）は実体が存在しない。設定から削除するか、以後は --no-default-folder を付けて起動する。
+- 旧構成の 11 台の識別子は全て作り直されている（philip は GO2U7PF から 3J4TRX4 へ）。旧記録の識別子を書き写してはならない。現行は scripts/sync/device_ids/*.txt の 5 件。
+- ノードは中心の住所を tcp://127.0.0.1:22001 として登録する。中継 ssh -N -L 22001:127.0.0.1:22000 -p 50072 は .tunnel_to_philip を置くと常駐処理が最大 30 分で張る。目印を置く前に ssh -p 50072 の到達を実測すること。
+- 共有フォルダ claude-sync の型は要判断。philip 上は 8.0K・1 ファイルしか無く、他 4 台の中身を測っていない。空の側が sendreceive で参加すると中身を消しうるため、中身を持つ台を sendonly、他を receiveonly で始めるのが安全である。
+- 疎通の最も強い確認は、小さなファイルが同じ要約値で相手に現れることである。~/claude-sync/ で測ること。m2 側で測ると .stignore の解釈も同時に検証することになり、失敗の切り分けができない。
+- P9 spec_lint の host_mismatch はこの艦隊では誤検知である。philip と ilya は hostname=aolab を共有し、論理名は .servername が持つ。検査器は socket.gethostname() と本文の宣言だけを比べている。
+- P9 spec_lint の separated_source 5 件も誤検知である。SPEC.md:38,390,393,396,424 はいずれも行末の \ で次行へ継続する 1 つの命令であり、検査器が行継続を解釈していない。
+- make forbidden-check は data/annotations/_deprecated/egosurgery_hand4/DEPRECATED.md を禁止領域 data/ の内側として指し続ける。2026-07-31 からある未追跡ファイルで、禁止 8 が削除も移動も commit も禁じている。起票者の判断が要る。
+
+### T-2026-08-25-sync-ignore-scope
+
+- 禁止と同期の矛盾は解けていない。experiments/** への同期は 2591 件 / 30,750,569,270 バイト 残る。禁止事項 1「experiments/** の中身を削除・変更する」を、実行者の手による変更に限るのか、 同期による配布も含むのかを契約側で決める必要がある。全除外（案 C）すれば矛盾は完全に解けるが、 同期は 42,010,845,130 バイト → 11,844 バイトになり checkpoints・重み・predictions が一切 届かなくなる。起票者は案 A を選び、禁止事項の再定義を差し戻す判断をした。
+- 本ホストに存在する一時ファイルは 0 件のため、既存の一時ファイルの扱いは判断していない。 中心（philip）に残っているものを消すかどうかは次の判断である。本契約では触っていない。
+- .stglobalignore:29 は「git 追跡ファイルとの二重管理を防ぐ除外」を掲げて 1 行だけ置くが、 logs/ で同じ問題が 391 件起きていた。案 A の適用で二重管理は 473 件 → 82 件へ減ったが、 experiments/ に 82 件残る。どの行が拾っているかは audit.md §8 に記録した。
+- 無制限行の削除により、将来 experiments/ 配下に .ckpt / .onnx / .safetensors が 生まれた場合は同期されなくなる。現時点の実測では 3 形式とも 0 件のため範囲付きの行を 足していない。形式を変える場合は 43〜54 行に範囲付きで追加すること。
+- /rest/db/browse が HTTP 500 を返す（could not find child '.remember' for path '.remember/logs'）。索引に親ディレクトリのエントリが無いことが原因で、prefix を指定すれば 応答する。全件一覧は索引 DB（folder.0002-uefxpssq.db の files / file_names）の直読みで得た。
+
+## 断定できなかった事項（196 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -717,6 +797,12 @@
 - git@github.com:takuya3h/m2.git の fetch を通している鍵。~/.zshrc 68-71 行が ssh-add ~/.ssh/id_ed25519_github を実行しておりこれが経路と思われるが、 Warning: Identity file ~/.ssh/id_Andrewdeploy not accessible を出しつつ fetch は exit 0 で通っている。 どの鍵が通したかは照合していない。
 - P9 spec_lint の separated_source 3 件が検査器の行単位判定によるものか。検査器の実装を読んでいない。 3 つとも実際には exit 0 で通ることだけを実測した。
 
+### T-2026-08-24-andrew-syncthing-node
+
+- ~/.ssh/** が実行基盤の deny 規則で読めないため、秘密鍵 ~/.ssh/id_ed25519_andrewtophilip の 権限と ~/.ssh/known_hosts の実行前後の要約値は UNKNOWN。指紋は版管理側の公開鍵で照合した。
+- 中心側 m2 の needItems=1478 の内訳は UNKNOWN。禁止 1 により中心で命令を実行しておらず、 自ホストの REST からは件数しか見えない。
+- 中心（philip）から見た状態は UNKNOWN。本契約は中心を触っていないため、観測はすべて 自ホストの 127.0.0.1:8384 の REST 経由である。
+
 ### T-2026-08-24-bengio-keeper-autosync
 
 - 起動した実体 pid=157746 が本会期の終了後も残るか。nohup による切り離しが実行基盤に拒否されたため測れない。起動行を追記済みなので、失われても次の対話シェルで復旧する。
@@ -724,10 +810,23 @@
 - 抑止を外した後の周回で auto-merge / auto-push が実際に働くか。次の周回は 1800 秒後で本報告の時点では測れない。
 - make taskindex-check / inbox-check の差分。禁止 4 により生成物を再生成していないため、検査結果は事実として記録するのみ。
 
+### T-2026-08-24-bengio-syncthing-node
+
+- m2 の同期が完了するまでの時間。本契約は完了を待たない。13:11:44 時点で残り 14832654763 B。
+- 中心側で衝突ファイルがどう見えているか。禁止 1 により中心で命令を実行できないため測っていない。
+- 残る三台の syncthing の版・実行権・登録名・~/claude-sync/ の中身。禁止 1 により測っていない。
+- make taskindex-check / inbox-check の差分。禁止 5 により再生成していないため記録のみ。
+
 ### T-2026-08-24-ilya-keeper-autosync
 
 - この実行基盤が前景の sleep を拒否する範囲。単独の sleep 5 は拒否されたが、 Task 3 Step 4 の対照では複合命令中の sleep 3 が通った。条件を切り分けていない。
 - 試験の件数。本契約は src/ と tests/ に一切触れておらず、契約も試験の実行を求めていないため 測っていない。tests の三値 0 は「未実行」であって「零件」ではない。
+
+### T-2026-08-24-ilya-syncthing-node
+
+- 中心側 m2 の needItems=571 の内訳。needBytes=0 のため大きさ零の要素と解釈したが、禁止 1 により中心で命令を実行できず確かめられない。
+- ~/.ssh/known_hosts の実行前後の比較。実行基盤の deny 規則で読めない。自分の確認は隔離先 scratchpad/known_hosts_probe へ書いた。
+- 中心から見た状態。禁止 1 により中心で命令を実行していないため、観測はすべて自ホストの REST 経由である。
 
 ### T-2026-08-24-lecun-keeper-autosync
 
@@ -735,22 +834,59 @@
 - 目印を置いたときに中継が実際に張られるか。禁止 1 が目印の作成を禁じているため測っていない。
 - test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics が失敗する理由。 本契約の範囲外のため追っていない。
 
+### T-2026-08-24-lecun-syncthing-node
+
+- ~/.ssh/known_hosts の前後比較は UNKNOWN。実行基盤の deny 規則で一覧できないため。自分の到達確認は隔離先へ書いており、常駐処理が書いた 1 行は ~/.tunnel.log から確認した。
+- 中心側の内部状態は UNKNOWN。禁止 1 により中心で命令を実行していないため、中心から見た値は自ホストの REST 経由の観測に限る。
+- m2 フォルダの同期が収束した時刻は UNKNOWN。SPEC の指示に従い完了を待たず、進み方だけを測った。T1→T2 の 63.056 秒で 101522468 B/s、残り 26016195954 B から約 256 秒と見積もった。最終観測 20:40:44Z では収束していたため、起動 20:24:50.932 からの上限は 949 秒と言えるが、収束の瞬間は測っていない。
+- 新版 syncthing の版文字列は strings の ^v2\.1\.3$ では当たらなかった。同一性は要約値 e8a08fdd… で確定し、起動後の --version が v2.1.3 を返すことで裏づけた。strings で当たらない理由は UNKNOWN。
+
+### T-2026-08-24-philip-accept-node-keys
+
+- ~/.ssh/ の他のファイルの無変更。ls と find のいずれも実行基盤に拒否された
+- 同期処理と常駐処理の開始時の件数。SPEC に開始時の計数の手順が無く測っていない
+- 各ノードから中心への疎通。中心からは測れず、ノード側の契約でしか確かめられない
+- 秘匿検査のうち環境の資格情報そのものとの直接照合は、自前の検査を走らせたシェルの env に値が無く照合できなかった。ただし資格情報を読み込んだうえでの report_task.py --dry-run が exit 0 を返しており、そちらでは照合されている
+- 配布台帳に本契約の行が無い理由。起票の経路を追っていない。台帳側の状態は測れていない
+
 ### T-2026-08-24-philip-keeper-autosync
 
 - 本報告が context/auto/ の投影に現れるかを確かめていない。禁止 4 により make taskindex / taskindex-check / inbox-check を実行していないため。
 - make forbidden-check を通せる状態にできるかは未確認。違反 4 件は禁止 5 が触ることを禁じている未追跡ファイルであり、本契約では消せない。
 - P2 cuda_ext_loaded と P3 deterministic_flags は plan.env.preflight に記載が無く SKIP。実行されていない。
 
-## 起票者の誤りの型（141 件）
+### T-2026-08-24-philip-syncthing-hub
+
+- 他 4 台（lecun / bengio / andrew / ilya）の syncthing のバージョンと実行権。禁止1により測っていない。
+- 他 4 台の ~/claude-sync/ の中身の件数。禁止1により測っていない。
+- ~/.ssh/authorized_keys の要約値。開始時・終了時とも、実行基盤の権限設定により測れなかった。
+- ~/bin/keeper.sh と ~/bin/m2-sync.sh の開始時の要約値。Task1 で ls -la のみを取り sha256sum を取らなかった。終了時は keeper.sh 9fe9c423 / m2-sync.sh bcf46ba9 で、サイズは両方とも開始時と同一。
+- ノードから philip の 50072 への到達性。前契約が UNKNOWN として残した事項であり、本契約でも他ホストに触れないため測っていない。
+
+### T-2026-08-24-syncthing-config-survey
+
+- ~/claude-sync/ に何を戻すか。旧構成の 2532 ファイルの中身が版管理に無く、各実装系の設定は各ホストの実体から集める必要があるが、他ホストへ接続できない（禁止 5）。
+- 5 台のうちどれが ~/claude-sync/ の中身を持つか。philip 上は 1 ファイルのみ。他ホストを測れないため、空の側が中身を配る事故を防ぐ型を決められない。
+- 初回の約 19G を中継越しに流してよいか。帯域も所要時間も測っていない。OPERATION.md:15 の 28 秒は差分同期の実測であり初回全量ではない。
+- 中心の住所 192.168.196.150 の到達性。禁止 5 のため他ホストから試せず、容器内からは検証できない。
+- 本報告が context/auto/ の投影に現れるか。禁止 7 により make taskindex と make inbox を実行していない。
+
+### T-2026-08-25-sync-ignore-scope
+
+- 完了判定 L の「四ノードとの接続」。本ホスト lecun から見える相手は中心 1 台のみで、 残る三台は測っていない。見える 1 台は切れていない（connected = 1 / 1）。
+- 他台での反映の実測。他ホストに触れていない（禁止 3）ため、実装から導いた見込みのみ。 マージ → keeper 最大 30 分 → 走査（監視 10 秒 / 定期 3600 秒）で概ね 30 分〜1 時間。
+- 「今から足した行で既存が消えない」ことの中心ホストでの実測。本ホストでは消えなかったが、 中心では測っていない。
+
+## 起票者の誤りの型（177 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 45 |
-| `asserted_without_measuring` | 41 |
-| `self_contradiction` | 40 |
-| `shell_assumption` | 15 |
+| `check_does_not_check` | 55 |
+| `asserted_without_measuring` | 57 |
+| `self_contradiction` | 47 |
+| `shell_assumption` | 18 |
 
-合計 141 件（対を持つ契約 55 件から）
+合計 177 件（対を持つ契約 63 件から）
 
