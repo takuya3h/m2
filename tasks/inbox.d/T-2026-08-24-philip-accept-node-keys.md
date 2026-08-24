@@ -4,3 +4,4 @@
 - [ ] 2026-08-24 [cc] 受け入れ一覧の権限は本機で 600 であり SPEC の申し送りの 664 ではなかった。戻し方も 600 で記録した。ホストごとに実測が要る（~/.ssh/authorized_keys）
 - [ ] 2026-08-24 [cc] 実行ホスト philip と OS ホスト名 aolab が食い違い preflight の P9 が host_mismatch を出す。philip と ilya は OS ホスト名が同じで区別できないため syncthing device-id で確かめた。P9 の当該規則はホスト名以外の識別子を見ないと偽陽性が出続ける（tools/preflight_task.py）
 - [ ] 2026-08-24 [cc] 疎通は中心からは測れない。受け入れ一覧に載ったことまでしか示せず、各ノードの契約で ssh -v の Server accepts key を確かめる必要がある。再起動は不要（tasks/T-2026-08-24-bengio-syncthing-node/）
+- [ ] 2026-08-24 [cc] 台帳への返送が失敗した。make task-report が「配布台帳に契約が見つかりません」で exit 2。台帳に本契約の行が無く depends_on の T-2026-08-24-bengio-syncthing-node の行も無い。照合器は働いており T-2026-08-24-philip-syncthing-hub は found=True を返す。SPEC は「台帳から取り込んでいるので返送も通るはず」と確かめずに書いていた。報告は PR #142 で読むこと（tools/report_task.py）
