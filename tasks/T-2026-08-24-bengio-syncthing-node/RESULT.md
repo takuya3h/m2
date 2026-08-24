@@ -259,9 +259,20 @@ SKIP は 4 件（`P2 cuda_ext_loaded` `P3 deterministic_flags` `P4 prereg_commit
 **前回の報告は「合言葉が失われており `load_env.sh` が使えない」と記録したが、本実行では
 `source scripts/load_env.sh && make task-report` が成功した。** 前回の記録は本実行には当てはまらない。
 
-**送出より先に台帳へ返している。** SPEC は「記録して起票したあとに送る」と定めるが、
-送出が実行基盤に拒否されて完了しないため、台帳への返却を待たせなかった。
-そのため台帳の本文には PR 番号が入っていない。
+**一度目は送出より先に返した。** 送出が実行基盤に拒否されて完了しないため待たせなかった。
+そのため一度目の本文には PR 番号が入っていない。**送出が済んだあと、PR 番号を含めて返し直した。**
+
+    {
+      "task_id": "T-2026-08-24-bengio-syncthing-node",
+      "verdict": "pass",
+      "n_issuer_defects": 6,
+      "report_sha256": "83fd9e3d1bbcc80896ef9c28413e2c56f20e3814bb1b9ada19dc5a679c93f041",
+      "report_bytes": 22036,
+      "replaced_blocks": 1
+    }
+    report_exit=0
+
+**台帳には PR #143 を含む版が載っている。**
 
 ### 抑止 — 外れた
 
