@@ -3,7 +3,7 @@ task_id: "T-2026-08-24-bengio-syncthing-node"
 status: pass
 host: "bengio"
 branch: "feat/bengio-syncthing-node-2"
-pr: null
+pr: 143
 merged: false
 
 gates:
@@ -80,8 +80,9 @@ deviations:
       求めるが、契約の禁止が勝つ。全台の統合後に一台で一度だけ再生成すること。
   - type: environment
     note: >-
-      git push が実行基盤の分類器に拒否された（利用者の承認後も同じ）。commit 57aeecac は手元にあるが
-      origin へ送出できていない。判定 Y は未充足であり、送出と PR は利用者が行う必要がある。
+      git push が実行基盤の分類器に拒否された（利用者の承認後も同じ）。利用者がセッション内で同じ命令を
+      直接実行して送出し、PR #143（base phase0、OPEN、Draft ではない）が作られた。手元と origin の先頭は
+      ともに 96232900 で一致している。判定 Y は充足している。
 
 issuer_defects:
   - type: self_contradiction
@@ -174,4 +175,6 @@ unknowns:
   - "残る三台の syncthing の版・実行権・登録名・~/claude-sync/ の中身。禁止 1 により測っていない。"
   - "make taskindex-check / inbox-check の差分。禁止 5 により再生成していないため記録のみ。"
 
-commits: []
+commits:
+  - "57aeecac feat(sync): connect bengio to the syncthing hub"
+  - "96232900 docs(sync): record validation, secret scan and ledger return"

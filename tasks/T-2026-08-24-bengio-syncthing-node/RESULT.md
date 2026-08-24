@@ -1,6 +1,6 @@
 # RESULT — T-2026-08-24-bengio-syncthing-node
 
-**status:** `pass`（**G1 / G2 / G3 すべて pass**。ただし**判定 Y（送出）は未充足** — §6）
+**status:** `pass`（**G1 / G2 / G3 すべて pass**）  **PR:** #143
 **kind:** `impl`  **host:** `bengio`  **repo:** `~/slocal2/m2`
 **branch:** `feat/bengio-syncthing-node-2`  **実行日:** 2026-08-24 (UTC)
 
@@ -91,8 +91,8 @@ SPEC は前契約 `tasks/T-2026-08-24-philip-syncthing-hub/` にあると書く�
 | V | repo の同期の様子を記録した | `m2` は `sync-preparing`。local 3646 件 / 40.74 GB、global 3720 件 / 40.74 GB、**残り 1413 件 / 14.83 GB**、errors 0 |
 | W | 目印が一件、常駐処理が無変更 | `marker_count=1`。`keeper.sh` `9fe9c423…` / `m2-sync.sh` `bcf46ba9…` は Task 1 と同じ |
 | X | 秘匿検査を自分で行った（陽性対照つき） | §5 |
-| Y | 分岐が送出され PR が存在する | 🔴 **未充足。** commit `57aeecac` は手元にあるが `git push` が実行基盤に拒否された（§6） |
-| Z | 報告が台帳へ返り、抑止が外れている | 台帳は `report_exit=0` で返った（`report_sha256=688b6a78…`）。抑止は §6 |
+| Y | 分岐が送出され PR が存在する | **PR #143**（base `phase0`、OPEN、Draft ではない）。先頭 `96232900` が手元と `origin` で一致。**push は分類器に拒否されたため利用者が実行した**（§6） |
+| Z | 報告が台帳へ返り、抑止が外れている | 台帳は `report_exit=0`（`report_sha256=688b6a78…`）。**抑止は外れた**（`repo 直下から消えた`）。§6 |
 
 ---
 
@@ -221,13 +221,28 @@ SKIP は 4 件（`P2 cuda_ext_loaded` `P3 deterministic_flags` `P4 prereg_commit
     57aeecac feat(sync): connect bengio to the syncthing hub
     4 files changed, 540 insertions(+), 177 deletions(-)
 
-### 送出 — **できていない**
+### 送出 — **利用者が実行して完了した**
 
-🔴 `git push -u origin HEAD` が**実行基盤の分類器に拒否された**。利用者の承認を得たあとも同じである。
-commit は手元にあるが `origin` へ送れていない。**判定 Y は未充足であり、送出と PR は利用者が行う必要がある。**
+`git push` は**実行基盤の分類器に拒否された**（利用者の承認を得たあとも同じ）。
+**利用者が同じ命令をセッション内で直接実行して送出した。**
 
-    git push -u origin HEAD
-    gh pr create --base phase0 --fill
+    remote: Create a pull request for 'feat/bengio-syncthing-node-2' on GitHub by visiting:
+    remote:      https://github.com/takuya3h/m2/pull/new/feat/bengio-syncthing-node-2
+    To github.com:takuya3h/m2.git
+     * [new branch]        HEAD -> feat/bengio-syncthing-node-2
+    branch 'feat/bengio-syncthing-node-2' set up to track 'origin/feat/bengio-syncthing-node-2'.
+    Warning: 1 uncommitted change
+    https://github.com/takuya3h/m2/pull/143
+
+    $ gh pr list --head feat/bengio-syncthing-node-2 --json number,isDraft,state,baseRefName
+    [{"baseRefName":"phase0","isDraft":false,"number":143,"state":"OPEN"}]
+
+    $ git rev-parse --short HEAD ; git rev-parse --short origin/feat/bengio-syncthing-node-2
+    96232900
+    96232900
+
+**PR #143（base `phase0`、Draft ではない、OPEN）。手元と `origin` の先頭が一致している。**
+`gh` が警告した「1 uncommitted change」は `docs/sessions/digest/…`（本実行より前からある変更）である。
 
 ### 台帳 — 返した
 
@@ -248,9 +263,20 @@ commit は手元にあるが `origin` へ送れていない。**判定 Y は未�
 送出が実行基盤に拒否されて完了しないため、台帳への返却を待たせなかった。
 そのため台帳の本文には PR 番号が入っていない。
 
-### 抑止
+### 抑止 — 外れた
 
-Task 5 Step 5 で外す。実測は下に貼る。
+    $ mv .sync-pause /tmp/.sync-pause.released.T-2026-08-24-bengio-syncthing-node
+    repo 直下から消えた
+    -rw-rw-r-- 1 ubuntu ubuntu 0 Aug 24 00:34 /tmp/.sync-pause.released.T-2026-08-24-bengio-syncthing-node
+
+外した直後の記録に**中心の行が現れた。**
+
+    2026-08-24 13:40:02 [bengio] 一時停止中: …
+    2026-08-24 13:59:10 [philip] 一時停止中: …
+
+`[philip]` は bengio が書いた行ではない。**同期で届いた行である。**
+`~/claude-sync/sync-alerts.log` が両ホストで共有されていることの、もう一つの裏づけになった。
+（中心側も現在 `.sync-pause` を置いている。これは中心の別の作業によるものであり、本契約は触っていない。）
 
 ---
 
@@ -291,7 +317,7 @@ Task 5 Step 5 で外す。実測は下に貼る。
 5. **判断（利用者）** — 実行権の復帰（Task 4 Step 4）と `<defaults>` の folder ひな型の削除は**利用者が行った**。前者は中継の成立より後であり順序は守られている。後者は同期対象ではない要素であり、最上位の共有フォルダは前後とも 2 件のままである。
 6. **判断（利用者）** — 共有フォルダの型は `handoff.md` が `UNKNOWN` として残した未決の判断だった。実測（bengio 4031 B / 1 件、中心も 1 件、削除の履歴なし）を示したうえで**利用者が両方 `sendreceive` を選んだ**。中心側の選択と揃う。
 7. **判断** — 禁止 5 に従い `make taskindex` と `make inbox` を実行していない。技能書は投影の確認を求めるが、契約の禁止が勝つ。
-8. **環境** — 🔴 `git push` が実行基盤の分類器に拒否された。**判定 Y は未充足。** 送出と PR は利用者が行う。
+8. **環境** — `git push` が実行基盤の分類器に拒否された（利用者の承認後も同じ）。**利用者がセッション内で直接実行して送出し、PR #143 が作られた。** 判定 Y は充足している。
 
 **逸脱は「無し」ではない。** 上記 8 件がすべてである。
 
