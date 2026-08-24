@@ -996,3 +996,35 @@ andrew とは逆）。本体には開始時に見た最終行
 | X | 触っていないものが無変更 | `keeper.sh` `9fe9c423…` / `m2-sync.sh` `bcf46ba9…` / 受け入れ一覧 9 件 / `.stignore` `61593e99…` すべて開始時と同一。`scripts/sync/` の差分 0 行。**目印 1 件**。常駐処理 pid 89614 は生存 |
 | Y | 秘匿検査 | `secretscan_exit=0`、`literal_leaks=0`、`shape_hits=0`。**検査は値を出力していない**。陽性対照 `3/3` と形 3 規則すべて発火。囮は commit していない |
 | Z | 送出 | commit `49b24fbb`、push 済（手元 = リモート）、**PR #146**、台帳 `report_exit=0`（`report_sha256=2eace207…`）、抑止は `.sync-pause.released` へ移動して解除 |
+
+### 追記: `m2` の同期の収束（最終観測 2026-08-24T20:40:44Z）
+
+**SPEC の指示どおり完了は待っていない。** 報告の作成中に収束した。
+
+    $ /rest/db/status?folder=m2
+      "state": "idle"
+      "localBytes": 42010845130     ← globalBytes と一致
+      "localFiles": 5256            ← globalFiles と一致
+      "needBytes": 0   "needFiles": 0
+      "errors": 0      "pullErrors": 0
+    $ du -sb /home/ubuntu/slocal/m2
+    48999900426                     ← 開始時 7652515378 B から +41347385048 B
+
+**収束した瞬間は測っていない（UNKNOWN）。** 起動 `20:24:50.932` から最終観測 `20:40:44` までの
+**949 秒が上限**である。T1→T2 の実測（101.5 MB/s）から見積もった約 256 秒とは矛盾しない。
+
+### 追記: 最終の稼働状態
+
+    exe=syncthing        count=2      ← 監視役と作業役
+    exe=ssh              count=1      ← 中継
+    exe=zzz_no_such_exe  count=0      ← 否定対照
+    port 22000 = LISTEN  port 22001 = LISTEN  port 22 = LISTEN  port 1 = CLOSED
+    目印 = 1 件
+    常駐処理 keeper pid=89614（実体 1 件。**exe が bash であることも見て自己一致を避けた**）
+
+    $ make task-validate  → validate_exit=0
+    $ make forbidden-check → {"changed": 10, "checked": 10, "status": "pass", "violations": []}
+    $ gh pr view 146 → {"baseRefName":"phase0","isDraft":false,"number":146,"state":"OPEN"}
+
+`changed` が 6 から 10 へ増えたのは、報告の更新 3 件と戻した digest 3 件と
+`.sync-pause.released` が加わったためである。**違反は 0 件。**
