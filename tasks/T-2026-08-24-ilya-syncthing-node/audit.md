@@ -869,3 +869,92 @@ SPEC は「初期値は大文字始まりのはず」（`Ilya`）と書き、前
 **陽性対照は 3/3 と 1/1・1/1 で当たっており、検査は空振りしていない。**
 **囮は変数の中だけに置き、ファイルへ書いていないため commit にも含まれない。**
 **出力に秘匿の値は現れていない**（種類の名前・件数・長さだけ）。
+
+### Step 5: 送出
+
+#### 変更が契約のディレクトリと受け皿に限られること
+
+    $ git add tasks/T-2026-08-24-ilya-syncthing-node/ tasks/inbox.d/T-2026-08-24-ilya-syncthing-node.md
+    $ git --no-pager diff --cached --name-only
+    tasks/T-2026-08-24-ilya-syncthing-node/RESULT.md
+    tasks/T-2026-08-24-ilya-syncthing-node/SPEC.md
+    tasks/T-2026-08-24-ilya-syncthing-node/audit.md
+    tasks/T-2026-08-24-ilya-syncthing-node/result.yaml
+    tasks/T-2026-08-24-ilya-syncthing-node/spec.yaml
+    tasks/inbox.d/T-2026-08-24-ilya-syncthing-node.md
+
+**6 件。契約のディレクトリと受け皿だけである。**
+`docs/sessions/digest/2026-08-23-…md` は **開始前から存在した差分で本契約が作ったものではないため
+staged にしていない**（禁止 7 の「未追跡の成果物を削除しない」に触れず、他人の作業も壊さない）。
+
+    $ git commit && git --no-pager show --stat --format= HEAD | tail -2
+    1432e3b feat(sync): connect ilya to the syncthing hub
+     6 files changed, 1618 insertions(+)          ← 追加のみ。削除 0
+
+    $ git push -u origin feat/ilya-syncthing-node
+     * [new branch]      feat/ilya-syncthing-node -> feat/ilya-syncthing-node
+
+`git push` は一度 auto mode の分類器に拒否された。**外向きで取り消せない操作のため回避せず停止し、
+利用者へ提示して権限の付与を受けてから実行した**（逸脱 6）。
+
+#### PR — 既存が無いので新規に作った
+
+    $ gh pr list --head feat/ilya-syncthing-node --state all --json number,state,title,baseRefName
+    []                                            ← 既存の PR は無い
+    $ gh pr create --base phase0 --head feat/ilya-syncthing-node …
+    https://github.com/takuya3h/m2/pull/145
+    $ gh pr view 145 --json number,state,isDraft,baseRefName
+    PR=#145 state=OPEN draft=false base=phase0
+    $ git rev-parse --short HEAD ; git rev-parse --short origin/feat/ilya-syncthing-node
+    1432e3b
+    1432e3b
+
+**PR #145（base `phase0`、Draft ではない、OPEN）。手元と `origin` の先頭が一致している。**
+
+### 台帳 — 返した（**`make task-report` 以外の経路を使っていない**）
+
+    $ source .venv/bin/activate && source scripts/load_env.sh && make task-report TASK=T-2026-08-24-ilya-syncthing-node
+    {
+      "task_id": "T-2026-08-24-ilya-syncthing-node",
+      "verdict": "pass",
+      "n_issuer_defects": 4,
+      "report_sha256": "241c88445d92357187797ffe27506b7f031c54ec26642a63f5916fb348658bc1",
+      "report_bytes": 15756,
+      "replaced_blocks": 0
+    }
+
+**PR 番号を含む版を返している**（記録して起票したあとに送った）。
+`replaced_blocks: 0` は本契約の報告が台帳に初めて載ったことを示す。
+**送る前に自分で秘匿を検査した**（§Step 4）。`make task-report` の内側の検査も通っている。
+
+### 抑止 — 効いていたことの実測と、解除
+
+置いたことと稼働中の版が対応していることは §0 に記録した。**効いていたことを記録で実測する**
+（推定ではない）:
+
+    $ grep '一時停止中' ~/claude-sync/sync-alerts.log | tail -2
+    2026-08-24 18:18:38 [ilya]   一時停止中: /home/ubuntu/slocal2/m2/.sync-pause があるため分岐へ書き込まない（消せば再開）
+    2026-08-24 18:29:10 [philip] 一時停止中: …                     ← 中心の行が同期で届いている
+
+本契約の実行中（`16:43` 以降）に**本ホストで統合は起きていない**:
+
+    $ awk '$0 >= "2026-08-24 16:43"' ~/claude-sync/sync-alerts.log | grep 'auto-merge\|auto-push'
+    2026-08-24 18:40:48 [bengio] auto-merge skip: 追跡変更 1 件 (behind 4)
+
+**唯一の該当は他ホスト `bengio` の行が同期で届いたものであり、しかも `skip` である。**
+本ホスト `[ilya]` の `auto-merge` / `auto-push` は 1 件も無い。
+
+    $ git --no-pager log --oneline -2
+    1432e3b feat(sync): connect ilya to the syncthing hub
+    27c3f66 Merge pull request #144 from takuya3h/feat/andrew-syncthing-node
+    $ git rev-list --count HEAD ^origin/phase0
+    1
+
+**分岐の先頭は `origin/phase0` の 1 commit 先だけ。契約が禁じる自動統合は入っていない。**
+
+解除は**削除ではなく移動**で行う（実装は目印の存在だけを見る。実行基盤が削除を拒む場合があるため）。
+
+    mv ~/slocal2/m2/.sync-pause ~/slocal2/m2/.sync-pause.released
+
+**この移動は本 commit の後に行う最後の操作である。** 解除の実測は会話の記録に残す
+（前契約 andrew も同じ扱い。解除後に commit すると、その間に常駐処理が統合しうるため）。

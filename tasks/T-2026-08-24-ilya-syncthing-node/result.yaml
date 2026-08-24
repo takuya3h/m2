@@ -3,7 +3,7 @@ task_id: "T-2026-08-24-ilya-syncthing-node"
 status: pass
 host: "ilya"
 branch: "feat/ilya-syncthing-node"
-pr: null
+pr: 145
 merged: false
 
 gates:
@@ -137,4 +137,5 @@ unknowns:
   - "~/.ssh/known_hosts の実行前後の比較。実行基盤の deny 規則で読めない。自分の確認は隔離先 scratchpad/known_hosts_probe へ書いた。"
   - "中心から見た状態。禁止 1 により中心で命令を実行していないため、観測はすべて自ホストの REST 経由である。"
 
-commits: []
+commits:
+  - "1432e3b"
