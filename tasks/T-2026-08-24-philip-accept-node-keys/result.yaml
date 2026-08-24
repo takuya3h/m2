@@ -3,7 +3,7 @@ task_id: "T-2026-08-24-philip-accept-node-keys"
 status: partial
 host: "philip"
 branch: "feat/philip-accept-node-keys"
-pr: null
+pr: 142
 merged: false
 
 gates:
@@ -138,4 +138,5 @@ unknowns:
   - "各ノードから中心への疎通。中心からは測れず、ノード側の契約でしか確かめられない"
   - "秘匿検査のうち環境の資格情報そのものとの直接照合。NOTION_API_KEY 等がこのシェルの env に無く照合できなかった。make task-report が読み込み済みの env で自前の検査を行う"
 
-commits: []
+commits:
+  - "e667b4a feat(sync): accept four node public keys on the hub"

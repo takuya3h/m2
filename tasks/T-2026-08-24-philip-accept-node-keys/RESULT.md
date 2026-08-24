@@ -299,6 +299,16 @@ SPEC「環境の事実」の「認証情報への接触を実行基盤が拒む�
 `forbidden-check` は生成物（`context/auto/` と `tasks/inbox.md`）を除外してから検査し、
 `violations: []` を返した。**禁止領域に触れていない。**
 
+### 送出
+
+| 項目 | 値 |
+|---|---|
+| commit | `e667b4a feat(sync): accept four node public keys on the hub`（6 files） |
+| push | `origin/feat/philip-accept-node-keys` へ**新規分岐**として送出 |
+| PR | **[#142](https://github.com/takuya3h/m2/pull/142)**（`feat/philip-accept-node-keys` → `phase0`） |
+| 既存 PR | **無かった。** `gh pr list --state all` が `[]` を返したため新規作成した |
+| base との関係 | 送出前に `origin/phase0...HEAD` が `0 0`（ahead も behind も無い） |
+
 ---
 
 ## 8. 逸脱
