@@ -1028,3 +1028,24 @@ andrew とは逆）。本体には開始時に見た最終行
 
 `changed` が 6 から 10 へ増えたのは、報告の更新 3 件と戻した digest 3 件と
 `.sync-pause.released` が加わったためである。**違反は 0 件。**
+
+### 追記: 台帳への再送
+
+報告を実測で更新したため、**同じ経路で送り直した**（台帳は Name 冪等で、同名は更新される）。
+
+    1 回目: report_sha256=2eace20734639141a39ef5f8974fe282f0582c6823604bac6d22f9948e44b298
+            report_bytes=16625  replaced_blocks=0    ← 初回投稿
+    2 回目: report_sha256=7866841f78b61bb1f0b202f511c315ad577881580a452e4aa70223296b0e7781
+            report_bytes=18863  replaced_blocks=1    ← 既存を置換
+    report_exit=0（両方）
+
+**本追記のあとは送り直していない。** 送り直すたびに `RESULT.md` の要約値が変わるため、
+証跡側の追記で連鎖を止める。**台帳が持つのは 2 回目の本文である。**
+
+最終の検証（報告の更新後）:
+
+    validate_exit=0
+    preflight: 4 PASS / 1 WARN / 4 SKIP / 0 FAIL（WARN は誤検知の separated_source 1 件）
+    forbidden: status=pass violations=0 changed=10
+    secretscan_exit=0（陽性対照は働いている）
+    local = 88912bc3214c752177e5f471dd590a9e14e4b10b = origin/feat/lecun-syncthing-node
