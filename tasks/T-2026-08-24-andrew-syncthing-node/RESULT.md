@@ -40,7 +40,7 @@
 | T | 🟢 `availability=[3J4TRX4-…-DZOCQQE]`、`modifiedBy=3C2LTP7`。`completion(claude-sync, philip)=100.0000% needBytes=0`。**自ホストの REST のみ。中心で命令を実行していない**。陽性対照 5 件（下記） |
 | U | **1510 B / 1 件 → 18858 B / 7 件**（+17348 B / +6 件）。**消えたものは無い**。`probe-bengio.txt`（40 B）が中心から届いた |
 | V | `m2`: 起動直後 `needBytes=689548250 needItems=1731` → `16:12:52` に `needBytes=0 needFiles=0 errors=0`。**約 4 分半でバイト転送が収束**。中心側は `needItems=1478`（`needBytes=0` のため大きさ零の要素）。**完了は待っていない** |
-| W | 本書は 7 節・150 行以内。手続きの証跡は `audit.md`（779 行）へ分離 |
+| W | 本書は 7 節・150 行以内。手続きの証跡は `audit.md`（927 行）へ分離 |
 | X | `keeper.sh` `9fe9c423…` / `m2-sync.sh` `bcf46ba9…`（開始時と同一）。`scripts/sync/` の差分 **0 行**。`.stignore` = `.stglobalignore` = `61593e99…`（開始時と同一）。**目印 1 件** |
 | Y | §秘匿検査（陽性対照つき。**検査は値を出力していない**） |
 | Z | §送出 |
@@ -91,4 +91,14 @@
 
 ## 送出
 
-（§送出・秘匿検査・台帳は下記。出力の全文は `audit.md` にある）
+| 項目 | 結果 |
+|---|---|
+| PR | **#144**（base `phase0`、OPEN、Draft ではない）。既存の PR は無かった（`gh pr list` が `[]`） |
+| commit | `cbb5c6c`。6 files changed, 1507 insertions(+), 0 deletions(-)。**追加のみ** |
+| 先頭の一致 | 手元 `cbb5c6c` = `origin/feat/andrew-syncthing-node` `cbb5c6c` |
+| `make task-validate` | **`validate_exit=0`**（`OK` / 1 task(s), 0 failed） |
+| `make task-preflight` | **`preflight_exit=0`**（4 PASS / 1 WARN / 4 SKIP / 0 FAIL）。WARN は `P9 spec_lint` の `separated_source@SPEC.md:41`。SKIP は `P2` `P3` `P4` `P5`。**SKIP は合格ではなく実行されなかったことを意味する** |
+| `make forbidden-check` | **`forbidden_exit=0`**（`status: pass`、`changed: 6`、`violations: []`） |
+| 秘匿検査 | **`secretscan_exit=0`**。実値照合 **`literal_leaks=0`**（対象 3 種）。形の該当 2 件は目視で秘匿でないことを確認（`audit.md:662` は試験ファイルの乱数、`result.yaml:121` は陽性対照の説明文）。**検査は値を出力していない**。陽性対照 `decoy_literal_detected=3/3` / `decoy_shape_hits={PEM_PRIVATE:1, AWS_AKID:1}`。囮は `/tmp` にも残さず変数の中だけ |
+| 台帳 | §台帳（`audit.md`） |
+| 抑止 | §抑止（`audit.md`） |

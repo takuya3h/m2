@@ -777,3 +777,151 @@ andrew は作っていない。**中心を経由して届いた。**
 （`needBytes=0` であるため、これは大きさ零の要素＝ディレクトリ等である）。
 **誤りは 0 件。** 完了を待っていない。次の契約へ渡す。
 
+---
+
+## 6. Task 5 (Phase E) — 報告、検証、送出
+
+### Step 2: 触っていないものが無変更であること
+
+    $ sha256sum ~/bin/keeper.sh ~/bin/m2-sync.sh
+    9fe9c423002e426e774bf8366f0cb307b5bcc31da0fa1fb15ff603c5f219dd90  keeper.sh    ← Task 1 と同じ
+    bcf46ba9031a45cb5f22371e6a1e598b2218782f6b0db74ab80ca6fea0aeb25f  m2-sync.sh   ← Task 1 と同じ
+
+    $ git --no-pager diff HEAD -- scripts/sync/ | grep -c ''
+    0                                        ← 受け入れ一覧・識別子・常駐処理の版管理側は無変更
+
+    $ ls -1 ~/.tunnel_to_* | wc -l
+    1
+    -rw------- 1 ubuntu ubuntu 60 Aug 24 15:18 /home/ubuntu/.tunnel_to_philip
+
+    $ sha256sum .stignore .stglobalignore
+    61593e99292e428c7c6f2157772722c147eaa48452c7e5b71e438363d1de9a2a  .stignore        ← 開始時と同じ
+    61593e99292e428c7c6f2157772722c147eaa48452c7e5b71e438363d1de9a2a  .stglobalignore  ← 開始時と同じ
+
+**`keeper.sh` は毎周回 `origin/phase0` から `.stignore` を書き戻すが、内容が同じため
+要約値は動いていない。**
+
+### Step 3: 検証（**報告を書いたあと**）
+
+    $ source .venv/bin/activate && make task-validate TASK=T-2026-08-24-andrew-syncthing-node
+    OK   T-2026-08-24-andrew-syncthing-node
+    1 task(s), 0 failed
+    validate_exit=0
+
+    $ source .venv/bin/activate && make task-preflight TASK=T-2026-08-24-andrew-syncthing-node
+    P1 venv_active            PASS expected=…/.venv VIRTUAL_ENV=…/.venv sys.prefix=…/.venv
+    P2 cuda_ext_loaded        SKIP plan.env.preflight に cuda_ext_loaded の記載なし
+    P3 deterministic_flags    SKIP plan.env.preflight に deterministic_flags の記載なし
+    P4 prereg_committed       SKIP kind=impl のため対象外（exp のみ）
+    P5 frozen_source_hash     SKIP kind=impl のため対象外（exp のみ）
+    P6 decisions_answered     PASS decisions_required は空
+    P7 destination_writable   PASS tasks/T-2026-08-24-andrew-syncthing-node/ へ書き込みと削除ができた
+    P8 contract_valid         PASS validate_task.py --level l2 が exit 0
+    P9 spec_lint              WARN 規則 8 件のうち 1 件が該当: separated_source@…/SPEC.md:41
+    RESULT: 4 PASS / 1 WARN / 4 SKIP / 0 FAIL
+    preflight_exit=0
+
+**SKIP は 4 件。合格ではなく、実行されなかったことを意味する。**
+`P9` の該当は `SPEC.md:41`（`source .venv/bin/activate && source scripts/load_env.sh \`
+の行継続）。**契約の誤りであり実行者の責任ではないため終了コードは変わらない。**
+
+    $ source .venv/bin/activate && make forbidden-check
+    {"base": "origin/phase0", "changed": 6, "checked": 6, "errors": [], "excluded": 0,
+     "excluded_paths": [], "generated_directories": ["context/auto/"],
+     "generated_files": ["tasks/inbox.md"], "status": "pass", "violations": []}
+    forbidden_exit=0
+
+**`conventions_rev` は実測して照合した（`d422b08`）。一致するため置換していない**（§1）。
+
+**`make taskindex` と `make inbox` は実行していない**（禁止 6）。技能書は投影の確認を
+求めるが契約の禁止が勝つ。`taskindex-check` / `inbox-check` も回していない。
+
+### Step 4: 送信前の秘匿検査（**自分で実施。検査が値を出力していない**）
+
+判定は件数ではなく**形**で行い、加えて**環境にある資格情報そのものと本文を照合した。**
+
+    --- 形による走査（値は出さない。件数と位置だけ） ---
+      RESULT.md                                該当なし
+      audit.md                                 {'HEX32': 1}
+          HEX32@audit.md:662
+      result.yaml                              {'PEM_PRIVATE': 1}
+          PEM_PRIVATE@result.yaml:121
+      T-2026-08-24-andrew-syncthing-node.md    該当なし
+      shape_hits_total=2
+
+**該当を目視した**（申し送り「一致が出たときは何に一致したのかを目視する」）:
+
+    $ sed -n '662p' audit.md
+        nonce=97a528940c9ea6f196967915bb164ba9      ← 試験ファイルの乱数。資格情報ではない
+    $ sed -n '121p' result.yaml
+        breaking_input: "本文の末尾に -----BEGIN OPENSSH PRIVATE KEY----- を足した…"
+                                                    ← 陽性対照の説明文。鍵ではない
+
+    --- 実値との照合（環境にある資格情報そのもの。値は出さない） ---
+      literals_available=3 names=['NOTION_API_KEY', 'WANDB_API_KEY', 'syncthing_apikey']
+      literal_leaks=0
+
+    --- 陽性対照（囮は変数の中だけ。ファイルにも commit にも残していない） ---
+      decoy_literal_detected=3/3
+      decoy_shape_hits={'PEM_PRIVATE': 1, 'AWS_AKID': 1}
+
+    --- 版管理へ入る範囲 ---
+      worktree_entries=2
+        ?? tasks/T-2026-08-24-andrew-syncthing-node/
+        ?? tasks/inbox.d/T-2026-08-24-andrew-syncthing-node.md
+
+    secretscan_exit=0
+
+**検査は働いており（囮を 3/3 と 2 種の形で検出）、そのうえで漏洩は 0 件である。**
+**この検査の出力に秘匿の値は一つも現れていない**（長さ・件数・位置・真偽だけ）。
+画面の鍵は版管理へ置いていない。控えは repo の外（`~/.local/state/syncthing.bak.20260824-150939`）
+だけにある。本文の `<KEYDIR>` は伏せ字であり鍵の値ではない。
+
+### Step 5: 送出
+
+    $ git add tasks/T-2026-08-24-andrew-syncthing-node/ tasks/inbox.d/T-2026-08-24-andrew-syncthing-node.md
+    $ git --no-pager diff --cached --stat
+     6 files changed, 1507 insertions(+)      ← **追加のみ。既存ファイルの変更なし**
+
+    $ git commit …
+    cbb5c6c feat(sync): connect andrew to the syncthing hub
+
+    $ git push -u origin feat/andrew-syncthing-node
+     * [new branch]      feat/andrew-syncthing-node -> feat/andrew-syncthing-node
+    branch 'feat/andrew-syncthing-node' set up to track 'origin/feat/andrew-syncthing-node'.
+    push_exit=0
+
+**前契約では push が実行基盤の分類器に拒否されたが、本実行では通った。**
+
+    $ gh pr list --head feat/andrew-syncthing-node --json number,isDraft,state,baseRefName
+    []                                        ← 既存の PR は無い。新規に作る
+
+    $ gh pr create --base phase0 --head feat/andrew-syncthing-node …
+    https://github.com/takuya3h/m2/pull/144
+    pr_exit=0
+
+    $ gh pr list --head feat/andrew-syncthing-node --json number,isDraft,state,baseRefName
+    [{"baseRefName":"phase0","isDraft":false,"number":144,"state":"OPEN"}]
+
+    $ git rev-parse --short HEAD ; git rev-parse --short origin/feat/andrew-syncthing-node
+    cbb5c6c
+    cbb5c6c
+
+**PR #144（base `phase0`、Draft ではない、OPEN）。手元と `origin` の先頭が一致している。**
+
+### 台帳 — 返した（**`make task-report` 以外の経路を使っていない**）
+
+    $ source .venv/bin/activate && source scripts/load_env.sh && make task-report TASK=T-2026-08-24-andrew-syncthing-node
+    {
+      "task_id": "T-2026-08-24-andrew-syncthing-node",
+      "verdict": "pass",
+      "n_issuer_defects": 4,
+      "report_sha256": "92807a5a3b12fcab41ed0c4fe9c80561210f4c3442bae1bc98a554a3f853183a",
+      "report_bytes": 12983,
+      "replaced_blocks": 0
+    }
+    report_exit=0
+
+**PR 番号を含む版を返している**（記録して起票したあとに送った）。
+`replaced_blocks: 0` は本契約の報告が台帳に初めて載ったことを示す。
+
