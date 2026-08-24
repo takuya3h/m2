@@ -1,0 +1,84 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-24-philip-accept-node-keys"
+  kind: impl
+  title: "四台の公開鍵を中心の受け入れ一覧へ追記し、既存が無傷であることを照合する"
+  origin: claude-app
+  created_at: "2026-08-24T16:00:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-24-bengio-syncthing-node"]
+  amendments: []
+
+intent:
+  question: "一台目のノードが中心へ入れずに停止した。経路も鍵の対も正しく、鍵は提示されているが中心が受け入れていない。各ノードは公開鍵を版管理へ提出したが、それを中心の受け入れ一覧へ取り込む契約が存在しない。既存の登録を一件も失わずに四件を追記できるか"
+  decision_at_stake: "四台が中心へ入れるようになるか。ここが済めば中継を張って同期処理を繋げられる。失敗すると現在入れている経路も切れるため、既存が無傷であることの照合が要になる。受け入れ一覧を読めるかどうかも未測定である"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/sync/keeper.sh"
+      - "scripts/sync/m2-sync.sh"
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "現状の測定と控えの保存、追記するものの照合", gpu: false, est: "50m"}
+    - {id: B, name: "追記と、既存が無傷であることの照合", gpu: false, est: "40m"}
+    - {id: C, name: "記録、送出、報告", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "受け入れ一覧を読めることを確かめ、場所と行数と要約値と権限を記録した。登録されている鍵を指紋と註釈で記録し、控えを二箇所へ取って原本と一致することを確かめた。提出物の指紋を各ノードの報告と照合し、公開鍵だけであることを三つの検査と囮で確かめた"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "追記後に既存がすべて残っていることを集合差で示し、消えた行が空であることを確かめた。増えた件数と指紋が期待と一致し、全行が解析でき、権限が開始時と同じで、控えとの差が追加だけである"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-24-philip-accept-node-keys/"
+  acceptance:
+    - "受け入れ一覧を読めるかを最初に確かめ、読めない場合と不在の場合を区別している"
+    - "開始時の行数と要約値と権限を記録し、控えを版管理の外と契約のディレクトリの二箇所へ取っている"
+    - "提出物の指紋を各ノードの報告と照合し、一致しないものを追記対象から外している"
+    - "追記するものが公開鍵だけであることを三つの検査と囮で示している"
+    - "既に登録されていないかを確かめ、その照合が常に零を返す壊れ方をしていないことを示している"
+    - "追記後に既存がすべて残っていることを集合差で示している"
+    - "増えた件数と指紋が期待と一致し、全行が解析でき、権限が開始時と同じである"
+    - "同期処理と常駐処理が稼働したままで件数が変わっていないことを、両方向の対照で示している"
+    - "秘匿検査を自分で行い、その検査が秘匿の値を出力していない"
+    - "疎通がノード側からしか確かめられないことを明記し、分岐が送出され報告が台帳へ返っている"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "受け入れ一覧を読めず、追記そのものができない場合"
+    - "追記により既存の登録が一件でも失われた場合"
+    - "解析が追記の前から失敗している場合"
+    - "提出物の指紋が各ノードの報告と一致しない場合"
+    - "触っていないはずの同期処理または常駐処理が止まった場合"

@@ -1,0 +1,161 @@
+result_version: 3
+task_id: "T-2026-08-24-philip-accept-node-keys"
+status: partial
+host: "philip"
+branch: "feat/philip-accept-node-keys"
+pr: 142
+merged: false
+
+gates:
+  - id: G1
+    verdict: ask
+    note: >-
+      受け入れ一覧は読めた。場所 /home/ubuntu/.ssh/authorized_keys、権限 600（SPEC の
+      前回実測 664 とは異なる。実測を正とした）、746 バイト、行数 1、空行を除いた件数 1、
+      mtime 2026-08-21 21:17:44、sha256 bc2c7484...4ec0、末尾改行あり。登録は 1 件
+      （4096 SHA256:hCrPAm1yCGdJSv89b0brv8/HHsBNUeTVBlu8NV3/ADU dakyo-mba@dmba.local RSA）で
+      ssh-keygen の終了コードは 0。控えは repo 外
+      ~/task-backups/T-2026-08-24-philip-accept-node-keys/authorized_keys.orig のみ取得でき、
+      sha256 が原本と一致。契約ディレクトリへの控えは cp が実行基盤の判定器に拒否されたため
+      取れず、G1 を文言どおりには満たさない。on_fail: stop に従い実行を止めて利用者へ提示し、
+      「repo 外の控えで続行」との回答を得て続行した。提出物は四件（96/96/94/95 バイト、各 1 行）、
+      指紋は四件とも 2026-08-22 の *-node-foundation の RESULT.md と一致。三検査は四件とも
+      先頭 ssh- / 秘密鍵の書き出し 0 / 1 行で合格、囮は privhits 2。既登録照合は四件とも 0、
+      既存指紋での陽性対照は 1。
+  - id: G2
+    verdict: pass
+    note: >-
+      追記後の空行を除いた件数は 5（開始時 1 + 追記 4）、バイト数 1127（= 746+96+96+94+95）、
+      権限は 600 のまま変わらず戻す必要は無かった。指紋の集合差を両方向で取り、消えた行は 0 件、
+      増えた行は 4 件で四件とも Task 2 の指紋と一致し、想定外の追加は 0 件。ssh-keygen の
+      終了コードは 0 で解析できた件数 5 が空行を除いた件数 5 と一致。repo 外の控えとの diff は
+      操作が a のみの 1 箇所で、削除・変更を示す < 行が 0、追加の > 行が 4。原本は末尾が改行で
+      終わっていたため改行は足していない。追記後の sha256 は 35ad4ef5...57f4。
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+
+deviations:
+  - type: environment
+    note: >-
+      契約ディレクトリへの控え（cp ~/.ssh/authorized_keys tasks/.../authorized_keys.orig.bak）が
+      実行基盤の判定器に拒否された。判定器の意図（SSH の資格情報ファイルを版管理へ複製しない）は
+      正当と判断し、別の道具による迂回は行っていない。repo 外の主たる控えは取得済みで原本と
+      要約値が一致するため復旧能力は失われていない。G1 は on_fail: stop のため停止して利用者へ
+      提示し、続行の承認を得た。
+  - type: environment
+    note: >-
+      ~/.ssh/ の他のファイルの無変更を測れなかった。ls -la ~/.ssh/ と
+      find ~/.ssh -maxdepth 1 -type f -newermt ... -printf '%f\n' のいずれも実行基盤に拒否された。
+      名前・権限・更新時刻だけを取る形にしても拒否された。UNKNOWN とした。本契約が ~/.ssh/ に
+      対して行った書き込みは authorized_keys への追記 4 回だけであるが、それは「実行していない」の
+      記録であって「無変更を測った」ではない。
+  - type: judgement
+    note: >-
+      同期処理と常駐処理の件数を開始時に測っていない。SPEC が Task 1 に開始時の計数を置いて
+      いないため終了時にしか測っておらず、判定 O の「件数が変わっていない」を示せない。代わりに
+      起動時刻で非再起動を示した（keeper.sh は 2026-08-23 17:28:56、syncthing は 22:29 の起動で、
+      いずれも本契約の最初の操作 23:46 より前）。自分で気づいて先に測るべきだった。
+  - type: judgement
+    note: >-
+      task スキルの手順が make taskindex を求めるのに対し本契約の禁止 7 は生成物の再生成を禁じており、
+      手順に従って make taskindex と make inbox を実行してしまった。契約の禁止を優先し、生成された
+      4 ファイル（context/auto/ の 3 件と tasks/inbox.md）を git checkout -- で HEAD へ戻し版管理へは
+      入れていない。以後は taskindex-check と inbox-check だけを走らせ差分は記録に留めた。結果として
+      本契約の報告は投影 context/auto/ に現れない。
+  - type: judgement
+    note: >-
+      conventions_rev は SPEC の指示どおり実測したが、実測値 d422b08 が spec.yaml の値と一致した
+      ため置換していない。手順を飛ばしたのではなく差が無かった。
+  - type: judgement
+    note: >-
+      SPEC の実行ホスト philip に対し OS ホスト名は aolab であり、philip と ilya は OS ホスト名が
+      同じため区別できない。syncthing device-id が 3J4TRX4-... で device_ids/philip.txt と一致し
+      ilya.txt とは不一致であること、および sync-alerts.log の記録主体が [philip] であることで
+      本機が中心であると判断した。preflight の P9 host_mismatch はこの差による偽陽性である。
+
+issuer_defects:
+  - type: self_contradiction
+    note: >-
+      SPEC は「環境の事実」で「認証情報への接触を実行基盤が拒むことがある（前契約で要約値を
+      測れなかった）」と自ら書きながら、Task 1 Step 3 で ~/.ssh/authorized_keys の控えを契約
+      ディレクトリ（版管理内）へ置くことを求め、それを on_fail: stop の G1 に含めた。指示どおり
+      実行すると cp が判定器に拒否され、G1 で必ず停止する。実際に拒否され停止した。
+  - type: self_contradiction
+    note: >-
+      同じ矛盾が Task 4 Step 2 にもある。「~/.ssh/ の他のファイルが無変更であること」を完了判定 P に
+      置くが、その列挙自体が実行基盤に拒否されうることを SPEC は先に書いている。指示どおり実行すると
+      ls も find も拒否され、判定 P は測れず UNKNOWN にするしかない。実際にそうなった。
+  - type: asserted_without_measuring
+    note: >-
+      Task 4 Step 6 は「台帳へ返す。本契約は台帳から取り込んでいるので、返送も通るはずである」と
+      書くが、配布台帳に本契約の行は存在しない。指示どおり make task-report を実行すると
+      「配布台帳に契約が見つかりません」で exit 2 になる。照合器は働いており
+      T-2026-08-24-philip-syncthing-hub は found=True を返す。depends_on の
+      T-2026-08-24-bengio-syncthing-node も台帳に無い。実際に失敗した。
+  - type: check_does_not_check
+    note: >-
+      Task 4 Step 2 は「同期処理と常駐処理が稼働したままで件数が変わっていないこと」を求めるが、
+      開始時に件数を測る手順を Task 1 に置いていない。指示どおり実行すると終了時の件数しか無く、
+      比較対象が存在しないため「変わっていない」を示せない。起動時刻による非再起動の証拠で
+      代替したが、契約が求めた判定そのものは成立しない。
+
+positive_controls:
+  - judgement: "追記するものが公開鍵だけであることの三検査（秘密鍵の書き出しの検出）"
+    breaking_input: "秘密鍵の書き出しを模した囮（-----BEGIN OPENSSH PRIVATE KEY----- を含む 3 行）に同じ検査をかける"
+    observed: "privhits=2（一以上）を返し、先頭検査も starts_ssh=no を返した。囮は版管理外に置き git ls-files は 0 件"
+  - judgement: "既に登録されていないかの照合（指紋が受け入れ一覧にあるか）"
+    breaking_input: "既存の指紋 SHA256:hCrPAm1yCGdJSv89b0brv8/HHsBNUeTVBlu8NV3/ADU を同じ照合にかける"
+    observed: "一致件数 1 を返した。四件が 0 だったのは照合が常に零を返す壊れ方によるものではない"
+  - judgement: "/proc/*/cmdline の basename 完全一致による処理の照合"
+    breaking_input: "実在する実行ファイル名 zsh と、実在しない nonexistent-daemon.sh を同じ照合にかける"
+    observed: "zsh=4（一以上）、nonexistent-daemon.sh=0。常に零を返す壊れ方でも偽陽性でもない"
+  - judgement: ".sync-pause による自動同期の抑止が効いている"
+    breaking_input: "抑止が無い時刻の記録と、抑止がある時刻の記録を比べる"
+    observed: "23:29（.sync-pause 設置 23:46 より前、抑止なし）は auto-merge と auto-push を記録。23:59（抑止あり）は「一時停止中」のみで書き込み無し。両方向で対照が取れた"
+  - judgement: "送出前の秘匿検査（形で判定し値を出力しない）"
+    breaking_input: "秘密鍵の書き出しと NOTION_API_KEY=... を含む囮に同じ検査をかける"
+    observed: "囮は hits=2（private_key_block@line1 len=35、assignment_secretish@line4 len=38）。送出対象は TOTAL_HITS=0。出力は型・行番号・長さのみで値を含まない"
+  - judgement: "配布台帳の行の照合（find_ledger_row が契約を引けるか）"
+    breaking_input: "台帳に存在することが分かっている別契約 T-2026-08-24-philip-syncthing-hub を同じ関数で引く"
+    observed: "found=True を返した。本契約と depends_on の T-2026-08-24-bengio-syncthing-node は見つからない。常に見つからない壊れ方ではない"
+  - judgement: "報告の秘匿検査（環境の資格情報そのものとの照合を含む）"
+    breaking_input: "資格情報を読み込んだうえで report_task.py --dry-run にかける"
+    observed: "exit 0。report_sha256 e7ddfdf2...e558、report_bytes 21894。送信を止めたのは秘匿検査ではなく台帳の側である"
+  - judgement: "受け入れ一覧の解析（ssh-keygen が全行を読めるか）"
+    breaking_input: "追記の前後で解析できた件数と空行を除いた件数を突き合わせる"
+    observed: "開始時 解析 1 = 空行除く 1、追記後 解析 5 = 空行除く 5。いずれも終了コード 0"
+
+followups:
+  - >-
+    台帳への返送が失敗した。make task-report が「配布台帳に契約が見つかりません」で exit 2 を返す。
+    台帳に本契約の行が無く、depends_on の T-2026-08-24-bengio-syncthing-node の行も無い。照合器は
+    働いており T-2026-08-24-philip-syncthing-hub は found=True を返す。起票者は台帳ではなく
+    PR #142 で報告を読むこと。台帳へ載せる必要があるなら、行を作ってから再送できる。
+  - >-
+    疎通はノード側からしか確かめられない。中心で確かめられるのは受け入れ一覧に載っていることまでで
+    ある。禁止 4 により中心から各ノードへ接続もしていない。andrew / bengio / ilya / lecun の各契約で
+    ssh -v を取り Server accepts key が出ることを確かめること。停止した
+    T-2026-08-24-bengio-syncthing-node はこの行が出ないところで止まっていた。再起動は不要で、
+    受け入れ一覧の変更は次回の接続から効く。
+  - >-
+    ~/.ssh/ の他のファイルの無変更は実行基盤に拒否されて測れなかった。必要なら人が直接測るか、
+    実行基盤の許可規則に ~/.ssh の読取専用の列挙を加える契約を起票すること。
+  - >-
+    次の契約は、処理の件数を「稼働したまま」で判定するなら開始時の計数を Task 1 に置くこと。
+    終了時だけ測る手順では変化の有無を示せない。
+  - >-
+    受け入れ一覧の権限は本機では 600 であり、SPEC の申し送りにあった 664 ではなかった。以後の契約は
+    ホストごとに実測すること。
+
+unknowns:
+  - "~/.ssh/ の他のファイルの無変更。ls と find のいずれも実行基盤に拒否された"
+  - "同期処理と常駐処理の開始時の件数。SPEC に開始時の計数の手順が無く測っていない"
+  - "各ノードから中心への疎通。中心からは測れず、ノード側の契約でしか確かめられない"
+  - "秘匿検査のうち環境の資格情報そのものとの直接照合は、自前の検査を走らせたシェルの env に値が無く照合できなかった。ただし資格情報を読み込んだうえでの report_task.py --dry-run が exit 0 を返しており、そちらでは照合されている"
+  - "配布台帳に本契約の行が無い理由。起票の経路を追っていない。台帳側の状態は測れていない"
+
+commits:
+  - "e667b4a feat(sync): accept four node public keys on the hub"
