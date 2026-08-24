@@ -1,0 +1,86 @@
+result_version: 3
+task_id: "T-2026-08-24-lecun-syncthing-node"
+status: pass
+host: "lecun"
+branch: "feat/lecun-syncthing-node"
+pr: 146
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "実行権 644 / 目印 0 件 / syncthing 0 件 / ssh 0 件 / 22000=CLOSED / 22001=CLOSED を実測。対照は両方向（肯定 zsh=4・口22=LISTEN、否定 zzz_no_such_exe=0・口1=CLOSED）。~/claude-sync=1610B/1件、repo du -sb=7652515378B。控えは ~/.local/state/syncthing.bak.20260824-192105 で要約値 3 件とも一致。自分の識別子 OOOTQMG…KRFOWA3 = device_ids/lecun.txt。ssh -N が Authenticated to 192.168.196.150 を出し denied=0、指紋 SHA256:g5Twfvg… は hub_keys/lecun.pub と一致。"
+  - id: G2
+    verdict: pass
+    note: "~/bin/syncthing を v1.27.10(32ab747e…) から v2.1.3 へ入れ替え、sha256=e8a08fdd8b25340aae0c0a00ab131b293830e4ea47504d4b83a82f31b52b96c4・27045912B・perm=644。autoUpgradeIntervalH 12→0、globalAnnounceEnabled/relaysEnabled を false、localAnnounceEnabled は true のまま。自分の登録名は初期値で既に lecun のため置換件数 0。philip を tcp://127.0.0.1:22001 で登録。最上位 folder=2（claude-sync=/home/ubuntu/claude-sync、m2=/home/ubuntu/slocal/m2）、単純検索は 3（差はひな型）。xml_ok=True、config.xml=600 cert.pem=664 key.pem=600 で鍵の要約値は開始時と同一。"
+  - id: G3
+    verdict: pass
+    note: "目印 19:28:34.892Z → 中継 19:54:44.305Z（1569.413 秒）→ 実行権 19:55:44.547Z → 起動 20:24:50.932Z（1746.4 秒）。中継 pid=135351 親=89614(keeper)、引数に ubuntu@192.168.196.150 と -L 22001:127.0.0.1:22000。中継が実行権より 60.242 秒早く、同時刻に perm=644・syncthing=0 件を観測。起動後は syncthing 2 件（140103 親=keeper、140120 親=140103）、22000/22001 とも LISTEN、--version=v2.1.3。config_version 37→52 でも最上位 folder=2・device=2・autoUpgradeIntervalH=0 を保持、grep -c -i upgrade ~/.syncthing.log = 0。"
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+
+deviations:
+  - type: judgement
+    note: "make task-start を通すため、開始前から存在した docs/sessions/digest/ の未追跡 3 件を scratchpad へ退避した。消していない（禁止 7）。報告の後に元へ戻す。前三契約は退避せず task-start 自体を諦めている。"
+  - type: environment
+    note: "~/.ssh/ の一覧が実行基盤に拒否された。秘密鍵の権限を直接確認できず、版管理側の公開鍵の指紋（SHA256:g5Twfvg…）と ssh -v が出した同じ指紋で代えた。回避していない。個別の test -f は通った。"
+  - type: judgement
+    note: "中心への到達確認を ssh -N（中心で命令を実行しない形）で行った。禁止 1 を守るため。受け入れ控えは隔離先へ書き、~/.ssh/known_hosts を触っていない。"
+  - type: judgement
+    note: "秘匿検査で値を表示せず、長さと有無と件数だけを測った（申し送り 6）。囮は変数の中だけに置き、ファイルへ書いていない。"
+  - type: judgement
+    note: "禁止 6 に従い make taskindex / make inbox を実行していない。技能書は投影の確認を求めるが、契約の禁止が勝つと判断した。全台の統合後に一台で一度だけ回すこと。"
+
+issuer_defects:
+  - type: check_does_not_check
+    note: "SPEC「環境の事実」は自己一致への対処として /proc/*/cmdline を実行ファイル名で照合せよと指示するが、cmdline の照合も自己一致する。実測で否定対照 zzz_no_such_token が 1 を返した（自分の命令行にその語が含まれるため）。指示どおりだと中継や同期処理の件数を 1 多く数え、開始状態の封印が誤る。/proc/<pid>/exe の readlink で絞る必要がある。"
+  - type: self_contradiction
+    note: "待ち時間の記載が本文内で食い違う。「前契約で確定した事実」表は四百十三〜千二百二十七秒、Task 3 Step 2 は四百十三〜千三百五十九秒と書く。同じ量に 2 つの上限があり、どちらを基準に「中継が立たない」と判断すべきかが定まらないまま実行者が待つことになる。"
+  - type: asserted_without_measuring
+    note: "その上限自体が過去 3 件の最大値にすぎない。本ホストの実測は 1569.413 秒で両方の記載を超えた。実装は keeper.sh の sleep 1800 であるから上限は約 1800 秒である。指示どおり 1359 秒を上限と見れば、正常に進んでいる最中に「中継が立たない」と誤って報告し、実行権を戻さずに停止する。"
+  - type: check_does_not_check
+    note: "spec.yaml の inputs.data（egosurgery_phase_v1 / data/splits/ego_val.txt）は本契約の手順のどこでも使わない。SPEC 自身が参照しないと明記している。検証は入力の存在を見るが使われるかは見ないため、無関係な入力が契約に残り続ける。ilya が同じ誤りを報告したのに是正されずに繰り返された。"
+  - type: asserted_without_measuring
+    note: "SPEC「0. 前提」は make task-start を無条件に指示するが、前三契約（bengio / andrew / ilya）はいずれも作業ツリーの未追跡ファイルにより実行できていないと報告済みである。指示どおり実行すると exit 3 で止まり、契約の取り込みそのものが始まらない。本契約でも一度目は同じ理由で止まった。"
+
+positive_controls:
+  - judgement: "完了判定 A の稼働の計数（syncthing / ssh / 中継が 0 件であること）"
+    breaking_input: "存在しない実行ファイル名 zzz_no_such_exe と、存在しない語 zzz_no_such_token で同じ数え方を走らせる。1 以上を返せば数え方が自分を数えている"
+    observed: "exe の readlink による照合では zzz_no_such_exe=0。**cmdline の照合では zzz_no_such_token が 1 を返し、自己一致が実在した**。方式を exe 照合へ改めた。肯定側は zsh=4 で 0 以外を返すことも確かめた"
+  - judgement: "完了判定 T 中心が試験ファイルを持つこと（/rest/db/file が 200 を返し availability に中心の識別子が現れる）"
+    breaking_input: "存在しない名前 zzz-no-such-file.txt を同じ経路で問う。200 が返れば「常に 200 を返す壊れ方」である"
+    observed: "HTTP 404 が返った。実在する probe-lecun.txt は HTTP 200 で availability=[3J4TRX4-…-DZOCQQE]"
+  - judgement: "待ち受けの判定（22001 と 22000 が LISTEN であること。/proc/net/tcp の st=0A で判定）"
+    breaking_input: "使われていない口 1 を同じ判定に掛ける。LISTEN を返せば判定が壊れている"
+    observed: "port 1 = CLOSED、port 22 = LISTEN。肯定と否定の両方向で期待どおり"
+  - judgement: "完了判定 C 控えに秘密鍵の書き出しが混ざっていないこと"
+    breaking_input: "実物の秘密鍵 key.pem を同じ検査に掛ける。0 件なら検査が働いていない"
+    observed: "key.pem = 1 件、config.xml = 0 件、cert.pem = 0 件。検査は働いている"
+  - judgement: "完了判定 H2 自分の登録名の判定（置換件数を確かめること）"
+    breaking_input: "置換で判定すると、当たらなかった 0 件と既に正しい 0 件が区別できない。予想した文字列 Lecun を置換すれば件数 0 のまま通過するはず"
+    observed: "置換ではなく現在値の読み出し（re.search で name=\"([^\"]*)\" を取る）で判定した。読み出しは lecun を返し、読み出しが失敗すれば assert m で停止する。他の置換は全て assert n==1 で表明し、いずれも 1 であった"
+  - judgement: "完了判定 Y 秘匿検査（実値照合と形の照合）"
+    breaking_input: "実値 3 種と、鍵らしい代入・Notion の内部鍵・秘密鍵の書き出しを含む囮を検査に掛ける。0 件なら検査が空振りしている"
+    observed: "decoy_literal_detected=3/3、decoy_shape_hits={Notion の内部鍵:2, 鍵らしい代入:1, 秘密鍵の書き出し:1}。送出対象は literal_leaks=0 / shape_hits=0。囮は変数の中だけで commit していない"
+
+followups:
+  - "五台の構成が揃った。philip（中心）+ bengio / andrew / ilya / lecun の四ノードが接続済みで、四台すべての試験ファイルが共有領域に揃った。設定共有の再構築はこれで完了し、残るのは共有領域の中身と実験環境の復旧である。"
+  - "🔴 同期が experiments/ へ書く。m2 フォルダは repo 全体であり、.stignore は experiments/baselines/_* しか除外しない。実行中に experiments/baselines/s0_002_maskdino_bbox_seed123/.syncthing.epoch_12.pth.tmp が現れた。契約の禁止 11（experiments/** を変更・削除しない）と、契約自身が定義した m2 の同期とが両立しない。次の契約で除外規則を決めること。触っていない。"
+  - "🔴 待ち時間を過去の実測の幅で上限として扱ってはならない。目印 → 中継は 1569.413 秒で SPEC の記載（最大 1359 秒）を超えた。keeper.sh は sleep 1800 であるから上限は約 1800 秒 + α である。実行権 → 起動も 1746.4 秒かかった。次の契約では実装の周期を根拠に書くこと。"
+  - "🔴 登録名の初期値は四台とも異なった。bengio=Bengio / andrew=Andrew / ilya=aolab / lecun=lecun（既に正しい）。置換で判定すると「当たらなかった 0 件」と「既に正しい 0 件」を取り違える。読み出しで現在値を確かめてから分岐すること。"
+  - "lecun だけ版管理の位置が ~/slocal/m2 である（他四台は ~/slocal2/m2）。keeper.sh の M2DIR が [ -d ~/slocal2 ] で分岐するため、共有フォルダ m2 の位置さえ写し間違えなければ手順は同一で通った。~/slocal2 が存在しないことを実測して確かめている。"
+  - "repo の規模は開始時点で本ホストが最小であった（du -sb 7652515378 B。ilya 47515332495 / andrew 54745194976）。群れ全体は 42010845130 B / 5256 files であり、本ホストは受け取る量が最も多かった。SPEC の指示どおり完了は待たなかったが、最終観測 20:40:44Z では収束していた（state=idle、localBytes=globalBytes=42010845130、needBytes=0、errors=0、du -sb repo = 48999900426）。起動 20:24:50.932 からの上限は 949 秒である。"
+  - "衝突は本契約で 2 件生まれた（…-OOOTQMG.log、6534 B / 61 行）。自分の内容（20 行・全 [lecun]）が sync-alerts.log として勝ち、中心側（[ilya] 51 / [bengio] 4 / [philip] 4 / [andrew] 2）が衝突ファイルになった。ilya と同じ向きで andrew とは逆。両方残っている。"
+  - "~/bin/** と ~/.local/state/** への書き込みは本ホストでは拒否されなかった。ilya では拒否された。ホストの差ではなく実行基盤の状態の差である。一方で ~/.ssh/ の一覧は本ホストでも拒否された。"
+  - "常駐処理の ssh は -o StrictHostKeyChecking=accept-new を持ち ~/.ssh/known_hosts へ書く（~/.tunnel.log に Permanently added が 1 行）。実行者の操作ではない。実行者の到達確認は隔離先の known_hosts を使っている。"
+
+unknowns:
+  - "~/.ssh/known_hosts の前後比較は UNKNOWN。実行基盤の deny 規則で一覧できないため。自分の到達確認は隔離先へ書いており、常駐処理が書いた 1 行は ~/.tunnel.log から確認した。"
+  - "中心側の内部状態は UNKNOWN。禁止 1 により中心で命令を実行していないため、中心から見た値は自ホストの REST 経由の観測に限る。"
+  - "m2 フォルダの同期が収束した時刻は UNKNOWN。SPEC の指示に従い完了を待たず、進み方だけを測った。T1→T2 の 63.056 秒で 101522468 B/s、残り 26016195954 B から約 256 秒と見積もった。最終観測 20:40:44Z では収束していたため、起動 20:24:50.932 からの上限は 949 秒と言えるが、収束の瞬間は測っていない。"
+  - "新版 syncthing の版文字列は strings の ^v2\\.1\\.3$ では当たらなかった。同一性は要約値 e8a08fdd… で確定し、起動後の --version が v2.1.3 を返すことで裏づけた。strings で当たらない理由は UNKNOWN。"
+
+commits: ["49b24fbbbce4189d936d59f4699b21bb3e4d8450"]
