@@ -1,29 +1,37 @@
 result_version: 3
 task_id: "T-2026-08-24-bengio-syncthing-node"
-status: stopped
+status: pass
 host: "bengio"
-branch: "feat/bengio-syncthing-node"
+branch: "feat/bengio-syncthing-node-2"
 pr: null
 merged: false
 
 gates:
   - id: G1
-    verdict: stop
+    verdict: pass
     note: >-
-      要約値の記録・実行権 644・目印 0 件・両方向の対照つきの計数・repo 外への控えは満たしたが、
-      中心への認証が通らなかった。ssh -o BatchMode=yes -p 50072 -i ~/.ssh/id_ed25519_bengiotophilip
-      192.168.196.150 'echo REACHABLE' が exit 255 で Permission denied (publickey,password) を返し、
-      REACHABLE は 0 件。TCP は 192.168.196.150:50072 へ接続でき SSH-2.0-OpenSSH_9.6p1 が返るため
-      経路は生きている。ssh -v は Offering public key … SHA256:Ea9ReajNAiOoaixOPnahszJrJug/UvSXI4ZJZjAr6G4
-      を出すが Server accepts key が出ない。中心が受け入れていない。on_fail: stop に従い停止した。
+      要約値の記録・実行権 644・目印 0 件・両方向の対照つきの計数（zsh=5 / zzz_no_such=0）・repo 外への控えを満たし、
+      中心への認証が通った。禁止 1 の但し書き（中心で命令を実行してはならない）を守るため SPEC の
+      ssh … 'echo REACHABLE' ではなく ssh -N で測り、Server accepts key … SHA256:Ea9Reaj… と
+      Authenticated to 192.168.196.150 … using "publickey" を得た（denied=0）。中心側の記録は
+      authorized_keys:3 に port-forwarding 許可。前回 G1 で停止した原因は PR #142 で解消していた。
   - id: G2
-    verdict: skip
-    note: "G1 が stop のため Phase B を実行していない。版揃えも設定の組み立ても行っていない。"
-  - id: G3
-    verdict: skip
+    verdict: pass
     note: >-
-      G1 が stop のため Phase C を実行していない。SPEC の想定外の表が「認証が通らない場合は
-      目印を作らない」と定めるため、~/.tunnel_to_philip を作っていない。中継 0 件のまま。
+      v2.1.3 を取得して展開物の要約値が中心の実測値 e8a08fdd8b25…b96c4 と完全一致し、実行権 644 のまま置き換えた。
+      autoUpgradeIntervalH を 12 から 0 にし、globalAnnounceEnabled と relaysEnabled を false、
+      localAnnounceEnabled は true のまま。登録名を Bengio から bengio へ直した。philip を
+      tcp://127.0.0.1:22001 で登録し、claude-sync と m2 を中心と同じ識別子で sendreceive 定義した。
+      default は削除。xml_ok / device_count=2 / folder_count=2 / 権限 600。
+  - id: G3
+    verdict: pass
+    note: >-
+      目印を 11:03:09 UTC に置き、中継が 11:10:02 UTC に立った（413 秒）。port_22001=LISTEN で
+      引数に ubuntu@192.168.196.150 を含む。実行権の復帰は 12:52:02 UTC（ctime）であり中継の成立より
+      1 時間 42 分遅い。要約値は e8a08fdd… のまま不変。同期処理は 13:10:04 UTC に起動し 2 件
+      （332564 の親が keeper 157746、332580 の親が 332564）。版は v2.1.3 で中心と同じ。
+      設定は config_version 37 から 52 へ移行されたが定義は全て保たれ autoUpgradeIntervalH=0 のまま。
+      自動更新の記録は ~/.syncthing.log に無い。
 
 tests:
   before_failed: 0
@@ -34,92 +42,131 @@ deviations:
   - type: environment
     note: >-
       SPEC §0 の source scripts/load_env.sh && make task-start を実行していない。合言葉が失われており
-      load_env.sh が使えないことは前契約 T-2026-08-22-bengio-node-foundation 以降の既知事項である。
-      分岐 feat/bengio-syncthing-node は既に作られていた。同じ理由で Task 5 Step 5 の make task-report も使えない。
+      load_env.sh が使えないことは T-2026-08-22-bengio-node-foundation 以降の既知事項である。
+      分岐 feat/bengio-syncthing-node-2 は既に作られていた。同じ理由で Task 5 Step 5 の make task-report も使えない。
   - type: judgement
     note: >-
-      Task 1 Step 3 の apikey の確認で SPEC 指示の grep -o 'apikey>[^<]*' | cut -c1-12 を採らなかった。
-      これは秘匿の実値の先頭 12 文字を画面に出す。要素の件数と値の長さと空かどうかだけを測り、
-      実値は出していない。結果は apikey_elements=1 / len=32 / empty=False で、config.xml を
-      版管理へ置かない判断の根拠になった。
+      Task 1 Step 6 を SPEC の ssh … 192.168.196.150 'echo REACHABLE' ではなく ssh -N（命令を伴わない）で
+      行った。禁止 1 の但し書きが中心での命令の実行を禁じるためである。認証の成否は ssh -v の
+      Server accepts key と Authenticated to で判定した。timeout により ssh_exit=124 になるが、
+      これは -N が接続を保持し続けるためであり認証の失敗ではない。
   - type: judgement
     note: >-
-      handoff.md を SPEC が指す前契約 tasks/T-2026-08-24-philip-syncthing-hub/ ではなく
-      tasks/T-2026-08-24-syncthing-config-survey/handoff.md から読んだ。前者に handoff.md は実在しない。
+      Task 1 Step 3 の apikey の確認で SPEC 指示の cut -c1-12 を採らなかった。秘匿の実値の先頭 12 文字を
+      画面に出すためである。要素の件数と値の長さと空かどうかだけを測った（apikey_elements=1 len=32 empty=False）。
+      Task 5 の REST 問い合わせでも合言葉は変数へ読み込み画面へ出していない。
+  - type: environment
+    note: >-
+      ~/.ssh/** が実行基盤の deny 規則（Read(~/.ssh/**)）に該当するため、ssh-keygen -lf による鍵の指紋の
+      再照合ができなかった。ssh -v が出力した SHA256:Ea9ReajNAiOoaixOPnahszJrJug/UvSXI4ZJZjAr6G4 が
+      前回実行時に版管理の scripts/sync/hub_keys/bengio.pub と一致を確認した指紋と同じであることで代えた。
   - type: judgement
     note: >-
-      抑止 .sync-pause を SPEC §0 の指示どおり作業の最初に置いた。grep -c sync-pause ~/bin/m2-sync.sh は
-      2 を返し、稼働中の版が抑止に対応していることを確かめた。
+      Task 4 Step 4 の実行権の復帰と、<defaults> 配下の <folder id="" path="~"> の削除は利用者が行った。
+      前者は ctime 12:52:02 UTC で中継の成立 11:10:02 UTC より後であり、契約が求める順序は守られている。
+      後者は控え /tmp/config.xml.before_folder_fix との差分で位置を確かめた。削除されたのは <defaults> の
+      内側のひな型のみであり（diff 162,202d161）、最上位の共有フォルダは編集の前後とも claude-sync と m2 の
+      2 件で変わらない。<defaults><folder> は新規フォルダ追加時の初期値であり同期対象ではないため、
+      ホーム全体が共有される状態ではなかった。削除は無害なので戻していない。
   - type: judgement
     note: >-
-      G1 が fail のため Task 2 以降を実行していない。gates.G1.on_fail は stop であり、SPEC の
-      想定外の表も「中心への認証が通らない → 停止して報告。中継が張れない。目印を作らない」と定める。
-      半端に版を揃えたり設定を組んだりすると、次の実行者が開始状態を測れなくなるため加えていない。
+      共有フォルダの型は handoff.md §2.3 が UNKNOWN として残した未決の判断だった。bengio の実測
+      （4031 B / 1 件、削除の履歴なし。中心も 1 件）を示したうえで利用者が両方 sendreceive を選んだ。
+      中心側の選択（前契約の逸脱 1）と揃う。結果は上書きではなく衝突ファイルで、消えたものは無い。
+  - type: judgement
+    note: >-
+      SPEC 禁止 5 に従い make taskindex と make inbox を実行していない。技能書は投影に現れることの確認を
+      求めるが、契約の禁止が勝つ。全台の統合後に一台で一度だけ再生成すること。
 
 issuer_defects:
-  - type: asserted_without_measuring
-    note: >-
-      SPEC は中心が繋げる状態にあることを前提に全 5 タスクを組むが、中心の ~/.ssh/authorized_keys に
-      本ホストの公開鍵が入っているかを誰も測っていない。前契約 T-2026-08-24-philip-syncthing-hub の
-      RESULT.md は完了判定 18 で受け入れ一覧を UNKNOWN と明記しており、その UNKNOWN を埋める契約を
-      挟まずにノード側の契約を起票した。指示どおり実行すると Task 1 Step 6 で必ず停止し、
-      Phase B 以降の作業は一切できない。実際にそうなった。
   - type: self_contradiction
     note: >-
       禁止 1 の但し書きは「中継は中心へ SSH で入る操作だが、中心の状態は変えない。中心で命令を
       実行してはならない」と定めるが、Task 1 Step 6 は ssh … 192.168.196.150 'echo REACHABLE' を
-      指示する。これは中心での命令の実行そのものである。状態は変えないため実害は無いが、
-      指示どおり実行すると自らの禁止事項に触れる。到達確認だけなら命令を伴わない形が要る。
+      指示する。これは中心での命令の実行そのものである。到達確認だけなら命令を伴わない ssh -N で足りる。
+      本契約では ssh -N を採った。
   - type: check_does_not_check
     note: >-
-      Task 1 Step 3 は grep -o 'apikey>[^<]*' ~/.local/state/syncthing/config.xml | head -1 | cut -c1-12
-      を指示し「値が出れば、そのまま置いてはならない」と続ける。しかしこの命令自体が秘匿の実値の
-      先頭 12 文字を画面へ出す。禁止 7「秘匿の値を版管理へ置く」と申し送りの「画面の鍵に注意」の
-      意図に反する。存在の確認は長さと空判定で足り、値を出す必要は無い。
+      Task 1 Step 3 は grep -o 'apikey>[^<]*' … | head -1 | cut -c1-12 を指示し「値が出れば、そのまま
+      置いてはならない」と続けるが、この命令自体が秘匿の実値の先頭 12 文字を画面へ出す。禁止 7 と
+      申し送りの「画面の鍵に注意」の意図に反する。存在の確認は長さと空判定で足りる。
   - type: shell_assumption
     note: >-
       P9 spec_lint が separated_source を 5 件返した（SPEC.md:50,473,476,479,507）。いずれも
       source .venv/bin/activate \ で行を継続する形である。字下げ区画を 1 行ずつ別のシェルへ渡す
       実装系では単独の source が壊れた命令になり、続く make が仮想環境なしで走る。
       終了コードは変わらずプリフライトは exit 0 だった。
+  - type: asserted_without_measuring
+    note: >-
+      SPEC Task 5 Step 1 は「repo は約十九ギガあり、初回の同期に時間がかかる」と断定するが、
+      bengio の実測は du -sh で 51G、syncthing の global で 40743989547 B（約 40.74 GB）である。
+      桁は違わないが倍以上外れており、同期の見込みを誤らせる。
+  - type: check_does_not_check
+    note: >-
+      Task 3 Step 5 は「使わない共有フォルダ（default）があれば消す」と名前で指定する。しかし
+      <defaults> 配下には id="" path="~" の folder ひな型があり、名前が一致しないため残る。
+      ひな型は同期対象ではないので実害は無いが、名前による確認では id="" の要素が残っていることに
+      気づけない。実際に利用者がこれを共有対象と誤認して削除した。確認は名前ではなく最上位の
+      <folder> の列挙で行うべきである。
+  - type: asserted_without_measuring
+    note: >-
+      SPEC Task 5 Step 2 は「開始時は八キロバイト・一件だった。増えていれば届いている」と断定するが、
+      八キロバイトは前契約が philip 上で測った du -sh の丸めた表示である。bengio の実測は 4031 B / 1 件で、
+      du -sh はこれを 8.0K と表示する。丸めた表示を実数として引き継いでおり、増減の判定には使えない。
+      本契約では du -sb で 4031 B から 9702 B への増加として測った。
 
 positive_controls:
   - judgement: "稼働しているものの計数が空振りでない"
     breaking_input: "実在する語（zsh）と実在しない語（zzz_no_such）を同じ走査に掛ける"
-    observed: "zsh=6（開始時）/ zsh=4（停止時）と zzz_no_such=0 に分かれた。走査は両方向で働いている"
+    observed: "zsh=5 と zzz_no_such=0 に分かれた。走査は両方向で働いている"
   - judgement: "実行権 644 が本当に起動を止めている"
     breaking_input: "644 のまま ~/bin/syncthing --version を実行する"
-    observed: "exit 126 permission denied で拒まれた。keeper.sh:41 の [ -x ] が偽になることの裏づけ"
-  - judgement: "中心への認証の失敗が経路の問題ではない"
-    breaking_input: "同じ住所と口へ素の TCP で接続する"
-    observed: "tcp_connect=OK banner='SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.1'。経路は生きており、失敗は認証層である"
-  - judgement: "提示している鍵が版管理へ公開した鍵と同じ対である"
-    breaking_input: "秘密鍵と公開鍵の指紋を別々に取って突き合わせる"
-    observed: "両方とも SHA256:Ea9ReajNAiOoaixOPnahszJrJug/UvSXI4ZJZjAr6G4。本ホスト側に誤りは無い"
+    observed: "permission denied で拒まれた。keeper.sh:41 の [ -x ] が偽になることの裏づけ"
+  - judgement: "中継の成立の判定が自分自身を拾っていない"
+    breaking_input: "pgrep -f 'ssh.*-L 22001:127.0.0.1:22000' を、その文字列を含む待機命令の中から実行する"
+    observed: >-
+      偽陽性を出した。11:03:38 に「中継あり」と判定したが同時刻の port_22001 は待ち受けていなかった。
+      /proc/net/tcp のポートだけで測り直したところ実際の成立は 11:10:02 で、7 分ずれていた。
+      申し送り #3 のとおり部分一致は実行基盤を拾う。
+  - judgement: "取得した実行ファイルが中心と同一である"
+    breaking_input: "中心の実測値（前契約 audit.md:308）と自ホストの sha256 を突き合わせる"
+    observed: "両方とも e8a08fdd8b25340aae0c0a00ab131b293830e4ea47504d4b83a82f31b52b96c4。大きさも 27045912 B で一致"
+  - judgement: "同期処理が二重起動していない"
+    breaking_input: "実行ファイル名で照合した 2 件の親子関係を /proc/*/stat の ppid で見る"
+    observed: "332564 の親は keeper の 157746、332580 の親は 332564。監視役と作業役であり二重起動ではない"
+  - judgement: "自分の試験ファイルが中心へ届いた"
+    breaking_input: "自ホストの索引に中心の識別子が現れるかを見る（中心では命令を実行しない）"
+    observed: >-
+      probe availability=[3J4TRX4-7ZOHQAY-MNNTGTY-WXYDHFW-OOAWOXQ-7L23IDP-ZJ6KT77-DZOCQQE]。
+      modifiedBy=4NIRI4M（bengio が作った）。claude-sync の philip_completion=100% needBytes=0。
+  - judgement: "自動更新の抑止が効いている"
+    breaking_input: "起動記録 ~/.syncthing.log に自動更新の行があるかを見る。前契約では起動と同時に走った"
+    observed: "v1.27.10 から上げる行は無い。起動後の config でも autoUpgradeIntervalH=0 のまま"
   - judgement: "送信前の秘匿検査が働く"
-    breaking_input: "語=値の形と鍵の書き出し行を含む囮を /tmp に置いて同じ命令を掛ける"
-    observed: "囮で 4 件を返した。本契約の本文の該当は検査命令そのものだけで、語と値が続く形は無い"
-  - judgement: "中心の受け入れ一覧に本ホストの鍵が入っていない"
-    breaking_input: "中心で ssh-keygen -lf ~/.ssh/authorized_keys を取り、指紋の一覧に Ea9Reaj… があるかを見る"
-    observed: "UNKNOWN。禁止 1 により中心で命令を実行できない。ssh -v に Server accepts key が出ないことからの推定である"
+    breaking_input: "語=値の形と鍵の書き出し行を含む囮を /tmp に置いて同じ命令を掛ける。さらに合言葉の実値そのものを囮へ入れて照合する"
+    observed: >-
+      囮で decoy_hits=3 を返し、実値を入れた囮では decoy_detects_apikey=True を返した。検査は働いている。
+      契約のディレクトリの本文に対する照合は apikey_literal_in_task_files=0 で、合言葉の 32 文字は
+      どのファイルにも現れない。語 apikey / password の該当はすべて要素名・検査命令そのもの・
+      ssh が返した認証方式の一覧であり、値ではない。
 
 followups:
-  - "🔴 中心（philip）で受け入れ一覧を設定する契約を起票して実行すること。scripts/sync/hub_keys/{andrew,bengio,ilya,lecun}.pub の 4 件を ~/.ssh/authorized_keys へ追加する。手本は T-2026-08-12-register-hub-keys（控えを取り、戻し方を先に決め、指紋で照合する形になっている）。これが済むまで四台のノード契約はどれも Task 1 Step 6 で停止する。"
-  - "中心の到達性は解けた。192.168.196.150:50072 は TCP が開いており SSH-2.0-OpenSSH_9.6p1 Ubuntu-3ubuntu13.1 を返す。handoff.md §3.4 が残した「目印の 2 行目に何を書くかは UNKNOWN」は、住所については 192.168.196.150 で正しい。"
-  - "bengio が提示する指紋は SHA256:Ea9ReajNAiOoaixOPnahszJrJug/UvSXI4ZJZjAr6G4。中心側で受け入れ一覧を設定した後、この指紋が入ったことを ssh-keygen -lf で確かめられる。"
-  - "⚠ bengio の syncthing 登録名は Bengio（先頭が大文字）であり bengio ではない。再開時に Task 3 Step 2 で直すこと。"
-  - "共有フォルダの型が未決である。handoff.md §2.3 は「空の側が sendreceive で参加すると中身を消しうる」として中身を持つ台を sendonly、他を receiveonly で始めよと書き、§3.3 #5 は「型は 2.3 の判断に従う」と定める。SPEC Task 3 Step 5 は両方 sendreceive を指示する。SPEC 自身が handoff.md を正とすると定めるため本来は handoff.md が勝つが、中心側は利用者の判断で sendreceive を採っている。ノード側をどちらにするかは未決。"
-  - "bengio の ~/claude-sync/ は 8.0K / 1 件（sync-alerts.log 813 B）。中心も同名のファイルを持つため、sendreceive で繋ぐと上書きか衝突ファイルのどちらかが起きる。どちらが起きたかを次の実行者が記録すること。"
-  - "版が揃っていない。中心 v2.1.3（e8a08fdd…）、bengio v1.27.10（32ab747e… 26730145 B 644）。Task 2 は未実行である。"
-  - "ssh … | grep | head の直後に別の命令を挟むと ${pipestatus[1]} がその命令の終了コードになる。実際に ssh の 255 を 0 と表示してしまった。終了コードは配管を挟まずファイルへ落として取ること。"
-  - "SPEC は handoff.md が前契約 tasks/T-2026-08-24-philip-syncthing-hub/ にあると書くが実在しない。実体は tasks/T-2026-08-24-syncthing-config-survey/handoff.md である。"
+  - "残る三台（andrew / ilya / lecun）の同種契約は本契約の手順がそのまま使える。ただし lecun は repo が ~/slocal/m2 である。"
+  - "版を揃える手順は確立した。v2.1.3 の配布物 f929eb8e… を展開すると実行ファイルは e8a08fdd8b25…b96c4 27045912 B で中心と完全一致する。自動更新に任せず手で入れ替えて 644 のまま置くこと。"
+  - "中継が立つまでは目印を置いてから 413 秒だった。常駐処理の周回は毎時 :10:02 と :40:02 である。起動は実行権を 755 にしてから 1082 秒（次の周回）だった。"
+  - "届いたかは中心で命令を実行せずに確かめられる。自ホストの 127.0.0.1:8384 へ /rest/db/file?folder=<id>&file=<name> を投げ、availability に中心の識別子が現れるかを見る。/rest/db/completion?folder=&device= も使える。合言葉は config.xml の apikey で、変数へ読み込んで画面に出さないこと。"
+  - "m2 の同期は完了を待っていない。13:11:44 時点で global 3720 件 / 40743989547 B に対し残り 1413 件 / 14832654763 B、state=sync-preparing、errors=0。次の契約で完了を確かめること。"
+  - ".stignore は .git を除外している。同期と git の操作は衝突しない。"
+  - "sync-alerts.log は上書きされず衝突ファイル sync-alerts.sync-conflict-20260824-131007-4NIRI4M.log が生まれた。両方の内容が残る。全台が繋がると台数分の衝突ファイルが生まれるため、中心側での扱いを決めること。"
+  - "bengio の syncthing 登録名の初期値は Bengio（先頭が大文字）だった。残る三台も同様の可能性があるため Task 3 Step 2 で必ず確かめること。"
+  - "起動時に設定は config_version 37 から 52 へ移行され、控えとして config.xml.v37 が残る。要約値は必ず変わるため、無変更の確認は定義の有無で行うこと。"
+  - "SPEC Task 3 Step 5 の「default を消す」を名前で確認すると <defaults> 配下の id=\"\" の folder ひな型を見落とす。確認は最上位の <folder> の列挙で行うこと。ひな型は同期対象ではないため削除しなくてよい。"
   - "禁止 5 に従い make taskindex と make inbox を実行していない。全台の統合後に一台で一度だけ再生成すること。"
 
 unknowns:
-  - "中心の ~/.ssh/authorized_keys の内容。禁止 1 により中心で命令を実行できないため測れない。ssh -v に Server accepts key が出ないことから、本ホストの鍵が入っていないと推定している。"
-  - "中心と繋がったあとに実際にファイルが届くか。中継が張れないため一切測れていない。"
-  - "共有領域を sendreceive で繋いだときに上書きと衝突ファイルのどちらが起きるか。"
-  - "版を v2.1.3 へ揃えたときに要約値が中心の e8a08fdd… と一致するか。Task 2 未実行のため測れない。"
+  - "m2 の同期が完了するまでの時間。本契約は完了を待たない。13:11:44 時点で残り 14832654763 B。"
+  - "中心側で衝突ファイルがどう見えているか。禁止 1 により中心で命令を実行できないため測っていない。"
+  - "残る三台の syncthing の版・実行権・登録名・~/claude-sync/ の中身。禁止 1 により測っていない。"
   - "make taskindex-check / inbox-check の差分。禁止 5 により再生成していないため記録のみ。"
 
 commits: []
