@@ -1,6 +1,6 @@
 # RESULT — T-2026-08-24-bengio-syncthing-node
 
-**status:** `pass`（**G1 / G2 / G3 すべて pass**）
+**status:** `pass`（**G1 / G2 / G3 すべて pass**。ただし**判定 Y（送出）は未充足** — §6）
 **kind:** `impl`  **host:** `bengio`  **repo:** `~/slocal2/m2`
 **branch:** `feat/bengio-syncthing-node-2`  **実行日:** 2026-08-24 (UTC)
 
@@ -91,8 +91,8 @@ SPEC は前契約 `tasks/T-2026-08-24-philip-syncthing-hub/` にあると書く�
 | V | repo の同期の様子を記録した | `m2` は `sync-preparing`。local 3646 件 / 40.74 GB、global 3720 件 / 40.74 GB、**残り 1413 件 / 14.83 GB**、errors 0 |
 | W | 目印が一件、常駐処理が無変更 | `marker_count=1`。`keeper.sh` `9fe9c423…` / `m2-sync.sh` `bcf46ba9…` は Task 1 と同じ |
 | X | 秘匿検査を自分で行った（陽性対照つき） | §5 |
-| Y | 分岐が送出され PR が存在する | §6 |
-| Z | 報告が台帳へ返り、抑止が外れている | §6 |
+| Y | 分岐が送出され PR が存在する | 🔴 **未充足。** commit `57aeecac` は手元にあるが `git push` が実行基盤に拒否された（§6） |
+| Z | 報告が台帳へ返り、抑止が外れている | 台帳は `report_exit=0` で返った（`report_sha256=688b6a78…`）。抑止は §6 |
 
 ---
 
@@ -173,7 +173,84 @@ REST への問い合わせでも合言葉は変数へ読み込み、画面へ出
 
 ## 6. 送出、抑止、台帳
 
-（Task 5 Step 4-5 の実測値。実行後に埋める）
+### 検証（報告を書いたあと）
+
+    make task-validate   → OK   T-2026-08-24-bengio-syncthing-node / 1 task(s), 0 failed / validate_exit=0
+    make task-preflight  → 4 PASS / 1 WARN / 4 SKIP / 0 FAIL / preflight_exit=0
+    make forbidden-check → {"base": "origin/phase0", "changed": 4, "checked": 4, "errors": [],
+                            "excluded": 0, "generated_directories": ["context/auto/"],
+                            "generated_files": ["tasks/inbox.md"], "status": "pass", "violations": []}
+                            forbidden_exit=0
+
+**一度目の `task-validate` は失敗した。** `status: done` と書いたが様式が許すのは
+`pass` / `partial` / `stopped` の 3 語である。`pass` へ直して通した。推測で直していない
+（`tasks/_schema/result.schema.json` の `enum` を読んだ）。
+
+`P9 spec_lint` の WARN は 5 件（`separated_source@SPEC.md:50,473,476,479,507`）。
+SKIP は 4 件（`P2 cuda_ext_loaded` `P3 deterministic_flags` `P4 prereg_committed` `P5 frozen_source_hash`）。
+**SKIP は合格ではなく、実行されなかったことを意味する。**
+
+### 秘匿検査（陽性対照つき）
+
+語による走査の該当は、**すべて要素名・検査命令そのもの・`ssh` が返した認証方式の一覧**であり、
+値ではない。加えて**合言葉の実値そのもの**を本文と照合した。
+
+    apikey_literal_in_task_files=0 []          ← 32 文字の実値はどのファイルにも無い
+
+陽性対照（囮は `/tmp` に置き、commit していない）
+
+    decoy_hits=3                    ← 語による走査が囮を拾う
+    decoy_detects_apikey=True       ← 実値の照合が囮を拾う
+
+**検査は働いており、そのうえで該当が無い。**
+
+### 変更範囲
+
+    count=5
+     M docs/sessions/digest/2026-08-23-a5cc9299-5f4d-433e-99ca-ef63c4707c22.md
+     M tasks/T-2026-08-24-bengio-syncthing-node/RESULT.md
+     M tasks/T-2026-08-24-bengio-syncthing-node/audit.md
+     M tasks/T-2026-08-24-bengio-syncthing-node/result.yaml
+     M tasks/inbox.d/T-2026-08-24-bengio-syncthing-node.md
+
+`docs/sessions/digest/…` は**本実行より前からある変更**であり、触っていない。commit していない。
+`~/claude-sync/probe-bengio.txt` は版管理の外である。
+
+### 記録
+
+    57aeecac feat(sync): connect bengio to the syncthing hub
+    4 files changed, 540 insertions(+), 177 deletions(-)
+
+### 送出 — **できていない**
+
+🔴 `git push -u origin HEAD` が**実行基盤の分類器に拒否された**。利用者の承認を得たあとも同じである。
+commit は手元にあるが `origin` へ送れていない。**判定 Y は未充足であり、送出と PR は利用者が行う必要がある。**
+
+    git push -u origin HEAD
+    gh pr create --base phase0 --fill
+
+### 台帳 — 返した
+
+    {
+      "task_id": "T-2026-08-24-bengio-syncthing-node",
+      "verdict": "pass",
+      "n_issuer_defects": 6,
+      "report_sha256": "688b6a78e4f7ef5ba5beb0267bb9cee0b37017b61f227e5a43d46355f6fed74f",
+      "report_bytes": 16112,
+      "replaced_blocks": 1
+    }
+    report_exit=0
+
+**前回の報告は「合言葉が失われており `load_env.sh` が使えない」と記録したが、本実行では
+`source scripts/load_env.sh && make task-report` が成功した。** 前回の記録は本実行には当てはまらない。
+
+**送出より先に台帳へ返している。** SPEC は「記録して起票したあとに送る」と定めるが、
+送出が実行基盤に拒否されて完了しないため、台帳への返却を待たせなかった。
+そのため台帳の本文には PR 番号が入っていない。
+
+### 抑止
+
+Task 5 Step 5 で外す。実測は下に貼る。
 
 ---
 
@@ -207,15 +284,16 @@ REST への問い合わせでも合言葉は変数へ読み込み、画面へ出
 
 `result.yaml` の `deviations` と対で書いてある。要約すると 7 件。
 
-1. **環境** — `make task-start` を実行していない。`scripts/load_env.sh` が使えない（合言葉が失われている）。分岐 `feat/bengio-syncthing-node-2` は既に作られていた。
+1. **環境** — `make task-start` を実行していない。分岐 `feat/bengio-syncthing-node-2` は既に作られていた。**前回記録した「`load_env.sh` が使えない」は本実行には当てはまらない**（`make task-report` が exit 0 で成功した）。
 2. **判断** — Task 1 Step 6 を `ssh … 'echo REACHABLE'` ではなく `ssh -N` で行った。禁止 1 の但し書きを守るため。
 3. **判断** — `apikey` の検査で `cut -c1-12` を採らず、長さと空かどうかだけを測った。
 4. **環境** — `~/.ssh/**` は実行基盤の deny 規則で読めないため、鍵の指紋の再照合ができなかった。前回の実測値（`SHA256:Ea9Reaj…`）と、今回の `ssh -v` が出した同じ指紋で代えた。
 5. **判断（利用者）** — 実行権の復帰（Task 4 Step 4）と `<defaults>` の folder ひな型の削除は**利用者が行った**。前者は中継の成立より後であり順序は守られている。後者は同期対象ではない要素であり、最上位の共有フォルダは前後とも 2 件のままである。
 6. **判断（利用者）** — 共有フォルダの型は `handoff.md` が `UNKNOWN` として残した未決の判断だった。実測（bengio 4031 B / 1 件、中心も 1 件、削除の履歴なし）を示したうえで**利用者が両方 `sendreceive` を選んだ**。中心側の選択と揃う。
 7. **判断** — 禁止 5 に従い `make taskindex` と `make inbox` を実行していない。技能書は投影の確認を求めるが、契約の禁止が勝つ。
+8. **環境** — 🔴 `git push` が実行基盤の分類器に拒否された。**判定 Y は未充足。** 送出と PR は利用者が行う。
 
-**逸脱は「無し」ではない。** 上記 7 件がすべてである。
+**逸脱は「無し」ではない。** 上記 8 件がすべてである。
 
 ## 9. 禁止 5 の遵守
 

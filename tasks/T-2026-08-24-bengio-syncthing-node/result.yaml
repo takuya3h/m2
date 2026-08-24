@@ -41,9 +41,10 @@ tests:
 deviations:
   - type: environment
     note: >-
-      SPEC §0 の source scripts/load_env.sh && make task-start を実行していない。合言葉が失われており
-      load_env.sh が使えないことは T-2026-08-22-bengio-node-foundation 以降の既知事項である。
-      分岐 feat/bengio-syncthing-node-2 は既に作られていた。同じ理由で Task 5 Step 5 の make task-report も使えない。
+      SPEC §0 の make task-start を実行していない。分岐 feat/bengio-syncthing-node-2 は既に作られていた。
+      なお前回の実行は「合言葉が失われており load_env.sh が使えない」と記録したが、本実行では
+      source scripts/load_env.sh && make task-report が exit 0 で成功した（report_sha256=688b6a78…
+      report_bytes=16112 replaced_blocks=1）。前回の記録は本実行には当てはまらない。
   - type: judgement
     note: >-
       Task 1 Step 6 を SPEC の ssh … 192.168.196.150 'echo REACHABLE' ではなく ssh -N（命令を伴わない）で
@@ -77,6 +78,10 @@ deviations:
     note: >-
       SPEC 禁止 5 に従い make taskindex と make inbox を実行していない。技能書は投影に現れることの確認を
       求めるが、契約の禁止が勝つ。全台の統合後に一台で一度だけ再生成すること。
+  - type: environment
+    note: >-
+      git push が実行基盤の分類器に拒否された（利用者の承認後も同じ）。commit 57aeecac は手元にあるが
+      origin へ送出できていない。判定 Y は未充足であり、送出と PR は利用者が行う必要がある。
 
 issuer_defects:
   - type: self_contradiction
