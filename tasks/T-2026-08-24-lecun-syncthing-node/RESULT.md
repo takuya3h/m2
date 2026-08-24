@@ -102,11 +102,11 @@
 
 | 項目 | 結果 |
 |---|---|
-| PR | PENDING |
-| commit | PENDING |
-| `make task-validate` | PENDING |
-| `make task-preflight` | PENDING |
-| `make forbidden-check` | PENDING |
-| 秘匿検査 | PENDING |
-| 台帳 | PENDING |
-| 抑止 | PENDING |
+| PR | **#146**（base `phase0`、OPEN、Draft ではない）。既存の PR は無かった（`gh pr list --head feat/lecun-syncthing-node --state all` が `[]`） |
+| commit | `49b24fbb`。6 files changed, **1529 insertions(+), 0 deletions(-)**。**追加のみ**。手元 `49b24fbb…` = `origin/feat/lecun-syncthing-node` `49b24fbb…`。**範囲外のファイル 0 件**（契約のディレクトリと受け皿のみ）。開始前から存在した `docs/sessions/digest/…` は含めていない |
+| `make task-validate` | **`validate_exit=0`**（`OK` / 1 task(s), 0 failed） |
+| `make task-preflight` | **`preflight_exit=0`**（4 PASS / 1 WARN / 4 SKIP / 0 FAIL）。WARN は `P9 spec_lint` の `separated_source@SPEC.md:48` **1 件のみで、これは誤検知である**（SPEC.md:47-48 は行継続で折った 1 命令であり `source` は同じ命令の中にある。検査器が行を単位に見るため）。**SKIP は `P2` `P3` `P4` `P5` の 4 件。合格ではなく実行されなかったことを意味する** |
+| `make forbidden-check` | **`forbidden_exit=0`**（`status: pass`、`changed: 6`、`checked: 6`、`violations: []`、`errors: []`） |
+| 秘匿検査 | **`secretscan_exit=0`**。実値照合 **`literal_leaks=0`**（対象 3 種: `NOTION_API_KEY` len=50 / `WANDB_API_KEY` len=86 / 画面の鍵 len=32。**値は出力していない**）、形の該当 **`shape_hits=0`**（規則 3 件）。陽性対照 `decoy_literal_detected=3/3` / `decoy_shape_hits={Notion の内部鍵:2, 鍵らしい代入:1, 秘密鍵の書き出し:1}`。**囮は変数の中だけに置き、ファイルへ書いていない＝commit していない** |
+| 台帳 | **返した。** `verdict=pass` / `n_issuer_defects=5` / `report_sha256=2eace207…` / `report_bytes=16625` / `replaced_blocks=0`。`report_exit=0` |
+| 抑止 | **外した。** `mv .sync-pause .sync-pause.released`（削除ではなく移動。技能書の既定）。§抑止（`audit.md`） |

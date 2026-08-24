@@ -813,3 +813,186 @@ andrew とは逆）。本体には開始時に見た最終行
 | T | 中心が持っている | `availability=[3J4TRX4-…-DZOCQQE]`、`completion=100 needBytes=0`。陽性対照 404/200 |
 | U | 共有領域の増加 | **1610 B / 1 件 → 38214 B / 13 件**（+36604 B / +12 件）。消失なし |
 | V | repo の進み方 | 101.5 MB/s、`needBytes` 26016195954、`state=syncing`、`errors=0` |
+
+---
+
+## 5. Phase E — 報告と送出
+
+### Step 2: 触っていないものが無変更であること
+
+    $ sha256sum scripts/sync/keeper.sh scripts/sync/m2-sync.sh ~/bin/m2-sync.sh
+    9fe9c423002e426e774bf8366f0cb307b5bcc31da0fa1fb15ff603c5f219dd90  scripts/sync/keeper.sh    ← 開始時と同一
+    bcf46ba9031a45cb5f22371e6a1e598b2218782f6b0db74ab80ca6fea0aeb25f  scripts/sync/m2-sync.sh   ← 開始時と同一
+    bcf46ba9031a45cb5f22371e6a1e598b2218782f6b0db74ab80ca6fea0aeb25f  /home/ubuntu/bin/m2-sync.sh
+    $ git --no-pager diff -- scripts/sync/ | wc -l
+    0                                  ← **差分 0 行**
+
+受け入れ一覧（**変更していない**。禁止 3）:
+
+    7299ba7c…  device_ids/andrew.txt      06649883…  hub_keys/andrew.pub
+    d46bb8a3…  device_ids/bengio.txt      5c9bcdcc…  hub_keys/bengio.pub
+    ceaa37be…  device_ids/ilya.txt        16cd6b3f…  hub_keys/ilya.pub
+    6827eab2…  device_ids/lecun.txt       3fcc9b00…  hub_keys/lecun.pub
+    c8e9ceb1…  device_ids/philip.txt
+
+    $ sha256sum .stignore .stglobalignore
+    61593e99…  .stignore        ← 開始時と同一
+    61593e99…  .stglobalignore  ← 開始時と同一
+    $ ls -1 ~/.tunnel_to_* | wc -l
+    1                                  ← **目印は 1 件**
+    $ 常駐処理 keeper pid=89614 は生きている（**止めていない**。禁止 12）
+
+🔴 **自己一致がここでも出た。** `keeper.sh` を語で数えたところ 2 件が返り、そのうち 1 件は
+**自分の命令行**であった（命令の本文に `keeper.sh` という語が含まれるため）。
+`os.getpid()` による自己除外は、**命令を包むシェルが別の pid を持つため効かない。**
+実体は 1 件である。**起票者の誤り 1 と同じ事象が、別の場面で再現した。**
+
+🔴 **同期が `experiments/` へ書いた。**
+
+    $ git --no-pager status --porcelain
+    ?? experiments/baselines/s0_002_maskdino_bbox_seed123/.syncthing.epoch_12.pth.tmp
+    ?? tasks/T-2026-08-24-lecun-syncthing-node/
+
+`.stignore` は `experiments/baselines/_*` しか除外しない（39 行目）。**`m2` フォルダは repo 全体
+であるから、`experiments/` の中身も同期の対象になる。** これは**契約自身が Task 2 Step 6 で
+定義した結果**であって実行者の操作ではない。**禁止 11（`experiments/**` を変更・削除しない）と
+両立しない。触らずに申し送りへ回した。** 送出の時点では一時ファイルは消えていた（同期が完了した）。
+
+### Step 3: 検証を通す
+
+    $ source .venv/bin/activate && make task-validate TASK=T-2026-08-24-lecun-syncthing-node
+    OK   T-2026-08-24-lecun-syncthing-node
+    1 task(s), 0 failed
+    validate_exit=0
+
+    $ source .venv/bin/activate && make task-preflight TASK=T-2026-08-24-lecun-syncthing-node
+    P1 venv_active            PASS …
+    P2 cuda_ext_loaded        SKIP …      P3 deterministic_flags   SKIP …
+    P4 prereg_committed       SKIP …      P5 frozen_source_hash    SKIP …
+    P6 decisions_answered     PASS decisions_required は空
+    P7 destination_writable   PASS
+    P8 contract_valid         PASS
+    P9 spec_lint              WARN separated_source@SPEC.md:48
+    RESULT: 4 PASS / 1 WARN / 4 SKIP / 0 FAIL
+    preflight_exit=0
+
+    $ source .venv/bin/activate && make forbidden-check
+    {"base": "origin/phase0", "changed": 6, "checked": 6, "errors": [], "excluded": 0,
+     "excluded_paths": [], "generated_directories": ["context/auto/"],
+     "generated_files": ["tasks/inbox.md"], "status": "pass", "violations": []}
+    forbidden_exit=0
+
+`conventions_rev` は実測して `d422b087` へ置換済み（0.3 参照）。
+**生成物の検査（`make taskindex-check` / `make inbox-check`）は実行していない**（禁止 6。逸脱 5）。
+
+### Step 4: 送信前の秘匿検査
+
+**検査そのものが値を出力していない。** 実値は長さと有無だけを示した。
+
+    $ source scripts/load_env.sh && .venv/bin/python <scratchpad>/probe/secretscan.py
+    照合する実値の種類 = 3 (NOTION_API_KEY, SYNCTHING_APIKEY, WANDB_API_KEY)
+      NOTION_API_KEY     len=50 empty=False
+      WANDB_API_KEY      len=86 empty=False
+      SYNCTHING_APIKEY   len=32 empty=False
+    --- 送出対象 ---
+      tasks/T-2026-08-24-lecun-syncthing-node/RESULT.md    literal=0 shape={...0,0,0}
+      tasks/T-2026-08-24-lecun-syncthing-node/SPEC.md      literal=0 shape={...0,0,0}
+      tasks/T-2026-08-24-lecun-syncthing-node/audit.md     literal=0 shape={...0,0,0}
+      tasks/T-2026-08-24-lecun-syncthing-node/result.yaml  literal=0 shape={...0,0,0}
+      tasks/T-2026-08-24-lecun-syncthing-node/spec.yaml    literal=0 shape={...0,0,0}
+      tasks/inbox.d/T-2026-08-24-lecun-syncthing-node.md   literal=0 shape={...0,0,0}
+    literal_leaks = 0
+    shape_hits    = {'Notion の内部鍵': 0, '鍵らしい代入': 0, '秘密鍵の書き出し': 0}
+    --- 陽性対照（囮は commit していない） ---
+      decoy_literal_detected = 3/3
+      decoy_shape_hits       = {'Notion の内部鍵': 2, '鍵らしい代入': 1, '秘密鍵の書き出し': 1}
+      陽性対照が働いているか = True
+    secretscan_exit = 0
+
+**囮は変数の中だけに置き、ファイルへ書いていない。** したがって commit にも含まれない。
+**判定したのは件数ではなく形である**（実値との一致・鍵らしい代入・内部鍵の接頭辞・秘密鍵の書き出し）。
+
+### Step 5: 送出
+
+    $ git add tasks/T-2026-08-24-lecun-syncthing-node/ tasks/inbox.d/T-2026-08-24-lecun-syncthing-node.md
+    $ git --no-pager diff --cached --stat
+     RESULT.md   | 112 +++      SPEC.md    | 389 ++++      audit.md   | 815 ++++++
+     result.yaml |  86 +++      spec.yaml  |  92 +++       inbox.d/…  |  35 +
+     6 files changed, 1529 insertions(+)
+    範囲外の件数 = 0            ← **契約のディレクトリと受け皿に限られている**
+
+    $ git commit …
+    49b24fbb feat(sync): connect lecun to the syncthing hub
+    $ git push -u origin feat/lecun-syncthing-node
+    push_exit=0
+    local  = 49b24fbbbce4189d936d59f4699b21bb3e4d8450
+    remote = 49b24fbbbce4189d936d59f4699b21bb3e4d8450
+
+    $ gh pr list --head feat/lecun-syncthing-node --state all --json number,state,title
+    []                          ← **既存の PR は無い。新規に作る**
+    $ gh pr create --base phase0 …
+    https://github.com/takuya3h/m2/pull/146
+
+#### 台帳
+
+    $ source .venv/bin/activate && source scripts/load_env.sh \
+        && make task-report TASK=T-2026-08-24-lecun-syncthing-node
+    {
+      "task_id": "T-2026-08-24-lecun-syncthing-node",
+      "verdict": "pass",
+      "n_issuer_defects": 5,
+      "report_sha256": "2eace20734639141a39ef5f8974fe282f0582c6823604bac6d22f9948e44b298",
+      "report_bytes": 16625,
+      "replaced_blocks": 0
+    }
+    report_exit=0
+
+**送ったのは記録して起票したあとである。** `replaced_blocks: 0` は初回投稿を意味する。
+
+#### 抑止
+
+**削除ではなく移動で外す**（技能書の既定。実装は目印の存在だけを見る）。
+
+    $ mv .sync-pause .sync-pause.released
+    $ ls -la .sync-pause
+    ls: cannot access '.sync-pause': No such file or directory
+    $ ls -la .sync-pause.released
+    -rw-rw-r-- 1 ubuntu ubuntu 0 Aug 24 19:16 .sync-pause.released
+    抑止が外れているか: 外れた(正しい)
+
+🔴 **副作用。** `.gitignore:240` は `.sync-pause` だけを無視するため、`.sync-pause.released` が
+**未追跡ファイルとして残り `git status` に現れる**（ilya が報告済み）。
+**禁止 7（未追跡の成果物を削除しない）に従い消していない。**
+
+#### 退避した digest を戻す
+
+    $ mv <scratchpad>/digest-stash/*.md docs/sessions/digest/
+    2026-08-22-52ba4658-….md   9568 B
+    2026-08-22-7c2986d7-….md   2253 B
+    2026-08-23-df8af05d-….md  22907 B
+    退避先の残り = 0 件         ← **全て戻した。消していない**
+
+**これらは開始前から存在したものであり、本契約の commit には含めていない。**
+
+### 変更範囲の一覧（最終）
+
+    $ git --no-pager status --porcelain
+     M tasks/T-2026-08-24-lecun-syncthing-node/RESULT.md     ← PR 番号と検証結果を反映
+     M tasks/T-2026-08-24-lecun-syncthing-node/audit.md      ← 本節
+     M tasks/T-2026-08-24-lecun-syncthing-node/result.yaml   ← pr: 146 / commits
+    ?? .sync-pause.released                                  ← 抑止の解除の副作用（消さない）
+    ?? docs/sessions/digest/2026-08-22-52ba4658-….md         ← 開始前から存在（戻した）
+    ?? docs/sessions/digest/2026-08-22-7c2986d7-….md         ← 開始前から存在（戻した）
+    ?? docs/sessions/digest/2026-08-23-df8af05d-….md         ← 開始前から存在（戻した）
+
+**契約が触ったのは `tasks/T-2026-08-24-lecun-syncthing-node/` と
+`tasks/inbox.d/T-2026-08-24-lecun-syncthing-node.md` だけである。**
+
+### Gate（Phase E に gate は無い）
+
+| # | 完了判定 | 実測 |
+|---|---|---|
+| W | 報告の構成と分量 | `RESULT.md` は 7 節・112 行（目安 150 行以内）。証跡は `audit.md` へ分離し、行番号で指した |
+| X | 触っていないものが無変更 | `keeper.sh` `9fe9c423…` / `m2-sync.sh` `bcf46ba9…` / 受け入れ一覧 9 件 / `.stignore` `61593e99…` すべて開始時と同一。`scripts/sync/` の差分 0 行。**目印 1 件**。常駐処理 pid 89614 は生存 |
+| Y | 秘匿検査 | `secretscan_exit=0`、`literal_leaks=0`、`shape_hits=0`。**検査は値を出力していない**。陽性対照 `3/3` と形 3 規則すべて発火。囮は commit していない |
+| Z | 送出 | commit `49b24fbb`、push 済（手元 = リモート）、**PR #146**、台帳 `report_exit=0`（`report_sha256=2eace207…`）、抑止は `.sync-pause.released` へ移動して解除 |

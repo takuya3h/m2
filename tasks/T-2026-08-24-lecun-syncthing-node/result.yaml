@@ -3,7 +3,7 @@ task_id: "T-2026-08-24-lecun-syncthing-node"
 status: pass
 host: "lecun"
 branch: "feat/lecun-syncthing-node"
-pr: null
+pr: 146
 merged: false
 
 gates:
@@ -83,4 +83,4 @@ unknowns:
   - "m2 フォルダの同期完了時刻は UNKNOWN。SPEC の指示に従い完了を待っていない。T1→T2 の 63.056 秒で 101522468 B/s、残り 26016195954 B から約 256 秒と見積もったが、実測していない。"
   - "新版 syncthing の版文字列は strings の ^v2\\.1\\.3$ では当たらなかった。同一性は要約値 e8a08fdd… で確定し、起動後の --version が v2.1.3 を返すことで裏づけた。strings で当たらない理由は UNKNOWN。"
 
-commits: []
+commits: ["49b24fbbbce4189d936d59f4699b21bb3e4d8450"]
