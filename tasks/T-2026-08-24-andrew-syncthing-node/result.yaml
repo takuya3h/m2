@@ -1,0 +1,167 @@
+result_version: 3
+task_id: "T-2026-08-24-andrew-syncthing-node"
+status: pass
+host: "Andrew"
+branch: "feat/andrew-syncthing-node"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      開始状態: syncthing 32ab747e… 26730145B perm=644 / config.xml c3783e9d… 8495B perm=600 /
+      cert.pem bb9a4442… / key.pem 92f44d2e… / keeper.sh 9fe9c423… / m2-sync.sh bcf46ba9… /
+      .stignore = .stglobalignore = 61593e99…。目印 0 件・syncthing 0 件・ssh 0 件を
+      /proc/*/cmdline の argv[0] 基底名で照合し、両方向の対照を取った（肯定 zsh=3、否定
+      zzz_no_such_exe=0、口 22=LISTEN、口 1=CLOSED）。~/claude-sync = 1510 バイト / 1 件、
+      repo = 54745194976 バイト（いずれも du -sb と find の実数。丸めていない）。控えは
+      ~/.local/state/syncthing.bak.20260824-150939（要約値 3 件とも一致）。apikey_len=32
+      empty=False のため版管理へ置かない。秘密鍵書き出しの混入 0（囮で 1 を返す陽性対照つき）。
+      設定内の device id が scripts/sync/device_ids/andrew.txt と一致。ssh -N（中心で命令を
+      実行しない形）で Server accepts key SHA256:7yvApjr/… / Authenticated to 192.168.196.150
+      using "publickey" / denied=0。受け入れ控えは UserKnownHostsFile を隔離先へ向けた。
+  - id: G2
+    verdict: pass
+    note: >-
+      実行ファイルを v1.27.10 (32ab747e…) から v2.1.3 へ置換。取得物 f929eb8e… 11821325B、
+      実行ファイル e8a08fdd8b25340aae0c0a00ab131b293830e4ea47504d4b83a82f31b52b96c4 27045912B、
+      権限 644 のまま。中心の実測値と完全一致。options 配下の要素名の実在を一覧で確かめてから
+      autoUpgradeIntervalH 12→0、globalAnnounceEnabled true→false、relaysEnabled true→false、
+      localAnnounceEnabled は true 維持。device name を Andrew→andrew へ。中心を
+      id=3J4TRX4-…-DZOCQQE name=philip address=tcp://127.0.0.1:22001 で登録（他 3 台は未登録）。
+      最上位 folder は claude-sync=/home/ubuntu/claude-sync と m2=/home/ubuntu/slocal2/m2 の
+      2 件、ともに sendreceive・共有相手 2 件。ET の階層走査で top_level_folder_count=2、
+      単純検索 naive=3（差は defaults 配下のひな型。触っていない）。xml_ok=True、
+      config.xml perm=600 / cert.pem 664 / key.pem 600、cert と key は要約値も開始時と同一。
+  - id: G3
+    verdict: pass
+    note: >-
+      目印 ~/.tunnel_to_philip を 60B perm=600 2 行で 15:18:02Z に設置。中継は常駐処理が
+      15:38:29Z に張り（1227 秒）、/proc/net/tcp の復号で port_22001=LISTEN hits=2、処理は
+      pid 86521 ppid 40838(keeper.sh) で引数に ubuntu@192.168.196.150 を含む。実行権を 755 へ
+      戻したのは 15:39:16Z（ctime）で、15:38:39Z の測定時点で port_22001=LISTEN と perm=644 を
+      同時に観測しているため中継が 47 秒早い。要約値 e8a08fdd… は不変。syncthing は 16:08:21Z に
+      起動し 2 件（89005 ppid=40838、89026 ppid=89005 の親子）、version=v2.1.3 で中心と同じ、
+      port_22000=LISTEN・port_22001=LISTEN 維持。config は version 37→52 へ移行し要約値は
+      5ea37224…→7f80508e… と変わったが、最上位 folder 2 件・device 2 件・autoUpgradeIntervalH=0・
+      global=false・relays=false・local=true をすべて保持。grep -c -i upgrade ~/.syncthing.log = 0。
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+
+deviations:
+  - type: environment
+    note: >-
+      make task-start を実行できなかった。未commit の 1 件は契約ディレクトリそのものであり、
+      分岐 feat/andrew-syncthing-node も既に存在するため、scripts/task_start.sh の前提検査
+      （作業ツリーが清潔・分岐が未作成）を原理的に通せない。exit は make 経由で Error 3。
+      前契約 T-2026-08-24-bengio-syncthing-node も同じ理由で実行していない。
+  - type: environment
+    note: >-
+      ~/.ssh/** が実行基盤の deny 規則で読めず、秘密鍵の権限（600 の想定）と ~/.ssh/known_hosts の
+      前後比較ができなかった。指紋は版管理側の scripts/sync/hub_keys/andrew.pub で照合し
+      （256 SHA256:7yvApjr/qWxBWND60+liGfDGuJMJF7NowRyGZXCu2W0 andrewtophilip ED25519）、
+      ssh -v が提示した同じ指紋と一致することで代えた。
+  - type: judgement
+    note: >-
+      Task 1 Step 4 の到達確認を ssh -N（中心で命令を実行しない形）で行った。禁止 1 の但し書きを
+      守るため。timeout 20 で打ち切り exit 124 を得ており、拒否ではなく接続維持であることを
+      認証行と denied=0 で裏づけた。前契約の判断を踏襲している。
+  - type: judgement
+    note: >-
+      秘匿検査で値の一部（先頭 n 文字など）を一切表示せず、要素の件数・長さ・空判定・
+      正規表現の一致件数だけで測った。申し送り #6「秘匿を守る検査が秘匿を出力してはならない」に従う。
+      REST への問い合わせでも合言葉は変数へ読み込み、画面へ出していない。
+  - type: judgement
+    note: >-
+      禁止 6「生成物を再生成する」に従い make taskindex と make inbox を実行していない。
+      技能書 SKILL.md は投影に現れることの確認を求めるが、契約の禁止が勝つと判断した。
+      make taskindex-check / inbox-check が差分を報告しても再生成していない。
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: >-
+      SPEC「前契約で確定した事実」表は repo の大きさを「五十一ギガ（同期対象は四十・七四ギガ）」と
+      断定するが、これは bengio の実測であって andrew には当てはまらない。本ホストの実測は
+      du -sb で 54745194976 バイト、syncthing の global で 42010521855 バイト / 5193 件である。
+      指示どおり「五十一ギガ」を前提にすると、初回同期の所要や残量の見積もりを誤る。
+      ホスト非依存の定数として書かれている値を、実行者が実測で置き換える必要があった。
+  - type: asserted_without_measuring
+    note: >-
+      SPEC Task 3 Step 2 と「前契約で確定した事実」表は起動の引き金の周期を「最大六十分」と書くが、
+      稼働している keeper.sh の実装は sleep 1800（30 分）である。実測は目印 15:18:02Z から
+      中継 15:38:29Z までの 1227 秒で、実装と一致する。指示どおり 60 分を上限として待つと、
+      異常の判定（想定外の表「六十分待っても起きなければ報告」）が実装の 2 倍遅れる。
+  - type: check_does_not_check
+    note: >-
+      SPEC Task 4 Step 2 は availability に中心の識別子が現れるかを見よと指示するが、
+      置いた直後は syncthing の索引に入っておらず同じ問いが HTTP 404 を返すことに触れていない。
+      指示どおり Step 1 の直後に Step 2 を実行したところ実際に 404 が返り、これは
+      「中心が持っていない」と読み違えうる。/rest/db/status が state=idle になるのを待ってから
+      問い直したところ 200 で availability に中心の識別子が現れた。
+  - type: asserted_without_measuring
+    note: >-
+      SPEC は中心の住所として「中継の出口 tcp://127.0.0.1:22001」だけを与えるが、これは
+      syncthing の device address であって、目印の 2 行目に必要な SSH の住所ではない。
+      指示どおりでは目印を作れない。版管理内の T-2026-08-12-submit-hub-key-andrew/handoff.md:8 は
+      2 行目の案として 192.168.196.176 を持つがこれは誤りで、前契約 audit.md:547 の実測
+      192.168.196.150 が正しい。実行者が前契約の実測を掘り当てる必要があった。
+
+positive_controls:
+  - judgement: "判定 A/B — 稼働しているものの計数（同期処理 0 件・中継 0 件）"
+    breaking_input: "存在しない実行ファイル名で数えれば 0、実在する名で数えれば 1 以上になるはず"
+    observed: "zzz_no_such_exe_count=0、zsh_count=3。常に零を返す壊れ方でも常に非零を返す壊れ方でもない"
+  - judgement: "判定 N/P — 待ち受けの検出（/proc/net/tcp の復号）"
+    breaking_input: "使われていない口 1 を問えば CLOSED、sshd の口 22 を問えば LISTEN になるはず"
+    observed: "negative_control port_1=CLOSED hits=0、positive_control port_22=LISTEN hits=2"
+  - judgement: "判定 C — 設定に秘密鍵の書き出しが混ざっていないこと"
+    breaking_input: "本文の末尾に -----BEGIN OPENSSH PRIVATE KEY----- を足した文字列を与えれば 1 を返すはず"
+    observed: "positive_control OPENSSH_PRIVATE_on_decoy=1、実本文では 0。囮は変数の中だけでファイルに残していない"
+  - judgement: "判定 T — 中心が試験ファイルを持っていること（availability に中心の識別子）"
+    breaking_input: "実在しないファイル名を問えば 404 を返すはず。常に真を返すなら 200 と非空の availability が返る"
+    observed: "no-such-file-zzz.txt で status=404 body_is_none=True、probe-andrew.txt で status=200 hub_in_availability=True n=1"
+  - judgement: "判定 T — REST の応答が認証済みの実物であること"
+    breaking_input: "合言葉を外して問えば 401/403 で拒まれるはず。誰でも読めるなら 200 が返る"
+    observed: "status_without_key=403。合言葉ありでは 200。値は出力していない（apikey_len=32 のみ報告）"
+  - judgement: "判定 K/Q — 最上位の共有フォルダが 2 件であること（ひな型と取り違えていない）"
+    breaking_input: "階層を見ずに .//folder で検索すれば defaults 配下のひな型を拾って件数が増えるはず"
+    observed: "naive_folder_count=3 に対し top_level_folder_count=2。差の 1 件は defaults/<folder id=''> である"
+  - judgement: "SPEC §0 の抑止（.sync-pause）が効いていること"
+    breaking_input: "抑止が効かなければ常駐処理が分岐へ auto-merge / auto-push した行を記録に残すはず"
+    observed: "15:08:21 と 15:38:21 の周回はいずれも「一時停止中」を記録し、auto-merge / auto-push の行は本実行中に一件も出ていない"
+
+followups:
+  - >-
+    残る二台（ilya / lecun）は本契約と同じ手順で進められる。ただし lecun は repo が ~/slocal/m2 で
+    あり、keeper.sh の M2DIR 判定（[ -d ~/slocal2 ] で分岐）がそちらを選ぶ。目印の 2 行目は
+    192.168.196.150（handoff.md の 192.168.196.176 ではない）。登録名は bengio・andrew とも
+    初期値が先頭大文字だったため、ilya / lecun も確かめて小文字へ直すこと。
+  - >-
+    m2 の同期は andrew 側では needFiles=0 / needBytes=0 / errors=0 まで到達した（起動から約 4 分半）。
+    一方で中心側の completion は needBytes=0 でありながら needItems=1478 が残る。needBytes が零で
+    あるため大きさ零の要素（ディレクトリ等）と解釈したが、中心で命令を実行できないため内訳は
+    確かめていない。次の契約で中心側から確かめる価値がある。
+  - >-
+    ~/claude-sync の sync-alerts.log は上書きされず衝突ファイルが生まれた。本ホストでは 2 件
+    （…-160823-3C2LTP7.log と …-160825-3C2LTP7.log、ともに 6016B・46 行）で、bengio 由来の
+    …-131007-4NIRI4M.log も届いた。全 4 台が繋がると台数分増える。中心側で衝突ファイルの
+    扱いを決める必要がある（前契約の申し送り 3 と同じ）。
+  - >-
+    禁止 6 により make taskindex / make inbox を実行していない。全台の統合後に一台で一度だけ
+    回すこと（前契約の申し送り 4 と同じ）。
+
+unknowns:
+  - >-
+    ~/.ssh/** が実行基盤の deny 規則で読めないため、秘密鍵 ~/.ssh/id_ed25519_andrewtophilip の
+    権限と ~/.ssh/known_hosts の実行前後の要約値は UNKNOWN。指紋は版管理側の公開鍵で照合した。
+  - >-
+    中心側 m2 の needItems=1478 の内訳は UNKNOWN。禁止 1 により中心で命令を実行しておらず、
+    自ホストの REST からは件数しか見えない。
+  - >-
+    中心（philip）から見た状態は UNKNOWN。本契約は中心を触っていないため、観測はすべて
+    自ホストの 127.0.0.1:8384 の REST 経由である。
+
+commits: []

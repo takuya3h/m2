@@ -1,0 +1,90 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-24-andrew-syncthing-node"
+  kind: impl
+  title: "二台目のノードを中心へ繋ぎ、実際にファイルが届くことを確かめる"
+  origin: claude-app
+  created_at: "2026-08-24T18:00:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-24-bengio-syncthing-node"]
+  amendments: []
+
+intent:
+  question: "一台目のノードが中心へ繋がり、双方向でファイルが届くことを実証した。中心の受け入れ一覧には四台分が登録済みであり、版と設定の組み立て方も確定している。同じ手順を二台目へ適用して繋げるか。前契約で判明したつまずきを避けられるか"
+  decision_at_stake: "二台目が繋がるか。ここまで同じ形で通れば、残る二台も同じ手順で進められる。繋がらない場合、ホストごとの差が原因かどうかを切り分ける必要がある"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/sync/keeper.sh"
+      - "scripts/sync/m2-sync.sh"
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "開始状態の封印と中心への到達の確認", gpu: false, est: "40m"}
+    - {id: B, name: "版を揃え、設定を組み立てる", gpu: false, est: "50m"}
+    - {id: C, name: "中継を張り、起動する", gpu: false, est: "60m"}
+    - {id: D, name: "実際に届くことの確認", gpu: false, est: "30m"}
+    - {id: E, name: "報告と送出", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "開始状態を要約値で記録し、実行権が落ちていて目印と同期処理と中継が零件であることを両方向の対照つきで確かめた。控えを版管理の外へ取り、自分の識別子が設定と一致し、中心へ命令を伴わない形で入れることを確かめた"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "実行ファイルの要約値が中心と一致し実行権が落ちたままである。自動更新を止め、告知と外部の中継を無効にし、中心を中継の出口で登録した。最上位の共有フォルダが二件で識別子が中心と同じであり、書式が解析でき権限が保たれている"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "目印を置いて中継が立ち、その引数に中心の住所が含まれる。中継が立ってから実行権を戻し、同期処理が起動して版が中心と同じである。最上位の共有フォルダが二件のままで自動更新が零のままである"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-24-andrew-syncthing-node/"
+  acceptance:
+    - "開始状態を要約値で記録し、共有領域の大きさと件数を丸めずに実数で記録している"
+    - "中心へ入れることを、中心で命令を実行しない形で確かめている"
+    - "版を中心に揃え、要約値の一致を示している"
+    - "自動更新を止めてから実行権を戻していることを、手順の順序で示している"
+    - "最上位の共有フォルダだけを数えており、ひな型と取り違えていない"
+    - "中継が立ってから実行権を戻したことを、待ち受けの実測で示している"
+    - "同期処理が起動し、プロセスの数を親子関係で切り分けている"
+    - "自分の試験ファイルを中心が持っていることを、中心で命令を実行せずに確かめている"
+    - "報告が指定の構成であり、手続きの証跡を別ファイルへ分けている"
+    - "秘匿検査を自分で行い、その検査が秘匿の値を出力していない"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "中心へ入れず、中継を張れない場合"
+    - "中継が立たず、実行権を戻せない場合"
+    - "同期処理が起動しない、またはプロセスが三件以上になった場合"
+    - "自動更新が走り、版が中心と食い違った場合"
+    - "共有領域の中身が消えた、または中心の状態が変わった場合"
