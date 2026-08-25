@@ -1,0 +1,100 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-08-26-oracle-ceiling-and-tool-drop"
+  kind: exp
+  title: "オラクル上限の本番確認と工程弁別性による術具除去の効果測定"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-08-25T20:52:56Z"
+  created_from:
+    runindex_commit: "7918b5dd9aab3d15b3c459f87aebdd9eb1653116"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: []
+  amendments:
+    - date: "2026-08-26"
+      reason: "Phase A Step 5。起票時に存在しなかった二つの欄を実測で差し替えた"
+      diff: "meta.created_from.runindex_commit: PENDING_EXECUTOR_MEASUREMENT -> 7918b5dd9aab3d15b3c459f87aebdd9eb1653116 / contract.conventions_rev: PENDING_EXECUTOR_MEASUREMENT -> a8c07e813696d3720ceee648e8aa202224285955"
+    - date: "2026-08-26"
+      reason: "P6 decisions_answered。起票者が 4 件すべてに『行わない』と回答したため空にした。回答は tasks/inbox.d/T-2026-08-26-oracle-ceiling-and-tool-drop.md と RESULT.md に記録"
+      diff: "governance.decisions_required: 4 件 -> []"
+intent:
+  question: "代理モデルで見えた二つの所見、すなわちオラクル術具存在の追加利得がほぼ無いことと、工程を弁別しない術具を落とすと macro-F1 が上がることは、本番の時系列モデルの構造でも保たれるか"
+  decision_at_stake: "工程認識のために検出器を強化する投資を続けるかどうか。および術具除去を実務上の主路として扱い続けてよいかどうか"
+  hypothesis: "オラクルの追加利得は小さいままであり、術具除去の macro-F1 改善は本番の受容野を与えても残る。ただし代理で見えた効果が本番の構造で消えた前例があるため、消える可能性も同等に扱う"
+  related:
+    backlog: []
+inputs:
+  denominator:
+    ref: "exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42"
+    metric: "accuracy"
+    require: {n_seeds: ">=3", sigma: present, split: val}
+  frozen_source:
+    ref: "run:transfer/relation_detr_seed42"
+    verify: ckpt_sha256
+  data:
+    dataset: "egosurgery_tool_subset"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt", "data/splits/ego_test.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/train_b2a.py"]
+contract:
+  inject_verbatim:
+    - conventions#split
+    - conventions#eval_recipe
+    - conventions#frozen_source
+    - conventions#sigma
+    - conventions#prohibitions
+    - conventions#issuer_cautions
+  conventions_rev: "a8c07e813696d3720ceee648e8aa202224285955"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "環境と入力の実在確認", gpu: false, est: "short"}
+    - {id: B, name: "オラクル上限の評価", gpu: true, est: "short"}
+    - {id: C, name: "一本の所要時間の実測と本数の決定", gpu: true, est: "short"}
+    - {id: D, name: "術具除去の対測定", gpu: true, est: "unknown"}
+    - {id: E, name: "報告", gpu: false, est: "short"}
+  gates:
+    - {id: G1, after: A, check: "必要な入力がすべて実在し、所在が実測で確かめられている", on_fail: stop}
+    - {id: G2, after: B, check: "上限の評価が完走し、値が記録されている", on_fail: stop}
+    - {id: G3, after: C, check: "残り時間で判定に足る本数が入る見込みがある", on_fail: skip}
+    - {id: G4, after: D, check: "対の両側が同数そろい、実行順序が記録されている", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, deterministic_flags]
+  resources: {server: "lecun", gpu: 1, est_hours: 0, runs: 0}
+prereg:
+  prediction: "オラクル術具存在を与えた腕は、予測された術具存在を与えた腕に対して分類の指標をほとんど動かさない。術具除去の腕は、除去しない腕に対して主終点を改善する。ただし本番の受容野で消える可能性も同等に扱い、消えた場合はそのまま報告する"
+  primary_endpoint: "macro-F1"
+  decision_rule: "判定は本契約では行わない。効果量と、対のうち改善側へ倒れた個数の両方を報告する。判定則は同時に走る別契約が確定させるため、そこで確定した則を起票者が後から当てる。本数が事前に定めた最小に満たない場合は判定不能と記し、数値から結論を作らない"
+  stop_conditions:
+    - "必要な入力が実在しないことが判明した場合は Phase A で止める"
+    - "残り時間で判定に足る本数が入らない場合は Phase D へ入らず Phase B までの結果で報告する"
+    - "対の両側の本数がそろわない見込みになった場合は新たな腕を始めず、そろっている対だけで報告する"
+  committed_at: null
+  commit: null
+outputs:
+  expected_runs: 0
+  must_have: [metrics.json, per_class_ap.json, notes.md, config.yaml]
+  destination: "experiments/transfer/"
+  stamp: {task_id_in: config.yaml}
+  acceptance:
+    - "a 必要な入力の実在が一つずつ実測で確かめられ、所在が記録されている"
+    - "b オラクル上限の評価が完走し、分類の指標と分節の指標の双方が記録されている"
+    - "c 学習一本の所要時間が実測され、残り時間から入る本数が計算されている"
+    - "d 術具除去の対測定が行われた場合、対の両側が同数そろっている"
+    - "e 落とした術具の一覧と、落とす判断に用いた材料が学習側だけから作られたことが示されている"
+    - "f 陽性対照と陰性対照の双方の結果が記録されている"
+    - "g 効果量と改善側へ倒れた個数の双方が報告され、判定が行われていない"
+    - "h 実行の順序が記録されている"
+    - "i 決定化が有効であったことが実測で確かめられている"
+    - "j 変更範囲の一覧が記録され、禁止領域への変更が無いことが示されている"
+    - "k PR が存在し、分岐が規定の接頭辞で始まっている"
+    - "l 完了報告が事実の記録と証跡の記録に分かれている"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [denominator_moved, frozen_source_hash_mismatch]
