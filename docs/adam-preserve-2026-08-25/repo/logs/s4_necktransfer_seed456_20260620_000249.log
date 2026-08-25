@@ -1,0 +1,57 @@
+/home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/torch/_utils.py:831: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return self.fget.__get__(instance, owner)()
+[s4] train clips=13  val clips=3  classes=9  device=cuda
+[s4] evidence dir: /home/ubuntu/slocal2/m2/experiments/phase1/s4_phase_baseline_009_frozen_tecno_phase_necktransfer_seed456
+[s4″] 検出 C5 neck を凍結ロード（片方向転送結合）: data/processed/c5neck/c5neck_seed456.pth
+[s4][epoch 1/50] loss=3.4391  val_acc=0.3663  macroF1=0.0769  edit=15.11  segF1@50=0.13
+[s4][epoch 2/50] loss=2.4884  val_acc=0.5551  macroF1=0.1924  edit=13.89  segF1@50=0.01
+[s4][epoch 3/50] loss=2.0851  val_acc=0.6370  macroF1=0.2196  edit=31.00  segF1@50=0.12
+[s4][epoch 4/50] loss=1.7219  val_acc=0.5432  macroF1=0.1878  edit=21.43  segF1@50=0.09
+[s4][epoch 5/50] loss=1.5438  val_acc=0.6482  macroF1=0.2191  edit=28.87  segF1@50=0.16
+[s4][epoch 6/50] loss=1.4197  val_acc=0.6521  macroF1=0.2232  edit=28.33  segF1@50=0.10
+[s4][epoch 7/50] loss=1.4427  val_acc=0.5954  macroF1=0.2155  edit=22.62  segF1@50=0.10
+[s4][epoch 8/50] loss=1.4343  val_acc=0.6462  macroF1=0.2254  edit=34.00  segF1@50=0.14
+[s4][epoch 9/50] loss=1.2623  val_acc=0.7452  macroF1=0.3478  edit=43.16  segF1@50=0.20
+[s4][epoch 10/50] loss=1.0710  val_acc=0.7716  macroF1=0.4153  edit=34.36  segF1@50=0.25
+[s4][epoch 11/50] loss=0.9705  val_acc=0.8653  macroF1=0.6320  edit=34.00  segF1@50=0.29
+[s4][epoch 12/50] loss=0.8688  val_acc=0.7861  macroF1=0.4623  edit=21.74  segF1@50=0.16
+[s4][epoch 13/50] loss=0.8001  val_acc=0.8191  macroF1=0.5781  edit=32.29  segF1@50=0.24
+[s4][epoch 14/50] loss=0.7651  val_acc=0.8198  macroF1=0.5636  edit=30.36  segF1@50=0.31
+[s4][epoch 15/50] loss=0.7376  val_acc=0.8482  macroF1=0.5961  edit=37.17  segF1@50=0.29
+[s4][epoch 16/50] loss=0.7683  val_acc=0.8785  macroF1=0.6554  edit=32.30  segF1@50=0.29
+[s4][epoch 17/50] loss=0.7015  val_acc=0.8587  macroF1=0.6249  edit=39.92  segF1@50=0.32
+[s4][epoch 18/50] loss=0.6931  val_acc=0.8535  macroF1=0.6500  edit=29.88  segF1@50=0.26
+[s4][epoch 19/50] loss=0.7064  val_acc=0.8884  macroF1=0.6691  edit=37.57  segF1@50=0.31
+[s4][epoch 20/50] loss=0.6481  val_acc=0.8779  macroF1=0.6725  edit=29.80  segF1@50=0.25
+[s4][epoch 21/50] loss=0.6392  val_acc=0.8792  macroF1=0.6353  edit=31.30  segF1@50=0.24
+[s4][epoch 22/50] loss=0.5939  val_acc=0.8772  macroF1=0.6973  edit=44.97  segF1@50=0.38
+[s4][epoch 23/50] loss=0.5754  val_acc=0.8845  macroF1=0.6664  edit=33.67  segF1@50=0.32
+[s4][epoch 24/50] loss=0.5278  val_acc=0.8568  macroF1=0.6540  edit=28.81  segF1@50=0.26
+[s4][epoch 25/50] loss=0.5030  val_acc=0.8759  macroF1=0.6674  edit=34.81  segF1@50=0.32
+[s4][epoch 26/50] loss=0.4787  val_acc=0.8884  macroF1=0.6713  edit=34.17  segF1@50=0.28
+[s4][epoch 27/50] loss=0.4625  val_acc=0.8759  macroF1=0.6759  edit=45.51  segF1@50=0.36
+[s4][epoch 28/50] loss=0.4520  val_acc=0.8911  macroF1=0.6903  edit=36.28  segF1@50=0.31
+[s4][epoch 29/50] loss=0.4584  val_acc=0.8818  macroF1=0.6684  edit=41.48  segF1@50=0.37
+[s4][epoch 30/50] loss=0.4404  val_acc=0.8568  macroF1=0.6683  edit=43.92  segF1@50=0.37
+[s4][epoch 31/50] loss=0.4519  val_acc=0.8865  macroF1=0.6674  edit=36.56  segF1@50=0.32
+[s4][epoch 32/50] loss=0.4587  val_acc=0.8363  macroF1=0.6505  edit=34.73  segF1@50=0.28
+[s4][epoch 33/50] loss=0.5808  val_acc=0.8924  macroF1=0.7169  edit=43.84  segF1@50=0.40
+[s4][epoch 34/50] loss=0.5346  val_acc=0.8931  macroF1=0.6613  edit=41.62  segF1@50=0.36
+[s4][epoch 35/50] loss=0.4815  val_acc=0.8568  macroF1=0.6661  edit=42.31  segF1@50=0.37
+[s4][epoch 36/50] loss=0.4435  val_acc=0.8805  macroF1=0.6899  edit=42.49  segF1@50=0.36
+[s4][epoch 37/50] loss=0.4091  val_acc=0.8772  macroF1=0.6935  edit=45.10  segF1@50=0.39
+[s4][epoch 38/50] loss=0.3864  val_acc=0.8884  macroF1=0.6774  edit=31.84  segF1@50=0.28
+[s4][epoch 39/50] loss=0.3804  val_acc=0.9003  macroF1=0.7166  edit=40.39  segF1@50=0.36
+[s4][epoch 40/50] loss=0.3803  val_acc=0.8627  macroF1=0.6572  edit=44.00  segF1@50=0.34
+[s4][epoch 41/50] loss=0.3789  val_acc=0.8977  macroF1=0.7083  edit=30.59  segF1@50=0.27
+[s4][epoch 42/50] loss=0.4239  val_acc=0.8587  macroF1=0.6450  edit=35.59  segF1@50=0.29
+[s4][epoch 43/50] loss=0.3800  val_acc=0.8733  macroF1=0.6599  edit=42.38  segF1@50=0.34
+[s4][epoch 44/50] loss=0.3564  val_acc=0.8898  macroF1=0.7054  edit=39.06  segF1@50=0.37
+[s4][epoch 45/50] loss=0.3806  val_acc=0.8548  macroF1=0.6388  edit=31.93  segF1@50=0.26
+[s4][epoch 46/50] loss=0.3760  val_acc=0.8904  macroF1=0.7125  edit=34.26  segF1@50=0.33
+[s4][epoch 47/50] loss=0.3605  val_acc=0.8746  macroF1=0.6691  edit=37.78  segF1@50=0.31
+[s4][epoch 48/50] loss=0.3340  val_acc=0.8931  macroF1=0.6940  edit=37.78  segF1@50=0.32
+[s4][epoch 49/50] loss=0.3110  val_acc=0.8977  macroF1=0.7076  edit=40.78  segF1@50=0.37
+[s4][epoch 50/50] loss=0.3013  val_acc=0.9023  macroF1=0.7145  edit=39.28  segF1@50=0.37
+[s4] best @epoch 50: acc=0.9023 macroF1=0.7145
+[s4] evidence written -> /home/ubuntu/slocal2/m2/experiments/phase1/s4_phase_baseline_009_frozen_tecno_phase_necktransfer_seed456

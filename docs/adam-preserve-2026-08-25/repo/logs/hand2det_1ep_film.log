@@ -1,0 +1,72 @@
+/home/ubuntu/slocal/m2/.venv-relation-detr/lib/python3.11/site-packages/albumentations/core/validation.py:114: UserWarning: ShiftScaleRotate is a special case of Affine transform. Please use Affine transform instead.
+  original_init(self, **validated_kwargs)
+/home/ubuntu/slocal/m2/third_party/Relation-DETR/transforms/presets.py:109: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal/m2/third_party/Relation-DETR/transforms/presets.py:140: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+/home/ubuntu/slocal/m2/third_party/Relation-DETR/transforms/presets.py:195: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal/m2/third_party/Relation-DETR/transforms/presets.py:226: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+Using /home/ubuntu/.cache/torch_extensions/py311_cu118 as PyTorch extensions root...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /home/ubuntu/.cache/torch_extensions/py311_cu118/MultiScaleDeformableAttention/build.ninja...
+Building extension module MultiScaleDeformableAttention...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+loading annotations into memory...
+Done (t=0.33s)
+creating index...
+index created!
+Using [0, 0.5, 0.6299605249474365, 0.7937005259840997, 1.0, 1.259921049894873, 1.5874010519681991, 2.0, inf] as bins for aspect ratio quantization
+Count of instances per bin: [9618]
+loading annotations into memory...
+Done (t=0.03s)
+creating index...
+index created!
+ninja: no work to do.
+Loading extension module MultiScaleDeformableAttention...
+/home/ubuntu/slocal/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+/home/ubuntu/slocal/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+/home/ubuntu/slocal/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+/home/ubuntu/slocal/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+The model and loaded state dict do not match exactly
+Missing keys: hand_prior.proj.weight
+
+[t1b] warm-start from /home/ubuntu/slocal/m2/third_party/Relation-DETR/checkpoints/incoming/seed42/best_ap.pth
+[hand2det] seed=42 hand_ch=4 trainable=film zero_ctx=False det_steps/ep=4809 inject_params=8192 total_trainable=8192 work=/home/ubuntu/slocal/m2/experiments/hand2det_dev/hand2det_1ep_4ch_film_seed42
+Accumulating evaluation results...
+DONE (t=4.29s).
+[hand2det] warm-start init mAP=0.7303 (zero-init 恒等 → S0-frozen 水準なら OK)
+[hand2det][ep0 0/4809] L=20.293 1.4it/s eta_ep=57m
+[hand2det][ep0 200/4809] L=9.534 1.4it/s eta_ep=54m
+[hand2det][ep0 400/4809] L=19.643 1.7it/s eta_ep=44m
+[hand2det][ep0 600/4809] L=18.266 1.5it/s eta_ep=45m
+[hand2det][ep0 800/4809] L=14.926 1.7it/s eta_ep=40m
+[hand2det][ep0 1000/4809] L=20.487 1.7it/s eta_ep=37m
+[hand2det][ep0 1200/4809] L=11.324 1.8it/s eta_ep=34m
+[hand2det][ep0 1400/4809] L=15.296 1.8it/s eta_ep=31m
+[hand2det][ep0 1600/4809] L=17.018 1.8it/s eta_ep=29m
+[hand2det][ep0 1800/4809] L=14.097 1.9it/s eta_ep=27m
+[hand2det][ep0 2000/4809] L=11.381 1.9it/s eta_ep=25m
+[hand2det][ep0 2200/4809] L=12.423 1.9it/s eta_ep=23m
+[hand2det][ep0 2400/4809] L=17.167 1.9it/s eta_ep=21m
+[hand2det][ep0 2600/4809] L=9.798 1.9it/s eta_ep=19m
+[hand2det][ep0 2800/4809] L=11.711 1.9it/s eta_ep=17m
+[hand2det][ep0 3000/4809] L=9.291 1.9it/s eta_ep=15m
+[hand2det][ep0 3200/4809] L=24.177 2.0it/s eta_ep=14m
+[hand2det][ep0 3400/4809] L=17.865 2.0it/s eta_ep=12m
+[hand2det][ep0 3600/4809] L=21.295 2.0it/s eta_ep=10m
+[hand2det][ep0 3800/4809] L=11.910 2.0it/s eta_ep=9m
+[hand2det][ep0 4000/4809] L=13.077 2.0it/s eta_ep=7m
+[hand2det][ep0 4200/4809] L=25.911 2.0it/s eta_ep=5m
+[hand2det][ep0 4400/4809] L=20.247 2.0it/s eta_ep=3m
+[hand2det][ep0 4600/4809] L=17.997 2.0it/s eta_ep=2m
+[hand2det][ep0 4800/4809] L=15.103 2.0it/s eta_ep=0m
+Accumulating evaluation results...
+DONE (t=4.26s).
+[hand2det][ep0] val mAP=0.7303
+[hand2det] DONE best@ep0 mAP=0.7303 (init 0.7303) inject_grad=True -> /home/ubuntu/slocal/m2/experiments/hand2det_dev/hand2det_1ep_4ch_film_seed42
