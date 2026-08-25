@@ -856,3 +856,77 @@ $ find experiments transfer data \( -name '*.syncthing.*' -o -name '.syncthing.*
 **各台で起きること**: 外した対象が索引から落ち、`localFiles` が減る。
 **実体は消えない**（§4）。**他台にしか無いものが失われる経路は無い。**
 
+---
+
+## 15. 抑止の解除後に観測されたこと（見込みの実測）
+
+**§12 で「PR がマージされるまで本ホストの `.stignore` は次の keeper ループで
+旧版へ戻る」と書いた。報告の直後にそのとおりになった。**
+
+```
+$ sha256sum .stglobalignore .stignore
+4b71ae4eafc31f23303cdb8258b3c2aa465186ec15bc8daf316569b45f0fbba1  .stglobalignore   ← 新版（作業ツリー）
+61593e99292e428c7c6f2157772722c147eaa48452c7e5b71e438363d1de9a2a  .stignore         ← 旧版へ戻された
+
+$ git show origin/phase0:.stglobalignore | sha256sum
+61593e99292e428c7c6f2157772722c147eaa48452c7e5b71e438363d1de9a2a   ← phase0 はまだ旧版（PR #147 未マージ）
+```
+
+| 項目 | 反映直後 | keeper の上書き後 |
+|---|---:|---:|
+| `localFiles` | 2591 | **5256** |
+| `localBytes` | 30,750,569,270 | **42,010,845,130** |
+| `state` / `errors` / `needFiles` | idle / 0 / 0 | **idle / 0 / 0** |
+
+**局所の実体は前後で一切変わっていない。**
+
+```
+  experiments  files=10628   bytes=27183167123     ← 基準と同一
+  transfer     files=111     bytes=202614876       ← 基準と同一
+  data         files=217     bytes=12774818641     ← 基準と同一
+```
+
+🔴 **これは失敗ではなく、`keeper.sh:48-49` の設計どおりの動作である。**
+**正本は版管理にあり、`origin/phase0` へ入るまでどの台にも効かない。**
+**変更が効くのは PR #147 のマージ後である**（§14 の見込み）。
+
+**同時に、除外を出し入れしても実体が消えないことが往復で確かめられた。**
+外して 2591 件になり、戻して 5256 件になっても、**局所のファイルは 1 件も増減していない。**
+
+## 16. 抑止の解除と退避の復帰
+
+```
+$ rm -f .sync-pause
+$ ls -la .sync-pause
+ls: cannot access '.sync-pause': No such file or directory
+```
+
+**抑止が効いていた記録**（解除前）:
+
+```
+2026-08-25 01:54:46 [lecun] 一時停止中: /home/ubuntu/slocal/m2/.sync-pause があるため分岐へ書き込まない（消せば再開）
+2026-08-25 02:24:46 [lecun] 一時停止中: /home/ubuntu/slocal/m2/.sync-pause があるため分岐へ書き込まない（消せば再開）
+2026-08-25 02:54:46 [lecun] 一時停止中: /home/ubuntu/slocal/m2/.sync-pause があるため分岐へ書き込まない（消せば再開）
+```
+
+**同じ記録に philip の行も出ている**（本契約の操作ではない）。
+
+```
+2026-08-25 02:59:10 [philip] 一時停止中: /home/ubuntu/slocal2/m2/.sync-pause があるため分岐へ書き込まない（消せば再開）
+```
+
+**中心でも抑止が置かれたままである。** 誰が置いたかは本契約では追っていない。
+**中心の自動同期が止まっている間は、PR をマージしても phase0 の取得が進まない可能性がある。**
+
+**退避したもの 5 件を戻した。**
+
+| 戻したもの |
+|---|
+| `.sync-pause.released`（0 バイト。前回の解除の残骸。**開始前から在ったもの**） |
+| `docs/sessions/digest/2026-08-22-52ba4658-47af-4d90-85e2-27ab8c014c0f.md` |
+| `docs/sessions/digest/2026-08-22-7c2986d7-0ce3-48b3-8d32-60a03a93c8d2.md` |
+| `docs/sessions/digest/2026-08-23-df8af05d-d760-42da-8eac-97f11929bd6e.md` |
+| `docs/sessions/digest/2026-08-24-8818557a-7cdd-4919-9ef2-b20bbbcd7160.md` |
+
+**digest の 4 件は `tasks/README.md`「契約の記録と一緒に含めること」に従い版管理へ入れた。**
+**`.sync-pause.released` は一時的な目印の残骸のため未追跡のまま残した。消していない。**

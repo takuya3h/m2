@@ -118,6 +118,13 @@ positive_controls:
       仕込んだ 1 件を 1 件として検出した（陽性対照 OK）。仕込まない文字列では 0 件（陰性対照 OK）。
       本検査では RESULT.md / audit.md / spec.yaml / .stglobalignore の 4 ファイルすべてで混入 0 件。
       検査は値も名前も出力していない。
+  - judgement: "除外を出し入れしても局所の実体は増減しない"
+    breaking_input: "新版で 2591 件へ外した後、keeper が旧版へ戻して 5256 件へ復帰させる（往復）"
+    observed: >-
+      localFiles が 2591 → 5256、localBytes が 30,750,569,270 → 42,010,845,130 へ戻る間、
+      experiments/ 10628 件 / 27,183,167,123 バイト、transfer/ 111 件 / 202,614,876 バイト、
+      data/ 217 件 / 12,774,818,641 バイトはいずれも変わらなかった。往復のどちらの向きでも
+      実体は増減しない。
   - judgement: "展開規則の再現が実装と一致する"
     breaking_input: "現行の文面 68 行を自前で展開し、REST が返した expanded 184 行と 1 行ずつ照合する"
     observed: >-
@@ -142,6 +149,13 @@ followups:
     無制限行の削除により、将来 experiments/ 配下に .ckpt / .onnx / .safetensors が
     生まれた場合は同期されなくなる。現時点の実測では 3 形式とも 0 件のため範囲付きの行を
     足していない。形式を変える場合は 43〜54 行に範囲付きで追加すること。
+  - >-
+    中心（philip）にも .sync-pause が置かれたままで、02:59:10 時点で自動同期が止まっている
+    （本契約の操作ではない）。中心が止まっている間は PR #147 をマージしても phase0 の取得が
+    進まない可能性がある。誰が置いたかは追っていない。
+  - >-
+    本ホストの .stignore は報告後に keeper が origin/phase0 の旧版へ戻した（設計どおり）。
+    変更が実際に効くのは PR #147 のマージ後で、各台へは keeper 最大 30 分 + 走査で及ぶ。
   - >-
     /rest/db/browse が HTTP 500 を返す（could not find child '.remember' for path
     '.remember/logs'）。索引に親ディレクトリのエントリが無いことが原因で、prefix を指定すれば

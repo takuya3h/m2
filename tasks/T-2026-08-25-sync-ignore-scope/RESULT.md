@@ -155,7 +155,7 @@ SPEC が挙げた `experiments/baselines/s0_002_maskdino_bbox_seed123/.syncthing
 | `make inbox-check` | exit 0 |
 | `make forbidden-check` | `status: pass` / `violations: []`（生成物 4 件を除外し 7 件を検査） |
 | 退避したもの | **5 件を戻した**（`.sync-pause.released`、`docs/sessions/digest/` の 4 件） |
-| 抑止 | §12 |
+| 抑止 | **外した**（`rm -f .sync-pause`。解除前の記録は `audit.md` §16） |
 
 ## 12. 触っていないものが無変更であること（完了判定 O）
 
@@ -165,3 +165,22 @@ SPEC が挙げた `experiments/baselines/s0_002_maskdino_bbox_seed123/.syncthing
 | keeper 処理数 | 2 |
 | `experiments/` `transfer/` `data/` の中身 | **件数・バイトとも変更前と完全同一**（判定 K の表） |
 | 禁止領域への手による変更 | **無し**（`make forbidden-check` が `violations: []`） |
+
+## 13. 報告後に観測されたこと（見込みの実測）
+
+**§7 に書いた「マージまでは keeper が旧版へ戻す」がそのとおりに起きた**（`audit.md` §15）。
+
+| | 反映直後 | keeper の上書き後 |
+|---|---:|---:|
+| `.stignore` の要約値 | `4b71ae4e…fbba1`（新版） | **`61593e99…9a2a`（旧版）** |
+| `localFiles` / `localBytes` | 2591 / 30,750,569,270 | **5256 / 42,010,845,130** |
+| `experiments/` `transfer/` `data/` の実体 | 基準と同一 | **基準と同一** |
+
+**設計どおりの動作である。** 正本は版管理にあり、`origin/phase0` へ入るまでどの台にも効かない。
+**変更が効くのは PR #147 のマージ後である。**
+
+**副産物として、除外を出し入れしても実体が消えないことが往復で確かめられた。**
+2591 件へ外し、5256 件へ戻しても、**局所のファイルは 1 件も増減していない。**
+
+🔴 **中心（philip）でも抑止が置かれたままである**（`audit.md` §16。本契約の操作ではない）。
+**中心の自動同期が止まっている間は、マージしても phase0 の取得が進まない可能性がある。**
