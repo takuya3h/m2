@@ -1,0 +1,99 @@
+result_version: 3
+task_id: "T-2026-08-26-oracle-ceiling-and-tool-drop"
+status: partial
+host: "lecun"
+branch: "feat/oracle-ceiling-and-tool-drop"
+pr: 152
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "4 種の入力の実在を個別に実測した。GAP 特徴・予測 tool-presence・オラクル tool-presence の各 3 split、phase_manifest 4 件、splits 3 件がすべて在り、分割の中身は conventions#split と完全一致した。凍結源の sha256 は規約の正本値と一致（P5 PASS）。GPU は compute プロセス 0 件で競合なし。"
+  - id: G2
+    verdict: pass
+    note: "上限の評価が RC=0 で完走し 25 秒で終わった。分類（accuracy 0.9557755775577558 / macro_f1 0.8236749678606377）と分節（edit 52.63492063492063 / jaccard 0.7946755567390006 / seg_f1_10 0.5944066515495088 / seg_f1_25 0.5944066515495088 / seg_f1_50 0.5437641723356009）の双方を metrics.json に記録した。"
+  - id: G3
+    verdict: pass
+    note: "学習 1 本は決定化ありで 25/26/27/34 秒（n=4）。残り 56307 秒を安全側の 34 秒×2 で割ると対 828 組が入る。時間は制約にならなかった。"
+  - id: G4
+    verdict: skip
+    note: "Phase D を実施していないため評価対象が無い。片側だけの腕は 0 本。事前登録 §4 停止条件 5（落とす集合を求める仕組みが本番側に未実装）に該当し、起票者が『契約どおり止める』と回答した。"
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 472
+
+deviations:
+  - type: spec_defect
+    note: "Phase B は『再学習を要しない。既存の学習済みの重みを使って評価するだけである』とされていたが、入口 scripts/train_b2a.py に評価専用の経路が無く、工程時系列モデルの評価専用入口も他に存在しなかった。学習を 1 本（決定化あり・seed42・50 epoch・25 秒）走らせて達成した。"
+  - type: spec_defect
+    note: "契約は決定化を有効にすることを求めるが、入口に切り替えが無かった。本番側の src/egosurgery/utils/determinism.py の enable_determinism() を、既存の作法（scripts/train_grasp_phase_injection_variants.py --deterministic）に合わせて train_b2a.py へ配線した。既定は現状のままとし、学習の数式には触れていない。"
+  - type: judgement
+    note: "契約の outputs.stamp.task_id_in と §2.1 Step 3 を満たすため、train_b2a.py が config.yaml の最上位へ task_id と oracle_upper_bound_only_do_not_report を書き出すよう配線を足した。印の値は既存の作法に合わせた。"
+  - type: judgement
+    note: "Phase D へ入らなかった。理由は時間ではなく（対 828 組が入る計算）、落とす集合を求める仕組みが本番側に実装されていないこと。異質な 3 方法で確認し、起票者へ提示して『契約どおり止める』との回答を得た。"
+  - type: judgement
+    note: "禁止 5 に従い make taskindex と make inbox を回していない。skill の手順はこれらの再生成と -check を求めるが、契約の禁止を優先した。したがって context/auto/ の投影と tasks/inbox.md は本報告を含まない。全 PR 統合後に一台で一度だけ回す必要がある。"
+  - type: judgement
+    note: "Phase B の run を追跡なしで走らせた。実行前に scripts/load_env.sh を読み込んでおらず、W&B と Notion の追跡は設計どおり no-op で走った。指標は metrics.json に残っている。当初これを『資格情報が読めない環境差』と記録したが誤りで、読み込み自体は通る。拒否されたのは .env を ls した探りだけだった。"
+  - type: environment
+    note: "source scripts/load_env.sh をパイプに繋いだため副シェルで実行され、export が呼び出し元に残らず make task-report が一度失敗した。読み込みを同じ命令に入れても、パイプに繋げば無効になる。パイプを外して再実行し exit 0 で送出できた。"
+  - type: judgement
+    note: "決定化の対照 3 本（C1a/C1b/C2）と非決定の 2 本（N1/N2）は --no-evidence で走らせ、experiments/ を汚していない。証跡はコマンドの出力ログとして EVIDENCE.md に残した。"
+  - type: judgement
+    note: "申し送り 4 が『Phase C で実測すること』と求めた減速倍率のため、決定化なしの run を 2 本走らせた。契約の腕ではなく道具の測定と判断したが、decisions_required の『別の腕を追加すること』に当たるかは起票者の判断を仰ぐ。"
+
+issuer_defects:
+  - type: self_contradiction
+    note: "outputs.expected_runs が 0、resources が runs 0 / est_hours 0 と宣言されているのに、plan は Phase C で最低 2 本の学習を、Phase D で対の学習を要求する。指示どおり実行すると宣言 0 本に対して実際に run が生まれ、experiments/ を禁止領域とする forbidden-check が構造的に失敗する。実際に違反 7 件・exit 2 として現れた。"
+  - type: asserted_without_measuring
+    note: "§2.1 に『再学習を要しない。既存の学習済みの重みを使って評価するだけである』とあるが、入口 scripts/train_b2a.py には評価専用の経路が無く、工程時系列モデルの評価専用入口も存在しない。指示どおり『評価するだけ』を実行しようとすると実行できる命令が無く、Phase B が着手不能になる。学習 1 本 25 秒で代替した。"
+  - type: asserted_without_measuring
+    note: "Task 4 Step 1 は『決定化を有効にした状態で』と書くが、入口 scripts/train_b2a.py には決定化の切り替えが無い。本番側の enable_determinism は別の入口にしか配線されていなかった。指示どおりでは有効にする手段が無く、決定化ありと称して非決定の run を作ることになる。実際に決定化なしでは同種 2 本が 96 行食い違った。"
+  - type: asserted_without_measuring
+    note: "申し送り 4 は『決定化を有効にすると二倍強遅くなる』と述べるが、本入口の実測は平均比 1.87 倍（決定化あり 25/26/27/34 秒、なし 19/11 秒）で、範囲は 1.32〜3.09 倍と粗い。二倍強と断定できる測定になっておらず、これを前提に本数を見積もると過小にも過大にもなる。"
+
+positive_controls:
+  - judgement: "判定 d 決定化が効いている（陰性側: 同じ種なら一致する）"
+    breaking_input: "決定化を外して同じ種 42 で 50 epoch を 2 本走らせる"
+    observed: "50 epoch のログが 96 行食い違い、best acc が 0.9564 と 0.9545 に分かれた。決定化ありでは差分 0 行である"
+  - judgement: "判定 d 決定化が効いている（陽性側: 種を変えれば変わる）"
+    breaking_input: "種を 42 から 123 へ変える"
+    observed: "差分 102 行、best epoch が 48 から 45 へ、acc が 0.9558 から 0.9584 へ動いた"
+  - judgement: "証跡の生成が結果を動かさない（ExperimentManager が RNG に触れない）"
+    breaking_input: "証跡ありの Phase B 本体と証跡なしの C1a の epoch 行を照合する"
+    observed: "差分 0 行。証跡の有無で学習の軌跡は変わらなかった"
+  - judgement: "判定 a/k config.yaml の task_id が収穫器に拾われる"
+    breaking_input: "task_id を持たない既存 run の config.yaml と、存在しない経路 experiments/transfer/zzz_no_such_run/config.yaml を同じ関数へ投げる"
+    observed: "いずれも task_id='' を返した。本契約の run は 'T-2026-08-26-oracle-ceiling-and-tool-drop' を返し warnings は空だった"
+  - judgement: "試験の失敗が本契約の変更に由来しない"
+    breaking_input: "scripts/train_b2a.py の変更を stash して同じ試験を回す"
+    observed: "失敗集合が完全に一致した（5 件・diff 0 行）。before 5 failed / 472 passed、after 5 failed / 472 passed"
+  - judgement: "判定 l 禁止領域検査が『何でも違反にする』壊れ方でない"
+    breaking_input: "禁止領域の外側の変更（契約 4 ファイルと scripts/train_b2a.py）を同じ検査へ通す"
+    observed: "12 件を検査して 7 件のみを違反とし、外側の 5 件は違反にしなかった。違反 7 件はすべて本契約が作った run の内側である"
+  - judgement: "判定 e 落とす集合を求める仕組みの探索が空振りでない"
+    breaking_input: "内容検索・ファイル名走査・版管理の一覧という異質な 3 方法で同じ対象を探す"
+    observed: "3 方法が一致して docs/analysis_scripts/ の代理側 3 本のみを指した。src/ と scripts/ には 0 件。ファイル名走査は .venv 配下の 28 件も返しており、検索自体は当たる状態だった"
+
+followups:
+  - "本番の時系列モデルではオラクル術具存在の追加利得が小さくなかった（accuracy +0.0188 / macro-F1 +0.0331、既存記録の種ごとの対では 5/5 が改善側）。契約 §1 の代理モデルの所見および intent.hypothesis と食い違う。検出器強化への投資判断は、この実測を踏まえて立て直す必要がある。"
+  - "上限の答えは本契約を起こす前から runindex に在った。同一 split・同一凍結源で oracle 腕 8 run と pred 腕 9 run が既に記録されており、5 種すべてで上限側が上回っていた。起票の前に既存記録を引く手順を入れれば、Phase B は測る前に方向が分かる。"
+  - "落とす集合を求める仕組みを本番側へ実装する契約が要る。集合計算そのもの（H(phase|tool)/log2(9) を train のみから求める）は本番キャッシュを読む純関数であり、代理なのは下流の分類器だけである。適用側は train_b2a.py --mask-tool-dims として既にある。欠けているのは両者をつなぐ配線のみ。"
+  - "macro-F1 の分母は 9 ではなく 7 である（val に支持の無い disinfection と irrigation が除外される）。一方 dressing は支持 24 frame で F1=0.0 のまま分母に入る。主終点を macro-F1 に固定する以上、この非対称は結果の読み方に効く。"
+  - "禁止 5 のため投影と集約を再生成していない。全 PR 統合後に一台で make taskindex と make inbox を回すこと。"
+  - "決定化の対照 3 本と非決定の 2 本は --no-evidence で走らせたため runindex に現れない。所要時間の実測値を索引側へ残すなら、elapsed_seconds を記録する経路が要る（既存の b2a 実験はすべて elapsed_seconds が空である）。"
+
+unknowns:
+  - "術具除去の効果量。Phase D を実施していないため UNKNOWN。"
+  - "術具除去の対のうち改善側へ倒れた個数。Phase D を実施していないため UNKNOWN。"
+  - "落とす術具の集合そのもの。本番側に集合計算が無く、代理側の関数を呼ぶ判断は起票者が『契約どおり止める』としたため求めていない。UNKNOWN。"
+  - "決定化の減速倍率の正確な値。平均比 1.87 倍だが n=4 と n=2 でばらつきが大きく、範囲は 1.32〜3.09 倍。断定できない。"
+  - "runindex への反映。make runindex を回していないため index.csv は本契約の run を含まない。収穫器の読取関数を直接呼んで task_id が拾われることは確かめたが、索引そのものは未更新。"
+  - "run 生成前の forbidden-check の状態。測っていないため、違反 7 件が run 生成のみに由来することは変更範囲の一覧からの推論であり、検査の前後比較では確かめていない。"
+
+commits:
+  - "1f4dd9c7e886aad2db9c4650b31a32d364f1f95a"
+  - "a4a95cf2768b89f7b2ca221dc069b3761daaf890"
