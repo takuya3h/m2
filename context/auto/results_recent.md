@@ -11,7 +11,7 @@
 
 ## T-2026-08-25-sync-ignore-scope
 
-状態 `partial` / ホスト `lecun` / 起票 `なし` / 様式 `v3`
+状態 `partial` / ホスト `lecun` / 起票 `147` / 様式 `v3`
 
 ### ゲート
 

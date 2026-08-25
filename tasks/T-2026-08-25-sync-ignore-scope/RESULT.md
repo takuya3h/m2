@@ -142,3 +142,26 @@ SPEC が挙げた `experiments/baselines/s0_002_maskdino_bbox_seed123/.syncthing
 
 ## 11. 送出
 
+
+| 項目 | 値 |
+|---|---|
+| commit | `2f61013f` |
+| 分岐 | `feat/sync-ignore-scope`（起点 `origin/phase0`） |
+| PR | **#147** |
+| 秘匿検査 | **PASS**（自前・陽性対照 1/1 検出・陰性対照 0 件・値も名前も出力していない） |
+| `make task-validate` | exit 0 |
+| `make task-preflight` | 4 PASS / 1 WARN / 4 SKIP / 0 FAIL（WARN は `P9 spec_lint`: `separated_source@SPEC.md:48`・`host_mismatch@SPEC.md:5`。SKIP は `P2 cuda_ext_loaded` `P3 deterministic_flags` `P4 prereg_committed` `P5 frozen_source_hash`） |
+| `make taskindex-check` | exit 0 |
+| `make inbox-check` | exit 0 |
+| `make forbidden-check` | `status: pass` / `violations: []`（生成物 4 件を除外し 7 件を検査） |
+| 退避したもの | **5 件を戻した**（`.sync-pause.released`、`docs/sessions/digest/` の 4 件） |
+| 抑止 | §12 |
+
+## 12. 触っていないものが無変更であること（完了判定 O）
+
+| 項目 | 値 |
+|---|---|
+| syncthing 処理数（`/proc/PID/exe` で絞った） | **2**（変更前と同じ。`/proc/*/cmdline` の照合は使っていない） |
+| keeper 処理数 | 2 |
+| `experiments/` `transfer/` `data/` の中身 | **件数・バイトとも変更前と完全同一**（判定 K の表） |
+| 禁止領域への手による変更 | **無し**（`make forbidden-check` が `violations: []`） |
