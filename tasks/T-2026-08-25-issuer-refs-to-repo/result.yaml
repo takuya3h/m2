@@ -1,0 +1,154 @@
+result_version: 3
+task_id: "T-2026-08-25-issuer-refs-to-repo"
+status: pass
+host: "philip"
+branch: "feat/issuer-refs-to-repo"
+pr: 151
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      識別は _ANCHOR_RE = <a id="([a-z0-9_]+)"></a>（validate_task.py:34）、範囲は
+      アンカーから次の <a id=" か EOF まで（preflight_task.py:117）と実装から読んだ。
+      追加前の conventions.md は 143 行 6346 B sha256 d281e5e3…、アンカー 7 件。
+      置き場所 2 件は git log --all で 0 件、HEAD にも無く、除外にも落ちない。
+      配られた本文と実測の食い違いを 5 件（D1〜D5）列挙した。
+  - id: G2
+    verdict: pass
+    note: >-
+      env-facts.md（D2 の 1 行を修正）と issuer-defects.md（無変更）を置き、
+      issuer_cautions 節を 144 行目から末尾へ 35 行追加した。既存 7 節の解決本文の
+      sha256 が全て追加前と同一。git diff --numstat は 35 0 で削除 0 行。
+      陽性 2（既存 exit 0 / 新規 exit 0、本文 1012 B 非空）と
+      陰性 2（綴り違い L2-5 exit 2 / ハイフン形 L1-1 exit 2）を取った。
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+
+deviations:
+  - type: judgement
+    note: >-
+      env-facts.md と issuer-defects.md は開始時点（15:08、契約の展開 15:12 より前）に
+      版管理外で既に置かれていた。実行者が配置していない。版管理のどの ref にも
+      存在せず上書きの危険が無いため、作り直さず D2 の 1 行だけ直して受け入れた。
+  - type: spec_defect
+    note: >-
+      SPEC 禁止 4「生成物を再生成しない」に従い make taskindex / make inbox を回していない。
+      手順書 SKILL.md §6 は両方を回して投影に現れることを確かめよと求めており両立しない。
+      tasks/inbox.d/ へは書いたが tasks/inbox.md へは反映されていない。契約を優先した。
+  - type: spec_defect
+    note: >-
+      context/conventions.md:7 が求める変更履歴への追記をしていない。変更履歴は
+      naming 節の本文の内側にあり、行を足すと naming の解決結果が変わるため、
+      SPEC 禁止 1「既存の節を変更しない」と両立しない。禁止 1 を優先した。
+  - type: judgement
+    note: >-
+      context/issuer-cautions.md を残置した。SPEC は「ファイルとして置かない」と定めるが、
+      禁止 5 が未追跡の成果物の削除を禁じるため削除も退避もしていない。commit していない。
+      処分は起票者の判断に委ねる。
+  - type: judgement
+    note: >-
+      RESULT.md が 193 行で SPEC の目安 150 行を 43 行超過した。起票者の誤り 6 件・
+      UNKNOWN 3 件・逸脱 5 件を落とさずに書くと収まらなかった。手続きの証跡は audit.md
+      628 行へ分離済みで、残っているのは判断に要る事実だけである。
+  - type: environment
+    note: >-
+      対話シェルが zsh のため ${PIPESTATUS[0]} で終了コードが空になり、対照 A〜D の
+      exit を一度取り損ねた。out=$(...); ec=$? に直して取り直した。env-facts.md:35 と
+      issuer-defects.md:20 に既出の罠を、その 2 文書を扱う契約の中で踏んだ。
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: >-
+      SPEC が「バンドルには五つのファイルが入っている」と断定したが、tools/fetch_task.py:52 の
+      ALLOWED_FILES は spec.yaml / SPEC.md / prereg.md の 3 種のみで、それ以外を含むバンドルは
+      BundleError で拒否される。5 ファイルのバンドルは構造上存在し得ない。指示どおり実行すると、
+      本命である issuer-cautions.md がホストのどこにも無く、Task 2 Step 2 で実行が止まった。
+      利用者へ提示して本文を手渡しで受け取るまで進めなかった。
+  - type: check_does_not_check
+    note: >-
+      配られた issuer-cautions.md のアンカーが <a id="issuer-cautions"></a> とハイフン形で、
+      _ANCHOR_RE の [a-z0-9_] に一致しない。SPEC の指示どおり本文をそのまま末尾へ追記すると、
+      アンカー行はファイルに在るのに conventions_anchors() の集合には入らず、節の数は 7 のままで、
+      追記したのに参照できない状態になる。実測で確認した（issuer-cautions/issuer_cautions とも False）。
+      L1 の様式 ^conventions#[a-z0-9_]+ も同じ形を弾く。実行者が issuer_cautions へ直した。
+  - type: self_contradiction
+    note: >-
+      SPEC 禁止 1 は conventions.md の既存の節を変更してはならないと定めるが、
+      context/conventions.md:7 は「改訂したら末尾の変更履歴に追記すること」と定める。
+      変更履歴はアンカーを持たず naming 節の本文の内側にあるため、行を足すと naming の
+      解決結果が変わる。指示どおり両方に従うと必ず一方を破る。禁止 1 を優先して追記しなかった。
+  - type: check_does_not_check
+    note: >-
+      完了判定 G「既存の節が一行も変わっていない」を git diff で測ると節の不変性を測れない。
+      追加時に空行を 1 つ挟んだところ naming 節の解決本文が 526 B 23 改行から 527 B 24 改行へ
+      変わったが、git diff の削除行数は 0 のままだった。切り出しがアンカーから次のアンカーまでで、
+      naming が EOF まで伸びているためである。行の差分ではなく節ごとの要約値で測る必要がある。
+      実行者は一度これを踏み、revert して空行を挟まずに追加し直した。
+  - type: asserted_without_measuring
+    note: >-
+      配られた env-facts.md:87 が「Codex 側の .codex/skills/task は ~/claude-sync/codex/ 経由の
+      symlink。保守で失われた」と断定したが、実測では版管理下の symlink（commit 19341085、
+      target ../../.claude/skills/task）で解決でき、失われていない。~/claude-sync/codex/ のほうが
+      存在しない。指示どおり配置すると誤った環境認識が版管理へ入り、以後の契約が引き写す。
+  - type: self_contradiction
+    note: >-
+      SPEC 禁止 4 は生成物の再生成を禁じるが、手順書 SKILL.md §6 は make taskindex と make inbox を
+      回して投影に現れることを確かめよと求め、tasks/inbox.d/ への記入も要求する。指示どおり両方に
+      従うと禁止 4 を破る。契約を優先し、投影を更新していない。次の実行者が make inbox-check を
+      回すと差分が出る。
+
+positive_controls:
+  - judgement: "完了判定 I: 誤った参照が解決に失敗する（L2 の アンカー存在検査）"
+    breaking_input: "inject_verbatim を conventions#issuer_cautionz（綴りを 1 文字崩す）にする"
+    observed: "FAIL [L2-5] アンカー issuer_cautionz が存在しません、make task-validate が exit 2"
+  - judgement: "完了判定 I: 誤った参照が解決に失敗する（L1 の様式検査）"
+    breaking_input: "inject_verbatim を配られたハイフン形 conventions#issuer-cautions にする"
+    observed: "FAIL [L1-1] does not match '^conventions#[a-z0-9_]+(?![\\s\\S])'、exit 2"
+  - judgement: "完了判定 H: 新しい参照が解決して中身が取れる"
+    breaking_input: "節を追加する前に conventions#issuer_cautions を参照する"
+    observed: "追加前はアンカー集合が 7 件で issuer_cautions を含まず False。追加後は 1012 B が取れた"
+  - judgement: "完了判定 G: 既存の節が一行も変わっていない"
+    breaking_input: "新しい節の手前に空行を 1 つ挟んで追加する"
+    observed: "naming の解決本文が 74956a03… 526 B から 65f5b182… 527 B へ変わった。git diff の削除行は 0 のまま"
+  - judgement: "秘匿検査が実際に秘匿を検出する"
+    breaking_input: "環境の実値を埋めた囮ファイル（版管理外）を検査対象に入れる"
+    observed: >-
+      環境の実値を埋めた囮を版管理外に置くと live:WANDB_API_KEY=1 live:NOTION_API_KEY=1
+      notion_token=1 pem_private_key=1 を検出し exit 1。送出する 9 ファイルは合計 0 で exit 0。
+      形の規則 wandb_key_shape（40 桁 16 進）は囮に一致せず、実値照合だけが WANDB_API_KEY を捕まえた。
+
+followups:
+  - >-
+    conventions.md の変更履歴は naming 節の本文の内側にあり、追記すると naming の解決結果が変わる。
+    変更履歴の直前に終端用のアンカー（例 <a id="changelog"></a>）を置けば、以後の追記が
+    既存の節を汚さなくなる。本契約は追加のみのため触っていない。
+  - >-
+    CLAUDE.md:74 と docs/notion_integration.md:30 は NOTION_DB_ID を .env の変数として挙げるが、
+    load_env.sh 後の実測で unset だった。版管理側の文書が古い。本契約の範囲外のため直していない。
+  - >-
+    P9 spec_lint の separated_source@SPEC.md:50 は誤検出である。source ... && source ... && make が
+    行継続の \ で 2 行に分かれているものを、読み込みが単独の命令で終わったと判定している。
+    check_agent_docs.check_text 側で行継続を連結してから判定すべきである。
+  - >-
+    forbidden-check は「追加のみ」を判別しない。conventions.md への追記は本契約のように
+    正当な場合があるが、道具は変更の有無だけを見て違反を返す。判定の根拠は人が書くしかない。
+
+unknowns:
+  - >-
+    一般の節の本文抽出の壊れ方。切り出しを機械化した実装は preflight_task.py:109-126 の
+    frozen_source 専用の 1 か所だけで、汎用の抽出器が無い。抽出は実行者の手続きであるため、
+    抽出側が静かに空を返す壊れ方があるかは測れていない。
+  - >-
+    .env の変数がちょうど 5 件かどうか。照合したのは配られた 5 名 + NOTION_DB_ID の計 6 名だけで、
+    一覧に無い名前が他に在るかは確かめていない。.env 本体の読み取りは実行基盤が拒否した。
+  - >-
+    起票者の手順書が 671 行から 341 行へ縮む見込み。手順書は版管理の外にあり、このホストから測れない。
+
+commits:
+  - "a8c07e81"
+  - "7897db16"
