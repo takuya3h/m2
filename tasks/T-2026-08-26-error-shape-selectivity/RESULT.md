@@ -153,6 +153,9 @@
 - **`pgrep` の否定対照が 1 を返した。** 自分の命令行を拾っていた。`/proc/PID/exe` の絞りを
   **陽性側にしか当てていなかった**ため。両方向へ当て直した。
 - **`created_from.counts` を一度 現在値へ書き換えた。** L2-8 の警告そのものを消してしまうため戻した。
+- 🔴 **同期処理による `.py` の削除が二度起きた**（21:59:55 と **22:29:58**）。二度目は
+  **commit の直後**であったため成果は失われず、`git checkout --` で作業ツリーを戻せた。
+  **先に commit したことが work を守った。** 一度目は commit 前で、書き直しが要った。
 - **取り込みが一度失敗した**（要約値の不一致、exit 2）。起票者が台帳を直したのち取り込めた。
 
 ### UNKNOWN
@@ -169,7 +172,7 @@
 
 | # | 実測 |
 |---|---|
-| commit | `4386badf`（**32 ファイル**）。`experiments/analysis/lovo_decision_rule/`（別契約）は段階に上げていない |
+| commit | `4386badf`（**32 ファイル**）→ 報告 `3af6ae3c`（push 済み）。`experiments/analysis/lovo_decision_rule/`（別契約）は段階に上げていない |
 | push | `origin/feat/error-shape-selectivity` **exit 0**（`* [new branch]`） |
 | PR | **#153**（`feat/error-shape-selectivity` → `phase0`）。**分岐は規定の接頭辞 `feat/` で始まる** |
 | 分岐の位置 | `origin/phase0` から **4 commit behind**（実行中に PR #152 が phase0 へ入った）。**統合していない** |
@@ -177,8 +180,8 @@
 | `make task-preflight` | **exit 0**（5 PASS / 4 SKIP / 0 FAIL）。SKIP は P2 P3 P4 P5 |
 | `make forbidden-check` | **exit 2・違反 38 件**。内訳は上表（A 26 / B 5 / C 7） |
 | `make taskindex` / `make inbox` | **回していない**（SPEC 禁止 4）。§逸脱 3 |
-| `make task-report` | （送信後に記す） |
-| `.sync-pause` | （解除後に記す） |
+| `make task-report` | **exit 0**。`{"verdict": "pass", "n_issuer_defects": 6, "report_sha256": "ce4ed432cf836344…", "report_bytes": 14574, "replaced_blocks": 0}` |
+| `.sync-pause` | **移動で解除**（`mv .sync-pause .sync-pause.released`、`[ -e .sync-pause ]` が偽）。抑止中の記録は `22:29:59 [philip] 一時停止中: …` |
 | 前の契約の退避 | `stash@{0}` を**戻していない**（指示どおり。契約が終わり元の分岐へ戻ってから戻す） |
 
 ### 秘匿の自主検査

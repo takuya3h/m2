@@ -52,6 +52,8 @@ deviations:
       掃引の実装を outputs.destination に置いたまま実行できなかった。.stignore:52 の
       !experiments/**/*.py が .py を同期対象にしており、実行中に他ホストの状態で削除される
       （2026-08-25 21:59:55 に実測）。実装を同期の外で走らせ、成果物は指定どおりの場所へ書いた。
+      削除は二度起きた（21:59:55 と 22:29:58）。二度目は commit 直後だったため成果は失われず、
+      git checkout -- で作業ツリーを戻せた。先に commit したことが work を守った。
   - type: spec_defect
     note: >-
       SPEC 禁止 4「投影と集約の再生成を行わない」に従い make taskindex と make inbox を回していない。
@@ -167,3 +169,4 @@ unknowns:
 
 commits:
   - "4386badf"
+  - "3af6ae3c"
