@@ -1,0 +1,75 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-08-26-error-shape-selectivity"
+  kind: analysis
+  title: "誤りの形による壊れ方の違いを掃引して曲線として測る"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-08-25T21:40:00Z"
+  created_from:
+    runindex_commit: "7918b5dd"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: []
+  amendments: []
+intent:
+  question: "術具存在の信号に含まれる誤りは、量ではなく形によって壊す場所が変わる。孤立した反転は主に分節を壊し、持続する誤りは主に分類を壊す。この選択性は誤り率と持続の長さをどう変えても現れる性質か、それとも特定の設定でだけ現れるものか"
+  decision_at_stake: "誤りの形による選択性を、研究の主たる知見として報告してよいかどうか。および今後どの誤りを減らす努力に投資すべきか"
+  related:
+    backlog: []
+inputs:
+  denominator:
+    ref: "exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42"
+    metric: "accuracy"
+    require: {n_seeds: ">=3", sigma: present, split: val}
+  data:
+    dataset: "egosurgery_tool_subset"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["docs/analysis_scripts/proxy_lovo_noise_structure.py"]
+contract:
+  inject_verbatim:
+    - conventions#sigma
+    - conventions#prohibitions
+    - conventions#issuer_cautions
+  conventions_rev: "a8c07e81"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "既存の介入実験の所在確認と再現", gpu: false, est: "short"}
+    - {id: B, name: "対照の設置", gpu: false, est: "short"}
+    - {id: C, name: "誤り率と持続の長さの掃引", gpu: false, est: "medium"}
+    - {id: D, name: "選択性の曲線化と限界の特定", gpu: false, est: "medium"}
+    - {id: E, name: "報告", gpu: false, est: "short"}
+  gates:
+    - {id: G1, after: A, check: "既存の介入実験が実在し、記録されている値を再現できる", on_fail: stop}
+    - {id: G2, after: B, check: "対照が両方向で設置され、期待どおりに働いている", on_fail: stop}
+    - {id: G3, after: C, check: "掃引が完了し、誤りの量が意図した水準になっていることが実測で確かめられている", on_fail: stop}
+    - {id: G4, after: D, check: "選択性が二つの軸に沿って表になり、崩れる領域が特定されている", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [REPORT.md]
+  destination: "experiments/analysis/error_shape_selectivity/"
+  acceptance:
+    - "a 既存の介入実験の所在が実測で確かめられ、記録されている値を再現できたか否かが記録されている"
+    - "b 与えた誤りの量が、意図した水準になっていることが実測で確かめられている"
+    - "c 陽性対照と陰性対照の双方が設置され、期待どおりに働いている"
+    - "d 誤り率と持続の長さの二つの軸で掃引が行われ、格子の各点の結果が記録されている"
+    - "e 乱数を使う手続きは種が固定され、二度走らせて一致することが実測されている"
+    - "f 選択性が複数の種にわたって求められ、種ごとの散らばりが記録されている"
+    - "g 選択性が崩れる領域が特定されている、または全域で崩れなかったことが記録されている"
+    - "h 効果量と符号の個数が、判定とは別に記録されている"
+    - "i 判定が行われていない"
+    - "j 数値がすべて実測へ遡れる"
+    - "k 変更範囲の一覧が記録されている"
+    - "l PR が存在し、分岐が規定の接頭辞で始まっている"
+    - "m 完了報告が事実の記録と証跡の記録に分かれている"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: []

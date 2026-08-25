@@ -1,0 +1,7 @@
+- [ ] 2026-08-26 [cc] `decisions_required` 3 件（選択性を主たる知見に位置づける／掃引を契約の外へ広げる／既存の報告を訂正する）は利用者の回答により**三件とも「契約の外」**。掃引と曲線化までを実施し、位置づけ・拡張・訂正は別契約へ回した（tasks/T-2026-08-26-error-shape-selectivity/spec.yaml）
+- [ ] 2026-08-26 [cc] `.stignore:52` の `!experiments/**/*.py` が experiments 配下の .py を同期対象にしており、実行中に他ホストの状態で削除される。本契約 2 件と lovo_decision_rule 2 件が実測で消えた。置き場所を変えるか規則を見直すかが未決（.stignore:52）
+- [ ] 2026-08-26 [cc] `.sync-pause` は git 操作しか止めない。syncthing の実ファイル同期は動き続ける。手順書と SPEC の「抑止の目印を置く」に適用範囲を書き足すかが未決（scripts/sync/m2-sync.sh:40）
+- [ ] 2026-08-26 [cc] `forbidden-check` の起点 `origin/phase0` が実行中に動き、他契約の追加が自分の「削除」として現れる（実測 7 件）。BASE を task-start 時点へ固定するかが未決（tools/check_forbidden.py）
+- [ ] 2026-08-26 [cc] `outputs.destination` が `experiments/` を指す analysis 契約では `forbidden-check` が必ず違反を返す（実測 26 件）。道具側で destination を除外するか、SPEC 側で説明するかが未決（Makefile:151）
+- [ ] 2026-08-26 [cc] 既存の §3.10(c)「評価側だけ汚すと選択性が 3.9→7.0 倍に鋭くなる」は p=0.05 の一点でのみ成立し p≧0.10 で逆転する。訂正するかは「契約の外」と回答されたため保留（docs/research_review_and_next_plan_2026-08-22.md:1119-1135）
+- [ ] 2026-08-26 [cc] `proxy_lovo_noise_testonly.py` は種を直書きしており 1 本しか使わない。原典を 3 本へ揃えるかが未決（docs/analysis_scripts/proxy_lovo_noise_testonly.py:31-32）

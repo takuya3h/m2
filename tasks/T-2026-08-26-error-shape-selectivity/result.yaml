@@ -1,0 +1,168 @@
+result_version: 3
+task_id: "T-2026-08-26-error-shape-selectivity"
+status: pass
+host: "philip"
+branch: "feat/error-shape-selectivity"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      既存の介入実験を名前と中身の二通りで探し、どちらも
+      docs/analysis_scripts/proxy_lovo_noise_structure.py を指した。種 3 本で走らせ、記録
+      （research_review_and_next_plan_2026-08-22.md:1077-1082）の acc/mF1/edit/segF50 の 20 値と
+      効果量と符号の個数がすべて一致した。種を 3→1 に変えると汚した 4 条件だけが動き、
+      クリーンは 0.8680 のまま変わらなかった。
+  - id: G2
+    verdict: pass
+    note: >-
+      陰性は add_noise を p=0 で直接呼び 12 条件すべて異なる位置数 0、同じ検査が p=0.001 では
+      93 を返す。陽性は p=0.40 L=1 で acc 0.8680→0.3049、edit 56.61→4.97（評価側のみ）。
+      同じ種で二度走らせて sha256 が完全一致し、種を変えると 120 行が相違した。
+      軸二は burst L=1 が iid とビット単位で同一（15 条件）、L=2 では 6885 箇所が相違。
+  - id: G3
+    verdict: pass
+    note: >-
+      126/126 点×種が完了し飛ばした点は 0。行数は両腕とも 1905 = 15 動画×(42 点×3 種+クリーン)。
+      誤り量は集合の対称差で実測し、名目 p に対する比は 0.71〜1.02。名目を 40 倍にすると
+      実測も 39 倍になる（0.0102→0.4005）。平均連長は L=1 で 1.01〜1.67、L=64 で 59.1〜61.9。
+  - id: G4
+    verdict: pass
+    note: >-
+      選択性が p 6 水準 × L 7 水準の表になり、両腕で作った。崩れる領域は三つとも特定した。
+      分母が零に近い領域（p=0.01 L=1、分母の効果量 1.87・符号 11/15）、比が 1 を下回る領域
+      （評価側のみ 10/42 点・学習側も 7/42 点）、二つの形が区別できない領域
+      （sel(L=1)/sel(L=32) が 19.39 から 1.32 へ）。全域で崩れなかったのではない。
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+
+deviations:
+  - type: judgement
+    note: >-
+      governance.decisions_required の 3 件を利用者へ提示して停止し、回答（三件とも契約の外）を
+      得たうえで空にした。tools/preflight_task.py:242-251 は空であることだけを見るため。
+      自分では決めていない。回答内容は RESULT.md と tasks/inbox.d/ へ記録した。
+  - type: environment
+    note: >-
+      掃引の実装を outputs.destination に置いたまま実行できなかった。.stignore:52 の
+      !experiments/**/*.py が .py を同期対象にしており、実行中に他ホストの状態で削除される
+      （2026-08-25 21:59:55 に実測）。実装を同期の外で走らせ、成果物は指定どおりの場所へ書いた。
+  - type: spec_defect
+    note: >-
+      SPEC 禁止 4「投影と集約の再生成を行わない」に従い make taskindex と make inbox を回していない。
+      手順書 SKILL.md §6 は両方を回して投影に現れることを確かめよと求めており両立しない。契約を優先した。
+  - type: judgement
+    note: >-
+      logs/ を版管理へ入れていない。.gitignore:28 が experiments/**/logs/** を除外し、
+      experiments/analysis 配下で logs を版管理している前例は 0 件である。集計・崩れる領域・
+      腕の比較・Phase A の再現の各出力は tables/ へ置き、除外されないことを git check-ignore で確かめた。
+  - type: judgement
+    note: >-
+      experiments/analysis/lovo_decision_rule/（別の契約のファイル、同期処理で届いた未追跡）を
+      残置した。削除も commit もしていない。forbidden-check の違反 5 件はこれである。
+  - type: judgement
+    note: >-
+      前の契約の退避 stash@{0} を戻していない。利用者の指示どおり、契約が終わり元の分岐へ
+      戻ってから戻す。本契約の中では戻さない。
+
+issuer_defects:
+  - type: self_contradiction
+    note: >-
+      outputs.destination が experiments/analysis/error_shape_selectivity/ を指すのに、
+      forbidden-check は experiments/ を禁止領域として扱う。指示どおり成果物を置くと必ず違反になり、
+      実測で 26 件が報告された。SPEC §5 は「本契約は新しい run を作らないため、失敗するなら別の原因」と
+      書くが、run を作らなくても成果物を置くだけで違反になる。この記述は実行者を誤った診断へ導く。
+  - type: asserted_without_measuring
+    note: >-
+      申し送り 2 が「孤立した反転と持続する誤りが同じ仕組みの両端として扱えるかは未確認。別々の
+      仕組みなら二つを一つの軸に載せられない」とするが、実測では burst の L=1 が iid とビット単位で
+      同一だった（p 5 水準×種 3 本で異なる位置数 0、乱数の消費順序まで一致）。指示どおり二つを
+      別々に掃引していれば、同じ計算を二度行って格子を二重に持つことになっていた。
+  - type: asserted_without_measuring
+    note: >-
+      申し送り 3 が「持続の長さを変える手続きが実装されているかは未確認。無い場合 軸二の掃引は
+      できない。実装を新たに書き起こすかどうかは残り時間を見て判断してよい」とするが、L は原典
+      add_noise の引数として実装済みだった。書き起こしの検討自体が不要であり、指示に従うと
+      存在する機能を再実装しかねない。
+  - type: check_does_not_check
+    note: >-
+      SPEC Task 3 Step 2 は「陰性対照 — 誤りを与えない場合。分類も分節も損失は零のはずである」と
+      求めるが、原典の build は add_noise(...) if p>0 else X と分岐するため p=0 では誤りを与える
+      手続きを一度も呼ばない。指示どおり p=0 を流すと必ず零になるが、それは構造上の零であって
+      add_noise の欠陥を検出できない。経路を通す対照（add_noise を直接 p=0 で呼ぶ）を別に足した。
+  - type: asserted_without_measuring
+    note: >-
+      SPEC §0 は「本契約は他の四台と同時に走っている」と述べるだけで、同時実行の実害に触れていない。
+      指示どおり成果物を outputs.destination へ置いて実行すると、実装が実行中に同期処理へ削除される。
+      2026-08-25 21:59:55 に本契約の .py 2 件と、別の契約（lovo_decision_rule）の .py 2 件が消えた。
+      抑止の目印（.sync-pause）は git 操作しか止めないため、SPEC の Task 1 Step 3 では防げない。
+  - type: check_does_not_check
+    note: >-
+      完了判定 o「変更範囲の一覧を出した」を forbidden-check で測ると、起点が origin/phase0 に
+      固定されている。契約の実行中に phase0 が進むため（実測: PR #152 で 4 commit 先へ）、
+      他契約の追加が自分の「削除」として一覧に現れる（実測 7 件）。指示どおり一覧を読むと、
+      触れてもいない experiments/transfer/ を自分が消したと誤読する。
+
+positive_controls:
+  - judgement: "完了判定 a: 既存の介入実験を再現した"
+    breaking_input: "種の本数を 3 から 1 へ変える（入力を変える）"
+    observed: "汚した 4 条件がすべて変化（iid p=0.05 の acc 0.8378→0.8309）。クリーンは 0.8680 のまま"
+  - judgement: "完了判定 c: 誤りの量を集合の差で求めた"
+    breaking_input: "件数の差 abs(|S(X)|-|S(Y)|) で数える（部分一致の数え方）"
+    observed: "18 条件すべてで別の値。例 p=0.05 L=1 seed=7 は対称差 2941 に対し件数の差 1189"
+  - judgement: "完了判定 d: 陰性対照が働いた"
+    breaking_input: "同じ検査に p=0.001 を与える（零でない誤り）"
+    observed: "異なる位置数 93、実測誤り率 0.001033。p=0 では 12 条件すべて 0"
+  - judgement: "完了判定 e: 陽性対照が働いた"
+    breaking_input: "p=0.40 L=1 を与える（誤りを極端に増やす）"
+    observed: "評価側のみ acc 0.8680→0.3049 / edit 56.61→4.97、学習側も acc→0.6321 / edit→23.36"
+  - judgement: "完了判定 f: 乱数の手続きが再現する"
+    breaking_input: "種を 7,17,27 から 8,18,28 へ変える"
+    observed: "sha256 が 82f6cd19… から 9be8a994… へ変わり 120 行が相違。同じ種では sha256 完全一致"
+  - judgement: "軸二の両端が同じ仕組みで扱える（burst L=1 == iid）"
+    breaking_input: "L=2 で比べる"
+    observed: "6885 箇所が相違。L=1 では p 5 水準×種 3 本すべてで異なる位置数 0"
+  - judgement: "実行中の処理の計数が正しい"
+    breaking_input: "存在しない語 zzz_no_such_process_token を数える"
+    observed: "/proc/PID/exe の絞りを両方向へ当てて 0。片方向のみのときは自分の命令行を拾って 1 を返した"
+  - judgement: "完了判定 l: 判定を行っていない"
+    breaking_input: "REPORT.md に有意・非有意の語を探す"
+    observed: "grep -c '有意' = 0、grep -c '非有意' = 0"
+
+followups:
+  - >-
+    .stignore:52 の !experiments/**/*.py は experiments 配下の .py を同期対象にする。契約の実行中に
+    他ホストの状態で削除されうる（本契約と lovo_decision_rule の計 4 件が実測で消えた）。
+    実装の置き場所を同期の外にするか、除外規則を見直すかの判断が要る。
+  - >-
+    .sync-pause は scripts/sync/m2-sync.sh:40 の git 操作しか止めない。syncthing の実ファイル同期は
+    止まらない。手順書と SPEC はどちらも「抑止の目印を置く」としか書いておらず、適用範囲が明示されていない。
+  - >-
+    forbidden-check の起点 origin/phase0 は契約の実行中に動く。BASE を task-start 時点の commit へ
+    固定できるようにするか、起点のずれを出力に含めるかの判断が要る。
+  - >-
+    既存の記述「評価側だけ汚すと選択性が 3.9 倍 → 7.0 倍に鋭くなる」（§3.10(c)）は p=0.05 の一点でのみ
+    成立し、p ≧ 0.10 で逆転する。訂正の要否は decisions_required で「契約の外」と回答されたため
+    本契約では触れていない。
+  - >-
+    proxy_lovo_noise_testonly.py は build(...,7) と種を直書きしており、種 1 本の結果しか出さない
+    （:31-32）。記録の 10.5 と本掃引の 10.04 の差はこれで説明がつく。原典を 3 本へ揃えるかの判断が要る。
+
+unknowns:
+  - >-
+    最も選択性が大きい角（p=0.01, L=1・評価側のみ）の倍率。分母 Δacc の効果量が 1.87 と格子で最小で、
+    種ごとの選択性が 57.07/34.74/35.56 と幅を持つ。3 本とも 34 を超えるため「大きい」ことは支持されるが、
+    倍率の値は定まらない。
+  - >-
+    本番の構造で同じ選択性が現れるか。本掃引はプロキシ（線形分類器 + HMM の LOVO）であり、
+    本契約の範囲外である。
+  - >-
+    高い p での L 軸に沿った比較の解釈。実測誤り率が名目の 0.71〜0.83 まで落ちるため、
+    L を変えた比較は実際の誤り量を揃えた比較になっていない。p=0.40 の行はとくに影響が大きい。
+
+commits: []
