@@ -3,7 +3,7 @@ task_id: "T-2026-08-25-issuer-refs-to-repo"
 status: pass
 host: "philip"
 branch: "feat/issuer-refs-to-repo"
-pr: null
+pr: 151
 merged: false
 
 gates:
@@ -50,6 +50,11 @@ deviations:
       context/issuer-cautions.md を残置した。SPEC は「ファイルとして置かない」と定めるが、
       禁止 5 が未追跡の成果物の削除を禁じるため削除も退避もしていない。commit していない。
       処分は起票者の判断に委ねる。
+  - type: judgement
+    note: >-
+      RESULT.md が 189 行で SPEC の目安 150 行を 39 行超過した。起票者の誤り 6 件・
+      UNKNOWN 3 件・逸脱 5 件を落とさずに書くと収まらなかった。手続きの証跡は audit.md
+      628 行へ分離済みで、残っているのは判断に要る事実だけである。
   - type: environment
     note: >-
       対話シェルが zsh のため ${PIPESTATUS[0]} で終了コードが空になり、対照 A〜D の
@@ -112,7 +117,10 @@ positive_controls:
     observed: "naming の解決本文が 74956a03… 526 B から 65f5b182… 527 B へ変わった。git diff の削除行は 0 のまま"
   - judgement: "秘匿検査が実際に秘匿を検出する"
     breaking_input: "環境の実値を埋めた囮ファイル（版管理外）を検査対象に入れる"
-    observed: "§送出 に記載"
+    observed: >-
+      環境の実値を埋めた囮を版管理外に置くと live:WANDB_API_KEY=1 live:NOTION_API_KEY=1
+      notion_token=1 pem_private_key=1 を検出し exit 1。送出する 9 ファイルは合計 0 で exit 0。
+      形の規則 wandb_key_shape（40 桁 16 進）は囮に一致せず、実値照合だけが WANDB_API_KEY を捕まえた。
 
 followups:
   - >-
@@ -141,4 +149,5 @@ unknowns:
   - >-
     起票者の手順書が 671 行から 341 行へ縮む見込み。手順書は版管理の外にあり、このホストから測れない。
 
-commits: []
+commits:
+  - "a8c07e81"

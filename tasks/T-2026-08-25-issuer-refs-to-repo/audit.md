@@ -503,3 +503,139 @@ L1 の様式も同じ制約を持つ（`tasks/_schema/spec.schema.json:148`）�
 `spec.yaml` の最終状態:
 
     31:  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+
+---
+
+## Task 3 Step 2 — 触っていないものが無変更であること
+
+    $ git --no-pager diff --name-status origin/phase0 -- .
+    M	.stglobalignore
+    M	context/conventions.md
+
+**`runindex/**` も `context/auto/**` も現れない。** 差は 2 件だけで、
+`.stglobalignore` は**開始前から在った変更**（本契約の産物ではない。commit していない）。
+
+    $ git --no-pager status --porcelain | grep '^??'
+    ?? .sync-pause.released
+    ?? context/issuer-cautions.md
+    ?? docs/sessions/digest/2026-08-22-….md
+    ?? docs/sessions/digest/2026-08-23-….md
+    ?? docs/sessions/digest/2026-08-24-….md
+
+**未追跡は減っていない。** 開始時 8 件のうち、`context/env-facts.md`
+`docs/issuer-defects.md` `tasks/T-2026-08-25-issuer-refs-to-repo/` の 3 件が
+版管理へ入り、`context/issuer-cautions.md` が受領で 1 件増えた。**削除は 0 件。**
+
+---
+
+## Task 3 Step 3 — 検証
+
+    $ source .venv/bin/activate && make forbidden-check
+    {"base": "origin/phase0", "changed": 12, "checked": 12, "errors": [], "excluded": 0,
+     "excluded_paths": [], "generated_directories": ["context/auto/"],
+     "generated_files": ["tasks/inbox.md"], "status": "fail",
+     "violations": [{"path": "context/conventions.md", "reason": "禁止されたファイル context/conventions.md"}]}
+    make: *** [Makefile:151: forbidden-check] Error 1
+    forbidden-check exit=2
+
+**違反 1 件。予期されていた**（SPEC Task 3 Step 3 が「報告しうる」と書いている）。
+
+**追加のみである根拠:**
+
+1. `git --no-pager diff -U0 context/conventions.md | grep -c '^-[^-]'` = **0**（削除行なし）
+2. 位置は `@@ -143,0 +144,35 @@`（**追加前のファイル末尾の直後**）
+3. 既存 7 節の**解決本文**の `sha256` が追加前と**全て同一**（Task 2 Step 3 の表）
+
+**道具は「追加のみ」を判別しない。** 変更の有無だけを見る。
+
+`conventions_rev` は実測（`d422b08`）と記載が一致しており**置換していない。**
+**生成物を再生成していない**（禁止 4）。`make taskindex` `make inbox` を回していない。
+
+---
+
+## Task 3 Step 4 — 秘匿の自主検査
+
+検査器 `secret_scan.py` は**版管理の外**（scratchpad）に置いた。
+**出力は経路・規則名・件数・照合本数だけで、値を出す経路が無い。**
+
+判定は 2 系統。
+
+- **形**（5 件）: `pem_private_key` `notion_token` `wandb_key_shape`（40 桁 16 進）
+  `aws_key` `generic_assign`（`api_key|token|passphrase|password|secret` への 20 字以上の代入）
+- **実値**（4 本）: 環境の `WANDB_API_KEY` `NOTION_API_KEY` `WANDB_ENTITY` `DATA_ROOT` を
+  そのまま部分一致で照合。**規則が古くて素通りする壊れ方に強い。**
+
+### 陽性対照
+
+囮は**版管理の外**（scratchpad）に、環境の実値を埋めて作った。
+
+    $ python secret_scan.py $S/decoy.md
+    🔴 …/decoy.md: live:NOTION_API_KEY=1, live:WANDB_API_KEY=1, notion_token=1, pem_private_key=1
+    ---
+    照合した実値の本数: 4 / 規則: 5 / 一致の合計: 4
+    exit=1
+
+**検出した。** 検査器は空振りしていない。
+
+🔴 **`wandb_key_shape`（40 桁 16 進）は一致しなかった。**
+形の規則だけでは `WANDB_API_KEY` を捕まえられていない。**実値照合だけが捕まえた。**
+形だけの検査は「規則が実値の形と合っていない」壊れ方に気づけない。
+
+### 陰性対照（送出する本体）
+
+    $ python secret_scan.py RESULT.md result.yaml audit.md spec.yaml SPEC.md \
+        tasks/inbox.d/T-2026-08-25-issuer-refs-to-repo.md \
+        context/conventions.md context/env-facts.md docs/issuer-defects.md
+    🟢 tasks/T-2026-08-25-issuer-refs-to-repo/RESULT.md: 0
+    🟢 tasks/T-2026-08-25-issuer-refs-to-repo/result.yaml: 0
+    🟢 tasks/T-2026-08-25-issuer-refs-to-repo/audit.md: 0
+    🟢 tasks/T-2026-08-25-issuer-refs-to-repo/spec.yaml: 0
+    🟢 tasks/T-2026-08-25-issuer-refs-to-repo/SPEC.md: 0
+    🟢 tasks/inbox.d/T-2026-08-25-issuer-refs-to-repo.md: 0
+    🟢 context/conventions.md: 0
+    🟢 context/env-facts.md: 0
+    🟢 docs/issuer-defects.md: 0
+    ---
+    照合した実値の本数: 4 / 規則: 5 / 一致の合計: 0
+    exit=0
+
+### 囮の後始末
+
+    $ rm -f $S/decoy.md
+    囮を削除: 0 件
+    $ git --no-pager status --porcelain | grep -c 'decoy'
+    0
+
+**囮は commit していない。** 配られた本文に含まれる住所（`192.168.196.150`）と
+識別子は秘匿ではない（SPEC Task 3 Step 4 の明記）。
+
+---
+
+## Task 3 Step 5 — 送出
+
+    $ git commit（9 ファイル）
+    a8c07e81 feat(context): move issuer references into version control and inject the cautions
+
+    $ git push -u origin feat/issuer-refs-to-repo
+     * [new branch]        feat/issuer-refs-to-repo -> feat/issuer-refs-to-repo
+    branch 'feat/issuer-refs-to-repo' set up to track 'origin/feat/issuer-refs-to-repo'.
+    push exit=0
+
+    $ gh pr create --base phase0 --head feat/issuer-refs-to-repo …
+    https://github.com/takuya3h/m2/pull/151
+
+**注**: `gh pr create --body "$(cat <<'EOF' … )"` は実行基盤に拒否された。
+`--body-file` へ変えて通した。**回避ではなく別の呼び方**であり、内容は同一である。
+
+### 報告作成後の再検証
+
+    $ make task-validate TASK=T-2026-08-25-issuer-refs-to-repo
+    WARN [L2-6] conventions.md が d422b08 以降に変更されています。差分を確認してください
+    OK   T-2026-08-25-issuer-refs-to-repo
+
+    1 task(s), 0 failed
+    validate exit=0
+
+**この WARN は本契約自身の追加が原因である。** `conventions_rev` は起票時点の commit を
+記録する欄であり、Task 1 の実測（`d422b08`）と記載が一致していた。**置換していない。**
+自分の産物で上書きすると、起票時点の状態を指す情報が失われる。

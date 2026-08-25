@@ -34,7 +34,7 @@
 | G | **既存の節が一行も変わっていない** | 既存 7 節の解決本文の `sha256` が**全て同一**。`git diff --numstat` = `35 0`、削除行 `0`、位置 `@@ -143,0 +144,35 @@` |
 | H | 新しい参照が解決し中身が取れる | `conventions#issuer_cautions` → **1012 B / 空でない / sha256 512f7bf5…**。表と字下げが保たれる |
 | I | **誤った参照が解決に失敗する** | 綴り違い `issuer_cautionz` → `[L2-5]` **exit 2**。配られたハイフン形 `issuer-cautions` → `[L1-1]` **exit 2**。**層が違う 2 種類とも落ちた** |
-| J | 報告の構成と分量 | 本ファイル 133 行（目安 150 以内）。証跡は `audit.md` 505 行へ分離 |
+| J | 報告の構成と分量 | 構成は指定どおり 8 節。**本ファイル 189 行で目安 150 を 39 行超過している**。証跡は `audit.md` 628 行へ分離済み |
 | K | 既存部分と禁止領域が無変更 | 上記 G。`runindex/**` `context/auto/**` は `git diff origin/phase0 --name-status` に**現れない**（差は `.stglobalignore` と `context/conventions.md` の 2 件のみ） |
 | L | 秘匿検査を自分で行った | §送出 |
 | M | 変更が契約の範囲に限られる | §送出 |
@@ -119,7 +119,10 @@
    手順書 §6 の要求とは食い違う。**契約を優先した。**
    → `tasks/inbox.d/` へは書いたが、`tasks/inbox.md` へは反映されていない。
 3. **`context/conventions.md:7` が求める変更履歴への追記をしていない。** 禁止 1 を優先した。
-4. **`context/issuer-cautions.md` を残置した。** SPEC は「ファイルとして置かない」と定めるが、
+4. **報告が目安の分量を超えた（189 行 / 目安 150）。** 起票者の誤り 6 件と UNKNOWN 3 件と
+   逸脱 5 件を落とさずに書くと収まらなかった。**手続きの証跡は `audit.md` へ分離済み**で、
+   残っているのは判断に要る事実だけである。**削るなら完了判定の表が候補。**
+5. **`context/issuer-cautions.md` を残置した。** SPEC は「ファイルとして置かない」と定めるが、
    禁止 5 が未追跡の成果物の削除を禁じる。**commit していない。処分は起票者の判断に委ねる。**
 
 ### 想定外
@@ -146,4 +149,41 @@
 
 ## 送出
 
-（この節は commit・PR の後に埋める）
+| # | 実測 |
+|---|---|
+| commit | `a8c07e81`（9 ファイル）。**`.stglobalignore` の変更・digest 3 件・`.sync-pause.released`・`context/issuer-cautions.md` は段階に上げていない** |
+| push | `origin/feat/issuer-refs-to-repo` **exit 0**（`* [new branch]`） |
+| PR | **#151**（`feat/issuer-refs-to-repo` → `phase0`） |
+| `make forbidden-check` | **exit 2**。`{"path": "context/conventions.md", "reason": "禁止されたファイル context/conventions.md"}`。**追加のみである根拠は §想定外** |
+| `make task-validate` | **exit 0**（`OK`）。報告作成後は `WARN [L2-6] conventions.md が d422b08 以降に変更されています`。**本契約自身の追加が原因**であり、`conventions_rev` は起票時点の値として `d422b08` のまま残した（実測と一致していた） |
+| `make task-preflight` | **exit 0**（4 PASS / 1 WARN / 4 SKIP / 0 FAIL） |
+| `make taskindex` / `make inbox` | **回していない**（SPEC 禁止 4）。§逸脱 2 |
+| `make task-report` | §末尾 |
+| 抑止 | §末尾 |
+
+### 秘匿の自主検査（完了判定 L）
+
+**形の規則 5 件**（PEM 秘密鍵 / Notion トークン / 40 桁 16 進 / AWS 鍵 / 代入の形）と
+**環境の実値との直接照合 4 本**（`WANDB_API_KEY` `NOTION_API_KEY` `WANDB_ENTITY` `DATA_ROOT`）。
+**検査器は経路・規則名・件数しか出力しない。値を出す経路が無い。**
+
+| 対照 | 対象 | 結果 |
+|---|---|---|
+| **陽性** | 実値を埋めた囮（**版管理外**） | `live:NOTION_API_KEY=1, live:WANDB_API_KEY=1, notion_token=1, pem_private_key=1` **exit 1** |
+| **陰性** | 送出する 9 ファイル | 全件 `0`、合計 **0**、**exit 0** |
+
+**囮は削除した。commit していない**（`git status` に `decoy` は 0 件）。詳細 `audit.md:556-612`。
+
+🔴 **所見**: 陽性対照で `wandb_key_shape`（40 桁 16 進）は**一致しなかった**。
+形の規則だけでは `WANDB_API_KEY` を捕まえられず、**実値との照合だけが効いた。**
+形だけの検査は「規則が実値の形と合っていない」壊れ方に気づけない。
+
+---
+
+## 台帳と抑止
+
+| # | 実測 |
+|---|---|
+| `make task-report` | （送信後に記す） |
+| `.sync-pause` | （解除後に記す） |
+| 退避したもの | **無い**（開始前の未追跡は退避せず、そのまま残した） |
