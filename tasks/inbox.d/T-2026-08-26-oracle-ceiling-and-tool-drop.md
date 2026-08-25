@@ -1,0 +1,3 @@
+- [ ] 2026-08-26 [cc] L2-8 の WARN（index.csv 751→1177 / experiments.csv 207→213）を提示し、続行の承認を得た。分母の参照行 phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42 は実在し n_seeds=3・sigma present・split=val を満たすため denominator_moved には当たらない（T-2026-08-26-oracle-ceiling-and-tool-drop）
+- [ ] 2026-08-26 [human] P6 decisions_required 4 件すべてに「行わない」と回答。閾値変更なし・分母移動なし・決定化は有効のまま・契約範囲を越える腕の追加なし（T-2026-08-26-oracle-ceiling-and-tool-drop）
+- [ ] 2026-08-26 [human] P4 のため tasks/T-2026-08-26-oracle-ceiling-and-tool-drop/ の commit を承認（push はしない）（T-2026-08-26-oracle-ceiling-and-tool-drop）
