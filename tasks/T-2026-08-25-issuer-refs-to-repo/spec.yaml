@@ -1,0 +1,84 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-25-issuer-refs-to-repo"
+  kind: impl
+  title: "起票の参照先を版管理へ置き、申し送りを注入で配れるようにする"
+  origin: claude-app
+  created_at: "2026-08-25T18:00:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: []
+  amendments: []
+
+intent:
+  question: "起票者の手順書が肥大し、毎回の読み込みで六百七十一行を消費している。そのうち約半分は契約へ毎回転記する内容である。環境の実測と欠陥の記録と実行者への申し送りを版管理へ置けば、手順書からも契約本文からも消せるか。申し送りは逐語注入の仕組みで配れるか"
+  decision_at_stake: "起票のたびに転記していた十三項目を注入へ移せるか。移せれば実行者は常に最新版を読み、起票者が古い値を書き写す事故が減る。移せない場合は転記を続けることになる"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "tools/fetch_task.py"
+      - "tools/check_spec.py"
+
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "注入の仕組みの読解と、既存および置き場所の測定", gpu: false, est: "40m"}
+    - {id: B, name: "三つの文書の配置と、注入が働くことの確認", gpu: false, est: "50m"}
+    - {id: C, name: "報告と送出", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "逐語注入が節をどう識別しどこまでを取るかを実装から読んだ。既存の節の要約値と一覧を記録した。置き場所が既存と衝突しないことを確かめた。配られた本文と実測の食い違いを列挙した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "二つの文書を置き、申し送りの節を末尾へ追加した。既存の節が一行も変わっていないことを差分で示した。新しい参照が解決して中身が取れ、誤った参照が解決に失敗することを陰性対照で確かめた"
+      on_fail: ask
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-25-issuer-refs-to-repo/"
+  acceptance:
+    - "逐語注入の書式を実装から読み、読めない場合は既存の節を真似たことを記録している"
+    - "既存の節の要約値と行数と一覧を、追加の前に記録している"
+    - "置き場所が既存と衝突しないことを確かめ、上書きしていない"
+    - "配られた本文と実測の食い違いを列挙し、実測を正として直している"
+    - "申し送りの節を末尾へ追加し、既存の書式に合わせている"
+    - "既存の節が一行も変わっていないことを差分で示している"
+    - "新しい参照が解決して中身が取れることを示している"
+    - "誤った参照が解決に失敗することを陰性対照で示している。取れない場合は UNKNOWN としている"
+    - "秘匿検査を自分で行い、その検査が値を出力していない"
+    - "報告が指定の構成であり、手続きの証跡を別ファイルへ分けている"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "追加のみのはずが既存の節が変わった場合"
+    - "逐語注入の書式を読めず、新しい節が解決するかを確かめられない場合"
+    - "新しい参照が解決せず、書式の誤りを特定できない場合"
+    - "置き場所が既に存在し、上書きが必要になる場合"
+    - "配られた本文の食い違いが多く、実測との整合を取れない場合"

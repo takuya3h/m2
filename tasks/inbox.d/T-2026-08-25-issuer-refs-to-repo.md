@@ -1,0 +1,5 @@
+- [ ] 2026-08-25 [cc] 逐語注入のアンカーは `[a-z0-9_]` のみで、配られた本文のハイフン形は L1 の様式と L2 のアンカー集合の両方から落ちる。起票側の雛形にこの制約を書くかは未決（context/conventions.md の `issuer_cautions`）
+- [ ] 2026-08-25 [cc] 変更履歴が `naming` 節の本文の内側にあるため、conventions.md の改訂記録を残すと既存の節の解決結果が変わる。終端用のアンカーを置くかは未決（context/conventions.md:7）
+- [ ] 2026-08-25 [cc] バンドルは spec.yaml / SPEC.md / prereg.md の 3 種しか運べない。起票者が用意した本文を配る経路が無く、今回は対話で手渡しした。添付経路を足すか本文を SPEC へ埋めるかが未決（tools/fetch_task.py:52）
+- [ ] 2026-08-25 [cc] SPEC 禁止 4「生成物を再生成しない」と手順書 §6「make taskindex / make inbox を回す」が両立しない。投影を更新していないため次の実行者が inbox-check で差分を見る。どちらを正とするかが未決（.claude/skills/task/SKILL.md §6）
+- [ ] 2026-08-25 [cc] `context/issuer-cautions.md` は本文を conventions.md へ取り込んだ後も残置した。SPEC は「ファイルとして置かない」と定めるが禁止 5 が削除を禁じる。処分は起票者の判断待ち（context/issuer-cautions.md）
