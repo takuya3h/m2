@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（321 件）
+## 申し送り（322 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -499,6 +499,7 @@
 
 ### T-2026-08-25-adam-artifact-inventory
 
+- 🔴 実行中に本ホストへ再構築の手順が適用され始めた。順位 1 の 3.38 GB の保全判断は急を要する。本ホストが初期化されれば失われる
 - 最優先。初期化された 5 台（lecun 827 / andrew 69 / philip 31 / bengio 3 run）が産んだ版管理外実体 3379519786 bytes を、同期で配るか外部の保管へ出すか諦めるかを決める。版管理へは大きすぎて入れられない。本ホストの複製が唯一の現存物である可能性があるが、他ホストが再構築時に復元したかは本ホストからは確かめられない
 - 順位 3〜6 の計 15.9 MB（~/.claude/projects の対話記録、.remember/logs、wandb/outputs/logs の版管理外分、docs/m2_plan_rewrite/.remember）を版管理へ入れるかを決める。対話記録は既存慣行どおり docs/sessions/digest/ へ機械抽出のみを入れる形が妥当
 - adam を同期の群れへ戻すかを決める。現在 ~/bin/ も syncthing も無く、版管理以外に外部へ配る経路が無い
@@ -515,7 +516,7 @@
 - 本ホストの .stignore は報告後に keeper が origin/phase0 の旧版へ戻した（設計どおり）。 変更が実際に効くのは PR #147 のマージ後で、各台へは keeper 最大 30 分 + 走査で及ぶ。
 - /rest/db/browse が HTTP 500 を返す（could not find child '.remember' for path '.remember/logs'）。索引に親ディレクトリのエントリが無いことが原因で、prefix を指定すれば 応答する。全件一覧は索引 DB（folder.0002-uefxpssq.db の files / file_names）の直読みで得た。
 
-## 断定できなかった事項（202 件）
+## 断定できなかった事項（203 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -884,6 +885,7 @@
 
 ### T-2026-08-25-adam-artifact-inventory
 
+- 契約の実行中に本ホストへ再構築の手順が適用され始めた。~/setup_server.sh が 13:57:59 に置かれ 13:59 以降に .nvm/.npm/.rustup/.cargo/.codex/.zsh が導入された（計 3.9 GB）。家の直下は 29 から 38 へ増えたが減ったものは無い。契約が前提に置いた本ホストは対象外という条件が実行中に失われたため、測定値は 2026-08-25 時点の snapshot として扱う必要がある
 - 版管理外の実体が他ホストに現存するか。禁止 4 により他ホストへ接続できず、版管理の記録は産出元しか示さない
 - 待ち受けの一覧。ss / netstat / lsof / ip がすべて不在。迂回しない
 - 常駐の登録。crontab が不在で systemd user バスも不通
