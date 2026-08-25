@@ -53,13 +53,13 @@ experiments/phase0/_*
 !experiments/**/last_checkpoint
 !experiments/**/20[0-9][0-9][0-9]*
 !.notion_sync.json
-!*.pth
-!*.pt
-!*.ckpt
-!*.onnx
-!*.safetensors
-!outputs
-!logs
+
+// --- 範囲を持たない行は置かない（T-2026-08-25-sync-ignore-scope で削除）---
+// 処理は 1 行を 4 行へ展開し `**/` を前置するため、`!*.pth` や `!logs` のように
+// 範囲を持たない行は repo の全階層へ及ぶ。実測では `!logs` が wandb・.remember・docs の
+// 記録を 1832 件、`!*.pth` が data/external/weights と third_party を 11,293,859,378 バイト
+// 運んでいた。いずれも 33-37 行が「同期しない」と宣言した対象である。
+// 実験成果物は範囲を持つ 43-54 行が受け持つ。
 !data/processed
 !data/annotations/egosurgery_hts
 !data/annotations/**/*.json

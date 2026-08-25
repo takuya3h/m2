@@ -449,3 +449,302 @@ count=2
 **契約のディレクトリと受け皿の 2 件だけ。** 開始時の未追跡も 1 件（本契約のディレクトリ）
 だけだったので、失ったものは無い。`~/.local/state/` `~/bin/` `~/.ssh/` は版管理の外、
 `.sync-pause` は `.gitignore` 済みで現れない。
+
+---
+
+# 再開（2026-08-24、PR #142 マージ後）
+
+前回は G1 で停止した（中心が bengio の鍵を受け入れなかった）。その後
+`T-2026-08-24-philip-accept-node-keys`（PR #142）が origin/phase0 へ入り、
+分岐 `feat/bengio-syncthing-node-2` で再実行した。
+
+## 0. 事前
+
+    sync_pause_placed=yes
+    m2sync_supports=2
+    worktree_dirty=1
+    branch=feat/bengio-syncthing-node-2
+    head=a99e317c Merge pull request #142 from takuya3h/feat/philip-accept-node-keys
+
+### 検証とプリフライト
+
+    OK   T-2026-08-24-bengio-syncthing-node
+    1 task(s), 0 failed
+    validate_exit=0
+
+    P1 venv_active            PASS expected=/home/ubuntu/slocal2/m2/.venv VIRTUAL_ENV=/home/ubuntu/slocal2/m2/.venv sys.prefix=/home/ubuntu/slocal2/m2/.venv
+    P2 cuda_ext_loaded        SKIP plan.env.preflight に cuda_ext_loaded の記載なし
+    P3 deterministic_flags    SKIP plan.env.preflight に deterministic_flags の記載なし
+    P4 prereg_committed       SKIP kind=impl のため対象外（exp のみ）
+    P5 frozen_source_hash     SKIP kind=impl のため対象外（exp のみ）
+    P6 decisions_answered     PASS decisions_required は空
+    P7 destination_writable   PASS tasks/T-2026-08-24-bengio-syncthing-node/ へ書き込みと削除ができた
+    P8 contract_valid         PASS validate_task.py --level l2 が exit 0
+    P9 spec_lint              WARN 規則 8 件のうち 5 件が該当: separated_source@SPEC.md:50,473,476,479,507（終了コードは変わらない）
+    RESULT: 4 PASS / 1 WARN / 4 SKIP / 0 FAIL
+    preflight_exit=0
+
+## Task 1 (Phase A) Step 1: 現状（前回と同一）
+
+    b53eba6d30ae9d45f7636ade10f85eeb462b0254f6129e9d96bba457669d4658  cert.pem 794 664
+    d4928c2db9b5539b8b356ec6f7e77dcec65fca2c66bf0af883f7011fbe77d146  config.xml 8495 600
+    99dfaa2cefb88b545e3e96d803fa87abccbb0cb93411637aec8d996fac5dafbb  key.pem 288 600
+    -rw-r--r-- 1 ubuntu ubuntu 26730145 Aug 23 13:52 /home/ubuntu/bin/syncthing
+    32ab747eb18ff3a01423f9719c5b8a8165da63e60ee9c3f733887464c70ca1dd  /home/ubuntu/bin/syncthing
+    (eval):1: permission denied: /home/ubuntu/bin/syncthing
+    実行できない（権限）
+    9fe9c423002e426e774bf8366f0cb307b5bcc31da0fa1fb15ff603c5f219dd90  /home/ubuntu/bin/keeper.sh
+    bcf46ba9031a45cb5f22371e6a1e598b2218782f6b0db74ab80ca6fea0aeb25f  /home/ubuntu/bin/m2-sync.sh
+    marker_count=0
+    8.0K	/home/ubuntu/claude-sync/
+    files=1
+    61593e99292e428c7c6f2157772722c147eaa48452c7e5b71e438363d1de9a2a  .stignore
+    61593e99292e428c7c6f2157772722c147eaa48452c7e5b71e438363d1de9a2a  .stglobalignore
+
+共有領域の詳細（開始時）
+
+    -rw-rw-r-- 1 ubuntu ubuntu 4031 Aug 24 10:40 sync-alerts.log
+    du_bytes=4031  files=1
+    m2 repo: 51G   （SPEC の「約十九ギガ」と食い違う）
+    ~/slocal2/m2/.stfolder は 8/2 から既に存在（syncthing-folder-29c1b2.txt 108 B）
+
+## Task 1 (Phase A) Step 2: 稼働（両方向の対照つき）
+
+    syncthing=0 []
+    keeper.sh=1 [('157746', '157741')]
+    ssh=6 [('1', '0'), ('148463', '1'), ('270628', '1'), ('270639', '270628'), ('270705', '270660'), ('270709', '270705')]
+    zsh=5 [('157741', '1'), ('171845', '171844'), ('270640', '270639'), ('272972', '270766'), ('274582', '270766')]
+    zzz_no_such=0 []
+
+## Task 1 (Phase A) Step 3: 控え
+
+    drwx------ 2 ubuntu ubuntu 4096 Aug 23 13:52 syncthing
+    drwx------ 2 ubuntu ubuntu 4096 Aug 23 13:52 syncthing.bak.20260823-232244
+    drwx------ 2 ubuntu ubuntu 4096 Aug 23 13:52 syncthing.bak.20260824-003520
+    apikey_elements=1
+    len=32 empty=False        ← 値は出していない
+
+## Task 1 (Phase A) Step 5: 中心の値と自分の識別子
+
+    philip: 3J4TRX4-7ZOHQAY-MNNTGTY-WXYDHFW-OOAWOXQ-7L23IDP-ZJ6KT77-DZOCQQE
+    bengio: 4NIRI4M-BKF2ELP-QKUSUWG-II6SCOD-SHM3U5J-ZMWUAYN-IA6PXIT-X52VHQO
+    device id="4NIRI4M-...-X52VHQO" name="Bengio"        ← 先頭が大文字。Task 3 Step 2 で直す
+    folder id="default" label="Default Folder" path="/home/ubuntu/Sync" type="sendreceive"
+    <configuration version="37"
+    in_config=True
+
+## Task 1 (Phase A) Step 6: 中心への認証 — **通った**
+
+禁止 1 の但し書き（中心で命令を実行してはならない）を守るため、SPEC の
+`ssh … 'echo REACHABLE'` ではなく `ssh -N`（命令を伴わない）で測った。
+
+    ssh_exit=124          ← timeout による終了。-N は保持し続けるため
+    authenticated=1
+    accepts_key=1
+    denied=0
+
+    debug1: Server accepts key: /home/ubuntu/.ssh/id_ed25519_bengiotophilip ED25519 SHA256:Ea9ReajNAiOoaixOPnahszJrJug/UvSXI4ZJZjAr6G4 explicit
+    Authenticated to 192.168.196.150 ([192.168.196.150]:50072) using "publickey".
+    debug1: Requesting no-more-sessions@openssh.com
+    debug1: Entering interactive session.
+    debug1: Remote: /home/ubuntu/.ssh/authorized_keys:3: key options: agent-forwarding port-forwarding pty user-rc x11-forwarding
+    Transferred: sent 3396, received 3868 bytes, in 11.4 seconds
+    debug1: Exit status 0
+
+**Gate G1 — pass。**
+
+## Task 2 (Phase B): 版を中心に揃える
+
+    curl_exit=0
+    -rw-rw-r-- 1 ubuntu ubuntu 11821325 Aug 24 00:41 /tmp/st_v2_bengio.tar.gz
+    f929eb8e5b72a85543eeeefb2c38f34a68e0c530e70758a2905b78840c76602c  /tmp/st_v2_bengio.tar.gz
+    syncthing-linux-amd64-v2.1.3/
+
+展開したものの要約値（中心の実測値と照合）
+
+    e8a08fdd8b25340aae0c0a00ab131b293830e4ea47504d4b83a82f31b52b96c4  /tmp/syncthing-linux-amd64-v2.1.3/syncthing
+    中心（前契約 audit.md:308）: e8a08fdd8b25340aae0c0a00ab131b293830e4ea47504d4b83a82f31b52b96c4  27045912 bytes  v2.1.3
+    → 一致
+
+置き換え（旧版は /tmp/syncthing.v1.27.10.bak へ退避。要約値 32ab747e…）
+
+    -rw-r--r-- 1 ubuntu ubuntu 27045912 Aug 24 10:33 /home/ubuntu/bin/syncthing
+    e8a08fdd8b25340aae0c0a00ab131b293830e4ea47504d4b83a82f31b52b96c4  /home/ubuntu/bin/syncthing
+
+## Task 3 (Phase B): 設定を組み立てる
+
+    own_name: Bengio -> bengio
+    hub_device_added: id=3J4TRX4-7ZOHQAY-MNNTGTY-WXYDHFW-OOAWOXQ-7L23IDP-ZJ6KT77-DZOCQQE name=philip address=tcp://127.0.0.1:22001
+    globalAnnounceEnabled: true -> false
+    relaysEnabled: true -> false
+    autoUpgradeIntervalH: 12 -> 0
+    localAnnounceEnabled: true (unchanged)
+    folders: [('claude-sync', '/home/ubuntu/claude-sync', 'sendreceive'), ('m2', '/home/ubuntu/slocal2/m2', 'sendreceive')]
+
+### Step 6: 書式と権限
+
+    xml_ok
+    device_count=2
+      id=4NIRI4M-...-X52VHQO name=bengio address=['dynamic']
+      id=3J4TRX4-...-DZOCQQE name=philip address=['tcp://127.0.0.1:22001']
+    folder_count=2
+      id=claude-sync path=/home/ubuntu/claude-sync type=sendreceive shared=['4NIRI4M', '3J4TRX4']
+      id=m2 path=/home/ubuntu/slocal2/m2 type=sendreceive shared=['4NIRI4M', '3J4TRX4']
+    globalAnnounceEnabled=false
+    localAnnounceEnabled=true
+    relaysEnabled=false
+    autoUpgradeIntervalH=0
+    600 11085
+    sha=fdc3d29452422dc8ea4ce5e54ae1d06fcb40a5edfa276c0aae46b5c1b74c2358
+
+**Gate G2 — pass。**
+
+### 利用者による追加の編集（`<defaults>` の folder ひな型の削除）
+
+利用者が `<defaults>` 配下の `<folder id="" path="~">` を削除し、控えを
+`/tmp/config.xml.before_folder_fix` に取った。位置を控えとの差分で確かめた。
+
+    before root_children=['folder', 'folder', 'device', 'device', 'gui', 'ldap', 'options', 'defaults']
+    before top-level folders=[('claude-sync', '/home/ubuntu/claude-sync'), ('m2', '/home/ubuntu/slocal2/m2')]
+    before defaults children=[('folder', '', '~'), ('device', '', None), ('ignores', None, None)]
+
+    diff: 162,202d161
+    <         <folder id="" label="" path="~" type="sendreceive" ...>   ← <defaults> の内側のみ
+    diff_lines=47
+
+    after  root_children=['folder', 'folder', 'device', 'device', 'gui', 'ldap', 'options', 'defaults']
+    after  defaults children=[('device', ''), ('ignores', None)]
+    after  top-level folders=[('claude-sync', ...), ('m2', ...)]   ← 変わらず 2 件
+
+**最上位の共有フォルダは編集の前後とも `claude-sync` と `m2` の 2 件だけである。**
+`<defaults><folder>` は新規フォルダ追加時の初期値のひな型であり、同期対象ではない。
+削除は無害だが、「ホーム全体が共有される状態だった」という事実は無い。
+
+## Task 4 (Phase C): 中継を張り、繋ぐ
+
+### Step 1: 目印
+
+    -rw------- 1 ubuntu ubuntu 60 Aug 24 11:03 /home/ubuntu/.tunnel_to_philip
+    lines=2
+    marker_count=1
+    placed_at=2026-08-24 11:03:09 UTC
+
+### Step 3: 中継が立った
+
+**一度目の走査は偽陽性だった。** `pgrep -f 'ssh.*-L 22001:127.0.0.1:22000'` が
+**自分自身の待機命令の文字列**を拾った（申し送り #3 のとおり）。ポートだけで測り直した。
+
+    port_22=LISTEN
+    port_22000=-
+    port_22001=-        ← 一度目（11:03:38）の実際の状態
+    port_8384=-
+
+改めて `/proc/net/tcp` のみで待ったところ
+
+    pid=321160 start=2026-08-24 11:10:02 UTC        ← 目印から 413 秒
+    pid=157746 start=2026-08-23 17:39:05 UTC        ← keeper（親）
+    ssh -N -L 22001:127.0.0.1:22000 -p 50072 -i <KEYDIR>/id_ed25519_bengiotophilip -o StrictHostKeyChecking=accept-new -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=3 ubuntu@192.168.196.150
+
+    ~/.tunnel.log:
+    Warning: Permanently added '[192.168.196.150]:50072' (ED25519) to the list of known hosts.
+
+**引数に中心の住所 `ubuntu@192.168.196.150` を含む。**
+
+### Step 4: 実行権（利用者が戻した）
+
+    ctime=2026-08-24 12:52:02 +0000  mtime=2026-08-24 10:33:15 +0000  mode=755
+    e8a08fdd8b25340aae0c0a00ab131b293830e4ea47504d4b83a82f31b52b96c4
+
+**中継の成立（11:10:02）が実行権の復帰（12:52:02）より 1 時間 42 分早い。順序は守られている。**
+要約値は Task 2 と同じ。
+
+### Step 5: 起動
+
+    syncthing_started_at=2026-08-24 13:10:04 UTC       ← 実行権の復帰から 1082 秒
+    syncthing_count=2
+      pid=332564 ppid=157746 cmd=/home/ubuntu/bin/syncthing serve --no-browser    ← 親は keeper
+      pid=332580 ppid=332564 cmd=/home/ubuntu/bin/syncthing serve --no-browser    ← その子
+    port_22=LISTEN port_22000=LISTEN port_22001=LISTEN port_8384=LISTEN
+
+    syncthing v2.1.3 "Hafnium Hornet" (go1.26.5 linux-amd64) builder@github.syncthing.net 2026-08-03 21:36:05 UTC
+
+`~/.syncthing.log`（識別子は先頭 7 文字のみ syncthing 自身が出す）
+
+    13:10:02 INF syncthing v2.1.3 "Hafnium Hornet" ...
+    13:10:02 INF Archiving a copy of old config file format (path=.../config.xml.v37)
+    13:10:02 INF TCP listener starting (address="[::]:22000")
+    13:10:02 INF GUI and API listening (address=127.0.0.1:8384)
+    13:10:02 INF Loaded configuration (name=bengio)
+    13:10:02 INF Loaded peer device configuration (device=3J4TRX4 name=philip address="[tcp://127.0.0.1:22001]")
+    13:10:02 INF Ready to synchronize (folder.id=claude-sync folder.type=sendreceive)
+    13:10:02 INF Established secure connection (device=3J4TRX4 connection.remote=127.0.0.1:22001 connection.type=tcp-client connection.crypto=TLS1.3-TLS_AES_128_GCM_SHA256)
+    13:10:02 INF Ready to synchronize (folder.id=m2 folder.type=sendreceive)
+    13:10:02 INF New device connection (device=3J4TRX4 address=127.0.0.1:22001 remote.name=philip remote.client=syncthing remote.version=v2.1.3)
+    13:10:02 INF Completed initial scan (folder.id=claude-sync)
+    13:10:03 INF Peer has a new index ID (device=3J4TRX4 folder.id=claude-sync indexid=0x926FBB42EBBA2DBD)
+    13:10:03 INF Peer has a new index ID (device=3J4TRX4 folder.id=m2 indexid=0x29601E30C53CB192)
+    13:10:10 INF Synced file (folder.id=claude-sync file.name=sync-alerts.sync-conflict-20260824-131007-4NIRI4M.log file.size=4784 blocks.local=0 blocks.download=1)
+    13:10:22 INF Detected NAT services (count=0)
+
+**自動更新の記録は無い。** `autoUpgradeIntervalH=0` が効いている。
+
+### Step 6: 設定の保持
+
+    config_version=52                       ← 37 から移行された（要約値は変わる）
+    folders=[('claude-sync', '/home/ubuntu/claude-sync', 'sendreceive'), ('m2', '/home/ubuntu/slocal2/m2', 'sendreceive')]
+    devices=[('3J4TRX4', 'philip', ['tcp://127.0.0.1:22001']), ('4NIRI4M', 'bengio', ['dynamic'])]
+    globalAnnounceEnabled=false
+    localAnnounceEnabled=true
+    relaysEnabled=false
+    autoUpgradeIntervalH=0
+    mode=600 size=11330
+
+**Gate G3 — pass。**
+
+## Task 5 (Phase D): 届くことの確認
+
+### Step 1: 自分から中心へ送る
+
+    -rw-rw-r-- 1 ubuntu ubuntu 40 Aug 24 13:10 /home/ubuntu/claude-sync/probe-bengio.txt
+    2d693215c54633e8060558f7f42890ce48927c8938e2bbb4fbde758efbf66fbc  probe-bengio.txt
+    40 bytes   created_at=2026-08-24 13:10:57 UTC
+
+中心へ届いたかを、**中心で命令を実行せず**に自ホストの索引から読んだ
+（`127.0.0.1:8384` の REST。合言葉は変数に読み込み、画面へ出していない）
+
+    claude-sync  philip_completion=100.0000% needBytes=0 needItems=0 globalBytes=9585
+    m2           philip_completion=100.0000% needBytes=0 needItems=0 globalBytes=40743989547
+    hub_connected=True addr=127.0.0.1:22001 clientVersion=v2.1.3
+    probe global: size=40 modifiedBy=4NIRI4M deleted=False
+    probe availability=[{'id': '3J4TRX4-7ZOHQAY-MNNTGTY-WXYDHFW-OOAWOXQ-7L23IDP-ZJ6KT77-DZOCQQE', 'fromTemporary': False}]
+
+**`availability` に philip の識別子がある。bengio が作った試験ファイルを中心が保有している。**
+
+### Step 2: 中心から届いたものと、共有領域の増減
+
+    drwxrwxr-x 2 ubuntu ubuntu 4096 Aug 24 13:10 .stfolder
+    -rw-rw-r-- 1 ubuntu ubuntu 4761 Aug 24 13:10 sync-alerts.log
+    -rw-rw-r-- 1 ubuntu ubuntu 4784 Aug 24 12:59 sync-alerts.sync-conflict-20260824-131007-4NIRI4M.log
+    -rw-rw-r-- 1 ubuntu ubuntu   40 Aug 24 13:10 probe-bengio.txt
+
+    開始時: du_bytes=4031  files=1
+    終了時: du_bytes=9702  files=4
+
+**記録は上書きではなく衝突ファイルになった。** `sync-alerts.sync-conflict-20260824-131007-4NIRI4M.log`
+が生まれ、両方の内容が残っている。**消えたものは無い。**
+
+folder の進み方（13:11:44 時点）
+
+    claude-sync  state=idle           local=3/9585B        global=3/9585B        need=0/0B          errors=0
+    m2           state=sync-preparing local=3646/40737661512B global=3720/40743989547B need=1413/14832654763B errors=0
+
+**repo は約 40.7 GB（SPEC の「約十九ギガ」と食い違う）。完了を待たない。**
+残り 1413 件 / 約 14.8 GB。`.stignore` が `.git` を除外しているため git の操作とは衝突しない。
+
+### Step 3: 触っていないものの無変更
+
+    9fe9c423002e426e774bf8366f0cb307b5bcc31da0fa1fb15ff603c5f219dd90  /home/ubuntu/bin/keeper.sh
+    marker_count=1
+    m2sync_sha=bcf46ba9031a45cb5f22371e6a1e598b2218782f6b0db74ab80ca6fea0aeb25f
+
+keeper.sh と m2-sync.sh は Task 1 と同じ要約値。目印は 1 件。

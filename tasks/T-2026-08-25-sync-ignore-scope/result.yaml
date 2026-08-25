@@ -1,0 +1,175 @@
+result_version: 3
+task_id: "T-2026-08-25-sync-ignore-scope"
+status: partial
+host: "lecun"
+branch: "feat/sync-ignore-scope"
+pr: 147
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      .stglobalignore と .stignore の sha256 が一致（61593e99…9a2a、2223 バイト / 68 行）。
+      REST /rest/db/ignores が ignore 68 行 → expanded 184 行を返し、1 実効行が 4 展開行へ
+      なることを確認。禁止領域の一時ファイルは find で 0 件（触っていない）。禁止領域の同期対象は
+      2612 件 / 39,749,977,564 バイト。除外を足しても既存が消えないことを実装 6 点（(?d) 印、
+      IsDeletable、contains ignored files の拒否、Marking as ignored と deleted の区別、
+      scanSubdirsDeletedAndIgnored、FileInfo.IsIgnored）と実測 3 点（ignored 印 2092 件が
+      2092/2092 局所に存在、.venv 6,455,902,962 バイトが残存、除外を広げた 57d2a57a の後も残存）で確定。
+      反映は REST と keeper.sh:48-49 の両方が使え、再起動は不要。
+  - id: G2
+    verdict: pass
+    note: >-
+      同期 5256 件を版管理との重なりで分離（二重管理 473 件 / 7,213,150 バイト、同期のみ 4783 件 /
+      42,003,631,980 バイト）。展開規則を再現し REST の expanded と 183/184 行一致（差は ** の
+      畳み込みのみ）。判定器を実在 51,245 件へ当て、実測 5256 件 / 42,010,845,130 バイトと
+      件数・バイト・集合すべて一致（集合差 0）。案 A / B / C を評価し、A=2591 件 / 30,750,569,270 バイト、
+      B=2447 件 / 26,796,683,381 バイト、C=188 件 / 11,844 バイト。新たに同期対象になるものは 3 案とも 0 件。
+  - id: G3
+    verdict: ask
+    note: >-
+      正本を 61593e99…9a2a → 4b71ae4e…fbba1 へ変更し REST で反映（HTTP 200、error なし）。
+      expanded 184 → 156 行。消えるべき 7 展開形（!**/*.pth !*.pth !**/logs/** !logs/**
+      !**/outputs/** !*.ckpt !**/*.safetensors）がすべて消え、残るべき 5 展開形
+      （!experiments/**/checkpoints/** !experiments/**/*.pth !experiments/**/predictions/**
+      !experiments/**/logs/** !data/processed/**）がすべて残った。localFiles 5256 → 2591、
+      localBytes 42,010,845,130 → 30,750,569,270 で Phase B の事前予測と完全一致。
+      禁止領域は experiments/ 10628 件 / 27,183,167,123 バイト、transfer/ 111 件 / 202,614,876 バイト、
+      data/ 217 件 / 12,774,818,641 バイトで変更前と完全同一。一時ファイルは前後とも 0 件。
+      errors 0、needFiles 0、state idle、接続 1/1 維持、syncthing 2 プロセス。
+      四ノードの接続は本ホスト（lecun）から測れない。見える相手は中心 1 台のみで、その 1 台は
+      切れていない。測れない項目を達成と書かないため起票者へ諮り、UNKNOWN として報告する
+      承認を得たうえで続行した。
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+
+deviations:
+  - type: spec_defect
+    note: >-
+      SPEC の repo 指定 ~/slocal2/m2 と実行ホスト philip が本ホストと異なるため、
+      ~/slocal/m2 / lecun へ読み替えて実行した。keeper.sh:26 が [ -d ~/slocal2 ] で
+      分岐しており、指定はホストごとに違う値である。起票者の判断を仰ぎ、続行の承認を得た。
+  - type: judgement
+    note: >-
+      make task-start を使わず、同じ規則（feat/<slug>、起点 origin/phase0）で分岐を作った。
+      契約は手順 1 の make task-notion で取得済みであり、作業ツリーに契約の成果物があるため
+      task_start.sh の前提（未 commit 0 件）を満たせない。
+  - type: judgement
+    note: >-
+      開始前から在る未追跡 5 件（.sync-pause.released と docs/sessions/digest/ の 4 件）を
+      repo 外へ退避した。SPEC が許可した措置。消していない。報告の後に戻した。
+  - type: judgement
+    note: >-
+      反映に REST を使った。正規経路（phase0 → keeper）はマージ待ちのため、本ホストで
+      効果を実測する手段として併用した。マージまでは keeper が旧版へ戻す。
+  - type: judgement
+    note: >-
+      案の選択（A / B / C）と、文面の宣言と実態が食い違う 3 対象の扱いは、
+      escalate_if「版管理と同期のどちらで配るべきかを決められない対象が残った場合」に
+      当たるため自分で決めず、材料を示して起票者の判断を仰いだ。
+
+issuer_defects:
+  - type: shell_assumption
+    note: >-
+      SPEC 5 行目が repo を ~/slocal2/m2 と断定し、§0 の手順が cd ~/slocal2/m2 で始まる。
+      本ホストに ~/slocal2 は存在せず、指示どおり実行すると最初の 1 行で失敗して以降が
+      すべて実行されない。keeper.sh:26 の M2DIR=$([ -d ~/slocal2 ] && echo ~/slocal2/m2 ||
+      echo ~/slocal/m2) が示すとおり、repo の位置はホストごとに違う。preflight の
+      P9 spec_lint が host_mismatch@SPEC.md:5 として検出した。
+  - type: asserted_without_measuring
+    note: >-
+      「環境の事実（再測定は不要）」表が中心を philip（本ホスト）とし、四ノードが接続済みと
+      断定した。本ホストは lecun であり、/rest/system/connections で見える相手は中心 1 台
+      （connected = 1 / 1）のみだった。指示どおり完了判定 L「四ノードとの接続が切れていない」を
+      確かめようとすると、測れないまま達成を主張することになる。UNKNOWN として報告した。
+  - type: asserted_without_measuring
+    note: >-
+      Goal が experiments/baselines/s0_002_maskdino_bbox_seed123/.syncthing.epoch_12.pth.tmp を
+      実在するものとして扱い、Task 1 Step 3 が「触らずに数える」ことを求めた。本ホストには
+      変更前から 0 件であり、指示どおり実行しても数える対象が無く空振りした。中心で観測された
+      ものと解される。一時ファイルは転送中にのみ存在し、収束後は残らない挙動と整合する。
+
+positive_controls:
+  - judgement: "除外規則の変更が同期処理に効いている"
+    breaking_input: "無制限行 7 行（!*.pth !*.pt !*.ckpt !*.onnx !*.safetensors !outputs !logs）を削除して反映する"
+    observed: >-
+      expanded が 184 → 156 行へ減り、localFiles が 5256 → 2591、localBytes が
+      42,010,845,130 → 30,750,569,270 へ変わった。変えなければどれも動かない値である。
+  - judgement: "案の事前評価に使った判定器が、処理と同じ判定をする"
+    breaking_input: "実在ファイル 51,245 件へ当て、Syncthing の実測と集合で照合する"
+    observed: >-
+      件数 5256 = 5256、バイト 42,010,845,130 = 42,010,845,130、判定器のみ 0 件・DB のみ 0 件。
+      索引の ignored 印 13,163 件との照合でも一致 13,157 / 不一致 6（すべて配下に同期対象を持つ
+      中間ディレクトリ。ファイルの不一致は 0）。
+  - judgement: "除外を足しても局所の実体は消えない"
+    breaking_input: "2665 件 / 11,260,275,860 バイトを除外へ移し、禁止領域を含む状態で反映する"
+    observed: >-
+      experiments/ 10628 件 / 27,183,167,123 バイト、transfer/ 111 件 / 202,614,876 バイト、
+      data/ 217 件 / 12,774,818,641 バイトが変更前と完全同一。repo 全体の差 −3 件 / −9,809 バイトは
+      集合の差で全件を特定し、消えた 5 件はすべて実行者が退避したもの、増えた 2 件は分岐作成による
+      .git 内のファイルだった。同期処理が消したものは 0 件。
+  - judgement: "報告本文の秘匿検査が資格情報の混入を検出する"
+    breaking_input: "環境にある資格情報の値そのものを含む文字列を検査へ通す"
+    observed: >-
+      仕込んだ 1 件を 1 件として検出した（陽性対照 OK）。仕込まない文字列では 0 件（陰性対照 OK）。
+      本検査では RESULT.md / audit.md / spec.yaml / .stglobalignore の 4 ファイルすべてで混入 0 件。
+      検査は値も名前も出力していない。
+  - judgement: "除外を出し入れしても局所の実体は増減しない"
+    breaking_input: "新版で 2591 件へ外した後、keeper が旧版へ戻して 5256 件へ復帰させる（往復）"
+    observed: >-
+      localFiles が 2591 → 5256、localBytes が 30,750,569,270 → 42,010,845,130 へ戻る間、
+      experiments/ 10628 件 / 27,183,167,123 バイト、transfer/ 111 件 / 202,614,876 バイト、
+      data/ 217 件 / 12,774,818,641 バイトはいずれも変わらなかった。往復のどちらの向きでも
+      実体は増減しない。
+  - judgement: "展開規則の再現が実装と一致する"
+    breaking_input: "現行の文面 68 行を自前で展開し、REST が返した expanded 184 行と 1 行ずつ照合する"
+    observed: >-
+      184 行中 183 行が一致した。差は最終行のみで、REST が ** を畳み込んで ** を返すのに対し
+      自前は **/**/** を出した。どちらもすべてに当たる行であり判定に影響しない。
+
+followups:
+  - >-
+    禁止と同期の矛盾は解けていない。experiments/** への同期は 2591 件 / 30,750,569,270 バイト
+    残る。禁止事項 1「experiments/** の中身を削除・変更する」を、実行者の手による変更に限るのか、
+    同期による配布も含むのかを契約側で決める必要がある。全除外（案 C）すれば矛盾は完全に解けるが、
+    同期は 42,010,845,130 バイト → 11,844 バイトになり checkpoints・重み・predictions が一切
+    届かなくなる。起票者は案 A を選び、禁止事項の再定義を差し戻す判断をした。
+  - >-
+    本ホストに存在する一時ファイルは 0 件のため、既存の一時ファイルの扱いは判断していない。
+    中心（philip）に残っているものを消すかどうかは次の判断である。本契約では触っていない。
+  - >-
+    .stglobalignore:29 は「git 追跡ファイルとの二重管理を防ぐ除外」を掲げて 1 行だけ置くが、
+    logs/ で同じ問題が 391 件起きていた。案 A の適用で二重管理は 473 件 → 82 件へ減ったが、
+    experiments/ に 82 件残る。どの行が拾っているかは audit.md §8 に記録した。
+  - >-
+    無制限行の削除により、将来 experiments/ 配下に .ckpt / .onnx / .safetensors が
+    生まれた場合は同期されなくなる。現時点の実測では 3 形式とも 0 件のため範囲付きの行を
+    足していない。形式を変える場合は 43〜54 行に範囲付きで追加すること。
+  - >-
+    中心（philip）にも .sync-pause が置かれたままで、02:59:10 時点で自動同期が止まっている
+    （本契約の操作ではない）。中心が止まっている間は PR #147 をマージしても phase0 の取得が
+    進まない可能性がある。誰が置いたかは追っていない。
+  - >-
+    本ホストの .stignore は報告後に keeper が origin/phase0 の旧版へ戻した（設計どおり）。
+    変更が実際に効くのは PR #147 のマージ後で、各台へは keeper 最大 30 分 + 走査で及ぶ。
+  - >-
+    /rest/db/browse が HTTP 500 を返す（could not find child '.remember' for path
+    '.remember/logs'）。索引に親ディレクトリのエントリが無いことが原因で、prefix を指定すれば
+    応答する。全件一覧は索引 DB（folder.0002-uefxpssq.db の files / file_names）の直読みで得た。
+
+unknowns:
+  - >-
+    完了判定 L の「四ノードとの接続」。本ホスト lecun から見える相手は中心 1 台のみで、
+    残る三台は測っていない。見える 1 台は切れていない（connected = 1 / 1）。
+  - >-
+    他台での反映の実測。他ホストに触れていない（禁止 3）ため、実装から導いた見込みのみ。
+    マージ → keeper 最大 30 分 → 走査（監視 10 秒 / 定期 3600 秒）で概ね 30 分〜1 時間。
+  - >-
+    「今から足した行で既存が消えない」ことの中心ホストでの実測。本ホストでは消えなかったが、
+    中心では測っていない。
+
+commits: ["2f61013f"]

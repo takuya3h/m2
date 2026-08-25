@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（323 件）
+## 未処理（347 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -335,9 +335,33 @@
 - [ ] 2026-08-23 [cc] 契約の対照 zzz_none は偽陽性が無いことしか示さない。検出能力は実在する語でしか測れない。計数の対照は両方向を雛形に入れるべき（tasks/_templates/impl/SPEC.md）
 - [ ] 2026-08-23 [cc] 錠のファイルの存在は保持を意味しない。flock -n で取得を試して初めて分かる。判定の書き方を「作られた」から「保持されている」へ変えるべき（scripts/sync/keeper.sh の 25-26 行）
 - [ ] 2026-08-23 [cc] ~/.claude/settings.json が末尾カンマで JSON として壊れており、allow だけでなく deny(20 件) と ask(13 件) も無効化されていた。ユーザーが修正済み。設定変更後に妥当性を検査する習慣が要る（~/.claude/settings.json）
+- [ ] 2026-08-24 [cc] 契約ディレクトリへの控えが実行基盤の判定器に拒否され G1 を文言どおりに満たせず、停止して判断を仰いだ。repo 外の主たる控え（要約値が原本と一致）で続行する承認を得た。SPEC は自ら「認証情報への接触を拒むことがある」と書きながら版管理内への控えを stop ゲートに置いており、指示どおり実行すると必ず止まる（tasks/T-2026-08-24-philip-accept-node-keys/SPEC.md）
+- [ ] 2026-08-24 [cc] ~/.ssh/ の他のファイルの無変更を測れず UNKNOWN。ls -la ~/.ssh/ も find ~/.ssh -printf '%f\n' も実行基盤に拒否された。名前と権限と更新時刻だけを取る形でも拒否される。人が直接測るか、読取専用の列挙を許す規則を足すかが未決（~/.ssh/）
+- [ ] 2026-08-24 [cc] 処理の件数を「変わっていない」と判定させる契約なのに開始時の計数の手順が無い。終了時しか測れず比較対象が無い。起動時刻による非再起動の証拠で代替した。以後は Task 1 に開始時の計数を置くこと（tasks/T-2026-08-24-philip-accept-node-keys/SPEC.md）
+- [ ] 2026-08-24 [cc] 受け入れ一覧の権限は本機で 600 であり SPEC の申し送りの 664 ではなかった。戻し方も 600 で記録した。ホストごとに実測が要る（~/.ssh/authorized_keys）
+- [ ] 2026-08-24 [cc] 実行ホスト philip と OS ホスト名 aolab が食い違い preflight の P9 が host_mismatch を出す。philip と ilya は OS ホスト名が同じで区別できないため syncthing device-id で確かめた。P9 の当該規則はホスト名以外の識別子を見ないと偽陽性が出続ける（tools/preflight_task.py）
+- [ ] 2026-08-24 [cc] 疎通は中心からは測れない。受け入れ一覧に載ったことまでしか示せず、各ノードの契約で ssh -v の Server accepts key を確かめる必要がある。再起動は不要（tasks/T-2026-08-24-bengio-syncthing-node/）
+- [ ] 2026-08-24 [cc] 台帳への返送が失敗した。make task-report が「配布台帳に契約が見つかりません」で exit 2。台帳に本契約の行が無く depends_on の T-2026-08-24-bengio-syncthing-node の行も無い。照合器は働いており T-2026-08-24-philip-syncthing-hub は found=True を返す。SPEC は「台帳から取り込んでいるので返送も通るはず」と確かめずに書いていた。報告は PR #142 で読むこと（tools/report_task.py）
 - [ ] 2026-08-24 [human] keeper.sh 41-43 行が目印と無関係に syncthing を起動するため禁止 2 と衝突する。3 案（実行権を外す／そのまま起動して記録／Phase A で差し戻す）を提示し「~/bin/syncthing の実行権を一時的に外す」を選択。~/bin/ への配置・~/.zshrc への追記・常駐の起動・commit と push も併せて承認（T-2026-08-24-philip-keeper-autosync）
 - [ ] 2026-08-24 [cc] ~/bin/syncthing を 644 へ落とした状態は philip に残る。同期処理を立ち上げる契約で chmod 755 ~/bin/syncthing を戻す必要がある。syncthing を配置済みの他 4 台でも keeper 起動時に同じ矛盾が起きるため、起票側で扱いを決めてほしい（T-2026-08-24-philip-keeper-autosync）
 - [ ] 2026-08-24 [cc] SPEC の構文検査が sh -n を使うが正本は #!/bin/bash でプロセス置換を含むため dash では必ず落ちる。次の起票から bash -n にしたい（T-2026-08-24-philip-keeper-autosync）
+- [ ] 2026-08-24 [human] claude-sync の型。handoff が「他4台の中身が未測定のため UNKNOWN、中身を持つ台を sendonly」と残した点を提示し、3案（他4台を測ってから決める／handoff の安全側／SPEC どおり sendreceive）を示して「SPEC どおり sendreceive」を選択。他4台の中身は未測定のままである（T-2026-08-24-philip-syncthing-hub）
+- [ ] 2026-08-24 [human] 起動と同時に syncthing が v1.27.10 から v2.1.3 へ自動更新された件。3案（v2 のまま進め自動更新を止める／v1.27.10 へ戻す／何もせず報告）を示して「v2.1.3 のまま進め、autoUpgradeIntervalH を 0 にする」を選択。契約の Phase B に無い変更を承認（T-2026-08-24-philip-syncthing-hub）
+- [ ] 2026-08-24 [human] 外部通信（stunServer=default / natEnabled=true / crashReportingEnabled=true）が globalAnnounce と relays の無効化だけでは止まらない件。2案（意図に合わせて無効化／変えずに記録）を示して「変えずに記録だけする」を選択。契約の範囲外のため次の契約で扱う（T-2026-08-24-philip-syncthing-hub）
+- [ ] 2026-08-24 [cc] autoUpgradeIntervalH の既定は 12 であり、実行権を戻した瞬間に更新が走る。他 4 台でも同じことが起きる。ノード側の契約は、実行権を戻す前に 0 にしておくか v2 へ揃えるかを先に決めてほしい。中心は既に v2.1.3 である（T-2026-08-24-philip-syncthing-hub）
+- [ ] 2026-08-24 [cc] config.xml には GUI の apikey が実値で入っている。SPEC Task1 Step2 の BEGIN.*PRIVATE の検査では検出できず、指示どおりだと秘匿値が版管理へ入る。控えを版管理へ置かせる契約では、Task4 Step4 と同じ広さの検査を Task1 の側に置いてほしい（T-2026-08-24-philip-syncthing-hub）
+- [ ] 2026-08-24 [cc] 前契約 T-2026-08-24-syncthing-config-survey が origin/phase0 に未マージのため、SPEC が「正とする」と定めた handoff.md が本契約の分岐に存在しない。feat/syncthing-config-survey から読んで進めた。依存契約を正とする指定をするなら、先にマージしてから起票してほしい（T-2026-08-24-philip-syncthing-hub）
+- [ ] 2026-08-24 [human] make task-start が作業ツリーの未追跡 2 件で停止した。4 案（stash で一時退避／digest は commit し data 側は無視規則／両方 commit／ここで停止）を提示し「stash で一時退避」を選択。退避物は data/annotations/_deprecated/egosurgery_hand4/DEPRECATED.md と docs/sessions/digest/2026-08-22-d0076c74-….md で、報告の後に git stash pop で戻す（T-2026-08-24-syncthing-config-survey）
+- [ ] 2026-08-24 [cc] 同期処理を起動する契約は、設定を確定させてから chmod 755 ~/bin/syncthing を戻すこと。keeper.sh 41-43 は実行権だけを見て起動するため、戻した瞬間から最大 30 分でそのときの設定のまま起動する。起動前に globalAnnounceEnabled と relaysEnabled を false へ落とし、登録名を aolab から論理名へ直し、自動生成された default フォルダを消すこと（T-2026-08-24-syncthing-config-survey）
+- [ ] 2026-08-24 [cc] 共有フォルダ claude-sync の型を決めてほしい。philip 上は 8.0K・1 ファイルしか無く、他 4 台の中身は禁止 5 のため測れていない。空の側が sendreceive で参加すると中身を消しうる。中身を持つ台を sendonly、他を receiveonly で始める案を handoff.md に書いたが、どの台が中身を持つかが UNKNOWN のままである（T-2026-08-24-syncthing-config-survey）
+- [ ] 2026-08-24 [cc] 契約の「確定した事実（再測定は不要）」に誤りが 2 件あった。設定の場所は既定であり（serve --paths で実測）、中心の SSH は容器の中では 22 で 50072 は外側の写像である。再測定は不要と宣言された欄こそ、次の起票で出所を添えてほしい（T-2026-08-24-syncthing-config-survey）
+- [ ] 2026-08-25 [cc] 禁止と同期の矛盾は未解決。禁止事項1「experiments/** の中身を削除・変更する」を、実行者の手による変更に限るのか同期による配布も含むのかを契約側で決める必要がある。全除外すると同期は 42,010,845,130 → 11,844 バイトになる（tasks/T-2026-08-25-sync-ignore-scope/RESULT.md §5）
+- [ ] 2026-08-25 [cc] 起票者の判断で案 A（無制限行 7 行の削除のみ）を採用。案 B（data/ transfer/ も除外）と案 C（禁止領域を全除外）は不採用。判断の材料と 3 案の実測値は audit.md §9 にある（.stglobalignore）
+- [ ] 2026-08-25 [cc] 文面のコメントが「同期しない」と宣言していた wandb・third_party・data/external を、宣言どおり外す判断。data/external/weights 8,797,633,322 バイトと third_party 2,149,645,702 バイトが他台へ届かなくなるため、各台での再取得が要るかは未確認（.stglobalignore:33-37）
+- [ ] 2026-08-25 [cc] 中心（philip）に残る一時ファイルを消すかどうかは未決。本ホストには 0 件で本契約では触っていない（experiments/baselines/s0_002_maskdino_bbox_seed123/）
+- [ ] 2026-08-25 [cc] 契約の実行ホスト指定（philip / ~/slocal2/m2）と実際（lecun / ~/slocal/m2）が食い違い、完了判定 L「四ノードとの接続」が測れなかった。ホスト指定を持つ契約は指定ホストで実行するか、判定を実行ホストから測れる形に書き換えるかの判断が要る（tasks/T-2026-08-25-sync-ignore-scope/SPEC.md:5）
+- [ ] 2026-08-25 [cc] 無制限行の削除により、将来 experiments/ 配下に .ckpt / .onnx / .safetensors が生まれた場合は同期されない。現時点の実測では 3 形式とも 0 件のため範囲付きの行を足していない（.stglobalignore:43-54）
+- [ ] 2026-08-25 [cc] /rest/db/browse が HTTP 500 を返す（索引に .remember の親エントリが無い）。prefix 指定なら応答する。全件一覧は索引 DB の直読みで代替した。Syncthing v2.1.3 の不具合か設定かは未判定（~/.local/state/syncthing/index-v2/）
 
 ## 処理済み（1 件）
 

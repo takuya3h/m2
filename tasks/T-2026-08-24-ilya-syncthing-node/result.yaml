@@ -1,0 +1,141 @@
+result_version: 3
+task_id: "T-2026-08-24-ilya-syncthing-node"
+status: pass
+host: "ilya"
+branch: "feat/ilya-syncthing-node"
+pr: 145
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      開始状態を要約値で封印: syncthing 32ab747e… 26730145 B perm=644 / config.xml b548d117… 8494 B perm=600 /
+      cert.pem 0081011c… / key.pem 8fac365b… / keeper.sh 9fe9c423… / m2-sync.sh bcf46ba9… /
+      .stignore = .stglobalignore = 61593e99…。目印 0 件・同期処理 0 件（exe=syncthing count=0）・
+      中継 0 件（exe=ssh count=0、port=22001 CLOSED）。両方向の対照: zsh=5 / zzz_no_such_exe=0、
+      keeper.sh=1 / zzz_no_such_token=0、口 22=LISTEN / 口 1=CLOSED。
+      ~/claude-sync = 4528 バイト / 1 件、repo = 47515332495 バイト（いずれも丸めない実数）。
+      控えは repo 外 ~/.local/state/syncthing.bak.20260824-164557（要約値 3 件一致）。
+      設定内の識別子 UODEAXZ-…-X6SDBQY が scripts/sync/device_ids/ilya.txt と一致。
+      ssh -N で Authenticated to 192.168.196.150 using "publickey"、denied=0、
+      指紋 SHA256:O4FrUiuT3+JNwIDMduljzPXfS7minab+CkWfg4gDzIQ が hub_keys/ilya.pub と一致。
+  - id: G2
+    verdict: pass
+    note: >-
+      実行ファイル e8a08fdd8b25340aae0c0a00ab131b293830e4ea47504d4b83a82f31b52b96c4 / 27045912 B、
+      権限は 644 のまま（起動条件を満たさない）。v1.27.10 から入れ替えた。
+      options/autoUpgradeIntervalH=0、globalAnnounceEnabled=false、relaysEnabled=false、
+      localAnnounceEnabled=true。自分の登録名を aolab から ilya へ直した。
+      中心を id=3J4TRX4-…-DZOCQQE name=philip address=tcp://127.0.0.1:22001 で登録。
+      最上位 folder=2（claude-sync=/home/ubuntu/claude-sync, m2=/home/ubuntu/slocal2/m2、
+      ともに sendreceive、共有相手 2 件）。単純検索は 3 件でひな型 defaults/<folder id=""> を含む。
+      xml_ok=True、top_level_device_count=2、config.xml=600 cert.pem=664 key.pem=600、
+      鍵の要約値は開始時と同一。編集は各置換で件数 1 を表明して実行した。
+  - id: G3
+    verdict: pass
+    note: >-
+      目印 ~/.tunnel_to_philip 58 B perm=600 2 行（1 行目 /home/ubuntu/.ssh/id_ed25519_ilyatophilip、
+      2 行目 192.168.196.150）を 17:26:17.945 に置き、中継 pid 102324 が 17:48:56.714 に立った
+      （1358.8 秒）。引数に ubuntu@192.168.196.150 を含み、親は 43963 = keeper.sh。
+      中継が立った時点で port=22001 LISTEN と perm=644 を同時に観測した後、17:51:20.223 に
+      chmod 755（中継が 143.5 秒早い）。要約値は e8a08fdd… のまま不変。
+      18:18:38 に起動、プロセス 2 件 = 107755（親 43963）と 107777（親 107755）の親子。
+      版 v2.1.3 で中心と同じ。config_version 37→52 の移行後も最上位 folder 2 件・device 2 件・
+      autoUpgradeIntervalH=0 を保持。grep -c -i upgrade ~/.syncthing.log = 0。
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+
+deviations:
+  - type: environment
+    note: >-
+      make task-start を実行できなかった。未commit 2 件は契約そのもの（未追跡）と、本契約の開始前から
+      存在した docs/sessions/digest/2026-08-23-… の差分であり、scripts/task_start.sh の前提検査
+      （作業ツリーが清潔・分岐が未作成）を原理的に通せない。前二契約も同じ理由で実行していない。
+  - type: environment
+    note: >-
+      ~/.ssh/** を実行基盤の deny 規則で読めない。秘密鍵の権限を直接確認できないため、版管理側の
+      公開鍵 scripts/sync/hub_keys/ilya.pub の指紋と ssh -v が出した指紋の一致で代えた。
+  - type: judgement
+    note: >-
+      中心への到達確認を ssh -N（中心で命令を実行しない形）で行った。禁止 1 を守るため。
+      受け入れの控えは scratchpad へ隔離し ~/.ssh/known_hosts を触っていない。
+  - type: judgement
+    note: >-
+      秘匿検査で値の一部も表示せず、長さと有無だけを測った（申し送り 6: 秘匿を守る検査が秘匿を
+      出力してはならない）。囮は変数の中だけに置きファイルへ書いていない。
+  - type: judgement
+    note: >-
+      禁止 6（生成物を再生成しない）に従い make taskindex / make inbox を実行していない。
+      技能書は投影に現れることの確認を求めるが、契約の禁止が勝つと判断した。
+  - type: environment
+    note: >-
+      ~/bin/syncthing の入れ替え、~/.local/state/syncthing/config.xml の編集、$HOME 直下の目印の
+      作成が auto mode の分類器に拒否された。回避せず停止して利用者へ提示し、権限の付与を受けてから
+      続行した。目印だけは同じ目的の別の道具（Write）で置いた。
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: >-
+      SPEC 冒頭は「自分の登録名を ilya に直す必要がある（初期値は大文字始まりのはず）」と断定するが、
+      実測した初期値は aolab（hostname そのもの）であった。指示どおり Ilya を探して置換すると件数 0 で
+      当たらず、衝突を抱えたまま起動して中心と同名の相手が現れる。前契約 andrew の申し送りも
+      「ilya lecun も Andrew と同じ（先頭が大文字）と見てよい」と予想しており、これも外れた。
+  - type: asserted_without_measuring
+    note: >-
+      SPEC の「前契約で確定した事実」表は repo を四十・七四ギガと定数で書くが、本ホストの実測は
+      du -sb で 47515332495 B、syncthing の global で 42010655195 B であった。bengio 40.74 GB、
+      andrew 54745194976 B と三台とも違う。andrew が同じ誤りを報告済みだが是正されずに繰り返された。
+      定数として扱うとホスト固有の量を引き継いで誤った判断をする。
+  - type: check_does_not_check
+    note: >-
+      spec.yaml の inputs.data（egosurgery_phase_v1 と data/splits/ego_val.txt）は本契約の手順の
+      どこでも使わない。同期の設営に split も dataset も要らない。task-validate は入力の記載と存在を
+      見るが、その入力が手順で使われるかは見ないため、無関係な入力が契約に残っても誰も気付かない。
+  - type: asserted_without_measuring
+    note: >-
+      SPEC Task 3 Step 2 は中継まで最大六十分と書くが、keeper.sh の実装は sleep 1800（30 分）である。
+      andrew が同じ誤りを報告したのに本 SPEC でも直っていない。上限が実装の 2 倍で書かれており、
+      待つべき時間の判断を誤らせる。本ホストの実測は 1358.8 秒であった。
+
+positive_controls:
+  - judgement: "稼働しているものの計数（プロセス）が空振りでない"
+    breaking_input: "存在しない実行ファイル名 zzz_no_such_exe と存在しない語 zzz_no_such_token で数える"
+    observed: "exe=zsh count=5 / arg=keeper.sh count=1 に対し、いずれの否定対照も count=0 を返した"
+  - judgement: "口の状態の復号（/proc/net/tcp）が空振りでない"
+    breaking_input: "実在する口 22 と、待ち受けていない口 1 を問う"
+    observed: "port=22 LISTEN ESTABLISHED LISTEN / port=1 CLOSED"
+  - judgement: "秘密鍵の書き出しの混入検査が働いている"
+    breaking_input: "'-----BEGIN OPENSSH PRIVATE KEY-----' を変数の中で組み立てて走査させる"
+    observed: "decoy_detected=1（config.xml 本体の該当は 0）"
+  - judgement: "中心が試験ファイルを持っているかの判定が常に 200 を返す壊れ方ではない"
+    breaking_input: "/rest/db/file?folder=claude-sync&file=zzz-no-such-file.txt を問う"
+    observed: "HTTP 404 を返した。実在する probe-ilya.txt は HTTP 200"
+  - judgement: "設定の置換が意図した箇所だけに当たっている"
+    breaking_input: "各置換で件数が 1 でなければ assert n == 1 で失敗させる"
+    observed: "7 件の置換すべてが件数 1 で通り、最上位 folder は 1 から 2 へ、単純検索は 2 から 3 へ変わった"
+  - judgement: "送信前の秘匿検査が実値を照合している"
+    breaking_input: "環境の NOTION_API_KEY / WANDB_API_KEY / config.xml の apikey の実値を、それぞれ本文へ埋めた文字列を作って走査させる"
+    observed: "decoy_literal_detected=3/3。形の囮では decoy_shape_hits={Notion の内部鍵:1, 鍵らしい代入:1}。本文側は literal_leaks=0 / shape_hits=0。囮は変数の中だけでファイルへ書いていない"
+  - judgement: "抑止（.sync-pause）が実際に自動同期を止めている"
+    breaking_input: "目印を置いた後、常駐処理の周回が分岐へ書き込むかを記録で見る"
+    observed: "~/claude-sync/sync-alerts.log に 16:48:38 と 17:18:38 の『一時停止中』が記録され、auto-merge / auto-push は現れなかった"
+
+followups:
+  - "残る一台は lecun。版管理の位置が他と違うため、そこだけが未確認として残る。"
+  - "登録名の初期値は一定ではない。bengio=Bengio、andrew=Andrew、ilya=aolab（hostname そのもの）。lecun では必ず実測し、予想で置換しないこと。"
+  - "実行基盤（auto mode の分類器）が ~/bin/**、~/.local/state/**、$HOME 直下の目印への書き込みを拒否する。lecun でも同じ壁に当たる。起票時に織り込むこと。"
+  - "目印 → 中継の待ち時間は周回の位相で決まる（bengio 413 / andrew 1227 / ilya 1358.8 秒）。keeper.sh は sleep 1800 であり、SPEC の『最大六十分』は実装の 2 倍である。"
+  - "衝突の勝敗はホストで逆転する。ilya では自分の内容が sync-alerts.log として残り、中心側が衝突ファイルになった（andrew は逆）。どちらでも両方残るため中身で確かめること。"
+  - "中心側 m2 の needItems は needBytes=0 のまま非零になる（andrew 1478 / ilya 571）。中心で命令を実行できないため内訳は UNKNOWN のままである。"
+
+unknowns:
+  - "中心側 m2 の needItems=571 の内訳。needBytes=0 のため大きさ零の要素と解釈したが、禁止 1 により中心で命令を実行できず確かめられない。"
+  - "~/.ssh/known_hosts の実行前後の比較。実行基盤の deny 規則で読めない。自分の確認は隔離先 scratchpad/known_hosts_probe へ書いた。"
+  - "中心から見た状態。禁止 1 により中心で命令を実行していないため、観測はすべて自ホストの REST 経由である。"
+
+commits:
+  - "1432e3b"
