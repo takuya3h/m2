@@ -107,7 +107,8 @@ macro-F1 **5/5**（平均 Δ +0.03399）。同一ホスト（lecun）だけで�
 4. Phase D へ入らなかった（1.2）。
 5. **禁止 5 に従い `make taskindex` と `make inbox` を回していない。** skill の手順は再生成を求めるが、契約の禁止を優先した。
    したがって `context/auto/` の投影と `tasks/inbox.md` は本報告を含まない。**全 PR 統合後に一台で回す必要がある。**
-6. `.env` への接触が権限フックに拒否され、W&B と Notion の追跡は no-op で走った（E13 / 521-527 行）。
+6. Phase B の run は W&B と Notion の追跡が no-op のまま走った。実行前に `scripts/load_env.sh` を読み込んでいなかったためで、
+   資格情報が読めないからではない（当初そう記録したが**誤りだった**。E13 / 532-559 行）。指標そのものは `metrics.json` に残っている。
 7. 決定化の対照 3 本と非決定の 2 本は `--no-evidence` で走らせ、`experiments/` を汚していない。証跡はログとして残した。
 8. 申し送り 4 が「Phase C で実測すること」と求めた減速倍率のため、決定化なしの run を 2 本走らせた。
    契約の腕ではなく道具の測定であり、証跡を残していない。**「別の腕の追加」に当たるかは起票者の判断を仰ぐ。**
@@ -122,8 +123,28 @@ macro-F1 **5/5**（平均 Δ +0.03399）。同一ホスト（lecun）だけで�
   **契約が Phase C の対照で測れと定めていたのは、この空白を埋めるためである**（E6 / 197-231 行）。
 - **シェルの前提**: `${PIPESTATUS[0]}` が zsh で空になり、最初の終了コード検査が空振りした。
   以後すべて `; echo "EXIT_CODE=$?"` に統一した（E2 / 39-43 行）。SPEC §6 の予告どおりの事故である。
+- **シェルの前提（2 件目）**: `source scripts/load_env.sh 2>&1 | tail -3` と書いたため
+  **パイプが副シェルを起こし、`export` が呼び出し元に残らなかった。**
+  読み込みを同じ命令に入れても、**パイプに繋いだ時点で無効になる。**
+  結果として「資格情報が読めない」と一度誤って記録した。パイプを外したところ `make task-report` は exit 0 で通った。
+  SPEC §6 の「読み込みは同じ命令の中に入れる」は**必要条件であって十分条件ではない**（E13 / 532-559 行）。
 
 ## 7. 送出と PR
 
-- PR: **§7 は commit / push 後に更新する。**
-- 台帳への送出: `make task-report` は `scripts/load_env.sh` を要し、`.env` への接触が権限フックに拒否されるため**送れない見込み**。結果は commit 後に追記する。
+- **PR: https://github.com/takuya3h/m2/pull/152**（`feat/oracle-ceiling-and-tool-drop` → `master`）。送り出しただけの状態ではなく、PR が存在する状態で終えている。分岐は規定の接頭辞 `feat/` で始まる。
+- commit: `1f4dd9c7e886aad2db9c4650b31a32d364f1f95a`（事前登録の記録）/
+  `a4a95cf2768b89f7b2ca221dc069b3761daaf890`（コードの配線・run の証跡・本報告）。
+- 台帳への送出: 下記「送出の結果」を参照（証跡は E12 / 517-530 行）。
+- **本契約では触れていない未追跡ファイル**: `experiments/analysis/lovo_decision_rule/dump_folds.py` は
+  同時に走っている別契約（判定則を確定させる契約）の生成物であり、commit に含めていない。
+
+### 送出の結果
+
+`make task-report` は **exit 0 で送出に成功した。** 台帳の応答:
+
+    {"task_id": "T-2026-08-26-oracle-ceiling-and-tool-drop", "verdict": "partial",
+     "n_issuer_defects": 4,
+     "report_sha256": "f736d4c56fc6075dad0c1e52afb43b23aff1ae1411f1d5c23731d96d92a29d25",
+     "report_bytes": 12440, "replaced_blocks": 0}
+
+秘匿の検査は無効にしていない。送出は `make task-report` の 1 経路のみで行った。

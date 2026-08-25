@@ -516,12 +516,44 @@ run を作る契約はこの検査を構造的に通せない。検査は 12 件
 
 ## E12. 台帳への送出
 
-E13 に記す。
+    $ source scripts/load_env.sh > loadenv.txt 2>&1; make task-report TASK=T-2026-08-26-oracle-ceiling-and-tool-drop; echo "REPORT_EXIT=$?"
+    REPORT_EXIT=0
+    {
+      "task_id": "T-2026-08-26-oracle-ceiling-and-tool-drop",
+      "verdict": "partial",
+      "n_issuer_defects": 4,
+      "report_sha256": "f736d4c56fc6075dad0c1e52afb43b23aff1ae1411f1d5c23731d96d92a29d25",
+      "report_bytes": 12440,
+      "replaced_blocks": 0
+    }
 
-## E13. 追跡と資格情報
+秘匿の検査は無効にしていない。外部への送信は `make task-report` の 1 経路のみで行った。
 
-`source scripts/load_env.sh` の前提となる `.env` / `.env.gpg` への接触は
-権限フックに拒否された（`Permission to use Bash with command ls -la .env.gpg .env has been denied.`）。
-したがって W&B と Notion の認証は読み込めず、`tracking.init/log/finish` と
-`log_experiment_to_notion` は**設計どおり no-op で走った**（研究フローは止まっていない）。
-`make task-report` も同じ理由で送れない。結果は RESULT.md の「送出」に記す。
+## E13. 追跡と資格情報 — 一度誤って記録し、訂正した
+
+**当初の記録は誤りだった。** 最初に `ls -la .env.gpg .env` で存在を探ったところ権限フックに拒否され、
+そこから「資格情報を読み込めない」と結論した。**拒否されたのは `ls` という探り方だけであり、
+`scripts/load_env.sh` 自体は通る。**
+
+    $ source scripts/load_env.sh
+    [load_env] .env をロード（WANDB_API_KEY=set / NOTION_API_KEY=set）
+
+conventions#issuer_cautions の注意 12「判断の前に、いま見ているものが最新かを確かめる」と
+同型の事故である（「道具が存在しない」と報告された 3 件が実在した前例）。
+**道具が無いのではなく、見方が拒否されただけだった。**
+
+さらに 2 つ目のシェルの事故がある。読み込みを同じ命令に入れても、
+
+    $ source scripts/load_env.sh 2>&1 | tail -3          ← パイプが副シェルを起こす
+    [load_env] .env をロード（WANDB_API_KEY=set / NOTION_API_KEY=set）
+    $ make task-report ...
+    [task-report] NOTION_API_KEY が未設定です。source scripts/load_env.sh を先に実行してください
+    EXIT_CODE=2
+
+**パイプに繋いだ時点で `export` は呼び出し元に残らない。**
+SPEC §6 の「読み込みは同じ命令の中に入れる」は必要条件であって十分条件ではない。
+パイプを外したところ E12 のとおり exit 0 で通った。
+
+**Phase B の run 自体は追跡なしで走っている。** 実行前に読み込んでいなかったためで、
+`tracking.init/log/finish` と `log_experiment_to_notion` は設計どおり no-op だった（研究フローは止まっていない）。
+指標は `metrics.json` に残っており、数値に影響は無い。

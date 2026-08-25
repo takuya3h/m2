@@ -3,7 +3,7 @@ task_id: "T-2026-08-26-oracle-ceiling-and-tool-drop"
 status: partial
 host: "lecun"
 branch: "feat/oracle-ceiling-and-tool-drop"
-pr: null
+pr: 152
 merged: false
 
 gates:
@@ -36,8 +36,10 @@ deviations:
     note: "Phase D へ入らなかった。理由は時間ではなく（対 828 組が入る計算）、落とす集合を求める仕組みが本番側に実装されていないこと。異質な 3 方法で確認し、起票者へ提示して『契約どおり止める』との回答を得た。"
   - type: judgement
     note: "禁止 5 に従い make taskindex と make inbox を回していない。skill の手順はこれらの再生成と -check を求めるが、契約の禁止を優先した。したがって context/auto/ の投影と tasks/inbox.md は本報告を含まない。全 PR 統合後に一台で一度だけ回す必要がある。"
+  - type: judgement
+    note: "Phase B の run を追跡なしで走らせた。実行前に scripts/load_env.sh を読み込んでおらず、W&B と Notion の追跡は設計どおり no-op で走った。指標は metrics.json に残っている。当初これを『資格情報が読めない環境差』と記録したが誤りで、読み込み自体は通る。拒否されたのは .env を ls した探りだけだった。"
   - type: environment
-    note: ".env と .env.gpg への接触が権限フックに拒否され、scripts/load_env.sh を読み込めなかった。W&B と Notion の追跡は設計どおり no-op で走り、研究フローは止まっていない。make task-report も同じ理由で送れない。"
+    note: "source scripts/load_env.sh をパイプに繋いだため副シェルで実行され、export が呼び出し元に残らず make task-report が一度失敗した。読み込みを同じ命令に入れても、パイプに繋げば無効になる。パイプを外して再実行し exit 0 で送出できた。"
   - type: judgement
     note: "決定化の対照 3 本（C1a/C1b/C2）と非決定の 2 本（N1/N2）は --no-evidence で走らせ、experiments/ を汚していない。証跡はコマンドの出力ログとして EVIDENCE.md に残した。"
   - type: judgement
@@ -91,6 +93,7 @@ unknowns:
   - "決定化の減速倍率の正確な値。平均比 1.87 倍だが n=4 と n=2 でばらつきが大きく、範囲は 1.32〜3.09 倍。断定できない。"
   - "runindex への反映。make runindex を回していないため index.csv は本契約の run を含まない。収穫器の読取関数を直接呼んで task_id が拾われることは確かめたが、索引そのものは未更新。"
   - "run 生成前の forbidden-check の状態。測っていないため、違反 7 件が run 生成のみに由来することは変更範囲の一覧からの推論であり、検査の前後比較では確かめていない。"
-  - "make task-report による台帳への送出可否。.env への接触が拒否されるため未実行。"
 
-commits: []
+commits:
+  - "1f4dd9c7e886aad2db9c4650b31a32d364f1f95a"
+  - "a4a95cf2768b89f7b2ca221dc069b3761daaf890"
