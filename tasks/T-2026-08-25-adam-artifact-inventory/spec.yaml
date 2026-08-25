@@ -1,0 +1,83 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-25-adam-artifact-inventory"
+  kind: analysis
+  title: "再構築の対象外だったホストに何が残っているかを測り、失われうるものを列挙する"
+  origin: claude-app
+  created_at: "2026-08-25T05:00:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: []
+  amendments: []
+
+intent:
+  question: "保守作業で五台が初期化され、再構築を終えた。本ホストはその対象外であり、保守の前後で何が残っているかを測っていない。版管理の外にある成果物が残っているか。同じ保守が本ホストへ及べば失われるものは何か。それらは版管理へ入れられるか"
+  decision_at_stake: "何を先に保全すべきか。他ホストでは版管理外に二十二万字の記録と分析の道具が残っており、初期化されていれば失われていた。本ホストにも同種のものがあるなら、測ってから保全の順序を決める"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/sync/keeper.sh"
+      - "scripts/sync/m2-sync.sh"
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b08"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "版管理の外にあるものの棚卸し", gpu: false, est: "50m"}
+    - {id: B, name: "失われうるものの評価と控えの保存", gpu: false, est: "40m"}
+    - {id: C, name: "報告と送出", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "版管理の位置を実測で確定し、作業ツリーの未追跡を件数と大きさで記録した。家の直下と同期の共有領域と実験の成果物について、版管理で配られるものと配られないものを分けて数えた。読み取りだけを行い、削除も移動もしていない"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "失われうるものを大きさと件数と復元の可否で評価し、優先順位をつけた。版管理へ入れられるものと入れられないものを分けた。控えを取った場合はその位置と要約値を記録した"
+      on_fail: ask
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-25-adam-artifact-inventory/"
+  acceptance:
+    - "版管理の位置を候補から実測で確定している"
+    - "作業ツリーの未追跡を件数と大きさで記録し、一件も消していない"
+    - "家の直下と共有領域と実験の成果物を、版管理で配られるかどうかで分けて数えている"
+    - "失われうるものを、大きさと復元の可否で評価している"
+    - "版管理へ入れられるものと入れられないものを分け、理由を書いている"
+    - "秘匿の値を出力しておらず、検査そのものも値を出していない"
+    - "他ホストへ接続しておらず、同期の経路も設定も変更していない"
+    - "測れなかったものを UNKNOWN として明示している"
+    - "報告が指定の構成であり、手続きの証跡を別ファイルへ分けている"
+    - "分岐が送出され、報告が台帳へ返っている"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "版管理の位置を確定できない場合"
+    - "読み取りのみの契約であるにもかかわらず、何かが失われた場合"
+    - "版管理外の成果物が大きすぎ、版管理へ入れられないと判明した場合"
+    - "秘匿の値が成果物に含まれており、そのままでは保全できない場合"

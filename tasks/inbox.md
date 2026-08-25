@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（347 件）
+## 未処理（354 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -342,6 +342,7 @@
 - [ ] 2026-08-24 [cc] 実行ホスト philip と OS ホスト名 aolab が食い違い preflight の P9 が host_mismatch を出す。philip と ilya は OS ホスト名が同じで区別できないため syncthing device-id で確かめた。P9 の当該規則はホスト名以外の識別子を見ないと偽陽性が出続ける（tools/preflight_task.py）
 - [ ] 2026-08-24 [cc] 疎通は中心からは測れない。受け入れ一覧に載ったことまでしか示せず、各ノードの契約で ssh -v の Server accepts key を確かめる必要がある。再起動は不要（tasks/T-2026-08-24-bengio-syncthing-node/）
 - [ ] 2026-08-24 [cc] 台帳への返送が失敗した。make task-report が「配布台帳に契約が見つかりません」で exit 2。台帳に本契約の行が無く depends_on の T-2026-08-24-bengio-syncthing-node の行も無い。照合器は働いており T-2026-08-24-philip-syncthing-hub は found=True を返す。SPEC は「台帳から取り込んでいるので返送も通るはず」と確かめずに書いていた。報告は PR #142 で読むこと（tools/report_task.py）
+- [ ] 2026-08-24 [cc] 前行の訂正。depends_on の T-2026-08-24-bengio-syncthing-node は台帳にあった。一度目の測定（00:15 頃）では引けなかったが、00:25 に make task-report を実行すると exit 0 で送信でき、直後の再測定でも found=True。行が後から作られたのか検索が即座に反映されないのかは未測定。本契約の行が無いことは時刻を変えて 3 回とも一致する（tools/report_task.py）
 - [ ] 2026-08-24 [human] keeper.sh 41-43 行が目印と無関係に syncthing を起動するため禁止 2 と衝突する。3 案（実行権を外す／そのまま起動して記録／Phase A で差し戻す）を提示し「~/bin/syncthing の実行権を一時的に外す」を選択。~/bin/ への配置・~/.zshrc への追記・常駐の起動・commit と push も併せて承認（T-2026-08-24-philip-keeper-autosync）
 - [ ] 2026-08-24 [cc] ~/bin/syncthing を 644 へ落とした状態は philip に残る。同期処理を立ち上げる契約で chmod 755 ~/bin/syncthing を戻す必要がある。syncthing を配置済みの他 4 台でも keeper 起動時に同じ矛盾が起きるため、起票側で扱いを決めてほしい（T-2026-08-24-philip-keeper-autosync）
 - [ ] 2026-08-24 [cc] SPEC の構文検査が sh -n を使うが正本は #!/bin/bash でプロセス置換を含むため dash では必ず落ちる。次の起票から bash -n にしたい（T-2026-08-24-philip-keeper-autosync）
@@ -355,6 +356,12 @@
 - [ ] 2026-08-24 [cc] 同期処理を起動する契約は、設定を確定させてから chmod 755 ~/bin/syncthing を戻すこと。keeper.sh 41-43 は実行権だけを見て起動するため、戻した瞬間から最大 30 分でそのときの設定のまま起動する。起動前に globalAnnounceEnabled と relaysEnabled を false へ落とし、登録名を aolab から論理名へ直し、自動生成された default フォルダを消すこと（T-2026-08-24-syncthing-config-survey）
 - [ ] 2026-08-24 [cc] 共有フォルダ claude-sync の型を決めてほしい。philip 上は 8.0K・1 ファイルしか無く、他 4 台の中身は禁止 5 のため測れていない。空の側が sendreceive で参加すると中身を消しうる。中身を持つ台を sendonly、他を receiveonly で始める案を handoff.md に書いたが、どの台が中身を持つかが UNKNOWN のままである（T-2026-08-24-syncthing-config-survey）
 - [ ] 2026-08-24 [cc] 契約の「確定した事実（再測定は不要）」に誤りが 2 件あった。設定の場所は既定であり（serve --paths で実測）、中心の SSH は容器の中では 22 で 50072 は外側の写像である。再測定は不要と宣言された欄こそ、次の起票で出所を添えてほしい（T-2026-08-24-syncthing-config-survey）
+- [ ] 2026-08-25 [cc] adam が産んだ run は index の 1177 件中 0 件だが、1177 件すべての実体が本ホストにある。うち初期化済み 5 台由来の版管理外実体 3,379,519,786 bytes は本ホストの複製が唯一の現存物である可能性がある。同期で配るか外部保管か諦めるかが未決（runindex/index.csv の host 列）
+- [ ] 2026-08-25 [cc] 控え 11,981,805 bytes は同一 disk 上にあり、本ホストが失われれば控えも失われる。保全としては不完全で、外部への複製の要否が未決（~/adam-preserve-2026-08-25/）
+- [ ] 2026-08-25 [cc] adam は同期に参加しておらず ~/bin/ も syncthing も無い。版管理以外に外部へ配る経路が無く、群れへ戻すかの判断が要る（.stfolder と 60 件の競合複製が過去の参加と整合）
+- [ ] 2026-08-25 [cc] 秘匿検査の初版が陽性対照に落ちた。${(P)var} を bash が解釈できず 2 鍵の照合が黙って飛ばされ exit=0 を返した。陽性対照の要求が無ければ誤報告していた。契約の様式として維持する価値がある（tasks/_templates/result.yaml の positive_controls）
+- [ ] 2026-08-25 [cc] spec.schema.json の inputs.data / inputs.code が必須かつ minItems: 1 のため、データもエントリも持たない kind: analysis が表現できず、参照しない値の記入を強いられる。kind 別に緩めることを提案（tasks/_schema/spec.schema.json）
+- [ ] 2026-08-25 [cc] 配布台帳の添付が複数あると fetch_task._scan_children が最初の 1 件だけを拾い、新しい版に到達できない。要約値の検査が捕まえたが、2 件以上あるとき拒むか最新を選ぶ方が安全（tools/fetch_task.py）
 - [ ] 2026-08-25 [cc] 禁止と同期の矛盾は未解決。禁止事項1「experiments/** の中身を削除・変更する」を、実行者の手による変更に限るのか同期による配布も含むのかを契約側で決める必要がある。全除外すると同期は 42,010,845,130 → 11,844 バイトになる（tasks/T-2026-08-25-sync-ignore-scope/RESULT.md §5）
 - [ ] 2026-08-25 [cc] 起票者の判断で案 A（無制限行 7 行の削除のみ）を採用。案 B（data/ transfer/ も除外）と案 C（禁止領域を全除外）は不採用。判断の材料と 3 案の実測値は audit.md §9 にある（.stglobalignore）
 - [ ] 2026-08-25 [cc] 文面のコメントが「同期しない」と宣言していた wandb・third_party・data/external を、宣言どおり外す判断。data/external/weights 8,797,633,322 バイトと third_party 2,149,645,702 バイトが他台へ届かなくなるため、各台での再取得が要るかは未確認（.stglobalignore:33-37）

@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 63 件）。
-ここに出ない 58 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 64 件）。
+ここに出ない 59 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-08-25-sync-ignore-scope
 
@@ -48,6 +48,46 @@
 - 完了判定 L の「四ノードとの接続」。本ホスト lecun から見える相手は中心 1 台のみで、 残る三台は測っていない。見える 1 台は切れていない（connected = 1 / 1）。
 - 他台での反映の実測。他ホストに触れていない（禁止 3）ため、実装から導いた見込みのみ。 マージ → keeper 最大 30 分 → 走査（監視 10 秒 / 定期 3600 秒）で概ね 30 分〜1 時間。
 - 「今から足した行で既存が消えない」ことの中心ホストでの実測。本ホストでは消えなかったが、 中心では測っていない。
+
+## T-2026-08-25-adam-artifact-inventory
+
+状態 `pass` / ホスト `adam` / 起票 `なし` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 版管理の位置を /home/ubuntu/slocal2/m2 と実測（~/slocal/m2 は不在）。未追跡 2 件、無視エントリ 2276 件、家の直下 29 件を計数。同期処理の実体は /proc/PID/exe で 0 件、陽性対照 zsh=5 件・陰性対照 0 件。削除も移動も行っていない
+- `G2` pass — index.csv の host 列で adam 産出 0/1177 件、disk 上 1177/1177 件を実測。初期化 5 台由来の版管理外実体 3379519786 bytes/1299 件を特定。控え 1834 件中 1833 件が sha256 一致、不一致 1 件は本対話の記録
+
+### 起票者の誤り
+
+- `check_does_not_check` — inputs.data と inputs.code が schema で必須かつ minItems: 1 のため、データもエントリも持たない kind: analysis を表現できない。本契約は inputs.data を参照しないと SPEC.md が明記しているのに dataset: egosurgery_phase_v1 と split_files の記入を強いられ、参照されない値が契約に残った
+- `asserted_without_measuring` — 環境の事実の表が ~/.ssh/** の一覧すら拒まれることがあると断定するが、本ホストでは拒まれず 7 件を列挙できた。指示どおり UNKNOWN としていれば、実際には測れた項目を測れなかったと誤報告するところだった。SPEC.md の実測を正とする指示に従って記録した
+- `self_contradiction` — outputs.must_have は RESULT.md のみを挙げるが、SPEC.md Task 3 は result.yaml と tasks/inbox.d/<task_id>.md の作成も求める。must_have だけに従うと機械可読の報告と判断の受け皿が生成されず、taskindex の投影に現れない。本文に従い 3 つとも作成した
+
+### 逸脱
+
+- `spec_defect` — 契約の取り込みに 3 回失敗した。台帳の本文が L1 schema に落ち（8 件→4 件）、次に古い添付 v2 が新しい v3 より先に走査され要約値が食い違った。起票者が差し替えて解消。検査は迂回していない
+- `environment` — .venv/bin/python が消えた pyenv 3.11.4 を指しており make task-* が全く動かなかった。uv で 3.11.16 を導入し bin/python と pyvenv.cfg だけを差し替えた。既存 227 パッケージは温存し再構築はしていない。利用者の承認を得た
+- `environment` — source scripts/load_env.sh が合言葉不在で失敗した回があり、平文 .env から読んだ。他 34 箇所と同じ経路。後半は利用者が合言葉を配置し、以降は load_env.sh を正規に使った
+- `judgement` — 未commit のセッションダイジェスト 1 件を commit した。task-start が作業ツリーの清浄を要求するため。同種 15 件が追跡済みで慣例に従い、利用者の許可を得た
+- `environment` — git identity が本ホストに未設定で commit できなかったため、既存 commit と同一の値をリポジトリ局所に設定した
+- `judgement` — .sync-pause は実行前から存在したため作成も削除もしていない。~/bin/ が無く常駐処理も無いため、本ホストで抑止は無意味である
+
+### 申し送り
+
+- 最優先。初期化された 5 台（lecun 827 / andrew 69 / philip 31 / bengio 3 run）が産んだ版管理外実体 3379519786 bytes を、同期で配るか外部の保管へ出すか諦めるかを決める。版管理へは大きすぎて入れられない。本ホストの複製が唯一の現存物である可能性があるが、他ホストが再構築時に復元したかは本ホストからは確かめられない
+- 順位 3〜6 の計 15.9 MB（~/.claude/projects の対話記録、.remember/logs、wandb/outputs/logs の版管理外分、docs/m2_plan_rewrite/.remember）を版管理へ入れるかを決める。対話記録は既存慣行どおり docs/sessions/digest/ へ機械抽出のみを入れる形が妥当
+- adam を同期の群れへ戻すかを決める。現在 ~/bin/ も syncthing も無く、版管理以外に外部へ配る経路が無い
+- 控えは同一 disk 上の ~/adam-preserve-2026-08-25/ にあり、本ホストが失われれば控えも共に失われる。保全としては不完全である
+- spec.schema.json の inputs.data / inputs.code の minItems: 1 を kind: analysis では緩めることを提案する。参照しない値の記入を強いる現状は契約に嘘を残す
+
+### 断定できなかったこと
+
+- 版管理外の実体が他ホストに現存するか。禁止 4 により他ホストへ接続できず、版管理の記録は産出元しか示さない
+- 待ち受けの一覧。ss / netstat / lsof / ip がすべて不在。迂回しない
+- 常駐の登録。crontab が不在で systemd user バスも不通
+- adam が過去に同期へ参加していたか。.stfolder と 60 件の競合複製（装置識別子 6 種、2026-07-04〜2026-08-05）は参加と整合するが、本ホスト単独では確証を取れない
+- 本契約は inputs.data を参照していない。雛形の必須項目のため記入されているだけである
 
 ## T-2026-08-24-syncthing-config-survey
 
@@ -195,45 +235,4 @@
 - 本報告が context/auto/ の投影に現れるかを確かめていない。禁止 4 により make taskindex / taskindex-check / inbox-check を実行していないため。
 - make forbidden-check を通せる状態にできるかは未確認。違反 4 件は禁止 5 が触ることを禁じている未追跡ファイルであり、本契約では消せない。
 - P2 cuda_ext_loaded と P3 deterministic_flags は plan.env.preflight に記載が無く SKIP。実行されていない。
-
-## T-2026-08-24-philip-accept-node-keys
-
-状態 `partial` / ホスト `philip` / 起票 `142` / 様式 `v3`
-
-### ゲート
-
-- `G1` ask — 受け入れ一覧は読めた。場所 /home/ubuntu/.ssh/authorized_keys、権限 600（SPEC の 前回実測 664 とは異なる。実測を正とした）、746 バイト、行数 1、空行を除いた件数 1、 mtime 2026-08-21 21:17:44、sha256 bc2c7484...4ec0、末尾改行あり。登録は 1 件 （4096 SHA256:hCrPAm1yCGdJSv89b0brv8/HHsBNUeTVBlu8NV3/ADU dakyo-mba@dmba.local RSA）で ssh-keygen の終了コードは 0。控えは repo 外 ~/task-backups/T-2026-08-24-philip-accept-node-keys/authorized_keys.orig のみ取得でき、 sha256 が原本と一致。契約ディレクトリへの控えは cp が実行基盤の判定器に拒否されたため 取れず、G1 を文言どおりには満たさない。on_fail: stop に従い実行を止めて利用者へ提示し、 「repo 外の控えで続行」との回答を得て続行した。提出物は四件（96/96/94/95 バイト、各 1 行）、 指紋は四件とも 2026-08-22 の *-node-foundation の RESULT.md と一致。三検査は四件とも 先頭 ssh- / 秘密鍵の書き出し 0 / 1 行で合格、囮は privhits 2。既登録照合は四件とも 0、 既存指紋での陽性対照は 1。
-- `G2` pass — 追記後の空行を除いた件数は 5（開始時 1 + 追記 4）、バイト数 1127（= 746+96+96+94+95）、 権限は 600 のまま変わらず戻す必要は無かった。指紋の集合差を両方向で取り、消えた行は 0 件、 増えた行は 4 件で四件とも Task 2 の指紋と一致し、想定外の追加は 0 件。ssh-keygen の 終了コードは 0 で解析できた件数 5 が空行を除いた件数 5 と一致。repo 外の控えとの diff は 操作が a のみの 1 箇所で、削除・変更を示す < 行が 0、追加の > 行が 4。原本は末尾が改行で 終わっていたため改行は足していない。追記後の sha256 は 35ad4ef5...57f4。
-
-### 起票者の誤り
-
-- `self_contradiction` — SPEC は「環境の事実」で「認証情報への接触を実行基盤が拒むことがある（前契約で要約値を 測れなかった）」と自ら書きながら、Task 1 Step 3 で ~/.ssh/authorized_keys の控えを契約 ディレクトリ（版管理内）へ置くことを求め、それを on_fail: stop の G1 に含めた。指示どおり 実行すると cp が判定器に拒否され、G1 で必ず停止する。実際に拒否され停止した。
-- `self_contradiction` — 同じ矛盾が Task 4 Step 2 にもある。「~/.ssh/ の他のファイルが無変更であること」を完了判定 P に 置くが、その列挙自体が実行基盤に拒否されうることを SPEC は先に書いている。指示どおり実行すると ls も find も拒否され、判定 P は測れず UNKNOWN にするしかない。実際にそうなった。
-- `asserted_without_measuring` — Task 4 Step 6 は「台帳へ返す。本契約は台帳から取り込んでいるので、返送も通るはずである」と 書くが、配布台帳に本契約の行は存在しない。指示どおり make task-report を実行すると 「配布台帳に契約が見つかりません」で exit 2 になる。照合器は働いており T-2026-08-24-philip-syncthing-hub は found=True を返す。depends_on の T-2026-08-24-bengio-syncthing-node も台帳に無い。実際に失敗した。
-- `check_does_not_check` — Task 4 Step 2 は「同期処理と常駐処理が稼働したままで件数が変わっていないこと」を求めるが、 開始時に件数を測る手順を Task 1 に置いていない。指示どおり実行すると終了時の件数しか無く、 比較対象が存在しないため「変わっていない」を示せない。起動時刻による非再起動の証拠で 代替したが、契約が求めた判定そのものは成立しない。
-
-### 逸脱
-
-- `environment` — 契約ディレクトリへの控え（cp ~/.ssh/authorized_keys tasks/.../authorized_keys.orig.bak）が 実行基盤の判定器に拒否された。判定器の意図（SSH の資格情報ファイルを版管理へ複製しない）は 正当と判断し、別の道具による迂回は行っていない。repo 外の主たる控えは取得済みで原本と 要約値が一致するため復旧能力は失われていない。G1 は on_fail: stop のため停止して利用者へ 提示し、続行の承認を得た。
-- `environment` — ~/.ssh/ の他のファイルの無変更を測れなかった。ls -la ~/.ssh/ と find ~/.ssh -maxdepth 1 -type f -newermt ... -printf '%f\n' のいずれも実行基盤に拒否された。 名前・権限・更新時刻だけを取る形にしても拒否された。UNKNOWN とした。本契約が ~/.ssh/ に 対して行った書き込みは authorized_keys への追記 4 回だけであるが、それは「実行していない」の 記録であって「無変更を測った」ではない。
-- `judgement` — 同期処理と常駐処理の件数を開始時に測っていない。SPEC が Task 1 に開始時の計数を置いて いないため終了時にしか測っておらず、判定 O の「件数が変わっていない」を示せない。代わりに 起動時刻で非再起動を示した（keeper.sh は 2026-08-23 17:28:56、syncthing は 22:29 の起動で、 いずれも本契約の最初の操作 23:46 より前）。自分で気づいて先に測るべきだった。
-- `judgement` — task スキルの手順が make taskindex を求めるのに対し本契約の禁止 7 は生成物の再生成を禁じており、 手順に従って make taskindex と make inbox を実行してしまった。契約の禁止を優先し、生成された 4 ファイル（context/auto/ の 3 件と tasks/inbox.md）を git checkout -- で HEAD へ戻し版管理へは 入れていない。以後は taskindex-check と inbox-check だけを走らせ差分は記録に留めた。結果として 本契約の報告は投影 context/auto/ に現れない。
-- `judgement` — conventions_rev は SPEC の指示どおり実測したが、実測値 d422b08 が spec.yaml の値と一致した ため置換していない。手順を飛ばしたのではなく差が無かった。
-- `judgement` — SPEC の実行ホスト philip に対し OS ホスト名は aolab であり、philip と ilya は OS ホスト名が 同じため区別できない。syncthing device-id が 3J4TRX4-... で device_ids/philip.txt と一致し ilya.txt とは不一致であること、および sync-alerts.log の記録主体が [philip] であることで 本機が中心であると判断した。preflight の P9 host_mismatch はこの差による偽陽性である。
-
-### 申し送り
-
-- 台帳への返送が失敗した。make task-report が「配布台帳に契約が見つかりません」で exit 2 を返す。 台帳に本契約の行が無く、depends_on の T-2026-08-24-bengio-syncthing-node の行も無い。照合器は 働いており T-2026-08-24-philip-syncthing-hub は found=True を返す。起票者は台帳ではなく PR #142 で報告を読むこと。台帳へ載せる必要があるなら、行を作ってから再送できる。
-- 疎通はノード側からしか確かめられない。中心で確かめられるのは受け入れ一覧に載っていることまでで ある。禁止 4 により中心から各ノードへ接続もしていない。andrew / bengio / ilya / lecun の各契約で ssh -v を取り Server accepts key が出ることを確かめること。停止した T-2026-08-24-bengio-syncthing-node はこの行が出ないところで止まっていた。再起動は不要で、 受け入れ一覧の変更は次回の接続から効く。
-- ~/.ssh/ の他のファイルの無変更は実行基盤に拒否されて測れなかった。必要なら人が直接測るか、 実行基盤の許可規則に ~/.ssh の読取専用の列挙を加える契約を起票すること。
-- 次の契約は、処理の件数を「稼働したまま」で判定するなら開始時の計数を Task 1 に置くこと。 終了時だけ測る手順では変化の有無を示せない。
-- 受け入れ一覧の権限は本機では 600 であり、SPEC の申し送りにあった 664 ではなかった。以後の契約は ホストごとに実測すること。
-
-### 断定できなかったこと
-
-- ~/.ssh/ の他のファイルの無変更。ls と find のいずれも実行基盤に拒否された
-- 同期処理と常駐処理の開始時の件数。SPEC に開始時の計数の手順が無く測っていない
-- 各ノードから中心への疎通。中心からは測れず、ノード側の契約でしか確かめられない
-- 秘匿検査のうち環境の資格情報そのものとの直接照合は、自前の検査を走らせたシェルの env に値が無く照合できなかった。ただし資格情報を読み込んだうえでの report_task.py --dry-run が exit 0 を返しており、そちらでは照合されている
-- 配布台帳に本契約の行が無い理由。起票の経路を追っていない。台帳側の状態は測れていない
 

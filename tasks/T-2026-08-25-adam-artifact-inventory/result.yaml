@@ -1,0 +1,72 @@
+result_version: 3
+task_id: "T-2026-08-25-adam-artifact-inventory"
+status: pass
+host: "adam"
+branch: "feat/adam-artifact-inventory"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "版管理の位置を /home/ubuntu/slocal2/m2 と実測（~/slocal/m2 は不在）。未追跡 2 件、無視エントリ 2276 件、家の直下 29 件を計数。同期処理の実体は /proc/PID/exe で 0 件、陽性対照 zsh=5 件・陰性対照 0 件。削除も移動も行っていない"
+  - id: G2
+    verdict: pass
+    note: "index.csv の host 列で adam 産出 0/1177 件、disk 上 1177/1177 件を実測。初期化 5 台由来の版管理外実体 3379519786 bytes/1299 件を特定。控え 1834 件中 1833 件が sha256 一致、不一致 1 件は本対話の記録"
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+
+deviations:
+  - type: spec_defect
+    note: "契約の取り込みに 3 回失敗した。台帳の本文が L1 schema に落ち（8 件→4 件）、次に古い添付 v2 が新しい v3 より先に走査され要約値が食い違った。起票者が差し替えて解消。検査は迂回していない"
+  - type: environment
+    note: ".venv/bin/python が消えた pyenv 3.11.4 を指しており make task-* が全く動かなかった。uv で 3.11.16 を導入し bin/python と pyvenv.cfg だけを差し替えた。既存 227 パッケージは温存し再構築はしていない。利用者の承認を得た"
+  - type: environment
+    note: "source scripts/load_env.sh が合言葉不在で失敗した回があり、平文 .env から読んだ。他 34 箇所と同じ経路。後半は利用者が合言葉を配置し、以降は load_env.sh を正規に使った"
+  - type: judgement
+    note: "未commit のセッションダイジェスト 1 件を commit した。task-start が作業ツリーの清浄を要求するため。同種 15 件が追跡済みで慣例に従い、利用者の許可を得た"
+  - type: environment
+    note: "git identity が本ホストに未設定で commit できなかったため、既存 commit と同一の値をリポジトリ局所に設定した"
+  - type: judgement
+    note: ".sync-pause は実行前から存在したため作成も削除もしていない。~/bin/ が無く常駐処理も無いため、本ホストで抑止は無意味である"
+
+issuer_defects:
+  - type: check_does_not_check
+    note: "inputs.data と inputs.code が schema で必須かつ minItems: 1 のため、データもエントリも持たない kind: analysis を表現できない。本契約は inputs.data を参照しないと SPEC.md が明記しているのに dataset: egosurgery_phase_v1 と split_files の記入を強いられ、参照されない値が契約に残った"
+  - type: asserted_without_measuring
+    note: "環境の事実の表が ~/.ssh/** の一覧すら拒まれることがあると断定するが、本ホストでは拒まれず 7 件を列挙できた。指示どおり UNKNOWN としていれば、実際には測れた項目を測れなかったと誤報告するところだった。SPEC.md の実測を正とする指示に従って記録した"
+  - type: self_contradiction
+    note: "outputs.must_have は RESULT.md のみを挙げるが、SPEC.md Task 3 は result.yaml と tasks/inbox.d/<task_id>.md の作成も求める。must_have だけに従うと機械可読の報告と判断の受け皿が生成されず、taskindex の投影に現れない。本文に従い 3 つとも作成した"
+
+positive_controls:
+  - judgement: "完了判定 E: 同期処理と中継が動いていないことの確認"
+    breaking_input: "実在するプロセス名を同じ /proc/PID/exe の方法で探す。検出できなければ方法が空振りしている"
+    observed: "zsh で 5 件を検出し、存在しない名 zzz-nonexistent-zzz で 0 件。方法は実在を検出でき偽陽性を出さない。その方法で syncthing/keeper/m2-sync は 0 件"
+  - judgement: "完了判定 H: 秘匿の混入検査"
+    breaking_input: "実際の NOTION_API_KEY を含む囮ファイルを検査器にかける。検出しなければ検査器が働いていない"
+    observed: "最初の検査器は囮を見逃し exit=0 を返した。${(P)var} という zsh 記法を bash が解釈できず 2 つの鍵の照合が黙って飛ばされていた。${!var} に直すと囮を 1 件検出し exit=1。陰性対照は 0 件で exit=0"
+  - judgement: "完了判定 I: 控えが原本と一致すること"
+    breaking_input: "書き込まれ続けているファイルを控えに含める。一致すれば照合が実際には比較していない"
+    observed: "本対話の記録 1 件が 998845 vs 990046 bytes で不一致になった。照合は実際に中身を比べている。残り 1833 件は sha256 が一致"
+  - judgement: "完了判定 K: 何も失っていないこと"
+    breaking_input: "実行者が新たに作った控えの分だけ家の直下の件数が増えるはず。増えなければ数え直しが同じ対象を見ていない"
+    observed: "家の直下が 29 から 30 へ増え、控えを除くと 29。無視エントリ 2276、run 実体 1177、主要 8 ディレクトリの bytes はすべて一致"
+
+followups:
+  - "最優先。初期化された 5 台（lecun 827 / andrew 69 / philip 31 / bengio 3 run）が産んだ版管理外実体 3379519786 bytes を、同期で配るか外部の保管へ出すか諦めるかを決める。版管理へは大きすぎて入れられない。本ホストの複製が唯一の現存物である可能性があるが、他ホストが再構築時に復元したかは本ホストからは確かめられない"
+  - "順位 3〜6 の計 15.9 MB（~/.claude/projects の対話記録、.remember/logs、wandb/outputs/logs の版管理外分、docs/m2_plan_rewrite/.remember）を版管理へ入れるかを決める。対話記録は既存慣行どおり docs/sessions/digest/ へ機械抽出のみを入れる形が妥当"
+  - "adam を同期の群れへ戻すかを決める。現在 ~/bin/ も syncthing も無く、版管理以外に外部へ配る経路が無い"
+  - "控えは同一 disk 上の ~/adam-preserve-2026-08-25/ にあり、本ホストが失われれば控えも共に失われる。保全としては不完全である"
+  - "spec.schema.json の inputs.data / inputs.code の minItems: 1 を kind: analysis では緩めることを提案する。参照しない値の記入を強いる現状は契約に嘘を残す"
+
+unknowns:
+  - "版管理外の実体が他ホストに現存するか。禁止 4 により他ホストへ接続できず、版管理の記録は産出元しか示さない"
+  - "待ち受けの一覧。ss / netstat / lsof / ip がすべて不在。迂回しない"
+  - "常駐の登録。crontab が不在で systemd user バスも不通"
+  - "adam が過去に同期へ参加していたか。.stfolder と 60 件の競合複製（装置識別子 6 種、2026-07-04〜2026-08-05）は参加と整合するが、本ホスト単独では確証を取れない"
+  - "本契約は inputs.data を参照していない。雛形の必須項目のため記入されているだけである"
+
+commits: []
