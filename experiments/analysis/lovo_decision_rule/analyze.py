@@ -85,16 +85,30 @@ def main():
                 })
     # 陰性対照は定数倍では |m|/SE が変わらない（分子も分母も同じ倍率）ため、
     # **平行移動**でも確かめる。片方だけでは「常に同じ値を返す壊れ方」と区別できない。
+    # 反転する移動量まで掃引し、**どこで検出へ変わるか**を測る。変わらなければ則が壊れている。
+    RULE_FN = {"R0": rules.r0_current, "R1": rules.r1_nadeau_bengio, "R3": rules.r3_signflip_exact}
     for row in rows:
         if row["id"] == nc_id and row["metric"] in nc_keys:
-            for shift in (0.02, 0.05):
+            sweep = []
+            for shift in (0.0, 0.05, 0.075, 0.10, 0.15, 0.20, 0.30):
                 moved = [x + shift for x in row["d"]]
-                ctrl.setdefault("negative_shift", []).append({
-                    "id": nc_id, "metric": row["metric"], "shift": shift,
-                    "shifted": {"R0": rules.r0_current(moved)["detect"],
-                                "R1": rules.r1_nadeau_bengio(moved)["detect"],
-                                "R3": rules.r3_signflip_exact(moved)["detect"]},
-                })
+                sweep.append({"shift": shift,
+                              "detect": {k: fn(moved)["detect"] for k, fn in RULE_FN.items()}})
+            flip = {}
+            for k, fn in RULE_FN.items():
+                lo, hi = 0.0, 1.0
+                if not fn([x + hi for x in row["d"]])["detect"]:
+                    flip[k] = None  # 1.0 まで動かしても検出しないなら反転点が無い
+                    continue
+                for _ in range(60):
+                    mid = (lo + hi) / 2
+                    if fn([x + mid for x in row["d"]])["detect"]:
+                        hi = mid
+                    else:
+                        lo = mid
+                flip[k] = hi
+            ctrl.setdefault("negative_shift", []).append({
+                "id": nc_id, "metric": row["metric"], "sweep": sweep, "flip_at": flip})
 
     out = {"rows": rows, "missing": missing, "controls": ctrl}
     (D / "results.json").write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
