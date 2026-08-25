@@ -167,4 +167,27 @@
 
 ## 送出
 
-（この節は commit・PR の後に埋める）
+| # | 実測 |
+|---|---|
+| commit | `4386badf`（**32 ファイル**）。`experiments/analysis/lovo_decision_rule/`（別契約）は段階に上げていない |
+| push | `origin/feat/error-shape-selectivity` **exit 0**（`* [new branch]`） |
+| PR | **#153**（`feat/error-shape-selectivity` → `phase0`）。**分岐は規定の接頭辞 `feat/` で始まる** |
+| 分岐の位置 | `origin/phase0` から **4 commit behind**（実行中に PR #152 が phase0 へ入った）。**統合していない** |
+| `make task-validate` | **exit 0**（WARN 2 件は L2-8。利用者へ提示し「続行する」と回答を得た） |
+| `make task-preflight` | **exit 0**（5 PASS / 4 SKIP / 0 FAIL）。SKIP は P2 P3 P4 P5 |
+| `make forbidden-check` | **exit 2・違反 38 件**。内訳は上表（A 26 / B 5 / C 7） |
+| `make taskindex` / `make inbox` | **回していない**（SPEC 禁止 4）。§逸脱 3 |
+| `make task-report` | （送信後に記す） |
+| `.sync-pause` | （解除後に記す） |
+| 前の契約の退避 | `stash@{0}` を**戻していない**（指示どおり。契約が終わり元の分岐へ戻ってから戻す） |
+
+### 秘匿の自主検査
+
+**形の規則 5 件**と**環境の実値との直接照合 4 本**。**検査器は値を出力しない。**
+
+| 対照 | 対象 | 結果 |
+|---|---|---|
+| **陽性** | 実値を埋めた囮（**版管理外**） | `live:NOTION_API_KEY=1, live:WANDB_API_KEY=1, notion_token=1, pem_private_key=1` **exit 1** |
+| **陰性** | 送出する 24 ファイル | 全件 `0`、合計 **0**、**exit 0** |
+
+**囮は削除した。commit していない。**

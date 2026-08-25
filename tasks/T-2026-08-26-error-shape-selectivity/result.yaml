@@ -3,7 +3,7 @@ task_id: "T-2026-08-26-error-shape-selectivity"
 status: pass
 host: "philip"
 branch: "feat/error-shape-selectivity"
-pr: null
+pr: 153
 merged: false
 
 gates:
@@ -165,4 +165,5 @@ unknowns:
     高い p での L 軸に沿った比較の解釈。実測誤り率が名目の 0.71〜0.83 まで落ちるため、
     L を変えた比較は実際の誤り量を揃えた比較になっていない。p=0.40 の行はとくに影響が大きい。
 
-commits: []
+commits:
+  - "4386badf"
