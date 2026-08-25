@@ -93,8 +93,10 @@ issuer_defects:
       Task 4 Step 6 は「台帳へ返す。本契約は台帳から取り込んでいるので、返送も通るはずである」と
       書くが、配布台帳に本契約の行は存在しない。指示どおり make task-report を実行すると
       「配布台帳に契約が見つかりません」で exit 2 になる。照合器は働いており
-      T-2026-08-24-philip-syncthing-hub は found=True を返す。depends_on の
-      T-2026-08-24-bengio-syncthing-node も台帳に無い。実際に失敗した。
+      T-2026-08-24-philip-syncthing-hub は found=True を返す。時刻を変えて 3 回測り 3 回とも
+      本契約の行は無かった。depends_on の T-2026-08-24-bengio-syncthing-node は一度目の測定では
+      引けなかったが二度目では found=True であり、その契約の報告は exit 0 で送信できた。
+      台帳にあるのは他契約であり、本契約だけが配られていない。実際に失敗した。
   - type: check_does_not_check
     note: >-
       Task 4 Step 2 は「同期処理と常駐処理が稼働したままで件数が変わっていないこと」を求めるが、
@@ -119,8 +121,8 @@ positive_controls:
     breaking_input: "秘密鍵の書き出しと NOTION_API_KEY=... を含む囮に同じ検査をかける"
     observed: "囮は hits=2（private_key_block@line1 len=35、assignment_secretish@line4 len=38）。送出対象は TOTAL_HITS=0。出力は型・行番号・長さのみで値を含まない"
   - judgement: "配布台帳の行の照合（find_ledger_row が契約を引けるか）"
-    breaking_input: "台帳に存在することが分かっている別契約 T-2026-08-24-philip-syncthing-hub を同じ関数で引く"
-    observed: "found=True を返した。本契約と depends_on の T-2026-08-24-bengio-syncthing-node は見つからない。常に見つからない壊れ方ではない"
+    breaking_input: "台帳に存在することが分かっている別契約 T-2026-08-24-philip-syncthing-hub と T-2026-08-24-bengio-syncthing-node を同じ関数で引く"
+    observed: "いずれも found=True を返し、後者は make task-report が exit 0 で送信できた。本契約だけが 3 回とも見つからない。常に見つからない壊れ方ではない"
   - judgement: "報告の秘匿検査（環境の資格情報そのものとの照合を含む）"
     breaking_input: "資格情報を読み込んだうえで report_task.py --dry-run にかける"
     observed: "exit 0。report_sha256 e7ddfdf2...e558、report_bytes 21894。送信を止めたのは秘匿検査ではなく台帳の側である"
@@ -131,9 +133,10 @@ positive_controls:
 followups:
   - >-
     台帳への返送が失敗した。make task-report が「配布台帳に契約が見つかりません」で exit 2 を返す。
-    台帳に本契約の行が無く、depends_on の T-2026-08-24-bengio-syncthing-node の行も無い。照合器は
-    働いており T-2026-08-24-philip-syncthing-hub は found=True を返す。起票者は台帳ではなく
-    PR #142 で報告を読むこと。台帳へ載せる必要があるなら、行を作ってから再送できる。
+    台帳に本契約の行が無い（時刻を変えて 3 回とも一致）。照合器は働いており
+    T-2026-08-24-philip-syncthing-hub と T-2026-08-24-bengio-syncthing-node は found=True を返す。
+    後者は報告を exit 0 で送信できた。起票者は台帳ではなく PR #142 で報告を読むこと。
+    台帳へ載せる必要があるなら、行を作ってから make task-report を再実行すれば通る。
   - >-
     疎通はノード側からしか確かめられない。中心で確かめられるのは受け入れ一覧に載っていることまでで
     ある。禁止 4 により中心から各ノードへ接続もしていない。andrew / bengio / ilya / lecun の各契約で
@@ -156,6 +159,7 @@ unknowns:
   - "各ノードから中心への疎通。中心からは測れず、ノード側の契約でしか確かめられない"
   - "秘匿検査のうち環境の資格情報そのものとの直接照合は、自前の検査を走らせたシェルの env に値が無く照合できなかった。ただし資格情報を読み込んだうえでの report_task.py --dry-run が exit 0 を返しており、そちらでは照合されている"
   - "配布台帳に本契約の行が無い理由。起票の経路を追っていない。台帳側の状態は測れていない"
+  - "depends_on の T-2026-08-24-bengio-syncthing-node が一度目の測定で引けず二度目で引けた理由。行が後から作られたのか台帳の検索が即座に反映されないのか、どちらかを測っていない"
 
 commits:
   - "e667b4a feat(sync): accept four node public keys on the hub"
