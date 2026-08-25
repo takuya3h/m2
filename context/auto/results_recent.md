@@ -51,7 +51,7 @@
 
 ## T-2026-08-25-adam-artifact-inventory
 
-状態 `pass` / ホスト `adam` / 起票 `なし` / 様式 `v3`
+状態 `pass` / ホスト `adam` / 起票 `149` / 様式 `v3`
 
 ### ゲート
 

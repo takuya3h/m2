@@ -122,5 +122,5 @@
 
 | 項目 | 値 |
 |---|---|
-| PR | PENDING |
-| `make task-report` | PENDING |
+| PR | #149 https://github.com/takuya3h/m2/pull/149 |
+| `make task-report` | 未送信。この commit の直後に実行する |
