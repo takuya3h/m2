@@ -122,5 +122,11 @@
 
 | 項目 | 値 |
 |---|---|
-| PR | #149 https://github.com/takuya3h/m2/pull/149 |
-| `make task-report` | 未送信。この commit の直後に実行する |
+| PR | **#149** https://github.com/takuya3h/m2/pull/149（exit 0） |
+| `make task-report` | **送信済み** verdict=pass / report_sha256=`2495da6f` / 9,972 bytes / replaced_blocks=0 |
+
+## 抑止の扱い
+
+`.sync-pause` は**実行前から存在した**ため、`task-start` は「触れません」と記録した。
+**実行者は作成も削除もしていない。** 禁止 1（削除・移動しない）に従い、そのまま残す。
+本ホストには `~/bin/m2-sync.sh` も常駐処理も無いため、この目印は**そもそも作用しない**。
