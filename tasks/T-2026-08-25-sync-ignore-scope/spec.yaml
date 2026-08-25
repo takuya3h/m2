@@ -1,0 +1,89 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-08-25-sync-ignore-scope"
+  kind: impl
+  title: "同期の除外範囲を決め直し、禁止領域への書き込みを止める"
+  origin: claude-app
+  created_at: "2026-08-25T00:00:00Z"
+  created_from:
+    runindex_commit: "f96edc1"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-24-lecun-syncthing-node"]
+  amendments: []
+
+intent:
+  question: "五台の同期が動き出したとき、契約が一貫して禁じてきた領域へ同期処理が一時ファイルを書いた。共有フォルダは版管理の作業場所の全体であり、除外規則はその一部しか外していない。禁止と、契約自身が定義した同期とが両立していない。除外の範囲をどう決め直せば矛盾が解けるか。除外を足したとき、既に届いたものは失われないか"
+  decision_at_stake: "何を版管理で配り、何を同期で配るか。除外が広すぎれば必要なものが届かず、狭すぎれば禁止領域への書き込みが続く。既存のものが消える挙動であれば、他台にしか無いものを失う。反映に再起動が要るなら、五台の接続を一度切ることになる"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/sync/keeper.sh"
+      - "scripts/sync/m2-sync.sh"
+
+contract:
+  inject_verbatim: [conventions#prohibitions]
+  conventions_rev: "d422b087"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "除外規則と同期された内容の測定、既存への影響の確定", gpu: false, est: "60m"}
+    - {id: B, name: "配るものと配らないものの決定、規則の案と点検", gpu: false, est: "50m"}
+    - {id: C, name: "適用と、効いたことの確認", gpu: false, est: "40m"}
+    - {id: D, name: "報告と送出", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "除外規則の全文と要約値を記録し、処理が解釈した形との差を確かめた。禁止領域に同期されたものを触らずに数えた。除外を足したとき既存のものが消えるかどうかを実装または文書から確定した。反映の手段を記録した"
+      on_fail: ask
+    - id: G2
+      after: B
+      check: "何を版管理で配り何を同期で配るかを材料つきで整理した。規則の案の各行が何を外すかを併記し、広すぎず狭すぎないことを実在するものへ当てて両方向の対照で確かめた"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "正本を変えて反映させ、処理が解釈した除外に新しい規則が含まれることを確かめた。禁止領域へ新たな書き込みが起きておらず、既存のものが件数と大きさで減っていない。四ノードとの接続が切れていない"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-08-25-sync-ignore-scope/"
+  acceptance:
+    - "除外規則の全文と要約値を記録し、正本と反映先の一致を確かめている"
+    - "処理が解釈した除外の形を記録し、文面との差を示している"
+    - "禁止領域に同期されたものを触らずに数えている"
+    - "除外を足したとき既存のものがどうなるかを確定しており、読めない場合は判断を仰いでいる"
+    - "反映の手段を記録し、再起動が唯一の手段であった場合は判断を仰いでいる"
+    - "何を版管理で配り何を同期で配るかを、材料つきで整理している"
+    - "規則の案が広すぎず狭すぎないことを、実在するものへ当てて両方向の対照で示している"
+    - "適用後に禁止領域へ新たな書き込みが起きておらず、既存のものが減っていない"
+    - "四ノードとの接続が切れていないことを示している"
+    - "報告が指定の構成であり、手続きの証跡を別ファイルへ分けている"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "除外を足すと既に届いたものが消える挙動だと判明した場合"
+    - "反映の手段が再起動しかなく、五台の接続を切ることになる場合"
+    - "適用後に既存のものが消えた場合"
+    - "版管理と同期のどちらで配るべきかを決められない対象が残った場合"
+    - "適用後も禁止領域への書き込みが続く場合"

@@ -1,0 +1,7 @@
+- [ ] 2026-08-25 [cc] 禁止と同期の矛盾は未解決。禁止事項1「experiments/** の中身を削除・変更する」を、実行者の手による変更に限るのか同期による配布も含むのかを契約側で決める必要がある。全除外すると同期は 42,010,845,130 → 11,844 バイトになる（tasks/T-2026-08-25-sync-ignore-scope/RESULT.md §5）
+- [ ] 2026-08-25 [cc] 起票者の判断で案 A（無制限行 7 行の削除のみ）を採用。案 B（data/ transfer/ も除外）と案 C（禁止領域を全除外）は不採用。判断の材料と 3 案の実測値は audit.md §9 にある（.stglobalignore）
+- [ ] 2026-08-25 [cc] 文面のコメントが「同期しない」と宣言していた wandb・third_party・data/external を、宣言どおり外す判断。data/external/weights 8,797,633,322 バイトと third_party 2,149,645,702 バイトが他台へ届かなくなるため、各台での再取得が要るかは未確認（.stglobalignore:33-37）
+- [ ] 2026-08-25 [cc] 中心（philip）に残る一時ファイルを消すかどうかは未決。本ホストには 0 件で本契約では触っていない（experiments/baselines/s0_002_maskdino_bbox_seed123/）
+- [ ] 2026-08-25 [cc] 契約の実行ホスト指定（philip / ~/slocal2/m2）と実際（lecun / ~/slocal/m2）が食い違い、完了判定 L「四ノードとの接続」が測れなかった。ホスト指定を持つ契約は指定ホストで実行するか、判定を実行ホストから測れる形に書き換えるかの判断が要る（tasks/T-2026-08-25-sync-ignore-scope/SPEC.md:5）
+- [ ] 2026-08-25 [cc] 無制限行の削除により、将来 experiments/ 配下に .ckpt / .onnx / .safetensors が生まれた場合は同期されない。現時点の実測では 3 形式とも 0 件のため範囲付きの行を足していない（.stglobalignore:43-54）
+- [ ] 2026-08-25 [cc] /rest/db/browse が HTTP 500 を返す（索引に .remember の親エントリが無い）。prefix 指定なら応答する。全件一覧は索引 DB の直読みで代替した。Syncthing v2.1.3 の不具合か設定かは未判定（~/.local/state/syncthing/index-v2/）
