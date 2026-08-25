@@ -1,0 +1,6 @@
+- [ ] 2026-08-25 [cc] adam が産んだ run は index の 1177 件中 0 件だが、1177 件すべての実体が本ホストにある。うち初期化済み 5 台由来の版管理外実体 3,379,519,786 bytes は本ホストの複製が唯一の現存物である可能性がある。同期で配るか外部保管か諦めるかが未決（runindex/index.csv の host 列）
+- [ ] 2026-08-25 [cc] 控え 11,981,805 bytes は同一 disk 上にあり、本ホストが失われれば控えも失われる。保全としては不完全で、外部への複製の要否が未決（~/adam-preserve-2026-08-25/）
+- [ ] 2026-08-25 [cc] adam は同期に参加しておらず ~/bin/ も syncthing も無い。版管理以外に外部へ配る経路が無く、群れへ戻すかの判断が要る（.stfolder と 60 件の競合複製が過去の参加と整合）
+- [ ] 2026-08-25 [cc] 秘匿検査の初版が陽性対照に落ちた。${(P)var} を bash が解釈できず 2 鍵の照合が黙って飛ばされ exit=0 を返した。陽性対照の要求が無ければ誤報告していた。契約の様式として維持する価値がある（tasks/_templates/result.yaml の positive_controls）
+- [ ] 2026-08-25 [cc] spec.schema.json の inputs.data / inputs.code が必須かつ minItems: 1 のため、データもエントリも持たない kind: analysis が表現できず、参照しない値の記入を強いられる。kind 別に緩めることを提案（tasks/_schema/spec.schema.json）
+- [ ] 2026-08-25 [cc] 配布台帳の添付が複数あると fetch_task._scan_children が最初の 1 件だけを拾い、新しい版に到達できない。要約値の検査が捕まえたが、2 件以上あるとき拒むか最新を選ぶ方が安全（tools/fetch_task.py）
