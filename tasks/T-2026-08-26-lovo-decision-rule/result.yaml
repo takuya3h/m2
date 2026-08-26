@@ -1,0 +1,93 @@
+result_version: 3
+task_id: "T-2026-08-26-lovo-decision-rule"
+status: pass
+host: "ilya"
+branch: "feat/lovo-decision-rule"
+pr: 157
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "LOVO 台本 16 本の実在を確認。保存されたログは名前でも内容でも零件だったため、報告書 §3.9 に残る fold ごとの acc/edit を頼りに、読み取り専用の再実行で全台本の素の値を復元した"
+  - id: G2
+    verdict: pass
+    note: "現行の則が §3.9 の fold ごと 90 値・集計 8 行・§3.16(b) の 6 凍結源・§3.16(e) の受容野 4 段を再現し不一致 0。陽性対照 C01 を検出し陰性対照 C05 を検出しない"
+  - id: G3
+    verdict: pass
+    note: "R1 と R2 が両対照を分離。R2 は同じ種で結果の sha256 が一致し違う種で不一致。R1 と R2 は 10/192 行で食い違い両方向に出るため実質一つではない"
+  - id: G4
+    verdict: pass
+    note: "48 結論 × 4 指標 = 192 行すべてに同じ 4 則を当て、欠測 0。判定が変わった行は R0→R1 で 30、R0→R2 で 26"
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 472
+
+deviations:
+  - type: judgement
+    note: "skill の手順 6 が求める make taskindex / make inbox を実行しなかった。契約 第 5 節禁止 4 が投影と集約の再生成を明示的に禁じているため契約を上位とした。全 PR の統合後に一台で一度だけ回す必要がある"
+  - type: judgement
+    note: "背景で走らせた処理の完了前に batch2.log を進捗確認のため読んだ。契約 第 6 節が禁じている。部分的な出力から結論は引いていないが読んだ事実を記録する。以降は完了通知まで読まない運用に戻した"
+  - type: environment
+    note: "同期が experiments/**/*.py を対象にしており、実行中に dump_folds.py・rules.py・analyze.py が三度消えた。版管理へ入れて git checkout で復旧し、実行の正本をスクラッチパッドへ移した。契約の抑止 .sync-pause は自動統合を止めるがファイル同期は止めない"
+  - type: judgement
+    note: "R2 の反復回数を 10 台本で 24 回、受容野と凍結源の 6 台本で 12 回とした。24 回で揃えると約 8 時間を要し 14 時間の上限に合わないため。この 6 台本の R2 は他より粗い"
+  - type: judgement
+    note: "自分が書いた足場と推定器の欠陥を二つ見つけ、直して測り直した。分割ごとの空判定で約 3% の反復が系統的に落ちていた件と、反復間分散から引く項に有限母集団の補正が無く相関がゼロへ潰れていた件である"
+
+issuer_defects:
+  - type: self_contradiction
+    note: "governance.decisions_required に『採用する判定則を最終的に一つへ決めること』『既存の報告の記述を訂正すること』を置いたが、SPEC.md 第 4 節と第 8 節 5 が同じ 2 件を既に否で確定し実行者に禁じている。指示どおり実行すると L3 の P6 が FAIL し、本文が既に答えている問いを人へ差し戻すまで実行が止まる。実際に停止して利用者へ提示し、回答を meta.amendments へ記録して初めて先へ進めた"
+  - type: check_does_not_check
+    note: "完了判定 d が陰性対照の空振り確認を『効果を人為的に大きくすれば検出されるはず』と書くが、対の差を定数倍しても |m|/SE は分子と分母が同じ倍率で動くため一切変わらない。指示どおり x10 と x50 を当てた結果、3 則すべてが False のまま動かず、壊れた則と正しい則を区別できなかった。平行移動で境界をまたぐまで掃引して初めて R0 が +0.0732、R1 が +0.1102 で反転することを測れた"
+  - type: asserted_without_measuring
+    note: "第 1 節が『任意の二つの fold は十三動画を共有するのだから fold の間には強い正の相関がある』と前提として断定するが、実測した相関は中央値 0.029・最大 0.129 と小さい。学習側の重なりが大きいことと、二つの腕の対の差が強く相関することは別である。共通に乗る成分の多くは引き算で消える。この断定に従って補正の強さを決めると過大になる"
+  - type: asserted_without_measuring
+    note: "第 0 節が『計算はすべて既存の結果の読み取りと再集計である』と断定するが、fold ごとの素の値はリポジトリのどこにも保存されておらず、名前でも内容でも零件だった。実際には読み取り専用スクリプト 16 本の再実行と、R2 のための反復 LOVO に合計およそ 6 時間の計算を要した。申し送り 1 は素の値の有無を未確認としており、第 0 節の断定と食い違っている"
+
+positive_controls:
+  - judgement: "現行の則が報告書の既知の値を再現することの照合"
+    breaking_input: "fold の対応を 1 つずらして同じ照合を行う"
+    observed: "不一致が 0/90 から 15/15 へ変わった。入力を読まずに一致を返しているのではない"
+  - judgement: "陽性対照 C01（presence − GAP の edit と seg-F1@50）を各則が検出する"
+    breaking_input: "対の差を人為的にすべて零へ潰す"
+    observed: "R0・R1・R3 すべてが検出から検出せずへ変わった"
+  - judgement: "陰性対照 C05（オラクル presence の accuracy）を各則が検出しない"
+    breaking_input: "対の差を定数倍する（x10 と x50）"
+    observed: "判定は一切変わらなかった。t 型は分子と分母が同じ倍率で動くためである。平行移動へ切り替えると R0 は +0.0732、R3 は +0.0804、R1 は +0.1102 で検出へ反転した"
+  - judgement: "差し替えた共通ヘルパを置いた足場が結果を変えない"
+    breaking_input: "環境変数 LOVO_VIDEO_SUBSET で動画の部分集合を与える"
+    observed: "fold 数が 15 から 12 へ変わり、共通 fold の 252 値のうち 201 値が変化した。与えないときは 315 値すべてが一致する"
+  - judgement: "R2 の乱数が種で再現する"
+    breaking_input: "種を 42 から 43 へ変える"
+    observed: "結果の sha256 が 9cf16f3050238a25 から e629bebd574792e4 へ変わった。同じ種 42 を二度走らせると完全に一致する"
+  - judgement: "R2 の有限母集団の補正が効いている"
+    breaking_input: "補正を外して反復間分散から s2/m をそのまま引く"
+    observed: "相関 rho の中央値が 0.029 から 0.000 へ潰れ、K=128 の macro-F1 の R2 判定が検出せずから検出へ反転した"
+
+unknowns:
+  - "本番 TeCNO の上での再判定。本契約はプロキシ（多項ロジスティック回帰 + 因果 phase HMM）の上でのみ測った"
+  - "学習側が 14 動画のときの共有成分の大きさ。R2 は部分集合 12 本（学習側 11 動画）で測っており、同じとは限らない"
+  - "受容野と凍結源の 6 台本を 24 反復にしたときの R2。費用の都合で 12 反復に留めた"
+  - "開始前の試験の件数を先に測らなかった。before_failed の 5 は完了後の実測値であり、本契約の差分が experiments/analysis/lovo_decision_rule/ の外に 0 件・src/ と tests/ に 0 件であることを実測して同値と判断した。直接の測定ではない"
+
+commits:
+  - "5c7f267 docs(lovo): record the rule-selection criteria before any new rule exists"
+  - "3cfb6a5 feat(lovo): add the harness that recovers per-fold values without touching the scripts"
+  - "d2ca436 docs(lovo): enumerate the existing conclusions to be re-judged"
+  - "9139e01 feat(lovo): apply every rule to every conclusion and check both controls"
+  - "2af12fe fix(lovo): sweep the negative control until each rule flips"
+  - "7e5d49a feat(lovo): capture per-loop fold values and add the replicated-LOVO rule"
+  - "0fc8b36 fix(lovo): correct the finite-population term in the replicated-LOVO variance"
+  - "55218c2 analysis(lovo): re-judge every LOVO conclusion under rules that drop the independence assumption"
+  - "bfc81d6 docs(task): record the result and the evidence for the LOVO decision rule"
+
+followups:
+  - "四台の PR がすべて統合された後、一台で一度だけ make taskindex と make inbox を回すこと。本契約は契約 第 5 節禁止 4 により再生成を行っていない"
+  - "採用する判定則を一つに決めること。本契約は R0・R1・R2 の結果を並べたところまでで、正本の指定は起票者と利用者の判断事項である。決めた則は、同時に走っている別ホストの契約が出す効果量と符号の個数へ後から当てられる"
+  - "既存の報告 docs/research_review_and_next_plan_2026-08-22.md のうち訂正の対象になりうる箇所を REPORT.md 第 11 節に一覧にした。訂正するかどうかは起票者と利用者の判断事項である"
+  - "禁止領域の検査 make forbidden-check が、契約の outputs.destination を除外しないため必ず失敗する。destination を除外する仕組みを入れるか、分析成果物の置き場を experiments/ の外へ移すかの判断が要る"
+  - "同期が experiments/**/*.py を対象にしており、実行中の作業ファイルを削除する。契約の抑止 .sync-pause は自動統合しか止めない。ファイル同期も止める目印を用意するか、作業を experiments/ の外で行う規約が要る"
+  - "R2 の共有成分は学習側 11 動画で測った。本番相当の 14 動画で測り直すと補正の強さが変わりうる"
