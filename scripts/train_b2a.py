@@ -37,6 +37,7 @@ sys.path.insert(0, str(PROJ / "src"))
 
 from egosurgery.metrics.phase import PhaseEvaluator  # noqa: E402
 from egosurgery.models.heads.tecno_head import TeCNO  # noqa: E402
+from egosurgery.utils.determinism import enable_determinism  # noqa: E402
 from egosurgery.utils.eval_recipe import (  # noqa: E402
     PAPER_SPLIT_SIZES,
     PHASE_EVAL_PROTOCOL,
@@ -182,6 +183,11 @@ def _build_cfg(args, server_name: str, n_train: int, n_val: int) -> dict:
         "delta": {"phase_denominator": "s4_phase_baseline (frozen_tecno_phase_baseline)",
                   "note": "Δ_phase = (B2a − S4 base). 土台は素 TeCNO・neck 無しで一致、変える軸は tool 信号 1 点。"},
         "server_name": server_name,
+        "determinism": args.determinism_record,
+        # 契約 (tasks/<task_id>/spec.yaml) と run を結ぶ鍵。harvester は最上位を読む。
+        "task_id": args.task_id,
+        # 上限測定専用の印。oracle は「どこまで行けるか」を測る腕であって手法の成果ではない。
+        "oracle_upper_bound_only_do_not_report": args.tool_source == "oracle",
     }
 
 
@@ -229,10 +235,13 @@ def _write_notes(exp_dir: Path, args, best: dict, server_name: str) -> None:
 
 
 def train(args) -> dict:
+    # 決定化は最初の CUDA 演算より前に入れる（cuBLAS は handle 生成時に環境変数を読む）
+    det_record = enable_determinism(args.seed) if args.deterministic else {"deterministic": False}
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    random.seed(args.seed)
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
+    if not args.deterministic:
+        random.seed(args.seed)
+        np.random.seed(args.seed)
+        torch.manual_seed(args.seed)
 
     # --mask-tool-dims (複数) > --mask-tool-dim (単一)
     if args.mask_tool_dims:
@@ -275,6 +284,7 @@ def train(args) -> dict:
             base_dir=str(PROJ / "experiments"), category="transfer",
             step=desc, description=desc, seed=args.seed,
         )
+        args.determinism_record = det_record
         manager.setup(_build_cfg(args, server_name, len(train_clips), len(val_clips)))
         exp_dir = manager.exp_dir
         print(f"[b2a] evidence dir: {exp_dir}")
@@ -395,6 +405,18 @@ def parse_args():
     p.add_argument("--num-stages", type=int, default=2)
     p.add_argument("--num-layers", type=int, default=8)
     p.add_argument("--num-f-maps", type=int, default=64)
+    p.add_argument(
+        "--deterministic",
+        action="store_true",
+        help="ビット単位の決定化を有効にする（egosurgery.utils.determinism.enable_determinism）。"
+             "既定は現状のまま（過去 run との比較可能性を壊さない）。",
+    )
+    p.add_argument(
+        "--task-id",
+        type=str,
+        default="",
+        help="契約の識別子。config.yaml の最上位へ書き出し、run と指示書を結ぶ。",
+    )
     p.add_argument("--smoke", action="store_true", help="数 epoch・少 clip で疎通確認（証跡なし）")
     p.add_argument("--no-evidence", action="store_true", help="証跡を残さない（配線検証用）")
     return p.parse_args()
