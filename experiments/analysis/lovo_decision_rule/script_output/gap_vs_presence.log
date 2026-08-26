@@ -1,0 +1,48 @@
+01 gap:0.9485 pres:0.9814 gap+pres:0.9660 hmm2:0.9869
+02 gap:0.8200 pres:0.9696 gap+pres:0.9067 hmm2:0.9805
+03 gap:0.7456 pres:0.7291 gap+pres:0.6061 hmm2:0.7484
+04 gap:0.5779 pres:0.7886 gap+pres:0.5433 hmm2:0.7509
+05 gap:0.8180 pres:0.9143 gap+pres:0.8286 hmm2:0.9192
+06 gap:0.9166 pres:0.9304 gap+pres:0.9449 hmm2:0.8731
+07 gap:0.7376 pres:0.7031 gap+pres:0.7534 hmm2:0.6943
+08 gap:0.7636 pres:0.8514 gap+pres:0.7993 hmm2:0.8386
+09 gap:0.9459 pres:0.9961 gap+pres:0.9556 hmm2:0.9981
+10 gap:0.8826 pres:0.9488 gap+pres:0.8947 hmm2:0.9498
+11 gap:0.8249 pres:0.8859 gap+pres:0.8820 hmm2:0.8899
+12 gap:0.5140 pres:0.9261 gap+pres:0.6010 hmm2:0.9228
+13 gap:0.9307 pres:0.9538 gap+pres:0.9538 hmm2:0.9562
+14 gap:0.6552 pres:0.4680 gap+pres:0.6530 hmm2:0.4713
+15 gap:0.8667 pres:0.9929 gap+pres:0.8905 hmm2:0.9833
+
+--- acc
+    gap        mean=  0.7965 pstd= 0.1283
+    pres       mean=  0.8693 pstd= 0.1395
+    gap+pres   mean=  0.8119 pstd= 0.1408
+    hmm2       mean=  0.8642 pstd= 0.1400
+    Δ(pres − gap): mean= +0.0728 pstd= 0.1263 |m|/SE= 2.23 pos=12/15
+    Δ(gap+pres − gap): mean= +0.0154 pstd= 0.0514 |m|/SE= 1.16 pos=12/15
+    Δ(hmm2 − gap): mean= +0.0677 pstd= 0.1251 |m|/SE= 2.10 pos=12/15
+--- mF1
+    gap        mean=  0.6834 pstd= 0.1546
+    pres       mean=  0.8097 pstd= 0.1274
+    gap+pres   mean=  0.7193 pstd= 0.1423
+    hmm2       mean=  0.7953 pstd= 0.1439
+    Δ(pres − gap): mean= +0.1264 pstd= 0.1124 |m|/SE= 4.35 pos=13/15
+    Δ(gap+pres − gap): mean= +0.0359 pstd= 0.0337 |m|/SE= 4.12 pos=14/15
+    Δ(hmm2 − gap): mean= +0.1119 pstd= 0.1200 |m|/SE= 3.61 pos=13/15
+--- edit
+    gap        mean= 19.2973 pstd=13.3461
+    pres       mean= 51.4977 pstd=25.4665
+    gap+pres   mean= 24.0613 pstd=18.1250
+    hmm2       mean= 59.7431 pstd=27.3086
+    Δ(pres − gap): mean=+32.2004 pstd=19.3653 |m|/SE= 6.44 pos=15/15
+    Δ(gap+pres − gap): mean= +4.7639 pstd= 6.3195 |m|/SE= 2.92 pos=12/15
+    Δ(hmm2 − gap): mean=+40.4458 pstd=23.4698 |m|/SE= 6.67 pos=15/15
+--- segF50
+    gap        mean=  0.1907 pstd= 0.1683
+    pres       mean=  0.5289 pstd= 0.2780
+    gap+pres   mean=  0.2372 pstd= 0.2214
+    hmm2       mean=  0.5905 pstd= 0.2832
+    Δ(pres − gap): mean= +0.3382 pstd= 0.2150 |m|/SE= 6.09 pos=15/15
+    Δ(gap+pres − gap): mean= +0.0464 pstd= 0.0847 |m|/SE= 2.12 pos=12/15
+    Δ(hmm2 − gap): mean= +0.3997 pstd= 0.2312 |m|/SE= 6.70 pos=15/15

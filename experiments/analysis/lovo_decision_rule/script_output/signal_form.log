@@ -1,0 +1,54 @@
+thresholds(train): [0.31 0.64 0.56 0.53 0.47 0.47 0.58 0.5  0.45 0.48 0.46 0.7  0.52 0.59
+ 0.5 ]
+01 A_raw:0.977 B_bin:0.984 D_oracle:0.974 E_oracle+raw:0.973
+02 A_raw:0.967 B_bin:0.980 D_oracle:0.963 E_oracle+raw:0.961
+03 A_raw:0.722 B_bin:0.744 D_oracle:0.803 E_oracle+raw:0.766
+04 A_raw:0.777 B_bin:0.768 D_oracle:0.728 E_oracle+raw:0.761
+05 A_raw:0.918 B_bin:0.913 D_oracle:0.433 E_oracle+raw:0.934
+06 A_raw:0.935 B_bin:0.902 D_oracle:0.962 E_oracle+raw:0.953
+07 A_raw:0.707 B_bin:0.680 D_oracle:0.743 E_oracle+raw:0.725
+08 A_raw:0.849 B_bin:0.823 D_oracle:0.891 E_oracle+raw:0.874
+09 A_raw:0.996 B_bin:0.988 D_oracle:1.000 E_oracle+raw:0.973
+10 A_raw:0.947 B_bin:0.947 D_oracle:0.964 E_oracle+raw:0.964
+11 A_raw:0.874 B_bin:0.887 D_oracle:0.956 E_oracle+raw:0.956
+12 A_raw:0.933 B_bin:0.920 D_oracle:0.957 E_oracle+raw:0.966
+13 A_raw:0.937 B_bin:0.940 D_oracle:0.948 E_oracle+raw:0.951
+14 A_raw:0.459 B_bin:0.567 D_oracle:0.712 E_oracle+raw:0.731
+15 A_raw:0.990 B_bin:0.993 D_oracle:0.986 E_oracle+raw:0.988
+
+--- acc
+    A_raw            mean=  0.8658 pstd= 0.1411
+    B_bin            mean=  0.8691 pstd= 0.1230
+    D_oracle         mean=  0.8680 pstd= 0.1517
+    E_oracle+raw     mean=  0.8984 pstd= 0.0957
+    binary 化の純効果 (B−A)                 Δ= +0.0033 |m|/SE= 0.40 pos=7/15
+    誤り除去の純効果 (D−B)                     Δ= -0.0011 |m|/SE= 0.03 pos=10/15
+    誤り除去のみ・段階情報保持 (E−A)                Δ= +0.0326 |m|/SE= 1.83 pos=10/15
+    オラクル全体 (D−A)                       Δ= +0.0022 |m|/SE= 0.06 pos=10/15
+--- mF1
+    A_raw            mean=  0.8004 pstd= 0.1291
+    B_bin            mean=  0.8122 pstd= 0.1298
+    D_oracle         mean=  0.8087 pstd= 0.1186
+    E_oracle+raw     mean=  0.8205 pstd= 0.1208
+    binary 化の純効果 (B−A)                 Δ= +0.0117 |m|/SE= 1.99 pos=11/15
+    誤り除去の純効果 (D−B)                     Δ= -0.0035 |m|/SE= 0.20 pos=11/15
+    誤り除去のみ・段階情報保持 (E−A)                Δ= +0.0201 |m|/SE= 1.79 pos=10/15
+    オラクル全体 (D−A)                       Δ= +0.0083 |m|/SE= 0.55 pos=12/15
+--- edit
+    A_raw            mean= 50.7307 pstd=24.9279
+    B_bin            mean= 50.2127 pstd=27.6832
+    D_oracle         mean= 56.6133 pstd=25.8674
+    E_oracle+raw     mean= 51.4990 pstd=23.0510
+    binary 化の純効果 (B−A)                 Δ= -0.5180 |m|/SE= 0.14 pos=8/15
+    誤り除去の純効果 (D−B)                     Δ= +6.4006 |m|/SE= 0.95 pos=7/15
+    誤り除去のみ・段階情報保持 (E−A)                Δ= +0.7683 |m|/SE= 0.43 pos=8/15
+    オラクル全体 (D−A)                       Δ= +5.8826 |m|/SE= 1.34 pos=9/15
+--- segF50
+    A_raw            mean=  0.5139 pstd= 0.2677
+    B_bin            mean=  0.4933 pstd= 0.2843
+    D_oracle         mean=  0.5788 pstd= 0.2672
+    E_oracle+raw     mean=  0.5386 pstd= 0.2534
+    binary 化の純効果 (B−A)                 Δ= -0.0206 |m|/SE= 0.55 pos=7/15
+    誤り除去の純効果 (D−B)                     Δ= +0.0855 |m|/SE= 1.63 pos=10/15
+    誤り除去のみ・段階情報保持 (E−A)                Δ= +0.0247 |m|/SE= 0.96 pos=12/15
+    オラクル全体 (D−A)                       Δ= +0.0649 |m|/SE= 2.64 pos=12/15
