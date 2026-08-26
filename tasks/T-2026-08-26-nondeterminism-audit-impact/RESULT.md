@@ -63,7 +63,7 @@ SPEC 第 6 節・第 8 節-1 に従い実測を採った。L2-8 WARN 2 件はユ
 | l | 外挿していない | PASS | 決定化の実測値を他の入口へ当てはめていない。書いたのは構造の共通性のみ |
 | m | 数値が実測へ遡れる | PASS | 全数値が `runindex/` と実装の grep に対応。CSV 4 本と JSON 2 本を同梱 |
 | n | 変更範囲の一覧 | PASS | 13 件を一件ずつ列挙（`EVIDENCE.md:175`） |
-| o | PR | **後述**（第 7 節） | — |
+| o | PR | PASS | **#154**。送り出しただけの状態ではない（https://github.com/takuya3h/m2/pull/154） |
 | p | 報告が二つ | PASS | `RESULT.md` と `EVIDENCE.md` |
 | q | 締切に対する経過 | PASS | Phase A 13 分 / B 15 分 / C 18 分 / D 19 分 / E 22 分（840 分に対し） |
 
@@ -130,4 +130,10 @@ SPEC 第 6 節・第 8 節-1 に従い実測を採った。L2-8 WARN 2 件はユ
 
 ## 8. 送出
 
-PR と台帳への送信は本ファイルの記録後に行う。結果を第 3 節 o 行と本節へ追記する。
+- **commit** `08b4fc9e0c2650d0ab72e02c739dc67fd664c5cc`（17 ファイル）
+- **PR** #154 → `phase0`（https://github.com/takuya3h/m2/pull/154）
+- **同時に走る他契約の生成物 16 件は commit に含めていない。**
+  `experiments/analysis/error_shape_selectivity/` と `experiments/analysis/lovo_decision_rule/` が
+  本契約の開始（22:07 UTC）より後の 22:23〜22:37 にファイル同期で作業ツリーへ現れた。
+  分岐への自動書き込みは抑止が効いている（`sync-alerts.log` に bengio の「一時停止中」が 22:14 に出ている）。
+- **台帳への送出** — 第 9 節に結果を記す。

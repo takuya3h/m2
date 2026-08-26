@@ -3,7 +3,7 @@ task_id: "T-2026-08-26-nondeterminism-audit-impact"
 status: pass
 host: "bengio"
 branch: "feat/nondeterminism-audit-impact"
-pr: null
+pr: 154
 merged: false
 
 gates:
@@ -83,4 +83,5 @@ unknowns:
   - "本報告の投影への反映。SPEC 禁止 4 により make taskindex を実行していないため、context/auto/ の tasks_summary.csv / followups.md / results_recent.md に本契約の行が現れることを確認していない"
   - "146 run は命令の記録が無く、24 run は命令を解析できない。これらの入口は特定できていない"
 
-commits: []
+commits:
+  - "08b4fc9e0c2650d0ab72e02c739dc67fd664c5cc"

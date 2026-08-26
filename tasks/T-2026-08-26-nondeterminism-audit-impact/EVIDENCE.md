@@ -210,7 +210,30 @@ T-2026-08-15-injection-sweep-deterministic の項に同じ指摘がある）。
 
 ## 11. 台帳の応答
 
-（`make task-report` の実行後に追記する）
+    source scripts/load_env.sh && make task-report TASK=T-2026-08-26-nondeterminism-audit-impact
+    REPORT_EXIT=0
+    {
+      "task_id": "T-2026-08-26-nondeterminism-audit-impact",
+      "verdict": "pass",
+      "n_issuer_defects": 2,
+      "report_sha256": "46aef65c6cad19bb5c7e313d9b4839f40438f83451e924745f34b396840ab049",
+      "report_bytes": 10865,
+      "replaced_blocks": 0
+    }
+
+**秘匿の検査は通過した。** 本文を直す必要は生じなかった。
+
+送出の記録:
+
+    commit  08b4fc9e0c2650d0ab72e02c739dc67fd664c5cc（17 ファイル）
+    push    origin feat/nondeterminism-audit-impact（PUSH_EXIT=0、新規分岐）
+    PR      #154 -> phase0  https://github.com/takuya3h/m2/pull/154
+
+**同時に走る他契約の生成物 16 件は commit に含めていない。**
+`experiments/analysis/error_shape_selectivity/`（22:37）と
+`experiments/analysis/lovo_decision_rule/`（22:33）が本契約の開始（22:07 UTC）より後に
+ファイル同期で作業ツリーへ現れた。**分岐への自動書き込みは抑止が効いている**
+（`~/claude-sync/sync-alerts.log` に bengio の「一時停止中」が 22:14 に出ている）。
 
 ## 12. 既存の監査（anomalies.md 26 節）との突き合わせ
 
