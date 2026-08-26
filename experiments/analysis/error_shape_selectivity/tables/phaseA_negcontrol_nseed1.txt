@@ -1,0 +1,40 @@
+01 clean:0.974 iid p=0.05:0.950 burst L=32 p=0.05:0.867 iid p=0.10:0.935 burst L=32 p=0.10:0.747
+02 clean:0.963 iid p=0.05:0.957 burst L=32 p=0.05:0.824 iid p=0.10:0.954 burst L=32 p=0.10:0.610
+03 clean:0.803 iid p=0.05:0.758 burst L=32 p=0.05:0.692 iid p=0.10:0.697 burst L=32 p=0.10:0.538
+04 clean:0.728 iid p=0.05:0.728 burst L=32 p=0.05:0.680 iid p=0.10:0.764 burst L=32 p=0.10:0.609
+05 clean:0.433 iid p=0.05:0.368 burst L=32 p=0.05:0.414 iid p=0.10:0.368 burst L=32 p=0.10:0.219
+06 clean:0.962 iid p=0.05:0.936 burst L=32 p=0.05:0.883 iid p=0.10:0.906 burst L=32 p=0.10:0.721
+07 clean:0.743 iid p=0.05:0.724 burst L=32 p=0.05:0.645 iid p=0.10:0.719 burst L=32 p=0.10:0.580
+08 clean:0.891 iid p=0.05:0.858 burst L=32 p=0.05:0.799 iid p=0.10:0.787 burst L=32 p=0.10:0.586
+09 clean:1.000 iid p=0.05:0.990 burst L=32 p=0.05:0.736 iid p=0.10:0.986 burst L=32 p=0.10:0.683
+10 clean:0.964 iid p=0.05:0.939 burst L=32 p=0.05:0.886 iid p=0.10:0.928 burst L=32 p=0.10:0.721
+11 clean:0.956 iid p=0.05:0.943 burst L=32 p=0.05:0.825 iid p=0.10:0.932 burst L=32 p=0.10:0.659
+12 clean:0.957 iid p=0.05:0.905 burst L=32 p=0.05:0.892 iid p=0.10:0.878 burst L=32 p=0.10:0.742
+13 clean:0.948 iid p=0.05:0.904 burst L=32 p=0.05:0.838 iid p=0.10:0.889 burst L=32 p=0.10:0.636
+14 clean:0.712 iid p=0.05:0.647 burst L=32 p=0.05:0.687 iid p=0.10:0.619 burst L=32 p=0.10:0.573
+15 clean:0.986 iid p=0.05:0.857 burst L=32 p=0.05:0.569 iid p=0.10:0.843 burst L=32 p=0.10:0.679
+
+--- acc
+    clean                mean=  0.8680
+    iid p=0.05           mean=  0.8309  Δ= -0.0371 |m|/SE= 4.61 neg=15/15
+    burst L=32 p=0.05    mean=  0.7491  Δ= -0.1189 |m|/SE= 4.74 neg=15/15
+    iid p=0.10           mean=  0.8139  Δ= -0.0541 |m|/SE= 4.72 neg=14/15
+    burst L=32 p=0.10    mean=  0.6201  Δ= -0.2478 |m|/SE=14.30 neg=15/15
+--- mF1
+    clean                mean=  0.8087
+    iid p=0.05           mean=  0.7603  Δ= -0.0484 |m|/SE= 4.00 neg=13/15
+    burst L=32 p=0.05    mean=  0.6715  Δ= -0.1372 |m|/SE= 5.87 neg=14/15
+    iid p=0.10           mean=  0.7323  Δ= -0.0764 |m|/SE= 5.40 neg=13/15
+    burst L=32 p=0.10    mean=  0.5331  Δ= -0.2756 |m|/SE=12.35 neg=15/15
+--- edit
+    clean                mean= 56.6133
+    iid p=0.05           mean= 36.5413  Δ=-20.0720 |m|/SE= 3.61 neg=15/15
+    burst L=32 p=0.05    mean= 37.3935  Δ=-19.2198 |m|/SE= 2.81 neg=13/15
+    iid p=0.10           mean= 38.3030  Δ=-18.3103 |m|/SE= 2.93 neg=13/15
+    burst L=32 p=0.10    mean= 32.2986  Δ=-24.3147 |m|/SE= 4.10 neg=13/15
+--- segF50
+    clean                mean=  0.5788
+    iid p=0.05           mean=  0.3706  Δ= -0.2082 |m|/SE= 4.36 neg=14/15
+    burst L=32 p=0.05    mean=  0.3523  Δ= -0.2265 |m|/SE= 3.62 neg=14/15
+    iid p=0.10           mean=  0.3794  Δ= -0.1994 |m|/SE= 4.35 neg=14/15
+    burst L=32 p=0.10    mean=  0.2413  Δ= -0.3376 |m|/SE= 5.79 neg=15/15
