@@ -585,4 +585,28 @@ $ git status --porcelain | grep '^??'
 
 ## 台帳への送出
 
-（下記に結果を追記する）
+```
+$ source scripts/load_env.sh && source .venv/bin/activate && make task-report TASK=T-2026-08-26-denoise-falsification; echo "EXIT=$?"
+{
+  "task_id": "T-2026-08-26-denoise-falsification",
+  "verdict": "stopped",
+  "n_issuer_defects": 4,
+  "report_sha256": "22995a83c46846e75752bb558e9c1ba72e95b7c6e5ce74e7ab54fbfd2d97cde1",
+  "report_bytes": 13513,
+  "replaced_blocks": 0
+}
+EXIT=0
+```
+
+**送出は成功した。** 秘匿の検査で止まっていない。資格情報の有無だけを確かめてから送った
+（`NOTION_API_KEY` は設定あり・`NOTION_DB_ID` は未設定。**値は出力していない**）。
+
+## PR
+
+```
+$ gh pr create --base phase0 --head feat/denoise-falsification …
+https://github.com/takuya3h/m2/pull/155
+```
+
+**PR #155。送り出しただけの状態ではなく、起票まで完了している。**
+分岐 `feat/denoise-falsification` は規定の接頭辞 `feat/` で始まる（L419–428）。
