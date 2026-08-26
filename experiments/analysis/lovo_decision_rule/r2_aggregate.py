@@ -48,11 +48,19 @@ def aggregate(reps, mean_full, n_full=15):
     s2 = statistics.mean(r[1] for r in reps)
     m = statistics.mean(r[2] for r in reps)
     v_between = statistics.variance(means)
-    v_b = max(0.0, v_between - s2 / m)
+    # **有限母集団の補正。** 部分集合は 15 本から重複なく m 本を選ぶ。
+    # 反復どうしは動画を大きく共有するため、反復間の平均の散らばりは
+    # 独立に選んだ場合の s2/m より **小さく出る**。正しい期待値は
+    #   (s2/m) * (N-m)/(N-1)
+    # である。補正を入れずに s2/m を引くと共有成分がほぼ必ず負になり、
+    # max(0, .) で 0 へ潰れて「相関は無い」という誤った像を与える。
+    fpc = (n_full - m) / (n_full - 1) if n_full > 1 else 1.0
+    v_sampling = (s2 / m) * fpc
+    v_b = max(0.0, v_between - v_sampling)
     se = math.sqrt(v_b + s2 / n_full)
     lo, hi = mean_full - Z * se, mean_full + Z * se
     rho = v_b / (v_b + s2) if (v_b + s2) > 0 else 0.0
     return {"detect": not (lo <= 0.0 <= hi), "se": se, "lo": lo, "hi": hi,
             "n_reps": len(reps), "rho": rho, "sigma2": s2, "v_between": v_between,
-            "v_shared": v_b, "m": m,
-            "note": "学習側を取り替えた反復から共有成分を実測して分散へ入れた"}
+            "v_sampling": v_sampling, "v_shared": v_b, "m": m, "fpc": fpc,
+            "note": "学習側を取り替えた反復から共有成分を実測。有限母集団の補正を入れた"}
