@@ -1,0 +1,27 @@
+--- acc
+    raw                  mean=  0.8658 pstd= 0.1411
+    drop-ubiq            mean=  0.8797  Δ= +0.0139 |m|/SE= 1.92 pos=7/15
+    denoise              mean=  0.8627  Δ= -0.0032 |m|/SE= 0.44 pos=9/15
+    denoise+drop-ubiq    mean=  0.8722  Δ= +0.0064 |m|/SE= 0.56 pos=7/15
+--- mF1
+    raw                  mean=  0.8004 pstd= 0.1291
+    drop-ubiq            mean=  0.8315  Δ= +0.0311 |m|/SE= 2.25 pos=9/15
+    denoise              mean=  0.8031  Δ= +0.0027 |m|/SE= 0.27 pos=9/15
+    denoise+drop-ubiq    mean=  0.8210  Δ= +0.0206 |m|/SE= 1.19 pos=8/15
+--- edit
+    raw                  mean= 50.7307 pstd=24.9279
+    drop-ubiq            mean= 48.5774  Δ= -2.1533 |m|/SE= 1.53 pos=5/15
+    denoise              mean= 59.8402  Δ= +9.1095 |m|/SE= 3.06 pos=12/15
+    denoise+drop-ubiq    mean= 57.3112  Δ= +6.5804 |m|/SE= 1.97 pos=10/15
+--- segF50
+    raw                  mean=  0.5139 pstd= 0.2677
+    drop-ubiq            mean=  0.5157  Δ= +0.0017 |m|/SE= 0.15 pos=7/15
+    denoise              mean=  0.5815  Δ= +0.0675 |m|/SE= 3.15 pos=12/15
+    denoise+drop-ubiq    mean=  0.5833  Δ= +0.0694 |m|/SE= 3.08 pos=10/15
+
+--- per-phase F1（15 fold のフレーム加重ではなく fold 平均）
+variant              anesthesi  incision dissectio hemostasi   closure    design irrigatio  dressing
+raw                      0.892     0.941     0.872     0.626     0.753     0.587     0.129     0.096
+drop-ubiq                0.921     0.946     0.893     0.649     0.757     0.601     0.219     0.117
+denoise                  0.904     0.963     0.870     0.648     0.744     0.584     0.117     0.098
+denoise+drop-ubiq        0.912     0.963     0.885     0.667     0.747     0.580     0.168     0.130

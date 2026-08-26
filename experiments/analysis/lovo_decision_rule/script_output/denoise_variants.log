@@ -1,0 +1,48 @@
+01 raw:0.977 hmm2:0.981 hmm2_asym:0.982 max_raw_hmm:0.984 raw+hmm:0.982
+02 raw:0.967 hmm2:0.980 hmm2_asym:0.980 max_raw_hmm:0.974 raw+hmm:0.976
+03 raw:0.722 hmm2:0.754 hmm2_asym:0.747 max_raw_hmm:0.716 raw+hmm:0.758
+04 raw:0.777 hmm2:0.754 hmm2_asym:0.762 max_raw_hmm:0.785 raw+hmm:0.786
+05 raw:0.918 hmm2:0.924 hmm2_asym:0.929 max_raw_hmm:0.936 raw+hmm:0.933
+06 raw:0.935 hmm2:0.842 hmm2_asym:0.875 max_raw_hmm:0.898 raw+hmm:0.888
+07 raw:0.707 hmm2:0.687 hmm2_asym:0.701 max_raw_hmm:0.715 raw+hmm:0.693
+08 raw:0.849 hmm2:0.836 hmm2_asym:0.837 max_raw_hmm:0.846 raw+hmm:0.886
+09 raw:0.996 hmm2:0.998 hmm2_asym:0.998 max_raw_hmm:0.998 raw+hmm:0.998
+10 raw:0.947 hmm2:0.949 hmm2_asym:0.952 max_raw_hmm:0.949 raw+hmm:0.950
+11 raw:0.874 hmm2:0.893 hmm2_asym:0.891 max_raw_hmm:0.891 raw+hmm:0.890
+12 raw:0.933 hmm2:0.928 hmm2_asym:0.926 max_raw_hmm:0.931 raw+hmm:0.941
+13 raw:0.937 hmm2:0.956 hmm2_asym:0.956 max_raw_hmm:0.957 raw+hmm:0.956
+14 raw:0.459 hmm2:0.472 hmm2_asym:0.470 max_raw_hmm:0.461 raw+hmm:0.496
+15 raw:0.990 hmm2:0.986 hmm2_asym:0.986 max_raw_hmm:0.988 raw+hmm:0.988
+
+--- acc
+  raw            mean=  0.8658
+  hmm2           mean=  0.8627  Δ= -0.0032 |m|/SE= 0.44 pos=9/15
+  hmm2_asym      mean=  0.8663  Δ= +0.0005 |m|/SE= 0.09 pos=9/15
+  max_raw_hmm    mean=  0.8686  Δ= +0.0028 |m|/SE= 0.83 pos=10/15
+  raw+hmm        mean=  0.8748  Δ= +0.0090 |m|/SE= 1.70 pos=12/15
+--- mF1
+  raw            mean=  0.8004
+  hmm2           mean=  0.8031  Δ= +0.0027 |m|/SE= 0.27 pos=9/15
+  hmm2_asym      mean=  0.8011  Δ= +0.0007 |m|/SE= 0.06 pos=8/15
+  max_raw_hmm    mean=  0.8059  Δ= +0.0055 |m|/SE= 0.61 pos=9/15
+  raw+hmm        mean=  0.8061  Δ= +0.0057 |m|/SE= 0.59 pos=11/15
+--- edit
+  raw            mean= 50.7307
+  hmm2           mean= 59.8402  Δ= +9.1095 |m|/SE= 3.06 pos=12/15
+  hmm2_asym      mean= 56.8619  Δ= +6.1312 |m|/SE= 2.43 pos=11/15
+  max_raw_hmm    mean= 56.8266  Δ= +6.0959 |m|/SE= 2.74 pos=13/15
+  raw+hmm        mean= 56.4926  Δ= +5.7619 |m|/SE= 1.88 pos=9/15
+--- segF50
+  raw            mean=  0.5139
+  hmm2           mean=  0.5815  Δ= +0.0675 |m|/SE= 3.15 pos=12/15
+  hmm2_asym      mean=  0.5613  Δ= +0.0473 |m|/SE= 2.72 pos=10/15
+  max_raw_hmm    mean=  0.5572  Δ= +0.0433 |m|/SE= 2.59 pos=12/15
+  raw+hmm        mean=  0.5769  Δ= +0.0630 |m|/SE= 2.78 pos=10/15
+
+--- 工程別 F1（15 fold 平均）
+variant        anesthesi  incision dissectio hemostasi   closure    design irrigatio  dressing
+raw                0.892     0.941     0.872     0.626     0.753     0.587     0.129     0.096
+hmm2               0.904     0.963     0.870     0.648     0.744     0.584     0.117     0.098
+hmm2_asym          0.906     0.962     0.874     0.647     0.748     0.560     0.117     0.101
+max_raw_hmm        0.917     0.960     0.872     0.649     0.752     0.553     0.125     0.098
+raw+hmm            0.905     0.961     0.886     0.654     0.751     0.581     0.108     0.098

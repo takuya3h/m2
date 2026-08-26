@@ -1,0 +1,83 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-08-26-lovo-decision-rule"
+  kind: analysis
+  title: "一つ抜き検証の判定則の再構築と既存結論の再判定"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-08-25T21:20:00Z"
+  created_from:
+    runindex_commit: "PENDING_EXECUTOR_MEASUREMENT"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: []
+  amendments:
+    - date: "2026-08-26"
+      reason: "decisions_required 1/3 を利用者が回答: 採用する判定則を一つへ決めない。SPEC.md 第4節および第5節禁止6 の既定どおり、複数の則の結果を並べるところまでを範囲とする"
+      diff: "governance.decisions_required から当該項目を除去"
+    - date: "2026-08-26"
+      reason: "decisions_required 2/3 を利用者が回答: 既存の報告の記述を訂正しない。SPEC.md 第8節5 の既定どおり、訂正の対象になりうる箇所の指摘までを範囲とする"
+      diff: "governance.decisions_required から当該項目を除去"
+    - date: "2026-08-26"
+      reason: "decisions_required 3/3 を利用者が回答: 対象とする既存結論の範囲を広げない。SPEC.md Task 2 Step 2 の 7 種類を軸に、LOVO の素の値が残る結論に限る"
+      diff: "governance.decisions_required から当該項目を除去"
+intent:
+  question: "一つ抜き検証の各 fold は学習側の集合を大きく共有しており互いに独立ではない。独立を前提とした揺らぎの見積もりで下した既存の判定は、非独立を踏まえた則でも保たれるか"
+  decision_at_stake: "術具除去を主路として扱い続けてよいかどうか。および報告会で述べる結論のうち、どれが判定則の変更に耐え、どれが耐えないか"
+  related:
+    backlog: []
+inputs:
+  denominator:
+    ref: "exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42"
+    metric: "accuracy"
+    require: {n_seeds: ">=3", sigma: present, split: val}
+  data:
+    dataset: "egosurgery_tool_subset"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["docs/analysis_scripts/proxy_lovo_presence.py"]
+contract:
+  inject_verbatim:
+    - conventions#sigma
+    - conventions#prohibitions
+    - conventions#issuer_cautions
+  conventions_rev: "PENDING_EXECUTOR_MEASUREMENT"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "既存の一つ抜き結果の所在確認と一覧化", gpu: false, est: "short"}
+    - {id: B, name: "現行の則の再現と対照の設置", gpu: false, est: "short"}
+    - {id: C, name: "非独立を踏まえた則の実装と自己検査", gpu: false, est: "medium"}
+    - {id: D, name: "全結論の再判定と比較", gpu: false, est: "medium"}
+    - {id: E, name: "報告", gpu: false, est: "short"}
+  gates:
+    - {id: G1, after: A, check: "既存の結果が実在し、再判定できる形で読めている", on_fail: stop}
+    - {id: G2, after: B, check: "現行の則で既知の値が再現でき、対照が両方向で働いている", on_fail: stop}
+    - {id: G3, after: C, check: "新しい則が対照を正しく分離し、乱数を使う場合は再現する", on_fail: stop}
+    - {id: G4, after: D, check: "すべての結論に同じ則が当てられ、変わったものが特定されている", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [REPORT.md]
+  destination: "experiments/analysis/lovo_decision_rule/"
+  acceptance:
+    - "a 既存の一つ抜き結果の所在が実測で確かめられ、対象の一覧が作られている"
+    - "b 現行の則で既知の値が再現できたか、できなかったかが記録されている"
+    - "c 陽性対照と陰性対照が両方向で設置され、現行の則がそれらを正しく分離することが示されている"
+    - "d 則を選ぶ基準が結果を見る前に定められ、記録されている"
+    - "e 非独立を踏まえた則が少なくとも二種類実装され、互いの結果が比較されている"
+    - "f 乱数を使う手続きは種が固定され、二度走らせて一致することが実測されている"
+    - "g すべての既存結論に同じ則が当てられ、判定が変わったものと変わらなかったものが一覧になっている"
+    - "h 効果量と符号の個数が、判定とは別に記録されている"
+    - "i 数値がすべて実測へ遡れる"
+    - "j 変更範囲の一覧が記録されている"
+    - "k PR が存在し、分岐が規定の接頭辞で始まっている"
+    - "l 完了報告が事実の記録と証跡の記録に分かれている"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: []

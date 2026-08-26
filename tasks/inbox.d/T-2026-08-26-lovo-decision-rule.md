@@ -1,0 +1,6 @@
+- [ ] 2026-08-26 [cc] 採用する判定則を一つに決めるか、既存報告を訂正するか、対象範囲を広げるかの 3 件を利用者へ提示し、いずれも契約本文の既定どおり「決めない／訂正しない／広げない」と回答を得た。回答は spec.yaml の meta.amendments へ記録し decisions_required を空にした（T-2026-08-26-lovo-decision-rule）
+- [ ] 2026-08-26 [cc] 起票時からの分母の動き（index 751→1177 / experiments 207→213）は起票後の S4 injection 系 3 commit による。利用者の判断で現在の記録のまま続行した（T-2026-08-26-lovo-decision-rule）
+- [ ] 2026-08-26 [cc] 完了判定 d の「効果を人為的に大きくすれば検出される」は定数倍では成立しない。t 型は分子と分母が同じ倍率で動くため |m|/SE が不変で、実測でも x10 と x50 で 3 則とも判定が動かなかった。平行移動で境界をまたぐ掃引に置き換えて初めて R0 が +0.0732、R1 が +0.1102 で反転した。空振り確認の作法として tasks/README.md への昇格を提案（T-2026-08-26-lovo-decision-rule）
+- [ ] 2026-08-26 [cc] 契約の禁止事項に置かれた「採用する則を一つに決めない」「既存報告を訂正しない」を governance.decisions_required にも重ねて置くと、本文が既に答えている問いで L3 の P6 が FAIL し実行が止まる。本文で確定した事項は decisions_required に載せない規約を提案（T-2026-08-26-lovo-decision-rule）
+- [ ] 2026-08-26 [cc] 同期が experiments/**/*.py を対象にしており、実行中の作業ファイルが三度削除された。契約の抑止 .sync-pause は自動統合しか止めずファイル同期は止めない。ファイル同期も止める目印を用意するか、作業を experiments/ の外で行う規約が要る（T-2026-08-26-lovo-decision-rule）
+- [ ] 2026-08-26 [cc] make forbidden-check は experiments/ 全体を禁止領域とし契約の outputs.destination を除外しないため、destination が experiments/ 配下の分析契約では必ず失敗する。除外の仕組みを入れるか置き場を移すかの判断が要る（T-2026-08-26-lovo-decision-rule）

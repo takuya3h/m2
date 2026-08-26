@@ -1,0 +1,69 @@
+01 drop order: Gauze, Mouth Gag, Suction Cannula, Tweezers
+02 drop order: Gauze, Mouth Gag, Suction Cannula, Tweezers
+03 drop order: Gauze, Mouth Gag, Tweezers, Suction Cannula
+04 drop order: Gauze, Mouth Gag, Tweezers, Suction Cannula
+05 drop order: Gauze, Mouth Gag, Suction Cannula, Tweezers
+06 drop order: Gauze, Mouth Gag, Suction Cannula, Tweezers
+07 drop order: Gauze, Mouth Gag, Tweezers, Suction Cannula
+08 drop order: Gauze, Mouth Gag, Suction Cannula, Tweezers
+09 drop order: Gauze, Mouth Gag, Suction Cannula, Tweezers
+10 drop order: Gauze, Mouth Gag, Tweezers, Suction Cannula
+11 drop order: Gauze, Mouth Gag, Suction Cannula, Tweezers
+12 drop order: Gauze, Mouth Gag, Tweezers, Suction Cannula
+13 drop order: Gauze, Mouth Gag, Suction Cannula, Tweezers
+14 drop order: Gauze, Mouth Gag, Suction Cannula, Tweezers
+15 drop order: Gauze, Mouth Gag, Suction Cannula, Tweezers
+
+※ 落とす術具は fold ごとに train のみの H(phase|tool) で決めている（結果を見て選んでいない）
+--- acc
+  raw     k=0  mean=  0.8658 pstd= 0.1411
+  raw     k=1  mean=  0.8664  Δ= +0.0006 |m|/SE= 0.25 pos=7/15
+  raw     k=2  mean=  0.8759  Δ= +0.0101 |m|/SE= 1.27 pos=7/15
+  raw     k=3  mean=  0.8736  Δ= +0.0078 |m|/SE= 0.99 pos=7/15
+  raw     k=4  mean=  0.8781  Δ= +0.0123 |m|/SE= 1.97 pos=7/15
+  raw     k=5  mean=  0.8985  Δ= +0.0327 |m|/SE= 1.82 pos=8/15
+  denoise k=0  mean=  0.8627 pstd= 0.1402
+  denoise k=1  mean=  0.8698  Δ= +0.0071 |m|/SE= 1.53 pos=7/15
+  denoise k=2  mean=  0.8706  Δ= +0.0079 |m|/SE= 1.03 pos=7/15
+  denoise k=3  mean=  0.8673  Δ= +0.0046 |m|/SE= 0.64 pos=8/15
+  denoise k=4  mean=  0.8656  Δ= +0.0029 |m|/SE= 0.35 pos=7/15
+  denoise k=5  mean=  0.8899  Δ= +0.0272 |m|/SE= 1.56 pos=8/15
+--- mF1
+  raw     k=0  mean=  0.8004 pstd= 0.1291
+  raw     k=1  mean=  0.8027  Δ= +0.0022 |m|/SE= 2.08 pos=9/15
+  raw     k=2  mean=  0.8292  Δ= +0.0288 |m|/SE= 2.45 pos=8/15
+  raw     k=3  mean=  0.8344  Δ= +0.0340 |m|/SE= 2.58 pos=10/15
+  raw     k=4  mean=  0.8265  Δ= +0.0261 |m|/SE= 3.34 pos=10/15
+  raw     k=5  mean=  0.8269  Δ= +0.0264 |m|/SE= 2.77 pos=9/15
+  denoise k=0  mean=  0.8029 pstd= 0.1354
+  denoise k=1  mean=  0.8093  Δ= +0.0064 |m|/SE= 1.96 pos=11/15
+  denoise k=2  mean=  0.8174  Δ= +0.0145 |m|/SE= 1.43 pos=8/15
+  denoise k=3  mean=  0.8166  Δ= +0.0137 |m|/SE= 1.32 pos=8/15
+  denoise k=4  mean=  0.8049  Δ= +0.0020 |m|/SE= 0.42 pos=6/15
+  denoise k=5  mean=  0.8187  Δ= +0.0158 |m|/SE= 2.09 pos=9/15
+--- edit
+  raw     k=0  mean= 50.7307 pstd=24.9279
+  raw     k=1  mean= 51.0152  Δ= +0.2845 |m|/SE= 0.51 pos=7/15
+  raw     k=2  mean= 49.3492  Δ= -1.3815 |m|/SE= 1.20 pos=5/15
+  raw     k=3  mean= 51.7852  Δ= +1.0544 |m|/SE= 0.50 pos=6/15
+  raw     k=4  mean= 50.4613  Δ= -0.2695 |m|/SE= 0.19 pos=7/15
+  raw     k=5  mean= 51.9481  Δ= +1.2174 |m|/SE= 0.95 pos=7/15
+  denoise k=0  mean= 59.7189 pstd=26.6240
+  denoise k=1  mean= 58.9611  Δ= -0.7579 |m|/SE= 0.92 pos=4/15
+  denoise k=2  mean= 57.0730  Δ= -2.6460 |m|/SE= 1.59 pos=6/15
+  denoise k=3  mean= 56.3499  Δ= -3.3690 |m|/SE= 2.20 pos=6/15
+  denoise k=4  mean= 56.4407  Δ= -3.2783 |m|/SE= 2.32 pos=4/15
+  denoise k=5  mean= 56.7782  Δ= -2.9407 |m|/SE= 1.84 pos=6/15
+--- segF50
+  raw     k=0  mean=  0.5139 pstd= 0.2677
+  raw     k=1  mean=  0.5135  Δ= -0.0004 |m|/SE= 0.07 pos=7/15
+  raw     k=2  mean=  0.5135  Δ= -0.0004 |m|/SE= 0.04 pos=5/15
+  raw     k=3  mean=  0.5081  Δ= -0.0058 |m|/SE= 0.51 pos=6/15
+  raw     k=4  mean=  0.5129  Δ= -0.0011 |m|/SE= 0.08 pos=5/15
+  raw     k=5  mean=  0.5378  Δ= +0.0238 |m|/SE= 1.05 pos=6/15
+  denoise k=0  mean=  0.5807 pstd= 0.2754
+  denoise k=1  mean=  0.5774  Δ= -0.0033 |m|/SE= 0.48 pos=6/15
+  denoise k=2  mean=  0.5764  Δ= -0.0042 |m|/SE= 0.32 pos=4/15
+  denoise k=3  mean=  0.5637  Δ= -0.0170 |m|/SE= 1.27 pos=5/15
+  denoise k=4  mean=  0.5611  Δ= -0.0196 |m|/SE= 1.80 pos=5/15
+  denoise k=5  mean=  0.5749  Δ= -0.0058 |m|/SE= 0.33 pos=5/15
