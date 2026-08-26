@@ -1,0 +1,101 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-08-26-denoise-falsification"
+  kind: exp
+  title: "入力側の雑音除去が本番の受容野で効かないことの反証テストと環境の棚卸し"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-08-25T22:00:00Z"
+  created_from:
+    runindex_commit: "44697d9a402cb52a2b800220cdd5976c0a656ca6"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: []
+  amendments:
+    - date: "2026-08-26"
+      reason: "起票者が PENDING_EXECUTOR_MEASUREMENT と置いた 2 欄を実測値へ差し替えた。SPEC Task 2 Step 5 の指示による"
+      diff: "meta.created_from.runindex_commit を 44697d9 へ。contract.conventions_rev を a8c07e8 へ"
+    - date: "2026-08-26"
+      reason: "governance.decisions_required の 4 件を利用者へ提示し、4 件すべて行わないことで確定した。契約本文の禁止事項と一致する回答である"
+      diff: "governance.decisions_required を 4 件から空へ。回答は tasks/T-2026-08-26-denoise-falsification/RESULT.md と tasks/inbox.d/ に記録"
+intent:
+  question: "術具存在の信号を入力側で雑音除去する介入は、代理モデルでは分節の指標を一貫して改善したが、時間方向の受容野を与えると効果が消えた。本番の時系列モデルでも効かないことを実測で確かめられるか"
+  decision_at_stake: "入力側の雑音除去を実務上の提案から取り下げる判断を、実測にもとづいて確定させてよいかどうか。および当該ホストで今後の実験を回せるかどうか"
+  hypothesis: "本番の時系列モデルは受容野が広いため、雑音除去の効果は実質的に消える。ただし効果が見えないことと効果が無いことは別であり、本契約が示せるのは前者だけである"
+  related:
+    backlog: []
+inputs:
+  denominator:
+    ref: "exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42"
+    metric: "accuracy"
+    require: {n_seeds: ">=3", sigma: present, split: val}
+  frozen_source:
+    ref: "run:transfer/relation_detr_seed42"
+    verify: ckpt_sha256
+  data:
+    dataset: "egosurgery_tool_subset"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt", "data/splits/ego_test.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/train_b2a.py"]
+contract:
+  inject_verbatim:
+    - conventions#split
+    - conventions#eval_recipe
+    - conventions#frozen_source
+    - conventions#sigma
+    - conventions#prohibitions
+    - conventions#issuer_cautions
+  conventions_rev: "a8c07e813696d3720ceee648e8aa202224285955"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "環境と入力の棚卸し", gpu: false, est: "short"}
+    - {id: B, name: "雑音除去が信号を変えていることの確認", gpu: false, est: "short"}
+    - {id: C, name: "所要時間の実測と本数の決定", gpu: true, est: "short"}
+    - {id: D, name: "雑音除去の有無の対測定", gpu: true, est: "unknown"}
+    - {id: E, name: "報告", gpu: false, est: "short"}
+  gates:
+    - {id: G1, after: A, check: "後続に必要なものがすべて実在する。欠けているものは一覧になっている", on_fail: stop}
+    - {id: G2, after: B, check: "雑音除去が信号を実際に変えていることが実測で確かめられている", on_fail: stop}
+    - {id: G3, after: C, check: "残り時間で対が入る見込みがある", on_fail: skip}
+    - {id: G4, after: D, check: "対の両側が同数そろい、実行順序が記録されている", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, deterministic_flags]
+  resources: {server: "andrew", gpu: 1, est_hours: 0, runs: 0}
+prereg:
+  prediction: "雑音除去を施した腕は、施さない腕に対して分節の指標を実質的に動かさない。ただし効果が見えないことと効果が無いことは別であり、本契約が示せるのは、この本数で見える大きさより小さいという事実だけである"
+  primary_endpoint: "edit"
+  decision_rule: "判定は本契約では行わない。効果量と、対のうち改善側へ倒れた個数の両方を報告する。判定則は同時に走る別契約が確定させるため、そこで確定した則を起票者が後から当てる。効果が見えなかった場合、効果が無いとは書かない。この本数で見える大きさより小さいと書く"
+  stop_conditions:
+    - "後続に必要なものが実在しないことが判明した場合は環境の棚卸しの結果を成果として報告し、そこで止める"
+    - "雑音除去が信号を変えていないことが判明した場合は止める。信号が変わっていなければ何を測っても効果は出ない"
+    - "残り時間で対が入らない場合は対測定へ入らず、棚卸しと信号の確認までで報告する"
+    - "対の両側の本数がそろわない見込みになった場合は新たな腕を始めない"
+  committed_at: "2026-08-25T22:18:27Z"
+  commit: "e040a5f739ef60e02d1a252eb0cd4b58de542b26"
+outputs:
+  expected_runs: 0
+  must_have: [metrics.json, notes.md, config.yaml]
+  destination: "experiments/transfer/"
+  stamp: {task_id_in: config.yaml}
+  acceptance:
+    - "a 環境の棚卸しが行われ、実在するものと欠けているものが一覧になっている"
+    - "b 欠けているものについて、何があれば後続が走るかが記録されている"
+    - "c 雑音除去が信号を実際に変えていることが、変化の量として実測されている"
+    - "d 雑音除去を施さない腕では信号が変わっていないことが確かめられている"
+    - "e 対測定が行われた場合、対の両側が同数そろっている"
+    - "f 実行の順序が記録されている"
+    - "g 効果量と改善側へ倒れた個数の双方が報告され、判定が行われていない"
+    - "h 効果が見えなかった場合に、効果が無いという書き方をしていない"
+    - "i 見える大きさの下限が、本数から求められて記録されている"
+    - "j 変更範囲の一覧が記録されている"
+    - "k PR が存在し、分岐が規定の接頭辞で始まっている"
+    - "l 完了報告が事実の記録と証跡の記録に分かれている"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [denominator_moved, frozen_source_hash_mismatch]
