@@ -1,0 +1,94 @@
+result_version: 3
+task_id: "T-2026-08-26-oracle-ceiling-lovo"
+status: pass
+host: "lecun"
+branch: "feat/oracle-ceiling-lovo"
+pr: 156
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "本番側に一つ抜き検証の経路は無いことを異質な 3 方法で確定した（grep 1 件は散文、実装は代理側 16 本のみ、src/ と scripts/ は 0 件）。SPEC Task 2 Step 3 が許可する分け方を外から与える経路だけを配線した（+62/-11 行）。学習の数式・損失・最適化と既存の分割ファイルには触れていない。"
+  - id: G2
+    verdict: pass
+    note: "分け方 01 が両腕とも RC=0 で完走した。漏れの検査は train_videos に 02-15 の 14 本、eval_videos に 01 のみで leak=0。検査そのものの陽性対照は意図的に漏らした組で ['09'] を検出した。所要は pred 37 秒 / oracle 42 秒。"
+  - id: G3
+    verdict: pass
+    note: "15 組 30 本すべてが RC=0 で完走し、片側だけの腕は 0 本。config.yaml の lovo 節を 30 本すべて照合し漏れのあった run は 0 件。上限測定専用の印が無い oracle run 0 件、task_id が刻まれていない run 0 件。"
+
+tests:
+  before_failed: 5
+  after_failed: 5
+  after_passed: 472
+
+deviations:
+  - type: spec_defect
+    note: "本番側に一つ抜き検証の経路が無かったため、SPEC Task 2 Step 3 が明示的に許可する『分け方を外から与える経路』と『学習側と評価側の動画の集合を指定する経路』だけを配線した。video_of / check_no_leak / load_clips_lovo / --lovo-holdout / config.yaml の lovo 節 / eval_recipe の cv_scheme の 6 項目である。既存の load_clips は改変せずに呼んでいる。"
+  - type: judgement
+    note: "outputs.expected_runs と plan.resources.runs を 32 から 30 へ直した。data/processed/phase_manifest の 3 split に現れる動画は 01-15 の 15 本であり、一つ抜き検証は 15 組 30 本になる。起票者の回答に従い実測を正とした。"
+  - type: judgement
+    note: "漏れの検査の陽性対照は、CLI に漏れを起こす経路を足さず check_no_leak を最小の clip_id の組で直接呼んで行った。禁止 9 が陽性対照に使った分け方の証跡を残すことを禁じているためで、run は 1 本も生成していない。"
+  - type: judgement
+    note: "禁止 5 に従い make taskindex と make inbox を回していない。skill の手順はこれらの再生成と -check を求めるが、契約の禁止を優先した。context/auto/ の投影と tasks/inbox.md は本報告を含まない。全 PR 統合後に一台で一度だけ回す必要がある。"
+  - type: environment
+    note: "同じ作業ツリーで別契約が同時に走っており、その未追跡ファイル 16 件（error_shape_selectivity 7 件・lovo_decision_rule 9 件）が現れた。SPEC Task 1 Step 2 は汚れていれば退避と述べるが、退避すると実行中の作業を壊すため触れず、commit にも含めなかった。実行中であることは mtime が 75 秒前であることで確かめた。"
+  - type: judgement
+    note: "検証側分割との並びは、同じ基準（lecun・決定化あり・seed42・1 本ずつ）の対が既存記録に存在しないため、既存記録から作れる 3 通りの基準を明示して併記した。新しい run は足していない。同じ基準の対を作るには予測側の val run が 1 本要り、37 秒で得られる。"
+  - type: judgement
+    note: "決定化の対照 3 本（D1a/D1b/D2）は --no-evidence で走らせ、experiments/ を汚していない。証跡はコマンドの出力ログとして EVIDENCE.md に残した。"
+
+issuer_defects:
+  - type: self_contradiction
+    note: "outputs.expected_runs: 32 と plan.resources.runs: 32 が、データが決める分け方の数と合わない。3 split の manifest に現れる動画は 01-15 の 15 本であり、一つ抜き検証は 15 組 30 本にしかならない。指示どおり 32 本を作ろうとすると 16 組目の分け方が存在せず、宣言と実際が食い違ったまま完了判定に入ることになる。"
+  - type: check_does_not_check
+    note: "契約 §2 が定める漏れの検査は評価側の動画が学習側に在るかだけを見る。しかし最良 epoch は抜いた動画の正解で選ばれており（train_b2a.py の val['phase_accuracy'] による best 更新）、その経路は検査されない。指示どおり実行すると漏れ 0 と報告しながら、抜いた動画のラベルが epoch 選択に使われる。両腕に等しくかかるため対の差は受けにくいが、絶対値は楽観側に寄る。"
+  - type: self_contradiction
+    note: "契約は §1.2 で『比較できない二つを並べていた』ことを起票者の誤りとして挙げながら、Task 5 Step 2 で並べよと求める先行契約の値が同じ基準で作られていない。先行契約の val の Δ は決定化ありの新規 oracle 1 本と非決定で別ホスト混在の pred 9 本の平均の差である。指示どおり並べると基準の違う二つを並べることになり、批判した誤りを繰り返す。3 通りの基準を併記して緩和した。"
+
+positive_controls:
+  - judgement: "判定 c/d 漏れの検査が働いている"
+    breaking_input: "評価側の動画 09 を学習側へ意図的に混ぜた最小の組を check_no_leak へ渡す"
+    observed: "['09'] を返して検出した。正しく分けた組では空集合を返した。両方向で働いている"
+  - judgement: "判定 a 経路の探索が空振りでない"
+    breaking_input: "実在しない語 zqx_absent_mechanism で内容検索・ファイル名走査・版管理の一覧の 3 方法を回す"
+    observed: "grep 0 件 / find 0 件 / git ls-files 0 件。lovo では 1 件 / 20 件 / 20 件を返した"
+  - judgement: "判定 e 二つの腕で入力が違う"
+    breaking_input: "同じ腕（oracle）の npz を二度読んで比較する"
+    observed: "np.array_equal が True。pred と oracle は 6753/231555 = 2.92% の要素が違い、np.array_equal は False"
+  - judgement: "決定化が LOVO の経路でも効いている（陰性側: 同じ種なら一致）"
+    breaking_input: "種を 42 から 123 へ変える"
+    observed: "差分 102 行、best epoch 49 から 48 へ、acc 0.9704 から 0.9693 へ動いた。同じ種の 2 本は差分 0 行"
+  - judgement: "判定 n 既存の分割が書き換えられていない"
+    breaking_input: "data/splits/ego_val.txt へ 1 行足す"
+    observed: "diff 行数が 0 から 8 へ増えた。戻すと 0 に戻り、cmp による内容の照合も一致した"
+  - judgement: "判定 p 禁止領域検査が『何でも違反にする』壊れ方でない"
+    breaking_input: "禁止領域の外側の 5 件（scripts/train_b2a.py と契約 4 ファイル）を同じ検査へ通す"
+    observed: "231 件を検査して 226 件を違反とし、外側の 5 件は違反にしなかった。違反 226 件の内訳は本契約の run 210 件と別契約の未追跡 16 件である"
+  - judgement: "試験の失敗が本契約の変更に由来しない"
+    breaking_input: "scripts/train_b2a.py の変更を stash して同じ試験を回す"
+    observed: "失敗集合が完全に一致した（5 件・diff 0 行）。before 5 failed / 472 passed、after 5 failed / 472 passed"
+  - judgement: "プロセスによる別契約の活動の確認（これは空振りした）"
+    breaking_input: "実在しない語 zzz_no_such_token_xyz と qqq_absent_marker で同じ絞り込みを行う"
+    observed: "pgrep -f が 2 件、/proc の cmdline 走査が 1 件を返した。自分の命令行に語が含まれるためで、この方法は使えない。判断は mtime に拠った"
+
+followups:
+  - "先行契約が検証側の分割で見た大きな追加利得は、分割に固有の現象である。一つ抜き検証の平均 Δaccuracy は +0.008282 で、検証側の分割で得た値の 39〜50% にとどまり、改善側へ倒れた個数も 5/5 から 11/15 へ落ちた。既存の方針（工程認識のために検出器の強化へ投資しない）を覆す根拠は本契約の実測からは得られていない。"
+  - "代理モデルの一つ抜き検証は 10/15 であった。本番の時系列モデルで 11/15 は、これとほぼ同じ水準である。すなわち代理モデルの所見は一つ抜き検証という土俵では本番でも再現している。食い違っていたのは土俵の方であった。"
+  - "予測側と正しい側の術具存在の食い違いは train 0.52% / val 2.89% / test 8.36% である。val は test の 2.9 分の 1 しか食い違わない。凍結検出器が train で学習されている点を差し引いても val と test の開きは大きく、検証側の分割が異常にきれいであることの直接の実測になる。今後 val だけで測った上限を未見の手術に対する上限として扱わないこと。"
+  - "macro-F1 は動画 12 に支配されている。動画 12 を除くと平均 ΔmacroF1 が +0.014511 から +0.005658 へ 61% 縮む。一方 accuracy はどの 1 組を除いても正のままで最大の変化は 20% である。分け方ごとの macro-F1 は分母が 4 から 7 まで違うため、分け方をまたいだ平均は同じ土俵の平均ではない。"
+  - "最良 epoch を抜いた動画の正解で選んでいる。両腕に等しくかかるため対の差は受けにくいが、絶対値は楽観側に寄る。学習側から検証用の動画をさらに 1 本抜いて epoch を選ぶ設計にすれば解消するが、それは学習の手続きを変えることになるため起票者の判断事項である。"
+  - "PR の base は phase0 である。既定の分岐 master ではない。先行契約の PR #152 は --base master で起票したが実際の base は phase0 で MERGED になっており、先行契約の報告の『master 宛』という記述は誤りであった。今後も base を明記すること。"
+  - "禁止 5 のため投影と集約を再生成していない。全 PR 統合後に一台で make taskindex と make inbox を回すこと。make runindex も回していないため、本契約の 30 run は索引に現れていない。"
+  - "同じ作業ツリーで複数の契約が同時に走っている。禁止領域の検査は他契約の未追跡ファイルも違反として数えるため、内訳を分けないと自分の成果物の評価ができない。検査に契約ごとの絞り込みがあると読みやすい。"
+
+unknowns:
+  - "種は 42 の 1 種のみである。分け方ごとの Δ に種の揺らぎがどれだけ入るかは測っていない。"
+  - "同じ基準（lecun・決定化あり・seed42・1 本ずつ）で作った検証側分割の対は存在しない。予測側の val run が 1 本足りず、作れば 37 秒で得られる。本契約では新しい腕を足さない判断をしたため UNKNOWN。"
+  - "最良 epoch を抜いた動画の正解で選ぶことによる楽観の大きさ。両腕に等しくかかることは構造から言えるが、大きさは測っていない。"
+  - "runindex への反映。make runindex を回していないため index.csv は本契約の 30 run を含まない。config.yaml への task_id の刻印は 30 本すべてで確認したが、索引そのものは未更新。"
+  - "別契約の未追跡ファイル 16 件がどの契約のどの段階のものかは確かめていない。mtime が更新中であることだけを実測した。"
+
+commits:
+  - "9563ce5169bf305a245d6fef007369c2ed5c7ebf"
+  - "ee93885e329f2566c094d74185f53c97eb81aa3b"

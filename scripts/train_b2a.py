@@ -140,6 +140,32 @@ def load_clips(
     return clips
 
 
+def video_of(clip_id: str) -> str:
+    """clip_id から動画 ID を取り出す（例 "06_2" -> "06"）。manifest の命名に従う。"""
+    return clip_id.split("_")[0]
+
+
+def check_no_leak(train_clips, eval_clips) -> set[str]:
+    """評価側の動画が学習側にも在れば、その集合を返す。無ければ空集合。
+
+    一つ抜き検証で最も起きやすい事故であり、**結果は良く見える方向へ壊れる。**
+    呼び出し側は空でなければ止めること。
+    """
+    return {video_of(c[0]) for c in train_clips} & {video_of(c[0]) for c in eval_clips}
+
+
+def load_clips_lovo(holdout: str, **kw):
+    """3 つの split の clip をすべて集め、動画 ID で学習側と評価側に分ける。
+
+    **既存の分割ファイルは読むだけで、書き換えない。** 一つ抜き検証は別の枠組みとして扱う。
+    """
+    train_clips, eval_clips = [], []
+    for split in ("train", "val", "test"):
+        for item in load_clips(split, **kw):
+            (eval_clips if video_of(item[0]) == holdout else train_clips).append(item)
+    return train_clips, eval_clips
+
+
 def smoothing_loss(logits: torch.Tensor) -> torch.Tensor:
     """MS-TCN の T-MSE 平滑化損失（S4/B1 と同一定義）。"""
     ls = F.log_softmax(logits, dim=1)
@@ -188,6 +214,8 @@ def _build_cfg(args, server_name: str, n_train: int, n_val: int) -> dict:
         "task_id": args.task_id,
         # 上限測定専用の印。oracle は「どこまで行けるか」を測る腕であって手法の成果ではない。
         "oracle_upper_bound_only_do_not_report": args.tool_source == "oracle",
+        # 一つ抜き検証の分け方。既存の分割ファイルは読むだけで書き換えていない。
+        "lovo": args.lovo_record,
     }
 
 
@@ -209,6 +237,10 @@ def _build_phase_recipe(args, server_name: str) -> dict:
         "coupling": "b2a_det_to_phase_toolpresence",
         "tool_signal_dim": NUM_TOOLS,
     }
+    if args.lovo_holdout:
+        # 評価の作法が標準 split と違う。recipe を分けないと索引で同じ実験に混ざる。
+        test_cfg["cv_scheme"] = "leave_one_video_out"
+        test_cfg["lovo_holdout"] = args.lovo_holdout
     return build_eval_recipe(
         test_cfg=test_cfg, split_sizes=PAPER_SPLIT_SIZES, server_name=server_name,
         gpu_count=1, effective_batch_size=1, lr_scaling="none",
@@ -251,8 +283,7 @@ def train(args) -> dict:
     noise_dims_list = None
     if args.tool_noise_dims:
         noise_dims_list = [int(x) for x in args.tool_noise_dims.split(",")]
-    train_clips = load_clips(
-        "train",
+    load_kw = dict(
         tool_source=args.tool_source,
         mask_tool_dim=mask_dims,
         drop_gap=args.drop_gap,
@@ -260,15 +291,27 @@ def train(args) -> dict:
         noise_seed=args.seed,
         noise_dims=noise_dims_list,
     )
-    val_clips = load_clips(
-        "val",
-        tool_source=args.tool_source,
-        mask_tool_dim=mask_dims,
-        drop_gap=args.drop_gap,
-        noise_rate=args.tool_noise_rate,
-        noise_seed=args.seed,
-        noise_dims=noise_dims_list,
-    )
+    if args.lovo_holdout:
+        train_clips, val_clips = load_clips_lovo(args.lovo_holdout, **load_kw)
+        if not val_clips:
+            raise SystemExit(f"[b2a][LOVO] 抜いた動画 {args.lovo_holdout} の clip が 0 件")
+        leaked = check_no_leak(train_clips, val_clips)
+        if leaked:
+            raise SystemExit(f"[b2a][LOVO] 漏れ: 評価側の動画が学習側にも在る -> {sorted(leaked)}")
+        args.lovo_record = {
+            "holdout_video": args.lovo_holdout,
+            "train_videos": sorted({video_of(c[0]) for c in train_clips}),
+            "eval_videos": sorted({video_of(c[0]) for c in val_clips}),
+            "n_train_clips": len(train_clips),
+            "n_eval_clips": len(val_clips),
+            "leak_check": "pass",
+        }
+        print(f"[b2a][LOVO] holdout={args.lovo_holdout} "
+              f"train_videos={args.lovo_record['train_videos']} "
+              f"eval_videos={args.lovo_record['eval_videos']} leak=0")
+    else:
+        train_clips = load_clips("train", **load_kw)
+        val_clips = load_clips("val", **load_kw)
     if args.smoke:
         train_clips, val_clips = train_clips[:3], val_clips[:2]
     print(f"[b2a] train clips={len(train_clips)}  val clips={len(val_clips)}  "
@@ -412,6 +455,13 @@ def parse_args():
              "既定は現状のまま（過去 run との比較可能性を壊さない）。",
     )
     p.add_argument(
+        "--lovo-holdout",
+        type=str,
+        default="",
+        help="一つ抜き検証。指定した動画 ID を評価側に、残り全動画を学習側にする。"
+             "3 つの split の manifest を読むだけで、既存の分割ファイルは書き換えない。",
+    )
+    p.add_argument(
         "--task-id",
         type=str,
         default="",
@@ -424,6 +474,7 @@ def parse_args():
 
 if __name__ == "__main__":
     a = parse_args()
+    a.lovo_record = None
     if a.smoke:
         a.epochs = 3
     train(a)

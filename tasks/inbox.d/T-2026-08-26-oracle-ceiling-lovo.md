@@ -1,0 +1,4 @@
+- [ ] 2026-08-26 [cc] L2-8 の WARN（index.csv 751→1177 / experiments.csv 207→213）を提示し続行の承認を得た。SPEC §7 の指示どおり参照先の分母を確かめ、先行契約時と同一値（n_runs=17 / accuracy_mean=0.8973014948553679）で移動していないことを実測した（T-2026-08-26-oracle-ceiling-lovo）
+- [ ] 2026-08-26 [human] P6-1 は実測に従い分け方 15 組・30 run とする決定。契約の expected_runs: 32 は算間違いとして spec.yaml を 30 へ直し amendments に残す（T-2026-08-26-oracle-ceiling-lovo）
+- [ ] 2026-08-26 [human] P6 の残り 3 件（分母の移動・決定化の無効化・学習の数式や最適化への接触）はいずれも「行わない」（T-2026-08-26-oracle-ceiling-lovo）
+- [ ] 2026-08-26 [human] P4 のため tasks/T-2026-08-26-oracle-ceiling-lovo/ の commit を承認（push はしない）（T-2026-08-26-oracle-ceiling-lovo）
