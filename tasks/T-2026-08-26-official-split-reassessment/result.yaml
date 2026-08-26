@@ -1,0 +1,166 @@
+result_version: 3
+task_id: "T-2026-08-26-official-split-reassessment"
+status: pass
+host: "philip"
+branch: "feat/official-split-reassessment"
+pr: 159
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      公式の分割で測られた結果の所在を三つの異質な方法で数え、いずれも一致した
+      （experiments.csv の split 列 val 200/test 0、index.csv の split 列 val 1142/test 0、
+      experiment_id の文字列 @val 200/@test 0）。陰性対照 3 種（@zzznosuchsplit、zzznosuchtoken、
+      qqq_not_a_method）はすべて 0 件を返した。六つの結論のうち公式の分割で測られているのは
+      1・3・5 の三つだけで、2・4・6 は 0 件である。
+  - id: G2
+    verdict: pass
+    note: >-
+      公式の分割で判定を持つ 136 行すべてについて効果量・種の数・揺らぎの出所・決定性の有無を
+      表にした。揺らぎの出所は sigma_source=paired_delta が 136/136 件で、対の差から求めたものである。
+      種は delta_n_seeds=3 が全行。決定性を表す列は experiments.csv にも index.csv にも 0 件で、
+      全行を「記録なし」とした。推定で埋めた欄は無い。
+  - id: G3
+    verdict: pass
+    note: >-
+      分け方の間の相関を扱う判定は当てていない。公式の分割には分け方が存在せず、索引に fold/cv/leave を
+      名に含む列が 0 件であることを機械的に確かめた。対照は陽性 significant（|Δ|/σ=11.423・同符号 True）、
+      陰性 not_significant（|Δ|/σ=0.207・同符号 False）で 55.1 倍に分離した。陰性対照は同じ学習・評価・
+      対の差の手続きを通ったうえで零に近い値になっており、構造上の零ではない。
+  - id: G4
+    verdict: pass
+    note: >-
+      撤回の対象（工程を弁別しない術具を落とす）について公式の分割の 11 件を全件並べ、一つ抜き検証側の
+      報告と並置した。食い違いは符号の向きにある。公式の分割の検証側では分類の正しさが 11 件中 10 件で正、
+      工程平均が 8/11 件で正であるのに対し、撤回の根拠は負の方向であった。どちらが正しいとは書いていない。
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+
+deviations:
+  - type: judgement
+    note: >-
+      governance.decisions_required の 3 件を利用者へ提示して停止し、回答（三件とも契約の外）を得たうえで
+      空にした。SPEC 第 4 節が同じ 3 件を「本契約が行わないこと」として禁じており本文と整合する。
+      自分では決めていない。
+  - type: environment
+    note: >-
+      Phase A の開始時点で上限 600 分のうち 541 分を消費していた。P6 の回答待ちに 9 時間を要したためで、
+      開始 UTC 06:27:11 に対し回答の記録が UTC 15:27:27（spec.yaml の更新時刻で裏づけ）。時計は飛んでいない。
+      残り 59 分で読み取りと再集計を完了させ、落とした範囲を明記した。
+  - type: judgement
+    note: >-
+      一つ抜き検証側の数字を再集計していない。残り時間が足りず、先行契約の報告を引用するに留めた。
+      公式の分割側は全件を実測している。
+  - type: spec_defect
+    note: >-
+      SPEC 禁止 4「投影と集約の再生成を行わない」に従い make taskindex と make inbox を回していない。
+      手順書 SKILL.md §6 は両方を回して投影に現れることを確かめよと求めており両立しない。契約を優先した。
+  - type: judgement
+    note: >-
+      索引の split 列の意味を実装から確かめていない。文書 §3.17 は t1a_base_test 群の test 値を載せるが、
+      索引では同じ群の split が val である。食い違いを記録し、索引を正として扱うに留めた。
+  - type: judgement
+    note: >-
+      前の契約の退避を戻していない。他ホストの契約が退避を積んだため stash@{0} から stash@{1} へ添字が
+      ずれている。名前（T-2026-08-26-error-shape-selectivity を含む）で指すこと。
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: >-
+      SPEC Task 4 Step 2 が陽性対照に「全体平均の特徴を足すことの害が該当する。どの判定でも検出される
+      はずである」と指定したが、この結論は公式の分割で 0 件であった（6 通りの綴りで探索し、
+      experiments.csv も index.csv も 0 件）。指示どおり設置しようとすると対照そのものが置けない。
+      実行者が代替を選ぶ判断を強いられた。
+  - type: asserted_without_measuring
+    note: >-
+      同 Step 2 が陰性対照に「工程の情報を術具検出へ渡すことの全体的な効果が該当する」と指定したが、
+      これも公式の分割で 0 件であった（transfer_legacy に 2 件あるが split が空で、公式の分割の
+      どちら側で測られたかが記録されていない）。指示どおりでは陰性対照も置けない。
+  - type: asserted_without_measuring
+    note: >-
+      申し送り 3 が「記録によれば、公式の分割では術具を落とす手法について、分類の正しさは動かず、
+      工程ごとの成績を平均した指標が改善していた」と述べるが、実測は違った。分類の正しさも動いており、
+      11 件中 10 件が正で |Δ|/σ は 0.21〜28.32 である。指示どおり「確かめられるかを見る」を実行した結果、
+      確かめられなかった。この前提のまま撤回の見直しを論じると、実測に無い形を根拠にすることになる。
+  - type: asserted_without_measuring
+    note: >-
+      SPEC 第 1.1 節が「このデータセットには公開されている公式の分割がある。これまでの研究はその分割に
+      従って進められてきた」と述べるが、公式の分割の評価側（test: 04,05,07）で測られた結論は六つとも
+      0 件であった。従っていたのは検証側（val: 09,10）だけである。この前提のまま「公式の分割を主軸に
+      据える」と、存在しない評価側の結果があるかのように読まれる。
+  - type: self_contradiction
+    note: >-
+      outputs.destination が experiments/analysis/official_split_reassessment/ を指すのに、
+      forbidden-check は experiments/ を禁止領域として扱う。SPEC 第 3 節 Task 6 Step 2 はこれを
+      「道具の側の欠陥であり契約違反ではない」と正しく予告しているが、道具は直っていない。
+      予告があっても毎回 exit 2 になり、内訳を人手で示す作業が要る。予告は原因を取り除かない。
+  - type: check_does_not_check
+    note: >-
+      完了判定 s「締切に対する経過が記録されている」は経過を測るだけで超過を防がない。本契約では
+      decisions_required の回答待ちに 9 時間を要し、Phase A の開始時点で既に 541/600 分を消費していた。
+      待ち時間が上限に算入される設計であることが本文に書かれていないため、指示どおり
+      「Phase A を始める前に時刻を記録」しても、記録した時点で残りが 59 分しか無い事態を避けられない。
+
+positive_controls:
+  - judgement: "秘匿検査が実際に秘匿を検出し、かつ誤検知を見分けられる"
+    breaking_input: "環境の実値を埋めた囮（版管理外）を検査対象に入れる"
+    observed: >-
+      囮では live:WANDB_API_KEY=1 live:NOTION_API_KEY=1 notion_token=1 pem_private_key=1 を検出し exit 1。
+      送出物では wandb_key_shape=2 が出たが、git cat-file -t で 2 件とも commit と判明し、環境の実値との
+      照合は 0 件だった。形の規則の既知の誤検知（40 桁 16 進の git ハッシュ）である。検査は無効にしていない。
+  - judgement: "完了判定 a: 公式の分割の結果の所在を確かめた"
+    breaking_input: "存在しない語（@zzznosuchsplit / zzznosuchtoken / qqq_not_a_method）で同じ探索を行う"
+    observed: "三語とも experiments.csv 0 件・index.csv 0 件。同じ探索が val では 200/1142/200 を返す"
+  - judgement: "完了判定 g: 陽性対照が検出された"
+    breaking_input: "効果が大きい既知の結論（b2a_det2phase_oracletool）を判定に通す"
+    observed: "verdict_10_1=significant、|Δ|/σ(accuracy)=11.423、同符号 True"
+  - judgement: "完了判定 h: 陰性対照が検出されなかった"
+    breaking_input: "効果が実質的に無い結論（t1a_region_only_mask_top3）を同じ判定に通す"
+    observed: "verdict_10_1=not_significant、|Δ|/σ(accuracy)=0.207、同符号 False。陽性の 55.1 分の 1"
+  - judgement: "完了判定 i: 陰性対照が経路を通っている（構造上の零ではない）"
+    breaking_input: "同じ行の別の指標を見る"
+    observed: "Δ分節=-4.62615、|Δ|/σ=4.155、同符号 True。指標によっては零から離れる。構造上の零なら全指標が零になる"
+  - judgement: "完了判定 e: 分け方に依存する判定を当てていない"
+    breaking_input: "索引に fold を表す列があるかを機械的に走査する"
+    observed: "fold/cv/leave を名に含む列は 0 件。分け方を表す情報が索引に存在しない"
+  - judgement: "完了判定 j: 決定性の有無を併記した"
+    breaking_input: "determin/cudnn/benchmark/nondet を名に含む列を両 csv で走査する"
+    observed: "両方とも 0 件。seed 系の列は在るが種の値であって決定性の制御ではない。全行を「記録なし」とした"
+
+followups:
+  - >-
+    公式の分割の評価側（test: 04,05,07）で測られた結論が六つとも 0 件である。報告と論文を公式の分割で
+    統一するなら、評価側での再評価が未着手の空白として残る。どの結論を test で測り直すかの判断が要る。
+  - >-
+    索引の split 列の意味が未確定である。文書 §3.17 は t1a_base_test 群の test 値（acc 0.8286 等）を
+    載せるが、索引では同じ群の split が val である。列が「評価に使った分割」なのか「集計の枠」なのかを
+    実装から確かめる必要がある。
+  - >-
+    決定性を表す列が索引に存在しない。効果量ごとに「決定性が制御されていたか」を機械で読めるようにするには
+    収穫器に列を足す必要がある。現状は全行が「記録なし」としか書けない。
+  - >-
+    forbidden-check は outputs.destination を除外しない。analysis 契約は必ず exit 2 になり、
+    内訳を人手で示す作業が毎回発生する。道具側で destination を除外するかの判断が要る。
+  - >-
+    decisions_required の回答待ち時間が契約の締切に算入される。回答待ちを締切から除くか、
+    締切の起点を回答後にするかの判断が要る。本契約では 9 時間が失われた。
+
+unknowns:
+  - >-
+    文書 §3.17 が載せる test 側の値を索引で裏づけられるか。索引では該当群の split が val であり、
+    列の意味を実装から確かめる時間が無かった。索引を正として扱い、文書の値は採用していない。
+  - >-
+    決定性が制御された実行が一つでもあるか。索引に決定性を表す列が 0 件であり、記録から読めない。
+    先行契約の実測（判定のすべてが決定性を制御していない実行の上に立つ）と整合するが、本契約では確かめていない。
+  - >-
+    公式の分割の評価側での六つの結論のいずれか。0 件であり測られていない。
+  - >-
+    一つ抜き検証側の数字の再集計。残り時間が足りず、先行契約の報告を引用するに留めた。
+
+commits:
+  - "3f35758c"

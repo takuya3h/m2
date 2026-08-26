@@ -1,0 +1,214 @@
+====================================================================================================
+Phase A — 公式の分割で測られた結果の棚卸し
+====================================================================================================
+
+結論                                experiments.csv    うち split=val    うち split=test   index.csv
+----------------------------------------------------------------------------------------------------
+1 術具の情報を工程認識へ渡す                                 8               8                0          35
+2 全体平均の特徴を足す害(GAP)                              0               0                0           0
+3 正しい術具存在の追加の利得                                 2               1                0          11
+4 入力側の雑音除去                                      0               0                0           0
+5 弁別しない術具を落とす                                  11              11                0          33
+6 工程の情報を術具検出へ渡す                                 2               0                0           6
+
+陰性対照（存在しない語で同じ探索）:
+  zzznosuchtoken          : experiments.csv 0 件 / index.csv 0 件
+  qqq_not_a_method        : experiments.csv 0 件 / index.csv 0 件
+
+====================================================================================================
+Phase B — 効果量と種の数と揺らぎの出所
+====================================================================================================
+**推定で埋めない。記録が無い欄は (記録なし) と書く。**
+
+--- 1 術具の情報を工程認識へ渡す
+    transfer/b2a_det2phase/b2a_det2phase_toolpresence@val~relation_detr_seed42
+      測られた分割 = val   n_runs=3  n_seeds=3  seeds=42,123,456
+      揺らぎの出所: sigma_source=paired_delta  delta_sigma_source=paired
+      対の由来    : pairing_provenance=from_config_yaml  delta_method=paired
+      判定        : verdict_10_1=significant  metric=accuracy
+        分類の正しさ               Δ=+0.04009  sstd=0.004  |Δ|/σ=11.268  同符号=True  種=3
+        工程ごとの成績の平均           Δ=+0.09699  sstd=0.010  |Δ|/σ=11.351  同符号=True  種=3
+        分節                   Δ=+3.00216  sstd=2.016  |Δ|/σ=1.823  同符号=True  種=3
+
+    transfer/b2a_det2phase_toolpresence/b2a_det2phase_toolpresence@val~relation_detr_augstrong_hires_seed42
+      測られた分割 = val   n_runs=3  n_seeds=3  seeds=42,123,456
+      揺らぎの出所: sigma_source=paired_delta  delta_sigma_source=paired
+      対の由来    : pairing_provenance=from_config_yaml  delta_method=paired
+      判定        : verdict_10_1=significant  metric=accuracy
+        分類の正しさ               Δ=+0.02354  sstd=0.003  |Δ|/σ=10.492  同符号=True  種=3
+        工程ごとの成績の平均           Δ=+0.06150  sstd=0.015  |Δ|/σ=4.960  同符号=True  種=3
+        分節                   Δ=+2.78286  sstd=10.300  |Δ|/σ=0.331  同符号=False  種=3
+
+    transfer/b2a_det2phase_toolpresence/b2a_det2phase_toolpresence@val~relation_detr_augstrong_seed123
+      測られた分割 = val   n_runs=3  n_seeds=3  seeds=42,123,456
+      揺らぎの出所: sigma_source=paired_delta  delta_sigma_source=paired
+      対の由来    : pairing_provenance=from_config_yaml  delta_method=paired
+      判定        : verdict_10_1=significant  metric=accuracy
+        分類の正しさ               Δ=+0.02673  sstd=0.012  |Δ|/σ=2.699  同符号=True  種=3
+        工程ごとの成績の平均           Δ=+0.06418  sstd=0.036  |Δ|/σ=2.165  同符号=True  種=3
+        分節                   Δ=+3.81817  sstd=7.046  |Δ|/σ=0.664  同符号=False  種=3
+
+    transfer/b2a_det2phase_toolpresence/b2a_det2phase_toolpresence@val~relation_detr_augstrong_seed42
+      測られた分割 = val   n_runs=8  n_seeds=3  seeds=42,123,456
+      揺らぎの出所: sigma_source=paired_delta  delta_sigma_source=paired
+      対の由来    : pairing_provenance=from_config_yaml  delta_method=paired
+      判定        : verdict_10_1=significant  metric=accuracy
+        分類の正しさ               Δ=+0.02493  sstd=0.002  |Δ|/σ=16.956  同符号=True  種=3
+        工程ごとの成績の平均           Δ=+0.05242  sstd=0.008  |Δ|/σ=7.731  同符号=True  種=3
+        分節                   Δ=+0.26180  sstd=7.807  |Δ|/σ=0.041  同符号=False  種=3
+
+    transfer/b2a_det2phase_toolpresence/b2a_det2phase_toolpresence@val~relation_detr_augstrong_seed456
+      測られた分割 = val   n_runs=3  n_seeds=3  seeds=42,123,456
+      揺らぎの出所: sigma_source=paired_delta  delta_sigma_source=paired
+      対の由来    : pairing_provenance=from_config_yaml  delta_method=paired
+      判定        : verdict_10_1=significant  metric=accuracy
+        分類の正しさ               Δ=+0.02134  sstd=0.004  |Δ|/σ=6.068  同符号=True  種=3
+        工程ごとの成績の平均           Δ=+0.04964  sstd=0.019  |Δ|/σ=3.262  同符号=True  種=3
+        分節                   Δ=+2.25878  sstd=11.869  |Δ|/σ=0.233  同符号=False  種=3
+
+    transfer/b2a_det2phase_toolpresence/b2a_det2phase_toolpresence@val~relation_detr_seed123
+      測られた分割 = val   n_runs=3  n_seeds=3  seeds=42,123,456
+      揺らぎの出所: sigma_source=paired_delta  delta_sigma_source=paired
+      対の由来    : pairing_provenance=from_config_yaml  delta_method=paired
+      判定        : verdict_10_1=significant  metric=accuracy
+        分類の正しさ               Δ=+0.04389  sstd=0.005  |Δ|/σ=10.493  同符号=True  種=3
+        工程ごとの成績の平均           Δ=+0.09667  sstd=0.001  |Δ|/σ=172.270  同符号=True  種=3
+        分節                   Δ=+4.07755  sstd=2.520  |Δ|/σ=1.982  同符号=True  種=3
+
+    transfer/b2a_det2phase_toolpresence/b2a_det2phase_toolpresence@val~relation_detr_seed42
+      測られた分割 = val   n_runs=9  n_seeds=5  seeds=42,123,456,789,1000
+      揺らぎの出所: sigma_source=paired_delta  delta_sigma_source=paired
+      対の由来    : pairing_provenance=from_config_yaml  delta_method=paired
+      判定        : verdict_10_1=significant  metric=accuracy
+        分類の正しさ               Δ=+0.04013  sstd=0.005  |Δ|/σ=10.180  同符号=True  種=3
+        工程ごとの成績の平均           Δ=+0.09618  sstd=0.014  |Δ|/σ=8.652  同符号=True  種=3
+        分節                   Δ=+4.05613  sstd=2.040  |Δ|/σ=2.435  同符号=True  種=3
+
+    transfer/b2a_det2phase_toolpresence/b2a_det2phase_toolpresence@val~relation_detr_seed456
+      測られた分割 = val   n_runs=3  n_seeds=3  seeds=42,123,456
+      揺らぎの出所: sigma_source=paired_delta  delta_sigma_source=paired
+      対の由来    : pairing_provenance=from_config_yaml  delta_method=paired
+      判定        : verdict_10_1=significant  metric=accuracy
+        分類の正しさ               Δ=+0.03784  sstd=0.013  |Δ|/σ=3.466  同符号=True  種=3
+        工程ごとの成績の平均           Δ=+0.09051  sstd=0.013  |Δ|/σ=8.680  同符号=True  種=3
+        分節                   Δ=+3.25163  sstd=5.527  |Δ|/σ=0.720  同符号=False  種=3
+
+--- 2 全体平均の特徴を足す害(GAP)
+    公式の分割で測られた行が **0 件**。効果量を読めない。
+
+--- 3 正しい術具存在の追加の利得
+    transfer/b2a_det2phase_oracletool/b2a_det2phase_oracletool@val~relation_detr_seed42
+      測られた分割 = val   n_runs=8  n_seeds=5  seeds=42,123,456,789,1000
+      揺らぎの出所: sigma_source=paired_delta  delta_sigma_source=paired
+      対の由来    : pairing_provenance=from_config_yaml  delta_method=paired
+      判定        : verdict_10_1=significant  metric=accuracy
+        分類の正しさ               Δ=+0.05979  sstd=0.006  |Δ|/σ=11.423  同符号=True  種=3
+        工程ごとの成績の平均           Δ=+0.12993  sstd=0.012  |Δ|/σ=12.941  同符号=True  種=3
+        分節                   Δ=+12.73908  sstd=4.175  |Δ|/σ=3.737  同符号=True  種=3
+
+--- 4 入力側の雑音除去
+    公式の分割で測られた行が **0 件**。効果量を読めない。
+
+--- 5 弁別しない術具を落とす
+    transfer/b2a_base_oracle_top3noise_p010/b2a_base_oracle_top3noise_p010@val~relation_detr_seed42
+      測られた分割 = val   n_runs=3  n_seeds=3  seeds=42,123,456
+      揺らぎの出所: sigma_source=paired_delta  delta_sigma_source=paired
+      対の由来    : pairing_provenance=from_config_yaml  delta_method=paired
+      判定        : verdict_10_1=significant  metric=accuracy
+        分類の正しさ               Δ=+0.04471  sstd=0.007  |Δ|/σ=7.542  同符号=True  種=3
+        工程ごとの成績の平均           Δ=+0.10252  sstd=0.012  |Δ|/σ=10.084  同符号=True  種=3
+        分節                   Δ=+6.70249  sstd=1.146  |Δ|/σ=7.166  同符号=True  種=3
+
+    transfer/b2a_base_oracle_top3noise_p020/b2a_base_oracle_top3noise_p020@val~relation_detr_seed42
+      測られた分割 = val   n_runs=3  n_seeds=3  seeds=42,123,456
+      揺らぎの出所: sigma_source=paired_delta  delta_sigma_source=paired
+      対の由来    : pairing_provenance=from_config_yaml  delta_method=paired
+      判定        : verdict_10_1=significant  metric=accuracy
+        分類の正しさ               Δ=+0.03635  sstd=0.006  |Δ|/σ=7.398  同符号=True  種=3
+        工程ごとの成績の平均           Δ=+0.08699  sstd=0.012  |Δ|/σ=9.217  同符号=True  種=3
+        分節                   Δ=+0.14608  sstd=3.559  |Δ|/σ=0.050  同符号=False  種=3
+
+    transfer/b2a_base_oracle_top3noise_p030/b2a_base_oracle_top3noise_p030@val~relation_detr_seed42
+      測られた分割 = val   n_runs=3  n_seeds=3  seeds=42,123,456
+      揺らぎの出所: sigma_source=paired_delta  delta_sigma_source=paired
+      対の由来    : pairing_provenance=from_config_yaml  delta_method=paired
+      判定        : verdict_10_1=significant  metric=accuracy
+        分類の正しさ               Δ=+0.03041  sstd=0.008  |Δ|/σ=4.871  同符号=True  種=3
+        工程ごとの成績の平均           Δ=+0.07644  sstd=0.013  |Δ|/σ=7.407  同符号=True  種=3
+        分節                   Δ=-1.42981  sstd=2.255  |Δ|/σ=0.776  同符号=False  種=3
+
+    transfer/b2a_oracle_mask_top3_joint/b2a_oracle_mask_top3_joint@val~relation_detr_seed42
+      測られた分割 = val   n_runs=3  n_seeds=3  seeds=42,123,456
+      揺らぎの出所: sigma_source=paired_delta  delta_sigma_source=paired
+      対の由来    : pairing_provenance=from_config_yaml  delta_method=paired
+      判定        : verdict_10_1=significant  metric=accuracy
+        分類の正しさ               Δ=+0.02403  sstd=0.002  |Δ|/σ=15.698  同符号=True  種=3
+        工程ごとの成績の平均           Δ=+0.07019  sstd=0.022  |Δ|/σ=3.865  同符号=True  種=3
+        分節                   Δ=-0.48409  sstd=1.071  |Δ|/σ=0.553  同符号=False  種=3
+
+    transfer/b2a_regiononly_oracle_mask_top3/b2a_regiononly_oracle_mask_top3@val~relation_detr_seed42
+      測られた分割 = val   n_runs=3  n_seeds=3  seeds=42,123,456
+      揺らぎの出所: sigma_source=paired_delta  delta_sigma_source=paired
+      対の由来    : pairing_provenance=from_config_yaml  delta_method=paired
+      判定        : verdict_10_1=significant  metric=accuracy
+        分類の正しさ               Δ=-0.01799  sstd=0.008  |Δ|/σ=2.602  同符号=True  種=3
+        工程ごとの成績の平均           Δ=-0.03741  sstd=0.019  |Δ|/σ=2.383  同符号=True  種=3
+        分節                   Δ=+15.38036  sstd=8.895  |Δ|/σ=2.118  同符号=True  種=3
+
+    transfer/b2a_ro_oracle_top3noise_p010/b2a_ro_oracle_top3noise_p010@val~relation_detr_seed42
+      測られた分割 = val   n_runs=3  n_seeds=3  seeds=42,123,456
+      揺らぎの出所: sigma_source=paired_delta  delta_sigma_source=paired
+      対の由来    : pairing_provenance=from_config_yaml  delta_method=paired
+      判定        : verdict_10_1=significant  metric=accuracy
+        分類の正しさ               Δ=+0.05462  sstd=0.003  |Δ|/σ=25.758  同符号=True  種=3
+        工程ごとの成績の平均           Δ=+0.11108  sstd=0.009  |Δ|/σ=14.344  同符号=True  種=3
+        分節                   Δ=+16.48994  sstd=12.180  |Δ|/σ=1.658  同符号=True  種=3
+
+    transfer/b2a_ro_oracle_top3noise_p020/b2a_ro_oracle_top3noise_p020@val~relation_detr_seed42
+      測られた分割 = val   n_runs=3  n_seeds=3  seeds=42,123,456
+      揺らぎの出所: sigma_source=paired_delta  delta_sigma_source=paired
+      対の由来    : pairing_provenance=from_config_yaml  delta_method=paired
+      判定        : verdict_10_1=significant  metric=accuracy
+        分類の正しさ               Δ=+0.03195  sstd=0.001  |Δ|/σ=28.319  同符号=True  種=3
+        工程ごとの成績の平均           Δ=+0.04565  sstd=0.007  |Δ|/σ=8.069  同符号=True  種=3
+        分節                   Δ=+11.07225  sstd=10.227  |Δ|/σ=1.326  同符号=True  種=3
+
+    transfer/b2a_ro_oracle_top3noise_p030/b2a_ro_oracle_top3noise_p030@val~relation_detr_seed42
+      測られた分割 = val   n_runs=3  n_seeds=3  seeds=42,123,456
+      揺らぎの出所: sigma_source=paired_delta  delta_sigma_source=paired
+      対の由来    : pairing_provenance=from_config_yaml  delta_method=paired
+      判定        : verdict_10_1=not_significant  metric=accuracy
+        分類の正しさ               Δ=+0.00291  sstd=0.014  |Δ|/σ=0.250  同符号=False  種=3
+        工程ごとの成績の平均           Δ=-0.02504  sstd=0.007  |Δ|/σ=4.256  同符号=True  種=3
+        分節                   Δ=+7.16425  sstd=1.097  |Δ|/σ=7.997  同符号=True  種=3
+
+    transfer/t1a_combined_region_top3_mask/t1a_combined_region_top3_mask@val~relation_detr_seed42
+      測られた分割 = val   n_runs=3  n_seeds=3  seeds=42,123,456
+      揺らぎの出所: sigma_source=paired_delta  delta_sigma_source=paired
+      対の由来    : pairing_provenance=from_config_yaml  delta_method=paired
+      判定        : verdict_10_1=significant  metric=accuracy
+        分類の正しさ               Δ=+0.02403  sstd=0.004  |Δ|/σ=7.290  同符号=True  種=3
+        工程ごとの成績の平均           Δ=+0.05898  sstd=0.023  |Δ|/σ=3.094  同符号=True  種=3
+        分節                   Δ=-5.85239  sstd=4.856  |Δ|/σ=1.476  同符号=True  種=3
+
+    transfer/t1a_region_mask_top3/t1a_region_mask_top3@val~relation_detr_seed42
+      測られた分割 = val   n_runs=3  n_seeds=3  seeds=42,123,456
+      揺らぎの出所: sigma_source=paired_delta  delta_sigma_source=paired
+      対の由来    : pairing_provenance=from_config_yaml  delta_method=paired
+      判定        : verdict_10_1=significant  metric=accuracy
+        分類の正しさ               Δ=+0.01941  sstd=0.005  |Δ|/σ=4.866  同符号=True  種=3
+        工程ごとの成績の平均           Δ=+0.04284  sstd=0.016  |Δ|/σ=3.358  同符号=True  種=3
+        分節                   Δ=-5.49382  sstd=2.755  |Δ|/σ=2.442  同符号=True  種=3
+
+    transfer/t1a_region_only_mask_top3/t1a_region_only_mask_top3@val~relation_detr_seed42
+      測られた分割 = val   n_runs=3  n_seeds=3  seeds=42,123,456
+      揺らぎの出所: sigma_source=paired_delta  delta_sigma_source=paired
+      対の由来    : pairing_provenance=from_config_yaml  delta_method=paired
+      判定        : verdict_10_1=not_significant  metric=accuracy
+        分類の正しさ               Δ=+0.00049  sstd=0.003  |Δ|/σ=0.207  同符号=False  種=3
+        工程ごとの成績の平均           Δ=-0.00482  sstd=0.011  |Δ|/σ=0.533  同符号=False  種=3
+        分節                   Δ=-4.62615  sstd=1.364  |Δ|/σ=4.155  同符号=True  種=3
+
+--- 6 工程の情報を術具検出へ渡す
+    公式の分割で測られた行が **0 件**。効果量を読めない。
+

@@ -1,0 +1,76 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-08-26-official-split-reassessment"
+  kind: analysis
+  title: "公開されている公式の分割で得た結果を主軸として整理し直す"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-08-26T04:30:00Z"
+  created_from:
+    runindex_commit: "7918b5dd9aab3d15b3c459f87aebdd9eb1653116"
+    counts: {index: 1177, experiments: 213, verdicts: 1038}
+  depends_on: ["T-2026-08-26-lovo-decision-rule", "T-2026-08-26-nondeterminism-audit-impact"]
+  amendments: []
+intent:
+  question: "これまでの報告は一つ抜き検証にもとづく数字に偏っていた。データセットが公開している公式の分割で得た結果だけを主軸に据えると、どの結論が支持され、どの結論が支持されないか"
+  decision_at_stake: "報告と論文に載せる数字をどの評価枠組みで統一するか。および一つ抜き検証にもとづいて撤回した判断を維持するか、見直すか"
+  related:
+    backlog: []
+inputs:
+  denominator:
+    ref: "exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42"
+    metric: "accuracy"
+    require: {n_seeds: ">=3", sigma: present, split: val}
+  data:
+    dataset: "egosurgery_tool_subset"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt", "data/splits/ego_test.txt"]
+  caches: []
+  code:
+    entrypoints: ["tools/build_context.py"]
+contract:
+  inject_verbatim:
+    - conventions#split
+    - conventions#sigma
+    - conventions#prohibitions
+    - conventions#issuer_cautions
+  conventions_rev: "a8c07e813696d3720ceee648e8aa202224285955"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "公式の分割で測られた結果の棚卸し", gpu: false, est: "short"}
+    - {id: B, name: "結論ごとの効果量と揺らぎの出所の整理", gpu: false, est: "medium"}
+    - {id: C, name: "適用できる判定と適用できない判定の切り分け", gpu: false, est: "medium"}
+    - {id: D, name: "一つ抜き検証の結果との並置", gpu: false, est: "short"}
+    - {id: E, name: "報告", gpu: false, est: "short"}
+  gates:
+    - {id: G1, after: A, check: "公式の分割で測られた結果が実在し、一覧になっている", on_fail: stop}
+    - {id: G2, after: B, check: "各結論について効果量と種の数と揺らぎの出所が整理されている", on_fail: stop}
+    - {id: G3, after: C, check: "一つ抜き検証専用の判定を公式の分割へ当てていない", on_fail: stop}
+    - {id: G4, after: D, check: "二つの枠組みの結果が並べて示され、食い違いが特定されている", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [REPORT.md]
+  destination: "experiments/analysis/official_split_reassessment/"
+  acceptance:
+    - "a 公式の分割で測られた結果の所在が実測で確かめられ、一覧になっている"
+    - "b 各結論について効果量と種の数と揺らぎの出所が整理されている"
+    - "c 一つ抜き検証専用の判定を公式の分割へ当てていないことが示されている"
+    - "d 公式の分割で使える判定と使えない判定が切り分けられ、理由が記録されている"
+    - "e 揺らぎに非決定性が混ざっている結論が特定されている"
+    - "f 陽性対照と陰性対照の双方が設置され、判定がそれらを分離することが示されている"
+    - "g 二つの枠組みの結果が並べて示され、食い違う結論が特定されている"
+    - "h 撤回の対象とした結論について、公式の分割での結果が明示されている"
+    - "i 数値がすべて実測へ遡れる"
+    - "j 推定で埋めた欄が無い"
+    - "k 変更範囲の一覧が記録されている"
+    - "l PR が存在し、base が起点と同じ分岐であり、分岐が規定の接頭辞で始まっている"
+    - "m 完了報告が事実の記録と証跡の記録に分かれている"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: []
