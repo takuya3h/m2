@@ -129,9 +129,19 @@ SPEC 第 4 節 Task 6 Step 2 の「検査は失敗する」も的中した。
 
 ## 7. 送出と PR
 
-- PR: **§7 は commit / push 後に更新する。**
+- **PR: https://github.com/takuya3h/m2/pull/158**（`feat/det2phase-segmentation-lovo` → **`phase0`**）。送り出しただけの状態ではなく PR が存在する状態で終えている。base は起点と同じ分岐であり、既定の `master` ではない。分岐は規定の接頭辞 `feat/` で始まる（E18 / 387-393 行）。
+- commit: `081ec004bf35e7167d15ab66425b12ef2293d5e6`（事前登録の記録）/ `4e9d3a2f12cec8f92a7c7dbc1b8abc15d999f887`（30 run の証跡と本報告）。
+- **他契約の生成物は 1 件も含めていない**（禁止領域の違反 210 件はすべて本契約の run）。
 - 台帳への送出: 下記「送出の結果」を参照。
 
 ### 送出の結果
 
-TASK_REPORT_PLACEHOLDER
+`make task-report` は **exit 0 で送出に成功した。** 台帳の応答:
+
+    {"task_id": "T-2026-08-26-det2phase-segmentation-lovo", "verdict": "partial",
+     "n_issuer_defects": 4,
+     "report_sha256": "d927f50f77b8bb2d7a2ffd4a91665da20091ea162c5b1395b4288613b69af38d",
+     "report_bytes": 12881, "replaced_blocks": 0}
+
+`source scripts/load_env.sh` はパイプに繋がず同じ命令の中で実行した。
+秘匿の検査は無効にしていない。外部への送信は `make task-report` の 1 経路のみで行った。

@@ -393,4 +393,12 @@ SPEC 第 4 節 Task 6 Step 2 が予告したとおり、成果物の置き場所
 
 ## E19. 台帳への送出
 
-TASK_REPORT_PLACEHOLDER
+`make task-report` は **exit 0 で送出に成功した。** 台帳の応答:
+
+    {"task_id": "T-2026-08-26-det2phase-segmentation-lovo", "verdict": "partial",
+     "n_issuer_defects": 4,
+     "report_sha256": "d927f50f77b8bb2d7a2ffd4a91665da20091ea162c5b1395b4288613b69af38d",
+     "report_bytes": 12881, "replaced_blocks": 0}
+
+`source scripts/load_env.sh` はパイプに繋がず同じ命令の中で実行した。
+秘匿の検査は無効にしていない。外部への送信は `make task-report` の 1 経路のみで行った。

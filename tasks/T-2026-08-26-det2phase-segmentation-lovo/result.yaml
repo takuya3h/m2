@@ -3,7 +3,7 @@ task_id: "T-2026-08-26-det2phase-segmentation-lovo"
 status: partial
 host: "lecun"
 branch: "feat/det2phase-segmentation-lovo"
-pr: null
+pr: 158
 merged: false
 
 gates:
@@ -92,4 +92,6 @@ unknowns:
   - "runindex への反映。make runindex を回していないため index.csv は本契約の 30 run を含まない。config.yaml への task_id の刻印は 30 本すべてで確認したが索引そのものは未更新。"
   - "fold 01 の失敗した試行（seq 0）の開始時刻。記録していなかったため UNKNOWN。所要 2 秒と RC=2 は実測である。"
 
-commits: []
+commits:
+  - "081ec004bf35e7167d15ab66425b12ef2293d5e6"
+  - "4e9d3a2f12cec8f92a7c7dbc1b8abc15d999f887"
