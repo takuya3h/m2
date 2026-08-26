@@ -1,0 +1,90 @@
+result_version: 3
+task_id: "T-2026-08-26-denoise-falsification"
+status: stopped
+host: "Andrew"
+branch: "feat/denoise-falsification"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: stop
+    note: "本番入口 scripts/train_b2a.py の術具信号の腕は 6 つ（tool-source / mask-tool-dim / mask-tool-dims / drop-gap / tool-noise-rate / tool-noise-dims）で、雑音除去の腕は 0 件。本番側 243 ファイルを語による探索と構文木による import 解析の 2 方法で走査し、いずれも 0 件。origin/phase0 の最新版でも 0 件"
+  - id: G2
+    verdict: pass
+    note: "val 1515 フレーム × 15 次元 = 22725 セルの全てで値が変わった。二値化して集合の差を取ると対称差 2387（しきい値 0.5 では 308）。向きを変える回数は 1618 回から 542 回へ 66.5% 減。施さない腕は元の信号と 0 セル差"
+  - id: G3
+    verdict: skip
+    note: "G1 が stop のため Phase C へ入っていない。学習を一本も走らせておらず、所要時間の実測が無い"
+  - id: G4
+    verdict: skip
+    note: "G1 が stop のため Phase D へ入っていない。腕は片側も含めて 0 本"
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+
+deviations:
+  - type: judgement
+    note: "Phase B を停止条件に該当した後に実施した。G1 の on_fail: stop はそこで止めることを求めるが、Phase B は GPU 不要・読み取り専用・0.2 秒で「何があれば後続が走るか」の証拠を強くする。利用者へ提示して承認を得てから行った"
+  - type: judgement
+    note: "作業ツリーの未追跡 1 件を退避しなかった。未追跡は本契約の契約書そのものであり、退避すれば実行対象が消えるため退避しないことが正しいと判断した"
+  - type: spec_defect
+    note: "投影と集約の再生成（make taskindex / make inbox）を行っていない。手順書はこれを求めるが、契約の第 5 節 5 が四台同時実行での衝突を理由に明確に禁じているため契約を優先した。全 PR 統合後に一台で一度だけ回す必要がある"
+  - type: judgement
+    note: "origin/phase0 を統合していない。実行中に phase0 が PR #152 で進み train_b2a.py が変わったが、統合は PR に委ねた。古い版で測った所見 1 件（task_id を刻む経路が無い）は最新版で測り直して訂正した"
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "第 0 節 1 で「このホストに紐づく run は三件しかない。環境、データ、重みが揃っていない可能性が高い」と断定したが、実測ではすべて揃っていた。指示どおり揃っていない前提で進めれば、実在する環境を欠落として報告し、後続の契約が不要な構築作業を計画していた。run 数はホストの環境の有無を示さない"
+  - type: asserted_without_measuring
+    note: "meta.created_from.counts を 2026-08-11 以前の索引の状態（751/207/1038）から書いたが、起票日は 2026-08-25 で実体は 2026-08-16 の 7918b5d まで進んでいた。指示どおり実行すると検証が WARN 2 件を出して停止判断を求められ、分母行そのものは 8 コミット全てで不変であることを実行者が別途確かめる手間が生じた"
+  - type: self_contradiction
+    note: "outputs.expected_runs を 0、plan.resources を runs 0 / est_hours 0 と宣言しながら、Phase C と Phase D で GPU 学習と対測定を求めている。指示どおり Phase D まで走らせると run が生成され、宣言した 0 件と食い違う。kind が exp の完了条件は expected_runs の run が index.csv に現れることだが、0 件では判定できない"
+  - type: asserted_without_measuring
+    note: "inputs.caches を空と宣言したが、後続は実際には 5 系統のキャッシュ（b2a_detsignal / oracle_toolpresence / stage1_features / t1a_regiontoken / phase_manifest）を必要とする。指示どおりキャッシュ不要として棚卸しすれば、後続が走るかどうかを判断できない一覧になっていた"
+
+positive_controls:
+  - judgement: "判定 a / G1 — 本番入口に雑音除去の腕が無いこと（語による探索）"
+    breaking_input: "同じ探索式に、実在する語 tool-noise を与える"
+    observed: "grep -c が 3 を返した。存在しない語 zzz_no_such_arm_token_xyz では 0 を返した。探索式は働いている"
+  - judgement: "判定 a / G1 — 同じ結論を異質な方法（構文木による import 解析）で確かめたこと"
+    breaking_input: "実在する module egosurgery.models.heads.tecno_head を同じ解析器に与える"
+    observed: "本番側 243 ファイル中 13 件を検出した。存在しない module では 0 件。解析器は働いている"
+  - judgement: "判定 a — デノイズ済みキャッシュが 0 件であること"
+    breaking_input: "同じ find に、実在する名前 toolpresence を与える"
+    observed: "oracle_toolpresence と b2a_detsignal 配下の npz が返った。find は働いている"
+  - judgement: "判定 c / G2 — 雑音除去が信号を変えていること"
+    breaking_input: "何も変えていない入力（同一の配列どうし）を計数器に与える"
+    observed: "集合の差が 0 になった。1 セルだけ変えた配列では 1 を返した。計数器は両方向で働いている"
+  - judgement: "判定 d — 施さない腕の信号が元の信号と一致すること"
+    breaking_input: "施さない腕の代わりに、雑音除去後の配列を同じ比較に与える"
+    observed: "対称差 2387 が出た。元の信号どうしでは 0 セル差、総和も 4807.2875671387 で一致した"
+  - judgement: "判定 e — 変化の量を集合の差で求めたこと（部分一致で数えていないこと）"
+    breaking_input: "件数（部分一致）で数えた場合と値が一致してしまえば、集合の差を取る意味が無い"
+    observed: "しきい値 0.5 で件数の差は +92、集合の差は 308 だった。値が実際に食い違い、件数では 3.3 倍過小になる"
+  - judgement: "禁止事項 7 — 雑音除去の実装を書き換えていないこと"
+    breaking_input: "実装を 1 バイトでも書き換える"
+    observed: "sha256 が実行前後で 1e166f977249ad7cfd3cd13c802801009e8cf274b5789e1f9037e990566ab518 と一致した"
+  - judgement: "判定 o — 分岐が規定の接頭辞で始まること"
+    breaking_input: "接頭辞の無い分岐名を規則に照らす"
+    observed: "scripts/task_start.sh L94 の branch=feat/${BASH_REMATCH[1]} に照らし、識別子から導かれる feat/denoise-falsification と現分岐が一致した"
+
+followups:
+  - "本番入口 scripts/train_b2a.py に雑音除去の腕を足す契約が要る。実装は docs/analysis_scripts/hmm_presence_filter.py の forward_filter を流用でき、出力は生信号と同形 (T,15) の [0,1] である。信号を読んだ直後に通す形が、既存の --tool-source と同じ位置で副作用が小さい"
+  - "代替として、デノイズ済みの信号キャッシュを作って RELDETR_FROZEN_TAG で差し替える方法もあるが、この環境変数は GAP のディレクトリも同時に切り替えるため GAP 側の複製が要る。腕を足す方が小さい"
+  - "本契約の分母（frozen_tecno_phase_baseline@val~relation_detr_seed42）は 8 コミットにわたり不変である。accuracy_mean 0.8973014948553679 / edit_score_mean 39.91661295170067 / sstd 2.621371700613755 / n_seeds 3。次の契約はこれをそのまま使える"
+  - "投影と集約（make taskindex / make inbox）は本契約では回していない。四台の PR が全て統合された後に、一台で一度だけ回すこと"
+  - "起票の際に meta.created_from を最新の runindex から取ること。本契約は 2 週間古い索引の状態から起票されており、検証が WARN を出した"
+
+unknowns:
+  - "学習一本の所要時間。学習を走らせていないため測っていない"
+  - "残り時間で入る対の組数。所要時間が無いため計算できない"
+  - "見える効果の大きさの下限。対測定の本数が 0 のため求まらない"
+  - "効果量および改善側へ倒れた対の個数。対測定を行っていないため観測が 1 件も無い。効果が見えなかったのではなく、測っていない"
+  - "本番側へ雑音除去の腕を足すのに要する時間。実測できないため推測を数値で書かない"
+  - "試験の件数は 0 / 0 / 0 と記録したが、これは本契約が src や scripts のコードを一切変更していないためであり、試験一式を走らせた結果ではない"
+
+commits:
+  - "e040a5f739ef60e02d1a252eb0cd4b58de542b26"
