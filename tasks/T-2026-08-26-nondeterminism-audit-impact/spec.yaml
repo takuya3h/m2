@@ -1,0 +1,80 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-08-26-nondeterminism-audit-impact"
+  kind: analysis
+  title: "非決定性を含む揺らぎの上に下された既存の判定の棚卸しと再測定の優先順位"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-08-25T22:20:00Z"
+  created_from:
+    runindex_commit: "7918b5dd9aab3d15b3c459f87aebdd9eb1653116"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: []
+  amendments:
+    - date: "2026-08-26"
+      reason: "decisions_required 3 件を実行前にユーザーへ提示し、3 件とも「行わない」と回答を得た。決定化の全経路展開は本契約の範囲外で提言に留める。既存報告の訂正は禁止 5 に従い行わない。脆いと分類された結論の撤回は禁止 6 および第 2 節に従い行わない。回答済みのため decisions_required を空にした"
+      diff: "governance.decisions_required: 3 items -> []"
+    - date: "2026-08-26"
+      reason: "created_from.runindex_commit と contract.conventions_rev の PENDING_EXECUTOR_MEASUREMENT を実測値へ確定した。created_from.counts は起票時の記録として保持し、実測との食い違いは RESULT.md に記録する"
+      diff: "created_from.runindex_commit: PENDING -> 7918b5dd9aab3d15b3c459f87aebdd9eb1653116; contract.conventions_rev: PENDING -> a8c07e813696d3720ceee648e8aa202224285955"
+intent:
+  question: "多数の run が計算の決定性を制御せずに走っており、揺らぎの解釈が種の効果と非決定性の混合になっている。この上に下された既存の判定のうち、どれが脆く、どれが頑健か"
+  decision_at_stake: "報告会で述べる結論のうち、どれを確定した事実として扱い、どれを再測定が要るものとして扱うか。および決定化を全体へ広げる投資をすべきかどうか"
+  related:
+    backlog: []
+inputs:
+  denominator:
+    ref: "exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42"
+    metric: "accuracy"
+    require: {n_seeds: ">=3", sigma: present, split: val}
+  data:
+    dataset: "egosurgery_tool_subset"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["tools/build_context.py"]
+contract:
+  inject_verbatim:
+    - conventions#sigma
+    - conventions#prohibitions
+    - conventions#issuer_cautions
+  conventions_rev: "a8c07e813696d3720ceee648e8aa202224285955"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "索引と投影の所在確認と母集団の把握", gpu: false, est: "short"}
+    - {id: B, name: "揺らぎの出所と解釈の突き合わせ", gpu: false, est: "medium"}
+    - {id: C, name: "判定の脆さの分類と対照", gpu: false, est: "medium"}
+    - {id: D, name: "再測定の優先順位", gpu: false, est: "short"}
+    - {id: E, name: "報告", gpu: false, est: "short"}
+  gates:
+    - {id: G1, after: A, check: "索引が実在し、母集団の件数が実測で得られている", on_fail: stop}
+    - {id: G2, after: B, check: "各実験について揺らぎの出所と解釈が突き合わされている", on_fail: stop}
+    - {id: G3, after: C, check: "脆さの分類が対照によって検証されている", on_fail: stop}
+    - {id: G4, after: D, check: "優先順位が根拠とともに並んでいる", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [REPORT.md]
+  destination: "experiments/analysis/nondeterminism_audit_impact/"
+  acceptance:
+    - "a 索引と投影の所在が実測で確かめられ、母集団の件数が記録されている"
+    - "b 決定性の制御を欠く run の件数と、その内訳が実測で得られている"
+    - "c 各実験について揺らぎの出所と解釈が突き合わされ、表になっている"
+    - "d 判定の比と種の数が実験ごとに記録されている"
+    - "e 脆さの分類の基準が、分類を行う前に定められて記録されている"
+    - "f 陽性対照と陰性対照の双方が設置され、分類がそれらを正しく分離することが示されている"
+    - "g 再測定の優先順位が根拠とともに並んでいる"
+    - "h 実測されていない値を外挿していない"
+    - "i 数値がすべて実測へ遡れる"
+    - "j 変更範囲の一覧が記録されている"
+    - "k PR が存在し、分岐が規定の接頭辞で始まっている"
+    - "l 完了報告が事実の記録と証跡の記録に分かれている"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: []

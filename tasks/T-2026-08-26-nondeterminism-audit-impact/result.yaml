@@ -1,0 +1,87 @@
+result_version: 3
+task_id: "T-2026-08-26-nondeterminism-audit-impact"
+status: pass
+host: "bengio"
+branch: "feat/nondeterminism-audit-impact"
+pr: 154
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "索引 5 経路と投影 1 経路の実在を確かめ、存在しない 3 経路が同じ方法で ABSENT を返すことも確かめた。母集団は index.csv 1177 / experiments.csv 213 / verdicts.csv 1038 / run JSON 1177 を実測。決定性の記録を欠く run は 817、ある run は 360 で合計 1177 が母集団と等号で一致"
+  - id: G2
+    verdict: pass
+    note: "判定 1038 行と実験 213 行について、揺らぎの出所・解釈・判定・比・種の数・入口の決定性を突き合わせた表を出力した。欠損は 7 列で (記録なし) として残した。両立しない組み合わせは X1（解釈 seed_effect なのに決定性未制御）8 件、X3（同一実験行に決定化あり/なし混在）6 件"
+  - id: G3
+    verdict: pass
+    note: "基準を 07:25:59 に記録し、分類を 07:26:47 に実行した。陽性対照 #111 は合計 7 で脆い、陰性対照は合計 2 で頑健、分離 5 点。1038 件すべてを分類し未分類 0 件"
+  - id: G4
+    verdict: pass
+    note: "脆い significant を含む 92 群を σ 過小疑い・比の僅少・記録での言及回数・入口で並べた。全群に根拠列がある。再測定の規模は主要 2 入口で elapsed_seconds の記録が無く UNKNOWN とした"
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+
+deviations:
+  - type: judgement
+    note: "make taskindex と make inbox を実行しなかった。skill 手順書は投影の再生成と確認を求めるが、SPEC 第 5 節 禁止 4 が四台同時実行による衝突を理由に明示的に禁じているため契約固有の禁止を優先した。投影に現れることは未確認である。tasks/inbox.d/ への書き込みは契約ごとに別ファイルで衝突しないため実施した"
+  - type: judgement
+    note: "spec.yaml を編集した。P6 が governance.decisions_required の空を要求するため、3 件をユーザーへ提示して「行わない」の回答を得て空にし meta.amendments へ記録した。併せて PENDING_EXECUTOR_MEASUREMENT 2 件を実測値へ確定した"
+  - type: judgement
+    note: "作業ツリーを退避しなかった。SPEC Task 1 Step 2 は汚れていれば退避と指示するが、追跡下の変更は零件で、未追跡は本契約のディレクトリと開始前から在った docs/sessions/digest/ の 1 件のみだった。退避すると作業対象を失う"
+  - type: judgement
+    note: "REPORT の記述を 1 件訂正した。「種は届いている」は不正確で、torch.manual_seed は CPU 側のみ、torch.cuda.manual_seed_all は主要 5 入口とも設定されていない"
+  - type: environment
+    note: ".sync-pause は契約配布時に既に置かれていた。稼働中の keeper が対応済み（grep -c sync-pause ~/bin/m2-sync.sh が 2）であることを確かめたうえでそのまま使い、報告後に移動で解除する"
+  - type: environment
+    note: "${PIPESTATUS[0]} が空を返した。対話シェルが zsh のため配列添字で終了コードを取れない。以後は変数へ落として $? で取った。SPEC 第 6 節が予告していた事象である"
+  - type: environment
+    note: "make forbidden-check が exit 2 で fail するが契約違反ではない。違反 10 件はすべて本契約の outputs.destination である experiments/analysis/nondeterminism_audit_impact/ の内側で、道具は context/auto/ と tasks/inbox.md しか生成物として除外しない。runindex/ の差分は 0 行、M も D も 0 件"
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "SPEC Task 4 Step 2 が陰性対照を「効果量が大きく、種も多く、揺らぎの出所も記録されている結論」と定義したが、母集団の種の数の実測最大値は 3 であり「種が多い」判定は一件も存在しない。指示どおり「種が多い」を要件にすると陰性対照が 0 件になり、対照を設置できず G3 を満たせなくなる。n=3（母集団の最大値）かつ比 3 以上かつ σ が群中央値の 0.75 倍以上、で構成し直した"
+  - type: check_does_not_check
+    note: "SPEC 第 7 節の完了判定 c が「合計が母集団を超えていれば、数え方が誤っている」としているが、この確認は片側しか見ておらず数え落とし（合計が母集団を下回る場合）を検出しない。指示どおり超過だけを見ると、run JSON の読み落としがあっても判定は通ってしまう。等号で確かめ、817+360=1177 が母集団と一致することを示した"
+
+positive_controls:
+  - judgement: "索引と投影の実在検査が働いていること"
+    breaking_input: "存在しないはずの経路（runindex/zzz_no_such_index.csv、context/auto/zzz_no_such_projection.md、runindex/.hidden_no_such）を同じ方法で調べる"
+    observed: "3 経路とも ABSENT が返った。実在する 6 経路は EXISTS が返った"
+  - judgement: "脆さの分類が脆いものを脆いと判定すること"
+    breaking_input: "既に脆いと判明している #111 の値（delta -0.0044、比 5.345、pstd 0.000823、n_seeds 3）を分類器へ入力する"
+    observed: "合計 7 で脆いと分類された。内訳は出所 0 / 種 1 / 解釈 2 / 比 0 / σ過小 3 / 決定性 1 で、比は 0 点なのに σ 過小が 3 点を入れて脆い側へ運んだ"
+  - judgement: "脆さの分類がすべてを脆いとする壊れ方をしていないこと"
+    breaking_input: "効果量が大きく（比 14.54）、種が母集団最大（n=3）、出所が記録され、σ が群中央値の 1.086 倍の判定を入力する"
+    observed: "合計 2 で頑健と分類された。陽性対照との分離は 5 点"
+  - judgement: "決定性を欠く run の計数が正しいこと"
+    breaking_input: "python の json 解釈を経由しない別の方法（grep -l / grep -L / ls -A）で数え直す"
+    observed: "360 / 817 / 1177 が python の結果と完全に一致した。さらに anomalies.md 26 節の静的解析（953 run）と 11 入口すべてで全体件数が一致し、差 953-593=360 が決定化済み本数に等しかった"
+  - judgement: "両立しない組み合わせの探索が零件を返したとき、探し方が働いていること"
+    breaking_input: "X2（解釈が確定なのに出所が空）と X4（significant なのに種が 1 か空）の条件を、同じ列で緩める"
+    observed: "sigma_source が空の 65 行は解釈が全件 unknown、種が 1 か空の 92 行は判定が全件 undecidable と返った。同じ探索式が同じ列で非零を返すため空振りではない"
+  - judgement: "基準の記録が分類より前であること"
+    breaking_input: "criteria_timestamp.txt と classify_timestamp.txt の時刻を比べる"
+    observed: "基準 1787696759（07:25:59）/ 分類 1787696807（07:26:47）。記録が 48 秒早い"
+  - judgement: "既存の判定を覆していないこと"
+    breaking_input: "origin/phase0 に対する runindex/ と experiments/ の差分を取る"
+    observed: "M 0 件 / D 0 件 / runindex/ の差分 0 行。変更 13 件はすべて未追跡の新規である"
+
+followups:
+  - "脆い significant 209 件のうち 190 件（90.9%）が scripts/train_b2a.py（115）と scripts/train_t1a.py（75）の二つの入口に集まる。決定化をこの二つへ入れれば、再測定の対象の大半が一度に片付く"
+  - "決定化された 360 run は判定を一つも持っていない。decisions_required 1（決定化を全経路へ広げること）を判断する材料として、まずこの 360 run から判定を作るべきである。索引の集約が決定化の有無を混ぜているため（X3）、集約の鍵に決定化の有無を含めない限り判定は作れない"
+  - "sigma_interpretation='seed_effect' の 8 実験行は、決定性を制御していない run に「種の効果」という解釈が付いている（X1）。頑健と分類された 18 件はすべてこの 8 行に由来するため、本契約が「最も条件が良い」と呼べた 18 件も、解釈の妥当性は未確認である"
+  - "make forbidden-check を exp / analysis 契約でも使える形に直す impl 契約が要る。道具は outputs.destination を知らず、契約が指定した場所への生成を違反として報告する。同じ指摘が context/auto/followups.md の T-2026-08-15-injection-sweep-deterministic の項にある"
+  - "src/egosurgery/engines/mmdet_trainer.py:501 が deterministic=False を直書きしている。検出系（S0 baselines）へ決定化を広げるには、この直書きを設定から制御できるようにする必要がある"
+
+unknowns:
+  - "再測定に要する規模。scripts/train_b2a.py と scripts/train_t1a.py の run には metric.elapsed_seconds の記録が無く、一本あたりの所要を実測できない。所要が実測できるのは train_grasp_phase_injection_variants.py（中央値 33.5 秒 / n=420）と train_grasp_phase_injection.py（6.9 秒 / n=6）のみである"
+  - "決定化した場合に各入口の σ がどう変わるか。実測値は train_grasp_phase_injection_variants.py の経路のものしかない（σ_d 0.0054519、Δ_min n=3 で 0.0062953 / n=10 で 0.0034481、減速 2.15×）。他の入口へ当てはめることは SPEC 第 2 節 2.1 が禁じている。言えるのは、非決定源として特定された TeCNO（nn.Conv1d 4 箇所）を脆い判定を出した 5 入口と決定化が実測された経路の双方が使う、という構造の共通性までである"
+  - "本報告の投影への反映。SPEC 禁止 4 により make taskindex を実行していないため、context/auto/ の tasks_summary.csv / followups.md / results_recent.md に本契約の行が現れることを確認していない"
+  - "146 run は命令の記録が無く、24 run は命令を解析できない。これらの入口は特定できていない"
+
+commits:
+  - "08b4fc9e0c2650d0ab72e02c739dc67fd664c5cc"
