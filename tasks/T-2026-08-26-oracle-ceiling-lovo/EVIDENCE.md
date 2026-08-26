@@ -386,4 +386,13 @@ SPEC Task 1 Step 2 は「汚れていれば退避」と述べるが、**退避�
 
 ## E18. 台帳への送出
 
-TASK_REPORT_PLACEHOLDER
+`make task-report` は **exit 0 で送出に成功した。** 台帳の応答:
+
+    {"task_id": "T-2026-08-26-oracle-ceiling-lovo", "verdict": "pass",
+     "n_issuer_defects": 3,
+     "report_sha256": "38630f280780957954f8b2a3e33068656dfda7d56cd527338b37c4a9d88a0fab",
+     "report_bytes": 12830, "replaced_blocks": 0}
+
+`source scripts/load_env.sh` はパイプに繋がず同じ命令の中で実行した。
+**先行契約でパイプが副シェルを起こして export が消えた事故を繰り返さないためである。**
+秘匿の検査は無効にしていない。外部への送信は `make task-report` の 1 経路のみで行った。

@@ -3,7 +3,7 @@ task_id: "T-2026-08-26-oracle-ceiling-lovo"
 status: pass
 host: "lecun"
 branch: "feat/oracle-ceiling-lovo"
-pr: null
+pr: 156
 merged: false
 
 gates:
@@ -89,4 +89,6 @@ unknowns:
   - "runindex への反映。make runindex を回していないため index.csv は本契約の 30 run を含まない。config.yaml への task_id の刻印は 30 本すべてで確認したが、索引そのものは未更新。"
   - "別契約の未追跡ファイル 16 件がどの契約のどの段階のものかは確かめていない。mtime が更新中であることだけを実測した。"
 
-commits: []
+commits:
+  - "9563ce5169bf305a245d6fef007369c2ed5c7ebf"
+  - "ee93885e329f2566c094d74185f53c97eb81aa3b"

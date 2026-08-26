@@ -141,9 +141,20 @@ SPEC §7 の「検証の警告が母集団の件数の食い違いを報告す�
 
 ## 7. 送出と PR
 
-- PR: **§7 は commit / push 後に更新する。**
+- **PR: https://github.com/takuya3h/m2/pull/156**（`feat/oracle-ceiling-lovo` → **`phase0`**）。送り出しただけの状態ではなく PR が存在する状態で終えている。base は起点と同じ分岐であり、既定の `master` ではない。分岐は規定の接頭辞 `feat/` で始まる（E17 / 373-385 行）。
+- commit: `9563ce5169bf305a245d6fef007369c2ed5c7ebf`（事前登録の記録）/ `ee93885e329f2566c094d74185f53c97eb81aa3b`（配線・30 run の証跡・本報告）。
+- **本契約では触れていない未追跡ファイル**: `experiments/analysis/error_shape_selectivity/` 7 件と `experiments/analysis/lovo_decision_rule/` 9 件は同時に走る別契約の生成物であり、commit に含めていない。
 - 台帳への送出: 下記「送出の結果」を参照。
 
 ### 送出の結果
 
-TASK_REPORT_PLACEHOLDER
+`make task-report` は **exit 0 で送出に成功した。** 台帳の応答:
+
+    {"task_id": "T-2026-08-26-oracle-ceiling-lovo", "verdict": "pass",
+     "n_issuer_defects": 3,
+     "report_sha256": "38630f280780957954f8b2a3e33068656dfda7d56cd527338b37c4a9d88a0fab",
+     "report_bytes": 12830, "replaced_blocks": 0}
+
+`source scripts/load_env.sh` はパイプに繋がず同じ命令の中で実行した。
+**先行契約でパイプが副シェルを起こして export が消えた事故を繰り返さないためである。**
+秘匿の検査は無効にしていない。外部への送信は `make task-report` の 1 経路のみで行った。
