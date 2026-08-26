@@ -1,0 +1,99 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-08-26-oracle-ceiling-lovo"
+  kind: exp
+  title: "オラクル術具存在の追加利得が特定の分割に固有かどうかを一つ抜き検証で切り分ける"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-08-25T22:40:00Z"
+  created_from:
+    runindex_commit: "7918b5dd9aab3d15b3c459f87aebdd9eb1653116"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-08-26-oracle-ceiling-and-tool-drop"]
+  amendments:
+    - date: "2026-08-26"
+      reason: "P6 decisions_answered。起票者が 4 件に回答した。1 件目は実測（動画 15 本）に従い分け方 15 組・30 run とする決定、残り 3 件は『行わない』"
+      diff: "governance.decisions_required: 4 件 -> []"
+    - date: "2026-08-26"
+      reason: "分け方の数はデータが決める。data/processed/phase_manifest の 3 split に現れる動画は 01-15 の 15 本であり、一つ抜き検証は 15 組・30 run になる。起票時の 32 は算間違いである"
+      diff: "outputs.expected_runs: 32 -> 30 / plan.resources.runs: 32 -> 30"
+intent:
+  question: "先行する契約が本番の時系列モデルで測ったオラクル術具存在の追加利得は、検証側の分割に固有の現象か、それとも動画を跨いでも成立するか"
+  decision_at_stake: "工程認識のために検出器を強化する投資を行わないという既存の方針を維持するか、覆すか"
+  hypothesis: "検証側の分割は術具と工程の対応が異常にきれいであることが実測されている。一つ抜き検証では追加利得が大きく縮むと予測する。ただし縮まなければ既存の方針を覆す根拠になる"
+  related:
+    backlog: []
+inputs:
+  denominator:
+    ref: "exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42"
+    metric: "accuracy"
+    require: {n_seeds: ">=3", sigma: present, split: val}
+  frozen_source:
+    ref: "run:transfer/relation_detr_seed42"
+    verify: ckpt_sha256
+  data:
+    dataset: "egosurgery_tool_subset"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt", "data/splits/ego_test.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/train_b2a.py"]
+contract:
+  inject_verbatim:
+    - conventions#split
+    - conventions#eval_recipe
+    - conventions#frozen_source
+    - conventions#sigma
+    - conventions#prohibitions
+    - conventions#issuer_cautions
+  conventions_rev: "a8c07e813696d3720ceee648e8aa202224285955"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "一つ抜き検証を回す経路の確認", gpu: false, est: "short"}
+    - {id: B, name: "一つの分け方での疎通と所要時間の実測", gpu: true, est: "short"}
+    - {id: C, name: "すべての分け方での対測定", gpu: true, est: "medium"}
+    - {id: D, name: "報告", gpu: false, est: "short"}
+  gates:
+    - {id: G1, after: A, check: "一つ抜き検証を回す経路が在るか、軽い配線で足りることが確かめられている", on_fail: stop}
+    - {id: G2, after: B, check: "一つの分け方が完走し、評価側の動画が学習側に含まれていないことが実測で確かめられている", on_fail: stop}
+    - {id: G3, after: C, check: "対の両側がすべての分け方でそろっている", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, deterministic_flags]
+  resources: {server: "lecun", gpu: 1, est_hours: 1, runs: 30}
+prereg:
+  prediction: "一つ抜き検証では、オラクル術具存在の追加利得は検証側の分割で見えた大きさより小さくなる。既存の代理モデルの一つ抜き検証では、正しさの割合の差は僅少で、改善側へ倒れたのは十五のうち十であった。本契約でも同程度に縮むと予測する。縮まなければ既存の方針を覆す根拠になる"
+  primary_endpoint: "accuracy"
+  decision_rule: "判定は本契約では行わない。効果量と、分け方のうち改善側へ倒れた個数の両方を報告する。判定則は同時に走る別契約が確定させるため、そこで確定した則を起票者が後から当てる。分け方の数が計画に満たない場合は、そろった分だけで効果量と個数を出し、足りない旨を明記する"
+  stop_conditions:
+    - "一つ抜き検証を回す経路が無く、軽い配線では足りないことが判明した場合は止める"
+    - "評価側の動画が学習側に含まれていることが判明した場合は直ちに止める"
+    - "残り時間ですべての分け方が入らない場合は、入る分だけを対で走らせ、足りない旨を明記する"
+    - "対の両側の本数がそろわない見込みになった場合は新たな腕を始めない"
+  committed_at: null
+  commit: null
+outputs:
+  expected_runs: 30
+  must_have: [metrics.json, notes.md, config.yaml]
+  destination: "experiments/transfer/"
+  stamp: {task_id_in: config.yaml}
+  acceptance:
+    - "a 一つ抜き検証を回す経路の有無が実測で確かめられ、配線した場合はその内容が記録されている"
+    - "b 評価側の動画が学習側に含まれていないことが、すべての分け方で実測されている"
+    - "c 分け方の正しさの検査が、漏らした場合との対比で働くことが示されている"
+    - "d 対の両側が同数そろっている"
+    - "e 実行の順序が記録されている"
+    - "f 効果量と改善側へ倒れた個数の双方が報告され、判定が行われていない"
+    - "g 先行する契約が検証側の分割で得た値と、本契約の値が並べて示されている"
+    - "h 上限の腕に測定専用の印がある"
+    - "i 既存の分割の定義が書き換えられていない"
+    - "j 変更範囲の一覧が記録されている"
+    - "k PR が存在し、base が規定の分岐であり、分岐が規定の接頭辞で始まっている"
+    - "l 完了報告が事実の記録と証跡の記録に分かれている"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [denominator_moved, frozen_source_hash_mismatch]
