@@ -1,0 +1,100 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-08-26-det2phase-segmentation-lovo"
+  kind: exp
+  title: "判定則に耐えた分節側の改善を本番の時系列モデルの一つ抜き検証で確認する"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-08-26T03:30:00Z"
+  created_from:
+    runindex_commit: "7918b5dd9aab3d15b3c459f87aebdd9eb1653116"
+    counts: {index: 1177, experiments: 213, verdicts: 1038}
+  depends_on: ["T-2026-08-26-oracle-ceiling-lovo", "T-2026-08-26-lovo-decision-rule"]
+  amendments:
+    - date: "2026-08-26"
+      reason: "P6 decisions_answered。起票者が 4 件に回答した。1 件目は R2 が単発の一つ抜き検証には当てられないため SPEC 第 3 節の逃げ道（当てはめられない場合は理由を記録して効果量と符号の個数だけを出す）を使う決定。則を一つへ絞る決定ではない。残り 3 件は行わない"
+      diff: "governance.decisions_required: 4 件 -> []"
+intent:
+  question: "術具の情報を工程認識へ渡すと分節の指標が改善するという所見は、判定則を厳しくしても耐えた唯一の強い結論である。これは本番の時系列モデルの一つ抜き検証でも成立するか"
+  decision_at_stake: "研究の主張の中心を分節側の改善に置いてよいかどうか。撤回した主路に代わる骨格として報告できるかどうか"
+  hypothesis: "代理モデルでは十五の分け方すべてで同じ向きに動いた。本番の時系列モデルでも同じ向きが保たれると予測する。ただし代理で見えた効果が本番で消えた前例があるため、消える可能性も同等に扱う"
+  related:
+    backlog: []
+inputs:
+  denominator:
+    ref: "exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42"
+    metric: "accuracy"
+    require: {n_seeds: ">=3", sigma: present, split: val}
+  frozen_source:
+    ref: "run:transfer/relation_detr_seed42"
+    verify: ckpt_sha256
+  data:
+    dataset: "egosurgery_tool_subset"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt", "data/splits/ego_test.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/train_b2a.py"]
+contract:
+  inject_verbatim:
+    - conventions#split
+    - conventions#eval_recipe
+    - conventions#frozen_source
+    - conventions#sigma
+    - conventions#prohibitions
+    - conventions#issuer_cautions
+  conventions_rev: "a8c07e813696d3720ceee648e8aa202224285955"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "前提の統合状態と腕の確認", gpu: false, est: "short"}
+    - {id: B, name: "一つの分け方での疎通と腕の分離の確認", gpu: true, est: "short"}
+    - {id: C, name: "すべての分け方での対測定", gpu: true, est: "medium"}
+    - {id: D, name: "確定した二つの則の適用", gpu: false, est: "short"}
+    - {id: E, name: "報告", gpu: false, est: "short"}
+  gates:
+    - {id: G1, after: A, check: "先行する二つの契約の成果が統合されており、術具を渡さない腕が実在する", on_fail: stop}
+    - {id: G2, after: B, check: "二つの腕で入力が違い、評価側の動画が学習側に含まれていない", on_fail: stop}
+    - {id: G3, after: C, check: "対の両側がすべての分け方でそろっている", on_fail: ask}
+    - {id: G4, after: D, check: "確定した二つの則の双方が当てられ、結果が併記されている", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, deterministic_flags]
+  resources: {server: "lecun", gpu: 1, est_hours: 1, runs: 30}
+prereg:
+  prediction: "術具の情報を渡した腕は、渡さない腕に対して分節の指標を改善する。代理モデルでは十五の分け方すべてで同じ向きに動いた。本番でも同じ向きが保たれると予測する。ただし消える可能性も同等に扱い、消えた場合はそのまま報告する"
+  primary_endpoint: "edit"
+  decision_rule: "先行する契約が確定させた二つの則を、双方とも当てる。片方だけを採らない。両者が食い違う場合は食い違ったまま報告する。効果量と、分け方のうち改善側へ倒れた個数も、判定とは別に必ず記録する。分類の指標は主終点ではなく、分け方ごとに分母が変わるため主張の根拠に用いない"
+  stop_conditions:
+    - "先行する二つの契約が統合されていない場合は止める。統合は利用者の判断事項である"
+    - "術具を渡さない腕が実在せず、軽い配線では足りない場合は止める"
+    - "評価側の動画が学習側に含まれていることが判明した場合は直ちに止める"
+    - "残り時間ですべての分け方が入らない場合は、入る分だけを対で走らせ、足りない旨を明記する"
+  committed_at: null
+  commit: null
+outputs:
+  expected_runs: 30
+  must_have: [metrics.json, notes.md, config.yaml]
+  destination: "experiments/transfer/"
+  stamp: {task_id_in: config.yaml}
+  acceptance:
+    - "a 先行する二つの契約の成果が統合されていることが実測で確かめられている"
+    - "b 術具を渡さない腕の実在が実測で確かめられ、配線した場合は内容が記録されている"
+    - "c 二つの腕で入力が実際に違うことが実測されている"
+    - "d 評価側の動画が学習側に含まれていないことが、すべての分け方で実測されている"
+    - "e 漏れの検査が、意図的に漏らした場合との対比で働くことが示されている"
+    - "f 対の両側が同数そろい、実行の順序が記録されている"
+    - "g 効果量と改善側へ倒れた個数が、判定とは別に記録されている"
+    - "h 確定した二つの則の双方が当てられ、結果が併記されている"
+    - "i 片方の則だけを採用していない"
+    - "j 分類の指標を主張の根拠に用いていない"
+    - "k 代理モデルで得た値と本契約の値が並べて示されている"
+    - "l 変更範囲の一覧が記録されている"
+    - "m PR が存在し、base が起点と同じ分岐であり、分岐が規定の接頭辞で始まっている"
+    - "n 完了報告が事実の記録と証跡の記録に分かれている"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [denominator_moved, frozen_source_hash_mismatch]
