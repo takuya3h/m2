@@ -1,0 +1,4 @@
+- [ ] 2026-08-26 [cc] 確定した二つの則のうち R2（反復 LOVO）は単発の一つ抜き検証には当てられない。r2_aggregate.py は学習側を実際に取り替えた反復から fold 間相関を実測する設計で、代理側の記録は 24 反復 × 12 fold × 2 腕 = 576 run を使っていた。さらに動画母集団を絞る配線が別途要る（T-2026-08-26-det2phase-segmentation-lovo）
+- [ ] 2026-08-26 [human] P6-1 は SPEC 第 3 節の逃げ道を使う決定。R1 を当て、R2 は未適用の理由を記録し、効果量と符号の個数を判定と別に出す。片方を採用したことにはしない（T-2026-08-26-det2phase-segmentation-lovo）
+- [ ] 2026-08-26 [human] P6 の残り 3 件（主終点の移動・分母の移動・学習の数式や最適化への接触）はいずれも「行わない」（T-2026-08-26-det2phase-segmentation-lovo）
+- [ ] 2026-08-26 [human] P4 のため tasks/T-2026-08-26-det2phase-segmentation-lovo/ の commit を承認（push はしない）（T-2026-08-26-det2phase-segmentation-lovo）
