@@ -3,7 +3,7 @@ task_id: "T-2026-08-26-official-split-reassessment"
 status: pass
 host: "philip"
 branch: "feat/official-split-reassessment"
-pr: null
+pr: 159
 merged: false
 
 gates:
@@ -107,6 +107,12 @@ issuer_defects:
       「Phase A を始める前に時刻を記録」しても、記録した時点で残りが 59 分しか無い事態を避けられない。
 
 positive_controls:
+  - judgement: "秘匿検査が実際に秘匿を検出し、かつ誤検知を見分けられる"
+    breaking_input: "環境の実値を埋めた囮（版管理外）を検査対象に入れる"
+    observed: >-
+      囮では live:WANDB_API_KEY=1 live:NOTION_API_KEY=1 notion_token=1 pem_private_key=1 を検出し exit 1。
+      送出物では wandb_key_shape=2 が出たが、git cat-file -t で 2 件とも commit と判明し、環境の実値との
+      照合は 0 件だった。形の規則の既知の誤検知（40 桁 16 進の git ハッシュ）である。検査は無効にしていない。
   - judgement: "完了判定 a: 公式の分割の結果の所在を確かめた"
     breaking_input: "存在しない語（@zzznosuchsplit / zzznosuchtoken / qqq_not_a_method）で同じ探索を行う"
     observed: "三語とも experiments.csv 0 件・index.csv 0 件。同じ探索が val では 200/1142/200 を返す"
@@ -156,4 +162,5 @@ unknowns:
   - >-
     一つ抜き検証側の数字の再集計。残り時間が足りず、先行契約の報告を引用するに留めた。
 
-commits: []
+commits:
+  - "3f35758c"

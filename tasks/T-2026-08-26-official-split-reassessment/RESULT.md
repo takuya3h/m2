@@ -155,4 +155,32 @@
 
 ## 送出
 
-（この節は commit・PR の後に埋める）
+| # | 実測 |
+|---|---|
+| commit | `3f35758c`（**13 ファイル**）。別の契約のファイルの混入 **0 件** |
+| push | `origin/feat/official-split-reassessment` **exit 0**（`* [new branch]`） |
+| PR | **#159**。**`base=phase0`**（起点と同じ）。既定の `master` **ではない**。接頭辞 `feat/` |
+| `make task-validate` | **exit 0**、**WARN 無し** |
+| `make task-preflight` | **exit 0**（5 PASS / 4 SKIP / 0 FAIL）。SKIP は P2 P3 P4 P5 |
+| `make forbidden-check` | **exit 2・違反 7 件**。**全件が本契約の成果物**（SPEC 第 3 節が予告した道具側の欠陥） |
+| `make taskindex` / `make inbox` | **回していない**（SPEC 禁止 4）。§逸脱 3 |
+| `make task-report` | **exit 0**。`{"verdict": "pass", "n_issuer_defects": 6, "report_sha256": "b477306d03dfd0f5…", "report_bytes": 11484, "replaced_blocks": 0}` |
+| `.sync-pause` | **移動で解除**（`mv .sync-pause .sync-pause.released`） |
+| 前の契約の退避 | **`stash@{1}` を戻していない**（添字がずれている。名前で指すこと） |
+
+### 秘匿の自主検査
+
+| 対照 | 対象 | 結果 |
+|---|---|---|
+| **陽性** | 実値を埋めた囮（**版管理外**） | `live:NOTION_API_KEY=1, live:WANDB_API_KEY=1, notion_token=1, pem_private_key=1` **exit 1** |
+| **陰性** | 送出する 13 ファイル | `wandb_key_shape=2`（`spec.yaml` と `audit.md`）**exit 1** |
+
+🔴 **陰性対照で一致が出たため、何に一致したかを目視した。**
+**すべて git の commit** であった（`git cat-file -t` で `commit` と確認。
+`runindex_commit = 7918b5dd9aab…`「exp(s4): 60-seed deterministic sweep」と
+`conventions_rev = a8c07e8136 96…`「feat(context): move issuer references…」。
+起票者が 40 桁の全長で書いている）。
+
+**環境の実値との照合は 0 件。** 秘匿は含まれていない。
+既知の型の誤検知である（`tasks/T-2026-08-12-sync-audit-efros/RESULT.md:291` に同じ実測）。
+**検査は無効にしていない。** `make task-report` も exit 0 で通った。
