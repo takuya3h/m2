@@ -95,15 +95,15 @@
 
 | # | 実測 |
 |---|---|
-| commit | `5703e607`（**16 ファイル**）。対象外の混入 **0 件** |
+| commit | `5703e607`（**16 ファイル**）→ 報告 `1f497726`（push 済み）。対象外の混入 **0 件** |
 | push | `origin/feat/projection-refresh` **exit 0** |
 | PR | **#161**。**`base=phase0`**（分岐の起点と同じ）。既定の `master` **ではない**。接頭辞 `feat/` |
 | `make task-validate` | **exit 0**、WARN 無し |
 | `make task-preflight` | **exit 0**（5 PASS / 4 SKIP / 0 FAIL） |
 | `make context-check` / `taskindex-check` / `inbox-check` | **すべて exit 0** |
 | `make forbidden-check` | **exit 0・違反 0 件** |
-| `make task-report` | （送信後に記す） |
-| `.sync-pause` | （解除後に記す） |
+| `make task-report` | **exit 0**。`{"verdict": "pass", "n_issuer_defects": 2, "report_sha256": "705efac3fa1e992e…", "report_bytes": 6995, "replaced_blocks": 0}` |
+| `.sync-pause` | **移動で解除**（`mv .sync-pause .sync-pause.released`） |
 | 退避 | **2 件とも drop していない** |
 
 ### 秘匿の自主検査
