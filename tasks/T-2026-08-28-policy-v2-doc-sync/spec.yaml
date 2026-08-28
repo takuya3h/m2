@@ -1,0 +1,55 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-08-28-policy-v2-doc-sync"
+  kind: impl
+  title: "README と CLAUDE.md を研究方針の新版へ同期し、旧方針の記録を履歴として保全する"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-08-28T12:00:00Z"
+  created_from:
+    runindex_commit: "7918b5dd9aab3d15b3c459f87aebdd9eb1653116"
+    counts: {index: 1177, experiments: 213, verdicts: 1038}
+  depends_on: []
+  amendments: []
+intent:
+  question: "実行者が毎回読む正本の記述を研究方針の新版と一致させ、撤回済みの規則で実行者が動く事故を防ぐには、何を履歴へ移し、何を書き直すべきか"
+  decision_at_stake: "正本更新の完了可否と、撤回済みの規則の残存有無"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "none"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["Makefile"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#naming]
+  conventions_rev: "a8c07e813696d3720ceee648e8aa202224285955"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_history_rewrite, no_projection_regen]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "前提の実測と現状確認", gpu: false, est: "short"}
+    - {id: B, name: "配置と改訂", gpu: false, est: "medium"}
+    - {id: C, name: "検査と送出", gpu: false, est: "short"}
+  gates:
+    - {id: G1, after: A, check: "SPEC の Step A の置換と現状確認がすべて完了している", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md, result.yaml, audit.md]
+  destination: "docs/"
+  acceptance:
+    - "SPEC の完了判定 a から e をすべて満たし、各判定に空振りでないことの確認が付く"
+    - "PR が存在する状態で終える"
+  report_to: [notion_task_distribution]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "履歴として移す範囲の境界が本文の構造から一意に決められない場合"
+    - "撤回済みの語を履歴以外の節に残す必要が生じた場合"
+    - "Makefile に文書系の検査が見当たらない場合"
