@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（377 件）
+## 申し送り（385 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -601,7 +601,21 @@
 - 方針 v2 の全文はリポジトリに置いていない。README は要点の写しであり、正本は外部の記録場所にある。 配布経路が 3 種しか受け取れないため、全文の配置は別契約で扱う。
 - docs/docs_audit.md の分類表に docs/history/README_log_2026-05_to_2026-08.md を足していない （§2 の変更対象外のため）。記録であって現行手順ではないので docs-check の対象にしなくてよいが、 分類表の方針として明示するかは未決。
 
-## 断定できなかった事項（244 件）
+### T-2026-08-29-projection-refresh
+
+- .sync-pause.released（0B、stash@{0}とstash@{1}に各1）の処分が判断待ちのまま残っている。 版管理へ記録する規約（対話の抽出物）には当たらず、禁止領域でもない。捨てるか記録するかの 判断が必要。
+- philipの定位置分岐exp/philipがoriginに存在しない（実体はexp/philip-wip-20260703）。 移行計画（tasks/T-2026-08-10-branch-naming-and-canonical-index/migration_plan.md）の 実施が未完了である。
+- stash@{1}（pre-oracle-ceiling-lovo、2026-08-26作成、他契約由来）は今回一切触っていない。 中身はlovo_decision_rule 9件（正本と一致確認済み）と.sync-pause.released。処分の判断待ち。
+
+### T-2026-08-29-stage0-contract-a
+
+- A7の結論により、台帳のK1の数値（Δ_phase -0.0201、hemostasis F1 0.801→0.179）は実在のrunに 遡れないことが確定した。中核主張の一つの出所照合が未了という方針文書の記述は、この実測で 「照合した結果、遡れなかった」へ更新できる。反映は別契約で起票者が行う。
+- 方針文書research_policy_v2_2026-08-28.mdがリポジトリに未配置である。配布経路が3種 （spec.yaml/SPEC.md/prereg.md）しか受け取れないため、配置には別の経路か別契約が要る。
+- A6の誤り分解に使った「見落とし」と「局在誤り」を分けるIoU下限0.1は既存実装に無く、実行者が 置いた値である。既存の評価実装に誤り分解の基準を足すかの判断が要る。
+- 術者・症例の属性情報が存在しないため、A3（追加6動画とtest折りの属性重複）は原理的に測れない。 属性を付与するか、R4の前提を属性に依らない形へ変えるかの判断が要る。
+- AlignDETRの検出性能0.686の所在が索引から特定できない（baselines/s0/aligndetr_bbox@valの accuracy_meanが空）。この値も出所照合の対象に含めるかの判断が要る。
+
+## 断定できなかった事項（246 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1051,16 +1065,21 @@
 - runindex への反映。make runindex を回していないため index.csv は本契約の 30 run を含まない。config.yaml への task_id の刻印は 30 本すべてで確認したが、索引そのものは未更新。
 - 別契約の未追跡ファイル 16 件がどの契約のどの段階のものかは確かめていない。mtime が更新中であることだけを実測した。
 
-## 起票者の誤りの型（225 件）
+### T-2026-08-29-stage0-contract-a
+
+- A3 追加6動画とtest折りの術者・症例の重複。属性情報が存在しないため測れない （data/splits/surgeon_folds.jsonが3バイトの空、追加動画のannotations.jsonにも該当キー0件）。 存在しないこと自体を実測として報告した。
+- AlignDETRの検出性能0.686に対応する値の所在。baselines/s0/aligndetr_bbox@valのaccuracy_meanが 空であり、索引から特定できない。
+
+## 起票者の誤りの型（229 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 67 |
-| `asserted_without_measuring` | 78 |
+| `asserted_without_measuring` | 82 |
 | `self_contradiction` | 62 |
 | `shell_assumption` | 18 |
 
-合計 225 件（対を持つ契約 74 件から）
+合計 229 件（対を持つ契約 76 件から）
 

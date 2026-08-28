@@ -1,0 +1,56 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-08-29-stage0-contract-a"
+  kind: analysis
+  title: "Stage 0 契約 A: 設計を左右する実測（折り材料・重複・上界・誤り分解・K1 出所照合・Cholec80 実体）"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-08-29T00:00:00Z"
+  created_from:
+    runindex_commit: "7918b5dd"
+    counts: {index: 1177, experiments: 213, verdicts: 1038}
+  depends_on: ["T-2026-08-29-projection-refresh"]
+  amendments: []
+intent:
+  question: "新方針の段階設計を確定する前に、折りの材料・データの重複・情報の上界・誤りの内訳・設計動機となった数値の出所を、どこまで実測で確定できるか"
+  decision_at_stake: "折り表と段階設計の前提、および設計動機の数値を実測扱いにできるかどうか"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "hts_ego"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["Makefile"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#naming]
+  conventions_rev: "a8c07e81"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_regen, no_external_download]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "前提の実測と承認済みの退避処分", gpu: false, est: "short"}
+    - {id: B, name: "九項目のうち本契約の八項目の実測", gpu: false, est: "long"}
+    - {id: C, name: "検査と送出", gpu: false, est: "short"}
+  gates:
+    - {id: G1, after: A, check: "各項目の入力データの所在が実測され、項目ごとに実施可否が確定している", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md, result.yaml, audit.md]
+  destination: "docs/stage0/"
+  acceptance:
+    - "SPEC の完了判定 a から f をすべて満たし、各判定に空振りでないことの確認が付く"
+    - "全項目が実測済みか、理由つき UNKNOWN のいずれかで埋まっている"
+    - "PR が存在する状態で終える"
+  report_to: [notion_task_distribution]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "実測に外部サービスへの問い合わせや外部データの取得が必要になった場合"
+    - "禁止領域への書き込みが必要になった場合"
+    - "台帳の数値に一致する run が複数系統あり、出所の結論が割れた場合"

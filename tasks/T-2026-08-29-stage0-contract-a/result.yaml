@@ -1,0 +1,111 @@
+result_version: 3
+task_id: "T-2026-08-29-stage0-contract-a"
+status: pass
+host: "philip"
+branch: "feat/stage0-contract-a"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      各項目の入力の所在を実測し、実施可否を確定した。工程アノテ23クリップ/15動画、術具COCO15クラス
+      （images 15437 / annotations 49652）、HTS 3系統が全15動画を被覆、追加動画は17-22の6動画23クリップ
+      （16はphase CSVなし）、保存済み特徴（region-token 2.2G等）と予測出力1191ディレクトリが実在。
+      術者・症例の属性は存在せず（surgeon_folds.jsonが3バイトの空）A3のみ実施不可。Cholec80はphilipに無い。
+      方針文書v2はリポジトリに未配置。
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+
+deviations:
+  - type: environment
+    note: >-
+      開始前から在った汚れ（.sync-pause.released 1件、前契約の判断待ち対象）をgit stash push -uで
+      退避してから進めた。mvは使っていない。その後Step A-0で他2件とともにdropした。
+  - type: judgement
+    note: >-
+      decisions_required 2件（Cholec80の取得可否、K1の結論の方針文書への反映）を利用者へ提示して
+      回答を得た。ただし両方とも実測が出てからでないと答えられない性質だったため、Phase A/Bを先に
+      進めて具体的な事実を示してから提示した。自分では決めていない。
+  - type: judgement
+    note: >-
+      A6で既存実装に無い値を二つ置いた。IoU下限0.1（「見落とし」と「局在誤り」を分けるため）と
+      score>=0.05（mmdetの既定値）。SPECは「新しい基準を発明しない」と定めるが、既存実装
+      src/egosurgery/metrics/detection.py:184-226が持つのはIoU 0.5のマッチ基準のみで、誤りを三分する
+      下限が存在しなかった。実行者の判断として成果物に明記した。結果の解釈に影響する。
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: >-
+      SPEC §1が「philipには退避が二件残っている（前契約の実測）。処分（drop）は利用者が承認済み」と
+      するが、実測は三件だった。三件目は本契約のtask-startが作業ツリーの汚れで止まったため実行者が
+      取り込み直前に作ったもので、起票時点では存在し得ない。指示どおり「二件」をdropすると一件残り、
+      完了判定f「退避が零件になった」を満たせない。利用者へ提示して三件ともdropする回答を得た。
+  - type: asserted_without_measuring
+    note: >-
+      SPEC §0が方針文書research_policy_v2_2026-08-28.mdについて「統合済みのREADMEから相対リンクで
+      辿れる位置にあるかは未確定」とするが、実測ではリポジトリに一切存在しない（find で
+      research_policy* / *policy*v2* のヒットは契約ディレクトリ名の2件のみ、本体0件）。
+      READMEの相対リンク36件はすべて実在しており壊れリンクは無い。「未確定」ではなく「未配置」が正しく、
+      指示どおり「導線が指す先が実在するか」を確かめようとしても導線自体が存在しない。
+
+positive_controls:
+  - judgement: "完了判定 b: A7の照合器が実際に一致を検出できる"
+    breaking_input: "索引に確実に存在する既知の値 0.8973014948553679（分母のaccuracy_mean）を与える"
+    observed: >-
+      1件一致（phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42 の
+      accuracy_mean）。一方、台帳の値の最終桁を変えた -0.0202 と -0.0200 はいずれも0件。
+      許容差±5e-5（表示4桁の丸め幅）で走査した。照合器は働いており、-0.0201の0件は空振りではない。
+  - judgement: "A2 動画IDの集合演算が重複を検出できる"
+    breaking_input: "追加動画の集合に公式testの04を混ぜて同じ演算を行う"
+    observed: "1件（04）を検出。実測の0件は検出できていないのではない"
+  - judgement: "A3 属性キーの検索が働いている"
+    breaking_input: "annotations.jsonのimagesのキーから 'file' を含むものを探す"
+    observed: >-
+      ['file_name'] を返す。surgeon/patient/case/subject/operator の0件は本物。
+      surgeon_folds.json自体も3バイトの{}で、作成commit af1fc587（2026-05-21 scaffold）以来空のまま。
+  - judgement: "A8 Cholec80 の探索が働いている"
+    breaking_input: "存在しない語 *zzznosuchdataset* で同じ探索を行い、既存のdata/external/weights/も数える"
+    observed: "zzznosuchdatasetは0件、data/external/weights/は35ファイル。探索は働いており、Cholec80の0件は本物"
+  - judgement: "完了判定 c: 成果物の数値が出所へ遡れる"
+    breaking_input: "成果物から無作為に三つの数値を選び、元データから独立に再計算する"
+    observed: >-
+      A1の動画14 dissection=1352はegosurgery_phase/14_*.csvから再計算して一致。
+      A5のhemostasis ΣH_b=7.2284はoracle_toolpresence+egosurgery_phaseから再計算して一致。
+      A6の分類誤り248は基準（IoU>=0.5・score>=0.05）を成果物に明記。
+  - judgement: "完了判定 e: 読み取り専用が守られている"
+    breaking_input: "同じgit status検査を変更のある場所（docs/stage0、契約ディレクトリ）へ当てる"
+    observed: "各1件を検出。experiments/・data/・runindex/の0件は検査が働いた上での0件である"
+
+followups:
+  - >-
+    A7の結論により、台帳のK1の数値（Δ_phase -0.0201、hemostasis F1 0.801→0.179）は実在のrunに
+    遡れないことが確定した。中核主張の一つの出所照合が未了という方針文書の記述は、この実測で
+    「照合した結果、遡れなかった」へ更新できる。反映は別契約で起票者が行う。
+  - >-
+    方針文書research_policy_v2_2026-08-28.mdがリポジトリに未配置である。配布経路が3種
+    （spec.yaml/SPEC.md/prereg.md）しか受け取れないため、配置には別の経路か別契約が要る。
+  - >-
+    A6の誤り分解に使った「見落とし」と「局在誤り」を分けるIoU下限0.1は既存実装に無く、実行者が
+    置いた値である。既存の評価実装に誤り分解の基準を足すかの判断が要る。
+  - >-
+    術者・症例の属性情報が存在しないため、A3（追加6動画とtest折りの属性重複）は原理的に測れない。
+    属性を付与するか、R4の前提を属性に依らない形へ変えるかの判断が要る。
+  - >-
+    AlignDETRの検出性能0.686の所在が索引から特定できない（baselines/s0/aligndetr_bbox@valの
+    accuracy_meanが空）。この値も出所照合の対象に含めるかの判断が要る。
+
+unknowns:
+  - >-
+    A3 追加6動画とtest折りの術者・症例の重複。属性情報が存在しないため測れない
+    （data/splits/surgeon_folds.jsonが3バイトの空、追加動画のannotations.jsonにも該当キー0件）。
+    存在しないこと自体を実測として報告した。
+  - >-
+    AlignDETRの検出性能0.686に対応する値の所在。baselines/s0/aligndetr_bbox@valのaccuracy_meanが
+    空であり、索引から特定できない。
+
+commits: []
