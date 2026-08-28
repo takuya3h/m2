@@ -133,14 +133,14 @@
 
 | # | 実測 |
 |---|---|
-| commit | `b094bdb9`（**19 ファイル**）。対象外の混入 **0 件** |
+| commit | `b094bdb9`（**19 ファイル**）→ 報告 `5d324014`（push 済み）。対象外の混入 **0 件** |
 | push | `origin/feat/stage0-contract-a` **exit 0** |
 | PR | **#162**。**`base=phase0`**（分岐の起点と同じ）。接頭辞 `feat/` |
 | `make task-validate` | **exit 0**、WARN 無し |
 | `make task-preflight` | **exit 0**（5 PASS / 4 SKIP / 0 FAIL） |
 | 投影の再生成 | `make taskindex` `make inbox` を実行。**索引の再生成はしていない**。三検査とも exit 0 |
-| `make task-report` | （送信後に記す） |
-| `.sync-pause` | （解除後に記す） |
+| `make task-report` | **exit 0**。`{"verdict": "pass", "n_issuer_defects": 2, "report_sha256": "43984e84cab36917…", "report_bytes": 9823, "replaced_blocks": 0}` |
+| `.sync-pause` | **移動で解除**（`mv .sync-pause .sync-pause.released`） |
 | 退避 | **0 件**（3 件とも drop 済み） |
 
 ### 秘匿の自主検査
