@@ -1,0 +1,94 @@
+result_version: 3
+task_id: "T-2026-08-29-projection-refresh"
+status: pass
+host: "philip"
+branch: "feat/projection-refresh"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      未統合の commit は0件（origin/exp/philip-wip-20260703..origin/phase0）。開いているPRは0件。
+      起点に前契約(#160)の変更が入っていることを確認。再生成前の三検査は全てexit 2で、8ファイルの
+      要約値（行数とsha256先頭16桁）を記録した。索引の件数は前契約時点と不変（1177/213/1038）。
+
+tests:
+  before_failed: 3
+  after_failed: 0
+  after_passed: 3
+
+deviations:
+  - type: environment
+    note: >-
+      開始前から在った汚れ（.stglobalignoreの変更+未追跡7件、内訳はdigest3件と解析ディレクトリ3件）を
+      git stash push -uで退避してから進めた。mvは使っていない。
+  - type: judgement
+    note: >-
+      decisions_required 1件（退避の中身のうち版管理へ記録する規約に当たらないものの処分）を
+      利用者へ提示して停止し、回答（判断待ちとして報告に残す）を得た。Phase Aの実測を先に済ませ、
+      具体的な対象（.sync-pause.released 計2件）を示してから確認した。自分では決めていない。
+  - type: judgement
+    note: >-
+      禁止領域配下（experiments/analysis/ 計28件、両退避に分散）を復帰させていない。SPEC指示どおり
+      追跡下の正本と要約値で照合し（全件一致）、結果だけを報告した。触っていない。消していない。
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: >-
+      SPEC §1が「同期の抑止の目印…存在する場合、前契約が解除しなかったことを意味する」と述べるが、
+      実測ではこの.sync-pauseは今回のtask-startが新規作成したものだった（scripts/task_start.sh:37
+      「既にあれば触れない」＝触れずログも出さない実装のため、作成ログが出た事実が新規作成の証拠）。
+      前契約はmv .sync-pause .sync-pause.releasedで正しく解除しており、その名残は退避内に保全されている。
+      指示どおり「存在する＝前契約の失敗」と読むと誤った結論に至る。
+  - type: asserted_without_measuring
+    note: >-
+      SPEC §3 Step A-2が「作業ホストの定位置分岐と起点の分岐の差を確かめる」ことを前提とするが、
+      philipの定位置分岐exp/philipはoriginに存在しない。OPERATION.mdに「実際の分岐切替は別作業」と
+      あるとおり移行が未実施であり、実行者は代わりにexp/philip-wip-20260703（phase0と0commit差）を
+      測った。SPEC §1「前契約が残した退避は二件」も、実際には二件の作成時刻が前契約の実行期間を
+      またいでおらず（片方は2026-08-26、もう片方は2026-08-28で「前契約」policy-v2-doc-syncより前）、
+      「前契約が残した」という帰属は実測と食い違う。
+
+positive_controls:
+  - judgement: "完了判定 a: 三つの投影検査が対応する生成物だけを見ている"
+    breaking_input: "STATE.md / tasks_summary.csv / inbox.md それぞれに一文字追加する"
+    observed: >-
+      各ケースで対応する検査だけがexit 2になり、他の二つはexit 0のまま。cpで復元後は
+      sha256が一致し、三検査とも exit 0 に戻った。git checkout -- を使った最初の試行では
+      未commitの再生成分ごと古い版へ戻る事故が起き、make context の再実行で修復した。
+  - judgement: "完了判定 b: 再生成が実際に働いた"
+    breaking_input: "再生成前後で8ファイル全ての行数とsha256を比較する"
+    observed: "8ファイル全てで行数・sha256とも変化。再生成前exit 2 → 再生成後exit 0"
+  - judgement: "完了判定 d: 索引の配下が不変"
+    breaking_input: "同じ検査を変更のある契約ディレクトリへ当てる"
+    observed: "runindex/の変更は0件だが、tasks/T-2026-08-29-projection-refresh/では1件検出。検査は働いている"
+  - judgement: "完了判定 e: 禁止領域検査が生成物を除外したうえで走査している"
+    breaking_input: "forbidden-checkの出力からchangedとcheckedの差、除外リストを読む"
+    observed: "changed=16に対しcontext/auto/とtasks/inbox.mdを除外してchecked=8。violations=0"
+  - judgement: "禁止領域配下（experiments/analysis/）の退避内容が正本と同一か"
+    breaking_input: "退避内の28ファイルをgit hash-objectで追跡下の正本と1件ずつ照合する"
+    observed: "28件全て一致（lovo_decision_rule 9+9件、error_shape_selectivity 7件、official_split_reassessment 3件）"
+  - judgement: "対話の抽出物の伏せ字が効いている"
+    breaking_input: "32文字以上の生の16進文字列と、秘密名への代入がdigestファイルに残っていないか走査する"
+    observed: >-
+      32桁以上の生16進は0件。NOTION_API_KEY=<redacted>のように値は伏せられている。
+      「password」への一致1件は libgl1 のトラブルシュート記録で秘密ではないことを目視確認した
+
+followups:
+  - >-
+    .sync-pause.released（0B、stash@{0}とstash@{1}に各1）の処分が判断待ちのまま残っている。
+    版管理へ記録する規約（対話の抽出物）には当たらず、禁止領域でもない。捨てるか記録するかの
+    判断が必要。
+  - >-
+    philipの定位置分岐exp/philipがoriginに存在しない（実体はexp/philip-wip-20260703）。
+    移行計画（tasks/T-2026-08-10-branch-naming-and-canonical-index/migration_plan.md）の
+    実施が未完了である。
+  - >-
+    stash@{1}（pre-oracle-ceiling-lovo、2026-08-26作成、他契約由来）は今回一切触っていない。
+    中身はlovo_decision_rule 9件（正本と一致確認済み）と.sync-pause.released。処分の判断待ち。
+
+unknowns: []
+
+commits: []

@@ -1,0 +1,55 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-08-29-projection-refresh"
+  kind: impl
+  title: "統合後の投影三種を再生成し、philip に残る退避と同期の抑止を整理する"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-08-29T00:00:00Z"
+  created_from:
+    runindex_commit: "7918b5dd9aab3d15b3c459f87aebdd9eb1653116"
+    counts: {index: 1177, experiments: 213, verdicts: 1038}
+  depends_on: ["T-2026-08-28-policy-v2-doc-sync"]
+  amendments: []
+intent:
+  question: "統合が済んだ後の投影を正本へ戻し、前契約の退避と抑止が解けているかを実測で確かめるには何を回し何を確認すべきか"
+  decision_at_stake: "投影の検査が通る状態へ戻せたか。退避の内容のうち版管理へ記録すべきものがあるか"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "none"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["Makefile"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#naming]
+  conventions_rev: "a8c07e813696d3720ceee648e8aa202224285955"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_regen, no_history_rewrite]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "前提の実測（未統合の有無・投影の現状・退避と抑止の状態）", gpu: false, est: "short"}
+    - {id: B, name: "投影三種の再生成と退避の整理", gpu: false, est: "short"}
+    - {id: C, name: "検査と送出", gpu: false, est: "short"}
+  gates:
+    - {id: G1, after: A, check: "未統合の変更が残っていないことを確かめた。投影三種の再生成前の状態を記録した", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md, result.yaml, audit.md]
+  destination: "context/auto/"
+  acceptance:
+    - "SPEC の完了判定 a から f をすべて満たし、各判定に空振りでないことの確認が付く"
+    - "PR が存在する状態で終える"
+  report_to: [notion_task_distribution]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "起点の分岐へ未統合の変更が残っている場合"
+    - "退避の復帰が衝突した場合、または復帰すると既存のファイルを上書きする場合"
+    - "再生成の差分が三つの生成器の出力以外へ及んだ場合"
