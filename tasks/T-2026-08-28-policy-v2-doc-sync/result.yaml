@@ -3,7 +3,7 @@ task_id: "T-2026-08-28-policy-v2-doc-sync"
 status: pass
 host: "philip"
 branch: "feat/policy-v2-doc-sync"
-pr: null
+pr: 160
 merged: false
 
 gates:
@@ -86,6 +86,13 @@ issuer_defects:
       節の存在自体が前提として書かれている。
 
 positive_controls:
+  - judgement: "秘匿検査が実際に秘匿を検出し、かつ誤検知を見分けられる"
+    breaking_input: "環境の実値を埋めた囮（版管理外）を検査対象に入れる"
+    observed: >-
+      囮では live:WANDB_API_KEY=1 live:NOTION_API_KEY=1 notion_token=1 pem_private_key=1 を検出し exit 1。
+      送出物では wandb_key_shape=6 が出たが、git cat-file -t で 6 件とも commit と判明し、環境の実値との
+      照合は 0 件だった。SPEC Step A-1 が 40 桁の全長で書くよう求めた runindex_commit と conventions_rev である。
+      形の規則の既知の誤検知であり、検査は無効にしていない。
   - judgement: "完了判定 a: 履歴移設の同一性"
     breaking_input: "移設先の複製で一文字だけ変える（S0-frozen → S0-frozeN）"
     observed: "sha256 が 419de04d… から 247efd8b… へ変わり不一致になった。一時複製は削除して 0 件"
@@ -126,4 +133,5 @@ followups:
 
 unknowns: []
 
-commits: []
+commits:
+  - "8aca4fe3"

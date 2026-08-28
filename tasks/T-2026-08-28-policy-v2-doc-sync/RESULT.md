@@ -127,4 +127,34 @@ docs/history/README_log_2026-05_to_2026-08.md: docs/task_drafts/README.md
 
 ## 送出
 
-（この節は commit・PR の後に埋める）
+| # | 実測 |
+|---|---|
+| commit | `8aca4fe3`（**9 ファイル**）。対象外の混入 **0 件** |
+| push | `origin/feat/policy-v2-doc-sync` **exit 0**（`* [new branch]`） |
+| PR | **#160**。**`base=phase0`**（分岐の起点と同じ）。既定の `master` **ではない**。接頭辞 `feat/` |
+| `make task-validate` | **exit 0**、**WARN 無し** |
+| `make task-preflight` | **exit 0**（5 PASS / 4 SKIP / 0 FAIL）。SKIP は P2 P3 P4 P5 |
+| `make docs-check` | **exit 0**（対象 42 文書） |
+| `make agent-check` | **exit 0**（94 対象） |
+| `make forbidden-check` | **exit 0・違反 0 件** |
+| `make context-check` / `taskindex-check` / `inbox-check` | **exit 2**。投影が他ホストの統合に対して古い。禁止 3・4 により再生成していない |
+| `make task-report` | （送信後に記す） |
+| `.sync-pause` | （解除後に記す） |
+| 退避 | **戻していない**（`stash@{0}` と `stash@{1}`。元の分岐へ戻ってから戻す） |
+
+### 秘匿の自主検査
+
+| 対照 | 対象 | 結果 |
+|---|---|---|
+| **陽性** | 実値を埋めた囮（**版管理外**） | `live:NOTION_API_KEY=1, live:WANDB_API_KEY=1, notion_token=1, pem_private_key=1` **exit 1** |
+| **陰性** | 送出する 9 ファイル | `wandb_key_shape=6`（`spec.yaml` `audit.md` `RESULT.md` に各 2 件）**exit 1** |
+
+🔴 **陰性対照で一致が出たため、何に一致したかを目視した。**
+**6 件すべて git の commit** であった（`git cat-file -t` で `commit` と確認。
+`runindex_commit = 7918b5dd…`「exp(s4): 60-seed deterministic sweep」と
+`conventions_rev = a8c07e81…`「feat(context): move issuer references…」。
+**SPEC Step A-1 が 40 桁の全長で書くよう求めている値である**）。
+
+**環境の実値との照合は 0 件。** 秘匿は含まれていない。
+既知の型の誤検知である（`tasks/T-2026-08-12-sync-audit-efros/RESULT.md:291` に同じ実測）。
+**検査は無効にしていない。**
