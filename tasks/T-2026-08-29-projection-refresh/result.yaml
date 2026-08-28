@@ -3,7 +3,7 @@ task_id: "T-2026-08-29-projection-refresh"
 status: pass
 host: "philip"
 branch: "feat/projection-refresh"
-pr: null
+pr: 161
 merged: false
 
 gates:
@@ -52,6 +52,12 @@ issuer_defects:
       「前契約が残した」という帰属は実測と食い違う。
 
 positive_controls:
+  - judgement: "秘匿検査が実際に秘匿を検出し、かつ誤検知を見分けられる"
+    breaking_input: "環境の実値を埋めた囮（版管理外）を検査対象に入れる"
+    observed: >-
+      囮では検出しexit 1。送出物ではwandb_key_shape=6が出たが、6件全てgit cat-file -tでcommitと
+      判明し、環境の実値との照合は0件だった。SPEC本文に前契約から引用されたrunindex_commitと
+      conventions_revの全長。RESULT.md/result.yamlは短縮形を使い0件。既知の型の誤検知で検査は無効にしていない。
   - judgement: "完了判定 a: 三つの投影検査が対応する生成物だけを見ている"
     breaking_input: "STATE.md / tasks_summary.csv / inbox.md それぞれに一文字追加する"
     observed: >-
@@ -91,4 +97,5 @@ followups:
 
 unknowns: []
 
-commits: []
+commits:
+  - "5703e607"

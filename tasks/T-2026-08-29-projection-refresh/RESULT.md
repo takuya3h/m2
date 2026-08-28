@@ -93,4 +93,27 @@
 
 ## 送出
 
-（この節は commit・PR の後に埋める）
+| # | 実測 |
+|---|---|
+| commit | `5703e607`（**16 ファイル**）。対象外の混入 **0 件** |
+| push | `origin/feat/projection-refresh` **exit 0** |
+| PR | **#161**。**`base=phase0`**（分岐の起点と同じ）。既定の `master` **ではない**。接頭辞 `feat/` |
+| `make task-validate` | **exit 0**、WARN 無し |
+| `make task-preflight` | **exit 0**（5 PASS / 4 SKIP / 0 FAIL） |
+| `make context-check` / `taskindex-check` / `inbox-check` | **すべて exit 0** |
+| `make forbidden-check` | **exit 0・違反 0 件** |
+| `make task-report` | （送信後に記す） |
+| `.sync-pause` | （解除後に記す） |
+| 退避 | **2 件とも drop していない** |
+
+### 秘匿の自主検査
+
+| 対照 | 対象 | 結果 |
+|---|---|---|
+| **陽性** | 実値を埋めた囮（**版管理外**） | `live:NOTION_API_KEY=1, live:WANDB_API_KEY=1, notion_token=1, pem_private_key=1` **exit 1** |
+| **陰性** | 送出する 16 ファイル | `wandb_key_shape=6`（`spec.yaml` `SPEC.md` `audit.md` に各2件）**exit 1** |
+
+🔴 **陰性対照で一致が出たため目視した。6 件すべて git の commit**（`runindex_commit`/`conventions_rev`
+の全長。SPEC本文に前契約から引用されている値）。**環境の実値との照合は 0 件。**
+`RESULT.md`/`result.yaml` は本 SPEC の指示どおり短縮形を使用しており **0 件**だった。
+既知の型の誤検知である。**検査は無効にしていない。**
