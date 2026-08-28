@@ -129,7 +129,7 @@ docs/history/README_log_2026-05_to_2026-08.md: docs/task_drafts/README.md
 
 | # | 実測 |
 |---|---|
-| commit | `8aca4fe3`（**9 ファイル**）。対象外の混入 **0 件** |
+| commit | `8aca4fe3`（**9 ファイル**）→ 報告 `85f6a6fe`（push 済み）。対象外の混入 **0 件** |
 | push | `origin/feat/policy-v2-doc-sync` **exit 0**（`* [new branch]`） |
 | PR | **#160**。**`base=phase0`**（分岐の起点と同じ）。既定の `master` **ではない**。接頭辞 `feat/` |
 | `make task-validate` | **exit 0**、**WARN 無し** |
@@ -138,8 +138,8 @@ docs/history/README_log_2026-05_to_2026-08.md: docs/task_drafts/README.md
 | `make agent-check` | **exit 0**（94 対象） |
 | `make forbidden-check` | **exit 0・違反 0 件** |
 | `make context-check` / `taskindex-check` / `inbox-check` | **exit 2**。投影が他ホストの統合に対して古い。禁止 3・4 により再生成していない |
-| `make task-report` | （送信後に記す） |
-| `.sync-pause` | （解除後に記す） |
+| `make task-report` | **exit 0**。`{"verdict": "pass", "n_issuer_defects": 6, "report_sha256": "beb92eedc1e36cbb…", "report_bytes": 11507, "replaced_blocks": 0}` |
+| `.sync-pause` | **移動で解除**（`mv .sync-pause .sync-pause.released`） |
 | 退避 | **戻していない**（`stash@{0}` と `stash@{1}`。元の分岐へ戻ってから戻す） |
 
 ### 秘匿の自主検査
