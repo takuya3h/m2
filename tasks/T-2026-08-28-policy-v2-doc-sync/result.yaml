@@ -1,0 +1,138 @@
+result_version: 3
+task_id: "T-2026-08-28-policy-v2-doc-sync"
+status: pass
+host: "philip"
+branch: "feat/policy-v2-doc-sync"
+pr: 160
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      Step A-1 の置換 3 件を実測して置いた（runindex_commit=7918b5dd…、conventions_rev=a8c07e81…、
+      counts=index 1177 / experiments 213 / verdicts 1038）。L1/L2 は exit 0 で WARN 無し、
+      L3 は 5 PASS / 4 SKIP / 0 FAIL。Step A-2 で時系列ログの境界が一意に決まらないことが判明し、
+      候補と根拠を利用者へ提示して候補 B（日付見出し 21 件すべて）の回答を得た。Step A-3 の分布は
+      比較の三角形が README 3 件・CLAUDE 0 件、分析ファーストが両方 0 件、旧判定規則が CLAUDE の 4 行と 34-35 行。
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+
+deviations:
+  - type: environment
+    note: >-
+      開始前から在った汚れを 2 回に分けて退避した。task-start が汚れた作業ツリーでは分岐を作らないため。
+      1 回目は .stglobalignore の変更と未追跡 5 件、2 回目は実行の合間に同期処理が運んできた
+      experiments/analysis/ の 3 ディレクトリ。2 回目は中身が origin/phase0 と一致することを照合してから
+      退避した（差は各ホスト固有の logs/ 配下のみ）。mv は使っていない。契約が終わり元の分岐へ戻るまで戻さない。
+  - type: judgement
+    note: >-
+      時系列ログの境界を利用者へ escalate して決めた。日付見出し 21 件が連続しておらず、起票者の記述の
+      二条件（連続している／2026-06 中旬から 2026-08 下旬）が両立しないため。候補 A（連続する塊のみ 20 件）と
+      候補 B（21 件すべて）を根拠つきで提示し、候補 B の回答を得た。自分では決めていない。
+  - type: judgement
+    note: >-
+      Task 5 の追記先を履歴ファイルの末尾に新設した。SPEC は「README の変更履歴に相当する節」を
+      追記先とするが、README にも CLAUDE.md にも docs/*.md にもその節が存在しない（機械的に走査して 0 件）。
+      移設本文の範囲外であることを本文中に明記し、判定 a を取り直して要約値の一致を確認した。
+  - type: judgement
+    note: >-
+      2026-08-27 の指摘整理へのリンクを張っていない。成果物がリポジトリに実在しないため
+      （名前と中身の両方で走査して 0 件）。SPEC の「実在を確かめずにリンクを書かない」に従った。
+  - type: spec_defect
+    note: >-
+      投影系 3 検査（context-check / taskindex-check / inbox-check）を exit 0 にしていない。
+      禁止 3・4 が投影と集約と runindex の再生成を禁じているため。今回の変更が原因でないことは、
+      生成器 3 つの入力に README.md / CLAUDE.md が無いこと、および runindex/・tasks/*/result.yaml・
+      tasks/inbox.d/ の変更が 0 件であることで示した。
+
+issuer_defects:
+  - type: self_contradiction
+    note: >-
+      バンドルに四つ目のファイル research_policy_v2_2026-08-28.md を同梱したため初回の取り込みが
+      拒否された（tools/fetch_task.py:51 の ALLOWED_FILES は spec.yaml / SPEC.md / prereg.md の 3 種）。
+      SPEC §0 はこの失敗を自ら記しているが、同じバンドルで再配布されたため実行者側で二度止まった。
+      指示どおり task-start を実行すると分岐が作られては巻き戻される。
+  - type: asserted_without_measuring
+    note: >-
+      検査語 y「分析ファースト」は README.md にも CLAUDE.md にも変更前から 0 件であった。存在しない語を
+      検査語に指定したため、判定 b の空振り確認「同じ検査を履歴ファイルへ当てて一件以上が出ることを示す」が
+      y については原理的に成立しない。指示どおり実行すると、働いていない検査を働いていると誤認しかねない。
+  - type: asserted_without_measuring
+    note: >-
+      「2026-06 中旬から 2026-08 下旬に及ぶ日付見出し節が連続している」は誤り。日付見出しは 21 件あり、
+      あいだに三つの参照用の節（Claude Code 連携・サーバー間同期・検出側 run の成果物）が挟まる。さらに
+      連続する塊の最後は 2026-08-13（中旬）で、下旬の見出しは分離した 1 件だけである。記述の二条件が
+      両立せず、指示どおりでは「どの見出しからどの見出しまで」を決められない。escalate して利用者に決めてもらった。
+  - type: self_contradiction
+    note: >-
+      禁止 1「移設本文を一字も変えない」と判定 c「今回張った相対リンクの指す先がすべて実在する」が
+      両立しない場合がある。移設は相対リンクの基点を変えるため、本文を変えずに解決させられない。実測で
+      2 件が該当した（移設前の README では相対リンク 43 件すべて解決していた）。SPEC §7 は「既存の壊れリンク」
+      しか想定しておらず、移設によって新たに壊れる場合の行が無い。先頭注記への追記で補うほかなかった。
+  - type: self_contradiction
+    note: >-
+      判定 d「Makefile にある文書・生成物系の検査がすべて exit code 零」と禁止 3・4「投影と集約と runindex の
+      再生成を行わない（統合後に正本ホストで行う）」が両立しない。投影は他ホストの統合で古くなっており、
+      再生成しない限り exit 0 にできない。指示どおり両方に従うと必ず一方を破る。
+  - type: check_does_not_check
+    note: >-
+      Task 5 が追記先を「README の変更履歴に相当する節」とするが、README にも CLAUDE.md にも docs/*.md にも
+      その節は存在しない（^#+ 変更履歴|更新履歴|Changelog|History で走査して 0 件）。指示どおりの場所が無いため、
+      実行者が新設先を判断するほかなかった。「位置は実行者が現物で判断し audit に記す」との但し書きはあるが、
+      節の存在自体が前提として書かれている。
+
+positive_controls:
+  - judgement: "秘匿検査が実際に秘匿を検出し、かつ誤検知を見分けられる"
+    breaking_input: "環境の実値を埋めた囮（版管理外）を検査対象に入れる"
+    observed: >-
+      囮では live:WANDB_API_KEY=1 live:NOTION_API_KEY=1 notion_token=1 pem_private_key=1 を検出し exit 1。
+      送出物では wandb_key_shape=6 が出たが、git cat-file -t で 6 件とも commit と判明し、環境の実値との
+      照合は 0 件だった。SPEC Step A-1 が 40 桁の全長で書くよう求めた runindex_commit と conventions_rev である。
+      形の規則の既知の誤検知であり、検査は無効にしていない。
+  - judgement: "完了判定 a: 履歴移設の同一性"
+    breaking_input: "移設先の複製で一文字だけ変える（S0-frozen → S0-frozeN）"
+    observed: "sha256 が 419de04d… から 247efd8b… へ変わり不一致になった。一時複製は削除して 0 件"
+  - judgement: "完了判定 b: 撤回済みの語が残っていない"
+    breaking_input: "同じ検査を履歴ファイルと版管理の旧版（HEAD）へ当てる"
+    observed: >-
+      比較の三角形は履歴ファイルで 3 件、旧判定規則（|Δ| > 1σ / S0〜S9 で揃える / §10.1）は HEAD の
+      CLAUDE.md で各 1 件を検出した。分析ファーストは元から存在しない語のため、この対照は成立しない
+  - judgement: "完了判定 c: リンクがすべて実在する"
+    breaking_input: "実在しない経路 docs/history/zzz_no_such_file.md を含む一時複製に同じ検査を当てる"
+    observed: "相対リンク 46 件中 1 件を検出し exit 1。一時複製は削除して 0 件"
+  - judgement: "完了判定 d: 文書検査が今回の変更ファイルを走査している"
+    breaking_input: "README.md に実在しない経路 docs/zzz_no_such_path.md を一時的に足す"
+    observed: >-
+      docs-check が README.md:1117 を指して 1 件の食い違いを報告し exit 2。走査零件のまま通っていない。
+      復元後の sha256 が変更前と一致することも確認した
+  - judgement: "投影系 3 検査の失敗が今回の変更と無関係である"
+    breaking_input: "生成器の入力に README.md / CLAUDE.md が含まれるかを実装から走査する"
+    observed: >-
+      build_context.py 0 件、build_taskindex.py 0 件、build_inbox.py 1 件（104 行の案内文字列で入力ではない）。
+      さらに runindex/・tasks/*/result.yaml・tasks/inbox.d/ の変更が 0 件
+
+followups:
+  - >-
+    移設本文の中の相対リンク 2 件（docs/research_review_and_next_plan_2026-08-22.md と
+    docs/task_drafts/README.md）が docs/history/ からは解決しない。禁止 1 のため直していない。
+    基点を注記で補ったが、リンク検査を回す契約では既存の壊れとして扱う必要がある。
+  - >-
+    投影系 3 検査（context-check / taskindex-check / inbox-check）が古い。全ホストの PR が統合された後、
+    正本ホストで一度だけ make context && make taskindex && make inbox を回す必要がある。
+  - >-
+    方針 v2 の全文はリポジトリに置いていない。README は要点の写しであり、正本は外部の記録場所にある。
+    配布経路が 3 種しか受け取れないため、全文の配置は別契約で扱う。
+  - >-
+    docs/docs_audit.md の分類表に docs/history/README_log_2026-05_to_2026-08.md を足していない
+    （§2 の変更対象外のため）。記録であって現行手順ではないので docs-check の対象にしなくてよいが、
+    分類表の方針として明示するかは未決。
+
+unknowns: []
+
+commits:
+  - "8aca4fe3"
+  - "85f6a6fe"
