@@ -138,3 +138,167 @@
     作業ツリー: 0 件（退避へ隔離済み）
     stash@{0} 内: 3 件（docs/sessions/digest/2026-08-22 / 23 / 24）
     stash@{1} 内: 0 件
+
+---
+
+## Task 1 投影三種の再生成
+
+    $ make context && make taskindex && make inbox
+    context: exit=0 / taskindex: exit=0 / inbox: exit=0
+
+    $ make context-check / taskindex-check / inbox-check
+    exit=0 / exit=0 / exit=0
+
+差分は生成器の出力 8 ファイルのみ（`context/auto/` 7 件・`tasks/inbox.md` 1 件）。
+
+### 想定外 — 空振り確認で再生成の成果を一度失った
+
+判定 a の空振り確認で `git checkout -- context/auto/STATE.md` を使ったところ、
+**1 文字の取り消しではなく、Task 1 で再生成した内容ごと HEAD（再生成前の古い版）へ
+戻ってしまった。** まだ commit していなかったため、`checkout --` は「作業ツリーの変更」を
+丸ごと破棄する。**手で直さず**、`make context` を再実行して修復した。
+
+    修復後の context-check: exit=0
+
+以後の空振り確認は `cp` で複製してから戻す方式に変更した（`git checkout --` を使わない）。
+
+### 判定 a 空振り確認（三生成器それぞれ・修復後）
+
+    対象: STATE.md（context 系）
+      一文字追加 → context-check exit=2 / taskindex-check exit=0 / inbox-check exit=0
+      復元（cp）→ sha256 一致 🟢 → context-check exit=0
+
+    対象: tasks_summary.csv（taskindex 系）
+      一文字追加 → taskindex-check exit=2 / context-check exit=0 / inbox-check exit=0
+      復元（cp）→ sha256 一致 🟢 → taskindex-check exit=0
+
+    対象: inbox.md（inbox 系）
+      一文字追加 → inbox-check exit=2 / context-check exit=0 / taskindex-check exit=0
+      復元（cp）→ sha256 一致 🟢 → inbox-check exit=0
+
+**それぞれ対応する検査だけが非零になり、他は波及しない。** 復元後は三つとも exit 0。
+
+### 判定 b 再生成前後の比較
+
+    再生成前（Step A-3）                          再生成後
+    STATE.md               85行 98e242fbfe05ad3e   85行 9eaa0252b9978423
+    experiments_summary.csv 209行 b60e22b1e6ba2695  215行 ac28d29737435b23
+    open_questions.md       54行 d7d377dffd8d5835   54行 dc7051039e09e9f6
+    verdicts_summary.csv   138行 c19e7f35b4533ea1  138行 7b2cc5d9c1cbcb97
+    tasks_summary.csv       66行 dc8405c8dc66ae62   76行 260bbdb16b5fc6da
+    followups.md           913行 1aa09d38a8b7e237 1066行 df792d8b73382fcc
+    results_recent.md      240行 1b2b7ce6053d6826  225行 cd8a40dfba1d0bfb
+    inbox.md               376行 4eb61c6335b66b66  427行 e382894f29a52538
+
+**8 ファイルすべて内容が変わった。** 再生成前の終了コード（全て exit 2）が
+再生成後（全て exit 0）へ変わったことと合わせて、再生成が実際に働いたことを示す。
+
+### 判定 c 変更範囲
+
+    $ git --no-pager status --porcelain
+     M  .stglobalignore
+      M context/auto/{STATE.md,experiments_summary.csv,followups.md,open_questions.md,
+                       results_recent.md,tasks_summary.csv,verdicts_summary.csv}
+     A  docs/sessions/digest/2026-08-{22,23,24}-*.md
+      M tasks/inbox.md
+     ?? tasks/T-2026-08-29-projection-refresh/
+     ?? tasks/inbox.d/T-2026-08-29-projection-refresh.md
+
+**§2 の対象（投影の出力・退避から復帰した抽出物）と契約ディレクトリ・受け皿のみ。対象外 0 件。**
+
+### 判定 d 索引が変わっていないこと
+
+    $ git --no-pager status --porcelain runindex/
+    （0 件）
+    空振り確認: tasks/T-2026-08-29-projection-refresh/ の変更 = 1 件（一件以上出る）
+
+### 判定 e 禁止領域
+
+    $ make forbidden-check
+    changed=16 checked=8 status=pass violations=0
+    除外ディレクトリ: ['context/auto/']  除外ファイル: ['tasks/inbox.md']
+
+16 件のうち生成物 8 件を除外し、残り 8 件（契約ディレクトリ 3 + digest 3 + .stglobalignore 1 +
+inbox.d 1）が検査対象。**違反 0 件。**
+
+---
+
+## Task 2 退避の整理
+
+### 衝突の確認
+
+    stash@{1}（.sync-pause.released・lovo_decision_rule）
+      .sync-pause.released: 作業ツリーに無い（衝突しない）
+      lovo_decision_rule/: 作業ツリーに**既に存在**（92 ファイル追跡下、origin/phase0 に統合済み）
+        → 禁止領域配下。復帰しない
+
+    stash@{0}
+      .stglobalignore: 追跡済み変更として復帰可能
+      digest 3 件: 未追跡として復帰可能
+      .sync-pause.released: 判断待ち（版管理の記録規約に当たらない）
+      experiments/analysis/{error_shape_selectivity,lovo_decision_rule,official_split_reassessment}/
+        19 ファイル: 禁止領域配下。復帰しない
+
+### 禁止領域の要約値照合（触らず、結果だけ報告）
+
+    lovo_decision_rule（stash@{1} の 9 件）            対 正本: 一致 9 / 不一致 0
+    lovo_decision_rule（stash@{0} の 9 件）            対 正本: 一致 9 / 不一致 0
+    error_shape_selectivity（stash@{0} の 7 件）       対 正本: 一致 7 / 不一致 0
+    official_split_reassessment（stash@{0} の 3 件）   対 正本: 一致 3 / 不一致 0
+
+**全 28 件が追跡下の正本と一致。触っていない。消していない。**
+（正本の総ファイル数は lovo_decision_rule 92 / error_shape_selectivity 26 /
+official_split_reassessment 7 であり、退避内の件数より多い。差は `logs/` 等
+`.gitignore` 対象で、そもそも退避に含まれていない分。）
+
+### 個別復帰（`git checkout <stash> -- <path>` で部分復帰。stash 全体は pop しない）
+
+    $ git checkout 'stash@{0}' -- .stglobalignore
+    $ git checkout 'stash@{0}^3' -- docs/sessions/digest/2026-08-{22,23,24}-*.md
+
+復元内容が stash の持つ内容と一致することを確認。
+
+    $ diff <(git show 'stash@{0}:.stglobalignore') .stglobalignore
+    （差分なし）
+
+### 対話の抽出物の伏せ字確認
+
+    $ grep -oE '\b[0-9a-f]{32,}\b' digest/2026-08-{22,23,24}-*.md | grep -c ''
+    0（32桁以上の生16進 = 0 件。伏せられている）
+
+    目視: docs/sessions/digest/2026-08-22-....md:47
+      "NOTION_API_KEY=<redacted> …（切り詰め）"           ← 値が伏せられている
+    "password" への一致（2026-08-24 ファイル）
+      "sudo: a password is required" ← libgl1 のトラブルシュート記録。秘密ではない
+
+**伏せ字は効いている。**
+
+### stash@{1} — 一切触らなかった
+
+`.sync-pause.released`（判断待ち）と `lovo_decision_rule/`（禁止領域・照合のみ）のみで構成され、
+復帰可能なものが無い。**stash はそのまま残る。**
+
+---
+
+## Task 3・4 の順序
+
+**受け皿への記録は Task 1（再生成）より後になった。** SPEC の二択のうち「集約の生成器を
+最後にもう一度回す」を採った。
+
+    $ cat > tasks/inbox.d/T-2026-08-29-projection-refresh.md  （3 行）
+    $ make inbox   ← 二度目（受け皿記録を反映するため）
+    exit=0
+    $ make inbox-check
+    exit=0          ← 三検査とも exit 0 のまま維持
+
+### 判定 f 退避の整合
+
+    Phase A-4 の実測: stash@{0} 追跡1件・未追跡23件 / stash@{1} 未追跡10件
+    現在                : stash@{0} 追跡1件・未追跡23件 / stash@{1} 未追跡10件   一致
+
+    $ git --no-pager stash list
+    stash@{0}: …T-2026-08-29-projection-refresh: 契約開始前から在った汚れの退避…
+    stash@{1}: …pre-oracle-ceiling-lovo
+
+**両方とも drop していない。件数不変。消えたものは無い。**
+作業ツリーに新たに現れたのは復帰した 4 項目（`.stglobalignore` + digest 3 件）のみ。
