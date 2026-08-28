@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（354 件）
+## 未処理（408 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -362,6 +362,11 @@
 - [ ] 2026-08-25 [cc] 秘匿検査の初版が陽性対照に落ちた。${(P)var} を bash が解釈できず 2 鍵の照合が黙って飛ばされ exit=0 を返した。陽性対照の要求が無ければ誤報告していた。契約の様式として維持する価値がある（tasks/_templates/result.yaml の positive_controls）
 - [ ] 2026-08-25 [cc] spec.schema.json の inputs.data / inputs.code が必須かつ minItems: 1 のため、データもエントリも持たない kind: analysis が表現できず、参照しない値の記入を強いられる。kind 別に緩めることを提案（tasks/_schema/spec.schema.json）
 - [ ] 2026-08-25 [cc] 配布台帳の添付が複数あると fetch_task._scan_children が最初の 1 件だけを拾い、新しい版に到達できない。要約値の検査が捕まえたが、2 件以上あるとき拒むか最新を選ぶ方が安全（tools/fetch_task.py）
+- [ ] 2026-08-25 [cc] 逐語注入のアンカーは `[a-z0-9_]` のみで、配られた本文のハイフン形は L1 の様式と L2 のアンカー集合の両方から落ちる。起票側の雛形にこの制約を書くかは未決（context/conventions.md の `issuer_cautions`）
+- [ ] 2026-08-25 [cc] 変更履歴が `naming` 節の本文の内側にあるため、conventions.md の改訂記録を残すと既存の節の解決結果が変わる。終端用のアンカーを置くかは未決（context/conventions.md:7）
+- [ ] 2026-08-25 [cc] バンドルは spec.yaml / SPEC.md / prereg.md の 3 種しか運べない。起票者が用意した本文を配る経路が無く、今回は対話で手渡しした。添付経路を足すか本文を SPEC へ埋めるかが未決（tools/fetch_task.py:52）
+- [ ] 2026-08-25 [cc] SPEC 禁止 4「生成物を再生成しない」と手順書 §6「make taskindex / make inbox を回す」が両立しない。投影を更新していないため次の実行者が inbox-check で差分を見る。どちらを正とするかが未決（.claude/skills/task/SKILL.md §6）
+- [ ] 2026-08-25 [cc] `context/issuer-cautions.md` は本文を conventions.md へ取り込んだ後も残置した。SPEC は「ファイルとして置かない」と定めるが禁止 5 が削除を禁じる。処分は起票者の判断待ち（context/issuer-cautions.md）
 - [ ] 2026-08-25 [cc] 禁止と同期の矛盾は未解決。禁止事項1「experiments/** の中身を削除・変更する」を、実行者の手による変更に限るのか同期による配布も含むのかを契約側で決める必要がある。全除外すると同期は 42,010,845,130 → 11,844 バイトになる（tasks/T-2026-08-25-sync-ignore-scope/RESULT.md §5）
 - [ ] 2026-08-25 [cc] 起票者の判断で案 A（無制限行 7 行の削除のみ）を採用。案 B（data/ transfer/ も除外）と案 C（禁止領域を全除外）は不採用。判断の材料と 3 案の実測値は audit.md §9 にある（.stglobalignore）
 - [ ] 2026-08-25 [cc] 文面のコメントが「同期しない」と宣言していた wandb・third_party・data/external を、宣言どおり外す判断。data/external/weights 8,797,633,322 バイトと third_party 2,149,645,702 バイトが他台へ届かなくなるため、各台での再取得が要るかは未確認（.stglobalignore:33-37）
@@ -369,6 +374,55 @@
 - [ ] 2026-08-25 [cc] 契約の実行ホスト指定（philip / ~/slocal2/m2）と実際（lecun / ~/slocal/m2）が食い違い、完了判定 L「四ノードとの接続」が測れなかった。ホスト指定を持つ契約は指定ホストで実行するか、判定を実行ホストから測れる形に書き換えるかの判断が要る（tasks/T-2026-08-25-sync-ignore-scope/SPEC.md:5）
 - [ ] 2026-08-25 [cc] 無制限行の削除により、将来 experiments/ 配下に .ckpt / .onnx / .safetensors が生まれた場合は同期されない。現時点の実測では 3 形式とも 0 件のため範囲付きの行を足していない（.stglobalignore:43-54）
 - [ ] 2026-08-25 [cc] /rest/db/browse が HTTP 500 を返す（索引に .remember の親エントリが無い）。prefix 指定なら応答する。全件一覧は索引 DB の直読みで代替した。Syncthing v2.1.3 の不具合か設定かは未判定（~/.local/state/syncthing/index-v2/）
+- [ ] 2026-08-26 [cc] 分母が動いた旨の WARN 2 件を利用者へ提示し、分母行そのものが 8 コミットで不変であることを実測で示して続行の判断を得た。L2-8 は索引全体の行数増加に反応する粗い検知であり、宣言された分母の値が動いたかは見ていない。分母を宣言する契約では値そのものを照合する検知が要る（T-2026-08-26-denoise-falsification）
+- [ ] 2026-08-26 [cc] governance.decisions_required の 4 件（環境の新規構築 / 雑音除去実装の書き換え / 分母の移動 / 範囲外の腕の追加）を利用者へ提示し、4 件すべて「行わない」で確定した。いずれも契約本文が禁止事項として書いていた項目であり、決定事項として起票側で先に埋められたはずである（T-2026-08-26-denoise-falsification）
+- [ ] 2026-08-26 [cc] 停止条件に該当した後に Phase B（GPU 不要・読み取り専用・0.2 秒）を実施する判断を利用者へ提示し、承認を得た。棚卸しだけで止めるより「何があれば後続が走るか」の証拠が強くなるため。停止後も安価な陽性対照は取る価値があることを、次の起票で SPEC 側に織り込みたい（T-2026-08-26-denoise-falsification）
+- [ ] 2026-08-26 [cc] 実行中に origin/phase0 が PR #152 で進み、古い版で測った所見 1 件（task_id を刻む経路が本番入口に無い）が誤りだった。最新版には --task-id がある。規約の注意 12 が実際に働いた 2 例目である。四台同時実行では棚卸しの前に origin の位置を確かめる手順を SPEC 側へ入れたい（T-2026-08-26-denoise-falsification）
+- [ ] 2026-08-26 [cc] 確定した二つの則のうち R2（反復 LOVO）は単発の一つ抜き検証には当てられない。r2_aggregate.py は学習側を実際に取り替えた反復から fold 間相関を実測する設計で、代理側の記録は 24 反復 × 12 fold × 2 腕 = 576 run を使っていた。さらに動画母集団を絞る配線が別途要る（T-2026-08-26-det2phase-segmentation-lovo）
+- [ ] 2026-08-26 [human] P6-1 は SPEC 第 3 節の逃げ道を使う決定。R1 を当て、R2 は未適用の理由を記録し、効果量と符号の個数を判定と別に出す。片方を採用したことにはしない（T-2026-08-26-det2phase-segmentation-lovo）
+- [ ] 2026-08-26 [human] P6 の残り 3 件（主終点の移動・分母の移動・学習の数式や最適化への接触）はいずれも「行わない」（T-2026-08-26-det2phase-segmentation-lovo）
+- [ ] 2026-08-26 [human] P4 のため tasks/T-2026-08-26-det2phase-segmentation-lovo/ の commit を承認（push はしない）（T-2026-08-26-det2phase-segmentation-lovo）
+- [ ] 2026-08-26 [cc] `decisions_required` 3 件（選択性を主たる知見に位置づける／掃引を契約の外へ広げる／既存の報告を訂正する）は利用者の回答により**三件とも「契約の外」**。掃引と曲線化までを実施し、位置づけ・拡張・訂正は別契約へ回した（tasks/T-2026-08-26-error-shape-selectivity/spec.yaml）
+- [ ] 2026-08-26 [cc] `.stignore:52` の `!experiments/**/*.py` が experiments 配下の .py を同期対象にしており、実行中に他ホストの状態で削除される。本契約 2 件と lovo_decision_rule 2 件が実測で消えた。置き場所を変えるか規則を見直すかが未決（.stignore:52）
+- [ ] 2026-08-26 [cc] `.sync-pause` は git 操作しか止めない。syncthing の実ファイル同期は動き続ける。手順書と SPEC の「抑止の目印を置く」に適用範囲を書き足すかが未決（scripts/sync/m2-sync.sh:40）
+- [ ] 2026-08-26 [cc] `forbidden-check` の起点 `origin/phase0` が実行中に動き、他契約の追加が自分の「削除」として現れる（実測 7 件）。BASE を task-start 時点へ固定するかが未決（tools/check_forbidden.py）
+- [ ] 2026-08-26 [cc] `outputs.destination` が `experiments/` を指す analysis 契約では `forbidden-check` が必ず違反を返す（実測 26 件）。道具側で destination を除外するか、SPEC 側で説明するかが未決（Makefile:151）
+- [ ] 2026-08-26 [cc] 既存の §3.10(c)「評価側だけ汚すと選択性が 3.9→7.0 倍に鋭くなる」は p=0.05 の一点でのみ成立し p≧0.10 で逆転する。訂正するかは「契約の外」と回答されたため保留（docs/research_review_and_next_plan_2026-08-22.md:1119-1135）
+- [ ] 2026-08-26 [cc] `proxy_lovo_noise_testonly.py` は種を直書きしており 1 本しか使わない。原典を 3 本へ揃えるかが未決（docs/analysis_scripts/proxy_lovo_noise_testonly.py:31-32）
+- [ ] 2026-08-26 [cc] 採用する判定則を一つに決めるか、既存報告を訂正するか、対象範囲を広げるかの 3 件を利用者へ提示し、いずれも契約本文の既定どおり「決めない／訂正しない／広げない」と回答を得た。回答は spec.yaml の meta.amendments へ記録し decisions_required を空にした（T-2026-08-26-lovo-decision-rule）
+- [ ] 2026-08-26 [cc] 起票時からの分母の動き（index 751→1177 / experiments 207→213）は起票後の S4 injection 系 3 commit による。利用者の判断で現在の記録のまま続行した（T-2026-08-26-lovo-decision-rule）
+- [ ] 2026-08-26 [cc] 完了判定 d の「効果を人為的に大きくすれば検出される」は定数倍では成立しない。t 型は分子と分母が同じ倍率で動くため |m|/SE が不変で、実測でも x10 と x50 で 3 則とも判定が動かなかった。平行移動で境界をまたぐ掃引に置き換えて初めて R0 が +0.0732、R1 が +0.1102 で反転した。空振り確認の作法として tasks/README.md への昇格を提案（T-2026-08-26-lovo-decision-rule）
+- [ ] 2026-08-26 [cc] 契約の禁止事項に置かれた「採用する則を一つに決めない」「既存報告を訂正しない」を governance.decisions_required にも重ねて置くと、本文が既に答えている問いで L3 の P6 が FAIL し実行が止まる。本文で確定した事項は decisions_required に載せない規約を提案（T-2026-08-26-lovo-decision-rule）
+- [ ] 2026-08-26 [cc] 同期が experiments/**/*.py を対象にしており、実行中の作業ファイルが三度削除された。契約の抑止 .sync-pause は自動統合しか止めずファイル同期は止めない。ファイル同期も止める目印を用意するか、作業を experiments/ の外で行う規約が要る（T-2026-08-26-lovo-decision-rule）
+- [ ] 2026-08-26 [cc] make forbidden-check は experiments/ 全体を禁止領域とし契約の outputs.destination を除外しないため、destination が experiments/ 配下の分析契約では必ず失敗する。除外の仕組みを入れるか置き場を移すかの判断が要る（T-2026-08-26-lovo-decision-rule）
+- [ ] 2026-08-26 [cc] decisions_required 3 件を実行前に提示し、3 件とも「行わない」と決めた。決定化を既存の学習経路すべてへ広げることは本契約の範囲外で提言に留める。既存の報告の記述の訂正は禁止 5 に従い行わない。脆いと分類された結論の撤回は禁止 6 および第 2 節に従い行わない。**本契約が出したのは順序であって結論の訂正ではない**（T-2026-08-26-nondeterminism-audit-impact）
+- [ ] 2026-08-26 [cc] L2-8 WARN（起票時 index 751 → 実測 1177、experiments 207 → 213）に対し、SPEC 第 6 節・第 8 節-1 の指示どおり**実測の側を採って続行**すると決めた。契約の側に合わせない（T-2026-08-26-nondeterminism-audit-impact）
+- [ ] 2026-08-26 [cc] skill 手順書が求める `make taskindex` / `make inbox` を**実行しないと決めた**。SPEC 第 5 節 禁止 4 が四台同時実行による衝突を理由に投影と集約の再生成を明示的に禁じているため、契約固有の禁止を優先した。**全 PR 統合後に一台で一度だけ回すこと。** 本契約の行が context/auto/ に現れることは未確認である（T-2026-08-26-nondeterminism-audit-impact）
+- [ ] 2026-08-26 [cc] 現存する判定 1038 件のうち **1038 件が決定性を制御していない run の上に立つ**。決定化して走った 360 run は判定を一つも持たない。確定した事実として扱えるのは significant 738 件中 **18 件（2.4%）**のみで、脆い 209 件・要注意 511 件。**報告会ではこの比率を前提にすること**（T-2026-08-26-nondeterminism-audit-impact）
+- [ ] 2026-08-26 [cc] **比の大きさは頑健さの証拠にならない。** 陽性対照 #111 は比 5.345 で脆く、脆さの実体は判定に使った σ が偶然小さく出たこと（pstd 0.000823 に対し後の実測の真値 0.0054519）。比が母集団最大（172.27）の判定は σ/中央値が 0.0644 で #111 よりさらに小さく、陰性対照から外した。同じ印を持つ significant 判定が **22 件**ある（T-2026-08-26-nondeterminism-audit-impact）
+- [ ] 2026-08-26 [cc] `decisions_required` 3 件（評価枠組みを一つに決める／撤回の可否／既存の報告の訂正）は利用者の回答により**三件とも「契約の外」**。SPEC 第 4 節が同じ 3 件を禁じており本文と整合する（tasks/T-2026-08-26-official-split-reassessment/spec.yaml）
+- [ ] 2026-08-26 [cc] **公式の分割の評価側（test: 04,05,07）で測られた結論が六つとも 0 件。** 報告と論文を公式の分割で統一するなら評価側での再評価が空白として残る。どれを test で測り直すかが未決（runindex/experiments.csv）
+- [ ] 2026-08-26 [cc] 索引の `split` 列の意味が未確定。文書 §3.17 は `t1a_base_test` 群の test 値を載せるが索引では同じ群が `val`。「評価に使った分割」か「集計の枠」かを実装から確かめる必要がある（docs/research_review_and_next_plan_2026-08-22.md の §3.17）
+- [ ] 2026-08-26 [cc] 決定性を表す列が索引に 0 件。効果量ごとに「決定性が制御されていたか」を機械で読むには収穫器に列を足す必要がある。現状は全行が「記録なし」（runindex/index.csv）
+- [ ] 2026-08-26 [cc] `decisions_required` の回答待ちが契約の締切に算入される。本契約は Phase A の開始時点で 541/600 分を消費していた。待ち時間を締切から除くか起点を回答後にするかが未決（.claude/skills/task/SKILL.md）
+- [ ] 2026-08-26 [cc] SPEC が指定した陽性・陰性の対照が公式の分割にどちらも 0 件で、実測から代替を選んだ。起票時に対照の実在を確かめる手立てが未決（tasks/T-2026-08-26-official-split-reassessment/SPEC.md の Task 4 Step 2）
+- [ ] 2026-08-26 [cc] L2-8 の WARN（index.csv 751→1177 / experiments.csv 207→213）を提示し、続行の承認を得た。分母の参照行 phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42 は実在し n_seeds=3・sigma present・split=val を満たすため denominator_moved には当たらない（T-2026-08-26-oracle-ceiling-and-tool-drop）
+- [ ] 2026-08-26 [human] P6 decisions_required 4 件すべてに「行わない」と回答。閾値変更なし・分母移動なし・決定化は有効のまま・契約範囲を越える腕の追加なし（T-2026-08-26-oracle-ceiling-and-tool-drop）
+- [ ] 2026-08-26 [human] P4 のため tasks/T-2026-08-26-oracle-ceiling-and-tool-drop/ の commit を承認（push はしない）（T-2026-08-26-oracle-ceiling-and-tool-drop）
+- [ ] 2026-08-26 [cc] L2-8 の WARN（index.csv 751→1177 / experiments.csv 207→213）を提示し続行の承認を得た。SPEC §7 の指示どおり参照先の分母を確かめ、先行契約時と同一値（n_runs=17 / accuracy_mean=0.8973014948553679）で移動していないことを実測した（T-2026-08-26-oracle-ceiling-lovo）
+- [ ] 2026-08-26 [human] P6-1 は実測に従い分け方 15 組・30 run とする決定。契約の expected_runs: 32 は算間違いとして spec.yaml を 30 へ直し amendments に残す（T-2026-08-26-oracle-ceiling-lovo）
+- [ ] 2026-08-26 [human] P6 の残り 3 件（分母の移動・決定化の無効化・学習の数式や最適化への接触）はいずれも「行わない」（T-2026-08-26-oracle-ceiling-lovo）
+- [ ] 2026-08-26 [human] P4 のため tasks/T-2026-08-26-oracle-ceiling-lovo/ の commit を承認（push はしない）（T-2026-08-26-oracle-ceiling-lovo）
+- [ ] 2026-08-28 [cc] 時系列ログの境界が一意に決まらず escalate。日付見出し 21 件は連続しておらず（間に参照用の節が 3 つ）、起票者の「連続している」と「2026-06 中旬〜2026-08 下旬」が両立しない。利用者の回答により**候補 B（21 件すべて）**を採用（README.md の 646-1069 と 1250-1379）
+- [ ] 2026-08-28 [cc] 移設本文の相対リンク 2 件が `docs/history/` からは解決しない（基点が README のため）。禁止 1 により本文は直せず、先頭注記で基点を明記した。リンク検査を回す契約では既存の壊れとして扱うかが未決（docs/history/README_log_2026-05_to_2026-08.md）
+- [ ] 2026-08-28 [cc] 判定 d「文書系の検査がすべて exit 0」と禁止 3・4「投影と集約を再生成しない」が両立しない。投影系 3 検査は他ホストの統合で古く、再生成しない限り exit 0 にできない。全 PR 統合後に正本ホストで一度回す必要がある（Makefile:106-137）
+- [ ] 2026-08-28 [cc] 検査語「分析ファースト」は README・CLAUDE.md とも変更前から 0 件。存在しない語のため判定 b の空振り確認が成立しない。起票時に検査語の実在を確かめる手立てが未決（tasks/T-2026-08-28-policy-v2-doc-sync/SPEC.md の Step A-3）
+- [ ] 2026-08-28 [cc] バンドルに 4 つ目のファイルを同梱して取り込みが拒否される事故が 2026-08-25 に続き再発（`ALLOWED_FILES` は 3 種）。添付経路を足すか本文を SPEC へ埋めるかが未決（tools/fetch_task.py:51）
+- [ ] 2026-08-28 [cc] 方針 v2 の全文はリポジトリに無く、README は要点の写しである。正本は外部の記録場所にあり、全文の配置は別契約で扱う（README.md の冒頭）
+- [ ] 2026-08-28 [cc] `docs/docs_audit.md` の分類表に新設の履歴ファイルを足していない（§2 の対象外のため）。記録は docs-check の対象外でよいが、分類表の方針として明示するかが未決（docs/docs_audit.md:19-20）
+- [ ] 2026-08-29 [cc] 統合後の投影三種（context/auto の4件・taskindex の3件・inbox.md）を「一台で一度だけ」の規約に従い再生成した。回した命令は `make context` `make taskindex` `make inbox`（索引の生成器は回していない）。再生成前は三検査とも exit 2、再生成後は exit 0（T-2026-08-29-projection-refresh）
+- [ ] 2026-08-29 [cc] 前契約群が残した退避 2 件のうち、復帰できるもの（`.stglobalignore` の変更・digest 3件）は本契約の分岐へ復帰し記録した。禁止領域（`experiments/analysis/` 配下 計 28 ファイル）は復帰せず、追跡下の正本と要約値で照合し全件一致を確認した（触っていない）。`.sync-pause.released`（0B・計2件）は版管理へ記録する規約に当たらないため**判断待ちとして残す**。両退避とも drop していない（T-2026-08-29-projection-refresh）
+- [ ] 2026-08-29 [cc] `.sync-pause`（今回の task-start が新規作成したもの）は前契約の残骸ではないことを実測で確認した。SPEC の「抑止の目印が存在する場合、前契約が解除しなかったことを意味する」という前提は、`scripts/task_start.sh:37` の実装（既にあれば触れない＝作成ログを出さない）と食い違う。前契約は正しく解除しており、`.sync-pause.released` は退避内に保全されている
 
 ## 処理済み（1 件）
 

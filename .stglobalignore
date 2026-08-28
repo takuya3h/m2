@@ -30,7 +30,6 @@ __pycache__
 data/annotations/egosurgery_tool/instances_*.json
 
 // --- 同期しない判断をしたもの（必要なら該当行を消して !付きで下の同期対象へ）---
-// data/raw          : 生データセット（巨大・各サーバーで個別配置）
 // data/external     : 外部データ（同上）
 // third_party       : 外部fork（入れ子.gitを含むため同期不可。各サーバーでclone）
 // wandb             : W&Bローカルラン（クラウドに記録済み・巨大）
@@ -53,6 +52,8 @@ experiments/phase0/_*
 !experiments/**/last_checkpoint
 !experiments/**/20[0-9][0-9][0-9]*
 !.notion_sync.json
+!data/raw
+!data/external/weights
 
 // --- 範囲を持たない行は置かない（T-2026-08-25-sync-ignore-scope で削除）---
 // 処理は 1 行を 4 行へ展開し `**/` を前置するため、`!*.pth` や `!logs` のように

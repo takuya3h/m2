@@ -6,235 +6,220 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 64 件）。
-ここに出ない 59 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 74 件）。
+ここに出ない 69 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
-## T-2026-08-25-sync-ignore-scope
+## T-2026-08-28-policy-v2-doc-sync
 
-状態 `partial` / ホスト `lecun` / 起票 `147` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — .stglobalignore と .stignore の sha256 が一致（61593e99…9a2a、2223 バイト / 68 行）。 REST /rest/db/ignores が ignore 68 行 → expanded 184 行を返し、1 実効行が 4 展開行へ なることを確認。禁止領域の一時ファイルは find で 0 件（触っていない）。禁止領域の同期対象は 2612 件 / 39,749,977,564 バイト。除外を足しても既存が消えないことを実装 6 点（(?d) 印、 IsDeletable、contains ignored files の拒否、Marking as ignored と deleted の区別、 scanSubdirsDeletedAndIgnored、FileInfo.IsIgnored）と実測 3 点（ignored 印 2092 件が 2092/2092 局所に存在、.venv 6,455,902,962 バイトが残存、除外を広げた 57d2a57a の後も残存）で確定。 反映は REST と keeper.sh:48-49 の両方が使え、再起動は不要。
-- `G2` pass — 同期 5256 件を版管理との重なりで分離（二重管理 473 件 / 7,213,150 バイト、同期のみ 4783 件 / 42,003,631,980 バイト）。展開規則を再現し REST の expanded と 183/184 行一致（差は ** の 畳み込みのみ）。判定器を実在 51,245 件へ当て、実測 5256 件 / 42,010,845,130 バイトと 件数・バイト・集合すべて一致（集合差 0）。案 A / B / C を評価し、A=2591 件 / 30,750,569,270 バイト、 B=2447 件 / 26,796,683,381 バイト、C=188 件 / 11,844 バイト。新たに同期対象になるものは 3 案とも 0 件。
-- `G3` ask — 正本を 61593e99…9a2a → 4b71ae4e…fbba1 へ変更し REST で反映（HTTP 200、error なし）。 expanded 184 → 156 行。消えるべき 7 展開形（!**/*.pth !*.pth !**/logs/** !logs/** !**/outputs/** !*.ckpt !**/*.safetensors）がすべて消え、残るべき 5 展開形 （!experiments/**/checkpoints/** !experiments/**/*.pth !experiments/**/predictions/** !experiments/**/logs/** !data/processed/**）がすべて残った。localFiles 5256 → 2591、 localBytes 42,010,845,130 → 30,750,569,270 で Phase B の事前予測と完全一致。 禁止領域は experiments/ 10628 件 / 27,183,167,123 バイト、transfer/ 111 件 / 202,614,876 バイト、 data/ 217 件 / 12,774,818,641 バイトで変更前と完全同一。一時ファイルは前後とも 0 件。 errors 0、needFiles 0、state idle、接続 1/1 維持、syncthing 2 プロセス。 四ノードの接続は本ホスト（lecun）から測れない。見える相手は中心 1 台のみで、その 1 台は 切れていない。測れない項目を達成と書かないため起票者へ諮り、UNKNOWN として報告する 承認を得たうえで続行した。
-
-### 起票者の誤り
-
-- `shell_assumption` — SPEC 5 行目が repo を ~/slocal2/m2 と断定し、§0 の手順が cd ~/slocal2/m2 で始まる。 本ホストに ~/slocal2 は存在せず、指示どおり実行すると最初の 1 行で失敗して以降が すべて実行されない。keeper.sh:26 の M2DIR=$([ -d ~/slocal2 ] && echo ~/slocal2/m2 || echo ~/slocal/m2) が示すとおり、repo の位置はホストごとに違う。preflight の P9 spec_lint が host_mismatch@SPEC.md:5 として検出した。
-- `asserted_without_measuring` — 「環境の事実（再測定は不要）」表が中心を philip（本ホスト）とし、四ノードが接続済みと 断定した。本ホストは lecun であり、/rest/system/connections で見える相手は中心 1 台 （connected = 1 / 1）のみだった。指示どおり完了判定 L「四ノードとの接続が切れていない」を 確かめようとすると、測れないまま達成を主張することになる。UNKNOWN として報告した。
-- `asserted_without_measuring` — Goal が experiments/baselines/s0_002_maskdino_bbox_seed123/.syncthing.epoch_12.pth.tmp を 実在するものとして扱い、Task 1 Step 3 が「触らずに数える」ことを求めた。本ホストには 変更前から 0 件であり、指示どおり実行しても数える対象が無く空振りした。中心で観測された ものと解される。一時ファイルは転送中にのみ存在し、収束後は残らない挙動と整合する。
-
-### 逸脱
-
-- `spec_defect` — SPEC の repo 指定 ~/slocal2/m2 と実行ホスト philip が本ホストと異なるため、 ~/slocal/m2 / lecun へ読み替えて実行した。keeper.sh:26 が [ -d ~/slocal2 ] で 分岐しており、指定はホストごとに違う値である。起票者の判断を仰ぎ、続行の承認を得た。
-- `judgement` — make task-start を使わず、同じ規則（feat/<slug>、起点 origin/phase0）で分岐を作った。 契約は手順 1 の make task-notion で取得済みであり、作業ツリーに契約の成果物があるため task_start.sh の前提（未 commit 0 件）を満たせない。
-- `judgement` — 開始前から在る未追跡 5 件（.sync-pause.released と docs/sessions/digest/ の 4 件）を repo 外へ退避した。SPEC が許可した措置。消していない。報告の後に戻した。
-- `judgement` — 反映に REST を使った。正規経路（phase0 → keeper）はマージ待ちのため、本ホストで 効果を実測する手段として併用した。マージまでは keeper が旧版へ戻す。
-- `judgement` — 案の選択（A / B / C）と、文面の宣言と実態が食い違う 3 対象の扱いは、 escalate_if「版管理と同期のどちらで配るべきかを決められない対象が残った場合」に 当たるため自分で決めず、材料を示して起票者の判断を仰いだ。
-
-### 申し送り
-
-- 禁止と同期の矛盾は解けていない。experiments/** への同期は 2591 件 / 30,750,569,270 バイト 残る。禁止事項 1「experiments/** の中身を削除・変更する」を、実行者の手による変更に限るのか、 同期による配布も含むのかを契約側で決める必要がある。全除外（案 C）すれば矛盾は完全に解けるが、 同期は 42,010,845,130 バイト → 11,844 バイトになり checkpoints・重み・predictions が一切 届かなくなる。起票者は案 A を選び、禁止事項の再定義を差し戻す判断をした。
-- 本ホストに存在する一時ファイルは 0 件のため、既存の一時ファイルの扱いは判断していない。 中心（philip）に残っているものを消すかどうかは次の判断である。本契約では触っていない。
-- .stglobalignore:29 は「git 追跡ファイルとの二重管理を防ぐ除外」を掲げて 1 行だけ置くが、 logs/ で同じ問題が 391 件起きていた。案 A の適用で二重管理は 473 件 → 82 件へ減ったが、 experiments/ に 82 件残る。どの行が拾っているかは audit.md §8 に記録した。
-- 無制限行の削除により、将来 experiments/ 配下に .ckpt / .onnx / .safetensors が 生まれた場合は同期されなくなる。現時点の実測では 3 形式とも 0 件のため範囲付きの行を 足していない。形式を変える場合は 43〜54 行に範囲付きで追加すること。
-- 中心（philip）にも .sync-pause が置かれたままで、02:59:10 時点で自動同期が止まっている （本契約の操作ではない）。中心が止まっている間は PR #147 をマージしても phase0 の取得が 進まない可能性がある。誰が置いたかは追っていない。
-- 本ホストの .stignore は報告後に keeper が origin/phase0 の旧版へ戻した（設計どおり）。 変更が実際に効くのは PR #147 のマージ後で、各台へは keeper 最大 30 分 + 走査で及ぶ。
-- /rest/db/browse が HTTP 500 を返す（could not find child '.remember' for path '.remember/logs'）。索引に親ディレクトリのエントリが無いことが原因で、prefix を指定すれば 応答する。全件一覧は索引 DB（folder.0002-uefxpssq.db の files / file_names）の直読みで得た。
-
-### 断定できなかったこと
-
-- 完了判定 L の「四ノードとの接続」。本ホスト lecun から見える相手は中心 1 台のみで、 残る三台は測っていない。見える 1 台は切れていない（connected = 1 / 1）。
-- 他台での反映の実測。他ホストに触れていない（禁止 3）ため、実装から導いた見込みのみ。 マージ → keeper 最大 30 分 → 走査（監視 10 秒 / 定期 3600 秒）で概ね 30 分〜1 時間。
-- 「今から足した行で既存が消えない」ことの中心ホストでの実測。本ホストでは消えなかったが、 中心では測っていない。
-
-## T-2026-08-25-adam-artifact-inventory
-
-状態 `pass` / ホスト `adam` / 起票 `149` / 様式 `v3`
+状態 `pass` / ホスト `philip` / 起票 `160` / 様式 `v3`
 
 ### ゲート
 
-- `G1` pass — 版管理の位置を /home/ubuntu/slocal2/m2 と実測（~/slocal/m2 は不在）。未追跡 2 件、無視エントリ 2276 件、家の直下 29 件を計数。同期処理の実体は /proc/PID/exe で 0 件、陽性対照 zsh=5 件・陰性対照 0 件。削除も移動も行っていない
-- `G2` pass — index.csv の host 列で adam 産出 0/1177 件、disk 上 1177/1177 件を実測。初期化 5 台由来の版管理外実体 3379519786 bytes/1299 件を特定。控え 1834 件中 1833 件が sha256 一致、不一致 1 件は本対話の記録
+- `G1` pass — Step A-1 の置換 3 件を実測して置いた（runindex_commit=7918b5dd…、conventions_rev=a8c07e81…、 counts=index 1177 / experiments 213 / verdicts 1038）。L1/L2 は exit 0 で WARN 無し、 L3 は 5 PASS / 4 SKIP / 0 FAIL。Step A-2 で時系列ログの境界が一意に決まらないことが判明し、 候補と根拠を利用者へ提示して候補 B（日付見出し 21 件すべて）の回答を得た。Step A-3 の分布は 比較の三角形が README 3 件・CLAUDE 0 件、分析ファーストが両方 0 件、旧判定規則が CLAUDE の 4 行と 34-35 行。
 
 ### 起票者の誤り
 
-- `check_does_not_check` — inputs.data と inputs.code が schema で必須かつ minItems: 1 のため、データもエントリも持たない kind: analysis を表現できない。本契約は inputs.data を参照しないと SPEC.md が明記しているのに dataset: egosurgery_phase_v1 と split_files の記入を強いられ、参照されない値が契約に残った
-- `asserted_without_measuring` — 環境の事実の表が ~/.ssh/** の一覧すら拒まれることがあると断定するが、本ホストでは拒まれず 7 件を列挙できた。指示どおり UNKNOWN としていれば、実際には測れた項目を測れなかったと誤報告するところだった。SPEC.md の実測を正とする指示に従って記録した
-- `self_contradiction` — outputs.must_have は RESULT.md のみを挙げるが、SPEC.md Task 3 は result.yaml と tasks/inbox.d/<task_id>.md の作成も求める。must_have だけに従うと機械可読の報告と判断の受け皿が生成されず、taskindex の投影に現れない。本文に従い 3 つとも作成した
+- `self_contradiction` — バンドルに四つ目のファイル research_policy_v2_2026-08-28.md を同梱したため初回の取り込みが 拒否された（tools/fetch_task.py:51 の ALLOWED_FILES は spec.yaml / SPEC.md / prereg.md の 3 種）。 SPEC §0 はこの失敗を自ら記しているが、同じバンドルで再配布されたため実行者側で二度止まった。 指示どおり task-start を実行すると分岐が作られては巻き戻される。
+- `asserted_without_measuring` — 検査語 y「分析ファースト」は README.md にも CLAUDE.md にも変更前から 0 件であった。存在しない語を 検査語に指定したため、判定 b の空振り確認「同じ検査を履歴ファイルへ当てて一件以上が出ることを示す」が y については原理的に成立しない。指示どおり実行すると、働いていない検査を働いていると誤認しかねない。
+- `asserted_without_measuring` — 「2026-06 中旬から 2026-08 下旬に及ぶ日付見出し節が連続している」は誤り。日付見出しは 21 件あり、 あいだに三つの参照用の節（Claude Code 連携・サーバー間同期・検出側 run の成果物）が挟まる。さらに 連続する塊の最後は 2026-08-13（中旬）で、下旬の見出しは分離した 1 件だけである。記述の二条件が 両立せず、指示どおりでは「どの見出しからどの見出しまで」を決められない。escalate して利用者に決めてもらった。
+- `self_contradiction` — 禁止 1「移設本文を一字も変えない」と判定 c「今回張った相対リンクの指す先がすべて実在する」が 両立しない場合がある。移設は相対リンクの基点を変えるため、本文を変えずに解決させられない。実測で 2 件が該当した（移設前の README では相対リンク 43 件すべて解決していた）。SPEC §7 は「既存の壊れリンク」 しか想定しておらず、移設によって新たに壊れる場合の行が無い。先頭注記への追記で補うほかなかった。
+- `self_contradiction` — 判定 d「Makefile にある文書・生成物系の検査がすべて exit code 零」と禁止 3・4「投影と集約と runindex の 再生成を行わない（統合後に正本ホストで行う）」が両立しない。投影は他ホストの統合で古くなっており、 再生成しない限り exit 0 にできない。指示どおり両方に従うと必ず一方を破る。
+- `check_does_not_check` — Task 5 が追記先を「README の変更履歴に相当する節」とするが、README にも CLAUDE.md にも docs/*.md にも その節は存在しない（^#+ 変更履歴|更新履歴|Changelog|History で走査して 0 件）。指示どおりの場所が無いため、 実行者が新設先を判断するほかなかった。「位置は実行者が現物で判断し audit に記す」との但し書きはあるが、 節の存在自体が前提として書かれている。
 
 ### 逸脱
 
-- `spec_defect` — 契約の取り込みに 3 回失敗した。台帳の本文が L1 schema に落ち（8 件→4 件）、次に古い添付 v2 が新しい v3 より先に走査され要約値が食い違った。起票者が差し替えて解消。検査は迂回していない
-- `environment` — .venv/bin/python が消えた pyenv 3.11.4 を指しており make task-* が全く動かなかった。uv で 3.11.16 を導入し bin/python と pyvenv.cfg だけを差し替えた。既存 227 パッケージは温存し再構築はしていない。利用者の承認を得た
-- `environment` — source scripts/load_env.sh が合言葉不在で失敗した回があり、平文 .env から読んだ。他 34 箇所と同じ経路。後半は利用者が合言葉を配置し、以降は load_env.sh を正規に使った
-- `judgement` — 未commit のセッションダイジェスト 1 件を commit した。task-start が作業ツリーの清浄を要求するため。同種 15 件が追跡済みで慣例に従い、利用者の許可を得た
-- `environment` — git identity が本ホストに未設定で commit できなかったため、既存 commit と同一の値をリポジトリ局所に設定した
-- `judgement` — .sync-pause は実行前から存在したため作成も削除もしていない。~/bin/ が無く常駐処理も無いため、本ホストで抑止は無意味である
+- `environment` — 開始前から在った汚れを 2 回に分けて退避した。task-start が汚れた作業ツリーでは分岐を作らないため。 1 回目は .stglobalignore の変更と未追跡 5 件、2 回目は実行の合間に同期処理が運んできた experiments/analysis/ の 3 ディレクトリ。2 回目は中身が origin/phase0 と一致することを照合してから 退避した（差は各ホスト固有の logs/ 配下のみ）。mv は使っていない。契約が終わり元の分岐へ戻るまで戻さない。
+- `judgement` — 時系列ログの境界を利用者へ escalate して決めた。日付見出し 21 件が連続しておらず、起票者の記述の 二条件（連続している／2026-06 中旬から 2026-08 下旬）が両立しないため。候補 A（連続する塊のみ 20 件）と 候補 B（21 件すべて）を根拠つきで提示し、候補 B の回答を得た。自分では決めていない。
+- `judgement` — Task 5 の追記先を履歴ファイルの末尾に新設した。SPEC は「README の変更履歴に相当する節」を 追記先とするが、README にも CLAUDE.md にも docs/*.md にもその節が存在しない（機械的に走査して 0 件）。 移設本文の範囲外であることを本文中に明記し、判定 a を取り直して要約値の一致を確認した。
+- `judgement` — 2026-08-27 の指摘整理へのリンクを張っていない。成果物がリポジトリに実在しないため （名前と中身の両方で走査して 0 件）。SPEC の「実在を確かめずにリンクを書かない」に従った。
+- `spec_defect` — 投影系 3 検査（context-check / taskindex-check / inbox-check）を exit 0 にしていない。 禁止 3・4 が投影と集約と runindex の再生成を禁じているため。今回の変更が原因でないことは、 生成器 3 つの入力に README.md / CLAUDE.md が無いこと、および runindex/・tasks/*/result.yaml・ tasks/inbox.d/ の変更が 0 件であることで示した。
 
 ### 申し送り
 
-- 🔴 実行中に本ホストへ再構築の手順が適用され始めた。順位 1 の 3.38 GB の保全判断は急を要する。本ホストが初期化されれば失われる
-- 最優先。初期化された 5 台（lecun 827 / andrew 69 / philip 31 / bengio 3 run）が産んだ版管理外実体 3379519786 bytes を、同期で配るか外部の保管へ出すか諦めるかを決める。版管理へは大きすぎて入れられない。本ホストの複製が唯一の現存物である可能性があるが、他ホストが再構築時に復元したかは本ホストからは確かめられない
-- 順位 3〜6 の計 15.9 MB（~/.claude/projects の対話記録、.remember/logs、wandb/outputs/logs の版管理外分、docs/m2_plan_rewrite/.remember）を版管理へ入れるかを決める。対話記録は既存慣行どおり docs/sessions/digest/ へ機械抽出のみを入れる形が妥当
-- adam を同期の群れへ戻すかを決める。現在 ~/bin/ も syncthing も無く、版管理以外に外部へ配る経路が無い
-- 控えは同一 disk 上の ~/adam-preserve-2026-08-25/ にあり、本ホストが失われれば控えも共に失われる。保全としては不完全である
-- spec.schema.json の inputs.data / inputs.code の minItems: 1 を kind: analysis では緩めることを提案する。参照しない値の記入を強いる現状は契約に嘘を残す
+- 移設本文の中の相対リンク 2 件（docs/research_review_and_next_plan_2026-08-22.md と docs/task_drafts/README.md）が docs/history/ からは解決しない。禁止 1 のため直していない。 基点を注記で補ったが、リンク検査を回す契約では既存の壊れとして扱う必要がある。
+- 投影系 3 検査（context-check / taskindex-check / inbox-check）が古い。全ホストの PR が統合された後、 正本ホストで一度だけ make context && make taskindex && make inbox を回す必要がある。
+- 方針 v2 の全文はリポジトリに置いていない。README は要点の写しであり、正本は外部の記録場所にある。 配布経路が 3 種しか受け取れないため、全文の配置は別契約で扱う。
+- docs/docs_audit.md の分類表に docs/history/README_log_2026-05_to_2026-08.md を足していない （§2 の変更対象外のため）。記録であって現行手順ではないので docs-check の対象にしなくてよいが、 分類表の方針として明示するかは未決。
 
 ### 断定できなかったこと
 
-- 契約の実行中に本ホストへ再構築の手順が適用され始めた。~/setup_server.sh が 13:57:59 に置かれ 13:59 以降に .nvm/.npm/.rustup/.cargo/.codex/.zsh が導入された（計 3.9 GB）。家の直下は 29 から 38 へ増えたが減ったものは無い。契約が前提に置いた本ホストは対象外という条件が実行中に失われたため、測定値は 2026-08-25 時点の snapshot として扱う必要がある
-- 版管理外の実体が他ホストに現存するか。禁止 4 により他ホストへ接続できず、版管理の記録は産出元しか示さない
-- 待ち受けの一覧。ss / netstat / lsof / ip がすべて不在。迂回しない
-- 常駐の登録。crontab が不在で systemd user バスも不通
-- adam が過去に同期へ参加していたか。.stfolder と 60 件の競合複製（装置識別子 6 種、2026-07-04〜2026-08-05）は参加と整合するが、本ホスト単独では確証を取れない
-- 本契約は inputs.data を参照していない。雛形の必須項目のため記入されているだけである
+（なし）
 
-## T-2026-08-24-syncthing-config-survey
+## T-2026-08-26-oracle-ceiling-lovo
 
-状態 `pass` / ホスト `philip` / 起票 `139` / 様式 `v3`
+状態 `pass` / ホスト `lecun` / 起票 `156` / 様式 `v3`
 
 ### ゲート
 
-- `G1` pass — 設定は ~/.local/state/syncthing/ の 3 ファイル。config.xml は sha256 abb2fa89… 8494 バイト 600。要素名 105 種を全件記録。実体は device 1 件（name=aolab、識別子は device_ids/philip.txt と一致し他 4 台とは不一致）と folder 1 件（default / /home/ubuntu/Sync）。cli は常駐なしで exit=1、connection refused。
-- `G2` pass — 旧構成を T-2026-08-12-sync-audit-bengio/audit.md:222-228 から復元（folder_count=2、claude-sync と m2、いずれも sendreceive で 11 台共有、global=false relays=false）。除外規則は .stglobalignore / .stignore / origin/phase0 の三者が sha256 61593e99… で一致。順序は keeper.sh:41-43 が実行権だけで起動することから固定。
+- `G1` pass — 本番側に一つ抜き検証の経路は無いことを異質な 3 方法で確定した（grep 1 件は散文、実装は代理側 16 本のみ、src/ と scripts/ は 0 件）。SPEC Task 2 Step 3 が許可する分け方を外から与える経路だけを配線した（+62/-11 行）。学習の数式・損失・最適化と既存の分割ファイルには触れていない。
+- `G2` pass — 分け方 01 が両腕とも RC=0 で完走した。漏れの検査は train_videos に 02-15 の 14 本、eval_videos に 01 のみで leak=0。検査そのものの陽性対照は意図的に漏らした組で ['09'] を検出した。所要は pred 37 秒 / oracle 42 秒。
+- `G3` pass — 15 組 30 本すべてが RC=0 で完走し、片側だけの腕は 0 本。config.yaml の lovo 節を 30 本すべて照合し漏れのあった run は 0 件。上限測定専用の印が無い oracle run 0 件、task_id が刻まれていない run 0 件。
 
 ### 起票者の誤り
 
-- `asserted_without_measuring` — 「確定した事実（再測定は不要）」が設定の場所について「--home で明示する。既定ではない」と断ずる。隔離した HOME で serve --paths を実行すると設定ファイルは $HOME/.local/state/syncthing/config.xml と表示され、既定の場所であった。指示どおりなら既定でない前提で手順を設計し、次の契約で --home の省略時の挙動を誤って危険視することになった。
-- `check_does_not_check` — Task 5 Step 3 の陽性対照 python(exact_arg) が 0 を返す。走査は自分と祖先を除外し、この環境の実行は .venv/bin/python であるため、引数の要素が厳密に python と一致する処理は存在しない。指示どおり実行すると、検出器が壊れていても同じ 0 が出るため、同期処理 0 件という結論を裏付けられない。
-- `self_contradiction` — 禁止 2「同期処理を常駐させる」と Task 2 Step 1-3「~/bin/syncthing --help を実行せよ」が philip では両立しない。前契約が禁止 2 を守るために実行権を 644 へ落としており、正本は起動できない。実行権を戻せば keeper.sh:41-43 が 30 分以内に起動するため、指示どおり実行すると禁止 2 に触れる。
-- `asserted_without_measuring` — 「確定した事実」が中心の住所を 192.168.196.150、SSH を 50072 とする。philip は Docker の中にあり、局所で観測できる住所は 172.17.0.13、待ち受けている SSH の口は 22 であった。50072 は容器の外側の写像と解せば矛盾しないが、外からの到達性は禁止 5 のため検証できず、文書側も 172.17.0.20 と食い違う。
+- `self_contradiction` — outputs.expected_runs: 32 と plan.resources.runs: 32 が、データが決める分け方の数と合わない。3 split の manifest に現れる動画は 01-15 の 15 本であり、一つ抜き検証は 15 組 30 本にしかならない。指示どおり 32 本を作ろうとすると 16 組目の分け方が存在せず、宣言と実際が食い違ったまま完了判定に入ることになる。
+- `check_does_not_check` — 契約 §2 が定める漏れの検査は評価側の動画が学習側に在るかだけを見る。しかし最良 epoch は抜いた動画の正解で選ばれており（train_b2a.py の val['phase_accuracy'] による best 更新）、その経路は検査されない。指示どおり実行すると漏れ 0 と報告しながら、抜いた動画のラベルが epoch 選択に使われる。両腕に等しくかかるため対の差は受けにくいが、絶対値は楽観側に寄る。
+- `self_contradiction` — 契約は §1.2 で『比較できない二つを並べていた』ことを起票者の誤りとして挙げながら、Task 5 Step 2 で並べよと求める先行契約の値が同じ基準で作られていない。先行契約の val の Δ は決定化ありの新規 oracle 1 本と非決定で別ホスト混在の pred 9 本の平均の差である。指示どおり並べると基準の違う二つを並べることになり、批判した誤りを繰り返す。3 通りの基準を併記して緩和した。
 
 ### 逸脱
 
-- `judgement` — ~/bin/syncthing の正本を実行せず作業領域へ複製して調べた。実行権を戻すと keeper.sh:41-43 が 30 分以内に起動して禁止 2 に触れるため。複製の sha256 が正本と一致することを提示し、正本の権限は 644 のまま保った。
-- `judgement` — cli を正本の設定へ向ける前に設定の複製へ向けて試した。cli が設定を書き換える可能性があり禁止 1 は本契約の要であるため。複製が不変であることを確かめてから正本へ向け、正本も前後で sha256 が変わらなかった。
-- `judgement` — serve --paths を隔離した HOME で実行した。自ホームで実行すると設定や DB を作りうるため。実測では fakehome に何も作られず、設定ファイルの既定の場所が $HOME/.local/state/syncthing であることだけが分かった。
-- `spec_defect` — 契約 Task 5 Step 3 の陽性対照 python(exact_arg) が 0 を返したため、実在する語 zsh で取り直して 3 件を得た。契約の走査そのものの出力も audit.md に併記し、対照が働かなかった事実を消していない。
-- `environment` — 契約が示す awk 系の集計が mawk で空振りした。strtonum は gawk の拡張であり、この環境の awk には無い。/proc/net/tcp を Python で読み直して待ち受けの口を得た。終了コードは 0 のまま出力だけが空になる罠である。
-- `environment` — ip ss netstat lsof がいずれも存在しない（command -v が exit=1）。住所は hostname -I、待ち受けは /proc/net/tcp の state=0A から取った。SSH が待つ口は 22 であり、契約の言う 50072 は容器の外側の写像である。
-- `environment` — make task-start が前提検査で停止した（作業ツリーに未追跡 2 件、exit 3）。ユーザーの判断を仰ぎ git stash push -u で退避してから実行し、報告の後に git stash pop で戻す。退避物は消していない（禁止 8 を守るための退避である）。
-- `judgement` — make taskindex と make inbox を実行していない。task スキルの手順 6 は投影の確認を求めるが、契約の禁止 7 が優越する。結果として本報告が context/auto/ に現れるかは確かめておらず、unknowns に置いた。
+- `spec_defect` — 本番側に一つ抜き検証の経路が無かったため、SPEC Task 2 Step 3 が明示的に許可する『分け方を外から与える経路』と『学習側と評価側の動画の集合を指定する経路』だけを配線した。video_of / check_no_leak / load_clips_lovo / --lovo-holdout / config.yaml の lovo 節 / eval_recipe の cv_scheme の 6 項目である。既存の load_clips は改変せずに呼んでいる。
+- `judgement` — outputs.expected_runs と plan.resources.runs を 32 から 30 へ直した。data/processed/phase_manifest の 3 split に現れる動画は 01-15 の 15 本であり、一つ抜き検証は 15 組 30 本になる。起票者の回答に従い実測を正とした。
+- `judgement` — 漏れの検査の陽性対照は、CLI に漏れを起こす経路を足さず check_no_leak を最小の clip_id の組で直接呼んで行った。禁止 9 が陽性対照に使った分け方の証跡を残すことを禁じているためで、run は 1 本も生成していない。
+- `judgement` — 禁止 5 に従い make taskindex と make inbox を回していない。skill の手順はこれらの再生成と -check を求めるが、契約の禁止を優先した。context/auto/ の投影と tasks/inbox.md は本報告を含まない。全 PR 統合後に一台で一度だけ回す必要がある。
+- `environment` — 同じ作業ツリーで別契約が同時に走っており、その未追跡ファイル 16 件（error_shape_selectivity 7 件・lovo_decision_rule 9 件）が現れた。SPEC Task 1 Step 2 は汚れていれば退避と述べるが、退避すると実行中の作業を壊すため触れず、commit にも含めなかった。実行中であることは mtime が 75 秒前であることで確かめた。
+- `judgement` — 検証側分割との並びは、同じ基準（lecun・決定化あり・seed42・1 本ずつ）の対が既存記録に存在しないため、既存記録から作れる 3 通りの基準を明示して併記した。新しい run は足していない。同じ基準の対を作るには予測側の val run が 1 本要り、37 秒で得られる。
+- `judgement` — 決定化の対照 3 本（D1a/D1b/D2）は --no-evidence で走らせ、experiments/ を汚していない。証跡はコマンドの出力ログとして EVIDENCE.md に残した。
 
 ### 申し送り
 
-- 同期処理を起動する契約は、philip の ~/bin/syncthing を chmod 755 で戻す必要がある。前契約 T-2026-08-24-philip-keeper-autosync が禁止 2 を守るため 644 へ落とした。戻した瞬間から最大 30 分で、そのときの設定のまま起動する。設定を確定させてから戻すこと。
-- 起動前に globalAnnounceEnabled と relaysEnabled を false へ落とすこと。現在の設定は両方 true（既定のまま）だが、旧構成は両方 false であった。落とし忘れたまま 5 台同時に起動すると 5 台が同時に外部の探索網と公開中継へ出る。
-- 自分の登録名が name=aolab になっている。philip と ilya は OS のホスト名が同じであるため、論理名へ直さないと 2 台が同名で登録される。論理名は各ホストの .servername が持つ。
-- 自動生成された共有フォルダ default（path=/home/ubuntu/Sync）は実体が存在しない。設定から削除するか、以後は --no-default-folder を付けて起動する。
-- 旧構成の 11 台の識別子は全て作り直されている（philip は GO2U7PF から 3J4TRX4 へ）。旧記録の識別子を書き写してはならない。現行は scripts/sync/device_ids/*.txt の 5 件。
-- ノードは中心の住所を tcp://127.0.0.1:22001 として登録する。中継 ssh -N -L 22001:127.0.0.1:22000 -p 50072 は .tunnel_to_philip を置くと常駐処理が最大 30 分で張る。目印を置く前に ssh -p 50072 の到達を実測すること。
-- 共有フォルダ claude-sync の型は要判断。philip 上は 8.0K・1 ファイルしか無く、他 4 台の中身を測っていない。空の側が sendreceive で参加すると中身を消しうるため、中身を持つ台を sendonly、他を receiveonly で始めるのが安全である。
-- 疎通の最も強い確認は、小さなファイルが同じ要約値で相手に現れることである。~/claude-sync/ で測ること。m2 側で測ると .stignore の解釈も同時に検証することになり、失敗の切り分けができない。
-- P9 spec_lint の host_mismatch はこの艦隊では誤検知である。philip と ilya は hostname=aolab を共有し、論理名は .servername が持つ。検査器は socket.gethostname() と本文の宣言だけを比べている。
-- P9 spec_lint の separated_source 5 件も誤検知である。SPEC.md:38,390,393,396,424 はいずれも行末の \ で次行へ継続する 1 つの命令であり、検査器が行継続を解釈していない。
-- make forbidden-check は data/annotations/_deprecated/egosurgery_hand4/DEPRECATED.md を禁止領域 data/ の内側として指し続ける。2026-07-31 からある未追跡ファイルで、禁止 8 が削除も移動も commit も禁じている。起票者の判断が要る。
+- 先行契約が検証側の分割で見た大きな追加利得は、分割に固有の現象である。一つ抜き検証の平均 Δaccuracy は +0.008282 で、検証側の分割で得た値の 39〜50% にとどまり、改善側へ倒れた個数も 5/5 から 11/15 へ落ちた。既存の方針（工程認識のために検出器の強化へ投資しない）を覆す根拠は本契約の実測からは得られていない。
+- 代理モデルの一つ抜き検証は 10/15 であった。本番の時系列モデルで 11/15 は、これとほぼ同じ水準である。すなわち代理モデルの所見は一つ抜き検証という土俵では本番でも再現している。食い違っていたのは土俵の方であった。
+- 予測側と正しい側の術具存在の食い違いは train 0.52% / val 2.89% / test 8.36% である。val は test の 2.9 分の 1 しか食い違わない。凍結検出器が train で学習されている点を差し引いても val と test の開きは大きく、検証側の分割が異常にきれいであることの直接の実測になる。今後 val だけで測った上限を未見の手術に対する上限として扱わないこと。
+- macro-F1 は動画 12 に支配されている。動画 12 を除くと平均 ΔmacroF1 が +0.014511 から +0.005658 へ 61% 縮む。一方 accuracy はどの 1 組を除いても正のままで最大の変化は 20% である。分け方ごとの macro-F1 は分母が 4 から 7 まで違うため、分け方をまたいだ平均は同じ土俵の平均ではない。
+- 最良 epoch を抜いた動画の正解で選んでいる。両腕に等しくかかるため対の差は受けにくいが、絶対値は楽観側に寄る。学習側から検証用の動画をさらに 1 本抜いて epoch を選ぶ設計にすれば解消するが、それは学習の手続きを変えることになるため起票者の判断事項である。
+- PR の base は phase0 である。既定の分岐 master ではない。先行契約の PR #152 は --base master で起票したが実際の base は phase0 で MERGED になっており、先行契約の報告の『master 宛』という記述は誤りであった。今後も base を明記すること。
+- 禁止 5 のため投影と集約を再生成していない。全 PR 統合後に一台で make taskindex と make inbox を回すこと。make runindex も回していないため、本契約の 30 run は索引に現れていない。
+- 同じ作業ツリーで複数の契約が同時に走っている。禁止領域の検査は他契約の未追跡ファイルも違反として数えるため、内訳を分けないと自分の成果物の評価ができない。検査に契約ごとの絞り込みがあると読みやすい。
 
 ### 断定できなかったこと
 
-- ~/claude-sync/ に何を戻すか。旧構成の 2532 ファイルの中身が版管理に無く、各実装系の設定は各ホストの実体から集める必要があるが、他ホストへ接続できない（禁止 5）。
-- 5 台のうちどれが ~/claude-sync/ の中身を持つか。philip 上は 1 ファイルのみ。他ホストを測れないため、空の側が中身を配る事故を防ぐ型を決められない。
-- 初回の約 19G を中継越しに流してよいか。帯域も所要時間も測っていない。OPERATION.md:15 の 28 秒は差分同期の実測であり初回全量ではない。
-- 中心の住所 192.168.196.150 の到達性。禁止 5 のため他ホストから試せず、容器内からは検証できない。
-- 本報告が context/auto/ の投影に現れるか。禁止 7 により make taskindex と make inbox を実行していない。
+- 種は 42 の 1 種のみである。分け方ごとの Δ に種の揺らぎがどれだけ入るかは測っていない。
+- 同じ基準（lecun・決定化あり・seed42・1 本ずつ）で作った検証側分割の対は存在しない。予測側の val run が 1 本足りず、作れば 37 秒で得られる。本契約では新しい腕を足さない判断をしたため UNKNOWN。
+- 最良 epoch を抜いた動画の正解で選ぶことによる楽観の大きさ。両腕に等しくかかることは構造から言えるが、大きさは測っていない。
+- runindex への反映。make runindex を回していないため index.csv は本契約の 30 run を含まない。config.yaml への task_id の刻印は 30 本すべてで確認したが、索引そのものは未更新。
+- 別契約の未追跡ファイル 16 件がどの契約のどの段階のものかは確かめていない。mtime が更新中であることだけを実測した。
 
-## T-2026-08-24-philip-syncthing-hub
+## T-2026-08-26-oracle-ceiling-and-tool-drop
 
-状態 `partial` / ホスト `philip` / 起票 `140` / 様式 `v3`
+状態 `partial` / ホスト `lecun` / 起票 `152` / 様式 `v3`
 
 ### ゲート
 
-- `G1` pass — config.xml abb2fa89 権限600 / syncthing 32ab747e 権限644 を記録。BEGIN.*PRIVATE は 0 件。控えを repo 内と repo 外の両方へ置き、三ファイルとも要約値が開始時と一致。識別子は版管理に 5 件あり philip の値が設定と一致した。
-- `G2` pass — global=false relays=false local=true。実体の device は 5 件（自分＋4台、すべて dynamic）。folder は claude-sync と m2 の 2 件で共有相手は各 5、default は削除。xml_ok。権限は 600 のまま。
-- `G3` pass — 22000 が TCP/QUIC で LISTEN、8384 も LISTEN、22001 は立たず。folder 定義は起動後も 2 件残存。~/claude-sync/ は sync-alerts.log を保持し .stfolder が増えただけで減っていない。起動は keeper 由来の 1 件（monitor+worker の 2 プロセス）。
+- `G1` pass — 4 種の入力の実在を個別に実測した。GAP 特徴・予測 tool-presence・オラクル tool-presence の各 3 split、phase_manifest 4 件、splits 3 件がすべて在り、分割の中身は conventions#split と完全一致した。凍結源の sha256 は規約の正本値と一致（P5 PASS）。GPU は compute プロセス 0 件で競合なし。
+- `G2` pass — 上限の評価が RC=0 で完走し 25 秒で終わった。分類（accuracy 0.9557755775577558 / macro_f1 0.8236749678606377）と分節（edit 52.63492063492063 / jaccard 0.7946755567390006 / seg_f1_10 0.5944066515495088 / seg_f1_25 0.5944066515495088 / seg_f1_50 0.5437641723356009）の双方を metrics.json に記録した。
+- `G3` pass — 学習 1 本は決定化ありで 25/26/27/34 秒（n=4）。残り 56307 秒を安全側の 34 秒×2 で割ると対 828 組が入る。時間は制約にならなかった。
+- `G4` skip — Phase D を実施していないため評価対象が無い。片側だけの腕は 0 本。事前登録 §4 停止条件 5（落とす集合を求める仕組みが本番側に未実装）に該当し、起票者が『契約どおり止める』と回答した。
 
 ### 起票者の誤り
 
-- `check_does_not_check` — SPEC Task3 Step3 は実行ファイル名で数えて『同期処理が一件』を期待するが、Syncthing は monitor が worker を fork する構成のため正常な単一起動でも必ず 2 を返す。指示どおり実行すると二重起動と誤認して停止・報告することになる。実際に 2 が出たため、親 PID と STMONITORED 環境変数で monitor(122452, 親は keeper 72428) と worker(122530) を切り分ける必要があった。
-- `check_does_not_check` — SPEC Task1 Step2 の秘匿検査は grep -c 'BEGIN.*PRIVATE' のみで、期待値 0 を確かめて版管理へ置かせる。しかし config.xml には GUI の apikey が実値で入っており、この検査では検出されない。指示どおり実行すると秘匿値がそのまま版管理に入る。実際に Task4 Step4 の広い検査で 1 件検出され、実行者がマスクした。Task4 の検査が Task1 の検査の穴を塞いでいる形になっている。
-- `shell_assumption` — SPEC Task3 Step6 は tail -30 ~/claude-sync/syncthing.log を読ませるが、起動元である keeper.sh:42 の出力先は ~/.syncthing.log であり、指定されたファイルは存在しない。指示どおり実行すると『記録なし』となり、起動時の異常を見落とす。実際に自動アップグレードの記録は ~/.syncthing.log にしかなく、これを読まなければ本体が入れ替わったことに気づけなかった。
-- `asserted_without_measuring` — SPEC Task2 Step3 は『全台が空なので sendreceive でよい（前契約で八キロバイトと確認済み）』と断定するが、前契約の handoff は『他 4 台の中身を測っていないため空の側が sendreceive で参加すると中身を消しうる』と明記して型を UNKNOWN として残している。八キロバイトは philip 単独の実測値であり、全台の実測ではない。指示どおり読むと未測定の事項を確定事項と誤認する。
-- `self_contradiction` — SPEC 禁止1は『他ホストへ接続する。他ホストの状態を変更する』を禁じるが、SPEC が正とすると定めた handoff は『作業前に 5 台とも 644 であることを確かめる』と『事前に全台の find ~/claude-sync -type f の件数を測っておく』を求める。両立しない。本契約では禁止1を優先し、他 4 台の状態は UNKNOWN のままとした。
-- `self_contradiction` — SPEC Task4 Step1 は『完了判定 16 項目を表にまとめ』と書くが、契約全体の完了判定表は Task1 の 4 件、Task2 の 6 件、Task3 の 6 件、Task4 の 6 件で合計 22 項目ある。指示どおり 16 項目だけ書くと Task4 自身の判定 17 から 22 が報告から抜ける。本報告では 22 項目すべてを表にした。
+- `self_contradiction` — outputs.expected_runs が 0、resources が runs 0 / est_hours 0 と宣言されているのに、plan は Phase C で最低 2 本の学習を、Phase D で対の学習を要求する。指示どおり実行すると宣言 0 本に対して実際に run が生まれ、experiments/ を禁止領域とする forbidden-check が構造的に失敗する。実際に違反 7 件・exit 2 として現れた。
+- `asserted_without_measuring` — §2.1 に『再学習を要しない。既存の学習済みの重みを使って評価するだけである』とあるが、入口 scripts/train_b2a.py には評価専用の経路が無く、工程時系列モデルの評価専用入口も存在しない。指示どおり『評価するだけ』を実行しようとすると実行できる命令が無く、Phase B が着手不能になる。学習 1 本 25 秒で代替した。
+- `asserted_without_measuring` — Task 4 Step 1 は『決定化を有効にした状態で』と書くが、入口 scripts/train_b2a.py には決定化の切り替えが無い。本番側の enable_determinism は別の入口にしか配線されていなかった。指示どおりでは有効にする手段が無く、決定化ありと称して非決定の run を作ることになる。実際に決定化なしでは同種 2 本が 96 行食い違った。
+- `asserted_without_measuring` — 申し送り 4 は『決定化を有効にすると二倍強遅くなる』と述べるが、本入口の実測は平均比 1.87 倍（決定化あり 25/26/27/34 秒、なし 19/11 秒）で、範囲は 1.32〜3.09 倍と粗い。二倍強と断定できる測定になっておらず、これを前提に本数を見積もると過小にも過大にもなる。
 
 ### 逸脱
 
-- `judgement` — claude-sync の型。handoff は他4台の中身が未測定のため UNKNOWN とし sendonly/receiveonly を勧めたが、利用者の判断で SPEC どおり sendreceive とした。他4台の中身は依然未測定。
-- `environment` — 起動と同時に syncthing が v1.27.10 から v2.1.3 へ自動更新され、実行ファイルの要約値が 32ab747e から e8a08fdd へ変わった。完了判定 12 を満たせない。設定形式と DB も移行された。
-- `judgement` — 再発防止として autoUpgradeIntervalH を 12 から 0 にした。契約の Phase B に無い変更だが、放置すると 12 時間ごとに更新が走る。
-- `spec_defect` — 起こし方は handoff 2.5（常駐処理に任せる）を正とした。SPEC は手動起動も許したが、SPEC 自身が handoff を正とすると定めている。1760 秒後に keeper が起動した。
-- `environment` — ~/.ssh/authorized_keys の要約値を測れなかった。実行基盤の権限設定が認証情報への接触を拒否した。開始時・終了時とも UNKNOWN。
-- `judgement` — config.xml.before の apikey を REDACTED-BY-EXECUTOR に置換した。SPEC Step2 は要約値の一致を求めるが、秘匿値を版管理へ置くことになるため一致を捨てた。原本は repo 外の控えに残る。
-- `spec_defect` — SPEC 禁止6により make taskindex と make inbox を実行していない。SKILL.md 手順6はこれらを求めるが、契約固有の禁止を優先した。投影は更新されていない。
-- `environment` — 外部通信（stunServer=default / natEnabled=true / crashReportingEnabled=true）は有効のまま。契約の範囲外のため利用者の判断で変更せず記録のみとした。
+- `spec_defect` — Phase B は『再学習を要しない。既存の学習済みの重みを使って評価するだけである』とされていたが、入口 scripts/train_b2a.py に評価専用の経路が無く、工程時系列モデルの評価専用入口も他に存在しなかった。学習を 1 本（決定化あり・seed42・50 epoch・25 秒）走らせて達成した。
+- `spec_defect` — 契約は決定化を有効にすることを求めるが、入口に切り替えが無かった。本番側の src/egosurgery/utils/determinism.py の enable_determinism() を、既存の作法（scripts/train_grasp_phase_injection_variants.py --deterministic）に合わせて train_b2a.py へ配線した。既定は現状のままとし、学習の数式には触れていない。
+- `judgement` — 契約の outputs.stamp.task_id_in と §2.1 Step 3 を満たすため、train_b2a.py が config.yaml の最上位へ task_id と oracle_upper_bound_only_do_not_report を書き出すよう配線を足した。印の値は既存の作法に合わせた。
+- `judgement` — Phase D へ入らなかった。理由は時間ではなく（対 828 組が入る計算）、落とす集合を求める仕組みが本番側に実装されていないこと。異質な 3 方法で確認し、起票者へ提示して『契約どおり止める』との回答を得た。
+- `judgement` — 禁止 5 に従い make taskindex と make inbox を回していない。skill の手順はこれらの再生成と -check を求めるが、契約の禁止を優先した。したがって context/auto/ の投影と tasks/inbox.md は本報告を含まない。全 PR 統合後に一台で一度だけ回す必要がある。
+- `judgement` — Phase B の run を追跡なしで走らせた。実行前に scripts/load_env.sh を読み込んでおらず、W&B と Notion の追跡は設計どおり no-op で走った。指標は metrics.json に残っている。当初これを『資格情報が読めない環境差』と記録したが誤りで、読み込み自体は通る。拒否されたのは .env を ls した探りだけだった。
+- `environment` — source scripts/load_env.sh をパイプに繋いだため副シェルで実行され、export が呼び出し元に残らず make task-report が一度失敗した。読み込みを同じ命令に入れても、パイプに繋げば無効になる。パイプを外して再実行し exit 0 で送出できた。
+- `judgement` — 決定化の対照 3 本（C1a/C1b/C2）と非決定の 2 本（N1/N2）は --no-evidence で走らせ、experiments/ を汚していない。証跡はコマンドの出力ログとして EVIDENCE.md に残した。
+- `judgement` — 申し送り 4 が『Phase C で実測すること』と求めた減速倍率のため、決定化なしの run を 2 本走らせた。契約の腕ではなく道具の測定と判断したが、decisions_required の『別の腕を追加すること』に当たるかは起票者の判断を仰ぐ。
 
 ### 申し送り
 
-- 中心は v2.1.3 になった。他 4 台は v1.27.10 と推定されるが未測定である。ノード側の契約では、実行権を戻す前に autoUpgradeIntervalH を 0 にしておくか、v2 へ揃える方針を先に決めること。実行権を戻した瞬間に更新が走る。
-- 外部通信が globalAnnounce と relays の無効化だけでは止まらない。stunServer=default により外部 STUN へ問い合わせが行き、外から見た住所が解決された（記録に stun.voipstunt.com:3478 と 131.113.39.33:62442）。natEnabled と crashReportingEnabled も有効。止めるかどうかを起票者が決めること。
-- claude-sync の型は sendreceive で確定させたが、他 4 台の中身は未測定のままである。ノード側の契約で最初の一台を繋ぐ前に、その台の find ~/claude-sync -type f の件数を測ること。
-- 前契約 T-2026-08-24-syncthing-config-survey が origin/phase0 に未マージのため、handoff.md は feat/syncthing-config-survey から読んだ。本契約の分岐には前契約の成果物が無い。
-- SPEC 禁止6により投影（make taskindex / make inbox）を更新していない。tasks_summary.csv 等に本契約は現れない。
+- 本番の時系列モデルではオラクル術具存在の追加利得が小さくなかった（accuracy +0.0188 / macro-F1 +0.0331、既存記録の種ごとの対では 5/5 が改善側）。契約 §1 の代理モデルの所見および intent.hypothesis と食い違う。検出器強化への投資判断は、この実測を踏まえて立て直す必要がある。
+- 上限の答えは本契約を起こす前から runindex に在った。同一 split・同一凍結源で oracle 腕 8 run と pred 腕 9 run が既に記録されており、5 種すべてで上限側が上回っていた。起票の前に既存記録を引く手順を入れれば、Phase B は測る前に方向が分かる。
+- 落とす集合を求める仕組みを本番側へ実装する契約が要る。集合計算そのもの（H(phase|tool)/log2(9) を train のみから求める）は本番キャッシュを読む純関数であり、代理なのは下流の分類器だけである。適用側は train_b2a.py --mask-tool-dims として既にある。欠けているのは両者をつなぐ配線のみ。
+- macro-F1 の分母は 9 ではなく 7 である（val に支持の無い disinfection と irrigation が除外される）。一方 dressing は支持 24 frame で F1=0.0 のまま分母に入る。主終点を macro-F1 に固定する以上、この非対称は結果の読み方に効く。
+- 禁止 5 のため投影と集約を再生成していない。全 PR 統合後に一台で make taskindex と make inbox を回すこと。
+- 決定化の対照 3 本と非決定の 2 本は --no-evidence で走らせたため runindex に現れない。所要時間の実測値を索引側へ残すなら、elapsed_seconds を記録する経路が要る（既存の b2a 実験はすべて elapsed_seconds が空である）。
 
 ### 断定できなかったこと
 
-- 他 4 台（lecun / bengio / andrew / ilya）の syncthing のバージョンと実行権。禁止1により測っていない。
-- 他 4 台の ~/claude-sync/ の中身の件数。禁止1により測っていない。
-- ~/.ssh/authorized_keys の要約値。開始時・終了時とも、実行基盤の権限設定により測れなかった。
-- ~/bin/keeper.sh と ~/bin/m2-sync.sh の開始時の要約値。Task1 で ls -la のみを取り sha256sum を取らなかった。終了時は keeper.sh 9fe9c423 / m2-sync.sh bcf46ba9 で、サイズは両方とも開始時と同一。
-- ノードから philip の 50072 への到達性。前契約が UNKNOWN として残した事項であり、本契約でも他ホストに触れないため測っていない。
+- 術具除去の効果量。Phase D を実施していないため UNKNOWN。
+- 術具除去の対のうち改善側へ倒れた個数。Phase D を実施していないため UNKNOWN。
+- 落とす術具の集合そのもの。本番側に集合計算が無く、代理側の関数を呼ぶ判断は起票者が『契約どおり止める』としたため求めていない。UNKNOWN。
+- 決定化の減速倍率の正確な値。平均比 1.87 倍だが n=4 と n=2 でばらつきが大きく、範囲は 1.32〜3.09 倍。断定できない。
+- runindex への反映。make runindex を回していないため index.csv は本契約の run を含まない。収穫器の読取関数を直接呼んで task_id が拾われることは確かめたが、索引そのものは未更新。
+- run 生成前の forbidden-check の状態。測っていないため、違反 7 件が run 生成のみに由来することは変更範囲の一覧からの推論であり、検査の前後比較では確かめていない。
 
-## T-2026-08-24-philip-keeper-autosync
+## T-2026-08-26-official-split-reassessment
 
-状態 `partial` / ホスト `philip` / 起票 `126` / 様式 `v3`
+状態 `pass` / ホスト `philip` / 起票 `159` / 様式 `v3`
 
 ### ゲート
 
-- `G1` pass — origin/phase0...HEAD が 0/0 で最新。marker_count=0、.zshrc の keeper 該当 0 件（全 77 行）、未追跡 6 件、~/.keeper.lock 不在、~/claude-sync 不在。稼働計数は自己と祖先 15 件を /proc 38 件から除外し keeper.sh=0 m2-sync=0 syncthing=0 'ssh -N -L'=0、陽性対照 zsh=4 陰性対照 zzz_none=0。keeper.sh の分岐を行番号つき（中継 33-38 / syncthing 41-43 / 自己更新 45-46 / 除外規則 48-49 / 同期 50 / 周期 51 / 錠 25-26）で記録。m2-sync.sh の発火条件は抑止 40-43、auto-merge 60-88、auto-push 103-112。
-- `G2` pass — 配置物と正本の sha256 が一致（keeper 9fe9c423…dd90 / m2-sync bcf46ba9…25f、いずれも origin/phase0 と同一）。bash -n は両方 0、sh -n は m2-sync が 2（dash がプロセス置換を拒否）。keeper.sh=1 pid 72428、'ssh -N -L'=0、syncthing=0。~/.keeper.lock 生成、二つ目を起動しても keeper.sh=1 のまま。~/claude-sync/sync-alerts.log に『一時停止中』1 行、automerge=0 autopush=0、ahead/behind 0/0、HEAD=3c4c5a6 不変。
+- `G1` pass — 公式の分割で測られた結果の所在を三つの異質な方法で数え、いずれも一致した （experiments.csv の split 列 val 200/test 0、index.csv の split 列 val 1142/test 0、 experiment_id の文字列 @val 200/@test 0）。陰性対照 3 種（@zzznosuchsplit、zzznosuchtoken、 qqq_not_a_method）はすべて 0 件を返した。六つの結論のうち公式の分割で測られているのは 1・3・5 の三つだけで、2・4・6 は 0 件である。
+- `G2` pass — 公式の分割で判定を持つ 136 行すべてについて効果量・種の数・揺らぎの出所・決定性の有無を 表にした。揺らぎの出所は sigma_source=paired_delta が 136/136 件で、対の差から求めたものである。 種は delta_n_seeds=3 が全行。決定性を表す列は experiments.csv にも index.csv にも 0 件で、 全行を「記録なし」とした。推定で埋めた欄は無い。
+- `G3` pass — 分け方の間の相関を扱う判定は当てていない。公式の分割には分け方が存在せず、索引に fold/cv/leave を 名に含む列が 0 件であることを機械的に確かめた。対照は陽性 significant（|Δ|/σ=11.423・同符号 True）、 陰性 not_significant（|Δ|/σ=0.207・同符号 False）で 55.1 倍に分離した。陰性対照は同じ学習・評価・ 対の差の手続きを通ったうえで零に近い値になっており、構造上の零ではない。
+- `G4` pass — 撤回の対象（工程を弁別しない術具を落とす）について公式の分割の 11 件を全件並べ、一つ抜き検証側の 報告と並置した。食い違いは符号の向きにある。公式の分割の検証側では分類の正しさが 11 件中 10 件で正、 工程平均が 8/11 件で正であるのに対し、撤回の根拠は負の方向であった。どちらが正しいとは書いていない。
 
 ### 起票者の誤り
 
-- `self_contradiction` — SPEC の分岐表は keeper.sh 39-50 行を『これを動かす』とまとめるが、41-43 行は目印と無関係に [ -x ~/bin/syncthing ] だけを見て syncthing を起動する。philip では前契約が ~/bin/syncthing を mode 755 で配置済みのため、指示どおり keeper を起動すると syncthing が必ず立ち、禁止 2 に触れて完了判定 11『同期処理が零件』が同時に不成立になる。契約の中で両立しない。
-- `shell_assumption` — SPEC Task 2 Step 2 は sh -n で構文を検査し『両方が零であること』を求めるが、正本の shebang は #!/bin/bash で m2-sync.sh 74-75 行が bash 固有のプロセス置換 <(…) を使う。/bin/sh は dash であるため指示どおり実行すると exit=2 と『75: Syntax error: "(" unexpected』が出て、正常な正本が不合格に見え完了判定 6 を原理的に満たせない。
-- `asserted_without_measuring` — SPEC Task 3 Step 5 は『~/claude-sync/ は失われている。記録の置き場所が無ければ別の場所を探すか UNKNOWN とする』と断定するが、m2-sync.sh 22 行が mkdir -p "$(dirname "$LOG")" で自分で作る。実測では一周目で ~/claude-sync/sync-alerts.log が生成された。前提を鵜呑みにすると実在する記録を UNKNOWN と誤記する。
-- `check_does_not_check` — SPEC Task 1 Step 2 は『存在しない語が零を返すことが対照である』とするが、それは陰性対照のみで、全項目が 0 の状況では検出器が壊れていても同じ出力になる。指示どおりでは空振りと真の不在を区別できない。実行者が陽性対照 zsh=4 を足して初めて区別できた。
+- `asserted_without_measuring` — SPEC Task 4 Step 2 が陽性対照に「全体平均の特徴を足すことの害が該当する。どの判定でも検出される はずである」と指定したが、この結論は公式の分割で 0 件であった（6 通りの綴りで探索し、 experiments.csv も index.csv も 0 件）。指示どおり設置しようとすると対照そのものが置けない。 実行者が代替を選ぶ判断を強いられた。
+- `asserted_without_measuring` — 同 Step 2 が陰性対照に「工程の情報を術具検出へ渡すことの全体的な効果が該当する」と指定したが、 これも公式の分割で 0 件であった（transfer_legacy に 2 件あるが split が空で、公式の分割の どちら側で測られたかが記録されていない）。指示どおりでは陰性対照も置けない。
+- `asserted_without_measuring` — 申し送り 3 が「記録によれば、公式の分割では術具を落とす手法について、分類の正しさは動かず、 工程ごとの成績を平均した指標が改善していた」と述べるが、実測は違った。分類の正しさも動いており、 11 件中 10 件が正で |Δ|/σ は 0.21〜28.32 である。指示どおり「確かめられるかを見る」を実行した結果、 確かめられなかった。この前提のまま撤回の見直しを論じると、実測に無い形を根拠にすることになる。
+- `asserted_without_measuring` — SPEC 第 1.1 節が「このデータセットには公開されている公式の分割がある。これまでの研究はその分割に 従って進められてきた」と述べるが、公式の分割の評価側（test: 04,05,07）で測られた結論は六つとも 0 件であった。従っていたのは検証側（val: 09,10）だけである。この前提のまま「公式の分割を主軸に 据える」と、存在しない評価側の結果があるかのように読まれる。
+- `self_contradiction` — outputs.destination が experiments/analysis/official_split_reassessment/ を指すのに、 forbidden-check は experiments/ を禁止領域として扱う。SPEC 第 3 節 Task 6 Step 2 はこれを 「道具の側の欠陥であり契約違反ではない」と正しく予告しているが、道具は直っていない。 予告があっても毎回 exit 2 になり、内訳を人手で示す作業が要る。予告は原因を取り除かない。
+- `check_does_not_check` — 完了判定 s「締切に対する経過が記録されている」は経過を測るだけで超過を防がない。本契約では decisions_required の回答待ちに 9 時間を要し、Phase A の開始時点で既に 541/600 分を消費していた。 待ち時間が上限に算入される設計であることが本文に書かれていないため、指示どおり 「Phase A を始める前に時刻を記録」しても、記録した時点で残りが 59 分しか無い事態を避けられない。
 
 ### 逸脱
 
-- `judgement` — ~/bin/syncthing の実行権を 755→644 へ落として keeper 41 行の -x 判定を偽にし、禁止 2 と完了判定 11 を守った。中身は不変（sha256 一致）。ユーザーへ 3 案を提示し選択を得た。戻し方は chmod 755 ~/bin/syncthing。
-- `spec_defect` — 完了判定 6 の根拠を契約の sh -n から bash -n へ置き換えた。正本の shebang は #!/bin/bash で /bin/sh は dash。sh -n の非零も隠さず記録した。
-- `judgement` — 稼働計数に陽性対照 zsh を、構文検査に壊した写しの陽性対照を追加した。契約は陰性対照しか求めていないが、全項目 0 では検出器の空振りと区別できないため。
-- `judgement` — flock の実効を二つ目の起動で実測した。錠の存在は錠が効いていることを意味しないため。
-- `judgement` — 実行者の測り方に誤りがあった。grep -c PATTERN FILE || echo UNKNOWN は 0 件のとき exit 1 となり 0 と UNKNOWN を両方出す。読めない場合と 0 件を区別して測り直し、訂正の経緯ごと audit.md に残した。
-- `spec_defect` — 禁止 4 により make taskindex / inbox / taskindex-check / inbox-check を実行していない。task スキルは投影の確認を求めるが本契約の禁止が優先する。本報告が context/auto/ に現れることは未確認。
-- `environment` — gh pr create を手で実行した。抑止を外せば m2-sync.sh 115 行以降の auto-PR が同じことを自動で行うが、完了判定 18 が PR 番号を求めるため待たずに作成した。PR #126。
-- `environment` — make task-report を実行していない。合言葉が失われ scripts/load_env.sh が使えず、outputs.report_to も空であるため。
-- `environment` — make forbidden-check が exit=2 で fail する。違反 4 件はすべて data/annotations/** の未追跡ファイルで mtime 2026-07-31、本契約の 3 週間以上前から存在し Phase A で記録した未追跡 6 件に含まれる。tools/check_forbidden.py は origin/phase0 を起点に未追跡も列挙するため作業ツリーに在る限り必ず fail する。禁止 5 が削除・移動・commit を禁じているので通すために消さず記録のみとした。
-- `judgement` — 実行者が終了コードの取り方を誤った。${PIPESTATUS[0]} を使ったがこのシェルは zsh で配列添字が効かず空文字が出た。SPEC の申し送り #8 が警告していた罠。パイプを使わず出力をファイルへ落として直後に $? を取る形で測り直した。
-- `environment` — git checkout -b を実行していない。分岐 feat/philip-keeper-autosync はセッション開始時に既に存在し origin/phase0 と 0/0 で一致していた。
-- `environment` — 前契約の未追跡 3 件（experiments/transfer/_smoke_*）が git status から消えたが exists=yes tracked=no であり .gitignore:174-176 の上流追加による表示変化にすぎない。成果物は失われていない。
+- `judgement` — governance.decisions_required の 3 件を利用者へ提示して停止し、回答（三件とも契約の外）を得たうえで 空にした。SPEC 第 4 節が同じ 3 件を「本契約が行わないこと」として禁じており本文と整合する。 自分では決めていない。
+- `environment` — Phase A の開始時点で上限 600 分のうち 541 分を消費していた。P6 の回答待ちに 9 時間を要したためで、 開始 UTC 06:27:11 に対し回答の記録が UTC 15:27:27（spec.yaml の更新時刻で裏づけ）。時計は飛んでいない。 残り 59 分で読み取りと再集計を完了させ、落とした範囲を明記した。
+- `judgement` — 一つ抜き検証側の数字を再集計していない。残り時間が足りず、先行契約の報告を引用するに留めた。 公式の分割側は全件を実測している。
+- `spec_defect` — SPEC 禁止 4「投影と集約の再生成を行わない」に従い make taskindex と make inbox を回していない。 手順書 SKILL.md §6 は両方を回して投影に現れることを確かめよと求めており両立しない。契約を優先した。
+- `judgement` — 索引の split 列の意味を実装から確かめていない。文書 §3.17 は t1a_base_test 群の test 値を載せるが、 索引では同じ群の split が val である。食い違いを記録し、索引を正として扱うに留めた。
+- `judgement` — 前の契約の退避を戻していない。他ホストの契約が退避を積んだため stash@{0} から stash@{1} へ添字が ずれている。名前（T-2026-08-26-error-shape-selectivity を含む）で指すこと。
 
 ### 申し送り
 
-- 記録の置き場所は ~/claude-sync/sync-alerts.log（m2-sync.sh 11 行）。不在でも 22 行の mkdir -p で自分が作るため、開始前に無いことを理由に UNKNOWN と書かない。
-- 起動行は ( nohup ~/bin/keeper.sh >/dev/null 2>&1 & ) 2>/dev/null。flock があるので毎回呼んで安全。
-- 目印 ~/.tunnel_to_<hub名> は 1 行目が秘密鍵パス、2 行目が中心の住所（省略時は名前を SSH 別名に使う）。resolve_tunnel は辞書順で最初の 1 件だけを選ぶ。中継は ssh -N -L 22001:127.0.0.1:22000 -p 50072 で ExitOnForwardFailure=yes。
-- philip では ~/bin/syncthing を 644 へ落とした。同期処理を立ち上げる契約で chmod 755 ~/bin/syncthing が要る。忘れると keeper が永遠に syncthing を起動しない。
-- ~/bin/syncthing を配置済みの他 4 台でも keeper 起動時に同じ矛盾が起きる。同じ判断が要る。
-- 構文検査に sh -n を使わない。正本は bash であり bash -n で検査する。
-- auto-push は origin/$BR が存在するときだけ発火する（103 行）。最初の 1 回は手で push する必要がある。
-- .stignore は keeper 48-49 行が毎ループ origin/phase0:.stglobalignore から再生成する。手で編集しても 30 分以内に消える。
-- .sync-pause は .gitignore:240 と .stignore の総取り規則の両方に落ちるため、抑止は 1 台にだけ効く。
-- make forbidden-check は data/annotations/** の未追跡 4 件（mtime 2026-07-31）により必ず fail する。本契約が作ったものではなく禁止 5 で触れない。全台で同じ結果になるはずなので、起票側で扱いを決めてほしい。
-- auto-merge を阻害する未追跡は BLOCKED=0 で無い。抑止を外せば次の周回から統合が動く。
-- pgrep -af は自分のコマンド行を拾う（本セッションでも再現）。/proc を走査して自己と祖先を除外する方式が確実。
+- 公式の分割の評価側（test: 04,05,07）で測られた結論が六つとも 0 件である。報告と論文を公式の分割で 統一するなら、評価側での再評価が未着手の空白として残る。どの結論を test で測り直すかの判断が要る。
+- 索引の split 列の意味が未確定である。文書 §3.17 は t1a_base_test 群の test 値（acc 0.8286 等）を 載せるが、索引では同じ群の split が val である。列が「評価に使った分割」なのか「集計の枠」なのかを 実装から確かめる必要がある。
+- 決定性を表す列が索引に存在しない。効果量ごとに「決定性が制御されていたか」を機械で読めるようにするには 収穫器に列を足す必要がある。現状は全行が「記録なし」としか書けない。
+- forbidden-check は outputs.destination を除外しない。analysis 契約は必ず exit 2 になり、 内訳を人手で示す作業が毎回発生する。道具側で destination を除外するかの判断が要る。
+- decisions_required の回答待ち時間が契約の締切に算入される。回答待ちを締切から除くか、 締切の起点を回答後にするかの判断が要る。本契約では 9 時間が失われた。
 
 ### 断定できなかったこと
 
-- 本報告が context/auto/ の投影に現れるかを確かめていない。禁止 4 により make taskindex / taskindex-check / inbox-check を実行していないため。
-- make forbidden-check を通せる状態にできるかは未確認。違反 4 件は禁止 5 が触ることを禁じている未追跡ファイルであり、本契約では消せない。
-- P2 cuda_ext_loaded と P3 deterministic_flags は plan.env.preflight に記載が無く SKIP。実行されていない。
+- 文書 §3.17 が載せる test 側の値を索引で裏づけられるか。索引では該当群の split が val であり、 列の意味を実装から確かめる時間が無かった。索引を正として扱い、文書の値は採用していない。
+- 決定性が制御された実行が一つでもあるか。索引に決定性を表す列が 0 件であり、記録から読めない。 先行契約の実測（判定のすべてが決定性を制御していない実行の上に立つ）と整合するが、本契約では確かめていない。
+- 公式の分割の評価側での六つの結論のいずれか。0 件であり測られていない。
+- 一つ抜き検証側の数字の再集計。残り時間が足りず、先行契約の報告を引用するに留めた。
+
+## T-2026-08-26-nondeterminism-audit-impact
+
+状態 `pass` / ホスト `bengio` / 起票 `154` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 索引 5 経路と投影 1 経路の実在を確かめ、存在しない 3 経路が同じ方法で ABSENT を返すことも確かめた。母集団は index.csv 1177 / experiments.csv 213 / verdicts.csv 1038 / run JSON 1177 を実測。決定性の記録を欠く run は 817、ある run は 360 で合計 1177 が母集団と等号で一致
+- `G2` pass — 判定 1038 行と実験 213 行について、揺らぎの出所・解釈・判定・比・種の数・入口の決定性を突き合わせた表を出力した。欠損は 7 列で (記録なし) として残した。両立しない組み合わせは X1（解釈 seed_effect なのに決定性未制御）8 件、X3（同一実験行に決定化あり/なし混在）6 件
+- `G3` pass — 基準を 07:25:59 に記録し、分類を 07:26:47 に実行した。陽性対照 #111 は合計 7 で脆い、陰性対照は合計 2 で頑健、分離 5 点。1038 件すべてを分類し未分類 0 件
+- `G4` pass — 脆い significant を含む 92 群を σ 過小疑い・比の僅少・記録での言及回数・入口で並べた。全群に根拠列がある。再測定の規模は主要 2 入口で elapsed_seconds の記録が無く UNKNOWN とした
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — SPEC Task 4 Step 2 が陰性対照を「効果量が大きく、種も多く、揺らぎの出所も記録されている結論」と定義したが、母集団の種の数の実測最大値は 3 であり「種が多い」判定は一件も存在しない。指示どおり「種が多い」を要件にすると陰性対照が 0 件になり、対照を設置できず G3 を満たせなくなる。n=3（母集団の最大値）かつ比 3 以上かつ σ が群中央値の 0.75 倍以上、で構成し直した
+- `check_does_not_check` — SPEC 第 7 節の完了判定 c が「合計が母集団を超えていれば、数え方が誤っている」としているが、この確認は片側しか見ておらず数え落とし（合計が母集団を下回る場合）を検出しない。指示どおり超過だけを見ると、run JSON の読み落としがあっても判定は通ってしまう。等号で確かめ、817+360=1177 が母集団と一致することを示した
+
+### 逸脱
+
+- `judgement` — make taskindex と make inbox を実行しなかった。skill 手順書は投影の再生成と確認を求めるが、SPEC 第 5 節 禁止 4 が四台同時実行による衝突を理由に明示的に禁じているため契約固有の禁止を優先した。投影に現れることは未確認である。tasks/inbox.d/ への書き込みは契約ごとに別ファイルで衝突しないため実施した
+- `judgement` — spec.yaml を編集した。P6 が governance.decisions_required の空を要求するため、3 件をユーザーへ提示して「行わない」の回答を得て空にし meta.amendments へ記録した。併せて PENDING_EXECUTOR_MEASUREMENT 2 件を実測値へ確定した
+- `judgement` — 作業ツリーを退避しなかった。SPEC Task 1 Step 2 は汚れていれば退避と指示するが、追跡下の変更は零件で、未追跡は本契約のディレクトリと開始前から在った docs/sessions/digest/ の 1 件のみだった。退避すると作業対象を失う
+- `judgement` — REPORT の記述を 1 件訂正した。「種は届いている」は不正確で、torch.manual_seed は CPU 側のみ、torch.cuda.manual_seed_all は主要 5 入口とも設定されていない
+- `environment` — .sync-pause は契約配布時に既に置かれていた。稼働中の keeper が対応済み（grep -c sync-pause ~/bin/m2-sync.sh が 2）であることを確かめたうえでそのまま使い、報告後に移動で解除する
+- `environment` — ${PIPESTATUS[0]} が空を返した。対話シェルが zsh のため配列添字で終了コードを取れない。以後は変数へ落として $? で取った。SPEC 第 6 節が予告していた事象である
+- `environment` — make forbidden-check が exit 2 で fail するが契約違反ではない。違反 10 件はすべて本契約の outputs.destination である experiments/analysis/nondeterminism_audit_impact/ の内側で、道具は context/auto/ と tasks/inbox.md しか生成物として除外しない。runindex/ の差分は 0 行、M も D も 0 件
+
+### 申し送り
+
+- 脆い significant 209 件のうち 190 件（90.9%）が scripts/train_b2a.py（115）と scripts/train_t1a.py（75）の二つの入口に集まる。決定化をこの二つへ入れれば、再測定の対象の大半が一度に片付く
+- 決定化された 360 run は判定を一つも持っていない。decisions_required 1（決定化を全経路へ広げること）を判断する材料として、まずこの 360 run から判定を作るべきである。索引の集約が決定化の有無を混ぜているため（X3）、集約の鍵に決定化の有無を含めない限り判定は作れない
+- sigma_interpretation='seed_effect' の 8 実験行は、決定性を制御していない run に「種の効果」という解釈が付いている（X1）。頑健と分類された 18 件はすべてこの 8 行に由来するため、本契約が「最も条件が良い」と呼べた 18 件も、解釈の妥当性は未確認である
+- make forbidden-check を exp / analysis 契約でも使える形に直す impl 契約が要る。道具は outputs.destination を知らず、契約が指定した場所への生成を違反として報告する。同じ指摘が context/auto/followups.md の T-2026-08-15-injection-sweep-deterministic の項にある
+- src/egosurgery/engines/mmdet_trainer.py:501 が deterministic=False を直書きしている。検出系（S0 baselines）へ決定化を広げるには、この直書きを設定から制御できるようにする必要がある
+
+### 断定できなかったこと
+
+- 再測定に要する規模。scripts/train_b2a.py と scripts/train_t1a.py の run には metric.elapsed_seconds の記録が無く、一本あたりの所要を実測できない。所要が実測できるのは train_grasp_phase_injection_variants.py（中央値 33.5 秒 / n=420）と train_grasp_phase_injection.py（6.9 秒 / n=6）のみである
+- 決定化した場合に各入口の σ がどう変わるか。実測値は train_grasp_phase_injection_variants.py の経路のものしかない（σ_d 0.0054519、Δ_min n=3 で 0.0062953 / n=10 で 0.0034481、減速 2.15×）。他の入口へ当てはめることは SPEC 第 2 節 2.1 が禁じている。言えるのは、非決定源として特定された TeCNO（nn.Conv1d 4 箇所）を脆い判定を出した 5 入口と決定化が実測された経路の双方が使う、という構造の共通性までである
+- 本報告の投影への反映。SPEC 禁止 4 により make taskindex を実行していないため、context/auto/ の tasks_summary.csv / followups.md / results_recent.md に本契約の行が現れることを確認していない
+- 146 run は命令の記録が無く、24 run は命令を解析できない。これらの入口は特定できていない
 

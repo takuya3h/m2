@@ -1,0 +1,3 @@
+- [ ] 2026-08-29 [cc] 統合後の投影三種（context/auto の4件・taskindex の3件・inbox.md）を「一台で一度だけ」の規約に従い再生成した。回した命令は `make context` `make taskindex` `make inbox`（索引の生成器は回していない）。再生成前は三検査とも exit 2、再生成後は exit 0（T-2026-08-29-projection-refresh）
+- [ ] 2026-08-29 [cc] 前契約群が残した退避 2 件のうち、復帰できるもの（`.stglobalignore` の変更・digest 3件）は本契約の分岐へ復帰し記録した。禁止領域（`experiments/analysis/` 配下 計 28 ファイル）は復帰せず、追跡下の正本と要約値で照合し全件一致を確認した（触っていない）。`.sync-pause.released`（0B・計2件）は版管理へ記録する規約に当たらないため**判断待ちとして残す**。両退避とも drop していない（T-2026-08-29-projection-refresh）
+- [ ] 2026-08-29 [cc] `.sync-pause`（今回の task-start が新規作成したもの）は前契約の残骸ではないことを実測で確認した。SPEC の「抑止の目印が存在する場合、前契約が解除しなかったことを意味する」という前提は、`scripts/task_start.sh:37` の実装（既にあれば触れない＝作成ログを出さない）と食い違う。前契約は正しく解除しており、`.sync-pause.released` は退避内に保全されている
