@@ -3,7 +3,7 @@ task_id: "T-2026-08-29-stage0-contract-a"
 status: pass
 host: "philip"
 branch: "feat/stage0-contract-a"
-pr: null
+pr: 162
 merged: false
 
 gates:
@@ -54,6 +54,12 @@ issuer_defects:
       指示どおり「導線が指す先が実在するか」を確かめようとしても導線自体が存在しない。
 
 positive_controls:
+  - judgement: "秘匿検査が実際に秘匿を検出し、かつ誤検知を見分けられる"
+    breaking_input: "環境の実値を埋めた囮（版管理外）を検査対象に入れる"
+    observed: >-
+      囮では live:WANDB_API_KEY=1 live:NOTION_API_KEY=1 notion_token=1 pem_private_key=1 を検出し exit 1。
+      送出物では audit.md に wandb_key_shape=3 が出たが、3件ともgit cat-file -tでcommitと判明した
+      （dropした退避のcommitハッシュを記録したもの）。環境の実値との照合は0件。検査は無効にしていない。
   - judgement: "完了判定 b: A7の照合器が実際に一致を検出できる"
     breaking_input: "索引に確実に存在する既知の値 0.8973014948553679（分母のaccuracy_mean）を与える"
     observed: >-
@@ -108,4 +114,5 @@ unknowns:
     AlignDETRの検出性能0.686に対応する値の所在。baselines/s0/aligndetr_bbox@valのaccuracy_meanが
     空であり、索引から特定できない。
 
-commits: []
+commits:
+  - "b094bdb9"

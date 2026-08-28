@@ -131,4 +131,25 @@
 
 ## 送出
 
-（この節は commit・PR の後に埋める）
+| # | 実測 |
+|---|---|
+| commit | `b094bdb9`（**19 ファイル**）。対象外の混入 **0 件** |
+| push | `origin/feat/stage0-contract-a` **exit 0** |
+| PR | **#162**。**`base=phase0`**（分岐の起点と同じ）。接頭辞 `feat/` |
+| `make task-validate` | **exit 0**、WARN 無し |
+| `make task-preflight` | **exit 0**（5 PASS / 4 SKIP / 0 FAIL） |
+| 投影の再生成 | `make taskindex` `make inbox` を実行。**索引の再生成はしていない**。三検査とも exit 0 |
+| `make task-report` | （送信後に記す） |
+| `.sync-pause` | （解除後に記す） |
+| 退避 | **0 件**（3 件とも drop 済み） |
+
+### 秘匿の自主検査
+
+| 対照 | 対象 | 結果 |
+|---|---|---|
+| **陽性** | 実値を埋めた囮（**版管理外**） | `live:NOTION_API_KEY=1, live:WANDB_API_KEY=1, notion_token=1, pem_private_key=1` **exit 1** |
+| **陰性** | 送出する 15 ファイル | `wandb_key_shape=3`（`audit.md` のみ）**exit 1** |
+
+🔴 **陰性対照で一致が出たため目視した。3 件すべて git の commit**
+（**drop した退避の commit ハッシュ**を `audit.md` に記録したもの。`git cat-file -t` で `commit` と確認）。
+**環境の実値との照合は 0 件。** 既知の型の誤検知である。**検査は無効にしていない。**
