@@ -87,7 +87,7 @@
 |---|---|
 | 収穫後の索引件数 | `index.csv` **1238** / `experiments.csv` 273 / `verdicts.csv` 1458 / `per_class.csv` 8919 / `runs/` 1238 |
 | 収穫前 | 1177 / 213 / 1038 / 8370 / 1177 |
-| `runindex_commit` | 本契約の commit（§6 に記載） |
+| `runindex_commit` | **`606d875e`**（収穫を含む commit） |
 | 評価の所要時間 | 六 run 合わせて **GPU 3.49 s / CPU 2.28 s**（全体の実時間。学習はしていない） |
 | 使用資源 | RTX A6000 1 枚（`cuda`）。CPU でも同値を再現。**GPU は必須ではない** |
 | ホスト / repo / 分岐 | `lecun` / `/home/ubuntu/slocal/m2` / `feat/k1-reeval-and-harvest` |
@@ -160,5 +160,7 @@
 
 | 項目 | 実測 |
 |---|---|
-| PR | 未起票（下記） |
-| 台帳への報告 | 未送信（下記） |
+| commit | `606d875e`（87 files changed, 10637 insertions, 90 deletions） |
+| push | exit 0（`origin/feat/k1-reeval-and-harvest`） |
+| PR | **#165**（base `phase0`。起点と同じ分岐） |
+| 台帳への報告 | `make task-report` の結果を下に記す |

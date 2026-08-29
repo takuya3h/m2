@@ -3,7 +3,7 @@ task_id: "T-2026-08-29-k1-reeval-and-harvest"
 status: pass
 host: "lecun"
 branch: "feat/k1-reeval-and-harvest"
-pr: null
+pr: 165
 merged: false
 
 gates:
@@ -73,4 +73,5 @@ unknowns:
   - "六 run の metrics.json がいつ・なぜ失われたか。隔離の時点で既に無く、失敗ログも残っていない"
   - "第二層の対応の一意性は記録の並びの解釈に依存する。記録側が seed 42/123/456 の順で書いたかどうかは lecun からは確かめられない"
 
-commits: []
+commits:
+  - "606d875e"
