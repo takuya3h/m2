@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（389 件）
+## 申し送り（393 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -608,6 +608,13 @@
 - aligndetr群のconfigのbackboneがrelation_detr_resnet50_frozen_seed42である。名前と中身が 食い違う run が索引に残っている。命名を実体に合わせるか、無効判定の記録を run 側にも残すかの 判断が要る。
 - A9の文献値（TeCNO原著88.56 / 再実装relaxed 90.17 / offline系94.1）は起票者の文献確認であり、 リポジトリ内で再現していない。比較表を作る際は三属性の列を必須とする。
 
+### T-2026-08-29-k1-verify-policy-place
+
+- 追跡外 run 61 件（b2a_lovo_v01..15 各 2 系統 30 件 / b2a_seglovo_v01..15 各 2 系統 30 件 / b2a_det2phase_oracletool_009 1 件、生成日 2026-08-25〜08-28）は索引の最終更新 7918b5dd（2026-08-16）より後の生成である。make runindex で解消するが、収穫は本契約の対象外。別契約として起票するかは判断待ち
+- 六 run の checkpoint 6 件は健在（各 2599650 バイト、md5 照合済み）。再評価すれば K1 の数値は回復しうる。lecun の GPU は RTX A6000 が 2 枚とも空き 48.5GB・利用率 0% である。本契約は GPU 使用が禁止のため実施していない
+- docs/sessions/digest/2026-08-25-6ae159a7-8526-4c86-98a8-2a1367c72a6a.md は版管理に無く、task_start.sh の前提を満たすためスクラッチパッドへ退避したままである。版管理へ入れるかの判断が要る
+- 本文が既に答えている事項を governance.decisions_required に重ねて置くと L3 の P6 で実行が止まる。T-2026-08-26-lovo-decision-rule で提案済みの規約が未適用のまま再発した
+
 ### T-2026-08-29-projection-refresh
 
 - .sync-pause.released（0B、stash@{0}とstash@{1}に各1）の処分が判断待ちのまま残っている。 版管理へ記録する規約（対話の抽出物）には当たらず、禁止領域でもない。捨てるか記録するかの 判断が必要。
@@ -622,7 +629,7 @@
 - 術者・症例の属性情報が存在しないため、A3（追加6動画とtest折りの属性重複）は原理的に測れない。 属性を付与するか、R4の前提を属性に依らない形へ変えるかの判断が要る。
 - AlignDETRの検出性能0.686の所在が索引から特定できない（baselines/s0/aligndetr_bbox@valの accuracy_meanが空）。この値も出所照合の対象に含めるかの判断が要る。
 
-## 断定できなかった事項（248 件）
+## 断定できなかった事項（252 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1077,21 +1084,28 @@
 - 方針文書v2の本文。旧バンドルに区画が存在せず、配置できていない。取得物全体の要約値は宣言と 一致しており改竄ではなく、最初から入っていない。
 - 試していない表現の揺れ（有効数字を増やした形、指数表記、百分率での小数点以下2桁）。 「探した」に数えていない。K1の結論はこれらを除いた範囲での確定である。
 
+### T-2026-08-29-k1-verify-policy-place
+
+- 六 run の学習時刻と学習ホスト。checkpoint の mtime は 2026-07-10 17:47:49〜17:48:38 の 49 秒に集中し、生成器の逐次 50 epoch × 6 run と両立しない。順序も逐次の順と食い違う。複製の時刻であり学習の時刻ではない
+- aligndetr 側の config が指す特徴ファイル。六 run に config.yaml が無いため測れない。SPEC §5 の完了判定 b はこの部分について UNKNOWN である
+- 07-10 版の特徴が v2 ckpt（bbox AP 68.5960）から抽出されたことの直接の記録。抽出ログが残っておらず、evidence/discarded_caches/ の記載「v3 の ckpt は存在しない」による消去法の推定である
+- 六 run の metrics がいつ・なぜ失われたか。隔離の時点で既に無く、失敗ログも残っていない
+
 ### T-2026-08-29-stage0-contract-a
 
 - A3 追加6動画とtest折りの術者・症例の重複。属性情報が存在しないため測れない （data/splits/surgeon_folds.jsonが3バイトの空、追加動画のannotations.jsonにも該当キー0件）。 存在しないこと自体を実測として報告した。
 - AlignDETRの検出性能0.686に対応する値の所在。baselines/s0/aligndetr_bbox@valのaccuracy_meanが 空であり、索引から特定できない。
 
-## 起票者の誤りの型（231 件）
+## 起票者の誤りの型（235 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 67 |
-| `asserted_without_measuring` | 84 |
-| `self_contradiction` | 62 |
+| `check_does_not_check` | 68 |
+| `asserted_without_measuring` | 86 |
+| `self_contradiction` | 63 |
 | `shell_assumption` | 18 |
 
-合計 231 件（対を持つ契約 77 件から）
+合計 235 件（対を持つ契約 78 件から）
 

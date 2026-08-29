@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（422 件）
+## 未処理（423 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -427,6 +427,7 @@
 - [ ] 2026-08-29 [cc] **取り込みの追加ファイル対応を実装した。** `spec.yaml` の `inputs.bundle_extras: [{path, sha256, bytes}]` で宣言する方式。未宣言の区画・要約値の不一致・大きさの不一致を拒否し、宣言が無ければ従来どおり三種のみ（後方互換）。仕様は tasks/README.md の「追加ファイルを運ぶ」（tools/fetch_task.py）
 - [ ] 2026-08-29 [cc] A3 に提供元回答を追記（**追加6動画と既存15動画に術者・症例の重複は無い**、2026-08-29・利用者経由）。リポジトリ内の実測ではないため既存本文は変えず、出所の種別を冒頭に明記して追記のみとした。R4 の前提は解消（docs/stage0/A3_attribute_overlap.md）
 - [ ] 2026-08-29 [cc] A9 を新設（工程塔候補の文献値は**推論様式・境界の緩和・数値の来歴**の三属性で割れる。TeCNO 原著 88.56 / 再実装 relaxed 90.17 / offline 系 94.1）。起票者の文献確認でありリポジトリ内で再現していない。比較表は三属性の列を必須とする（docs/stage0/A9_inference_protocol.md）
+- [ ] 2026-08-29 [cc] **lecun の追跡外 run は索引へ収穫しない**（本契約は棚卸しのみ。収穫は別契約）と利用者から回答を得た。契約 §3 A-3 および §6 禁止 2 が既に同じ内容を定めており、本文が答えている問いを decisions_required に重ねて置いたため L3 の P6 が FAIL した（T-2026-08-26-lovo-decision-rule で提案済みの規約と同型の再発）。回答は spec.yaml の meta.amendments へ記録し decisions_required を空にした（T-2026-08-29-k1-verify-policy-place）
 - [ ] 2026-08-29 [cc] 統合後の投影三種（context/auto の4件・taskindex の3件・inbox.md）を「一台で一度だけ」の規約に従い再生成した。回した命令は `make context` `make taskindex` `make inbox`（索引の生成器は回していない）。再生成前は三検査とも exit 2、再生成後は exit 0（T-2026-08-29-projection-refresh）
 - [ ] 2026-08-29 [cc] 前契約群が残した退避 2 件のうち、復帰できるもの（`.stglobalignore` の変更・digest 3件）は本契約の分岐へ復帰し記録した。禁止領域（`experiments/analysis/` 配下 計 28 ファイル）は復帰せず、追跡下の正本と要約値で照合し全件一致を確認した（触っていない）。`.sync-pause.released`（0B・計2件）は版管理へ記録する規約に当たらないため**判断待ちとして残す**。両退避とも drop していない（T-2026-08-29-projection-refresh）
 - [ ] 2026-08-29 [cc] `.sync-pause`（今回の task-start が新規作成したもの）は前契約の残骸ではないことを実測で確認した。SPEC の「抑止の目印が存在する場合、前契約が解除しなかったことを意味する」という前提は、`scripts/task_start.sh:37` の実装（既にあれば触れない＝作成ログを出さない）と食い違う。前契約は正しく解除しており、`.sync-pause.released` は退避内に保全されている

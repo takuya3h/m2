@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 77 件）。
-ここに出ない 72 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 78 件）。
+ここに出ない 73 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-08-29-stage0-contract-a
 
@@ -69,6 +69,43 @@
 ### 断定できなかったこと
 
 （なし）
+
+## T-2026-08-29-k1-verify-policy-place
+
+状態 `partial` / ホスト `lecun` / 起票 `なし` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 六 run は experiments/_orphan_no_metrics/transfer/ に 6/6 実在。各 run が持つファイルは checkpoints/best_tecno.pth 一つのみ（合計 6 ファイル、各 2599650 バイト）。metrics.json/config.yaml/command.sh/git_commit.txt/notes.md は 0/6。predictions/ と visualizations/ は空。隔離前の md5 記録と 6/6 一致。読み取りは可能だが metrics が無いため再計算は不能と確定した
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — SPEC §1 が記録上の証跡経路を experiments/transfer/ 配下の t1a_frozen_src_* と断定したが、現物は experiments/_orphan_no_metrics/transfer/ にある。指示どおり experiments/transfer/ を見ると六 run は一件も見つからず、実在しないと誤って結論しうる
+- `asserted_without_measuring` — SPEC §0 が遡れない理由を「run 名が t1a_frozen_src 系で、かつ lecun の run が索引に未収穫だから」と推定したが、実際の理由は metrics.json 等の完全な不在である。指示どおり収穫の欠落を疑うと、収穫器が走査すらしない run を収穫できない理由の追跡に時間を費やす
+- `self_contradiction` — governance.decisions_required に「追跡外 run を索引へ収穫するか」を置いたが、SPEC §3 A-3 と §6 禁止 2 が本文で既に「収穫しない」と答えている。指示どおり実行すると L3 の P6 が FAIL し、本文が答えている問いで実行が止まる。T-2026-08-26-lovo-decision-rule で提案済みの規約と同型の再発である
+- `check_does_not_check` — SPEC §4 の検算器の対照は陽性を「既知の値（relationdetr 側の平均 acc）が再計算で一致すること」と定めたが、再計算の入力となる seed 別 acc は run にも記録側にも存在しない。指示どおりに組むと陽性対照が定義できず、陰性だけの片方向の対照になる
+
+### 逸脱
+
+- `judgement` — 作業ツリーに前セッションの未追跡 3 種が残り task_start.sh が実行できなかった。削除せずスクラッチパッドへ退避した。experiments/analysis/official_split_reassessment/*.py 3 件は origin/phase0 と同一内容のため無損失。docs/sessions/digest/2026-08-25-6ae159a7-*.md 1 件は版管理に無く退避したままである
+- `judgement` — governance.decisions_required の 1 件を利用者へ提示し「lecun の追跡外 run は索引へ収穫しない（棚卸しのみ）」の回答を得た。回答は meta.amendments へ記録し decisions_required を空にした。前例 T-2026-08-26-lovo-decision-rule に倣った
+- `spec_defect` — SPEC §4 の陽性対照『relationdetr 側の平均 acc が再計算で一致すること』は記録側に seed 別の acc が無いため定義できない。記録側に seed 別で残る唯一の量である paired 差 3 件を陽性対照に置き換えた。陰性対照は指示どおり seed を一つ除く方式で取り、値の差し替えを 1 件足した
+- `judgement` — 検算器の許容差を最初は出力側にだけ適用し、入力の丸め表示を実数として扱っていたため mean(paired) が誤って不一致と出た。conventions#issuer_cautions 注意 7 に反していたため、入力の丸め幅を端点の総当たりで出力へ伝播させる方式へ改めた
+- `environment` — spec.yaml の contract.prohibitions が挙げる no_runindex_regen と no_history_rewrite は conventions#prohibitions の表に存在しない id である（表は no_frozen_change と no_runindex_hand_edit を持つ）。L2 は通るため停止せず、意味は SPEC §6 の本文で解した
+
+### 申し送り
+
+- 追跡外 run 61 件（b2a_lovo_v01..15 各 2 系統 30 件 / b2a_seglovo_v01..15 各 2 系統 30 件 / b2a_det2phase_oracletool_009 1 件、生成日 2026-08-25〜08-28）は索引の最終更新 7918b5dd（2026-08-16）より後の生成である。make runindex で解消するが、収穫は本契約の対象外。別契約として起票するかは判断待ち
+- 六 run の checkpoint 6 件は健在（各 2599650 バイト、md5 照合済み）。再評価すれば K1 の数値は回復しうる。lecun の GPU は RTX A6000 が 2 枚とも空き 48.5GB・利用率 0% である。本契約は GPU 使用が禁止のため実施していない
+- docs/sessions/digest/2026-08-25-6ae159a7-8526-4c86-98a8-2a1367c72a6a.md は版管理に無く、task_start.sh の前提を満たすためスクラッチパッドへ退避したままである。版管理へ入れるかの判断が要る
+- 本文が既に答えている事項を governance.decisions_required に重ねて置くと L3 の P6 で実行が止まる。T-2026-08-26-lovo-decision-rule で提案済みの規約が未適用のまま再発した
+
+### 断定できなかったこと
+
+- 六 run の学習時刻と学習ホスト。checkpoint の mtime は 2026-07-10 17:47:49〜17:48:38 の 49 秒に集中し、生成器の逐次 50 epoch × 6 run と両立しない。順序も逐次の順と食い違う。複製の時刻であり学習の時刻ではない
+- aligndetr 側の config が指す特徴ファイル。六 run に config.yaml が無いため測れない。SPEC §5 の完了判定 b はこの部分について UNKNOWN である
+- 07-10 版の特徴が v2 ckpt（bbox AP 68.5960）から抽出されたことの直接の記録。抽出ログが残っておらず、evidence/discarded_caches/ の記載「v3 の ckpt は存在しない」による消去法の推定である
+- 六 run の metrics がいつ・なぜ失われたか。隔離の時点で既に無く、失敗ログも残っていない
 
 ## T-2026-08-29-k1-trace-policy-place
 
@@ -136,49 +173,4 @@
 ### 断定できなかったこと
 
 （なし）
-
-## T-2026-08-26-oracle-ceiling-lovo
-
-状態 `pass` / ホスト `lecun` / 起票 `156` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 本番側に一つ抜き検証の経路は無いことを異質な 3 方法で確定した（grep 1 件は散文、実装は代理側 16 本のみ、src/ と scripts/ は 0 件）。SPEC Task 2 Step 3 が許可する分け方を外から与える経路だけを配線した（+62/-11 行）。学習の数式・損失・最適化と既存の分割ファイルには触れていない。
-- `G2` pass — 分け方 01 が両腕とも RC=0 で完走した。漏れの検査は train_videos に 02-15 の 14 本、eval_videos に 01 のみで leak=0。検査そのものの陽性対照は意図的に漏らした組で ['09'] を検出した。所要は pred 37 秒 / oracle 42 秒。
-- `G3` pass — 15 組 30 本すべてが RC=0 で完走し、片側だけの腕は 0 本。config.yaml の lovo 節を 30 本すべて照合し漏れのあった run は 0 件。上限測定専用の印が無い oracle run 0 件、task_id が刻まれていない run 0 件。
-
-### 起票者の誤り
-
-- `self_contradiction` — outputs.expected_runs: 32 と plan.resources.runs: 32 が、データが決める分け方の数と合わない。3 split の manifest に現れる動画は 01-15 の 15 本であり、一つ抜き検証は 15 組 30 本にしかならない。指示どおり 32 本を作ろうとすると 16 組目の分け方が存在せず、宣言と実際が食い違ったまま完了判定に入ることになる。
-- `check_does_not_check` — 契約 §2 が定める漏れの検査は評価側の動画が学習側に在るかだけを見る。しかし最良 epoch は抜いた動画の正解で選ばれており（train_b2a.py の val['phase_accuracy'] による best 更新）、その経路は検査されない。指示どおり実行すると漏れ 0 と報告しながら、抜いた動画のラベルが epoch 選択に使われる。両腕に等しくかかるため対の差は受けにくいが、絶対値は楽観側に寄る。
-- `self_contradiction` — 契約は §1.2 で『比較できない二つを並べていた』ことを起票者の誤りとして挙げながら、Task 5 Step 2 で並べよと求める先行契約の値が同じ基準で作られていない。先行契約の val の Δ は決定化ありの新規 oracle 1 本と非決定で別ホスト混在の pred 9 本の平均の差である。指示どおり並べると基準の違う二つを並べることになり、批判した誤りを繰り返す。3 通りの基準を併記して緩和した。
-
-### 逸脱
-
-- `spec_defect` — 本番側に一つ抜き検証の経路が無かったため、SPEC Task 2 Step 3 が明示的に許可する『分け方を外から与える経路』と『学習側と評価側の動画の集合を指定する経路』だけを配線した。video_of / check_no_leak / load_clips_lovo / --lovo-holdout / config.yaml の lovo 節 / eval_recipe の cv_scheme の 6 項目である。既存の load_clips は改変せずに呼んでいる。
-- `judgement` — outputs.expected_runs と plan.resources.runs を 32 から 30 へ直した。data/processed/phase_manifest の 3 split に現れる動画は 01-15 の 15 本であり、一つ抜き検証は 15 組 30 本になる。起票者の回答に従い実測を正とした。
-- `judgement` — 漏れの検査の陽性対照は、CLI に漏れを起こす経路を足さず check_no_leak を最小の clip_id の組で直接呼んで行った。禁止 9 が陽性対照に使った分け方の証跡を残すことを禁じているためで、run は 1 本も生成していない。
-- `judgement` — 禁止 5 に従い make taskindex と make inbox を回していない。skill の手順はこれらの再生成と -check を求めるが、契約の禁止を優先した。context/auto/ の投影と tasks/inbox.md は本報告を含まない。全 PR 統合後に一台で一度だけ回す必要がある。
-- `environment` — 同じ作業ツリーで別契約が同時に走っており、その未追跡ファイル 16 件（error_shape_selectivity 7 件・lovo_decision_rule 9 件）が現れた。SPEC Task 1 Step 2 は汚れていれば退避と述べるが、退避すると実行中の作業を壊すため触れず、commit にも含めなかった。実行中であることは mtime が 75 秒前であることで確かめた。
-- `judgement` — 検証側分割との並びは、同じ基準（lecun・決定化あり・seed42・1 本ずつ）の対が既存記録に存在しないため、既存記録から作れる 3 通りの基準を明示して併記した。新しい run は足していない。同じ基準の対を作るには予測側の val run が 1 本要り、37 秒で得られる。
-- `judgement` — 決定化の対照 3 本（D1a/D1b/D2）は --no-evidence で走らせ、experiments/ を汚していない。証跡はコマンドの出力ログとして EVIDENCE.md に残した。
-
-### 申し送り
-
-- 先行契約が検証側の分割で見た大きな追加利得は、分割に固有の現象である。一つ抜き検証の平均 Δaccuracy は +0.008282 で、検証側の分割で得た値の 39〜50% にとどまり、改善側へ倒れた個数も 5/5 から 11/15 へ落ちた。既存の方針（工程認識のために検出器の強化へ投資しない）を覆す根拠は本契約の実測からは得られていない。
-- 代理モデルの一つ抜き検証は 10/15 であった。本番の時系列モデルで 11/15 は、これとほぼ同じ水準である。すなわち代理モデルの所見は一つ抜き検証という土俵では本番でも再現している。食い違っていたのは土俵の方であった。
-- 予測側と正しい側の術具存在の食い違いは train 0.52% / val 2.89% / test 8.36% である。val は test の 2.9 分の 1 しか食い違わない。凍結検出器が train で学習されている点を差し引いても val と test の開きは大きく、検証側の分割が異常にきれいであることの直接の実測になる。今後 val だけで測った上限を未見の手術に対する上限として扱わないこと。
-- macro-F1 は動画 12 に支配されている。動画 12 を除くと平均 ΔmacroF1 が +0.014511 から +0.005658 へ 61% 縮む。一方 accuracy はどの 1 組を除いても正のままで最大の変化は 20% である。分け方ごとの macro-F1 は分母が 4 から 7 まで違うため、分け方をまたいだ平均は同じ土俵の平均ではない。
-- 最良 epoch を抜いた動画の正解で選んでいる。両腕に等しくかかるため対の差は受けにくいが、絶対値は楽観側に寄る。学習側から検証用の動画をさらに 1 本抜いて epoch を選ぶ設計にすれば解消するが、それは学習の手続きを変えることになるため起票者の判断事項である。
-- PR の base は phase0 である。既定の分岐 master ではない。先行契約の PR #152 は --base master で起票したが実際の base は phase0 で MERGED になっており、先行契約の報告の『master 宛』という記述は誤りであった。今後も base を明記すること。
-- 禁止 5 のため投影と集約を再生成していない。全 PR 統合後に一台で make taskindex と make inbox を回すこと。make runindex も回していないため、本契約の 30 run は索引に現れていない。
-- 同じ作業ツリーで複数の契約が同時に走っている。禁止領域の検査は他契約の未追跡ファイルも違反として数えるため、内訳を分けないと自分の成果物の評価ができない。検査に契約ごとの絞り込みがあると読みやすい。
-
-### 断定できなかったこと
-
-- 種は 42 の 1 種のみである。分け方ごとの Δ に種の揺らぎがどれだけ入るかは測っていない。
-- 同じ基準（lecun・決定化あり・seed42・1 本ずつ）で作った検証側分割の対は存在しない。予測側の val run が 1 本足りず、作れば 37 秒で得られる。本契約では新しい腕を足さない判断をしたため UNKNOWN。
-- 最良 epoch を抜いた動画の正解で選ぶことによる楽観の大きさ。両腕に等しくかかることは構造から言えるが、大きさは測っていない。
-- runindex への反映。make runindex を回していないため index.csv は本契約の 30 run を含まない。config.yaml への task_id の刻印は 30 本すべてで確認したが、索引そのものは未更新。
-- 別契約の未追跡ファイル 16 件がどの契約のどの段階のものかは確かめていない。mtime が更新中であることだけを実測した。
 
