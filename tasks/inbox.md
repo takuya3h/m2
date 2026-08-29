@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（432 件）
+## 未処理（433 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -447,6 +447,7 @@
 - [ ] 2026-08-29 [cc] 凍結源の run を **`baselines/s0_016_relationdetr_bbox_seed42`** と一意に同定した。seed42 の relation 系検出 run は 3 件あるが、`s0_frozen_001/004` は派生 init `relation_detr_s0frozen_init_seed42.pth` から学習した下流である（notes.md と command.sh で確認）。ckpt の sha256 は conventions の正本と一致（T-2026-08-29-stage0-contract-b）
 - [ ] 2026-08-29 [cc] 🔴 **SPEC §6 の「十五動画の工程ラベルで微調整」は分割違反になる。** 十五動画は val 2 本と test 3 本を含み、そのまま実行すると §8 禁止 1（test への接触）に反する。強い工程塔の学習対象は train 10 動画に限るべき（T-2026-08-29-stage0-contract-b）
 - [ ] 2026-08-29 [cc] `plan.env.preflight` の `cuda_ext_loaded` は検出器の拡張を見るが、**D→P 四段はキャッシュ特徴の上で動くため検出器の実装を必要としない**。契約が使う経路と preflight が見る経路がずれている。工程側だけを回す契約では `cuda_ext_loaded` を宣言しない規約を提案（T-2026-08-29-stage0-contract-b）
+- [ ] 2026-08-29 [cc] **run 台帳への投稿が 0/12 で skip した。** `scripts/load_env.sh` は `NOTION_API_KEY` は入れるが `NOTION_DB_ID` を入れない。非秘密の ID レジストリ `configs/notion.yaml` の `databases.run_ledger` を環境変数に与えて 12/12 成功させた。`load_env.sh` 側で設定するか、`post_experiments_to_notion.py` が `configs/notion.yaml` を読むようにするかの判断が要る（T-2026-08-29-stage0-contract-b）
 
 ## 処理済み（1 件）
 

@@ -151,4 +151,6 @@ seed 別の全量は audit §4.1。**解釈は書かない**（SPEC §10）。
 | commit | `09fdefb3`（118 files changed, 3965 insertions, 97 deletions）／prereg `7b1cff8b` |
 | push | exit 0（`origin/feat/stage0-contract-b`） |
 | PR | **#166**（base `phase0`。起点と同じ分岐） |
-| 台帳への報告 | `make task-report` の結果を下に記す |
+| 台帳への報告 | **送信成功**（exit 0）。`report_sha256=75371df79a46a42d9c2e74978f46552aeffe3bf53718a11b1066bb8892e7fd2a` / `report_bytes=12526` / `replaced_blocks=0` / `verdict=partial` / `n_issuer_defects=5` |
+| run 台帳（`notion_run_ledger`） | **12/12 投稿成功。** ただし `scripts/load_env.sh` は `NOTION_DB_ID` をロードしないため、非秘密の ID レジストリ `configs/notion.yaml` の `databases.run_ledger` を環境変数に与えて実行した |
+| 同期の抑止 | `task_start.sh` が `.sync-pause` を作成。報告後に `.sync-pause.released` へ改名して解除した |

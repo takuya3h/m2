@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（404 件）
+## 申し送り（405 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -644,6 +644,7 @@
 - SPEC §6 の「十五動画の工程ラベルで微調整」は val 2 本と test 3 本を含み分割違反になる。train 10 動画に限る訂正が要る
 - 工程側だけを回す契約では plan.env.preflight に cuda_ext_loaded を宣言しない規約を提案する。契約が使う経路と preflight が見る経路がずれると、使わない資産の欠落で実行が止まる
 - REPLACE-BY-EXECUTOR を形式検査のある欄に置くと、取り込みが検証で落ちて巻き戻り実行者が直せない。取り込みと検証の順序を道具側で分けるか、起票の作法として形式検査のある欄には置かないかの判断が要る
+- scripts/load_env.sh は NOTION_DB_ID をロードしないため、run 台帳への投稿が 0/12 で skip した。非秘密の ID レジストリ configs/notion.yaml の databases.run_ledger を環境変数に与えて 12/12 成功させたが、load_env.sh 側で NOTION_DB_ID を設定するか、post_experiments_to_notion.py が configs/notion.yaml を読むようにするかの判断が要る
 - B1 の所要時間は学習と評価を分離して計測していない。train_b2a.py は同一プロセスで両方を行うため、分離するには計測点の追加が要る
 
 ## 断定できなかった事項（260 件）
