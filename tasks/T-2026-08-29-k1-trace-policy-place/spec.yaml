@@ -1,0 +1,55 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-08-29-k1-trace-policy-place"
+  kind: impl
+  title: "K1 数値の初出の再捜索、方針文書の配置、取り込みの追加ファイル対応、Stage 0 記録の完成"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-08-29T00:00:00Z"
+  created_from:
+    runindex_commit: "7918b5dd"
+    counts: {index: 1177, experiments: 213, verdicts: 1038}
+  depends_on: ["T-2026-08-29-stage0-contract-a"]
+  amendments: []
+intent:
+  question: "設計動機となった数値の初出を索引以外の系統から辿れるか。現行方針の本文を実行者が読める場所に置き、契約の本文配布を恒久的に可能にできるか"
+  decision_at_stake: "設計動機の数値を実測扱いに戻すか出所不明として確定するか。今後の契約で本文を機械配布できるか"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "none"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["tools/fetch_task.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#naming]
+  conventions_rev: "a8c07e81"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_regen, no_history_rewrite]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "K1 数値の初出の再捜索（異質な四系統・打ち切りつき）", gpu: false, est: "medium"}
+    - {id: B, name: "方針文書の配置・取り込みの拡張・Stage 0 記録の完成", gpu: false, est: "medium"}
+    - {id: C, name: "検査と送出", gpu: false, est: "short"}
+  gates:
+    - {id: G1, after: A, check: "四系統すべてが {発見（出所つき）／零件（方法と範囲つき）} で確定し、K1 の結論が一意に定まった", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md, result.yaml, audit.md]
+  destination: "docs/"
+  acceptance:
+    - "SPEC の完了判定 a から f をすべて満たし、各判定に空振りでないことの確認が付く"
+    - "PR が存在する状態で終える"
+  report_to: [notion_task_distribution]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "K1 の数値が互いに矛盾する複数の出所へ遡れた場合"
+    - "取り込みの拡張が既存契約の取り込みとの互換を壊すと判明した場合"
+    - "配置する本文の要約値が宣言値と一致しない場合"

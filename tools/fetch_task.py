@@ -48,8 +48,21 @@ _HEADER_RE = re.compile(
     rf"{re.escape(BUNDLE_MAGIC)}\s+(?P<version>v\d+)\s+delim=(?P<delim>\S+)\s*\Z"
 )
 # 取り込みを認めるファイル。契約そのものだけを受け取り、実行後の成果物は受け取らない。
+# **これは無条件に許すものの一覧である。** 契約が spec.yaml で宣言した追加ファイルは
+# ALLOWED_EXTRA_DECL の規約に従って別に許される（宣言と要約値の照合を経る）。
 ALLOWED_FILES = ("spec.yaml", "SPEC.md", "prereg.md")
 REQUIRED_FILES = ("spec.yaml", "SPEC.md")
+
+# 契約が追加ファイルを宣言する場所。spec.yaml の下記の経路に一覧を置く。
+#   inputs:
+#     bundle_extras:
+#       - {path: "research_policy_v2.md", sha256: "<64桁>", bytes: 60490}
+# **宣言が無ければ従来どおり三種のみ。** 後方互換のため既定は空である。
+EXTRA_DECL_KEY = ("inputs", "bundle_extras")
+# 追加ファイルの置き場は契約ディレクトリ配下に限る。リポジトリの任意の場所へは置かせない。
+# 最終配置は契約の Task が行い、差分として見える形にする。
+_EXTRA_PATH_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*(/[A-Za-z0-9][A-Za-z0-9._-]*)*\Z")
+_SHA256_RE = re.compile(r"^[0-9a-f]{64}\Z")
 # ディレクトリ名に使うため、任意の文字列を受け入れてはならない。
 # 🔴 終端は $ ではなく \Z を使う。Python の $ は**末尾の改行の直前にも一致する**ため、
 #    "T-2026-08-03-x\n" のような値を通してしまう。改行入りの task_id は
@@ -137,8 +150,11 @@ def parse_bundle(text: str) -> dict[str, str]:
         if not marker.startswith("FILE "):
             raise BundleError(f"解釈できない標識です: {marker!r}。区切りが本文と衝突した可能性があります")
         name = marker[len("FILE ") :].strip()
-        if name not in ALLOWED_FILES:
-            raise BundleError(f"受け取れないファイルです: {name!r}（許可: {', '.join(ALLOWED_FILES)}）")
+        # ここでは構造だけを見る。**許可の判定は spec.yaml を読んだ後**に行う
+        # （追加ファイルは spec.yaml の宣言によって許されるため、順序を逆にできない）。
+        # 経路の形だけは先に拒む。ディレクトリ脱出を後段へ持ち越さないため。
+        if not _EXTRA_PATH_RE.fullmatch(name):
+            raise BundleError(f"経路として受け取れない名前です: {name!r}")
         if name in files:
             raise BundleError(f"同じファイルが二度現れます: {name}")
         files[name] = []
@@ -158,6 +174,80 @@ def parse_bundle(text: str) -> dict[str, str]:
             raise BundleError(f"区切りが {name} の本文と衝突しています")
 
     return {name: "\n".join(body).rstrip("\n") + "\n" for name, body in files.items()}
+
+
+def extras_from_spec(spec_text: str) -> dict[str, dict]:
+    """spec.yaml が宣言した追加ファイルの一覧を {経路: {sha256, bytes}} で返す。
+
+    宣言が無ければ空を返す。**空なら従来どおり三種のみが通る**（後方互換）。
+    宣言の形が壊れている場合は取り込みを止める。壊れた宣言を黙って無視すると、
+    **宣言したつもりの追加ファイルが未宣言として拒否され**、原因が読めなくなる。
+    """
+    try:
+        data = yaml.safe_load(spec_text)
+    except yaml.YAMLError as exc:
+        raise BundleError(f"spec.yaml を解釈できません: {type(exc).__name__}") from exc
+    node = data if isinstance(data, dict) else {}
+    for key in EXTRA_DECL_KEY:
+        node = (node or {}).get(key) if isinstance(node, dict) else None
+    if node is None:
+        return {}
+    if not isinstance(node, list):
+        raise BundleError(
+            f"{'.'.join(EXTRA_DECL_KEY)} は一覧である必要があります（現在: {type(node).__name__}）"
+        )
+    out: dict[str, dict] = {}
+    for i, item in enumerate(node):
+        if not isinstance(item, dict):
+            raise BundleError(f"{'.'.join(EXTRA_DECL_KEY)}[{i}] が対応表ではありません")
+        path, sha, size = item.get("path"), item.get("sha256"), item.get("bytes")
+        if not isinstance(path, str) or not _EXTRA_PATH_RE.fullmatch(path):
+            raise BundleError(f"{'.'.join(EXTRA_DECL_KEY)}[{i}].path が経路の規約に合いません: {path!r}")
+        if path in ALLOWED_FILES:
+            raise BundleError(f"既定のファイルは追加宣言に書けません: {path}")
+        if not isinstance(sha, str) or not _SHA256_RE.fullmatch(sha):
+            raise BundleError(f"{'.'.join(EXTRA_DECL_KEY)}[{i}].sha256 が 64 桁十六進ではありません")
+        if not isinstance(size, int) or size < 0:
+            raise BundleError(f"{'.'.join(EXTRA_DECL_KEY)}[{i}].bytes が非負整数ではありません")
+        if path in out:
+            raise BundleError(f"同じ経路が二度宣言されています: {path}")
+        out[path] = {"sha256": sha, "bytes": size}
+    return out
+
+
+def check_extras(files: dict[str, str], declared: dict[str, dict]) -> None:
+    """バンドルの区画が宣言と一致するかを確かめる。**不一致は取り込みを止める。**
+
+    - 未宣言の区画は拒否する（既定の三種を除く）
+    - 宣言された経路が欠けていれば拒否する
+    - 要約値または大きさが宣言と違えば拒否する
+
+    **値は改行を正規化した後の本文で数える。** parse_bundle が末尾を整えるため、
+    組み立て時の値と数え方を揃えないと必ず不一致になる。
+    """
+    for name in files:
+        if name in ALLOWED_FILES or name in declared:
+            continue
+        raise BundleError(
+            f"宣言されていないファイルです: {name!r}"
+            f"（spec.yaml の {'.'.join(EXTRA_DECL_KEY)} に宣言してください）"
+        )
+    for path, want in declared.items():
+        if path not in files:
+            raise BundleError(f"宣言された追加ファイルがバンドルにありません: {path}")
+        body = files[path].encode()
+        got_sha = hashlib.sha256(body).hexdigest()
+        if got_sha != want["sha256"]:
+            raise BundleError(
+                f"追加ファイルの要約値が宣言と一致しません: {path}\n"
+                f"  宣言: {want['sha256']}\n"
+                f"  実測: {got_sha}"
+            )
+        if len(body) != want["bytes"]:
+            raise BundleError(
+                f"追加ファイルの大きさが宣言と一致しません: {path}"
+                f"（宣言 {want['bytes']} / 実測 {len(body)}）"
+            )
 
 
 def task_id_from_spec(spec_text: str) -> str:
@@ -187,9 +277,16 @@ def pack_bundle(files: dict[str, str], delim: str | None = None) -> str:
 
     区切りは本文と衝突しないことを確かめてから使う。衝突したら失敗させる。
     """
+    # 追加ファイルは spec.yaml の宣言で許される。組み立て側も同じ基準を使う。
+    # **ここで ALLOWED_FILES に固定すると、宣言済みの追加ファイルを詰められない。**
+    declared = extras_from_spec(files["spec.yaml"]) if "spec.yaml" in files else {}
     for name in files:
-        if name not in ALLOWED_FILES:
-            raise BundleError(f"受け取れないファイルです: {name!r}")
+        if name in ALLOWED_FILES or name in declared:
+            continue
+        raise BundleError(
+            f"受け取れないファイルです: {name!r}"
+            f"（spec.yaml の {'.'.join(EXTRA_DECL_KEY)} に宣言してください）"
+        )
     missing = [name for name in REQUIRED_FILES if name not in files]
     if missing:
         raise BundleError(f"必須のファイルがありません: {', '.join(missing)}")
@@ -203,7 +300,9 @@ def pack_bundle(files: dict[str, str], delim: str | None = None) -> str:
             raise BundleError(f"区切りが {name} の本文と衝突しています")
 
     parts = [f"{BUNDLE_MAGIC} {BUNDLE_VERSION} delim={delim}"]
-    for name in ALLOWED_FILES:
+    # 既定の三種を先に、宣言された追加ファイルを後に置く。**順序を固定する**のは、
+    # 同じ入力からは同じバンドルが出るようにするためである（要約値が揺れない）。
+    for name in list(ALLOWED_FILES) + sorted(declared):
         if name in files:
             parts.append(f"{delim} FILE {name}")
             parts.append(files[name].rstrip("\n"))
@@ -525,6 +624,8 @@ def fetch(src: str) -> int:
     try:
         text = read_source(src)
         files = parse_bundle(text)
+        # **spec.yaml を読んでから許可を決める。** 追加ファイルは契約が宣言したものだけを通す。
+        check_extras(files, extras_from_spec(files["spec.yaml"]))
         task_id = task_id_from_spec(files["spec.yaml"])
         ensure_absent(task_id, TASKS_DIR)
     except BundleError as exc:
@@ -541,7 +642,11 @@ def fetch(src: str) -> int:
             staging = Path(tmp) / task_id
             staging.mkdir(parents=True)
             for name, body in files.items():
-                (staging / name).write_text(body, encoding="utf-8")
+                # 追加ファイルは経路を持ちうる。親を作ってから書く。
+                # 経路は _EXTRA_PATH_RE で相対かつ脱出不能であることを確かめてある。
+                dest = staging / name
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                dest.write_text(body, encoding="utf-8")
 
             # 名前をアトミックに確保する。既にあれば FileExistsError になり、
             # **この run が作っていない**ディレクトリなので巻き戻しの対象にしない。
