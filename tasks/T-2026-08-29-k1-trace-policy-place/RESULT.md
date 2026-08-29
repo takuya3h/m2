@@ -126,14 +126,14 @@ hemostasis F1 は 0.1667 / 0.0 / 0.0 で **0.801 にも 0.179 にも一致しな
 
 | # | 実測 |
 |---|---|
-| commit | `09476214`（**16 ファイル**）。対象外の混入 **0 件**。**試験バンドルは版管理に入れていない** |
+| commit | `09476214`（**16 ファイル**）→ 報告 `d577df3f`（push 済み）。対象外の混入 **0 件**。**試験バンドルは版管理に入れていない** |
 | push | `origin/feat/k1-trace-policy-place` **exit 0** |
 | PR | **#163**。**`base=phase0`**（分岐の起点と同じ）。接頭辞 `feat/` |
 | `make task-validate` / `task-preflight` | **exit 0** / **exit 0**（5 PASS / 4 SKIP / 0 FAIL） |
 | `make docs-check` / `agent-check` / `forbidden-check` | すべて **exit 0** |
 | 投影の再生成 | `make taskindex` `make inbox` を実行。**索引は再生成していない**。三検査とも exit 0 |
-| `make task-report` | （送信後に記す） |
-| `.sync-pause` | （解除後に記す） |
+| `make task-report` | **exit 0**。`{"verdict": "partial", "n_issuer_defects": 2, "report_sha256": "4f6326034ac92e62…", "report_bytes": 9357, "replaced_blocks": 0}` |
+| `.sync-pause` | **移動で解除**（`mv .sync-pause .sync-pause.released`） |
 
 ### 秘匿の自主検査
 
