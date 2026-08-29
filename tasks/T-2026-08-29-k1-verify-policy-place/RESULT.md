@@ -104,7 +104,7 @@
 
 **逸脱**
 
-1. `judgement` — 作業ツリーに前セッションの未追跡 3 種（`docs/sessions/digest/2026-08-25-6ae159a7-*.md`、`.sync-pause.released`、`experiments/analysis/official_split_reassessment/*.py`）があり `task_start.sh` が実行できなかった。削除せずスクラッチパッドへ退避した。**うち .py 3 件は origin/phase0 と md5 同一のため無損失。digest 1 件は版管理に無く、退避したままである（申し送り）。**
+1. `judgement` — 作業ツリーに前セッションの未追跡 3 種（`docs/sessions/digest/2026-08-25-6ae159a7-*.md`、`.sync-pause.released`、`experiments/analysis/official_split_reassessment/*.py`）があり `task_start.sh` が実行できなかった。削除せずスクラッチパッドへ退避した。**.py 3 件は origin/phase0 に追跡済みで同一内容のため、phase0 へ切り替えた時点で追跡下に入った。digest 1 件は報告後に元の位置 `docs/sessions/digest/` へ戻したが、版管理へは入れていない。**`tasks/README.md` は抽出物を契約の記録と一緒に含めるよう定めるが、**本契約 §2 の変更対象外**であり、含めると完了判定 c（変更が §2 の対象に限られる）を満たさなくなるため見送った（申し送り）。
 2. `judgement` — `decisions_required` の 1 件を利用者へ提示し「収穫しない（棚卸しのみ）」の回答を得た。回答は `meta.amendments` へ記録し `decisions_required` を空にした（前例 `T-2026-08-26-lovo-decision-rule` に倣った）。
 3. `spec_defect` — SPEC §4 の陽性対照が定義できないため、**記録側に seed 別で残る唯一の量（paired 差 3 件）**を陽性対照に置き換えた。陰性対照は指示どおり「seed を一つ除く」で取り、さらに値の差し替えを 1 件足した。
 4. `judgement` — 検算器の許容差を最初は出力側にだけ適用し、入力の丸め表示を実数として扱っていた（`mean(paired)` が誤って不一致と出た）。`issuer_cautions` 注意 7 に反していたため、入力の丸め幅を伝播させる方式へ改めた（audit §5.2）。
@@ -143,4 +143,5 @@
 | commit | `b8089bb7`（12 files changed, 1216 insertions, 55 deletions。うち削除 55 行はすべて投影の再生成分） |
 | push | exit 0（`origin/feat/k1-verify-policy-place`） |
 | PR | **#164**（base `phase0`。起点と同じ分岐） |
-| 台帳への報告 | `make task-report` の結果を下に記す |
+| 台帳への報告 | **送信成功**（exit 0）。`report_sha256=0fe13318dd39c47d65c8161ea7a4ffa8ab7f8998e9fff6bb2b58f404d60387ff` / `report_bytes=12920` / `replaced_blocks=0` / `verdict=partial` / `n_issuer_defects=4` |
+| 同期の抑止 | `task_start.sh` が `.sync-pause` を作成。報告後に `.sync-pause.released` へ改名して解除した |
