@@ -3,7 +3,7 @@ task_id: "T-2026-08-29-k1-trace-policy-place"
 status: partial
 host: "philip"
 branch: "feat/k1-trace-policy-place"
-pr: null
+pr: 163
 merged: false
 
 gates:
@@ -53,6 +53,13 @@ issuer_defects:
       入っていない。Task 1は原理的に実行できない。
 
 positive_controls:
+  - judgement: "秘匿検査が実際に秘匿を検出し、かつ誤検知を見分けられる"
+    breaking_input: "環境の実値を埋めた囮（版管理外）を検査対象に入れる"
+    observed: >-
+      囮では live:WANDB_API_KEY=1 live:NOTION_API_KEY=1 notion_token=1 pem_private_key=1 を検出しexit 1。
+      送出物ではaudit.mdにwandb_key_shape=1が出たが、目視するとバンドルの区切り文字列
+      （BUNDLE-378eef9428be…、構造の記録として引用）であった。parse_bundleが本文一行目から読む
+      公開の構造値であり資格情報ではない。環境の実値との照合は0件。検査は無効にしていない。
   - judgement: "完了判定 b: K1 の検索器が実際に一致を検出できる"
     breaking_input: "前契約で実在が確定した値 0.050877 を同じ検索器で探す／実在しない乱数を探す"
     observed: >-
@@ -103,4 +110,5 @@ unknowns:
     試していない表現の揺れ（有効数字を増やした形、指数表記、百分率での小数点以下2桁）。
     「探した」に数えていない。K1の結論はこれらを除いた範囲での確定である。
 
-commits: []
+commits:
+  - "09476214"

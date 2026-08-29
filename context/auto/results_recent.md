@@ -72,7 +72,7 @@
 
 ## T-2026-08-29-k1-trace-policy-place
 
-状態 `partial` / ホスト `philip` / 起票 `なし` / 様式 `v3`
+状態 `partial` / ホスト `philip` / 起票 `163` / 様式 `v3`
 
 ### ゲート
 
