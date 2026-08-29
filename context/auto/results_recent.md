@@ -11,7 +11,7 @@
 
 ## T-2026-08-29-stage0-contract-b
 
-状態 `partial` / ホスト `lecun` / 起票 `なし` / 様式 `v3`
+状態 `partial` / ホスト `lecun` / 起票 `166` / 様式 `v3`
 
 ### ゲート
 

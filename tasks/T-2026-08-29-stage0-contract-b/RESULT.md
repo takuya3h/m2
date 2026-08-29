@@ -89,7 +89,7 @@ seed 別の全量は audit §4.1。**解釈は書かない**（SPEC §10）。
 | 項目 | 実測値 |
 |---|---|
 | 収穫後の索引件数 | `index.csv` **1250** / `experiments.csv` 277 / `verdicts.csv` 1486 / `per_class.csv` 9027 / `runs/` 1250 |
-| `runindex_commit` | 本契約の commit（§8 に記載） |
+| `runindex_commit` | **`09fdefb3`**（収穫を含む commit） |
 | prereg commit | `7b1cff8b9e12478bf2638597f385565386d7aed6` / `2026-08-29T13:52:50+00:00` |
 | GPU 利用実績 | RTX A6000 **1 枚**、延べ約 3 分。2 枚目は未使用 |
 | 欠落資産 | Relation-DETR の実装・`.venv-relation-detr`・ImageNet-R50 の重み |
@@ -148,5 +148,7 @@ seed 別の全量は audit §4.1。**解釈は書かない**（SPEC §10）。
 
 | 項目 | 実測 |
 |---|---|
-| PR | 未起票（下記） |
-| 台帳への報告 | 未送信（下記） |
+| commit | `09fdefb3`（118 files changed, 3965 insertions, 97 deletions）／prereg `7b1cff8b` |
+| push | exit 0（`origin/feat/stage0-contract-b`） |
+| PR | **#166**（base `phase0`。起点と同じ分岐） |
+| 台帳への報告 | `make task-report` の結果を下に記す |
