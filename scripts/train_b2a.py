@@ -59,6 +59,16 @@ NUM_TOOLS = 15
 IN_DIM = 2048 + NUM_TOOLS  # 2063
 
 
+def tool_dim(tool_source: str) -> int:
+    """tool 信号の次元。"both" は正解 15-d と予測 15-d の連結で 30-d。"""
+    return NUM_TOOLS * 2 if tool_source == "both" else NUM_TOOLS
+
+
+def in_dim_of(tool_source: str, drop_gap: bool) -> int:
+    """入力次元。GAP を落とす場合は tool 信号のみ。"""
+    return tool_dim(tool_source) if drop_gap else 2048 + tool_dim(tool_source)
+
+
 def load_clips(
     split: str,
     tool_source: str = "pred",
@@ -77,25 +87,37 @@ def load_clips(
       - "pred": 凍結検出器の予測 tool-presence（既定・B2a base）
       - "oracle": GT bbox から作った one-hot 15-d（注入の上限を測る・oracle-tool-presence）
     """
+    n_tool = tool_dim(tool_source)
     g = np.load(GAP_DIR / f"{split}_gap.npz")
     gap_all = g["features"]  # NpzFile は遅延展開: 一度だけ取り出す
     feat_by_frame = {str(fid): gap_all[i] for i, fid in enumerate(g["frame_ids"])}
 
-    if tool_source == "oracle":
-        s = np.load(ORACLE_SIGNAL_DIR / f"{split}_oracletool.npz")
+    if tool_source == "both":
+        # 正解と予測の連結（参照入力四段の「正解 ⊕ 予測」段）。順序は 正解15 → 予測15 に固定する。
+        o = np.load(ORACLE_SIGNAL_DIR / f"{split}_oracletool.npz")
+        q = np.load(SIGNAL_DIR / f"{split}_toolpresence.npz")
+        o_by_frame = {str(fid): o["signal"][i] for i, fid in enumerate(o["frame_ids"])}
+        q_by_frame = {str(fid): q["signal"][i] for i, fid in enumerate(q["frame_ids"])}
+        missing = set(o_by_frame) ^ set(q_by_frame)
+        if missing:
+            raise KeyError(f"[b2a] 正解と予測で frame_id が食い違う: {len(missing)} 件 ({split})")
+        sig_by_frame = {fid: np.concatenate([o_by_frame[fid], q_by_frame[fid]]) for fid in o_by_frame}
     else:
-        s = np.load(SIGNAL_DIR / f"{split}_toolpresence.npz")
-    sig_all = s["signal"]
-    sig_by_frame = {str(fid): sig_all[i] for i, fid in enumerate(s["frame_ids"])}
+        if tool_source == "oracle":
+            s = np.load(ORACLE_SIGNAL_DIR / f"{split}_oracletool.npz")
+        else:
+            s = np.load(SIGNAL_DIR / f"{split}_toolpresence.npz")
+        sig_all = s["signal"]
+        sig_by_frame = {str(fid): sig_all[i] for i, fid in enumerate(s["frame_ids"])}
 
     # §18.4 L2-4: 指定 dim を mask（0 埋め）して per-dim 寄与を測定
     # 単一 int / int リスト 両対応（複数 dim 同時 mask 用）
     mask_dims: list[int] = []
     if mask_tool_dim is not None:
         if isinstance(mask_tool_dim, int):
-            mask_dims = [mask_tool_dim] if 0 <= mask_tool_dim < NUM_TOOLS else []
+            mask_dims = [mask_tool_dim] if 0 <= mask_tool_dim < n_tool else []
         else:
-            mask_dims = [d for d in mask_tool_dim if 0 <= d < NUM_TOOLS]
+            mask_dims = [d for d in mask_tool_dim if 0 <= d < n_tool]
     if mask_dims:
         for fid in sig_by_frame:
             sig_by_frame[fid] = sig_by_frame[fid].copy()
@@ -111,11 +133,11 @@ def load_clips(
         split_offset = {"train": 0, "val": 1, "test": 2}.get(split, 3)
         rng = np.random.RandomState(noise_seed * 100 + split_offset)
         # noise_dims が指定されたらその dim のみ flip、None なら全 15 dim
-        target_dims = noise_dims if noise_dims else list(range(NUM_TOOLS))
+        target_dims = noise_dims if noise_dims else list(range(n_tool))
         for fid in sig_by_frame:
             v = sig_by_frame[fid].copy()
             for d in target_dims:
-                if 0 <= d < NUM_TOOLS and rng.uniform(0.0, 1.0) < noise_rate:
+                if 0 <= d < n_tool and rng.uniform(0.0, 1.0) < noise_rate:
                     v[d] = 1.0 - v[d]
             sig_by_frame[fid] = v
 
@@ -198,11 +220,12 @@ def _build_cfg(args, server_name: str, n_train: int, n_val: int) -> dict:
                           "gap_cache": str(GAP_DIR.relative_to(PROJ)),
                           "tool_signal_cache": str(SIGNAL_DIR.relative_to(PROJ))},
         "method": {"name": "b2a_det_to_phase", "system": "①signal_level", "direction": "det->phase",
-                   "coupling": "toolpresence_concat", "tool_signal_dim": NUM_TOOLS,
+                   "coupling": "toolpresence_concat", "tool_signal_dim": tool_dim(args.tool_source),
                    "neck": None, "grad_crossing": False},
         "model": {"temporal_head": "tecno", "num_stages": args.num_stages,
                   "num_layers": args.num_layers, "num_f_maps": args.num_f_maps,
-                  "in_dim": IN_DIM, "num_phases": len(CLASS_NAMES), "causal": True},
+                  "in_dim": in_dim_of(args.tool_source, args.drop_gap),
+                  "num_phases": len(CLASS_NAMES), "causal": True},
         "train": {"epochs": args.epochs, "lr": args.lr, "weight_decay": args.weight_decay,
                   "freeze_backbone": True, "smoothing_weight": 0.15},
         "data": {"n_train_clips": n_train, "n_val_clips": n_val},
@@ -233,9 +256,9 @@ def _build_phase_recipe(args, server_name: str) -> dict:
         "num_stages": args.num_stages,
         "num_layers": args.num_layers,
         "num_f_maps": args.num_f_maps,
-        "in_dim": IN_DIM,
+        "in_dim": in_dim_of(args.tool_source, args.drop_gap),
         "coupling": "b2a_det_to_phase_toolpresence",
-        "tool_signal_dim": NUM_TOOLS,
+        "tool_signal_dim": tool_dim(args.tool_source),
     }
     if args.lovo_holdout:
         # 評価の作法が標準 split と違う。recipe を分けないと索引で同じ実験に混ざる。
@@ -257,7 +280,8 @@ def _write_notes(exp_dir: Path, args, best: dict, server_name: str) -> None:
         f"- edit={best['phase_edit_score']:.2f} / seg_f1@10/25/50="
         f"{best['phase_seg_f1_10']:.2f}/{best['phase_seg_f1_25']:.2f}/{best['phase_seg_f1_50']:.2f}\n\n"
         f"## 構成\n- seed={args.seed} epochs={args.epochs} lr={args.lr} "
-        f"in_dim={IN_DIM}(=2048+{NUM_TOOLS}) stages={args.num_stages} layers={args.num_layers} "
+        f"in_dim={in_dim_of(args.tool_source, args.drop_gap)}(=2048+{tool_dim(args.tool_source)}) tool_source={args.tool_source} "
+        f"stages={args.num_stages} layers={args.num_layers} "
         f"f_maps={args.num_f_maps}\n"
         f"- server={server_name} / eval recipe=online_causal+jaccard_strict (PHASE_EVAL_PROTOCOL)\n\n"
         f"## Δ\n- Δ_phase = (B2a − S4 base 0.8986±0.0034)。同一土台（凍結backbone/GAP/recipe/seed・neck無し）。\n"
@@ -315,7 +339,7 @@ def train(args) -> dict:
     if args.smoke:
         train_clips, val_clips = train_clips[:3], val_clips[:2]
     print(f"[b2a] train clips={len(train_clips)}  val clips={len(val_clips)}  "
-          f"in_dim={IN_DIM}  tool_source={args.tool_source}  classes={len(CLASS_NAMES)}  device={device}")
+          f"in_dim={in_dim_of(args.tool_source, args.drop_gap)}  tool_source={args.tool_source}  classes={len(CLASS_NAMES)}  device={device}")
 
     server_name = resolve_server_name(None)
     manager = exp_dir = None
@@ -333,7 +357,7 @@ def train(args) -> dict:
         print(f"[b2a] evidence dir: {exp_dir}")
 
     # ①信号レベル: neck 無し・素の TeCNO に 2063-d を入力（drop_gap で 15-d のみ）
-    effective_in_dim = NUM_TOOLS if args.drop_gap else IN_DIM
+    effective_in_dim = in_dim_of(args.tool_source, args.drop_gap)
     model = TeCNO(num_stages=args.num_stages, num_layers=args.num_layers,
                   num_f_maps=args.num_f_maps, in_dim=effective_in_dim,
                   num_classes=len(CLASS_NAMES)).to(device)
@@ -342,7 +366,7 @@ def train(args) -> dict:
 
     from egosurgery.utils import tracking  # W&B 追跡（無認証なら no-op）
     tracking.init(f"b2a_det2phase_seed{args.seed}", group="B", job_type="b2a",
-                  config={"seed": args.seed, "lr": args.lr, "epochs": args.epochs, "in_dim": 2063,
+                  config={"seed": args.seed, "lr": args.lr, "epochs": args.epochs, "in_dim": in_dim_of(args.tool_source, args.drop_gap),
                           "method": "b2a_det_to_phase_toolpresence"})
 
     best = {"phase_accuracy": -1.0}
@@ -402,10 +426,12 @@ def parse_args():
     p.add_argument("--weight-decay", type=float, default=0.01)
     p.add_argument(
         "--tool-source",
-        choices=["pred", "oracle"],
+        choices=["pred", "oracle", "both"],
         default="pred",
         help="§18.4 L2-3: tool-presence のソース。pred=凍結検出器予測（既定・B2a base）/ "
-        "oracle=GT bbox からの one-hot（B2a の上限を測定）",
+        "oracle=GT bbox からの one-hot（B2a の上限を測定）/ "
+        "both=正解15d ⊕ 予測15d の連結（参照入力四段の「正解 ⊕ 予測」段。"
+        "T-2026-08-29-stage0-contract-b で追加）",
     )
     p.add_argument(
         "--mask-tool-dim",
