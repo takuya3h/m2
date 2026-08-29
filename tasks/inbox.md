@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（427 件）
+## 未処理（432 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -442,6 +442,11 @@
 - [ ] 2026-08-29 [cc] A6 の誤り分解で、既存実装に無い値を二つ置いた（「見落とし」と「局在誤り」を分ける IoU 下限 0.1、score しきい値 0.05）。既存実装が持つのは IoU 0.5 のマッチ基準のみ。評価実装に誤り分解の基準を足すかが未決（src/egosurgery/metrics/detection.py:184-226）
 - [ ] 2026-08-29 [cc] **術者・症例の属性情報が存在しない**（`data/splits/surgeon_folds.json` は 2026-05-21 の scaffold 以来 3 バイトの `{}`）。A3 は原理的に測れない。属性を付与するか R4 の前提を属性に依らない形へ変えるかが未決
 - [ ] 2026-08-29 [cc] AlignDETR の検出性能 0.686 の所在が索引から特定できない（`baselines/s0/aligndetr_bbox@val` の accuracy_mean が空）。この値も出所照合の対象に含めるかが未決（runindex/experiments.csv）
+- [ ] 2026-08-29 [cc] 🔴 **lecun には Relation-DETR の実装も `.venv-relation-detr` も無い**（`third_party/Relation-DETR/` は `checkpoints/` 12 ファイルのみ。`third_party/` は .gitignore:133 で版管理外、submodule 無し）。このため契約 B の **B2（送り手の train/val mAP 差）と P→D 四段が不能**。利用者の判断で縮退して続行し、D→P 四段のみ実施する（T-2026-08-29-stage0-contract-b）
+- [ ] 2026-08-29 [cc] **B4（強い工程塔）は ImageNet-R50 の重みが手元に無いため未実施。** `~/.cache/torch/hub/checkpoints/` は dinov2 のみ、`data/external/weights/` は検出器の COCO 重みのみ。取得は外部通信であり本契約の変更対象外（T-2026-08-29-stage0-contract-b）
+- [ ] 2026-08-29 [cc] 凍結源の run を **`baselines/s0_016_relationdetr_bbox_seed42`** と一意に同定した。seed42 の relation 系検出 run は 3 件あるが、`s0_frozen_001/004` は派生 init `relation_detr_s0frozen_init_seed42.pth` から学習した下流である（notes.md と command.sh で確認）。ckpt の sha256 は conventions の正本と一致（T-2026-08-29-stage0-contract-b）
+- [ ] 2026-08-29 [cc] 🔴 **SPEC §6 の「十五動画の工程ラベルで微調整」は分割違反になる。** 十五動画は val 2 本と test 3 本を含み、そのまま実行すると §8 禁止 1（test への接触）に反する。強い工程塔の学習対象は train 10 動画に限るべき（T-2026-08-29-stage0-contract-b）
+- [ ] 2026-08-29 [cc] `plan.env.preflight` の `cuda_ext_loaded` は検出器の拡張を見るが、**D→P 四段はキャッシュ特徴の上で動くため検出器の実装を必要としない**。契約が使う経路と preflight が見る経路がずれている。工程側だけを回す契約では `cuda_ext_loaded` を宣言しない規約を提案（T-2026-08-29-stage0-contract-b）
 
 ## 処理済み（1 件）
 

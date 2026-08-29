@@ -4,7 +4,7 @@
 # open_questions — 未解決事項
 
     generated_from:        runindex/
-    generated_from_digest: b3ca56d5cccc
+    generated_from_digest: f7617d7a7766
 
 backlog（`tools/harvest_runindex.py` の `BACKLOG`）から抽出した未解決事項の一覧。
 本文は載せない。詳細は `runindex/anomalies/backlog.md` を参照。
