@@ -8,7 +8,7 @@
 **明文化されていない**。以下はディレクトリ名の意味からの判断であり、
 規約に基づくものではない。**除外規約の明文化を推奨する。**
 
-除外 48 run / 全 1177 run（削除ではなくフラグ）
+除外 48 run / 全 1238 run（削除ではなくフラグ）
 
 | exclusion_reason | runs | 対象 |
 |---|---:|---|
@@ -35,7 +35,7 @@
 
 指標キーの接頭辞から split を確定できない run。**推測していない**。
 
-確定不能 35 run / 全 1177 run
+確定不能 35 run / 全 1238 run
 
 | split_provenance | runs |
 |---|---:|
@@ -104,7 +104,7 @@
 
 | per_class_kind | per_class_metric | runs | 内容 | 根拠 |
 |---|---|---:|---|---|
-| `phase` | `F1` | 545 | 9 クラスの工程別 **F1**（AP ではない） | `scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が `best.get("phase_per_class_f1", {})` を `log_per_class_ap()` に渡している |
+| `phase` | `F1` | 606 | 9 クラスの工程別 **F1**（AP ではない） | `scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が `best.get("phase_per_class_f1", {})` を `log_per_class_ap()` に渡している |
 | `unknown` | `unknown` | 426 | 既知の 2 体系のいずれとも一致しない | 確定不能 |
 | `None` | `None` | 117 | `per_class_ap.json` が無い・空・パース失敗 | — |
 | `tool` | `AP` | 68 | 15 クラスの術具 AP | `per_class_coco_map` / `COCOeval.precision` 由来 |
@@ -749,7 +749,7 @@ b2a_base_oracle_noise_p010_001_b2a_base_oracle_noise_p010_seed42/command.sh
 |---|---:|---|---|
 | `_orphan_no_metrics` | 9 | (未調査) | (未調査) |
 | `ablations` | 1 | `.gitkeep` のみ | 未着手 scaffold |
-| `analysis` | 176 | EDA レポート / 図 (png) / CSV / JSON | **あり**: `detector_sanity/reldetr_seed42_val_perclass.json` (COCO 形式 `AP`/`AP50`/`AP75`/`AP_s`/`AP_m` 等 13 キー)、`signature_subset_detector_compare/results.json` (`per_class` キー) |
+| `analysis` | 363 | EDA レポート / 図 (png) / CSV / JSON | **あり**: `detector_sanity/reldetr_seed42_val_perclass.json` (COCO 形式 `AP`/`AP50`/`AP75`/`AP_s`/`AP_m` 等 13 キー)、`signature_subset_detector_compare/results.json` (`per_class` キー) |
 | `audit` | 8 | `audit_report.json` × 3 | なし (`inject` / `trainable` / `n_trainable_params` 等の学習設定監査) |
 | `detector_improve` | 118 | `label_names.txt` / `val_perclass.json` | **あり**: `augstrong_seed42/val_perclass.json` (COCO 形式 13 キー) |
 | `final` | 1 | `.gitkeep` のみ | 未着手 scaffold |
@@ -954,12 +954,12 @@ mAP 系の指標を持つのに術具 per-class（15 クラス）を持たない
 ## 12. experiments/README.md と実態の乖離
 
 README は step 識別子を **s0〜s9 / a1〜a7（17 種）** と規定しているが、
-実測は **190 種**。README に無い以下の系統が存在する。
+実測は **250 種**。README に無い以下の系統が存在する。
 
 | 系統 | step 識別子の種類 | run 合計 | 例 |
 |---|---:|---:|---|
 | `b1` | 1 | 6 | `b1_mtl` |
-| `b2a` | 74 | 265 | `b2a_det2phase_toolpresence`, `b2a_ro_oracle_noise000` |
+| `b2a` | 134 | 326 | `b2a_det2phase_toolpresence`, `b2a_ro_oracle_noise000` |
 | `t1a` | 56 | 132 | `t1a_deep_3s10l96f`, `t1a_region_only` |
 | `t1b` | 9 | 23 | `t1b_ca`, `t1b_camt_all` |
 | `taux` | 5 | 15 | `taux_mingru_nonek3`, `taux_tecno_deltak3` |
@@ -1767,7 +1767,7 @@ _FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
 **したがって `frozen_source_tag` はキャッシュのパスからのみ導き、
 `frozen_source.seed` と `notes.md` の記述は採用していない。**
 
-- 実験数: **213** / run 数 1177
+- 実験数: **273** / run 数 1238
 - `experiment_id` を付けられなかった run: 78
   （run 名が命名規約に一致しない run）
 - `eval_recipe_id` の食い違いで分離した base: 12
@@ -1872,7 +1872,7 @@ delta:
 | 分類 | run 数 |
 |---|---:|
 | `no_denominator_declared` | 736 |
-| `injection_from_config_yaml` | 439 |
+| `injection_from_config_yaml` | 500 |
 | `baseline` | 17 |
 | `within_run_baseline` | 2 |
 
@@ -1918,7 +1918,7 @@ per-class の値は 573 個の JSON に分散していて横断分析に使え�
 `runindex/per_class.csv` に long 形式（1 行 = 1 run × 1 クラス）で 1 ファイル化した。
 
 - `per_class_kind=tool` : 68 run × 15 クラス（術具 **AP**）
-- `per_class_kind=phase`: 545 run × 9 クラス（工程 **F1**）
+- `per_class_kind=phase`: 606 run × 9 クラス（工程 **F1**）
 
 **この 2 つを混ぜて集計してはならない。** 指標の種類が違う（AP と F1）。
 ファイル名は両方とも `per_class_ap.json` なので、名前では判別できない。
@@ -2082,8 +2082,8 @@ docs/experiment_log.md:440   S4' = acc 0.9142 ± 0.0017
 
 全件は `anomalies/paired_feasibility.csv`（1 行 = 1 実験）。
 
-- `control_of` が確定した実験: **136**
-- そのうち `notes.md` / `config.yaml` が **paired-σ 判定を宣言**: **136**
+- `control_of` が確定した実験: **196**
+- そのうち `notes.md` / `config.yaml` が **paired-σ 判定を宣言**: **196**
 - 実際に paired-σ を計算できる: **5**
 - **seed ごとに代表 1 本を選ぶ規約を入れれば計算できる: 134**
 
@@ -2091,24 +2091,24 @@ docs/experiment_log.md:440   S4' = acc 0.9142 ± 0.0017
 
 | 原因 | 実験数 |
 |---|---:|
-| `control_multi_run_per_seed` | 125 |
+| `control_multi_run_per_seed` | 185 |
 | `both_multi_run_per_seed` | 6 |
 | `(阻害なし)` | 5 |
 
 **支配的原因は対照実験の再実行が畳まれていないこと**であり、
 注入側の seed 記録誤りではない（§23 のとおり seed の食い違いは 0 件）。
 
-注入側 run 439 本のうち、対照に同じ seed が存在するのは **427 本**。
+注入側 run 500 本のうち、対照に同じ seed が存在するのは **488 本**。
 残り 12 本は対照側に対応する seed が無く、畳んでも paired にできない。
 
 ### 22.2 🔴 「paired と宣言されているが unpaired でしか計算できない実験」
 
-**131 実験**が該当する。§10.1 の判定を paired-σ で行ったと
+**191 実験**が該当する。§10.1 の判定を paired-σ で行ったと
 読める記述が `notes.md` にあるが、実際にはできていない。
 
 | 阻害原因 | 実験数 | 代表例 |
 |---|---:|---|
-| `control_multi_run_per_seed` | 125 | `transfer/b2a_base_oracle_noise_p010/b2a_base_oracle_noise_p010@val~relation_detr_seed42` |
+| `control_multi_run_per_seed` | 185 | `transfer/b2a_base_oracle_noise_p010/b2a_base_oracle_noise_p010@val~relation_detr_seed42` |
 | `both_multi_run_per_seed` | 6 | `transfer/b2a_det2phase_oracletool/b2a_det2phase_oracletool@val~relation_detr_seed42` |
 
 現在の `experiments.csv` はこれらを `delta_method=unpaired` /
@@ -2145,8 +2145,8 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 | `transfer/t1a_3seed_det123_frozen/t1a_3seed_det123_frozen@val~relation_detr_seed123` | +0.06084 | 14.27 | ✓ | **有意** |
 | `transfer/b2a_oracle_mask_14/b2a_oracle_mask_14@val~relation_detr_seed42` | +0.06078 | 15.24 | ✓ | **有意** |
 | `transfer/haux_hand_presence_oracle_withtooloracle/haux_hand_presence_oracle_withtooloracle@val~relation_detr_seed42` | +0.06012 | 11.77 | ✓ | **有意** |
+| `transfer/b2a_det2phase_oracletool/b2a_det2phase_oracletool@val~relation_detr_seed42` | +0.06001 | 12.19 | ✓ | **有意** |
 | `transfer/b2a_oracle_mask_13/b2a_oracle_mask_13@val~relation_detr_seed42` | +0.05990 | 13.77 | ✓ | **有意** |
-| `transfer/b2a_det2phase_oracletool/b2a_det2phase_oracletool@val~relation_detr_seed42` | +0.05979 | 11.42 | ✓ | **有意** |
 | `transfer/b2a_oracle_mask_07/b2a_oracle_mask_07@val~relation_detr_seed42` | +0.05968 | 12.41 | ✓ | **有意** |
 | `transfer/b2a_ro_oracle_scalpelnoise_p030/b2a_ro_oracle_scalpelnoise_p030@val~relation_detr_seed42` | +0.05946 | 30.75 | ✓ | **有意** |
 | `transfer/b2a_oracle_mask_06/b2a_oracle_mask_06@val~relation_detr_seed42` | +0.05594 | 18.12 | ✓ | **有意** |
@@ -2272,7 +2272,7 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 
 | seed_agreement | run 数 | 意味 |
 |---|---:|---|
-| `agree` | 1067 | ディレクトリ名と他証拠が一致 |
+| `agree` | 1128 | ディレクトリ名と他証拠が一致 |
 | `unverified_no_other_evidence` | 32 | `command.sh` も `config.yaml` も無い（g2_* 群） |
 | `no_seed_in_dirname` | 78 | 命名規約外 |
 | **`conflict`** | **0** | **食い違い** |
@@ -2282,7 +2282,7 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 
 ### 23.1 `frozen_source.seed` は信用できない（実測）
 
-- `config.yaml` に `frozen_source.seed` を持つ run: **929**
+- `config.yaml` に `frozen_source.seed` を持つ run: **990**
 - そのうち実際の cache パスと**矛盾**する run: **48**
 
 矛盾例: 宣言は `seed: 42` だが cache は `relation_detr_augstrong_seed123`。
@@ -2291,14 +2291,14 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 
 ### 23.2 分母が `s4_phase_baseline` である実験の一覧
 
-`s4_phase_baseline` を `control_of` に持つ実験は **133**、run は **430**。
+`s4_phase_baseline` を `control_of` に持つ実験は **193**、run は **491**。
 
 - 分母 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_augstrong_hires_seed42` … 2 実験
 - 分母 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_augstrong_seed123` … 2 実験
 - 分母 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_augstrong_seed42` … 4 実験
 - 分母 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_augstrong_seed456` … 2 実験
 - 分母 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed123` … 2 実験
-- 分母 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42` … 119 実験
+- 分母 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42` … 179 実験
 - 分母 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed456` … 2 実験
 
 §17.0 の凍結源誤記は**この分母実験そのもの**で起きている。ただし:
@@ -2358,14 +2358,74 @@ paired-σ を計算できなかった（§22）。`experiments.csv` の Δ は
 |---|---:|---:|
 | `significant` | 125 | 124 |
 | `not_significant` | 9 | 10 |
-| `undecidable` | 2 | 2 |
+| `undecidable` | 62 | 62 |
 
 **σ の規約で結論が変わる実験: 1 件**
 
 - `transfer/b2a_ro_oracle_noise000/b2a_ro_oracle_noise000@val~relation_detr_seed42`（指標 `accuracy`）
   - Δ = +0.006046 / 母集団σ = 0.005726 -> **significant** / 標本σ = 0.007013 -> **not_significant**
 
-`undecidable` は 2 件。いずれも paired にできない実験である。
+`undecidable` は 62 件。いずれも paired にできない実験である。
+- `transfer/b2a_lovo_v01_oracletool/b2a_lovo_v01_oracletool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v01_toolpresence/b2a_lovo_v01_toolpresence@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v02_oracletool/b2a_lovo_v02_oracletool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v02_toolpresence/b2a_lovo_v02_toolpresence@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v03_oracletool/b2a_lovo_v03_oracletool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v03_toolpresence/b2a_lovo_v03_toolpresence@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v04_oracletool/b2a_lovo_v04_oracletool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v04_toolpresence/b2a_lovo_v04_toolpresence@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v05_oracletool/b2a_lovo_v05_oracletool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v05_toolpresence/b2a_lovo_v05_toolpresence@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v06_oracletool/b2a_lovo_v06_oracletool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v06_toolpresence/b2a_lovo_v06_toolpresence@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v07_oracletool/b2a_lovo_v07_oracletool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v07_toolpresence/b2a_lovo_v07_toolpresence@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v08_oracletool/b2a_lovo_v08_oracletool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v08_toolpresence/b2a_lovo_v08_toolpresence@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v09_oracletool/b2a_lovo_v09_oracletool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v09_toolpresence/b2a_lovo_v09_toolpresence@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v10_oracletool/b2a_lovo_v10_oracletool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v10_toolpresence/b2a_lovo_v10_toolpresence@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v11_oracletool/b2a_lovo_v11_oracletool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v11_toolpresence/b2a_lovo_v11_toolpresence@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v12_oracletool/b2a_lovo_v12_oracletool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v12_toolpresence/b2a_lovo_v12_toolpresence@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v13_oracletool/b2a_lovo_v13_oracletool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v13_toolpresence/b2a_lovo_v13_toolpresence@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v14_oracletool/b2a_lovo_v14_oracletool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v14_toolpresence/b2a_lovo_v14_toolpresence@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v15_oracletool/b2a_lovo_v15_oracletool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_lovo_v15_toolpresence/b2a_lovo_v15_toolpresence@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v01_notool/b2a_seglovo_v01_notool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v01_withtool/b2a_seglovo_v01_withtool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v02_notool/b2a_seglovo_v02_notool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v02_withtool/b2a_seglovo_v02_withtool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v03_notool/b2a_seglovo_v03_notool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v03_withtool/b2a_seglovo_v03_withtool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v04_notool/b2a_seglovo_v04_notool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v04_withtool/b2a_seglovo_v04_withtool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v05_notool/b2a_seglovo_v05_notool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v05_withtool/b2a_seglovo_v05_withtool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v06_notool/b2a_seglovo_v06_notool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v06_withtool/b2a_seglovo_v06_withtool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v07_notool/b2a_seglovo_v07_notool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v07_withtool/b2a_seglovo_v07_withtool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v08_notool/b2a_seglovo_v08_notool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v08_withtool/b2a_seglovo_v08_withtool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v09_notool/b2a_seglovo_v09_notool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v09_withtool/b2a_seglovo_v09_withtool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v10_notool/b2a_seglovo_v10_notool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v10_withtool/b2a_seglovo_v10_withtool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v11_notool/b2a_seglovo_v11_notool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v11_withtool/b2a_seglovo_v11_withtool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v12_notool/b2a_seglovo_v12_notool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v12_withtool/b2a_seglovo_v12_withtool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v13_notool/b2a_seglovo_v13_notool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v13_withtool/b2a_seglovo_v13_withtool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v14_notool/b2a_seglovo_v14_notool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v14_withtool/b2a_seglovo_v14_withtool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v15_notool/b2a_seglovo_v15_notool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
+- `transfer/b2a_seglovo_v15_withtool/b2a_seglovo_v15_withtool@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
 - `transfer/t1a_probe_aug/t1a_probe_aug@val~relation_detr_augstrong_seed42` … unpaired のため同符号条件を判定できない
 - `transfer/t1a_probe_frozen/t1a_probe_frozen@val~relation_detr_seed42` … unpaired のため同符号条件を判定できない
 
@@ -2511,12 +2571,12 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 一方 `scripts/train_*.py` 系（**`direct`**、run 数で見て大半）は
 CPU 側 3 種のみで **GPU 側の制御が 1 つも無い**。
 
-影響を受ける run: **953**（CUDA 学習スクリプトが entrypoint の run）
+影響を受ける run: **1014**（CUDA 学習スクリプトが entrypoint の run）
 
 | スクリプト | run 数 | 欠落している必須項目 |
 |---|---:|---|
 | `scripts/train_grasp_phase_injection_variants.py` | 420 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
-| `scripts/train_b2a.py` | 265 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
+| `scripts/train_b2a.py` | 326 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_t1a.py` | 132 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_s4_tecno.py` | 61 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_hand2det.py` | 21 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
@@ -2601,11 +2661,11 @@ Relation-DETR 経路の状況である。
 
 | `sigma_interpretation` | 実験数 |
 |---|---:|
-| `mixed_with_nondeterminism` | 123 |
+| `mixed_with_nondeterminism` | 183 |
 | `seed_effect` | 8 |
 | `unknown` | 5 |
 
-**`control_of` を持つ 136 実験のうち 123 の σ は seed 効果を測っていない。**
+**`control_of` を持つ 196 実験のうち 183 の σ は seed 効果を測っていない。**
 
 うち `verdict_10_1 = significant` は **115** 件。
 これらは「§10.1 の条件は満たすが、σ が想定どおりのものではない」状態である。

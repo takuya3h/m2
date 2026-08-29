@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 78 件）。
-ここに出ない 73 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 79 件）。
+ここに出ない 74 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-08-29-stage0-contract-a
 
@@ -138,39 +138,42 @@
 - 方針文書v2の本文。旧バンドルに区画が存在せず、配置できていない。取得物全体の要約値は宣言と 一致しており改竄ではなく、最初から入っていない。
 - 試していない表現の揺れ（有効数字を増やした形、指数表記、百分率での小数点以下2桁）。 「探した」に数えていない。K1の結論はこれらを除いた範囲での確定である。
 
-## T-2026-08-28-policy-v2-doc-sync
+## T-2026-08-29-k1-reeval-and-harvest
 
-状態 `pass` / ホスト `philip` / 起票 `160` / 様式 `v3`
+状態 `pass` / ホスト `lecun` / 起票 `なし` / 様式 `v3`
 
 ### ゲート
 
-- `G1` pass — Step A-1 の置換 3 件を実測して置いた（runindex_commit=7918b5dd…、conventions_rev=a8c07e81…、 counts=index 1177 / experiments 213 / verdicts 1038）。L1/L2 は exit 0 で WARN 無し、 L3 は 5 PASS / 4 SKIP / 0 FAIL。Step A-2 で時系列ログの境界が一意に決まらないことが判明し、 候補と根拠を利用者へ提示して候補 B（日付見出し 21 件すべて）の回答を得た。Step A-3 の分布は 比較の三角形が README 3 件・CLAUDE 0 件、分析ファーストが両方 0 件、旧判定規則が CLAUDE の 4 行と 34-35 行。
+- `G1` pass — 収穫対象を収穫器と同じ走査定義で数え直し 61 件（b2a_lovo 30 / b2a_seglovo 30 / b2a_det2phase_oracletool 1）で前契約の棚卸しと件数・内訳とも一致。評価経路は scripts/train_t1a.py の load_clips と evaluate、指標は PhaseEvaluator、モデルは TeCNO と特定。特徴は relation_detr_seed42（2026-06-16/20 生成）と aligndetr_s0frozen_seed42（2026-07-10 生成）。分割は phase_manifest/val.json の clip 09_1/10_1/10_2 計 1515 フレームで data/splits/ego_val.txt の動画 09,10 と整合。checkpoint の入力次元は 5888（GAP2048 ⊕ region-token 3840）でクラス数 9、load_state_dict(strict=True) が 6/6 通った
 
 ### 起票者の誤り
 
-- `self_contradiction` — バンドルに四つ目のファイル research_policy_v2_2026-08-28.md を同梱したため初回の取り込みが 拒否された（tools/fetch_task.py:51 の ALLOWED_FILES は spec.yaml / SPEC.md / prereg.md の 3 種）。 SPEC §0 はこの失敗を自ら記しているが、同じバンドルで再配布されたため実行者側で二度止まった。 指示どおり task-start を実行すると分岐が作られては巻き戻される。
-- `asserted_without_measuring` — 検査語 y「分析ファースト」は README.md にも CLAUDE.md にも変更前から 0 件であった。存在しない語を 検査語に指定したため、判定 b の空振り確認「同じ検査を履歴ファイルへ当てて一件以上が出ることを示す」が y については原理的に成立しない。指示どおり実行すると、働いていない検査を働いていると誤認しかねない。
-- `asserted_without_measuring` — 「2026-06 中旬から 2026-08 下旬に及ぶ日付見出し節が連続している」は誤り。日付見出しは 21 件あり、 あいだに三つの参照用の節（Claude Code 連携・サーバー間同期・検出側 run の成果物）が挟まる。さらに 連続する塊の最後は 2026-08-13（中旬）で、下旬の見出しは分離した 1 件だけである。記述の二条件が 両立せず、指示どおりでは「どの見出しからどの見出しまで」を決められない。escalate して利用者に決めてもらった。
-- `self_contradiction` — 禁止 1「移設本文を一字も変えない」と判定 c「今回張った相対リンクの指す先がすべて実在する」が 両立しない場合がある。移設は相対リンクの基点を変えるため、本文を変えずに解決させられない。実測で 2 件が該当した（移設前の README では相対リンク 43 件すべて解決していた）。SPEC §7 は「既存の壊れリンク」 しか想定しておらず、移設によって新たに壊れる場合の行が無い。先頭注記への追記で補うほかなかった。
-- `self_contradiction` — 判定 d「Makefile にある文書・生成物系の検査がすべて exit code 零」と禁止 3・4「投影と集約と runindex の 再生成を行わない（統合後に正本ホストで行う）」が両立しない。投影は他ホストの統合で古くなっており、 再生成しない限り exit 0 にできない。指示どおり両方に従うと必ず一方を破る。
-- `check_does_not_check` — Task 5 が追記先を「README の変更履歴に相当する節」とするが、README にも CLAUDE.md にも docs/*.md にも その節は存在しない（^#+ 変更履歴|更新履歴|Changelog|History で走査して 0 件）。指示どおりの場所が無いため、 実行者が新設先を判断するほかなかった。「位置は実行者が現物で判断し audit に記す」との但し書きはあるが、 節の存在自体が前提として書かれている。
+- `asserted_without_measuring` — SPEC §0 が「六 run は metrics を持たず数値へは遡れない」「当時の metrics は喪失」と断定したが、checkpoint の val キーに当時の best epoch の検証指標が丸ごと残っていた。指示どおり再評価だけを行うと、保存値との照合という最も強い裏付けを取り逃し、再評価値が当時の値と同じかを言えないまま終わる
+- `asserted_without_measuring` — SPEC §1 が「run 名から relationdetr と aligndetr の別は分かるが seed との対応は分からない（config 不在）」としたが、run ディレクトリ名は t1a_frozen_src_aligndetr_001_..._seed42 の形で seed を含んでいる。指示どおり対応不明として扱うと、必要のない 3x3 の総当たりを強いられる
+- `self_contradiction` — SPEC §4 と escalate_if の「既存行の変更・削除が零件」は集約表には原理的に満たせない。新しい run が既存の experiment 群へ加入すれば、その群の平均・sigma・Delta は必ず再計算される。指示どおり実行すると、正常な収穫で必ず escalate して停止する。実際に停止した
+- `check_does_not_check` — SPEC §6 の完了判定 d は投影の検査だけを求めるが、契約が runindex/ への収穫を許可する一方で make forbidden-check は runindex/ を固定の禁止領域として持ち契約ごとの許可を受け取らない。指示どおり収穫すると forbidden-check は必ず exit 2 になる。実測では違反 70 件すべてが runindex/ で experiments/ data/ transfer/ は 0 件だった
+- `check_does_not_check` — plan.env.preflight に gpu_free を宣言したが、tools/preflight_task.py の CHECK_NAMES は P1 から P9 の 9 語しか持たず未知の名前を検出する分岐が無い。schema も items type string で任意の文字列を通す。指示どおり preflight を信頼すると、GPU が塞がっていても検査を通過して PASS になる
 
 ### 逸脱
 
-- `environment` — 開始前から在った汚れを 2 回に分けて退避した。task-start が汚れた作業ツリーでは分岐を作らないため。 1 回目は .stglobalignore の変更と未追跡 5 件、2 回目は実行の合間に同期処理が運んできた experiments/analysis/ の 3 ディレクトリ。2 回目は中身が origin/phase0 と一致することを照合してから 退避した（差は各ホスト固有の logs/ 配下のみ）。mv は使っていない。契約が終わり元の分岐へ戻るまで戻さない。
-- `judgement` — 時系列ログの境界を利用者へ escalate して決めた。日付見出し 21 件が連続しておらず、起票者の記述の 二条件（連続している／2026-06 中旬から 2026-08 下旬）が両立しないため。候補 A（連続する塊のみ 20 件）と 候補 B（21 件すべて）を根拠つきで提示し、候補 B の回答を得た。自分では決めていない。
-- `judgement` — Task 5 の追記先を履歴ファイルの末尾に新設した。SPEC は「README の変更履歴に相当する節」を 追記先とするが、README にも CLAUDE.md にも docs/*.md にもその節が存在しない（機械的に走査して 0 件）。 移設本文の範囲外であることを本文中に明記し、判定 a を取り直して要約値の一致を確認した。
-- `judgement` — 2026-08-27 の指摘整理へのリンクを張っていない。成果物がリポジトリに実在しないため （名前と中身の両方で走査して 0 件）。SPEC の「実在を確かめずにリンクを書かない」に従った。
-- `spec_defect` — 投影系 3 検査（context-check / taskindex-check / inbox-check）を exit 0 にしていない。 禁止 3・4 が投影と集約と runindex の再生成を禁じているため。今回の変更が原因でないことは、 生成器 3 つの入力に README.md / CLAUDE.md が無いこと、および runindex/・tasks/*/result.yaml・ tasks/inbox.d/ の変更が 0 件であることで示した。
+- `judgement` — 作業ツリーの未追跡 2 件（前セッションの digest と .sync-pause.released）が task_start.sh の前提を満たさなかったため、削除せずスクラッチパッドへ退避してから phase0 へ切り替えた。digest は Step A-3 で元の位置へ戻し、要約値の一致を確かめて版管理へ記録した
+- `judgement` — Phase B の収穫で escalate 条件（集約表の既存行変更 8 件）が発動したため停止し、原因と影響を実測で示して利用者へ提示した。続行の回答を得て Phase C へ進んだ。判断は tasks/inbox.d/ に記録した
+- `spec_defect` — 第二層の対応の一意性は、記録の paired 三つ組の並びを seed 42/123/456 順と解する読み方に依存する。順序を無視すると 2 通り一致する（relationdetr の seed42 と seed123 の acc が完全同値で縮退するため）。SPEC は並びの意味を定めていないため、読み方を明示した上で一意と判定した
+- `judgement` — SPEC が求めた再評価に加え、checkpoint 内に残っていた保存値との照合を行った。指示にない作業だが、再評価が当時の値を再現しているかを直接示せるため実施した。結果は 6/6 でビット単位の一致
+- `environment` — 再評価器は RELDETR_FROZEN_TAG を設定してから train_t1a を読み直す必要があった（特徴の経路が import 時に決まるため）。経路が意図どおりであることを assert で実測している。評価規則そのものは一切変更していない
 
 ### 申し送り
 
-- 移設本文の中の相対リンク 2 件（docs/research_review_and_next_plan_2026-08-22.md と docs/task_drafts/README.md）が docs/history/ からは解決しない。禁止 1 のため直していない。 基点を注記で補ったが、リンク検査を回す契約では既存の壊れとして扱う必要がある。
-- 投影系 3 検査（context-check / taskindex-check / inbox-check）が古い。全ホストの PR が統合された後、 正本ホストで一度だけ make context && make taskindex && make inbox を回す必要がある。
-- 方針 v2 の全文はリポジトリに置いていない。README は要点の写しであり、正本は外部の記録場所にある。 配布経路が 3 種しか受け取れないため、全文の配置は別契約で扱う。
-- docs/docs_audit.md の分類表に docs/history/README_log_2026-05_to_2026-08.md を足していない （§2 の変更対象外のため）。記録であって現行手順ではないので docs-check の対象にしなくてよいが、 分類表の方針として明示するかは未決。
+- 六 run を索引へ載せるかの判断が要る。載せるには metrics.json の生成が必要だが、それは当時の生成物ではないため本契約では禁止されている。checkpoint の val キーを一次証拠として索引に載せる経路を設けるか、_orphan_no_metrics のまま残すかの規約が要る
+- 収穫の検証規約: 「既存行の変更・削除が零件」は run 単位の index.csv にのみ成立する。集約表（experiments.csv / verdicts.csv）は新しい run が既存群へ加入すれば必ず書き換わるため、「判定列 same_sign / verdict_pstd / verdict_sstd / agree が不変であること」を条件にする案を提案する
+- plan.env.preflight に検査器が知らない名前を書いても黙って無視される。未知の名前を FAIL にするか、tasks/_schema/spec.schema.json の preflight を enum にする必要がある
+- 本契約の秘匿検出規則が追跡済み digest 4 件で偽陽性を出した（実物の資格情報は含まれない）。規則の (?!\*) が伏せ字表記 NAME=*** の一部形にしか効いていない。docs/sessions/README.md の伏せ字規約に合わせて直すか、専用の検査器を用意するか
+- 収穫で b2a_det2phase_oracletool 群の集約が変わった（n_runs 8 から 9、accuracy_mean 0.9575907590759076 から 0.9573890722405574）。判定列と 1 シグマ判定は不変だが、この群を引用している既存の報告があれば数値の更新が要る
 
 ### 断定できなかったこと
 
-（なし）
+- 六 run の学習時刻と学習ホスト。checkpoint の mtime は 2026-07-10 17:47:49 から 17:48:38 の 49 秒に集中しており、逐次 50 epoch x 6 run と両立しない。複製の時刻であり学習の時刻ではない（前契約で実測済み）
+- 六 run の当時のハイパーパラメータ。config.yaml が無い。再評価は train_t1a.py の既定値（num_stages=2 / num_layers=8 / num_f_maps=64）を用い、load_state_dict(strict=True) が 6/6 通ることがその裏付けである。学習率や weight decay は checkpoint に残っていない
+- 六 run の metrics.json がいつ・なぜ失われたか。隔離の時点で既に無く、失敗ログも残っていない
+- 第二層の対応の一意性は記録の並びの解釈に依存する。記録側が seed 42/123/456 の順で書いたかどうかは lecun からは確かめられない
 

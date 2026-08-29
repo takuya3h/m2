@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（393 件）
+## 申し送り（398 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -601,6 +601,14 @@
 - 方針 v2 の全文はリポジトリに置いていない。README は要点の写しであり、正本は外部の記録場所にある。 配布経路が 3 種しか受け取れないため、全文の配置は別契約で扱う。
 - docs/docs_audit.md の分類表に docs/history/README_log_2026-05_to_2026-08.md を足していない （§2 の変更対象外のため）。記録であって現行手順ではないので docs-check の対象にしなくてよいが、 分類表の方針として明示するかは未決。
 
+### T-2026-08-29-k1-reeval-and-harvest
+
+- 六 run を索引へ載せるかの判断が要る。載せるには metrics.json の生成が必要だが、それは当時の生成物ではないため本契約では禁止されている。checkpoint の val キーを一次証拠として索引に載せる経路を設けるか、_orphan_no_metrics のまま残すかの規約が要る
+- 収穫の検証規約: 「既存行の変更・削除が零件」は run 単位の index.csv にのみ成立する。集約表（experiments.csv / verdicts.csv）は新しい run が既存群へ加入すれば必ず書き換わるため、「判定列 same_sign / verdict_pstd / verdict_sstd / agree が不変であること」を条件にする案を提案する
+- plan.env.preflight に検査器が知らない名前を書いても黙って無視される。未知の名前を FAIL にするか、tasks/_schema/spec.schema.json の preflight を enum にする必要がある
+- 本契約の秘匿検出規則が追跡済み digest 4 件で偽陽性を出した（実物の資格情報は含まれない）。規則の (?!\*) が伏せ字表記 NAME=*** の一部形にしか効いていない。docs/sessions/README.md の伏せ字規約に合わせて直すか、専用の検査器を用意するか
+- 収穫で b2a_det2phase_oracletool 群の集約が変わった（n_runs 8 から 9、accuracy_mean 0.9575907590759076 から 0.9573890722405574）。判定列と 1 シグマ判定は不変だが、この群を引用している既存の報告があれば数値の更新が要る
+
 ### T-2026-08-29-k1-trace-policy-place
 
 - 方針文書v2の本文が依然として配布されていない。旧バンドルに区画が無いため、起票者が inputs.bundle_extras の宣言つきで再配布する必要がある。取り込みの拡張は本契約で完了しており、 宣言さえあれば機械配布できる。
@@ -629,7 +637,7 @@
 - 術者・症例の属性情報が存在しないため、A3（追加6動画とtest折りの属性重複）は原理的に測れない。 属性を付与するか、R4の前提を属性に依らない形へ変えるかの判断が要る。
 - AlignDETRの検出性能0.686の所在が索引から特定できない（baselines/s0/aligndetr_bbox@valの accuracy_meanが空）。この値も出所照合の対象に含めるかの判断が要る。
 
-## 断定できなかった事項（252 件）
+## 断定できなかった事項（256 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1079,6 +1087,13 @@
 - runindex への反映。make runindex を回していないため index.csv は本契約の 30 run を含まない。config.yaml への task_id の刻印は 30 本すべてで確認したが、索引そのものは未更新。
 - 別契約の未追跡ファイル 16 件がどの契約のどの段階のものかは確かめていない。mtime が更新中であることだけを実測した。
 
+### T-2026-08-29-k1-reeval-and-harvest
+
+- 六 run の学習時刻と学習ホスト。checkpoint の mtime は 2026-07-10 17:47:49 から 17:48:38 の 49 秒に集中しており、逐次 50 epoch x 6 run と両立しない。複製の時刻であり学習の時刻ではない（前契約で実測済み）
+- 六 run の当時のハイパーパラメータ。config.yaml が無い。再評価は train_t1a.py の既定値（num_stages=2 / num_layers=8 / num_f_maps=64）を用い、load_state_dict(strict=True) が 6/6 通ることがその裏付けである。学習率や weight decay は checkpoint に残っていない
+- 六 run の metrics.json がいつ・なぜ失われたか。隔離の時点で既に無く、失敗ログも残っていない
+- 第二層の対応の一意性は記録の並びの解釈に依存する。記録側が seed 42/123/456 の順で書いたかどうかは lecun からは確かめられない
+
 ### T-2026-08-29-k1-trace-policy-place
 
 - 方針文書v2の本文。旧バンドルに区画が存在せず、配置できていない。取得物全体の要約値は宣言と 一致しており改竄ではなく、最初から入っていない。
@@ -1096,16 +1111,16 @@
 - A3 追加6動画とtest折りの術者・症例の重複。属性情報が存在しないため測れない （data/splits/surgeon_folds.jsonが3バイトの空、追加動画のannotations.jsonにも該当キー0件）。 存在しないこと自体を実測として報告した。
 - AlignDETRの検出性能0.686に対応する値の所在。baselines/s0/aligndetr_bbox@valのaccuracy_meanが 空であり、索引から特定できない。
 
-## 起票者の誤りの型（235 件）
+## 起票者の誤りの型（240 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 68 |
-| `asserted_without_measuring` | 86 |
-| `self_contradiction` | 63 |
+| `check_does_not_check` | 70 |
+| `asserted_without_measuring` | 88 |
+| `self_contradiction` | 64 |
 | `shell_assumption` | 18 |
 
-合計 235 件（対を持つ契約 78 件から）
+合計 240 件（対を持つ契約 79 件から）
 
