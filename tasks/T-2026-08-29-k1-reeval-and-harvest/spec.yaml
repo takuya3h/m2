@@ -1,0 +1,57 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-08-29-k1-reeval-and-harvest"
+  kind: impl
+  title: "六 checkpoint の再評価による K1 数値の回復と、lecun 追跡外 run の収穫、退避 digest の記録"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-08-29T07:00:00Z"
+  created_from:
+    runindex_commit: "7918b5dd"
+    counts: {index: 1177, experiments: 213, verdicts: 1038}
+  depends_on: ["T-2026-08-29-k1-verify-policy-place"]
+  amendments: []
+intent:
+  question: "健在な checkpoint の再評価で、失われた metrics に相当する数値を回復し、記録値と一致させられるか。索引外の run 群を正規に登録できるか"
+  decision_at_stake: "設計動機の数値を実測へ復帰させられるか。索引外 run による遡及不能の再発を断てるか"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "hts_ego"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["Makefile"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#naming]
+  conventions_rev: "a8c07e81"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "前提の実測と退避 digest の記録", gpu: false, est: "short"}
+    - {id: B, name: "追跡外 run の収穫と投影の再生成", gpu: false, est: "short"}
+    - {id: C, name: "六 checkpoint の再評価と記録値との照合", gpu: true, est: "medium"}
+    - {id: D, name: "検査と送出", gpu: false, est: "short"}
+  gates:
+    - {id: G1, after: A, check: "収穫対象の一覧が前契約の棚卸しと突き合わされ、評価の実装経路と特徴・分割の所在が確定している", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, gpu_free]
+outputs:
+  must_have: [RESULT.md, result.yaml, audit.md]
+  destination: "docs/stage0/"
+  acceptance:
+    - "SPEC の完了判定 a から f をすべて満たし、各判定に空振りでないことの確認が付く"
+    - "K1 再評価の結論が三値のいずれかで確定している"
+    - "PR が存在する状態で終える"
+  report_to: [notion_task_distribution]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "収穫の差分に、追加以外（既存行の変更・削除）が一件でも現れた場合"
+    - "評価の実装経路が既存コードから特定できない、または checkpoint と特徴の次元が噛み合わない場合"
+    - "再評価の結果が記録値と一部だけ一致し、解釈が割れる場合"

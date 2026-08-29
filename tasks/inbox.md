@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（423 件）
+## 未処理（427 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -420,6 +420,10 @@
 - [ ] 2026-08-28 [cc] バンドルに 4 つ目のファイルを同梱して取り込みが拒否される事故が 2026-08-25 に続き再発（`ALLOWED_FILES` は 3 種）。添付経路を足すか本文を SPEC へ埋めるかが未決（tools/fetch_task.py:51）
 - [ ] 2026-08-28 [cc] 方針 v2 の全文はリポジトリに無く、README は要点の写しである。正本は外部の記録場所にあり、全文の配置は別契約で扱う（README.md の冒頭）
 - [ ] 2026-08-28 [cc] `docs/docs_audit.md` の分類表に新設の履歴ファイルを足していない（§2 の対象外のため）。記録は docs-check の対象外でよいが、分類表の方針として明示するかが未決（docs/docs_audit.md:19-20）
+- [ ] 2026-08-29 [cc] **収穫の差分に「追加以外」が 8 行出て escalate。利用者の判断で続行した。** 原因は追加 61 件のうち 1 件（b2a_det2phase_oracletool_009_..._seed42）が既存の experiment 群へ加入し、その群の集約（experiments.csv 1 行）と派生（verdicts.csv 7 行）が再計算されたこと。run 単位の index.csv は変更 0 件、判定列（same_sign/verdict_pstd/verdict_sstd/agree/reason/n_seeds）は不変、1σ 判定も 7 指標すべて有意のまま（比 3.7〜15.4）（T-2026-08-29-k1-reeval-and-harvest）
+- [ ] 2026-08-29 [cc] **契約 §4 の「既存行の変更・削除が零件」は集約表には原理的に適用できない。** 新しい run が既存の群へ加入すれば集約行は必ず書き換わる。この条件が成立するのは run 単位の index.csv だけである。集約表には「判定列が不変であること」を条件にする規約を提案（T-2026-08-29-k1-reeval-and-harvest）
+- [ ] 2026-08-29 [cc] 🔴 **六 run の metrics は失われていなかった。checkpoint の中に当時の val 指標が入っていた**（best_tecno.pth の `val` キー。epoch と併せて保存されている）。前契約 T-2026-08-29-k1-verify-policy-place は metrics.json の不在だけを見て「run が無い・読めない」と結論したが、checkpoint を開いていなかった。**成果物の不在を、数値の不在と同一視しない**（T-2026-08-29-k1-reeval-and-harvest）
+- [ ] 2026-08-29 [cc] `plan.env.preflight` に検査器が知らない名前を書いても**黙って無視される**。本契約は `gpu_free` を宣言したが preflight_task.py の CHECK_NAMES に無く、schema も任意文字列を許すため検査されないまま PASS した。未知の名前を FAIL にするか、schema を enum にする必要がある（T-2026-08-29-k1-reeval-and-harvest）
 - [ ] 2026-08-29 [cc] **K1 の結論が確定: 「遡れない」。** 索引以外の四系統（版履歴・生ログ直接走査・外部記録の読み取り照会 479 run・文書全走査）すべてで零件。検索器の陽性/陰性対照は working。以後 K1 は出所不明として扱い、正規の再測定は送り手掃引で行う（docs/stage0/A7_k1_provenance.md）
 - [ ] 2026-08-29 [cc] **初出 `909dd193`（2026-08-02）は数値の出所ではなく、出所が無いことを報告している文書だった**（「台帳記載値のみで、per-phase F1 の生数値はこのホストでは再現できない」）。典拠の連鎖はそこで止まる（experiments/analysis/frozen_source_signature3_R_index/REPORT.md:52）
 - [ ] 2026-08-29 [cc] 🔴 **aligndetr 群の config の backbone が `relation_detr_resnet50_frozen_seed42`** — 名前と中身が食い違う run が索引に残っている。2026-07-03 の「学習失敗→通常学習 ckpt で代替」の実体。命名を実体に合わせるか無効判定を run 側にも残すかが未決（experiments/phase1/s4_phase_baseline_01{0,1,2}_..._aligndetr_seed*）

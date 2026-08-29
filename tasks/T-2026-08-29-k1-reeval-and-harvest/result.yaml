@@ -1,0 +1,77 @@
+result_version: 3
+task_id: "T-2026-08-29-k1-reeval-and-harvest"
+status: pass
+host: "lecun"
+branch: "feat/k1-reeval-and-harvest"
+pr: 165
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "収穫対象を収穫器と同じ走査定義で数え直し 61 件（b2a_lovo 30 / b2a_seglovo 30 / b2a_det2phase_oracletool 1）で前契約の棚卸しと件数・内訳とも一致。評価経路は scripts/train_t1a.py の load_clips と evaluate、指標は PhaseEvaluator、モデルは TeCNO と特定。特徴は relation_detr_seed42（2026-06-16/20 生成）と aligndetr_s0frozen_seed42（2026-07-10 生成）。分割は phase_manifest/val.json の clip 09_1/10_1/10_2 計 1515 フレームで data/splits/ego_val.txt の動画 09,10 と整合。checkpoint の入力次元は 5888（GAP2048 ⊕ region-token 3840）でクラス数 9、load_state_dict(strict=True) が 6/6 通った"
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 9
+
+deviations:
+  - type: judgement
+    note: "作業ツリーの未追跡 2 件（前セッションの digest と .sync-pause.released）が task_start.sh の前提を満たさなかったため、削除せずスクラッチパッドへ退避してから phase0 へ切り替えた。digest は Step A-3 で元の位置へ戻し、要約値の一致を確かめて版管理へ記録した"
+  - type: judgement
+    note: "Phase B の収穫で escalate 条件（集約表の既存行変更 8 件）が発動したため停止し、原因と影響を実測で示して利用者へ提示した。続行の回答を得て Phase C へ進んだ。判断は tasks/inbox.d/ に記録した"
+  - type: spec_defect
+    note: "第二層の対応の一意性は、記録の paired 三つ組の並びを seed 42/123/456 順と解する読み方に依存する。順序を無視すると 2 通り一致する（relationdetr の seed42 と seed123 の acc が完全同値で縮退するため）。SPEC は並びの意味を定めていないため、読み方を明示した上で一意と判定した"
+  - type: judgement
+    note: "SPEC が求めた再評価に加え、checkpoint 内に残っていた保存値との照合を行った。指示にない作業だが、再評価が当時の値を再現しているかを直接示せるため実施した。結果は 6/6 でビット単位の一致"
+  - type: environment
+    note: "再評価器は RELDETR_FROZEN_TAG を設定してから train_t1a を読み直す必要があった（特徴の経路が import 時に決まるため）。経路が意図どおりであることを assert で実測している。評価規則そのものは一切変更していない"
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "SPEC §0 が「六 run は metrics を持たず数値へは遡れない」「当時の metrics は喪失」と断定したが、checkpoint の val キーに当時の best epoch の検証指標が丸ごと残っていた。指示どおり再評価だけを行うと、保存値との照合という最も強い裏付けを取り逃し、再評価値が当時の値と同じかを言えないまま終わる"
+  - type: asserted_without_measuring
+    note: "SPEC §1 が「run 名から relationdetr と aligndetr の別は分かるが seed との対応は分からない（config 不在）」としたが、run ディレクトリ名は t1a_frozen_src_aligndetr_001_..._seed42 の形で seed を含んでいる。指示どおり対応不明として扱うと、必要のない 3x3 の総当たりを強いられる"
+  - type: self_contradiction
+    note: "SPEC §4 と escalate_if の「既存行の変更・削除が零件」は集約表には原理的に満たせない。新しい run が既存の experiment 群へ加入すれば、その群の平均・sigma・Delta は必ず再計算される。指示どおり実行すると、正常な収穫で必ず escalate して停止する。実際に停止した"
+  - type: check_does_not_check
+    note: "SPEC §6 の完了判定 d は投影の検査だけを求めるが、契約が runindex/ への収穫を許可する一方で make forbidden-check は runindex/ を固定の禁止領域として持ち契約ごとの許可を受け取らない。指示どおり収穫すると forbidden-check は必ず exit 2 になる。実測では違反 70 件すべてが runindex/ で experiments/ data/ transfer/ は 0 件だった"
+  - type: check_does_not_check
+    note: "plan.env.preflight に gpu_free を宣言したが、tools/preflight_task.py の CHECK_NAMES は P1 から P9 の 9 語しか持たず未知の名前を検出する分岐が無い。schema も items type string で任意の文字列を通す。指示どおり preflight を信頼すると、GPU が塞がっていても検査を通過して PASS になる"
+
+positive_controls:
+  - judgement: "再評価器が checkpoint ごとに異なる値を返し、決定性も持つこと"
+    breaking_input: "同一 checkpoint を二回評価する（同値になるはず）／別の checkpoint を評価する（異値になるはず）／別の装置で評価する"
+    observed: "GPU 2 回が完全一致、CPU とも完全一致。別 checkpoint では hemostasis F1 が 6/6 すべて異なる値になった（acc は 5/6。relationdetr の seed42 と seed123 が完全同値のため）。さらに checkpoint 内の保存値と差 1e-15 未満で一致し 6/6 でビット同値だった"
+  - judgement: "収穫の差分検出器が働いていること"
+    breaking_input: "同一入力（収穫後 vs 収穫後）を与える。追加も削除も変更も 0 件になるはず"
+    observed: "陽性（収穫前 vs 収穫後）は 追加 61 / 削除 0 / 変更 0。陰性（同一入力）は 追加 0 / 削除 0 / 変更 0。追加行の path 集合は棚卸し 61 件と完全一致し、差集合は両方向とも 0 件"
+  - judgement: "投影の検査が生成物の改変を捕まえること"
+    breaking_input: "context/auto/tasks_summary.csv に 1 バイト足す。対応する検査だけが非零になるはず"
+    observed: "taskindex-check だけが exit 2 になり、inbox-check と context-check は exit 0 のままだった。make taskindex で再生成すると sha256 が e422714da204d214ae84397c5679225dce928bae458408cf5fdfc3c22da41f27 へ戻り、3 検査とも exit 0 に復した"
+  - judgement: "六 checkpoint の md5 照合が働いていること（判定 f）"
+    breaking_input: "一時複製に 1 バイト足す。同じ照合が不一致になるはず"
+    observed: "md5 が 95fc689143841d80f021bbb89160e95f から 5d7e62b21c2e5304538205cda7f11a5f へ変わり、大きさも 2599650 から 2599651 バイトになって不一致になった。複製は削除した（ls が No such file or directory を返す）。原本 6 件は前契約の記録と 6/6 一致"
+  - judgement: "digest の伏せ字検査が働いていること"
+    breaking_input: "該当するはずの合成文字列（本物の値ではない）を検査に通す／伏せ字済みの表記を通す"
+    observed: "陽性では 3 規則すべてが 1 件ずつ検出し、陰性（NAME=*** 等）では 3 規則すべて 0 件だった。対象の digest は 3 規則とも 0 件。分母の確認として追跡済み digest 36 件にも当てると 4 件で 6 件該当したが、環境の実際の資格情報との完全一致は 0 件・本文への出現も 0 件で、検出規則の偽陽性だった"
+  - judgement: "集計器が seed 数に感応すること（前契約で確立した器の再用）"
+    breaking_input: "記録の paired 三件から 1 件を除いて平均を取る"
+    observed: "3 通りとも不一致（-0.075550 / -0.067300 / -0.064350 で、記録 -0.06909 の伝播区間から外れた）。陽性は mean=-0.069067 が区間 [-0.069117,-0.069017] 内で一致"
+
+followups:
+  - "六 run を索引へ載せるかの判断が要る。載せるには metrics.json の生成が必要だが、それは当時の生成物ではないため本契約では禁止されている。checkpoint の val キーを一次証拠として索引に載せる経路を設けるか、_orphan_no_metrics のまま残すかの規約が要る"
+  - "収穫の検証規約: 「既存行の変更・削除が零件」は run 単位の index.csv にのみ成立する。集約表（experiments.csv / verdicts.csv）は新しい run が既存群へ加入すれば必ず書き換わるため、「判定列 same_sign / verdict_pstd / verdict_sstd / agree が不変であること」を条件にする案を提案する"
+  - "plan.env.preflight に検査器が知らない名前を書いても黙って無視される。未知の名前を FAIL にするか、tasks/_schema/spec.schema.json の preflight を enum にする必要がある"
+  - "本契約の秘匿検出規則が追跡済み digest 4 件で偽陽性を出した（実物の資格情報は含まれない）。規則の (?!\\*) が伏せ字表記 NAME=*** の一部形にしか効いていない。docs/sessions/README.md の伏せ字規約に合わせて直すか、専用の検査器を用意するか"
+  - "収穫で b2a_det2phase_oracletool 群の集約が変わった（n_runs 8 から 9、accuracy_mean 0.9575907590759076 から 0.9573890722405574）。判定列と 1 シグマ判定は不変だが、この群を引用している既存の報告があれば数値の更新が要る"
+
+unknowns:
+  - "六 run の学習時刻と学習ホスト。checkpoint の mtime は 2026-07-10 17:47:49 から 17:48:38 の 49 秒に集中しており、逐次 50 epoch x 6 run と両立しない。複製の時刻であり学習の時刻ではない（前契約で実測済み）"
+  - "六 run の当時のハイパーパラメータ。config.yaml が無い。再評価は train_t1a.py の既定値（num_stages=2 / num_layers=8 / num_f_maps=64）を用い、load_state_dict(strict=True) が 6/6 通ることがその裏付けである。学習率や weight decay は checkpoint に残っていない"
+  - "六 run の metrics.json がいつ・なぜ失われたか。隔離の時点で既に無く、失敗ログも残っていない"
+  - "第二層の対応の一意性は記録の並びの解釈に依存する。記録側が seed 42/123/456 の順で書いたかどうかは lecun からは確かめられない"
+
+commits:
+  - "606d875e"
