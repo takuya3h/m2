@@ -1,0 +1,115 @@
+result_version: 3
+task_id: "T-2026-08-29-k1-trace-policy-place"
+status: partial
+host: "philip"
+branch: "feat/k1-trace-policy-place"
+pr: 163
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      四系統すべてが{方法・範囲・揺れの一覧・件数}で確定した。系統1は版管理の全履歴をgit log --all -Sで
+      走査し初出909dd193（2026-08-02）を特定、その本文が既に「台帳記載値のみ」と述べており典拠の連鎖が
+      そこで止まることを確認。系統2は索引を経由せずmetrics.json/per_class_ap.jsonを直接読み一致0件、
+      あわせてconfigのbackboneがaligndetr群でもrelation_detr_resnet50_frozen_seed42であることを発見。
+      系統3は外部記録479runを読み取りのみ照会し0.686近傍3件（すべて別実験）、他0件。系統4は文書11件が
+      いずれも出所を主張していないことを確認。結論は二値の「遡れない（確定）」で一意に定まった。
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 4
+
+deviations:
+  - type: environment
+    note: >-
+      開始前から在った汚れ（.sync-pause.released 1件）をgit stash push -uで退避してから進めた。
+      mvは使っていない。
+  - type: spec_defect
+    note: >-
+      Task 1（方針文書の配置）を停止した。旧バンドルに三つ目の区画が存在せず、SPECが言う宣言値
+      （2eb9c882 / 60490バイト）も旧SPEC.mdに無かったため。SPEC §7の「配置せず停止して報告
+      （Phase AとTask 2・3は続けてよい。部分完了として報告）」に従い、残りを完遂した。
+      存在しない本文を書き起こしてはいない。
+  - type: judgement
+    note: >-
+      git checkout 系の破壊的操作を使わなかった。前契約で未commitの再生成物を
+      git checkout -- で失う事故を起こしたため、一時複製はcpで作りrmで消す方式に統一した。
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: >-
+      SPEC §1が「バンドル内の三つ目の区画 research_policy_v2_2026-08-28.md の要約値と大きさは、
+      同バンドル内のSPEC.mdの§1に宣言済み（短縮形で2eb9c882、60490バイト）」とするが、実測では
+      三つ目の区画も宣言値も存在しない。旧SPEC.mdの§1全文を走査したが2eb9c882も60490も
+      research_policy_v2の文字列も0件だった。指示どおり進めると三つ目の区画を取り出す段で必ず止まる。
+  - type: asserted_without_measuring
+    note: >-
+      同§1「方針文書の正本バンドルは台帳の行T-2026-08-28-policy-v2-doc-syncに添付されている」。
+      添付は実在し取得物全体の要約値も宣言（182d152f…）と一致したが、中身は二区画
+      （spec.yaml 2267バイト / SPEC.md 16840バイト）のみで本文を含まない。改竄ではなく最初から
+      入っていない。Task 1は原理的に実行できない。
+
+positive_controls:
+  - judgement: "秘匿検査が実際に秘匿を検出し、かつ誤検知を見分けられる"
+    breaking_input: "環境の実値を埋めた囮（版管理外）を検査対象に入れる"
+    observed: >-
+      囮では live:WANDB_API_KEY=1 live:NOTION_API_KEY=1 notion_token=1 pem_private_key=1 を検出しexit 1。
+      送出物ではaudit.mdにwandb_key_shape=1が出たが、目視するとバンドルの区切り文字列
+      （BUNDLE-378eef9428be…、構造の記録として引用）であった。parse_bundleが本文一行目から読む
+      公開の構造値であり資格情報ではない。環境の実値との照合は0件。検査は無効にしていない。
+  - judgement: "完了判定 b: K1 の検索器が実際に一致を検出できる"
+    breaking_input: "前契約で実在が確定した値 0.050877 を同じ検索器で探す／実在しない乱数を探す"
+    observed: >-
+      0.050877は4commitで検出。乱数0.3971428571と-0.8264193はいずれも0commit。
+      検索器は働いており、K1の三値の零件は空振りではない。
+  - judgement: "完了判定 c: 取り込みが未宣言の区画を拒否する"
+    breaking_input: "宣言をbundle_extras: []に変えた上でextra_doc.mdの区画を含むバンドルを渡す"
+    observed: "拒否。「宣言されていないファイルです: 'extra_doc.md'（spec.yaml の inputs.bundle_extras に宣言してください）」"
+  - judgement: "完了判定 c: 取り込みが要約値の改竄を拒否する"
+    breaking_input: "宣言はそのままに追加ファイルの本文を書き換えたバンドルを渡す"
+    observed: "拒否。「追加ファイルの要約値が宣言と一致しません: extra_doc.md」（宣言値と実測値を並べて表示）"
+  - judgement: "完了判定 d: 既存形式のバンドルが従来どおり通る"
+    breaking_input: "bundle_extras の宣言を持たない三種のみのバンドル、および実在する3契約のバンドル"
+    observed: >-
+      試験用の三種のみバンドルは区画['SPEC.md','spec.yaml']・宣言{}で通過。
+      実在するT-2026-08-29-k1-trace-policy-place / T-2026-08-28-policy-v2-doc-sync /
+      T-2026-08-29-stage0-contract-a の3バンドルも検証通過。
+  - judgement: "完了判定 a: バンドルの抽出器が働いている（区画の不在は抽出の失敗ではない）"
+    breaking_input: "同じ抽出器 parse_bundle を実在する二区画に対して実行する"
+    observed: >-
+      spec.yaml 2267バイト / SPEC.md 16840バイトを正しく取り出した。抽出器は働いており、
+      三つ目の区画の不在は本物である。
+  - judgement: "完了判定 e: リンク検査が壊れリンクを検出する"
+    breaking_input: "実在しない経路 zzz_no_such.md を含む一時複製に同じ検査を当てる"
+    observed: "検出しexit 1。一時複製は削除して0件。変更した文書57件の相対リンクは実在0件外れなし"
+
+followups:
+  - >-
+    方針文書v2の本文が依然として配布されていない。旧バンドルに区画が無いため、起票者が
+    inputs.bundle_extras の宣言つきで再配布する必要がある。取り込みの拡張は本契約で完了しており、
+    宣言さえあれば機械配布できる。
+  - >-
+    K1は出所不明として確定した。正規の再測定は送り手掃引で行う。方針文書の「中核主張の一つの
+    出所照合が未了」という記述は「照合した結果、四系統とも遡れなかった」へ更新できる。
+  - >-
+    aligndetr群のconfigのbackboneがrelation_detr_resnet50_frozen_seed42である。名前と中身が
+    食い違う run が索引に残っている。命名を実体に合わせるか、無効判定の記録を run 側にも残すかの
+    判断が要る。
+  - >-
+    A9の文献値（TeCNO原著88.56 / 再実装relaxed 90.17 / offline系94.1）は起票者の文献確認であり、
+    リポジトリ内で再現していない。比較表を作る際は三属性の列を必須とする。
+
+unknowns:
+  - >-
+    方針文書v2の本文。旧バンドルに区画が存在せず、配置できていない。取得物全体の要約値は宣言と
+    一致しており改竄ではなく、最初から入っていない。
+  - >-
+    試していない表現の揺れ（有効数字を増やした形、指数表記、百分率での小数点以下2桁）。
+    「探した」に数えていない。K1の結論はこれらを除いた範囲での確定である。
+
+commits:
+  - "09476214"
+  - "d577df3f"
