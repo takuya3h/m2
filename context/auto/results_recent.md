@@ -72,7 +72,7 @@
 
 ## T-2026-08-29-k1-verify-policy-place
 
-状態 `partial` / ホスト `lecun` / 起票 `なし` / 様式 `v3`
+状態 `partial` / ホスト `lecun` / 起票 `164` / 様式 `v3`
 
 ### ゲート
 

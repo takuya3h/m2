@@ -140,5 +140,7 @@
 
 | 項目 | 実測 |
 |---|---|
-| PR | 未起票（下記） |
-| 台帳への報告 | 未送信（下記） |
+| commit | `b8089bb7`（12 files changed, 1216 insertions, 55 deletions。うち削除 55 行はすべて投影の再生成分） |
+| push | exit 0（`origin/feat/k1-verify-policy-place`） |
+| PR | **#164**（base `phase0`。起点と同じ分岐） |
+| 台帳への報告 | `make task-report` の結果を下に記す |

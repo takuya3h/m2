@@ -3,7 +3,7 @@ task_id: "T-2026-08-29-k1-verify-policy-place"
 status: partial
 host: "lecun"
 branch: "feat/k1-verify-policy-place"
-pr: null
+pr: 164
 merged: false
 
 gates:
@@ -70,4 +70,5 @@ unknowns:
   - "07-10 版の特徴が v2 ckpt（bbox AP 68.5960）から抽出されたことの直接の記録。抽出ログが残っておらず、evidence/discarded_caches/ の記載「v3 の ckpt は存在しない」による消去法の推定である"
   - "六 run の metrics がいつ・なぜ失われたか。隔離の時点で既に無く、失敗ログも残っていない"
 
-commits: []
+commits:
+  - "b8089bb7"
