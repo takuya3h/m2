@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（398 件）
+## 申し送り（405 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -637,7 +637,17 @@
 - 術者・症例の属性情報が存在しないため、A3（追加6動画とtest折りの属性重複）は原理的に測れない。 属性を付与するか、R4の前提を属性に依らない形へ変えるかの判断が要る。
 - AlignDETRの検出性能0.686の所在が索引から特定できない（baselines/s0/aligndetr_bbox@valの accuracy_meanが空）。この値も出所照合の対象に含めるかの判断が要る。
 
-## 断定できなかった事項（256 件）
+### T-2026-08-29-stage0-contract-b
+
+- Relation-DETR の実装と .venv-relation-detr を lecun へ用意するかの判断が要る。P→D 四段と B2 の前提であり、これが無い限り関門 G0 の両方向は成立しない。third_party は .gitignore:133 で版管理外、submodule も無く各ホストで clone する運用である
+- ImageNet-R50 の重みを取得するかの判断が要る（B4 の前提）。~/.cache/torch/hub/checkpoints/ は dinov2_vits14_reg4_pretrain.pth のみ、data/external/weights/ は検出器の COCO 重みのみである。取得は外部通信であり本契約の変更対象外
+- SPEC §6 の「十五動画の工程ラベルで微調整」は val 2 本と test 3 本を含み分割違反になる。train 10 動画に限る訂正が要る
+- 工程側だけを回す契約では plan.env.preflight に cuda_ext_loaded を宣言しない規約を提案する。契約が使う経路と preflight が見る経路がずれると、使わない資産の欠落で実行が止まる
+- REPLACE-BY-EXECUTOR を形式検査のある欄に置くと、取り込みが検証で落ちて巻き戻り実行者が直せない。取り込みと検証の順序を道具側で分けるか、起票の作法として形式検査のある欄には置かないかの判断が要る
+- scripts/load_env.sh は NOTION_DB_ID をロードしないため、run 台帳への投稿が 0/12 で skip した。非秘密の ID レジストリ configs/notion.yaml の databases.run_ledger を環境変数に与えて 12/12 成功させたが、load_env.sh 側で NOTION_DB_ID を設定するか、post_experiments_to_notion.py が configs/notion.yaml を読むようにするかの判断が要る
+- B1 の所要時間は学習と評価を分離して計測していない。train_b2a.py は同一プロセスで両方を行うため、分離するには計測点の追加が要る
+
+## 断定できなかった事項（260 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1111,16 +1121,23 @@
 - A3 追加6動画とtest折りの術者・症例の重複。属性情報が存在しないため測れない （data/splits/surgeon_folds.jsonが3バイトの空、追加動画のannotations.jsonにも該当キー0件）。 存在しないこと自体を実測として報告した。
 - AlignDETRの検出性能0.686に対応する値の所在。baselines/s0/aligndetr_bbox@valのaccuracy_meanが 空であり、索引から特定できない。
 
-## 起票者の誤りの型（240 件）
+### T-2026-08-29-stage0-contract-b
+
+- 予測段 seed42 の所要時間。命名と証跡の確認のため単独で実行し計時していない。このため B1 の予測段は n=2 である
+- 学習と評価の内訳時間。train_b2a.py は同一プロセスで両方を行い、分離して計測する経路が無い
+- P→D 四段の値、B2 の train と val の mAP 差、B4 の強い工程塔の単体性能。いずれも資産の欠落により測定していない
+- GPU を 2 枚使った場合の所要時間。本契約は 1 枚のみで実行した
+
+## 起票者の誤りの型（245 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 70 |
-| `asserted_without_measuring` | 88 |
-| `self_contradiction` | 64 |
+| `check_does_not_check` | 71 |
+| `asserted_without_measuring` | 90 |
+| `self_contradiction` | 66 |
 | `shell_assumption` | 18 |
 
-合計 240 件（対を持つ契約 79 件から）
+合計 245 件（対を持つ契約 80 件から）
 

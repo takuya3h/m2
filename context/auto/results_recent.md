@@ -6,8 +6,51 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 79 件）。
-ここに出ない 74 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 80 件）。
+ここに出ない 75 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-08-29-stage0-contract-b
+
+状態 `partial` / ホスト `lecun` / 起票 `166` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 分母は experiments.csv に 1 件一意で解決し require の三条件を満たす（accuracy_mean=0.8973014948553679 / n_runs=17 / split=val）。凍結源は run:baselines/s0_016_relationdetr_bbox_seed42 に一意（seed42 の relation 系 mAP 保持 run 3 件のうち s0_frozen_001/004 は派生 init から学習した下流）。ckpt sha256 は conventions の正本と一致。四段の実装可否は 空・予測・正解=既存実装で可能、正解⊕予測=最小追加、P→D と B2 と B4=不能または未実施と確定。所要時間は試走で 50 epoch あたり 12〜27 秒と実測。prereg は 7b1cff8b で commit 済み
+- `G2` pass — D→P 四段 12 run が揃った。一 run あたりの実測は 11.9 から 30.0 秒で、見積もり 24h/29run = 約 50 分/run の三倍以内どころか三桁下回る。ask の必要は生じなかった
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — 初回配布の inputs.denominator.ref と inputs.frozen_source.ref が REPLACE-BY-EXECUTOR のままで、いずれも schema が正規表現で検査する欄に置かれていた。参照の解決は取り込み後の手順なのに検証は取り込み前に走るため、指示どおり実行すると契約が設置されずに巻き戻る。実際に巻き戻り、実行できなかった
+- `asserted_without_measuring` — SPEC §5 と §6 が P→D 四段と強い工程塔を実施可能な前提で書かれているが、lecun には Relation-DETR の実装も .venv-relation-detr も ImageNet-R50 の重みも存在しない。third_party は .gitignore:133 で版管理外で submodule も無い。指示どおり進めると Phase C と Phase D の着手時点で止まる
+- `self_contradiction` — SPEC §6 が強い工程塔を十五動画の工程ラベルで微調整すると書くが、十五動画は val 2 本と test 3 本を含む。指示どおり実行すると SPEC §8 禁止 1 の分割の再定義と test への接触に反する。学習対象は train 10 動画に限る必要がある
+- `check_does_not_check` — plan.env.preflight に cuda_ext_loaded を宣言したが、実施した D→P はキャッシュ特徴上で .venv だけで動き検出器を import しない。契約が使う経路と preflight が見る経路がずれており、指示どおり preflight を通そうとすると使わない資産の欠落で実行が止まる
+- `self_contradiction` — SPEC §3 Step A-2 が最小の試走による所要時間の見積もりを Step A-3 の prereg commit より前に置く一方、完了判定 b は prereg の commit が全学習 run の開始より前であることを求める。指示どおり実行すると判定 b を厳密には満たせない。試走は --no-evidence で証跡を残さないため run としては残らない
+
+### 逸脱
+
+- `judgement` — 未追跡の .sync-pause.released が task_start.sh の作業ツリー清浄の前提を満たさなかったため、削除せずスクラッチパッドへ退避してから phase0 へ切り替えた
+- `spec_defect` — 初回の取り込みが L1 検証で落ちて巻き戻ったため実行できず、停止して報告した。inputs.denominator.ref と inputs.frozen_source.ref が REPLACE-BY-EXECUTOR のままで、いずれも正規表現による形式検査のある欄だった。利用者が台帳を置き直した後、二度目の task-start で取り込めた
+- `judgement` — B2 と P→D 四段が実行不能、B4 が未実施と判明したため停止して利用者へ提示し、縮退して続行（D→P 四段のみ実施）の判断を得た。判断は tasks/inbox.d/ に記録した
+- `environment` — P2 cuda_ext_loaded が FAIL のまま Phase B を実行した。実施した D→P はキャッシュ特徴の上で .venv だけで動き Relation-DETR を import しないことを、四段の読み込み検証と 50 epoch の完走で実測した上での判断である。検出器を使う B2 と P→D はそもそも実施していない
+- `judgement` — 参照入力四段のうち正解⊕予測段の入力経路を train_b2a.py へ追加した（--tool-source both、正解15d ⊕ 予測15d = 30d、in_dim 2078）。W1 の入力適合層と界面の範囲であり、評価規則は一切変更していない。次元の決定を tool_dim と in_dim_of の 2 関数へ集約し IN_DIM の直参照を置換した
+- `judgement` — ruff check scripts/train_b2a.py が I001（import 並び）を 1 件出すが、変更前の HEAD でも同じ 1 件が出る。自分の変更由来ではないため直していない。指摘のみとした
+
+### 申し送り
+
+- Relation-DETR の実装と .venv-relation-detr を lecun へ用意するかの判断が要る。P→D 四段と B2 の前提であり、これが無い限り関門 G0 の両方向は成立しない。third_party は .gitignore:133 で版管理外、submodule も無く各ホストで clone する運用である
+- ImageNet-R50 の重みを取得するかの判断が要る（B4 の前提）。~/.cache/torch/hub/checkpoints/ は dinov2_vits14_reg4_pretrain.pth のみ、data/external/weights/ は検出器の COCO 重みのみである。取得は外部通信であり本契約の変更対象外
+- SPEC §6 の「十五動画の工程ラベルで微調整」は val 2 本と test 3 本を含み分割違反になる。train 10 動画に限る訂正が要る
+- 工程側だけを回す契約では plan.env.preflight に cuda_ext_loaded を宣言しない規約を提案する。契約が使う経路と preflight が見る経路がずれると、使わない資産の欠落で実行が止まる
+- REPLACE-BY-EXECUTOR を形式検査のある欄に置くと、取り込みが検証で落ちて巻き戻り実行者が直せない。取り込みと検証の順序を道具側で分けるか、起票の作法として形式検査のある欄には置かないかの判断が要る
+- scripts/load_env.sh は NOTION_DB_ID をロードしないため、run 台帳への投稿が 0/12 で skip した。非秘密の ID レジストリ configs/notion.yaml の databases.run_ledger を環境変数に与えて 12/12 成功させたが、load_env.sh 側で NOTION_DB_ID を設定するか、post_experiments_to_notion.py が configs/notion.yaml を読むようにするかの判断が要る
+- B1 の所要時間は学習と評価を分離して計測していない。train_b2a.py は同一プロセスで両方を行うため、分離するには計測点の追加が要る
+
+### 断定できなかったこと
+
+- 予測段 seed42 の所要時間。命名と証跡の確認のため単独で実行し計時していない。このため B1 の予測段は n=2 である
+- 学習と評価の内訳時間。train_b2a.py は同一プロセスで両方を行い、分離して計測する経路が無い
+- P→D 四段の値、B2 の train と val の mAP 差、B4 の強い工程塔の単体性能。いずれも資産の欠落により測定していない
+- GPU を 2 枚使った場合の所要時間。本契約は 1 枚のみで実行した
 
 ## T-2026-08-29-stage0-contract-a
 
@@ -137,43 +180,4 @@
 
 - 方針文書v2の本文。旧バンドルに区画が存在せず、配置できていない。取得物全体の要約値は宣言と 一致しており改竄ではなく、最初から入っていない。
 - 試していない表現の揺れ（有効数字を増やした形、指数表記、百分率での小数点以下2桁）。 「探した」に数えていない。K1の結論はこれらを除いた範囲での確定である。
-
-## T-2026-08-29-k1-reeval-and-harvest
-
-状態 `pass` / ホスト `lecun` / 起票 `165` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 収穫対象を収穫器と同じ走査定義で数え直し 61 件（b2a_lovo 30 / b2a_seglovo 30 / b2a_det2phase_oracletool 1）で前契約の棚卸しと件数・内訳とも一致。評価経路は scripts/train_t1a.py の load_clips と evaluate、指標は PhaseEvaluator、モデルは TeCNO と特定。特徴は relation_detr_seed42（2026-06-16/20 生成）と aligndetr_s0frozen_seed42（2026-07-10 生成）。分割は phase_manifest/val.json の clip 09_1/10_1/10_2 計 1515 フレームで data/splits/ego_val.txt の動画 09,10 と整合。checkpoint の入力次元は 5888（GAP2048 ⊕ region-token 3840）でクラス数 9、load_state_dict(strict=True) が 6/6 通った
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — SPEC §0 が「六 run は metrics を持たず数値へは遡れない」「当時の metrics は喪失」と断定したが、checkpoint の val キーに当時の best epoch の検証指標が丸ごと残っていた。指示どおり再評価だけを行うと、保存値との照合という最も強い裏付けを取り逃し、再評価値が当時の値と同じかを言えないまま終わる
-- `asserted_without_measuring` — SPEC §1 が「run 名から relationdetr と aligndetr の別は分かるが seed との対応は分からない（config 不在）」としたが、run ディレクトリ名は t1a_frozen_src_aligndetr_001_..._seed42 の形で seed を含んでいる。指示どおり対応不明として扱うと、必要のない 3x3 の総当たりを強いられる
-- `self_contradiction` — SPEC §4 と escalate_if の「既存行の変更・削除が零件」は集約表には原理的に満たせない。新しい run が既存の experiment 群へ加入すれば、その群の平均・sigma・Delta は必ず再計算される。指示どおり実行すると、正常な収穫で必ず escalate して停止する。実際に停止した
-- `check_does_not_check` — SPEC §6 の完了判定 d は投影の検査だけを求めるが、契約が runindex/ への収穫を許可する一方で make forbidden-check は runindex/ を固定の禁止領域として持ち契約ごとの許可を受け取らない。指示どおり収穫すると forbidden-check は必ず exit 2 になる。実測では違反 70 件すべてが runindex/ で experiments/ data/ transfer/ は 0 件だった
-- `check_does_not_check` — plan.env.preflight に gpu_free を宣言したが、tools/preflight_task.py の CHECK_NAMES は P1 から P9 の 9 語しか持たず未知の名前を検出する分岐が無い。schema も items type string で任意の文字列を通す。指示どおり preflight を信頼すると、GPU が塞がっていても検査を通過して PASS になる
-
-### 逸脱
-
-- `judgement` — 作業ツリーの未追跡 2 件（前セッションの digest と .sync-pause.released）が task_start.sh の前提を満たさなかったため、削除せずスクラッチパッドへ退避してから phase0 へ切り替えた。digest は Step A-3 で元の位置へ戻し、要約値の一致を確かめて版管理へ記録した
-- `judgement` — Phase B の収穫で escalate 条件（集約表の既存行変更 8 件）が発動したため停止し、原因と影響を実測で示して利用者へ提示した。続行の回答を得て Phase C へ進んだ。判断は tasks/inbox.d/ に記録した
-- `spec_defect` — 第二層の対応の一意性は、記録の paired 三つ組の並びを seed 42/123/456 順と解する読み方に依存する。順序を無視すると 2 通り一致する（relationdetr の seed42 と seed123 の acc が完全同値で縮退するため）。SPEC は並びの意味を定めていないため、読み方を明示した上で一意と判定した
-- `judgement` — SPEC が求めた再評価に加え、checkpoint 内に残っていた保存値との照合を行った。指示にない作業だが、再評価が当時の値を再現しているかを直接示せるため実施した。結果は 6/6 でビット単位の一致
-- `environment` — 再評価器は RELDETR_FROZEN_TAG を設定してから train_t1a を読み直す必要があった（特徴の経路が import 時に決まるため）。経路が意図どおりであることを assert で実測している。評価規則そのものは一切変更していない
-
-### 申し送り
-
-- 六 run を索引へ載せるかの判断が要る。載せるには metrics.json の生成が必要だが、それは当時の生成物ではないため本契約では禁止されている。checkpoint の val キーを一次証拠として索引に載せる経路を設けるか、_orphan_no_metrics のまま残すかの規約が要る
-- 収穫の検証規約: 「既存行の変更・削除が零件」は run 単位の index.csv にのみ成立する。集約表（experiments.csv / verdicts.csv）は新しい run が既存群へ加入すれば必ず書き換わるため、「判定列 same_sign / verdict_pstd / verdict_sstd / agree が不変であること」を条件にする案を提案する
-- plan.env.preflight に検査器が知らない名前を書いても黙って無視される。未知の名前を FAIL にするか、tasks/_schema/spec.schema.json の preflight を enum にする必要がある
-- 本契約の秘匿検出規則が追跡済み digest 4 件で偽陽性を出した（実物の資格情報は含まれない）。規則の (?!\*) が伏せ字表記 NAME=*** の一部形にしか効いていない。docs/sessions/README.md の伏せ字規約に合わせて直すか、専用の検査器を用意するか
-- 収穫で b2a_det2phase_oracletool 群の集約が変わった（n_runs 8 から 9、accuracy_mean 0.9575907590759076 から 0.9573890722405574）。判定列と 1 シグマ判定は不変だが、この群を引用している既存の報告があれば数値の更新が要る
-
-### 断定できなかったこと
-
-- 六 run の学習時刻と学習ホスト。checkpoint の mtime は 2026-07-10 17:47:49 から 17:48:38 の 49 秒に集中しており、逐次 50 epoch x 6 run と両立しない。複製の時刻であり学習の時刻ではない（前契約で実測済み）
-- 六 run の当時のハイパーパラメータ。config.yaml が無い。再評価は train_t1a.py の既定値（num_stages=2 / num_layers=8 / num_f_maps=64）を用い、load_state_dict(strict=True) が 6/6 通ることがその裏付けである。学習率や weight decay は checkpoint に残っていない
-- 六 run の metrics.json がいつ・なぜ失われたか。隔離の時点で既に無く、失敗ログも残っていない
-- 第二層の対応の一意性は記録の並びの解釈に依存する。記録側が seed 42/123/456 の順で書いたかどうかは lecun からは確かめられない
 

@@ -8,7 +8,7 @@
 **明文化されていない**。以下はディレクトリ名の意味からの判断であり、
 規約に基づくものではない。**除外規約の明文化を推奨する。**
 
-除外 48 run / 全 1238 run（削除ではなくフラグ）
+除外 48 run / 全 1250 run（削除ではなくフラグ）
 
 | exclusion_reason | runs | 対象 |
 |---|---:|---|
@@ -35,7 +35,7 @@
 
 指標キーの接頭辞から split を確定できない run。**推測していない**。
 
-確定不能 35 run / 全 1238 run
+確定不能 35 run / 全 1250 run
 
 | split_provenance | runs |
 |---|---:|
@@ -104,7 +104,7 @@
 
 | per_class_kind | per_class_metric | runs | 内容 | 根拠 |
 |---|---|---:|---|---|
-| `phase` | `F1` | 606 | 9 クラスの工程別 **F1**（AP ではない） | `scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が `best.get("phase_per_class_f1", {})` を `log_per_class_ap()` に渡している |
+| `phase` | `F1` | 618 | 9 クラスの工程別 **F1**（AP ではない） | `scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が `best.get("phase_per_class_f1", {})` を `log_per_class_ap()` に渡している |
 | `unknown` | `unknown` | 426 | 既知の 2 体系のいずれとも一致しない | 確定不能 |
 | `None` | `None` | 117 | `per_class_ap.json` が無い・空・パース失敗 | — |
 | `tool` | `AP` | 68 | 15 クラスの術具 AP | `per_class_coco_map` / `COCOeval.precision` 由来 |
@@ -954,12 +954,12 @@ mAP 系の指標を持つのに術具 per-class（15 クラス）を持たない
 ## 12. experiments/README.md と実態の乖離
 
 README は step 識別子を **s0〜s9 / a1〜a7（17 種）** と規定しているが、
-実測は **250 種**。README に無い以下の系統が存在する。
+実測は **254 種**。README に無い以下の系統が存在する。
 
 | 系統 | step 識別子の種類 | run 合計 | 例 |
 |---|---:|---:|---|
 | `b1` | 1 | 6 | `b1_mtl` |
-| `b2a` | 134 | 326 | `b2a_det2phase_toolpresence`, `b2a_ro_oracle_noise000` |
+| `b2a` | 138 | 338 | `b2a_det2phase_toolpresence`, `b2a_ro_oracle_noise000` |
 | `t1a` | 56 | 132 | `t1a_deep_3s10l96f`, `t1a_region_only` |
 | `t1b` | 9 | 23 | `t1b_ca`, `t1b_camt_all` |
 | `taux` | 5 | 15 | `taux_mingru_nonek3`, `taux_tecno_deltak3` |
@@ -1767,7 +1767,7 @@ _FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
 **したがって `frozen_source_tag` はキャッシュのパスからのみ導き、
 `frozen_source.seed` と `notes.md` の記述は採用していない。**
 
-- 実験数: **273** / run 数 1238
+- 実験数: **277** / run 数 1250
 - `experiment_id` を付けられなかった run: 78
   （run 名が命名規約に一致しない run）
 - `eval_recipe_id` の食い違いで分離した base: 12
@@ -1872,7 +1872,7 @@ delta:
 | 分類 | run 数 |
 |---|---:|
 | `no_denominator_declared` | 736 |
-| `injection_from_config_yaml` | 500 |
+| `injection_from_config_yaml` | 512 |
 | `baseline` | 17 |
 | `within_run_baseline` | 2 |
 
@@ -1918,7 +1918,7 @@ per-class の値は 573 個の JSON に分散していて横断分析に使え�
 `runindex/per_class.csv` に long 形式（1 行 = 1 run × 1 クラス）で 1 ファイル化した。
 
 - `per_class_kind=tool` : 68 run × 15 クラス（術具 **AP**）
-- `per_class_kind=phase`: 606 run × 9 クラス（工程 **F1**）
+- `per_class_kind=phase`: 618 run × 9 クラス（工程 **F1**）
 
 **この 2 つを混ぜて集計してはならない。** 指標の種類が違う（AP と F1）。
 ファイル名は両方とも `per_class_ap.json` なので、名前では判別できない。
@@ -1981,11 +1981,11 @@ arm を表している可能性があるが、対照関係を明示した記録�
 
 | 閾値 | 母集団σ基準 | 標本σ基準 | 判定が反転 |
 |---|---:|---:|---:|
-| 1σ | 126 | 124 | **2** |
-| 2σ | 124 | 123 | **1** |
-| 3σ | 120 | 118 | **2** |
+| 1σ | 130 | 128 | **2** |
+| 2σ | 127 | 126 | **1** |
+| 3σ | 123 | 121 | **2** |
 
-対象 134 実験。標本σ/母集団σ の実測中央値 = **1.2247**。
+対象 138 実験。標本σ/母集団σ の実測中央値 = **1.2247**。
 
 **§10.1 が使う 1σ 基準では、現在の実データで判定は 1 件も反転しない。**
 理由は σ の合成にある。注入側は n=3（比 √(3/2)=1.2247）だが
@@ -2082,33 +2082,33 @@ docs/experiment_log.md:440   S4' = acc 0.9142 ± 0.0017
 
 全件は `anomalies/paired_feasibility.csv`（1 行 = 1 実験）。
 
-- `control_of` が確定した実験: **196**
-- そのうち `notes.md` / `config.yaml` が **paired-σ 判定を宣言**: **196**
+- `control_of` が確定した実験: **200**
+- そのうち `notes.md` / `config.yaml` が **paired-σ 判定を宣言**: **200**
 - 実際に paired-σ を計算できる: **5**
-- **seed ごとに代表 1 本を選ぶ規約を入れれば計算できる: 134**
+- **seed ごとに代表 1 本を選ぶ規約を入れれば計算できる: 138**
 
 ### 22.1 何が paired を阻んでいるか
 
 | 原因 | 実験数 |
 |---|---:|
-| `control_multi_run_per_seed` | 185 |
+| `control_multi_run_per_seed` | 189 |
 | `both_multi_run_per_seed` | 6 |
 | `(阻害なし)` | 5 |
 
 **支配的原因は対照実験の再実行が畳まれていないこと**であり、
 注入側の seed 記録誤りではない（§23 のとおり seed の食い違いは 0 件）。
 
-注入側 run 500 本のうち、対照に同じ seed が存在するのは **488 本**。
+注入側 run 512 本のうち、対照に同じ seed が存在するのは **500 本**。
 残り 12 本は対照側に対応する seed が無く、畳んでも paired にできない。
 
 ### 22.2 🔴 「paired と宣言されているが unpaired でしか計算できない実験」
 
-**191 実験**が該当する。§10.1 の判定を paired-σ で行ったと
+**195 実験**が該当する。§10.1 の判定を paired-σ で行ったと
 読める記述が `notes.md` にあるが、実際にはできていない。
 
 | 阻害原因 | 実験数 | 代表例 |
 |---|---:|---|
-| `control_multi_run_per_seed` | 185 | `transfer/b2a_base_oracle_noise_p010/b2a_base_oracle_noise_p010@val~relation_detr_seed42` |
+| `control_multi_run_per_seed` | 189 | `transfer/b2a_base_oracle_noise_p010/b2a_base_oracle_noise_p010@val~relation_detr_seed42` |
 | `both_multi_run_per_seed` | 6 | `transfer/b2a_det2phase_oracletool/b2a_det2phase_oracletool@val~relation_detr_seed42` |
 
 現在の `experiments.csv` はこれらを `delta_method=unpaired` /
@@ -2132,10 +2132,12 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 | `transfer/b2a_ro_oracle_scalpelnoise_p010/b2a_ro_oracle_scalpelnoise_p010@val~relation_detr_seed42` | +0.06782 | 27.32 | ✓ | **有意** |
 | `transfer/t1a_3seed_det456_frozen/t1a_3seed_det456_frozen@val~relation_detr_seed456` | +0.06425 | 6.00 | ✓ | **有意** |
 | `transfer/b2a_ro_oracle_scalpelnoise_p020/b2a_ro_oracle_scalpelnoise_p020@val~relation_detr_seed42` | +0.06342 | 32.80 | ✓ | **有意** |
+| `transfer/b2a_refin_both/b2a_refin_both@val~relation_detr_seed42` | +0.06320 | 10.97 | ✓ | **有意** |
 | `transfer/b2a_oracle_mask_03/b2a_oracle_mask_03@val~relation_detr_seed42` | +0.06276 | 15.46 | ✓ | **有意** |
 | `transfer/b2a_oracle_mask_02/b2a_oracle_mask_02@val~relation_detr_seed42` | +0.06210 | 11.26 | ✓ | **有意** |
 | `transfer/b2a_oracle_mask_04/b2a_oracle_mask_04@val~relation_detr_seed42` | +0.06188 | 15.54 | ✓ | **有意** |
 | `transfer/b2a_oracle_mask_08/b2a_oracle_mask_08@val~relation_detr_seed42` | +0.06188 | 12.30 | ✓ | **有意** |
+| `transfer/b2a_refin_oracle/b2a_refin_oracle@val~relation_detr_seed42` | +0.06188 | 12.72 | ✓ | **有意** |
 | `transfer/b2a_oracle_mask_11/b2a_oracle_mask_11@val~relation_detr_seed42` | +0.06166 | 12.83 | ✓ | **有意** |
 | `transfer/b2a_oracle_mask_01/b2a_oracle_mask_01@val~relation_detr_seed42` | +0.06144 | 12.13 | ✓ | **有意** |
 | `transfer/b2a_oracle_mask_05/b2a_oracle_mask_05@val~relation_detr_seed42` | +0.06100 | 10.05 | ✓ | **有意** |
@@ -2217,6 +2219,7 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 | `transfer/t1a_shuffle_oracle/t1a_shuffle_oracle@val~relation_detr_seed42` | +0.03987 | 8.88 | ✓ | **有意** |
 | `transfer/b2a_mask_dim_14/b2a_mask_dim_14@val~relation_detr_seed42` | +0.03965 | 10.76 | ✓ | **有意** |
 | `transfer/b2a_mask_dim_08/b2a_mask_dim_08@val~relation_detr_seed42` | +0.03921 | 9.91 | ✓ | **有意** |
+| `transfer/b2a_refin_pred/b2a_refin_pred@val~relation_detr_seed42` | +0.03921 | 17.79 | ✓ | **有意** |
 | `transfer/b2a_mask_dim_04/b2a_mask_dim_04@val~relation_detr_seed42` | +0.03899 | 5.04 | ✓ | **有意** |
 | `transfer/hires_relation_detr_augstrong_seed42/hires_relation_detr_augstrong_seed42@val~relation_detr_augstrong_seed42` | +0.03868 | 38.97 | ✓ | **有意** |
 | `transfer/t1a_3seed_det42_aug/t1a_3seed_det42_aug@val~relation_detr_augstrong_seed42` | +0.03857 | 29.20 | ✓ | **有意** |
@@ -2249,6 +2252,7 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 | `transfer/b2a_regiononly_oracle_mask_top3/b2a_regiononly_oracle_mask_top3@val~relation_detr_seed42` | -0.01799 | 2.60 | ✓ | **有意** |
 | `transfer/haux_hand_geom_oracle/haux_hand_geom_oracle@val~relation_detr_seed42` | +0.01391 | 2.03 | ✓ | **有意** |
 | `transfer/b2a_base_oracle_noise_p030/b2a_base_oracle_noise_p030@val~relation_detr_seed42` | +0.01237 | 3.62 | ✓ | **有意** |
+| `transfer/b2a_refin_empty/b2a_refin_empty@val~relation_detr_seed42` | +0.00731 | 1.57 | ✓ | **有意** |
 | `transfer/haux_hand_presence_oracle/haux_hand_presence_oracle@val~relation_detr_seed42` | +0.00665 | 0.74 | ✗ | 非有意 |
 | `transfer/b2a_ro_oracle_noise000/b2a_ro_oracle_noise000@val~relation_detr_seed42` | +0.00605 | 1.06 | ✓ | **有意** |
 | `transfer/b2a_ro_oracle_top3noise_p030/b2a_ro_oracle_top3noise_p030@val~relation_detr_seed42` | +0.00291 | 0.25 | ✗ | 非有意 |
@@ -2272,7 +2276,7 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 
 | seed_agreement | run 数 | 意味 |
 |---|---:|---|
-| `agree` | 1128 | ディレクトリ名と他証拠が一致 |
+| `agree` | 1140 | ディレクトリ名と他証拠が一致 |
 | `unverified_no_other_evidence` | 32 | `command.sh` も `config.yaml` も無い（g2_* 群） |
 | `no_seed_in_dirname` | 78 | 命名規約外 |
 | **`conflict`** | **0** | **食い違い** |
@@ -2282,7 +2286,7 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 
 ### 23.1 `frozen_source.seed` は信用できない（実測）
 
-- `config.yaml` に `frozen_source.seed` を持つ run: **990**
+- `config.yaml` に `frozen_source.seed` を持つ run: **1002**
 - そのうち実際の cache パスと**矛盾**する run: **48**
 
 矛盾例: 宣言は `seed: 42` だが cache は `relation_detr_augstrong_seed123`。
@@ -2291,14 +2295,14 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 
 ### 23.2 分母が `s4_phase_baseline` である実験の一覧
 
-`s4_phase_baseline` を `control_of` に持つ実験は **193**、run は **491**。
+`s4_phase_baseline` を `control_of` に持つ実験は **197**、run は **503**。
 
 - 分母 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_augstrong_hires_seed42` … 2 実験
 - 分母 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_augstrong_seed123` … 2 実験
 - 分母 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_augstrong_seed42` … 4 実験
 - 分母 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_augstrong_seed456` … 2 実験
 - 分母 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed123` … 2 実験
-- 分母 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42` … 179 実験
+- 分母 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42` … 183 実験
 - 分母 `phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed456` … 2 実験
 
 §17.0 の凍結源誤記は**この分母実験そのもの**で起きている。ただし:
@@ -2340,7 +2344,7 @@ paired-σ を計算できなかった（§22）。`experiments.csv` の Δ は
 
 ### 24.2 代表値の取り方は結論を変えない（感度分析）
 
-3 規則すべてで §10.1 判定が一致する実験: **134 / 134**
+3 規則すべてで §10.1 判定が一致する実験: **137 / 138**
 
 ただし Δ の値自体は動く（`mean` との差の最大 = **0.093175**）。
 判定が変わらないのは σ も同時にスケールするためである。
@@ -2356,7 +2360,7 @@ paired-σ を計算できなかった（§22）。`experiments.csv` の Δ は
 
 | 判定 | 母集団σ (ddof=0) | 標本σ (ddof=1) |
 |---|---:|---:|
-| `significant` | 125 | 124 |
+| `significant` | 129 | 128 |
 | `not_significant` | 9 | 10 |
 | `undecidable` | 62 | 62 |
 
@@ -2571,12 +2575,12 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 一方 `scripts/train_*.py` 系（**`direct`**、run 数で見て大半）は
 CPU 側 3 種のみで **GPU 側の制御が 1 つも無い**。
 
-影響を受ける run: **1014**（CUDA 学習スクリプトが entrypoint の run）
+影響を受ける run: **1026**（CUDA 学習スクリプトが entrypoint の run）
 
 | スクリプト | run 数 | 欠落している必須項目 |
 |---|---:|---|
 | `scripts/train_grasp_phase_injection_variants.py` | 420 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
-| `scripts/train_b2a.py` | 326 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
+| `scripts/train_b2a.py` | 338 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_t1a.py` | 132 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_s4_tecno.py` | 61 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_hand2det.py` | 21 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
@@ -2661,13 +2665,13 @@ Relation-DETR 経路の状況である。
 
 | `sigma_interpretation` | 実験数 |
 |---|---:|
-| `mixed_with_nondeterminism` | 183 |
+| `mixed_with_nondeterminism` | 187 |
 | `seed_effect` | 8 |
 | `unknown` | 5 |
 
-**`control_of` を持つ 196 実験のうち 183 の σ は seed 効果を測っていない。**
+**`control_of` を持つ 200 実験のうち 187 の σ は seed 効果を測っていない。**
 
-うち `verdict_10_1 = significant` は **115** 件。
+うち `verdict_10_1 = significant` は **119** 件。
 これらは「§10.1 の条件は満たすが、σ が想定どおりのものではない」状態である。
 **判定を無効とするか、非決定性を制御して再実行するかは研究上の判断**であり、
 harvester は判定を消さずに `sigma_interpretation` で印を付けるに留める。

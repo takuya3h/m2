@@ -4,15 +4,15 @@
 # STATE — 数値の現在地
 
     generated_from:        runindex/
-    generated_from_digest: b3ca56d5cccc
-    runindex_counts:       index=1238 experiments=273 verdicts=1458
+    generated_from_digest: f7617d7a7766
+    runindex_counts:       index=1250 experiments=277 verdicts=1486
 
 このファイルは runindex から機械的に生成されたものです。
 判断・解釈・評価は含みません。研究方針は context/plan_mirror.md を参照してください。
 
 ## 母集団
 
-- 総 run 数: 1238
+- 総 run 数: 1250
 - 除外: 48
   - failed_run: 6
   - identity_check: 24
@@ -26,13 +26,13 @@ host 別内訳:
   - andrew: 69
   - bengio: 3
   - efros: 206
-  - lecun: 888
+  - lecun: 900
   - philip: 31
 
 ## 実験
 
-- 総数: 273
-- control_of を持つ数: 196
+- 総数: 277
+- control_of を持つ数: 200
 group 別内訳:
   - _smoke_prior: 2
   - baselines: 20
@@ -41,7 +41,7 @@ group 別内訳:
   - hand2det_dev: 9
   - phase0: 1
   - phase1: 16
-  - transfer: 201
+  - transfer: 205
   - transfer_legacy: 12
 
 ## 判定
@@ -49,19 +49,19 @@ group 別内訳:
 verdict_10_1 の値別件数:
   - (空): 77
   - not_significant: 9
-  - significant: 125
+  - significant: 129
   - undecidable: 62
-- 母集団σと標本σの一致率（verdict_10_1_agree=True）: 195/196
+- 母集団σと標本σの一致率（verdict_10_1_agree=True）: 199/200
 
 ## σ の健全性
 
 sigma_interpretation の値別件数:
-  - mixed_with_nondeterminism: 183
+  - mixed_with_nondeterminism: 187
   - seed_effect: 8
   - unknown: 82
 sigma_source の値別件数:
   - (空): 65
-  - paired_delta: 196
+  - paired_delta: 200
   - within_run_seed_spread: 12
 
 ## 未解決
@@ -72,7 +72,7 @@ sigma_source の値別件数:
 
 ## 契約
 
-- task_id を持つ run: 489 / 1238 (39.5%)
+- task_id を持つ run: 501 / 1250 (40.1%)
 
 ## 参照先
 

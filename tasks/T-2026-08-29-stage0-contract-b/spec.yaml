@@ -1,0 +1,89 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-08-29-stage0-contract-b"
+  kind: exp
+  title: "Stage 0 契約 B: 両方向の参照入力四段の暫定測定・強い工程塔への D→P・所要時間と送り手の訓練検証差"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-08-29T08:00:00Z"
+  created_from:
+    runindex_commit: "606d875e"
+    counts: {index: 1238, experiments: 273, verdicts: 1458}
+  depends_on: ["T-2026-08-29-k1-reeval-and-harvest"]
+  amendments: []
+intent:
+  question: "両方向の参照入力四段は既存資産でどこまで測れるか。強い工程塔に対しても検出情報の残存はあるか。各 run 型の所要時間と送り手の過適合はどの程度か"
+  decision_at_stake: "関門 G0（両方向が測れたか）と G1.5 の暫定材料。主目標の投稿先判断に使う所要時間"
+  hypothesis: "正解と予測の結合段は空段を上回る。予測段が正解段を上回る場合は離散化損失の証拠として扱う"
+  related:
+    backlog: []
+inputs:
+  denominator:
+    ref: "exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42"
+    metric: "phase_accuracy"
+    require: {n_seeds: ">=3", sigma: present, split: val}
+  frozen_source:
+    ref: "run:baselines/s0_016_relationdetr_bbox_seed42"
+    verify: ckpt_sha256
+  data:
+    dataset: "hts_ego"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["Makefile"]
+contract:
+  inject_verbatim:
+    - conventions#split
+    - conventions#eval_recipe
+    - conventions#frozen_source
+    - conventions#sigma
+    - conventions#prohibitions
+    - conventions#issuer_cautions
+    - conventions#naming
+  conventions_rev: "a8c07e81"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "前提の実測（参照解決・実装可否・時間見積もり）と prereg の commit", gpu: false, est: "short"}
+    - {id: B, name: "D→P 参照入力四段（既存工程塔・三 seed）と B2 送り手評価", gpu: true, est: "medium"}
+    - {id: C, name: "P→D 参照入力四段（既存検出塔・W1・一 seed）", gpu: true, est: "long"}
+    - {id: D, name: "強い工程塔の構築と D→P 四段（暫定・一 seed 塔・三 seed 界面）", gpu: true, est: "long"}
+    - {id: E, name: "収穫・検査・送出", gpu: false, est: "short"}
+  gates:
+    - {id: G1, after: A, check: "分母と凍結源の参照が索引で解決し、四段それぞれの実装可否と所要時間見積もりが確定し、prereg が commit されている", on_fail: stop}
+    - {id: G2, after: B, check: "D→P 四段が揃い、一 run あたり実測時間が見積もりの三倍以内", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, cuda_ext_loaded, deterministic_flags]
+  resources: {server: "lecun", gpu: 2, est_hours: 24, runs: 29}
+prereg:
+  prediction: "prereg.md の予測節に同文を記す。方向のみを登録し、効果量は登録しない"
+  primary_endpoint: "両方向それぞれで参照入力四段の主指標（工程は phase_accuracy、検出は mAP）が測定として揃うこと"
+  decision_rule: "本契約の数値では仮説の採否を判定しない。関門 G0 は測定の成立のみを問う。数値は Stage 1 設計の材料とする"
+  stop_conditions:
+    - "一 run の学習が六時間を超える見込みになった場合"
+    - "W1 相当の最小構成でも GPU メモリに載らない場合"
+    - "分母または凍結源の参照が索引で解決できない場合"
+  committed_at: "2026-08-29T13:52:50+00:00"
+  commit: "7b1cff8b9e12478bf2638597f385565386d7aed6"
+outputs:
+  expected_runs: 29
+  must_have: [metrics.json, notes.md, config.yaml]
+  destination: "experiments/transfer/"
+  stamp: {task_id_in: config.yaml}
+  acceptance:
+    - "SPEC の完了判定 a から f をすべて満たし、各判定に空振りでないことの確認が付く"
+    - "全 run が task_id 付きで索引に現れている"
+    - "PR が存在する状態で終える"
+  report_to: [notion_task_distribution, notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "denominator_moved"
+    - "frozen_source_hash_mismatch"
+    - "凍結源の run が索引で一意に定まらない場合"
+    - "P→D の入力経路の新設が、入力適合層と界面の追加という W1 の範囲を超える改変を要する場合"
+    - "実測の所要時間から総量が資源見積もりの二倍を超える見込みになった場合"
