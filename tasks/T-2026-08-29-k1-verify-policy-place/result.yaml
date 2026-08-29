@@ -1,0 +1,74 @@
+result_version: 3
+task_id: "T-2026-08-29-k1-verify-policy-place"
+status: partial
+host: "lecun"
+branch: "feat/k1-verify-policy-place"
+pr: 164
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "六 run は experiments/_orphan_no_metrics/transfer/ に 6/6 実在。各 run が持つファイルは checkpoints/best_tecno.pth 一つのみ（合計 6 ファイル、各 2599650 バイト）。metrics.json/config.yaml/command.sh/git_commit.txt/notes.md は 0/6。predictions/ と visualizations/ は空。隔離前の md5 記録と 6/6 一致。読み取りは可能だが metrics が無いため再計算は不能と確定した"
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 7
+
+deviations:
+  - type: judgement
+    note: "作業ツリーに前セッションの未追跡 3 種が残り task_start.sh が実行できなかった。削除せずスクラッチパッドへ退避した。experiments/analysis/official_split_reassessment/*.py 3 件は origin/phase0 と同一内容のため無損失。docs/sessions/digest/2026-08-25-6ae159a7-*.md 1 件は報告後に元の位置へ戻したが未追跡のままである。tasks/README.md は抽出物を契約の記録と一緒に含めるよう定めるが、本契約 §2 の変更対象外であり、含めると完了判定 c を満たさなくなるため見送った"
+  - type: judgement
+    note: "governance.decisions_required の 1 件を利用者へ提示し「lecun の追跡外 run は索引へ収穫しない（棚卸しのみ）」の回答を得た。回答は meta.amendments へ記録し decisions_required を空にした。前例 T-2026-08-26-lovo-decision-rule に倣った"
+  - type: spec_defect
+    note: "SPEC §4 の陽性対照『relationdetr 側の平均 acc が再計算で一致すること』は記録側に seed 別の acc が無いため定義できない。記録側に seed 別で残る唯一の量である paired 差 3 件を陽性対照に置き換えた。陰性対照は指示どおり seed を一つ除く方式で取り、値の差し替えを 1 件足した"
+  - type: judgement
+    note: "検算器の許容差を最初は出力側にだけ適用し、入力の丸め表示を実数として扱っていたため mean(paired) が誤って不一致と出た。conventions#issuer_cautions 注意 7 に反していたため、入力の丸め幅を端点の総当たりで出力へ伝播させる方式へ改めた"
+  - type: environment
+    note: "spec.yaml の contract.prohibitions が挙げる no_runindex_regen と no_history_rewrite は conventions#prohibitions の表に存在しない id である（表は no_frozen_change と no_runindex_hand_edit を持つ）。L2 は通るため停止せず、意味は SPEC §6 の本文で解した"
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "SPEC §1 が記録上の証跡経路を experiments/transfer/ 配下の t1a_frozen_src_* と断定したが、現物は experiments/_orphan_no_metrics/transfer/ にある。指示どおり experiments/transfer/ を見ると六 run は一件も見つからず、実在しないと誤って結論しうる"
+  - type: asserted_without_measuring
+    note: "SPEC §0 が遡れない理由を「run 名が t1a_frozen_src 系で、かつ lecun の run が索引に未収穫だから」と推定したが、実際の理由は metrics.json 等の完全な不在である。指示どおり収穫の欠落を疑うと、収穫器が走査すらしない run を収穫できない理由の追跡に時間を費やす"
+  - type: self_contradiction
+    note: "governance.decisions_required に「追跡外 run を索引へ収穫するか」を置いたが、SPEC §3 A-3 と §6 禁止 2 が本文で既に「収穫しない」と答えている。指示どおり実行すると L3 の P6 が FAIL し、本文が答えている問いで実行が止まる。T-2026-08-26-lovo-decision-rule で提案済みの規約と同型の再発である"
+  - type: check_does_not_check
+    note: "SPEC §4 の検算器の対照は陽性を「既知の値（relationdetr 側の平均 acc）が再計算で一致すること」と定めたが、再計算の入力となる seed 別 acc は run にも記録側にも存在しない。指示どおりに組むと陽性対照が定義できず、陰性だけの片方向の対照になる"
+
+positive_controls:
+  - judgement: "K1 照合の検算器（記録値の再計算）が働いていること"
+    breaking_input: "paired 差 3 件から seed を一つ除いて平均を取る（集計が seed 数に感応するなら一致しなくなるはず）"
+    observed: "3 通りとも不一致。除外後の平均は -0.075550 / -0.067300 / -0.064350 で、記録 -0.06909 の伝播区間から外れた。加えて paired#3 を -0.0300 に差し替えた 4 通り目も -0.052900 で不一致。陽性側は mean(paired)=-0.069067 が伝播区間 [-0.069117,-0.069017] 内で一致した"
+  - judgement: "検算器が sigma の系統（ddof）に感応していること"
+    breaking_input: "同じ入力に ddof=1 の標本標準偏差を使う"
+    observed: "ddof=1 では +0.011610（区間 [+0.011555,+0.011666]）となり記録 0.00949 と不一致。ddof=0 では +0.009480（区間 [+0.009434,+0.009526]）で一致した。記録の系統は pstd と確定"
+  - judgement: "分母 0.8986 の同定が数値の一致だけで足りるかの検査"
+    breaking_input: "同じ description の 55 行から作れる 3 件組 26235 通りを全数で当て、0.8986 になる組を数える"
+    observed: "277 通り（1.06%）が 4 桁表示で 0.8986 になった。数値の一致は一意な同定にならないと判明したため、001/002/003 の同定は「連番の最初の 3-seed 組」という根拠に依存すると明記した"
+  - judgement: "禁止領域（experiments/ data/ runindex/）へ触れていないことの検査"
+    breaking_input: "同じ絞り込みを、実際に変更のある docs/ へ当てる"
+    observed: "runindex/ 等への該当は 0 件、docs/ への該当は 2 件（A7 と stage0_summary）。検査は空振りしていない"
+  - judgement: "記録値がリポジトリ内の他所に残っていないことの走査"
+    breaking_input: "語境界を外して単独の数値で検索する（部分一致が大量に出るはず）"
+    observed: "0.8986 単独では 1188 ファイルが該当した。語境界と対の同時出現へ絞ると 3〜14 ファイルまで落ち、SPEC.md を除く全件が学習 loss や bbox 座標列であることを目視で確認した"
+  - judgement: "六 run が隔離前に記録された当の run であることの照合"
+    breaking_input: "六つの md5 が互いに一致すれば複製であり、記録と食い違えば別物である"
+    observed: "現物 6 件の md5 は t2_ckpt_inventory.csv の記録と 6/6 一致し、六つは互いにすべて異なった。移動であって差し替えでも複製でもない"
+
+followups:
+  - "追跡外 run 61 件（b2a_lovo_v01..15 各 2 系統 30 件 / b2a_seglovo_v01..15 各 2 系統 30 件 / b2a_det2phase_oracletool_009 1 件、生成日 2026-08-25〜08-28）は索引の最終更新 7918b5dd（2026-08-16）より後の生成である。make runindex で解消するが、収穫は本契約の対象外。別契約として起票するかは判断待ち"
+  - "六 run の checkpoint 6 件は健在（各 2599650 バイト、md5 照合済み）。再評価すれば K1 の数値は回復しうる。lecun の GPU は RTX A6000 が 2 枚とも空き 48.5GB・利用率 0% である。本契約は GPU 使用が禁止のため実施していない"
+  - "docs/sessions/digest/2026-08-25-6ae159a7-8526-4c86-98a8-2a1367c72a6a.md は元の位置へ戻したが未追跡のままである。tasks/README.md は抽出物を契約の記録と一緒に含めるよう定める一方、本契約 §2 の変更対象は docs/stage0/ の 2 文書と契約ディレクトリ・受け皿・投影に限られる。未追跡のまま残すと B-30 のとおり git merge --ff-only が内容同一でも失敗しうるため、別契約で取り込むか §2 に含める規約が要る"
+  - "本文が既に答えている事項を governance.decisions_required に重ねて置くと L3 の P6 で実行が止まる。T-2026-08-26-lovo-decision-rule で提案済みの規約が未適用のまま再発した"
+
+unknowns:
+  - "六 run の学習時刻と学習ホスト。checkpoint の mtime は 2026-07-10 17:47:49〜17:48:38 の 49 秒に集中し、生成器の逐次 50 epoch × 6 run と両立しない。順序も逐次の順と食い違う。複製の時刻であり学習の時刻ではない"
+  - "aligndetr 側の config が指す特徴ファイル。六 run に config.yaml が無いため測れない。SPEC §5 の完了判定 b はこの部分について UNKNOWN である"
+  - "07-10 版の特徴が v2 ckpt（bbox AP 68.5960）から抽出されたことの直接の記録。抽出ログが残っておらず、evidence/discarded_caches/ の記載「v3 の ckpt は存在しない」による消去法の推定である"
+  - "六 run の metrics がいつ・なぜ失われたか。隔離の時点で既に無く、失敗ログも残っていない"
+
+commits:
+  - "b8089bb7"

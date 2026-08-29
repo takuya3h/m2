@@ -1,0 +1,1 @@
+- [ ] 2026-08-29 [cc] **lecun の追跡外 run は索引へ収穫しない**（本契約は棚卸しのみ。収穫は別契約）と利用者から回答を得た。契約 §3 A-3 および §6 禁止 2 が既に同じ内容を定めており、本文が答えている問いを decisions_required に重ねて置いたため L3 の P6 が FAIL した（T-2026-08-26-lovo-decision-rule で提案済みの規約と同型の再発）。回答は spec.yaml の meta.amendments へ記録し decisions_required を空にした（T-2026-08-29-k1-verify-policy-place）
