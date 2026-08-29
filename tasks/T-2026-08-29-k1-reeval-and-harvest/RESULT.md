@@ -163,4 +163,5 @@
 | commit | `606d875e`（87 files changed, 10637 insertions, 90 deletions） |
 | push | exit 0（`origin/feat/k1-reeval-and-harvest`） |
 | PR | **#165**（base `phase0`。起点と同じ分岐） |
-| 台帳への報告 | `make task-report` の結果を下に記す |
+| 台帳への報告 | **送信成功**（exit 0）。`report_sha256=f0cc17811a12eed9c732d543df2f77e1636009f6f5734c356bc59cd47cbb7ea0` / `report_bytes=13501` / `replaced_blocks=0` / `verdict=pass` / `n_issuer_defects=5` |
+| 同期の抑止 | `task_start.sh` が `.sync-pause` を作成。報告後に `.sync-pause.released` へ改名して解除した |
