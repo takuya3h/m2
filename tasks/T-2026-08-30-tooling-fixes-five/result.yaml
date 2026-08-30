@@ -1,0 +1,160 @@
+result_version: 3
+task_id: "T-2026-08-30-tooling-fixes-five"
+status: pass
+host: "andrew"
+branch: "feat/tooling-fixes-five"
+pr: 168
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      五件すべてで再現する入力と正常に振る舞う入力を実測した。F1 は runindex/__f1_probe.tmp で
+      violations=1、tools/__f1_ok.tmp で violations=0。F2 は gpu_free と zzz_not_a_check の
+      どちらも適用検査が ['P1','P6','P7','P8','P9'] のまま変わらず FAIL にならないことを確認。
+      F3 は TBD と <resolve_from_runindex> と exp:?/?/?@? が schema で落ち、正規形は通ること。
+      F4 は experiments.csv の 277 群のうち n_runs>1 が 206 件あり、既存の群へ run が加われば
+      集計列が必ず動くこと。F5 は伏せ字 2 種が偽陽性で拾われ、合成鍵と無害文は正しく分かれること。
+  - id: G2
+    verdict: pass
+    note: >-
+      五件すべてで陽性が検出され陰性が非検出であることを対照で確認した（audit §7 に出力の全文）。
+      既存の全契約の L1 は diff で完全一致（104 task(s), 1 failed / OK 103 / FAIL 1 / SKIP 1 / exit 1）。
+      失敗 1 件は T-2026-08-22-philip-hub-foundation で修正前から同じ。
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 509
+
+deviations:
+  - type: judgement
+    note: >-
+      開始時の未追跡ファイル（pd_refin_*_seed42 の logs/*.json 4 組とセッションダイジェスト 1 件）で
+      make task-start が exit 3 で止まった。前契約でユーザーが選んだ「stash で一時退避」を同じ手順で
+      適用した（stash@{0}）。本契約の完了後に git stash pop で戻す。
+  - type: judgement
+    note: >-
+      F1 の対照に使った touch/unlink が実在ファイル
+      experiments/audit/l0_hts_acceptance/acceptance_report.json を削除した。git checkout -- で復元し、
+      要約値 d9ac7ced89e5c574… の一致と git status --porcelain experiments/ の空を確認した。
+      以降の対照は控えを取ってから書き換え、finally で必ず戻す方式に変えた。
+  - type: judgement
+    note: >-
+      F5 の伏せ字の目印を最初は xxxx と ** まで広く取ったため、既存の試験を 1 件壊した
+      （NOTION_API_KEY= + x*40 という合成鍵を伏せ字と誤認して非検出にした）。目印を省略記号と
+      明示的な「伏せ字」語だけに絞り込んで解消した。tests/test_report_task.py は 26 件すべて通る。
+  - type: judgement
+    note: >-
+      F1 の許可の上限を宣言の文字列だけで判定していたため穴があった。allow_write が "d" のとき
+      capped("d") が None を返し、grant("data/annotations/x.json", ("d",)) が許可を返していた。
+      上限を経路そのものに当てる形へ直し、d / da / data / data/ / data/annotations/ の 5 通りを
+      試験で固定した。
+  - type: spec_defect
+    note: >-
+      手順書（.claude/skills/task/SKILL.md 手順 6）は make taskindex と make taskindex-check、
+      make inbox の実行を求めるが、契約 §4-3 は context/auto と tasks/inbox.md の再生成を禁止して
+      いる（並行契約があるため）。契約を優先しいずれも実行しなかった。したがって本報告は
+      context/auto/tasks_summary.csv などの投影にまだ現れない。統合後に一台で再生成すること。
+
+issuer_defects: []
+
+positive_controls:
+  - judgement: "判定 a F1 禁止領域検査が契約ごとの許可を受け取る"
+    breaking_input: "宣言を外した状態で同じ runindex への書き込みを行う／宣言があっても data 配下と既存 run 配下へ書く"
+    observed: >-
+      宣言なしでは violations=['runindex/__probe.tmp'] で fail。宣言ありでは
+      permitted=['runindex/__probe.tmp'] で pass。宣言があっても data/__probe.tmp は違反のままで
+      rejected_allowances に「許可の上限: data/ 配下は宣言しても許可されない」が残った。
+      既存 run 配下（experiments/audit/l0_hts_acceptance/acceptance_report.json）の変更も違反のまま。
+  - judgement: "判定 b F2 未知の preflight 名を FAIL にする"
+    breaking_input: "実装されていない名前 zzz_not_a_check を preflight に書く"
+    observed: >-
+      P10 preflight_names_known が FAIL になり detail に zzz_not_a_check が出た。既存契約が使う
+      4 名（venv_active / cuda_ext_loaded / deterministic_flags / gpu_free）だけなら PASS。
+      gpu_free を使う既存契約 T-2026-08-29-k1-reeval-and-harvest は 7 PASS / 0 FAIL で通る。
+  - judgement: "判定 c F3 解決前に止まる"
+    breaking_input: "resolved.yaml を置かない／resolved_to に unresolved: のままの値を書く"
+    observed: >-
+      resolved.yaml が無いとき P12 FAIL「解決前提の参照 1 件（inputs.denominator.ref）に対し
+      resolved.yaml が無い」。resolved_to が unresolved: のままなら P12 FAIL「解決先がまだ未解決のまま」。
+      正しい exp: 形式を書くと PASS。解決前提の参照が無い契約は SKIP。宣言の無い TBD は schema で落ちる。
+  - judgement: "判定 d F4 集約表の判定列の不変を検出する"
+    breaking_input: "verdicts.csv の既存行の verdict_pstd を undecidable から significant へ 1 箇所変える"
+    observed: >-
+      pass=False になり changed_judgement に
+      ['hand2det_dev/…/hand2det_1ep_4ch_all@val','detection_max'] の verdict_pstd が
+      'undecidable' -> 'significant' として出た。集計値の列 delta だけを変えた場合は pass=True で
+      changed_rows=1 / changed_judgement=0。削除は両表とも pass=False。run 単位の既存行変更も pass=False。
+  - judgement: "判定 e F5 秘匿検出が本物を拾い続ける"
+    breaking_input: "合成した鍵様文字列（ntn_ + S*30、secret_ + S*25）と名前つきの値、伏せ字と本物が同居する行"
+    observed: >-
+      4 種すべて検出された。伏せ字表記 4 種（WANDB_API_KEY=abcd1234…、ntn_synthetic...(伏せ字)、
+      report_sha256: 2f648079f286a825…、無害文）は非検出。出力は種別と行番号だけで、
+      合成値の先頭 12 文字がどの出力にも現れないことを確かめた。実在の資格情報は一切使っていない。
+  - judgement: "判定 f 回帰の分母が空振りでない"
+    breaking_input: "修正前の L1 の記録が空、または件数が契約数と一致しない"
+    observed: >-
+      修正前の記録は 123 行で非空。104 task(s) は tasks/T-* の実数 104 と一致。
+      内訳 OK 103 / FAIL 1 / SKIP 1。修正後の出力と diff が空で完全一致した。
+  - judgement: "判定 g 試験の増分が足した数と一致する"
+    breaking_input: "増分が足した試験の数と食い違う"
+    observed: >-
+      修正前 471 passed / 6 failed、修正後 509 passed / 6 failed。増分 38 は
+      tests/test_tooling_fixes_five.py の 38 件と一致した。**ただし全テストは通っていない。**
+      失敗 6 件は修正を stash して修正前でも同じ 6 件が落ちることを実測した（判定 g は未充足）。
+  - judgement: "判定 h 変更範囲の絞り込みが働いている"
+    breaking_input: "同じ絞り込み（git status --porcelain）を tools と tasks に当てる"
+    observed: >-
+      experiments/ data/ runindex/ に当てると空、tools/ と tasks/ に当てると 10 行出た。
+      絞り込みが常に空を返しているのではない。
+
+followups:
+  - >-
+    SPEC §5-g「全テストが通る」は未充足のまま終えた。起票時点で既に 6 件が落ちており、
+    本契約の作業では動かせない。tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics、
+    tests/test_fetch_task.py::test_rejects_unknown_file_name、
+    tests/test_research_logger.py の 4 件（test_log_run_idempotent ほか）。
+  - >-
+    test_fetch_task.py::test_rejects_unknown_file_name は誤り文言と試験の期待がずれているだけに
+    見える（期待「受け取れないファイル」／実際「経路として受け取れない名前です」）。
+    tools/fetch_task.py は本契約の entrypoints に入っているが、F1 から F5 のいずれでもないため
+    触っていない。直すなら別契約で。
+  - >-
+    今後の契約は「実行前の失敗件数を分母として記録する」形にすると、判定 g のような空振りを
+    避けられる。件数が増えたことだけを見ると、既存の失敗が残っていても気付けない。
+  - >-
+    許可の宣言は contract.allow_write（接頭辞の配列）。検査は make forbidden-check TASK=<task_id>。
+    上限は data/ 配下（常に不可）と、experiments/ transfer/ のうち起点に既に存在する経路。
+    収穫を伴う契約は allow_write: [runindex/] を置けば道具を迂回せずに通せる。
+  - >-
+    収穫の検証は make harvest-verify（BASE=<commit> で起点を変えられる。既定は HEAD）。
+    run 単位の index.csv は追加のみ、集約表は既存の群の判定列が不変。判定列は same_sign /
+    verdict / agree / reason / n_seeds を名前に含む列で見分ける（experiments.csv では 631 列中 106 件）。
+  - >-
+    置換前提の参照は ref: "unresolved:<何を索引で引くか>" と resolve_by_executor: true で宣言し、
+    解決先を tasks/<task_id>/resolved.yaml に resolved_to と how の対で書く。P12 が済むまで止まる。
+    この対応表がそのまま RESULT の「解決された参照」の材料になる。
+  - >-
+    preflight に書いてよい名前は venv_active / cuda_ext_loaded / deterministic_flags / gpu_free。
+    schema の enum と tools/preflight_task.py の KNOWN_PREFLIGHT_NAMES が同じ集合であることは
+    test_f2_schema_enum_matches_implementation が縛っている。片方だけ増やすと試験が落ちる。
+  - >-
+    P11 gpu_free は「GPU を占有する compute プロセスが 0 件」で判定する。使用量の閾値は置いていない。
+    nvidia-smi が無い・失敗する・タイムアウトする場合は FAIL にした。契約が空きを前提に宣言した以上、
+    確かめられないまま実行を許すと宣言の意味が無いという判断による。閾値が要るなら別契約で。
+  - >-
+    本契約の実行で退避した未追跡ファイルが残っている。git stash@{0}
+    「task-start用の一時退避 T-2026-08-30-tooling-fixes-five」を pop して戻すこと。
+
+unknowns:
+  - >-
+    P3 deterministic_flags の判定基準は従来どおり未確定で常に SKIP のまま（backlog B-20）。
+    決定性の設定は実行プロセス内で行われ外部から観測できない。本契約では触れていない。
+  - >-
+    P11 gpu_free を「compute プロセス 0 件」で判定したとき、共有ホストで他者の学習が走っている間に
+    契約が止まる頻度は測っていない。実測は本契約の範囲外（GPU を使わないため）。
+
+commits:
+  - "1955cf4be63deaca11d702d25f36aff3d93cf925"

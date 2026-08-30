@@ -63,6 +63,20 @@ SECRET_PATTERNS = (
     )),
 )
 
+# 伏せ字の目印。**これを含む一致は値が伏せられているとみなして拾わない。**
+# 報告は「先頭数桁と省略記号」で要約値を書く。それを秘匿として拾うと、正しく
+# 伏せた報告ほど送れなくなり、伏せずに書くほうが通るという逆の誘引が生まれる。
+# 目印は一致した文字列の中だけを見る。**行全体を見ると、同じ行に本物の鍵があっても
+# 伏せ字が一つあるだけで見逃す。**
+# **目印は狭く取る。** 繰り返し文字（xxxx など）や強調記号（**）を目印にすると、
+# 合成した鍵や強調つきの本文を伏せ字と誤認して本物を見逃す（既存の試験で実測）。
+REDACTION_MARKS = ("…", "...", "＜伏せ字＞", "(伏せ字)", "（伏せ字）", "[伏せ字]", "REDACTED")
+
+
+def looks_redacted(fragment: str) -> bool:
+    """一致した断片が伏せ字表記かどうか。**判定に値を出さない。**"""
+    return any(mark in fragment for mark in REDACTION_MARKS)
+
 
 class ReportError(RuntimeError):
     """送り返せない理由。**送る前に必ず理由を出して止まる。**"""
@@ -90,6 +104,8 @@ def scan_secrets(text: str, env: dict[str, str] | None = None) -> list[str]:
 
     for label, pattern in SECRET_PATTERNS:
         for m in pattern.finditer(text):
+            if looks_redacted(m.group(0)):
+                continue  # 伏せ字の要約値。**偽陽性を拾わない**
             line = text.count("\n", 0, m.start()) + 1
             findings.append(f"{label}（{line} 行目・値は伏せる）")
 

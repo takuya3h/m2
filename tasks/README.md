@@ -203,6 +203,73 @@ L3 は実行環境そのものを検査するため、**実行するホストで
 再生成との差分で捕まる（`make taskindex-check` と `make inbox-check`）。
 2 つの検査は別のものを見ている。片方だけでは足りない。
 
+**契約が正当に書く場所は宣言する。** 収穫を伴う契約は `runindex/` を正当に更新するし、
+分析の契約は `outputs.destination` へ書く。宣言が無いと、契約どおりに実行するほど
+検査が落ちる。宣言は `contract.allow_write` に接頭辞で置き、検査へ契約を渡す。
+
+    make forbidden-check TASK=<task_id>   # 契約の allow_write を許可として読む
+
+**許可には上限がある。** 宣言しても次は許可されない。上限に触れた宣言は
+`rejected_allowances` として出力に残る。**黙って無視しない。**
+
+| 上限 | 理由 |
+|---|---|
+| `data/` 配下 | 一次データは契約の種類にかかわらず書き換えない |
+| `experiments/` と `transfer/` のうち起点に既に存在する経路 | 既存 run の証跡を上書きさせない。新規の経路は許可される |
+
+`runindex/` の更新は許可できる。収穫が既存行を書き換えるのは正常であり、
+その中身の判定は禁止領域の検査ではなく `make harvest-verify` が行う。
+
+### 収穫の前後は一つの命令で比べる
+
+    make harvest-verify                # 起点は HEAD（収穫前の commit）
+    make harvest-verify BASE=<commit>
+
+**「既存行の変更が零件」は run 単位の索引にしか成立しない。** 集約表は、既存の群へ
+新しい run が加われば `n_runs` も `*_mean` も `*_pstd` も必ず書き換わる。
+この条件を集約表にも課していたため、正常な収穫でも必ず escalate していた。
+
+| 表 | 規則 |
+|---|---|
+| `runindex/index.csv` | 追加のみ。削除零・既存行の変更零 |
+| `runindex/experiments.csv` `verdicts.csv` `per_class.csv` | 削除零かつ**既存の群の判定列が不変**。集計値の列（`*_mean` `*_pstd` `*_min` `*_max` `*_n`）は変わってよい |
+
+判定列は `same_sign` `verdict` `agree` `reason` `n_seeds` を名前に含む列とする
+（`tools/verify_harvest.py` の `JUDGEMENT_MARKERS`）。**一覧を手で持たない。**
+表が列を増やしても規則が古くならないためである。差分の全量を出力に含める。
+
+### 実行者が解決する参照は宣言して渡す
+
+起票者が索引の中身を知らないまま契約を書くことがある。分母や凍結源の参照がそれで、
+置換前提の値をそのまま置くと**取り込みの形式検査で落ちて契約が設置できなかった**。
+
+宣言つきなら設置でき、**解決が済むまで実行直前検査が止める**方式を採った。
+形式検査を緩める方式ではなく宣言を要る方式にしたのは、宣言の無い置換前提の値
+（`TBD` など）を従来どおり落とし続けるためである。
+
+    inputs:
+      denominator:
+        ref: "unresolved:runindex/experiments.csv から s0 の分母を引く"
+        resolve_by_executor: true
+        metric: "mAP"
+
+実行者は解決先を `tasks/<task_id>/resolved.yaml` に書く。書くまで `P12 refs_resolved`
+が `FAIL` になる。この対応表がそのまま RESULT の「解決された参照」の材料になる。
+
+    inputs.denominator.ref:
+      resolved_to: "exp:baselines/s0/relationdetr@mAP"
+      how: "runindex/experiments.csv の experiment_id と照合した"
+
+### preflight の宣言は契約が実際に使う経路に限る
+
+工程側だけを回す契約は検出器の拡張（`cuda_ext_loaded`）を宣言しない。
+契約が使う経路と検査が見る経路がずれると、通っても意味が無く、落ちても直しようがない。
+
+**実装されていない名前は `FAIL` になる。** 以前は黙って無視され、宣言した検査が
+一つも動かないまま `PASS` になっていた。書いてよい名前は
+`tools/preflight_task.py` の `KNOWN_PREFLIGHT_NAMES` と schema の `enum` が持つ
+（両者が同じ集合であることは試験で縛っている）。
+
 ### L3 の PASS と SKIP は違う
 
 `make task-preflight` は各検査を `PASS` / `WARN` / `SKIP` / `FAIL` のいずれかで報告する。

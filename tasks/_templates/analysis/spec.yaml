@@ -32,6 +32,11 @@ contract:
   conventions_rev: ""
   prohibitions: [no_split_redefine, no_raw_write, no_estimated_values]
   verbatim_forbidden: true
+  # 契約が正当に書く禁止領域があれば接頭辞で宣言する（無ければ欄ごと消す）。
+  # 宣言の無い禁止領域への書き込みは失敗する。検査は make forbidden-check（--task つき）。
+  # **上限**: data/ 配下は宣言しても許可されない。experiments/ と transfer/ は
+  # 起点に既に存在する経路（既存 run 配下）を許可できない。
+  # allow_write: [runindex/]
 plan:
   phases:
     - {id: A, name: "", gpu: false, est: ""}
