@@ -83,7 +83,7 @@ train_acc は ep0 0.8387 → ep2 0.9831。
 | 項目 | 実測値 |
 |---|---|
 | 収穫後の索引件数 | `index.csv` **1266** / `experiments.csv` 285 / `verdicts.csv` 1506 / `per_class.csv` 9195 |
-| `runindex_commit` | 本契約の commit（§9 に記載） |
+| `runindex_commit` | **`96eb3a1c`** |
 | prereg commit | `762ee4f57069990120cbc668730c17f376f3dfa7` / `2026-08-29T17:08:04+00:00` |
 | 検出器 run の所要時間 | 2 本並行で 1 epoch 36〜40 分、6 epoch で **1 run 約 4 時間**。単独時は 2.2 it/s（37 分/epoch） |
 | B4 の run 所要時間 | 12 run 合計 **約 4 分**（各 14.5〜32.2 s）。塔の学習は 105 秒 |
@@ -145,5 +145,7 @@ commit していない**（契約 §7 の但し書きに該当。audit §8.3）�
 
 | 項目 | 実測 |
 |---|---|
-| PR | 未起票（下記） |
-| 台帳への報告 | 未送信（下記） |
+| commit | `96eb3a1c`（160 files changed, 12638 insertions, 92 deletions）／prereg `762ee4f5` |
+| push | exit 0（`origin/feat/lecun-detector-env-pd`） |
+| PR | **#169**（base `phase0`） |
+| 台帳への報告 | `make task-report` の結果を下に記す |

@@ -115,7 +115,7 @@
 
 ## T-2026-08-29-lecun-detector-env-pd
 
-状態 `pass` / ホスト `lecun` / 起票 `なし` / 様式 `v3`
+状態 `pass` / ホスト `lecun` / 起票 `169` / 様式 `v3`
 
 ### ゲート
 

@@ -3,7 +3,7 @@ task_id: "T-2026-08-29-lecun-detector-env-pd"
 status: pass
 host: "lecun"
 branch: "feat/lecun-detector-env-pd"
-pr: null
+pr: 169
 merged: false
 
 gates:
@@ -93,4 +93,6 @@ unknowns:
   - "philip への SSH が使えなかった原因。SSH 設定の読み取りは実行基盤の保護規則で拒否されたため特定していない"
   - "強い工程塔の seed 間のばらつき。一 seed しか作っていない"
 
-commits: []
+commits:
+  - "762ee4f5"
+  - "96eb3a1c"
