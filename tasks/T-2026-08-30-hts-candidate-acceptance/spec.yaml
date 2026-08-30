@@ -1,0 +1,55 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-08-30-hts-candidate-acceptance"
+  kind: analysis
+  title: "data/annotations 配下の手・把持・マスク系の候補を受け入れ基準に当て、HTS 完全版を組めるかを三値で確定する"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-08-30T03:10:00Z"
+  created_from:
+    runindex_commit: "09fdefb3"
+    counts: {index: 1250, experiments: 277, verdicts: 1486}
+  depends_on: []
+  amendments: []
+intent:
+  question: "既存の注釈から、受け入れ基準を満たす HTS 完全版を組み立てられるか。組めないなら何が欠けているか"
+  decision_at_stake: "HTS 完全版の組立に着手するか、手信号の腕を主測定の段から外すか。方針文書は塔の確定の関門までの判断を求めている"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "egosurgery_hts"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/audit_l0_hts_acceptance.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "a8c07e81"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_regen, no_history_rewrite]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "候補の全走査と棚卸し", gpu: false, est: "medium"}
+    - {id: B, name: "受け入れ基準への当てはめと対照", gpu: false, est: "medium"}
+    - {id: C, name: "三値の結論・記録・送出", gpu: false, est: "short"}
+  gates:
+    - {id: G1, after: A, check: "走査の範囲が対象の定義（配下の全ファイル、点で始まるもの、退避先、参照先）を覆っていることを異質な二方法で確かめた", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md, result.yaml, audit.md, REPORT.md, candidates.csv, criteria_matrix.csv]
+  destination: "experiments/analysis/hts_candidate_acceptance/"
+  acceptance:
+    - "SPEC の完了判定 a から g をすべて満たし、各判定に空振りでないことの確認が付く"
+    - "data 配下への書き込みが無い"
+    - "PR が存在する状態で終える"
+  report_to: [notion_task_distribution]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "受け入れ基準の定義が既存の検査器と文書とで食い違う場合"
+    - "候補の読み取りに data 配下の変更が必要になる場合"

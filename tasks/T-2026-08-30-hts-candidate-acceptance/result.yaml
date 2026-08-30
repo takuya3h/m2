@@ -1,0 +1,169 @@
+result_version: 3
+task_id: "T-2026-08-30-hts-candidate-acceptance"
+status: pass
+host: "andrew"
+branch: "feat/hts-candidate-acceptance"
+pr: 167
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      配下を find で全走査し 74 エントリ（d=11 f=60 l=3）。点で始まる .gitkeep 1 件、
+      退避先 _deprecated/egosurgery_hand4 の 3 件、配下内を指す symlink 3 件を含む。
+      文書・スクリプトからの逆引き（ひな型 {train,val,test}/{split}/{sp}/{s} を展開）で
+      実在 27 経路を得て、方法1 に現れない実在参照が 0 件であることを確かめた。
+      参照先 4 経路（raw 02_hand/04_handtool/00_master）はすべて到達可。
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+
+deviations:
+  - type: judgement
+    note: >-
+      開始時に作業ツリーへ未追跡ファイル（pd_refin_*_seed42 の logs/*.json 4 組と
+      セッションダイジェスト 1 件）が残り make task-start が exit 3 で止まった。破棄は
+      研究記録に関わるためユーザーへ選択肢を示し、「stash で一時退避」の回答を得て
+      git stash push -u で退避した（stash@{0}）。本契約の完了後に git stash pop で戻す。
+  - type: judgement
+    note: >-
+      実行開始時の分岐は feat/denoise-falsification だった。ユーザーが指示した起動命令に
+      従い git checkout phase0 を行ってから task-start を実行した。
+  - type: judgement
+    note: >-
+      契約 §4-2（destination 以外の experiments への書き込み禁止）に触れた。対照のため
+      scripts/audit_l0_hts_acceptance.py をそのまま実行したところ、検査器 main() が
+      experiments/audit/l0_hts_acceptance/acceptance_report.json を上書きした。実行前の
+      控えから復元し git status --porcelain experiments/audit/ が空であることを確認した。
+      以降は main() を呼ばず判定関数のみを import して評価した。検査器を素直に実行すると
+      必ずこの書き込みが起きるため、契約側で実行方法を指定する必要がある。
+  - type: spec_defect
+    note: >-
+      手順書（.claude/skills/task/SKILL.md 手順 6）は make taskindex と make taskindex-check、
+      make inbox を実行して投影に現れることを確かめるよう求めるが、契約 §4-3 は context/auto と
+      tasks/inbox.md の再生成を禁止している（並行契約あり、統合後に一台で回す）。契約を優先し
+      いずれも実行しなかった。したがって本報告は context/auto/tasks_summary.csv などの投影に
+      まだ現れない。統合後に一台で再生成すること。
+  - type: spec_defect
+    note: >-
+      make forbidden-check が status=fail を返すが、違反 12 件はすべて本契約の
+      outputs.destination（experiments/analysis/hts_candidate_acceptance/）の内側である。
+      道具は生成物（context/auto/ と tasks/inbox.md）しか除外できず、契約ごとの destination を
+      表現できないため、契約に従った実行でも必ず fail になる。destination の外側にある違反は
+      0 件であることを個別に確かめた（changed 17 件の内訳は destination 12・契約ディレクトリ 4・
+      tasks/inbox.d/ 1）。道具に destination の除外を渡せるようにする必要がある。
+  - type: judgement
+    note: >-
+      G1 の照合が初回は空振りだった。逆引きがひな型を展開していなかったため、方法1 から
+      1 件除く陰性対照が 3 例すべて非検出になった。ひな型展開を足して照合を強めてから
+      G1 を判定した。弱いままなら G1 は空振りのまま通っていた。
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: >-
+      SPEC §2 は「既存の検査器が実装している C1 から C5 の定義を正とする」と書くが、実装の
+      主判定は main_keys = C1/C2/C3/C4 の 4 つで C5 を含まない（C5 は pass を持つが verdict に
+      使われない）。指示どおり C1–C5 を主判定として扱うと、C5 が PASS/FAIL する候補で結論が
+      変わり、検査器の verdict と食い違う判定が出る。実装を優先し食い違いを報告に残した。
+  - type: self_contradiction
+    note: >-
+      spec.contract.prohibitions の no_runindex_regen と no_history_rewrite は、同じ契約が
+      inject_verbatim で原文注入を指示している conventions#prohibitions の表に存在しない
+      （表は no_split_redefine / no_raw_write / no_frozen_change / no_estimated_values /
+      no_runindex_hand_edit）。指示どおり原文へ照合すると解決先が見つからず、禁止の内容を
+      実行者が推測するしかない。SPEC §4 の禁止事項を正として運用した。
+
+positive_controls:
+  - judgement: "判定 a 走査の網羅性（異質な二方法の照合）"
+    breaking_input: "方法1 の一覧から実在ファイルを 1 件除く"
+    observed: >-
+      ひな型展開後は hand_tool_seg/train.json と egosurgery_tool_hand/instances_val.json の
+      2 例で差として検出された。_deprecated/egosurgery_hand4/instances_train.json の 1 例は
+      非検出で、退避後の経路を具体参照する文書が無いためと説明がついた。ひな型展開前は
+      3 例すべて非検出（空振り）だった。
+  - judgement: "判定 c 検査器の再現（陽性: C1 から C3 が落ちる）"
+    breaking_input: "現行派生物に検査器を再実行する"
+    observed: >-
+      C1/C2/C3 が FAIL、C4 が PASS で前回と一致し verdict も NOT ACCEPTED を再現した。
+      同時に C3 の hand_instances_current が 46320 から 0 へ、C5 が PASS から FAIL へ変化した。
+      egosurgery_hand4 が _deprecated/ へ退避され、_splits() が不在ファイルを黙って飛ばすため。
+  - judgement: "判定 d マスク型の判定器が真マスクとダミーを区別する"
+    breaking_input: "4 頂点だけの polygon を入力する"
+    observed: >-
+      hand_seg/val.json の RLE 注釈は is_real=True、egosurgery_tool_hand/val.json の
+      4 頂点 polygon 注釈は is_real=False となり判定が分かれた。双方とも実データから抜いた。
+  - judgement: "判定 e 手の件数の重複除去が働いている"
+    breaking_input: "重複を含む複数候補を合算し、単純加算と集合件数を比べる"
+    observed: >-
+      hand4+tool_hand_4cls は単純加算 92640 に対し集合 77807（差 14833）、4 候補合算は
+      単純加算 196133 に対し集合 134979（差 61154）。hand_seg 単体でも 57173 対 57172（差 1）。
+      差が 0 でないため重複除去は働いている。
+  - judgement: "判定 g 変更範囲が data 配下に及んでいない"
+    breaking_input: "同じ絞り込み（git status --porcelain）を destination に当てる"
+    observed: >-
+      data/ に当てると空、絞り込みなしでは experiments/analysis/hts_candidate_acceptance/ と
+      tasks/T-2026-08-30-hts-candidate-acceptance/ の 2 行が出た。検査は空振りしていない。
+  - judgement: "C1 の polygon>4 頂点の枝"
+    breaking_input: "頂点数 5 以上の polygon を含む実データを入力する"
+    observed: >-
+      UNKNOWN。data/annotations と data/raw の全候補を通じた polygon 頂点数分布は {4: 371335} で、
+      真の多角形が 1 件も存在しないため実データでこの枝を踏めない。合成入力（8 頂点）でのみ
+      is_real=True を確認した。
+
+followups:
+  - >-
+    make forbidden-check は契約ごとの outputs.destination を除外できないため、destination へ
+    正しく書いた契約でも status=fail を返す。本契約では違反 12 件すべてが destination の内側で、
+    外側は 0 件だった。道具側に destination を渡す口が要る。
+  - >-
+    三値の結論は「一部欠落」。主判定 C1（真マスク）は hts_hand_seg / hts_hand_tool_seg /
+    hts_tool_seg / raw04_5cls が、C2（値5=Two Hands Tool）は hts_hand_tool_seg（cat5 注釈 2021 件）と
+    raw04_5cls が、C4 は全 9 候補が満たす。C3 を満たす候補は 0 件。
+  - >-
+    C3 は実装どおりでは満たせない。検査器は raw 02_hand の glob によるディレクトリ名 26 件と、
+    file_name から導く動画 id 25 件を比べており、03_3 は右辺に現れ得ないため missing == [] が
+    構成上成立しない。03_3 は 02_hand/json_per_video/03_3/03_3.json が images 1472 件・
+    annotations 0 件で、その画像リストは 03_1/03_2 のフレームである。
+  - >-
+    03_3 の手・把持・マスク注釈は存在しない。data/annotations と data/raw の COCO JSON 全 291 個
+    （realpath で重複排除）を走査し 03_3_* のフレームを持つ注釈は 0 件だった。一方 frames は
+    01_frames/initial_videos/03_3/ に 261 枚、工程注釈は egosurgery_phase/03_3.csv が実在し、
+    公式 split（egosurgery_tool の 22 動画）には 03_3 が含まれない。組立作業では埋まらない欠落である。
+  - >-
+    目標値 57173 は正本の完全重複 1 件を含む。02_hand/json_per_video/05_1/05_1.json の
+    05_1_0575.jpg / bbox (0.0, 6.0, 940.0, 1066.0) / cat 4 に ann id 1519 と 1520 が同一内容で並ぶ。
+    hts_hand_seg（train+val+test+extra）の単純加算は 57173 で目標一致、集合件数は 57172。
+    C3 の閾値を直す場合はどちらを正とするか明記が要る。
+  - >-
+    既存検査器 scripts/audit_l0_hts_acceptance.py に 3 つの欠陥を実測した。(1) 入力の不在を
+    0 件として通す（_splits が不在ファイルを黙って飛ばし、退避に気付かない）。(2) C3 が
+    ディレクトリ名と動画 id という型の違うものを比べる。(3) C1 の seg_profile は先頭 3000 件しか
+    見ない。本契約は全件（polygon 371335 件を含む）を走査した。修正は本契約の範囲外。
+  - >-
+    C5（公式 split 整合）は主判定ではないが、真マスクを持つ hts_hand_seg は 9627/1515/4255 で
+    公式 9657/1515/4265 に 40 枚届かない。不足分は手注釈が 0 件のフレームであり、原資料の欠落では
+    なく「注釈ゼロのフレームを images に載せるか」の設計差である。組立時に決める必要がある。
+  - >-
+    文書・スクリプトが指す data/annotations 配下の経路のうち 29 件が実在しない
+    （egosurgery_hand4/ の旧経路、egosurgery_hts/hand_bbox/、handtool_seg_5cls/by_split/、
+    pseudo_labels/、egosurgery_hts_bundle_audit.md、egosurgery_split_consistency_audit.md など）。
+    README §9 が指す文書の一部も不在。文書の追従が要る。
+  - >-
+    本契約の実行で退避した未追跡ファイルが残っている。git stash@{0}
+    「task-start用の一時退避 T-2026-08-30-hts-candidate-acceptance」を pop して戻すこと。
+    実体（checkpoints/predictions）は .gitignore 済みのためディスク上に残っている。
+
+unknowns:
+  - >-
+    検査器 C1 の polygon>4 頂点の枝の実データ上の挙動。実データの polygon は全 371335 件が
+    4 頂点であり、真の多角形が存在しないため踏めない。合成入力でのみ確認した。
+  - >-
+    egosurgery_tool_hand 直下の 4cls（train/val/test.json）と 19cls（instances_*.json）の生成元。
+    README に記載を確認できなかった。来歴は candidates.csv の provenance 列で空欄とせず
+    「生成元の記載を README で確認できず」と明記した。
+
+commits:
+  - "7e022fa5a9ad602797c0da8e016798eb41e4770d"

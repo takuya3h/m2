@@ -1,0 +1,851 @@
+[
+ {
+  "key": "hand4_deprecated",
+  "desc": "手 bbox 4cls（退避先）",
+  "paths": {
+   "train": "data/annotations/_deprecated/egosurgery_hand4/instances_train.json",
+   "val": "data/annotations/_deprecated/egosurgery_hand4/instances_val.json",
+   "test": "data/annotations/_deprecated/egosurgery_hand4/instances_test.json"
+  },
+  "extras": [],
+  "splits_found": [
+   "test",
+   "train",
+   "val"
+  ],
+  "readable": true,
+  "categories": {
+   "0": "Own hands left",
+   "1": "Own hands right",
+   "2": "Other hands left",
+   "3": "Other hands right"
+  },
+  "true_hand_category_ids": [
+   0,
+   1,
+   2,
+   3
+  ],
+  "C1": {
+   "pass": false,
+   "counted": {
+    "seg_types": {
+     "none": 46320
+    },
+    "vertex_hist": {}
+   },
+   "threshold": "RLE>0 か、頂点数>4 の polygon が 4 頂点以上に多いこと"
+  },
+  "C2": {
+   "pass": false,
+   "counted": {
+    "cat5_name": null,
+    "cat5_count": 0
+   },
+   "threshold": "id=5 の名が 'Two Hands' を含み、件数>0"
+  },
+  "C3": {
+   "pass": false,
+   "counted": {
+    "hand_annotations": 46320,
+    "segments_present": 22,
+    "segments_raw_dirs": 26,
+    "missing_videos": [
+     "03_1",
+     "03_3",
+     "12_2",
+     "15_2"
+    ]
+   },
+   "threshold": "手注釈 == 57173 かつ 欠落動画 0"
+  },
+  "C4": {
+   "pass": true,
+   "counted": {
+    "frame_overlap": {
+     "train^val": 0,
+     "train^test": 0,
+     "val^test": 0
+    },
+    "video_overlap": {
+     "train^val": [],
+     "train^test": [],
+     "val^test": []
+    }
+   },
+   "threshold": "frame も video も split 跨ぎで共有 0（比較対が存在すること）"
+  },
+  "C5": {
+   "pass": true,
+   "counted": {
+    "image_counts": {
+     "train": 9657,
+     "val": 1515,
+     "test": 4265
+    }
+   },
+   "threshold": "images 数 == {'train': 9657, 'val': 1515, 'test': 4265}"
+  }
+ },
+ {
+  "key": "hts_hand_seg",
+  "desc": "手 seg 4cls（HTS 再構成）",
+  "paths": {
+   "train": "data/annotations/egosurgery_hts/hand_seg/train.json",
+   "val": "data/annotations/egosurgery_hts/hand_seg/val.json",
+   "test": "data/annotations/egosurgery_hts/hand_seg/test.json"
+  },
+  "extras": [
+   "data/annotations/egosurgery_hts/hand_seg/extra.json"
+  ],
+  "splits_found": [
+   "test",
+   "train",
+   "val"
+  ],
+  "readable": true,
+  "categories": {
+   "1": "First Person's Left Hand",
+   "2": "First Person's Right Hand",
+   "3": "Other Person's Left Hand",
+   "4": "Other Person's Right Hand"
+  },
+  "true_hand_category_ids": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "C1": {
+   "pass": true,
+   "counted": {
+    "seg_types": {
+     "rle": 57173
+    },
+    "vertex_hist": {}
+   },
+   "threshold": "RLE>0 か、頂点数>4 の polygon が 4 頂点以上に多いこと"
+  },
+  "C2": {
+   "pass": false,
+   "counted": {
+    "cat5_name": null,
+    "cat5_count": 0
+   },
+   "threshold": "id=5 の名が 'Two Hands' を含み、件数>0"
+  },
+  "C3": {
+   "pass": false,
+   "counted": {
+    "hand_annotations": 57173,
+    "segments_present": 25,
+    "segments_raw_dirs": 26,
+    "missing_videos": [
+     "03_3"
+    ]
+   },
+   "threshold": "手注釈 == 57173 かつ 欠落動画 0"
+  },
+  "C4": {
+   "pass": true,
+   "counted": {
+    "frame_overlap": {
+     "train^val": 0,
+     "train^test": 0,
+     "val^test": 0
+    },
+    "video_overlap": {
+     "train^val": [],
+     "train^test": [],
+     "val^test": []
+    }
+   },
+   "threshold": "frame も video も split 跨ぎで共有 0（比較対が存在すること）"
+  },
+  "C5": {
+   "pass": false,
+   "counted": {
+    "image_counts": {
+     "train": 9627,
+     "val": 1515,
+     "test": 4255
+    }
+   },
+   "threshold": "images 数 == {'train': 9657, 'val': 1515, 'test': 4265}"
+  }
+ },
+ {
+  "key": "hts_hand_tool_seg",
+  "desc": "把持関係 seg 5cls（HTS 再構成）",
+  "paths": {
+   "train": "data/annotations/egosurgery_hts/hand_tool_seg/train.json",
+   "val": "data/annotations/egosurgery_hts/hand_tool_seg/val.json",
+   "test": "data/annotations/egosurgery_hts/hand_tool_seg/test.json"
+  },
+  "extras": [
+   "data/annotations/egosurgery_hts/hand_tool_seg/extra.json"
+  ],
+  "splits_found": [
+   "test",
+   "train",
+   "val"
+  ],
+  "readable": true,
+  "categories": {
+   "1": "First Person's Left Hand",
+   "2": "First Person's Right Hand",
+   "3": "Left Hand Tool",
+   "4": "Right Hand Tool",
+   "5": "Two Hands Tool"
+  },
+  "true_hand_category_ids": [
+   1,
+   2
+  ],
+  "C1": {
+   "pass": true,
+   "counted": {
+    "seg_types": {
+     "rle": 62087
+    },
+    "vertex_hist": {}
+   },
+   "threshold": "RLE>0 か、頂点数>4 の polygon が 4 頂点以上に多いこと"
+  },
+  "C2": {
+   "pass": true,
+   "counted": {
+    "cat5_name": "Two Hands Tool",
+    "cat5_count": 2021
+   },
+   "threshold": "id=5 の名が 'Two Hands' を含み、件数>0"
+  },
+  "C3": {
+   "pass": false,
+   "counted": {
+    "hand_annotations": 33465,
+    "segments_present": 24,
+    "segments_raw_dirs": 26,
+    "missing_videos": [
+     "03_3",
+     "12_2"
+    ]
+   },
+   "threshold": "手注釈 == 57173 かつ 欠落動画 0"
+  },
+  "C4": {
+   "pass": true,
+   "counted": {
+    "frame_overlap": {
+     "train^val": 0,
+     "train^test": 0,
+     "val^test": 0
+    },
+    "video_overlap": {
+     "train^val": [],
+     "train^test": [],
+     "val^test": []
+    }
+   },
+   "threshold": "frame も video も split 跨ぎで共有 0（比較対が存在すること）"
+  },
+  "C5": {
+   "pass": false,
+   "counted": {
+    "image_counts": {
+     "train": 9356,
+     "val": 1514,
+     "test": 4107
+    }
+   },
+   "threshold": "images 数 == {'train': 9657, 'val': 1515, 'test': 4265}"
+  }
+ },
+ {
+  "key": "hts_tool_seg",
+  "desc": "術具 seg 31cls（HTS 再構成）",
+  "paths": {
+   "train": "data/annotations/egosurgery_hts/tool_seg/train.json",
+   "val": "data/annotations/egosurgery_hts/tool_seg/val.json",
+   "test": "data/annotations/egosurgery_hts/tool_seg/test.json"
+  },
+  "extras": [
+   "data/annotations/egosurgery_hts/tool_seg/extra.json"
+  ],
+  "splits_found": [
+   "test",
+   "train",
+   "val"
+  ],
+  "readable": true,
+  "categories": {
+   "1": "BiClamp",
+   "2": "Bipolar Forceps",
+   "3": "Chisel",
+   "4": "Cup",
+   "5": "Drill",
+   "6": "Electric Cautery",
+   "7": "Forceps",
+   "8": "Gauze",
+   "9": "Hammer",
+   "10": "Hook",
+   "11": "Kidney Dish",
+   "12": "Malleable Retractor",
+   "13": "Mouth Gag",
+   "14": "Nasogastric Tube",
+   "15": "Needle Holders",
+   "16": "Pen",
+   "17": "Petri Dish",
+   "18": "Raspatory",
+   "19": "Retractor",
+   "20": "Ruler",
+   "21": "Scalpel",
+   "22": "Scissors",
+   "23": "Screwdriver",
+   "24": "Skewer",
+   "25": "Spoon",
+   "26": "Suction Cannula",
+   "27": "Suction Tube",
+   "28": "Suture, Suture Needle",
+   "29": "Syringe",
+   "30": "Trephine",
+   "31": "Tweezers"
+  },
+  "true_hand_category_ids": [],
+  "C1": {
+   "pass": true,
+   "counted": {
+    "seg_types": {
+     "rle": 54137
+    },
+    "vertex_hist": {}
+   },
+   "threshold": "RLE>0 か、頂点数>4 の polygon が 4 頂点以上に多いこと"
+  },
+  "C2": {
+   "pass": false,
+   "counted": {
+    "cat5_name": "Drill",
+    "cat5_count": 75
+   },
+   "threshold": "id=5 の名が 'Two Hands' を含み、件数>0"
+  },
+  "C3": {
+   "pass": false,
+   "counted": {
+    "hand_annotations": 0,
+    "segments_present": 24,
+    "segments_raw_dirs": 26,
+    "missing_videos": [
+     "03_1",
+     "03_3"
+    ]
+   },
+   "threshold": "手注釈 == 57173 かつ 欠落動画 0"
+  },
+  "C4": {
+   "pass": true,
+   "counted": {
+    "frame_overlap": {
+     "train^val": 0,
+     "train^test": 0,
+     "val^test": 0
+    },
+    "video_overlap": {
+     "train^val": [],
+     "train^test": [],
+     "val^test": []
+    }
+   },
+   "threshold": "frame も video も split 跨ぎで共有 0（比較対が存在すること）"
+  },
+  "C5": {
+   "pass": false,
+   "counted": {
+    "image_counts": {
+     "train": 9528,
+     "val": 1512,
+     "test": 3927
+    }
+   },
+   "threshold": "images 数 == {'train': 9657, 'val': 1515, 'test': 4265}"
+  }
+ },
+ {
+  "key": "tool_bbox",
+  "desc": "術具 bbox 15cls",
+  "paths": {
+   "train": "data/annotations/egosurgery_tool/instances_train.json",
+   "val": "data/annotations/egosurgery_tool/instances_val.json",
+   "test": "data/annotations/egosurgery_tool/instances_test.json"
+  },
+  "extras": [],
+  "splits_found": [
+   "test",
+   "train",
+   "val"
+  ],
+  "readable": true,
+  "categories": {
+   "0": "Bipolar Forceps",
+   "1": "Electric Cautery",
+   "2": "Forceps",
+   "3": "Gauze",
+   "4": "Hook",
+   "5": "Mouth Gag",
+   "6": "Needle Holders",
+   "7": "Raspatory",
+   "8": "Retractor",
+   "9": "Scalpel",
+   "10": "Scissors",
+   "11": "Skewer",
+   "12": "Suction Cannula",
+   "13": "Syringe",
+   "14": "Tweezers"
+  },
+  "true_hand_category_ids": [],
+  "C1": {
+   "pass": false,
+   "counted": {
+    "seg_types": {
+     "polygon": 49652
+    },
+    "vertex_hist": {
+     "4": 49652
+    }
+   },
+   "threshold": "RLE>0 か、頂点数>4 の polygon が 4 頂点以上に多いこと"
+  },
+  "C2": {
+   "pass": false,
+   "counted": {
+    "cat5_name": "Mouth Gag",
+    "cat5_count": 5985
+   },
+   "threshold": "id=5 の名が 'Two Hands' を含み、件数>0"
+  },
+  "C3": {
+   "pass": false,
+   "counted": {
+    "hand_annotations": 0,
+    "segments_present": 22,
+    "segments_raw_dirs": 26,
+    "missing_videos": [
+     "03_1",
+     "03_3",
+     "12_2",
+     "15_2"
+    ]
+   },
+   "threshold": "手注釈 == 57173 かつ 欠落動画 0"
+  },
+  "C4": {
+   "pass": true,
+   "counted": {
+    "frame_overlap": {
+     "train^val": 0,
+     "train^test": 0,
+     "val^test": 0
+    },
+    "video_overlap": {
+     "train^val": [],
+     "train^test": [],
+     "val^test": []
+    }
+   },
+   "threshold": "frame も video も split 跨ぎで共有 0（比較対が存在すること）"
+  },
+  "C5": {
+   "pass": true,
+   "counted": {
+    "image_counts": {
+     "train": 9657,
+     "val": 1515,
+     "test": 4265
+    }
+   },
+   "threshold": "images 数 == {'train': 9657, 'val': 1515, 'test': 4265}"
+  }
+ },
+ {
+  "key": "tool_hand_19cls",
+  "desc": "術具+手 bbox 19cls（検査器が見る現行派生）",
+  "paths": {
+   "train": "data/annotations/egosurgery_tool_hand/instances_train.json",
+   "val": "data/annotations/egosurgery_tool_hand/instances_val.json",
+   "test": "data/annotations/egosurgery_tool_hand/instances_test.json"
+  },
+  "extras": [],
+  "splits_found": [
+   "test",
+   "train",
+   "val"
+  ],
+  "readable": true,
+  "categories": {
+   "0": "Bipolar Forceps",
+   "1": "Electric Cautery",
+   "2": "Forceps",
+   "3": "Gauze",
+   "4": "Hook",
+   "5": "Mouth Gag",
+   "6": "Needle Holders",
+   "7": "Raspatory",
+   "8": "Retractor",
+   "9": "Scalpel",
+   "10": "Scissors",
+   "11": "Skewer",
+   "12": "Suction Cannula",
+   "13": "Syringe",
+   "14": "Tweezers",
+   "15": "Own hands left",
+   "16": "Own hands right",
+   "17": "Other hands left",
+   "18": "Other hands right"
+  },
+  "true_hand_category_ids": [
+   15,
+   16,
+   17,
+   18
+  ],
+  "C1": {
+   "pass": false,
+   "counted": {
+    "seg_types": {
+     "polygon": 95972
+    },
+    "vertex_hist": {
+     "4": 95972
+    }
+   },
+   "threshold": "RLE>0 か、頂点数>4 の polygon が 4 頂点以上に多いこと"
+  },
+  "C2": {
+   "pass": false,
+   "counted": {
+    "cat5_name": "Mouth Gag",
+    "cat5_count": 5985
+   },
+   "threshold": "id=5 の名が 'Two Hands' を含み、件数>0"
+  },
+  "C3": {
+   "pass": false,
+   "counted": {
+    "hand_annotations": 46320,
+    "segments_present": 22,
+    "segments_raw_dirs": 26,
+    "missing_videos": [
+     "03_1",
+     "03_3",
+     "12_2",
+     "15_2"
+    ]
+   },
+   "threshold": "手注釈 == 57173 かつ 欠落動画 0"
+  },
+  "C4": {
+   "pass": true,
+   "counted": {
+    "frame_overlap": {
+     "train^val": 0,
+     "train^test": 0,
+     "val^test": 0
+    },
+    "video_overlap": {
+     "train^val": [],
+     "train^test": [],
+     "val^test": []
+    }
+   },
+   "threshold": "frame も video も split 跨ぎで共有 0（比較対が存在すること）"
+  },
+  "C5": {
+   "pass": true,
+   "counted": {
+    "image_counts": {
+     "train": 9657,
+     "val": 1515,
+     "test": 4265
+    }
+   },
+   "threshold": "images 数 == {'train': 9657, 'val': 1515, 'test': 4265}"
+  }
+ },
+ {
+  "key": "tool_hand_4cls",
+  "desc": "手 bbox 4cls（egosurgery_tool_hand 直下）",
+  "paths": {
+   "train": "data/annotations/egosurgery_tool_hand/train.json",
+   "val": "data/annotations/egosurgery_tool_hand/val.json",
+   "test": "data/annotations/egosurgery_tool_hand/test.json"
+  },
+  "extras": [],
+  "splits_found": [
+   "test",
+   "train",
+   "val"
+  ],
+  "readable": true,
+  "categories": {
+   "1": "Own hands left",
+   "2": "Own hands right",
+   "3": "Other hands left",
+   "4": "Other hands right"
+  },
+  "true_hand_category_ids": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "C1": {
+   "pass": false,
+   "counted": {
+    "seg_types": {
+     "polygon": 46320
+    },
+    "vertex_hist": {
+     "4": 46320
+    }
+   },
+   "threshold": "RLE>0 か、頂点数>4 の polygon が 4 頂点以上に多いこと"
+  },
+  "C2": {
+   "pass": false,
+   "counted": {
+    "cat5_name": null,
+    "cat5_count": 0
+   },
+   "threshold": "id=5 の名が 'Two Hands' を含み、件数>0"
+  },
+  "C3": {
+   "pass": false,
+   "counted": {
+    "hand_annotations": 46320,
+    "segments_present": 22,
+    "segments_raw_dirs": 26,
+    "missing_videos": [
+     "03_1",
+     "03_3",
+     "12_2",
+     "15_2"
+    ]
+   },
+   "threshold": "手注釈 == 57173 かつ 欠落動画 0"
+  },
+  "C4": {
+   "pass": true,
+   "counted": {
+    "frame_overlap": {
+     "train^val": 0,
+     "train^test": 0,
+     "val^test": 0
+    },
+    "video_overlap": {
+     "train^val": [],
+     "train^test": [],
+     "val^test": []
+    }
+   },
+   "threshold": "frame も video も split 跨ぎで共有 0（比較対が存在すること）"
+  },
+  "C5": {
+   "pass": false,
+   "counted": {
+    "image_counts": {
+     "train": 9627,
+     "val": 1515,
+     "test": 4255
+    }
+   },
+   "threshold": "images 数 == {'train': 9657, 'val': 1515, 'test': 4265}"
+  }
+ },
+ {
+  "key": "tool_hand_4cls_link",
+  "desc": "手 bbox 4cls（symlink: egosurgery_tool/hand）",
+  "paths": {
+   "train": "data/annotations/egosurgery_tool/hand/train.json",
+   "val": "data/annotations/egosurgery_tool/hand/val.json",
+   "test": "data/annotations/egosurgery_tool/hand/test.json"
+  },
+  "extras": [],
+  "splits_found": [
+   "test",
+   "train",
+   "val"
+  ],
+  "readable": true,
+  "categories": {
+   "1": "Own hands left",
+   "2": "Own hands right",
+   "3": "Other hands left",
+   "4": "Other hands right"
+  },
+  "true_hand_category_ids": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "C1": {
+   "pass": false,
+   "counted": {
+    "seg_types": {
+     "polygon": 46320
+    },
+    "vertex_hist": {
+     "4": 46320
+    }
+   },
+   "threshold": "RLE>0 か、頂点数>4 の polygon が 4 頂点以上に多いこと"
+  },
+  "C2": {
+   "pass": false,
+   "counted": {
+    "cat5_name": null,
+    "cat5_count": 0
+   },
+   "threshold": "id=5 の名が 'Two Hands' を含み、件数>0"
+  },
+  "C3": {
+   "pass": false,
+   "counted": {
+    "hand_annotations": 46320,
+    "segments_present": 22,
+    "segments_raw_dirs": 26,
+    "missing_videos": [
+     "03_1",
+     "03_3",
+     "12_2",
+     "15_2"
+    ]
+   },
+   "threshold": "手注釈 == 57173 かつ 欠落動画 0"
+  },
+  "C4": {
+   "pass": true,
+   "counted": {
+    "frame_overlap": {
+     "train^val": 0,
+     "train^test": 0,
+     "val^test": 0
+    },
+    "video_overlap": {
+     "train^val": [],
+     "train^test": [],
+     "val^test": []
+    }
+   },
+   "threshold": "frame も video も split 跨ぎで共有 0（比較対が存在すること）"
+  },
+  "C5": {
+   "pass": false,
+   "counted": {
+    "image_counts": {
+     "train": 9627,
+     "val": 1515,
+     "test": 4255
+    }
+   },
+   "threshold": "images 数 == {'train': 9657, 'val': 1515, 'test': 4265}"
+  }
+ },
+ {
+  "key": "raw04_5cls",
+  "desc": "参照先: raw 04_handtool 5cls",
+  "paths": {
+   "train": "data/raw/OpenSurgery_Dataset/04_handtool/coco_splits_5cls/train.json",
+   "val": "data/raw/OpenSurgery_Dataset/04_handtool/coco_splits_5cls/val.json",
+   "test": "data/raw/OpenSurgery_Dataset/04_handtool/coco_splits_5cls/test.json"
+  },
+  "extras": [],
+  "splits_found": [
+   "test",
+   "train",
+   "val"
+  ],
+  "readable": true,
+  "categories": {
+   "1": "First Person's Left Hand",
+   "2": "First Person's Right Hand",
+   "3": "Left Hand Tool",
+   "4": "Right Hand Tool",
+   "5": "Two Hands Tool"
+  },
+  "true_hand_category_ids": [
+   1,
+   2
+  ],
+  "C1": {
+   "pass": true,
+   "counted": {
+    "seg_types": {
+     "rle": 34175
+    },
+    "vertex_hist": {}
+   },
+   "threshold": "RLE>0 か、頂点数>4 の polygon が 4 頂点以上に多いこと"
+  },
+  "C2": {
+   "pass": true,
+   "counted": {
+    "cat5_name": "Two Hands Tool",
+    "cat5_count": 816
+   },
+   "threshold": "id=5 の名が 'Two Hands' を含み、件数>0"
+  },
+  "C3": {
+   "pass": false,
+   "counted": {
+    "hand_annotations": 18123,
+    "segments_present": 13,
+    "segments_raw_dirs": 26,
+    "missing_videos": [
+     "03_1",
+     "03_2",
+     "03_3",
+     "04_2",
+     "05_1",
+     "06_2",
+     "07_2",
+     "08_2",
+     "10_2",
+     "12_2",
+     "14_1",
+     "14_2",
+     "15_2"
+    ]
+   },
+   "threshold": "手注釈 == 57173 かつ 欠落動画 0"
+  },
+  "C4": {
+   "pass": true,
+   "counted": {
+    "frame_overlap": {
+     "train^val": 0,
+     "train^test": 0,
+     "val^test": 0
+    },
+    "video_overlap": {
+     "train^val": [],
+     "train^test": [],
+     "val^test": []
+    }
+   },
+   "threshold": "frame も video も split 跨ぎで共有 0（比較対が存在すること）"
+  },
+  "C5": {
+   "pass": false,
+   "counted": {
+    "image_counts": {
+     "train": 5668,
+     "val": 2094,
+     "test": 1344
+    }
+   },
+   "threshold": "images 数 == {'train': 9657, 'val': 1515, 'test': 4265}"
+  }
+ }
+]

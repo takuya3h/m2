@@ -1,0 +1,46 @@
+﻿candidate,desc,criterion,verdict,counted,threshold
+hand4_deprecated,手 bbox 4cls（退避先）,C1,FAIL,"{""seg_types"": {""none"": 46320}, ""vertex_hist"": {}}",RLE>0 か、頂点数>4 の polygon が 4 頂点以上に多いこと
+hand4_deprecated,手 bbox 4cls（退避先）,C2,FAIL,"{""cat5_name"": null, ""cat5_count"": 0}",id=5 の名が 'Two Hands' を含み、件数>0
+hand4_deprecated,手 bbox 4cls（退避先）,C3,FAIL,"{""hand_annotations"": 46320, ""segments_present"": 22, ""segments_raw_dirs"": 26, ""missing_videos"": [""03_1"", ""03_3"", ""12_2"", ""15_2""]}",手注釈 == 57173 かつ 欠落動画 0
+hand4_deprecated,手 bbox 4cls（退避先）,C4,PASS,"{""frame_overlap"": {""train^val"": 0, ""train^test"": 0, ""val^test"": 0}, ""video_overlap"": {""train^val"": [], ""train^test"": [], ""val^test"": []}}",frame も video も split 跨ぎで共有 0（比較対が存在すること）
+hand4_deprecated,手 bbox 4cls（退避先）,C5,PASS,"{""image_counts"": {""train"": 9657, ""val"": 1515, ""test"": 4265}}","images 数 == {'train': 9657, 'val': 1515, 'test': 4265}"
+hts_hand_seg,手 seg 4cls（HTS 再構成）,C1,PASS,"{""seg_types"": {""rle"": 57173}, ""vertex_hist"": {}}",RLE>0 か、頂点数>4 の polygon が 4 頂点以上に多いこと
+hts_hand_seg,手 seg 4cls（HTS 再構成）,C2,FAIL,"{""cat5_name"": null, ""cat5_count"": 0}",id=5 の名が 'Two Hands' を含み、件数>0
+hts_hand_seg,手 seg 4cls（HTS 再構成）,C3,FAIL,"{""hand_annotations"": 57173, ""segments_present"": 25, ""segments_raw_dirs"": 26, ""missing_videos"": [""03_3""]}",手注釈 == 57173 かつ 欠落動画 0
+hts_hand_seg,手 seg 4cls（HTS 再構成）,C4,PASS,"{""frame_overlap"": {""train^val"": 0, ""train^test"": 0, ""val^test"": 0}, ""video_overlap"": {""train^val"": [], ""train^test"": [], ""val^test"": []}}",frame も video も split 跨ぎで共有 0（比較対が存在すること）
+hts_hand_seg,手 seg 4cls（HTS 再構成）,C5,FAIL,"{""image_counts"": {""train"": 9627, ""val"": 1515, ""test"": 4255}}","images 数 == {'train': 9657, 'val': 1515, 'test': 4265}"
+hts_hand_tool_seg,把持関係 seg 5cls（HTS 再構成）,C1,PASS,"{""seg_types"": {""rle"": 62087}, ""vertex_hist"": {}}",RLE>0 か、頂点数>4 の polygon が 4 頂点以上に多いこと
+hts_hand_tool_seg,把持関係 seg 5cls（HTS 再構成）,C2,PASS,"{""cat5_name"": ""Two Hands Tool"", ""cat5_count"": 2021}",id=5 の名が 'Two Hands' を含み、件数>0
+hts_hand_tool_seg,把持関係 seg 5cls（HTS 再構成）,C3,FAIL,"{""hand_annotations"": 33465, ""segments_present"": 24, ""segments_raw_dirs"": 26, ""missing_videos"": [""03_3"", ""12_2""]}",手注釈 == 57173 かつ 欠落動画 0
+hts_hand_tool_seg,把持関係 seg 5cls（HTS 再構成）,C4,PASS,"{""frame_overlap"": {""train^val"": 0, ""train^test"": 0, ""val^test"": 0}, ""video_overlap"": {""train^val"": [], ""train^test"": [], ""val^test"": []}}",frame も video も split 跨ぎで共有 0（比較対が存在すること）
+hts_hand_tool_seg,把持関係 seg 5cls（HTS 再構成）,C5,FAIL,"{""image_counts"": {""train"": 9356, ""val"": 1514, ""test"": 4107}}","images 数 == {'train': 9657, 'val': 1515, 'test': 4265}"
+hts_tool_seg,術具 seg 31cls（HTS 再構成）,C1,PASS,"{""seg_types"": {""rle"": 54137}, ""vertex_hist"": {}}",RLE>0 か、頂点数>4 の polygon が 4 頂点以上に多いこと
+hts_tool_seg,術具 seg 31cls（HTS 再構成）,C2,FAIL,"{""cat5_name"": ""Drill"", ""cat5_count"": 75}",id=5 の名が 'Two Hands' を含み、件数>0
+hts_tool_seg,術具 seg 31cls（HTS 再構成）,C3,FAIL,"{""hand_annotations"": 0, ""segments_present"": 24, ""segments_raw_dirs"": 26, ""missing_videos"": [""03_1"", ""03_3""]}",手注釈 == 57173 かつ 欠落動画 0
+hts_tool_seg,術具 seg 31cls（HTS 再構成）,C4,PASS,"{""frame_overlap"": {""train^val"": 0, ""train^test"": 0, ""val^test"": 0}, ""video_overlap"": {""train^val"": [], ""train^test"": [], ""val^test"": []}}",frame も video も split 跨ぎで共有 0（比較対が存在すること）
+hts_tool_seg,術具 seg 31cls（HTS 再構成）,C5,FAIL,"{""image_counts"": {""train"": 9528, ""val"": 1512, ""test"": 3927}}","images 数 == {'train': 9657, 'val': 1515, 'test': 4265}"
+tool_bbox,術具 bbox 15cls,C1,FAIL,"{""seg_types"": {""polygon"": 49652}, ""vertex_hist"": {""4"": 49652}}",RLE>0 か、頂点数>4 の polygon が 4 頂点以上に多いこと
+tool_bbox,術具 bbox 15cls,C2,FAIL,"{""cat5_name"": ""Mouth Gag"", ""cat5_count"": 5985}",id=5 の名が 'Two Hands' を含み、件数>0
+tool_bbox,術具 bbox 15cls,C3,FAIL,"{""hand_annotations"": 0, ""segments_present"": 22, ""segments_raw_dirs"": 26, ""missing_videos"": [""03_1"", ""03_3"", ""12_2"", ""15_2""]}",手注釈 == 57173 かつ 欠落動画 0
+tool_bbox,術具 bbox 15cls,C4,PASS,"{""frame_overlap"": {""train^val"": 0, ""train^test"": 0, ""val^test"": 0}, ""video_overlap"": {""train^val"": [], ""train^test"": [], ""val^test"": []}}",frame も video も split 跨ぎで共有 0（比較対が存在すること）
+tool_bbox,術具 bbox 15cls,C5,PASS,"{""image_counts"": {""train"": 9657, ""val"": 1515, ""test"": 4265}}","images 数 == {'train': 9657, 'val': 1515, 'test': 4265}"
+tool_hand_19cls,術具+手 bbox 19cls（検査器が見る現行派生）,C1,FAIL,"{""seg_types"": {""polygon"": 95972}, ""vertex_hist"": {""4"": 95972}}",RLE>0 か、頂点数>4 の polygon が 4 頂点以上に多いこと
+tool_hand_19cls,術具+手 bbox 19cls（検査器が見る現行派生）,C2,FAIL,"{""cat5_name"": ""Mouth Gag"", ""cat5_count"": 5985}",id=5 の名が 'Two Hands' を含み、件数>0
+tool_hand_19cls,術具+手 bbox 19cls（検査器が見る現行派生）,C3,FAIL,"{""hand_annotations"": 46320, ""segments_present"": 22, ""segments_raw_dirs"": 26, ""missing_videos"": [""03_1"", ""03_3"", ""12_2"", ""15_2""]}",手注釈 == 57173 かつ 欠落動画 0
+tool_hand_19cls,術具+手 bbox 19cls（検査器が見る現行派生）,C4,PASS,"{""frame_overlap"": {""train^val"": 0, ""train^test"": 0, ""val^test"": 0}, ""video_overlap"": {""train^val"": [], ""train^test"": [], ""val^test"": []}}",frame も video も split 跨ぎで共有 0（比較対が存在すること）
+tool_hand_19cls,術具+手 bbox 19cls（検査器が見る現行派生）,C5,PASS,"{""image_counts"": {""train"": 9657, ""val"": 1515, ""test"": 4265}}","images 数 == {'train': 9657, 'val': 1515, 'test': 4265}"
+tool_hand_4cls,手 bbox 4cls（egosurgery_tool_hand 直下）,C1,FAIL,"{""seg_types"": {""polygon"": 46320}, ""vertex_hist"": {""4"": 46320}}",RLE>0 か、頂点数>4 の polygon が 4 頂点以上に多いこと
+tool_hand_4cls,手 bbox 4cls（egosurgery_tool_hand 直下）,C2,FAIL,"{""cat5_name"": null, ""cat5_count"": 0}",id=5 の名が 'Two Hands' を含み、件数>0
+tool_hand_4cls,手 bbox 4cls（egosurgery_tool_hand 直下）,C3,FAIL,"{""hand_annotations"": 46320, ""segments_present"": 22, ""segments_raw_dirs"": 26, ""missing_videos"": [""03_1"", ""03_3"", ""12_2"", ""15_2""]}",手注釈 == 57173 かつ 欠落動画 0
+tool_hand_4cls,手 bbox 4cls（egosurgery_tool_hand 直下）,C4,PASS,"{""frame_overlap"": {""train^val"": 0, ""train^test"": 0, ""val^test"": 0}, ""video_overlap"": {""train^val"": [], ""train^test"": [], ""val^test"": []}}",frame も video も split 跨ぎで共有 0（比較対が存在すること）
+tool_hand_4cls,手 bbox 4cls（egosurgery_tool_hand 直下）,C5,FAIL,"{""image_counts"": {""train"": 9627, ""val"": 1515, ""test"": 4255}}","images 数 == {'train': 9657, 'val': 1515, 'test': 4265}"
+tool_hand_4cls_link,手 bbox 4cls（symlink: egosurgery_tool/hand）,C1,FAIL,"{""seg_types"": {""polygon"": 46320}, ""vertex_hist"": {""4"": 46320}}",RLE>0 か、頂点数>4 の polygon が 4 頂点以上に多いこと
+tool_hand_4cls_link,手 bbox 4cls（symlink: egosurgery_tool/hand）,C2,FAIL,"{""cat5_name"": null, ""cat5_count"": 0}",id=5 の名が 'Two Hands' を含み、件数>0
+tool_hand_4cls_link,手 bbox 4cls（symlink: egosurgery_tool/hand）,C3,FAIL,"{""hand_annotations"": 46320, ""segments_present"": 22, ""segments_raw_dirs"": 26, ""missing_videos"": [""03_1"", ""03_3"", ""12_2"", ""15_2""]}",手注釈 == 57173 かつ 欠落動画 0
+tool_hand_4cls_link,手 bbox 4cls（symlink: egosurgery_tool/hand）,C4,PASS,"{""frame_overlap"": {""train^val"": 0, ""train^test"": 0, ""val^test"": 0}, ""video_overlap"": {""train^val"": [], ""train^test"": [], ""val^test"": []}}",frame も video も split 跨ぎで共有 0（比較対が存在すること）
+tool_hand_4cls_link,手 bbox 4cls（symlink: egosurgery_tool/hand）,C5,FAIL,"{""image_counts"": {""train"": 9627, ""val"": 1515, ""test"": 4255}}","images 数 == {'train': 9657, 'val': 1515, 'test': 4265}"
+raw04_5cls,参照先: raw 04_handtool 5cls,C1,PASS,"{""seg_types"": {""rle"": 34175}, ""vertex_hist"": {}}",RLE>0 か、頂点数>4 の polygon が 4 頂点以上に多いこと
+raw04_5cls,参照先: raw 04_handtool 5cls,C2,PASS,"{""cat5_name"": ""Two Hands Tool"", ""cat5_count"": 816}",id=5 の名が 'Two Hands' を含み、件数>0
+raw04_5cls,参照先: raw 04_handtool 5cls,C3,FAIL,"{""hand_annotations"": 18123, ""segments_present"": 13, ""segments_raw_dirs"": 26, ""missing_videos"": [""03_1"", ""03_2"", ""03_3"", ""04_2"", ""05_1"", ""06_2"", ""07_2"", ""08_2"", ""10_2"", ""12_2"", ""14_1"", ""14_2"", ""15_2""]}",手注釈 == 57173 かつ 欠落動画 0
+raw04_5cls,参照先: raw 04_handtool 5cls,C4,PASS,"{""frame_overlap"": {""train^val"": 0, ""train^test"": 0, ""val^test"": 0}, ""video_overlap"": {""train^val"": [], ""train^test"": [], ""val^test"": []}}",frame も video も split 跨ぎで共有 0（比較対が存在すること）
+raw04_5cls,参照先: raw 04_handtool 5cls,C5,FAIL,"{""image_counts"": {""train"": 5668, ""val"": 2094, ""test"": 1344}}","images 数 == {'train': 9657, 'val': 1515, 'test': 4265}"
