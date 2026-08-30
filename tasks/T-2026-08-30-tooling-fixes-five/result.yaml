@@ -3,7 +3,7 @@ task_id: "T-2026-08-30-tooling-fixes-five"
 status: pass
 host: "andrew"
 branch: "feat/tooling-fixes-five"
-pr: null
+pr: 168
 merged: false
 
 gates:
@@ -156,4 +156,5 @@ unknowns:
     P11 gpu_free を「compute プロセス 0 件」で判定したとき、共有ホストで他者の学習が走っている間に
     契約が止まる頻度は測っていない。実測は本契約の範囲外（GPU を使わないため）。
 
-commits: []
+commits:
+  - "1955cf4be63deaca11d702d25f36aff3d93cf925"

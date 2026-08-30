@@ -120,5 +120,6 @@ schema の変更で既存契約が壊れたものも無い（L1 が修正前と�
 
 ## 7. 送出
 
-- PR: 本文末尾に番号を追記
-- `make task-report` の終了コード: 本文末尾に追記
+- PR: **#168**（https://github.com/takuya3h/m2/pull/168）
+- commit: `1955cf4b`
+- `make task-report` の終了コード: **0**（report_sha256 `959639fd…` / 8,954 bytes / replaced_blocks 0）
