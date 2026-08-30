@@ -50,7 +50,11 @@ import os  # noqa: E402  frozen-src の env 上書き用（改善検出器の特
 
 FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
 GAP_DIR = PROJ / "data" / "processed" / "stage1_features" / FROZEN_SRC
-SIGNAL_DIR = PROJ / "data" / "processed" / "b2a_detsignal" / FROZEN_SRC
+# 送り手（tool 信号）のタグは受け手（GAP）と別にできる。B4 で受け手を別の工程塔へ
+# 差し替えつつ、送り手は凍結検出器のままにするために要る（train_t1a.py の
+# RELDETR_REGION_TAG と同じ作法）。未指定なら従来どおり FROZEN_SRC を使う。
+SIGNAL_SRC = os.environ.get("RELDETR_SIGNAL_TAG", FROZEN_SRC)
+SIGNAL_DIR = PROJ / "data" / "processed" / "b2a_detsignal" / SIGNAL_SRC
 ORACLE_SIGNAL_DIR = PROJ / "data" / "processed" / "oracle_toolpresence"  # §18.4 L2-3
 MANIFEST_DIR = PROJ / "data" / "processed" / "phase_manifest"
 VOCAB = json.loads((MANIFEST_DIR / "phase_vocab.json").read_text())
@@ -218,7 +222,8 @@ def _build_cfg(args, server_name: str, n_train: int, n_val: int) -> dict:
         "seed": args.seed,
         "frozen_source": {"detector": "relation_detr", "seed": 42, "backbone": "resnet50",
                           "gap_cache": str(GAP_DIR.relative_to(PROJ)),
-                          "tool_signal_cache": str(SIGNAL_DIR.relative_to(PROJ))},
+                          "tool_signal_cache": str(SIGNAL_DIR.relative_to(PROJ)),
+                          "gap_tag": FROZEN_SRC, "signal_tag": SIGNAL_SRC},
         "method": {"name": "b2a_det_to_phase", "system": "①signal_level", "direction": "det->phase",
                    "coupling": "toolpresence_concat", "tool_signal_dim": tool_dim(args.tool_source),
                    "neck": None, "grad_crossing": False},

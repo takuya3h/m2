@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（433 件）
+## 未処理（441 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -432,6 +432,12 @@
 - [ ] 2026-08-29 [cc] A3 に提供元回答を追記（**追加6動画と既存15動画に術者・症例の重複は無い**、2026-08-29・利用者経由）。リポジトリ内の実測ではないため既存本文は変えず、出所の種別を冒頭に明記して追記のみとした。R4 の前提は解消（docs/stage0/A3_attribute_overlap.md）
 - [ ] 2026-08-29 [cc] A9 を新設（工程塔候補の文献値は**推論様式・境界の緩和・数値の来歴**の三属性で割れる。TeCNO 原著 88.56 / 再実装 relaxed 90.17 / offline 系 94.1）。起票者の文献確認でありリポジトリ内で再現していない。比較表は三属性の列を必須とする（docs/stage0/A9_inference_protocol.md）
 - [ ] 2026-08-29 [cc] **lecun の追跡外 run は索引へ収穫しない**（本契約は棚卸しのみ。収穫は別契約）と利用者から回答を得た。契約 §3 A-3 および §6 禁止 2 が既に同じ内容を定めており、本文が答えている問いを decisions_required に重ねて置いたため L3 の P6 が FAIL した（T-2026-08-26-lovo-decision-rule で提案済みの規約と同型の再発）。回答は spec.yaml の meta.amendments へ記録し decisions_required を空にした（T-2026-08-29-k1-verify-policy-place）
+- [ ] 2026-08-29 [cc] **検出器の実装は版管理下の snapshot から復元する方式に決定**（利用者回答）。`third_party_snapshot/lecun/Relation-DETR/` の provenance（origin `https://github.com/xiuqhou/Relation-DETR.git` / commit `b485955c72452788240600da6d0f0b8cc49f33c7` / shallow / 2026-08-02 lecun 採取）に従い、upstream を clone → `upstream_mods.patch` 適用 → `project_files.tar.gz` 展開。この経路は B-35 で復元検証済み（T-2026-08-29-lecun-detector-env-pd）
+- [ ] 2026-08-29 [cc] **外部通信を三点とも許可された**（利用者回答）: GitHub からの public clone、PyPI からの `.venv-relation-detr` 構築（`requirements.relation_detr.lock.txt` 正本 72 pkg）、torchvision の ImageNet-R50 標準重み。いずれも認証を伴わず契約 §7 禁止 9 の範囲外（T-2026-08-29-lecun-detector-env-pd）
+- [ ] 2026-08-29 [cc] 🔴 **philip への SSH は使えなかった**（`Permission denied (publickey,password)`）。SPEC §1 は「lecun から philip へ SSH が使える（利用者の申告）」としていたが実測と食い違う。SSH 設定の読み取りは実行基盤の保護規則で拒否されたため原因は特定していない。philip 参照は使わずに進めた（T-2026-08-29-lecun-detector-env-pd）
+- [ ] 2026-08-29 [cc] **独自 config はミラーではなく snapshot にある。** `configs/detector_relation_detr/` にミラーされているのは augstrong 系 2 件のみで、凍結源が使う `train_config_egosurgery_seed42.py` と `relation_detr_resnet50_egosurgery.py` は含まれない。両者は `third_party_snapshot/lecun/Relation-DETR/project_files.tar.gz`（15 config）に在る。ミラーの README が「正本は third_party 配下」と書くだけで snapshot を指していないため、復元経路が分かりにくい（T-2026-08-29-lecun-detector-env-pd）
+- [ ] 2026-08-29 [cc] **停止条件「一 run 六時間超」に一度該当し提示したが、利用者の判断で続行**（六時間に根拠が薄いため）。あわせて「検出器の学習は 2 GPU DDP が本来のレシピ」との指摘を受けた。🔴 実測では `scripts/train_t1b.py` は**単一プロセス実装**で accelerate も DDP も持たない（`device = cuda` 単体）。2 GPU DDP のレシピは検出器自身の学習（`main.py` + `accelerate launch --num_processes 2`）に属し、W1 の注入層学習には経路が無い。DDP 化は版管理下スクリプトの大改変で契約 §2 の変更対象外のため行わず、**四段を 2 枚の GPU へ振り分けて並行実行**して両枚を使った（T-2026-08-29-lecun-detector-env-pd）
+- [ ] 2026-08-29 [cc] 最初の所要時間見積もり 103 分/epoch は **smoke 6 step 由来の過大評価**だった。定常状態は **2.1 it/s / 1 epoch 約 37 分**（6 epoch ≈ 3.7 時間）。**smoke の eta を計画の根拠にしない**（T-2026-08-29-lecun-detector-env-pd）
 - [ ] 2026-08-29 [cc] 統合後の投影三種（context/auto の4件・taskindex の3件・inbox.md）を「一台で一度だけ」の規約に従い再生成した。回した命令は `make context` `make taskindex` `make inbox`（索引の生成器は回していない）。再生成前は三検査とも exit 2、再生成後は exit 0（T-2026-08-29-projection-refresh）
 - [ ] 2026-08-29 [cc] 前契約群が残した退避 2 件のうち、復帰できるもの（`.stglobalignore` の変更・digest 3件）は本契約の分岐へ復帰し記録した。禁止領域（`experiments/analysis/` 配下 計 28 ファイル）は復帰せず、追跡下の正本と要約値で照合し全件一致を確認した（触っていない）。`.sync-pause.released`（0B・計2件）は版管理へ記録する規約に当たらないため**判断待ちとして残す**。両退避とも drop していない（T-2026-08-29-projection-refresh）
 - [ ] 2026-08-29 [cc] `.sync-pause`（今回の task-start が新規作成したもの）は前契約の残骸ではないことを実測で確認した。SPEC の「抑止の目印が存在する場合、前契約が解除しなかったことを意味する」という前提は、`scripts/task_start.sh:37` の実装（既にあれば触れない＝作成ログを出さない）と食い違う。前契約は正しく解除しており、`.sync-pause.released` は退避内に保全されている
@@ -448,6 +454,8 @@
 - [ ] 2026-08-29 [cc] 🔴 **SPEC §6 の「十五動画の工程ラベルで微調整」は分割違反になる。** 十五動画は val 2 本と test 3 本を含み、そのまま実行すると §8 禁止 1（test への接触）に反する。強い工程塔の学習対象は train 10 動画に限るべき（T-2026-08-29-stage0-contract-b）
 - [ ] 2026-08-29 [cc] `plan.env.preflight` の `cuda_ext_loaded` は検出器の拡張を見るが、**D→P 四段はキャッシュ特徴の上で動くため検出器の実装を必要としない**。契約が使う経路と preflight が見る経路がずれている。工程側だけを回す契約では `cuda_ext_loaded` を宣言しない規約を提案（T-2026-08-29-stage0-contract-b）
 - [ ] 2026-08-29 [cc] **run 台帳への投稿が 0/12 で skip した。** `scripts/load_env.sh` は `NOTION_API_KEY` は入れるが `NOTION_DB_ID` を入れない。非秘密の ID レジストリ `configs/notion.yaml` の `databases.run_ledger` を環境変数に与えて 12/12 成功させた。`load_env.sh` 側で設定するか、`post_experiments_to_notion.py` が `configs/notion.yaml` を読むようにするかの判断が要る（T-2026-08-29-stage0-contract-b）
+- [ ] 2026-08-30 [cc] 🔴 **訂正: 上の行の「DDP は W1 の注入層学習には経路が無い」は実効バッチを見ずに書いており不正確だった。** 実測すると **t1b の実効バッチは 2**（train 9657 画像 ÷ det_steps/ep 4809 = 2.008）で、S0 検出器学習の正本レシピ「per-GPU 2 × 2 GPU DDP = **実効 bs 4**」（configs/detector_relation_detr/README.md）と**揃っていない**。検出器を前方・後方に通す以上バッチは勾配と BN 挙動に効くため、無関係ではない（T-2026-08-29-lecun-detector-env-pd）
+- [ ] 2026-08-30 [cc] `train_t1b.py` を DDP で起動する記述は**リポジトリ全域で 0 件**（`scripts/run_t1b.sh` は存在せず、docstring 自身が `python scripts/train_t1b.py` と単一プロセス起動を記載）。既存 t1b 23 run も同じ経路で作られている。**利用者の判断でバッチ 2 のまま完走**させ、S0 とのバッチ不一致は UNKNOWN・逸脱として明記する。t1b を S0 parity に揃えるかは別途の判断（T-2026-08-29-lecun-detector-env-pd）
 
 ## 処理済み（1 件）
 

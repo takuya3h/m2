@@ -1,0 +1,115 @@
+{
+  "arm": "unknown",
+  "attributes": {
+    "best_is_init": false
+  },
+  "command": "#!/usr/bin/env bash\n# 自動生成: この run を起動したコマンドの記録\n# 生成日時: 2026-08-29T21:36:11+00:00\npython scripts/train_t1b.py --inject film --trainable film --phase-source both --seed 42 --epochs 6 --task-id T-2026-08-29-lecun-detector-env-pd --run-name pd_refin_both_seed42\n",
+  "commit": "762ee4f57069990120cbc668730c17f376f3dfa7",
+  "config_path": "experiments/transfer/pd_refin_both_seed42/config.yaml",
+  "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
+  "description": "pd_refin_both",
+  "duplicate_bare_keys": [],
+  "epoch": 2,
+  "eval_recipe": null,
+  "eval_recipe_id": null,
+  "evidence_completeness": "full",
+  "excluded": false,
+  "exclusion_reason": null,
+  "experiment_id": "transfer/pd_refin_both/pd_refin_both@val",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_seed_declared": null,
+  "frozen_source_tag": null,
+  "gpu": null,
+  "group": "transfer",
+  "harvest_warnings": [
+    "run 名に seq (3 桁連番) が無い別系統の命名: pd_refin_both_seed42。step には description を充てた。"
+  ],
+  "host": "lecun",
+  "host_raw": "lecun",
+  "ledger_key": "transfer__pd_refin_both_seed42",
+  "metrics": {
+    "delta_detection": 0.012193375208428003,
+    "final_epoch": 5,
+    "final_mAP": 0.7414132259668733,
+    "init_mAP": 0.7302938994613697,
+    "mAP": 0.7424872746697977
+  },
+  "metrics_by_split": {
+    "unknown": {
+      "delta_detection": 0.012193375208428003,
+      "final_epoch": 5,
+      "final_mAP": 0.7414132259668733,
+      "init_mAP": 0.7302938994613697,
+      "mAP": 0.7424872746697977
+    }
+  },
+  "metrics_nested": {
+    "artifacts": {
+      "checkpoints": "lecun:/home/ubuntu/slocal/m2/experiments/transfer/pd_refin_both_seed42/checkpoints",
+      "logs": "lecun:/home/ubuntu/slocal/m2/experiments/transfer/pd_refin_both_seed42/logs",
+      "predictions": "lecun:/home/ubuntu/slocal/m2/experiments/transfer/pd_refin_both_seed42/predictions",
+      "run_dir": "lecun:/home/ubuntu/slocal/m2/experiments/transfer/pd_refin_both_seed42"
+    }
+  },
+  "metrics_primary_split": null,
+  "metrics_source": "metrics_json",
+  "notes": null,
+  "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
+  "path": "experiments/transfer/pd_refin_both_seed42",
+  "per_class": {
+    "Bipolar Forceps": 0.8297190687057755,
+    "Electric Cautery": 0.9698641194158082,
+    "Forceps": 0.394254060946903,
+    "Gauze": 0.2661955916026334,
+    "Hook": 0.6145719603952317,
+    "Mouth Gag": 0.8021912176457142,
+    "Needle Holders": 0.854624682174235,
+    "Raspatory": 0.850016218730269,
+    "Retractor": null,
+    "Scalpel": 0.9223784677912485,
+    "Scissors": 0.7259002600571509,
+    "Skewer": 0.9568038072376593,
+    "Suction Cannula": 0.8308405179449964,
+    "Syringe": 0.5946315874529997,
+    "Tweezers": 0.7828302852765429
+  },
+  "per_class_kind": "tool",
+  "per_class_metric": "AP",
+  "per_class_nan_classes": [
+    "Retractor"
+  ],
+  "per_class_source": "experiments/transfer/pd_refin_both_seed42/per_class_ap.json",
+  "per_class_valid_count": 14,
+  "provenance": {
+    "aux_token": "no_aux_token",
+    "commit": "from_git_commit_txt",
+    "epoch": "from_metrics_json",
+    "host": "from_server_txt",
+    "name": "from_dirname_desc_seed_no_seq",
+    "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
+    "seed": "from_dirname_verified_by_command_sh_and_config_yaml",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "from_plan_section_16_7",
+    "step": "from_dirname"
+  },
+  "run_id": "pd_refin_both_seed42",
+  "seed": 42,
+  "seed_agreement": "agree",
+  "seed_command": 42,
+  "seed_config": 42,
+  "seed_detector": null,
+  "seed_phase": null,
+  "seq": null,
+  "split": "val",
+  "step": "pd_refin_both",
+  "subgroup": null,
+  "task_id": "T-2026-08-29-lecun-detector-env-pd",
+  "wandb_run_id": null,
+  "wandb_run_url": null
+}

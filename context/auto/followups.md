@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（405 件）
+## 申し送り（410 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -623,6 +623,14 @@
 - docs/sessions/digest/2026-08-25-6ae159a7-8526-4c86-98a8-2a1367c72a6a.md は元の位置へ戻したが未追跡のままである。tasks/README.md は抽出物を契約の記録と一緒に含めるよう定める一方、本契約 §2 の変更対象は docs/stage0/ の 2 文書と契約ディレクトリ・受け皿・投影に限られる。未追跡のまま残すと B-30 のとおり git merge --ff-only が内容同一でも失敗しうるため、別契約で取り込むか §2 に含める規約が要る
 - 本文が既に答えている事項を governance.decisions_required に重ねて置くと L3 の P6 で実行が止まる。T-2026-08-26-lovo-decision-rule で提案済みの規約が未適用のまま再発した
 
+### T-2026-08-29-lecun-detector-env-pd
+
+- t1b の実効バッチ 2 を S0 検出器学習の正本レシピ 4（per-GPU 2 × 2 GPU DDP）に揃えるかの判断が要る。train_t1b を DDP で起動する記述はリポジトリ全域に 0 件で、scripts/run_t1b.sh も存在せず、docstring 自身が単一プロセス起動を記載している。既存 t1b 23 run も同条件である。揃えるなら train_t1b.py の DDP 化が要り、既存 23 run とは比較不能になる
+- docs/setup/lecun_detector.md に記した nvcc 前提の食い違い（文書は 11.8、lecun の実体は 12.9）を他ホストへも展開するか。setup_env_relation_detr.sh の 11.8 固定チェックを見直すかの判断が要る
+- 新設した scripts/train_phase_tower_r50.py と scripts/train_b2a.py の RELDETR_SIGNAL_TAG を正式な実装として残すか。いずれも契約 §2 の変更対象外として足したものである
+- B4 の強い工程塔は一 seed・3 epoch の暫定版である。Stage 1 では seed を三本へ増やす前提であり、塔単体の val accuracy 0.6924 が seed でどれだけ動くかは測っていない
+- philip への SSH が使えなかった（Permission denied）。SPEC の申告と食い違うため、鍵の配布状況を確かめるか SPEC の記載を訂正するかの判断が要る
+
 ### T-2026-08-29-projection-refresh
 
 - .sync-pause.released（0B、stash@{0}とstash@{1}に各1）の処分が判断待ちのまま残っている。 版管理へ記録する規約（対話の抽出物）には当たらず、禁止領域でもない。捨てるか記録するかの 判断が必要。
@@ -647,7 +655,7 @@
 - scripts/load_env.sh は NOTION_DB_ID をロードしないため、run 台帳への投稿が 0/12 で skip した。非秘密の ID レジストリ configs/notion.yaml の databases.run_ledger を環境変数に与えて 12/12 成功させたが、load_env.sh 側で NOTION_DB_ID を設定するか、post_experiments_to_notion.py が configs/notion.yaml を読むようにするかの判断が要る
 - B1 の所要時間は学習と評価を分離して計測していない。train_b2a.py は同一プロセスで両方を行うため、分離するには計測点の追加が要る
 
-## 断定できなかった事項（260 件）
+## 断定できなかった事項（264 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1116,6 +1124,13 @@
 - 07-10 版の特徴が v2 ckpt（bbox AP 68.5960）から抽出されたことの直接の記録。抽出ログが残っておらず、evidence/discarded_caches/ の記載「v3 の ckpt は存在しない」による消去法の推定である
 - 六 run の metrics がいつ・なぜ失われたか。隔離の時点で既に無く、失敗ログも残っていない
 
+### T-2026-08-29-lecun-detector-env-pd
+
+- t1b の実効バッチ 2 と S0 のレシピ 4 の不一致が結果へ与える影響。四段の内部比較は同一条件で成立するが、S0 や既存 run との比較可能性は確認していない
+- nvcc 12.9 と torch 2.1.2+cu118 の組み合わせの妥当性。MS-Deform-Attn の JIT ビルドは通り凍結源の mAP を完全再現したが、検証された構成ではない
+- philip への SSH が使えなかった原因。SSH 設定の読み取りは実行基盤の保護規則で拒否されたため特定していない
+- 強い工程塔の seed 間のばらつき。一 seed しか作っていない
+
 ### T-2026-08-29-stage0-contract-a
 
 - A3 追加6動画とtest折りの術者・症例の重複。属性情報が存在しないため測れない （data/splits/surgeon_folds.jsonが3バイトの空、追加動画のannotations.jsonにも該当キー0件）。 存在しないこと自体を実測として報告した。
@@ -1128,16 +1143,16 @@
 - P→D 四段の値、B2 の train と val の mAP 差、B4 の強い工程塔の単体性能。いずれも資産の欠落により測定していない
 - GPU を 2 枚使った場合の所要時間。本契約は 1 枚のみで実行した
 
-## 起票者の誤りの型（245 件）
+## 起票者の誤りの型（249 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 71 |
-| `asserted_without_measuring` | 90 |
+| `check_does_not_check` | 72 |
+| `asserted_without_measuring` | 93 |
 | `self_contradiction` | 66 |
 | `shell_assumption` | 18 |
 
-合計 245 件（対を持つ契約 80 件から）
+合計 249 件（対を持つ契約 81 件から）
 
