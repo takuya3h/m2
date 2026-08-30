@@ -148,4 +148,6 @@ commit していない**（契約 §7 の但し書きに該当。audit §8.3）�
 | commit | `96eb3a1c`（160 files changed, 12638 insertions, 92 deletions）／prereg `762ee4f5` |
 | push | exit 0（`origin/feat/lecun-detector-env-pd`） |
 | PR | **#169**（base `phase0`） |
-| 台帳への報告 | `make task-report` の結果を下に記す |
+| 台帳への報告 | **送信成功**（exit 0）。`report_sha256=9e9a840ac067f769ea3dc357ba08feafd8faa1dd9370b51142a7d21dc1123332` / `report_bytes=13393` / `replaced_blocks=0` / `verdict=pass` / `n_issuer_defects=4` |
+| run 台帳（`notion_run_ledger`） | **16/16 投稿成功**（`configs/notion.yaml` の `databases.run_ledger` を `NOTION_DB_ID` に与えて実行。`load_env.sh` は同変数をロードしない） |
+| 同期の抑止 | `task_start.sh` が `.sync-pause` を作成。報告後に `.sync-pause.released` へ改名して解除した |
