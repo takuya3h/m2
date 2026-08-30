@@ -106,5 +106,6 @@ C5 の位置づけ（§5 起票者の誤り 1 件目）。実装の定義で続�
 
 ## 7. 送出
 
-- PR: 本文末尾に番号を追記
-- `make task-report` の終了コード: 本文末尾に追記
+- PR: **#167**（https://github.com/takuya3h/m2/pull/167）
+- commit: `7e022fa5`
+- `make task-report` の終了コード: **0**（report_sha256 `2f648079…` / 9,576 bytes / replaced_blocks 0）
