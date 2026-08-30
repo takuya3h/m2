@@ -8,7 +8,7 @@
 **明文化されていない**。以下はディレクトリ名の意味からの判断であり、
 規約に基づくものではない。**除外規約の明文化を推奨する。**
 
-除外 48 run / 全 1250 run（削除ではなくフラグ）
+除外 48 run / 全 1266 run（削除ではなくフラグ）
 
 | exclusion_reason | runs | 対象 |
 |---|---:|---|
@@ -35,7 +35,7 @@
 
 指標キーの接頭辞から split を確定できない run。**推測していない**。
 
-確定不能 35 run / 全 1250 run
+確定不能 35 run / 全 1266 run
 
 | split_provenance | runs |
 |---|---:|
@@ -104,10 +104,10 @@
 
 | per_class_kind | per_class_metric | runs | 内容 | 根拠 |
 |---|---|---:|---|---|
-| `phase` | `F1` | 618 | 9 クラスの工程別 **F1**（AP ではない） | `scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が `best.get("phase_per_class_f1", {})` を `log_per_class_ap()` に渡している |
+| `phase` | `F1` | 630 | 9 クラスの工程別 **F1**（AP ではない） | `scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が `best.get("phase_per_class_f1", {})` を `log_per_class_ap()` に渡している |
 | `unknown` | `unknown` | 426 | 既知の 2 体系のいずれとも一致しない | 確定不能 |
 | `None` | `None` | 117 | `per_class_ap.json` が無い・空・パース失敗 | — |
-| `tool` | `AP` | 68 | 15 クラスの術具 AP | `per_class_coco_map` / `COCOeval.precision` 由来 |
+| `tool` | `AP` | 72 | 15 クラスの術具 AP | `per_class_coco_map` / `COCOeval.precision` 由来 |
 | `coco_map` | `AP` | 21 |  |  |
 
 ### metric を確定できなかった run: 426
@@ -561,7 +561,7 @@
 
 | NaN のクラス | runs | 該当群 |
 |---|---:|---|
-| `Retractor` | 75 | `experiments/baselines`, `experiments/baselines/_legacy_score_thr_0`, `experiments/baselines/_smoke_ddq`, `experiments/hand2det_dev`, `experiments/transfer`, `transfer` |
+| `Retractor` | 79 | `experiments/baselines`, `experiments/baselines/_legacy_score_thr_0`, `experiments/baselines/_smoke_ddq`, `experiments/hand2det_dev`, `experiments/transfer`, `transfer` |
 | `Mouth Gag`, `Skewer` | 6 | `experiments/baselines/_wrong_split_8_2_3` |
 
 ### 平均の取り方への含意
@@ -749,7 +749,7 @@ b2a_base_oracle_noise_p010_001_b2a_base_oracle_noise_p010_seed42/command.sh
 |---|---:|---|---|
 | `_orphan_no_metrics` | 9 | (未調査) | (未調査) |
 | `ablations` | 1 | `.gitkeep` のみ | 未着手 scaffold |
-| `analysis` | 363 | EDA レポート / 図 (png) / CSV / JSON | **あり**: `detector_sanity/reldetr_seed42_val_perclass.json` (COCO 形式 `AP`/`AP50`/`AP75`/`AP_s`/`AP_m` 等 13 キー)、`signature_subset_detector_compare/results.json` (`per_class` キー) |
+| `analysis` | 367 | EDA レポート / 図 (png) / CSV / JSON | **あり**: `detector_sanity/reldetr_seed42_val_perclass.json` (COCO 形式 `AP`/`AP50`/`AP75`/`AP_s`/`AP_m` 等 13 キー)、`signature_subset_detector_compare/results.json` (`per_class` キー) |
 | `audit` | 8 | `audit_report.json` × 3 | なし (`inject` / `trainable` / `n_trainable_params` 等の学習設定監査) |
 | `detector_improve` | 118 | `label_names.txt` / `val_perclass.json` | **あり**: `augstrong_seed42/val_perclass.json` (COCO 形式 13 キー) |
 | `final` | 1 | `.gitkeep` のみ | 未着手 scaffold |
@@ -814,6 +814,10 @@ adapter を書けば貴重な追加ソースになる。
 | run 名に seq (3 桁連番) が無い別系統の命名: hand2det_1ep_4ch_all_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: hand2det_1ep_4ch_film_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: hand2det_4ch_film_inj_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: pd_refin_both_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: pd_refin_empty_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: pd_refin_oracle_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: pd_refin_pred_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: t1b_ca_zeroctx_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: t1b_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: t1c_bidir_pilot_seed<N>。step には description を充てた。 | 1 |
@@ -954,7 +958,7 @@ mAP 系の指標を持つのに術具 per-class（15 クラス）を持たない
 ## 12. experiments/README.md と実態の乖離
 
 README は step 識別子を **s0〜s9 / a1〜a7（17 種）** と規定しているが、
-実測は **254 種**。README に無い以下の系統が存在する。
+実測は **262 種**。README に無い以下の系統が存在する。
 
 | 系統 | step 識別子の種類 | run 合計 | 例 |
 |---|---:|---:|---|
@@ -987,7 +991,7 @@ M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 �
 これを split の既定値とし、`provenance.split = from_plan_section_16_7` を記録する。
 ただし **指標が 1 つもない run には適用しない**（評価されていないため null のまま）。
 
-既定を適用した run: 530
+既定を適用した run: 534
 
 | path | 指標キー |
 |---|---|
@@ -1519,6 +1523,10 @@ M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 �
 | `experiments/transfer/b2b_rescore_alpha0.5` | `alpha`, `delta_detection`, `mAP_baseline`, `mAP_rescored`, `miss_ctx` |
 | `experiments/transfer/b2b_rescore_alpha1.0` | `alpha`, `delta_detection`, `mAP_baseline`, `mAP_rescored`, `miss_ctx` |
 | `experiments/transfer/b2b_rescore_alpha2.0` | `alpha`, `delta_detection`, `mAP_baseline`, `mAP_rescored`, `miss_ctx` |
+| `experiments/transfer/pd_refin_both_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/transfer/pd_refin_empty_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/transfer/pd_refin_oracle_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/transfer/pd_refin_pred_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
 | `experiments/transfer/t1b_phasefilm_001_t1b_phasefilm_seed123` | `control_init_mAP`, `control_mAP`, `delta_control`, `delta_detection`, `init_mAP`, `injection_effect` |
 | `experiments/transfer/t1b_phasefilm_002_t1b_phasefilm_seed456` | `control_init_mAP`, `control_mAP`, `delta_control`, `delta_detection`, `init_mAP`, `injection_effect` |
 
@@ -1767,7 +1775,7 @@ _FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
 **したがって `frozen_source_tag` はキャッシュのパスからのみ導き、
 `frozen_source.seed` と `notes.md` の記述は採用していない。**
 
-- 実験数: **277** / run 数 1250
+- 実験数: **285** / run 数 1266
 - `experiment_id` を付けられなかった run: 78
   （run 名が命名規約に一致しない run）
 - `eval_recipe_id` の食い違いで分離した base: 12
@@ -1871,12 +1879,13 @@ delta:
 
 | 分類 | run 数 |
 |---|---:|
-| `no_denominator_declared` | 736 |
+| `no_denominator_declared` | 740 |
 | `injection_from_config_yaml` | 512 |
 | `baseline` | 17 |
+| `denominator_unresolvable` | 12 |
 | `within_run_baseline` | 2 |
 
-**分母を宣言している run はすべて実験に解決できた（未解決 0 件）。**
+- 未解決: 分母 's4_phase_baseline' が 7 実験に該当し、引用値も無いため切り分けられない。対照を確定できない。
 
 `no_denominator_declared` の run は `config.yaml` にも `notes.md` にも
 分母の記載が無い。推測で埋めず `control_of` は null のままにしてある。
@@ -1917,8 +1926,8 @@ seed ごとに 1 本ずつ対応させることができない。
 per-class の値は 573 個の JSON に分散していて横断分析に使えなかったため、
 `runindex/per_class.csv` に long 形式（1 行 = 1 run × 1 クラス）で 1 ファイル化した。
 
-- `per_class_kind=tool` : 68 run × 15 クラス（術具 **AP**）
-- `per_class_kind=phase`: 618 run × 9 クラス（工程 **F1**）
+- `per_class_kind=tool` : 72 run × 15 クラス（術具 **AP**）
+- `per_class_kind=phase`: 630 run × 9 クラス（工程 **F1**）
 
 **この 2 つを混ぜて集計してはならない。** 指標の種類が違う（AP と F1）。
 ファイル名は両方とも `per_class_ap.json` なので、名前では判別できない。
@@ -2276,7 +2285,7 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 
 | seed_agreement | run 数 | 意味 |
 |---|---:|---|
-| `agree` | 1140 | ディレクトリ名と他証拠が一致 |
+| `agree` | 1156 | ディレクトリ名と他証拠が一致 |
 | `unverified_no_other_evidence` | 32 | `command.sh` も `config.yaml` も無い（g2_* 群） |
 | `no_seed_in_dirname` | 78 | 命名規約外 |
 | **`conflict`** | **0** | **食い違い** |
@@ -2286,7 +2295,7 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 
 ### 23.1 `frozen_source.seed` は信用できない（実測）
 
-- `config.yaml` に `frozen_source.seed` を持つ run: **1002**
+- `config.yaml` に `frozen_source.seed` を持つ run: **1014**
 - そのうち実際の cache パスと**矛盾**する run: **48**
 
 矛盾例: 宣言は `seed: 42` だが cache は `relation_detr_augstrong_seed123`。
@@ -2529,22 +2538,22 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 
 ### 26.1 🔴 決定的になり得る学習スクリプトは **1 本も無い**
 
-監査 34 スクリプト / うち CUDA を使う **17** 本 / 
+監査 35 スクリプト / うち CUDA を使う **18** 本 / 
 `can_be_deterministic = True` は **0** 本。
 
 | 制御項目 | 設定している本数 |
 |---|---:|
-| `random_seed` | 17 / 17 |
-| `numpy_seed` | 17 / 17 |
-| `torch_manual_seed` | 17 / 17 |
-| `cuda_manual_seed` | 2 / 17 |
-| `use_deterministic_algorithms` | 0 / 17 |
-| `cudnn_deterministic` | 2 / 17 |
-| `cudnn_benchmark` | 2 / 17 |
-| `pythonhashseed` | 2 / 17 |
-| `dataloader_worker_init_fn` | 0 / 17 |
-| `dataloader_generator` | 0 / 17 |
-| `cublas_workspace_config` | 0 / 17 |
+| `random_seed` | 18 / 18 |
+| `numpy_seed` | 18 / 18 |
+| `torch_manual_seed` | 18 / 18 |
+| `cuda_manual_seed` | 3 / 18 |
+| `use_deterministic_algorithms` | 0 / 18 |
+| `cudnn_deterministic` | 2 / 18 |
+| `cudnn_benchmark` | 2 / 18 |
+| `pythonhashseed` | 2 / 18 |
+| `dataloader_worker_init_fn` | 0 / 18 |
+| `dataloader_generator` | 0 / 18 |
+| `cublas_workspace_config` | 0 / 18 |
 
 **`torch.use_deterministic_algorithms` はどのスクリプトも呼んでいない。**
 これが無い限り GPU 上で bit 単位の再現は保証されないため、
@@ -2556,7 +2565,7 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 
 | seed_setup_via | 本数 | 意味 |
 |---|---:|---|
-| `direct` | 15 | ファイル内で直接 seed を張る（`scripts/train_*.py` 系）|
+| `direct` | 16 | ファイル内で直接 seed を張る（`scripts/train_*.py` 系）|
 | `seed_everything` | 1 | `src/egosurgery/utils/seed.py` のヘルパ経由 |
 | `seed_everything+delegates_to_engines` | 3 | ヘルパを呼びつつ更に委譲もする |
 | `delegates_to_engines` | 1 | 自分では触らず trainer に委譲（`src/egosurgery/train.py`）|
@@ -2575,20 +2584,20 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 一方 `scripts/train_*.py` 系（**`direct`**、run 数で見て大半）は
 CPU 側 3 種のみで **GPU 側の制御が 1 つも無い**。
 
-影響を受ける run: **1026**（CUDA 学習スクリプトが entrypoint の run）
+影響を受ける run: **1042**（CUDA 学習スクリプトが entrypoint の run）
 
 | スクリプト | run 数 | 欠落している必須項目 |
 |---|---:|---|
 | `scripts/train_grasp_phase_injection_variants.py` | 420 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
-| `scripts/train_b2a.py` | 338 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
+| `scripts/train_b2a.py` | 350 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_t1a.py` | 132 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_s4_tecno.py` | 61 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_hand2det.py` | 21 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_haux.py` | 18 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_taux.py` | 15 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
+| `scripts/train_t1b.py` | 10 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_grasp_phase_injection.py` | 6 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_t1a_regiontraj.py` | 6 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
-| `scripts/train_t1b.py` | 6 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_t1a_boundary.py` | 3 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 
 ### 26.2 監査できなかったもの

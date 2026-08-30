@@ -1,0 +1,35 @@
+{
+  "epoch": 37,
+  "eval_recipe": {
+    "effective_batch_size": 1,
+    "gpu_count": 1,
+    "lr_scaling": "none",
+    "server_name": "lecun",
+    "split_test_annotations": 12673,
+    "split_test_images": 4265,
+    "split_train_annotations": 32272,
+    "split_train_images": 9657,
+    "split_val_annotations": 4707,
+    "split_val_images": 1515,
+    "test_cfg": {
+      "backbone": "relation_detr_resnet50_frozen_seed42",
+      "coupling": "b2a_det_to_phase_toolpresence",
+      "in_dim": 2078,
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "num_f_maps": 64,
+      "num_layers": 8,
+      "num_stages": 2,
+      "task": "phase",
+      "temporal_head": "tecno",
+      "tool_signal_dim": 30
+    }
+  },
+  "phase_accuracy": 0.7570957095709571,
+  "phase_edit_score": 14.779785809906292,
+  "phase_jaccard": 0.3717221959225537,
+  "phase_macro_f1": 0.4846198256715594,
+  "phase_seg_f1_10": 0.18230973589623378,
+  "phase_seg_f1_25": 0.14300671979996873,
+  "phase_seg_f1_50": 0.11214252226910455
+}

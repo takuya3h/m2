@@ -99,10 +99,26 @@ def load_oracle_phase_ctx(split: str) -> dict:
     return out
 
 
+def load_both_phase_ctx(split: str) -> dict:
+    """正解 one-hot(9) ⊕ 予測事後(9) = 18-d。参照入力四段の「正解 ⊕ 予測」段。
+
+    連結順は **正解 → 予測** に固定する。frame_id が食い違えば Fail Loud（補完しない）。
+    """
+    o = load_oracle_phase_ctx(split)
+    r = load_phase_ctx(split)
+    diff = set(o) ^ set(r)
+    if diff:
+        raise KeyError(f"[t1b] 正解と予測で frame_id が食い違う: {len(diff)} 件 ({split})")
+    return {fid: np.concatenate([o[fid], r[fid]]).astype(np.float32) for fid in o}
+
+
 def resolve_phase_ctx_loader(source: str):
-    """`--phase-source` の値から ctx loader 関数を返す。'real'=S4 予測、'oracle'=GT one-hot。"""
+    """`--phase-source` の値から ctx loader 関数を返す。'real'=S4 予測、'oracle'=GT one-hot、
+    'both'=正解 ⊕ 予測（18-d）。"""
     if source == "oracle":
         return load_oracle_phase_ctx
+    if source == "both":
+        return load_both_phase_ctx
     return load_phase_ctx
 
 
@@ -256,6 +272,9 @@ def main():
     det_val = build_det_loader(train=False)
     model_cfg = {"ca": MODEL_CFG_CA, "camt": MODEL_CFG_CAMT, "hc": MODEL_CFG_HC,
                  "clsbias": MODEL_CFG_CLSBIAS}.get(args.inject, MODEL_CFG)
+    # 明示 override（T1B_WORK_DIR / T1B_RUN_NAME と同じ作法）。phase ctx の次元を変える段
+    # （正解 ⊕ 予測 = 18-d）で num_phases 違いの model config を指すために要る。
+    model_cfg = os.environ.get("T1B_MODEL_CFG") or model_cfg
     model = build_model(device, args.seed, model_cfg)
     register_classes(model, det_train)
     set_trainable(model, args.trainable)
@@ -297,6 +316,8 @@ def main():
         "trainable": args.trainable, "zero_ctx": bool(args.zero_ctx), "epochs": args.epochs,
         "lr": args.lr, "film_lr": args.film_lr, "phase_source": args.phase_source,
         "model_cfg": model_cfg, "smoke": bool(args.smoke),
+        # 契約 (tasks/<task_id>/spec.yaml) と run を結ぶ鍵。harvester は最上位を読む。
+        "task_id": args.task_id,
         "rare_slots": os.environ.get("T1B_RARE_SLOTS"),
         "warm_start_ckpt": str(detector_ckpt(args.seed)),
         "eval": {"split": "val", "topk": ra.EVAL_TOPK,
@@ -499,7 +520,7 @@ def parse_args():
     p.add_argument("--zero-ctx", action="store_true", help="§4.6 対照: phase context を 0 固定で fine-tune")
     p.add_argument(
         "--phase-source",
-        choices=["real", "oracle"],
+        choices=["real", "oracle", "both"],
         default="real",
         help="§18.4 L1-2: phase context のソース。real=S4 TeCNO 予測（既定）/ "
         "oracle=phase_manifest からの GT one-hot（注入の上限を測定）",
@@ -513,6 +534,8 @@ def parse_args():
                    help="init/best だけでなく全 epoch の predictions を保存する（容量大）")
     p.add_argument("--predictions-no-gzip", action="store_true",
                    help="predictions を gzip せず素の .json で保存する")
+    p.add_argument("--task-id", type=str, default="",
+                   help="契約の識別子。config.yaml の最上位へ書き出し、run と指示書を結ぶ。")
     p.add_argument("--print-freq", type=int, default=200)
     p.add_argument("--smoke", action="store_true")
     p.add_argument("--assert-init-map", type=float, default=None,

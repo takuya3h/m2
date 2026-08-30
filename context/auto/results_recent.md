@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 80 件）。
-ここに出ない 75 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 81 件）。
+ここに出ない 76 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-08-29-stage0-contract-b
 
@@ -113,6 +113,50 @@
 
 （なし）
 
+## T-2026-08-29-lecun-detector-env-pd
+
+状態 `pass` / ホスト `lecun` / 起票 `なし` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 検出器が凍結源 ckpt を読み込んで前方計算し、val AP=0.7302938994613697 / AP50=0.8545901117284289 を出した。configs/stage/s4_phase_baseline.yaml:9 の再 eval mAP 0.7303 と一致する。B4 の ImageNet-R50 は torchvision 標準重み（認証なし）で取得でき sha256 の先頭がファイル名 0676ba61 と一致した。prereg は 762ee4f5（2026-08-29T17:08:04+00:00）で全学習 run より前に commit 済み。P→D の入力経路は snapshot の既存実装（set_phase_context / RelationDETRPhaseFiLM / --trainable film）で足り、正解⊕予測段のみ 18d の追加を要した
+- `G2` pass — P→D 四段が四段とも揃い（best mAP 0.733576 / 0.737538 / 0.741071 / 0.742487）、B2 も train 0.8425732477176417 と val 0.7302938994613697 の差 +0.1122793483 として得られた。不能の段は無い
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — SPEC §1 が「lecun から philip へ SSH が使える（利用者の申告）」としたが、実測は Permission denied (publickey,password) だった。指示どおり philip 参照で版と依存を突き合わせようとすると進めない。SSH 設定の読み取りは実行基盤の保護規則で拒否されたため原因は特定していない
+- `asserted_without_measuring` — SPEC §3 Step A-2 は「ミラーされている configs/detector_relation_detr/README.md が正本の config 経路を指す」とするが、ミラーは augstrong 系 2 件のみで凍結源が使う train_config_egosurgery_seed42.py も relation_detr_resnet50_egosurgery.py も含まない。指示どおりミラーだけを頼ると復元できない。実体は third_party_snapshot/lecun/Relation-DETR/project_files.tar.gz（config 15 件を含む 23 件）に在った
+- `check_does_not_check` — 契約は outputs.stamp.task_id_in を config.yaml と定め完了判定 e で全 run の task_id を要求するが、P→D で使う scripts/train_t1b.py に task_id の配線が無かった。指示どおり実行すると P→D の 4 run が task_id 無しで索引に載り、完了判定 e を満たせない
+- `asserted_without_measuring` — SPEC §5 は B4 の塔を ImageNet-R50 の微調整と TeCNO 学習として実施可能な前提で書くが、画像から工程を学ぶ経路は既存実装に無い（src/egosurgery/models/backbones は dinov2 と vit_adapter のみ）。指示どおり進めると Phase C の着手時点で止まる
+
+### 逸脱
+
+- `judgement` — 未追跡の .sync-pause.released を削除せずスクラッチパッドへ退避してから phase0 へ切り替えた
+- `judgement` — decisions_required の 1 件を提示し、検出器の実装は版管理下の third_party_snapshot/lecun から復元する回答を得た。あわせて GitHub の public clone・PyPI からの venv 構築・torchvision の ImageNet-R50 取得の三点を許可された。いずれも認証を伴わず契約 §7 禁止 9 の範囲外である
+- `judgement` — prereg の停止条件「一 run の学習が六時間を超える見込み」に一度該当して停止・提示したが、利用者の判断で続行した。定常状態の再実測では 2.1 から 2.2 it/s で 1 run 約 4 時間となり停止条件の内側だった。最初の 103 分/epoch は smoke 6 step（CUDA 起動と JIT を含む）由来の過大評価である。meta.amendments へ記録した
+- `spec_defect` — scripts/train_t1b.py へ --phase-source both（正解9d ⊕ 予測9d = 18d）・--task-id・T1B_MODEL_CFG の明示 override を追加した。scripts/ は契約 §2 の変更対象外である。--task-id は契約自身の outputs.stamp.task_id_in と完了判定 e が要求するのに配線が無かったため要った。18d 用の model config は third_party 内に作った（差分 1 行）。評価規則は一切変更していない
+- `spec_defect` — B4 の強い工程塔を作る経路が既存に無かったため scripts/train_phase_tower_r50.py を新設し、あわせて scripts/train_b2a.py へ RELDETR_SIGNAL_TAG を追加した（受け手の GAP と送り手の tool 信号でタグを分けるため。train_t1a.py の RELDETR_REGION_TAG と同じ作法）。いずれも scripts/ への変更で §2 の対象外である
+- `judgement` — B4 の特徴を data/processed/stage1_features/imagenet_r50_phasetower_seed42/ へ新規に書いた。契約 §2 は生データ・分割・既存キャッシュへの書き込みを禁じており新規キャッシュは対象外と解したが、data/ 配下ではある
+- `environment` — ホストの nvcc は 12.9 で、文書が前提とする CUDA 11.8 は存在しない。scripts/setup_env_relation_detr.sh は nvcc が 11.8 でなければ停止するため SKIP_CUDA_CHECK=1 を渡した。MS-Deform-Attn の JIT ビルドは 12.9 でも成功し凍結源の mAP を完全再現したが、これは実測であって保証された構成ではない
+- `judgement` — 時短のため B4（検出器に依存せず本体 .venv で動く）を P→D と並行実行した。GPU のメモリは各 49140 MiB のうち 18 から 26 GiB が空いていた。塔の学習と 12 run を GPU0 に載せ、P→D の 2 段は GPU0 と GPU1 で継続した
+- `environment` — 作業中に experiments/analysis/hts_candidate_acceptance/ の .py 4 件が同期で配布された（中身は別契約 T-2026-08-30-hts-candidate-acceptance の Phase A、生成時刻 2026-08-30 02:34 から 02:40 で本契約の最後の run 08-29 23:00:28 より後）。.sync-pause は分岐への統合を止めるがファイル同期は止めない。契約 §7 の但し書きに該当するため commit していない
+- `judgement` — ruff が scripts/train_b2a.py に I001（import 並び）を 1 件出すが変更前の HEAD でも出る既存指摘のため直していない。新設した scripts/train_phase_tower_r50.py は All checks passed である
+
+### 申し送り
+
+- t1b の実効バッチ 2 を S0 検出器学習の正本レシピ 4（per-GPU 2 × 2 GPU DDP）に揃えるかの判断が要る。train_t1b を DDP で起動する記述はリポジトリ全域に 0 件で、scripts/run_t1b.sh も存在せず、docstring 自身が単一プロセス起動を記載している。既存 t1b 23 run も同条件である。揃えるなら train_t1b.py の DDP 化が要り、既存 23 run とは比較不能になる
+- docs/setup/lecun_detector.md に記した nvcc 前提の食い違い（文書は 11.8、lecun の実体は 12.9）を他ホストへも展開するか。setup_env_relation_detr.sh の 11.8 固定チェックを見直すかの判断が要る
+- 新設した scripts/train_phase_tower_r50.py と scripts/train_b2a.py の RELDETR_SIGNAL_TAG を正式な実装として残すか。いずれも契約 §2 の変更対象外として足したものである
+- B4 の強い工程塔は一 seed・3 epoch の暫定版である。Stage 1 では seed を三本へ増やす前提であり、塔単体の val accuracy 0.6924 が seed でどれだけ動くかは測っていない
+- philip への SSH が使えなかった（Permission denied）。SPEC の申告と食い違うため、鍵の配布状況を確かめるか SPEC の記載を訂正するかの判断が要る
+
+### 断定できなかったこと
+
+- t1b の実効バッチ 2 と S0 のレシピ 4 の不一致が結果へ与える影響。四段の内部比較は同一条件で成立するが、S0 や既存 run との比較可能性は確認していない
+- nvcc 12.9 と torch 2.1.2+cu118 の組み合わせの妥当性。MS-Deform-Attn の JIT ビルドは通り凍結源の mAP を完全再現したが、検証された構成ではない
+- philip への SSH が使えなかった原因。SSH 設定の読み取りは実行基盤の保護規則で拒否されたため特定していない
+- 強い工程塔の seed 間のばらつき。一 seed しか作っていない
+
 ## T-2026-08-29-k1-verify-policy-place
 
 状態 `partial` / ホスト `lecun` / 起票 `164` / 様式 `v3`
@@ -149,35 +193,4 @@
 - aligndetr 側の config が指す特徴ファイル。六 run に config.yaml が無いため測れない。SPEC §5 の完了判定 b はこの部分について UNKNOWN である
 - 07-10 版の特徴が v2 ckpt（bbox AP 68.5960）から抽出されたことの直接の記録。抽出ログが残っておらず、evidence/discarded_caches/ の記載「v3 の ckpt は存在しない」による消去法の推定である
 - 六 run の metrics がいつ・なぜ失われたか。隔離の時点で既に無く、失敗ログも残っていない
-
-## T-2026-08-29-k1-trace-policy-place
-
-状態 `partial` / ホスト `philip` / 起票 `163` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 四系統すべてが{方法・範囲・揺れの一覧・件数}で確定した。系統1は版管理の全履歴をgit log --all -Sで 走査し初出909dd193（2026-08-02）を特定、その本文が既に「台帳記載値のみ」と述べており典拠の連鎖が そこで止まることを確認。系統2は索引を経由せずmetrics.json/per_class_ap.jsonを直接読み一致0件、 あわせてconfigのbackboneがaligndetr群でもrelation_detr_resnet50_frozen_seed42であることを発見。 系統3は外部記録479runを読み取りのみ照会し0.686近傍3件（すべて別実験）、他0件。系統4は文書11件が いずれも出所を主張していないことを確認。結論は二値の「遡れない（確定）」で一意に定まった。
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — SPEC §1が「バンドル内の三つ目の区画 research_policy_v2_2026-08-28.md の要約値と大きさは、 同バンドル内のSPEC.mdの§1に宣言済み（短縮形で2eb9c882、60490バイト）」とするが、実測では 三つ目の区画も宣言値も存在しない。旧SPEC.mdの§1全文を走査したが2eb9c882も60490も research_policy_v2の文字列も0件だった。指示どおり進めると三つ目の区画を取り出す段で必ず止まる。
-- `asserted_without_measuring` — 同§1「方針文書の正本バンドルは台帳の行T-2026-08-28-policy-v2-doc-syncに添付されている」。 添付は実在し取得物全体の要約値も宣言（182d152f…）と一致したが、中身は二区画 （spec.yaml 2267バイト / SPEC.md 16840バイト）のみで本文を含まない。改竄ではなく最初から 入っていない。Task 1は原理的に実行できない。
-
-### 逸脱
-
-- `environment` — 開始前から在った汚れ（.sync-pause.released 1件）をgit stash push -uで退避してから進めた。 mvは使っていない。
-- `spec_defect` — Task 1（方針文書の配置）を停止した。旧バンドルに三つ目の区画が存在せず、SPECが言う宣言値 （2eb9c882 / 60490バイト）も旧SPEC.mdに無かったため。SPEC §7の「配置せず停止して報告 （Phase AとTask 2・3は続けてよい。部分完了として報告）」に従い、残りを完遂した。 存在しない本文を書き起こしてはいない。
-- `judgement` — git checkout 系の破壊的操作を使わなかった。前契約で未commitの再生成物を git checkout -- で失う事故を起こしたため、一時複製はcpで作りrmで消す方式に統一した。
-
-### 申し送り
-
-- 方針文書v2の本文が依然として配布されていない。旧バンドルに区画が無いため、起票者が inputs.bundle_extras の宣言つきで再配布する必要がある。取り込みの拡張は本契約で完了しており、 宣言さえあれば機械配布できる。
-- K1は出所不明として確定した。正規の再測定は送り手掃引で行う。方針文書の「中核主張の一つの 出所照合が未了」という記述は「照合した結果、四系統とも遡れなかった」へ更新できる。
-- aligndetr群のconfigのbackboneがrelation_detr_resnet50_frozen_seed42である。名前と中身が 食い違う run が索引に残っている。命名を実体に合わせるか、無効判定の記録を run 側にも残すかの 判断が要る。
-- A9の文献値（TeCNO原著88.56 / 再実装relaxed 90.17 / offline系94.1）は起票者の文献確認であり、 リポジトリ内で再現していない。比較表を作る際は三属性の列を必須とする。
-
-### 断定できなかったこと
-
-- 方針文書v2の本文。旧バンドルに区画が存在せず、配置できていない。取得物全体の要約値は宣言と 一致しており改竄ではなく、最初から入っていない。
-- 試していない表現の揺れ（有効数字を増やした形、指数表記、百分率での小数点以下2桁）。 「探した」に数えていない。K1の結論はこれらを除いた範囲での確定である。
 

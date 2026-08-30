@@ -14,6 +14,9 @@ meta:
     - date: "2026-08-29"
       reason: "利用者から decisions_required の 1 件へ回答を得た。検出器の実装は版管理下の third_party_snapshot/lecun から復元する（upstream https://github.com/xiuqhou/Relation-DETR.git の commit b485955c72452788240600da6d0f0b8cc49f33c7 を clone し upstream_mods.patch と project_files.tar.gz を適用）。あわせて clone / PyPI / torchvision 重みの外部取得を許可された。いずれも認証を伴わない"
       diff: "governance.decisions_required を 1 件から空へ"
+    - date: "2026-08-29"
+      reason: "prereg の停止条件「一 run の学習が六時間を超える見込み」に一度該当したため停止して提示したが、利用者の判断で続行することとした（六時間という数値に根拠が薄いとの理由）。なお定常状態の再実測では 2.1 it/s / 1 epoch 約 37 分で、6 epoch あたり約 3.7 時間となり停止条件の内側であった。最初の見積もり 103 分/epoch は smoke 6 step（CUDA 起動と JIT を含む）由来の過大評価である"
+      diff: "停止条件の適用を見送り Phase B を続行。prereg 本文は変更しない"
 intent:
   question: "lecun に検出器の実装と環境を規約どおり用意し、前契約で欠落により測れなかった P→D 四段・B2・B4 を実施できるか"
   decision_at_stake: "関門 G0 の残る片方向を成立させ、G1.5 の暫定材料を得られるか"
@@ -67,8 +70,8 @@ prereg:
     - "一 run の学習が六時間を超える見込みになった場合"
     - "環境構築が認証を伴う外部取得を要する場合"
     - "分母または凍結源の参照が索引で解決できない場合"
-  committed_at: null
-  commit: null
+  committed_at: "2026-08-29T17:08:04+00:00"
+  commit: "762ee4f57069990120cbc668730c17f376f3dfa7"
 outputs:
   expected_runs: 17
   must_have: [metrics.json, notes.md, config.yaml]
