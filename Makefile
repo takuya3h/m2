@@ -100,6 +100,12 @@ runindex-strict:
 	python tools/verify_runindex.py
 	python tools/verify_no_dummy_metrics.py --strict
 
+# 収穫の前後を一つの命令で比べる。**run 単位は追加のみ、集約表は判定列の不変**を判定する。
+# 「既存行の変更零」は集約表には原理的に成立しない（既存の群へ run が加われば集計は動く）。
+.PHONY: harvest-verify
+harvest-verify:
+	@.venv/bin/python tools/verify_harvest.py $(if $(BASE),--base $(BASE),)
+
 # runindex/ から軽量ビュー context/auto/ を冪等に生成する（派生物・完全再生成可能）。
 # make runindex の直後に実行すること。
 .PHONY: context context-check
@@ -146,9 +152,11 @@ agent-check:
 # 除外する場所は生成器の実装から取るため、生成物が増えても検査が古くならない。
 # 生成物への手編集はここでは捕まらない。taskindex-check / inbox-check で捕まる。
 # 起点は BASE で変えられる（既定 origin/phase0）。起点が誤れば通さずに失敗する。
+# TASK を渡すと契約の contract.allow_write を許可として読む。**許可には上限がある**
+# （data/ 配下は不可。experiments/ と transfer/ は既存 run 配下を許可できない）。
 .PHONY: forbidden-check
 forbidden-check:
-	@.venv/bin/python tools/check_forbidden.py $(if $(BASE),--base $(BASE),)
+	@.venv/bin/python tools/check_forbidden.py $(if $(BASE),--base $(BASE),) $(if $(TASK),--task $(TASK),)
 
 # 契約の本文から起票者の既知の誤りを検出する（層 1）。**文言では防げないので機械にした。**
 # 規則は tasks/*/result.yaml の issuer_defects を裏付けに持つ。裏付けの無い規則を

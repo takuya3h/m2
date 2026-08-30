@@ -1,0 +1,61 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-08-30-tooling-fixes-five"
+  kind: impl
+  title: "契約運用の道具に残る五つの欠陥（禁止領域検査の許可・preflight 未知名・置換前提の欄・収穫の集約表検証・秘匿検出の偽陽性）を直す"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-08-30T03:00:00Z"
+  created_from:
+    runindex_commit: "09fdefb3"
+    counts: {index: 1250, experiments: 277, verdicts: 1486}
+  depends_on: ["T-2026-08-29-stage0-contract-b", "T-2026-08-29-k1-reeval-and-harvest"]
+  amendments: []
+intent:
+  question: "直近の契約が報告した道具側の欠陥五件を、既存の契約と検査を壊さずに直せるか。直した検査は違反を検出し非違反を誤検出しないか"
+  decision_at_stake: "収穫を伴う契約や実行者が参照を解決する契約を、道具を迂回せずに通せる運用へ移れるか"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "none"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints:
+      - "tools/check_forbidden.py"
+      - "tools/preflight_task.py"
+      - "tools/validate_task.py"
+      - "tools/fetch_task.py"
+      - "tools/harvest_runindex.py"
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "a8c07e81"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_regen, no_history_rewrite]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "五件それぞれの現状を再現で実測する", gpu: false, est: "medium"}
+    - {id: B, name: "修正と、対照つきの試験の追加", gpu: false, est: "long"}
+    - {id: C, name: "既存契約への回帰確認・文書・送出", gpu: false, est: "medium"}
+  gates:
+    - {id: G1, after: A, check: "五件すべてについて、欠陥が現に再現する入力と、正常に振る舞う入力の双方を実測で記録した", on_fail: stop}
+    - {id: G2, after: B, check: "五件すべてで陽性対照が検出され陰性対照が非検出であり、既存の全契約の静的検証の結果が修正前と一致する", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md, result.yaml, audit.md]
+  destination: "tasks/T-2026-08-30-tooling-fixes-five/"
+  acceptance:
+    - "SPEC の完了判定 a から h をすべて満たし、各判定に空振りでないことの確認が付く"
+    - "experiments と data と runindex に変更が無い"
+    - "PR が存在する状態で終える"
+  report_to: [notion_task_distribution]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "修正が schema の変更を要し、既存契約の静的検証が一件でも修正前と異なる結果になる場合"
+    - "五件のうち、原因が道具ではなく規約の側にあると判明した場合"

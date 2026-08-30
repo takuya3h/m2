@@ -40,10 +40,29 @@ CHECK_NAMES = {
     "P7": "destination_writable",
     "P8": "contract_valid",
     "P9": "spec_lint",
+    "P10": "preflight_names_known",
+    "P11": "gpu_free",
+    "P12": "refs_resolved",
 }
-ALWAYS = {"P1", "P6", "P7", "P8", "P9"}
+ALWAYS = {"P1", "P6", "P7", "P8", "P9", "P10", "P12"}
 EXP_ONLY = {"P4", "P5"}
-LISTED_ONLY = {"P2": "cuda_ext_loaded", "P3": "deterministic_flags"}
+LISTED_ONLY = {
+    "P2": "cuda_ext_loaded",
+    "P3": "deterministic_flags",
+    "P11": "gpu_free",
+}
+
+# plan.env.preflight に書いてよい名前。**schema の enum と同じ集合でなければならない。**
+# 片方だけを増やすと、一方が通して他方が落とす食い違いが起きる。整合は試験で縛る。
+KNOWN_PREFLIGHT_NAMES = frozenset({"venv_active", *LISTED_ONLY.values()})
+
+# 実行者が索引で解決する前提の参照の書き方。**取り込みでは落とさず、実行直前で止める。**
+UNRESOLVED_PREFIX = "unresolved:"
+RESOLVED_FILE = "resolved.yaml"
+
+# P11 gpu_free。**空きの判定は「compute プロセスが 0 件」で行う。**
+# 使用量の閾値は機種と用途で変わるため置かない。占有しているプロセスの有無だけを見る。
+NVIDIA_SMI_TIMEOUT_SEC = 30
 
 # 検出系の CUDA 拡張は トップレベル module ではない。実測（Task 1 Step 3）で確認した
 # 唯一の import 経路は scripts/run_hc_seeds_lecun.sh の warmup と同じ次の手順。
@@ -369,10 +388,118 @@ def check_spec_lint(task_id: str) -> Check:
     )
 
 
+def unknown_preflight_names(spec: dict) -> list[str]:
+    """契約が書いた preflight の名前のうち、検査器が実装していないものを返す。"""
+    listed = (spec.get("plan", {}).get("env", {}) or {}).get("preflight") or []
+    return [str(n) for n in listed if str(n) not in KNOWN_PREFLIGHT_NAMES]
+
+
+def check_preflight_names(spec: dict) -> Check:
+    """P10. 未知の名前を **FAIL** にする。
+
+    以前は未知の名前が黙って無視され、契約が宣言した検査が一つも動かないまま
+    PASS になっていた（実測: `gpu_free` が 1 契約で無視されていた）。
+    **黙って通すより落ちるほうがよい。**
+    """
+    unknown = unknown_preflight_names(spec)
+    known = ", ".join(sorted(KNOWN_PREFLIGHT_NAMES))
+    if not unknown:
+        listed = (spec.get("plan", {}).get("env", {}) or {}).get("preflight") or []
+        return Check("P10", CHECK_NAMES["P10"], "PASS",
+                     f"宣言 {len(listed)} 件はすべて実装済み（既知: {known}）")
+    return Check("P10", CHECK_NAMES["P10"], "FAIL",
+                 f"実装されていない名前: {', '.join(unknown)}（既知: {known}）")
+
+
+def check_gpu_free() -> Check:
+    """P11. GPU を占有している compute プロセスが無いことを確かめる。
+
+    使用量の閾値は置かない。**占有しているプロセスの有無だけを見る。**
+    観測できない場合は FAIL とする。契約が「空いていること」を前提に宣言した以上、
+    確かめられないまま実行を許すと宣言の意味が無い。
+    """
+    try:
+        proc = subprocess.run(
+            ["nvidia-smi", "--query-compute-apps=pid,used_memory", "--format=csv,noheader"],
+            capture_output=True, text=True, check=False, timeout=NVIDIA_SMI_TIMEOUT_SEC,
+        )
+    except FileNotFoundError:
+        return Check("P11", CHECK_NAMES["P11"], "FAIL", "nvidia-smi が無く GPU の空きを観測できない")
+    except subprocess.TimeoutExpired:
+        return Check("P11", CHECK_NAMES["P11"], "FAIL",
+                     f"nvidia-smi が {NVIDIA_SMI_TIMEOUT_SEC}s でタイムアウト")
+    if proc.returncode != 0:
+        reason = (proc.stderr or "").strip().splitlines()
+        return Check("P11", CHECK_NAMES["P11"], "FAIL",
+                     f"nvidia-smi が失敗: {reason[-1] if reason else proc.returncode}")
+    busy = [line for line in proc.stdout.splitlines() if line.strip()]
+    if busy:
+        return Check("P11", CHECK_NAMES["P11"], "FAIL",
+                     f"GPU を占有する compute プロセスが {len(busy)} 件: {'; '.join(busy)}")
+    return Check("P11", CHECK_NAMES["P11"], "PASS", "GPU を占有する compute プロセスは 0 件")
+
+
+def unresolved_refs(spec: dict) -> list[str]:
+    """`unresolved:` で始まる参照の位置を返す（`inputs.denominator.ref` のような点区切り）。"""
+    found: list[str] = []
+
+    def walk(node, path: str) -> None:
+        if isinstance(node, dict):
+            for key, value in node.items():
+                walk(value, f"{path}.{key}" if path else str(key))
+        elif isinstance(node, list):
+            for i, value in enumerate(node):
+                walk(value, f"{path}.{i}")
+        elif isinstance(node, str) and node.startswith(UNRESOLVED_PREFIX):
+            found.append(path)
+
+    walk(spec, "")
+    return sorted(found)
+
+
+def check_refs_resolved(task_id: str, spec: dict) -> Check:
+    """P12. 実行者が解決する前提の参照が、実行前に解決済みであることを確かめる。
+
+    起票者は `unresolved:<何を索引で引くか>` と書いて契約を設置できる（取り込みで
+    落ちない）。実行者は `tasks/<task_id>/resolved.yaml` に解決結果を書く。
+    **解決が済んでいなければここで止まる。**
+    """
+    pending = unresolved_refs(spec)
+    if not pending:
+        return Check("P12", CHECK_NAMES["P12"], "SKIP", "解決前提の参照は無い")
+
+    path = TASKS_DIR / task_id / RESOLVED_FILE
+    if not path.exists():
+        return Check("P12", CHECK_NAMES["P12"], "FAIL",
+                     f"解決前提の参照 {len(pending)} 件（{', '.join(pending)}）に対し {RESOLVED_FILE} が無い")
+    try:
+        resolved = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as exc:
+        return Check("P12", CHECK_NAMES["P12"], "FAIL", f"{RESOLVED_FILE} を読めない: {exc}")
+    if not isinstance(resolved, dict):
+        return Check("P12", CHECK_NAMES["P12"], "FAIL", f"{RESOLVED_FILE} が対応表ではない")
+
+    missing = [
+        key for key in pending
+        if not str(((resolved.get(key) or {}) if isinstance(resolved.get(key), dict)
+                    else {}).get("resolved_to") or "").strip()
+    ]
+    if missing:
+        return Check("P12", CHECK_NAMES["P12"], "FAIL",
+                     f"{RESOLVED_FILE} に resolved_to が無い: {', '.join(missing)}")
+    still = [key for key in pending
+             if str(resolved[key]["resolved_to"]).startswith(UNRESOLVED_PREFIX)]
+    if still:
+        return Check("P12", CHECK_NAMES["P12"], "FAIL",
+                     f"解決先がまだ未解決のまま: {', '.join(still)}")
+    return Check("P12", CHECK_NAMES["P12"], "PASS",
+                 f"解決前提の参照 {len(pending)} 件がすべて {RESOLVED_FILE} で解決済み")
+
+
 def run_checks(task_id: str, spec: dict) -> list[Check]:
     applicable = decide_applicability(spec)
     checks: list[Check] = []
-    for cid in sorted(CHECK_NAMES):
+    for cid in sorted(CHECK_NAMES, key=lambda c: int(c[1:])):
         if not applicable[cid]:
             checks.append(Check(cid, CHECK_NAMES[cid], "SKIP", _skip_reason(cid, spec)))
             continue
@@ -394,6 +521,12 @@ def run_checks(task_id: str, spec: dict) -> list[Check]:
             checks.append(check_contract(task_id))
         elif cid == "P9":
             checks.append(check_spec_lint(task_id))
+        elif cid == "P10":
+            checks.append(check_preflight_names(spec))
+        elif cid == "P11":
+            checks.append(check_gpu_free())
+        elif cid == "P12":
+            checks.append(check_refs_resolved(task_id, spec))
     return checks
 
 

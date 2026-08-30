@@ -3,54 +3,130 @@
   "$id": "https://github.com/takuya3h/m2/tasks/_schema/spec.schema.json",
   "title": "TASK contract",
   "type": "object",
-  "required": ["spec_version", "meta", "intent", "inputs", "contract", "plan", "outputs", "governance"],
+  "required": [
+    "spec_version",
+    "meta",
+    "intent",
+    "inputs",
+    "contract",
+    "plan",
+    "outputs",
+    "governance"
+  ],
   "additionalProperties": false,
   "properties": {
     "spec_version": {
-      "enum": [1, 2],
+      "enum": [
+        1,
+        2
+      ],
       "description": "1=旧様式。2=完了判定の表に「空振りでないことの確認」の欄を要求する様式。**版 1 の契約に版 2 の要件を遡って適用しない。**"
     },
     "meta": {
       "type": "object",
-      "required": ["task_id", "kind", "title", "origin", "created_at", "created_from"],
+      "required": [
+        "task_id",
+        "kind",
+        "title",
+        "origin",
+        "created_at",
+        "created_from"
+      ],
       "additionalProperties": false,
       "properties": {
-        "task_id": { "type": "string", "pattern": "^T-[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9-]{3,60}(?![\\s\\S])" },
-        "kind": { "enum": ["impl", "exp", "analysis"] },
-        "title": { "type": "string", "minLength": 1 },
-        "origin": { "enum": ["claude-app", "cli", "human"] },
-        "chat_url": { "type": "string" },
-        "created_at": { "type": "string" },
+        "task_id": {
+          "type": "string",
+          "pattern": "^T-[0-9]{4}-[0-9]{2}-[0-9]{2}-[a-z0-9-]{3,60}(?![\\s\\S])"
+        },
+        "kind": {
+          "enum": [
+            "impl",
+            "exp",
+            "analysis"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "origin": {
+          "enum": [
+            "claude-app",
+            "cli",
+            "human"
+          ]
+        },
+        "chat_url": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string"
+        },
         "created_from": {
           "type": "object",
-          "required": ["runindex_commit", "counts"],
+          "required": [
+            "runindex_commit",
+            "counts"
+          ],
           "additionalProperties": false,
           "properties": {
-            "runindex_commit": { "type": "string", "minLength": 7 },
+            "runindex_commit": {
+              "type": "string",
+              "minLength": 7
+            },
             "counts": {
               "type": "object",
-              "required": ["index", "experiments", "verdicts"],
+              "required": [
+                "index",
+                "experiments",
+                "verdicts"
+              ],
               "additionalProperties": false,
               "properties": {
-                "index": { "type": "integer" },
-                "experiments": { "type": "integer" },
-                "verdicts": { "type": "integer" }
+                "index": {
+                  "type": "integer"
+                },
+                "experiments": {
+                  "type": "integer"
+                },
+                "verdicts": {
+                  "type": "integer"
+                }
               }
             }
           }
         },
-        "supersedes": { "type": "array", "items": { "type": "string" } },
-        "depends_on": { "type": "array", "items": { "type": "string" } },
+        "supersedes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "depends_on": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "amendments": {
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["date", "reason"],
+            "required": [
+              "date",
+              "reason"
+            ],
             "additionalProperties": false,
             "properties": {
-              "date": { "type": "string" },
-              "reason": { "type": "string" },
-              "diff": { "type": "string" }
+              "date": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              },
+              "diff": {
+                "type": "string"
+              }
             }
           }
         }
@@ -58,103 +134,310 @@
     },
     "intent": {
       "type": "object",
-      "required": ["question", "decision_at_stake"],
+      "required": [
+        "question",
+        "decision_at_stake"
+      ],
       "additionalProperties": false,
       "properties": {
-        "question": { "type": "string", "minLength": 1 },
-        "decision_at_stake": { "type": "string", "minLength": 1 },
-        "hypothesis": { "type": "string" },
+        "question": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decision_at_stake": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hypothesis": {
+          "type": "string"
+        },
         "related": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "decision_log": { "type": "array", "items": { "type": "string" } },
-            "lessons": { "type": "array", "items": { "type": "string" } },
-            "plan_sections": { "type": "array", "items": { "type": "string" } },
-            "backlog": { "type": "array", "items": { "type": "string" } }
+            "decision_log": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "lessons": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "plan_sections": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "backlog": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           }
         }
       }
     },
     "inputs": {
       "type": "object",
-      "required": ["data", "code"],
+      "required": [
+        "data",
+        "code"
+      ],
       "additionalProperties": false,
       "properties": {
         "denominator": {
           "type": "object",
-          "required": ["ref", "metric"],
+          "required": [
+            "ref",
+            "metric"
+          ],
           "additionalProperties": false,
           "properties": {
-            "ref": { "type": "string", "pattern": "^exp:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[A-Za-z0-9_.-]+(?:~[A-Za-z0-9_.-]+|#[A-Za-z0-9_.-]+)?(?![\\s\\S])" },
-            "metric": { "type": "string" },
+            "ref": {
+              "type": "string",
+              "description": "実行者が索引で解決する前提なら `unresolved:<何を索引で引くか>` と書き、同じ対象に `resolve_by_executor: true` を置く。**宣言の無い置換前提の値は従来どおり落ちる。**解決は tasks/<task_id>/resolved.yaml に記録し、実行直前検査 P12 が済んでいなければ止める。",
+              "oneOf": [
+                {
+                  "pattern": "^exp:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[A-Za-z0-9_.-]+(?:~[A-Za-z0-9_.-]+|#[A-Za-z0-9_.-]+)?(?![\\s\\S])"
+                },
+                {
+                  "pattern": "^unresolved:.+"
+                }
+              ]
+            },
+            "metric": {
+              "type": "string"
+            },
             "require": {
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "n_seeds": { "type": "string" },
-                "sigma": { "enum": ["present", "any"] },
-                "split": { "enum": ["train", "val", "test"] }
+                "n_seeds": {
+                  "type": "string"
+                },
+                "sigma": {
+                  "enum": [
+                    "present",
+                    "any"
+                  ]
+                },
+                "split": {
+                  "enum": [
+                    "train",
+                    "val",
+                    "test"
+                  ]
+                }
+              }
+            },
+            "resolve_by_executor": {
+              "type": "boolean",
+              "description": "true のときだけ ref に unresolved: 形式を許す。"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "ref": {
+                    "pattern": "^unresolved:.+"
+                  }
+                },
+                "required": [
+                  "ref"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "resolve_by_executor": {
+                    "const": true
+                  }
+                },
+                "required": [
+                  "resolve_by_executor"
+                ]
               }
             }
-          }
+          ]
         },
         "sigma_policy": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "series": { "enum": ["pstd", "sstd"] },
-            "sigma_source": { "enum": ["paired_delta", "within_run_seed_spread"] },
-            "delta_sigma_source": { "enum": ["paired", "unpaired_pooled"] }
+            "series": {
+              "enum": [
+                "pstd",
+                "sstd"
+              ]
+            },
+            "sigma_source": {
+              "enum": [
+                "paired_delta",
+                "within_run_seed_spread"
+              ]
+            },
+            "delta_sigma_source": {
+              "enum": [
+                "paired",
+                "unpaired_pooled"
+              ]
+            }
           }
         },
         "frozen_source": {
           "type": "object",
-          "required": ["ref"],
+          "required": [
+            "ref"
+          ],
           "additionalProperties": false,
           "properties": {
-            "ref": { "type": "string", "pattern": "^run:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?![\\s\\S])" },
-            "verify": { "enum": ["ckpt_sha256", "none"] }
-          }
+            "ref": {
+              "type": "string",
+              "description": "実行者が索引で解決する前提なら `unresolved:<何を索引で引くか>` と書き、同じ対象に `resolve_by_executor: true` を置く。**宣言の無い置換前提の値は従来どおり落ちる。**解決は tasks/<task_id>/resolved.yaml に記録し、実行直前検査 P12 が済んでいなければ止める。",
+              "oneOf": [
+                {
+                  "pattern": "^run:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?![\\s\\S])"
+                },
+                {
+                  "pattern": "^unresolved:.+"
+                }
+              ]
+            },
+            "verify": {
+              "enum": [
+                "ckpt_sha256",
+                "none"
+              ]
+            },
+            "resolve_by_executor": {
+              "type": "boolean",
+              "description": "true のときだけ ref に unresolved: 形式を許す。"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "ref": {
+                    "pattern": "^unresolved:.+"
+                  }
+                },
+                "required": [
+                  "ref"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "resolve_by_executor": {
+                    "const": true
+                  }
+                },
+                "required": [
+                  "resolve_by_executor"
+                ]
+              }
+            }
+          ]
         },
         "data": {
           "type": "object",
-          "required": ["dataset", "split_files"],
+          "required": [
+            "dataset",
+            "split_files"
+          ],
           "additionalProperties": false,
           "properties": {
-            "dataset": { "type": "string" },
-            "split_files": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+            "dataset": {
+              "type": "string"
+            },
+            "split_files": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            }
           }
         },
-        "caches": { "type": "array", "items": { "type": "string" } },
+        "caches": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "code": {
           "type": "object",
-          "required": ["entrypoints"],
+          "required": [
+            "entrypoints"
+          ],
           "additionalProperties": false,
           "properties": {
-            "entrypoints": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+            "entrypoints": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1
+            }
           }
         }
       }
     },
     "contract": {
       "type": "object",
-      "required": ["inject_verbatim", "conventions_rev", "prohibitions", "verbatim_forbidden"],
+      "required": [
+        "inject_verbatim",
+        "conventions_rev",
+        "prohibitions",
+        "verbatim_forbidden"
+      ],
       "additionalProperties": false,
       "properties": {
         "inject_verbatim": {
           "type": "array",
           "minItems": 1,
-          "items": { "type": "string", "pattern": "^conventions#[a-z0-9_]+(?![\\s\\S])" }
+          "items": {
+            "type": "string",
+            "pattern": "^conventions#[a-z0-9_]+(?![\\s\\S])"
+          }
         },
-        "conventions_rev": { "type": "string", "minLength": 7 },
-        "prohibitions": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
-        "verbatim_forbidden": { "const": true }
+        "conventions_rev": {
+          "type": "string",
+          "minLength": 7
+        },
+        "prohibitions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "verbatim_forbidden": {
+          "const": true
+        },
+        "allow_write": {
+          "type": "array",
+          "description": "契約が正当に書き込む禁止領域の接頭辞。宣言の無い禁止領域への書き込みは従来どおり失敗する。**許可には上限がある**: data/ 配下は宣言しても許可されず、experiments/ と transfer/ は起点に既に存在する経路（既存 run 配下）を許可できない。検査は tools/check_forbidden.py --task。",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.\\-/]+(?![\\s\\S])"
+          },
+          "minItems": 1
+        }
       }
     },
     "plan": {
       "type": "object",
-      "required": ["phases", "env"],
+      "required": [
+        "phases",
+        "env"
+      ],
       "additionalProperties": false,
       "properties": {
         "phases": {
@@ -162,13 +445,25 @@
           "minItems": 1,
           "items": {
             "type": "object",
-            "required": ["id", "name", "gpu"],
+            "required": [
+              "id",
+              "name",
+              "gpu"
+            ],
             "additionalProperties": false,
             "properties": {
-              "id": { "type": "string" },
-              "name": { "type": "string" },
-              "gpu": { "type": "boolean" },
-              "est": { "type": "string" }
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "gpu": {
+                "type": "boolean"
+              },
+              "est": {
+                "type": "string"
+              }
             }
           }
         },
@@ -176,99 +471,265 @@
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["id", "after", "check", "on_fail"],
+            "required": [
+              "id",
+              "after",
+              "check",
+              "on_fail"
+            ],
             "additionalProperties": false,
             "properties": {
-              "id": { "type": "string" },
-              "after": { "type": "string" },
-              "check": { "type": "string" },
-              "threshold": { "type": "string" },
-              "on_fail": { "enum": ["stop", "ask", "skip"] }
+              "id": {
+                "type": "string"
+              },
+              "after": {
+                "type": "string"
+              },
+              "check": {
+                "type": "string"
+              },
+              "threshold": {
+                "type": "string"
+              },
+              "on_fail": {
+                "enum": [
+                  "stop",
+                  "ask",
+                  "skip"
+                ]
+              }
             }
           }
         },
         "env": {
           "type": "object",
-          "required": ["venv", "preflight"],
+          "required": [
+            "venv",
+            "preflight"
+          ],
           "additionalProperties": false,
           "properties": {
-            "venv": { "type": "string" },
-            "preflight": { "type": "array", "items": { "type": "string" } }
+            "venv": {
+              "type": "string"
+            },
+            "preflight": {
+              "type": "array",
+              "description": "実行直前検査に適用する名前。**検査器が実装している名前だけを書く。**未知の名前は黙って無視されず L1 と実行直前検査の双方で失敗する。宣言は契約が実際に使う経路に限る（工程側だけを回す契約は検出器の拡張を宣言しない）。",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "venv_active",
+                  "cuda_ext_loaded",
+                  "deterministic_flags",
+                  "gpu_free"
+                ]
+              }
+            }
           }
         },
         "resources": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "server": { "type": "string" },
-            "gpu": { "type": "integer" },
-            "est_hours": { "type": "number" },
-            "runs": { "type": "integer" }
+            "server": {
+              "type": "string"
+            },
+            "gpu": {
+              "type": "integer"
+            },
+            "est_hours": {
+              "type": "number"
+            },
+            "runs": {
+              "type": "integer"
+            }
           }
         },
         "parallelism": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "waves": { "type": "integer" },
-            "per_wave": { "type": "integer" }
+            "waves": {
+              "type": "integer"
+            },
+            "per_wave": {
+              "type": "integer"
+            }
           }
         }
       }
     },
     "prereg": {
       "type": "object",
-      "required": ["prediction", "primary_endpoint", "decision_rule", "stop_conditions"],
+      "required": [
+        "prediction",
+        "primary_endpoint",
+        "decision_rule",
+        "stop_conditions"
+      ],
       "additionalProperties": false,
       "properties": {
-        "prediction": { "type": "string", "minLength": 1 },
-        "primary_endpoint": { "type": "string", "minLength": 1 },
-        "decision_rule": { "type": "string", "minLength": 1 },
-        "stop_conditions": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
-        "committed_at": { "type": ["string", "null"] },
-        "commit": { "type": ["string", "null"] }
+        "prediction": {
+          "type": "string",
+          "minLength": 1
+        },
+        "primary_endpoint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decision_rule": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stop_conditions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "committed_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "commit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       }
     },
     "outputs": {
       "type": "object",
-      "required": ["must_have", "destination", "acceptance"],
+      "required": [
+        "must_have",
+        "destination",
+        "acceptance"
+      ],
       "additionalProperties": false,
       "properties": {
-        "expected_runs": { "type": "integer" },
-        "must_have": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
-        "destination": { "type": "string" },
+        "expected_runs": {
+          "type": "integer"
+        },
+        "must_have": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "destination": {
+          "type": "string"
+        },
         "stamp": {
           "type": "object",
           "additionalProperties": false,
-          "properties": { "task_id_in": { "type": "string" } }
+          "properties": {
+            "task_id_in": {
+              "type": "string"
+            }
+          }
         },
-        "acceptance": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
-        "report_to": { "type": "array", "items": { "type": "string" } }
+        "acceptance": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "report_to": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
       }
     },
     "governance": {
       "type": "object",
-      "required": ["deviations_required", "integrity"],
+      "required": [
+        "deviations_required",
+        "integrity"
+      ],
       "additionalProperties": false,
       "properties": {
-        "decisions_required": { "type": "array", "items": { "type": "string" } },
-        "deviations_required": { "const": true },
-        "integrity": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
-        "escalate_if": { "type": "array", "items": { "type": "string" } }
+        "decisions_required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "deviations_required": {
+          "const": true
+        },
+        "integrity": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "escalate_if": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
       }
     }
   },
   "allOf": [
     {
-      "if": { "properties": { "meta": { "properties": { "kind": { "const": "exp" } } } } },
-      "then": { "required": ["prereg"] }
+      "if": {
+        "properties": {
+          "meta": {
+            "properties": {
+              "kind": {
+                "const": "exp"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "prereg"
+        ]
+      }
     },
     {
-      "if": { "properties": { "meta": { "properties": { "kind": { "const": "exp" } } } } },
+      "if": {
+        "properties": {
+          "meta": {
+            "properties": {
+              "kind": {
+                "const": "exp"
+              }
+            }
+          }
+        }
+      },
       "then": {
         "properties": {
-          "inputs": { "required": ["denominator", "data", "code"] },
-          "outputs": { "required": ["expected_runs", "must_have", "destination", "stamp", "acceptance"] }
+          "inputs": {
+            "required": [
+              "denominator",
+              "data",
+              "code"
+            ]
+          },
+          "outputs": {
+            "required": [
+              "expected_runs",
+              "must_have",
+              "destination",
+              "stamp",
+              "acceptance"
+            ]
+          }
         }
       }
     }
