@@ -56,6 +56,22 @@ TEACHER: tuple[tuple[str, str | None, int | None, str], ...] = (
     ("T-2026-08-17-report-projection-and-friction#1",
      "gate_requires_report_before_end", 41, ""),
     ("T-2026-08-17-report-projection-and-friction#2", "truncation_in_measurement", 279, ""),
+    # 陰性例（該当しないことが正しい）。抑止の手順を日本語で書き、目印の文字列
+    # `.sync-pause` を含まない起票が二契約続けて偽陽性になった
+    # （T-2026-09-01-notion-retire-scripts-and-speccheck で規則を直した）。
+    ("T-2026-08-31-notion-legacy-toc-and-export#1", None, None,
+     "統合を禁止しつつ抑止の設置と解除を別の節に書く。該当しないのが正しい"),
+    ("T-2026-08-31-notion-repo-followup-and-retire#1", None, None,
+     "同上。前契約に続いて同じ言い回しで偽陽性になっていた"),
+    ("T-2026-09-01-notion-retire-scripts-and-speccheck#1", None, None,
+     "同上。本契約自身も修正前は該当していた"),
+)
+
+# 抑止の手順を持つ契約（該当してはならない）。上の陰性例の対象を機械で引くための一覧。
+PAUSE_PROCEDURE_NEGATIVE = (
+    "T-2026-08-31-notion-legacy-toc-and-export",
+    "T-2026-08-31-notion-repo-followup-and-retire",
+    "T-2026-09-01-notion-retire-scripts-and-speccheck",
 )
 
 # 教師データ（対）を持つ契約。対を持たない契約への該当は対応の有無を判定できない。
@@ -266,10 +282,15 @@ def test_host_mismatch_ignores_case_but_detects_other_host(tmp_path, monkeypatch
 # ------------------------------------------------------------------- 検出率
 
 def test_teacher_detection_rate(all_findings):
-    """教師データ 16 件のうち 11 件を検出する（実測 2026-08-11 lecun）。
+    """教師データ 19 件のうち 11 件を検出する（実測 2026-08-11 lecun / 2026-09-01 更新）。
 
     `host_mismatch` の 2 件は実行ホストに依存する。宣言と一致するホストでは
     該当しないのが正しい。**期待値を hostname から計算する。**
+
+    2026-09-01 に陰性例 3 件を足した（rule=None。該当しないことが正しい例）。
+    **分母だけが 16 から 19 へ動き、検出すべき件数は変えていない。**
+    陰性例は `integration_prohibited_without_pause` の偽陽性を直した際の裏づけで、
+    抑止の手順を日本語で書き目印の文字列を含まない起票を表す。
     """
     detected, missed = [], []
     for key, rule, line, _ in TEACHER:
@@ -294,7 +315,7 @@ def test_teacher_detection_rate(all_findings):
     # codex-parity#1 を引いて 10 件。これにホストに依存する分を足す。
     expected = 10 + expected_host_detected
     assert len(detected) == expected, f"検出 {detected} / 未検出 {missed}"
-    assert len(detected) + len(missed) == 16
+    assert len(detected) + len(missed) == 19
 
 
 def test_unrecorded_hits_are_pinned(all_findings):

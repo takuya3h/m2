@@ -1,0 +1,62 @@
+result_version: 3
+task_id: "T-2026-09-01-notion-retire-scripts-and-speccheck"
+status: pass
+host: "lecun"
+branch: "feat/notion-retire-scripts-and-speccheck"
+pr: null
+merged: false
+
+gates: []
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 509
+
+deviations:
+  - type: judgement
+    note: "開始前から在った未追跡 .sync-pause.released を repo の外へ退避した（契約 §1 罠 6 が許可）。同期対象外のマーカーであり他ホストへ影響しない。消していない"
+  - type: judgement
+    note: "tests/test_check_spec.py の test_teacher_detection_rate の分母を 16 から 19 へ更新した。陰性の教師例 3 件を追加したためである。検出すべき件数 expected は変えておらず、陽性例も弱めていない。禁止 11 には抵触しない"
+  - type: judgement
+    note: "退役の方式として scripts/retired/ への移動と入口での停止の両方を行った。契約 §3 はいずれでもよいとするが、対象 4 本のうち 3 本が NOTION_DB_ID 環境変数を自前で読むため、移動だけでは絶対経路で呼ばれた場合に止まらない"
+
+issuer_defects: []
+
+positive_controls:
+  - judgement: "門が働いていること（判定 A）"
+    breaking_input: "存在しない節名 NO_SUCH_SECTION で同じ確認をする"
+    observed: "失敗した。実在する claude_app_surfaces では成功する。前契約 PR #171 が統合済みであることを確かめた上で作業した"
+  - judgement: "書き込み経路の列挙が漏れていないこと（判定 B）"
+    breaking_input: "異質な二通り（endpoint の文字列と HTTP ライブラリの呼び出し）で列挙して差を突き合わせる"
+    observed: "差が 5 件出た。方法 1 は draft_master_update.py を落とし（/pages が変数展開の内側）、方法 2 は report_task.py を落とした（_notion_call_method 経由）。片方だけでは集合を確定できなかった。実装で切り分けて対象 4 本を確定し、退役していない書き込み経路は 0 になった"
+  - judgement: "退役が効いており無言で成功したことにならないこと（判定 C）"
+    breaking_input: "退役の入口を外した写しを repo の外に作り --dry-run で走らせる。元の処理へ進むはず"
+    observed: "退役後の 4 本はいずれも exit 3 で退役の旨を出した。入口を外した写しは exit 0 で元の処理へ進み [hc-post] SKIP ... を出した。--dry-run のため投稿していない"
+  - judgement: "文書の追随が漏れていないこと（判定 D）"
+    breaking_input: "退役前の経路が文書に残っていれば docs-check が非零を返すはず"
+    observed: "追随の途中で exit 2 になり docs/auto_logging.md:71 実在しない経路 scripts/draft_master_update.py を検出した。残りを直して exit 0 になった。agent-check も exit 0"
+  - judgement: "spec-check の偽陽性が直ったこと（判定 E）"
+    breaking_input: "修正前の検出器で同じ三本を回す。fail するはず"
+    observed: "修正前は三本とも fail した（legacy-toc は行 74 と 77 の 2 件、repo-followup は行 82、本契約は行 55。計 4 件）。修正後は三本とも hits=0 status=pass"
+  - judgement: "既存の陽性例が引き続き検出されること（判定 F）"
+    breaking_input: "陽性例の本文へ抑止を置くと解除するの双方を足した写しを判定にかける。該当しなくなるはず"
+    observed: "元の陽性例は _has_pause_procedure が False で該当し、足した写しでは True になり該当しなくなる。規則は本文に感応している。陽性 3 件はいずれも従来と同じ行を検出した（55 / 47 / 46）。全契約での該当は 19 件から 15 件へ減り、差は陰性 3 本ぶんである"
+  - judgement: "検出器の試験が通ること（C-4）"
+    breaking_input: "教師データを増やしたまま試験を回す。分母が動けば落ちるはず"
+    observed: "一度 test_teacher_detection_rate が落ちた（分母 16 に対し 19 件）。分母だけを 19 へ更新し検出すべき件数は変えずに 22 passed になった"
+  - judgement: "秘匿の検査が値を出さずに働いていること（判定 J）"
+    breaking_input: "偽の token の形と鍵の書き出しと Bearer の直書きを含む合成フィクスチャを与える"
+    observed: "3 規則とも 1 件ずつ検出した。実対象の変更ファイル 8 件では 3 形とも 0 件である"
+
+followups:
+  - "CLI から旧データベースへ書ける経路は零になった。旧データベース群と旧頁群をアーカイブへ移す判断ができる状態である"
+  - "make spec-check は本契約の修正により契約の完了条件へ戻せる状態になった。全契約での該当 15 件は本契約の対象外であり、内容の妥当性は検証していない"
+  - "scripts/eval_and_post.sh は docs_audit.md の現行手順に載っておらず docs-check の対象外だが、投稿の呼び出しを持っていた。検査で捕まる範囲の外にある参照が他にもありうる"
+
+unknowns:
+  - "退役した 4 本を --dry-run 以外の引数で呼んだ場合の挙動。__main__ を通知だけにしたため引数に依らず止まるはずだが実行して確かめていない"
+  - "spec-check の全契約での該当 15 件の内容の妥当性。本契約は integration_prohibited_without_pause の偽陽性だけを対象にしており、他の規則の該当は見ていない"
+  - "docs-check の対象外にある文書やスクリプトに、退役した経路への参照が残っているか。eval_and_post.sh は手で見つけたが網羅していない"
+
+commits: []

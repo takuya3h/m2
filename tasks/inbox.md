@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（467 件）
+## 未処理（474 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -482,6 +482,13 @@
 - [ ] 2026-08-31 [cc] **preflight に P10 preflight_names_known が入った。** 前契約 T-2026-08-29-stage0-contract-b で「`plan.env.preflight` に検査器が知らない名前を書いても黙って無視される」と申し送った件が実装された（既知: cuda_ext_loaded / deterministic_flags / gpu_free / venv_active）。あわせて P11 gpu_free と P12 refs_resolved も増えている（T-2026-08-31-notion-legacy-toc-and-export）
 - [ ] 2026-08-31 [cc] **旧マスター頁は Integration に未共有で HTTP 404。** 対象 7 件中 6 件は到達でき、見出し 199 件と DB 5 件・872 行を保全した。`toc_plan_master.md` には未取得の理由と再取得の命令だけを書き、推定で埋めていない。共有後にアーカイブへ移す判断が要る（T-2026-08-31-notion-legacy-toc-and-export）
 - [ ] 2026-08-31 [cc] 🔴 **実行者の誤りを 2 件記録する。** (1) 判定 E を `wc -l` で数えて一度「不一致」と誤判定した。`properties.csv` はセルに改行を含むため CSV として読む必要がある（decision_log は 65 行だが `wc -l` は 848）。(2) `pgrep -f` の自己一致で自分のシェルを 2 度停止させた。`conventions#issuer_cautions` 注意 6 に明記された落とし穴で、待機ループでも同じ失敗を先に起こしている。`/proc/PID/exe` で絞る作法の例示を規約側に足すと再発を減らせる（T-2026-08-31-notion-legacy-toc-and-export）
+- [ ] 2026-08-31 [cc] **CLI が Notion に触れるのは配布台帳だけになった。** 旧 DB への自動書き込みを明示的に退役させた（`notion_ops` の `RETIRED_DB_KEYS` と `notion_logger` の `RUN_LEDGER_RETIRED`）。識別子を消すだけでは fail-open で無言のままになり「壊れた」と「退役した」を区別できないため、呼ばれたら投稿せず `{"retired": True, "posted": False, ...}` を返す。呼び出し規約は変えていないので呼び出し元 25 ファイルと試験は無改変で、失敗の増減も 0（T-2026-08-31-notion-repo-followup-and-retire）
+- [ ] 2026-08-31 [cc] 🔴 **旧マスター頁が到達可能になっていた**（前契約では HTTP 404）。利用者が共有したものと見られる。見出し 222 件を取得し、`manifest.csv` の対象 7 件がすべて `exported` になった。旧頁群と旧 DB 群をアーカイブへ移す判断ができる状態である（T-2026-08-31-notion-repo-followup-and-retire）
+- [ ] 2026-08-31 [cc] 🔴 **実行者の誤りを 3 件記録する。** (1) 判定 F の対照を Makefile へ当てて失敗した。`docs-check` は文書に書かれた経路の実在を見るもので Makefile の中身は見ない。(2) D-4 の方法 1（現行手順 3 文書のみ）が `context/README.md` の旧手順案内を見落とし、方法 2（対象 42 文書の全走査）で検出した。**契約が「異質な二通りで確かめる」と定めていた理由がそのまま出た。** (3) 退役の陰性対照が最初 HTTP 0 回で対照にならなかった。登録簿から鍵を移したため解決前に止まっており、鍵も与えて当て直した（T-2026-08-31-notion-repo-followup-and-retire）
+- [ ] 2026-08-31 [cc] `make spec-check` の `integration_prohibited_without_pause` が**二契約続けて偽陽性**を出した（SPEC.md:82）。SPEC §5 A-2・F-7・判定 N に抑止の記載があるのに語句パターンが合わない。検出器の語句を広げるか、契約側の要求を WARN 許容に変えるかの判断が要る（T-2026-08-31-notion-repo-followup-and-retire）
+- [ ] 2026-09-01 [cc] **CLI から旧データベースへ書ける経路が零になった。** 個別投稿スクリプト 4 本（`post_eval_to_notion` / `post_hc_to_notion` / `post_t1b_ca_to_notion` / `draft_master_update`）を `scripts/retired/` へ移動し、入口でも停止させた。🔴 **うち 3 本は `NOTION_DB_ID` 環境変数を自前で読むため、前契約の登録簿の退役では止まらなかった**（T-2026-09-01-notion-retire-scripts-and-speccheck）
+- [ ] 2026-09-01 [cc] **`spec-check` の `integration_prohibited_without_pause` の偽陽性を直した。** 検出器は本文に文字列 `.sync-pause` があるかだけを見ており、抑止を日本語で書く起票を拾っていた。「抑止を置く」と「抑止を解除」の**双方**に触れる記述を抑止の手順とみなす規則へ変更。陰性の教師例 3 件を `TEACHER` へ追加し、分母を 16→19 に更新（**検出すべき件数と陽性例は不変**）。全契約での該当は 19→15 件（T-2026-09-01-notion-retire-scripts-and-speccheck）
+- [ ] 2026-09-01 [cc] 🔴 **異質な二通りの列挙がどちらも取り逃しを持っていた。** 方法 1（endpoint の文字列）は `draft_master_update.py` を落とし（`/pages` が変数展開の内側）、方法 2（HTTP ライブラリ）は `report_task.py` を落とした（`_notion_call_method` 経由）。**片方だけでは集合を確定できない**という実測であり、契約が二通りを求める理由がそのまま出た（T-2026-09-01-notion-retire-scripts-and-speccheck）
 
 ## 処理済み（1 件）
 
