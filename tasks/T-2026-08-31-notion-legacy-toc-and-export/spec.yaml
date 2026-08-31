@@ -1,0 +1,62 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-08-31-notion-legacy-toc-and-export"
+  kind: analysis
+  title: "Notion の旧頁の見出し抽出と旧データベースの保全 export"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-08-31T09:00:00Z"
+  created_from:
+    runindex_commit: "96eb3a1c"
+    counts: {index: 1266, experiments: 285, verdicts: 1506}
+  depends_on: []
+  amendments:
+    - date: "2026-08-31"
+      reason: "利用者から decisions_required 3 件へ回答を得た。export の合計が閾値超なら commit せず停止して報告、個人情報の形を検出したら commit せず停止して報告、資格情報は本ホストで読み込みが成立したため三つ目は発火しない。いずれも契約 §7 の既定と同じ振る舞いである"
+      diff: "governance.decisions_required を 3 件から空へ。created_from と conventions_rev の resolve-at-intake を実測値へ差し替え"
+intent:
+  question: "Notion の旧マスター頁と現行版頁の見出し構造、および凍結する旧データベース群の全行を、本文を人が読まずに repo へ機械的に保全できるか"
+  decision_at_stake: "新マスターの章立ての決定と、旧頁と旧データベースをアーカイブへ移す判断"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "notion-legacy-pages-and-databases"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/load_env.sh", "src/egosurgery/utils/notion_ops.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "a8c07e81"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "準備と到達性の実測", gpu: false, est: "20m"}
+    - {id: B, name: "見出し抽出", gpu: false, est: "40m"}
+    - {id: C, name: "旧データベースの export", gpu: false, est: "60m"}
+    - {id: D, name: "対照と検査", gpu: false, est: "30m"}
+    - {id: E, name: "報告と送出", gpu: false, est: "30m"}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [REPORT.md, manifest.csv, toc_plan_master.md, toc_plan_current.md]
+  destination: "docs/archive/notion/"
+  acceptance:
+    - "manifest.csv に対象の全オブジェクトが一行ずつあり、各行の状態が exported か unreachable か stopped のいずれかである"
+    - "見出し抽出の出力は見出しの文と階層と block id と子頁の題だけを含み、本文の段落を含まない"
+    - "export された各データベースは raw の jsonl と properties の csv と bodies の jsonl を持ち、行数が manifest と一致する"
+    - "検出器と計数器について陽性対照と陰性対照が両方向で記録されている"
+    - "export と抽出物と報告に秘匿の形が零件で、検査は値を出力していない"
+    - "分岐名が feat で始まり、PR が存在し、番号が RESULT に記録されている"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "対象オブジェクトの過半が到達不能"
+    - "export の再実行で要約値が一致しない"
+    - "見出し抽出の二通りの頁送りで結果が一致しない"
