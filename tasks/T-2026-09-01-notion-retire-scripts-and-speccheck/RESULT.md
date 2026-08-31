@@ -1,0 +1,102 @@
+# RESULT — T-2026-09-01-notion-retire-scripts-and-speccheck
+
+証跡は `audit.md`。本書からは節番号で指す。**Notion への読み書きは行っていない。**
+
+## 判定
+
+**status: pass。** Task A〜D を完走した。門は通過し、退役・検出器の修正・投影の末尾再生成の
+三つとも成立した。`decisions_required`（規則の修正が陽性例と両立しない場合）は**発火しなかった**。
+
+## 完了判定（SPEC §6）
+
+| # | 判定 | 実測 | 空振りでないことの確認 |
+|---|---|---|---|
+| A | 門: `origin/phase0` の登録簿に `claude_app_surfaces` | **あり** | 存在しない節名 `NO_SUCH_SECTION` では失敗する（audit §1.4） |
+| B | 二通りの列挙が一致し、退役していないものが零 | 対象 **4 本**を確定。退役していない書き込み経路は **0** | 二通りの差 5 件を実装で切り分けた（Slack webhook・読み取り・配布台帳 2 本）。方法 1 と方法 2 はそれぞれ別の 1 本を取り逃しており、**片方だけでは不足だった**（audit §2.1） |
+| C | 退役後は投稿せず退役の旨を返す。印を外すと投稿を試みる | 4 本とも **exit 3** で退役の旨。入口を外した写しは元の処理へ進む | 対照そのもの。`--dry-run` のため送信していない（audit §2.4） |
+| D | `docs-check` と `agent-check` が exit 0 | 両方 **0** | 追随の途中で `docs-check` が **exit 2**（`docs/auto_logging.md:71 実在しない経路`）を返し、残りの参照を検出した（audit §2.5） |
+| E | `spec-check` が三本の陰性例で fail しない | **3 本とも hits=0 status=pass** | 修正前は 3 本とも fail（計 4 件。audit §1.3） |
+| F | 既存の陽性例が引き続き検出される | **3 件とも従来と同じ行**（55 / 47 / 46） | 陽性例へ「抑止を置く／解除する」を足した写しでは該当しなくなる。規則は本文に感応している（audit §3.3） |
+| G | 試験の失敗が増えていない | 前 **6** / 後 **6**、増減 **0** | 前後の集合差（audit §4.1） |
+| H | 再生成が D-5 で一度、両 check が exit 0、差分が commit に含まれる | 再生成前は差分あり、後は両方 exit 0 | 本契約の `result.yaml` が未反映のため差分は必ず出る（§送出） |
+| I | `forbidden-check` の結果が記録 | **exit 0**（changed 10 / checked 10 / violations 0） | — |
+| J | 変更ファイルに秘匿の形が零件・検査は値を出さない | 危険 3 形とも **0 件** | 合成フィクスチャで 3 規則とも 1 件ずつ検出（audit §4.3） |
+| K | 分岐 `feat/`、PR、抑止の移動解除、退避物の復帰 | 分岐 `feat/notion-retire-scripts-and-speccheck`、他は §送出 | 抑止を置いた状態で同期の記録に一時停止中が出る |
+| L | `tasks/inbox.d/` に一行以上 | あり | — |
+| M | `RESULT.md` が上限以内・`result.yaml` が様式を通る | 本書 / `make task-validate` exit 0 | 様式検査そのもの |
+
+## 実測
+
+### 退役したスクリプトと識別子の解決経路
+
+| スクリプト | 解決経路 | 退役後 |
+|---|---|---|
+| `post_eval_to_notion.py` | `NOTION_DB_ID` 環境変数 | `scripts/retired/` へ移動＋入口で停止（exit 3） |
+| `post_hc_to_notion.py` | `NOTION_DB_ID` 環境変数 | 同上 |
+| `post_t1b_ca_to_notion.py` | `NOTION_DB_ID` 環境変数 | 同上 |
+| `draft_master_update.py` | `configs/notion.yaml` を自前で読む | 同上 |
+
+🔴 **三本は環境変数を自前で読むため、前契約の登録簿の退役では止まらなかった。**
+入口で止める方式が必要だった。**これで CLI から旧データベースへ書ける経路は零になった。**
+
+対象外と判定したもの: `notify_experiment.py`（Slack webhook）、
+`retired/notion_context_pack.py`（読み取り・退役済み）、
+`tools/fetch_task.py` と `tools/report_task.py`（配布台帳。禁止 10）。
+
+### 検出器の変更点と教師例の増減
+
+| 項目 | 前 | 後 |
+|---|---|---|
+| 判定 | 本文に `.sync-pause` の文字列があるか | 文字列、**または**「抑止を置く」と「抑止を解除」の双方の記述 |
+| 教師データ | 16 件 | **19 件**（陰性例 3 件を追加。`rule=None`） |
+| 検出すべき件数 | 変えていない | 同左（`expected` は不変） |
+| 全契約での該当 | 19 件 | **15 件**（減った 4 件は陰性 3 本ぶん） |
+| 検出器の試験 | — | **22 passed** |
+
+**陽性例を弱めていない。** 三つの陽性例はいずれも従来と同じ行を検出する。
+
+### 再生成の差分の要点
+
+本契約の `result.yaml` と `inbox.d` が未反映のため、再生成前は必ず差分が出る。
+D-5 で一度回し、両方の check が exit 0 になった状態で commit した（§送出）。
+
+### 参照しなかったもの
+
+`inputs.data.split_files`（`data/splits/ego_val.txt`）は様式のために書かれており、
+契約 §10 の指示どおり**参照していない**。
+
+## 起票者の誤り
+
+**見つからなかった。** 罠 1・3・5・6・7 はいずれも実際に発火し、対処の指示がそのまま有効だった。
+特に罠 3（識別子の解決経路が分からない）と罠 5（本契約自身も修正前は fail する）は実測と一致した。
+
+## 逸脱
+
+1. `judgement` — 開始前から在った未追跡 `.sync-pause.released` を repo の外へ退避した（罠 6 が許可）。**消していない**。
+2. `judgement` — `tests/test_check_spec.py` の `test_teacher_detection_rate` の分母を 16 → 19 へ更新した。陰性例 3 件を教師データへ足したためで、**検出すべき件数（`expected`）は変えていない**。禁止 11（試験を弱めない）に抵触しない。
+3. `judgement` — 退役の方式として、移動と入口での停止の**両方**を行った。契約 §3 はいずれでもよいとするが、三本が環境変数を自前で読むため移動だけでは（絶対経路で呼ばれれば）止まらない。
+
+## 想定外と UNKNOWN
+
+1. **二通りの列挙がどちらも取り逃しを持っていた。** 方法 1 は `draft_master_update.py`（`/pages` の文字列が変数展開の内側）を、方法 2 は `report_task.py`（`_notion_call_method` 経由）を落とした。**片方だけでは集合を確定できなかった。**
+2. `scripts/eval_and_post.sh` は `docs_audit.md` の現行手順に載っていないため `docs-check` の対象外だが、投稿の呼び出しを持っていたので追随させた。検査で捕まる範囲の外にある参照が他にもありうる。
+3. 退役した 4 本を `--dry-run` 以外の引数で呼んだ場合の挙動は確かめていない。`__main__` を通知だけにしたため引数に依らず止まるはずだが、実行していない。
+
+## 申し送り
+
+- **CLI から旧データベースへ書ける経路は零になった**（本契約で確認）。旧 DB をアーカイブへ移す判断ができる。
+- `make spec-check` は本契約の修正により契約の完了条件へ戻せる状態になった。全契約での該当 15 件は本契約の対象外であり、内容の妥当性は未検証。
+- 上記 UNKNOWN 2 のとおり、`docs-check` の対象外にある参照の追随は網羅されていない。
+
+## 送出
+
+| 項目 | 実測 |
+|---|---|
+| commit | `1b00ddcb`（18 files changed） |
+| push | exit 0（`origin/feat/notion-retire-scripts-and-speccheck`） |
+| PR | **#172**（base `phase0`） |
+| `make task-report` | **exit 0**。`report_sha256=c48499161fdf2a3ffb8116f86068508536ee52e45d3e35888f18d82f318559f7` / `report_bytes=7949` / `replaced_blocks=0` / `verdict=pass` / `n_issuer_defects=0` |
+| 抑止 | `.sync-pause` を**移動**で解除 |
+| 退避物 | `.sync-pause.released` を元へ戻す（消していない） |
+
+D-6 の指示により、RESULT へ番号を書いた後に再生成の差分が出るかを確かめた（audit §5）。
