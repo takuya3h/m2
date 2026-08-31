@@ -86,23 +86,22 @@ CV 研究プロジェクト。設計は**二塔・界面分離型**である。�
   平文 `.env` は **絶対に commit しない**（公開リポ）。秘密の運用は `docs/secrets_and_tracking.md`。
   新規 trainer を書くときは `tracking.init/log/finish` を必ず配線する（無認証なら no-op）。
 - 構造的な調査（呼び出し関係・定義位置・影響範囲）は CodeGraph MCP を優先。
-## Notion 連携（運用ハブ駆動・コンテキスト削減）
+## Notion 連携（配布台帳のみ）
 
-研究運用は Notion「**M2研究運用ハブ**」を入口にする。**マスターの「M2研究計画」（長文）は毎回読まない**。
-ID レジストリは `configs/notion.yaml`（非秘密）、認証 `NOTION_API_KEY`/`NOTION_DB_ID` は `.env`。詳細は `docs/notion_integration.md`。
+**CLI が Notion に触れるのは配布台帳（`task_distribution`）だけである。** 2026-08-31 に
+記録系を再構成した（`T-2026-08-31-notion-repo-followup-and-retire`）。
+ID レジストリは `configs/notion.yaml`（非秘密）、認証 `NOTION_API_KEY` は `.env`。
+詳細は `docs/notion_integration.md`。
 
-**読む（MCP・コンテキスト削減）**: セッションで必要なときだけ、次の順で**スライスのみ**取得する:
-1. `pages.current_state`「現在の研究状態」（最優先・小）を MCP fetch。
-2. 該当 step の構造化行を `scripts/notion_context_pack.py --step <S0..S9/B>` で抽出
-   （意思決定/失敗知見/プロンプト/手順書の関連行のみ）。
-3. 「M2研究計画」は**該当 §セクションだけ** MCP fetch（全文を渡さない）。
-「研究計画に基づいて答えて」と指示されたら、上記でハブ→該当計画スライスを**必ず**参照して答える。
+**使う経路はこれだけ**:
+- 契約の取り込み → `make task-notion` / `make task-start`（`tools/fetch_task.py`）
+- 完了報告の送り返し → `make task-report`（`tools/report_task.py`）
 
-**書く（自動記録・運用ループ §1-6）**:
-- 実験完了 → 実験Run台帳に自動投稿（`notion_logger.log_experiment_to_notion` 配線済 / バックフィルは `scripts/post_experiments_to_notion.py`）。
-- 方針変更 → `egosurgery.utils.notion_ops.log_decision(...)`（意思決定ログ）。
-- 再発防止の失敗 → `notion_ops.log_lesson(...)`（失敗知見・教訓）。
-- 再利用プロンプト → `notion_ops.save_prompt(...)`（プロンプトライブラリ）。
-- いずれも `NOTION_API_KEY` 未設定なら no-op（研究フローを止めない）。Name 冪等（同名は update）。
-- 高レベル計画本文への反映は週次/マイルストーン単位（毎回はしない）。
-- `tasks/lessons.md` に記録した教訓は、再発防止性があれば `notion_ops.log_lesson` でハブにも上げる。
+**新しい面（運用正本・現在地と現行計画・マスター・知見/決定・アーカイブ）は
+Claude アプリの面であり、CLI は読まない。** 識別子は登録簿の `claude_app_surfaces` に
+人が引くために載せてあるだけで、コードから解決しない。
+
+**旧データベース群と旧頁群は退役した**（登録簿の `retired_databases` / `retired_pages`）。
+自動投稿は明示的に止めてあり、呼ばれても投稿せず退役の旨を返す。
+内容を引くときは Notion ではなく repo の写しを読む（`docs/archive/notion/db/<KEY>/`）。
+教訓は `tasks/lessons.md`、契約ごとの判断は `tasks/inbox.d/` に書く。

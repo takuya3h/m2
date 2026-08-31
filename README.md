@@ -282,27 +282,22 @@ bash scripts/sync/setup_host_servername.sh --verify           # 現在の解決�
 覆えない（`BASH_ENV` 自体が環境変数のため clean env からは設定できない）。覆うなら
 `/etc/environment`（PAM 経由・要 root・システム全体）か、起動側での明示 export が要る。
 
-### Notion 連携（運用ハブ駆動・コンテキスト削減）
+### Notion 連携（配布台帳のみ）
 
-研究運用を Notion「**M2研究運用ハブ**」に連動させ、マスターの「M2研究計画」（長文）を毎回読まずに
-DB 駆動で回す。**ID レジストリ `configs/notion.yaml` は非秘密・commit 可、token は
-暗号化 `.env.gpg` から `scripts/load_env.sh` が現在のシェルへ読み込む**。
-`NOTION_API_KEY` 未設定なら全 no-op（研究フローを止めない）。詳細 → [`docs/notion_integration.md`](docs/notion_integration.md)。
+**CLI が Notion に触れるのは配布台帳（`task_distribution`）だけである。**
+2026-08-31 に記録系を再構成した。ID レジストリ `configs/notion.yaml` は非秘密・commit 可、
+token は暗号化 `.env.gpg` から `scripts/load_env.sh` が現在のシェルへ読み込む。
+詳細 → [`docs/notion_integration.md`](docs/notion_integration.md)。
 
-- **書く（自動記録）**:
-  - 実験Run台帳: `MMDetTrainer.run()` 完了時 + STEP B 後処理（`postprocess_b1` / `train_b2a` / `train_t1a` / `postprocess_t1b`）が
-    `notion_logger.log_experiment_to_notion` で投稿。既存分の一括投稿は `scripts/post_experiments_to_notion.py`（`--dry-run` 可）。
-  - **T1b-CA 専用**: `scripts/post_t1b_ca_to_notion.py`（`injected_result.json` / `control_result.json` を inj/ctrl/純効果に整形して冪等 upsert）。
-  - 意思決定 / 失敗知見 / プロンプト: `egosurgery.utils.notion_ops`（`log_decision` / `log_lesson` / `save_prompt`）。
-- **読む（コンテキスト削減）**: `scripts/notion_context_pack.py --step <S0..S9/B>`（関連 DB 行のみ抽出）+ 「現在の研究状態」を MCP fetch。
-  M2研究計画は**該当 § のみ**取得する。
-- **DB 共有状態（2026-06-23 確認）**: REST トークンに **全 5 DB（run_ledger / decision_log / lessons / procedure_docs / prompt_library）が共有済み**。
-  以前 404 だった `decision_log` / `lessons` も REST 経由で `notion_ops.log_decision` / `log_lesson` が正常動作する
-  （メモリ: [[notion-rest-share-gap]] は解消済）。新規 DB を追加した場合は Notion 側で Integration への share が必要。
-- **注（DB id）**: `NOTION_DB_ID` は **database id**（`ef4ccd02…`）。Notion-flavored の `collection://7bcf9406…` は
-  data source id で、REST `/databases/{id}/query`（API 2022-06-28）では使えない。投稿が 404 で skip される場合は
-  ① database id を使っているか ② Integration に share されているか を確認する。
-- 失敗時も学習を止めない設計（証拠ファイルは書き出し済）。旧 Run台帳ドキュメント → [`docs/notion_run_ledger_auto_post.md`](docs/notion_run_ledger_auto_post.md)。
+- **使う経路**: 契約の取り込み `make task-notion` / `make task-start`（`tools/fetch_task.py`）と、
+  完了報告の送り返し `make task-report`（`tools/report_task.py`）。この二つだけ。
+- **新しい面**（運用正本・現在地と現行計画・マスター・知見/決定・アーカイブ）は
+  **Claude アプリの面であり CLI は読まない**。識別子は登録簿の `claude_app_surfaces` に
+  人が引くために載せてあるだけで、コードから解決しない。
+- **退役**: 旧データベース群（run 台帳・意思決定ログ・失敗知見・実験手順書・プロンプトライブラリ）と
+  旧頁群は凍結した。自動投稿は明示的に止めてあり、呼ばれても投稿せず退役の旨を返す。
+  内容は Notion ではなく repo の写しを読む（`docs/archive/notion/db/<KEY>/`）。
+  読み取りの道具だった `notion_context_pack.py` は `scripts/retired/` へ移した。
 
 ### 6. 動作確認（sanity check）
 

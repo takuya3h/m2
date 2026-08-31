@@ -93,8 +93,38 @@ def _url(v: str | None) -> dict | None:
     return {"url": v} if v else None
 
 
+# --- 退役（2026-08-31, T-2026-08-31-notion-repo-followup-and-retire）-------- #
+# 旧データベース群（意思決定ログ・失敗知見・プロンプトライブラリ）は凍結した。
+# **CLI が Notion に触れるのは配布台帳（task_distribution）だけである。**
+#
+# 退役は明示的にする。識別子を登録簿から消すだけだと fail-open のまま無言で
+# 何もせず、「壊れた」と「退役した」を区別できない（契約 §1 罠 6）。
+# ここで止め、呼ばれたら退役の旨を記録して RETIRED の印を返す。
+#
+# 呼び出し規約（引数と戻り値の型）は変えない。呼び出し元は 10 本以上あり、
+# 試験は関数を patch して呼び出し回数を見ているため影響しない。
+# 全行の写しは docs/archive/notion/db/<KEY>/ にある。
+RETIRED_DB_KEYS = frozenset({"run_ledger", "decision_log", "lessons",
+                             "procedure_docs", "prompt_library"})
+
+
+def _retired_result(db_key: str, name: str) -> dict:
+    """退役した経路の戻り値。**無言で成功したことにしない。**"""
+    logger.warning(
+        "notion %s は 2026-08-31 に退役した。投稿しない (%s)。"
+        "写しは docs/archive/notion/db/%s/ にある", db_key, name, db_key,
+    )
+    return {"retired": True, "db_key": db_key, "name": name, "posted": False,
+            "since": "2026-08-31", "archive": f"docs/archive/notion/db/{db_key}/"}
+
+
 def _upsert(db_key: str, name: str, properties: dict) -> dict | None:
-    """db_key の DB に Name=name で upsert（同名あれば PATCH、無ければ POST）。"""
+    """db_key の DB に Name=name で upsert（同名あれば PATCH、無ければ POST）。
+
+    **退役した DB へは投稿しない**（RETIRED_DB_KEYS）。退役の旨を返す。
+    """
+    if db_key in RETIRED_DB_KEYS:
+        return _retired_result(db_key, name)
     headers = _headers()
     db_id = _db_id(db_key)
     if headers is None or not db_id:

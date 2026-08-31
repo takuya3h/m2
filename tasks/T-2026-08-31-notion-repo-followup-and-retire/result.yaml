@@ -1,0 +1,68 @@
+result_version: 3
+task_id: "T-2026-08-31-notion-repo-followup-and-retire"
+status: pass
+host: "lecun"
+branch: "feat/notion-repo-followup-and-retire"
+pr: null
+merged: false
+
+gates: []
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 509
+
+deviations:
+  - type: judgement
+    note: "開始前から在った未追跡 .sync-pause.released を repo の外へ退避した（契約 §1 罠 13 が許可）。同期対象外のマーカーであり他ホストへ影響しない。消していない"
+  - type: judgement
+    note: "退役の方式として呼び出し規約を変えず入口で止める形を選んだ（notion_ops の RETIRED_DB_KEYS と notion_logger の RUN_LEDGER_RETIRED）。呼び出し元が 25 ファイル（学習スクリプト 10 本以上と試験 2 本）に及び、試験は関数を patch して呼び出し回数を見ているため、この方式なら両立する。実測でも試験の増減は 0 だった"
+  - type: judgement
+    note: "context/README.md を追随の対象に加えた。契約 §2 は CLAUDE.md と README.md と docs/notion_integration.md を挙げるが、退役する経路を説明している文書も対象としており、D-4 の異質な走査で旧手順への案内を検出したためである"
+
+issuer_defects:
+  - type: check_does_not_check
+    note: "make spec-check が SPEC 本文で 1 件 fail する（integration_prohibited_without_pause @ SPEC.md:82）。前契約と同型の偽陽性で、SPEC §5 A-2 に make task-start で抑止を置く、F-7 に抑止を移動で解除、判定 N にも抑止の記載がある。契約 §1 罠 14 が通すために本文を書き換えないと定めるため fail のまま続けた"
+
+positive_controls:
+  - judgement: "門が働いていること（判定 A）"
+    breaking_input: "存在しない経路 docs/archive/notion/NO_SUCH_FILE.csv で同じ確認をする"
+    observed: "git cat-file -e が失敗した。実在する manifest.csv では成功する。前契約 PR #170 が統合済みであることを確かめた上で作業した"
+  - judgement: "投影の再生成が実際に古さを解消したこと（判定 B）"
+    breaking_input: "再生成の前に check を回す。古ければ非零になるはず"
+    observed: "前は taskindex-check と inbox-check がいずれも exit 2、後は両方 exit 0。context-check は前後とも exit 0 で make context は回していない"
+  - judgement: "登録簿の鍵とコードが読む鍵が一致すること（判定 C）"
+    breaking_input: "登録簿から鍵を一つ消した写しで照合する"
+    observed: "不一致になる。実際の照合では登録簿 databases の鍵 {task_distribution} とコードが読む鍵 {task_distribution} が一致した"
+  - judgement: "退役が効いており無言で成功したことにならないこと（判定 D）"
+    breaking_input: "退役の印を外し、鍵も与えた模擬で投稿を試みるか見る。乾燥走行で実際には送らない"
+    observed: "退役側は 4 経路とも retired=True posted=False を返し警告ログを出した。印を外し鍵も与えると notion_ops と notion_logger の両方が HTTP を 1 回ずつ試みた（databases/dummy-db-id/query）。一度目は鍵を与えず HTTP 0 回で対照にならなかったため当て直した。requests を差し替えており実際には一度も送信していない"
+  - judgement: "退役したスクリプトが現行手順から参照されないこと（判定 F）"
+    breaking_input: "文書に旧経路を一行書いて docs-check を回す"
+    observed: "exit 2 になり docs/notion_integration.md:81 実在しない経路 scripts/notion_context_pack.py と出た。復元後は exit 0 で sha256 も戻った。一度目は Makefile へ当てて exit 0 のままだったが、実装を読むと docs-check は文書に書かれた経路の実在を見るもので Makefile の中身は見ないと分かり当て直した"
+  - judgement: "旧手順の指示が現行手順の文書に残っていないこと（判定 G）"
+    breaking_input: "旧指示を一行足した写しで検査する"
+    observed: "検出 1 件。元の CLAUDE.md では 0 件。加えて異質な二通りで確かめ、方法 1（現行手順 3 文書）は 0 件だったが方法 2（対象 42 文書の全走査）が context/README.md の残存を検出した。追随後の残り 4 件はすべて退役を説明する記述である"
+  - judgement: "退役が既存の試験を壊していないこと（判定 H）"
+    breaking_input: "作業前に試験を回して失敗一覧を取り、作業後と集合差を取る"
+    observed: "前 6 failed 509 passed、後 6 failed 509 passed で増減 0。試験は関数を patch して呼び出し回数を見ており、呼び出し規約を変えなかったため影響しない"
+  - judgement: "自動投稿の退役後に run 台帳が増えていないこと（判定 I）"
+    breaking_input: "退役の後に export を取り直して前回と比べる"
+    observed: "767 行で前回と同数。さらに raw.jsonl と properties.csv と bodies.jsonl の sha256 が三つとも前回と一致し、内容まで変わっていないことを確かめた"
+  - judgement: "秘匿と個人情報の検査が値を出さずに働いていること（判定 K）"
+    breaking_input: "偽の token の形と鍵の書き出しと電子メールの形を含む合成フィクスチャを与える"
+    observed: "token 接頭辞 1 件・鍵の書き出し 1 件・メール 1 件を検出した。実対象の変更ファイル 16 件では危険 3 形が 0 件、メールの形 9 件は目視により全件が SSH の clone 先 git@github.com とホスト表記 ubuntu@host.local と文書内位置指示であり、実在の個人アドレスは 0 件と確かめた"
+
+followups:
+  - "open な PR は Task A-5 の実測で 0 件だった。本契約の PR を統合した後、投影が再び古くなる見込みは無い"
+  - "scripts/post_eval_to_notion.py と post_t1b_ca_to_notion.py と post_hc_to_notion.py と draft_master_update.py の 4 本は notion_logger を経由せず自前で HTTP を呼ぶ。書き込み先の DB が退役済みのため実質的に投稿できないが、コード上の明示的な退役の印は付けていない。付けるかの判断が要る"
+  - "make spec-check の integration_prohibited_without_pause が二契約続けて偽陽性を出した。検出器の語句を広げるか、契約側の要求を WARN 許容に変えるかの判断が要る"
+  - "旧マスター頁が到達可能になったため、旧頁群と旧 DB 群をアーカイブへ移す判断ができる状態になった。写しは docs/archive/notion/ に揃っている"
+
+unknowns:
+  - "旧マスター頁が到達可能になった経緯。利用者が共有したものと推測されるが確認していない。前契約では HTTP 404 だった"
+  - "個別の投稿スクリプト 4 本が退役後に呼ばれた場合の実際の挙動。書き込み先 DB が退役済みのため投稿できないはずだが、実行して確かめていない"
+
+commits:
+  - "72d23568"

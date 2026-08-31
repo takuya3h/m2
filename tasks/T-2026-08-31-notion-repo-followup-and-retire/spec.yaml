@@ -10,7 +10,10 @@ meta:
     runindex_commit: "96eb3a1c"
     counts: {index: 1266, experiments: 285, verdicts: 1506}
   depends_on: ["T-2026-08-31-notion-legacy-toc-and-export"]
-  amendments: []
+  amendments:
+    - date: "2026-08-31"
+      reason: "契約 §3 が求めた退役により scripts/notion_context_pack.py を scripts/retired/ へ移動した結果、inputs.code.entrypoints の経路が L2-7 で存在しなくなった。entrypoints は読解の起点であり実行の入口ではない（契約 §10）ため、移動先へ追随させた。読解の対象は変わっていない"
+      diff: "inputs.code.entrypoints の notion_context_pack.py を退役後の経路へ。created_from と conventions_rev の resolve-at-intake を実測値へ差し替え"
 intent:
   question: "CLI が Notion を配布台帳だけで使う状態へ repo を追随させ、旧データベースへの自動書き込みと旧頁の読み取り手順を、試験と文書検査を壊さずに退役できるか"
   decision_at_stake: "旧データベースと旧頁をアーカイブへ移してよいか、CLI 側の Notion 経路を台帳のみに固定してよいか"
@@ -22,7 +25,7 @@ inputs:
     split_files: ["data/splits/ego_val.txt"]
   caches: []
   code:
-    entrypoints: ["src/egosurgery/utils/notion_ops.py", "src/egosurgery/utils/notion_logger.py", "scripts/notion_context_pack.py", "tools/fetch_task.py"]
+    entrypoints: ["src/egosurgery/utils/notion_ops.py", "src/egosurgery/utils/notion_logger.py", "scripts/retired/notion_context_pack.py", "tools/fetch_task.py"]
 contract:
   inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
   conventions_rev: "a8c07e81"
