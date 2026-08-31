@@ -109,4 +109,11 @@ sha256 が三つとも前回と一致した。
 
 ## 送出
 
-（PR 番号と `make task-report` の終了コードは下に入れる。）
+| 項目 | 実測 |
+|---|---|
+| commit | `72d23568`（投影の再生成）→ `86c78619`（16 files changed） |
+| push | exit 0（`origin/feat/notion-repo-followup-and-retire`） |
+| PR | **#171**（base `phase0`） |
+| `make task-report` | **exit 0**。`report_sha256=a3226c4394e98df6579000db5d039a1dd85a20344169897370f486ef201aeefd` / `report_bytes=9204` / `replaced_blocks=0` / `verdict=pass` / `n_issuer_defects=1`。**判定 E（配布台帳の経路が従来どおり動く）の実証でもある** |
+| 抑止 | `.sync-pause` を**移動**で解除（`.sync-pause.released`） |
+| 退避物 | `.sync-pause.released` を元へ戻す（消していない） |
