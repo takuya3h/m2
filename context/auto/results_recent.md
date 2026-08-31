@@ -6,8 +6,119 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 81 件）。
-ここに出ない 76 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 84 件）。
+ここに出ない 79 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-08-31-notion-legacy-toc-and-export
+
+状態 `partial` / ホスト `lecun` / 起票 `170` / 様式 `v3`
+
+### ゲート
+
+（なし）
+
+### 起票者の誤り
+
+- `check_does_not_check` — 契約 §5 A-3 は make spec-check を通すことを求めるが、SPEC 本文が integration_prohibited_without_pause を SPEC.md:74 と :77 の 2 件で踏んで fail する。実体は偽陽性で、§5 A-2 に make task-start で抑止を置く、E-5 に抑止を移動で解除、判定 M にも抑止の記載がある。検出器の語句パターンに合致しないだけであり、指示どおりでは A-3 を満たせない
+- `asserted_without_measuring` — 契約 §2 は旧マスター頁を対象に含め §3 は toc_plan_master.md を生成物に挙げるが、実測では HTTP 404 object_not_found で到達できない。§1 の罠 1 が 404 を unreachable として続行すると定めているため停止はしないが、生成物の要求と到達性の見込みが食い違っている。共有設定は利用者の操作領域である
+
+### 逸脱
+
+- `judgement` — 開始前から在った未追跡 5 件を repo の外へ退避した（契約 §1 罠 9 が許可）。うち experiments/analysis/hts_candidate_acceptance/*.py 4 件は .stignore:51 の !experiments/**/*.py により同期対象であるため、origin/phase0 に同一内容が commit 済みであること（4/4 バイト一致）を先に確かめてから動かした。消していない
+- `judgement` — 作業中に生成された docs/archive/notion/__pycache__ を退避した。契約 §4 禁止 5 がファイルの削除を禁じているため mv で repo の外へ出した
+- `spec_defect` — export_notion.py の再試行の対象を 429 だけでなく OSError（読み取りタイムアウトを含む）へ広げた。page_size=7 の走行が読み取りタイムアウトで 2 度落ちたためである。契約 §1 罠 6 が実装を読んで待って再試行すると定める範囲であり、待ちは 2・4・6・8 秒とした
+- `environment` — 契約 §4 禁止 3 に従い make context と make taskindex と make inbox およびその check を回していない。技能書 §6 は投影の再生成を求めるが契約 §1 罠 11 が本契約の禁止を優先すると定めている
+
+### 申し送り
+
+- 旧マスター頁（configs/notion.yaml の pages.plan_master）が Integration に共有されておらず HTTP 404 である。共有設定は利用者の操作領域であり、共有後は docs/archive/notion/toc_plan_master.md に記した同じ命令で取得できる
+- 到達できた 5 DB（run_ledger 767 / decision_log 65 / lessons 31 / procedure_docs 6 / prompt_library 3）はアーカイブへ移せる状態にある。移す判断が要る
+- make spec-check の integration_prohibited_without_pause が SPEC 本文の抑止の記載を拾えず偽陽性を 2 件出す。検出器の語句を広げるか、契約 §5 A-3 の要求を WARN 許容に変えるかの判断が要る
+- properties.csv はセルに改行を含む本文を持つため wc -l では行数が水増しされる（decision_log は 65 行だが wc -l は 848）。数えるときは CSV として読む必要があり、判定の書き方に注記が要る
+- conventions#issuer_cautions 注意 6 の pgrep -f 自己一致を待機ループと停止処理で 2 度踏んだ。/proc/PID/exe で絞る作法を技能書か規約の側で例示すると再発を減らせる
+
+### 断定できなかったこと
+
+- 旧マスター頁の見出し。HTTP 404 のため一件も取得していない。推定で埋めていない
+- page_size=7 の走行が読み取りタイムアウトを 2 度起こした原因。再試行で完走したが Notion 側の応答か経路かは切り分けていない
+- 長い符号化文字列 8 件のうち本文中の 2 件が何の語であるか。形（長さ 63・英小 40・数 19・記号 4・16 進ではない）と資格情報でないことは確かめたが、値は見ていない
+
+## T-2026-08-30-tooling-fixes-five
+
+状態 `pass` / ホスト `andrew` / 起票 `168` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 五件すべてで再現する入力と正常に振る舞う入力を実測した。F1 は runindex/__f1_probe.tmp で violations=1、tools/__f1_ok.tmp で violations=0。F2 は gpu_free と zzz_not_a_check の どちらも適用検査が ['P1','P6','P7','P8','P9'] のまま変わらず FAIL にならないことを確認。 F3 は TBD と <resolve_from_runindex> と exp:?/?/?@? が schema で落ち、正規形は通ること。 F4 は experiments.csv の 277 群のうち n_runs>1 が 206 件あり、既存の群へ run が加われば 集計列が必ず動くこと。F5 は伏せ字 2 種が偽陽性で拾われ、合成鍵と無害文は正しく分かれること。
+- `G2` pass — 五件すべてで陽性が検出され陰性が非検出であることを対照で確認した（audit §7 に出力の全文）。 既存の全契約の L1 は diff で完全一致（104 task(s), 1 failed / OK 103 / FAIL 1 / SKIP 1 / exit 1）。 失敗 1 件は T-2026-08-22-philip-hub-foundation で修正前から同じ。
+
+### 起票者の誤り
+
+（なし）
+
+### 逸脱
+
+- `judgement` — 開始時の未追跡ファイル（pd_refin_*_seed42 の logs/*.json 4 組とセッションダイジェスト 1 件）で make task-start が exit 3 で止まった。前契約でユーザーが選んだ「stash で一時退避」を同じ手順で 適用した（stash@{0}）。本契約の完了後に git stash pop で戻す。
+- `judgement` — F1 の対照に使った touch/unlink が実在ファイル experiments/audit/l0_hts_acceptance/acceptance_report.json を削除した。git checkout -- で復元し、 要約値 d9ac7ced89e5c574… の一致と git status --porcelain experiments/ の空を確認した。 以降の対照は控えを取ってから書き換え、finally で必ず戻す方式に変えた。
+- `judgement` — F5 の伏せ字の目印を最初は xxxx と ** まで広く取ったため、既存の試験を 1 件壊した （NOTION_API_KEY= + x*40 という合成鍵を伏せ字と誤認して非検出にした）。目印を省略記号と 明示的な「伏せ字」語だけに絞り込んで解消した。tests/test_report_task.py は 26 件すべて通る。
+- `judgement` — F1 の許可の上限を宣言の文字列だけで判定していたため穴があった。allow_write が "d" のとき capped("d") が None を返し、grant("data/annotations/x.json", ("d",)) が許可を返していた。 上限を経路そのものに当てる形へ直し、d / da / data / data/ / data/annotations/ の 5 通りを 試験で固定した。
+- `spec_defect` — 手順書（.claude/skills/task/SKILL.md 手順 6）は make taskindex と make taskindex-check、 make inbox の実行を求めるが、契約 §4-3 は context/auto と tasks/inbox.md の再生成を禁止して いる（並行契約があるため）。契約を優先しいずれも実行しなかった。したがって本報告は context/auto/tasks_summary.csv などの投影にまだ現れない。統合後に一台で再生成すること。
+
+### 申し送り
+
+- SPEC §5-g「全テストが通る」は未充足のまま終えた。起票時点で既に 6 件が落ちており、 本契約の作業では動かせない。tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics、 tests/test_fetch_task.py::test_rejects_unknown_file_name、 tests/test_research_logger.py の 4 件（test_log_run_idempotent ほか）。
+- test_fetch_task.py::test_rejects_unknown_file_name は誤り文言と試験の期待がずれているだけに 見える（期待「受け取れないファイル」／実際「経路として受け取れない名前です」）。 tools/fetch_task.py は本契約の entrypoints に入っているが、F1 から F5 のいずれでもないため 触っていない。直すなら別契約で。
+- 今後の契約は「実行前の失敗件数を分母として記録する」形にすると、判定 g のような空振りを 避けられる。件数が増えたことだけを見ると、既存の失敗が残っていても気付けない。
+- 許可の宣言は contract.allow_write（接頭辞の配列）。検査は make forbidden-check TASK=<task_id>。 上限は data/ 配下（常に不可）と、experiments/ transfer/ のうち起点に既に存在する経路。 収穫を伴う契約は allow_write: [runindex/] を置けば道具を迂回せずに通せる。
+- 収穫の検証は make harvest-verify（BASE=<commit> で起点を変えられる。既定は HEAD）。 run 単位の index.csv は追加のみ、集約表は既存の群の判定列が不変。判定列は same_sign / verdict / agree / reason / n_seeds を名前に含む列で見分ける（experiments.csv では 631 列中 106 件）。
+- 置換前提の参照は ref: "unresolved:<何を索引で引くか>" と resolve_by_executor: true で宣言し、 解決先を tasks/<task_id>/resolved.yaml に resolved_to と how の対で書く。P12 が済むまで止まる。 この対応表がそのまま RESULT の「解決された参照」の材料になる。
+- preflight に書いてよい名前は venv_active / cuda_ext_loaded / deterministic_flags / gpu_free。 schema の enum と tools/preflight_task.py の KNOWN_PREFLIGHT_NAMES が同じ集合であることは test_f2_schema_enum_matches_implementation が縛っている。片方だけ増やすと試験が落ちる。
+- P11 gpu_free は「GPU を占有する compute プロセスが 0 件」で判定する。使用量の閾値は置いていない。 nvidia-smi が無い・失敗する・タイムアウトする場合は FAIL にした。契約が空きを前提に宣言した以上、 確かめられないまま実行を許すと宣言の意味が無いという判断による。閾値が要るなら別契約で。
+- 本契約の実行で退避した未追跡ファイルが残っている。git stash@{0} 「task-start用の一時退避 T-2026-08-30-tooling-fixes-five」を pop して戻すこと。
+
+### 断定できなかったこと
+
+- P3 deterministic_flags の判定基準は従来どおり未確定で常に SKIP のまま（backlog B-20）。 決定性の設定は実行プロセス内で行われ外部から観測できない。本契約では触れていない。
+- P11 gpu_free を「compute プロセス 0 件」で判定したとき、共有ホストで他者の学習が走っている間に 契約が止まる頻度は測っていない。実測は本契約の範囲外（GPU を使わないため）。
+
+## T-2026-08-30-hts-candidate-acceptance
+
+状態 `pass` / ホスト `andrew` / 起票 `167` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 配下を find で全走査し 74 エントリ（d=11 f=60 l=3）。点で始まる .gitkeep 1 件、 退避先 _deprecated/egosurgery_hand4 の 3 件、配下内を指す symlink 3 件を含む。 文書・スクリプトからの逆引き（ひな型 {train,val,test}/{split}/{sp}/{s} を展開）で 実在 27 経路を得て、方法1 に現れない実在参照が 0 件であることを確かめた。 参照先 4 経路（raw 02_hand/04_handtool/00_master）はすべて到達可。
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — SPEC §2 は「既存の検査器が実装している C1 から C5 の定義を正とする」と書くが、実装の 主判定は main_keys = C1/C2/C3/C4 の 4 つで C5 を含まない（C5 は pass を持つが verdict に 使われない）。指示どおり C1–C5 を主判定として扱うと、C5 が PASS/FAIL する候補で結論が 変わり、検査器の verdict と食い違う判定が出る。実装を優先し食い違いを報告に残した。
+- `self_contradiction` — spec.contract.prohibitions の no_runindex_regen と no_history_rewrite は、同じ契約が inject_verbatim で原文注入を指示している conventions#prohibitions の表に存在しない （表は no_split_redefine / no_raw_write / no_frozen_change / no_estimated_values / no_runindex_hand_edit）。指示どおり原文へ照合すると解決先が見つからず、禁止の内容を 実行者が推測するしかない。SPEC §4 の禁止事項を正として運用した。
+
+### 逸脱
+
+- `judgement` — 開始時に作業ツリーへ未追跡ファイル（pd_refin_*_seed42 の logs/*.json 4 組と セッションダイジェスト 1 件）が残り make task-start が exit 3 で止まった。破棄は 研究記録に関わるためユーザーへ選択肢を示し、「stash で一時退避」の回答を得て git stash push -u で退避した（stash@{0}）。本契約の完了後に git stash pop で戻す。
+- `judgement` — 実行開始時の分岐は feat/denoise-falsification だった。ユーザーが指示した起動命令に 従い git checkout phase0 を行ってから task-start を実行した。
+- `judgement` — 契約 §4-2（destination 以外の experiments への書き込み禁止）に触れた。対照のため scripts/audit_l0_hts_acceptance.py をそのまま実行したところ、検査器 main() が experiments/audit/l0_hts_acceptance/acceptance_report.json を上書きした。実行前の 控えから復元し git status --porcelain experiments/audit/ が空であることを確認した。 以降は main() を呼ばず判定関数のみを import して評価した。検査器を素直に実行すると 必ずこの書き込みが起きるため、契約側で実行方法を指定する必要がある。
+- `spec_defect` — 手順書（.claude/skills/task/SKILL.md 手順 6）は make taskindex と make taskindex-check、 make inbox を実行して投影に現れることを確かめるよう求めるが、契約 §4-3 は context/auto と tasks/inbox.md の再生成を禁止している（並行契約あり、統合後に一台で回す）。契約を優先し いずれも実行しなかった。したがって本報告は context/auto/tasks_summary.csv などの投影に まだ現れない。統合後に一台で再生成すること。
+- `spec_defect` — make forbidden-check が status=fail を返すが、違反 12 件はすべて本契約の outputs.destination（experiments/analysis/hts_candidate_acceptance/）の内側である。 道具は生成物（context/auto/ と tasks/inbox.md）しか除外できず、契約ごとの destination を 表現できないため、契約に従った実行でも必ず fail になる。destination の外側にある違反は 0 件であることを個別に確かめた（changed 17 件の内訳は destination 12・契約ディレクトリ 4・ tasks/inbox.d/ 1）。道具に destination の除外を渡せるようにする必要がある。
+- `judgement` — G1 の照合が初回は空振りだった。逆引きがひな型を展開していなかったため、方法1 から 1 件除く陰性対照が 3 例すべて非検出になった。ひな型展開を足して照合を強めてから G1 を判定した。弱いままなら G1 は空振りのまま通っていた。
+
+### 申し送り
+
+- make forbidden-check は契約ごとの outputs.destination を除外できないため、destination へ 正しく書いた契約でも status=fail を返す。本契約では違反 12 件すべてが destination の内側で、 外側は 0 件だった。道具側に destination を渡す口が要る。
+- 三値の結論は「一部欠落」。主判定 C1（真マスク）は hts_hand_seg / hts_hand_tool_seg / hts_tool_seg / raw04_5cls が、C2（値5=Two Hands Tool）は hts_hand_tool_seg（cat5 注釈 2021 件）と raw04_5cls が、C4 は全 9 候補が満たす。C3 を満たす候補は 0 件。
+- C3 は実装どおりでは満たせない。検査器は raw 02_hand の glob によるディレクトリ名 26 件と、 file_name から導く動画 id 25 件を比べており、03_3 は右辺に現れ得ないため missing == [] が 構成上成立しない。03_3 は 02_hand/json_per_video/03_3/03_3.json が images 1472 件・ annotations 0 件で、その画像リストは 03_1/03_2 のフレームである。
+- 03_3 の手・把持・マスク注釈は存在しない。data/annotations と data/raw の COCO JSON 全 291 個 （realpath で重複排除）を走査し 03_3_* のフレームを持つ注釈は 0 件だった。一方 frames は 01_frames/initial_videos/03_3/ に 261 枚、工程注釈は egosurgery_phase/03_3.csv が実在し、 公式 split（egosurgery_tool の 22 動画）には 03_3 が含まれない。組立作業では埋まらない欠落である。
+- 目標値 57173 は正本の完全重複 1 件を含む。02_hand/json_per_video/05_1/05_1.json の 05_1_0575.jpg / bbox (0.0, 6.0, 940.0, 1066.0) / cat 4 に ann id 1519 と 1520 が同一内容で並ぶ。 hts_hand_seg（train+val+test+extra）の単純加算は 57173 で目標一致、集合件数は 57172。 C3 の閾値を直す場合はどちらを正とするか明記が要る。
+- 既存検査器 scripts/audit_l0_hts_acceptance.py に 3 つの欠陥を実測した。(1) 入力の不在を 0 件として通す（_splits が不在ファイルを黙って飛ばし、退避に気付かない）。(2) C3 が ディレクトリ名と動画 id という型の違うものを比べる。(3) C1 の seg_profile は先頭 3000 件しか 見ない。本契約は全件（polygon 371335 件を含む）を走査した。修正は本契約の範囲外。
+- C5（公式 split 整合）は主判定ではないが、真マスクを持つ hts_hand_seg は 9627/1515/4255 で 公式 9657/1515/4265 に 40 枚届かない。不足分は手注釈が 0 件のフレームであり、原資料の欠落では なく「注釈ゼロのフレームを images に載せるか」の設計差である。組立時に決める必要がある。
+- 文書・スクリプトが指す data/annotations 配下の経路のうち 29 件が実在しない （egosurgery_hand4/ の旧経路、egosurgery_hts/hand_bbox/、handtool_seg_5cls/by_split/、 pseudo_labels/、egosurgery_hts_bundle_audit.md、egosurgery_split_consistency_audit.md など）。 README §9 が指す文書の一部も不在。文書の追従が要る。
+- 本契約の実行で退避した未追跡ファイルが残っている。git stash@{0} 「task-start用の一時退避 T-2026-08-30-hts-candidate-acceptance」を pop して戻すこと。 実体（checkpoints/predictions）は .gitignore 済みのためディスク上に残っている。
+
+### 断定できなかったこと
+
+- 検査器 C1 の polygon>4 頂点の枝の実データ上の挙動。実データの polygon は全 371335 件が 4 頂点であり、真の多角形が存在しないため踏めない。合成入力でのみ確認した。
+- egosurgery_tool_hand 直下の 4cls（train/val/test.json）と 19cls（instances_*.json）の生成元。 README に記載を確認できなかった。来歴は candidates.csv の provenance 列で空欄とせず 「生成元の記載を README で確認できず」と明記した。
 
 ## T-2026-08-29-stage0-contract-b
 
@@ -83,114 +194,4 @@
 
 - A3 追加6動画とtest折りの術者・症例の重複。属性情報が存在しないため測れない （data/splits/surgeon_folds.jsonが3バイトの空、追加動画のannotations.jsonにも該当キー0件）。 存在しないこと自体を実測として報告した。
 - AlignDETRの検出性能0.686に対応する値の所在。baselines/s0/aligndetr_bbox@valのaccuracy_meanが 空であり、索引から特定できない。
-
-## T-2026-08-29-projection-refresh
-
-状態 `pass` / ホスト `philip` / 起票 `161` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 未統合の commit は0件（origin/exp/philip-wip-20260703..origin/phase0）。開いているPRは0件。 起点に前契約(#160)の変更が入っていることを確認。再生成前の三検査は全てexit 2で、8ファイルの 要約値（行数とsha256先頭16桁）を記録した。索引の件数は前契約時点と不変（1177/213/1038）。
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — SPEC §1が「同期の抑止の目印…存在する場合、前契約が解除しなかったことを意味する」と述べるが、 実測ではこの.sync-pauseは今回のtask-startが新規作成したものだった（scripts/task_start.sh:37 「既にあれば触れない」＝触れずログも出さない実装のため、作成ログが出た事実が新規作成の証拠）。 前契約はmv .sync-pause .sync-pause.releasedで正しく解除しており、その名残は退避内に保全されている。 指示どおり「存在する＝前契約の失敗」と読むと誤った結論に至る。
-- `asserted_without_measuring` — SPEC §3 Step A-2が「作業ホストの定位置分岐と起点の分岐の差を確かめる」ことを前提とするが、 philipの定位置分岐exp/philipはoriginに存在しない。OPERATION.mdに「実際の分岐切替は別作業」と あるとおり移行が未実施であり、実行者は代わりにexp/philip-wip-20260703（phase0と0commit差）を 測った。SPEC §1「前契約が残した退避は二件」も、実際には二件の作成時刻が前契約の実行期間を またいでおらず（片方は2026-08-26、もう片方は2026-08-28で「前契約」policy-v2-doc-syncより前）、 「前契約が残した」という帰属は実測と食い違う。
-
-### 逸脱
-
-- `environment` — 開始前から在った汚れ（.stglobalignoreの変更+未追跡7件、内訳はdigest3件と解析ディレクトリ3件）を git stash push -uで退避してから進めた。mvは使っていない。
-- `judgement` — decisions_required 1件（退避の中身のうち版管理へ記録する規約に当たらないものの処分）を 利用者へ提示して停止し、回答（判断待ちとして報告に残す）を得た。Phase Aの実測を先に済ませ、 具体的な対象（.sync-pause.released 計2件）を示してから確認した。自分では決めていない。
-- `judgement` — 禁止領域配下（experiments/analysis/ 計28件、両退避に分散）を復帰させていない。SPEC指示どおり 追跡下の正本と要約値で照合し（全件一致）、結果だけを報告した。触っていない。消していない。
-
-### 申し送り
-
-- .sync-pause.released（0B、stash@{0}とstash@{1}に各1）の処分が判断待ちのまま残っている。 版管理へ記録する規約（対話の抽出物）には当たらず、禁止領域でもない。捨てるか記録するかの 判断が必要。
-- philipの定位置分岐exp/philipがoriginに存在しない（実体はexp/philip-wip-20260703）。 移行計画（tasks/T-2026-08-10-branch-naming-and-canonical-index/migration_plan.md）の 実施が未完了である。
-- stash@{1}（pre-oracle-ceiling-lovo、2026-08-26作成、他契約由来）は今回一切触っていない。 中身はlovo_decision_rule 9件（正本と一致確認済み）と.sync-pause.released。処分の判断待ち。
-
-### 断定できなかったこと
-
-（なし）
-
-## T-2026-08-29-lecun-detector-env-pd
-
-状態 `pass` / ホスト `lecun` / 起票 `169` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 検出器が凍結源 ckpt を読み込んで前方計算し、val AP=0.7302938994613697 / AP50=0.8545901117284289 を出した。configs/stage/s4_phase_baseline.yaml:9 の再 eval mAP 0.7303 と一致する。B4 の ImageNet-R50 は torchvision 標準重み（認証なし）で取得でき sha256 の先頭がファイル名 0676ba61 と一致した。prereg は 762ee4f5（2026-08-29T17:08:04+00:00）で全学習 run より前に commit 済み。P→D の入力経路は snapshot の既存実装（set_phase_context / RelationDETRPhaseFiLM / --trainable film）で足り、正解⊕予測段のみ 18d の追加を要した
-- `G2` pass — P→D 四段が四段とも揃い（best mAP 0.733576 / 0.737538 / 0.741071 / 0.742487）、B2 も train 0.8425732477176417 と val 0.7302938994613697 の差 +0.1122793483 として得られた。不能の段は無い
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — SPEC §1 が「lecun から philip へ SSH が使える（利用者の申告）」としたが、実測は Permission denied (publickey,password) だった。指示どおり philip 参照で版と依存を突き合わせようとすると進めない。SSH 設定の読み取りは実行基盤の保護規則で拒否されたため原因は特定していない
-- `asserted_without_measuring` — SPEC §3 Step A-2 は「ミラーされている configs/detector_relation_detr/README.md が正本の config 経路を指す」とするが、ミラーは augstrong 系 2 件のみで凍結源が使う train_config_egosurgery_seed42.py も relation_detr_resnet50_egosurgery.py も含まない。指示どおりミラーだけを頼ると復元できない。実体は third_party_snapshot/lecun/Relation-DETR/project_files.tar.gz（config 15 件を含む 23 件）に在った
-- `check_does_not_check` — 契約は outputs.stamp.task_id_in を config.yaml と定め完了判定 e で全 run の task_id を要求するが、P→D で使う scripts/train_t1b.py に task_id の配線が無かった。指示どおり実行すると P→D の 4 run が task_id 無しで索引に載り、完了判定 e を満たせない
-- `asserted_without_measuring` — SPEC §5 は B4 の塔を ImageNet-R50 の微調整と TeCNO 学習として実施可能な前提で書くが、画像から工程を学ぶ経路は既存実装に無い（src/egosurgery/models/backbones は dinov2 と vit_adapter のみ）。指示どおり進めると Phase C の着手時点で止まる
-
-### 逸脱
-
-- `judgement` — 未追跡の .sync-pause.released を削除せずスクラッチパッドへ退避してから phase0 へ切り替えた
-- `judgement` — decisions_required の 1 件を提示し、検出器の実装は版管理下の third_party_snapshot/lecun から復元する回答を得た。あわせて GitHub の public clone・PyPI からの venv 構築・torchvision の ImageNet-R50 取得の三点を許可された。いずれも認証を伴わず契約 §7 禁止 9 の範囲外である
-- `judgement` — prereg の停止条件「一 run の学習が六時間を超える見込み」に一度該当して停止・提示したが、利用者の判断で続行した。定常状態の再実測では 2.1 から 2.2 it/s で 1 run 約 4 時間となり停止条件の内側だった。最初の 103 分/epoch は smoke 6 step（CUDA 起動と JIT を含む）由来の過大評価である。meta.amendments へ記録した
-- `spec_defect` — scripts/train_t1b.py へ --phase-source both（正解9d ⊕ 予測9d = 18d）・--task-id・T1B_MODEL_CFG の明示 override を追加した。scripts/ は契約 §2 の変更対象外である。--task-id は契約自身の outputs.stamp.task_id_in と完了判定 e が要求するのに配線が無かったため要った。18d 用の model config は third_party 内に作った（差分 1 行）。評価規則は一切変更していない
-- `spec_defect` — B4 の強い工程塔を作る経路が既存に無かったため scripts/train_phase_tower_r50.py を新設し、あわせて scripts/train_b2a.py へ RELDETR_SIGNAL_TAG を追加した（受け手の GAP と送り手の tool 信号でタグを分けるため。train_t1a.py の RELDETR_REGION_TAG と同じ作法）。いずれも scripts/ への変更で §2 の対象外である
-- `judgement` — B4 の特徴を data/processed/stage1_features/imagenet_r50_phasetower_seed42/ へ新規に書いた。契約 §2 は生データ・分割・既存キャッシュへの書き込みを禁じており新規キャッシュは対象外と解したが、data/ 配下ではある
-- `environment` — ホストの nvcc は 12.9 で、文書が前提とする CUDA 11.8 は存在しない。scripts/setup_env_relation_detr.sh は nvcc が 11.8 でなければ停止するため SKIP_CUDA_CHECK=1 を渡した。MS-Deform-Attn の JIT ビルドは 12.9 でも成功し凍結源の mAP を完全再現したが、これは実測であって保証された構成ではない
-- `judgement` — 時短のため B4（検出器に依存せず本体 .venv で動く）を P→D と並行実行した。GPU のメモリは各 49140 MiB のうち 18 から 26 GiB が空いていた。塔の学習と 12 run を GPU0 に載せ、P→D の 2 段は GPU0 と GPU1 で継続した
-- `environment` — 作業中に experiments/analysis/hts_candidate_acceptance/ の .py 4 件が同期で配布された（中身は別契約 T-2026-08-30-hts-candidate-acceptance の Phase A、生成時刻 2026-08-30 02:34 から 02:40 で本契約の最後の run 08-29 23:00:28 より後）。.sync-pause は分岐への統合を止めるがファイル同期は止めない。契約 §7 の但し書きに該当するため commit していない
-- `judgement` — ruff が scripts/train_b2a.py に I001（import 並び）を 1 件出すが変更前の HEAD でも出る既存指摘のため直していない。新設した scripts/train_phase_tower_r50.py は All checks passed である
-
-### 申し送り
-
-- t1b の実効バッチ 2 を S0 検出器学習の正本レシピ 4（per-GPU 2 × 2 GPU DDP）に揃えるかの判断が要る。train_t1b を DDP で起動する記述はリポジトリ全域に 0 件で、scripts/run_t1b.sh も存在せず、docstring 自身が単一プロセス起動を記載している。既存 t1b 23 run も同条件である。揃えるなら train_t1b.py の DDP 化が要り、既存 23 run とは比較不能になる
-- docs/setup/lecun_detector.md に記した nvcc 前提の食い違い（文書は 11.8、lecun の実体は 12.9）を他ホストへも展開するか。setup_env_relation_detr.sh の 11.8 固定チェックを見直すかの判断が要る
-- 新設した scripts/train_phase_tower_r50.py と scripts/train_b2a.py の RELDETR_SIGNAL_TAG を正式な実装として残すか。いずれも契約 §2 の変更対象外として足したものである
-- B4 の強い工程塔は一 seed・3 epoch の暫定版である。Stage 1 では seed を三本へ増やす前提であり、塔単体の val accuracy 0.6924 が seed でどれだけ動くかは測っていない
-- philip への SSH が使えなかった（Permission denied）。SPEC の申告と食い違うため、鍵の配布状況を確かめるか SPEC の記載を訂正するかの判断が要る
-
-### 断定できなかったこと
-
-- t1b の実効バッチ 2 と S0 のレシピ 4 の不一致が結果へ与える影響。四段の内部比較は同一条件で成立するが、S0 や既存 run との比較可能性は確認していない
-- nvcc 12.9 と torch 2.1.2+cu118 の組み合わせの妥当性。MS-Deform-Attn の JIT ビルドは通り凍結源の mAP を完全再現したが、検証された構成ではない
-- philip への SSH が使えなかった原因。SSH 設定の読み取りは実行基盤の保護規則で拒否されたため特定していない
-- 強い工程塔の seed 間のばらつき。一 seed しか作っていない
-
-## T-2026-08-29-k1-verify-policy-place
-
-状態 `partial` / ホスト `lecun` / 起票 `164` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 六 run は experiments/_orphan_no_metrics/transfer/ に 6/6 実在。各 run が持つファイルは checkpoints/best_tecno.pth 一つのみ（合計 6 ファイル、各 2599650 バイト）。metrics.json/config.yaml/command.sh/git_commit.txt/notes.md は 0/6。predictions/ と visualizations/ は空。隔離前の md5 記録と 6/6 一致。読み取りは可能だが metrics が無いため再計算は不能と確定した
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — SPEC §1 が記録上の証跡経路を experiments/transfer/ 配下の t1a_frozen_src_* と断定したが、現物は experiments/_orphan_no_metrics/transfer/ にある。指示どおり experiments/transfer/ を見ると六 run は一件も見つからず、実在しないと誤って結論しうる
-- `asserted_without_measuring` — SPEC §0 が遡れない理由を「run 名が t1a_frozen_src 系で、かつ lecun の run が索引に未収穫だから」と推定したが、実際の理由は metrics.json 等の完全な不在である。指示どおり収穫の欠落を疑うと、収穫器が走査すらしない run を収穫できない理由の追跡に時間を費やす
-- `self_contradiction` — governance.decisions_required に「追跡外 run を索引へ収穫するか」を置いたが、SPEC §3 A-3 と §6 禁止 2 が本文で既に「収穫しない」と答えている。指示どおり実行すると L3 の P6 が FAIL し、本文が答えている問いで実行が止まる。T-2026-08-26-lovo-decision-rule で提案済みの規約と同型の再発である
-- `check_does_not_check` — SPEC §4 の検算器の対照は陽性を「既知の値（relationdetr 側の平均 acc）が再計算で一致すること」と定めたが、再計算の入力となる seed 別 acc は run にも記録側にも存在しない。指示どおりに組むと陽性対照が定義できず、陰性だけの片方向の対照になる
-
-### 逸脱
-
-- `judgement` — 作業ツリーに前セッションの未追跡 3 種が残り task_start.sh が実行できなかった。削除せずスクラッチパッドへ退避した。experiments/analysis/official_split_reassessment/*.py 3 件は origin/phase0 と同一内容のため無損失。docs/sessions/digest/2026-08-25-6ae159a7-*.md 1 件は報告後に元の位置へ戻したが未追跡のままである。tasks/README.md は抽出物を契約の記録と一緒に含めるよう定めるが、本契約 §2 の変更対象外であり、含めると完了判定 c を満たさなくなるため見送った
-- `judgement` — governance.decisions_required の 1 件を利用者へ提示し「lecun の追跡外 run は索引へ収穫しない（棚卸しのみ）」の回答を得た。回答は meta.amendments へ記録し decisions_required を空にした。前例 T-2026-08-26-lovo-decision-rule に倣った
-- `spec_defect` — SPEC §4 の陽性対照『relationdetr 側の平均 acc が再計算で一致すること』は記録側に seed 別の acc が無いため定義できない。記録側に seed 別で残る唯一の量である paired 差 3 件を陽性対照に置き換えた。陰性対照は指示どおり seed を一つ除く方式で取り、値の差し替えを 1 件足した
-- `judgement` — 検算器の許容差を最初は出力側にだけ適用し、入力の丸め表示を実数として扱っていたため mean(paired) が誤って不一致と出た。conventions#issuer_cautions 注意 7 に反していたため、入力の丸め幅を端点の総当たりで出力へ伝播させる方式へ改めた
-- `environment` — spec.yaml の contract.prohibitions が挙げる no_runindex_regen と no_history_rewrite は conventions#prohibitions の表に存在しない id である（表は no_frozen_change と no_runindex_hand_edit を持つ）。L2 は通るため停止せず、意味は SPEC §6 の本文で解した
-
-### 申し送り
-
-- 追跡外 run 61 件（b2a_lovo_v01..15 各 2 系統 30 件 / b2a_seglovo_v01..15 各 2 系統 30 件 / b2a_det2phase_oracletool_009 1 件、生成日 2026-08-25〜08-28）は索引の最終更新 7918b5dd（2026-08-16）より後の生成である。make runindex で解消するが、収穫は本契約の対象外。別契約として起票するかは判断待ち
-- 六 run の checkpoint 6 件は健在（各 2599650 バイト、md5 照合済み）。再評価すれば K1 の数値は回復しうる。lecun の GPU は RTX A6000 が 2 枚とも空き 48.5GB・利用率 0% である。本契約は GPU 使用が禁止のため実施していない
-- docs/sessions/digest/2026-08-25-6ae159a7-8526-4c86-98a8-2a1367c72a6a.md は元の位置へ戻したが未追跡のままである。tasks/README.md は抽出物を契約の記録と一緒に含めるよう定める一方、本契約 §2 の変更対象は docs/stage0/ の 2 文書と契約ディレクトリ・受け皿・投影に限られる。未追跡のまま残すと B-30 のとおり git merge --ff-only が内容同一でも失敗しうるため、別契約で取り込むか §2 に含める規約が要る
-- 本文が既に答えている事項を governance.decisions_required に重ねて置くと L3 の P6 で実行が止まる。T-2026-08-26-lovo-decision-rule で提案済みの規約が未適用のまま再発した
-
-### 断定できなかったこと
-
-- 六 run の学習時刻と学習ホスト。checkpoint の mtime は 2026-07-10 17:47:49〜17:48:38 の 49 秒に集中し、生成器の逐次 50 epoch × 6 run と両立しない。順序も逐次の順と食い違う。複製の時刻であり学習の時刻ではない
-- aligndetr 側の config が指す特徴ファイル。六 run に config.yaml が無いため測れない。SPEC §5 の完了判定 b はこの部分について UNKNOWN である
-- 07-10 版の特徴が v2 ckpt（bbox AP 68.5960）から抽出されたことの直接の記録。抽出ログが残っておらず、evidence/discarded_caches/ の記載「v3 の ckpt は存在しない」による消去法の推定である
-- 六 run の metrics がいつ・なぜ失われたか。隔離の時点で既に無く、失敗ログも残っていない
 

@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（410 件）
+## 申し送り（433 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -655,7 +655,39 @@
 - scripts/load_env.sh は NOTION_DB_ID をロードしないため、run 台帳への投稿が 0/12 で skip した。非秘密の ID レジストリ configs/notion.yaml の databases.run_ledger を環境変数に与えて 12/12 成功させたが、load_env.sh 側で NOTION_DB_ID を設定するか、post_experiments_to_notion.py が configs/notion.yaml を読むようにするかの判断が要る
 - B1 の所要時間は学習と評価を分離して計測していない。train_b2a.py は同一プロセスで両方を行うため、分離するには計測点の追加が要る
 
-## 断定できなかった事項（264 件）
+### T-2026-08-30-hts-candidate-acceptance
+
+- make forbidden-check は契約ごとの outputs.destination を除外できないため、destination へ 正しく書いた契約でも status=fail を返す。本契約では違反 12 件すべてが destination の内側で、 外側は 0 件だった。道具側に destination を渡す口が要る。
+- 三値の結論は「一部欠落」。主判定 C1（真マスク）は hts_hand_seg / hts_hand_tool_seg / hts_tool_seg / raw04_5cls が、C2（値5=Two Hands Tool）は hts_hand_tool_seg（cat5 注釈 2021 件）と raw04_5cls が、C4 は全 9 候補が満たす。C3 を満たす候補は 0 件。
+- C3 は実装どおりでは満たせない。検査器は raw 02_hand の glob によるディレクトリ名 26 件と、 file_name から導く動画 id 25 件を比べており、03_3 は右辺に現れ得ないため missing == [] が 構成上成立しない。03_3 は 02_hand/json_per_video/03_3/03_3.json が images 1472 件・ annotations 0 件で、その画像リストは 03_1/03_2 のフレームである。
+- 03_3 の手・把持・マスク注釈は存在しない。data/annotations と data/raw の COCO JSON 全 291 個 （realpath で重複排除）を走査し 03_3_* のフレームを持つ注釈は 0 件だった。一方 frames は 01_frames/initial_videos/03_3/ に 261 枚、工程注釈は egosurgery_phase/03_3.csv が実在し、 公式 split（egosurgery_tool の 22 動画）には 03_3 が含まれない。組立作業では埋まらない欠落である。
+- 目標値 57173 は正本の完全重複 1 件を含む。02_hand/json_per_video/05_1/05_1.json の 05_1_0575.jpg / bbox (0.0, 6.0, 940.0, 1066.0) / cat 4 に ann id 1519 と 1520 が同一内容で並ぶ。 hts_hand_seg（train+val+test+extra）の単純加算は 57173 で目標一致、集合件数は 57172。 C3 の閾値を直す場合はどちらを正とするか明記が要る。
+- 既存検査器 scripts/audit_l0_hts_acceptance.py に 3 つの欠陥を実測した。(1) 入力の不在を 0 件として通す（_splits が不在ファイルを黙って飛ばし、退避に気付かない）。(2) C3 が ディレクトリ名と動画 id という型の違うものを比べる。(3) C1 の seg_profile は先頭 3000 件しか 見ない。本契約は全件（polygon 371335 件を含む）を走査した。修正は本契約の範囲外。
+- C5（公式 split 整合）は主判定ではないが、真マスクを持つ hts_hand_seg は 9627/1515/4255 で 公式 9657/1515/4265 に 40 枚届かない。不足分は手注釈が 0 件のフレームであり、原資料の欠落では なく「注釈ゼロのフレームを images に載せるか」の設計差である。組立時に決める必要がある。
+- 文書・スクリプトが指す data/annotations 配下の経路のうち 29 件が実在しない （egosurgery_hand4/ の旧経路、egosurgery_hts/hand_bbox/、handtool_seg_5cls/by_split/、 pseudo_labels/、egosurgery_hts_bundle_audit.md、egosurgery_split_consistency_audit.md など）。 README §9 が指す文書の一部も不在。文書の追従が要る。
+- 本契約の実行で退避した未追跡ファイルが残っている。git stash@{0} 「task-start用の一時退避 T-2026-08-30-hts-candidate-acceptance」を pop して戻すこと。 実体（checkpoints/predictions）は .gitignore 済みのためディスク上に残っている。
+
+### T-2026-08-30-tooling-fixes-five
+
+- SPEC §5-g「全テストが通る」は未充足のまま終えた。起票時点で既に 6 件が落ちており、 本契約の作業では動かせない。tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics、 tests/test_fetch_task.py::test_rejects_unknown_file_name、 tests/test_research_logger.py の 4 件（test_log_run_idempotent ほか）。
+- test_fetch_task.py::test_rejects_unknown_file_name は誤り文言と試験の期待がずれているだけに 見える（期待「受け取れないファイル」／実際「経路として受け取れない名前です」）。 tools/fetch_task.py は本契約の entrypoints に入っているが、F1 から F5 のいずれでもないため 触っていない。直すなら別契約で。
+- 今後の契約は「実行前の失敗件数を分母として記録する」形にすると、判定 g のような空振りを 避けられる。件数が増えたことだけを見ると、既存の失敗が残っていても気付けない。
+- 許可の宣言は contract.allow_write（接頭辞の配列）。検査は make forbidden-check TASK=<task_id>。 上限は data/ 配下（常に不可）と、experiments/ transfer/ のうち起点に既に存在する経路。 収穫を伴う契約は allow_write: [runindex/] を置けば道具を迂回せずに通せる。
+- 収穫の検証は make harvest-verify（BASE=<commit> で起点を変えられる。既定は HEAD）。 run 単位の index.csv は追加のみ、集約表は既存の群の判定列が不変。判定列は same_sign / verdict / agree / reason / n_seeds を名前に含む列で見分ける（experiments.csv では 631 列中 106 件）。
+- 置換前提の参照は ref: "unresolved:<何を索引で引くか>" と resolve_by_executor: true で宣言し、 解決先を tasks/<task_id>/resolved.yaml に resolved_to と how の対で書く。P12 が済むまで止まる。 この対応表がそのまま RESULT の「解決された参照」の材料になる。
+- preflight に書いてよい名前は venv_active / cuda_ext_loaded / deterministic_flags / gpu_free。 schema の enum と tools/preflight_task.py の KNOWN_PREFLIGHT_NAMES が同じ集合であることは test_f2_schema_enum_matches_implementation が縛っている。片方だけ増やすと試験が落ちる。
+- P11 gpu_free は「GPU を占有する compute プロセスが 0 件」で判定する。使用量の閾値は置いていない。 nvidia-smi が無い・失敗する・タイムアウトする場合は FAIL にした。契約が空きを前提に宣言した以上、 確かめられないまま実行を許すと宣言の意味が無いという判断による。閾値が要るなら別契約で。
+- 本契約の実行で退避した未追跡ファイルが残っている。git stash@{0} 「task-start用の一時退避 T-2026-08-30-tooling-fixes-five」を pop して戻すこと。
+
+### T-2026-08-31-notion-legacy-toc-and-export
+
+- 旧マスター頁（configs/notion.yaml の pages.plan_master）が Integration に共有されておらず HTTP 404 である。共有設定は利用者の操作領域であり、共有後は docs/archive/notion/toc_plan_master.md に記した同じ命令で取得できる
+- 到達できた 5 DB（run_ledger 767 / decision_log 65 / lessons 31 / procedure_docs 6 / prompt_library 3）はアーカイブへ移せる状態にある。移す判断が要る
+- make spec-check の integration_prohibited_without_pause が SPEC 本文の抑止の記載を拾えず偽陽性を 2 件出す。検出器の語句を広げるか、契約 §5 A-3 の要求を WARN 許容に変えるかの判断が要る
+- properties.csv はセルに改行を含む本文を持つため wc -l では行数が水増しされる（decision_log は 65 行だが wc -l は 848）。数えるときは CSV として読む必要があり、判定の書き方に注記が要る
+- conventions#issuer_cautions 注意 6 の pgrep -f 自己一致を待機ループと停止処理で 2 度踏んだ。/proc/PID/exe で絞る作法を技能書か規約の側で例示すると再発を減らせる
+
+## 断定できなかった事項（271 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1143,16 +1175,32 @@
 - P→D 四段の値、B2 の train と val の mAP 差、B4 の強い工程塔の単体性能。いずれも資産の欠落により測定していない
 - GPU を 2 枚使った場合の所要時間。本契約は 1 枚のみで実行した
 
-## 起票者の誤りの型（249 件）
+### T-2026-08-30-hts-candidate-acceptance
+
+- 検査器 C1 の polygon>4 頂点の枝の実データ上の挙動。実データの polygon は全 371335 件が 4 頂点であり、真の多角形が存在しないため踏めない。合成入力でのみ確認した。
+- egosurgery_tool_hand 直下の 4cls（train/val/test.json）と 19cls（instances_*.json）の生成元。 README に記載を確認できなかった。来歴は candidates.csv の provenance 列で空欄とせず 「生成元の記載を README で確認できず」と明記した。
+
+### T-2026-08-30-tooling-fixes-five
+
+- P3 deterministic_flags の判定基準は従来どおり未確定で常に SKIP のまま（backlog B-20）。 決定性の設定は実行プロセス内で行われ外部から観測できない。本契約では触れていない。
+- P11 gpu_free を「compute プロセス 0 件」で判定したとき、共有ホストで他者の学習が走っている間に 契約が止まる頻度は測っていない。実測は本契約の範囲外（GPU を使わないため）。
+
+### T-2026-08-31-notion-legacy-toc-and-export
+
+- 旧マスター頁の見出し。HTTP 404 のため一件も取得していない。推定で埋めていない
+- page_size=7 の走行が読み取りタイムアウトを 2 度起こした原因。再試行で完走したが Notion 側の応答か経路かは切り分けていない
+- 長い符号化文字列 8 件のうち本文中の 2 件が何の語であるか。形（長さ 63・英小 40・数 19・記号 4・16 進ではない）と資格情報でないことは確かめたが、値は見ていない
+
+## 起票者の誤りの型（253 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 72 |
-| `asserted_without_measuring` | 93 |
-| `self_contradiction` | 66 |
+| `check_does_not_check` | 73 |
+| `asserted_without_measuring` | 95 |
+| `self_contradiction` | 67 |
 | `shell_assumption` | 18 |
 
-合計 249 件（対を持つ契約 81 件から）
+合計 253 件（対を持つ契約 84 件から）
 

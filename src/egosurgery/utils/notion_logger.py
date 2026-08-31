@@ -33,6 +33,11 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 NOTION_VERSION = "2022-06-28"
+
+# 実験Run台帳は 2026-08-31 に凍結した（T-2026-08-31-notion-repo-followup-and-retire）。
+# **CLI が Notion に触れるのは配布台帳だけである。** 旗を False にすると以下の
+# 投稿経路が生き返るが、その前に台帳の凍結を解く判断が要る。
+RUN_LEDGER_RETIRED = True
 _API_BASE = "https://api.notion.com/v1"
 
 
@@ -90,6 +95,21 @@ def _log_impl(
     extra_result_text: str | None,
     name_override: str | None = None,
 ) -> dict | None:
+    # --- 退役（2026-08-31, T-2026-08-31-notion-repo-followup-and-retire）------ #
+    # 実験Run台帳は凍結した。**CLI が Notion に触れるのは配布台帳だけである。**
+    # 識別子は NOTION_DB_ID と登録簿の二経路で解決されうるため、**入口で止める**
+    # （片方だけ塞いで他方が生きる形にしない。契約 §1 罠 5）。
+    # 無言で何もせず戻ると「壊れた」と「退役した」を区別できないため、退役の旨を返す。
+    # 全行の写しは docs/archive/notion/db/run_ledger/ にある。
+    if RUN_LEDGER_RETIRED:
+        logger.warning(
+            "notion run_ledger は 2026-08-31 に退役した。投稿しない (%s)。"
+            "写しは docs/archive/notion/db/run_ledger/ にある", exp_dir,
+        )
+        return {"retired": True, "db_key": "run_ledger", "name": str(exp_dir),
+                "posted": False, "since": "2026-08-31",
+                "archive": "docs/archive/notion/db/run_ledger/"}
+
     api_key = os.environ.get("NOTION_API_KEY", "").strip()
     db_id = os.environ.get("NOTION_DB_ID", "").strip()
     if not api_key or not db_id:

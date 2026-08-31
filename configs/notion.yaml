@@ -1,31 +1,51 @@
-# Notion 連携の ID レジストリ（M2研究運用ハブ）。
+# Notion 連携の ID レジストリ。
 #
 # ここに置くのは **ページ/DB の ID のみ**（秘密情報ではない）。認証トークン
 # (NOTION_API_KEY) は .env に置き、ここには絶対に書かない。
 #
-# 使い方:
-#   - 自動記録(REST): src/egosurgery/utils/notion_ops.py が本ファイルを読む。
-#     NOTION_DB_<KEY>（大文字）環境変数があればそちらを優先（上書き可能）。
-#   - 対話読み取り(MCP): Claude は下の page/db を直接 fetch/query する（CLAUDE.md 参照）。
+# 2026-08-31 に記録系を再構成した（T-2026-08-31-notion-repo-followup-and-retire）。
 #
-# token の Notion Integration には、これら全 DB/ページを share しておくこと。
+#   **CLI が Notion に触れるのは配布台帳（task_distribution）だけである。**
+#
+# 下の `claude_app_surfaces` は Claude アプリが読む面であり、**CLI は読まない**。
+# 人が引くために載せてあり、コードから解決してはならない。
+# `retired_*` は凍結した旧経路で、内容は docs/archive/notion/ へ写してある。
 
-# --- 管理データベース（実験Run台帳の DB は notion_logger が NOTION_DB_ID で使う既存物）---
+# --- CLI が使う唯一の面 ---------------------------------------------------- #
+# tools/fetch_task.py の _notion_database_id() と tools/report_task.py が読む。
 databases:
-  run_ledger:     ef4ccd02-0a97-41af-814e-9acc44e1e0d3   # 実験Run台帳（結果の自動記録）
-  decision_log:   c3f27d4a-0d9f-4c52-adb9-1137efac38b6   # 意思決定ログ（方針変更）
-  lessons:        9f6d6a56-0244-4977-84d3-7c55e9b32768   # 失敗知見・教訓（再発防止）
-  procedure_docs: 5b8d9c8d-fa78-49c1-a1de-fd9d03b318a2   # 実験手順書
-  prompt_library: 1c60213a-bf84-4a91-ab50-7eefcb4cffea   # プロンプトライブラリ
   task_distribution: 3af70553-8f2d-45de-972a-c64b3127bb1a   # TASK配布（契約の受け渡し）
 
-# --- まず読むページ（コンテキスト削減: 全計画でなくこれらを読む）---
-pages:
-  ops_hub:        36bee4d4-7777-819c-8495-e48d1a71e500   # M2研究運用ハブ（軽量な入口）
-  current_state:  36bee4d4-7777-815d-90e7-e669503f994b   # 現在の研究状態（最優先で読む）
+# --- Claude アプリの面（CLI は読まない。人が引くための記載）----------------- #
+# Integration へ共有されていないため CLI が読めば 404 になる。コードが読む鍵の
+# 集合には含めない（T-2026-08-31 の契約 §1 罠 10）。
+claude_app_surfaces:
+  ops_root:        {kind: page,     id: 3ccee4d4-7777-81e0-a5fc-d190805d0f7a}  # 運用正本（ルート）
+  current_plan:    {kind: page,     id: 3ccee4d4-7777-81ff-a12a-ec9fb549cb27}  # 現在地と現行計画
+  master:          {kind: page,     id: 3ccee4d4-7777-81c6-97ab-cbbeb0303f45}  # マスター
+  knowledge:       {kind: database, id: 57de3ecf-03f4-4663-b72d-ac0e5e71215b,
+                    data_source_id: ba16780f-5b7c-4d1d-ae54-cb7f2e0e66fe}      # 知見・決定
+  archive:         {kind: page,     id: 3ccee4d4-7777-8137-a0d6-e89a906bdd80}  # アーカイブ
+
+# --- 退役（2026-08-31 に凍結）---------------------------------------------- #
+# 自動書き込みは明示的に退役させた。呼ばれても投稿せず退役の旨を返す
+# （src/egosurgery/utils/notion_ops.py と notion_logger.py の RETIRED 節）。
+# 全行の写しは docs/archive/notion/db/<KEY>/ にある（PR #170）。
+retired_databases:
+  run_ledger:     ef4ccd02-0a97-41af-814e-9acc44e1e0d3   # 実験Run台帳
+  decision_log:   c3f27d4a-0d9f-4c52-adb9-1137efac38b6   # 意思決定ログ
+  lessons:        9f6d6a56-0244-4977-84d3-7c55e9b32768   # 失敗知見・教訓
+  procedure_docs: 5b8d9c8d-fa78-49c1-a1de-fd9d03b318a2   # 実験手順書
+  prompt_library: 1c60213a-bf84-4a91-ab50-7eefcb4cffea   # プロンプトライブラリ
+
+# 旧頁群。MCP で読む手順は退役した（docs/notion_integration.md 参照）。
+retired_pages:
+  ops_hub:        36bee4d4-7777-819c-8495-e48d1a71e500   # M2研究運用ハブ
+  current_state:  36bee4d4-7777-815d-90e7-e669503f994b   # 現在の研究状態
   ops_rules:      36bee4d4-7777-81e1-aea0-f9b509aab850   # 運用ルール
   context_pack_template: 36bee4d4-7777-8159-97dd-d8d34a0e833b  # LLMコンテキストパック雛形
-  plan_master:    361ee4d4-7777-804f-b7e6-c023cf50267d   # M2研究計画（マスター・長文。スライスのみ読む）
+  plan_master:    361ee4d4-7777-804f-b7e6-c023cf50267d   # M2研究計画（旧マスター）
+  plan_current:   3b8ee4d4-7777-8193-8f0e-da5dc0fea9f0   # M2研究計画（現行版）
 
-# Step select の許容値（全 DB 共通）。STEP A-D の結合実験は当面 S5/S6 系へ寄せず "B" を使う方針も可。
+# Step select の許容値（退役した DB の写しを読むときに使う）。
 step_options: [S0, S1, S2, S3, S4, S5, S6, S7, S7.5, S8, S9]
