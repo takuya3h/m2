@@ -196,4 +196,29 @@
 
 ## 5. 末尾の再生成と送出
 
-（D-5 以降をここへ置く。）
+### 5.1 D-5 の再生成（判定 H）
+
+    再生成の前: taskindex-check exit=2 / inbox-check exit=2
+    make taskindex exit=0 / make inbox exit=0   ← 一度だけ
+    再生成の後: taskindex-check exit=0 / inbox-check exit=0 / context-check exit=0
+
+本契約の `result.yaml` と `inbox.d` が未反映のため、**前は必ず差分が出る**。
+`make context` は runindex が変わっていないため回していない（禁止 3）。
+
+### 5.2 D-6 の続きの再生成
+
+RESULT と `result.yaml` へ PR 番号 #172 を書いた後、指示どおり check を回した。
+
+    taskindex-check exit=2   ← 差分あり（result.yaml の pr と commits が未反映）
+    inbox-check     exit=0
+
+D-6 が「差分があれば再生成をもう一度回してよい。これは D-5 の続きであり、別の再生成ではない」
+と定めるため、`make taskindex` を回した。
+
+    再生成の後: taskindex-check exit=0 / inbox-check exit=0 / context-check exit=0
+
+### 5.3 送出
+
+    commit 1b00ddcb（18 files changed）
+    push exit=0
+    PR #172（base phase0）

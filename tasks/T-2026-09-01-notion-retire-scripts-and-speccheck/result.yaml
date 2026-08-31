@@ -3,7 +3,7 @@ task_id: "T-2026-09-01-notion-retire-scripts-and-speccheck"
 status: pass
 host: "lecun"
 branch: "feat/notion-retire-scripts-and-speccheck"
-pr: null
+pr: 172
 merged: false
 
 gates: []
@@ -59,4 +59,5 @@ unknowns:
   - "spec-check の全契約での該当 15 件の内容の妥当性。本契約は integration_prohibited_without_pause の偽陽性だけを対象にしており、他の規則の該当は見ていない"
   - "docs-check の対象外にある文書やスクリプトに、退役した経路への参照が残っているか。eval_and_post.sh は手で見つけたが網羅していない"
 
-commits: []
+commits:
+  - "1b00ddcb"

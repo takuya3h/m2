@@ -11,7 +11,7 @@
 
 ## T-2026-09-01-notion-retire-scripts-and-speccheck
 
-状態 `pass` / ホスト `lecun` / 起票 `なし` / 様式 `v3`
+状態 `pass` / ホスト `lecun` / 起票 `172` / 様式 `v3`
 
 ### ゲート
 

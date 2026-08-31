@@ -90,4 +90,13 @@ D-5 で一度回し、両方の check が exit 0 になった状態で commit �
 
 ## 送出
 
-（PR 番号と `make task-report` の終了コードは下に入れる。）
+| 項目 | 実測 |
+|---|---|
+| commit | `1b00ddcb`（18 files changed） |
+| push | exit 0（`origin/feat/notion-retire-scripts-and-speccheck`） |
+| PR | **#172**（base `phase0`） |
+| `make task-report` | **exit 0**。`report_sha256=c48499161fdf2a3ffb8116f86068508536ee52e45d3e35888f18d82f318559f7` / `report_bytes=7949` / `replaced_blocks=0` / `verdict=pass` / `n_issuer_defects=0` |
+| 抑止 | `.sync-pause` を**移動**で解除 |
+| 退避物 | `.sync-pause.released` を元へ戻す（消していない） |
+
+D-6 の指示により、RESULT へ番号を書いた後に再生成の差分が出るかを確かめた（audit §5）。
