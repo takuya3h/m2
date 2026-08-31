@@ -87,4 +87,11 @@ DB 合計 **872 行**。頁送りの再試行 合計 8 回（DB 6・見出し 2�
 
 ## 送出
 
-（PR 番号と `make task-report` の終了コードは下に入れる。）
+| 項目 | 実測 |
+|---|---|
+| commit | `3e87ea59`（28 files changed, 6210 insertions） |
+| push | exit 0（`origin/feat/notion-legacy-toc-and-export`） |
+| PR | **#170**（base `phase0`） |
+| `make task-report` | **exit 0**。`report_sha256=ccc8affc1554528e3c1cfc7cfc6562d64225886f64717a66b0c53ee8d45ebe1b` / `report_bytes=7887` / `replaced_blocks=0` / `verdict=partial` / `n_issuer_defects=2` |
+| 抑止 | `task_start.sh` が置いた `.sync-pause` を**移動**で解除（`.sync-pause.released`） |
+| 退避物 | §1 の 5 件を元へ戻す（消していない） |

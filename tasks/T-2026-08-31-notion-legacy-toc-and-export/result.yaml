@@ -3,7 +3,7 @@ task_id: "T-2026-08-31-notion-legacy-toc-and-export"
 status: partial
 host: "lecun"
 branch: "feat/notion-legacy-toc-and-export"
-pr: null
+pr: 170
 merged: false
 
 gates: []
@@ -73,4 +73,5 @@ unknowns:
   - "page_size=7 の走行が読み取りタイムアウトを 2 度起こした原因。再試行で完走したが Notion 側の応答か経路かは切り分けていない"
   - "長い符号化文字列 8 件のうち本文中の 2 件が何の語であるか。形（長さ 63・英小 40・数 19・記号 4・16 進ではない）と資格情報でないことは確かめたが、値は見ていない"
 
-commits: []
+commits:
+  - "3e87ea59"
