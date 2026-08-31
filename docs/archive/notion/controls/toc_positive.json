@@ -1,0 +1,21 @@
+[
+ {"id":"b1","type":"heading_1","heading_1":{"rich_text":[{"plain_text":"第一章"}]}},
+ {"id":"b2","type":"paragraph","paragraph":{"rich_text":[{"plain_text":"これは段落。拾ってはならない。"}]}},
+ {"id":"b3","type":"heading_2","heading_2":{"rich_text":[{"plain_text":"一節"}]},
+  "__children":[
+    {"id":"b4","type":"heading_3","heading_3":{"rich_text":[{"plain_text":"toggle 見出しの内側"}]}},
+    {"id":"b5","type":"paragraph","paragraph":{"rich_text":[{"plain_text":"内側の段落。拾わない。"}]}}
+  ]},
+ {"id":"b6","type":"toggle","toggle":{"rich_text":[{"plain_text":"折りたたみ"}]},
+  "__children":[
+    {"id":"b7","type":"heading_3","heading_3":{"rich_text":[{"plain_text":"折りたたみの中の見出し"}]}}
+  ]},
+ {"id":"b8","type":"column_list","column_list":{},
+  "__children":[
+    {"id":"b9","type":"column","column":{},
+     "__children":[{"id":"b10","type":"heading_2","heading_2":{"rich_text":[{"plain_text":"段組みの中の見出し"}]}}]}
+  ]},
+ {"id":"b11","type":"child_page","child_page":{"title":"子頁の題"},
+  "__children":[{"id":"b12","type":"heading_1","heading_1":{"rich_text":[{"plain_text":"降りてはならない見出し"}]}}]},
+ {"id":"b13","type":"child_database","child_database":{"title":"子DBの題"}}
+]

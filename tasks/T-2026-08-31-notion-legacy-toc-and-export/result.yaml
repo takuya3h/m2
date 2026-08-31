@@ -1,0 +1,77 @@
+result_version: 3
+task_id: "T-2026-08-31-notion-legacy-toc-and-export"
+status: partial
+host: "lecun"
+branch: "feat/notion-legacy-toc-and-export"
+pr: 170
+merged: false
+
+gates: []
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 15
+
+deviations:
+  - type: judgement
+    note: "開始前から在った未追跡 5 件を repo の外へ退避した（契約 §1 罠 9 が許可）。うち experiments/analysis/hts_candidate_acceptance/*.py 4 件は .stignore:51 の !experiments/**/*.py により同期対象であるため、origin/phase0 に同一内容が commit 済みであること（4/4 バイト一致）を先に確かめてから動かした。消していない"
+  - type: judgement
+    note: "作業中に生成された docs/archive/notion/__pycache__ を退避した。契約 §4 禁止 5 がファイルの削除を禁じているため mv で repo の外へ出した"
+  - type: spec_defect
+    note: "export_notion.py の再試行の対象を 429 だけでなく OSError（読み取りタイムアウトを含む）へ広げた。page_size=7 の走行が読み取りタイムアウトで 2 度落ちたためである。契約 §1 罠 6 が実装を読んで待って再試行すると定める範囲であり、待ちは 2・4・6・8 秒とした"
+  - type: environment
+    note: "契約 §4 禁止 3 に従い make context と make taskindex と make inbox およびその check を回していない。技能書 §6 は投影の再生成を求めるが契約 §1 罠 11 が本契約の禁止を優先すると定めている"
+
+issuer_defects:
+  - type: check_does_not_check
+    note: "契約 §5 A-3 は make spec-check を通すことを求めるが、SPEC 本文が integration_prohibited_without_pause を SPEC.md:74 と :77 の 2 件で踏んで fail する。実体は偽陽性で、§5 A-2 に make task-start で抑止を置く、E-5 に抑止を移動で解除、判定 M にも抑止の記載がある。検出器の語句パターンに合致しないだけであり、指示どおりでは A-3 を満たせない"
+  - type: asserted_without_measuring
+    note: "契約 §2 は旧マスター頁を対象に含め §3 は toc_plan_master.md を生成物に挙げるが、実測では HTTP 404 object_not_found で到達できない。§1 の罠 1 が 404 を unreachable として続行すると定めているため停止はしないが、生成物の要求と到達性の見込みが食い違っている。共有設定は利用者の操作領域である"
+
+positive_controls:
+  - judgement: "見出し抽出器が見出しだけを拾い段落を拾わないこと（判定 C）"
+    breaking_input: "段落と箇条書きと番号付きとコードだけのフィクスチャを与える。零件になるはず"
+    observed: "陰性フィクスチャで 0 件。陽性フィクスチャでは 7 件（H1 1 / H2 2 / H3 2 / PAGE 1 / DB 1）を検出した。child_page の内側に置いた見出しは拾わず、降りない規則が効いていることも確認した"
+  - judgement: "抽出器が見出しの欠落に感応すること（判定 C の追加）"
+    breaking_input: "toggle の内側の見出しを 1 件落とした写しを与える。検出数が減るはず"
+    observed: "7 件から 6 件へ減り、落とした H3 折りたたみの中の見出しが差分として出た"
+  - judgement: "頁送りで取りこぼしが起きていないこと（判定 D）"
+    breaking_input: "途中で打ち切った写し（150 行）と比べる。不一致になるはず"
+    observed: "page_size 100 と 7 はいずれも 199 行で完全一致した。打ち切った写しとは不一致になった"
+  - judgement: "見出しファイルの形式検査が働いていること（判定 B）"
+    breaking_input: "段落を 1 行足した写しを検査に通す。不適合が出るはず"
+    observed: "不適合 1 件を検出した。元のファイルは 199 行すべて適合で不適合 0 件である"
+  - judgement: "存在しない database id が零件の成功にならないこと（判定 G）"
+    breaking_input: "00000000-0000-0000-0000-000000000000 を probe に与える"
+    observed: "status unreachable として HTTP 404 object_not_found を記録した。反対側として task_distribution に本契約の行が 1 件あることを確かめた（export はしていない）"
+  - judgement: "秘匿の検査が値を出さずに働いていること（判定 H）"
+    breaking_input: "偽の token の形と鍵の書き出しを含む合成フィクスチャを与える"
+    observed: "notion token の接頭辞と鍵の書き出しをそれぞれ 1 件検出した。実対象では危険な 3 形が 0 件で、長い符号化文字列 8 件は目視で全件偽陽性（manifest の sha256 6 件と本文中の長い語 2 件）と確かめた。環境の資格情報との完全一致は 0 件である"
+  - judgement: "個人情報の検査が働いていること（判定 I）"
+    breaking_input: "電子メールの形を含む合成フィクスチャを与える"
+    observed: "1 件検出した。実対象 20 ファイルでは 0 件であり停止条件は発火しない"
+  - judgement: "サイズの停止条件が発火すること（判定 J）"
+    breaking_input: "閾値を実測値の半分に置く"
+    observed: "発火する。実測は 5,627,935 バイト（5.37 MB）で閾値 50 MB の範囲内である"
+  - judgement: "読み取りだけで Notion 側に副作用が無いこと（判定 K）"
+    breaking_input: "5 DB の last_edited_time を Task A と Task D で照合する。書き込みがあれば変わるはず"
+    observed: "5/5 で不変だった（run_ledger 2026-08-23T16:39:00.000Z ほか）"
+  - judgement: "export が再現すること（判定 F）"
+    breaking_input: "同じ export を二回走らせて要約値を比べる"
+    observed: "prompt_library と procedure_docs の raw.jsonl と properties.csv と bodies.jsonl の 6 ファイルすべてで sha256 が一致した"
+
+followups:
+  - "旧マスター頁（configs/notion.yaml の pages.plan_master）が Integration に共有されておらず HTTP 404 である。共有設定は利用者の操作領域であり、共有後は docs/archive/notion/toc_plan_master.md に記した同じ命令で取得できる"
+  - "到達できた 5 DB（run_ledger 767 / decision_log 65 / lessons 31 / procedure_docs 6 / prompt_library 3）はアーカイブへ移せる状態にある。移す判断が要る"
+  - "make spec-check の integration_prohibited_without_pause が SPEC 本文の抑止の記載を拾えず偽陽性を 2 件出す。検出器の語句を広げるか、契約 §5 A-3 の要求を WARN 許容に変えるかの判断が要る"
+  - "properties.csv はセルに改行を含む本文を持つため wc -l では行数が水増しされる（decision_log は 65 行だが wc -l は 848）。数えるときは CSV として読む必要があり、判定の書き方に注記が要る"
+  - "conventions#issuer_cautions 注意 6 の pgrep -f 自己一致を待機ループと停止処理で 2 度踏んだ。/proc/PID/exe で絞る作法を技能書か規約の側で例示すると再発を減らせる"
+
+unknowns:
+  - "旧マスター頁の見出し。HTTP 404 のため一件も取得していない。推定で埋めていない"
+  - "page_size=7 の走行が読み取りタイムアウトを 2 度起こした原因。再試行で完走したが Notion 側の応答か経路かは切り分けていない"
+  - "長い符号化文字列 8 件のうち本文中の 2 件が何の語であるか。形（長さ 63・英小 40・数 19・記号 4・16 進ではない）と資格情報でないことは確かめたが、値は見ていない"
+
+commits:
+  - "3e87ea59"
