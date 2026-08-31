@@ -1,0 +1,63 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-08-31-notion-repo-followup-and-retire"
+  kind: impl
+  title: "Notion 記録系の再構成に伴う repo 側の追随と旧経路の退役"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-08-31T10:00:00Z"
+  created_from:
+    runindex_commit: "96eb3a1c"
+    counts: {index: 1266, experiments: 285, verdicts: 1506}
+  depends_on: ["T-2026-08-31-notion-legacy-toc-and-export"]
+  amendments: []
+intent:
+  question: "CLI が Notion を配布台帳だけで使う状態へ repo を追随させ、旧データベースへの自動書き込みと旧頁の読み取り手順を、試験と文書検査を壊さずに退役できるか"
+  decision_at_stake: "旧データベースと旧頁をアーカイブへ移してよいか、CLI 側の Notion 経路を台帳のみに固定してよいか"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "repo-notion-integration-surfaces"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["src/egosurgery/utils/notion_ops.py", "src/egosurgery/utils/notion_logger.py", "scripts/notion_context_pack.py", "tools/fetch_task.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "a8c07e81"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "前提の実測と門", gpu: false, est: "20m"}
+    - {id: B, name: "投影の再生成（一度だけ）", gpu: false, est: "15m"}
+    - {id: C, name: "登録簿の更新と自動書き込みの退役", gpu: false, est: "60m"}
+    - {id: D, name: "読み取り手順と文書の追随", gpu: false, est: "45m"}
+    - {id: E, name: "run 台帳の再 export と旧マスターの見出し", gpu: false, est: "30m"}
+    - {id: F, name: "検査と報告", gpu: false, est: "40m"}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [configs/notion.yaml, CLAUDE.md, docs/notion_integration.md]
+  destination: "."
+  acceptance:
+    - "origin の phase0 に前契約の生成物があることを門で確かめてから作業している"
+    - "taskindex と inbox の再生成を一度だけ行い、両方の check が通っている"
+    - "登録簿に新しい面の識別子が載り、退役した識別子は別節に移され、コードが読む鍵はすべて実在する"
+    - "旧データベースへ自動で書く経路がすべて明示的に退役し、試験の失敗が作業前より増えていない"
+    - "エージェント向け文書に旧頁を MCP で読む手順が残っておらず、docs-check と agent-check が通っている"
+    - "run 台帳の export が自動書き込みの退役後に取り直され、manifest が更新されている"
+    - "分岐名が feat で始まり、PR が存在し、番号が RESULT に記録されている"
+  report_to: []
+governance:
+  decisions_required:
+    - "自動書き込みの退役の方式が既存の試験と両立しない場合の扱い"
+    - "退役するスクリプトの移動先が禁止領域の検査に当たる場合の扱い"
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "門で前契約の生成物が origin の phase0 に無い"
+    - "再生成の後も check が通らない"
+    - "自動書き込みの経路が実装の読解で列挙しきれない"
