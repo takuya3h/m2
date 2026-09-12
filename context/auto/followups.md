@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（433 件）
+## 申し送り（440 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -687,7 +687,20 @@
 - properties.csv はセルに改行を含む本文を持つため wc -l では行数が水増しされる（decision_log は 65 行だが wc -l は 848）。数えるときは CSV として読む必要があり、判定の書き方に注記が要る
 - conventions#issuer_cautions 注意 6 の pgrep -f 自己一致を待機ループと停止処理で 2 度踏んだ。/proc/PID/exe で絞る作法を技能書か規約の側で例示すると再発を減らせる
 
-## 断定できなかった事項（271 件）
+### T-2026-08-31-notion-repo-followup-and-retire
+
+- open な PR は Task A-5 の実測で 0 件だった。本契約の PR を統合した後、投影が再び古くなる見込みは無い
+- scripts/post_eval_to_notion.py と post_t1b_ca_to_notion.py と post_hc_to_notion.py と draft_master_update.py の 4 本は notion_logger を経由せず自前で HTTP を呼ぶ。書き込み先の DB が退役済みのため実質的に投稿できないが、コード上の明示的な退役の印は付けていない。付けるかの判断が要る
+- make spec-check の integration_prohibited_without_pause が二契約続けて偽陽性を出した。検出器の語句を広げるか、契約側の要求を WARN 許容に変えるかの判断が要る
+- 旧マスター頁が到達可能になったため、旧頁群と旧 DB 群をアーカイブへ移す判断ができる状態になった。写しは docs/archive/notion/ に揃っている
+
+### T-2026-09-01-notion-retire-scripts-and-speccheck
+
+- CLI から旧データベースへ書ける経路は零になった。旧データベース群と旧頁群をアーカイブへ移す判断ができる状態である
+- make spec-check は本契約の修正により契約の完了条件へ戻せる状態になった。全契約での該当 15 件は本契約の対象外であり、内容の妥当性は検証していない
+- scripts/eval_and_post.sh は docs_audit.md の現行手順に載っておらず docs-check の対象外だが、投稿の呼び出しを持っていた。検査で捕まる範囲の外にある参照が他にもありうる
+
+## 断定できなかった事項（276 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1191,16 +1204,27 @@
 - page_size=7 の走行が読み取りタイムアウトを 2 度起こした原因。再試行で完走したが Notion 側の応答か経路かは切り分けていない
 - 長い符号化文字列 8 件のうち本文中の 2 件が何の語であるか。形（長さ 63・英小 40・数 19・記号 4・16 進ではない）と資格情報でないことは確かめたが、値は見ていない
 
-## 起票者の誤りの型（253 件）
+### T-2026-08-31-notion-repo-followup-and-retire
+
+- 旧マスター頁が到達可能になった経緯。利用者が共有したものと推測されるが確認していない。前契約では HTTP 404 だった
+- 個別の投稿スクリプト 4 本が退役後に呼ばれた場合の実際の挙動。書き込み先 DB が退役済みのため投稿できないはずだが、実行して確かめていない
+
+### T-2026-09-01-notion-retire-scripts-and-speccheck
+
+- 退役した 4 本を --dry-run 以外の引数で呼んだ場合の挙動。__main__ を通知だけにしたため引数に依らず止まるはずだが実行して確かめていない
+- spec-check の全契約での該当 15 件の内容の妥当性。本契約は integration_prohibited_without_pause の偽陽性だけを対象にしており、他の規則の該当は見ていない
+- docs-check の対象外にある文書やスクリプトに、退役した経路への参照が残っているか。eval_and_post.sh は手で見つけたが網羅していない
+
+## 起票者の誤りの型（254 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 73 |
+| `check_does_not_check` | 74 |
 | `asserted_without_measuring` | 95 |
 | `self_contradiction` | 67 |
 | `shell_assumption` | 18 |
 
-合計 253 件（対を持つ契約 84 件から）
+合計 254 件（対を持つ契約 86 件から）
 

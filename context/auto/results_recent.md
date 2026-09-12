@@ -6,8 +6,68 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 84 件）。
-ここに出ない 79 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 86 件）。
+ここに出ない 81 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-09-01-notion-retire-scripts-and-speccheck
+
+状態 `pass` / ホスト `lecun` / 起票 `172` / 様式 `v3`
+
+### ゲート
+
+（なし）
+
+### 起票者の誤り
+
+（なし）
+
+### 逸脱
+
+- `judgement` — 開始前から在った未追跡 .sync-pause.released を repo の外へ退避した（契約 §1 罠 6 が許可）。同期対象外のマーカーであり他ホストへ影響しない。消していない
+- `judgement` — tests/test_check_spec.py の test_teacher_detection_rate の分母を 16 から 19 へ更新した。陰性の教師例 3 件を追加したためである。検出すべき件数 expected は変えておらず、陽性例も弱めていない。禁止 11 には抵触しない
+- `judgement` — 退役の方式として scripts/retired/ への移動と入口での停止の両方を行った。契約 §3 はいずれでもよいとするが、対象 4 本のうち 3 本が NOTION_DB_ID 環境変数を自前で読むため、移動だけでは絶対経路で呼ばれた場合に止まらない
+
+### 申し送り
+
+- CLI から旧データベースへ書ける経路は零になった。旧データベース群と旧頁群をアーカイブへ移す判断ができる状態である
+- make spec-check は本契約の修正により契約の完了条件へ戻せる状態になった。全契約での該当 15 件は本契約の対象外であり、内容の妥当性は検証していない
+- scripts/eval_and_post.sh は docs_audit.md の現行手順に載っておらず docs-check の対象外だが、投稿の呼び出しを持っていた。検査で捕まる範囲の外にある参照が他にもありうる
+
+### 断定できなかったこと
+
+- 退役した 4 本を --dry-run 以外の引数で呼んだ場合の挙動。__main__ を通知だけにしたため引数に依らず止まるはずだが実行して確かめていない
+- spec-check の全契約での該当 15 件の内容の妥当性。本契約は integration_prohibited_without_pause の偽陽性だけを対象にしており、他の規則の該当は見ていない
+- docs-check の対象外にある文書やスクリプトに、退役した経路への参照が残っているか。eval_and_post.sh は手で見つけたが網羅していない
+
+## T-2026-08-31-notion-repo-followup-and-retire
+
+状態 `pass` / ホスト `lecun` / 起票 `171` / 様式 `v3`
+
+### ゲート
+
+（なし）
+
+### 起票者の誤り
+
+- `check_does_not_check` — make spec-check が SPEC 本文で 1 件 fail する（integration_prohibited_without_pause @ SPEC.md:82）。前契約と同型の偽陽性で、SPEC §5 A-2 に make task-start で抑止を置く、F-7 に抑止を移動で解除、判定 N にも抑止の記載がある。契約 §1 罠 14 が通すために本文を書き換えないと定めるため fail のまま続けた
+
+### 逸脱
+
+- `judgement` — 開始前から在った未追跡 .sync-pause.released を repo の外へ退避した（契約 §1 罠 13 が許可）。同期対象外のマーカーであり他ホストへ影響しない。消していない
+- `judgement` — 退役の方式として呼び出し規約を変えず入口で止める形を選んだ（notion_ops の RETIRED_DB_KEYS と notion_logger の RUN_LEDGER_RETIRED）。呼び出し元が 25 ファイル（学習スクリプト 10 本以上と試験 2 本）に及び、試験は関数を patch して呼び出し回数を見ているため、この方式なら両立する。実測でも試験の増減は 0 だった
+- `judgement` — context/README.md を追随の対象に加えた。契約 §2 は CLAUDE.md と README.md と docs/notion_integration.md を挙げるが、退役する経路を説明している文書も対象としており、D-4 の異質な走査で旧手順への案内を検出したためである
+
+### 申し送り
+
+- open な PR は Task A-5 の実測で 0 件だった。本契約の PR を統合した後、投影が再び古くなる見込みは無い
+- scripts/post_eval_to_notion.py と post_t1b_ca_to_notion.py と post_hc_to_notion.py と draft_master_update.py の 4 本は notion_logger を経由せず自前で HTTP を呼ぶ。書き込み先の DB が退役済みのため実質的に投稿できないが、コード上の明示的な退役の印は付けていない。付けるかの判断が要る
+- make spec-check の integration_prohibited_without_pause が二契約続けて偽陽性を出した。検出器の語句を広げるか、契約側の要求を WARN 許容に変えるかの判断が要る
+- 旧マスター頁が到達可能になったため、旧頁群と旧 DB 群をアーカイブへ移す判断ができる状態になった。写しは docs/archive/notion/ に揃っている
+
+### 断定できなかったこと
+
+- 旧マスター頁が到達可能になった経緯。利用者が共有したものと推測されるが確認していない。前契約では HTTP 404 だった
+- 個別の投稿スクリプト 4 本が退役後に呼ばれた場合の実際の挙動。書き込み先 DB が退役済みのため投稿できないはずだが、実行して確かめていない
 
 ## T-2026-08-31-notion-legacy-toc-and-export
 
@@ -119,79 +179,4 @@
 
 - 検査器 C1 の polygon>4 頂点の枝の実データ上の挙動。実データの polygon は全 371335 件が 4 頂点であり、真の多角形が存在しないため踏めない。合成入力でのみ確認した。
 - egosurgery_tool_hand 直下の 4cls（train/val/test.json）と 19cls（instances_*.json）の生成元。 README に記載を確認できなかった。来歴は candidates.csv の provenance 列で空欄とせず 「生成元の記載を README で確認できず」と明記した。
-
-## T-2026-08-29-stage0-contract-b
-
-状態 `partial` / ホスト `lecun` / 起票 `166` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 分母は experiments.csv に 1 件一意で解決し require の三条件を満たす（accuracy_mean=0.8973014948553679 / n_runs=17 / split=val）。凍結源は run:baselines/s0_016_relationdetr_bbox_seed42 に一意（seed42 の relation 系 mAP 保持 run 3 件のうち s0_frozen_001/004 は派生 init から学習した下流）。ckpt sha256 は conventions の正本と一致。四段の実装可否は 空・予測・正解=既存実装で可能、正解⊕予測=最小追加、P→D と B2 と B4=不能または未実施と確定。所要時間は試走で 50 epoch あたり 12〜27 秒と実測。prereg は 7b1cff8b で commit 済み
-- `G2` pass — D→P 四段 12 run が揃った。一 run あたりの実測は 11.9 から 30.0 秒で、見積もり 24h/29run = 約 50 分/run の三倍以内どころか三桁下回る。ask の必要は生じなかった
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — 初回配布の inputs.denominator.ref と inputs.frozen_source.ref が REPLACE-BY-EXECUTOR のままで、いずれも schema が正規表現で検査する欄に置かれていた。参照の解決は取り込み後の手順なのに検証は取り込み前に走るため、指示どおり実行すると契約が設置されずに巻き戻る。実際に巻き戻り、実行できなかった
-- `asserted_without_measuring` — SPEC §5 と §6 が P→D 四段と強い工程塔を実施可能な前提で書かれているが、lecun には Relation-DETR の実装も .venv-relation-detr も ImageNet-R50 の重みも存在しない。third_party は .gitignore:133 で版管理外で submodule も無い。指示どおり進めると Phase C と Phase D の着手時点で止まる
-- `self_contradiction` — SPEC §6 が強い工程塔を十五動画の工程ラベルで微調整すると書くが、十五動画は val 2 本と test 3 本を含む。指示どおり実行すると SPEC §8 禁止 1 の分割の再定義と test への接触に反する。学習対象は train 10 動画に限る必要がある
-- `check_does_not_check` — plan.env.preflight に cuda_ext_loaded を宣言したが、実施した D→P はキャッシュ特徴上で .venv だけで動き検出器を import しない。契約が使う経路と preflight が見る経路がずれており、指示どおり preflight を通そうとすると使わない資産の欠落で実行が止まる
-- `self_contradiction` — SPEC §3 Step A-2 が最小の試走による所要時間の見積もりを Step A-3 の prereg commit より前に置く一方、完了判定 b は prereg の commit が全学習 run の開始より前であることを求める。指示どおり実行すると判定 b を厳密には満たせない。試走は --no-evidence で証跡を残さないため run としては残らない
-
-### 逸脱
-
-- `judgement` — 未追跡の .sync-pause.released が task_start.sh の作業ツリー清浄の前提を満たさなかったため、削除せずスクラッチパッドへ退避してから phase0 へ切り替えた
-- `spec_defect` — 初回の取り込みが L1 検証で落ちて巻き戻ったため実行できず、停止して報告した。inputs.denominator.ref と inputs.frozen_source.ref が REPLACE-BY-EXECUTOR のままで、いずれも正規表現による形式検査のある欄だった。利用者が台帳を置き直した後、二度目の task-start で取り込めた
-- `judgement` — B2 と P→D 四段が実行不能、B4 が未実施と判明したため停止して利用者へ提示し、縮退して続行（D→P 四段のみ実施）の判断を得た。判断は tasks/inbox.d/ に記録した
-- `environment` — P2 cuda_ext_loaded が FAIL のまま Phase B を実行した。実施した D→P はキャッシュ特徴の上で .venv だけで動き Relation-DETR を import しないことを、四段の読み込み検証と 50 epoch の完走で実測した上での判断である。検出器を使う B2 と P→D はそもそも実施していない
-- `judgement` — 参照入力四段のうち正解⊕予測段の入力経路を train_b2a.py へ追加した（--tool-source both、正解15d ⊕ 予測15d = 30d、in_dim 2078）。W1 の入力適合層と界面の範囲であり、評価規則は一切変更していない。次元の決定を tool_dim と in_dim_of の 2 関数へ集約し IN_DIM の直参照を置換した
-- `judgement` — ruff check scripts/train_b2a.py が I001（import 並び）を 1 件出すが、変更前の HEAD でも同じ 1 件が出る。自分の変更由来ではないため直していない。指摘のみとした
-
-### 申し送り
-
-- Relation-DETR の実装と .venv-relation-detr を lecun へ用意するかの判断が要る。P→D 四段と B2 の前提であり、これが無い限り関門 G0 の両方向は成立しない。third_party は .gitignore:133 で版管理外、submodule も無く各ホストで clone する運用である
-- ImageNet-R50 の重みを取得するかの判断が要る（B4 の前提）。~/.cache/torch/hub/checkpoints/ は dinov2_vits14_reg4_pretrain.pth のみ、data/external/weights/ は検出器の COCO 重みのみである。取得は外部通信であり本契約の変更対象外
-- SPEC §6 の「十五動画の工程ラベルで微調整」は val 2 本と test 3 本を含み分割違反になる。train 10 動画に限る訂正が要る
-- 工程側だけを回す契約では plan.env.preflight に cuda_ext_loaded を宣言しない規約を提案する。契約が使う経路と preflight が見る経路がずれると、使わない資産の欠落で実行が止まる
-- REPLACE-BY-EXECUTOR を形式検査のある欄に置くと、取り込みが検証で落ちて巻き戻り実行者が直せない。取り込みと検証の順序を道具側で分けるか、起票の作法として形式検査のある欄には置かないかの判断が要る
-- scripts/load_env.sh は NOTION_DB_ID をロードしないため、run 台帳への投稿が 0/12 で skip した。非秘密の ID レジストリ configs/notion.yaml の databases.run_ledger を環境変数に与えて 12/12 成功させたが、load_env.sh 側で NOTION_DB_ID を設定するか、post_experiments_to_notion.py が configs/notion.yaml を読むようにするかの判断が要る
-- B1 の所要時間は学習と評価を分離して計測していない。train_b2a.py は同一プロセスで両方を行うため、分離するには計測点の追加が要る
-
-### 断定できなかったこと
-
-- 予測段 seed42 の所要時間。命名と証跡の確認のため単独で実行し計時していない。このため B1 の予測段は n=2 である
-- 学習と評価の内訳時間。train_b2a.py は同一プロセスで両方を行い、分離して計測する経路が無い
-- P→D 四段の値、B2 の train と val の mAP 差、B4 の強い工程塔の単体性能。いずれも資産の欠落により測定していない
-- GPU を 2 枚使った場合の所要時間。本契約は 1 枚のみで実行した
-
-## T-2026-08-29-stage0-contract-a
-
-状態 `pass` / ホスト `philip` / 起票 `162` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 各項目の入力の所在を実測し、実施可否を確定した。工程アノテ23クリップ/15動画、術具COCO15クラス （images 15437 / annotations 49652）、HTS 3系統が全15動画を被覆、追加動画は17-22の6動画23クリップ （16はphase CSVなし）、保存済み特徴（region-token 2.2G等）と予測出力1191ディレクトリが実在。 術者・症例の属性は存在せず（surgeon_folds.jsonが3バイトの空）A3のみ実施不可。Cholec80はphilipに無い。 方針文書v2はリポジトリに未配置。
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — SPEC §1が「philipには退避が二件残っている（前契約の実測）。処分（drop）は利用者が承認済み」と するが、実測は三件だった。三件目は本契約のtask-startが作業ツリーの汚れで止まったため実行者が 取り込み直前に作ったもので、起票時点では存在し得ない。指示どおり「二件」をdropすると一件残り、 完了判定f「退避が零件になった」を満たせない。利用者へ提示して三件ともdropする回答を得た。
-- `asserted_without_measuring` — SPEC §0が方針文書research_policy_v2_2026-08-28.mdについて「統合済みのREADMEから相対リンクで 辿れる位置にあるかは未確定」とするが、実測ではリポジトリに一切存在しない（find で research_policy* / *policy*v2* のヒットは契約ディレクトリ名の2件のみ、本体0件）。 READMEの相対リンク36件はすべて実在しており壊れリンクは無い。「未確定」ではなく「未配置」が正しく、 指示どおり「導線が指す先が実在するか」を確かめようとしても導線自体が存在しない。
-
-### 逸脱
-
-- `environment` — 開始前から在った汚れ（.sync-pause.released 1件、前契約の判断待ち対象）をgit stash push -uで 退避してから進めた。mvは使っていない。その後Step A-0で他2件とともにdropした。
-- `judgement` — decisions_required 2件（Cholec80の取得可否、K1の結論の方針文書への反映）を利用者へ提示して 回答を得た。ただし両方とも実測が出てからでないと答えられない性質だったため、Phase A/Bを先に 進めて具体的な事実を示してから提示した。自分では決めていない。
-- `judgement` — A6で既存実装に無い値を二つ置いた。IoU下限0.1（「見落とし」と「局在誤り」を分けるため）と score>=0.05（mmdetの既定値）。SPECは「新しい基準を発明しない」と定めるが、既存実装 src/egosurgery/metrics/detection.py:184-226が持つのはIoU 0.5のマッチ基準のみで、誤りを三分する 下限が存在しなかった。実行者の判断として成果物に明記した。結果の解釈に影響する。
-
-### 申し送り
-
-- A7の結論により、台帳のK1の数値（Δ_phase -0.0201、hemostasis F1 0.801→0.179）は実在のrunに 遡れないことが確定した。中核主張の一つの出所照合が未了という方針文書の記述は、この実測で 「照合した結果、遡れなかった」へ更新できる。反映は別契約で起票者が行う。
-- 方針文書research_policy_v2_2026-08-28.mdがリポジトリに未配置である。配布経路が3種 （spec.yaml/SPEC.md/prereg.md）しか受け取れないため、配置には別の経路か別契約が要る。
-- A6の誤り分解に使った「見落とし」と「局在誤り」を分けるIoU下限0.1は既存実装に無く、実行者が 置いた値である。既存の評価実装に誤り分解の基準を足すかの判断が要る。
-- 術者・症例の属性情報が存在しないため、A3（追加6動画とtest折りの属性重複）は原理的に測れない。 属性を付与するか、R4の前提を属性に依らない形へ変えるかの判断が要る。
-- AlignDETRの検出性能0.686の所在が索引から特定できない（baselines/s0/aligndetr_bbox@valの accuracy_meanが空）。この値も出所照合の対象に含めるかの判断が要る。
-
-### 断定できなかったこと
-
-- A3 追加6動画とtest折りの術者・症例の重複。属性情報が存在しないため測れない （data/splits/surgeon_folds.jsonが3バイトの空、追加動画のannotations.jsonにも該当キー0件）。 存在しないこと自体を実測として報告した。
-- AlignDETRの検出性能0.686に対応する値の所在。baselines/s0/aligndetr_bbox@valのaccuracy_meanが 空であり、索引から特定できない。
 

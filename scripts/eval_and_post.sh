@@ -71,9 +71,9 @@ if [[ $POST_ONLY -eq 0 ]]; then
   fi
 fi
 
-# Notion 投稿 (rc=0 の場合のみ)
-ARGS=(--name "$NAME" --seed "$SEED" --step "$STEP" --tier "$TIER" --log-path "$LOG")
-[[ -n "$RECIPE" ]] && ARGS+=(--recipe "$RECIPE")
-[[ -n "$SERVER" ]] && ARGS+=(--server "$SERVER")
-
-"$REPO/.venv/bin/python" "$REPO/scripts/post_eval_to_notion.py" "${ARGS[@]}"
+# Notion 投稿は 2026-09-01 に退役した
+# （T-2026-09-01-notion-retire-scripts-and-speccheck）。
+# 旧データベース群は凍結し、**CLI が Notion に触れるのは配布台帳だけになった。**
+# 投稿していた実装は scripts/retired/post_eval_to_notion.py にあり、呼ばれても
+# 投稿しない。評価の結果は experiments/ の証跡と runindex（make runindex）に残る。
+echo "[eval_and_post] Notion 投稿は退役した。証跡は experiments/ と runindex を見る" >&2

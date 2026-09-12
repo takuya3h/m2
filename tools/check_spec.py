@@ -69,6 +69,20 @@ _EXCLUDING_TOOL = "forbidden-check"
 
 _INTEGRATION = re.compile(r"統合")
 _PAUSE_MARK = ".sync-pause"
+# 抑止の**手順**を書いている契約は該当としない。目印の文字列を書かず
+# 「抑止を置く／解除する」と日本語で述べるだけの起票が二契約続けて偽陽性になった
+# （T-2026-08-31 の二本と T-2026-09-01 の一本。教師データの陰性例に追加した）。
+# **語だけでは足りない。** 設置と解除の双方に触れる記述だけを抑止の手順とみなす。
+# 陽性の教師例（抑止を探すこと自体が課題の契約）はこの形を持たない。
+_PAUSE_SET = re.compile(r"抑止[^。\n]{0,20}(置く|設置|作成|付ける)")
+_PAUSE_RELEASE = re.compile(r"抑止[^。\n]{0,20}(解除|外す|移動で解|消せば)")
+
+
+def _has_pause_procedure(text: str) -> bool:
+    """抑止の手順があるか。目印の文字列か、設置と解除の双方の記述で判定する。"""
+    if _PAUSE_MARK in text:
+        return True
+    return bool(_PAUSE_SET.search(text) and _PAUSE_RELEASE.search(text))
 
 # 報告を「書く／転記する／投影する」ことを求めるゲート。語だけでは足りない
 # （多くのゲートが報告に言及する）。**動作を伴う言及だけを対象にする。**
@@ -332,7 +346,7 @@ def rule_integration_prohibited_without_pause(c: Contract) -> list[Finding]:
             T-2026-08-15-template-leak-and-autosync-conflict#2。
     常駐処理は実行者の操作なしに統合する。**文言だけでは守れない。**
     """
-    if _PAUSE_MARK in c.md_text:
+    if _has_pause_procedure(c.md_text):
         return []
     found = []
     for line, body in _prohibition_rows(c.md_text):

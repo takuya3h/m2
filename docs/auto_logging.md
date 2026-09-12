@@ -68,9 +68,9 @@
 | ファイル | 役割 |
 |---|---|
 | `scripts/sync_experiments_to_notion.py` | 取りこぼし防止スイープ（`--dry-run` 既定で安全）|
-| `scripts/draft_master_update.py` | マスター §0 変更履歴 + 進捗 page 追記ブロック をドラフト生成 |
+| `scripts/retired/draft_master_update.py` | **2026-09-01 に退役**。呼ばれても投稿しない |
 | `scripts/post_experiments_to_notion.py` | 既存の DEFAULT_GLOBS / FAMILY meta を継承し sweep から再利用 |
-| `scripts/post_hc_to_notion.py` / `post_t1b_ca_to_notion.py` | injected/control 形式の派生実験用 |
+| `scripts/retired/post_hc_to_notion.py` / `post_t1b_ca_to_notion.py` | **2026-09-01 に退役**。呼ばれても投稿しない |
 
 ### 5.3 Claude Code 連携
 

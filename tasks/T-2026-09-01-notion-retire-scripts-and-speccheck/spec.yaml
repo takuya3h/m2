@@ -1,0 +1,57 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-09-01-notion-retire-scripts-and-speccheck"
+  kind: impl
+  title: "個別投稿スクリプトの明示的退役、spec-check の偽陽性の修正、投影の末尾再生成"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-09-01T02:00:00Z"
+  created_from:
+    runindex_commit: "96eb3a1c"
+    counts: {index: 1266, experiments: 285, verdicts: 1506}
+  depends_on: ["T-2026-08-31-notion-repo-followup-and-retire"]
+  amendments: []
+intent:
+  question: "Notion の旧データベースへ自前で書く残りのスクリプトを明示的に退役させ、spec-check の偽陽性を教師例に基づいて直し、契約の末尾で投影を再生成しても検査が通るか"
+  decision_at_stake: "CLI から旧データベースへ書ける経路が零になったと言えるか、spec-check を契約の完了条件に戻してよいか"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "repo-notion-write-paths-and-spec-check"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["src/egosurgery/utils/notion_ops.py", "tools/fetch_task.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "a8c07e81"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "前提の実測と門", gpu: false, est: "15m"}
+    - {id: B, name: "個別投稿スクリプトの退役", gpu: false, est: "30m"}
+    - {id: C, name: "spec-check の偽陽性の修正", gpu: false, est: "40m"}
+    - {id: D, name: "検査、報告、末尾の再生成", gpu: false, est: "30m"}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [tasks/T-2026-09-01-notion-retire-scripts-and-speccheck/RESULT.md]
+  destination: "."
+  acceptance:
+    - "旧データベースへ書く経路の集合が異質な二通りで列挙され、退役していないものが零である"
+    - "spec-check が前契約二本と本契約の SPEC を fail させず、既存の陽性の教師例は引き続き検出される"
+    - "投影の再生成が報告の後、commit の前に一度だけ行われ、両方の check が通っている"
+    - "試験の失敗が作業前より増えていない"
+    - "分岐名が feat で始まり、PR が存在し、番号が RESULT に記録されている"
+  report_to: []
+governance:
+  decisions_required:
+    - "検出器の規則を変えると既存の陽性の教師例が検出されなくなる場合の扱い"
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "門で前契約の変更が origin の phase0 に無い"
+    - "退役していない書き込み経路が残る"

@@ -348,5 +348,23 @@ def _cli() -> None:
     )
 
 
+# --- 退役（2026-09-01, T-2026-09-01-notion-retire-scripts-and-speccheck）------ #
+# 本スクリプトは旧データベース群へ自前で REST を呼んで書いていた。旧 DB は
+# 2026-08-31 に凍結し、**CLI が Notion に触れるのは配布台帳だけになった。**
+# 識別子を NOTION_DB_ID 環境変数や登録簿から自前で解決するため、登録簿の退役
+# だけでは止まらない。**入口で止める。** 全行の写しは docs/archive/notion/db/ にある。
+RETIRED_SINCE = "2026-09-01"
+
+
+def _retired_notice() -> int:
+    """呼ばれたら投稿せず退役の旨を出して終える。**無言で成功したことにしない。**"""
+    import sys as _sys
+    print(
+        f"[retired] {__file__} は {RETIRED_SINCE} に退役した。Notion へ投稿しない。"
+        " 旧データベースの内容は docs/archive/notion/db/ の写しを読む。",
+        file=_sys.stderr,
+    )
+    return 3
+
 if __name__ == "__main__":
-    _cli()
+    raise SystemExit(_retired_notice())
