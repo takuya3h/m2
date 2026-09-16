@@ -131,3 +131,51 @@ User-Agent に連絡先を入れた（Crossref の作法）。
 
 両件とも応答に著者があり、UNKNOWN にはならなかった。地図の文献欄の「著者未確認」を
 この著者名で置き換えた（SPEC Task B-5 の指示）。印の列の起票時の状態は書き換えていない。
+
+## 6. 変更範囲の一覧
+
+    make forbidden-check
+    FORBIDDEN_EXIT=0
+    {"base":"origin/phase0","changed":5,"checked":5,"status":"pass","violations":[]}
+
+commit した 8 ファイル（いずれも新規）:
+
+    docs/evidence/2026-09-16-A-phase-tower-candidates.md
+    docs/evidence/2026-09-16-B-p2d-interface.md
+    tasks/T-2026-09-16-evidence-map-ab/RESULT.md
+    tasks/T-2026-09-16-evidence-map-ab/SPEC.md
+    tasks/T-2026-09-16-evidence-map-ab/audit.md
+    tasks/T-2026-09-16-evidence-map-ab/result.yaml
+    tasks/T-2026-09-16-evidence-map-ab/spec.yaml
+    tasks/inbox.d/T-2026-09-16-evidence-map-ab.md
+
+禁止 4・5 の確認（触れてはならない場所の変更件数）:
+
+    experiments              0 件
+    data                     0 件
+    runindex                 0 件
+    context/conventions.md   0 件
+    context/auto             0 件
+    tasks/inbox.md           0 件
+    自分以外の tasks/        0 件
+
+## 7. 台帳の応答
+
+    source scripts/load_env.sh && make task-report TASK=T-2026-09-16-evidence-map-ab
+    REPORT_EXIT=0
+    {
+      "task_id": "T-2026-09-16-evidence-map-ab",
+      "verdict": "pass",
+      "n_issuer_defects": 0,
+      "report_sha256": "2ebbe0c3d1aa00af20cb2b7785349f0aa775f2b42a196edbf0b0c48f509e9b99",
+      "report_bytes": 8157,
+      "replaced_blocks": 0
+    }
+
+秘匿の検査は通過した。本文を直す必要は生じなかった。
+
+送出の記録:
+
+    commit  3f542e3ab726316e7d92f015351dc20d0518f60b（8 ファイル）
+    push    origin feat/evidence-map-ab（PUSH_EXIT=0、新規分岐）
+    PR      #174 -> phase0  isDraft=false  state=OPEN

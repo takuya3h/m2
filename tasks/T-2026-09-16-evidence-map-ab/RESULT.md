@@ -37,7 +37,7 @@ SurgPETL は Shu Yang, Zhiyuan Cai, Luyang Luo, Ning Ma, Shuchang Xu, Hao Chen�
 | e | 未検証の組み合わせの表 | A は A.3（行59）、B は B.3 の「未」の表と B.5（行78） | 表を欠く本文では該当が 0 になる。行番号を記録した |
 | f | citeturn の残骸 | **両地図 0 件** | 写しに 1 件混ぜると `grep -c` が 0 → 1 に変わった（終了コードではなく件数で数えた） |
 | g | 著者未確認二件の補完 | 両件とも著者が埋まった。UNKNOWN 0 件 | 応答の該当箇所は `audit.md:118`。地図から「著者未確認」の語は 0 件になった |
-| h | PR が Draft でなく存在する | **後述**（第 6 節） | 分岐名 `feat/evidence-map-ab` |
+| h | PR が Draft でなく存在する | **#174**（isDraft=false） | 分岐名 `feat/evidence-map-ab`。送り出しただけの状態ではない |
 
 ## 3. 実測
 
@@ -113,4 +113,7 @@ SurgPETL は Shu Yang, Zhiyuan Cai, Luyang Luo, Ning Ma, Shuchang Xu, Hao Chen�
 
 ## 7. 送出
 
-（PR と台帳の結果をここに追記する）
+- **commit** `3f542e3ab726316e7d92f015351dc20d0518f60b`（8 ファイル）
+- **push** `origin feat/evidence-map-ab`（PUSH_EXIT=0、新規分岐）
+- **PR** #174 → `phase0`、**Draft ではない**（https://github.com/takuya3h/m2/pull/174）
+- **台帳への送出** — 下記のとおり
