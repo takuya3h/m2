@@ -35,6 +35,8 @@
 - 認証情報への接触が拒まれる ↔ **版管理内への控えを必須にした**
 - 禁止領域は無変更 ↔ 同領域の件数増加を成功条件にする
 - **`outputs.must_have` が RESULT.md のみ** ↔ 本文が result.yaml と受け皿の作成も求める
+- **規約ファイルへの追記を命じながら `contract.allow_write` を宣言しなかった**（2026-09-16。`context/conventions.md` は `check_forbidden.py` の `FORBIDDEN_FILES`。指示どおり実行すると `make forbidden-check` が落ちる。`T-2026-09-16-proposal-gate` RESULT §4-1）
+- **付録に無い節を完了判定で要求した**（2026-09-16。完了判定 e は両地図の末尾に「未検証の組み合わせ」の節を求めるが、付録 B に該当する節が無い〔A.3 のみ〕。実行者が B.5 を足して満たした。`T-2026-09-16-evidence-map-ab` RESULT §5-2）
 
 ## 測らずに断定した
 
@@ -46,6 +48,8 @@
 - 受け入れ一覧の権限を `600` と書いた（**実測は `664`**）
 - `.env` の旧版を確かめず 2 変数と決めつけた（**5 変数あり、3 つを失わせた**）
 - 「`~/.ssh/**` は拒まれる」と書いた（**拒まれないホストもあった**）
+- **L2-6 が `inject_verbatim` を見ると書いた**（2026-09-16。`_warn_conventions_rev` は`inject_verbatim` を読まず `git diff` の有無だけを見る。**規約を一文字でも変えれば`conventions_rev` を持つ全契約が WARN になる**。`T-2026-09-16-proposal-gate` RESULT §4-2）
+- **repo に無い報告ファイルの名前とバイト数を書けと指示した**（2026-09-16。deep research の出力ファイルは追跡下に 0 件。実行者は SPEC の付録を出所として代用した。`T-2026-09-16-evidence-map-ab` RESULT §4 の補足）
 
 ## 検査が空振りした
 
