@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（440 件）
+## 申し送り（448 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -700,7 +700,21 @@
 - make spec-check は本契約の修正により契約の完了条件へ戻せる状態になった。全契約での該当 15 件は本契約の対象外であり、内容の妥当性は検証していない
 - scripts/eval_and_post.sh は docs_audit.md の現行手順に載っておらず docs-check の対象外だが、投稿の呼び出しを持っていた。検査で捕まる範囲の外にある参照が他にもありうる
 
-## 断定できなかった事項（276 件）
+### T-2026-09-16-evidence-map-ab
+
+- 本契約は文献の実在と書誌だけを照合した。各文献の本文にその数値が書いてあるかは照合していない。数値の検証は利用者が距離 0 から 1 の八本について原典で済ませており、残りの行の数値は未検証である
+- 地図の行は ChatGPT deep research 一エンジンの報告から写したものでエンジン間の突き合わせが無い。印の列の片方という記載がそれを指す。別エンジンでの突き合わせを行うかは未決である
+- deep research の出力ファイルが repo に無いため、地図の出所は契約書の付録になっている。今後の証拠地図では元の報告そのものを repo に置くと、写し誤りの追跡ができるようになる
+- Trans-SVNet の表番号は地図に「後続論文の再掲でも確認したため最終稿で原 PDF の表番号を照合する」と残っている。本契約は書誌の照合までで、表番号の照合は行っていない
+
+### T-2026-09-16-proposal-gate
+
+- docs/proposal-gate.md は docs/docs_audit.md に載っていないため make docs-check の対象外である。対象数は前後とも 42 で変わらない。登録するなら、文書が言及する docs/evidence/ が並行契約 T-2026-09-16-evidence-map-ab で実在するようになってからにする（いま登録すると不在の経路で落ちる）
+- context/conventions.md の変更履歴の表に a8c07e81（2026-08-25、issuer_cautions 節の追加）の行が欠けている。本契約は既存節の本文を変えない禁止を守るため足していない。補うなら別契約で
+- tools/check_proposal.py は引用の中の禁止語を区別しない。docs/proposal-gate.md 自身へ当てると過去の欠陥を引用した 13 行目を 1 件検出する。提案文書だけに使う前提であり、引用の除外が要るなら規則を足す判断が要る
+- context/auto/* と tasks/inbox.md は SPEC の禁止事項 3 により再生成していない。並行契約との統合後に一台で一度だけ make taskindex && make inbox を回すこと
+
+## 断定できなかった事項（280 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1215,16 +1229,26 @@
 - spec-check の全契約での該当 15 件の内容の妥当性。本契約は integration_prohibited_without_pause の偽陽性だけを対象にしており、他の規則の該当は見ていない
 - docs-check の対象外にある文書やスクリプトに、退役した経路への参照が残っているか。eval_and_post.sh は手で見つけたが網羅していない
 
-## 起票者の誤りの型（254 件）
+### T-2026-09-16-evidence-map-ab
+
+- 地図の各行の数値が原典に書いてあるか。本契約は実在と書誌の照合のみで、数値の検証は範囲外である
+- 本報告の投影への反映。SPEC 禁止 3 により make taskindex を実行していないため、context/auto/ に本契約の行が現れることを確認していない
+- 元の報告（deep research の出力）のファイル名とバイト数。repo に存在しないため、出所を SPEC.md の付録（30894 バイト）として記録した
+
+### T-2026-09-16-proposal-gate
+
+- make docs-check の通過は docs/proposal-gate.md について空振りである（対象が docs_audit.md 依存）。代わりに文書内の経路を手で確かめ、context/conventions.md と tools/check_spec.py は実在、docs/evidence/ は不在と実測した
+
+## 起票者の誤りの型（256 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 74 |
+| `check_does_not_check` | 75 |
 | `asserted_without_measuring` | 95 |
-| `self_contradiction` | 67 |
+| `self_contradiction` | 68 |
 | `shell_assumption` | 18 |
 
-合計 254 件（対を持つ契約 86 件から）
+合計 256 件（対を持つ契約 88 件から）
 

@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（474 件）
+## 未処理（484 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -489,6 +489,16 @@
 - [ ] 2026-09-01 [cc] **CLI から旧データベースへ書ける経路が零になった。** 個別投稿スクリプト 4 本（`post_eval_to_notion` / `post_hc_to_notion` / `post_t1b_ca_to_notion` / `draft_master_update`）を `scripts/retired/` へ移動し、入口でも停止させた。🔴 **うち 3 本は `NOTION_DB_ID` 環境変数を自前で読むため、前契約の登録簿の退役では止まらなかった**（T-2026-09-01-notion-retire-scripts-and-speccheck）
 - [ ] 2026-09-01 [cc] **`spec-check` の `integration_prohibited_without_pause` の偽陽性を直した。** 検出器は本文に文字列 `.sync-pause` があるかだけを見ており、抑止を日本語で書く起票を拾っていた。「抑止を置く」と「抑止を解除」の**双方**に触れる記述を抑止の手順とみなす規則へ変更。陰性の教師例 3 件を `TEACHER` へ追加し、分母を 16→19 に更新（**検出すべき件数と陽性例は不変**）。全契約での該当は 19→15 件（T-2026-09-01-notion-retire-scripts-and-speccheck）
 - [ ] 2026-09-01 [cc] 🔴 **異質な二通りの列挙がどちらも取り逃しを持っていた。** 方法 1（endpoint の文字列）は `draft_master_update.py` を落とし（`/pages` が変数展開の内側）、方法 2（HTTP ライブラリ）は `report_task.py` を落とした（`_notion_call_method` 経由）。**片方だけでは集合を確定できない**という実測であり、契約が二通りを求める理由がそのまま出た（T-2026-09-01-notion-retire-scripts-and-speccheck）
+- [ ] 2026-09-16 [cc] 証拠地図 A・B の全 26 行（A 15 / B 11）が実在し書誌も一致した。不在 0 件・到達不能 0 件・書誌に差 0 件で、**地図から外した行は無い**。照合は Crossref（DOI 4 件）と arXiv API（ID 26 件）。対照は両方向で取った（実在 DOI 200 / 架空 DOI 404）（T-2026-09-16-evidence-map-ab）
+- [ ] 2026-09-16 [cc] 著者未確認だった二件が埋まった。**SurgMAE = Muhammad Abdullah Jamal, Omid Mohareri**（arXiv 2305.11451）、**SurgPETL = Shu Yang, Zhiyuan Cai, Luyang Luo, Ning Ma, Shuchang Xu, Hao Chen**（arXiv 2409.20083）。UNKNOWN は無し（T-2026-09-16-evidence-map-ab）
+- [ ] 2026-09-16 [cc] **照合器が地図を誤って疑わせかけた。** MS-TCN の複合姓「Abu Farha」と CLIPSeg の「Lüddecke」を差と誤検出したが、原因は照合器側の正規化（先頭語だけを取る／片側だけ ASCII 化）であり地図の誤りではなかった。両側に同じ正規化を当てて解消。**書誌照合では複合姓と発音記号を先に潰すこと**（T-2026-09-16-evidence-map-ab）
+- [ ] 2026-09-16 [cc] **本契約は実在と書誌だけを照合した。各行の数値が原典に書いてあるかは未検証である。** 数値の確認は利用者が距離 0〜1 の八本について原典で済ませており、残りの行は UNKNOWN。地図を次の生成会話へ渡すときはこの区別を保つこと（T-2026-09-16-evidence-map-ab）
+- [ ] 2026-09-16 [cc] deep research の出力ファイルが repo に無く、地図の出所が契約書の付録になっている。**今後の証拠地図では元の報告そのものを repo に置く**と写し誤りの追跡ができる（T-2026-09-16-evidence-map-ab）
+- [ ] 2026-09-16 [cc] **提案の関門を規約・手順・検査器の三つで置いた。** `context/conventions.md` に `proposal_gate` 節（アンカー 8→9）、手順は `docs/proposal-gate.md`、静的検査は `tools/check_proposal.py`。検査は禁止語 15 語の完全一致と提案カード 14 見出しの有無、および #5 #6 #10 に数字があるかまで。**内容の妥当性は見ない**（批判会話の担当）（T-2026-09-16-proposal-gate）
+- [ ] 2026-09-16 [cc] **検査器は禁止語もカード項目も規約から読み、写しを持たない。** 写しは規約を直した瞬間に古くなるため。規約を読めなくなったときに 0 語で全件合格しないよう、読めない場合は `errors` を立てて非零で終わらせ、その挙動を試験で固定した（T-2026-09-16-proposal-gate）
+- [ ] 2026-09-16 [cc] 🔴 **契約が命じる変更先が禁止領域にあり、許可の宣言が無かった。** Task B は `context/conventions.md` への追記を命じるが、同ファイルは `check_forbidden.py` の `FORBIDDEN_FILES` にあり、契約に `contract.allow_write` が無い。指示どおり実行すると `forbidden-check` が落ちる。**停止せず宣言を補った**（スキーマ上の正規キーで、許可の上限 `data/` にも触れないため）。起票側で `allow_write` を書く運用にしたい（T-2026-09-16-proposal-gate）
+- [ ] 2026-09-16 [cc] 🔴 **L2-6 は注入アンカーを見ていない。** 契約は「変更履歴に行を足すと `naming` の解決結果が変わり、`naming` を注入する契約で WARN」と説明していたが、`_warn_conventions_rev` は `inject_verbatim` を読まず `git diff` の有無だけを見る。実測では変更履歴に触れる前、`naming` を注入しない契約にも WARN が出た。**規約を一文字でも変えれば `conventions_rev` を持つ全契約が WARN になる**（T-2026-09-16-proposal-gate）
+- [ ] 2026-09-16 [cc] **`make docs-check` は新規文書について空振りだった。** 対象は `docs/docs_audit.md` に列挙された文書だけで、対象数は前後とも 42 のまま。`docs/proposal-gate.md` は見られていない。代わりに経路を手で確かめ、`docs/evidence/` が不在（並行契約 `T-2026-09-16-evidence-map-ab` が作る）と実測した。**登録はその契約の後にする**（T-2026-09-16-proposal-gate）
 
 ## 処理済み（1 件）
 
