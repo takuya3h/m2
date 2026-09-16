@@ -1,0 +1,64 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-09-16-proposal-gate"
+  kind: impl
+  title: "提案関門の規約（proposal_gate）と提案文書の静的検査器を置く"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-09-16T11:17:12Z"
+  created_from:
+    runindex_commit: "96eb3a1c"
+    counts: {index: 0, experiments: 0, verdicts: 0}
+  depends_on: []
+  amendments: []
+intent:
+  question: "手法・結合・補助信号の提案を、実行の正しさとは別に、価値と根拠の面で機械と手順の両方で関門にかけられるか"
+  decision_at_stake: "以後の提案は提案カードの充足と禁止語の不在を通ったものだけを契約にする、という運用の開始"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "not-referenced"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["tools/validate_task.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "a8c07e81"
+  allow_write: ["context/conventions.md"]
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "開始状態の記録（規約のアンカー数、spec-check の規則数、作業ツリー）", gpu: false, est: "20m"}
+    - {id: B, name: "conventions.md に proposal_gate 節を置く", gpu: false, est: "30m"}
+    - {id: C, name: "docs/proposal-gate.md を置く", gpu: false, est: "30m"}
+    - {id: D, name: "提案文書の検査器（禁止語・カード充足）と試験を置く", gpu: false, est: "90m"}
+    - {id: E, name: "検証（L1・L2・forbidden-check・試験・対照）と報告", gpu: false, est: "60m"}
+  gates:
+    - {id: G1, after: A, check: "作業ツリーが清浄で、規約のアンカー数と spec-check の規則数を記録した", on_fail: stop}
+    - {id: G2, after: D, check: "検査器の陽性対照と陰性対照が両方向で期待どおり", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [proposal-gate.md]
+  destination: "docs/"
+  acceptance:
+    - "a: conventions#proposal_gate が L2 の解決で引ける。存在しないアンカー名で解決が失敗することを併せて示す"
+    - "b: 禁止語の検査器が禁止語を一語だけ含む本文で一件を検出し、含まない本文で零件"
+    - "c: カード充足の検査器が見出し十三件の本文で不足一件、十四件の本文で不足零件"
+    - "d: tools/check_spec.py の規則数が変更前後で同じ"
+    - "e: 規約の変更で L2 の L2-6 が WARN になる契約を一件示し、FAIL が零件"
+    - "f: 追加した試験が通り、変更前に失敗していた試験の件数が増えていない"
+    - "g: PR が Draft でなく存在し、分岐が feat/ で始まる"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "conventions.md の既存節の本文を変えないと新節を置けない場合"
+    - "検査器を置く場所として tools/ 配下以外が適切だと判断した場合"
+    - "実行基盤が家の直下や rm を拒んだ場合（回避せず提示する）"
