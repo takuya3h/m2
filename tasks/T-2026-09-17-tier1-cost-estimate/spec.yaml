@@ -1,0 +1,73 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-09-17-tier1-cost-estimate"
+  kind: analysis
+  title: "Tier 1 の総量（run 本数 × 所要時間）を Stage 0 の実測から試算し、締切に収まるかを判断できる形にする"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-09-16T19:41:29Z"
+  created_from:
+    runindex_commit: "96eb3a1c"
+    counts: {index: 1266, experiments: 285, verdicts: 1506}
+  depends_on: []
+  amendments:
+    - date: "2026-09-16"
+      diff: "governance.decisions_required を 2 件から空へ"
+      reason: >-
+        利用者から decisions_required の 2 件へ回答を得た。(1) 所要時間の実測が無い
+        検出塔のフル学習と検出側 W2 界面 run には、t1b の実測（1 run 約 4 時間 / 6 epoch、
+        2 本並行で 1 epoch 36〜40 分。出所 tasks/T-2026-08-29-lecun-detector-env-pd/RESULT.md:88）
+        を代理として採用する。いずれも逆伝播の範囲が t1b より広いため **下界** であることを
+        文書と UNKNOWN 欄に明記する。(2) 装置の台数は本ホスト Bengio の RTX A6000 × 2
+        （nvidia-smi 実測）のみを前提とする。他ホストへは接続せず数に入れない。
+        (3) 締切の日付は M §5.4 の記載のみを使い、公式頁は参照しない（出所を
+        「M の記載、公式未確認」と明記する）。
+intent:
+  question: "研究の道筋が定める Tier 一の全 run を、実測した所要時間と装置の数で積んだとき、どれだけの壁時計時間になり、縮退順を当てるとどこまで縮むか"
+  decision_at_stake: "関門 G ゼロの三条件目。投稿先の主目標（IPCAI か MICCAI か）を利用者が決める材料"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "not-referenced"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["tools/validate_task.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "4300b7d2"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "入力の収集（Stage 0 の所要時間の実測、装置の台数、道筋の Tier 表）", gpu: false, est: "40m"}
+    - {id: B, name: "run の列挙（Stage 一と Tier 一〜三を表に）", gpu: false, est: "60m"}
+    - {id: C, name: "計算器の実装と試算（基本・縮退・設計変更一回分）", gpu: false, est: "60m"}
+    - {id: D, name: "検証と報告", gpu: false, est: "40m"}
+  gates:
+    - {id: G1, after: A, check: "run 型ごとの所要時間の出所が実測の記録に遡れる。無いものは UNKNOWN として列挙された", on_fail: stop}
+    - {id: G2, after: B, check: "run の列挙が道筋の Tier 表の各項目に対応づけられ、対応の無い項目が零件", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [B1_tier1_cost_estimate.md]
+  destination: "docs/stage0/"
+  acceptance:
+    - "a: run 型ごとの所要時間が出所（run 名か記録の行）つきで表にあり、出所の無い値が零件"
+    - "b: Stage 一と Tier 一の run が列挙され、道筋の Tier 表の各項目に対応づけられている。対応の無い項目が零件"
+    - "c: 計算器が入力の表から総量を再計算し、文書の数値と一致する（差 零）"
+    - "d: 計算器の対照。所要時間を二倍にすると総量が二倍、装置を二倍にすると壁時計時間が半分以下"
+    - "e: 縮退順を一段ずつ当てた総量が段ごとに表になっている"
+    - "f: 設計変更一回分の費用が独立の行にある"
+    - "g: 締切の日付が出所つきで書かれ、基本と縮退の各段が収まるか収まらないかが判定されている"
+    - "h: PR が Draft でなく存在し、分岐が feat/ で始まる"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "Tier 一の主要な run 型（検出塔の学習、工程塔の学習、W2 の界面 run）のいずれかに所要時間の実測が無い場合"
+    - "道筋の Tier 表の項目が run に分解できない場合"

@@ -1,0 +1,121 @@
+result_version: 3
+task_id: "T-2026-09-17-tier1-cost-estimate"
+status: pass
+host: "Bengio"
+branch: "feat/tier1-cost-estimate"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      run 型 9 件すべてに出所があり、--check-sources が 0 件を返した。実測は 3 型
+      （工程側の界面 run 11.9〜30.0 s、工程塔の学習 105 s、検出側 W1 界面 run 約 4 時間）。
+      残る 6 型は所要時間の実測が無く、利用者の承認のもと t1b の実測を代理に置き、
+      UNKNOWN の表 9 件に列挙した。
+  - id: G2
+    verdict: pass
+    note: >-
+      M の項目 38 件（Tier1 13・対照 8・参照入力段 4・Stage1 3・Tier2 5・Tier3 4）すべてが
+      run 行に対応づき、--check-coverage が 0 件を返した。対応表から t1.pd_w2 を消すと
+      1 件を返すことまで確かめた。
+
+tests:
+  before_failed: 7
+  after_failed: 7
+  after_passed: 549
+
+deviations:
+  - type: judgement
+    note: >-
+      P6 が FAIL した時点で停止したが、利用者へ諮る前に読み取りのみで事実を集めた。
+      どの run 型に実測が無いかを知らずに代理の可否は答えられないため。決めていない。
+  - type: judgement
+    note: >-
+      Tier 2・Tier 3 の項目から run への分解は M に細目が無く、実行者が構成の数を置いた
+      （例: 「軸 2 選別」= 2 構成）。Tier 1 ほどの根拠は無い。試算の主対象は Tier 1 である。
+  - type: judgement
+    note: >-
+      締切の「下旬」「中旬」「頃」を 2026-10-25 / 2027-01-15 / 2027-02-15 へ落とした。
+      代表の採り方は B1 §6 に明記した。
+  - type: spec_defect
+    note: >-
+      申し送りは生成物を「docs/stage0/B1_* と tools/ の新規一件」とするが、Task D-1 が
+      計算器の試験を求めるため tests/test_estimate_tier_cost.py を足した（2 件目）。
+      あわせてプロジェクト CLAUDE.md の規定に従い README.md へ追記した。
+  - type: environment
+    note: >-
+      ruff format --check は tools/estimate_tier_cost.py を「要整形」と出すが、tools/ は
+      26 件中 17 件が同じ状態で、この repo は tools/ に整形器を当てていない。既存に合わせた。
+  - type: spec_defect
+    note: >-
+      make taskindex / taskindex-check / inbox を回していない。手順書は投影に現れることを
+      確かめよと定めるが、契約 §4-3 は並行契約を理由に context/auto/* と tasks/inbox.md の
+      再生成を禁じている。契約を優先した。投影への反映は未確認である。
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: >-
+      SPEC §2.5 は「B4 の暫定工程塔の所要時間があれば工程塔学習の下限の目安になる」と書くが、
+      B4 の塔は 3 epoch・1 seed の暫定版で、Stage 1 の塔は epoch 数も seed 数も未定である。
+      指示どおり進めると 105 秒を Stage 1 の工程塔学習の所要時間として扱う誘引が生じ、
+      未測定の値を実測のように書くことになる。本契約は 105 秒を置いたうえで「Stage 1 の塔は
+      epoch を増やす前提のため下界」と注記し、実測としては主張していない。
+
+positive_controls:
+  - judgement: "完了判定 a: 所要時間の出所の検査（--check-sources）"
+    breaking_input: "RUN_TYPES の 1 件の source を空文字にする"
+    observed: "(0, []) から (1, ['phase_iface']) へ変わった。試験 test_removing_one_source_is_detected"
+  - judgement: "完了判定 b: M の項目との対応表の検査（--check-coverage）"
+    breaking_input: "run 行の covers から t1.pd_w2 を取り除く"
+    observed: "(0, []) から (1, ['t1.pd_w2']) へ変わった。試験 test_removing_one_coverage_is_detected"
+  - judgement: "完了判定 c: 文書と再計算の一致の検査（--check-doc）"
+    breaking_input: "文書の写しで base 節の run 本数 1,309 を 9,999 に書き換える"
+    observed: "差 0 件・exit 0 から 差 1 件・exit 1 へ変わり、行番号と両者の値を出した"
+  - judgement: "完了判定 d: 計算器の線形性（所要時間 ×2 で総量 ×2）"
+    breaking_input: "duration_scale=2 を与える"
+    observed: "GPU 時間の比が 2.000000 / 2.000000。試験 test_doubling_durations_doubles_gpu_hours"
+  - judgement: "完了判定 d: 計算器の並列性（装置 ×2 で壁時計 ≤ 1/2）"
+    breaking_input: "devices=4 を与える"
+    observed: "壁時計の比が 0.500000 / 0.500000。試験 test_doubling_devices_at_most_halves_wall_clock"
+  - judgement: "縮退が M の制約「P→D の W1・W2・専用探索は最後まで削らない」を守る"
+    breaking_input: "縮退を最終段まで当てた前提で P→D の 3 行が残るかを見る"
+    observed: "t1_pd_w1 / t1_pd_w2 / t1_pd_search が dropped_rows に無く costs にも残った。試験 test_degrade_never_drops_the_pd_arms"
+  - judgement: "壁時計の下限（1 本の run は装置をまたげない）"
+    breaking_input: "devices=100000 を与える"
+    observed: "壁時計が最長の 1 run（8 時間）で止まり、それ以下にならなかった。試験 test_wall_clock_never_below_the_longest_single_run"
+
+followups:
+  - >-
+    IPCAI 2027 の intention（2026-10-25、残 39 日）は、どの縮退・どの前提でも収まらない。
+    最も縮めた段でも Stage 1 + Tier 1 に 46.1〜62.7 日が要る。投稿先の主目標の判断材料。
+  - >-
+    設計変更 1 回分（Stage 1 の塔一種の作り直し + Tier 1 の P→D 側の測り直し）が
+    72.9〜100.7 日で、計画全体 76.5〜104.3 日の 95% に達する。塔をやり直す余地は事実上無い。
+  - >-
+    縮退順で効くのは「seed 5 → 3」だけである（単独で 33.1〜34.8%）。掃引 4→3 点と
+    探索的腕の削除は Tier 2・3 にしか掛からず、Stage 1 + Tier 1 の日数を 1 日も動かさない。
+    縮退順の並びを見直す価値がある。
+  - >-
+    検出塔のフル学習と検出側 W2 界面 run の所要時間を実測する契約を起票すれば、
+    本試算の代理（下界）を実測へ置き換えられる。本契約は GPU 禁止のため測れていない。
+  - >-
+    試験 7 件が本契約の変更前から失敗している（test_check_spec 1・test_engines 1・
+    test_fetch_task 1・test_research_logger 4）。本契約では直していない。
+
+unknowns:
+  - "検出塔のフル学習の所要時間。計時が repo に無く、塔は philip で学習され ckpt だけが配置された"
+  - "検出側 W2 界面 run の所要時間。W2 の run は repo 全体に一件も無い"
+  - "検出側 W3 界面 run の所要時間"
+  - "評価のみ run の所要時間（検出側・工程側とも）。評価を分離した計測が無い"
+  - "クリップ ID 識別プローブの所要時間"
+  - "P→D の専用探索の回数。M に記載が無い（既定 4 回）"
+  - "Tier 1 の反復に折り A の 3 seed が掛かるか。二通りに読めるため 25 / 35 本の幅で出した"
+  - "Stage 1 で全候補を全折りに掛けるか。二通りに読めるため既定 7K と二段選定 3K+4 の両方を出した"
+  - "縮退順の 4 項目目が 1 段か 2 段か。読点区切りでは 4 段"
+  - "締切の日付は M §5.4 の記載であり公式未確認。利用者の決定により外部参照していない"
+  - "他ホストの GPU 台数。利用者の決定により接続せず、本ホストの A6000 2 枚だけを前提にした"
+  - "投影（context/auto/* と tasks/inbox.md）への反映。契約 §4-3 が再生成を禁じるため未確認"
+
+commits: []
