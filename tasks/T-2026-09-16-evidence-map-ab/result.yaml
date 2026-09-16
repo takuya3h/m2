@@ -1,0 +1,69 @@
+result_version: 3
+task_id: "T-2026-09-16-evidence-map-ab"
+status: pass
+host: "bengio"
+branch: "feat/evidence-map-ab"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "Crossref・doi.org・arXiv API の三方向すべてに HTTP 200 で到達した。陽性対照は起票者確認済みの DOI 二件（10.1007/978-3-031-72089-5_18 と 10.1016/j.media.2024.103366）がいずれも HTTP 200 で実在と返り、著者も地図の記載と一致。陰性対照は架空 DOI 10.1000/zz-not-a-real-doi-2026 が HTTP 404 で Resource not found. を返した"
+  - id: G2
+    verdict: pass
+    note: "地図 A 15 行・地図 B 11 行の計 26 行を DOI 4 件（Crossref）と arXiv ID 26 件（arXiv API）で照合し、26 件すべてが実在・書誌一致。不在 0 件のため地図から外した行は無い。書誌に差 0 件のため escalate_if の三件以上にも該当しない"
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+
+deviations:
+  - type: judgement
+    note: "最初の照合器が MS-TCN と CLIPSeg を書誌に差と誤検出した。複合姓 Abu Farha の先頭語だけを取ったことと、Lüddecke の ü を照合側だけ ASCII 化したことが原因で、地図の誤りではない。両側に同じ NFKD-ASCII-小文字の正規化を当てて直し、二件とも実在・書誌一致になった。誤ったまま報告すれば起票者の写し誤りを疑わせるところだった"
+  - type: judgement
+    note: "地図 B に B.5 未検証の組み合わせを足した。SPEC の付録 B には独立の節が無く B.3 の表の未のセルが実質それに当たるため、完了判定 e を満たす目的で末尾に置き B.3 を指す説明のみ書いた。B.3 の表そのものは書き換えていない"
+  - type: judgement
+    note: "印の列の読み方を各地図の冒頭に注記した。印には起票時の未照合が残りその後ろに本契約の照合結果が続くため、そのままでは矛盾して見える。元の印を書き換えず読み方を説明する形にした"
+  - type: judgement
+    note: "spec.yaml を編集した。created_from.runindex_commit と contract.conventions_rev の REPLACE-BY-EXECUTOR プレースホルダ二件を実測値へ確定し meta.amendments に記録した"
+  - type: judgement
+    note: "make taskindex と make inbox を実行していない。SPEC 禁止 3 が並行契約との衝突を理由に投影と集約の再生成を禁じているため。本契約の行が context/auto/ に現れることは未確認である"
+  - type: environment
+    note: "契約の取り込み前に作業ツリーを退避した。追跡下 1 件と未追跡 39 ファイルがあり、scripts/task_start.sh は作業ツリーが汚れていると exit 3 で止まる実装のため、git stash push -u -m pre-T-2026-09-16-evidence-map-ab で退避してから task-start を実行した"
+
+issuer_defects: []
+
+positive_controls:
+  - judgement: "照合器が実在する文献を実在と返すこと"
+    breaking_input: "起票者が web で確認済みの DOI 二件（10.1007/978-3-031-72089-5_18、10.1016/j.media.2024.103366）を Crossref へ問い合わせる"
+    observed: "両件とも HTTP 200。題と著者も地図の記載と一致した（EgoSurgery-Phase / Fujii Ryo ほか、LoViT / Liu Yang ほか）"
+  - judgement: "照合器が実在しない文献を不在と返すこと（すべてを実在と返す壊れ方をしていないこと）"
+    breaking_input: "架空の DOI 10.1000/zz-not-a-real-doi-2026 を Crossref へ問い合わせる"
+    observed: "HTTP 404、応答本文は Resource not found.。陽性と合わせて両方向が揃った"
+  - judgement: "citeturn の残骸を数える検査が働いていること"
+    breaking_input: "地図の写しに citeturn0search12 を含む行を一行足す"
+    observed: "grep -c citeturn が 0 から 1 へ変わった。成果物そのものは汚さず写しで試した"
+  - judgement: "三方向の検索記録を数える検査が働いていること"
+    breaking_input: "地図の写しから隣接ドメインの検索語という語を消す"
+    observed: "一致が 3 から 2 へ落ちた"
+  - judgement: "書誌の差の判定が地図の誤りと照合器の誤りを取り違えていないこと"
+    breaking_input: "最初の実装が差と判定した MS-TCN と CLIPSeg の二件について、地図側と照合側に同じ正規化を当て直す"
+    observed: "二件とも実在・書誌一致に変わった。差の原因は地図ではなく照合器の正規化であったと確定した"
+  - judgement: "禁止領域に触れていないこと"
+    breaking_input: "experiments / data / runindex / context/conventions.md / context/auto / tasks/inbox.md それぞれの変更件数を数える"
+    observed: "六箇所すべて 0 件。make forbidden-check も exit 0 で violations は空。自分以外の tasks/ の変更も 0 件"
+
+followups:
+  - "本契約は文献の実在と書誌だけを照合した。各文献の本文にその数値が書いてあるかは照合していない。数値の検証は利用者が距離 0 から 1 の八本について原典で済ませており、残りの行の数値は未検証である"
+  - "地図の行は ChatGPT deep research 一エンジンの報告から写したものでエンジン間の突き合わせが無い。印の列の片方という記載がそれを指す。別エンジンでの突き合わせを行うかは未決である"
+  - "deep research の出力ファイルが repo に無いため、地図の出所は契約書の付録になっている。今後の証拠地図では元の報告そのものを repo に置くと、写し誤りの追跡ができるようになる"
+  - "Trans-SVNet の表番号は地図に「後続論文の再掲でも確認したため最終稿で原 PDF の表番号を照合する」と残っている。本契約は書誌の照合までで、表番号の照合は行っていない"
+
+unknowns:
+  - "地図の各行の数値が原典に書いてあるか。本契約は実在と書誌の照合のみで、数値の検証は範囲外である"
+  - "本報告の投影への反映。SPEC 禁止 3 により make taskindex を実行していないため、context/auto/ に本契約の行が現れることを確認していない"
+  - "元の報告（deep research の出力）のファイル名とバイト数。repo に存在しないため、出所を SPEC.md の付録（30894 バイト）として記録した"
+
+commits: []

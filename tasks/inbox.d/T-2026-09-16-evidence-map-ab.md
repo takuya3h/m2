@@ -1,0 +1,5 @@
+- [ ] 2026-09-16 [cc] 証拠地図 A・B の全 26 行（A 15 / B 11）が実在し書誌も一致した。不在 0 件・到達不能 0 件・書誌に差 0 件で、**地図から外した行は無い**。照合は Crossref（DOI 4 件）と arXiv API（ID 26 件）。対照は両方向で取った（実在 DOI 200 / 架空 DOI 404）（T-2026-09-16-evidence-map-ab）
+- [ ] 2026-09-16 [cc] 著者未確認だった二件が埋まった。**SurgMAE = Muhammad Abdullah Jamal, Omid Mohareri**（arXiv 2305.11451）、**SurgPETL = Shu Yang, Zhiyuan Cai, Luyang Luo, Ning Ma, Shuchang Xu, Hao Chen**（arXiv 2409.20083）。UNKNOWN は無し（T-2026-09-16-evidence-map-ab）
+- [ ] 2026-09-16 [cc] **照合器が地図を誤って疑わせかけた。** MS-TCN の複合姓「Abu Farha」と CLIPSeg の「Lüddecke」を差と誤検出したが、原因は照合器側の正規化（先頭語だけを取る／片側だけ ASCII 化）であり地図の誤りではなかった。両側に同じ正規化を当てて解消。**書誌照合では複合姓と発音記号を先に潰すこと**（T-2026-09-16-evidence-map-ab）
+- [ ] 2026-09-16 [cc] **本契約は実在と書誌だけを照合した。各行の数値が原典に書いてあるかは未検証である。** 数値の確認は利用者が距離 0〜1 の八本について原典で済ませており、残りの行は UNKNOWN。地図を次の生成会話へ渡すときはこの区別を保つこと（T-2026-09-16-evidence-map-ab）
+- [ ] 2026-09-16 [cc] deep research の出力ファイルが repo に無く、地図の出所が契約書の付録になっている。**今後の証拠地図では元の報告そのものを repo に置く**と写し誤りの追跡ができる（T-2026-09-16-evidence-map-ab）

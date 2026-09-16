@@ -1,0 +1,65 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-09-16-evidence-map-ab"
+  kind: analysis
+  title: "証拠地図 A（工程塔の候補）と B（P→D の界面）の DOI 照合と docs/evidence/ への配置"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-09-16T11:17:12Z"
+  created_from:
+    runindex_commit: "96eb3a1ca20ab7eb4b373d93304c9e6b33b733d5"
+    counts: {index: 0, experiments: 0, verdicts: 0}
+  depends_on: []
+  amendments:
+    - date: "2026-09-16"
+      reason: "created_from.runindex_commit と contract.conventions_rev の REPLACE-BY-EXECUTOR プレースホルダを実測値へ確定した。created_from.counts は本契約が runindex を参照しないため 0 のまま残す（実測は index 1266 / experiments 285 / verdicts 1506）"
+      diff: "runindex_commit: REPLACE -> 96eb3a1c...; conventions_rev: REPLACE -> a8c07e81..."
+intent:
+  question: "deep research の報告から起票者が起こした証拠地図の各行が、機械照合で実在する文献に遡れ、様式どおりに repo へ置けるか"
+  decision_at_stake: "工程塔のトーナメント候補（Stage 一）と P→D 界面の提案（Stage 二）の生成会話に渡す証拠地図を確定する"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "not-referenced"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["tools/validate_task.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "a8c07e813696d3720ceee648e8aa202224285955"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "外部照合の到達性と対照（実在 DOI が通り、架空 DOI が落ちる）", gpu: false, est: "20m"}
+    - {id: B, name: "地図 A・B の全行を DOI または arXiv ID で機械照合し、著者未確認二件を補完", gpu: false, est: "60m"}
+    - {id: C, name: "様式を整えて docs/evidence/ に二ファイルを置く", gpu: false, est: "40m"}
+    - {id: D, name: "検証と報告", gpu: false, est: "40m"}
+  gates:
+    - {id: G1, after: A, check: "照合先へ到達でき、陽性対照が通り陰性対照が落ちた", on_fail: stop}
+    - {id: G2, after: B, check: "不通の行が一覧化され、不通行を地図から外した", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [2026-09-16-A-phase-tower-candidates.md, 2026-09-16-B-p2d-interface.md]
+  destination: "docs/evidence/"
+  acceptance:
+    - "a: 地図の全行の DOI または arXiv ID が照合を通る。不通零件。不通があれば外した一覧を報告に残す"
+    - "b: 架空の DOI を一件混ぜた入力で不通一件（陰性対照）。実在 DOI で通る（陽性対照）"
+    - "c: 三方向それぞれの検索記録が両地図にある"
+    - "d: 設定距離が零から一の行が地図 A に一件以上、地図 B に一件以上"
+    - "e: 未検証の組み合わせの表が両地図の末尾にある"
+    - "f: citeturn を含む行が両地図で零件"
+    - "g: 著者未確認だった二件（SurgMAE、SurgPETL）の著者が照合で埋まるか、埋まらなければ UNKNOWN と記す"
+    - "h: PR が Draft でなく存在し、分岐が feat/ で始まる"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "照合先（Crossref、doi.org、arXiv API）のいずれにも到達できない場合"
+    - "照合で書誌が地図の記載と食い違う行が三件以上ある場合（数値の書き換えは行わず、印を付けて止める）"
