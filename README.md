@@ -1107,3 +1107,20 @@ scope、または既存zmxを扱う許可を別契約で定義する必要があ
 Syncthingを再起動せず、localhost routeをlecun deviceへ一件だけ移し、marker・動的keeper・SSH中継を
 lecunへ揃えた。双方向probeと1805秒超の観測でbytes/SHA-256、process identity、route、接続を確認した。
 backupとprobeは保持し、guardの適用限界と二回の安全停止・修正履歴はtaskのRESULTへ記録している。
+
+### Tier 1 の総量の試算器（2026-09-16）
+
+`T-2026-09-17-tier1-cost-estimate` で `tools/estimate_tier_cost.py` と
+`tests/test_estimate_tier_cost.py` を追加し、`docs/stage0/B1_tier1_cost_estimate.md` を作った。
+Stage 0 の実測した所要時間から Stage 1・Tier 1〜3 の GPU 時間と壁時計時間を積み、
+縮退順を一段ずつ当てた総量と、設計変更一回分の費用と、締切への収まりを出す。
+
+所要時間の実測が無い run 型（検出塔のフル学習、検出側 W2 の界面 run）には、利用者の承認を得て
+t1b の実測（1 run 約 4 時間 / 6 epoch）を代理に置いた。**いずれも逆伝播の範囲が t1b より
+広いため下界である**ことを `RunType.measured` が型として持ち、`--unknown` の一覧に出る。
+装置の前提は本ホストの A6000 2 枚（`nvidia-smi` の実測）で、`--devices` で動かせる。
+
+文書の数表はすべて計算器の出力そのものを `<!-- estimate:begin ... -->` で囲って埋めてあり、
+`--check-doc` が再計算との差 0 件を確かめる。`--check-sources` は出所の無い所要時間の行を、
+`--check-coverage` は run に対応づかない M の項目を数える。**いずれも壊した入力で
+1 件を返すことまで試験で確かめている**（陽性対照）。
