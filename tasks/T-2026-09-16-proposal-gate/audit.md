@@ -539,3 +539,28 @@ WARN は出ないはずである。
 SPEC の禁止事項 3 により `context/auto/*` と `tasks/inbox.md` は再生成していない。
 並行契約 `T-2026-09-16-evidence-map-ab` と同時に走るためで、統合後に利用者が
 一台で一度だけ `make taskindex && make inbox` を回す。申し送りに残した。
+
+### 5.10 台帳の応答
+
+    $ source scripts/load_env.sh && make task-report TASK=T-2026-09-16-proposal-gate
+    [load_env] .env をロード（WANDB_API_KEY=set / NOTION_API_KEY=set）
+    {
+      "task_id": "T-2026-09-16-proposal-gate",
+      "verdict": "pass",
+      "n_issuer_defects": 2,
+      "report_sha256": "2a0e2b89f0618982a10bcc1855fcd898c4a8a81b00faa93255e937c99f04d3bc",
+      "report_bytes": 10968,
+      "replaced_blocks": 0
+    }
+    exit=0
+
+秘匿の検査は `make task-report` の内側にあり、止まらずに通った。
+外部への送信はこの経路だけを使っている（禁止事項 7）。
+
+### 5.11 抑止の解除と退避物の復帰
+
+    $ git stash pop                        # 開始前から在った未追跡 2 件を戻す
+    $ mv .sync-pause .sync-pause.released  # 削除ではなく移動で解除する
+
+解除は**存在だけ**を見ているため、別名へ移せば解ける
+（`scripts/sync/m2-sync.sh` の `[ -f "$M2DIR/.sync-pause" ]`）。

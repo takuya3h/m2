@@ -145,4 +145,4 @@
 | `make forbidden-check` | exit 0（changed 7 / permitted 1 / violations 0） |
 | `make spec-check` | exit 0（rules_checked 8 / hits 0） |
 | `make docs-check` / `make agent-check` | exit 0 / exit 0（targets 116） |
-| `make task-report` | §7 に追記 |
+| `make task-report` | exit 0。`verdict: pass` / `n_issuer_defects: 2` / `report_bytes: 10968` / `report_sha256: 2a0e2b89...` / `replaced_blocks: 0` |
