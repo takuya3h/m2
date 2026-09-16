@@ -13,6 +13,7 @@
 
 追跡下の `*.md` は 837 件。うち `tasks/T-` 配下の契約 60 件を除いた 777 件が母集団である。
 記録として自明な領域（下表の集約行）を除いた 96 件を個別に判定し、**42 件を現行手順**とした。
+契約 `T-2026-09-17-fold-table` で `docs/proposal-gate.md` を追加し、**43 件**になった。
 
 | 文書 | 分類 | 根拠 |
 |---|---|---|
@@ -35,6 +36,7 @@
 | docs/auto_logging.md | 現行手順 | 自動記録の説明 |
 | docs/notion_run_ledger_auto_post.md | 現行手順 | 台帳投稿の手順 |
 | docs/notion_run_ledger_recipe.md | 現行手順 | 台帳のレシピ |
+| docs/proposal-gate.md | 現行手順 | 提案の関門の手順。静的検査は tools/check_proposal.py |
 | .claude/skills/task/SKILL.md | 現行手順 | 契約実行の手順書 |
 | .claude/skills/run-experiment/SKILL.md | 現行手順 | 実験実行の手順書 |
 | .claude/skills/add-model-component/SKILL.md | 現行手順 | 実装追加の手順書 |

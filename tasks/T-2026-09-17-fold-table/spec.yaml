@@ -1,0 +1,75 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-09-17-fold-table"
+  kind: impl
+  title: "5-fold の折り表を A1 の材料から確定し、context/conventions.md に節として置く（小さな残件三つを相乗り）"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-09-16T19:41:29Z"
+  created_from:
+    runindex_commit: "96eb3a1c"
+    counts: {index: 1266, experiments: 285, verdicts: 1506}
+  depends_on: []
+  amendments:
+    - date: "2026-09-16"
+      reason: "created_from.runindex_commit / counts と contract.conventions_rev の REPLACE-BY-EXECUTOR 占位を実測値へ確定した。runindex_commit は runindex/ を最後に変えた commit、conventions_rev は context/conventions.md を最後に変えた commit"
+      diff: "runindex_commit: REPLACE -> 96eb3a1c; counts: 0/0/0 -> 1266/285/1506; conventions_rev: REPLACE -> 4300b7d2"
+    - date: "2026-09-16"
+      reason: "governance.decisions_required の 2 件を利用者が回答したため空にした。回答は tasks/inbox.d/T-2026-09-17-fold-table.md と RESULT.md に記録する。(1) 同点は SPEC Task B §2 の辞書順で決着させ、辞書順でも決まらない場合だけ停止して諮る。(2) 追加 6 動画と公式 test の重複は本契約で陽性対照付きで再実測し、0 件を記録して停止せず続行する"
+      diff: "decisions_required: 2 items -> []"
+    - date: "2026-09-17"
+      reason: "folds 節を追加した commit 537c968c が確定したため conventions_rev をそれへ更新した。起票時点の値は 4300b7d2 で、本契約自身が規約を変えたため参照先が動いた"
+      diff: "conventions_rev: 4300b7d2 -> 537c968c"
+intent:
+  question: "動画単位の折り表を、公式分割との整合と折り間の均衡を満たす形で一意に固定できるか"
+  decision_at_stake: "関門 G ゼロの二条件目（折りが固定された）。以後の全実験がこの表を参照する"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery-Tool subset (15 videos) and EgoSurgery-Phase (21 videos)"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt", "data/splits/ego_test.txt"]
+  caches: []
+  code:
+    entrypoints: ["tools/validate_task.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "537c968c"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["context/conventions.md"]
+plan:
+  phases:
+    - {id: A, name: "開始状態と材料の確認（A1 の材料、公式分割、追加六動画）", gpu: false, est: "30m"}
+    - {id: B, name: "折り表の生成（決定的手続き）と均衡指標、対照", gpu: false, est: "90m"}
+    - {id: C, name: "conventions.md に folds 節を置く。docs/stage0 に表と根拠を置く", gpu: false, est: "40m"}
+    - {id: D, name: "残件三つ（docs_audit 登録、変更履歴の欠落行、issuer-defects の追記）", gpu: false, est: "40m"}
+    - {id: E, name: "検証と報告", gpu: false, est: "40m"}
+  gates:
+    - {id: G1, after: A, check: "A1 の材料が実在し、十五動画の識別子が公式分割の三ファイルと一致した", on_fail: stop}
+    - {id: G2, after: B, check: "折り表が制約をすべて満たし、再実行で同一の表が出る", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [A1_fold_table.md]
+  destination: "docs/stage0/"
+  acceptance:
+    - "a: 十五動画が五折りに重複なく過不足なく割り当てられ、各動画は test にちょうど一度現れる"
+    - "b: 折り A の test と val が公式分割の test と val に一致する"
+    - "c: 折り B から E の test は三動画ずつ、各折りの val は二動画で、val は同じ折りの test と重ならない"
+    - "d: 手続きを二度走らせて同一の表が出る（決定性）"
+    - "e: 均衡指標が記録され、折り間の最大差が表と共に書かれている。無作為割り当て一件と比べて悪化していない"
+    - "f: 追加六動画の識別子が十五動画と重複せず、Phase 公式 test との重複の有無が記録されている"
+    - "g: conventions#folds が L2 で引け、表の数値が docs/stage0/A1_fold_table.md と一致する"
+    - "h: 残件三つが反映されている。docs_audit の対象数が一増え、変更履歴に欠落行が入り、issuer-defects に四件が追記されている"
+    - "i: PR が Draft でなく存在し、分岐が feat/ で始まる"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "A1 の材料に十五動画の工程分布か術具出現数が欠けている場合"
+    - "公式分割の三ファイルの合計が十五動画でない場合"
+    - "docs/issuer-defects.md が生成物であり手編集できない場合"

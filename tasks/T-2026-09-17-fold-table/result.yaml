@@ -1,0 +1,98 @@
+result_version: 3
+task_id: "T-2026-09-17-fold-table"
+status: pass
+host: "lecun"
+branch: "feat/fold-table"
+pr: 176
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "材料を A1 の表から写さず同じ出所から読み直した。総フレーム 17233 / images 15437 / boxes 49652 が A1 の合計行と一致。工程 CSV・術具 COCO・HTS のいずれも動画 15 本で、公式分割（train 10 / val 2 / test 3 = 15）との集合差は 0 件。工程 9 種・術具 15 クラス・HTS は 15 動画すべてが 3 系統とも保持"
+  - id: G2
+    verdict: pass
+    note: "制約検査の違反 0 件。二度の生成で表の要約値が 237837faa843e1b3… と一致し、ファイルも sha256 eb66170a8565b993… で byte 一致。入力を一行変えると要約値が febee3775bec5785… へ変わることも示した"
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 535
+
+deviations:
+  - type: judgement
+    note: "P6 decisions_answered が FAIL で止まったため手順どおり停止し、decisions_required 2 件を利用者へ諮った。回答は (1) 同点は SPEC Task B §2 の辞書順で決着させ辞書順でも決まらない場合だけ停止 (2) 追加 6 動画の重複は陽性対照つきで再実測し 0 件なら続行。実行の結果いずれの条件も発生しなかった（同点は 1 通り、重複は 0 件）"
+  - type: judgement
+    note: "spec.yaml を編集した。REPLACE-BY-EXECUTOR の占位 2 件（runindex_commit → 96eb3a1c、conventions_rev → 4300b7d2）を実測値へ確定し、created_from.counts を 0/0/0 から 1266/285/1506 へ、decisions_required を空にした。いずれも meta.amendments に記録した"
+  - type: environment
+    note: "forbidden-check が violations 7 件で非ゼロのまま終えた。7 件はすべて experiments/analysis/**/.syncthing.*.py.tmp で、開始時に stash した 31 件の削除を syncthing が他ホストから復元した際の取り残し。mtime 20:06 のまま 8 分変化せず、内容は復元済みの .py と byte 一致。SPEC §4 前文が同期処理による配布を禁止の対象外とし、禁止事項 4 が experiments/** に触れることを禁じるため削除せず記録した。permitted は要求どおり context/conventions.md の 1 件"
+  - type: judgement
+    note: "make taskindex / make inbox を実行していない。SPEC 禁止事項 3 が並行契約との衝突を理由に context/auto/* と tasks/inbox.md の再生成を禁じているため。投影への反映は未確認である"
+  - type: judgement
+    note: "作業ツリーの退避に git stash を使った（SPEC Task A-1 が許している）。追跡下の削除 31 件を stash@{1}、未追跡 2 件を stash@{0} へ。task_start.sh は git status --porcelain が非ゼロなら exit 3 で止まる実装のため未追跡も退避が要った。前契約の stash 2 件には触れていない"
+  - type: judgement
+    note: "生成器を tools/ ではなく scripts/analysis/a1_fold_table.py に置いた。同ディレクトリが解析用スクリプトの既存の置き場であり、SPEC 申し送りが並行契約 T-2026-09-17-tier1-cost-estimate に tools/ の新規一件を割り当てているため生成物の分離を保った"
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "SPEC Task D-3 は追記する 4 件の出所を T-2026-09-16-evidence-map-ab/RESULT.md §4・§5 と書くが、当該 §4 は「起票者の誤り 無し」と述べている。3 件目は §4 の「補足（誤りではない）」、4 件目は §5 の「逸脱 2（judgement）」であり、出所は誤りの一覧ではない。また 2 件目の型を asserted_without_measuring と指定するが、出所の T-2026-09-16-proposal-gate/RESULT.md §4-2 は check_does_not_check と分類している。指示どおり実行すると、出所が自ら誤りでないと述べたものを誤りとして記録し、型も出所と食い違う形で残ることになる。4 件とも内容自体は実装と契約本文から実測で裏が取れたため契約の指定どおり書き、この食い違いを RESULT §5 と audit §9 に記録した"
+
+positive_controls:
+  - judgement: "判定 a 各動画が test にちょうど一度現れる"
+    breaking_input: "動画 02 を折り B と C の両方の test に置く"
+    observed: "違反 4 件。狙った文言『動画 02 が test に現れた回数が 1 でない: ['B', 'C']』が一覧に現れた"
+  - judgement: "判定 b 折り A の test が公式 test に一致する"
+    breaking_input: "折り A の test の一本を 01 へ入れ替える"
+    observed: "違反 5 件。狙った文言『折り A の test が公式 test と一致しない: ['01', '04', '05']』が現れた"
+  - judgement: "判定 b 折り A の val が公式 val に一致する"
+    breaking_input: "折り A の val の一本を train の動画へ入れ替える"
+    observed: "違反 3 件。狙った文言『折り A の val が公式 val と一致しない: ['01', '09']』が現れた"
+  - judgement: "判定 c val が同じ折りの test と重ならない"
+    breaking_input: "折り B の val に自分の test の動画 01 を入れる"
+    observed: "違反 2 件。狙った文言『折り B: val が test と重なる ['01']』が現れた"
+  - judgement: "判定 c val は全折りを通じて各動画高々一度"
+    breaking_input: "折り C の val を折り D の val と同じ 04, 05 にする"
+    observed: "違反 4 件。狙った文言『動画 04 が val に 2 回以上現れる: ['C', 'D']』が現れた"
+  - judgement: "判定 c 各折りの test は 3 本"
+    breaking_input: "折り E の test を 2 本に減らす"
+    observed: "違反 3 件。狙った文言『折り E: test が 3 本でない（2 本）』が現れた"
+  - judgement: "制約検査が正しい表を誤って落とさない（陰性対照）"
+    breaking_input: "提案の表そのものを与える"
+    observed: "違反 0 件。落ちなかった"
+  - judgement: "判定 d 手続きが決定的である"
+    breaking_input: "入力を一行変える（動画 01 の工程 anesthesia に +100000 フレーム。記憶上のみで data/ は書き換えない）"
+    observed: "要約値が 237837faa843e1b3… から febee3775bec5785… へ変わった。同じ入力での二度の生成は一致し、ファイルも sha256 eb66170a8565b993… で byte 一致"
+  - judgement: "判定 e 提案の表が無作為より悪化していない"
+    breaking_input: "無作為割り当てを一件作って同じ指標で比べる（seed 20260917）"
+    observed: "無作為は max d = 0.6102 / sum d = 1.6287、提案の表は max d = 0.2844 / sum d = 1.0951。さらに全数列挙 15400 通りの max d は最小 0.2844 / 中央 0.5246 / 最大 0.7972 で、提案の表は最小値そのもの"
+  - judgement: "判定 f 追加 6 動画と公式 test の重複が 0 件"
+    breaking_input: "追加動画の集合へ公式 test の 04 を混ぜる"
+    observed: "重複が 1 件 ['04'] になった。混ぜない場合は 0 件"
+  - judgement: "判定 g conventions#folds が L2 で引ける"
+    breaking_input: "存在しないアンカー conventions#folds_zz を引く"
+    observed: "conventions_anchors() に folds は現れ folds_zz は現れなかった。アンカーは 9 から 10 へ増えた"
+  - judgement: "判定 g 表の数値が docs/stage0/A1_fold_table.md と一致する"
+    breaking_input: "両ファイルから折り／test／val の行を抜いて突き合わせる"
+    observed: "差分 0 行。5 折りすべてで test と val の組が一致した"
+  - judgement: "判定 h docs-check の対象が 42 から 43 へ増える"
+    breaking_input: "docs/proposal-gate.md を docs_audit.md へ登録する前後で対象数を数える"
+    observed: "前 42 文書 / 後 43 文書。いずれも食い違いなしで exit 0"
+  - judgement: "Task C と D が既存の本文を変えていない"
+    breaking_input: "git diff の削除行を数える"
+    observed: "context/conventions.md（+37）、docs/docs_audit.md（+2）、docs/issuer-defects.md（+4）のいずれも削除行 0"
+  - judgement: "試験の失敗が本契約で増えていない"
+    breaking_input: "直前契約 T-2026-09-16-proposal-gate が記録した基準 6 failed / 535 passed と比べる"
+    observed: "6 failed / 535 passed で増減 0。失敗した 3 ファイルはいずれも本契約が変えたファイルを参照しない（grep -l の該当 0 件）"
+
+followups:
+  - "投影（context/auto/ と tasks/inbox.md）への反映は未確認である。SPEC 禁止事項 3 により再生成を禁じられているため、並行契約 T-2026-09-17-tier1-cost-estimate の統合後に一台で make taskindex && make inbox を回す必要がある"
+  - "context/conventions.md の変更履歴と contract.conventions_rev の commit 欄は、本体の commit 537c968c が確定した後に e7a51005 で埋めた。残件なし"
+  - "experiments/analysis/**/.syncthing.*.py.tmp 7 件が未追跡のまま残っている。syncthing の取り残しで内容は本体と byte 一致。禁止事項 4 により本契約は触れていない。experiments/ を扱える契約か同期処理の側で片付ける必要がある"
+  - "tests/test_fetch_task.py::test_rejects_unknown_file_name は実装の文言『経路として受け取れない名前です』と試験の期待『受け取れないファイル』が食い違って落ちている。tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics は experiments/ の NMS-free の run が score_thr=0.0 を持つため落ちている。いずれも本契約の範囲外で、直前契約から引き継いだ既知の失敗である"
+  - "git stash が 4 件ある。本契約の 2 件（stash@{0} 未追跡 2 件、stash@{1} 追跡下の削除 31 件）と前契約の 2 件。本契約の 2 件のうち削除 31 件は syncthing が既にファイルを復元済みのため、そのまま pop すると復元された .py を再び消すことになる。復元の要否を確かめてから扱うこと"
+
+unknowns:
+  - "L2-6 の WARN は本契約では出なかった。SPEC §2 は規約ファイルが変われば conventions_rev を持つ全契約に出ると述べるが、本契約の L1+L2 は規約を変える前に実行したためである。規約を変えた後に他契約を検証すれば出るはずだが、本契約では測っていない"
+  - "repo に Phase 専用の分割ファイルは存在しない（find data -iname '*split*' は data/splits のみ、生データ側にも phase 用の train/test 一覧は無い）。したがって『Phase 公式 test』に対応する実体は data/splits/ego_test.txt であると解釈した。EgoSurgery-Phase の 21 動画版に別の公式分割が外部で定義されているかは未確認である"
+
+commits: ["537c968c", "e7a51005"]
