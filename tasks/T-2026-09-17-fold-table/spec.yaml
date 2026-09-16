@@ -17,6 +17,9 @@ meta:
     - date: "2026-09-16"
       reason: "governance.decisions_required の 2 件を利用者が回答したため空にした。回答は tasks/inbox.d/T-2026-09-17-fold-table.md と RESULT.md に記録する。(1) 同点は SPEC Task B §2 の辞書順で決着させ、辞書順でも決まらない場合だけ停止して諮る。(2) 追加 6 動画と公式 test の重複は本契約で陽性対照付きで再実測し、0 件を記録して停止せず続行する"
       diff: "decisions_required: 2 items -> []"
+    - date: "2026-09-17"
+      reason: "folds 節を追加した commit 537c968c が確定したため conventions_rev をそれへ更新した。起票時点の値は 4300b7d2 で、本契約自身が規約を変えたため参照先が動いた"
+      diff: "conventions_rev: 4300b7d2 -> 537c968c"
 intent:
   question: "動画単位の折り表を、公式分割との整合と折り間の均衡を満たす形で一意に固定できるか"
   decision_at_stake: "関門 G ゼロの二条件目（折りが固定された）。以後の全実験がこの表を参照する"
@@ -31,7 +34,7 @@ inputs:
     entrypoints: ["tools/validate_task.py"]
 contract:
   inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
-  conventions_rev: "4300b7d2"
+  conventions_rev: "537c968c"
   prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
   verbatim_forbidden: true
   allow_write: ["context/conventions.md"]

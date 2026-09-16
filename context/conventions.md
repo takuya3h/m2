@@ -143,7 +143,7 @@ activate を省略すると CUDA 拡張が読み込まれず、無言で CPU 実
 | 2026-08-07 | 290da51 | frozen_source に「検査の適用範囲」を追記。実行直前検査での適用条件と、適用時に省略経路が無いことを明文化 |
 | 2026-08-25 | a8c07e81 | issuer_cautions 節を追加。起票者の注意 13 件と、シェルの前提・命令ごとの読み込みを明文化 |
 | 2026-09-16 | 6c95e4f | proposal_gate 節を追加。提案カード 14 項目・禁止語・設定/設計/問いの三水準・失敗時手順・引用規約・役割分離を定義。静的検査は tools/check_proposal.py、手順は docs/proposal-gate.md |
-| 2026-09-17 | PENDING | folds 節を追加。動画単位 5-fold の折り表（折り A は公式分割に固定）、追加 6 動画の用途、選定と test の規律を定義。正本は docs/stage0/A1_fold_table.md |
+| 2026-09-17 | 537c968c | folds 節を追加。動画単位 5-fold の折り表（折り A は公式分割に固定）、追加 6 動画の用途、選定と test の規律を定義。正本は docs/stage0/A1_fold_table.md |
 <a id="issuer_cautions"></a>
 ## issuer_cautions
 

@@ -6,7 +6,7 @@
 
 | 記載 | 解決先 | 値 |
 |---|---|---|
-| `contract.conventions_rev`（占位） | `context/conventions.md` を最後に変えた commit | `4300b7d2` |
+| `contract.conventions_rev`（占位） | `context/conventions.md` を最後に変えた commit | 起票時点 `4300b7d2` → 本契約の commit `537c968c` へ更新 |
 | `meta.created_from.runindex_commit`（占位） | `runindex/` を最後に変えた commit | `96eb3a1c` |
 | `meta.created_from.counts`（0 のまま） | `runindex/*.csv` の行数（ヘッダ除く） | index 1266 / experiments 285 / verdicts 1506 |
 | `contract.inject_verbatim` | `conventions#prohibitions`（表 5 行）、`conventions#issuer_cautions`（注意 13 件＋実測 3 件＋シェルの前提） | 原文のまま適用。要約していない |
@@ -62,7 +62,7 @@
 | 項目 | 値 |
 |---|---|
 | アンカー数（`context/conventions.md`） | 9 → **10**（`folds` を追加）|
-| `conventions_rev` | 前 `4300b7d2` → 後 `PENDING`（commit 後に埋める。変更履歴の行も同様）|
+| `conventions_rev` | 前 `4300b7d2` → 後 **`537c968c`**（変更履歴の行も同じ commit で埋めた）|
 | conventions.md の行数 | 260 → 297（**+37 行、削除 0**）|
 | `make docs-check` の対象数 | 42 → **43** |
 | 試験 | **6 failed / 535 passed**（直前契約の基準と同一。増減 0）|
@@ -109,8 +109,6 @@
 
 - **投影（`context/auto/`・`tasks/inbox.md`）への反映は UNKNOWN。** 逸脱 4 のとおり再生成を禁じられている。
   並行契約の統合後に一台で回す必要がある。
-- **`conventions_rev` と変更履歴の commit 欄は `PENDING`。** commit 後に確定する値であり、未測定のまま
-  数値を置かない。
 - **L2-6 の WARN は出なかった。** SPEC §2 は規約ファイルの変更で全契約に出ると述べるが、本契約の
   L1+L2 は規約を変える前に実行したためである。規約を変えた後に他契約を検証すれば出るはずだが、
   **本契約では測っていない（UNKNOWN）。**
