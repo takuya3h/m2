@@ -185,3 +185,36 @@ Stage 1 の塔（epoch 数も seed 数も未定）の所要時間は暫定塔の
 退避した。**消していない。**
 
 ## 7. 送出
+
+| 項目 | 値 |
+|---|---|
+| 分岐 | `feat/tier1-cost-estimate`（識別子から機械的に導いた。人が打っていない） |
+| commit | `d63ab0aa` |
+| PR | **#177**（`isDraft: false`、`state: OPEN`、base `master`）https://github.com/takuya3h/m2/pull/177 |
+| `make task-validate` | exit 0（`1 task(s), 0 failed`） |
+| `make task-preflight` | exit 0（6 PASS / 0 WARN / 6 SKIP / 0 FAIL） |
+| `make forbidden-check` | exit 0（`status: pass`、`violations: []`、changed 10） |
+| `make spec-check` | exit 0（`hits: 0`、`rules_checked: 8`） |
+| `--check-sources` / `--check-coverage` / `--check-doc` | いずれも 0 件（exit 0） |
+| `pytest tests/test_estimate_tier_cost.py` | 15 passed |
+| `make task-report` | 送信成功（`verdict: pass`、`report_bytes: 13537`）。§8 に全文 |
+
+完了判定 h は **達成**（PR #177 が Draft でなく存在し、分岐が `feat/` で始まる）。
+
+## 8. 配布台帳への報告
+
+    $ make task-report TASK=T-2026-09-17-tier1-cost-estimate
+    {
+      "task_id": "T-2026-09-17-tier1-cost-estimate",
+      "verdict": "pass",
+      "n_issuer_defects": 1,
+      "report_sha256": "eaaec8e09e75e691b27cbbc786ab07484abe5c13323588aa99130fa322c21a77",
+      "report_bytes": 13537,
+      "replaced_blocks": 0
+    }
+
+**秘匿の検査で止まっていない。** `replaced_blocks` は非 dry-run の経路でのみ入るため、
+本文の投稿と台帳の行の `status: done` への更新まで通っている。`replaced_blocks: 0` は
+この契約の報告が初回で、置き換える既存の塊が無かったことを意味する。
+
+**外部への送信は `make task-report` 以外の経路で行っていない。**
