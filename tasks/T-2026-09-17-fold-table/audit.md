@@ -185,7 +185,8 @@ repo に Phase 専用の分割ファイルは存在しない（`find data -iname
 規律の一文（選定・early stopping・ハイパラ・界面の型の選択は折り内 val、test は腕ごとに一度）、
 出所（`docs/stage0/A1_fold_table.md`、`T-2026-09-17-fold-table`）。
 
-変更履歴には 2 行を足した（残件②の `a8c07e81` と本契約の行。本契約の commit 欄は `PENDING`）。
+変更履歴には 2 行を足した（残件②の `a8c07e81` と本契約の行）。本契約の commit 欄は、
+本体の commit が確定するまで `PENDING` とし、確定後に `537c968c` を埋めた（commit `e7a51005`）。
 
 ### 完了判定 g の検証
 
@@ -307,11 +308,23 @@ SPEC §4 前文は「**禁止は実行者の操作に対するものであり、
 
 ## 10. 変更範囲
 
-    git diff --stat
+    commit 537c968c（本体）
       context/conventions.md | 37 +++++++++++++++++++++++++++++++++++++
       docs/docs_audit.md     |  2 ++
       docs/issuer-defects.md |  4 ++++
       3 files changed, 43 insertions(+)   ← **削除行 0**
+      docs/stage0/A1_fold_table.md / scripts/analysis/a1_fold_table.py /
+      tasks/T-2026-09-17-fold-table/ / tasks/inbox.d/T-2026-09-17-fold-table.md を新規で加え、
+      合計 11 files changed, 1655 insertions(+)
+
+    commit e7a51005（PENDING の解消）
+      context/conventions.md の変更履歴の commit 欄と spec.yaml の conventions_rev を 537c968c へ
+
+    禁止領域の混入: git diff --cached --name-only | grep -cE '^(experiments|data|runindex|context/auto|transfer)/' → **0**
+    syncthing の一時ファイル 7 件は staging していない
+
+    git push -u origin feat/fold-table        → [new branch] / exit 0
+    gh pr create --base master                → **PR #176**（draft=false / state=OPEN）
 
     新規（未追跡）
       docs/stage0/A1_fold_table.md          折り表の正本（7297 バイト）

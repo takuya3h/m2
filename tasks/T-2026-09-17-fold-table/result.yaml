@@ -3,7 +3,7 @@ task_id: "T-2026-09-17-fold-table"
 status: pass
 host: "lecun"
 branch: "feat/fold-table"
-pr: null
+pr: 176
 merged: false
 
 gates:
@@ -86,7 +86,7 @@ positive_controls:
 
 followups:
   - "投影（context/auto/ と tasks/inbox.md）への反映は未確認である。SPEC 禁止事項 3 により再生成を禁じられているため、並行契約 T-2026-09-17-tier1-cost-estimate の統合後に一台で make taskindex && make inbox を回す必要がある"
-  - "context/conventions.md の変更履歴と contract.conventions_rev の commit 欄は PENDING のままである。本契約の commit が確定した後に埋める必要がある"
+  - "context/conventions.md の変更履歴と contract.conventions_rev の commit 欄は、本体の commit 537c968c が確定した後に e7a51005 で埋めた。残件なし"
   - "experiments/analysis/**/.syncthing.*.py.tmp 7 件が未追跡のまま残っている。syncthing の取り残しで内容は本体と byte 一致。禁止事項 4 により本契約は触れていない。experiments/ を扱える契約か同期処理の側で片付ける必要がある"
   - "tests/test_fetch_task.py::test_rejects_unknown_file_name は実装の文言『経路として受け取れない名前です』と試験の期待『受け取れないファイル』が食い違って落ちている。tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics は experiments/ の NMS-free の run が score_thr=0.0 を持つため落ちている。いずれも本契約の範囲外で、直前契約から引き継いだ既知の失敗である"
   - "git stash が 4 件ある。本契約の 2 件（stash@{0} 未追跡 2 件、stash@{1} 追跡下の削除 31 件）と前契約の 2 件。本契約の 2 件のうち削除 31 件は syncthing が既にファイルを復元済みのため、そのまま pop すると復元された .py を再び消すことになる。復元の要否を確かめてから扱うこと"
@@ -95,4 +95,4 @@ unknowns:
   - "L2-6 の WARN は本契約では出なかった。SPEC §2 は規約ファイルが変われば conventions_rev を持つ全契約に出ると述べるが、本契約の L1+L2 は規約を変える前に実行したためである。規約を変えた後に他契約を検証すれば出るはずだが、本契約では測っていない"
   - "repo に Phase 専用の分割ファイルは存在しない（find data -iname '*split*' は data/splits のみ、生データ側にも phase 用の train/test 一覧は無い）。したがって『Phase 公式 test』に対応する実体は data/splits/ego_test.txt であると解釈した。EgoSurgery-Phase の 21 動画版に別の公式分割が外部で定義されているかは未確認である"
 
-commits: []
+commits: ["537c968c", "e7a51005"]

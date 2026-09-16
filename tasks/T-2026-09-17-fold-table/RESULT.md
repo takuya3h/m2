@@ -37,7 +37,7 @@
 | f | 追加 6 動画 | `17, 18, 19, 20, 21, 22`。15 動画との重複 **0 件**、公式 test との重複 **0 件**（val・train とも 0） | 追加動画の集合へ `04` を混ぜると重複 **1 件** `['04']` → 集合演算は重複を検出できる |
 | g | `conventions#folds` が L2 で引ける | `conventions_anchors()` に `folds` が現れた（アンカー 9 → 10）。表の数値は docs と**差分 0 行** | `conventions#folds_zz` は引けない（陰性対照） |
 | h | 残件三つ | docs-check 対象 **42 → 43**（食い違いなし・exit 0）。変更履歴に `a8c07e81` 行。`issuer-defects.md` に **4 件**追記 | `issuer-defects.md` は生成物でない（`generated_locations()` は `context/auto/` と `tasks/inbox.md` のみ）ので手編集した。3 ファイルとも **削除行 0** |
-| i | PR が Draft でなく存在 | §7 に記載 | 分岐名 **`feat/fold-table`**（`task_start.sh` が識別子から機械的に導いた） |
+| i | PR が Draft でなく存在 | **PR #176**（`draft=false` / `state=OPEN` / `feat/fold-table → master`）| 分岐名 **`feat/fold-table`**（`task_start.sh` が識別子から機械的に導いた） |
 
 ## 4. 実測
 
@@ -112,8 +112,15 @@
 - **L2-6 の WARN は出なかった。** SPEC §2 は規約ファイルの変更で全契約に出ると述べるが、本契約の
   L1+L2 は規約を変える前に実行したためである。規約を変えた後に他契約を検証すれば出るはずだが、
   **本契約では測っていない（UNKNOWN）。**
-- PR 番号と push の終了コードは §8 に記す。
 
 ## 8. 送出
 
-（commit・push・PR・`make task-report` の結果をここに記す）
+| 操作 | 結果 | 終了コード |
+|---|---|---|
+| commit | `537c968c`（本体 11 ファイル / 1655 行追加）、`e7a51005`（PENDING の解消）| 0 |
+| `git push -u origin feat/fold-table` | `[new branch] feat/fold-table -> feat/fold-table` | 0 |
+| `gh pr create --base master` | **PR #176**（`draft=false` / `state=OPEN`）<br>https://github.com/takuya3h/m2/pull/176 | 0 |
+| `make task-report TASK=…` | （下に追記）| |
+
+commit に禁止領域は 1 件も含めていない（`git diff --cached --name-only | grep -cE '^(experiments|data|runindex|context/auto|transfer)/'` → **0**）。
+syncthing の一時ファイル 7 件は staging していない。
