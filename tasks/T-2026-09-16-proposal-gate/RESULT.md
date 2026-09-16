@@ -138,8 +138,8 @@
 | 項目 | 値 |
 |---|---|
 | 分岐 | `feat/proposal-gate` |
-| commit | REPLACE-AFTER-PUSH |
-| PR | REPLACE-AFTER-PUSH |
+| commit | `6c95e4f1`（規約・文書・検査器） / `4300b7d2`（報告） |
+| PR | **#173**（Draft ではない。base `phase0` ← head `feat/proposal-gate`） |
 | `make task-validate` | exit 0（WARN [L2-6] 1 件） |
 | `make task-preflight` | 6 PASS / 0 WARN / 6 SKIP / 0 FAIL |
 | `make forbidden-check` | exit 0（changed 7 / permitted 1 / violations 0） |
