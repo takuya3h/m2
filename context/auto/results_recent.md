@@ -6,8 +6,74 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 86 件）。
-ここに出ない 81 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 88 件）。
+ここに出ない 83 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-09-16-proposal-gate
+
+状態 `pass` / ホスト `lecun` / 起票 `173` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 開始前から在る未追跡 2 件を git stash（移動）で退避し作業ツリーを清浄にした。context/conventions.md のアンカーを実装の正規表現で数えて 8 件、tools/check_spec.py の RULES タプルの要素数を読んで 8 件と記録。P9 の自己申告『規則 8 件』と独立に一致した
+- `G2` pass — 禁止語は 0 語で 0 件・1 語で 1 件・2 語で 2 件。カードは見出し 14 件で 0 件・13 件で missing_heading 1 件・#5 の数字を消して missing_number 1 件。境界（未踏＋空白である理由の仮説）は 0 件、条件が無ければ 1 件。六通りすべて期待どおり
+
+### 起票者の誤り
+
+- `self_contradiction` — Task B は context/conventions.md への追記を命じるが、同ファイルは tools/check_forbidden.py の FORBIDDEN_FILES にあり、契約は contract.allow_write を宣言していない。指示どおり実行すると Task E-1 の make forbidden-check が status: fail / violations 1 件（禁止されたファイル context/conventions.md）で落ち、完了判定に到達できない
+- `check_does_not_check` — SPEC 2 節の確定事実 2 は『変更履歴に行を足すと naming の解決結果が変わり、naming を注入する既存契約で L2-6 が WARN になる』と述べるが、_warn_conventions_rev（tools/validate_task.py:439）は inject_verbatim を読まず git diff の有無だけを見る。実測では変更履歴に行を足す前、proposal_gate 節を足しただけの時点で、naming を注入しない T-2026-08-11-issuer-defect-detector にも同じ WARN が出た
+
+### 逸脱
+
+- `judgement` — contract.allow_write に context/conventions.md を足した。契約の Task B が同ファイルへの追記を命じており、allow_write はスキーマ上の正規キーで許可の上限（data/ のみ）にも触れないため、停止せず宣言を補った。結果 forbidden-check は permitted 1 件 / violations 0 件で通る
+- `judgement` — 開始前から在った未追跡 2 件（.sync-pause.released と前セッションの digest）を git stash push -u で退避した。禁止事項 6 のとおり消していない。戻すのは git stash pop
+- `judgement` — 逐語注入の原文 2 件を RESULT.md へ四字下げで貼った。原文の見出しが本書の節構造と混ざるのを避けるためで、下げ幅を除いた文字列は規約の当該節と一致する。要約はしていない
+
+### 申し送り
+
+- docs/proposal-gate.md は docs/docs_audit.md に載っていないため make docs-check の対象外である。対象数は前後とも 42 で変わらない。登録するなら、文書が言及する docs/evidence/ が並行契約 T-2026-09-16-evidence-map-ab で実在するようになってからにする（いま登録すると不在の経路で落ちる）
+- context/conventions.md の変更履歴の表に a8c07e81（2026-08-25、issuer_cautions 節の追加）の行が欠けている。本契約は既存節の本文を変えない禁止を守るため足していない。補うなら別契約で
+- tools/check_proposal.py は引用の中の禁止語を区別しない。docs/proposal-gate.md 自身へ当てると過去の欠陥を引用した 13 行目を 1 件検出する。提案文書だけに使う前提であり、引用の除外が要るなら規則を足す判断が要る
+- context/auto/* と tasks/inbox.md は SPEC の禁止事項 3 により再生成していない。並行契約との統合後に一台で一度だけ make taskindex && make inbox を回すこと
+
+### 断定できなかったこと
+
+- make docs-check の通過は docs/proposal-gate.md について空振りである（対象が docs_audit.md 依存）。代わりに文書内の経路を手で確かめ、context/conventions.md と tools/check_spec.py は実在、docs/evidence/ は不在と実測した
+
+## T-2026-09-16-evidence-map-ab
+
+状態 `pass` / ホスト `bengio` / 起票 `174` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — Crossref・doi.org・arXiv API の三方向すべてに HTTP 200 で到達した。陽性対照は起票者確認済みの DOI 二件（10.1007/978-3-031-72089-5_18 と 10.1016/j.media.2024.103366）がいずれも HTTP 200 で実在と返り、著者も地図の記載と一致。陰性対照は架空 DOI 10.1000/zz-not-a-real-doi-2026 が HTTP 404 で Resource not found. を返した
+- `G2` pass — 地図 A 15 行・地図 B 11 行の計 26 行を DOI 4 件（Crossref）と arXiv ID 26 件（arXiv API）で照合し、26 件すべてが実在・書誌一致。不在 0 件のため地図から外した行は無い。書誌に差 0 件のため escalate_if の三件以上にも該当しない
+
+### 起票者の誤り
+
+（なし）
+
+### 逸脱
+
+- `judgement` — 最初の照合器が MS-TCN と CLIPSeg を書誌に差と誤検出した。複合姓 Abu Farha の先頭語だけを取ったことと、Lüddecke の ü を照合側だけ ASCII 化したことが原因で、地図の誤りではない。両側に同じ NFKD-ASCII-小文字の正規化を当てて直し、二件とも実在・書誌一致になった。誤ったまま報告すれば起票者の写し誤りを疑わせるところだった
+- `judgement` — 地図 B に B.5 未検証の組み合わせを足した。SPEC の付録 B には独立の節が無く B.3 の表の未のセルが実質それに当たるため、完了判定 e を満たす目的で末尾に置き B.3 を指す説明のみ書いた。B.3 の表そのものは書き換えていない
+- `judgement` — 印の列の読み方を各地図の冒頭に注記した。印には起票時の未照合が残りその後ろに本契約の照合結果が続くため、そのままでは矛盾して見える。元の印を書き換えず読み方を説明する形にした
+- `judgement` — spec.yaml を編集した。created_from.runindex_commit と contract.conventions_rev の REPLACE-BY-EXECUTOR プレースホルダ二件を実測値へ確定し meta.amendments に記録した
+- `judgement` — make taskindex と make inbox を実行していない。SPEC 禁止 3 が並行契約との衝突を理由に投影と集約の再生成を禁じているため。本契約の行が context/auto/ に現れることは未確認である
+- `environment` — 契約の取り込み前に作業ツリーを退避した。追跡下 1 件と未追跡 39 ファイルがあり、scripts/task_start.sh は作業ツリーが汚れていると exit 3 で止まる実装のため、git stash push -u -m pre-T-2026-09-16-evidence-map-ab で退避してから task-start を実行した
+
+### 申し送り
+
+- 本契約は文献の実在と書誌だけを照合した。各文献の本文にその数値が書いてあるかは照合していない。数値の検証は利用者が距離 0 から 1 の八本について原典で済ませており、残りの行の数値は未検証である
+- 地図の行は ChatGPT deep research 一エンジンの報告から写したものでエンジン間の突き合わせが無い。印の列の片方という記載がそれを指す。別エンジンでの突き合わせを行うかは未決である
+- deep research の出力ファイルが repo に無いため、地図の出所は契約書の付録になっている。今後の証拠地図では元の報告そのものを repo に置くと、写し誤りの追跡ができるようになる
+- Trans-SVNet の表番号は地図に「後続論文の再掲でも確認したため最終稿で原 PDF の表番号を照合する」と残っている。本契約は書誌の照合までで、表番号の照合は行っていない
+
+### 断定できなかったこと
+
+- 地図の各行の数値が原典に書いてあるか。本契約は実在と書誌の照合のみで、数値の検証は範囲外である
+- 本報告の投影への反映。SPEC 禁止 3 により make taskindex を実行していないため、context/auto/ に本契約の行が現れることを確認していない
+- 元の報告（deep research の出力）のファイル名とバイト数。repo に存在しないため、出所を SPEC.md の付録（30894 バイト）として記録した
 
 ## T-2026-09-01-notion-retire-scripts-and-speccheck
 
@@ -102,81 +168,4 @@
 - 旧マスター頁の見出し。HTTP 404 のため一件も取得していない。推定で埋めていない
 - page_size=7 の走行が読み取りタイムアウトを 2 度起こした原因。再試行で完走したが Notion 側の応答か経路かは切り分けていない
 - 長い符号化文字列 8 件のうち本文中の 2 件が何の語であるか。形（長さ 63・英小 40・数 19・記号 4・16 進ではない）と資格情報でないことは確かめたが、値は見ていない
-
-## T-2026-08-30-tooling-fixes-five
-
-状態 `pass` / ホスト `andrew` / 起票 `168` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 五件すべてで再現する入力と正常に振る舞う入力を実測した。F1 は runindex/__f1_probe.tmp で violations=1、tools/__f1_ok.tmp で violations=0。F2 は gpu_free と zzz_not_a_check の どちらも適用検査が ['P1','P6','P7','P8','P9'] のまま変わらず FAIL にならないことを確認。 F3 は TBD と <resolve_from_runindex> と exp:?/?/?@? が schema で落ち、正規形は通ること。 F4 は experiments.csv の 277 群のうち n_runs>1 が 206 件あり、既存の群へ run が加われば 集計列が必ず動くこと。F5 は伏せ字 2 種が偽陽性で拾われ、合成鍵と無害文は正しく分かれること。
-- `G2` pass — 五件すべてで陽性が検出され陰性が非検出であることを対照で確認した（audit §7 に出力の全文）。 既存の全契約の L1 は diff で完全一致（104 task(s), 1 failed / OK 103 / FAIL 1 / SKIP 1 / exit 1）。 失敗 1 件は T-2026-08-22-philip-hub-foundation で修正前から同じ。
-
-### 起票者の誤り
-
-（なし）
-
-### 逸脱
-
-- `judgement` — 開始時の未追跡ファイル（pd_refin_*_seed42 の logs/*.json 4 組とセッションダイジェスト 1 件）で make task-start が exit 3 で止まった。前契約でユーザーが選んだ「stash で一時退避」を同じ手順で 適用した（stash@{0}）。本契約の完了後に git stash pop で戻す。
-- `judgement` — F1 の対照に使った touch/unlink が実在ファイル experiments/audit/l0_hts_acceptance/acceptance_report.json を削除した。git checkout -- で復元し、 要約値 d9ac7ced89e5c574… の一致と git status --porcelain experiments/ の空を確認した。 以降の対照は控えを取ってから書き換え、finally で必ず戻す方式に変えた。
-- `judgement` — F5 の伏せ字の目印を最初は xxxx と ** まで広く取ったため、既存の試験を 1 件壊した （NOTION_API_KEY= + x*40 という合成鍵を伏せ字と誤認して非検出にした）。目印を省略記号と 明示的な「伏せ字」語だけに絞り込んで解消した。tests/test_report_task.py は 26 件すべて通る。
-- `judgement` — F1 の許可の上限を宣言の文字列だけで判定していたため穴があった。allow_write が "d" のとき capped("d") が None を返し、grant("data/annotations/x.json", ("d",)) が許可を返していた。 上限を経路そのものに当てる形へ直し、d / da / data / data/ / data/annotations/ の 5 通りを 試験で固定した。
-- `spec_defect` — 手順書（.claude/skills/task/SKILL.md 手順 6）は make taskindex と make taskindex-check、 make inbox の実行を求めるが、契約 §4-3 は context/auto と tasks/inbox.md の再生成を禁止して いる（並行契約があるため）。契約を優先しいずれも実行しなかった。したがって本報告は context/auto/tasks_summary.csv などの投影にまだ現れない。統合後に一台で再生成すること。
-
-### 申し送り
-
-- SPEC §5-g「全テストが通る」は未充足のまま終えた。起票時点で既に 6 件が落ちており、 本契約の作業では動かせない。tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics、 tests/test_fetch_task.py::test_rejects_unknown_file_name、 tests/test_research_logger.py の 4 件（test_log_run_idempotent ほか）。
-- test_fetch_task.py::test_rejects_unknown_file_name は誤り文言と試験の期待がずれているだけに 見える（期待「受け取れないファイル」／実際「経路として受け取れない名前です」）。 tools/fetch_task.py は本契約の entrypoints に入っているが、F1 から F5 のいずれでもないため 触っていない。直すなら別契約で。
-- 今後の契約は「実行前の失敗件数を分母として記録する」形にすると、判定 g のような空振りを 避けられる。件数が増えたことだけを見ると、既存の失敗が残っていても気付けない。
-- 許可の宣言は contract.allow_write（接頭辞の配列）。検査は make forbidden-check TASK=<task_id>。 上限は data/ 配下（常に不可）と、experiments/ transfer/ のうち起点に既に存在する経路。 収穫を伴う契約は allow_write: [runindex/] を置けば道具を迂回せずに通せる。
-- 収穫の検証は make harvest-verify（BASE=<commit> で起点を変えられる。既定は HEAD）。 run 単位の index.csv は追加のみ、集約表は既存の群の判定列が不変。判定列は same_sign / verdict / agree / reason / n_seeds を名前に含む列で見分ける（experiments.csv では 631 列中 106 件）。
-- 置換前提の参照は ref: "unresolved:<何を索引で引くか>" と resolve_by_executor: true で宣言し、 解決先を tasks/<task_id>/resolved.yaml に resolved_to と how の対で書く。P12 が済むまで止まる。 この対応表がそのまま RESULT の「解決された参照」の材料になる。
-- preflight に書いてよい名前は venv_active / cuda_ext_loaded / deterministic_flags / gpu_free。 schema の enum と tools/preflight_task.py の KNOWN_PREFLIGHT_NAMES が同じ集合であることは test_f2_schema_enum_matches_implementation が縛っている。片方だけ増やすと試験が落ちる。
-- P11 gpu_free は「GPU を占有する compute プロセスが 0 件」で判定する。使用量の閾値は置いていない。 nvidia-smi が無い・失敗する・タイムアウトする場合は FAIL にした。契約が空きを前提に宣言した以上、 確かめられないまま実行を許すと宣言の意味が無いという判断による。閾値が要るなら別契約で。
-- 本契約の実行で退避した未追跡ファイルが残っている。git stash@{0} 「task-start用の一時退避 T-2026-08-30-tooling-fixes-five」を pop して戻すこと。
-
-### 断定できなかったこと
-
-- P3 deterministic_flags の判定基準は従来どおり未確定で常に SKIP のまま（backlog B-20）。 決定性の設定は実行プロセス内で行われ外部から観測できない。本契約では触れていない。
-- P11 gpu_free を「compute プロセス 0 件」で判定したとき、共有ホストで他者の学習が走っている間に 契約が止まる頻度は測っていない。実測は本契約の範囲外（GPU を使わないため）。
-
-## T-2026-08-30-hts-candidate-acceptance
-
-状態 `pass` / ホスト `andrew` / 起票 `167` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 配下を find で全走査し 74 エントリ（d=11 f=60 l=3）。点で始まる .gitkeep 1 件、 退避先 _deprecated/egosurgery_hand4 の 3 件、配下内を指す symlink 3 件を含む。 文書・スクリプトからの逆引き（ひな型 {train,val,test}/{split}/{sp}/{s} を展開）で 実在 27 経路を得て、方法1 に現れない実在参照が 0 件であることを確かめた。 参照先 4 経路（raw 02_hand/04_handtool/00_master）はすべて到達可。
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — SPEC §2 は「既存の検査器が実装している C1 から C5 の定義を正とする」と書くが、実装の 主判定は main_keys = C1/C2/C3/C4 の 4 つで C5 を含まない（C5 は pass を持つが verdict に 使われない）。指示どおり C1–C5 を主判定として扱うと、C5 が PASS/FAIL する候補で結論が 変わり、検査器の verdict と食い違う判定が出る。実装を優先し食い違いを報告に残した。
-- `self_contradiction` — spec.contract.prohibitions の no_runindex_regen と no_history_rewrite は、同じ契約が inject_verbatim で原文注入を指示している conventions#prohibitions の表に存在しない （表は no_split_redefine / no_raw_write / no_frozen_change / no_estimated_values / no_runindex_hand_edit）。指示どおり原文へ照合すると解決先が見つからず、禁止の内容を 実行者が推測するしかない。SPEC §4 の禁止事項を正として運用した。
-
-### 逸脱
-
-- `judgement` — 開始時に作業ツリーへ未追跡ファイル（pd_refin_*_seed42 の logs/*.json 4 組と セッションダイジェスト 1 件）が残り make task-start が exit 3 で止まった。破棄は 研究記録に関わるためユーザーへ選択肢を示し、「stash で一時退避」の回答を得て git stash push -u で退避した（stash@{0}）。本契約の完了後に git stash pop で戻す。
-- `judgement` — 実行開始時の分岐は feat/denoise-falsification だった。ユーザーが指示した起動命令に 従い git checkout phase0 を行ってから task-start を実行した。
-- `judgement` — 契約 §4-2（destination 以外の experiments への書き込み禁止）に触れた。対照のため scripts/audit_l0_hts_acceptance.py をそのまま実行したところ、検査器 main() が experiments/audit/l0_hts_acceptance/acceptance_report.json を上書きした。実行前の 控えから復元し git status --porcelain experiments/audit/ が空であることを確認した。 以降は main() を呼ばず判定関数のみを import して評価した。検査器を素直に実行すると 必ずこの書き込みが起きるため、契約側で実行方法を指定する必要がある。
-- `spec_defect` — 手順書（.claude/skills/task/SKILL.md 手順 6）は make taskindex と make taskindex-check、 make inbox を実行して投影に現れることを確かめるよう求めるが、契約 §4-3 は context/auto と tasks/inbox.md の再生成を禁止している（並行契約あり、統合後に一台で回す）。契約を優先し いずれも実行しなかった。したがって本報告は context/auto/tasks_summary.csv などの投影に まだ現れない。統合後に一台で再生成すること。
-- `spec_defect` — make forbidden-check が status=fail を返すが、違反 12 件はすべて本契約の outputs.destination（experiments/analysis/hts_candidate_acceptance/）の内側である。 道具は生成物（context/auto/ と tasks/inbox.md）しか除外できず、契約ごとの destination を 表現できないため、契約に従った実行でも必ず fail になる。destination の外側にある違反は 0 件であることを個別に確かめた（changed 17 件の内訳は destination 12・契約ディレクトリ 4・ tasks/inbox.d/ 1）。道具に destination の除外を渡せるようにする必要がある。
-- `judgement` — G1 の照合が初回は空振りだった。逆引きがひな型を展開していなかったため、方法1 から 1 件除く陰性対照が 3 例すべて非検出になった。ひな型展開を足して照合を強めてから G1 を判定した。弱いままなら G1 は空振りのまま通っていた。
-
-### 申し送り
-
-- make forbidden-check は契約ごとの outputs.destination を除外できないため、destination へ 正しく書いた契約でも status=fail を返す。本契約では違反 12 件すべてが destination の内側で、 外側は 0 件だった。道具側に destination を渡す口が要る。
-- 三値の結論は「一部欠落」。主判定 C1（真マスク）は hts_hand_seg / hts_hand_tool_seg / hts_tool_seg / raw04_5cls が、C2（値5=Two Hands Tool）は hts_hand_tool_seg（cat5 注釈 2021 件）と raw04_5cls が、C4 は全 9 候補が満たす。C3 を満たす候補は 0 件。
-- C3 は実装どおりでは満たせない。検査器は raw 02_hand の glob によるディレクトリ名 26 件と、 file_name から導く動画 id 25 件を比べており、03_3 は右辺に現れ得ないため missing == [] が 構成上成立しない。03_3 は 02_hand/json_per_video/03_3/03_3.json が images 1472 件・ annotations 0 件で、その画像リストは 03_1/03_2 のフレームである。
-- 03_3 の手・把持・マスク注釈は存在しない。data/annotations と data/raw の COCO JSON 全 291 個 （realpath で重複排除）を走査し 03_3_* のフレームを持つ注釈は 0 件だった。一方 frames は 01_frames/initial_videos/03_3/ に 261 枚、工程注釈は egosurgery_phase/03_3.csv が実在し、 公式 split（egosurgery_tool の 22 動画）には 03_3 が含まれない。組立作業では埋まらない欠落である。
-- 目標値 57173 は正本の完全重複 1 件を含む。02_hand/json_per_video/05_1/05_1.json の 05_1_0575.jpg / bbox (0.0, 6.0, 940.0, 1066.0) / cat 4 に ann id 1519 と 1520 が同一内容で並ぶ。 hts_hand_seg（train+val+test+extra）の単純加算は 57173 で目標一致、集合件数は 57172。 C3 の閾値を直す場合はどちらを正とするか明記が要る。
-- 既存検査器 scripts/audit_l0_hts_acceptance.py に 3 つの欠陥を実測した。(1) 入力の不在を 0 件として通す（_splits が不在ファイルを黙って飛ばし、退避に気付かない）。(2) C3 が ディレクトリ名と動画 id という型の違うものを比べる。(3) C1 の seg_profile は先頭 3000 件しか 見ない。本契約は全件（polygon 371335 件を含む）を走査した。修正は本契約の範囲外。
-- C5（公式 split 整合）は主判定ではないが、真マスクを持つ hts_hand_seg は 9627/1515/4255 で 公式 9657/1515/4265 に 40 枚届かない。不足分は手注釈が 0 件のフレームであり、原資料の欠落では なく「注釈ゼロのフレームを images に載せるか」の設計差である。組立時に決める必要がある。
-- 文書・スクリプトが指す data/annotations 配下の経路のうち 29 件が実在しない （egosurgery_hand4/ の旧経路、egosurgery_hts/hand_bbox/、handtool_seg_5cls/by_split/、 pseudo_labels/、egosurgery_hts_bundle_audit.md、egosurgery_split_consistency_audit.md など）。 README §9 が指す文書の一部も不在。文書の追従が要る。
-- 本契約の実行で退避した未追跡ファイルが残っている。git stash@{0} 「task-start用の一時退避 T-2026-08-30-hts-candidate-acceptance」を pop して戻すこと。 実体（checkpoints/predictions）は .gitignore 済みのためディスク上に残っている。
-
-### 断定できなかったこと
-
-- 検査器 C1 の polygon>4 頂点の枝の実データ上の挙動。実データの polygon は全 371335 件が 4 頂点であり、真の多角形が存在しないため踏めない。合成入力でのみ確認した。
-- egosurgery_tool_hand 直下の 4cls（train/val/test.json）と 19cls（instances_*.json）の生成元。 README に記載を確認できなかった。来歴は candidates.csv の provenance 列で空欄とせず 「生成元の記載を README で確認できず」と明記した。
 
