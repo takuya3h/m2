@@ -91,7 +91,7 @@
 
 ## T-2026-09-17-efros-syncthing-join
 
-状態 `pass` / ホスト `efros` / 起票 `なし` / 様式 `v3`
+状態 `pass` / ホスト `efros` / 起票 `180` / 様式 `v3`
 
 ### ゲート
 

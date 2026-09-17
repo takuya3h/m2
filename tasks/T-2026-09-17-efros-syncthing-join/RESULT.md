@@ -121,3 +121,18 @@
   報告時点で `needBytes=5915279436` `needFiles=102484`
 
 ## 送出
+
+| 項目 | 結果 |
+|---|---|
+| commit | `7ae0a73d`（契約 5 ファイル + 受け皿 1 + 投影 4 の変更のみ。開始前からの未追跡 2 件は含めていない） |
+| push | 終了コード **0**（`feat/efros-syncthing-join` を新規に送った） |
+| PR | **#180**（`feat/efros-syncthing-join` → `phase0`） |
+| `make task-validate` | 終了コード **0** |
+| `make task-preflight` | **6 PASS / 0 WARN / 6 SKIP / 0 FAIL**。SKIP は P2 `cuda_ext_loaded`・P3 `deterministic_flags`・P4 `prereg_committed`・P5 `frozen_source_hash`・P11 `gpu_free`・P12 `refs_resolved` |
+| `make forbidden-check` | 終了コード **0**（`status: pass`、`violations: []`、生成物 4 件を除外） |
+| `make taskindex-check` | 終了コード **0**。`tasks_summary.csv` と `results_recent.md` に本契約が現れる |
+| `make inbox-check` | 終了コード **0** |
+| 秘匿検査（自前） | 送出物 6 件に対し **合計一致 0 件 / exit 0**。**検査は値を出力せず長さと件数だけを出した** |
+| `make task-report` | 終了コード **0**。`verdict=pass` / `n_issuer_defects=2` / `report_bytes=10732` / `report_sha256=b0492499…11fc` / `replaced_blocks=0` |
+| 抑止の解除 | **解除した**。`.sync-pause` を別名へ移して解除を確かめたのち削除した（`.sync-pause.released` は `.gitignore` に載らず未追跡として残るため）。抑止が効いていた記録は `sync-alerts.log` に 3 件 |
+| 作業ツリー | 開始時と同じ未追跡 **2 件**のみ（`docs/sessions/digest/`）。**入れ子は作っていない** |
