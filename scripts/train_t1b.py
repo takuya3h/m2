@@ -288,6 +288,13 @@ def main():
     from optimizer import param_dict
     groups = param_dict.finetune_t1b(model, lr=args.lr, film_lr=args.film_lr)
     opt = torch.optim.AdamW(groups, lr=args.lr, weight_decay=1e-4, betas=(0.9, 0.999))
+    # TF32。**既定 off では設定に触れない**（触れること自体が既定値の再確認になり、
+    # 将来 torch の既定が変わったときに挙動が固定されてしまうため）。
+    if args.tf32:
+        torch.backends.cuda.matmul.allow_tf32 = True
+    # 自動混合精度。既定 no では autocast を張らず scaler も作らないため、経路は従来と同一。
+    amp_dtype = {"bf16": torch.bfloat16, "fp16": torch.float16}.get(args.amp)
+    scaler = torch.cuda.amp.GradScaler() if args.amp == "fp16" else None
     sched = torch.optim.lr_scheduler.MultiStepLR(opt, milestones=[max(args.epochs - 2, 1)], gamma=0.1)
 
     det_steps_per_ep = len(det_train)
@@ -314,6 +321,9 @@ def main():
     ra.write_evidence(work, config={
         "run_name": run_name, "variant": variant, "seed": args.seed, "inject": args.inject,
         "trainable": args.trainable, "zero_ctx": bool(args.zero_ctx), "epochs": args.epochs,
+        "amp": args.amp, "tf32": bool(args.tf32),
+        "matmul_allow_tf32": bool(torch.backends.cuda.matmul.allow_tf32),
+        "cudnn_allow_tf32": bool(torch.backends.cudnn.allow_tf32),
         "lr": args.lr, "film_lr": args.film_lr, "phase_source": args.phase_source,
         "model_cfg": model_cfg, "smoke": bool(args.smoke),
         # 契約 (tasks/<task_id>/spec.yaml) と run を結ぶ鍵。harvester は最上位を読む。
@@ -365,15 +375,28 @@ def main():
                 break
             images, targets = batch
             model.set_phase_context(ctx_for_targets(targets, imgid_to_ctx_tr, device, args.zero_ctx))
-            loss_dict = model(images, targets)
-            loss = sum(loss_dict.values())
+            if amp_dtype is None:
+                loss_dict = model(images, targets)
+                loss = sum(loss_dict.values())
+            else:
+                with torch.autocast("cuda", dtype=amp_dtype):
+                    loss_dict = model(images, targets)
+                    loss = sum(loss_dict.values())
             opt.zero_grad()
-            loss.backward()
+            if scaler is None:
+                loss.backward()
+            else:
+                scaler.scale(loss).backward()
+                scaler.unscale_(opt)  # 勾配の刈り込みは尺度を戻してから当てる
             if not phase_grad_seen and any(
                     p.grad is not None and p.grad.abs().sum() > 0 for _, p in phase_named):
                 phase_grad_seen = True
             torch.nn.utils.clip_grad_norm_([p for p in model.parameters() if p.requires_grad], 0.1)
-            opt.step()
+            if scaler is None:
+                opt.step()
+            else:
+                scaler.step(opt)
+                scaler.update()
             if step % args.print_freq == 0:
                 rate = (step + 1) / max(time.perf_counter() - ep_start, 1e-6)
                 eta = (det_steps_per_ep - step) / max(rate, 1e-6) / 60
@@ -541,6 +564,13 @@ def parse_args():
     p.add_argument("--assert-init-map", type=float, default=None,
                    help="warm-start init mAP がこの値±tol から外れたら中断（恒等性・ドリフト検査）")
     p.add_argument("--assert-init-tol", type=float, default=0.02)
+    p.add_argument("--tf32", action="store_true",
+                   help="行列積で TF32 を許す（torch の既定は False。畳み込み側の cudnn は既定で True）。"
+                        "既定 off ではこの設定に触れないため、経路は従来と同一")
+    p.add_argument("--amp", default="no", choices=("no", "bf16", "fp16"),
+                   help="学習の順伝播の数値精度。既定 no は従来どおりの単精度で、"
+                        "経路も従来と同一（autocast を張らない）。bf16/fp16 は自動混合精度。"
+                        "fp16 は GradScaler による勾配の尺度調整を伴う。**評価は常に単精度で行う**")
     return p.parse_args()
 
 

@@ -1149,3 +1149,28 @@ t1b の実測（1 run 約 4 時間 / 6 epoch）を代理に置いた。**いず�
 
 `scripts/train_t1b.py` は 1 行も変えていない。キャッシュを読む口は計測用の道具の側にあり、
 既存の学習経路は構成上壊れない。
+
+### 数値精度と計算グラフの最適化の実測（2026-09-17）
+
+`T-2026-09-17-amp-compile-timing` で `scripts/bench_t1b_precision.py` を追加し、
+`scripts/train_t1b.py` に `--tf32` と `--amp {no,bf16,fp16}` を足した。
+`docs/stage0/C2_amp_compile_timing.md` に結果を置いた。
+
+🔴 **既定は従来と同一である。** `--tf32` を付けなければ `torch.backends.cuda.matmul.allow_tf32`
+には**触れない**（既定値の再確認すらしない。将来 torch の既定が変わったときに挙動を固定しないため）。
+`--amp no`（既定）では autocast を張らず `GradScaler` も作らないため、経路は分岐する前と同じである。
+
+- `bench_t1b_precision.py` — 条件（fp32 / tf32 / bf16 / fp16 / compile 系）ごとに 1 step を測る。
+  バッチは最初に一度だけ取り出して保持し、**全条件へ同じ列を与えて**形の列の要約値で同一性を示す。
+  暖機を捨て、**同期を取ってから**計時する（同期なしの値も併記する。取らないと速く見える）。
+  `--trainable all` で W2 相当、`--dynamo-suppress-errors` で dynamo の eager 退避を測れる。
+
+**結果（efros・A6000・実測）**: 行列積の TF32 を許すだけで W1 が **1.182×**、W2 が **1.286×**。
+bf16 / fp16 はほぼ同じ倍率で、記憶領域が W1 で 12.8%・W2 で 27.1% 減る。
+非有限の損失と跳ねは全条件で 0 件。**`torch.compile` は完走しない**
+（`set_criterion.py:199` の `F.one_hot` が記号のままの形を扱えず、eager へ退避させると
+Hungarian matcher の費用行列に非数が入る）。利用者の判断で実装は改変せず除外した。
+
+`tools/estimate_tier_cost.py` の `det_iface_w2` を 4.00 h → **4.82 h** に直した
+（前契約の実測比 1.205 から導いた。`measured` は False のまま）。
+`docs/stage0/B1_tier1_cost_estimate.md` の 8 区画を再生成し `--check-doc` は差 0 件。

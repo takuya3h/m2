@@ -1,0 +1,74 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-09-17-amp-compile-timing"
+  kind: impl
+  title: "P→D 側の界面 run を混合精度とコンパイルで短縮できるか、処方を変えずに実測する"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-09-17T10:23:52Z"
+  created_from:
+    runindex_commit: "96eb3a1ca20ab7eb4b373d93304c9e6b33b733d5"
+    counts: {index: 1266, experiments: 285, verdicts: 1506}
+  depends_on: [T-2026-09-17-frozen-feature-cache-timing]
+  amendments:
+    - date: "2026-09-17"
+      reason: "利用者から decisions_required の 2 件へ回答を得た。(1) 数値精度を下げた設定を本番の処方として採用するかは実測を見てから決める（本契約は測るだけで採用しない。SPEC §8 と同じ）。(2) 前契約が残した一時領域は、前セッションで 6,827,503,447 bytes を実測して提示し利用者の指示で削除済み、現在 0 bytes として確定する"
+      diff: "governance.decisions_required を 2 件から空へ"
+    - date: "2026-09-17"
+      reason: "契約は Task C で experiments/transfer/<run> への書き込みを必ず伴う run を求める一方、contract.allow_write を宣言していないため make forbidden-check（Task E-1 が求める検査）が必ず失敗する。実測では 9 経路が禁止領域の内側として弾かれた。Task C が生成する 1 run に限って許可を宣言した。data/ 配下は宣言しておらず、既存 run 配下も含まない"
+      diff: "contract.allow_write に experiments/transfer/pd_refin_empty_seed42_tf32/ を 1 件追加"
+intent:
+  question: "いま単精度で回している検出側の界面 run を、数値精度を下げる設定と計算グラフの最適化で短くできるか。短くできるなら、主指標は seed 間の散らばりの内側に収まるか"
+  decision_at_stake: "Tier 一の費用を腕を削らずに下げられるか。下げられなければ設定水準の縮退か問いの見直しへ進む"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery-Tool subset (15 videos), fold A only"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt", "data/splits/ego_test.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/train_t1b.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#frozen_source]
+  conventions_rev: "e7a5100597a79b3b9c60935bf38d232f8ae96822"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  # Task C が必ず書く run の成果物。**新設の 1 run に限る**（起点に存在しない経路のみ許可される）。
+  allow_write: ["experiments/transfer/pd_refin_empty_seed42_tf32/"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。前契約の残置物の確認、現行の数値精度の特定、基準の step 時間の再取得", gpu: true, est: "60m"}
+    - {id: B, name: "条件ごとの step 時間の測定（単精度、半精度二種、コンパイル、併用）", gpu: true, est: "3h"}
+    - {id: C, name: "最良条件での折り A 一本と、主指標の基準との比較", gpu: true, est: "4h"}
+    - {id: D, name: "計算器への差し戻しと日数の再計算", gpu: false, est: "40m"}
+    - {id: E, name: "検証と報告", gpu: false, est: "60m"}
+  gates:
+    - {id: G1, after: A, check: "現行が単精度であることを実装から確認し、基準の step 時間を同一ホストで取り直した", on_fail: stop}
+    - {id: G2, after: B, check: "条件ごとの step 時間が対照つきで出そろい、最良条件が決まった", on_fail: ask}
+    - {id: G3, after: C, check: "主指標の差が seed 間の散らばりの内側に収まった", on_fail: ask}
+  env:
+    venv: ".venv-relation-detr"
+    preflight: [venv_active]
+outputs:
+  must_have: [C2_amp_compile_timing.md]
+  destination: "docs/stage0/"
+  acceptance:
+    - "a: 現行の数値精度が実装の行を指して特定され、単精度であることが示されている"
+    - "b: 条件ごとの step 時間が同一バッチ・同一ホストで測られ、単精度を基準とした倍率が出ている"
+    - "c: 測定が暖機と同期を含み、短い測定と長い測定で倍率が一致することが示されている"
+    - "d: 最良条件での折り A 一本の主指標が、基準と比べられ、差が seed 間の散らばりと並べて書かれている"
+    - "e: 数値の異常（発散、非数、損失の跳ね）の有無が記録されている"
+    - "f: 計算器へ差し戻した日数が、単精度の場合と最良条件の場合で出ている"
+    - "g: 前契約が残した一時領域の大きさが記録され、片付けの可否が利用者へ提示されている"
+    - "h: PR が Draft でなく存在し、base が phase0 で、分岐が feat/ で始まる"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "半精度で損失が発散するか非数が出る場合"
+    - "コンパイルが完走せず、回避に実装の改変が要る場合"
+    - "主指標の差が seed 間の散らばりと同程度以上になった場合"
+    - "装置が他利用者に使われている場合"
