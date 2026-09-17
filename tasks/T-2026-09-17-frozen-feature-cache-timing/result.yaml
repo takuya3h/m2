@@ -1,0 +1,83 @@
+result_version: 3
+task_id: "T-2026-09-17-frozen-feature-cache-timing"
+status: partial
+host: "efros"
+branch: "feat/frozen-feature-cache-timing"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "基準 run pd_refin_empty_seed42 を runindex/index.csv の task_id 一致 16 件から特定し、command.sh と config.yaml で処方を照合した（epochs 6 / inject film / trainable film / seed 42 / zero_ctx true）。装置は仮占有 2 件を停止して compute プロセス 0 件・15 と 35 MiB・util 0% になった"
+  - id: G2
+    verdict: pass
+    note: "別過程で二度生成し cache_key 16e889a328f921c037e6d46756c59f802d8a6339b12f966e7e845a17dc7ae19e と aggregate_sha256 96ab87b8abfae5ba662b47991bd7fb890b4806ad95e75195806a7604d3183e84 が一致した。塔を seed123 に変えると両方変わった"
+  - id: G3
+    verdict: ask
+    note: "キャッシュ経路の 6 epoch run は回していない。上限倍率 1.049〜1.083 と実測倍率 0.558〜0.661 が先に判明したため利用者へ提示し、限定版で結論とする判断を得た"
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 550
+
+deviations:
+  - type: environment
+    note: ".venv-relation-detr にインタプリタが 1 つも無く pyvenv.cfg が指す pyenv 3.11.4 も不在だったため、docs/setup/lecun_detector.md に従い UV_VENV_CLEAR=1 SKIP_CUDA_CHECK=1 で再構築した（利用者の許可）。nvcc は 12.9 で文書の前提 11.8 は不在"
+  - type: environment
+    note: "P8 contract_valid を通すため .venv-relation-detr へ jsonschema>=4 を追加導入した（依存込み 5 件）。正本 lock requirements.relation_detr.lock.txt は変更していない（利用者の指示）"
+  - type: judgement
+    note: "完了判定 b の 6 epoch 完走比較を行っていない。上限 1.05〜1.08 倍・実測 0.65 倍が先に判明し 9 GPU 時間と 2.64 TB を投じる根拠が無くなったため、数値を提示して限定版で結論とする判断を得た"
+  - type: judgement
+    note: "装置の仮占有プロセス PID 106429 と 106543 を実験直前に停止した（利用者の明示の許可）。停止前に /proc/PID/exe と nvidia-smi --query-compute-apps の両方で同定し、部分一致は使っていない"
+  - type: spec_defect
+    note: "scripts/profile_t1b_step.py と scripts/t1b_backbone_cache.py を新設した。SPEC §3 は実装を読んで決めてよいとするが scripts/ への新設は明示の対象外である。scripts/train_t1b.py は 1 行も変えていないため既存の経路は構成上壊れない"
+  - type: judgement
+    note: "キャッシュの実体は third_party/Relation-DETR/data/processed/ 配下へ落ちた。train_t1b が import 時に os.chdir(RELDETR) するため相対経路がそこへ解決される。版管理外・同期対象外で禁止領域ではない。証跡の index.json 3 件は契約フォルダへ取り出した"
+  - type: judgement
+    note: "決定性の検査は val（transforms=None で前処理が決定的）で行った。学習側は増強が毎 epoch 乱択のため「同じ入力で二度生成」が定義できない"
+  - type: spec_defect
+    note: "手順書 §6 に従い make taskindex と make inbox を一度回したが、SPEC §4 禁止事項 4 が context/auto/* と tasks/inbox.md の再生成を禁じているため git checkout で元へ戻した。結果として taskindex-check と inbox-check は差分ありで exit 2 を返す。併合後に中央で再生成される想定と解した"
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "SPEC §2 は「環境は .venv-relation-detr」を確定事実として書くが、本ホストではその venv に python が 1 つも存在せず pyvenv.cfg の home が指す pyenv 3.11.4 も不在だった。指示どおり進めると L3 が make: python: No such file or directory で起動すらせず Task A の途中で止まる"
+  - type: check_does_not_check
+    note: "preflight の P1 は .venv-relation-detr を要求する一方、P8 は sys.executable すなわちその venv で validate_task.py を起動する。その venv の正本 lock 72 pkg に jsonschema が無いため検出系の契約では P8 が構造的に必ず FAIL し、指示どおり実行すると L3 が exit 0 にならず実行へ進めない"
+  - type: asserted_without_measuring
+    note: "完了判定 a は両方の run の所要時間が壁時計と GPU 時間で記録されていることを要求するが、基準 run の証跡 config.yaml と metrics.json と t1b_result.json と logs のどれにも時間の列が無い。指示どおりでは基準側が原理的に埋まらず 4 時間の再実行を強いる"
+  - type: self_contradiction
+    note: "§3 Task B は塔の出力を一度だけ保存して界面だけを学習することを前提に置くが、§4 禁止事項 2 は処方を変えないと定める。学習の前処理 presets.detr は毎 epoch 乱択のため一度きりの保存を使い回すことは処方の変更にあたり、両立には epoch ごとのキャッシュが要る"
+  - type: self_contradiction
+    note: "§4 禁止事項 4 は context/auto/* と tasks/inbox.md を再生成しないと定めるが、手順書 §6 は make taskindex と make inbox で投影と集約結果を生成し taskindex-check と inbox-check で差分 0 を確かめることを要求する。禁止事項に従うとこの二つの検査が必ず exit 2 を返し、手順書に従うと禁止事項に触れる"
+
+positive_controls:
+  - judgement: "キャッシュの決定性検査が働いている（同じ値を返し続ける壊れ方ではない）"
+    breaking_input: "塔の識別子を seed42 から seed123 へ変える"
+    observed: "cache_key が 16e889a3… から ff5f0729… へ、aggregate_sha256 が 96ab87b8… から 5db5f7ef… へ変わった"
+  - judgement: "経路比較が塔の順伝播を本当に外している"
+    breaking_input: "キャッシュ経路で backbone を差し替えなければ step 時間は変わらないはず"
+    observed: "差し替えた step は 0.4130 s、差し替えない step は 0.4379 s で 0.0250 s 減った（n=30）"
+  - judgement: "経路比較が実行順序の偏りを拾っていない"
+    breaking_input: "キャッシュ経路を先に回す（--swap）"
+    observed: "実測倍率 0.661 倍 → 0.654 倍、塔の順伝播 5.70% → 4.63%。結論は動かない"
+  - judgement: "preflight の P1 が実際に環境を見ている"
+    breaking_input: "契約が要求する .venv-relation-detr 以外の venv で起動する"
+    observed: ".venv で起動したとき P1 が FAIL し expected と VIRTUAL_ENV の食い違いを出した"
+
+followups:
+  - "tools/estimate_tier_cost.py の det_iface_w2 は代理 4.00 h（B1 の UNKNOWN #2）である。本契約の実測 W2/W1 = 1.205 から 4.82 h へ置き換えられる。置き換えるかは利用者の判断"
+  - ".venv-relation-detr の正本 lock に jsonschema が無いため、検出系の契約では preflight の P8 が構造的に FAIL する。lock に足すか P8 の起動方法を変えるかの判断が要る"
+  - "基準 run の証跡に所要時間の列が無い。run_artifacts へ壁時計と GPU 時間を残すようにすれば、以後は同じ処方の基準を再実行せずに比べられる"
+  - "SPEC §4 禁止事項 4（context/auto/* と tasks/inbox.md を再生成しない）と手順書 §6（make taskindex / make inbox とその検査）が衝突する。どちらを正とするかを定めないと、検出系に限らずすべての契約で同じ判断が繰り返される"
+  - "configs/stage/s0_frozen.yaml の stage1_feature_cache の骨組みは P→D の界面学習には使えない（凍結塔の出力を毎 step 全解像度で要する用途には向かない）。用途の注記を置くか外すかの判断が要る"
+  - "時間を縮めるなら削るのは腕ではなく 1 run の中身（epoch 数・解像度・query 数・encoder 層数）である。いずれも比較の土台を動かすため全腕で同一に動かすことが条件になる"
+
+unknowns:
+  - "基準 run とキャッシュ経路 run の 6 epoch 完走比較（主指標の一致）。キャッシュ経路が遅いことが確定したため実行していない"
+  - "基準 run の GPU 時間。記録が無く、本ホストでも 6 epoch を回していないため出せない"
+  - "決定化（ビット一致）の可否。6 epoch 完走比較を行っていないため未確認"
+  - "15 動画分の大きさは、val と同じ原解像度・増強なしの前処理を仮定して 1 枚あたりの実測値を枚数倍したものである（枚数 15,437 と 1 枚 57,802,752 bytes はいずれも実測）"
+
+commits: []
