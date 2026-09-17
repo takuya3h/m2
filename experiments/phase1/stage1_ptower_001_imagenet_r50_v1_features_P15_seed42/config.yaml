@@ -1,0 +1,27 @@
+task_id: T-2026-09-18-stage1-phase-tower
+action: extract
+candidate: A
+fold: A
+seed: 42
+layers: 6
+smoothing_weight: 0.0
+history: 30
+device: cuda:0
+cache: data/processed/stage1_features/imagenet_r50_v1_stage1/all_gap.npz
+manifest_dir: data/processed/phase_manifest
+epochs: 50
+patience: 10
+lr: 0.0005
+weight_decay: 0.01
+warmup_epochs: 2
+maps: 64
+batch_size: 32
+workers: 4
+weights: ResNet50_Weights.IMAGENET1K_V1
+transform: "ImageClassification(\n    crop_size=[224]\n    resize_size=[256]\n   \
+  \ mean=[0.485, 0.456, 0.406]\n    std=[0.229, 0.224, 0.225]\n    interpolation=InterpolationMode.BILINEAR\n\
+  )"
+feature_dim: 2048
+data_setting: P15
+source_sha256: ae9d48938997dd8bf5f70070bba8c41c0efee927a3898c1c85b108d39a2b1be1
+contract_sha256: f8becc40c384c31af6cf3f69d0a9ee29675c28d88e0fc32abd0e2147aada047b

@@ -1,0 +1,93 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-09-18-stage1-phase-tower"
+  kind: exp
+  title: "Stage 1: 工程塔 P*-21 と P*-15 を三候補のトーナメントで五折り確定する"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-09-17T15:09:16Z"
+  created_from:
+    runindex_commit: "96eb3a1ca20ab7eb4b373d93304c9e6b33b733d5"
+    counts: {index: 0, experiments: 0, verdicts: 0}
+  depends_on: [T-2026-09-17-fold-table]
+  amendments:
+    - date: "2026-09-18"
+      reason: "利用者回答による条件分岐の確定。追加6動画が使えない場合はP*-15だけで進め、P*-21はUNKNOWNとする。Stage 2の主分母P*-21のため追加6動画を使えるようにする別契約が必要と報告し、P*-15のトーナメントで選んだrecipeをP*-21にも適用する。最良と次点がseed間SD以内かつ所要時間も同程度なら単純な構成を優先し、候補A > C > B、掃引点が同点なら受容野の短い方を選ぶ。Stage 2での解釈の容易さとW2の費用が理由。原契約の該当する停止条件・G1・選定規則に対する例外として適用する。"
+    - date: "2026-09-18"
+      reason: "利用者指定により候補Cの平滑化重みは0.15と0.30、所要時間の同程度は±20%。判定式は短い時間に対する差が20%以内。実装から候補Aの短/長を6/8層（2段の受容野253/1021フレーム）に固定。全候補でtrain内頻度の逆数による重み付きCE、AdamW lr=0.0005、weight_decay=0.01、最大50epoch、2epoch warmup+cosine、val Jaccardの改善なし10epochで停止。同一seedで同じ設定を使用する。"
+    - date: "2026-09-17"
+      reason: "利用者回答による同点の決着。候補C・8層・履歴30で平滑化重み0.15と0.30が、5折り平均val Jaccardの差0.00389が折りAのseed間pstd 0.09596以内、所要時間差5.1%が20%以内となり、修正条項の同点規則（候補A>C>B、次に受容野の短い方）でも決着しなかった。事前登録6.3のdecisions_requiredとして諮り、平滑化重み0.30を確定した。以後の同点規則として、同一候補・同一受容野で残る同点は折りAのseed間pstdが小さい方を採る。理由はStage 2の送り手として再現性を優先するため。選定はvalのみで行いtestは参照していない。"
+    - date: "2026-09-18"
+      reason: "候補Bの固定実装: Aの最終logitsを64次元へ線形埋め込み、4head・1層・FFN256・dropout0.5・位置符号なしのTransformerを適用。履歴30/60は現在を含む窓で未来をmask。最終段のCEを集約後へ置き換え、CEの段数はA/Cと同じ2。入力は同一動画内のclipを番号順に連結し動画単位batch1。追加画像未発見の例外により学習格子は70run、線形対照1run・特徴抽出1runを別記。testは選定後のP15五折りのみとする。"
+intent:
+  question: "凍結した ImageNet 初期化の空間特徴の上に載せる時間ヘッド三候補のうち、折り内 val の macro Jaccard が最も高いものはどれか。その塔は折り A で Stage ゼロの凍結工程塔とどの程度離れるか"
+  decision_at_stake: "関門 G 一（事前登録基準で塔が確定）。確定した P 塔が Stage 二の送り手と G 一点五の材料になる"
+  hypothesis: "候補 A（causal 二段 TCN）が三候補の中で最良になる。候補 B（Transformer 集約）は同ドメインの否定例により A を下回る。候補 C（平滑化損失）は A と同程度"
+  related:
+    backlog: []
+inputs:
+  denominator:
+    ref: "exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42"
+    metric: "phase_jaccard"
+    require: {n_seeds: ">=3", sigma: present, split: val}
+  data:
+    dataset: "EgoSurgery-Phase: 15 videos (Tool subset) for P*-15, plus 6 extra videos (train only) for P*-21. Folds per conventions#folds"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt", "data/splits/ego_test.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/train_s4_tecno.py", "scripts/extract_stage1_features.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#folds, conventions#split, conventions#eval_recipe, conventions#sigma]
+  conventions_rev: "e7a5100597a79b3b9c60935bf38d232f8ae96822"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/phase1/stage1_ptower", "runindex/"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。折り表の解決、追加六動画の画像と注釈の実在、装置、一 run の所要時間の実測", gpu: true, est: "90m"}
+    - {id: B, name: "凍結 ImageNet-1K R50 の空間特徴を二十一動画分一度だけ抽出し、決定性を確かめる", gpu: true, est: "2h"}
+    - {id: C, name: "候補 A の掃引二点を五折りで学習（折り A は三 seed）。P*-21 と P*-15 の両方", gpu: true, est: "8h"}
+    - {id: D, name: "候補 B・C を候補 A の掃引二点の上に載せて同様に学習", gpu: true, est: "16h"}
+    - {id: E, name: "事前登録の規則で P 塔を選定。test を一度だけ評価。折り A を Stage ゼロの凍結塔と並べる", gpu: true, est: "2h"}
+    - {id: F, name: "検証と報告", gpu: false, est: "90m"}
+  gates:
+    - {id: G1, after: A, check: "折り表が解決でき、十五動画と追加六動画の画像と注釈が実在し、一 run の所要時間が記録された", on_fail: stop}
+    - {id: G2, after: B, check: "特徴の要約値が二度の抽出で一致し、動画ごとのフレーム数が manifest と一致した", on_fail: stop}
+    - {id: G3, after: C, check: "候補 A の全 run が完走し、val の主指標が記録された", on_fail: ask}
+    - {id: G4, after: E, check: "test の評価が確定した塔についてのみ、折りごとに一度だけ行われた", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, deterministic_flags]
+  resources: {server: "ilya", gpu: 2, est_hours: 40, runs: 140}
+prereg:
+  prediction: "候補 A が五折り平均の val macro Jaccard で最良。候補 B は A より低い。候補 C は A との差が seed 間散らばりの内側。P 塔（二十一動画） は P 塔（十五動画） より高い。折り A の P 塔（二十一動画） は Stage ゼロの凍結工程塔（検出 backbone 由来）より低いか同程度"
+  primary_endpoint: "候補ごとの五折り平均の折り内 val macro Jaccard（折り A は三 seed の平均、他は一 seed）。co-primary は frame accuracy で同方向"
+  decision_rule: "P 塔（二十一動画） の recipe は、五折り平均の val macro Jaccard が最大で、co-primary が同方向の候補と掃引点に決める。最良と次点の差が折り A の seed 間 SD 以内なら一 run の所要時間が短い方。P 塔（十五動画） には同じ recipe を適用し、別のトーナメントは行わない。test は確定した塔について折りごとに一度だけ評価し、test アクセス台帳に記録する"
+  stop_conditions:
+    - "追加六動画の画像か注釈が無い場合は停止して諮る。P 塔（十五動画） だけを進めてよいかは利用者が決める"
+    - "候補 A の折り A の一 seed が、同じ折り・同じ特徴の単フレーム線形分類より低い場合は停止して諮る（時間ヘッドが働いていない）"
+    - "特徴抽出の要約値が二度で一致しない場合は停止"
+    - "一 run の所要時間が一時間を超える場合は run 数の見直しを諮る"
+  committed_at: "2026-09-18T00:31:50+09:00"
+  commit: "1e586cf9672fb509d7c3704bb0a3c27cab2adf95"
+outputs:
+  expected_runs: 140
+  must_have: [metrics.json, config.yaml, notes.md]
+  destination: "experiments/phase1/stage1_ptower/"
+  stamp: {task_id_in: config.yaml}
+  acceptance:
+    - "a: 特徴抽出が二十一動画分一度だけ行われ、要約値が二度で一致し、動画ごとのフレーム数が manifest と一致する"
+    - "b: 全 run が折り表に従い、各 run の train・val・test の動画集合が規約の表と集合として一致する（集合差 零）"
+    - "c: 候補と掃引点ごとの五折り平均 val macro Jaccard と frame accuracy が表にあり、折り A は三 seed の平均と SD"
+    - "d: 事前登録の規則で選ばれた recipe が一意に決まり、選定に test の値を使っていない"
+    - "e: 確定した P*-21 と P*-15 の五折り test 値が、折りごとに一度だけ評価され、test アクセス台帳に記録されている"
+    - "f: 折り A の P*-21 の val と test が、Stage ゼロの凍結工程塔の値と並べて記録されている"
+    - "g: 単フレーム線形分類の対照が折り A で一件あり、候補 A がそれを上回る"
+    - "h: 全 run に task_id が刻まれ、runindex の収穫で新しい実験として現れる"
+    - "i: PR が Draft でなく存在し、base が phase0 で、分岐が feat/ で始まる"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [denominator_moved, "追加六動画の画像か注釈が無い", "候補 A が単フレーム線形分類を下回る", "一 run が一時間を超える"]

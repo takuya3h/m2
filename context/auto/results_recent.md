@@ -6,8 +6,49 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 93 件）。
-ここに出ない 88 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 94 件）。
+ここに出ない 89 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-09-18-stage1-phase-tower
+
+状態 `partial` / ホスト `ilya` / 起票 `なし` / 様式 `v3`
+
+### ゲート
+
+- `G1` ask — 折り表は解決でき、15 動画の画像と注釈は実在した（manifest train 9657 / val 1515 / test 4265 フレーム、欠損 0）。追加 6 動画 17-22 は注釈のみ実在し画像は 0 件。停止して諮り、P*-15 だけで進める承認を得た。1 run の所要は候補 A 折り A seed42 で 4.227106129284948 秒。
+- `G2` pass — 同じ入力で二度抽出し要約値が一致（63cd91453b76bc8f28118494893ec59ce369a2f0e1175335cf4d0bab21de2d81）。動画ごとのフレーム数の合計 15437 が manifest と一致し、欠損 0 件。陰性対照 2 件（重みの差し替え、manifest から 1 動画の削除）がともに検出した。
+- `G3` pass — 候補 A の 14 run（2 掃引点 × 折り 5、折り A は 3 seed）が全て完走し、val の phase_jaccard と phase_accuracy が metrics.json に入った。最長の run でも 4.880 秒で、1 時間の停止条件に触れていない。
+- `G4` pass — test を評価したのは確定塔 C/L8/w0.3/h30 の 5 折りのみで計 5 回。台帳 test_access_{A..E}.json が 5 件あり、学習経路は load_fold の既定 parts=(train,val) で test を読まない。P*-21 の塔は存在しないため 0 回。
+
+### 起票者の誤り
+
+- `check_does_not_check` — 契約は outputs.destination を experiments/phase1/stage1_ptower/ に置き Task F で make runindex と make forbidden-check を求めるのに contract.allow_write を宣言していない。指示どおり実行すると契約自身が作った 672 件の出力が禁止領域の違反に数えられ、make forbidden-check が status fail で落ちる。
+- `self_contradiction` — 完了判定 c は表の行数を 10 構成 × 2 データ設定と定めるが、同じ契約の 2026-09-18 の修正条項が追加画像未発見により学習格子 70 run・P*-21 は UNKNOWN と確定している。指示どおり実行すると判定 c は原理的に達成できず、判定 a・e・f も同じ理由で部分達成になる。
+- `asserted_without_measuring` — 契約 2 節は S4 の分母を val Jaccard 0.6447 ± 0.0146 と確定した事実として書いたが、同じ実験 ID を runindex で引くと 0.6322 ± 0.0215 が返る。指示どおり実行すると分母の照合が食い違って止まる。調査の結果、前者は当初 3 run、後者は後続 14 run の集計で、集計対象の相違だと判明した。
+- `self_contradiction` — 完了判定 d は選ばれた recipe が一意に決まることを求めるが、事前登録 6.3 と 2026-09-18 の同点規則は同一候補・同一受容野で残る同点を解けない。指示どおり実行すると候補 C・8 層で 0.15 と 0.30 が並び、選定器が例外で停止した。判定 d は諮って決めた場合の一意性を覆っていない。
+
+### 逸脱
+
+- `judgement` — 選定規則が同一候補・同一受容野の同点を解けず、事前登録 6.3 に従い停止して諮った。利用者が平滑化 0.30 を確定。規則を spec.yaml の修正条項と select() に置いてから機械で当て直した。結果を見たあとに置いた規則であり事前登録されていない。当てた対象は val のみ。
+- `spec_defect` — contract.allow_write が無く、契約が求める make forbidden-check が契約自身の出力で必ず落ちた。experiments/phase1/stage1_ptower と runindex/ を宣言して通した。
+- `environment` — 追加 6 動画 17-22 の画像が本ホストに無く、P*-21 を一切学習していない。契約の 140 run のうち実施は 70 run。Stage 2 の主分母 P*-21 には別契約が要る。
+- `judgement` — 分岐は開始時点から feat/stage1-phase-tower であり phase0 を起点にしていない。原契約 Task A-1 の「HEAD が phase0」を満たしていない。PR の base は phase0 にする。
+- `judgement` — RESULT.md の前半にある「学習は未開始」「利用者判断を待つ」は追記時点より前の状態を書いたものだが、時系列の記録を壊さないため書き換えずに残した。
+- `judgement` — select_stage1_ptower.py に同点規則と、それを両方向で覆う試験 1 件を追加した。契約は Task E を「規則を機械で当てる」としか書いておらず、実装の追加は実行者の判断である。
+
+### 申し送り
+
+- 追加 6 動画 17-22 の画像を本ホストで使えるようにする別契約が要る。注釈は実在するが画像が 0 件のため P*-21 が一切学習できていない。Stage 2 の主分母は P*-21 であり、これが無いと Stage 2 の送り手が揃わない。
+- 確定塔の 5 折り平均 val macro Jaccard は 0.32890765082910894、test は 0.22471876589180543 で、Stage 0 の S4（折り A val 0.6447397621229328）と大きく離れている。凍結 ImageNet 特徴の上では工程認識の水準がこの程度に留まることを、Stage 2 の期待値の置き方に反映する必要がある。
+- 事前登録の予測 1 と 2 が外れた。候補 A（TeCNO 型）は 10 構成中 7 位で、候補 B（Trans-SVNet 型）が A を上回った。根拠にした同ドメインの否定例（Trans-SVNet 23.1 < TeCNO 27.3）は、凍結 ImageNet 特徴・0.5 fps・15 動画・5 折りの本設定では再現しない。教訓として tasks/lessons.md に上げる。
+- 選定の同点規則「同一候補・同一受容野で残る同点は折り A の seed 間 pstd が小さい方」は本契約で事後に置いた。以後の契約では事前登録の段階で同点の解き方を最後まで書く。
+- 折り B と折り C の val Jaccard が全構成で低い（B は 0.19-0.24、C は 0.23-0.29）。折りによる難易度の差が大きく、5 折り平均の解釈に効く。折りごとの動画の性質を Stage 2 の前に調べる価値がある。
+
+### 断定できなかったこと
+
+- P*-21 の全ての値。追加 6 動画の画像が本ホストに無く、学習も test も行っていない。判定 a・c・e・f の P*-21 側は未測定である。
+- S4 凍結工程塔の test 値。本契約では val のみを並置した。S4 の test は評価していない。
+- 確定塔の checkpoint からの再評価による S4 との厳密な比較。特徴も塔も異なるため、差の要因を特徴の出所と時間ヘッドに分解できていない。
 
 ## T-2026-09-17-tier1-cost-estimate
 
@@ -158,47 +199,4 @@
 
 - 中心が本ホストの分を取り込み終える時刻。完了を待たない指示のため測っていない。17:10 時点で完了率 75.66% / needBytes=11983979383。本ホストの受け取り側は完了している
 - 中心側から見た本ホストの登録状態。中心で命令を実行しない禁止事項のため、自ホストの経路からしか確かめていない
-
-## T-2026-09-17-efros-rejoin-foundation
-
-状態 `pass` / ホスト `efros` / 起票 `178` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 既存 .venv を 11279712329 バイト / 63549 ファイル / 7053 ディレクトリと測り、mv で /home/ubuntu/slocal2/venv-archive/venv-py312-2026-09-17 へ退避。退避先で再測して 4 値すべて一致。削除していない。 作り直し後は Python 3.11.16 / torch 2.1.2+cu118 / torchvision 0.16.2+cu118 / mmcv 2.1.0 / mmdet 3.3.0 / mmengine 0.10.7 / mamba-ssm 2.2.2 / causal-conv1d 1.4.0 / numpy 1.26.4 / transformers 4.44.2。torch.cuda.is_available()=True、device_count=2、RTX A6000 で 256x256 の行列積が通った。 mmcv は当初 libGL.so.1 欠損で ImportError、利用者が libgl1 を導入して解消（ldconfig 該当 0->1）。 jsonschema 4.26.0 を .venv/bin/python を明示して導入し make task-validate が exit 0。 SERVERNAME は追記前に 5 形態すべて未設定、追記後に zsh -c / zsh -ic / zsh -lc / bash -lc / bash -ic の 5 形態で efros。bash -c（非対話・非ログイン）のみ未設定で、これは利用者ファイルでは覆えない既知の限界。
-- `G2` pass — 中心宛の鍵は 0 件だったので作成し、指紋 SHA256:Ney1waioF2sdDnbxOZyo/ff1Y6yz8x8kvnLSJGM0qF0 を記録。 権限は ~/.ssh=700 / 秘密鍵=600 / 公開鍵=644。版管理へ置いた efros.pub は先頭 ssh-=1、 PRIVATE KEY の書き出し=0、行数=1、95 バイト。囮は同じ三検査で 0 / 1 / 4 と逆向きに落ちた。 書庫内で名前が syncthing の要素は 3 件（1709 / 175 / 27045912）で、大きさで特定した実行ファイルの sha256 が中心の e8a08fdd8b25340aae0c0a00ab131b293830e4ea47504d4b83a82f31b52b96c4 と一致。 ~/bin/syncthing も同値で権限 600、[ -x ] は FALSE（実行権を立てた囮への同じ判定は TRUE）。 識別子 LW4CO4U-XINDYL5-WDTK4LN-NANREIJ-LHSPA6F-6VPGZ3R-2ADLKLP-GG6AUQW を 1 行 64 バイトで公開。 ポート 22000 / 8384 の LISTEN は 0 / 0、対照用リスナを立てると 1 / 1、撤去で 0 / 0。 /proc/PID/exe の syncthing 一致は 0 件、対照 /bin/sleep は 2 件、否定対照 zzz_no_such_exe は 0 件。
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — Task 4 Step 4 と env-facts.md:62 が「取り方は serve --home ... --device-id。device-id という下位命令は無い （五台での実測）」と書く。指示どおり実行すると syncthing: error: unknown flag --device-id を返し、 exit 80、stdout 0 行で識別子が取れない。v2.1.3 の実測では device-id 下位命令が --help の Commands に載り、 正しい値を返す。記述が逆である。実測を正として device-id --home を使い、env-facts.md:62 を訂正した。
-- `shell_assumption` — SPEC.md:47-48 で source .venv/bin/activate が単独の命令で終わり、次の make task-start がそれを前提にする。 命令ごとに新しいシェルが起きる実装系では読み込みが引き継がれず、make が仮想環境の外で走る。 P9 spec_lint が separated_source として同じ箇所を該当に出した。実行者は make を含む全命令へ source .venv/bin/activate && を同じ命令内に入れて回避した。
-- `asserted_without_measuring` — Task 1 Step 2 が「README.md の推奨セットアップに従う」と指示するが、その経路の scripts/setup_env.sh:43 は nvcc が 11.8 でなければ exit 1 する。本ホストの nvcc は 12.9 で 11.8 は導入されていないため、 指示どおり実行すると仮想環境を作れずに止まる。起票者は README の手順が本ホストで通るかを測っていない。 SKIP_CUDA_CHECK=1 で続行し、prebuilt wheel 経路が nvcc を使わないことを実装から確かめた。
-- `check_does_not_check` — scripts/setup_env.sh:43 の nvcc 検査は :8 の「mamba-ssm / causal-conv1d のソースビルドに CUDA 11.8 が必須」を 根拠にするが、同スクリプトの :77-91 は GitHub の prebuilt wheel を curl で取得して --no-deps で入れており、 ソースビルドを行わない。実際に通る経路に対して nvcc を要求しているため、検査は目的を守っていない。 起票者ではなく repo の道具の誤りだが、本契約の遂行を止めたので記録する。
-
-### 逸脱
-
-- `environment` — scripts/setup_env.sh:43 が nvcc 11.8 以外を exit 1 で拒むが、本ホストの nvcc は 12.9 で 11.8 は無い。 同スクリプトの mamba 導入（:77-91）は prebuilt wheel を --no-deps で入れる経路でソースビルドを行わないため、 SKIP_CUDA_CHECK=1 を付けて続行した。結果として mamba-ssm 2.2.2 と causal-conv1d 1.4.0 は正常に読み込めた。
-- `judgement` — 退避先を ~/ ではなく /home/ubuntu/slocal2/venv-archive/ にした。~/ は overlay、~/slocal2 は /dev/sdd1 で 別のファイルシステムであり、跨ぐと 11 GB の実コピーが走って中断時に失う。同一ファイルシステム内の rename にして失う経路を断った。repo（~/slocal2/m2）の外という契約の条件は満たしている。
-- `environment` — 手順書は L3 プリフライトを実行の前に置くが、着手時点の .venv は Python の実体が無く make が .venv/bin/python: No such file or directory / Error 127 で動かなかった。 SPEC の「その場合は Task 1 を先に済ませてから取り込む」に従い、Task 1 の後にプリフライトを回した。
-- `judgement` — make taskindex と make inbox を実行していない。手順書の第 6 節はこれらを求めるが、契約の禁止 7 が 「生成物を再生成する」を禁じるため契約を優先した。生成元である tasks/inbox.d/ への書き込みは行った。 投影 context/auto/ は本契約の結果をまだ含まない。統合する側で再生成が要る。
-- `judgement` — SPEC は論理名の追記先を ~/.zshenv と ~/.profile の 2 件と指定するが、 scripts/sync/setup_host_servername.sh は ~/.bashrc を含む 3 件へ書く。実装を読んだうえでそのまま使った。 上位集合であり、bash の対話シェルも覆える。追記は標識で挟んだ 3 行で、既存行は書き換えていない。
-- `environment` — sudo を実行者は実行していない。libgl1 の導入は sudo がパスワードを要求するため、 契約の指示どおり回避せず利用者へ提示し、許諾を得て利用者自身が実行した。 導入の前後を 3 つの検査（dpkg / ldconfig / import mmcv）で両方向に測った。
-- `environment` — make task-start を使っていない。契約 tasks/<task_id>/ と分岐 feat/efros-rejoin-foundation が 着手時点で既に存在し、かつ仮想環境が壊れていて make 自体が動かなかったため。 契約本文の要約値の照合は make task-validate（exit 0）で行った。
-
-### 申し送り
-
-- 中心 philip 側での登録が要る。受け入れ一覧へ入れる指紋は SHA256:Ney1waioF2sdDnbxOZyo/ff1Y6yz8x8kvnLSJGM0qF0、識別子は LW4CO4U-XINDYL5-WDTK4LN-NANREIJ-LHSPA6F-6VPGZ3R-2ADLKLP-GG6AUQW。 公開鍵は scripts/sync/hub_keys/efros.pub、識別子は scripts/sync/device_ids/efros.txt に置いた。
-- env-facts.md:63-64 の「公開の探索網と公開中継を起動前に無効にする」「自動更新を実行権を戻す前に 0 にする」を まだ当てていない。本契約は起動しないため ~/.local/state/syncthing/config.xml を生成したまま変更していない。 起動を伴う後続の契約で当てること。
-- ~/bin/keeper.sh と ~/bin/m2-sync.sh は本ホストに無い。常駐処理が無いため .sync-pause も置いていない。 後続の契約で keeper を配置するときは、置いた時点から 30 分周期の自動統合が始まる点に注意する。
-- 投影 context/auto/ は本契約の結果を含まない（禁止 7 により make taskindex を回していない）。 統合する側で make taskindex と make inbox を回すこと。
-- 本ホストの平文 .env が .env.gpg と異なる。source scripts/load_env.sh が 「平文 .env が .env.gpg と異なる。編集を保持し、上書きしない」と警告し、保護は働いた。 どちらを正とするかは判断していない（.env は禁止領域であり触っていない）。八月の再構築の 対象外だった本ホスト固有の状態である可能性がある。起票者の判断が要る。
-- 試験が 6 failed / 550 passed。落ちた 6 件は本契約と無関係な既存の不一致で、 tests/test_fetch_task.py は例外の文言が実装とずれ、tests/test_research_logger.py の 4 件は 退役した投稿経路の戻り値を期待している。別契約で扱うべき。
-
-### 断定できなかったこと
-
-- 試験の開始前の値。着手時点の .venv には Python の実体が 1 件も無く pytest の実行系が起動しないため測れなかった。 result.yaml の before_failed: 0 は「落ちた試験が 0 件」という字義どおりの値であり、 同時に「通った試験も 0 件」である。良好な開始状態を意味しない。
-- 落ちた 6 件が他台でも落ちるか。他ホストへ接続しない（禁止 5）ため測っていない。
-- 中心 philip への到達性。本契約では測っていない。SPEC は「中心から測定済み」と書くが、その値は引き写していない。
-- he の到達性。測っていない。env-facts.md:12 は「he は未確認」と訂正した。
-- 退避した .venv（11279712329 バイト）を将来いつ処分してよいか。本契約は削除を禁じられており、判断は起票者に委ねる。
 
