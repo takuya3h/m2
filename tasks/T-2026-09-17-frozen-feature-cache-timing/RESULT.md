@@ -39,7 +39,7 @@
 | e | W2 の範囲 | **達成。** `freeze_indices=(0,1,2,3)`（`…egosurgery_t1b.py:42-43`）により W1・W2 とも backbone は凍結。境界は layer2/3/4 出力で**同一**。学習対象は W1 266,880 / W2 25,505,568 param（`scripts/train_t1b.py:252-261`） |
 | f | 短縮の倍率 | **達成（測り方は限定版）。** step あたり上限 1.049〜1.083×、実測 0.558〜0.661×（＝遅い）。run 全体は step 比がそのまま乗る（1 epoch の 94.7% が学習 step）。キャッシュ生成は別行（下記 3） |
 | g | 装置の使用 | **達成。** 開始前 40,361/40,381 MiB・util 100%（利用者の仮占有 2 件）、停止後および終了後は compute プロセス **0 件**・15/35 MiB・util 0% |
-| h | PR | 送出節を参照 |
+| h | PR | **達成。** #181・base `phase0`・`isDraft: false`・分岐 `feat/frozen-feature-cache-timing` |
 
 ## 3. 実測
 
@@ -121,4 +121,5 @@ IPCAI 2027 intention（残 39 日）にも long abstract（残 121 日）にも�
 | `make inbox-check` | **exit 2（差分あり）。** 同上。`tasks/inbox.d/<task_id>.md` は書いてある |
 | 試験 | 変更前 6 failed / 536 passed / 14 skipped（HEAD の worktree）→ 変更後 6 failed / 550 passed。**失敗の増加 0** |
 | 分岐 | `feat/frozen-feature-cache-timing` |
-| PR | 送出節の追記を参照（base は `phase0`） |
+| commit | `8dbee161` |
+| PR | **#181**（base `phase0` / head `feat/frozen-feature-cache-timing` / `isDraft: false` / `state: OPEN`） |

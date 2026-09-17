@@ -3,7 +3,7 @@ task_id: "T-2026-09-17-frozen-feature-cache-timing"
 status: partial
 host: "efros"
 branch: "feat/frozen-feature-cache-timing"
-pr: null
+pr: 181
 merged: false
 
 gates:
@@ -80,4 +80,5 @@ unknowns:
   - "決定化（ビット一致）の可否。6 epoch 完走比較を行っていないため未確認"
   - "15 動画分の大きさは、val と同じ原解像度・増強なしの前処理を仮定して 1 枚あたりの実測値を枚数倍したものである（枚数 15,437 と 1 枚 57,802,752 bytes はいずれも実測）"
 
-commits: []
+commits:
+  - "8dbee161"
