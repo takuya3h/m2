@@ -737,6 +737,12 @@
 - tests/test_fetch_task.py::test_rejects_unknown_file_name は実装の文言『経路として受け取れない名前です』と試験の期待『受け取れないファイル』が食い違って落ちている。tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics は experiments/ の NMS-free の run が score_thr=0.0 を持つため落ちている。いずれも本契約の範囲外で、直前契約から引き継いだ既知の失敗である
 - git stash が 4 件ある。本契約の 2 件（stash@{0} 未追跡 2 件、stash@{1} 追跡下の削除 31 件）と前契約の 2 件。本契約の 2 件のうち削除 31 件は syncthing が既にファイルを復元済みのため、そのまま pop すると復元された .py を再び消すことになる。復元の要否を確かめてから扱うこと
 
+### T-2026-09-17-philip-accept-efros
+
+- efros から中心への疎通は efros 側の契約で測る。中心は住所 dynamic のため相手へ 繋ぎに行かず、禁止 5 により他ホストへ接続できないため、本契約では原理的に測れない。 efros 側が起動すれば connections の efros の項目が connected=True へ変わる。
+- 配布台帳の T-2026-09-17-philip-accept-efros の行は本文も添付も sha256 列も空である。 起票者が本文を載せ直さない限り make task-notion は今後も拒否する。
+- 稼働中の syncthing の設定は REST 127.0.0.1:8384 でのみ変えられる。次の契約で 相手を足す・外すときは POST /rest/config/devices と PATCH /rest/config/folders/<id> （devices だけを送る）を使い、GET /rest/system/connections に項目が出ることで 反映を確かめる。config.xml の直接編集は稼働中の処理に上書きされる。
+
 ### T-2026-09-17-tier1-cost-estimate
 
 - IPCAI 2027 の intention（2026-10-25、残 39 日）は、どの縮退・どの前提でも収まらない。 最も縮めた段でも Stage 1 + Tier 1 に 46.1〜62.7 日が要る。投稿先の主目標の判断材料。
@@ -1288,6 +1294,11 @@
 - L2-6 の WARN は本契約では出なかった。SPEC §2 は規約ファイルが変われば conventions_rev を持つ全契約に出ると述べるが、本契約の L1+L2 は規約を変える前に実行したためである。規約を変えた後に他契約を検証すれば出るはずだが、本契約では測っていない
 - repo に Phase 専用の分割ファイルは存在しない（find data -iname '*split*' は data/splits のみ、生データ側にも phase 用の train/test 一覧は無い）。したがって『Phase 公式 test』に対応する実体は data/splits/ego_test.txt であると解釈した。EgoSurgery-Phase の 21 動画版に別の公式分割が外部で定義されているかは未確認である
 
+### T-2026-09-17-philip-accept-efros
+
+- efros から中心へ ssh で入れるか。受け入れ一覧に指紋が在ることまでは示したが、 実際の接続は中心からは測れない（禁止 5、および efros 側が未起動）。
+- efros と中心が同期で繋がるか。connections に項目は出たが connected=False であり、 efros 側の起動待ちである。
+
 ### T-2026-09-17-tier1-cost-estimate
 
 - 検出塔のフル学習の所要時間。計時が repo に無く、塔は philip で学習され ckpt だけが配置された
@@ -1312,6 +1323,8 @@
 | `check_does_not_check` | 76 |
 | `asserted_without_measuring` | 101 |
 | `self_contradiction` | 68 |
+| `asserted_without_measuring` | 100 |
+| `self_contradiction` | 69 |
 | `shell_assumption` | 19 |
 
 合計 264 件（対を持つ契約 92 件から）

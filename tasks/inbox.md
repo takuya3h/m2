@@ -14,6 +14,7 @@
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
 ## 未処理（511 件）
+## 未処理（512 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -526,6 +527,12 @@
 - [ ] 2026-09-17 [cc] 🔴 **`forbidden-check` の violations 7 件は syncthing の取り残しであり実行者の操作ではない。** 開始時に stash した 31 件の削除を syncthing が復元した際の `.syncthing.*.py.tmp` で、内容は本体と byte 一致・mtime は 8 分停滞。SPEC §4 前文が同期処理を対象外とし禁止事項 4 が `experiments/**` を禁じるため**削除せず記録した**。検査は実行者の操作と同期の配布を区別できない（T-2026-09-17-fold-table）
 - [ ] 2026-09-17 [cc] 🔴 **起票者の誤り: 追記 4 件の出所が「誤り無し」と述べている頁だった。** SPEC Task D-3 は出所を `T-2026-09-16-evidence-map-ab/RESULT.md §4・§5` とするが §4 は「起票者の誤り 無し」で、3 件目は補足、4 件目は逸脱である。2 件目の型も出所は `check_does_not_check` としており指定の `asserted_without_measuring` と食い違う。内容は実測で裏が取れたため指定どおり書いた（T-2026-09-17-fold-table）
 - [ ] 2026-09-17 [cc] **残件三つを反映した。** `docs/docs_audit.md` に `docs/proposal-gate.md` を登録し docs-check の対象が **42→43**、`conventions.md` の変更履歴に欠落していた `a8c07e81`（2026-08-25・issuer_cautions 節の追加）の行、`docs/issuer-defects.md` に 4 件。**3 ファイルとも削除行 0**（T-2026-09-17-fold-table）
+- [ ] 2026-09-17 [cc] 配布台帳の T-2026-09-17-philip-accept-efros の行が本文 0 文字・添付なし・sha256 列も空。make task-start が exit 4 で止まるため分岐を手で作った。起票者が本文を載せ直すまで取り込み経路は使えない（tools/fetch_task.py の read_notion_bundle）
+- [ ] 2026-09-17 [cc] グローバル設定の permissions.deny に Read(~/.ssh/**) があり、受け入れ一覧を扱う契約は最初の測定で必ず止まる。利用者が緩めて続行したが、今後 ~/.ssh/ を触る契約は前提として規約側に書くか、契約の前提欄で deny の確認を求めるかが未決（~/.claude/settings.json）
+- [ ] 2026-09-17 [cc] 稼働中の syncthing の設定は config.xml の直接編集では変えられず、局所 REST 127.0.0.1:8384 だけが効く。相手の追加は再起動不要で PID も変わらなかった。この手段を規約か手順書へ昇格させるかが未決（scripts/sync/）
+- [ ] 2026-09-17 [cc] 常駐処理の件数を cmdline で数えると自分の命令行が混じって 2 件と出た。issuer_cautions 注意 6 と同型の汚染で、自 pid の除外を数え方の規約に足すかが未決（context/conventions.md#issuer_cautions）
+- [ ] 2026-09-17 [cc] ss がこのホストに無く /proc/net/tcp から数えた。待ち受けの数え方をホスト非依存の形で規約化するかが未決（context/conventions.md）
+- [ ] 2026-09-17 [cc] efros からの疎通は中心からは測れない。中心は住所 dynamic で繋ぎに行かず、禁止 5 で他ホストへも触れない。efros 側の契約で connected=True を確かめる必要がある（tasks/T-2026-09-17-efros-rejoin-foundation/）
 
 ## 処理済み（1 件）
 

@@ -54,6 +54,41 @@
 - 他ホストの GPU 台数。利用者の決定により接続せず、本ホストの A6000 2 枚だけを前提にした
 - 投影（context/auto/* と tasks/inbox.md）への反映。契約 §4-3 が再生成を禁じるため未確認
 
+## T-2026-09-17-philip-accept-efros
+
+状態 `pass` / ホスト `philip` / 起票 `179` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 初回は fail。受け入れ一覧が実行基盤に拒否された（グローバル設定の permissions.deny に Read(~/.ssh/**)）。on_fail: ask に従い停止して判断を仰ぎ、 利用者が設定を変更した後に再測定。受け入れ一覧 5 件 / 権限 600 / 1127 B / sha256 35ad4ef5…b457f4 / 指紋 5 件。同期処理は相手の実体 5 件・共有フォルダ 2 件（素朴な .//device は 17。直下 5 + folder 配下 10 + defaults 配下 2 で、 ひな型を含めていない）。控え 2 件を repo 外へ取り sha256 一致 True。 設定を変える手段は局所 REST 127.0.0.1:8384 と確定（直接編集は稼働中の処理に 上書きされる。起動 22:29:18 に対し config.xml の mtime が 22:41:33）。
+- `G2` pass — 提出物は efros.pub 95 B / 1 行、efros.txt 64 B / 1 行でともに追跡済み。 指紋 SHA256:Ney1waioF2sdDnbxOZyo/ff1Y6yz8x8kvnLSJGM0qF0 が前契約 T-2026-09-17-efros-rejoin-foundation の RESULT.md 行 51 と一致。識別子も 行 54 と一致。三検査は 1 / 0 / 1 で、囮に対しては 0 / 2 / 4 と三つとも逆向きに 落ちた。未登録の確認は鍵側 0（陽性対照 lecun は 1）、識別子側 0（陽性対照 philip は直下 device と両フォルダで 1、陰性対照 0）。
+- `G3` pass — 受け入れ一覧は 5 → 6 件、権限 600 のまま、大きさ 1127 + 95 = 1222 B。 開始時の控えとの集合差で消えた行 0 件、増えた行 1 件でその指紋が Task 2 の値と 一致。解析できた件数 6 = 空行を除いた件数 6。同期処理は相手の実体 6 件・ 共有フォルダ 2 件、フォルダの定義（id/label/path/type）の一致 True、defaults 節の 要約値も 8d869daf8e337a16 のまま、config.xml の権限 600 のまま。 restart-required は false で PID は 122452 / 122530 と Task 1 から不変。 connections に efros の項目が出現。connected=True は 4 件のまま。
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — 前提の手順に make task-start を置いたが、配布台帳の当該行は本文 0 文字・添付 なし・sha256 列も空だった。契約を台帳へ載せたことを確かめていない。指示どおり 実行すると「要約値の列が空です: T-2026-09-17-philip-accept-efros。照合できない 本文は取り込みません」で make が exit 4 になり、作った分岐が巻き戻されて Phase A へ進めない。分岐を手で作る逸脱が必要になった。
+- `self_contradiction` — SPEC:30 の見出しが「既存の実測（再測定は不要）」として受け入れ一覧 5 件・権限 600 などを与えているのに、Task 1 Step 1（SPEC:104-109）と完了判定 A が同じ項目 （場所・行数・要約値・権限・更新時刻・指紋の一覧）の測定を必須にしている。 指示どおり実行すると結局すべて測ることになり、「再測定は不要」の宣言が働かない。 実測はすべて表の値と一致したため害は出なかったが、どちらに従うかが決まらない。
+
+### 逸脱
+
+- `judgement` — make task-start が配布台帳の欠落で exit 4（要約値の列が空です）。巻き戻しは 成功した。契約は手元にあり make task-validate が exit 0 だったため、同じ起点 origin/phase0 で分岐 feat/philip-accept-efros を手で作った。台帳からの取り込みは 行っていない。
+- `environment` — task_start.sh は作業ツリーが汚れていると分岐を作らない。開始前から在る未追跡 8 件（experiments/transfer/pd_refin_* 4 件の計 848MB を含む）を repo 外の ~/task-hold/T-2026-09-17-philip-accept-efros/ へ mv で退避した。削除していない。 報告と commit の後に戻す。
+- `environment` — グローバル設定 ~/.claude/settings.json の permissions.deny に Read(~/.ssh/**) が あり、Task 1 Step 1 が実行できなかった。Gate G1 は on_fail: ask のため停止して 判断を仰いだ。Edit/Write は deny に無く追記自体は通る見込みだったが、読めない 状態では既存の無傷を確かめられないため追記しなかった。利用者が設定を変更した 後に続行した。
+- `environment` — ss が本ホストに存在せず（command not found）、待ち受けを /proc/net/tcp と /proc/net/tcp6 の LISTEN 行から数えた。ss | grep -c が返した 0 は件数ではなく 命令の失敗であり、件数として扱っていない。
+- `judgement` — 作業中に ~/bin/m2-sync.sh の mtime が 2026-09-17 04:56:16 へ変わった。keeper の 自己更新であり、中身は origin/phase0 の scripts/sync/m2-sync.sh と sha256 が 完全一致（bcf46ba9031a45cb…）。実行者による変更ではない。
+- `judgement` — 退避物を戻す mv が入れ子を一段作った。退避時は未追跡だった experiments/** と 契約ディレクトリが、origin/phase0 起点の分岐では追跡下に既に存在したため、 mv src dest が dest の中へ入った。比較したところ入れ子のみに在るのは checkpoints/ と predictions/ の計 866 MB で、重なる 2 件は sha256 が完全一致。 前者を親へ移し、一致を再確認してから重複の入れ子 6 つだけを削除した。 失われたデータは無い（866 MB が残存。.gitignore:24 により追跡外）。
+
+### 申し送り
+
+- efros から中心への疎通は efros 側の契約で測る。中心は住所 dynamic のため相手へ 繋ぎに行かず、禁止 5 により他ホストへ接続できないため、本契約では原理的に測れない。 efros 側が起動すれば connections の efros の項目が connected=True へ変わる。
+- 配布台帳の T-2026-09-17-philip-accept-efros の行は本文も添付も sha256 列も空である。 起票者が本文を載せ直さない限り make task-notion は今後も拒否する。
+- 稼働中の syncthing の設定は REST 127.0.0.1:8384 でのみ変えられる。次の契約で 相手を足す・外すときは POST /rest/config/devices と PATCH /rest/config/folders/<id> （devices だけを送る）を使い、GET /rest/system/connections に項目が出ることで 反映を確かめる。config.xml の直接編集は稼働中の処理に上書きされる。
+
+### 断定できなかったこと
+
+- efros から中心へ ssh で入れるか。受け入れ一覧に指紋が在ることまでは示したが、 実際の接続は中心からは測れない（禁止 5、および efros 側が未起動）。
+- efros と中心が同期で繋がるか。connections に項目は出たが connected=False であり、 efros 側の起動待ちである。
+
 ## T-2026-09-17-fold-table
 
 状態 `pass` / ホスト `lecun` / 起票 `176` / 様式 `v3`
