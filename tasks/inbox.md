@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（484 件）
+## 未処理（506 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -499,6 +499,28 @@
 - [ ] 2026-09-16 [cc] 🔴 **契約が命じる変更先が禁止領域にあり、許可の宣言が無かった。** Task B は `context/conventions.md` への追記を命じるが、同ファイルは `check_forbidden.py` の `FORBIDDEN_FILES` にあり、契約に `contract.allow_write` が無い。指示どおり実行すると `forbidden-check` が落ちる。**停止せず宣言を補った**（スキーマ上の正規キーで、許可の上限 `data/` にも触れないため）。起票側で `allow_write` を書く運用にしたい（T-2026-09-16-proposal-gate）
 - [ ] 2026-09-16 [cc] 🔴 **L2-6 は注入アンカーを見ていない。** 契約は「変更履歴に行を足すと `naming` の解決結果が変わり、`naming` を注入する契約で WARN」と説明していたが、`_warn_conventions_rev` は `inject_verbatim` を読まず `git diff` の有無だけを見る。実測では変更履歴に触れる前、`naming` を注入しない契約にも WARN が出た。**規約を一文字でも変えれば `conventions_rev` を持つ全契約が WARN になる**（T-2026-09-16-proposal-gate）
 - [ ] 2026-09-16 [cc] **`make docs-check` は新規文書について空振りだった。** 対象は `docs/docs_audit.md` に列挙された文書だけで、対象数は前後とも 42 のまま。`docs/proposal-gate.md` は見られていない。代わりに経路を手で確かめ、`docs/evidence/` が不在（並行契約 `T-2026-09-16-evidence-map-ab` が作る）と実測した。**登録はその契約の後にする**（T-2026-09-16-proposal-gate）
+- [ ] 2026-09-16 [cc] 🔴 **IPCAI 2027 の intention（2026-10-25、残 39 日）はどの縮退でも収まらない。** Stage 1 + Tier 1 は最も縮めた段でも 46.1〜62.7 日（装置 A6000 2 枚・1 日 24 時間）。1 日 24 時間なら IPCAI long abstract（2027-01-15）と MICCAI（2027-02-15）には縮退なしで収まるが、**1 日 12 時間なら縮退なしではどの締切にも収まらない**。投稿先の判断は「1 日あたり何時間 装置を占有できるか」で反転する（T-2026-09-17-tier1-cost-estimate）
+- [ ] 2026-09-16 [cc] 🔴 **設計変更 1 回分が計画全体の 95% に達する。** Stage 1 の塔一種を作り直して Tier 1 の P→D 側を測り直すと 72.9〜100.7 日で、Stage 1 + Tier 1 の全体 76.5〜104.3 日にほぼ等しい。P→D の run が 1 本 4 時間で Tier 1 の費用のほぼ全部を占めるため。**塔をやり直す余地は事実上 1 回も無い**（T-2026-09-17-tier1-cost-estimate）
+- [ ] 2026-09-16 [cc] 🔴 **M の縮退順で効くのは「seed 5 → 3」だけである。** 単独で全体 GPU 時間の 33.1〜34.8% を削るのに対し、他の 3 段の合計は 4.9〜6.6%。しかも「掃引 4→3 点」と「探索的腕の削除」は Tier 2・3 の項目にしか掛からず、**Stage 1 + Tier 1 の日数を 1 日も動かさない**。縮退順の並びを見直す価値がある（T-2026-09-17-tier1-cost-estimate）
+- [ ] 2026-09-16 [cc] 🔴 **検出側 W2 の界面 run は repo 全体に一件も無い。** `docs/stage0/*.md`・`docs/experiment_log.md`・`tasks/*/RESULT.md` に文字列 `W2` が 0 行。検出塔のフル学習の計時も無く（塔は philip で学習され完走 ckpt だけが配置された）、`runindex` で `elapsed_seconds` を持つのは `s4_grasp_injection` の 426 run だけで**検出系は 0 件**。両者は利用者の承認のもと t1b の実測（1 run 約 4 時間 / 6 epoch）を代理に置いたが、**逆伝播の範囲が広いので下界である**（T-2026-09-17-tier1-cost-estimate）
+- [ ] 2026-09-16 [cc] **文書の数表を計算器の出力そのものにして、乖離を機械で捕まえるようにした。** `docs/stage0/B1_tier1_cost_estimate.md` の表は `<!-- estimate:begin ... -->` で囲った生成物で、`tools/estimate_tier_cost.py --check-doc` が再計算との差を数える。文書の数値を一つ書き換えると行番号つきで 1 件を返す。**散文に数字を手で写す経路を残さない**（T-2026-09-17-tier1-cost-estimate）
+- [ ] 2026-09-16 [cc] **P6（decisions_answered）で停止したあと、諮る前に読み取りだけで事実を集めた。** どの run 型に実測が無いかを知らずに「代理を置くか」は答えられないため。手順書は「項目を提示して停止」と定めるが、提示の質は集めた事実で決まる。**決めていない。集めただけである**（T-2026-09-17-tier1-cost-estimate）
+- [ ] 2026-09-17 [cc] 退避した .venv 11279712329 バイトの処分期限が未決。版管理外・同期対象外で、このホストが失われれば失われる。契約は削除を禁じており判断は起票者に委ねた（/home/ubuntu/slocal2/venv-archive/venv-py312-2026-09-17）
+- [ ] 2026-09-17 [cc] 退避先を repo の外かつ同一ファイルシステムに置くという規約が無い。~/ は overlay で ~/slocal2 は /dev/sdd1。跨ぐと 11GB の実コピーになり中断で失う。契約の「repo の外」だけでは足りない（tasks/README.md）
+- [ ] 2026-09-17 [cc] setup_env.sh の nvcc 11.8 検査が prebuilt wheel 経路でも止める。ソースビルドを行わないのに nvcc を要求しており、SKIP_CUDA_CHECK=1 が事実上の既定になっている。検査の条件を経路に合わせるか削るかの判断が要る（scripts/setup_env.sh:43）
+- [ ] 2026-09-17 [cc] syncthing の識別子の取り方が env-facts の記述と逆だった。v2.1.3 では device-id 下位命令が在り serve --device-id は unknown flag。五台の記述が v1 のものである可能性があり、他台でも測り直す価値がある（context/env-facts.md:62）
+- [ ] 2026-09-17 [cc] 契約の禁止 7「生成物を再生成する」と task 手順書の第 6 節「make taskindex / make inbox を回す」が衝突する。今回は契約を優先し投影を更新していない。どちらを上位に置くかの規約が要る（.claude/skills/task/SKILL.md）
+- [ ] 2026-09-17 [cc] 試験 6 件が既存の不一致で落ちている。test_fetch_task は例外の文言ずれ、test_research_logger の 4 件は退役した投稿経路の戻り値を期待。他台でも落ちるかは未測定（tests/test_research_logger.py）
+- [ ] 2026-09-17 [cc] efros は起動前の設定（公開の探索網・公開中継の無効化、自動更新 0）をまだ当てていない。起動を伴う後続の契約で当てる必要がある（~/.local/state/syncthing/config.xml）
+- [ ] 2026-09-17 [cc] 本ホストの平文 .env が .env.gpg と異なる。load_env.sh が上書きを拒んで保護は働いたが、どちらを正とするかが未決。八月の再構築の対象外だった本ホスト固有の状態の可能性がある（scripts/load_env.sh）
+- [ ] 2026-09-17 [cc] **5-fold の折り表を確定した。** 折り A = 公式分割（test 04,05,07 / val 09,10）、B = 01,03,14 / 02,08、C = 02,08,11 / 06,12、D = 06,13,15 / 04,05、E = 09,10,12 / 07,15。正本は `docs/stage0/A1_fold_table.md`、規約は `conventions#folds`（アンカー 9→10）。生成器は `scripts/analysis/a1_fold_table.py`（T-2026-09-17-fold-table）
+- [ ] 2026-09-17 [cc] **均衡指標は実行者が定義した。** `d(S) = TV(工程比率, 全15動画) + TV(術具クラス比率, 全15動画)`、選び方は `max_f d(test_f)` → `sum_f d(test_f)` → 辞書順。12 動画の分け方 **15400 通りを全数列挙**したので近似ではなく最適。折り B〜E の最大差 0.0216（T-2026-09-17-fold-table）
+- [ ] 2026-09-17 [cc] **val にも制約を足した（実行者の設計判断）。** SPEC は「自分の test と重ならない 2 本」までしか求めていないが、**各動画は全折りを通じて val に高々一度**という制約を加えた。同じ 2 本が全折りの val に選ばれる退化を防ぐため。制約検査で対照も取った（T-2026-09-17-fold-table）
+- [ ] 2026-09-17 [cc] **利用者の判断①: 同点の表は辞書順で決着させ、辞書順でも決まらない場合だけ停止して諮る**（P6 の未回答 1 件目への回答）。**実行の結果、同点は 1 通りで一意に決まり、諮る条件は発生しなかった**（T-2026-09-17-fold-table）
+- [ ] 2026-09-17 [cc] **利用者の判断②: 追加 6 動画（17–22）と公式 test の重複は陽性対照つきで再実測し、0 件を記録して停止せず続行する**（P6 の未回答 2 件目への回答）。**実測は重複 0 件**、`04` を混ぜる陽性対照では 1 件。A2 の既報と一致（T-2026-09-17-fold-table）
+- [ ] 2026-09-17 [cc] 🔴 **`forbidden-check` の violations 7 件は syncthing の取り残しであり実行者の操作ではない。** 開始時に stash した 31 件の削除を syncthing が復元した際の `.syncthing.*.py.tmp` で、内容は本体と byte 一致・mtime は 8 分停滞。SPEC §4 前文が同期処理を対象外とし禁止事項 4 が `experiments/**` を禁じるため**削除せず記録した**。検査は実行者の操作と同期の配布を区別できない（T-2026-09-17-fold-table）
+- [ ] 2026-09-17 [cc] 🔴 **起票者の誤り: 追記 4 件の出所が「誤り無し」と述べている頁だった。** SPEC Task D-3 は出所を `T-2026-09-16-evidence-map-ab/RESULT.md §4・§5` とするが §4 は「起票者の誤り 無し」で、3 件目は補足、4 件目は逸脱である。2 件目の型も出所は `check_does_not_check` としており指定の `asserted_without_measuring` と食い違う。内容は実測で裏が取れたため指定どおり書いた（T-2026-09-17-fold-table）
+- [ ] 2026-09-17 [cc] **残件三つを反映した。** `docs/docs_audit.md` に `docs/proposal-gate.md` を登録し docs-check の対象が **42→43**、`conventions.md` の変更履歴に欠落していた `a8c07e81`（2026-08-25・issuer_cautions 節の追加）の行、`docs/issuer-defects.md` に 4 件。**3 ファイルとも削除行 0**（T-2026-09-17-fold-table）
 
 ## 処理済み（1 件）
 

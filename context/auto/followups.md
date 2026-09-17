@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（448 件）
+## 申し送り（467 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -714,7 +714,38 @@
 - tools/check_proposal.py は引用の中の禁止語を区別しない。docs/proposal-gate.md 自身へ当てると過去の欠陥を引用した 13 行目を 1 件検出する。提案文書だけに使う前提であり、引用の除外が要るなら規則を足す判断が要る
 - context/auto/* と tasks/inbox.md は SPEC の禁止事項 3 により再生成していない。並行契約との統合後に一台で一度だけ make taskindex && make inbox を回すこと
 
-## 断定できなかった事項（280 件）
+### T-2026-09-17-efros-rejoin-foundation
+
+- 中心 philip 側での登録が要る。受け入れ一覧へ入れる指紋は SHA256:Ney1waioF2sdDnbxOZyo/ff1Y6yz8x8kvnLSJGM0qF0、識別子は LW4CO4U-XINDYL5-WDTK4LN-NANREIJ-LHSPA6F-6VPGZ3R-2ADLKLP-GG6AUQW。 公開鍵は scripts/sync/hub_keys/efros.pub、識別子は scripts/sync/device_ids/efros.txt に置いた。
+- env-facts.md:63-64 の「公開の探索網と公開中継を起動前に無効にする」「自動更新を実行権を戻す前に 0 にする」を まだ当てていない。本契約は起動しないため ~/.local/state/syncthing/config.xml を生成したまま変更していない。 起動を伴う後続の契約で当てること。
+- ~/bin/keeper.sh と ~/bin/m2-sync.sh は本ホストに無い。常駐処理が無いため .sync-pause も置いていない。 後続の契約で keeper を配置するときは、置いた時点から 30 分周期の自動統合が始まる点に注意する。
+- 投影 context/auto/ は本契約の結果を含まない（禁止 7 により make taskindex を回していない）。 統合する側で make taskindex と make inbox を回すこと。
+- 本ホストの平文 .env が .env.gpg と異なる。source scripts/load_env.sh が 「平文 .env が .env.gpg と異なる。編集を保持し、上書きしない」と警告し、保護は働いた。 どちらを正とするかは判断していない（.env は禁止領域であり触っていない）。八月の再構築の 対象外だった本ホスト固有の状態である可能性がある。起票者の判断が要る。
+- 試験が 6 failed / 550 passed。落ちた 6 件は本契約と無関係な既存の不一致で、 tests/test_fetch_task.py は例外の文言が実装とずれ、tests/test_research_logger.py の 4 件は 退役した投稿経路の戻り値を期待している。別契約で扱うべき。
+
+### T-2026-09-17-efros-syncthing-join
+
+- repo フォルダ m2 の同期は完了していない。報告時点で needBytes=5915279436 / needFiles=102484。完了を待たない指示のため打ち切った。完了の確認は次の契約か人の目視で行う必要がある
+- ~/claude-sync/ に記録の衝突ファイルが生まれた（sync-alerts.sync-conflict-20260917-074045-LW4CO4U.log 他）。正常な挙動であり両方残してある。整理するかどうかは起票者の判断である
+- 本ホストの ~/.zshrc には keeper の起動行だけが先に配られていて、指す先の脚本が無い状態であった。他に同じ状態のホストが残っていないか確かめる価値がある
+
+### T-2026-09-17-fold-table
+
+- 投影（context/auto/ と tasks/inbox.md）への反映は未確認である。SPEC 禁止事項 3 により再生成を禁じられているため、並行契約 T-2026-09-17-tier1-cost-estimate の統合後に一台で make taskindex && make inbox を回す必要がある
+- context/conventions.md の変更履歴と contract.conventions_rev の commit 欄は、本体の commit 537c968c が確定した後に e7a51005 で埋めた。残件なし
+- experiments/analysis/**/.syncthing.*.py.tmp 7 件が未追跡のまま残っている。syncthing の取り残しで内容は本体と byte 一致。禁止事項 4 により本契約は触れていない。experiments/ を扱える契約か同期処理の側で片付ける必要がある
+- tests/test_fetch_task.py::test_rejects_unknown_file_name は実装の文言『経路として受け取れない名前です』と試験の期待『受け取れないファイル』が食い違って落ちている。tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics は experiments/ の NMS-free の run が score_thr=0.0 を持つため落ちている。いずれも本契約の範囲外で、直前契約から引き継いだ既知の失敗である
+- git stash が 4 件ある。本契約の 2 件（stash@{0} 未追跡 2 件、stash@{1} 追跡下の削除 31 件）と前契約の 2 件。本契約の 2 件のうち削除 31 件は syncthing が既にファイルを復元済みのため、そのまま pop すると復元された .py を再び消すことになる。復元の要否を確かめてから扱うこと
+
+### T-2026-09-17-tier1-cost-estimate
+
+- IPCAI 2027 の intention（2026-10-25、残 39 日）は、どの縮退・どの前提でも収まらない。 最も縮めた段でも Stage 1 + Tier 1 に 46.1〜62.7 日が要る。投稿先の主目標の判断材料。
+- 設計変更 1 回分（Stage 1 の塔一種の作り直し + Tier 1 の P→D 側の測り直し）が 72.9〜100.7 日で、計画全体 76.5〜104.3 日の 95% に達する。塔をやり直す余地は事実上無い。
+- 縮退順で効くのは「seed 5 → 3」だけである（単独で 33.1〜34.8%）。掃引 4→3 点と 探索的腕の削除は Tier 2・3 にしか掛からず、Stage 1 + Tier 1 の日数を 1 日も動かさない。 縮退順の並びを見直す価値がある。
+- 検出塔のフル学習と検出側 W2 界面 run の所要時間を実測する契約を起票すれば、 本試算の代理（下界）を実測へ置き換えられる。本契約は GPU 禁止のため測れていない。
+- 試験 7 件が本契約の変更前から失敗している（test_check_spec 1・test_engines 1・ test_fetch_task 1・test_research_logger 4）。本契約では直していない。
+
+## 断定できなかった事項（301 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1239,16 +1270,49 @@
 
 - make docs-check の通過は docs/proposal-gate.md について空振りである（対象が docs_audit.md 依存）。代わりに文書内の経路を手で確かめ、context/conventions.md と tools/check_spec.py は実在、docs/evidence/ は不在と実測した
 
-## 起票者の誤りの型（256 件）
+### T-2026-09-17-efros-rejoin-foundation
+
+- 試験の開始前の値。着手時点の .venv には Python の実体が 1 件も無く pytest の実行系が起動しないため測れなかった。 result.yaml の before_failed: 0 は「落ちた試験が 0 件」という字義どおりの値であり、 同時に「通った試験も 0 件」である。良好な開始状態を意味しない。
+- 落ちた 6 件が他台でも落ちるか。他ホストへ接続しない（禁止 5）ため測っていない。
+- 中心 philip への到達性。本契約では測っていない。SPEC は「中心から測定済み」と書くが、その値は引き写していない。
+- he の到達性。測っていない。env-facts.md:12 は「he は未確認」と訂正した。
+- 退避した .venv（11279712329 バイト）を将来いつ処分してよいか。本契約は削除を禁じられており、判断は起票者に委ねる。
+
+### T-2026-09-17-efros-syncthing-join
+
+- repo フォルダ m2 の同期が完了する時刻。完了を待たない指示のため測っていない
+- 中心側から見た本ホストの登録状態。中心で命令を実行しない禁止事項のため、自ホストの経路からしか確かめていない
+
+### T-2026-09-17-fold-table
+
+- L2-6 の WARN は本契約では出なかった。SPEC §2 は規約ファイルが変われば conventions_rev を持つ全契約に出ると述べるが、本契約の L1+L2 は規約を変える前に実行したためである。規約を変えた後に他契約を検証すれば出るはずだが、本契約では測っていない
+- repo に Phase 専用の分割ファイルは存在しない（find data -iname '*split*' は data/splits のみ、生データ側にも phase 用の train/test 一覧は無い）。したがって『Phase 公式 test』に対応する実体は data/splits/ego_test.txt であると解釈した。EgoSurgery-Phase の 21 動画版に別の公式分割が外部で定義されているかは未確認である
+
+### T-2026-09-17-tier1-cost-estimate
+
+- 検出塔のフル学習の所要時間。計時が repo に無く、塔は philip で学習され ckpt だけが配置された
+- 検出側 W2 界面 run の所要時間。W2 の run は repo 全体に一件も無い
+- 検出側 W3 界面 run の所要時間
+- 評価のみ run の所要時間（検出側・工程側とも）。評価を分離した計測が無い
+- クリップ ID 識別プローブの所要時間
+- P→D の専用探索の回数。M に記載が無い（既定 4 回）
+- Tier 1 の反復に折り A の 3 seed が掛かるか。二通りに読めるため 25 / 35 本の幅で出した
+- Stage 1 で全候補を全折りに掛けるか。二通りに読めるため既定 7K と二段選定 3K+4 の両方を出した
+- 縮退順の 4 項目目が 1 段か 2 段か。読点区切りでは 4 段
+- 締切の日付は M §5.4 の記載であり公式未確認。利用者の決定により外部参照していない
+- 他ホストの GPU 台数。利用者の決定により接続せず、本ホストの A6000 2 枚だけを前提にした
+- 投影（context/auto/* と tasks/inbox.md）への反映。契約 §4-3 が再生成を禁じるため未確認
+
+## 起票者の誤りの型（264 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 75 |
-| `asserted_without_measuring` | 95 |
+| `check_does_not_check` | 76 |
+| `asserted_without_measuring` | 101 |
 | `self_contradiction` | 68 |
-| `shell_assumption` | 18 |
+| `shell_assumption` | 19 |
 
-合計 256 件（対を持つ契約 88 件から）
+合計 264 件（対を持つ契約 92 件から）
 

@@ -1,0 +1,95 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-09-17-efros-syncthing-join"
+  kind: impl
+  title: "常駐処理を配置して中継を張り、同期を起動して双方向の疎通を確かめる"
+  origin: claude-app
+  created_at: "2026-09-17T08:00:00Z"
+  created_from:
+    runindex_commit: "ee53e58"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-09-17-philip-accept-efros"]
+  amendments: []
+
+intent:
+  question: "中心の側は整い、本ホストの公開鍵が受け入れ一覧へ、識別子が同期処理の設定へ登録された。本ホストには常駐処理が無いため、他の五台には無かった配置の工程が要る。設定を組み立て、常駐処理を置き、中継を張り、同期を起動して、実際にファイルが届くことを確かめられるか"
+  decision_at_stake: "六台目が群れへ入るか。本ホストは同期処理が未起動のため設定を直接編集できるが、起動後は処理が書き戻すため効かなくなる。起動の前にすべて済ませる順序が要になる。常駐処理を入れる工程は本契約が初めてであり、同じことをする後続の契約の手順にもなる"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/sync/keeper.sh"
+      - "scripts/sync/m2-sync.sh"
+
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "e7a5100"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "開始状態の封印と中心への到達の確認", gpu: false, est: "40m"}
+    - {id: B, name: "同期処理の設定の組み立て", gpu: false, est: "40m"}
+    - {id: C, name: "常駐処理の配置と起動行の追記", gpu: false, est: "30m"}
+    - {id: D, name: "中継を張り、同期を起動する", gpu: false, est: "60m"}
+    - {id: E, name: "実際に届くことの確認", gpu: false, est: "30m"}
+    - {id: F, name: "報告と送出", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "開始状態を要約値で記録し、実行権が落ちていて目印と同期処理と中継が零件であることを両方向の対照つきで確かめた。控えを版管理の外の同一のファイルシステム内へ取り、中心へ命令を伴わない形で入れることを確かめた"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "自動更新を止め、告知と外部の中継を無効にし、自分の登録名を実測してから直した。中心を中継の出口で登録し、最上位の共有フォルダが二件で識別子が中心と同じである。書式が解析でき権限が保たれている"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "常駐処理と同期処理の正本を配置し、要約値が一致して構文検査が通った。起動行を追記し、既存があれば重ねていない。抑止を置き、対応している版であることを確かめた"
+      on_fail: stop
+    - id: G4
+      after: D
+      check: "目印を置いて常駐処理を起こし、中継が立ってその引数に中心の住所が含まれる。中継が立ってから実行権を戻し、同期処理が起動して版が中心と同じである。最上位の共有フォルダが二件のままで自動更新が零のままである"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-09-17-efros-syncthing-join/"
+  acceptance:
+    - "開始状態を要約値で記録し、共有領域の大きさと件数を丸めずに実数で記録している"
+    - "中心へ入れることを、中心で命令を実行しない形で確かめている"
+    - "起動の前に設定をすべて組み立てており、順序を示している"
+    - "自分の登録名を実測してから直しており、置換の件数を確かめている"
+    - "最上位の共有フォルダだけを数えており、ひな型と取り違えていない"
+    - "常駐処理と同期処理の正本を配置し、要約値の一致と構文検査を示している"
+    - "中継が立ってから実行権を戻したことを、待ち受けの実測で示している"
+    - "同期処理が起動し、プロセスの数を親子関係で切り分けている"
+    - "自分の試験ファイルを中心が持っていることを、中心で命令を実行せずに確かめている"
+    - "禁止語の検査を送出物に当て、秘匿検査が値を出力していない"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "中心へ入れず、中継を張れない場合"
+    - "中継が立たず、実行権を戻せない場合"
+    - "常駐処理または同期処理が起動しない場合"
+    - "自動更新が走り、版が中心と食い違った場合"
+    - "共有領域の中身が消えた、または中心の状態が変わった場合"

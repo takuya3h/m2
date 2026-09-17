@@ -6,8 +6,166 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 88 件）。
-ここに出ない 83 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 92 件）。
+ここに出ない 87 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-09-17-tier1-cost-estimate
+
+状態 `pass` / ホスト `Bengio` / 起票 `177` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — run 型 9 件すべてに出所があり、--check-sources が 0 件を返した。実測は 3 型 （工程側の界面 run 11.9〜30.0 s、工程塔の学習 105 s、検出側 W1 界面 run 約 4 時間）。 残る 6 型は所要時間の実測が無く、利用者の承認のもと t1b の実測を代理に置き、 UNKNOWN の表 9 件に列挙した。
+- `G2` pass — M の項目 38 件（Tier1 13・対照 8・参照入力段 4・Stage1 3・Tier2 5・Tier3 4）すべてが run 行に対応づき、--check-coverage が 0 件を返した。対応表から t1.pd_w2 を消すと 1 件を返すことまで確かめた。
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — SPEC §2.5 は「B4 の暫定工程塔の所要時間があれば工程塔学習の下限の目安になる」と書くが、 B4 の塔は 3 epoch・1 seed の暫定版で、Stage 1 の塔は epoch 数も seed 数も未定である。 指示どおり進めると 105 秒を Stage 1 の工程塔学習の所要時間として扱う誘引が生じ、 未測定の値を実測のように書くことになる。本契約は 105 秒を置いたうえで「Stage 1 の塔は epoch を増やす前提のため下界」と注記し、実測としては主張していない。
+
+### 逸脱
+
+- `judgement` — P6 が FAIL した時点で停止したが、利用者へ諮る前に読み取りのみで事実を集めた。 どの run 型に実測が無いかを知らずに代理の可否は答えられないため。決めていない。
+- `judgement` — Tier 2・Tier 3 の項目から run への分解は M に細目が無く、実行者が構成の数を置いた （例: 「軸 2 選別」= 2 構成）。Tier 1 ほどの根拠は無い。試算の主対象は Tier 1 である。
+- `judgement` — 締切の「下旬」「中旬」「頃」を 2026-10-25 / 2027-01-15 / 2027-02-15 へ落とした。 代表の採り方は B1 §6 に明記した。
+- `spec_defect` — 申し送りは生成物を「docs/stage0/B1_* と tools/ の新規一件」とするが、Task D-1 が 計算器の試験を求めるため tests/test_estimate_tier_cost.py を足した（2 件目）。 あわせてプロジェクト CLAUDE.md の規定に従い README.md へ追記した。
+- `environment` — ruff format --check は tools/estimate_tier_cost.py を「要整形」と出すが、tools/ は 26 件中 17 件が同じ状態で、この repo は tools/ に整形器を当てていない。既存に合わせた。
+- `spec_defect` — make taskindex / taskindex-check / inbox を回していない。手順書は投影に現れることを 確かめよと定めるが、契約 §4-3 は並行契約を理由に context/auto/* と tasks/inbox.md の 再生成を禁じている。契約を優先した。投影への反映は未確認である。
+
+### 申し送り
+
+- IPCAI 2027 の intention（2026-10-25、残 39 日）は、どの縮退・どの前提でも収まらない。 最も縮めた段でも Stage 1 + Tier 1 に 46.1〜62.7 日が要る。投稿先の主目標の判断材料。
+- 設計変更 1 回分（Stage 1 の塔一種の作り直し + Tier 1 の P→D 側の測り直し）が 72.9〜100.7 日で、計画全体 76.5〜104.3 日の 95% に達する。塔をやり直す余地は事実上無い。
+- 縮退順で効くのは「seed 5 → 3」だけである（単独で 33.1〜34.8%）。掃引 4→3 点と 探索的腕の削除は Tier 2・3 にしか掛からず、Stage 1 + Tier 1 の日数を 1 日も動かさない。 縮退順の並びを見直す価値がある。
+- 検出塔のフル学習と検出側 W2 界面 run の所要時間を実測する契約を起票すれば、 本試算の代理（下界）を実測へ置き換えられる。本契約は GPU 禁止のため測れていない。
+- 試験 7 件が本契約の変更前から失敗している（test_check_spec 1・test_engines 1・ test_fetch_task 1・test_research_logger 4）。本契約では直していない。
+
+### 断定できなかったこと
+
+- 検出塔のフル学習の所要時間。計時が repo に無く、塔は philip で学習され ckpt だけが配置された
+- 検出側 W2 界面 run の所要時間。W2 の run は repo 全体に一件も無い
+- 検出側 W3 界面 run の所要時間
+- 評価のみ run の所要時間（検出側・工程側とも）。評価を分離した計測が無い
+- クリップ ID 識別プローブの所要時間
+- P→D の専用探索の回数。M に記載が無い（既定 4 回）
+- Tier 1 の反復に折り A の 3 seed が掛かるか。二通りに読めるため 25 / 35 本の幅で出した
+- Stage 1 で全候補を全折りに掛けるか。二通りに読めるため既定 7K と二段選定 3K+4 の両方を出した
+- 縮退順の 4 項目目が 1 段か 2 段か。読点区切りでは 4 段
+- 締切の日付は M §5.4 の記載であり公式未確認。利用者の決定により外部参照していない
+- 他ホストの GPU 台数。利用者の決定により接続せず、本ホストの A6000 2 枚だけを前提にした
+- 投影（context/auto/* と tasks/inbox.md）への反映。契約 §4-3 が再生成を禁じるため未確認
+
+## T-2026-09-17-fold-table
+
+状態 `pass` / ホスト `lecun` / 起票 `176` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 材料を A1 の表から写さず同じ出所から読み直した。総フレーム 17233 / images 15437 / boxes 49652 が A1 の合計行と一致。工程 CSV・術具 COCO・HTS のいずれも動画 15 本で、公式分割（train 10 / val 2 / test 3 = 15）との集合差は 0 件。工程 9 種・術具 15 クラス・HTS は 15 動画すべてが 3 系統とも保持
+- `G2` pass — 制約検査の違反 0 件。二度の生成で表の要約値が 237837faa843e1b3… と一致し、ファイルも sha256 eb66170a8565b993… で byte 一致。入力を一行変えると要約値が febee3775bec5785… へ変わることも示した
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — SPEC Task D-3 は追記する 4 件の出所を T-2026-09-16-evidence-map-ab/RESULT.md §4・§5 と書くが、当該 §4 は「起票者の誤り 無し」と述べている。3 件目は §4 の「補足（誤りではない）」、4 件目は §5 の「逸脱 2（judgement）」であり、出所は誤りの一覧ではない。また 2 件目の型を asserted_without_measuring と指定するが、出所の T-2026-09-16-proposal-gate/RESULT.md §4-2 は check_does_not_check と分類している。指示どおり実行すると、出所が自ら誤りでないと述べたものを誤りとして記録し、型も出所と食い違う形で残ることになる。4 件とも内容自体は実装と契約本文から実測で裏が取れたため契約の指定どおり書き、この食い違いを RESULT §5 と audit §9 に記録した
+
+### 逸脱
+
+- `judgement` — P6 decisions_answered が FAIL で止まったため手順どおり停止し、decisions_required 2 件を利用者へ諮った。回答は (1) 同点は SPEC Task B §2 の辞書順で決着させ辞書順でも決まらない場合だけ停止 (2) 追加 6 動画の重複は陽性対照つきで再実測し 0 件なら続行。実行の結果いずれの条件も発生しなかった（同点は 1 通り、重複は 0 件）
+- `judgement` — spec.yaml を編集した。REPLACE-BY-EXECUTOR の占位 2 件（runindex_commit → 96eb3a1c、conventions_rev → 4300b7d2）を実測値へ確定し、created_from.counts を 0/0/0 から 1266/285/1506 へ、decisions_required を空にした。いずれも meta.amendments に記録した
+- `environment` — forbidden-check が violations 7 件で非ゼロのまま終えた。7 件はすべて experiments/analysis/**/.syncthing.*.py.tmp で、開始時に stash した 31 件の削除を syncthing が他ホストから復元した際の取り残し。mtime 20:06 のまま 8 分変化せず、内容は復元済みの .py と byte 一致。SPEC §4 前文が同期処理による配布を禁止の対象外とし、禁止事項 4 が experiments/** に触れることを禁じるため削除せず記録した。permitted は要求どおり context/conventions.md の 1 件
+- `judgement` — make taskindex / make inbox を実行していない。SPEC 禁止事項 3 が並行契約との衝突を理由に context/auto/* と tasks/inbox.md の再生成を禁じているため。投影への反映は未確認である
+- `judgement` — 作業ツリーの退避に git stash を使った（SPEC Task A-1 が許している）。追跡下の削除 31 件を stash@{1}、未追跡 2 件を stash@{0} へ。task_start.sh は git status --porcelain が非ゼロなら exit 3 で止まる実装のため未追跡も退避が要った。前契約の stash 2 件には触れていない
+- `judgement` — 生成器を tools/ ではなく scripts/analysis/a1_fold_table.py に置いた。同ディレクトリが解析用スクリプトの既存の置き場であり、SPEC 申し送りが並行契約 T-2026-09-17-tier1-cost-estimate に tools/ の新規一件を割り当てているため生成物の分離を保った
+
+### 申し送り
+
+- 投影（context/auto/ と tasks/inbox.md）への反映は未確認である。SPEC 禁止事項 3 により再生成を禁じられているため、並行契約 T-2026-09-17-tier1-cost-estimate の統合後に一台で make taskindex && make inbox を回す必要がある
+- context/conventions.md の変更履歴と contract.conventions_rev の commit 欄は、本体の commit 537c968c が確定した後に e7a51005 で埋めた。残件なし
+- experiments/analysis/**/.syncthing.*.py.tmp 7 件が未追跡のまま残っている。syncthing の取り残しで内容は本体と byte 一致。禁止事項 4 により本契約は触れていない。experiments/ を扱える契約か同期処理の側で片付ける必要がある
+- tests/test_fetch_task.py::test_rejects_unknown_file_name は実装の文言『経路として受け取れない名前です』と試験の期待『受け取れないファイル』が食い違って落ちている。tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics は experiments/ の NMS-free の run が score_thr=0.0 を持つため落ちている。いずれも本契約の範囲外で、直前契約から引き継いだ既知の失敗である
+- git stash が 4 件ある。本契約の 2 件（stash@{0} 未追跡 2 件、stash@{1} 追跡下の削除 31 件）と前契約の 2 件。本契約の 2 件のうち削除 31 件は syncthing が既にファイルを復元済みのため、そのまま pop すると復元された .py を再び消すことになる。復元の要否を確かめてから扱うこと
+
+### 断定できなかったこと
+
+- L2-6 の WARN は本契約では出なかった。SPEC §2 は規約ファイルが変われば conventions_rev を持つ全契約に出ると述べるが、本契約の L1+L2 は規約を変える前に実行したためである。規約を変えた後に他契約を検証すれば出るはずだが、本契約では測っていない
+- repo に Phase 専用の分割ファイルは存在しない（find data -iname '*split*' は data/splits のみ、生データ側にも phase 用の train/test 一覧は無い）。したがって『Phase 公式 test』に対応する実体は data/splits/ego_test.txt であると解釈した。EgoSurgery-Phase の 21 動画版に別の公式分割が外部で定義されているかは未確認である
+
+## T-2026-09-17-efros-syncthing-join
+
+状態 `pass` / ホスト `efros` / 起票 `なし` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 実行権 600 / 目印 0 件 / syncthing 0 / 中継 0 を両方向の対照つきで実測（正 zsh=5、負 zzz=0）。控えは ~/.syncthing-config-backup-20260917-155900（stat -c %d が双方 233 で同一ファイルシステム）。中心へ ssh -N で入り Authenticated to 192.168.196.150:50072 を得た。負の対照（口 50073）は Connection refused
+- `G2` pass — autoUpgradeIntervalH 12→0、globalAnnounceEnabled true→false、relaysEnabled true→false、localAnnounceEnabled は true のまま。自分の登録名は実測で既に efros のため置換 0 件。中心を tcp://127.0.0.1:22001 で登録。count(/configuration/folder)=2、count(/configuration/defaults/folder)=1、count(//folder)=3。xmllint --noout exit 0、権限 600
+- `G3` pass — keeper.sh sha256 9fe9c423…dd90、m2-sync.sh sha256 bcf46ba9…e25f が正本と一致。bash -n は両方 0（負の対照は 2）。~/.zshrc の起動行は既存 1 件のため追記せず（.zshrc の sha256 は開始時から不変）。.sync-pause を置き grep -c sync-pause ~/bin/m2-sync.sh = 2 を確認
+- `G4` pass — 目印 ~/.tunnel_to_philip（2 行、権限 600）。keeper 1 件（PID 53967、錠 ~/.keeper.lock）。中継 PID 53974 は keeper の子で引数に ubuntu@192.168.196.150 を含み 22001 の待ち受けは 2（負の対照 65533 は 0）。中継が立ってから chmod 700、sha256 は前後同一。syncthing 2 件（73191 → 73210 の親子）、版は自分 v2.1.3 / 中心 clientVersion v2.1.3。最上位フォルダ 2 のまま、autoUpgradeIntervalH 0 のまま、grep -ci upgrade = 0
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — SPEC は「起動時に設定は書き戻される。要約値は変わる。定義が消えていないことで確かめる」と断定する。指示どおり定義で確かめたが、実測では config.xml の sha256 も大きさも変わらなかった（c4e6c320…d63b5 / 11179 bytes のまま）。要約値の変化を起動の証拠に使う手順を書くと、この版では常に「起動していない」と誤判定する
+- `asserted_without_measuring` — SPEC は中継について「周期は千八百秒。実測は四百十三〜千五百六十九秒」と書く。これは既に回っている keeper の次の周回を待つ場合の値である。本契約のように自分で keeper を起こす場合は最初の周回の先頭で張られ、実測は約 4 秒であった。指示どおりに数百秒待つ設計にすると、立っているものを待ち続ける
+
+### 逸脱
+
+- `judgement` — ~/.zshrc へ起動行を追記しなかった。grep -c 'keeper.sh' ~/.zshrc が 1 で既存が在ったため（SPEC Task 3 Step 3 の指示どおり）。本ホストは起動行だけ先に配られ、指す先の脚本が無い状態であった
+- `judgement` — conventions_rev を置換しなかった。実測 e7a51005 に対し契約の記載 e7a5100 は同じコミットの短縮形であり、validate_task.py の照合（git diff <rev>..HEAD -- context/conventions.md）に差分が出ないため置換が無意味である
+- `judgement` — 開始前からの未追跡 2 件を退避しなかった。分岐 feat/efros-syncthing-join が既に origin/phase0 と同じ位置に在り、git checkout -b が不要であったため。2 件には触れていない
+- `environment` — ss / netstat / lsof / ip がいずれも本ホストに存在しない。待ち受けは /proc/net/tcp と /proc/net/tcp6 の st=0A を数えて判定した
+- `judgement` — ~/claude-sync/.stfolder を先回りして作らず、起動後の実挙動を測った。syncthing が起動時に自分で作り、フォルダは両方とも正常に動いた。新しいホストを入れるとき人が作る必要は無い
+
+### 申し送り
+
+- repo フォルダ m2 の同期は完了していない。報告時点で needBytes=5915279436 / needFiles=102484。完了を待たない指示のため打ち切った。完了の確認は次の契約か人の目視で行う必要がある
+- ~/claude-sync/ に記録の衝突ファイルが生まれた（sync-alerts.sync-conflict-20260917-074045-LW4CO4U.log 他）。正常な挙動であり両方残してある。整理するかどうかは起票者の判断である
+- 本ホストの ~/.zshrc には keeper の起動行だけが先に配られていて、指す先の脚本が無い状態であった。他に同じ状態のホストが残っていないか確かめる価値がある
+
+### 断定できなかったこと
+
+- repo フォルダ m2 の同期が完了する時刻。完了を待たない指示のため測っていない
+- 中心側から見た本ホストの登録状態。中心で命令を実行しない禁止事項のため、自ホストの経路からしか確かめていない
+
+## T-2026-09-17-efros-rejoin-foundation
+
+状態 `pass` / ホスト `efros` / 起票 `178` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 既存 .venv を 11279712329 バイト / 63549 ファイル / 7053 ディレクトリと測り、mv で /home/ubuntu/slocal2/venv-archive/venv-py312-2026-09-17 へ退避。退避先で再測して 4 値すべて一致。削除していない。 作り直し後は Python 3.11.16 / torch 2.1.2+cu118 / torchvision 0.16.2+cu118 / mmcv 2.1.0 / mmdet 3.3.0 / mmengine 0.10.7 / mamba-ssm 2.2.2 / causal-conv1d 1.4.0 / numpy 1.26.4 / transformers 4.44.2。torch.cuda.is_available()=True、device_count=2、RTX A6000 で 256x256 の行列積が通った。 mmcv は当初 libGL.so.1 欠損で ImportError、利用者が libgl1 を導入して解消（ldconfig 該当 0->1）。 jsonschema 4.26.0 を .venv/bin/python を明示して導入し make task-validate が exit 0。 SERVERNAME は追記前に 5 形態すべて未設定、追記後に zsh -c / zsh -ic / zsh -lc / bash -lc / bash -ic の 5 形態で efros。bash -c（非対話・非ログイン）のみ未設定で、これは利用者ファイルでは覆えない既知の限界。
+- `G2` pass — 中心宛の鍵は 0 件だったので作成し、指紋 SHA256:Ney1waioF2sdDnbxOZyo/ff1Y6yz8x8kvnLSJGM0qF0 を記録。 権限は ~/.ssh=700 / 秘密鍵=600 / 公開鍵=644。版管理へ置いた efros.pub は先頭 ssh-=1、 PRIVATE KEY の書き出し=0、行数=1、95 バイト。囮は同じ三検査で 0 / 1 / 4 と逆向きに落ちた。 書庫内で名前が syncthing の要素は 3 件（1709 / 175 / 27045912）で、大きさで特定した実行ファイルの sha256 が中心の e8a08fdd8b25340aae0c0a00ab131b293830e4ea47504d4b83a82f31b52b96c4 と一致。 ~/bin/syncthing も同値で権限 600、[ -x ] は FALSE（実行権を立てた囮への同じ判定は TRUE）。 識別子 LW4CO4U-XINDYL5-WDTK4LN-NANREIJ-LHSPA6F-6VPGZ3R-2ADLKLP-GG6AUQW を 1 行 64 バイトで公開。 ポート 22000 / 8384 の LISTEN は 0 / 0、対照用リスナを立てると 1 / 1、撤去で 0 / 0。 /proc/PID/exe の syncthing 一致は 0 件、対照 /bin/sleep は 2 件、否定対照 zzz_no_such_exe は 0 件。
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — Task 4 Step 4 と env-facts.md:62 が「取り方は serve --home ... --device-id。device-id という下位命令は無い （五台での実測）」と書く。指示どおり実行すると syncthing: error: unknown flag --device-id を返し、 exit 80、stdout 0 行で識別子が取れない。v2.1.3 の実測では device-id 下位命令が --help の Commands に載り、 正しい値を返す。記述が逆である。実測を正として device-id --home を使い、env-facts.md:62 を訂正した。
+- `shell_assumption` — SPEC.md:47-48 で source .venv/bin/activate が単独の命令で終わり、次の make task-start がそれを前提にする。 命令ごとに新しいシェルが起きる実装系では読み込みが引き継がれず、make が仮想環境の外で走る。 P9 spec_lint が separated_source として同じ箇所を該当に出した。実行者は make を含む全命令へ source .venv/bin/activate && を同じ命令内に入れて回避した。
+- `asserted_without_measuring` — Task 1 Step 2 が「README.md の推奨セットアップに従う」と指示するが、その経路の scripts/setup_env.sh:43 は nvcc が 11.8 でなければ exit 1 する。本ホストの nvcc は 12.9 で 11.8 は導入されていないため、 指示どおり実行すると仮想環境を作れずに止まる。起票者は README の手順が本ホストで通るかを測っていない。 SKIP_CUDA_CHECK=1 で続行し、prebuilt wheel 経路が nvcc を使わないことを実装から確かめた。
+- `check_does_not_check` — scripts/setup_env.sh:43 の nvcc 検査は :8 の「mamba-ssm / causal-conv1d のソースビルドに CUDA 11.8 が必須」を 根拠にするが、同スクリプトの :77-91 は GitHub の prebuilt wheel を curl で取得して --no-deps で入れており、 ソースビルドを行わない。実際に通る経路に対して nvcc を要求しているため、検査は目的を守っていない。 起票者ではなく repo の道具の誤りだが、本契約の遂行を止めたので記録する。
+
+### 逸脱
+
+- `environment` — scripts/setup_env.sh:43 が nvcc 11.8 以外を exit 1 で拒むが、本ホストの nvcc は 12.9 で 11.8 は無い。 同スクリプトの mamba 導入（:77-91）は prebuilt wheel を --no-deps で入れる経路でソースビルドを行わないため、 SKIP_CUDA_CHECK=1 を付けて続行した。結果として mamba-ssm 2.2.2 と causal-conv1d 1.4.0 は正常に読み込めた。
+- `judgement` — 退避先を ~/ ではなく /home/ubuntu/slocal2/venv-archive/ にした。~/ は overlay、~/slocal2 は /dev/sdd1 で 別のファイルシステムであり、跨ぐと 11 GB の実コピーが走って中断時に失う。同一ファイルシステム内の rename にして失う経路を断った。repo（~/slocal2/m2）の外という契約の条件は満たしている。
+- `environment` — 手順書は L3 プリフライトを実行の前に置くが、着手時点の .venv は Python の実体が無く make が .venv/bin/python: No such file or directory / Error 127 で動かなかった。 SPEC の「その場合は Task 1 を先に済ませてから取り込む」に従い、Task 1 の後にプリフライトを回した。
+- `judgement` — make taskindex と make inbox を実行していない。手順書の第 6 節はこれらを求めるが、契約の禁止 7 が 「生成物を再生成する」を禁じるため契約を優先した。生成元である tasks/inbox.d/ への書き込みは行った。 投影 context/auto/ は本契約の結果をまだ含まない。統合する側で再生成が要る。
+- `judgement` — SPEC は論理名の追記先を ~/.zshenv と ~/.profile の 2 件と指定するが、 scripts/sync/setup_host_servername.sh は ~/.bashrc を含む 3 件へ書く。実装を読んだうえでそのまま使った。 上位集合であり、bash の対話シェルも覆える。追記は標識で挟んだ 3 行で、既存行は書き換えていない。
+- `environment` — sudo を実行者は実行していない。libgl1 の導入は sudo がパスワードを要求するため、 契約の指示どおり回避せず利用者へ提示し、許諾を得て利用者自身が実行した。 導入の前後を 3 つの検査（dpkg / ldconfig / import mmcv）で両方向に測った。
+- `environment` — make task-start を使っていない。契約 tasks/<task_id>/ と分岐 feat/efros-rejoin-foundation が 着手時点で既に存在し、かつ仮想環境が壊れていて make 自体が動かなかったため。 契約本文の要約値の照合は make task-validate（exit 0）で行った。
+
+### 申し送り
+
+- 中心 philip 側での登録が要る。受け入れ一覧へ入れる指紋は SHA256:Ney1waioF2sdDnbxOZyo/ff1Y6yz8x8kvnLSJGM0qF0、識別子は LW4CO4U-XINDYL5-WDTK4LN-NANREIJ-LHSPA6F-6VPGZ3R-2ADLKLP-GG6AUQW。 公開鍵は scripts/sync/hub_keys/efros.pub、識別子は scripts/sync/device_ids/efros.txt に置いた。
+- env-facts.md:63-64 の「公開の探索網と公開中継を起動前に無効にする」「自動更新を実行権を戻す前に 0 にする」を まだ当てていない。本契約は起動しないため ~/.local/state/syncthing/config.xml を生成したまま変更していない。 起動を伴う後続の契約で当てること。
+- ~/bin/keeper.sh と ~/bin/m2-sync.sh は本ホストに無い。常駐処理が無いため .sync-pause も置いていない。 後続の契約で keeper を配置するときは、置いた時点から 30 分周期の自動統合が始まる点に注意する。
+- 投影 context/auto/ は本契約の結果を含まない（禁止 7 により make taskindex を回していない）。 統合する側で make taskindex と make inbox を回すこと。
+- 本ホストの平文 .env が .env.gpg と異なる。source scripts/load_env.sh が 「平文 .env が .env.gpg と異なる。編集を保持し、上書きしない」と警告し、保護は働いた。 どちらを正とするかは判断していない（.env は禁止領域であり触っていない）。八月の再構築の 対象外だった本ホスト固有の状態である可能性がある。起票者の判断が要る。
+- 試験が 6 failed / 550 passed。落ちた 6 件は本契約と無関係な既存の不一致で、 tests/test_fetch_task.py は例外の文言が実装とずれ、tests/test_research_logger.py の 4 件は 退役した投稿経路の戻り値を期待している。別契約で扱うべき。
+
+### 断定できなかったこと
+
+- 試験の開始前の値。着手時点の .venv には Python の実体が 1 件も無く pytest の実行系が起動しないため測れなかった。 result.yaml の before_failed: 0 は「落ちた試験が 0 件」という字義どおりの値であり、 同時に「通った試験も 0 件」である。良好な開始状態を意味しない。
+- 落ちた 6 件が他台でも落ちるか。他ホストへ接続しない（禁止 5）ため測っていない。
+- 中心 philip への到達性。本契約では測っていない。SPEC は「中心から測定済み」と書くが、その値は引き写していない。
+- he の到達性。測っていない。env-facts.md:12 は「he は未確認」と訂正した。
+- 退避した .venv（11279712329 バイト）を将来いつ処分してよいか。本契約は削除を禁じられており、判断は起票者に委ねる。
 
 ## T-2026-09-16-proposal-gate
 
@@ -39,133 +197,4 @@
 ### 断定できなかったこと
 
 - make docs-check の通過は docs/proposal-gate.md について空振りである（対象が docs_audit.md 依存）。代わりに文書内の経路を手で確かめ、context/conventions.md と tools/check_spec.py は実在、docs/evidence/ は不在と実測した
-
-## T-2026-09-16-evidence-map-ab
-
-状態 `pass` / ホスト `bengio` / 起票 `174` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — Crossref・doi.org・arXiv API の三方向すべてに HTTP 200 で到達した。陽性対照は起票者確認済みの DOI 二件（10.1007/978-3-031-72089-5_18 と 10.1016/j.media.2024.103366）がいずれも HTTP 200 で実在と返り、著者も地図の記載と一致。陰性対照は架空 DOI 10.1000/zz-not-a-real-doi-2026 が HTTP 404 で Resource not found. を返した
-- `G2` pass — 地図 A 15 行・地図 B 11 行の計 26 行を DOI 4 件（Crossref）と arXiv ID 26 件（arXiv API）で照合し、26 件すべてが実在・書誌一致。不在 0 件のため地図から外した行は無い。書誌に差 0 件のため escalate_if の三件以上にも該当しない
-
-### 起票者の誤り
-
-（なし）
-
-### 逸脱
-
-- `judgement` — 最初の照合器が MS-TCN と CLIPSeg を書誌に差と誤検出した。複合姓 Abu Farha の先頭語だけを取ったことと、Lüddecke の ü を照合側だけ ASCII 化したことが原因で、地図の誤りではない。両側に同じ NFKD-ASCII-小文字の正規化を当てて直し、二件とも実在・書誌一致になった。誤ったまま報告すれば起票者の写し誤りを疑わせるところだった
-- `judgement` — 地図 B に B.5 未検証の組み合わせを足した。SPEC の付録 B には独立の節が無く B.3 の表の未のセルが実質それに当たるため、完了判定 e を満たす目的で末尾に置き B.3 を指す説明のみ書いた。B.3 の表そのものは書き換えていない
-- `judgement` — 印の列の読み方を各地図の冒頭に注記した。印には起票時の未照合が残りその後ろに本契約の照合結果が続くため、そのままでは矛盾して見える。元の印を書き換えず読み方を説明する形にした
-- `judgement` — spec.yaml を編集した。created_from.runindex_commit と contract.conventions_rev の REPLACE-BY-EXECUTOR プレースホルダ二件を実測値へ確定し meta.amendments に記録した
-- `judgement` — make taskindex と make inbox を実行していない。SPEC 禁止 3 が並行契約との衝突を理由に投影と集約の再生成を禁じているため。本契約の行が context/auto/ に現れることは未確認である
-- `environment` — 契約の取り込み前に作業ツリーを退避した。追跡下 1 件と未追跡 39 ファイルがあり、scripts/task_start.sh は作業ツリーが汚れていると exit 3 で止まる実装のため、git stash push -u -m pre-T-2026-09-16-evidence-map-ab で退避してから task-start を実行した
-
-### 申し送り
-
-- 本契約は文献の実在と書誌だけを照合した。各文献の本文にその数値が書いてあるかは照合していない。数値の検証は利用者が距離 0 から 1 の八本について原典で済ませており、残りの行の数値は未検証である
-- 地図の行は ChatGPT deep research 一エンジンの報告から写したものでエンジン間の突き合わせが無い。印の列の片方という記載がそれを指す。別エンジンでの突き合わせを行うかは未決である
-- deep research の出力ファイルが repo に無いため、地図の出所は契約書の付録になっている。今後の証拠地図では元の報告そのものを repo に置くと、写し誤りの追跡ができるようになる
-- Trans-SVNet の表番号は地図に「後続論文の再掲でも確認したため最終稿で原 PDF の表番号を照合する」と残っている。本契約は書誌の照合までで、表番号の照合は行っていない
-
-### 断定できなかったこと
-
-- 地図の各行の数値が原典に書いてあるか。本契約は実在と書誌の照合のみで、数値の検証は範囲外である
-- 本報告の投影への反映。SPEC 禁止 3 により make taskindex を実行していないため、context/auto/ に本契約の行が現れることを確認していない
-- 元の報告（deep research の出力）のファイル名とバイト数。repo に存在しないため、出所を SPEC.md の付録（30894 バイト）として記録した
-
-## T-2026-09-01-notion-retire-scripts-and-speccheck
-
-状態 `pass` / ホスト `lecun` / 起票 `172` / 様式 `v3`
-
-### ゲート
-
-（なし）
-
-### 起票者の誤り
-
-（なし）
-
-### 逸脱
-
-- `judgement` — 開始前から在った未追跡 .sync-pause.released を repo の外へ退避した（契約 §1 罠 6 が許可）。同期対象外のマーカーであり他ホストへ影響しない。消していない
-- `judgement` — tests/test_check_spec.py の test_teacher_detection_rate の分母を 16 から 19 へ更新した。陰性の教師例 3 件を追加したためである。検出すべき件数 expected は変えておらず、陽性例も弱めていない。禁止 11 には抵触しない
-- `judgement` — 退役の方式として scripts/retired/ への移動と入口での停止の両方を行った。契約 §3 はいずれでもよいとするが、対象 4 本のうち 3 本が NOTION_DB_ID 環境変数を自前で読むため、移動だけでは絶対経路で呼ばれた場合に止まらない
-
-### 申し送り
-
-- CLI から旧データベースへ書ける経路は零になった。旧データベース群と旧頁群をアーカイブへ移す判断ができる状態である
-- make spec-check は本契約の修正により契約の完了条件へ戻せる状態になった。全契約での該当 15 件は本契約の対象外であり、内容の妥当性は検証していない
-- scripts/eval_and_post.sh は docs_audit.md の現行手順に載っておらず docs-check の対象外だが、投稿の呼び出しを持っていた。検査で捕まる範囲の外にある参照が他にもありうる
-
-### 断定できなかったこと
-
-- 退役した 4 本を --dry-run 以外の引数で呼んだ場合の挙動。__main__ を通知だけにしたため引数に依らず止まるはずだが実行して確かめていない
-- spec-check の全契約での該当 15 件の内容の妥当性。本契約は integration_prohibited_without_pause の偽陽性だけを対象にしており、他の規則の該当は見ていない
-- docs-check の対象外にある文書やスクリプトに、退役した経路への参照が残っているか。eval_and_post.sh は手で見つけたが網羅していない
-
-## T-2026-08-31-notion-repo-followup-and-retire
-
-状態 `pass` / ホスト `lecun` / 起票 `171` / 様式 `v3`
-
-### ゲート
-
-（なし）
-
-### 起票者の誤り
-
-- `check_does_not_check` — make spec-check が SPEC 本文で 1 件 fail する（integration_prohibited_without_pause @ SPEC.md:82）。前契約と同型の偽陽性で、SPEC §5 A-2 に make task-start で抑止を置く、F-7 に抑止を移動で解除、判定 N にも抑止の記載がある。契約 §1 罠 14 が通すために本文を書き換えないと定めるため fail のまま続けた
-
-### 逸脱
-
-- `judgement` — 開始前から在った未追跡 .sync-pause.released を repo の外へ退避した（契約 §1 罠 13 が許可）。同期対象外のマーカーであり他ホストへ影響しない。消していない
-- `judgement` — 退役の方式として呼び出し規約を変えず入口で止める形を選んだ（notion_ops の RETIRED_DB_KEYS と notion_logger の RUN_LEDGER_RETIRED）。呼び出し元が 25 ファイル（学習スクリプト 10 本以上と試験 2 本）に及び、試験は関数を patch して呼び出し回数を見ているため、この方式なら両立する。実測でも試験の増減は 0 だった
-- `judgement` — context/README.md を追随の対象に加えた。契約 §2 は CLAUDE.md と README.md と docs/notion_integration.md を挙げるが、退役する経路を説明している文書も対象としており、D-4 の異質な走査で旧手順への案内を検出したためである
-
-### 申し送り
-
-- open な PR は Task A-5 の実測で 0 件だった。本契約の PR を統合した後、投影が再び古くなる見込みは無い
-- scripts/post_eval_to_notion.py と post_t1b_ca_to_notion.py と post_hc_to_notion.py と draft_master_update.py の 4 本は notion_logger を経由せず自前で HTTP を呼ぶ。書き込み先の DB が退役済みのため実質的に投稿できないが、コード上の明示的な退役の印は付けていない。付けるかの判断が要る
-- make spec-check の integration_prohibited_without_pause が二契約続けて偽陽性を出した。検出器の語句を広げるか、契約側の要求を WARN 許容に変えるかの判断が要る
-- 旧マスター頁が到達可能になったため、旧頁群と旧 DB 群をアーカイブへ移す判断ができる状態になった。写しは docs/archive/notion/ に揃っている
-
-### 断定できなかったこと
-
-- 旧マスター頁が到達可能になった経緯。利用者が共有したものと推測されるが確認していない。前契約では HTTP 404 だった
-- 個別の投稿スクリプト 4 本が退役後に呼ばれた場合の実際の挙動。書き込み先 DB が退役済みのため投稿できないはずだが、実行して確かめていない
-
-## T-2026-08-31-notion-legacy-toc-and-export
-
-状態 `partial` / ホスト `lecun` / 起票 `170` / 様式 `v3`
-
-### ゲート
-
-（なし）
-
-### 起票者の誤り
-
-- `check_does_not_check` — 契約 §5 A-3 は make spec-check を通すことを求めるが、SPEC 本文が integration_prohibited_without_pause を SPEC.md:74 と :77 の 2 件で踏んで fail する。実体は偽陽性で、§5 A-2 に make task-start で抑止を置く、E-5 に抑止を移動で解除、判定 M にも抑止の記載がある。検出器の語句パターンに合致しないだけであり、指示どおりでは A-3 を満たせない
-- `asserted_without_measuring` — 契約 §2 は旧マスター頁を対象に含め §3 は toc_plan_master.md を生成物に挙げるが、実測では HTTP 404 object_not_found で到達できない。§1 の罠 1 が 404 を unreachable として続行すると定めているため停止はしないが、生成物の要求と到達性の見込みが食い違っている。共有設定は利用者の操作領域である
-
-### 逸脱
-
-- `judgement` — 開始前から在った未追跡 5 件を repo の外へ退避した（契約 §1 罠 9 が許可）。うち experiments/analysis/hts_candidate_acceptance/*.py 4 件は .stignore:51 の !experiments/**/*.py により同期対象であるため、origin/phase0 に同一内容が commit 済みであること（4/4 バイト一致）を先に確かめてから動かした。消していない
-- `judgement` — 作業中に生成された docs/archive/notion/__pycache__ を退避した。契約 §4 禁止 5 がファイルの削除を禁じているため mv で repo の外へ出した
-- `spec_defect` — export_notion.py の再試行の対象を 429 だけでなく OSError（読み取りタイムアウトを含む）へ広げた。page_size=7 の走行が読み取りタイムアウトで 2 度落ちたためである。契約 §1 罠 6 が実装を読んで待って再試行すると定める範囲であり、待ちは 2・4・6・8 秒とした
-- `environment` — 契約 §4 禁止 3 に従い make context と make taskindex と make inbox およびその check を回していない。技能書 §6 は投影の再生成を求めるが契約 §1 罠 11 が本契約の禁止を優先すると定めている
-
-### 申し送り
-
-- 旧マスター頁（configs/notion.yaml の pages.plan_master）が Integration に共有されておらず HTTP 404 である。共有設定は利用者の操作領域であり、共有後は docs/archive/notion/toc_plan_master.md に記した同じ命令で取得できる
-- 到達できた 5 DB（run_ledger 767 / decision_log 65 / lessons 31 / procedure_docs 6 / prompt_library 3）はアーカイブへ移せる状態にある。移す判断が要る
-- make spec-check の integration_prohibited_without_pause が SPEC 本文の抑止の記載を拾えず偽陽性を 2 件出す。検出器の語句を広げるか、契約 §5 A-3 の要求を WARN 許容に変えるかの判断が要る
-- properties.csv はセルに改行を含む本文を持つため wc -l では行数が水増しされる（decision_log は 65 行だが wc -l は 848）。数えるときは CSV として読む必要があり、判定の書き方に注記が要る
-- conventions#issuer_cautions 注意 6 の pgrep -f 自己一致を待機ループと停止処理で 2 度踏んだ。/proc/PID/exe で絞る作法を技能書か規約の側で例示すると再発を減らせる
-
-### 断定できなかったこと
-
-- 旧マスター頁の見出し。HTTP 404 のため一件も取得していない。推定で埋めていない
-- page_size=7 の走行が読み取りタイムアウトを 2 度起こした原因。再試行で完走したが Notion 側の応答か経路かは切り分けていない
-- 長い符号化文字列 8 件のうち本文中の 2 件が何の語であるか。形（長さ 63・英小 40・数 19・記号 4・16 進ではない）と資格情報でないことは確かめたが、値は見ていない
 
