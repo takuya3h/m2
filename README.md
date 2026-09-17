@@ -1155,3 +1155,53 @@ test は台帳 `experiments/phase1/stage1_ptower/test_access_{A..E}.json` を `o
 学習も test も行っていない。Stage 2 の主分母は P\*-21 であるため、画像を使えるようにする別契約が要る。
 
 数値・逸脱・起票者の誤り・陽性対照は当該タスクの `RESULT.md`・`result.yaml`・`audit.md` を参照。
+
+### 凍結検出塔の出力キャッシュの識別実験（2026-09-17）
+
+`T-2026-09-17-frozen-feature-cache-timing` で `scripts/profile_t1b_step.py` と
+`scripts/t1b_backbone_cache.py` を追加し、`docs/stage0/C1_frozen_feature_cache_timing.md`
+を作った。**P→D 側の界面 run が 1 本約 4 時間かかる原因が「凍結した塔へ毎 epoch 画像を
+通し直していること」かを、キャッシュを本実装する前に測って判定する**ための道具である。
+
+- `profile_t1b_step.py` — `train_t1b.py` の構築関数をそのまま再利用して 1 step を
+  データ供給・順伝播・backbone・逆伝播・最適化へ分解する。**hook の中で同期するため
+  backbone へ過大に帰属する**ことが実測で分かっており、結論には使わない（下記）。
+- `t1b_backbone_cache.py` — `build` は決定的な前処理（val）で backbone 出力を保存し、
+  塔の識別子と凍結源の要約値を含む鍵と `aggregate_sha256` を記録する。`bench` は
+  **同一のバッチ集合**について「塔を計算する経路」と「キャッシュを読む経路」を同一過程内で
+  比較する。読み出しは `posix_fadvise(POSIX_FADV_DONTNEED)` で頁キャッシュを落として測る。
+  `--swap` で順序を入れ替えられ、`--trainable all` で W2 相当も測れる。
+
+**結果（efros・A6000・実測）**: 凍結 backbone の順伝播は 1 step の 4.63〜7.68% にすぎず、
+無料になっても上限は 1.049〜1.083 倍。キャッシュ経路は実測 0.558〜0.661 倍で**遅くなる**
+（1 step で読む 91,566,899 bytes を塔の順伝播の時間内に読むには 2.28〜4.58 GB/s が要るが、
+実測は 0.367〜0.472 GB/s）。**`configs/stage/s0_frozen.yaml` の `stage1_feature_cache` の
+骨組みは P→D の界面学習には使えない。**
+
+`scripts/train_t1b.py` は 1 行も変えていない。キャッシュを読む口は計測用の道具の側にあり、
+既存の学習経路は構成上壊れない。
+
+### 数値精度と計算グラフの最適化の実測（2026-09-17）
+
+`T-2026-09-17-amp-compile-timing` で `scripts/bench_t1b_precision.py` を追加し、
+`scripts/train_t1b.py` に `--tf32` と `--amp {no,bf16,fp16}` を足した。
+`docs/stage0/C2_amp_compile_timing.md` に結果を置いた。
+
+🔴 **既定は従来と同一である。** `--tf32` を付けなければ `torch.backends.cuda.matmul.allow_tf32`
+には**触れない**（既定値の再確認すらしない。将来 torch の既定が変わったときに挙動を固定しないため）。
+`--amp no`（既定）では autocast を張らず `GradScaler` も作らないため、経路は分岐する前と同じである。
+
+- `bench_t1b_precision.py` — 条件（fp32 / tf32 / bf16 / fp16 / compile 系）ごとに 1 step を測る。
+  バッチは最初に一度だけ取り出して保持し、**全条件へ同じ列を与えて**形の列の要約値で同一性を示す。
+  暖機を捨て、**同期を取ってから**計時する（同期なしの値も併記する。取らないと速く見える）。
+  `--trainable all` で W2 相当、`--dynamo-suppress-errors` で dynamo の eager 退避を測れる。
+
+**結果（efros・A6000・実測）**: 行列積の TF32 を許すだけで W1 が **1.182×**、W2 が **1.286×**。
+bf16 / fp16 はほぼ同じ倍率で、記憶領域が W1 で 12.8%・W2 で 27.1% 減る。
+非有限の損失と跳ねは全条件で 0 件。**`torch.compile` は完走しない**
+（`set_criterion.py:199` の `F.one_hot` が記号のままの形を扱えず、eager へ退避させると
+Hungarian matcher の費用行列に非数が入る）。利用者の判断で実装は改変せず除外した。
+
+`tools/estimate_tier_cost.py` の `det_iface_w2` を 4.00 h → **4.82 h** に直した
+（前契約の実測比 1.205 から導いた。`measured` は False のまま）。
+`docs/stage0/B1_tier1_cost_estimate.md` の 8 区画を再生成し `--check-doc` は差 0 件。
