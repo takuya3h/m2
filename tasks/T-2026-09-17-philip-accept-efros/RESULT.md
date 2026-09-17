@@ -145,4 +145,4 @@
 | `make taskindex-check` | exit 0 |
 | `make inbox-check` | exit 0 |
 | `make forbidden-check` | `status: pass` / `violations: []` |
-| 台帳への返送 | **exit 0**。`verdict: pass` / `n_issuer_defects: 2` / `report_bytes: 10831` / `report_sha256: 0d44113ade83a594…` / `replaced_blocks: 0` |
+| 台帳への返送 | **exit 0**。1 回目 `report_bytes: 10831` / `0d44113ade83a594…` / `replaced_blocks: 0`。逸脱 6 を足して差し替え、2 回目 `report_bytes: 11604` / `d1135a158a3ba663…` / **`replaced_blocks: 1`**。いずれも `verdict: pass` / `n_issuer_defects: 2`。**台帳が持つのは 2 回目である**（この行自体はその後の追記のため、台帳の本文はこの一行だけ 1 手前になる。三度目は送っていない） |
