@@ -9,24 +9,24 @@
 - 外側の転送は **`50072` から内側の `22` だけ**
 - よって**中継が要る。星型。単純化の余地はない**
 - 中心は **philip**（`192.168.196.150`）。参加する 5 台は philip / lecun / bengio / andrew / ilya
-- **efros / he は `50072` が `REFUSED`**（未参加）
+- **efros は復旧した**（2026-09-17 実測）。**基盤のみで、中心への登録は後続の契約**。**he は未確認**
 - **パスワード認証は通る。** 一台から全台を確認できる
 - 住所の一覧は全 15 台。`scripts/sync/hosts/` に保全済み
 
 ## repo の位置
 
-- **lecun / efros** — `~/slocal/m2`
-- philip / bengio / andrew / ilya / その他 — `~/slocal2/m2`
+- **lecun のみ** — `~/slocal/m2`
+- philip / bengio / andrew / ilya / **efros** / その他 — `~/slocal2/m2`
 
 ## 実行環境
 
 - **`.venv/bin/python`** は uv 管理の実体を指す。**`uv venv --clear` は 6.3 GB を捨てる。使わない**
-- 壊れ方は消えた pyenv を指す dangling symlink。**貼り直しで足りる**
-- uv の実体は `~/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/bin/python3.11`
+- 壊れ方はホストによる。消えた pyenv を指す dangling symlink なら**貼り直しで足りる**が、**efros は `.venv/bin/python` が 1 件も無く、作り直しが要った**（2026-09-17 実測）
+- uv の実体の場所は**ホストによる**。efros には五台と同じ場所が無く、作り直して初めて `~/.local/share/uv/python/cpython-3.11-linux-x86_64-gnu/bin/python3.11`（**patch 番号を含まない名前**）が生えた
 - `~/.gitconfig` は失われることがある。commit 前に設定
 - `remote.origin.pushurl` が SSH のまま残る。**`--push` を別に指定して HTTPS へ**
 - `jsonschema` は環境の作り直し後に追加導入が要る
-- **`libGL.so.1`** は `libgl1` の導入で解消（5 台で完了）。**`sudo` はパスワードを要求する**
+- **`libGL.so.1`** は `libgl1` の導入で解消（**6 台で完了**。efros は 2026-09-17）。**`sudo` はパスワードを要求する**
 
 ## シェル
 
@@ -59,7 +59,7 @@
 
 - 版は **v2.1.3**。実行ファイル `e8a08fdd…`
 - 設定は `~/.local/state/syncthing/`（**既定の場所**）
-- 識別子は `serve --home ... --device-id`（**`device-id` という下位命令は無い**）
+- 識別子は **`device-id --home ...`**（v2.1.3 実測。**`serve --device-id` は `unknown flag` で exit 80**。五台の記述と逆であった）
 - **告知の既定値は有効。** 公開の探索網と公開中継を起動前に無効にする
 - **自動更新は既定 12 時間。起動と同時に走る。実行権を戻す前に 0 にする**
 - **起動の引き金は実行権だけ。** `keeper.sh` が周期 1800 秒で見る

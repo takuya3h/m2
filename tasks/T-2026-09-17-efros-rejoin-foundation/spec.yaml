@@ -1,0 +1,84 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-09-17-efros-rejoin-foundation"
+  kind: impl
+  title: "同期の群れへ戻すための基盤を作り、鍵と識別子を版管理へ公開する"
+  origin: claude-app
+  created_at: "2026-09-17T04:00:00Z"
+  created_from:
+    runindex_commit: "ee53e58"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: []
+  amendments: []
+
+intent:
+  question: "本ホストは八月の再構築の対象外だった。到達性が失われていたためである。復旧したので群れへ戻したい。実行環境は他台と版が揃っておらず、同期処理も鍵も無い。他台と同じ構成で基盤を作り直し、中心宛の鍵と識別子を版管理へ公開できるか"
+  decision_at_stake: "本ホストが群れへ戻れるか。基盤が整えば、中心が鍵と識別子を登録し、中継と起動へ進める。実行環境は十一ギガある既存を退避したうえで作り直すため、退避に失敗すると失う"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/sync/keeper.sh"
+      - "scripts/sync/m2-sync.sh"
+
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "e7a5100"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "実行環境の作り直しと論理名の設定", gpu: false, est: "60m"}
+    - {id: B, name: "中心宛の鍵と同期処理の識別子の公開", gpu: false, est: "50m"}
+    - {id: C, name: "記述の訂正と報告", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "既存の仮想環境を測って退避し、削除していない。他台と同じ版で作り直し、装置が使えて主要な依存が読み込める。検証に要るものが揃い、論理名が新しいシェルの両方の形態で解決される"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "中心宛の鍵を作り指紋を記録した。版管理へ置いたものが公開鍵だけであることを三つの検査と囮で示した。配布物と配置物の要約値が中心と一致し、識別子を一行で公開した。同期処理が起動していないことを両方向の対照で確かめた"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-09-17-efros-rejoin-foundation/"
+  acceptance:
+    - "既存の仮想環境を大きさで測ってから退避し、削除していない"
+    - "他台と同じ版で作り直し、装置が使えることを示している"
+    - "論理名を両方の場所へ置き、新しいシェルの両方の形態で解決されることを示している"
+    - "中心宛の鍵を作り、指紋を記録し、秘密鍵の中身をどこにも含んでいない"
+    - "版管理へ置いたものが公開鍵だけであることを三つの検査と囮で示している"
+    - "配布物と配置物の要約値が中心と一致することを示している"
+    - "識別子を一行で公開し、同期処理が起動していないことを両方向の対照で示している"
+    - "起票者の記述の誤りを実測どおりに訂正し、直した箇所を記録している"
+    - "起票者が読んでいない規約が本契約に適用されるかを記録している"
+    - "報告が指定の構成であり、手続きの証跡を別ファイルへ分けている"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "既存の仮想環境を退避できず、失う恐れが生じた場合"
+    - "他台と同じ版で作り直せない場合"
+    - "主要な依存が読み込めず、管理者権限が必要になった場合"
+    - "配布物の要約値が中心と一致しない場合"
+    - "起票者が読んでいない規約が本契約に適用され、手順の変更が必要になった場合"

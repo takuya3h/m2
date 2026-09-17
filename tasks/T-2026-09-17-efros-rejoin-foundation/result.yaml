@@ -1,0 +1,167 @@
+result_version: 3
+task_id: "T-2026-09-17-efros-rejoin-foundation"
+status: pass
+host: "efros"
+branch: "feat/efros-rejoin-foundation"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      既存 .venv を 11279712329 バイト / 63549 ファイル / 7053 ディレクトリと測り、mv で
+      /home/ubuntu/slocal2/venv-archive/venv-py312-2026-09-17 へ退避。退避先で再測して 4 値すべて一致。削除していない。
+      作り直し後は Python 3.11.16 / torch 2.1.2+cu118 / torchvision 0.16.2+cu118 / mmcv 2.1.0 /
+      mmdet 3.3.0 / mmengine 0.10.7 / mamba-ssm 2.2.2 / causal-conv1d 1.4.0 / numpy 1.26.4 /
+      transformers 4.44.2。torch.cuda.is_available()=True、device_count=2、RTX A6000 で 256x256 の行列積が通った。
+      mmcv は当初 libGL.so.1 欠損で ImportError、利用者が libgl1 を導入して解消（ldconfig 該当 0->1）。
+      jsonschema 4.26.0 を .venv/bin/python を明示して導入し make task-validate が exit 0。
+      SERVERNAME は追記前に 5 形態すべて未設定、追記後に zsh -c / zsh -ic / zsh -lc / bash -lc / bash -ic の
+      5 形態で efros。bash -c（非対話・非ログイン）のみ未設定で、これは利用者ファイルでは覆えない既知の限界。
+  - id: G2
+    verdict: pass
+    note: >-
+      中心宛の鍵は 0 件だったので作成し、指紋 SHA256:Ney1waioF2sdDnbxOZyo/ff1Y6yz8x8kvnLSJGM0qF0 を記録。
+      権限は ~/.ssh=700 / 秘密鍵=600 / 公開鍵=644。版管理へ置いた efros.pub は先頭 ssh-=1、
+      PRIVATE KEY の書き出し=0、行数=1、95 バイト。囮は同じ三検査で 0 / 1 / 4 と逆向きに落ちた。
+      書庫内で名前が syncthing の要素は 3 件（1709 / 175 / 27045912）で、大きさで特定した実行ファイルの
+      sha256 が中心の e8a08fdd8b25340aae0c0a00ab131b293830e4ea47504d4b83a82f31b52b96c4 と一致。
+      ~/bin/syncthing も同値で権限 600、[ -x ] は FALSE（実行権を立てた囮への同じ判定は TRUE）。
+      識別子 LW4CO4U-XINDYL5-WDTK4LN-NANREIJ-LHSPA6F-6VPGZ3R-2ADLKLP-GG6AUQW を 1 行 64 バイトで公開。
+      ポート 22000 / 8384 の LISTEN は 0 / 0、対照用リスナを立てると 1 / 1、撤去で 0 / 0。
+      /proc/PID/exe の syncthing 一致は 0 件、対照 /bin/sleep は 2 件、否定対照 zzz_no_such_exe は 0 件。
+
+tests:
+  before_failed: 0
+  after_failed: 6
+  after_passed: 550
+
+deviations:
+  - type: environment
+    note: >-
+      scripts/setup_env.sh:43 が nvcc 11.8 以外を exit 1 で拒むが、本ホストの nvcc は 12.9 で 11.8 は無い。
+      同スクリプトの mamba 導入（:77-91）は prebuilt wheel を --no-deps で入れる経路でソースビルドを行わないため、
+      SKIP_CUDA_CHECK=1 を付けて続行した。結果として mamba-ssm 2.2.2 と causal-conv1d 1.4.0 は正常に読み込めた。
+  - type: judgement
+    note: >-
+      退避先を ~/ ではなく /home/ubuntu/slocal2/venv-archive/ にした。~/ は overlay、~/slocal2 は /dev/sdd1 で
+      別のファイルシステムであり、跨ぐと 11 GB の実コピーが走って中断時に失う。同一ファイルシステム内の
+      rename にして失う経路を断った。repo（~/slocal2/m2）の外という契約の条件は満たしている。
+  - type: environment
+    note: >-
+      手順書は L3 プリフライトを実行の前に置くが、着手時点の .venv は Python の実体が無く
+      make が .venv/bin/python: No such file or directory / Error 127 で動かなかった。
+      SPEC の「その場合は Task 1 を先に済ませてから取り込む」に従い、Task 1 の後にプリフライトを回した。
+  - type: judgement
+    note: >-
+      make taskindex と make inbox を実行していない。手順書の第 6 節はこれらを求めるが、契約の禁止 7 が
+      「生成物を再生成する」を禁じるため契約を優先した。生成元である tasks/inbox.d/ への書き込みは行った。
+      投影 context/auto/ は本契約の結果をまだ含まない。統合する側で再生成が要る。
+  - type: judgement
+    note: >-
+      SPEC は論理名の追記先を ~/.zshenv と ~/.profile の 2 件と指定するが、
+      scripts/sync/setup_host_servername.sh は ~/.bashrc を含む 3 件へ書く。実装を読んだうえでそのまま使った。
+      上位集合であり、bash の対話シェルも覆える。追記は標識で挟んだ 3 行で、既存行は書き換えていない。
+  - type: environment
+    note: >-
+      sudo を実行者は実行していない。libgl1 の導入は sudo がパスワードを要求するため、
+      契約の指示どおり回避せず利用者へ提示し、許諾を得て利用者自身が実行した。
+      導入の前後を 3 つの検査（dpkg / ldconfig / import mmcv）で両方向に測った。
+  - type: environment
+    note: >-
+      make task-start を使っていない。契約 tasks/<task_id>/ と分岐 feat/efros-rejoin-foundation が
+      着手時点で既に存在し、かつ仮想環境が壊れていて make 自体が動かなかったため。
+      契約本文の要約値の照合は make task-validate（exit 0）で行った。
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: >-
+      Task 4 Step 4 と env-facts.md:62 が「取り方は serve --home ... --device-id。device-id という下位命令は無い
+      （五台での実測）」と書く。指示どおり実行すると syncthing: error: unknown flag --device-id を返し、
+      exit 80、stdout 0 行で識別子が取れない。v2.1.3 の実測では device-id 下位命令が --help の Commands に載り、
+      正しい値を返す。記述が逆である。実測を正として device-id --home を使い、env-facts.md:62 を訂正した。
+  - type: shell_assumption
+    note: >-
+      SPEC.md:47-48 で source .venv/bin/activate が単独の命令で終わり、次の make task-start がそれを前提にする。
+      命令ごとに新しいシェルが起きる実装系では読み込みが引き継がれず、make が仮想環境の外で走る。
+      P9 spec_lint が separated_source として同じ箇所を該当に出した。実行者は make を含む全命令へ
+      source .venv/bin/activate && を同じ命令内に入れて回避した。
+  - type: asserted_without_measuring
+    note: >-
+      Task 1 Step 2 が「README.md の推奨セットアップに従う」と指示するが、その経路の scripts/setup_env.sh:43 は
+      nvcc が 11.8 でなければ exit 1 する。本ホストの nvcc は 12.9 で 11.8 は導入されていないため、
+      指示どおり実行すると仮想環境を作れずに止まる。起票者は README の手順が本ホストで通るかを測っていない。
+      SKIP_CUDA_CHECK=1 で続行し、prebuilt wheel 経路が nvcc を使わないことを実装から確かめた。
+  - type: check_does_not_check
+    note: >-
+      scripts/setup_env.sh:43 の nvcc 検査は :8 の「mamba-ssm / causal-conv1d のソースビルドに CUDA 11.8 が必須」を
+      根拠にするが、同スクリプトの :77-91 は GitHub の prebuilt wheel を curl で取得して --no-deps で入れており、
+      ソースビルドを行わない。実際に通る経路に対して nvcc を要求しているため、検査は目的を守っていない。
+      起票者ではなく repo の道具の誤りだが、本契約の遂行を止めたので記録する。
+
+positive_controls:
+  - judgement: "完了判定 K: 版管理へ置いたものが公開鍵だけである（三つの検査）"
+    breaking_input: "秘密鍵の書き出しを模した囮（BEGIN OPENSSH PRIVATE KEY を含む 4 行）に同じ三検査を当てる"
+    observed: "先頭 ssh-=0 / PRIVATE KEY の書き出し=1 / 行数=4 と三検査すべてが逆向きに落ちた。本体は 1 / 0 / 1"
+  - judgement: "完了判定 P: ポート 22000 と 8384 が待ち受けていない"
+    breaking_input: "同じ 2 ポートで素の socket を LISTEN させ、同じ /proc/net/tcp 検出器を当てる"
+    observed: "リスナ無し 0/0 → リスナ有り 1/1 → 撤去後 0/0。検出器は同じポートで 1 を返せる状態で 0 を返した"
+  - judgement: "完了判定 P: syncthing のプロセスが無い"
+    breaking_input: "/proc/PID/exe が一致する別のプロセスを走らせ、同じ検出器を当てる"
+    observed: "対照 /bin/sleep で 2 件、否定対照 zzz_no_such_exe で 0 件、syncthing は 0 件"
+  - judgement: "完了判定 L: 配布物の要約値が中心と一致する"
+    breaking_input: "中心の値と一致しないファイル（囮）に同じ sha256 照合を当てる"
+    observed: "囮は不一致を返した。照合は常に一致を返す壊れ方ではない"
+  - judgement: "完了判定 M: 起動の引き金（実行権）が落ちている"
+    breaking_input: "実行権を立てた囮に keeper.sh:41 と同じ [ -x ] 判定を当てる"
+    observed: "囮では TRUE を返した。~/bin/syncthing では FALSE"
+  - judgement: "完了判定 G: 論理名が新しいシェルで解決される"
+    breaking_input: "追記前に同じ 5 形態を env -i で測る"
+    observed: "追記前は 5 形態すべて未設定。追記後に zsh 3 形態と bash 2 形態が efros を返した"
+  - judgement: "完了判定 C: mmcv が読み込める"
+    breaking_input: "libgl1 の導入前に同じ import と同じ 2 つの検査を当てる"
+    observed: "導入前は ImportError: libGL.so.1 / dpkg 0 件 / ldconfig 0 件。導入後は mmcv 2.1.0 / 1 件 / 1 件"
+  - judgement: "完了判定 S: proposal_gate の禁止語検査が契約の本文に当たっている"
+    breaking_input: "禁止語 4 語を含む囮に tools/check_proposal.py --only forbidden を当てる"
+    observed: "4 件を検出（画期的 / 確実に効く / 明らかに / 大幅）。SPEC.md と audit.md と RESULT.md は 0 件"
+  - judgement: "完了判定 T: make task-report の秘匿検査"
+    breaking_input: "環境にある資格情報そのものを本文に含めて送る"
+    observed: "UNKNOWN。取り消せない送信のため、故意に落とす入力は与えていない"
+
+followups:
+  - >-
+    中心 philip 側での登録が要る。受け入れ一覧へ入れる指紋は
+    SHA256:Ney1waioF2sdDnbxOZyo/ff1Y6yz8x8kvnLSJGM0qF0、識別子は
+    LW4CO4U-XINDYL5-WDTK4LN-NANREIJ-LHSPA6F-6VPGZ3R-2ADLKLP-GG6AUQW。
+    公開鍵は scripts/sync/hub_keys/efros.pub、識別子は scripts/sync/device_ids/efros.txt に置いた。
+  - >-
+    env-facts.md:63-64 の「公開の探索網と公開中継を起動前に無効にする」「自動更新を実行権を戻す前に 0 にする」を
+    まだ当てていない。本契約は起動しないため ~/.local/state/syncthing/config.xml を生成したまま変更していない。
+    起動を伴う後続の契約で当てること。
+  - >-
+    ~/bin/keeper.sh と ~/bin/m2-sync.sh は本ホストに無い。常駐処理が無いため .sync-pause も置いていない。
+    後続の契約で keeper を配置するときは、置いた時点から 30 分周期の自動統合が始まる点に注意する。
+  - >-
+    投影 context/auto/ は本契約の結果を含まない（禁止 7 により make taskindex を回していない）。
+    統合する側で make taskindex と make inbox を回すこと。
+  - >-
+    試験が 6 failed / 550 passed。落ちた 6 件は本契約と無関係な既存の不一致で、
+    tests/test_fetch_task.py は例外の文言が実装とずれ、tests/test_research_logger.py の 4 件は
+    退役した投稿経路の戻り値を期待している。別契約で扱うべき。
+
+unknowns:
+  - >-
+    試験の開始前の値。着手時点の .venv には Python の実体が 1 件も無く pytest の実行系が起動しないため測れなかった。
+    result.yaml の before_failed: 0 は「落ちた試験が 0 件」という字義どおりの値であり、
+    同時に「通った試験も 0 件」である。良好な開始状態を意味しない。
+  - >-
+    落ちた 6 件が他台でも落ちるか。他ホストへ接続しない（禁止 5）ため測っていない。
+  - >-
+    中心 philip への到達性。本契約では測っていない。SPEC は「中心から測定済み」と書くが、その値は引き写していない。
+  - >-
+    he の到達性。測っていない。env-facts.md:12 は「he は未確認」と訂正した。
+  - >-
+    退避した .venv（11279712329 バイト）を将来いつ処分してよいか。本契約は削除を禁じられており、判断は起票者に委ねる。
+
+commits: []

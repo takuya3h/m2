@@ -1,0 +1,7 @@
+- [ ] 2026-09-17 [cc] 退避した .venv 11279712329 バイトの処分期限が未決。版管理外・同期対象外で、このホストが失われれば失われる。契約は削除を禁じており判断は起票者に委ねた（/home/ubuntu/slocal2/venv-archive/venv-py312-2026-09-17）
+- [ ] 2026-09-17 [cc] 退避先を repo の外かつ同一ファイルシステムに置くという規約が無い。~/ は overlay で ~/slocal2 は /dev/sdd1。跨ぐと 11GB の実コピーになり中断で失う。契約の「repo の外」だけでは足りない（tasks/README.md）
+- [ ] 2026-09-17 [cc] setup_env.sh の nvcc 11.8 検査が prebuilt wheel 経路でも止める。ソースビルドを行わないのに nvcc を要求しており、SKIP_CUDA_CHECK=1 が事実上の既定になっている。検査の条件を経路に合わせるか削るかの判断が要る（scripts/setup_env.sh:43）
+- [ ] 2026-09-17 [cc] syncthing の識別子の取り方が env-facts の記述と逆だった。v2.1.3 では device-id 下位命令が在り serve --device-id は unknown flag。五台の記述が v1 のものである可能性があり、他台でも測り直す価値がある（context/env-facts.md:62）
+- [ ] 2026-09-17 [cc] 契約の禁止 7「生成物を再生成する」と task 手順書の第 6 節「make taskindex / make inbox を回す」が衝突する。今回は契約を優先し投影を更新していない。どちらを上位に置くかの規約が要る（.claude/skills/task/SKILL.md）
+- [ ] 2026-09-17 [cc] 試験 6 件が既存の不一致で落ちている。test_fetch_task は例外の文言ずれ、test_research_logger の 4 件は退役した投稿経路の戻り値を期待。他台でも落ちるかは未測定（tests/test_research_logger.py）
+- [ ] 2026-09-17 [cc] efros は起動前の設定（公開の探索網・公開中継の無効化、自動更新 0）をまだ当てていない。起動を伴う後続の契約で当てる必要がある（~/.local/state/syncthing/config.xml）
