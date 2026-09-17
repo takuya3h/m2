@@ -136,6 +136,6 @@
 | `make taskindex-check` | 終了コード **0**。`tasks_summary.csv` と `results_recent.md` に本契約が現れる |
 | `make inbox-check` | 終了コード **0** |
 | 秘匿検査（自前） | 送出物 6 件に対し **合計一致 0 件 / exit 0**。**検査は値を出力せず長さと件数だけを出した** |
-| `make task-report` | 終了コード **0**。`verdict=pass` / `n_issuer_defects=2` / `report_bytes=10732` / `report_sha256=b0492499…11fc` / `replaced_blocks=0` |
+| `make task-report` | **2 回送った。** 1 回目 終了コード 0（`report_bytes=10732` / `replaced_blocks=0`）。同期の到達点を実測で更新したため 2 回目 終了コード **0**（`report_bytes=11875` / `report_sha256=6b9c7797…daa2` / **`replaced_blocks=1`** で前の版を置き換えた）。**台帳が持つのはこの行を書き足す前の版である**（自己参照になるため 3 回目は送っていない） |
 | 抑止の解除 | **解除した**。`.sync-pause` を別名へ移して解除を確かめたのち削除した（`.sync-pause.released` は `.gitignore` に載らず未追跡として残るため）。抑止が効いていた記録は `sync-alerts.log` に 3 件 |
 | 作業ツリー | 開始時と同じ未追跡 **2 件**のみ（`docs/sessions/digest/`）。**入れ子は作っていない** |
