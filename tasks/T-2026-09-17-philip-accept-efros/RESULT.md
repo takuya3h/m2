@@ -144,4 +144,4 @@
 | `make taskindex-check` | exit 0 |
 | `make inbox-check` | exit 0 |
 | `make forbidden-check` | `status: pass` / `violations: []` |
-| 台帳への返送 | PENDING |
+| 台帳への返送 | **exit 0**。`verdict: pass` / `n_issuer_defects: 2` / `report_bytes: 10831` / `report_sha256: 0d44113ade83a594…` / `replaced_blocks: 0` |
