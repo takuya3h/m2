@@ -37,7 +37,7 @@
 | e | 数値の異常 | **達成。** Task B の全条件・Task C とも**非有限 0 件・中央の 3 倍超 0 件**。Task C は損失 150 点、中央 14.9115。ただし**基準 run の step 別の損失は記録に無く**、並べられるのは epoch 別 val mAP まで |
 | f | 日数の差し戻し | **達成。** 単精度 159.9〜218.2 日 → 最良条件 135.3〜184.7 日（12h/日・Stage 1 + Tier 1・縮退なし）。`--check-doc` 差 **0 件** |
 | g | 一時領域 | **達成。** 前契約の終了時点 6,827,503,447 bytes、本契約の開始時点 **0 bytes**（前契約の報告時に提示し、利用者の指示で削除済み） |
-| h | PR | 送出節を参照 |
+| h | PR | **達成。** #182・base `phase0`・`isDraft: false`・分岐 `feat/amp-compile-timing` |
 
 ## 3. 実測
 
@@ -145,10 +145,11 @@ IPCAI intention（残 39 日）はどちらでも収まらない。**W1 の倍�
 |---|---|
 | `make task-validate` | exit 0（`OK` / 0 failed） |
 | `make task-preflight`（`.venv-relation-detr`） | **exit 0**。6 PASS / 0 WARN / 6 SKIP / 0 FAIL。SKIP は P2・P3・P4・P5・P11・P12 |
-| `make forbidden-check` | 送出時に再掲 |
+| `make forbidden-check TASK=...` | **status pass / violations 0 / permitted 9 / rejected 0**（宣言なしでは fail・violations 9） |
 | `make spec-check` | exit 0 / `"status": "pass"` / 規則 8 件・該当 0 |
 | `--check-doc`（B1） | **差 0 件** |
-| 試験 | 送出時に再掲 |
+| 試験 | 変更前 6 failed / 536 passed / 14 skipped → 変更後 6 failed / 550 passed。**失敗の増加 0** |
 | `make taskindex-check` / `make inbox-check` | **exit 2（差分あり）。§4 禁止事項 4 により再生成しない。契約が「想定どおりであり失敗ではない」と明記** |
 | 分岐 | `feat/amp-compile-timing` |
-| PR | 送出節の追記を参照（base は `phase0`） |
+| commit | `af53fff0` |
+| PR | **#182**（base `phase0` / head `feat/amp-compile-timing` / `isDraft: false` / `state: OPEN`） |
