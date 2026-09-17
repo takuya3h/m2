@@ -137,6 +137,11 @@
 
 | 項目 | 値 |
 |---|---|
-| PR | PENDING |
-| 秘匿検査 | PENDING |
+| commit | `5e5d36d2` |
+| PR | **#179** |
+| 秘匿検査 | **exit 0**（一致 0 件 / 陽性対照 1 件で検査が働いている。値は出力していない） |
+| `make task-validate` | exit 0 |
+| `make taskindex-check` | exit 0 |
+| `make inbox-check` | exit 0 |
+| `make forbidden-check` | `status: pass` / `violations: []` |
 | 台帳への返送 | PENDING |

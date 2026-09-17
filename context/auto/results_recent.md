@@ -56,7 +56,7 @@
 
 ## T-2026-09-17-philip-accept-efros
 
-状態 `pass` / ホスト `philip` / 起票 `なし` / 様式 `v3`
+状態 `pass` / ホスト `philip` / 起票 `179` / 様式 `v3`
 
 ### ゲート
 
