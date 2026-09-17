@@ -146,6 +146,11 @@ followups:
     投影 context/auto/ は本契約の結果を含まない（禁止 7 により make taskindex を回していない）。
     統合する側で make taskindex と make inbox を回すこと。
   - >-
+    本ホストの平文 .env が .env.gpg と異なる。source scripts/load_env.sh が
+    「平文 .env が .env.gpg と異なる。編集を保持し、上書きしない」と警告し、保護は働いた。
+    どちらを正とするかは判断していない（.env は禁止領域であり触っていない）。八月の再構築の
+    対象外だった本ホスト固有の状態である可能性がある。起票者の判断が要る。
+  - >-
     試験が 6 failed / 550 passed。落ちた 6 件は本契約と無関係な既存の不一致で、
     tests/test_fetch_task.py は例外の文言が実装とずれ、tests/test_research_logger.py の 4 件は
     退役した投稿経路の戻り値を期待している。別契約で扱うべき。
@@ -166,3 +171,4 @@ unknowns:
 
 commits:
   - "99db7264"
+  - "bae4045d"

@@ -5,3 +5,4 @@
 - [ ] 2026-09-17 [cc] 契約の禁止 7「生成物を再生成する」と task 手順書の第 6 節「make taskindex / make inbox を回す」が衝突する。今回は契約を優先し投影を更新していない。どちらを上位に置くかの規約が要る（.claude/skills/task/SKILL.md）
 - [ ] 2026-09-17 [cc] 試験 6 件が既存の不一致で落ちている。test_fetch_task は例外の文言ずれ、test_research_logger の 4 件は退役した投稿経路の戻り値を期待。他台でも落ちるかは未測定（tests/test_research_logger.py）
 - [ ] 2026-09-17 [cc] efros は起動前の設定（公開の探索網・公開中継の無効化、自動更新 0）をまだ当てていない。起動を伴う後続の契約で当てる必要がある（~/.local/state/syncthing/config.xml）
+- [ ] 2026-09-17 [cc] 本ホストの平文 .env が .env.gpg と異なる。load_env.sh が上書きを拒んで保護は働いたが、どちらを正とするかが未決。八月の再構築の対象外だった本ホスト固有の状態の可能性がある（scripts/load_env.sh）

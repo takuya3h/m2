@@ -118,6 +118,8 @@ WARN は P9 `spec_lint` の `separated_source@SPEC.md:47`（契約本文の誤�
 - 落ちた 6 件が**他台でも落ちるか**。他ホストへ接続しない（禁止 5）ため測っていない。
 - 中心 philip への**到達性**。本契約では測っていない（SPEC が「中心から測定済み」とする値を引き写していない）。
 - **`he` の到達性**。測っていない。
+- 本ホストの**平文 `.env` が `.env.gpg` と異なる**。`load_env.sh` が警告を出して上書きを拒み、保護は働いた。
+  どちらを正とするかは**判断していない**（`.env` は禁止領域であり触っていない）。起票者へ申し送る。
 
 ## 送出
 
@@ -126,7 +128,9 @@ WARN は P9 `spec_lint` の `separated_source@SPEC.md:47`（契約本文の誤�
 | commit | `99db7264` |
 | PR | **#178**（`feat/efros-rejoin-foundation` → `phase0`） |
 | push | 終了コード `0` |
-| `make task-report` の終了コード | `PENDING` |
+| `make task-report` の終了コード | `0` |
+| 台帳の応答 | `verdict: pass` / `n_issuer_defects: 4` / `report_bytes: 14176` / `report_sha256: c994b3c7d0da8c58687eb1778ec31ff21c5587b65aa756b374a312d67a1b89c4` / `replaced_blocks: 0` |
+| 記録の追補 | `bae4045d`（PR と秘匿検査）、本節の追記 |
 
 **秘匿検査（完了判定 T）は送出の前に自分で行った。** 変更 9 件に対し、秘密鍵の書き出し `0` /
 40 桁 16 進 `0` / 合言葉様の並び `0`。さらに**秘密鍵の本体行そのものとの照合**で出現 `0` 回。
