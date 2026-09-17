@@ -1125,6 +1125,31 @@ t1b の実測（1 run 約 4 時間 / 6 epoch）を代理に置いた。**いず�
 `--check-coverage` は run に対応づかない M の項目を数える。**いずれも壊した入力で
 1 件を返すことまで試験で確かめている**（陽性対照）。
 
+### 凍結検出塔の出力キャッシュの識別実験（2026-09-17）
+
+`T-2026-09-17-frozen-feature-cache-timing` で `scripts/profile_t1b_step.py` と
+`scripts/t1b_backbone_cache.py` を追加し、`docs/stage0/C1_frozen_feature_cache_timing.md`
+を作った。**P→D 側の界面 run が 1 本約 4 時間かかる原因が「凍結した塔へ毎 epoch 画像を
+通し直していること」かを、キャッシュを本実装する前に測って判定する**ための道具である。
+
+- `profile_t1b_step.py` — `train_t1b.py` の構築関数をそのまま再利用して 1 step を
+  データ供給・順伝播・backbone・逆伝播・最適化へ分解する。**hook の中で同期するため
+  backbone へ過大に帰属する**ことが実測で分かっており、結論には使わない（下記）。
+- `t1b_backbone_cache.py` — `build` は決定的な前処理（val）で backbone 出力を保存し、
+  塔の識別子と凍結源の要約値を含む鍵と `aggregate_sha256` を記録する。`bench` は
+  **同一のバッチ集合**について「塔を計算する経路」と「キャッシュを読む経路」を同一過程内で
+  比較する。読み出しは `posix_fadvise(POSIX_FADV_DONTNEED)` で頁キャッシュを落として測る。
+  `--swap` で順序を入れ替えられ、`--trainable all` で W2 相当も測れる。
+
+**結果（efros・A6000・実測）**: 凍結 backbone の順伝播は 1 step の 4.63〜7.68% にすぎず、
+無料になっても上限は 1.049〜1.083 倍。キャッシュ経路は実測 0.558〜0.661 倍で**遅くなる**
+（1 step で読む 91,566,899 bytes を塔の順伝播の時間内に読むには 2.28〜4.58 GB/s が要るが、
+実測は 0.367〜0.472 GB/s）。**`configs/stage/s0_frozen.yaml` の `stage1_feature_cache` の
+骨組みは P→D の界面学習には使えない。**
+
+`scripts/train_t1b.py` は 1 行も変えていない。キャッシュを読む口は計測用の道具の側にあり、
+既存の学習経路は構成上壊れない。
+
 ### 数値精度と計算グラフの最適化の実測（2026-09-17）
 
 `T-2026-09-17-amp-compile-timing` で `scripts/bench_t1b_precision.py` を追加し、
