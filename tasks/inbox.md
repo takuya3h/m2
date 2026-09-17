@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（517 件）
+## 未処理（540 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -505,6 +505,14 @@
 - [ ] 2026-09-16 [cc] 🔴 **検出側 W2 の界面 run は repo 全体に一件も無い。** `docs/stage0/*.md`・`docs/experiment_log.md`・`tasks/*/RESULT.md` に文字列 `W2` が 0 行。検出塔のフル学習の計時も無く（塔は philip で学習され完走 ckpt だけが配置された）、`runindex` で `elapsed_seconds` を持つのは `s4_grasp_injection` の 426 run だけで**検出系は 0 件**。両者は利用者の承認のもと t1b の実測（1 run 約 4 時間 / 6 epoch）を代理に置いたが、**逆伝播の範囲が広いので下界である**（T-2026-09-17-tier1-cost-estimate）
 - [ ] 2026-09-16 [cc] **文書の数表を計算器の出力そのものにして、乖離を機械で捕まえるようにした。** `docs/stage0/B1_tier1_cost_estimate.md` の表は `<!-- estimate:begin ... -->` で囲った生成物で、`tools/estimate_tier_cost.py --check-doc` が再計算との差を数える。文書の数値を一つ書き換えると行番号つきで 1 件を返す。**散文に数字を手で写す経路を残さない**（T-2026-09-17-tier1-cost-estimate）
 - [ ] 2026-09-16 [cc] **P6（decisions_answered）で停止したあと、諮る前に読み取りだけで事実を集めた。** どの run 型に実測が無いかを知らずに「代理を置くか」は答えられないため。手順書は「項目を提示して停止」と定めるが、提示の質は集めた事実で決まる。**決めていない。集めただけである**（T-2026-09-17-tier1-cost-estimate）
+- [ ] 2026-09-17 [cc] 🔴 **数値精度は効き、結果は変わらない。** 行列積の TF32 を許すだけで W1 が 1.182 倍・W2 が 1.286 倍。最良条件で折り A を 6 epoch 回した主指標の差は best で **0.030σ**、全 epoch で最大 0.138σ（σ=0.004540、`t1b_filmonly` の 3 seed）。最良 epoch も基準と同じ ep2。**速くなったぶんを結果で払っていない**（T-2026-09-17-amp-compile-timing）
+- [ ] 2026-09-17 [cc] 🔴 **採用の可否が未決である。** 速さでは tf32 と bf16 に差が無く（1.182 倍と 1.174 倍）、記憶領域では bf16 が優り（W1 で 12.8%、W2 で 27.1% 減＝将来バッチを増やす余地）、変更の小ささでは tf32 が優る（記憶の表現を変えず autocast も尺度調整も不要）。**採用すると既存の単精度 run とは比較の土台が変わり、分母の再構成が要る**（T-2026-09-17-amp-compile-timing）
+- [ ] 2026-09-17 [cc] **Tier 1 の締切の判定が 2 箇所で変わる。** 12h/日・Stage 1 + Tier 1 で、縮退なしが 159.9〜218.2 日 → 135.3〜184.7 日、縮退段 3 が 96.2〜131.2 日 → 81.4〜111.0 日。**縮退段 3 の IPCAI long abstract が「読みにより分かれる」から「収まる」へ変わる。** IPCAI intention（残 39 日）はどちらでも収まらない（docs/stage0/C2_amp_compile_timing.md）
+- [ ] 2026-09-17 [cc] 🔴 **前契約の日数の前提に誤りがあった。** C1 §7 と RESULT.md の「縮退なし（K=3・装置 2・**24h/日**）: 153.1〜208.7 日」は、実際には **12h/日・Stage 1 + Tier 1 のみ**の値である。24h/日・全体なら 84.1〜111.9 日が正しい。数値は計算器の出力のままで、誤っていたのは添えた前提の記述である。**PR #181 は未併合のため訂正の commit を足せる**（tasks/T-2026-09-17-frozen-feature-cache-timing/RESULT.md）
+- [ ] 2026-09-17 [cc] **`torch.compile` は使えない。** 3 条件とも `TorchRuntimeError`。原因は `set_criterion.py:199` の `F.one_hot` が記号のままの形を扱えないこと（画像ごとに物体数が変わるため）。実装を改変しない回避（dynamo の eager 退避）では `ValueError: matrix contains invalid numeric entries` で、Hungarian matcher の費用行列に非数が入る。**利用者の判断で改変せず除外した。別契約にするかは未決**（third_party/Relation-DETR/models/bricks/set_criterion.py）
+- [ ] 2026-09-17 [cc] **GPU を使う契約なのに P2 と P11 が SKIP になる契約が在る。** 本契約は `plan.env.preflight` が `venv_active` のみで、`cuda_ext_loaded` も `gpu_free` も宣言が無い。**実際に開始時の装置は 2 枚とも占有されていた**が検査は通った。宣言を必須にするか `phases` の gpu 欄から導くかの判断が要る（tools/preflight_task.py）
+- [ ] 2026-09-17 [cc] **`experiments/` へ書く run を伴う契約は `contract.allow_write` の宣言が要る。** 本契約は Task C で必ず run を生成するのに宣言が無く、`make forbidden-check` が 9 経路を禁止領域として弾いた。1 run に限って追補して通した。**起票の雛形に入れるかの判断が要る**（tools/check_forbidden.py）
+- [ ] 2026-09-17 [cc] **`pkill -f` が自分の命令行に一致して自滅した**（exit 144）。`conventions#issuer_cautions` の 6 番が言う「部分一致は実行基盤の包み込みを拾う」の実例である。同じ過程の中で止めたいものを探すときも部分一致を使わない（scripts/bench_t1b_precision.py の測定中）
 - [ ] 2026-09-17 [cc] 退避した .venv 11279712329 バイトの処分期限が未決。版管理外・同期対象外で、このホストが失われれば失われる。契約は削除を禁じており判断は起票者に委ねた（/home/ubuntu/slocal2/venv-archive/venv-py312-2026-09-17）
 - [ ] 2026-09-17 [cc] 退避先を repo の外かつ同一ファイルシステムに置くという規約が無い。~/ は overlay で ~/slocal2 は /dev/sdd1。跨ぐと 11GB の実コピーになり中断で失う。契約の「repo の外」だけでは足りない（tasks/README.md）
 - [ ] 2026-09-17 [cc] setup_env.sh の nvcc 11.8 検査が prebuilt wheel 経路でも止める。ソースビルドを行わないのに nvcc を要求しており、SKIP_CUDA_CHECK=1 が事実上の既定になっている。検査の条件を経路に合わせるか削るかの判断が要る（scripts/setup_env.sh:43）
@@ -526,12 +534,27 @@
 - [ ] 2026-09-17 [cc] 🔴 **`forbidden-check` の violations 7 件は syncthing の取り残しであり実行者の操作ではない。** 開始時に stash した 31 件の削除を syncthing が復元した際の `.syncthing.*.py.tmp` で、内容は本体と byte 一致・mtime は 8 分停滞。SPEC §4 前文が同期処理を対象外とし禁止事項 4 が `experiments/**` を禁じるため**削除せず記録した**。検査は実行者の操作と同期の配布を区別できない（T-2026-09-17-fold-table）
 - [ ] 2026-09-17 [cc] 🔴 **起票者の誤り: 追記 4 件の出所が「誤り無し」と述べている頁だった。** SPEC Task D-3 は出所を `T-2026-09-16-evidence-map-ab/RESULT.md §4・§5` とするが §4 は「起票者の誤り 無し」で、3 件目は補足、4 件目は逸脱である。2 件目の型も出所は `check_does_not_check` としており指定の `asserted_without_measuring` と食い違う。内容は実測で裏が取れたため指定どおり書いた（T-2026-09-17-fold-table）
 - [ ] 2026-09-17 [cc] **残件三つを反映した。** `docs/docs_audit.md` に `docs/proposal-gate.md` を登録し docs-check の対象が **42→43**、`conventions.md` の変更履歴に欠落していた `a8c07e81`（2026-08-25・issuer_cautions 節の追加）の行、`docs/issuer-defects.md` に 4 件。**3 ファイルとも削除行 0**（T-2026-09-17-fold-table）
+- [ ] 2026-09-17 [cc] 🔴 **4 時間の原因は凍結塔の再計算ではない。** 凍結 backbone の順伝播は 1 step の 4.63〜7.68%（差分法・4 条件）で、完全に無料になっても上限は 1.049〜1.083 倍。時間の約 85% は FiLM より後段の transformer の順伝播と逆伝播で、**入力が界面の重みに依存するため原理的にキャッシュできない**。実装水準の手当てでは 4 時間は縮まない（T-2026-09-17-frozen-feature-cache-timing）
+- [ ] 2026-09-17 [cc] 🔴 **キャッシュ経路は速くならず 1.5〜1.8 倍遅い（実測 0.558〜0.661 倍）。** 塔の出力は 1 step で 91,566,899 bytes あり、塔の順伝播の時間内に読み切るには 2.28〜4.58 GB/s を要する。実測は 0.367 GB/s（経路内）／0.472 GB/s（`dd`・direct）で一桁足りない。fp16 にしても届かない。**塔の出力が計算より高くつく**（T-2026-09-17-frozen-feature-cache-timing）
+- [ ] 2026-09-17 [cc] **「一度だけ保存」は処方の変更にあたる。** 学習の前処理 `presets.detr` は毎 epoch 乱択（水平反転・11 段の解像度・crop）のため、同じ画像でも epoch ごとに別の入力になる。基準と結果を揃えたままキャッシュするには epoch ごとに別物が要り、6 epoch で 2.64 TB。`data/processed/` に置くと `.stignore:61` により**全ホストへ複製される**。置き場の方針を見直す価値がある（T-2026-09-17-frozen-feature-cache-timing）
+- [ ] 2026-09-17 [cc] **検出系の契約では preflight の P8 が構造的に必ず FAIL する。** P1 が `.venv-relation-detr` を要求する一方、P8 は `sys.executable`（＝その venv）で `validate_task.py` を起動し、その venv の正本 lock 72 pkg に `jsonschema` が無い。今回は利用者の判断で lock を変えずに追加導入して回避した。**lock に足すか P8 の起動方法を変えるかの判断が要る**（tools/preflight_task.py）
+- [ ] 2026-09-17 [cc] **`.venv-relation-detr` がインタプリタ不在で壊れていた。** `pyvenv.cfg` の `home` が指す pyenv 3.11.4 がホストに無く、`bin/` に python が 1 つも無い。site-packages だけが残っていた。手順書どおり再構築して復旧したが、**他ホストで同じ壊れ方をしていないかの確認が要る**（efros / docs/setup/lecun_detector.md）
+- [ ] 2026-09-17 [cc] **W2 の所要時間を代理から実測へ置き換えられる。** 同一バッチで測った W2/W1 の 1 step 比は 1.205（学習対象 266,880 → 25,505,568 param）。`tools/estimate_tier_cost.py` の `det_iface_w2` は代理 4.00 h（B1 の UNKNOWN #2）で、4.82 h へ置き換えられる。置き換えるかは利用者の判断（tools/estimate_tier_cost.py）
+- [ ] 2026-09-17 [cc] **hook の中で同期すると凍結塔へ過大に帰属する。** hook 計測では backbone が 1 step の 14.74% に見えたが、差分法では 4.63〜7.68% だった。同期は直前までに積まれた仕事の完了を待つため、その待ちが帰属先へ入る。**計測の副作用であり、結論には差分法を採った**（scripts/profile_t1b_step.py）
+- [ ] 2026-09-17 [cc] **契約の禁止事項と手順書が正面から衝突する。** SPEC §4-4 は `context/auto/*` と `tasks/inbox.md` の再生成を禁じ、手順書 §6 は `make taskindex` / `make inbox` と差分 0 の検査を求める。今回は禁止事項を優先して生成物を元へ戻したため `taskindex-check` と `inbox-check` は exit 2 を返す。**どちらを正とするかを定めないと、すべての契約で同じ判断が繰り返される**（tasks/README.md と .claude/skills/task/SKILL.md）
 - [ ] 2026-09-17 [cc] 配布台帳の T-2026-09-17-philip-accept-efros の行が本文 0 文字・添付なし・sha256 列も空。make task-start が exit 4 で止まるため分岐を手で作った。起票者が本文を載せ直すまで取り込み経路は使えない（tools/fetch_task.py の read_notion_bundle）
 - [ ] 2026-09-17 [cc] グローバル設定の permissions.deny に Read(~/.ssh/**) があり、受け入れ一覧を扱う契約は最初の測定で必ず止まる。利用者が緩めて続行したが、今後 ~/.ssh/ を触る契約は前提として規約側に書くか、契約の前提欄で deny の確認を求めるかが未決（~/.claude/settings.json）
 - [ ] 2026-09-17 [cc] 稼働中の syncthing の設定は config.xml の直接編集では変えられず、局所 REST 127.0.0.1:8384 だけが効く。相手の追加は再起動不要で PID も変わらなかった。この手段を規約か手順書へ昇格させるかが未決（scripts/sync/）
 - [ ] 2026-09-17 [cc] 常駐処理の件数を cmdline で数えると自分の命令行が混じって 2 件と出た。issuer_cautions 注意 6 と同型の汚染で、自 pid の除外を数え方の規約に足すかが未決（context/conventions.md#issuer_cautions）
 - [ ] 2026-09-17 [cc] ss がこのホストに無く /proc/net/tcp から数えた。待ち受けの数え方をホスト非依存の形で規約化するかが未決（context/conventions.md）
 - [ ] 2026-09-17 [cc] efros からの疎通は中心からは測れない。中心は住所 dynamic で繋ぎに行かず、禁止 5 で他ホストへも触れない。efros 側の契約で connected=True を確かめる必要がある（tasks/T-2026-09-17-efros-rejoin-foundation/）
+- [ ] 2026-09-18 [cc] **P\*-15 の塔を確定した: 候補 C（truncated MSE の平滑化損失）・8 層（受容野 1021 フレーム）・平滑化重み 0.30・履歴 30。** 5 折り平均 val macro Jaccard 0.32891 / frame accuracy 0.60566、test 0.22472 / 0.54535。選定は 70 run の val だけで行い、test は確定塔の 5 折りに 1 回ずつ（計 5 回、台帳あり）（T-2026-09-18-stage1-phase-tower）
+- [ ] 2026-09-18 [cc] 🔴 **利用者の判断: 同点は平滑化 0.30 を採る。** 最良 C/L8/w0.15（0.33280）と次点 C/L8/w0.30（0.32891）の差 0.00389 が折り A の seed 間 pstd 0.09596 以内、所要時間差 5.1% が ±20% 以内で並び、修正条項の同点規則（A>C>B、受容野の短い方）も**同一候補・同一受容野**のため決着しなかった。事前登録 §6.3 に従い諮った。理由は Stage 2 の送り手として再現性を優先するため（0.30 の折り A seed 間 pstd 0.01232 に対し 0.15 は 0.09596）。以後の規則「同一候補・同一受容野で残る同点は折り A の seed 間 pstd が小さい方」を `select()` に実装し、両方向の陽性対照つき試験を足した。**結果を見たあとに置いた規則であり事前登録されていない**（T-2026-09-18-stage1-phase-tower）
+- [ ] 2026-09-18 [cc] 🔴 **事前登録の予測 1・2 が外れた。** 候補 A（TeCNO 型）の最良 0.30747 は 10 構成中 **7 位**で、候補 B（Trans-SVNet 型）の最良 0.32300 が A を上回った。根拠にした同ドメインの否定例（EgoSurgery-Phase で Trans-SVNet 23.1 < TeCNO 27.3）は、**凍結 ImageNet 特徴・0.5 fps・15 動画・5 折りの本設定では再現しない**。再発防止性があるため `tasks/lessons.md` に上げる（T-2026-09-18-stage1-phase-tower）
+- [ ] 2026-09-18 [cc] 🔴 **P\*-21 は UNKNOWN のまま。** 追加 6 動画（17–22）の注釈は実在するが画像が本ホストに 0 件で、学習も test も行っていない。契約の 140 run のうち実施は 70 run。**Stage 2 の主分母が P\*-21 であるため、画像を使えるようにする別契約が要る**（T-2026-09-18-stage1-phase-tower）
+- [ ] 2026-09-18 [cc] **起票者の誤り 4 件。** `contract.allow_write` の欠落（規定の `make forbidden-check` が契約自身の出力 672 件で必ず落ちる）、判定 c の「10 構成 × 2 データ設定」と修正条項「P\*-21 は UNKNOWN」の矛盾、S4 分母 0.6447 ± 0.0146 を測らずに確定と断定（索引は 0.6322 ± 0.0215。集計対象の相違）、判定 d の「一意に決まる」が諮る場合を覆っていないこと（T-2026-09-18-stage1-phase-tower）
+- [ ] 2026-09-18 [cc] **折り B・C が全構成で低い**（B 0.19–0.24、C 0.23–0.29、他は 0.30–0.45）。折りによる難易度差が 5 折り平均の解釈に効く。折りごとの動画の性質を Stage 2 の前に調べる価値がある（T-2026-09-18-stage1-phase-tower）
+- [ ] 2026-09-18 [cc] **`make forbidden-check` が報告後に status fail へ変わった。** 違反 2 件は `experiments/transfer/pd_refin_empty_seed42_tf32/logs/` で、21:58:17 UTC に**別の処理**が書いたもの（本契約の commit 16:25 UTC より後）。禁止事項 8・9 に従い触っていない。検査は実行者の操作と並行する処理の書き込みを区別できない（T-2026-09-17-fold-table の syncthing 取り残しと同型）（T-2026-09-18-stage1-phase-tower）
 
 ## 処理済み（1 件）
 

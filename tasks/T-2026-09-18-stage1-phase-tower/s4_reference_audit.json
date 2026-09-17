@@ -1,0 +1,61 @@
+{
+  "measured_at_jst": "2026-09-18T00:35:20.984178+09:00",
+  "method": "saved per-class F1 to Jaccard; no checkpoint inference; no test access",
+  "experiment_id": "phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42",
+  "present_classes": [
+    "anesthesia",
+    "closure",
+    "design",
+    "dissection",
+    "dressing",
+    "hemostasis",
+    "incision"
+  ],
+  "manifest_sha256": "9f935375a093024a5124b873e243954d048d091c518534b7ee50079767309bd2",
+  "runs": [
+    {
+      "run_id": "s4_phase_baseline_001_frozen_tecno_phase_baseline_seed42",
+      "seed": 42,
+      "accuracy": 0.9023102310231023,
+      "jaccard": 0.6569478711055682,
+      "per_class_sha256": "a2c5bff94955046bd277b1eafa48984081f59e706db31c5a664d3fcbf47f672f"
+    },
+    {
+      "run_id": "s4_phase_baseline_002_frozen_tecno_phase_baseline_seed456",
+      "seed": 456,
+      "accuracy": 0.8957095709570957,
+      "jaccard": 0.6286106389366275,
+      "per_class_sha256": "d641e12abe2de02d62b34bd64d44ae604aed44946215b21656bc83929a49ec5b"
+    },
+    {
+      "run_id": "s4_phase_baseline_003_frozen_tecno_phase_baseline_seed123",
+      "seed": 123,
+      "accuracy": 0.8976897689768977,
+      "jaccard": 0.6486607763266027,
+      "per_class_sha256": "922e22cb4430657edde3ad3cd0c3358e1c9633018510f65457c27fbeff884000"
+    }
+  ],
+  "original_three_seed": {
+    "accuracy": {
+      "mean": 0.8985698569856986,
+      "pstd": 0.0027656336831631398,
+      "sstd": 0.0033871956696018865
+    },
+    "jaccard": {
+      "mean": 0.6447397621229328,
+      "pstd": 0.011896230384401817,
+      "sstd": 0.014569847152188916
+    }
+  },
+  "index_population": {
+    "n_runs": 17,
+    "n_jaccard": 14,
+    "mean": 0.6321606095182377,
+    "pstd": 0.021544225014892025,
+    "sstd": 0.022357498898394404
+  },
+  "controls": {
+    "saved_macro_f1_reproduced": true,
+    "nine_class_mean_rejected": true
+  }
+}

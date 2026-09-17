@@ -1,0 +1,65 @@
+task_id: T-2026-09-18-stage1-phase-tower
+action: train
+candidate: C
+fold: D
+seed: 42
+layers: 6
+smoothing_weight: 0.3
+history: 30
+device: cuda:0
+cache: data/processed/stage1_features/imagenet_r50_v1_stage1/all_gap.npz
+manifest_dir: data/processed/phase_manifest
+epochs: 50
+patience: 10
+lr: 0.0005
+weight_decay: 0.01
+warmup_epochs: 2
+maps: 64
+batch_size: 32
+workers: 4
+data:
+  videos:
+    test:
+    - '06'
+    - '13'
+    - '15'
+    val:
+    - '04'
+    - '05'
+    train:
+    - '01'
+    - '02'
+    - '03'
+    - '07'
+    - '08'
+    - '09'
+    - '10'
+    - '11'
+    - '12'
+    - '14'
+  class_counts:
+  - 352
+  - 4180
+  - 310
+  - 0
+  - 3676
+  - 36
+  - 878
+  - 702
+  - 128
+class_weights:
+- 0.508079605895562
+- 0.042785651022784164
+- 0.5769161976620575
+- 0.0
+- 0.048651801217420514
+- 4.967889479867717
+- 0.2036947850515237
+- 0.25476356307013936
+- 1.3972189162127955
+data_setting: P15
+receptive_field: 253
+selection_metric: phase_jaccard
+cache_sha256: cb3761c467f737bbd8dff2f5f3ebd468631b000f79b77d9a2907050c58f2469c
+source_sha256: 35dd9d44b4fa86cacb79df4e183d2514266976baf5a7d3ecc41b40d9ab50f499
+contract_sha256: 3b28a871a6708e13e3f7808da772cd717c57f06fa87a657e0afcb6b604c7cfc7

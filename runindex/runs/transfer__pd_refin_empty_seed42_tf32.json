@@ -1,0 +1,115 @@
+{
+  "arm": "unknown",
+  "attributes": {
+    "best_is_init": false
+  },
+  "command": "#!/usr/bin/env bash\n# 自動生成: この run を起動したコマンドの記録\n# 生成日時: 2026-09-17T11:29:59+00:00\npython scripts/train_t1b.py --inject film --trainable film --phase-source real --zero-ctx --seed 42 --epochs 6 --tf32 --task-id T-2026-09-17-amp-compile-timing --run-name pd_refin_empty_seed42_tf32\n",
+  "commit": "4624b002c65acf263e8821dac943de23950c6f71",
+  "config_path": "experiments/transfer/pd_refin_empty_seed42_tf32/config.yaml",
+  "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
+  "description": null,
+  "duplicate_bare_keys": [],
+  "epoch": 2,
+  "eval_recipe": null,
+  "eval_recipe_id": null,
+  "evidence_completeness": "full",
+  "excluded": false,
+  "exclusion_reason": null,
+  "experiment_id": null,
+  "experiment_id_provenance": "not_determinable",
+  "frozen_source_seed_declared": null,
+  "frozen_source_tag": null,
+  "gpu": null,
+  "group": "transfer",
+  "harvest_warnings": [
+    "run 名が命名規約 <step>_<seq3>_<desc>_seed<N> に一致しない: pd_refin_empty_seed42_tf32"
+  ],
+  "host": "efros",
+  "host_raw": "efros",
+  "ledger_key": "transfer__pd_refin_empty_seed42_tf32",
+  "metrics": {
+    "delta_detection": 0.003418834319585229,
+    "final_epoch": 5,
+    "final_mAP": 0.7313652919063105,
+    "init_mAP": 0.7302930990386708,
+    "mAP": 0.733711933358256
+  },
+  "metrics_by_split": {
+    "unknown": {
+      "delta_detection": 0.003418834319585229,
+      "final_epoch": 5,
+      "final_mAP": 0.7313652919063105,
+      "init_mAP": 0.7302930990386708,
+      "mAP": 0.733711933358256
+    }
+  },
+  "metrics_nested": {
+    "artifacts": {
+      "checkpoints": "efros:/home/ubuntu/slocal2/m2/experiments/transfer/pd_refin_empty_seed42_tf32/checkpoints",
+      "logs": "efros:/home/ubuntu/slocal2/m2/experiments/transfer/pd_refin_empty_seed42_tf32/logs",
+      "predictions": "efros:/home/ubuntu/slocal2/m2/experiments/transfer/pd_refin_empty_seed42_tf32/predictions",
+      "run_dir": "efros:/home/ubuntu/slocal2/m2/experiments/transfer/pd_refin_empty_seed42_tf32"
+    }
+  },
+  "metrics_primary_split": null,
+  "metrics_source": "metrics_json",
+  "notes": null,
+  "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
+  "path": "experiments/transfer/pd_refin_empty_seed42_tf32",
+  "per_class": {
+    "Bipolar Forceps": 0.7893957309925181,
+    "Electric Cautery": 0.9698598827918415,
+    "Forceps": 0.3817045697474188,
+    "Gauze": 0.2706215879999989,
+    "Hook": 0.6109612917588938,
+    "Mouth Gag": 0.8044744260078763,
+    "Needle Holders": 0.8540892874901468,
+    "Raspatory": 0.8384913691036117,
+    "Retractor": null,
+    "Scalpel": 0.8993373835355207,
+    "Scissors": 0.7118633879515759,
+    "Skewer": 0.9455106958234419,
+    "Suction Cannula": 0.8333591083436362,
+    "Syringe": 0.5791090590806881,
+    "Tweezers": 0.7831892863884159
+  },
+  "per_class_kind": "tool",
+  "per_class_metric": "AP",
+  "per_class_nan_classes": [
+    "Retractor"
+  ],
+  "per_class_source": "experiments/transfer/pd_refin_empty_seed42_tf32/per_class_ap.json",
+  "per_class_valid_count": 14,
+  "provenance": {
+    "aux_token": "no_aux_token",
+    "commit": "from_git_commit_txt",
+    "epoch": "from_metrics_json",
+    "host": "from_server_txt",
+    "name": "not_determinable",
+    "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
+    "seed": "not_determinable",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "from_plan_section_16_7",
+    "step": "not_determinable"
+  },
+  "run_id": "pd_refin_empty_seed42_tf32",
+  "seed": null,
+  "seed_agreement": "no_seed_in_dirname",
+  "seed_command": 42,
+  "seed_config": 42,
+  "seed_detector": null,
+  "seed_phase": null,
+  "seq": null,
+  "split": "val",
+  "step": null,
+  "subgroup": null,
+  "task_id": "T-2026-09-17-amp-compile-timing",
+  "wandb_run_id": null,
+  "wandb_run_url": null
+}

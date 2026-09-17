@@ -1125,6 +1125,37 @@ t1b の実測（1 run 約 4 時間 / 6 epoch）を代理に置いた。**いず�
 `--check-coverage` は run に対応づかない M の項目を数える。**いずれも壊した入力で
 1 件を返すことまで試験で確かめている**（陽性対照）。
 
+## Stage 1 工程塔の実行準備（2026-09-18）
+
+`T-2026-09-18-stage1-phase-tower` 用に `scripts/stage1_ptower.py` と
+`configs/stage1_ptower.yaml` を追加。Hydra の `action=extract/train` で ImageNet V1
+凍結R50のGAP特徴と、折り別のA/C/単フレーム線形対照を実行する。
+二度の全特徴抽出の一致・重み変更対照・キャッシュSHA-256照合を行い、
+W&B接続失敗時は実験を開始しない。学習はval Jaccardで選択しtestは評価しない。
+追加6動画の画像が未発見のため、利用者承認によりP*-15を先行する。
+現時点で候補B・全トーナメント・選定後testは未実装/未実施。
+進捗と実測は当該タスクのRESULT.md・audit.mdを参照。
+
+## Stage 1 工程塔 P\*-15 の確定（2026-09-18）
+
+`T-2026-09-18-stage1-phase-tower` を完走した。上の「実行準備」の節にある
+「候補 B・全トーナメント・選定後 test は未実装/未実施」は解消している。
+
+`scripts/run_stage1_ptower.py`（2 並列で格子を回し、完走済みの設定を証跡から見つけて飛ばす）と
+`scripts/select_stage1_ptower.py`（val だけで選定し、確定塔の test を折りごとに一度だけ評価する）を追加。
+test は台帳 `experiments/phase1/stage1_ptower/test_access_{A..E}.json` を `open("x")` で先に作るため、
+中断しても黙って再評価されない。
+
+**確定した P\*-15 の recipe は、候補 C（truncated MSE の平滑化損失）・8 層（受容野 1021 フレーム）・
+平滑化重み 0.30・履歴 30。** 5 折り平均 val macro Jaccard 0.32891、test 0.22472。
+選定は 70 run の val だけで行い、最良と次点が同点になったため事前登録 §6.3 に従い諮って決めた。
+同点規則「同一候補・同一受容野で残る同点は折り A の seed 間 pstd が小さい方」を `select()` に追加した。
+
+**P\*-21 は UNKNOWN。** 追加 6 動画（17〜22）の注釈は実在するが画像が本ホストに無く、
+学習も test も行っていない。Stage 2 の主分母は P\*-21 であるため、画像を使えるようにする別契約が要る。
+
+数値・逸脱・起票者の誤り・陽性対照は当該タスクの `RESULT.md`・`result.yaml`・`audit.md` を参照。
+
 ### 凍結検出塔の出力キャッシュの識別実験（2026-09-17）
 
 `T-2026-09-17-frozen-feature-cache-timing` で `scripts/profile_t1b_step.py` と

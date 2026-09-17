@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（470 件）
+## 申し送り（486 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -714,6 +714,14 @@
 - tools/check_proposal.py は引用の中の禁止語を区別しない。docs/proposal-gate.md 自身へ当てると過去の欠陥を引用した 13 行目を 1 件検出する。提案文書だけに使う前提であり、引用の除外が要るなら規則を足す判断が要る
 - context/auto/* と tasks/inbox.md は SPEC の禁止事項 3 により再生成していない。並行契約との統合後に一台で一度だけ make taskindex && make inbox を回すこと
 
+### T-2026-09-17-amp-compile-timing
+
+- 数値精度を下げた設定を本番の処方として採用するかは未決である。速さでは tf32 と bf16 に差が無く（1.182 倍と 1.174 倍）、記憶領域では bf16 が優り（W1 で 12.8% 減、W2 で 27.1% 減）、変更の小ささでは tf32 が優る。採用すると既存の単精度 run とは比較の土台が変わり分母の再構成が要る
+- 前契約 T-2026-09-17-frozen-feature-cache-timing の C1 §7 と RESULT.md が「縮退なし（K=3・装置 2・24h/日）: 153.1〜208.7 日」と書いた括弧の前提が誤りである。153.1〜208.7 は 12h/日・Stage 1 + Tier 1 のみの値で、24h/日・全体なら 84.1〜111.9 日が正しい。PR #181 は未併合のため訂正の commit を足せる
+- torch.compile を通すには third_party の set_criterion.py の F.one_hot を動的な形でも通る形へ直す必要がある。利用者の判断で本契約では改変せず除外した。別契約として起票するかは未決
+- plan.env.preflight に cuda_ext_loaded と gpu_free を書く契約と書かない契約が混在している。GPU を使う契約では宣言を必須にするか、kind や phases の gpu 欄から自動で導くかの判断が要る
+- experiments/ へ書く run を伴う契約は contract.allow_write の宣言が要る。起票の雛形に入れるか、Task C 相当の run がある契約で自動的に補うかの判断が要る
+
 ### T-2026-09-17-efros-rejoin-foundation
 
 - 中心 philip 側での登録が要る。受け入れ一覧へ入れる指紋は SHA256:Ney1waioF2sdDnbxOZyo/ff1Y6yz8x8kvnLSJGM0qF0、識別子は LW4CO4U-XINDYL5-WDTK4LN-NANREIJ-LHSPA6F-6VPGZ3R-2ADLKLP-GG6AUQW。 公開鍵は scripts/sync/hub_keys/efros.pub、識別子は scripts/sync/device_ids/efros.txt に置いた。
@@ -737,6 +745,15 @@
 - tests/test_fetch_task.py::test_rejects_unknown_file_name は実装の文言『経路として受け取れない名前です』と試験の期待『受け取れないファイル』が食い違って落ちている。tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics は experiments/ の NMS-free の run が score_thr=0.0 を持つため落ちている。いずれも本契約の範囲外で、直前契約から引き継いだ既知の失敗である
 - git stash が 4 件ある。本契約の 2 件（stash@{0} 未追跡 2 件、stash@{1} 追跡下の削除 31 件）と前契約の 2 件。本契約の 2 件のうち削除 31 件は syncthing が既にファイルを復元済みのため、そのまま pop すると復元された .py を再び消すことになる。復元の要否を確かめてから扱うこと
 
+### T-2026-09-17-frozen-feature-cache-timing
+
+- tools/estimate_tier_cost.py の det_iface_w2 は代理 4.00 h（B1 の UNKNOWN #2）である。本契約の実測 W2/W1 = 1.205 から 4.82 h へ置き換えられる。置き換えるかは利用者の判断
+- .venv-relation-detr の正本 lock に jsonschema が無いため、検出系の契約では preflight の P8 が構造的に FAIL する。lock に足すか P8 の起動方法を変えるかの判断が要る
+- 基準 run の証跡に所要時間の列が無い。run_artifacts へ壁時計と GPU 時間を残すようにすれば、以後は同じ処方の基準を再実行せずに比べられる
+- SPEC §4 禁止事項 4（context/auto/* と tasks/inbox.md を再生成しない）と手順書 §6（make taskindex / make inbox とその検査）が衝突する。どちらを正とするかを定めないと、検出系に限らずすべての契約で同じ判断が繰り返される
+- configs/stage/s0_frozen.yaml の stage1_feature_cache の骨組みは P→D の界面学習には使えない（凍結塔の出力を毎 step 全解像度で要する用途には向かない）。用途の注記を置くか外すかの判断が要る
+- 時間を縮めるなら削るのは腕ではなく 1 run の中身（epoch 数・解像度・query 数・encoder 層数）である。いずれも比較の土台を動かすため全腕で同一に動かすことが条件になる
+
 ### T-2026-09-17-philip-accept-efros
 
 - efros から中心への疎通は efros 側の契約で測る。中心は住所 dynamic のため相手へ 繋ぎに行かず、禁止 5 により他ホストへ接続できないため、本契約では原理的に測れない。 efros 側が起動すれば connections の efros の項目が connected=True へ変わる。
@@ -751,7 +768,15 @@
 - 検出塔のフル学習と検出側 W2 界面 run の所要時間を実測する契約を起票すれば、 本試算の代理（下界）を実測へ置き換えられる。本契約は GPU 禁止のため測れていない。
 - 試験 7 件が本契約の変更前から失敗している（test_check_spec 1・test_engines 1・ test_fetch_task 1・test_research_logger 4）。本契約では直していない。
 
-## 断定できなかった事項（303 件）
+### T-2026-09-18-stage1-phase-tower
+
+- 追加 6 動画 17-22 の画像を本ホストで使えるようにする別契約が要る。注釈は実在するが画像が 0 件のため P*-21 が一切学習できていない。Stage 2 の主分母は P*-21 であり、これが無いと Stage 2 の送り手が揃わない。
+- 確定塔の 5 折り平均 val macro Jaccard は 0.32890765082910894、test は 0.22471876589180543 で、Stage 0 の S4（折り A val 0.6447397621229328）と大きく離れている。凍結 ImageNet 特徴の上では工程認識の水準がこの程度に留まることを、Stage 2 の期待値の置き方に反映する必要がある。
+- 事前登録の予測 1 と 2 が外れた。候補 A（TeCNO 型）は 10 構成中 7 位で、候補 B（Trans-SVNet 型）が A を上回った。根拠にした同ドメインの否定例（Trans-SVNet 23.1 < TeCNO 27.3）は、凍結 ImageNet 特徴・0.5 fps・15 動画・5 折りの本設定では再現しない。教訓として tasks/lessons.md に上げる。
+- 選定の同点規則「同一候補・同一受容野で残る同点は折り A の seed 間 pstd が小さい方」は本契約で事後に置いた。以後の契約では事前登録の段階で同点の解き方を最後まで書く。
+- 折り B と折り C の val Jaccard が全構成で低い（B は 0.19-0.24、C は 0.23-0.29）。折りによる難易度の差が大きく、5 折り平均の解釈に効く。折りごとの動画の性質を Stage 2 の前に調べる価値がある。
+
+## 断定できなかった事項（316 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1276,6 +1301,15 @@
 
 - make docs-check の通過は docs/proposal-gate.md について空振りである（対象が docs_audit.md 依存）。代わりに文書内の経路を手で確かめ、context/conventions.md と tools/check_spec.py は実在、docs/evidence/ は不在と実測した
 
+### T-2026-09-17-amp-compile-timing
+
+- 基準 run の壁時計と GPU 時間。証跡に時間の列が無く、本ホストで fp32 の 6 epoch を回していない。step 実測から積むと 4.23 h になるが導出値であり実測ではない
+- 基準 run の step 別の損失。記録に存在しないため、並べられるのは epoch 別の val mAP までである
+- torch.compile の上乗せ分。実装を改変しないと完走しないため測っていない
+- bf16 と fp16 での折り A の主指標。Task C は最良条件の tf32 の 1 本のみ回した
+- 半精度で減った記憶領域のぶんバッチを増やした場合の倍率。処方の変更にあたるため測っていない
+- 工程側（TeCNO 系）の run に同じ手当てが効くか。本契約は検出側だけを測った
+
 ### T-2026-09-17-efros-rejoin-foundation
 
 - 試験の開始前の値。着手時点の .venv には Python の実体が 1 件も無く pytest の実行系が起動しないため測れなかった。 result.yaml の before_failed: 0 は「落ちた試験が 0 件」という字義どおりの値であり、 同時に「通った試験も 0 件」である。良好な開始状態を意味しない。
@@ -1293,6 +1327,13 @@
 
 - L2-6 の WARN は本契約では出なかった。SPEC §2 は規約ファイルが変われば conventions_rev を持つ全契約に出ると述べるが、本契約の L1+L2 は規約を変える前に実行したためである。規約を変えた後に他契約を検証すれば出るはずだが、本契約では測っていない
 - repo に Phase 専用の分割ファイルは存在しない（find data -iname '*split*' は data/splits のみ、生データ側にも phase 用の train/test 一覧は無い）。したがって『Phase 公式 test』に対応する実体は data/splits/ego_test.txt であると解釈した。EgoSurgery-Phase の 21 動画版に別の公式分割が外部で定義されているかは未確認である
+
+### T-2026-09-17-frozen-feature-cache-timing
+
+- 基準 run とキャッシュ経路 run の 6 epoch 完走比較（主指標の一致）。キャッシュ経路が遅いことが確定したため実行していない
+- 基準 run の GPU 時間。記録が無く、本ホストでも 6 epoch を回していないため出せない
+- 決定化（ビット一致）の可否。6 epoch 完走比較を行っていないため未確認
+- 15 動画分の大きさは、val と同じ原解像度・増強なしの前処理を仮定して 1 枚あたりの実測値を枚数倍したものである（枚数 15,437 と 1 枚 57,802,752 bytes はいずれも実測）
 
 ### T-2026-09-17-philip-accept-efros
 
@@ -1314,16 +1355,22 @@
 - 他ホストの GPU 台数。利用者の決定により接続せず、本ホストの A6000 2 枚だけを前提にした
 - 投影（context/auto/* と tasks/inbox.md）への反映。契約 §4-3 が再生成を禁じるため未確認
 
-## 起票者の誤りの型（266 件）
+### T-2026-09-18-stage1-phase-tower
+
+- P*-21 の全ての値。追加 6 動画の画像が本ホストに無く、学習も test も行っていない。判定 a・c・e・f の P*-21 側は未測定である。
+- S4 凍結工程塔の test 値。本契約では val のみを並置した。S4 の test は評価していない。
+- 確定塔の checkpoint からの再評価による S4 との厳密な比較。特徴も塔も異なるため、差の要因を特徴の出所と時間ヘッドに分解できていない。
+
+## 起票者の誤りの型（280 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 76 |
-| `asserted_without_measuring` | 102 |
-| `self_contradiction` | 69 |
+| `check_does_not_check` | 80 |
+| `asserted_without_measuring` | 108 |
+| `self_contradiction` | 73 |
 | `shell_assumption` | 19 |
 
-合計 266 件（対を持つ契約 93 件から）
+合計 280 件（対を持つ契約 96 件から）
 
