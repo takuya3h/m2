@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 92 件）。
-ここに出ない 87 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 93 件）。
+ここに出ない 88 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-09-17-tier1-cost-estimate
 
@@ -124,6 +124,41 @@
 - L2-6 の WARN は本契約では出なかった。SPEC §2 は規約ファイルが変われば conventions_rev を持つ全契約に出ると述べるが、本契約の L1+L2 は規約を変える前に実行したためである。規約を変えた後に他契約を検証すれば出るはずだが、本契約では測っていない
 - repo に Phase 専用の分割ファイルは存在しない（find data -iname '*split*' は data/splits のみ、生データ側にも phase 用の train/test 一覧は無い）。したがって『Phase 公式 test』に対応する実体は data/splits/ego_test.txt であると解釈した。EgoSurgery-Phase の 21 動画版に別の公式分割が外部で定義されているかは未確認である
 
+## T-2026-09-17-efros-syncthing-join
+
+状態 `pass` / ホスト `efros` / 起票 `180` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 実行権 600 / 目印 0 件 / syncthing 0 / 中継 0 を両方向の対照つきで実測（正 zsh=5、負 zzz=0）。控えは ~/.syncthing-config-backup-20260917-155900（stat -c %d が双方 233 で同一ファイルシステム）。中心へ ssh -N で入り Authenticated to 192.168.196.150:50072 を得た。負の対照（口 50073）は Connection refused
+- `G2` pass — autoUpgradeIntervalH 12→0、globalAnnounceEnabled true→false、relaysEnabled true→false、localAnnounceEnabled は true のまま。自分の登録名は実測で既に efros のため置換 0 件。中心を tcp://127.0.0.1:22001 で登録。count(/configuration/folder)=2、count(/configuration/defaults/folder)=1、count(//folder)=3。xmllint --noout exit 0、権限 600
+- `G3` pass — keeper.sh sha256 9fe9c423…dd90、m2-sync.sh sha256 bcf46ba9…e25f が正本と一致。bash -n は両方 0（負の対照は 2）。~/.zshrc の起動行は既存 1 件のため追記せず（.zshrc の sha256 は開始時から不変）。.sync-pause を置き grep -c sync-pause ~/bin/m2-sync.sh = 2 を確認
+- `G4` pass — 目印 ~/.tunnel_to_philip（2 行、権限 600）。keeper 1 件（PID 53967、錠 ~/.keeper.lock）。中継 PID 53974 は keeper の子で引数に ubuntu@192.168.196.150 を含み 22001 の待ち受けは 2（負の対照 65533 は 0）。中継が立ってから chmod 700、sha256 は前後同一。syncthing 2 件（73191 → 73210 の親子）、版は自分 v2.1.3 / 中心 clientVersion v2.1.3。最上位フォルダ 2 のまま、autoUpgradeIntervalH 0 のまま、grep -ci upgrade = 0
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — SPEC は「起動時に設定は書き戻される。要約値は変わる。定義が消えていないことで確かめる」と断定する。指示どおり定義で確かめたが、実測では config.xml の sha256 も大きさも変わらなかった（c4e6c320…d63b5 / 11179 bytes のまま）。要約値の変化を起動の証拠に使う手順を書くと、この版では常に「起動していない」と誤判定する
+- `asserted_without_measuring` — SPEC は中継について「周期は千八百秒。実測は四百十三〜千五百六十九秒」と書く。これは既に回っている keeper の次の周回を待つ場合の値である。本契約のように自分で keeper を起こす場合は最初の周回の先頭で張られ、実測は約 4 秒であった。指示どおりに数百秒待つ設計にすると、立っているものを待ち続ける
+
+### 逸脱
+
+- `judgement` — ~/.zshrc へ起動行を追記しなかった。grep -c 'keeper.sh' ~/.zshrc が 1 で既存が在ったため（SPEC Task 3 Step 3 の指示どおり）。本ホストは起動行だけ先に配られ、指す先の脚本が無い状態であった
+- `judgement` — conventions_rev を置換しなかった。実測 e7a51005 に対し契約の記載 e7a5100 は同じコミットの短縮形であり、validate_task.py の照合（git diff <rev>..HEAD -- context/conventions.md）に差分が出ないため置換が無意味である
+- `judgement` — 開始前からの未追跡 2 件を退避しなかった。分岐 feat/efros-syncthing-join が既に origin/phase0 と同じ位置に在り、git checkout -b が不要であったため。2 件には触れていない
+- `environment` — ss / netstat / lsof / ip がいずれも本ホストに存在しない。待ち受けは /proc/net/tcp と /proc/net/tcp6 の st=0A を数えて判定した
+- `judgement` — ~/claude-sync/.stfolder を先回りして作らず、起動後の実挙動を測った。syncthing が起動時に自分で作り、フォルダは両方とも正常に動いた。新しいホストを入れるとき人が作る必要は無い
+
+### 申し送り
+
+- repo フォルダ m2 の受け取りは起動から約 29 分で完了した（17:10:06 に state=idle / needBytes 0、du -sb は 68314468570 → 73028668690 で 4714200120 bytes が届いた）。中心への送り出しは同時点で完了率 75.66% / needBytes=11983979383 であり完了していない。完了を待たない指示のため打ち切った
+- ~/claude-sync/ に記録の衝突ファイルが生まれた（sync-alerts.sync-conflict-20260917-074045-LW4CO4U.log 他）。正常な挙動であり両方残してある。整理するかどうかは起票者の判断である
+- 本ホストの ~/.zshrc には keeper の起動行だけが先に配られていて、指す先の脚本が無い状態であった。他に同じ状態のホストが残っていないか確かめる価値がある
+
+### 断定できなかったこと
+
+- 中心が本ホストの分を取り込み終える時刻。完了を待たない指示のため測っていない。17:10 時点で完了率 75.66% / needBytes=11983979383。本ホストの受け取り側は完了している
+- 中心側から見た本ホストの登録状態。中心で命令を実行しない禁止事項のため、自ホストの経路からしか確かめていない
+
 ## T-2026-09-17-efros-rejoin-foundation
 
 状態 `pass` / ホスト `efros` / 起票 `178` / 様式 `v3`
@@ -166,35 +201,4 @@
 - 中心 philip への到達性。本契約では測っていない。SPEC は「中心から測定済み」と書くが、その値は引き写していない。
 - he の到達性。測っていない。env-facts.md:12 は「he は未確認」と訂正した。
 - 退避した .venv（11279712329 バイト）を将来いつ処分してよいか。本契約は削除を禁じられており、判断は起票者に委ねる。
-
-## T-2026-09-16-proposal-gate
-
-状態 `pass` / ホスト `lecun` / 起票 `173` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 開始前から在る未追跡 2 件を git stash（移動）で退避し作業ツリーを清浄にした。context/conventions.md のアンカーを実装の正規表現で数えて 8 件、tools/check_spec.py の RULES タプルの要素数を読んで 8 件と記録。P9 の自己申告『規則 8 件』と独立に一致した
-- `G2` pass — 禁止語は 0 語で 0 件・1 語で 1 件・2 語で 2 件。カードは見出し 14 件で 0 件・13 件で missing_heading 1 件・#5 の数字を消して missing_number 1 件。境界（未踏＋空白である理由の仮説）は 0 件、条件が無ければ 1 件。六通りすべて期待どおり
-
-### 起票者の誤り
-
-- `self_contradiction` — Task B は context/conventions.md への追記を命じるが、同ファイルは tools/check_forbidden.py の FORBIDDEN_FILES にあり、契約は contract.allow_write を宣言していない。指示どおり実行すると Task E-1 の make forbidden-check が status: fail / violations 1 件（禁止されたファイル context/conventions.md）で落ち、完了判定に到達できない
-- `check_does_not_check` — SPEC 2 節の確定事実 2 は『変更履歴に行を足すと naming の解決結果が変わり、naming を注入する既存契約で L2-6 が WARN になる』と述べるが、_warn_conventions_rev（tools/validate_task.py:439）は inject_verbatim を読まず git diff の有無だけを見る。実測では変更履歴に行を足す前、proposal_gate 節を足しただけの時点で、naming を注入しない T-2026-08-11-issuer-defect-detector にも同じ WARN が出た
-
-### 逸脱
-
-- `judgement` — contract.allow_write に context/conventions.md を足した。契約の Task B が同ファイルへの追記を命じており、allow_write はスキーマ上の正規キーで許可の上限（data/ のみ）にも触れないため、停止せず宣言を補った。結果 forbidden-check は permitted 1 件 / violations 0 件で通る
-- `judgement` — 開始前から在った未追跡 2 件（.sync-pause.released と前セッションの digest）を git stash push -u で退避した。禁止事項 6 のとおり消していない。戻すのは git stash pop
-- `judgement` — 逐語注入の原文 2 件を RESULT.md へ四字下げで貼った。原文の見出しが本書の節構造と混ざるのを避けるためで、下げ幅を除いた文字列は規約の当該節と一致する。要約はしていない
-
-### 申し送り
-
-- docs/proposal-gate.md は docs/docs_audit.md に載っていないため make docs-check の対象外である。対象数は前後とも 42 で変わらない。登録するなら、文書が言及する docs/evidence/ が並行契約 T-2026-09-16-evidence-map-ab で実在するようになってからにする（いま登録すると不在の経路で落ちる）
-- context/conventions.md の変更履歴の表に a8c07e81（2026-08-25、issuer_cautions 節の追加）の行が欠けている。本契約は既存節の本文を変えない禁止を守るため足していない。補うなら別契約で
-- tools/check_proposal.py は引用の中の禁止語を区別しない。docs/proposal-gate.md 自身へ当てると過去の欠陥を引用した 13 行目を 1 件検出する。提案文書だけに使う前提であり、引用の除外が要るなら規則を足す判断が要る
-- context/auto/* と tasks/inbox.md は SPEC の禁止事項 3 により再生成していない。並行契約との統合後に一台で一度だけ make taskindex && make inbox を回すこと
-
-### 断定できなかったこと
-
-- make docs-check の通過は docs/proposal-gate.md について空振りである（対象が docs_audit.md 依存）。代わりに文書内の経路を手で確かめ、context/conventions.md と tools/check_spec.py は実在、docs/evidence/ は不在と実測した
 
