@@ -1,0 +1,6 @@
+- [ ] 2026-09-17 [cc] 配布台帳の T-2026-09-17-philip-accept-efros の行が本文 0 文字・添付なし・sha256 列も空。make task-start が exit 4 で止まるため分岐を手で作った。起票者が本文を載せ直すまで取り込み経路は使えない（tools/fetch_task.py の read_notion_bundle）
+- [ ] 2026-09-17 [cc] グローバル設定の permissions.deny に Read(~/.ssh/**) があり、受け入れ一覧を扱う契約は最初の測定で必ず止まる。利用者が緩めて続行したが、今後 ~/.ssh/ を触る契約は前提として規約側に書くか、契約の前提欄で deny の確認を求めるかが未決（~/.claude/settings.json）
+- [ ] 2026-09-17 [cc] 稼働中の syncthing の設定は config.xml の直接編集では変えられず、局所 REST 127.0.0.1:8384 だけが効く。相手の追加は再起動不要で PID も変わらなかった。この手段を規約か手順書へ昇格させるかが未決（scripts/sync/）
+- [ ] 2026-09-17 [cc] 常駐処理の件数を cmdline で数えると自分の命令行が混じって 2 件と出た。issuer_cautions 注意 6 と同型の汚染で、自 pid の除外を数え方の規約に足すかが未決（context/conventions.md#issuer_cautions）
+- [ ] 2026-09-17 [cc] ss がこのホストに無く /proc/net/tcp から数えた。待ち受けの数え方をホスト非依存の形で規約化するかが未決（context/conventions.md）
+- [ ] 2026-09-17 [cc] efros からの疎通は中心からは測れない。中心は住所 dynamic で繋ぎに行かず、禁止 5 で他ホストへも触れない。efros 側の契約で connected=True を確かめる必要がある（tasks/T-2026-09-17-efros-rejoin-foundation/）
