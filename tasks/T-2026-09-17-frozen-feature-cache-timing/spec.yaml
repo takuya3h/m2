@@ -1,0 +1,69 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-09-17-frozen-feature-cache-timing"
+  kind: impl
+  title: "P→D 側の W1 界面 run で、凍結検出塔の出力をキャッシュしたときの所要時間と結果の同一性を実測する"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-09-17T00:56:30Z"
+  created_from:
+    runindex_commit: "96eb3a1ca20ab7eb4b373d93304c9e6b33b733d5"
+    counts: {index: 1266, experiments: 285, verdicts: 1506}
+  depends_on: [T-2026-08-29-lecun-detector-env-pd]
+  amendments:
+    - date: "2026-09-17"
+      reason: "利用者から decisions_required の 1 件へ回答を得た。凍結塔の出力キャッシュは共有領域である data/processed/ 配下に置く（全ホストへ複製される。.stignore 61 行目の !data/processed が同期対象と宣言しているため）。あわせて、装置の仮占有プロセス（PID 106429 / 106543）を実験直前に停止する許可と、docs/setup/lecun_detector.md に従って .venv-relation-detr を再構築する許可を得た"
+      diff: "governance.decisions_required を 1 件から空へ"
+intent:
+  question: "検出側の界面 run が一本およそ四時間かかる原因は、凍結した塔に毎 epoch 画像を通し直していることか。塔の出力を一度保存して界面だけを学習すれば、同じ結果のまま何倍速くなるか"
+  decision_at_stake: "Tier 一の費用のほぼ全部を占める P→D 側の run を、腕を削らずに縮められるか。縮められなければ設計水準の見直しへ進む"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery-Tool subset (15 videos), fold A only"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt", "data/splits/ego_test.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/train_t1b.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#frozen_source]
+  conventions_rev: "e7a5100597a79b3b9c60935bf38d232f8ae96822"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "開始状態。装置の空き、基準となる既存 run の特定、凍結塔の出力の形と大きさの見積もり", gpu: false, est: "40m"}
+    - {id: B, name: "キャッシュの生成（凍結塔の出力を一度だけ保存）と、保存物の決定性の確認", gpu: true, est: "2h"}
+    - {id: C, name: "キャッシュを読む学習経路の実装と、基準と同じ処方での W1 run 一本", gpu: true, est: "4h"}
+    - {id: D, name: "所要時間の比較、結果の同一性、W2 への適用可能性の実測", gpu: true, est: "2h"}
+    - {id: E, name: "検証と報告", gpu: false, est: "60m"}
+  gates:
+    - {id: G1, after: A, check: "基準 run（同じ処方・同じ seed・所要時間の記録あり）が特定できた。装置が空いている", on_fail: stop}
+    - {id: G2, after: B, check: "同じ入力で二度生成したキャッシュの要約値が一致した", on_fail: stop}
+    - {id: G3, after: C, check: "キャッシュ経路の run が完走し、基準と同じ評価が出た", on_fail: ask}
+  env:
+    venv: ".venv-relation-detr"
+    preflight: [venv_active, cuda_ext_loaded]
+outputs:
+  must_have: [C1_frozen_feature_cache_timing.md]
+  destination: "docs/stage0/"
+  acceptance:
+    - "a: 基準 run とキャッシュ経路の run が同じ処方・同じ seed・同じ折りで、両方の所要時間が壁時計と GPU 時間で記録されている"
+    - "b: 二つの run の主指標が一致する。決定化できる場合はビット一致、できない場合は差が既知の seed 間散らばりより小さい"
+    - "c: キャッシュを二度生成して要約値が一致する。塔の識別子を変えると要約値が変わる"
+    - "d: キャッシュの大きさ（一折り分と十五動画分の見積もり）が記録され、配置先の空き容量と比べられている"
+    - "e: W2 の学習範囲について、凍結される層とそうでない層が実装から特定され、キャッシュが効く範囲が記録されている"
+    - "f: 短縮の倍率が epoch 一回あたりと run 全体で別々に記録されている"
+    - "g: 装置の使用が開始前と終了後で記録され、他利用者の処理を止めていない"
+    - "h: PR が Draft でなく存在し、分岐が feat/ で始まる"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "同じ処方の基準 run が記録に無く、四時間の基準を新たに回す必要がある場合（回す前に諮る）"
+    - "キャッシュの見積もりが配置先の空き容量を超える場合"
+    - "決定化ができず、主指標の差が seed 間散らばりと同程度になった場合"
+    - "装置が他利用者に使われている場合"
