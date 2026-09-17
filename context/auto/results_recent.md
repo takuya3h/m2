@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 92 件）。
-ここに出ない 87 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 93 件）。
+ここに出ない 88 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-09-17-tier1-cost-estimate
 
@@ -201,35 +201,4 @@
 - 中心 philip への到達性。本契約では測っていない。SPEC は「中心から測定済み」と書くが、その値は引き写していない。
 - he の到達性。測っていない。env-facts.md:12 は「he は未確認」と訂正した。
 - 退避した .venv（11279712329 バイト）を将来いつ処分してよいか。本契約は削除を禁じられており、判断は起票者に委ねる。
-
-## T-2026-09-16-proposal-gate
-
-状態 `pass` / ホスト `lecun` / 起票 `173` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 開始前から在る未追跡 2 件を git stash（移動）で退避し作業ツリーを清浄にした。context/conventions.md のアンカーを実装の正規表現で数えて 8 件、tools/check_spec.py の RULES タプルの要素数を読んで 8 件と記録。P9 の自己申告『規則 8 件』と独立に一致した
-- `G2` pass — 禁止語は 0 語で 0 件・1 語で 1 件・2 語で 2 件。カードは見出し 14 件で 0 件・13 件で missing_heading 1 件・#5 の数字を消して missing_number 1 件。境界（未踏＋空白である理由の仮説）は 0 件、条件が無ければ 1 件。六通りすべて期待どおり
-
-### 起票者の誤り
-
-- `self_contradiction` — Task B は context/conventions.md への追記を命じるが、同ファイルは tools/check_forbidden.py の FORBIDDEN_FILES にあり、契約は contract.allow_write を宣言していない。指示どおり実行すると Task E-1 の make forbidden-check が status: fail / violations 1 件（禁止されたファイル context/conventions.md）で落ち、完了判定に到達できない
-- `check_does_not_check` — SPEC 2 節の確定事実 2 は『変更履歴に行を足すと naming の解決結果が変わり、naming を注入する既存契約で L2-6 が WARN になる』と述べるが、_warn_conventions_rev（tools/validate_task.py:439）は inject_verbatim を読まず git diff の有無だけを見る。実測では変更履歴に行を足す前、proposal_gate 節を足しただけの時点で、naming を注入しない T-2026-08-11-issuer-defect-detector にも同じ WARN が出た
-
-### 逸脱
-
-- `judgement` — contract.allow_write に context/conventions.md を足した。契約の Task B が同ファイルへの追記を命じており、allow_write はスキーマ上の正規キーで許可の上限（data/ のみ）にも触れないため、停止せず宣言を補った。結果 forbidden-check は permitted 1 件 / violations 0 件で通る
-- `judgement` — 開始前から在った未追跡 2 件（.sync-pause.released と前セッションの digest）を git stash push -u で退避した。禁止事項 6 のとおり消していない。戻すのは git stash pop
-- `judgement` — 逐語注入の原文 2 件を RESULT.md へ四字下げで貼った。原文の見出しが本書の節構造と混ざるのを避けるためで、下げ幅を除いた文字列は規約の当該節と一致する。要約はしていない
-
-### 申し送り
-
-- docs/proposal-gate.md は docs/docs_audit.md に載っていないため make docs-check の対象外である。対象数は前後とも 42 で変わらない。登録するなら、文書が言及する docs/evidence/ が並行契約 T-2026-09-16-evidence-map-ab で実在するようになってからにする（いま登録すると不在の経路で落ちる）
-- context/conventions.md の変更履歴の表に a8c07e81（2026-08-25、issuer_cautions 節の追加）の行が欠けている。本契約は既存節の本文を変えない禁止を守るため足していない。補うなら別契約で
-- tools/check_proposal.py は引用の中の禁止語を区別しない。docs/proposal-gate.md 自身へ当てると過去の欠陥を引用した 13 行目を 1 件検出する。提案文書だけに使う前提であり、引用の除外が要るなら規則を足す判断が要る
-- context/auto/* と tasks/inbox.md は SPEC の禁止事項 3 により再生成していない。並行契約との統合後に一台で一度だけ make taskindex && make inbox を回すこと
-
-### 断定できなかったこと
-
-- make docs-check の通過は docs/proposal-gate.md について空振りである（対象が docs_audit.md 依存）。代わりに文書内の経路を手で確かめ、context/conventions.md と tools/check_spec.py は実在、docs/evidence/ は不在と実測した
 

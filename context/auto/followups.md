@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（467 件）
+## 申し送り（470 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -751,7 +751,7 @@
 - 検出塔のフル学習と検出側 W2 界面 run の所要時間を実測する契約を起票すれば、 本試算の代理（下界）を実測へ置き換えられる。本契約は GPU 禁止のため測れていない。
 - 試験 7 件が本契約の変更前から失敗している（test_check_spec 1・test_engines 1・ test_fetch_task 1・test_research_logger 4）。本契約では直していない。
 
-## 断定できなかった事項（301 件）
+## 断定できなかった事項（303 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1314,18 +1314,16 @@
 - 他ホストの GPU 台数。利用者の決定により接続せず、本ホストの A6000 2 枚だけを前提にした
 - 投影（context/auto/* と tasks/inbox.md）への反映。契約 §4-3 が再生成を禁じるため未確認
 
-## 起票者の誤りの型（264 件）
+## 起票者の誤りの型（266 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 76 |
-| `asserted_without_measuring` | 101 |
-| `self_contradiction` | 68 |
-| `asserted_without_measuring` | 100 |
+| `asserted_without_measuring` | 102 |
 | `self_contradiction` | 69 |
 | `shell_assumption` | 19 |
 
-合計 264 件（対を持つ契約 92 件から）
+合計 266 件（対を持つ契約 93 件から）
 
