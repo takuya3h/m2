@@ -30,7 +30,7 @@ def select(rows):
             rank = {"A": 0, "C": 1, "B": 2}
             best = min(pair, key=lambda r: (rank[r["candidate"]], r["layers"]))
             reason = "within SD and 20% runtime: A before C before B, then shorter RF"
-            # Same candidate and same RF: the 2026-09-17 amendment takes the steadier seeds.
+            # Same candidate and same RF: the 2026-09-18 amendment takes the steadier seeds.
             other = second if best is ranked[0] else ranked[0]
             if (best["candidate"], best["layers"]) == (other["candidate"], other["layers"]):
                 best = min(pair, key=lambda r: r["fold_A_pstd"])

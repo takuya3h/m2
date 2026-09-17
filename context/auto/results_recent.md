@@ -34,6 +34,8 @@
 - `environment` — 追加 6 動画 17-22 の画像が本ホストに無く、P*-21 を一切学習していない。契約の 140 run のうち実施は 70 run。Stage 2 の主分母 P*-21 には別契約が要る。
 - `judgement` — 分岐は開始時点から feat/stage1-phase-tower であり phase0 を起点にしていない。原契約 Task A-1 の「HEAD が phase0」を満たしていない。PR の base は phase0 にする。
 - `judgement` — RESULT.md の前半にある「学習は未開始」「利用者判断を待つ」は追記時点より前の状態を書いたものだが、時系列の記録を壊さないため書き換えずに残した。
+- `environment` — 報告後の 22:01 UTC に make forbidden-check が status fail・違反 2 件に変わった。内訳は experiments/transfer/pd_refin_empty_seed42_tf32/logs/ の 2 ファイルで、21:58:17 UTC に別の処理が書いたものである。本契約の出力ではないため触っていない。
+- `environment` — push が https の遠隔で対話的な資格情報を要求して失敗したため、git@github.com:takuya3h/m2.git を明示して push した。origin は fetch が ssh、push が https に設定されている。
 - `judgement` — select_stage1_ptower.py に同点規則と、それを両方向で覆う試験 1 件を追加した。契約は Task E を「規則を機械で当てる」としか書いておらず、実装の追加は実行者の判断である。
 
 ### 申し送り

@@ -83,7 +83,7 @@
 <a id="folds"></a>
 ## folds
 
-動画単位の 5-fold。**正本は `docs/stage0/A1_fold_table.md`**（契約 `T-2026-09-17-fold-table` が確定）。
+動画単位の 5-fold。**正本は `docs/stage0/A1_fold_table.md`**（契約 `T-2026-09-18-fold-table` が確定）。
 本節はその表と同じ値を持つ。数値が食い違ったら正本を正とする。
 
 | 折り | test（3） | val（2） |
@@ -112,7 +112,7 @@ train はその折りの test と val を除いた 10 本である。
 **選定・early stopping・ハイパラ・界面の型の選択は、すべてその折りの val で行う。
 test は腕ごとに一度だけ触る。** 折りをまたいで val を使い回さない。
 
-出所: `docs/stage0/A1_fold_table.md`、契約 `T-2026-09-17-fold-table`。
+出所: `docs/stage0/A1_fold_table.md`、契約 `T-2026-09-18-fold-table`。
 
 
 <a id="split"></a>
@@ -283,7 +283,7 @@ run ごとの値は `experiments/phase1/stage1_ptower/validation_runs.csv`（70 
 5. 2026-09-18 の修正条項の同点規則（候補 A > C > B、次に受容野の短い方）は、**両者が同一候補・同一受容野**のため決着しない
 
 事前登録 §6.3（決まらなければ諮る）に従い停止して利用者に諮り、**平滑化 0.30 を確定**した
-（2026-09-17 の修正条項）。以後の同点規則として「同一候補・同一受容野で残る同点は折り A の
+（2026-09-18 の修正条項）。以後の同点規則として「同一候補・同一受容野で残る同点は折り A の
 seed 間 pstd が小さい方を採る」を置いた。理由は Stage 2 の送り手として再現性を優先するため。
 
 **確定 recipe: 候補 C（平滑化損失）・8 層（受容野 1021 フレーム）・平滑化重み 0.30・履歴 30。**
@@ -417,3 +417,19 @@ S4 の出所は `runindex` の実験 ID `phase1/s4_phase_baseline/frozen_tecno_p
 | e test の二重評価 | 同じ折りの台帳をもう一度作る | `FileExistsError` で停止。台帳 269 バイトは無傷 |
 | g 時間ヘッドが働いている | 候補 A が単フレーム線形を下回る | 折り A の候補 A 6 run すべてが上回った（最小の差 0.03418）。下回った run は 0 件 |
 | 試験が増えていないこと | 失敗する試験を持ち込む | `origin/phase0` の worktree で 6 失敗を実測。終了後も同じ 6 件で、件数も内訳も一致 |
+
+## 11. 報告後の実測（2026-09-18 JST）
+
+- PR #183。実測で `draft=false` `base=phase0` `head=feat/stage1-phase-tower` `state=OPEN`。
+  commit は `92508ff4`（本体）と `310fb493`（PR 番号の記録）。
+- `make task-report` は exit 0。`verdict: partial`、`n_issuer_defects: 4`、
+  `report_sha256: 21d3aeb012865707fdb362c25617930d14ad302e5c5dfac4e842ecbe60ca1492`、28484 バイト。
+- `.sync-pause` を `.sync-pause.released.20260918` へ移して自動同期を戻した。
+  稼働中の `~/bin/m2-sync.sh` は抑止に対応済み（`grep -c sync-pause` が 2）。
+- **報告を書いたあとに `make forbidden-check` の結果が変わった。** 22:01 UTC 時点で
+  status fail・違反 2 件。内訳は `experiments/transfer/pd_refin_empty_seed42_tf32/logs/` の
+  2 ファイルで、いずれも 21:58:17 UTC に**別の処理**が書いたものである（本契約の commit 16:25 UTC より後）。
+  本契約の出力ではないため触っていない（禁止事項 8「開始前から在る未追跡を消さない」、
+  9「他利用者の処理を止めない」）。§7 の pass は本契約の作業が終わった時点の実測である。
+- push は `https` の遠隔が対話的な資格情報を要求して失敗したため、`git@github.com:takuya3h/m2.git`
+  を明示して行った。`origin` の fetch は ssh、push は https に設定されている。

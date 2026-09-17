@@ -36,7 +36,7 @@ def test_primary_winner_outside_seed_spread():
 
 
 def test_same_candidate_and_receptive_field_prefers_steadier_seeds():
-    # The 2026-09-17 amendment: a tie the A>C>B and shorter-RF rules cannot break.
+    # The 2026-09-18 amendment: a tie the A>C>B and shorter-RF rules cannot break.
     rows = [row("C", 0.51, 10, layers=8), row("C", 0.50, 10, layers=8)]
     rows[0]["fold_A_pstd"], rows[1]["fold_A_pstd"] = 0.09, 0.01
     chosen, reason = select(rows)
