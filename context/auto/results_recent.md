@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 94 件）。
-ここに出ない 89 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 96 件）。
+ここに出ない 91 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-09-18-stage1-phase-tower
 
@@ -132,6 +132,51 @@
 - efros から中心へ ssh で入れるか。受け入れ一覧に指紋が在ることまでは示したが、 実際の接続は中心からは測れない（禁止 5、および efros 側が未起動）。
 - efros と中心が同期で繋がるか。connections に項目は出たが connected=False であり、 efros 側の起動待ちである。
 
+## T-2026-09-17-frozen-feature-cache-timing
+
+状態 `partial` / ホスト `efros` / 起票 `181` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 基準 run pd_refin_empty_seed42 を runindex/index.csv の task_id 一致 16 件から特定し、command.sh と config.yaml で処方を照合した（epochs 6 / inject film / trainable film / seed 42 / zero_ctx true）。装置は仮占有 2 件を停止して compute プロセス 0 件・15 と 35 MiB・util 0% になった
+- `G2` pass — 別過程で二度生成し cache_key 16e889a328f921c037e6d46756c59f802d8a6339b12f966e7e845a17dc7ae19e と aggregate_sha256 96ab87b8abfae5ba662b47991bd7fb890b4806ad95e75195806a7604d3183e84 が一致した。塔を seed123 に変えると両方変わった
+- `G3` ask — キャッシュ経路の 6 epoch run は回していない。上限倍率 1.049〜1.083 と実測倍率 0.558〜0.661 が先に判明したため利用者へ提示し、限定版で結論とする判断を得た
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — SPEC §2 は「環境は .venv-relation-detr」を確定事実として書くが、本ホストではその venv に python が 1 つも存在せず pyvenv.cfg の home が指す pyenv 3.11.4 も不在だった。指示どおり進めると L3 が make: python: No such file or directory で起動すらせず Task A の途中で止まる
+- `check_does_not_check` — preflight の P1 は .venv-relation-detr を要求する一方、P8 は sys.executable すなわちその venv で validate_task.py を起動する。その venv の正本 lock 72 pkg に jsonschema が無いため検出系の契約では P8 が構造的に必ず FAIL し、指示どおり実行すると L3 が exit 0 にならず実行へ進めない
+- `asserted_without_measuring` — 完了判定 a は両方の run の所要時間が壁時計と GPU 時間で記録されていることを要求するが、基準 run の証跡 config.yaml と metrics.json と t1b_result.json と logs のどれにも時間の列が無い。指示どおりでは基準側が原理的に埋まらず 4 時間の再実行を強いる
+- `self_contradiction` — §3 Task B は塔の出力を一度だけ保存して界面だけを学習することを前提に置くが、§4 禁止事項 2 は処方を変えないと定める。学習の前処理 presets.detr は毎 epoch 乱択のため一度きりの保存を使い回すことは処方の変更にあたり、両立には epoch ごとのキャッシュが要る
+- `self_contradiction` — §4 禁止事項 4 は context/auto/* と tasks/inbox.md を再生成しないと定めるが、手順書 §6 は make taskindex と make inbox で投影と集約結果を生成し taskindex-check と inbox-check で差分 0 を確かめることを要求する。禁止事項に従うとこの二つの検査が必ず exit 2 を返し、手順書に従うと禁止事項に触れる
+
+### 逸脱
+
+- `environment` — .venv-relation-detr にインタプリタが 1 つも無く pyvenv.cfg が指す pyenv 3.11.4 も不在だったため、docs/setup/lecun_detector.md に従い UV_VENV_CLEAR=1 SKIP_CUDA_CHECK=1 で再構築した（利用者の許可）。nvcc は 12.9 で文書の前提 11.8 は不在
+- `environment` — P8 contract_valid を通すため .venv-relation-detr へ jsonschema>=4 を追加導入した（依存込み 5 件）。正本 lock requirements.relation_detr.lock.txt は変更していない（利用者の指示）
+- `judgement` — 完了判定 b の 6 epoch 完走比較を行っていない。上限 1.05〜1.08 倍・実測 0.65 倍が先に判明し 9 GPU 時間と 2.64 TB を投じる根拠が無くなったため、数値を提示して限定版で結論とする判断を得た
+- `judgement` — 装置の仮占有プロセス PID 106429 と 106543 を実験直前に停止した（利用者の明示の許可）。停止前に /proc/PID/exe と nvidia-smi --query-compute-apps の両方で同定し、部分一致は使っていない
+- `spec_defect` — scripts/profile_t1b_step.py と scripts/t1b_backbone_cache.py を新設した。SPEC §3 は実装を読んで決めてよいとするが scripts/ への新設は明示の対象外である。scripts/train_t1b.py は 1 行も変えていないため既存の経路は構成上壊れない
+- `judgement` — キャッシュの実体は third_party/Relation-DETR/data/processed/ 配下へ落ちた。train_t1b が import 時に os.chdir(RELDETR) するため相対経路がそこへ解決される。版管理外・同期対象外で禁止領域ではない。証跡の index.json 3 件は契約フォルダへ取り出した
+- `judgement` — 決定性の検査は val（transforms=None で前処理が決定的）で行った。学習側は増強が毎 epoch 乱択のため「同じ入力で二度生成」が定義できない
+- `spec_defect` — 手順書 §6 に従い make taskindex と make inbox を一度回したが、SPEC §4 禁止事項 4 が context/auto/* と tasks/inbox.md の再生成を禁じているため git checkout で元へ戻した。結果として taskindex-check と inbox-check は差分ありで exit 2 を返す。併合後に中央で再生成される想定と解した
+
+### 申し送り
+
+- tools/estimate_tier_cost.py の det_iface_w2 は代理 4.00 h（B1 の UNKNOWN #2）である。本契約の実測 W2/W1 = 1.205 から 4.82 h へ置き換えられる。置き換えるかは利用者の判断
+- .venv-relation-detr の正本 lock に jsonschema が無いため、検出系の契約では preflight の P8 が構造的に FAIL する。lock に足すか P8 の起動方法を変えるかの判断が要る
+- 基準 run の証跡に所要時間の列が無い。run_artifacts へ壁時計と GPU 時間を残すようにすれば、以後は同じ処方の基準を再実行せずに比べられる
+- SPEC §4 禁止事項 4（context/auto/* と tasks/inbox.md を再生成しない）と手順書 §6（make taskindex / make inbox とその検査）が衝突する。どちらを正とするかを定めないと、検出系に限らずすべての契約で同じ判断が繰り返される
+- configs/stage/s0_frozen.yaml の stage1_feature_cache の骨組みは P→D の界面学習には使えない（凍結塔の出力を毎 step 全解像度で要する用途には向かない）。用途の注記を置くか外すかの判断が要る
+- 時間を縮めるなら削るのは腕ではなく 1 run の中身（epoch 数・解像度・query 数・encoder 層数）である。いずれも比較の土台を動かすため全腕で同一に動かすことが条件になる
+
+### 断定できなかったこと
+
+- 基準 run とキャッシュ経路 run の 6 epoch 完走比較（主指標の一致）。キャッシュ経路が遅いことが確定したため実行していない
+- 基準 run の GPU 時間。記録が無く、本ホストでも 6 epoch を回していないため出せない
+- 決定化（ビット一致）の可否。6 epoch 完走比較を行っていないため未確認
+- 15 動画分の大きさは、val と同じ原解像度・増強なしの前処理を仮定して 1 枚あたりの実測値を枚数倍したものである（枚数 15,437 と 1 枚 57,802,752 bytes はいずれも実測）
+
 ## T-2026-09-17-fold-table
 
 状態 `pass` / ホスト `lecun` / 起票 `176` / 様式 `v3`
@@ -166,39 +211,4 @@
 
 - L2-6 の WARN は本契約では出なかった。SPEC §2 は規約ファイルが変われば conventions_rev を持つ全契約に出ると述べるが、本契約の L1+L2 は規約を変える前に実行したためである。規約を変えた後に他契約を検証すれば出るはずだが、本契約では測っていない
 - repo に Phase 専用の分割ファイルは存在しない（find data -iname '*split*' は data/splits のみ、生データ側にも phase 用の train/test 一覧は無い）。したがって『Phase 公式 test』に対応する実体は data/splits/ego_test.txt であると解釈した。EgoSurgery-Phase の 21 動画版に別の公式分割が外部で定義されているかは未確認である
-
-## T-2026-09-17-efros-syncthing-join
-
-状態 `pass` / ホスト `efros` / 起票 `180` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 実行権 600 / 目印 0 件 / syncthing 0 / 中継 0 を両方向の対照つきで実測（正 zsh=5、負 zzz=0）。控えは ~/.syncthing-config-backup-20260917-155900（stat -c %d が双方 233 で同一ファイルシステム）。中心へ ssh -N で入り Authenticated to 192.168.196.150:50072 を得た。負の対照（口 50073）は Connection refused
-- `G2` pass — autoUpgradeIntervalH 12→0、globalAnnounceEnabled true→false、relaysEnabled true→false、localAnnounceEnabled は true のまま。自分の登録名は実測で既に efros のため置換 0 件。中心を tcp://127.0.0.1:22001 で登録。count(/configuration/folder)=2、count(/configuration/defaults/folder)=1、count(//folder)=3。xmllint --noout exit 0、権限 600
-- `G3` pass — keeper.sh sha256 9fe9c423…dd90、m2-sync.sh sha256 bcf46ba9…e25f が正本と一致。bash -n は両方 0（負の対照は 2）。~/.zshrc の起動行は既存 1 件のため追記せず（.zshrc の sha256 は開始時から不変）。.sync-pause を置き grep -c sync-pause ~/bin/m2-sync.sh = 2 を確認
-- `G4` pass — 目印 ~/.tunnel_to_philip（2 行、権限 600）。keeper 1 件（PID 53967、錠 ~/.keeper.lock）。中継 PID 53974 は keeper の子で引数に ubuntu@192.168.196.150 を含み 22001 の待ち受けは 2（負の対照 65533 は 0）。中継が立ってから chmod 700、sha256 は前後同一。syncthing 2 件（73191 → 73210 の親子）、版は自分 v2.1.3 / 中心 clientVersion v2.1.3。最上位フォルダ 2 のまま、autoUpgradeIntervalH 0 のまま、grep -ci upgrade = 0
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — SPEC は「起動時に設定は書き戻される。要約値は変わる。定義が消えていないことで確かめる」と断定する。指示どおり定義で確かめたが、実測では config.xml の sha256 も大きさも変わらなかった（c4e6c320…d63b5 / 11179 bytes のまま）。要約値の変化を起動の証拠に使う手順を書くと、この版では常に「起動していない」と誤判定する
-- `asserted_without_measuring` — SPEC は中継について「周期は千八百秒。実測は四百十三〜千五百六十九秒」と書く。これは既に回っている keeper の次の周回を待つ場合の値である。本契約のように自分で keeper を起こす場合は最初の周回の先頭で張られ、実測は約 4 秒であった。指示どおりに数百秒待つ設計にすると、立っているものを待ち続ける
-
-### 逸脱
-
-- `judgement` — ~/.zshrc へ起動行を追記しなかった。grep -c 'keeper.sh' ~/.zshrc が 1 で既存が在ったため（SPEC Task 3 Step 3 の指示どおり）。本ホストは起動行だけ先に配られ、指す先の脚本が無い状態であった
-- `judgement` — conventions_rev を置換しなかった。実測 e7a51005 に対し契約の記載 e7a5100 は同じコミットの短縮形であり、validate_task.py の照合（git diff <rev>..HEAD -- context/conventions.md）に差分が出ないため置換が無意味である
-- `judgement` — 開始前からの未追跡 2 件を退避しなかった。分岐 feat/efros-syncthing-join が既に origin/phase0 と同じ位置に在り、git checkout -b が不要であったため。2 件には触れていない
-- `environment` — ss / netstat / lsof / ip がいずれも本ホストに存在しない。待ち受けは /proc/net/tcp と /proc/net/tcp6 の st=0A を数えて判定した
-- `judgement` — ~/claude-sync/.stfolder を先回りして作らず、起動後の実挙動を測った。syncthing が起動時に自分で作り、フォルダは両方とも正常に動いた。新しいホストを入れるとき人が作る必要は無い
-
-### 申し送り
-
-- repo フォルダ m2 の受け取りは起動から約 29 分で完了した（17:10:06 に state=idle / needBytes 0、du -sb は 68314468570 → 73028668690 で 4714200120 bytes が届いた）。中心への送り出しは同時点で完了率 75.66% / needBytes=11983979383 であり完了していない。完了を待たない指示のため打ち切った
-- ~/claude-sync/ に記録の衝突ファイルが生まれた（sync-alerts.sync-conflict-20260917-074045-LW4CO4U.log 他）。正常な挙動であり両方残してある。整理するかどうかは起票者の判断である
-- 本ホストの ~/.zshrc には keeper の起動行だけが先に配られていて、指す先の脚本が無い状態であった。他に同じ状態のホストが残っていないか確かめる価値がある
-
-### 断定できなかったこと
-
-- 中心が本ホストの分を取り込み終える時刻。完了を待たない指示のため測っていない。17:10 時点で完了率 75.66% / needBytes=11983979383。本ホストの受け取り側は完了している
-- 中心側から見た本ホストの登録状態。中心で命令を実行しない禁止事項のため、自ホストの経路からしか確かめていない
 
