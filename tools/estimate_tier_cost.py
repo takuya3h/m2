@@ -100,10 +100,12 @@ RUN_TYPES: dict[str, RunType] = {
         RunType(
             key="det_iface_w2",
             label="検出側の W2 界面 run（末端ブロックまで学習）",
-            hours=4.0 * _H,
-            source="tasks/T-2026-08-29-lecun-detector-env-pd/RESULT.md:88（W1 の実測を代理）",
+            hours=4.82 * _H,
+            source="T-2026-09-17-frozen-feature-cache-timing（W2/W1 の 1 step 比 1.205 を同一バッチ n=20 で実測）"
+            " × tasks/T-2026-08-29-lecun-detector-env-pd/RESULT.md:88（W1 の 1 run 約 4 時間）",
             measured=False,
-            note="W2 の run は repo 全体に一件も無い。逆伝播の範囲が W1 より広いため下界",
+            note="W2 の run は依然として repo 全体に一件も無い。**値は実測の比から導いた**"
+            "（4.00 h × 1.205 = 4.82 h）が、W2 の run そのものを計時していないため代理のままとする",
         ),
         RunType(
             key="det_tower_train",

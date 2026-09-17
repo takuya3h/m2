@@ -1,0 +1,23 @@
+amp: 'no'
+cudnn_allow_tf32: true
+epochs: 6
+eval:
+  note: score 閾値の足切りなし（eval recipe = score_thr 0.0 系）
+  split: val
+  topk: 300
+film_lr: 0.0005
+inject: film
+lr: 0.0001
+matmul_allow_tf32: true
+model_cfg: configs/relation_detr/relation_detr_resnet50_egosurgery_t1b.py
+phase_source: real
+rare_slots: null
+run_name: pd_refin_empty_seed42_tf32
+seed: 42
+smoke: false
+task_id: T-2026-09-17-amp-compile-timing
+tf32: true
+trainable: film
+variant: ctrl
+warm_start_ckpt: /home/ubuntu/slocal2/m2/third_party/Relation-DETR/checkpoints/incoming/seed42/best_ap.pth
+zero_ctx: true
