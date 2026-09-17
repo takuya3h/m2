@@ -351,7 +351,7 @@ S4 の出所は `runindex` の実験 ID `phase1/s4_phase_baseline/frozen_tecno_p
 | f | 折り A と S4 の並置 | **部分** | val は両方、test は P\*-15 のみ（S4 の test は未評価）。S4 の出所の実験 ID を明記 |
 | g | 単フレーム線形の対照 | **達成** | 対照 0.22495 に対し候補 A の折り A 6 run すべてが上回る。最小の差 0.03418 |
 | h | task_id の刻印と収穫 | **達成** | `make runindex` で index.csv 1267→1339 行（+72 = 71 train + 1 extract）、experiments.csv 286→339 行（+53）。task_id を持つ行は 72 件 |
-| i | PR | 後述 | 分岐 `feat/stage1-phase-tower`、base `phase0` |
+| i | PR | **達成** | PR #183。実測で `draft=false` `base=phase0` `head=feat/stage1-phase-tower` `state=OPEN`。commit `92508ff4` |
 
 **a・c・e・f の未達は、いずれも追加 6 動画の画像が本ホストに無いことに由来する。**
 数値を補わず UNKNOWN のままにした。
