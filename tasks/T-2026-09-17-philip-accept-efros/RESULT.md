@@ -107,6 +107,7 @@
 | 2 | environment | 未追跡 8 件（`experiments/transfer/pd_refin_*` を含む計 **848MB**）を repo 外へ **mv で退避**してから分岐を作った。`task_start.sh` は汚れた作業ツリーで分岐を作らないため。**消していない。報告の後に戻す** |
 | 3 | environment | **`Read(~/.ssh/**)` がグローバル設定の `deny` にあり Task 1 Step 1 が不能**。Gate G1（`on_fail: ask`）で停止して判断を仰ぎ、利用者が設定を変更した後に続行した |
 | 4 | environment | `ss` が本ホストに無く、待ち受けを `/proc/net/tcp{,6}` から数えた。**`ss \| grep -c` が返した `0` は件数ではなく命令の失敗**であり、件数として扱わなかった |
+| 6 | judgement | **退避物を戻す `mv` が入れ子を一段作った。** 退避時は未追跡だった `experiments/**` と契約ディレクトリが、`origin/phase0` 起点の分岐では**追跡下に既に存在した**ため、`mv src dest` が dest の中へ入った。比較したところ入れ子のみに在るのは `checkpoints/` と `predictions/`（計 **866 MB**）で、重なる 2 件は **sha256 が完全一致**。前者を親へ移し、一致を再確認してから重複の入れ子 6 つだけを削除した。**失われたデータは無い**（866 MB が残存。`.gitignore:24` により追跡外） |
 | 5 | judgement | 作業中に `~/bin/m2-sync.sh` の mtime が変わった（`04:56:16`）。**keeper の自己更新**で、中身は `origin/phase0` の `scripts/sync/m2-sync.sh` と **sha256 が完全一致**。実行者の変更ではない |
 
 ## 想定外

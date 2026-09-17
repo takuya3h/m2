@@ -76,6 +76,7 @@
 - `environment` — グローバル設定 ~/.claude/settings.json の permissions.deny に Read(~/.ssh/**) が あり、Task 1 Step 1 が実行できなかった。Gate G1 は on_fail: ask のため停止して 判断を仰いだ。Edit/Write は deny に無く追記自体は通る見込みだったが、読めない 状態では既存の無傷を確かめられないため追記しなかった。利用者が設定を変更した 後に続行した。
 - `environment` — ss が本ホストに存在せず（command not found）、待ち受けを /proc/net/tcp と /proc/net/tcp6 の LISTEN 行から数えた。ss | grep -c が返した 0 は件数ではなく 命令の失敗であり、件数として扱っていない。
 - `judgement` — 作業中に ~/bin/m2-sync.sh の mtime が 2026-09-17 04:56:16 へ変わった。keeper の 自己更新であり、中身は origin/phase0 の scripts/sync/m2-sync.sh と sha256 が 完全一致（bcf46ba9031a45cb…）。実行者による変更ではない。
+- `judgement` — 退避物を戻す mv が入れ子を一段作った。退避時は未追跡だった experiments/** と 契約ディレクトリが、origin/phase0 起点の分岐では追跡下に既に存在したため、 mv src dest が dest の中へ入った。比較したところ入れ子のみに在るのは checkpoints/ と predictions/ の計 866 MB で、重なる 2 件は sha256 が完全一致。 前者を親へ移し、一致を再確認してから重複の入れ子 6 つだけを削除した。 失われたデータは無い（866 MB が残存。.gitignore:24 により追跡外）。
 
 ### 申し送り
 

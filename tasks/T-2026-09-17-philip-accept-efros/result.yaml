@@ -73,6 +73,14 @@ deviations:
       作業中に ~/bin/m2-sync.sh の mtime が 2026-09-17 04:56:16 へ変わった。keeper の
       自己更新であり、中身は origin/phase0 の scripts/sync/m2-sync.sh と sha256 が
       完全一致（bcf46ba9031a45cb…）。実行者による変更ではない。
+  - type: judgement
+    note: >-
+      退避物を戻す mv が入れ子を一段作った。退避時は未追跡だった experiments/** と
+      契約ディレクトリが、origin/phase0 起点の分岐では追跡下に既に存在したため、
+      mv src dest が dest の中へ入った。比較したところ入れ子のみに在るのは
+      checkpoints/ と predictions/ の計 866 MB で、重なる 2 件は sha256 が完全一致。
+      前者を親へ移し、一致を再確認してから重複の入れ子 6 つだけを削除した。
+      失われたデータは無い（866 MB が残存。.gitignore:24 により追跡外）。
 
 issuer_defects:
   - type: asserted_without_measuring
