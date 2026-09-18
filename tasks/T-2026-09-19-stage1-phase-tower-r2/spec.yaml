@@ -1,0 +1,84 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-09-19-stage1-phase-tower-r2"
+  kind: exp
+  title: "Stage 1 工程塔の二周目: ImageNet 初期化の backbone を折りごとに工程ラベルで fine-tune し、時間ヘッドを再トーナメントして P*-15（画像があれば P*-21 も）を確定する"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-09-18T04:19:04Z"
+  created_from:
+    runindex_commit: "92508ff4bcada0f8c39a6f570f67c2f1a685f15a"
+    counts: {index: 1339, experiments: 338, verdicts: 1506}
+  depends_on: [T-2026-09-18-stage1-phase-tower]
+  amendments: []
+intent:
+  question: "検出塔と同じく backbone を手術データで fine-tune した工程塔は、凍結 ImageNet 特徴の工程塔よりどれだけ強く、Stage ゼロの検出 backbone 由来の塔にどこまで近づくか。fine-tune 後の特徴の上で最良の時間ヘッドは一周目と同じか"
+  decision_at_stake: "関門 G 一（工程側）の再確定。Stage 二の送り手 P 塔の強さが、D 塔と対称になるか。弱い送り手のまま主測定へ進むと方向依存（H 一）が塔の強さと混ざる"
+  hypothesis: "fine-tune した backbone の特徴の上では、五折り平均の val macro Jaccard が一周目の確定塔を大きく上回り、Stage ゼロの S 四との差が半分以下に縮む。最良の時間ヘッドは一周目と変わりうる"
+  related:
+    backlog: []
+inputs:
+  denominator:
+    ref: "exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42"
+    metric: "phase_jaccard"
+    require: {n_seeds: ">=3", sigma: present, split: val}
+  data:
+    dataset: "EgoSurgery-Phase, 15 videos (Tool subset). Extra 6 videos (17-22) added to train only if their frames exist on the host. Folds per conventions#folds"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt", "data/splits/ego_test.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/train_phase_tower_r50.py", "scripts/run_stage1_ptower.py", "scripts/select_stage1_ptower.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#folds, conventions#split, conventions#eval_recipe, conventions#sigma]
+  conventions_rev: "e7a5100597a79b3b9c60935bf38d232f8ae96822"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/phase1/stage1_ptower_r2", "runindex/", "data/processed/stage1_features/"]
+plan:
+  phases:
+    - {id: A, name: "prereg の commit。開始状態、装置、追加六動画の画像の実在、一周目の道具の再利用可否", gpu: false, est: "60m"}
+    - {id: B, name: "折りごとに backbone を工程ラベルで fine-tune（学習率二水準、折り A は三 seed）。val で最良 epoch", gpu: true, est: "3h"}
+    - {id: C, name: "fine-tune 後の backbone から特徴を抽出（折り・seed・学習率ごと）。決定性の確認", gpu: true, est: "1h"}
+    - {id: D, name: "時間ヘッド十構成の再トーナメント。一周目の凍結特徴の対照を並置", gpu: true, est: "2h"}
+    - {id: E, name: "事前登録の規則で選定。test を折りごとに一度。S 四と並置。予測の当たり外れ", gpu: true, est: "60m"}
+    - {id: F, name: "検証と報告", gpu: false, est: "90m"}
+  gates:
+    - {id: G1, after: A, check: "折り表が解決でき、一周目の道具が本分岐にあり、追加六動画の画像の有無が記録された", on_fail: stop}
+    - {id: G2, after: B, check: "全 fine-tune が完走し、val の frame accuracy が一周目の単フレーム線形対照を上回った", on_fail: stop}
+    - {id: G3, after: E, check: "test の評価が確定塔についてのみ折りごとに一度", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, gpu_free, deterministic_flags]
+  resources: {server: "ilya", gpu: 2, est_hours: 10, runs: 154}
+prereg:
+  prediction: "fine-tune した backbone の特徴の上で、五折り平均の val macro Jaccard は一周目の確定塔を五点以上上回る。折り A の val は S 四との差が一周目の半分以下に縮む。時間ヘッドの最良は一周目と同じ候補 C とは限らず、候補 A か B が最良になりうる。学習率二水準のうち低い方が最良になる"
+  primary_endpoint: "候補と掃引点ごとの五折り平均の折り内 val macro Jaccard（折り A は三 seed の平均、他は一 seed）。co-primary は frame accuracy で同方向"
+  decision_rule: "backbone の学習率と時間ヘッドの候補・掃引点の組を、五折り平均の val macro Jaccard が最大で co-primary が同方向のものに決める。最良と次点の差が折り A の seed 間 SD 以内なら、一 run の所要時間が二割以内で同程度のとき構成の単純さ（候補 A、C、B の順、次に受容野の短い方、次に折り A の seed 間 pstd が小さい方）で決める。P 塔（十五動画）の recipe を確定し、追加六動画の画像があれば同じ recipe で P 塔（二十一動画）も学習する。test は確定塔について折りごとに一度だけ評価し、台帳に記録する"
+  stop_conditions:
+    - "fine-tune 後の frame accuracy が一周目の単フレーム線形対照を下回る折りが一つでもあれば停止し、学習の記録を提示する"
+    - "特徴抽出の要約値が二度で一致しない場合は停止"
+    - "一 fine-tune の所要時間が一時間を超える場合は run 数の見直しを諮る"
+    - "装置が他利用者に使われている場合は停止"
+  committed_at: "2026-09-18T13:32:26+09:00"
+  commit: "8aa636bf597abde3393405c59a8e94ad28d18288"
+outputs:
+  expected_runs: 154
+  must_have: [metrics.json, config.yaml, notes.md]
+  destination: "experiments/phase1/stage1_ptower_r2/"
+  stamp: {task_id_in: config.yaml}
+  acceptance:
+    - "a: fine-tune は折りの train 動画だけで行われ、各 run の train・val・test の動画集合が規約の表と集合差 零。最良 epoch の選択は val のみ"
+    - "b: backbone の凍結範囲が検出塔と同じ stem のみであることが実装の行を指して記録されている"
+    - "c: 折り・seed・学習率ごとの特徴の要約値が二度の抽出で一致し、backbone を変えると変わる"
+    - "d: 時間ヘッド十構成 × 学習率二水準の表があり、一周目の確定塔（凍結特徴）の値が同じ折りで並置されている"
+    - "e: 選定が規則で一意に決まり、test を使っていない"
+    - "f: 確定塔の test が折りごとに一度だけ評価され、台帳に記録されている。P 塔（二十一動画）は画像の有無に応じて評価か UNKNOWN"
+    - "g: 折り A の確定塔の val が S 四と並置され、差が一周目の差と比べられている"
+    - "h: 全 run に task_id が刻まれ、runindex の収穫で新実験として現れる"
+    - "i: PR が Draft でなく存在し、base が phase0 で、分岐が feat/ で始まる"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [denominator_moved, "fine-tune が線形対照を下回る折りがある", "一 fine-tune が一時間を超える"]

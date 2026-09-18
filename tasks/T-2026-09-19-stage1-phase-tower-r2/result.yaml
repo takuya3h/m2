@@ -1,0 +1,89 @@
+result_version: 3
+task_id: "T-2026-09-19-stage1-phase-tower-r2"
+status: partial
+host: "ilya"
+branch: "feat/stage1-phase-tower-r2"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: ask
+    note: "折り表は解決でき、PR #183 は phase0 へ統合済み（HEAD 9fbf0d31、merge-base で確認）、一周目の道具 4 本と成果物 72 run はすべて在り、装置は compute プロセス 0 件。追加 6 動画 17-22 の画像は 0 件で注釈 23 csv のみ在る。探索は data 全体をディレクトリ名とファイル名接頭辞の両方で行い、陽性対照として動画 01 は 3254 件当たる。契約 6 節の規定に従い停止せず P*-15 を進めた。"
+  - id: G2
+    verdict: pass
+    note: "fine-tune 14 本が完走し、val frame accuracy が一周目の単フレーム線形対照 0.48382838283828383 を下回った run は 0 件。最小の余裕は折り B・lr 1e-4 の +0.04277、最大は折り E・lr 3.3333e-5 の +0.23649。所要は 1 本 411〜658 秒で 1 時間の停止条件に触れない。損失の非有限は 0 件。"
+  - id: G3
+    verdict: pass
+    note: "test を評価したのは確定塔 C/L6/w0.15/h30/lr1e-4 の 5 折りのみで各 1 回、計 5 回。台帳 test_access_{A..E}.json の 5 件がすべて completed。同じ折りの台帳をもう一度 open(x) で作ると FileExistsError で止まり、台帳 285 バイトは無傷。P*-21 は塔が無いため 0 回。"
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 567
+
+deviations:
+  - type: judgement
+    note: "前処理の resize を prereg の指す既定（Resize 224）ではなく一周目の IMAGENET1K_V1.transforms()（Resize 232 + CenterCrop 224）に揃えた。一周目との差が backbone の重みだけになるようにするため。増強は既定どおり RandomHorizontalFlip のみ。"
+  - type: spec_defect
+    note: "prereg が前提とする train_phase_tower_r50.py の凍結範囲が実際には凍結なしだったため、SPEC Task A-5 に従い stem のみ凍結へ揃えた。既存スクリプトは書き換えず、新しい stage1_ptower_r2.py の build_backbone と stem_eval で対応した。"
+  - type: environment
+    note: "追加 6 動画の画像が本ホストに 0 件で、P*-21 を一切学習・抽出・評価していない。実施は fine-tune 14・extract 14・時間ヘッド 140 の計 168 run。判定 d・f の P*-21 側は未測定である。"
+  - type: judgement
+    note: "実行者が fine-tune 1 本目の最中に出力の書き出し遅れをデータ供給の律速と誤読し、停止と削除の命令を出した。pkill -f が自分の命令行に部分一致して自滅し rm -rf に到達しなかったため成果物は無傷。設定は変更していない。特徴抽出でも COMPLETE の通知を完了の証拠として扱い、走行中の run を完了と誤って報告した。issuer_cautions の注意 6 と 12 の型である。"
+  - type: judgement
+    note: "一周目のスクリプト 2 本に後方互換の変更を入れた。stage1_ptower.py の 5 箇所を cfg.get へ、run_stage1_ptower.py の completed に task 引数を足した。既定値はすべて一周目の値で一周目の試験 8 件はそのまま通る。契約は実装の追加を指示していないため実行者の判断である。"
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "prereg 2 節は学習率と凍結範囲を train_phase_tower_r50.py の既定に依拠すると定めるが、同スクリプトは AdamW(model.parameters(), ...) で全パラメータを学習しており凍結していない。指示どおり既定に固定すると検出塔と対称にならず契約の目的が達せられない。SPEC Task A-5 が手当てしていたため実行は止まらなかった。"
+  - type: self_contradiction
+    note: "contract.allow_write に data/processed/stage1_features/ を宣言するが、tools/check_forbidden.py は data 配下を宣言しても許可せず rejected_allowances に落とす。一方 SPEC Task C-3 は特徴の置き場をそこに指定している。実害は出ない（data/processed と *.npz が gitignore 済みで追跡 0 件のため差分に現れない）が宣言は無効である。"
+  - type: asserted_without_measuring
+    note: "prereg 2 節は増強を同スクリプトの既定に固定するとしたが、同スクリプトの resize は Resize((224,224)) で一周目の特徴抽出の Resize 232 + CenterCrop 224 と異なる。そのまま従うと一周目との差に前処理の違いが混ざり fine-tune の効果量が測れなくなる。"
+
+positive_controls:
+  - judgement: "判定 a 全 run が折り表に従う"
+    breaking_input: "1 run の config の train に test 動画 04 を混ぜる"
+    observed: "集合差が出て検出した。無改変の 168 run は違反 0 件"
+  - judgement: "判定 b 凍結範囲が stem のみである"
+    breaking_input: "conv1.requires_grad_(True) に戻す"
+    observed: "stem の学習対象パラメータ数が 0 から非零になった（試験 test_only_the_stem_is_frozen）"
+  - judgement: "判定 c 特徴抽出が決定的である"
+    breaking_input: "backbone の conv1.weight を零にして同じ入力で抽出する"
+    observed: "要約値が変わり weight_change_detected が true になった"
+  - judgement: "判定 c 別の backbone では特徴が変わる"
+    breaking_input: "14 本の要約値を突き合わせる"
+    observed: "14 種すべてが相異なり、同じ値の組は 0 件だった"
+  - judgement: "判定 e 選定が test の値に依存しない"
+    breaking_input: "表に test_jaccard 列を ±100 で足して選定を回す"
+    observed: "選ばれる構成が変わらなかった（試験 test_selection_ignores_columns_that_carry_test_values）"
+  - judgement: "判定 e 同点規則が働く"
+    breaking_input: "同一候補・同一受容野で折り A の seed 間 pstd が小さい方を次点側に置く"
+    observed: "次点が選ばれた。逆向きに置くと最良が残った（試験 test_the_learning_rate_widens_the_table_but_never_breaks_a_tie）"
+  - judgement: "判定 f test を折りごとに一度しか評価しない"
+    breaking_input: "同じ折りの台帳をもう一度 open(x) で作る"
+    observed: "FileExistsError で停止した。台帳 285 バイトは無傷"
+  - judgement: "G2 fine-tune が働いている"
+    breaking_input: "val frame accuracy が一周目の線形対照 0.48382838283828383 を下回る"
+    observed: "14 本すべてが上回った。最小の余裕 +0.04277、下回った run は 0 件"
+  - judgement: "試験の失敗が増えていない"
+    breaking_input: "失敗する試験を持ち込む"
+    observed: "6 失敗で前契約が origin/phase0 の worktree で実測した件数と内訳が一致した。tests・src・tools は origin/phase0 と差分 0"
+
+followups:
+  - "追加 6 動画 17-22 の画像を本ホストで使えるようにする別契約が要る。一周目（2026-09-18）に続き二周目でも 0 件だった。Stage 2 の主分母は P*-21 であり、これが無いと Stage 2 の送り手が揃わない。利用者が用意すると述べていた件の現状を確かめる必要がある。"
+  - "backbone の fine-tune は効いた。同一構成での比較で 5 折り平均 val macro Jaccard が 0.30528663443428180 から 0.38709914439104350 へ +0.08181251 上がり、確定塔どうしでは 0.32890765082910894 から 0.38709914439104350 へ +0.05819149 上がった。しかし test は 0.22471876589180543 から 0.25617724603309940 への +0.03145848 にとどまり、val と test の乖離は 0.10418888 から 0.13092190 へ広がった。fine-tune が折りの train 動画へ適合した結果とみられるが、本契約は要因を分解していない。"
+  - "学習率で結果が完全に分かれた。高い方 1e-4 の 10 構成がすべて上位（0.36172672 〜 0.38709914）、低い方 3.3333e-5 の 10 構成がすべて下位（0.27941728 〜 0.32649248）。低い学習率では一周目の凍結特徴とほぼ同等かむしろ悪い。事前登録の予測 4 は逆を予測していた。次に掃引するなら 1e-4 より高い側を見る価値がある。"
+  - "S4 との差は縮んだが届かない。折り A val macro Jaccard で S4 の 0.6447397621229328 に対し、一周目 0.36689160542508260（差 0.27784816）から二周目 0.46789125804810210（差 0.17684850）へ 36.4% 縮んだ。事前登録の予測 2 が求めた半分以下（0.13892408）には届かない。届かない場合は backbone の種類（ViT、中立 SSL）が次の軸になると SPEC 8 節が申し送っている。"
+  - "最良 epoch が上限 12 に張り付いた fine-tune が 2 件、10 に達したものが 1 件ある。上限を増やせばさらに上がる余地は残るが、prereg が D* と揃えて 12 に固定しているため本契約では増やさなかった。次の契約で上限を動かすなら D* 側も揃えて動かす必要がある。"
+  - "時間ヘッドの最良は一周目と同じ候補 C（平滑化損失）だったが、掃引点は 8 層・平滑化 0.30 から 6 層・平滑化 0.15 へ動いた。特徴が強くなると受容野も平滑化も小さい方が良くなる向きで、事前登録の予測 3（候補 A か B になりうる）とは別の形で「一周目と同じではない」が現れた。"
+
+unknowns:
+  - "P*-21 のすべての値。追加 6 動画の画像が本ホストに無く、学習も抽出も test も行っていない。判定 d・f の P*-21 側は未測定である。"
+  - "S4 凍結工程塔の test 値。本契約では val のみを並置した。"
+  - "val と test の乖離が一周目より広がった理由。0.10418888 から 0.13092190 へ。要因を分解していない。"
+  - "上限 12 epoch を超えたときの到達点。最良 epoch が上限に張り付いた run があるため、上限が結果を切っている可能性がある。"
+  - "P3 deterministic_flags の実測。プリフライトで SKIP となり、決定性設定が実行プロセス内で行われ外部から観測できないため確かめていない（backlog B-20）。"
+
+commits: []

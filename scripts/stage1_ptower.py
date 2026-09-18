@@ -107,8 +107,8 @@ def deterministic(seed):
 def evidence(cfg, description):
     cfg = enrich(cfg, {"source_sha256": sha256(__file__),
                               "contract_sha256": sha256(ROOT / "tasks" / cfg.task_id / "spec.yaml")})
-    manager = ExperimentManager(ROOT / "experiments", "phase1", "stage1_ptower",
-                                description, cfg.seed)
+    manager = ExperimentManager(ROOT / "experiments", "phase1",
+                                cfg.get("step", "stage1_ptower"), description, cfg.seed)
     manager.setup(OmegaConf.to_container(cfg, resolve=True))
     # A missing/failed tracking connection must not silently produce untracked runs.
     run = tracking.init(manager.exp_id, config=OmegaConf.to_container(cfg, resolve=True),
@@ -275,12 +275,14 @@ def train(cfg):
     weights = np.divide(1.0, counts, out=np.zeros(len(counts)), where=counts > 0)
     weights /= weights[weights > 0].mean()
     cfg = enrich(cfg, {"data": {"videos": splits, "class_counts": counts.tolist()},
-                              "class_weights": weights.tolist(), "data_setting": "P15",
+                              "class_weights": weights.tolist(),
+                              "data_setting": cfg.get("data_setting", "P15"),
                               "receptive_field": 1 + 4 * (2 ** cfg.layers - 1),
                               "selection_metric": "phase_jaccard",
                               "cache_sha256": sha256(ROOT / cfg.cache)})
-    manager = evidence(cfg, f"P15_{cfg.candidate}_L{cfg.layers}_w{cfg.smoothing_weight}"
-                           f"_h{cfg.history}_fold{cfg.fold}")
+    manager = evidence(cfg, f"{cfg.get('data_setting', 'P15')}_{cfg.candidate}"
+                           f"_L{cfg.layers}_w{cfg.smoothing_weight}"
+                           f"_h{cfg.history}_fold{cfg.fold}{cfg.get('desc_suffix', '')}")
     model = build_model(cfg, len(names)).to(cfg.device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
     warm = torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=0.5, total_iters=cfg.warmup_epochs)
@@ -325,10 +327,11 @@ def train(cfg):
     best["epochs_completed"] = epoch
     manager.log_metrics({k: v for k, v in best.items() if isinstance(v, (int, float))})
     manager.log_per_class_ap(best["phase_per_class_jaccard"])
-    manager.log_eval_recipe({"test_cfg": {"task": "phase", "backbone": "imagenet_r50_v1_frozen",
-                                           "inference_protocol": "online_causal", "jaccard_mode": "strict"}})
+    manager.log_eval_recipe({"test_cfg": {
+        "task": "phase", "backbone": cfg.get("backbone_tag", "imagenet_r50_v1_frozen"),
+        "inference_protocol": "online_causal", "jaccard_mode": "strict"}})
     (manager.exp_dir / "notes.md").write_text(
-        f"# Stage 1 {cfg.candidate} P15 fold {cfg.fold}\n\n"
+        f"# Stage 1 {cfg.candidate} {cfg.get('data_setting', 'P15')} fold {cfg.fold}\n\n"
         f"Validation-only selection; test unevaluated.\nBest epoch: {best['epoch']}\n"
         f"Jaccard: {best_score}\nElapsed seconds: {best['elapsed_seconds']}\n")
     tracking.finish()
