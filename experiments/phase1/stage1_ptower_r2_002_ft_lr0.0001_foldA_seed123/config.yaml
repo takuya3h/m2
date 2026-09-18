@@ -1,0 +1,62 @@
+task_id: T-2026-09-19-stage1-phase-tower-r2
+step: stage1_ptower_r2
+action: finetune
+fold: A
+seed: 123
+ft_lr: 0.0001
+ft_weight_decay: 0.0001
+ft_batch_size: 64
+ft_epochs: 12
+backbone_tag: imagenet_r50_v1_ft
+checkpoint: null
+verify_determinism: false
+candidate: A
+layers: 6
+smoothing_weight: 0.0
+history: 30
+epochs: 50
+patience: 10
+lr: 0.0005
+weight_decay: 0.01
+warmup_epochs: 2
+maps: 64
+desc_suffix: ''
+device: cuda:1
+cache: data/processed/stage1_features/r2_ft_lr0.0001_foldA_seed123/all_gap.npz
+manifest_dir: data/processed/phase_manifest
+batch_size: 32
+workers: 4
+data:
+  videos:
+    test:
+    - '04'
+    - '05'
+    - '07'
+    val:
+    - '09'
+    - '10'
+    train:
+    - '01'
+    - '02'
+    - '03'
+    - '06'
+    - '08'
+    - '11'
+    - '12'
+    - '13'
+    - '14'
+    - '15'
+  train_frames: 9657
+  val_frames: 1515
+weights: ResNet50_Weights.IMAGENET1K_V1
+transform_train: "Compose(\n    RandomHorizontalFlip(p=0.5)\n    ImageClassification(\n\
+  \    crop_size=[224]\n    resize_size=[256]\n    mean=[0.485, 0.456, 0.406]\n  \
+  \  std=[0.229, 0.224, 0.225]\n    interpolation=InterpolationMode.BILINEAR\n)\n)"
+transform_eval: "ImageClassification(\n    crop_size=[224]\n    resize_size=[256]\n\
+  \    mean=[0.485, 0.456, 0.406]\n    std=[0.229, 0.224, 0.225]\n    interpolation=InterpolationMode.BILINEAR\n\
+  )"
+freeze: stem (conv1, bn1); layer1-4 and fc trained
+selection_metric: phase_accuracy
+data_setting: P15
+source_sha256: 4ec5b57451f46d66473913361203e65ae1460222fd57860bd126e0d0ef2aeb5e
+contract_sha256: 23238e9b340ed838448baa839307bd83424e23b7a02729cdc033d62b1c067dc0

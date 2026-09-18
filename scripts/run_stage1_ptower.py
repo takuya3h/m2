@@ -27,11 +27,11 @@ def grid(stage):
             for s in ((42, 123, 456) if f == "A" else (42,))]
 
 
-def completed(params):
+def completed(params, task=TASK):
     found = []
     for p in (ROOT / "experiments/phase1").glob("stage1_ptower_*/config.yaml"):
         cfg = yaml.safe_load(p.read_text())
-        if cfg.get("task_id") != TASK or cfg.get("action") != "train":
+        if cfg.get("task_id") != task or cfg.get("action") != "train":
             continue
         if not all(cfg.get(k) == v for k, v in params.items()):
             continue

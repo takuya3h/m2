@@ -1205,3 +1205,32 @@ Hungarian matcher の費用行列に非数が入る）。利用者の判断で�
 `tools/estimate_tier_cost.py` の `det_iface_w2` を 4.00 h → **4.82 h** に直した
 （前契約の実測比 1.205 から導いた。`measured` は False のまま）。
 `docs/stage0/B1_tier1_cost_estimate.md` の 8 区画を再生成し `--check-doc` は差 0 件。
+
+## Stage 1 工程塔の二周目: backbone の fine-tune（2026-09-18）
+
+一周目（`T-2026-09-18-stage1-phase-tower`）は backbone を凍結したままだった。検出塔 D\* が
+backbone を手術データで fine-tune しているのに工程塔 P\* を凍結のままにするのは不公平で、
+近年の工程認識研究にも例が無い（利用者の指摘）。二周目
+`T-2026-09-19-stage1-phase-tower-r2` は backbone を折りごとに工程ラベルで fine-tune し、
+D\* と対称にする。
+
+追加した道具:
+
+- `scripts/stage1_ptower_r2.py` — Hydra の `action=finetune/extract/train`。`finetune` は
+  **stem（conv1・bn1）だけを凍結**して layer1〜4 と fc を学習する（検出塔の
+  `freeze_indices=(0,)` と揃えた）。折りの train 動画だけを使い、val が最良 epoch を選び、
+  **test は読まない**。`extract` は fine-tune 後の backbone から、一周目と同じ前処理で
+  C5 GAP を書き出す（差が backbone の重みだけになるようにするため）。`train` は一周目の
+  `stage1_ptower.train` をそのまま呼ぶ
+- `scripts/run_stage1_ptower_r2.py` — FT（14 本）・EX（14 本）・HEAD（140 run）の格子を
+  2 並列で回す。証跡のある設定は飛ばすため、中断しても続きから再開できる
+- `scripts/select_stage1_ptower_r2.py` — val だけで選定し、確定塔の test を折りごとに一度
+  評価する。**判定規則は一周目の `select_stage1_ptower.select` を import してそのまま使う**
+  （同点規則とその試験を共有するため）。学習率は表を広げるだけで同点規則には入らない
+
+既存スクリプトへの変更は後方互換のみ。`stage1_ptower.py` の 5 箇所を `cfg.get(...)` へ変え
+（`step` / `data_setting` / `desc_suffix` / `backbone_tag`）、`run_stage1_ptower.py` の
+`completed()` に `task` 引数を足した。**既定値はすべて一周目の値**であり、一周目の試験 8 件は
+そのまま通る。
+
+実測・確定 recipe・一周目との差は当該タスクの `RESULT.md`・`audit.md` を参照。

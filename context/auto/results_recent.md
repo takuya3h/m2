@@ -6,8 +6,49 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 96 件）。
-ここに出ない 91 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 97 件）。
+ここに出ない 92 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-09-19-stage1-phase-tower-r2
+
+状態 `partial` / ホスト `ilya` / 起票 `184` / 様式 `v3`
+
+### ゲート
+
+- `G1` ask — 折り表は解決でき、PR #183 は phase0 へ統合済み（HEAD 9fbf0d31、merge-base で確認）、一周目の道具 4 本と成果物 72 run はすべて在り、装置は compute プロセス 0 件。追加 6 動画 17-22 の画像は 0 件で注釈 23 csv のみ在る。探索は data 全体をディレクトリ名とファイル名接頭辞の両方で行い、陽性対照として動画 01 は 3254 件当たる。契約 6 節の規定に従い停止せず P*-15 を進めた。
+- `G2` pass — fine-tune 14 本が完走し、val frame accuracy が一周目の単フレーム線形対照 0.48382838283828383 を下回った run は 0 件。最小の余裕は折り B・lr 1e-4 の +0.04277、最大は折り E・lr 3.3333e-5 の +0.23649。所要は 1 本 411〜658 秒で 1 時間の停止条件に触れない。損失の非有限は 0 件。
+- `G3` pass — test を評価したのは確定塔 C/L6/w0.15/h30/lr1e-4 の 5 折りのみで各 1 回、計 5 回。台帳 test_access_{A..E}.json の 5 件がすべて completed。同じ折りの台帳をもう一度 open(x) で作ると FileExistsError で止まり、台帳 285 バイトは無傷。P*-21 は塔が無いため 0 回。
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — prereg 2 節は学習率と凍結範囲を train_phase_tower_r50.py の既定に依拠すると定めるが、同スクリプトは AdamW(model.parameters(), ...) で全パラメータを学習しており凍結していない。指示どおり既定に固定すると検出塔と対称にならず契約の目的が達せられない。SPEC Task A-5 が手当てしていたため実行は止まらなかった。
+- `self_contradiction` — contract.allow_write に data/processed/stage1_features/ を宣言するが、tools/check_forbidden.py は data 配下を宣言しても許可せず rejected_allowances に落とす。一方 SPEC Task C-3 は特徴の置き場をそこに指定している。実害は出ない（data/processed と *.npz が gitignore 済みで追跡 0 件のため差分に現れない）が宣言は無効である。
+- `asserted_without_measuring` — prereg 2 節は増強を同スクリプトの既定に固定するとしたが、同スクリプトの resize は Resize((224,224)) で一周目の特徴抽出の 短辺 256 へ Resize + CenterCrop 224 と異なる。そのまま従うと一周目との差に前処理の違いが混ざり fine-tune の効果量が測れなくなる。
+
+### 逸脱
+
+- `judgement` — 前処理の resize を prereg の指す既定（Resize 224）ではなく一周目の IMAGENET1K_V1.transforms()（短辺 256 へ Resize + CenterCrop 224）に揃えた。一周目との差が backbone の重みだけになるようにするため。増強は既定どおり RandomHorizontalFlip のみ。
+- `spec_defect` — prereg が前提とする train_phase_tower_r50.py の凍結範囲が実際には凍結なしだったため、SPEC Task A-5 に従い stem のみ凍結へ揃えた。既存スクリプトは書き換えず、新しい stage1_ptower_r2.py の build_backbone と stem_eval で対応した。
+- `environment` — 追加 6 動画の画像が本ホストに 0 件で、P*-21 を一切学習・抽出・評価していない。実施は fine-tune 14・extract 14・時間ヘッド 140 の計 168 run。判定 d・f の P*-21 側は未測定である。
+- `judgement` — 実行者が fine-tune 1 本目の最中に出力の書き出し遅れをデータ供給の律速と誤読し、停止と削除の命令を出した。pkill -f が自分の命令行に部分一致して自滅し rm -rf に到達しなかったため成果物は無傷。設定は変更していない。特徴抽出でも COMPLETE の通知を完了の証拠として扱い、走行中の run を完了と誤って報告した。issuer_cautions の注意 6 と 12 の型である。
+- `judgement` — 一周目のスクリプト 2 本に後方互換の変更を入れた。stage1_ptower.py の 5 箇所を cfg.get へ、run_stage1_ptower.py の completed に task 引数を足した。既定値はすべて一周目の値で一周目の試験 8 件はそのまま通る。契約は実装の追加を指示していないため実行者の判断である。
+
+### 申し送り
+
+- 追加 6 動画 17-22 の画像を本ホストで使えるようにする別契約が要る。一周目（2026-09-18）に続き二周目でも 0 件だった。Stage 2 の主分母は P*-21 であり、これが無いと Stage 2 の送り手が揃わない。利用者が用意すると述べていた件の現状を確かめる必要がある。
+- backbone の fine-tune は効いた。同一構成での比較で 5 折り平均 val macro Jaccard が 0.30528663443428180 から 0.38709914439104350 へ +0.08181251 上がり、確定塔どうしでは 0.32890765082910894 から 0.38709914439104350 へ +0.05819149 上がった。しかし test は 0.22471876589180543 から 0.25617724603309940 への +0.03145848 にとどまり、val と test の乖離は 0.10418888 から 0.13092190 へ広がった。fine-tune が折りの train 動画へ適合した結果とみられるが、本契約は要因を分解していない。
+- 学習率で結果が完全に分かれた。高い方 1e-4 の 10 構成がすべて上位（0.36172672 〜 0.38709914）、低い方 3.3333e-5 の 10 構成がすべて下位（0.27941728 〜 0.32649248）。低い学習率では一周目の凍結特徴とほぼ同等かむしろ悪い。事前登録の予測 4 は逆を予測していた。次に掃引するなら 1e-4 より高い側を見る価値がある。
+- S4 との差は縮んだが届かない。折り A val macro Jaccard で S4 の 0.6447397621229328 に対し、一周目 0.36689160542508260（差 0.27784816）から二周目 0.46789125804810210（差 0.17684850）へ 36.4% 縮んだ。事前登録の予測 2 が求めた半分以下（0.13892408）には届かない。届かない場合は backbone の種類（ViT、中立 SSL）が次の軸になると SPEC 8 節が申し送っている。
+- 最良 epoch が上限 12 に張り付いた fine-tune が 2 件、10 に達したものが 1 件ある。上限を増やせばさらに上がる余地は残るが、prereg が D* と揃えて 12 に固定しているため本契約では増やさなかった。次の契約で上限を動かすなら D* 側も揃えて動かす必要がある。
+- 時間ヘッドの最良は一周目と同じ候補 C（平滑化損失）だったが、掃引点は 8 層・平滑化 0.30 から 6 層・平滑化 0.15 へ動いた。特徴が強くなると受容野も平滑化も小さい方が良くなる向きで、事前登録の予測 3（候補 A か B になりうる）とは別の形で「一周目と同じではない」が現れた。
+
+### 断定できなかったこと
+
+- P*-21 のすべての値。追加 6 動画の画像が本ホストに無く、学習も抽出も test も行っていない。判定 d・f の P*-21 側は未測定である。
+- S4 凍結工程塔の test 値。本契約では val のみを並置した。
+- val と test の乖離が一周目より広がった理由。0.10418888 から 0.13092190 へ。要因を分解していない。
+- 上限 12 epoch を超えたときの到達点。最良 epoch が上限に張り付いた run があるため、上限が結果を切っている可能性がある。
+- P3 deterministic_flags の実測。プリフライトで SKIP となり、決定性設定が実行プロセス内で行われ外部から観測できないため確かめていない（backlog B-20）。
 
 ## T-2026-09-18-stage1-phase-tower
 
@@ -176,39 +217,4 @@
 - 基準 run の GPU 時間。記録が無く、本ホストでも 6 epoch を回していないため出せない
 - 決定化（ビット一致）の可否。6 epoch 完走比較を行っていないため未確認
 - 15 動画分の大きさは、val と同じ原解像度・増強なしの前処理を仮定して 1 枚あたりの実測値を枚数倍したものである（枚数 15,437 と 1 枚 57,802,752 bytes はいずれも実測）
-
-## T-2026-09-17-fold-table
-
-状態 `pass` / ホスト `lecun` / 起票 `176` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 材料を A1 の表から写さず同じ出所から読み直した。総フレーム 17233 / images 15437 / boxes 49652 が A1 の合計行と一致。工程 CSV・術具 COCO・HTS のいずれも動画 15 本で、公式分割（train 10 / val 2 / test 3 = 15）との集合差は 0 件。工程 9 種・術具 15 クラス・HTS は 15 動画すべてが 3 系統とも保持
-- `G2` pass — 制約検査の違反 0 件。二度の生成で表の要約値が 237837faa843e1b3… と一致し、ファイルも sha256 eb66170a8565b993… で byte 一致。入力を一行変えると要約値が febee3775bec5785… へ変わることも示した
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — SPEC Task D-3 は追記する 4 件の出所を T-2026-09-16-evidence-map-ab/RESULT.md §4・§5 と書くが、当該 §4 は「起票者の誤り 無し」と述べている。3 件目は §4 の「補足（誤りではない）」、4 件目は §5 の「逸脱 2（judgement）」であり、出所は誤りの一覧ではない。また 2 件目の型を asserted_without_measuring と指定するが、出所の T-2026-09-16-proposal-gate/RESULT.md §4-2 は check_does_not_check と分類している。指示どおり実行すると、出所が自ら誤りでないと述べたものを誤りとして記録し、型も出所と食い違う形で残ることになる。4 件とも内容自体は実装と契約本文から実測で裏が取れたため契約の指定どおり書き、この食い違いを RESULT §5 と audit §9 に記録した
-
-### 逸脱
-
-- `judgement` — P6 decisions_answered が FAIL で止まったため手順どおり停止し、decisions_required 2 件を利用者へ諮った。回答は (1) 同点は SPEC Task B §2 の辞書順で決着させ辞書順でも決まらない場合だけ停止 (2) 追加 6 動画の重複は陽性対照つきで再実測し 0 件なら続行。実行の結果いずれの条件も発生しなかった（同点は 1 通り、重複は 0 件）
-- `judgement` — spec.yaml を編集した。REPLACE-BY-EXECUTOR の占位 2 件（runindex_commit → 96eb3a1c、conventions_rev → 4300b7d2）を実測値へ確定し、created_from.counts を 0/0/0 から 1266/285/1506 へ、decisions_required を空にした。いずれも meta.amendments に記録した
-- `environment` — forbidden-check が violations 7 件で非ゼロのまま終えた。7 件はすべて experiments/analysis/**/.syncthing.*.py.tmp で、開始時に stash した 31 件の削除を syncthing が他ホストから復元した際の取り残し。mtime 20:06 のまま 8 分変化せず、内容は復元済みの .py と byte 一致。SPEC §4 前文が同期処理による配布を禁止の対象外とし、禁止事項 4 が experiments/** に触れることを禁じるため削除せず記録した。permitted は要求どおり context/conventions.md の 1 件
-- `judgement` — make taskindex / make inbox を実行していない。SPEC 禁止事項 3 が並行契約との衝突を理由に context/auto/* と tasks/inbox.md の再生成を禁じているため。投影への反映は未確認である
-- `judgement` — 作業ツリーの退避に git stash を使った（SPEC Task A-1 が許している）。追跡下の削除 31 件を stash@{1}、未追跡 2 件を stash@{0} へ。task_start.sh は git status --porcelain が非ゼロなら exit 3 で止まる実装のため未追跡も退避が要った。前契約の stash 2 件には触れていない
-- `judgement` — 生成器を tools/ ではなく scripts/analysis/a1_fold_table.py に置いた。同ディレクトリが解析用スクリプトの既存の置き場であり、SPEC 申し送りが並行契約 T-2026-09-17-tier1-cost-estimate に tools/ の新規一件を割り当てているため生成物の分離を保った
-
-### 申し送り
-
-- 投影（context/auto/ と tasks/inbox.md）への反映は未確認である。SPEC 禁止事項 3 により再生成を禁じられているため、並行契約 T-2026-09-17-tier1-cost-estimate の統合後に一台で make taskindex && make inbox を回す必要がある
-- context/conventions.md の変更履歴と contract.conventions_rev の commit 欄は、本体の commit 537c968c が確定した後に e7a51005 で埋めた。残件なし
-- experiments/analysis/**/.syncthing.*.py.tmp 7 件が未追跡のまま残っている。syncthing の取り残しで内容は本体と byte 一致。禁止事項 4 により本契約は触れていない。experiments/ を扱える契約か同期処理の側で片付ける必要がある
-- tests/test_fetch_task.py::test_rejects_unknown_file_name は実装の文言『経路として受け取れない名前です』と試験の期待『受け取れないファイル』が食い違って落ちている。tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics は experiments/ の NMS-free の run が score_thr=0.0 を持つため落ちている。いずれも本契約の範囲外で、直前契約から引き継いだ既知の失敗である
-- git stash が 4 件ある。本契約の 2 件（stash@{0} 未追跡 2 件、stash@{1} 追跡下の削除 31 件）と前契約の 2 件。本契約の 2 件のうち削除 31 件は syncthing が既にファイルを復元済みのため、そのまま pop すると復元された .py を再び消すことになる。復元の要否を確かめてから扱うこと
-
-### 断定できなかったこと
-
-- L2-6 の WARN は本契約では出なかった。SPEC §2 は規約ファイルが変われば conventions_rev を持つ全契約に出ると述べるが、本契約の L1+L2 は規約を変える前に実行したためである。規約を変えた後に他契約を検証すれば出るはずだが、本契約では測っていない
-- repo に Phase 専用の分割ファイルは存在しない（find data -iname '*split*' は data/splits のみ、生データ側にも phase 用の train/test 一覧は無い）。したがって『Phase 公式 test』に対応する実体は data/splits/ego_test.txt であると解釈した。EgoSurgery-Phase の 21 動画版に別の公式分割が外部で定義されているかは未確認である
 

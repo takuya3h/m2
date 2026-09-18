@@ -1,0 +1,74 @@
+task_id: T-2026-09-19-stage1-phase-tower-r2
+step: stage1_ptower_r2
+action: train
+fold: A
+seed: 456
+ft_lr: 3.3333333333333335e-05
+ft_weight_decay: 0.0001
+ft_batch_size: 64
+ft_epochs: 12
+backbone_tag: imagenet_r50_v1_ft_lr3.3333333333333335e-05
+checkpoint: null
+verify_determinism: false
+candidate: B
+layers: 8
+smoothing_weight: 0.0
+history: 30
+epochs: 50
+patience: 10
+lr: 0.0005
+weight_decay: 0.01
+warmup_epochs: 2
+maps: 64
+desc_suffix: _lr3.3333333333333335e-05
+device: cuda:0
+cache: data/processed/stage1_features/r2_ft_lr3.3333333333333335e-05_foldA_seed456/all_gap.npz
+manifest_dir: data/processed/phase_manifest
+batch_size: 32
+workers: 4
+data:
+  videos:
+    test:
+    - '04'
+    - '05'
+    - '07'
+    val:
+    - '09'
+    - '10'
+    train:
+    - '01'
+    - '02'
+    - '03'
+    - '06'
+    - '08'
+    - '11'
+    - '12'
+    - '13'
+    - '14'
+    - '15'
+  class_counts:
+  - 281
+  - 3595
+  - 245
+  - 11
+  - 3832
+  - 12
+  - 825
+  - 763
+  - 93
+class_weights:
+- 0.1636632981864376
+- 0.012792597160052564
+- 0.18771178281791417
+- 4.180853344580815
+- 0.012001405738619249
+- 3.8324488991990804
+- 0.05574471126107754
+- 0.06027442567547702
+- 0.49450953538052655
+data_setting: P15
+receptive_field: 1021
+selection_metric: phase_jaccard
+cache_sha256: cb80af52425e811a869406c01c7b78dab2fae38114fb7cdf34d836c402362574
+source_sha256: 4ec5b57451f46d66473913361203e65ae1460222fd57860bd126e0d0ef2aeb5e
+contract_sha256: 23238e9b340ed838448baa839307bd83424e23b7a02729cdc033d62b1c067dc0

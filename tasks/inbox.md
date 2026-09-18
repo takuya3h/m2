@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（540 件）
+## 未処理（545 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -555,6 +555,11 @@
 - [ ] 2026-09-18 [cc] **起票者の誤り 4 件。** `contract.allow_write` の欠落（規定の `make forbidden-check` が契約自身の出力 672 件で必ず落ちる）、判定 c の「10 構成 × 2 データ設定」と修正条項「P\*-21 は UNKNOWN」の矛盾、S4 分母 0.6447 ± 0.0146 を測らずに確定と断定（索引は 0.6322 ± 0.0215。集計対象の相違）、判定 d の「一意に決まる」が諮る場合を覆っていないこと（T-2026-09-18-stage1-phase-tower）
 - [ ] 2026-09-18 [cc] **折り B・C が全構成で低い**（B 0.19–0.24、C 0.23–0.29、他は 0.30–0.45）。折りによる難易度差が 5 折り平均の解釈に効く。折りごとの動画の性質を Stage 2 の前に調べる価値がある（T-2026-09-18-stage1-phase-tower）
 - [ ] 2026-09-18 [cc] **`make forbidden-check` が報告後に status fail へ変わった。** 違反 2 件は `experiments/transfer/pd_refin_empty_seed42_tf32/logs/` で、21:58:17 UTC に**別の処理**が書いたもの（本契約の commit 16:25 UTC より後）。禁止事項 8・9 に従い触っていない。検査は実行者の操作と並行する処理の書き込みを区別できない（T-2026-09-17-fold-table の syncthing 取り残しと同型）（T-2026-09-18-stage1-phase-tower）
+- [ ] 2026-09-18 [cc] 🔴 **追加 6 動画（17〜22）の画像は二周目でも 0 件。** 注釈 23 csv は在るが画像が本ホストに無い。探索は `data/` 全体でディレクトリ名とファイル名接頭辞の両方、陽性対照（動画 01 で 3254 件）つき。**P\*-21 は UNKNOWN のまま**で、Stage 2 の主分母が揃わない。一周目の申し送りどおり別契約が要る（T-2026-09-19-stage1-phase-tower-r2）
+- [ ] 2026-09-18 [cc] **起票者の誤り: `train_phase_tower_r50.py` は凍結していなかった。** prereg §2 は「値は同スクリプトの既定を読んで記録する」としているが、同スクリプトは `AdamW(model.parameters(), ...)` で全パラメータを学習する。SPEC Task A-5 の指示に従い stem のみ凍結へ揃えた。既存スクリプトは書き換えず、`scripts/stage1_ptower_r2.py` の `build_backbone` で `conv1`・`bn1` の `requires_grad` を落とし、`stem_eval` で凍結した stem の batch 統計を固定した（T-2026-09-19-stage1-phase-tower-r2）
+- [ ] 2026-09-18 [cc] 🔴 **実行者の誤読を 1 件記録する。** fine-tune 1 本目の実行中、出力ファイルに epoch 行が現れず GPU 利用率が 38% だったため「データ供給が律速」と判断し、停止と削除の命令を出した。**実際は出力の書き出しが遅れていただけで 12 epoch は 411 秒で完走していた。** `pkill -f` の模様が自分の命令行に部分一致して自滅し（`conventions#issuer_cautions` の注意 6 の型）、後続の `rm -rf` に到達しなかったため成果物は無傷。**途中の観測で速度を判断しない。完走の記録を待つ**（T-2026-09-19-stage1-phase-tower-r2）
+- [ ] 2026-09-18 [cc] **前処理は一周目に揃えた（実行者の判断）。** prereg §2 は「増強は同スクリプトの既定に固定」とするが、同スクリプトの resize は `Resize((224,224))` で一周目の特徴抽出（`IMAGENET1K_V1.transforms()` = 短辺 256 へ Resize + CenterCrop 224）と違う。増強（`RandomHorizontalFlip`）だけを既定から採り、resize は一周目と同じにした。**一周目との差が backbone の重みだけになるようにするため**（T-2026-09-19-stage1-phase-tower-r2）
+- [ ] 2026-09-18 [cc] **契約の `allow_write` の 1 件が検査器の上限で却下された。** `data/processed/stage1_features/` は「`data/` 配下は宣言しても許可されない」として `rejected_allowances` に落ちる（`tools/check_forbidden.py`）。一方 SPEC Task C-3 は特徴の置き場をそこに指定している。**実害は出ない**（`data/processed/**` と `*.npz` が `.gitignore` 済みで追跡 0 件のため差分に現れない）が、宣言は無効である。起票時に上限を確かめていれば宣言は要らなかった（T-2026-09-19-stage1-phase-tower-r2）
 
 ## 処理済み（1 件）
 
