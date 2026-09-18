@@ -11,7 +11,7 @@
 
 ## T-2026-09-19-stage1-phase-tower-r2
 
-状態 `partial` / ホスト `ilya` / 起票 `なし` / 様式 `v3`
+状態 `partial` / ホスト `ilya` / 起票 `184` / 様式 `v3`
 
 ### ゲート
 

@@ -222,7 +222,7 @@ sigma に関する列は 4 系統ある（backlog B-18）。
 | f | test は折りごとに一度 | **部分** | 台帳 5 件がすべて `completed`、評価 5 回。二重評価は `FileExistsError` で止まり台帳 285 バイトは無傷。**P\*-21 分は未実施**（塔が無い） |
 | g | S4 との並置 | **達成（差は縮んだが予測には届かず）** | 折り A val: 一周目 0.36689 → 二周目 **0.46789**。S4 0.64474 との差は 0.27785 → **0.17685**（0.10100 縮小、36.4%）。予測の「半分以下」= 0.13892 には届かない |
 | h | 刻印と収穫 | **達成** | `make runindex` で index.csv 1339→**1507**（+168 = fine-tune 14 + extract 14 + train 140）、experiments.csv 338→**458**（+120）。task_id を持つ行は 168 件 |
-| i | PR | 後述 | 分岐 `feat/stage1-phase-tower-r2`、base `phase0` |
+| i | PR | **達成** | PR #184。実測で `draft=false` `base=phase0` `head=feat/stage1-phase-tower-r2` `state=OPEN`。commit は `8aa636bf`（事前登録）と `029b5315`（本体） |
 
 ## 5. 実測
 

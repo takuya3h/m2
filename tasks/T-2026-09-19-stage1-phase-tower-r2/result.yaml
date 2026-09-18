@@ -3,7 +3,7 @@ task_id: "T-2026-09-19-stage1-phase-tower-r2"
 status: partial
 host: "ilya"
 branch: "feat/stage1-phase-tower-r2"
-pr: null
+pr: 184
 merged: false
 
 gates:
@@ -86,4 +86,6 @@ unknowns:
   - "上限 12 epoch を超えたときの到達点。最良 epoch が上限に張り付いた run があるため、上限が結果を切っている可能性がある。"
   - "P3 deterministic_flags の実測。プリフライトで SKIP となり、決定性設定が実行プロセス内で行われ外部から観測できないため確かめていない（backlog B-20）。"
 
-commits: []
+commits:
+  - "8aa636bf"
+  - "029b5315"
