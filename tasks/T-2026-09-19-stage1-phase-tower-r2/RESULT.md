@@ -320,7 +320,7 @@ test への波及は小さく（0.22472 → 0.25618、+0.031）、val と test �
    宣言は無効である。
 3. **asserted_without_measuring** — prereg §2 は「増強は同スクリプトの既定に固定」とするが、
    同スクリプトの resize は `Resize((224,224))` で、一周目の特徴抽出が使う
-   `IMAGENET1K_V1.transforms()`（Resize 232 + CenterCrop 224）と異なる。そのまま従うと
+   `IMAGENET1K_V1.transforms()`（短辺 256 へ Resize + CenterCrop 224）と異なる。そのまま従うと
    **一周目との差に前処理の違いが混ざり、fine-tune の効果量が測れなくなる**。
    増強（`RandomHorizontalFlip`）だけを既定から採り、resize は一周目に揃えた（§7 の逸脱 1）。
 

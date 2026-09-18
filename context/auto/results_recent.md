@@ -23,11 +23,11 @@
 
 - `asserted_without_measuring` — prereg 2 節は学習率と凍結範囲を train_phase_tower_r50.py の既定に依拠すると定めるが、同スクリプトは AdamW(model.parameters(), ...) で全パラメータを学習しており凍結していない。指示どおり既定に固定すると検出塔と対称にならず契約の目的が達せられない。SPEC Task A-5 が手当てしていたため実行は止まらなかった。
 - `self_contradiction` — contract.allow_write に data/processed/stage1_features/ を宣言するが、tools/check_forbidden.py は data 配下を宣言しても許可せず rejected_allowances に落とす。一方 SPEC Task C-3 は特徴の置き場をそこに指定している。実害は出ない（data/processed と *.npz が gitignore 済みで追跡 0 件のため差分に現れない）が宣言は無効である。
-- `asserted_without_measuring` — prereg 2 節は増強を同スクリプトの既定に固定するとしたが、同スクリプトの resize は Resize((224,224)) で一周目の特徴抽出の Resize 232 + CenterCrop 224 と異なる。そのまま従うと一周目との差に前処理の違いが混ざり fine-tune の効果量が測れなくなる。
+- `asserted_without_measuring` — prereg 2 節は増強を同スクリプトの既定に固定するとしたが、同スクリプトの resize は Resize((224,224)) で一周目の特徴抽出の 短辺 256 へ Resize + CenterCrop 224 と異なる。そのまま従うと一周目との差に前処理の違いが混ざり fine-tune の効果量が測れなくなる。
 
 ### 逸脱
 
-- `judgement` — 前処理の resize を prereg の指す既定（Resize 224）ではなく一周目の IMAGENET1K_V1.transforms()（Resize 232 + CenterCrop 224）に揃えた。一周目との差が backbone の重みだけになるようにするため。増強は既定どおり RandomHorizontalFlip のみ。
+- `judgement` — 前処理の resize を prereg の指す既定（Resize 224）ではなく一周目の IMAGENET1K_V1.transforms()（短辺 256 へ Resize + CenterCrop 224）に揃えた。一周目との差が backbone の重みだけになるようにするため。増強は既定どおり RandomHorizontalFlip のみ。
 - `spec_defect` — prereg が前提とする train_phase_tower_r50.py の凍結範囲が実際には凍結なしだったため、SPEC Task A-5 に従い stem のみ凍結へ揃えた。既存スクリプトは書き換えず、新しい stage1_ptower_r2.py の build_backbone と stem_eval で対応した。
 - `environment` — 追加 6 動画の画像が本ホストに 0 件で、P*-21 を一切学習・抽出・評価していない。実施は fine-tune 14・extract 14・時間ヘッド 140 の計 168 run。判定 d・f の P*-21 側は未測定である。
 - `judgement` — 実行者が fine-tune 1 本目の最中に出力の書き出し遅れをデータ供給の律速と誤読し、停止と削除の命令を出した。pkill -f が自分の命令行に部分一致して自滅し rm -rf に到達しなかったため成果物は無傷。設定は変更していない。特徴抽出でも COMPLETE の通知を完了の証拠として扱い、走行中の run を完了と誤って報告した。issuer_cautions の注意 6 と 12 の型である。

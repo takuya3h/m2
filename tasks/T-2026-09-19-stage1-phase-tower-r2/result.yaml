@@ -24,7 +24,7 @@ tests:
 
 deviations:
   - type: judgement
-    note: "前処理の resize を prereg の指す既定（Resize 224）ではなく一周目の IMAGENET1K_V1.transforms()（Resize 232 + CenterCrop 224）に揃えた。一周目との差が backbone の重みだけになるようにするため。増強は既定どおり RandomHorizontalFlip のみ。"
+    note: "前処理の resize を prereg の指す既定（Resize 224）ではなく一周目の IMAGENET1K_V1.transforms()（短辺 256 へ Resize + CenterCrop 224）に揃えた。一周目との差が backbone の重みだけになるようにするため。増強は既定どおり RandomHorizontalFlip のみ。"
   - type: spec_defect
     note: "prereg が前提とする train_phase_tower_r50.py の凍結範囲が実際には凍結なしだったため、SPEC Task A-5 に従い stem のみ凍結へ揃えた。既存スクリプトは書き換えず、新しい stage1_ptower_r2.py の build_backbone と stem_eval で対応した。"
   - type: environment
@@ -40,7 +40,7 @@ issuer_defects:
   - type: self_contradiction
     note: "contract.allow_write に data/processed/stage1_features/ を宣言するが、tools/check_forbidden.py は data 配下を宣言しても許可せず rejected_allowances に落とす。一方 SPEC Task C-3 は特徴の置き場をそこに指定している。実害は出ない（data/processed と *.npz が gitignore 済みで追跡 0 件のため差分に現れない）が宣言は無効である。"
   - type: asserted_without_measuring
-    note: "prereg 2 節は増強を同スクリプトの既定に固定するとしたが、同スクリプトの resize は Resize((224,224)) で一周目の特徴抽出の Resize 232 + CenterCrop 224 と異なる。そのまま従うと一周目との差に前処理の違いが混ざり fine-tune の効果量が測れなくなる。"
+    note: "prereg 2 節は増強を同スクリプトの既定に固定するとしたが、同スクリプトの resize は Resize((224,224)) で一周目の特徴抽出の 短辺 256 へ Resize + CenterCrop 224 と異なる。そのまま従うと一周目との差に前処理の違いが混ざり fine-tune の効果量が測れなくなる。"
 
 positive_controls:
   - judgement: "判定 a 全 run が折り表に従う"
