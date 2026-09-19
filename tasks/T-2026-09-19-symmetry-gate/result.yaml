@@ -66,4 +66,5 @@ unknowns:
   - "make task-validate を全契約で回すと SKIP inbox.d: spec.yaml なし により 1 件 failed になる。変更前から同じで、本契約は tasks/inbox.d/ の構造を変えていない。原因の特定は本契約の範囲外"
   - "make lint は変更前から落ちている（black --check 73 ファイル、ruff 3 件。いずれも本契約が触っていないファイル）。本契約が触った 4 ファイルは ruff check を通る。black は repo 全体が未整形のため合わせていない"
 
-commits: []
+commits:
+  - "d6b37c79"

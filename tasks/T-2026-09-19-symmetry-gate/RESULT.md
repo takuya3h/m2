@@ -113,5 +113,5 @@
 | 分岐 | `feat/symmetry-gate` |
 | base | `phase0` |
 | PR | PR_NUMBER_PLACEHOLDER |
-| commit | COMMIT_PLACEHOLDER |
+| commit | d6b37c79（本文）、後続 commit で変更履歴の commit 欄を埋めた |
 | `make task-report` | REPORT_PLACEHOLDER |
