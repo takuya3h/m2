@@ -40,7 +40,7 @@
 | g | issuer-defects の追記 | 2 型と実例を追加（15 insertions / **0 deletions**）。変更前の全行が現行に在ることを照合 | pass |
 | h | check_spec の規則数 | 変更前 8 / 変更後 8 | pass |
 | i | 試験 | 6 failed / 595 passed（変更前 6 failed / 567 passed）。失敗は**同一の 6 件** | pass |
-| j | PR | 番号 PR_NUMBER_PLACEHOLDER、base `phase0`、分岐 `feat/symmetry-gate`、Draft ではない | pass |
+| j | PR | 番号 #186、base `phase0`、分岐 `feat/symmetry-gate`、Draft ではない | pass |
 
 ## 4. 実測（前後）
 
@@ -112,6 +112,6 @@
 |---|---|
 | 分岐 | `feat/symmetry-gate` |
 | base | `phase0` |
-| PR | PR_NUMBER_PLACEHOLDER |
+| PR | #186 |
 | commit | d6b37c79（本文）、後続 commit で変更履歴の commit 欄を埋めた |
-| `make task-report` | REPORT_PLACEHOLDER |
+| `make task-report` | exit 0。`report_sha256` `13c5ecc2…93f9`、8094 bytes |
