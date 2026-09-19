@@ -11,7 +11,8 @@
 検査は二つ。
 
 1. 禁止語の完全一致。正規化も語幹処理もせず、書かれたままの並びを探す
-2. 提案カードの充足。見出し 14 件の有無と、規約が数値を求める項目に数字があるか
+2. 提案カードの充足。見出しの有無と、規約が数値を求める項目に数字があるか。件数は
+   規約の表から読む（`EXPECTED_CARD_ITEMS` は読めているかの健全性検査にだけ使う）
 
 **内容の妥当性は見ない。** 効果量の値が妥当か、引用が実在するか、順位が正しいかは
 批判会話が見る（`docs/proposal-gate.md` の B.6）。ここで見るのは形だけである。
@@ -61,6 +62,11 @@ _DIGIT = re.compile(r"[0-9０-９]")
 # 規約に該当の文言が在ることは tests/test_check_proposal.py が確かめる。
 _EXEMPT_WORDS = ("未踏", "空白")
 _EXEMPT_CONDITION = "空白である理由の仮説"
+
+# 規約の表から読めた件数がこの数と違えば、読み取りが壊れたとみなして非零で終わる。
+# **一覧そのものは規約から読む。** ここに持つのは件数だけで、写しではない。
+# 規約が増えたらこの数も直す（試験 test_expected_card_items_matches_conventions が縛る）。
+EXPECTED_CARD_ITEMS = 16
 
 
 @dataclass
@@ -192,8 +198,10 @@ def check(path: Path, only: str = "both") -> dict:
     else:
         if not words:
             errors.append("規約から禁止語の一覧を読めません")
-        if len(items) != 14:
-            errors.append(f"規約の提案カードが 14 件ではありません: {len(items)} 件")
+        if len(items) != EXPECTED_CARD_ITEMS:
+            errors.append(
+                f"規約の提案カードが {EXPECTED_CARD_ITEMS} 件ではありません: {len(items)} 件"
+            )
         if not numeric:
             errors.append("規約から数値を求める項目を読めません")
 
