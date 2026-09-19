@@ -43,9 +43,10 @@ CHECK_NAMES = {
     "P10": "preflight_names_known",
     "P11": "gpu_free",
     "P12": "refs_resolved",
+    "P13": "symmetry_table_complete",
 }
 ALWAYS = {"P1", "P6", "P7", "P8", "P9", "P10", "P12"}
-EXP_ONLY = {"P4", "P5"}
+EXP_ONLY = {"P4", "P5", "P13"}
 LISTED_ONLY = {
     "P2": "cuda_ext_loaded",
     "P3": "deterministic_flags",
@@ -59,6 +60,20 @@ KNOWN_PREFLIGHT_NAMES = frozenset({"venv_active", *LISTED_ONLY.values()})
 # 実行者が索引で解決する前提の参照の書き方。**取り込みでは落とさず、実行直前で止める。**
 UNRESOLVED_PREFIX = "unresolved:"
 RESOLVED_FILE = "resolved.yaml"
+
+# P13 symmetry_table_complete。conventions#symmetry が定めた対称性の表を prereg から探す。
+# **表の同定は列名の完全一致で行う。** 部分一致にすると「判定規約」「条件の理由」のような
+# 別の表を拾い、無関係な表で合否が決まる（issuer_cautions #13 と同型）。
+PREREG_FILE = "prereg.md"
+SYMMETRY_CONDITION_HEADER = "条件"
+SYMMETRY_VERDICT_HEADER = "判定"
+SYMMETRY_REASON_HEADER = "理由"
+SYMMETRY_ARM_RE = re.compile(r"^腕\d+$")
+SYMMETRY_MIN_ARMS = 2
+SYMMETRY_ALIGN = "揃える"
+SYMMETRY_INTENDED = "意図的に変える"
+SYMMETRY_UNKNOWN = "UNKNOWN"
+SYMMETRY_VERDICTS = (SYMMETRY_ALIGN, SYMMETRY_INTENDED, SYMMETRY_UNKNOWN)
 
 # P11 gpu_free。**空きの判定は「compute プロセスが 0 件」で行う。**
 # 使用量の閾値は機種と用途で変わるため置かない。占有しているプロセスの有無だけを見る。
@@ -496,6 +511,113 @@ def check_refs_resolved(task_id: str, spec: dict) -> Check:
                  f"解決前提の参照 {len(pending)} 件がすべて {RESOLVED_FILE} で解決済み")
 
 
+def _table_cells(line: str) -> list[str]:
+    """markdown の表の行をセルへ割る。両端の縦線と強調の印は落とす。"""
+    inner = line.strip()
+    if inner.startswith("|"):
+        inner = inner[1:]
+    if inner.endswith("|"):
+        inner = inner[:-1]
+    return [cell.strip().strip("*").strip() for cell in inner.split("|")]
+
+
+def _is_separator(line: str) -> bool:
+    return bool(re.fullmatch(r"\|[\s:|-]+\|?", line.strip())) and "-" in line
+
+
+def symmetry_tables(text: str) -> list[tuple[dict[str, int], list[list[str]]]]:
+    """対称性の表を全て返す。列名の**完全一致**で同定する。
+
+    Returns:
+        (列名 -> 添字, 本体の行) の一覧。様式に合う表が無ければ空。
+    """
+    lines = text.split("\n")
+    tables: list[tuple[dict[str, int], list[list[str]]]] = []
+    i = 0
+    while i < len(lines) - 1:
+        if not lines[i].strip().startswith("|") or not _is_separator(lines[i + 1]):
+            i += 1
+            continue
+        header = _table_cells(lines[i])
+        body: list[list[str]] = []
+        j = i + 2
+        while j < len(lines) and lines[j].strip().startswith("|"):
+            body.append(_table_cells(lines[j]))
+            j += 1
+        arms = sum(1 for cell in header if SYMMETRY_ARM_RE.fullmatch(cell))
+        matched = (
+            header
+            and header[0] == SYMMETRY_CONDITION_HEADER
+            and SYMMETRY_VERDICT_HEADER in header
+            and SYMMETRY_REASON_HEADER in header
+            and arms >= SYMMETRY_MIN_ARMS
+        )
+        if matched:
+            index = {
+                SYMMETRY_CONDITION_HEADER: 0,
+                SYMMETRY_VERDICT_HEADER: header.index(SYMMETRY_VERDICT_HEADER),
+                SYMMETRY_REASON_HEADER: header.index(SYMMETRY_REASON_HEADER),
+            }
+            tables.append((index, body))
+        i = j if body else i + 1
+    return tables
+
+
+def check_symmetry_table(task_id: str) -> Check:
+    """P13. prereg の対称性の表が埋まっていることを確かめる。
+
+    正本は `conventions#symmetry`。表が無い、UNKNOWN が残る、
+    「意図的に変える」に理由が無い、判定が三値のいずれでもない、のいずれも FAIL とする。
+    **判定の空欄を通さない。** 空欄を許すと、埋めないまま起票できてしまう。
+    """
+    path = TASKS_DIR / task_id / PREREG_FILE
+    if not path.exists():
+        return Check("P13", CHECK_NAMES["P13"], "FAIL", f"{PREREG_FILE} が無い")
+    tables = symmetry_tables(path.read_text(encoding="utf-8"))
+    if not tables:
+        return Check(
+            "P13", CHECK_NAMES["P13"], "FAIL",
+            f"{PREREG_FILE} に conventions#symmetry の対称性の表が無い"
+            f"（列名 {SYMMETRY_CONDITION_HEADER}／腕1／腕2／"
+            f"{SYMMETRY_VERDICT_HEADER}／{SYMMETRY_REASON_HEADER} で探す）",
+        )
+    rows = sum(len(body) for _, body in tables)
+    if not rows:
+        return Check("P13", CHECK_NAMES["P13"], "FAIL", "対称性の表に行が無い")
+
+    unknown: list[str] = []
+    no_reason: list[str] = []
+    bad_verdict: list[str] = []
+    for index, body in tables:
+        for cells in body:
+            if len(cells) <= max(index.values()):
+                bad_verdict.append(f"{cells[0] if cells else '(空行)'}（列が足りない）")
+                continue
+            condition = cells[index[SYMMETRY_CONDITION_HEADER]] or "(条件が空)"
+            verdict = cells[index[SYMMETRY_VERDICT_HEADER]]
+            reason = cells[index[SYMMETRY_REASON_HEADER]]
+            if verdict == SYMMETRY_UNKNOWN:
+                unknown.append(condition)
+            elif verdict == SYMMETRY_INTENDED and not reason:
+                no_reason.append(condition)
+            elif verdict not in SYMMETRY_VERDICTS:
+                bad_verdict.append(f"{condition}（判定が「{verdict or '空欄'}」）")
+
+    problems: list[str] = []
+    if unknown:
+        problems.append(f"UNKNOWN {len(unknown)} 行: {', '.join(unknown)}")
+    if no_reason:
+        problems.append(f"「{SYMMETRY_INTENDED}」に理由が無い {len(no_reason)} 行: {', '.join(no_reason)}")
+    if bad_verdict:
+        problems.append(f"判定が三値でない {len(bad_verdict)} 行: {', '.join(bad_verdict)}")
+    if problems:
+        return Check("P13", CHECK_NAMES["P13"], "FAIL", f"{rows} 行を検査。" + "／".join(problems))
+    return Check(
+        "P13", CHECK_NAMES["P13"], "PASS",
+        f"対称性の表 {len(tables)} 個 / {rows} 行に UNKNOWN と理由欠落は無い",
+    )
+
+
 def run_checks(task_id: str, spec: dict) -> list[Check]:
     applicable = decide_applicability(spec)
     checks: list[Check] = []
@@ -527,6 +649,8 @@ def run_checks(task_id: str, spec: dict) -> list[Check]:
             checks.append(check_gpu_free())
         elif cid == "P12":
             checks.append(check_refs_resolved(task_id, spec))
+        elif cid == "P13":
+            checks.append(check_symmetry_table(task_id))
     return checks
 
 

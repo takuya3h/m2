@@ -6,8 +6,41 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 97 件）。
-ここに出ない 92 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 98 件）。
+ここに出ない 93 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-09-19-symmetry-gate
+
+状態 `pass` / ホスト `m2` / 起票 `なし` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — HEAD=ed9211bc=origin/phase0。変更前の数を実測: アンカー 10、提案カード 14、禁止語 15、L3 検査 12、check_spec 規則 8、試験 6 failed / 567 passed。未追跡 3 件は mv を実行基盤が拒否したため sha256 を記録してその場に残した
+- `G2` pass — P13 に 6 種の入力を通し FAIL 5 / PASS 1。列名が部分一致するだけの表（条件の分類/腕の数/判定規約/理由の欄）は拾わず FAIL。check_proposal は #15 欠落 1 件・#16 欠落 1 件・両方あり 0 件
+
+### 起票者の誤り
+
+- `check_does_not_check` — 完了判定 E.1 が make forbidden-check の permitted を 3 件と予期していたが実測は 1 件。permitted は禁止領域に該当した経路だけを数えるため、tasks/_templates/exp/prereg.md と docs/issuer-defects.md は allow_write に宣言しても現れない。指示どおり件数で判定すると、violations 0 の合格を不合格と読み違える
+- `asserted_without_measuring` — 確定した事実に「exp の雛形は tasks/_templates/exp/（spec.yaml、SPEC.md、prereg.md）」と書いたが prereg.md は存在しなかった。指示どおり「足す」と読むと編集対象が見つからず止まる。実際には新設になり、雛形全体の構成を実行者が決める必要が生じた
+- `asserted_without_measuring` — 付録 D の表を「判定列が 揃える／意図的に変える／UNKNOWN のいずれか」と様式で定めながら、Task C.1 の FAIL 条件に空欄と三値以外を挙げていない。指示どおり実装すると判定が空欄の行が PASS になり、表を置いただけで埋めないまま起票できてしまう
+
+### 逸脱
+
+- `environment` — Task A.1 の「未追跡を移動で退避」は実行基盤が mv を拒否した（Irreversible Local Destruction）。回避せず、3 件の sha256 を記録してその場に残し、commit に含めなかった。禁止領域の外であり forbidden-check の violations は 0
+- `judgement` — P13 に「判定が三値でない」FAIL を足した。SPEC Task C.1 の FAIL 条件 3 つでは判定が空欄の行が素通りし、埋めないまま起票できる穴になるため。付録 A・D が定める様式（判定は三値）の範囲内
+- `judgement` — docs/issuer-defects.md の追記を付録 F の ### から既存文書に合わせて ## にし、冒頭の型の一覧に 2 行足した。付録の本文は変えていない。型の一覧の 2 行には result.yaml の enum には未追加である旨を明記した
+- `judgement` — tests/test_check_proposal.py の CARD_COUNT を 14 から 16 にし、件数を名に含む試験を 1 つ改名した。規約の件数に追随させるため。検査器の挙動は変えていない
+
+### 申し送り
+
+- 既存の exp 契約 12 件はすべて P13 で FAIL になる（実測）。いずれも完了済みで prereg に対称性の表が無いためである。過去の prereg は書き換えていない。遡って再実行する契約があれば、先に表を埋めること
+- tasks/_schema/result.schema.json の issuer_defects.type enum は 4 語のままである。asymmetric_comparison と rule_read_narrowly は docs/issuer-defects.md の分類として追記したが schema には無い。本契約は schema を allow_write に宣言していないため触っていない。追加の可否は起票者の判断
+- 三周目の工程塔契約は本 PR の統合後に起票する。P13 が動く状態で prereg を書くため（SPEC §8 の申し送り）
+
+### 断定できなかったこと
+
+- make task-validate を全契約で回すと SKIP inbox.d: spec.yaml なし により 1 件 failed になる。変更前から同じで、本契約は tasks/inbox.d/ の構造を変えていない。原因の特定は本契約の範囲外
+- make lint は変更前から落ちている（black --check 73 ファイル、ruff 3 件。いずれも本契約が触っていないファイル）。本契約が触った 4 ファイルは ruff check を通る。black は repo 全体が未整形のため合わせていない
 
 ## T-2026-09-19-stage1-phase-tower-r2
 
@@ -172,49 +205,4 @@
 
 - efros から中心へ ssh で入れるか。受け入れ一覧に指紋が在ることまでは示したが、 実際の接続は中心からは測れない（禁止 5、および efros 側が未起動）。
 - efros と中心が同期で繋がるか。connections に項目は出たが connected=False であり、 efros 側の起動待ちである。
-
-## T-2026-09-17-frozen-feature-cache-timing
-
-状態 `partial` / ホスト `efros` / 起票 `181` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 基準 run pd_refin_empty_seed42 を runindex/index.csv の task_id 一致 16 件から特定し、command.sh と config.yaml で処方を照合した（epochs 6 / inject film / trainable film / seed 42 / zero_ctx true）。装置は仮占有 2 件を停止して compute プロセス 0 件・15 と 35 MiB・util 0% になった
-- `G2` pass — 別過程で二度生成し cache_key 16e889a328f921c037e6d46756c59f802d8a6339b12f966e7e845a17dc7ae19e と aggregate_sha256 96ab87b8abfae5ba662b47991bd7fb890b4806ad95e75195806a7604d3183e84 が一致した。塔を seed123 に変えると両方変わった
-- `G3` ask — キャッシュ経路の 6 epoch run は回していない。上限倍率 1.049〜1.083 と実測倍率 0.558〜0.661 が先に判明したため利用者へ提示し、限定版で結論とする判断を得た
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — SPEC §2 は「環境は .venv-relation-detr」を確定事実として書くが、本ホストではその venv に python が 1 つも存在せず pyvenv.cfg の home が指す pyenv 3.11.4 も不在だった。指示どおり進めると L3 が make: python: No such file or directory で起動すらせず Task A の途中で止まる
-- `check_does_not_check` — preflight の P1 は .venv-relation-detr を要求する一方、P8 は sys.executable すなわちその venv で validate_task.py を起動する。その venv の正本 lock 72 pkg に jsonschema が無いため検出系の契約では P8 が構造的に必ず FAIL し、指示どおり実行すると L3 が exit 0 にならず実行へ進めない
-- `asserted_without_measuring` — 完了判定 a は両方の run の所要時間が壁時計と GPU 時間で記録されていることを要求するが、基準 run の証跡 config.yaml と metrics.json と t1b_result.json と logs のどれにも時間の列が無い。指示どおりでは基準側が原理的に埋まらず 4 時間の再実行を強いる
-- `self_contradiction` — §3 Task B は塔の出力を一度だけ保存して界面だけを学習することを前提に置くが、§4 禁止事項 2 は処方を変えないと定める。学習の前処理 presets.detr は毎 epoch 乱択のため一度きりの保存を使い回すことは処方の変更にあたり、両立には epoch ごとのキャッシュが要る
-- `self_contradiction` — §4 禁止事項 4 は context/auto/* と tasks/inbox.md を再生成しないと定めるが、手順書 §6 は make taskindex と make inbox で投影と集約結果を生成し taskindex-check と inbox-check で差分 0 を確かめることを要求する。禁止事項に従うとこの二つの検査が必ず exit 2 を返し、手順書に従うと禁止事項に触れる
-
-### 逸脱
-
-- `environment` — .venv-relation-detr にインタプリタが 1 つも無く pyvenv.cfg が指す pyenv 3.11.4 も不在だったため、docs/setup/lecun_detector.md に従い UV_VENV_CLEAR=1 SKIP_CUDA_CHECK=1 で再構築した（利用者の許可）。nvcc は 12.9 で文書の前提 11.8 は不在
-- `environment` — P8 contract_valid を通すため .venv-relation-detr へ jsonschema>=4 を追加導入した（依存込み 5 件）。正本 lock requirements.relation_detr.lock.txt は変更していない（利用者の指示）
-- `judgement` — 完了判定 b の 6 epoch 完走比較を行っていない。上限 1.05〜1.08 倍・実測 0.65 倍が先に判明し 9 GPU 時間と 2.64 TB を投じる根拠が無くなったため、数値を提示して限定版で結論とする判断を得た
-- `judgement` — 装置の仮占有プロセス PID 106429 と 106543 を実験直前に停止した（利用者の明示の許可）。停止前に /proc/PID/exe と nvidia-smi --query-compute-apps の両方で同定し、部分一致は使っていない
-- `spec_defect` — scripts/profile_t1b_step.py と scripts/t1b_backbone_cache.py を新設した。SPEC §3 は実装を読んで決めてよいとするが scripts/ への新設は明示の対象外である。scripts/train_t1b.py は 1 行も変えていないため既存の経路は構成上壊れない
-- `judgement` — キャッシュの実体は third_party/Relation-DETR/data/processed/ 配下へ落ちた。train_t1b が import 時に os.chdir(RELDETR) するため相対経路がそこへ解決される。版管理外・同期対象外で禁止領域ではない。証跡の index.json 3 件は契約フォルダへ取り出した
-- `judgement` — 決定性の検査は val（transforms=None で前処理が決定的）で行った。学習側は増強が毎 epoch 乱択のため「同じ入力で二度生成」が定義できない
-- `spec_defect` — 手順書 §6 に従い make taskindex と make inbox を一度回したが、SPEC §4 禁止事項 4 が context/auto/* と tasks/inbox.md の再生成を禁じているため git checkout で元へ戻した。結果として taskindex-check と inbox-check は差分ありで exit 2 を返す。併合後に中央で再生成される想定と解した
-
-### 申し送り
-
-- tools/estimate_tier_cost.py の det_iface_w2 は代理 4.00 h（B1 の UNKNOWN #2）である。本契約の実測 W2/W1 = 1.205 から 4.82 h へ置き換えられる。置き換えるかは利用者の判断
-- .venv-relation-detr の正本 lock に jsonschema が無いため、検出系の契約では preflight の P8 が構造的に FAIL する。lock に足すか P8 の起動方法を変えるかの判断が要る
-- 基準 run の証跡に所要時間の列が無い。run_artifacts へ壁時計と GPU 時間を残すようにすれば、以後は同じ処方の基準を再実行せずに比べられる
-- SPEC §4 禁止事項 4（context/auto/* と tasks/inbox.md を再生成しない）と手順書 §6（make taskindex / make inbox とその検査）が衝突する。どちらを正とするかを定めないと、検出系に限らずすべての契約で同じ判断が繰り返される
-- configs/stage/s0_frozen.yaml の stage1_feature_cache の骨組みは P→D の界面学習には使えない（凍結塔の出力を毎 step 全解像度で要する用途には向かない）。用途の注記を置くか外すかの判断が要る
-- 時間を縮めるなら削るのは腕ではなく 1 run の中身（epoch 数・解像度・query 数・encoder 層数）である。いずれも比較の土台を動かすため全腕で同一に動かすことが条件になる
-
-### 断定できなかったこと
-
-- 基準 run とキャッシュ経路 run の 6 epoch 完走比較（主指標の一致）。キャッシュ経路が遅いことが確定したため実行していない
-- 基準 run の GPU 時間。記録が無く、本ホストでも 6 epoch を回していないため出せない
-- 決定化（ビット一致）の可否。6 epoch 完走比較を行っていないため未確認
-- 15 動画分の大きさは、val と同じ原解像度・増強なしの前処理を仮定して 1 枚あたりの実測値を枚数倍したものである（枚数 15,437 と 1 枚 57,802,752 bytes はいずれも実測）
 

@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（492 件）
+## 申し送り（495 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -785,7 +785,13 @@
 - 最良 epoch が上限 12 に張り付いた fine-tune が 2 件、10 に達したものが 1 件ある。上限を増やせばさらに上がる余地は残るが、prereg が D* と揃えて 12 に固定しているため本契約では増やさなかった。次の契約で上限を動かすなら D* 側も揃えて動かす必要がある。
 - 時間ヘッドの最良は一周目と同じ候補 C（平滑化損失）だったが、掃引点は 8 層・平滑化 0.30 から 6 層・平滑化 0.15 へ動いた。特徴が強くなると受容野も平滑化も小さい方が良くなる向きで、事前登録の予測 3（候補 A か B になりうる）とは別の形で「一周目と同じではない」が現れた。
 
-## 断定できなかった事項（321 件）
+### T-2026-09-19-symmetry-gate
+
+- 既存の exp 契約 12 件はすべて P13 で FAIL になる（実測）。いずれも完了済みで prereg に対称性の表が無いためである。過去の prereg は書き換えていない。遡って再実行する契約があれば、先に表を埋めること
+- tasks/_schema/result.schema.json の issuer_defects.type enum は 4 語のままである。asymmetric_comparison と rule_read_narrowly は docs/issuer-defects.md の分類として追記したが schema には無い。本契約は schema を allow_write に宣言していないため触っていない。追加の可否は起票者の判断
+- 三周目の工程塔契約は本 PR の統合後に起票する。P13 が動く状態で prereg を書くため（SPEC §8 の申し送り）
+
+## 断定できなかった事項（323 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1378,16 +1384,21 @@
 - 上限 12 epoch を超えたときの到達点。最良 epoch が上限に張り付いた run があるため、上限が結果を切っている可能性がある。
 - P3 deterministic_flags の実測。プリフライトで SKIP となり、決定性設定が実行プロセス内で行われ外部から観測できないため確かめていない（backlog B-20）。
 
-## 起票者の誤りの型（283 件）
+### T-2026-09-19-symmetry-gate
+
+- make task-validate を全契約で回すと SKIP inbox.d: spec.yaml なし により 1 件 failed になる。変更前から同じで、本契約は tasks/inbox.d/ の構造を変えていない。原因の特定は本契約の範囲外
+- make lint は変更前から落ちている（black --check 73 ファイル、ruff 3 件。いずれも本契約が触っていないファイル）。本契約が触った 4 ファイルは ruff check を通る。black は repo 全体が未整形のため合わせていない
+
+## 起票者の誤りの型（286 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 80 |
-| `asserted_without_measuring` | 110 |
+| `check_does_not_check` | 81 |
+| `asserted_without_measuring` | 112 |
 | `self_contradiction` | 74 |
 | `shell_assumption` | 19 |
 
-合計 283 件（対を持つ契約 97 件から）
+合計 286 件（対を持つ契約 98 件から）
 

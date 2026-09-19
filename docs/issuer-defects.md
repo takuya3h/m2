@@ -8,6 +8,8 @@
 - **`self_contradiction`** — 同一契約内の禁止と要求が両立しない
 - **`check_does_not_check`** — 検査が意図した性質を実際には測っていない
 - **`shell_assumption`** — シェルや実行方式の前提を誤った
+- **`asymmetric_comparison`** — 比較対象の処方を読まずに候補を設計した（本文書の分類。`result.yaml` の enum には未追加）
+- **`rule_read_narrowly`** — 規則の字面を狭く読み、その読みを既定にした（同上）
 
 **すべての根は同じ。実態を測らずに書いた。**
 
@@ -75,6 +77,19 @@
 `<repo>` `<host>` `YOUR_PASSPHRASE` をそのまま貼られ、**別ホストのブランチで作業した**、**例示の合言葉が本番に設定された**。
 
 **ホストごとに違う値は表で示すか、実値を埋めた完成形を渡す。**
+
+## asymmetric_comparison — 比較対象の処方を読まずに候補を設計した
+
+実例: T-2026-09-18-stage1-phase-tower（凍結 vs fine-tune）、T-2026-09-19-stage1-phase-tower-r2
+（COCO 事前学習の有無、入力解像度 224 中央切り出し vs 短辺 480〜800 全画面）。
+指示どおり実行すると: 差が塔の下地の差なのか仮説の効果なのか区別できない実験が完走する。
+対処: conventions#symmetry の表を prereg に置く。UNKNOWN が残る間は起票しない。L3 P13。
+
+## rule_read_narrowly — 規則の字面を狭く読み、その読みを既定にした
+
+実例: M §5.1「P\* は ImageNet か中立 SSL の初期化」を「凍結」（一周目）、「COCO 排除」（二周目）と読んだ。
+規則の趣旨は in-domain の情報が塔をまたぐことの排除で、凍結も COCO 排除も要求していない。
+対処: 読みの候補を列挙して利用者に諮る（issuer_cautions #14）。
 
 ---
 

@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（545 件）
+## 未処理（551 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -560,6 +560,12 @@
 - [ ] 2026-09-18 [cc] 🔴 **実行者の誤読を 1 件記録する。** fine-tune 1 本目の実行中、出力ファイルに epoch 行が現れず GPU 利用率が 38% だったため「データ供給が律速」と判断し、停止と削除の命令を出した。**実際は出力の書き出しが遅れていただけで 12 epoch は 411 秒で完走していた。** `pkill -f` の模様が自分の命令行に部分一致して自滅し（`conventions#issuer_cautions` の注意 6 の型）、後続の `rm -rf` に到達しなかったため成果物は無傷。**途中の観測で速度を判断しない。完走の記録を待つ**（T-2026-09-19-stage1-phase-tower-r2）
 - [ ] 2026-09-18 [cc] **前処理は一周目に揃えた（実行者の判断）。** prereg §2 は「増強は同スクリプトの既定に固定」とするが、同スクリプトの resize は `Resize((224,224))` で一周目の特徴抽出（`IMAGENET1K_V1.transforms()` = 短辺 256 へ Resize + CenterCrop 224）と違う。増強（`RandomHorizontalFlip`）だけを既定から採り、resize は一周目と同じにした。**一周目との差が backbone の重みだけになるようにするため**（T-2026-09-19-stage1-phase-tower-r2）
 - [ ] 2026-09-18 [cc] **契約の `allow_write` の 1 件が検査器の上限で却下された。** `data/processed/stage1_features/` は「`data/` 配下は宣言しても許可されない」として `rejected_allowances` に落ちる（`tools/check_forbidden.py`）。一方 SPEC Task C-3 は特徴の置き場をそこに指定している。**実害は出ない**（`data/processed/**` と `*.npz` が `.gitignore` 済みで追跡 0 件のため差分に現れない）が、宣言は無効である。起票時に上限を確かめていれば宣言は要らなかった（T-2026-09-19-stage1-phase-tower-r2）
+- [ ] 2026-09-19 [cc] **起票者の誤り: 完了判定 E.1 の `permitted` 3 件は実測 1 件。** `make forbidden-check` の `permitted` は禁止領域に該当した経路だけを数えるため、`allow_write` に宣言しても `tasks/_templates/exp/prereg.md` と `docs/issuer-defects.md` は現れない。件数で判定すると `violations` 0 の合格を不合格と読み違える（T-2026-09-19-symmetry-gate）
+- [ ] 2026-09-19 [cc] **起票者の誤り: `tasks/_templates/exp/prereg.md` は存在しなかった。** 確定した事実に「exp の雛形は spec.yaml、SPEC.md、prereg.md」と書かれていたが実在は 3 件のうち 2 件で、Task D-1 は「足す」ではなく新設になった。雛形全体の構成は実行者が決めた（T-2026-09-19-symmetry-gate）
+- [ ] 2026-09-19 [cc] **P13 に「判定が三値でない」FAIL を足した（実行者の判断）。** SPEC Task C.1 の FAIL 条件 3 つでは判定が空欄の行が素通りし、表を置いただけで埋めないまま起票できる穴になる。付録 A・D が「判定は三値」と様式で定めている範囲内として FAIL にした（T-2026-09-19-symmetry-gate）
+- [ ] 2026-09-19 [cc] 🔴 **未追跡 3 件の退避（`mv`）を実行基盤が拒否した。** `Irreversible Local Destruction` として遮断されたため、SPEC §6 に従い回避せず、sha256 を記録してその場に残し commit に含めなかった。**この遮断は他の契約でも起きる。** 退避を求める指示は、削除を伴わない代替（記録して残す）を併記しておくとよい（T-2026-09-19-symmetry-gate）
+- [ ] 2026-09-19 [cc] 🔴 **既存の exp 契約 12 件はすべて P13 で FAIL になる（実測）。** いずれも完了済みで prereg に対称性の表が無いためで、関門の意図どおりである。過去の prereg は書き換えていない。遡って再実行する契約があれば先に表を埋めること（T-2026-09-19-symmetry-gate）
+- [ ] 2026-09-19 [cc] **`result.yaml` の `issuer_defects.type` enum は 4 語のまま。** `asymmetric_comparison` と `rule_read_narrowly` は `docs/issuer-defects.md` の分類として追記したが `tasks/_schema/result.schema.json` には無い。本契約は schema を `allow_write` に宣言していないため触っていない。追加の可否は起票者の判断（T-2026-09-19-symmetry-gate）
 
 ## 処理済み（1 件）
 
