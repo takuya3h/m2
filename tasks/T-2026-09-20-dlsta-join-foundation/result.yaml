@@ -1,0 +1,175 @@
+result_version: 3
+task_id: "T-2026-09-20-dlsta-join-foundation"
+status: pass
+host: "dlsta"
+branch: "feat/dlsta-join-foundation"
+pr: 187
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      .venv がディレクトリごと無い状態から作り直した。Python 3.11.16 / torch 2.1.2+cu118 /
+      torchvision 0.16.2+cu118 / mmcv 2.1.0 が他台の実測と一致。torch.cuda.is_available() が True で
+      device_count は 5（RTX A5000, driver 595.84）、cuda 上の 256x256 行列積が完走した。
+      nvcc は 12.9 のため SKIP_CUDA_CHECK=1 で検査を飛ばした。依存は 18 件中 18 件が読み込める
+      （libgl1 導入前は mmcv / mmdet / albumentations の 3 件が libGL.so.1 で落ちていた）。
+      SERVERNAME は zsh 非対話・zsh ログイン・bash ログイン・bash 対話の 4 形態で dlsta を返す。
+      版管理の識別は ~/.gitconfig に takuya3h / daky.o7600@gmail.com が既設定で、local は空であった。
+  - id: G2
+    verdict: pass
+    note: >-
+      ed25519 の鍵を合言葉なしで作り、指紋 SHA256:5jUsv9rrpScleVa1jvO008WDPpg7LzQq0G8qSZjgKO4 を得た。
+      scripts/sync/hub_keys/dlsta.pub は 先頭 ssh- = 1 / 秘密鍵の書き出し = 0 件 / 行数 = 1 で、
+      同じ検査を実物の秘密鍵の書き出し（囮）へ当てると 0 / 2 件 / 7 となり検査に掛かった。
+      配布物の中に syncthing という名前が 3 件（1709 / 175 / 27045912 バイト）あり、大きさで実行ファイルを
+      特定した。配布物と配置物の sha256 はともに中心の e8a08fdd…b96c4 と一致。
+      識別子 BRPEYOX-MJ7HMGV-RR2XAUW-CVFVSED-DEMAG5M-EMQNVR6-77XWXPL-ZS26PAI を 64 bytes / 1 行で公開した。
+      /proc/net/tcp の復号で 22000 も 8384 も一致 0 件、/proc/PID/exe で syncthing / m2-sync / keeper とも 0 件。
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 581
+
+deviations:
+  - type: judgement
+    note: >-
+      手順の順序を変えた。L1+L2 の make task-validate と L3 の make task-preflight は .venv/bin/python を
+      使うため、開始時（.venv 不在）には exit 2 / Error 127 で起動しなかった。Task 1 で環境を作った後に
+      実行した。SPEC 0 節が「.venv が無いため取り込みの仕組みは使えない。Task 1 が済めば使えるようになる」と
+      明記しているため契約に沿う。
+  - type: spec_defect
+    note: >-
+      SPEC 0 節の git checkout -b feat/dlsta-join-foundation origin/phase0 を実行しなかった。
+      分岐は既に存在し、HEAD も origin/phase0 も 29a6116f で ahead 0 / behind 0 であったため。
+  - type: judgement
+    note: >-
+      版管理の識別を新規設定しなかった。~/.gitconfig（global）に既設定で、値は版管理の履歴の作者と一致する。
+      SPEC の「推測で設定しない」に従い、既存値と出所（git config --show-origin）のみを記録した。
+  - type: environment
+    note: >-
+      Task 2 の Files 欄にない ~/.bashrc も変更された。指示された scripts/sync/setup_host_servername.sh の
+      TARGETS が ~/.zshenv ~/.profile ~/.bashrc の 3 つであるため。覆う範囲が広がる方向なのでそのまま使った。
+  - type: environment
+    note: >-
+      .sync-pause を置かなかった。~/bin/ も ~/claude-sync/ も存在せず、crontab も無く、/proc/PID/exe による
+      m2-sync / keeper / syncthing の計数が 0 件（陽性対照 zsh = 4 件）であり、止める対象が無いため。
+      SPEC の「常駐処理は動いていない。抑止は要らない。その旨を記録する」に従った。
+  - type: judgement
+    note: >-
+      論理名 dlsta の根拠を住所ではなく契約の記載（task_id、SPEC の実行ホスト宣言、配置先ファイル名）に取った。
+      容器の内側から見える住所は 172.17.0.12 のみで、scripts/sync/hosts/ の 192.168.196.54 と照合できないため。
+  - type: environment
+    note: >-
+      libgl1 の導入は利用者が実行した（sudo がパスワードを要求するため）。一度目の完了申告の時点では
+      find / ldconfig -p / dpkg -l / apt の history.log の 4 系統すべてが未導入を示したため、申告ではなく
+      実測を正とした。二度目に libgl1 1.7.0-1build1 と apt 記録 2026-09-20 15:58:16 を確認した。
+  - type: judgement
+    note: >-
+      試験の「変更前」を HEAD（29a6116f）の worktree を --detach で切って測った。開始時に .venv が無く
+      直接測れなかったため。測定後に git worktree remove で撤去し、分岐数は 2 のまま変わっていない。
+  - type: judgement
+    note: >-
+      禁止 5「生成物を再生成する」の読みが一つに定まらなかったため、conventions#issuer_cautions 14 に従い
+      読みの候補を列挙して利用者に諮った。手順書は make taskindex と make inbox を要求し
+      make taskindex-check は再生成なしでは非零になる一方、SPEC の禁止 5 と Task 5 Step 3 は
+      再生成しないと明記している。また make forbidden-check は投影と集約を明示的に検査から除外している。
+      利用者の判断により「禁止 5 が指すのは runindex/ 等の指数であり、投影と集約は対象外」の読みを採り、
+      tasks/inbox.md と context/auto/ の 4 件を再生成したまま送出した。runindex/ は無変更である。
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: >-
+      現状の表が「版管理の識別: 未設定」と断定しているが、実測では ~/.gitconfig に user.name=takuya3h /
+      user.email=daky.o7600@gmail.com が設定済みであった（local のみ空）。Task 2 Step 4 の指示どおり
+      「他台と同じ値を使う」を実行すると、既に効いている値の上に不要な設定を重ねることになった。
+  - type: asserted_without_measuring
+    note: >-
+      Task 2 Step 2 が「論理名は dlsta である（版管理の scripts/sync/hosts/ の記載と、住所の対応による）」と
+      断定するが、本ホストは容器であり内側から見える住所は 172.17.0.12（gateway 172.17.0.1）のみである。
+      hosts の dlsta は 192.168.196.54 で、指示どおり住所で確かめようとすると外部接続（禁止 3）以外に手段が無い。
+  - type: asserted_without_measuring
+    note: >-
+      0 節が git checkout -b feat/dlsta-join-foundation origin/phase0 を「手で分岐を切る」として指示するが、
+      分岐は既に存在し HEAD も origin/phase0 も 29a6116f であった。指示どおり打つと
+      fatal: a branch named 'feat/dlsta-join-foundation' already exists で落ちる。
+  - type: self_contradiction
+    note: >-
+      Task 2 の Files 欄は Modify 対象を ~/.zshenv と ~/.profile の 2 つに限るが、同じ Step 2 が使えと指す
+      scripts/sync/setup_host_servername.sh の TARGETS は ~/.zshenv ~/.profile ~/.bashrc の 3 つである。
+      指示どおりスクリプトを使うと Files 欄に無い ~/.bashrc が変更される。
+  - type: asserted_without_measuring
+    note: >-
+      現状の表が ~/.ssh/ の中身を authorized_keys・config・config.d・id_ed25519_github・known_hosts の
+      5 件と列挙するが、実測では id_ed25519_github.pub も在り 6 件であった。
+      「再測定は不要」と添えられていたため、そのまま信じると公開鍵の既存有無の判断を誤りうる。
+
+positive_controls:
+  - judgement: "版管理へ置いたものが公開鍵だけであること（先頭 ssh- / 秘密鍵の書き出し 0 件 / 1 行）"
+    breaking_input: "ssh-keygen で実際に作った秘密鍵の書き出しを囮として同じ検査にかける"
+    observed: "先頭 ssh- = 0、秘密鍵の書き出し = 2 件、行数 = 7 となり検査に掛かった。囮は scratchpad に置き版管理へ入れていない"
+  - judgement: "同期処理が 22000 と 8384 で待ち受けていないこと"
+    breaking_input: "22000 番に一時的な待ち受けを立てる"
+    observed: "一致件数が 立てる前 0 → 立てている間 1 → 畳んだ後 0 と変化した。なお最初の復号器は strtonum（gawk 専用）を使っており mawk の本ホストでは全件 0 を返していた。陰性対照だけでは合格に見えていた"
+  - judgement: "論理名 dlsta が新しいシェルで解決されること"
+    breaking_input: "標識ブロックを持たない空ディレクトリを HOME として与える"
+    observed: "zsh -c も bash -lc も [未設定] を返した。HOME を渡さない env -i zsh は [dlsta] を返して対照にならなかった（zsh が passwd から HOME を復元するため）"
+  - judgement: "同期処理のプロセスが存在しないこと（/proc/PID/exe で絞る）"
+    breaking_input: "実在する語 zsh で数える／実在しない語 zzz_no_such_token で数える"
+    observed: "zsh = 4 件、zzz_no_such_token = 0 件。最初に置いた陽性対照 bash は 0 を返したが、これは本ホストに bash のプロセスが 1 件も無いためで、実在する語に取り直した"
+  - judgement: "配布物の要約値が中心（e8a08fdd…b96c4）と一致すること"
+    breaking_input: "同名の別物 etc/freebsd-rc/syncthing（1709 バイト）の要約値を同じ期待値と照合する"
+    observed: "一致しなかった。実行ファイル（27045912 バイト）のみが一致した"
+  - judgement: "libgl1 が導入されたこと"
+    breaking_input: "導入されていない状態で find / ldconfig -p / dpkg -l / apt history の 4 系統を走らせる"
+    observed: "一度目は 0 件 / 0 / 0 件 / 最終記録 2026-08-18 と 4 系統すべてが否定した。二度目は 2 件 / 1 / 2 件 / 2026-09-20 15:58:16 となり、mmcv・mmdet・albumentations が読み込めるようになった"
+  - judgement: "既存の中心宛の鍵が無いこと"
+    breaking_input: "実在する語 github で ~/.ssh 直下を数える"
+    observed: "github = 2 件、philip = 0 件。なお最初の試行では grep -c の 0 件が終了コード 1 を返して && の連鎖が切れ、鍵の生成に到達していなかった"
+
+followups:
+  - >-
+    P9 spec_lint の host_mismatch は本ホストでは必ず該当する。tools/check_spec.py:321 が
+    socket.gethostname() と宣言値を比べるが、dlsta は容器であり gethostname() は 4f3861ae8d3b を返す。
+    規則は論理名（SERVERNAME）を見ていない。tasks/inbox.md:121/190/302/342 と
+    context/auto/followups.md:49/139/362/496 に同じ原因が既出であり、本ホストで新たに一例が加わった。
+  - >-
+    scripts/setup_env.sh:45 の nvcc 検査は prebuilt wheel を使う経路に対して不要な要求をしている。
+    同スクリプトの手順 5 は causal-conv1d と mamba-ssm を GitHub release の .whl で導入しており
+    ソースビルドを行わない。本ホスト（nvcc 12.9）では SKIP_CUDA_CHECK=1 が常に要る。
+    検査を「ソースビルドを選んだときだけ」に絞るか、既定を prebuilt に合わせるかの判断が要る。
+  - >-
+    同期処理の告知の既定値（公開の探索網・公開中継）を無効化していない。本契約は起動しないため
+    対象外だが、env-facts.md が「起動前に無効にする」と定めているため、起動を行う後続の契約で必要になる。
+    自動更新の既定 12 時間を 0 にする処置も同様に未実施である。
+  - >-
+    中心 philip への鍵と識別子の登録、中継（ssh -N -L 22001:127.0.0.1:22000）の目印の設置、
+    keeper.sh と m2-sync.sh の配置、実行権の復帰による起動、疎通の確認はいずれも本契約の範囲外であり
+    後続の契約で行う。本契約が用意したのは指紋・識別子・実行ファイル・設定までである。
+  - >-
+    禁止語の検査は完全一致であるため、該当を報告する文が該当語を引用すると報告そのものが落ちる。
+    本契約では audit.md の該当を RESULT.md で説明した際に実際に起きた（RESULT.md が exit 1 になった）。
+    conventions#proposal_gate の引用規約には除外の定めが無い。検査器に引用の形（鉤括弧や码字の中）を
+    除外させるか、報告では語を書かず位置で指す運用を明文化するかの判断が要る（tools/check_proposal.py）。
+  - >-
+    禁止語の完全一致が技術用語の部分文字列を拾う。集約 tasks/inbox.md は該当 8 件を持つが、
+    変更前（origin/phase0）にも同じ 8 件があり、いずれも 2026-08 の他契約の行で本契約の追加分は 0 件である。
+    内訳には、余白を表す語の中や、再現性が完全であることを表す語の中に禁止語が現れる例が含まれる。
+    いずれも通常の技術記述である。例を語のまま引けばこの記録自身が検査に落ちるため、語は示さない。
+    集約は手で編集しない規則であり過去の記録も書き換えないため、本契約では直していない。
+    語境界を見るか、集約と投影を検査の対象から外すかの判断が要る（tools/check_proposal.py）。
+
+unknowns:
+  - >-
+    本ホストの外向きの住所が 192.168.196.54 であることは確認できていない。容器の内側から見えるのは
+    172.17.0.12（gateway 172.17.0.1）のみで、外部へ接続して確かめるのは禁止 3 に当たるため測っていない。
+    論理名 dlsta は住所ではなく契約の記載（task_id、実行ホスト宣言、配置先ファイル名）を根拠に採用した。
+  - >-
+    inputs.data（dataset: egosurgery_phase_v1、split_files: data/splits/ego_val.txt）は雛形の必須項目であり
+    本契約では参照していない。SPEC の申し送りの指示どおり、参照しなかったことを記録する。
+
+commits:
+  - "e4f80541"
+  - "02533e3c"

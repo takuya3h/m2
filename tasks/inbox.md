@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（551 件）
+## 未処理（559 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -566,6 +566,14 @@
 - [ ] 2026-09-19 [cc] 🔴 **未追跡 3 件の退避（`mv`）を実行基盤が拒否した。** `Irreversible Local Destruction` として遮断されたため、SPEC §6 に従い回避せず、sha256 を記録してその場に残し commit に含めなかった。**この遮断は他の契約でも起きる。** 退避を求める指示は、削除を伴わない代替（記録して残す）を併記しておくとよい（T-2026-09-19-symmetry-gate）
 - [ ] 2026-09-19 [cc] 🔴 **既存の exp 契約 12 件はすべて P13 で FAIL になる（実測）。** いずれも完了済みで prereg に対称性の表が無いためで、関門の意図どおりである。過去の prereg は書き換えていない。遡って再実行する契約があれば先に表を埋めること（T-2026-09-19-symmetry-gate）
 - [ ] 2026-09-19 [cc] **`result.yaml` の `issuer_defects.type` enum は 4 語のまま。** `asymmetric_comparison` と `rule_read_narrowly` は `docs/issuer-defects.md` の分類として追記したが `tasks/_schema/result.schema.json` には無い。本契約は schema を `allow_write` に宣言していないため触っていない。追加の可否は起票者の判断（T-2026-09-19-symmetry-gate）
+- [ ] 2026-09-20 [cc] libGL.so.1 の対処は他 6 台と同じ libgl1 の導入を選んだ。headless 化は requirements.lock.txt の検証済み構成（opencv-python と headless の両方を固定）から外れ全台で揃わなくなるため採らなかった（context/env-facts.md）
+- [ ] 2026-09-20 [cc] 導入の完了申告と実測が食い違ったため申告を根拠にしなかった。find / ldconfig -p / dpkg -l / apt history の 4 系統すべてが未導入を示した時点で実測を正とし、二度目で導入を確認した。外部の作業の完了は申告ではなく実測で確かめる（tasks/T-2026-09-20-dlsta-join-foundation/audit.md:251）
+- [ ] 2026-09-20 [cc] 論理名 dlsta の根拠を住所ではなく契約の記載に取った。容器の内側から見える住所は 172.17.0.12 のみで hosts の 192.168.196.54 と照合できない。容器で動くホストでは住所による論理名の確定ができないため、起票側の前提を見直す必要がある（scripts/sync/hosts/ssh_config.d.snapshot.conf）
+- [ ] 2026-09-20 [cc] 版管理の識別は ~/.gitconfig に既設定であったため新規設定せず出所のみ記録した。SPEC は未設定と断定していたが local が空で global が効いていた。スコープを見ずに「未設定」と判定する手順は誤りうる（tasks/T-2026-09-20-dlsta-join-foundation/audit.md:35）
+- [ ] 2026-09-20 [cc] setup_env.sh の nvcc 検査を SKIP_CUDA_CHECK=1 で飛ばした。手順 5 は prebuilt wheel を導入しソースビルドを行わないため、検査の要求は経路に対応していない。検査をソースビルド選択時に絞るか既定を prebuilt に合わせるかの判断が要る（scripts/setup_env.sh:45）
+- [ ] 2026-09-20 [cc] 同期処理の告知の既定値（公開の探索網・公開中継）と自動更新の既定 12 時間は無効化していない。本契約は起動しないため対象外だが、起動を行う後続の契約で必要になる（context/env-facts.md の「同期処理」）
+- [ ] 2026-09-20 [cc] 禁止 5「生成物を再生成する」の読みを利用者に諮り、投影（context/auto/）と集約（tasks/inbox.md）は対象外と確定した。手順書が make taskindex / make inbox を要求し make taskindex-check が再生成なしでは非零になる一方、SPEC は再生成しないと明記しており字面が両立しない。禁止 5 が指すのは runindex/ 等の指数であるという読みを採った。SPEC 側の文言を絞るかの判断が要る（tasks/T-2026-09-20-dlsta-join-foundation/SPEC.md の禁止 5）
+- [ ] 2026-09-20 [cc] 禁止語の検査が完全一致のため技術用語の部分文字列を拾う。集約 tasks/inbox.md の該当 8 件は変更前と同一で他契約の 2026-08 の行であり、余白を表す語や再現性が完全であることを表す語の中に禁止語が現れる例を含む（語のまま引けばこの記録自身が落ちる）。また該当を報告する文が該当語を引用すると報告自身が落ちる。語境界を見るか、集約と投影を対象から外すか、引用の形を除外するかの判断が要る（tools/check_proposal.py）
 
 ## 処理済み（1 件）
 

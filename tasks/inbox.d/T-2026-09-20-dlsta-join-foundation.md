@@ -1,0 +1,8 @@
+- [ ] 2026-09-20 [cc] libGL.so.1 の対処は他 6 台と同じ libgl1 の導入を選んだ。headless 化は requirements.lock.txt の検証済み構成（opencv-python と headless の両方を固定）から外れ全台で揃わなくなるため採らなかった（context/env-facts.md）
+- [ ] 2026-09-20 [cc] 導入の完了申告と実測が食い違ったため申告を根拠にしなかった。find / ldconfig -p / dpkg -l / apt history の 4 系統すべてが未導入を示した時点で実測を正とし、二度目で導入を確認した。外部の作業の完了は申告ではなく実測で確かめる（tasks/T-2026-09-20-dlsta-join-foundation/audit.md:251）
+- [ ] 2026-09-20 [cc] 論理名 dlsta の根拠を住所ではなく契約の記載に取った。容器の内側から見える住所は 172.17.0.12 のみで hosts の 192.168.196.54 と照合できない。容器で動くホストでは住所による論理名の確定ができないため、起票側の前提を見直す必要がある（scripts/sync/hosts/ssh_config.d.snapshot.conf）
+- [ ] 2026-09-20 [cc] 版管理の識別は ~/.gitconfig に既設定であったため新規設定せず出所のみ記録した。SPEC は未設定と断定していたが local が空で global が効いていた。スコープを見ずに「未設定」と判定する手順は誤りうる（tasks/T-2026-09-20-dlsta-join-foundation/audit.md:35）
+- [ ] 2026-09-20 [cc] setup_env.sh の nvcc 検査を SKIP_CUDA_CHECK=1 で飛ばした。手順 5 は prebuilt wheel を導入しソースビルドを行わないため、検査の要求は経路に対応していない。検査をソースビルド選択時に絞るか既定を prebuilt に合わせるかの判断が要る（scripts/setup_env.sh:45）
+- [ ] 2026-09-20 [cc] 同期処理の告知の既定値（公開の探索網・公開中継）と自動更新の既定 12 時間は無効化していない。本契約は起動しないため対象外だが、起動を行う後続の契約で必要になる（context/env-facts.md の「同期処理」）
+- [ ] 2026-09-20 [cc] 禁止 5「生成物を再生成する」の読みを利用者に諮り、投影（context/auto/）と集約（tasks/inbox.md）は対象外と確定した。手順書が make taskindex / make inbox を要求し make taskindex-check が再生成なしでは非零になる一方、SPEC は再生成しないと明記しており字面が両立しない。禁止 5 が指すのは runindex/ 等の指数であるという読みを採った。SPEC 側の文言を絞るかの判断が要る（tasks/T-2026-09-20-dlsta-join-foundation/SPEC.md の禁止 5）
+- [ ] 2026-09-20 [cc] 禁止語の検査が完全一致のため技術用語の部分文字列を拾う。集約 tasks/inbox.md の該当 8 件は変更前と同一で他契約の 2026-08 の行であり、余白を表す語や再現性が完全であることを表す語の中に禁止語が現れる例を含む（語のまま引けばこの記録自身が落ちる）。また該当を報告する文が該当語を引用すると報告自身が落ちる。語境界を見るか、集約と投影を対象から外すか、引用の形を除外するかの判断が要る（tools/check_proposal.py）

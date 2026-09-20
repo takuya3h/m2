@@ -6,8 +6,51 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 98 件）。
-ここに出ない 93 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 99 件）。
+ここに出ない 94 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-09-20-dlsta-join-foundation
+
+状態 `pass` / ホスト `dlsta` / 起票 `187` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — .venv がディレクトリごと無い状態から作り直した。Python 3.11.16 / torch 2.1.2+cu118 / torchvision 0.16.2+cu118 / mmcv 2.1.0 が他台の実測と一致。torch.cuda.is_available() が True で device_count は 5（RTX A5000, driver 595.84）、cuda 上の 256x256 行列積が完走した。 nvcc は 12.9 のため SKIP_CUDA_CHECK=1 で検査を飛ばした。依存は 18 件中 18 件が読み込める （libgl1 導入前は mmcv / mmdet / albumentations の 3 件が libGL.so.1 で落ちていた）。 SERVERNAME は zsh 非対話・zsh ログイン・bash ログイン・bash 対話の 4 形態で dlsta を返す。 版管理の識別は ~/.gitconfig に takuya3h / daky.o7600@gmail.com が既設定で、local は空であった。
+- `G2` pass — ed25519 の鍵を合言葉なしで作り、指紋 SHA256:5jUsv9rrpScleVa1jvO008WDPpg7LzQq0G8qSZjgKO4 を得た。 scripts/sync/hub_keys/dlsta.pub は 先頭 ssh- = 1 / 秘密鍵の書き出し = 0 件 / 行数 = 1 で、 同じ検査を実物の秘密鍵の書き出し（囮）へ当てると 0 / 2 件 / 7 となり検査に掛かった。 配布物の中に syncthing という名前が 3 件（1709 / 175 / 27045912 バイト）あり、大きさで実行ファイルを 特定した。配布物と配置物の sha256 はともに中心の e8a08fdd…b96c4 と一致。 識別子 BRPEYOX-MJ7HMGV-RR2XAUW-CVFVSED-DEMAG5M-EMQNVR6-77XWXPL-ZS26PAI を 64 bytes / 1 行で公開した。 /proc/net/tcp の復号で 22000 も 8384 も一致 0 件、/proc/PID/exe で syncthing / m2-sync / keeper とも 0 件。
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — 現状の表が「版管理の識別: 未設定」と断定しているが、実測では ~/.gitconfig に user.name=takuya3h / user.email=daky.o7600@gmail.com が設定済みであった（local のみ空）。Task 2 Step 4 の指示どおり 「他台と同じ値を使う」を実行すると、既に効いている値の上に不要な設定を重ねることになった。
+- `asserted_without_measuring` — Task 2 Step 2 が「論理名は dlsta である（版管理の scripts/sync/hosts/ の記載と、住所の対応による）」と 断定するが、本ホストは容器であり内側から見える住所は 172.17.0.12（gateway 172.17.0.1）のみである。 hosts の dlsta は 192.168.196.54 で、指示どおり住所で確かめようとすると外部接続（禁止 3）以外に手段が無い。
+- `asserted_without_measuring` — 0 節が git checkout -b feat/dlsta-join-foundation origin/phase0 を「手で分岐を切る」として指示するが、 分岐は既に存在し HEAD も origin/phase0 も 29a6116f であった。指示どおり打つと fatal: a branch named 'feat/dlsta-join-foundation' already exists で落ちる。
+- `self_contradiction` — Task 2 の Files 欄は Modify 対象を ~/.zshenv と ~/.profile の 2 つに限るが、同じ Step 2 が使えと指す scripts/sync/setup_host_servername.sh の TARGETS は ~/.zshenv ~/.profile ~/.bashrc の 3 つである。 指示どおりスクリプトを使うと Files 欄に無い ~/.bashrc が変更される。
+- `asserted_without_measuring` — 現状の表が ~/.ssh/ の中身を authorized_keys・config・config.d・id_ed25519_github・known_hosts の 5 件と列挙するが、実測では id_ed25519_github.pub も在り 6 件であった。 「再測定は不要」と添えられていたため、そのまま信じると公開鍵の既存有無の判断を誤りうる。
+
+### 逸脱
+
+- `judgement` — 手順の順序を変えた。L1+L2 の make task-validate と L3 の make task-preflight は .venv/bin/python を 使うため、開始時（.venv 不在）には exit 2 / Error 127 で起動しなかった。Task 1 で環境を作った後に 実行した。SPEC 0 節が「.venv が無いため取り込みの仕組みは使えない。Task 1 が済めば使えるようになる」と 明記しているため契約に沿う。
+- `spec_defect` — SPEC 0 節の git checkout -b feat/dlsta-join-foundation origin/phase0 を実行しなかった。 分岐は既に存在し、HEAD も origin/phase0 も 29a6116f で ahead 0 / behind 0 であったため。
+- `judgement` — 版管理の識別を新規設定しなかった。~/.gitconfig（global）に既設定で、値は版管理の履歴の作者と一致する。 SPEC の「推測で設定しない」に従い、既存値と出所（git config --show-origin）のみを記録した。
+- `environment` — Task 2 の Files 欄にない ~/.bashrc も変更された。指示された scripts/sync/setup_host_servername.sh の TARGETS が ~/.zshenv ~/.profile ~/.bashrc の 3 つであるため。覆う範囲が広がる方向なのでそのまま使った。
+- `environment` — .sync-pause を置かなかった。~/bin/ も ~/claude-sync/ も存在せず、crontab も無く、/proc/PID/exe による m2-sync / keeper / syncthing の計数が 0 件（陽性対照 zsh = 4 件）であり、止める対象が無いため。 SPEC の「常駐処理は動いていない。抑止は要らない。その旨を記録する」に従った。
+- `judgement` — 論理名 dlsta の根拠を住所ではなく契約の記載（task_id、SPEC の実行ホスト宣言、配置先ファイル名）に取った。 容器の内側から見える住所は 172.17.0.12 のみで、scripts/sync/hosts/ の 192.168.196.54 と照合できないため。
+- `environment` — libgl1 の導入は利用者が実行した（sudo がパスワードを要求するため）。一度目の完了申告の時点では find / ldconfig -p / dpkg -l / apt の history.log の 4 系統すべてが未導入を示したため、申告ではなく 実測を正とした。二度目に libgl1 1.7.0-1build1 と apt 記録 2026-09-20 15:58:16 を確認した。
+- `judgement` — 試験の「変更前」を HEAD（29a6116f）の worktree を --detach で切って測った。開始時に .venv が無く 直接測れなかったため。測定後に git worktree remove で撤去し、分岐数は 2 のまま変わっていない。
+- `judgement` — 禁止 5「生成物を再生成する」の読みが一つに定まらなかったため、conventions#issuer_cautions 14 に従い 読みの候補を列挙して利用者に諮った。手順書は make taskindex と make inbox を要求し make taskindex-check は再生成なしでは非零になる一方、SPEC の禁止 5 と Task 5 Step 3 は 再生成しないと明記している。また make forbidden-check は投影と集約を明示的に検査から除外している。 利用者の判断により「禁止 5 が指すのは runindex/ 等の指数であり、投影と集約は対象外」の読みを採り、 tasks/inbox.md と context/auto/ の 4 件を再生成したまま送出した。runindex/ は無変更である。
+
+### 申し送り
+
+- P9 spec_lint の host_mismatch は本ホストでは必ず該当する。tools/check_spec.py:321 が socket.gethostname() と宣言値を比べるが、dlsta は容器であり gethostname() は 4f3861ae8d3b を返す。 規則は論理名（SERVERNAME）を見ていない。tasks/inbox.md:121/190/302/342 と context/auto/followups.md:49/139/362/496 に同じ原因が既出であり、本ホストで新たに一例が加わった。
+- scripts/setup_env.sh:45 の nvcc 検査は prebuilt wheel を使う経路に対して不要な要求をしている。 同スクリプトの手順 5 は causal-conv1d と mamba-ssm を GitHub release の .whl で導入しており ソースビルドを行わない。本ホスト（nvcc 12.9）では SKIP_CUDA_CHECK=1 が常に要る。 検査を「ソースビルドを選んだときだけ」に絞るか、既定を prebuilt に合わせるかの判断が要る。
+- 同期処理の告知の既定値（公開の探索網・公開中継）を無効化していない。本契約は起動しないため 対象外だが、env-facts.md が「起動前に無効にする」と定めているため、起動を行う後続の契約で必要になる。 自動更新の既定 12 時間を 0 にする処置も同様に未実施である。
+- 中心 philip への鍵と識別子の登録、中継（ssh -N -L 22001:127.0.0.1:22000）の目印の設置、 keeper.sh と m2-sync.sh の配置、実行権の復帰による起動、疎通の確認はいずれも本契約の範囲外であり 後続の契約で行う。本契約が用意したのは指紋・識別子・実行ファイル・設定までである。
+- 禁止語の検査は完全一致であるため、該当を報告する文が該当語を引用すると報告そのものが落ちる。 本契約では audit.md の該当を RESULT.md で説明した際に実際に起きた（RESULT.md が exit 1 になった）。 conventions#proposal_gate の引用規約には除外の定めが無い。検査器に引用の形（鉤括弧や码字の中）を 除外させるか、報告では語を書かず位置で指す運用を明文化するかの判断が要る（tools/check_proposal.py）。
+- 禁止語の完全一致が技術用語の部分文字列を拾う。集約 tasks/inbox.md は該当 8 件を持つが、 変更前（origin/phase0）にも同じ 8 件があり、いずれも 2026-08 の他契約の行で本契約の追加分は 0 件である。 内訳には、余白を表す語の中や、再現性が完全であることを表す語の中に禁止語が現れる例が含まれる。 いずれも通常の技術記述である。例を語のまま引けばこの記録自身が検査に落ちるため、語は示さない。 集約は手で編集しない規則であり過去の記録も書き換えないため、本契約では直していない。 語境界を見るか、集約と投影を検査の対象から外すかの判断が要る（tools/check_proposal.py）。
+
+### 断定できなかったこと
+
+- 本ホストの外向きの住所が 192.168.196.54 であることは確認できていない。容器の内側から見えるのは 172.17.0.12（gateway 172.17.0.1）のみで、外部へ接続して確かめるのは禁止 3 に当たるため測っていない。 論理名 dlsta は住所ではなく契約の記載（task_id、実行ホスト宣言、配置先ファイル名）を根拠に採用した。
+- inputs.data（dataset: egosurgery_phase_v1、split_files: data/splits/ego_val.txt）は雛形の必須項目であり 本契約では参照していない。SPEC の申し送りの指示どおり、参照しなかったことを記録する。
 
 ## T-2026-09-19-symmetry-gate
 
@@ -170,39 +213,4 @@
 - 締切の日付は M §5.4 の記載であり公式未確認。利用者の決定により外部参照していない
 - 他ホストの GPU 台数。利用者の決定により接続せず、本ホストの A6000 2 枚だけを前提にした
 - 投影（context/auto/* と tasks/inbox.md）への反映。契約 §4-3 が再生成を禁じるため未確認
-
-## T-2026-09-17-philip-accept-efros
-
-状態 `pass` / ホスト `philip` / 起票 `179` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 初回は fail。受け入れ一覧が実行基盤に拒否された（グローバル設定の permissions.deny に Read(~/.ssh/**)）。on_fail: ask に従い停止して判断を仰ぎ、 利用者が設定を変更した後に再測定。受け入れ一覧 5 件 / 権限 600 / 1127 B / sha256 35ad4ef5…b457f4 / 指紋 5 件。同期処理は相手の実体 5 件・共有フォルダ 2 件（素朴な .//device は 17。直下 5 + folder 配下 10 + defaults 配下 2 で、 ひな型を含めていない）。控え 2 件を repo 外へ取り sha256 一致 True。 設定を変える手段は局所 REST 127.0.0.1:8384 と確定（直接編集は稼働中の処理に 上書きされる。起動 22:29:18 に対し config.xml の mtime が 22:41:33）。
-- `G2` pass — 提出物は efros.pub 95 B / 1 行、efros.txt 64 B / 1 行でともに追跡済み。 指紋 SHA256:Ney1waioF2sdDnbxOZyo/ff1Y6yz8x8kvnLSJGM0qF0 が前契約 T-2026-09-17-efros-rejoin-foundation の RESULT.md 行 51 と一致。識別子も 行 54 と一致。三検査は 1 / 0 / 1 で、囮に対しては 0 / 2 / 4 と三つとも逆向きに 落ちた。未登録の確認は鍵側 0（陽性対照 lecun は 1）、識別子側 0（陽性対照 philip は直下 device と両フォルダで 1、陰性対照 0）。
-- `G3` pass — 受け入れ一覧は 5 → 6 件、権限 600 のまま、大きさ 1127 + 95 = 1222 B。 開始時の控えとの集合差で消えた行 0 件、増えた行 1 件でその指紋が Task 2 の値と 一致。解析できた件数 6 = 空行を除いた件数 6。同期処理は相手の実体 6 件・ 共有フォルダ 2 件、フォルダの定義（id/label/path/type）の一致 True、defaults 節の 要約値も 8d869daf8e337a16 のまま、config.xml の権限 600 のまま。 restart-required は false で PID は 122452 / 122530 と Task 1 から不変。 connections に efros の項目が出現。connected=True は 4 件のまま。
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — 前提の手順に make task-start を置いたが、配布台帳の当該行は本文 0 文字・添付 なし・sha256 列も空だった。契約を台帳へ載せたことを確かめていない。指示どおり 実行すると「要約値の列が空です: T-2026-09-17-philip-accept-efros。照合できない 本文は取り込みません」で make が exit 4 になり、作った分岐が巻き戻されて Phase A へ進めない。分岐を手で作る逸脱が必要になった。
-- `self_contradiction` — SPEC:30 の見出しが「既存の実測（再測定は不要）」として受け入れ一覧 5 件・権限 600 などを与えているのに、Task 1 Step 1（SPEC:104-109）と完了判定 A が同じ項目 （場所・行数・要約値・権限・更新時刻・指紋の一覧）の測定を必須にしている。 指示どおり実行すると結局すべて測ることになり、「再測定は不要」の宣言が働かない。 実測はすべて表の値と一致したため害は出なかったが、どちらに従うかが決まらない。
-
-### 逸脱
-
-- `judgement` — make task-start が配布台帳の欠落で exit 4（要約値の列が空です）。巻き戻しは 成功した。契約は手元にあり make task-validate が exit 0 だったため、同じ起点 origin/phase0 で分岐 feat/philip-accept-efros を手で作った。台帳からの取り込みは 行っていない。
-- `environment` — task_start.sh は作業ツリーが汚れていると分岐を作らない。開始前から在る未追跡 8 件（experiments/transfer/pd_refin_* 4 件の計 848MB を含む）を repo 外の ~/task-hold/T-2026-09-17-philip-accept-efros/ へ mv で退避した。削除していない。 報告と commit の後に戻す。
-- `environment` — グローバル設定 ~/.claude/settings.json の permissions.deny に Read(~/.ssh/**) が あり、Task 1 Step 1 が実行できなかった。Gate G1 は on_fail: ask のため停止して 判断を仰いだ。Edit/Write は deny に無く追記自体は通る見込みだったが、読めない 状態では既存の無傷を確かめられないため追記しなかった。利用者が設定を変更した 後に続行した。
-- `environment` — ss が本ホストに存在せず（command not found）、待ち受けを /proc/net/tcp と /proc/net/tcp6 の LISTEN 行から数えた。ss | grep -c が返した 0 は件数ではなく 命令の失敗であり、件数として扱っていない。
-- `judgement` — 作業中に ~/bin/m2-sync.sh の mtime が 2026-09-17 04:56:16 へ変わった。keeper の 自己更新であり、中身は origin/phase0 の scripts/sync/m2-sync.sh と sha256 が 完全一致（bcf46ba9031a45cb…）。実行者による変更ではない。
-- `judgement` — 退避物を戻す mv が入れ子を一段作った。退避時は未追跡だった experiments/** と 契約ディレクトリが、origin/phase0 起点の分岐では追跡下に既に存在したため、 mv src dest が dest の中へ入った。比較したところ入れ子のみに在るのは checkpoints/ と predictions/ の計 866 MB で、重なる 2 件は sha256 が完全一致。 前者を親へ移し、一致を再確認してから重複の入れ子 6 つだけを削除した。 失われたデータは無い（866 MB が残存。.gitignore:24 により追跡外）。
-
-### 申し送り
-
-- efros から中心への疎通は efros 側の契約で測る。中心は住所 dynamic のため相手へ 繋ぎに行かず、禁止 5 により他ホストへ接続できないため、本契約では原理的に測れない。 efros 側が起動すれば connections の efros の項目が connected=True へ変わる。
-- 配布台帳の T-2026-09-17-philip-accept-efros の行は本文も添付も sha256 列も空である。 起票者が本文を載せ直さない限り make task-notion は今後も拒否する。
-- 稼働中の syncthing の設定は REST 127.0.0.1:8384 でのみ変えられる。次の契約で 相手を足す・外すときは POST /rest/config/devices と PATCH /rest/config/folders/<id> （devices だけを送る）を使い、GET /rest/system/connections に項目が出ることで 反映を確かめる。config.xml の直接編集は稼働中の処理に上書きされる。
-
-### 断定できなかったこと
-
-- efros から中心へ ssh で入れるか。受け入れ一覧に指紋が在ることまでは示したが、 実際の接続は中心からは測れない（禁止 5、および efros 側が未起動）。
-- efros と中心が同期で繋がるか。connections に項目は出たが connected=False であり、 efros 側の起動待ちである。
 
