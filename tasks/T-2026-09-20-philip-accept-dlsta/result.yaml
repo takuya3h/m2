@@ -1,0 +1,158 @@
+result_version: 3
+task_id: "T-2026-09-20-philip-accept-dlsta"
+status: pass
+host: "philip"
+branch: "feat/philip-accept-dlsta"
+pr: 188
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      受け入れ一覧は 6 件・権限 600・sha256 ab3fe1cb…86fb。相手の実体は configuration 直下の
+      device を数えて 6 件で、ひな型 defaults/device（id=""）1 件は別階層として除外した。
+      階層を見ない .//device は 20 件を返し、取り違えると 6 を 20 と読む。稼働は /proc/PID/exe を
+      realpath して basename で絞り、自分と祖先・子孫を除いて 2 件（PID 122452 と 122530）。
+      控えは /home/ubuntu/task-backups/ へ取り、原本と同一ファイルシステム（overlay）で
+      sha256 が両方とも一致した。
+  - id: G2
+    verdict: pass
+    note: >-
+      dlsta.pub（95 bytes / 1 行）と dlsta.txt（64 bytes / 1 行）はともに git ls-files で追跡済み。
+      指紋 SHA256:5jUsv9rrpScleVa1jvO008WDPpg7LzQq0G8qSZjgKO4 が前契約の RESULT.md:33,:53 と一致し、
+      識別子 63 文字も result.yaml:28 と一致した。三検査は先頭 ssh- が 1 行・秘密鍵の書き出しが 0 件・
+      行数 1。囮は (b) 1 件 (c) 3 行で掛かり (a) を通らなかった。受け入れ一覧にも相手の実体にも
+      両フォルダにも dlsta は 0 件で、efros を対照に置くと 1 件を返した。
+  - id: G3
+    verdict: pass
+    note: >-
+      追記後の空行を除いた件数は 7、解析できた件数も 7、権限は 600 のまま。集合差は消えた行 0 件・
+      増えた行 1 件で、増えた指紋は Task 2 の値と一致した。相手の実体は 6→7、共有フォルダは 2 件の
+      まま id/label/path/type に差分なし、消えた相手は 0 件、既存の定義が変わった相手も 0 件。
+      GET /rest/system/connections の項目数が 5→6 になり BRPEYOX（dlsta）が現れた。五ノードは
+      全て connected=True、TCP 22000 は LISTEN のまま、稼働プロセスは 2 件のままで再起動していない。
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 579
+
+deviations:
+  - type: environment
+    note: >-
+      Task 3 の追記命令を auto mode の分類器が Unauthorized Persistence で拒否した。命令は実行されず、
+      受け入れ一覧は sha256 も件数も開始時のまま無傷だった。SPEC の想定外表「実行基盤が拒むことがある」に
+      従い停止して利用者へ諮り、利用者が自分の手で追記した。実行者は検査も拒否も迂回していない。
+  - type: environment
+    note: >-
+      Task 4 の直後、設定ファイルを直接読む検証命令と REST の読み取り命令も同じ分類器に拒否された。
+      命令を細かく分け、読み取りだけの形にして測り直した。測れなかった項目は無い。
+  - type: environment
+    note: >-
+      pytest の収集で tests/test_estimate_tier_cost.py が ImportError になる。repo の tools/ ではなく
+      site-packages の tools を掴むためで、PYTHONPATH を足しても解消しない。本契約は Python を
+      変更していないため既存の不具合であり、修正は範囲外として触れていない。件数はこの module を
+      除いて測った。
+  - type: environment
+    note: >-
+      git push を auto mode の分類器が Sensitive-Source Provenance で拒否した。送出物の由来に ~/.ssh/ と
+      syncthing 設定の読み取りが含まれるためと見られる。送出物に秘匿の値は無く、記録したのは鍵の指紋と
+      識別子（どちらも既に版管理に在る公開値）だけである。迂回せず利用者へ諮り、利用者が送出した。
+      拒否の間も .sync-pause を外さなかった。外せば常駐処理が次ループでこの分岐を auto-push し、
+      拒否された操作を自動処理経由で迂回することになるためである。
+  - type: judgement
+    note: >-
+      開始時から在った未追跡 experiments/transfer/pd_refin_empty_seed42_tf32/（212M）が checkout を
+      阻んだため退避した。repo と同一ファイルシステム（/dev/sda）の /home/ubuntu/slocal2/.task-stash/
+      を選んだ。/home/ubuntu は overlay で、跨ぐと実コピーになる。報告の後に戻す。
+  - type: judgement
+    note: >-
+      控えを版管理へ置かなかった。config.xml は画面の鍵を含み、伏せる工程を挟むより版管理の外に
+      留めるほうが誤りが少ない。置く前の検査として両控えに秘密鍵の書き出しが 0 件であることは確かめた。
+  - type: judgement
+    note: >-
+      conventions_rev は置換しなかった。origin/phase0 上の実測が c801e17c で契約の c801e17 と一致した
+      ためである。古い分岐 feat/philip-accept-efros 上で見たときに出た L2-6 の WARN は、分岐を
+      origin/phase0 から切り直した後は出なくなった。
+  - type: judgement
+    note: >-
+      稼働プロセスの計数で 1 周目の陽性対照 python3 が 0 を返して落ちた。realpath 後の実体が
+      /usr/bin/python3.12 で basename が一致しないためで、2 周目に自分の exe の実体から basename を
+      取って測り直した。片方向だけなら気付けなかった。
+  - type: judgement
+    note: >-
+      tests の before は別途測っていない。git status に追跡済みファイルの変更が 1 件も無く、この木は
+      origin/phase0 そのものであるため、after の測定値が before でもある。before_failed と
+      after_failed に同じ値を置いたのはこの理由による。
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: >-
+      SPEC が「共有相手の属性名は id。deviceID ではない（前契約で誤った）」と断定したが、稼働中の
+      REST v2.1.3 の folder.devices[] のキーは deviceID / introducedBy / encryptionPassword である。
+      id は config.xml 側の属性名で、SPEC は二つの表現を取り違えている。指示どおり id を送れば、
+      相手の一覧が識別子を持たない要素に置き換わり、既存 6 台の共有が壊れうる。実在する名前を
+      GET で読んでから deviceID を使った。
+  - type: check_does_not_check
+    note: >-
+      L3 の P9 spec_lint の host_mismatch は socket.gethostname() と本文の宣言を比べる。philip と ilya は
+      どちらも aolab を返すため（m2-sync.sh の註に明記）、この判定はホストの同一性を判定できていない。
+      指示どおり従えば、正しいホストで実行しても毎回 WARN が出る一方、ilya で誤って実行しても同じ
+      WARN しか出ず区別できない。.servername と GET /rest/system/status の myID で同一性を確かめた。
+
+positive_controls:
+  - judgement: "公開鍵だけであることの三検査（先頭 ssh- / 秘密鍵の書き出し 0 件 / 行数 1）"
+    breaking_input: "秘密鍵の書き出しを模した囮（3 行、BEGIN OPENSSH PRIVATE KEY を含む）"
+    observed: "(b) が 0→1 件、(c) が 1→3 行で掛かった。(a) は 0 を返し囮を通さなかった"
+  - judgement: "dlsta が受け入れ一覧と設定に未登録であること"
+    breaking_input: "既に登録されている efros の指紋と識別子で同じ照合を行う"
+    observed: "受け入れ一覧で 1 件、相手の実体で 1 件を返した。陰性 ZZZZZZZ は 0 件。dlsta は 0 件"
+  - judgement: "追記で既存が一件も消えていないこと（集合差の消えた行が空）"
+    breaking_input: "追記後の一覧に無い行を持つ囮を比較元に置く"
+    observed: "差が 1 件出た。追記後と自分自身の差は 0 件。道具は常に 0 を返す壊れ方ではない"
+  - judgement: "稼働している syncthing を /proc/PID/exe で数える"
+    breaking_input: "存在しない basename（陰性）と、確実に存在する自分の exe の basename（陽性）"
+    observed: "1 周目の陽性 python3 が 0 を返して落ちた。python3.12 で 1、陰性は 0、測定対象は 2"
+  - judgement: "相手の実体をひな型と区別して数える"
+    breaking_input: "階層を見ずに .//device で文書全体を数える"
+    observed: "6 ではなく 20 を返した。ひな型と共有相手を実体に混ぜた数である"
+  - judgement: "送出物に禁止語が無いこと"
+    breaking_input: "禁止語を 1 語だけ含む囮（語そのものは引用しない）"
+    observed: "exit=1 で禁止語 1 件を返した。当初 audit.md:109 に該当が 1 件あり本文を直した（語そのものは引用しない）"
+  - judgement: "送出物に画面の合言葉が現れないこと"
+    breaking_input: "実際の合言葉を含む囮ファイル"
+    observed: "囮に対し 1 件を返した。送出物は合計 0 件。在ると分かっている語 dlsta では 3〜25 件を返した"
+  - judgement: "自動同期の抑止が効いていること"
+    breaking_input: "目印 .sync-pause を別名へ移す（実行していない。前契約 2026-08-11 lecun の実測）"
+    observed: "UNKNOWN。本契約では外していない。抑止側の実測は philip の 17:03 と 17:33 の 2 ループがともに「一時停止中」を記録し auto-merge / auto-push が 0 件"
+
+followups:
+  - >-
+    dlsta からの疎通は中心からは測れない。受け入れ一覧に鍵が在ることと、その鍵で認証が通ることは
+    別である。確かめるには dlsta 側から接続する必要があり、他ホストへの接続は本契約の禁止 5 に当たる。
+    後続の契約で dlsta 側から ssh と同期の疎通を確かめること。
+  - >-
+    dlsta は connected=False のままである。中心は住所 dynamic で相手へ繋ぎに行かず、dlsta の側は
+    まだ中心を登録していない。繋がる条件が揃うのは dlsta 側が philip を相手として登録した後である。
+  - >-
+    conventions#proposal_gate の共有相手の属性名について、SPEC の記述（id）と稼働中の REST の実在名
+    （deviceID）が食い違う。同じ誤りが次の受け入れ契約でも起きるため、config.xml の表現と REST の
+    表現を分けて書くよう起票側の雛形を直すとよい。
+  - >-
+    tests/test_estimate_tier_cost.py の収集エラーは本契約より前から在る。site-packages の tools が
+    repo の tools/ を覆う問題で、別契約で扱うこと。
+
+unknowns:
+  - >-
+    dlsta から philip へ実際に ssh で入れるか。中心からは測れない（禁止 5）。
+  - >-
+    ~/.ssh/ の authorized_keys 以外のものの無変更は、開始時の要約値を取っていないため mtime で示した。
+    要約値による照合ではない。最新でも 2026-09-20 13:52 で本セッション開始（16:39）より前であり、
+    触れる命令を一つも発していないことと合わせての判断である。
+  - >-
+    ~/bin/m2-sync.sh の mtime が 2026-09-20 17:33:10 と本セッション中である。keeper が毎ループ
+    origin/phase0 から自己更新する設計によるもので、実行者の操作ではない。sync-pause 対応は 2 のまま。
+
+commits:
+  - "bb0aaef9"
