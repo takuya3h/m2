@@ -3,7 +3,7 @@ task_id: "T-2026-09-20-dlsta-syncthing-join"
 status: pass
 host: "dlsta"
 branch: "feat/dlsta-syncthing-join"
-pr: null
+pr: 189
 merged: false
 
 gates:
@@ -92,6 +92,11 @@ deviations:
       ~/.ssh/known_hosts が 1 行から 2 行へ変わった。実行者の操作ではなく、keeper.sh:35 の
       -o StrictHostKeyChecking=accept-new を付けた中継の ssh が 21:09:08 に中心の鍵を追記したものである。
       ~/.ssh/ の他のものは更新時刻がいずれも本契約の開始より前のままであった。
+  - type: environment
+    note: >-
+      PR の起票を実行基盤の分類器が一度拒否した（Excess Sensitive Detail）。迂回せず、外向きの本文から
+      住所・要約値・内部の経路といった詳細を落とし、repo 内の RESULT.md と audit.md へ誘導する
+      短い本文へ書き直して通した。版管理に残る報告そのものの内容は一切削っていない。
 
 issuer_defects:
   - type: check_does_not_check
@@ -208,4 +213,5 @@ unknowns:
     inputs.data（dataset: egosurgery_phase_v1、split_files: data/splits/ego_val.txt）は雛形の必須項目であり
     本契約は参照していない。SPEC の申し送りの指示どおり、参照しなかったことを記録する。
 
-commits: []
+commits:
+  - "cb2f6617"

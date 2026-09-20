@@ -51,7 +51,7 @@
 
 ## T-2026-09-20-dlsta-syncthing-join
 
-状態 `pass` / ホスト `dlsta` / 起票 `なし` / 様式 `v3`
+状態 `pass` / ホスト `dlsta` / 起票 `189` / 様式 `v3`
 
 ### ゲート
 
@@ -78,6 +78,7 @@
 - `judgement` — 退避は行っていない。0 節は「開前から在る未追跡は退避してよい」と述べるが、開始時の作業ツリーは 本契約のディレクトリ 1 件のみで、分岐 feat/dlsta-syncthing-join も既に在ったため切り直しが不要であった。 したがって Task 6 の「退避したものを戻す」は対象 0 件であり、入れ子も生じていない。
 - `judgement` — conventions_rev を置換しなかった。context/conventions.md の最終変更 commit を実測すると c801e17c で、 契約の記載 c801e17 はその接頭辞であり一致するためである。値を書き換えていない。
 - `environment` — ~/.ssh/known_hosts が 1 行から 2 行へ変わった。実行者の操作ではなく、keeper.sh:35 の -o StrictHostKeyChecking=accept-new を付けた中継の ssh が 21:09:08 に中心の鍵を追記したものである。 ~/.ssh/ の他のものは更新時刻がいずれも本契約の開始より前のままであった。
+- `environment` — PR の起票を実行基盤の分類器が一度拒否した（Excess Sensitive Detail）。迂回せず、外向きの本文から 住所・要約値・内部の経路といった詳細を落とし、repo 内の RESULT.md と audit.md へ誘導する 短い本文へ書き直して通した。版管理に残る報告そのものの内容は一切削っていない。
 
 ### 申し送り
 

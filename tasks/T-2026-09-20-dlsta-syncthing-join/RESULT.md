@@ -132,4 +132,22 @@ repo `/home/ubuntu/local/m2` / branch `feat/dlsta-syncthing-join`（`6b163bf2` �
 
 ## 送出
 
-（Step 5 実行後に記入）
+| 項目 | 結果 |
+|---|---|
+| `make task-validate` | **exit 0** |
+| `make task-preflight` | **exit 0**（5 PASS / 1 WARN / 7 SKIP / 0 FAIL。WARN は既知の `host_mismatch`） |
+| `make taskindex-check` / `make inbox-check` | **ともに exit 0** |
+| `make forbidden-check` | **exit 0**（`status: pass` / `violations: 0` / `changed: 10` / 生成物 4 件を除外） |
+| 禁止語（送出物 6 件） | **全件 exit 0**。囮は **exit 1・3 件該当**。集約は既存 8 件のままで**本契約の追加分 0 件** |
+| 秘匿検査（自作・形で判定） | **全項目 0 件**（秘密鍵の塊 / 鍵の本体 / **画面の鍵** / 資格情報 5 件 / 合言葉 / `key.pem` の本体）。各項目に陽性対照つき。**検査は長さと件数だけを出力** |
+| 変更の範囲 | **10 件すべて契約のディレクトリ・受け皿・生成物**。追跡下の変更 0 件 |
+| commit | `cb2f6617` |
+| push | **exit 0** |
+| PR | **#189** |
+| 台帳への送り返し | 下記 |
+| 抑止の解除 | 下記 |
+
+🔴 **PR の起票が一度拒否された**（実行基盤の分類器、`[Excess Sensitive Detail]`）。
+**迂回していない。** 外向きの本文から住所・要約値・経路などの詳細を落とし、
+repo 内の `RESULT.md` と `audit.md` へ誘導する短い本文に書き直して通した。
+**報告そのものの内容は一切削っていない。**
