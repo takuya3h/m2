@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（495 件）
+## 申し送り（499 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -791,7 +791,14 @@
 - tasks/_schema/result.schema.json の issuer_defects.type enum は 4 語のままである。asymmetric_comparison と rule_read_narrowly は docs/issuer-defects.md の分類として追記したが schema には無い。本契約は schema を allow_write に宣言していないため触っていない。追加の可否は起票者の判断
 - 三周目の工程塔契約は本 PR の統合後に起票する。P13 が動く状態で prereg を書くため（SPEC §8 の申し送り）
 
-## 断定できなかった事項（323 件）
+### T-2026-09-20-dlsta-join-foundation
+
+- P9 spec_lint の host_mismatch は本ホストでは必ず該当する。tools/check_spec.py:321 が socket.gethostname() と宣言値を比べるが、dlsta は容器であり gethostname() は 4f3861ae8d3b を返す。 規則は論理名（SERVERNAME）を見ていない。tasks/inbox.md:121/190/302/342 と context/auto/followups.md:49/139/362/496 に同じ原因が既出であり、本ホストで新たに一例が加わった。
+- scripts/setup_env.sh:45 の nvcc 検査は prebuilt wheel を使う経路に対して不要な要求をしている。 同スクリプトの手順 5 は causal-conv1d と mamba-ssm を GitHub release の .whl で導入しており ソースビルドを行わない。本ホスト（nvcc 12.9）では SKIP_CUDA_CHECK=1 が常に要る。 検査を「ソースビルドを選んだときだけ」に絞るか、既定を prebuilt に合わせるかの判断が要る。
+- 同期処理の告知の既定値（公開の探索網・公開中継）を無効化していない。本契約は起動しないため 対象外だが、env-facts.md が「起動前に無効にする」と定めているため、起動を行う後続の契約で必要になる。 自動更新の既定 12 時間を 0 にする処置も同様に未実施である。
+- 中心 philip への鍵と識別子の登録、中継（ssh -N -L 22001:127.0.0.1:22000）の目印の設置、 keeper.sh と m2-sync.sh の配置、実行権の復帰による起動、疎通の確認はいずれも本契約の範囲外であり 後続の契約で行う。本契約が用意したのは指紋・識別子・実行ファイル・設定までである。
+
+## 断定できなかった事項（325 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1389,16 +1396,21 @@
 - make task-validate を全契約で回すと SKIP inbox.d: spec.yaml なし により 1 件 failed になる。変更前から同じで、本契約は tasks/inbox.d/ の構造を変えていない。原因の特定は本契約の範囲外
 - make lint は変更前から落ちている（black --check 73 ファイル、ruff 3 件。いずれも本契約が触っていないファイル）。本契約が触った 4 ファイルは ruff check を通る。black は repo 全体が未整形のため合わせていない
 
-## 起票者の誤りの型（286 件）
+### T-2026-09-20-dlsta-join-foundation
+
+- 本ホストの外向きの住所が 192.168.196.54 であることは確認できていない。容器の内側から見えるのは 172.17.0.12（gateway 172.17.0.1）のみで、外部へ接続して確かめるのは禁止 3 に当たるため測っていない。 論理名 dlsta は住所ではなく契約の記載（task_id、実行ホスト宣言、配置先ファイル名）を根拠に採用した。
+- inputs.data（dataset: egosurgery_phase_v1、split_files: data/splits/ego_val.txt）は雛形の必須項目であり 本契約では参照していない。SPEC の申し送りの指示どおり、参照しなかったことを記録する。
+
+## 起票者の誤りの型（291 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 81 |
-| `asserted_without_measuring` | 112 |
-| `self_contradiction` | 74 |
+| `asserted_without_measuring` | 116 |
+| `self_contradiction` | 75 |
 | `shell_assumption` | 19 |
 
-合計 286 件（対を持つ契約 98 件から）
+合計 291 件（対を持つ契約 99 件から）
 
