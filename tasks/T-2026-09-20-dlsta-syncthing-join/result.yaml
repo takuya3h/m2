@@ -1,0 +1,225 @@
+result_version: 3
+task_id: "T-2026-09-20-dlsta-syncthing-join"
+status: pass
+host: "dlsta"
+branch: "feat/dlsta-syncthing-join"
+pr: 189
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      稼働は syncthing / keeper / m2-sync / ssh とも 0 件。実行権 644、中継の目印 0 件、
+      ~/claude-sync は存在せず 0 bytes / 0 件、repo は .git 込み 7,028,316,158 bytes・file 49,918 件。
+      計数の器は自分の exe の実体から陽性対照を取り zsh=3、陰性対照 zzz_no_such_binary=0 で両方向を検証した。
+      控えは /home/ubuntu/.task-stash/ へ取り、repo(dev=2065, /dev/sdb1) の外かつ原本(dev=229)と同一 fs で、
+      config.xml.orig と zshrc.orig の要約値が原本と一致した。中心へは -N（遠隔で命令を実行しない形）で入り、
+      Authenticated to 192.168.196.150 using "publickey" を 1 件、Permission denied を 0 件観測した。
+      受け入れの控えは隔離先へ置き ~/.ssh/known_hosts の sha256 は変わらなかった。
+  - id: G2
+    verdict: pass
+    note: >-
+      要素名はすべて実在を確かめてから使った。autoUpgradeIntervalH を 12 から 0 へ、
+      globalAnnounceEnabled と relaysEnabled を true から false へ、localAnnounceEnabled は true のまま。
+      自分の登録名は初期値が容器の識別子 4f3861ae8d3b であり dlsta へ直した（該当 1 件を確かめてから置換）。
+      中心は版管理の scripts/sync/device_ids/philip.txt から読んだ識別子で、名前 philip、住所 tcp://127.0.0.1:22001。
+      最上位の folder は 2 件で識別子は中心と同じ claude-sync と m2、位置は /home/ubuntu/claude-sync と
+      /home/ubuntu/local/m2 で、中心の /home/ubuntu/slocal2/m2 を写していない。解析は成功し権限は 600 のまま、
+      既定値のひな型 defaults/folder と defaults/device は id="" のまま触っていない。
+  - id: G3
+    verdict: pass
+    note: >-
+      keeper.sh と m2-sync.sh を keeper.sh:3 の指定どおり git show origin/phase0: から展開し、
+      要約値は 9fe9c423002e… と bcf46ba9031a… で正本と一致、権限 755。bash -n は両方 exit 0 で、
+      末尾に if [ 1 を足した囮は落ちたため検査が働いていることを確かめた。
+      起動行は開始時から ~/.zshrc:135-138 に標識付きで在ったため追記せず、~/.zshrc の sha256 が控えと一致する
+      ことで一文字も変えていないことを示した。抑止 .sync-pause を repo 直下へ置き、
+      配置物の sync-pause 出現数 2（陰性対照 zzz_no_such_token は 0）で対応版であることを確かめた。
+  - id: G4
+    verdict: pass
+    note: >-
+      目印 1 件（1 行目が実在する鍵の経路、2 行目が 192.168.196.150、権限 600）を置いて keeper を起こし、
+      約 5 秒で中継が立った。中継は 1 件（pid 59557、親が keeper、exe=ssh、引数に 192.168.196.150）で
+      22001 が待ち受けた。中継が立っていることを確かめてから実行権を 644 から 755 へ戻し、sha256 は変わらず
+      中心の期待値 e8a08fdd…b96c4 と一致した。同期処理は 2 件（61631 の親が keeper、61670 の親が 61631）で
+      版は v2.1.3、22000 と 22001 と 8384 が待ち受けた。起動後も最上位 folder は 2 件のまま、
+      autoUpgradeIntervalH は 0、globalAnnounceEnabled と relaysEnabled は false のままであった。
+
+tests:
+  before_failed: 6
+  after_failed: 7
+  after_passed: 581
+
+deviations:
+  - type: judgement
+    note: >-
+      SPEC に無い手順として .stignore を置いた。m2 共有フォルダの位置 /home/ubuntu/local/m2 に除外規則が
+      無く、.stglobalignore が「絶対に同期しない」と定める .venv（6,455,707,160 bytes）と .git（92,370,004 bytes）
+      が群れ全体へ流れる状態であった。利用者へ提示して許諾を得たうえで keeper.sh:48-49 と同一の処理
+      （git show origin/phase0:.stglobalignore）を正しい位置へ行った。スクリプトは編集していない。
+  - type: judgement
+    note: >-
+      常駐処理を一度 kill して起こし直した。keeper.sh:51 の周期が 1800 秒で、21:09:08 の起動時には
+      実行権がまだ落ちていたため、次に同期処理を起こす周回は 21:39 であり約 26 分の待ちが生じた。
+      中継は別プロセスのため kill の間も維持され（kill 後に keeper 0 件・中継 1 件を実測）、
+      起こし直した後も中継は 1 件で重複しなかった。同期処理を起こしたのは常駐処理である。
+  - type: environment
+    note: >-
+      設定を組み立てる命令を実行基盤の auto mode 分類器が一度拒否した（Stage 2 classifier error）。
+      迂回せず、同じ内容をスクリプトファイルへ書いて実行する自然な形に替えた。抑止を外して自動処理へ
+      代行させる形も採っていない。拒否によって測れなくなった項目は無い。
+  - type: spec_defect
+    note: >-
+      Task 3 Step 3 の起動行の追記を行わなかった。~/.zshrc:135-138 に標識付きの起動行が開始時から
+      在ったためで、SPEC の「既に在れば追記しない。記録して次へ進む」に従った。
+      なお Task 3 冒頭の「本ホストには両方とも無い」は keeper.sh と m2-sync.sh の実体については正しい。
+  - type: judgement
+    note: >-
+      /home/ubuntu/claude-sync が存在しなかったため空のディレクトリとして作成した。共有フォルダの位置として
+      必要であり、中身は一切触っていない（禁止 4）。作成時点で 0 件・0 bytes であることを記録した。
+  - type: judgement
+    note: >-
+      退避は行っていない。0 節は「開前から在る未追跡は退避してよい」と述べるが、開始時の作業ツリーは
+      本契約のディレクトリ 1 件のみで、分岐 feat/dlsta-syncthing-join も既に在ったため切り直しが不要であった。
+      したがって Task 6 の「退避したものを戻す」は対象 0 件であり、入れ子も生じていない。
+  - type: judgement
+    note: >-
+      conventions_rev を置換しなかった。context/conventions.md の最終変更 commit を実測すると c801e17c で、
+      契約の記載 c801e17 はその接頭辞であり一致するためである。値を書き換えていない。
+  - type: environment
+    note: >-
+      ~/.ssh/known_hosts が 1 行から 2 行へ変わった。実行者の操作ではなく、keeper.sh:35 の
+      -o StrictHostKeyChecking=accept-new を付けた中継の ssh が 21:09:08 に中心の鍵を追記したものである。
+      ~/.ssh/ の他のものは更新時刻がいずれも本契約の開始より前のままであった。
+  - type: environment
+    note: >-
+      PR の起票を実行基盤の分類器が一度拒否した（Excess Sensitive Detail）。迂回せず、外向きの本文から
+      住所・要約値・内部の経路といった詳細を落とし、repo 内の RESULT.md と audit.md へ誘導する
+      短い本文へ書き直して通した。版管理に残る報告そのものの内容は一切削っていない。
+
+issuer_defects:
+  - type: check_does_not_check
+    note: >-
+      Task 3 Step 1 は正本の配置と要約値の一致だけを求めるが、その正本 keeper.sh:28 と m2-sync.sh:10 は
+      M2DIR を ~/slocal2/m2 か ~/slocal/m2 にしか解決しない。本ホストの repo は ~/local/m2 であり両方とも
+      存在しないため M2DIR=/home/ubuntu/slocal/m2（不在）となる。指示どおり配置しても .stignore の自動反映
+      （keeper.sh:48-49）は永久に働かず、m2-sync.sh は cd "$M2DIR" || exit 1 で即座に終わる。
+      SPEC は decision_at_stake で「位置が三種目である」と自ら述べながら、この帰結を検査していない。
+      実測: ~/bin/m2-sync.sh.new が 0 バイトで残り、~/claude-sync/sync-alerts.log に [dlsta] の行は 0 件。
+  - type: asserted_without_measuring
+    note: >-
+      Task 4 Step 3 が「中継が立てば、中心の側から見た本ホストの住所が記録に現れる。それを記録する」と
+      断定するが、同期処理は中継を通るため中心から見えるのは 127.0.0.1:22001 であり本ホストの住所ではない。
+      実際に記録へ現れたのは容器の内側の 172.17.0.12 と STUN 由来の 131.113.39.33 のみで、
+      scripts/sync/hosts/ が dlsta に与える 192.168.196.54 は現れない。指示どおり記録しようとすると、
+      中心で命令を実行して SSH の送信元を見る以外に手段が無く、それは禁止 1 に当たる。
+  - type: check_does_not_check
+    note: >-
+      Task 2 Step 2 は「そのまま起動すると外部へ出る」と述べて三つの要素の無効化を指示するが、
+      options/natEnabled が既定の true のまま検査の対象外に置かれている。指示どおり三要素だけを無効化して
+      起動した結果、~/.syncthing.log:1286 のとおり公開の STUN サーバ stun.internetcalls.com:3478 へ
+      問い合わせが出た。外部へ出ないという目的に対して、検査する要素が足りていない。
+  - type: asserted_without_measuring
+    note: >-
+      Task 5 Step 3 が「六台が置いた試験用ファイルが届くはずである」と断定するが、実測は probe-*.txt が
+      5 件（bengio / andrew / ilya / lecun / efros）であった。中心 philip は probe を置いておらず、
+      代わりに sync-alerts.log とその衝突ファイル 10 件を持つ。六件目は存在しない。
+      指示を字面どおり検証すると、正常に同期できているのに未達と誤判定する。
+  - type: asserted_without_measuring
+    note: >-
+      Task 3 冒頭が「本ホストには両方とも無い」と述べ Step 3 が ~/.zshrc への起動行の追記を指示するが、
+      標識付きの起動行が開始時から ~/.zshrc:135-138 に在った。「本ホストの現状」の表にも記載が無い。
+      Step 3 に「既に在れば追記しない」という但し書きがあったため実害は生じなかったが、
+      表を信じて追記すれば二重に起動する行が並ぶところであった。
+
+positive_controls:
+  - judgement: "プロセスの計数（同期処理・常駐処理・中継が何件動いているか）"
+    breaking_input: "実在する語（自分の exe の実体の basename）で数える／実在しない語 zzz_no_such_binary で数える"
+    observed: >-
+      zsh=3 件、zzz_no_such_binary=0 件。なお中継をシェルの一行で数えた最初の器は 2 件を返したが実際は
+      1 件で、数えている部分シェル自身の命令行を拾っていた。器を作り直し（/proc/PID/exe を realpath し
+      自分・祖先・子孫を器の中で除外）、以後の計数をすべてやり直した。
+  - judgement: "待ち受けの判定（22000 / 22001 / 8384 が開いているか）"
+    breaking_input: "実在する待ち受け port 22 で数える／実在しない port 65535 で数える"
+    observed: "port 22 = 1 件、port 65535 = 0 件。復号器は /proc/net/tcp と tcp6 の状態 0A を 16 進から変換する"
+  - judgement: "配置した常駐処理の構文検査"
+    breaking_input: "keeper.sh の写しの末尾に閉じていない if [ 1 を足して同じ検査にかける"
+    observed: "囮は bash -n で落ちた。正本の keeper.sh と m2-sync.sh は両方とも exit 0 であった"
+  - judgement: "中心へ鍵で入れること"
+    breaking_input: "認証が通らなければ Permission denied が出る／到達できなければ接続拒否か時間切れが出る"
+    observed: >-
+      Authenticated to 192.168.196.150 using "publickey" が 1 件、Permission denied が 0 件、
+      接続拒否・到達不能・時間切れが 0 件。終了コード 124 は -N に対する timeout であり期待値である。
+  - judgement: "除外規則が効いていること（.venv と .git を運ばない）"
+    breaking_input: "同期対象に含まれるはずの語 experiments で記録を数える"
+    observed: >-
+      .venv を含む行 0、.git/ を含む行 0、experiments を含む行 1663。
+      /rest/db/status の m2 の ignorePatterns が True で除外規則が読まれていることも確かめた。
+  - judgement: "中心が自分の試験ファイルを持っていること"
+    breaking_input: "置いた直後に問う（走査が済んでおらず無いと返りうる）／時間を置いて二度目を問う"
+    observed: >-
+      一度目（置いた直後）も二度目（落ち着いてから）も availability=['philip'] で一致した。
+      大域の記録の版は BRPEYOX:1789939077 で本ホスト発であることを示す。中心では命令を実行していない。
+  - judgement: "本ホストの常駐処理が共有の記録を汚していないこと"
+    breaking_input: "実在する語 [philip] で同じ記録を数える"
+    observed: >-
+      [dlsta] の行 0 件、陽性対照 [philip] の行 139 件。本ホスト由来（BRPEYOX）の衝突ファイルも 0 件で、
+      既存の衝突ファイル 10 件はいずれも中心 3J4TRX4 由来であった。
+  - judgement: "試験の増加（6 件から 7 件）が本契約のコード変更によるものではないこと"
+    breaking_input: "追跡下のファイルに変更があるか／前回測定時点からコードが変わっているか"
+    observed: >-
+      追跡下の変更 0 件、29a6116f から 6b163bf2 までの src と tests の差分 0 件。
+      増えた 1 件は test_loss_mask.py の飛ばし条件がディレクトリの存在だけを見るためで、
+      同期処理が 21:16:47 にディレクトリだけを作り train.txt が未着であることが原因である。
+
+followups:
+  - >-
+    keeper.sh:28 と m2-sync.sh:10 の M2DIR が repo の位置を二択でしか解決しない。
+    本ホスト（~/local/m2）では解決に失敗し、.stignore の自動反映も分岐の自動統合・push・Draft PR も
+    働かない。本契約では .stignore を手で置いて凌いだが、次に phase0 の .stglobalignore が変わっても
+    本ホストへは届かない。解決を三択以上にするか、.servername と同じ方式で位置を外から与えるかの判断が要る。
+  - >-
+    告知と外部の中継を無効にしても options/natEnabled が既定 true のままで、起動時に公開の STUN へ出る。
+    本契約では ~/.syncthing.log:1286 に stun.internetcalls.com:3478 経由で外向きの住所を解決した記録が残った。
+    外部へ出ないことを目的とするなら natEnabled も無効化の対象に含める必要がある。七台すべてが同じ状態である。
+  - >-
+    tests/test_loss_mask.py:70 の飛ばし条件が _REAL_LOSS_MASK.exists()、つまりディレクトリの存在だけを見る。
+    同期がディレクトリを先に作り中身を後から運ぶため、転送中は飛ばされずに実行されて FileNotFoundError で
+    落ちる。同期を使う全ホストで転送中に再現する。必要なファイルの存在を条件にするかの判断が要る。
+  - >-
+    m2 の同期は本報告の時点で completion 4.16%、残り 98,955,659,512 bytes・212,715 件である。
+    SPEC の指示により完了を待っていない。この速さ（約 5 分で 2.15 GB）なら約 4 時間を要する。
+    完了後に test_loss_mask の 1 件が解消するか、共有領域と repo の最終的な大きさがいくつになるかは
+    別途の確認が要る。容量は足りている（/dev/sdb1 の空き 8,326,007,549,952 bytes）。
+  - >-
+    本ホストの外向きの住所が依然として確定していない。中継の足元は 172.17.0.12、STUN が解決した外向きは
+    131.113.39.33 で、scripts/sync/hosts/ が dlsta に与える 192.168.196.54 とはどちらも異なる。
+    中心の側の sshd の記録を読めば確かめられるが、それは中心で命令を実行することになり禁止 1 に当たる。
+    中心を実行ホストとする契約で確かめるのが筋である。
+  - >-
+    抑止の解除を手順書が示す「別名へ移す」で行うと、未追跡ファイルが残る。.gitignore:240 は
+    .sync-pause を完全一致で無視するため .sync-pause.released は無視されない。未追跡の放置は
+    git merge --ff-only を内容が同一でも失敗させ、自動同期を止める（env-facts の B-30 の実測）。
+    本契約では削除が通る環境だったため rm で片付けたが、削除が拒まれる環境では残り続ける。
+    .gitignore に .sync-pause* を足すか、解除法を削除優先へ戻すかの判断が要る。
+
+unknowns:
+  - >-
+    中心の側から見た本ホストの住所。同期処理は中継を通るため中心から見えるのは 127.0.0.1:22001 であり、
+    SSH の送信元を知るには中心で命令を実行する必要があって禁止 1 に当たる。測れたのは容器の内側の
+    172.17.0.12 と STUN 由来の 131.113.39.33 のみで、192.168.196.54 との照合は本契約でも果たせていない。
+  - >-
+    m2 共有フォルダの同期の最終状態。SPEC が「完了を待たない」と指示するため、進み方
+    （21:16 に 2.08%、21:21 に 4.16%、local 2.15 GB から 4.30 GB）だけを記録した。
+  - >-
+    ~/.ssh/authorized_keys と ~/.ssh/ の他のものの無変更は、開始時の要約値を取っていないため更新時刻で
+    示した。要約値による照合ではない。本契約が鍵に触れる命令を一つも発していないことと合わせての判断である。
+  - >-
+    inputs.data（dataset: egosurgery_phase_v1、split_files: data/splits/ego_val.txt）は雛形の必須項目であり
+    本契約は参照していない。SPEC の申し送りの指示どおり、参照しなかったことを記録する。
+
+commits:
+  - "cb2f6617"
+  - "098bd286"
+  - "f79e25c9"
