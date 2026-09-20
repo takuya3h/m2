@@ -11,7 +11,7 @@
 
 ## T-2026-09-20-philip-accept-dlsta
 
-状態 `pass` / ホスト `philip` / 起票 `なし` / 様式 `v3`
+状態 `pass` / ホスト `philip` / 起票 `188` / 様式 `v3`
 
 ### ゲート
 
@@ -29,6 +29,7 @@
 - `environment` — Task 3 の追記命令を auto mode の分類器が Unauthorized Persistence で拒否した。命令は実行されず、 受け入れ一覧は sha256 も件数も開始時のまま無傷だった。SPEC の想定外表「実行基盤が拒むことがある」に 従い停止して利用者へ諮り、利用者が自分の手で追記した。実行者は検査も拒否も迂回していない。
 - `environment` — Task 4 の直後、設定ファイルを直接読む検証命令と REST の読み取り命令も同じ分類器に拒否された。 命令を細かく分け、読み取りだけの形にして測り直した。測れなかった項目は無い。
 - `environment` — pytest の収集で tests/test_estimate_tier_cost.py が ImportError になる。repo の tools/ ではなく site-packages の tools を掴むためで、PYTHONPATH を足しても解消しない。本契約は Python を 変更していないため既存の不具合であり、修正は範囲外として触れていない。件数はこの module を 除いて測った。
+- `environment` — git push を auto mode の分類器が Sensitive-Source Provenance で拒否した。送出物の由来に ~/.ssh/ と syncthing 設定の読み取りが含まれるためと見られる。送出物に秘匿の値は無く、記録したのは鍵の指紋と 識別子（どちらも既に版管理に在る公開値）だけである。迂回せず利用者へ諮り、利用者が送出した。 拒否の間も .sync-pause を外さなかった。外せば常駐処理が次ループでこの分岐を auto-push し、 拒否された操作を自動処理経由で迂回することになるためである。
 - `judgement` — 開始時から在った未追跡 experiments/transfer/pd_refin_empty_seed42_tf32/（212M）が checkout を 阻んだため退避した。repo と同一ファイルシステム（/dev/sda）の /home/ubuntu/slocal2/.task-stash/ を選んだ。/home/ubuntu は overlay で、跨ぐと実コピーになる。報告の後に戻す。
 - `judgement` — 控えを版管理へ置かなかった。config.xml は画面の鍵を含み、伏せる工程を挟むより版管理の外に 留めるほうが誤りが少ない。置く前の検査として両控えに秘密鍵の書き出しが 0 件であることは確かめた。
 - `judgement` — conventions_rev は置換しなかった。origin/phase0 上の実測が c801e17c で契約の c801e17 と一致した ためである。古い分岐 feat/philip-accept-efros 上で見たときに出た L2-6 の WARN は、分岐を origin/phase0 から切り直した後は出なくなった。

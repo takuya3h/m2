@@ -128,4 +128,28 @@ branch: `feat/philip-accept-dlsta`（`origin/phase0` = `de3b2a6a` から作成�
 
 ## 送出
 
-（送出後に記録する）
+**PR: #188**（base `phase0`）　**commit: `bb0aaef9`**
+
+| 検査 | 終了コード |
+|---|---|
+| `make task-validate` | **0** |
+| `make task-preflight` | **0**（5 PASS / 1 WARN / 7 SKIP） |
+| `make taskindex-check` | **0** |
+| `make inbox-check` | **0** |
+| `make forbidden-check` | **0**（`status: pass` / `violations: []`） |
+| 禁止語の検査（送出物 5 件） | **0 件**（陽性対照の囮は 1 件を返した） |
+| 禁止語の検査（生成物 `tasks/inbox.md` / `context/auto/`） | 該当 8 件と 7 件。**いずれも変更前と同数で本契約による増加は 0 件**。他契約の 2026-08 の行である |
+| 秘匿の検査（送出物 5 件） | **0 件**（陽性対照 A は 3〜25 件、B は 1 件を返した。値は出力していない） |
+| `pytest tests/` | 6 failed / 579 passed / 1 skipped。**全て本契約より前から在る** |
+| `make task-report` | **0**（`report_sha256: 111d8963…cd6b` / 12963 bytes / `replaced_blocks: 0`） |
+
+`P9 spec_lint` の WARN は `host_mismatch` 1 件。`P2` `P3` `P4` `P5` `P11` `P12` `P13` の 7 件は SKIP。
+SKIP は「合格」ではなく「実行されなかった」である。
+
+台帳へ送った本文は、この行を足す前の版である。送信は取り消せないため、送った後に
+その結果を同じファイルへ書けば必ず一版ずれる。再送はしない（重複するため）。
+
+`git push` は一度 `Sensitive-Source Provenance` で実行基盤に拒否された。
+**迂回していない。** 利用者へ諮り、利用者が自分の手で送出した。
+`.sync-pause` は拒否の間も外していない。外せば常駐処理が次ループでこの分岐を `auto-push` し、
+拒否された操作を自動処理経由で迂回することになるためである。

@@ -3,7 +3,7 @@ task_id: "T-2026-09-20-philip-accept-dlsta"
 status: pass
 host: "philip"
 branch: "feat/philip-accept-dlsta"
-pr: null
+pr: 188
 merged: false
 
 gates:
@@ -54,6 +54,13 @@ deviations:
       site-packages の tools を掴むためで、PYTHONPATH を足しても解消しない。本契約は Python を
       変更していないため既存の不具合であり、修正は範囲外として触れていない。件数はこの module を
       除いて測った。
+  - type: environment
+    note: >-
+      git push を auto mode の分類器が Sensitive-Source Provenance で拒否した。送出物の由来に ~/.ssh/ と
+      syncthing 設定の読み取りが含まれるためと見られる。送出物に秘匿の値は無く、記録したのは鍵の指紋と
+      識別子（どちらも既に版管理に在る公開値）だけである。迂回せず利用者へ諮り、利用者が送出した。
+      拒否の間も .sync-pause を外さなかった。外せば常駐処理が次ループでこの分岐を auto-push し、
+      拒否された操作を自動処理経由で迂回することになるためである。
   - type: judgement
     note: >-
       開始時から在った未追跡 experiments/transfer/pd_refin_empty_seed42_tf32/（212M）が checkout を
@@ -147,4 +154,5 @@ unknowns:
     ~/bin/m2-sync.sh の mtime が 2026-09-20 17:33:10 と本セッション中である。keeper が毎ループ
     origin/phase0 から自己更新する設計によるもので、実行者の操作ではない。sync-pause 対応は 2 のまま。
 
-commits: []
+commits:
+  - "bb0aaef9"
