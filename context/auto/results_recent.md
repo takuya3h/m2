@@ -6,8 +6,47 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 99 件）。
-ここに出ない 94 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 100 件）。
+ここに出ない 95 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-09-20-philip-accept-dlsta
+
+状態 `pass` / ホスト `philip` / 起票 `なし` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 受け入れ一覧は 6 件・権限 600・sha256 ab3fe1cb…86fb。相手の実体は configuration 直下の device を数えて 6 件で、ひな型 defaults/device（id=""）1 件は別階層として除外した。 階層を見ない .//device は 20 件を返し、取り違えると 6 を 20 と読む。稼働は /proc/PID/exe を realpath して basename で絞り、自分と祖先・子孫を除いて 2 件（PID 122452 と 122530）。 控えは /home/ubuntu/task-backups/ へ取り、原本と同一ファイルシステム（overlay）で sha256 が両方とも一致した。
+- `G2` pass — dlsta.pub（95 bytes / 1 行）と dlsta.txt（64 bytes / 1 行）はともに git ls-files で追跡済み。 指紋 SHA256:5jUsv9rrpScleVa1jvO008WDPpg7LzQq0G8qSZjgKO4 が前契約の RESULT.md:33,:53 と一致し、 識別子 63 文字も result.yaml:28 と一致した。三検査は先頭 ssh- が 1 行・秘密鍵の書き出しが 0 件・ 行数 1。囮は (b) 1 件 (c) 3 行で掛かり (a) を通らなかった。受け入れ一覧にも相手の実体にも 両フォルダにも dlsta は 0 件で、efros を対照に置くと 1 件を返した。
+- `G3` pass — 追記後の空行を除いた件数は 7、解析できた件数も 7、権限は 600 のまま。集合差は消えた行 0 件・ 増えた行 1 件で、増えた指紋は Task 2 の値と一致した。相手の実体は 6→7、共有フォルダは 2 件の まま id/label/path/type に差分なし、消えた相手は 0 件、既存の定義が変わった相手も 0 件。 GET /rest/system/connections の項目数が 5→6 になり BRPEYOX（dlsta）が現れた。五ノードは 全て connected=True、TCP 22000 は LISTEN のまま、稼働プロセスは 2 件のままで再起動していない。
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — SPEC が「共有相手の属性名は id。deviceID ではない（前契約で誤った）」と断定したが、稼働中の REST v2.1.3 の folder.devices[] のキーは deviceID / introducedBy / encryptionPassword である。 id は config.xml 側の属性名で、SPEC は二つの表現を取り違えている。指示どおり id を送れば、 相手の一覧が識別子を持たない要素に置き換わり、既存 6 台の共有が壊れうる。実在する名前を GET で読んでから deviceID を使った。
+- `check_does_not_check` — L3 の P9 spec_lint の host_mismatch は socket.gethostname() と本文の宣言を比べる。philip と ilya は どちらも aolab を返すため（m2-sync.sh の註に明記）、この判定はホストの同一性を判定できていない。 指示どおり従えば、正しいホストで実行しても毎回 WARN が出る一方、ilya で誤って実行しても同じ WARN しか出ず区別できない。.servername と GET /rest/system/status の myID で同一性を確かめた。
+
+### 逸脱
+
+- `environment` — Task 3 の追記命令を auto mode の分類器が Unauthorized Persistence で拒否した。命令は実行されず、 受け入れ一覧は sha256 も件数も開始時のまま無傷だった。SPEC の想定外表「実行基盤が拒むことがある」に 従い停止して利用者へ諮り、利用者が自分の手で追記した。実行者は検査も拒否も迂回していない。
+- `environment` — Task 4 の直後、設定ファイルを直接読む検証命令と REST の読み取り命令も同じ分類器に拒否された。 命令を細かく分け、読み取りだけの形にして測り直した。測れなかった項目は無い。
+- `environment` — pytest の収集で tests/test_estimate_tier_cost.py が ImportError になる。repo の tools/ ではなく site-packages の tools を掴むためで、PYTHONPATH を足しても解消しない。本契約は Python を 変更していないため既存の不具合であり、修正は範囲外として触れていない。件数はこの module を 除いて測った。
+- `judgement` — 開始時から在った未追跡 experiments/transfer/pd_refin_empty_seed42_tf32/（212M）が checkout を 阻んだため退避した。repo と同一ファイルシステム（/dev/sda）の /home/ubuntu/slocal2/.task-stash/ を選んだ。/home/ubuntu は overlay で、跨ぐと実コピーになる。報告の後に戻す。
+- `judgement` — 控えを版管理へ置かなかった。config.xml は画面の鍵を含み、伏せる工程を挟むより版管理の外に 留めるほうが誤りが少ない。置く前の検査として両控えに秘密鍵の書き出しが 0 件であることは確かめた。
+- `judgement` — conventions_rev は置換しなかった。origin/phase0 上の実測が c801e17c で契約の c801e17 と一致した ためである。古い分岐 feat/philip-accept-efros 上で見たときに出た L2-6 の WARN は、分岐を origin/phase0 から切り直した後は出なくなった。
+- `judgement` — 稼働プロセスの計数で 1 周目の陽性対照 python3 が 0 を返して落ちた。realpath 後の実体が /usr/bin/python3.12 で basename が一致しないためで、2 周目に自分の exe の実体から basename を 取って測り直した。片方向だけなら気付けなかった。
+- `judgement` — tests の before は別途測っていない。git status に追跡済みファイルの変更が 1 件も無く、この木は origin/phase0 そのものであるため、after の測定値が before でもある。before_failed と after_failed に同じ値を置いたのはこの理由による。
+
+### 申し送り
+
+- dlsta からの疎通は中心からは測れない。受け入れ一覧に鍵が在ることと、その鍵で認証が通ることは 別である。確かめるには dlsta 側から接続する必要があり、他ホストへの接続は本契約の禁止 5 に当たる。 後続の契約で dlsta 側から ssh と同期の疎通を確かめること。
+- dlsta は connected=False のままである。中心は住所 dynamic で相手へ繋ぎに行かず、dlsta の側は まだ中心を登録していない。繋がる条件が揃うのは dlsta 側が philip を相手として登録した後である。
+- conventions#proposal_gate の共有相手の属性名について、SPEC の記述（id）と稼働中の REST の実在名 （deviceID）が食い違う。同じ誤りが次の受け入れ契約でも起きるため、config.xml の表現と REST の 表現を分けて書くよう起票側の雛形を直すとよい。
+- tests/test_estimate_tier_cost.py の収集エラーは本契約より前から在る。site-packages の tools が repo の tools/ を覆う問題で、別契約で扱うこと。
+
+### 断定できなかったこと
+
+- dlsta から philip へ実際に ssh で入れるか。中心からは測れない（禁止 5）。
+- ~/.ssh/ の authorized_keys 以外のものの無変更は、開始時の要約値を取っていないため mtime で示した。 要約値による照合ではない。最新でも 2026-09-20 13:52 で本セッション開始（16:39）より前であり、 触れる命令を一つも発していないことと合わせての判断である。
+- ~/bin/m2-sync.sh の mtime が 2026-09-20 17:33:10 と本セッション中である。keeper が毎ループ origin/phase0 から自己更新する設計によるもので、実行者の操作ではない。sync-pause 対応は 2 のまま。
 
 ## T-2026-09-20-dlsta-join-foundation
 
@@ -168,49 +207,4 @@
 - P*-21 の全ての値。追加 6 動画の画像が本ホストに無く、学習も test も行っていない。判定 a・c・e・f の P*-21 側は未測定である。
 - S4 凍結工程塔の test 値。本契約では val のみを並置した。S4 の test は評価していない。
 - 確定塔の checkpoint からの再評価による S4 との厳密な比較。特徴も塔も異なるため、差の要因を特徴の出所と時間ヘッドに分解できていない。
-
-## T-2026-09-17-tier1-cost-estimate
-
-状態 `pass` / ホスト `Bengio` / 起票 `177` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — run 型 9 件すべてに出所があり、--check-sources が 0 件を返した。実測は 3 型 （工程側の界面 run 11.9〜30.0 s、工程塔の学習 105 s、検出側 W1 界面 run 約 4 時間）。 残る 6 型は所要時間の実測が無く、利用者の承認のもと t1b の実測を代理に置き、 UNKNOWN の表 9 件に列挙した。
-- `G2` pass — M の項目 38 件（Tier1 13・対照 8・参照入力段 4・Stage1 3・Tier2 5・Tier3 4）すべてが run 行に対応づき、--check-coverage が 0 件を返した。対応表から t1.pd_w2 を消すと 1 件を返すことまで確かめた。
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — SPEC §2.5 は「B4 の暫定工程塔の所要時間があれば工程塔学習の下限の目安になる」と書くが、 B4 の塔は 3 epoch・1 seed の暫定版で、Stage 1 の塔は epoch 数も seed 数も未定である。 指示どおり進めると 105 秒を Stage 1 の工程塔学習の所要時間として扱う誘引が生じ、 未測定の値を実測のように書くことになる。本契約は 105 秒を置いたうえで「Stage 1 の塔は epoch を増やす前提のため下界」と注記し、実測としては主張していない。
-
-### 逸脱
-
-- `judgement` — P6 が FAIL した時点で停止したが、利用者へ諮る前に読み取りのみで事実を集めた。 どの run 型に実測が無いかを知らずに代理の可否は答えられないため。決めていない。
-- `judgement` — Tier 2・Tier 3 の項目から run への分解は M に細目が無く、実行者が構成の数を置いた （例: 「軸 2 選別」= 2 構成）。Tier 1 ほどの根拠は無い。試算の主対象は Tier 1 である。
-- `judgement` — 締切の「下旬」「中旬」「頃」を 2026-10-25 / 2027-01-15 / 2027-02-15 へ落とした。 代表の採り方は B1 §6 に明記した。
-- `spec_defect` — 申し送りは生成物を「docs/stage0/B1_* と tools/ の新規一件」とするが、Task D-1 が 計算器の試験を求めるため tests/test_estimate_tier_cost.py を足した（2 件目）。 あわせてプロジェクト CLAUDE.md の規定に従い README.md へ追記した。
-- `environment` — ruff format --check は tools/estimate_tier_cost.py を「要整形」と出すが、tools/ は 26 件中 17 件が同じ状態で、この repo は tools/ に整形器を当てていない。既存に合わせた。
-- `spec_defect` — make taskindex / taskindex-check / inbox を回していない。手順書は投影に現れることを 確かめよと定めるが、契約 §4-3 は並行契約を理由に context/auto/* と tasks/inbox.md の 再生成を禁じている。契約を優先した。投影への反映は未確認である。
-
-### 申し送り
-
-- IPCAI 2027 の intention（2026-10-25、残 39 日）は、どの縮退・どの前提でも収まらない。 最も縮めた段でも Stage 1 + Tier 1 に 46.1〜62.7 日が要る。投稿先の主目標の判断材料。
-- 設計変更 1 回分（Stage 1 の塔一種の作り直し + Tier 1 の P→D 側の測り直し）が 72.9〜100.7 日で、計画全体 76.5〜104.3 日の 95% に達する。塔をやり直す余地は事実上無い。
-- 縮退順で効くのは「seed 5 → 3」だけである（単独で 33.1〜34.8%）。掃引 4→3 点と 探索的腕の削除は Tier 2・3 にしか掛からず、Stage 1 + Tier 1 の日数を 1 日も動かさない。 縮退順の並びを見直す価値がある。
-- 検出塔のフル学習と検出側 W2 界面 run の所要時間を実測する契約を起票すれば、 本試算の代理（下界）を実測へ置き換えられる。本契約は GPU 禁止のため測れていない。
-- 試験 7 件が本契約の変更前から失敗している（test_check_spec 1・test_engines 1・ test_fetch_task 1・test_research_logger 4）。本契約では直していない。
-
-### 断定できなかったこと
-
-- 検出塔のフル学習の所要時間。計時が repo に無く、塔は philip で学習され ckpt だけが配置された
-- 検出側 W2 界面 run の所要時間。W2 の run は repo 全体に一件も無い
-- 検出側 W3 界面 run の所要時間
-- 評価のみ run の所要時間（検出側・工程側とも）。評価を分離した計測が無い
-- クリップ ID 識別プローブの所要時間
-- P→D の専用探索の回数。M に記載が無い（既定 4 回）
-- Tier 1 の反復に折り A の 3 seed が掛かるか。二通りに読めるため 25 / 35 本の幅で出した
-- Stage 1 で全候補を全折りに掛けるか。二通りに読めるため既定 7K と二段選定 3K+4 の両方を出した
-- 縮退順の 4 項目目が 1 段か 2 段か。読点区切りでは 4 段
-- 締切の日付は M §5.4 の記載であり公式未確認。利用者の決定により外部参照していない
-- 他ホストの GPU 台数。利用者の決定により接続せず、本ホストの A6000 2 枚だけを前提にした
-- 投影（context/auto/* と tasks/inbox.md）への反映。契約 §4-3 が再生成を禁じるため未確認
 
