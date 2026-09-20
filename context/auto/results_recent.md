@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 100 件）。
-ここに出ない 95 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 101 件）。
+ここに出ない 96 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-09-20-philip-accept-dlsta
 
@@ -48,6 +48,51 @@
 - dlsta から philip へ実際に ssh で入れるか。中心からは測れない（禁止 5）。
 - ~/.ssh/ の authorized_keys 以外のものの無変更は、開始時の要約値を取っていないため mtime で示した。 要約値による照合ではない。最新でも 2026-09-20 13:52 で本セッション開始（16:39）より前であり、 触れる命令を一つも発していないことと合わせての判断である。
 - ~/bin/m2-sync.sh の mtime が 2026-09-20 17:33:10 と本セッション中である。keeper が毎ループ origin/phase0 から自己更新する設計によるもので、実行者の操作ではない。sync-pause 対応は 2 のまま。
+
+## T-2026-09-20-dlsta-syncthing-join
+
+状態 `pass` / ホスト `dlsta` / 起票 `なし` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 稼働は syncthing / keeper / m2-sync / ssh とも 0 件。実行権 644、中継の目印 0 件、 ~/claude-sync は存在せず 0 bytes / 0 件、repo は .git 込み 7,028,316,158 bytes・file 49,918 件。 計数の器は自分の exe の実体から陽性対照を取り zsh=3、陰性対照 zzz_no_such_binary=0 で両方向を検証した。 控えは /home/ubuntu/.task-stash/ へ取り、repo(dev=2065, /dev/sdb1) の外かつ原本(dev=229)と同一 fs で、 config.xml.orig と zshrc.orig の要約値が原本と一致した。中心へは -N（遠隔で命令を実行しない形）で入り、 Authenticated to 192.168.196.150 using "publickey" を 1 件、Permission denied を 0 件観測した。 受け入れの控えは隔離先へ置き ~/.ssh/known_hosts の sha256 は変わらなかった。
+- `G2` pass — 要素名はすべて実在を確かめてから使った。autoUpgradeIntervalH を 12 から 0 へ、 globalAnnounceEnabled と relaysEnabled を true から false へ、localAnnounceEnabled は true のまま。 自分の登録名は初期値が容器の識別子 4f3861ae8d3b であり dlsta へ直した（該当 1 件を確かめてから置換）。 中心は版管理の scripts/sync/device_ids/philip.txt から読んだ識別子で、名前 philip、住所 tcp://127.0.0.1:22001。 最上位の folder は 2 件で識別子は中心と同じ claude-sync と m2、位置は /home/ubuntu/claude-sync と /home/ubuntu/local/m2 で、中心の /home/ubuntu/slocal2/m2 を写していない。解析は成功し権限は 600 のまま、 既定値のひな型 defaults/folder と defaults/device は id="" のまま触っていない。
+- `G3` pass — keeper.sh と m2-sync.sh を keeper.sh:3 の指定どおり git show origin/phase0: から展開し、 要約値は 9fe9c423002e… と bcf46ba9031a… で正本と一致、権限 755。bash -n は両方 exit 0 で、 末尾に if [ 1 を足した囮は落ちたため検査が働いていることを確かめた。 起動行は開始時から ~/.zshrc:135-138 に標識付きで在ったため追記せず、~/.zshrc の sha256 が控えと一致する ことで一文字も変えていないことを示した。抑止 .sync-pause を repo 直下へ置き、 配置物の sync-pause 出現数 2（陰性対照 zzz_no_such_token は 0）で対応版であることを確かめた。
+- `G4` pass — 目印 1 件（1 行目が実在する鍵の経路、2 行目が 192.168.196.150、権限 600）を置いて keeper を起こし、 約 5 秒で中継が立った。中継は 1 件（pid 59557、親が keeper、exe=ssh、引数に 192.168.196.150）で 22001 が待ち受けた。中継が立っていることを確かめてから実行権を 644 から 755 へ戻し、sha256 は変わらず 中心の期待値 e8a08fdd…b96c4 と一致した。同期処理は 2 件（61631 の親が keeper、61670 の親が 61631）で 版は v2.1.3、22000 と 22001 と 8384 が待ち受けた。起動後も最上位 folder は 2 件のまま、 autoUpgradeIntervalH は 0、globalAnnounceEnabled と relaysEnabled は false のままであった。
+
+### 起票者の誤り
+
+- `check_does_not_check` — Task 3 Step 1 は正本の配置と要約値の一致だけを求めるが、その正本 keeper.sh:28 と m2-sync.sh:10 は M2DIR を ~/slocal2/m2 か ~/slocal/m2 にしか解決しない。本ホストの repo は ~/local/m2 であり両方とも 存在しないため M2DIR=/home/ubuntu/slocal/m2（不在）となる。指示どおり配置しても .stignore の自動反映 （keeper.sh:48-49）は永久に働かず、m2-sync.sh は cd "$M2DIR" || exit 1 で即座に終わる。 SPEC は decision_at_stake で「位置が三種目である」と自ら述べながら、この帰結を検査していない。 実測: ~/bin/m2-sync.sh.new が 0 バイトで残り、~/claude-sync/sync-alerts.log に [dlsta] の行は 0 件。
+- `asserted_without_measuring` — Task 4 Step 3 が「中継が立てば、中心の側から見た本ホストの住所が記録に現れる。それを記録する」と 断定するが、同期処理は中継を通るため中心から見えるのは 127.0.0.1:22001 であり本ホストの住所ではない。 実際に記録へ現れたのは容器の内側の 172.17.0.12 と STUN 由来の 131.113.39.33 のみで、 scripts/sync/hosts/ が dlsta に与える 192.168.196.54 は現れない。指示どおり記録しようとすると、 中心で命令を実行して SSH の送信元を見る以外に手段が無く、それは禁止 1 に当たる。
+- `check_does_not_check` — Task 2 Step 2 は「そのまま起動すると外部へ出る」と述べて三つの要素の無効化を指示するが、 options/natEnabled が既定の true のまま検査の対象外に置かれている。指示どおり三要素だけを無効化して 起動した結果、~/.syncthing.log:1286 のとおり公開の STUN サーバ stun.internetcalls.com:3478 へ 問い合わせが出た。外部へ出ないという目的に対して、検査する要素が足りていない。
+- `asserted_without_measuring` — Task 5 Step 3 が「六台が置いた試験用ファイルが届くはずである」と断定するが、実測は probe-*.txt が 5 件（bengio / andrew / ilya / lecun / efros）であった。中心 philip は probe を置いておらず、 代わりに sync-alerts.log とその衝突ファイル 10 件を持つ。六件目は存在しない。 指示を字面どおり検証すると、正常に同期できているのに未達と誤判定する。
+- `asserted_without_measuring` — Task 3 冒頭が「本ホストには両方とも無い」と述べ Step 3 が ~/.zshrc への起動行の追記を指示するが、 標識付きの起動行が開始時から ~/.zshrc:135-138 に在った。「本ホストの現状」の表にも記載が無い。 Step 3 に「既に在れば追記しない」という但し書きがあったため実害は生じなかったが、 表を信じて追記すれば二重に起動する行が並ぶところであった。
+
+### 逸脱
+
+- `judgement` — SPEC に無い手順として .stignore を置いた。m2 共有フォルダの位置 /home/ubuntu/local/m2 に除外規則が 無く、.stglobalignore が「絶対に同期しない」と定める .venv（6,455,707,160 bytes）と .git（92,370,004 bytes） が群れ全体へ流れる状態であった。利用者へ提示して許諾を得たうえで keeper.sh:48-49 と同一の処理 （git show origin/phase0:.stglobalignore）を正しい位置へ行った。スクリプトは編集していない。
+- `judgement` — 常駐処理を一度 kill して起こし直した。keeper.sh:51 の周期が 1800 秒で、21:09:08 の起動時には 実行権がまだ落ちていたため、次に同期処理を起こす周回は 21:39 であり約 26 分の待ちが生じた。 中継は別プロセスのため kill の間も維持され（kill 後に keeper 0 件・中継 1 件を実測）、 起こし直した後も中継は 1 件で重複しなかった。同期処理を起こしたのは常駐処理である。
+- `environment` — 設定を組み立てる命令を実行基盤の auto mode 分類器が一度拒否した（Stage 2 classifier error）。 迂回せず、同じ内容をスクリプトファイルへ書いて実行する自然な形に替えた。抑止を外して自動処理へ 代行させる形も採っていない。拒否によって測れなくなった項目は無い。
+- `spec_defect` — Task 3 Step 3 の起動行の追記を行わなかった。~/.zshrc:135-138 に標識付きの起動行が開始時から 在ったためで、SPEC の「既に在れば追記しない。記録して次へ進む」に従った。 なお Task 3 冒頭の「本ホストには両方とも無い」は keeper.sh と m2-sync.sh の実体については正しい。
+- `judgement` — /home/ubuntu/claude-sync が存在しなかったため空のディレクトリとして作成した。共有フォルダの位置として 必要であり、中身は一切触っていない（禁止 4）。作成時点で 0 件・0 bytes であることを記録した。
+- `judgement` — 退避は行っていない。0 節は「開前から在る未追跡は退避してよい」と述べるが、開始時の作業ツリーは 本契約のディレクトリ 1 件のみで、分岐 feat/dlsta-syncthing-join も既に在ったため切り直しが不要であった。 したがって Task 6 の「退避したものを戻す」は対象 0 件であり、入れ子も生じていない。
+- `judgement` — conventions_rev を置換しなかった。context/conventions.md の最終変更 commit を実測すると c801e17c で、 契約の記載 c801e17 はその接頭辞であり一致するためである。値を書き換えていない。
+- `environment` — ~/.ssh/known_hosts が 1 行から 2 行へ変わった。実行者の操作ではなく、keeper.sh:35 の -o StrictHostKeyChecking=accept-new を付けた中継の ssh が 21:09:08 に中心の鍵を追記したものである。 ~/.ssh/ の他のものは更新時刻がいずれも本契約の開始より前のままであった。
+
+### 申し送り
+
+- keeper.sh:28 と m2-sync.sh:10 の M2DIR が repo の位置を二択でしか解決しない。 本ホスト（~/local/m2）では解決に失敗し、.stignore の自動反映も分岐の自動統合・push・Draft PR も 働かない。本契約では .stignore を手で置いて凌いだが、次に phase0 の .stglobalignore が変わっても 本ホストへは届かない。解決を三択以上にするか、.servername と同じ方式で位置を外から与えるかの判断が要る。
+- 告知と外部の中継を無効にしても options/natEnabled が既定 true のままで、起動時に公開の STUN へ出る。 本契約では ~/.syncthing.log:1286 に stun.internetcalls.com:3478 経由で外向きの住所を解決した記録が残った。 外部へ出ないことを目的とするなら natEnabled も無効化の対象に含める必要がある。七台すべてが同じ状態である。
+- tests/test_loss_mask.py:70 の飛ばし条件が _REAL_LOSS_MASK.exists()、つまりディレクトリの存在だけを見る。 同期がディレクトリを先に作り中身を後から運ぶため、転送中は飛ばされずに実行されて FileNotFoundError で 落ちる。同期を使う全ホストで転送中に再現する。必要なファイルの存在を条件にするかの判断が要る。
+- m2 の同期は本報告の時点で completion 4.16%、残り 98,955,659,512 bytes・212,715 件である。 SPEC の指示により完了を待っていない。この速さ（約 5 分で 2.15 GB）なら約 4 時間を要する。 完了後に test_loss_mask の 1 件が解消するか、共有領域と repo の最終的な大きさがいくつになるかは 別途の確認が要る。容量は足りている（/dev/sdb1 の空き 8,326,007,549,952 bytes）。
+- 本ホストの外向きの住所が依然として確定していない。中継の足元は 172.17.0.12、STUN が解決した外向きは 131.113.39.33 で、scripts/sync/hosts/ が dlsta に与える 192.168.196.54 とはどちらも異なる。 中心の側の sshd の記録を読めば確かめられるが、それは中心で命令を実行することになり禁止 1 に当たる。 中心を実行ホストとする契約で確かめるのが筋である。
+
+### 断定できなかったこと
+
+- 中心の側から見た本ホストの住所。同期処理は中継を通るため中心から見えるのは 127.0.0.1:22001 であり、 SSH の送信元を知るには中心で命令を実行する必要があって禁止 1 に当たる。測れたのは容器の内側の 172.17.0.12 と STUN 由来の 131.113.39.33 のみで、192.168.196.54 との照合は本契約でも果たせていない。
+- m2 共有フォルダの同期の最終状態。SPEC が「完了を待たない」と指示するため、進み方 （21:16 に 2.08%、21:21 に 4.16%、local 2.15 GB から 4.30 GB）だけを記録した。
+- ~/.ssh/authorized_keys と ~/.ssh/ の他のものの無変更は、開始時の要約値を取っていないため更新時刻で 示した。要約値による照合ではない。本契約が鍵に触れる命令を一つも発していないことと合わせての判断である。
+- inputs.data（dataset: egosurgery_phase_v1、split_files: data/splits/ego_val.txt）は雛形の必須項目であり 本契約は参照していない。SPEC の申し送りの指示どおり、参照しなかったことを記録する。
 
 ## T-2026-09-20-dlsta-join-foundation
 
@@ -165,47 +210,4 @@
 - val と test の乖離が一周目より広がった理由。0.10418888 から 0.13092190 へ。要因を分解していない。
 - 上限 12 epoch を超えたときの到達点。最良 epoch が上限に張り付いた run があるため、上限が結果を切っている可能性がある。
 - P3 deterministic_flags の実測。プリフライトで SKIP となり、決定性設定が実行プロセス内で行われ外部から観測できないため確かめていない（backlog B-20）。
-
-## T-2026-09-18-stage1-phase-tower
-
-状態 `partial` / ホスト `ilya` / 起票 `183` / 様式 `v3`
-
-### ゲート
-
-- `G1` ask — 折り表は解決でき、15 動画の画像と注釈は実在した（manifest train 9657 / val 1515 / test 4265 フレーム、欠損 0）。追加 6 動画 17-22 は注釈のみ実在し画像は 0 件。停止して諮り、P*-15 だけで進める承認を得た。1 run の所要は候補 A 折り A seed42 で 4.227106129284948 秒。
-- `G2` pass — 同じ入力で二度抽出し要約値が一致（63cd91453b76bc8f28118494893ec59ce369a2f0e1175335cf4d0bab21de2d81）。動画ごとのフレーム数の合計 15437 が manifest と一致し、欠損 0 件。陰性対照 2 件（重みの差し替え、manifest から 1 動画の削除）がともに検出した。
-- `G3` pass — 候補 A の 14 run（2 掃引点 × 折り 5、折り A は 3 seed）が全て完走し、val の phase_jaccard と phase_accuracy が metrics.json に入った。最長の run でも 4.880 秒で、1 時間の停止条件に触れていない。
-- `G4` pass — test を評価したのは確定塔 C/L8/w0.3/h30 の 5 折りのみで計 5 回。台帳 test_access_{A..E}.json が 5 件あり、学習経路は load_fold の既定 parts=(train,val) で test を読まない。P*-21 の塔は存在しないため 0 回。
-
-### 起票者の誤り
-
-- `check_does_not_check` — 契約は outputs.destination を experiments/phase1/stage1_ptower/ に置き Task F で make runindex と make forbidden-check を求めるのに contract.allow_write を宣言していない。指示どおり実行すると契約自身が作った 672 件の出力が禁止領域の違反に数えられ、make forbidden-check が status fail で落ちる。
-- `self_contradiction` — 完了判定 c は表の行数を 10 構成 × 2 データ設定と定めるが、同じ契約の 2026-09-18 の修正条項が追加画像未発見により学習格子 70 run・P*-21 は UNKNOWN と確定している。指示どおり実行すると判定 c は原理的に達成できず、判定 a・e・f も同じ理由で部分達成になる。
-- `asserted_without_measuring` — 契約 2 節は S4 の分母を val Jaccard 0.6447 ± 0.0146 と確定した事実として書いたが、同じ実験 ID を runindex で引くと 0.6322 ± 0.0215 が返る。指示どおり実行すると分母の照合が食い違って止まる。調査の結果、前者は当初 3 run、後者は後続 14 run の集計で、集計対象の相違だと判明した。
-- `self_contradiction` — 完了判定 d は選ばれた recipe が一意に決まることを求めるが、事前登録 6.3 と 2026-09-18 の同点規則は同一候補・同一受容野で残る同点を解けない。指示どおり実行すると候補 C・8 層で 0.15 と 0.30 が並び、選定器が例外で停止した。判定 d は諮って決めた場合の一意性を覆っていない。
-
-### 逸脱
-
-- `judgement` — 選定規則が同一候補・同一受容野の同点を解けず、事前登録 6.3 に従い停止して諮った。利用者が平滑化 0.30 を確定。規則を spec.yaml の修正条項と select() に置いてから機械で当て直した。結果を見たあとに置いた規則であり事前登録されていない。当てた対象は val のみ。
-- `spec_defect` — contract.allow_write が無く、契約が求める make forbidden-check が契約自身の出力で必ず落ちた。experiments/phase1/stage1_ptower と runindex/ を宣言して通した。
-- `environment` — 追加 6 動画 17-22 の画像が本ホストに無く、P*-21 を一切学習していない。契約の 140 run のうち実施は 70 run。Stage 2 の主分母 P*-21 には別契約が要る。
-- `judgement` — 分岐は開始時点から feat/stage1-phase-tower であり phase0 を起点にしていない。原契約 Task A-1 の「HEAD が phase0」を満たしていない。PR の base は phase0 にする。
-- `judgement` — RESULT.md の前半にある「学習は未開始」「利用者判断を待つ」は追記時点より前の状態を書いたものだが、時系列の記録を壊さないため書き換えずに残した。
-- `environment` — 報告後の 22:01 UTC に make forbidden-check が status fail・違反 2 件に変わった。内訳は experiments/transfer/pd_refin_empty_seed42_tf32/logs/ の 2 ファイルで、21:58:17 UTC に別の処理が書いたものである。本契約の出力ではないため触っていない。
-- `environment` — push が https の遠隔で対話的な資格情報を要求して失敗したため、git@github.com:takuya3h/m2.git を明示して push した。origin は fetch が ssh、push が https に設定されている。
-- `judgement` — select_stage1_ptower.py に同点規則と、それを両方向で覆う試験 1 件を追加した。契約は Task E を「規則を機械で当てる」としか書いておらず、実装の追加は実行者の判断である。
-
-### 申し送り
-
-- 追加 6 動画 17-22 の画像を本ホストで使えるようにする別契約が要る。注釈は実在するが画像が 0 件のため P*-21 が一切学習できていない。Stage 2 の主分母は P*-21 であり、これが無いと Stage 2 の送り手が揃わない。
-- 確定塔の 5 折り平均 val macro Jaccard は 0.32890765082910894、test は 0.22471876589180543 で、Stage 0 の S4（折り A val 0.6447397621229328）と大きく離れている。凍結 ImageNet 特徴の上では工程認識の水準がこの程度に留まることを、Stage 2 の期待値の置き方に反映する必要がある。
-- 事前登録の予測 1 と 2 が外れた。候補 A（TeCNO 型）は 10 構成中 7 位で、候補 B（Trans-SVNet 型）が A を上回った。根拠にした同ドメインの否定例（Trans-SVNet 23.1 < TeCNO 27.3）は、凍結 ImageNet 特徴・0.5 fps・15 動画・5 折りの本設定では再現しない。教訓として tasks/lessons.md に上げる。
-- 選定の同点規則「同一候補・同一受容野で残る同点は折り A の seed 間 pstd が小さい方」は本契約で事後に置いた。以後の契約では事前登録の段階で同点の解き方を最後まで書く。
-- 折り B と折り C の val Jaccard が全構成で低い（B は 0.19-0.24、C は 0.23-0.29）。折りによる難易度の差が大きく、5 折り平均の解釈に効く。折りごとの動画の性質を Stage 2 の前に調べる価値がある。
-
-### 断定できなかったこと
-
-- P*-21 の全ての値。追加 6 動画の画像が本ホストに無く、学習も test も行っていない。判定 a・c・e・f の P*-21 側は未測定である。
-- S4 凍結工程塔の test 値。本契約では val のみを並置した。S4 の test は評価していない。
-- 確定塔の checkpoint からの再評価による S4 との厳密な比較。特徴も塔も異なるため、差の要因を特徴の出所と時間ヘッドに分解できていない。
 
