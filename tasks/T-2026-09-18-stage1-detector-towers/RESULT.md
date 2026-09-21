@@ -41,7 +41,7 @@
 | e | test は折りごとに一度 | **達成。台帳 10 行ちょうど。** 確定塔以外 0 件（折り A は seed 42 を確定塔とした） |
 | f | TF32 と所要時間 | **一部未達。** 🔴 **TF32 では回していない**（凍結源が fp16 のため。利用者の判断）。所要時間は全 14 run に記録（7:48:59〜9:13:30、平均 8.353 h）。計算器に実測が入り `measured: True`、`--check-doc` 差 0 件 |
 | g | 刻印と収穫 | **達成。** 14/14 に `task_id`。収穫で `baselines/d{coco,imagenet}_fold{A..E}` として現れた。🔴 空振り確認の「行数の差 = 新実験数」は**成り立たない**（下記 4） |
-| h | PR | 送出節を参照 |
+| h | PR | **達成。** #191・base `phase0`・`isDraft: false`・分岐 `feat/stage1-detector-towers` |
 
 ## 3. 実測
 
@@ -160,4 +160,5 @@ D\*-ImageNet +0.0067 対 D\*-COCO +0.0004 で **5.2 倍**。D\*-ImageNet は最�
 | `make runindex` | exit 0。本契約の 14 run が `task_id` つきで現れた |
 | `make taskindex-check` / `make inbox-check` | exit 2（§4 禁止事項 5 により再生成しない。契約が「想定どおり」と明記） |
 | 分岐 | `feat/stage1-detector-towers` |
-| PR | 送出節の追記を参照（base は `phase0`） |
+| commit | `5681ab5b`（本体）/ `4e97b3de`（phase0 の統合）/ `e48a081a`（報告） |
+| PR | **#191**（base `phase0` / head `feat/stage1-detector-towers` / `isDraft: false` / `state: OPEN`） |
