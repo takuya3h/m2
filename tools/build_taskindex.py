@@ -64,12 +64,14 @@ COLUMNS = [
     "depends_on",
 ]
 
-# result.schema.json の列挙と同じ 4 種。増やす場合は様式の側を先に直す。
+# result.schema.json の列挙と同じ 6 種。増やす場合は様式の側を先に直す。
 DEFECT_TYPES = [
     "check_does_not_check",
     "asserted_without_measuring",
     "self_contradiction",
     "shell_assumption",
+    "asymmetric_comparison",
+    "rule_read_narrowly",
 ]
 
 

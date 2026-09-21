@@ -1256,3 +1256,37 @@ D\* と対称にする。
 
 `tools/estimate_tier_cost.py` の `det_tower_train` を 8.00 h（代理）→ **8.35 h（実測・`measured: True`）**
 にした。計算器の UNKNOWN は 10 → 9 件。
+
+### L3 P13 を完了済み契約で SKIP にした（2026-09-21）
+
+`T-2026-09-19-symmetry-gate` が入れた P13 `symmetry_table_complete` は、**完了済みの
+exp 契約 13 件すべてを FAIL にしていた**（prereg に対称性の表が無い）。関門の意図は
+これから起票する契約に効かせるものであり、過去の契約の再現や追試を妨げない。
+
+`tools/preflight_task.py` に `completed_verdicts(task_id)` を足し、
+`check_symmetry_table` の冒頭で完了済みを見る。
+
+| 入力 | P13 |
+|---|---|
+| `result.yaml` の `gates[].verdict` に空でない値がある | **SKIP**（理由に「完了済み」） |
+| `result.yaml` が無い／`gates` が無い／verdict が空／壊れた YAML | 従来どおり検査する |
+| `kind != exp` | 従来どおり SKIP（`EXP_ONLY`） |
+
+🔴 **`verdict` は `result.yaml` の最上位の項目ではない。** 様式が持つのは
+`gates[].verdict` であり、最上位は `status` である。**判定に使うのは `result.yaml` の
+実在と verdict の有無だけ**で、名前の部分一致・日付・配布台帳は使わない。
+部分一致にすると無関係な契約を完了済みと誤認する。
+
+実測: 変更前は exp 13 件が 13/13 FAIL、変更後は 13/13 SKIP。未完了に対する挙動は
+対照 11 件で不変であることを確認した（`tests/test_symmetry_gate.py`、42 件）。
+
+### 起票者の誤りの型が 6 種になった（2026-09-21）
+
+`tasks/_schema/result.schema.json` の `issuer_defects[].type` の列挙に
+`asymmetric_comparison`（比較対象の処方を読まずに候補を設計した）と
+`rule_read_narrowly`（規則の字面を狭く読み、その読みを既定にした）を足した。
+`docs/issuer-defects.md` の「`result.yaml` の enum には未追加」の注記は消えている。
+
+`tools/build_taskindex.py` の `DEFECT_TYPES` も同じ 6 種へ揃えた。**片方だけ増やすと
+新しい型の欠陥が `context/auto/followups.md` の集計表から黙って落ちる。**
+一致は試験で縛ってある。

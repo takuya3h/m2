@@ -246,3 +246,99 @@ def test_checklist_exists_and_points_at_the_convention():
 @pytest.mark.parametrize("name", ["asymmetric_comparison", "rule_read_narrowly"])
 def test_issuer_defects_has_the_new_types(name):
     assert name in DEFECTS.read_text(encoding="utf-8")
+
+
+# --- 完了済み契約は P13 の対象外（T-2026-09-19-p13-skip-and-enum） ----------
+#
+# 関門はこれから起票する契約に効かせるものであり、過去の契約の再現や追試を妨げない。
+# **対照は両方向に置く。** 印があれば SKIP、無ければ従来どおり検査する。
+
+def _result(tasks_dir: Path, task_id: str, body: str) -> None:
+    task_dir = tasks_dir / task_id
+    task_dir.mkdir(parents=True, exist_ok=True)
+    (task_dir / "result.yaml").write_text(body, encoding="utf-8")
+
+
+def test_completed_contract_is_skipped(tasks_dir):
+    """完了判定 a。verdict があれば表を見ずに SKIP し、理由に完了済みと出す。"""
+    _prereg(tasks_dir, "T-2026-08-01-done", "表なし\n")
+    _result(tasks_dir, "T-2026-08-01-done", "gates:\n  - {id: G1, verdict: pass}\n")
+    check = preflight_task.check_symmetry_table("T-2026-08-01-done")
+    assert check.status == "SKIP"
+    assert "完了済み" in check.detail
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        "gates: []\n",                            # 表はあるが verdict が無い
+        'gates:\n  - {id: G1, verdict: ""}\n',    # verdict が空文字
+        "gates:\n  - {id: G1}\n",                 # verdict の項目が無い
+        "status: pass\n",                         # gates 自体が無い
+        "gates: [ {id: G1,\n",                    # 壊れた YAML
+        "- これは対応表ではない\n",                # 最上位が辞書でない
+    ],
+)
+def test_result_without_verdict_is_not_treated_as_completed(tasks_dir, body):
+    """完了判定 c の陽性対照。**印が無ければ従来どおり FAIL する。**
+
+    印を読み損ねたときに黙って SKIP へ倒れると、関門が誰も救わないまま通る。
+    """
+    _prereg(tasks_dir, "T-2026-08-01-half", "表なし\n")
+    _result(tasks_dir, "T-2026-08-01-half", body)
+    assert preflight_task.check_symmetry_table("T-2026-08-01-half").status == "FAIL"
+
+
+def test_name_containing_a_completed_task_id_is_not_completed(tasks_dir):
+    """完了判定 c。**名前の部分一致で完了済みと誤認しない。**"""
+    _result(tasks_dir, "T-2026-08-01-done", "gates:\n  - {id: G1, verdict: pass}\n")
+    _prereg(tasks_dir, "T-2026-08-01-done-followup", "表なし\n")
+    check = preflight_task.check_symmetry_table("T-2026-08-01-done-followup")
+    assert check.status == "FAIL"
+
+
+def test_incomplete_contract_keeps_passing_when_the_table_is_filled(tasks_dir):
+    """完了判定 b。未完了の挙動は変えない。埋まった表は従来どおり PASS。"""
+    body = HEADER + "| 学習率 | 1e-4 | 1e-4 | 揃える |  |\n"
+    _prereg(tasks_dir, "T-2026-09-20-new", body)
+    assert preflight_task.check_symmetry_table("T-2026-09-20-new").status == "PASS"
+
+
+def test_completed_verdicts_reads_only_the_gates(tasks_dir):
+    """印の出どころを固定する。**`verdict` は最上位の項目ではない。**"""
+    _result(tasks_dir, "T-2026-08-01-x", "status: pass\ngates:\n  - {id: G1, verdict: stop}\n")
+    assert preflight_task.completed_verdicts("T-2026-08-01-x") == ["stop"]
+    assert preflight_task.completed_verdicts("T-2026-08-01-missing") == []
+
+
+# --- 二型が様式の列挙に入った（完了判定 d・e） -----------------------------
+
+@pytest.mark.parametrize("name", ["asymmetric_comparison", "rule_read_narrowly"])
+def test_new_defect_types_are_in_the_result_schema(name):
+    import json
+
+    schema = json.loads(
+        (REPO_ROOT / "tasks" / "_schema" / "result.schema.json").read_text(encoding="utf-8")
+    )
+    enum = schema["properties"]["issuer_defects"]["items"]["properties"]["type"]["enum"]
+    assert name in enum
+    assert "zz_unknown" not in enum
+
+
+def test_defect_types_in_the_projection_match_the_schema():
+    """**片方だけ増やすと集計から落ちる。** 様式と投影の列挙を一致で縛る。"""
+    import json
+
+    import build_taskindex
+
+    schema = json.loads(
+        (REPO_ROOT / "tasks" / "_schema" / "result.schema.json").read_text(encoding="utf-8")
+    )
+    enum = schema["properties"]["issuer_defects"]["items"]["properties"]["type"]["enum"]
+    assert sorted(build_taskindex.DEFECT_TYPES) == sorted(enum)
+
+
+def test_issuer_defects_no_longer_says_the_enum_lacks_them():
+    """完了判定 e。注記が消えている。変更前は 1 件あった。"""
+    text = DEFECTS.read_text(encoding="utf-8")
+    assert "enum には未追加" not in text

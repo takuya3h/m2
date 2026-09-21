@@ -1,0 +1,60 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-09-19-p13-skip-and-enum"
+  kind: impl
+  title: "L3 P13 を完了済み契約で SKIP にし、result.yaml の起票者欠陥の型に asymmetric_comparison と rule_read_narrowly を足す"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-09-19T06:58:53Z"
+  created_from:
+    runindex_commit: "4e97b3deae28e653948c19309d229c755587c42b"
+    counts: {index: 1558, experiments: 476, verdicts: 1506}
+  depends_on: [T-2026-09-19-symmetry-gate]
+  amendments: []
+intent:
+  question: "対称性の関門を、これから起票する契約にだけ効かせ、完了済みの契約の再実行を妨げないようにできるか。新しい欠陥の型を機械可読にできるか"
+  decision_at_stake: "過去の exp 契約の再現や追試が P十三 で止まらないこと。欠陥の集計に二つの新しい型が入ること"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "not-referenced"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["tools/preflight_task.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "c801e17c3231fe1f2b7c8072e1a960e6dbab8ca5"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["tasks/_schema/result.schema.json"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。P十三 の現行の挙動と、完了済み契約の判定の仕方の確認", gpu: false, est: "30m"}
+    - {id: B, name: "P十三 に完了済み判定を足す。schema の enum に二型を足す", gpu: false, est: "60m"}
+    - {id: C, name: "検証（対照つき）と報告", gpu: false, est: "40m"}
+  gates:
+    - {id: G1, after: B, check: "完了済みの exp で SKIP、未完了の exp で従来どおり FAIL か PASS。既存の result.yaml が全件 schema を通る", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [notes.md]
+  destination: "tasks/T-2026-09-19-p13-skip-and-enum/"
+  acceptance:
+    - "a: 完了済み（result.yaml があり verdict が入っている）exp 契約で P十三 が SKIP になり、理由に完了済みと出る"
+    - "b: 未完了の exp 契約で P十三 の挙動が変わらない（表なし FAIL、UNKNOWN FAIL、揃う PASS）"
+    - "c: 完了済みの判定は result.yaml の実在と verdict の有無で行い、名前の部分一致や日付で判定していない"
+    - "d: result.schema.json の type enum に二型が足され、既存の result.yaml 全件が schema を通る。二型を使った result.yaml も通り、未知の型は落ちる"
+    - "e: docs/issuer-defects.md の型の一覧から「enum には未追加」の注記が消えている"
+    - "f: 試験が通り、失敗数が増えていない。check_spec.py の規則数が不変"
+    - "g: PR が Draft でなく存在し、base が phase0 で、分岐が feat/ で始まる"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "完了済みの判定に使える機械的な印が result.yaml 以外に必要な場合"
+    - "既存の result.yaml に schema を通らないものがあった場合（本契約の変更と無関係な破損）"

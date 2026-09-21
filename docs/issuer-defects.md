@@ -8,8 +8,8 @@
 - **`self_contradiction`** — 同一契約内の禁止と要求が両立しない
 - **`check_does_not_check`** — 検査が意図した性質を実際には測っていない
 - **`shell_assumption`** — シェルや実行方式の前提を誤った
-- **`asymmetric_comparison`** — 比較対象の処方を読まずに候補を設計した（本文書の分類。`result.yaml` の enum には未追加）
-- **`rule_read_narrowly`** — 規則の字面を狭く読み、その読みを既定にした（同上）
+- **`asymmetric_comparison`** — 比較対象の処方を読まずに候補を設計した
+- **`rule_read_narrowly`** — 規則の字面を狭く読み、その読みを既定にした
 
 **すべての根は同じ。実態を測らずに書いた。**
 
