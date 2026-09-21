@@ -19,6 +19,10 @@
 - **lecun のみ** — `~/slocal/m2`
 - philip / bengio / andrew / ilya / **efros** / その他 — `~/slocal2/m2`
 - **dlsta のみ** — **`~/local/m2`**（2026-09-20 実測。`~/slocal/m2` も `~/slocal2/m2` も存在しない）
+- **常駐処理が解決する位置は三種で、順序がある**（`keeper.sh` と `m2-sync.sh` の同一の判定。2026-09-21 `T-2026-09-21-m2dir-local`）。**判定は親ディレクトリの存在**であり、repo 本体でも版管理でもない。**外から上書きできない**（`M2DIR=$(…)` の無条件代入で `${M2DIR:-…}` ではない）
+  1. `~/slocal2` が在れば `~/slocal2/m2`
+  2. 無く `~/slocal` が在れば `~/slocal/m2`
+  3. どちらも無く `~/local/m2` が在れば `~/local/m2`（**末尾に足した。既存の台は 1 か 2 で短絡する**）
 
 ## 実行環境
 
@@ -80,6 +84,7 @@
 
 - keeper は 30 分周期。syncthing と中継の監視、`m2-sync.sh` と `.stignore` の自己更新、`m2-sync.sh` の実行
 - **keeper 自身は自己更新されない。** 変更には各台で手動配置が要る
+- **`m2-sync.sh` は keeper が毎ループ `origin/phase0` から自己更新する。** よって**統合前に手で置いても、次の周回で戻される**（2026-09-21 実測）。統合後は自動で配られる
 - m2-sync は auto-merge / auto-push / auto-PR
 - 抑止は `.sync-pause` を repo 直下に置く。**目印の存在だけを見る。移動で解ける**
 - 記録は `~/claude-sync/sync-alerts.log`

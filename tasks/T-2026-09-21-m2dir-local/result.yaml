@@ -1,0 +1,178 @@
+result_version: 3
+task_id: "T-2026-09-21-m2dir-local"
+status: pass
+host: "dlsta"
+branch: "feat/m2dir-local"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      解決部分は keeper.sh:28 と m2-sync.sh:10 で、一行を文字列として照合すると完全に同一であった。
+      実装は候補の繰り返しではなく三項一行で、一つ目 [ -d ~/slocal2 ] だけが検査され、二つ目
+      ~/slocal/m2 は存在を確かめずに使われる無条件の落とし所である。見つかったの判定は親ディレクトリの
+      存在で、repo 本体でも版管理でもない。M2DIR=$(…) の無条件代入のため環境変数で上書きできない。
+      set -e も set -u もどちらの正本にも無い。本ホストでは両方の既存候補が偽で /home/ubuntu/slocal/m2
+      （不在）に解決していた。止まっている証拠は、sync-alerts.log の [dlsta] が 0 件（陽性対照
+      [philip] 141 / [efros] 192）、抑止の記録が 0 件（陽性対照 450）、~/bin/m2-sync.sh.new が
+      0 バイトで本日 16:44 に残存、.stignore の更新時刻が前契約で手で置いた時刻のままであること。
+  - id: G2
+    verdict: pass
+    note: >-
+      両正本の錨の直後へ註 3 行と判定 1 行の計 4 行を足した。差分は keeper.sh が +4/-0、
+      m2-sync.sh が +4/-0 で、差分全体の削除行は 0 件であった。bash -n は両方 exit 0 で、
+      足した行の閉じ波括弧を落とした囮は落ちた。正本から解決部分の 5 行を機械的に抜き出して
+      env -i HOME=<隔離した家> で評価し、7 通りの家の形を両正本で試して 14 件すべてが期待どおりであった。
+      要の 2 件は、slocal2 と local/m2 が併存する家で ~/slocal2/m2 に、slocal と local/m2 が
+      併存する家で ~/slocal/m2 に解決したこと。本ホスト（実際の家）では両正本とも
+      /home/ubuntu/local/m2 に解決した。
+  - id: G3
+    verdict: pass
+    note: >-
+      旧版を ~/bin と同一 fs（dev=229、repo の 2065 とは別）かつ repo の外へ退避してから配置し、
+      両方とも正本と要約値が一致して権限 775 を保った。中継と同期処理が nohup と & で起こされ
+      錠の fd を継承しないこと、中継の親が既に init であることを実装と実測から確かめてから
+      起こし直した。kill 直後は keeper 0 / 中継 1 / 同期処理 2 で子が残った。起こし直した後、
+      自己更新が ~/bin/m2-sync.sh を origin/phase0 の版へ置き換え、m2-sync.sh.new の残骸が消え、
+      .stignore の更新時刻が 2026-09-20 21:07:21 から 2026-09-21 16:58:29 へ動いた。
+      抑止の記録は 2026-09-21 16:59:25 [dlsta] 一時停止中: /home/ubuntu/local/m2/.sync-pause で、
+      本ホストの位置と登録名が解決できている。中継 1 件・同期処理 2 件・中心との接続 connected=True
+      で無傷であった。
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 595
+
+deviations:
+  - type: spec_defect
+    note: >-
+      自己更新で戻された ~/bin/m2-sync.sh を置き直し、keeper.sh:54 と同じ呼び方
+      （~/bin/m2-sync.sh 9>&-）で一度走らせて完了判定 O を確かめた。keeper.sh:49 が毎ループ
+      origin/phase0 から自己更新するため、常駐処理の周回を待っても周回のたびに戻され、
+      統合されるまで O は達成できない。抑止の判定は m2-sync.sh:44-47 にあり、記録を書いて
+      exit 0 する。git fetch も分岐への書き込みもその後にあるため、走らせても副作用は記録 1 行だけである。
+  - type: judgement
+    note: >-
+      常駐処理を周期 1800 秒を待たずに起こし直した。SPEC の Task 3 Step 2 が明示的に許容しており、
+      前契約でも同じ判断を採った。起こし直しで中継が止まらないことは、実装（nohup … 9>&- &）と
+      中継の親が既に init であることの両方から確かめてから行い、実測でも残った。
+  - type: judgement
+    note: >-
+      conventions_rev を置換しなかった。context/conventions.md の最終変更 commit を実測すると
+      c801e17c で、契約の記載 c801e17 はその接頭辞であり一致するためである。値を書き換えていない。
+  - type: environment
+    note: >-
+      0 節の make task-start が未追跡 1 件（前セッションの抽出物 docs/sessions/digest/ の 1 ファイル）
+      で止まったため、利用者の指示に従い git stash push -u で退避した。退避物は 138 行で
+      stash@{0} に保全されており、tasks/README.md が「契約の記録と一緒に含めること」と定めるため
+      報告の commit に含めて戻す。消していない。
+  - type: judgement
+    note: >-
+      足した行の判定の仕方を既存の行に合わせ、repo 本体や版管理の存在ではなく親ディレクトリの存在で
+      見る形にした。基準を変えると「既存の候補が在る」の意味が二通りになり、既存の台で挙動が変わりうる
+      ためである。この選択により、親だけ在り repo 本体が無い家でも従来どおり ~/slocal2/m2 に解決する。
+  - type: judgement
+    note: >-
+      SPEC Task 4 Step 3 は変更の範囲を「二つの正本、env-facts.md、契約のディレクトリ、受け皿」に
+      限ると述べるが、前セッションの抽出物 docs/sessions/digest/ の 1 ファイルも含めた。
+      tasks/README.md が「抽出物は版管理へ記録する。契約の記録と一緒に含めること。未追跡のまま
+      放置すると自動同期が止まる」と定めるためである。版管理へ入れる前に伏せ字を確かめ、
+      秘密鍵の塊 0 件・ssh 鍵の表記 0 件・資格情報の出現 0 件・禁止語 0 件であることを実測した。
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: >-
+      「候補は上から順に試され、最初に見つかったものが使われるはずである」と述べ、足す位置と帰結の表も
+      候補列を前提に書かれている。実装は候補列ではなく三項一行で、一つ目だけが検査され二つ目は
+      存在を確かめない無条件の落とし所である。字義どおり「末尾に候補を足す」と読んで
+      || echo ~/local/m2 を三つ目に並べると、二つ目が常に当たるため三つ目には到達せず、
+      修正が何の効果も持たないまま「足した」と報告することになった。
+  - type: self_contradiction
+    note: >-
+      禁止 1 が「既存の候補の順序を変える。既存の候補を削る」を禁じ、Task 2 Step 1 が
+      「既存の行は一文字も変えない」と求める一方で、同じ Step が「~/local/m2 を既存の候補の後ろへ足す」
+      と指示する。実装は一行の三項であるため、行を一文字も変えずにその中の候補列へ後ろから足すことは
+      字義どおりには不可能である。別の文として次の行へ足すという解釈を実行者が補う必要があった。
+  - type: check_does_not_check
+    note: >-
+      完了判定 O は「配置 → 常駐処理を起こし直す → 抑止が効いた旨が記録に出る」という順序を求めるが、
+      keeper.sh:49 が ~/bin/m2-sync.sh を毎ループ origin/phase0 から自己更新する。よって統合前に
+      配置した m2-sync.sh の修正は、常駐処理が repo を見つけた最初の周回で戻される。
+      指示どおりの順序を守ると O は原理的に達成できず、修正版を置き直して手で一度走らせる必要があった。
+      SPEC 自身が「m2-sync.sh は常駐処理が自己更新する」と書きながら、この帰結を検査に織り込んでいない。
+
+positive_controls:
+  - judgement: "既存の台が新しい候補を掴まないこと（他の台を壊さないことの根拠）"
+    breaking_input: "隔離した家に既存の候補と ~/local/m2 の両方を作って解決させる"
+    observed: >-
+      slocal2 と local/m2 の併存では ~/slocal2/m2、slocal と local/m2 の併存では ~/slocal/m2 に
+      解決した。既存の候補が無い家でだけ ~/local/m2 に解決した。7 通りの家を両正本で試して 14 件すべて
+      期待どおりであった。解決部分は正本から機械的に抜き出して差し込み、写し間違いを避けた。
+  - judgement: "足した行の構文検査"
+    breaking_input: "足した行の閉じ波括弧を落とした写しに同じ検査をかける"
+    observed: "囮は bash -n で落ちた。正本は両方とも exit 0 であった"
+  - judgement: "本ホストで分岐の自動同期が止まっていること"
+    breaking_input: "実在する語 [philip] と [efros] で同じ記録を数える"
+    observed: >-
+      [dlsta] は 0 件、[philip] は 141 件、[efros] は 192 件。抑止の記録も [dlsta] では 0 件で、
+      '一時停止中' の総数は 450 件であった。器が常に 0 を返す壊れ方ではない。
+  - judgement: "常駐処理が repo を見つけたこと"
+    breaking_input: "見つけられなければ自己更新は空を書いて失敗し、.stignore の更新時刻も動かない"
+    observed: >-
+      ~/bin/m2-sync.sh が origin/phase0 の版へ置き換わり、0 バイトの m2-sync.sh.new の残骸が消え、
+      .stignore の更新時刻が 2026-09-20 21:07:21 から 2026-09-21 16:58:29 へ動いた。三つとも
+      起こし直す前には成り立っていなかった。
+  - judgement: "抑止が効き、自動同期の経路が生きていること"
+    breaking_input: "抑止が効かなければ記録は出ず、効けば分岐が動かないまま記録だけが出る"
+    observed: >-
+      走らせる前の [dlsta] は 0 件、走らせた後は 1 件で、記録には本ホストの位置
+      /home/ubuntu/local/m2 と登録名 dlsta が現れた。HEAD は 23333eb6 のまま、分岐も
+      feat/m2dir-local のままで動いていない。終了コードは 0 であった。
+  - judgement: "中継・同期処理・中心との接続が無傷であること"
+    breaking_input: "実在する待ち受け port 22 で数える／実在しない port 65535 で数える"
+    observed: >-
+      port 22 = 1 件、port 65535 = 0 件。22001 と 22000 と 8384 がいずれも 1 件で、
+      philip は connected=True であった。プロセスの器も陽性 zsh=2 / 陰性 zzz_no_such_binary=0 で検証した。
+  - judgement: "本契約の変更が試験に影響していないこと"
+    breaking_input: "src と tests に変更があるかを数える"
+    observed: >-
+      git status --porcelain -- src tests は 0 件。変更は scripts/sync の 2 本と context/env-facts.md と
+      契約のディレクトリだけである。なお前契約で一時的に落ちていた test_loss_mask の 1 件は、
+      同期が完了して train.txt（3010 bytes）が届いたため解消し、飛ばされていた 13 件も走るようになった
+      （7 failed / 581 passed / 13 skipped → 6 failed / 595 passed / 0 skipped）。
+
+followups:
+  - >-
+    P9 spec_lint の separated_source は行継続を扱えない。SPEC.md:51 の
+    source .venv/bin/activate && source scripts/load_env.sh \ と次行の && make task-start は
+    シェルでは一命令だが、検査器は行で切って「読み込みが単独の命令で終わる」と判定した。
+    本セッションで実際に一命令として実行し成功している。行継続を連結してから判定するか、
+    次行が && で始まる場合を除くかの判断が要る（tools/check_agent_docs.py の check_text）。
+  - >-
+    m2-sync.sh の修正は統合されるまで本ホストの ~/bin へ定着しない。keeper.sh:49 が毎ループ
+    origin/phase0 から自己更新して戻すためである。統合後は最短 2 ループで自動的に配られるが、
+    それまでの間、本ホストの分岐の自動同期は止まったままである。PR の統合を待つ必要がある。
+  - >-
+    keeper.sh は自己更新されないため、本ホストの ~/bin/keeper.sh は本契約で手で置いたものが残る。
+    既存の六台は既存の候補で動いているため配置は要らないが、将来 keeper.sh を変える契約では
+    「どの台へ配置済みか」を追う仕組みが無い。配置状況を記録する場所を決めるかの判断が要る。
+  - >-
+    解決の判定が親ディレクトリの存在であることは、repo 本体が無くても親さえ在れば解決が成立する
+    ことを意味する。今回は既存に合わせて同じ基準を使ったが、本来は repo 本体か版管理の存在で
+    見るほうが確かである。基準を変えると既存の台の挙動が変わりうるため、本契約では変えていない。
+
+unknowns:
+  - >-
+    他の台に ~/local/m2 が在るかは測っていない。他ホストへの接続は禁止 2 に当たるためである。
+    在っても既存の候補が先に当たることを隔離した家で示したため、判断には不要である。
+  - >-
+    統合後に他の台で実際に何が起きるかは本ホストから測れない。根拠は隔離した家での模擬
+    （7 通り × 2 正本 = 14 件すべて期待どおり）であって、実機での確認ではない。
+  - >-
+    inputs.data（dataset: egosurgery_phase_v1、split_files: data/splits/ego_val.txt）は雛形の
+    必須項目であり本契約は参照していない。SPEC の申し送りの指示どおり、参照しなかったことを記録する。
+
+commits: []

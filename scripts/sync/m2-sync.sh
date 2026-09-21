@@ -8,6 +8,10 @@
 # そのため phase0 にマージすれば全台へ自動で配られる（最短 2 ループ / 最大 60 分）。
 MAIN=phase0   # 幹ブランチが移ったらここだけ変更
 M2DIR=$([ -d ~/slocal2 ] && echo ~/slocal2/m2 || echo ~/slocal/m2)
+# 三種目の位置（~/local/m2）。既存の候補はどちらも親ディレクトリの存在で判定されるため、
+# どちらかが在る台では下の行は短絡して M2DIR を変えない。無い台だけが三種目へ届く。
+# 出所: T-2026-09-21-m2dir-local
+[ -d ~/slocal2 ] || [ -d ~/slocal ] || { [ -d ~/local/m2 ] && M2DIR=~/local/m2; }
 LOG=~/claude-sync/sync-alerts.log
 
 # サーバー名は 3 段で解決する。
