@@ -65,6 +65,13 @@ RESOLVED_FILE = "resolved.yaml"
 # **表の同定は列名の完全一致で行う。** 部分一致にすると「判定規約」「条件の理由」のような
 # 別の表を拾い、無関係な表で合否が決まる（issuer_cautions #13 と同型）。
 PREREG_FILE = "prereg.md"
+# **完了済みの契約は P13 の対象外とする**（利用者の決定 2026-09-19）。関門はこれから
+# 起票する契約に効かせるものであり、過去の契約の再現や追試を妨げる意図は無い。
+# 判定は `result.yaml` の実在と verdict の有無**だけ**で行う。名前の部分一致・日付・
+# 台帳は使わない。部分一致は無関係な契約を完了済みと誤認する（issuer_cautions #13 と同型）。
+# **`verdict` は最上位の項目ではない。** 様式が持つのは `gates[].verdict` であり、
+# 最上位は `status` である（result.schema.json を実測して確かめた）。
+RESULT_FILE = "result.yaml"
 SYMMETRY_CONDITION_HEADER = "条件"
 SYMMETRY_VERDICT_HEADER = "判定"
 SYMMETRY_REASON_HEADER = "理由"
@@ -563,13 +570,46 @@ def symmetry_tables(text: str) -> list[tuple[dict[str, int], list[list[str]]]]:
     return tables
 
 
+def completed_verdicts(task_id: str) -> list[str]:
+    """完了済みの印を返す。`result.yaml` の `gates[].verdict` のうち空でない値。
+
+    読めない・様式に合わない場合は空を返して「完了済みでない」と扱う。
+    **推測で補わない。** 印が無いなら未完了として従来どおり検査する。
+    """
+    path = TASKS_DIR / task_id / RESULT_FILE
+    if not path.exists():
+        return []
+    try:
+        data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError:
+        return []
+    if not isinstance(data, dict):
+        return []
+    gates = data.get("gates")
+    if not isinstance(gates, list):
+        return []
+    return [
+        str(gate["verdict"]).strip()
+        for gate in gates
+        if isinstance(gate, dict) and str(gate.get("verdict") or "").strip()
+    ]
+
+
 def check_symmetry_table(task_id: str) -> Check:
     """P13. prereg の対称性の表が埋まっていることを確かめる。
 
     正本は `conventions#symmetry`。表が無い、UNKNOWN が残る、
     「意図的に変える」に理由が無い、判定が三値のいずれでもない、のいずれも FAIL とする。
     **判定の空欄を通さない。** 空欄を許すと、埋めないまま起票できてしまう。
+
+    **完了済みの契約は SKIP とする。** 判定は `completed_verdicts` だけに委ねる。
     """
+    verdicts = completed_verdicts(task_id)
+    if verdicts:
+        return Check(
+            "P13", CHECK_NAMES["P13"], "SKIP",
+            f"完了済み（{RESULT_FILE} に verdict あり: {len(verdicts)} 件）のため対象外",
+        )
     path = TASKS_DIR / task_id / PREREG_FILE
     if not path.exists():
         return Check("P13", CHECK_NAMES["P13"], "FAIL", f"{PREREG_FILE} が無い")

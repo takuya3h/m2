@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（578 件）
+## 未処理（595 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -588,6 +588,23 @@
 - [ ] 2026-09-20 [cc] 退避先を repo と同一ファイルシステムの /home/ubuntu/slocal2/.task-stash/ に取った。/home/ubuntu は overlay で別ファイルシステムのため、212M の実験成果物が実コピーになる。SPEC は控えについてのみ同一ファイルシステムを求めているが、退避にも同じ理由が当てはまる（tasks/T-2026-09-20-philip-accept-dlsta/audit.md:20）
 - [ ] 2026-09-20 [cc] conventions_rev は置換しなかった。origin/phase0 上の実測 c801e17c が契約の値と一致したためである。古い分岐で検証を回すと L2-6 の WARN が出るが、これは分岐が古いことを示すだけで契約の誤りではない。検証を回す前に分岐を切る順序であれば WARN 自体が出ない（tasks/T-2026-09-20-philip-accept-dlsta/RESULT.md の逸脱）
 - [ ] 2026-09-20 [cc] 禁止語の検査が報告自身を落とす例を再現した。直した語を報告で引用したため result.yaml が該当 1 件になった。T-2026-09-20-dlsta-join-foundation が既に同型を挙げている。引用の形を除外するか、報告側で語を組み立てて書く規約を置くかの判断が要る（tools/check_proposal.py）
+- [ ] 2026-09-21 [cc] 🔴 **凍結源は fp32 ではなく fp16 で学習されていた。** 契約は `prereg.md` §2 で「凍結源は fp32」を前提に全 14 run を TF32 と定めていたが、run の `command.sh` の実測は `--mixed-precision fp16`。前契約 `C2` の TF32 の測定は **fp32 の界面 run** が基準で、検出塔のフル学習には当てはまらない。利用者の判断で fp16 に揃え、**処方の差分は 0 項目**になった（T-2026-09-18-stage1-detector-towers）
+- [ ] 2026-09-21 [cc] 🔴 **D\*-ImageNet は 12 epoch で打ち切られている可能性が高い。** 最終 epoch が最良で、最後の 1 epoch の伸びが **D\*-COCO の 5.2 倍**（+0.0067 対 +0.0004）。事前登録の予測 2「ImageNet は 5〜15 mAP 低い」は実測 1.66〜7.33 mAP で**予測より差が小さく**、これが「ImageNet が強い」ためか「両塔とも打ち切られている」ためか**切り分けていない**。H3 の材料に使う前に判断が要る（experiments/baselines/stage1_dtower/）
+- [ ] 2026-09-21 [cc] **折り間の散らばりは seed 間の 3.9〜16.3 倍。** D\*-COCO は折り間 pstd 0.032249 対 seed 間 0.001984（16.3×）、D\*-ImageNet は 0.030500 対 0.007892（3.9×）。**予測 3 は当たり。** 判定単位を動画に取りクラスタを折りに置く規約（`CLAUDE.md`）の前提が実測で裏づけられた（T-2026-09-18-stage1-detector-towers）
+- [ ] 2026-09-21 [cc] 🔴 **折り C・D・E で test mAP が val mAP を上回る。** 折り E は val 0.5272 → test 0.5841、折り D は 0.4967 → 0.5558、折り C は 0.4385 → 0.5011。折りごとの難しさが val と test で逆向きに出ている。**折り表の設計に起因するなら Tier 1 の読み方に影響する**（docs/stage0/A1_fold_table.md）
+- [ ] 2026-09-21 [cc] **検出塔の学習の所要時間が実測になった。** 14 run 平均 **8.35 h**（7.816〜9.225。折りにより train が 9,657〜11,182 枚）。計算器の代理 8.00 h とほぼ一致し、**Tier 1 の日数は +0.4% しか動かなかった**（160.5〜218.8 日）。計算器の UNKNOWN は 10 → 9 件（tools/estimate_tier_cost.py）
+- [ ] 2026-09-21 [cc] **同時実行は 2 本が最適で、3 本目は無意味だった。** 1 本 1.805 step/s → 2 本 2.17 → 3 本 2.19（+1% のみ）。2 本で GPU 使用率が 91〜96% に達する。**メモリは 28/49 GB と余るがボトルネックは計算**。今後の GPU 計画はこの数値を前提にできる（scripts/stage1_dtower_queue.sh）
+- [ ] 2026-09-21 [cc] 🔴 **`contract.allow_write` の宣言漏れが 2 契約続けて起きた。** `experiments/` へ書く run を伴う契約では `make forbidden-check` が必ず失敗する。**起票の雛形に入れるか自動で補うかの判断が要る**（tools/check_forbidden.py）
+- [ ] 2026-09-21 [cc] **完了判定の空振り確認に「収穫前後の行数の差 = 新実験数」を置くのは誤り。** 収穫器は既存行も更新し、同期で届いた退避物も拾う。実測は index +52 に対し新規 run 27 件（うち本契約 14 件）。**`task_id` での照合に替えるべき**（tasks/_templates/）
+- [ ] 2026-09-21 [cc] **検出塔のフル学習の入口は `main.py`（accelerate）であり `scripts/train_t1b.py` ではない。** 契約の `inputs.code.entrypoints` が後者を挙げていた。`train_t1b.py` は P→D 界面の学習器で別物である（third_party/Relation-DETR/main.py）
+- [ ] 2026-09-21 [cc] 🔴 **契約が許した操作が、契約の求める検査で落ちる。** §4 禁止事項 6 は `runindex/**` の手編集を禁じる一方 **`make runindex` は可**と明記するが、Task E-1 が求める `make forbidden-check` は `runindex/` の変更を 70 経路すべて禁止領域として弾く。`contract.allow_write` に `runindex/` を足して整合させた。**起票の雛形で解くべき**（tools/check_forbidden.py）
+- [ ] 2026-09-21 [cc] **`runindex/` は併合で必ず衝突する。** `.gitattributes` の union 指定は `context/auto/**` と `tasks/inbox.md` だけで `runindex/` は対象外。今回 4 ファイルが衝突し、phase0 側を土台に採ってから `make runindex` で再生成して解いた。**再生成後に両契約の run が残ることを実測で確かめる**のが要（本契約 14 件・ilya の工程塔 72 + 168 件）。union を `runindex/` にも広げるかの判断が要る（.gitattributes）
+- [ ] 2026-09-21 [cc] 🔴 **`verdict` は `result.yaml` の最上位の項目ではない。** 契約は「完了済み契約は `result.yaml` を持ち `verdict` が入っている」と書くが、様式が持つのは `gates[].verdict` で最上位は `status` である。**指示どおり最上位を見る実装にすると完了済みが 0 件になり、関門が 13 件すべてを止め続ける。** 契約 §5 の対照（verdict なしの一時契約で FAIL）が `status` では通せないため `gates[].verdict` を採った。**完了の印を正本として文書化すべき**（tasks/_schema/result.schema.json）
+- [ ] 2026-09-21 [cc] **完了済みの exp 契約は 12 件ではなく 13 件だった。** 起票後に `T-2026-09-19-stage1-phase-tower-r2` が完了した。**未完了の exp は 0 件**であり、変更前は 13/13 が P13 で FAIL、変更後は 13/13 が SKIP。件数を空振り確認の根拠に置く書き方は、起票から実行までの間に動く（tools/preflight_task.py）
+- [ ] 2026-09-21 [cc] 🔴 **既存の `result.yaml` 1 件が様式を通らない。** `T-2026-08-22-philip-hub-foundation` が旧様式（`meta:` の下に `task_id` と `verdict: PARTIAL`）で書かれ、最上位の `task_id` と `status` を欠く。**変更前から不通過**で本契約と無関係のため契約 §6 に従い触っていない。旧様式を通すか現行様式へ移すかの判断が要る（tasks/T-2026-08-22-philip-hub-foundation/result.yaml）
+- [ ] 2026-09-21 [cc] **様式の列挙を増やすと投影の集計表から黙って落ちる経路があった。** `tools/build_taskindex.py` の `DEFECT_TYPES` が `result.schema.json` の列挙を手で写しており、「同じ 4 種」と自ら宣言していた。**契約の Task B には無いが 6 種へ揃え、一致を試験で縛った**。変異（様式にだけ 1 語足す）で試験が落ちることを実測した（tools/build_taskindex.py）
+- [ ] 2026-09-21 [cc] 🔴 **ゲート G1 が `after: B` で、フェーズ C でしか測れない値を求めていた。** L3 の P9 と `make spec-check` が `gate_requires_report_before_end` で同一の指摘を出した（`make spec-check` は exit 1）。契約は書き換えず、**C の実測が揃った時点で評価した**。層 4 の検査は働いている（tools/check_spec.py）
+- [ ] 2026-09-21 [cc] **`contract.allow_write` の宣言漏れが本契約でも起きた。** Task B が求める 3 ファイル（`tools/preflight_task.py`・`tasks/_schema/result.schema.json`・`docs/issuer-defects.md`）のうち宣言は 1 つ。今回は 3 つとも禁止領域の外だったため `make forbidden-check` は通ったが、禁止領域を含む契約なら必ず落ちる。**起票の雛形で解くべきという申し送りが前契約にも残っている**（tools/check_forbidden.py）
 - [ ] 2026-09-21 [cc] 解決は候補列ではなく三項一行で、二つ目は存在を確かめない無条件の落とし所だった。字義どおり「末尾に候補を足す」と読むと二つ目が常に当たり修正が効かない。別の文として次行へ足す形を採った。候補列へ書き換えるかは既存の台への影響があるため本契約では触れていない（scripts/sync/keeper.sh:28 と m2-sync.sh:10）
 - [ ] 2026-09-21 [cc] 足した行の判定を既存に合わせて親ディレクトリの存在で見る形にした。repo 本体や版管理の存在で見るほうが確かだが、基準を変えると「既存の候補が在る」の意味が二通りになり既存の台の挙動が変わりうる。基準を揃え直すかの判断が要る（scripts/sync/keeper.sh:32）
 - [ ] 2026-09-21 [cc] m2-sync.sh の修正は統合されるまで本ホストへ定着しない。keeper が毎ループ origin/phase0 から自己更新して戻すためで、指示どおりの順序では完了判定 O が原理的に達成できなかった。修正版を置き直して常駐処理と同じ呼び方で一度走らせて確かめた。統合前の配置を前提にする契約は同じ壁に当たる（scripts/sync/keeper.sh:49）

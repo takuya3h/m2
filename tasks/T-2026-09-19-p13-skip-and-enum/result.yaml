@@ -1,0 +1,72 @@
+result_version: 3
+task_id: "T-2026-09-19-p13-skip-and-enum"
+status: pass
+host: "efros"
+branch: "feat/p13-skip-and-enum"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "完了済み exp 13 件が全件 SKIP（変更前は全件 FAIL）。未完了の対照 11 件が期待どおり（表なし FAIL／揃う PASS／UNKNOWN FAIL／理由欠落 FAIL／三値外 FAIL／prereg 無し FAIL／verdict 欠落 5 種 FAIL／名前の部分一致 FAIL／verdict あり SKIP）。既存 result.yaml 103 件のうち 102 件が schema を通り、不通過 1 件は変更前から不通過で本契約と無関係"
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 609
+
+deviations:
+  - type: spec_defect
+    note: "ゲート G1 を after=B の時点では評価せず、フェーズ C の実測が揃った時点で評価した。B の終了時には対照も試験も測っておらず、字面どおり評価すれば未測定の値を書くことになり governance.integrity の unknown_if_unmeasured と衝突する。契約は書き換えていない"
+  - type: judgement
+    note: "契約の Task B に無い tools/build_taskindex.py の DEFECT_TYPES を 4 種から 6 種へ揃えた。この一覧は自ら「result.schema.json の列挙と同じ」と宣言しており、様式だけ増やすと新しい型の欠陥が投影の集計表から黙って落ちる。一致を試験で縛った"
+  - type: judgement
+    note: "契約の Task C が求める一時契約を repo 内ではなく一時ディレクトリへ作り、preflight_task.TASKS_DIR を差し替えて測った。repo 内に一時契約を残すと L1/L2 と投影が拾うためである。判定の対象は同一の関数である"
+  - type: environment
+    note: "開始時の未追跡 1 件（docs/sessions/digest/2026-09-17-d9274377-….md）を利用者の指示により git stash push -u で退避した。契約 §4 の「開始前から在る未追跡を消さない」は守っている。消さずに退避しており git stash pop で戻る"
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "「完了済み契約は result.yaml を持ち verdict が入っている」と断定したが、verdict は result.yaml の最上位に存在しない。様式が持つのは gates[].verdict で最上位は status である。指示どおり最上位を見る実装にすると完了済みが 0 件になり、13 件すべてが FAIL のまま残って関門が誰も救わない"
+  - type: asserted_without_measuring
+    note: "「完了済みの exp 契約 12 件がすべて P13 で FAIL になる」と断定したが実測は 13 件である。起票後に T-2026-09-19-stage1-phase-tower-r2 が完了したためで、件数を完了判定 a の空振り確認の根拠に置いていたため字面どおりでは充足を示せない"
+  - type: self_contradiction
+    note: "ゲート G1 が after=B で「検証（対照つき）」の結果を求めるが、それを測るのはフェーズ C である。字面どおり B の終了時に評価すると未測定の値を書くことになり governance.integrity の unknown_if_unmeasured と衝突する。L3 の P9 と make spec-check が同一の指摘を出した"
+  - type: check_does_not_check
+    note: "contract.allow_write が tasks/_schema/result.schema.json だけを挙げるが、Task B は tools/preflight_task.py と docs/issuer-defects.md の変更も求める。今回は 3 つとも禁止領域の外だったため make forbidden-check は通ったが、宣言は求める作業を覆っておらず、禁止領域を含む契約なら必ず落ちる"
+
+positive_controls:
+  - judgement: "判定 a 完了済み exp で P13 が SKIP になる"
+    breaking_input: "完了済みの判定を外す（if verdicts: を if False: へ）"
+    observed: "1 failed / 41 passed。test_completed_contract_is_skipped が落ちた"
+  - judgement: "判定 b 未完了 exp の挙動が変わらない"
+    breaking_input: "判定を常に SKIP へ壊す（if verdicts: を if True: へ）"
+    observed: "18 failed / 24 passed。未完了の対照が総崩れになった"
+  - judgement: "判定 c 名前の部分一致で完了済みと誤認しない"
+    breaking_input: "result.yaml が無いとき task_id の部分一致で他契約の印を引く実装にする"
+    observed: "1 failed / 41 passed。test_name_containing_a_completed_task_id_is_not_completed が落ちた"
+  - judgement: "判定 c 印を読み損ねたら未完了として扱う"
+    breaking_input: "result.yaml を壊れた YAML にする"
+    observed: "例外で止まらず FAIL を返した。黙って SKIP へ倒れない"
+  - judgement: "判定 d 未知の型を様式が拒む"
+    breaking_input: "issuer_defects[].type に zz_unknown を置く"
+    observed: "'zz_unknown' is not one of [...] で落ちた"
+  - judgement: "判定 d 様式と投影の列挙が一致する"
+    breaking_input: "様式の列挙にだけ zz_probe を足して投影に足さない"
+    observed: "1 failed / 41 passed。test_defect_types_in_the_projection_match_the_schema が落ちた"
+  - judgement: "判定 e 「enum には未追加」の注記が消えている"
+    breaking_input: "変更前の docs/issuer-defects.md を入力する"
+    observed: "変更前は 1 件（11 行目）、変更後は 0 件"
+  - judgement: "判定 f 試験の失敗数が増えていない"
+    breaking_input: "変更前を測らずに「不変」と書く"
+    observed: "変更前 6 failed / 595 passed を先に測り、変更後の 6 件が同一の試験名であることを照合した"
+
+followups:
+  - "既存の result.yaml 1 件（T-2026-08-22-philip-hub-foundation）が schema を通らない。旧様式で meta: の下に task_id と verdict: PARTIAL を置く形で書かれており、最上位の task_id と status を欠く。変更前から不通過で本契約とは無関係のため契約 §6 に従い触っていない。旧様式を通す判断か、当該報告を現行様式へ移す判断かを起票者が決めること"
+  - "完了済みの印は gates[].verdict に取ったが、最上位 status も同じ役目を果たしうる。契約 §5 の対照が status では通せないため verdict を採った。印を正本として文書化するか、result.yaml に完了の印を明示的に置くかを決めること"
+  - "contract.allow_write の宣言漏れが本契約でも起きた（Task B が求める 3 ファイルのうち宣言は 1 つ）。起票の雛形で解くべきという申し送りが T-2026-09-18-stage1-detector-towers にも残っている"
+
+unknowns: []
+
+commits: []
