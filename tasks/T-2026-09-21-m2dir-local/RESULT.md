@@ -109,4 +109,19 @@ branch `feat/m2dir-local`（`origin/phase0` = `23333eb6` から）
 
 ## 送出
 
-（Step 3 実行後に記入）
+| 項目 | 結果 |
+|---|---|
+| `make task-validate` | **exit 0** |
+| `make task-preflight` | **exit 0**（5 PASS / **2 WARN** / 7 SKIP / 0 FAIL。どちらも検査器の偽陽性） |
+| `make taskindex-check` / `make inbox-check` | **ともに exit 0** |
+| `make forbidden-check` | **exit 0**（`status: pass` / `violations: 0` / `changed: 13` / 生成物 4 件を除外） |
+| 禁止語（送出物 7 件） | **全件 exit 0**。囮は **exit 1**。集約は既存 **8 件のまま**で本契約の追加分 0 件 |
+| 秘匿検査（自作・形で判定） | **全項目 0 件**（秘密鍵の塊 / 鍵の本体 / 画面の鍵 / 資格情報 5 件 / 合言葉 / `key.pem` の本体）。抽出物を加えた後に**やり直した**。各項目に陽性対照つき。**検査は長さと件数だけを出力** |
+| 変更の範囲 | **14 件**。二つの正本・`env-facts.md`・契約のディレクトリ・受け皿・生成物・**抽出物 1 件**（逸脱 5 に記載） |
+| **正本の差分** | `keeper.sh` **+4 / −0**、`m2-sync.sh` **+4 / −0** |
+| commit | `a4940c52` |
+| push | **exit 0** |
+| PR | **#190** |
+| 台帳への送り返し | 下記 |
+| 抑止の解除 | 下記 |
+| 退避の復帰 | **1 件を戻した**（要約値一致・138 行・入れ子 0・stash list 0） |
