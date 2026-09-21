@@ -33,7 +33,7 @@
 | d | 二型が通り未知が落ちる。既存が全件通る | **充足（記録つき）** | 二型と既存の語が通り、`zz_unknown` が落ちた。既存は **103 件中 102 件が通過**。不通過 1 件は**変更前から不通過**（§A7・§4） |
 | e | 「enum には未追加」の注記が消えている | **充足** | 変更前は `docs/issuer-defects.md:11` に 1 件、それを受ける `:12` の「（同上）」が 1 件。**変更後は 0 件**（§A8） |
 | f | 試験の失敗数不変、規則数不変 | **充足** | 6 failed → **6 failed**（同一の 6 件）。595 passed → 609 passed（追加 14 件）。`len(check_spec.RULES)` = **8 → 8**（§A9） |
-| g | PR が Draft でなく base が phase0、分岐が feat/ | **§6 に記す** | — |
+| g | PR が Draft でなく base が phase0、分岐が feat/ | **充足** | PR **#192**、`isDraft: false`、`baseRefName: phase0`、`headRefName: feat/p13-skip-and-enum`、`state: OPEN`（`gh pr view 192 --json` の実測） |
 
 **判定 d の 12 件と 13 件の差。** 契約は「完了済みの exp 契約 12 件」と書くが、実測は
 **13 件**である。起票後に `T-2026-09-19-stage1-phase-tower-r2` が完了したためで、
@@ -111,5 +111,10 @@
 
 ## 8. 送出
 
-§6 の判定 g（PR）と `.sync-pause` の解除は、commit・push・PR の実測を得た時点で
-**本節へ追記する**。
+| 項目 | 実測 |
+|---|---|
+| commit | `d86c778b` |
+| push | `origin/feat/p13-skip-and-enum`（新規分岐） |
+| PR | **#192** https://github.com/takuya3h/m2/pull/192 — Draft でない / base `phase0` |
+| `make task-report` | exit 0。`verdict: pass` / `n_issuer_defects: 4` / `report_bytes: 10703` / `replaced_blocks: 0`。秘匿の検査を通過 |
+| `.sync-pause` の解除 | `mv .sync-pause .sync-pause.released`（実測は下表） |
