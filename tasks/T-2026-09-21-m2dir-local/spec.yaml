@@ -1,0 +1,88 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-09-21-m2dir-local"
+  kind: impl
+  title: "常駐処理が三種目の版管理の位置を見つけられるよう、解決の候補を末尾へ足す"
+  origin: claude-app
+  created_at: "2026-09-21T01:00:00Z"
+  created_from:
+    runindex_commit: "29a6116"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-09-20-dlsta-syncthing-join"]
+  amendments: []
+
+intent:
+  question: "本ホストは群れに入ったが、常駐処理の正本は版管理の位置を二種の候補からしか解決しない。本ホストは三種目の位置にあるため、除外規則の自動反映と分岐の自動同期が働かない。解決の候補を足して本ホストで働かせられるか。既存の台が新しい候補を掴まないことを示せるか"
+  decision_at_stake: "本ホストの版管理の自動同期が働くか。候補を足す位置を誤ると、既存の台が別の版管理を掴んで自動同期が走る。正本は全台へ配られるため、既存の台を壊さないことを隔離した環境で確かめてから配置する"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/sync/keeper.sh"
+      - "scripts/sync/m2-sync.sh"
+
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "c801e17"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "解決の仕組みの読解と、止まっているものの測定", gpu: false, est: "30m"}
+    - {id: B, name: "候補の追加と、隔離した環境での確認", gpu: false, est: "40m"}
+    - {id: C, name: "本ホストへの配置と、動くことの確認", gpu: false, est: "40m"}
+    - {id: D, name: "報告と送出", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "二つの正本の解決部分を行番号つきで記録し、最初に見つかったもので止まるかと、何をもって見つかったとするかを実装から確定した。本ホストで何が止まっているかを記録から示した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "両方の正本の末尾へ候補を足し、差分が追加だけであることを示した。構文検査が通った。本ホストで新しい候補に解決し、既存の候補が在るときはそちらに解決することを隔離した環境で示した"
+      on_fail: stop
+    - id: G3
+      after: C
+      check: "本ホストへ配置し、常駐処理が版管理を見つけたことを記録で示した。除外規則の自動反映が働き、抑止が効いた旨が記録に出た。中継と同期処理と中心との接続が無傷である"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-09-21-m2dir-local/"
+  acceptance:
+    - "二つの正本の解決部分を行番号つきで記録している"
+    - "最初に見つかったもので止まるかを実装から確定している"
+    - "候補を末尾へ足し、差分が追加だけであることを示している"
+    - "本ホストで新しい候補に解決することを示している"
+    - "既存の候補が在るときそちらに解決することを隔離した環境で示している。模擬できない場合は UNKNOWN としている"
+    - "本ホストで常駐処理が版管理を見つけたことを記録で示している"
+    - "抑止が効いた旨が記録に出たことで、自動同期の経路が生きていることを示している"
+    - "中継と同期処理と中心との接続が無傷であることを示している"
+    - "他の台への配置が要らない根拠を示している"
+    - "禁止語と秘匿の検査を送出物に当て、検査が値を出力していない"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "解決の仕組みが最初に見つかったもので止まらない場合"
+    - "既存の候補が在るときに新しい候補を掴んだ場合"
+    - "常駐処理の起こし直しで中継が止まる見込みの場合"
+    - "配置後に中継または同期処理が止まった場合"
