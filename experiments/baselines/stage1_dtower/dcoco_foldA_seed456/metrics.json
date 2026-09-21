@@ -1,0 +1,25 @@
+{
+  "task_id": "T-2026-09-18-stage1-detector-towers",
+  "tower": "D*-COCO",
+  "fold": "A",
+  "seed": 456,
+  "val": {
+    "mAP": 0.7207601852065311,
+    "mAP_50": 0.8429182370838386,
+    "mAP_75": 0.7724385069458609,
+    "AP_rare": 0.725924764572559,
+    "AP_common": 0.7198994219788598,
+    "n_rare_classes": 2,
+    "n_common_classes": 12
+  },
+  "eval_recipe": {
+    "note": "NMS-free（conventions#eval_recipe）",
+    "score_thr": 0.0,
+    "max_per_img": 300,
+    "nms_pre": null,
+    "nms_iou": null
+  },
+  "training_time": "7:54:21",
+  "steps_per_epoch": 2405,
+  "epochs": 12
+}

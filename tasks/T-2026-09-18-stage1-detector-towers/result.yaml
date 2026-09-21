@@ -1,0 +1,92 @@
+result_version: 3
+task_id: "T-2026-09-18-stage1-detector-towers"
+status: pass
+host: "efros"
+branch: "feat/stage1-detector-towers"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "凍結源の処方を run の command.sh と config.yaml と metrics.json から全項目特定した（UNKNOWN 0 件）。折りごとの注釈を生成し 5 折り × 3 分割の全 15 組で集合差 0、折り A は公式ファイルと sha256 一致、画像合計 15437 枚が全折りで保存。装置は compute プロセス 0 件であった"
+  - id: G2
+    verdict: pass
+    note: "折り A seed42 の D*-COCO の val mAP は 0.724414（TensorBoard の float32 原値）。凍結源 0.729749 との差は -0.53 mAP で、事前登録の「1 mAP 以内なら再現」に該当する。分母参照の 3 seed 平均 0.726794 とは 0.70 sigma"
+  - id: G3
+    verdict: pass
+    note: "test の評価は test_access_ledger.csv の 10 行ちょうど。2 塔 × 5 折りで、各行に checkpoint の sha256 と画像数と mAP を持つ。確定塔以外の評価は 0 件"
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 550
+
+deviations:
+  - type: judgement
+    note: "G2 の評価を待たずに Task C の run を並行で始めた。利用者の「GPU の空きを使って早めて」という指示による。再現が 3 mAP を超えて外れていれば回した分を捨てることになったが、処方は完全に特定でき折り A の注釈は公式と sha256 一致だったため危険は低いと判断した。結果として G2 は通過した"
+  - type: judgement
+    note: "同時実行を 2 本に決めた。1 本 1.805 step/s、2 本 2.17 step/s、3 本 2.19 step/s と実測し、3 本目が総処理量を 1% しか増やさず per-run を 1.5 倍遅くすることを確かめたうえでの判断である"
+  - type: judgement
+    note: "折り A の test 評価は seed 42 を確定塔とした。折り A だけ 3 seed あり、契約は「折りごとに一度」としか書いていないため選ぶ必要があった。凍結源と同じ seed を採った"
+  - type: spec_defect
+    note: "scripts/make_fold_annotations.py と run_stage1_dtower.sh と stage1_dtower_queue.sh と eval_stage1_dtower.sh と write_stage1_dtower_evidence.py を新設し、eval_relation_detr_map.py に --split を足した（既定は従来どおり config の test_dataset を使う）。§3 はコマンドを書かないとするが scripts/ への新設は明示の対象外である"
+  - type: spec_defect
+    note: "third_party/Relation-DETR/configs/train_config_egosurgery_stage1_imagenet_seed{42,123,456}.py を新設した。COCO 版との差は resume_from_checkpoint の 1 箇所だけであることを diff で示した"
+  - type: environment
+    note: "折りごとの注釈は data/annotations/egosurgery_tool_folds/ へ置いた（.gitignore:10 で追跡外）。公式の egosurgery_tool/instances_*.json は .gitignore:118 で追跡対象のため、別ディレクトリにして取り違えを防いだ"
+  - type: judgement
+    note: "全 run の完了後、利用者の常設の指示に従い GPU の仮占有プロセスを戻した。そのため報告時点の preflight は P11 gpu_free が FAIL する。GPU を使う作業は完了しており、実行前の preflight は exit 0 であった"
+  - type: judgement
+    note: "契約と無関係な docs/experiment_settings.md（利用者の求めで作成した実験設定の索引）を同じ分岐に含めた"
+  - type: spec_defect
+    note: "契約が contract.allow_write を宣言していないため make forbidden-check が Task C の成果物を禁止領域として弾いた。本契約が新設する experiments/baselines/stage1_dtower/ の 1 件に限って追補した"
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "prereg.md §2 と SPEC §1 は凍結源が fp32 で学習されていることを前提に全 run を TF32 と定めるが、凍結源 run の command.sh の実測は --mixed-precision fp16 である。指示どおり TF32 で回すと処方の差分が 0 にならず完了判定 a を満たせない。利用者の判断で fp16 に揃えた"
+  - type: asserted_without_measuring
+    note: "SPEC が inputs.code.entrypoints に scripts/train_t1b.py を挙げるが、検出塔のフル学習の入口は third_party/Relation-DETR/main.py（accelerate launch）である。train_t1b.py は P→D 界面の学習器で別物であり、指示どおり進めると入口を取り違える"
+  - type: check_does_not_check
+    note: "契約は Task C で experiments/ 配下へ書く 14 run を必ず伴うのに contract.allow_write を宣言していないため、Task E-1 が求める make forbidden-check が必ず失敗する。前契約 T-2026-09-17-amp-compile-timing と同じ誤りの再発である"
+  - type: asserted_without_measuring
+    note: "完了判定 b の空振り確認が「test 動画を一本入れ替えた注釈で差 1」とするが、1 対 1 の入れ替えの対称差は 2 である（1 本抜けて 1 本入る）。実測は 2 で通常の照合は 0 であった。差が 0 でないことを示す目的は達するが期待値の記載が誤っている"
+  - type: check_does_not_check
+    note: "完了判定 g の空振り確認「収穫前後の行数の差 = 新実験数」はこの repo では成り立たない。収穫器は既存行も更新し同期で届いた退避物も拾うため、実測は index が +52 に対し新規 run は 27 件（うち本契約 14 件）であった。task_id での照合に替えた"
+
+positive_controls:
+  - judgement: "折り表の照合が空振りしていない"
+    breaking_input: "折り A の test から 04 を抜き 11 を入れた集合と照合する"
+    observed: "集合差が 2 になった（通常の照合は 0）。契約は差 1 を期待するが 1 対 1 の入れ替えの対称差は 2 である"
+  - judgement: "保存された重みと学習時の記録が一致している"
+    breaking_input: "best_ap.pth を読み直して val を評価し直す"
+    observed: "0.7244185525748421 で、学習時の TensorBoard 原値 0.7244138121604919 との差は 4.7e-06 であった"
+  - judgement: "同時実行の本数の決定が思い込みでない"
+    breaking_input: "3 本目を足して総処理量を測る"
+    observed: "2 本 2.17 step/s に対し 3 本 2.19 step/s で +1% にとどまり、per-run は 0.92 s から 1.37 s へ 1.5 倍遅くなった。3 本目は止めた"
+  - judgement: "B1 の区画を再生成する手順が文書を壊していない"
+    breaking_input: "所要時間の表を変えずに再生成する（無変更になるはず）"
+    observed: "前契約で 8 区画すべて無変更を確認済み。本契約で表を変えた後の再生成では 8 区画すべてが変わり、--check-doc は差 0 件になった"
+  - judgement: "preflight の P11 gpu_free が実際に装置の占有を見ている"
+    breaking_input: "GPU の仮占有プロセスを戻した状態で preflight を回す"
+    observed: "P11 が FAIL し、占有している 2 件の PID と使用量 40338 MiB を列挙した。実行前（占有 0 件）は PASS であった"
+  - judgement: "forbidden-check が禁止領域への書き込みを実際に捕まえる"
+    breaking_input: "allow_write を宣言せずに Task C の成果物を置く"
+    observed: "status fail で experiments/ の内側として弾かれた。宣言後の結果は送出節に記す"
+
+followups:
+  - "D*-ImageNet は 12 epoch で打ち切られている可能性が高い。最終 epoch が最良で、最後の 1 epoch の伸びが D*-COCO の 5.2 倍（+0.0067 対 +0.0004）である。epoch を増やしたときの到達点は測っていない。H3 の材料として両塔を使う前に、打ち切りの影響を見積もるか epoch を揃え直すかの判断が要る"
+  - "予測 2（ImageNet は 5〜15 mAP 低い）が外れ、実測は 1.66〜7.33 mAP と予測より差が小さかった。両塔とも打ち切られている可能性があるが切り分けていない。証拠地図 A の SurgMAE Table 7 からの外挿（距離 2〜3）の当たり方として記録する価値がある"
+  - "折り C・D・E で test mAP が val mAP を上回る（折り E は val 0.5272 に対し test 0.5841）。折りごとの難しさが val と test で逆向きに出ている。折り表の設計に起因するなら Tier 1 の読み方に影響する"
+  - "contract.allow_write の宣言漏れが 2 契約続けて起きた。experiments/ へ書く run を伴う契約では起票の雛形に入れるか、Task C 相当の run がある契約で自動的に補うかの判断が要る"
+  - "完了判定の空振り確認に「収穫前後の行数の差 = 新実験数」を置くのはこの repo では誤りである。収穫器は既存行も更新し同期で届いた退避物も拾う。雛形を直すかの判断が要る"
+  - "preflight の P3 deterministic_flags は宣言しても SKIP される（判定基準が未確定・backlog B-20）。宣言しても検査されない項目があることを起票側が知っている必要がある"
+
+unknowns:
+  - "D*-ImageNet を 12 epoch より延ばしたときの到達点。最終 epoch が最良で末尾の傾きが大きく打ち切りが疑われるが測っていない"
+  - "予測 2 の差が小さかった理由。両塔とも打ち切られている可能性があるが切り分けていない"
+  - "折り C・D・E で test mAP が val mAP を上回る理由。原因は調べていない"
+  - "Stage 1 の正式な工程塔の処方。ilya の契約 T-2026-09-18-stage1-phase-tower が確定中"
+  - "TF32 で回した場合の所要時間と主指標。凍結源が fp16 のため TF32 では回していない"
+
+commits: []

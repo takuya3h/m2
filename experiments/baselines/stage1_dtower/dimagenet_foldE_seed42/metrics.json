@@ -1,0 +1,33 @@
+{
+  "task_id": "T-2026-09-18-stage1-detector-towers",
+  "tower": "D*-ImageNet",
+  "fold": "E",
+  "seed": 42,
+  "val": {
+    "mAP": 0.4538452095476549,
+    "mAP_50": 0.6258939755193246,
+    "mAP_75": 0.504916257812518,
+    "AP_rare": 0.6381320986955059,
+    "AP_common": 0.4203385024298638,
+    "n_rare_classes": 2,
+    "n_common_classes": 11
+  },
+  "eval_recipe": {
+    "note": "NMS-free（conventions#eval_recipe）",
+    "score_thr": 0.0,
+    "max_per_img": 300,
+    "nms_pre": null,
+    "nms_iou": null
+  },
+  "training_time": "9:12:56",
+  "steps_per_epoch": 2773,
+  "epochs": 12,
+  "test": {
+    "mAP": 0.5655427297164539,
+    "mAP_50": 0.7150158607949502,
+    "mAP_75": 0.6163177924933532,
+    "AP_rare": 0.7683335724416333,
+    "AP_common": 0.5343441385279646,
+    "note": "折りごとに一度だけ評価。test_access_ledger.csv に記録"
+  }
+}
