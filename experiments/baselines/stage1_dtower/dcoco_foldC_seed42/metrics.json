@@ -1,0 +1,33 @@
+{
+  "task_id": "T-2026-09-18-stage1-detector-towers",
+  "tower": "D*-COCO",
+  "fold": "C",
+  "seed": 42,
+  "val": {
+    "mAP": 0.43846295001262053,
+    "mAP_50": 0.6272483165810855,
+    "mAP_75": 0.4987966468199943,
+    "AP_rare": 0.6003745250936101,
+    "AP_common": 0.4135534769232376,
+    "n_rare_classes": 2,
+    "n_common_classes": 13
+  },
+  "eval_recipe": {
+    "note": "NMS-free（conventions#eval_recipe）",
+    "score_thr": 0.0,
+    "max_per_img": 300,
+    "nms_pre": null,
+    "nms_iou": null
+  },
+  "training_time": "8:54:40",
+  "steps_per_epoch": 2682,
+  "epochs": 12,
+  "test": {
+    "mAP": 0.5010618788225796,
+    "mAP_50": 0.6548702656845381,
+    "mAP_75": 0.5516954752420493,
+    "AP_rare": 0.6685098690848417,
+    "AP_common": 0.4731538804455358,
+    "note": "折りごとに一度だけ評価。test_access_ledger.csv に記録"
+  }
+}

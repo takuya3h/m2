@@ -1234,3 +1234,25 @@ D\* と対称にする。
 そのまま通る。
 
 実測・確定 recipe・一周目との差は当該タスクの `RESULT.md`・`audit.md` を参照。
+
+### Stage 1 検出塔の 5 折り確定（2026-09-21）
+
+`T-2026-09-18-stage1-detector-towers` で `scripts/make_fold_annotations.py` /
+`run_stage1_dtower.sh` / `stage1_dtower_queue.sh` / `eval_stage1_dtower.sh` /
+`write_stage1_dtower_evidence.py` を追加し、`scripts/eval_relation_detr_map.py` に `--split` を足した
+（**既定は従来どおり** config の `test_dataset` を使う）。
+
+- `make_fold_annotations.py` — `conventions#folds` の 5 折りへ COCO 注釈を動画単位で組み替える。
+  🔴 **公式 3 ファイルの ID は 0 始まりで衝突する**（image 4,265 件・annotation 12,673 件）ため
+  プールして振り直す。**折り A は公式分割そのものなので複製して使い、ID を振り直さない**
+  （再現の忠実さのため。sha256 一致を検査する）。陰性対照つき
+- `stage1_dtower_queue.sh` — **常に 2 本だけ**同時に走らせる。2 本が最適であることは実測で決めた
+  （1 本 1.805 step/s → 2 本 2.17 → 3 本 2.19 で頭打ち。GPU 使用率は 2 本で 91〜96%）
+- `write_stage1_dtower_evidence.py` — `main.py` は `metrics.json` も `per_class_ap.json` も
+  書かないため、評価の出力からのみ証跡を作る（**手で数値を書かない**）
+
+**検出塔のフル学習の入口は `third_party/Relation-DETR/main.py`（accelerate）であり、
+`scripts/train_t1b.py` ではない**（後者は P→D 界面の学習器）。数値精度は凍結源と同じ **fp16**。
+
+`tools/estimate_tier_cost.py` の `det_tower_train` を 8.00 h（代理）→ **8.35 h（実測・`measured: True`）**
+にした。計算器の UNKNOWN は 10 → 9 件。

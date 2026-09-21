@@ -1,0 +1,186 @@
+# train.log から引用に要る行だけを抜いた要約。
+# 元の train.log は 1.6〜1.9 MB あり step ごとの損失行が大半のため版管理へ入れない。
+# 抜いた行: 各 epoch の先頭（lr）・COCO 評価の全 12 行・Training time・開始と保存の告知・異常語。
+Using [0, 0.5, 0.6299605249474365, 0.7937005259840997, 1.0, 1.259921049894873, 1.5874010519681991, 2.0, inf] as bins for aspect ratio quantization
+Using [0, 0.5, 0.6299605249474365, 0.7937005259840997, 1.0, 1.259921049894873, 1.5874010519681991, 2.0, inf] as bins for aspect ratio quantization
+[2026-09-17 22:26:50 det.__main__]: [RANK 0] load pretrained from /home/ubuntu/slocal2/m2/data/external/weights/relation_detr_resnet50_800_1333_coco_1x.pth
+[2026-09-17 22:26:50 det.__main__]: [RANK 0] Start training
+[2026-09-17 22:26:52 det.util.engine]: Epoch: [0]  [0/2405]  eta: 0:51:32  lr: 0.000000  data_time: 0.0080  iter_time: 1.2859  loss: 75.2489 (75.2489)  loss_class: 2.4146 (2.4146)  loss_bbox: 0.6819 (
+[2026-09-17 22:57:41 det.__main__]: [RANK 0] Start evaluation
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.573
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.689
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.623
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.194
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.582
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.696
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.837
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.866
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.554
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.874
+[2026-09-17 22:59:46 det.util.utils]: [RANK 0] the best ap model is saved to /home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower/dcoco_foldA_seed42/work/best_ap.pth
+[2026-09-17 22:59:47 det.util.engine]: Epoch: [1]  [0/2405]  eta: 0:40:34  lr: 0.000100  data_time: 0.0047  iter_time: 1.0121  loss: 21.2983 (21.2983)  loss_class: 0.6109 (0.6109)  loss_bbox: 0.1328 (
+[2026-09-17 23:36:43 det.__main__]: [RANK 0] Start evaluation
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.667
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.794
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.724
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.214
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.676
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.724
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.841
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.862
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.548
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.870
+[2026-09-17 23:38:53 det.util.utils]: [RANK 0] the best ap model is saved to /home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower/dcoco_foldA_seed42/work/best_ap.pth
+[2026-09-17 23:38:54 det.util.engine]: Epoch: [2]  [0/2405]  eta: 0:42:43  lr: 0.000100  data_time: 0.0203  iter_time: 1.0659  loss: 21.1383 (21.1383)  loss_class: 0.5644 (0.5644)  loss_bbox: 0.1482 (
+[2026-09-18 00:15:54 det.__main__]: [RANK 0] Start evaluation
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.676
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.800
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.732
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.277
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.686
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.738
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.836
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.853
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.574
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.861
+[2026-09-18 00:18:13 det.util.utils]: [RANK 0] the best ap model is saved to /home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower/dcoco_foldA_seed42/work/best_ap.pth
+[2026-09-18 00:18:15 det.util.engine]: Epoch: [3]  [0/2405]  eta: 0:38:44  lr: 0.000100  data_time: 0.0132  iter_time: 0.9664  loss: 21.4079 (21.4079)  loss_class: 0.3574 (0.3574)  loss_bbox: 0.2327 (
+[2026-09-18 00:55:09 det.__main__]: [RANK 0] Start evaluation
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.699
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.825
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.753
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.079
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.282
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.708
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.739
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.846
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.863
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.125
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.577
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.871
+[2026-09-18 00:57:28 det.util.utils]: [RANK 0] the best ap model is saved to /home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower/dcoco_foldA_seed42/work/best_ap.pth
+[2026-09-18 00:57:30 det.util.engine]: Epoch: [4]  [0/2405]  eta: 0:40:39  lr: 0.000100  data_time: 0.0039  iter_time: 1.0141  loss: 16.7801 (16.7801)  loss_class: 0.4288 (0.4288)  loss_bbox: 0.1881 (
+[2026-09-18 01:34:27 det.__main__]: [RANK 0] Start evaluation
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.704
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.824
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.761
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.073
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.273
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.714
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.743
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.845
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.864
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.150
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.574
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.871
+[2026-09-18 01:36:49 det.util.utils]: [RANK 0] the best ap model is saved to /home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower/dcoco_foldA_seed42/work/best_ap.pth
+[2026-09-18 01:36:50 det.util.engine]: Epoch: [5]  [0/2405]  eta: 0:39:09  lr: 0.000100  data_time: 0.0246  iter_time: 0.9771  loss: 14.5347 (14.5347)  loss_class: 0.3489 (0.3489)  loss_bbox: 0.1406 (
+[2026-09-18 02:13:51 det.__main__]: [RANK 0] Start evaluation
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.687
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.812
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.735
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.115
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.247
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.696
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.735
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.840
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.862
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.125
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.540
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.869
+[2026-09-18 02:16:14 det.util.engine]: Epoch: [6]  [0/2405]  eta: 1:15:00  lr: 0.000100  data_time: 0.0103  iter_time: 1.8712  loss: 22.4339 (22.4339)  loss_class: 0.5698 (0.5698)  loss_bbox: 0.1898 (
+[2026-09-18 02:53:40 det.__main__]: [RANK 0] Start evaluation
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.706
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.829
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.757
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.003
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.263
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.715
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.737
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.841
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.859
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.025
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.542
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.867
+[2026-09-18 02:56:06 det.util.utils]: [RANK 0] the best ap model is saved to /home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower/dcoco_foldA_seed42/work/best_ap.pth
+[2026-09-18 02:56:07 det.util.engine]: Epoch: [7]  [0/2405]  eta: 0:41:30  lr: 0.000100  data_time: 0.0039  iter_time: 1.0355  loss: 14.8310 (14.8310)  loss_class: 0.4670 (0.4670)  loss_bbox: 0.0857 (
+[2026-09-18 03:33:31 det.__main__]: [RANK 0] Start evaluation
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.711
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.839
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.767
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.269
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.721
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.741
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.833
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.854
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.495
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.862
+[2026-09-18 03:35:57 det.util.utils]: [RANK 0] the best ap model is saved to /home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower/dcoco_foldA_seed42/work/best_ap.pth
+[2026-09-18 03:35:59 det.util.engine]: Epoch: [8]  [0/2405]  eta: 0:37:04  lr: 0.000100  data_time: 0.0206  iter_time: 0.9251  loss: 13.6827 (13.6827)  loss_class: 0.2853 (0.2853)  loss_bbox: 0.1538 (
+[2026-09-18 04:13:24 det.__main__]: [RANK 0] Start evaluation
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.695
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.827
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.745
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.273
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.705
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.726
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.831
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.852
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.499
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.860
+[2026-09-18 04:15:51 det.util.engine]: Epoch: [9]  [0/2405]  eta: 0:37:27  lr: 0.000100  data_time: 0.0149  iter_time: 0.9346  loss: 20.3674 (20.3674)  loss_class: 0.5224 (0.5224)  loss_bbox: 0.1576 (
+[2026-09-18 04:53:19 det.__main__]: [RANK 0] Start evaluation
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.714
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.840
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.764
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.008
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.288
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.723
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.744
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.834
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.856
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.050
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.525
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.865
+[2026-09-18 04:55:45 det.util.utils]: [RANK 0] the best ap model is saved to /home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower/dcoco_foldA_seed42/work/best_ap.pth
+[2026-09-18 04:55:46 det.util.engine]: Epoch: [10]  [0/2405]  eta: 0:40:42  lr: 0.000010  data_time: 0.0023  iter_time: 1.0155  loss: 13.6939 (13.6939)  loss_class: 0.2355 (0.2355)  loss_bbox: 0.1334 
+[2026-09-18 05:33:12 det.__main__]: [RANK 0] Start evaluation
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.724
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.849
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.773
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.003
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.286
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.734
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.749
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.842
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.863
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.075
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.559
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.871
+[2026-09-18 05:35:38 det.util.utils]: [RANK 0] the best ap model is saved to /home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower/dcoco_foldA_seed42/work/best_ap.pth
+[2026-09-18 05:35:40 det.util.engine]: Epoch: [11]  [0/2405]  eta: 0:37:38  lr: 0.000010  data_time: 0.0039  iter_time: 0.9392  loss: 13.0117 (13.0117)  loss_class: 0.3198 (0.3198)  loss_bbox: 0.1350 
+[2026-09-18 06:13:24 det.__main__]: [RANK 0] Start evaluation
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.724
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.848
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.774
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.002
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.285
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.734
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.752
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.846
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.866
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.075
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.550
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.874
+[2026-09-18 06:15:50 det.util.utils]: [RANK 0] the best ap model is saved to /home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower/dcoco_foldA_seed42/work/best_ap.pth
+[2026-09-18 06:15:50 det.__main__]: [RANK 0] Training time: 7:48:59

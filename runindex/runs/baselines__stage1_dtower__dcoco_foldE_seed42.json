@@ -1,0 +1,138 @@
+{
+  "arm": "unknown",
+  "attributes": {
+    "epochs": 12,
+    "fold": "E",
+    "seed": 42,
+    "task_id": "T-2026-09-18-stage1-detector-towers",
+    "tower": "D*-COCO",
+    "training_time": "9:13:30"
+  },
+  "command": "#!/usr/bin/env bash\n# 自動生成: この run を起動したコマンドの記録\n# 契約 T-2026-09-18-stage1-detector-towers / 塔 coco / 折り E / seed 42\ncd third_party/Relation-DETR\nexport EGO_ANN_DIR=/home/ubuntu/slocal2/m2/data/annotations/egosurgery_tool_folds/E\nexport RELDETR_OUTPUT_DIR=/home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower/dcoco_foldE_seed42/work\nexport CUDA_HOME=/usr/local/cuda\naccelerate launch --num_processes 2 --main_process_port 29581 main.py \\\n    --config-file configs/train_config_egosurgery_seed42.py --seed 42 --mixed-precision fp16\n",
+  "commit": "ref: refs/heads/feat/stage1-detector-towers",
+  "config_path": "experiments/baselines/stage1_dtower/dcoco_foldE_seed42/config.yaml",
+  "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
+  "description": "dcoco_foldE",
+  "duplicate_bare_keys": [],
+  "epoch": null,
+  "eval_recipe": {
+    "max_per_img": 300,
+    "nms_iou": null,
+    "nms_pre": null,
+    "note": "NMS-free（conventions#eval_recipe）",
+    "score_thr": 0.0
+  },
+  "eval_recipe_id": null,
+  "evidence_completeness": "full",
+  "excluded": false,
+  "exclusion_reason": null,
+  "experiment_id": "baselines/dcoco_foldE/dcoco_foldE@val",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_seed_declared": null,
+  "frozen_source_tag": null,
+  "gpu": null,
+  "group": "baselines",
+  "harvest_warnings": [
+    "run 名に seq (3 桁連番) が無い別系統の命名: dcoco_foldE_seed42。step には description を充てた。",
+    "val と test の指標が共存する。primary（best 選択元）は val。test 側は metrics_by_split['test'] に保持している。"
+  ],
+  "host": null,
+  "host_raw": null,
+  "ledger_key": "baselines__stage1_dtower__dcoco_foldE_seed42",
+  "metrics": {
+    "AP_common": 0.5028382139988027,
+    "AP_rare": 0.661107646781214,
+    "mAP": 0.527187357503789,
+    "mAP_50": 0.6992663358568251,
+    "mAP_75": 0.5876459443972221,
+    "n_common_classes": 11,
+    "n_rare_classes": 2,
+    "steps_per_epoch": 2773
+  },
+  "metrics_by_split": {
+    "test": {
+      "AP_common": 0.5561252372044883,
+      "AP_rare": 0.7659360508639924,
+      "mAP": 0.5841000123590889,
+      "mAP_50": 0.716592520592131,
+      "mAP_75": 0.634606134377019
+    },
+    "unknown": {
+      "steps_per_epoch": 2773
+    },
+    "val": {
+      "AP_common": 0.5028382139988027,
+      "AP_rare": 0.661107646781214,
+      "mAP": 0.527187357503789,
+      "mAP_50": 0.6992663358568251,
+      "mAP_75": 0.5876459443972221,
+      "n_common_classes": 11,
+      "n_rare_classes": 2
+    }
+  },
+  "metrics_nested": {
+    "test.note": "折りごとに一度だけ評価。test_access_ledger.csv に記録"
+  },
+  "metrics_primary_split": "val",
+  "metrics_source": "metrics_json",
+  "notes": "# dcoco_foldE_seed42\n\n契約: T-2026-09-18-stage1-detector-towers\n塔: D*-COCO / 折り: E / seed: 42\n\n## 結果\n\n- val  mAP=0.5272 / AP_rare=0.6611 / AP_common=0.5028\n- test mAP=0.5841 / AP_rare=0.7659 / AP_common=0.5561（**折りごとに一度だけ**評価）\n\n## 処方\n\n凍結源 `s0_016` と**同一**（fp16・12 epoch・実効バッチ 4・lr 1e-4・`presets.detr`）。\n違うのは折りの注釈と seed と初期化だけである。所要 9:13:30。\n\n## 評価\n\nNMS-free（`conventions#eval_recipe`）。`AP_rare` は Skewer と Syringe の平均\n（`src/egosurgery/datasets/constants.py:71`）。NaN のクラスは平均から除く。\n",
+  "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
+  "path": "experiments/baselines/stage1_dtower/dcoco_foldE_seed42",
+  "per_class": {
+    "Bipolar Forceps": 0.6565530970261775,
+    "Electric Cautery": null,
+    "Forceps": 0.20086687163468203,
+    "Gauze": 0.1815363439518284,
+    "Hook": 0.4081049379647148,
+    "Mouth Gag": null,
+    "Needle Holders": 0.5830311144798334,
+    "Raspatory": 0.7295474928375345,
+    "Retractor": 0.46407625612521336,
+    "Scalpel": 0.8474072210843826,
+    "Scissors": 0.33238353886691,
+    "Skewer": 0.8009885988598859,
+    "Suction Cannula": 0.44277956985604283,
+    "Syringe": 0.5212266947025421,
+    "Tweezers": 0.6849339101595099
+  },
+  "per_class_kind": "tool",
+  "per_class_metric": "AP",
+  "per_class_nan_classes": [
+    "Electric Cautery",
+    "Mouth Gag"
+  ],
+  "per_class_source": "experiments/baselines/stage1_dtower/dcoco_foldE_seed42/per_class_ap.json",
+  "per_class_valid_count": 13,
+  "provenance": {
+    "aux_token": "no_aux_token",
+    "commit": "from_git_commit_txt",
+    "epoch": "not_determinable",
+    "host": "not_determinable",
+    "name": "from_dirname_desc_seed_no_seq",
+    "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
+    "seed": "from_dirname_verified_by_command_sh_and_config_yaml_and_metrics_json",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "primary_val_by_training_script",
+    "step": "from_dirname"
+  },
+  "run_id": "dcoco_foldE_seed42",
+  "seed": 42,
+  "seed_agreement": "agree",
+  "seed_command": 42,
+  "seed_config": 42,
+  "seed_detector": null,
+  "seed_phase": null,
+  "seq": null,
+  "split": "val",
+  "step": "dcoco_foldE",
+  "subgroup": "stage1_dtower",
+  "task_id": "T-2026-09-18-stage1-detector-towers",
+  "wandb_run_id": null,
+  "wandb_run_url": null
+}

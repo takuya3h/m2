@@ -35,6 +35,10 @@ def main() -> None:
     ap.add_argument("--checkpoint", type=str, required=True, help="best_ap.pth（repo 相対 or 絶対）")
     ap.add_argument("--num-workers", type=int, default=4)
     ap.add_argument("--out", type=str, default=None, help="stats を書き出す json（任意）")
+    ap.add_argument("--split", type=str, default=None, choices=("val", "test"),
+                    help="評価する分割。**既定（未指定）は従来どおり config の test_dataset を"
+                         "そのまま使う**。指定すると EGO_ANN_DIR の instances_<split>.json へ"
+                         "差し替える（折りごとの注釈を評価するために要る）")
     args = ap.parse_args()
 
     # config の env 経路を本チェックアウトへ（未設定時のみ）。detector は 15-class tool。
@@ -62,6 +66,16 @@ def main() -> None:
     cfg = Config(args.config, partials=("lr_scheduler", "optimizer", "param_dicts"))
     accelerator = Accelerator()
 
+    if args.split is not None:
+        # 分割を明示されたときだけ注釈を差し替える。**前処理は元の test_dataset と同じ
+        # transforms=None（増強なし・原解像度）にする。**
+        from datasets.coco import CocoDetection
+        cfg.test_dataset = CocoDetection(
+            img_folder=os.environ["EGO_ROOT"],
+            ann_file=f"{os.environ['EGO_ANN_DIR']}/instances_{args.split}.json",
+            transforms=None,
+        )
+        print(f"[eval] split={args.split} -> {os.environ['EGO_ANN_DIR']}/instances_{args.split}.json")
     test_loader = data.DataLoader(
         cfg.test_dataset, 1, shuffle=False, num_workers=args.num_workers, collate_fn=collate_fn,
     )

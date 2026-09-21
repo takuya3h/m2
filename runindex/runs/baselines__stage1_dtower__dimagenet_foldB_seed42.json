@@ -1,0 +1,138 @@
+{
+  "arm": "unknown",
+  "attributes": {
+    "epochs": 12,
+    "fold": "B",
+    "seed": 42,
+    "task_id": "T-2026-09-18-stage1-detector-towers",
+    "tower": "D*-ImageNet",
+    "training_time": "8:01:44"
+  },
+  "command": "#!/usr/bin/env bash\n# 自動生成: この run を起動したコマンドの記録\n# 契約 T-2026-09-18-stage1-detector-towers / 塔 imagenet / 折り B / seed 42\ncd third_party/Relation-DETR\nexport EGO_ANN_DIR=/home/ubuntu/slocal2/m2/data/annotations/egosurgery_tool_folds/B\nexport RELDETR_OUTPUT_DIR=/home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower/dimagenet_foldB_seed42/work\nexport CUDA_HOME=/usr/local/cuda\naccelerate launch --num_processes 2 --main_process_port 29621 main.py \\\n    --config-file configs/train_config_egosurgery_stage1_imagenet_seed42.py --seed 42 --mixed-precision fp16\n",
+  "commit": "ref: refs/heads/feat/stage1-detector-towers",
+  "config_path": "experiments/baselines/stage1_dtower/dimagenet_foldB_seed42/config.yaml",
+  "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
+  "description": "dimagenet_foldB",
+  "duplicate_bare_keys": [],
+  "epoch": null,
+  "eval_recipe": {
+    "max_per_img": 300,
+    "nms_iou": null,
+    "nms_pre": null,
+    "note": "NMS-free（conventions#eval_recipe）",
+    "score_thr": 0.0
+  },
+  "eval_recipe_id": null,
+  "evidence_completeness": "full",
+  "excluded": false,
+  "exclusion_reason": null,
+  "experiment_id": "baselines/dimagenet_foldB/dimagenet_foldB@val",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_seed_declared": null,
+  "frozen_source_tag": null,
+  "gpu": null,
+  "group": "baselines",
+  "harvest_warnings": [
+    "run 名に seq (3 桁連番) が無い別系統の命名: dimagenet_foldB_seed42。step には description を充てた。",
+    "val と test の指標が共存する。primary（best 選択元）は val。test 側は metrics_by_split['test'] に保持している。"
+  ],
+  "host": null,
+  "host_raw": null,
+  "ledger_key": "baselines__stage1_dtower__dimagenet_foldB_seed42",
+  "metrics": {
+    "AP_common": 0.38942834085540223,
+    "AP_rare": 0.5130028901763721,
+    "mAP": 0.4084398099817053,
+    "mAP_50": 0.5972338900978922,
+    "mAP_75": 0.4418633956840544,
+    "n_common_classes": 11,
+    "n_rare_classes": 2,
+    "steps_per_epoch": 2415
+  },
+  "metrics_by_split": {
+    "test": {
+      "AP_common": 0.393702261185646,
+      "AP_rare": 0.48894115583322995,
+      "mAP": 0.4064007804719905,
+      "mAP_50": 0.5877821409454781,
+      "mAP_75": 0.44073711307111
+    },
+    "unknown": {
+      "steps_per_epoch": 2415
+    },
+    "val": {
+      "AP_common": 0.38942834085540223,
+      "AP_rare": 0.5130028901763721,
+      "mAP": 0.4084398099817053,
+      "mAP_50": 0.5972338900978922,
+      "mAP_75": 0.4418633956840544,
+      "n_common_classes": 11,
+      "n_rare_classes": 2
+    }
+  },
+  "metrics_nested": {
+    "test.note": "折りごとに一度だけ評価。test_access_ledger.csv に記録"
+  },
+  "metrics_primary_split": "val",
+  "metrics_source": "metrics_json",
+  "notes": "# dimagenet_foldB_seed42\n\n契約: T-2026-09-18-stage1-detector-towers\n塔: D*-ImageNet / 折り: B / seed: 42\n\n## 結果\n\n- val  mAP=0.4084 / AP_rare=0.5130 / AP_common=0.3894\n- test mAP=0.4064 / AP_rare=0.4889 / AP_common=0.3937（**折りごとに一度だけ**評価）\n\n## 処方\n\n凍結源 `s0_016` と**同一**（fp16・12 epoch・実効バッチ 4・lr 1e-4・`presets.detr`）。\n違うのは折りの注釈と seed と初期化だけである。所要 8:01:44。\n\n## 評価\n\nNMS-free（`conventions#eval_recipe`）。`AP_rare` は Skewer と Syringe の平均\n（`src/egosurgery/datasets/constants.py:71`）。NaN のクラスは平均から除く。\n",
+  "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
+  "path": "experiments/baselines/stage1_dtower/dimagenet_foldB_seed42",
+  "per_class": {
+    "Bipolar Forceps": 0.32063859082467033,
+    "Electric Cautery": null,
+    "Forceps": 0.020634815839737475,
+    "Gauze": 0.24787438724181118,
+    "Hook": null,
+    "Mouth Gag": 0.8294365372475202,
+    "Needle Holders": 0.5102784226457949,
+    "Raspatory": 0.08808498864174515,
+    "Retractor": 0.1363912680588383,
+    "Scalpel": 0.5037177363493528,
+    "Scissors": 0.49385103965659916,
+    "Skewer": 0.49646696904450344,
+    "Suction Cannula": 0.4508496035644131,
+    "Syringe": 0.5295388113082409,
+    "Tweezers": 0.6819543593389427
+  },
+  "per_class_kind": "tool",
+  "per_class_metric": "AP",
+  "per_class_nan_classes": [
+    "Electric Cautery",
+    "Hook"
+  ],
+  "per_class_source": "experiments/baselines/stage1_dtower/dimagenet_foldB_seed42/per_class_ap.json",
+  "per_class_valid_count": 13,
+  "provenance": {
+    "aux_token": "no_aux_token",
+    "commit": "from_git_commit_txt",
+    "epoch": "not_determinable",
+    "host": "not_determinable",
+    "name": "from_dirname_desc_seed_no_seq",
+    "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
+    "seed": "from_dirname_verified_by_command_sh_and_config_yaml_and_metrics_json",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "primary_val_by_training_script",
+    "step": "from_dirname"
+  },
+  "run_id": "dimagenet_foldB_seed42",
+  "seed": 42,
+  "seed_agreement": "agree",
+  "seed_command": 42,
+  "seed_config": 42,
+  "seed_detector": null,
+  "seed_phase": null,
+  "seq": null,
+  "split": "val",
+  "step": "dimagenet_foldB",
+  "subgroup": "stage1_dtower",
+  "task_id": "T-2026-09-18-stage1-detector-towers",
+  "wandb_run_id": null,
+  "wandb_run_url": null
+}

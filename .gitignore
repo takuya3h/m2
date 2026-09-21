@@ -238,3 +238,9 @@ docs/sessions/raw/
 # ホストごとの状態であり全台で共有しない。行末にコメントを書かないこと
 # （パターンが壊れる）。検証: git check-ignore .sync-pause
 .sync-pause
+
+# Stage 1 検出塔の学習ログは 1.6〜1.9 MB × 14 本あり、step ごとの損失行が大半である。
+# 引用に要る行は train_summary.log（各 10 KB 程度）へ抜いてあり、そちらを追跡する。
+experiments/baselines/stage1_dtower/*/train.log
+experiments/baselines/stage1_dtower/*.boot.log
+experiments/baselines/stage1_dtower/*/eval_*.log

@@ -1,0 +1,93 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-09-18-stage1-detector-towers"
+  kind: exp
+  title: "Stage 1: 検出塔 D*-COCO と D*-ImageNet を五折りで確定する（トーナメントなし。折り A は三 seed）"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-09-17T21:58:19Z"
+  created_from:
+    runindex_commit: "96eb3a1ca20ab7eb4b373d93304c9e6b33b733d5"
+    counts: {index: 1266, experiments: 285, verdicts: 1506}
+  depends_on: [T-2026-09-17-fold-table, T-2026-09-17-amp-compile-timing]
+  amendments:
+    - date: "2026-09-18"
+      reason: "prereg §2 と SPEC §1 は凍結源が fp32 で学習されたことを前提に全 run を TF32 とするが、凍結源 run の command.sh の実測は accelerate launch --num_processes 2 main.py --config-file configs/train_config_egosurgery_seed42.py --seed 42 --mixed-precision fp16 であり、fp16 の自動混合精度であった。前契約 C2 の TF32 の測定は fp32 の界面 run を基準にしており、検出塔のフル学習には当てはまらない。利用者の判断で全 run を凍結源と同じ fp16 とする。これにより処方の差分は真に 0 項目になるが、完了判定 f の「全 run が TF32 で回り」は成立しないため起票者の誤りとして記録する"
+      diff: "数値精度を TF32 から fp16（凍結源と同一）へ。完了判定 f の TF32 の要件は不成立として記録"
+    - date: "2026-09-21"
+      reason: "契約は Task C で experiments/baselines/stage1_dtower/ への書き込みを必ず伴う 14 run を求める一方、contract.allow_write を宣言していないため Task E-1 が求める make forbidden-check が必ず失敗する。前契約 T-2026-09-17-amp-compile-timing でも同じ誤りが起き、同じ手当てをした。本契約が新設する 1 ディレクトリに限って許可を宣言した。data/ 配下は宣言しておらず、既存 run 配下も含まない"
+      diff: "contract.allow_write に experiments/baselines/stage1_dtower/ を 1 件追加"
+    - date: "2026-09-21"
+      reason: "§4 禁止事項 6 は runindex/** の手編集を禁じる一方 make runindex を明示的に許すが、Task E-1 が求める make forbidden-check は runindex/ の変更を禁止領域として弾く（実測 70 経路）。契約の中で許した操作が契約の求める検査で落ちるため、contract.allow_write に runindex/ を足して整合させた。**手編集はしていない。** 変更はすべて make runindex の生成物であり、併合後の再生成で両契約の run が残ることを実測で確かめてある"
+      diff: "contract.allow_write に runindex/ を 1 件追加"
+intent:
+  question: "Stage ゼロと同じ処方で検出塔を五折りに広げたとき、折り A の COCO 初期化塔は凍結源を再現し、ImageNet 初期化塔は COCO 初期化塔よりどれだけ低いか。折り間の散らばりは seed 間の散らばりよりどれだけ大きいか"
+  decision_at_stake: "関門 G 一（検出側）。両検出塔は Stage 二の受け取り手であり、H 三（受け取り手の表現に依存するか）の材料になる。同時に検出塔学習の所要時間が実測になり、Tier 一の試算の代理値が一つ消える"
+  hypothesis: "折り A の COCO 初期化塔は凍結源と一 mAP 以内で一致する。ImageNet 初期化塔は全折りで COCO 初期化塔より低い。折り間の散らばりは折り A の seed 間の散らばりより大きい"
+  related:
+    backlog: []
+inputs:
+  denominator:
+    ref: "exp:baselines/s0/relationdetr_bbox@val"
+    metric: "mAP"
+    require: {n_seeds: ">=3", sigma: present, split: val}
+  data:
+    dataset: "EgoSurgery-Tool subset (15 videos), bbox annotations, folds per conventions#folds"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt", "data/splits/ego_test.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/train_t1b.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#folds, conventions#split, conventions#eval_recipe, conventions#frozen_source, conventions#sigma]
+  conventions_rev: "e7a5100597a79b3b9c60935bf38d232f8ae96822"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  # Task C が必ず書く 14 run の成果物。**本契約が新設する 1 ディレクトリに限る**
+  # （起点に存在しない経路のみ許可される。既存 run 配下は宣言しても許可されない）。
+  allow_write: ["experiments/baselines/stage1_dtower/", "runindex/"]
+plan:
+  phases:
+    - {id: A, name: "prereg の commit。開始状態、装置、折り表の解決、凍結源の処方の特定、折りごとの注釈ファイルの生成", gpu: false, est: "2h"}
+    - {id: B, name: "D*-COCO 折り A seed 四十二の一本（再現の確認と一 run の所要時間）", gpu: true, est: "10h"}
+    - {id: C, name: "D*-COCO の残り六 run と D*-ImageNet の七 run（二枚で並行）", gpu: true, est: "60h"}
+    - {id: D, name: "test を折りごとに一度だけ評価。折り間と seed 間の散らばり。所要時間を計算器へ", gpu: true, est: "3h"}
+    - {id: E, name: "検証と報告", gpu: false, est: "90m"}
+  gates:
+    - {id: G1, after: A, check: "凍結源を生んだ処方が特定され、折りごとの train・val・test の注釈が集合差 零 で作られ、装置が空いている", on_fail: stop}
+    - {id: G2, after: B, check: "折り A seed 四十二の val mAP が凍結源の記録と一 mAP 以内", on_fail: ask}
+    - {id: G3, after: D, check: "test の評価が折りごとに一度、合計十回を超えていない", on_fail: stop}
+  env:
+    venv: ".venv-relation-detr"
+    preflight: [venv_active, cuda_ext_loaded, gpu_free, deterministic_flags]
+  resources: {server: "efros", gpu: 2, est_hours: 75, runs: 14}
+prereg:
+  prediction: "折り A の D 塔（COCO 初期化）seed 四十二は凍結源の val mAP と一 mAP 以内で一致する。D 塔（ImageNet 初期化）は五折りすべてで D 塔（COCO 初期化）より低く、差は五から十五 mAP。折り B から E の val mAP の折り間 SD は、折り A の三 seed の SD より大きい"
+  primary_endpoint: "各塔・各折りの val mAP（規約の評価 recipe）。折り A は三 seed の平均と SD。副次に AP rare"
+  decision_rule: "選定は行わない。両塔を確定する。折り A seed 四十二の D 塔（COCO 初期化）が凍結源と一 mAP 以内なら再現とみなす。一 mAP を超え三 mAP 以内なら続行し差を記録する。三 mAP を超えたら処方の照合をやり直す。test は確定した両塔について折りごとに一度だけ評価し、test アクセス台帳に記録する"
+  stop_conditions:
+    - "折り A seed 四十二の再現が三 mAP を超えて外れた場合は停止し、処方の差分を提示する"
+    - "ImageNet 初期化の学習が発散するか非数を出した場合は停止し、その run の記録を提示する"
+    - "一 run の所要時間が十二時間を超えた場合は run 数の見直しを諮る"
+    - "装置が他利用者に使われている場合は停止する"
+  committed_at: "2026-09-17T22:11:38+00:00"
+  commit: "fa9cc5466e0bee7646a0010b06413e6da853e03d"
+outputs:
+  expected_runs: 14
+  must_have: [metrics.json, per_class_ap.json, config.yaml, notes.md]
+  destination: "experiments/baselines/stage1_dtower/"
+  stamp: {task_id_in: config.yaml}
+  acceptance:
+    - "a: 凍結源を生んだ処方（config、epoch、batch、解像度、増強、seed）が記録から特定され、本契約の処方との差分が零項目（TF32 の設定を除く）"
+    - "b: 全 run が折り表に従い、各 run の train・val・test の画像集合が規約の表の動画集合と一致する（集合差 零）"
+    - "c: 折り A seed 四十二の D 塔（COCO 初期化）の val mAP が凍結源の記録と並べて書かれ、差が記録されている"
+    - "d: 両塔の五折り val mAP と AP rare が表にあり、折り A は三 seed の平均と SD、折り B から E は折り間 SD"
+    - "e: test は両塔について折りごとに一度だけ評価され、合計十回で、test アクセス台帳に記録されている"
+    - "f: 全 run が TF32 で回り、run ごとの壁時計時間と GPU 時間が記録され、計算器の所要時間表に検出塔学習の実測が入っている"
+    - "g: 全 run に task_id が刻まれ、runindex の収穫で新しい実験として現れる"
+    - "h: PR が Draft でなく存在し、base が phase0 で、分岐が feat/ で始まる"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [denominator_moved, frozen_source_hash_mismatch, "再現が三 mAP を超えて外れる", "一 run が十二時間を超える"]

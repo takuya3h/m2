@@ -110,11 +110,13 @@ RUN_TYPES: dict[str, RunType] = {
         RunType(
             key="det_tower_train",
             label="検出塔の学習（COCO / ImageNet 初期化、12 epoch）",
-            hours=8.0 * _H,
-            source="tasks/T-2026-08-29-lecun-detector-env-pd/RESULT.md:88（40 分/epoch × 12）",
-            measured=False,
-            note="フル学習の計時が repo に無い。塔は philip で学習され ckpt だけが配置された"
-            "（docs/experiment_log.md 2026-05-31 項）。全層を更新するため下界",
+            hours=8.35 * _H,
+            source="T-2026-09-18-stage1-detector-towers（efros・A6000 2 枚・14 run の実測平均）",
+            measured=True,
+            note="14 run の Training time の平均（7.816〜9.225 h、中央 8.031 h）。"
+            "**2 本同時に走らせた下での 1 run の壁時計**であり、14 x 8.35 / 2 枚 = 58.5 h が"
+            "実際の経過 58.7 h（9/17 22:26 -> 9/20 09:09 UTC）と一致する。折りにより "
+            "train の枚数が 9,657〜11,182 と違うため run ごとに幅がある",
         ),
         RunType(
             key="det_eval",
@@ -127,10 +129,11 @@ RUN_TYPES: dict[str, RunType] = {
         RunType(
             key="det_tower_w3",
             label="検出側の W3 界面 run（受け取り塔全体を学習）",
-            hours=8.0 * _H,
-            source="tasks/T-2026-08-29-lecun-detector-env-pd/RESULT.md:88（検出塔学習の代理と同じ）",
+            hours=8.35 * _H,
+            source="T-2026-09-18-stage1-detector-towers の検出塔学習の実測を代理に置く",
             measured=False,
-            note="W3 は塔全体を更新するためフル学習と同じ範囲に置く。下界",
+            note="W3 の run は依然として一件も無い。塔全体を更新するためフル学習と同じ範囲に置く。"
+            "**値は実測由来になったが W3 そのものは計時していないため代理のままとする**",
         ),
         RunType(
             key="probe",

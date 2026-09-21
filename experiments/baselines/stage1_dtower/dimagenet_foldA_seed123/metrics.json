@@ -1,0 +1,25 @@
+{
+  "task_id": "T-2026-09-18-stage1-detector-towers",
+  "tower": "D*-ImageNet",
+  "fold": "A",
+  "seed": 123,
+  "val": {
+    "mAP": 0.6774216470838215,
+    "mAP_50": 0.8230925533732388,
+    "mAP_75": 0.7324299489923592,
+    "AP_rare": 0.7411430435439339,
+    "AP_common": 0.6668014143404695,
+    "n_rare_classes": 2,
+    "n_common_classes": 12
+  },
+  "eval_recipe": {
+    "note": "NMS-free（conventions#eval_recipe）",
+    "score_thr": 0.0,
+    "max_per_img": 300,
+    "nms_pre": null,
+    "nms_iou": null
+  },
+  "training_time": "7:52:28",
+  "steps_per_epoch": 2405,
+  "epochs": 12
+}
