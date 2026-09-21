@@ -1,0 +1,39 @@
+task_id: T-2026-09-19-stage1-phase-tower-r2
+step: stage1_ptower_r2
+action: finetune
+fold: A
+seed: 42
+
+# backbone の fine-tune（掃引は ft_lr の 2 水準のみ）
+ft_lr: 0.0001
+ft_weight_decay: 0.0001
+ft_batch_size: 64
+ft_epochs: 12
+backbone_tag: imagenet_r50_v1_ft
+checkpoint: null
+verify_determinism: false
+
+# 時間ヘッド（一周目と同一。stage1_ptower.train がそのまま読む）
+candidate: A
+layers: 6
+smoothing_weight: 0.0
+history: 30
+epochs: 50
+patience: 10
+lr: 0.0005
+weight_decay: 0.01
+warmup_epochs: 2
+maps: 64
+desc_suffix: ""
+
+device: cuda:0
+cache: data/processed/stage1_features/r2_ft_lr0.0001_foldA_seed42/all_gap.npz
+manifest_dir: data/processed/phase_manifest
+batch_size: 32
+workers: 4
+hydra:
+  run:
+    dir: .
+  output_subdir: null
+  job:
+    chdir: false

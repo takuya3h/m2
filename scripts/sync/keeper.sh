@@ -26,6 +26,10 @@ exec 9>~/.keeper.lock
 flock -n 9 || exit 0
 
 M2DIR=$([ -d ~/slocal2 ] && echo ~/slocal2/m2 || echo ~/slocal/m2)
+# 三種目の位置（~/local/m2）。既存の候補はどちらも親ディレクトリの存在で判定されるため、
+# どちらかが在る台では下の行は短絡して M2DIR を変えない。無い台だけが三種目へ届く。
+# 出所: T-2026-09-21-m2dir-local
+[ -d ~/slocal2 ] || [ -d ~/slocal ] || { [ -d ~/local/m2 ] && M2DIR=~/local/m2; }
 
 while true; do
   # .tunnel_to_* を辞書順で一つ選び、ファイル名から中心を導出する。目印が無ければ張らない。

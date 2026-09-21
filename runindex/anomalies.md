@@ -8,7 +8,7 @@
 **明文化されていない**。以下はディレクトリ名の意味からの判断であり、
 規約に基づくものではない。**除外規約の明文化を推奨する。**
 
-除外 82 run / 全 1318 run（削除ではなくフラグ）
+除外 82 run / 全 1558 run（削除ではなくフラグ）
 
 | exclusion_reason | runs | 対象 |
 |---|---:|---|
@@ -37,7 +37,7 @@
 
 指標キーの接頭辞から split を確定できない run。**推測していない**。
 
-確定不能 44 run / 全 1318 run
+確定不能 44 run / 全 1558 run
 
 | split_provenance | runs |
 |---|---:|
@@ -115,9 +115,9 @@
 
 | per_class_kind | per_class_metric | runs | 内容 | 根拠 |
 |---|---|---:|---|---|
-| `phase` | `F1` | 636 | 9 クラスの工程別 **F1**（AP ではない） | `scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が `best.get("phase_per_class_f1", {})` を `log_per_class_ap()` に渡している |
+| `phase` | `F1` | 861 | 9 クラスの工程別 **F1**（AP ではない） | `scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が `best.get("phase_per_class_f1", {})` を `log_per_class_ap()` に渡している |
 | `unknown` | `unknown` | 432 | 既知の 2 体系のいずれとも一致しない | 確定不能 |
-| `None` | `None` | 129 | `per_class_ap.json` が無い・空・パース失敗 | — |
+| `None` | `None` | 144 | `per_class_ap.json` が無い・空・パース失敗 | — |
 | `tool` | `AP` | 100 | 15 クラスの術具 AP | `per_class_coco_map` / `COCOeval.precision` 由来 |
 | `coco_map` | `AP` | 21 |  |  |
 
@@ -797,7 +797,7 @@ adapter を書けば貴重な追加ソースになる。
 | run 名が命名規約 <step>_<seq3>_<desc>_seed<N> に一致しない | 82 |
 | val と test の指標が共存する。primary（best 選択元）は val。test 側は metrics_by_split['...'] に保持している。 | 79 |
 | per_class_ap.json が存在しない | 75 |
-| per_class_ap.json が空 ({...}) | 46 |
+| per_class_ap.json が空 ({...}) | 61 |
 | host '...' は実サーバーを一意に特定できない。host は null にした。 | 28 |
 | ディレクトリ名の p010 は seed ではない。command.sh が --tool-noise-rate を渡しており、ノイズ率 0.01 を指す。seed_phase には入れない。 | 24 |
 | ディレクトリ名の p020 は seed ではない。command.sh が --tool-noise-rate を渡しており、ノイズ率 0.02 を指す。seed_phase には入れない。 | 24 |
@@ -1002,7 +1002,7 @@ mAP 系の指標を持つのに術具 per-class（15 クラス）を持たない
 ## 12. experiments/README.md と実態の乖離
 
 README は step 識別子を **s0〜s9 / a1〜a7（17 種）** と規定しているが、
-実測は **273 種**。README に無い以下の系統が存在する。
+実測は **275 種**。README に無い以下の系統が存在する。
 
 | 系統 | step 識別子の種類 | run 合計 | 例 |
 |---|---:|---:|---|
@@ -1035,7 +1035,7 @@ M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 �
 これを split の既定値とし、`provenance.split = from_plan_section_16_7` を記録する。
 ただし **指標が 1 つもない run には適用しない**（評価されていないため null のまま）。
 
-既定を適用した run: 538
+既定を適用した run: 553
 
 | path | 指標キー |
 |---|---|
@@ -1486,6 +1486,21 @@ M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 �
 | `experiments/phase1/s4_grasp_injection_424_frozen_tecno_grasp_inference_inj_staged_seed404` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
 | `experiments/phase1/s4_grasp_injection_425_frozen_tecno_grasp_inference_inj_staged_seed456` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
 | `experiments/phase1/s4_grasp_injection_426_frozen_tecno_grasp_inference_inj_staged_seed505` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
+| `experiments/phase1/stage1_ptower_001_imagenet_r50_v1_features_P15_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r2_014_features_lr0.0001_foldA_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r2_015_features_lr0.0001_foldA_seed123` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r2_016_features_lr0.0001_foldA_seed456` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r2_017_features_lr0.0001_foldB_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r2_018_features_lr0.0001_foldD_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r2_019_features_lr0.0001_foldC_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r2_020_features_lr0.0001_foldE_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r2_020_features_lr3.3333333333333335e-05_foldA_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r2_021_features_lr3.3333333333333335e-05_foldA_seed123` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r2_021_features_lr3.3333333333333335e-05_foldA_seed456` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r2_022_features_lr3.3333333333333335e-05_foldC_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r2_023_features_lr3.3333333333333335e-05_foldB_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r2_024_features_lr3.3333333333333335e-05_foldE_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r2_025_features_lr3.3333333333333335e-05_foldD_seed42` | `elapsed_seconds`, `frames` |
 | `experiments/selection_noise_2026-07-29/runs/base_seed123_rep1` | `rep` |
 | `experiments/selection_noise_2026-07-29/runs/base_seed123_rep2` | `rep` |
 | `experiments/selection_noise_2026-07-29/runs/base_seed123_rep3` | `rep` |
@@ -1847,7 +1862,7 @@ _FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
 **したがって `frozen_source_tag` はキャッシュのパスからのみ導き、
 `frozen_source.seed` と `notes.md` の記述は採用していない。**
 
-- 実験数: **303** / run 数 1318
+- 実験数: **476** / run 数 1558
 - `experiment_id` を付けられなかった run: 82
   （run 名が命名規約に一致しない run）
 - `eval_recipe_id` の食い違いで分離した base: 24
@@ -1951,7 +1966,7 @@ delta:
 
 | 分類 | run 数 |
 |---|---:|
-| `no_denominator_declared` | 792 |
+| `no_denominator_declared` | 1032 |
 | `injection_from_config_yaml` | 512 |
 | `baseline` | 17 |
 | `denominator_unresolvable` | 12 |
@@ -1999,7 +2014,7 @@ per-class の値は 573 個の JSON に分散していて横断分析に使え�
 `runindex/per_class.csv` に long 形式（1 行 = 1 run × 1 クラス）で 1 ファイル化した。
 
 - `per_class_kind=tool` : 100 run × 15 クラス（術具 **AP**）
-- `per_class_kind=phase`: 636 run × 9 クラス（工程 **F1**）
+- `per_class_kind=phase`: 861 run × 9 クラス（工程 **F1**）
 
 **この 2 つを混ぜて集計してはならない。** 指標の種類が違う（AP と F1）。
 ファイル名は両方とも `per_class_ap.json` なので、名前では判別できない。
@@ -2357,7 +2372,7 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 
 | seed_agreement | run 数 | 意味 |
 |---|---:|---|
-| `agree` | 1204 | ディレクトリ名と他証拠が一致 |
+| `agree` | 1444 | ディレクトリ名と他証拠が一致 |
 | `unverified_no_other_evidence` | 32 | `command.sh` も `config.yaml` も無い（g2_* 群） |
 | `no_seed_in_dirname` | 82 | 命名規約外 |
 | **`conflict`** | **0** | **食い違い** |
@@ -2610,8 +2625,8 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 
 ### 26.1 🔴 決定的になり得る学習スクリプトは **1 本も無い**
 
-監査 35 スクリプト / うち CUDA を使う **18** 本 / 
-`can_be_deterministic = True` は **0** 本。
+監査 37 スクリプト / うち CUDA を使う **18** 本 / 
+`can_be_deterministic = True` は **1** 本。
 
 | 制御項目 | 設定している本数 |
 |---|---:|
@@ -2637,11 +2652,11 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 
 | seed_setup_via | 本数 | 意味 |
 |---|---:|---|
-| `direct` | 16 | ファイル内で直接 seed を張る（`scripts/train_*.py` 系）|
+| `direct` | 17 | ファイル内で直接 seed を張る（`scripts/train_*.py` 系）|
 | `seed_everything` | 1 | `src/egosurgery/utils/seed.py` のヘルパ経由 |
 | `seed_everything+delegates_to_engines` | 3 | ヘルパを呼びつつ更に委譲もする |
 | `delegates_to_engines` | 1 | 自分では触らず trainer に委譲（`src/egosurgery/train.py`）|
-| `none` | 5 | seed を張らない |
+| `none` | 6 | seed を張らない |
 
 **`seed_everything()` は 6 項目を設定している**
 （`random` / `PYTHONHASHSEED` / `numpy` / `torch.manual_seed` /

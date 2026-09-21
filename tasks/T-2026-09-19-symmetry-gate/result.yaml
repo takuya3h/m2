@@ -1,0 +1,70 @@
+result_version: 3
+task_id: "T-2026-09-19-symmetry-gate"
+status: pass
+host: "m2"
+branch: "feat/symmetry-gate"
+pr: 186
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "HEAD=ed9211bc=origin/phase0。変更前の数を実測: アンカー 10、提案カード 14、禁止語 15、L3 検査 12、check_spec 規則 8、試験 6 failed / 567 passed。未追跡 3 件は mv を実行基盤が拒否したため sha256 を記録してその場に残した"
+  - id: G2
+    verdict: pass
+    note: "P13 に 6 種の入力を通し FAIL 5 / PASS 1。列名が部分一致するだけの表（条件の分類/腕の数/判定規約/理由の欄）は拾わず FAIL。check_proposal は #15 欠落 1 件・#16 欠落 1 件・両方あり 0 件"
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 595
+
+deviations:
+  - type: environment
+    note: "Task A.1 の「未追跡を移動で退避」は実行基盤が mv を拒否した（Irreversible Local Destruction）。回避せず、3 件の sha256 を記録してその場に残し、commit に含めなかった。禁止領域の外であり forbidden-check の violations は 0"
+  - type: judgement
+    note: "P13 に「判定が三値でない」FAIL を足した。SPEC Task C.1 の FAIL 条件 3 つでは判定が空欄の行が素通りし、埋めないまま起票できる穴になるため。付録 A・D が定める様式（判定は三値）の範囲内"
+  - type: judgement
+    note: "docs/issuer-defects.md の追記を付録 F の ### から既存文書に合わせて ## にし、冒頭の型の一覧に 2 行足した。付録の本文は変えていない。型の一覧の 2 行には result.yaml の enum には未追加である旨を明記した"
+  - type: judgement
+    note: "tests/test_check_proposal.py の CARD_COUNT を 14 から 16 にし、件数を名に含む試験を 1 つ改名した。規約の件数に追随させるため。検査器の挙動は変えていない"
+
+issuer_defects:
+  - type: check_does_not_check
+    note: "完了判定 E.1 が make forbidden-check の permitted を 3 件と予期していたが実測は 1 件。permitted は禁止領域に該当した経路だけを数えるため、tasks/_templates/exp/prereg.md と docs/issuer-defects.md は allow_write に宣言しても現れない。指示どおり件数で判定すると、violations 0 の合格を不合格と読み違える"
+  - type: asserted_without_measuring
+    note: "確定した事実に「exp の雛形は tasks/_templates/exp/（spec.yaml、SPEC.md、prereg.md）」と書いたが prereg.md は存在しなかった。指示どおり「足す」と読むと編集対象が見つからず止まる。実際には新設になり、雛形全体の構成を実行者が決める必要が生じた"
+  - type: asserted_without_measuring
+    note: "付録 D の表を「判定列が 揃える／意図的に変える／UNKNOWN のいずれか」と様式で定めながら、Task C.1 の FAIL 条件に空欄と三値以外を挙げていない。指示どおり実装すると判定が空欄の行が PASS になり、表を置いただけで埋めないまま起票できてしまう"
+
+positive_controls:
+  - judgement: "完了判定 a: conventions#symmetry が L2 で引ける"
+    breaking_input: "存在しないアンカー名 symmetry_zz を引く"
+    observed: "conventions_anchors() に symmetry_zz は無く、symmetry は在った。常に真を返す壊れ方ではない"
+  - judgement: "完了判定 d: P13 が対称性の表を同定する"
+    breaking_input: "列名が部分一致するだけの表（条件の分類 / 腕の数 / 判定規約 / 理由の欄）だけを置いた prereg"
+    observed: "FAIL「対称性の表が無い」。別の表を拾っていない。逆向きに、手前に無関係な表（指標 / 値）があり様式に合う表もある prereg では PASS"
+  - judgement: "完了判定 d: P13 が UNKNOWN 行を検出する"
+    breaking_input: "check_symmetry_table() の UNKNOWN 判定を if False: へ差し替える（変異試験）"
+    observed: "tests/test_symmetry_gate.py が 2 failed / 26 passed。test_p13_fails_on_unknown_row と test_template_prereg_fails_p13_with_every_row_unknown が落ちた。原本へ戻し sha256 339bf315…02fe が一致、28 passed"
+  - judgement: "完了判定 e: check_proposal が #15・#16 を見る"
+    breaking_input: "#15 だけ、または #16 だけを欠く提案文書"
+    observed: "それぞれ missing_heading 1 件。16 件そろえた文書では hits 0 件・errors 0 件"
+  - judgement: "完了判定 b・c・g: 既存行を変えていない"
+    breaking_input: "既存行を 1 行でも書き換える（要約値が動く）"
+    observed: "card_rows_1-14 は b884c6da…a925d、cautions_rows_1-13 は bbc6de6c…f190 が変更前後で一致。git diff --numstat の削除行は conventions.md 0 / issuer-defects.md 0"
+  - judgement: "完了判定 f: 雛形のままでは起票できない"
+    breaking_input: "雛形 tasks/_templates/exp/prereg.md をそのまま prereg として置く"
+    observed: "P13 が FAIL「15 行を検査。UNKNOWN 15 行: …」。FAIL の行数 15 が表の行数 15 と一致"
+
+followups:
+  - "既存の exp 契約 12 件はすべて P13 で FAIL になる（実測）。いずれも完了済みで prereg に対称性の表が無いためである。過去の prereg は書き換えていない。遡って再実行する契約があれば、先に表を埋めること"
+  - "tasks/_schema/result.schema.json の issuer_defects.type enum は 4 語のままである。asymmetric_comparison と rule_read_narrowly は docs/issuer-defects.md の分類として追記したが schema には無い。本契約は schema を allow_write に宣言していないため触っていない。追加の可否は起票者の判断"
+  - "三周目の工程塔契約は本 PR の統合後に起票する。P13 が動く状態で prereg を書くため（SPEC §8 の申し送り）"
+
+unknowns:
+  - "make task-validate を全契約で回すと SKIP inbox.d: spec.yaml なし により 1 件 failed になる。変更前から同じで、本契約は tasks/inbox.d/ の構造を変えていない。原因の特定は本契約の範囲外"
+  - "make lint は変更前から落ちている（black --check 73 ファイル、ruff 3 件。いずれも本契約が触っていないファイル）。本契約が触った 4 ファイルは ruff check を通る。black は repo 全体が未整形のため合わせていない"
+
+commits:
+  - "d6b37c79"

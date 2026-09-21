@@ -1125,6 +1125,37 @@ t1b の実測（1 run 約 4 時間 / 6 epoch）を代理に置いた。**いず�
 `--check-coverage` は run に対応づかない M の項目を数える。**いずれも壊した入力で
 1 件を返すことまで試験で確かめている**（陽性対照）。
 
+## Stage 1 工程塔の実行準備（2026-09-18）
+
+`T-2026-09-18-stage1-phase-tower` 用に `scripts/stage1_ptower.py` と
+`configs/stage1_ptower.yaml` を追加。Hydra の `action=extract/train` で ImageNet V1
+凍結R50のGAP特徴と、折り別のA/C/単フレーム線形対照を実行する。
+二度の全特徴抽出の一致・重み変更対照・キャッシュSHA-256照合を行い、
+W&B接続失敗時は実験を開始しない。学習はval Jaccardで選択しtestは評価しない。
+追加6動画の画像が未発見のため、利用者承認によりP*-15を先行する。
+現時点で候補B・全トーナメント・選定後testは未実装/未実施。
+進捗と実測は当該タスクのRESULT.md・audit.mdを参照。
+
+## Stage 1 工程塔 P\*-15 の確定（2026-09-18）
+
+`T-2026-09-18-stage1-phase-tower` を完走した。上の「実行準備」の節にある
+「候補 B・全トーナメント・選定後 test は未実装/未実施」は解消している。
+
+`scripts/run_stage1_ptower.py`（2 並列で格子を回し、完走済みの設定を証跡から見つけて飛ばす）と
+`scripts/select_stage1_ptower.py`（val だけで選定し、確定塔の test を折りごとに一度だけ評価する）を追加。
+test は台帳 `experiments/phase1/stage1_ptower/test_access_{A..E}.json` を `open("x")` で先に作るため、
+中断しても黙って再評価されない。
+
+**確定した P\*-15 の recipe は、候補 C（truncated MSE の平滑化損失）・8 層（受容野 1021 フレーム）・
+平滑化重み 0.30・履歴 30。** 5 折り平均 val macro Jaccard 0.32891、test 0.22472。
+選定は 70 run の val だけで行い、最良と次点が同点になったため事前登録 §6.3 に従い諮って決めた。
+同点規則「同一候補・同一受容野で残る同点は折り A の seed 間 pstd が小さい方」を `select()` に追加した。
+
+**P\*-21 は UNKNOWN。** 追加 6 動画（17〜22）の注釈は実在するが画像が本ホストに無く、
+学習も test も行っていない。Stage 2 の主分母は P\*-21 であるため、画像を使えるようにする別契約が要る。
+
+数値・逸脱・起票者の誤り・陽性対照は当該タスクの `RESULT.md`・`result.yaml`・`audit.md` を参照。
+
 ### 凍結検出塔の出力キャッシュの識別実験（2026-09-17）
 
 `T-2026-09-17-frozen-feature-cache-timing` で `scripts/profile_t1b_step.py` と
@@ -1174,6 +1205,35 @@ Hungarian matcher の費用行列に非数が入る）。利用者の判断で�
 `tools/estimate_tier_cost.py` の `det_iface_w2` を 4.00 h → **4.82 h** に直した
 （前契約の実測比 1.205 から導いた。`measured` は False のまま）。
 `docs/stage0/B1_tier1_cost_estimate.md` の 8 区画を再生成し `--check-doc` は差 0 件。
+
+## Stage 1 工程塔の二周目: backbone の fine-tune（2026-09-18）
+
+一周目（`T-2026-09-18-stage1-phase-tower`）は backbone を凍結したままだった。検出塔 D\* が
+backbone を手術データで fine-tune しているのに工程塔 P\* を凍結のままにするのは不公平で、
+近年の工程認識研究にも例が無い（利用者の指摘）。二周目
+`T-2026-09-19-stage1-phase-tower-r2` は backbone を折りごとに工程ラベルで fine-tune し、
+D\* と対称にする。
+
+追加した道具:
+
+- `scripts/stage1_ptower_r2.py` — Hydra の `action=finetune/extract/train`。`finetune` は
+  **stem（conv1・bn1）だけを凍結**して layer1〜4 と fc を学習する（検出塔の
+  `freeze_indices=(0,)` と揃えた）。折りの train 動画だけを使い、val が最良 epoch を選び、
+  **test は読まない**。`extract` は fine-tune 後の backbone から、一周目と同じ前処理で
+  C5 GAP を書き出す（差が backbone の重みだけになるようにするため）。`train` は一周目の
+  `stage1_ptower.train` をそのまま呼ぶ
+- `scripts/run_stage1_ptower_r2.py` — FT（14 本）・EX（14 本）・HEAD（140 run）の格子を
+  2 並列で回す。証跡のある設定は飛ばすため、中断しても続きから再開できる
+- `scripts/select_stage1_ptower_r2.py` — val だけで選定し、確定塔の test を折りごとに一度
+  評価する。**判定規則は一周目の `select_stage1_ptower.select` を import してそのまま使う**
+  （同点規則とその試験を共有するため）。学習率は表を広げるだけで同点規則には入らない
+
+既存スクリプトへの変更は後方互換のみ。`stage1_ptower.py` の 5 箇所を `cfg.get(...)` へ変え
+（`step` / `data_setting` / `desc_suffix` / `backbone_tag`）、`run_stage1_ptower.py` の
+`completed()` に `task` 引数を足した。**既定値はすべて一周目の値**であり、一周目の試験 8 件は
+そのまま通る。
+
+実測・確定 recipe・一周目との差は当該タスクの `RESULT.md`・`audit.md` を参照。
 
 ### Stage 1 検出塔の 5 折り確定（2026-09-21）
 

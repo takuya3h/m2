@@ -1,0 +1,70 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-09-19-symmetry-gate"
+  kind: impl
+  title: "比較の対称性を起票前に確かめる関門を置く: 規約 symmetry 節、提案カード二項目、L3 検査、雛形、点検表、欠陥の記録"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-09-18T12:58:53Z"
+  created_from:
+    runindex_commit: "029b5315a4b543fabbebe350e2e1302e2d816d9b"
+    counts: {index: 0, experiments: 0, verdicts: 0}
+  depends_on: [T-2026-09-16-proposal-gate]
+  amendments:
+    - date: "2026-09-19"
+      reason: "created_from.runindex_commit と contract.conventions_rev の REPLACE-BY-EXECUTOR 占位を実測値へ確定した。runindex_commit は runindex/ を最後に変えた commit、conventions_rev は context/conventions.md を最後に変えた commit。created_from.counts は 本契約が runindex を参照しないため 0 のまま残す（実測は index 1507 / experiments 458 / verdicts 1506）"
+      diff: "runindex_commit: REPLACE -> 029b5315...; conventions_rev: REPLACE -> e7a51005..."
+intent:
+  question: "比較する腕の条件が揃っているかを、起票の段階で機械と手順の両方で止められるか"
+  decision_at_stake: "Stage 一 の工程塔で二度続いた非対称（凍結の有無、COCO 事前学習の有無、入力解像度）を三周目以降で繰り返さない運用の開始"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "not-referenced"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["tools/validate_task.py", "tools/check_proposal.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#proposal_gate]
+  conventions_rev: "e7a5100597a79b3b9c60935bf38d232f8ae96822"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["context/conventions.md", "tasks/_templates/exp/prereg.md", "docs/issuer-defects.md"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。規約のアンカー数、検査器の規則数、L3 の検査数、試験の失敗数", gpu: false, est: "30m"}
+    - {id: B, name: "conventions.md に symmetry 節を足し、proposal_gate 節と issuer_cautions 節に指定の行を足す", gpu: false, est: "40m"}
+    - {id: C, name: "L3 に P十三 symmetry_table_complete を足す。check_proposal.py にカード二項目を足す", gpu: false, est: "2h"}
+    - {id: D, name: "exp の prereg 雛形、docs/symmetry-checklist.md、docs/issuer-defects.md の追記", gpu: false, est: "60m"}
+    - {id: E, name: "検証（対照つき）と報告", gpu: false, est: "60m"}
+  gates:
+    - {id: G1, after: A, check: "作業ツリーが清浄で、変更前の数（アンカー、規則、検査、失敗）が記録された", on_fail: stop}
+    - {id: G2, after: C, check: "P十三 と check_proposal の追加が、陽性対照で落ち、陰性対照で通る", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [symmetry-checklist.md]
+  destination: "docs/"
+  acceptance:
+    - "a: conventions#symmetry が L2 で引け、存在しないアンカー名では失敗する"
+    - "b: conventions#proposal_gate のカード表に十五番と十六番の行があり、他の行の本文は変わっていない"
+    - "c: conventions#issuer_cautions に十四番の注意があり、他の行の本文は変わっていない"
+    - "d: L3 の P十三 が、対称性表の無い exp で FAIL、UNKNOWN 行を含む exp で FAIL、全行が揃うか意図的差の exp で PASS、impl と analysis では SKIP"
+    - "e: check_proposal.py が十五番か十六番を欠く提案文書で不足を検出し、両方ある文書で零件。既存の検査結果は変わらない"
+    - "f: exp の prereg 雛形に対称性表の骨組みがあり、雛形から作った prereg で P十三 が UNKNOWN により FAIL する"
+    - "g: docs/issuer-defects.md に二つの型（asymmetric_comparison、rule_read_narrowly）と実例が追記され、既存の項は変わっていない"
+    - "h: tools/check_spec.py の規則数が変更前後で同じ"
+    - "i: 追加した試験が通り、変更前に失敗していた試験の件数が増えていない"
+    - "j: PR が Draft でなく存在し、base が phase0 で、分岐が feat/ で始まる"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "L3 の実装に検査を足すと既存の検査の番号や順序が変わる場合（変えずに末尾に足せないとき）"
+    - "proposal_gate 節の表に行を足すと既存行の本文を変えざるを得ない場合"
+    - "実行基盤が書き込みや rm を拒む場合"

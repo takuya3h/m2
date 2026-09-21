@@ -1,0 +1,84 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-09-20-dlsta-join-foundation"
+  kind: impl
+  title: "同期の群れへ加わるための基盤を作り、鍵と識別子を版管理へ公開する"
+  origin: claude-app
+  created_at: "2026-09-20T14:00:00Z"
+  created_from:
+    runindex_commit: "29a6116"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: []
+  amendments: []
+
+intent:
+  question: "六台が中心を介して繋がっている。本ホストは加わっていない。実行環境そのものが無く、版管理の位置も他台と違い、機器名は容器の識別子を返す。他台と同じ構成で環境を作り、論理名を解決できるようにし、中心宛の鍵と識別子を版管理へ公開できるか"
+  decision_at_stake: "本ホストが七台目として加われるか。基盤が整えば、中心が鍵と識別子を登録し、中継と起動へ進める。版管理の位置が三種目であるため、起票者の記述にある前提が本ホストで成り立つかも同時に確かめる"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/sync/keeper.sh"
+      - "scripts/sync/m2-sync.sh"
+
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "c801e17"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "実行環境の作成と、論理名および版管理の識別の設定", gpu: false, est: "60m"}
+    - {id: B, name: "中心宛の鍵と同期処理の識別子の公開", gpu: false, est: "50m"}
+    - {id: C, name: "記述の訂正と報告", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "開始時に何が無いかを記録し、他台と同じ版で実行環境を作った。装置が使えて主要な依存が読み込める。論理名が新しいシェルの両方の形態で解決され、版管理の識別を値の出所つきで設定した"
+      on_fail: stop
+    - id: G2
+      after: B
+      check: "中心宛の鍵を作り指紋を記録した。版管理へ置いたものが公開鍵だけであることを三つの検査と囮で示した。配布物と配置物の要約値が中心と一致し、識別子を一行で公開した。同期処理が起動していないことを両方向の対照で確かめた"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-09-20-dlsta-join-foundation/"
+  acceptance:
+    - "開始時に何が無いかを記録している"
+    - "他台と同じ版で実行環境を作り、装置が使えることを示している"
+    - "依存の検査で止まった場合、飛ばした手段とその旨を記録している"
+    - "論理名を両方の場所へ置き、新しいシェルの両方の形態で解決されることを示している"
+    - "版管理の識別を設定し、値の出所を記録している"
+    - "中心宛の鍵を作り、指紋を記録し、秘密鍵の中身をどこにも含んでいない"
+    - "版管理へ置いたものが公開鍵だけであることを三つの検査と囮で示している"
+    - "配布物と配置物の要約値が中心と一致し、識別子を一行で公開している"
+    - "同期処理が起動していないことを両方向の対照で示している"
+    - "起票者の記述を実測どおりに訂正し、三つの規約の適用可否を記録している"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "実行環境を作れず、以降の検証が通らない場合"
+    - "主要な依存が読み込めず、管理者権限が必要になった場合"
+    - "配布物の要約値が中心と一致しない場合"
+    - "識別子を読み取れず、他ホストへ公開できない場合"
+    - "版管理の識別の値を確かめられない場合"

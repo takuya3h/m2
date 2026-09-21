@@ -35,7 +35,7 @@ FORBIDDEN_IN_CONVENTIONS = (
     "最大の新規性", "世界初", "画期的", "有望", "筋が良い", "本命", "未踏", "空白",
     "決定的", "確実に効く", "明らかに", "大幅", "劇的", "必ず改善", "唯一の",
 )
-CARD_COUNT = 14
+CARD_COUNT = 16
 NUMERIC_ITEMS = [5, 6, 10]
 
 
@@ -49,7 +49,7 @@ def test_forbidden_words_come_from_conventions():
     assert tuple(forbidden_words()) == FORBIDDEN_IN_CONVENTIONS
 
 
-def test_card_items_are_fourteen_and_numbered_one_to_fourteen():
+def test_card_items_are_sixteen_and_numbered_one_to_sixteen():
     items = card_items()
     assert len(items) == CARD_COUNT
     assert sorted(items) == list(range(1, CARD_COUNT + 1))
@@ -143,12 +143,12 @@ def _card(missing: int | None = None, blank_numbers: tuple[int, ...] = ()) -> st
 
 
 def test_card_complete_gives_zero():
-    """陰性対照。見出し 14 件で不足 0 件。"""
+    """陰性対照。見出し 16 件で不足 0 件。"""
     assert check_card(_card(), card_items(), numeric_items()) == []
 
 
 def test_card_missing_one_heading_gives_one():
-    """陽性対照。見出し 13 件で不足 1 件。"""
+    """陽性対照。見出しを 1 件落として不足 1 件。"""
     findings = check_card(_card(missing=7), card_items(), numeric_items())
     assert len(findings) == 1
     assert findings[0].kind == "missing_heading"

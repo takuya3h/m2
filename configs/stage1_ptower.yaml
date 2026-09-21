@@ -1,0 +1,25 @@
+task_id: T-2026-09-18-stage1-phase-tower
+action: extract
+candidate: A
+fold: A
+seed: 42
+layers: 6
+smoothing_weight: 0.0
+history: 30
+device: cuda:0
+cache: data/processed/stage1_features/imagenet_r50_v1_stage1/all_gap.npz
+manifest_dir: data/processed/phase_manifest
+epochs: 50
+patience: 10
+lr: 0.0005
+weight_decay: 0.01
+warmup_epochs: 2
+maps: 64
+batch_size: 32
+workers: 4
+hydra:
+  run:
+    dir: .
+  output_subdir: null
+  job:
+    chdir: false
