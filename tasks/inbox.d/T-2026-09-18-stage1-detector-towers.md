@@ -7,3 +7,5 @@
 - [ ] 2026-09-21 [cc] 🔴 **`contract.allow_write` の宣言漏れが 2 契約続けて起きた。** `experiments/` へ書く run を伴う契約では `make forbidden-check` が必ず失敗する。**起票の雛形に入れるか自動で補うかの判断が要る**（tools/check_forbidden.py）
 - [ ] 2026-09-21 [cc] **完了判定の空振り確認に「収穫前後の行数の差 = 新実験数」を置くのは誤り。** 収穫器は既存行も更新し、同期で届いた退避物も拾う。実測は index +52 に対し新規 run 27 件（うち本契約 14 件）。**`task_id` での照合に替えるべき**（tasks/_templates/）
 - [ ] 2026-09-21 [cc] **検出塔のフル学習の入口は `main.py`（accelerate）であり `scripts/train_t1b.py` ではない。** 契約の `inputs.code.entrypoints` が後者を挙げていた。`train_t1b.py` は P→D 界面の学習器で別物である（third_party/Relation-DETR/main.py）
+- [ ] 2026-09-21 [cc] 🔴 **契約が許した操作が、契約の求める検査で落ちる。** §4 禁止事項 6 は `runindex/**` の手編集を禁じる一方 **`make runindex` は可**と明記するが、Task E-1 が求める `make forbidden-check` は `runindex/` の変更を 70 経路すべて禁止領域として弾く。`contract.allow_write` に `runindex/` を足して整合させた。**起票の雛形で解くべき**（tools/check_forbidden.py）
+- [ ] 2026-09-21 [cc] **`runindex/` は併合で必ず衝突する。** `.gitattributes` の union 指定は `context/auto/**` と `tasks/inbox.md` だけで `runindex/` は対象外。今回 4 ファイルが衝突し、phase0 側を土台に採ってから `make runindex` で再生成して解いた。**再生成後に両契約の run が残ることを実測で確かめる**のが要（本契約 14 件・ilya の工程塔 72 + 168 件）。union を `runindex/` にも広げるかの判断が要る（.gitattributes）

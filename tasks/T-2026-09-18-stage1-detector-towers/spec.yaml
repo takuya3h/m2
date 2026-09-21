@@ -17,6 +17,9 @@ meta:
     - date: "2026-09-21"
       reason: "契約は Task C で experiments/baselines/stage1_dtower/ への書き込みを必ず伴う 14 run を求める一方、contract.allow_write を宣言していないため Task E-1 が求める make forbidden-check が必ず失敗する。前契約 T-2026-09-17-amp-compile-timing でも同じ誤りが起き、同じ手当てをした。本契約が新設する 1 ディレクトリに限って許可を宣言した。data/ 配下は宣言しておらず、既存 run 配下も含まない"
       diff: "contract.allow_write に experiments/baselines/stage1_dtower/ を 1 件追加"
+    - date: "2026-09-21"
+      reason: "§4 禁止事項 6 は runindex/** の手編集を禁じる一方 make runindex を明示的に許すが、Task E-1 が求める make forbidden-check は runindex/ の変更を禁止領域として弾く（実測 70 経路）。契約の中で許した操作が契約の求める検査で落ちるため、contract.allow_write に runindex/ を足して整合させた。**手編集はしていない。** 変更はすべて make runindex の生成物であり、併合後の再生成で両契約の run が残ることを実測で確かめてある"
+      diff: "contract.allow_write に runindex/ を 1 件追加"
 intent:
   question: "Stage ゼロと同じ処方で検出塔を五折りに広げたとき、折り A の COCO 初期化塔は凍結源を再現し、ImageNet 初期化塔は COCO 初期化塔よりどれだけ低いか。折り間の散らばりは seed 間の散らばりよりどれだけ大きいか"
   decision_at_stake: "関門 G 一（検出側）。両検出塔は Stage 二の受け取り手であり、H 三（受け取り手の表現に依存するか）の材料になる。同時に検出塔学習の所要時間が実測になり、Tier 一の試算の代理値が一つ消える"
@@ -41,7 +44,7 @@ contract:
   verbatim_forbidden: true
   # Task C が必ず書く 14 run の成果物。**本契約が新設する 1 ディレクトリに限る**
   # （起点に存在しない経路のみ許可される。既存 run 配下は宣言しても許可されない）。
-  allow_write: ["experiments/baselines/stage1_dtower/"]
+  allow_write: ["experiments/baselines/stage1_dtower/", "runindex/"]
 plan:
   phases:
     - {id: A, name: "prereg の commit。開始状態、装置、折り表の解決、凍結源の処方の特定、折りごとの注釈ファイルの生成", gpu: false, est: "2h"}

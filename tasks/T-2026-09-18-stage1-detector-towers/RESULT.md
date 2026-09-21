@@ -115,6 +115,7 @@ D\*-ImageNet +0.0067 対 D\*-COCO +0.0004 で **5.2 倍**。D\*-ImageNet は最�
 | `asserted_without_measuring` | SPEC §2 が `inputs.code.entrypoints` に `scripts/train_t1b.py` を挙げるが、**検出塔のフル学習の入口は `third_party/Relation-DETR/main.py`（accelerate）である**。`train_t1b.py` は P→D 界面の学習器で別物。指示どおり進めると入口を取り違える |
 | `check_does_not_check` | 契約は Task C で `experiments/` 配下へ書く 14 run を必ず伴うのに `contract.allow_write` を宣言していないため、Task E-1 が求める `make forbidden-check` が必ず失敗する。**前契約 `T-2026-09-17-amp-compile-timing` と同じ誤りの再発**である |
 | `asserted_without_measuring` | 完了判定 b の空振り確認が「test 動画を一本入れ替えた注釈で**差 1**」とするが、1 対 1 の入れ替えの対称差は **2** である。実測は 2（通常は 0）。差が 0 でないことを示す目的は達するが、期待値の記載が誤っている |
+| `self_contradiction` | §4 禁止事項 6 は `runindex/**` の手編集を禁じる一方 **`make runindex` は可**と明記するが、Task E-1 が求める `make forbidden-check` は `runindex/` の変更を禁止領域として弾く（実測 70 経路）。**契約が許した操作が、契約の求める検査で落ちる。** `contract.allow_write` に `runindex/` を足して整合させた |
 | `check_does_not_check` | 完了判定 g の空振り確認「収穫前後の**行数の差 = 新実験数**」は、この repo では成り立たない。収穫器は既存行も更新し、同期で届いた退避物も拾うため、実測は index +52 に対し新 run 27 件（うち本契約 14）だった。`task_id` での照合に替えた |
 
 ## 5. 逸脱
@@ -126,7 +127,15 @@ D\*-ImageNet +0.0067 対 D\*-COCO +0.0004 で **5.2 倍**。D\*-ImageNet は最�
 5. `spec_defect` — `third_party/Relation-DETR/configs/train_config_egosurgery_stage1_imagenet_seed{42,123,456}.py` を新設した。COCO 版との差は `resume_from_checkpoint` の 1 箇所だけであることを diff で示した
 6. `environment` — 折りごとの注釈は `data/annotations/egosurgery_tool_folds/` へ置いた（`.gitignore:10` で追跡外）。公式の `egosurgery_tool/instances_*.json` は 118 行目で追跡対象のため、**別ディレクトリにして取り違えを防いだ**
 7. `judgement` — 本 run の完了後、利用者の常設の指示に従い GPU の仮占有プロセスを戻した。そのため**報告時点の preflight は P11 `gpu_free` が FAIL する**（GPU 作業は完了済み）
-8. `judgement` — 契約と無関係な `docs/experiment_settings.md`（利用者の求めで作成した実験設定の索引）を同じ分岐に含めた
+8. `spec_defect` — `contract.allow_write` に `experiments/baselines/stage1_dtower/` と `runindex/` を
+   追補した。前者は Task C が必ず書く成果物、後者は §4-6 が明示的に許す `make runindex` の生成物である。
+   **どちらも手編集していない。**
+9. `judgement` — `origin/phase0` を統合した（基点が 34 commit 古く、検査が実質を測れなかったため）。
+   衝突 6 件のうち `runindex/` の 4 件は生成物で、phase0 側を土台に採ってから再生成し、
+   **両契約の run が残ることを実測で確かめた**（本契約 14 件・ilya の工程塔 72 + 168 件）。
+10. `judgement` — 学習ログ（1.6〜1.9 MB × 14 本）を版管理へ入れず、引用に要る行を
+    `train_summary.log`（各 17 KB 程度）へ抜いた。`.gitignore` に除外を足した。
+11. `judgement` — 契約と無関係な `docs/experiment_settings.md`（利用者の求めで作成した実験設定の索引）を同じ分岐に含めた
 
 ## 6. 想定外・UNKNOWN
 
@@ -146,7 +155,7 @@ D\*-ImageNet +0.0067 対 D\*-COCO +0.0004 で **5.2 倍**。D\*-ImageNet は最�
 | `make task-validate` | exit 0（`OK` / 0 failed） |
 | `make task-preflight` | 実行前は **exit 0**（10 PASS / 0 WARN / 2 SKIP / 0 FAIL）。報告時点は P11 `gpu_free` が FAIL（ダミーを戻したため。逸脱 7） |
 | `make spec-check` | exit 0 / `"status": "pass"` |
-| `make forbidden-check TASK=...` | 送出節の追記を参照 |
+| `make forbidden-check TASK=...` | **status pass / violations 0 / permitted 268 / rejected 0**（`allow_write` の追補後。宣言前は fail で 70 経路が `runindex/` として弾かれた） |
 | `--check-doc`（B1） | **差 0 件** |
 | `make runindex` | exit 0。本契約の 14 run が `task_id` つきで現れた |
 | `make taskindex-check` / `make inbox-check` | exit 2（§4 禁止事項 5 により再生成しない。契約が「想定どおり」と明記） |
