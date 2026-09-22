@@ -131,6 +131,14 @@
 | commit | `85a8a219` |
 | push | 終了コード **0** |
 | PR | **#193** — https://github.com/takuya3h/m2/pull/193 |
-| 台帳へ返す | 下記のとおり |
-| 抑止の解除 | 下記のとおり |
+| 台帳へ返す | `make task-report` 終了コード **0**（`report_sha256` あり、`report_bytes` 11,189、`replaced_blocks` 0） |
+| 抑止の解除 | `rm -f .sync-pause` を実行し、目印が消えたことを確認した。稼働中の `~/bin/m2-sync.sh` は目印に対応した版である（`grep -c sync-pause` = 2）。別名への退避ではなく削除にしたのは、`.sync-pause.released` が `.gitignore` に無く、次の契約の `task-start` を止めるためである（申し送り） |
 | 退避の復帰 | digest 3 件を `docs/sessions/digest/` へ戻す（次の契約の記録と一緒に含める） |
+
+**変更後の最終確認**（画面の経路）: `natEnabled=False` / `urAccepted=-1` /
+`crashReportingEnabled=False` / `localAnnounceEnabled=True` / `globalAnnounceEnabled=False` /
+`relaysEnabled=False`、接続中 **6 件**、`STUN disabled` の件数 **1**。
+
+**退避の復帰**: digest 3 件を `docs/sessions/digest/` へ戻した（22,908 / 19,191 / 12,272 bytes。
+退避元に残り 0 件）。**版管理へは入れていない。** `docs/sessions/README.md` の規約どおり、
+次の契約の記録と一緒に含める。
