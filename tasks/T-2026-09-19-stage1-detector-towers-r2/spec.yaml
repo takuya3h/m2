@@ -1,0 +1,84 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-09-19-stage1-detector-towers-r2"
+  kind: exp
+  title: "Stage 1 検出塔の二周目: 両塔を同じ収束基準で学習し、初期化源の差を学習不足と切り分ける"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-09-19T06:47:05Z"
+  created_from:
+    runindex_commit: "REPLACE-BY-EXECUTOR-with-measured-runindex-commit"
+    counts: {index: 0, experiments: 0, verdicts: 0}
+  depends_on: [T-2026-09-18-stage1-detector-towers, T-2026-09-19-symmetry-gate]
+  amendments: []
+intent:
+  question: "検出ヘッドを乱数初期化した塔を収束まで学習したとき、COCO 初期化の塔との差はどれだけ残るか。一周目の差のうち学習不足で説明できる分はどれだけか"
+  decision_at_stake: "関門 G 一（検出側）の再確定。受け取り手の表現依存（H 三）を測る腕として ImageNet 初期化の塔を使えるか。使えなければ H 三 の片側が落ちる"
+  hypothesis: "収束まで学習すると ImageNet 初期化の塔は一周目より上がり、COCO 初期化の塔との差は縮む。ただし零にはならず、初期化源の効果が残る"
+  related:
+    backlog: []
+inputs:
+  denominator:
+    ref: "exp:baselines/s0/relationdetr_bbox@val"
+    metric: "mAP"
+    require: {n_seeds: ">=3", sigma: present, split: val}
+  data:
+    dataset: "EgoSurgery-Tool subset (15 videos), bbox annotations, folds per conventions#folds"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt", "data/splits/ego_test.txt"]
+  caches: []
+  code:
+    entrypoints: ["third_party/Relation-DETR/main.py", "scripts/run_stage1_dtower.sh", "scripts/eval_stage1_dtower.sh"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#folds, conventions#split, conventions#eval_recipe, conventions#frozen_source, conventions#sigma, conventions#symmetry]
+  conventions_rev: "REPLACE-BY-EXECUTOR-with-measured-rev"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/baselines/stage1_dtower_r2", "runindex/"]
+plan:
+  phases:
+    - {id: A, name: "prereg の commit。開始状態、装置、一周目の成果物と曲線の引き継ぎ、停滞で学習率を下げ再停滞で打ち切る実装", gpu: false, est: "2h"}
+    - {id: B, name: "ImageNet 初期化の折り A seed 四十二を先に一本。学習率の低下と打ち切りが働くか、所要時間、一周目との差", gpu: true, est: "25h"}
+    - {id: C, name: "残りの run。両塔・五折り・折り A は三 seed", gpu: true, est: "115h"}
+    - {id: D, name: "test を折りごとに一度。一周目との対照。打ち切り epoch と最良 epoch の表", gpu: true, est: "3h"}
+    - {id: E, name: "検証と報告", gpu: false, est: "90m"}
+  gates:
+    - {id: G1, after: A, check: "一周目の曲線が引き継がれ、学習率の低下と打ち切りの実装が両塔で同一であることを実装の行で示した", on_fail: stop}
+    - {id: G2, after: B, check: "ImageNet 初期化の一本で学習率の低下が起き、打ち切りか上限で止まった。最良 epoch が上限なら報告して諮る", on_fail: ask}
+    - {id: G3, after: D, check: "test の評価が両塔について折りごとに一度、合計十回を超えていない", on_fail: stop}
+  env:
+    venv: ".venv-relation-detr"
+    preflight: [venv_active, cuda_ext_loaded, gpu_free, deterministic_flags]
+  resources: {server: "efros", gpu: 2, est_hours: 145, runs: 14}
+prereg:
+  prediction: "ImageNet 初期化の塔は一周目の値より上がる。両塔の差は一周目より縮むが零にはならない。COCO 初期化の塔は一周目と同程度。学習率の低下と打ち切りは ImageNet 初期化の塔の方が遅い"
+  primary_endpoint: "各塔・各折りの val mAP（規約の評価 recipe）。折り A は三 seed の平均と SD。副次に標的群 AP と AP rare"
+  decision_rule: "選定は行わない。両塔を確定する。確定に使うのは本契約の二周目の値であり、一周目の値は対照として並置する。いずれかの run で最良 epoch が上限に達した場合は、上限が結果を切っている可能性を報告し、利用者に諮る。学習率の低下を一度も受けずに上限へ達した run も報告する。test は確定した両塔について折りごとに一度だけ評価し、台帳に記録する"
+  stop_conditions:
+    - "打ち切りが働かず全 run が上限に達した場合は停止して諮る"
+    - "ImageNet 初期化の学習が発散するか非数を出した場合は停止し、その run の記録を提示する"
+    - "一 run の所要時間が二十七時間を超えた場合は run 数の見直しを諮る"
+    - "装置が他利用者に使われている場合は停止する"
+  committed_at: null
+  commit: null
+outputs:
+  expected_runs: 14
+  must_have: [metrics.json, per_class_ap.json, config.yaml, notes.md]
+  destination: "experiments/baselines/stage1_dtower_r2/"
+  stamp: {task_id_in: config.yaml}
+  acceptance:
+    - "a: 学習率を下げる基準・打ち切りの基準・上限が両塔で同一であることが実装の行を指して示され、run ごとの学習率の低下 epoch・打ち切り epoch・最良 epoch が表にある"
+    - "b: 全 run が折り表に従い、各 run の train・val・test の画像集合が規約の表の動画集合と一致する（集合差 零）"
+    - "c: 両塔の五折り val mAP・標的群 AP・AP rare が表にあり、一周目の同じ折り・seed の値が並置されている"
+    - "d: 一周目からの上がり幅が塔ごとに出ており、両塔の差が一周目と二周目で比べられている"
+    - "e: 最良 epoch が上限に達した run の件数が塔ごとに記録されている"
+    - "f: test は両塔について折りごとに一度だけ評価され、合計十回で、台帳に記録されている"
+    - "g: run ごとの壁時計時間と GPU 時間が記録され、計算器の所要時間表に検出塔学習の実測が入っている"
+    - "h: 対称性の表が prereg にあり、UNKNOWN が零件"
+    - "i: 全 run に task_id が刻まれ、runindex の収穫後に task_id で照合して本契約の全 run が現れる"
+    - "j: PR が Draft でなく存在し、base が phase0 で、分岐が feat/ で始まる"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [denominator_moved, frozen_source_hash_mismatch, "全 run が上限に達する", "一 run が二十七時間を超える"]
