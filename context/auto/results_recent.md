@@ -11,7 +11,7 @@
 
 ## T-2026-09-23-ops-and-proposal-card-gate
 
-状態 `partial` / ホスト `m2` / 起票 `なし` / 様式 `v3`
+状態 `partial` / ホスト `m2` / 起票 `194` / 様式 `v3`
 
 ### ゲート
 

@@ -48,6 +48,10 @@
 | `make forbidden-check` | `violations: []`、`permitted` は `context/conventions.md` 1 件、exit 0 |
 | `make spec-check` | 規則 9 件を検査し該当 0 件、exit 0 |
 
+commit の後は L2-6 の WARN が出る（`conventions.md が c801e17c 以降に変更されています`）。
+**規約を変えた契約では必ず出る警告であり、終了コードは変えない。** 記録した rev は
+変更前の値であり、契約の逐語の出所として正しい。
+
 L3 で SKIP になった 8 件: P2・P3・P11（`plan.env.preflight` に記載なし）、
 P4・P5・P13・P14（`kind=impl` のため対象外）、P12（解決前提の参照なし）。
 **SKIP は合格ではなく「実行されなかった」である。**
@@ -220,4 +224,11 @@ L1-10 は `gates[].after` の実在と、ゲートの並びがフェーズの並
 
 ## 12. 送出
 
-`make task-report` の結果は commit と PR の番号を含めて追記する。
+| 項目 | 実測 |
+|---|---|
+| commit | `ae76c1b9`（本体）、`4369cf5e`（変更履歴の commit 欄の記録） |
+| PR | **#194**。`isDraft: false`、`baseRefName: phase0`、`headRefName: feat/ops-and-proposal-card-gate`、`state: OPEN` |
+| push の経路 | `origin` の `pushurl` が https で資格情報を解決できず失敗した。fetch 側の ssh は通るため、**設定を変えずに** ssh の URL を明示して push した。上流は `origin/feat/ops-and-proposal-card-gate` に設定済み |
+| 配布台帳への報告 | 下に追記 |
+
+**完了判定 j は充足。** PR は Draft でなく、base は `phase0`、分岐名は `feat/` で始まる。
