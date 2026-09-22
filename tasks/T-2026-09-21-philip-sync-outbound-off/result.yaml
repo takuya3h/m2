@@ -1,0 +1,137 @@
+result_version: 3
+task_id: "T-2026-09-21-philip-sync-outbound-off"
+status: partial
+host: "philip"
+branch: "feat/philip-sync-outbound-off"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      記録 819,933 行から外向きを 6 種に分けて計数した（STUN 住所解決 1 / NAT 種別 1 /
+      使用状況 2 / 版の確認 1 / UPnP 探索 1 / 局所告知 2、公開中継 0）。設定は実体の
+      逆アセンブルと Go の型情報で確定した（IsStunDisabled の 3 項目、urAccepted、
+      AutoUpgradeEnabled）。読めない 3 件は UNKNOWN に分けた。変更前の全 55 項目を
+      版管理の外へ控え、戻す手順を書いた。接続 6 件・処理 2 件（pid 122452/122530）を記録した。
+  - id: G2
+    verdict: pass
+    note: >-
+      PATCH /rest/config/options に変える鍵だけを 3 回送り、いずれも HTTP 200。
+      読み戻しで全 55 項目中の差は 3 項目のみ、config.xml にも書き戻った。
+      周期 180 秒を越えて 300 秒待ち、増えた 187 行に外向きの語は 0 件で、
+      STUN disabled が 1 件出た（変更の 169 秒後）。接続 6→6、登録 7→7 が完全一致、
+      共有フォルダ 2→2、localAnnounceEnabled は true のまま、PID は同一。
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 593
+
+deviations:
+  - type: judgement
+    note: >-
+      開始前から在った未追跡 4 件のうち .sync-pause.released（0 バイト、前セッションの
+      解除の残骸）を削除した。SPEC 0 節と禁止 7 は「消さない。退避する」を求めており
+      これに反する。利用者へ選択肢を示して承認を得たうえで行った。
+      digest 3 件は退避し、報告の後に戻す。
+  - type: judgement
+    note: >-
+      退避先を最初 /tmp（overlay）に置いたが、SPEC 0 節の「repo と同じファイルシステム」に
+      反するため /home/ubuntu/slocal2/task-backups/（repo と同じ /dev/sda）へ移し替えた。
+  - type: judgement
+    note: >-
+      変える範囲を利用者に諮り、外向きの 3 項目（natEnabled / urAccepted /
+      crashReportingEnabled）に決めた。stunKeepaliveStartS は変えなかった。
+      natEnabled だけで IsStunDisabled が真になり、変える項目を最小にできるため。
+  - type: judgement
+    note: >-
+      手順書（.claude/skills/task/SKILL.md）は make taskindex で投影を生成せよと求めるが、
+      本契約の禁止 6 と Task 3 Step 3 が生成物の再生成を禁じ、変更を契約のディレクトリと
+      受け皿に限れと求める。契約を優先して再生成しなかった。結果として
+      make taskindex-check は差分ありで落ちる（exit 2）。make inbox-check は exit 0。
+      どちらの検査も作業ツリーへ書き込まないことを前後の件数で確かめた。
+  - type: environment
+    note: >-
+      容器の中に tcpdump / ss / lsof / conntrack が無く、/proc/net/nf_conntrack も無い。
+      /rest/system/debug は v2.1.3 に無い（404）。STTRACE は再起動が要るため使えない。
+      通信そのものは観測できず、記録と画面の経路だけで判断した。
+  - type: spec_defect
+    note: >-
+      契約の陽性対照では STUN の停止を判定できないため、実装を読んで
+      STUN disabled の記録を見つけ、それを判定に使った。issuer_defects に対応する。
+
+issuer_defects:
+  - type: check_does_not_check
+    note: >-
+      Task 2 Step 3 は陽性対照を「変える前の記録に外向きの痕跡が在ったこと」と置き、
+      判定を「周期を越えて待ち新たな痕跡が現れないこと」と置いた。しかし中心の STUN の
+      痕跡は起動時の 2 件だけで周期的ではなく、通常の水準では keepalive が記録されない。
+      指示どおり実行すると、設定を変えなくても新しい行は出ないため「止まった」と
+      誤って結論できる。実際の決め手は契約が指していない別の行（STUN disabled、
+      無効側の分岐でだけ出る）であり、これを実装から見つけて判定に使った。
+
+positive_controls:
+  - judgement: "禁止語の検査が送出物を実際に見ている"
+    breaking_input: "handoff.md の写しに禁止語 2 語（画期的・必ず改善）を足す"
+    observed: "検出 2 件で exit=1。足さない写しは検出 0 件で exit=0。両方向で働いた"
+  - judgement: "秘匿の検査が実在の資格情報を捕らえる"
+    breaking_input: "写しの本文へ画面の鍵（長さ 32）をそのまま置く"
+    observed: >-
+      照合が 1 件を検出して exit=1。値は出力せず名前と件数だけを出した。
+      ただし形の規則（40 文字以上の塊）はこの 32 文字の鍵を拾えず 0 件だった。
+      形だけでは足りず、実在値との照合が捕らえた。
+  - judgement: "STUN が止まったという判定（STUN disabled の記録）が空振りでない"
+    breaking_input: "設定を変えない。変更前の 28.9 日間がそれに当たる"
+    observed: "変更前は 0 件。変更の 169 秒後に 1 件出た。不在ではなく遷移の記録である"
+  - judgement: "プロセスの計数が自分と子を拾わない"
+    breaking_input: "在りえない語 zzz_no_such_binary で同じ手順を回す"
+    observed: "一致 0 件。自分の実体は /usr/bin/zsh で syncthing に一致しない（0）"
+  - judgement: "6 件の試験の失敗が本契約の追加によるものでない"
+    breaking_input: "追加した 6 ファイルを退避し、作業ツリーを 0 件にして同じ試験を回す"
+    observed: "同じ 6 件が落ちた（6 failed, 8 passed）。既存の失敗である"
+
+followups:
+  - >-
+      使用状況の日次送信が止まったかは未確認である。直近の送信は 2026-09-20 17:32:36 と
+      2026-09-21 17:32:38（UTC）で、変更は 2026-09-22 09:03:20（UTC）。
+      次に送るはずだった 2026-09-22 17:32 UTC を過ぎてから
+      grep -c 'Sent usage report' ~/.syncthing.log を見ること。変更時点で 2 件である。
+  - >-
+      障害報告は痕跡が元から 0 件のため「止まった」とは言えない。設定が false に
+      なったことだけが事実である。次に障害が起きたときに送信が出ないことで確かめる。
+  - >-
+      urAccepted が 0 から 3 へ変わった原因が UNKNOWN である。残る六台でも値を
+      必ず読んでから書くこと。契約のたびに options 全体を控えて差分を見る運用を勧める。
+  - >-
+      P9 spec_lint の host_mismatch は socket.gethostname() と比べるため、この repo の
+      「ホスト」（同期処理上の名前）と食い違う。philip の OS 名は aolab である。
+      検査側を直すか、宣言の意味を規約に書くこと。
+  - >-
+      P9 spec_lint の separated_source は行継続 \ を繋げずに行ごとに見るため、
+      1 命令に書かれた source … && make … を該当と出す。SPEC.md:39 がこれに当たる。
+  - >-
+      .sync-pause.released が .gitignore に載っていない（.sync-pause は載っている）。
+      抑止の解除を別名への退避で行うたびに未追跡が残り、次の契約の task-start が
+      前提検査で止まる。無視対象に加えるか、解除の手順を削除に統一すること。
+  - >-
+      tests/test_estimate_tier_cost.py が収集時に落ちる（site-packages の tools が
+      repo の tools を隠す）。PYTHONPATH に repo 直下を足しても解消しなかった。
+  - >-
+      tests/test_fetch_task.py::test_rejects_unknown_file_name が既存で落ちている。
+      束の取り込みが ../../etc/passwd を拒んでいない。経路の遡上を拒む修正が要る。
+
+  - >-
+      投影（context/auto/ の 3 ファイル）が本契約の result.yaml を反映していない。
+      禁止 6 により再生成していないためで、make taskindex-check は差分ありで落ちる。
+      生成物の再生成を許す契約で make taskindex を回し、投影を追いつかせること。
+
+unknowns:
+  - "使用状況の日次送信が止まったか（周期 24 時間を越えて待てなかった）"
+  - "障害報告が止まったか（痕跡が元から 0 件で、止まったことを示せない）"
+  - "urAccepted が 0 から 3 へ変わった原因"
+  - "crashReportingEnabled を読む判定の位置（実装から特定できなかった）"
+  - "natEnabled が UPnP/NAT-PMP の探索も止めるか（判定の位置を特定できなかった）"
+
+commits: []
