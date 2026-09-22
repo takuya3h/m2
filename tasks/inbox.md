@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（595 件）
+## 未処理（600 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -610,6 +610,11 @@
 - [ ] 2026-09-21 [cc] m2-sync.sh の修正は統合されるまで本ホストへ定着しない。keeper が毎ループ origin/phase0 から自己更新して戻すためで、指示どおりの順序では完了判定 O が原理的に達成できなかった。修正版を置き直して常駐処理と同じ呼び方で一度走らせて確かめた。統合前の配置を前提にする契約は同じ壁に当たる（scripts/sync/keeper.sh:49）
 - [ ] 2026-09-21 [cc] P9 spec_lint の separated_source が行継続を扱えず偽陽性を出す。source … && source … \ と次行の && make … はシェルでは一命令だが行で切って判定される。実際に一命令として実行し成功している。行継続を連結してから判定するかの判断が要る（tools/check_agent_docs.py の check_text）
 - [ ] 2026-09-21 [cc] 前契約で一時的に落ちていた test_loss_mask の 1 件は同期の完了で解消した。飛ばされていた 13 件も走るようになり 7 failed/581 passed/13 skipped から 6 failed/595 passed/0 skipped へ。飛ばし条件がディレクトリの存在だけを見る問題そのものは残っている（tests/test_loss_mask.py:70）
+- [ ] 2026-09-22 [cc] 🔴 **契約が自ら注入した規約の様式を外していた。** `prereg.md` §3 の対称性の表の列名が `条件 / D*-COCO / D*-ImageNet / 判定 / 理由` で、`contract.inject_verbatim` に入れている `conventions#symmetry` の「列名はこのとおりにする（L3 の P13 が列名で表を探す）」が定める `条件 / 腕1 / 腕2 / 判定 / 理由` と違い、P13 が表を見つけられず FAIL した。完了判定 h が「P13 が PASS」を空振りでない確認に置いているため実行できない。**利用者の決定で列名だけを正本へ直し、腕の対応を表の直下に 1 行で置いた**（15 行の判定と理由は無改変）。起票の雛形が対称性の表を持てば起きない（tools/preflight_task.py:78）
+- [ ] 2026-09-22 [cc] **L2-8「分母が動いています」は分母が動いた証拠ではなかった。** `meta.created_from.counts` が占位のまま全 0 で、現在値（index 1558 / experiments 476 / verdicts 1506）との差が WARN になる。起票時の値が記録されていない以上、**推測で埋めれば捏造になるため 0 のまま残した**。`governance.escalate_if` に `denominator_moved` があるので、占位のままの起票は毎回この関門に当たる。**起票時に実測値を入れる経路が要る**（tools/fetch_task.py）
+- [ ] 2026-09-22 [cc] **実装の本体が PR に現れない。** 収束基準は `third_party/Relation-DETR/{main.py,util/convergence.py}` に足したが `third_party/` は `.gitignore:133` で全体が追跡外で、一周目が新設した config も同じ扱いだった。完了判定 a の「実装の行を指して示す」は行番号でしか示せない。**写しを `experiments/baselines/stage1_dtower_r2/impl/` に置いた**が、`experiments/**/*.py` も `.gitignore:39` で落ちるため拡張子を `.txt` にする必要があった。学習器の改変を伴う契約では毎回この穴が開く（.gitignore:39,133）
+- [ ] 2026-09-22 [cc] **GPU の余裕はメモリの余裕であって計算の余裕ではない。** 利用者から並行化の可否を問われ、メモリは 13.1/49.1 GB しか使っていないが、一周目の実測で総処理量は 2 本同時で頭打ち（1 本 1.805 / 2 本 2.17 / 3 本 2.19 step/s）であることを示した。**1 GPU ずつに分ける案は実効 batch が 4 から 2 へ落ちて対称性の表を破るため採れない**。増やせるのは実質 1 本で全体の 1.5% のため、利用者は契約どおり B 単独を選んだ（scripts/stage1_dtower_queue.sh）
+- [ ] 2026-09-22 [cc] **同じ seed・同じ処方でも epoch 0 の val mAP が 0.0136 ずれた**（一周目 0.3249 / 二周目 0.3112）。決定性の引数は両周とも付けておらず、L3 の P3 `deterministic_flags` は「判定基準が未確定」で SKIP のままである。**曲線の差は 10 epoch を通じて ±0.02 に収まっており学習の異常ではない**が、塔どうしの差を 4.1 mAP の水準で論じる契約で run 間の再現幅が測られていないのは弱い。backlog B-20 が未解決（tools/preflight_task.py）
 
 ## 処理済み（1 件）
 
