@@ -7,10 +7,16 @@ meta:
   chat_url: ""
   created_at: "2026-09-19T06:47:05Z"
   created_from:
-    runindex_commit: "REPLACE-BY-EXECUTOR-with-measured-runindex-commit"
+    runindex_commit: "4e97b3deae28e653948c19309d229c755587c42b"
     counts: {index: 0, experiments: 0, verdicts: 0}
   depends_on: [T-2026-09-18-stage1-detector-towers, T-2026-09-19-symmetry-gate]
-  amendments: []
+  amendments:
+    - date: "2026-09-22"
+      diff: "meta.created_from.runindex_commit, contract.conventions_rev"
+      reason: "created_from.runindex_commit と contract.conventions_rev の REPLACE-BY-EXECUTOR 占位を実測値へ確定した。runindex_commit は runindex/ を最後に変えた commit、conventions_rev は context/conventions.md を最後に変えた commit。created_from.counts は起票時（2026-09-19）の値が記録されていないため 0 のまま残す。実行開始時点の実測は index 1558 / experiments 476 / verdicts 1506 で、L2-8 は分母が動いた旨を WARN する（利用者の続行判断 2026-09-22）"
+    - date: "2026-09-22"
+      diff: "prereg.md §3 の表の見出し行と直後の 1 行"
+      reason: "prereg.md §3 の対称性の表の列名を conventions#symmetry が定める 条件／腕1／腕2／判定／理由 へ直した。起票時は 条件／D*-COCO／D*-ImageNet／判定／理由 で、L3 の P13 が列名の完全一致で表を探すため表が見つからず FAIL していた。腕の対応は表の直下に明記し、15 行の判定と理由は変えていない（利用者の決定 2026-09-22）"
 intent:
   question: "検出ヘッドを乱数初期化した塔を収束まで学習したとき、COCO 初期化の塔との差はどれだけ残るか。一周目の差のうち学習不足で説明できる分はどれだけか"
   decision_at_stake: "関門 G 一（検出側）の再確定。受け取り手の表現依存（H 三）を測る腕として ImageNet 初期化の塔を使えるか。使えなければ H 三 の片側が落ちる"
@@ -30,7 +36,7 @@ inputs:
     entrypoints: ["third_party/Relation-DETR/main.py", "scripts/run_stage1_dtower.sh", "scripts/eval_stage1_dtower.sh"]
 contract:
   inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#folds, conventions#split, conventions#eval_recipe, conventions#frozen_source, conventions#sigma, conventions#symmetry]
-  conventions_rev: "REPLACE-BY-EXECUTOR-with-measured-rev"
+  conventions_rev: "c801e17c3231fe1f2b7c8072e1a960e6dbab8ca5"
   prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
   verbatim_forbidden: true
   allow_write: ["experiments/baselines/stage1_dtower_r2", "runindex/"]
@@ -58,8 +64,8 @@ prereg:
     - "ImageNet 初期化の学習が発散するか非数を出した場合は停止し、その run の記録を提示する"
     - "一 run の所要時間が二十七時間を超えた場合は run 数の見直しを諮る"
     - "装置が他利用者に使われている場合は停止する"
-  committed_at: null
-  commit: null
+  committed_at: "2026-09-22T16:15:30+00:00"
+  commit: "d2f8ca2e5673864c89e9f2bf24c43ff4c1dec980"
 outputs:
   expected_runs: 14
   must_have: [metrics.json, per_class_ap.json, config.yaml, notes.md]
