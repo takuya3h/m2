@@ -1,0 +1,83 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-09-21-philip-sync-outbound-off"
+  kind: impl
+  title: "同期処理の外向きの通信を決める設定を特定し、中心で先行して止める"
+  origin: claude-app
+  created_at: "2026-09-21T18:00:00Z"
+  created_from:
+    runindex_commit: "23333eb"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-09-21-m2dir-local"]
+  amendments: []
+
+intent:
+  question: "同期処理が起動時に公開の中継補助へ出ていることが、あるノードの記録で観測された。公開の探索網と公開中継は無効にしてあるが、別の設定が残っている。どの設定が何の外向き通信を決めているかを実装から特定し、中心で稼働を止めずに無効にできるか"
+  decision_at_stake: "七台すべての外向き通信を止める手順が確定するか。推測で設定を変えると、止まらないか、接続に要る設定まで落とす恐れがある。中心で一台だけ試し、確定した手順を残る六台へ広げる"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/sync/keeper.sh"
+      - "scripts/sync/m2-sync.sh"
+
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "c801e17"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "外向きの通信の痕跡と、それを決める設定の特定", gpu: false, est: "40m"}
+    - {id: B, name: "特定した設定の無効化と、止まったことの確認", gpu: false, est: "50m"}
+    - {id: C, name: "残る六台への手順書と報告", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "記録から外向きの通信を拾い種類ごとに数えた。外向きの通信を決める設定を実装か公式の説明から根拠つきで特定し、読めないものを区別した。変える前の値と戻し方と接続の状態を記録した"
+      on_fail: ask
+    - id: G2
+      after: B
+      check: "特定した設定だけを画面の経路で変え、読み戻しと設定ファイルの両方で反映を確かめた。周期を越えて待っても新たな外向きの通信が現れない。六ノードとの接続と定義と局所告知と処理の識別子が無傷である"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-09-21-philip-sync-outbound-off/"
+  acceptance:
+    - "記録から外向きの通信を拾い、種類ごとに件数を数えている"
+    - "外向きの通信を決める設定を根拠つきで特定し、推測で変えていない"
+    - "変える前の値と戻し方を記録している"
+    - "特定した設定だけを変え、局所の告知を変えていない"
+    - "読み戻しと設定ファイルの両方で反映を確かめている"
+    - "周期を越えて待ち、新たな外向きの通信が現れないことを示している。痕跡が元から無ければその旨を記録している"
+    - "六ノードとの接続と定義と処理の識別子が無傷であることを示している"
+    - "残る六台への手順書を、台による違いを含めて書いている"
+    - "禁止語と秘匿の検査を送出物に当て、検査が値を出力していない"
+    - "報告が指定の構成であり、手続きの証跡を別ファイルへ分けている"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "外向きの通信を決める設定を特定できない場合"
+    - "反映に再起動が必要な場合"
+    - "設定を変えたあと六ノードとの接続が切れた場合"
+    - "設定を変えても外向きの通信が止まらない場合"
