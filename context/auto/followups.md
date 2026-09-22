@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（524 件）
+## 申し送り（529 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -838,7 +838,15 @@
 - keeper.sh は自己更新されないため、本ホストの ~/bin/keeper.sh は本契約で手で置いたものが残る。 既存の六台は既存の候補で動いているため配置は要らないが、将来 keeper.sh を変える契約では 「どの台へ配置済みか」を追う仕組みが無い。配置状況を記録する場所を決めるかの判断が要る。
 - 解決の判定が親ディレクトリの存在であることは、repo 本体が無くても親さえ在れば解決が成立する ことを意味する。今回は既存に合わせて同じ基準を使ったが、本来は repo 本体か版管理の存在で 見るほうが確かである。基準を変えると既存の台の挙動が変わりうるため、本契約では変えていない。
 
-## 断定できなかった事項（340 件）
+### T-2026-09-23-ops-and-proposal-card-gate
+
+- 例外の二件（T-2026-09-19-stage1-detector-towers-r2 / T-2026-09-19-stage1-phase-tower-r3）は配布台帳にあるが repo には未取得である。P14 の例外の経路は試験で確かめたが、実物の契約で SKIP になることは取得後に確かめること
+- result.schema.json に、遡及の書き直しをどう扱うか（tests を任意にする版、または旧様式の退避の規約）を足す契約が要る。本契約では同ファイルは allow_write に無く触れていない
+- tasks/_templates/result.yaml と .claude/skills/task/SKILL.md は issuer_defects の型を 4 種と書くが、result.schema.json は 6 種である（PR #192 で拡張済み）。写しが古い
+- make spec-check を TASK 無しで回すと allow_write_incomplete が 15 件出る（exp 10 件 / impl 5 件）。過去の契約の是正は別契約で行うこと
+- 本契約の統合後、起票者は Stage 2 の提案カードを docs/proposals/ に置き、check_proposal.py を通してから exp を起票する（SPEC §8）
+
+## 断定できなかった事項（342 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1468,18 +1476,23 @@
 - 統合後に他の台で実際に何が起きるかは本ホストから測れない。根拠は隔離した家での模擬 （7 通り × 2 正本 = 14 件すべて期待どおり）であって、実機での確認ではない。
 - inputs.data（dataset: egosurgery_phase_v1、split_files: data/splits/ego_val.txt）は雛形の 必須項目であり本契約は参照していない。SPEC の申し送りの指示どおり、参照しなかったことを記録する。
 
-## 起票者の誤りの型（311 件）
+### T-2026-09-23-ops-and-proposal-card-gate
+
+- 旧様式 result.yaml（T-2026-08-22-philip-hub-foundation）の tests の 3 整数は実測不能である。旧報告にも旧 RESULT.md にも試験の記録が一切無く、推測で埋めれば捏造になる。UNKNOWN のまま据え置いた
+- 完了判定 e の「実例 4 件で FAIL」は達成していない。4 件目が是正済みであることが理由で、規則の欠陥ではないが、契約の字面は充足していない
+
+## 起票者の誤りの型（316 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 88 |
-| `asserted_without_measuring` | 126 |
-| `self_contradiction` | 78 |
+| `asserted_without_measuring` | 128 |
+| `self_contradiction` | 81 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 0 |
 | `rule_read_narrowly` | 0 |
 
-合計 311 件（対を持つ契約 104 件から）
+合計 316 件（対を持つ契約 105 件から）
 

@@ -90,6 +90,10 @@ _REPORT_WORDS = re.compile(r"報告[^。]*(書|転記|投影|対)|(書|作)[^。
 _MEASURE_WORDS = re.compile(r"数える|実数|内訳|確かめ|測る|測定|集計")
 _REVERIFY = re.compile(r"再検証しない")
 
+# 項目の行だけを指す（値の中の同じ語を拾わない）。
+_KEY_ALLOW_WRITE = re.compile(r"\s*allow_write\s*:")
+_KEY_DESTINATION = re.compile(r"\s*destination\s*:")
+
 RULE_CLASSES = {
     "truncation_in_measurement": "syntactic",
     "unquoted_glob": "syntactic",
@@ -99,6 +103,7 @@ RULE_CLASSES = {
     "integration_prohibited_without_pause": "structural",
     "gate_requires_report_before_end": "structural",
     "reverify_contradiction": "structural",
+    "allow_write_incomplete": "structural",
 }
 
 
@@ -444,6 +449,86 @@ def rule_reverify_contradiction(c: Contract) -> list[Finding]:
     return found
 
 
+
+def _write_prefix(value: str) -> str:
+    """経路を接頭辞として比べられる形にする。末尾の / の有無を揃える。"""
+    return value.strip().rstrip("/") + "/" if value.strip() else ""
+
+
+def _covers(declared: str, target: str) -> bool:
+    """宣言 `declared` が `target` を覆うか。**親は覆い、子は覆わない。**"""
+    return bool(declared) and bool(target) and target.startswith(declared)
+
+
+def rule_allow_write_incomplete(c: Contract) -> list[Finding]:
+    """書くと宣言した場所を `contract.allow_write` が覆っていない。
+
+    裏付け: T-2026-09-16-proposal-gate#1、T-2026-09-17-amp-compile-timing#5、
+            T-2026-09-18-stage1-detector-towers#3、T-2026-09-19-p13-skip-and-enum#4。
+    四件とも起票時に宣言を欠き、実行者が同じ spec へ追記して是正した
+    （`meta.amendments` に記録がある）。**同じ型が四契約続けて再発した。**
+
+    検査は二つ。
+
+    1. `outputs.destination`（またはその親）が `allow_write` に無ければ該当
+    2. `kind` が exp なら、加えて `runindex/` が無ければ該当。exp は収穫で
+       `runindex/` を必ず更新する（`make runindex`）ため、宣言が無いと
+       `make forbidden-check` が必ず落ちる
+
+    **適用範囲は kind と宣言の有無で決める**（利用者の決定 2026-09-22、実測に基づく）。
+
+    - `kind` が exp → 無条件に検査する。exp は `experiments/` と `runindex/` を必ず
+      書くため、宣言が無いこと自体が誤りである
+    - それ以外 → `allow_write` を宣言している契約だけを検査する。**宣言しながら
+      destination を覆わないのは、それ自体が食い違いである。**
+
+    全 kind を無条件にすると、過去 127 契約のうち 123 契約が該当した（実測）。
+    `allow_write` を宣言している契約は 9 件しかなく、**ほぼ常に該当する規則は
+    どの契約が誤っているかを指せない**（issuer_cautions #3 の裏返し）。
+    本規則の適用範囲では該当は 15 件（exp 10 件・impl 5 件）である。
+    """
+    spec = c.spec or {}
+    destination = str((spec.get("outputs") or {}).get("destination") or "")
+    if not destination:
+        return []
+    kind = str((spec.get("meta") or {}).get("kind") or "")
+    declared_raw = (spec.get("contract") or {}).get("allow_write") or []
+    if kind != "exp" and not declared_raw:
+        return []
+    declared = [_write_prefix(str(d)) for d in declared_raw if str(d).strip()]
+    target = _write_prefix(destination)
+
+    missing: list[str] = []
+    if not any(_covers(d, target) for d in declared):
+        missing.append(f"outputs.destination {destination}")
+    if kind == "exp" and not any(_covers(d, "runindex/") for d in declared):
+        missing.append("runindex/（収穫が必ず更新する）")
+    if not missing:
+        return []
+
+    # 🔴 行の同定は**項目の行**で行う。素朴に "allow_write" を含む行を探すと
+    #    meta.amendments の理由の本文（是正の経緯を日本語で述べた行）を先に拾う
+    #    （実測: T-2026-09-17-amp-compile-timing で 18 行目を指した）。
+    spec_lines = c.spec_path.read_text(encoding="utf-8").splitlines() if c.spec_path.exists() else []
+    line = next(
+        (i for i, text in enumerate(spec_lines, 1) if _KEY_ALLOW_WRITE.match(text)),
+        next((i for i, text in enumerate(spec_lines, 1) if _KEY_DESTINATION.match(text)), 0),
+    )
+    shown = ", ".join(declared_raw) if declared_raw else "（宣言なし）"
+    return [
+        Finding(
+            c.task,
+            "allow_write_incomplete",
+            "structural",
+            _rel(c.spec_path),
+            line,
+            f"contract.allow_write {shown} が覆っていない: {'／'.join(missing)}。"
+            "指示どおり実行すると make forbidden-check が落ちるか、"
+            "どこへ書く契約かが宣言から読めない",
+        )
+    ]
+
+
 RULES = (
     rule_truncation_in_measurement,
     rule_unquoted_glob,
@@ -453,6 +538,7 @@ RULES = (
     rule_integration_prohibited_without_pause,
     rule_gate_requires_report_before_end,
     rule_reverify_contradiction,
+    rule_allow_write_incomplete,
 )
 
 

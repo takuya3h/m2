@@ -65,6 +65,16 @@ TEACHER: tuple[tuple[str, str | None, int | None, str], ...] = (
      "同上。前契約に続いて同じ言い回しで偽陽性になっていた"),
     ("T-2026-09-01-notion-retire-scripts-and-speccheck#1", None, None,
      "同上。本契約自身も修正前は該当していた"),
+    # allow_write の宣言漏れ。**同じ型が四契約続けて再発した**（2026-09-16 から 09-19）。
+    # 四件とも実行者が同じ spec.yaml へ追記して是正しており、教師データの行番号は
+    # 是正後の宣言の行を指す（規則が見るのは宣言と destination の対応であり、
+    # 是正後も覆っていなければ該当する）。
+    ("T-2026-09-16-proposal-gate#1", "allow_write_incomplete", 29, ""),
+    ("T-2026-09-17-amp-compile-timing#5", "allow_write_incomplete", 38, ""),
+    ("T-2026-09-19-p13-skip-and-enum#4", "allow_write_incomplete", 31, ""),
+    ("T-2026-09-18-stage1-detector-towers#3", None, None,
+     "起票時の宣言漏れは実行中に同じ spec.yaml へ追記して是正済みで、"
+     "現行の本文は destination と runindex/ の双方を宣言している。該当しないのが正しい"),
 )
 
 # 抑止の手順を持つ契約（該当してはならない）。上の陰性例の対象を機械で引くための一覧。
@@ -143,7 +153,7 @@ def _rules_hit(contract: Contract) -> set[str]:
 
 def test_every_rule_is_classified():
     """規則の数と分類の数が一致する。**分類の無い規則を足せないようにする。**"""
-    assert len(RULES) == len(RULE_CLASSES) == 8
+    assert len(RULES) == len(RULE_CLASSES) == 9
     names = {r.__name__.removeprefix("rule_") for r in RULES}
     assert names == set(RULE_CLASSES)
 
@@ -219,6 +229,58 @@ def test_positive_control_reverify_contradiction(tmp_path):
     assert "reverify_contradiction" in _rules_hit(_contract(tmp_path, md))
 
 
+def test_positive_control_allow_write_incomplete_exp(tmp_path):
+    """exp は宣言の有無を問わず検査する。**exp は必ず runindex/ を書く。**"""
+    spec = (
+        "meta: {kind: exp}\n"
+        "outputs: {destination: experiments/baselines/x/}\n"
+        "contract: {allow_write: [experiments/baselines/x/]}\n"
+    )
+    assert "allow_write_incomplete" in _rules_hit(_contract(tmp_path, "# x\n", spec))
+
+
+def test_positive_control_allow_write_incomplete_declared(tmp_path):
+    """exp 以外は、宣言がありながら destination を覆わない場合に該当する。"""
+    spec = (
+        "meta: {kind: impl}\n"
+        "outputs: {destination: docs/stage0/}\n"
+        "contract: {allow_write: [context/conventions.md]}\n"
+    )
+    assert "allow_write_incomplete" in _rules_hit(_contract(tmp_path, "# x\n", spec))
+
+
+def test_allow_write_parent_prefix_covers_destination(tmp_path):
+    """親は覆う。**子は覆わない。** 覆う向きを両方向で確かめる。"""
+    covered = (
+        "meta: {kind: impl}\n"
+        "outputs: {destination: docs/stage0/}\n"
+        "contract: {allow_write: [docs/]}\n"
+    )
+    assert _rules_hit(_contract(tmp_path, "# x\n", covered)) == set()
+    child_only = (
+        "meta: {kind: impl}\n"
+        "outputs: {destination: docs/}\n"
+        "contract: {allow_write: [docs/stage0/]}\n"
+    )
+    assert "allow_write_incomplete" in _rules_hit(_contract(tmp_path, "# x\n", child_only))
+
+
+def test_allow_write_rule_ignores_undeclared_non_exp(tmp_path):
+    """陰性対照。宣言の無い impl は対象外（実測で 123/127 が該当したため絞った）。"""
+    spec = "meta: {kind: impl}\noutputs: {destination: docs/stage0/}\ncontract: {}\n"
+    assert _rules_hit(_contract(tmp_path, "# x\n", spec)) == set()
+
+
+def test_allow_write_rule_passes_when_exp_declares_both(tmp_path):
+    """陰性対照。destination と runindex/ の双方を宣言した exp は該当しない。"""
+    spec = (
+        "meta: {kind: exp}\n"
+        "outputs: {destination: experiments/baselines/x/}\n"
+        "contract: {allow_write: [experiments/baselines/x/, runindex/]}\n"
+    )
+    assert _rules_hit(_contract(tmp_path, "# x\n", spec)) == set()
+
+
 # ------------------------------------------------------------------- 陰性対照
 
 @pytest.mark.parametrize(
@@ -282,7 +344,7 @@ def test_host_mismatch_ignores_case_but_detects_other_host(tmp_path, monkeypatch
 # ------------------------------------------------------------------- 検出率
 
 def test_teacher_detection_rate(all_findings):
-    """教師データ 19 件のうち 11 件を検出する（実測 2026-08-11 lecun / 2026-09-01 更新）。
+    """教師データ 23 件のうち 14 件を検出する（実測 2026-08-11 lecun / 2026-09-23 更新）。
 
     `host_mismatch` の 2 件は実行ホストに依存する。宣言と一致するホストでは
     該当しないのが正しい。**期待値を hostname から計算する。**
@@ -291,6 +353,10 @@ def test_teacher_detection_rate(all_findings):
     **分母だけが 16 から 19 へ動き、検出すべき件数は変えていない。**
     陰性例は `integration_prohibited_without_pause` の偽陽性を直した際の裏づけで、
     抑止の手順を日本語で書き目印の文字列を含まない起票を表す。
+
+    2026-09-23 に `allow_write_incomplete` の裏づけ 4 件を足した（分母 19 → 23）。
+    **裏づけを持つ規則を足したので分母が動く。** うち 3 件を検出し、1 件
+    （stage1-detector-towers#3）は是正後の本文が宣言を満たすため該当しない。
     """
     detected, missed = [], []
     for key, rule, line, _ in TEACHER:
@@ -311,11 +377,11 @@ def test_teacher_detection_rate(all_findings):
         1 for key, rule, _, _ in TEACHER
         if rule == "host_mismatch" and _host_expectation(key.rsplit("#", 1)[0])
     )
-    # 規則を持つ 13 件のうち、ホストに依存しないのは 11 件。そこから検出できない
-    # codex-parity#1 を引いて 10 件。これにホストに依存する分を足す。
-    expected = 10 + expected_host_detected
+    # 規則を持つ 16 件のうち、ホストに依存しないのは 14 件。そこから検出できない
+    # codex-parity#1 を引いて 13 件。これにホストに依存する分を足す。
+    expected = 13 + expected_host_detected
     assert len(detected) == expected, f"検出 {detected} / 未検出 {missed}"
-    assert len(detected) + len(missed) == 19
+    assert len(detected) + len(missed) == 23
 
 
 def test_unrecorded_hits_are_pinned(all_findings):
@@ -341,7 +407,7 @@ def test_unrecorded_hits_are_pinned(all_findings):
 def test_rules_and_targets_are_reported(all_findings):
     """検査した規則の数と該当の件数の両方が出る。**片方だけでは空振りが分からない。**"""
     payload = check([load_contract(t) for t in discover_contracts()])
-    assert payload["rules_checked"] == 8
+    assert payload["rules_checked"] == 9
     assert payload["targets"] == len(discover_contracts()) >= 35
     assert payload["hits"] == len(payload["findings"]) == len(all_findings)
     assert sum(payload["hits_by_rule"].values()) == payload["hits"]

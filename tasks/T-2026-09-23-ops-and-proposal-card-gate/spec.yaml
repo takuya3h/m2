@@ -1,0 +1,71 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-09-23-ops-and-proposal-card-gate"
+  kind: impl
+  title: "提案カードの置き場と exp からの参照を必須にする（L3 P14）。allow_write の漏れを spec-check で止める。運用の残件三つ"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-09-22T10:57:41Z"
+  created_from:
+    runindex_commit: "4e97b3de"
+    counts: {index: 1558, experiments: 476, verdicts: 1506}
+  depends_on: [T-2026-09-19-symmetry-gate, T-2026-09-19-p13-skip-and-enum]
+  amendments:
+    - date: "2026-09-22"
+      reason: "Task A-4 の指示により占位を実測値へ差し替えた。conventions_rev は変更前の context/conventions.md の commit、runindex_commit は runindex/ の commit。あわせて created_from.counts の 0/0/0 を実測（index 1558 / experiments 476 / verdicts 1506）へ直した。SPEC は counts の差し替えを指示していないが、起票時の値が実測と一致しないため（conventions#issuer_cautions の注意 1）"
+      diff: "meta.created_from.runindex_commit と counts、contract.conventions_rev の 3 箇所"
+intent:
+  question: "提案関門が存在するのに使われなかった穴（カードが repo に無い、exp がカードを参照しない、批判会話が省かれる）を、起票の段階で機械で止められるか。起票者の allow_write の漏れ四回を規則で止められるか"
+  decision_at_stake: "以後の exp 契約は、検査を通った提案カードへの参照が無ければ起動できない、という運用の開始。起票者の同じ型の誤りの再発を止める"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "not-referenced"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["tools/preflight_task.py", "tools/check_spec.py", "tools/check_proposal.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#proposal_gate]
+  conventions_rev: "c801e17c"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["context/conventions.md", "tasks/_schema/spec.schema.json", "tasks/T-2026-08-22-philip-hub-foundation/result.yaml", ".gitignore", "docs/proposals/", "docs/proposal-gate.md", "docs/issuer-defects.md"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。規則数・検査数・アンカー数・試験の失敗数。旧様式 result.yaml の内容", gpu: false, est: "30m"}
+    - {id: B, name: "提案カードの置き場と雛形。規約と文書の改訂（候補数の下限、批判会話の検索必須、参照の規則）", gpu: false, est: "60m"}
+    - {id: C, name: "L3 P十四 proposal_card_checked。spec.schema.json に intent.proposal_card", gpu: false, est: "2h"}
+    - {id: D, name: "spec-check に allow_write の規則。L1 にゲートの after の検査。.gitignore。旧様式 result.yaml の書き直し", gpu: false, est: "2h"}
+    - {id: E, name: "検証（対照つき）と報告", gpu: false, est: "60m"}
+  gates:
+    - {id: G1, after: A, check: "作業ツリーが清浄で、変更前の数が記録された", on_fail: stop}
+    - {id: G2, after: C, check: "P十四 が、カード無しの exp で FAIL、検査を通らないカードで FAIL、通るカードで PASS、例外二件と完了済みで SKIP、impl と analysis で SKIP", on_fail: stop}
+    - {id: G3, after: D, check: "spec-check の新規則が実例四件の spec で FAIL、allow_write を足した同じ spec で PASS", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [_template.md]
+  destination: "docs/proposals/"
+  acceptance:
+    - "a: docs/proposals/_template.md が提案カード十六項目と却下表の骨組みを持ち、check_proposal.py が雛形そのものを不足で落とす（項目が空のため）"
+    - "b: conventions#proposal_gate に、候補数の下限三、批判会話での web 検索の必須化、カードの置き場、exp からの参照の規則が足され、既存の行の本文は変わっていない"
+    - "c: spec.schema.json に intent.proposal_card（文字列、任意）が足され、既存の spec.yaml 全件が schema を通る"
+    - "d: L3 P十四 が、exp 以外で SKIP、完了済みで SKIP、例外の二件で SKIP（理由に導入前と出る）、proposal_card が無い exp で FAIL、経路が存在しない exp で FAIL、check_proposal が落ちるカードを指す exp で FAIL、通るカードを指す exp で PASS"
+    - "e: check_spec.py に規則が一つ足され、kind が exp で allow_write に outputs.destination か runindex/ が無い spec で FAIL、両方ある spec で PASS。実例四件の spec で FAIL する"
+    - "f: L1 に、gates[].after が phases[].id に実在し、gates の並びが phases の並びと同じ順である検査が足され、順序を入れ替えた spec で FAIL"
+    - "g: .gitignore に .sync-pause* が足され、.sync-pause.released を置いた作業ツリーで git status が未追跡を出さない"
+    - "h: 旧様式の result.yaml 一件が現行 schema を通る形に書き直され、判定・欠陥・逸脱の内容が失われていない（旧版との対応表）"
+    - "i: 追加した試験が通り、変更前に失敗していた試験の件数が増えていない"
+    - "j: PR が Draft でなく存在し、base が phase0 で、分岐が feat/ で始まる"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "L3 の末尾に P十四 を足せない場合"
+    - "spec.schema.json に任意項目を足すと既存の spec.yaml が通らなくなる場合"
+    - "旧様式 result.yaml の書き直しで内容の対応が取れない項目がある場合（推測で埋めず諮る）"
