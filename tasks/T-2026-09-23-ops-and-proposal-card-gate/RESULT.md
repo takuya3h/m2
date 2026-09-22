@@ -229,6 +229,7 @@ L1-10 は `gates[].after` の実在と、ゲートの並びがフェーズの並
 | commit | `ae76c1b9`（本体）、`4369cf5e`（変更履歴の commit 欄の記録） |
 | PR | **#194**。`isDraft: false`、`baseRefName: phase0`、`headRefName: feat/ops-and-proposal-card-gate`、`state: OPEN` |
 | push の経路 | `origin` の `pushurl` が https で資格情報を解決できず失敗した。fetch 側の ssh は通るため、**設定を変えずに** ssh の URL を明示して push した。上流は `origin/feat/ops-and-proposal-card-gate` に設定済み |
-| 配布台帳への報告 | 下に追記 |
+| 配布台帳への報告 | `make task-report` が成功。`verdict: partial`、`n_issuer_defects: 5`、`report_sha256: 45eeb65de2afe6b87a1f09ead5583d219b846f7ab52c3d167d8122b7596b3bcb`、`report_bytes: 17749`、`replaced_blocks: 0` |
+| 常駐同期の抑止 | `.sync-pause` を `.sync-pause.released` へ移動して解除した（削除ではなく移動。実装は目印の実在だけを見る） |
 
 **完了判定 j は充足。** PR は Draft でなく、base は `phase0`、分岐名は `feat/` で始まる。
