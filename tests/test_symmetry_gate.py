@@ -74,11 +74,16 @@ def test_p13_applies_for_exp():
     assert preflight_task.decide_applicability(spec)["P13"] is True
 
 
-def test_p13_is_last_and_p1_to_p12_are_unchanged():
-    """既存の番号・順序・名前を変えていない。"""
+def test_p13_keeps_its_place_and_p1_to_p12_are_unchanged():
+    """既存の番号・順序・名前を変えていない。
+
+    2026-09-23 に P14 proposal_card_checked を**末尾へ**足した。P13 はもはや
+    最後ではないが、**位置と名前は動かない。** 後から足す検査は必ず末尾に置く
+    （番号を詰め直すと過去の報告の指す先が変わる）。
+    """
     ids = sorted(preflight_task.CHECK_NAMES, key=lambda c: int(c[1:]))
-    assert ids[-1] == "P13"
     assert ids[:12] == [f"P{n}" for n in range(1, 13)]
+    assert ids[12] == "P13"
     assert preflight_task.CHECK_NAMES["P13"] == "symmetry_table_complete"
 
 

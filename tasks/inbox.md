@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（595 件）
+## 未処理（601 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -610,6 +610,12 @@
 - [ ] 2026-09-21 [cc] m2-sync.sh の修正は統合されるまで本ホストへ定着しない。keeper が毎ループ origin/phase0 から自己更新して戻すためで、指示どおりの順序では完了判定 O が原理的に達成できなかった。修正版を置き直して常駐処理と同じ呼び方で一度走らせて確かめた。統合前の配置を前提にする契約は同じ壁に当たる（scripts/sync/keeper.sh:49）
 - [ ] 2026-09-21 [cc] P9 spec_lint の separated_source が行継続を扱えず偽陽性を出す。source … && source … \ と次行の && make … はシェルでは一命令だが行で切って判定される。実際に一命令として実行し成功している。行継続を連結してから判定するかの判断が要る（tools/check_agent_docs.py の check_text）
 - [ ] 2026-09-21 [cc] 前契約で一時的に落ちていた test_loss_mask の 1 件は同期の完了で解消した。飛ばされていた 13 件も走るようになり 7 failed/581 passed/13 skipped から 6 failed/595 passed/0 skipped へ。飛ばし条件がディレクトリの存在だけを見る問題そのものは残っている（tests/test_loss_mask.py:70）
+- [ ] 2026-09-22 [cc] 提案カードの雛形は付録 A の表だけでは check_proposal を永久に通らない（項目を見出しで探すため）。見出しと表の併記にした（docs/proposals/_template.md）
+- [ ] 2026-09-22 [cc] allow_write 規則の範囲は変種 C（exp は無条件、他は宣言がある時だけ）。全 kind 無条件だと 127 契約中 123 件が該当し判別力を失う実測による（tools/check_spec.py）
+- [ ] 2026-09-22 [cc] 旧様式 result.yaml は書き直さず据え置き。版 3 が要求する tests の 3 整数が旧報告に無く推測で埋めれば捏造になる。schema 側の改訂が別契約で要る（tasks/T-2026-08-22-philip-hub-foundation/result.yaml）
+- [ ] 2026-09-22 [cc] 完了判定 e の「実例 4 件で FAIL」は 3 件どまり。4 件目は起票時の宣言漏れが実行中に是正済みで、現行の本文では該当しないのが正しい（tasks/T-2026-09-23-ops-and-proposal-card-gate/RESULT.md §5）
+- [ ] 2026-09-22 [cc] 例外の二件（stage1-detector-towers-r2 / stage1-phase-tower-r3）は repo に未取得。取得後に P14 が実物で SKIP になることを確かめる（tools/preflight_task.py の PRE_GATE_EXEMPT_TASKS）
+- [ ] 2026-09-22 [cc] result.yaml の雛形と /task 手順書が issuer_defects の型を 4 種と書くが schema は 6 種。写しが古い（tasks/_templates/result.yaml）
 
 ## 処理済み（1 件）
 

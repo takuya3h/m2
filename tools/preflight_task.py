@@ -25,6 +25,10 @@ import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 TASKS_DIR = REPO_ROOT / "tasks"
+# P14 が tools/check_proposal.py を使う。**起動の仕方に依らず解決できるようにする。**
+_TOOLS_DIR = str(Path(__file__).resolve().parent)
+if _TOOLS_DIR not in sys.path:
+    sys.path.insert(0, _TOOLS_DIR)
 CONVENTIONS_PATH = REPO_ROOT / "context" / "conventions.md"
 # WARN は「合格でも失敗でもない」第 4 の状態である。SKIP と PASS を区別しているのと
 # 同じ理由で、警告と合格も区別する。**WARN は終了コードを変えない**（判定は FAIL の数のみ）。
@@ -44,9 +48,10 @@ CHECK_NAMES = {
     "P11": "gpu_free",
     "P12": "refs_resolved",
     "P13": "symmetry_table_complete",
+    "P14": "proposal_card_checked",
 }
 ALWAYS = {"P1", "P6", "P7", "P8", "P9", "P10", "P12"}
-EXP_ONLY = {"P4", "P5", "P13"}
+EXP_ONLY = {"P4", "P5", "P13", "P14"}
 LISTED_ONLY = {
     "P2": "cuda_ext_loaded",
     "P3": "deterministic_flags",
@@ -81,6 +86,22 @@ SYMMETRY_ALIGN = "揃える"
 SYMMETRY_INTENDED = "意図的に変える"
 SYMMETRY_UNKNOWN = "UNKNOWN"
 SYMMETRY_VERDICTS = (SYMMETRY_ALIGN, SYMMETRY_INTENDED, SYMMETRY_UNKNOWN)
+
+# P14 proposal_card_checked。conventions#proposal_gate の「置き場と参照」が定めた
+# 提案カードを spec から辿り、実在と静的検査の通過を確かめる。
+# **関門は在ったのに使われなかった。** 規約・手順・検査器は 2026-09-16 から在ったが、
+# Stage 1 の二周目と三周目はカードを repo に置かず prereg を直接書いた。関門を作った
+# 起票者自身が飛ばした。**文言による自制は働かないので機械にする**（docs/issuer-defects.md）。
+PROPOSAL_CARD_FIELD = "proposal_card"
+# 導入前に配布済みの契約。**照合は task_id の完全一致で行う。**
+# 部分一致にすると `-r2` を含む別の契約や後続の周回まで免除する
+# （issuer_cautions #13 と同型。P13 の完了済み判定と同じ理由）。
+# **三件目を足すときは規約の改訂が要る**（conventions#proposal_gate「置き場と参照」）。
+PRE_GATE_EXEMPT_TASKS = frozenset({
+    "T-2026-09-19-stage1-detector-towers-r2",
+    "T-2026-09-19-stage1-phase-tower-r3",
+})
+PRE_GATE_EXEMPT_REASON = "導入前の契約"
 
 # P11 gpu_free。**空きの判定は「compute プロセスが 0 件」で行う。**
 # 使用量の閾値は機種と用途で変わるため置かない。占有しているプロセスの有無だけを見る。
@@ -658,6 +679,69 @@ def check_symmetry_table(task_id: str) -> Check:
     )
 
 
+def check_proposal_card(task_id: str, spec: dict) -> Check:
+    """P14. exp 契約が、検査を通った提案カードを参照していることを確かめる。
+
+    正本は `conventions#proposal_gate` の「置き場と参照」。判定は次の順で行う。
+
+    1. 完了済み（`result.yaml` に `gates[].verdict` がある）→ SKIP。P13 と同じ判定に委ねる
+    2. 導入前に配布済みの契約（`PRE_GATE_EXEMPT_TASKS` の完全一致）→ SKIP
+    3. `intent.proposal_card` が無い → FAIL
+    4. 経路のファイルが無い → FAIL
+    5. `check_proposal.py` に検出がある → FAIL（検出の内容を出す）
+
+    **カードの中身の妥当性は見ない。** 形の検査は `check_proposal.py` に委ね、
+    価値の判断は批判会話が持つ（`docs/proposal-gate.md` B.6）。
+    """
+    verdicts = completed_verdicts(task_id)
+    if verdicts:
+        return Check(
+            "P14", CHECK_NAMES["P14"], "SKIP",
+            f"完了済み（{RESULT_FILE} に verdict あり: {len(verdicts)} 件）のため対象外",
+        )
+    if task_id in PRE_GATE_EXEMPT_TASKS:
+        return Check(
+            "P14", CHECK_NAMES["P14"], "SKIP",
+            f"{PRE_GATE_EXEMPT_REASON}のため対象外（conventions#proposal_gate の置き場と参照）",
+        )
+
+    card = (spec.get("intent") or {}).get(PROPOSAL_CARD_FIELD)
+    if not isinstance(card, str) or not card.strip():
+        return Check(
+            "P14", CHECK_NAMES["P14"], "FAIL",
+            f"intent.{PROPOSAL_CARD_FIELD} が無い。"
+            "提案カードを docs/proposals/ に置き、経路を書くこと",
+        )
+    card = card.strip()
+    path = REPO_ROOT / card
+    if not path.is_file():
+        return Check("P14", CHECK_NAMES["P14"], "FAIL", f"提案カードが無い: {card}")
+
+    try:
+        import check_proposal
+    except ImportError as exc:  # pragma: no cover - 検査器の欠落を隠さない
+        return Check("P14", CHECK_NAMES["P14"], "FAIL", f"check_proposal を読めない: {exc}")
+    report = check_proposal.check(path)
+    if report["errors"]:
+        return Check(
+            "P14", CHECK_NAMES["P14"], "FAIL",
+            f"{card} の検査が成立しない: " + "／".join(report["errors"]),
+        )
+    if report["findings"]:
+        detail = "／".join(
+            f"{f['kind']}:{f['detail']}" for f in report["findings"][:5]
+        )
+        more = "" if report["hits"] <= 5 else f"（ほか {report['hits'] - 5} 件）"
+        return Check(
+            "P14", CHECK_NAMES["P14"], "FAIL",
+            f"{card} が check_proposal.py を通らない（検出 {report['hits']} 件）: {detail}{more}",
+        )
+    return Check(
+        "P14", CHECK_NAMES["P14"], "PASS",
+        f"{card} は検出 0 件（カード {report['card_items']} 件 / 禁止語 {report['words_checked']} 語を検査）",
+    )
+
+
 def run_checks(task_id: str, spec: dict) -> list[Check]:
     applicable = decide_applicability(spec)
     checks: list[Check] = []
@@ -691,6 +775,8 @@ def run_checks(task_id: str, spec: dict) -> list[Check]:
             checks.append(check_refs_resolved(task_id, spec))
         elif cid == "P13":
             checks.append(check_symmetry_table(task_id))
+        elif cid == "P14":
+            checks.append(check_proposal_card(task_id, spec))
     return checks
 
 

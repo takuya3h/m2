@@ -1,0 +1,6 @@
+- [ ] 2026-09-22 [cc] 提案カードの雛形は付録 A の表だけでは check_proposal を永久に通らない（項目を見出しで探すため）。見出しと表の併記にした（docs/proposals/_template.md）
+- [ ] 2026-09-22 [cc] allow_write 規則の範囲は変種 C（exp は無条件、他は宣言がある時だけ）。全 kind 無条件だと 127 契約中 123 件が該当し判別力を失う実測による（tools/check_spec.py）
+- [ ] 2026-09-22 [cc] 旧様式 result.yaml は書き直さず据え置き。版 3 が要求する tests の 3 整数が旧報告に無く推測で埋めれば捏造になる。schema 側の改訂が別契約で要る（tasks/T-2026-08-22-philip-hub-foundation/result.yaml）
+- [ ] 2026-09-22 [cc] 完了判定 e の「実例 4 件で FAIL」は 3 件どまり。4 件目は起票時の宣言漏れが実行中に是正済みで、現行の本文では該当しないのが正しい（tasks/T-2026-09-23-ops-and-proposal-card-gate/RESULT.md §5）
+- [ ] 2026-09-22 [cc] 例外の二件（stage1-detector-towers-r2 / stage1-phase-tower-r3）は repo に未取得。取得後に P14 が実物で SKIP になることを確かめる（tools/preflight_task.py の PRE_GATE_EXEMPT_TASKS）
+- [ ] 2026-09-22 [cc] result.yaml の雛形と /task 手順書が issuer_defects の型を 4 種と書くが schema は 6 種。写しが古い（tasks/_templates/result.yaml）

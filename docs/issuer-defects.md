@@ -39,6 +39,7 @@
 - **`outputs.must_have` が RESULT.md のみ** ↔ 本文が result.yaml と受け皿の作成も求める
 - **規約ファイルへの追記を命じながら `contract.allow_write` を宣言しなかった**（2026-09-16。`context/conventions.md` は `check_forbidden.py` の `FORBIDDEN_FILES`。指示どおり実行すると `make forbidden-check` が落ちる。`T-2026-09-16-proposal-gate` RESULT §4-1）
 - **付録に無い節を完了判定で要求した**（2026-09-16。完了判定 e は両地図の末尾に「未検証の組み合わせ」の節を求めるが、付録 B に該当する節が無い〔A.3 のみ〕。実行者が B.5 を足して満たした。`T-2026-09-16-evidence-map-ab` RESULT §5-2）
+- **自作の関門を起票者自身が二度飛ばした**（2026-09-23。`T-2026-09-16-proposal-gate` が提案カードを運用の前提に置いたのに、Stage 1 の二周目 `T-2026-09-19-stage1-detector-towers-r2` と三周目 `T-2026-09-19-stage1-phase-tower-r3` は prereg を直接書き、カードを repo に置かず検査も通していない。カードが会話の中にしか無いため、関門は規約と検査器として在るだけで一度も効かなかった。**文言による自制は働かないので機械にした**（L3 の P14 `proposal_card_checked`）。`T-2026-09-23-ops-and-proposal-card-gate` RESULT）
 
 ## 測らずに断定した
 

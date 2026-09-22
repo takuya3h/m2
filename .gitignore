@@ -236,8 +236,12 @@ docs/sessions/raw/
 # === 常駐同期の一時停止マーカー ===
 # 契約の実行中だけ置き、終わったら消す（scripts/sync/m2-sync.sh が読む）。
 # ホストごとの状態であり全台で共有しない。行末にコメントを書かないこと
-# （パターンが壊れる）。検証: git check-ignore .sync-pause
-.sync-pause
+# （パターンが壊れる）。検証: git check-ignore .sync-pause .sync-pause.released
+# 解除は削除に固定しない。実装が見るのは目印の**実在だけ**であり
+# （scripts/sync/m2-sync.sh の [ -f "$M2DIR/.sync-pause" ]）、別名へ移しても解ける。
+# 退避先の .sync-pause.released が未追跡として毎回残っていたため、接尾を含めて除外する。
+# git の追跡と、ファイルの実在の検査は別である。ignore は実在の検査に影響しない。
+.sync-pause*
 
 # Stage 1 検出塔の学習ログは 1.6〜1.9 MB × 14 本あり、step ごとの損失行が大半である。
 # 引用に要る行は train_summary.log（各 10 KB 程度）へ抜いてあり、そちらを追跡する。
