@@ -6,6 +6,10 @@ repo: `~/slocal2/m2`。版: `v2.1.3`（画面の経路 `GET /rest/system/version
 秘匿の扱い: 画面の鍵は変数へ読み込むだけで、出力にも記録にも残していない。
 相手の識別子は先頭 7 文字までに切り詰めた。公開側の住所は末尾を伏せた。
 
+**時刻の表記**: 地の文・表・見出しは **JST**。
+`~/.syncthing.log` と設定ファイルの原文を引用した箇所だけは **UTC のまま**である
+（同期処理が UTC で書くため。書き換えると証跡でなくなる）。**JST = UTC + 9 時間。**
+
 ---
 
 ## 1. 実行ホストの同定（契約の宣言と OS 名が食い違うため）
@@ -28,8 +32,8 @@ repo: `~/slocal2/m2`。版: `v2.1.3`（画面の経路 `GET /rest/system/version
 プロセスは `/proc/PID/exe` の実体で絞った（部分一致は実行基盤の包み込みを拾うため）。
 件数は `grep -c` で数えた（終了コードを件数と呼ばない）。
 
-    pid=122452 exe=/home/ubuntu/bin/syncthing   起動 2026-08-23 22:29:04
-    pid=122530 exe=/home/ubuntu/bin/syncthing   起動 2026-08-23 22:29:18
+    pid=122452 exe=/home/ubuntu/bin/syncthing   起動 2026-08-24 07:29:04 JST
+    pid=122530 exe=/home/ubuntu/bin/syncthing   起動 2026-08-24 07:29:18 JST
     件数 = 2
 
 稼働時間 `uptime` = 2,501,884 秒（約 28.9 日）。接続は 6 件すべて `tcp-server`、
@@ -48,7 +52,7 @@ repo: `~/slocal2/m2`。版: `v2.1.3`（画面の経路 `GET /rest/system/version
 ## 3. 記録から拾った外向きの通信（変更前）
 
 記録: `~/.syncthing.log`、244,194,818 bytes / 819,933 行。
-範囲は 2026-08-23 22:29:04 〜 2026-09-21 21:22:56。**途中で版が上がっている**
+範囲は 2026-08-24 07:29:04 JST 〜 2026-09-22 06:22:56 JST。**途中で版が上がっている**
 （`v1.27.10` で起動 → 自動更新で `v2.1.3` へ → 以後 v2 の様式）。
 
 種類ごとの件数（完全一致の語を `grep -c` で数えた）。
@@ -63,7 +67,7 @@ repo: `~/slocal2/m2`。版: `v2.1.3`（画面の経路 `GET /rest/system/version
 | 6 | 局所の告知 | 2 | 12, 13 | IPv4 broadcast / IPv6 multicast。**外向きではない** |
 | — | 公開中継への参加 | **0** | — | `Joined relay` / `relay://` とも 0 件 |
 
-該当行（抜粋。公開側の住所は末尾を伏せた）:
+該当行（抜粋。**記録の原文なので時刻は UTC**。公開側の住所は末尾を伏せた）:
 
     29:2026-08-23 22:29:38 INF Detected NAT services (count=0 log.pkg=nat)
     30:2026-08-23 22:29:48 INF Detected NAT type (uri=quic://0.0.0.0:22000 type="Port restricted NAT" log.pkg=connections)
@@ -86,12 +90,12 @@ repo: `~/slocal2/m2`。版: `v2.1.3`（画面の経路 `GET /rest/system/version
 
 | 時点 | 出所 | `urAccepted` |
 |---|---|---|
-| 2026-08-23 22:41 | `~/task-hold/T-2026-09-17-philip-accept-efros/backup/config.xml.orig` | `0` |
-| 2026-08-23 22:29（v1→v2 移行時の控え） | `~/.local/state/syncthing/config.xml.v37` | `0` |
-| 2026-09-17 05:07 | `~/task-backups/T-2026-09-20-philip-accept-dlsta/config.xml.orig` | `0` |
-| 2026-09-20 17:32:39（現行） | `~/.local/state/syncthing/config.xml` | **`3`** |
+| 2026-08-24 07:41 JST | `~/task-hold/T-2026-09-17-philip-accept-efros/backup/config.xml.orig` | `0` |
+| 2026-08-24 07:29 JST（v1→v2 移行時の控え） | `~/.local/state/syncthing/config.xml.v37` | `0` |
+| 2026-09-17 14:07 JST | `~/task-backups/T-2026-09-20-philip-accept-dlsta/config.xml.orig` | `0` |
+| 2026-09-21 02:32:39 JST（現行） | `~/.local/state/syncthing/config.xml` | **`3`** |
 
-初回の送信は `2026-09-20 17:32:36`、設定ファイルの更新は `17:32:39`。
+初回の送信は `2026-09-21 02:32:36 JST`、設定ファイルの更新は `02:32:39 JST`。
 **28 日間 0 件だったものが、この時刻から日次 1 件になった。**
 
 前契約 `T-2026-09-20-philip-accept-dlsta` の証跡に残る経路は
@@ -283,7 +287,7 @@ STUN の keepalive は詳細記録の水準でしか出ない（`%s stun keepali
 
 ## 8. Phase B — 変更と確認
 
-### 8.1 変更直前の基準点（2026-09-22 09:02:55 UTC）
+### 8.1 変更直前の基準点（2026-09-22 18:02:55 JST）
 
     記録の行数 = 827,152 / 246,341,716 bytes
     natEnabled=True  urAccepted=3  crashReportingEnabled=True
@@ -312,7 +316,7 @@ STUN の keepalive は詳細記録の水準でしか出ない（`%s stun keepali
     crashReportingEnabled   True → False
     変わった項目数 = 3   増えた項目 = なし
 
-**設定ファイル** `~/.local/state/syncthing/config.xml`（mtime 2026-09-22 09:03:20）:
+**設定ファイル** `~/.local/state/syncthing/config.xml`（mtime 2026-09-22 18:03:20 JST）:
 
     natEnabled            = false      urAccepted           = -1
     crashReportingEnabled = false      localAnnounceEnabled = true
@@ -346,8 +350,8 @@ STUN の keepalive は詳細記録の水準でしか出ない（`%s stun keepali
 
 周期は実装から読んだ値を使った（`stunKeepaliveStartS = 180` 秒）。**それを越えて 300 秒待った。**
 
-    開始 UTC = 2026-09-22 09:04:36   記録の行数 = 827,152
-    終了 UTC = 2026-09-22 09:09:36   記録の行数 = 827,339   増えた行数 = 187
+    開始 2026-09-22 18:04:36 JST   記録の行数 = 827,152
+    終了 2026-09-22 18:09:36 JST   記録の行数 = 827,339   増えた行数 = 187
 
 増えた 187 行のうち、外向きに関わる語の件数（`grep -c`）:
 
@@ -361,11 +365,11 @@ STUN の keepalive は詳細記録の水準でしか出ない（`%s stun keepali
 | `Joined relay` | **0** |
 | `stun` | **1** |
 
-その 1 件が決め手である。
+その 1 件が決め手である（**記録の原文なので時刻は UTC**。JST では 2026-09-22 18:06:09）。
 
     2026-09-22 09:06:09 INF STUN disabled (log.pkg=stun)
 
-**設定変更（09:03:20）から 169 秒後に、同期処理自身が STUN を無効にしたと記録した。**
+**設定変更（18:03:20 JST）から 169 秒後に、同期処理自身が STUN を無効にしたと記録した。**
 169 秒は keepalive の周期 180 秒の内側であり、**待ちが明けた最初の周回で止まった**ことと整合する。
 
 **これは不在による証拠ではなく、遷移そのものの記録である。**
@@ -377,15 +381,15 @@ STUN の keepalive は詳細記録の水準でしか出ない（`%s stun keepali
 
 | 事実 | 値 |
 |---|---|
-| 直近の送信 | `2026-09-20 17:32:36` と `2026-09-21 17:32:38`（いずれも UTC） |
-| 変更の時刻 | `2026-09-22 09:03:20` UTC |
-| 次に送るはずだった時刻 | **`2026-09-22 17:32` 前後 UTC**（変更の約 8.5 時間後） |
+| 直近の送信 | **2026-09-21 02:32:36 JST** と **2026-09-22 02:32:38 JST**（記録の原文では 09-20 17:32:36 / 09-21 17:32:38 UTC） |
+| 変更の時刻 | **2026-09-22 18:03:20 JST** |
+| 次に送るはずだった時刻 | **2026-09-23 02:32 JST 前後**（変更の約 8.5 時間後） |
 | 待った時間 | 300 秒。**周期を越えていない** |
 
 **したがって「止まった」とは書かない。UNKNOWN とする。**
 判定の根拠は実装（4.2。`urAccepted >= 3` のときだけ送る）と読み戻しだけである。
 
-確かめ方は申し送りへ置く。**2026-09-22 17:32 UTC を過ぎてから**次を見ること。
+確かめ方は申し送りへ置く。**2026-09-23 02:32 JST を過ぎてから**次を見ること。
 
     grep -c 'Sent usage report' ~/.syncthing.log      # 変更時点で 2 件。増えていなければ止まっている
 
