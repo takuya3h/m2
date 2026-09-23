@@ -1,0 +1,314 @@
+The following values were not passed to `accelerate launch` and had defaults used instead:
+		More than one GPU was found, enabling multi-GPU training.
+		If this was unintended please pass in `--num_processes=1`.
+	`--num_machines` was set to a value of `1`
+	`--mixed_precision` was set to a value of `'no'`
+	`--dynamo_backend` was set to a value of `'no'`
+To avoid this warning pass in values for each of the problematic parameters or run `accelerate config`.
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/albumentations/core/validation.py:114: UserWarning: ShiftScaleRotate is a special case of Affine transform. Please use Affine transform instead.
+  original_init(self, **validated_kwargs)
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:109: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:140: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:195: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:226: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+loading annotations into memory...
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/albumentations/core/validation.py:114: UserWarning: ShiftScaleRotate is a special case of Affine transform. Please use Affine transform instead.
+  original_init(self, **validated_kwargs)
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:109: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:140: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:195: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:226: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+loading annotations into memory...
+Done (t=0.24s)
+creating index...
+index created!
+loading annotations into memory...
+Done (t=0.25s)
+creating index...
+index created!
+loading annotations into memory...
+Done (t=0.14s)
+creating index...
+index created!
+Done (t=0.14s)
+creating index...
+index created!
+[2026-09-23 05:27:07 det.util.misc]: [RANK 0] Rank of current process: 0, World size: 2
+[2026-09-23 05:27:08 det.util.misc]: [RANK 0] Environment info: 
+-------------------------------  --------------------------------------------------------------------------------------------------
+sys.platform                     linux
+Python                           3.11.16 (main, Sep  1 2026, 14:18:37) [Clang 22.1.3 ]
+numpy                            1.26.4
+PyTorch                          2.1.2+cu118 @/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch
+PyTorch debug build              False
+torch._C._GLIBCXX_USE_CXX11_ABI  False
+GPU available                    Yes
+GPU 0,1                          NVIDIA RTX A6000 (arch=8.6)
+Driver version                   595.84
+CUDA_HOME                        /usr/local/cuda
+Pillow                           12.2.0
+torchvision                      0.16.2+cu118 @/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torchvision
+torchvision arch flags           3.5, 5.0, 6.0, 7.0, 7.5, 8.0, 8.6
+fvcore                           0.1.5.post20221221
+iopath                           0.1.10
+cv2                              4.13.0
+-------------------------------  --------------------------------------------------------------------------------------------------
+PyTorch built with:
+  - GCC 9.3
+  - C++ Version: 201703
+  - Intel(R) oneAPI Math Kernel Library Version 2022.2-Product Build 20220804 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v3.1.1 (Git Hash 64f6bcbcbab628e96f33a62c3e975f8535a7bde4)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - LAPACK is enabled (usually provided by MKL)
+  - NNPACK is enabled
+  - CPU capability usage: AVX512
+  - CUDA Runtime 11.8
+  - NVCC architecture flags: -gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86;-gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_90,code=sm_90
+  - CuDNN 8.7
+  - Magma 2.6.1
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=11.8, CUDNN_VERSION=8.7.0, CXX_COMPILER=/opt/rh/devtoolset-9/root/usr/bin/c++, CXX_FLAGS= -D_GLIBCXX_USE_CXX11_ABI=0 -fabi-version=11 -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -DNDEBUG -DUSE_KINETO -DLIBKINETO_NOROCTRACER -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -O2 -fPIC -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor -Werror=bool-operation -Wnarrowing -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-strict-overflow -Wno-strict-aliasing -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=old-style-cast -Wno-invalid-partial-specialization -Wno-unused-private-field -Wno-aligned-allocation-unavailable -Wno-missing-braces -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Werror=cast-function-type -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_DISABLE_GPU_ASSERTS=ON, TORCH_VERSION=2.1.2, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=1, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, 
+
+[2026-09-23 05:27:08 det.util.misc]: [RANK 0] Command line arguments: Namespace(config_file='configs/train_config_egosurgery_seed42.py', mixed_precision='fp16', accumulate_steps=1, seed=42, convergence_schedule=True, plateau_patience=4, plateau_factor=0.1, max_epochs=36, use_deterministic_algorithms=False, dynamo_backend='no')
+[2026-09-23 05:27:08 det.util.misc]: [RANK 0] Contents of args.config_file=configs/train_config_egosurgery_seed42.py:
+[38;5;245m# DRAFT (not for direct training) — Relation-DETR train_config adapted to EgoSurgery.[39m
+[38;5;245m# Run from inside third_party/Relation-DETR with the .venv-relation-detr venv:[39m
+[38;5;245m#   CUDA_VISIBLE_DEVICES=0,1 accelerate launch --num_processes 2 main.py \[39m
+[38;5;245m#       --config-file <this file> --seed 42 --mixed-precision fp16[39m
+[38;5;245m# Lines marked # <CHANGED> are EgoSurgery-specific.[39m
+[38;5;204mimport[39m[38;5;255m [39m[38;5;255mos[39m
+[38;5;204mfrom[39m[38;5;255m [39m[38;5;255mtorch[39m[38;5;255m [39m[38;5;204mimport[39m[38;5;255m [39m[38;5;255moptim[39m
+
+[38;5;204mfrom[39m[38;5;255m [39m[38;5;255mdatasets[39m[38;5;255m.[39m[38;5;255mcoco[39m[38;5;255m [39m[38;5;204mimport[39m[38;5;255m [39m[38;5;255mCocoDetection[39m
+[38;5;204mfrom[39m[38;5;255m [39m[38;5;255mtransforms[39m[38;5;255m [39m[38;5;204mimport[39m[38;5;255m [39m[38;5;255mpresets[39m
+[38;5;204mfrom[39m[38;5;255m [39m[38;5;255moptimizer[39m[38;5;255m [39m[38;5;204mimport[39m[38;5;255m [39m[38;5;255mparam_dict[39m
+
+[38;5;245m# ---- training schedule (matches S0: 12 epochs, step at 10) ----[39m
+[38;5;255mnum_epochs[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;141m12[39m[38;5;255m          [39m[38;5;245m# S0 parity[39m
+[38;5;255mbatch_size[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;141m2[39m[38;5;255m           [39m[38;5;245m# <CHANGED-ish> per-GPU bs; with 2 GPUs -> effective bs = 4 (S0 parity)[39m
+[38;5;255mnum_workers[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;141m4[39m
+[38;5;255mpin_memory[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;81mTrue[39m
+[38;5;255mprint_freq[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;141m50[39m
+[38;5;255mstarting_epoch[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;141m0[39m
+[38;5;255mmax_norm[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;141m0.1[39m
+
+[38;5;245m# このファイルは third_party/Relation-DETR/configs/ にあるので、m2 リポジトリ root は 3 階層上。[39m
+[38;5;255m_PROJECT_ROOT[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;255mos[39m[38;5;204m.[39m[38;5;255menviron[39m[38;5;204m.[39m[38;5;255mget[39m[38;5;255m([39m
+[38;5;255m    [39m[38;5;186m"[39m[38;5;186mEGO_BODY[39m[38;5;186m"[39m[38;5;255m,[39m
+[38;5;255m    [39m[38;5;255mos[39m[38;5;204m.[39m[38;5;255mpath[39m[38;5;204m.[39m[38;5;255mdirname[39m[38;5;255m([39m[38;5;255mos[39m[38;5;204m.[39m[38;5;255mpath[39m[38;5;204m.[39m[38;5;255mdirname[39m[38;5;255m([39m[38;5;255mos[39m[38;5;204m.[39m[38;5;255mpath[39m[38;5;204m.[39m[38;5;255mdirname[39m[38;5;255m([39m[38;5;255mos[39m[38;5;204m.[39m[38;5;255mpath[39m[38;5;204m.[39m[38;5;255mabspath[39m[38;5;255m([39m[38;5;255m__file__[39m[38;5;255m)[39m[38;5;255m)[39m[38;5;255m)[39m[38;5;255m)[39m[38;5;255m,[39m
+[38;5;255m)[39m
+
+[38;5;245m# 成果物は experiments/ 配下に永続化する（/tmp は再起動で消える）。[39m
+[38;5;245m# RELDETR_OUTPUT_DIR で上書き可。[39m
+[38;5;255moutput_dir[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;255mos[39m[38;5;204m.[39m[38;5;255menviron[39m[38;5;204m.[39m[38;5;255mget[39m[38;5;255m([39m
+[38;5;255m    [39m[38;5;186m"[39m[38;5;186mRELDETR_OUTPUT_DIR[39m[38;5;186m"[39m[38;5;255m,[39m
+[38;5;255m    [39m[38;5;255mos[39m[38;5;204m.[39m[38;5;255mpath[39m[38;5;204m.[39m[38;5;255mjoin[39m[38;5;255m([39m[38;5;255m_PROJECT_ROOT[39m[38;5;255m,[39m[38;5;255m [39m[38;5;186m"[39m[38;5;186mexperiments[39m[38;5;186m"[39m[38;5;255m,[39m[38;5;255m [39m[38;5;186m"[39m[38;5;186mtransfer[39m[38;5;186m"[39m[38;5;255m,[39m
+[38;5;255m                 [39m[38;5;186m"[39m[38;5;186mreldetr_work_seed42[39m[38;5;186m"[39m[38;5;255m)[39m[38;5;255m,[39m
+[38;5;255m)[39m
+[38;5;255mfind_unused_parameters[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;81mFalse[39m
+
+[38;5;245m# ---- EgoSurgery dataset (COCO-format, bbox-only, 15 classes) ----  # <CHANGED block>[39m
+[38;5;245m# NOTE: instances_*.json file_name fields already include the split prefix[39m
+[38;5;245m#       e.g. "train/01/01_1_0124.jpg", so img_folder must be the PARENT (data/raw/ego).[39m
+[38;5;255mEGO_ROOT[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;255mos[39m[38;5;204m.[39m[38;5;255menviron[39m[38;5;204m.[39m[38;5;255mget[39m[38;5;255m([39m[38;5;186m"[39m[38;5;186mEGO_ROOT[39m[38;5;186m"[39m[38;5;255m,[39m[38;5;255m [39m[38;5;186m"[39m[38;5;186m/home/ubuntu/slocal2/m2/data/raw/ego[39m[38;5;186m"[39m[38;5;255m)[39m
+[38;5;255mANN_DIR[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;255mos[39m[38;5;204m.[39m[38;5;255menviron[39m[38;5;204m.[39m[38;5;255mget[39m[38;5;255m([39m
+[38;5;255m    [39m[38;5;186m"[39m[38;5;186mEGO_ANN_DIR[39m[38;5;186m"[39m[38;5;255m,[39m[38;5;255m [39m[38;5;186m"[39m[38;5;186m/home/ubuntu/slocal2/m2/data/annotations/egosurgery_tool[39m[38;5;186m"[39m
+[38;5;255m)[39m
+[38;5;255mtrain_dataset[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;255mCocoDetection[39m[38;5;255m([39m
+[38;5;255m    [39m[38;5;255mimg_folder[39m[38;5;204m=[39m[38;5;255mEGO_ROOT[39m[38;5;255m,[39m
+[38;5;255m    [39m[38;5;255mann_file[39m[38;5;204m=[39m[38;5;186mf[39m[38;5;186m"[39m[38;5;186m{[39m[38;5;255mANN_DIR[39m[38;5;186m}[39m[38;5;186m/instances_train.json[39m[38;5;186m"[39m[38;5;255m,[39m
+[38;5;255m    [39m[38;5;255mtransforms[39m[38;5;204m=[39m[38;5;255mpresets[39m[38;5;204m.[39m[38;5;255mdetr[39m[38;5;255m,[39m
+[38;5;255m    [39m[38;5;255mtrain[39m[38;5;204m=[39m[38;5;81mTrue[39m[38;5;255m,[39m
+[38;5;255m)[39m
+[38;5;255mtest_dataset[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;255mCocoDetection[39m[38;5;255m([39m
+[38;5;255m    [39m[38;5;255mimg_folder[39m[38;5;204m=[39m[38;5;255mEGO_ROOT[39m[38;5;255m,[39m
+[38;5;255m    [39m[38;5;255mann_file[39m[38;5;204m=[39m[38;5;186mf[39m[38;5;186m"[39m[38;5;186m{[39m[38;5;255mANN_DIR[39m[38;5;186m}[39m[38;5;186m/instances_val.json[39m[38;5;186m"[39m[38;5;255m,[39m[38;5;255m   [39m[38;5;245m# use instances_test.json for final test eval[39m
+[38;5;255m    [39m[38;5;255mtransforms[39m[38;5;204m=[39m[38;5;81mNone[39m[38;5;255m,[39m
+[38;5;255m)[39m
+
+[38;5;245m# model config to train[39m
+[38;5;255mmodel_path[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;186m"[39m[38;5;186mconfigs/relation_detr/relation_detr_resnet50_egosurgery.py[39m[38;5;186m"[39m[38;5;255m  [39m[38;5;245m# <CHANGED> drafted above[39m
+
+[38;5;245m# ---- COCO-pretrained finetune (S0 load_from parity) ----  # <CHANGED>[39m
+[38;5;245m# Pointing resume_from_checkpoint at a .pth FILE => finetune. main.py loads it via[39m
+[38;5;245m# load_state_dict(), and filter_mismatched_weights() auto-drops the 91->15 class-head[39m
+[38;5;245m# mismatch (backbone + transformer load, class heads reinit). A local copy is preferred[39m
+[38;5;245m# to avoid network access at train time; download once to data/external/weights/.[39m
+[38;5;255mresume_from_checkpoint[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;255mos[39m[38;5;204m.[39m[38;5;255menviron[39m[38;5;204m.[39m[38;5;255mget[39m[38;5;255m([39m
+[38;5;255m    [39m[38;5;186m"[39m[38;5;186mRELDETR_COCO_CKPT[39m[38;5;186m"[39m[38;5;255m,[39m
+[38;5;255m    [39m[38;5;186m"[39m[38;5;186m/home/ubuntu/slocal2/m2/data/external/weights/relation_detr_resnet50_800_1333_coco_1x.pth[39m[38;5;186m"[39m[38;5;255m,[39m
+[38;5;255m)[39m
+
+[38;5;245m# ---- optimizer / scheduler (Relation-DETR defaults; 1x schedule) ----[39m
+[38;5;255mlearning_rate[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;141m1e-4[39m[38;5;255m     [39m[38;5;245m# see report: S0 lr_scaling=linear_x2 maps to doubling base lr for eff bs[39m
+[38;5;255moptimizer[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;255moptim[39m[38;5;204m.[39m[38;5;255mAdamW[39m[38;5;255m([39m[38;5;255mlr[39m[38;5;204m=[39m[38;5;255mlearning_rate[39m[38;5;255m,[39m[38;5;255m [39m[38;5;255mweight_decay[39m[38;5;204m=[39m[38;5;141m1e-4[39m[38;5;255m,[39m[38;5;255m [39m[38;5;255mbetas[39m[38;5;204m=[39m[38;5;255m([39m[38;5;141m0.9[39m[38;5;255m,[39m[38;5;255m [39m[38;5;141m0.999[39m[38;5;255m)[39m[38;5;255m)[39m
+[38;5;255mlr_scheduler[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;255moptim[39m[38;5;204m.[39m[38;5;255mlr_scheduler[39m[38;5;204m.[39m[38;5;255mMultiStepLR[39m[38;5;255m([39m[38;5;255mmilestones[39m[38;5;204m=[39m[38;5;255m[[39m[38;5;141m10[39m[38;5;255m][39m[38;5;255m,[39m[38;5;255m [39m[38;5;255mgamma[39m[38;5;204m=[39m[38;5;141m0.1[39m[38;5;255m)[39m
+[38;5;255mparam_dicts[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;255mparam_dict[39m[38;5;204m.[39m[38;5;255mfinetune_backbone_and_linear_projection[39m[38;5;255m([39m[38;5;255mlr[39m[38;5;204m=[39m[38;5;255mlearning_rate[39m[38;5;255m)[39m
+
+[2026-09-23 05:27:08 det.util.misc]: [RANK 0] Using the random seed: 42
+Using [0, 0.5, 0.6299605249474365, 0.7937005259840997, 1.0, 1.259921049894873, 1.5874010519681991, 2.0, inf] as bins for aspect ratio quantization
+Count of instances per bin: [9618]
+Using /home/ubuntu/.cache/torch_extensions/py311_cu118 as PyTorch extensions root...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /home/ubuntu/.cache/torch_extensions/py311_cu118/MultiScaleDeformableAttention/build.ninja...
+Building extension module MultiScaleDeformableAttention...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+ninja: no work to do.
+Loading extension module MultiScaleDeformableAttention...
+[2026-09-23 05:27:08 det.models.backbones.base_backbone]: Backbone architecture: resnet50
+Using [0, 0.5, 0.6299605249474365, 0.7937005259840997, 1.0, 1.259921049894873, 1.5874010519681991, 2.0, inf] as bins for aspect ratio quantization
+Count of instances per bin: [9618]
+Using /home/ubuntu/.cache/torch_extensions/py311_cu118 as PyTorch extensions root...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /home/ubuntu/.cache/torch_extensions/py311_cu118/MultiScaleDeformableAttention/build.ninja...
+Building extension module MultiScaleDeformableAttention...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+ninja: no work to do.
+Loading extension module MultiScaleDeformableAttention...
+[2026-09-23 05:27:09 det.util.utils]: <All keys matched successfully>
+WARNING [2026-09-23 05:27:09 py.warnings]: /home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+
+WARNING [2026-09-23 05:27:09 py.warnings]: /home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+
+WARNING [2026-09-23 05:27:09 py.warnings]: /home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+
+WARNING [2026-09-23 05:27:09 py.warnings]: /home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+
+WARNING [2026-09-23 05:27:09 det.util.utils]: The model and loaded state dict do not match exactly
+WARNING [2026-09-23 05:27:09 det.util.utils]: Size mismatch keys: transformer.decoder.class_head.0.weight, transformer.decoder.class_head.0.bias, transformer.decoder.class_head.1.weight, transformer.decoder.class_head.1.bias, transformer.decoder.class_head.2.weight, transformer.decoder.class_head.2.bias, transformer.decoder.class_head.3.weight, transformer.decoder.class_head.3.bias, transformer.decoder.class_head.4.weight, transformer.decoder.class_head.4.bias, transformer.decoder.class_head.5.weight, transformer.decoder.class_head.5.bias, transformer.encoder_class_head.weight, transformer.encoder_class_head.bias, transformer.hybrid_class_head.weight, transformer.hybrid_class_head.bias, denoising_generator.label_encoder.weight
++------------------------------------------+----------------+---------------------+
+| key name                                 | shape in model | shape in state dict |
++------------------------------------------+----------------+---------------------+
+| transformer.decoder.class_head.0.weight  | (15, 256)      | (91, 256)           |
+| transformer.decoder.class_head.0.bias    | (15,)          | (91,)               |
+| transformer.decoder.class_head.1.weight  | (15, 256)      | (91, 256)           |
+| transformer.decoder.class_head.1.bias    | (15,)          | (91,)               |
+| transformer.decoder.class_head.2.weight  | (15, 256)      | (91, 256)           |
+| transformer.decoder.class_head.2.bias    | (15,)          | (91,)               |
+| transformer.decoder.class_head.3.weight  | (15, 256)      | (91, 256)           |
+| transformer.decoder.class_head.3.bias    | (15,)          | (91,)               |
+| transformer.decoder.class_head.4.weight  | (15, 256)      | (91, 256)           |
+| transformer.decoder.class_head.4.bias    | (15,)          | (91,)               |
+| transformer.decoder.class_head.5.weight  | (15, 256)      | (91, 256)           |
+| transformer.decoder.class_head.5.bias    | (15,)          | (91,)               |
+| transformer.encoder_class_head.weight    | (15, 256)      | (91, 256)           |
+| transformer.encoder_class_head.bias      | (15,)          | (91,)               |
+| transformer.hybrid_class_head.weight     | (15, 256)      | (91, 256)           |
+| transformer.hybrid_class_head.bias       | (15,)          | (91,)               |
++------------------------------------------+----------------+---------------------+
+| denoising_generator.label_encoder.weight | (15, 256)      | (91, 256)           |
++------------------------------------------+----------------+---------------------+
+
+[2026-09-23 05:27:09 det.__main__]: [RANK 0] load pretrained from /home/ubuntu/slocal2/m2/data/external/weights/relation_detr_resnet50_800_1333_coco_1x.pth
+[2026-09-23 05:27:10 det.__main__]: [RANK 0] model parameters: 48471200
+[2026-09-23 05:27:10 det.__main__]: [RANK 0] optimizer: AcceleratedOptimizer (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    initial_lr: 0.0001
+    lr: 0.0001
+    maximize: False
+    weight_decay: 0.0001
+
+Parameter Group 1
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    initial_lr: 1e-05
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0.0001
+
+Parameter Group 2
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    initial_lr: 1e-05
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0
+
+Parameter Group 3
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    initial_lr: 1e-05
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0.0001
+
+Parameter Group 4
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    initial_lr: 1e-05
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0
+
+Parameter Group 5
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    initial_lr: 0.0001
+    lr: 0.0001
+    maximize: False
+    weight_decay: 0
+)
+[2026-09-23 05:27:10 det.__main__]: [RANK 0] lr_scheduler: {'_get_lr_called_within_step': False,
+ '_last_lr': [0.0001, 1e-05, 1e-05, 1e-05, 1e-05, 0.0001],
+ '_step_count': 1,
+ 'base_lrs': [0.0001, 1e-05, 1e-05, 1e-05, 1e-05, 0.0001],
+ 'gamma': 0.1,
+ 'last_epoch': 0,
+ 'milestones': Counter({10: 1}),
+ 'verbose': False}
+[2026-09-23 05:27:10 det.__main__]: [RANK 0] Label names is saved to /home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/label_names.txt
+[2026-09-23 05:27:10 det.__main__]: [RANK 0] Start training
+WARNING [2026-09-23 05:27:12 py.warnings]: /home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/autograd/__init__.py:251: UserWarning: Grad strides do not match bucket view strides. This may indicate grad was not created according to the gradient layout contract, or that the param's strides changed since DDP was constructed.  This is not an error, but may impair performance.
+grad.sizes() = [8, 64, 1, 1], strides() = [64, 1, 64, 64]
+bucket_view.sizes() = [8, 64, 1, 1], strides() = [64, 1, 1, 1] (Triggered internally at ../torch/csrc/distributed/c10d/reducer.cpp:320.)
+  Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+
+[2026-09-23 05:27:12 det.util.engine]: Epoch: [0]  [0/2405]  eta: 1:00:37  lr: 0.000000  data_time: 0.0110  iter_time: 1.5125  loss: 75.2489 (75.2489)  loss_class: 2.4146 (2.4146)  loss_bbox: 0.6819 (0.6819)  loss_giou: 0.7006 (0.7006)  loss_class_0: 2.0379 (2.0379)  loss_bbox_0: 1.0420 (1.0420)  loss_giou_0: 0.8073 (0.8073)  loss_class_1: 2.2687 (2.2687)  loss_bbox_1: 0.9197 (0.9197)  loss_giou_1: 0.7160 (0.7160)  loss_class_2: 2.2505 (2.2505)  loss_bbox_2: 0.8383 (0.8383)  loss_giou_2: 0.7080 (0.7080)  loss_class_3: 2.3347 (2.3347)  loss_bbox_3: 0.6628 (0.6628)  loss_giou_3: 0.6928 (0.6928)  loss_class_4: 2.3992 (2.3992)  loss_bbox_4: 0.6819 (0.6819)  loss_giou_4: 0.6954 (0.6954)  loss_class_enc: 1.9019 (1.9019)  loss_bbox_enc: 1.0249 (1.0249)  loss_giou_enc: 0.9291 (0.9291)  loss_class_dn: 1.3558 (1.3558)  loss_bbox_dn: 1.4720 (1.4720)  loss_giou_dn: 1.1198 (1.1198)  loss_class_dn_0: 1.3196 (1.3196)  loss_bbox_dn_0: 1.3404 (1.3404)  loss_giou_dn_0: 1.1020 (1.1020)  loss_class_dn_1: 1.3871 (1.3871)  loss_bbox_dn_1: 1.3448 (1.3448)  loss_giou_dn_1: 1.0502 (1.0502)  loss_class_dn_2: 1.3218 (1.3218)  loss_bbox_dn_2: 1.3322 (1.3322)  loss_giou_dn_2: 1.0239 (1.0239)  loss_class_dn_3: 1.2440 (1.2440)  loss_bbox_dn_3: 1.4876 (1.4876)  loss_giou_dn_3: 1.1316 (1.1316)  loss_class_dn_4: 1.3094 (1.3094)  loss_bbox_dn_4: 1.4729 (1.4729)  loss_giou_dn_4: 1.1197 (1.1197)  loss_class_hybrid: 1.8934 (1.8934)  loss_bbox_hybrid: 0.9791 (0.9791)  loss_giou_hybrid: 0.8362 (0.8362)  loss_class_0_hybrid: 1.7250 (1.7250)  loss_bbox_0_hybrid: 1.0663 (1.0663)  loss_giou_0_hybrid: 0.9087 (0.9087)  loss_class_1_hybrid: 1.8411 (1.8411)  loss_bbox_1_hybrid: 1.0190 (1.0190)  loss_giou_1_hybrid: 0.8703 (0.8703)  loss_class_2_hybrid: 1.7347 (1.7347)  loss_bbox_2_hybrid: 0.9855 (0.9855)  loss_giou_2_hybrid: 0.8476 (0.8476)  loss_class_3_hybrid: 1.7586 (1.7586)  loss_bbox_3_hybrid: 0.9752 (0.9752)  loss_giou_3_hybrid: 0.8604 (0.8604)  loss_class_4_hybrid: 1.8295 (1.8295)  loss_bbox_4_hybrid: 0.9854 (0.9854)  loss_giou_4_hybrid: 0.8413 (0.8413)  loss_class_enc_hybrid: 1.6061 (1.6061)  loss_bbox_enc_hybrid: 1.0771 (1.0771)  loss_giou_enc_hybrid: 0.9652 (0.9652)  mem: 607  max mem: 7115
+[2026-09-23 05:27:12 accelerate.tracking]: [RANK 0] Successfully logged to TensorBoard
+[2026-09-23 05:27:59 det.util.engine]: Epoch: [0]  [50/2405]  eta: 0:37:37  lr: 0.000005  data_time: 0.0043  iter_time: 0.9358  loss: 72.8321 (73.4437)  loss_class: 2.7683 (2.5346)  loss_bbox: 0.4452 (0.5372)  loss_giou: 0.5296 (0.6025)  loss_class_0: 2.4151 (2.2686)  loss_bbox_0: 0.5964 (0.6439)  loss_giou_0: 0.6275 (0.7080)  loss_class_1: 2.6256 (2.4486)  loss_bbox_1: 0.5069 (0.5782)  loss_giou_1: 0.5412 (0.6396)  loss_class_2: 2.5989 (2.4487)  loss_bbox_2: 0.4518 (0.5553)  loss_giou_2: 0.5575 (0.6111)  loss_class_3: 2.5988 (2.4347)  loss_bbox_3: 0.4635 (0.5364)  loss_giou_3: 0.4966 (0.6132)  loss_class_4: 2.5777 (2.4627)  loss_bbox_4: 0.4620 (0.5369)  loss_giou_4: 0.4899 (0.6068)  loss_class_enc: 2.1074 (2.0274)  loss_bbox_enc: 0.6595 (0.7095)  loss_giou_enc: 0.7216 (0.7930)  loss_class_dn: 1.1502 (1.1722)  loss_bbox_dn: 1.4270 (1.4721)  loss_giou_dn: 1.1836 (1.2018)  loss_class_dn_0: 1.1003 (1.1088)  loss_bbox_dn_0: 1.3212 (1.3446)  loss_giou_dn_0: 1.1971 (1.1882)  loss_class_dn_1: 1.2244 (1.2244)  loss_bbox_dn_1: 1.2945 (1.3458)  loss_giou_dn_1: 1.1214 (1.1235)  loss_class_dn_2: 1.1957 (1.1998)  loss_bbox_dn_2: 1.3267 (1.3570)  loss_giou_dn_2: 1.1081 (1.1108)  loss_class_dn_3: 1.1096 (1.1176)  loss_bbox_dn_3: 1.4373 (1.4855)  loss_giou_dn_3: 1.1984 (1.2158)  loss_class_dn_4: 1.1286 (1.1461)  loss_bbox_dn_4: 1.4275 (1.4725)  loss_giou_dn_4: 1.1833 (1.2013)  loss_class_hybrid: 2.2537 (2.1791)  loss_bbox_hybrid: 0.6667 (0.7963)  loss_giou_hybrid: 0.6794 (0.7201)  loss_class_0_hybrid: 2.1158 (2.0128)  loss_bbox_0_hybrid: 0.7635 (0.8636)  loss_giou_0_hybrid: 0.7231 (0.7869)  loss_class_1_hybrid: 2.3215 (2.1307)  loss_bbox_1_hybrid: 0.7182 (0.8219)  loss_giou_1_hybrid: 0.6686 (0.7474)  loss_class_2_hybrid: 2.1518 (2.0781)  loss_bbox_2_hybrid: 0.6885 (0.8121)  loss_giou_2_hybrid: 0.6715 (0.7331)  loss_class_3_hybrid: 2.1847 (2.0986)  loss_bbox_3_hybrid: 0.6731 (0.8021)  loss_giou_3_hybrid: 0.6652 (0.7246)  loss_class_4_hybrid: 2.1879 (2.1244)  loss_bbox_4_hybrid: 0.6713 (0.7975)  loss_giou_4_hybrid: 0.6631 (0.7192)  loss_class_enc_hybrid: 1.9458 (1.9497)  loss_bbox_enc_hybrid: 0.8153 (0.9180)  loss_giou_enc_hybrid: 0.7999 (0.8429)  mem: 994  max mem: 11712
+[2026-09-23 05:27:59 accelerate.tracking]: [RANK 0] Successfully logged to TensorBoard
+[2026-09-23 05:28:46 det.util.engine]: Epoch: [0]  [100/2405]  eta: 0:36:26  lr: 0.000010  data_time: 0.0047  iter_time: 0.9108  loss: 70.5369 (72.1400)  loss_class: 2.4974 (2.5127)  loss_bbox: 0.3836 (0.4911)  loss_giou: 0.5164 (0.5829)  loss_class_0: 2.3749 (2.3106)  loss_bbox_0: 0.5382 (0.5963)  loss_giou_0: 0.6258 (0.6844)  loss_class_1: 2.3922 (2.4508)  loss_bbox_1: 0.4551 (0.5425)  loss_giou_1: 0.5702 (0.6252)  loss_class_2: 2.3767 (2.4370)  loss_bbox_2: 0.4315 (0.5186)  loss_giou_2: 0.5335 (0.5978)  loss_class_3: 2.3650 (2.4296)  loss_bbox_3: 0.3924 (0.4949)  loss_giou_3: 0.5177 (0.5845)  loss_class_4: 2.4497 (2.4416)  loss_bbox_4: 0.3931 (0.4928)  loss_giou_4: 0.5010 (0.5832)  loss_class_enc: 2.0328 (2.0625)  loss_bbox_enc: 0.6111 (0.6700)  loss_giou_enc: 0.7248 (0.7782)  loss_class_dn: 1.2974 (1.2400)  loss_bbox_dn: 1.1812 (1.3808)  loss_giou_dn: 1.0301 (1.1306)  loss_class_dn_0: 1.1534 (1.1381)  loss_bbox_dn_0: 1.2161 (1.3027)  loss_giou_dn_0: 1.1429 (1.1659)  loss_class_dn_1: 1.3285 (1.2736)  loss_bbox_dn_1: 1.1670 (1.2955)  loss_giou_dn_1: 1.0322 (1.0869)  loss_class_dn_2: 1.2699 (1.2396)  loss_bbox_dn_2: 1.1461 (1.3017)  loss_giou_dn_2: 1.0199 (1.0712)  loss_class_dn_3: 1.2132 (1.1820)  loss_bbox_dn_3: 1.1990 (1.3931)  loss_giou_dn_3: 1.0440 (1.1440)  loss_class_dn_4: 1.2415 (1.2040)  loss_bbox_dn_4: 1.1804 (1.3813)  loss_giou_dn_4: 1.0290 (1.1303)  loss_class_hybrid: 2.6208 (2.3825)  loss_bbox_hybrid: 0.3754 (0.6317)  loss_giou_hybrid: 0.4740 (0.6237)  loss_class_0_hybrid: 2.5057 (2.2202)  loss_bbox_0_hybrid: 0.4774 (0.7047)  loss_giou_0_hybrid: 0.5726 (0.6959)  loss_class_1_hybrid: 2.5600 (2.3273)  loss_bbox_1_hybrid: 0.4183 (0.6611)  loss_giou_1_hybrid: 0.5164 (0.6546)  loss_class_2_hybrid: 2.5522 (2.2524)  loss_bbox_2_hybrid: 0.3918 (0.6464)  loss_giou_2_hybrid: 0.4997 (0.6373)  loss_class_3_hybrid: 2.4713 (2.2808)  loss_bbox_3_hybrid: 0.3924 (0.6377)  loss_giou_3_hybrid: 0.4927 (0.6271)  loss_class_4_hybrid: 2.5414 (2.3000)  loss_bbox_4_hybrid: 0.3750 (0.6331)  loss_giou_4_hybrid: 0.4749 (0.6229)  loss_class_enc_hybrid: 2.3506 (2.1053)  loss_bbox_enc_hybrid: 0.5635 (0.7763)  loss_giou_enc_hybrid: 0.6544 (0.7709)  mem: 999  max mem: 11722
+[2026-09-23 05:28:46 accelerate.tracking]: [RANK 0] Successfully logged to TensorBoard
