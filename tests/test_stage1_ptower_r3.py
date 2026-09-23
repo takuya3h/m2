@@ -165,3 +165,46 @@ def test_the_effective_batch_matches_the_preregistered_one():
     import yaml
     cfg = yaml.safe_load((ROOT / "configs/stage1_ptower_r3.yaml").read_text())
     assert cfg["ft_batch_size"] * cfg["ft_accum_steps"] == 64
+
+
+# --- the stop condition: no fold may come out below the second round ---------
+
+def test_a_fold_below_the_second_round_stops_the_sweep():
+    reference = {"A": 0.7149, "B": 0.5846}
+    params = {"action": "finetune", "fold": "A"}
+    message = runner.below_round_two(params, {"phase_accuracy": 0.7000}, reference)
+    assert message is not None and "fold A" in message
+    # Both directions: at or above the second round the sweep goes on.
+    assert runner.below_round_two(params, {"phase_accuracy": 0.7149}, reference) is None
+    assert runner.below_round_two(params, {"phase_accuracy": 0.8759}, reference) is None
+
+
+def test_only_the_fine_tune_is_measured_against_the_second_round():
+    """Heads and extractions have no second-round counterpart at this key."""
+    reference = {"A": 0.7149}
+    for action in ("train", "extract"):
+        assert runner.below_round_two({"action": action, "fold": "A"},
+                                      {"phase_accuracy": 0.0}, reference) is None
+
+
+def test_an_unmeasured_fold_is_not_silently_passed_as_zero():
+    """A missing reference means no comparison, not a comparison against zero."""
+    assert runner.below_round_two({"action": "finetune", "fold": "Z"},
+                                  {"phase_accuracy": 0.1}, {"A": 0.7}) is None
+
+
+def test_the_second_round_reference_covers_every_fold():
+    reference = runner.round_two_frame_accuracy()
+    assert set(reference) == set("ABCDE")
+    assert all(0.0 < v < 1.0 for v in reference.values())
+
+
+def test_task_b_clears_the_stop_condition():
+    """The one run already measured must not trip the rule that was added after it."""
+    done = runner.evidence_for({"action": "finetune", "init": "coco",
+                                "ft_lr": 0.0003, "fold": "A", "seed": 42})
+    if done is None:
+        pytest.skip("Task B has not been run on this host")
+    _, metrics = done
+    assert runner.below_round_two({"action": "finetune", "fold": "A"}, metrics,
+                                  runner.round_two_frame_accuracy()) is None

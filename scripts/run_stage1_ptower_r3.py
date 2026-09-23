@@ -95,6 +95,41 @@ def evidence_for(params, task=TASK):
     return found[0] if found else None
 
 
+def round_two_frame_accuracy(task="T-2026-09-19-stage1-phase-tower-r2"):
+    """The second round's best val frame accuracy per fold.
+
+    The contract stops the sweep if a fold comes out below the second round --
+    at 22 times the pixels a drop means the implementation is wrong, not the
+    data. The strict reading is taken: the run must clear the second round's
+    *best* run at that fold, and falling short stops the sweep for the user to
+    look at rather than deciding anything here.
+    """
+    best = {}
+    for path in (ROOT / "experiments/phase1").glob("stage1_ptower_r2_*/config.yaml"):
+        cfg = yaml.safe_load(path.read_text())
+        if cfg.get("task_id") != task or cfg.get("action") != "finetune":
+            continue
+        metrics = json.loads(path.with_name("metrics.json").read_text())
+        score = metrics.get("phase_accuracy")
+        if score is None:
+            continue
+        fold = cfg["fold"]
+        best[fold] = max(best.get(fold, 0.0), score)
+    return best
+
+
+def below_round_two(params, metrics, reference):
+    """The stop condition, as one rule. Returns the message, or None to go on."""
+    if params["action"] != "finetune":
+        return None
+    earlier = reference.get(params["fold"])
+    score = metrics.get("phase_accuracy")
+    if earlier is None or score is None or score >= earlier:
+        return None
+    return (f"Below the second round at fold {params['fold']}: "
+            f"{score:.4f} < {earlier:.4f}")
+
+
 def arguments(params, device, verify):
     args = [f"{k}={v}" for k, v in params.items()]
     args.append(f"device=cuda:{device}")
@@ -108,7 +143,7 @@ def arguments(params, device, verify):
     return args
 
 
-def run(params, device, verify=False):
+def run(params, device, reference, verify=False):
     done = evidence_for(params)
     if done is None:
         LOG_DIR.mkdir(parents=True, exist_ok=True)
@@ -122,6 +157,9 @@ def run(params, device, verify=False):
         if done is None:
             raise RuntimeError(f"No evidence for {params}")
     path, metrics = done
+    failed = below_round_two(params, metrics, reference)
+    if failed is not None:
+        raise RuntimeError(f"{failed} ({path})")
     elapsed = metrics.get("elapsed_seconds", 0)
     gate = "OVER_GATE" if elapsed > GATE_SECONDS else "within_gate"
     score = metrics.get("phase_jaccard", metrics.get("phase_accuracy"))
@@ -136,11 +174,15 @@ def main():
                         help="check determinism on the first extraction only")
     args = parser.parse_args()
     items = grid(args.stage)
+    reference = round_two_frame_accuracy()
+    print(f"second round per fold: "
+          f"{ {f: round(v, 4) for f, v in sorted(reference.items())} }", flush=True)
     results = []
     # Submit one pair at a time: a failed pair cannot start subsequent runs.
     with ThreadPoolExecutor(max_workers=2) as pool:
         for i in range(0, len(items), 2):
-            futures = [pool.submit(run, p, device, args.verify_first and i == 0 and device == 0)
+            futures = [pool.submit(run, p, device, reference,
+                                   args.verify_first and i == 0 and device == 0)
                        for device, p in enumerate(items[i:i + 2])]
             for future in as_completed(futures):
                 results.append(future.result())
