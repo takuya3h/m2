@@ -39,7 +39,7 @@ Stage 1 工程塔の三周目。初期化の鎖と入力解像度を検出塔と
 | h | S4 との並置 | **達成** | 折り A: P\*-COCO **0.7068（S4 を 0.0621 上回る）** / P\*-ImageNet 0.6162（0.0285 下） / 二周目 0.4679（0.1768 下） | 差を 0.177 と並べた。S4 の SD 0.0119 の何倍かも併記 |
 | i | 対称性の表 | **達成** | prereg §3 に 15 行、UNKNOWN 0 件。L3 の **P13 が PASS**（取り込み直後と Task F の二度。報告を書いた後は「完了済みのため対象外」で SKIP に変わる） | 表の行数 15 |
 | j | 刻印と収穫 | **達成** | `make runindex` 後、task_id で照合して **339 行**（fine-tune 31 = 完了 28 + 未完了 3、特徴抽出 28、時間ヘッド 280） | 行数の差では照合していない。task_id で引いた |
-| k | PR | **UNKNOWN**（報告作成時点） | 分岐 `feat/stage1-phase-tower-r3`、base は phase0 の予定 | 番号は送出後に記録する |
+| k | PR | **達成** | **PR #195**。`isDraft=false` / `base=phase0` / `head=feat/stage1-phase-tower-r3` / `state=OPEN` | 分岐名は `feat/` で始まる。実測は `gh pr view 195 --json` |
 
 ## 4. 実測
 
@@ -176,5 +176,12 @@ Stage 2 の界面の設計では、送り手の強さをフレーム単位の指
 | 所要時間の扱い | Stage 1 の費用であり **Tier 1 の試算には入らない**（SPEC §8）。記録のみ |
 
 ## 10. 送出
+
+push は `.git/config` の `remote.origin.pushurl` が HTTPS で、askpass が壊れていて失敗した
+（`fatal: cannot exec '…/askpass.sh'`）。fetch 側の SSH は通るため SSH の URL を明示して送った。
+**設定は変えていない。** これは 2026-09-22 に keeper が記録した `auto-push失敗` と同じ原因で、
+このホストの不具合として申し送りに残す。
+
+PR は **#195**（base `phase0`、Draft でない）。
 
 `make task-report` で配布台帳へ送る。結果は送出後にここへ追記する。

@@ -11,3 +11,4 @@
 - [ ] 2026-09-25 [cc] spec.yaml の差し替えが、実行者でも本ホストの keeper でもない `reset` と phase0 への往復で失われ、占位のまま commit していた。全 run の `contract_sha256` は差し替え前で揃っており run どうしの整合は保たれる。以後は `git show HEAD:<path>` で commit の中身を直接読んで確かめる（tasks/T-2026-09-19-stage1-phase-tower-r3/audit.md §9）
 - [ ] 2026-09-25 [cc] `ExperimentManager` の `source_sha256` は base モジュールの要約値で、実際の entrypoint の内容を固定していない。run の証跡が entrypoint の版を指さない（scripts/stage1_ptower.py の `evidence`）
 - [ ] 2026-09-25 [cc] 予測 4「学習率は高い方が勝つ」が外れ、両系統とも lr 1e-4 が選ばれた。backbone 単体の frame accuracy では 3e-4 が上でも、時間ヘッドを載せた 5 折り平均 val J では逆転する。送り手の強さをフレーム単位の指標だけで測らない（tasks/T-2026-09-19-stage1-phase-tower-r3/RESULT.md §8）
+- [ ] 2026-09-25 [cc] ilya の `.git/config` は `remote.origin.pushurl` が HTTPS で、VS Code の askpass が実体を失っており push が必ず失敗する（`fatal: cannot exec '…/askpass.sh'`）。fetch 側の SSH は通る。2026-09-22 の keeper の `auto-push失敗: feat/ops-and-proposal-card-gate` と同じ原因。本契約では SSH の URL を明示して送り、設定は変えていない（.git/config）
