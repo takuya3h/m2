@@ -1,0 +1,6 @@
+# Stage 1 A P15 fold D
+
+Validation-only selection; test unevaluated.
+Best epoch: 5
+Jaccard: 0.47053039963761356
+Elapsed seconds: 2.249983064364642

@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（601 件）
+## 未処理（615 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -616,6 +616,20 @@
 - [ ] 2026-09-22 [cc] 完了判定 e の「実例 4 件で FAIL」は 3 件どまり。4 件目は起票時の宣言漏れが実行中に是正済みで、現行の本文では該当しないのが正しい（tasks/T-2026-09-23-ops-and-proposal-card-gate/RESULT.md §5）
 - [ ] 2026-09-22 [cc] 例外の二件（stage1-detector-towers-r2 / stage1-phase-tower-r3）は repo に未取得。取得後に P14 が実物で SKIP になることを確かめる（tools/preflight_task.py の PRE_GATE_EXEMPT_TASKS）
 - [ ] 2026-09-22 [cc] result.yaml の雛形と /task 手順書が issuer_defects の型を 4 種と書くが schema は 6 種。写しが古い（tasks/_templates/result.yaml）
+- [ ] 2026-09-23 [cc] L2 の WARN（`created_from.counts` が起票時 0 のまま。index 0→1558 / experiments 0→476 / verdicts 0→1506）を承知のうえ続行する判断。counts は「起票時」の値なので実測値で上書きせず、差し替えたのは `runindex_commit` と `conventions_rev` だけにした（tasks/T-2026-09-19-stage1-phase-tower-r3/spec.yaml）
+- [ ] 2026-09-23 [cc] prereg の既定 batch 64 は装置に収まらない（47.4 GiB で batch 64 と 32 が OOM、収まる最大は 16）。**batch 16 + 勾配累積 4 で実効 batch 64 を保つ**。対称性の表の「実効 batch 64」を書き換えずに済み、BN の統計だけ 16 枚単位になる点を逸脱に書く（configs/stage1_ptower_r3.yaml）
+- [ ] 2026-09-23 [cc] 決定性設定下の実測は 20.9 frames/s で、上限 36 epoch まで回ると 1 本 5.5 時間。prereg の「3 時間以内」を超えるが**上限 36 を変えずに続行**する判断。解像度を下げる案は SPEC の指示どおり出していない（tasks/T-2026-09-19-stage1-phase-tower-r3/audit.md §3）
+- [ ] 2026-09-23 [cc] 契約の `inputs.code.entrypoints` は**一周目**の道具を指す。二周目の実物は `stage1_ptower_r2.py` 系。三周目は `stage1_ptower_r3.py` を新設し、二周目の道具は一切変更しない（再現性を壊さないため）（scripts/stage1_ptower_r3.py）
+- [ ] 2026-09-23 [cc] 追加 6 動画（17〜22）は工程注釈が `data/raw/OpenSurgery_Dataset/.../annotations/phase/` に在るが**画像が無い**。prereg §2 と SPEC §6 に従い P\*-21 は UNKNOWN で確定（tasks/T-2026-09-19-stage1-phase-tower-r3/audit.md §A-5）
+- [ ] 2026-09-23 [cc] 学習率の低下と打ち切りの規則が学習ループに直書きで単体試験できなかったため純関数 `plateau_action` に抽出し、Task B を最初からやり直した。作業木の内容と実際に回った内容を一致させるため。中断した run は `metrics.json` が空のまま `stage1_ptower_r3_001_*` に残る（tests/test_stage1_ptower_r3.py）
+- [ ] 2026-09-23 [cc] `outputs.expected_runs: 308` は fine-tune 28 + 時間ヘッド 280 で、SPEC Task D-1 が求める特徴抽出 28 本を数えていない。掃引を実装すると run は **336** になる（scripts/run_stage1_ptower_r3.py）
+- [ ] 2026-09-23 [cc] 前契約の申し送り「例外の二件は取得後に P14 が実物で SKIP になることを確かめる」に対する実測: 本契約の L3 で **P14 は SKIP「導入前の契約のため対象外」**。期待どおり（tools/preflight_task.py の PRE_GATE_EXEMPT_TASKS）
+- [ ] 2026-09-25 [cc] prereg §6-1 が主指標と co-primary の食い違いを定めておらず、ImageNet 系統で実際に食い違って共有の `select()` が停止した。食い違いを記録したうえで同点規則へ進める判断（利用者、2026-09-25）。三つの読み（同点規則・受容野の短い方・pstd）がいずれも同じ行を選ぶことを実測してから決めた（experiments/phase1/stage1_ptower_r3/selection.json の co_primary_disagreement）
+- [ ] 2026-09-25 [cc] SPEC Task C-2 の停止条件が掃引の駆動に入っておらず実行者の目視頼みだったため純関数 `below_round_two` に持たせ、掃引を 35 分の時点で止めて作り直した。基準は二周目の同じ折りの**最良** run という厳しい側の読み（scripts/run_stage1_ptower_r3.py）
+- [ ] 2026-09-25 [cc] spec.yaml の差し替えが、実行者でも本ホストの keeper でもない `reset` と phase0 への往復で失われ、占位のまま commit していた。全 run の `contract_sha256` は差し替え前で揃っており run どうしの整合は保たれる。以後は `git show HEAD:<path>` で commit の中身を直接読んで確かめる（tasks/T-2026-09-19-stage1-phase-tower-r3/audit.md §9）
+- [ ] 2026-09-25 [cc] `ExperimentManager` の `source_sha256` は base モジュールの要約値で、実際の entrypoint の内容を固定していない。run の証跡が entrypoint の版を指さない（scripts/stage1_ptower.py の `evidence`）
+- [ ] 2026-09-25 [cc] 予測 4「学習率は高い方が勝つ」が外れ、両系統とも lr 1e-4 が選ばれた。backbone 単体の frame accuracy では 3e-4 が上でも、時間ヘッドを載せた 5 折り平均 val J では逆転する。送り手の強さをフレーム単位の指標だけで測らない（tasks/T-2026-09-19-stage1-phase-tower-r3/RESULT.md §8）
+- [ ] 2026-09-25 [cc] ilya の `.git/config` は `remote.origin.pushurl` が HTTPS で、VS Code の askpass が実体を失っており push が必ず失敗する（`fatal: cannot exec '…/askpass.sh'`）。fetch 側の SSH は通る。2026-09-22 の keeper の `auto-push失敗: feat/ops-and-proposal-card-gate` と同じ原因。本契約では SSH の URL を明示して送り、設定は変えていない（.git/config）
 
 ## 処理済み（1 件）
 

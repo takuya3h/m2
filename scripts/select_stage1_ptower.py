@@ -17,10 +17,17 @@ ROOT = Path(__file__).resolve().parents[1]
 DEST = ROOT / "experiments/phase1/stage1_ptower"
 
 
-def select(rows):
+def select(rows, *, co_primary="stop"):
+    """The first round's decision rule. ``co_primary`` only changes what happens
+    when the co-primary disagrees with the primary, which the first and second
+    rounds never hit. ``"stop"`` (the default, their behaviour) raises;
+    ``"record"`` goes on to the tie-break and leaves the caller to record the
+    disagreement. The third round takes the second path by the user's direction
+    (2026-09-25), because the prereg does not say what to do here.
+    """
     ranked = sorted(rows, key=lambda r: r["mean_jaccard"], reverse=True)
     best, second = ranked[:2]
-    if best["mean_accuracy"] < second["mean_accuracy"]:
+    if best["mean_accuracy"] < second["mean_accuracy"] and co_primary == "stop":
         raise ValueError("Co-primary directions disagree between best and runner-up")
     reason = "largest validation Jaccard with co-primary in same direction"
     if best["mean_jaccard"] - second["mean_jaccard"] <= best["fold_A_pstd"]:

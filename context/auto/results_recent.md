@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 105 件）。
-ここに出ない 100 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 107 件）。
+ここに出ない 102 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-09-23-ops-and-proposal-card-gate
 
@@ -52,6 +52,48 @@
 
 - 旧様式 result.yaml（T-2026-08-22-philip-hub-foundation）の tests の 3 整数は実測不能である。旧報告にも旧 RESULT.md にも試験の記録が一切無く、推測で埋めれば捏造になる。UNKNOWN のまま据え置いた
 - 完了判定 e の「実例 4 件で FAIL」は達成していない。4 件目が是正済みであることが理由で、規則の欠陥ではないが、契約の字面は充足していない
+
+## T-2026-09-21-philip-sync-outbound-off
+
+状態 `partial` / ホスト `philip` / 起票 `193` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 記録 819,933 行から外向きを 6 種に分けて計数した（STUN 住所解決 1 / NAT 種別 1 / 使用状況 2 / 版の確認 1 / UPnP 探索 1 / 局所告知 2、公開中継 0）。設定は実体の 逆アセンブルと Go の型情報で確定した（IsStunDisabled の 3 項目、urAccepted、 AutoUpgradeEnabled）。読めない 3 件は UNKNOWN に分けた。変更前の全 55 項目を 版管理の外へ控え、戻す手順を書いた。接続 6 件・処理 2 件（pid 122452/122530）を記録した。
+- `G2` pass — PATCH /rest/config/options に変える鍵だけを 3 回送り、いずれも HTTP 200。 読み戻しで全 55 項目中の差は 3 項目のみ、config.xml にも書き戻った。 周期 180 秒を越えて 300 秒待ち、増えた 187 行に外向きの語は 0 件で、 STUN disabled が 1 件出た（変更の 169 秒後）。接続 6→6、登録 7→7 が完全一致、 共有フォルダ 2→2、localAnnounceEnabled は true のまま、PID は同一。
+
+### 起票者の誤り
+
+- `check_does_not_check` — Task 2 Step 3 は陽性対照を「変える前の記録に外向きの痕跡が在ったこと」と置き、 判定を「周期を越えて待ち新たな痕跡が現れないこと」と置いた。しかし中心の STUN の 痕跡は起動時の 2 件だけで周期的ではなく、通常の水準では keepalive が記録されない。 指示どおり実行すると、設定を変えなくても新しい行は出ないため「止まった」と 誤って結論できる。実際の決め手は契約が指していない別の行（STUN disabled、 無効側の分岐でだけ出る）であり、これを実装から見つけて判定に使った。
+
+### 逸脱
+
+- `judgement` — 開始前から在った未追跡 4 件のうち .sync-pause.released（0 バイト、前セッションの 解除の残骸）を削除した。SPEC 0 節と禁止 7 は「消さない。退避する」を求めており これに反する。利用者へ選択肢を示して承認を得たうえで行った。 digest 3 件は退避し、報告の後に戻す。
+- `judgement` — 退避先を最初 /tmp（overlay）に置いたが、SPEC 0 節の「repo と同じファイルシステム」に 反するため /home/ubuntu/slocal2/task-backups/（repo と同じ /dev/sda）へ移し替えた。
+- `judgement` — 変える範囲を利用者に諮り、外向きの 3 項目（natEnabled / urAccepted / crashReportingEnabled）に決めた。stunKeepaliveStartS は変えなかった。 natEnabled だけで IsStunDisabled が真になり、変える項目を最小にできるため。
+- `judgement` — 手順書（.claude/skills/task/SKILL.md）は make taskindex で投影を生成せよと求めるが、 本契約の禁止 6 と Task 3 Step 3 が生成物の再生成を禁じ、変更を契約のディレクトリと 受け皿に限れと求める。契約を優先して再生成しなかった。結果として make taskindex-check は差分ありで落ちる（exit 2）。make inbox-check は exit 0。 どちらの検査も作業ツリーへ書き込まないことを前後の件数で確かめた。
+- `environment` — 容器の中に tcpdump / ss / lsof / conntrack が無く、/proc/net/nf_conntrack も無い。 /rest/system/debug は v2.1.3 に無い（404）。STTRACE は再起動が要るため使えない。 通信そのものは観測できず、記録と画面の経路だけで判断した。
+- `spec_defect` — 契約の陽性対照では STUN の停止を判定できないため、実装を読んで STUN disabled の記録を見つけ、それを判定に使った。issuer_defects に対応する。
+
+### 申し送り
+
+- 使用状況の日次送信が止まったかは未確認である。直近の送信は 2026-09-21 02:32:36 JST と 2026-09-22 02:32:38 JST（記録の原文では 09-20 17:32:36 / 09-21 17:32:38 UTC）で、 変更は 2026-09-22 18:03:20 JST。次に送るはずだった 2026-09-23 02:32 JST を過ぎてから grep -c 'Sent usage report' ~/.syncthing.log を見ること。変更時点で 2 件である。
+- 障害報告は痕跡が元から 0 件のため「止まった」とは言えない。設定が false に なったことだけが事実である。次に障害が起きたときに送信が出ないことで確かめる。
+- urAccepted が 0 から 3 へ変わった原因が UNKNOWN である。残る六台でも値を 必ず読んでから書くこと。契約のたびに options 全体を控えて差分を見る運用を勧める。
+- P9 spec_lint の host_mismatch は socket.gethostname() と比べるため、この repo の 「ホスト」（同期処理上の名前）と食い違う。philip の OS 名は aolab である。 検査側を直すか、宣言の意味を規約に書くこと。
+- P9 spec_lint の separated_source は行継続 \ を繋げずに行ごとに見るため、 1 命令に書かれた source … && make … を該当と出す。SPEC.md:39 がこれに当たる。
+- .sync-pause.released が .gitignore に載っていない（.sync-pause は載っている）。 抑止の解除を別名への退避で行うたびに未追跡が残り、次の契約の task-start が 前提検査で止まる。無視対象に加えるか、解除の手順を削除に統一すること。
+- tests/test_estimate_tier_cost.py が収集時に落ちる（site-packages の tools が repo の tools を隠す）。PYTHONPATH に repo 直下を足しても解消しなかった。
+- tests/test_fetch_task.py::test_rejects_unknown_file_name が既存で落ちている。 束の取り込みが ../../etc/passwd を拒んでいない。経路の遡上を拒む修正が要る。
+- 投影（context/auto/ の 3 ファイル）が本契約の result.yaml を反映していない。 禁止 6 により再生成していないためで、make taskindex-check は差分ありで落ちる。 生成物の再生成を許す契約で make taskindex を回し、投影を追いつかせること。
+
+### 断定できなかったこと
+
+- 使用状況の日次送信が止まったか（周期 24 時間を越えて待てなかった）
+- 障害報告が止まったか（痕跡が元から 0 件で、止まったことを示せない）
+- urAccepted が 0 から 3 へ変わった原因
+- crashReportingEnabled を読む判定の位置（実装から特定できなかった）
+- natEnabled が UPnP/NAT-PMP の探索も止めるか（判定の位置を特定できなかった）
 
 ## T-2026-09-21-m2dir-local
 
@@ -177,47 +219,4 @@
 - m2 共有フォルダの同期の最終状態。SPEC が「完了を待たない」と指示するため、進み方 （21:16 に 2.08%、21:21 に 4.16%、local 2.15 GB から 4.30 GB）だけを記録した。
 - ~/.ssh/authorized_keys と ~/.ssh/ の他のものの無変更は、開始時の要約値を取っていないため更新時刻で 示した。要約値による照合ではない。本契約が鍵に触れる命令を一つも発していないことと合わせての判断である。
 - inputs.data（dataset: egosurgery_phase_v1、split_files: data/splits/ego_val.txt）は雛形の必須項目であり 本契約は参照していない。SPEC の申し送りの指示どおり、参照しなかったことを記録する。
-
-## T-2026-09-20-dlsta-join-foundation
-
-状態 `pass` / ホスト `dlsta` / 起票 `187` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — .venv がディレクトリごと無い状態から作り直した。Python 3.11.16 / torch 2.1.2+cu118 / torchvision 0.16.2+cu118 / mmcv 2.1.0 が他台の実測と一致。torch.cuda.is_available() が True で device_count は 5（RTX A5000, driver 595.84）、cuda 上の 256x256 行列積が完走した。 nvcc は 12.9 のため SKIP_CUDA_CHECK=1 で検査を飛ばした。依存は 18 件中 18 件が読み込める （libgl1 導入前は mmcv / mmdet / albumentations の 3 件が libGL.so.1 で落ちていた）。 SERVERNAME は zsh 非対話・zsh ログイン・bash ログイン・bash 対話の 4 形態で dlsta を返す。 版管理の識別は ~/.gitconfig に takuya3h / daky.o7600@gmail.com が既設定で、local は空であった。
-- `G2` pass — ed25519 の鍵を合言葉なしで作り、指紋 SHA256:5jUsv9rrpScleVa1jvO008WDPpg7LzQq0G8qSZjgKO4 を得た。 scripts/sync/hub_keys/dlsta.pub は 先頭 ssh- = 1 / 秘密鍵の書き出し = 0 件 / 行数 = 1 で、 同じ検査を実物の秘密鍵の書き出し（囮）へ当てると 0 / 2 件 / 7 となり検査に掛かった。 配布物の中に syncthing という名前が 3 件（1709 / 175 / 27045912 バイト）あり、大きさで実行ファイルを 特定した。配布物と配置物の sha256 はともに中心の e8a08fdd…b96c4 と一致。 識別子 BRPEYOX-MJ7HMGV-RR2XAUW-CVFVSED-DEMAG5M-EMQNVR6-77XWXPL-ZS26PAI を 64 bytes / 1 行で公開した。 /proc/net/tcp の復号で 22000 も 8384 も一致 0 件、/proc/PID/exe で syncthing / m2-sync / keeper とも 0 件。
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — 現状の表が「版管理の識別: 未設定」と断定しているが、実測では ~/.gitconfig に user.name=takuya3h / user.email=daky.o7600@gmail.com が設定済みであった（local のみ空）。Task 2 Step 4 の指示どおり 「他台と同じ値を使う」を実行すると、既に効いている値の上に不要な設定を重ねることになった。
-- `asserted_without_measuring` — Task 2 Step 2 が「論理名は dlsta である（版管理の scripts/sync/hosts/ の記載と、住所の対応による）」と 断定するが、本ホストは容器であり内側から見える住所は 172.17.0.12（gateway 172.17.0.1）のみである。 hosts の dlsta は 192.168.196.54 で、指示どおり住所で確かめようとすると外部接続（禁止 3）以外に手段が無い。
-- `asserted_without_measuring` — 0 節が git checkout -b feat/dlsta-join-foundation origin/phase0 を「手で分岐を切る」として指示するが、 分岐は既に存在し HEAD も origin/phase0 も 29a6116f であった。指示どおり打つと fatal: a branch named 'feat/dlsta-join-foundation' already exists で落ちる。
-- `self_contradiction` — Task 2 の Files 欄は Modify 対象を ~/.zshenv と ~/.profile の 2 つに限るが、同じ Step 2 が使えと指す scripts/sync/setup_host_servername.sh の TARGETS は ~/.zshenv ~/.profile ~/.bashrc の 3 つである。 指示どおりスクリプトを使うと Files 欄に無い ~/.bashrc が変更される。
-- `asserted_without_measuring` — 現状の表が ~/.ssh/ の中身を authorized_keys・config・config.d・id_ed25519_github・known_hosts の 5 件と列挙するが、実測では id_ed25519_github.pub も在り 6 件であった。 「再測定は不要」と添えられていたため、そのまま信じると公開鍵の既存有無の判断を誤りうる。
-
-### 逸脱
-
-- `judgement` — 手順の順序を変えた。L1+L2 の make task-validate と L3 の make task-preflight は .venv/bin/python を 使うため、開始時（.venv 不在）には exit 2 / Error 127 で起動しなかった。Task 1 で環境を作った後に 実行した。SPEC 0 節が「.venv が無いため取り込みの仕組みは使えない。Task 1 が済めば使えるようになる」と 明記しているため契約に沿う。
-- `spec_defect` — SPEC 0 節の git checkout -b feat/dlsta-join-foundation origin/phase0 を実行しなかった。 分岐は既に存在し、HEAD も origin/phase0 も 29a6116f で ahead 0 / behind 0 であったため。
-- `judgement` — 版管理の識別を新規設定しなかった。~/.gitconfig（global）に既設定で、値は版管理の履歴の作者と一致する。 SPEC の「推測で設定しない」に従い、既存値と出所（git config --show-origin）のみを記録した。
-- `environment` — Task 2 の Files 欄にない ~/.bashrc も変更された。指示された scripts/sync/setup_host_servername.sh の TARGETS が ~/.zshenv ~/.profile ~/.bashrc の 3 つであるため。覆う範囲が広がる方向なのでそのまま使った。
-- `environment` — .sync-pause を置かなかった。~/bin/ も ~/claude-sync/ も存在せず、crontab も無く、/proc/PID/exe による m2-sync / keeper / syncthing の計数が 0 件（陽性対照 zsh = 4 件）であり、止める対象が無いため。 SPEC の「常駐処理は動いていない。抑止は要らない。その旨を記録する」に従った。
-- `judgement` — 論理名 dlsta の根拠を住所ではなく契約の記載（task_id、SPEC の実行ホスト宣言、配置先ファイル名）に取った。 容器の内側から見える住所は 172.17.0.12 のみで、scripts/sync/hosts/ の 192.168.196.54 と照合できないため。
-- `environment` — libgl1 の導入は利用者が実行した（sudo がパスワードを要求するため）。一度目の完了申告の時点では find / ldconfig -p / dpkg -l / apt の history.log の 4 系統すべてが未導入を示したため、申告ではなく 実測を正とした。二度目に libgl1 1.7.0-1build1 と apt 記録 2026-09-20 15:58:16 を確認した。
-- `judgement` — 試験の「変更前」を HEAD（29a6116f）の worktree を --detach で切って測った。開始時に .venv が無く 直接測れなかったため。測定後に git worktree remove で撤去し、分岐数は 2 のまま変わっていない。
-- `judgement` — 禁止 5「生成物を再生成する」の読みが一つに定まらなかったため、conventions#issuer_cautions 14 に従い 読みの候補を列挙して利用者に諮った。手順書は make taskindex と make inbox を要求し make taskindex-check は再生成なしでは非零になる一方、SPEC の禁止 5 と Task 5 Step 3 は 再生成しないと明記している。また make forbidden-check は投影と集約を明示的に検査から除外している。 利用者の判断により「禁止 5 が指すのは runindex/ 等の指数であり、投影と集約は対象外」の読みを採り、 tasks/inbox.md と context/auto/ の 4 件を再生成したまま送出した。runindex/ は無変更である。
-
-### 申し送り
-
-- P9 spec_lint の host_mismatch は本ホストでは必ず該当する。tools/check_spec.py:321 が socket.gethostname() と宣言値を比べるが、dlsta は容器であり gethostname() は 4f3861ae8d3b を返す。 規則は論理名（SERVERNAME）を見ていない。tasks/inbox.md:121/190/302/342 と context/auto/followups.md:49/139/362/496 に同じ原因が既出であり、本ホストで新たに一例が加わった。
-- scripts/setup_env.sh:45 の nvcc 検査は prebuilt wheel を使う経路に対して不要な要求をしている。 同スクリプトの手順 5 は causal-conv1d と mamba-ssm を GitHub release の .whl で導入しており ソースビルドを行わない。本ホスト（nvcc 12.9）では SKIP_CUDA_CHECK=1 が常に要る。 検査を「ソースビルドを選んだときだけ」に絞るか、既定を prebuilt に合わせるかの判断が要る。
-- 同期処理の告知の既定値（公開の探索網・公開中継）を無効化していない。本契約は起動しないため 対象外だが、env-facts.md が「起動前に無効にする」と定めているため、起動を行う後続の契約で必要になる。 自動更新の既定 12 時間を 0 にする処置も同様に未実施である。
-- 中心 philip への鍵と識別子の登録、中継（ssh -N -L 22001:127.0.0.1:22000）の目印の設置、 keeper.sh と m2-sync.sh の配置、実行権の復帰による起動、疎通の確認はいずれも本契約の範囲外であり 後続の契約で行う。本契約が用意したのは指紋・識別子・実行ファイル・設定までである。
-- 禁止語の検査は完全一致であるため、該当を報告する文が該当語を引用すると報告そのものが落ちる。 本契約では audit.md の該当を RESULT.md で説明した際に実際に起きた（RESULT.md が exit 1 になった）。 conventions#proposal_gate の引用規約には除外の定めが無い。検査器に引用の形（鉤括弧や码字の中）を 除外させるか、報告では語を書かず位置で指す運用を明文化するかの判断が要る（tools/check_proposal.py）。
-- 禁止語の完全一致が技術用語の部分文字列を拾う。集約 tasks/inbox.md は該当 8 件を持つが、 変更前（origin/phase0）にも同じ 8 件があり、いずれも 2026-08 の他契約の行で本契約の追加分は 0 件である。 内訳には、余白を表す語の中や、再現性が完全であることを表す語の中に禁止語が現れる例が含まれる。 いずれも通常の技術記述である。例を語のまま引けばこの記録自身が検査に落ちるため、語は示さない。 集約は手で編集しない規則であり過去の記録も書き換えないため、本契約では直していない。 語境界を見るか、集約と投影を検査の対象から外すかの判断が要る（tools/check_proposal.py）。
-
-### 断定できなかったこと
-
-- 本ホストの外向きの住所が 192.168.196.54 であることは確認できていない。容器の内側から見えるのは 172.17.0.12（gateway 172.17.0.1）のみで、外部へ接続して確かめるのは禁止 3 に当たるため測っていない。 論理名 dlsta は住所ではなく契約の記載（task_id、実行ホスト宣言、配置先ファイル名）を根拠に採用した。
-- inputs.data（dataset: egosurgery_phase_v1、split_files: data/splits/ego_val.txt）は雛形の必須項目であり 本契約では参照していない。SPEC の申し送りの指示どおり、参照しなかったことを記録する。
 

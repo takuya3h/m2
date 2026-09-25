@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（529 件）
+## 申し送り（543 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -800,6 +800,14 @@
 - 最良 epoch が上限 12 に張り付いた fine-tune が 2 件、10 に達したものが 1 件ある。上限を増やせばさらに上がる余地は残るが、prereg が D* と揃えて 12 に固定しているため本契約では増やさなかった。次の契約で上限を動かすなら D* 側も揃えて動かす必要がある。
 - 時間ヘッドの最良は一周目と同じ候補 C（平滑化損失）だったが、掃引点は 8 層・平滑化 0.30 から 6 層・平滑化 0.15 へ動いた。特徴が強くなると受容野も平滑化も小さい方が良くなる向きで、事前登録の予測 3（候補 A か B になりうる）とは別の形で「一周目と同じではない」が現れた。
 
+### T-2026-09-19-stage1-phase-tower-r3
+
+- 解像度と初期化の寄与を分離する「二周目の解像度 × COCO 初期化」の 1 セルは、本契約の掃引集合に後から 足さない（禁止事項 5）。必要なら別契約で起票する。
+- P*-21 は追加 6 動画の画像が届き次第、同じ recipe で学習して確定できる。注釈は repo に在る。
+- prereg §6 の判定規則に「主指標と co-primary が食い違った場合」の段を足す。今回は諮って決めたが、 次の契約で同じ場所に当たる。§6-2 の「受容野の短い方」が実装に無いことも併せて直す。
+- ExperimentManager の source_sha256 は base モジュール（stage1_ptower.py）の要約値であり、実際の entrypoint（stage1_ptower_r3.py）の内容を固定していない。run の証跡が entrypoint の版を指さない。
+- 実行者の操作でない reset が作業木を戻した。原因は特定できていない。本ホストで並行する別の処理が repo を触る可能性があるなら、契約の実行中は検出できるようにしたい。
+
 ### T-2026-09-19-symmetry-gate
 
 - 既存の exp 契約 12 件はすべて P13 で FAIL になる（実測）。いずれも完了済みで prereg に対称性の表が無いためである。過去の prereg は書き換えていない。遡って再実行する契約があれば、先に表を埋めること
@@ -838,6 +846,18 @@
 - keeper.sh は自己更新されないため、本ホストの ~/bin/keeper.sh は本契約で手で置いたものが残る。 既存の六台は既存の候補で動いているため配置は要らないが、将来 keeper.sh を変える契約では 「どの台へ配置済みか」を追う仕組みが無い。配置状況を記録する場所を決めるかの判断が要る。
 - 解決の判定が親ディレクトリの存在であることは、repo 本体が無くても親さえ在れば解決が成立する ことを意味する。今回は既存に合わせて同じ基準を使ったが、本来は repo 本体か版管理の存在で 見るほうが確かである。基準を変えると既存の台の挙動が変わりうるため、本契約では変えていない。
 
+### T-2026-09-21-philip-sync-outbound-off
+
+- 使用状況の日次送信が止まったかは未確認である。直近の送信は 2026-09-21 02:32:36 JST と 2026-09-22 02:32:38 JST（記録の原文では 09-20 17:32:36 / 09-21 17:32:38 UTC）で、 変更は 2026-09-22 18:03:20 JST。次に送るはずだった 2026-09-23 02:32 JST を過ぎてから grep -c 'Sent usage report' ~/.syncthing.log を見ること。変更時点で 2 件である。
+- 障害報告は痕跡が元から 0 件のため「止まった」とは言えない。設定が false に なったことだけが事実である。次に障害が起きたときに送信が出ないことで確かめる。
+- urAccepted が 0 から 3 へ変わった原因が UNKNOWN である。残る六台でも値を 必ず読んでから書くこと。契約のたびに options 全体を控えて差分を見る運用を勧める。
+- P9 spec_lint の host_mismatch は socket.gethostname() と比べるため、この repo の 「ホスト」（同期処理上の名前）と食い違う。philip の OS 名は aolab である。 検査側を直すか、宣言の意味を規約に書くこと。
+- P9 spec_lint の separated_source は行継続 \ を繋げずに行ごとに見るため、 1 命令に書かれた source … && make … を該当と出す。SPEC.md:39 がこれに当たる。
+- .sync-pause.released が .gitignore に載っていない（.sync-pause は載っている）。 抑止の解除を別名への退避で行うたびに未追跡が残り、次の契約の task-start が 前提検査で止まる。無視対象に加えるか、解除の手順を削除に統一すること。
+- tests/test_estimate_tier_cost.py が収集時に落ちる（site-packages の tools が repo の tools を隠す）。PYTHONPATH に repo 直下を足しても解消しなかった。
+- tests/test_fetch_task.py::test_rejects_unknown_file_name が既存で落ちている。 束の取り込みが ../../etc/passwd を拒んでいない。経路の遡上を拒む修正が要る。
+- 投影（context/auto/ の 3 ファイル）が本契約の result.yaml を反映していない。 禁止 6 により再生成していないためで、make taskindex-check は差分ありで落ちる。 生成物の再生成を許す契約で make taskindex を回し、投影を追いつかせること。
+
 ### T-2026-09-23-ops-and-proposal-card-gate
 
 - 例外の二件（T-2026-09-19-stage1-detector-towers-r2 / T-2026-09-19-stage1-phase-tower-r3）は配布台帳にあるが repo には未取得である。P14 の例外の経路は試験で確かめたが、実物の契約で SKIP になることは取得後に確かめること
@@ -846,7 +866,7 @@
 - make spec-check を TASK 無しで回すと allow_write_incomplete が 15 件出る（exp 10 件 / impl 5 件）。過去の契約の是正は別契約で行うこと
 - 本契約の統合後、起票者は Stage 2 の提案カードを docs/proposals/ に置き、check_proposal.py を通してから exp を起票する（SPEC §8）
 
-## 断定できなかった事項（342 件）
+## 断定できなかった事項（351 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1447,6 +1467,13 @@
 - 上限 12 epoch を超えたときの到達点。最良 epoch が上限に張り付いた run があるため、上限が結果を切っている可能性がある。
 - P3 deterministic_flags の実測。プリフライトで SKIP となり、決定性設定が実行プロセス内で行われ外部から観測できないため確かめていない（backlog B-20）。
 
+### T-2026-09-19-stage1-phase-tower-r3
+
+- P*-21（二十一動画の塔）は UNKNOWN。追加 6 動画（17〜22）の画像がこのホストに無く、注釈だけでは 学習できない。探索して 0 件であることを実測した。
+- 入力解像度の寄与と初期化の鎖の寄与は分離できない。本契約は 2 つを同時に変えた。P*-ImageNet と 二周目の差 +0.0914 が解像度側、P*-COCO と P*-ImageNet の差 +0.1773 が初期化側の目安になるが、 交互作用は測っていない。
+- spec.yaml の差し替えを失わせた reset を誰が行ったかは特定できていない。本ホストの keeper でないことは 記録から言えるが、それ以上は分からない。
+- L3 の SKIP 4 件（P2 cuda_ext_loaded / P3 deterministic_flags / P12 refs_resolved / P14 proposal_card_checked）は合格ではなく実行されなかった項目である。P3 は backlog B-20 が未解決。
+
 ### T-2026-09-19-symmetry-gate
 
 - make task-validate を全契約で回すと SKIP inbox.d: spec.yaml なし により 1 件 failed になる。変更前から同じで、本契約は tasks/inbox.d/ の構造を変えていない。原因の特定は本契約の範囲外
@@ -1476,23 +1503,31 @@
 - 統合後に他の台で実際に何が起きるかは本ホストから測れない。根拠は隔離した家での模擬 （7 通り × 2 正本 = 14 件すべて期待どおり）であって、実機での確認ではない。
 - inputs.data（dataset: egosurgery_phase_v1、split_files: data/splits/ego_val.txt）は雛形の 必須項目であり本契約は参照していない。SPEC の申し送りの指示どおり、参照しなかったことを記録する。
 
+### T-2026-09-21-philip-sync-outbound-off
+
+- 使用状況の日次送信が止まったか（周期 24 時間を越えて待てなかった）
+- 障害報告が止まったか（痕跡が元から 0 件で、止まったことを示せない）
+- urAccepted が 0 から 3 へ変わった原因
+- crashReportingEnabled を読む判定の位置（実装から特定できなかった）
+- natEnabled が UPnP/NAT-PMP の探索も止めるか（判定の位置を特定できなかった）
+
 ### T-2026-09-23-ops-and-proposal-card-gate
 
 - 旧様式 result.yaml（T-2026-08-22-philip-hub-foundation）の tests の 3 整数は実測不能である。旧報告にも旧 RESULT.md にも試験の記録が一切無く、推測で埋めれば捏造になる。UNKNOWN のまま据え置いた
 - 完了判定 e の「実例 4 件で FAIL」は達成していない。4 件目が是正済みであることが理由で、規則の欠陥ではないが、契約の字面は充足していない
 
-## 起票者の誤りの型（316 件）
+## 起票者の誤りの型（323 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 88 |
-| `asserted_without_measuring` | 128 |
-| `self_contradiction` | 81 |
+| `check_does_not_check` | 89 |
+| `asserted_without_measuring` | 132 |
+| `self_contradiction` | 82 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 0 |
-| `rule_read_narrowly` | 0 |
+| `rule_read_narrowly` | 1 |
 
-合計 316 件（対を持つ契約 105 件から）
+合計 323 件（対を持つ契約 107 件から）
 

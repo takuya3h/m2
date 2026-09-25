@@ -8,17 +8,15 @@
 **明文化されていない**。以下はディレクトリ名の意味からの判断であり、
 規約に基づくものではない。**除外規約の明文化を推奨する。**
 
-除外 82 run / 全 1558 run（削除ではなくフラグ）
+除外 48 run / 全 1860 run（削除ではなくフラグ）
 
 | exclusion_reason | runs | 対象 |
 |---|---:|---|
-| `aborted_run` | 4 | `experiments/baselines/_aborted_codetr_no_config`, `experiments/baselines/_aborted_s0_cuda_visible_misconfig` |
-| `failed_run` | 11 | `experiments/baselines/_failed_num_workers_zero`, `experiments/phase0/_failed_s3_weighted` |
+| `failed_run` | 6 | `experiments/phase0/_failed_s3_weighted` |
 | `identity_check` | 24 | `experiments/hand2det_dev`, `experiments/transfer` |
 | `known_bad_split` | 6 | `experiments/baselines/_wrong_split_8_2_3` |
 | `mislabeled_arm_all_not_film` | 2 | `experiments/transfer` |
-| `smoke_test` | 26 | `experiments/_smoke_prior`, `experiments/baselines/_smoke_ddq`, `experiments/baselines/_smoke_e3`, `experiments/baselines/_smoke_prior_simplehead`, `experiments/baselines/_smoke_v2_part3`, `experiments/phase0/_pre_redo_s0_smoke` |
-| `superseded` | 6 | `experiments/phase0/_prior_no_eval_recipe` |
+| `smoke_test` | 7 | `experiments/_smoke_prior`, `experiments/baselines/_smoke_ddq` |
 | `wrong_frozen_source` | 3 | `experiments/phase1` |
 
 ### 1.1 `phase0/_failed_s3_weighted/` の 6 run — 運用上の欠陥
@@ -37,12 +35,12 @@
 
 指標キーの接頭辞から split を確定できない run。**推測していない**。
 
-確定不能 44 run / 全 1558 run
+確定不能 38 run / 全 1860 run
 
 | split_provenance | runs |
 |---|---:|
 | `not_determinable_no_eval_recipe` | 29 |
-| `not_determinable` | 15 |
+| `not_determinable` | 9 |
 
 残るのは **`metrics.json` が空 `{}` の run** である。指標が 1 つも無いため
 「どの split で評価したか」が原理的に存在しない。正本 §16.7 の既定（§13）も
@@ -50,21 +48,15 @@
 
 | path | excluded | exclusion_reason |
 |---|---|---|
-| `experiments/baselines/_aborted_codetr_no_config/s0_007_codetr_bbox_seed42` | True | `aborted_run` |
-| `experiments/baselines/_aborted_codetr_no_config/s0_008_codetr_bbox_seed123` | True | `aborted_run` |
-| `experiments/baselines/_aborted_codetr_no_config/s0_009_codetr_bbox_seed456` | True | `aborted_run` |
-| `experiments/baselines/_aborted_s0_cuda_visible_misconfig/s0_001_maskdino_bbox_seed42` | True | `aborted_run` |
-| `experiments/baselines/_failed_num_workers_zero/s0_001_maskdino_bbox_seed42` | True | `failed_run` |
-| `experiments/baselines/_failed_num_workers_zero/s0_002_maskdino_bbox_seed123` | True | `failed_run` |
-| `experiments/baselines/_failed_num_workers_zero/s0_003_maskdino_bbox_seed456` | True | `failed_run` |
-| `experiments/baselines/_failed_num_workers_zero/s0_005_varifocanet_bbox_seed42` | True | `failed_run` |
-| `experiments/baselines/_failed_num_workers_zero/s0_006_varifocanet_bbox_seed123` | True | `failed_run` |
 | `experiments/phase0/_failed_s3_weighted/_004_partial` | True | `failed_run` |
 | `experiments/phase0/_failed_s3_weighted/_005_partial` | True | `failed_run` |
 | `experiments/phase0/_failed_s3_weighted/_006_partial` | True | `failed_run` |
 | `experiments/phase0/_failed_s3_weighted/s3_001_phase_frame_seed42` | True | `failed_run` |
 | `experiments/phase0/_failed_s3_weighted/s3_002_phase_frame_seed123` | True | `failed_run` |
 | `experiments/phase0/_failed_s3_weighted/s3_003_phase_frame_seed456` | True | `failed_run` |
+| `experiments/phase1/stage1_ptower_r3_001_ft_coco_lr0.0003_foldA_seed42` | False | `None` |
+| `experiments/phase1/stage1_ptower_r3_003_ft_coco_lr0.0001_foldA_seed123` | False | `None` |
+| `experiments/phase1/stage1_ptower_r3_004_ft_coco_lr0.0001_foldA_seed42` | False | `None` |
 | `transfer/hc_seed123` | False | `None` |
 | `transfer/hc_seed42` | False | `None` |
 | `transfer/hc_seed456` | False | `None` |
@@ -97,12 +89,12 @@
 
 ## 3. host を確定できなかった run
 
-確定不能 88 run
+確定不能 55 run
 
 | host_raw | runs | 理由 |
 |---|---:|---|
-| `None` | 60 | server.txt 欠損かつ eval_recipe.server_name 無し |
-| `aolab` | 28 | philip / ilya の双方が返すコンテナ内 hostname のため一意に特定不能 |
+| `None` | 45 | server.txt 欠損かつ eval_recipe.server_name 無し |
+| `aolab` | 10 | philip / ilya の双方が返すコンテナ内 hostname のため一意に特定不能 |
 
 ## 4. per_class_ap.json のクラス体系が 2 種類ある
 
@@ -115,20 +107,14 @@
 
 | per_class_kind | per_class_metric | runs | 内容 | 根拠 |
 |---|---|---:|---|---|
-| `phase` | `F1` | 861 | 9 クラスの工程別 **F1**（AP ではない） | `scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が `best.get("phase_per_class_f1", {})` を `log_per_class_ap()` に渡している |
-| `unknown` | `unknown` | 432 | 既知の 2 体系のいずれとも一致しない | 確定不能 |
-| `None` | `None` | 144 | `per_class_ap.json` が無い・空・パース失敗 | — |
-| `tool` | `AP` | 100 | 15 クラスの術具 AP | `per_class_coco_map` / `COCOeval.precision` 由来 |
+| `phase` | `F1` | 1163 | 9 クラスの工程別 **F1**（AP ではない） | `scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が `best.get("phase_per_class_f1", {})` を `log_per_class_ap()` に渡している |
+| `unknown` | `unknown` | 426 | 既知の 2 体系のいずれとも一致しない | 確定不能 |
+| `None` | `None` | 163 | `per_class_ap.json` が無い・空・パース失敗 | — |
+| `tool` | `AP` | 87 | 15 クラスの術具 AP | `per_class_coco_map` / `COCOeval.precision` 由来 |
 | `coco_map` | `AP` | 21 |  |  |
 
-### metric を確定できなかった run: 432
+### metric を確定できなかった run: 426
 
-- `experiments/phase0/_pre_redo_s0_smoke/s2_001_hand_detection_seed42`（19 クラス）
-- `experiments/phase0/_pre_redo_s0_smoke/s2_002_hand_detection_seed123`（19 クラス）
-- `experiments/phase0/_pre_redo_s0_smoke/s2_003_hand_detection_seed456`（19 クラス）
-- `experiments/phase0/_prior_no_eval_recipe/s2_001_hand_detection_seed42`（19 クラス）
-- `experiments/phase0/_prior_no_eval_recipe/s2_002_hand_detection_seed123`（19 クラス）
-- `experiments/phase0/_prior_no_eval_recipe/s2_003_hand_detection_seed456`（19 クラス）
 - `experiments/phase1/s4_grasp_injection_001_frozen_tecno_grasp_inference_ctrl_seed42`（5 クラス）
 - `experiments/phase1/s4_grasp_injection_002_frozen_tecno_grasp_inference_inj_seed42`（5 クラス）
 - `experiments/phase1/s4_grasp_injection_003_frozen_tecno_grasp_inference_ctrl_seed123`（5 クラス）
@@ -578,8 +564,8 @@
 
 | NaN のクラス | runs | 該当群 |
 |---|---:|---|
-| `Retractor` | 93 | `experiments/baselines`, `experiments/baselines/_legacy_score_thr_0`, `experiments/baselines/_smoke_ddq`, `experiments/baselines/_smoke_e3`, `experiments/baselines/_smoke_v2_part3`, `experiments/baselines/stage1_dtower`, `experiments/hand2det_dev`, `experiments/transfer`, `transfer` |
-| `Mouth Gag`, `Skewer` | 12 | `experiments/baselines/_wrong_split_8_2_3`, `experiments/phase0/_pre_redo_s0_smoke`, `experiments/phase0/_prior_no_eval_recipe` |
+| `Retractor` | 86 | `experiments/baselines`, `experiments/baselines/_legacy_score_thr_0`, `experiments/baselines/_smoke_ddq`, `experiments/baselines/stage1_dtower`, `experiments/hand2det_dev`, `experiments/transfer`, `transfer` |
+| `Mouth Gag`, `Skewer` | 6 | `experiments/baselines/_wrong_split_8_2_3` |
 | `Electric Cautery`, `Hook` | 2 | `experiments/baselines/stage1_dtower` |
 | `Electric Cautery`, `Mouth Gag` | 2 | `experiments/baselines/stage1_dtower` |
 
@@ -590,7 +576,7 @@
 
 ## 6. 命名規約から外れた run
 
-`<step>_<seq3>_<desc>_seed<N>` に一致しない run: 82
+`<step>_<seq3>_<desc>_seed<N>` に一致しない run: 79
 
 - `experiments/phase0/_failed_s3_weighted/_004_partial`
 - `experiments/phase0/_failed_s3_weighted/_005_partial`
@@ -667,9 +653,6 @@
 - `experiments/selection_noise_2026-07-29/runs/shuffleROI_seed456_rep1`
 - `experiments/selection_noise_2026-07-29/runs/shuffleROI_seed456_rep2`
 - `experiments/selection_noise_2026-07-29/runs/shuffleROI_seed456_rep3`
-- `experiments/transfer/_smoke_artifacts_ctrl`
-- `experiments/transfer/_smoke_artifacts_inj`
-- `experiments/transfer/_smoke_fullval`
 - `experiments/transfer/b2b_rescore_alpha0.5`
 - `experiments/transfer/b2b_rescore_alpha1.0`
 - `experiments/transfer/b2b_rescore_alpha2.0`
@@ -772,11 +755,11 @@ b2a_base_oracle_noise_p010_001_b2a_base_oracle_noise_p010_seed42/command.sh
 |---|---:|---|---|
 | `_orphan_no_metrics` | 9 | (未調査) | (未調査) |
 | `ablations` | 1 | `.gitkeep` のみ | 未着手 scaffold |
-| `analysis` | 380 | EDA レポート / 図 (png) / CSV / JSON | **あり**: `detector_sanity/reldetr_seed42_val_perclass.json` (COCO 形式 `AP`/`AP50`/`AP75`/`AP_s`/`AP_m` 等 13 キー)、`signature_subset_detector_compare/results.json` (`per_class` キー) |
+| `analysis` | 377 | EDA レポート / 図 (png) / CSV / JSON | **あり**: `detector_sanity/reldetr_seed42_val_perclass.json` (COCO 形式 `AP`/`AP50`/`AP75`/`AP_s`/`AP_m` 等 13 キー)、`signature_subset_detector_compare/results.json` (`per_class` キー) |
 | `audit` | 8 | `audit_report.json` × 3 | なし (`inject` / `trainable` / `n_trainable_params` 等の学習設定監査) |
 | `detector_improve` | 122 | `label_names.txt` / `val_perclass.json` | **あり**: `augstrong_seed42/val_perclass.json` (COCO 形式 13 キー) |
 | `final` | 1 | `.gitkeep` のみ | 未着手 scaffold |
-| `g2_main_2026-07-29` | 11 | `csv/` `json/` `prereg/` `HANDOVER_lecun.md` | なし (`f_roi_stats_{val,test}.json` は ROI 統計) |
+| `g2_main_2026-07-29` | 5 | `csv/` `json/` `prereg/` `HANDOVER_lecun.md` | なし (`f_roi_stats_{val,test}.json` は ROI 統計) |
 
 ### 次段階への申し送り
 
@@ -794,22 +777,20 @@ adapter を書けば貴重な追加ソースになる。
 |---|---:|
 | 複数 split の指標が同一 run に共存: ['...', '...']。split は null にした。metrics には <split>__<metric> として split 名を残したまま入れる。 | 426 |
 | per_class_ap.json のクラス集合が既知の 2 体系のいずれとも一致しない (5 クラス) -> metric を確定できないため unknown | 426 |
-| run 名が命名規約 <step>_<seq3>_<desc>_seed<N> に一致しない | 82 |
+| per_class_ap.json が空 ({...}) | 80 |
 | val と test の指標が共存する。primary（best 選択元）は val。test 側は metrics_by_split['...'] に保持している。 | 79 |
+| run 名が命名規約 <step>_<seq3>_<desc>_seed<N> に一致しない | 79 |
 | per_class_ap.json が存在しない | 75 |
-| per_class_ap.json が空 ({...}) | 61 |
-| host '...' は実サーバーを一意に特定できない。host は null にした。 | 28 |
 | ディレクトリ名の p010 は seed ではない。command.sh が --tool-noise-rate を渡しており、ノイズ率 0.01 を指す。seed_phase には入れない。 | 24 |
 | ディレクトリ名の p020 は seed ではない。command.sh が --tool-noise-rate を渡しており、ノイズ率 0.02 を指す。seed_phase には入れない。 | 24 |
 | ディレクトリ名の p030 は seed ではない。command.sh が --tool-noise-rate を渡しており、ノイズ率 0.03 を指す。seed_phase には入れない。 | 24 |
-| metrics.json が空 ({...}) | 15 |
 | config.yaml のパースに失敗: ConstructorError | 15 |
-| 同一 (group, step, description, split) 内で eval_recipe_id が 3 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #None で分離した。 | 12 |
+| host '...' は実サーバーを一意に特定できない。host は null にした。 | 10 |
 | run 名に seq (3 桁連番) が無い別系統の命名: base_seed<N>。step には description を充てた。 | 9 |
 | run 名に seq (3 桁連番) が無い別系統の命名: bboxROI_seed<N>。step には description を充てた。 | 9 |
-| 同一 (group, step, description, split) 内で eval_recipe_id が 3 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #93cb3159 で分離した。 | 6 |
-| 同一 (group, step, description, split) 内で eval_recipe_id が 3 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #a63aecae で分離した。 | 6 |
-| per_class_ap.json のクラス集合が既知の 2 体系のいずれとも一致しない (19 クラス) -> metric を確定できないため unknown | 6 |
+| metrics.json が空 ({...}) | 9 |
+| 同一 (group, step, description, split) 内で eval_recipe_id が 2 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #None で分離した。 | 6 |
+| 同一 (group, step, description, split) 内で eval_recipe_id が 2 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #a63aecae で分離した。 | 6 |
 | ディレクトリ名の p0 が末尾 seed<N> と一致せず、command.sh にノイズ引数も無い。seed か否かを確定できないため seed_phase は null にした。 | 6 |
 | run 名に seq (3 桁連番) が無い別系統の命名: t1b_ca_seed<N>。step には description を充てた。 | 4 |
 | config.yaml のパースに失敗: ParserError | 3 |
@@ -896,7 +877,7 @@ dummy Trainer の削除またはガード追加は別タスクで検討するこ
 mAP 系の指標を持つのに術具 per-class（15 クラス）を持たない run は、
 どちらの検査でも判定できない。**個別確認が要る対象**として列挙する。
 
-該当 48 run
+該当 39 run
 
 | path | mAP 系のキー | entrypoint | commit |
 |---|---|---|---|
@@ -920,21 +901,12 @@ mAP 系の指標を持つのに術具 per-class（15 クラス）を持たない
 | `experiments/hand2det_dev/_identity_inj_5ch_seed456` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_hand2det.py` | `0ea33cac65` |
 | `experiments/hand2det_dev/hand2det_1ep_4ch_all_seed42` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_hand2det.py` | `0ea33cac65` |
 | `experiments/hand2det_dev/hand2det_4ch_film_inj_seed42` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_hand2det.py` | `0ea33cac65` |
-| `experiments/phase0/_pre_redo_s0_smoke/s2_001_hand_detection_seed42` | `mAP`, `mAP_50`, `mAP_75` | `/home/ubuntu/slocal2/egosurgery_multitask/src/egosurgery/train.py` | `d1bcc8a3ca` |
-| `experiments/phase0/_pre_redo_s0_smoke/s2_002_hand_detection_seed123` | `mAP`, `mAP_50`, `mAP_75` | `/home/ubuntu/slocal2/egosurgery_multitask/src/egosurgery/train.py` | `d1bcc8a3ca` |
-| `experiments/phase0/_pre_redo_s0_smoke/s2_003_hand_detection_seed456` | `mAP`, `mAP_50`, `mAP_75` | `/home/ubuntu/slocal2/egosurgery_multitask/src/egosurgery/train.py` | `d1bcc8a3ca` |
-| `experiments/phase0/_prior_no_eval_recipe/s2_001_hand_detection_seed42` | `mAP`, `mAP_50`, `mAP_75` | `/home/ubuntu/slocal2/egosurgery_multitask/src/egosurgery/train.py` | `d1bcc8a3ca` |
-| `experiments/phase0/_prior_no_eval_recipe/s2_002_hand_detection_seed123` | `mAP`, `mAP_50`, `mAP_75` | `/home/ubuntu/slocal2/egosurgery_multitask/src/egosurgery/train.py` | `d1bcc8a3ca` |
-| `experiments/phase0/_prior_no_eval_recipe/s2_003_hand_detection_seed456` | `mAP`, `mAP_50`, `mAP_75` | `/home/ubuntu/slocal2/egosurgery_multitask/src/egosurgery/train.py` | `d1bcc8a3ca` |
 | `experiments/transfer/_p0_identity_ctrl_seed123` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_t1b.py` | `0ea33cac65` |
 | `experiments/transfer/_p0_identity_ctrl_seed42` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_t1b.py` | `0ea33cac65` |
 | `experiments/transfer/_p0_identity_ctrl_seed456` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_t1b.py` | `0ea33cac65` |
 | `experiments/transfer/_p0_identity_inj_seed123` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_t1b.py` | `0ea33cac65` |
 | `experiments/transfer/_p0_identity_inj_seed42` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_t1b.py` | `0ea33cac65` |
 | `experiments/transfer/_p0_identity_inj_seed456` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_t1b.py` | `0ea33cac65` |
-| `experiments/transfer/_smoke_artifacts_ctrl` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_t1b.py` | `cb075fce81` |
-| `experiments/transfer/_smoke_artifacts_inj` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_t1b.py` | `cb075fce81` |
-| `experiments/transfer/_smoke_fullval` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_t1b.py` | `cb075fce81` |
 | `experiments/transfer/b2b_rescore_alpha0.5` | `mAP_baseline`, `mAP_rescored` | — | `a697d90b88` |
 | `experiments/transfer/b2b_rescore_alpha1.0` | `mAP_baseline`, `mAP_rescored` | — | `a697d90b88` |
 | `experiments/transfer/b2b_rescore_alpha2.0` | `mAP_baseline`, `mAP_rescored` | — | `a697d90b88` |
@@ -1035,7 +1007,7 @@ M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 �
 これを split の既定値とし、`provenance.split = from_plan_section_16_7` を記録する。
 ただし **指標が 1 つもない run には適用しない**（評価されていないため null のまま）。
 
-既定を適用した run: 553
+既定を適用した run: 578
 
 | path | 指標キー |
 |---|---|
@@ -1501,6 +1473,34 @@ M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 �
 | `experiments/phase1/stage1_ptower_r2_023_features_lr3.3333333333333335e-05_foldB_seed42` | `elapsed_seconds`, `frames` |
 | `experiments/phase1/stage1_ptower_r2_024_features_lr3.3333333333333335e-05_foldE_seed42` | `elapsed_seconds`, `frames` |
 | `experiments/phase1/stage1_ptower_r2_025_features_lr3.3333333333333335e-05_foldD_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_028_features_coco_lr0.0001_foldA_seed123` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_029_features_coco_lr0.0001_foldA_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_030_features_coco_lr0.0001_foldA_seed456` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_031_features_coco_lr0.0001_foldB_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_032_features_coco_lr0.0001_foldC_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_033_features_coco_lr0.0001_foldD_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_034_features_coco_lr0.0001_foldE_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_034_features_coco_lr0.0003_foldA_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_035_features_coco_lr0.0003_foldA_seed456` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_036_features_coco_lr0.0003_foldA_seed123` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_037_features_coco_lr0.0003_foldB_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_038_features_coco_lr0.0003_foldC_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_039_features_coco_lr0.0003_foldD_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_040_features_coco_lr0.0003_foldE_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_041_features_imagenet_lr0.0001_foldA_seed123` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_042_features_imagenet_lr0.0001_foldA_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_043_features_imagenet_lr0.0001_foldB_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_044_features_imagenet_lr0.0001_foldA_seed456` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_045_features_imagenet_lr0.0001_foldC_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_046_features_imagenet_lr0.0001_foldD_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_047_features_imagenet_lr0.0003_foldA_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_048_features_imagenet_lr0.0001_foldE_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_049_features_imagenet_lr0.0003_foldA_seed456` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_050_features_imagenet_lr0.0003_foldA_seed123` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_051_features_imagenet_lr0.0003_foldB_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_052_features_imagenet_lr0.0003_foldC_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_053_features_imagenet_lr0.0003_foldD_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_054_features_imagenet_lr0.0003_foldE_seed42` | `elapsed_seconds`, `frames` |
 | `experiments/selection_noise_2026-07-29/runs/base_seed123_rep1` | `rep` |
 | `experiments/selection_noise_2026-07-29/runs/base_seed123_rep2` | `rep` |
 | `experiments/selection_noise_2026-07-29/runs/base_seed123_rep3` | `rep` |
@@ -1579,9 +1579,6 @@ M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 �
 | `experiments/transfer/_p0_identity_inj_seed123` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
 | `experiments/transfer/_p0_identity_inj_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
 | `experiments/transfer/_p0_identity_inj_seed456` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
-| `experiments/transfer/_smoke_artifacts_ctrl` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
-| `experiments/transfer/_smoke_artifacts_inj` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
-| `experiments/transfer/_smoke_fullval` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
 | `experiments/transfer/b2b_rescore_alpha0.5` | `alpha`, `delta_detection`, `mAP_baseline`, `mAP_rescored`, `miss_ctx` |
 | `experiments/transfer/b2b_rescore_alpha1.0` | `alpha`, `delta_detection`, `mAP_baseline`, `mAP_rescored`, `miss_ctx` |
 | `experiments/transfer/b2b_rescore_alpha2.0` | `alpha`, `delta_detection`, `mAP_baseline`, `mAP_rescored`, `miss_ctx` |
@@ -1754,34 +1751,25 @@ run_id 単位の 3 分類（記録漏れ / 成果物消失 / 数値の食い違�
 
 ## 15. run_id の衝突
 
-`run_id`（ディレクトリ名）は **21 種が複数箇所で衝突**する。
+`run_id`（ディレクトリ名）は **12 種が複数箇所で衝突**する。
 スキーマは `runs/<run_id>.json` を指定しているが、そのままではファイルが
 上書きされるため、パス由来の `ledger_key` をファイル名に使い、
 `run_id` はフィールドとして保持した。
 
 | run_id | 箇所数 |
 |---|---:|
-| `s0_001_maskdino_bbox_seed42` | 7 |
-| `s0_002_maskdino_bbox_seed123` | 6 |
-| `s0_003_maskdino_bbox_seed456` | 6 |
-| `s0_004_varifocanet_bbox_seed42` | 5 |
-| `s0_005_varifocanet_bbox_seed123` | 5 |
-| `s0_006_varifocanet_bbox_seed456` | 5 |
 | `base_seed123` | 3 |
 | `base_seed42` | 3 |
 | `base_seed456` | 3 |
 | `bboxROI_seed123` | 3 |
 | `bboxROI_seed42` | 3 |
 | `bboxROI_seed456` | 3 |
-| `s3_001_phase_frame_seed42` | 3 |
-| `s3_002_phase_frame_seed123` | 3 |
-| `s3_003_phase_frame_seed456` | 3 |
-| `s0_007_codetr_bbox_seed42` | 2 |
-| `s0_008_codetr_bbox_seed123` | 2 |
-| `s0_009_codetr_bbox_seed456` | 2 |
-| `s2_001_hand_detection_seed42` | 2 |
-| `s2_002_hand_detection_seed123` | 2 |
-| `s2_003_hand_detection_seed456` | 2 |
+| `s0_001_maskdino_bbox_seed42` | 3 |
+| `s0_002_maskdino_bbox_seed123` | 3 |
+| `s0_003_maskdino_bbox_seed456` | 3 |
+| `s0_004_varifocanet_bbox_seed42` | 3 |
+| `s0_005_varifocanet_bbox_seed123` | 3 |
+| `s0_006_varifocanet_bbox_seed456` | 3 |
 
 ## 16. 🔴 修正済み: primary 指標に test の値が入っていた
 
@@ -1862,16 +1850,16 @@ _FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
 **したがって `frozen_source_tag` はキャッシュのパスからのみ導き、
 `frozen_source.seed` と `notes.md` の記述は採用していない。**
 
-- 実験数: **476** / run 数 1558
-- `experiment_id` を付けられなかった run: 82
+- 実験数: **710** / run 数 1860
+- `experiment_id` を付けられなかった run: 79
   （run 名が命名規約に一致しない run）
-- `eval_recipe_id` の食い違いで分離した base: 24
-  - `baselines/s0/maskdino_bbox@val` -> ['93cb3159bea1', 'None', 'a63aecae1158']
-  - `baselines/s0/maskdino_bbox@val` -> ['93cb3159bea1', 'None', 'a63aecae1158']
-  - `baselines/s0/maskdino_bbox@val` -> ['93cb3159bea1', 'None', 'a63aecae1158']
-  - `baselines/s0/varifocanet_bbox@val` -> ['93cb3159bea1', 'None', 'a63aecae1158']
-  - `baselines/s0/varifocanet_bbox@val` -> ['93cb3159bea1', 'None', 'a63aecae1158']
-  - `baselines/s0/varifocanet_bbox@val` -> ['93cb3159bea1', 'None', 'a63aecae1158']
+- `eval_recipe_id` の食い違いで分離した base: 12
+  - `baselines/s0/maskdino_bbox@val` -> ['None', 'a63aecae1158']
+  - `baselines/s0/maskdino_bbox@val` -> ['None', 'a63aecae1158']
+  - `baselines/s0/maskdino_bbox@val` -> ['None', 'a63aecae1158']
+  - `baselines/s0/varifocanet_bbox@val` -> ['None', 'a63aecae1158']
+  - `baselines/s0/varifocanet_bbox@val` -> ['None', 'a63aecae1158']
+  - `baselines/s0/varifocanet_bbox@val` -> ['None', 'a63aecae1158']
 
 ### 17.1 🔴 限界: 名前が条件を一意に表さない実験がある
 
@@ -1897,8 +1885,8 @@ _FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
 
 | group / description / split / frozen_source | 分裂した experiment_id |
 |---|---|
-| `baselines` / `maskdino_bbox` / `val` / `None` | `baselines/s0/maskdino_bbox@val#93cb3159`<br>`baselines/s0/maskdino_bbox@val#None`<br>`baselines/s0/maskdino_bbox@val#a63aecae` |
-| `baselines` / `varifocanet_bbox` / `val` / `None` | `baselines/s0/varifocanet_bbox@val#93cb3159`<br>`baselines/s0/varifocanet_bbox@val#None`<br>`baselines/s0/varifocanet_bbox@val#a63aecae` |
+| `baselines` / `maskdino_bbox` / `val` / `None` | `baselines/s0/maskdino_bbox@val#None`<br>`baselines/s0/maskdino_bbox@val#a63aecae` |
+| `baselines` / `varifocanet_bbox` / `val` / `None` | `baselines/s0/varifocanet_bbox@val#None`<br>`baselines/s0/varifocanet_bbox@val#a63aecae` |
 | `transfer` / `b2a_det2phase_toolpresence` / `val` / `relation_detr_seed42` | `transfer/b2a_det2phase/b2a_det2phase_toolpresence@val~relation_detr_seed42`<br>`transfer/b2a_det2phase_toolpresence/b2a_det2phase_toolpresence@val~relation_detr_seed42` |
 
 これらを 1 実験として束ねるべきかは、起動経路が同一かどうかの判断を伴うため
@@ -1966,7 +1954,7 @@ delta:
 
 | 分類 | run 数 |
 |---|---:|
-| `no_denominator_declared` | 1032 |
+| `no_denominator_declared` | 1334 |
 | `injection_from_config_yaml` | 512 |
 | `baseline` | 17 |
 | `denominator_unresolvable` | 12 |
@@ -2013,8 +2001,8 @@ seed ごとに 1 本ずつ対応させることができない。
 per-class の値は 573 個の JSON に分散していて横断分析に使えなかったため、
 `runindex/per_class.csv` に long 形式（1 行 = 1 run × 1 クラス）で 1 ファイル化した。
 
-- `per_class_kind=tool` : 100 run × 15 クラス（術具 **AP**）
-- `per_class_kind=phase`: 861 run × 9 クラス（工程 **F1**）
+- `per_class_kind=tool` : 87 run × 15 クラス（術具 **AP**）
+- `per_class_kind=phase`: 1163 run × 9 クラス（工程 **F1**）
 
 **この 2 つを混ぜて集計してはならない。** 指標の種類が違う（AP と F1）。
 ファイル名は両方とも `per_class_ap.json` なので、名前では判別できない。
@@ -2372,9 +2360,9 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 
 | seed_agreement | run 数 | 意味 |
 |---|---:|---|
-| `agree` | 1444 | ディレクトリ名と他証拠が一致 |
+| `agree` | 1749 | ディレクトリ名と他証拠が一致 |
 | `unverified_no_other_evidence` | 32 | `command.sh` も `config.yaml` も無い（g2_* 群） |
-| `no_seed_in_dirname` | 82 | 命名規約外 |
+| `no_seed_in_dirname` | 79 | 命名規約外 |
 | **`conflict`** | **0** | **食い違い** |
 
 **食い違いは 0 件。** したがって Δ の seed 対応が誤っている可能性は排除できる。
@@ -2625,7 +2613,7 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 
 ### 26.1 🔴 決定的になり得る学習スクリプトは **1 本も無い**
 
-監査 37 スクリプト / うち CUDA を使う **18** 本 / 
+監査 38 スクリプト / うち CUDA を使う **18** 本 / 
 `can_be_deterministic = True` は **1** 本。
 
 | 制御項目 | 設定している本数 |
@@ -2656,7 +2644,7 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 | `seed_everything` | 1 | `src/egosurgery/utils/seed.py` のヘルパ経由 |
 | `seed_everything+delegates_to_engines` | 3 | ヘルパを呼びつつ更に委譲もする |
 | `delegates_to_engines` | 1 | 自分では触らず trainer に委譲（`src/egosurgery/train.py`）|
-| `none` | 6 | seed を張らない |
+| `none` | 7 | seed を張らない |
 
 **`seed_everything()` は 6 項目を設定している**
 （`random` / `PYTHONHASHSEED` / `numpy` / `torch.manual_seed` /
@@ -2671,7 +2659,7 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 一方 `scripts/train_*.py` 系（**`direct`**、run 数で見て大半）は
 CPU 側 3 種のみで **GPU 側の制御が 1 つも無い**。
 
-影響を受ける run: **1046**（CUDA 学習スクリプトが entrypoint の run）
+影響を受ける run: **1043**（CUDA 学習スクリプトが entrypoint の run）
 
 | スクリプト | run 数 | 欠落している必須項目 |
 |---|---:|---|
@@ -2682,7 +2670,7 @@ CPU 側 3 種のみで **GPU 側の制御が 1 つも無い**。
 | `scripts/train_hand2det.py` | 21 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_haux.py` | 18 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_taux.py` | 15 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
-| `scripts/train_t1b.py` | 14 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
+| `scripts/train_t1b.py` | 11 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_grasp_phase_injection.py` | 6 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_t1a_regiontraj.py` | 6 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_t1a_boundary.py` | 3 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
@@ -2733,9 +2721,9 @@ Relation-DETR 経路の状況である。
 
 全件は `anomalies/within_vs_between_seed.csv`（1 行 = 1 実験 × 1 指標）。
 
-- 反復がある (実験 × 指標) の組: **226**
-- そのうち **within > between**: **64**
-  - 条件混在の交絡あり: 53
+- 反復がある (実験 × 指標) の組: **204**
+- そのうち **within > between**: **54**
+  - 条件混在の交絡あり: 43
   - 交絡なし（純粋に非決定性）: **11**
 
 **⚠️ 単純に「47 件で within が上回る」と読んではいけない。**

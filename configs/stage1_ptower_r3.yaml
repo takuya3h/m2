@@ -1,0 +1,46 @@
+task_id: T-2026-09-19-stage1-phase-tower-r3
+step: stage1_ptower_r3
+action: finetune
+fold: A
+seed: 42
+
+# 初期化の鎖（掃引の 1 軸）。coco = D*-COCO が出発する checkpoint の backbone 部分
+init: coco
+
+# backbone の fine-tune
+ft_lr: 0.0003
+ft_weight_decay: 0.0001
+# 装置に収まる最大が 16（64 と 32 は OOM）。勾配累積 4 で実効 batch 64 を保つ
+ft_batch_size: 16
+ft_accum_steps: 4
+ft_epochs: 36
+ft_patience: 4
+ft_lr_decay: 0.1
+backbone_tag: coco_r50_ft_800
+checkpoint: null
+verify_determinism: false
+
+# 時間ヘッド（一周目・二周目と同一。stage1_ptower.train がそのまま読む）
+candidate: A
+layers: 6
+smoothing_weight: 0.0
+history: 30
+epochs: 50
+patience: 10
+lr: 0.0005
+weight_decay: 0.01
+warmup_epochs: 2
+maps: 64
+desc_suffix: ""
+
+device: cuda:0
+cache: data/processed/stage1_features/r3_coco_lr0.0003_foldA_seed42/all_gap.npz
+manifest_dir: data/processed/phase_manifest
+batch_size: 16
+workers: 4
+hydra:
+  run:
+    dir: .
+  output_subdir: null
+  job:
+    chdir: false

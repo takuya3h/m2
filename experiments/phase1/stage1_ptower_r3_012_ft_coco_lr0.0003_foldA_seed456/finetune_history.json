@@ -1,0 +1,152 @@
+{
+  "task_id": "T-2026-09-19-stage1-phase-tower-r3",
+  "fold": "A",
+  "seed": 456,
+  "init": "coco",
+  "ft_lr": 0.0003,
+  "trainable_params": {
+    "stem": 0,
+    "layer1": 215808,
+    "layer2": 1219584,
+    "layer3": 7098368,
+    "layer4": 14964736,
+    "fc": 18441
+  },
+  "backbone_init_sha256": "a755b3eb22a3c1996ff88bb5797690ceb5605eedef5c24f980e1cac4c07fc98f",
+  "weights": "data/external/weights/relation_detr_resnet50_800_1333_coco_1x.pth",
+  "effective_batch_size": 64,
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.7549859481753061,
+      "lr": 0.0003,
+      "val_accuracy": 0.6844884488448845,
+      "val_macro_f1": 0.40192142091992233
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.31879145461412844,
+      "lr": 0.0003,
+      "val_accuracy": 0.7260726072607261,
+      "val_macro_f1": 0.5162757597235141
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.19213535798297135,
+      "lr": 0.0003,
+      "val_accuracy": 0.7432343234323432,
+      "val_macro_f1": 0.6156365702399528
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.13967610648920495,
+      "lr": 0.0003,
+      "val_accuracy": 0.7821782178217822,
+      "val_macro_f1": 0.6119828471127963
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.08566227103394974,
+      "lr": 0.0003,
+      "val_accuracy": 0.805940594059406,
+      "val_macro_f1": 0.6674735369417523
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.05604697336853893,
+      "lr": 0.0003,
+      "val_accuracy": 0.8171617161716171,
+      "val_macro_f1": 0.6616397351483261
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.05486927218814299,
+      "lr": 0.0003,
+      "val_accuracy": 0.7353135313531353,
+      "val_macro_f1": 0.6254940109485195
+    },
+    {
+      "epoch": 8,
+      "train_loss": 0.06079172488731922,
+      "lr": 0.0003,
+      "val_accuracy": 0.8613861386138614,
+      "val_macro_f1": 0.7063481995833014
+    },
+    {
+      "epoch": 9,
+      "train_loss": 0.04399448832928763,
+      "lr": 0.0003,
+      "val_accuracy": 0.8468646864686469,
+      "val_macro_f1": 0.7161973148643119
+    },
+    {
+      "epoch": 10,
+      "train_loss": 0.02692717629959993,
+      "lr": 0.0003,
+      "val_accuracy": 0.8679867986798679,
+      "val_macro_f1": 0.7334224864325519
+    },
+    {
+      "epoch": 11,
+      "train_loss": 0.043905914720018424,
+      "lr": 0.0003,
+      "val_accuracy": 0.7386138613861386,
+      "val_macro_f1": 0.656193189251712
+    },
+    {
+      "epoch": 12,
+      "train_loss": 0.0418626812260612,
+      "lr": 0.0003,
+      "val_accuracy": 0.8072607260726072,
+      "val_macro_f1": 0.6825249020366176
+    },
+    {
+      "epoch": 13,
+      "train_loss": 0.03699114471412131,
+      "lr": 0.0003,
+      "val_accuracy": 0.829042904290429,
+      "val_macro_f1": 0.6697911861854076
+    },
+    {
+      "epoch": 14,
+      "train_loss": 0.033111673954028885,
+      "lr": 0.0003,
+      "val_accuracy": 0.8455445544554455,
+      "val_macro_f1": 0.7142021433096453
+    },
+    {
+      "epoch": 15,
+      "train_loss": 0.010946955104442928,
+      "lr": 2.9999999999999997e-05,
+      "val_accuracy": 0.8481848184818482,
+      "val_macro_f1": 0.7298808329983457
+    },
+    {
+      "epoch": 16,
+      "train_loss": 0.004972257006553606,
+      "lr": 2.9999999999999997e-05,
+      "val_accuracy": 0.8574257425742574,
+      "val_macro_f1": 0.7440888998368942
+    },
+    {
+      "epoch": 17,
+      "train_loss": 0.0027736809993910475,
+      "lr": 2.9999999999999997e-05,
+      "val_accuracy": 0.8528052805280528,
+      "val_macro_f1": 0.7392066540956252
+    },
+    {
+      "epoch": 18,
+      "train_loss": 0.0026264670306807513,
+      "lr": 2.9999999999999997e-05,
+      "val_accuracy": 0.8534653465346534,
+      "val_macro_f1": 0.7335846964632328
+    }
+  ],
+  "best_epoch": 10,
+  "best_val_accuracy": 0.8679867986798679,
+  "lr_lowered_epoch": 14,
+  "early_stopped_epoch": 18,
+  "peak_memory_bytes": 29054617088,
+  "checkpoint_sha256": "5e32daa33d77486ea9387f1a1cb7da593a9eec2213d975bcf19129721e6c944a"
+}
