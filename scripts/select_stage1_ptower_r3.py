@@ -44,6 +44,40 @@ def confirmed(path):
     return {fold: recipe.get(f"{fold}_jaccard") for fold in "ABCDE"}
 
 
+def select_chain(rows):
+    """prereg §6 for one init chain, plus what to do when the co-primary disagrees.
+
+    The prereg assumes the primary and the co-primary point the same way and does
+    not say what to do otherwise. The user directed (2026-09-25) that the
+    disagreement be recorded and the tie-break applied, which the observed case
+    reaches anyway: the gap is inside fold A's seed spread. §6-2's "shorter
+    receptive field" step is not in the shared rule; where it would apply this
+    function reports whether it agrees with the step that is, so the gap between
+    the prereg and the implementation is visible rather than assumed away.
+    """
+    ranked = sorted(rows, key=lambda r: r["mean_jaccard"], reverse=True)
+    best, second = ranked[:2]
+    if best["mean_accuracy"] >= second["mean_accuracy"]:
+        chosen, reason = select(rows)
+        return chosen, reason, None
+    chosen, reason = select(rows, co_primary="record")
+    shorter = min((best, second), key=lambda r: r["history"])
+    disagreement = {
+        "primary": {"best": best["mean_jaccard"], "runner_up": second["mean_jaccard"]},
+        "co_primary": {"best": best["mean_accuracy"], "runner_up": second["mean_accuracy"]},
+        "gap_within_fold_A_seed_spread":
+            best["mean_jaccard"] - second["mean_jaccard"] <= best["fold_A_pstd"],
+        "fold_A_pstd": best["fold_A_pstd"],
+        "shorter_receptive_field_agrees":
+            (shorter["candidate"], shorter["layers"], shorter["smoothing_weight"],
+             shorter["history"], shorter["ft_lr"])
+            == (chosen["candidate"], chosen["layers"], chosen["smoothing_weight"],
+                chosen["history"], chosen["ft_lr"]),
+        "resolved_by": reason,
+    }
+    return chosen, reason, disagreement
+
+
 def validation_table():
     groups, all_runs = {}, []
     for params in grid("HEAD"):
@@ -89,8 +123,9 @@ def validation_table():
     for init in INITS:
         rows = [r for r in table if r["init"] == init]
         assert len(rows) == 20, (init, len(rows))
-        chosen, reason = select(rows)
-        chains[init] = {"recipe": chosen, "reason": reason}
+        chosen, reason, disagreement = select_chain(rows)
+        chains[init] = {"recipe": chosen, "reason": reason,
+                        "co_primary_disagreement": disagreement}
     selection = {"task_id": TASK, "chains": chains, "test_seed": 42,
                  "P21": "UNKNOWN: frames for videos 17-22 are not on this host",
                  "validation_runs": len(all_runs), "recipes": len(table),

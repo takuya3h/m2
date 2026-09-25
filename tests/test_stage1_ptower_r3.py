@@ -208,3 +208,51 @@ def test_task_b_clears_the_stop_condition():
     _, metrics = done
     assert runner.below_round_two({"action": "finetune", "fold": "A"}, metrics,
                                   runner.round_two_frame_accuracy()) is None
+
+
+# --- the co-primary disagreement the prereg does not cover -------------------
+
+def _row(candidate, layers, weight, history, lr, jaccard, accuracy, pstd, seconds):
+    return {"candidate": candidate, "layers": layers, "smoothing_weight": weight,
+            "history": history, "ft_lr": lr, "mean_jaccard": jaccard,
+            "mean_accuracy": accuracy, "fold_A_pstd": pstd, "mean_seconds": seconds}
+
+
+def _observed_pair():
+    """The ImageNet chain as measured: primary up, co-primary down."""
+    return [_row("B", 8, 0.0, 30, 1e-4, 0.4785, 0.7781, 0.0294, 4.2),
+            _row("B", 8, 0.0, 60, 1e-4, 0.4757, 0.7858, 0.0357, 4.6)]
+
+
+def test_the_shared_rule_still_stops_by_default():
+    """The first and second rounds must keep the behaviour they were run with."""
+    from select_stage1_ptower import select
+    with pytest.raises(ValueError):
+        select(_observed_pair())
+
+
+def test_recording_the_disagreement_lets_the_tie_break_run():
+    from select_stage1_ptower import select
+    chosen, _ = select(_observed_pair(), co_primary="record")
+    assert chosen["history"] == 30
+
+
+def test_select_chain_reports_no_disagreement_when_they_agree():
+    import select_stage1_ptower_r3 as sel
+    rows = [_row("A", 6, 0.0, 30, 1e-4, 0.70, 0.90, 0.01, 3.0),
+            _row("B", 6, 0.0, 30, 1e-4, 0.50, 0.80, 0.01, 3.0)]
+    chosen, reason, disagreement = sel.select_chain(rows)
+    assert disagreement is None and chosen["candidate"] == "A" and reason
+
+
+def test_select_chain_records_the_disagreement_and_still_decides():
+    import select_stage1_ptower_r3 as sel
+    chosen, reason, disagreement = sel.select_chain(_observed_pair())
+    assert chosen["history"] == 30
+    assert disagreement is not None
+    assert disagreement["co_primary"]["best"] < disagreement["co_primary"]["runner_up"]
+    assert disagreement["primary"]["best"] > disagreement["primary"]["runner_up"]
+    assert disagreement["gap_within_fold_A_seed_spread"] is True
+    # The prereg's "shorter receptive field" step is not in the shared rule.
+    # Here it agrees, so the missing step changes nothing -- and we say so.
+    assert disagreement["shorter_receptive_field_agrees"] is True

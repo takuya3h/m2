@@ -283,6 +283,37 @@ BatchNorm の後方互換の読み込みが 0 のまま残すためで、入れ�
 **同一性は連番ではなく config の識別鍵**（action・init・ft_lr・fold・seed）で取るため、
 再開判定にも集計にも影響しない（`run_stage1_ptower_r3.IDENTITY`）。
 
+## 5. Task D — 特徴抽出と決定性
+
+`scripts/run_stage1_ptower_r3.py EX --verify-first`。掃引ログ
+`experiments/phase1/stage1_ptower_r3/logs/taskD_EX.log`。**28 本すべて完了**
+（`GRID_COMPLETE EX runs=28`）。1 本 277〜291 秒（決定性を検証した 1 本のみ 744 秒）。
+
+fine-tune 後の backbone から、その折りの**全 15 動画**の C5 GAP 2048 次元を
+短辺 800・全画面で取る。学習時と同じ前処理（反転なし）。
+
+| 項目 | 実測 |
+|---|---|
+| キャッシュ件数 | 28 |
+| 各キャッシュのフレーム数 | 15,437（動画 15 本。`video_counts` が manifest の数と一致することを実装が assert する） |
+| 各キャッシュの大きさ | 約 127 MB |
+| **特徴の要約値が相異なる** | 28 / 28 |
+| **checkpoint の要約値が相異なる** | 28 / 28 |
+
+### 決定性（完了判定 d）
+
+`verify_determinism` を立てた 1 本（`r3_coco_lr0.0001_foldA_seed42`）の実測:
+
+| 項目 | 実測 |
+|---|---|
+| 1 度目の特徴の要約値 | `5823279fe5e3c6ed3559b2ebf12d42fdd46ab577a0907ba0501fa94109938190` |
+| **2 度目の特徴の要約値** | `5823279fe5e3c6ed3559b2ebf12d42fdd46ab577a0907ba0501fa94109938190`（**一致**） |
+| **backbone を変えたとき** | `weight_change_detected: true`（`conv1.weight` を 0 にすると特徴が変わる） |
+
+2 度目の一致だけでは「検査が働いている」ことにならないため、実装は同じ run の中で
+**重みを壊して特徴が変わることも測る**（`scripts/stage1_ptower_r3.py` の `extract`）。
+どちらかが崩れれば `assert` で run が落ちる。
+
 ## 4. 起票者の誤り
 
 | # | 型 | 内容 |

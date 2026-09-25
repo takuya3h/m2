@@ -1,0 +1,101 @@
+{
+  "task_id": "T-2026-09-19-stage1-phase-tower-r3",
+  "chains": {
+    "coco": {
+      "recipe": {
+        "init": "coco",
+        "candidate": "C",
+        "layers": 8,
+        "smoothing_weight": 0.3,
+        "history": 30,
+        "ft_lr": 0.0001,
+        "A_jaccard": 0.70683155993455,
+        "A_accuracy": 0.8721672167216722,
+        "A_r2_jaccard": 0.4678912580481021,
+        "A_r1_jaccard": 0.3668916054250826,
+        "B_jaccard": 0.6717981995781513,
+        "B_accuracy": 0.84631918323482,
+        "B_r2_jaccard": 0.2464389781598864,
+        "B_r1_jaccard": 0.20245610381627338,
+        "C_jaccard": 0.6094239362074261,
+        "C_accuracy": 0.7821931589537223,
+        "C_r2_jaccard": 0.42651949939798545,
+        "C_r1_jaccard": 0.2399774193058629,
+        "D_jaccard": 0.6151940666293619,
+        "D_accuracy": 0.8465152701644479,
+        "D_r2_jaccard": 0.31835658843057396,
+        "D_r1_jaccard": 0.3856083419955977,
+        "E_jaccard": 0.6757300829844042,
+        "E_accuracy": 0.8916001877053027,
+        "E_r2_jaccard": 0.4762893979186696,
+        "E_r1_jaccard": 0.4496047836027281,
+        "mean_jaccard": 0.6557955690667787,
+        "mean_accuracy": 0.8477590033559931,
+        "r2_mean_jaccard": 0.3870991443910435,
+        "r1_mean_jaccard": 0.32890765082910894,
+        "fold_A_pstd": 0.015181164464046479,
+        "fold_A_sstd": 0.018593053319093167,
+        "mean_seconds": 4.427075588077839
+      },
+      "reason": "within SD and 20% runtime, same candidate and RF: smaller fold A seed pstd",
+      "co_primary_disagreement": null
+    },
+    "imagenet": {
+      "recipe": {
+        "init": "imagenet",
+        "candidate": "B",
+        "layers": 8,
+        "smoothing_weight": 0.0,
+        "history": 30,
+        "ft_lr": 0.0001,
+        "A_jaccard": 0.6161904717755771,
+        "A_accuracy": 0.8497249724972498,
+        "A_r2_jaccard": 0.4678912580481021,
+        "A_r1_jaccard": 0.3668916054250826,
+        "B_jaccard": 0.3584194967660744,
+        "B_accuracy": 0.7291778613648576,
+        "B_r2_jaccard": 0.2464389781598864,
+        "B_r1_jaccard": 0.20245610381627338,
+        "C_jaccard": 0.4304956698012248,
+        "C_accuracy": 0.7947686116700201,
+        "C_r2_jaccard": 0.42651949939798545,
+        "C_r1_jaccard": 0.2399774193058629,
+        "D_jaccard": 0.43297400195313207,
+        "D_accuracy": 0.6859827721221613,
+        "D_r2_jaccard": 0.31835658843057396,
+        "D_r1_jaccard": 0.3856083419955977,
+        "E_jaccard": 0.5541974275812928,
+        "E_accuracy": 0.8305959643359925,
+        "E_r2_jaccard": 0.4762893979186696,
+        "E_r1_jaccard": 0.4496047836027281,
+        "mean_jaccard": 0.47845541357546023,
+        "mean_accuracy": 0.7780500363980563,
+        "r2_mean_jaccard": 0.3870991443910435,
+        "r1_mean_jaccard": 0.32890765082910894,
+        "fold_A_pstd": 0.02942639168118637,
+        "fold_A_sstd": 0.03603982229509313,
+        "mean_seconds": 4.201658791995475
+      },
+      "reason": "within SD and 20% runtime, same candidate and RF: smaller fold A seed pstd",
+      "co_primary_disagreement": {
+        "primary": {
+          "best": 0.47845541357546023,
+          "runner_up": 0.47568880333137215
+        },
+        "co_primary": {
+          "best": 0.7780500363980563,
+          "runner_up": 0.7857772396858412
+        },
+        "gap_within_fold_A_seed_spread": true,
+        "fold_A_pstd": 0.02942639168118637,
+        "shorter_receptive_field_agrees": true,
+        "resolved_by": "within SD and 20% runtime, same candidate and RF: smaller fold A seed pstd"
+      }
+    }
+  },
+  "test_seed": 42,
+  "P21": "UNKNOWN: frames for videos 17-22 are not on this host",
+  "validation_runs": 280,
+  "recipes": 40,
+  "source_table_sha256": "cf22f269a565d07d6828da04fe1969823c8bd1d5393382d46a876cd0530f5d91"
+}
