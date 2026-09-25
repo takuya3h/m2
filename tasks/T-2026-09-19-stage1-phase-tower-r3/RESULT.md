@@ -184,4 +184,13 @@ push は `.git/config` の `remote.origin.pushurl` が HTTPS で、askpass が�
 
 PR は **#195**（base `phase0`、Draft でない）。
 
-`make task-report` で配布台帳へ送る。結果は送出後にここへ追記する。
+`make task-report` で配布台帳へ送った。実測:
+
+    {"task_id": "T-2026-09-19-stage1-phase-tower-r3", "verdict": "pass",
+     "n_issuer_defects": 6,
+     "report_sha256": "7654b2a90d8ccf941b006d0cdc99ba00dc7c8e8baaf62003ec7e5388d4a97bd2",
+     "report_bytes": 13560, "replaced_blocks": 0}
+
+秘匿の検査は `make task-report` の内側で通り、他の経路は使っていない。
+`.sync-pause` は `.sync-pause.released` へ移して解除した（削除ではなく移動。
+実装は目印の存在だけを見る）。
