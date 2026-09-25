@@ -7,7 +7,7 @@ meta:
   chat_url: ""
   created_at: "2026-09-19T06:58:53Z"
   created_from:
-    runindex_commit: "REPLACE-BY-EXECUTOR-with-measured-runindex-commit"
+    runindex_commit: "4e97b3deae28e653948c19309d229c755587c42b"
     counts: {index: 0, experiments: 0, verdicts: 0}
   depends_on: [T-2026-09-19-stage1-phase-tower-r2, T-2026-09-19-symmetry-gate]
   amendments: []
@@ -30,7 +30,7 @@ inputs:
     entrypoints: ["scripts/train_phase_tower_r50.py", "scripts/run_stage1_ptower.py", "scripts/select_stage1_ptower.py"]
 contract:
   inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#folds, conventions#split, conventions#eval_recipe, conventions#sigma, conventions#symmetry]
-  conventions_rev: "REPLACE-BY-EXECUTOR-with-measured-rev"
+  conventions_rev: "4369cf5e7b82a3043b9b00b998911c4efb856f69"
   prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
   verbatim_forbidden: true
   allow_write: ["experiments/phase1/stage1_ptower_r3", "runindex/"]
@@ -60,8 +60,8 @@ prereg:
     - "fine-tune 後の frame accuracy が二周目の同じ折りを下回る折りが一つでもあれば停止して諮る"
     - "特徴抽出の要約値が二度で一致しない場合は停止"
     - "装置が他利用者に使われている場合は停止"
-  committed_at: null
-  commit: null
+  committed_at: "2026-09-22T16:33:50+00:00"
+  commit: "b663f214cf58458c478c13b69b74c236de468c75"
 outputs:
   expected_runs: 308
   must_have: [metrics.json, config.yaml, notes.md]
