@@ -132,4 +132,4 @@ D\*-ImageNet は **表現の違う塔として H3 の腕に使える**。差の�
 
 L1/L2 validate OK（L2-8 WARN 3 件は §6）、L3 preflight は実行前 11 PASS / 0 FAIL / 2 SKIP、報告後は 9 PASS / 1 FAIL / 3 SKIP（FAIL は復元したダミー GPU 保持プロセスによる P11、SKIP の追加は完了済みによる P13）、`forbidden-check` pass、`spec-check` pass、
 試験 6 failed / 618 passed（失敗 6 件は既存で本契約の未変更ファイル。合格 +9）、`make runindex` OK。
-**PR #196**（https://github.com/takuya3h/m2/pull/196、base phase0、`isDraft: false`、分岐 `feat/stage1-detector-towers-r2`）。報告の commit は `e8f7d42c`。`make task-report` は終了コード **2**（2026-09-27 UTC）。
+**PR #196**（https://github.com/takuya3h/m2/pull/196、base phase0、`isDraft: false`、分岐 `feat/stage1-detector-towers-r2`）。報告の commit は `e8f7d42c`。`make task-report` は 1 回目が終了コード 2（`source scripts/load_env.sh` をパイプに通してサブシェルで読み込んだ実行者の誤りで、資格情報が渡らなかった）、パイプ無しでやり直した 2 回目が終了コード **0**（2026-09-27 UTC）。
