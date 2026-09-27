@@ -109,14 +109,16 @@ RUN_TYPES: dict[str, RunType] = {
         ),
         RunType(
             key="det_tower_train",
-            label="検出塔の学習（COCO / ImageNet 初期化、12 epoch）",
-            hours=8.35 * _H,
-            source="T-2026-09-18-stage1-detector-towers（efros・A6000 2 枚・14 run の実測平均）",
+            label="検出塔の学習（COCO / ImageNet 初期化、収束基準・上限 36 epoch）",
+            hours=14.13 * _H,
+            source="T-2026-09-19-stage1-detector-towers-r2（efros・A6000 2 枚・2 本同時の 13 run の実測平均）",
             measured=True,
-            note="14 run の Training time の平均（7.816〜9.225 h、中央 8.031 h）。"
-            "**2 本同時に走らせた下での 1 run の壁時計**であり、14 x 8.35 / 2 枚 = 58.5 h が"
-            "実際の経過 58.7 h（9/17 22:26 -> 9/20 09:09 UTC）と一致する。折りにより "
-            "train の枚数が 9,657〜11,182 と違うため run ごとに幅がある",
+            note="停滞 4 epoch で lr を 1/10、再停滞 4 epoch で打ち切り（上限 36）の下で 15〜31 epoch "
+            "（COCO 15〜21、ImageNet 17〜31）で止まった 13 run の壁時計の平均（9.97〜20.52 h）。"
+            "**2 本同時に走らせた下での 1 run の壁時計**であり、13 x 14.13 / 2 本 = 91.9 h が"
+            "実際の経過 94.0 h（9/23 05:27 -> 9/27 03:24 UTC）と一致する。単独で回した 1 run"
+            "（29 epoch、12.37 h）は条件が違うため平均に含めない。一周目（12 epoch 固定）は "
+            "8.35 h だった",
         ),
         RunType(
             key="det_eval",
