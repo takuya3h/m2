@@ -267,6 +267,48 @@ GPU が空転したのは Task B 終了後の約 40 分だけである（待受�
 
 ## Task D — test と対照
 
-2026-09-27 03:2x UTC に `eval_stage1_dtower.sh all` を起動（val 14 回 → test 10 回、待受ポート 29731）。
+2026-09-27 03:26 UTC に `eval_stage1_dtower.sh all` を起動（val 14 回 → test 10 回、待受ポート 29731）。
+04:23:09 UTC に終了、失敗 0、約 57 分。
 
-結果は実測後に追記する。
+### D-1 test の回数（関門 G3、完了判定 f）
+
+| 項目 | 実測 |
+|---|---|
+| `test_access_ledger.csv` の test 行 | **10**（coco / imagenet × A〜E、seed 42） |
+| 重複する（塔, 折り） | 0 |
+| task_id 一致 | 10 / 10 |
+| `eval_test.json` | 10 個。確定塔以外（折り A の seed 123・456）には無い |
+
+陽性対照: 最終行を複製して 11 行にした複製では判定が落ちた。
+
+### D-2〜D-5 表
+
+`scripts/build_stage1_dtower_r2_table.py` が `results_table.md` と `results.json` を書く。要点は RESULT §4。
+標的群 AP は集合の定義が無いため UNKNOWN（利用者の決定 2026-09-25）。per-class AP 15 クラスを代わりに置いた。
+
+### D-6 所要時間表
+
+`tools/estimate_tier_cost.py` の `det_tower_train` を 8.35 h → **14.13 h**（2 本同時の 13 run の平均）に更新、
+`measured=True`。文書 `docs/stage0/B1_tier1_cost_estimate.md` の埋め込み 8 節を `--section` の出力で再生成し、
+`--check-doc` で **差 0**。更新前の文書を新しい表で照合すると差を検出した（exit 1）。試験 15 件 PASS。
+
+| 日数（K=2、装置 2 枚、24 h/日、縮退なし） | 更新前 | 更新後 |
+|---|---|---|
+| Stage 1 | 4.9 | **8.3** |
+| Stage 1 + Tier 1 | 77.8〜107.0 | **81.2〜110.4** |
+| 全体 | 85.4〜114.6 | **88.8〜118.0** |
+
+## Task E — 検証と報告
+
+| 検査 | 結果 |
+|---|---|
+| L1/L2 `make task-validate` | OK。L2-8 WARN 3 件（占位の分母、RESULT §6） |
+| L3 `make task-preflight`（実行前 2026-09-22） | 11 PASS / 0 FAIL / 2 SKIP（P3 決定性、P12 参照なし） |
+| L3（報告後 2026-09-27） | 9 PASS / 1 FAIL / 3 SKIP。FAIL は P11（復元したダミー GPU 保持 2 件）、追加の SKIP は P13（完了済み） |
+| `make forbidden-check TASK=… BASE=66855c5b` | pass、違反 0（引数なしでは phase0 の前進分を拾い fail） |
+| `make spec-check` | pass、規則 8 件 |
+| 試験 | 6 failed / 618 passed。失敗 6 件は既存（test_engines 1・test_fetch_task 1・test_research_logger 4、いずれも本契約の未変更ファイル）。前契約の記録は 6 failed / 609 passed で、合格 +9 は本契約の新規試験 |
+| `make runindex` | OK。`index.csv` で task_id 一致 **14 件** |
+| 証跡 | metrics.json / per_class_ap.json / config.yaml / notes.md 各 14 / 14、task_id 刻印 14 / 14 |
+
+GPU 保持のダミープロセス 2 件は 04:2x UTC に退避した原文から復元した（pid 483516 / 483518、各 40338 MiB）。

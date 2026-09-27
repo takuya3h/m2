@@ -1,0 +1,109 @@
+result_version: 3
+task_id: "T-2026-09-19-stage1-detector-towers-r2"
+status: pass
+host: "efros"
+branch: "feat/stage1-detector-towers-r2"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "一周目 14 run の val/mAP を TensorBoard の原値（float32）で読めた。収束規則は third_party/Relation-DETR/main.py の 211-215 行（生成）と 249 行（呼び出し）の各 1 箇所で塔を見る分岐が無く、構文木の試験 test_both_towers_take_the_same_path が生成 1・呼び出し 1 を確認した"
+  - id: G2
+    verdict: pass
+    note: "D*-ImageNet 折り A seed 42 で学習率の低下 epoch 15（低下直後 +1.96 mAP）、打ち切り epoch 28、最良 epoch 24、観測 29 epoch。上限 36 に達していないため諮る条件に当たらない。壁時計 12:22:13、単独実行 0.427 h/epoch"
+  - id: G3
+    verdict: pass
+    note: "test_access_ledger.csv に test 行が 10 行（coco/imagenet × A〜E、seed 42、重複 0、task_id 一致 10）。eval_test.json も 10 個で確定塔以外 0 件"
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 618
+
+deviations:
+  - type: spec_defect
+    note: "prereg.md §3 の対称性の表の列名を、契約が注入する conventions#symmetry の様式（条件／腕1／腕2／判定／理由）へ直した。起票時の D*-COCO／D*-ImageNet では L3 の P13 が表を見つけられず FAIL し、完了判定 h が満たせない。15 行の判定と理由は無改変で、腕の対応を表の直下に 1 行で置き、meta.amendments に記録した（利用者の決定 2026-09-22）"
+  - type: spec_defect
+    note: "完了判定 c の標的群 AP を UNKNOWN と報告した。クラス集合の定義が src/egosurgery/datasets/constants.py にも runindex にも Notion の写しにも無く、prereg が挙げる 2026-06-19 の事前登録も見当たらない。代わりに全 15 クラスの per-class AP と AP_rare / AP_common を表に置いた（利用者の決定 2026-09-25）"
+  - type: environment
+    note: "third_party/ が .gitignore:133 で全体追跡外のため、収束規則の実装本体（main.py と util/convergence.py）は PR に現れない。写しを experiments/baselines/stage1_dtower_r2/impl/ に置いた。experiments/**/*.py も .gitignore:39 で落ちるため拡張子を .txt にした"
+  - type: environment
+    note: "開始時の未追跡 3 件を利用者の指示で git stash push -u へ退避した（git stash pop で戻る）。GPU を保持していた自分のダミープロセス 2 件（各 40338 MiB）を実験前に停止し、全評価の後に退避した原文から復元した。他利用者の処理は 0 件"
+  - type: judgement
+    note: "make forbidden-check を TASK=<id> BASE=66855c5b（分岐点）で走らせて pass（違反 0）を得た。引数なしでは既定の基準 origin/phase0 が分岐後に進んでおり（→ 9d6366d3）、他契約が入れた context/conventions.md の変更を違反に数えて fail した。契約は統合を禁じるため基準を分岐点に置いた"
+  - type: judgement
+    note: "計算器 det_tower_train の値を 2 本同時で走った 13 run の平均 14.13 h とし、単独で走った Task B（12.37 h）を平均から除いた。行の定義が「2 本同時に走らせた下での 1 run の壁時計」であるため。Task B の条件は note に別記した"
+  - type: judgement
+    note: "実行者の誤り。Task B の完了を待つ待受に pgrep -f を使い、検索語が待受シェル自身の command line に載って永遠に一致した。学習は 04:45:47 に終了していたが 05:27 まで気づかず、GPU が約 40 分空転し、一度「走行中」と誤って報告した。pid の生存と done.txt を見る形へ替え、Task B の end.txt を 05:27 から学習終了の 04:45:47 へ訂正した"
+  - type: spec_defect
+    note: "完了判定 h の「L3 の P13 が PASS」は実行前の preflight（2026-09-22、11 PASS / 0 FAIL）で測った値を証拠にした。result.yaml に verdict を書いた後は P13 が完了済みとして SKIP になる（T-2026-09-19-p13-skip-and-enum の変更）ため、報告後に PASS を再現することはできない"
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "prereg §3 の対称性の表の列名を 条件／D*-COCO／D*-ImageNet／判定／理由 と書いたが、契約自身が inject_verbatim に入れた conventions#symmetry は「列名はこのとおりにする（L3 の P13 が列名で表を探す）」と 腕1／腕2 を定める。指示どおり実行すると P13 が表を見つけられず FAIL し、完了判定 h が満たせず実行に入れない"
+  - type: asserted_without_measuring
+    note: "prereg §5 と完了判定 c が「2026-06-19 に事前登録した標的群 AP」を求めるが、クラス集合の定義が repo のどこにも無い（constants.py は RARE_CLASSES と CONFUSABLE_CLASSES のみ、runindex に列なし、Notion の写しにも要求の文言だけ）。指示どおり実行すると存在しない集合の AP を書くことになり、捏造になる"
+  - type: self_contradiction
+    note: "meta.created_from.counts を占位の 0 のまま渡し、同時に governance.escalate_if に denominator_moved を置いた。起票時の分母を測っていないため L2-8 は現在値（1558 / 476 / 1506）との差を必ず「分母が動いています」と WARN し、実行者は毎回 escalate の判断を迫られる。実際には分母は動いていない"
+  - type: self_contradiction
+    note: "完了判定 h の空振り確認に「L3 の P13 が PASS」を置くが、同日に起票された T-2026-09-19-p13-skip-and-enum が完了済み契約の P13 を SKIP にしたため、報告を書いた後に P13 を PASS にする方法が無い。指示どおり報告後に検査すると SKIP が出て判定 h の確認が成立しない"
+  - type: check_does_not_check
+    note: "contract.allow_write が experiments/baselines/stage1_dtower_r2 と runindex/ だけを挙げるが、Task A-4 は third_party/Relation-DETR/main.py、D-6 は tools/estimate_tier_cost.py と docs/stage0/B1_tier1_cost_estimate.md、E は tests/ と scripts/ の変更を求める。今回は 5 つとも禁止領域の外だったため make forbidden-check は通ったが、宣言は求める作業を覆っていない"
+
+positive_controls:
+  - judgement: "判定 a 低下と打ち切りの規則が働く"
+    breaking_input: "同じ val mAP の並びで patience を 4 から 2 へ変える"
+    observed: "低下 epoch が 8 → 6、打ち切り epoch が 12 → 8 へ動いた（test_patience_changes_the_timing_of_the_decay）"
+  - judgement: "判定 a 両塔が同じ経路を通る"
+    breaking_input: "PlateauSchedule( の生成か observe( の呼び出しを 2 箇所にする"
+    observed: "UNKNOWN（壊した main.py は作っていない。試験は構文木で生成 1・呼び出し 1 を数えており、2 になれば落ちる）"
+  - judgement: "判定 b 折り表との照合が差を出せる"
+    breaking_input: "折り A の test 動画を 07 から 11 へ一本入れ替えた集合"
+    observed: "対称差 2（['07', '11']）。実物は 15 行すべて対称差 0"
+  - judgement: "判定 c・d 表が未測定を数値で埋めない"
+    breaking_input: "評価済みが 2 run しか無い時点で生成器を走らせる"
+    observed: "val 二周目 2 / 折り A の差 UNKNOWN と出た。14 run 揃った後は 14 / 0.0464"
+  - judgement: "判定 e 上限到達の数え方"
+    breaking_input: "12 epoch 上がり続ける並び（打ち切りが起きない）"
+    observed: "stopped_epoch と decayed_epoch が None のまま残った（test_improvement_resets_the_counter）。表はこの None を上限到達として数える"
+  - judgement: "判定 f・G3 test の評価が 10 回を超えていない"
+    breaking_input: "台帳の最終行を複製して test 行を 11 行にした複製"
+    observed: "11 行を数えて判定が落ちた。実物は 10 行"
+  - judgement: "判定 g --check-doc が差を検出する"
+    breaking_input: "更新前（分岐点 66855c5b）の文書を、更新後の所要時間表で照合する"
+    observed: "差を検出して exit 1。現行の文書は差 0 件"
+  - judgement: "判定 h P13 が対称性の表を検査している"
+    breaking_input: "起票時の列名（条件／D*-COCO／D*-ImageNet／判定／理由）の prereg"
+    observed: "P13 FAIL「対称性の表が無い（列名 条件／腕1／腕2／判定／理由 で探す）」。列名を直すと PASS（表 1 個 / 15 行）"
+  - judgement: "判定 i task_id の刻印を数えている"
+    breaking_input: "1 run の config.yaml から task_id を抜いた複製 14 件"
+    observed: "刻印を持つ run が 13/14 になった。実物は 14/14、runindex の index.csv でも 14 件"
+  - judgement: "判定 j PR が Draft でない"
+    breaking_input: "Draft で PR を作る"
+    observed: "UNKNOWN（Draft の PR は作っていない。作成後に gh pr view --json isDraft で false を確認する）"
+
+followups:
+  - "標的群（工程で出現が変わる術具クラスの集合）を src/egosurgery/datasets/constants.py に定義し、runindex に列を足す。本契約の 14 run は per-class AP を持つため、定義が決まれば GPU なしで再計算できる"
+  - "決定性の判定基準（backlog B-20）。同一 seed・同一処方で epoch 0 の val mAP が 0.014 ずれ、dcoco_foldB_seed42 の −2.05 mAP が再現幅の内か外か言えない。塔どうしの差 4.6 mAP を論じる前提として run 間の再現幅を測る契約が要る"
+  - "det_tower_w3 は一周目の 8.35 h を代理のまま置いている。W3 は塔全体を学習するため、収束基準の 14.13 h を代理にすべきか判断が要る（本契約の Task D-6 は det_tower_train だけを指示）"
+  - "起票の雛形に対称性の表（正本の列名）と標的群の定義への参照を入れる。.claude/skills/task/SKILL.md の forbidden-check の呼び方に TASK と BASE を書く"
+  - "一周目の run は捨てない。12 epoch 版と収束版の対照として T1 の脚注に残す（申し送り §8）。両版の差が測定限界以下であることがその脚注の内容になる"
+
+unknowns:
+  - "標的群 AP: クラス集合の定義が無いため未測定"
+  - "決定性: P3 deterministic_flags は SKIP。同一 seed で epoch 0 が 0.3249 対 0.3112 とずれた"
+  - "dcoco_foldB_seed42 の −2.05 mAP が学習の長さの効果か再現幅か"
+  - "判定 j の陽性対照（Draft の PR が検出されること）は測っていない"
+
+commits:
+  - "d2f8ca2e5673864c89e9f2bf24c43ff4c1dec980"
+  - "e2d6c9a4d401debf2d387cc1b4fcc4b6d6ad14e2"
+  - "dd273f33"
+  - "f2daffc3"
+  - "fd214d46"
+  - "563045c9"
+  - "f8ce187f"
+  - "4688a116"
+  - "57ee0666"

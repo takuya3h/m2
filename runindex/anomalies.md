@@ -8,7 +8,7 @@
 **明文化されていない**。以下はディレクトリ名の意味からの判断であり、
 規約に基づくものではない。**除外規約の明文化を推奨する。**
 
-除外 82 run / 全 1558 run（削除ではなくフラグ）
+除外 82 run / 全 1572 run（削除ではなくフラグ）
 
 | exclusion_reason | runs | 対象 |
 |---|---:|---|
@@ -37,7 +37,7 @@
 
 指標キーの接頭辞から split を確定できない run。**推測していない**。
 
-確定不能 44 run / 全 1558 run
+確定不能 44 run / 全 1572 run
 
 | split_provenance | runs |
 |---|---:|
@@ -97,11 +97,11 @@
 
 ## 3. host を確定できなかった run
 
-確定不能 88 run
+確定不能 102 run
 
 | host_raw | runs | 理由 |
 |---|---:|---|
-| `None` | 60 | server.txt 欠損かつ eval_recipe.server_name 無し |
+| `None` | 74 | server.txt 欠損かつ eval_recipe.server_name 無し |
 | `aolab` | 28 | philip / ilya の双方が返すコンテナ内 hostname のため一意に特定不能 |
 
 ## 4. per_class_ap.json のクラス体系が 2 種類ある
@@ -118,7 +118,7 @@
 | `phase` | `F1` | 861 | 9 クラスの工程別 **F1**（AP ではない） | `scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が `best.get("phase_per_class_f1", {})` を `log_per_class_ap()` に渡している |
 | `unknown` | `unknown` | 432 | 既知の 2 体系のいずれとも一致しない | 確定不能 |
 | `None` | `None` | 144 | `per_class_ap.json` が無い・空・パース失敗 | — |
-| `tool` | `AP` | 100 | 15 クラスの術具 AP | `per_class_coco_map` / `COCOeval.precision` 由来 |
+| `tool` | `AP` | 114 | 15 クラスの術具 AP | `per_class_coco_map` / `COCOeval.precision` 由来 |
 | `coco_map` | `AP` | 21 |  |  |
 
 ### metric を確定できなかった run: 432
@@ -578,10 +578,10 @@
 
 | NaN のクラス | runs | 該当群 |
 |---|---:|---|
-| `Retractor` | 93 | `experiments/baselines`, `experiments/baselines/_legacy_score_thr_0`, `experiments/baselines/_smoke_ddq`, `experiments/baselines/_smoke_e3`, `experiments/baselines/_smoke_v2_part3`, `experiments/baselines/stage1_dtower`, `experiments/hand2det_dev`, `experiments/transfer`, `transfer` |
+| `Retractor` | 99 | `experiments/baselines`, `experiments/baselines/_legacy_score_thr_0`, `experiments/baselines/_smoke_ddq`, `experiments/baselines/_smoke_e3`, `experiments/baselines/_smoke_v2_part3`, `experiments/baselines/stage1_dtower`, `experiments/baselines/stage1_dtower_r2`, `experiments/hand2det_dev`, `experiments/transfer`, `transfer` |
 | `Mouth Gag`, `Skewer` | 12 | `experiments/baselines/_wrong_split_8_2_3`, `experiments/phase0/_pre_redo_s0_smoke`, `experiments/phase0/_prior_no_eval_recipe` |
-| `Electric Cautery`, `Hook` | 2 | `experiments/baselines/stage1_dtower` |
-| `Electric Cautery`, `Mouth Gag` | 2 | `experiments/baselines/stage1_dtower` |
+| `Electric Cautery`, `Hook` | 4 | `experiments/baselines/stage1_dtower`, `experiments/baselines/stage1_dtower_r2` |
+| `Electric Cautery`, `Mouth Gag` | 4 | `experiments/baselines/stage1_dtower`, `experiments/baselines/stage1_dtower_r2` |
 
 ### 平均の取り方への含意
 
@@ -794,8 +794,8 @@ adapter を書けば貴重な追加ソースになる。
 |---|---:|
 | 複数 split の指標が同一 run に共存: ['...', '...']。split は null にした。metrics には <split>__<metric> として split 名を残したまま入れる。 | 426 |
 | per_class_ap.json のクラス集合が既知の 2 体系のいずれとも一致しない (5 クラス) -> metric を確定できないため unknown | 426 |
+| val と test の指標が共存する。primary（best 選択元）は val。test 側は metrics_by_split['...'] に保持している。 | 89 |
 | run 名が命名規約 <step>_<seq3>_<desc>_seed<N> に一致しない | 82 |
-| val と test の指標が共存する。primary（best 選択元）は val。test 側は metrics_by_split['...'] に保持している。 | 79 |
 | per_class_ap.json が存在しない | 75 |
 | per_class_ap.json が空 ({...}) | 61 |
 | host '...' は実サーバーを一意に特定できない。host は null にした。 | 28 |
@@ -809,12 +809,12 @@ adapter を書けば貴重な追加ソースになる。
 | run 名に seq (3 桁連番) が無い別系統の命名: bboxROI_seed<N>。step には description を充てた。 | 9 |
 | 同一 (group, step, description, split) 内で eval_recipe_id が 3 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #93cb3159 で分離した。 | 6 |
 | 同一 (group, step, description, split) 内で eval_recipe_id が 3 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #a63aecae で分離した。 | 6 |
+| run 名に seq (3 桁連番) が無い別系統の命名: dcoco_foldA_seed<N>。step には description を充てた。 | 6 |
+| run 名に seq (3 桁連番) が無い別系統の命名: dimagenet_foldA_seed<N>。step には description を充てた。 | 6 |
 | per_class_ap.json のクラス集合が既知の 2 体系のいずれとも一致しない (19 クラス) -> metric を確定できないため unknown | 6 |
 | ディレクトリ名の p0 が末尾 seed<N> と一致せず、command.sh にノイズ引数も無い。seed か否かを確定できないため seed_phase は null にした。 | 6 |
 | run 名に seq (3 桁連番) が無い別系統の命名: t1b_ca_seed<N>。step には description を充てた。 | 4 |
 | config.yaml のパースに失敗: ParserError | 3 |
-| run 名に seq (3 桁連番) が無い別系統の命名: dcoco_foldA_seed<N>。step には description を充てた。 | 3 |
-| run 名に seq (3 桁連番) が無い別系統の命名: dimagenet_foldA_seed<N>。step には description を充てた。 | 3 |
 | run 名に seq (3 桁連番) が無い別系統の命名: shuffleROI_seed<N>。step には description を充てた。 | 3 |
 | run 名に seq (3 桁連番) が無い別系統の命名: bboxROI_handROIbbox2_seed<N>。step には description を充てた。 | 3 |
 | run 名に seq (3 桁連番) が無い別系統の命名: handPresence_seed<N>。step には description を充てた。 | 3 |
@@ -838,14 +838,14 @@ adapter を書けば貴重な追加ソースになる。
 | run 名に seq (3 桁連番) が無い別系統の命名: t1b_clsbias_pe_seed<N>。step には description を充てた。 | 3 |
 | run 名に seq (3 桁連番) が無い別系統の命名: t1b_clsbias_seed<N>。step には description を充てた。 | 3 |
 | run 名に seq (3 桁連番) が無い別系統の命名: t1b_filmonly_seed<N>。step には description を充てた。 | 3 |
-| run 名に seq (3 桁連番) が無い別系統の命名: dcoco_foldB_seed<N>。step には description を充てた。 | 1 |
-| run 名に seq (3 桁連番) が無い別系統の命名: dcoco_foldC_seed<N>。step には description を充てた。 | 1 |
-| run 名に seq (3 桁連番) が無い別系統の命名: dcoco_foldD_seed<N>。step には description を充てた。 | 1 |
-| run 名に seq (3 桁連番) が無い別系統の命名: dcoco_foldE_seed<N>。step には description を充てた。 | 1 |
-| run 名に seq (3 桁連番) が無い別系統の命名: dimagenet_foldB_seed<N>。step には description を充てた。 | 1 |
-| run 名に seq (3 桁連番) が無い別系統の命名: dimagenet_foldC_seed<N>。step には description を充てた。 | 1 |
-| run 名に seq (3 桁連番) が無い別系統の命名: dimagenet_foldD_seed<N>。step には description を充てた。 | 1 |
-| run 名に seq (3 桁連番) が無い別系統の命名: dimagenet_foldE_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: dcoco_foldB_seed<N>。step には description を充てた。 | 2 |
+| run 名に seq (3 桁連番) が無い別系統の命名: dcoco_foldC_seed<N>。step には description を充てた。 | 2 |
+| run 名に seq (3 桁連番) が無い別系統の命名: dcoco_foldD_seed<N>。step には description を充てた。 | 2 |
+| run 名に seq (3 桁連番) が無い別系統の命名: dcoco_foldE_seed<N>。step には description を充てた。 | 2 |
+| run 名に seq (3 桁連番) が無い別系統の命名: dimagenet_foldB_seed<N>。step には description を充てた。 | 2 |
+| run 名に seq (3 桁連番) が無い別系統の命名: dimagenet_foldC_seed<N>。step には description を充てた。 | 2 |
+| run 名に seq (3 桁連番) が無い別系統の命名: dimagenet_foldD_seed<N>。step には description を充てた。 | 2 |
+| run 名に seq (3 桁連番) が無い別系統の命名: dimagenet_foldE_seed<N>。step には description を充てた。 | 2 |
 | run 名に seq (3 桁連番) が無い別系統の命名: hand2det_1ep_4ch_all_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: hand2det_1ep_4ch_film_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: hand2det_4ch_film_inj_seed<N>。step には description を充てた。 | 1 |
@@ -1598,13 +1598,13 @@ M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 �
 正本は「test split は未評価」と述べているが、その後 `--eval-test` が実装され、
 **test 側の数値を持つ run が実在する**。正本の記述はこの時点より前のもの。
 
-該当 79 run。全件の val/test 対応表は `anomalies/val_test_pairs.csv`。
+該当 89 run。全件の val/test 対応表は `anomalies/val_test_pairs.csv`。
 
 **index.csv の `metric.<name>` 列は primary(val) の値である。**
 test 側は `metric_test.<name>` 列に別出ししてある（`has_test` 列で絞り込める）。
 この分離が無いと「split 列が val 一色 → test 評価は存在しない」と誤読される。
 
-#### val / test の乖離（実測・全 79 run）
+#### val / test の乖離（実測・全 89 run）
 
 | 指標 | val 平均 | test 平均 | 差 (test - val) | n |
 |---|---:|---:|---:|---:|
@@ -1618,12 +1618,12 @@ test 側は `metric_test.<name>` 列に別出ししてある（`has_test` 列で
 | `accuracy` | 0.9406 | 0.8328 | -0.1078 | 69 |
 | `sticky_seg_f1_50` | 0.5422 | 0.4854 | -0.0568 | 3 |
 | `seg_f1_25` | 0.5093 | 0.4851 | -0.0242 | 69 |
-| `AP_rare` | 0.6478 | 0.6267 | -0.0212 | 10 |
+| `AP_rare` | 0.6440 | 0.6233 | -0.0207 | 20 |
 | `seg_f1_10` | 0.5179 | 0.4984 | -0.0195 | 69 |
-| `mAP` | 0.5100 | 0.5032 | -0.0068 | 10 |
-| `mAP_50` | 0.6779 | 0.6712 | -0.0067 | 10 |
-| `mAP_75` | 0.5602 | 0.5550 | -0.0052 | 10 |
-| `AP_common` | 0.4871 | 0.4837 | -0.0034 | 10 |
+| `mAP_50` | 0.6768 | 0.6674 | -0.0094 | 20 |
+| `mAP` | 0.5100 | 0.5014 | -0.0086 | 20 |
+| `mAP_75` | 0.5597 | 0.5516 | -0.0081 | 20 |
+| `AP_common` | 0.4879 | 0.4821 | -0.0058 | 20 |
 | `sticky_seg_f1_25` | 0.6029 | 0.6323 | +0.0293 | 3 |
 | `sticky_seg_f1_10` | 0.6106 | 0.6411 | +0.0304 | 3 |
 | `sticky_edit_score` | 50.5944 | 59.0140 | +8.4196 | 3 |
@@ -1640,6 +1640,16 @@ test 側は `metric_test.<name>` 列に別出ししてある（`has_test` 列で
 | `experiments/baselines/stage1_dtower/dimagenet_foldC_seed42` | 42 | False |
 | `experiments/baselines/stage1_dtower/dimagenet_foldD_seed42` | 42 | False |
 | `experiments/baselines/stage1_dtower/dimagenet_foldE_seed42` | 42 | False |
+| `experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42` | 42 | False |
+| `experiments/baselines/stage1_dtower_r2/dcoco_foldB_seed42` | 42 | False |
+| `experiments/baselines/stage1_dtower_r2/dcoco_foldC_seed42` | 42 | False |
+| `experiments/baselines/stage1_dtower_r2/dcoco_foldD_seed42` | 42 | False |
+| `experiments/baselines/stage1_dtower_r2/dcoco_foldE_seed42` | 42 | False |
+| `experiments/baselines/stage1_dtower_r2/dimagenet_foldA_seed42` | 42 | False |
+| `experiments/baselines/stage1_dtower_r2/dimagenet_foldB_seed42` | 42 | False |
+| `experiments/baselines/stage1_dtower_r2/dimagenet_foldC_seed42` | 42 | False |
+| `experiments/baselines/stage1_dtower_r2/dimagenet_foldD_seed42` | 42 | False |
+| `experiments/baselines/stage1_dtower_r2/dimagenet_foldE_seed42` | 42 | False |
 | `experiments/g2_followup_2026-07-29/s3/runs/base_seed123` | 123 | False |
 | `experiments/g2_followup_2026-07-29/s3/runs/base_seed42` | 42 | False |
 | `experiments/g2_followup_2026-07-29/s3/runs/base_seed456` | 456 | False |
@@ -1754,7 +1764,7 @@ run_id 単位の 3 分類（記録漏れ / 成果物消失 / 数値の食い違�
 
 ## 15. run_id の衝突
 
-`run_id`（ディレクトリ名）は **21 種が複数箇所で衝突**する。
+`run_id`（ディレクトリ名）は **35 種が複数箇所で衝突**する。
 スキーマは `runs/<run_id>.json` を指定しているが、そのままではファイルが
 上書きされるため、パス由来の `ledger_key` をファイル名に使い、
 `run_id` はフィールドとして保持した。
@@ -1776,6 +1786,20 @@ run_id 単位の 3 分類（記録漏れ / 成果物消失 / 数値の食い違�
 | `s3_001_phase_frame_seed42` | 3 |
 | `s3_002_phase_frame_seed123` | 3 |
 | `s3_003_phase_frame_seed456` | 3 |
+| `dcoco_foldA_seed123` | 2 |
+| `dcoco_foldA_seed42` | 2 |
+| `dcoco_foldA_seed456` | 2 |
+| `dcoco_foldB_seed42` | 2 |
+| `dcoco_foldC_seed42` | 2 |
+| `dcoco_foldD_seed42` | 2 |
+| `dcoco_foldE_seed42` | 2 |
+| `dimagenet_foldA_seed123` | 2 |
+| `dimagenet_foldA_seed42` | 2 |
+| `dimagenet_foldA_seed456` | 2 |
+| `dimagenet_foldB_seed42` | 2 |
+| `dimagenet_foldC_seed42` | 2 |
+| `dimagenet_foldD_seed42` | 2 |
+| `dimagenet_foldE_seed42` | 2 |
 | `s0_007_codetr_bbox_seed42` | 2 |
 | `s0_008_codetr_bbox_seed123` | 2 |
 | `s0_009_codetr_bbox_seed456` | 2 |
@@ -1862,7 +1886,7 @@ _FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
 **したがって `frozen_source_tag` はキャッシュのパスからのみ導き、
 `frozen_source.seed` と `notes.md` の記述は採用していない。**
 
-- 実験数: **476** / run 数 1558
+- 実験数: **476** / run 数 1572
 - `experiment_id` を付けられなかった run: 82
   （run 名が命名規約に一致しない run）
 - `eval_recipe_id` の食い違いで分離した base: 24
@@ -1966,7 +1990,7 @@ delta:
 
 | 分類 | run 数 |
 |---|---:|
-| `no_denominator_declared` | 1032 |
+| `no_denominator_declared` | 1046 |
 | `injection_from_config_yaml` | 512 |
 | `baseline` | 17 |
 | `denominator_unresolvable` | 12 |
@@ -2013,7 +2037,7 @@ seed ごとに 1 本ずつ対応させることができない。
 per-class の値は 573 個の JSON に分散していて横断分析に使えなかったため、
 `runindex/per_class.csv` に long 形式（1 行 = 1 run × 1 クラス）で 1 ファイル化した。
 
-- `per_class_kind=tool` : 100 run × 15 クラス（術具 **AP**）
+- `per_class_kind=tool` : 114 run × 15 クラス（術具 **AP**）
 - `per_class_kind=phase`: 861 run × 9 クラス（工程 **F1**）
 
 **この 2 つを混ぜて集計してはならない。** 指標の種類が違う（AP と F1）。
@@ -2372,7 +2396,7 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 
 | seed_agreement | run 数 | 意味 |
 |---|---:|---|
-| `agree` | 1444 | ディレクトリ名と他証拠が一致 |
+| `agree` | 1458 | ディレクトリ名と他証拠が一致 |
 | `unverified_no_other_evidence` | 32 | `command.sh` も `config.yaml` も無い（g2_* 群） |
 | `no_seed_in_dirname` | 82 | 命名規約外 |
 | **`conflict`** | **0** | **食い違い** |
@@ -2733,9 +2757,9 @@ Relation-DETR 経路の状況である。
 
 全件は `anomalies/within_vs_between_seed.csv`（1 行 = 1 実験 × 1 指標）。
 
-- 反復がある (実験 × 指標) の組: **226**
-- そのうち **within > between**: **64**
-  - 条件混在の交絡あり: 53
+- 反復がある (実験 × 指標) の組: **242**
+- そのうち **within > between**: **65**
+  - 条件混在の交絡あり: 54
   - 交絡なし（純粋に非決定性）: **11**
 
 **⚠️ 単純に「47 件で within が上回る」と読んではいけない。**

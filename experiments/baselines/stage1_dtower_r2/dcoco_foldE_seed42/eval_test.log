@@ -1,0 +1,124 @@
+The following values were not passed to `accelerate launch` and had defaults used instead:
+		More than one GPU was found, enabling multi-GPU training.
+		If this was unintended please pass in `--num_processes=1`.
+	`--num_machines` was set to a value of `1`
+	`--mixed_precision` was set to a value of `'no'`
+	`--dynamo_backend` was set to a value of `'no'`
+To avoid this warning pass in values for each of the problematic parameters or run `accelerate config`.
+[eval] EGO_ROOT=/home/ubuntu/slocal2/m2/data/raw/ego
+[eval] EGO_ANN_DIR=/home/ubuntu/slocal2/m2/data/annotations/egosurgery_tool_folds/E
+[eval] config=configs/train_config_egosurgery_seed42.py  checkpoint=/home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldE_seed42/work/best_ap.pth
+[eval] EGO_ROOT=/home/ubuntu/slocal2/m2/data/raw/ego
+[eval] EGO_ANN_DIR=/home/ubuntu/slocal2/m2/data/annotations/egosurgery_tool_folds/E
+[eval] config=configs/train_config_egosurgery_seed42.py  checkpoint=/home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldE_seed42/work/best_ap.pth
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/albumentations/core/validation.py:114: UserWarning: ShiftScaleRotate is a special case of Affine transform. Please use Affine transform instead.
+  original_init(self, **validated_kwargs)
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/albumentations/core/validation.py:114: UserWarning: ShiftScaleRotate is a special case of Affine transform. Please use Affine transform instead.
+  original_init(self, **validated_kwargs)
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:109: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:109: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:140: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:140: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:195: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:226: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:195: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:226: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+loading annotations into memory...
+loading annotations into memory...
+Done (t=0.22s)
+creating index...
+Done (t=0.22s)
+creating index...
+index created!
+index created!
+loading annotations into memory...
+loading annotations into memory...
+Done (t=0.14s)
+creating index...
+index created!
+Done (t=0.15s)
+creating index...
+index created!
+loading annotations into memory...
+loading annotations into memory...
+Done (t=0.05s)
+creating index...
+Done (t=0.03s)
+creating index...
+index created!
+index created!
+[eval] split=test -> /home/ubuntu/slocal2/m2/data/annotations/egosurgery_tool_folds/E/instances_test.json
+[eval] split=test -> /home/ubuntu/slocal2/m2/data/annotations/egosurgery_tool_folds/E/instances_test.json
+Using /home/ubuntu/.cache/torch_extensions/py311_cu118 as PyTorch extensions root...
+Using /home/ubuntu/.cache/torch_extensions/py311_cu118 as PyTorch extensions root...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /home/ubuntu/.cache/torch_extensions/py311_cu118/MultiScaleDeformableAttention/build.ninja...
+Building extension module MultiScaleDeformableAttention...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+ninja: no work to do.
+Loading extension module MultiScaleDeformableAttention...
+Loading extension module MultiScaleDeformableAttention...
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+Test: Total time: 0:01:43 (0.0976 s / it)
+Test: Total time: 0:01:43 (0.0979 s / it)
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/util/utils.py:93: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  storage = torch.ByteStorage.from_buffer(buffer)
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/util/utils.py:93: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  storage = torch.ByteStorage.from_buffer(buffer)
+
+[eval] COCO bbox stats:
+  AP    = 0.5938
+  AP50  = 0.7218
+  AP75  = 0.6367
+  AP_s  = 0.0000
+  AP_m  = 0.1760
+  AP_l  = 0.6068
+  AR1   = 0.6400
+  AR10  = 0.7467
+  AR100 = 0.7714
+  AR_s  = 0.0000
+  AR_m  = 0.4219
+  AR_l  = 0.7845
+
+[eval] => mAP=0.5938  mAP50=0.7218  (凍結源 目標 val/mAP≈0.7297 / mAP50≈0.854)
+
+[eval] per-class AP（弱い順）:
+  Retractor              AP=0.0016
+  Forceps                AP=0.1713
+  Gauze                  AP=0.3108
+  Hook                   AP=0.4789
+  Scissors               AP=0.5603
+  Bipolar Forceps        AP=0.5615
+  Syringe                AP=0.5739
+  Suction Cannula        AP=0.5894
+  Tweezers               AP=0.6678
+  Needle Holders         AP=0.6833
+  Mouth Gag              AP=0.8073
+  Electric Cautery       AP=0.8254
+  Raspatory              AP=0.8502
+  Scalpel                AP=0.8565
+  Skewer                 AP=0.9685
+[eval] stats -> /home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldE_seed42/eval_test.json
