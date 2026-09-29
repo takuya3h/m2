@@ -1,0 +1,87 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-09-19-stage1-phase-tower-r3"
+  kind: exp
+  title: "Stage 1 工程塔の三周目: 初期化の鎖と入力解像度を検出塔と揃え、P*-COCO と P*-ImageNet を確定する"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-09-19T06:58:53Z"
+  created_from:
+    runindex_commit: "4e97b3deae28e653948c19309d229c755587c42b"
+    counts: {index: 0, experiments: 0, verdicts: 0}
+  depends_on: [T-2026-09-19-stage1-phase-tower-r2, T-2026-09-19-symmetry-gate]
+  amendments: []
+intent:
+  question: "検出塔と同じ初期化の鎖（ImageNet 分類、COCO 検出の有無の二水準）と同じ入力解像度・全画面で工程塔の backbone を fine-tune したとき、二周目からどれだけ上がり、Stage ゼロの検出 backbone 由来の塔にどこまで近づくか。COCO 検出の事前学習は工程認識にも効くか"
+  decision_at_stake: "関門 G 一（工程側）の確定。Stage 二 の送り手 P 塔を D 塔と対称な二系統（COCO 由来、ImageNet 由来）で持てるか"
+  hypothesis: "全画面・高解像度で二周目より大きく上がる。COCO 検出を経た backbone は ImageNet 分類のみより高い。S 四 との差は二周目の半分以下に縮む"
+  related:
+    backlog: []
+inputs:
+  denominator:
+    ref: "exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42"
+    metric: "phase_jaccard"
+    require: {n_seeds: ">=3", sigma: present, split: val}
+  data:
+    dataset: "EgoSurgery-Phase, 15 videos (Tool subset). Extra 6 videos (17-22) added to train only if their frames exist on the host. Folds per conventions#folds"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt", "data/splits/ego_test.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/train_phase_tower_r50.py", "scripts/run_stage1_ptower.py", "scripts/select_stage1_ptower.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#folds, conventions#split, conventions#eval_recipe, conventions#sigma, conventions#symmetry]
+  conventions_rev: "4369cf5e7b82a3043b9b00b998911c4efb856f69"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/phase1/stage1_ptower_r3", "runindex/"]
+plan:
+  phases:
+    - {id: A, name: "prereg の commit。開始状態、装置、COCO 検出済み backbone の重みの実在、追加六動画の画像の有無、二周目の道具の再利用", gpu: false, est: "60m"}
+    - {id: B, name: "折り A で一本（COCO 系統、学習率高）。全画面高解像度の所要時間と記憶領域を実測。上限を超えるなら諮る", gpu: true, est: "3h"}
+    - {id: C, name: "backbone の fine-tune 二十八本（初期化二 × 学習率二 × 七）。val で最良 epoch、停滞で学習率を下げ再停滞で打ち切り", gpu: true, est: "40h"}
+    - {id: D, name: "特徴抽出と決定性。時間ヘッド十構成の再トーナメント", gpu: true, est: "4h"}
+    - {id: E, name: "系統ごとに選定。P 塔（二十一動画）。test を折りごとに一度。二周目と S 四 の並置。予測の当たり外れ", gpu: true, est: "2h"}
+    - {id: F, name: "検証と報告", gpu: false, est: "90m"}
+  gates:
+    - {id: G1, after: A, check: "COCO 検出済み backbone の重みが実在し、その要約値が D 塔の初期化に使うものと一致した。二周目の道具が本分岐にある", on_fail: stop}
+    - {id: G2, after: B, check: "一本の所要時間が三時間以内で、記憶領域が装置に収まる", on_fail: ask}
+    - {id: G3, after: E, check: "test の評価が確定塔についてのみ折りごとに一度", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, gpu_free, deterministic_flags]
+  resources: {server: "ilya", gpu: 2, est_hours: 50, runs: 308}
+prereg:
+  prediction: "全画面・高解像度により二周目（val 零点三八七）より五点以上上がる。COCO 系統は ImageNet 系統より高い。折り A の S 四 との差は二周目（零点一七七）の半分以下に縮む。学習率は高い方が勝つ。時間ヘッドの最良は候補 C とは限らない"
+  primary_endpoint: "候補と掃引点ごとの五折り平均の折り内 val macro Jaccard（折り A は三 seed の平均、他は一 seed）。co-primary は frame accuracy で同方向"
+  decision_rule: "系統（COCO 由来、ImageNet 由来）ごとに、学習率と時間ヘッドの候補・掃引点の組を、五折り平均の val macro Jaccard が最大で co-primary が同方向のものに決める。同点規則は二周目と同じ（所要時間二割以内なら構成の単純さ、次に受容野の短い方、次に折り A の seed 間 pstd）。P 塔（十五動画）を系統ごとに確定し、追加六動画の画像があれば同じ recipe で P 塔（二十一動画）も学習する。系統間の優劣は選定に使わない（両方を確定する）。test は確定塔について折りごとに一度だけ評価し、台帳に記録する"
+  stop_conditions:
+    - "COCO 検出済み backbone の重みが無い、または D 塔の初期化と要約値が一致しない場合は停止して諮る"
+    - "一本の fine-tune が三時間を超える、または記憶領域が装置に収まらない場合は諮る"
+    - "fine-tune 後の frame accuracy が二周目の同じ折りを下回る折りが一つでもあれば停止して諮る"
+    - "特徴抽出の要約値が二度で一致しない場合は停止"
+    - "装置が他利用者に使われている場合は停止"
+  committed_at: "2026-09-22T16:33:50+00:00"
+  commit: "b663f214cf58458c478c13b69b74c236de468c75"
+outputs:
+  expected_runs: 308
+  must_have: [metrics.json, config.yaml, notes.md]
+  destination: "experiments/phase1/stage1_ptower_r3/"
+  stamp: {task_id_in: config.yaml}
+  acceptance:
+    - "a: COCO 系統の backbone の初期値が、D 塔（COCO 初期化）が出発する重みと同じ要約値であることが記録されている"
+    - "b: 全 fine-tune が折りの train 動画だけで行われ、集合差 零。最良 epoch の選択は val のみ。学習率の低下と打ち切りの規則が全 run で同一で、検出塔の二周目と同じ"
+    - "c: 入力が全画面・短辺八百で、画面の残る割合が百パーセントであることが前処理の実装の行で示されている"
+    - "d: 特徴の要約値が二度で一致し、backbone を変えると変わる"
+    - "e: 系統 × 学習率 × 時間ヘッド十構成の表に、二周目の確定塔と一周目の確定塔の値が同じ折りで並置されている"
+    - "f: 系統ごとに選定が一意で、test を使っていない"
+    - "g: 確定塔の test が折りごとに一度だけ評価され台帳にある。P 塔（二十一動画）は画像の有無に応じて評価か UNKNOWN"
+    - "h: 折り A の確定塔の val が S 四 と並置され、差が二周目の差と比べられている"
+    - "i: 対称性の表が prereg にあり UNKNOWN が零件で、L3 の P十三 が PASS"
+    - "j: 全 run に task_id が刻まれ、runindex の収穫後に task_id で照合して本契約の全 run が現れる"
+    - "k: PR が Draft でなく存在し、base が phase0 で、分岐が feat/ で始まる"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [denominator_moved, "COCO 検出済み backbone の重みが無い", "一本が三時間を超える", "二周目を下回る折りがある"]

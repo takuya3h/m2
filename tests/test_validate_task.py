@@ -524,3 +524,66 @@ def test_l2_reads_seed_count_from_resolved_row():
 
     unsatisfied = _l2_checks(_exp_spec_with_denominator(REAL_DENOMINATOR_REF, {"n_seeds": ">=4"}))
     assert "L2-3" in unsatisfied, unsatisfied
+
+
+# ------------------------------------------- L1-10 ゲートの after と並び（2026-09-23）
+
+def _spec_with_gates(gates: list[dict]) -> dict:
+    """三フェーズの契約にゲートを差し込む。**フェーズ側は固定する。**"""
+    spec = _minimal_impl_spec()
+    spec["plan"]["phases"] = [
+        {"id": "A", "name": "a", "gpu": False},
+        {"id": "B", "name": "b", "gpu": False},
+        {"id": "C", "name": "c", "gpu": False},
+    ]
+    spec["plan"]["gates"] = gates
+    return spec
+
+
+def _gate_findings(gates: list[dict]):
+    spec = _spec_with_gates(gates)
+    return [f for f in validate_l1(spec, dir_name="T-2026-08-03-example-task") if f.check == "L1-10"]
+
+
+def test_gates_in_phase_order_pass():
+    """陰性対照。フェーズの並びと同じ順なら該当しない。"""
+    assert _gate_findings(
+        [
+            {"id": "G1", "after": "A", "check": "x", "on_fail": "stop"},
+            {"id": "G2", "after": "C", "check": "y", "on_fail": "stop"},
+        ]
+    ) == []
+
+
+def test_two_gates_after_the_same_phase_pass():
+    """同じフェーズの直後に二つ置くのは許す。**戻る場合だけを咎める。**"""
+    assert _gate_findings(
+        [
+            {"id": "G1", "after": "B", "check": "x", "on_fail": "stop"},
+            {"id": "G2", "after": "B", "check": "y", "on_fail": "stop"},
+        ]
+    ) == []
+
+
+def test_gates_out_of_phase_order_fail():
+    """陽性対照。順序を入れ替えた契約で落ちる。"""
+    findings = _gate_findings(
+        [
+            {"id": "G1", "after": "C", "check": "x", "on_fail": "stop"},
+            {"id": "G2", "after": "A", "check": "y", "on_fail": "stop"},
+        ]
+    )
+    assert len(findings) == 1
+    assert "同じ順ではありません" in findings[0].message
+
+
+def test_gate_after_unknown_phase_fails():
+    """陽性対照。実在しないフェーズを指すゲートはどこでも評価されない。"""
+    findings = _gate_findings([{"id": "G1", "after": "Z", "check": "x", "on_fail": "stop"}])
+    assert len(findings) == 1
+    assert "phases に無いフェーズ Z" in findings[0].message
+
+
+def test_contract_without_gates_is_not_checked():
+    """ゲートを置かない契約は対象外。**無いことを誤りにしない。**"""
+    assert _gate_findings([]) == []

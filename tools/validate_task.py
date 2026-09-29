@@ -152,6 +152,8 @@ def validate_l1(spec: dict, dir_name: str) -> list[Finding]:
                 Finding("L1-4", "inputs.frozen_source.ref", "run:<group>/<run_name> の形式が必要です")
             )
 
+    findings.extend(_check_gate_order(spec))
+
     if spec.get("contract", {}).get("verbatim_forbidden") is True:
         for path, value in _walk_strings(spec):
             if path in _ALLOW_NUMBER_PATHS or not path.startswith(_NUMBER_SCAN_PATHS):
@@ -165,6 +167,56 @@ def validate_l1(spec: dict, dir_name: str) -> list[Finding]:
                         f"数値リテラル {hit.group(0)} が直書きされています。参照で書いてください",
                     )
                 )
+    return findings
+
+
+def _check_gate_order(spec: dict) -> list[Finding]:
+    """L1-10. ゲートの `after` が実在し、ゲートの並びがフェーズの並びと同じ順である。
+
+    裏付け: `T-2026-09-19-p13-skip-and-enum` の issuer_defects #3。ゲート G1 が
+    `after=B` で、それを測るフェーズ C より前に置かれていた。**字面どおり評価すると
+    未測定の値を書くことになり** `governance.integrity` の `unknown_if_unmeasured`
+    と衝突する。実在しない `after` は、そのゲートがどこでも評価されないことを意味する。
+
+    同じフェーズの直後に複数のゲートを置くことは許す（並びが戻る場合だけを咎める）。
+    """
+    plan = spec.get("plan") or {}
+    phase_ids = [
+        str(phase.get("id"))
+        for phase in (plan.get("phases") or [])
+        if isinstance(phase, dict) and phase.get("id") is not None
+    ]
+    if not phase_ids:
+        return []
+
+    findings: list[Finding] = []
+    positions: list[tuple[int, int]] = []
+    for index, gate in enumerate(plan.get("gates") or []):
+        if not isinstance(gate, dict):
+            continue
+        after = str(gate.get("after", ""))
+        if after not in phase_ids:
+            findings.append(
+                Finding(
+                    "L1-10",
+                    f"plan.gates.{index}.after",
+                    f"phases に無いフェーズ {after or '(空)'} を指しています"
+                    f"（実在するのは {', '.join(phase_ids)}）。このゲートは評価されません",
+                )
+            )
+            continue
+        positions.append((index, phase_ids.index(after)))
+
+    for (_, previous), (index, current) in zip(positions, positions[1:]):
+        if current < previous:
+            findings.append(
+                Finding(
+                    "L1-10",
+                    f"plan.gates.{index}.after",
+                    "gates の並びが phases の並びと同じ順ではありません。"
+                    "前のゲートより前のフェーズを指しています",
+                )
+            )
     return findings
 
 

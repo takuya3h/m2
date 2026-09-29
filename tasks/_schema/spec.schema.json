@@ -151,6 +151,10 @@
         "hypothesis": {
           "type": "string"
         },
+        "proposal_card": {
+          "type": "string",
+          "description": "提案カードの経路（docs/proposals/YYYY-MM-DD-slug.md）。**kind が exp の契約では実質必須である**: 実行直前検査 P14 proposal_card_checked が、記載の有無・経路の実在・tools/check_proposal.py の通過を確かめ、いずれかを欠けば止める。schema で必須にしないのは、導入前に配布済みの契約と完了済みの契約を遡って落とさないためである（例外の一覧は context/conventions.md の proposal_gate 節「置き場と参照」）。"
+        },
         "related": {
           "type": "object",
           "additionalProperties": false,

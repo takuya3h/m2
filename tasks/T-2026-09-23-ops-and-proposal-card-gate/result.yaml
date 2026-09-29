@@ -1,0 +1,95 @@
+result_version: 3
+task_id: "T-2026-09-23-ops-and-proposal-card-gate"
+status: partial
+host: "m2"
+branch: "feat/ops-and-proposal-card-gate"
+pr: 194
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "作業ツリー清浄（未追跡の session digest 4 件は git stash push -u で退避）。HEAD は 66855c5b。変更前の数を実測: 規約のアンカー 11、check_spec の規則 8、L3 は P1〜P13、spec.yaml 127 件で schema 通過 127 件、試験 6 failed / 609 passed、旧様式 result.yaml の schema エラー 15 件"
+  - id: G2
+    verdict: pass
+    note: "P14 の 7 種を実測。impl と analysis で SKIP、完了済みで SKIP、例外二件で SKIP（理由に「導入前の契約」）、カード無しで FAIL、経路が無い場合に FAIL、検査を通らないカードで FAIL（検出 3 件を列挙）、通るカードで PASS。例外の照合が完全一致であることを一文字違い・接頭辞・部分列の 3 方向で確かめた。配線は一時契約で make task-preflight を端から端まで回して確認し、測定後に削除した"
+  - id: G3
+    verdict: pass
+    note: "新規則を実例へ当てた実測。proposal-gate（spec.yaml:29）・amp-compile-timing（spec.yaml:38）・p13-skip-and-enum（spec.yaml:31）の 3 件が FAIL。4 件目の stage1-detector-towers は起票時の宣言漏れを実行者が同じ spec へ追記して是正済みで、destination と runindex/ の双方を宣言しており PASS。これが「宣言を足した同じ spec で PASS」の実測にあたる。完了判定 e が言う 4 件 FAIL は達成できない"
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 644
+
+deviations:
+  - type: judgement
+    note: "提案カードの雛形を、付録 A の表だけでなく項目ごとの markdown 見出しとの併記にした（利用者の決定 2026-09-22）。check_proposal.py は見出しから番号を取るため、表だけでは埋めても通らない"
+  - type: judgement
+    note: "check_spec の新規則の適用範囲を Task D-1 の exp 限定から「exp は無条件、それ以外は allow_write を宣言している契約だけ」へ変えた（利用者の決定 2026-09-22）。全 kind 無条件では 127 契約中 123 件が該当し判別力を失う（実測）"
+  - type: judgement
+    note: "旧様式 result.yaml を書き直さず据え置いた（利用者の決定 2026-09-22）。版 3 が必須とする tests の 3 整数が旧報告に存在せず、推測で埋めれば捏造になるため。完了判定 h は未達"
+  - type: spec_defect
+    note: "完了判定 e の「実例 4 件で FAIL」は 3 件にとどまる。4 件目は起票時の宣言漏れが是正済みで、現行の本文では該当しない"
+  - type: judgement
+    note: "L1 の新しい検査の識別子を L1-10 とした。SPEC は番号を指定していないが、L1-9 は validate_spec_md が使用済みで、重ねると既存の該当と見分けられなくなる"
+  - type: judgement
+    note: "tests/test_symmetry_gate.py の「P13 が末尾である」ことを固定していた試験を、「P13 の位置が 13 番目である」ことの固定へ変えた。P14 を末尾に足したため。P1〜P13 の番号・順序・名前・挙動は変えていない"
+  - type: judgement
+    note: "meta.created_from.counts の 0/0/0 を実測値（index 1558 / experiments 476 / verdicts 1506）へ差し替えた。SPEC は差し替えを指示していないが、起票時の値が実測と一致しないため（規約の注意 1）"
+  - type: judgement
+    note: "規約の変更履歴の commit 欄は、最初の commit で (本契約) と置き、commit 後に実際の値へ差し替える二段で記録した。自分の commit 番号は事前に書けない"
+  - type: environment
+    note: "開始時に未追跡だった session digest 4 件は git stash push -u で退避した。開始前から在る未追跡を消していない（禁止事項 7）"
+  - type: judgement
+    note: "SPEC 禁止事項 5 は context/auto/* と tasks/inbox.md の再生成を禁じるが /task 手順書は投影の生成と taskindex-check / inbox-check の exit 0 を求める。契約と手順書が衝突するため諮り、再生成を選んだ（利用者の決定 2026-09-22）。forbidden-check は生成物 4 経路を除外したうえで違反 0 件"
+
+issuer_defects:
+  - type: self_contradiction
+    note: "付録 A は提案カードを表で示すが SPEC §3 Task B-1 は「16 項目の見出しと空欄」と書く。check_proposal.py は markdown の見出しから項目の番号を取るため、付録 A の表だけを置くと 16 件すべて missing_heading で落ち、表のセルを埋めても落ち続ける（実測）。完了判定 a の四列目「項目を全部埋めた文書で通る」が原理的に達成できない"
+  - type: asserted_without_measuring
+    note: "完了判定 e は「実例 4 件の spec で FAIL する」と書くが、Task D-1 の指示どおり exp 限定で実装すると該当は 0 件になる。実例 4 件のうち 3 件は kind が impl で対象外、残る 1 件は是正後の本文が destination と runindex/ の双方を宣言しているためである。4 件という数は現行の本文を測らずに書かれている"
+  - type: self_contradiction
+    note: "SPEC §4 禁止事項 5 は context/auto/* と tasks/inbox.md の再生成を禁じるが、/task 手順書は報告を書いたあとに make taskindex と make inbox で投影を生成し taskindex-check / inbox-check が exit 0 になることを求める。指示どおり禁止を守ると集約結果に inbox.d の行が載らず、次の契約の検査も失敗したままになる。禁止領域の検査器は生成物を除外する設計であり、この禁止は repo の仕組みと噛み合っていない"
+  - type: self_contradiction
+    note: "Task D-4 は旧様式 result.yaml を現行 schema の版 3 へ書き直すことを求めるが、result.schema.json 自身と /task 手順書は「過去の報告に版 2・版 3 の要件を遡って適用しない／過去を書き換えて通す方法は採らない」と明記している。加えて版 3 が必須とする tests の 3 整数は旧報告にも旧 RESULT.md にも存在せず、指示どおり書き直すと未測定の値を書くことになり governance.integrity の unknown_if_unmeasured と衝突する"
+  - type: asserted_without_measuring
+    note: "Task D-4 は旧版の退避先を result.v2.yaml と指定するが、当該ファイルの result_version は 1 である。指示どおりの名にすると版番号と名が食い違う記録が残る。据え置きの決定により顕在化しなかったが、名の指定そのものが対象を測らずに書かれている"
+
+positive_controls:
+  - judgement: "完了判定 a（雛形が不足で落ちる）"
+    breaking_input: "16 項目をすべて満たした文書（数値を求める #5 #6 #10 に数字を入れたもの）を check_proposal.py に掛ける。落ちなくなるはずである"
+    observed: "検出 0 件で exit 0。雛形そのものは検出 3 件（missing_number のみ、missing_heading は 0 件）で exit 1"
+  - judgement: "完了判定 d（P14 の例外が完全一致であること）"
+    breaking_input: "例外の task_id を一文字変えた T-2026-09-19-stage1-detector-towers-r3、例外を接頭辞に持つ T-2026-09-19-stage1-detector-towers-r2-followup、例外の部分列 stage1-detector-towers-r2 の 3 種。部分一致なら SKIP になるはずである"
+    observed: "3 種とも FAIL。SKIP になるのは完全一致の 2 件だけであった"
+  - judgement: "完了判定 e（allow_write_incomplete が空振りでないこと）"
+    breaking_input: "destination と runindex/ の双方を宣言した exp、宣言の無い impl、destination を親として覆う宣言。いずれも該当しないはずである"
+    observed: "3 種とも該当 0 件。宣言が destination の子（docs/stage0/ に対する destination docs/）の場合だけ該当 1 件になり、覆う向きが正しいことを確かめた"
+  - judgement: "完了判定 f（L1-10 が空振りでないこと）"
+    breaking_input: "正しい順（A → C）の契約と、同じフェーズの直後に二つ置いた契約。いずれも該当しないはずである"
+    observed: "いずれも該当 0 件。順序を入れ替えた契約・実在しないフェーズ Z・after が空の 3 種は該当 1 件。既存 127 契約での該当は 0 件であった"
+  - judgement: "完了判定 g（.gitignore が git status を常に空にしていないこと）"
+    breaking_input: ".sync-pause* に一致しない名 .sync-paus-control を作業ツリーに置く。未追跡として現れるはずである"
+    observed: "?? .sync-paus-control が git status に現れた。.sync-pause と .sync-pause.released はいずれも .gitignore:244 で捕捉され現れない"
+  - judgement: "完了判定 i（追加した試験が空振りでないこと）"
+    breaking_input: "雛形 docs/proposals/_template.md から見出し #12 を落とす。雛形と P14 に関わる試験が落ちるはずである"
+    observed: "4 件が落ちた（test_template_has_all_card_headings / test_template_itself_fails_because_items_are_empty / test_filled_card_passes / test_p14_passes_with_a_checked_card）。復元後は 21 件すべて通過"
+  - judgement: "完了判定 c（schema の型が効いていること）"
+    breaking_input: "intent.proposal_card に整数を入れる。落ちるはずである"
+    observed: "「3 is not of type 'string'」で落ちた。文字列なら通過し、既存 127 件も 127 件すべて通過する"
+
+followups:
+  - "例外の二件（T-2026-09-19-stage1-detector-towers-r2 / T-2026-09-19-stage1-phase-tower-r3）は配布台帳にあるが repo には未取得である。P14 の例外の経路は試験で確かめたが、実物の契約で SKIP になることは取得後に確かめること"
+  - "result.schema.json に、遡及の書き直しをどう扱うか（tests を任意にする版、または旧様式の退避の規約）を足す契約が要る。本契約では同ファイルは allow_write に無く触れていない"
+  - "tasks/_templates/result.yaml と .claude/skills/task/SKILL.md は issuer_defects の型を 4 種と書くが、result.schema.json は 6 種である（PR #192 で拡張済み）。写しが古い"
+  - "make spec-check を TASK 無しで回すと allow_write_incomplete が 15 件出る（exp 10 件 / impl 5 件）。過去の契約の是正は別契約で行うこと"
+  - "本契約の統合後、起票者は Stage 2 の提案カードを docs/proposals/ に置き、check_proposal.py を通してから exp を起票する（SPEC §8）"
+
+unknowns:
+  - "旧様式 result.yaml（T-2026-08-22-philip-hub-foundation）の tests の 3 整数は実測不能である。旧報告にも旧 RESULT.md にも試験の記録が一切無く、推測で埋めれば捏造になる。UNKNOWN のまま据え置いた"
+  - "完了判定 e の「実例 4 件で FAIL」は達成していない。4 件目が是正済みであることが理由で、規則の欠陥ではないが、契約の字面は充足していない"
+
+commits:
+  - "ae76c1b97446512424395e99dcf9e406ef3227a7"
+  - "4369cf5e"

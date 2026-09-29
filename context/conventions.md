@@ -145,6 +145,7 @@ activate を省略すると CUDA 拡張が読み込まれず、無言で CPU 実
 | 2026-09-16 | 6c95e4f | proposal_gate 節を追加。提案カード 14 項目・禁止語・設定/設計/問いの三水準・失敗時手順・引用規約・役割分離を定義。静的検査は tools/check_proposal.py、手順は docs/proposal-gate.md |
 | 2026-09-17 | 537c968c | folds 節を追加。動画単位 5-fold の折り表（折り A は公式分割に固定）、追加 6 動画の用途、選定と test の規律を定義。正本は docs/stage0/A1_fold_table.md |
 | 2026-09-19 | d6b37c79 | symmetry 節を追加。比較する腕の対称性の表の様式・必ず置く行・規則の読みを定義。proposal_gate のカードに #15 #16、issuer_cautions に注意 14 を追加。検査は L3 の P13 symmetry_table_complete、点検表は docs/symmetry-checklist.md |
+| 2026-09-23 | ae76c1b9 | proposal_gate に「置き場と参照」を追加。カードは docs/proposals/ に置き check_proposal.py を通す、候補は三案以上、批判会話は web 検索必須、exp は intent.proposal_card で参照。検査は L3 の P14 proposal_card_checked、雛形は docs/proposals/_template.md |
 <a id="issuer_cautions"></a>
 ## issuer_cautions
 
@@ -267,6 +268,15 @@ activate を省略すると CUDA 拡張が読み込まれず、無言で CPU 実
 | 起票 | 別会話 | 契約 | 手法の変更 |
 
 生成と批判を同じ会話で行わない。批判は「やらない理由」から書く。
+
+### 置き場と参照（2026-09-23 追加）
+
+- 提案カードは docs/proposals/YYYY-MM-DD-slug.md に置き、tools/check_proposal.py を通す
+- 生成会話は候補を三案以上出す
+- 批判会話は web 検索を必須とし、検索語と件数と見つかった否定例を却下表に書く
+- exp 契約は spec.yaml の intent.proposal_card にカードの経路を書く。L3 の P14 が、カードの実在と検査の通過を確かめる。
+  無い exp は起動できない
+- 導入前の契約（T-2026-09-19-stage1-detector-towers-r2、T-2026-09-19-stage1-phase-tower-r3）は例外。三件目を足すときは本節を改訂する
 
 ---
 

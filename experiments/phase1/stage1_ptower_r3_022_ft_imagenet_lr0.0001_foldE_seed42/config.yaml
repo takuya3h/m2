@@ -1,0 +1,71 @@
+task_id: T-2026-09-19-stage1-phase-tower-r3
+step: stage1_ptower_r3
+action: finetune
+fold: E
+seed: 42
+init: imagenet
+ft_lr: 0.0001
+ft_weight_decay: 0.0001
+ft_batch_size: 16
+ft_accum_steps: 4
+ft_epochs: 36
+ft_patience: 4
+ft_lr_decay: 0.1
+backbone_tag: coco_r50_ft_800
+checkpoint: null
+verify_determinism: false
+candidate: A
+layers: 6
+smoothing_weight: 0.0
+history: 30
+epochs: 50
+patience: 10
+lr: 0.0005
+weight_decay: 0.01
+warmup_epochs: 2
+maps: 64
+desc_suffix: ''
+device: cuda:0
+cache: data/processed/stage1_features/r3_imagenet_lr0.0001_foldE_seed42/all_gap.npz
+manifest_dir: data/processed/phase_manifest
+batch_size: 16
+workers: 4
+data:
+  videos:
+    test:
+    - '09'
+    - '10'
+    - '12'
+    val:
+    - '07'
+    - '15'
+    train:
+    - '01'
+    - '02'
+    - '03'
+    - '04'
+    - '05'
+    - '06'
+    - '08'
+    - '11'
+    - '13'
+    - '14'
+  train_frames: 11182
+  val_frames: 2131
+weights: ResNet50_Weights.IMAGENET1K_V1
+backbone_init_sha256: 4f6b5b6209465abc4f7d35d2518bfae94f7972f9c1ea094e183d7d7e492563fd
+transform_train: "Compose(\n    RandomHorizontalFlip(p=0.5)\n    Compose(\n    Resize(size=800,\
+  \ interpolation=bilinear, max_size=None, antialias=warn)\n    ToTensor()\n    Normalize(mean=[0.485,\
+  \ 0.456, 0.406], std=[0.229, 0.224, 0.225])\n)\n)"
+transform_eval: "Compose(\n    Resize(size=800, interpolation=bilinear, max_size=None,\
+  \ antialias=warn)\n    ToTensor()\n    Normalize(mean=[0.485, 0.456, 0.406], std=[0.229,\
+  \ 0.224, 0.225])\n)"
+short_side: 800
+crop: none
+frame_kept_fraction: 1.0
+effective_batch_size: 64
+freeze: stem (conv1, bn1); layer1-4 and fc trained
+selection_metric: phase_accuracy
+data_setting: P15
+source_sha256: 4ec5b57451f46d66473913361203e65ae1460222fd57860bd126e0d0ef2aeb5e
+contract_sha256: b7d070f56756ad4754ecd283c00c12e4d76640dfe5988f3938a4d7ea9382bb85

@@ -1,0 +1,174 @@
+result_version: 3
+task_id: T-2026-09-19-stage1-phase-tower-r3
+status: pass
+host: ilya
+branch: feat/stage1-phase-tower-r3
+pr: 195
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      COCO 検出済み backbone は実在し（data/external/weights/relation_detr_resnet50_800_1333_coco_1x.pth、
+      196,140,106 bytes、sha256 2d2c19a7…）、そこから取り出した backbone 265 要素の要約値
+      a755b3eb… が P*-COCO の初期値の要約値と完全一致した。ImageNet 系統は 4f6b5b62… で別値、
+      共通 265 key はすべて値が違う。D 側は sha256 を記録していなかったため、照合は config の
+      resume_from_checkpoint が指す同一ファイルと byte 数で行い、要約値は本契約で初めて測った。
+      二周目の道具は本分岐に在る（ただし契約が指す名前は一周目のもの）。
+  - id: G2
+    verdict: pass
+    note: >-
+      一本目（coco / 折り A / seed 42 / lr 3e-4）は壁時計 8,513 秒 = 2.36 時間で 3 時間以内、
+      記憶領域の最大は 27.06 GiB で装置の 47.37 GiB に収まった。上限 36 epoch には届かず、
+      最良 epoch 8 → 停滞 4 で epoch 12 に学習率 1/10 → さらに停滞 4 で epoch 16 に打ち切り。
+      起票前の外挿は 5.5 時間だったが上限に達しなかったため外れた。
+  - id: G3
+    verdict: pass
+    note: >-
+      test の評価は確定塔 2 つ × 5 折りでちょうど 10 回。台帳 test_access_<系統>_<折り>.json は
+      10 行で全て status=completed、確定塔以外の評価は 0 件。同じ折りを再度取ろうとすると
+      open("x") が FileExistsError を投げることを実際に確かめた。
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 669
+
+positive_controls:
+  - judgement: "a: COCO 系統の初期値が D*-COCO の出発点と同じ要約値である"
+    breaking_input: "ImageNet 初期化の backbone を同じ関数で要約すれば、別の値が出るはず"
+    observed: "4f6b5b62… が出た。a755b3eb… と異なる。共通する 265 key はすべて値が違う"
+  - judgement: "b: fine-tune が折りの train 動画だけで行われ集合差が零である"
+    breaking_input: "折り A の train に test の動画を一本混ぜれば、重なりが零でなくなるはず"
+    observed: "動画 04 を混ぜると train∩(val∪test) が 1 本になった。混ぜない全 5 折りでは 0 本"
+  - judgement: "c: 入力が全画面・短辺 800 で画面の残る割合が 100% である"
+    breaking_input: "二周目の前処理を同じ画像に当てれば、切り出しにより全画面でなくなるはず"
+    observed: "二周目の preset は (3,224,224) を返し crop_size=[224] を持つ。三周目は (3,800,1422) で縦横比を保ち Crop の行が無い"
+  - judgement: "d: 特徴が決定的である"
+    breaking_input: "backbone の重みを壊せば、同じ入力でも特徴の要約値が変わるはず"
+    observed: "conv1.weight を 0 にすると変わった（weight_change_detected: true）。壊さない二度は 5823279f… で一致"
+  - judgement: "f: 選定が val だけで決まり test を使っていない"
+    breaking_input: "test の値を持つ列を ±100 で表に混ぜれば、test を見ていれば選定が動くはず"
+    observed: "両系統とも選定が変わらなかった（COCO は C/8/0.3/30/1e-4、ImageNet は B/8/0.0/30/1e-4 のまま）"
+  - judgement: "g: test が確定塔について折りごとに一度だけ評価される"
+    breaking_input: "同じ折りの申告をもう一度取ろうとすれば、拒まれるはず"
+    observed: "test_access_coco_A.json に open(\"x\") すると FileExistsError が投げられた"
+  - judgement: "Task C の停止条件（二周目の同じ折りを下回れば止まる）が働いている"
+    breaking_input: "二周目の基準を下回る frame accuracy を渡せば、掃引を止める報せが返るはず"
+    observed: "折り A に 0.7000（基準 0.7149）を渡すと停止の報せが返った。0.7149 と 0.8759 では返らない。試験 tests/test_stage1_ptower_r3.py で固定した"
+  - judgement: "j: 本契約の全 run が runindex に task_id つきで現れる"
+    breaking_input: "task_id で引いて 336 本（+ 未完了 3 件）に満たなければ、刻印か収穫が漏れている"
+    observed: "339 行が出た。fine-tune 31（完了 28 + 未完了 3）・特徴抽出 28・時間ヘッド 280。行数の差ではなく task_id で照合した"
+
+deviations:
+  - type: environment
+    note: >-
+      prereg の既定 batch 64 が装置に収まらなかった（47.4 GiB で batch 64 と 32 が OOM、収まる最大は 16）。
+      利用者に諮り batch 16 + 勾配累積 4 で実効 batch 64 を保った（2026-09-23）。対称性の表の
+      「実効 batch 64」は書き換えずに済むが、BatchNorm の統計だけは 16 枚単位になる。解像度を下げる案は
+      SPEC の指示どおり出していない。
+  - type: judgement
+    note: >-
+      prereg の「一本が 3 時間以内」を 28 本中 12 本が超えた。上限 36 epoch を変えずに続行する判断を
+      利用者から得ている（2026-09-23）。G2 の一本目自体は 2.36 時間で条件を満たした。上限への張り付きは
+      0 件で、打ち切りが全 run で働いたため、上限を下げていれば収束前に切っていた可能性がある。
+  - type: judgement
+    note: >-
+      学習率の低下と打ち切りの規則が学習ループに直書きで単体試験できなかったため、純関数 plateau_action に
+      抽出し、Task B を 2 epoch の時点で止めて最初からやり直した。作業木の内容と実際に回った内容を
+      一致させるため。未完了の run stage1_ptower_r3_001 が metrics.json 空のまま残る。
+  - type: judgement
+    note: >-
+      SPEC の Task C-2 と prereg §8 の停止条件（各 run が二周目の同じ折りを下回れば停止）が掃引の駆動に
+      入っておらず実行者の目視に頼っていたため、純関数 below_round_two として機械に持たせ、掃引を 35 分の
+      時点で止めて作り直した。未完了の run が 2 件（_003_ と _004_）残る。基準は二周目の同じ折りの最良 run
+      という厳しい側の読みを取った。
+  - type: spec_defect
+    note: >-
+      prereg §6-1 は主指標と co-primary が同方向であることを前提に書かれ、食い違った場合を定めていない。
+      ImageNet 系統で実際に食い違い（J 0.4785 > 0.4757 だが acc 0.7781 < 0.7858）、共有の select() が停止した。
+      SPEC の Task E-1 に従って諮り、食い違いを記録したうえで同点規則へ進める判断を得た（2026-09-25）。
+      差は折り A の seed 間 SD 0.0294 の内側で、§6-2 の「受容野の短い方」を当てても同じ行になる。
+  - type: environment
+    note: >-
+      Task A-1 と A-7 の spec.yaml の差し替えが、実行者の操作でも本ホストの keeper でもない reset と
+      phase0 への往復（reflog に記録）によって失われ、占位のまま commit していた。Task F の P4 FAIL で
+      気づき差し替え直した。全 run が記録した contract_sha256 は差し替え前の b7d070f5… で揃っており
+      run どうしの整合は保たれているが、最終の spec.yaml とは食い違う。実行者の落ち度は差し替えが
+      commit に入ったことを再確認しなかった点である。
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: >-
+      SPEC §2 と inputs.code.entrypoints が二周目の道具を train_phase_tower_r50.py / run_stage1_ptower.py /
+      select_stage1_ptower.py と書くが、これらは一周目のものである。指示どおり train_phase_tower_r50.py を
+      改修すると、二周目が実際に使った stage1_ptower_r2.py 系とは別の経路を直すことになり、掃引も選定も
+      動かない。実物を読んで stage1_ptower_r3.py を新設し、二周目の道具は再現性のため変更しなかった。
+  - type: self_contradiction
+    note: >-
+      outputs.expected_runs は 308 だが、これは fine-tune 28 と時間ヘッド 280 の和で、SPEC の Task D-1 が
+      求める特徴抽出 28 本を数えていない。指示どおり掃引を実装すると run は 336 になり、expected_runs と
+      一致しない。完了判定 j を行数の一致で読むと必ず外れるため、task_id で照合する読みを採った。
+  - type: asserted_without_measuring
+    note: >-
+      prereg §2 が既定として置く batch 64 は装置に収まらない（47.4 GiB で batch 64 も 32 も OOM）。
+      起票時に記憶領域が測られていない。指示どおり batch 64 で起動すると一本目が即座に OOM で落ちる。
+      SPEC §2 が「所要時間と記憶領域は Task B で実測する」と書くため停止条件としては想定内だが、
+      既定値そのものが実行不能である点は残る。
+  - type: asserted_without_measuring
+    note: >-
+      SPEC §2 と prereg §3 が腕1 を「T-2026-09-19-stage1-detector-towers-r2 の処方」と呼ぶが、その契約は
+      存在しない。指示どおり参照しようとすると tasks/ に無く解決できない。実在するのは
+      tasks/T-2026-09-18-stage1-detector-towers で、参照先の中身（COCO 初期化の checkpoint）は一致していた
+      ため、そちらの記録を照合に使った。
+  - type: asserted_without_measuring
+    note: >-
+      SPEC §2 は「追加 6 動画（17〜22）の注釈は ilya に在る」と書くが、画像の有無は測られていない。
+      実測すると注釈は在るが画像が 0 件で、指示どおり P*-21 を学習しようとしても入力が無い。
+      SPEC §6 の想定どおり P*-21 は UNKNOWN とした。注釈の所在だけを確かめて画像を確かめなかった誤り。
+  - type: rule_read_narrowly
+    note: >-
+      prereg §6-1 の判定規則は主指標と co-primary が同方向であることを前提に書かれ、食い違った場合を
+      定めていない。ImageNet 系統で実際に食い違い、一周目から共有している select() が ValueError で停止した。
+      指示どおり規則を当てるだけでは系統が確定せず、諮るまで Task E が進まない。§6-2 の「受容野の短い方」の
+      段が実装に無いことも併せて分かった（この事例では同じ行になるため結果は変わらない）。
+
+followups:
+  - >-
+    解像度と初期化の寄与を分離する「二周目の解像度 × COCO 初期化」の 1 セルは、本契約の掃引集合に後から
+    足さない（禁止事項 5）。必要なら別契約で起票する。
+  - >-
+    P*-21 は追加 6 動画の画像が届き次第、同じ recipe で学習して確定できる。注釈は repo に在る。
+  - >-
+    prereg §6 の判定規則に「主指標と co-primary が食い違った場合」の段を足す。今回は諮って決めたが、
+    次の契約で同じ場所に当たる。§6-2 の「受容野の短い方」が実装に無いことも併せて直す。
+  - >-
+    ExperimentManager の source_sha256 は base モジュール（stage1_ptower.py）の要約値であり、実際の
+    entrypoint（stage1_ptower_r3.py）の内容を固定していない。run の証跡が entrypoint の版を指さない。
+  - >-
+    実行者の操作でない reset が作業木を戻した。原因は特定できていない。本ホストで並行する別の処理が
+    repo を触る可能性があるなら、契約の実行中は検出できるようにしたい。
+
+unknowns:
+  - >-
+    P*-21（二十一動画の塔）は UNKNOWN。追加 6 動画（17〜22）の画像がこのホストに無く、注釈だけでは
+    学習できない。探索して 0 件であることを実測した。
+  - >-
+    入力解像度の寄与と初期化の鎖の寄与は分離できない。本契約は 2 つを同時に変えた。P*-ImageNet と
+    二周目の差 +0.0914 が解像度側、P*-COCO と P*-ImageNet の差 +0.1773 が初期化側の目安になるが、
+    交互作用は測っていない。
+  - >-
+    spec.yaml の差し替えを失わせた reset を誰が行ったかは特定できていない。本ホストの keeper でないことは
+    記録から言えるが、それ以上は分からない。
+  - >-
+    L3 の SKIP 4 件（P2 cuda_ext_loaded / P3 deterministic_flags / P12 refs_resolved /
+    P14 proposal_card_checked）は合格ではなく実行されなかった項目である。P3 は backlog B-20 が未解決。
+
+commits:
+  - b663f214cf58458c478c13b69b74c236de468c75
+  - aa2f59b1d6d1be02ce86e3b09f0dbc611edab20a
+  - e7f651ee79384fbfcbb0fc3b34cf73d4e9d96085
+  - 0db182bdf9b4d39709b4b0dd548cee94f672f913
+  - aef6f252778cdace81f5683d8035cec377c289f9
+  - 00a2f555c8c084f1634f6c6d1d0970b406ff592e

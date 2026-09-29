@@ -1,0 +1,38 @@
+{
+  "init": "imagenet",
+  "fold": "A",
+  "seed": 42,
+  "source_run": "experiments/phase1/stage1_ptower_r3_131_P15_B_L8_w0.0_h30_foldA_imagenet_lr0.0001_seed42",
+  "metrics": {
+    "phase_accuracy": 0.8056271981242673,
+    "phase_macro_f1": 0.4670302757588095,
+    "phase_jaccard": 0.3586818409625675,
+    "phase_edit_score": 15.49073530121268,
+    "phase_seg_f1_10": 0.2029999235649316,
+    "phase_seg_f1_25": 0.1727065657723764,
+    "phase_seg_f1_50": 0.10178399449667508,
+    "phase_per_class_f1": {
+      "anesthesia": 0.5388601036269429,
+      "closure": 0.9233176838810642,
+      "design": 0.24615384615384614,
+      "disinfection": 0.0,
+      "dissection": 0.7424616905585764,
+      "dressing": 0.0,
+      "hemostasis": 0.6101083032490975,
+      "incision": 0.6115107913669064,
+      "irrigation": 0.06382978723404255
+    },
+    "phase_per_class_jaccard": {
+      "anesthesia": 0.36879432624113473,
+      "closure": 0.8575581395348837,
+      "design": 0.14035087719298245,
+      "disinfection": 0.0,
+      "dissection": 0.5904088050314465,
+      "dressing": 0.0,
+      "hemostasis": 0.43896103896103894,
+      "incision": 0.44041450777202074,
+      "irrigation": 0.03296703296703297
+    }
+  },
+  "checkpoint_sha256": "692f04a7c17e17b52b102ea03f0d169692383727e9349b99a2f24814746da4f8"
+}

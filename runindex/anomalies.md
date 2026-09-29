@@ -8,7 +8,7 @@
 **明文化されていない**。以下はディレクトリ名の意味からの判断であり、
 規約に基づくものではない。**除外規約の明文化を推奨する。**
 
-除外 82 run / 全 1572 run（削除ではなくフラグ）
+除外 82 run / 全 1911 run（削除ではなくフラグ）
 
 | exclusion_reason | runs | 対象 |
 |---|---:|---|
@@ -37,12 +37,12 @@
 
 指標キーの接頭辞から split を確定できない run。**推測していない**。
 
-確定不能 44 run / 全 1572 run
+確定不能 47 run / 全 1911 run
 
 | split_provenance | runs |
 |---|---:|
 | `not_determinable_no_eval_recipe` | 29 |
-| `not_determinable` | 15 |
+| `not_determinable` | 18 |
 
 残るのは **`metrics.json` が空 `{}` の run** である。指標が 1 つも無いため
 「どの split で評価したか」が原理的に存在しない。正本 §16.7 の既定（§13）も
@@ -65,6 +65,9 @@
 | `experiments/phase0/_failed_s3_weighted/s3_001_phase_frame_seed42` | True | `failed_run` |
 | `experiments/phase0/_failed_s3_weighted/s3_002_phase_frame_seed123` | True | `failed_run` |
 | `experiments/phase0/_failed_s3_weighted/s3_003_phase_frame_seed456` | True | `failed_run` |
+| `experiments/phase1/stage1_ptower_r3_001_ft_coco_lr0.0003_foldA_seed42` | False | `None` |
+| `experiments/phase1/stage1_ptower_r3_003_ft_coco_lr0.0001_foldA_seed123` | False | `None` |
+| `experiments/phase1/stage1_ptower_r3_004_ft_coco_lr0.0001_foldA_seed42` | False | `None` |
 | `transfer/hc_seed123` | False | `None` |
 | `transfer/hc_seed42` | False | `None` |
 | `transfer/hc_seed456` | False | `None` |
@@ -115,9 +118,9 @@
 
 | per_class_kind | per_class_metric | runs | 内容 | 根拠 |
 |---|---|---:|---|---|
-| `phase` | `F1` | 861 | 9 クラスの工程別 **F1**（AP ではない） | `scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が `best.get("phase_per_class_f1", {})` を `log_per_class_ap()` に渡している |
+| `phase` | `F1` | 1169 | 9 クラスの工程別 **F1**（AP ではない） | `scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が `best.get("phase_per_class_f1", {})` を `log_per_class_ap()` に渡している |
 | `unknown` | `unknown` | 432 | 既知の 2 体系のいずれとも一致しない | 確定不能 |
-| `None` | `None` | 144 | `per_class_ap.json` が無い・空・パース失敗 | — |
+| `None` | `None` | 175 | `per_class_ap.json` が無い・空・パース失敗 | — |
 | `tool` | `AP` | 114 | 15 クラスの術具 AP | `per_class_coco_map` / `COCOeval.precision` 由来 |
 | `coco_map` | `AP` | 21 |  |  |
 
@@ -794,15 +797,15 @@ adapter を書けば貴重な追加ソースになる。
 |---|---:|
 | 複数 split の指標が同一 run に共存: ['...', '...']。split は null にした。metrics には <split>__<metric> として split 名を残したまま入れる。 | 426 |
 | per_class_ap.json のクラス集合が既知の 2 体系のいずれとも一致しない (5 クラス) -> metric を確定できないため unknown | 426 |
+| per_class_ap.json が空 ({...}) | 92 |
 | val と test の指標が共存する。primary（best 選択元）は val。test 側は metrics_by_split['...'] に保持している。 | 89 |
 | run 名が命名規約 <step>_<seq3>_<desc>_seed<N> に一致しない | 82 |
 | per_class_ap.json が存在しない | 75 |
-| per_class_ap.json が空 ({...}) | 61 |
 | host '...' は実サーバーを一意に特定できない。host は null にした。 | 28 |
 | ディレクトリ名の p010 は seed ではない。command.sh が --tool-noise-rate を渡しており、ノイズ率 0.01 を指す。seed_phase には入れない。 | 24 |
 | ディレクトリ名の p020 は seed ではない。command.sh が --tool-noise-rate を渡しており、ノイズ率 0.02 を指す。seed_phase には入れない。 | 24 |
 | ディレクトリ名の p030 は seed ではない。command.sh が --tool-noise-rate を渡しており、ノイズ率 0.03 を指す。seed_phase には入れない。 | 24 |
-| metrics.json が空 ({...}) | 15 |
+| metrics.json が空 ({...}) | 18 |
 | config.yaml のパースに失敗: ConstructorError | 15 |
 | 同一 (group, step, description, split) 内で eval_recipe_id が 3 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #None で分離した。 | 12 |
 | run 名に seq (3 桁連番) が無い別系統の命名: base_seed<N>。step には description を充てた。 | 9 |
@@ -1002,7 +1005,7 @@ mAP 系の指標を持つのに術具 per-class（15 クラス）を持たない
 ## 12. experiments/README.md と実態の乖離
 
 README は step 識別子を **s0〜s9 / a1〜a7（17 種）** と規定しているが、
-実測は **275 種**。README に無い以下の系統が存在する。
+実測は **276 種**。README に無い以下の系統が存在する。
 
 | 系統 | step 識別子の種類 | run 合計 | 例 |
 |---|---:|---:|---|
@@ -1035,7 +1038,7 @@ M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 �
 これを split の既定値とし、`provenance.split = from_plan_section_16_7` を記録する。
 ただし **指標が 1 つもない run には適用しない**（評価されていないため null のまま）。
 
-既定を適用した run: 553
+既定を適用した run: 581
 
 | path | 指標キー |
 |---|---|
@@ -1501,6 +1504,34 @@ M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 �
 | `experiments/phase1/stage1_ptower_r2_023_features_lr3.3333333333333335e-05_foldB_seed42` | `elapsed_seconds`, `frames` |
 | `experiments/phase1/stage1_ptower_r2_024_features_lr3.3333333333333335e-05_foldE_seed42` | `elapsed_seconds`, `frames` |
 | `experiments/phase1/stage1_ptower_r2_025_features_lr3.3333333333333335e-05_foldD_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_028_features_coco_lr0.0001_foldA_seed123` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_029_features_coco_lr0.0001_foldA_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_030_features_coco_lr0.0001_foldA_seed456` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_031_features_coco_lr0.0001_foldB_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_032_features_coco_lr0.0001_foldC_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_033_features_coco_lr0.0001_foldD_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_034_features_coco_lr0.0001_foldE_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_034_features_coco_lr0.0003_foldA_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_035_features_coco_lr0.0003_foldA_seed456` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_036_features_coco_lr0.0003_foldA_seed123` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_037_features_coco_lr0.0003_foldB_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_038_features_coco_lr0.0003_foldC_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_039_features_coco_lr0.0003_foldD_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_040_features_coco_lr0.0003_foldE_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_041_features_imagenet_lr0.0001_foldA_seed123` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_042_features_imagenet_lr0.0001_foldA_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_043_features_imagenet_lr0.0001_foldB_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_044_features_imagenet_lr0.0001_foldA_seed456` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_045_features_imagenet_lr0.0001_foldC_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_046_features_imagenet_lr0.0001_foldD_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_047_features_imagenet_lr0.0003_foldA_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_048_features_imagenet_lr0.0001_foldE_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_049_features_imagenet_lr0.0003_foldA_seed456` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_050_features_imagenet_lr0.0003_foldA_seed123` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_051_features_imagenet_lr0.0003_foldB_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_052_features_imagenet_lr0.0003_foldC_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_053_features_imagenet_lr0.0003_foldD_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_r3_054_features_imagenet_lr0.0003_foldE_seed42` | `elapsed_seconds`, `frames` |
 | `experiments/selection_noise_2026-07-29/runs/base_seed123_rep1` | `rep` |
 | `experiments/selection_noise_2026-07-29/runs/base_seed123_rep2` | `rep` |
 | `experiments/selection_noise_2026-07-29/runs/base_seed123_rep3` | `rep` |
@@ -1886,7 +1917,7 @@ _FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
 **したがって `frozen_source_tag` はキャッシュのパスからのみ導き、
 `frozen_source.seed` と `notes.md` の記述は採用していない。**
 
-- 実験数: **476** / run 数 1572
+- 実験数: **718** / run 数 1911
 - `experiment_id` を付けられなかった run: 82
   （run 名が命名規約に一致しない run）
 - `eval_recipe_id` の食い違いで分離した base: 24
@@ -1990,7 +2021,7 @@ delta:
 
 | 分類 | run 数 |
 |---|---:|
-| `no_denominator_declared` | 1046 |
+| `no_denominator_declared` | 1385 |
 | `injection_from_config_yaml` | 512 |
 | `baseline` | 17 |
 | `denominator_unresolvable` | 12 |
@@ -2038,7 +2069,7 @@ per-class の値は 573 個の JSON に分散していて横断分析に使え�
 `runindex/per_class.csv` に long 形式（1 行 = 1 run × 1 クラス）で 1 ファイル化した。
 
 - `per_class_kind=tool` : 114 run × 15 クラス（術具 **AP**）
-- `per_class_kind=phase`: 861 run × 9 クラス（工程 **F1**）
+- `per_class_kind=phase`: 1169 run × 9 クラス（工程 **F1**）
 
 **この 2 つを混ぜて集計してはならない。** 指標の種類が違う（AP と F1）。
 ファイル名は両方とも `per_class_ap.json` なので、名前では判別できない。
@@ -2396,7 +2427,7 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 
 | seed_agreement | run 数 | 意味 |
 |---|---:|---|
-| `agree` | 1458 | ディレクトリ名と他証拠が一致 |
+| `agree` | 1797 | ディレクトリ名と他証拠が一致 |
 | `unverified_no_other_evidence` | 32 | `command.sh` も `config.yaml` も無い（g2_* 群） |
 | `no_seed_in_dirname` | 82 | 命名規約外 |
 | **`conflict`** | **0** | **食い違い** |
@@ -2649,7 +2680,7 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 
 ### 26.1 🔴 決定的になり得る学習スクリプトは **1 本も無い**
 
-監査 37 スクリプト / うち CUDA を使う **18** 本 / 
+監査 38 スクリプト / うち CUDA を使う **18** 本 / 
 `can_be_deterministic = True` は **1** 本。
 
 | 制御項目 | 設定している本数 |
@@ -2680,7 +2711,7 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 | `seed_everything` | 1 | `src/egosurgery/utils/seed.py` のヘルパ経由 |
 | `seed_everything+delegates_to_engines` | 3 | ヘルパを呼びつつ更に委譲もする |
 | `delegates_to_engines` | 1 | 自分では触らず trainer に委譲（`src/egosurgery/train.py`）|
-| `none` | 6 | seed を張らない |
+| `none` | 7 | seed を張らない |
 
 **`seed_everything()` は 6 項目を設定している**
 （`random` / `PYTHONHASHSEED` / `numpy` / `torch.manual_seed` /
