@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# 自動生成: この run を起動したコマンドの記録
+# 契約 T-2026-09-19-stage1-detector-towers-r2 / 塔 coco / 折り A / seed 456
+cd third_party/Relation-DETR
+export EGO_ANN_DIR=/home/ubuntu/slocal2/m2/data/annotations/egosurgery_tool_folds/A
+export RELDETR_OUTPUT_DIR=/home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed456/work
+export CUDA_HOME=/usr/local/cuda
+accelerate launch --num_processes 2 --main_process_port 29713 main.py \
+    --config-file configs/train_config_egosurgery_seed456.py --seed 456 --mixed-precision fp16 --convergence-schedule --max-epochs 36

@@ -1,0 +1,23 @@
+   41	    parser.add_argument("--seed", type=int, help="Random seed")
+   42	    # ---- 収束基準で学習の長さを決める（契約 T-2026-09-19-stage1-detector-towers-r2）----
+   43	    # **既定は off。** off のとき学習ループは一周目（12 epoch 固定・MultiStepLR([10])）と
+   44	    # 同一の経路を通る。on にしたときだけ val mAP の停滞で学習率を下げ、再停滞で打ち切る。
+   45	    parser.add_argument(
+   46	        "--convergence-schedule",
+   47	        action="store_true",
+   48	        help="val mAP が停滞したら学習率を下げ（一度だけ）、再び停滞したら打ち切る。"
+   49	        "有効にすると config の lr_scheduler は進めない",
+   50	    )
+   51	    parser.add_argument(
+   52	        "--plateau-patience", type=int, default=4,
+   53	        help="何 epoch 続けて val mAP の最良を更新しなければ動くか",
+   54	    )
+   55	    parser.add_argument(
+   56	        "--plateau-factor", type=float, default=0.1,
+   57	        help="停滞したときに学習率へ掛ける倍率",
+   58	    )
+   59	    parser.add_argument(
+   60	        "--max-epochs", type=int, default=None,
+   61	        help="epoch 数の上限。config の num_epochs を上書きする",
+   62	    )
+   63	    parser.add_argument("--use-deterministic-algorithms", action="store_true")

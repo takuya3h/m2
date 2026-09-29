@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（615 件）
+## 未処理（623 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -610,12 +610,18 @@
 - [ ] 2026-09-21 [cc] m2-sync.sh の修正は統合されるまで本ホストへ定着しない。keeper が毎ループ origin/phase0 から自己更新して戻すためで、指示どおりの順序では完了判定 O が原理的に達成できなかった。修正版を置き直して常駐処理と同じ呼び方で一度走らせて確かめた。統合前の配置を前提にする契約は同じ壁に当たる（scripts/sync/keeper.sh:49）
 - [ ] 2026-09-21 [cc] P9 spec_lint の separated_source が行継続を扱えず偽陽性を出す。source … && source … \ と次行の && make … はシェルでは一命令だが行で切って判定される。実際に一命令として実行し成功している。行継続を連結してから判定するかの判断が要る（tools/check_agent_docs.py の check_text）
 - [ ] 2026-09-21 [cc] 前契約で一時的に落ちていた test_loss_mask の 1 件は同期の完了で解消した。飛ばされていた 13 件も走るようになり 7 failed/581 passed/13 skipped から 6 failed/595 passed/0 skipped へ。飛ばし条件がディレクトリの存在だけを見る問題そのものは残っている（tests/test_loss_mask.py:70）
+- [ ] 2026-09-22 [cc] 🔴 **契約が自ら注入した規約の様式を外していた。** `prereg.md` §3 の対称性の表の列名が `条件 / D*-COCO / D*-ImageNet / 判定 / 理由` で、`contract.inject_verbatim` に入れている `conventions#symmetry` の「列名はこのとおりにする（L3 の P13 が列名で表を探す）」が定める `条件 / 腕1 / 腕2 / 判定 / 理由` と違い、P13 が表を見つけられず FAIL した。完了判定 h が「P13 が PASS」を空振りでない確認に置いているため実行できない。**利用者の決定で列名だけを正本へ直し、腕の対応を表の直下に 1 行で置いた**（15 行の判定と理由は無改変）。起票の雛形が対称性の表を持てば起きない（tools/preflight_task.py:78）
+- [ ] 2026-09-22 [cc] **L2-8「分母が動いています」は分母が動いた証拠ではなかった。** `meta.created_from.counts` が占位のまま全 0 で、現在値（index 1558 / experiments 476 / verdicts 1506）との差が WARN になる。起票時の値が記録されていない以上、**推測で埋めれば捏造になるため 0 のまま残した**。`governance.escalate_if` に `denominator_moved` があるので、占位のままの起票は毎回この関門に当たる。**起票時に実測値を入れる経路が要る**（tools/fetch_task.py）
+- [ ] 2026-09-22 [cc] **実装の本体が PR に現れない。** 収束基準は `third_party/Relation-DETR/{main.py,util/convergence.py}` に足したが `third_party/` は `.gitignore:133` で全体が追跡外で、一周目が新設した config も同じ扱いだった。完了判定 a の「実装の行を指して示す」は行番号でしか示せない。**写しを `experiments/baselines/stage1_dtower_r2/impl/` に置いた**が、`experiments/**/*.py` も `.gitignore:39` で落ちるため拡張子を `.txt` にする必要があった。学習器の改変を伴う契約では毎回この穴が開く（.gitignore:39,133）
+- [ ] 2026-09-22 [cc] **GPU の余裕はメモリの余裕であって計算の余裕ではない。** 利用者から並行化の可否を問われ、メモリは 13.1/49.1 GB しか使っていないが、一周目の実測で総処理量は 2 本同時で頭打ち（1 本 1.805 / 2 本 2.17 / 3 本 2.19 step/s）であることを示した。**1 GPU ずつに分ける案は実効 batch が 4 から 2 へ落ちて対称性の表を破るため採れない**。増やせるのは実質 1 本で全体の 1.5% のため、利用者は契約どおり B 単独を選んだ（scripts/stage1_dtower_queue.sh）
+- [ ] 2026-09-22 [cc] **同じ seed・同じ処方でも epoch 0 の val mAP が 0.0136 ずれた**（一周目 0.3249 / 二周目 0.3112）。決定性の引数は両周とも付けておらず、L3 の P3 `deterministic_flags` は「判定基準が未確定」で SKIP のままである。**曲線の差は 10 epoch を通じて ±0.02 に収まっており学習の異常ではない**が、塔どうしの差を 4.1 mAP の水準で論じる契約で run 間の再現幅が測られていないのは弱い。backlog B-20 が未解決（tools/preflight_task.py）
 - [ ] 2026-09-22 [cc] 提案カードの雛形は付録 A の表だけでは check_proposal を永久に通らない（項目を見出しで探すため）。見出しと表の併記にした（docs/proposals/_template.md）
 - [ ] 2026-09-22 [cc] allow_write 規則の範囲は変種 C（exp は無条件、他は宣言がある時だけ）。全 kind 無条件だと 127 契約中 123 件が該当し判別力を失う実測による（tools/check_spec.py）
 - [ ] 2026-09-22 [cc] 旧様式 result.yaml は書き直さず据え置き。版 3 が要求する tests の 3 整数が旧報告に無く推測で埋めれば捏造になる。schema 側の改訂が別契約で要る（tasks/T-2026-08-22-philip-hub-foundation/result.yaml）
 - [ ] 2026-09-22 [cc] 完了判定 e の「実例 4 件で FAIL」は 3 件どまり。4 件目は起票時の宣言漏れが実行中に是正済みで、現行の本文では該当しないのが正しい（tasks/T-2026-09-23-ops-and-proposal-card-gate/RESULT.md §5）
 - [ ] 2026-09-22 [cc] 例外の二件（stage1-detector-towers-r2 / stage1-phase-tower-r3）は repo に未取得。取得後に P14 が実物で SKIP になることを確かめる（tools/preflight_task.py の PRE_GATE_EXEMPT_TASKS）
 - [ ] 2026-09-22 [cc] result.yaml の雛形と /task 手順書が issuer_defects の型を 4 種と書くが schema は 6 種。写しが古い（tasks/_templates/result.yaml）
+- [ ] 2026-09-23 [cc] 🔴 **`pgrep -f` で完了を待つ待受が自分自身に一致して永遠に眠った**（実行者の誤り、契約とは無関係）。`run_in_background` の指令は `zsh -c '<本文>'` として動くため**検索語そのものがそのシェルの command line に載る**。`pgrep` の自己除外は自分の pid だけで親シェルを除かないため、`until ! pgrep -f "main_process_port 29701"` は常に一致を受け取り続けた。学習は 04:45:47 に正常終了していたのに 05:27 まで気づかず、**GPU が約 40 分空転し、さらに「走行中」という誤った報告を一度出した**。角括弧で逃がす方法は効くが同じ脆さを残すため、**pid の生存を `kill -0` で見る形へ入れ替えた**。そもそも学習自体を `run_in_background` で起こせば実行基盤が終了を追跡し待受は不要だった。プロセス名ではなく**仕事の事実（`done.txt`）を見る**のが本筋である
 - [ ] 2026-09-23 [cc] L2 の WARN（`created_from.counts` が起票時 0 のまま。index 0→1558 / experiments 0→476 / verdicts 0→1506）を承知のうえ続行する判断。counts は「起票時」の値なので実測値で上書きせず、差し替えたのは `runindex_commit` と `conventions_rev` だけにした（tasks/T-2026-09-19-stage1-phase-tower-r3/spec.yaml）
 - [ ] 2026-09-23 [cc] prereg の既定 batch 64 は装置に収まらない（47.4 GiB で batch 64 と 32 が OOM、収まる最大は 16）。**batch 16 + 勾配累積 4 で実効 batch 64 を保つ**。対称性の表の「実効 batch 64」を書き換えずに済み、BN の統計だけ 16 枚単位になる点を逸脱に書く（configs/stage1_ptower_r3.yaml）
 - [ ] 2026-09-23 [cc] 決定性設定下の実測は 20.9 frames/s で、上限 36 epoch まで回ると 1 本 5.5 時間。prereg の「3 時間以内」を超えるが**上限 36 を変えずに続行**する判断。解像度を下げる案は SPEC の指示どおり出していない（tasks/T-2026-09-19-stage1-phase-tower-r3/audit.md §3）
@@ -630,6 +636,8 @@
 - [ ] 2026-09-25 [cc] `ExperimentManager` の `source_sha256` は base モジュールの要約値で、実際の entrypoint の内容を固定していない。run の証跡が entrypoint の版を指さない（scripts/stage1_ptower.py の `evidence`）
 - [ ] 2026-09-25 [cc] 予測 4「学習率は高い方が勝つ」が外れ、両系統とも lr 1e-4 が選ばれた。backbone 単体の frame accuracy では 3e-4 が上でも、時間ヘッドを載せた 5 折り平均 val J では逆転する。送り手の強さをフレーム単位の指標だけで測らない（tasks/T-2026-09-19-stage1-phase-tower-r3/RESULT.md §8）
 - [ ] 2026-09-25 [cc] ilya の `.git/config` は `remote.origin.pushurl` が HTTPS で、VS Code の askpass が実体を失っており push が必ず失敗する（`fatal: cannot exec '…/askpass.sh'`）。fetch 側の SSH は通る。2026-09-22 の keeper の `auto-push失敗: feat/ops-and-proposal-card-gate` と同じ原因。本契約では SSH の URL を明示して送り、設定は変えていない（.git/config）
+- [ ] 2026-09-27 [cc] **`make forbidden-check` は引数なしだと分岐と無関係の変更を違反に数える。** 既定の基準 `origin/phase0` が分岐後に進んでいる（分岐点 66855c5b → 9d6366d3）ため、他契約が phase0 に入れた `context/conventions.md` の変更が「禁止されたファイル」として出た（`"task": null` で `allow_write` も読まれず違反 3,391 件）。契約は統合を禁じているので基準を動かせない。**`TASK=<id> BASE=<分岐点>` を付けると status pass、違反 0 件**。手順書 `.claude/skills/task/SKILL.md` は引数なしの形しか書いていないため、長い契約では毎回この誤検知に当たる（tools/check_forbidden.py）
+- [ ] 2026-09-27 [cc] **標的群 AP の集合が repo のどこにも定義されていない。** prereg は「2026-06-19 に事前登録した」と書くが、`constants.py` にあるのは `RARE_CLASSES` と `CONFUSABLE_CLASSES` だけで、runindex にも列が無く、Notion の写しにも要求の文言しか無い。利用者の決定で **UNKNOWN と報告し、全 15 クラスの per-class AP を並べる**。per-class AP は run ごとに残るため、集合が決まれば GPU なしで再計算できる。定義を `constants.py` に置くまで、この語を完了判定に使う契約は毎回ここで止まる（src/egosurgery/datasets/constants.py）
 
 ## 処理済み（1 件）
 

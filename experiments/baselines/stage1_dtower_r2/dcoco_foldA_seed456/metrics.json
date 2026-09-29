@@ -1,0 +1,53 @@
+{
+  "task_id": "T-2026-09-19-stage1-detector-towers-r2",
+  "tower": "D*-COCO",
+  "fold": "A",
+  "seed": 456,
+  "val": {
+    "mAP": 0.7189796811844756,
+    "mAP_50": 0.8462988000734897,
+    "mAP_75": 0.7729307882003225,
+    "AP_rare": 0.7716918107346347,
+    "AP_common": 0.7101943262594492,
+    "n_rare_classes": 2,
+    "n_common_classes": 12
+  },
+  "eval_recipe": {
+    "note": "NMS-free（conventions#eval_recipe）",
+    "score_thr": 0.0,
+    "max_per_img": 300,
+    "nms_pre": null,
+    "nms_iou": null
+  },
+  "training_time": "11:12:39",
+  "steps_per_epoch": 2405,
+  "epochs": 17,
+  "convergence": {
+    "patience": 4,
+    "factor": 0.1,
+    "best_epoch": 12,
+    "best_val_map": 0.7192779779434204,
+    "decayed_epoch": 11,
+    "stopped_epoch": 16,
+    "reached_max_epochs": false,
+    "val_map_per_epoch": [
+      0.6281766295433044,
+      0.6737093329429626,
+      0.68715900182724,
+      0.6784682869911194,
+      0.6975093483924866,
+      0.7082529664039612,
+      0.6898708343505859,
+      0.7092158198356628,
+      0.6993696689605713,
+      0.6844604015350342,
+      0.7031094431877136,
+      0.6991968154907227,
+      0.7192779779434204,
+      0.7164708971977234,
+      0.7174379229545593,
+      0.7183988094329834,
+      0.7156268954277039
+    ]
+  }
+}

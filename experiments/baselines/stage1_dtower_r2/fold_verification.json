@@ -1,0 +1,315 @@
+{
+  "rows": [
+    {
+      "fold": "A",
+      "split": "test",
+      "expected": [
+        "04",
+        "05",
+        "07"
+      ],
+      "observed": [
+        "04",
+        "05",
+        "07"
+      ],
+      "symmetric_difference": [],
+      "n_diff": 0
+    },
+    {
+      "fold": "A",
+      "split": "val",
+      "expected": [
+        "09",
+        "10"
+      ],
+      "observed": [
+        "09",
+        "10"
+      ],
+      "symmetric_difference": [],
+      "n_diff": 0
+    },
+    {
+      "fold": "A",
+      "split": "train",
+      "expected": [
+        "01",
+        "02",
+        "03",
+        "06",
+        "08",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ],
+      "observed": [
+        "01",
+        "02",
+        "03",
+        "06",
+        "08",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15"
+      ],
+      "symmetric_difference": [],
+      "n_diff": 0
+    },
+    {
+      "fold": "B",
+      "split": "test",
+      "expected": [
+        "01",
+        "03",
+        "14"
+      ],
+      "observed": [
+        "01",
+        "03",
+        "14"
+      ],
+      "symmetric_difference": [],
+      "n_diff": 0
+    },
+    {
+      "fold": "B",
+      "split": "val",
+      "expected": [
+        "02",
+        "08"
+      ],
+      "observed": [
+        "02",
+        "08"
+      ],
+      "symmetric_difference": [],
+      "n_diff": 0
+    },
+    {
+      "fold": "B",
+      "split": "train",
+      "expected": [
+        "04",
+        "05",
+        "06",
+        "07",
+        "09",
+        "10",
+        "11",
+        "12",
+        "13",
+        "15"
+      ],
+      "observed": [
+        "04",
+        "05",
+        "06",
+        "07",
+        "09",
+        "10",
+        "11",
+        "12",
+        "13",
+        "15"
+      ],
+      "symmetric_difference": [],
+      "n_diff": 0
+    },
+    {
+      "fold": "C",
+      "split": "test",
+      "expected": [
+        "02",
+        "08",
+        "11"
+      ],
+      "observed": [
+        "02",
+        "08",
+        "11"
+      ],
+      "symmetric_difference": [],
+      "n_diff": 0
+    },
+    {
+      "fold": "C",
+      "split": "val",
+      "expected": [
+        "06",
+        "12"
+      ],
+      "observed": [
+        "06",
+        "12"
+      ],
+      "symmetric_difference": [],
+      "n_diff": 0
+    },
+    {
+      "fold": "C",
+      "split": "train",
+      "expected": [
+        "01",
+        "03",
+        "04",
+        "05",
+        "07",
+        "09",
+        "10",
+        "13",
+        "14",
+        "15"
+      ],
+      "observed": [
+        "01",
+        "03",
+        "04",
+        "05",
+        "07",
+        "09",
+        "10",
+        "13",
+        "14",
+        "15"
+      ],
+      "symmetric_difference": [],
+      "n_diff": 0
+    },
+    {
+      "fold": "D",
+      "split": "test",
+      "expected": [
+        "06",
+        "13",
+        "15"
+      ],
+      "observed": [
+        "06",
+        "13",
+        "15"
+      ],
+      "symmetric_difference": [],
+      "n_diff": 0
+    },
+    {
+      "fold": "D",
+      "split": "val",
+      "expected": [
+        "04",
+        "05"
+      ],
+      "observed": [
+        "04",
+        "05"
+      ],
+      "symmetric_difference": [],
+      "n_diff": 0
+    },
+    {
+      "fold": "D",
+      "split": "train",
+      "expected": [
+        "01",
+        "02",
+        "03",
+        "07",
+        "08",
+        "09",
+        "10",
+        "11",
+        "12",
+        "14"
+      ],
+      "observed": [
+        "01",
+        "02",
+        "03",
+        "07",
+        "08",
+        "09",
+        "10",
+        "11",
+        "12",
+        "14"
+      ],
+      "symmetric_difference": [],
+      "n_diff": 0
+    },
+    {
+      "fold": "E",
+      "split": "test",
+      "expected": [
+        "09",
+        "10",
+        "12"
+      ],
+      "observed": [
+        "09",
+        "10",
+        "12"
+      ],
+      "symmetric_difference": [],
+      "n_diff": 0
+    },
+    {
+      "fold": "E",
+      "split": "val",
+      "expected": [
+        "07",
+        "15"
+      ],
+      "observed": [
+        "07",
+        "15"
+      ],
+      "symmetric_difference": [],
+      "n_diff": 0
+    },
+    {
+      "fold": "E",
+      "split": "train",
+      "expected": [
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "08",
+        "11",
+        "13",
+        "14"
+      ],
+      "observed": [
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "08",
+        "11",
+        "13",
+        "14"
+      ],
+      "symmetric_difference": [],
+      "n_diff": 0
+    }
+  ],
+  "negative_control": {
+    "case": "折り A の test 動画を 07 から 11 へ一本入れ替える",
+    "symmetric_difference": [
+      "07",
+      "11"
+    ],
+    "n_diff": 2,
+    "expected_n_diff": 2,
+    "passed": true
+  },
+  "n_failed": 0
+}

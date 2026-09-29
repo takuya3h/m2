@@ -1,0 +1,59 @@
+{
+  "task_id": "T-2026-09-19-stage1-detector-towers-r2",
+  "tower": "D*-COCO",
+  "fold": "A",
+  "seed": 42,
+  "val": {
+    "mAP": 0.7273450248398429,
+    "mAP_50": 0.851807431425236,
+    "mAP_75": 0.7751046134971612,
+    "AP_rare": 0.7405994088629804,
+    "AP_common": 0.7251359608359867,
+    "n_rare_classes": 2,
+    "n_common_classes": 12
+  },
+  "eval_recipe": {
+    "note": "NMS-free（conventions#eval_recipe）",
+    "score_thr": 0.0,
+    "max_per_img": 300,
+    "nms_pre": null,
+    "nms_iou": null
+  },
+  "training_time": "9:58:04",
+  "steps_per_epoch": 2405,
+  "epochs": 15,
+  "convergence": {
+    "patience": 4,
+    "factor": 0.1,
+    "best_epoch": 10,
+    "best_val_map": 0.7275004386901855,
+    "decayed_epoch": 9,
+    "stopped_epoch": 14,
+    "reached_max_epochs": false,
+    "val_map_per_epoch": [
+      0.590863049030304,
+      0.6632902026176453,
+      0.6976284980773926,
+      0.7118344902992249,
+      0.7076939344406128,
+      0.7128626704216003,
+      0.6967812776565552,
+      0.7111077308654785,
+      0.6983551383018494,
+      0.7080033421516418,
+      0.7275004386901855,
+      0.723357617855072,
+      0.7242535352706909,
+      0.7234817743301392,
+      0.72333824634552
+    ]
+  },
+  "test": {
+    "mAP": 0.5085214694781,
+    "mAP_50": 0.6809180175181313,
+    "mAP_75": 0.570586388782978,
+    "AP_rare": 0.6015092620644428,
+    "AP_common": 0.49421565523404715,
+    "note": "折りごとに一度だけ評価。test_access_ledger.csv に記録"
+  }
+}

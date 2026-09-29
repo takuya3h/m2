@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（543 件）
+## 申し送り（548 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -791,6 +791,14 @@
 - 完了済みの印は gates[].verdict に取ったが、最上位 status も同じ役目を果たしうる。契約 §5 の対照が status では通せないため verdict を採った。印を正本として文書化するか、result.yaml に完了の印を明示的に置くかを決めること
 - contract.allow_write の宣言漏れが本契約でも起きた（Task B が求める 3 ファイルのうち宣言は 1 つ）。起票の雛形で解くべきという申し送りが T-2026-09-18-stage1-detector-towers にも残っている
 
+### T-2026-09-19-stage1-detector-towers-r2
+
+- 標的群（工程で出現が変わる術具クラスの集合）を src/egosurgery/datasets/constants.py に定義し、runindex に列を足す。本契約の 14 run は per-class AP を持つため、定義が決まれば GPU なしで再計算できる
+- 決定性の判定基準（backlog B-20）。同一 seed・同一処方で epoch 0 の val mAP が 0.014 ずれ、dcoco_foldB_seed42 の −2.05 mAP が再現幅の内か外か言えない。塔どうしの差 4.6 mAP を論じる前提として run 間の再現幅を測る契約が要る
+- det_tower_w3 は一周目の 8.35 h を代理のまま置いている。W3 は塔全体を学習するため、収束基準の 14.13 h を代理にすべきか判断が要る（本契約の Task D-6 は det_tower_train だけを指示）
+- 起票の雛形に対称性の表（正本の列名）と標的群の定義への参照を入れる。.claude/skills/task/SKILL.md の forbidden-check の呼び方に TASK と BASE を書く
+- 一周目の run は捨てない。12 epoch 版と収束版の対照として T1 の脚注に残す（申し送り §8）。両版の差が測定限界以下であることがその脚注の内容になる
+
 ### T-2026-09-19-stage1-phase-tower-r2
 
 - 追加 6 動画 17-22 の画像を本ホストで使えるようにする別契約が要る。一周目（2026-09-18）に続き二周目でも 0 件だった。Stage 2 の主分母は P*-21 であり、これが無いと Stage 2 の送り手が揃わない。利用者が用意すると述べていた件の現状を確かめる必要がある。
@@ -866,7 +874,7 @@
 - make spec-check を TASK 無しで回すと allow_write_incomplete が 15 件出る（exp 10 件 / impl 5 件）。過去の契約の是正は別契約で行うこと
 - 本契約の統合後、起票者は Stage 2 の提案カードを docs/proposals/ に置き、check_proposal.py を通してから exp を起票する（SPEC §8）
 
-## 断定できなかった事項（351 件）
+## 断定できなかった事項（355 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1459,6 +1467,13 @@
 - S4 凍結工程塔の test 値。本契約では val のみを並置した。S4 の test は評価していない。
 - 確定塔の checkpoint からの再評価による S4 との厳密な比較。特徴も塔も異なるため、差の要因を特徴の出所と時間ヘッドに分解できていない。
 
+### T-2026-09-19-stage1-detector-towers-r2
+
+- 標的群 AP: クラス集合の定義が無いため未測定
+- 決定性: P3 deterministic_flags は SKIP。同一 seed で epoch 0 が 0.3249 対 0.3112 とずれた
+- dcoco_foldB_seed42 の −2.05 mAP が学習の長さの効果か再現幅か
+- 判定 j の陽性対照（Draft の PR が検出されること）は測っていない
+
 ### T-2026-09-19-stage1-phase-tower-r2
 
 - P*-21 のすべての値。追加 6 動画の画像が本ホストに無く、学習も抽出も test も行っていない。判定 d・f の P*-21 側は未測定である。
@@ -1516,18 +1531,18 @@
 - 旧様式 result.yaml（T-2026-08-22-philip-hub-foundation）の tests の 3 整数は実測不能である。旧報告にも旧 RESULT.md にも試験の記録が一切無く、推測で埋めれば捏造になる。UNKNOWN のまま据え置いた
 - 完了判定 e の「実例 4 件で FAIL」は達成していない。4 件目が是正済みであることが理由で、規則の欠陥ではないが、契約の字面は充足していない
 
-## 起票者の誤りの型（323 件）
+## 起票者の誤りの型（328 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 89 |
-| `asserted_without_measuring` | 132 |
-| `self_contradiction` | 82 |
+| `check_does_not_check` | 90 |
+| `asserted_without_measuring` | 134 |
+| `self_contradiction` | 84 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 0 |
 | `rule_read_narrowly` | 1 |
 
-合計 323 件（対を持つ契約 107 件から）
+合計 328 件（対を持つ契約 108 件から）
 

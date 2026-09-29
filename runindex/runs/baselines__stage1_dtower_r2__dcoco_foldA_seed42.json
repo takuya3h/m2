@@ -1,0 +1,163 @@
+{
+  "arm": "unknown",
+  "attributes": {
+    "epochs": 15,
+    "fold": "A",
+    "seed": 42,
+    "task_id": "T-2026-09-19-stage1-detector-towers-r2",
+    "tower": "D*-COCO",
+    "training_time": "9:58:04"
+  },
+  "command": "#!/usr/bin/env bash\n# 自動生成: この run を起動したコマンドの記録\n# 契約 T-2026-09-19-stage1-detector-towers-r2 / 塔 coco / 折り A / seed 42\ncd third_party/Relation-DETR\nexport EGO_ANN_DIR=/home/ubuntu/slocal2/m2/data/annotations/egosurgery_tool_folds/A\nexport RELDETR_OUTPUT_DIR=/home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work\nexport CUDA_HOME=/usr/local/cuda\naccelerate launch --num_processes 2 --main_process_port 29711 main.py \\\n    --config-file configs/train_config_egosurgery_seed42.py --seed 42 --mixed-precision fp16 --convergence-schedule --max-epochs 36\n",
+  "commit": "ref: refs/heads/feat/stage1-detector-towers-r2",
+  "config_path": "experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/config.yaml",
+  "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
+  "description": "dcoco_foldA",
+  "duplicate_bare_keys": [],
+  "epoch": null,
+  "eval_recipe": {
+    "max_per_img": 300,
+    "nms_iou": null,
+    "nms_pre": null,
+    "note": "NMS-free（conventions#eval_recipe）",
+    "score_thr": 0.0
+  },
+  "eval_recipe_id": null,
+  "evidence_completeness": "full",
+  "excluded": false,
+  "exclusion_reason": null,
+  "experiment_id": "baselines/dcoco_foldA/dcoco_foldA@val",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_seed_declared": null,
+  "frozen_source_tag": null,
+  "gpu": null,
+  "group": "baselines",
+  "harvest_warnings": [
+    "run 名に seq (3 桁連番) が無い別系統の命名: dcoco_foldA_seed42。step には description を充てた。",
+    "val と test の指標が共存する。primary（best 選択元）は val。test 側は metrics_by_split['test'] に保持している。"
+  ],
+  "host": null,
+  "host_raw": null,
+  "ledger_key": "baselines__stage1_dtower_r2__dcoco_foldA_seed42",
+  "metrics": {
+    "AP_common": 0.7251359608359867,
+    "AP_rare": 0.7405994088629804,
+    "mAP": 0.7273450248398429,
+    "mAP_50": 0.851807431425236,
+    "mAP_75": 0.7751046134971612,
+    "n_common_classes": 12,
+    "n_rare_classes": 2,
+    "steps_per_epoch": 2405
+  },
+  "metrics_by_split": {
+    "test": {
+      "AP_common": 0.49421565523404715,
+      "AP_rare": 0.6015092620644428,
+      "mAP": 0.5085214694781,
+      "mAP_50": 0.6809180175181313,
+      "mAP_75": 0.570586388782978
+    },
+    "unknown": {
+      "steps_per_epoch": 2405
+    },
+    "val": {
+      "AP_common": 0.7251359608359867,
+      "AP_rare": 0.7405994088629804,
+      "mAP": 0.7273450248398429,
+      "mAP_50": 0.851807431425236,
+      "mAP_75": 0.7751046134971612,
+      "n_common_classes": 12,
+      "n_rare_classes": 2
+    }
+  },
+  "metrics_nested": {
+    "convergence": {
+      "best_epoch": 10,
+      "best_val_map": 0.7275004386901855,
+      "decayed_epoch": 9,
+      "factor": 0.1,
+      "patience": 4,
+      "reached_max_epochs": false,
+      "stopped_epoch": 14,
+      "val_map_per_epoch": [
+        0.590863049030304,
+        0.6632902026176453,
+        0.6976284980773926,
+        0.7118344902992249,
+        0.7076939344406128,
+        0.7128626704216003,
+        0.6967812776565552,
+        0.7111077308654785,
+        0.6983551383018494,
+        0.7080033421516418,
+        0.7275004386901855,
+        0.723357617855072,
+        0.7242535352706909,
+        0.7234817743301392,
+        0.72333824634552
+      ]
+    },
+    "test.note": "折りごとに一度だけ評価。test_access_ledger.csv に記録"
+  },
+  "metrics_primary_split": "val",
+  "metrics_source": "metrics_json",
+  "notes": "# dcoco_foldA_seed42\n\n契約: T-2026-09-19-stage1-detector-towers-r2\n塔: D*-COCO / 折り: A / seed: 42\n\n## 結果\n\n- val  mAP=0.7273 / AP_rare=0.7406 / AP_common=0.7251\n- test mAP=0.5085 / AP_rare=0.6015 / AP_common=0.4942（**折りごとに一度だけ**評価）\n\n## 収束\n\n- 最良 epoch: 10（val mAP 0.727500）\n- 学習率の低下: epoch 9\n- 打ち切り: epoch 14\n- 観測した epoch 数: 15\n\n## 処方\n\n凍結源 `s0_016` と**学習の長さの決め方だけ**が違う（fp16・実効バッチ 4・lr 1e-4・`presets.detr` は同一。上限 36、停滞 4 でlr を 0.1 倍、再停滞で打ち切り）。\n違うのは折りの注釈と seed と初期化だけである。所要 9:58:04。\n\n## 評価\n\nNMS-free（`conventions#eval_recipe`）。`AP_rare` は Skewer と Syringe の平均\n（`src/egosurgery/datasets/constants.py:71`）。NaN のクラスは平均から除く。\n",
+  "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
+  "path": "experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42",
+  "per_class": {
+    "Bipolar Forceps": 0.7898794444235409,
+    "Electric Cautery": 0.9687812331789367,
+    "Forceps": 0.3561239611642256,
+    "Gauze": 0.26918130139973323,
+    "Hook": 0.6365377594169036,
+    "Mouth Gag": 0.799206245873842,
+    "Needle Holders": 0.845680655120691,
+    "Raspatory": 0.803773438439878,
+    "Retractor": null,
+    "Scalpel": 0.9005223036860694,
+    "Scissors": 0.7096800075689964,
+    "Skewer": 0.9443283539032797,
+    "Suction Cannula": 0.8348758163714836,
+    "Syringe": 0.5368704638226811,
+    "Tweezers": 0.7873893633875403
+  },
+  "per_class_kind": "tool",
+  "per_class_metric": "AP",
+  "per_class_nan_classes": [
+    "Retractor"
+  ],
+  "per_class_source": "experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/per_class_ap.json",
+  "per_class_valid_count": 14,
+  "provenance": {
+    "aux_token": "no_aux_token",
+    "commit": "from_git_commit_txt",
+    "epoch": "not_determinable",
+    "host": "not_determinable",
+    "name": "from_dirname_desc_seed_no_seq",
+    "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
+    "seed": "from_dirname_verified_by_command_sh_and_config_yaml_and_metrics_json",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "primary_val_by_training_script",
+    "step": "from_dirname"
+  },
+  "run_id": "dcoco_foldA_seed42",
+  "seed": 42,
+  "seed_agreement": "agree",
+  "seed_command": 42,
+  "seed_config": 42,
+  "seed_detector": null,
+  "seed_phase": null,
+  "seq": null,
+  "split": "val",
+  "step": "dcoco_foldA",
+  "subgroup": "stage1_dtower_r2",
+  "task_id": "T-2026-09-19-stage1-detector-towers-r2",
+  "wandb_run_id": null,
+  "wandb_run_url": null
+}

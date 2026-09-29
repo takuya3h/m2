@@ -1,0 +1,61 @@
+  205	    logger.info("Start training")
+  206	    start_time = time.perf_counter()
+  207	    highest_checkpoint = HighestCheckpoint(accelerator, model)
+  208	    # 収束基準で長さを決めるときだけ立てる。**ここに塔を見る分岐は無い。**
+  209	    # D*-COCO と D*-ImageNet は同じ 1 本の規則を通り、低下と打ち切りの epoch が
+  210	    # 違うのは入力（val mAP の並び）の違いだけである。
+  211	    schedule = (
+  212	        PlateauSchedule(patience=args.plateau_patience, factor=args.plateau_factor)
+  213	        if args.convergence_schedule
+  214	        else None
+  215	    )
+  216	    num_epochs = cfg.num_epochs if args.max_epochs is None else args.max_epochs
+  217	    for epoch in range(cfg.starting_epoch, num_epochs):
+  218	        train_one_epoch_acc(
+  219	            model=model,
+  220	            optimizer=optimizer,
+  221	            data_loader=train_loader,
+  222	            epoch=epoch,
+  223	            print_freq=cfg.print_freq,
+  224	            max_grad_norm=cfg.max_norm,
+  225	            accelerator=accelerator,
+  226	        )
+  227	        # 収束基準のときは config の lr_scheduler（MultiStepLR）を進めない。
+  228	        # 学習率を動かすのは下の停滞判定だけにする（二重に下がらないようにする）。
+  229	        if schedule is None:
+  230	            lr_scheduler.step()
+  231	
+  232	        # we save model and labels together
+  233	        accelerator.save_state(safe_serialization=False)
+  234	        logger.info("Start evaluation")
+  235	        coco_evaluator = evaluate_acc(model, test_loader, epoch, accelerator)
+  236	
+  237	        # save best results
+  238	        cur_ap, cur_ap50 = coco_evaluator.coco_eval["bbox"].stats[:2]
+  239	        highest_checkpoint.update(ap=cur_ap, ap50=cur_ap50)
+  240	
+  241	        if schedule is None:
+  242	            continue
+  243	        # **判断の入力を全過程で揃える。** 評価器は同期済みで各過程の stats は一致する
+  244	        # はずだが、一致しなければ片方だけが loop を抜けて DDP が停止する。
+  245	        # 主過程の値を配ってから判定する。
+  246	        shared_ap = broadcast(
+  247	            torch.tensor([float(cur_ap)], device=accelerator.device), from_process=0
+  248	        )
+  249	        action = schedule.observe(epoch, float(shared_ap.item()))
+  250	        if action == DECAY:
+  251	            for group in optimizer.param_groups:
+  252	                group["lr"] *= args.plateau_factor
+  253	            logger.info(
+  254	                f"[convergence] epoch {epoch}: val mAP が {args.plateau_patience} epoch "
+  255	                f"続けて最良を更新しなかったため学習率を {args.plateau_factor} 倍にした "
+  256	                f"(lr={[g['lr'] for g in optimizer.param_groups]})"
+  257	            )
+  258	        elif action == STOP:
+  259	            logger.info(
+  260	                f"[convergence] epoch {epoch}: 学習率の低下（epoch "
+  261	                f"{schedule.decayed_epoch}）の後も {args.plateau_patience} epoch "
+  262	                f"続けて最良を更新しなかったため打ち切る"
+  263	            )
+  264	        if accelerator.is_main_process:
+  265	            # **途中で落ちても読めるように毎 epoch 書く。** 報告の低下 epoch・

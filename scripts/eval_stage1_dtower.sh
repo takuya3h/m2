@@ -7,10 +7,19 @@
 #          **test は選定に使わない。** 学習の最良 epoch は既に折り内 val で決まっている。
 #
 # test の評価は毎回 test アクセス台帳へ 1 行追記する。回数はその行数で数える。
+#
+# 二周目（契約 T-2026-09-19-stage1-detector-towers-r2）は**行き先と契約と待受ポートだけ**を
+# 環境変数で差し替える。**既定は一周目のままである。**
+#   DTOWER_EXP_DIR  出力先（experiments/baselines/ の下）。既定 stage1_dtower
+#   DTOWER_TASK_ID  台帳と証跡に記す契約。既定 T-2026-09-18-stage1-detector-towers
+#   DTOWER_PORT     accelerate の待受ポート。既定 29701
 set -uo pipefail
 BODY="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-ROOT="$BODY/experiments/baselines/stage1_dtower"
-LEDGER="$BODY/experiments/baselines/stage1_dtower/test_access_ledger.csv"
+EXP_DIR="${DTOWER_EXP_DIR:-stage1_dtower}"
+TASK_ID="${DTOWER_TASK_ID:-T-2026-09-18-stage1-detector-towers}"
+PORT="${DTOWER_PORT:-29701}"
+ROOT="$BODY/experiments/baselines/$EXP_DIR"
+LEDGER="$ROOT/test_access_ledger.csv"
 MODE="${1:-all}"   # all | val | test
 
 if [ ! -f "$LEDGER" ]; then
@@ -37,7 +46,7 @@ eval_one() {   # tower fold seed split
     esac
     export EGO_ANN_DIR="$BODY/data/annotations/egosurgery_tool_folds/${fold}"
     echo "[eval] $run $split 開始 $(date -u '+%H:%M:%S')"
-    accelerate launch --num_processes 2 --main_process_port 29701 \
+    accelerate launch --num_processes 2 --main_process_port "$PORT" \
         "$BODY/scripts/eval_relation_detr_map.py" \
         --config "$cfg" --checkpoint "$ckpt" --split "$split" --out "$out" \
         > "$dir/eval_${split}.log" 2>&1
@@ -48,7 +57,7 @@ eval_one() {   # tower fold seed split
         sha=$(sha256sum "$ckpt" | cut -d' ' -f1)
         n=$(python -c "import json;print(len(json.load(open('$EGO_ANN_DIR/instances_test.json'))['images']))")
         m=$(python -c "import json;print(json.load(open('$out'))['AP'])")
-        echo "$(date -u '+%Y-%m-%dT%H:%M:%SZ'),T-2026-09-18-stage1-detector-towers,${tower},${fold},${seed},test,${sha},${n},${m},確定塔の最終評価（折りごとに一度）" >> "$LEDGER"
+        echo "$(date -u '+%Y-%m-%dT%H:%M:%SZ'),${TASK_ID},${tower},${fold},${seed},test,${sha},${n},${m},確定塔の最終評価（折りごとに一度）" >> "$LEDGER"
     fi
     echo "[eval] $run $split 完了 $(date -u '+%H:%M:%S')"
 }
