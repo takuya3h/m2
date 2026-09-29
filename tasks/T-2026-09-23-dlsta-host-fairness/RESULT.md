@@ -37,8 +37,8 @@
 | h | 装置間の接続 | NVLink は GPU1–2 と GPU3–4 の 2 対、GPU0 単独 | — |
 | i | 判定 | 上表 | 0.8469… は (0.5, 1]、0.0 は ≤ 0.5 |
 | j | env-facts.md | 追加 2 行、既存の減少 0 | 1 行消した控えとの差で検査が 1 件を返した |
-| k | 秘匿の検査 | 送出節を参照 | 送出節を参照 |
-| l | PR | 送出節を参照 | 分岐名 `feat/dlsta-host-fairness` |
+| k | 秘匿の検査 | 報告 8 ファイルで 0 件（`tools/report_task.py` の `scan_secrets`、件数のみ出力） | 形だけ合わせた囮で 1 件。値は出力していない |
+| l | PR | #197、base `phase0`、`isDraft: false` | 分岐名 `feat/dlsta-host-fairness`（`gh pr view` の `headRefName`） |
 
 ## 統計量（工程塔）
 
@@ -215,3 +215,18 @@ T-2026-09-19-symmetry-gate。実例は docs/symmetry-checklist.md。
 - `.sync-pause` は開始前から在ったため Task E Step 5 の解除は行っていない
 - RESULT.md は規約の原文注入のため目安 150 行を超える
 - UNKNOWN: ilya の driver・nvcc・torch・cuDNN、efros の cuDNN・lock、参照ホストの接続、参照の step 時間、`stage1_ptower_r2.py` の実行時点の要約値、検出塔の全測定値
+
+## 送出
+
+| 項目 | 値 |
+|---|---|
+| commit | `63b0150565bbc27ef31c98fe639b248e61083d10`（本体） |
+| PR | **#197**、base `phase0`、Draft でない、head `feat/dlsta-host-fairness` |
+| push | exit 0 |
+| `make forbidden-check BASE=HEAD` | exit 0、変更 11 件・違反 0 件（`origin/phase0` 基準では phase0 側の先行 3223 件を拾うため HEAD を基準にした） |
+| `make task-validate` | exit 0 |
+| 試験 | `pytest tests/`（`--cov` なし）644 passed / 6 failed。6 件は HEAD でも同名で落ちる既存の失敗 |
+| `make taskindex` / `make inbox` | 契約の禁止 4 により回していない |
+| `make task-report` | 本節の記入後に実行（結果は次の commit で追記） |
+| 抑止の目印 | 開始前から在ったため解除していない |
+
