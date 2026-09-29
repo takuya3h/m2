@@ -1,0 +1,74 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-09-23-dlsta-host-fairness"
+  kind: impl
+  title: "dlsta で既存の処方を短く回し、既存ホストの記録と比べて公平に使えるかを判定する"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-09-23T00:00:00Z"
+  created_from:
+    runindex_commit: "4e97b3deae28e653948c19309d229c755587c42b"
+    counts: {index: 1558, experiments: 476, verdicts: 1506}
+  depends_on: []
+  amendments: []
+intent:
+  question: "当該ホストで既存の処方を回したとき、既存ホストの記録との差は、当該ホスト内で種を変えたときの差より小さいか。検出塔の処方は処方を変えずに当該ホストの記憶容量に収まるか"
+  decision_at_stake: "当該ホストへ比較の腕や折りを割り当ててよいか。割り当てるなら、対になる腕を同じホストに置く必要があるか"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints:
+      - "scripts/train_phase_tower_r50.py"
+      - "tools/estimate_tier_cost.py"
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#folds, conventions#symmetry]
+  conventions_rev: "4369cf5e7b82a3043b9b00b998911c4efb856f69"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "参照の特定と環境の照合", gpu: false, est: "60m"}
+    - {id: B, name: "評価の再現", gpu: true, est: "40m"}
+    - {id: C, name: "短い学習の比較", gpu: true, est: "120m"}
+    - {id: D, name: "記憶量と処理量", gpu: true, est: "40m"}
+    - {id: E, name: "判定と報告", gpu: false, est: "50m"}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: ["RESULT.md", "docs/stage0/D1_dlsta_host_fairness.md"]
+  destination: "docs/stage0/"
+  acceptance:
+    - "参照とする記録を run 名・checkpoint・処方・記録されたホストとともに特定している"
+    - "版の比較表を当該ホストと参照ホストの記録で作り、差分を列挙している"
+    - "データ・折りの注釈・凍結源の要約値を記録と照合している"
+    - "同じ checkpoint の評価を当該ホストで二回行い、記録との差と二回の差を出している"
+    - "短い学習でホスト間の差・種の差・再実行の差を同じ定義で出し、比 r を計算している"
+    - "各処方のピーク記憶量を処方を変えずに実測し、収まらない場合はそう書いている"
+    - "定常状態の step 時間を当該ホストで測り、記録と比べている"
+    - "装置間の接続の形を記録している"
+    - "事前に固定した区分で判定し、区分から導かれる割り当ての帰結を書いている"
+    - "env-facts.md に当該ホストの装置の行を足し、既存の行が集合差で一件も減っていない"
+    - "秘匿の検査を自分で行い、検査そのものが値を出力していないことと陽性対照の結果を示している"
+    - "PR が Draft でなく存在し、base が phase0 で、分岐名が feat で始まることを記録している"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "参照とする checkpoint が当該ホストに無い場合"
+    - "参照の run に一歩ごとの損失の記録が無い場合"
+    - "記録から処方を一意に復元できない場合"
+    - "実行環境が壊れており make が動かない場合"
+    - "実行基盤が読み取りや書き込みを拒む場合"

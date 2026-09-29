@@ -1,0 +1,3 @@
+- [ ] 2026-09-26 [cc] 工程塔の参照 run に一歩ごとの損失が無く（epoch 平均のみ）停止して諮った。利用者の判断で epoch 平均損失 12 点を軌跡として代替した（scripts/stage1_ptower_r2.py:155）
+- [ ] 2026-09-26 [cc] dlsta に Relation-DETR の学習コードと設定が無く検出塔の B・C・D は実行不能。利用者の判断で取り寄せず「判定不能」とした。配備は後続契約（third_party/Relation-DETR）
+- [ ] 2026-09-26 [cc] 工程塔スクリプトは出力先が experiments/ 固定で W&B 必須。利用者の判断でコードを変えず repo 外の写しから WANDB_MODE=offline で回した。出力先を引数で変えられるようにするかは未決（scripts/stage1_ptower.py:110）

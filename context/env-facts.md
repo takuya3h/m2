@@ -35,6 +35,10 @@
 - `jsonschema` は環境の作り直し後に追加導入が要る
 - **`libGL.so.1`** は `libgl1` の導入で解消（**7 台で完了**。efros は 2026-09-17、**dlsta は 2026-09-20**）。**`sudo` はパスワードを要求する**。**導入されたかは申告ではなく実測で確かめる**（`find` / `ldconfig -p` / `dpkg -l` / `apt` の履歴。dlsta では一度目の完了申告時に 4 系統とも未導入であった）
 
+## 装置
+
+- **dlsta** — **RTX A5000 × 5**（各 24564 MiB）、driver 595.84、torch 2.1.2+cu118、cuDNN 8700、nvcc 12.9。**NVLink は GPU1–GPU2 と GPU3–GPU4 の 2 対**（NV4）、GPU0 は単独。NUMA 0 が GPU0–2、NUMA 1 が GPU3–4。容器内で OS のホスト名は英数の識別子（`dlsta` ではない）。**`third_party/Relation-DETR` の本体が無い**（2026-09-26 実測。`T-2026-09-23-dlsta-host-fairness`）
+
 ## シェル
 
 **対話シェルは zsh。**

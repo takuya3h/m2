@@ -2950,3 +2950,27 @@ H3（受け取り手の表現に依存するか）の材料に使う前に判断
 証跡: `tasks/T-2026-09-18-stage1-detector-towers/{RESULT.md,audit.md,result.yaml,prereg.md}` /
 `experiments/baselines/stage1_dtower/`（14 run + `test_access_ledger.csv`）。
 `data/raw` `data/external` `context/conventions.md` には変更を加えていない。
+
+## 2026-09-26 — dlsta のホスト公平性: 工程塔の学習は「要注意」、評価は全桁一致、検出塔は測れない
+
+**仮説**: dlsta（RTX A5000 × 5）で既存の処方を回したときの参照ホストとの差は、dlsta 内で種を変えたときの差より十分小さい（r ≤ 0.5）。
+
+**実験**（契約 `T-2026-09-23-dlsta-host-fairness`）: 工程塔 r2 の確定 recipe（ilya）について、
+(1) 記録の backbone + ヘッドを dlsta で fold A val に 2 回評価、(2) backbone の fine-tune 12 epoch を seed 42 で 2 回・seed 123 で 1 回。
+損失は参照に epoch 平均しか無いため 12 点で比べた（利用者の判断）。出力は repo の外、W&B はオフライン。
+検出塔（efros の Relation-DETR）は dlsta に本体が無く回せなかった。
+
+**結果**:
+- 評価: J = 0.5089659192972632 が 2 回とも記録と**全桁一致**（特徴は最大 2.97e-6 だけ違う）。r = 0 → 無視できる
+- 学習: d_host 0.005011、d_seed 0.005917、d_rerun 0（同じ種はビット一致）、**r = 0.847 → 要注意**
+- 記憶量 6355 MiB / 24564 MiB で収まる。定常 step 0.3008 s（参照の step 時間は記録なし）。全所要は ilya の 1.715 倍
+- 検出塔: 判定不能
+
+**解釈**: dlsta の学習は決定的で、ホスト差（0.005）は非決定性と区別できるが、種の差（0.006）より少し小さいだけ。
+**工程塔を dlsta で学習させる比較は、対になる腕を同じホストに置く。** d_seed は種の対 1 組だけから出ており、
+ilya は別世代（6000 Ada）なので、ホスト差と世代差は分けられない。r3（短辺 800）には当てはまらない。
+
+**次**: 検出塔を比べるには Relation-DETR の dlsta への配備が先。種を増やして d_seed を安定させるかは利用者の判断。
+
+証跡: `docs/stage0/D1_dlsta_host_fairness.md`（値は同名ディレクトリ）/ `tasks/T-2026-09-23-dlsta-host-fairness/{RESULT.md,audit.md,result.yaml}`。
+`experiments/` `data/` `runindex/` `context/conventions.md` には変更を加えていない。
