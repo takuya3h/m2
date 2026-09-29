@@ -1,0 +1,169 @@
+{
+  "phase_tower": {
+    "eval": {
+      "metric": "val macro Jaccard (phase_jaccard, strict), fold A val videos 09,10",
+      "recorded_seed42": 0.5089659192972632,
+      "recorded_by_seed": {
+        "42": 0.5089659192972632,
+        "123": 0.4448237400689348,
+        "456": 0.44988411477810836
+      },
+      "recorded_seed_pstd": 0.029117551357664122,
+      "dlsta_eval_1": 0.5089659192972632,
+      "dlsta_eval_2": 0.5089659192972632,
+      "d_host": 0.0,
+      "d_rerun": 0.0,
+      "feature_absdiff_max_vs_recorded": 2.9653310775756836e-06,
+      "feature_absdiff_mean_vs_recorded": 2.168474103178287e-09,
+      "feature_sha256_eval_1": "ba85558c9f2d2855f7d302780722e7a7e02c2bffcf1fb1b03a93dc088ecc92ae",
+      "feature_sha256_eval_2": "ba85558c9f2d2855f7d302780722e7a7e02c2bffcf1fb1b03a93dc088ecc92ae",
+      "feature_sha256_recorded_subset": "d656f131042c414bb7eb8de9c5c1c186844ade24af11ee0bdbf0ae604ef76f45",
+      "frames": 1515,
+      "positive_control": {
+        "breaking_input": "fold B tower (backbone run 003, head run 043) on fold A val",
+        "jaccard": 0.9543047316703157,
+        "d_host": 0.4453388123730525,
+        "r": 15.294514531897047
+      },
+      "r": 0.0
+    },
+    "short_training": {
+      "definition": "x = epoch-mean train loss at epochs 1..12 (12 common points); d = mean over epochs of |difference|",
+      "n_common_points": 12,
+      "loss": {
+        "ref_ilya_seed42": [
+          0.5093077533768734,
+          0.1241893890303485,
+          0.05545900065243164,
+          0.038491025273105155,
+          0.026744678295185148,
+          0.027109213280920207,
+          0.030090206059576796,
+          0.027513084155468326,
+          0.0204579799051333,
+          0.026756224762305016,
+          0.017805509586332747,
+          0.009079207383937948
+        ],
+        "ref_ilya_seed123": [
+          0.5261409708702923,
+          0.12735394101585676,
+          0.05599114859986468,
+          0.03748318741955013,
+          0.033207382633009104,
+          0.018995873930168605,
+          0.02569081726557006,
+          0.016540954406119083,
+          0.02190943875160939,
+          0.03856503738957779,
+          0.02572424298344629,
+          0.027275661618964844
+        ],
+        "dlsta_seed42_a": [
+          0.5103350199625534,
+          0.12380631856849454,
+          0.05295232624938871,
+          0.04070424979485697,
+          0.029504340748041574,
+          0.03472032904305915,
+          0.027677663415516092,
+          0.01657996656551268,
+          0.016137560481467708,
+          0.017900076212778657,
+          0.016493451442680208,
+          0.0248812381635267
+        ],
+        "dlsta_seed42_b": [
+          0.5103350199625534,
+          0.12380631856849454,
+          0.05295232624938871,
+          0.04070424979485697,
+          0.029504340748041574,
+          0.03472032904305915,
+          0.027677663415516092,
+          0.01657996656551268,
+          0.016137560481467708,
+          0.017900076212778657,
+          0.016493451442680208,
+          0.0248812381635267
+        ],
+        "dlsta_seed123": [
+          0.5263300802401656,
+          0.12906609907201622,
+          0.054411135863505426,
+          0.03049866864152011,
+          0.04399912757765275,
+          0.02776413564010413,
+          0.0272363217147695,
+          0.015168896792565485,
+          0.016441086323177072,
+          0.023631809802992666,
+          0.011638807738291448,
+          0.020989529094510757
+        ]
+      },
+      "d_host": 0.005011444276481136,
+      "d_host_with_run_b": 0.005011444276481136,
+      "d_seed": 0.005917019621681293,
+      "d_rerun": 0.0,
+      "r": 0.8469541419328871,
+      "positive_control": {
+        "breaking_input": "reference replaced by recorded seed123 run (ilya)",
+        "d_host": 0.007094072319268893,
+        "r": 1.1989266172575488
+      },
+      "context_ref_host_seed_gap": 0.007571731384811341,
+      "checkpoint_sha256": {
+        "s42_a": "69b7682bdc91dc52a45c58c12cf55b8b84c469d67a3ce0d6f3274aac47adfa07",
+        "s42_b": "69b7682bdc91dc52a45c58c12cf55b8b84c469d67a3ce0d6f3274aac47adfa07",
+        "s123": "b97d5de44115606c96cfeeb5a9cda8fad2fd2decf7b9d6a7512ff9959e8978c9"
+      },
+      "elapsed_seconds": {
+        "s42_a": 705.5881491606124,
+        "s42_b": 671.7402399559505,
+        "s123": 678.2493147440255
+      },
+      "frames_logged": {
+        "s42_a": 12,
+        "s42_b": 12,
+        "s123": 12
+      }
+    },
+    "memory": {
+      "nvidia_smi_peak_MiB_during_full_run": 6355,
+      "nvidia_smi_samples": 1423,
+      "sample_interval_ms": 500,
+      "device_total_MiB_nvidia_smi": 24564,
+      "torch_max_memory_allocated_bytes": 5466812928,
+      "torch_max_memory_reserved_bytes": 6155141120,
+      "device_total_bytes_torch": 25283526656,
+      "fits": true
+    },
+    "throughput": {
+      "steps_measured": 151,
+      "excluded_warmup_steps": 10,
+      "excluded_last_partial_batch": 1,
+      "last_batch_size": 57,
+      "steady_mean_step_seconds": 0.30079340446474295,
+      "steady_median_step_seconds": 0.23854813212528825,
+      "all_steps_mean_seconds": 0.30824236523680737,
+      "first_10_step_seconds": [
+        1.9405097709968686,
+        0.2317353906109929,
+        0.23332317732274532,
+        0.2343306657858193,
+        0.2579660811461508,
+        0.23349823476746678,
+        0.23386136209592223,
+        0.2360658091492951,
+        0.2930682389996946,
+        0.25314738089218736
+      ],
+      "steady_mean_compute_seconds": 0.23198575043186012,
+      "reference_step_seconds": "UNKNOWN (ilya records epoch-level only)",
+      "dlsta_full_run_elapsed_seconds_solo": 705.5881491606124,
+      "ilya_full_run_elapsed_seconds": 411.39905246999115,
+      "elapsed_ratio_dlsta_over_ilya": 1.715094249547598
+    }
+  }
+}

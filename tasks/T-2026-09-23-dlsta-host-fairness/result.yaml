@@ -1,0 +1,79 @@
+result_version: 3
+task_id: "T-2026-09-23-dlsta-host-fairness"
+status: partial
+host: "dlsta"
+branch: "feat/dlsta-host-fairness"
+pr: 197
+merged: false
+
+gates:
+  - {id: A, verdict: pass, note: "参照 2 系を run 名・ckpt sha256・処方・ホストで特定。注釈 3 件・ckpt 2 件・特徴キャッシュの sha256 が記録と一致。凍結源は当該ホストに無く照合不能"}
+  - {id: B, verdict: pass, note: "工程塔: 記録の backbone+ヘッドで fold A val を 2 回評価し J=0.5089659192972632 が 2 回とも記録と全桁一致。検出塔は Relation-DETR 本体が無く実行不能"}
+  - {id: C, verdict: ask, note: "工程塔の参照に一歩ごとの損失が無く停止して諮った。利用者の判断で epoch 平均損失 12 点を使い r=0.8469541419328871。検出塔は実行不能"}
+  - {id: D, verdict: pass, note: "工程塔ピーク 6355 MiB / 24564 MiB で収まる。定常 step 平均 0.30079340446474295 s。参照の step 時間は記録に無く UNKNOWN。検出塔は UNKNOWN"}
+  - {id: E, verdict: pass, note: "工程塔 学習=要注意・評価=無視できる、検出塔=判定不能。D1 文書と値ファイル、env-facts の行追加（既存の減少 0）"}
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 644
+
+deviations:
+  - {type: judgement, note: "占位（conventions_rev・runindex_commit）の置換前に make task-validate を一度回した。SPEC §1 申し送りに反する。置換後に再検証して exit 0"}
+  - {type: judgement, note: "工程塔の参照 run は epoch 平均損失しか持たないため停止して諮り、利用者の判断で epoch 平均 12 点を損失の軌跡として代替した"}
+  - {type: environment, note: "dlsta の third_party/Relation-DETR はキャッシュの残骸だけで main.py も設定も無い。取り寄せは禁止のため、利用者の判断で検出塔の B・C・D を行わず判定不能とした"}
+  - {type: judgement, note: "工程塔スクリプトは出力先が experiments/ 固定で W&B 必須。利用者の判断でコードを変えず repo 外の写しから WANDB_MODE=offline・秘匿でない占位の鍵で実行した。評価と step 時間は写しのハーネスで測った"}
+  - {type: spec_defect, note: "spec の入口 scripts/train_phase_tower_r50.py ではなく、記録の command.sh にある scripts/stage1_ptower_r2.py を使った"}
+  - {type: judgement, note: "工程塔は学習 r と評価 r で区分が分かれた。SPEC に組み合わせの規則が無く、割り当てを決めるのは学習側と解釈した"}
+  - {type: judgement, note: "手順書 §6 の make taskindex / make inbox は契約の禁止 4 と衝突するため回していない（SPEC §4 に従い契約を優先）"}
+  - {type: environment, note: ".sync-pause は開始前から在ったため Task E Step 5 の解除を行っていない"}
+  - {type: environment, note: "make test は dlsta に pytest-cov が無く引数エラーで止まるため pytest tests/ を --cov なしで回した。失敗 6 件（test_engines 1・test_fetch_task 1・test_research_logger 4）は HEAD を展開した木でも同名で落ちる既存の失敗。展開木は git 管理外のため別に 3 件落ち、変更前の数は名前の突き合わせで 6 とした"}
+
+issuer_defects:
+  - {type: asserted_without_measuring, note: "inputs.code.entrypoints の scripts/train_phase_tower_r50.py は旧系統のスクリプトで、r2 の確定 recipe を回したのは scripts/stage1_ptower_r2.py である。指示どおりに入口を使うと別の前処理と処方で学習し、参照と違う処方どうしを比べることになる"}
+  - {type: asserted_without_measuring, note: "検出塔を dlsta で評価・学習できる前提で Task B〜D を書いたが、dlsta には Relation-DETR の本体と egosurgery 用の設定が無い（third_party は同期されない）。§4 にもこの場合が無く、指示どおりには一つも実行できなかった"}
+  - {type: self_contradiction, note: "§2 は系ごとに評価の r と短い学習の r の二つを定義するのに、区分は系ごとに一つとし組み合わせ方を定めていない。工程塔は評価 r=0（無視できる）と学習 r=0.847（要注意）に分かれ、帰結を一意に出せなかった"}
+  - {type: check_does_not_check, note: "完了判定 d の陽性対照「別の折りの checkpoint を当てる」は、折り B が fold A val の動画 09・10 を学習に含むため J=0.954 となり、ホスト差への感度と無関係に d_host が大きくなる。対照が通っても評価経路の感度は示されない"}
+
+positive_controls:
+  - judgement: "a 参照の特定が索引を正しく絞る"
+    breaking_input: "存在しない task_id T-2099-01-01-nonexistent で絞る"
+    observed: "0 件（実在の 2 契約は 14 件・168 件）"
+  - judgement: "b 版の比較の差分の数え上げ"
+    breaking_input: "dlsta の driver を 595.83 に書き換える"
+    observed: "dlsta と efros の差分が 3 件から 4 件に増えた"
+  - judgement: "c 画像集合の要約値"
+    breaking_input: "先頭 1 件を除いた集合"
+    observed: "c72e2cab… から 5283360f… に変わった"
+  - judgement: "d 評価の d_host"
+    breaking_input: "折り B の塔（backbone 003・ヘッド 043）を fold A val に当てる"
+    observed: "J=0.9543047316703157、d_host=0.4453388123730525（r=15.29）"
+  - judgement: "e 短い学習の r"
+    breaking_input: "参照を記録の seed 123 の run に差し替える"
+    observed: "r が 0.8469541419328871 から 1.1989266172575488 に上がった"
+  - judgement: "j env-facts の既存行が減っていない"
+    breaking_input: "1 行消した控えと比べる"
+    observed: "集合差の検査が 1 件を返した（本番は 0 件）"
+  - judgement: "k 秘匿の検査"
+    breaking_input: "Notion 鍵の形をした囮文字列"
+    observed: "囮で 1 件、報告 8 ファイルで 0 件。値は出力していない"
+
+followups:
+  - "検出塔を dlsta で比べるには third_party/Relation-DETR（egosurgery 用の設定と別 venv を含む）の配備が要る。配備の契約を出してから本契約の検出塔部分を再実行する"
+  - "工程塔の d_seed は種の対 1 組（42 と 123）だけから出た。r=0.847 は境界 1 に近く、種を増やすと区分が変わりうる"
+  - "ilya の driver・nvcc・torch・cuDNN を記録として残す。今回は型番しか記録が無く、ホスト差と世代差を分けられなかった"
+  - "scripts/stage1_ptower.py の出力先（experiments/ 固定）と W&B 必須を、短い検証の run のために引数で外せるようにするかは未決"
+  - "Relation-DETR の train.log は 50 step 間隔、工程塔は epoch 単位。ホスト比較のため一歩ごとの損失を残す規約を置くかは未決"
+
+unknowns:
+  - "ilya の driver・nvcc・torch・cuDNN・Python・lock の要約値"
+  - "efros の cuDNN・torchvision・lock の要約値・repo の commit（git_commit.txt は ref のみ）"
+  - "参照ホストの装置間の接続"
+  - "工程塔の参照の step 時間（epoch 単位の記録のみ）"
+  - "stage1_ptower_r2.py の実行時点の要約値（記録の commit にまだ無かった）"
+  - "検出塔の当該ホストでの評価・短い学習・ピーク記憶量・step 時間"
+  - "凍結源 checkpoint の照合（当該ホストに無い）"
+
+commits:
+  - "63b0150565bbc27ef31c98fe639b248e61083d10"
+  - "26e06f9356c6de23762515ab936b628a6828bac3"
