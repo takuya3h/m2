@@ -220,13 +220,13 @@ T-2026-09-19-symmetry-gate。実例は docs/symmetry-checklist.md。
 
 | 項目 | 値 |
 |---|---|
-| commit | `63b0150565bbc27ef31c98fe639b248e61083d10`（本体） |
+| commit | `63b0150565bbc27ef31c98fe639b248e61083d10`（本体）、`26e06f9356c6de23762515ab936b628a6828bac3`（PR 番号の記入） |
 | PR | **#197**、base `phase0`、Draft でない、head `feat/dlsta-host-fairness` |
 | push | exit 0 |
 | `make forbidden-check BASE=HEAD` | exit 0、変更 11 件・違反 0 件（`origin/phase0` 基準では phase0 側の先行 3223 件を拾うため HEAD を基準にした） |
 | `make task-validate` | exit 0 |
 | 試験 | `pytest tests/`（`--cov` なし）644 passed / 6 failed。6 件は HEAD でも同名で落ちる既存の失敗 |
 | `make taskindex` / `make inbox` | 契約の禁止 4 により回していない |
-| `make task-report` | 本節の記入後に実行（結果は次の commit で追記） |
+| `make task-report` | exit 0。verdict `partial`、issuer_defects 4、report_sha256 `ebdf3e70f1375325eedb2b06e1282490d1057a806597267284cbd983e77e88a2`、14686 バイト（送った本文は commit `26e06f93` 時点の報告） |
 | 抑止の目印 | 開始前から在ったため解除していない |
 
