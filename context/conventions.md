@@ -146,6 +146,7 @@ activate を省略すると CUDA 拡張が読み込まれず、無言で CPU 実
 | 2026-09-17 | 537c968c | folds 節を追加。動画単位 5-fold の折り表（折り A は公式分割に固定）、追加 6 動画の用途、選定と test の規律を定義。正本は docs/stage0/A1_fold_table.md |
 | 2026-09-19 | d6b37c79 | symmetry 節を追加。比較する腕の対称性の表の様式・必ず置く行・規則の読みを定義。proposal_gate のカードに #15 #16、issuer_cautions に注意 14 を追加。検査は L3 の P13 symmetry_table_complete、点検表は docs/symmetry-checklist.md |
 | 2026-09-23 | ae76c1b9 | proposal_gate に「置き場と参照」を追加。カードは docs/proposals/ に置き check_proposal.py を通す、候補は三案以上、批判会話は web 検索必須、exp は intent.proposal_card で参照。検査は L3 の P14 proposal_card_checked、雛形は docs/proposals/_template.md |
+| 2026-10-02 | TBD | det_groups 節と crossfit 節を追加。検出の標的群 5 クラスと陰性対照群 4 クラス（研究方針 v2 §7.3）、送り手の交差適合の規則と閾値 3pt（研究方針 v2 §9.4、利用者の決定 2026-09-27）を定義。契約 T-2026-09-27-stage2-prep |
 <a id="issuer_cautions"></a>
 ## issuer_cautions
 
@@ -357,3 +358,30 @@ prereg.md に次の表を置く。列名はこのとおりにする（L3 の P13
 ### 出所
 
 T-2026-09-19-symmetry-gate。実例は docs/symmetry-checklist.md。
+
+<a id="det_groups"></a>
+## det_groups
+
+検出の co-primary と陰性対照の集合。研究方針 v2 §7.3（2026-06-19 に EDA から事前登録。結果を見て選んだ群ではない）。
+
+| 群 | クラス | 用途 |
+|---|---|---|
+| 標的群 | Skewer、Bipolar Forceps、Scalpel、Syringe、Raspatory | 検出の co-primary（標的群 AP = 5 クラスの AP の平均） |
+| 陰性対照群 | Gauze、Mouth Gag、Suction Cannula、Tweezers | Δ ≈ 0 であるべき群。動いたら交絡を疑う |
+
+- クラス名は検出塔の注釈と完全一致で照合する
+- ある折りの評価集合に出現しないクラスは、その折りの群 AP から除き、除いたことを明記する。0 で埋めない
+- AP rare（Skewer、Syringe）は副次指標として別に報告する
+
+<a id="crossfit"></a>
+## crossfit
+
+送り手の積み重ね漏れ（stacking leakage）の扱い。研究方針 v2 §9.4。閾値は利用者の決定（2026-09-27）。
+
+- 送り手が学習した train 動画で送り手が出す予測は過学習している。界面をその予測で学習すると、train と val・test で信号の質が違う
+- **送り手の train 動画と val 動画の主指標の差が 3pt を超えれば、交差適合を適用する**
+- 交差適合: 各折りの train 動画を動画単位で 2 分割し、一方で学習した送り手が他方に予測を出す。両方向で train 動画すべての予測を作る。
+  val・test への予測は train 全体で学習した確定塔が出す
+- 適用は送り手掃引の全点で統一する。主送り手だけに適用しない
+- 交差適合版と非適用版の送り手の主指標を両方記録する
+- 実測: 検出塔の送り手の差は約 11pt（Stage 0）。工程塔の送り手の差は T-2026-09-27-stage1-ptower-20 で測る

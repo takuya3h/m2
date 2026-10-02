@@ -1,0 +1,65 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-09-27-stage2-prep"
+  kind: impl
+  title: "Stage 2 の準備: 標的群と交差適合を規約に置き標的群 AP を再計算する。P*-20 の提案カードを置く。交差適合を含めて Tier 一 の日数を出し直す"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-02T10:26:43Z"
+  created_from:
+    runindex_commit: "2fb7c905b51aac5ec2b0ee5fe5c70e835f4024a8"
+    counts: {index: 1911, experiments: 718, verdicts: 1506}
+  depends_on: [T-2026-09-19-stage1-detector-towers-r2, T-2026-09-23-ops-and-proposal-card-gate]
+  amendments: []
+intent:
+  question: "Stage 二 の契約が引く定義（標的群と陰性対照群、交差適合の規則と閾値）を repo の規約に置き、確定した検出塔の標的群 AP を出せるか。交差適合の送り手の学び直しを含めた Tier 一 の日数はいくらか"
+  decision_at_stake: "Stage 二 の副次指標の前提を固める。Tier 一 の seed 数の判断材料。P 塔（二十動画）の契約が P十四 を通るためのカードの配置"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "not-referenced"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["tools/estimate_tier_cost.py", "tools/check_proposal.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#eval_recipe, conventions#proposal_gate]
+  conventions_rev: "4369cf5e7b82a3043b9b00b998911c4efb856f69"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["context/conventions.md", "docs/proposals/", "docs/stage0/B1_tier1_cost_estimate.md", "tools/estimate_tier_cost.py", "docs/stage1/", "experiments/baselines/stage1_dtower_r2/group_ap.json"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。規約のアンカー数、検出塔二周目の per-class AP の在処とクラス名、計算器の現行の前提", gpu: false, est: "40m"}
+    - {id: B, name: "規約に det_groups 節と crossfit 節を置く", gpu: false, est: "40m"}
+    - {id: C, name: "検出塔二周目（と一周目）の標的群 AP と陰性対照群 AP を per-class AP から再計算", gpu: false, est: "60m"}
+    - {id: D, name: "P 塔（二十動画）の提案カードを docs/proposals/ に置き check_proposal を通す", gpu: false, est: "40m"}
+    - {id: E, name: "計算器に交差適合の送り手の学び直しを足し、TF32 の反映を確かめ、日数を出し直す", gpu: false, est: "90m"}
+    - {id: F, name: "検証と報告", gpu: false, est: "60m"}
+  gates:
+    - {id: G1, after: A, check: "九クラスの名前が検出塔の per-class AP のクラス名と完全一致で対応した", on_fail: stop}
+    - {id: G2, after: D, check: "カードが check_proposal で検出零件", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [D_group_ap.md, B2_tier1_cost_with_crossfit.md]
+  destination: "docs/stage1/"
+  acceptance:
+    - "a: conventions に det_groups 節と crossfit 節があり L2 で引ける。存在しないアンカー名では失敗する。既存の節の本文は変わっていない"
+    - "b: 標的群五クラスと陰性対照群四クラスが検出塔のクラス名と完全一致で対応し、対応表が残っている"
+    - "c: 検出塔二周目十四 run の val と、確定塔の test 十件について、標的群 AP と陰性対照群 AP が出ており、両塔の差が並んでいる。一周目の同じ run も並置されている"
+    - "d: docs/proposals/ に P 塔（二十動画）のカードがあり、check_proposal の検出が零件"
+    - "e: 計算器に交差適合の送り手の学び直しの行があり、Tier 一 の日数が seed 五と三、交差適合ありとなしで出ている。TF32 の反映の有無が明記され、九月十七日の値と九月二十七日の値の差の原因が説明されている"
+    - "f: 計算器の --check-doc が差零"
+    - "g: 試験が通り、失敗数が増えていない"
+    - "h: PR が Draft でなく存在し、base が phase0 で、分岐が feat/ で始まる"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "九クラスのいずれかが検出塔のクラス名と完全一致で対応しない場合（推測で対応させず諮る）"
+    - "計算器の日数の差の原因が特定できない場合"

@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（623 件）
+## 未処理（629 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -636,8 +636,14 @@
 - [ ] 2026-09-25 [cc] `ExperimentManager` の `source_sha256` は base モジュールの要約値で、実際の entrypoint の内容を固定していない。run の証跡が entrypoint の版を指さない（scripts/stage1_ptower.py の `evidence`）
 - [ ] 2026-09-25 [cc] 予測 4「学習率は高い方が勝つ」が外れ、両系統とも lr 1e-4 が選ばれた。backbone 単体の frame accuracy では 3e-4 が上でも、時間ヘッドを載せた 5 折り平均 val J では逆転する。送り手の強さをフレーム単位の指標だけで測らない（tasks/T-2026-09-19-stage1-phase-tower-r3/RESULT.md §8）
 - [ ] 2026-09-25 [cc] ilya の `.git/config` は `remote.origin.pushurl` が HTTPS で、VS Code の askpass が実体を失っており push が必ず失敗する（`fatal: cannot exec '…/askpass.sh'`）。fetch 側の SSH は通る。2026-09-22 の keeper の `auto-push失敗: feat/ops-and-proposal-card-gate` と同じ原因。本契約では SSH の URL を明示して送り、設定は変えていない（.git/config）
+- [ ] 2026-09-26 [cc] 工程塔の参照 run に一歩ごとの損失が無く（epoch 平均のみ）停止して諮った。利用者の判断で epoch 平均損失 12 点を軌跡として代替した（scripts/stage1_ptower_r2.py:155）
+- [ ] 2026-09-26 [cc] dlsta に Relation-DETR の学習コードと設定が無く検出塔の B・C・D は実行不能。利用者の判断で取り寄せず「判定不能」とした。配備は後続契約（third_party/Relation-DETR）
+- [ ] 2026-09-26 [cc] 工程塔スクリプトは出力先が experiments/ 固定で W&B 必須。利用者の判断でコードを変えず repo 外の写しから WANDB_MODE=offline で回した。出力先を引数で変えられるようにするかは未決（scripts/stage1_ptower.py:110）
 - [ ] 2026-09-27 [cc] **`make forbidden-check` は引数なしだと分岐と無関係の変更を違反に数える。** 既定の基準 `origin/phase0` が分岐後に進んでいる（分岐点 66855c5b → 9d6366d3）ため、他契約が phase0 に入れた `context/conventions.md` の変更が「禁止されたファイル」として出た（`"task": null` で `allow_write` も読まれず違反 3,391 件）。契約は統合を禁じているので基準を動かせない。**`TASK=<id> BASE=<分岐点>` を付けると status pass、違反 0 件**。手順書 `.claude/skills/task/SKILL.md` は引数なしの形しか書いていないため、長い契約では毎回この誤検知に当たる（tools/check_forbidden.py）
 - [ ] 2026-09-27 [cc] **標的群 AP の集合が repo のどこにも定義されていない。** prereg は「2026-06-19 に事前登録した」と書くが、`constants.py` にあるのは `RARE_CLASSES` と `CONFUSABLE_CLASSES` だけで、runindex にも列が無く、Notion の写しにも要求の文言しか無い。利用者の決定で **UNKNOWN と報告し、全 15 クラスの per-class AP を並べる**。per-class AP は run ごとに残るため、集合が決まれば GPU なしで再計算できる。定義を `constants.py` に置くまで、この語を完了判定に使う契約は毎回ここで止まる（src/egosurgery/datasets/constants.py）
+- [ ] 2026-10-02 [cc] **9 月 17 日の 74.0〜98.7 日は計算器の出力ではなかった。** 計算器は TF32 を一度も持たず、C2 §5 が外で 1/1.182 を当てた値である。9 月 27 日の 88.8〜118.0 日との差の最大要因は TF32 の有無（+13.5〜+18.0 日）、次に検出塔の学習時間（+5.5 日）、K の違いが −4.1 日。**TF32 の採用は未決のまま**で、採用すれば Tier 1 の検出側が約 1/1.17〜1/1.18 になる（tools/estimate_tier_cost.py の節 history）
+- [ ] 2026-10-02 [cc] **交差適合を足すと Tier 1（seed 5）は 80.0〜109.2 日、使える 125 日に対し残り 15.8〜45.0 日。** 設計変更を一回挟めば収まらない（1 回 79.0〜108.2 日）。B1 の Stage 1 + Tier 1 では IPCAI long abstract の判定が「収まる」から「読みにより分かれる」に変わった（docs/stage1/B2_tier1_cost_with_crossfit.md）
+- [ ] 2026-10-02 [cc] **規約の変更履歴表が naming 節の範囲にある。** 「既存節の本文を変えない」と「変更履歴に行を足す」は両立しない。履歴を独立の節にするか、節の切り出しが履歴を除く形にする必要がある（context/conventions.md）
 
 ## 処理済み（1 件）
 

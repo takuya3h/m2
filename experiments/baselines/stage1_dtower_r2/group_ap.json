@@ -1,0 +1,998 @@
+{
+  "task_id": "T-2026-09-27-stage2-prep",
+  "source": "eval_{val,test}.json の per_class_ap（再評価なし）",
+  "groups": {
+    "target": [
+      "Skewer",
+      "Bipolar Forceps",
+      "Scalpel",
+      "Syringe",
+      "Raspatory"
+    ],
+    "control": [
+      "Gauze",
+      "Mouth Gag",
+      "Suction Cannula",
+      "Tweezers"
+    ]
+  },
+  "annotation_classes": [
+    "Bipolar Forceps",
+    "Electric Cautery",
+    "Forceps",
+    "Gauze",
+    "Hook",
+    "Mouth Gag",
+    "Needle Holders",
+    "Raspatory",
+    "Retractor",
+    "Scalpel",
+    "Scissors",
+    "Skewer",
+    "Suction Cannula",
+    "Syringe",
+    "Tweezers"
+  ],
+  "mapping": [
+    {
+      "group": "target",
+      "class": "Skewer",
+      "matched": "Skewer"
+    },
+    {
+      "group": "target",
+      "class": "Bipolar Forceps",
+      "matched": "Bipolar Forceps"
+    },
+    {
+      "group": "target",
+      "class": "Scalpel",
+      "matched": "Scalpel"
+    },
+    {
+      "group": "target",
+      "class": "Syringe",
+      "matched": "Syringe"
+    },
+    {
+      "group": "target",
+      "class": "Raspatory",
+      "matched": "Raspatory"
+    },
+    {
+      "group": "control",
+      "class": "Gauze",
+      "matched": "Gauze"
+    },
+    {
+      "group": "control",
+      "class": "Mouth Gag",
+      "matched": "Mouth Gag"
+    },
+    {
+      "group": "control",
+      "class": "Suction Cannula",
+      "matched": "Suction Cannula"
+    },
+    {
+      "group": "control",
+      "class": "Tweezers",
+      "matched": "Tweezers"
+    }
+  ],
+  "missing_rule": "評価集合に出現しないクラス（NaN）は群 AP から除く。0 で埋めない",
+  "runs": {
+    "r1": {
+      "dcoco_foldA_seed42": {
+        "val": {
+          "target": {
+            "ap": 0.7875267676599755,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.6742577860454687,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.7244185525748421
+        },
+        "test": {
+          "target": {
+            "ap": 0.6557556792923853,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.5496038017834964,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.5117143908497997
+        }
+      },
+      "dcoco_foldA_seed123": {
+        "val": {
+          "target": {
+            "ap": 0.8175756965246022,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.6730414731931108,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.7253595718805355
+        }
+      },
+      "dcoco_foldA_seed456": {
+        "val": {
+          "target": {
+            "ap": 0.781682489660749,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.6744544249681519,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.7207601852065311
+        }
+      },
+      "dcoco_foldB_seed42": {
+        "val": {
+          "target": {
+            "ap": 0.47965571254163714,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.6383149319008626,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.4761576719363108
+        },
+        "test": {
+          "target": {
+            "ap": 0.43970719347196197,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.3313824821677416,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.43840123696930766
+        }
+      },
+      "dcoco_foldC_seed42": {
+        "val": {
+          "target": {
+            "ap": 0.5221315949935437,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.5066975670034775,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.43846295001262053
+        },
+        "test": {
+          "target": {
+            "ap": 0.4964986091957596,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.6506292745740736,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.5010618788225796
+        }
+      },
+      "dcoco_foldD_seed42": {
+        "val": {
+          "target": {
+            "ap": 0.691607955866419,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.5512401298297328,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.4967032771120454
+        },
+        "test": {
+          "target": {
+            "ap": 0.5776021393322559,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.5396272714854382,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.5557751409625421
+        }
+      },
+      "dcoco_foldE_seed42": {
+        "val": {
+          "target": {
+            "ap": 0.7111446209021045,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.436416607989127,
+            "n_classes": 3,
+            "missing": [
+              "Mouth Gag"
+            ]
+          },
+          "mAP": 0.527187357503789
+        },
+        "test": {
+          "target": {
+            "ap": 0.7574187103910953,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.57669699022585,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.5841000123590889
+        }
+      },
+      "dimagenet_foldA_seed42": {
+        "val": {
+          "target": {
+            "ap": 0.7707765239364897,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.6364236030442965,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.6852564114129459
+        },
+        "test": {
+          "target": {
+            "ap": 0.6207554139706896,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.5185329500039028,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.4723696513025527
+        }
+      },
+      "dimagenet_foldA_seed123": {
+        "val": {
+          "target": {
+            "ap": 0.7545046342144461,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.6255437495439956,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.6774216470838215
+        }
+      },
+      "dimagenet_foldA_seed456": {
+        "val": {
+          "target": {
+            "ap": 0.7181177401431091,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.6278801063090351,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.6660340635519355
+        }
+      },
+      "dimagenet_foldB_seed42": {
+        "val": {
+          "target": {
+            "ap": 0.3876894192337025,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.5525287218481718,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.4084398099817053
+        },
+        "test": {
+          "target": {
+            "ap": 0.4063197171105058,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.310754996207777,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.4064007804719905
+        }
+      },
+      "dimagenet_foldC_seed42": {
+        "val": {
+          "target": {
+            "ap": 0.5023348435101331,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.4630141383185691,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.4092764292911225
+        },
+        "test": {
+          "target": {
+            "ap": 0.44613204783197374,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.6253544358545052,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.48017609412011386
+        }
+      },
+      "dimagenet_foldD_seed42": {
+        "val": {
+          "target": {
+            "ap": 0.6877216875683712,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.533083605012332,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.4800833423333329
+        },
+        "test": {
+          "target": {
+            "ap": 0.5543768681973822,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.49459679599394857,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.5163877004777886
+        }
+      },
+      "dimagenet_foldE_seed42": {
+        "val": {
+          "target": {
+            "ap": 0.6427070398933974,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.39067656350911467,
+            "n_classes": 3,
+            "missing": [
+              "Mouth Gag"
+            ]
+          },
+          "mAP": 0.4538452095476549
+        },
+        "test": {
+          "target": {
+            "ap": 0.73836377476942,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.5463473890363952,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.5655427297164539
+        }
+      }
+    },
+    "r2": {
+      "dcoco_foldA_seed42": {
+        "val": {
+          "target": {
+            "ap": 0.7950748008550899,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.6726631817581498,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.7273450248398429
+        },
+        "test": {
+          "target": {
+            "ap": 0.6513439635291238,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.5388012605727548,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.5085214694781
+        }
+      },
+      "dcoco_foldA_seed123": {
+        "val": {
+          "target": {
+            "ap": 0.8234320705537787,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.6701777002060821,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.728863105195762
+        }
+      },
+      "dcoco_foldA_seed456": {
+        "val": {
+          "target": {
+            "ap": 0.7967868688266846,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.6651616779672143,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.7189796811844756
+        }
+      },
+      "dcoco_foldB_seed42": {
+        "val": {
+          "target": {
+            "ap": 0.45267107419153324,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.6302393421839991,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.4556529799606346
+        },
+        "test": {
+          "target": {
+            "ap": 0.41886521881779676,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.32356131451073616,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.43242262589263303
+        }
+      },
+      "dcoco_foldC_seed42": {
+        "val": {
+          "target": {
+            "ap": 0.5318368269971948,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.49105316517410097,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.4339169971657927
+        },
+        "test": {
+          "target": {
+            "ap": 0.45806339428653153,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.6501146312724273,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.48029738993893556
+        }
+      },
+      "dcoco_foldD_seed42": {
+        "val": {
+          "target": {
+            "ap": 0.7182140726477839,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.5642837073458438,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.5116990234460894
+        },
+        "test": {
+          "target": {
+            "ap": 0.60369068026839,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.5404779645467127,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.5724210958623651
+        }
+      },
+      "dcoco_foldE_seed42": {
+        "val": {
+          "target": {
+            "ap": 0.7048561477166063,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.43860521730832774,
+            "n_classes": 3,
+            "missing": [
+              "Mouth Gag"
+            ]
+          },
+          "mAP": 0.5311553079337102
+        },
+        "test": {
+          "target": {
+            "ap": 0.7621170909618558,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.5938081437470276,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.5937730443959853
+        }
+      },
+      "dimagenet_foldA_seed42": {
+        "val": {
+          "target": {
+            "ap": 0.763334945216059,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.6372536986900481,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.6855209182362318
+        },
+        "test": {
+          "target": {
+            "ap": 0.6308317785537503,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.5147914590194902,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.47387391745462804
+        }
+      },
+      "dimagenet_foldA_seed123": {
+        "val": {
+          "target": {
+            "ap": 0.7621849616378749,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.6187212345466464,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.6750002240587673
+        }
+      },
+      "dimagenet_foldA_seed456": {
+        "val": {
+          "target": {
+            "ap": 0.7456335259409771,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.631522155093034,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.6755150557838926
+        }
+      },
+      "dimagenet_foldB_seed42": {
+        "val": {
+          "target": {
+            "ap": 0.39173849987273296,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.5656130165808452,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.40865542216090717
+        },
+        "test": {
+          "target": {
+            "ap": 0.45138946186403006,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.2714320504224445,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.3979038727347893
+        }
+      },
+      "dimagenet_foldC_seed42": {
+        "val": {
+          "target": {
+            "ap": 0.4955855016779057,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.4638660005546003,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.40876532331221715
+        },
+        "test": {
+          "target": {
+            "ap": 0.4203477319389983,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.6237843550996917,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.4623712029863782
+        }
+      },
+      "dimagenet_foldD_seed42": {
+        "val": {
+          "target": {
+            "ap": 0.6780473054492056,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.5158395011807447,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.47329160508601836
+        },
+        "test": {
+          "target": {
+            "ap": 0.5516499874249727,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.48180511231172074,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.5172275862622457
+        }
+      },
+      "dimagenet_foldE_seed42": {
+        "val": {
+          "target": {
+            "ap": 0.6258709671364923,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.4085654182995048,
+            "n_classes": 3,
+            "missing": [
+              "Mouth Gag"
+            ]
+          },
+          "mAP": 0.46455188154416516
+        },
+        "test": {
+          "target": {
+            "ap": 0.7562086021719991,
+            "n_classes": 5,
+            "missing": []
+          },
+          "control": {
+            "ap": 0.5349695738247395,
+            "n_classes": 4,
+            "missing": []
+          },
+          "mAP": 0.5568625500073703
+        }
+      }
+    }
+  },
+  "diff_coco_minus_imagenet": {
+    "r1": {
+      "foldA_seed42": {
+        "val": {
+          "target": 0.01675024372348588,
+          "control": 0.03783418300117225,
+          "mAP": 0.0391621411618962
+        },
+        "test": {
+          "target": 0.035000265321695756,
+          "control": 0.031070851779593678,
+          "mAP": 0.03934473954724704
+        }
+      },
+      "foldA_seed123": {
+        "val": {
+          "target": 0.06307106231015602,
+          "control": 0.0474977236491152,
+          "mAP": 0.04793792479671399
+        }
+      },
+      "foldA_seed456": {
+        "val": {
+          "target": 0.0635647495176399,
+          "control": 0.046574318659116765,
+          "mAP": 0.05472612165459556
+        }
+      },
+      "foldB_seed42": {
+        "val": {
+          "target": 0.09196629330793465,
+          "control": 0.08578621005269083,
+          "mAP": 0.0677178619546055
+        },
+        "test": {
+          "target": 0.03338747636145617,
+          "control": 0.020627485959964553,
+          "mAP": 0.03200045649731714
+        }
+      },
+      "foldC_seed42": {
+        "val": {
+          "target": 0.019796751483410535,
+          "control": 0.043683428684908376,
+          "mAP": 0.02918652072149802
+        },
+        "test": {
+          "target": 0.05036656136378587,
+          "control": 0.02527483871956837,
+          "mAP": 0.020885784702465715
+        }
+      },
+      "foldD_seed42": {
+        "val": {
+          "target": 0.0038862682980478347,
+          "control": 0.01815652481740082,
+          "mAP": 0.016619934778712542
+        },
+        "test": {
+          "target": 0.023225271134873715,
+          "control": 0.04503047549148964,
+          "mAP": 0.03938744048475351
+        }
+      },
+      "foldE_seed42": {
+        "val": {
+          "target": 0.06843758100870712,
+          "control": 0.04574004448001234,
+          "mAP": 0.07334214795613408
+        },
+        "test": {
+          "target": 0.019054935621675373,
+          "control": 0.030349601189454734,
+          "mAP": 0.01855728264263501
+        }
+      }
+    },
+    "r2": {
+      "foldA_seed42": {
+        "val": {
+          "target": 0.03173985563903081,
+          "control": 0.035409483068101655,
+          "mAP": 0.04182410660361102
+        },
+        "test": {
+          "target": 0.02051218497537355,
+          "control": 0.024009801553264598,
+          "mAP": 0.03464755202347192
+        }
+      },
+      "foldA_seed123": {
+        "val": {
+          "target": 0.06124710891590379,
+          "control": 0.051456465659435735,
+          "mAP": 0.05386288113699478
+        }
+      },
+      "foldA_seed456": {
+        "val": {
+          "target": 0.0511533428857075,
+          "control": 0.03363952287418026,
+          "mAP": 0.043464625400583046
+        }
+      },
+      "foldB_seed42": {
+        "val": {
+          "target": 0.06093257431880028,
+          "control": 0.06462632560315396,
+          "mAP": 0.04699755779972742
+        },
+        "test": {
+          "target": -0.0325242430462333,
+          "control": 0.05212926408829166,
+          "mAP": 0.03451875315784375
+        }
+      },
+      "foldC_seed42": {
+        "val": {
+          "target": 0.036251325319289096,
+          "control": 0.02718716461950066,
+          "mAP": 0.02515167385357553
+        },
+        "test": {
+          "target": 0.03771566234753321,
+          "control": 0.026330276172735645,
+          "mAP": 0.017926186952557377
+        }
+      },
+      "foldD_seed42": {
+        "val": {
+          "target": 0.04016676719857837,
+          "control": 0.048444206165099035,
+          "mAP": 0.038407418360071055
+        },
+        "test": {
+          "target": 0.05204069284341728,
+          "control": 0.05867285223499197,
+          "mAP": 0.05519350960011937
+        }
+      },
+      "foldE_seed42": {
+        "val": {
+          "target": 0.07898518058011406,
+          "control": 0.03003979900882292,
+          "mAP": 0.06660342638954508
+        },
+        "test": {
+          "target": 0.005908488789856614,
+          "control": 0.058838569922288086,
+          "mAP": 0.036910494388615045
+        }
+      }
+    }
+  },
+  "summary": {
+    "r1": {
+      "coco_target": {
+        "val_foldA_3seed_mean": 0.7955949846151089,
+        "val_foldA_3seed_sd": 0.0192588335152772,
+        "val_5fold_seed42_mean": 0.638413330392736,
+        "test_5fold_mean": 0.5853964663366916
+      },
+      "coco_control": {
+        "val_foldA_3seed_mean": 0.6739178947355772,
+        "val_foldA_3seed_sd": 0.0007653448611918645,
+        "val_5fold_seed42_mean": 0.5613854045537338,
+        "test_5fold_mean": 0.5295879640473199
+      },
+      "imagenet_target": {
+        "val_foldA_3seed_mean": 0.7477996327646816,
+        "val_foldA_3seed_sd": 0.026962096746738867,
+        "val_5fold_seed42_mean": 0.5982459028284188,
+        "test_5fold_mean": 0.5531895643759943
+      },
+      "imagenet_control": {
+        "val_foldA_3seed_mean": 0.6299491529657758,
+        "val_foldA_3seed_sd": 0.005727435603987991,
+        "val_5fold_seed42_mean": 0.5151453263464968,
+        "test_5fold_mean": 0.49911731341930576
+      },
+      "diff_target_val_5fold_mean": 0.0401674275643172,
+      "diff_target_test_5fold_mean": 0.03220690196069738,
+      "diff_control_val_5fold_mean": 0.046240078207236926,
+      "diff_control_test_5fold_mean": 0.030470650628014195,
+      "diff_mAP_val_5fold_mean": 0.04520572131456927,
+      "diff_mAP_test_5fold_mean": 0.030035140774883683
+    },
+    "r2": {
+      "coco_target": {
+        "val_foldA_3seed_mean": 0.805097913411851,
+        "val_foldA_3seed_sd": 0.015900905092588652,
+        "val_5fold_seed42_mean": 0.6405305844816416,
+        "test_5fold_mean": 0.5788160695727396
+      },
+      "coco_control": {
+        "val_foldA_3seed_mean": 0.6693341866438155,
+        "val_foldA_3seed_sd": 0.0038212270448968215,
+        "val_5fold_seed42_mean": 0.5593689227540842,
+        "test_5fold_mean": 0.5293526629299318
+      },
+      "imagenet_target": {
+        "val_foldA_3seed_mean": 0.7570511442649703,
+        "val_foldA_3seed_sd": 0.009904651518443896,
+        "val_5fold_seed42_mean": 0.5909154438704791,
+        "test_5fold_mean": 0.5620855123907501
+      },
+      "imagenet_control": {
+        "val_foldA_3seed_mean": 0.6291656961099096,
+        "val_foldA_3seed_sd": 0.00948829442054675,
+        "val_5fold_seed42_mean": 0.5182275270611486,
+        "test_5fold_mean": 0.4853565101356173
+      },
+      "diff_target_val_5fold_mean": 0.049615140611162525,
+      "diff_target_test_5fold_mean": 0.01673055718198947,
+      "diff_control_val_5fold_mean": 0.041141395692935644,
+      "diff_control_test_5fold_mean": 0.04399615279431439,
+      "diff_mAP_val_5fold_mean": 0.043796836601306025,
+      "diff_mAP_test_5fold_mean": 0.03583929922452149
+    }
+  }
+}

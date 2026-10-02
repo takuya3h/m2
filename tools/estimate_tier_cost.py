@@ -138,6 +138,26 @@ RUN_TYPES: dict[str, RunType] = {
             "**値は実測由来になったが W3 そのものは計時していないため代理のままとする**",
         ),
         RunType(
+            key="det_sender_crossfit",
+            label="検出塔の送り手の学び直し（交差適合、train の半分で学習）",
+            hours=14.13 * _H,
+            source="T-2026-09-19-stage1-detector-towers-r2（検出塔の学習 1 本の実測平均 14.13 h を上限に置く）",
+            measured=False,
+            note="交差適合の送り手の学習は計時していない。データ量が半分になる効果は**測っていないので乗じない**"
+            "（上界）。2 本同時に走らせた下での 1 run の壁時計を GPU 時間として扱う点は `det_tower_train` と同じ",
+        ),
+        RunType(
+            key="phase_sender_crossfit",
+            label="工程塔の送り手の学び直し（交差適合、backbone の fine-tune）",
+            hours=81.0 / 28.0 * _H,
+            source="tasks/T-2026-09-19-stage1-phase-tower-r3/RESULT.md §4（fine-tune 28 本で 81.0 GPU 時間。"
+            "ilya・RTX 6000 Ada、物理 batch 16 × 累積 4）",
+            measured=False,
+            note="1 本あたり 81.0 / 28 = 2.89 h（範囲 6,002〜16,240 s）。**ホストが違う**（ilya の RTX 6000 Ada。"
+            "検出側の値は efros・本計算器の装置は A6000）。交差適合の送り手そのものは計時しておらず、"
+            "データ量が半分になる効果も乗じない（上界）",
+        ),
+        RunType(
             key="probe",
             label="クリップ ID 識別プローブ",
             hours=30.0 * _S,
@@ -344,6 +364,20 @@ def build_rows(k: int, search_trials: int, two_stage_selection: bool) -> list[Ru
             "t1_ctrl_probe", "tier1", "対照: クリップ ID 識別プローブ", "probe",
             1, 1, ("c7.clipid_probe", "t1.controls"),
         ),
+        # 交差適合（conventions#crossfit。M v1 の外の項目のため covers は空）。
+        # 5 折り × 2 分割 × 2 系統。送り手の seed は 1 のため Tier 1 の反復を掛けない。
+        RunRow(
+            "t1_crossfit_det", "tier1", "交差適合: 検出塔の送り手の学び直し（5 折り × 2 分割 × 2 系統）",
+            "det_sender_crossfit", 5 * 2 * 2, 5 * 2 * 2, (),
+            reps_override=(1.0, 1.0),
+            note="系統は COCO・ImageNet。送り手の seed は 1",
+        ),
+        RunRow(
+            "t1_crossfit_phase", "tier1", "交差適合: 工程塔の送り手の学び直し（5 折り × 2 分割 × 2 系統）",
+            "phase_sender_crossfit", 5 * 2 * 2, 5 * 2 * 2, (),
+            reps_override=(1.0, 1.0),
+            note="系統は工程塔の二系統。送り手の seed は 1",
+        ),
         # ---------------- Tier 2 ----------------
         RunRow(
             "t2_sweep_pd", "tier2", "送り手掃引 4 点（P→D）", "det_iface_w1",
@@ -444,6 +478,16 @@ class Assumptions:
     tier1_seeds: int = 5
     two_stage_selection: bool = False
     dropped_rows: tuple[str, ...] = field(default_factory=tuple)
+    # run 型の所要時間の上書き（過去の前提の再現に使う）。((key, hours), ...)
+    hours_override: tuple[tuple[str, float], ...] = field(default_factory=tuple)
+
+
+# 交差適合の行。落とすと交差適合なしの値に戻る。
+CROSSFIT_ROWS = ("t1_crossfit_det", "t1_crossfit_phase")
+
+
+def _hours(run_type: str, a: Assumptions) -> float:
+    return dict(a.hours_override).get(run_type, RUN_TYPES[run_type].hours) * a.duration_scale
 
 
 @dataclass(frozen=True)
@@ -481,7 +525,7 @@ def compute(a: Assumptions) -> dict:
     for row in rows:
         reps_low, reps_high = _reps_for(row, a)
         cfg_low, cfg_high = _configs_for(row, a)
-        hours = RUN_TYPES[row.run_type].hours * a.duration_scale
+        hours = _hours(row.run_type, a)
         runs_low = cfg_low * reps_low
         runs_high = cfg_high * reps_high
         costs.append(
@@ -499,9 +543,7 @@ def compute(a: Assumptions) -> dict:
         t["gpu_low"] += c.gpu_hours_low
         t["gpu_high"] += c.gpu_hours_high
 
-    longest = max(
-        (RUN_TYPES[c.row.run_type].hours * a.duration_scale for c in costs), default=0.0
-    )
+    longest = max((_hours(c.row.run_type, a) for c in costs), default=0.0)
     for t in by_tier.values():
         # **1 本の run は装置をまたげない。** 最長の 1 run を壁時計の下限に置く。
         t["wall_low"] = max(t["gpu_low"] / a.devices, longest)
@@ -805,6 +847,112 @@ def section_unknown() -> str:
     return "\n".join(out)
 
 
+# --------------------------------------------------------------------------
+# 9 月 17 日と 9 月 27 日の日数の差の分解（契約 T-2026-09-27-stage2-prep / Task E-1）
+# 過去の前提を所要時間の上書きと倍率で再現し、一つずつ戻す。**順序を変えると寄与の配分が変わる。**
+# --------------------------------------------------------------------------
+TF32_SPEEDUP = 1.182  # docs/stage0/C2_amp_compile_timing.md §5。W1 の倍率を全行へ当てた（計算器の外で）
+
+HISTORY_STEPS: list[tuple[str, str, dict]] = [
+    ("9 月 17 日に報告された値（TF32）",
+     "K=3、det_tower_train 8.00 h、W2 4.82 h、全行を 1/1.182 倍（C2 §5。計算器の外で当てた）",
+     {"k": 3, "duration_scale": 1 / TF32_SPEEDUP,
+      "hours_override": (("det_tower_train", 8.0), ("det_tower_w3", 8.0))}),
+    ("TF32 の倍率を外す",
+     "計算器には TF32 が一度も入っていない。9 月 17 日の計算器の出力そのもの（単精度）",
+     {"k": 3, "hours_override": (("det_tower_train", 8.0), ("det_tower_w3", 8.0))}),
+    ("検出塔の学習 8.00 → 8.35 h（9 月 21 日）",
+     "一周目の実測（12 epoch 固定）。W3 の代理も 8.35 h へ",
+     {"k": 3, "hours_override": (("det_tower_train", 8.35),)}),
+    ("検出塔の学習 8.35 → 14.13 h（9 月 27 日）",
+     "二周目の実測（収束基準・上限 36 epoch）",
+     {"k": 3}),
+    ("K 3 → 2（9 月 27 日の報告の前提）",
+     "9 月 27 日に報告された値",
+     {"k": 2}),
+]
+
+
+def history_rows() -> list[tuple[str, str, float, float]]:
+    """各段の全体（Stage 1 + Tier 1〜3、縮退なし、2 枚、24 h/日、交差適合なし）の日数。"""
+    out = []
+    for label, note, kw in HISTORY_STEPS:
+        a = Assumptions(hours_per_day=24.0, devices=2, dropped_rows=CROSSFIT_ROWS, **kw)
+        t = cumulative_totals(compute(a), ("stage1", "tier1", "tier2", "tier3"))
+        out.append((label, note, t["wall_low"] / 24.0, t["wall_high"] / 24.0))
+    return out
+
+
+def section_history() -> str:
+    out = [
+        "全体（Stage 1 + Tier 1〜3）、縮退なし、装置 2 枚、24 時間/日、交差適合なし。上から順に一つずつ戻す。",
+        "",
+        "| # | 段 | 前提 | 日数（低〜高） | 前の段との差（低 / 高） |",
+        "|---:|---|---|---:|---:|",
+    ]
+    prev = None
+    for i, (label, note, lo, hi) in enumerate(history_rows()):
+        diff = "—" if prev is None else f"{lo - prev[0]:+.1f} / {hi - prev[1]:+.1f}"
+        out.append(f"| {i} | {label} | {note} | {_f(lo)}〜{_f(hi)} | {diff} |")
+        prev = (lo, hi)
+    return "\n".join(out)
+
+
+# --------------------------------------------------------------------------
+# 交差適合を含めた Tier 1 の日数（契約 T-2026-09-27-stage2-prep / Task E-3, E-4）
+# --------------------------------------------------------------------------
+CROSSFIT_TODAY = "2026-10-02"
+CROSSFIT_DEADLINE = Deadline(
+    "miccai_late_feb", "MICCAI 2027（推定）", "2027-02-25",
+    "2027-02 下旬（公式未発表）。下旬の代表として 02-25 を採る（本計算器が IPCAI 2027 intention で採った「下旬の代表 = 25 日」と同じ読み）",
+)
+WRITING_DAYS = 21
+
+
+def _days_between(d0: str, d1: str) -> int:
+    from datetime import date as _date
+
+    y0, m0, dd0 = (int(x) for x in d0.split("-"))
+    y1, m1, dd1 = (int(x) for x in d1.split("-"))
+    return (_date(y1, m1, dd1) - _date(y0, m0, dd0)).days
+
+
+def section_crossfit(a: Assumptions) -> str:
+    total = _days_between(CROSSFIT_TODAY, CROSSFIT_DEADLINE.date)
+    avail = total - WRITING_DAYS
+    out = [
+        f"対象は **Tier 1 のみ**。装置 {a.devices} 枚、1 日あたり {_f(a.hours_per_day)} 時間、縮退なし"
+        "（seed の列だけ動かす）。Tier 1 の行は K に依存しない（K は Stage 1 の行にだけ掛かる）。",
+        "",
+        "| Tier 1 の seed | 交差適合 | run 本数（低〜高） | GPU 時間（低〜高） | 壁時計の日数（低〜高） "
+        f"| うち交差適合の GPU 時間 | 使える {avail} 日との比較 |",
+        "|---:|---|---:|---:|---:|---:|---|",
+    ]
+    for seeds in (5, 3):
+        for cf in (True, False):
+            aa = Assumptions(**{**a.__dict__, "tier1_seeds": seeds,
+                                "dropped_rows": tuple(a.dropped_rows) + (() if cf else CROSSFIT_ROWS)})
+            res = compute(aa)
+            t = cumulative_totals(res, ("tier1",))
+            cf_gpu = sum(c.gpu_hours_low for c in res["costs"] if c.row.key in CROSSFIT_ROWS)
+            need_low, need_high = t["wall_low"] / a.hours_per_day, t["wall_high"] / a.hours_per_day
+            verdict = ("収まる" if need_high <= avail
+                       else "**読みにより分かれる**" if need_low <= avail else "**収まらない**")
+            out.append(
+                f"| {seeds} | {'あり' if cf else 'なし'} | {_i(t['runs_low'])}〜{_i(t['runs_high'])} | "
+                f"{_f(t['gpu_low'])}〜{_f(t['gpu_high'])} | "
+                f"{_f(need_low)}〜{_f(need_high)} | {_f(cf_gpu)} | {verdict}（残り {_f(avail - need_high)}〜{_f(avail - need_low)} 日） |"
+            )
+    out += [
+        "",
+        f"締切との比較: 基準日 {CROSSFIT_TODAY} から **{CROSSFIT_DEADLINE.label}** = `{CROSSFIT_DEADLINE.date}` まで "
+        f"{total} 日、執筆 {WRITING_DAYS} 日を引いて **{avail} 日**。",
+        "",
+        f"- 締切の出所: {CROSSFIT_DEADLINE.source}",
+    ]
+    return "\n".join(out)
+
+
 # 感度の例。**前提を変えると判定が変わり得ることを一例で示す**（完了判定 g）。
 # 1 日あたりの使用時間だけを半分にし、他の前提は呼び出し側のまま使う。
 SENSITIVITY_HOURS_PER_DAY = 12.0
@@ -824,6 +972,8 @@ SECTIONS = {
     "deadline": lambda a, s: section_deadline(a, s),
     "deadline_sensitivity": lambda a, s: section_deadline_sensitivity(a, s),
     "unknown": lambda a, s: section_unknown(),
+    "history": lambda a, s: section_history(),
+    "crossfit": lambda a, s: section_crossfit(a),
 }
 
 
@@ -845,12 +995,19 @@ def check_coverage(a: Assumptions) -> tuple[int, list[str]]:
     return len(missing), missing
 
 
-def check_doc(path: Path, a: Assumptions, split_last: bool) -> tuple[int, list[str]]:
-    """文書に埋め込まれた生成物と、いま計算した値の差を数える。"""
+def check_doc(
+    path: Path, a: Assumptions, split_last: bool, sections: list[str] | None = None
+) -> tuple[int, list[str]]:
+    """文書に埋め込まれた生成物と、いま計算した値の差を数える。
+
+    `sections` を渡すとその節だけを突き合わせる（節の一部だけを載せる文書のため）。
+    """
     text = path.read_text(encoding="utf-8")
     found = {m.group("key"): m.group("body") for m in re.finditer(_BLOCK_RE, text, re.S)}
     diffs: list[str] = []
     for key, fn in SECTIONS.items():
+        if sections is not None and key not in sections:
+            continue
         want = fn(a, split_last)
         got = found.get(key)
         if got is None:
@@ -920,6 +1077,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--check-sources", action="store_true", help="出所の無い行を数える")
     p.add_argument("--check-coverage", action="store_true", help="対応の無い M 項目を数える")
     p.add_argument("--check-doc", type=Path, help="文書の埋め込みと再計算の差を数える")
+    p.add_argument("--doc-sections", help="--check-doc で突き合わせる節（カンマ区切り。既定は全節）")
     p.add_argument("--json", action="store_true", help="機械可読で出す")
     args = p.parse_args(argv)
 
@@ -944,7 +1102,10 @@ def main(argv: list[str] | None = None) -> int:
         return 0 if n == 0 else 1
 
     if args.check_doc:
-        n, diffs = check_doc(args.check_doc, a, args.degrade_split_last)
+        sections = args.doc_sections.split(",") if args.doc_sections else None
+        if sections and set(sections) - set(SECTIONS):
+            p.error(f"未知の節: {sorted(set(sections) - set(SECTIONS))}")
+        n, diffs = check_doc(args.check_doc, a, args.degrade_split_last, sections)
         print(f"文書と再計算の差: {n} 件")
         for d in diffs:
             print(f"  - {d}")
