@@ -1,6 +1,6 @@
 # RESULT — T-2026-09-27-stage2-prep
 
-**判定: pass**（完了判定 a〜h をすべて達成。h は PR 起票後に記入）
+**判定: pass**（完了判定 a〜h をすべて達成）
 **ホスト:** aolab（GPU 不使用） **分岐:** `feat/stage2-prep`（起点 `origin/phase0` = `1ac2d2c9`）
 **実行日:** 2026-10-02（JST）
 
@@ -25,7 +25,7 @@
 | e | 日数 | **達成**。4 通り、差の原因の表、締切との比較（`docs/stage1/B2_tier1_cost_with_crossfit.md`） | 交差適合の二行を外すと Tier 1 が 340.5 GPU 時間ちょうど減り「なし」の値に一致（試験 `test_removing_crossfit_rows_returns_to_the_no_crossfit_values`） |
 | f | check-doc | **達成**。B1 差 0 件。B2 も `--doc-sections history,crossfit` で差 0 件 | B1 の crossfit 節の 109.2 を 109.3 にした写しで差 1 件、exit 1 |
 | g | 試験 | **達成**。前 6 failed / 669 passed / 収集エラー 1 → 後 6 failed / 673 passed / 収集エラー 1 | 失敗 6 件と収集エラー 1 件は同一（§7）。合格 +4 は本契約の新規試験 |
-| h | PR | 起票後に記入 | 分岐名 `feat/stage2-prep` |
+| h | PR | **達成**。**PR #198**、`isDraft=false` / `base=phase0` / `head=feat/stage2-prep` / `state=OPEN`（`gh pr view 198 --json` の実測） | 分岐名は `feat/` で始まる |
 
 ゲート: **G1 pass**（9 クラス完全一致）、**G2 pass**（検出 0 件）。
 
@@ -131,4 +131,8 @@ B1 の Stage 1 + Tier 1（K=3、縮退なし、24 h/日）は 85.3〜114.5 → 9
 
 ## 8. 送出
 
-PR と台帳への送出の結果は起票後に記入する。
+- commit `001b4309`（本体）、`073f9dc0`（規約の変更履歴の commit 欄）、push は `origin/feat/stage2-prep`
+- push は VS Code の askpass が古く失敗したため、`gh auth git-credential` を資格情報の経路にして送った
+- PR #198（base phase0）
+- 台帳への送出: `make task-report` 成功（verdict pass、起票者の誤り 3 件、報告 11,474 bytes、sha256 `f287a416…`、置換ブロック 0）。送出したのはこの行を書く前の版である
+- `.sync-pause` は報告の後に `.sync-pause.released` へ移して解除した
