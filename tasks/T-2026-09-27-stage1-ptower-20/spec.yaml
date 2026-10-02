@@ -1,0 +1,86 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-09-27-stage1-ptower-20"
+  kind: exp
+  title: "Stage 1: 工程塔 P*-20（十五動画に追加五動画を訓練に足す）を二系統で確定し、工程塔の送り手の train と val の差を測る"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-02T10:26:43Z"
+  created_from:
+    runindex_commit: "REPLACE-BY-EXECUTOR-with-measured-runindex-commit"
+    counts: {index: 0, experiments: 0, verdicts: 0}
+  depends_on: [T-2026-09-19-stage1-phase-tower-r3, T-2026-09-27-stage2-prep]
+  amendments: []
+intent:
+  question: "確定した工程塔の recipe に追加動画を訓練として足すと、五折りの val と test はどう変わるか。工程塔を送り手にしたとき、train 動画と val 動画の予測の質の差は交差適合の閾値を超えるか"
+  decision_at_stake: "G 一点五 と Stage 二 の D から P への主分母となる P 塔（二十動画）の確定。P から D への送り手に交差適合が要るかの判定"
+  hypothesis: "P 塔（二十動画）は P 塔（十五動画）を両系統で小さく上回る。工程塔の送り手の train と val の差は閾値を超える"
+  proposal_card: "docs/proposals/2026-09-27-ptower-20.md"
+  related:
+    backlog: []
+inputs:
+  denominator:
+    ref: "exp:phase1/s4_phase_baseline/frozen_tecno_phase_baseline@val~relation_detr_seed42"
+    metric: "phase_jaccard"
+    require: {n_seeds: ">=3", sigma: present, split: val}
+  data:
+    dataset: "EgoSurgery-Phase: 15 videos (Tool subset) plus extra videos 17-21 for train only. Video 22 has phase annotations but no frames and is excluded. Folds per conventions#folds"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt", "data/splits/ego_test.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/train_phase_tower_r50.py", "scripts/run_stage1_ptower.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#folds, conventions#split, conventions#eval_recipe, conventions#sigma, conventions#symmetry, conventions#crossfit]
+  conventions_rev: "REPLACE-BY-EXECUTOR-with-measured-rev"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/phase1/stage1_ptower_20", "runindex/", "data/processed/stage1_features/", "docs/stage1/"]
+plan:
+  phases:
+    - {id: A, name: "prereg の commit。efros に揃っているもの・欠けているものの一覧。欠けていれば停止して利用者に移送を頼む", gpu: false, est: "90m"}
+    - {id: B, name: "追加五動画の manifest を train のみとして作る。フレーム数と注釈の一致", gpu: false, est: "40m"}
+    - {id: C, name: "ホスト差の対照: P 塔（十五動画）COCO 系統の折り A seed 四十二を efros で一本", gpu: true, est: "5h"}
+    - {id: D, name: "P 塔（二十動画）の backbone fine-tune 十四本と時間ヘッド。両系統", gpu: true, est: "60h"}
+    - {id: E, name: "test を折りごとに一度。P 塔（十五動画）と並置。工程塔の送り手の train と val の差", gpu: true, est: "3h"}
+    - {id: F, name: "検証と報告", gpu: false, est: "90m"}
+  gates:
+    - {id: G1, after: A, check: "三周目の recipe・道具・COCO backbone の重みが efros にあり、要約値が三周目の記録と一致した。欠けがあれば停止した", on_fail: stop}
+    - {id: G2, after: C, check: "efros での P 塔（十五動画）の val が ilya の三周目の同じ run と、折り A の seed 間 SD の二倍以内で一致した", on_fail: ask}
+    - {id: G3, after: E, check: "test の評価が確定塔についてのみ折りごとに一度", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, gpu_free, deterministic_flags]
+  resources: {server: "efros", gpu: 2, est_hours: 70, runs: 30}
+prereg:
+  prediction: "P 塔（二十動画）は P 塔（十五動画）を五折り平均の val macro Jaccard で両系統とも上回り、差は零点零一から零点零三。COCO 系統の方が上がり幅は小さい。efros の P 塔（十五動画）は ilya の値と seed 間 SD の二倍以内で一致する。工程塔の送り手の train と val の macro Jaccard の差は三点を超える"
+  primary_endpoint: "系統ごとの五折り平均の折り内 val macro Jaccard（折り A は三 seed の平均、他は一 seed）。co-primary は frame accuracy"
+  decision_rule: "選定は行わない。recipe は三周目の確定値に固定し、二系統の P 塔（二十動画）を確定する。test は確定塔について折りごとに一度だけ評価し台帳に記録する。ホスト差の対照が seed 間 SD の二倍を超えたら停止して諮る。工程塔の送り手の train と val の差は系統ごとに記録し、三点を超えれば交差適合の対象とする"
+  stop_conditions:
+    - "efros に三周目の recipe・道具・COCO backbone の重み・十五動画のフレームのいずれかが無い場合は停止し、欠けの一覧を出して利用者に移送を頼む"
+    - "追加五動画のフレーム数が注釈と一致しない場合は停止して諮る"
+    - "ホスト差の対照が ilya の値から seed 間 SD の二倍を超えて外れた場合は停止して諮る"
+    - "一本の fine-tune が八時間を超える、または記憶領域が収まらない場合は諮る"
+    - "装置が他利用者に使われている場合は停止する"
+  committed_at: null
+  commit: null
+outputs:
+  expected_runs: 30
+  must_have: [metrics.json, config.yaml, notes.md]
+  destination: "experiments/phase1/stage1_ptower_20/"
+  stamp: {task_id_in: config.yaml}
+  acceptance:
+    - "a: 追加五動画が各折りの train にだけ入り、val と test に入っていない。動画二十二が除外されている。集合差の照合"
+    - "b: recipe（初期化、凍結範囲、入力、学習率、収束規則、実効 batch、時間ヘッドの構成）が三周目の確定値と一致する。差分の表"
+    - "c: ホスト差の対照の値が ilya の値と並べられ、差が seed 間 SD と比べられている"
+    - "d: 二系統 × 五折り（折り A は三 seed）の val と test が、P 塔（十五動画）の同じ折りと並置されている"
+    - "e: 工程塔の送り手の train と val の差が、四塔（二系統 × 十五と二十）について折りごとに記録され、閾値三点との比較がある"
+    - "f: test の評価が確定塔について折りごとに一度で、台帳にある"
+    - "g: 対称性の表が prereg にあり UNKNOWN が零件。実行前の L3 で P十三 と P十四 が PASS"
+    - "h: 全 run に task_id が刻まれ、runindex の収穫後に task_id で照合して本契約の全 run が現れる"
+    - "i: PR が Draft でなく存在し、base が phase0 で、分岐が feat/ で始まる"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: [denominator_moved, "efros に必要なものが欠けている", "ホスト差が seed 間 SD の二倍を超える", "一本が八時間を超える"]
