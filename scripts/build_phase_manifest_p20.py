@@ -5,6 +5,7 @@
 clip を ``train.json`` にだけ加える。動画 22 は工程注釈があるがフレーム画像が無いので
 使わない。追加動画は**注釈のフレーム集合と画像のフレーム集合が一致すること**を要求し、
 一致しなければ止まる（15 動画の builder のように交差を取って黙って落とさない）。
+全画像をデコードし、途中で切れた画像が 1 枚でもあれば止まる。
 
 出力（``data/processed/stage1_features/p20_manifest/``）:
   - ``{train,val,test}.json`` と ``phase_vocab.json``（15 動画と同じ形式）
@@ -17,7 +18,10 @@ from __future__ import annotations
 
 import json
 import sys
+from multiprocessing import Pool
 from pathlib import Path
+
+from PIL import Image
 
 PROJ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJ / "scripts"))
@@ -54,7 +58,25 @@ def extra_clips(vocab):
                 for frame, phase in rows]})
         if not any(c["video"] == video for c in clips):
             raise RuntimeError(f"No clips for extra video {video}")
+    broken = undecodable([PROJ / f["image_path"] for c in clips for f in c["frames"]])
+    if broken:
+        raise RuntimeError(f"{len(broken)} extra frames do not decode, e.g. {broken[:3]}")
     return clips, audit
+
+
+def _decodes(path):
+    try:
+        with Image.open(path) as image:
+            image.load()
+        return None
+    except OSError as error:
+        return f"{path.relative_to(PROJ)}: {error}"
+
+
+def undecodable(paths):
+    """数が合っても中身が欠けた画像がある（転送の途中切れ）。全数をデコードする。"""
+    with Pool(16) as pool:
+        return [e for e in pool.map(_decodes, paths, chunksize=64) if e]
 
 
 def verify_folds(p15, p20):
