@@ -7,7 +7,7 @@ meta:
   chat_url: ""
   created_at: "2026-10-02T10:26:43Z"
   created_from:
-    runindex_commit: "REPLACE-BY-EXECUTOR-with-measured-runindex-commit"
+    runindex_commit: "2fb7c905b51aac5ec2b0ee5fe5c70e835f4024a8"
     counts: {index: 0, experiments: 0, verdicts: 0}
   depends_on: [T-2026-09-19-stage1-phase-tower-r3, T-2026-09-27-stage2-prep]
   amendments: []
@@ -31,7 +31,7 @@ inputs:
     entrypoints: ["scripts/train_phase_tower_r50.py", "scripts/run_stage1_ptower.py"]
 contract:
   inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#folds, conventions#split, conventions#eval_recipe, conventions#sigma, conventions#symmetry, conventions#crossfit]
-  conventions_rev: "REPLACE-BY-EXECUTOR-with-measured-rev"
+  conventions_rev: "073f9dc0b80b7ca48c2766eb6f8f2ccd17cf0fe6"
   prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
   verbatim_forbidden: true
   allow_write: ["experiments/phase1/stage1_ptower_20", "runindex/", "data/processed/stage1_features/", "docs/stage1/"]
@@ -61,8 +61,8 @@ prereg:
     - "ホスト差の対照が ilya の値から seed 間 SD の二倍を超えて外れた場合は停止して諮る"
     - "一本の fine-tune が八時間を超える、または記憶領域が収まらない場合は諮る"
     - "装置が他利用者に使われている場合は停止する"
-  committed_at: null
-  commit: null
+  committed_at: "2026-10-02T11:05:16+00:00"
+  commit: "0049f2fcf68028cccae2d184eab25b473b689055"
 outputs:
   expected_runs: 30
   must_have: [metrics.json, config.yaml, notes.md]
