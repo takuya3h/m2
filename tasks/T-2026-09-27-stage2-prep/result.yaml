@@ -1,0 +1,68 @@
+result_version: 3
+task_id: "T-2026-09-27-stage2-prep"
+status: pass
+host: "aolab"
+branch: "feat/stage2-prep"
+pr: 198
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "規約の 9 クラスを注釈の categories 15 件と完全一致で照合し 9/9 一致。全 5 折り × 3 分割でクラス名一覧は同一。per_class_ap のキーも同じ 15 件"}
+  - {id: G2, verdict: pass, note: "tools/check_proposal.py docs/proposals/2026-09-27-ptower-20.md が検出 0 件（禁止語 15 語 / カード 16 件、数値必須 #5 #6 #10）、exit 0"}
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 673
+
+deviations:
+  - {type: judgement, note: "開始時の未追跡 session digest 4 件を利用者の指示により git stash で退避した（Task A-1 は移動での退避）。stash@{0}、戻し方は git stash pop"}
+  - {type: spec_defect, note: "変更履歴表が naming 節の範囲にあるため、履歴への 1 行追加で naming 節の本文が 1 行変わった。他の 10 節は末尾空白を除き同一"}
+  - {type: judgement, note: "allow_write 外の scripts/build_stage1_group_ap.py、tests/test_estimate_tier_cost.py、README.md、本契約の spec.yaml（占位の差し替え）へ書いた。禁止領域ではなく forbidden-check は pass"}
+  - {type: judgement, note: "計算器に --doc-sections と Assumptions.hours_override を足した。B2 の部分照合と 9/17 の前提の再現のため。既定の挙動は不変"}
+  - {type: judgement, note: "B1 §7 の地の文を直した。交差適合の追加で 24h/日・縮退なしの IPCAI long abstract の判定が収まるから読みにより分かれるへ変わったため"}
+  - {type: judgement, note: "締切 2027-02 下旬を 02-25 とした（B1 の下旬 = 25 日と同じ読み）"}
+  - {type: environment, note: "このホストに third_party/Relation-DETR/util/convergence.py が無く試験 1 件が収集エラー。--continue-on-collection-errors で回した。変更前後で同一"}
+
+issuer_defects:
+  - {type: asserted_without_measuring, note: "SPEC §2 の「P→D の W1 界面 run 約 3.6 h（TF32）」に出所が無い。repo の実測は C2 §4 の 3.7406 h で 4.00/1.182=3.38 h とも合わない。指示どおり使うと実測の無い値が実測の行に入るため、計算器の W1 は単精度 4.00 h のまま残した"}
+  - {type: asserted_without_measuring, note: "SPEC §2 は 9 月 17 日の 74.0〜98.7 日を計算器の出力として書くが、計算器は TF32 を一度も持たず、C2 §5 が計算器の外で 1/1.182 を当てた値だった。計算器の前提の差だけを探すと差の最大要因（TF32、+13.5〜+18.0 日）を見落とす"}
+  - {type: self_contradiction, note: "禁止事項 1「既存の規約の節の本文を変えない」と Task B-2「変更履歴に本契約の行」が両立しない。変更履歴表は naming 節のアンカーの範囲にあり、指示どおり行を足すと naming 節の本文が 1 行変わる。Task B-2 を優先し差がその 1 行だけであることを実測した"}
+
+positive_controls:
+  - judgement: "a: 新しいアンカーが L2 で引ける"
+    breaking_input: "inject_verbatim を conventions#det_group / conventions#crossfitt にする"
+    observed: "[L2-5] アンカー det_group が存在しません / crossfitt が存在しません を返した"
+  - judgement: "b: 9 クラスが完全一致で対応する"
+    breaking_input: "Bipolar Forceps を Bipolar forceps にした群で mapping_table を引く"
+    observed: "Bipolar forceps が matched: None になった"
+  - judgement: "c: 群 AP が per-class AP の平均である"
+    breaking_input: "手計算と照合（不一致なら計算の誤り）"
+    observed: "dcoco_foldE_seed42 val 陰性対照群（Mouth Gag 欠落の 3 クラス）を全桁で手計算 0.43860521730832785、json 0.43860521730832774"
+  - judgement: "d: カードが check_proposal で検出 0 件"
+    breaking_input: "#6 の本文の数字 0.6 を消した一時文書"
+    observed: "missing_number 1 件、exit 1"
+  - judgement: "e: 交差適合の行が日数に入っている"
+    breaking_input: "dropped_rows に CROSSFIT_ROWS を入れる"
+    observed: "Tier 1 の GPU 時間がちょうど 340.5 h 減り交差適合なしの値に一致（試験で縛った）"
+  - judgement: "f: --check-doc が差 0"
+    breaking_input: "B1 の crossfit 節の 109.2 を 109.3 にした写し"
+    observed: "差 1 件、exit 1"
+  - judgement: "e: 差の原因の分解が報告値を再現する"
+    breaking_input: "前提を戻した再計算が報告値と違えば分解は誤り"
+    observed: "段 0 が 74.0〜98.7、段 4 が 88.8〜118.0 で報告と一致（試験で縛った）"
+
+followups:
+  - "P*-20 の契約（T-2026-09-27-stage1-ptower-20）は本契約の PR の統合後に起動する。カードは docs/proposals/2026-09-27-ptower-20.md"
+  - "カード #1 の問いが yes/no の一文になっていない（内容を変えない指示のためそのまま）。check_proposal.py は検出しない"
+  - "規約の変更履歴表が naming 節の範囲にある。改訂のたびに既存節の不変と衝突する"
+  - "TF32 の採用は未決。計算器には入っていない（採用すれば Tier 1 の検出側が約 1/1.17〜1/1.18）"
+  - "計算器の行ラベル「受け取りは P*-21」は P*-20 になった（数値に影響なし、未修正）"
+
+unknowns:
+  - "交差適合の送り手（train の半分）の学習時間。全量の実測を上限に置いた"
+  - "工程塔の fine-tune の A6000 での時間。ilya（RTX 6000 Ada）の値を使った"
+  - "工程塔の送り手の train−val 差。T-2026-09-27-stage1-ptower-20 で測る"
+  - "MICCAI 2027 の締切（公式未発表）"
+
+commits: ["001b4309", "073f9dc0"]

@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（548 件）
+## 申し送り（558 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -866,6 +866,14 @@
 - tests/test_fetch_task.py::test_rejects_unknown_file_name が既存で落ちている。 束の取り込みが ../../etc/passwd を拒んでいない。経路の遡上を拒む修正が要る。
 - 投影（context/auto/ の 3 ファイル）が本契約の result.yaml を反映していない。 禁止 6 により再生成していないためで、make taskindex-check は差分ありで落ちる。 生成物の再生成を許す契約で make taskindex を回し、投影を追いつかせること。
 
+### T-2026-09-23-dlsta-host-fairness
+
+- 検出塔を dlsta で比べるには third_party/Relation-DETR（egosurgery 用の設定と別 venv を含む）の配備が要る。配備の契約を出してから本契約の検出塔部分を再実行する
+- 工程塔の d_seed は種の対 1 組（42 と 123）だけから出た。r=0.847 は境界 1 に近く、種を増やすと区分が変わりうる
+- ilya の driver・nvcc・torch・cuDNN を記録として残す。今回は型番しか記録が無く、ホスト差と世代差を分けられなかった
+- scripts/stage1_ptower.py の出力先（experiments/ 固定）と W&B 必須を、短い検証の run のために引数で外せるようにするかは未決
+- Relation-DETR の train.log は 50 step 間隔、工程塔は epoch 単位。ホスト比較のため一歩ごとの損失を残す規約を置くかは未決
+
 ### T-2026-09-23-ops-and-proposal-card-gate
 
 - 例外の二件（T-2026-09-19-stage1-detector-towers-r2 / T-2026-09-19-stage1-phase-tower-r3）は配布台帳にあるが repo には未取得である。P14 の例外の経路は試験で確かめたが、実物の契約で SKIP になることは取得後に確かめること
@@ -874,7 +882,15 @@
 - make spec-check を TASK 無しで回すと allow_write_incomplete が 15 件出る（exp 10 件 / impl 5 件）。過去の契約の是正は別契約で行うこと
 - 本契約の統合後、起票者は Stage 2 の提案カードを docs/proposals/ に置き、check_proposal.py を通してから exp を起票する（SPEC §8）
 
-## 断定できなかった事項（355 件）
+### T-2026-09-27-stage2-prep
+
+- P*-20 の契約（T-2026-09-27-stage1-ptower-20）は本契約の PR の統合後に起動する。カードは docs/proposals/2026-09-27-ptower-20.md
+- カード #1 の問いが yes/no の一文になっていない（内容を変えない指示のためそのまま）。check_proposal.py は検出しない
+- 規約の変更履歴表が naming 節の範囲にある。改訂のたびに既存節の不変と衝突する
+- TF32 の採用は未決。計算器には入っていない（採用すれば Tier 1 の検出側が約 1/1.17〜1/1.18）
+- 計算器の行ラベル「受け取りは P*-21」は P*-20 になった（数値に影響なし、未修正）
+
+## 断定できなかった事項（366 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1526,23 +1542,40 @@
 - crashReportingEnabled を読む判定の位置（実装から特定できなかった）
 - natEnabled が UPnP/NAT-PMP の探索も止めるか（判定の位置を特定できなかった）
 
+### T-2026-09-23-dlsta-host-fairness
+
+- ilya の driver・nvcc・torch・cuDNN・Python・lock の要約値
+- efros の cuDNN・torchvision・lock の要約値・repo の commit（git_commit.txt は ref のみ）
+- 参照ホストの装置間の接続
+- 工程塔の参照の step 時間（epoch 単位の記録のみ）
+- stage1_ptower_r2.py の実行時点の要約値（記録の commit にまだ無かった）
+- 検出塔の当該ホストでの評価・短い学習・ピーク記憶量・step 時間
+- 凍結源 checkpoint の照合（当該ホストに無い）
+
 ### T-2026-09-23-ops-and-proposal-card-gate
 
 - 旧様式 result.yaml（T-2026-08-22-philip-hub-foundation）の tests の 3 整数は実測不能である。旧報告にも旧 RESULT.md にも試験の記録が一切無く、推測で埋めれば捏造になる。UNKNOWN のまま据え置いた
 - 完了判定 e の「実例 4 件で FAIL」は達成していない。4 件目が是正済みであることが理由で、規則の欠陥ではないが、契約の字面は充足していない
 
-## 起票者の誤りの型（328 件）
+### T-2026-09-27-stage2-prep
+
+- 交差適合の送り手（train の半分）の学習時間。全量の実測を上限に置いた
+- 工程塔の fine-tune の A6000 での時間。ilya（RTX 6000 Ada）の値を使った
+- 工程塔の送り手の train−val 差。T-2026-09-27-stage1-ptower-20 で測る
+- MICCAI 2027 の締切（公式未発表）
+
+## 起票者の誤りの型（335 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 90 |
-| `asserted_without_measuring` | 134 |
-| `self_contradiction` | 84 |
+| `check_does_not_check` | 91 |
+| `asserted_without_measuring` | 138 |
+| `self_contradiction` | 86 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 0 |
 | `rule_read_narrowly` | 1 |
 
-合計 328 件（対を持つ契約 108 件から）
+合計 335 件（対を持つ契約 110 件から）
 

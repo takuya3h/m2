@@ -1290,3 +1290,20 @@ exp 契約 13 件すべてを FAIL にしていた**（prereg に対称性の表
 `tools/build_taskindex.py` の `DEFECT_TYPES` も同じ 6 種へ揃えた。**片方だけ増やすと
 新しい型の欠陥が `context/auto/followups.md` の集計表から黙って落ちる。**
 一致は試験で縛ってある。
+
+### Stage 2 の準備: 標的群・交差適合の規約化と日数の出し直し（2026-10-02）
+
+`T-2026-09-27-stage2-prep`（GPU 不使用）。
+
+- `context/conventions.md` に `det_groups` 節（標的群 5 クラス・陰性対照群 4 クラス）と `crossfit` 節（閾値 3pt）を追加。
+  既存の節の本文は不変
+- `scripts/build_stage1_group_ap.py` — 群を規約の表から読み、既存の `eval_{val,test}.json` の per-class AP から
+  標的群 AP と陰性対照群 AP を計算する（**再評価しない**）。評価集合に出現しないクラスは除き 0 で埋めない。
+  NaN と注釈の欠落の一致を照合する。出力は `docs/stage1/D_group_ap.md` と
+  `experiments/baselines/stage1_dtower_r2/group_ap.json`
+- `docs/proposals/2026-09-27-ptower-20.md` — P\*-20 の提案カード（`check_proposal.py` 検出 0 件）
+- `tools/estimate_tier_cost.py` — 交差適合の送り手の学び直し二行（`t1_crossfit_det`・`t1_crossfit_phase`）、
+  過去の前提を再現する `Assumptions.hours_override`、節 `history`（9/17 と 9/27 の差の分解）と `crossfit`
+  （Tier 1 の 4 通りと締切）、`--doc-sections`（節の一部だけを載せる文書の照合）を追加。
+  **TF32 は計算器に一度も入っていない**（9/17 の 74.0〜98.7 日は計算器の外で 1/1.182 を当てた値）。
+  新しい文書は `docs/stage1/B2_tier1_cost_with_crossfit.md`

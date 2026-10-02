@@ -168,3 +168,44 @@ def test_check_doc_reports_a_difference_when_a_number_is_changed(tmp_path):
     n2, diffs2 = etc.check_doc(doc, a, split_last=False)
     assert any(d.startswith("base 行") for d in diffs2), diffs2
     assert n2 > n
+
+
+# ---------------------------------------------------------------- 交差適合（T-2026-09-27-stage2-prep）
+def test_removing_crossfit_rows_returns_to_the_no_crossfit_values():
+    """陽性対照。交差適合の行を外すと Tier 1 の総量がちょうど二行の分だけ減る。"""
+    with_cf = etc.compute(_base())
+    without = etc.compute(dataclasses.replace(_base(), dropped_rows=etc.CROSSFIT_ROWS))
+    cf_gpu = sum(c.gpu_hours_high for c in with_cf["costs"] if c.row.key in etc.CROSSFIT_ROWS)
+    assert cf_gpu == pytest.approx(20 * 14.13 + 20 * 81.0 / 28.0)
+    assert with_cf["by_tier"]["tier1"]["gpu_high"] - cf_gpu == pytest.approx(
+        without["by_tier"]["tier1"]["gpu_high"]
+    )
+
+
+def test_crossfit_rows_do_not_scale_with_tier1_seeds():
+    """送り手の seed は 1。Tier 1 の seed を 5 → 3 にしても交差適合の行は変わらない。"""
+    for seeds in (5, 3):
+        res = etc.compute(dataclasses.replace(_base(), tier1_seeds=seeds))
+        runs = [c.runs_high for c in res["costs"] if c.row.key in etc.CROSSFIT_ROWS]
+        assert runs == [20.0, 20.0]
+
+
+def test_history_reproduces_the_reported_values():
+    """9 月 17 日（TF32）と 9 月 27 日に報告された全体の日数を、前提を戻して再現する。"""
+    rows = etc.history_rows()
+    first, last = rows[0], rows[-1]
+    assert (round(first[2], 1), round(first[3], 1)) == (74.0, 98.7)
+    assert (round(last[2], 1), round(last[3], 1)) == (88.8, 118.0)
+
+
+def test_check_doc_with_sections_ignores_other_sections(tmp_path):
+    a = _base()
+    doc = tmp_path / "doc.md"
+    body = etc.section_crossfit(a)
+    doc.write_text(
+        f"{etc.BLOCK_BEGIN.format(key='crossfit')}\n{body}\n{etc.BLOCK_END.format(key='crossfit')}\n",
+        encoding="utf-8",
+    )
+    assert etc.check_doc(doc, a, False, ["crossfit"])[0] == 0
+    doc.write_text(doc.read_text(encoding="utf-8").replace("| 5 | あり |", "| 5 | ありx |"), encoding="utf-8")
+    assert etc.check_doc(doc, a, False, ["crossfit"])[0] > 0
