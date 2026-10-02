@@ -40,6 +40,9 @@ cache: null
 manifest_dir: data/processed/stage1_features/p20_manifest
 batch_size: 16
 workers: 4
+# PyTorch 2.1 の pinned メモリのキャッシュは塊を返さず、1 回の val で 95 塊（約 24 GiB）まで積もる。
+# 本ホストの cgroup 上限 52 GiB で 2 本並べると OOM になったため切る。数値は同一（logits の要約値で確認）
+pin_memory: false
 hydra:
   run:
     dir: .

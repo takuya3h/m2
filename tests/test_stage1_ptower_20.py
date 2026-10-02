@@ -72,7 +72,8 @@ def test_the_control_reads_the_fifteen_video_manifest_and_its_own_cache():
 
 # --- acceptance b: the recipe is the third round's --------------------------
 
-ALLOWED = {"task_id", "step", "data_setting", "ft_lr", "cache", "manifest_dir"}
+# pin_memory はコピーの方式だけを変え、数値は変えない（logits の要約値で確認）
+ALLOWED = {"task_id", "step", "data_setting", "ft_lr", "cache", "manifest_dir", "pin_memory"}
 
 
 def recipe_diff(a, b):
