@@ -14,6 +14,8 @@ from __future__ import annotations
 import argparse
 import json
 import subprocess
+import threading
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
@@ -127,6 +129,40 @@ def run(params, device, verify=False):
     return {"params": params, "path": str(path.relative_to(ROOT)), "metrics": metrics}
 
 
+def running_elsewhere(params):
+    """A run with exactly these settings is already in progress outside this runner."""
+    marker = " ".join(f"{k}={v}" for k, v in params.items())
+    return subprocess.run(["pgrep", "-f", f"{SCRIPT} {marker}"],
+                          capture_output=True).returncode == 0
+
+
+def gpu_busy(device):
+    """Any compute process on the device (the contract stops if another user is on it)."""
+    query = ["nvidia-smi", "--format=csv,noheader"]
+    buses = subprocess.run(query + ["--query-gpu=pci.bus_id"], capture_output=True,
+                           text=True, check=True).stdout.split()
+    apps = subprocess.run(query + ["--query-compute-apps=gpu_bus_id"], capture_output=True,
+                          text=True, check=True).stdout.split()
+    return buses[device] in apps
+
+
+def worker(device, queue, lock, first, verify_first):
+    """Take the next setting whenever this device is free. A fine-tune of P*-20 runs
+    for seven to ten hours and they differ by hours, so pairing would idle a GPU."""
+    results = []
+    while True:
+        while gpu_busy(device):
+            time.sleep(60)
+        with lock:
+            if not queue:
+                return results
+            params = queue.pop(0)
+        if evidence_for(params) is None and running_elsewhere(params):
+            print(f"SKIP_RUNNING_ELSEWHERE {params}", flush=True)
+            continue
+        results.append(run(params, device, verify_first and params == first))
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("stage", choices=["CTRL", "FT", "EX", "HEAD"])
@@ -140,14 +176,15 @@ def main():
         for params in items:
             results.append(run(params, 0, args.verify_first and params["action"] == "extract"))
     else:
-        # Submit one pair at a time: a failed pair cannot start subsequent runs.
+        queue, lock = list(items), threading.Lock()
         with ThreadPoolExecutor(max_workers=2) as pool:
-            for i in range(0, len(items), 2):
-                futures = [pool.submit(run, p, device,
-                                       args.verify_first and i == 0 and device == 0)
-                           for device, p in enumerate(items[i:i + 2])]
-                for future in as_completed(futures):
-                    results.append(future.result())
+            futures = [pool.submit(worker, device, queue, lock, items[0], args.verify_first)
+                       for device in (0, 1)]
+            for future in as_completed(futures):
+                results.extend(future.result())
+    missing = [p for p in items if evidence_for(p) is None]
+    if missing:
+        print(f"MISSING_EVIDENCE {len(missing)} {missing}", flush=True)
     path = LOG_DIR / f"grid_{args.stage}_results.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(results, indent=2) + "\n")

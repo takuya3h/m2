@@ -1,0 +1,4 @@
+- [ ] 2026-10-03 [cc] **G2 不合格を記録して続行（利用者の決定）。** efros の P*-15 対照（COCO・折り A・seed 42）の val macro Jaccard は 0.7762、ilya の同じ run は 0.7066。差 +0.0696 は閾値 0.0372（三周目の折り A の seed 間標本 SD 0.0186 の 2 倍）を超えた（SD 比 3.7）。fine-tune 段階のフレーム単位 J の差は +0.0063 で、時間ヘッドで広がった。P*-20（efros）と P*-15（ilya）の並置にはこの大きさのホスト差が混ざる（experiments/phase1/stage1_ptower_20/host_control_rule.json）
+- [ ] 2026-10-03 [cc] **P*-20 の fine-tune は 1 本 8 時間を超えても recipe を変えずに続行（利用者の決定）。** efros（A6000）は 14.2 フレーム/秒で ilya の約 0.68 倍、P*-20 の train は P*-15 の約 2.1 倍。P*-15 対照の実測は 4.47 時間、P*-20 は 1 epoch 約 26 分
+- [ ] 2026-10-02 [cc] **efros の cgroup 上限 52 GiB で 2 本並べると OOM。** PyTorch 2.1 の pinned メモリのキャッシュが 1 回の val で 95 塊（約 24 GiB）まで積もり返さない。P*-20 は pin_memory=False（logits の要約値は一致）。三周目の既定は True のまま
+- [ ] 2026-10-02 [cc] **追加動画 19 の 1,932 枚が 256 KiB で切れていた。** フレーム数の照合だけでは捕まらない。manifest の生成で全数デコードを必須にした。利用者が再送して全 10,461 枚が通った
