@@ -47,9 +47,79 @@ data/                          規模（aolab, 2026-10-05）
 1 行 1 **動画 ID** である（フレーム ID ではない）。規約 `context/conventions.md#split` と
 `src/egosurgery/utils/eval_recipe.py` の `PAPER_SPLIT_VIDEOS` が同じ値を持つ。
 
-**動画単位 5 折りの正本は `docs/stage0/A1_fold_table.md`**（規約 `conventions#folds`）。
-折り A は公式分割そのものである。折りの注釈は `annotations/egosurgery_tool_folds/` にある。
 **分割を書き換えない**（契約の禁止事項 `no_split_redefine`）。
+
+### 2.1 動画単位 5 折り（A〜E）
+
+**正本は `docs/stage0/A1_fold_table.md`**（契約 `T-2026-09-17-fold-table` が確定。生成器
+`scripts/analysis/a1_fold_table.py`）。規約 `conventions#folds` は同じ値を持つ。下の折り表はその写しで、
+食い違ったら正本を正とする。注釈の画像数・box 数・欠けるクラスは、`annotations/egosurgery_tool_folds/`
+の各ファイルを 2026-10-05 に実測した値である。
+
+#### 折り表
+
+| 折り | test（3） | val（2） | train（10） |
+|---|---|---|---|
+| A | 04, 05, 07 | 09, 10 | 01, 02, 03, 06, 08, 11, 12, 13, 14, 15 |
+| B | 01, 03, 14 | 02, 08 | 04, 05, 06, 07, 09, 10, 11, 12, 13, 15 |
+| C | 02, 08, 11 | 06, 12 | 01, 03, 04, 05, 07, 09, 10, 13, 14, 15 |
+| D | 06, 13, 15 | 04, 05 | 01, 02, 03, 07, 08, 09, 10, 11, 12, 14 |
+| E | 09, 10, 12 | 07, 15 | 01, 02, 03, 04, 05, 06, 08, 11, 13, 14 |
+
+- **折り A は公式分割そのもの**（`splits/ego_*.txt` と一致）。折り B〜E の test は、公式 train 10 本と
+  公式 val 2 本の計 12 本を 3 本ずつに分けたもの
+- 各動画は test にちょうど一度現れる。val は全折りを通じて各動画高々一度
+- train はその折りの test と val を除いた 10 本
+- 折り B〜E の test は、工程と術具の分布が全 15 動画に最も近くなる分け方を全数列挙（15,400 通り）から選んだ
+  （最も偏る折りを最小にする minimax。指標の定義と無作為対照は正本を参照）
+
+#### 折りごとの術具注釈（`egosurgery_tool_folds/<折り>/instances_<分割>.json`）
+
+| 折り | train 画像 / box | val 画像 / box | test 画像 / box | 評価集合に出現しないクラス |
+|---|---|---|---|---|
+| A | 9,657 / 32,272 | 1,515 / 4,707 | 4,265 / 12,673 | val: Retractor |
+| B | 9,764 / 31,119 | 1,861 / 4,922 | 3,812 / 13,611 | val: Electric Cautery、Hook |
+| C | 10,834 / 34,769 | 1,988 / 7,516 | 2,615 / 7,367 | test: Electric Cautery |
+| D | 10,262 / 35,078 | 2,554 / 5,751 | 2,621 / 8,823 | test: Hook |
+| E | 11,182 / 33,724 | 2,131 / 8,750 | 2,124 / 7,178 | val: Electric Cautery、Mouth Gag |
+
+- 3 分割の画像数の和は全折りで 15,437（プールした全画像数。`fold_report.json` の `pooled_images`）
+- 出現しないクラスの AP は評価器が NaN を返す。群 AP では除いて平均する（`conventions#det_groups`。
+  標的群・陰性対照群に掛かるのは折り E の val の Mouth Gag だけ）
+- train はどの折りでも 15 クラスすべてが出現する
+
+#### 工程のフレーム数（正本の表から）
+
+| 折り | test frames | val frames |
+|---|---:|---:|
+| A | 4,749 | 1,904 |
+| B | 4,220 | 2,120 |
+| C | 2,985 | 2,066 |
+| D | 2,756 | 2,961 |
+| E | 2,523 | 2,254 |
+
+工程の frames は `annotations/egosurgery_phase/*.csv` の行数で、術具注釈の画像数とは数え方が違う。
+
+#### ファイルと生成
+
+- 生成は `scripts/make_fold_annotations.py`。公式 3 ファイルは ID が 0 始まりで分割間で衝突するため、
+  **折り B〜E はプールして ID を振り直す**。**折り A は公式ファイルの複製**で ID を振り直さない（sha256 一致）
+- 生成の記録は `egosurgery_tool_folds/fold_report.json`（折りごと・分割ごとの期待と実際の動画集合、集合差 0、
+  画像数・box 数・sha256、陰性対照）。検証は `scripts/verify_stage1_dtower_r2_folds.py`
+- 🔴 **`file_name` は公式分割のディレクトリ名を保持する。** 例えば折り B の train には `test/04/04_1_0511.jpg` が、
+  test には `train/01/01_1_0124.jpg` が入る。**画像の根は折りによらず `raw/ego/`** であり、`file_name` の先頭を
+  その折りの分割と読んではならない
+- Git 管理しない（`annotations/**/*.json` の除外に当たる）。無いホストでは `make_fold_annotations.py` で作る
+
+#### 使い方と規律
+
+- 検出塔は `EGO_ANN_DIR=data/annotations/egosurgery_tool_folds/<折り>` で折りを切り替える
+  （`scripts/run_stage1_dtower.sh`）。工程塔は折り表を `docs/stage0/A1_fold_table.md` から直接読む
+  （`scripts/stage1_ptower.py` の `folds()`）
+- 選定・early stopping・ハイパラの選択はその折りの val で行い、**test は腕ごとに一度だけ**触る。
+  検出塔の test の参照は `experiments/baselines/stage1_dtower*/test_access_ledger.csv` に記録されている
+- 判定は動画単位の 5 折り × 3 test 動画 = 15 個の対の差で、**クラスタは折り**に取る（プロジェクトの判定規則）
+- 追加動画 17〜21（`raw/ego/other(17~21)/`）は工程塔 P\*-20 の train にだけ足す。どの折りの val・test にも現れない
 
 ---
 
