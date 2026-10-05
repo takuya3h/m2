@@ -1,0 +1,103 @@
+{
+  "task_id": "T-2026-09-27-stage1-ptower-20",
+  "chains": {
+    "coco": {
+      "per_fold": {
+        "A": {
+          "p20_val_jaccard": 0.7319762119999969,
+          "p20_val_accuracy": 0.9328932893289329,
+          "p15_val_jaccard": 0.70683155993455,
+          "p15_val_accuracy": 0.8721672167216722
+        },
+        "B": {
+          "p20_val_jaccard": 0.6165838584727378,
+          "p20_val_accuracy": 0.8221386351423966,
+          "p15_val_jaccard": 0.6717981995781513,
+          "p15_val_accuracy": 0.84631918323482
+        },
+        "C": {
+          "p20_val_jaccard": 0.7243734803918263,
+          "p20_val_accuracy": 0.8430583501006036,
+          "p15_val_jaccard": 0.6094239362074261,
+          "p15_val_accuracy": 0.7821931589537223
+        },
+        "D": {
+          "p20_val_jaccard": 0.6504894504163616,
+          "p20_val_accuracy": 0.8555207517619421,
+          "p15_val_jaccard": 0.6151940666293619,
+          "p15_val_accuracy": 0.8465152701644479
+        },
+        "E": {
+          "p20_val_jaccard": 0.7826290166602327,
+          "p20_val_accuracy": 0.9300797747536368,
+          "p15_val_jaccard": 0.6757300829844042,
+          "p15_val_accuracy": 0.8916001877053027
+        }
+      },
+      "mean_p20_val_jaccard": 0.7012104035882311,
+      "mean_p20_val_accuracy": 0.8767381602175024,
+      "mean_p15_val_jaccard": 0.6557955690667787,
+      "mean_p15_val_accuracy": 0.8477590033559931,
+      "delta_jaccard_per_fold": [
+        0.025144652065446804,
+        -0.05521434110541357,
+        0.11494954418440018,
+        0.0352953837869997,
+        0.10689893367582848
+      ],
+      "delta_jaccard_mean": 0.04541483452145232,
+      "delta_jaccard_fold_sd": 0.0693809859832739,
+      "p15_fold_sd": 0.0420028324238048,
+      "delta_standardized_by_p15_fold_sd": 1.0812326669597119
+    },
+    "imagenet": {
+      "per_fold": {
+        "A": {
+          "p20_val_jaccard": 0.7542114879716114,
+          "p20_val_accuracy": 0.915951595159516,
+          "p15_val_jaccard": 0.6161904717755771,
+          "p15_val_accuracy": 0.8497249724972498
+        },
+        "B": {
+          "p20_val_jaccard": 0.4420206631335652,
+          "p20_val_accuracy": 0.7614185921547555,
+          "p15_val_jaccard": 0.3584194967660744,
+          "p15_val_accuracy": 0.7291778613648576
+        },
+        "C": {
+          "p20_val_jaccard": 0.5439369746935381,
+          "p20_val_accuracy": 0.8234406438631791,
+          "p15_val_jaccard": 0.4304956698012248,
+          "p15_val_accuracy": 0.7947686116700201
+        },
+        "D": {
+          "p20_val_jaccard": 0.5377905621906646,
+          "p20_val_accuracy": 0.7991386061080658,
+          "p15_val_jaccard": 0.43297400195313207,
+          "p15_val_accuracy": 0.6859827721221613
+        },
+        "E": {
+          "p20_val_jaccard": 0.7214931296010467,
+          "p20_val_accuracy": 0.8977006100422337,
+          "p15_val_jaccard": 0.5541974275812928,
+          "p15_val_accuracy": 0.8305959643359925
+        }
+      },
+      "mean_p20_val_jaccard": 0.5998905635180852,
+      "mean_p20_val_accuracy": 0.83953000946555,
+      "mean_p15_val_jaccard": 0.47845541357546023,
+      "mean_p15_val_accuracy": 0.7780500363980563,
+      "delta_jaccard_per_fold": [
+        0.13802101619603435,
+        0.08360116636749082,
+        0.1134413048923133,
+        0.1048165602375325,
+        0.16729570201975397
+      ],
+      "delta_jaccard_mean": 0.12143514994262498,
+      "delta_jaccard_fold_sd": 0.032209356528162605,
+      "p15_fold_sd": 0.10426542582918974,
+      "delta_standardized_by_p15_fold_sd": 1.1646732267852924
+    }
+  }
+}

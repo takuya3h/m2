@@ -1307,3 +1307,25 @@ exp 契約 13 件すべてを FAIL にしていた**（prereg に対称性の表
   （Tier 1 の 4 通りと締切）、`--doc-sections`（節の一部だけを載せる文書の照合）を追加。
   **TF32 は計算器に一度も入っていない**（9/17 の 74.0〜98.7 日は計算器の外で 1/1.182 を当てた値）。
   新しい文書は `docs/stage1/B2_tier1_cost_with_crossfit.md`
+
+### Stage 1 工程塔 P\*-20 の確定と送り手の train−val 差（2026-10-05）
+
+`T-2026-09-27-stage1-ptower-20`（efros、GPU 2 枚、fine-tune 90.0 GPU 時間）。三周目の確定 recipe のまま、
+追加動画 17〜21 を各折りの train にだけ足した P\*-20 を二系統で確定した。動画 22 はフレームが無いので使わない。
+
+- `scripts/build_phase_manifest_p20.py` — 15 動画の manifest を写し、追加 20 clip を `train.json` にだけ足す。
+  **全画像をデコードし、注釈と画像のフレーム集合の一致を要求する**（数だけでは途中で切れた画像を通す。動画 19 の
+  1,932 枚が実際に通った）。出力は `data/processed/stage1_features/p20_manifest/`
+- `scripts/stage1_ptower_20.py` — 三周目の `finetune` / `extract` / `train` をそのまま呼び、`data_setting=P20` のとき
+  折り表の train に 17〜21 を足すだけの入口。`data_setting=P15` は三周目そのもの（ホスト差の対照）
+- `scripts/run_stage1_ptower_20.py` — GPU ごとの待ち行列。走行中の同一設定と使用中の GPU を避ける
+- `scripts/select_stage1_ptower_20.py` — `table`（P\*-15 と並置）/ `test`（確定塔を折りごとに一度）/
+  `gap`（送り手の train と val の差）
+- `scripts/stage1_ptower_r3.py` は `data_setting` と `pin_memory` を設定から読む（既定は三周目のまま）。
+  **efros（cgroup 上限 52 GiB）で 2 本並べるときは `pin_memory: false`**。PyTorch 2.1 の pinned メモリの
+  キャッシュが val 1 回で約 24 GiB まで積もり返らず、OOM になった。数値は同一（logits の要約値で確認）
+
+現状: P\*-20 の val macro Jaccard は COCO 0.7012 / ImageNet 0.5999、test は 0.6402 / 0.5317。
+**P\*-15（ilya）との差はホスト差と分離できない**（efros の対照が ilya より +0.0696、閾値 0.0372）。
+送り手の train と val の差は 4 塔 × 5 折りの 20 件すべてで 3pt を超え（最小 +0.1254）、工程塔の送り手にも
+交差適合が要る。表は `docs/stage1/ptower_20.md`。
