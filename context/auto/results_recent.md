@@ -6,8 +6,48 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 112 件）。
-ここに出ない 107 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 113 件）。
+ここに出ない 108 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-10-07-design-val-subset-balance
+
+状態 `pass` / ホスト `efros` / 起票 `203` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 15 動画の工程（23 クリップ）と術具（COCO 3 ファイル）を出所から読み直し、総フレーム 17233、総 images 15437、総 boxes 49652、工程 9、クラス 15 が材料の合計行と一致。折り表は conventions#folds と正本の表が一致、群のクラス名 9 個が注釈と完全一致
+- `G2` pass — d(test) が A 0.296647、B 0.284446、C 0.262836、D 0.266745、E 0.281091 で正本と小数第 4 位まで一致、15 動画全体 0、1 本の最小 0.3666。欠落は 15 動画全体で 0、除くと各 +1。清浄側の三行が起票者の内訳と一致し、内訳を変えると 511 行が落ちる
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — §2 は生成器が工程と術具の注釈を出所から読む関数を持つと書くが、load_phase は egosurgery_phase/*.csv を glob で全部読む。本ホストには 17〜21 の未追跡 CSV があり、生成器の関数を絞らずに使うと 20 動画になり総フレームが一致せず G1 で止まる。生成器そのものも分け方 0 通りの IndexError で止まった
+- `self_contradiction` — Task A-9 は created_from.counts（runindex の各 CSV の行数）の実測を求めるが、禁止 1 は runindex/** を入力にも参考にも使わないと定める。指示どおり行数を数えると runindex の中身を開くことになる。中身を開かず、同じ commit で過去の契約が測った値を引き継いだ
+
+### 逸脱
+
+- `judgement` — 起動前の未追跡の注釈 CSV 20 件は (a) .git/info/exclude で隠した。起動前の説明で「15 動画の注釈を読む経路と同じ」を理由に (b) を退けたが、実測では 15 動画とは別のファイルで、同じディレクトリの glob に入るだけだった。(b) も規則上は選べた。契約の後に除外を外し、20 件の経路・バイト・sha256 が起動前と一致
+- `judgement` — repo 直下の未追跡 stage1_ptower_20.log（0 バイト）は手順上の想定外で、利用者に諮り選択 1（走行と無関係を確かめて退避）を得た。開くプロセス 0、runner 不在、コード参照 0 を確かめ ~/slocal2/m2_stash/20261007-042417/ へ移した。戻していない
+- `judgement` — Task D の順序を入れ替え、注釈 CSV の除外を外す（D-7）と digest を戻す（D-6）を commit と PR（D-4）の前に行った。戻した後の要約値を報告に載せるため
+- `judgement` — spec の counts は禁止 1（runindex を読まない）のため runindex/ の中身を開かず、同じ runindex_commit 2fb7c905 で T-2026-10-04 が測った 1911/718/1506 を引き継いだ。作業ツリーが 2fb7c905 と同一であることは git diff --quiet で確かめた
+- `judgement` — Task A-3 の参照の数えで git grep が experiments/ 配下の過去 run の config.yaml 7 件を走査した（文字列 egosurgery_phase の有無だけ）。モデルの出力と評価値ではないが、禁止 1 の字面に触れる。道具の実行（受け入れ h）では experiments と runindex を 0 件しか開いていない
+- `judgement` — 工程の読み込みは生成器の load_phase をそのまま使い、折り表の 15 動画に絞った。load_phase の glob が未追跡の 17〜21 の CSV 20 件も開く（読むだけで集計には入れない）
+- `judgement` — 欠落の母数は宣言された一覧（工程は constants.PHASE_CLASSES の 9、術具は COCO categories の 15）とした。データから導くと、除いた種類が母数からも消えて欠落の対照が働かないため。15 動画全体では両者が一致する
+- `judgement` — csv は利用者の全体規則に従い UTF-8 BOM 付きで書いた。文書に載せた要約値 18c06016 は BOM を除いた本文の sha256 で、ファイルの sha256 は 155324f6
+- `judgement` — 本数ごとの上位行は 5 行とした（本数 10 は 1 件、公式 test を含まない側の本数 7 は 1 件）
+- `environment` — 試験の開始時の値は契約の途中で測った。新規の 3 ファイルを scratchpad に一時的に移して pytest を回し、戻した。一時的な作業ツリーでは未追跡の data が無く条件が揃わないため
+- `environment` — make forbidden-check は BASE=4b175b70（分岐点）で回した。注釈 CSV の除外が効いていた間は pass（changed 6、違反 0）。除外を外した後は、起動前から在る未追跡 CSV 20 件を data/ の違反として数え fail（違反 20、すべて egosurgery_phase）。本契約はこれらを書いていない（sha256 が起動前と同一）。TASK を外しても pass になるため、陽性対照には起点を 2360768a~1 にずらした回を使った
+
+### 申し送り
+
+- efros の data/annotations/egosurgery_phase/ に追加動画 17〜21 の工程 CSV 20 件が未追跡で置かれている。同じ内容が data/raw/…/annotations/phase/ と ~/slocal2/EgoSurgery/annotations/coco_format/phase/ に在る。このディレクトリを glob で読むコード（a1_fold_table.load_phase、phase_dataset の既定）は 20 動画を読み、生成器 a1_fold_table.py は止まる。置き場は利用者が決める
+- make forbidden-check は TASK の有無で結果が変わらなかった（今回の変更が禁止領域に無いため）。陽性対照の取り方を手順書に置くか、道具に自己検査を持たせるかを検討してほしい
+- make taskindex と make inbox の生成物は本契約の commit に含めた
+- tools/check_forbidden.py は未追跡ファイルも差分に数えるため、開始前から在る未追跡（今回は注釈 CSV 20 件）がある作業ツリーでは、契約の変更と無関係に fail する。開始時点の未追跡を差し引く仕組みが要る
+- make agent-check が docs/experiment_settings.md 155 行（source の後に次の source が続く）で fail する。phase0 の時点から在る（最終変更 5681ab5b、本契約は触れていない）
+
+### 断定できなかったこと
+
+（なし）
 
 ## T-2026-10-04-ptower-attribution-val
 
@@ -175,53 +215,4 @@
 
 - 旧様式 result.yaml（T-2026-08-22-philip-hub-foundation）の tests の 3 整数は実測不能である。旧報告にも旧 RESULT.md にも試験の記録が一切無く、推測で埋めれば捏造になる。UNKNOWN のまま据え置いた
 - 完了判定 e の「実例 4 件で FAIL」は達成していない。4 件目が是正済みであることが理由で、規則の欠陥ではないが、契約の字面は充足していない
-
-## T-2026-09-23-dlsta-host-fairness
-
-状態 `partial` / ホスト `dlsta` / 起票 `197` / 様式 `v3`
-
-### ゲート
-
-- `A` pass — 参照 2 系を run 名・ckpt sha256・処方・ホストで特定。注釈 3 件・ckpt 2 件・特徴キャッシュの sha256 が記録と一致。凍結源は当該ホストに無く照合不能
-- `B` pass — 工程塔: 記録の backbone+ヘッドで fold A val を 2 回評価し J=0.5089659192972632 が 2 回とも記録と全桁一致。検出塔は Relation-DETR 本体が無く実行不能
-- `C` ask — 工程塔の参照に一歩ごとの損失が無く停止して諮った。利用者の判断で epoch 平均損失 12 点を使い r=0.8469541419328871。検出塔は実行不能
-- `D` pass — 工程塔ピーク 6355 MiB / 24564 MiB で収まる。定常 step 平均 0.30079340446474295 s。参照の step 時間は記録に無く UNKNOWN。検出塔は UNKNOWN
-- `E` pass — 工程塔 学習=要注意・評価=無視できる、検出塔=判定不能。D1 文書と値ファイル、env-facts の行追加（既存の減少 0）
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — inputs.code.entrypoints の scripts/train_phase_tower_r50.py は旧系統のスクリプトで、r2 の確定 recipe を回したのは scripts/stage1_ptower_r2.py である。指示どおりに入口を使うと別の前処理と処方で学習し、参照と違う処方どうしを比べることになる
-- `asserted_without_measuring` — 検出塔を dlsta で評価・学習できる前提で Task B〜D を書いたが、dlsta には Relation-DETR の本体と egosurgery 用の設定が無い（third_party は同期されない）。§4 にもこの場合が無く、指示どおりには一つも実行できなかった
-- `self_contradiction` — §2 は系ごとに評価の r と短い学習の r の二つを定義するのに、区分は系ごとに一つとし組み合わせ方を定めていない。工程塔は評価 r=0（無視できる）と学習 r=0.847（要注意）に分かれ、帰結を一意に出せなかった
-- `check_does_not_check` — 完了判定 d の陽性対照「別の折りの checkpoint を当てる」は、折り B が fold A val の動画 09・10 を学習に含むため J=0.954 となり、ホスト差への感度と無関係に d_host が大きくなる。対照が通っても評価経路の感度は示されない
-
-### 逸脱
-
-- `judgement` — 占位（conventions_rev・runindex_commit）の置換前に make task-validate を一度回した。SPEC §1 申し送りに反する。置換後に再検証して exit 0
-- `judgement` — 工程塔の参照 run は epoch 平均損失しか持たないため停止して諮り、利用者の判断で epoch 平均 12 点を損失の軌跡として代替した
-- `environment` — dlsta の third_party/Relation-DETR はキャッシュの残骸だけで main.py も設定も無い。取り寄せは禁止のため、利用者の判断で検出塔の B・C・D を行わず判定不能とした
-- `judgement` — 工程塔スクリプトは出力先が experiments/ 固定で W&B 必須。利用者の判断でコードを変えず repo 外の写しから WANDB_MODE=offline・秘匿でない占位の鍵で実行した。評価と step 時間は写しのハーネスで測った
-- `spec_defect` — spec の入口 scripts/train_phase_tower_r50.py ではなく、記録の command.sh にある scripts/stage1_ptower_r2.py を使った
-- `judgement` — 工程塔は学習 r と評価 r で区分が分かれた。SPEC に組み合わせの規則が無く、割り当てを決めるのは学習側と解釈した
-- `judgement` — 手順書 §6 の make taskindex / make inbox は契約の禁止 4 と衝突するため回していない（SPEC §4 に従い契約を優先）
-- `environment` — .sync-pause は開始前から在ったため Task E Step 5 の解除を行っていない
-- `environment` — make test は dlsta に pytest-cov が無く引数エラーで止まるため pytest tests/ を --cov なしで回した。失敗 6 件（test_engines 1・test_fetch_task 1・test_research_logger 4）は HEAD を展開した木でも同名で落ちる既存の失敗。展開木は git 管理外のため別に 3 件落ち、変更前の数は名前の突き合わせで 6 とした
-
-### 申し送り
-
-- 検出塔を dlsta で比べるには third_party/Relation-DETR（egosurgery 用の設定と別 venv を含む）の配備が要る。配備の契約を出してから本契約の検出塔部分を再実行する
-- 工程塔の d_seed は種の対 1 組（42 と 123）だけから出た。r=0.847 は境界 1 に近く、種を増やすと区分が変わりうる
-- ilya の driver・nvcc・torch・cuDNN を記録として残す。今回は型番しか記録が無く、ホスト差と世代差を分けられなかった
-- scripts/stage1_ptower.py の出力先（experiments/ 固定）と W&B 必須を、短い検証の run のために引数で外せるようにするかは未決
-- Relation-DETR の train.log は 50 step 間隔、工程塔は epoch 単位。ホスト比較のため一歩ごとの損失を残す規約を置くかは未決
-
-### 断定できなかったこと
-
-- ilya の driver・nvcc・torch・cuDNN・Python・lock の要約値
-- efros の cuDNN・torchvision・lock の要約値・repo の commit（git_commit.txt は ref のみ）
-- 参照ホストの装置間の接続
-- 工程塔の参照の step 時間（epoch 単位の記録のみ）
-- stage1_ptower_r2.py の実行時点の要約値（記録の commit にまだ無かった）
-- 検出塔の当該ホストでの評価・短い学習・ピーク記憶量・step 時間
-- 凍結源 checkpoint の照合（当該ホストに無い）
 

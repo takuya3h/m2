@@ -1291,6 +1291,17 @@ exp 契約 13 件すべてを FAIL にしていた**（prereg に対称性の表
 新しい型の欠陥が `context/auto/followups.md` の集計表から黙って落ちる。**
 一致は試験で縛ってある。
 
+### 設計に使う val 動画の部分集合の全数列挙（2026-10-07、efros）
+
+`T-2026-10-07-design-val-subset-balance`（GPU 不使用）。ラベルの統計だけを読み、モデルの出力と評価値は読まない。
+
+- `scripts/analysis/design_val_subsets.py` — 折り表の val 10 本の空でない部分集合 1023 通りについて、設計側 S と
+  清浄側 C（15 動画から S を除く）の欠落・均衡指標 d・折りごとの清浄本数・非劣の印を出す。注釈の読み込みと d は
+  生成器 `a1_fold_table.py` の関数をそのまま使い、工程は折り表の 15 動画に絞る。`--write` で
+  `docs/stage1/design_val_subsets.{csv,md}` を書く。集合は選ばない
+- 注意: `data/annotations/egosurgery_phase/` に追加動画（17〜21）の CSV が置かれたホストでは、
+  `a1_fold_table.load_phase` がそれも読むため、生成器 `a1_fold_table.py` 自体は 20 動画で分け方が 0 通りになり止まる
+
 ### 工程塔の寄与の診断（2026-10-05、dlsta）
 
 `T-2026-10-04-ptower-attribution-val`。学習なし、推論と勾配のみ。W&B へは送らない（契約の禁止事項）。

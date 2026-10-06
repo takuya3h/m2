@@ -1,0 +1,70 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-07-design-val-subset-balance"
+  kind: analysis
+  title: "設計の判断に使う val 動画の部分集合を、ラベルの統計だけで全数列挙し、設計側と清浄側の偏りを表にする"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-07T00:00:00Z"
+  created_from:
+    runindex_commit: "2fb7c905b51aac5ec2b0ee5fe5c70e835f4024a8"
+    counts: {index: 1911, experiments: 718, verdicts: 1506}
+  depends_on: [T-2026-09-17-fold-table, T-2026-09-27-stage2-prep]
+  amendments:
+    - date: "2026-10-07"
+      reason: "Task A-9 の実測による差し替え。conventions_rev は context/conventions.md を最後に変えた commit、runindex_commit は runindex/ を最後に変えた commit（2026-10-07 efros、起点 origin/phase0 4b175b70）。counts は禁止 1（runindex を読まない）のため中身を開かず、同じ commit 2fb7c905 で T-2026-10-04-ptower-attribution-val が測った行数を引き継いだ。作業ツリーの runindex/ が 2fb7c905 と同一であることは git diff --quiet で確かめた"
+      diff: "runindex_commit REPLACE -> 2fb7c905; counts 0/0/0 -> 1911/718/1506; conventions_rev REPLACE -> 073f9dc0"
+intent:
+  question: "折り表の val 動画から設計の判断に使う部分集合を選ぶとき、設計に使う側と、設計が触れない test の側のそれぞれで、工程と術具のラベルの偏りと欠落がどれだけになるか"
+  decision_at_stake: "val の動画がほかの折りで test になる点の扱い。全折り共通の設計判断に使う val をどこまで絞るかを利用者が決める材料"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery の Tool subset 十五動画の注釈（工程と術具）。画像とモデルの出力は読まない"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt", "data/splits/ego_test.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/analysis/a1_fold_table.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#folds, conventions#det_groups]
+  conventions_rev: "073f9dc0b80b7ca48c2766eb6f8f2ccd17cf0fe6"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "開始状態と材料。未追跡の注釈 CSV の実態、注釈の所在、合計値、折り表と群の解決", gpu: false, est: "40m"}
+    - {id: B, name: "指標の実装と対照。均衡指標の再現、欠落の計数、清浄側の導出", gpu: false, est: "60m"}
+    - {id: C, name: "全数列挙と文書。部分集合ごとの値、本数ごとの要約、各折りの val の値", gpu: false, est: "40m"}
+    - {id: D, name: "検証と報告", gpu: false, est: "40m"}
+  gates:
+    - {id: G1, after: A, check: "十五動画の注釈が読め、合計値が材料の合計行と一致し、折り表と群の定義が規約から引けた", on_fail: stop}
+    - {id: G2, after: B, check: "均衡指標が折り表の記録を再現し、欠落の計数と清浄側の導出の対照が両方向で期待どおりだった", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [design_val_subsets.md, design_val_subsets.csv]
+  destination: "docs/stage1/"
+  acceptance:
+    - "a: 十五動画の工程と術具の注釈を出所から読み直し、総フレーム、総 images、総 boxes が材料の合計行と一致する"
+    - "b: 折り表から val 動画の集合と、各 val 動画が test になる折りが導かれ、どの val 動画も自分の折りの test に入らず、test になる折りがちょうど一つである"
+    - "c: 均衡指標が折り表の記録を再現する。五折りの test の値が正本と小数第四位まで一致し、十五動画全体の値は零である"
+    - "d: 欠落の計数が両方向の対照で働く。十五動画全体の欠落を記録し、入力から種類を一つ除くと欠落が一つ増える"
+    - "e: val 動画の空でない部分集合がすべて列挙されている。行数が二の冪から一を引いた数に一致し、本数ごとの件数が二項係数に一致し、重複行が零である"
+    - "f: 清浄側の恒等式が全行で成り立つ。清浄側の本数は十五から設計側の本数を引いた数で、折りごとの清浄本数の和に一致する。起票者が導いた三行の内訳との一致か食い違いが記録されている"
+    - "g: 二度の実行で表の要約値が一致する"
+    - "h: モデルの出力と評価値を読んでいない。開いた入力の一覧に experiments と runindex の配下が零件である"
+    - "i: 文書に、指標の定義、val の選ばれ方の記録、各折りの val の表、本数ごとの要約と上位行、参照行があり、どの集合を採るかの推奨文が無い"
+    - "j: PR が Draft でなく存在し、分岐が feat/ で始まる"
+    - "k: 開始前から在った未追跡の注釈 CSV の件数、経路、要約値、追跡と除外の状態、参照の場所が記録され、契約の後に起動前の状態へ戻っている"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "本ホストに十五動画の工程か術具の注釈が無い場合、または生成器の読み込みで読めない場合"
+    - "合計値が材料の合計行と一致しない場合"
+    - "均衡指標が折り表の記録を再現しない場合"
+    - "規約の群のクラス名が注釈のクラス名と完全一致で照合できない場合"

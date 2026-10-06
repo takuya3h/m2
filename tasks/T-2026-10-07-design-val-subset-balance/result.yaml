@@ -1,0 +1,61 @@
+result_version: 3
+task_id: "T-2026-10-07-design-val-subset-balance"
+status: pass
+host: "efros"
+branch: "feat/design-val-subset-balance"
+pr: 203
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "15 動画の工程（23 クリップ）と術具（COCO 3 ファイル）を出所から読み直し、総フレーム 17233、総 images 15437、総 boxes 49652、工程 9、クラス 15 が材料の合計行と一致。折り表は conventions#folds と正本の表が一致、群のクラス名 9 個が注釈と完全一致"}
+  - {id: G2, verdict: pass, note: "d(test) が A 0.296647、B 0.284446、C 0.262836、D 0.266745、E 0.281091 で正本と小数第 4 位まで一致、15 動画全体 0、1 本の最小 0.3666。欠落は 15 動画全体で 0、除くと各 +1。清浄側の三行が起票者の内訳と一致し、内訳を変えると 511 行が落ちる"}
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 690
+
+deviations:
+  - {type: judgement, note: "起動前の未追跡の注釈 CSV 20 件は (a) .git/info/exclude で隠した。起動前の説明で「15 動画の注釈を読む経路と同じ」を理由に (b) を退けたが、実測では 15 動画とは別のファイルで、同じディレクトリの glob に入るだけだった。(b) も規則上は選べた。契約の後に除外を外し、20 件の経路・バイト・sha256 が起動前と一致"}
+  - {type: judgement, note: "repo 直下の未追跡 stage1_ptower_20.log（0 バイト）は手順上の想定外で、利用者に諮り選択 1（走行と無関係を確かめて退避）を得た。開くプロセス 0、runner 不在、コード参照 0 を確かめ ~/slocal2/m2_stash/20261007-042417/ へ移した。戻していない"}
+  - {type: judgement, note: "Task D の順序を入れ替え、注釈 CSV の除外を外す（D-7）と digest を戻す（D-6）を commit と PR（D-4）の前に行った。戻した後の要約値を報告に載せるため"}
+  - {type: judgement, note: "spec の counts は禁止 1（runindex を読まない）のため runindex/ の中身を開かず、同じ runindex_commit 2fb7c905 で T-2026-10-04 が測った 1911/718/1506 を引き継いだ。作業ツリーが 2fb7c905 と同一であることは git diff --quiet で確かめた"}
+  - {type: judgement, note: "Task A-3 の参照の数えで git grep が experiments/ 配下の過去 run の config.yaml 7 件を走査した（文字列 egosurgery_phase の有無だけ）。モデルの出力と評価値ではないが、禁止 1 の字面に触れる。道具の実行（受け入れ h）では experiments と runindex を 0 件しか開いていない"}
+  - {type: judgement, note: "工程の読み込みは生成器の load_phase をそのまま使い、折り表の 15 動画に絞った。load_phase の glob が未追跡の 17〜21 の CSV 20 件も開く（読むだけで集計には入れない）"}
+  - {type: judgement, note: "欠落の母数は宣言された一覧（工程は constants.PHASE_CLASSES の 9、術具は COCO categories の 15）とした。データから導くと、除いた種類が母数からも消えて欠落の対照が働かないため。15 動画全体では両者が一致する"}
+  - {type: judgement, note: "csv は利用者の全体規則に従い UTF-8 BOM 付きで書いた。文書に載せた要約値 18c06016 は BOM を除いた本文の sha256 で、ファイルの sha256 は 155324f6"}
+  - {type: judgement, note: "本数ごとの上位行は 5 行とした（本数 10 は 1 件、公式 test を含まない側の本数 7 は 1 件）"}
+  - {type: environment, note: "試験の開始時の値は契約の途中で測った。新規の 3 ファイルを scratchpad に一時的に移して pytest を回し、戻した。一時的な作業ツリーでは未追跡の data が無く条件が揃わないため"}
+  - {type: environment, note: "make forbidden-check は BASE=4b175b70（分岐点）で回した。注釈 CSV の除外が効いていた間は pass（changed 6、違反 0）。除外を外した後は、起動前から在る未追跡 CSV 20 件を data/ の違反として数え fail（違反 20、すべて egosurgery_phase）。本契約はこれらを書いていない（sha256 が起動前と同一）。TASK を外しても pass になるため、陽性対照には起点を 2360768a~1 にずらした回を使った"}
+
+issuer_defects:
+  - {type: asserted_without_measuring, note: "§2 は生成器が工程と術具の注釈を出所から読む関数を持つと書くが、load_phase は egosurgery_phase/*.csv を glob で全部読む。本ホストには 17〜21 の未追跡 CSV があり、生成器の関数を絞らずに使うと 20 動画になり総フレームが一致せず G1 で止まる。生成器そのものも分け方 0 通りの IndexError で止まった"}
+  - {type: self_contradiction, note: "Task A-9 は created_from.counts（runindex の各 CSV の行数）の実測を求めるが、禁止 1 は runindex/** を入力にも参考にも使わないと定める。指示どおり行数を数えると runindex の中身を開くことになる。中身を開かず、同じ commit で過去の契約が測った値を引き継いだ"}
+
+positive_controls:
+  - {judgement: "a 材料の合計", breaking_input: "動画 01 の工程の一行分 +1（記憶上）", observed: "総フレームが 17233 から変わった"}
+  - {judgement: "b val の導出", breaking_input: "折り A の val 09 を折り A の test に置いた表（記憶上）", observed: "検査が落ちた（動画 09 が自分の折りの test に入る: ['A']）"}
+  - {judgement: "c 均衡指標の再現", breaking_input: "動画 1 本の集合、比率の二要素を ±0.01", observed: "1 本の d の最小 0.3666 > 0、TV > 0"}
+  - {judgement: "d 欠落の計数", breaking_input: "工程 anesthesia と術具 Bipolar Forceps を記憶上で除く", observed: "工程と術具の欠落がそれぞれ 0 から 1 に増えた"}
+  - {judgement: "d 群の照合", breaking_input: "Skewer を Skewers に変えた群の定義", observed: "照合が落ちた（['Skewers']）"}
+  - {judgement: "e 全数列挙", breaking_input: "同じ集合を二度入れた表", observed: "行数 1024 != 1023、本数 1 が 11 != 10、重複 1 で落ちた"}
+  - {judgement: "f 清浄側の恒等式", breaking_input: "折り A の test を 2 本にした内訳（記憶上）", observed: "511 行で恒等式の検査が落ちた"}
+  - {judgement: "g 再現性", breaking_input: "動画 01 の anesthesia に +100000（記憶上）", observed: "csv の要約値が 18c06016 から f49a730a に変わった"}
+  - {judgement: "h モデルの値を読んでいない", breaking_input: "開いた入力の一覧が空、または注釈を含まない", observed: "一覧 54 件、egosurgery_phase の CSV 43 件を含み、experiments と runindex は 0 件"}
+  - {judgement: "i 推奨の語の数え方", breaking_input: "「この集合を推奨する。」の一時の文", observed: "1 件と数えた（文書本体は 0 件）"}
+  - {judgement: "k 未追跡の注釈 CSV の件数", breaking_input: "存在しない経路 99_*.csv で数える", observed: "0 件（実在の経路は 20 件）"}
+  - {judgement: "k 複製の探索", breaking_input: "追跡済み 01_1.csv の sha256、存在しない sha256", observed: "2 件と 0 件。初回の探索は起点がファイルシステム境界で外れ 0 件だった"}
+  - {judgement: "forbidden-check", breaking_input: "起点を 2360768a~1 へずらし、過去の data/README.md と experiments/ の変更を差分に含める", observed: "status fail、exit 2、違反を列挙"}
+
+followups:
+  - "efros の data/annotations/egosurgery_phase/ に追加動画 17〜21 の工程 CSV 20 件が未追跡で置かれている。同じ内容が data/raw/…/annotations/phase/ と ~/slocal2/EgoSurgery/annotations/coco_format/phase/ に在る。このディレクトリを glob で読むコード（a1_fold_table.load_phase、phase_dataset の既定）は 20 動画を読み、生成器 a1_fold_table.py は止まる。置き場は利用者が決める"
+  - "make forbidden-check は TASK の有無で結果が変わらなかった（今回の変更が禁止領域に無いため）。陽性対照の取り方を手順書に置くか、道具に自己検査を持たせるかを検討してほしい"
+  - "make taskindex と make inbox の生成物は本契約の commit に含めた"
+  - "tools/check_forbidden.py は未追跡ファイルも差分に数えるため、開始前から在る未追跡（今回は注釈 CSV 20 件）がある作業ツリーでは、契約の変更と無関係に fail する。開始時点の未追跡を差し引く仕組みが要る"
+  - "make agent-check が docs/experiment_settings.md 155 行（source の後に次の source が続く）で fail する。phase0 の時点から在る（最終変更 5681ab5b、本契約は触れていない）"
+
+unknowns: []
+
+commits:
+  - "1fb7097c"
+  - "3662581d"

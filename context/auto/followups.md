@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（567 件）
+## 申し送り（572 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -905,6 +905,14 @@
 - make taskindex と make inbox は契約の禁止 5 により実行していない。統合の後に一台で一度だけ回す（SPEC §6-5）
 - 大きな中間物は dlsta の /home/ubuntu/local/ptower_attribution_20261005/（362,866,001 バイト）にある。消すかどうかは利用者の判断
 
+### T-2026-10-07-design-val-subset-balance
+
+- efros の data/annotations/egosurgery_phase/ に追加動画 17〜21 の工程 CSV 20 件が未追跡で置かれている。同じ内容が data/raw/…/annotations/phase/ と ~/slocal2/EgoSurgery/annotations/coco_format/phase/ に在る。このディレクトリを glob で読むコード（a1_fold_table.load_phase、phase_dataset の既定）は 20 動画を読み、生成器 a1_fold_table.py は止まる。置き場は利用者が決める
+- make forbidden-check は TASK の有無で結果が変わらなかった（今回の変更が禁止領域に無いため）。陽性対照の取り方を手順書に置くか、道具に自己検査を持たせるかを検討してほしい
+- make taskindex と make inbox の生成物は本契約の commit に含めた
+- tools/check_forbidden.py は未追跡ファイルも差分に数えるため、開始前から在る未追跡（今回は注釈 CSV 20 件）がある作業ツリーでは、契約の変更と無関係に fail する。開始時点の未追跡を差し引く仕組みが要る
+- make agent-check が docs/experiment_settings.md 155 行（source の後に次の source が続く）で fail する。phase0 の時点から在る（最終変更 5681ab5b、本契約は触れていない）
+
 ## 断定できなかった事項（370 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
@@ -1589,18 +1597,18 @@
 - 折り E の記録の val 主指標の再現（記録が 07 と 15 の合算しか持たない）
 - 読み d（動画の術式が学習動画と違う）。術式の情報を測っていない
 
-## 起票者の誤りの型（343 件）
+## 起票者の誤りの型（345 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 92 |
-| `asserted_without_measuring` | 142 |
-| `self_contradiction` | 89 |
+| `asserted_without_measuring` | 143 |
+| `self_contradiction` | 90 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 0 |
 | `rule_read_narrowly` | 1 |
 
-合計 343 件（対を持つ契約 112 件から）
+合計 345 件（対を持つ契約 113 件から）
 
