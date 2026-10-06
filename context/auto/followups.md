@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（558 件）
+## 申し送り（568 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -890,7 +890,23 @@
 - TF32 の採用は未決。計算器には入っていない（採用すれば Tier 1 の検出側が約 1/1.17〜1/1.18）
 - 計算器の行ラベル「受け取りは P*-21」は P*-20 になった（数値に影響なし、未修正）
 
-## 断定できなかった事項（366 件）
+### T-2026-10-04-ptower-attribution-val
+
+- 面積を揃えた対照は巡回のずらしで作ったが、手（平均面積 41%）とどの枠の外（76%）では枠と無関係な位置がほとんど取れなかった。遮蔽の対照を使う後続の契約では、対照の作り方（例えば面積の上限、手と術具を分けた空き領域の定義）を起票時に決めておく必要がある
+- 一つの工程にしか出ない術具は、対象の七動画では Bipolar Forceps（hemostasis）の一つだけだった。誤りと術具 GT の関係はこの一例からしか読めない
+- make forbidden-check を BASE 省略で回すと、分岐の後に origin/phase0 へ入った他の PR の差が違反に数えられる。手順書が BASE を分岐点にすることを明記するか、道具が merge-base を取るかを検討してほしい
+- make taskindex と make inbox は契約の禁止 5 により実行していない。統合の後に一台で一度だけ回す（SPEC §6-5）
+- 大きな中間物は dlsta の /home/ubuntu/local/ptower_attribution_20261005/（362,866,001 バイト）にある。消すかどうかは利用者の判断
+
+### T-2026-10-07-design-val-subset-balance
+
+- efros の data/annotations/egosurgery_phase/ に追加動画 17〜21 の工程 CSV 20 件が未追跡で置かれている。同じ内容が data/raw/…/annotations/phase/ と ~/slocal2/EgoSurgery/annotations/coco_format/phase/ に在る。このディレクトリを glob で読むコード（a1_fold_table.load_phase、phase_dataset の既定）は 20 動画を読み、生成器 a1_fold_table.py は止まる。置き場は利用者が決める
+- make forbidden-check は TASK の有無で結果が変わらなかった（今回の変更が禁止領域に無いため）。陽性対照の取り方を手順書に置くか、道具に自己検査を持たせるかを検討してほしい
+- make taskindex と make inbox の生成物は本契約の commit に含めた
+- tools/check_forbidden.py は未追跡ファイルも差分に数えるため、開始前から在る未追跡（今回は注釈 CSV 20 件）がある作業ツリーでは、契約の変更と無関係に fail する。開始時点の未追跡を差し引く仕組みが要る
+- make agent-check が docs/experiment_settings.md 155 行（source の後に次の source が続く）で fail する。phase0 の時点から在る（最終変更 5681ab5b、本契約は触れていない）
+
+## 断定できなかった事項（368 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1564,18 +1580,23 @@
 - 工程塔の送り手の train−val 差。T-2026-09-27-stage1-ptower-20 で測る
 - MICCAI 2027 の締切（公式未発表）
 
-## 起票者の誤りの型（335 件）
+### T-2026-10-04-ptower-attribution-val
+
+- 折り E の記録の val 主指標の再現（記録が 07 と 15 の合算しか持たない）
+- 読み d（動画の術式が学習動画と違う）。術式の情報を測っていない
+
+## 起票者の誤りの型（340 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 91 |
-| `asserted_without_measuring` | 138 |
-| `self_contradiction` | 86 |
+| `asserted_without_measuring` | 140 |
+| `self_contradiction` | 89 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 0 |
 | `rule_read_narrowly` | 1 |
 
-合計 335 件（対を持つ契約 110 件から）
+合計 340 件（対を持つ契約 112 件から）
 

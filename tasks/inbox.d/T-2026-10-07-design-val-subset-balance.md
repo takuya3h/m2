@@ -1,0 +1,2 @@
+- [ ] 2026-10-07 [cc] **起動前の未追跡に stage1_ptower_20.log（0 バイト）があり、利用者に諮って「走行と無関係を確かめて退避」の回答を得た。** ~/slocal2/m2_stash/20261007-042417/ にある（T-2026-10-07-design-val-subset-balance）
+- [ ] 2026-10-07 [cc] **efros の data/annotations/egosurgery_phase/ に追加動画 17〜21 の未追跡 CSV 20 件があり、glob で読む a1_fold_table.py は 20 動画を読んで IndexError で止まる。** 同じ内容が data/raw/…/annotations/phase/ と ~/slocal2/EgoSurgery/annotations/coco_format/phase/ に在る。置き場は利用者が決める（tasks/T-2026-10-07-design-val-subset-balance/audit.md §2）

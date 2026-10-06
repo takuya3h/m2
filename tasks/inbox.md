@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（629 件）
+## 未処理（635 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -644,6 +644,12 @@
 - [ ] 2026-10-02 [cc] **9 月 17 日の 74.0〜98.7 日は計算器の出力ではなかった。** 計算器は TF32 を一度も持たず、C2 §5 が外で 1/1.182 を当てた値である。9 月 27 日の 88.8〜118.0 日との差の最大要因は TF32 の有無（+13.5〜+18.0 日）、次に検出塔の学習時間（+5.5 日）、K の違いが −4.1 日。**TF32 の採用は未決のまま**で、採用すれば Tier 1 の検出側が約 1/1.17〜1/1.18 になる（tools/estimate_tier_cost.py の節 history）
 - [ ] 2026-10-02 [cc] **交差適合を足すと Tier 1（seed 5）は 80.0〜109.2 日、使える 125 日に対し残り 15.8〜45.0 日。** 設計変更を一回挟めば収まらない（1 回 79.0〜108.2 日）。B1 の Stage 1 + Tier 1 では IPCAI long abstract の判定が「収まる」から「読みにより分かれる」に変わった（docs/stage1/B2_tier1_cost_with_crossfit.md）
 - [ ] 2026-10-02 [cc] **規約の変更履歴表が naming 節の範囲にある。** 「既存節の本文を変えない」と「変更履歴に行を足す」は両立しない。履歴を独立の節にするか、節の切り出しが履歴を除く形にする必要がある（context/conventions.md）
+- [ ] 2026-10-05 [cc] **task-validate の WARN L2-6（conventions_rev が det_groups 節の追加より前）を利用者に提示し、「現行版で続行」の回答を得た。** conventions_rev を 073f9dc0 に差し替え meta.amendments に記録した（T-2026-10-04-ptower-attribution-val）
+- [ ] 2026-10-05 [cc] **面積を揃えた遮蔽の対照は、手と枠の外では無関係な位置がほとんど取れない**（重なり 5% 超で除外: 手 4254/5748、枠の外 5060/5784）。対照の作り方は後続の契約の起票時に決める必要がある（experiments/analysis/ptower_attribution/REPORT.md §3）
+- [ ] 2026-10-05 [cc] **make forbidden-check は BASE を省くと origin/phase0 の先端と比べるため、分岐の後に入った他の PR の差を違反に数える。** 今回は BASE=分岐点で回した。手順書か道具の修正が要る（tools/check_forbidden.py）
+- [ ] 2026-10-05 [cc] 大きな中間物 362,866,001 バイトが dlsta の /home/ubuntu/local/ptower_attribution_20261005/ に残る。消すかは利用者の判断（T-2026-10-04-ptower-attribution-val）
+- [ ] 2026-10-07 [cc] **起動前の未追跡に stage1_ptower_20.log（0 バイト）があり、利用者に諮って「走行と無関係を確かめて退避」の回答を得た。** ~/slocal2/m2_stash/20261007-042417/ にある（T-2026-10-07-design-val-subset-balance）
+- [ ] 2026-10-07 [cc] **efros の data/annotations/egosurgery_phase/ に追加動画 17〜21 の未追跡 CSV 20 件があり、glob で読む a1_fold_table.py は 20 動画を読んで IndexError で止まる。** 同じ内容が data/raw/…/annotations/phase/ と ~/slocal2/EgoSurgery/annotations/coco_format/phase/ に在る。置き場は利用者が決める（tasks/T-2026-10-07-design-val-subset-balance/audit.md §2）
 
 ## 処理済み（1 件）
 
