@@ -30,7 +30,7 @@ dlsta（RTX A5000 × 5、GPU1〜4 を使用）、2026-10-05 UTC。証跡は `aud
 | l | 9652 ファイルの要約値が前後で一致（全体 `726ed88e…`） | 写しの 1 バイトを反転すると要約値が変わる |
 | m | 全件の地図・画像は 0 件（新規の npy/npz 0）。追加 463,371 バイト（新規ファイル）＋ README・実験ログ 36 行 | 同じ数え方で小さい表 12、代表図 2 |
 | n | 変更前 6 failed / 673 passed / 1 error → 変更後 6 failed / 681 passed / 1 error。失敗の一覧は同一 | 追加した試験の入力を壊す: 半分の面積の対照・04 入りの対象・04 入りの記録がそれぞれ検査に落ちる（試験内） |
-| o | 送出の節を見よ | `gh pr view` の応答から読む |
+| o | PR #201、`baseRefName=phase0`、`headRefName=feat/ptower-attribution-val`、`isDraft=false`、`state=OPEN`、`mergeable=MERGEABLE` | `gh pr view 201 --json` の応答から読んだ。申告ではない |
 
 ## 実測
 
@@ -72,4 +72,7 @@ dlsta（RTX A5000 × 5、GPU1〜4 を使用）、2026-10-05 UTC。証跡は `aud
 
 ## 送出
 
-（commit・push・PR・`make task-report` の後に記入する）
+- commit `2360768a`（本体）。push は HTTPS で exit 0
+- **PR #201**（base `phase0`、head `feat/ptower-attribution-val`、Draft でない、`mergeStateStatus=CLEAN`）
+- `make task-report` の結果は次の commit で追記する
+- `.sync-pause` は開始前から在ったため触れていない。`make task-start` が置いた抑止は無い
