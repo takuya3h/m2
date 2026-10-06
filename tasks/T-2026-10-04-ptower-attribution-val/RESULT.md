@@ -74,5 +74,5 @@ dlsta（RTX A5000 × 5、GPU1〜4 を使用）、2026-10-05 UTC。証跡は `aud
 
 - commit `2360768a`（本体）。push は HTTPS で exit 0
 - **PR #201**（base `phase0`、head `feat/ptower-attribution-val`、Draft でない、`mergeStateStatus=CLEAN`）
-- `make task-report` の結果は次の commit で追記する
+- `make task-report`: exit 0。秘匿の検査は内側で通過。応答 `{"verdict": "pass", "n_issuer_defects": 3, "report_sha256": "5f96733ab776bab72b8799eff1cf9c08ab1d861f2832b7bbae5e9cd2918da086", "report_bytes": 7776, "replaced_blocks": 0}`（送ったのは本行を書く前の版）
 - `.sync-pause` は開始前から在ったため触れていない。`make task-start` が置いた抑止は無い
