@@ -1,0 +1,4 @@
+- [ ] 2026-10-05 [cc] **task-validate の WARN L2-6（conventions_rev が det_groups 節の追加より前）を利用者に提示し、「現行版で続行」の回答を得た。** conventions_rev を 073f9dc0 に差し替え meta.amendments に記録した（T-2026-10-04-ptower-attribution-val）
+- [ ] 2026-10-05 [cc] **面積を揃えた遮蔽の対照は、手と枠の外では無関係な位置がほとんど取れない**（重なり 5% 超で除外: 手 4254/5748、枠の外 5060/5784）。対照の作り方は後続の契約の起票時に決める必要がある（experiments/analysis/ptower_attribution/REPORT.md §3）
+- [ ] 2026-10-05 [cc] **make forbidden-check は BASE を省くと origin/phase0 の先端と比べるため、分岐の後に入った他の PR の差を違反に数える。** 今回は BASE=分岐点で回した。手順書か道具の修正が要る（tools/check_forbidden.py）
+- [ ] 2026-10-05 [cc] 大きな中間物 362,866,001 バイトが dlsta の /home/ubuntu/local/ptower_attribution_20261005/ に残る。消すかは利用者の判断（T-2026-10-04-ptower-attribution-val）

@@ -1,0 +1,63 @@
+result_version: 3
+task_id: "T-2026-10-04-ptower-attribution-val"
+status: pass
+host: "dlsta"
+branch: "feat/ptower-attribution-val"
+pr: 201
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "折り A・B・C・E の両系統で backbone・時間ヘッドの checkpoint、特徴キャッシュ、画像、工程 GT、術具と手の枠の GT が実在。七動画のフレーム数 5784、枠 35826。外した折りは無い"}
+  - {id: G2, verdict: pass, note: "折り A・B・C × COCO/ImageNet の 6 組で記録の val macro Jaccard と frame accuracy が全桁一致。折り E は記録が 07 と 15 の合算のみで UNKNOWN（Task B-2 の指示）"}
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 681
+
+deviations:
+  - {type: judgement, note: "開始時の分岐は feat/dlsta-host-fairness だった。利用者の指示で phase0 へ切り替えて origin/phase0 へ fast-forward し、make task-start が起点 origin/phase0（331525e8）で feat/ptower-attribution-val を作った。開始前の未追跡 3 件は scratchpad へ mv、追跡済みの変更 1 件は git stash で退避した"}
+  - {type: judgement, note: "面積を揃えた対照の除外規則（枠の和集合との重なりが 5% を超えたら除く）を計算前に固定し、結果を見た後も変えなかった。手と枠の外では大半が除かれた。除いた値と除かない値の両方を表に置いた"}
+  - {type: judgement, note: "完了判定 c の空振り確認は、指標ではなく logits の要約値で測った。COCO 系では 1 フレームの差し替えで J と argmax が変わらなかったため"}
+  - {type: environment, note: "make forbidden-check を BASE=331525e8（分岐点）と TASK を付けて回した。分岐の後に origin/phase0 へ PR #199・#200（data/README.md）が入り、BASE を省くとその差が違反に数えられた"}
+  - {type: judgement, note: "README.md の追記は origin/phase0 の末尾追記と衝突しない位置（2026-10-02 の節の前）に入れた。時系列の順が一か所逆になる"}
+  - {type: environment, note: "試験は make test を使わず python -m pytest -q -p no:cacheprovider --continue-on-collection-errors tests で回した。Relation-DETR の本体が無く収集で全体が止まるため（dlsta の既知事情）"}
+  - {type: judgement, note: "完了判定 l の要約値は特徴キャッシュのファイル全体のバイトを sha256 に通す。test 動画の行も読み込まれるが、特徴として解釈・使用はしていない。分析での読み込みは memmap で対象の行だけ"}
+  - {type: judgement, note: "CLAUDE.md は全実験の W&B 追跡を求めるが、契約の禁止 8（W&B へ送らない）を優先した。証跡は reads.jsonl・audit.md・summary.json に残した"}
+  - {type: judgement, note: "実行者の誤り: 待機の命令が pgrep -f で自分自身の命令行に一致し、計算の終了後も止まらなかった（issuer_cautions 注意 6 の型）。結果には影響しない。TaskStop で止めた"}
+
+issuer_defects:
+  - {type: asserted_without_measuring, note: "conventions_rev に置いた e7a51005 の時点では、inject_verbatim が指す det_groups 節が存在しなかった（001b4309 で追加）。指示どおり実行すると make task-validate が L2-6 の WARN を出す。実測 073f9dc0 に差し替え meta.amendments に記録した"}
+  - {type: self_contradiction, note: "関門 G2 は対象の折りと系統のすべてで記録の val 主指標の再現を求める一方、Task B-2 は折り E を UNKNOWN で済ませるよう指示する。記録は 07 と 15 の合算しか持たないため、指示どおり実行すると折り E で G2 は字面上満たせない。B-2 を優先し G2 を pass とした"}
+  - {type: self_contradiction, note: "Task D は四領域のそれぞれに面積を揃えた枠と無関係な位置の対照を求めるが、どの枠の外の領域は定義上枠以外の全部（平均 76%）であり同面積の無関係な位置は存在しない。実行すると 5060/5784 フレームが重なり 5% 超で除かれ、手（平均 41%）でも 4254/5748 が除かれた"}
+
+positive_controls:
+  - {judgement: "a 対象と公式 test の交わり", breaking_input: "対象へ 04 を混ぜる", observed: "交わりが {04} の 1 件になった"}
+  - {judgement: "b 各動画を自分の折りの塔でだけ処理", breaking_input: "折り B の COCO 塔を折り A の val（09・10）に当てる", observed: "J 0.9640、acc 0.9848。記録の 0.7066 / 0.8416 と一致しない"}
+  - {judgement: "c 記録の val 主指標の再現", breaking_input: "09 の位置 100 の特徴を位置 300 の特徴に差し替える", observed: "logits の要約値が両系統で変化（COCO cea52f2a→59f80945、ImageNet 8a373c8a→4763f77b）。argmax の変化は COCO 0、ImageNet 1"}
+  - {judgement: "d 何も隠さない条件の一致", breaking_input: "全面を隠す", observed: "予測が変わったのは延べ 14377 件（何も隠さない条件は 0 件）"}
+  - {judgement: "e 四領域の和が 1", breaking_input: "枠の内側だけ／外側だけに値を置いた人工の地図", observed: "寄与率が 1.0 と 0.0（tests/test_ptower_attribution.py）"}
+  - {judgement: "f 枠の組み替え対照", breaking_input: "組み替えずに同じフレームの枠を当てる", observed: "15 の 21 フレームで元の寄与率との差の最大 0"}
+  - {judgement: "g 面積を揃えた対照", breaking_input: "面積を半分にした対照を作る", observed: "面積の一致の検査が落ちた（試験）"}
+  - {judgement: "h 受容野の外の入れ替えで点数が不変", breaking_input: "受容野の内側の直前 1 フレームを零にする", observed: "全フレームで点数が変化、最小 2.40e-03（受容野の外は最大 1.43e-06）"}
+  - {judgement: "i 過去フレームの選び方の事前記録", breaking_input: "06/COCO の t=700 で規則を手で当て直す", observed: "選ばれた遅れ {1,2,4,5,8,15,30,60} が記録と一致"}
+  - {judgement: "j 既存報告との突き合わせ", breaking_input: "二系統を入れ替えて突き合わせる", observed: "術具の内 0.734 対 0.535 で一致しない"}
+  - {judgement: "k 読んだ動画の集合", breaking_input: "読み込みの記録へ 04 を 1 件足す", observed: "reads_outside が [('run','A','coco','04')] を返した"}
+  - {judgement: "l 塔・特徴キャッシュ・既存 run の無変更", breaking_input: "写しの 1 バイトを反転する", observed: "要約値が変わった"}
+  - {judgement: "m 全件の地図と画像が差分に無い", breaking_input: "同じ数え方で小さい表と代表図を数える", observed: "表 12、代表図 2。npy/npz は 0"}
+  - {judgement: "n 試験の失敗が増えていない", breaking_input: "追加した試験の入力を壊す（04 入りの対象、04 入りの記録、半分の面積）", observed: "それぞれの検査が落ちることを試験の中で確かめた（8 passed）"}
+  - {judgement: "forbidden-check", breaking_input: "TASK を外して allow_write を効かせない", observed: "status fail（TASK ありは pass）"}
+
+followups:
+  - "面積を揃えた対照は巡回のずらしで作ったが、手（平均面積 41%）とどの枠の外（76%）では枠と無関係な位置がほとんど取れなかった。遮蔽の対照を使う後続の契約では、対照の作り方（例えば面積の上限、手と術具を分けた空き領域の定義）を起票時に決めておく必要がある"
+  - "一つの工程にしか出ない術具は、対象の七動画では Bipolar Forceps（hemostasis）の一つだけだった。誤りと術具 GT の関係はこの一例からしか読めない"
+  - "make forbidden-check を BASE 省略で回すと、分岐の後に origin/phase0 へ入った他の PR の差が違反に数えられる。手順書が BASE を分岐点にすることを明記するか、道具が merge-base を取るかを検討してほしい"
+  - "make taskindex と make inbox は契約の禁止 5 により実行していない。統合の後に一台で一度だけ回す（SPEC §6-5）"
+  - "大きな中間物は dlsta の /home/ubuntu/local/ptower_attribution_20261005/（362,866,001 バイト）にある。消すかどうかは利用者の判断"
+
+unknowns:
+  - "折り E の記録の val 主指標の再現（記録が 07 と 15 の合算しか持たない）"
+  - "読み d（動画の術式が学習動画と違う）。術式の情報を測っていない"
+
+commits:
+  - "2360768a"

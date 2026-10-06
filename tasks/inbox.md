@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（633 件）
+## 未処理（637 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -648,6 +648,10 @@
 - [ ] 2026-10-02 [cc] **規約の変更履歴表が naming 節の範囲にある。** 「既存節の本文を変えない」と「変更履歴に行を足す」は両立しない。履歴を独立の節にするか、節の切り出しが履歴を除く形にする必要がある（context/conventions.md）
 - [ ] 2026-10-03 [cc] **G2 不合格を記録して続行（利用者の決定）。** efros の P*-15 対照（COCO・折り A・seed 42）の val macro Jaccard は 0.7762、ilya の同じ run は 0.7066。差 +0.0696 は閾値 0.0372（三周目の折り A の seed 間標本 SD 0.0186 の 2 倍）を超えた（SD 比 3.7）。fine-tune 段階のフレーム単位 J の差は +0.0063 で、時間ヘッドで広がった。P*-20（efros）と P*-15（ilya）の並置にはこの大きさのホスト差が混ざる（experiments/phase1/stage1_ptower_20/host_control_rule.json）
 - [ ] 2026-10-03 [cc] **P*-20 の fine-tune は 1 本 8 時間を超えても recipe を変えずに続行（利用者の決定）。** efros（A6000）は 14.2 フレーム/秒で ilya の約 0.68 倍、P*-20 の train は P*-15 の約 2.1 倍。P*-15 対照の実測は 4.47 時間、P*-20 は 1 epoch 約 26 分
+- [ ] 2026-10-05 [cc] **task-validate の WARN L2-6（conventions_rev が det_groups 節の追加より前）を利用者に提示し、「現行版で続行」の回答を得た。** conventions_rev を 073f9dc0 に差し替え meta.amendments に記録した（T-2026-10-04-ptower-attribution-val）
+- [ ] 2026-10-05 [cc] **面積を揃えた遮蔽の対照は、手と枠の外では無関係な位置がほとんど取れない**（重なり 5% 超で除外: 手 4254/5748、枠の外 5060/5784）。対照の作り方は後続の契約の起票時に決める必要がある（experiments/analysis/ptower_attribution/REPORT.md §3）
+- [ ] 2026-10-05 [cc] **make forbidden-check は BASE を省くと origin/phase0 の先端と比べるため、分岐の後に入った他の PR の差を違反に数える。** 今回は BASE=分岐点で回した。手順書か道具の修正が要る（tools/check_forbidden.py）
+- [ ] 2026-10-05 [cc] 大きな中間物 362,866,001 バイトが dlsta の /home/ubuntu/local/ptower_attribution_20261005/ に残る。消すかは利用者の判断（T-2026-10-04-ptower-attribution-val）
 
 ## 処理済み（1 件）
 

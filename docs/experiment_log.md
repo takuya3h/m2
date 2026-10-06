@@ -2975,6 +2975,31 @@ ilya は別世代（6000 Ada）なので、ホスト差と世代差は分けら�
 証跡: `docs/stage0/D1_dlsta_host_fairness.md`（値は同名ディレクトリ）/ `tasks/T-2026-09-23-dlsta-host-fairness/{RESULT.md,audit.md,result.yaml}`。
 `experiments/` `data/` `runindex/` `context/conventions.md` には変更を加えていない。
 
+## 2026-10-05 — 工程塔の寄与の診断: 術具の枠への寄与は七動画で同じ向き、過去を現フレームの複写にしても予測の約 8 割は残る
+
+**仮説**（契約の問い）: 工程塔の予測は現フレームの器具と手の領域を隠すと変わるか。過去フレームのどの時刻とどの位置が寄与するか。
+プラス寄与と器具・手の枠の対応は、折り A 以外の動画でも残るか。関門の判定には使わない診断である。
+
+**実験**（契約 `T-2026-10-04-ptower-attribution-val`、dlsta、GPU1〜4）: 三周目の確定工程塔（seed 42、COCO 系・ImageNet 系）を、
+公式 test を除く val 七動画（02, 06, 08, 09, 10, 12, 15、計 5784 フレーム）に、その動画を val に持つ折りの塔でだけ通した。
+Grad-CAM（既存の道具と同じ定義）と枠の照合、枠の組み替え対照、遮蔽 14 条件×2 範囲（現フレームのみ／全フレーム）、
+勾配と特徴の積の時刻分解と過去の入れ替え。学習なし。W&B へは送らない。
+
+**結果**:
+- 折り A・B・C の両系統で記録の val J と acc が**全桁一致**。折り E は 15 だけのため UNKNOWN。折り A の正解数 1275 / 1300 と術具の内の寄与率は既存報告と一致（差 ≤ 2.5e-7）
+- 術具の枠の内の寄与率 COCO 0.713 / ImageNet 0.541（面積 0.239、組み替え対照 0.503 / 0.412）。対照より高い向きと COCO > ImageNet の向きは**七動画すべてで同じ**。手の枠は対照とほぼ差が無い
+- 術具の領域を全フレームで隠すと予測の 34%（COCO）/ 33%（ImageNet）が変わる。現フレームだけなら 7% / 17%。COCO では同じ面積の対照（4%）より大きい
+- 勾配と特徴の積で現フレームの割合は 19% / 17%。過去をすべて現フレームの複写にしても予測の 81% / 82% が残り、正解率は 8.5 / 5.4 点下がる
+- Bipolar Forceps は対象動画で hemostasis にしか出ないが、写るフレームの 23〜24% を誤り、大半が dissection
+
+**解釈**: 寄与の位置は術具の枠に寄るが、面積比ではなく組み替え対照と比べると差は半分程度に縮む。過去の文脈は平均では正解率を上げている。
+読み a〜d のうち区別できたもの・できなかったものは `experiments/analysis/ptower_attribution/REPORT.md` §6。
+
+**次**: 面積を揃えた対照の多くが枠と重なり（手と枠の外ではほぼ取れない）、この対照の設計は弱い。一つの工程にしか出ない術具が一つしかない。
+
+証跡: `experiments/analysis/ptower_attribution/{REPORT.md,summary.json,tables/}` / `tasks/T-2026-10-04-ptower-attribution-val/{RESULT.md,audit.md,result.yaml}`。
+`data/` `runindex/` `context/conventions.md` と既存の run・checkpoint・特徴キャッシュは変えていない（要約値 9652 件が前後で一致）。
+
 ## 2026-10-05 — Stage 1: 工程塔 P\*-20 を二系統で確定した。送り手の train−val 差は全件 3pt 超（efros）
 
 契約 `T-2026-09-27-stage1-ptower-20`。詳細は `tasks/T-2026-09-27-stage1-ptower-20/RESULT.md`、表は `docs/stage1/ptower_20.md`。

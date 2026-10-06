@@ -6,8 +6,48 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 111 件）。
-ここに出ない 106 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 112 件）。
+ここに出ない 107 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-10-04-ptower-attribution-val
+
+状態 `pass` / ホスト `dlsta` / 起票 `201` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 折り A・B・C・E の両系統で backbone・時間ヘッドの checkpoint、特徴キャッシュ、画像、工程 GT、術具と手の枠の GT が実在。七動画のフレーム数 5784、枠 35826。外した折りは無い
+- `G2` pass — 折り A・B・C × COCO/ImageNet の 6 組で記録の val macro Jaccard と frame accuracy が全桁一致。折り E は記録が 07 と 15 の合算のみで UNKNOWN（Task B-2 の指示）
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — conventions_rev に置いた e7a51005 の時点では、inject_verbatim が指す det_groups 節が存在しなかった（001b4309 で追加）。指示どおり実行すると make task-validate が L2-6 の WARN を出す。実測 073f9dc0 に差し替え meta.amendments に記録した
+- `self_contradiction` — 関門 G2 は対象の折りと系統のすべてで記録の val 主指標の再現を求める一方、Task B-2 は折り E を UNKNOWN で済ませるよう指示する。記録は 07 と 15 の合算しか持たないため、指示どおり実行すると折り E で G2 は字面上満たせない。B-2 を優先し G2 を pass とした
+- `self_contradiction` — Task D は四領域のそれぞれに面積を揃えた枠と無関係な位置の対照を求めるが、どの枠の外の領域は定義上枠以外の全部（平均 76%）であり同面積の無関係な位置は存在しない。実行すると 5060/5784 フレームが重なり 5% 超で除かれ、手（平均 41%）でも 4254/5748 が除かれた
+
+### 逸脱
+
+- `judgement` — 開始時の分岐は feat/dlsta-host-fairness だった。利用者の指示で phase0 へ切り替えて origin/phase0 へ fast-forward し、make task-start が起点 origin/phase0（331525e8）で feat/ptower-attribution-val を作った。開始前の未追跡 3 件は scratchpad へ mv、追跡済みの変更 1 件は git stash で退避した
+- `judgement` — 面積を揃えた対照の除外規則（枠の和集合との重なりが 5% を超えたら除く）を計算前に固定し、結果を見た後も変えなかった。手と枠の外では大半が除かれた。除いた値と除かない値の両方を表に置いた
+- `judgement` — 完了判定 c の空振り確認は、指標ではなく logits の要約値で測った。COCO 系では 1 フレームの差し替えで J と argmax が変わらなかったため
+- `environment` — make forbidden-check を BASE=331525e8（分岐点）と TASK を付けて回した。分岐の後に origin/phase0 へ PR #199・#200（data/README.md）が入り、BASE を省くとその差が違反に数えられた
+- `judgement` — README.md の追記は origin/phase0 の末尾追記と衝突しない位置（2026-10-02 の節の前）に入れた。時系列の順が一か所逆になる
+- `environment` — 試験は make test を使わず python -m pytest -q -p no:cacheprovider --continue-on-collection-errors tests で回した。Relation-DETR の本体が無く収集で全体が止まるため（dlsta の既知事情）
+- `judgement` — 完了判定 l の要約値は特徴キャッシュのファイル全体のバイトを sha256 に通す。test 動画の行も読み込まれるが、特徴として解釈・使用はしていない。分析での読み込みは memmap で対象の行だけ
+- `judgement` — CLAUDE.md は全実験の W&B 追跡を求めるが、契約の禁止 8（W&B へ送らない）を優先した。証跡は reads.jsonl・audit.md・summary.json に残した
+- `judgement` — 実行者の誤り: 待機の命令が pgrep -f で自分自身の命令行に一致し、計算の終了後も止まらなかった（issuer_cautions 注意 6 の型）。結果には影響しない。TaskStop で止めた
+
+### 申し送り
+
+- 面積を揃えた対照は巡回のずらしで作ったが、手（平均面積 41%）とどの枠の外（76%）では枠と無関係な位置がほとんど取れなかった。遮蔽の対照を使う後続の契約では、対照の作り方（例えば面積の上限、手と術具を分けた空き領域の定義）を起票時に決めておく必要がある
+- 一つの工程にしか出ない術具は、対象の七動画では Bipolar Forceps（hemostasis）の一つだけだった。誤りと術具 GT の関係はこの一例からしか読めない
+- make forbidden-check を BASE 省略で回すと、分岐の後に origin/phase0 へ入った他の PR の差が違反に数えられる。手順書が BASE を分岐点にすることを明記するか、道具が merge-base を取るかを検討してほしい
+- make taskindex と make inbox は契約の禁止 5 により実行していない。統合の後に一台で一度だけ回す（SPEC §6-5）
+- 大きな中間物は dlsta の /home/ubuntu/local/ptower_attribution_20261005/（362,866,001 バイト）にある。消すかどうかは利用者の判断
+
+### 断定できなかったこと
+
+- 折り E の記録の val 主指標の再現（記録が 07 と 15 の合算しか持たない）
+- 読み d（動画の術式が学習動画と違う）。術式の情報を測っていない
 
 ## T-2026-09-27-stage2-prep
 
@@ -184,46 +224,4 @@
 - stage1_ptower_r2.py の実行時点の要約値（記録の commit にまだ無かった）
 - 検出塔の当該ホストでの評価・短い学習・ピーク記憶量・step 時間
 - 凍結源 checkpoint の照合（当該ホストに無い）
-
-## T-2026-09-21-philip-sync-outbound-off
-
-状態 `partial` / ホスト `philip` / 起票 `193` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 記録 819,933 行から外向きを 6 種に分けて計数した（STUN 住所解決 1 / NAT 種別 1 / 使用状況 2 / 版の確認 1 / UPnP 探索 1 / 局所告知 2、公開中継 0）。設定は実体の 逆アセンブルと Go の型情報で確定した（IsStunDisabled の 3 項目、urAccepted、 AutoUpgradeEnabled）。読めない 3 件は UNKNOWN に分けた。変更前の全 55 項目を 版管理の外へ控え、戻す手順を書いた。接続 6 件・処理 2 件（pid 122452/122530）を記録した。
-- `G2` pass — PATCH /rest/config/options に変える鍵だけを 3 回送り、いずれも HTTP 200。 読み戻しで全 55 項目中の差は 3 項目のみ、config.xml にも書き戻った。 周期 180 秒を越えて 300 秒待ち、増えた 187 行に外向きの語は 0 件で、 STUN disabled が 1 件出た（変更の 169 秒後）。接続 6→6、登録 7→7 が完全一致、 共有フォルダ 2→2、localAnnounceEnabled は true のまま、PID は同一。
-
-### 起票者の誤り
-
-- `check_does_not_check` — Task 2 Step 3 は陽性対照を「変える前の記録に外向きの痕跡が在ったこと」と置き、 判定を「周期を越えて待ち新たな痕跡が現れないこと」と置いた。しかし中心の STUN の 痕跡は起動時の 2 件だけで周期的ではなく、通常の水準では keepalive が記録されない。 指示どおり実行すると、設定を変えなくても新しい行は出ないため「止まった」と 誤って結論できる。実際の決め手は契約が指していない別の行（STUN disabled、 無効側の分岐でだけ出る）であり、これを実装から見つけて判定に使った。
-
-### 逸脱
-
-- `judgement` — 開始前から在った未追跡 4 件のうち .sync-pause.released（0 バイト、前セッションの 解除の残骸）を削除した。SPEC 0 節と禁止 7 は「消さない。退避する」を求めており これに反する。利用者へ選択肢を示して承認を得たうえで行った。 digest 3 件は退避し、報告の後に戻す。
-- `judgement` — 退避先を最初 /tmp（overlay）に置いたが、SPEC 0 節の「repo と同じファイルシステム」に 反するため /home/ubuntu/slocal2/task-backups/（repo と同じ /dev/sda）へ移し替えた。
-- `judgement` — 変える範囲を利用者に諮り、外向きの 3 項目（natEnabled / urAccepted / crashReportingEnabled）に決めた。stunKeepaliveStartS は変えなかった。 natEnabled だけで IsStunDisabled が真になり、変える項目を最小にできるため。
-- `judgement` — 手順書（.claude/skills/task/SKILL.md）は make taskindex で投影を生成せよと求めるが、 本契約の禁止 6 と Task 3 Step 3 が生成物の再生成を禁じ、変更を契約のディレクトリと 受け皿に限れと求める。契約を優先して再生成しなかった。結果として make taskindex-check は差分ありで落ちる（exit 2）。make inbox-check は exit 0。 どちらの検査も作業ツリーへ書き込まないことを前後の件数で確かめた。
-- `environment` — 容器の中に tcpdump / ss / lsof / conntrack が無く、/proc/net/nf_conntrack も無い。 /rest/system/debug は v2.1.3 に無い（404）。STTRACE は再起動が要るため使えない。 通信そのものは観測できず、記録と画面の経路だけで判断した。
-- `spec_defect` — 契約の陽性対照では STUN の停止を判定できないため、実装を読んで STUN disabled の記録を見つけ、それを判定に使った。issuer_defects に対応する。
-
-### 申し送り
-
-- 使用状況の日次送信が止まったかは未確認である。直近の送信は 2026-09-21 02:32:36 JST と 2026-09-22 02:32:38 JST（記録の原文では 09-20 17:32:36 / 09-21 17:32:38 UTC）で、 変更は 2026-09-22 18:03:20 JST。次に送るはずだった 2026-09-23 02:32 JST を過ぎてから grep -c 'Sent usage report' ~/.syncthing.log を見ること。変更時点で 2 件である。
-- 障害報告は痕跡が元から 0 件のため「止まった」とは言えない。設定が false に なったことだけが事実である。次に障害が起きたときに送信が出ないことで確かめる。
-- urAccepted が 0 から 3 へ変わった原因が UNKNOWN である。残る六台でも値を 必ず読んでから書くこと。契約のたびに options 全体を控えて差分を見る運用を勧める。
-- P9 spec_lint の host_mismatch は socket.gethostname() と比べるため、この repo の 「ホスト」（同期処理上の名前）と食い違う。philip の OS 名は aolab である。 検査側を直すか、宣言の意味を規約に書くこと。
-- P9 spec_lint の separated_source は行継続 \ を繋げずに行ごとに見るため、 1 命令に書かれた source … && make … を該当と出す。SPEC.md:39 がこれに当たる。
-- .sync-pause.released が .gitignore に載っていない（.sync-pause は載っている）。 抑止の解除を別名への退避で行うたびに未追跡が残り、次の契約の task-start が 前提検査で止まる。無視対象に加えるか、解除の手順を削除に統一すること。
-- tests/test_estimate_tier_cost.py が収集時に落ちる（site-packages の tools が repo の tools を隠す）。PYTHONPATH に repo 直下を足しても解消しなかった。
-- tests/test_fetch_task.py::test_rejects_unknown_file_name が既存で落ちている。 束の取り込みが ../../etc/passwd を拒んでいない。経路の遡上を拒む修正が要る。
-- 投影（context/auto/ の 3 ファイル）が本契約の result.yaml を反映していない。 禁止 6 により再生成していないためで、make taskindex-check は差分ありで落ちる。 生成物の再生成を許す契約で make taskindex を回し、投影を追いつかせること。
-
-### 断定できなかったこと
-
-- 使用状況の日次送信が止まったか（周期 24 時間を越えて待てなかった）
-- 障害報告が止まったか（痕跡が元から 0 件で、止まったことを示せない）
-- urAccepted が 0 から 3 へ変わった原因
-- crashReportingEnabled を読む判定の位置（実装から特定できなかった）
-- natEnabled が UPnP/NAT-PMP の探索も止めるか（判定の位置を特定できなかった）
 
