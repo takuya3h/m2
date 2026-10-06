@@ -1,0 +1,77 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-04-ptower-attribution-val"
+  kind: analysis
+  title: "工程塔の寄与の診断: 遮蔽・過去フレームの寄与・プラス寄与の位置を、公式 test を除く val 七動画で測る"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-04T14:09:01Z"
+  created_from:
+    runindex_commit: "2fb7c905b51aac5ec2b0ee5fe5c70e835f4024a8"
+    counts: {index: 1911, experiments: 718, verdicts: 1506}
+  depends_on: [T-2026-09-19-stage1-phase-tower-r3]
+  amendments:
+    - date: "2026-10-05"
+      reason: "Task A-11 の実測による差し替え。conventions_rev は context/conventions.md を最後に変えた commit、runindex_commit は runindex/ を最後に変えた commit、counts は各 CSV のデータ行数（2026-10-05 dlsta、起点 origin/phase0 331525e8）。旧 conventions_rev e7a51005 は注入対象の det_groups 節を持たない"
+      diff: "runindex_commit 029b5315 -> 2fb7c905; counts 0/0/0 -> 1911/718/1506; conventions_rev e7a51005 -> 073f9dc0"
+intent:
+  question: "工程塔の予測は、現フレームの器具と手の領域を隠すと変わるか。過去フレームのどの時刻とどの位置が予測に寄与しているか。プラス寄与の位置と器具・手の枠の対応は、動画を増やしても残るか"
+  decision_at_stake: "Stage 二の設計の診断材料。検出から工程への向きで器具の情報が新しい情報になりうる工程と、界面を入れる位置の手がかりを得る。事前登録の予測と見込みの判定規則を書く材料であり、関門の判定には使わない"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery-Phase と EgoSurgery-Tool（手の枠を含む）。五折りの val のうち公式 test の動画を除いた七動画。折りは conventions#folds"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/stage1_ptower.py", "scripts/stage1_ptower_r2.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#folds, conventions#split, conventions#eval_recipe, conventions#det_groups]
+  conventions_rev: "073f9dc0b80b7ca48c2766eb6f8f2ccd17cf0fe6"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/analysis/ptower_attribution"]
+plan:
+  phases:
+    - {id: A, name: "開始状態と材料の実在。対象七動画と折りの対応、塔・注釈・既存の道具の所在、装置と記憶領域", gpu: false}
+    - {id: B, name: "塔の同一性と基準の再現。折りごと系統ごとに記録の val 主指標を再現し、別の折りの塔による対照を一度取る", gpu: true}
+    - {id: C, name: "プラス寄与の位置と枠の照合を対象の全フレームへ広げる。枠の組み替えと人工の地図による対照", gpu: true}
+    - {id: D, name: "遮蔽。領域別と面積を揃えた対照を、現フレームだけと履歴ごとの二つの範囲で測る", gpu: true}
+    - {id: E, name: "過去フレームの寄与。時刻ごとの寄与と、規則で選んだ過去フレームの位置の寄与", gpu: true}
+    - {id: F, name: "集計、検証、報告", gpu: false}
+  gates:
+    - {id: G1, after: A, check: "折り A の材料が揃っている。欠ける折りは一覧にして対象から外した", on_fail: stop}
+    - {id: G2, after: B, check: "対象の折りと系統のすべてで、記録の val 主指標が再現した", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [REPORT.md]
+  destination: "experiments/analysis/ptower_attribution/"
+  acceptance:
+    - "a: 対象の動画の集合が公式 test の動画と交わらない"
+    - "b: 各動画が、その動画を val に持つ折りの塔でだけ処理された"
+    - "c: 対象の折りと系統のすべてで、記録の val 主指標が再現した"
+    - "d: 何も隠さない条件を遮蔽の経路に通すと、元の予測と全件一致する"
+    - "e: 互いに重ならない四領域の寄与率の和が一になる"
+    - "f: 枠を組み替えた対照の寄与率が対象の全フレームで出ている"
+    - "g: 遮蔽の各条件に面積を揃えた対照があり、面積の差が記録されている"
+    - "h: 時間ヘッドの受容野の外の時刻を入れ替えても点数が変わらない"
+    - "i: 位置の寄与を調べる過去フレームの選び方が、計算の開始より前に記録されている"
+    - "j: 折り A の正解数と全体の寄与率を既存報告と突き合わせ、一致か差と理由が記録されている"
+    - "k: 読んだ動画の集合が対象の七動画に含まれる。例外は完了判定 b の対照の一度だけ"
+    - "l: 塔、特徴キャッシュ、既存 run の要約値が前後で一致する"
+    - "m: 全件の地図と全件の画像が版管理の差分に無い"
+    - "n: 試験の失敗が増えていない"
+    - "o: PR が存在し、base が phase0、分岐が feat/ptower-attribution-val、Draft でない"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "折り A の塔、画像、注釈のいずれかが本ホストに無い場合"
+    - "記録の val 主指標が再現しない場合"
+    - "空いている装置が一枚も無い場合"
+    - "既存スクリプトの挙動を変える変更が必要になった場合"
