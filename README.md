@@ -1291,6 +1291,17 @@ exp 契約 13 件すべてを FAIL にしていた**（prereg に対称性の表
 新しい型の欠陥が `context/auto/followups.md` の集計表から黙って落ちる。**
 一致は試験で縛ってある。
 
+### 工程塔の寄与の診断（2026-10-05、dlsta）
+
+`T-2026-10-04-ptower-attribution-val`。学習なし、推論と勾配のみ。W&B へは送らない（契約の禁止事項）。
+
+- `scripts/ptower_attribution.py` — 三周目の確定工程塔（seed 42、COCO 系・ImageNet 系）を、公式 test を除く val 七動画に
+  その動画を val に持つ折りの塔でだけ通す。基準の再現（`baseline`）、現フレームの Grad-CAM・遮蔽 14 条件×2 範囲・
+  過去フレームの寄与（`run`）、規則で選んだ過去フレームの地図（`positional`）。特徴キャッシュは対象の行だけを memmap で読む。
+  全件の出力は repo の外（既定 `/home/ubuntu/local/ptower_attribution_20261005/`、環境変数 `PTOWER_ATTR_OUT`）
+- `scripts/ptower_attribution_summary.py` — 集計。小さい表と報告は `experiments/analysis/ptower_attribution/`
+- `tests/test_ptower_attribution.py` — 対象集合、読み込みの記録、四領域、人工の地図、面積を揃えた対照、memmap の行読み、過去フレームの選定規則
+
 ### Stage 2 の準備: 標的群・交差適合の規約化と日数の出し直し（2026-10-02）
 
 `T-2026-09-27-stage2-prep`（GPU 不使用）。
