@@ -185,3 +185,8 @@
 
 退避先から元の経路へ mv（3 件）。伏せ字の検査: 32 文字以上の十六進 0、鍵らしき接頭辞の長い文字列 0、
 秘密を示す名前への伏せていない代入 0（3 件とも）。陽性対照: 同じ正規表現が見本の 2 行に 2 件一致。値は出力していない。
+
+## 9. 送出
+
+    make task-report TASK=… → exit 0
+    {"verdict": "pass", "n_issuer_defects": 2, "report_sha256": "0cc4a195dde771056a21d7b7a912627b22cbe10a211f7b4dc76575233aaa1e1d", "report_bytes": 6185, "replaced_blocks": 0}

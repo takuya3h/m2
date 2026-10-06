@@ -76,4 +76,5 @@ d(C) の中央は 0.0384 から 0.2100 へ上がる。標的群の欠落 0 の�
 
 ## 送出
 
-PR #203（base phase0、Draft でない、分岐 feat/design-val-subset-balance）。commit 1fb7097c。`make task-report` の結果は送出後に追記する。
+PR #203（base phase0、Draft でない、分岐 feat/design-val-subset-balance）。commit 1fb7097c、3662581d。
+`make task-report` は exit 0（verdict pass、起票者の誤り 2、6185 バイト、report_sha256 0cc4a195…）。
