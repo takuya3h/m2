@@ -1,0 +1,84 @@
+task_id: T-2026-09-27-stage1-ptower-20
+step: stage1_ptower_20
+action: train
+data_setting: P20
+fold: B
+seed: 42
+init: imagenet
+ft_lr: 0.0001
+ft_weight_decay: 0.0001
+ft_batch_size: 16
+ft_accum_steps: 4
+ft_epochs: 36
+ft_patience: 4
+ft_lr_decay: 0.1
+backbone_tag: imagenet_r50_ft800_lr0.0001
+checkpoint: null
+verify_determinism: false
+candidate: B
+layers: 8
+smoothing_weight: 0.0
+history: 30
+epochs: 50
+patience: 10
+lr: 0.0005
+weight_decay: 0.01
+warmup_epochs: 2
+maps: 64
+desc_suffix: _imagenet_lr0.0001
+device: cuda:0
+cache: data/processed/stage1_features/p20_imagenet_lr0.0001_foldB_seed42/all_gap.npz
+manifest_dir: data/processed/stage1_features/p20_manifest
+batch_size: 16
+workers: 4
+pin_memory: false
+data:
+  videos:
+    test:
+    - '01'
+    - '03'
+    - '14'
+    val:
+    - '02'
+    - '08'
+    train:
+    - '04'
+    - '05'
+    - '06'
+    - '07'
+    - '09'
+    - '10'
+    - '11'
+    - '12'
+    - '13'
+    - '15'
+    - '17'
+    - '18'
+    - '19'
+    - '20'
+    - '21'
+  class_counts:
+  - 469
+  - 6821
+  - 612
+  - 126
+  - 9581
+  - 315
+  - 851
+  - 1073
+  - 377
+class_weights:
+- 0.9648990415501084
+- 0.06634476623471644
+- 0.7394406053709165
+- 3.5915686546587366
+- 0.047232820215739574
+- 1.4366274618634949
+- 0.5317716221938905
+- 0.4217499072572235
+- 1.2003651206551746
+receptive_field: 1021
+selection_metric: phase_jaccard
+cache_sha256: 3c9aab3b785990031b15b986f4dfde74f03260812072f4b48171fa30fbdd933f
+source_sha256: 4ec5b57451f46d66473913361203e65ae1460222fd57860bd126e0d0ef2aeb5e
+contract_sha256: ffdc99e02fa3d7f55e39b6ffce133600423e513c638c35de7f189c7f4a8d89bb

@@ -191,13 +191,13 @@ def finetune(cfg):
         "short_side": SHORT_SIDE, "crop": "none", "frame_kept_fraction": 1.0,
         "effective_batch_size": int(cfg.ft_batch_size) * int(cfg.ft_accum_steps),
         "freeze": "stem (conv1, bn1); layer1-4 and fc trained",
-        "selection_metric": "phase_accuracy", "data_setting": "P15"})
+        "selection_metric": "phase_accuracy", "data_setting": cfg.get("data_setting", "P15")})
     manager = base.evidence(cfg, f"ft_{cfg.init}_lr{cfg.ft_lr}_fold{cfg.fold}")
     loaders = {
         "train": DataLoader(train_set, batch_size=cfg.ft_batch_size, shuffle=True,
-                            num_workers=cfg.workers, pin_memory=True),  # nosemgrep
+                            num_workers=cfg.workers, pin_memory=cfg.get("pin_memory", True)),  # nosemgrep
         "val": DataLoader(val_set, batch_size=cfg.ft_batch_size, shuffle=False,
-                          num_workers=cfg.workers, pin_memory=True),  # nosemgrep
+                          num_workers=cfg.workers, pin_memory=cfg.get("pin_memory", True)),  # nosemgrep
     }
     optimizer = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad],
                                   lr=cfg.ft_lr, weight_decay=cfg.ft_weight_decay)
@@ -304,7 +304,7 @@ def extract(cfg):
     names = list(json.loads((ROOT / cfg.manifest_dir / "phase_vocab.json").read_text()))
     every = FoldFrames(clips, sorted({c["video"] for c in clips}), train=False)
     loader = DataLoader(every, batch_size=cfg.batch_size, shuffle=False,
-                        num_workers=cfg.workers, pin_memory=True)  # nosemgrep
+                        num_workers=cfg.workers, pin_memory=cfg.get("pin_memory", True))  # nosemgrep
     checkpoint = ROOT / cfg.checkpoint
     state = torch.load(checkpoint, map_location="cpu", weights_only=True)
     model, source, _ = build_backbone(len(names), cfg.device, cfg.init)
@@ -314,7 +314,7 @@ def extract(cfg):
     cfg = base.enrich(cfg, {"weights": source, "transform": str(EVAL_TRANSFORM),
                             "short_side": SHORT_SIDE, "crop": "none",
                             "frame_kept_fraction": 1.0, "feature_dim": 2048,
-                            "data_setting": "P15", "best_epoch": int(state["epoch"]),
+                            "data_setting": cfg.get("data_setting", "P15"), "best_epoch": int(state["epoch"]),
                             "checkpoint_sha256": base.sha256(checkpoint)})
     manager = base.evidence(cfg, f"features_{cfg.init}_lr{cfg.ft_lr}_fold{cfg.fold}")
     before = time.monotonic()

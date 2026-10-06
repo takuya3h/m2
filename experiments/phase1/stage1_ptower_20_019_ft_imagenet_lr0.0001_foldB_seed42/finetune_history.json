@@ -1,0 +1,89 @@
+{
+  "task_id": "T-2026-09-27-stage1-ptower-20",
+  "fold": "B",
+  "seed": 42,
+  "init": "imagenet",
+  "ft_lr": 0.0001,
+  "trainable_params": {
+    "stem": 0,
+    "layer1": 215808,
+    "layer2": 1219584,
+    "layer3": 7098368,
+    "layer4": 14964736,
+    "fc": 18441
+  },
+  "backbone_init_sha256": "4f6b5b6209465abc4f7d35d2518bfae94f7972f9c1ea094e183d7d7e492563fd",
+  "weights": "ResNet50_Weights.IMAGENET1K_V1",
+  "effective_batch_size": 64,
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.6129879704202503,
+      "lr": 0.0001,
+      "val_accuracy": 0.7560451370231058,
+      "val_macro_f1": 0.4560412450576816
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.2116308987037508,
+      "lr": 0.0001,
+      "val_accuracy": 0.707146695325094,
+      "val_macro_f1": 0.5153492590536205
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.10773967106019611,
+      "lr": 0.0001,
+      "val_accuracy": 0.6883396023643202,
+      "val_macro_f1": 0.5025677748497965
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.07496888016685567,
+      "lr": 0.0001,
+      "val_accuracy": 0.6980118216012896,
+      "val_macro_f1": 0.5092815104041366
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.05247586355700039,
+      "lr": 0.0001,
+      "val_accuracy": 0.7017732401934443,
+      "val_macro_f1": 0.5367498926719443
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.023931010031361222,
+      "lr": 1e-05,
+      "val_accuracy": 0.7162815690488984,
+      "val_macro_f1": 0.5596580138345106
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.013647028421603227,
+      "lr": 1e-05,
+      "val_accuracy": 0.6759806555615261,
+      "val_macro_f1": 0.5377427568127943
+    },
+    {
+      "epoch": 8,
+      "train_loss": 0.009870208166309428,
+      "lr": 1e-05,
+      "val_accuracy": 0.708221386351424,
+      "val_macro_f1": 0.5531822871408002
+    },
+    {
+      "epoch": 9,
+      "train_loss": 0.009469242107206023,
+      "lr": 1e-05,
+      "val_accuracy": 0.6974744760881246,
+      "val_macro_f1": 0.530771803248068
+    }
+  ],
+  "best_epoch": 1,
+  "best_val_accuracy": 0.7560451370231058,
+  "lr_lowered_epoch": 5,
+  "early_stopped_epoch": 9,
+  "peak_memory_bytes": 29054617088,
+  "checkpoint_sha256": "c1a706d5e7356ee03425476890bfca556b09b2475c10aab9ae2381c3da06a801"
+}

@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 112 件）。
-ここに出ない 107 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 113 件）。
+ここに出ない 108 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-10-07-design-val-subset-balance
 
@@ -129,6 +129,49 @@
 - 工程塔の送り手の train−val 差。T-2026-09-27-stage1-ptower-20 で測る
 - MICCAI 2027 の締切（公式未発表）
 
+## T-2026-09-27-stage1-ptower-20
+
+状態 `partial` / ホスト `efros` / 起票 `202` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — efros で一つずつ測った。15 動画の工程フレーム 15,437 枚は manifest どおり全数が実在し三周目の数と一致。 COCO 検出 checkpoint は 196,140,106 bytes / sha256 2d2c19a7… で、R50 部分の要約値 a755b3eb… と ImageNet-1K R50 の要約値 4f6b5b62… が三周目と一致。三周目の時間ヘッドの確定構成は selection.json （COCO C/8/0.30/30、ImageNet B/8/0.00/30、lr 1e-4）。一度目の測定では動画 20・21 のフレームが 0 件で停止し、 利用者が移送した。続いて動画 19 の 1,932 枚が 262,144 バイトで切れていることを P*-20 の一本目の DataLoader が検出して停止し、利用者が再送した。最終的に追加 10,461 枚が全数デコードでき、 20 クリップすべてで注釈のフレーム集合と画像のフレーム集合が一致した。動画 22 は注釈 22_1〜22_3 があり フレームは無い。
+- `G2` ask — efros の P*-15・COCO・折り A・seed 42 の val macro Jaccard は 0.7762、ilya の同じ run （stage1_ptower_r3_059）は 0.7066。差 +0.0696 は、結果を見る前に固定した閾値 0.0372 （三周目の折り A の 3 seed 0.7066 / 0.6884 / 0.7255 の標本 SD 0.0186 の 2 倍）を超えた（SD 比 3.7）。 frame accuracy は 0.8713 対 0.8416（+0.0297）。fine-tune 段階のフレーム単位 val J の差は +0.0063。 利用者に諮り「差を記録して続行」の決定を得た（2026-10-03）。
+- `G3` pass — test の評価は確定塔（各系統の seed 42）2 系統 × 5 折りでちょうど 10 回。台帳 test_access_<系統>_<折り>.json は 10 件で全て status=completed。確定塔以外の test 評価は 0 件。test_access_coco_A.json に open("x") すると FileExistsError が投げられることを確かめた。
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — inputs.code.entrypoints が scripts/train_phase_tower_r50.py と scripts/run_stage1_ptower.py を挙げるが、これは一周目の道具で、 三周目の確定 recipe を実装しているのは stage1_ptower_r3.py / run_stage1_ptower_r3.py / select_stage1_ptower_r3.py である。 指示どおり一周目の道具で P*-20 を回すと、短辺 800・全画面・COCO 初期化の鎖を持たない別の recipe になる。三周目でも同じ誤りが報告されている。
+- `self_contradiction` — outputs.expected_runs は 30 だが、SPEC の Task C・D を実装すると完了 run は 45 になる（対照 3 + P*-20 の fine-tune 14・特徴抽出 14・ 時間ヘッド 14）。30 は fine-tune と時間ヘッドの 15 ずつの和で、特徴抽出を数えていない。完了判定 h を行数の一致で読むと必ず外れるため、 task_id で照合する読みを採った。
+- `asserted_without_measuring` — SPEC §1 と Task A-3 は欠けているものを「利用者が ilya から移す」とし、prereg の停止条件も ilya を出所に置くが、三周目の RESULT は ilya に動画 17〜22 の画像が 0 件だったと記録している。指示どおり ilya から移そうとすると移す物が無い。実際には利用者が別の出所から efros へ直接置いた。
+- `check_does_not_check` — 停止条件と Task B-2 は「追加五動画のフレーム数が注釈と一致すること」を求めるが、数の一致は画像の中身を検査しない。動画 19 の 1,932 枚は 262,144 バイトで切れていたのに数の照合を通り、P*-20 の一本目が epoch 1 の途中で OSError で落ちて初めて見つかった。全数デコードを要件に 含めるべきだった。
+- `asserted_without_measuring` — meta.created_from.counts が {index: 0, experiments: 0, verdicts: 0} のまま起票され、取り込み時に L2-8 の WARN が 3 件出た （現在 1911 / 718 / 1506）。起票時の母集団が測られていない。分母は動いていないが、WARN の意味が失われ利用者の確認が要った。
+
+### 逸脱
+
+- `judgement` — Task C（ホスト差の対照）は fine-tune → 特徴 → 時間ヘッドの順にしか進められず GPU 1 枚しか使わないため、 利用者の了承を得て G2 の判定前に Task D の一本目（P*-20・COCO・折り A・seed 42）を GPU 1 で始めた（2026-10-02）。 契約の phases は C→D の順。
+- `judgement` — G2 は不合格（+0.0696、閾値 0.0372）。on_fail: ask に従い諮り、利用者が「差を記録して続行」を選んだ（2026-10-03）。 P*-20（efros）と P*-15（ilya）の並置にはホスト差が混ざる。同一ホストの唯一の点（COCO・折り A・seed 42）では P*-20 0.7461 が efros の P*-15 0.7762 を下回る。
+- `judgement` — P*-20 の fine-tune は見込み 9 時間で契約の 8 時間を超えるため諮り、recipe を変えずに続行する承認を得た（2026-10-03）。 実測で 8 時間を超えたのは 14 本中 2 本（COCO 折り C 8.56 時間、ImageNet 折り E 8.11 時間）。合計 90.0 GPU 時間。
+- `environment` — efros の cgroup 上限 52 GiB で 2 本を並べると、PyTorch 2.1 の pinned メモリのキャッシュが 1 回の val で 256 MiB × 約 95 塊（約 24 GiB）まで積もり、OOM killer が 2 本とも止めた（oom_kill 3）。P*-20 の設定だけ pin_memory=False にした（logits の要約値は一致）。ホスト差の対照は起動時の設定のまま pin_memory 既定 True で走った。 三周目のスクリプトは cfg.get("pin_memory", True) で既定を変えていない。
+- `environment` — 未完了の run が 5 件残る（metrics.json が空で再開判定は完了と見なさない）。_001_ は対照で、実行者が Bash の run_in_background で起こしたため 30 分の上限で子プロセスごと止まった。_002_ は P*-20 で動画 19 の切れた画像に当たった。 _003_（対照）と _004_（P*-20）は OOM。_006_ は P*-20 で、pinned メモリが積もり次の epoch 境界で OOM になる恐れがあったため 実行者が止めた。失敗したログは消さず .failed1〜.failed3 を付けて退避した。
+- `judgement` — 掃引の駆動を対ごとの投入から GPU ごとの待ち行列に変え、走行中の同一設定と使用中の GPU を避けるようにした。 所要時間が 4.1〜8.6 時間と run ごとに違い、対では GPU が遊ぶため。特徴抽出と時間ヘッドの 13 本は、最後の fine-tune を 待つ間に空いた GPU で runner の run() を直接呼んで先に流した（証跡は同じ形で残る）。
+- `judgement` — 契約が指す entrypoint（train_phase_tower_r50.py / run_stage1_ptower.py）ではなく、三周目の stage1_ptower_r3.py の関数を そのまま呼ぶ薄い入口 stage1_ptower_20.py と、掃引 run_stage1_ptower_20.py、集計 select_stage1_ptower_20.py、manifest build_phase_manifest_p20.py を新設した。三周目のスクリプトには data_setting と pin_memory を設定から読む 2 箇所の変更を 入れた（既定値は三周目の挙動のまま）。
+- `environment` — 追加動画 17〜21 の注釈 CSV 20 件は開始前から未追跡で置かれていた。取り込みの前に利用者の指示で stash に退避し、 Task B で使うため作業ツリーへ未追跡のまま戻した（stash は消していない）。commit はしない。make forbidden-check は これら 20 件を data/ の内側として違反に数え status fail で終わる。それ以外の違反は 0 件。
+- `environment` — 開始時、両 GPU に 34.6 GiB を確保して行列積を回し続ける仮占有プロセスが 2 本あった（2026-09-29 起動）。停止して諮り、 実行者による停止は実行基盤に拒否されたため利用者が止めた。途中で利用者の指示により同じものを再開し、再び利用者が止めた。
+- `judgement` — 試験の開始前の値を作業の最初に測らなかった。分岐の起点 331525e8 の作業木で後から測った（third_party が無い作業木のため tests/test_stage1_dtower_convergence.py を除いて 7 failed / 657 passed / 15 skipped）。作業後の本作業木は 6 failed / 691 passed。6 件はすべて起点でも落ちる既存の失敗（test_engines 1、test_fetch_task 1、test_research_logger 4）。
+
+### 申し送り
+
+- P*-20 と P*-15 の差（val: COCO +0.0454、ImageNet +0.1214。test: COCO +0.1226、ImageNet +0.1222）は efros と ilya をまたぐ比較で、 G2 のホスト差（+0.0696、SD 比 3.7）と同じ大きさである。唯一の同一ホストの点では P*-20 が P*-15 を 0.0301 下回る。 データ量の効果を主張するには、P*-15 を efros で 14 本回して同一ホストで比べる必要がある（2 枚で約 31 時間）。
+- 工程塔の送り手の train と val の差は 4 塔 × 5 折りの 20 件すべてで閾値 3pt を超えた（最小 +0.1254、系統と設定ごとの平均 +0.2521 / +0.2510 / +0.3968 / +0.3449）。conventions#crossfit に従い、Stage 2 の P→D 側の工程塔の送り手にも交差適合を適用する対象である。
+- efros の cgroup 上限は 52 GiB。PyTorch 2.1 の pinned メモリのキャッシュは塊を返さず 1 回の val で約 24 GiB まで積もりうるため、 efros で 2 本並べる GPU 学習は pin_memory=False を既定にするか、上限を確認してから並べる。
+- efros の A6000 は短辺 800・batch 16 で 14.2 フレーム/秒（ilya の約 0.68 倍）。P*-20 の fine-tune は 4.06〜8.56 時間、合計 90.0 GPU 時間。
+
+### 断定できなかったこと
+
+- G2 の差が恒常的なホスト差か seed 一本の揺れかは区別できない。efros の対照は 1 seed しか無い。fine-tune 段階の差（+0.0063）に比べ 時間ヘッドを載せた差（+0.0696）が大きく、時間ヘッドで揺れが増幅された可能性がある。
+- 完了判定 e と g の陽性対照（壊した入力で落ちること）は測っていない。
+
 ## T-2026-09-23-ops-and-proposal-card-gate
 
 状態 `partial` / ホスト `m2` / 起票 `194` / 様式 `v3`
@@ -172,53 +215,4 @@
 
 - 旧様式 result.yaml（T-2026-08-22-philip-hub-foundation）の tests の 3 整数は実測不能である。旧報告にも旧 RESULT.md にも試験の記録が一切無く、推測で埋めれば捏造になる。UNKNOWN のまま据え置いた
 - 完了判定 e の「実例 4 件で FAIL」は達成していない。4 件目が是正済みであることが理由で、規則の欠陥ではないが、契約の字面は充足していない
-
-## T-2026-09-23-dlsta-host-fairness
-
-状態 `partial` / ホスト `dlsta` / 起票 `197` / 様式 `v3`
-
-### ゲート
-
-- `A` pass — 参照 2 系を run 名・ckpt sha256・処方・ホストで特定。注釈 3 件・ckpt 2 件・特徴キャッシュの sha256 が記録と一致。凍結源は当該ホストに無く照合不能
-- `B` pass — 工程塔: 記録の backbone+ヘッドで fold A val を 2 回評価し J=0.5089659192972632 が 2 回とも記録と全桁一致。検出塔は Relation-DETR 本体が無く実行不能
-- `C` ask — 工程塔の参照に一歩ごとの損失が無く停止して諮った。利用者の判断で epoch 平均損失 12 点を使い r=0.8469541419328871。検出塔は実行不能
-- `D` pass — 工程塔ピーク 6355 MiB / 24564 MiB で収まる。定常 step 平均 0.30079340446474295 s。参照の step 時間は記録に無く UNKNOWN。検出塔は UNKNOWN
-- `E` pass — 工程塔 学習=要注意・評価=無視できる、検出塔=判定不能。D1 文書と値ファイル、env-facts の行追加（既存の減少 0）
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — inputs.code.entrypoints の scripts/train_phase_tower_r50.py は旧系統のスクリプトで、r2 の確定 recipe を回したのは scripts/stage1_ptower_r2.py である。指示どおりに入口を使うと別の前処理と処方で学習し、参照と違う処方どうしを比べることになる
-- `asserted_without_measuring` — 検出塔を dlsta で評価・学習できる前提で Task B〜D を書いたが、dlsta には Relation-DETR の本体と egosurgery 用の設定が無い（third_party は同期されない）。§4 にもこの場合が無く、指示どおりには一つも実行できなかった
-- `self_contradiction` — §2 は系ごとに評価の r と短い学習の r の二つを定義するのに、区分は系ごとに一つとし組み合わせ方を定めていない。工程塔は評価 r=0（無視できる）と学習 r=0.847（要注意）に分かれ、帰結を一意に出せなかった
-- `check_does_not_check` — 完了判定 d の陽性対照「別の折りの checkpoint を当てる」は、折り B が fold A val の動画 09・10 を学習に含むため J=0.954 となり、ホスト差への感度と無関係に d_host が大きくなる。対照が通っても評価経路の感度は示されない
-
-### 逸脱
-
-- `judgement` — 占位（conventions_rev・runindex_commit）の置換前に make task-validate を一度回した。SPEC §1 申し送りに反する。置換後に再検証して exit 0
-- `judgement` — 工程塔の参照 run は epoch 平均損失しか持たないため停止して諮り、利用者の判断で epoch 平均 12 点を損失の軌跡として代替した
-- `environment` — dlsta の third_party/Relation-DETR はキャッシュの残骸だけで main.py も設定も無い。取り寄せは禁止のため、利用者の判断で検出塔の B・C・D を行わず判定不能とした
-- `judgement` — 工程塔スクリプトは出力先が experiments/ 固定で W&B 必須。利用者の判断でコードを変えず repo 外の写しから WANDB_MODE=offline・秘匿でない占位の鍵で実行した。評価と step 時間は写しのハーネスで測った
-- `spec_defect` — spec の入口 scripts/train_phase_tower_r50.py ではなく、記録の command.sh にある scripts/stage1_ptower_r2.py を使った
-- `judgement` — 工程塔は学習 r と評価 r で区分が分かれた。SPEC に組み合わせの規則が無く、割り当てを決めるのは学習側と解釈した
-- `judgement` — 手順書 §6 の make taskindex / make inbox は契約の禁止 4 と衝突するため回していない（SPEC §4 に従い契約を優先）
-- `environment` — .sync-pause は開始前から在ったため Task E Step 5 の解除を行っていない
-- `environment` — make test は dlsta に pytest-cov が無く引数エラーで止まるため pytest tests/ を --cov なしで回した。失敗 6 件（test_engines 1・test_fetch_task 1・test_research_logger 4）は HEAD を展開した木でも同名で落ちる既存の失敗。展開木は git 管理外のため別に 3 件落ち、変更前の数は名前の突き合わせで 6 とした
-
-### 申し送り
-
-- 検出塔を dlsta で比べるには third_party/Relation-DETR（egosurgery 用の設定と別 venv を含む）の配備が要る。配備の契約を出してから本契約の検出塔部分を再実行する
-- 工程塔の d_seed は種の対 1 組（42 と 123）だけから出た。r=0.847 は境界 1 に近く、種を増やすと区分が変わりうる
-- ilya の driver・nvcc・torch・cuDNN を記録として残す。今回は型番しか記録が無く、ホスト差と世代差を分けられなかった
-- scripts/stage1_ptower.py の出力先（experiments/ 固定）と W&B 必須を、短い検証の run のために引数で外せるようにするかは未決
-- Relation-DETR の train.log は 50 step 間隔、工程塔は epoch 単位。ホスト比較のため一歩ごとの損失を残す規約を置くかは未決
-
-### 断定できなかったこと
-
-- ilya の driver・nvcc・torch・cuDNN・Python・lock の要約値
-- efros の cuDNN・torchvision・lock の要約値・repo の commit（git_commit.txt は ref のみ）
-- 参照ホストの装置間の接続
-- 工程塔の参照の step 時間（epoch 単位の記録のみ）
-- stage1_ptower_r2.py の実行時点の要約値（記録の commit にまだ無かった）
-- 検出塔の当該ホストでの評価・短い学習・ピーク記憶量・step 時間
-- 凍結源 checkpoint の照合（当該ホストに無い）
 
