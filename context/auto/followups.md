@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（558 件）
+## 申し送り（567 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -882,6 +882,13 @@
 - make spec-check を TASK 無しで回すと allow_write_incomplete が 15 件出る（exp 10 件 / impl 5 件）。過去の契約の是正は別契約で行うこと
 - 本契約の統合後、起票者は Stage 2 の提案カードを docs/proposals/ に置き、check_proposal.py を通してから exp を起票する（SPEC §8）
 
+### T-2026-09-27-stage1-ptower-20
+
+- P*-20 と P*-15 の差（val: COCO +0.0454、ImageNet +0.1214。test: COCO +0.1226、ImageNet +0.1222）は efros と ilya をまたぐ比較で、 G2 のホスト差（+0.0696、SD 比 3.7）と同じ大きさである。唯一の同一ホストの点では P*-20 が P*-15 を 0.0301 下回る。 データ量の効果を主張するには、P*-15 を efros で 14 本回して同一ホストで比べる必要がある（2 枚で約 31 時間）。
+- 工程塔の送り手の train と val の差は 4 塔 × 5 折りの 20 件すべてで閾値 3pt を超えた（最小 +0.1254、系統と設定ごとの平均 +0.2521 / +0.2510 / +0.3968 / +0.3449）。conventions#crossfit に従い、Stage 2 の P→D 側の工程塔の送り手にも交差適合を適用する対象である。
+- efros の cgroup 上限は 52 GiB。PyTorch 2.1 の pinned メモリのキャッシュは塊を返さず 1 回の val で約 24 GiB まで積もりうるため、 efros で 2 本並べる GPU 学習は pin_memory=False を既定にするか、上限を確認してから並べる。
+- efros の A6000 は短辺 800・batch 16 で 14.2 フレーム/秒（ilya の約 0.68 倍）。P*-20 の fine-tune は 4.06〜8.56 時間、合計 90.0 GPU 時間。
+
 ### T-2026-09-27-stage2-prep
 
 - P*-20 の契約（T-2026-09-27-stage1-ptower-20）は本契約の PR の統合後に起動する。カードは docs/proposals/2026-09-27-ptower-20.md
@@ -890,7 +897,15 @@
 - TF32 の採用は未決。計算器には入っていない（採用すれば Tier 1 の検出側が約 1/1.17〜1/1.18）
 - 計算器の行ラベル「受け取りは P*-21」は P*-20 になった（数値に影響なし、未修正）
 
-## 断定できなかった事項（366 件）
+### T-2026-10-04-ptower-attribution-val
+
+- 面積を揃えた対照は巡回のずらしで作ったが、手（平均面積 41%）とどの枠の外（76%）では枠と無関係な位置がほとんど取れなかった。遮蔽の対照を使う後続の契約では、対照の作り方（例えば面積の上限、手と術具を分けた空き領域の定義）を起票時に決めておく必要がある
+- 一つの工程にしか出ない術具は、対象の七動画では Bipolar Forceps（hemostasis）の一つだけだった。誤りと術具 GT の関係はこの一例からしか読めない
+- make forbidden-check を BASE 省略で回すと、分岐の後に origin/phase0 へ入った他の PR の差が違反に数えられる。手順書が BASE を分岐点にすることを明記するか、道具が merge-base を取るかを検討してほしい
+- make taskindex と make inbox は契約の禁止 5 により実行していない。統合の後に一台で一度だけ回す（SPEC §6-5）
+- 大きな中間物は dlsta の /home/ubuntu/local/ptower_attribution_20261005/（362,866,001 バイト）にある。消すかどうかは利用者の判断
+
+## 断定できなかった事項（370 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1557,6 +1572,11 @@
 - 旧様式 result.yaml（T-2026-08-22-philip-hub-foundation）の tests の 3 整数は実測不能である。旧報告にも旧 RESULT.md にも試験の記録が一切無く、推測で埋めれば捏造になる。UNKNOWN のまま据え置いた
 - 完了判定 e の「実例 4 件で FAIL」は達成していない。4 件目が是正済みであることが理由で、規則の欠陥ではないが、契約の字面は充足していない
 
+### T-2026-09-27-stage1-ptower-20
+
+- G2 の差が恒常的なホスト差か seed 一本の揺れかは区別できない。efros の対照は 1 seed しか無い。fine-tune 段階の差（+0.0063）に比べ 時間ヘッドを載せた差（+0.0696）が大きく、時間ヘッドで揺れが増幅された可能性がある。
+- 完了判定 e と g の陽性対照（壊した入力で落ちること）は測っていない。
+
 ### T-2026-09-27-stage2-prep
 
 - 交差適合の送り手（train の半分）の学習時間。全量の実測を上限に置いた
@@ -1564,18 +1584,23 @@
 - 工程塔の送り手の train−val 差。T-2026-09-27-stage1-ptower-20 で測る
 - MICCAI 2027 の締切（公式未発表）
 
-## 起票者の誤りの型（335 件）
+### T-2026-10-04-ptower-attribution-val
+
+- 折り E の記録の val 主指標の再現（記録が 07 と 15 の合算しか持たない）
+- 読み d（動画の術式が学習動画と違う）。術式の情報を測っていない
+
+## 起票者の誤りの型（343 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 91 |
-| `asserted_without_measuring` | 138 |
-| `self_contradiction` | 86 |
+| `check_does_not_check` | 92 |
+| `asserted_without_measuring` | 142 |
+| `self_contradiction` | 89 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 0 |
 | `rule_read_narrowly` | 1 |
 
-合計 335 件（対を持つ契約 110 件から）
+合計 343 件（対を持つ契約 112 件から）
 

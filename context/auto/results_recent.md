@@ -6,8 +6,48 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 110 件）。
-ここに出ない 105 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 112 件）。
+ここに出ない 107 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-10-04-ptower-attribution-val
+
+状態 `pass` / ホスト `dlsta` / 起票 `201` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 折り A・B・C・E の両系統で backbone・時間ヘッドの checkpoint、特徴キャッシュ、画像、工程 GT、術具と手の枠の GT が実在。七動画のフレーム数 5784、枠 35826。外した折りは無い
+- `G2` pass — 折り A・B・C × COCO/ImageNet の 6 組で記録の val macro Jaccard と frame accuracy が全桁一致。折り E は記録が 07 と 15 の合算のみで UNKNOWN（Task B-2 の指示）
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — conventions_rev に置いた e7a51005 の時点では、inject_verbatim が指す det_groups 節が存在しなかった（001b4309 で追加）。指示どおり実行すると make task-validate が L2-6 の WARN を出す。実測 073f9dc0 に差し替え meta.amendments に記録した
+- `self_contradiction` — 関門 G2 は対象の折りと系統のすべてで記録の val 主指標の再現を求める一方、Task B-2 は折り E を UNKNOWN で済ませるよう指示する。記録は 07 と 15 の合算しか持たないため、指示どおり実行すると折り E で G2 は字面上満たせない。B-2 を優先し G2 を pass とした
+- `self_contradiction` — Task D は四領域のそれぞれに面積を揃えた枠と無関係な位置の対照を求めるが、どの枠の外の領域は定義上枠以外の全部（平均 76%）であり同面積の無関係な位置は存在しない。実行すると 5060/5784 フレームが重なり 5% 超で除かれ、手（平均 41%）でも 4254/5748 が除かれた
+
+### 逸脱
+
+- `judgement` — 開始時の分岐は feat/dlsta-host-fairness だった。利用者の指示で phase0 へ切り替えて origin/phase0 へ fast-forward し、make task-start が起点 origin/phase0（331525e8）で feat/ptower-attribution-val を作った。開始前の未追跡 3 件は scratchpad へ mv、追跡済みの変更 1 件は git stash で退避した
+- `judgement` — 面積を揃えた対照の除外規則（枠の和集合との重なりが 5% を超えたら除く）を計算前に固定し、結果を見た後も変えなかった。手と枠の外では大半が除かれた。除いた値と除かない値の両方を表に置いた
+- `judgement` — 完了判定 c の空振り確認は、指標ではなく logits の要約値で測った。COCO 系では 1 フレームの差し替えで J と argmax が変わらなかったため
+- `environment` — make forbidden-check を BASE=331525e8（分岐点）と TASK を付けて回した。分岐の後に origin/phase0 へ PR #199・#200（data/README.md）が入り、BASE を省くとその差が違反に数えられた
+- `judgement` — README.md の追記は origin/phase0 の末尾追記と衝突しない位置（2026-10-02 の節の前）に入れた。時系列の順が一か所逆になる
+- `environment` — 試験は make test を使わず python -m pytest -q -p no:cacheprovider --continue-on-collection-errors tests で回した。Relation-DETR の本体が無く収集で全体が止まるため（dlsta の既知事情）
+- `judgement` — 完了判定 l の要約値は特徴キャッシュのファイル全体のバイトを sha256 に通す。test 動画の行も読み込まれるが、特徴として解釈・使用はしていない。分析での読み込みは memmap で対象の行だけ
+- `judgement` — CLAUDE.md は全実験の W&B 追跡を求めるが、契約の禁止 8（W&B へ送らない）を優先した。証跡は reads.jsonl・audit.md・summary.json に残した
+- `judgement` — 実行者の誤り: 待機の命令が pgrep -f で自分自身の命令行に一致し、計算の終了後も止まらなかった（issuer_cautions 注意 6 の型）。結果には影響しない。TaskStop で止めた
+
+### 申し送り
+
+- 面積を揃えた対照は巡回のずらしで作ったが、手（平均面積 41%）とどの枠の外（76%）では枠と無関係な位置がほとんど取れなかった。遮蔽の対照を使う後続の契約では、対照の作り方（例えば面積の上限、手と術具を分けた空き領域の定義）を起票時に決めておく必要がある
+- 一つの工程にしか出ない術具は、対象の七動画では Bipolar Forceps（hemostasis）の一つだけだった。誤りと術具 GT の関係はこの一例からしか読めない
+- make forbidden-check を BASE 省略で回すと、分岐の後に origin/phase0 へ入った他の PR の差が違反に数えられる。手順書が BASE を分岐点にすることを明記するか、道具が merge-base を取るかを検討してほしい
+- make taskindex と make inbox は契約の禁止 5 により実行していない。統合の後に一台で一度だけ回す（SPEC §6-5）
+- 大きな中間物は dlsta の /home/ubuntu/local/ptower_attribution_20261005/（362,866,001 バイト）にある。消すかどうかは利用者の判断
+
+### 断定できなかったこと
+
+- 折り E の記録の val 主指標の再現（記録が 07 と 15 の合算しか持たない）
+- 読み d（動画の術式が学習動画と違う）。術式の情報を測っていない
 
 ## T-2026-09-27-stage2-prep
 
@@ -48,6 +88,49 @@
 - 工程塔の fine-tune の A6000 での時間。ilya（RTX 6000 Ada）の値を使った
 - 工程塔の送り手の train−val 差。T-2026-09-27-stage1-ptower-20 で測る
 - MICCAI 2027 の締切（公式未発表）
+
+## T-2026-09-27-stage1-ptower-20
+
+状態 `partial` / ホスト `efros` / 起票 `202` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — efros で一つずつ測った。15 動画の工程フレーム 15,437 枚は manifest どおり全数が実在し三周目の数と一致。 COCO 検出 checkpoint は 196,140,106 bytes / sha256 2d2c19a7… で、R50 部分の要約値 a755b3eb… と ImageNet-1K R50 の要約値 4f6b5b62… が三周目と一致。三周目の時間ヘッドの確定構成は selection.json （COCO C/8/0.30/30、ImageNet B/8/0.00/30、lr 1e-4）。一度目の測定では動画 20・21 のフレームが 0 件で停止し、 利用者が移送した。続いて動画 19 の 1,932 枚が 262,144 バイトで切れていることを P*-20 の一本目の DataLoader が検出して停止し、利用者が再送した。最終的に追加 10,461 枚が全数デコードでき、 20 クリップすべてで注釈のフレーム集合と画像のフレーム集合が一致した。動画 22 は注釈 22_1〜22_3 があり フレームは無い。
+- `G2` ask — efros の P*-15・COCO・折り A・seed 42 の val macro Jaccard は 0.7762、ilya の同じ run （stage1_ptower_r3_059）は 0.7066。差 +0.0696 は、結果を見る前に固定した閾値 0.0372 （三周目の折り A の 3 seed 0.7066 / 0.6884 / 0.7255 の標本 SD 0.0186 の 2 倍）を超えた（SD 比 3.7）。 frame accuracy は 0.8713 対 0.8416（+0.0297）。fine-tune 段階のフレーム単位 val J の差は +0.0063。 利用者に諮り「差を記録して続行」の決定を得た（2026-10-03）。
+- `G3` pass — test の評価は確定塔（各系統の seed 42）2 系統 × 5 折りでちょうど 10 回。台帳 test_access_<系統>_<折り>.json は 10 件で全て status=completed。確定塔以外の test 評価は 0 件。test_access_coco_A.json に open("x") すると FileExistsError が投げられることを確かめた。
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — inputs.code.entrypoints が scripts/train_phase_tower_r50.py と scripts/run_stage1_ptower.py を挙げるが、これは一周目の道具で、 三周目の確定 recipe を実装しているのは stage1_ptower_r3.py / run_stage1_ptower_r3.py / select_stage1_ptower_r3.py である。 指示どおり一周目の道具で P*-20 を回すと、短辺 800・全画面・COCO 初期化の鎖を持たない別の recipe になる。三周目でも同じ誤りが報告されている。
+- `self_contradiction` — outputs.expected_runs は 30 だが、SPEC の Task C・D を実装すると完了 run は 45 になる（対照 3 + P*-20 の fine-tune 14・特徴抽出 14・ 時間ヘッド 14）。30 は fine-tune と時間ヘッドの 15 ずつの和で、特徴抽出を数えていない。完了判定 h を行数の一致で読むと必ず外れるため、 task_id で照合する読みを採った。
+- `asserted_without_measuring` — SPEC §1 と Task A-3 は欠けているものを「利用者が ilya から移す」とし、prereg の停止条件も ilya を出所に置くが、三周目の RESULT は ilya に動画 17〜22 の画像が 0 件だったと記録している。指示どおり ilya から移そうとすると移す物が無い。実際には利用者が別の出所から efros へ直接置いた。
+- `check_does_not_check` — 停止条件と Task B-2 は「追加五動画のフレーム数が注釈と一致すること」を求めるが、数の一致は画像の中身を検査しない。動画 19 の 1,932 枚は 262,144 バイトで切れていたのに数の照合を通り、P*-20 の一本目が epoch 1 の途中で OSError で落ちて初めて見つかった。全数デコードを要件に 含めるべきだった。
+- `asserted_without_measuring` — meta.created_from.counts が {index: 0, experiments: 0, verdicts: 0} のまま起票され、取り込み時に L2-8 の WARN が 3 件出た （現在 1911 / 718 / 1506）。起票時の母集団が測られていない。分母は動いていないが、WARN の意味が失われ利用者の確認が要った。
+
+### 逸脱
+
+- `judgement` — Task C（ホスト差の対照）は fine-tune → 特徴 → 時間ヘッドの順にしか進められず GPU 1 枚しか使わないため、 利用者の了承を得て G2 の判定前に Task D の一本目（P*-20・COCO・折り A・seed 42）を GPU 1 で始めた（2026-10-02）。 契約の phases は C→D の順。
+- `judgement` — G2 は不合格（+0.0696、閾値 0.0372）。on_fail: ask に従い諮り、利用者が「差を記録して続行」を選んだ（2026-10-03）。 P*-20（efros）と P*-15（ilya）の並置にはホスト差が混ざる。同一ホストの唯一の点（COCO・折り A・seed 42）では P*-20 0.7461 が efros の P*-15 0.7762 を下回る。
+- `judgement` — P*-20 の fine-tune は見込み 9 時間で契約の 8 時間を超えるため諮り、recipe を変えずに続行する承認を得た（2026-10-03）。 実測で 8 時間を超えたのは 14 本中 2 本（COCO 折り C 8.56 時間、ImageNet 折り E 8.11 時間）。合計 90.0 GPU 時間。
+- `environment` — efros の cgroup 上限 52 GiB で 2 本を並べると、PyTorch 2.1 の pinned メモリのキャッシュが 1 回の val で 256 MiB × 約 95 塊（約 24 GiB）まで積もり、OOM killer が 2 本とも止めた（oom_kill 3）。P*-20 の設定だけ pin_memory=False にした（logits の要約値は一致）。ホスト差の対照は起動時の設定のまま pin_memory 既定 True で走った。 三周目のスクリプトは cfg.get("pin_memory", True) で既定を変えていない。
+- `environment` — 未完了の run が 5 件残る（metrics.json が空で再開判定は完了と見なさない）。_001_ は対照で、実行者が Bash の run_in_background で起こしたため 30 分の上限で子プロセスごと止まった。_002_ は P*-20 で動画 19 の切れた画像に当たった。 _003_（対照）と _004_（P*-20）は OOM。_006_ は P*-20 で、pinned メモリが積もり次の epoch 境界で OOM になる恐れがあったため 実行者が止めた。失敗したログは消さず .failed1〜.failed3 を付けて退避した。
+- `judgement` — 掃引の駆動を対ごとの投入から GPU ごとの待ち行列に変え、走行中の同一設定と使用中の GPU を避けるようにした。 所要時間が 4.1〜8.6 時間と run ごとに違い、対では GPU が遊ぶため。特徴抽出と時間ヘッドの 13 本は、最後の fine-tune を 待つ間に空いた GPU で runner の run() を直接呼んで先に流した（証跡は同じ形で残る）。
+- `judgement` — 契約が指す entrypoint（train_phase_tower_r50.py / run_stage1_ptower.py）ではなく、三周目の stage1_ptower_r3.py の関数を そのまま呼ぶ薄い入口 stage1_ptower_20.py と、掃引 run_stage1_ptower_20.py、集計 select_stage1_ptower_20.py、manifest build_phase_manifest_p20.py を新設した。三周目のスクリプトには data_setting と pin_memory を設定から読む 2 箇所の変更を 入れた（既定値は三周目の挙動のまま）。
+- `environment` — 追加動画 17〜21 の注釈 CSV 20 件は開始前から未追跡で置かれていた。取り込みの前に利用者の指示で stash に退避し、 Task B で使うため作業ツリーへ未追跡のまま戻した（stash は消していない）。commit はしない。make forbidden-check は これら 20 件を data/ の内側として違反に数え status fail で終わる。それ以外の違反は 0 件。
+- `environment` — 開始時、両 GPU に 34.6 GiB を確保して行列積を回し続ける仮占有プロセスが 2 本あった（2026-09-29 起動）。停止して諮り、 実行者による停止は実行基盤に拒否されたため利用者が止めた。途中で利用者の指示により同じものを再開し、再び利用者が止めた。
+- `judgement` — 試験の開始前の値を作業の最初に測らなかった。分岐の起点 331525e8 の作業木で後から測った（third_party が無い作業木のため tests/test_stage1_dtower_convergence.py を除いて 7 failed / 657 passed / 15 skipped）。作業後の本作業木は 6 failed / 691 passed。6 件はすべて起点でも落ちる既存の失敗（test_engines 1、test_fetch_task 1、test_research_logger 4）。
+
+### 申し送り
+
+- P*-20 と P*-15 の差（val: COCO +0.0454、ImageNet +0.1214。test: COCO +0.1226、ImageNet +0.1222）は efros と ilya をまたぐ比較で、 G2 のホスト差（+0.0696、SD 比 3.7）と同じ大きさである。唯一の同一ホストの点では P*-20 が P*-15 を 0.0301 下回る。 データ量の効果を主張するには、P*-15 を efros で 14 本回して同一ホストで比べる必要がある（2 枚で約 31 時間）。
+- 工程塔の送り手の train と val の差は 4 塔 × 5 折りの 20 件すべてで閾値 3pt を超えた（最小 +0.1254、系統と設定ごとの平均 +0.2521 / +0.2510 / +0.3968 / +0.3449）。conventions#crossfit に従い、Stage 2 の P→D 側の工程塔の送り手にも交差適合を適用する対象である。
+- efros の cgroup 上限は 52 GiB。PyTorch 2.1 の pinned メモリのキャッシュは塊を返さず 1 回の val で約 24 GiB まで積もりうるため、 efros で 2 本並べる GPU 学習は pin_memory=False を既定にするか、上限を確認してから並べる。
+- efros の A6000 は短辺 800・batch 16 で 14.2 フレーム/秒（ilya の約 0.68 倍）。P*-20 の fine-tune は 4.06〜8.56 時間、合計 90.0 GPU 時間。
+
+### 断定できなかったこと
+
+- G2 の差が恒常的なホスト差か seed 一本の揺れかは区別できない。efros の対照は 1 seed しか無い。fine-tune 段階の差（+0.0063）に比べ 時間ヘッドを載せた差（+0.0696）が大きく、時間ヘッドで揺れが増幅された可能性がある。
+- 完了判定 e と g の陽性対照（壊した入力で落ちること）は測っていない。
 
 ## T-2026-09-23-ops-and-proposal-card-gate
 
@@ -141,84 +224,4 @@
 - stage1_ptower_r2.py の実行時点の要約値（記録の commit にまだ無かった）
 - 検出塔の当該ホストでの評価・短い学習・ピーク記憶量・step 時間
 - 凍結源 checkpoint の照合（当該ホストに無い）
-
-## T-2026-09-21-philip-sync-outbound-off
-
-状態 `partial` / ホスト `philip` / 起票 `193` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 記録 819,933 行から外向きを 6 種に分けて計数した（STUN 住所解決 1 / NAT 種別 1 / 使用状況 2 / 版の確認 1 / UPnP 探索 1 / 局所告知 2、公開中継 0）。設定は実体の 逆アセンブルと Go の型情報で確定した（IsStunDisabled の 3 項目、urAccepted、 AutoUpgradeEnabled）。読めない 3 件は UNKNOWN に分けた。変更前の全 55 項目を 版管理の外へ控え、戻す手順を書いた。接続 6 件・処理 2 件（pid 122452/122530）を記録した。
-- `G2` pass — PATCH /rest/config/options に変える鍵だけを 3 回送り、いずれも HTTP 200。 読み戻しで全 55 項目中の差は 3 項目のみ、config.xml にも書き戻った。 周期 180 秒を越えて 300 秒待ち、増えた 187 行に外向きの語は 0 件で、 STUN disabled が 1 件出た（変更の 169 秒後）。接続 6→6、登録 7→7 が完全一致、 共有フォルダ 2→2、localAnnounceEnabled は true のまま、PID は同一。
-
-### 起票者の誤り
-
-- `check_does_not_check` — Task 2 Step 3 は陽性対照を「変える前の記録に外向きの痕跡が在ったこと」と置き、 判定を「周期を越えて待ち新たな痕跡が現れないこと」と置いた。しかし中心の STUN の 痕跡は起動時の 2 件だけで周期的ではなく、通常の水準では keepalive が記録されない。 指示どおり実行すると、設定を変えなくても新しい行は出ないため「止まった」と 誤って結論できる。実際の決め手は契約が指していない別の行（STUN disabled、 無効側の分岐でだけ出る）であり、これを実装から見つけて判定に使った。
-
-### 逸脱
-
-- `judgement` — 開始前から在った未追跡 4 件のうち .sync-pause.released（0 バイト、前セッションの 解除の残骸）を削除した。SPEC 0 節と禁止 7 は「消さない。退避する」を求めており これに反する。利用者へ選択肢を示して承認を得たうえで行った。 digest 3 件は退避し、報告の後に戻す。
-- `judgement` — 退避先を最初 /tmp（overlay）に置いたが、SPEC 0 節の「repo と同じファイルシステム」に 反するため /home/ubuntu/slocal2/task-backups/（repo と同じ /dev/sda）へ移し替えた。
-- `judgement` — 変える範囲を利用者に諮り、外向きの 3 項目（natEnabled / urAccepted / crashReportingEnabled）に決めた。stunKeepaliveStartS は変えなかった。 natEnabled だけで IsStunDisabled が真になり、変える項目を最小にできるため。
-- `judgement` — 手順書（.claude/skills/task/SKILL.md）は make taskindex で投影を生成せよと求めるが、 本契約の禁止 6 と Task 3 Step 3 が生成物の再生成を禁じ、変更を契約のディレクトリと 受け皿に限れと求める。契約を優先して再生成しなかった。結果として make taskindex-check は差分ありで落ちる（exit 2）。make inbox-check は exit 0。 どちらの検査も作業ツリーへ書き込まないことを前後の件数で確かめた。
-- `environment` — 容器の中に tcpdump / ss / lsof / conntrack が無く、/proc/net/nf_conntrack も無い。 /rest/system/debug は v2.1.3 に無い（404）。STTRACE は再起動が要るため使えない。 通信そのものは観測できず、記録と画面の経路だけで判断した。
-- `spec_defect` — 契約の陽性対照では STUN の停止を判定できないため、実装を読んで STUN disabled の記録を見つけ、それを判定に使った。issuer_defects に対応する。
-
-### 申し送り
-
-- 使用状況の日次送信が止まったかは未確認である。直近の送信は 2026-09-21 02:32:36 JST と 2026-09-22 02:32:38 JST（記録の原文では 09-20 17:32:36 / 09-21 17:32:38 UTC）で、 変更は 2026-09-22 18:03:20 JST。次に送るはずだった 2026-09-23 02:32 JST を過ぎてから grep -c 'Sent usage report' ~/.syncthing.log を見ること。変更時点で 2 件である。
-- 障害報告は痕跡が元から 0 件のため「止まった」とは言えない。設定が false に なったことだけが事実である。次に障害が起きたときに送信が出ないことで確かめる。
-- urAccepted が 0 から 3 へ変わった原因が UNKNOWN である。残る六台でも値を 必ず読んでから書くこと。契約のたびに options 全体を控えて差分を見る運用を勧める。
-- P9 spec_lint の host_mismatch は socket.gethostname() と比べるため、この repo の 「ホスト」（同期処理上の名前）と食い違う。philip の OS 名は aolab である。 検査側を直すか、宣言の意味を規約に書くこと。
-- P9 spec_lint の separated_source は行継続 \ を繋げずに行ごとに見るため、 1 命令に書かれた source … && make … を該当と出す。SPEC.md:39 がこれに当たる。
-- .sync-pause.released が .gitignore に載っていない（.sync-pause は載っている）。 抑止の解除を別名への退避で行うたびに未追跡が残り、次の契約の task-start が 前提検査で止まる。無視対象に加えるか、解除の手順を削除に統一すること。
-- tests/test_estimate_tier_cost.py が収集時に落ちる（site-packages の tools が repo の tools を隠す）。PYTHONPATH に repo 直下を足しても解消しなかった。
-- tests/test_fetch_task.py::test_rejects_unknown_file_name が既存で落ちている。 束の取り込みが ../../etc/passwd を拒んでいない。経路の遡上を拒む修正が要る。
-- 投影（context/auto/ の 3 ファイル）が本契約の result.yaml を反映していない。 禁止 6 により再生成していないためで、make taskindex-check は差分ありで落ちる。 生成物の再生成を許す契約で make taskindex を回し、投影を追いつかせること。
-
-### 断定できなかったこと
-
-- 使用状況の日次送信が止まったか（周期 24 時間を越えて待てなかった）
-- 障害報告が止まったか（痕跡が元から 0 件で、止まったことを示せない）
-- urAccepted が 0 から 3 へ変わった原因
-- crashReportingEnabled を読む判定の位置（実装から特定できなかった）
-- natEnabled が UPnP/NAT-PMP の探索も止めるか（判定の位置を特定できなかった）
-
-## T-2026-09-21-m2dir-local
-
-状態 `pass` / ホスト `dlsta` / 起票 `190` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 解決部分は keeper.sh:28 と m2-sync.sh:10 で、一行を文字列として照合すると完全に同一であった。 実装は候補の繰り返しではなく三項一行で、一つ目 [ -d ~/slocal2 ] だけが検査され、二つ目 ~/slocal/m2 は存在を確かめずに使われる無条件の落とし所である。見つかったの判定は親ディレクトリの 存在で、repo 本体でも版管理でもない。M2DIR=$(…) の無条件代入のため環境変数で上書きできない。 set -e も set -u もどちらの正本にも無い。本ホストでは両方の既存候補が偽で /home/ubuntu/slocal/m2 （不在）に解決していた。止まっている証拠は、sync-alerts.log の [dlsta] が 0 件（陽性対照 [philip] 141 / [efros] 192）、抑止の記録が 0 件（陽性対照 450）、~/bin/m2-sync.sh.new が 0 バイトで本日 16:44 に残存、.stignore の更新時刻が前契約で手で置いた時刻のままであること。
-- `G2` pass — 両正本の錨の直後へ註 3 行と判定 1 行の計 4 行を足した。差分は keeper.sh が +4/-0、 m2-sync.sh が +4/-0 で、差分全体の削除行は 0 件であった。bash -n は両方 exit 0 で、 足した行の閉じ波括弧を落とした囮は落ちた。正本から解決部分の 5 行を機械的に抜き出して env -i HOME=<隔離した家> で評価し、7 通りの家の形を両正本で試して 14 件すべてが期待どおりであった。 要の 2 件は、slocal2 と local/m2 が併存する家で ~/slocal2/m2 に、slocal と local/m2 が 併存する家で ~/slocal/m2 に解決したこと。本ホスト（実際の家）では両正本とも /home/ubuntu/local/m2 に解決した。
-- `G3` pass — 旧版を ~/bin と同一 fs（dev=229、repo の 2065 とは別）かつ repo の外へ退避してから配置し、 両方とも正本と要約値が一致して権限 775 を保った。中継と同期処理が nohup と & で起こされ 錠の fd を継承しないこと、中継の親が既に init であることを実装と実測から確かめてから 起こし直した。kill 直後は keeper 0 / 中継 1 / 同期処理 2 で子が残った。起こし直した後、 自己更新が ~/bin/m2-sync.sh を origin/phase0 の版へ置き換え、m2-sync.sh.new の残骸が消え、 .stignore の更新時刻が 2026-09-20 21:07:21 から 2026-09-21 16:58:29 へ動いた。 抑止の記録は 2026-09-21 16:59:25 [dlsta] 一時停止中: /home/ubuntu/local/m2/.sync-pause で、 本ホストの位置と登録名が解決できている。中継 1 件・同期処理 2 件・中心との接続 connected=True で無傷であった。
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — 「候補は上から順に試され、最初に見つかったものが使われるはずである」と述べ、足す位置と帰結の表も 候補列を前提に書かれている。実装は候補列ではなく三項一行で、一つ目だけが検査され二つ目は 存在を確かめない無条件の落とし所である。字義どおり「末尾に候補を足す」と読んで || echo ~/local/m2 を三つ目に並べると、二つ目が常に当たるため三つ目には到達せず、 修正が何の効果も持たないまま「足した」と報告することになった。
-- `self_contradiction` — 禁止 1 が「既存の候補の順序を変える。既存の候補を削る」を禁じ、Task 2 Step 1 が 「既存の行は一文字も変えない」と求める一方で、同じ Step が「~/local/m2 を既存の候補の後ろへ足す」 と指示する。実装は一行の三項であるため、行を一文字も変えずにその中の候補列へ後ろから足すことは 字義どおりには不可能である。別の文として次の行へ足すという解釈を実行者が補う必要があった。
-- `check_does_not_check` — 完了判定 O は「配置 → 常駐処理を起こし直す → 抑止が効いた旨が記録に出る」という順序を求めるが、 keeper.sh:49 が ~/bin/m2-sync.sh を毎ループ origin/phase0 から自己更新する。よって統合前に 配置した m2-sync.sh の修正は、常駐処理が repo を見つけた最初の周回で戻される。 指示どおりの順序を守ると O は原理的に達成できず、修正版を置き直して手で一度走らせる必要があった。 SPEC 自身が「m2-sync.sh は常駐処理が自己更新する」と書きながら、この帰結を検査に織り込んでいない。
-
-### 逸脱
-
-- `spec_defect` — 自己更新で戻された ~/bin/m2-sync.sh を置き直し、keeper.sh:54 と同じ呼び方 （~/bin/m2-sync.sh 9>&-）で一度走らせて完了判定 O を確かめた。keeper.sh:49 が毎ループ origin/phase0 から自己更新するため、常駐処理の周回を待っても周回のたびに戻され、 統合されるまで O は達成できない。抑止の判定は m2-sync.sh:44-47 にあり、記録を書いて exit 0 する。git fetch も分岐への書き込みもその後にあるため、走らせても副作用は記録 1 行だけである。
-- `judgement` — 常駐処理を周期 1800 秒を待たずに起こし直した。SPEC の Task 3 Step 2 が明示的に許容しており、 前契約でも同じ判断を採った。起こし直しで中継が止まらないことは、実装（nohup … 9>&- &）と 中継の親が既に init であることの両方から確かめてから行い、実測でも残った。
-- `judgement` — conventions_rev を置換しなかった。context/conventions.md の最終変更 commit を実測すると c801e17c で、契約の記載 c801e17 はその接頭辞であり一致するためである。値を書き換えていない。
-- `environment` — 0 節の make task-start が未追跡 1 件（前セッションの抽出物 docs/sessions/digest/ の 1 ファイル） で止まったため、利用者の指示に従い git stash push -u で退避した。退避物は 138 行で stash@{0} に保全されており、tasks/README.md が「契約の記録と一緒に含めること」と定めるため 報告の commit に含めて戻す。消していない。
-- `judgement` — 足した行の判定の仕方を既存の行に合わせ、repo 本体や版管理の存在ではなく親ディレクトリの存在で 見る形にした。基準を変えると「既存の候補が在る」の意味が二通りになり、既存の台で挙動が変わりうる ためである。この選択により、親だけ在り repo 本体が無い家でも従来どおり ~/slocal2/m2 に解決する。
-- `judgement` — SPEC Task 4 Step 3 は変更の範囲を「二つの正本、env-facts.md、契約のディレクトリ、受け皿」に 限ると述べるが、前セッションの抽出物 docs/sessions/digest/ の 1 ファイルも含めた。 tasks/README.md が「抽出物は版管理へ記録する。契約の記録と一緒に含めること。未追跡のまま 放置すると自動同期が止まる」と定めるためである。版管理へ入れる前に伏せ字を確かめ、 秘密鍵の塊 0 件・ssh 鍵の表記 0 件・資格情報の出現 0 件・禁止語 0 件であることを実測した。
-
-### 申し送り
-
-- P9 spec_lint の separated_source は行継続を扱えない。SPEC.md:51 の source .venv/bin/activate && source scripts/load_env.sh \ と次行の && make task-start は シェルでは一命令だが、検査器は行で切って「読み込みが単独の命令で終わる」と判定した。 本セッションで実際に一命令として実行し成功している。行継続を連結してから判定するか、 次行が && で始まる場合を除くかの判断が要る（tools/check_agent_docs.py の check_text）。
-- m2-sync.sh の修正は統合されるまで本ホストの ~/bin へ定着しない。keeper.sh:49 が毎ループ origin/phase0 から自己更新して戻すためである。統合後は最短 2 ループで自動的に配られるが、 それまでの間、本ホストの分岐の自動同期は止まったままである。PR の統合を待つ必要がある。
-- keeper.sh は自己更新されないため、本ホストの ~/bin/keeper.sh は本契約で手で置いたものが残る。 既存の六台は既存の候補で動いているため配置は要らないが、将来 keeper.sh を変える契約では 「どの台へ配置済みか」を追う仕組みが無い。配置状況を記録する場所を決めるかの判断が要る。
-- 解決の判定が親ディレクトリの存在であることは、repo 本体が無くても親さえ在れば解決が成立する ことを意味する。今回は既存に合わせて同じ基準を使ったが、本来は repo 本体か版管理の存在で 見るほうが確かである。基準を変えると既存の台の挙動が変わりうるため、本契約では変えていない。
-
-### 断定できなかったこと
-
-- 他の台に ~/local/m2 が在るかは測っていない。他ホストへの接続は禁止 2 に当たるためである。 在っても既存の候補が先に当たることを隔離した家で示したため、判断には不要である。
-- 統合後に他の台で実際に何が起きるかは本ホストから測れない。根拠は隔離した家での模擬 （7 通り × 2 正本 = 14 件すべて期待どおり）であって、実機での確認ではない。
-- inputs.data（dataset: egosurgery_phase_v1、split_files: data/splits/ego_val.txt）は雛形の 必須項目であり本契約は参照していない。SPEC の申し送りの指示どおり、参照しなかったことを記録する。
 

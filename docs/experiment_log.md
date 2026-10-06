@@ -2999,3 +2999,34 @@ Grad-CAM（既存の道具と同じ定義）と枠の照合、枠の組み替え
 
 証跡: `experiments/analysis/ptower_attribution/{REPORT.md,summary.json,tables/}` / `tasks/T-2026-10-04-ptower-attribution-val/{RESULT.md,audit.md,result.yaml}`。
 `data/` `runindex/` `context/conventions.md` と既存の run・checkpoint・特徴キャッシュは変えていない（要約値 9652 件が前後で一致）。
+
+## 2026-10-05 — Stage 1: 工程塔 P\*-20 を二系統で確定した。送り手の train−val 差は全件 3pt 超（efros）
+
+契約 `T-2026-09-27-stage1-ptower-20`。詳細は `tasks/T-2026-09-27-stage1-ptower-20/RESULT.md`、表は `docs/stage1/ptower_20.md`。
+
+**仮説.** 追加動画 17〜21 を train に足した P\*-20 は P\*-15 を両系統で 0.01〜0.03 上回り、COCO 系統の方が上がり幅が小さい。
+efros の P\*-15 は ilya と seed 間 SD の 2 倍以内で一致する。工程塔の送り手の train と val の差は 3pt を超える。
+
+**実験.** 三周目の確定 recipe（短辺 800・全画面・stem 凍結・lr 1e-4・実効 batch 64・確定した時間ヘッド）で、
+2 系統 × 5 折り（折り A は 3 seed）の fine-tune 14 本・特徴抽出 14 本・時間ヘッド 14 本。ホスト差の対照として
+P\*-15・COCO・折り A・seed 42 を efros で一本。test は確定塔について折りごとに一度。
+
+**結果.**
+
+| | COCO | ImageNet |
+|---|---|---|
+| P\*-20 val J（5 折り平均） | 0.7012 | 0.5999 |
+| P\*-15 val J（ilya） | 0.6558 | 0.4785 |
+| 差（差 / P\*-15 の折り間 SD） | +0.0454（1.08） | +0.1214（1.16） |
+| P\*-20 test J | 0.6402 | 0.5317 |
+| P\*-15 test J（ilya） | 0.5176 | 0.4095 |
+| 送り手の train−val 差 J（P\*-15 / P\*-20 の 5 折り平均） | +0.2521 / +0.2510 | +0.3968 / +0.3449 |
+
+ホスト差の対照: efros 0.7762 / ilya 0.7066、差 +0.0696（閾値 0.0372、SD 比 3.7）。**G2 不合格**、利用者の決定で記録して続行。
+
+**解釈.** 塔は確定した。P\*-20 と P\*-15 の差はホスト差と同じ桁で、同一ホストの唯一の点（COCO・折り A・seed 42）では
+P\*-20 0.7461 が efros の P\*-15 0.7762 を下回るため、**データ量の効果としては読めない**。送り手の train−val 差は
+20 件すべてで 12〜56 点あり、同じ塔どうしの比較なのでホスト差を受けない。予測は 1・3・5 が外れ、2・4 が当たり。
+
+**次.** Stage 2 の P→D 側で工程塔の送り手にも交差適合を適用する（`conventions#crossfit`）。データ量の効果を主張するなら
+P\*-15 を efros で 14 本回し直して同一ホストで比べる（2 枚で約 31 時間）。

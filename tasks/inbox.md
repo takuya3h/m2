@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（629 件）
+## 未処理（637 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -641,9 +641,17 @@
 - [ ] 2026-09-26 [cc] 工程塔スクリプトは出力先が experiments/ 固定で W&B 必須。利用者の判断でコードを変えず repo 外の写しから WANDB_MODE=offline で回した。出力先を引数で変えられるようにするかは未決（scripts/stage1_ptower.py:110）
 - [ ] 2026-09-27 [cc] **`make forbidden-check` は引数なしだと分岐と無関係の変更を違反に数える。** 既定の基準 `origin/phase0` が分岐後に進んでいる（分岐点 66855c5b → 9d6366d3）ため、他契約が phase0 に入れた `context/conventions.md` の変更が「禁止されたファイル」として出た（`"task": null` で `allow_write` も読まれず違反 3,391 件）。契約は統合を禁じているので基準を動かせない。**`TASK=<id> BASE=<分岐点>` を付けると status pass、違反 0 件**。手順書 `.claude/skills/task/SKILL.md` は引数なしの形しか書いていないため、長い契約では毎回この誤検知に当たる（tools/check_forbidden.py）
 - [ ] 2026-09-27 [cc] **標的群 AP の集合が repo のどこにも定義されていない。** prereg は「2026-06-19 に事前登録した」と書くが、`constants.py` にあるのは `RARE_CLASSES` と `CONFUSABLE_CLASSES` だけで、runindex にも列が無く、Notion の写しにも要求の文言しか無い。利用者の決定で **UNKNOWN と報告し、全 15 クラスの per-class AP を並べる**。per-class AP は run ごとに残るため、集合が決まれば GPU なしで再計算できる。定義を `constants.py` に置くまで、この語を完了判定に使う契約は毎回ここで止まる（src/egosurgery/datasets/constants.py）
+- [ ] 2026-10-02 [cc] **efros の cgroup 上限 52 GiB で 2 本並べると OOM。** PyTorch 2.1 の pinned メモリのキャッシュが 1 回の val で 95 塊（約 24 GiB）まで積もり返さない。P*-20 は pin_memory=False（logits の要約値は一致）。三周目の既定は True のまま
+- [ ] 2026-10-02 [cc] **追加動画 19 の 1,932 枚が 256 KiB で切れていた。** フレーム数の照合だけでは捕まらない。manifest の生成で全数デコードを必須にした。利用者が再送して全 10,461 枚が通った
 - [ ] 2026-10-02 [cc] **9 月 17 日の 74.0〜98.7 日は計算器の出力ではなかった。** 計算器は TF32 を一度も持たず、C2 §5 が外で 1/1.182 を当てた値である。9 月 27 日の 88.8〜118.0 日との差の最大要因は TF32 の有無（+13.5〜+18.0 日）、次に検出塔の学習時間（+5.5 日）、K の違いが −4.1 日。**TF32 の採用は未決のまま**で、採用すれば Tier 1 の検出側が約 1/1.17〜1/1.18 になる（tools/estimate_tier_cost.py の節 history）
 - [ ] 2026-10-02 [cc] **交差適合を足すと Tier 1（seed 5）は 80.0〜109.2 日、使える 125 日に対し残り 15.8〜45.0 日。** 設計変更を一回挟めば収まらない（1 回 79.0〜108.2 日）。B1 の Stage 1 + Tier 1 では IPCAI long abstract の判定が「収まる」から「読みにより分かれる」に変わった（docs/stage1/B2_tier1_cost_with_crossfit.md）
 - [ ] 2026-10-02 [cc] **規約の変更履歴表が naming 節の範囲にある。** 「既存節の本文を変えない」と「変更履歴に行を足す」は両立しない。履歴を独立の節にするか、節の切り出しが履歴を除く形にする必要がある（context/conventions.md）
+- [ ] 2026-10-03 [cc] **G2 不合格を記録して続行（利用者の決定）。** efros の P*-15 対照（COCO・折り A・seed 42）の val macro Jaccard は 0.7762、ilya の同じ run は 0.7066。差 +0.0696 は閾値 0.0372（三周目の折り A の seed 間標本 SD 0.0186 の 2 倍）を超えた（SD 比 3.7）。fine-tune 段階のフレーム単位 J の差は +0.0063 で、時間ヘッドで広がった。P*-20（efros）と P*-15（ilya）の並置にはこの大きさのホスト差が混ざる（experiments/phase1/stage1_ptower_20/host_control_rule.json）
+- [ ] 2026-10-03 [cc] **P*-20 の fine-tune は 1 本 8 時間を超えても recipe を変えずに続行（利用者の決定）。** efros（A6000）は 14.2 フレーム/秒で ilya の約 0.68 倍、P*-20 の train は P*-15 の約 2.1 倍。P*-15 対照の実測は 4.47 時間、P*-20 は 1 epoch 約 26 分
+- [ ] 2026-10-05 [cc] **task-validate の WARN L2-6（conventions_rev が det_groups 節の追加より前）を利用者に提示し、「現行版で続行」の回答を得た。** conventions_rev を 073f9dc0 に差し替え meta.amendments に記録した（T-2026-10-04-ptower-attribution-val）
+- [ ] 2026-10-05 [cc] **面積を揃えた遮蔽の対照は、手と枠の外では無関係な位置がほとんど取れない**（重なり 5% 超で除外: 手 4254/5748、枠の外 5060/5784）。対照の作り方は後続の契約の起票時に決める必要がある（experiments/analysis/ptower_attribution/REPORT.md §3）
+- [ ] 2026-10-05 [cc] **make forbidden-check は BASE を省くと origin/phase0 の先端と比べるため、分岐の後に入った他の PR の差を違反に数える。** 今回は BASE=分岐点で回した。手順書か道具の修正が要る（tools/check_forbidden.py）
+- [ ] 2026-10-05 [cc] 大きな中間物 362,866,001 バイトが dlsta の /home/ubuntu/local/ptower_attribution_20261005/ に残る。消すかは利用者の判断（T-2026-10-04-ptower-attribution-val）
 
 ## 処理済み（1 件）
 
