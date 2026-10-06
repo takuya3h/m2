@@ -143,4 +143,15 @@ G2 不合格を記録して続行（利用者の決定）、8 時間超の承認
 
 ## 9. 送出
 
-本報告の commit・push・PR の後に記入する。
+push は `git push -u origin feat/stage1-ptower-20` がそのまま通った（`.git/config` は変えていない）。
+PR は **#202**（base `phase0`、Draft でない）。
+
+`make task-report` で配布台帳へ送った。実測:
+
+    {"task_id": "T-2026-09-27-stage1-ptower-20", "verdict": "partial",
+     "n_issuer_defects": 5,
+     "report_sha256": "4ad4596f5bcccb74a01e606e3dd45f06fc6a14a7542b7d32275eb3ee77c83478",
+     "report_bytes": 11808, "replaced_blocks": 0}
+
+秘匿の検査は `make task-report` の内側で通り、他の経路は使っていない。送った本文は本節を書く前の版である。
+`.sync-pause` は `.sync-pause.released` へ移して解除した（削除ではなく移動。実装は目印の存在だけを見る）。
