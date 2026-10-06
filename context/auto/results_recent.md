@@ -11,7 +11,7 @@
 
 ## T-2026-10-07-design-val-subset-balance
 
-状態 `pass` / ホスト `efros` / 起票 `なし` / 様式 `v3`
+状態 `pass` / ホスト `efros` / 起票 `203` / 様式 `v3`
 
 ### ゲート
 
