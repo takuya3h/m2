@@ -40,7 +40,7 @@ Stage 1 の工程塔 P\*-20（15 動画 ＋ 追加動画 17〜21 を train に�
 | f | test | **達成** | 10 回、台帳 10 件 | `open("x")` が FileExistsError |
 | g | 対称性とカード | **達成** | prereg §3 の 16 行に UNKNOWN 0 件。L3 の P13・P14 が実行前（取り込み直後）と Task F で PASS | カードの経路を変えた一時契約での FAIL は UNKNOWN（作っていない） |
 | h | 刻印と収穫 | **達成** | `make runindex` 後 task_id で引いて 50 行 = 実験フォルダ 50（完了 45 ＋ 未完了 5）。全 50 run の `contract_sha256` は現在の spec.yaml の `ffdc99e0…` と一致 | 行数の差ではなく task_id で照合 |
-| i | PR | 本報告の commit 後に記入 | — | 分岐名 `feat/stage1-ptower-20` |
+| i | PR | **達成** | **PR #202**。`isDraft=false` / `base=phase0` / `head=feat/stage1-ptower-20` / `state=OPEN`（`gh pr view 202 --json` で実測） | 分岐名は `feat/` で始まる |
 
 ## 4. 実測
 
