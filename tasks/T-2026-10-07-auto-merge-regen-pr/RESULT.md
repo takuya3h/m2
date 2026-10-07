@@ -1,6 +1,6 @@
 # RESULT — T-2026-10-07-auto-merge-regen-pr
 
-**判定: pass（統合後の実測は未了）。** `regen-projections.yml` に三つを足した。一つ目は統合の段で、三条件を統合の直前に読み直し、`GITHUB_TOKEN` で merge commit を作る。二つ目は、差分が無いときに開いた自動 PR を閉じる段。三つ目は、PAT の未設定と無効を言い分ける文言。手元の試験は 6 通りと認証の 4 通りがすべて期待どおりで、条件を壊した版では陰性の場合が統合されることも確かめた。`GITHUB_TOKEN` で実際に統合できるかは、統合後の実測で判定する（§4）。
+**判定: pass。** 統合後の実測で、自動 PR #214 が人の操作なしに統合され、次の実行は起きなかった（§4a）。 `regen-projections.yml` に三つを足した。一つ目は統合の段で、三条件を統合の直前に読み直し、`GITHUB_TOKEN` で merge commit を作る。二つ目は、差分が無いときに開いた自動 PR を閉じる段。三つ目は、PAT の未設定と無効を言い分ける文言。手元の試験は 6 通りと認証の 4 通りがすべて期待どおりで、条件を壊した版では陰性の場合が統合されることも確かめた。`GITHUB_TOKEN` で実際に統合できることは、統合後の実測で確かめた（§4a）。
 ホスト `philip`、分岐 `feat/auto-merge-regen-pr`、起点 `origin/phase0` = `67c4cc44`。実施日時は 2026-10-07 JST。証跡は `audit.md` にある。
 
 ## 1. 解決された参照
@@ -19,8 +19,8 @@
 | 許可された方式 | merge・squash・rebase のすべて。`allow_auto_merge: true` |
 | これまでの方式 | 直近 30 件の PR すべてが **merge commit**（親が 2 つ）→ `--merge` を使う |
 | 統合に要る権限 | REST の統合は Contents の write、PR を閉じるのは Pull requests の write（GitHub の文書） |
-| GITHUB_TOKEN での統合 | できないと示す根拠は見つからなかった。**実際に通るかは UNKNOWN で、統合後の実測で判定する** |
-| 次の workflow を起こすか | 文書によれば、GITHUB_TOKEN が起こした push は新しい実行を作らない（例外は `workflow_dispatch` などで、push は含まない）。統合後に確かめる |
+| GITHUB_TOKEN での統合 | できないと示す根拠は見つからなかった。**実際に通るかは UNKNOWN で、統合後の実測で判定する** → 統合できた（§4a） |
+| 次の workflow を起こすか | 文書によれば、GITHUB_TOKEN が起こした push は新しい実行を作らない（例外は `workflow_dispatch` などで、push は含まない）。統合後に確かめる → 起こさなかった（§4a） |
 
 ## 3. 統合の条件と試験の結果（Phase B、完了判定 D-G、G2: pass）
 
@@ -68,6 +68,18 @@
 | 開いた自動 PR | `gh pr list --head auto/regen-projections` | 0 件 |
 | 失敗したとき | `gh run view <id> --log-failed` で `::error::自動で統合しない:` の理由を見る | GITHUB_TOKEN で統合できなければ、統合の段がエラーになる |
 
+### 4a. 統合後の実測（2026-10-07 JST）
+
+| 確かめること | 結果 |
+|---|---|
+| 自動 PR が作られたか | #212 の統合（`a162c417`）で run `37596989944` が 17:55 に起動し、success だった。自動 PR #214 が 1 件作られた。中身は生成物 4 ファイルだけ |
+| 自動で統合されたか | **作成から 4 秒後の 17:55:31 に、`app/github-actions` が統合した**（統合 commit は `44d9e120`、作成者は `github-actions[bot]`）。人の操作は無い。#209 と #211 は利用者が統合していた |
+| 統合の後 | **新しい実行は 0 件。** 最後の実行は `a162c417` に対するもので、`44d9e120` の後にはどの workflow も起動していない。GITHUB_TOKEN が起こした push は新しい実行を作らない、という文書の記述と一致した |
+| 開いた自動 PR | 0 件 |
+| 生成物 | 統合後の phase0 を書き出して検査した。`taskindex-check` と `inbox-check` はどちらも exit 0 |
+
+**閉じる段は、まだ一度も動いていない。** 差分が無いのに自動 PR が開いている状況で初めて動くため、GITHUB_TOKEN で閉じられるかは UNKNOWN のまま残る。
+
 ## 5. 送出
 
 push は exit 0。PR は **#212**（`feat/auto-merge-regen-pr` → `phase0`）。台帳への送り返しは `make task-report` で行う。
@@ -90,4 +102,6 @@ push は exit 0。PR は **#212**（`feat/auto-merge-regen-pr` → `phase0`）�
 - **逸脱（判断）。** 契約の三条件に加えて、PR の先頭の oid が分岐の先頭と一致すること（4c）と、統合の時点での `--match-head-commit` を足した。読み直しの間に分岐が動いた場合に、別の中身を統合しないためである。
 - **逸脱（環境）。** CLAUDE.md の方針にある `ctxpack` がこのホストに無く、文書は WebFetch で読んだ。
 - **想定外。** `allow_auto_merge: true` だった（前の会話での私の推測と違った）。本契約では GitHub の auto-merge は使わず、条件を満たしたときに即座に統合する。
-- UNKNOWN: GITHUB_TOKEN で実際に統合できるか、閉じられるか。自動の統合が次の実行を起こさないか。書式の検査。いずれも統合後に判定する（書式の検査を除く）。
+- 統合後に解消した UNKNOWN: GITHUB_TOKEN で統合できるか（できた）。自動の統合が次の実行を起こすか（起こさなかった）。
+- 残る UNKNOWN: GITHUB_TOKEN で閉じられるか（閉じる段が未発動）。書式の検査（actionlint・yamllint が無い）。
+- 統合後の記録は、追記用の分岐 `feat/auto-merge-regen-pr-postmerge` から別の PR で送った。
