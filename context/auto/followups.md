@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（592 件）
+## 申し送り（593 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -925,7 +925,8 @@
 - PR の分岐では生成物が古いままで、taskindex-check と inbox-check が差分を報告し続ける。案 (a) 契約の検証から *-check を外し、phase0 の上の検査に限る。案 (b) 契約の分岐では差分を WARN 扱いにする。本契約では検査を変えていない
 - 差分が無くなったときに開いたままの自動 PR を閉じる処理は無い。人が手で作り直した場合などに空の PR が残りうる
 - make agent-check は docs/experiment_settings.md:155 の source 二行で fail する。phase0 の上でも exit 1 になる既存の失敗で、本契約では触れていない
-- 本 PR の統合が最初の契機になる。RESULT.md §4 の手順で、起動・差分・自己起動の有無を確かめること
+- regen-projections.yml の PR 作成の段は 401 を受けても gh の出力をそのまま出すだけである。auto-draft-pr.yml のように「未設定」と「設定されているが無効」を言い分ける処理は入れていない
+- AUTOSYNC_PR_TOKEN は 2026-08-16 から無効で、auto-draft-pr.yml がその間すべて失敗していた。2026-10-07 に利用者が再発行した。PAT の期限は利用者が管理する
 
 ### T-2026-10-07-design-val-subset-balance
 
@@ -942,7 +943,7 @@
 - context/conventions.md#folds は追加動画を 17〜22 の 6 本と書くが、追跡したのは 17〜21 の注釈だけ。動画 22 の注釈は data/raw にだけ在る
 - make agent-check の既存の失敗（docs/experiment_settings.md:155）は本契約でも未対応
 
-## 断定できなかった事項（377 件）
+## 断定できなかった事項（375 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1634,9 +1635,7 @@
 
 ### T-2026-10-07-auto-regen-projections
 
-- Actions 上での実際の動作（統合後に確かめる）
-- PyYAML だけの最小構成で動くか（import 文からの推定のみ）
-- workflow の書式の検査（actionlint・yamllint が無い）
+- workflow の書式の検査（actionlint・yamllint が無い。GitHub が解釈して実行できたことだけは確かめた）
 - 登録されている Actions の秘匿の名前の一覧（gh secret list が拒否された）
 
 ## 起票者の誤りの型（351 件）

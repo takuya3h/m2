@@ -93,6 +93,7 @@
 
 - `G1` ask — phase0 はクラシックの保護で PR が必須（承認 0 件、enforce_admins=true）。直接 push は不可で escalate_if に該当した。利用者が自動 PR 型を選んだ。決定性は 4 ファイルの sha256 が 4 条件で一致して確認。workflow 権限は gh auth status が実行基盤に拒否され UNKNOWN
 - `G2` pass — 偽の origin で workflow の run を再現した。差分なしでは exit 0・changed=false・gh の呼び出し 0 件。入力だけを変えると auto 分岐が phase0 の先頭 + 1 commit になり、差分は生成物 4 ファイルの M だけだった。統合後の再実行は changed=false。作業ツリーの porcelain は試験の前後で一致した
+- `postmerge` pass — 統合後に Actions で実測した。#208 の統合で run 37585603466 が起動し、生成と auto 分岐への push は成功、PR 作成は AUTOSYNC_PR_TOKEN の 401 で失敗した。利用者が PAT を再発行して再実行すると success で、PR #209（生成物 4 ファイル・1 commit）ができた。#209 の統合で run 37588790526 が起動し「差分なし。何もしない」で終わった。run は計 2 件で自己起動は無く、統合後の phase0 で taskindex-check と inbox-check は exit 0
 
 ### 起票者の誤り
 
@@ -106,6 +107,7 @@
 - `environment` — 手元の gh 認証に workflow 権限が無く、初回の push は refusing to allow an OAuth App to create or update workflow で拒否された。迂回せず提示し、利用者が gh auth refresh -s workflow で付与した後に同じ commit を push した
 - `environment` — 最小構成（PyYAML だけの venv）での実測ができなかった。uv のキャッシュに PyYAML が無く、--offline で失敗した
 - `judgement` — 禁止語の検査の後に RESULT.md §8 へ禁止語の引用を足し、c110278f をそのまま commit・push した。再検査で検出し、語を引用しない表現に直して次の commit で送った
+- `judgement` — Phase A で AUTOSYNC_PR_TOKEN の名前だけを記録し、有効かは確かめなかった。auto-draft-pr.yml の run 履歴を見れば値を読まずに失効が分かった（2026-08-16 から失敗が続いていた）。統合後の初回 run の PR 作成が 401 で失敗した
 - `judgement` — 試験を開始前に測らなかった。本契約は Python を変更していないため、開始後に測った tests/test_build_taskindex.py と tests/test_build_inbox.py の 23 件 pass を開始前の値とみなした
 
 ### 申し送り
@@ -113,13 +115,12 @@
 - PR の分岐では生成物が古いままで、taskindex-check と inbox-check が差分を報告し続ける。案 (a) 契約の検証から *-check を外し、phase0 の上の検査に限る。案 (b) 契約の分岐では差分を WARN 扱いにする。本契約では検査を変えていない
 - 差分が無くなったときに開いたままの自動 PR を閉じる処理は無い。人が手で作り直した場合などに空の PR が残りうる
 - make agent-check は docs/experiment_settings.md:155 の source 二行で fail する。phase0 の上でも exit 1 になる既存の失敗で、本契約では触れていない
-- 本 PR の統合が最初の契機になる。RESULT.md §4 の手順で、起動・差分・自己起動の有無を確かめること
+- regen-projections.yml の PR 作成の段は 401 を受けても gh の出力をそのまま出すだけである。auto-draft-pr.yml のように「未設定」と「設定されているが無効」を言い分ける処理は入れていない
+- AUTOSYNC_PR_TOKEN は 2026-08-16 から無効で、auto-draft-pr.yml がその間すべて失敗していた。2026-10-07 に利用者が再発行した。PAT の期限は利用者が管理する
 
 ### 断定できなかったこと
 
-- Actions 上での実際の動作（統合後に確かめる）
-- PyYAML だけの最小構成で動くか（import 文からの推定のみ）
-- workflow の書式の検査（actionlint・yamllint が無い）
+- workflow の書式の検査（actionlint・yamllint が無い。GitHub が解釈して実行できたことだけは確かめた）
 - 登録されている Actions の秘匿の名前の一覧（gh secret list が拒否された）
 
 ## T-2026-10-04-ptower-attribution-val
