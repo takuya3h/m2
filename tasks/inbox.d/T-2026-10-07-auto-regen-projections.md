@@ -1,0 +1,1 @@
+- [ ] 2026-10-07 [cc] **Gate G1: phase0 はクラシックの保護で PR が必須（承認 0 件、enforce_admins=true）のため、Actions からの直接 push はできない。利用者が「自動 PR 型」を選んだ。** 生成物を固定の分岐へ push し、PR は既存の AUTOSYNC_PR_TOKEN で作る。人の操作は PR の統合だけになる（tasks/T-2026-10-07-auto-regen-projections/audit.md §2）

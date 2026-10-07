@@ -1,0 +1,64 @@
+result_version: 3
+task_id: "T-2026-10-07-auto-regen-projections"
+status: partial
+host: "philip"
+branch: "feat/auto-regen-projections"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: ask
+    note: "phase0 はクラシックの保護で PR が必須（承認 0 件、enforce_admins=true）。直接 push は不可で escalate_if に該当した。利用者が自動 PR 型を選んだ。決定性は 4 ファイルの sha256 が 4 条件で一致して確認。workflow 権限は gh auth status が実行基盤に拒否され UNKNOWN"
+  - id: G2
+    verdict: pass
+    note: "偽の origin で workflow の run を再現した。差分なしでは exit 0・changed=false・gh の呼び出し 0 件。入力だけを変えると auto 分岐が phase0 の先頭 + 1 commit になり、差分は生成物 4 ファイルの M だけだった。統合後の再実行は changed=false。作業ツリーの porcelain は試験の前後で一致した"
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 23
+
+deviations:
+  - {type: judgement, note: "契約の直接 push 型ではなく自動 PR 型で作った。phase0 が PR 必須のため。G1 で利用者が選んだ"}
+  - {type: environment, note: "gh auth status と gh secret list が実行基盤に拒否された。迂回せず、workflow 権限と秘匿の登録一覧を UNKNOWN とした"}
+  - {type: environment, note: "最小構成（PyYAML だけの venv）での実測ができなかった。uv のキャッシュに PyYAML が無く、--offline で失敗した"}
+  - {type: judgement, note: "試験を開始前に測らなかった。本契約は Python を変更していないため、開始後に測った tests/test_build_taskindex.py と tests/test_build_inbox.py の 23 件 pass を開始前の値とみなした"}
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "inputs.code.entrypoints は tools/build_context.py を挙げるが、make taskindex と make inbox が呼ぶのは build_taskindex.py と build_inbox.py である（Makefile:122-138）。指示どおり build_context.py を読めば、依存と書くファイルを誤って記録していた"
+  - type: asserted_without_measuring
+    note: "Goal は「差分があれば phase0 へ commit して push」と設計したが、phase0 は PR 必須で enforce_admins=true である。指示どおり作れば初回の push から拒まれ、生成物は一度も記録されない。escalate_if に挙げてあったため停止はできた"
+
+positive_controls:
+  - judgement: "生成物以外の差分があれば commit しない"
+    breaking_input: "作業ツリーに未追跡の stray.txt を置く"
+    observed: "exit 1、::error:: を出し、changed は出ず commit も無かった"
+  - judgement: "push の失敗を一度だけやり直し、二度目で失敗にする"
+    breaking_input: "偽の origin の pre-receive フックで push を常に拒否する"
+    observed: "試行 1 と 2 で warning、続いて error が出て exit 1。1 回目だけ拒否した場合は試行 2 で成功し changed=true"
+  - judgement: "差分なしでは何もしない（常に何もしない壊れ方ではない）"
+    breaking_input: "phase0 に入力だけを変えた commit を足す"
+    observed: "changed=true となり、auto 分岐が作られ gh pr create が呼ばれた"
+  - judgement: "生成の失敗で止まる"
+    breaking_input: "yaml を読めない python を .venv/bin/python に置く"
+    observed: "ModuleNotFoundError で make が失敗し、regen は exit 2"
+  - judgement: "禁止語と秘匿の検査が送出物で働く"
+    breaking_input: "禁止語（画期的・明らかに）を含む合成文、鍵の形をした合成文字列、合成した環境値の直接照合"
+    observed: "禁止語は 2 件を検出し exit 1。秘匿は形で 1 件、環境照合で 1 件を検出し、値は出力しなかった。送出物 5 件は禁止語・秘匿とも 0 件（初回は RESULT.md の「決定的」に一致したため言い換えた）"
+
+followups:
+  - "PR の分岐では生成物が古いままで、taskindex-check と inbox-check が差分を報告し続ける。案 (a) 契約の検証から *-check を外し、phase0 の上の検査に限る。案 (b) 契約の分岐では差分を WARN 扱いにする。本契約では検査を変えていない"
+  - "差分が無くなったときに開いたままの自動 PR を閉じる処理は無い。人が手で作り直した場合などに空の PR が残りうる"
+  - "make agent-check は docs/experiment_settings.md:155 の source 二行で fail する。phase0 の上でも exit 1 になる既存の失敗で、本契約では触れていない"
+  - "本 PR の統合が最初の契機になる。RESULT.md §4 の手順で、起動・差分・自己起動の有無を確かめること"
+
+unknowns:
+  - "手元の gh 認証に workflow 権限があるか（事前の確認は拒否された。push の結果で判明する）"
+  - "Actions 上での実際の動作（統合後に確かめる）"
+  - "PyYAML だけの最小構成で動くか（import 文からの推定のみ）"
+  - "workflow の書式の検査（actionlint・yamllint が無い）"
+  - "登録されている Actions の秘匿の名前の一覧（gh secret list が拒否された）"
+
+commits: []

@@ -1297,6 +1297,16 @@ exp 契約 13 件すべてを FAIL にしていた**（prereg に対称性の表
 新しい型の欠陥が `context/auto/followups.md` の集計表から黙って落ちる。**
 一致は試験で縛ってある。
 
+### 生成物の自動の作り直し（2026-10-07、philip）
+
+`T-2026-10-07-auto-regen-projections`（GPU 不使用）。
+
+- `.github/workflows/regen-projections.yml` — phase0 への push で `make taskindex` と `make inbox` を走らせる。
+  生成物（`context/auto/` の 3 つと `tasks/inbox.md`）に差分があれば `auto/regen-projections` へ push し、phase0 への PR を作る
+- phase0 は PR が必須（承認 0 件、enforce_admins）のため、直接 push はしない。**統合は人手で行う。**
+  PR の作成には `auto-draft-pr.yml` と同じ `AUTOSYNC_PR_TOKEN` を使う
+- 統合後に動作を確かめる手順は `tasks/T-2026-10-07-auto-regen-projections/RESULT.md` §4
+
 ### 追加動画 17〜21 の工程の注釈の追跡（2026-10-07、efros）
 
 `T-2026-10-07-track-extra-phase-annotations`（GPU 不使用）。
