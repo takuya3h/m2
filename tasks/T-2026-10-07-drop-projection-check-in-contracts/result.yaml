@@ -1,0 +1,63 @@
+result_version: 3
+task_id: "T-2026-10-07-drop-projection-check-in-contracts"
+status: pass
+host: "bengio"
+branch: "feat/drop-projection-check-in-contracts"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "S1〜S8 の 8 通りで探した。直接の該当は audit.md §2。Makefile の依存、validate/preflight/report/fetch/task_start/m2-sync の subprocess、フック、コマンド、試験、Codex のリンクを読み、*-check と作り直しへ至る間接の経路は 0 件だった。直す対象は SKILL.md の 4 文と tasks/README.md の 1 段落で、道具の変更は要らない"
+  - id: G2
+    verdict: pass
+    note: "受け皿を足して inbox-check が exit 1 の状態で task-validate exit 0、task-preflight exit 0（5/1/8/0 で変化なし）。phase0 67c4cc44 の作業木で taskindex-check と inbox-check は素で 0、生成物 1 行追記で 1。task-validate と preflight は kind 改変の写しで 1、forbidden-check は runindex 追記で 1。Makefile の目標は残っている"
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 63
+
+deviations:
+  - {type: environment, note: "開始時の分岐で git checkout phase0 が未追跡の experiments/transfer/pd_refin_empty_seed42_tf32/logs/ の json 2 件に阻まれた。phase0 の追跡版と内容が同一と確かめて scratchpad へ移し、切替えで同じ内容の追跡版が置かれた。禁止 12 に字面で触れたため記録する"}
+  - {type: judgement, note: "契約の検証の道具には *-check の呼び出しが無かったため、外したのは手順書の文言だけである。Makefile と tools/ は変えていない"}
+  - {type: judgement, note: "プロジェクト規約は変更後に README.md への記録を求めるが、契約が変更範囲を直す対象・契約のディレクトリ・受け皿に限るため README.md は変えていない"}
+  - {type: judgement, note: "試験は変更前の値を phase0 の作業木で測った（同じ 5 本で 63 passed）。本体で変更前に測ってはいない"}
+  - {type: environment, note: "zsh では PIPESTATUS が空で、最初の終了コードの測定が空振りした。出力をファイルへ落として測り直した"}
+  - {type: judgement, note: "送出の予行の命令に誤って make task-report を含め、commit の前に台帳へ一度送った。送信前の秘匿検査は通り、読み戻しの要約値は手元と一致した。report_task.py は既存の報告を置き換えるため、PR 番号を入れた後に送り直した"}
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "契約は「契約の検証で *-check が走り毎回落ちる」「契約の検証から呼び出しを外す」と書いたが、task-validate・task-preflight・Makefile の依存に *-check への経路は無く、走らせていたのは手順書の文言だった。指示どおり道具から外そうとすると外す対象が無く、無関係な検査を変えて禁止 7 に触れうる"
+
+positive_controls:
+  - judgement: "taskindex-check は単独で差分を検出する"
+    breaking_input: "phase0 の作業木で context/auto/followups.md に 1 行追記"
+    observed: "素で exit 0、追記で exit 1「差分あり: followups.md」"
+  - judgement: "inbox-check は単独で差分を検出する"
+    breaking_input: "phase0 の作業木で tasks/inbox.md に 1 行追記。本分岐では受け皿を 1 行追加"
+    observed: "素で exit 0、追記で exit 1。本分岐でも exit 1（make は 2）"
+  - judgement: "契約の検証は鮮度で落ちない"
+    breaking_input: "inbox-check が落ちる状態（受け皿を追加し生成物は古いまま）"
+    observed: "task-validate exit 0、task-preflight exit 0（5 PASS / 1 WARN / 8 SKIP / 0 FAIL）"
+  - judgement: "task-validate と task-preflight は弱まっていない"
+    breaking_input: "本契約の写しの meta.kind を bogus に変える（作業木で）"
+    observed: "task-validate exit 1（L1-1 meta.kind）、task-preflight exit 1（P8 FAIL）"
+  - judgement: "forbidden-check は弱まっていない"
+    breaking_input: "作業木で runindex/anomalies.md に 1 行追記"
+    observed: "exit 1、違反 runindex/anomalies.md（禁止領域 runindex/ の内側）"
+  - judgement: "禁止語と秘匿の検査が送出物で働き、値を出力しない"
+    breaking_input: "禁止語を 2 語含む合成文、鍵の形をした合成文字列、合成した環境値の直接照合"
+    observed: "禁止語は合成文で 2 件を検出し exit 1。秘匿は形で 2 件、環境照合で 1 件を検出し、出力は種別だけだった。送出物のうち契約の記録 4 件は禁止語・秘匿とも 0 件。SKILL.md と tasks/README.md は既存の文で禁止語に一致し exit 1 だが、検出内容は phase0 版と同一で、追加した 12 行だけでは 0 件。秘匿は 6 件とも 0 件"
+
+followups:
+  - "起票者の手順書（版管理の外）に「検証を通す」の中身として taskindex-check や inbox-check を含める記述があれば、phase0 の上で使う道具と書き直すこと。repo の雛形 tasks/_templates/{impl,exp,analysis}/SPEC.md:27 は事実の説明だけだが、同じ注記を添える候補である"
+  - "P1 venv_active は VIRTUAL_ENV が期待値と一致すれば、sys.prefix が別で期待の場所が実在しなくても PASS する（作業木で VIRTUAL_ENV だけを差し替えて観測）。道具は変えていない"
+  - "P9 spec_lint の separated_source は、行末の継続（\\）でつないだ source ... && make を別の命令と読んで WARN を出す（本契約 SPEC.md:39）。実際は一つの命令として動いた"
+  - "tasks/README.md:202 の「生成は可、手編集は不可」は forbidden-check の除外の仕様を述べる文として残した。契約の分岐では作り直さないこととの読み違いを避けるなら、起票者側で文言を揃える余地がある"
+
+unknowns:
+  - "起票者の手順書の中身（版管理の外にあり、このホストから読めない）"
+
+commits: []
