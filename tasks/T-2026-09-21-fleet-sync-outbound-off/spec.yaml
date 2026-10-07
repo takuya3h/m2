@@ -1,0 +1,83 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-09-21-fleet-sync-outbound-off"
+  kind: impl
+  title: "残る六台の同期処理の外向き通信を、中心から一台ずつ止める"
+  origin: claude-app
+  created_at: "2026-09-21T22:00:00Z"
+  created_from:
+    runindex_commit: "23333eb"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-09-21-philip-sync-outbound-off"]
+  amendments: []
+
+intent:
+  question: "中心の同期処理の外向き通信を止める手順が確定し、手順書にまとめられた。中心から六台へ公開鍵で入れることも確かめられた。同じ変更を中心から一台ずつ当て、七台の接続を保ったまま六台すべての外向き通信を止められるか。入れた鍵が利用者の端末からの転送に依存していないか"
+  decision_at_stake: "一つの契約で六台を揃えられるか。認証が転送された鍵に依存していれば、転送の無いセッションでは再現できない。一台でも接続が切れれば群れが欠ける。一台ずつ当て、失敗したら止める"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "scripts/sync/keeper.sh"
+      - "scripts/sync/m2-sync.sh"
+
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "c801e17"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "認証の鍵と手順書と六台の現状の確認", gpu: false, est: "30m"}
+    - {id: B, name: "六台へ一台ずつ当てる", gpu: false, est: "60m"}
+    - {id: C, name: "止まったことの確認と報告", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "認証に使われた鍵を指紋で特定し、転送に依存するかを確かめた。手順書の項目と値と経路を記録した。六台の現在値と中心との接続を変えずに読み、版が中心と同じことを確かめた"
+      on_fail: ask
+    - id: G2
+      after: B
+      check: "六台それぞれで手順書の項目だけを変え、読み戻しと設定ファイルの両方で反映を確かめた。六台それぞれで中心との接続と定義と局所告知と処理の識別子が無傷であり、中心から見て六ノードすべてが繋がったままである"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-09-21-fleet-sync-outbound-off/"
+  acceptance:
+    - "認証に使われた鍵を指紋で特定し、転送に依存するかを示している"
+    - "六台の現在値を変える前に読み、版が中心と同じことを示している"
+    - "一台ずつ当て、失敗したら次へ進まない手順で行っている"
+    - "六台それぞれで手順書の項目だけを変え、前後の値を示している"
+    - "六台それぞれで読み戻しと設定ファイルの両方で反映を確かめている"
+    - "六台それぞれで接続と定義と局所告知と処理の識別子が無傷であることを示している"
+    - "中心から見て六ノードすべてが繋がったままであることを示している"
+    - "止まったことを確かめられないものを、理由とともに UNKNOWN としている"
+    - "各ノードの画面の鍵をノードの外へ出していない"
+    - "禁止語と秘匿の検査を送出物に当て、検査が値を出力していない"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "認証が利用者の端末から転送された鍵に依存していた場合"
+    - "いずれかのノードで変更が失敗した場合"
+    - "いずれかのノードで中心との接続が切れた場合"
+    - "反映に再起動が必要な場合"
