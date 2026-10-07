@@ -51,11 +51,17 @@ def vid_of(stem: str) -> str:
     return stem.split("_")[0]
 
 
-def load_phase(directory: Path = PHASE_DIR) -> dict[str, dict[str, int]]:
-    """動画ごとの工程フレーム数。`Frame,Phase` の CSV を数える。"""
+def load_phase(directory: Path = PHASE_DIR, videos: set[str] | None = None) -> dict[str, dict[str, int]]:
+    """動画ごとの工程フレーム数。`Frame,Phase` の CSV を数える。
+
+    `videos` を与えると、その動画の CSV だけを読む。同じディレクトリには追加動画（17〜21）の
+    CSV も在るため、15 動画を前提とする呼び出し側は動画の集合を明示して絞る。
+    """
     counts: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
     for path in sorted(directory.glob("*.csv")):
         vid = vid_of(path.stem)
+        if videos is not None and vid not in videos:
+            continue
         with path.open(newline="") as handle:
             for row in csv.DictReader(handle):
                 counts[vid][row["Phase"]] += 1
@@ -658,11 +664,11 @@ def main() -> int:
     parser.add_argument("--controls", action="store_true", help="対照だけを走らせる")
     args = parser.parse_args()
 
-    phase = load_phase()
+    official = load_splits()
+    phase = load_phase(videos={v for split in official.values() for v in split})
     tool, images = load_tool()
     hts = load_hts()
     material = Material(phase, tool, images, hts)
-    official = load_splits()
     extra = load_extra_videos()
 
     table, diagnostics = build_table(material, official)

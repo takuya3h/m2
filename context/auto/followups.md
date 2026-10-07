@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（572 件）
+## 申し送り（576 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -913,6 +913,13 @@
 - tools/check_forbidden.py は未追跡ファイルも差分に数えるため、開始前から在る未追跡（今回は注釈 CSV 20 件）がある作業ツリーでは、契約の変更と無関係に fail する。開始時点の未追跡を差し引く仕組みが要る
 - make agent-check が docs/experiment_settings.md 155 行（source の後に次の source が続く）で fail する。phase0 の時点から在る（最終変更 5681ab5b、本契約は触れていない）
 
+### T-2026-10-07-track-extra-phase-annotations
+
+- 他ホストでは同期の前に docs/stage1/extra_phase_annotations.md の手順で、同じ経路の未追跡の写しを照合する。git は内容が同一でも未追跡のファイルを上書きしない
+- 7 月の監査と EDA の 8 本は、20 件の追跡の後に再実行すると 17〜21 が入り、experiments/analysis/ に記録済みの値と変わる。再実行するなら読む動画を 15 本に絞ってから
+- context/conventions.md#folds は追加動画を 17〜22 の 6 本と書くが、追跡したのは 17〜21 の注釈だけ。動画 22 の注釈は data/raw にだけ在る
+- make agent-check の既存の失敗（docs/experiment_settings.md:155）は本契約でも未対応
+
 ## 断定できなかった事項（370 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
@@ -1597,18 +1604,18 @@
 - 折り E の記録の val 主指標の再現（記録が 07 と 15 の合算しか持たない）
 - 読み d（動画の術式が学習動画と違う）。術式の情報を測っていない
 
-## 起票者の誤りの型（345 件）
+## 起票者の誤りの型（347 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 92 |
-| `asserted_without_measuring` | 143 |
-| `self_contradiction` | 90 |
+| `asserted_without_measuring` | 144 |
+| `self_contradiction` | 91 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 0 |
 | `rule_read_narrowly` | 1 |
 
-合計 345 件（対を持つ契約 113 件から）
+合計 347 件（対を持つ契約 114 件から）
 
