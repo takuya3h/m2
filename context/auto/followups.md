@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（600 件）
+## 申し送り（604 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -949,6 +949,13 @@
 - P9 spec_lint の separated_source は、行末の継続（\）でつないだ source ... && make を別の命令と読んで WARN を出す（本契約 SPEC.md:39）。実際は一つの命令として動いた
 - tasks/README.md:202 の「生成は可、手編集は不可」は forbidden-check の除外の仕様を述べる文として残した。契約の分岐では作り直さないこととの読み違いを避けるなら、起票者側で文言を揃える余地がある
 
+### T-2026-10-07-pause-release-tool-digest-relocate
+
+- SKILL.md の改訂契約では、解除を make task-release TASK=<id> END=complete（中止は END=abort REASON=...）に置き換え、状態表示で判定する。git add docs/sessions/digest/ の指示が残っていれば消す
+- 本契約より前の task_start.sh が置いた目印（中身なし）は OWNER_UNREADABLE で外れない。移行期は手で外す
+- 移す前のセッションが移した後も続いた場合、その続きは新しい置き場に書き出されない（名前で抽出済みと判定するため）
+- make docs-check（docs/proposal-gate.md:41）と make agent-check（docs/experiment_settings.md:155）は、本契約で触れていないファイルで落ちる
+
 ### T-2026-10-07-track-extra-phase-annotations
 
 - 他ホストでは同期の前に docs/stage1/extra_phase_annotations.md の手順で、同じ経路の未追跡の写しを照合する。git は内容が同一でも未追跡のファイルを上書きしない
@@ -956,7 +963,7 @@
 - context/conventions.md#folds は追加動画を 17〜22 の 6 本と書くが、追跡したのは 17〜21 の注釈だけ。動画 22 の注釈は data/raw にだけ在る
 - make agent-check の既存の失敗（docs/experiment_settings.md:155）は本契約でも未対応
 
-## 断定できなかった事項（378 件）
+## 断定できなかった事項（380 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1660,7 +1667,12 @@
 
 - 起票者の手順書の中身（版管理の外にあり、このホストから読めない）
 
-## 起票者の誤りの型（353 件）
+### T-2026-10-07-pause-release-tool-digest-relocate
+
+- 共有フォルダが無いホストと .servername が無いホストでの実機の動作（試験の場では確かめた）
+- 終了フックが新しい置き場へ書くことの実機での確認（本セッションの終了時に初めて起きる）
+
+## 起票者の誤りの型（354 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
@@ -1668,10 +1680,10 @@
 |---|---:|
 | `check_does_not_check` | 93 |
 | `asserted_without_measuring` | 147 |
-| `self_contradiction` | 93 |
+| `self_contradiction` | 94 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 0 |
 | `rule_read_narrowly` | 1 |
 
-合計 353 件（対を持つ契約 118 件から）
+合計 354 件（対を持つ契約 119 件から）
 
