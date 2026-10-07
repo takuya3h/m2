@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（593 件）
+## 申し送り（596 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -920,6 +920,12 @@
 - make taskindex と make inbox は契約の禁止 5 により実行していない。統合の後に一台で一度だけ回す（SPEC §6-5）
 - 大きな中間物は dlsta の /home/ubuntu/local/ptower_attribution_20261005/（362,866,001 バイト）にある。消すかどうかは利用者の判断
 
+### T-2026-10-07-auto-merge-regen-pr
+
+- GITHUB_TOKEN で実際に統合できるか、閉じられるかは統合後に判定する。できなければ統合の段が ::error:: で失敗し、自動 PR は開いたまま残る（人が統合すれば従来どおり収束する）
+- GITHUB_TOKEN による統合は新しい実行を作らない仕様のため、自動の統合の後に regen-projections は走らない。統合後の木は作り直した木と同じなので、走らないことによる取り残しは無い見込み
+- 基点が古いときは失敗で終える（契約どおり）。phase0 を進めた push が別の実行を起こすため、次の実行が最新から作り直して統合する。失敗の記録が一件残る
+
 ### T-2026-10-07-auto-regen-projections
 
 - PR の分岐では生成物が古いままで、taskindex-check と inbox-check が差分を報告し続ける。案 (a) 契約の検証から *-check を外し、phase0 の上の検査に限る。案 (b) 契約の分岐では差分を WARN 扱いにする。本契約では検査を変えていない
@@ -943,7 +949,7 @@
 - context/conventions.md#folds は追加動画を 17〜22 の 6 本と書くが、追跡したのは 17〜21 の注釈だけ。動画 22 の注釈は data/raw にだけ在る
 - make agent-check の既存の失敗（docs/experiment_settings.md:155）は本契約でも未対応
 
-## 断定できなかった事項（375 件）
+## 断定できなかった事項（379 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1633,23 +1639,30 @@
 - 折り E の記録の val 主指標の再現（記録が 07 と 15 の合算しか持たない）
 - 読み d（動画の術式が学習動画と違う）。術式の情報を測っていない
 
+### T-2026-10-07-auto-merge-regen-pr
+
+- GITHUB_TOKEN で phase0 への PR を統合できるか（保護の PR 必須・enforce_admins との関係）
+- GITHUB_TOKEN で PR を閉じられるか
+- 自動の統合が次の workflow を起こさないか（文書ではそうなっているが、実測していない）
+- workflow の書式の検査（actionlint・yamllint が無い）
+
 ### T-2026-10-07-auto-regen-projections
 
 - workflow の書式の検査（actionlint・yamllint が無い。GitHub が解釈して実行できたことだけは確かめた）
 - 登録されている Actions の秘匿の名前の一覧（gh secret list が拒否された）
 
-## 起票者の誤りの型（351 件）
+## 起票者の誤りの型（352 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 92 |
+| `check_does_not_check` | 93 |
 | `asserted_without_measuring` | 146 |
 | `self_contradiction` | 93 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 0 |
 | `rule_read_narrowly` | 1 |
 
-合計 351 件（対を持つ契約 116 件から）
+合計 352 件（対を持つ契約 117 件から）
 
