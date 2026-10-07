@@ -124,4 +124,4 @@
 
 ## 8. 送出
 
-PR #213（commit `b7836cfa`）。台帳への返送の終了コードは本 commit の次の記録で確かめる（下の commit メッセージ）。
+PR #213（commit `b7836cfa`）。台帳への返送 `make task-report` は exit 0（先に誤って送った 1 件を置き換えた。replaced_blocks=1）。
