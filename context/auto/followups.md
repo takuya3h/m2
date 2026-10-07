@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（596 件）
+## 申し送り（600 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -922,8 +922,8 @@
 
 ### T-2026-10-07-auto-merge-regen-pr
 
-- GITHUB_TOKEN で実際に統合できるか、閉じられるかは統合後に判定する。できなければ統合の段が ::error:: で失敗し、自動 PR は開いたまま残る（人が統合すれば従来どおり収束する）
-- GITHUB_TOKEN による統合は新しい実行を作らない仕様のため、自動の統合の後に regen-projections は走らない。統合後の木は作り直した木と同じなので、走らないことによる取り残しは無い見込み
+- GITHUB_TOKEN で PR を閉じる段はまだ一度も動いていない。差分が無いのに自動 PR が開いている状況で初めて動く。失敗すれば ::error:: が出て、自動 PR は開いたまま残る（人が閉じればよい）
+- GITHUB_TOKEN による統合は新しい実行を作らなかった（実測）。統合後の木は作り直した木と同じで、phase0 の生成物は最新だった
 - 基点が古いときは失敗で終える（契約どおり）。phase0 を進めた push が別の実行を起こすため、次の実行が最新から作り直して統合する。失敗の記録が一件残る
 
 ### T-2026-10-07-auto-regen-projections
@@ -942,6 +942,13 @@
 - tools/check_forbidden.py は未追跡ファイルも差分に数えるため、開始前から在る未追跡（今回は注釈 CSV 20 件）がある作業ツリーでは、契約の変更と無関係に fail する。開始時点の未追跡を差し引く仕組みが要る
 - make agent-check が docs/experiment_settings.md 155 行（source の後に次の source が続く）で fail する。phase0 の時点から在る（最終変更 5681ab5b、本契約は触れていない）
 
+### T-2026-10-07-drop-projection-check-in-contracts
+
+- 起票者の手順書（版管理の外）に「検証を通す」の中身として taskindex-check や inbox-check を含める記述があれば、phase0 の上で使う道具と書き直すこと。repo の雛形 tasks/_templates/{impl,exp,analysis}/SPEC.md:27 は事実の説明だけだが、同じ注記を添える候補である
+- P1 venv_active は VIRTUAL_ENV が期待値と一致すれば、sys.prefix が別で期待の場所が実在しなくても PASS する（作業木で VIRTUAL_ENV だけを差し替えて観測）。道具は変えていない
+- P9 spec_lint の separated_source は、行末の継続（\）でつないだ source ... && make を別の命令と読んで WARN を出す（本契約 SPEC.md:39）。実際は一つの命令として動いた
+- tasks/README.md:202 の「生成は可、手編集は不可」は forbidden-check の除外の仕様を述べる文として残した。契約の分岐では作り直さないこととの読み違いを避けるなら、起票者側で文言を揃える余地がある
+
 ### T-2026-10-07-track-extra-phase-annotations
 
 - 他ホストでは同期の前に docs/stage1/extra_phase_annotations.md の手順で、同じ経路の未追跡の写しを照合する。git は内容が同一でも未追跡のファイルを上書きしない
@@ -949,7 +956,7 @@
 - context/conventions.md#folds は追加動画を 17〜22 の 6 本と書くが、追跡したのは 17〜21 の注釈だけ。動画 22 の注釈は data/raw にだけ在る
 - make agent-check の既存の失敗（docs/experiment_settings.md:155）は本契約でも未対応
 
-## 断定できなかった事項（379 件）
+## 断定できなかった事項（378 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1641,9 +1648,7 @@
 
 ### T-2026-10-07-auto-merge-regen-pr
 
-- GITHUB_TOKEN で phase0 への PR を統合できるか（保護の PR 必須・enforce_admins との関係）
-- GITHUB_TOKEN で PR を閉じられるか
-- 自動の統合が次の workflow を起こさないか（文書ではそうなっているが、実測していない）
+- GITHUB_TOKEN で PR を閉じられるか（閉じる段がまだ動いていない）
 - workflow の書式の検査（actionlint・yamllint が無い）
 
 ### T-2026-10-07-auto-regen-projections
@@ -1651,18 +1656,22 @@
 - workflow の書式の検査（actionlint・yamllint が無い。GitHub が解釈して実行できたことだけは確かめた）
 - 登録されている Actions の秘匿の名前の一覧（gh secret list が拒否された）
 
-## 起票者の誤りの型（352 件）
+### T-2026-10-07-drop-projection-check-in-contracts
+
+- 起票者の手順書の中身（版管理の外にあり、このホストから読めない）
+
+## 起票者の誤りの型（353 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 93 |
-| `asserted_without_measuring` | 146 |
+| `asserted_without_measuring` | 147 |
 | `self_contradiction` | 93 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 0 |
 | `rule_read_narrowly` | 1 |
 
-合計 352 件（対を持つ契約 117 件から）
+合計 353 件（対を持つ契約 118 件から）
 
