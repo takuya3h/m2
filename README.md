@@ -786,6 +786,7 @@ root でも不可）。そのため論理サーバー名を明示的に設定す
 | 出力・ログ | `outputs/` `logs/` |
 | 加工済みデータ | `data/processed/` |
 | アノテーション | `data/annotations/pseudo_labels` `data/annotations/egosurgery_hts` `data/annotations/**/*.json` |
+| HTS 整形前バックアップ | `data/annotations/egosurgery_hts_bak/`（`.json.bak` を含む） |
 | Notion 同期状態 | `.notion_sync.json` |
 
 **同期されない:**
@@ -800,6 +801,11 @@ root でも不可）。そのため論理サーバー名を明示的に設定す
 **ルールの変更方法:** リポジトリ直下の `.stglobalignore` を作業ブランチで編集・commit し、
 通常の PR / auto-merge 経路で `phase0` へ統合する。各サーバーの keeper が 30 分以内に
 `$M2DIR/.stignore` へ自動反映する（`.stignore` 自体は編集しない。先にマッチした行が勝つ構文に注意）。
+
+**2026-10-07 更新:** HTS の `hand_seg`・`tool_seg`・`hand_tool_seg` の JSON を
+内容を変えずに整形し、整形前の12ファイルを `data/annotations/egosurgery_hts_bak/` へ
+同じサブフォルダ構成で退避した。退避先は Git 管理から除外し、Syncthing で同期する。
+設定配布には `phase0` の取得と keeper の反映が必要で、転送完了は各同期先で別途確認する。
 
 ---
 
