@@ -66,4 +66,5 @@ UNKNOWN は無い。想定外は動画 22 の注釈が raw にあったこと（
 
 ## 送出
 
-PR #204（base phase0、Draft でない、分岐 feat/track-extra-phase-annotations）。commit d1199a38。`make task-report` の結果は送出後に追記する。
+PR #204（base phase0、Draft でない、分岐 feat/track-extra-phase-annotations）。commit d1199a38、723f2341。
+`make task-report` は exit 0（verdict pass、起票者の誤り 2、4986 バイト、report_sha256 e6b5369a…）。

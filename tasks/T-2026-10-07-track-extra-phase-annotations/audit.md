@@ -99,3 +99,8 @@ audit_hts_vs_tool_phase、audit_l0_hts_acceptance c6、audit_l0b_raw_provenance�
       違反の経路の集合 = 追跡した 20 件（両方向の集合差 0）。それ以外の違反 0
     文書の一覧から計算し直した要約値 87f62aee…（a と一致）、sha256sum -c で 20 件 OK。
       対照: 先頭の一文字を変えた一覧で FAILED 1
+
+## 10. 送出
+
+    make task-report TASK=… → exit 0
+    {"verdict": "pass", "n_issuer_defects": 2, "report_sha256": "e6b5369a9b8f3a7d67773b7075898f547116cfd588be0f097dbd4b6dbfc962ab", "report_bytes": 4986, "replaced_blocks": 0}
