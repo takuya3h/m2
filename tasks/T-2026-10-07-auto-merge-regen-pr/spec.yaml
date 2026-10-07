@@ -1,0 +1,83 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-10-07-auto-merge-regen-pr"
+  kind: impl
+  title: "生成物の自動の変更提案を、条件を確かめたうえで自動で統合する"
+  origin: claude-app
+  created_at: "2026-10-07T08:00:00Z"
+  created_from:
+    runindex_commit: "1eb6364"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: ["T-2026-10-07-auto-regen-projections"]
+  amendments: []
+
+intent:
+  question: "統合を契機に生成物を作り直し、変更提案を自動で作る仕組みができた。人の操作は統合だけが残っている。本線の保護は変更提案を必須とするが承認を求めない。差分が生成物だけで基点が最新であることを確かめたうえで、自動実行の既定の認証で統合まで行えるか。それが次の自動実行を起こさず収束するか"
+  decision_at_stake: "人の操作を無くせるか。統合の条件の判定が壊れると生成物以外も統合される。期限のある認証を増やすと失効で止まる。設定を変えず、条件を陽性と陰性の両方で確かめてから入れる"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - ".github/workflows/regen-projections.yml"
+      - "Makefile"
+
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "073f9dc"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "保護設定と現在の仕組みと既定の認証の能力の測定", gpu: false, est: "30m"}
+    - {id: B, name: "統合の段と空の提案を閉じる段を足し、手元で陽性と陰性を試す", gpu: false, est: "60m"}
+    - {id: C, name: "統合後の確かめ方と報告", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "本線の保護の必須検査と承認と基点の要求と統合の方式を変えずに読んだ。現在の仕組みの該当段を行番号つきで記録した。既定の認証で統合できるかと、それが次の自動実行を起こすかを記録した"
+      on_fail: ask
+    - id: G2
+      after: B
+      check: "統合の段を足し、差分が生成物だけ、基点が最新、作成元が自動の分岐、の三条件を統合の直前に読み直す形にした。手元の試験で、条件を満たす場合だけ統合が呼ばれ、陰性の三通りで統合が呼ばれないことを示した。差分が無いとき開いた自動の提案を閉じることを示した"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-10-07-auto-merge-regen-pr/"
+  acceptance:
+    - "本線の保護設定を変えずに読み、必須検査と承認と統合の方式を記録している"
+    - "既定の認証で統合できるかを記録し、確かめられなければ統合後の実測で判定するとしている"
+    - "統合の条件が差分と基点と作成元の三つであり、統合の直前に読み直す形になっている"
+    - "条件を満たす場合に統合が呼ばれることを手元で示している"
+    - "生成物以外を含む場合、基点が古い場合、作成元が違う場合に統合が呼ばれないことを手元で示している"
+    - "差分が無いとき開いた自動の提案を閉じることを手元で示している"
+    - "認証の失敗で未設定と無効を言い分け、値を出していない"
+    - "既存の別の自動実行を変えていない"
+    - "統合後に動作を確かめる手順を書いている"
+    - "禁止語と秘匿の検査を送出物に当て、検査が値を出力していない"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "本線に必須の状態検査があり統合が待たされる場合"
+    - "既定の認証で統合できないことが明らかな場合"
+    - "陰性の試験で統合が呼ばれ、直せない場合"
+    - "統合の後に自動実行が止まらず繰り返す場合"

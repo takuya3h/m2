@@ -1,0 +1,63 @@
+result_version: 3
+task_id: "T-2026-10-07-auto-merge-regen-pr"
+status: pass
+host: "philip"
+branch: "feat/auto-merge-regen-pr"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "phase0 の保護を読んだ。必須の状態検査は無く、承認 0 件、迂回の許可と push の制限も無く、enforce_admins=true。方式は 3 種すべて許可され、直近 30 件の PR はすべて merge commit だった。統合は Contents の write、閉じるのは Pull requests の write（文書）。GITHUB_TOKEN が起こす push は新しい実行を作らない（文書）。GITHUB_TOKEN で実際に統合できるかは UNKNOWN で、統合後の実測で判定する"
+  - id: G2
+    verdict: pass
+    note: "偽の origin と状態を持つ偽の gh で 6 通りを試した。生成物だけの差分では統合が 1 回呼ばれ、生成物以外・基点が古い・fork・別の分岐・先頭の食い違いでは 0 回で exit 1。差分なしで PR が無ければ何もせず、PR が開いていれば fork を除いて閉じた。条件 1・2・3 を常に通す版に壊すと場合 2・3・4b で統合が呼ばれ、試験が壊れ方を検出することを確かめた"
+
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 23
+
+deviations:
+  - {type: judgement, note: "生成物の一覧を、作り直しの段の局所変数から job の env へ移した。統合の条件と同じ一覧を見せるためで、作り直しの挙動は変わらない（場合 1・5 で確認）"}
+  - {type: judgement, note: "契約の三条件に加え、PR の先頭の oid が分岐の先頭と一致することと、統合の時点での --match-head-commit を足した。読み直しの間に分岐が動いたとき別の中身を統合しないため"}
+  - {type: environment, note: "CLAUDE.md の方針にある ctxpack がホストに無く、GitHub の文書は WebFetch で読んだ"}
+  - {type: judgement, note: "試験を開始前に測らなかった。Python は変えていないため、開始後に測った tests/test_build_taskindex.py と tests/test_build_inbox.py の 23 件 pass を開始前の値とみなした"}
+
+issuer_defects:
+  - type: check_does_not_check
+    note: "試験の場合「作成元の分岐が違う」は、書かれたとおりに別の分岐から PR を作ると、gh pr list --head auto/regen-projections の絞り込みで一覧に出ない。統合が呼ばれないのは一覧のためで条件 3 は試されない。fork と、一覧と詳細の食い違いとして 4a・4b・4c で試し直した"
+
+positive_controls:
+  - judgement: "条件 1（差分が生成物だけ）"
+    breaking_input: "auto の先頭を、生成物に stray.txt を加えた 1 commit に置き換える"
+    observed: "統合 0 回、生成物以外を含む: stray.txt で exit 1。拒否を常に通す版に壊すと統合が呼ばれた"
+  - judgement: "条件 2（基点が phase0 の先頭）"
+    breaking_input: "PR を作った後に phase0 へ別の commit を足す"
+    observed: "統合 0 回、基点が phase0 の先頭ではないで exit 1。拒否を常に通す版に壊すと統合が呼ばれた"
+  - judgement: "条件 3（作成元が自動の分岐）"
+    breaking_input: "同名の分岐の fork の PR だけを開く／詳細の head を feat/other にする／先頭の oid を食い違わせる"
+    observed: "3 通りとも統合 0 回で exit 1。head の拒否を常に通す版に壊すと 4b で統合が呼ばれた"
+  - judgement: "統合の条件が常に拒む壊れ方ではない"
+    breaking_input: "生成物だけを変えた正常な場合"
+    observed: "統合が 1 回呼ばれ、--match-head-commit が auto の先頭の oid だった"
+  - judgement: "空の自動 PR を閉じる"
+    breaking_input: "差分なしで、自動の PR #7 と同名の fork の PR #8 を開いておく"
+    observed: "#7 だけを閉じ、#8 は開いたままだった。PR が無いときは閉じる操作 0 回"
+  - judgement: "認証の文言を分け、値を出さない"
+    breaking_input: "token を空にする／api が 401 を返す／500 を返す"
+    observed: "未設定・設定されているが無効・判別できないの 3 文言に分かれた。合成した token の値の出現は 4 通りとも 0 件"
+
+followups:
+  - "GITHUB_TOKEN で実際に統合できるか、閉じられるかは統合後に判定する。できなければ統合の段が ::error:: で失敗し、自動 PR は開いたまま残る（人が統合すれば従来どおり収束する）"
+  - "GITHUB_TOKEN による統合は新しい実行を作らない仕様のため、自動の統合の後に regen-projections は走らない。統合後の木は作り直した木と同じなので、走らないことによる取り残しは無い見込み"
+  - "基点が古いときは失敗で終える（契約どおり）。phase0 を進めた push が別の実行を起こすため、次の実行が最新から作り直して統合する。失敗の記録が一件残る"
+
+unknowns:
+  - "GITHUB_TOKEN で phase0 への PR を統合できるか（保護の PR 必須・enforce_admins との関係）"
+  - "GITHUB_TOKEN で PR を閉じられるか"
+  - "自動の統合が次の workflow を起こさないか（文書ではそうなっているが、実測していない）"
+  - "workflow の書式の検査（actionlint・yamllint が無い）"
+
+commits: []
