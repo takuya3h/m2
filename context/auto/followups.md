@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（588 件）
+## 申し送り（592 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -920,6 +920,13 @@
 - make taskindex と make inbox は契約の禁止 5 により実行していない。統合の後に一台で一度だけ回す（SPEC §6-5）
 - 大きな中間物は dlsta の /home/ubuntu/local/ptower_attribution_20261005/（362,866,001 バイト）にある。消すかどうかは利用者の判断
 
+### T-2026-10-07-auto-regen-projections
+
+- PR の分岐では生成物が古いままで、taskindex-check と inbox-check が差分を報告し続ける。案 (a) 契約の検証から *-check を外し、phase0 の上の検査に限る。案 (b) 契約の分岐では差分を WARN 扱いにする。本契約では検査を変えていない
+- 差分が無くなったときに開いたままの自動 PR を閉じる処理は無い。人が手で作り直した場合などに空の PR が残りうる
+- make agent-check は docs/experiment_settings.md:155 の source 二行で fail する。phase0 の上でも exit 1 になる既存の失敗で、本契約では触れていない
+- 本 PR の統合が最初の契機になる。RESULT.md §4 の手順で、起動・差分・自己起動の有無を確かめること
+
 ### T-2026-10-07-design-val-subset-balance
 
 - efros の data/annotations/egosurgery_phase/ に追加動画 17〜21 の工程 CSV 20 件が未追跡で置かれている。同じ内容が data/raw/…/annotations/phase/ と ~/slocal2/EgoSurgery/annotations/coco_format/phase/ に在る。このディレクトリを glob で読むコード（a1_fold_table.load_phase、phase_dataset の既定）は 20 動画を読み、生成器 a1_fold_table.py は止まる。置き場は利用者が決める
@@ -935,7 +942,7 @@
 - context/conventions.md#folds は追加動画を 17〜22 の 6 本と書くが、追跡したのは 17〜21 の注釈だけ。動画 22 の注釈は data/raw にだけ在る
 - make agent-check の既存の失敗（docs/experiment_settings.md:155）は本契約でも未対応
 
-## 断定できなかった事項（373 件）
+## 断定できなかった事項（377 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1625,18 +1632,25 @@
 - 折り E の記録の val 主指標の再現（記録が 07 と 15 の合算しか持たない）
 - 読み d（動画の術式が学習動画と違う）。術式の情報を測っていない
 
-## 起票者の誤りの型（349 件）
+### T-2026-10-07-auto-regen-projections
+
+- Actions 上での実際の動作（統合後に確かめる）
+- PyYAML だけの最小構成で動くか（import 文からの推定のみ）
+- workflow の書式の検査（actionlint・yamllint が無い）
+- 登録されている Actions の秘匿の名前の一覧（gh secret list が拒否された）
+
+## 起票者の誤りの型（351 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 92 |
-| `asserted_without_measuring` | 144 |
+| `asserted_without_measuring` | 146 |
 | `self_contradiction` | 93 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 0 |
 | `rule_read_narrowly` | 1 |
 
-合計 349 件（対を持つ契約 115 件から）
+合計 351 件（対を持つ契約 116 件から）
 
