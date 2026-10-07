@@ -3,7 +3,7 @@ task_id: "T-2026-10-07-auto-regen-projections"
 status: partial
 host: "philip"
 branch: "feat/auto-regen-projections"
-pr: null
+pr: 208
 merged: false
 
 gates:
@@ -22,7 +22,9 @@ tests:
 deviations:
   - {type: judgement, note: "契約の直接 push 型ではなく自動 PR 型で作った。phase0 が PR 必須のため。G1 で利用者が選んだ"}
   - {type: environment, note: "gh auth status と gh secret list が実行基盤に拒否された。迂回せず、workflow 権限と秘匿の登録一覧を UNKNOWN とした"}
+  - {type: environment, note: "手元の gh 認証に workflow 権限が無く、初回の push は refusing to allow an OAuth App to create or update workflow で拒否された。迂回せず提示し、利用者が gh auth refresh -s workflow で付与した後に同じ commit を push した"}
   - {type: environment, note: "最小構成（PyYAML だけの venv）での実測ができなかった。uv のキャッシュに PyYAML が無く、--offline で失敗した"}
+  - {type: judgement, note: "禁止語の検査の後に RESULT.md §8 へ禁止語の引用を足し、c110278f をそのまま commit・push した。再検査で検出し、語を引用しない表現に直して次の commit で送った"}
   - {type: judgement, note: "試験を開始前に測らなかった。本契約は Python を変更していないため、開始後に測った tests/test_build_taskindex.py と tests/test_build_inbox.py の 23 件 pass を開始前の値とみなした"}
 
 issuer_defects:
@@ -45,8 +47,8 @@ positive_controls:
     breaking_input: "yaml を読めない python を .venv/bin/python に置く"
     observed: "ModuleNotFoundError で make が失敗し、regen は exit 2"
   - judgement: "禁止語と秘匿の検査が送出物で働く"
-    breaking_input: "禁止語（画期的・明らかに）を含む合成文、鍵の形をした合成文字列、合成した環境値の直接照合"
-    observed: "禁止語は 2 件を検出し exit 1。秘匿は形で 1 件、環境照合で 1 件を検出し、値は出力しなかった。送出物 5 件は禁止語・秘匿とも 0 件（初回は RESULT.md の「決定的」に一致したため言い換えた）"
+    breaking_input: "禁止語を 2 語含む合成文、鍵の形をした合成文字列、合成した環境値の直接照合"
+    observed: "禁止語は 2 件を検出し exit 1。秘匿は形で 1 件、環境照合で 1 件を検出し、値は出力しなかった。送出物 5 件は禁止語・秘匿とも 0 件（初回は RESULT.md の 1 語に一致したため言い換えた）"
 
 followups:
   - "PR の分岐では生成物が古いままで、taskindex-check と inbox-check が差分を報告し続ける。案 (a) 契約の検証から *-check を外し、phase0 の上の検査に限る。案 (b) 契約の分岐では差分を WARN 扱いにする。本契約では検査を変えていない"
@@ -55,10 +57,10 @@ followups:
   - "本 PR の統合が最初の契機になる。RESULT.md §4 の手順で、起動・差分・自己起動の有無を確かめること"
 
 unknowns:
-  - "手元の gh 認証に workflow 権限があるか（事前の確認は拒否された。push の結果で判明する）"
   - "Actions 上での実際の動作（統合後に確かめる）"
   - "PyYAML だけの最小構成で動くか（import 文からの推定のみ）"
   - "workflow の書式の検査（actionlint・yamllint が無い）"
   - "登録されている Actions の秘匿の名前の一覧（gh secret list が拒否された）"
 
-commits: []
+commits:
+  - "c110278f"

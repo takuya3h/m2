@@ -19,7 +19,7 @@
 | 2'' | 出力の決定性 | **同じ入力で同じ出力になった。** 4 ファイルの sha256 が HEAD、別の作業ディレクトリ、`LC_ALL=C TZ=UTC`、`PYTHONHASHSEED` を 1・2・123 にした場合のすべてで一致した |
 | 3 | 既存の workflow | `auto-draft-pr.yml` だけ。契機は `exp/**` で phase0 と重ならない。秘匿の名前は `AUTOSYNC_PR_TOKEN` |
 | 4 | 自動の commit による起動 | 新しい workflow は phase0 ではなく `auto/regen-projections` へ push する。そこを契機にする workflow は無い（§3 自己起動） |
-| D | 手元の `workflow` 権限 | 事前の確認（`gh auth status`）は**実行基盤に拒否され UNKNOWN**。push の結果は §6 |
+| D | 手元の `workflow` 権限 | 事前の確認（`gh auth status`）は実行基盤に拒否された。**初回の push で権限が無いことが判明した**（§6） |
 
 **G1: ask。** escalate_if の「保護設定が自動の直接の書き込みを許さない」に当たった。利用者が「自動 PR 型」を選んだ（`tasks/inbox.d/T-2026-10-07-auto-regen-projections.md`）。
 
@@ -71,7 +71,8 @@
 ## 6. 送出
 
 - 禁止語と秘匿の検査: §8 を参照。
-- PR: 下の result.yaml を参照（送出後に追記する）。
+- 初回の push は exit 1。`workflow` 権限が無いため拒否された。迂回せず利用者へ提示し、利用者が `gh auth refresh -s workflow` で権限を付与した。同じ commit `c110278f` を再送して exit 0。
+- PR: **#208**（`feat/auto-regen-projections` → `phase0`）。台帳への送り返しは `make task-report` の終了コードで記録する。
 
 ## 7. 起票者の誤り
 
@@ -81,7 +82,7 @@
 
 ## 8. 規約の適用判定・検査
 
-- `proposal_gate` の禁止語: `tools/check_proposal.py --only forbidden` を送出物 5 件（RESULT.md、result.yaml、audit.md、inbox.d、workflow）に当てた。初回は RESULT.md:19 の「決定的」に一致した。言い換えた後は 5 件とも exit 0。陽性対照（「画期的」「明らかに」を含む合成文）では 2 件を検出し exit 1。
+- `proposal_gate` の禁止語: `tools/check_proposal.py --only forbidden` を送出物 5 件（RESULT.md、result.yaml、audit.md、inbox.d、workflow）に当てた。初回は RESULT.md:19 の 1 語（「同じ出力になる」の意味で使っていた語）に一致した。言い換えた後は 5 件とも exit 0。陽性対照（禁止語を 2 語含む合成文）では 2 件を検出し exit 1。
 - `folds` と `symmetry` は**適用されない**（impl で、比較する腕が無い）。
 - 秘匿: `tools/report_task.py` の `scan_secrets` を、資格情報を環境に読み込んだうえで同じ 5 件に当てた。結果は 0 件。陽性対照は二つで、鍵の形をした合成文字列は 1 件検出した。合成した環境値の直接照合も検出した。出力は種別だけで、値は出していない。
 - その他の検査: `task-validate` exit 0、`forbidden-check` は pass（違反 0、検査 7 件）。`taskindex-check` と `inbox-check` は差分ありで exit 2（禁止 3 のため再生成しない）。`agent-check` は `docs/experiment_settings.md:155` で fail したが、phase0 の上でも exit 1 になる**既存の失敗**で、本契約では触れていない。
@@ -89,7 +90,7 @@
 ## 9. 逸脱・想定外・UNKNOWN
 
 - **逸脱（判断）。** 直接 push 型ではなく自動 PR 型にした（G1 で利用者が判断）。
-- **逸脱（環境）。** `gh auth status` と `gh secret list` が実行基盤に拒否された。迂回していない。`workflow` 権限と秘匿の登録一覧は UNKNOWN。
+- **逸脱（環境）。** `gh auth status` と `gh secret list` が実行基盤に拒否された。迂回していない。秘匿の登録一覧は UNKNOWN。`workflow` 権限は無く、push が拒否された後に利用者が付与した。
 - **想定外。** `make inbox-check` は exit 2 になる。本契約で `tasks/inbox.d/` に 1 行を足したためで、禁止 3 により再生成しない。統合後に仕組みが直す。
 - **申し送り（Step 3、完了判定 H）。** PR の分岐では生成物が古いままで、`taskindex-check` と `inbox-check` が差分を報告し続ける。案は二つある。(a) 契約の検証から `*-check` を外し、phase0 の上での検査に限る。(b) 契約の分岐では「差分あり」を WARN 扱いにする。本契約では検査を変えていない。
 - **申し送り。** 差分が無くなったとき、開いたままの自動 PR を閉じる処理は入れていない。人が手で作り直した場合などに、空の PR が残りうる。
