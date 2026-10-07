@@ -91,7 +91,9 @@
 - **`m2-sync.sh` は keeper が毎ループ `origin/phase0` から自己更新する。** よって**統合前に手で置いても、次の周回で戻される**（2026-09-21 実測）。統合後は自動で配られる
 - m2-sync は auto-merge / auto-push / auto-PR
 - 抑止は `.sync-pause` を repo 直下に置く。**目印の存在だけを見る。移動で解ける**
+- 目印の中身は所有の記録（`task_id=<識別子>` と `branch=<分岐名>` の 2 行）。`make task-start` が書き、`make task-release` が読んでその契約の目印だけを外す。m2-sync も keeper も中身を読まない（2026-10-07 実装で確認）
 - 記録は `~/claude-sync/sync-alerts.log`
+- 会話の抽出物の置き場は `~/claude-sync/session-digest/<ホスト名>/`（2026-10-07 から。それまでは repo の `docs/sessions/digest/`）
 
 ## 実装系
 

@@ -1,0 +1,74 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-07-pause-release-tool-digest-relocate"
+  kind: impl
+  title: "同期の抑止に所有の記録を付け、契約の終わりに外す道具を置く。会話の抽出物の出力先を共有フォルダへ移し、旧い置き場を版管理の対象から外す"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-07T10:30:00Z"
+  created_from:
+    runindex_commit: "63ae65da8c7d32df591f5e2ee4358286b72c726b"
+    counts: {index: 1961, experiments: 750, verdicts: 1506}
+  depends_on: []
+  amendments: []
+intent:
+  question: "契約の開始で置いた同期の抑止を、契約の終わりに機械的かつ安全に外せるか。会話の抽出物が作業ツリーを汚して次の契約の開始を止める問題を、版管理の外へ出すことで解消できるか"
+  decision_at_stake: "手順書（SKILL.md）の改訂契約の前提になる道具の有無。抽出物を版管理に記録する方針を撤回し、共有フォルダに置く運用へ移るか"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "not-referenced"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/task_start.sh", "tools/session_digest.py", ".claude/hooks/session_end.sh", "scripts/sync/m2-sync.sh"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "073f9dc0b80b7ca48c2766eb6f8f2ccd17cf0fe6"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "開始状態の記録。作業ツリー、試験の失敗の名前、目印の状態と中身、追跡済みの抽出物の件数、m2-sync.sh が目印をどう読むか", gpu: false, est: "30m"}
+    - {id: B, name: "task_start.sh が置く目印に所有の記録を入れる。既存の振る舞いは変えない", gpu: false, est: "45m"}
+    - {id: C, name: "契約の終わりに目印を外す道具と Makefile の入口", gpu: false, est: "2h"}
+    - {id: D, name: "抽出物の出力先を共有フォルダへ移し、旧い置き場を版管理の対象から外す", gpu: false, est: "90m"}
+    - {id: E, name: "文書の更新（tasks/README.md、docs/sessions/README.md、OPERATION.md、context/env-facts.md）", gpu: false, est: "45m"}
+    - {id: F, name: "検証（対照つき）、報告、本契約の目印の解除", gpu: false, est: "60m"}
+  gates:
+    - {id: G1, after: A, check: "開始状態が記録され、m2-sync.sh が目印の実在だけを見て中身を読まないことを実装で確かめた", on_fail: stop}
+    - {id: G2, after: C, check: "所有の記録と解除の道具が、陽性対照で解除し、陰性対照のすべてで解除しない", on_fail: stop}
+    - {id: G3, after: D, check: "第二の実装系の走査が、切り替え前に抽出済みの記録を新しい置き場へ作り直さないことを確かめた", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md, result.yaml, audit.md]
+  destination: "scripts/"
+  acceptance:
+    - "a: task_start.sh が新たに置く目印の中身に契約の識別子が入り、実行前から在る目印の中身は変わらない"
+    - "b: task_start.sh の既存の振る舞い（終了コード、失敗時に自分が置いた目印だけを消す、既存の目印に触れない）が変わらない"
+    - "c: 完了の終わり方で前提をすべて満たすと目印が外れ、外れた後に目印が存在しない"
+    - "d: 完了の前提を一つずつ欠けさせると、それぞれ目印を外さず、欠けた前提を名指しする"
+    - "e: 前提を確かめられない場合（照会の失敗）は外さず、欠けている場合と区別して表示する"
+    - "f: 中止の終わり方では理由を必須とし、PR が無くても目印を外す"
+    - "g: 所有者が違う目印と所有者を読めない目印は、どちらの終わり方でも外さない"
+    - "h: 目印の位置が m2-sync.sh の読む位置と一致しないときは外さない"
+    - "i: 二度目の実行は元から無いことを、失敗と区別して返す"
+    - "j: 削除が拒まれた場合は無視される名前へ移して外し、外れたことを実在で示す"
+    - "k: 道具の実行の前後で HEAD、index、stash、現在の分岐、遠隔の参照以外の git の状態が変わらない"
+    - "l: 抽出物の既定の出力先が共有フォルダ配下に解決され、旧い置き場に新しい抽出物が現れても作業ツリーの汚れとして数えられない。追跡済みの抽出物は追跡のまま"
+    - "m: 第二の実装系の走査が、切り替え前に抽出済みの記録を作り直さず、新しい記録だけを書き出す"
+    - "n: 追加した試験が通り、変更前から失敗していた試験の名前の集合が変わらない"
+    - "o: PR が Draft でなく存在し、base が phase0 で、分岐が feat/ で始まる"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "m2-sync.sh か keeper が目印の中身を読んでいると分かった場合"
+    - "task_start.sh の既存の振る舞いを変えずに所有の記録を入れられない場合"
+    - "第二の実装系の走査が、切り替え前に抽出済みの記録を新しい置き場へ作り直す実装しか取れない場合"
+    - "実行基盤が書き込みや rm を拒む場合"

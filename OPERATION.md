@@ -46,6 +46,11 @@ git 側の自動化は二つに分かれる。
 目印を消せば次のループから元に戻る。目印は `.gitignore` 済みで `.stignore` の総取り
 規則にも落ちるため、**置いた 1 台にだけ効く。**
 
+TASK 契約では `make task-start` が目印を置き、中身に所有の記録（`task_id=` と `branch=`）を書く。
+外すのは `make task-release TASK=<id> END=complete`（または `END=abort REASON="..."`）で、
+その契約が置いた目印だけを、前提を確かめてから外す（`tasks/README.md` の「契約の受け取り」）。
+**人が手で置いた目印（中身なし）は道具が外さない**ので、上の `rm -f` か `mv` で戻す。
+
 この抑止は `origin/phase0` に届いてから効く（keeper が毎ループ `origin/phase0` から
 `~/bin/m2-sync.sh` を自己更新するため）。稼働中の版が対応済みかは
 `grep -c sync-pause ~/bin/m2-sync.sh` で確かめる。`0` なら未対応で、目印を置いても止まらない。

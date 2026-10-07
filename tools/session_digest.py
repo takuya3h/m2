@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 """対話記録から機械的に取り出せる要素だけを抽出する。
 
-**要約はしない。** 言語モデルによる要約は捏造を生むため、抽出のみを版管理へ入れる。
+**要約はしない。** 言語モデルによる要約は捏造を生むため、抽出だけを残す。
 会話本文・thinking・モデルの応答・評価は一切含めない。
+
+出力先は repo の外の共有フォルダ `~/claude-sync/session-digest/<ホスト名>/` である
+（2026-10-07 から。それまでは repo の `docs/sessions/digest/` に置いて版管理へ記録していた）。
+repo は公開であり、会話由来の抽出物を公開する必然性が薄い。全台からの検索は共有フォルダで保てる。
+共有フォルダが無いホストでは何も書かずに終える（セッションの終了を妨げない）。
 
 抽出後は必ず伏せ字を適用する。既定で伏せ、通す方を例外にする。
 判断に迷うものは伏せる。伏せすぎて困ることはあるが、漏れると取り返しがつかない。
@@ -22,11 +27,16 @@ import argparse
 import json
 import os
 import re
+import socket
 import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DIGEST_DIRNAME = Path("docs") / "sessions" / "digest"
+# 旧い置き場（repo 内）。2026-10-07 までの抽出物がここにある。走査は抽出済みの判定にだけ使う。
+LEGACY_DIGEST_DIRNAME = Path("docs") / "sessions" / "digest"
+# 新しい置き場。共有フォルダ（Syncthing。全台へ配られる）の配下。
+SHARED_DIRNAME = "claude-sync"
+DIGEST_SUBDIR = "session-digest"
 
 # 伏せ字の規則。既定で伏せ、通す方を例外にする。
 _REDACTIONS: tuple[tuple[re.Pattern[str], str], ...] = (
@@ -231,7 +241,30 @@ def render(result: dict) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def _digest_path(root: Path, result: dict, key: str | None = None) -> Path:
+def server_name(root: Path) -> str:
+    """どのホストの記録か。`scripts/sync/m2-sync.sh` と同じ 3 段で解決する。
+
+    `SERVERNAME` → repo の `.servername` の 1 行目 → `hostname`。
+    hostname は台によって重なる（philip と ilya はどちらも aolab）ため、最後の手段にする。
+    """
+    name = os.environ.get("SERVERNAME", "").strip()
+    if not name:
+        try:
+            name = "".join((root / ".servername").read_text(encoding="utf-8").splitlines()[:1]).replace(" ", "")
+        except (OSError, UnicodeDecodeError):
+            name = ""
+    return (name or socket.gethostname()).replace("/", "_")
+
+
+def resolve_out_dir(root: Path, home: Path | None = None) -> Path | None:
+    """既定の出力先。共有フォルダが無ければ None（書かずに終える）。"""
+    shared = (home or Path.home()) / SHARED_DIRNAME
+    if not shared.is_dir():
+        return None
+    return shared / DIGEST_SUBDIR / server_name(root)
+
+
+def _digest_path(out_dir: Path, result: dict, key: str | None = None) -> Path:
     """出力先。壁時計は使わず、記録に含まれる時刻を使う。
 
     `key` は記録ごとに一意な識別子。省略時は `session_id` を使うが、
@@ -242,7 +275,7 @@ def _digest_path(root: Path, result: dict, key: str | None = None) -> Path:
     started = result.get("started") or ""
     day = started[:10] if len(started) >= 10 else "unknown-date"
     name = key or result.get("session_id") or "unknown"
-    return root / DIGEST_DIRNAME / f"{day}-{name.replace('/', '_')}.md"
+    return out_dir / f"{day}-{name.replace('/', '_')}.md"
 
 
 def _read_lines(path: Path) -> list[str]:
@@ -255,14 +288,22 @@ def _read_lines(path: Path) -> list[str]:
 CODEX_SESSION_GLOB = ".codex/sessions/**/rollout-*.jsonl"
 
 
-def sweep_codex(root: Path, home: Path | None = None) -> list[Path]:
+def sweep_codex(root: Path, home: Path | None = None, out_dir: Path | None = None) -> list[Path]:
     """第二の実装系の記録を走査し、まだ抽出していないものだけを書き出す。
 
     第二の実装系にも hook の仕組みはあるが、設定の様式が公開情報から判明しない。
     **推測で様式を仮定しない**ため、登録ではなく走査で補う。
     既に同じ内容の抽出物があれば書き直さない（冪等）。
+
+    **旧い置き場（repo の `docs/sessions/digest/`）に同じ名前の抽出物があれば、抽出済みとみなして
+    新しい置き場へ作り直さない。** 置き場を移した直後に、全台で過去分が一斉に書き出されるのを避ける。
+    内容は比べない（旧い版の書式で書かれた抽出物を「未抽出」と取り違えないため）。
     """
     base = home or Path.home()
+    out_dir = out_dir or resolve_out_dir(root, base)
+    if out_dir is None:
+        return []  # 共有フォルダが無いホスト。何も書かない
+    legacy = root / LEGACY_DIGEST_DIRNAME
     written: list[Path] = []
     for transcript in sorted(base.glob(CODEX_SESSION_GLOB)):
         result = extract(_read_lines(transcript))
@@ -276,7 +317,9 @@ def sweep_codex(root: Path, home: Path | None = None) -> list[Path]:
         day = (result.get("started") or "")[:10]
         if day and key.startswith(f"{day}T"):
             key = key[len(day) + 1 :]
-        out = _digest_path(root, result, key=key)
+        out = _digest_path(out_dir, result, key=key)
+        if (legacy / out.name).exists():
+            continue  # 置き場を移す前に抽出済み
         text = render(result)
         if out.is_file() and out.read_text(encoding="utf-8") == text:
             continue
@@ -302,14 +345,23 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--transcript", help="対話記録のパス")
     parser.add_argument("--from-hook", action="store_true", help="標準入力の JSON から記録のパスを読む")
-    parser.add_argument("--root", default=str(REPO_ROOT), help="出力先の基点")
+    parser.add_argument("--root", default=str(REPO_ROOT),
+                        help="repo の最上位（ホスト名の .servername と旧い置き場を引く）")
+    parser.add_argument("--out-dir", help="出力先を差し替える（既定は ~/claude-sync/session-digest/<ホスト名>）")
+    parser.add_argument("--show-out-dir", action="store_true", help="既定の出力先を表示するだけで、何も書かない")
     parser.add_argument("--stdout", action="store_true", help="ファイルへ書かず標準出力へ出す")
     parser.add_argument("--sweep-codex", action="store_true",
                         help="第二の実装系の記録を走査し、未抽出のものを書き出す")
     args = parser.parse_args()
 
+    root = Path(args.root)
+    out_dir = Path(args.out_dir).expanduser() if args.out_dir else resolve_out_dir(root)
+    if args.show_out_dir:
+        print(str(out_dir) if out_dir else f"（共有フォルダ ~/{SHARED_DIRNAME} が無い。書き出さない）")
+        return 0
+
     if args.sweep_codex:
-        for path in sweep_codex(Path(args.root)):
+        for path in sweep_codex(root, out_dir=out_dir):
             print(str(path))
         return 0
 
@@ -342,7 +394,10 @@ def main() -> int:
             os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())
         return 0
 
-    out = _digest_path(Path(args.root), result)
+    if out_dir is None:
+        print(f"共有フォルダ ~/{SHARED_DIRNAME} が無いため書き出さない", file=sys.stderr)
+        return 0
+    out = _digest_path(out_dir, result)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(text, encoding="utf-8")
     print(str(out))

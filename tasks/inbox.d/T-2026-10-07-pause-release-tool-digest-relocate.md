@@ -1,0 +1,2 @@
+- [ ] 2026-10-07 [cc] **抑止の解除は `make task-release TASK=<id> END=complete|abort` に機械化した。目印の中身は所有の記録（task_id=、branch=）。** 旧い task_start.sh が置いた中身なしの目印は外さない（OWNER_UNREADABLE）。SKILL.md の改訂契約がこの名前を引く（tasks/T-2026-10-07-pause-release-tool-digest-relocate/RESULT.md §4）
+- [ ] 2026-10-07 [cc] **会話の抽出物は ~/claude-sync/session-digest/<ホスト名>/ へ移し、docs/sessions/digest/ は .gitignore に載せた。** 2026-08-09 の「版管理へ記録する」は撤回。追跡済み 48 件は残す（同 §3）

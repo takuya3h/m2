@@ -1297,6 +1297,15 @@ exp 契約 13 件すべてを FAIL にしていた**（prereg に対称性の表
 新しい型の欠陥が `context/auto/followups.md` の集計表から黙って落ちる。**
 一致は試験で縛ってある。
 
+### 抑止の所有の記録と解除の道具、会話の抽出物の置き場の移動（2026-10-07、philip）
+
+`T-2026-10-07-pause-release-tool-digest-relocate`（GPU 不使用）。
+
+- `scripts/task_start.sh` — 新たに置く `.sync-pause` の中身に所有の記録（`task_id=` と `branch=`）を書く。終了コードと巻き戻しは変えていない
+- `scripts/task_release.py`（`make task-release TASK=<id> END=complete|abort [REASON=...]`）— その契約が置いた目印だけを、前提を確かめてから外す。状態は一行で表示する（`task-release: RELEASED` など）
+- `tools/session_digest.py` — 抽出物の出力先を `~/claude-sync/session-digest/<ホスト名>/` へ移した。旧い置き場 `docs/sessions/digest/` は `.gitignore` に載せた（追跡済みの 48 件は追跡のまま）。2026-08-09 の「抽出物は版管理へ記録する」は撤回した
+- 文書: `tasks/README.md`、`docs/sessions/README.md`、`OPERATION.md`、`context/env-facts.md`
+
 ### 生成物の自動 PR の自動の統合（2026-10-07、philip）
 
 `T-2026-10-07-auto-merge-regen-pr`（GPU 不使用）。

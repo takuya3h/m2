@@ -246,6 +246,7 @@ def test_sweep_does_not_collide_when_session_ids_repeat(tmp_path):
     home = tmp_path / "home"
     sessions = home / ".codex" / "sessions" / "2026" / "08" / "07"
     sessions.mkdir(parents=True)
+    (home / "claude-sync").mkdir()
     shared = "019fdbe5-2dba-7e11-ac08-b7594162a299"
     for stem, cmd in (
         (f"rollout-2026-08-07T11-04-17-{shared}", "make one"),
@@ -275,6 +276,7 @@ def test_sweep_is_idempotent(tmp_path):
     home = tmp_path / "home"
     sessions = home / ".codex" / "sessions" / "2026" / "08" / "07"
     sessions.mkdir(parents=True)
+    (home / "claude-sync").mkdir()
     lines = [
         json.dumps({"timestamp": "2026-08-07T11:04:17.000Z", "type": "session_meta",
                     "payload": {"session_id": "abc"}}),
@@ -288,3 +290,143 @@ def test_sweep_is_idempotent(tmp_path):
     root = tmp_path / "repo"
     assert len(session_digest.sweep_codex(root, home=home)) == 1
     assert session_digest.sweep_codex(root, home=home) == []
+
+
+# --- 置き場の移動（T-2026-10-07-pause-release-tool-digest-relocate） -------------------
+def _codex_home(tmp_path, stem="rollout-2026-08-07T11-04-17-abc", cmd="make one", shared=True):
+    home = tmp_path / "home"
+    sessions = home / ".codex" / "sessions" / "2026" / "08" / "07"
+    sessions.mkdir(parents=True)
+    if shared:
+        (home / "claude-sync").mkdir()
+    lines = [
+        json.dumps({"timestamp": "2026-08-07T11:04:17.000Z", "type": "session_meta",
+                    "payload": {"session_id": "abc"}}),
+        json.dumps({"timestamp": "2026-08-07T11:04:18.000Z", "type": "response_item",
+                    "payload": {"type": "custom_tool_call", "name": "exec",
+                                "input": f'tools.exec_command({{cmd:"{cmd}"}});'}}),
+    ]
+    (sessions / f"{stem}.jsonl").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return home
+
+
+def test_default_out_dir_is_under_shared_folder_and_names_host(tmp_path, monkeypatch):
+    import session_digest
+
+    home = tmp_path / "home"
+    (home / "claude-sync").mkdir(parents=True)
+    root = tmp_path / "repo"
+    root.mkdir()
+    (root / ".servername").write_text("philip\n", encoding="utf-8")
+    monkeypatch.delenv("SERVERNAME", raising=False)
+    assert session_digest.resolve_out_dir(root, home) == home / "claude-sync" / "session-digest" / "philip"
+    monkeypatch.setenv("SERVERNAME", "efros")
+    assert session_digest.resolve_out_dir(root, home) == home / "claude-sync" / "session-digest" / "efros"
+
+
+def test_no_shared_folder_writes_nothing(tmp_path):
+    import session_digest
+
+    home = _codex_home(tmp_path, shared=False)
+    root = tmp_path / "repo"
+    assert session_digest.resolve_out_dir(root, home) is None
+    assert session_digest.sweep_codex(root, home=home) == []
+    assert not (root / "docs").exists()
+
+
+def test_sweep_writes_to_shared_folder_not_repo(tmp_path):
+    import session_digest
+
+    home = _codex_home(tmp_path)
+    root = tmp_path / "repo"
+    written = session_digest.sweep_codex(root, home=home)
+    assert len(written) == 1
+    assert written[0].parent.parent == home / "claude-sync" / "session-digest"
+    assert not (root / "docs").exists()
+
+
+def test_sweep_does_not_recreate_digests_extracted_before_the_move(tmp_path):
+    """旧い置き場に同名の抽出物があれば、新しい置き場へ作り直さない。内容は比べない。"""
+    import session_digest
+
+    home = _codex_home(tmp_path)
+    root = tmp_path / "repo"
+    legacy = root / "docs" / "sessions" / "digest"
+    legacy.mkdir(parents=True)
+    (legacy / "2026-08-07-11-04-17-abc.md").write_text("旧い書式の抽出物\n", encoding="utf-8")
+    assert session_digest.sweep_codex(root, home=home) == []
+    assert not (home / "claude-sync" / "session-digest").exists()
+
+    (legacy / "2026-08-07-11-04-17-abc.md").unlink()  # 旧い置き場から消すと書き出される
+    assert len(session_digest.sweep_codex(root, home=home)) == 1
+
+
+def test_sweep_writes_new_records_even_when_old_ones_exist(tmp_path):
+    import session_digest
+
+    home = _codex_home(tmp_path)
+    sessions = home / ".codex" / "sessions" / "2026" / "08" / "07"
+    (sessions / "rollout-2026-08-07T12-00-00-new.jsonl").write_text(
+        (sessions / "rollout-2026-08-07T11-04-17-abc.jsonl").read_text(encoding="utf-8"), encoding="utf-8")
+    root = tmp_path / "repo"
+    legacy = root / "docs" / "sessions" / "digest"
+    legacy.mkdir(parents=True)
+    (legacy / "2026-08-07-11-04-17-abc.md").write_text("x\n", encoding="utf-8")
+    written = session_digest.sweep_codex(root, home=home)
+    assert [p.name for p in written] == ["2026-08-07-12-00-00-new.md"]
+
+
+def test_show_out_dir_does_not_write(tmp_path):
+    import os
+    import subprocess
+
+    home = tmp_path / "home"
+    (home / "claude-sync").mkdir(parents=True)
+    tool = Path(__file__).resolve().parents[1] / "tools" / "session_digest.py"
+    env = {**os.environ, "HOME": str(home), "SERVERNAME": "testhost"}
+    proc = subprocess.run([sys.executable, str(tool), "--show-out-dir", "--root", str(tmp_path)],
+                          env=env, capture_output=True, text=True, check=True)
+    assert proc.stdout.strip() == str(home / "claude-sync" / "session-digest" / "testhost")
+    assert not (home / "claude-sync" / "session-digest").exists()
+
+
+def test_hook_writes_redacted_digest_to_shared_folder(tmp_path):
+    import os
+    import subprocess
+
+    home = tmp_path / "home"
+    (home / "claude-sync").mkdir(parents=True)
+    root = tmp_path / "repo"
+    root.mkdir()
+    transcript = tmp_path / "t.jsonl"
+    transcript.write_text(json.dumps({
+        "type": "assistant", "sessionId": "s1", "timestamp": "2026-10-07T01:00:00Z",
+        "message": {"content": [{"type": "tool_use", "name": "Bash",
+                                 "input": {"command": "export API_TOKEN=abcdef123456"}}]},
+    }) + "\n", encoding="utf-8")
+    tool = Path(__file__).resolve().parents[1] / "tools" / "session_digest.py"
+    env = {**os.environ, "HOME": str(home), "SERVERNAME": "testhost"}
+    proc = subprocess.run([sys.executable, str(tool), "--from-hook", "--root", str(root)],
+                          input=json.dumps({"transcript_path": str(transcript)}),
+                          env=env, capture_output=True, text=True)
+    assert proc.returncode == 0
+    out = home / "claude-sync" / "session-digest" / "testhost" / "2026-10-07-s1.md"
+    assert out.is_file()
+    assert "API_TOKEN=<redacted>" in out.read_text(encoding="utf-8")
+    assert not (root / "docs").exists()
+
+
+def test_hook_without_shared_folder_exits_zero(tmp_path):
+    import os
+    import subprocess
+
+    home = tmp_path / "home"
+    home.mkdir()
+    transcript = tmp_path / "t.jsonl"
+    transcript.write_text(json.dumps({"type": "assistant", "sessionId": "s1",
+                                      "message": {"content": []}}) + "\n", encoding="utf-8")
+    tool = Path(__file__).resolve().parents[1] / "tools" / "session_digest.py"
+    proc = subprocess.run([sys.executable, str(tool), "--transcript", str(transcript), "--root", str(tmp_path)],
+                          env={**os.environ, "HOME": str(home)}, capture_output=True, text=True)
+    assert proc.returncode == 0
+    assert not any(home.rglob("*.md"))

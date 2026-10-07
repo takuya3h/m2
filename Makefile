@@ -212,6 +212,14 @@ task-report:
 task-start:
 	@bash scripts/task_start.sh $(TASK)
 
+# 契約の終わりに同期の抑止（.sync-pause）を外す。task-start が置いた目印だけを外す。
+#   make task-release TASK=T-YYYY-MM-DD-slug END=complete
+#   make task-release TASK=T-YYYY-MM-DD-slug END=abort REASON="中止の理由"
+# 失敗は make の終了コード（2）に潰れる。結果は一行の状態表示（task-release: <状態>）で見る。
+.PHONY: task-release
+task-release:
+	@.venv/bin/python scripts/task_release.py $(TASK) --end "$(END)" $(if $(REASON),--reason "$(REASON)",)
+
 clean:
 	find . -type d -name __pycache__ -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
