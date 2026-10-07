@@ -1,17 +1,20 @@
 name: regen-projections
 # phase0 へ push されたら生成物（context/auto/ の 3 つと tasks/inbox.md）を作り直す。
 # 差分があれば固定の分岐 auto/regen-projections へ push し、phase0 への PR を作るか更新する。
-# 差分が無ければ何もしない。
-# phase0 は PR が必須（承認 0 件、enforce_admins）で直接 push できないため PR を経る。統合は人手。
-# 出所: T-2026-10-07-auto-regen-projections
+# 差分が生成物だけで基点が最新の phase0 なら、その PR を GITHUB_TOKEN で統合する。
+# 差分が無ければ、開いたままの自動 PR を閉じる。
+# phase0 は PR が必須（承認 0 件、enforce_admins）で直接 push できないため PR を経る。
+# 出所: T-2026-10-07-auto-regen-projections, T-2026-10-07-auto-merge-regen-pr
 on:
   push:
     branches: [phase0]
-# auto/regen-projections への push に contents: write が要る。
+# auto/regen-projections への push と PR の統合に contents: write、PR を閉じるのに pull-requests: write が要る。
 # PR の作成は GITHUB_TOKEN では許されない（repo 設定 can_approve_pull_request_reviews=false）ため、
 # auto-draft-pr.yml と同じ AUTOSYNC_PR_TOKEN(PAT) で行う。
+# GITHUB_TOKEN による統合は新しい実行を作らない（GitHub の仕様）。
 permissions:
   contents: write
+  pull-requests: write
 # 同時に一つだけ。短い間隔で二つ統合されても後のものは前のものを待つ。
 # 各実行は push の直前に最新の phase0 から作り直すため、待たせても古い生成物で上書きしない。
 concurrency:
@@ -20,6 +23,10 @@ concurrency:
 jobs:
   regen:
     runs-on: ubuntu-latest
+    # 生成物の一覧は作り直しと統合の条件で共有する。片方だけ直すと条件がずれる。
+    env:
+      AUTO_BRANCH: auto/regen-projections
+      OUTPUTS: "context/auto/tasks_summary.csv context/auto/followups.md context/auto/results_recent.md tasks/inbox.md"
     steps:
       - uses: actions/checkout@v4
         with:
@@ -34,11 +41,8 @@ jobs:
           .venv/bin/pip install --quiet pyyaml==6.0.3
       - name: Regenerate and push if changed
         id: regen
-        env:
-          AUTO_BRANCH: auto/regen-projections
         run: |
           set -euo pipefail
-          OUTPUTS="context/auto/tasks_summary.csv context/auto/followups.md context/auto/results_recent.md tasks/inbox.md"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           # push の前に最新の phase0 を取り込んで作り直す。失敗したら一度だけやり直す。
@@ -79,10 +83,21 @@ jobs:
         if: steps.regen.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.AUTOSYNC_PR_TOKEN }}
-          AUTO_BRANCH: auto/regen-projections
         run: |
           if [ -z "${GH_TOKEN}" ]; then
             echo "::error::secret AUTOSYNC_PR_TOKEN が未設定。分岐 ${AUTO_BRANCH} は push 済み"
+            exit 1
+          fi
+          # 未設定と失効は別の状態である。応答の種別だけで文言を分け、値も応答の本文も出さない。
+          if ! probe=$(gh api "repos/${GITHUB_REPOSITORY}" --jq '.full_name' 2>&1); then
+            case "${probe}" in
+              *"HTTP 401"*|*"Bad credentials"*)
+                echo "::error::secret AUTOSYNC_PR_TOKEN は設定されているが無効。失効・取り消し・値の誤りのいずれか。fine-grained PAT を再発行して secret を更新する。分岐 ${AUTO_BRANCH} は push 済み"
+                ;;
+              *)
+                echo "::error::AUTOSYNC_PR_TOKEN での確認に失敗した。応答の種別を判別できない。分岐 ${AUTO_BRANCH} は push 済み"
+                ;;
+            esac
             exit 1
           fi
           if gh pr list --head "$AUTO_BRANCH" --base phase0 --state open --json number --jq '.[0].number' | grep -q .; then
@@ -90,5 +105,53 @@ jobs:
           else
             gh pr create --base phase0 --head "$AUTO_BRANCH" \
               --title "auto: 生成物の作り直し → phase0" \
-              --body "regen-projections workflow が自動で作った PR。生成物（context/auto/ の 3 つと tasks/inbox.md）だけを含む。**統合は人手。**"
+              --body "regen-projections workflow が自動で作った PR。生成物（context/auto/ の 3 つと tasks/inbox.md）だけを含む。条件を満たせば続く段が自動で統合する。"
           fi
+      # 統合してよいのは、作成元が自動の分岐で、基点が phase0 の先頭で、差分が生成物だけのときに限る。
+      # 条件は統合の直前に読み直す。PR を作った時点の値を使い回さない（その間に phase0 が進みうる）。
+      - name: Merge auto PR if only outputs on latest phase0
+        if: steps.regen.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          refuse() { echo "::error::自動で統合しない: $1"; exit 1; }
+          pr=$(gh pr list --head "$AUTO_BRANCH" --base phase0 --state open --json number,isCrossRepository \
+            --jq '[.[] | select(.isCrossRepository | not)][0].number // empty')
+          [ -n "$pr" ] || refuse "開いた自動 PR が見つからない"
+          IFS=$'\t' read -r head_ref head_oid cross base_ref < <(gh pr view "$pr" \
+            --json headRefName,headRefOid,isCrossRepository,baseRefName \
+            --jq '[.headRefName, .headRefOid, (.isCrossRepository | tostring), .baseRefName] | @tsv')
+          # 条件 3: 作成元が自動の分岐
+          if [ "$head_ref" != "$AUTO_BRANCH" ] || [ "$cross" != "false" ] || [ "$base_ref" != "phase0" ]; then
+            refuse "作成元が ${AUTO_BRANCH} ではない（head=${head_ref} cross=${cross} base=${base_ref}）"
+          fi
+          git fetch -q origin "+refs/heads/phase0:refs/remotes/origin/phase0" \
+            "+refs/heads/${AUTO_BRANCH}:refs/remotes/origin/${AUTO_BRANCH}"
+          base=$(git rev-parse origin/phase0)
+          [ "$(git rev-parse "origin/${AUTO_BRANCH}")" = "$head_oid" ] || refuse "PR の先頭 ${head_oid} が分岐の先頭と違う"
+          # 条件 2: 基点が phase0 の先頭（親が一つで、それが phase0 の先頭）
+          [ "$(git rev-list --parents -n1 "$head_oid")" = "$head_oid $base" ] || refuse "基点が phase0 の先頭 ${base} ではない"
+          # 条件 1: 差分が生成物の部分集合
+          changed=$(git diff --name-only "$base" "$head_oid")
+          [ -n "$changed" ] || refuse "差分が空"
+          for f in $changed; do
+            case " $OUTPUTS " in
+              *" $f "*) ;;
+              *) refuse "生成物以外を含む: $f" ;;
+            esac
+          done
+          # 方式はこれまでの PR と同じ merge commit。先頭が変わっていたら GitHub が拒む。
+          gh pr merge "$pr" --merge --match-head-commit "$head_oid"
+          echo "PR #${pr} を統合した（基点 ${base}）"
+      - name: Close auto PR if nothing to change
+        if: steps.regen.outputs.changed == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for pr in $(gh pr list --head "$AUTO_BRANCH" --base phase0 --state open --json number,isCrossRepository \
+              --jq '.[] | select(.isCrossRepository | not) | .number'); do
+            gh pr close "$pr" --comment "phase0 の生成物は最新で、この PR は不要になった。regen-projections が自動で閉じた。"
+            echo "PR #${pr} を閉じた"
+          done

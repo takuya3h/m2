@@ -1,0 +1,1 @@
+- [ ] 2026-10-07 [cc] **自動 PR を GITHUB_TOKEN で統合する段を足した。条件は作成元・基点・差分の三つで、統合の直前に読み直す。** GITHUB_TOKEN で統合できるかは統合後の実測で判定する（tasks/T-2026-10-07-auto-merge-regen-pr/RESULT.md §4）
