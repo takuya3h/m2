@@ -1,0 +1,162 @@
+result_version: 3
+task_id: "T-2026-09-21-fleet-sync-outbound-off"
+status: partial
+host: "philip"
+branch: "feat/fleet-sync-outbound-off"
+pr: 206
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: >-
+      転送の経路を断った状態（SSH_AUTH_SOCK を外し IdentityAgent=none）で lecun へ入り、受け入れられた鍵は
+      中心の手元の id_ed25519_aolab（SHA256:6NnjKh1s…a04H0、explicit）だった。転送の受け口の指す先は存在しなかった。
+      handoff.md の 3 項目・値・経路を記録した。六台の全 55 項目を変えずに読み、repo の外へ控えた。
+      六台とも v2.1.3 で中心と同じ。六台とも中心と接続していた。lecun だけ urAccepted が 3 だった。
+  - id: G2
+    verdict: pass
+    note: >-
+      lecun→bengio→andrew→ilya→efros→dlsta の順に、一台ずつ PATCH で 3 項目だけを送った（18 回すべて HTTP 200）。
+      各台で全 55 項目のうち変わったのは 3 項目だけで、読み戻しと config.xml の両方で目標値になった。
+      接続・登録・共有・局所告知・処理の識別子は前後で同一だった。中心からは各台の変更直後に 6/6 が繋がって見え、
+      中心の options は無変更だった。各台の照合が PASS になってから次へ進んだ。
+
+tests:
+  before_failed: 7
+  after_failed: 6
+  after_passed: 670
+
+deviations:
+  - type: environment
+    note: >-
+      実行基盤（auto mode）が、ノードの画面の鍵を読む命令と最初の SSH 接続を「資格情報の探索」として拒んだ。
+      迂回はしていない。鍵を使う命令（現状の読み取りと六台の PATCH）は利用者が ! で実行し、実行者は結果の照合だけをした。
+  - type: environment
+    note: >-
+      利用者の全体設定 ~/.claude/settings.json が末尾のカンマで JSON として壊れていた。
+      利用者が直し、セッションを開き直した。
+  - type: environment
+    note: >-
+      試験の前件数は HEAD を別の作業ツリーへ切り出して測った（7 failed / 654 passed / 16 skipped）。後は 6 failed / 670 passed / 1 skipped。
+      前だけで落ちた 1 件と skip の差は、版管理外の資源が別の作業ツリーに無いことによる差と見る。条件は揃っていない。
+      共通する 6 件は前契約と同じ。test_estimate_tier_cost.py と test_stage1_dtower_convergence.py は前後とも収集の段階で落ちるため除外した。
+  - type: judgement
+    note: >-
+      開始前から在った digest 3 件を同一ファイルシステムへ退避し、tasks/README.md の規約と利用者の指示に従い
+      本契約の commit に含めた。Task 3 の「退避したものを戻す」と食い違う。
+  - type: judgement
+    note: >-
+      .sync-pause を手で置かず、task_start.sh に作らせた。SPEC 0 節の touch と食い違う。利用者の指示による。
+  - type: judgement
+    note: >-
+      生成物（context/auto/ の投影と tasks/inbox.md）を再生成していない。手順書は make taskindex を求めるが、
+      契約の禁止 7 を優先した。make taskindex-check は差分ありで落ちる見込み。
+  - type: judgement
+    note: >-
+      conventions_rev を spec.yaml へ置換しなかった。実測の 073f9dc0 と差分の範囲を RESULT.md に記録した。
+      注入する prohibitions と issuer_cautions の 2 節は c801e17 から変わっていない。
+
+issuer_defects:
+  - type: self_contradiction
+    note: >-
+      SPEC 0 節が touch .sync-pause の後に make task-start を置いている。task_start.sh は目印を自分で作り、
+      実行前から在る目印は失敗時の巻き戻しで消さない。指示どおりに実行すると、取り込みが失敗したとき目印が残り、
+      そのホストの自動同期が止まったままになる。
+  - type: self_contradiction
+    note: >-
+      Task 3 Step 3 は「退避したものを戻す」として、退避した digest を未追跡に戻させる。しかし tasks/README.md は、
+      抽出物を契約の記録と一緒に版管理へ含めよと定めている。指示どおりに実行すると未追跡が残り、
+      次の契約の task-start が前提検査で止まり、自動統合も止まる。
+
+positive_controls:
+  - judgement: "各台の照合（check.py）が変更の不備を捕らえる"
+    breaking_input: "結果の写しを 3 通りに壊す（4 項目目の変更・処理の識別子の変化・中心から一台欠ける）"
+    observed: "3 通りとも VERDICT FAIL。原本は六台とも VERDICT PASS"
+  - judgement: "STUN が止まったという判定（STUN disabled の記録）が空振りでない"
+    breaking_input: "設定を変えない。各台の記録の全期間の変更前が、これに当たる"
+    observed: >-
+      六台とも変更前は 0 件。変更の 20〜172 秒後に 1 件ずつ出た。andrew・efros・dlsta は
+      変更の約 40〜80 秒後には 0 件で、その後に 1 件出た。不在ではなく、遷移の記録である
+  - judgement: "認証が転送に依存しないという判定"
+    breaking_input: "agent の経路を残したまま接続する（転送された鍵が使われうる状態）"
+    observed: "UNKNOWN（経路を断った側だけを測った。転送の受け口の指す先は存在しなかった）"
+  - judgement: "禁止語の検査が送出物を見ている"
+    breaking_input: "RESULT.md の写しに禁止語を 2 語足す"
+    observed: "検出 2 件。足さない原本は送出物 4 件とも 0 件"
+  - judgement: "秘匿の照合が環境の資格情報を捕らえる"
+    breaking_input: "写しの本文へ環境の NOTION_API_KEY / WANDB_API_KEY の値を足す"
+    observed: "NOTION 2 件・WANDB 1 件を検出。原本は 9 件とも 0 件。最初の試行は資格情報を読み込まないシェルで走り空振りした（対照 0 件で発覚）"
+  - judgement: "七台の画面の鍵が送出物に現れないという判定"
+    breaking_input: "各ノードの中で本文にそのノードの鍵を足す"
+    observed: "七台とも pc_hits=1、原本は hits=0（鍵の長さ 32、本文 73,106 bytes、9 ファイル）。値はノードの外へ出していない"
+
+followups:
+  - >-
+      使用状況の日次送信が lecun で止まったかを確かめていない。直近の送信は 2026-10-07 06:06:50 JST
+      （記録の原文では 2026-10-06 21:06:50 UTC）。2026-10-08 06:06 JST ごろを過ぎてから、
+      lecun で grep -c 'Sent usage report' ~/.syncthing.log を見ること。変更時点の件数は 44。
+  - >-
+      障害報告は六台とも痕跡が元から 0 件のため、「止まった」とは言えない。設定が false になったことだけが事実である。
+  - >-
+      lecun の urAccepted が 3 だった経緯が UNKNOWN である。中心は前契約で 0 から 3 への変化が見つかった。
+      二台で起きているので、設定を書き換えうる経路（配布・手作業・同期処理の既定値）を調べること。
+  - >-
+      ilya の OS 名は aolab、dlsta の OS 名は 4f3861ae8d3b で、別名と食い違う。中心の OS 名も aolab なので、
+      OS 名でホストを同定する検査（P9 host_mismatch など）は、ilya と中心を区別できない。
+  - >-
+      tests/test_stage1_dtower_convergence.py が収集の段階で落ちる。third_party/Relation-DETR/util/convergence.py が
+      本体に無い。tests/test_estimate_tier_cost.py も前契約から引き続き落ちている。
+  - >-
+      投影（context/auto/）と集約結果（tasks/inbox.md）が本契約を反映していない。禁止 7 により再生成していないため。
+      生成物の再生成を許す契約で make taskindex と make inbox を回すこと。
+  - >-
+      ノードの画面の鍵を使う操作は、auto mode の実行基盤が実行者に許さない。六台以上へ同じ変更を当てる契約では、
+      利用者が ! で実行する前提を SPEC に書くか、実行モードを事前に指定すること。
+  - >-
+      【起票依頼・新契約】digest がセッション終了時に生成されるため、契約を終えるたびに作業ツリーに必ず残り、
+      次の契約の task-start が止まる。構造的な欠陥である（利用者の指摘を受けて実装を読み、確かめた）。
+      生成の経路: .claude/settings.json の SessionEnd フック → .claude/hooks/session_end.sh →
+      tools/session_digest.py。経路は 2 本ある。(1) --from-hook は、終わったセッションの抽出物を
+      docs/sessions/digest/<日付>-<session_id>.md へ無条件に書く（同一内容かの確認は無い）。
+      (2) --sweep-codex は ~/.codex/sessions/**/rollout-*.jsonl を走査し、内容が違うものだけを書く。
+      2 本目は Codex のセッションでも、Claude Code のセッション終了のたびに走る。
+  - >-
+      （digest 欠陥の続き）なぜ毎回起きるか: 契約の commit はセッションの内側で行う。
+      そのセッションの抽出物は、終了フックが走る commit の後にしか現れない。原理的に避けられない。
+      現れ方は 2 通りある。(a) 新しいファイルは未追跡として残る。(b) 既に commit した digest は、
+      同じ session_id のセッションが続いて終わったとき上書きされ、変更ありとして残る。
+      本契約で commit した 2026-10-07-b1846250-….md は (b) に当たり、このセッションの終了で再び汚れる見込み
+      （未測定。終了後に git status で確かめること）。
+  - >-
+      （digest 欠陥の続き）衝突する 2 つの規則: tasks/README.md と docs/sessions/README.md は
+      「抽出物は次の契約の記録と一緒に含める」と定める。scripts/task_start.sh の 4 番目の検査
+      （git status --porcelain の件数が 0 以外なら die 3）は、未追跡も変更も区別せずに止める。
+      規約どおりに運用すると、次の契約は必ず開始できない。また、自動同期（scripts/sync/m2-sync.sh）は
+      digest を commit しない。git merge --ff-only は、内容が同一でも未追跡ファイルの上書きを拒否する（B-30）。
+      このため、放置すれば自動統合も止まる。
+  - >-
+      （digest 欠陥の続き）実測の件数: 前契約 T-2026-09-21-philip-sync-outbound-off では、開始前に未追跡が 4 件あった
+      （digest 3 件 ＋ .sync-pause.released）。本契約では、開始前に digest 3 件、作業中にさらに 2 件
+      （Codex の rollout 由来 2026-10-07-02-45-42-01a11440-….md と、セッションを開き直したときの本セッション前半の
+      2026-10-07-b1846250-….md）が現れた。どちらの契約も、利用者が退避を承認してから開始した。
+  - >-
+      （digest 欠陥の続き）直し方の案（実行者の見立て。未実装）。
+      A（推奨）: task_start.sh の汚れの判定から docs/sessions/digest/ を除く。未追跡も変更も対象にする。
+      分岐を切り替えても未追跡と未 commit の変更は作業ツリーに残るので、新しい契約の commit に含めれば規約どおりになる。
+      除いた件数は表示して、黙って通さない。
+      B: フックの書き込み先を無視対象の一時置き場（例 docs/sessions/digest/.pending/）に変え、
+      task_start.sh が分岐を作った後に正規の場所へ移す。作業ツリーは常にきれいになるが、部品が増える。
+      C: m2-sync.sh が digest を自動で commit する。契約の分岐へ実行者の知らない commit が入り、
+      .sync-pause の考え方と衝突するので勧めない。
+      検証の要件: 未追跡の digest が在る状態、および commit 済みの digest が変更された状態で、task-start が
+      exit 0 になり、それ以外の未追跡（例 tasks/ 配下）が在れば従来どおり exit 3 になること。
+      両方向の陽性対照をつける。tests/ に task_start.sh の試験は現在無い（2026-10-07 実測）ので、新たに置くこと。
+
+unknowns:
+  - "lecun の使用状況の日次送信が止まったか（周期 24 時間を越えて待てなかった）"
+  - "障害報告が止まったか（六台とも痕跡が元から 0 件）"
+  - "lecun の urAccepted が 3 だった経緯"
+
+commits:
+  - "f739448d"
