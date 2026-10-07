@@ -70,7 +70,7 @@
 
 ## 5. 送出
 
-PR 番号と終了コードは result.yaml の `pr` と §6 の追記に書く。
+push は exit 0。PR は **#212**（`feat/auto-merge-regen-pr` → `phase0`）。台帳への送り返しは `make task-report` で行う。
 
 ## 6. 起票者の誤り
 
