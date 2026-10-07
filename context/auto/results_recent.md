@@ -11,7 +11,7 @@
 
 ## T-2026-10-07-track-extra-phase-annotations
 
-状態 `pass` / ホスト `efros` / 起票 `なし` / 様式 `v3`
+状態 `pass` / ホスト `efros` / 起票 `204` / 様式 `v3`
 
 ### ゲート
 

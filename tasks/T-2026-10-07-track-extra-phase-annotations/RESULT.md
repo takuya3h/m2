@@ -66,4 +66,4 @@ UNKNOWN は無い。想定外は動画 22 の注釈が raw にあったこと（
 
 ## 送出
 
-PR と `make task-report` の結果は commit 後に追記する。
+PR #204（base phase0、Draft でない、分岐 feat/track-extra-phase-annotations）。commit d1199a38。`make task-report` の結果は送出後に追記する。
