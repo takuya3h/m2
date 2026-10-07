@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 117 件）。
-ここに出ない 112 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 118 件）。
+ここに出ない 113 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-10-07-track-extra-phase-annotations
 
@@ -44,6 +44,39 @@
 ### 断定できなかったこと
 
 （なし）
+
+## T-2026-10-07-drop-projection-check-in-contracts
+
+状態 `pass` / ホスト `bengio` / 起票 `213` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — S1〜S8 の 8 通りで探した。直接の該当は audit.md §2。Makefile の依存、validate/preflight/report/fetch/task_start/m2-sync の subprocess、フック、コマンド、試験、Codex のリンクを読み、*-check と作り直しへ至る間接の経路は 0 件だった。直す対象は SKILL.md の 4 文と tasks/README.md の 1 段落で、道具の変更は要らない
+- `G2` pass — 受け皿を足して inbox-check が exit 1 の状態で task-validate exit 0、task-preflight exit 0（5/1/8/0 で変化なし）。phase0 67c4cc44 の作業木で taskindex-check と inbox-check は素で 0、生成物 1 行追記で 1。task-validate と preflight は kind 改変の写しで 1、forbidden-check は runindex 追記で 1。Makefile の目標は残っている
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — 契約は「契約の検証で *-check が走り毎回落ちる」「契約の検証から呼び出しを外す」と書いたが、task-validate・task-preflight・Makefile の依存に *-check への経路は無く、走らせていたのは手順書の文言だった。指示どおり道具から外そうとすると外す対象が無く、無関係な検査を変えて禁止 7 に触れうる
+
+### 逸脱
+
+- `environment` — 開始時の分岐で git checkout phase0 が未追跡の experiments/transfer/pd_refin_empty_seed42_tf32/logs/ の json 2 件に阻まれた。phase0 の追跡版と内容が同一と確かめて scratchpad へ移し、切替えで同じ内容の追跡版が置かれた。禁止 12 に字面で触れたため記録する
+- `judgement` — 契約の検証の道具には *-check の呼び出しが無かったため、外したのは手順書の文言だけである。Makefile と tools/ は変えていない
+- `judgement` — プロジェクト規約は変更後に README.md への記録を求めるが、契約が変更範囲を直す対象・契約のディレクトリ・受け皿に限るため README.md は変えていない
+- `judgement` — 試験は変更前の値を phase0 の作業木で測った（同じ 5 本で 63 passed）。本体で変更前に測ってはいない
+- `environment` — zsh では PIPESTATUS が空で、最初の終了コードの測定が空振りした。出力をファイルへ落として測り直した
+- `judgement` — 送出の予行の命令に誤って make task-report を含め、commit の前に台帳へ一度送った。送信前の秘匿検査は通り、読み戻しの要約値は手元と一致した。report_task.py は既存の報告を置き換えるため、PR 番号を入れた後に送り直した
+
+### 申し送り
+
+- 起票者の手順書（版管理の外）に「検証を通す」の中身として taskindex-check や inbox-check を含める記述があれば、phase0 の上で使う道具と書き直すこと。repo の雛形 tasks/_templates/{impl,exp,analysis}/SPEC.md:27 は事実の説明だけだが、同じ注記を添える候補である
+- P1 venv_active は VIRTUAL_ENV が期待値と一致すれば、sys.prefix が別で期待の場所が実在しなくても PASS する（作業木で VIRTUAL_ENV だけを差し替えて観測）。道具は変えていない
+- P9 spec_lint の separated_source は、行末の継続（\）でつないだ source ... && make を別の命令と読んで WARN を出す（本契約 SPEC.md:39）。実際は一つの命令として動いた
+- tasks/README.md:202 の「生成は可、手編集は不可」は forbidden-check の除外の仕様を述べる文として残した。契約の分岐では作り直さないこととの読み違いを避けるなら、起票者側で文言を揃える余地がある
+
+### 断定できなかったこと
+
+- 起票者の手順書の中身（版管理の外にあり、このホストから読めない）
 
 ## T-2026-10-07-design-val-subset-balance
 
@@ -131,6 +164,7 @@
 
 - `G1` pass — phase0 の保護を読んだ。必須の状態検査は無く、承認 0 件、迂回の許可と push の制限も無く、enforce_admins=true。方式は 3 種すべて許可され、直近 30 件の PR はすべて merge commit だった。統合は Contents の write、閉じるのは Pull requests の write（文書）。GITHUB_TOKEN が起こす push は新しい実行を作らない（文書）。GITHUB_TOKEN で実際に統合できるかは UNKNOWN で、統合後の実測で判定する
 - `G2` pass — 偽の origin と状態を持つ偽の gh で 6 通りを試した。生成物だけの差分では統合が 1 回呼ばれ、生成物以外・基点が古い・fork・別の分岐・先頭の食い違いでは 0 回で exit 1。差分なしで PR が無ければ何もせず、PR が開いていれば fork を除いて閉じた。条件 1・2・3 を常に通す版に壊すと場合 2・3・4b で統合が呼ばれ、試験が壊れ方を検出することを確かめた
+- `postmerge` pass — 統合後に Actions で実測した。#212 の統合（a162c417）で run 37596989944 が起動し success。自動 PR #214（生成物 4 ファイル）が作られ、4 秒後に app/github-actions が統合した（44d9e120）。自動の統合の後に新しい run は 0 件。開いた自動 PR は 0 件。統合後の phase0 で taskindex-check と inbox-check は exit 0
 
 ### 起票者の誤り
 
@@ -145,54 +179,12 @@
 
 ### 申し送り
 
-- GITHUB_TOKEN で実際に統合できるか、閉じられるかは統合後に判定する。できなければ統合の段が ::error:: で失敗し、自動 PR は開いたまま残る（人が統合すれば従来どおり収束する）
-- GITHUB_TOKEN による統合は新しい実行を作らない仕様のため、自動の統合の後に regen-projections は走らない。統合後の木は作り直した木と同じなので、走らないことによる取り残しは無い見込み
+- GITHUB_TOKEN で PR を閉じる段はまだ一度も動いていない。差分が無いのに自動 PR が開いている状況で初めて動く。失敗すれば ::error:: が出て、自動 PR は開いたまま残る（人が閉じればよい）
+- GITHUB_TOKEN による統合は新しい実行を作らなかった（実測）。統合後の木は作り直した木と同じで、phase0 の生成物は最新だった
 - 基点が古いときは失敗で終える（契約どおり）。phase0 を進めた push が別の実行を起こすため、次の実行が最新から作り直して統合する。失敗の記録が一件残る
 
 ### 断定できなかったこと
 
-- GITHUB_TOKEN で phase0 への PR を統合できるか（保護の PR 必須・enforce_admins との関係）
-- GITHUB_TOKEN で PR を閉じられるか
-- 自動の統合が次の workflow を起こさないか（文書ではそうなっているが、実測していない）
+- GITHUB_TOKEN で PR を閉じられるか（閉じる段がまだ動いていない）
 - workflow の書式の検査（actionlint・yamllint が無い）
-
-## T-2026-10-04-ptower-attribution-val
-
-状態 `pass` / ホスト `dlsta` / 起票 `201` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 折り A・B・C・E の両系統で backbone・時間ヘッドの checkpoint、特徴キャッシュ、画像、工程 GT、術具と手の枠の GT が実在。七動画のフレーム数 5784、枠 35826。外した折りは無い
-- `G2` pass — 折り A・B・C × COCO/ImageNet の 6 組で記録の val macro Jaccard と frame accuracy が全桁一致。折り E は記録が 07 と 15 の合算のみで UNKNOWN（Task B-2 の指示）
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — conventions_rev に置いた e7a51005 の時点では、inject_verbatim が指す det_groups 節が存在しなかった（001b4309 で追加）。指示どおり実行すると make task-validate が L2-6 の WARN を出す。実測 073f9dc0 に差し替え meta.amendments に記録した
-- `self_contradiction` — 関門 G2 は対象の折りと系統のすべてで記録の val 主指標の再現を求める一方、Task B-2 は折り E を UNKNOWN で済ませるよう指示する。記録は 07 と 15 の合算しか持たないため、指示どおり実行すると折り E で G2 は字面上満たせない。B-2 を優先し G2 を pass とした
-- `self_contradiction` — Task D は四領域のそれぞれに面積を揃えた枠と無関係な位置の対照を求めるが、どの枠の外の領域は定義上枠以外の全部（平均 76%）であり同面積の無関係な位置は存在しない。実行すると 5060/5784 フレームが重なり 5% 超で除かれ、手（平均 41%）でも 4254/5748 が除かれた
-
-### 逸脱
-
-- `judgement` — 開始時の分岐は feat/dlsta-host-fairness だった。利用者の指示で phase0 へ切り替えて origin/phase0 へ fast-forward し、make task-start が起点 origin/phase0（331525e8）で feat/ptower-attribution-val を作った。開始前の未追跡 3 件は scratchpad へ mv、追跡済みの変更 1 件は git stash で退避した
-- `judgement` — 面積を揃えた対照の除外規則（枠の和集合との重なりが 5% を超えたら除く）を計算前に固定し、結果を見た後も変えなかった。手と枠の外では大半が除かれた。除いた値と除かない値の両方を表に置いた
-- `judgement` — 完了判定 c の空振り確認は、指標ではなく logits の要約値で測った。COCO 系では 1 フレームの差し替えで J と argmax が変わらなかったため
-- `environment` — make forbidden-check を BASE=331525e8（分岐点）と TASK を付けて回した。分岐の後に origin/phase0 へ PR #199・#200（data/README.md）が入り、BASE を省くとその差が違反に数えられた
-- `judgement` — README.md の追記は origin/phase0 の末尾追記と衝突しない位置（2026-10-02 の節の前）に入れた。時系列の順が一か所逆になる
-- `environment` — 試験は make test を使わず python -m pytest -q -p no:cacheprovider --continue-on-collection-errors tests で回した。Relation-DETR の本体が無く収集で全体が止まるため（dlsta の既知事情）
-- `judgement` — 完了判定 l の要約値は特徴キャッシュのファイル全体のバイトを sha256 に通す。test 動画の行も読み込まれるが、特徴として解釈・使用はしていない。分析での読み込みは memmap で対象の行だけ
-- `judgement` — CLAUDE.md は全実験の W&B 追跡を求めるが、契約の禁止 8（W&B へ送らない）を優先した。証跡は reads.jsonl・audit.md・summary.json に残した
-- `judgement` — 実行者の誤り: 待機の命令が pgrep -f で自分自身の命令行に一致し、計算の終了後も止まらなかった（issuer_cautions 注意 6 の型）。結果には影響しない。TaskStop で止めた
-
-### 申し送り
-
-- 面積を揃えた対照は巡回のずらしで作ったが、手（平均面積 41%）とどの枠の外（76%）では枠と無関係な位置がほとんど取れなかった。遮蔽の対照を使う後続の契約では、対照の作り方（例えば面積の上限、手と術具を分けた空き領域の定義）を起票時に決めておく必要がある
-- 一つの工程にしか出ない術具は、対象の七動画では Bipolar Forceps（hemostasis）の一つだけだった。誤りと術具 GT の関係はこの一例からしか読めない
-- make forbidden-check を BASE 省略で回すと、分岐の後に origin/phase0 へ入った他の PR の差が違反に数えられる。手順書が BASE を分岐点にすることを明記するか、道具が merge-base を取るかを検討してほしい
-- make taskindex と make inbox は契約の禁止 5 により実行していない。統合の後に一台で一度だけ回す（SPEC §6-5）
-- 大きな中間物は dlsta の /home/ubuntu/local/ptower_attribution_20261005/（362,866,001 バイト）にある。消すかどうかは利用者の判断
-
-### 断定できなかったこと
-
-- 折り E の記録の val 主指標の再現（記録が 07 と 15 の合算しか持たない）
-- 読み d（動画の術式が学習動画と違う）。術式の情報を測っていない
 
