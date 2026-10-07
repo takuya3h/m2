@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 115 件）。
-ここに出ない 110 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 116 件）。
+ここに出ない 111 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-10-07-track-extra-phase-annotations
 
@@ -84,6 +84,43 @@
 ### 断定できなかったこと
 
 （なし）
+
+## T-2026-10-07-auto-regen-projections
+
+状態 `partial` / ホスト `philip` / 起票 `208` / 様式 `v3`
+
+### ゲート
+
+- `G1` ask — phase0 はクラシックの保護で PR が必須（承認 0 件、enforce_admins=true）。直接 push は不可で escalate_if に該当した。利用者が自動 PR 型を選んだ。決定性は 4 ファイルの sha256 が 4 条件で一致して確認。workflow 権限は gh auth status が実行基盤に拒否され UNKNOWN
+- `G2` pass — 偽の origin で workflow の run を再現した。差分なしでは exit 0・changed=false・gh の呼び出し 0 件。入力だけを変えると auto 分岐が phase0 の先頭 + 1 commit になり、差分は生成物 4 ファイルの M だけだった。統合後の再実行は changed=false。作業ツリーの porcelain は試験の前後で一致した
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — inputs.code.entrypoints は tools/build_context.py を挙げるが、make taskindex と make inbox が呼ぶのは build_taskindex.py と build_inbox.py である（Makefile:122-138）。指示どおり build_context.py を読めば、依存と書くファイルを誤って記録していた
+- `asserted_without_measuring` — Goal は「差分があれば phase0 へ commit して push」と設計したが、phase0 は PR 必須で enforce_admins=true である。指示どおり作れば初回の push から拒まれ、生成物は一度も記録されない。escalate_if に挙げてあったため停止はできた
+
+### 逸脱
+
+- `judgement` — 契約の直接 push 型ではなく自動 PR 型で作った。phase0 が PR 必須のため。G1 で利用者が選んだ
+- `environment` — gh auth status と gh secret list が実行基盤に拒否された。迂回せず、workflow 権限と秘匿の登録一覧を UNKNOWN とした
+- `environment` — 手元の gh 認証に workflow 権限が無く、初回の push は refusing to allow an OAuth App to create or update workflow で拒否された。迂回せず提示し、利用者が gh auth refresh -s workflow で付与した後に同じ commit を push した
+- `environment` — 最小構成（PyYAML だけの venv）での実測ができなかった。uv のキャッシュに PyYAML が無く、--offline で失敗した
+- `judgement` — 禁止語の検査の後に RESULT.md §8 へ禁止語の引用を足し、c110278f をそのまま commit・push した。再検査で検出し、語を引用しない表現に直して次の commit で送った
+- `judgement` — 試験を開始前に測らなかった。本契約は Python を変更していないため、開始後に測った tests/test_build_taskindex.py と tests/test_build_inbox.py の 23 件 pass を開始前の値とみなした
+
+### 申し送り
+
+- PR の分岐では生成物が古いままで、taskindex-check と inbox-check が差分を報告し続ける。案 (a) 契約の検証から *-check を外し、phase0 の上の検査に限る。案 (b) 契約の分岐では差分を WARN 扱いにする。本契約では検査を変えていない
+- 差分が無くなったときに開いたままの自動 PR を閉じる処理は無い。人が手で作り直した場合などに空の PR が残りうる
+- make agent-check は docs/experiment_settings.md:155 の source 二行で fail する。phase0 の上でも exit 1 になる既存の失敗で、本契約では触れていない
+- 本 PR の統合が最初の契機になる。RESULT.md §4 の手順で、起動・差分・自己起動の有無を確かめること
+
+### 断定できなかったこと
+
+- Actions 上での実際の動作（統合後に確かめる）
+- PyYAML だけの最小構成で動くか（import 文からの推定のみ）
+- workflow の書式の検査（actionlint・yamllint が無い）
+- 登録されている Actions の秘匿の名前の一覧（gh secret list が拒否された）
 
 ## T-2026-10-04-ptower-attribution-val
 
@@ -164,47 +201,4 @@
 - 工程塔の fine-tune の A6000 での時間。ilya（RTX 6000 Ada）の値を使った
 - 工程塔の送り手の train−val 差。T-2026-09-27-stage1-ptower-20 で測る
 - MICCAI 2027 の締切（公式未発表）
-
-## T-2026-09-27-stage1-ptower-20
-
-状態 `partial` / ホスト `efros` / 起票 `202` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — efros で一つずつ測った。15 動画の工程フレーム 15,437 枚は manifest どおり全数が実在し三周目の数と一致。 COCO 検出 checkpoint は 196,140,106 bytes / sha256 2d2c19a7… で、R50 部分の要約値 a755b3eb… と ImageNet-1K R50 の要約値 4f6b5b62… が三周目と一致。三周目の時間ヘッドの確定構成は selection.json （COCO C/8/0.30/30、ImageNet B/8/0.00/30、lr 1e-4）。一度目の測定では動画 20・21 のフレームが 0 件で停止し、 利用者が移送した。続いて動画 19 の 1,932 枚が 262,144 バイトで切れていることを P*-20 の一本目の DataLoader が検出して停止し、利用者が再送した。最終的に追加 10,461 枚が全数デコードでき、 20 クリップすべてで注釈のフレーム集合と画像のフレーム集合が一致した。動画 22 は注釈 22_1〜22_3 があり フレームは無い。
-- `G2` ask — efros の P*-15・COCO・折り A・seed 42 の val macro Jaccard は 0.7762、ilya の同じ run （stage1_ptower_r3_059）は 0.7066。差 +0.0696 は、結果を見る前に固定した閾値 0.0372 （三周目の折り A の 3 seed 0.7066 / 0.6884 / 0.7255 の標本 SD 0.0186 の 2 倍）を超えた（SD 比 3.7）。 frame accuracy は 0.8713 対 0.8416（+0.0297）。fine-tune 段階のフレーム単位 val J の差は +0.0063。 利用者に諮り「差を記録して続行」の決定を得た（2026-10-03）。
-- `G3` pass — test の評価は確定塔（各系統の seed 42）2 系統 × 5 折りでちょうど 10 回。台帳 test_access_<系統>_<折り>.json は 10 件で全て status=completed。確定塔以外の test 評価は 0 件。test_access_coco_A.json に open("x") すると FileExistsError が投げられることを確かめた。
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — inputs.code.entrypoints が scripts/train_phase_tower_r50.py と scripts/run_stage1_ptower.py を挙げるが、これは一周目の道具で、 三周目の確定 recipe を実装しているのは stage1_ptower_r3.py / run_stage1_ptower_r3.py / select_stage1_ptower_r3.py である。 指示どおり一周目の道具で P*-20 を回すと、短辺 800・全画面・COCO 初期化の鎖を持たない別の recipe になる。三周目でも同じ誤りが報告されている。
-- `self_contradiction` — outputs.expected_runs は 30 だが、SPEC の Task C・D を実装すると完了 run は 45 になる（対照 3 + P*-20 の fine-tune 14・特徴抽出 14・ 時間ヘッド 14）。30 は fine-tune と時間ヘッドの 15 ずつの和で、特徴抽出を数えていない。完了判定 h を行数の一致で読むと必ず外れるため、 task_id で照合する読みを採った。
-- `asserted_without_measuring` — SPEC §1 と Task A-3 は欠けているものを「利用者が ilya から移す」とし、prereg の停止条件も ilya を出所に置くが、三周目の RESULT は ilya に動画 17〜22 の画像が 0 件だったと記録している。指示どおり ilya から移そうとすると移す物が無い。実際には利用者が別の出所から efros へ直接置いた。
-- `check_does_not_check` — 停止条件と Task B-2 は「追加五動画のフレーム数が注釈と一致すること」を求めるが、数の一致は画像の中身を検査しない。動画 19 の 1,932 枚は 262,144 バイトで切れていたのに数の照合を通り、P*-20 の一本目が epoch 1 の途中で OSError で落ちて初めて見つかった。全数デコードを要件に 含めるべきだった。
-- `asserted_without_measuring` — meta.created_from.counts が {index: 0, experiments: 0, verdicts: 0} のまま起票され、取り込み時に L2-8 の WARN が 3 件出た （現在 1911 / 718 / 1506）。起票時の母集団が測られていない。分母は動いていないが、WARN の意味が失われ利用者の確認が要った。
-
-### 逸脱
-
-- `judgement` — Task C（ホスト差の対照）は fine-tune → 特徴 → 時間ヘッドの順にしか進められず GPU 1 枚しか使わないため、 利用者の了承を得て G2 の判定前に Task D の一本目（P*-20・COCO・折り A・seed 42）を GPU 1 で始めた（2026-10-02）。 契約の phases は C→D の順。
-- `judgement` — G2 は不合格（+0.0696、閾値 0.0372）。on_fail: ask に従い諮り、利用者が「差を記録して続行」を選んだ（2026-10-03）。 P*-20（efros）と P*-15（ilya）の並置にはホスト差が混ざる。同一ホストの唯一の点（COCO・折り A・seed 42）では P*-20 0.7461 が efros の P*-15 0.7762 を下回る。
-- `judgement` — P*-20 の fine-tune は見込み 9 時間で契約の 8 時間を超えるため諮り、recipe を変えずに続行する承認を得た（2026-10-03）。 実測で 8 時間を超えたのは 14 本中 2 本（COCO 折り C 8.56 時間、ImageNet 折り E 8.11 時間）。合計 90.0 GPU 時間。
-- `environment` — efros の cgroup 上限 52 GiB で 2 本を並べると、PyTorch 2.1 の pinned メモリのキャッシュが 1 回の val で 256 MiB × 約 95 塊（約 24 GiB）まで積もり、OOM killer が 2 本とも止めた（oom_kill 3）。P*-20 の設定だけ pin_memory=False にした（logits の要約値は一致）。ホスト差の対照は起動時の設定のまま pin_memory 既定 True で走った。 三周目のスクリプトは cfg.get("pin_memory", True) で既定を変えていない。
-- `environment` — 未完了の run が 5 件残る（metrics.json が空で再開判定は完了と見なさない）。_001_ は対照で、実行者が Bash の run_in_background で起こしたため 30 分の上限で子プロセスごと止まった。_002_ は P*-20 で動画 19 の切れた画像に当たった。 _003_（対照）と _004_（P*-20）は OOM。_006_ は P*-20 で、pinned メモリが積もり次の epoch 境界で OOM になる恐れがあったため 実行者が止めた。失敗したログは消さず .failed1〜.failed3 を付けて退避した。
-- `judgement` — 掃引の駆動を対ごとの投入から GPU ごとの待ち行列に変え、走行中の同一設定と使用中の GPU を避けるようにした。 所要時間が 4.1〜8.6 時間と run ごとに違い、対では GPU が遊ぶため。特徴抽出と時間ヘッドの 13 本は、最後の fine-tune を 待つ間に空いた GPU で runner の run() を直接呼んで先に流した（証跡は同じ形で残る）。
-- `judgement` — 契約が指す entrypoint（train_phase_tower_r50.py / run_stage1_ptower.py）ではなく、三周目の stage1_ptower_r3.py の関数を そのまま呼ぶ薄い入口 stage1_ptower_20.py と、掃引 run_stage1_ptower_20.py、集計 select_stage1_ptower_20.py、manifest build_phase_manifest_p20.py を新設した。三周目のスクリプトには data_setting と pin_memory を設定から読む 2 箇所の変更を 入れた（既定値は三周目の挙動のまま）。
-- `environment` — 追加動画 17〜21 の注釈 CSV 20 件は開始前から未追跡で置かれていた。取り込みの前に利用者の指示で stash に退避し、 Task B で使うため作業ツリーへ未追跡のまま戻した（stash は消していない）。commit はしない。make forbidden-check は これら 20 件を data/ の内側として違反に数え status fail で終わる。それ以外の違反は 0 件。
-- `environment` — 開始時、両 GPU に 34.6 GiB を確保して行列積を回し続ける仮占有プロセスが 2 本あった（2026-09-29 起動）。停止して諮り、 実行者による停止は実行基盤に拒否されたため利用者が止めた。途中で利用者の指示により同じものを再開し、再び利用者が止めた。
-- `judgement` — 試験の開始前の値を作業の最初に測らなかった。分岐の起点 331525e8 の作業木で後から測った（third_party が無い作業木のため tests/test_stage1_dtower_convergence.py を除いて 7 failed / 657 passed / 15 skipped）。作業後の本作業木は 6 failed / 691 passed。6 件はすべて起点でも落ちる既存の失敗（test_engines 1、test_fetch_task 1、test_research_logger 4）。
-
-### 申し送り
-
-- P*-20 と P*-15 の差（val: COCO +0.0454、ImageNet +0.1214。test: COCO +0.1226、ImageNet +0.1222）は efros と ilya をまたぐ比較で、 G2 のホスト差（+0.0696、SD 比 3.7）と同じ大きさである。唯一の同一ホストの点では P*-20 が P*-15 を 0.0301 下回る。 データ量の効果を主張するには、P*-15 を efros で 14 本回して同一ホストで比べる必要がある（2 枚で約 31 時間）。
-- 工程塔の送り手の train と val の差は 4 塔 × 5 折りの 20 件すべてで閾値 3pt を超えた（最小 +0.1254、系統と設定ごとの平均 +0.2521 / +0.2510 / +0.3968 / +0.3449）。conventions#crossfit に従い、Stage 2 の P→D 側の工程塔の送り手にも交差適合を適用する対象である。
-- efros の cgroup 上限は 52 GiB。PyTorch 2.1 の pinned メモリのキャッシュは塊を返さず 1 回の val で約 24 GiB まで積もりうるため、 efros で 2 本並べる GPU 学習は pin_memory=False を既定にするか、上限を確認してから並べる。
-- efros の A6000 は短辺 800・batch 16 で 14.2 フレーム/秒（ilya の約 0.68 倍）。P*-20 の fine-tune は 4.06〜8.56 時間、合計 90.0 GPU 時間。
-
-### 断定できなかったこと
-
-- G2 の差が恒常的なホスト差か seed 一本の揺れかは区別できない。efros の対照は 1 seed しか無い。fine-tune 段階の差（+0.0063）に比べ 時間ヘッドを載せた差（+0.0696）が大きく、時間ヘッドで揺れが増幅された可能性がある。
-- 完了判定 e と g の陽性対照（壊した入力で落ちること）は測っていない。
 

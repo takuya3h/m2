@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（647 件）
+## 未処理（648 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -658,6 +658,7 @@
 - [ ] 2026-10-07 [human] 退避した digest は報告の後に戻すのではなく、規約どおり契約の commit に含める（T-2026-09-21-fleet-sync-outbound-off）
 - [ ] 2026-10-07 [cc] lecun は `urAccepted=3` で、記録の始まりから毎日使用状況を送っていた。中心に続いて二台目である。契約のたびに options 全体を控える運用を続ける（T-2026-09-21-fleet-sync-outbound-off）
 - [ ] 2026-10-07 [human] digest はセッション終了フック（`.claude/hooks/session_end.sh`）が commit の後に書くため、契約のたびに必ず残る。`task_start.sh` の汚れの判定と規約「次の契約と一緒に含める」が衝突し、次の契約が開始できない。起票側で新しい契約として扱う（詳細は result.yaml の followups）（T-2026-09-21-fleet-sync-outbound-off）
+- [ ] 2026-10-07 [cc] **Gate G1: phase0 はクラシックの保護で PR が必須（承認 0 件、enforce_admins=true）のため、Actions からの直接 push はできない。利用者が「自動 PR 型」を選んだ。** 生成物を固定の分岐へ push し、PR は既存の AUTOSYNC_PR_TOKEN で作る。人の操作は PR の統合だけになる（tasks/T-2026-10-07-auto-regen-projections/audit.md §2）
 - [ ] 2026-10-07 [cc] **起動前の未追跡に stage1_ptower_20.log（0 バイト）があり、利用者に諮って「走行と無関係を確かめて退避」の回答を得た。** ~/slocal2/m2_stash/20261007-042417/ にある（T-2026-10-07-design-val-subset-balance）
 - [ ] 2026-10-07 [cc] **efros の data/annotations/egosurgery_phase/ に追加動画 17〜21 の未追跡 CSV 20 件があり、glob で読む a1_fold_table.py は 20 動画を読んで IndexError で止まる。** 同じ内容が data/raw/…/annotations/phase/ と ~/slocal2/EgoSurgery/annotations/coco_format/phase/ に在る。置き場は利用者が決める（tasks/T-2026-10-07-design-val-subset-balance/audit.md §2）
 - [ ] 2026-10-07 [cc] **Gate G2: 注釈のディレクトリを丸ごと読む 7 月の監査と EDA の 8 本（hts_phase_coverage のプロジェクト側、analyze_annotations 3 本、audit 系 4 本）は「直さず表に残す」と利用者が回答した。** 再実行すると 17〜21 が入り値が変わる（docs/stage1/extra_phase_annotations.md）
