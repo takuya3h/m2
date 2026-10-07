@@ -1297,6 +1297,14 @@ exp 契約 13 件すべてを FAIL にしていた**（prereg に対称性の表
 新しい型の欠陥が `context/auto/followups.md` の集計表から黙って落ちる。**
 一致は試験で縛ってある。
 
+### 生成物の自動 PR の自動の統合（2026-10-07、philip）
+
+`T-2026-10-07-auto-merge-regen-pr`（GPU 不使用）。
+
+- `regen-projections.yml` に統合の段を足した。三条件（作成元が `auto/regen-projections`、基点が phase0 の先頭、差分が生成物だけ）を統合の直前に読み直す。満たせば `GITHUB_TOKEN` で merge commit を作る。満たさなければ統合せず、失敗で終える
+- 差分が無いときは、開いたままの自動 PR を閉じる。PAT の失敗は「未設定」と「無効」で文言を分ける
+- **人の操作は不要になる見込み。** ただし `GITHUB_TOKEN` で実際に統合できるかは、統合後の実測で判定する（`tasks/T-2026-10-07-auto-merge-regen-pr/RESULT.md` §4）
+
 ### 生成物の自動の作り直し（2026-10-07、philip）
 
 `T-2026-10-07-auto-regen-projections`（GPU 不使用）。
