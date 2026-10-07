@@ -1,0 +1,74 @@
+result_version: 3
+task_id: "T-2026-10-07-pause-release-tool-digest-relocate"
+status: pass
+host: "philip"
+branch: "feat/pause-release-tool-digest-relocate"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "m2-sync.sh:44 は [ -f \"$M2DIR/.sync-pause\" ] で実在だけを見て、目印を開く処理は 0 件。keeper.sh は目印を参照しない。開始時は作業ツリー 1 件（取り込んだ契約）、HEAD=origin/phase0=c3ca48e3、目印 0 バイト、追跡済み抽出物 48 件、失敗の名前 8 件を記録した"
+  - id: G2
+    verdict: pass
+    note: "隔離した場で 39 件。前提を満たす場では RELEASED で外れた。前提の欠け 6 通り・照会の失敗 2 通り・所有者違いと読めない 6 通り・位置違い・中止の理由なし 3 通りのいずれでも外れなかった。所有者・前提・位置・理由・照会の判定をそれぞれ壊すと 4・11・1・3・3 件の試験が落ちた"
+  - id: G3
+    verdict: pass
+    note: "旧い置き場に同名があれば作り直さない。このホストの記録 2 件では、書き出し 0 件、作り直さなかったもの 1 件、中身なし 1 件。旧い置き場が無い root では 1 件書き出された。判定を壊すと 2 件の試験が落ちた"
+
+tests:
+  before_failed: 8
+  after_failed: 8
+  after_passed: 725
+
+deviations:
+  - {type: spec_defect, note: "Task F の 6 は解除を送出の後に置き git の操作を禁じるが、判定 g は実物の目印の陰性対照を報告に求める。外さない操作である陰性対照を commit の前に取り、解除だけを最後に回した"}
+  - {type: judgement, note: "道具を Python（標準ライブラリだけ）で scripts/task_release.py に置いた。試験から関数として呼べ、gh の JSON を読めるため"}
+  - {type: judgement, note: "走査の抽出済みの判定は、旧い置き場の名前の有無だけを見て内容は比べない。旧い書式の抽出物を未抽出と取り違えて過去分を一斉に書き出さないため。移す前のセッションが移した後に続いた分は書き出されない"}
+  - {type: environment, note: "試験全体は収集のエラー 2 件で中断するため、開始前と変更後の両方を --continue-on-collection-errors で回し、失敗とエラーの名前の集合を比べた"}
+
+issuer_defects:
+  - type: self_contradiction
+    note: "§4 Task F の 6 は抑止の解除を送出の後に置き、その後の git の操作を禁じる。一方で完了判定 g は実物の目印に対する陰性対照を報告に含めることを求める。書かれた順に実行すると、陰性対照の結果は commit された報告に入らない"
+
+positive_controls:
+  - judgement: "所有の記録（a）"
+    breaking_input: "変更前の task_start.sh を同じ試験にかける"
+    observed: "test_new_marker_records_owner だけが落ち、既存の振る舞いの 7 件は通った"
+  - judgement: "完了の前提（d）"
+    breaking_input: "check_prerequisites を常に満たす形に壊す"
+    observed: "11 件の試験が落ちた"
+  - judgement: "所有者（g）"
+    breaking_input: "所有者の検査を外す"
+    observed: "4 件の試験が落ちた。実物の 0 バイトの目印には OWNER_UNREADABLE（21）を返し、外さなかった"
+  - judgement: "位置（h）"
+    breaking_input: "位置の検査を外す"
+    observed: "1 件の試験が落ちた"
+  - judgement: "確かめられない（e）"
+    breaking_input: "照会の失敗を欠けとして扱う形に壊す"
+    observed: "3 件の試験が落ちた"
+  - judgement: "中止の理由（f）"
+    breaking_input: "理由の必須を外す"
+    observed: "3 件の試験が落ちた"
+  - judgement: "副作用（k）"
+    breaking_input: "道具の前後のあいだに分岐を一つ足す"
+    observed: "要約値に差が出た"
+  - judgement: "抽出物の置き場の無視（l）"
+    breaking_input: "置き場の外の docs/sessions/2099-01-01-elsewhere.md"
+    observed: "git check-ignore は exit 1 で、汚れに数えられる"
+  - judgement: "走査が作り直さない（m）"
+    breaking_input: "旧い置き場を見ない形に壊す／旧い置き場から同名を消す"
+    observed: "2 件の試験が落ちた。同名を消した場では 1 件が書き出された"
+
+followups:
+  - "SKILL.md の改訂契約では、解除を make task-release TASK=<id> END=complete（中止は END=abort REASON=...）に置き換え、状態表示で判定する。git add docs/sessions/digest/ の指示が残っていれば消す"
+  - "本契約より前の task_start.sh が置いた目印（中身なし）は OWNER_UNREADABLE で外れない。移行期は手で外す"
+  - "移す前のセッションが移した後も続いた場合、その続きは新しい置き場に書き出されない（名前で抽出済みと判定するため）"
+  - "make docs-check（docs/proposal-gate.md:41）と make agent-check（docs/experiment_settings.md:155）は、本契約で触れていないファイルで落ちる"
+
+unknowns:
+  - "共有フォルダが無いホストと .servername が無いホストでの実機の動作（試験の場では確かめた）"
+  - "終了フックが新しい置き場へ書くことの実機での確認（本セッションの終了時に初めて起きる）"
+
+commits: []

@@ -226,13 +226,17 @@ package.json
 .servername
 
 # === 対話の生記録は版管理へ入れない ===
-# 秘匿情報が混入しうるため。抽出物（docs/sessions/digest/）のみを追跡する。
-# 生の記録は各実装系の既定の保存先（~/.claude/projects/ など repo 外）に残る。
+# 秘匿情報が混入しうるため。生の記録は各実装系の既定の保存先（~/.claude/projects/ など repo 外）に残る。
 #
 # 🔴 repo 全体の `*.jsonl` は書かない。`.jsonl` は本 repo で現に使われている
 #    データ形式であり（experiments/**/logs/val_metrics.jsonl）、広く除外すると
 #    将来追跡すべき jsonl を静かに取りこぼす。backlog B-28 と同型の危険である。
 docs/sessions/raw/
+# 抽出物も 2026-10-07 から版管理へ入れない。出力先は共有フォルダ ~/claude-sync/session-digest/<ホスト名>/。
+# 旧い置き場に各ホストが残した未追跡の抽出物を、作業ツリーの汚れとして数えないために足した。
+# **追跡済みの 48 件は追跡のまま残る**（無視は未追跡にだけ効く）。
+# 出所: T-2026-10-07-pause-release-tool-digest-relocate
+docs/sessions/digest/
 
 # === 常駐同期の一時停止マーカー ===
 # 契約の実行中だけ置き、終わったら消す（scripts/sync/m2-sync.sh が読む）。

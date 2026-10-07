@@ -142,7 +142,9 @@ main() {
 
     # --- 8. 同期の抑止を置く ---------------------------------------------
     if [ "${created_pause}" -eq 1 ]; then
-        touch "${PAUSE_MARKER}"
+        # 中身は所有の記録。scripts/task_release.py が読み、この契約の目印だけを外す。
+        # m2-sync.sh は実在だけを見るため、中身を書いても抑止の挙動は変わらない。
+        printf 'task_id=%s\nbranch=%s\n' "${task_id}" "${branch}" > "${PAUSE_MARKER}"
         printf '[task-start] %s を作成（報告まで終えたら rm -f %s）\n' "${PAUSE_MARKER}" "${PAUSE_MARKER}"
     else
         printf '[task-start] %s は実行前から存在するため触れません\n' "${PAUSE_MARKER}"
