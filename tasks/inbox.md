@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（641 件）
+## 未処理（647 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -652,6 +652,12 @@
 - [ ] 2026-10-05 [cc] **面積を揃えた遮蔽の対照は、手と枠の外では無関係な位置がほとんど取れない**（重なり 5% 超で除外: 手 4254/5748、枠の外 5060/5784）。対照の作り方は後続の契約の起票時に決める必要がある（experiments/analysis/ptower_attribution/REPORT.md §3）
 - [ ] 2026-10-05 [cc] **make forbidden-check は BASE を省くと origin/phase0 の先端と比べるため、分岐の後に入った他の PR の差を違反に数える。** 今回は BASE=分岐点で回した。手順書か道具の修正が要る（tools/check_forbidden.py）
 - [ ] 2026-10-05 [cc] 大きな中間物 362,866,001 バイトが dlsta の /home/ubuntu/local/ptower_attribution_20261005/ に残る。消すかは利用者の判断（T-2026-10-04-ptower-attribution-val）
+- [ ] 2026-10-07 [cc] 中心から六台へは手元の鍵 `id_ed25519_aolab` で入る。転送には依存しない（agent の経路を断って実測）。今後の遠隔操作の契約はこれを前提にしてよい（T-2026-09-21-fleet-sync-outbound-off）
+- [ ] 2026-10-07 [cc] auto mode の実行基盤は、ノードの画面の鍵を読む操作を実行者に許さない。鍵を使う命令は利用者が `!` で実行し、実行者は照合だけをする分担で進めた（T-2026-09-21-fleet-sync-outbound-off）
+- [ ] 2026-10-07 [human] `.sync-pause` は手で置かず、`task_start.sh` に任せる。SPEC の手動 touch は起票者の誤りとして扱う（T-2026-09-21-fleet-sync-outbound-off）
+- [ ] 2026-10-07 [human] 退避した digest は報告の後に戻すのではなく、規約どおり契約の commit に含める（T-2026-09-21-fleet-sync-outbound-off）
+- [ ] 2026-10-07 [cc] lecun は `urAccepted=3` で、記録の始まりから毎日使用状況を送っていた。中心に続いて二台目である。契約のたびに options 全体を控える運用を続ける（T-2026-09-21-fleet-sync-outbound-off）
+- [ ] 2026-10-07 [human] digest はセッション終了フック（`.claude/hooks/session_end.sh`）が commit の後に書くため、契約のたびに必ず残る。`task_start.sh` の汚れの判定と規約「次の契約と一緒に含める」が衝突し、次の契約が開始できない。起票側で新しい契約として扱う（詳細は result.yaml の followups）（T-2026-09-21-fleet-sync-outbound-off）
 - [ ] 2026-10-07 [cc] **起動前の未追跡に stage1_ptower_20.log（0 バイト）があり、利用者に諮って「走行と無関係を確かめて退避」の回答を得た。** ~/slocal2/m2_stash/20261007-042417/ にある（T-2026-10-07-design-val-subset-balance）
 - [ ] 2026-10-07 [cc] **efros の data/annotations/egosurgery_phase/ に追加動画 17〜21 の未追跡 CSV 20 件があり、glob で読む a1_fold_table.py は 20 動画を読んで IndexError で止まる。** 同じ内容が data/raw/…/annotations/phase/ と ~/slocal2/EgoSurgery/annotations/coco_format/phase/ に在る。置き場は利用者が決める（tasks/T-2026-10-07-design-val-subset-balance/audit.md §2）
 - [ ] 2026-10-07 [cc] **Gate G2: 注釈のディレクトリを丸ごと読む 7 月の監査と EDA の 8 本（hts_phase_coverage のプロジェクト側、analyze_annotations 3 本、audit 系 4 本）は「直さず表に残す」と利用者が回答した。** 再実行すると 17〜21 が入り値が変わる（docs/stage1/extra_phase_annotations.md）

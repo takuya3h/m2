@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（576 件）
+## 申し送り（588 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -847,6 +847,21 @@
 - conventions#proposal_gate の共有相手の属性名について、SPEC の記述（id）と稼働中の REST の実在名 （deviceID）が食い違う。同じ誤りが次の受け入れ契約でも起きるため、config.xml の表現と REST の 表現を分けて書くよう起票側の雛形を直すとよい。
 - tests/test_estimate_tier_cost.py の収集エラーは本契約より前から在る。site-packages の tools が repo の tools/ を覆う問題で、別契約で扱うこと。
 
+### T-2026-09-21-fleet-sync-outbound-off
+
+- 使用状況の日次送信が lecun で止まったかを確かめていない。直近の送信は 2026-10-07 06:06:50 JST （記録の原文では 2026-10-06 21:06:50 UTC）。2026-10-08 06:06 JST ごろを過ぎてから、 lecun で grep -c 'Sent usage report' ~/.syncthing.log を見ること。変更時点の件数は 44。
+- 障害報告は六台とも痕跡が元から 0 件のため、「止まった」とは言えない。設定が false になったことだけが事実である。
+- lecun の urAccepted が 3 だった経緯が UNKNOWN である。中心は前契約で 0 から 3 への変化が見つかった。 二台で起きているので、設定を書き換えうる経路（配布・手作業・同期処理の既定値）を調べること。
+- ilya の OS 名は aolab、dlsta の OS 名は 4f3861ae8d3b で、別名と食い違う。中心の OS 名も aolab なので、 OS 名でホストを同定する検査（P9 host_mismatch など）は、ilya と中心を区別できない。
+- tests/test_stage1_dtower_convergence.py が収集の段階で落ちる。third_party/Relation-DETR/util/convergence.py が 本体に無い。tests/test_estimate_tier_cost.py も前契約から引き続き落ちている。
+- 投影（context/auto/）と集約結果（tasks/inbox.md）が本契約を反映していない。禁止 7 により再生成していないため。 生成物の再生成を許す契約で make taskindex と make inbox を回すこと。
+- ノードの画面の鍵を使う操作は、auto mode の実行基盤が実行者に許さない。六台以上へ同じ変更を当てる契約では、 利用者が ! で実行する前提を SPEC に書くか、実行モードを事前に指定すること。
+- 【起票依頼・新契約】digest がセッション終了時に生成されるため、契約を終えるたびに作業ツリーに必ず残り、 次の契約の task-start が止まる。構造的な欠陥である（利用者の指摘を受けて実装を読み、確かめた）。 生成の経路: .claude/settings.json の SessionEnd フック → .claude/hooks/session_end.sh → tools/session_digest.py。経路は 2 本ある。(1) --from-hook は、終わったセッションの抽出物を docs/sessions/digest/<日付>-<session_id>.md へ無条件に書く（同一内容かの確認は無い）。 (2) --sweep-codex は ~/.codex/sessions/**/rollout-*.jsonl を走査し、内容が違うものだけを書く。 2 本目は Codex のセッションでも、Claude Code のセッション終了のたびに走る。
+- （digest 欠陥の続き）なぜ毎回起きるか: 契約の commit はセッションの内側で行う。 そのセッションの抽出物は、終了フックが走る commit の後にしか現れない。原理的に避けられない。 現れ方は 2 通りある。(a) 新しいファイルは未追跡として残る。(b) 既に commit した digest は、 同じ session_id のセッションが続いて終わったとき上書きされ、変更ありとして残る。 本契約で commit した 2026-10-07-b1846250-….md は (b) に当たり、このセッションの終了で再び汚れる見込み （未測定。終了後に git status で確かめること）。
+- （digest 欠陥の続き）衝突する 2 つの規則: tasks/README.md と docs/sessions/README.md は 「抽出物は次の契約の記録と一緒に含める」と定める。scripts/task_start.sh の 4 番目の検査 （git status --porcelain の件数が 0 以外なら die 3）は、未追跡も変更も区別せずに止める。 規約どおりに運用すると、次の契約は必ず開始できない。また、自動同期（scripts/sync/m2-sync.sh）は digest を commit しない。git merge --ff-only は、内容が同一でも未追跡ファイルの上書きを拒否する（B-30）。 このため、放置すれば自動統合も止まる。
+- （digest 欠陥の続き）実測の件数: 前契約 T-2026-09-21-philip-sync-outbound-off では、開始前に未追跡が 4 件あった （digest 3 件 ＋ .sync-pause.released）。本契約では、開始前に digest 3 件、作業中にさらに 2 件 （Codex の rollout 由来 2026-10-07-02-45-42-01a11440-….md と、セッションを開き直したときの本セッション前半の 2026-10-07-b1846250-….md）が現れた。どちらの契約も、利用者が退避を承認してから開始した。
+- （digest 欠陥の続き）直し方の案（実行者の見立て。未実装）。 A（推奨）: task_start.sh の汚れの判定から docs/sessions/digest/ を除く。未追跡も変更も対象にする。 分岐を切り替えても未追跡と未 commit の変更は作業ツリーに残るので、新しい契約の commit に含めれば規約どおりになる。 除いた件数は表示して、黙って通さない。 B: フックの書き込み先を無視対象の一時置き場（例 docs/sessions/digest/.pending/）に変え、 task_start.sh が分岐を作った後に正規の場所へ移す。作業ツリーは常にきれいになるが、部品が増える。 C: m2-sync.sh が digest を自動で commit する。契約の分岐へ実行者の知らない commit が入り、 .sync-pause の考え方と衝突するので勧めない。 検証の要件: 未追跡の digest が在る状態、および commit 済みの digest が変更された状態で、task-start が exit 0 になり、それ以外の未追跡（例 tasks/ 配下）が在れば従来どおり exit 3 になること。 両方向の陽性対照をつける。tests/ に task_start.sh の試験は現在無い（2026-10-07 実測）ので、新たに置くこと。
+
 ### T-2026-09-21-m2dir-local
 
 - P9 spec_lint の separated_source は行継続を扱えない。SPEC.md:51 の source .venv/bin/activate && source scripts/load_env.sh \ と次行の && make task-start は シェルでは一命令だが、検査器は行で切って「読み込みが単独の命令で終わる」と判定した。 本セッションで実際に一命令として実行し成功している。行継続を連結してから判定するか、 次行が && で始まる場合を除くかの判断が要る（tools/check_agent_docs.py の check_text）。
@@ -920,7 +935,7 @@
 - context/conventions.md#folds は追加動画を 17〜22 の 6 本と書くが、追跡したのは 17〜21 の注釈だけ。動画 22 の注釈は data/raw にだけ在る
 - make agent-check の既存の失敗（docs/experiment_settings.md:155）は本契約でも未対応
 
-## 断定できなかった事項（370 件）
+## 断定できなかった事項（373 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1558,6 +1573,12 @@
 - ~/.ssh/ の authorized_keys 以外のものの無変更は、開始時の要約値を取っていないため mtime で示した。 要約値による照合ではない。最新でも 2026-09-20 13:52 で本セッション開始（16:39）より前であり、 触れる命令を一つも発していないことと合わせての判断である。
 - ~/bin/m2-sync.sh の mtime が 2026-09-20 17:33:10 と本セッション中である。keeper が毎ループ origin/phase0 から自己更新する設計によるもので、実行者の操作ではない。sync-pause 対応は 2 のまま。
 
+### T-2026-09-21-fleet-sync-outbound-off
+
+- lecun の使用状況の日次送信が止まったか（周期 24 時間を越えて待てなかった）
+- 障害報告が止まったか（六台とも痕跡が元から 0 件）
+- lecun の urAccepted が 3 だった経緯
+
 ### T-2026-09-21-m2dir-local
 
 - 他の台に ~/local/m2 が在るかは測っていない。他ホストへの接続は禁止 2 に当たるためである。 在っても既存の候補が先に当たることを隔離した家で示したため、判断には不要である。
@@ -1604,7 +1625,7 @@
 - 折り E の記録の val 主指標の再現（記録が 07 と 15 の合算しか持たない）
 - 読み d（動画の術式が学習動画と違う）。術式の情報を測っていない
 
-## 起票者の誤りの型（347 件）
+## 起票者の誤りの型（349 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
@@ -1612,10 +1633,10 @@
 |---|---:|
 | `check_does_not_check` | 92 |
 | `asserted_without_measuring` | 144 |
-| `self_contradiction` | 91 |
+| `self_contradiction` | 93 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 0 |
 | `rule_read_narrowly` | 1 |
 
-合計 347 件（対を持つ契約 114 件から）
+合計 349 件（対を持つ契約 115 件から）
 
