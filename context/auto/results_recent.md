@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 116 件）。
-ここに出ない 111 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 117 件）。
+ここに出ない 112 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-10-07-track-extra-phase-annotations
 
@@ -123,6 +123,39 @@
 - workflow の書式の検査（actionlint・yamllint が無い。GitHub が解釈して実行できたことだけは確かめた）
 - 登録されている Actions の秘匿の名前の一覧（gh secret list が拒否された）
 
+## T-2026-10-07-auto-merge-regen-pr
+
+状態 `pass` / ホスト `philip` / 起票 `212` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — phase0 の保護を読んだ。必須の状態検査は無く、承認 0 件、迂回の許可と push の制限も無く、enforce_admins=true。方式は 3 種すべて許可され、直近 30 件の PR はすべて merge commit だった。統合は Contents の write、閉じるのは Pull requests の write（文書）。GITHUB_TOKEN が起こす push は新しい実行を作らない（文書）。GITHUB_TOKEN で実際に統合できるかは UNKNOWN で、統合後の実測で判定する
+- `G2` pass — 偽の origin と状態を持つ偽の gh で 6 通りを試した。生成物だけの差分では統合が 1 回呼ばれ、生成物以外・基点が古い・fork・別の分岐・先頭の食い違いでは 0 回で exit 1。差分なしで PR が無ければ何もせず、PR が開いていれば fork を除いて閉じた。条件 1・2・3 を常に通す版に壊すと場合 2・3・4b で統合が呼ばれ、試験が壊れ方を検出することを確かめた
+
+### 起票者の誤り
+
+- `check_does_not_check` — 試験の場合「作成元の分岐が違う」は、書かれたとおりに別の分岐から PR を作ると、gh pr list --head auto/regen-projections の絞り込みで一覧に出ない。統合が呼ばれないのは一覧のためで条件 3 は試されない。fork と、一覧と詳細の食い違いとして 4a・4b・4c で試し直した
+
+### 逸脱
+
+- `judgement` — 生成物の一覧を、作り直しの段の局所変数から job の env へ移した。統合の条件と同じ一覧を見せるためで、作り直しの挙動は変わらない（場合 1・5 で確認）
+- `judgement` — 契約の三条件に加え、PR の先頭の oid が分岐の先頭と一致することと、統合の時点での --match-head-commit を足した。読み直しの間に分岐が動いたとき別の中身を統合しないため
+- `environment` — CLAUDE.md の方針にある ctxpack がホストに無く、GitHub の文書は WebFetch で読んだ
+- `judgement` — 試験を開始前に測らなかった。Python は変えていないため、開始後に測った tests/test_build_taskindex.py と tests/test_build_inbox.py の 23 件 pass を開始前の値とみなした
+
+### 申し送り
+
+- GITHUB_TOKEN で実際に統合できるか、閉じられるかは統合後に判定する。できなければ統合の段が ::error:: で失敗し、自動 PR は開いたまま残る（人が統合すれば従来どおり収束する）
+- GITHUB_TOKEN による統合は新しい実行を作らない仕様のため、自動の統合の後に regen-projections は走らない。統合後の木は作り直した木と同じなので、走らないことによる取り残しは無い見込み
+- 基点が古いときは失敗で終える（契約どおり）。phase0 を進めた push が別の実行を起こすため、次の実行が最新から作り直して統合する。失敗の記録が一件残る
+
+### 断定できなかったこと
+
+- GITHUB_TOKEN で phase0 への PR を統合できるか（保護の PR 必須・enforce_admins との関係）
+- GITHUB_TOKEN で PR を閉じられるか
+- 自動の統合が次の workflow を起こさないか（文書ではそうなっているが、実測していない）
+- workflow の書式の検査（actionlint・yamllint が無い）
+
 ## T-2026-10-04-ptower-attribution-val
 
 状態 `pass` / ホスト `dlsta` / 起票 `201` / 様式 `v3`
@@ -162,44 +195,4 @@
 
 - 折り E の記録の val 主指標の再現（記録が 07 と 15 の合算しか持たない）
 - 読み d（動画の術式が学習動画と違う）。術式の情報を測っていない
-
-## T-2026-09-27-stage2-prep
-
-状態 `pass` / ホスト `aolab` / 起票 `198` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 規約の 9 クラスを注釈の categories 15 件と完全一致で照合し 9/9 一致。全 5 折り × 3 分割でクラス名一覧は同一。per_class_ap のキーも同じ 15 件
-- `G2` pass — tools/check_proposal.py docs/proposals/2026-09-27-ptower-20.md が検出 0 件（禁止語 15 語 / カード 16 件、数値必須 #5 #6 #10）、exit 0
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — SPEC §2 の「P→D の W1 界面 run 約 3.6 h（TF32）」に出所が無い。repo の実測は C2 §4 の 3.7406 h で 4.00/1.182=3.38 h とも合わない。指示どおり使うと実測の無い値が実測の行に入るため、計算器の W1 は単精度 4.00 h のまま残した
-- `asserted_without_measuring` — SPEC §2 は 9 月 17 日の 74.0〜98.7 日を計算器の出力として書くが、計算器は TF32 を一度も持たず、C2 §5 が計算器の外で 1/1.182 を当てた値だった。計算器の前提の差だけを探すと差の最大要因（TF32、+13.5〜+18.0 日）を見落とす
-- `self_contradiction` — 禁止事項 1「既存の規約の節の本文を変えない」と Task B-2「変更履歴に本契約の行」が両立しない。変更履歴表は naming 節のアンカーの範囲にあり、指示どおり行を足すと naming 節の本文が 1 行変わる。Task B-2 を優先し差がその 1 行だけであることを実測した
-
-### 逸脱
-
-- `judgement` — 開始時の未追跡 session digest 4 件を利用者の指示により git stash で退避した（Task A-1 は移動での退避）。stash@{0}、戻し方は git stash pop
-- `spec_defect` — 変更履歴表が naming 節の範囲にあるため、履歴への 1 行追加で naming 節の本文が 1 行変わった。他の 10 節は末尾空白を除き同一
-- `judgement` — allow_write 外の scripts/build_stage1_group_ap.py、tests/test_estimate_tier_cost.py、README.md、本契約の spec.yaml（占位の差し替え）へ書いた。禁止領域ではなく forbidden-check は pass
-- `judgement` — 計算器に --doc-sections と Assumptions.hours_override を足した。B2 の部分照合と 9/17 の前提の再現のため。既定の挙動は不変
-- `judgement` — B1 §7 の地の文を直した。交差適合の追加で 24h/日・縮退なしの IPCAI long abstract の判定が収まるから読みにより分かれるへ変わったため
-- `judgement` — 締切 2027-02 下旬を 02-25 とした（B1 の下旬 = 25 日と同じ読み）
-- `environment` — このホストに third_party/Relation-DETR/util/convergence.py が無く試験 1 件が収集エラー。--continue-on-collection-errors で回した。変更前後で同一
-
-### 申し送り
-
-- P*-20 の契約（T-2026-09-27-stage1-ptower-20）は本契約の PR の統合後に起動する。カードは docs/proposals/2026-09-27-ptower-20.md
-- カード #1 の問いが yes/no の一文になっていない（内容を変えない指示のためそのまま）。check_proposal.py は検出しない
-- 規約の変更履歴表が naming 節の範囲にある。改訂のたびに既存節の不変と衝突する
-- TF32 の採用は未決。計算器には入っていない（採用すれば Tier 1 の検出側が約 1/1.17〜1/1.18）
-- 計算器の行ラベル「受け取りは P*-21」は P*-20 になった（数値に影響なし、未修正）
-
-### 断定できなかったこと
-
-- 交差適合の送り手（train の半分）の学習時間。全量の実測を上限に置いた
-- 工程塔の fine-tune の A6000 での時間。ilya（RTX 6000 Ada）の値を使った
-- 工程塔の送り手の train−val 差。T-2026-09-27-stage1-ptower-20 で測る
-- MICCAI 2027 の締切（公式未発表）
 
