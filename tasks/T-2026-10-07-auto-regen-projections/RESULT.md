@@ -1,6 +1,6 @@
 # RESULT — T-2026-10-07-auto-regen-projections
 
-**判定: partial。** 仕組みは作った。ただし契約の形（Actions が phase0 へ直接 push する）ではなく、**利用者が G1 で選んだ「自動 PR 型」**で作った。phase0 の保護が直接 push を許さないためである。統合後の動作は未確認で、確かめ方は §4 に書いた。
+**判定: partial。** 仕組みは作った。ただし契約の形（Actions が phase0 へ直接 push する）ではなく、**利用者が G1 で選んだ「自動 PR 型」**で作った。phase0 の保護が直接 push を許さないためである。**統合後の動作は Actions で確かめた**（§4a）。初回は PR 作成の段が失効した PAT で失敗し、利用者が再発行した後に通った。
 ホスト `philip`（`hostname` は `aolab`）、分岐 `feat/auto-regen-projections`、起点 `origin/phase0` = `b911810b`。実施日時は 2026-10-07 JST。証跡は `audit.md` にある。
 
 ## 1. 解決された参照
@@ -14,7 +14,7 @@
 | # | 前提 | 結果 |
 |---|---|---|
 | 1 | phase0 の保護 | **直接 push 不可。** クラシックの保護で PR が必須（承認 0 件）、`enforce_admins: true`。ルールセットは無い。Actions の既定権限は `read` で、`can_approve_pull_request_reviews: false`（`GITHUB_TOKEN` では PR を作れない） |
-| 2 | 生成の依存 | 標準ライブラリと PyYAML だけ。Makefile が `.venv/bin/python` を直に呼ぶため、Actions で `.venv` を作る。最小構成での実測は UNKNOWN（PyYAML がキャッシュに無かった） |
+| 2 | 生成の依存 | 標準ライブラリと PyYAML だけ。Makefile が `.venv/bin/python` を直に呼ぶため、Actions で `.venv` を作る。手元では最小構成を測れなかった（PyYAML がキャッシュに無かった）。**Actions の新しい venv に PyYAML だけを入れた状態で生成が通った**（§4a） |
 | 2' | 読む範囲・書くファイル | 版管理の中で閉じている。書くのは 4 ファイルだけ（`find -newer` で実測） |
 | 2'' | 出力の決定性 | **同じ入力で同じ出力になった。** 4 ファイルの sha256 が HEAD、別の作業ディレクトリ、`LC_ALL=C TZ=UTC`、`PYTHONHASHSEED` を 1・2・123 にした場合のすべてで一致した |
 | 3 | 既存の workflow | `auto-draft-pr.yml` だけ。契機は `exp/**` で phase0 と重ならない。秘匿の名前は `AUTOSYNC_PR_TOKEN` |
@@ -53,6 +53,17 @@
 | 自己起動していないか | 自動 PR を統合した後、`regen-projections` の実行が一件だけ増えて「差分なし」で終わること。`auto/regen-projections` への push で実行が増えていないこと |
 | 失敗したとき | Actions の画面で `regen-projections` の失敗した段を見る。`::error::` の文言は 3 種ある。生成物以外の差分、push に二度失敗、`AUTOSYNC_PR_TOKEN` が未設定。PAT が失効していれば `gh pr` の段が 401 になる |
 
+### 4a. 統合後の実測（2026-10-07 JST）
+
+| 確かめること | 結果 |
+|---|---|
+| 起動したか | #208 の統合（`7e42db12`）で run `37585603466` が 16:09 に起動した |
+| 何をしたか | 生成と `auto/regen-projections` への push は成功した。**PR 作成の段は `HTTP 401: Bad credentials` で失敗した** |
+| 原因 | `AUTOSYNC_PR_TOKEN` の失効である。`auto-draft-pr.yml` も 2026-08-16 11:54 から「設定されているが無効」で失敗し続けていた。利用者が PAT を再発行して秘匿を更新した |
+| 再実行 | `gh run rerun --failed` の試行 2 は success で、PR #209 ができた。中身は 1 commit、生成物 4 ファイルだけ（+61 −51）、起点は phase0 の先頭 |
+| 自己起動していないか | #209 の統合（`1eb6364a`）で run `37588790526` が 16:40 に起動し、「差分なし。何もしない」で終わった。run は計 2 件で、auto 分岐への push では起動していない。開いた自動 PR は 0 件 |
+| 生成物 | 統合後の phase0 を書き出して検査した。`taskindex-check` と `inbox-check` はどちらも exit 0 |
+
 ## 5. 手元の試験（完了判定 F・G、G2: pass）
 
 偽の origin（bare リポジトリ）を scratchpad に作り、workflow の `run` 部分を取り出して同じ順で実行した。`gh` は呼び出しを記録するだけの偽物に差し替えた。
@@ -72,7 +83,8 @@
 
 - 禁止語と秘匿の検査: §8 を参照。
 - 初回の push は exit 1。`workflow` 権限が無いため拒否された。迂回せず利用者へ提示し、利用者が `gh auth refresh -s workflow` で権限を付与した。同じ commit `c110278f` を再送して exit 0。
-- PR: **#208**（`feat/auto-regen-projections` → `phase0`）。台帳への送り返しは `make task-report` の終了コードで記録する。
+- PR: **#208**（`feat/auto-regen-projections` → `phase0`、統合済み）。台帳への送り返しは exit 0。
+- 統合後の記録は追記用の分岐 `feat/auto-regen-projections-postmerge` から別の PR で送り、台帳へ送り直した。
 
 ## 7. 起票者の誤り
 
@@ -94,4 +106,6 @@
 - **想定外。** `make inbox-check` は exit 2 になる。本契約で `tasks/inbox.d/` に 1 行を足したためで、禁止 3 により再生成しない。統合後に仕組みが直す。
 - **申し送り（Step 3、完了判定 H）。** PR の分岐では生成物が古いままで、`taskindex-check` と `inbox-check` が差分を報告し続ける。案は二つある。(a) 契約の検証から `*-check` を外し、phase0 の上での検査に限る。(b) 契約の分岐では「差分あり」を WARN 扱いにする。本契約では検査を変えていない。
 - **申し送り。** 差分が無くなったとき、開いたままの自動 PR を閉じる処理は入れていない。人が手で作り直した場合などに、空の PR が残りうる。
-- UNKNOWN: Actions 上での実際の動作、PyYAML だけの最小構成での動作、書式の検査。
+- **逸脱（判断）。** Phase A で `AUTOSYNC_PR_TOKEN` の名前だけを記録し、有効かを確かめなかった。`auto-draft-pr.yml` の run 履歴を見れば、値を読まずに失効が分かった。
+- **申し送り。** PR 作成の段は 401 を受けても `gh` の出力をそのまま出すだけで、「未設定」と「無効」を言い分けない。
+- UNKNOWN: 書式の検査（actionlint・yamllint が無い。GitHub が解釈して実行できたことだけは確かめた）。
