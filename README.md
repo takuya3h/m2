@@ -1297,6 +1297,16 @@ exp 契約 13 件すべてを FAIL にしていた**（prereg に対称性の表
 新しい型の欠陥が `context/auto/followups.md` の集計表から黙って落ちる。**
 一致は試験で縛ってある。
 
+### 追加動画 17〜21 の工程の注釈の追跡（2026-10-07、efros）
+
+`T-2026-10-07-track-extra-phase-annotations`（GPU 不使用）。
+
+- `data/annotations/egosurgery_phase/` の追加動画 17〜21 の CSV 20 件（210618 バイト）を今の場所のまま版管理に入れた。
+  動画 22 は含まない。一覧・要約値と、同じ経路に未追跡の写しを持つホストでの手順は `docs/stage1/extra_phase_annotations.md`
+- `scripts/analysis/a1_fold_table.py` — `load_phase` に `videos` を足し、`main` が公式分割の 15 動画を渡す。
+  20 件が在っても止まらず、表の要約値は折り表の契約の記録と一致する
+- このディレクトリを丸ごと読む 7 月の監査と EDA の 8 本は変えていない。再実行すると 17〜21 が入り値が変わる（同文書の表）
+
 ### 設計に使う val 動画の部分集合の全数列挙（2026-10-07、efros）
 
 `T-2026-10-07-design-val-subset-balance`（GPU 不使用）。ラベルの統計だけを読み、モデルの出力と評価値は読まない。
@@ -1307,6 +1317,7 @@ exp 契約 13 件すべてを FAIL にしていた**（prereg に対称性の表
   `docs/stage1/design_val_subsets.{csv,md}` を書く。集合は選ばない
 - 注意: `data/annotations/egosurgery_phase/` に追加動画（17〜21）の CSV が置かれたホストでは、
   `a1_fold_table.load_phase` がそれも読むため、生成器 `a1_fold_table.py` 自体は 20 動画で分け方が 0 通りになり止まる
+  （`T-2026-10-07-track-extra-phase-annotations` で解消）
 
 ### 工程塔の寄与の診断（2026-10-05、dlsta）
 

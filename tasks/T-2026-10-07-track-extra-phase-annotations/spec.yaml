@@ -1,0 +1,70 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-07-track-extra-phase-annotations"
+  kind: impl
+  title: "追加動画 17〜21 の工程の注釈 CSV 20 件を今の場所のまま追跡し、注釈のディレクトリを丸ごと読む道具の挙動を確かめる"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-07T00:00:00Z"
+  created_from:
+    runindex_commit: "63ae65da8c7d32df591f5e2ee4358286b72c726b"
+    counts: {index: 1961, experiments: 750, verdicts: 1506}
+  depends_on: [T-2026-10-07-design-val-subset-balance, T-2026-09-27-stage1-ptower-20]
+  amendments:
+    - date: "2026-10-07"
+      reason: "Task A-6 の実測による差し替え。conventions_rev は context/conventions.md を最後に変えた commit、runindex_commit は runindex/ を最後に変えた commit、counts は各 CSV のデータ行数（2026-10-07 efros、起点 origin/phase0 b9272cfe）。数え方は 2fb7c905 で 1911/718/1506 を再現することを確かめた"
+      diff: "runindex_commit REPLACE -> 63ae65da; counts 0/0/0 -> 1961/750/1506; conventions_rev REPLACE -> 073f9dc0"
+intent:
+  question: "追加動画の工程の注釈を今の場所のまま版管理に入れたとき、注釈のディレクトリを丸ごと読む道具の挙動が保たれ、追加動画つきの工程塔の再現に要る入力が全ホストで揃うか"
+  decision_at_stake: "efros にだけ在る未追跡の注釈の置き場。利用者は今の場所のまま追跡すると決めた"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery の工程の注釈のうち追加動画の分。画像は読まない"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt", "data/splits/ego_test.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/analysis/a1_fold_table.py", "scripts/analysis/design_val_subsets.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#folds]
+  conventions_rev: "073f9dc0b80b7ca48c2766eb6f8f2ccd17cf0fe6"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "開始状態。注釈の照合、工程塔の道具の実在、試験の失敗の集合", gpu: false, est: "30m"}
+    - {id: B, name: "注釈のディレクトリを読む箇所の洗い出しと分類。止まる道具の修正", gpu: false, est: "90m"}
+    - {id: C, name: "注釈を今の場所のまま追跡する", gpu: false, est: "15m"}
+    - {id: D, name: "検証と、他ホスト向けの文書", gpu: false, est: "45m"}
+    - {id: E, name: "報告", gpu: false, est: "30m"}
+  gates:
+    - {id: G1, after: A, check: "注釈の件数と名前と要約値が前の契約の記録と一致し、追加動画つきの工程塔の道具が起点に在る", on_fail: stop}
+    - {id: G2, after: B, check: "注釈のディレクトリを列挙して読む箇所がすべて分類され、扱いを判断できない箇所が零件である", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [extra_phase_annotations.md]
+  destination: "docs/stage1/"
+  acceptance:
+    - "a: 追跡の前に、注釈の件数、名前の集合、バイト数、要約値が前の契約の記録と一致し、別の場所の写しとも要約値で一致する"
+    - "b: 注釈のディレクトリを参照するコードと設定が読まれ、ディレクトリを列挙して読む箇所が、読む動画の集合が変わるか変わらないかで分類されている。扱いを判断できない箇所が零件である"
+    - "c: 折り表の生成器が本ホストで止まらずに動き、表の要約値が折り表の契約の記録と一致する。折り表の文書は変わっていない"
+    - "d: 設計用の部分集合の道具を回し直しても、文書と csv が変わらない"
+    - "e: 追加動画つきの工程塔が読む動画の集合が、変更の前後で同じである"
+    - "f: 注釈が今の場所のまま版管理に入り、内容の要約値が追跡の前と一致する。本ホスト限りの除外設定は残っていない"
+    - "g: 禁止領域の検査の違反が、追跡した注釈の経路と集合として一致する。それ以外の違反が零件である"
+    - "h: 試験の失敗の集合が変更の前後で同じである"
+    - "i: 他ホスト向けの文書に、注釈の経路とバイト数と要約値の一覧、同じ経路に未追跡の写しを持つホストでの手順がある"
+    - "j: PR が Draft でなく存在し、分岐が feat/ で始まる"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "注釈の件数か名前か要約値が、前の契約の記録と食い違う場合"
+    - "追加動画つきの工程塔の道具が起点に無い場合"
+    - "十五動画を前提とする道具を直すと、その生成物が変わる場合"
+    - "注釈のディレクトリを列挙して読む箇所に、追加動画を読むべきか判断できないものがある場合"

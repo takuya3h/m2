@@ -6,8 +6,44 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 113 件）。
-ここに出ない 108 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 114 件）。
+ここに出ない 109 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-10-07-track-extra-phase-annotations
+
+状態 `pass` / ホスト `efros` / 起票 `204` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 20 件の名前の集合、合計 210618 バイト、各 sha256 が前の契約の記録と一致し、data/raw と ~/slocal2/EgoSurgery の写しとも 20/20 一致。P*-20 の道具 4 件が起点 b9272cfe に在る
+- `G2` ask — 読む箇所を 2 通りで探し、23 件だけのディレクトリと実ディレクトリで動かして分類した。15 動画前提で全部を読み値が変わる 7 月の監査と EDA の 8 本を利用者に諮り、「直さず表に残す」の回答を得た
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — §2 は動画 22 の注釈は efros に無いと書くが、efros の data/raw/…/annotations/phase/ には 22_1〜22_3 が在る。無いのは data/annotations/egosurgery_phase/ だけ。Task B-4 が懸念した追加 6 動画の節の差分は出ず、生成器の出力は正本と一致した
+- `self_contradiction` — Task B-3 は 15 動画前提で全部を読む箇所を直し生成物が変わらないことを確かめよと定めるが、該当の監査と EDA は出力先が experiments/ で禁止 5 に当たり、import だけで書くものもある。指示どおりでは確認できず、G2 で利用者に諮った
+
+### 逸脱
+
+- `judgement` — Gate G2 で、15 動画前提で全部を読む 8 本（hts_phase_coverage のプロジェクト側、EDA 3 本、audit 系 4 本）を利用者に諮った。出力が experiments/ に在り、直した後の確認に実行が要るため。回答により直さず、文書の表に再実行すると値が変わることを書いた
+- `judgement` — audit・EDA 系は import だけで experiments/ に mkdir するものがあるため、丸ごと動かさず、読み込み部分を同じ書き方で scratchpad の計測スクリプトに写して 2 状態で比べた。関数として切り出されている箇所は import して動かした
+- `judgement` — 実行者の誤り: 計測の初回で verify_thinning_rule の出所をディレクトリの経路のまま比べ、27694 件の差と出した。経路を揃えて測り直し 10461 件（動画 17〜21）とした。出所は使われていない
+- `judgement` — 実行者の誤り: README の確認のつもりで sed -i に p を付けて実行し、前の契約の節の注意書き 2 行を二重にした。差分を見て元に戻した。その注意書きは本契約で解消したため、解消の注記を 1 行足した
+- `judgement` — 生成器の修正は load_phase に videos 引数を足し、main が公式分割の 15 動画を渡す形にした。design_val_subsets は従来どおり引数なしで呼び自分で絞るため変えていない
+- `environment` — ruff が a1_fold_table.py の 555・578 行に F541 を 2 件出す。起点の版でも同じで、本契約の変更行ではないため直していない
+- `environment` — make forbidden-check は契約が想定したとおり fail（違反 20、すべて追跡した 20 件）。起点は分岐点 b9272cfe
+- `judgement` — 起動前に退避した session digest は無かった（未追跡は注釈 CSV 20 件のみ）
+
+### 申し送り
+
+- 他ホストでは同期の前に docs/stage1/extra_phase_annotations.md の手順で、同じ経路の未追跡の写しを照合する。git は内容が同一でも未追跡のファイルを上書きしない
+- 7 月の監査と EDA の 8 本は、20 件の追跡の後に再実行すると 17〜21 が入り、experiments/analysis/ に記録済みの値と変わる。再実行するなら読む動画を 15 本に絞ってから
+- context/conventions.md#folds は追加動画を 17〜22 の 6 本と書くが、追跡したのは 17〜21 の注釈だけ。動画 22 の注釈は data/raw にだけ在る
+- make agent-check の既存の失敗（docs/experiment_settings.md:155）は本契約でも未対応
+
+### 断定できなかったこと
+
+（なし）
 
 ## T-2026-10-07-design-val-subset-balance
 
@@ -171,48 +207,4 @@
 
 - G2 の差が恒常的なホスト差か seed 一本の揺れかは区別できない。efros の対照は 1 seed しか無い。fine-tune 段階の差（+0.0063）に比べ 時間ヘッドを載せた差（+0.0696）が大きく、時間ヘッドで揺れが増幅された可能性がある。
 - 完了判定 e と g の陽性対照（壊した入力で落ちること）は測っていない。
-
-## T-2026-09-23-ops-and-proposal-card-gate
-
-状態 `partial` / ホスト `m2` / 起票 `194` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 作業ツリー清浄（未追跡の session digest 4 件は git stash push -u で退避）。HEAD は 66855c5b。変更前の数を実測: 規約のアンカー 11、check_spec の規則 8、L3 は P1〜P13、spec.yaml 127 件で schema 通過 127 件、試験 6 failed / 609 passed、旧様式 result.yaml の schema エラー 15 件
-- `G2` pass — P14 の 7 種を実測。impl と analysis で SKIP、完了済みで SKIP、例外二件で SKIP（理由に「導入前の契約」）、カード無しで FAIL、経路が無い場合に FAIL、検査を通らないカードで FAIL（検出 3 件を列挙）、通るカードで PASS。例外の照合が完全一致であることを一文字違い・接頭辞・部分列の 3 方向で確かめた。配線は一時契約で make task-preflight を端から端まで回して確認し、測定後に削除した
-- `G3` pass — 新規則を実例へ当てた実測。proposal-gate（spec.yaml:29）・amp-compile-timing（spec.yaml:38）・p13-skip-and-enum（spec.yaml:31）の 3 件が FAIL。4 件目の stage1-detector-towers は起票時の宣言漏れを実行者が同じ spec へ追記して是正済みで、destination と runindex/ の双方を宣言しており PASS。これが「宣言を足した同じ spec で PASS」の実測にあたる。完了判定 e が言う 4 件 FAIL は達成できない
-
-### 起票者の誤り
-
-- `self_contradiction` — 付録 A は提案カードを表で示すが SPEC §3 Task B-1 は「16 項目の見出しと空欄」と書く。check_proposal.py は markdown の見出しから項目の番号を取るため、付録 A の表だけを置くと 16 件すべて missing_heading で落ち、表のセルを埋めても落ち続ける（実測）。完了判定 a の四列目「項目を全部埋めた文書で通る」が原理的に達成できない
-- `asserted_without_measuring` — 完了判定 e は「実例 4 件の spec で FAIL する」と書くが、Task D-1 の指示どおり exp 限定で実装すると該当は 0 件になる。実例 4 件のうち 3 件は kind が impl で対象外、残る 1 件は是正後の本文が destination と runindex/ の双方を宣言しているためである。4 件という数は現行の本文を測らずに書かれている
-- `self_contradiction` — SPEC §4 禁止事項 5 は context/auto/* と tasks/inbox.md の再生成を禁じるが、/task 手順書は報告を書いたあとに make taskindex と make inbox で投影を生成し taskindex-check / inbox-check が exit 0 になることを求める。指示どおり禁止を守ると集約結果に inbox.d の行が載らず、次の契約の検査も失敗したままになる。禁止領域の検査器は生成物を除外する設計であり、この禁止は repo の仕組みと噛み合っていない
-- `self_contradiction` — Task D-4 は旧様式 result.yaml を現行 schema の版 3 へ書き直すことを求めるが、result.schema.json 自身と /task 手順書は「過去の報告に版 2・版 3 の要件を遡って適用しない／過去を書き換えて通す方法は採らない」と明記している。加えて版 3 が必須とする tests の 3 整数は旧報告にも旧 RESULT.md にも存在せず、指示どおり書き直すと未測定の値を書くことになり governance.integrity の unknown_if_unmeasured と衝突する
-- `asserted_without_measuring` — Task D-4 は旧版の退避先を result.v2.yaml と指定するが、当該ファイルの result_version は 1 である。指示どおりの名にすると版番号と名が食い違う記録が残る。据え置きの決定により顕在化しなかったが、名の指定そのものが対象を測らずに書かれている
-
-### 逸脱
-
-- `judgement` — 提案カードの雛形を、付録 A の表だけでなく項目ごとの markdown 見出しとの併記にした（利用者の決定 2026-09-22）。check_proposal.py は見出しから番号を取るため、表だけでは埋めても通らない
-- `judgement` — check_spec の新規則の適用範囲を Task D-1 の exp 限定から「exp は無条件、それ以外は allow_write を宣言している契約だけ」へ変えた（利用者の決定 2026-09-22）。全 kind 無条件では 127 契約中 123 件が該当し判別力を失う（実測）
-- `judgement` — 旧様式 result.yaml を書き直さず据え置いた（利用者の決定 2026-09-22）。版 3 が必須とする tests の 3 整数が旧報告に存在せず、推測で埋めれば捏造になるため。完了判定 h は未達
-- `spec_defect` — 完了判定 e の「実例 4 件で FAIL」は 3 件にとどまる。4 件目は起票時の宣言漏れが是正済みで、現行の本文では該当しない
-- `judgement` — L1 の新しい検査の識別子を L1-10 とした。SPEC は番号を指定していないが、L1-9 は validate_spec_md が使用済みで、重ねると既存の該当と見分けられなくなる
-- `judgement` — tests/test_symmetry_gate.py の「P13 が末尾である」ことを固定していた試験を、「P13 の位置が 13 番目である」ことの固定へ変えた。P14 を末尾に足したため。P1〜P13 の番号・順序・名前・挙動は変えていない
-- `judgement` — meta.created_from.counts の 0/0/0 を実測値（index 1558 / experiments 476 / verdicts 1506）へ差し替えた。SPEC は差し替えを指示していないが、起票時の値が実測と一致しないため（規約の注意 1）
-- `judgement` — 規約の変更履歴の commit 欄は、最初の commit で (本契約) と置き、commit 後に実際の値へ差し替える二段で記録した。自分の commit 番号は事前に書けない
-- `environment` — 開始時に未追跡だった session digest 4 件は git stash push -u で退避した。開始前から在る未追跡を消していない（禁止事項 7）
-- `judgement` — SPEC 禁止事項 5 は context/auto/* と tasks/inbox.md の再生成を禁じるが /task 手順書は投影の生成と taskindex-check / inbox-check の exit 0 を求める。契約と手順書が衝突するため諮り、再生成を選んだ（利用者の決定 2026-09-22）。forbidden-check は生成物 4 経路を除外したうえで違反 0 件
-
-### 申し送り
-
-- 例外の二件（T-2026-09-19-stage1-detector-towers-r2 / T-2026-09-19-stage1-phase-tower-r3）は配布台帳にあるが repo には未取得である。P14 の例外の経路は試験で確かめたが、実物の契約で SKIP になることは取得後に確かめること
-- result.schema.json に、遡及の書き直しをどう扱うか（tests を任意にする版、または旧様式の退避の規約）を足す契約が要る。本契約では同ファイルは allow_write に無く触れていない
-- tasks/_templates/result.yaml と .claude/skills/task/SKILL.md は issuer_defects の型を 4 種と書くが、result.schema.json は 6 種である（PR #192 で拡張済み）。写しが古い
-- make spec-check を TASK 無しで回すと allow_write_incomplete が 15 件出る（exp 10 件 / impl 5 件）。過去の契約の是正は別契約で行うこと
-- 本契約の統合後、起票者は Stage 2 の提案カードを docs/proposals/ に置き、check_proposal.py を通してから exp を起票する（SPEC §8）
-
-### 断定できなかったこと
-
-- 旧様式 result.yaml（T-2026-08-22-philip-hub-foundation）の tests の 3 整数は実測不能である。旧報告にも旧 RESULT.md にも試験の記録が一切無く、推測で埋めれば捏造になる。UNKNOWN のまま据え置いた
-- 完了判定 e の「実例 4 件で FAIL」は達成していない。4 件目が是正済みであることが理由で、規則の欠陥ではないが、契約の字面は充足していない
 

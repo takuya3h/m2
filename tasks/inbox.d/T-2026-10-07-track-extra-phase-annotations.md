@@ -1,0 +1,2 @@
+- [ ] 2026-10-07 [cc] **Gate G2: 注釈のディレクトリを丸ごと読む 7 月の監査と EDA の 8 本（hts_phase_coverage のプロジェクト側、analyze_annotations 3 本、audit 系 4 本）は「直さず表に残す」と利用者が回答した。** 再実行すると 17〜21 が入り値が変わる（docs/stage1/extra_phase_annotations.md）
+- [ ] 2026-10-07 [cc] 追加動画 17〜21 の工程の注釈 20 件を data/annotations/egosurgery_phase/ のまま追跡した。他ホストは同期の前に同じ経路の未追跡の写しを sha256sum -c で照合する（T-2026-10-07-track-extra-phase-annotations）

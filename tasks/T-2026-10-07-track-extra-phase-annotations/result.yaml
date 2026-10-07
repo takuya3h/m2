@@ -1,0 +1,54 @@
+result_version: 3
+task_id: "T-2026-10-07-track-extra-phase-annotations"
+status: pass
+host: "efros"
+branch: "feat/track-extra-phase-annotations"
+pr: 204
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "20 件の名前の集合、合計 210618 バイト、各 sha256 が前の契約の記録と一致し、data/raw と ~/slocal2/EgoSurgery の写しとも 20/20 一致。P*-20 の道具 4 件が起点 b9272cfe に在る"}
+  - {id: G2, verdict: ask, note: "読む箇所を 2 通りで探し、23 件だけのディレクトリと実ディレクトリで動かして分類した。15 動画前提で全部を読み値が変わる 7 月の監査と EDA の 8 本を利用者に諮り、「直さず表に残す」の回答を得た"}
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 699
+
+deviations:
+  - {type: judgement, note: "Gate G2 で、15 動画前提で全部を読む 8 本（hts_phase_coverage のプロジェクト側、EDA 3 本、audit 系 4 本）を利用者に諮った。出力が experiments/ に在り、直した後の確認に実行が要るため。回答により直さず、文書の表に再実行すると値が変わることを書いた"}
+  - {type: judgement, note: "audit・EDA 系は import だけで experiments/ に mkdir するものがあるため、丸ごと動かさず、読み込み部分を同じ書き方で scratchpad の計測スクリプトに写して 2 状態で比べた。関数として切り出されている箇所は import して動かした"}
+  - {type: judgement, note: "実行者の誤り: 計測の初回で verify_thinning_rule の出所をディレクトリの経路のまま比べ、27694 件の差と出した。経路を揃えて測り直し 10461 件（動画 17〜21）とした。出所は使われていない"}
+  - {type: judgement, note: "実行者の誤り: README の確認のつもりで sed -i に p を付けて実行し、前の契約の節の注意書き 2 行を二重にした。差分を見て元に戻した。その注意書きは本契約で解消したため、解消の注記を 1 行足した"}
+  - {type: judgement, note: "生成器の修正は load_phase に videos 引数を足し、main が公式分割の 15 動画を渡す形にした。design_val_subsets は従来どおり引数なしで呼び自分で絞るため変えていない"}
+  - {type: environment, note: "ruff が a1_fold_table.py の 555・578 行に F541 を 2 件出す。起点の版でも同じで、本契約の変更行ではないため直していない"}
+  - {type: environment, note: "make forbidden-check は契約が想定したとおり fail（違反 20、すべて追跡した 20 件）。起点は分岐点 b9272cfe"}
+  - {type: judgement, note: "起動前に退避した session digest は無かった（未追跡は注釈 CSV 20 件のみ）"}
+
+issuer_defects:
+  - {type: asserted_without_measuring, note: "§2 は動画 22 の注釈は efros に無いと書くが、efros の data/raw/…/annotations/phase/ には 22_1〜22_3 が在る。無いのは data/annotations/egosurgery_phase/ だけ。Task B-4 が懸念した追加 6 動画の節の差分は出ず、生成器の出力は正本と一致した"}
+  - {type: self_contradiction, note: "Task B-3 は 15 動画前提で全部を読む箇所を直し生成物が変わらないことを確かめよと定めるが、該当の監査と EDA は出力先が experiments/ で禁止 5 に当たり、import だけで書くものもある。指示どおりでは確認できず、G2 で利用者に諮った"}
+
+positive_controls:
+  - {judgement: "a 20 件の照合", breaking_input: "21_5 を 21_9 に変えた一覧（記憶上）", observed: "集合差が片側 1 件ずつ出た"}
+  - {judgement: "b 読む側の分類", breaking_input: "既知の a1_fold_table.load_phase が探し方に載るか", observed: "探し方 1 と 2 の両方に載り、2 状態で DIFF と出た"}
+  - {judgement: "c 生成器", breaking_input: "直す前の生成器、入力を一行変えた表", observed: "直す前は IndexError で exit 1。一行 +100000 で要約値が変わる"}
+  - {judgement: "d 部分集合の道具", breaking_input: "入力を一行変える（道具の内部の対照）", observed: "csv の要約値が 18c06016 から f49a730a に変わる。回し直しの差分は 0 行"}
+  - {judgement: "e P*-20 が読む集合", breaking_input: "追加動画の注釈 21_5 を除いた入力（記憶上）", observed: "clip が 20 から 19 に変わった"}
+  - {judgement: "f 追跡", breaking_input: "存在しない経路 99_9.csv で数える", observed: "0 件（実在の 20 経路は 20 件）"}
+  - {judgement: "g 禁止領域の検査", breaking_input: "違反の集合と追跡した 20 件の両方向の集合差", observed: "どちらも 0（件数でなく集合で比べた）"}
+  - {judgement: "h 試験", breaking_input: "失敗の名前の集合を比べる", observed: "6 件の名前が前後で同一"}
+  - {judgement: "i 他ホスト向けの一覧", breaking_input: "先頭の一文字を変えた一覧で sha256sum -c", observed: "FAILED 1 件（元の一覧は 20 件 OK）"}
+  - {judgement: "G2 の計測", breaking_input: "15 動画を明示して絞る箇所（build_phase_manifest、PhaseImageDataset）", observed: "SAME と出た。全部を読む箇所は DIFF と出た"}
+
+followups:
+  - "他ホストでは同期の前に docs/stage1/extra_phase_annotations.md の手順で、同じ経路の未追跡の写しを照合する。git は内容が同一でも未追跡のファイルを上書きしない"
+  - "7 月の監査と EDA の 8 本は、20 件の追跡の後に再実行すると 17〜21 が入り、experiments/analysis/ に記録済みの値と変わる。再実行するなら読む動画を 15 本に絞ってから"
+  - "context/conventions.md#folds は追加動画を 17〜22 の 6 本と書くが、追跡したのは 17〜21 の注釈だけ。動画 22 の注釈は data/raw にだけ在る"
+  - "make agent-check の既存の失敗（docs/experiment_settings.md:155）は本契約でも未対応"
+
+unknowns: []
+
+commits:
+  - "d1199a38"
+  - "723f2341"
