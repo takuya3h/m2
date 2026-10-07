@@ -1,1 +1,2 @@
 - [ ] 2026-10-07 [cc] **自動 PR を GITHUB_TOKEN で統合する段を足した。条件は作成元・基点・差分の三つで、統合の直前に読み直す。** GITHUB_TOKEN で統合できるかは統合後の実測で判定する（tasks/T-2026-10-07-auto-merge-regen-pr/RESULT.md §4）
+- [ ] 2026-10-07 [cc] **統合後の実測: #212 の統合で自動 PR #214 が作られ、app/github-actions が 4 秒後に統合した。その後に新しい実行は起きなかった。** 閉じる段はまだ動いていない（tasks/T-2026-10-07-auto-merge-regen-pr/RESULT.md §4a）
