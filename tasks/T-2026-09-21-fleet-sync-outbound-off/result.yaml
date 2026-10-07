@@ -113,6 +113,45 @@ followups:
   - >-
       ノードの画面の鍵を使う操作は、auto mode の実行基盤が実行者に許さない。六台以上へ同じ変更を当てる契約では、
       利用者が ! で実行する前提を SPEC に書くか、実行モードを事前に指定すること。
+  - >-
+      【起票依頼・新契約】digest がセッション終了時に生成されるため、契約を終えるたびに作業ツリーに必ず残り、
+      次の契約の task-start が止まる。構造的な欠陥である（利用者の指摘を受けて実装を読み、確かめた）。
+      生成の経路: .claude/settings.json の SessionEnd フック → .claude/hooks/session_end.sh →
+      tools/session_digest.py。経路は 2 本ある。(1) --from-hook は、終わったセッションの抽出物を
+      docs/sessions/digest/<日付>-<session_id>.md へ無条件に書く（同一内容かの確認は無い）。
+      (2) --sweep-codex は ~/.codex/sessions/**/rollout-*.jsonl を走査し、内容が違うものだけを書く。
+      2 本目は Codex のセッションでも、Claude Code のセッション終了のたびに走る。
+  - >-
+      （digest 欠陥の続き）なぜ毎回起きるか: 契約の commit はセッションの内側で行う。
+      そのセッションの抽出物は、終了フックが走る commit の後にしか現れない。原理的に避けられない。
+      現れ方は 2 通りある。(a) 新しいファイルは未追跡として残る。(b) 既に commit した digest は、
+      同じ session_id のセッションが続いて終わったとき上書きされ、変更ありとして残る。
+      本契約で commit した 2026-10-07-b1846250-….md は (b) に当たり、このセッションの終了で再び汚れる見込み
+      （未測定。終了後に git status で確かめること）。
+  - >-
+      （digest 欠陥の続き）衝突する 2 つの規則: tasks/README.md と docs/sessions/README.md は
+      「抽出物は次の契約の記録と一緒に含める」と定める。scripts/task_start.sh の 4 番目の検査
+      （git status --porcelain の件数が 0 以外なら die 3）は、未追跡も変更も区別せずに止める。
+      規約どおりに運用すると、次の契約は必ず開始できない。また、自動同期（scripts/sync/m2-sync.sh）は
+      digest を commit しない。git merge --ff-only は、内容が同一でも未追跡ファイルの上書きを拒否する（B-30）。
+      このため、放置すれば自動統合も止まる。
+  - >-
+      （digest 欠陥の続き）実測の件数: 前契約 T-2026-09-21-philip-sync-outbound-off では、開始前に未追跡が 4 件あった
+      （digest 3 件 ＋ .sync-pause.released）。本契約では、開始前に digest 3 件、作業中にさらに 2 件
+      （Codex の rollout 由来 2026-10-07-02-45-42-01a11440-….md と、セッションを開き直したときの本セッション前半の
+      2026-10-07-b1846250-….md）が現れた。どちらの契約も、利用者が退避を承認してから開始した。
+  - >-
+      （digest 欠陥の続き）直し方の案（実行者の見立て。未実装）。
+      A（推奨）: task_start.sh の汚れの判定から docs/sessions/digest/ を除く。未追跡も変更も対象にする。
+      分岐を切り替えても未追跡と未 commit の変更は作業ツリーに残るので、新しい契約の commit に含めれば規約どおりになる。
+      除いた件数は表示して、黙って通さない。
+      B: フックの書き込み先を無視対象の一時置き場（例 docs/sessions/digest/.pending/）に変え、
+      task_start.sh が分岐を作った後に正規の場所へ移す。作業ツリーは常にきれいになるが、部品が増える。
+      C: m2-sync.sh が digest を自動で commit する。契約の分岐へ実行者の知らない commit が入り、
+      .sync-pause の考え方と衝突するので勧めない。
+      検証の要件: 未追跡の digest が在る状態、および commit 済みの digest が変更された状態で、task-start が
+      exit 0 になり、それ以外の未追跡（例 tasks/ 配下）が在れば従来どおり exit 3 になること。
+      両方向の陽性対照をつける。tests/ に task_start.sh の試験は現在無い（2026-10-07 実測）ので、新たに置くこと。
 
 unknowns:
   - "lecun の使用状況の日次送信が止まったか（周期 24 時間を越えて待てなかった）"

@@ -95,6 +95,7 @@ lecun が `Server accepts key … explicit` を返し exit 0（1.3）。転送�
 
 **想定外**: lecun の `urAccepted` が 3 で、記録の始まりから 44 日分を毎日送っていた（5.2）。
 ilya と dlsta は OS 名が別名と違う（`aolab` / `4f3861ae8d3b`。住所は SPEC と一致、3.1）。
+**digest は契約のたびに作業ツリーへ必ず残る**（終了フックが commit の後に書く）。`task_start.sh` の汚れの判定と衝突する。起票依頼として申し送りに詳細を置いた。
 
 **UNKNOWN**
 
