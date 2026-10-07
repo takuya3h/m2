@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 118 件）。
-ここに出ない 113 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 119 件）。
+ここに出ない 114 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-10-07-track-extra-phase-annotations
 
@@ -44,6 +44,39 @@
 ### 断定できなかったこと
 
 （なし）
+
+## T-2026-10-07-pause-release-tool-digest-relocate
+
+状態 `pass` / ホスト `philip` / 起票 `217` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — m2-sync.sh:44 は [ -f "$M2DIR/.sync-pause" ] で実在だけを見て、目印を開く処理は 0 件。keeper.sh は目印を参照しない。開始時は作業ツリー 1 件（取り込んだ契約）、HEAD=origin/phase0=c3ca48e3、目印 0 バイト、追跡済み抽出物 48 件、失敗の名前 8 件を記録した
+- `G2` pass — 隔離した場で 39 件。前提を満たす場では RELEASED で外れた。前提の欠け 6 通り・照会の失敗 2 通り・所有者違いと読めない 6 通り・位置違い・中止の理由なし 3 通りのいずれでも外れなかった。所有者・前提・位置・理由・照会の判定をそれぞれ壊すと 4・11・1・3・3 件の試験が落ちた
+- `G3` pass — 旧い置き場に同名があれば作り直さない。このホストの記録 2 件では、書き出し 0 件、作り直さなかったもの 1 件、中身なし 1 件。旧い置き場が無い root では 1 件書き出された。判定を壊すと 2 件の試験が落ちた
+
+### 起票者の誤り
+
+- `self_contradiction` — §4 Task F の 6 は抑止の解除を送出の後に置き、その後の git の操作を禁じる。一方で完了判定 g は実物の目印に対する陰性対照を報告に含めることを求める。書かれた順に実行すると、陰性対照の結果は commit された報告に入らない
+
+### 逸脱
+
+- `spec_defect` — Task F の 6 は解除を送出の後に置き git の操作を禁じるが、判定 g は実物の目印の陰性対照を報告に求める。外さない操作である陰性対照を commit の前に取り、解除だけを最後に回した
+- `judgement` — 道具を Python（標準ライブラリだけ）で scripts/task_release.py に置いた。試験から関数として呼べ、gh の JSON を読めるため
+- `judgement` — 走査の抽出済みの判定は、旧い置き場の名前の有無だけを見て内容は比べない。旧い書式の抽出物を未抽出と取り違えて過去分を一斉に書き出さないため。移す前のセッションが移した後に続いた分は書き出されない
+- `environment` — 試験全体は収集のエラー 2 件で中断するため、開始前と変更後の両方を --continue-on-collection-errors で回し、失敗とエラーの名前の集合を比べた
+
+### 申し送り
+
+- SKILL.md の改訂契約では、解除を make task-release TASK=<id> END=complete（中止は END=abort REASON=...）に置き換え、状態表示で判定する。git add docs/sessions/digest/ の指示が残っていれば消す
+- 本契約より前の task_start.sh が置いた目印（中身なし）は OWNER_UNREADABLE で外れない。移行期は手で外す
+- 移す前のセッションが移した後も続いた場合、その続きは新しい置き場に書き出されない（名前で抽出済みと判定するため）
+- make docs-check（docs/proposal-gate.md:41）と make agent-check（docs/experiment_settings.md:155）は、本契約で触れていないファイルで落ちる
+
+### 断定できなかったこと
+
+- 共有フォルダが無いホストと .servername が無いホストでの実機の動作（試験の場では確かめた）
+- 終了フックが新しい置き場へ書くことの実機での確認（本セッションの終了時に初めて起きる）
 
 ## T-2026-10-07-drop-projection-check-in-contracts
 
@@ -155,36 +188,4 @@
 
 - workflow の書式の検査（actionlint・yamllint が無い。GitHub が解釈して実行できたことだけは確かめた）
 - 登録されている Actions の秘匿の名前の一覧（gh secret list が拒否された）
-
-## T-2026-10-07-auto-merge-regen-pr
-
-状態 `pass` / ホスト `philip` / 起票 `212` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — phase0 の保護を読んだ。必須の状態検査は無く、承認 0 件、迂回の許可と push の制限も無く、enforce_admins=true。方式は 3 種すべて許可され、直近 30 件の PR はすべて merge commit だった。統合は Contents の write、閉じるのは Pull requests の write（文書）。GITHUB_TOKEN が起こす push は新しい実行を作らない（文書）。GITHUB_TOKEN で実際に統合できるかは UNKNOWN で、統合後の実測で判定する
-- `G2` pass — 偽の origin と状態を持つ偽の gh で 6 通りを試した。生成物だけの差分では統合が 1 回呼ばれ、生成物以外・基点が古い・fork・別の分岐・先頭の食い違いでは 0 回で exit 1。差分なしで PR が無ければ何もせず、PR が開いていれば fork を除いて閉じた。条件 1・2・3 を常に通す版に壊すと場合 2・3・4b で統合が呼ばれ、試験が壊れ方を検出することを確かめた
-- `postmerge` pass — 統合後に Actions で実測した。#212 の統合（a162c417）で run 37596989944 が起動し success。自動 PR #214（生成物 4 ファイル）が作られ、4 秒後に app/github-actions が統合した（44d9e120）。自動の統合の後に新しい run は 0 件。開いた自動 PR は 0 件。統合後の phase0 で taskindex-check と inbox-check は exit 0
-
-### 起票者の誤り
-
-- `check_does_not_check` — 試験の場合「作成元の分岐が違う」は、書かれたとおりに別の分岐から PR を作ると、gh pr list --head auto/regen-projections の絞り込みで一覧に出ない。統合が呼ばれないのは一覧のためで条件 3 は試されない。fork と、一覧と詳細の食い違いとして 4a・4b・4c で試し直した
-
-### 逸脱
-
-- `judgement` — 生成物の一覧を、作り直しの段の局所変数から job の env へ移した。統合の条件と同じ一覧を見せるためで、作り直しの挙動は変わらない（場合 1・5 で確認）
-- `judgement` — 契約の三条件に加え、PR の先頭の oid が分岐の先頭と一致することと、統合の時点での --match-head-commit を足した。読み直しの間に分岐が動いたとき別の中身を統合しないため
-- `environment` — CLAUDE.md の方針にある ctxpack がホストに無く、GitHub の文書は WebFetch で読んだ
-- `judgement` — 試験を開始前に測らなかった。Python は変えていないため、開始後に測った tests/test_build_taskindex.py と tests/test_build_inbox.py の 23 件 pass を開始前の値とみなした
-
-### 申し送り
-
-- GITHUB_TOKEN で PR を閉じる段はまだ一度も動いていない。差分が無いのに自動 PR が開いている状況で初めて動く。失敗すれば ::error:: が出て、自動 PR は開いたまま残る（人が閉じればよい）
-- GITHUB_TOKEN による統合は新しい実行を作らなかった（実測）。統合後の木は作り直した木と同じで、phase0 の生成物は最新だった
-- 基点が古いときは失敗で終える（契約どおり）。phase0 を進めた push が別の実行を起こすため、次の実行が最新から作り直して統合する。失敗の記録が一件残る
-
-### 断定できなかったこと
-
-- GITHUB_TOKEN で PR を閉じられるか（閉じる段がまだ動いていない）
-- workflow の書式の検査（actionlint・yamllint が無い）
 

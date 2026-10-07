@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（652 件）
+## 未処理（654 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -665,6 +665,8 @@
 - [ ] 2026-10-07 [cc] **起動前の未追跡に stage1_ptower_20.log（0 バイト）があり、利用者に諮って「走行と無関係を確かめて退避」の回答を得た。** ~/slocal2/m2_stash/20261007-042417/ にある（T-2026-10-07-design-val-subset-balance）
 - [ ] 2026-10-07 [cc] **efros の data/annotations/egosurgery_phase/ に追加動画 17〜21 の未追跡 CSV 20 件があり、glob で読む a1_fold_table.py は 20 動画を読んで IndexError で止まる。** 同じ内容が data/raw/…/annotations/phase/ と ~/slocal2/EgoSurgery/annotations/coco_format/phase/ に在る。置き場は利用者が決める（tasks/T-2026-10-07-design-val-subset-balance/audit.md §2）
 - [ ] 2026-10-07 [cc] 契約の手順から生成物の作り直しと `*-check` を外した。外したのは手順書の文言だけで、Makefile の目標と道具は変えていない（検証の道具に `*-check` へ至る経路は無かった）。起票者の手順書に同趣旨の記述があれば「phase0 の上で使う」に揃えること（T-2026-10-07-drop-projection-check-in-contracts）
+- [ ] 2026-10-07 [cc] **抑止の解除は `make task-release TASK=<id> END=complete|abort` に機械化した。目印の中身は所有の記録（task_id=、branch=）。** 旧い task_start.sh が置いた中身なしの目印は外さない（OWNER_UNREADABLE）。SKILL.md の改訂契約がこの名前を引く（tasks/T-2026-10-07-pause-release-tool-digest-relocate/RESULT.md §4）
+- [ ] 2026-10-07 [cc] **会話の抽出物は ~/claude-sync/session-digest/<ホスト名>/ へ移し、docs/sessions/digest/ は .gitignore に載せた。** 2026-08-09 の「版管理へ記録する」は撤回。追跡済み 48 件は残す（同 §3）
 - [ ] 2026-10-07 [cc] **Gate G2: 注釈のディレクトリを丸ごと読む 7 月の監査と EDA の 8 本（hts_phase_coverage のプロジェクト側、analyze_annotations 3 本、audit 系 4 本）は「直さず表に残す」と利用者が回答した。** 再実行すると 17〜21 が入り値が変わる（docs/stage1/extra_phase_annotations.md）
 - [ ] 2026-10-07 [cc] 追加動画 17〜21 の工程の注釈 20 件を data/annotations/egosurgery_phase/ のまま追跡した。他ホストは同期の前に同じ経路の未追跡の写しを sha256sum -c で照合する（T-2026-10-07-track-extra-phase-annotations）
 
