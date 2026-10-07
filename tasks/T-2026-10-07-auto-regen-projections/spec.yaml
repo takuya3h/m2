@@ -1,0 +1,83 @@
+spec_version: 1
+
+meta:
+  task_id: "T-2026-10-07-auto-regen-projections"
+  kind: impl
+  title: "統合のたびに生成物を自動で作り直す仕組みを、前提を測ってから作る"
+  origin: claude-app
+  created_at: "2026-10-07T06:30:00Z"
+  created_from:
+    runindex_commit: "073f9dc"
+    counts: {index: 751, experiments: 207, verdicts: 1038}
+  depends_on: []
+  amendments: []
+
+intent:
+  question: "生成物は契約が増えるたびに古くなり、並行する契約が書くと衝突するため、統合の後に人が一度だけ作り直している。統合を契機に自動で作り直し、差分があるときだけ本線へ記録する仕組みを作れるか。本線の保護設定、生成の道具の依存と出力の決定性、既存の仕組みとの衝突が前提として成り立つか"
+  decision_at_stake: "人手の作り直しをなくせるか。保護設定が自動の書き込みを許さなければ形を変える必要がある。出力が決定的でなければ仕組みは毎回記録を作って止まらない。前提を測ってから作り、崩れていれば判断を仰ぐ"
+  related:
+    backlog: []
+
+inputs:
+  data:
+    dataset: "egosurgery_phase_v1"
+    split_files: ["data/splits/ego_val.txt"]
+  code:
+    entrypoints:
+      - "Makefile"
+      - "tools/build_context.py"
+
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "073f9dc"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+
+plan:
+  phases:
+    - {id: A, name: "生成の道具と保護設定と既存の仕組みと認証の権限の測定", gpu: false, est: "40m"}
+    - {id: B, name: "仕組みを書き、手元で試せる範囲を試す", gpu: false, est: "50m"}
+    - {id: C, name: "統合後の確かめ方の記述と報告", gpu: false, est: "30m"}
+  gates:
+    - id: G1
+      after: A
+      check: "生成の道具が読む範囲と書くファイルと依存と出力の決定性を実装から記録した。本線の保護設定と既定の権限を変えずに読んだ。既存の仕組みと参照する秘匿の名前を記録した。手元の認証に必要な権限があるかを記録した"
+      on_fail: ask
+    - id: G2
+      after: B
+      check: "仕組みを書き、差分が無いとき何もしないことと、差分があるとき生成物だけが対象になることを手元で確かめた。試した生成物を記録に含めず、作業ツリーを試す前と同じに戻した"
+      on_fail: stop
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-10-07-auto-regen-projections/"
+  acceptance:
+    - "生成の道具の読む範囲と書くファイルと依存と出力の決定性を実装から記録している"
+    - "本線の保護設定と既定の権限を変えずに読み、記録している"
+    - "既存の仕組みと参照する秘匿の名前を記録し、値を読んでいない"
+    - "手元の認証に必要な権限があるかを記録している"
+    - "仕組みが差分の無いとき何もしないことを手元で確かめている"
+    - "仕組みが生成物だけを記録の対象にすることを手元で確かめている"
+    - "同時実行と競合と自己起動への対処をどう満たしたかを示している"
+    - "手元で作った生成物を記録に含めていない"
+    - "統合後に動作を確かめる手順を書いている"
+    - "禁止語と秘匿の検査を送出物に当て、検査が値を出力していない"
+  report_to: []
+
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "本線の保護設定が自動の直接の書き込みを許さない場合"
+    - "生成物の出力が同じ入力で揺れる場合"
+    - "生成の依存が自動実行の環境で用意できない場合"
+    - "手元の認証に必要な権限が無く送出が拒まれた場合"
