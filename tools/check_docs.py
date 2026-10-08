@@ -96,7 +96,8 @@ def extract_paths(text: str) -> list[tuple[int, str]]:
     return out
 
 
-def check_text(doc, text, *, targets, exists, branches) -> list[str]:
+def check_text(doc, text, *, targets, exists, branches,
+               ignored=lambda p: False) -> list[str]:
     """1 つの文書を検査し、問題を人が読める行で返す。"""
     if IGNORE_FILE in text:
         return []
@@ -107,12 +108,17 @@ def check_text(doc, text, *, targets, exists, branches) -> list[str]:
     for lineno, path in extract_paths(text):
         if path in branches:
             continue  # 分岐名であって経路ではない
+        # 無視されるファイルはホストの手元にだけ在る。版管理は実在を約束しないため、
+        # 在っても無くても対象外にする（在るホストでだけ通ると、結果がホストで変わる）。
+        if ignored(path):
+            continue
         if not exists(path):
             problems.append(f"{doc}:{lineno} 実在しない経路 {path}")
     return problems
 
 
-def check_documents(docs, *, targets, exists, branches) -> list[str]:
+def check_documents(docs, *, targets, exists, branches,
+                    ignored=lambda p: False) -> list[str]:
     """対象が無くても、対象の文書が存在しなくても落ちない。"""
     problems = []
     for doc in docs:
@@ -122,7 +128,8 @@ def check_documents(docs, *, targets, exists, branches) -> list[str]:
             continue
         problems.extend(
             check_text(doc, p.read_text(encoding="utf-8"),
-                       targets=targets, exists=exists, branches=branches)
+                       targets=targets, exists=exists, branches=branches,
+                       ignored=ignored)
         )
     return problems
 
@@ -156,6 +163,13 @@ def load_branches() -> set[str]:
     return {b.split("/", 1)[1] for b in r.stdout.split() if "/" in b}
 
 
+def is_git_ignored(path: str) -> bool:
+    """`.gitignore` で無視される経路か。追跡下のファイルは無視されたことにならない。"""
+    r = subprocess.run(["git", "check-ignore", "-q", "--", path],
+                       capture_output=True, text=True)
+    return r.returncode == 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--audit", default="docs/docs_audit.md")
@@ -171,7 +185,8 @@ def main() -> int:
     targets = load_make_targets(Path(args.makefile))
     branches = load_branches()
     problems = check_documents(
-        docs, targets=targets, exists=lambda p: Path(p).exists(), branches=branches
+        docs, targets=targets, exists=lambda p: Path(p).exists(), branches=branches,
+        ignored=is_git_ignored,
     )
 
     print(f"[docs-check] 対象 {len(docs)} 文書 / Makefile のターゲット {len(targets)} 件")

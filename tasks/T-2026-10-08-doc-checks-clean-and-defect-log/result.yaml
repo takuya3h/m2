@@ -1,0 +1,59 @@
+result_version: 3
+task_id: "T-2026-10-08-doc-checks-clean-and-defect-log"
+status: pass
+host: "philip"
+branch: "feat/doc-checks-clean-and-defect-log"
+pr: 221
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "手元では agent-check 1 件（docs/experiment_settings.md:155→156）と docs-check 1 件（docs/proposal-gate.md:41）。GitHub から複製した作業ツリーでは agent-check 1 件、docs-check 7 件。手元の repo から複製した場では docs-check 8 件（OPERATION.md:84 が加わる）。全件を audit.md A3・A4 に記録"
+  - id: G2
+    verdict: pass
+    note: "手元と GitHub の複製（変更した 3 ファイルを写した）の両方で二つの検査が合格。複製に実在しない経路と分けた読み込みを足すと、それぞれ rc 1 で検出。手元のファイルを touch した場と無い場で docs-check は同じく合格"
+
+tests:
+  before_failed: 8
+  after_failed: 8
+  after_passed: 731
+
+deviations:
+  - {type: judgement, note: "新しい作業ツリーを GitHub の origin からの複製と手元の repo からの複製の二つで測り、判定には前者を用いた。後者は遠隔に分岐が揃わず、新しく取得した状態を代表しないため"}
+  - {type: judgement, note: "R1 は文書の側を直した。二行は選択肢であり、検査の判定は誤っていないと判断した。見出しの文で塊を分け、続く操作と同じ命令で読み込む形を一文で添えた"}
+  - {type: judgement, note: "R2 は雛形の経路を <YYYY-MM-DD>-<slug> の置き場の形に直し、既存の VAR_MARKS 規則で対象外にした。外す印は使っていない"}
+  - {type: judgement, note: "R3 は検査器の側で、git check-ignore が無視とする経路を在っても無くても対象外にした。追跡下のファイルは無視とされないため、版管理に在るはずの経路の検出は減らない"}
+  - {type: environment, note: "試験全体は収集のエラー 2 件で中断するため、変更前後とも --continue-on-collection-errors を付けて回した"}
+
+issuer_defects:
+  - type: check_does_not_check
+    note: "完了判定 b の新しく取得した作業ツリーは取得元を定めていない。docs-check は分岐名を遠隔追跡の参照で除外するため、手元の repo から複製すると OPERATION.md:84 の分岐名が実在しない経路として追加で 1 件出る。取得元しだいで結果が変わり、判定 b はホストに左右されないことを測りきれない"
+
+positive_controls:
+  - judgement: "docs-check が実在しない経路を変更後も検出する（c）"
+    breaking_input: "新しい作業ツリーの docs/proposal-gate.md に `tools/no_such_tool.py` を足す"
+    observed: "docs/proposal-gate.md:92 実在しない経路 tools/no_such_tool.py を報告し rc 1。足さない写しでは食い違いなし"
+  - judgement: "agent-check が分けた読み込みを変更後も検出する（c）"
+    breaking_input: "docs/experiment_settings.md に字下げの source .venv/bin/activate と make docs-check の二行を足す"
+    observed: "status fail、line 372 → 373 を報告し rc 1。足さない写しでは pass"
+  - judgement: "手元のファイルの有無で docs-check の結果が変わらない（d）"
+    breaking_input: "追跡下の scripts/sync/m2-sync.sh を退けた写しを、手元のファイル有りと無しの両方で検査する"
+    observed: "どちらも .claude/skills/task/SKILL.md:163 実在しない経路 scripts/sync/m2-sync.sh の同じ 1 件。退けない写しは有り・無しとも食い違いなし"
+  - judgement: "is_git_ignored が追跡下のファイルを無視としない（R3）"
+    breaking_input: "*.log を無視する repo で kept.log を git add -f して追跡下に置く"
+    observed: "test_is_git_ignored_matches_untracked_only で kept.log は偽、追跡しない local.log は真。試験は通過"
+  - judgement: "欠陥の一覧への追記（e）"
+    breaking_input: "変更前の docs/issuer-defects.md を出所の識別子で検索する"
+    observed: "変更前は 0 件、変更後は 1 件"
+
+followups:
+  - "docs-check の分岐名の除外は git branch -r に依存する。手元の repo から複製した作業ツリーや --single-branch の複製では OPERATION.md:84 の docs/plan-rewrite-2026-06 が実在しない経路として出る。分岐名の判定を参照に依存しない形にするかは起票者の判断"
+  - "以後の契約は、文書の二つの検査の合格そのものを完了条件にできる（手元と GitHub の複製で合格を確認）"
+
+unknowns:
+  - "他のホストでの二つの検査の結果（他ホストへ接続しないため測っていない）"
+  - "本契約の目印による一時停止の記録の出現（確認時点では次のループ待ち）"
+
+commits:
+  - "363d88a7"
