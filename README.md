@@ -1297,6 +1297,17 @@ exp 契約 13 件すべてを FAIL にしていた**（prereg に対称性の表
 新しい型の欠陥が `context/auto/followups.md` の集計表から黙って落ちる。**
 一致は試験で縛ってある。
 
+### 手順書に契約の始め方と終え方を入れた（2026-10-07、philip）
+
+`T-2026-10-07-skill-task-start-and-release`（GPU 不使用）。
+
+- `.claude/skills/task/SKILL.md` に `### 0. 始める` と `### 8. 終える` を足した（既存の 1〜7 の番号は不変）。
+  始める段は、読み取りだけの命令で状態を判定してから task-start を呼ぶ（再開・分岐の重複・detached・汚れ・清浄・失敗）。
+  終える段は、`make task-release` の状態表示で扱いを決める
+- 利用者は `/task <task_id>` を一行送るだけでよい。汚れがあるときだけ、分類した一覧から選ぶ
+- 目印を手で置く・外す指示は、条件つきの 2 か所だけにした。`tasks/README.md` と `scripts/task_start.sh` の案内文も合わせた
+- 構造は `tests/test_skill_task_doc.py` で縛る（段の位置、状態の一覧の一致、手作業の指示の位置）
+
 ### 抑止の所有の記録と解除の道具、会話の抽出物の置き場の移動（2026-10-07、philip）
 
 `T-2026-10-07-pause-release-tool-digest-relocate`（GPU 不使用）。

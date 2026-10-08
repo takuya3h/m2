@@ -1,0 +1,62 @@
+result_version: 3
+task_id: "T-2026-10-07-skill-task-start-and-release"
+status: pass
+host: "philip"
+branch: "feat/skill-task-start-and-release"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "開始状態を記録した。HEAD=origin/phase0=08224414、作業ツリーは取り込んだ契約の 1 件だけ。task-start の表示は「作成」で、目印は 91 バイト、中身は task_id と branch の 2 行。手順書の見出しは 17 個（sha256 先頭 5e986c78）。失敗の名前は 8 件。agent-check と docs-check の不合格は各 1 件"
+  - id: G2
+    verdict: pass
+    note: "手順書から命令を取り出し、隔離した場で辿った。始める段の 7 場面（清浄・再開・手元の重複・遠隔だけの重複・detached・汚れ・task-start の失敗）と、終える段の 6 場面（完了・前提の欠けから回復・OWNER_UNREADABLE の作成と実行前から存在・中止）が、すべて書いた動作になった。汚れと重複は task-start を直に呼ぶとどちらも exit 2 だが、判定は分かれた"
+
+tests:
+  before_failed: 8
+  after_failed: 8
+  after_passed: 728
+
+deviations:
+  - {type: judgement, note: "終える段を 7 の後の ### 8. 終える に置いた。既存の番号を付け替えずに報告の後の段を足せる位置であるため。6 の末尾から導いた"}
+  - {type: judgement, note: "分岐の重複の判定に、tasks/<task_id> の履歴が在り現在の分岐が feat/<slug> でない場合を含めた。統合済みの契約を phase0 の上で受けた場合も止まる"}
+  - {type: judgement, note: "汚れの退避の対象を、未追跡かつ禁止領域に属さないものに限った。追跡下の変更は移しても消えず、禁止領域は同期処理が全台へ配るため、移すと他の台でも消える"}
+  - {type: judgement, note: "判定 a・d・e を縛る試験 tests/test_skill_task_doc.py を足した。手順書の改訂のたびに状態の一覧のずれと無条件の手作業の指示を捕まえるため"}
+
+issuer_defects: []
+
+positive_controls:
+  - judgement: "始める段の位置と既存の番号（a）"
+    breaking_input: "変更前の手順書を試験にかける"
+    observed: "test_start_step_precedes_read_and_existing_steps_are_unchanged が落ちた"
+  - judgement: "手作業の指示は条件つきだけ（d）"
+    breaking_input: "変更前の手順書／5 に無条件の touch .sync-pause を足した写し"
+    observed: "どちらも test_manual_marker_commands_only_in_conditional_places が落ちた"
+  - judgement: "状態の一覧の一致（e）"
+    breaking_input: "表から PREREQ_UNKNOWN の行を消した写し"
+    observed: "test_end_step_states_match_the_tool_both_ways だけが落ちた"
+  - judgement: "終了コードに依存しない判定（c）"
+    breaking_input: "汚れの場と分岐の重複の場で task-start を直に呼ぶ"
+    observed: "どちらも exit 2 で区別できないが、手順書の判定は 4 汚れと 2 分岐の重複に分かれた"
+  - judgement: "所有者を読めない目印（f）"
+    breaking_input: "始めに「作成」と表示した場と「実行前から存在」と表示した場"
+    observed: "前者は手で外され目印が無くなり、後者は外されず 0 バイトの目印が残った"
+  - judgement: "文書の検査（i）"
+    breaking_input: "手順書の写しに、読み込みを別の命令に分けた行を足す"
+    observed: "agent-check --path が fail（違反 1）。改めた手順書だけなら pass"
+  - judgement: "README との整合（g）"
+    breaking_input: "変更前の tasks/README.md に同じ検索をかける"
+    observed: "手で外すと読める文が 1 件見つかった。変更後は 0 件"
+
+followups:
+  - "改めた手順書が各ホストで効くのは、居る分岐に統合が入ってからである。統合後の最初の契約で、0. 始める による受け取りが働くかを確かめる"
+  - "第二の実装系で、番号つきの文による汚れの選択が働くかは実機で未確認"
+  - "OPERATION.md の「自動化を一時的に止める」は、人が自分で置いた目印を自分で外す運用として rm -f と mv を残している。契約の手順書とは対象が違うため変えていない"
+
+unknowns:
+  - "改めた手順書による実際の /task の受け取り（本セッションは変更前の手順書で動いている）"
+  - "第二の実装系での利用者の選択の受け取り"
+
+commits: []
