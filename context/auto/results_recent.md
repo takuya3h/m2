@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 119 件）。
-ここに出ない 114 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 120 件）。
+ここに出ない 115 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-10-07-track-extra-phase-annotations
 
@@ -44,6 +44,37 @@
 ### 断定できなかったこと
 
 （なし）
+
+## T-2026-10-07-skill-task-start-and-release
+
+状態 `pass` / ホスト `philip` / 起票 `219` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 開始状態を記録した。HEAD=origin/phase0=08224414、作業ツリーは取り込んだ契約の 1 件だけ。task-start の表示は「作成」で、目印は 91 バイト、中身は task_id と branch の 2 行。手順書の見出しは 17 個（sha256 先頭 5e986c78）。失敗の名前は 8 件。agent-check と docs-check の不合格は各 1 件
+- `G2` pass — 手順書から命令を取り出し、隔離した場で辿った。始める段の 7 場面（清浄・再開・手元の重複・遠隔だけの重複・detached・汚れ・task-start の失敗）と、終える段の 6 場面（完了・前提の欠けから回復・OWNER_UNREADABLE の作成と実行前から存在・中止）が、すべて書いた動作になった。汚れと重複は task-start を直に呼ぶとどちらも exit 2 だが、判定は分かれた
+
+### 起票者の誤り
+
+（なし）
+
+### 逸脱
+
+- `judgement` — 終える段を 7 の後の ### 8. 終える に置いた。既存の番号を付け替えずに報告の後の段を足せる位置であるため。6 の末尾から導いた
+- `judgement` — 分岐の重複の判定に、tasks/<task_id> の履歴が在り現在の分岐が feat/<slug> でない場合を含めた。統合済みの契約を phase0 の上で受けた場合も止まる
+- `judgement` — 汚れの退避の対象を、未追跡かつ禁止領域に属さないものに限った。追跡下の変更は移しても消えず、禁止領域は同期処理が全台へ配るため、移すと他の台でも消える
+- `judgement` — 判定 a・d・e を縛る試験 tests/test_skill_task_doc.py を足した。手順書の改訂のたびに状態の一覧のずれと無条件の手作業の指示を捕まえるため
+
+### 申し送り
+
+- 改めた手順書が各ホストで効くのは、居る分岐に統合が入ってからである。統合後の最初の契約で、0. 始める による受け取りが働くかを確かめる
+- 第二の実装系で、番号つきの文による汚れの選択が働くかは実機で未確認
+- OPERATION.md の「自動化を一時的に止める」は、人が自分で置いた目印を自分で外す運用として rm -f と mv を残している。契約の手順書とは対象が違うため変えていない
+
+### 断定できなかったこと
+
+- 改めた手順書による実際の /task の受け取り（本セッションは変更前の手順書で動いている）
+- 第二の実装系での利用者の選択の受け取り
 
 ## T-2026-10-07-pause-release-tool-digest-relocate
 
@@ -150,42 +181,4 @@
 ### 断定できなかったこと
 
 （なし）
-
-## T-2026-10-07-auto-regen-projections
-
-状態 `partial` / ホスト `philip` / 起票 `208` / 様式 `v3`
-
-### ゲート
-
-- `G1` ask — phase0 はクラシックの保護で PR が必須（承認 0 件、enforce_admins=true）。直接 push は不可で escalate_if に該当した。利用者が自動 PR 型を選んだ。決定性は 4 ファイルの sha256 が 4 条件で一致して確認。workflow 権限は gh auth status が実行基盤に拒否され UNKNOWN
-- `G2` pass — 偽の origin で workflow の run を再現した。差分なしでは exit 0・changed=false・gh の呼び出し 0 件。入力だけを変えると auto 分岐が phase0 の先頭 + 1 commit になり、差分は生成物 4 ファイルの M だけだった。統合後の再実行は changed=false。作業ツリーの porcelain は試験の前後で一致した
-- `postmerge` pass — 統合後に Actions で実測した。#208 の統合で run 37585603466 が起動し、生成と auto 分岐への push は成功、PR 作成は AUTOSYNC_PR_TOKEN の 401 で失敗した。利用者が PAT を再発行して再実行すると success で、PR #209（生成物 4 ファイル・1 commit）ができた。#209 の統合で run 37588790526 が起動し「差分なし。何もしない」で終わった。run は計 2 件で自己起動は無く、統合後の phase0 で taskindex-check と inbox-check は exit 0
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — inputs.code.entrypoints は tools/build_context.py を挙げるが、make taskindex と make inbox が呼ぶのは build_taskindex.py と build_inbox.py である（Makefile:122-138）。指示どおり build_context.py を読めば、依存と書くファイルを誤って記録していた
-- `asserted_without_measuring` — Goal は「差分があれば phase0 へ commit して push」と設計したが、phase0 は PR 必須で enforce_admins=true である。指示どおり作れば初回の push から拒まれ、生成物は一度も記録されない。escalate_if に挙げてあったため停止はできた
-
-### 逸脱
-
-- `judgement` — 契約の直接 push 型ではなく自動 PR 型で作った。phase0 が PR 必須のため。G1 で利用者が選んだ
-- `environment` — gh auth status と gh secret list が実行基盤に拒否された。迂回せず、workflow 権限と秘匿の登録一覧を UNKNOWN とした
-- `environment` — 手元の gh 認証に workflow 権限が無く、初回の push は refusing to allow an OAuth App to create or update workflow で拒否された。迂回せず提示し、利用者が gh auth refresh -s workflow で付与した後に同じ commit を push した
-- `environment` — 最小構成（PyYAML だけの venv）での実測ができなかった。uv のキャッシュに PyYAML が無く、--offline で失敗した
-- `judgement` — 禁止語の検査の後に RESULT.md §8 へ禁止語の引用を足し、c110278f をそのまま commit・push した。再検査で検出し、語を引用しない表現に直して次の commit で送った
-- `judgement` — Phase A で AUTOSYNC_PR_TOKEN の名前だけを記録し、有効かは確かめなかった。auto-draft-pr.yml の run 履歴を見れば値を読まずに失効が分かった（2026-08-16 から失敗が続いていた）。統合後の初回 run の PR 作成が 401 で失敗した
-- `judgement` — 試験を開始前に測らなかった。本契約は Python を変更していないため、開始後に測った tests/test_build_taskindex.py と tests/test_build_inbox.py の 23 件 pass を開始前の値とみなした
-
-### 申し送り
-
-- PR の分岐では生成物が古いままで、taskindex-check と inbox-check が差分を報告し続ける。案 (a) 契約の検証から *-check を外し、phase0 の上の検査に限る。案 (b) 契約の分岐では差分を WARN 扱いにする。本契約では検査を変えていない
-- 差分が無くなったときに開いたままの自動 PR を閉じる処理は無い。人が手で作り直した場合などに空の PR が残りうる
-- make agent-check は docs/experiment_settings.md:155 の source 二行で fail する。phase0 の上でも exit 1 になる既存の失敗で、本契約では触れていない
-- regen-projections.yml の PR 作成の段は 401 を受けても gh の出力をそのまま出すだけである。auto-draft-pr.yml のように「未設定」と「設定されているが無効」を言い分ける処理は入れていない
-- AUTOSYNC_PR_TOKEN は 2026-08-16 から無効で、auto-draft-pr.yml がその間すべて失敗していた。2026-10-07 に利用者が再発行した。PAT の期限は利用者が管理する
-
-### 断定できなかったこと
-
-- workflow の書式の検査（actionlint・yamllint が無い。GitHub が解釈して実行できたことだけは確かめた）
-- 登録されている Actions の秘匿の名前の一覧（gh secret list が拒否された）
 
