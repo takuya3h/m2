@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（607 件）
+## 申し送り（609 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -969,7 +969,12 @@
 - context/conventions.md#folds は追加動画を 17〜22 の 6 本と書くが、追跡したのは 17〜21 の注釈だけ。動画 22 の注釈は data/raw にだけ在る
 - make agent-check の既存の失敗（docs/experiment_settings.md:155）は本契約でも未対応
 
-## 断定できなかった事項（382 件）
+### T-2026-10-08-doc-checks-clean-and-defect-log
+
+- docs-check の分岐名の除外は git branch -r に依存する。手元の repo から複製した作業ツリーや --single-branch の複製では OPERATION.md:84 の docs/plan-rewrite-2026-06 が実在しない経路として出る。分岐名の判定を参照に依存しない形にするかは起票者の判断
+- 以後の契約は、文書の二つの検査の合格そのものを完了条件にできる（手元と GitHub の複製で合格を確認）
+
+## 断定できなかった事項（384 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1683,18 +1688,23 @@
 - 改めた手順書による実際の /task の受け取り（本セッションは変更前の手順書で動いている）
 - 第二の実装系での利用者の選択の受け取り
 
-## 起票者の誤りの型（354 件）
+### T-2026-10-08-doc-checks-clean-and-defect-log
+
+- 他のホストでの二つの検査の結果（他ホストへ接続しないため測っていない）
+- 本契約の目印による一時停止の記録の出現（確認時点では次のループ待ち）
+
+## 起票者の誤りの型（355 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 93 |
+| `check_does_not_check` | 94 |
 | `asserted_without_measuring` | 147 |
 | `self_contradiction` | 94 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 0 |
 | `rule_read_narrowly` | 1 |
 
-合計 354 件（対を持つ契約 120 件から）
+合計 355 件（対を持つ契約 121 件から）
 

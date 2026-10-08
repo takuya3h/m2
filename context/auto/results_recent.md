@@ -6,8 +6,39 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 120 件）。
-ここに出ない 115 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 121 件）。
+ここに出ない 116 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-10-08-doc-checks-clean-and-defect-log
+
+状態 `pass` / ホスト `philip` / 起票 `221` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 手元では agent-check 1 件（docs/experiment_settings.md:155→156）と docs-check 1 件（docs/proposal-gate.md:41）。GitHub から複製した作業ツリーでは agent-check 1 件、docs-check 7 件。手元の repo から複製した場では docs-check 8 件（OPERATION.md:84 が加わる）。全件を audit.md A3・A4 に記録
+- `G2` pass — 手元と GitHub の複製（変更した 3 ファイルを写した）の両方で二つの検査が合格。複製に実在しない経路と分けた読み込みを足すと、それぞれ rc 1 で検出。手元のファイルを touch した場と無い場で docs-check は同じく合格
+
+### 起票者の誤り
+
+- `check_does_not_check` — 完了判定 b の新しく取得した作業ツリーは取得元を定めていない。docs-check は分岐名を遠隔追跡の参照で除外するため、手元の repo から複製すると OPERATION.md:84 の分岐名が実在しない経路として追加で 1 件出る。取得元しだいで結果が変わり、判定 b はホストに左右されないことを測りきれない
+
+### 逸脱
+
+- `judgement` — 新しい作業ツリーを GitHub の origin からの複製と手元の repo からの複製の二つで測り、判定には前者を用いた。後者は遠隔に分岐が揃わず、新しく取得した状態を代表しないため
+- `judgement` — R1 は文書の側を直した。二行は選択肢であり、検査の判定は誤っていないと判断した。見出しの文で塊を分け、続く操作と同じ命令で読み込む形を一文で添えた
+- `judgement` — R2 は雛形の経路を <YYYY-MM-DD>-<slug> の置き場の形に直し、既存の VAR_MARKS 規則で対象外にした。外す印は使っていない
+- `judgement` — R3 は検査器の側で、git check-ignore が無視とする経路を在っても無くても対象外にした。追跡下のファイルは無視とされないため、版管理に在るはずの経路の検出は減らない
+- `environment` — 試験全体は収集のエラー 2 件で中断するため、変更前後とも --continue-on-collection-errors を付けて回した
+
+### 申し送り
+
+- docs-check の分岐名の除外は git branch -r に依存する。手元の repo から複製した作業ツリーや --single-branch の複製では OPERATION.md:84 の docs/plan-rewrite-2026-06 が実在しない経路として出る。分岐名の判定を参照に依存しない形にするかは起票者の判断
+- 以後の契約は、文書の二つの検査の合格そのものを完了条件にできる（手元と GitHub の複製で合格を確認）
+
+### 断定できなかったこと
+
+- 他のホストでの二つの検査の結果（他ホストへ接続しないため測っていない）
+- 本契約の目印による一時停止の記録の出現（確認時点では次のループ待ち）
 
 ## T-2026-10-07-track-extra-phase-annotations
 
@@ -141,44 +172,4 @@
 ### 断定できなかったこと
 
 - 起票者の手順書の中身（版管理の外にあり、このホストから読めない）
-
-## T-2026-10-07-design-val-subset-balance
-
-状態 `pass` / ホスト `efros` / 起票 `203` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 15 動画の工程（23 クリップ）と術具（COCO 3 ファイル）を出所から読み直し、総フレーム 17233、総 images 15437、総 boxes 49652、工程 9、クラス 15 が材料の合計行と一致。折り表は conventions#folds と正本の表が一致、群のクラス名 9 個が注釈と完全一致
-- `G2` pass — d(test) が A 0.296647、B 0.284446、C 0.262836、D 0.266745、E 0.281091 で正本と小数第 4 位まで一致、15 動画全体 0、1 本の最小 0.3666。欠落は 15 動画全体で 0、除くと各 +1。清浄側の三行が起票者の内訳と一致し、内訳を変えると 511 行が落ちる
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — §2 は生成器が工程と術具の注釈を出所から読む関数を持つと書くが、load_phase は egosurgery_phase/*.csv を glob で全部読む。本ホストには 17〜21 の未追跡 CSV があり、生成器の関数を絞らずに使うと 20 動画になり総フレームが一致せず G1 で止まる。生成器そのものも分け方 0 通りの IndexError で止まった
-- `self_contradiction` — Task A-9 は created_from.counts（runindex の各 CSV の行数）の実測を求めるが、禁止 1 は runindex/** を入力にも参考にも使わないと定める。指示どおり行数を数えると runindex の中身を開くことになる。中身を開かず、同じ commit で過去の契約が測った値を引き継いだ
-
-### 逸脱
-
-- `judgement` — 起動前の未追跡の注釈 CSV 20 件は (a) .git/info/exclude で隠した。起動前の説明で「15 動画の注釈を読む経路と同じ」を理由に (b) を退けたが、実測では 15 動画とは別のファイルで、同じディレクトリの glob に入るだけだった。(b) も規則上は選べた。契約の後に除外を外し、20 件の経路・バイト・sha256 が起動前と一致
-- `judgement` — repo 直下の未追跡 stage1_ptower_20.log（0 バイト）は手順上の想定外で、利用者に諮り選択 1（走行と無関係を確かめて退避）を得た。開くプロセス 0、runner 不在、コード参照 0 を確かめ ~/slocal2/m2_stash/20261007-042417/ へ移した。戻していない
-- `judgement` — Task D の順序を入れ替え、注釈 CSV の除外を外す（D-7）と digest を戻す（D-6）を commit と PR（D-4）の前に行った。戻した後の要約値を報告に載せるため
-- `judgement` — spec の counts は禁止 1（runindex を読まない）のため runindex/ の中身を開かず、同じ runindex_commit 2fb7c905 で T-2026-10-04 が測った 1911/718/1506 を引き継いだ。作業ツリーが 2fb7c905 と同一であることは git diff --quiet で確かめた
-- `judgement` — Task A-3 の参照の数えで git grep が experiments/ 配下の過去 run の config.yaml 7 件を走査した（文字列 egosurgery_phase の有無だけ）。モデルの出力と評価値ではないが、禁止 1 の字面に触れる。道具の実行（受け入れ h）では experiments と runindex を 0 件しか開いていない
-- `judgement` — 工程の読み込みは生成器の load_phase をそのまま使い、折り表の 15 動画に絞った。load_phase の glob が未追跡の 17〜21 の CSV 20 件も開く（読むだけで集計には入れない）
-- `judgement` — 欠落の母数は宣言された一覧（工程は constants.PHASE_CLASSES の 9、術具は COCO categories の 15）とした。データから導くと、除いた種類が母数からも消えて欠落の対照が働かないため。15 動画全体では両者が一致する
-- `judgement` — csv は利用者の全体規則に従い UTF-8 BOM 付きで書いた。文書に載せた要約値 18c06016 は BOM を除いた本文の sha256 で、ファイルの sha256 は 155324f6
-- `judgement` — 本数ごとの上位行は 5 行とした（本数 10 は 1 件、公式 test を含まない側の本数 7 は 1 件）
-- `environment` — 試験の開始時の値は契約の途中で測った。新規の 3 ファイルを scratchpad に一時的に移して pytest を回し、戻した。一時的な作業ツリーでは未追跡の data が無く条件が揃わないため
-- `environment` — make forbidden-check は BASE=4b175b70（分岐点）で回した。注釈 CSV の除外が効いていた間は pass（changed 6、違反 0）。除外を外した後は、起動前から在る未追跡 CSV 20 件を data/ の違反として数え fail（違反 20、すべて egosurgery_phase）。本契約はこれらを書いていない（sha256 が起動前と同一）。TASK を外しても pass になるため、陽性対照には起点を 2360768a~1 にずらした回を使った
-
-### 申し送り
-
-- efros の data/annotations/egosurgery_phase/ に追加動画 17〜21 の工程 CSV 20 件が未追跡で置かれている。同じ内容が data/raw/…/annotations/phase/ と ~/slocal2/EgoSurgery/annotations/coco_format/phase/ に在る。このディレクトリを glob で読むコード（a1_fold_table.load_phase、phase_dataset の既定）は 20 動画を読み、生成器 a1_fold_table.py は止まる。置き場は利用者が決める
-- make forbidden-check は TASK の有無で結果が変わらなかった（今回の変更が禁止領域に無いため）。陽性対照の取り方を手順書に置くか、道具に自己検査を持たせるかを検討してほしい
-- make taskindex と make inbox の生成物は本契約の commit に含めた
-- tools/check_forbidden.py は未追跡ファイルも差分に数えるため、開始前から在る未追跡（今回は注釈 CSV 20 件）がある作業ツリーでは、契約の変更と無関係に fail する。開始時点の未追跡を差し引く仕組みが要る
-- make agent-check が docs/experiment_settings.md 155 行（source の後に次の source が続く）で fail する。phase0 の時点から在る（最終変更 5681ab5b、本契約は触れていない）
-
-### 断定できなかったこと
-
-（なし）
 
