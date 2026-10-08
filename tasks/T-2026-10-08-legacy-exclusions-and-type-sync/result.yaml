@@ -3,7 +3,7 @@ task_id: "T-2026-10-08-legacy-exclusions-and-type-sync"
 status: pass
 host: "efros"
 branch: "feat/legacy-exclusions-and-type-sync"
-pr: null
+pr: 224
 merged: false
 
 gates:
@@ -60,4 +60,5 @@ unknowns:
   - "他ホストでの動作（他ホストへ接続しないため測っていない）。変更は統合後に各ホストへ届く"
   - "旧様式の報告の tests の三整数（旧報告にも旧 RESULT.md にも試験の記録が無く、書き直さない決定のため据え置き）"
 
-commits: []
+commits:
+  - "4f4a2924"

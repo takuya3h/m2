@@ -27,7 +27,7 @@
 | l | 試験の失敗 6 → 6、名前の集合差は空。通過 760 → 802 |
 | m | 変更は宣言の内側のみ。`forbidden-check`（BASE=分岐点、省略の両方）は violations 0。既存行の削除は型の一覧の 3 行のみ |
 | n | 禁止語 0 件。囮は 1 件検出。秘匿の検査は形と一致の有無だけを出力（audit E） |
-| o | 下記「送出」 |
+| o | PR #224、base=phase0、draft=false、分岐 feat/legacy-exclusions-and-type-sync（API の値） |
 
 ## 変更前と変更後
 
@@ -72,4 +72,4 @@
 
 ## 送出
 
-__SEND__
+PR #224、base `phase0`、Draft ではない（API の値: base=phase0 draft=false）、分岐 `feat/legacy-exclusions-and-type-sync`。commit 4f4a2924。台帳への送出（`make task-report`）の結果は最後の応答で伝える。
