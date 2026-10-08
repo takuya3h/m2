@@ -1,0 +1,70 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-07-skill-task-start-and-release"
+  kind: impl
+  title: "手順書 SKILL.md に契約の始め方（状態の判定、汚れの扱い、task-start）と終え方（task-release による完了と中止）を入れ、目印の手作業の指示を条件つきに改める"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-07T11:55:00Z"
+  created_from:
+    runindex_commit: "63ae65da8c7d32df591f5e2ee4358286b72c726b"
+    counts: {index: 1961, experiments: 750, verdicts: 1506}
+  depends_on: [T-2026-10-07-pause-release-tool-digest-relocate]
+  amendments: []
+intent:
+  question: "利用者が識別子を一行送るだけで、手順書が契約の取り込みから抑止の解除までを安全に通せるか"
+  decision_at_stake: "起動前の定型手順（分岐の確認、汚れの確認、目印の手作業、task-start）を利用者の手から外すか"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "not-referenced"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: [".claude/skills/task/SKILL.md", "scripts/task_start.sh", "scripts/task_release.py", "tasks/README.md"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "073f9dc0b80b7ca48c2766eb6f8f2ccd17cf0fe6"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "開始状態の記録。手順書の見出しと要約値、目印の有無と中身、task-start の表示、試験と文書検査の不合格の名前", gpu: false, est: "30m"}
+    - {id: B, name: "手順書に始める段を足す", gpu: false, est: "60m"}
+    - {id: C, name: "手順書の実行中の抑止の節を改め、終える段を足す。禁止事項を足す", gpu: false, est: "60m"}
+    - {id: D, name: "tasks/README.md の解除の節と task_start.sh の案内文を手順書に合わせる", gpu: false, est: "30m"}
+    - {id: E, name: "隔離した場で、改めた手順書の文面どおりに状態ごとに辿る", gpu: false, est: "90m"}
+    - {id: F, name: "検証、報告、改めた終える段による本契約の終わり", gpu: false, est: "45m"}
+  gates:
+    - {id: G1, after: A, check: "開始状態が記録され、本契約の目印に所有の記録が入っているかが分かった", on_fail: stop}
+    - {id: G2, after: E, check: "隔離した場で、すべての状態が手順書に書いた動作になった", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md, result.yaml, audit.md]
+  destination: ".claude/skills/task/"
+  acceptance:
+    - "a: 始める段が手順の読む段より前にあり、既存の手順の番号は付け替えていない"
+    - "b: 隔離した場で、改めた手順書の文面どおりに再開、分岐の重複、detached HEAD、汚れ、清浄、task-start の失敗の各状態を辿り、書いた動作になる"
+    - "c: 始める段の判定は終了コードに依存せず、make 経由で失敗の終了コードが潰れても原因が分かれる"
+    - "d: 目印を手で置く指示と手で外す指示は、条件つきの箇所にしか無い"
+    - "e: 終える段が完了と中止の二つの終わり方と、道具の状態ごとの扱いを持ち、状態の集合が道具の冒頭の一覧と両方向で一致する"
+    - "f: 所有者を読めない目印の扱いが、開始時の task-start の表示（作成か、実行前から存在か）で分かれる"
+    - "g: tasks/README.md と手順書の解除の記述が食い違わない"
+    - "h: task_start.sh の案内文が解除の道具を指し、動作と終了コードは変わらない"
+    - "i: make agent-check と make docs-check の不合格の名前が変更前と同じ"
+    - "j: 試験の失敗の名前の集合が変更前と同じ"
+    - "k: 本契約の終わりを改めた終える段で行い、状態表示を最後の応答で利用者に伝える"
+    - "l: PR が Draft でなく存在し、base が phase0 で、分岐が feat/ で始まる"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "既存の手順の番号を付け替えないと始める段や終える段を置けない場合"
+    - "手順書の文面だけでは、二つの実装系の両方で利用者に選んでもらう形を書けない場合"
+    - "task_start.sh の案内文を変えると既存の試験の期待が変わり、動作の変更と区別できない場合"
+    - "実行基盤が書き込みや rm を拒む場合"
