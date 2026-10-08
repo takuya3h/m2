@@ -33,7 +33,7 @@
 | e | 一件足し、出所を指す | `docs/issuer-defects.md` の「禁止と要求が両立しなかった」に一件。`T-2026-10-07-pause-release-tool-digest-relocate` RESULT §5-1 を指す | 変更前の一覧にこの識別子は 0 件 |
 | f | 失敗の名前の集合 | 変更前と同一の 8 件（`diff` が空）。通過は 728 → 731（足した試験 3 件） | 名前で比べた（A5、E） |
 | g | 始める段の記録 | §2 のとおり。目印の中身を値で記録 | 表示の文言だけでなく中身の 2 行を記録 |
-| h | PR | 送出の節に記録 | 分岐名 `feat/doc-checks-clean-and-defect-log` |
+| h | PR | #221。Draft でない、base `phase0` | 分岐名 `feat/doc-checks-clean-and-defect-log` |
 
 `make forbidden-check` は pass（違反 0）。`task-validate` と `spec-check` も合格。
 
@@ -77,5 +77,5 @@
 
 ## 8. 送出
 
-- PR: 起票後に追記する
+- PR: #221（base `phase0`、head `feat/doc-checks-clean-and-defect-log`、`isDraft: false`、OPEN）。`gh pr create` は URL を返して成功
 - `make task-report`: 送出後に結果を最後の応答で伝える（版管理には残らない）
