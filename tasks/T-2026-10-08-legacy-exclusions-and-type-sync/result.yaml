@@ -1,0 +1,63 @@
+result_version: 3
+task_id: "T-2026-10-08-legacy-exclusions-and-type-sync"
+status: pass
+host: "efros"
+branch: "feat/legacy-exclusions-and-type-sync"
+pr: null
+merged: false
+
+gates:
+  - id: G1
+    verdict: pass
+    note: "#194 の統合 commit cb3fcaa1 は origin/phase0 の祖先。開始前の数値を実数で記録した: 試験 6 failed / 760 passed、全契約の検証 144 task(s) 1 failed、spec-check の allow_write_incomplete 15 件（hits 232）、報告の様式エラー 16 件（1 契約）、型は schema 6 語・手順書／README／雛形 4 語。詳細は audit.md の A"
+  - id: G2
+    verdict: pass
+    note: "P13 の check_symmetry_table と P14 の check_proposal_card はどちらも preflight_task.completed_verdicts を呼ぶ。check_spec.py も同じ関数を呼ぶ。判定を常に空にする変異で spec-check 0→15、P13 と P14 は SKIP→FAIL に同時に変わり、戻して一致した"
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 802
+
+deviations:
+  - {type: judgement, note: "教師データの試験 test_teacher_detection_rate が完了済みの実契約を入力にしており、除外で検出 12 / 期待 15 になった。期待値は変えず、その試験だけが使うフィクスチャで completed_verdicts を切った。ツール側に引数は足していない（規則の署名と数を動かさないため）"}
+  - {type: judgement, note: "旧様式の除外の一覧は yaml（tasks/_schema/result_legacy_exclusions.yaml）にした。P14 の例外が frozenset であるのに対し、理由・決定日・出所を同じ行に置くため。照合は同じく完全一致"}
+  - {type: judgement, note: "ルートの README.md と docs/experiment_log.md は更新していない。契約の allow_write に含まれず、実験を行っていないため"}
+  - {type: environment, note: "変異試験の最初の実行で zsh が複数経路の変数を単語分割せず、バックアップが取れないまま変異が残った。逆置換で戻して git diff で確認し、以後は Python でメモリ上のバックアップから復元した（前後の sha256 一致）。成果物への影響なし"}
+
+issuer_defects:
+  - type: check_does_not_check
+    note: "申し送りは全契約の task-validate が inbox.d に spec.yaml が無いため 1 件失敗すると述べる。実測では inbox.d は SKIP で失敗に数えられず、失敗は旧様式の philip-hub-foundation の様式エラー 16 件だった。述べられた原因で復元すると別の失敗を見逃す"
+  - type: asserted_without_measuring
+    note: "受け入れ基準は既存の試験の失敗数が増えないことを求めるが、教師データの試験が完了済みの実契約を入力にしており、除外で検出が 15 から 12 に減って失敗が 1 件増えた。起票時に測っておらず、想定外の行にだけ載っていた"
+
+positive_controls:
+  - judgement: "旧様式の除外が完全一致で働く（c）"
+    breaking_input: "旧様式の報告を、一覧の名前から一文字違い・末尾の改行・半角スペース・大文字小文字・接頭辞のみ・接尾辞つきの 6 通りの名前で一時の木に置く"
+    observed: "6 通りとも除外の行は出ず L1-6 で FAIL、終了コード 1。一覧の名前そのものは除外され終了コード 0"
+  - judgement: "除外が常に除外する壊れ方でない（c）"
+    breaking_input: "一覧に無い名前で現行 schema を満たさない result.yaml を置く"
+    observed: "除外の行なしで FAIL。同内容の旧様式報告を別名で置いても除外されない"
+  - judgement: "完了済みの除外が P13・P14 と同じ関数である（g）"
+    breaking_input: "preflight_task.completed_verdicts を常に空を返す関数に置換する"
+    observed: "spec-check の allow_write_incomplete が 0 から 15、P13 が SKIP から FAIL、P14 が SKIP から FAIL に同時に変わり、戻すと 0 / SKIP / SKIP"
+  - judgement: "未完了の契約は従来どおり検出される（h）"
+    breaking_input: "宣言を欠く exp と impl の契約で、報告なし・gates なし・verdict 空・verdict キーなし・YAML 破損の 5 通りを置く"
+    observed: "10 入力すべて検出。verdict が pass・ask・stop・skip の 8 入力は検出されない"
+  - judgement: "型の写しがずれたら試験が落ちる（k）"
+    breaking_input: "手順書から一語を消す／README の行を消す／雛形から一行を消す／雛形へ schema に無い語を足す／schema の列挙へ一語足す／手順書に個数を戻す"
+    observed: "6 変異すべてで失敗（2・2・2・2・6・1 件）。戻した後は 51 passed、sha256 が一致"
+  - judgement: "禁止語の検査が働いている（n）"
+    breaking_input: "規約の禁止語を 1 語含む囮の文書（版管理の外）を検査する"
+    observed: "囮は 1 件検出、終了コード 1。SPEC は 0 件"
+
+followups:
+  - "取り込まない項目のうち、開始処理が止まるときの表示（scripts/task_start.sh:106-111）は退避の方法と戻し方を表示しない。件数と経路の一覧のみ。別契約で扱うか起票者が判断する"
+  - "完了済みの定義（gates[].verdict に空でない値）は stop と ask を含む。除外された 15 契約のうち pass 以外は 5 件（partial 4、stopped 1）。定義を締めるなら利用者の判断を得て別契約で扱う"
+  - "docs/issuer-defects.md は 6 語で schema と一致していた（本契約は読むだけ）。別契約 T-2026-10-08-doc-checks-clean-and-defect-log の統合後も一致しているので、起票者の確認は済んでいる"
+
+unknowns:
+  - "他ホストでの動作（他ホストへ接続しないため測っていない）。変更は統合後に各ホストへ届く"
+  - "旧様式の報告の tests の三整数（旧報告にも旧 RESULT.md にも試験の記録が無く、書き直さない決定のため据え置き）"
+
+commits: []

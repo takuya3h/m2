@@ -1,0 +1,17 @@
+# 現行の result.schema.json の検査から外す旧様式の result.yaml の一覧。
+#
+# 照合は**ディレクトリ名（task_id）の完全一致**で行う（tools/validate_task.py の
+# load_legacy_result_exclusions）。旧様式は最上位に task_id を持たないため、
+# ファイルの中身では引けない。接頭辞・部分一致・大文字小文字の無視はしない。
+# 外すのは**報告の様式の検査だけ**。その契約の spec.yaml の検査は従来どおり行う。
+# 外した事実は検査の出力に「除外（旧様式）」の行として契約名つきで出る。
+#
+# **行を足すときは利用者の決定が要る。** 旧様式の報告は書き直さない
+# （版 3 の tests の三整数は旧報告に存在せず、推測で埋めれば捏造になるため）。
+legacy_result_format:
+  - task_id: T-2026-08-22-philip-hub-foundation
+    reason: >-
+      旧様式。meta の下に task_id と verdict を持ち、最上位の task_id と status を欠く。
+      版 3 が要る tests の三整数が旧報告に存在せず、推測で埋めれば捏造になる。
+    decided: ["2026-09-22", "2026-09-23"]
+    source: "tasks/inbox.d/T-2026-09-19-p13-skip-and-enum.md; context/auto/results_recent.md の T-2026-09-23-ops-and-proposal-card-gate の逸脱"

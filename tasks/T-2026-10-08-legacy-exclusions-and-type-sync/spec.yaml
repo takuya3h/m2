@@ -1,0 +1,102 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-08-legacy-exclusions-and-type-sync"
+  kind: impl
+  title: "旧様式の報告を現行 schema の検査から名指しで外し、完了済みの契約を宣言漏れ検査の対象から外し、起票者の誤りの型の写しを schema に縛る"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-08T11:25:00Z"
+  created_from:
+    runindex_commit: "63ae65da"
+    counts: {index: 1961, experiments: 750, verdicts: 1506}
+  depends_on: ["T-2026-09-23-ops-and-proposal-card-gate"]
+  amendments:
+    - date: "2026-10-08"
+      reason: "created_from の占位を実測値へ置換した。runindex_commit は runindex/ を最後に変えた commit、counts は runindex の index.csv・experiments.csv・verdicts.csv の行数。conventions_rev は契約の記載 073f9dc0 が conventions.md を最後に変えた commit と一致したため置換しない"
+      diff: "runindex_commit: REPLACE-BY-EXECUTOR -> 63ae65da; counts: 0/0/0 -> 1961/750/1506"
+intent:
+  question: "検査が過去の記録に対して出し続ける偽の失敗と、写しが schema からずれる経路を、記録を書き換えずに機械で止められるか"
+  decision_at_stake: "以後の契約で、旧様式の報告と完了済みの契約が検査の出力を汚さない状態にできるか。型の集合を増やしたときの写しの更新漏れが試験で落ちるようになるか"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "not-referenced"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints:
+      - "tools/validate_task.py"
+      - "tools/check_spec.py"
+      - "tools/preflight_task.py"
+      - "tasks/_schema/result.schema.json"
+      - "tasks/_templates/result.yaml"
+      - ".claude/skills/task/SKILL.md"
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "073f9dc0"
+  allow_write:
+    - "tasks/T-2026-10-08-legacy-exclusions-and-type-sync/"
+    - "tasks/inbox.d/"
+    - "tasks/_schema/"
+    - "tasks/_templates/"
+    - "tasks/README.md"
+    - "tools/"
+    - "tests/"
+    - ".claude/skills/task/"
+  prohibitions:
+    - no_split_redefine
+    - no_raw_write
+    - no_frozen_change
+    - no_runindex_hand_edit
+    - no_estimated_values
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "前提と開始状態。取り込まない項目の読み取り確認", gpu: false, est: "30m"}
+    - {id: B, name: "旧様式の報告を名指しで除外する", gpu: false, est: "60m"}
+    - {id: C, name: "完了済みの契約を宣言漏れ検査の対象から外す", gpu: false, est: "90m"}
+    - {id: D, name: "型の写しを schema に合わせ、ずれたら落ちる試験を足す", gpu: false, est: "60m"}
+    - {id: E, name: "検証と報告", gpu: false, est: "45m"}
+  gates:
+    - id: G1
+      after: A
+      check: "前提の統合を実測で確かめ、開始前の数値（作業ツリー、試験の失敗の内訳、全契約の検証結果、宣言漏れ検査の該当、報告の様式エラー、型の集合）を実数で記録した"
+      on_fail: stop
+    - id: G2
+      after: C
+      check: "完了済みの判定が P13 と P14 で同じ関数であることを確かめた。食い違いがあれば記録して利用者に諮った"
+      on_fail: ask
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: ["RESULT.md"]
+  destination: "tasks/T-2026-10-08-legacy-exclusions-and-type-sync/"
+  acceptance:
+    - "前提の統合を実測で示し、開始前の数値を丸めずに実数で記録している"
+    - "取り込まない項目の確認が読み取りだけで行われ、未達があれば未達と記録して直していない"
+    - "旧様式の除外が task_id の完全一致で働くことを、一文字違い・末尾の改行・大文字小文字・接頭辞・接尾辞の入力と、一覧に無い不適合の報告との両方向の対照で示している"
+    - "除外が検査の出力に除外（旧様式）として現れ、旧様式のファイルの要約値が前後で一致している"
+    - "検査の最終行の書式が変わっていない"
+    - "spec-check が完了済みの契約を宣言漏れ検査の対象から外し、未完了では従来どおり検出することを両方向の対照で示している"
+    - "完了済みの判定が P13 と P14 と同じ関数であることを、判定を置換する変異で示している"
+    - "契約指定なしの spec-check の該当件数が減り、減った契約がすべて完了済みであることを集合差で示している"
+    - "型の写しが schema の列挙と同じ集合になり、個数を述べる古い語句の残存が零である"
+    - "写しと schema がずれたら落ちる試験があり、変異で落ちること、戻して通ることを示している"
+    - "試験の失敗数が開始前の値以下で、失敗した試験名の集合が開始前と同じである"
+    - "変更が宣言した経路の内側だけで、禁止領域の違反が零であり、文書・雛形・手順書の既存行の削除が型の一覧の箇所だけである"
+    - "秘匿と禁止語の検査を自分で行い、検査そのものが値を出力せず、陽性対照が検出している"
+    - "PR が Draft でなく存在し、base が phase0 で、分岐名が feat で始まる"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "前提の PR が統合幹に入っていない場合"
+    - "完了済みの判定が P13 と P14 で食い違っている場合"
+    - "旧様式の除外を task_id の完全一致で実現できない場合"
+    - "既存の試験の失敗数が増えた、または失敗した試験名の集合が開始前と変わった場合"
+    - "実行基盤が書き込みや削除を拒んだ場合（回避せず利用者へ提示する）"
+    - "秘匿の値を出力した、または出力しうる検査に気付いた場合"

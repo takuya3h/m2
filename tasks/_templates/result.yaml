@@ -37,12 +37,14 @@ tests:
 deviations:
   - {type: judgement, note: ""}
 
-# 起票者の誤り。type は 4 種に固定。**空にしない。**
+# 起票者の誤り。type は schema の列挙（tasks/_schema/result.schema.json）のいずれか。**空にしない。**
 # 無かった場合は [] とし、無かったことを RESULT に書く。
 #   check_does_not_check       検証コマンドが対象を検証していない
 #   asserted_without_measuring 確かめずに断定した
 #   self_contradiction         契約の内部で矛盾した
 #   shell_assumption           実行環境と異なるシェルを前提にした
+#   asymmetric_comparison      比較対象の処方を読まずに候補を設計した
+#   rule_read_narrowly         規則の字面を狭く読み、その読みを既定にした
 #
 # note は **何が誤っていたか** と **指示どおり実行すると何が起きたか** の 2 つを含む。
 # 版 2 では 80 字以上。結果を書かない記述を拒むための下限であって、字数を稼ぐためではない。

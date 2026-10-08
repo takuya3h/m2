@@ -432,7 +432,7 @@ B-30 が起きるのは、未追跡のファイルと同じパスが統合で取
 `result.yaml` の必須項目は `result_version` `task_id` `status` `host` `branch`
 `gates` `tests` `deviations` `issuer_defects` `followups` `unknowns` `commits` である。
 
-`issuer_defects.type` は 4 語のいずれか。**起票者を改善するための記録であり、
+`issuer_defects.type` は次のいずれか（正本は `tasks/_schema/result.schema.json` の列挙）。**起票者を改善するための記録であり、
 件数を隠さない。**
 
 | 型 | 意味 |
@@ -441,6 +441,8 @@ B-30 が起きるのは、未追跡のファイルと同じパスが統合で取
 | `asserted_without_measuring` | 測らずに断定した |
 | `self_contradiction` | 同じ契約の中で両立しない指示がある |
 | `shell_assumption` | 対話シェルの違いを踏まえていない |
+| `asymmetric_comparison` | 比較対象の処方を読まずに候補を設計した |
+| `rule_read_narrowly` | 規則の字面を狭く読み、その読みを既定にした |
 
 ## 投影
 
