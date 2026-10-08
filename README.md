@@ -1002,6 +1002,10 @@ WARN 単独では validator の exit code は 0 だが、`/task` 実行時は内
 L3、凍結 checkpoint の SHA-256 照合、実行、`RESULT.md` 記入は `/task` 手順の責務。
 エージェント向け文書のシェル命令は `make agent-check` で検査し、仮想環境や資格情報の
 読み込みと後続操作が別命令へ分かれていないことを確認する。
+`make docs-check` は `.gitignore` で無視される経路（`.claude/settings.local.json` など
+ホストの手元にだけ在るファイル）を、在っても無くても対象外にする。結果がホストで変わらず、
+追跡下の経路が実在しない場合は従来どおり検出する（2026-10-08、`T-2026-10-08-doc-checks-clean-and-defect-log`。
+この時点で二つの検査は手元と新しく取得した作業ツリーの両方で合格）。
 
 ### 起票者の誤りの検出（`make spec-check`）
 

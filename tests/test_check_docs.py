@@ -103,6 +103,46 @@ def test_out_of_scope_prefixes_are_skipped():
     assert extract_paths(text) == []
 
 
+# --- 無視されるホストの手元のファイル ----------------------------------------
+
+IGNORED = {".claude/settings.local.json"}
+
+
+def _check_ignored(text: str, exists):
+    return check_text("sample.md", text, targets=TARGETS, exists=exists,
+                      branches=BRANCHES, ignored=lambda p: p in IGNORED)
+
+
+def test_ignored_path_result_does_not_depend_on_presence():
+    text = "`PYTHONPATH` は `.claude/settings.local.json` で通す。\n"
+    absent = _check_ignored(text, exists=_exists)
+    present = _check_ignored(
+        text, exists=lambda p: _exists(p) or p == ".claude/settings.local.json"
+    )
+    assert absent == present == []
+
+
+def test_missing_tracked_path_is_still_rejected_with_ignored():
+    text = "`.claude/settings.local.json` と `tools/missing.py` を見る。\n"
+    problems = _check_ignored(text, exists=_exists)
+    assert problems == ["sample.md:1 実在しない経路 tools/missing.py"]
+
+
+def test_is_git_ignored_matches_untracked_only(tmp_path, monkeypatch):
+    import subprocess
+
+    from check_docs import is_git_ignored
+
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    (tmp_path / ".gitignore").write_text("*.log\n", encoding="utf-8")
+    (tmp_path / "kept.log").write_text("x\n", encoding="utf-8")
+    subprocess.run(["git", "add", "-f", "kept.log"], cwd=tmp_path, check=True)
+    monkeypatch.chdir(tmp_path)
+    assert is_git_ignored("local.log")  # 無視される。在るかどうかは問わない
+    assert not is_git_ignored("kept.log")  # 追跡下は無視されたことにならない
+    assert not is_git_ignored("tools/missing.py")
+
+
 # --- 対象の一覧の解析 -------------------------------------------------------
 
 

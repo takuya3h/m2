@@ -152,8 +152,15 @@ D→P 系 `4ac382e09c21`・`cef2b5817cdd`。
 
 出所: `conventions#env_p0`。
 
-    source .venv-relation-detr/bin/activate   # 検出系
-    source .venv/bin/activate                 # 解析・工程系
+系ごとにどちらか一方を、続く操作と同じ命令の中で読み込む（`source <仮想環境>/bin/activate && <操作>`）。
+
+検出系:
+
+    source .venv-relation-detr/bin/activate
+
+解析・工程系:
+
+    source .venv/bin/activate
 
 **activate を省略すると CUDA 拡張が読み込まれず、無言で CPU 実装へ落ちて数値が変わったまま完走する。**
 拡張のロード確認をログに残すこと。

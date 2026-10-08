@@ -38,7 +38,7 @@
       → 生成会話: 地図だけから提案カード三から五案
       → 批判会話: 却下表と順位
       → 利用者が決定。F に決定行
-      → カードを docs/proposals/YYYY-MM-DD-slug.md に置き、check_proposal.py を通す
+      → カードを docs/proposals/<YYYY-MM-DD>-<slug>.md に置き、check_proposal.py を通す
       → 起票会話: 契約。手法は変えない。exp は intent.proposal_card でカードを参照する
       → 実行・報告。カード #5 #6 の予測と実測を突き合わせ、F に予測外れ行
 

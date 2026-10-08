@@ -1,0 +1,1 @@
+- [ ] 2026-10-08 [cc] **文書の二つの検査を手元と新しい作業ツリーの両方で合格にした。** docs-check は無視される経路を在っても無くても対象外にする。手元の repo から複製した場では分岐名の照合が効かず `OPERATION.md:84` が残る（範囲外。tasks/T-2026-10-08-doc-checks-clean-and-defect-log/RESULT.md §7）

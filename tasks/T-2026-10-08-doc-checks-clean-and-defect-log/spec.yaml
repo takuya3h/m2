@@ -1,0 +1,65 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-08-doc-checks-clean-and-defect-log"
+  kind: impl
+  title: "文書の検査（docs-check と agent-check）の既存の不合格を解消し、検査の結果がホストの手元のファイルに左右されないようにする。起票者の誤りを一件、欠陥の一覧へ足す"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-08T07:40:00Z"
+  created_from:
+    runindex_commit: "63ae65da8c7d32df591f5e2ee4358286b72c726b"
+    counts: {index: 1961, experiments: 750, verdicts: 1506}
+  depends_on: [T-2026-10-07-skill-task-start-and-release]
+  amendments: []
+intent:
+  question: "文書の二つの検査を、どのホストでも、新しく取得した作業ツリーでも、合格の状態にできるか"
+  decision_at_stake: "以後の契約が文書の検査の不合格を変更前と同じかで比べずに、合格を完了条件にできるか"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "not-referenced"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["tools/check_docs.py", "tools/check_agent_docs.py", "docs/proposal-gate.md", "docs/experiment_settings.md", "docs/issuer-defects.md"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "073f9dc0b80b7ca48c2766eb6f8f2ccd17cf0fe6"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "開始状態の記録。始める段の働き、二つの検査の出力の全件、新しく取得した作業ツリーでの出力、試験の失敗の名前", gpu: false, est: "30m"}
+    - {id: B, name: "agent-check の不合格を解消する", gpu: false, est: "30m"}
+    - {id: C, name: "docs-check の不合格を解消し、結果がホストの手元のファイルに左右されないようにする", gpu: false, est: "90m"}
+    - {id: D, name: "起票者の欠陥の一覧に一件足す", gpu: false, est: "15m"}
+    - {id: E, name: "検証、報告、終える段", gpu: false, est: "45m"}
+  gates:
+    - {id: G1, after: A, check: "手元の作業ツリーと新しく取得した作業ツリーの両方で、二つの検査の出力が全件記録された", on_fail: stop}
+    - {id: G2, after: C, check: "両方の作業ツリーで二つの検査が合格し、陽性対照では検出する", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md, result.yaml, audit.md]
+  destination: "docs/"
+  acceptance:
+    - "a: 手元の作業ツリーで make agent-check と make docs-check が合格する"
+    - "b: 新しく取得した作業ツリー（無視されている手元のファイルが無い）でも二つの検査が合格する"
+    - "c: 二つの検査は、実在しない経路と、読み込みを別の命令に分けた行を、変更後も検出する"
+    - "d: 無視されている手元のファイルの有無で、docs-check の結果が変わらない"
+    - "e: 起票者の欠陥の一覧に、状態を変える操作と報告の順序の誤りが一件足され、出所の契約を指す"
+    - "f: 試験の失敗の名前の集合が変更前と同じか、減った分の名前が説明されている"
+    - "g: 始める段の働き（task-start を手で打たずに始まったか、目印を作成と表示したか）が報告に記録されている"
+    - "h: PR が Draft でなく存在し、base が phase0 で、分岐が feat/ で始まる"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "不合格の行を消すか検査を弱めるほかに、合格させる手段が無い場合"
+    - "無視されているファイルの扱いを変えると、実在しない経路の検出が減る場合"
+    - "始める段が手順書どおりに働かなかった場合"
+    - "実行基盤が書き込みや rm を拒む場合"
