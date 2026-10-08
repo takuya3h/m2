@@ -25,7 +25,7 @@
 | i | 文書の検査 | agent-check（`docs/experiment_settings.md:155`）と docs-check（`docs/proposal-gate.md:41`）の不合格は、変更前と同じ。読み込みを別の命令に分けた行を足した写しでは agent-check が落ちた |
 | j | 試験 | 失敗の名前の集合（8 件）は開始前と同一で、名前で比べた。passed は 725 から 728（追加 3 件） |
 | k | 本契約の終わり | 解除の前の目印の中身は `task_id=T-2026-10-07-skill-task-start-and-release` / `branch=feat/skill-task-start-and-release`（91 バイト）で、始めの表示は「作成」。状態表示は最後の応答で伝える |
-| l | PR | §6 を参照 |
+| l | PR | #219。Draft ではなく、base は `phase0`、分岐は `feat/skill-task-start-and-release` |
 
 ## 3. 実測
 
@@ -58,7 +58,7 @@
 
 - 検証: `task-validate` は exit 0、`forbidden-check` は pass（違反 0）、`spec-check TASK=...` は exit 0。
 - 禁止語と秘匿: 送出物 4 件、変更した文書と task_start.sh の追加行、追加した試験の計 9 件に当てた。どちらも 0 件だった。陽性対照（禁止語を 2 語含む合成文、鍵の形の合成文字列、合成した環境値の照合）はすべて検出した。出力は種別だけ。
-- PR 番号と終了コードは、result.yaml の `pr` と追記の commit に書く。台帳への送り返しは `make task-report` で行う。
+- push は exit 0。PR は **#219**（base `phase0`、Draft ではない）。台帳への送り返しは `make task-report` で行う。
 - **抑止の解除は報告と送出の後に、改めた「8. 終える」のとおり `make task-release TASK=T-2026-10-07-skill-task-start-and-release END=complete` で行う。** 結果は版管理にも台帳にも残らないため、最後の応答で伝える。
 
 ## 7. 想定外・UNKNOWN
