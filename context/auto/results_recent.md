@@ -6,8 +6,40 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 121 件）。
-ここに出ない 116 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 122 件）。
+ここに出ない 117 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-10-08-legacy-exclusions-and-type-sync
+
+状態 `pass` / ホスト `efros` / 起票 `224` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — #194 の統合 commit cb3fcaa1 は origin/phase0 の祖先。開始前の数値を実数で記録した: 試験 6 failed / 760 passed、全契約の検証 144 task(s) 1 failed、spec-check の allow_write_incomplete 15 件（hits 232）、報告の様式エラー 16 件（1 契約）、型は schema 6 語・手順書／README／雛形 4 語。詳細は audit.md の A
+- `G2` pass — P13 の check_symmetry_table と P14 の check_proposal_card はどちらも preflight_task.completed_verdicts を呼ぶ。check_spec.py も同じ関数を呼ぶ。判定を常に空にする変異で spec-check 0→15、P13 と P14 は SKIP→FAIL に同時に変わり、戻して一致した
+
+### 起票者の誤り
+
+- `check_does_not_check` — 申し送りは全契約の task-validate が inbox.d に spec.yaml が無いため 1 件失敗すると述べる。実測では inbox.d は SKIP で失敗に数えられず、失敗は旧様式の philip-hub-foundation の様式エラー 16 件だった。述べられた原因で復元すると別の失敗を見逃す
+- `asserted_without_measuring` — 受け入れ基準は既存の試験の失敗数が増えないことを求めるが、教師データの試験が完了済みの実契約を入力にしており、除外で検出が 15 から 12 に減って失敗が 1 件増えた。起票時に測っておらず、想定外の行にだけ載っていた
+
+### 逸脱
+
+- `judgement` — 教師データの試験 test_teacher_detection_rate が完了済みの実契約を入力にしており、除外で検出 12 / 期待 15 になった。期待値は変えず、その試験だけが使うフィクスチャで completed_verdicts を切った。ツール側に引数は足していない（規則の署名と数を動かさないため）
+- `judgement` — 旧様式の除外の一覧は yaml（tasks/_schema/result_legacy_exclusions.yaml）にした。P14 の例外が frozenset であるのに対し、理由・決定日・出所を同じ行に置くため。照合は同じく完全一致
+- `judgement` — ルートの README.md と docs/experiment_log.md は更新していない。契約の allow_write に含まれず、実験を行っていないため
+- `environment` — 変異試験の最初の実行で zsh が複数経路の変数を単語分割せず、バックアップが取れないまま変異が残った。逆置換で戻して git diff で確認し、以後は Python でメモリ上のバックアップから復元した（前後の sha256 一致）。成果物への影響なし
+
+### 申し送り
+
+- 取り込まない項目のうち、開始処理が止まるときの表示（scripts/task_start.sh:106-111）は退避の方法と戻し方を表示しない。件数と経路の一覧のみ。別契約で扱うか起票者が判断する
+- 完了済みの定義（gates[].verdict に空でない値）は stop と ask を含む。除外された 15 契約のうち pass 以外は 5 件（partial 4、stopped 1）。定義を締めるなら利用者の判断を得て別契約で扱う
+- docs/issuer-defects.md は 6 語で schema と一致していた（本契約は読むだけ）。別契約 T-2026-10-08-doc-checks-clean-and-defect-log の統合後も一致しているので、起票者の確認は済んでいる
+
+### 断定できなかったこと
+
+- 他ホストでの動作（他ホストへ接続しないため測っていない）。変更は統合後に各ホストへ届く
+- 旧様式の報告の tests の三整数（旧報告にも旧 RESULT.md にも試験の記録が無く、書き直さない決定のため据え置き）
 
 ## T-2026-10-08-doc-checks-clean-and-defect-log
 
@@ -139,37 +171,4 @@
 
 - 共有フォルダが無いホストと .servername が無いホストでの実機の動作（試験の場では確かめた）
 - 終了フックが新しい置き場へ書くことの実機での確認（本セッションの終了時に初めて起きる）
-
-## T-2026-10-07-drop-projection-check-in-contracts
-
-状態 `pass` / ホスト `bengio` / 起票 `213` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — S1〜S8 の 8 通りで探した。直接の該当は audit.md §2。Makefile の依存、validate/preflight/report/fetch/task_start/m2-sync の subprocess、フック、コマンド、試験、Codex のリンクを読み、*-check と作り直しへ至る間接の経路は 0 件だった。直す対象は SKILL.md の 4 文と tasks/README.md の 1 段落で、道具の変更は要らない
-- `G2` pass — 受け皿を足して inbox-check が exit 1 の状態で task-validate exit 0、task-preflight exit 0（5/1/8/0 で変化なし）。phase0 67c4cc44 の作業木で taskindex-check と inbox-check は素で 0、生成物 1 行追記で 1。task-validate と preflight は kind 改変の写しで 1、forbidden-check は runindex 追記で 1。Makefile の目標は残っている
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — 契約は「契約の検証で *-check が走り毎回落ちる」「契約の検証から呼び出しを外す」と書いたが、task-validate・task-preflight・Makefile の依存に *-check への経路は無く、走らせていたのは手順書の文言だった。指示どおり道具から外そうとすると外す対象が無く、無関係な検査を変えて禁止 7 に触れうる
-
-### 逸脱
-
-- `environment` — 開始時の分岐で git checkout phase0 が未追跡の experiments/transfer/pd_refin_empty_seed42_tf32/logs/ の json 2 件に阻まれた。phase0 の追跡版と内容が同一と確かめて scratchpad へ移し、切替えで同じ内容の追跡版が置かれた。禁止 12 に字面で触れたため記録する
-- `judgement` — 契約の検証の道具には *-check の呼び出しが無かったため、外したのは手順書の文言だけである。Makefile と tools/ は変えていない
-- `judgement` — プロジェクト規約は変更後に README.md への記録を求めるが、契約が変更範囲を直す対象・契約のディレクトリ・受け皿に限るため README.md は変えていない
-- `judgement` — 試験は変更前の値を phase0 の作業木で測った（同じ 5 本で 63 passed）。本体で変更前に測ってはいない
-- `environment` — zsh では PIPESTATUS が空で、最初の終了コードの測定が空振りした。出力をファイルへ落として測り直した
-- `judgement` — 送出の予行の命令に誤って make task-report を含め、commit の前に台帳へ一度送った。送信前の秘匿検査は通り、読み戻しの要約値は手元と一致した。report_task.py は既存の報告を置き換えるため、PR 番号を入れた後に送り直した
-
-### 申し送り
-
-- 起票者の手順書（版管理の外）に「検証を通す」の中身として taskindex-check や inbox-check を含める記述があれば、phase0 の上で使う道具と書き直すこと。repo の雛形 tasks/_templates/{impl,exp,analysis}/SPEC.md:27 は事実の説明だけだが、同じ注記を添える候補である
-- P1 venv_active は VIRTUAL_ENV が期待値と一致すれば、sys.prefix が別で期待の場所が実在しなくても PASS する（作業木で VIRTUAL_ENV だけを差し替えて観測）。道具は変えていない
-- P9 spec_lint の separated_source は、行末の継続（\）でつないだ source ... && make を別の命令と読んで WARN を出す（本契約 SPEC.md:39）。実際は一つの命令として動いた
-- tasks/README.md:202 の「生成は可、手編集は不可」は forbidden-check の除外の仕様を述べる文として残した。契約の分岐では作り直さないこととの読み違いを避けるなら、起票者側で文言を揃える余地がある
-
-### 断定できなかったこと
-
-- 起票者の手順書の中身（版管理の外にあり、このホストから読めない）
 
