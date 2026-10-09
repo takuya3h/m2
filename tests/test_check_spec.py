@@ -129,6 +129,27 @@ def all_findings() -> list[dict]:
     return payload["findings"]
 
 
+@pytest.fixture(scope="module")
+def findings_before_completed_exclusion() -> list[dict]:
+    """完了済みの契約を宣言漏れ検査から外す前の見え方で全契約を検査する。
+
+    教師データの `allow_write_incomplete` の 3 件（proposal-gate#1 など）は、起票時に
+    宣言を欠いた**完了済みの実契約**を入力にしている。除外が入ると検出されなくなるため、
+    教師の期待値は変えず、入力の側で判定（P13・P14 と共通の `completed_verdicts`）を切る。
+    除外そのものの試験は tests/test_legacy_exclusions.py にある。
+    """
+    import preflight_task
+
+    patch = pytest.MonkeyPatch()
+    patch.setattr(preflight_task, "completed_verdicts", lambda task_id: [])
+    try:
+        payload = check([load_contract(t) for t in discover_contracts()])
+    finally:
+        patch.undo()
+    assert payload["errors"] == [], payload["errors"]
+    return payload["findings"]
+
+
 def _contract(tmp_path: Path, md: str, spec: str = "") -> Contract:
     md_path = tmp_path / "SPEC.md"
     md_path.write_text(md, encoding="utf-8")
@@ -343,7 +364,7 @@ def test_host_mismatch_ignores_case_but_detects_other_host(tmp_path, monkeypatch
 
 # ------------------------------------------------------------------- 検出率
 
-def test_teacher_detection_rate(all_findings):
+def test_teacher_detection_rate(findings_before_completed_exclusion):
     """教師データ 23 件のうち 14 件を検出する（実測 2026-08-11 lecun / 2026-09-23 更新）。
 
     `host_mismatch` の 2 件は実行ホストに依存する。宣言と一致するホストでは
@@ -364,7 +385,10 @@ def test_teacher_detection_rate(all_findings):
         if rule is None:
             missed.append(key)
             continue
-        hits = [f for f in all_findings if f["task"] == task and f["rule"] == rule]
+        hits = [
+            f for f in findings_before_completed_exclusion
+            if f["task"] == task and f["rule"] == rule
+        ]
         if rule == "host_mismatch" and not _host_expectation(task):
             missed.append(key)
             continue

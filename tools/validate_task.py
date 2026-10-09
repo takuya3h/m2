@@ -23,6 +23,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = REPO_ROOT / "tasks" / "_schema" / "spec.schema.json"
 # 完了報告の構造化された対。契約と違い、起票直後には存在しない。
 RESULT_SCHEMA_PATH = REPO_ROOT / "tasks" / "_schema" / "result.schema.json"
+# 旧様式の報告を現行 schema の検査から外す一覧（ディレクトリ名の完全一致）。
+LEGACY_EXCLUSIONS_PATH = REPO_ROOT / "tasks" / "_schema" / "result_legacy_exclusions.yaml"
 TASKS_DIR = REPO_ROOT / "tasks"
 EXPERIMENTS_CSV = REPO_ROOT / "runindex" / "experiments.csv"
 CONVENTIONS_PATH = REPO_ROOT / "context" / "conventions.md"
@@ -230,6 +232,19 @@ def load_result(task_dir: Path) -> dict | None:
     if not path.exists():
         return None
     return yaml.safe_load(path.read_text(encoding="utf-8"))
+
+
+def load_legacy_result_exclusions(path: Path | None = None) -> dict[str, str]:
+    """旧様式として報告の様式検査から外す契約。`{ディレクトリ名: 理由}`。
+
+    **照合は呼び出し側が辞書の完全一致で行う。** 部分一致にすると関係ない契約まで免除する。
+    """
+    path = path or LEGACY_EXCLUSIONS_PATH
+    data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    return {
+        str(row["task_id"]): " ".join(str(row.get("reason", "")).split())
+        for row in data.get("legacy_result_format") or []
+    }
 
 
 def validate_result(result: dict, dir_name: str) -> list[Finding]:
@@ -529,6 +544,7 @@ def main() -> int:
 
     total = 0
     failed = 0
+    legacy = load_legacy_result_exclusions()
     for task_dir in _iter_task_dirs(args.task):
         spec_path = task_dir / "spec.yaml"
         if not spec_path.exists():
@@ -542,7 +558,11 @@ def main() -> int:
         # 完了報告の対は**あれば**検査する。無い契約を失敗にしない。
         result = load_result(task_dir)
         if result is not None:
-            findings += validate_result(result, dir_name=task_dir.name)
+            if task_dir.name in legacy:
+                # 黙って通さない。外すのは報告の様式の検査だけで、spec の検査は続く。
+                print(f"除外（旧様式） {task_dir.name}: result.yaml の様式検査を行わない")
+            else:
+                findings += validate_result(result, dir_name=task_dir.name)
         if args.level == "l2" and not [f for f in findings if f.check not in _WARN_CHECKS]:
             findings += validate_l2(spec)
         hard = [f for f in findings if f.check not in _WARN_CHECKS]

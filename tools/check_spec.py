@@ -44,6 +44,10 @@ if _TOOLS_DIR not in sys.path:
     sys.path.insert(0, _TOOLS_DIR)
 
 # 命令の取り出しと置換の除去は既存の実装を使う。**同じ取り方にする。**
+# 完了済みの判定は P13・P14 と同じ関数を呼ぶ（`preflight_task.completed_verdicts`）。
+# **二重に実装しない。** モジュールごと import し、呼び出しの時点で解決する
+# （判定を置換した変異が三者に同時に効く）。
+import preflight_task  # noqa: E402
 from check_agent_docs import _command, check_text  # noqa: E402
 from check_forbidden import generated_locations  # noqa: E402
 
@@ -504,6 +508,12 @@ def rule_allow_write_incomplete(c: Contract) -> list[Finding]:
     if kind == "exp" and not any(_covers(d, "runindex/") for d in declared):
         missing.append("runindex/（収穫が必ず更新する）")
     if not missing:
+        return []
+    # **完了済みの契約は対象外。** 過去の契約に宣言漏れを出し続けても、直せる人がいない。
+    # 判定は P13・P14 と同じ `completed_verdicts`（`gates[].verdict` に空でない値）で、
+    # `stop` や `ask` も完了に含む。定義は変えない。未完了（報告が無い・壊れている・
+    # `gates` が無い・`verdict` が空）は従来どおり検出する。
+    if preflight_task.completed_verdicts(c.task):
         return []
 
     # 🔴 行の同定は**項目の行**で行う。素朴に "allow_write" を含む行を探すと

@@ -197,7 +197,8 @@ task-start を経ずに契約の分岐で作業を始めた場合（「0. 始め
 
 散文から値を機械で抜こうとしない。**書き手が最初から対で書く。**
 `issuer_defects` を空にしない。型は `check_does_not_check`
-`asserted_without_measuring` `self_contradiction` `shell_assumption` の 4 語である。
+`asserted_without_measuring` `self_contradiction` `shell_assumption`
+`asymmetric_comparison` `rule_read_narrowly` である（正本は `tasks/_schema/result.schema.json`）。
 
 **報告の版 3 は `positive_controls` を要求する。空にできない。**
 判定が通ったことは、その判定が働いていることを意味しない。主要な判定について

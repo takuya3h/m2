@@ -8,6 +8,7 @@
 
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -341,6 +342,75 @@ def test_defect_types_in_the_projection_match_the_schema():
     )
     enum = schema["properties"]["issuer_defects"]["items"]["properties"]["type"]["enum"]
     assert sorted(build_taskindex.DEFECT_TYPES) == sorted(enum)
+
+
+# --- 型の写し（schema の列挙とずれたら落とす） -----------------------------
+#
+# 正本は result.schema.json の列挙。写しは build_taskindex.DEFECT_TYPES（上の試験）に加え、
+# 雛形・手順書・README の表・docs/issuer-defects.md にある。**実ファイルを読み、
+# 写しの側にある語と schema の語を双方向で比べる**（片方向だと余分な語を見逃す）。
+_TYPE_WORD = re.compile(r"`?\b([a-z]+(?:_[a-z]+)+)\b`?")
+
+
+def _schema_defect_types() -> set[str]:
+    import json
+
+    schema = json.loads(
+        (REPO_ROOT / "tasks" / "_schema" / "result.schema.json").read_text(encoding="utf-8")
+    )
+    return set(schema["properties"]["issuer_defects"]["items"]["properties"]["type"]["enum"])
+
+
+def _region(path: str, start: str, end: str) -> str:
+    text = (REPO_ROOT / path).read_text(encoding="utf-8")
+    assert text.count(start) == 1, f"{path}: 開始の目印が {text.count(start)} 件（1 件であるべき）"
+    tail = text.split(start, 1)[1]
+    assert end in tail, f"{path}: 終了の目印が無い"
+    return tail.split(end, 1)[0]
+
+
+# (経路, 型の一覧の開始の目印, 終了の目印, 語の取り方)
+_TYPE_COPIES = {
+    "skill": (".claude/skills/task/SKILL.md", "型は ", "である", "any"),
+    "readme": ("tasks/README.md", "`issuer_defects.type` は次のいずれか", "## 投影", "table"),
+    "template": ("tasks/_templates/result.yaml", "# 起票者の誤り。type は", "issuer_defects: []", "comment"),
+    "issuer_defects_doc": ("docs/issuer-defects.md", "## 型", "**すべての根は同じ", "bullet"),
+}
+
+
+def _copy_words(name: str) -> set[str]:
+    path, start, end, how = _TYPE_COPIES[name]
+    region = _region(path, start, end)
+    if how == "table":  # 表の先頭の列だけ（本文中の別の識別子を拾わない）
+        return {m.group(1) for m in re.finditer(r"^\| `([a-z_]+)` \|", region, re.M)}
+    if how == "comment":  # `#   name   説明` の name
+        return {m.group(1) for m in re.finditer(r"^#\s{2,}([a-z]+(?:_[a-z]+)+)\s", region, re.M)}
+    if how == "bullet":  # `- **`name`** —`
+        return {m.group(1) for m in re.finditer(r"^- \*\*`([a-z_]+)`\*\*", region, re.M)}
+    return {m.group(1) for m in _TYPE_WORD.finditer(region)} - {"issuer_defects"}
+
+
+@pytest.mark.parametrize("name", sorted(_TYPE_COPIES))
+def test_every_copy_of_the_defect_types_equals_the_schema_enum(name):
+    words, enum = _copy_words(name), _schema_defect_types()
+    assert words == enum, f"{name}: 不足 {sorted(enum - words)} / 余分 {sorted(words - enum)}"
+
+
+@pytest.mark.parametrize("name", sorted(_TYPE_COPIES))
+def test_no_copy_states_how_many_types_there_are(name):
+    """個数を述べる語句は schema とずれうる。一覧で足りるなら個数は書かない。"""
+    path, start, end, _ = _TYPE_COPIES[name]
+    assert not re.search(r"\d+\s*(語|種)", _region(path, start, end))
+
+
+def test_the_copy_check_reads_real_files_and_rejects_a_dropped_or_added_word():
+    """空振り対策: 抽出が 0 件でない／実在しない語は拾わない。"""
+    enum = _schema_defect_types()
+    for name in _TYPE_COPIES:
+        assert len(_copy_words(name)) == len(enum) >= 1
+    assert "zz_unknown_type" not in set().union(*(_copy_words(n) for n in _TYPE_COPIES))
+    assert (_copy_words("skill") - {"shell_assumption"}) != enum  # 一語欠けた写しは一致しない
+    assert (_copy_words("skill") | {"zz_extra"}) != enum  # 余分な語がある写しも一致しない
 
 
 def test_issuer_defects_no_longer_says_the_enum_lacks_them():
