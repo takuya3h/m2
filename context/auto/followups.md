@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（609 件）
+## 申し送り（612 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -974,7 +974,13 @@
 - docs-check の分岐名の除外は git branch -r に依存する。手元の repo から複製した作業ツリーや --single-branch の複製では OPERATION.md:84 の docs/plan-rewrite-2026-06 が実在しない経路として出る。分岐名の判定を参照に依存しない形にするかは起票者の判断
 - 以後の契約は、文書の二つの検査の合格そのものを完了条件にできる（手元と GitHub の複製で合格を確認）
 
-## 断定できなかった事項（384 件）
+### T-2026-10-08-legacy-exclusions-and-type-sync
+
+- 取り込まない項目のうち、開始処理が止まるときの表示（scripts/task_start.sh:106-111）は退避の方法と戻し方を表示しない。件数と経路の一覧のみ。別契約で扱うか起票者が判断する
+- 完了済みの定義（gates[].verdict に空でない値）は stop と ask を含む。除外された 15 契約のうち pass 以外は 5 件（partial 4、stopped 1）。定義を締めるなら利用者の判断を得て別契約で扱う
+- docs/issuer-defects.md は 6 語で schema と一致していた（本契約は読むだけ）。別契約 T-2026-10-08-doc-checks-clean-and-defect-log の統合後も一致しているので、起票者の確認は済んでいる
+
+## 断定できなかった事項（386 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1693,18 +1699,23 @@
 - 他のホストでの二つの検査の結果（他ホストへ接続しないため測っていない）
 - 本契約の目印による一時停止の記録の出現（確認時点では次のループ待ち）
 
-## 起票者の誤りの型（355 件）
+### T-2026-10-08-legacy-exclusions-and-type-sync
+
+- 他ホストでの動作（他ホストへ接続しないため測っていない）。変更は統合後に各ホストへ届く
+- 旧様式の報告の tests の三整数（旧報告にも旧 RESULT.md にも試験の記録が無く、書き直さない決定のため据え置き）
+
+## 起票者の誤りの型（357 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 94 |
-| `asserted_without_measuring` | 147 |
+| `check_does_not_check` | 95 |
+| `asserted_without_measuring` | 148 |
 | `self_contradiction` | 94 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 0 |
 | `rule_read_narrowly` | 1 |
 
-合計 355 件（対を持つ契約 121 件から）
+合計 357 件（対を持つ契約 122 件から）
 
