@@ -1,0 +1,825 @@
+{
+  "task_id": "T-2026-10-14-frame-signal-audit",
+  "method": "A: csv/json/os.walk で注釈・manifest・画像を直接読む",
+  "elapsed_seconds": 23.535438498482108,
+  "counts": {
+    "phase": 27694,
+    "tool": 15437,
+    "host_img": 25898,
+    "m15": 15437,
+    "m20": 25898,
+    "opensurgery_frames": 27535,
+    "hts2_images": 19496
+  },
+  "phase_rows_rejected": [],
+  "phase_duplicate_frames": [],
+  "tool_rejected": [],
+  "host_non_frame_files": [
+    "data/raw/ego/train/.gitkeep",
+    "data/raw/ego/train/.DS_Store",
+    "data/raw/ego/val/.gitkeep",
+    "data/raw/ego/test/.gitkeep"
+  ],
+  "host_zero_byte_files": [],
+  "tool_per_split": {
+    "train": {
+      "images": 9657,
+      "annotations": 32272,
+      "zero_box": 39
+    },
+    "val": {
+      "images": 1515,
+      "annotations": 4707,
+      "zero_box": 0
+    },
+    "test": {
+      "images": 4265,
+      "annotations": 12673,
+      "zero_box": 84
+    }
+  },
+  "set_differences_total": {
+    "phase_minus_tool": 12257,
+    "tool_minus_phase": 0,
+    "phase_minus_host_img": 1796,
+    "host_img_minus_phase": 0,
+    "tool_minus_host_img": 0,
+    "host_img_minus_tool": 10461,
+    "phase_minus_m15": 12257,
+    "m15_minus_phase": 0,
+    "phase_minus_m20": 1796,
+    "m20_minus_phase": 0,
+    "m15_minus_tool": 0,
+    "tool_minus_m15": 0,
+    "m20_minus_host_img": 0,
+    "host_img_minus_m20": 0
+  },
+  "one_sided_examples": {
+    "tool_minus_phase": [],
+    "host_minus_phase": [],
+    "host_minus_tool": [
+      "17_1_1504",
+      "17_1_1505",
+      "17_1_1506",
+      "17_1_1507",
+      "17_1_1508"
+    ],
+    "tool_minus_host": [],
+    "m15_minus_phase": [],
+    "m20_minus_phase": [],
+    "m15_minus_host": [],
+    "m20_minus_host": [],
+    "phase_minus_m20": [
+      "01_1_0001",
+      "01_1_0002",
+      "01_1_0003",
+      "01_1_0004",
+      "01_1_0005"
+    ]
+  },
+  "one_sided_counts": {
+    "tool_minus_phase": 0,
+    "host_minus_phase": 0,
+    "host_minus_tool": 10461,
+    "tool_minus_host": 0,
+    "m15_minus_phase": 0,
+    "m20_minus_phase": 0,
+    "m15_minus_host": 0,
+    "m20_minus_host": 0,
+    "phase_minus_m20": 1796
+  },
+  "phase_only": {
+    "total": 12257,
+    "in_opensurgery_frames": 1796,
+    "in_hts2_images": 0,
+    "in_neither": 10461,
+    "in_m15": 0,
+    "in_m20": 10461
+  },
+  "m15_equals_tool_set": true,
+  "m15_equals_host_01_15": true,
+  "m20_minus_m15_equals_host_17_21": true,
+  "m20_minus_m15_equals_phase_17_21": true,
+  "sequence_is_sorted": {
+    "phase_csv": true,
+    "manifest15": true,
+    "manifest20": true
+  },
+  "clip_boundaries": [
+    {
+      "source": "manifest15",
+      "video": "06",
+      "from_clip": "06_1",
+      "to_clip": "06_2",
+      "last_of_from": 1563,
+      "first_of_to": 288,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest15",
+      "video": "08",
+      "from_clip": "08_1",
+      "to_clip": "08_2",
+      "last_of_from": 1661,
+      "first_of_to": 206,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest15",
+      "video": "14",
+      "from_clip": "14_1",
+      "to_clip": "14_2",
+      "last_of_from": 1684,
+      "first_of_to": 1,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest15",
+      "video": "10",
+      "from_clip": "10_1",
+      "to_clip": "10_2",
+      "last_of_from": 1682,
+      "first_of_to": 3,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest15",
+      "video": "04",
+      "from_clip": "04_1",
+      "to_clip": "04_2",
+      "last_of_from": 1684,
+      "first_of_to": 1,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest15",
+      "video": "05",
+      "from_clip": "05_1",
+      "to_clip": "05_2",
+      "last_of_from": 1682,
+      "first_of_to": 1,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest15",
+      "video": "07",
+      "from_clip": "07_1",
+      "to_clip": "07_2",
+      "last_of_from": 1689,
+      "first_of_to": 48,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest20",
+      "video": "06",
+      "from_clip": "06_1",
+      "to_clip": "06_2",
+      "last_of_from": 1563,
+      "first_of_to": 288,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest20",
+      "video": "08",
+      "from_clip": "08_1",
+      "to_clip": "08_2",
+      "last_of_from": 1661,
+      "first_of_to": 206,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest20",
+      "video": "14",
+      "from_clip": "14_1",
+      "to_clip": "14_2",
+      "last_of_from": 1684,
+      "first_of_to": 1,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest20",
+      "video": "18",
+      "from_clip": "18_1",
+      "to_clip": "18_2",
+      "last_of_from": 581,
+      "first_of_to": 1,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest20",
+      "video": "19",
+      "from_clip": "19_1",
+      "to_clip": "19_2",
+      "last_of_from": 1681,
+      "first_of_to": 1,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest20",
+      "video": "19",
+      "from_clip": "19_2",
+      "to_clip": "19_3",
+      "last_of_from": 506,
+      "first_of_to": 8,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest20",
+      "video": "19",
+      "from_clip": "19_3",
+      "to_clip": "19_4",
+      "last_of_from": 1488,
+      "first_of_to": 1,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest20",
+      "video": "19",
+      "from_clip": "19_4",
+      "to_clip": "19_5",
+      "last_of_from": 108,
+      "first_of_to": 1,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest20",
+      "video": "19",
+      "from_clip": "19_5",
+      "to_clip": "19_6",
+      "last_of_from": 590,
+      "first_of_to": 2,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest20",
+      "video": "20",
+      "from_clip": "20_2",
+      "to_clip": "20_4",
+      "last_of_from": 686,
+      "first_of_to": 1,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest20",
+      "video": "20",
+      "from_clip": "20_4",
+      "to_clip": "20_5",
+      "last_of_from": 417,
+      "first_of_to": 1,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest20",
+      "video": "20",
+      "from_clip": "20_5",
+      "to_clip": "20_6",
+      "last_of_from": 367,
+      "first_of_to": 1,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest20",
+      "video": "20",
+      "from_clip": "20_6",
+      "to_clip": "20_7",
+      "last_of_from": 284,
+      "first_of_to": 79,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest20",
+      "video": "20",
+      "from_clip": "20_7",
+      "to_clip": "20_8",
+      "last_of_from": 98,
+      "first_of_to": 18,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest20",
+      "video": "21",
+      "from_clip": "21_1",
+      "to_clip": "21_2",
+      "last_of_from": 90,
+      "first_of_to": 108,
+      "number_restarts": 0
+    },
+    {
+      "source": "manifest20",
+      "video": "21",
+      "from_clip": "21_2",
+      "to_clip": "21_3",
+      "last_of_from": 898,
+      "first_of_to": 1,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest20",
+      "video": "21",
+      "from_clip": "21_3",
+      "to_clip": "21_4",
+      "last_of_from": 1276,
+      "first_of_to": 1,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest20",
+      "video": "21",
+      "from_clip": "21_4",
+      "to_clip": "21_5",
+      "last_of_from": 1685,
+      "first_of_to": 1,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest20",
+      "video": "10",
+      "from_clip": "10_1",
+      "to_clip": "10_2",
+      "last_of_from": 1682,
+      "first_of_to": 3,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest20",
+      "video": "04",
+      "from_clip": "04_1",
+      "to_clip": "04_2",
+      "last_of_from": 1684,
+      "first_of_to": 1,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest20",
+      "video": "05",
+      "from_clip": "05_1",
+      "to_clip": "05_2",
+      "last_of_from": 1682,
+      "first_of_to": 1,
+      "number_restarts": 1
+    },
+    {
+      "source": "manifest20",
+      "video": "07",
+      "from_clip": "07_1",
+      "to_clip": "07_2",
+      "last_of_from": 1689,
+      "first_of_to": 48,
+      "number_restarts": 1
+    }
+  ],
+  "gaps": {
+    "phase_csv": {
+      "clips": 43,
+      "frames": 27694,
+      "span_sum": 36929,
+      "missing_in_span": 9235,
+      "gap_events": 850,
+      "gap_sum": 9235,
+      "gap_max": 329,
+      "backward_steps": 0,
+      "bins": {
+        "1": 306,
+        "2-4": 277,
+        "5-14": 136,
+        "15-59": 89,
+        "60+": 42
+      }
+    },
+    "manifest15": {
+      "clips": 22,
+      "frames": 15437,
+      "span_sum": 21880,
+      "missing_in_span": 6443,
+      "gap_events": 1013,
+      "gap_sum": 6443,
+      "gap_max": 253,
+      "backward_steps": 0,
+      "bins": {
+        "1": 526,
+        "2-4": 286,
+        "5-14": 118,
+        "15-59": 60,
+        "60+": 23
+      }
+    },
+    "manifest20": {
+      "clips": 42,
+      "frames": 25898,
+      "span_sum": 35356,
+      "missing_in_span": 9458,
+      "gap_events": 1316,
+      "gap_sum": 9458,
+      "gap_max": 329,
+      "backward_steps": 0,
+      "bins": {
+        "1": 622,
+        "2-4": 393,
+        "5-14": 174,
+        "15-59": 94,
+        "60+": 33
+      }
+    },
+    "tool_sorted": {
+      "clips": 22,
+      "frames": 15437,
+      "span_sum": 21880,
+      "missing_in_span": 6443,
+      "gap_events": 1013,
+      "gap_sum": 6443,
+      "gap_max": 253,
+      "backward_steps": 0,
+      "bins": {
+        "1": 526,
+        "2-4": 286,
+        "5-14": 118,
+        "15-59": 60,
+        "60+": 23
+      }
+    },
+    "tool_sorted_01_15": {
+      "clips": 22,
+      "frames": 15437,
+      "span_sum": 21880,
+      "missing_in_span": 6443,
+      "gap_events": 1013,
+      "gap_sum": 6443,
+      "gap_max": 253,
+      "backward_steps": 0,
+      "bins": {
+        "1": 526,
+        "2-4": 286,
+        "5-14": 118,
+        "15-59": 60,
+        "60+": 23
+      }
+    },
+    "assumed_fps": 0.5,
+    "note": "秒換算は 0.5 fps を仮定した値。根拠の有無は REPORT.md を見よ"
+  },
+  "controls": {
+    "removed_frame": "01_1_0124",
+    "positive_tool_minus_phase_before_after": [
+      0,
+      1
+    ],
+    "positive_phase_minus_tool_before_after": [
+      12257,
+      12258
+    ],
+    "negative_phase_minus_phase": 0,
+    "negative_tool_minus_tool": 0,
+    "negative_same_count_phase_vs_copy": 0,
+    "gap_control_clip": "01_1",
+    "gap_control_dropped_number": 125,
+    "gap_events_before_after": [
+      52,
+      53
+    ]
+  },
+  "issuer_compare": {
+    "phase_clips_01_15": {
+      "issuer": 23,
+      "measured": 23,
+      "match": true
+    },
+    "phase_frames_01_15": {
+      "issuer": 17233,
+      "measured": 17233,
+      "match": true
+    },
+    "phase_frames_17_21": {
+      "issuer": 10461,
+      "measured": 10461,
+      "match": true
+    },
+    "tool_images_01_15": {
+      "issuer": 15437,
+      "measured": 15437,
+      "match": true
+    },
+    "tool_without_phase": {
+      "issuer": 0,
+      "measured": 0,
+      "match": true
+    },
+    "phase_without_tool": {
+      "issuer": 1796,
+      "measured": 1796,
+      "match": true
+    },
+    "tool_zero_box": {
+      "issuer": 123,
+      "measured": 123,
+      "match": true
+    },
+    "clip_03_3_phase": {
+      "issuer": 168,
+      "measured": 168,
+      "match": true
+    },
+    "clip_03_3_tool": {
+      "issuer": 0,
+      "measured": 0,
+      "match": true
+    },
+    "phase_gap_events_01_15": {
+      "issuer": 547,
+      "measured": 547,
+      "match": true
+    },
+    "tool_seq_span_sum": {
+      "issuer": 21880,
+      "measured": 21880,
+      "match": true
+    },
+    "tool_seq_missing": {
+      "issuer": 6443,
+      "measured": 6443,
+      "match": true
+    },
+    "tool_seq_gap_events": {
+      "issuer": 1013,
+      "measured": 1013,
+      "match": true
+    },
+    "tool_seq_gap_bins": {
+      "issuer": {
+        "1": 526,
+        "2-4": 286,
+        "5-14": 118,
+        "15-59": 60,
+        "60+": 23
+      },
+      "measured": {
+        "1": 526,
+        "2-4": 286,
+        "5-14": 118,
+        "15-59": 60,
+        "60+": 23
+      },
+      "match": true
+    },
+    "per_video": {
+      "01": {
+        "issuer": [
+          999,
+          913,
+          86,
+          0
+        ],
+        "measured": [
+          999,
+          913,
+          86,
+          0
+        ],
+        "match": true
+      },
+      "02": {
+        "issuer": [
+          529,
+          461,
+          68,
+          3
+        ],
+        "measured": [
+          529,
+          461,
+          68,
+          3
+        ],
+        "match": true
+      },
+      "03": {
+        "issuer": [
+          1363,
+          1089,
+          274,
+          0
+        ],
+        "measured": [
+          1363,
+          1089,
+          274,
+          0
+        ],
+        "match": true
+      },
+      "04": {
+        "issuer": [
+          1643,
+          1329,
+          314,
+          56
+        ],
+        "measured": [
+          1643,
+          1329,
+          314,
+          56
+        ],
+        "match": true
+      },
+      "05": {
+        "issuer": [
+          1318,
+          1225,
+          93,
+          2
+        ],
+        "measured": [
+          1318,
+          1225,
+          93,
+          2
+        ],
+        "match": true
+      },
+      "06": {
+        "issuer": [
+          1447,
+          1379,
+          68,
+          11
+        ],
+        "measured": [
+          1447,
+          1379,
+          68,
+          11
+        ],
+        "match": true
+      },
+      "07": {
+        "issuer": [
+          1788,
+          1711,
+          77,
+          26
+        ],
+        "measured": [
+          1788,
+          1711,
+          77,
+          26
+        ],
+        "match": true
+      },
+      "08": {
+        "issuer": [
+          1591,
+          1400,
+          191,
+          0
+        ],
+        "measured": [
+          1591,
+          1400,
+          191,
+          0
+        ],
+        "match": true
+      },
+      "09": {
+        "issuer": [
+          672,
+          518,
+          154,
+          0
+        ],
+        "measured": [
+          672,
+          518,
+          154,
+          0
+        ],
+        "match": true
+      },
+      "10": {
+        "issuer": [
+          1232,
+          997,
+          235,
+          0
+        ],
+        "measured": [
+          1232,
+          997,
+          235,
+          0
+        ],
+        "match": true
+      },
+      "11": {
+        "issuer": [
+          865,
+          754,
+          111,
+          2
+        ],
+        "measured": [
+          865,
+          754,
+          111,
+          2
+        ],
+        "match": true
+      },
+      "12": {
+        "issuer": [
+          619,
+          609,
+          10,
+          1
+        ],
+        "measured": [
+          619,
+          609,
+          10,
+          1
+        ],
+        "match": true
+      },
+      "13": {
+        "issuer": [
+          843,
+          822,
+          21,
+          3
+        ],
+        "measured": [
+          843,
+          822,
+          21,
+          3
+        ],
+        "match": true
+      },
+      "14": {
+        "issuer": [
+          1858,
+          1810,
+          48,
+          15
+        ],
+        "measured": [
+          1858,
+          1810,
+          48,
+          15
+        ],
+        "match": true
+      },
+      "15": {
+        "issuer": [
+          466,
+          420,
+          46,
+          4
+        ],
+        "measured": [
+          466,
+          420,
+          46,
+          4
+        ],
+        "match": true
+      }
+    }
+  },
+  "decode": {
+    "skipped": false,
+    "images": 25898,
+    "undecodable": 0,
+    "undecodable_list": [],
+    "sizes": {
+      "1920x1080": 25898
+    },
+    "bytes_total": 4079408682,
+    "sha256_of_sorted_name_and_filehash": "fb0b620e42e5c3690dbe9fb96405949a340cdf0bb26dc2178c059da9d67fae68",
+    "sha256_per_video": {
+      "01": "bcfccdcdac157ec0eb5f16de5f9682cef1fbf4d90487642ae61a954900fb8a32",
+      "02": "a6814e55bf8a9c7d3a9364cfc116dec38dfed12788476d05e915cced6551241f",
+      "03": "78ec8a4a751791c845ce42cea6c3760073d1daeb99805644a7916617e229d0bd",
+      "04": "1f6c32337abcf9bd379b2728cf8ed42f71b6dee45825c00debc8d3ca824ee032",
+      "05": "efeec4822518f8b5dd0594627e26f0285e590ad079f5bc41420d68ece922c6c6",
+      "06": "9236132904f50946a5736b512b2e6a1e51c8cdba34dc310f32e7b1c67b137497",
+      "07": "a959642dd48146d26bdbe86d069cea5bea5ebf82dd206f3ccd7c9b6bc6938fae",
+      "08": "cdac779055b1a2d1e5feed08bacbdc36904bd6a393a16bbc5e0bbee56796e77f",
+      "09": "9edd3eeb32d81c139955cc3dd6004194ee8956a29ee7f9711348a0951536bea0",
+      "10": "5f47cf8f8104b574ffe87b4862fb5f253fdd34e6b2afa7ef81b6aff361d31209",
+      "11": "8262fb999954798a10a5dae2f9ec0a9a448a6aa849a51aa787842e6eee82dd7b",
+      "12": "f18e9230bfbf59f527d363853a2b39982775c2bb08f32639ebdf5c7a28d34065",
+      "13": "699c8df595186f898f64ec97809bf57a214c65a0c17cea4ec49720476f0dc4e4",
+      "14": "ba0492e289e02bf705ea0b76169f4417ac2100d2ce0f29f86e012f77d1ffd458",
+      "15": "f2f73a634180089fc1c26c9759536cb27ef31bd8186c6795bb4d9fd97781e7cc",
+      "17": "bf5cef1f02c356f6f13b06a15e9486192c7dd560c2c89b9d7b49eeccdd19c0f9",
+      "18": "e826c8c7ba51f0f708afe5ed842ff61c39050d2daa2278dbbb387f89191b263b",
+      "19": "759975c7dce9552fc927c5d22ce82bf05dc5b9ce557c640b1d5915f4fde62ec6",
+      "20": "90af3bc2c17e43d716e08c7d39e6215543e13ab3ceba7af90a92d516c14683ff",
+      "21": "12c3b84c91b0e76afda78ec2c509fe84e50509e8fd761ce5e8638d17524c24e0"
+    },
+    "method": "各ファイルの sha256 を名前順に並べた行 '<相対パス> <sha256>\\n' の連結の sha256"
+  }
+}

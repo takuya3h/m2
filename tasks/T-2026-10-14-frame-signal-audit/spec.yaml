@@ -1,0 +1,72 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-14-frame-signal-audit"
+  kind: analysis
+  title: "Stage 2 の前提の実測: フレームと注釈の対応、送り手信号の時刻と形、参照入力段の実装、メタデータ、andrew の材料の所在"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-14T10:42:24Z"
+  created_from:
+    runindex_commit: "63ae65da8c7d32df591f5e2ee4358286b72c726b"
+    counts: {index: 1961, experiments: 750, verdicts: 1506}
+  depends_on: [T-2026-09-19-stage1-phase-tower-r3, T-2026-09-27-stage1-ptower-20]
+  amendments: []
+intent:
+  question: "工程と術具の注釈はどのフレームにあり、塔はどのフレーム列を時間として扱っているか。既存の送り手信号と参照入力段はどの時刻の情報をどの形で渡しているか。動画のメタデータと、andrew に後続契約の材料が在るか"
+  decision_at_stake: "Stage 二の設計の前提。界面に渡す信号を同時刻の塔単独の出力にする決定の実装上の意味、経過時間の対照の作り方、工程から検出への界面とフレームの時刻対応の提案カードの前提の訂正、十五動画の工程塔 COCO 系統の学び直しと分散の分解の契約の起票の材料。関門の判定には使わない"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery-Phase（工程 CSV、動画 01 から 15 と追加 17 から 21）と EgoSurgery-Tool（COCO 形式の枠、動画 01 から 15）。折りは conventions#folds"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt", "data/splits/ego_test.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/build_phase_manifest.py", "scripts/build_phase_manifest_p20.py", "scripts/stage1_ptower.py", "scripts/stage1_ptower_r3.py", "scripts/stage1_ptower_20.py", "scripts/extract_phase_context.py", "scripts/train_t1b.py", "scripts/train_b2a.py", "scripts/extract_b2a_detsignal.py", "scripts/build_oracle_toolpresence.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#folds, conventions#split, conventions#crossfit]
+  conventions_rev: "073f9dc0b80b7ca48c2766eb6f8f2ccd17cf0fe6"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/analysis/frame_signal_audit"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。分岐、未追跡の退避、同期の抑止、装置を使わないことの記録、起点の実測", gpu: false, est: "30m"}
+    - {id: B, name: "フレームと注釈の対応。四つの集合を動画とフレームの対で突き合わせ、時刻の根拠とクリップ内の飛びを数える", gpu: false, est: "2h"}
+    - {id: C, name: "塔が扱うフレーム列。Stage 1 の工程塔が学習と評価に使った集合、履歴の初期化、評価の単位", gpu: false, est: "1h"}
+    - {id: D, name: "送り手信号の時刻と形、参照入力段の実装。既存の経路ごとの表と、L0 から L3 の実際の形", gpu: false, est: "2h"}
+    - {id: E, name: "動画のメタデータの有無", gpu: false, est: "1h"}
+    - {id: F, name: "andrew の材料の所在。後続契約の前提を読むだけで確かめる", gpu: false, est: "1h"}
+    - {id: G, name: "検証と報告", gpu: false, est: "90m"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、注釈の版管理下のファイルが揃い、装置を使わないことを記録した", on_fail: stop}
+    - {id: G2, after: B, check: "四つの集合の突き合わせが二通りの異質な方法で一致し、起票者の写しの値と一致するか食い違いの理由が書けた", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [REPORT.md]
+  destination: "experiments/analysis/frame_signal_audit/"
+  acceptance:
+    - "a: 工程注釈、術具注釈、ホスト上の画像、工程塔の manifest の四つの集合を、動画とフレームの対で突き合わせた集合差の件数が動画ごとにある"
+    - "b: 起票者が版管理の写しで数えた値と一致するか、食い違いごとに理由がある"
+    - "c: フレーム番号と時刻の対応の根拠が出所つきで記録され、塔が見るフレーム列の飛びの件数と大きさの分布がある"
+    - "d: 三周目と P 塔二十動画の工程塔が学習と評価に使ったフレームの集合が manifest の実物から特定され、工程注釈だけがあるフレームと区間の扱いが書かれている"
+    - "e: 時間ヘッドの履歴がクリップの境界で初期化されるか、評価の集計がクリップ単位か動画単位かが、実装の行と run の記録の二通りで記録されている"
+    - "f: 既存の送り手信号の経路ごとに、どの時刻の情報を使うかが表にある"
+    - "g: 参照入力段の正解と正解と予測の組み合わせの作り方（連結か和か、次元、正解の時刻）が両方向で記録されている"
+    - "h: L0 から L3 に当たる信号の実際の形が、検出塔 COCO 系統と三周目の COCO 系統の工程塔について記録され、測れないものが UNKNOWN と書かれている"
+    - "i: 術式、術者、手術室、動画の長さ、撮影日のメタデータの有無が、探した場所と方法つきで記録されている"
+    - "j: andrew の材料の所在が表にあり、無いと書いた項目は異質な二通りで探した記録がある"
+    - "k: 装置を使っておらず、data 配下に書いておらず、注釈と manifest の要約値が前後で一致する"
+    - "l: 試験の失敗が増えていない"
+    - "m: PR が存在し、base が phase0、分岐が feat/frame-signal-audit、Draft でない"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "本ホストの repo の位置や起点が env-facts.md の記載と食い違う場合"
+    - "既存スクリプトの挙動を変える変更が必要になった場合"
+    - "注釈の版管理下のファイルが起点と一致しない場合"
