@@ -36,7 +36,7 @@ mkdir -p logs
 
 VENV="$ROOT/.venv-relation-detr/bin/python"
 [ -x "$VENV" ] || { echo "[ERR] $VENV が無い"; exit 1; }
-export CUDA_HOME="${CUDA_HOME:-/usr/local/cuda-11.8}"
+export CUDA_HOME="${CUDA_HOME:-/usr/local/cuda}"
 if [ -f "$ROOT/.env" ]; then set -a; source "$ROOT/.env"; set +a; fi
 
 for S in "${SEEDS[@]}"; do

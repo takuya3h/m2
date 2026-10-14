@@ -36,7 +36,7 @@ mkdir -p logs
 
 VENV="$ROOT/.venv-relation-detr/bin/python"
 [ -x "$VENV" ] || { echo "[ERR] $VENV が無い。先に scripts/setup_env.sh で .venv-relation-detr を構築せよ"; exit 1; }
-export CUDA_HOME="${CUDA_HOME:-/usr/local/cuda-11.8}"
+export CUDA_HOME="${CUDA_HOME:-/usr/local/cuda}"
 
 CKPT="$ROOT/third_party/Relation-DETR/checkpoints/incoming/seed${SEED}/best_ap.pth"
 [ -f "$CKPT" ] || { echo "[ERR] warm-start ckpt が無い: $CKPT（transfer_to_bengio.sh で受領せよ）"; exit 1; }

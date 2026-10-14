@@ -28,7 +28,7 @@ GPU="${P0_GPU:-0}"
 
 VENV="$ROOT/.venv-relation-detr/bin/python"
 [ -x "$VENV" ] || { echo "[ERR] $VENV が無い"; exit 1; }
-export CUDA_HOME="${CUDA_HOME:-/usr/local/cuda-11.8}"
+export CUDA_HOME="${CUDA_HOME:-/usr/local/cuda}"
 export PATH="$ROOT/.venv-relation-detr/bin:$PATH"
 command -v ninja >/dev/null || { echo "[ERR] ninja が PATH に無い"; exit 1; }
 

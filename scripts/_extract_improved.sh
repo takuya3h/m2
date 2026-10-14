@@ -9,7 +9,7 @@ cd "$(cd "$(dirname "$0")/.." && pwd)"
 TAG="${1:?frozen_tag}"; CKPT="${2:?ckpt abs path}"
 PY="$PWD/.venv-relation-detr/bin/python"
 MC="$PWD/third_party/Relation-DETR/configs/relation_detr/relation_detr_resnet50_egosurgery.py"
-export CUDA_HOME=/usr/local/cuda-11.8
+export CUDA_HOME=/usr/local/cuda
 export PATH="$PWD/.venv-relation-detr/bin:$PATH"
 export RELDETR_EXTRACT_CKPT="$CKPT"
 export RELDETR_FROZEN_TAG="$TAG"

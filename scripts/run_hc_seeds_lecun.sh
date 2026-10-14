@@ -44,7 +44,7 @@ mkdir -p logs
 
 VENV="$ROOT/.venv-relation-detr/bin/python"
 [ -x "$VENV" ] || { echo "[ERR] $VENV が無い。先に .venv-relation-detr を構築せよ"; exit 1; }
-export CUDA_HOME="${CUDA_HOME:-/usr/local/cuda-11.8}"
+export CUDA_HOME="${CUDA_HOME:-/usr/local/cuda}"
 
 for S in "${SEEDS[@]}"; do
   CK="$ROOT/third_party/Relation-DETR/checkpoints/incoming/seed${S}/best_ap.pth"
