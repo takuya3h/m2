@@ -4,15 +4,15 @@
 #
 # 前提（docs/environment.md 参照）:
 #   - Linux x86_64 / NVIDIA GPU（driver は CUDA 12.x 対応 = 535 系以降を推奨）
-#   - CUDA Toolkit 11.8（nvcc 11.8）がシステムに導入済み
-#     → mamba-ssm / causal-conv1d のソースビルドが torch cu118 と整合するため必須
+#   - CUDA Toolkit（nvcc）の版は問わない。CUDA 拡張はすべて prebuilt wheel で入り、
+#     本スクリプトは何もビルドしない（現行サーバーは Ubuntu 24.04 / CUDA 12.9 / gcc 13）
 #   - uv が導入済み（無ければ: curl -LsSf https://astral.sh/uv/install.sh | sh）
 #
 # 使い方:
 #   bash scripts/setup_env.sh
 #
 # 設計:
-#   1) 特殊 tier（torch cu118 / mmcv prebuilt / mamba ソースビルド）を正しい
+#   1) 特殊 tier（torch cu118 / mmcv prebuilt / mamba prebuilt）を正しい
 #      方法で先に導入する
 #   2) 最後に requirements.lock.txt を --no-deps で適用し、全 100 パッケージを
 #      検証済みの厳密バージョンへスナップ（途中の近似解決を矯正）する
@@ -25,7 +25,6 @@ cd "$PROJECT_DIR"
 echo "[setup] プロジェクト: $PROJECT_DIR"
 
 UV="${UV:-$(command -v uv || echo "$HOME/.local/bin/uv")}"
-CUDA_HOME="${CUDA_HOME:-/usr/local/cuda}"
 PY_VERSION="3.11"
 
 # --- 0. 前提チェック -------------------------------------------------------- #
@@ -38,15 +37,7 @@ if ! command -v nvidia-smi >/dev/null 2>&1; then
   echo "[ERROR] nvidia-smi が見つかりません。NVIDIA driver を導入してください。" >&2
   exit 1
 fi
-NVCC_VER="$("${CUDA_HOME}/bin/nvcc" --version 2>/dev/null | sed -n 's/.*release \([0-9.]*\).*/\1/p' || echo "none")"
-echo "[setup] nvcc: ${NVCC_VER} / driver: $(nvidia-smi --query-gpu=driver_version --format=csv,noheader | head -1)"
-if [ "${NVCC_VER}" != "11.8" ] && [ "${SKIP_CUDA_CHECK:-0}" != "1" ]; then
-  echo "[ERROR] nvcc が 11.8 ではありません（検出: ${NVCC_VER}）。" >&2
-  echo "        mamba-ssm / causal-conv1d のソースビルドは torch cu118 と" >&2
-  echo "        一致する CUDA 11.8 Toolkit が必要です。CUDA 11.8 を導入するか、" >&2
-  echo "        mamba 系を諦める場合は SKIP_CUDA_CHECK=1 で続行できます。" >&2
-  exit 1
-fi
+echo "[setup] driver: $(nvidia-smi --query-gpu=driver_version --format=csv,noheader | head -1)"
 
 # --- 1. 仮想環境 ------------------------------------------------------------ #
 echo "[setup] === 1. uv 仮想環境（.venv, Python ${PY_VERSION}）==="
