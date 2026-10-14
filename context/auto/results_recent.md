@@ -6,8 +6,50 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 122 件）。
-ここに出ない 117 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 123 件）。
+ここに出ない 118 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-10-14-frame-signal-audit
+
+状態 `pass` / ホスト `andrew` / 起票 `227` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 分岐 feat/frame-signal-audit、HEAD = origin/phase0 = 57717f6c、注釈 46 ファイルの木の要約値が起点と一致（4bc3bfff… / 6bedcd36…）、nvidia-smi の compute-apps 0 件、.sync-pause は task-start が作成
+- `G2` pass — 方法 A（csv/json/os.walk）と方法 B（cut/grep -o/find -L/comm）の区間ごとの件数が 43 区間 × 20 列 = 860 セルで一致。起票者 §3.2 の 14 項目と動画ごと 15 行 × 4 値がすべて一致
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — §3.3 行 5 は stage1_ptower.py:264-266 を『評価器にクリップの識別子を動画の識別子として渡しているように読める』と書くが、変数名 clip_id を読んだだけで、load_fold（213）が返すのは動画の識別子である。そのまま信じると Stage 1 の評価がクリップ単位だと誤って設計し、動画単位への直しを不要に起票する。実測では列は動画単位に連結済みで、Jaccard は合算なので識別子は segment 系にしか効かない
+- `asserted_without_measuring` — §1 の 2 は『設計文書には工程から検出へは一つ前の時刻までという規則があった』と書くが文書名が無く、docs/ context/ tasks/ を git grep しても該当の文言が無い（過去ラグ特徴の記述だけ）。規則の出所が無いまま『実装がそうなっているか』を測ると、比較の基準が無い。本契約は実装が同時刻 t であることだけを実測し、規則の出所は UNKNOWN とした
+
+### 逸脱
+
+- `environment` — tests/test_stage1_dtower_convergence.py が収集で FileNotFoundError（third_party/Relation-DETR/util/convergence.py が無い）になり素の pytest は全件を走らせない。前後とも --continue-on-collection-errors を付けて測り、error 1 件を両方に数えた
+- `judgement` — 方法 B の awk が COCO の images 要素で id が file_name より後に来ると仮定しており、4 区間の枠 0 個が方法 A と 1 ずつ違った。実物（id → width → height → file_name）に合わせて直し、再実行で 860 セル一致。最初の食い違いも audit に残した
+- `judgement` — 時刻判定の陽性対照は、名前を 1 つ先へ付け替えた写し（名前 t の行が t−1 の情報を持つ）を −1 と判定するのが正しい。最初の版は +1 を期待して control_ok=False になった。期待の符号を直し、k の符号の定義を道具に書いた。データ側の判定値は変えていない
+- `judgement` — Task C.5（動画単位に直したときの変化）は UNKNOWN。三周目・P*-20 の run は val の予測を保存せず、帰属解析の予測は dlsta の repo の外に在り本ホストに無い
+- `environment` — 起点 origin/phase0 が起票時の 8b331ac6 から本日の #226 で 57717f6c に進んでいた。conventions_rev・runindex_commit・counts・注釈の木は起票時と同じなので amendments を書かず続行した
+- `judgement` — 番号→秒の対応は配布物のどこにも無い。0.5 fps は repo の文書（docs/evidence/2026-09-16-A-phase-tower-candidates.md:30 が原著 arXiv 2405.19644 を引く）の記載として出所を書き、秒の値はすべて仮定として列名に assumed_0.5fps を付けた。番号が区間ごとの抽出の通し番号であることは配布物の生フレームの連続性で実測した
+- `judgement` — 1,796 枚の画像が術具注釈の置き場以外（配布物 01_frames）に在ったので、Task B.5 の全数復号をその 1,796 枚にも当てた（復号できないもの 0）
+- `judgement` — 契約の成果物の一覧（Task G.4）に README.md は無いが、プロジェクトの CLAUDE.md は『コード変更後は README.md に変更内容と現状を記録する』を必須とする。読むための道具 3 本を足したので README 末尾の変更記録に 1 節（数行）を追記した。docs/experiment_log.md は実験を行っていないので触れていない
+
+### 申し送り
+
+- 1,796 枚（区間 03_3 の 168 枚を含む）の画像は data/raw/OpenSurgery_Dataset/01_frames/initial_videos/ に在り全数復号できる。工程塔に入れるかは研究上の判断（術具注釈は無い）。入れるなら manifest の生成を変える契約が要る
+- 番号は区間ごとに振り直されるため、経過時間の対照は区間内でしか作れない。区間の間の時間は配布物に無い。動画ごとの術式・術者・撮影日も無いので、術者の対照は本データでは作れない（原著に当たるか著者に問い合わせるかは利用者の判断）
+- Stage 1 の工程塔は区間を連結した列を見る（履歴は境界をまたぐ）。Stage 2 で同時刻の塔単独の出力を保存する経路は無いので、保存する道具を起票するときは列の作り方を Stage 1 と同じにし、区間の境界の扱いを明記すること
+- P→D の『正解⊕予測』18-d は num_phases 18 のモデル設定を T1B_MODEL_CFG で指す必要があるが、版管理下の t1b 系 config 5 本はすべて 9。過去にこの段を回した run があれば設定の出所を確かめること
+- 三周目・P*-20 の run は val の予測を保存していない。動画単位の値や区間ごとの値が要るなら、checkpoint と all_gap.npz から再推論する契約が要る（本契約は推論しない）
+- tests/test_stage1_dtower_convergence.py の収集エラー（convergence.py が snapshot に無い）は #226 の報告済み。本契約とは無関係だが、素の pytest が全件を走らせない状態が続いている
+
+### 断定できなかったこと
+
+- 番号 → 秒の対応（0.5 fps の仮定）。配布物の文書・注釈・JPEG に fps の記載が無い
+- Task C.5: 塔の値を動画単位に直したときの変化。val の予測が本ホストに無い
+- 動画ごとの術式・術者・手術室・撮影日・撮影機器。全体値（10 種類・8 人・15 時間）は HTS 論文の抜き書きのみ
+- §1 の 2 の『一つ前の時刻まで』の規則の出所（repo に無い）
+- 検出塔の特徴の空間の大きさ（1344×768 → 168×96 / 84×48 / 42×24 / 21×12）は設定からの計算値で、推論で確かめていない
 
 ## T-2026-10-08-legacy-exclusions-and-type-sync
 
@@ -138,37 +180,4 @@
 
 - 改めた手順書による実際の /task の受け取り（本セッションは変更前の手順書で動いている）
 - 第二の実装系での利用者の選択の受け取り
-
-## T-2026-10-07-pause-release-tool-digest-relocate
-
-状態 `pass` / ホスト `philip` / 起票 `217` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — m2-sync.sh:44 は [ -f "$M2DIR/.sync-pause" ] で実在だけを見て、目印を開く処理は 0 件。keeper.sh は目印を参照しない。開始時は作業ツリー 1 件（取り込んだ契約）、HEAD=origin/phase0=c3ca48e3、目印 0 バイト、追跡済み抽出物 48 件、失敗の名前 8 件を記録した
-- `G2` pass — 隔離した場で 39 件。前提を満たす場では RELEASED で外れた。前提の欠け 6 通り・照会の失敗 2 通り・所有者違いと読めない 6 通り・位置違い・中止の理由なし 3 通りのいずれでも外れなかった。所有者・前提・位置・理由・照会の判定をそれぞれ壊すと 4・11・1・3・3 件の試験が落ちた
-- `G3` pass — 旧い置き場に同名があれば作り直さない。このホストの記録 2 件では、書き出し 0 件、作り直さなかったもの 1 件、中身なし 1 件。旧い置き場が無い root では 1 件書き出された。判定を壊すと 2 件の試験が落ちた
-
-### 起票者の誤り
-
-- `self_contradiction` — §4 Task F の 6 は抑止の解除を送出の後に置き、その後の git の操作を禁じる。一方で完了判定 g は実物の目印に対する陰性対照を報告に含めることを求める。書かれた順に実行すると、陰性対照の結果は commit された報告に入らない
-
-### 逸脱
-
-- `spec_defect` — Task F の 6 は解除を送出の後に置き git の操作を禁じるが、判定 g は実物の目印の陰性対照を報告に求める。外さない操作である陰性対照を commit の前に取り、解除だけを最後に回した
-- `judgement` — 道具を Python（標準ライブラリだけ）で scripts/task_release.py に置いた。試験から関数として呼べ、gh の JSON を読めるため
-- `judgement` — 走査の抽出済みの判定は、旧い置き場の名前の有無だけを見て内容は比べない。旧い書式の抽出物を未抽出と取り違えて過去分を一斉に書き出さないため。移す前のセッションが移した後に続いた分は書き出されない
-- `environment` — 試験全体は収集のエラー 2 件で中断するため、開始前と変更後の両方を --continue-on-collection-errors で回し、失敗とエラーの名前の集合を比べた
-
-### 申し送り
-
-- SKILL.md の改訂契約では、解除を make task-release TASK=<id> END=complete（中止は END=abort REASON=...）に置き換え、状態表示で判定する。git add docs/sessions/digest/ の指示が残っていれば消す
-- 本契約より前の task_start.sh が置いた目印（中身なし）は OWNER_UNREADABLE で外れない。移行期は手で外す
-- 移す前のセッションが移した後も続いた場合、その続きは新しい置き場に書き出されない（名前で抽出済みと判定するため）
-- make docs-check（docs/proposal-gate.md:41）と make agent-check（docs/experiment_settings.md:155）は、本契約で触れていないファイルで落ちる
-
-### 断定できなかったこと
-
-- 共有フォルダが無いホストと .servername が無いホストでの実機の動作（試験の場では確かめた）
-- 終了フックが新しい置き場へ書くことの実機での確認（本セッションの終了時に初めて起きる）
 
