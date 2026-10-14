@@ -4,7 +4,7 @@
 # 生成: uv pip freeze --python .venv-relation-detr/bin/python  (2026-06-20, lecun / Python 3.11.4)
 # 注意: torch/torchvision は cu118 wheel。導入時は次の extra index が必須:
 #       --extra-index-url https://download.pytorch.org/whl/cu118
-#       MS-Deform-Attn は実行時 JIT ビルド（ninja 同梱・CUDA_HOME=/usr/local/cuda-11.8 が必要）。
+#       MS-Deform-Attn は JIT ビルド（ninja 同梱。システムの nvcc 12.9 か 11.8 でビルドできる）。
 # 再構築: bash scripts/setup_env_relation_detr.sh
 #
 absl-py==2.4.0

@@ -14,7 +14,7 @@ STATUS="$PROJ/logs/detector_study_status.tsv"
 mkdir -p "$PROJ/logs"
 
 # ---- 検出器学習の入力（ローカル・検証済み）----
-export CUDA_HOME=/usr/local/cuda-11.8
+export CUDA_HOME=/usr/local/cuda
 export EGO_ROOT="$PROJ/data/raw/ego"
 export EGO_ANN_DIR="$PROJ/data/annotations/egosurgery_tool"
 export RELDETR_COCO_CKPT="$PROJ/data/external/weights/relation_detr_resnet50_800_1333_coco_1x.pth"

@@ -3,7 +3,7 @@
 #
 # 本体 .venv（キャッシュのみ読む）。region-token は事前抽出済みである必要がある:
 #   data/processed/t1a_regiontoken/relation_detr_seed42/{train,val,test}_regiontoken.npz
-#   （未抽出なら: source .venv-relation-detr/bin/activate && export CUDA_HOME=/usr/local/cuda-11.8
+#   （未抽出なら: source .venv-relation-detr/bin/activate && export CUDA_HOME=/usr/local/cuda
 #     && python scripts/extract_t1a_regiontoken.py --subset <split> --limit 0）
 #
 # 使い方:

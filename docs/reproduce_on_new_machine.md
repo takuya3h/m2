@@ -9,7 +9,7 @@
 > - **本体 `.venv`** — 工程認識(TeCNO)・評価・S0〜S9 学習・テスト。mmdet/mamba を含む。
 > - **検出器 `.venv-relation-detr`** — Relation-DETR の推論・特徴抽出。①系統の
 >   検出器 forward（Stage1 GAP / B2a tool-presence / **T1a region-token**）と
->   B1 統合トレーナーで使う。MS-Deform-Attn を実行時 JIT ビルドする（要 CUDA 11.8）。
+>   B1 統合トレーナーで使う。MS-Deform-Attn を JIT ビルドする（システムの nvcc 12.9 でよい）。
 >
 > **検出器側の実験（B2a / T1a 等）を再現するには両方を構築すること。**
 
@@ -19,6 +19,7 @@
 - `scripts/setup_env.sh` — 本体 `.venv` の作成〜導入〜検証を自動化
 - `requirements.relation_detr.lock.txt` — 検出器 `.venv-relation-detr` の厳密版（正本・72 pkg）
 - `scripts/setup_env_relation_detr.sh` — 検出器 venv の作成〜導入〜検証を自動化
+- `scripts/restore_relation_detr_source.sh` — `third_party/Relation-DETR` のソースを snapshot から復元
 - `docs/environment.md` — OS / driver / CUDA 等のシステム層の記録
 
 ---
@@ -30,22 +31,22 @@
 
 | 確認 | コマンド | 期待値 |
 |---|---|---|
-| OS | `. /etc/os-release; echo $PRETTY_NAME` | Linux x86_64（Ubuntu 22.04 系を推奨） |
-| NVIDIA driver | `nvidia-smi --query-gpu=driver_version --format=csv,noheader` | 525 以降（検証は 535） |
-| **CUDA Toolkit** | `nvcc --version` | **release 11.8**（最重要） |
+| OS | `. /etc/os-release; echo $PRETTY_NAME` | Linux x86_64（現行は Ubuntu 24.04） |
+| NVIDIA driver | `nvidia-smi --query-gpu=driver_version --format=csv,noheader` | 525 以降（現行は 595） |
+| CUDA Toolkit | `nvcc --version` | 現行は release 12.9。**検出器 venv だけが使う**（12.x か 11.8） |
 | uv | `uv --version` | 導入済み |
 | GPU | `nvidia-smi -L` | NVIDIA GPU が見える |
 
 判断基準:
 
-- **nvcc が 11.8 でない**: `mamba-ssm` / `causal-conv1d` のソースビルドが torch
-  cu118 と不整合になり失敗する。CUDA 11.8 Toolkit の導入をユーザーに依頼する
-  （`/usr/local/cuda-11.8` を用意し `CUDA_HOME` で指す）。導入できない場合のみ、
-  ユーザー合意のうえ mamba 系を諦めて `SKIP_CUDA_CHECK=1` で続行する。
+- **nvcc が 12.9**: 現行サーバーの標準であり、そのまま進める。本体 `.venv` は prebuilt wheel
+  だけで入り nvcc を使わない。検出器 venv の MS-Deform-Attn は 12.9 でビルドでき、凍結源の出力を
+  bit 一致で再現する。**CUDA 11.8 を足さないこと**（gcc 13 と噛み合わない。`docs/environment.md`）。
 - **uv が無い**: `curl -LsSf https://astral.sh/uv/install.sh | sh` で導入する。
 - **GPU が無い / driver 不可**: CPU でも import・テストは通るが学習は実用的でない。
   その旨をユーザーへ明示する。
-- **nvcc が見つからない**: CUDA Toolkit 未導入。導入をユーザーに依頼する。
+- **nvcc が見つからない**: 本体 `.venv` は構築できる。検出器 venv が要るときだけ、
+  CUDA Toolkit の導入をユーザーに依頼する。
 
 ## 手順 1: 環境構築の実行
 
@@ -55,13 +56,12 @@
 bash scripts/setup_env.sh
 ```
 
-このスクリプトは「特殊 tier（torch cu118 / mmcv prebuilt / mamba ソースビルド）を
+このスクリプトは「特殊 tier（torch cu118 / mmcv prebuilt / mamba prebuilt）を
 正しい方法で先に導入 → `requirements.lock.txt` を `--no-deps` で適用し全 100
 パッケージを厳密版へ固定 → `egosurgery` を editable install → 検証」を自動で行う。
 
-- mamba-ssm / causal-conv1d の CUDA 拡張ビルドに数分〜十数分かかる。
-- 長時間になるため **`run_in_background: true` で起動し、Monitor で
-  進捗と失敗（`Traceback|Error|ERROR|fatal`）を監視**すること。
+- 何もビルドしない（すべて wheel）。所要時間はダウンロード次第である。
+- 既存の `.venv` を作り直すときは `UV_VENV_CLEAR=1` を付ける（付けないと `uv venv` が止まる）。
 
 ## 手順 1.5: 検出器 venv の構築（B2a / T1a 等を再現する場合のみ）
 
@@ -69,15 +69,18 @@ bash scripts/setup_env.sh
 B1 統合トレーナー）を再現するなら、続けて検出器 venv を構築する:
 
 ```bash
-CUDA_HOME=/usr/local/cuda-11.8 bash scripts/setup_env_relation_detr.sh
+bash scripts/restore_relation_detr_source.sh    # third_party/Relation-DETR に main.py が無いときだけ
+bash scripts/setup_env_relation_detr.sh
 ```
 
 - `requirements.relation_detr.lock.txt`（72 pkg, torch 2.1.2+cu118）を厳密適用する。
 - mmdet/mamba は**含まない**（検出器の推論専用の軽い env）。
-- MS-Deform-Attn はここではビルドされない。**初回の detector forward で JIT ビルド**
-  される（`source .venv-relation-detr/bin/activate` で ninja を PATH に載せ、
-  `CUDA_HOME` が 11.8 を指していること）。
-- `third_party/Relation-DETR` がチェックアウト済みであること。
+- **MS-Deform-Attn のビルドとロードまでここで検証する**（失敗すれば手順 5 で止まる）。
+  実行時は `source .venv-relation-detr/bin/activate` で ninja を PATH に載せる。`CUDA_HOME` は
+  未設定か `/usr/local/cuda` にする（構築時と違う場所を指すと再ビルドになる）。
+- `third_party/` は git にも Syncthing にも乗らず、checkpoints だけのホストがある。復元スクリプトは
+  上流 `b485955` に `third_party_snapshot/<host>/` の patch と tarball を当てる（既定は efros の版）。
+  🔴 **どのホストの版を正とするかは研究上の判断**であり、snapshot は 2026-08-02 時点のものである。
 
 ## 手順 2: 検証
 
@@ -103,7 +106,7 @@ CUDA_HOME=/usr/local/cuda-11.8 bash scripts/setup_env_relation_detr.sh
   （スラッシュコマンド `/env-check` が使えるならそれでもよい。）
 - 検出器 venv を構築した場合: `.venv-relation-detr/bin/python` で
   `torch.cuda.is_available()` が `True`、`accelerate` が import できることを確認。
-  MS-Deform-Attn の JIT ビルドは手順 5 の region-token 抽出スモークで初めて検証される。
+  MS-Deform-Attn のビルドとロードは `setup_env_relation_detr.sh` の手順 5 で検証済みになる。
 
 ## 手順 3: 完了報告
 
@@ -165,10 +168,10 @@ T1a = Tier-1 主力「TAPIS/GraSP 型 region-token→工程」（②系統・Δ_
 notes/experiment_log に明文化する（同一 ckpt・同一前処理ゆえ差は TeCNO 学習の数値のみ）。
 
 ```bash
-# 1) 検出器 venv で region-token 抽出（JIT ビルドは初回 forward で走る）
-CUDA_HOME=/usr/local/cuda-11.8 CUDA_VISIBLE_DEVICES=0 .venv-relation-detr/bin/python scripts/extract_t1a_regiontoken.py --subset val --limit 8   # スモーク
+# 1) 検出器 venv で region-token 抽出（PATH の前置は venv の ninja を見せるため。拡張の再ビルド判定に要る）
+PATH="$PWD/.venv-relation-detr/bin:$PATH" CUDA_VISIBLE_DEVICES=0 python scripts/extract_t1a_regiontoken.py --subset val --limit 8   # スモーク
 for sub in train val test; do
-  CUDA_HOME=/usr/local/cuda-11.8 CUDA_VISIBLE_DEVICES=0 .venv-relation-detr/bin/python scripts/extract_t1a_regiontoken.py --subset "$sub" --limit 0
+  PATH="$PWD/.venv-relation-detr/bin:$PATH" CUDA_VISIBLE_DEVICES=0 python scripts/extract_t1a_regiontoken.py --subset "$sub" --limit 0
 done
 
 # 2) 本体 venv で TeCNO 学習（3-seed）

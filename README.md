@@ -84,18 +84,19 @@ uv pip install -e ".[dev]"
 平文 `.env` は commit しない。新規ホストでの暗号化環境の準備と復旧手順は
 [`docs/secrets_and_tracking.md`](docs/secrets_and_tracking.md) を参照。
 GPU 本実験には、以下の「推奨セットアップ」で CUDA / mmcv / mmdet / Mamba まで導入する。
+現行サーバーは **Ubuntu 24.04 / CUDA 12.9 / gcc 13** で、追加のシステム導入は要らない。
 
 ### 推奨セットアップ（uv 仮想環境 + CUDA + mm系 + Mamba）
 
-mm 系（mmcv/mmdet）と mamba-ssm/causal-conv1d は CUDA 拡張ビルドが必要で、
-**torch の CUDA 版をシステム nvcc（11.8）と一致させる**のが要点。検証済み構成:
+mm 系（mmcv/mmdet）と mamba-ssm/causal-conv1d の CUDA 拡張は、**torch 2.1.2+cu118 に合わせた
+prebuilt wheel** で入れる。本体 `.venv` は何もビルドしないので、システムの nvcc の版は問わない。検証済み構成:
 
 ```bash
 # 仮想環境を作成して有効化
 uv venv .venv --python 3.11
 source .venv/bin/activate
 
-# torch 2.1.2 + cu118（システム nvcc 11.8 と一致 → CUDA 拡張がビルド可能）
+# torch 2.1.2 + cu118（mmcv / mamba の prebuilt wheel がこの組に合わせてある）
 uv pip install torch==2.1.2 torchvision==0.16.2 --index-url https://download.pytorch.org/whl/cu118
 
 # コア依存（numpy<2 を torch 2.1 系に合わせて固定）
@@ -132,8 +133,8 @@ ruff・black・coverage を定義する。`pip install -e .` 後は `PYTHONPATH=
 torch / mmcv 系 / mamba-ssm は CUDA 依存のため `pyproject.toml` の依存には含めず、
 上記の手順で個別に導入する。
 
-検証済み: driver 535（CUDA 12.2）上で cu118 ランタイムが動作し、`torch.cuda` /
-mmcv 2.1 / mmdet 3.3 / mamba-ssm 2.2.2 / causal-conv1d 1.4.0 がすべて GPU で動作。
+検証済み: driver 595 / CUDA 12.9 のホスト（2026-10-13 andrew。旧構成は driver 535）で cu118 ランタイムが
+動作し、`torch.cuda` / mmcv 2.1 / mmdet 3.3 / mamba-ssm 2.2.2 / causal-conv1d 1.4.0 がすべて GPU で動作。
 `transformers` は mamba-ssm 2.2.2 が旧 generation API を参照するため 4.44.2 に固定。
 
 ### 別マシンでの環境再現（推奨）
@@ -141,15 +142,23 @@ mmcv 2.1 / mmdet 3.3 / mamba-ssm 2.2.2 / causal-conv1d 1.4.0 がすべて GPU �
 検証済み環境を他サーバで完全再現するための再現セット（すべて Git 管理）:
 
 ```bash
-bash scripts/setup_env.sh   # venv 作成〜全依存導入〜検証まで自動
+bash scripts/setup_env.sh   # 本体 .venv: 作成〜全依存導入〜検証まで自動
+
+# 検出器（Relation-DETR）側も使うとき
+bash scripts/restore_relation_detr_source.sh   # third_party/Relation-DETR に main.py が無いときだけ
+bash scripts/setup_env_relation_detr.sh        # .venv-relation-detr + MS-Deform-Attn のビルド検証
 ```
 
 - `requirements.lock.txt` — 全 100 パッケージの厳密バージョン（`uv pip freeze`）
-- `scripts/setup_env.sh` — index URL・find-links・ソースビルドを含む再現スクリプト
+- `scripts/setup_env.sh` — index URL・find-links・prebuilt wheel の取得を含む再現スクリプト
+- `requirements.relation_detr.lock.txt` / `scripts/setup_env_relation_detr.sh` — 検出器 venv の厳密版と構築
+- `scripts/restore_relation_detr_source.sh` — 上流 clone + `third_party_snapshot/<host>/` の patch・tarball で
+  ソースを復元（既定は efros の版。**どの版を正とするかは研究上の判断**）
 - `docs/environment.md` — OS / driver / CUDA Toolkit 11.8 等のシステム層の記録
 - `docs/reproduce_on_new_machine.md` — 別マシンの Claude Code 向け再現指示書
 
-前提: Ubuntu 22.04 系・NVIDIA driver 525 以降・**CUDA Toolkit 11.8（nvcc）**・uv。
+前提: NVIDIA driver 525 以降・uv。検出器 venv だけが CUDA Toolkit（nvcc 12.x か 11.8）を使う。
+既存の venv を作り直すときは `UV_VENV_CLEAR=1` を付ける。
 
 ---
 
@@ -162,8 +171,8 @@ bash scripts/setup_env.sh   # venv 作成〜全依存導入〜検証まで自動
 
 | 項目 | 要件 |
 |---|---|
-| OS | Ubuntu 22.04 LTS（20.04 でも `setup_env.sh` は通る想定） |
-| NVIDIA driver | **535 以降推奨**（最低 525。`nvidia-smi` で確認）|
+| OS | Ubuntu 24.04 LTS（現行サーバー。旧構成の 22.04 でも通る） |
+| NVIDIA driver | **535 以降推奨**（最低 525。現行サーバーは 595。`nvidia-smi` で確認）|
 | GPU | **VRAM 24GB 以上 × 1 枚以上**。S0/S2 の DINO 学習は batch 4 で 23-48GB 消費。RTX A6000（49GB）×2 で検証済み |
 | ディスク | データ・重み・実験結果込みで **40GB 以上空き**（EgoSurgery 約 15GB + COCO 事前学習重み 約 400MB + 実験ログ）|
 | RAM | 32GB 以上推奨（DataLoader workers + mmdet で消費）|
@@ -171,20 +180,14 @@ bash scripts/setup_env.sh   # venv 作成〜全依存導入〜検証まで自動
 ### 1. システムパッケージのインストール（root 権限）
 
 ```bash
-# nvcc 11.8（uv venv の前にホスト側で必要）
-wget https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda_11.8.0_520.61.05_linux.run
-sudo sh cuda_11.8.0_520.61.05_linux.run --toolkit --silent --override
-export CUDA_HOME=/usr/local/cuda-11.8
-echo 'export CUDA_HOME=/usr/local/cuda-11.8' >> ~/.bashrc
-echo 'export PATH=$CUDA_HOME/bin:$PATH' >> ~/.bashrc
-
 # uv（Python パッケージマネージャ）
 curl -LsSf https://astral.sh/uv/install.sh | sh
 # pyenv 経由で Python 3.11 を入手するか、uv 内蔵の Python ダウンロードに任せる
 ```
 
-`nvcc --version` で **CUDA 11.8** が表示されることを確認（システム nvcc と
-`torch+cu118` の major バージョン一致が CUDA 拡張ビルドの絶対条件）。
+CUDA Toolkit は現行コンテナの 12.9（`/usr/local/cuda`）をそのまま使う。**CUDA 11.8 を足す必要はなく、
+足さないこと**（nvcc 11.8 は gcc 13 を扱えない。経緯は `docs/environment.md`）。本体 `.venv` は nvcc を
+使わず、検出器 venv の MS-Deform-Attn は nvcc 12.9 でビルドして凍結源の出力を bit 一致で再現する。
 
 ### 2. リポジトリのクローン
 
@@ -203,6 +206,10 @@ cd egosurgery_multitask
 bash scripts/setup_env.sh         # venv 作成〜全依存導入〜import 検証まで自動
 source .venv/bin/activate
 PYTHONPATH=src .venv/bin/python -m pytest tests/ -q
+
+# 検出器（Relation-DETR）側も使うとき
+bash scripts/restore_relation_detr_source.sh   # ソースが無いときだけ
+bash scripts/setup_env_relation_detr.sh
 ```
 
 ### 4. データセットの取得と配置
@@ -1420,3 +1427,42 @@ exp 契約 13 件すべてを FAIL にしていた**（prereg に対称性の表
 **P\*-15（ilya）との差はホスト差と分離できない**（efros の対照が ilya より +0.0696、閾値 0.0372）。
 送り手の train と val の差は 4 塔 × 5 折りの 20 件すべてで 3pt を超え（最小 +0.1254）、工程塔の送り手にも
 交差適合が要る。表は `docs/stage1/ptower_20.md`。
+
+### 現行サーバー構成（Ubuntu 24.04 / CUDA 12.9 / gcc 13）への追従（2026-10-13、andrew）
+
+サーバーが文書作成時の構成（Ubuntu 22.04 / nvcc 11.8）から移ったため、環境構築の前提を実測で引き直した。
+**torch 2.1.2+cu118 と 2 本の lock は変えていない**（受け取り手を揃える規約のため）。変えたのはホスト側の前提だけである。
+
+- `scripts/setup_env.sh` — nvcc 11.8 の必須検査を外した。全依存が prebuilt wheel で入り、何もビルドしないため。
+  それまで efros / dlsta / lecun は `SKIP_CUDA_CHECK=1` で飛ばしていた（受信箱の 2026-09-17・09-20 の指摘）
+- `scripts/setup_env_relation_detr.sh` — nvcc 12.x を受け入れ、**MS-Deform-Attn のビルドとロードまで検証する**
+  手順 5 を足した。上流は失敗を warning に落として先へ進むので、これまでは初回の forward まで気づけなかった。
+  ソースの有無は `main.py` で見る（checkpoints だけのホストを通さない）
+- `scripts/restore_relation_detr_source.sh` — 新設。上流 `b485955` + snapshot の patch・tarball でソースを復元する
+- `docs/environment.md` / `docs/reproduce_on_new_machine.md` / `CLAUDE.md` — 構成表と手順を現行へ直した
+- **`scripts/` の `CUDA_HOME` の既定を `/usr/local/cuda-11.8` から `/usr/local/cuda` へ一括で置き換えた**（24 ファイル）。
+  現行サーバーに `/usr/local/cuda-11.8` は無く、拡張の再ビルドが要る場面で失敗していたため。内訳は
+  `export CUDA_HOME="${CUDA_HOME:-...}"` の 15 本（`run_t1b*.sh` / `run_t1c_*` / `run_hc_seeds_lecun.sh` /
+  `run_l1_2_oracle_phase_lecun.sh` / `verify_*_init_identity.sh`）、固定値の 3 本（`_detector_full_study.sh` /
+  `_extract_improved.sh` / `_hand2det_gpu1_chain.sh`）、使い方コメントの 6 か所（`extract_t1a_regiontoken.py` /
+  `train_t1b.py` / `train_hand2det.py` / `audit_t1b_l0.py` / `audit_l2_hand2det_l0.py` / `run_t1a.sh`）。
+  ホスト名つきの過去スクリプトも含むが、変えたのはこの 1 行だけで、旧構成のホストで流すときは
+  `CUDA_HOME=/usr/local/cuda-11.8` を渡せば元どおりになる（固定値の 3 本は該当行を戻す）。
+  `docs/` と `tasks/` の過去の記録にある `cuda-11.8` は当時の事実なので書き換えていない
+
+実測（andrew）: 既定値のまま `setup_env_relation_detr.sh` が最後まで通り、凍結源 seed42 で val 先頭 8 フレームを
+forward した region token が既存の `t1a_regiontoken/relation_detr_seed42` と **bit 一致**した。本体 `.venv` は
+既存のもので mamba の GPU forward と mmcv の GPU 演算（nms / MS-Deform-Attn）を確かめた。
+
+未検証・残り:
+
+- `setup_env.sh` は修正後に頭から流していない（検証済みの `.venv` を作り直さないため）。変えたのは検査の削除だけである
+- 検出塔の学習（`main.py`）と逆伝播は andrew では流していない。順伝播の一致だけを見た
+- 🔴 **snapshot は 2026-08-02 時点で、それ以降に efros で足した実装を含まない。** `util/convergence.py` と
+  `main.py` の収束規則（`T-2026-09-19-stage1-detector-towers-r2`）、Stage 1 用の config がそれに当たる。
+  復元しただけのホストでは `tests/test_stage1_dtower_convergence.py` が収集できない。写しは
+  `experiments/baselines/stage1_dtower_r2/impl/` にあるが `main.py` は抜粋だけなので、組み直していない。
+  efros の実体から snapshot を取り直すのが筋である
+- テスト: 上の 1 ファイルを除き 793 passed / 6 failed。失敗は既知の 5 件と
+  `test_fetch_task.py::test_rejects_unknown_file_name`（エラー文言の食い違い。今回の変更とは無関係）
+- CUDA 11.8 を足す経路も試し、gcc 11 の追加と `CPATH` の解除で動くことは確かめたが、12.9 のままで足りるので採らない

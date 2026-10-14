@@ -36,7 +36,7 @@ mkdir -p logs
 
 VENV="$ROOT/.venv-relation-detr/bin/python"
 [ -x "$VENV" ] || { echo "[ERR] $VENV が無い。scripts/setup_env.sh で .venv-relation-detr を構築せよ"; exit 1; }
-export CUDA_HOME="${CUDA_HOME:-/usr/local/cuda-11.8}"
+export CUDA_HOME="${CUDA_HOME:-/usr/local/cuda}"
 export PATH="$ROOT/.venv-relation-detr/bin:$PATH"
 command -v ninja >/dev/null || { echo "[ERR] ninja が PATH に無い（$ROOT/.venv-relation-detr/bin/ninja を確認）"; exit 1; }
 

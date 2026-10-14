@@ -13,7 +13,7 @@ under-tuning/バグと区別できるよう、以下 5 チェックの all_pass 
                           （bias 無し zero-init conv → 0 入力で残差 0・勾配 0）。
 
 実行（.venv-relation-detr, cwd=third_party/Relation-DETR）:
-  source .venv-relation-detr/bin/activate && export CUDA_HOME=/usr/local/cuda-11.8
+  source .venv-relation-detr/bin/activate && export CUDA_HOME=/usr/local/cuda
   python /abs/scripts/audit_l2_hand2det_l0.py --hand-channels 4 --seed 42
   python /abs/scripts/audit_l2_hand2det_l0.py --hand-channels 5 --seed 42
 

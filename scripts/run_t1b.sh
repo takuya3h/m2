@@ -23,7 +23,7 @@ LOG="$LOG_DIR/${TAG}.log"
 
 # shellcheck disable=SC1091
 source "$BODY/.venv-relation-detr/bin/activate"
-export CUDA_HOME="${CUDA_HOME:-/usr/local/cuda-11.8}"
+export CUDA_HOME="${CUDA_HOME:-/usr/local/cuda}"
 echo "[run_t1b] seed=$SEED gpu=$GPU tag=$TAG log=$LOG extra=$*"
 CUDA_VISIBLE_DEVICES="$GPU" T1B_WORK_DIR="$BODY/experiments/transfer/${TAG}" \
   python "$BODY/scripts/train_t1b.py" --seed "$SEED" --epochs 6 "$@" \

@@ -11,8 +11,9 @@ CV 研究プロジェクト。設計は**二塔・界面分離型**である。�
 
 - 仮想環境: `.venv`（uv, Python 3.11）。**コードを動かす前に必ず有効化**
   （`source .venv/bin/activate`、または `.venv/bin/python` を明示）。無ければ作成。
-- torch 2.1.2+cu118（システム nvcc 11.8 と一致 → CUDA 拡張がビルド可能）。
-  CUDA 利用可（RTX A6000、driver 535）。
+- torch 2.1.2+cu118。CUDA 利用可（RTX A6000）。ホストは Ubuntu 24.04 / CUDA 12.9 / gcc 13。
+  本体 `.venv` は prebuilt wheel だけで入り nvcc を使わない。検出器 `.venv-relation-detr` の
+  MS-Deform-Attn は nvcc 12.9 でビルドする（CUDA 11.8 は足さない。`docs/environment.md`）。
 - 導入済み: mmcv 2.1.0 / mmdet 3.3.0 / mmengine 0.10.7 /
   mamba-ssm 2.2.2 / causal-conv1d 1.4.0。
 - `transformers` は **4.44.2 固定**（mamba-ssm 2.2.2 が旧 generation API を参照するため）。

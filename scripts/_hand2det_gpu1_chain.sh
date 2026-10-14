@@ -2,7 +2,7 @@
 # 一時ドライバ: GPU1 で audit(4/5ch) → identity(4/5ch) → all 1epoch を順に実行。
 set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"; cd "$ROOT"
-export CUDA_HOME=/usr/local/cuda-11.8
+export CUDA_HOME=/usr/local/cuda
 export PATH="$ROOT/.venv-relation-detr/bin:$PATH"
 export CUDA_VISIBLE_DEVICES=1
 PY="$ROOT/.venv-relation-detr/bin/python"

@@ -24,7 +24,7 @@ Tier2（接触 hand∩tool）は未実装、Tier3（tool mask/bbox/class）は�
   metrics.json / per_class_ap.json / hand2det_result.json / server.txt
 
 実行（.venv-relation-detr, cwd=third_party/Relation-DETR）:
-  source .venv-relation-detr/bin/activate && export CUDA_HOME=/usr/local/cuda-11.8
+  source .venv-relation-detr/bin/activate && export CUDA_HOME=/usr/local/cuda
   python /abs/scripts/train_hand2det.py --seed 42 --hand-channels 4 --trainable film --epochs 1
   python /abs/scripts/train_hand2det.py --seed 42 --hand-channels 5 --trainable all  --epochs 1
   python /abs/scripts/train_hand2det.py --seed 42 --epochs 0                # init 恒等検証用

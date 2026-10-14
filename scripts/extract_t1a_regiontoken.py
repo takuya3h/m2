@@ -20,7 +20,7 @@ GAP/frame_id を揃えるため phase manifest を走査（frame_id = fr["frame"
 低メモリ（走行中ジョブを邪魔しない）: batch=1 / fp16 autocast / no_grad。
 
 実行（必ず .venv-relation-detr を activate: ninja を PATH に載せ MS-Deform-Attn を JIT）:
-  source .venv-relation-detr/bin/activate && export CUDA_HOME=/usr/local/cuda-11.8
+  source .venv-relation-detr/bin/activate && export CUDA_HOME=/usr/local/cuda
   CUDA_VISIBLE_DEVICES=0 python scripts/extract_t1a_regiontoken.py --subset val --limit 8   # スモーク
   CUDA_VISIBLE_DEVICES=0 python scripts/extract_t1a_regiontoken.py --subset train --limit 0
 """

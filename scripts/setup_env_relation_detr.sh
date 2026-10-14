@@ -8,16 +8,20 @@
 #   - B2a tool-presence 抽出（extract_b2a_detsignal.py）
 #   - T1a region-token 抽出（extract_t1a_regiontoken.py）
 #   - B1 統合トレーナー（train_b1_mtl.py, egosurgery 非 import）
-# で使う。MS-Deform-Attn は実行時 JIT ビルド（ninja 同梱・CUDA_HOME=11.8 が必要）。
+# で使う。MS-Deform-Attn は JIT ビルド（ninja 同梱）で、本スクリプトの末尾で
+# ビルドとロードまで検証する。
 #
 # 前提（docs/environment.md / reproduce_on_new_machine.md 参照）:
-#   - CUDA Toolkit 11.8（nvcc 11.8）導入済み。MS-Deform-Attn の JIT ビルドが
-#     torch cu118 と整合するため必須。CUDA_HOME でそれを指す。
-#   - uv 導入済み。third_party/Relation-DETR がチェックアウト済み。
+#   - CUDA Toolkit（nvcc）導入済み。**12.x（現行サーバーの 12.9）でも 11.8 でもよい。**
+#     torch は cu118 のままだが、nvcc 12.9 + gcc 13 でビルドした拡張が凍結源の出力を
+#     bit 一致で再現する（2026-08-29 lecun / 2026-10-13 andrew 実測）。
+#     既定は /usr/local/cuda。別の場所なら CUDA_HOME で指す。
+#   - 拡張は実行時に $CUDA_HOME/lib64 の libcudart を要る（LD_LIBRARY_PATH に載っていること）。
+#   - uv 導入済み。third_party/Relation-DETR のソースが展開済み
+#     （無ければ: bash scripts/restore_relation_detr_source.sh）。
 #
 # 使い方:
 #   bash scripts/setup_env_relation_detr.sh
-#   （CUDA_HOME を明示する場合: CUDA_HOME=/usr/local/cuda-11.8 bash scripts/setup_env_relation_detr.sh）
 # ============================================================================
 set -euo pipefail
 
@@ -44,17 +48,24 @@ if ! command -v nvidia-smi >/dev/null 2>&1; then
 fi
 NVCC_VER="$("${CUDA_HOME}/bin/nvcc" --version 2>/dev/null | sed -n 's/.*release \([0-9.]*\).*/\1/p' || echo "none")"
 echo "[setup-reldetr] nvcc(${CUDA_HOME}): ${NVCC_VER} / driver: $(nvidia-smi --query-gpu=driver_version --format=csv,noheader | head -1)"
-if [ "${NVCC_VER}" != "11.8" ] && [ "${SKIP_CUDA_CHECK:-0}" != "1" ]; then
-  echo "[ERROR] nvcc が 11.8 ではありません（検出: ${NVCC_VER}）。" >&2
-  echo "        MS-Deform-Attn の JIT ビルドは torch cu118 と一致する CUDA 11.8 が必要です。" >&2
-  echo "        CUDA 11.8 を導入し CUDA_HOME で指すか、SKIP_CUDA_CHECK=1 で続行（自己責任）。" >&2
-  exit 1
-fi
+case "${NVCC_VER}" in
+  11.8|12.*) ;;
+  *)
+    if [ "${SKIP_CUDA_CHECK:-0}" != "1" ]; then
+      echo "[ERROR] nvcc が 11.8 でも 12.x でもありません（検出: ${NVCC_VER}）。" >&2
+      echo "        MS-Deform-Attn の JIT ビルドを実測で確かめたのは 11.8 と 12.9 だけです。" >&2
+      echo "        CUDA_HOME で nvcc の場所を指すか、SKIP_CUDA_CHECK=1 で続行（自己責任）。" >&2
+      exit 1
+    fi ;;
+esac
 if [ ! -f "$LOCK" ]; then
   echo "[ERROR] $LOCK が見つかりません（正本 lock 欠落）。" >&2; exit 1
 fi
-if [ ! -d "third_party/Relation-DETR" ]; then
-  echo "[ERROR] third_party/Relation-DETR が見当たりません（submodule/checkout を確認）。" >&2; exit 1
+# checkpoints だけが置かれたホストがあるため、ディレクトリではなくソースの実在で見る。
+if [ ! -f "third_party/Relation-DETR/main.py" ]; then
+  echo "[ERROR] third_party/Relation-DETR にソースがありません（main.py が無い）。" >&2
+  echo "        復元: bash scripts/restore_relation_detr_source.sh" >&2
+  exit 1
 fi
 
 # --- 1. 仮想環境 ------------------------------------------------------------ #
@@ -84,11 +95,37 @@ _ = (x @ x).sum().item()
 import torchvision, accelerate, omegaconf, albumentations, pycocotools, ninja  # noqa: F401
 print(f"  torch {torch.__version__} / CUDA {torch.version.cuda} / GPU {torch.cuda.get_device_name(0)}")
 print(f"  torchvision {torchvision.__version__} / accelerate {accelerate.__version__}")
-print("  import OK・CUDA 動作 OK（MS-Deform-Attn は初回 detector forward で JIT ビルドされる）")
+print("  import OK・CUDA 動作 OK")
 PY
+
+# --- 5. MS-Deform-Attn の JIT ビルドとロード -------------------------------- #
+# 上流は失敗を warning に落として _C=None で先へ進むため、ここで止めないと
+# 初回の detector forward まで気づけない。ninja は venv の bin から取る。
+echo "[setup-reldetr] === 5. MS-Deform-Attn の JIT ビルド（nvcc ${NVCC_VER}）==="
+JIT_LOG="$(mktemp)"   # コンパイラの警告が数百行出るため、失敗時だけ末尾を見せる
+if (
+  cd third_party/Relation-DETR
+  PATH="$PROJECT_DIR/$VENV/bin:$PATH" CUDA_HOME="$CUDA_HOME" \
+    "$PROJECT_DIR/$VENV/bin/python" - <<'PY'
+import warnings
+with warnings.catch_warnings(record=True) as caught:
+    warnings.simplefilter("always")
+    from models.bricks import ms_deform_attn
+reasons = [str(w.message) for w in caught if "MultiScaleDeformableAttention" in str(w.message)]
+assert ms_deform_attn._C is not None, "MS-Deform-Attn のビルド/ロードに失敗: " + " / ".join(reasons)
+print("  MS-Deform-Attn ビルド OK・ロード OK")
+PY
+) >"$JIT_LOG" 2>&1; then
+  tail -n 1 "$JIT_LOG"
+else
+  tail -n 20 "$JIT_LOG" >&2
+  echo "[ERROR] MS-Deform-Attn を用意できませんでした（全文: $JIT_LOG）。" >&2
+  echo "        LD_LIBRARY_PATH に ${CUDA_HOME}/lib64 が載っているかを確認してください。" >&2
+  exit 1
+fi
 
 echo ""
 echo "[setup-reldetr] 完了。検出器側スクリプトは次のように使う:"
-echo "  source ${VENV}/bin/activate    # ninja を PATH に載せ MS-Deform-Attn を JIT ビルド可能に"
-echo "  export CUDA_HOME=${CUDA_HOME}"
+echo "  source ${VENV}/bin/activate    # ninja を PATH に載せる（拡張の再ビルド判定に要る）"
+echo "  export CUDA_HOME=${CUDA_HOME}   # 構築時と同じ場所を指す（変えると再ビルドになる）"
 echo "  CUDA_VISIBLE_DEVICES=0 python scripts/extract_t1a_regiontoken.py --subset val --limit 8  # 疎通"

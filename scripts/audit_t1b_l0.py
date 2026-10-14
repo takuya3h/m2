@@ -21,7 +21,7 @@ FAIL = 主張の修正が必要（査読耐性を欠く）。
 
 実行（.venv-relation-detr, cwd=third_party/Relation-DETR）:
   source .venv-relation-detr/bin/activate
-  export CUDA_HOME=/usr/local/cuda-11.8
+  export CUDA_HOME=/usr/local/cuda
   python /abs/scripts/audit_t1b_l0.py --inject film --seed 42
   python /abs/scripts/audit_t1b_l0.py --inject ca --seed 42
   python /abs/scripts/audit_t1b_l0.py --inject hc --seed 42

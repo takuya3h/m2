@@ -31,7 +31,7 @@ zero-init=恒等なので warm-start 直後は S0-frozen と一致 → fine-tune
      工程別品質・定性可視化）を後から実行できる状態を担保するため。
 
 実行（.venv-relation-detr, cwd=third_party/Relation-DETR）:
-  source .venv-relation-detr/bin/activate && export CUDA_HOME=/usr/local/cuda-11.8
+  source .venv-relation-detr/bin/activate && export CUDA_HOME=/usr/local/cuda
   python /abs/scripts/train_t1b.py --seed 42 --epochs 6
   python /abs/scripts/train_t1b.py --smoke           # 数 step・warm-start mAP 検証
   python /abs/scripts/train_t1b.py --zero-ctx ...     # §4.6 対照（注入効果分離）

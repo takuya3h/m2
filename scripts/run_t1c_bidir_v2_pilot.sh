@@ -13,7 +13,7 @@ GPU_A="${GPU_A:-0}"; GPU_C="${GPU_C:-1}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"; cd "$ROOT"; mkdir -p logs
 VENV="$ROOT/.venv-relation-detr/bin/python"
 [ -x "$VENV" ] || { echo "[ERR] $VENV 無い"; exit 1; }
-export CUDA_HOME="${CUDA_HOME:-/usr/local/cuda-11.8}"
+export CUDA_HOME="${CUDA_HOME:-/usr/local/cuda}"
 export PATH="$ROOT/.venv-relation-detr/bin:$PATH"
 command -v ninja >/dev/null || { echo "[ERR] ninja が PATH に無い"; exit 1; }
 [ -f "$ROOT/third_party/Relation-DETR/checkpoints/incoming/seed${SEED}/best_ap.pth" ] || { echo "[ERR] ckpt 無し"; exit 1; }
