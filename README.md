@@ -1466,3 +1466,15 @@ forward した region token が既存の `t1a_regiontoken/relation_detr_seed42` 
 - テスト: 上の 1 ファイルを除き 793 passed / 6 failed。失敗は既知の 5 件と
   `test_fetch_task.py::test_rejects_unknown_file_name`（エラー文言の食い違い。今回の変更とは無関係）
 - CUDA 11.8 を足す経路も試し、gcc 11 の追加と `CPATH` の解除で動くことは確かめたが、12.9 のままで足りるので採らない
+
+### Stage 2 の前提の実測: フレームと注釈の対応・送り手信号の時刻（2026-10-14、andrew）
+
+契約 `T-2026-10-14-frame-signal-audit`（analysis。装置も推論も使わない）。結果は `experiments/analysis/frame_signal_audit/REPORT.md`、
+道具は同 `tools/`（`audit_frames.py` が注釈・manifest・画像を直接読む方法 A、`count_shell.sh` がシェルで辿る方法 B、
+`time_alignment_check.py` が送り手信号の時刻の判定と陽性対照）。既存のスクリプトは変えていない。
+
+- 術具注釈 = 工程塔の manifest（15 動画）= `data/raw/ego/` の画像 = 15,437 で完全一致。工程注釈だけの 1,796 枚は
+  `data/raw/OpenSurgery_Dataset/01_frames/initial_videos/` に全数在り復号できる（区間 03_3 の 168 枚を含む）
+- 番号は区間ごとの抽出の通し番号で、区間が変わると振り直される。0.5 fps は文書の記載で、番号→秒の対応は配布物に無い（仮定として扱う）
+- Stage 1 の工程塔は動画の区間を連結した 1 本の列を見る（履歴は区間の境界をまたぐ）。Jaccard と accuracy は全フレーム合算
+- 既存の送り手信号 6 経路はすべて同時刻 t。「一つ前の時刻まで」の規則は実装にも repo の文書にも無い

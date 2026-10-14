@@ -1,0 +1,222 @@
+{
+  "split": "val",
+  "offsets": [
+    -2,
+    -1,
+    0,
+    1,
+    2
+  ],
+  "senders": {
+    "phase_context(P->D, S4 posterior 9d)": {
+      "source": "data/processed/phase_context/relation_detr_seed42/val_phasectx.npz",
+      "rows": 1515,
+      "dim": 9,
+      "unshifted": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1515,
+        "missing": 0,
+        "agreement_by_offset": {
+          "-2": 0.897283,
+          "-1": 0.900794,
+          "0": 0.90231,
+          "1": 0.890212,
+          "2": 0.878728
+        },
+        "judged_offset": 0,
+        "verdict": "同時刻"
+      },
+      "unshifted_margin_over_next_best": 0.001516,
+      "shifted_control(name t holds t-1)": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1512,
+        "missing": 3,
+        "agreement_by_offset": {
+          "-2": 0.901259,
+          "-1": 0.902778,
+          "0": 0.890212,
+          "1": 0.878728,
+          "2": 0.870518
+        },
+        "judged_offset": -1,
+        "verdict": "ずらし(-1)"
+      },
+      "control_ok": true
+    },
+    "b2a_toolpresence(D->P, 15d max score)": {
+      "source": "data/processed/b2a_detsignal/relation_detr_seed42/val_toolpresence.npz",
+      "rows": 1515,
+      "dim": 15,
+      "unshifted": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1515,
+        "missing": 0,
+        "agreement_by_offset": {
+          "-2": 0.951668,
+          "-1": 0.958774,
+          "0": 0.971089,
+          "1": 0.959083,
+          "2": 0.951182
+        },
+        "judged_offset": 0,
+        "verdict": "同時刻"
+      },
+      "unshifted_margin_over_next_best": 0.012006,
+      "shifted_control(name t holds t-1)": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1512,
+        "missing": 3,
+        "agreement_by_offset": {
+          "-2": 0.958781,
+          "-1": 0.971032,
+          "0": 0.959083,
+          "1": 0.951182,
+          "2": 0.94502
+        },
+        "judged_offset": -1,
+        "verdict": "ずらし(-1)"
+      },
+      "control_ok": true
+    },
+    "t1a_regiontoken(D->P, 15x256d)": {
+      "source": "data/processed/t1a_regiontoken/relation_detr_seed42/val_regiontoken.npz",
+      "rows": 1515,
+      "dim": 3840,
+      "unshifted": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1515,
+        "missing": 0,
+        "agreement_by_offset": {
+          "-2": 0.951049,
+          "-1": 0.958157,
+          "0": 0.970385,
+          "1": 0.958554,
+          "2": 0.950387
+        },
+        "judged_offset": 0,
+        "verdict": "同時刻"
+      },
+      "unshifted_margin_over_next_best": 0.011831,
+      "shifted_control(name t holds t-1)": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1512,
+        "missing": 3,
+        "agreement_by_offset": {
+          "-2": 0.958162,
+          "-1": 0.970326,
+          "0": 0.958554,
+          "1": 0.950387,
+          "2": 0.944622
+        },
+        "judged_offset": -1,
+        "verdict": "ずらし(-1)"
+      },
+      "control_ok": true
+    },
+    "oracle_toolpresence(D->P, 15d one-hot)": {
+      "source": "data/processed/oracle_toolpresence/val_oracletool.npz",
+      "rows": 1515,
+      "dim": 15,
+      "unshifted": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1515,
+        "missing": 0,
+        "agreement_by_offset": {
+          "-2": 0.695162,
+          "-1": 0.752646,
+          "0": 1.0,
+          "1": 0.752646,
+          "2": 0.695162
+        },
+        "judged_offset": 0,
+        "verdict": "同時刻"
+      },
+      "unshifted_margin_over_next_best": 0.247354,
+      "shifted_control(name t holds t-1)": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1512,
+        "missing": 3,
+        "agreement_by_offset": {
+          "-2": 0.753479,
+          "-1": 1.0,
+          "0": 0.752646,
+          "1": 0.695162,
+          "2": 0.634794
+        },
+        "judged_offset": -1,
+        "verdict": "ずらし(-1)"
+      },
+      "control_ok": true
+    },
+    "oracle_phase_onehot(P->D, 9d; train_t1b.load_oracle_phase_ctx)": {
+      "source": "manifest label (same construction as scripts/train_t1b.py:82-99)",
+      "rows": 1515,
+      "dim": 9,
+      "unshifted": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1515,
+        "missing": 0,
+        "agreement_by_offset": {
+          "-2": 0.962889,
+          "-1": 0.981481,
+          "0": 1.0,
+          "1": 0.981481,
+          "2": 0.962889
+        },
+        "judged_offset": 0,
+        "verdict": "同時刻"
+      },
+      "unshifted_margin_over_next_best": 0.018519,
+      "shifted_control(name t holds t-1)": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1512,
+        "missing": 3,
+        "agreement_by_offset": {
+          "-2": 0.981445,
+          "-1": 1.0,
+          "0": 0.981481,
+          "1": 0.962889,
+          "2": 0.944887
+        },
+        "judged_offset": -1,
+        "verdict": "ずらし(-1)"
+      },
+      "control_ok": true
+    },
+    "oracle_handfeature_presence(D->P, 4d)": {
+      "source": "data/processed/oracle_handfeature/val_oraclehand_presence.npz",
+      "rows": 1515,
+      "dim": 4,
+      "unshifted": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1515,
+        "missing": 0,
+        "agreement_by_offset": {
+          "-2": 0.696488,
+          "-1": 0.742725,
+          "0": 1.0,
+          "1": 0.742725,
+          "2": 0.696488
+        },
+        "judged_offset": 0,
+        "verdict": "同時刻"
+      },
+      "unshifted_margin_over_next_best": 0.257275,
+      "shifted_control(name t holds t-1)": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1512,
+        "missing": 3,
+        "agreement_by_offset": {
+          "-2": 0.743539,
+          "-1": 1.0,
+          "0": 0.742725,
+          "1": 0.696488,
+          "2": 0.650066
+        },
+        "judged_offset": -1,
+        "verdict": "ずらし(-1)"
+      },
+      "control_ok": true
+    }
+  }
+}
