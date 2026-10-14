@@ -119,4 +119,17 @@
 
 ## 8. 送出
 
-（commit / push / PR / 台帳の応答は RESULT.md §送出と、下に追記する）
+commit は `.git/index.lock` の競合で 2 回失敗した。ロックは数秒に一度 `~/.claude/statusline.sh` が走らせる
+`git status --porcelain` が一瞬だけ置くもので、ロックが無い瞬間に合わせた再試行（0.3 秒間隔）で add は 2 回目、commit は 1 回目で通った。
+最初の失敗時に `&&` 連鎖の後ろの `git push -u origin feat/frame-signal-audit` だけが走り、遠隔に commit 0 の分岐ができていた
+（`gh pr create` は「No commits between phase0 and feat/frame-signal-audit」で失敗）。本 commit の push で上書きではなく fast-forward になった。
+
+| 手順 | 結果 |
+|---|---|
+| commit | `432e1f10`（25 ファイル、16,289 行追加。README.md の追記を含む） |
+| push | `57717f6c..432e1f10 feat/frame-signal-audit -> feat/frame-signal-audit` |
+| PR | #227 `https://github.com/takuya3h/m2/pull/227`、base `phase0`、head `feat/frame-signal-audit`、`isDraft: false`、`state: OPEN`（`gh pr view --json` で実測） |
+| `make task-report` | 成功。応答 `{"task_id": "T-2026-10-14-frame-signal-audit", "verdict": "pass", "n_issuer_defects": 2, "report_sha256": "2d02e042a4c9d16f39d1d208c5eb86437fc3e2de38e5d024664f3aec78abd2cb", "report_bytes": 8851, "replaced_blocks": 0}` |
+
+本節と RESULT.md §8、result.yaml の `pr` / `commits` を書いた 2 つ目の commit は、台帳へ送った本文（要約値 `2d02e042…`）には含まれない。
+送信の時刻 2026-10-15 04:14 JST。

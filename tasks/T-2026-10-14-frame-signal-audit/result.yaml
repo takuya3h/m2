@@ -3,7 +3,7 @@ task_id: "T-2026-10-14-frame-signal-audit"
 status: pass
 host: "andrew"
 branch: "feat/frame-signal-audit"
-pr: null
+pr: 227
 merged: false
 
 gates:
@@ -52,4 +52,5 @@ unknowns:
   - "§1 の 2 の『一つ前の時刻まで』の規則の出所（repo に無い）"
   - "検出塔の特徴の空間の大きさ（1344×768 → 168×96 / 84×48 / 42×24 / 21×12）は設定からの計算値で、推論で確かめていない"
 
-commits: []
+commits:
+  - "432e1f10"

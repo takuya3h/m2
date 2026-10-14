@@ -75,4 +75,7 @@ Stage 1 の工程塔は動画の区間を連結した 1 本の列を見ており
 
 ## 8. 送出
 
-（commit / push / PR / 台帳の応答は本節に追記する）
+- commit `432e1f10`（25 ファイル）→ push → **PR #227**（`https://github.com/takuya3h/m2/pull/227`、base `phase0`、Draft でない、OPEN。`gh pr view --json` で実測）
+- `make task-report` 成功。台帳の応答: verdict `pass`、issuer_defects 2、report_sha256 `2d02e042a4c9d16f39d1d208c5eb86437fc3e2de38e5d024664f3aec78abd2cb`、8,851 bytes、replaced_blocks 0
+- commit は `.git/index.lock`（状態行スクリプトの `git status` が一瞬置く）との競合で 2 回失敗し、再試行で通った。経緯は `audit.md` §8
+- 本節と `result.yaml` の `pr` / `commits` を書いた 2 つ目の commit は、台帳へ送った本文には含まれない
