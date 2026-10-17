@@ -1,0 +1,4 @@
+- [ ] 2026-10-17 [cc] 検出塔の評価時の入力は原寸 1920×1080 → 縮小後 1333×749 → pad 後 1344×768（W×H、前処理だけの実測）。REPORT.md:200 の計算値 1333×750 は丸めの違いで、実装は切り捨てる。次の契約の対称性の表の解像度の行を埋められる（T-2026-10-17-tower-reselect-prereq）
+- [ ] 2026-10-17 [cc] andrew の検出器に二周目の収束規則（util/convergence.py、main.py）と D*-ImageNet の設定 3 件を efros の実体から戻した。収束規則の試験は 9/9 PASS。新しい snapshot は third_party_snapshot/efros/2026-10-17/Relation-DETR/（T-2026-10-17-tower-reselect-prereq）
+- [ ] 2026-10-17 [cc] 規約 frame_sets の「追加動画 17〜21」（SPEC §5.2 の文言どおり）と conventions#folds の「追加 6 動画 17〜22」が食い違う。動画 22 の扱いを明示するかは未決（T-2026-10-17-tower-reselect-prereq）
+- [ ] 2026-10-17 [cc] decisions_required の 2 件（efros に届かない場合の版、andrew だけの改変の扱い）は利用者が回答し amendments に記録。2 件とも発火しなかった（T-2026-10-17-tower-reselect-prereq）

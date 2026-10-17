@@ -1,0 +1,75 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-17-tower-reselect-prereq"
+  kind: impl
+  title: "両塔の学び直しの前提を整える。andrew に検出塔二周目の収束規則の実装と設定を efros から戻し、検出塔の評価時の入力の大きさを測り、規約に対称性の理由とフレーム集合の節を足す"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-16T20:10:00Z"
+  created_from:
+    runindex_commit: "63ae65da8c7d32df591f5e2ee4358286b72c726b"
+    counts: {index: 1961, experiments: 750, verdicts: 1506}
+  depends_on: [T-2026-09-19-stage1-detector-towers-r2, T-2026-10-14-frame-signal-audit]
+  amendments:
+    - date: "2026-10-17"
+      reason: "L3 プリフライト P6 decisions_answered が FAIL（未回答 2 件）。利用者が回答した。決定1（efros に届かない、または収束規則の実装が二周目の写しと一致しない場合に andrew にどの版を置くか）: 事前に版を決めず、発火した時点で停止して諮る（SPEC §8 と同じ扱い）。決定2（どの snapshot にも無い andrew だけの改変が見つかった場合）: 残す（上書きしない。SPEC §4 Task D-3 と同じ）。二周目の学習に要るファイルと重なる場合だけ停止して諮る（SPEC §8）"
+      diff: "governance.decisions_required の 2 件を回答済みとして空にした（回答は本 amendment の reason に記録）"
+intent:
+  question: "andrew で検出塔の二周目と同じ収束規則と設定を動かせる状態にできるか。検出塔の評価経路が実際に作る入力の大きさはいくつか。規約に、塔どうしの最適化の細部を変えてよい理由と、塔と界面が使うフレームの集合を置けるか"
+  decision_at_stake: "両塔の学び直しの実験契約の起票の可否。対称性の表に残る UNKNOWN の一行を埋め、実行者の対称性の検査が止まらない規約にし、Notion にしか無いフレーム集合の決定を契約から引ける形にする"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery-Tool の画像のうち一枚以上（評価時の入力の大きさを測るためだけに読む）"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/restore_relation_detr_source.sh", "scripts/eval_relation_detr_map.py", "tests/test_stage1_dtower_convergence.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#env_p0, conventions#symmetry]
+  conventions_rev: "073f9dc0b80b7ca48c2766eb6f8f2ccd17cf0fe6"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["context/conventions.md", "third_party_snapshot/efros/"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。分岐、未追跡の退避、同期の抑止、装置を使わないことの記録、起点の実測、試験の失敗の名前", gpu: false, est: "30m"}
+    - {id: B, name: "andrew の検出器のソースの棚卸し。前の値として要約値の一覧を取り、二周目の写しと照らして欠けを特定する", gpu: false, est: "45m"}
+    - {id: C, name: "efros の実体を読むだけで取り寄せ、二周目の写しと一致を確かめ、日付つきの snapshot として repo に置く", gpu: false, est: "90m"}
+    - {id: D, name: "andrew へ欠けたソースと設定を戻し、試験と引数の存在で動く状態を確かめる", gpu: false, est: "60m"}
+    - {id: E, name: "検出塔の評価経路が作る入力の大きさを前処理だけで測る", gpu: false, est: "45m"}
+    - {id: F, name: "規約と README の更新", gpu: false, est: "45m"}
+    - {id: G, name: "検証と報告", gpu: false, est: "60m"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、装置を使わないことと試験の失敗の名前を記録した", on_fail: stop}
+    - {id: G2, after: C, check: "efros の収束規則の実装が二周目の写しと要約値で一致し、取り寄せた一覧がある", on_fail: ask}
+    - {id: G3, after: D, check: "収束規則の試験が収集されて全件通り、拡張の生成物と checkpoints と凍結源の要約値が前後で一致する", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md, result.yaml, audit.md]
+  destination: "third_party_snapshot/efros/"
+  acceptance:
+    - "a: andrew の検出器に収束規則の実装と二周目の D-COCO の学習に使った設定が在り、二周目の写しと要約値か行の一致で照合されている"
+    - "b: 取り寄せ元が二周目を動かした efros の実体であることが要約値で示されている。届かなければ停止して諮った記録がある"
+    - "c: andrew で上書きか追加したファイルの一覧が前後の要約値つきであり、上書き前の版が repo の外に退避されている"
+    - "d: 拡張の生成物、checkpoints、凍結源、COCO 初期化の重みの要約値が前後で一致する"
+    - "e: 収束規則の試験が収集されて全件通る。全体の試験で失敗の名前の集合が増えていない"
+    - "f: efros の新しい snapshot が third_party_snapshot/efros/ の下に日付つきで置かれ、出所の記録があり、既存の snapshot が変わらない"
+    - "g: 検出塔の評価経路が原寸のフレームに対して作る入力の大きさが、前処理を装置なしで動かした実測で記録され、別の大きさの入力での陽性対照がある"
+    - "h: 規約の symmetry 節に各塔の構造の標準の処方が許される理由として足され、使える行と使えない行と条件が書かれている"
+    - "i: 規約に学習と評価のフレーム集合の節が足され、SPEC の規則と一致し、変更履歴に行がある"
+    - "j: 本契約で装置を使っておらず、efros に書き込んでおらず、data 配下に書いていない"
+    - "k: PR が Draft でなく存在し、base が phase0 で、分岐が feat/tower-reselect-prereq"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "本ホストの repo の位置や起点が env-facts.md の記載と食い違う場合"
+    - "efros への接続に、実行者が扱えない資格情報が要る場合"
+    - "拡張の生成物を作り直さないと検出器が動かないと分かった場合"
+    - "実行基盤が書き込みや移動を拒む場合"
