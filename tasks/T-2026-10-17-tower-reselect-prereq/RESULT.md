@@ -84,4 +84,4 @@ andrew で、検出塔の二周目の収束規則と設定を動かせる状態�
 |---|---|
 | PR | #229（base `phase0`、draft false）https://github.com/takuya3h/m2/pull/229 |
 | commit | `2da88a8f`（本体）、続く 1 件（規約の変更履歴の commit の欄と本報告の PR 番号の記入） |
-| 台帳 `make task-report` | 終了コードは inbox.d と最後の応答に記す |
+| 台帳 `make task-report` | 終了コード 0（report_sha256 `8063f4ee…`。送ったのは `b12eda6c` の版。応答は audit の G-5） |

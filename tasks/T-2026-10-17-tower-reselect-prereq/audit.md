@@ -430,6 +430,13 @@ argv0 と venv の経路の完全一致 0。陽性対照として自分のシェ
 
 commit: `2da88a8f`（本体）、続く 1 件（変更履歴の commit の欄、PR 番号の記入）。
 
+### 台帳の応答（`make task-report`、終了コード 0）
+
+    {"task_id": "T-2026-10-17-tower-reselect-prereq", "verdict": "pass", "n_issuer_defects": 2,
+     "report_sha256": "8063f4ee87c6f689a8bb84208999689081086ca8df4a5fc53ee55df163fcb243", "report_bytes": 10396, "replaced_blocks": 0}
+
+送った報告は commit `b12eda6c` の版。この節を足す commit はその後である。
+
 ## 付録 1. 四つの集合の前の値（set / path / sha256 / bytes）
 
 ```
