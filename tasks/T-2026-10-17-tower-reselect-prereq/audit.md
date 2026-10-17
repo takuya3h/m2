@@ -366,7 +366,7 @@ ImageNet 用の設定と seed42 の設定の差は `resume_from_checkpoint`（CO
 
 ### F-3 変更履歴
 
-150 行に本契約の行を足した。commit の欄は本契約の commit（§G-5）。
+150 行に本契約の行を足した。commit の欄は本体の commit `2da88a8f`（PENDING で commit した後に記入）。
 
 ### F-4 README
 
@@ -421,6 +421,14 @@ argv0 と venv の経路の完全一致 0。陽性対照として自分のシェ
 | `tasks/T-2026-10-17-tower-reselect-prereq/`（spec.yaml、SPEC.md、audit.md、RESULT.md、result.yaml） | 追加 |
 | `tasks/inbox.d/T-2026-10-17-tower-reselect-prereq.md` | 追加 |
 | repo の外: `third_party/Relation-DETR/`（版管理の外）に 5 件、`~/m2-evacuated/T-2026-10-17-tower-reselect-prereq/` に退避 1 件 | − |
+
+## G-5 送出
+
+    $ git push -u origin feat/tower-reselect-prereq → [new branch]
+    $ gh pr create --base phase0 --head feat/tower-reselect-prereq ... → https://github.com/takuya3h/m2/pull/229
+    $ gh pr view --json ... → {"baseRefName":"phase0","headRefName":"feat/tower-reselect-prereq","isDraft":false,"number":229,"state":"OPEN"}
+
+commit: `2da88a8f`（本体）、続く 1 件（変更履歴の commit の欄、PR 番号の記入）。
 
 ## 付録 1. 四つの集合の前の値（set / path / sha256 / bytes）
 

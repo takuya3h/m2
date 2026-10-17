@@ -39,7 +39,7 @@ andrew で、検出塔の二周目の収束規則と設定を動かせる状態�
 | h | 規約 symmetry | 達成 | 理由 3、使える比較・行・条件、使えない行、変種への不適用、理由の欄の書き方、出所 | SPEC §5.1 の 10 項と規約の行を一行ずつ突き合わせた（audit 339-357） |
 | i | 規約 frame_sets | 達成 | 用途の表 5 行、規則 4 項、変更履歴の行 | 数 17,233 / 15,437 / 1,796 が `REPORT.md:14,15,22,43` と一致。アンカーが `validate_task` で引ける（audit 358-366） |
 | j | 装置・efros・data | 達成 | 装置の使用 0、efros への書き込み 0、`data/` への書き込み 0 | 装置は開始時と終了時の二回（同じ他プロセス 2 件だけ、exe と argv0 の完全一致 0）。efros の操作の一覧（audit 61-70、158-175、400-412） |
-| k | PR | 達成 | PR #PR_NUMBER、base `phase0`、head `feat/tower-reselect-prereq`、draft false | `gh pr view` の実測（§7） |
+| k | PR | 達成 | PR #229、base `phase0`、head `feat/tower-reselect-prereq`、draft false、OPEN | `gh pr view --json number,isDraft,baseRefName,headRefName,state` の実測 |
 
 ## 4. 実測（次の契約で使う値）
 
@@ -82,6 +82,6 @@ andrew で、検出塔の二周目の収束規則と設定を動かせる状態�
 
 | 項目 | 値 |
 |---|---|
-| PR | #PR_NUMBER（base `phase0`、draft false） |
-| commit | COMMIT_LIST |
+| PR | #229（base `phase0`、draft false）https://github.com/takuya3h/m2/pull/229 |
+| commit | `2da88a8f`（本体）、続く 1 件（規約の変更履歴の commit の欄と本報告の PR 番号の記入） |
 | 台帳 `make task-report` | 終了コードは inbox.d と最後の応答に記す |

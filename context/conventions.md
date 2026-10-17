@@ -147,7 +147,7 @@ activate を省略すると CUDA 拡張が読み込まれず、無言で CPU 実
 | 2026-09-19 | d6b37c79 | symmetry 節を追加。比較する腕の対称性の表の様式・必ず置く行・規則の読みを定義。proposal_gate のカードに #15 #16、issuer_cautions に注意 14 を追加。検査は L3 の P13 symmetry_table_complete、点検表は docs/symmetry-checklist.md |
 | 2026-09-23 | ae76c1b9 | proposal_gate に「置き場と参照」を追加。カードは docs/proposals/ に置き check_proposal.py を通す、候補は三案以上、批判会話は web 検索必須、exp は intent.proposal_card で参照。検査は L3 の P14 proposal_card_checked、雛形は docs/proposals/_template.md |
 | 2026-10-02 | 001b4309 | det_groups 節と crossfit 節を追加。検出の標的群 5 クラスと陰性対照群 4 クラス（研究方針 v2 §7.3）、送り手の交差適合の規則と閾値 3pt（研究方針 v2 §9.4、利用者の決定 2026-09-27）を定義。契約 T-2026-09-27-stage2-prep |
-| 2026-10-17 | PENDING | symmetry 節の「意図的に変える」の理由に 3「各塔の構造の標準の処方」を足し、使える比較・行・条件と使えない行、同じ塔の変種への不適用を定義。frame_sets 節を追加し、塔と界面が学習・評価に使うフレームの集合と規則を定義（利用者の決定 2026-10-16・2026-10-17）。契約 T-2026-10-17-tower-reselect-prereq |
+| 2026-10-17 | 2da88a8f | symmetry 節の「意図的に変える」の理由に 3「各塔の構造の標準の処方」を足し、使える比較・行・条件と使えない行、同じ塔の変種への不適用を定義。frame_sets 節を追加し、塔と界面が学習・評価に使うフレームの集合と規則を定義（利用者の決定 2026-10-16・2026-10-17）。契約 T-2026-10-17-tower-reselect-prereq |
 <a id="issuer_cautions"></a>
 ## issuer_cautions
 
