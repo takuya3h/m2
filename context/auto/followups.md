@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（631 件）
+## 申し送り（632 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1008,6 +1008,10 @@
 - tools/fetch_task.py の extras_from_spec は bytes: true を通す（schema は落とす）。tests/test_fetch_task.py::test_rejects_unknown_file_name は文言の食い違いで変更前から落ちる。どちらも本契約では直していない
 - 試験の副産物 .coverage が bengio の作業ツリーに未追跡で残っている（commit していない）
 
+### T-2026-10-19-evidence-maps-revise
+
+- C=29、B=34、N=37の全IDが実在・書誌一致。N追加書誌18 IDは全て該当行と比較。書誌IDなしはC-24だけ。
+
 ## 断定できなかった事項（396 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
@@ -1751,7 +1755,7 @@
 - arXiv の 429 が同じ出口の IP の他の台の問い合わせによるものか（この台には arXiv へ問い合わせる他のプロセスが無かった）
 - 新しい試験がネットワークを断った状態でも通るか（unshare -rn が許されず測れなかった。通信の口を塞ぐ仕掛けで代えた）
 
-## 起票者の誤りの型（363 件）
+## 起票者の誤りの型（364 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
@@ -1759,10 +1763,10 @@
 |---|---:|
 | `check_does_not_check` | 97 |
 | `asserted_without_measuring` | 152 |
-| `self_contradiction` | 94 |
+| `self_contradiction` | 95 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 0 |
 | `rule_read_narrowly` | 1 |
 
-合計 363 件（対を持つ契約 125 件から）
+合計 364 件（対を持つ契約 126 件から）
 

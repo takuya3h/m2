@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（673 件）
+## 未処理（674 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -688,6 +688,7 @@
 - [ ] 2026-10-19 [cc] bengio の make test は収集の段階で中断する（third_party/Relation-DETR/util/convergence.py が無い）。bengio へ 2026-10-17 の snapshot を戻すかは未決（scripts/restore_relation_detr_source.sh efros/2026-10-17）
 - [ ] 2026-10-19 [cc] fetch_task の extras_from_spec は bytes: true を通す（schema は落とす）。test_fetch_task.py::test_rejects_unknown_file_name は文言の食い違いで変更前から落ちる。どちらも本契約では直していない。直す契約を出すかは未決
 - [ ] 2026-10-19 [cc] arXiv の API は 02:07 の 1 件のあと 02:18〜02:24 にキャッシュに無い問い合わせをすべて 429 で返し、10 分あけて戻った（Retry-After なし）。照合器の待ちは最長 約 19 分にした。同じ出口の IP の他の台の影響かは確かめていない
+- [ ] 2026-10-19 [cx] 契約の変更範囲と task スキルの必須記録の衝突について、利用者は選択肢1（本契約の inbox.d 一件の追加）を許可した。C=29・B=34・N=37件すべて書誌一致、様式違反0、G1〜G3 pass。（T-2026-10-19-evidence-maps-revise）
 
 ## 処理済み（1 件）
 
