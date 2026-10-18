@@ -6,8 +6,35 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 125 件）。
-ここに出ない 120 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 126 件）。
+ここに出ない 121 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-10-19-evidence-maps-revise
+
+状態 `pass` / ホスト `Bengio` / 起票 `233` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 改訂前3件・パッチのSHA-256とバイト数が一致、4照合先HTTP 200。
+- `G2` pass — パッチ適用後3件のSHA-256とバイト数・行増減が一致、追跡変更は地図3件のみ。
+- `G3` pass — 様式違反0、抽出ID集合差がC/B/Nとも事前指定と一致。
+
+### 起票者の誤り
+
+- `self_contradiction` — 契約の完了判定 b は変更範囲を地図・照合結果・本契約のディレクトリだけに限定する一方、実行手順の task スキルは tasks/inbox.d に最低一行の記録を要求しており、両方をそのまま満たすことはできなかった。変更前に利用者へ選択を求め、回答「1」により本契約の inbox.d 一件だけを追加する許可を得た。
+
+### 逸脱
+
+- `environment` — Defaultモード固定。planning-with-filesとagentmemoryが利用不可のため契約のPhase順と契約内の記録で進行。pytestは契約どおり未実行。
+- `judgement` — 利用者の回答「1」に基づき、契約の変更範囲に tasks/inbox.d/T-2026-10-19-evidence-maps-revise.md 一件を追加する。
+
+### 申し送り
+
+- C=29、B=34、N=37の全IDが実在・書誌一致。N追加書誌18 IDは全て該当行と比較。書誌IDなしはC-24だけ。
+
+### 断定できなかったこと
+
+（なし）
 
 ## T-2026-10-18-evidence-verify-place
 
@@ -163,35 +190,4 @@
 
 - 他ホストでの動作（他ホストへ接続しないため測っていない）。変更は統合後に各ホストへ届く
 - 旧様式の報告の tests の三整数（旧報告にも旧 RESULT.md にも試験の記録が無く、書き直さない決定のため据え置き）
-
-## T-2026-10-08-doc-checks-clean-and-defect-log
-
-状態 `pass` / ホスト `philip` / 起票 `221` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 手元では agent-check 1 件（docs/experiment_settings.md:155→156）と docs-check 1 件（docs/proposal-gate.md:41）。GitHub から複製した作業ツリーでは agent-check 1 件、docs-check 7 件。手元の repo から複製した場では docs-check 8 件（OPERATION.md:84 が加わる）。全件を audit.md A3・A4 に記録
-- `G2` pass — 手元と GitHub の複製（変更した 3 ファイルを写した）の両方で二つの検査が合格。複製に実在しない経路と分けた読み込みを足すと、それぞれ rc 1 で検出。手元のファイルを touch した場と無い場で docs-check は同じく合格
-
-### 起票者の誤り
-
-- `check_does_not_check` — 完了判定 b の新しく取得した作業ツリーは取得元を定めていない。docs-check は分岐名を遠隔追跡の参照で除外するため、手元の repo から複製すると OPERATION.md:84 の分岐名が実在しない経路として追加で 1 件出る。取得元しだいで結果が変わり、判定 b はホストに左右されないことを測りきれない
-
-### 逸脱
-
-- `judgement` — 新しい作業ツリーを GitHub の origin からの複製と手元の repo からの複製の二つで測り、判定には前者を用いた。後者は遠隔に分岐が揃わず、新しく取得した状態を代表しないため
-- `judgement` — R1 は文書の側を直した。二行は選択肢であり、検査の判定は誤っていないと判断した。見出しの文で塊を分け、続く操作と同じ命令で読み込む形を一文で添えた
-- `judgement` — R2 は雛形の経路を <YYYY-MM-DD>-<slug> の置き場の形に直し、既存の VAR_MARKS 規則で対象外にした。外す印は使っていない
-- `judgement` — R3 は検査器の側で、git check-ignore が無視とする経路を在っても無くても対象外にした。追跡下のファイルは無視とされないため、版管理に在るはずの経路の検出は減らない
-- `environment` — 試験全体は収集のエラー 2 件で中断するため、変更前後とも --continue-on-collection-errors を付けて回した
-
-### 申し送り
-
-- docs-check の分岐名の除外は git branch -r に依存する。手元の repo から複製した作業ツリーや --single-branch の複製では OPERATION.md:84 の docs/plan-rewrite-2026-06 が実在しない経路として出る。分岐名の判定を参照に依存しない形にするかは起票者の判断
-- 以後の契約は、文書の二つの検査の合格そのものを完了条件にできる（手元と GitHub の複製で合格を確認）
-
-### 断定できなかったこと
-
-- 他のホストでの二つの検査の結果（他ホストへ接続しないため測っていない）
-- 本契約の目印による一時停止の記録の出現（確認時点では次のループ待ち）
 
