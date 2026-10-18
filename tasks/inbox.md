@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（666 件）
+## 未処理（673 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -681,6 +681,13 @@
 - [ ] 2026-10-17 [cc] andrew の検出器に二周目の収束規則（util/convergence.py、main.py）と D*-ImageNet の設定 3 件を efros の実体から戻した。収束規則の試験は 9/9 PASS。新しい snapshot は third_party_snapshot/efros/2026-10-17/Relation-DETR/（T-2026-10-17-tower-reselect-prereq）
 - [ ] 2026-10-17 [cc] 規約 frame_sets の「追加動画 17〜21」（SPEC §5.2 の文言どおり）と conventions#folds の「追加 6 動画 17〜22」が食い違う。動画 22 の扱いを明示するかは未決（T-2026-10-17-tower-reselect-prereq）
 - [ ] 2026-10-17 [cc] decisions_required の 2 件（efros に届かない場合の版、andrew だけの改変の扱い）は利用者が回答し amendments に記録。2 件とも発火しなかった（T-2026-10-17-tower-reselect-prereq）
+- [ ] 2026-10-19 [cc] 照合で「書誌に差」の 8 件は地図に反映していない（決定 2）。内訳は題名の欄が略称・説明の行 6 件（B-02 の 1610.08851 と 1610.08844「M2CAI 技術報告」、B-03「MTRCNet-CL」、B-06「CLIPSeg」、B-10「SELSA」、N-10「KAFR」。著者はすべて一致）、題名の語の違い 1 件（C-21「…Digital Twin-based Scene Representation」→ arXiv「…Digital Twin Representation」）、著者の欠け 1 件（N-01 地図 1 名・DataCite 6 名）。題名の欄に正式の題名を書くかは起票者が次の契約で決める（docs/evidence/verification/）
+- [ ] 2026-10-19 [cc] B-02 の書誌 ID の欄の二つは別の文献。1610.08851 は「Single- and Multi-Task Architectures for Tool Presence Detection Challenge at M2CAI 2016」、1610.08844 は「…for Surgical Workflow Challenge at M2CAI 2016」（著者はどちらも Twinanda, Mutter, Marescaux, de Mathelin, Padoy）。B-02 がどちらを指すかは起票者が決める
+- [ ] 2026-10-19 [cc] C-05（ORViT、2110.06915）の掲載先は地図が「ECCV 2022 系」、arXiv の comment が「CVPR 2022」。掲載先は分類に入れていない。地図へ反映するかは起票者が決める
+- [ ] 2026-10-19 [cc] bengio の .git/info/exclude に Syncthing で届いた他契約の出力 3 経路（frame_signal_audit/、stage2_pilot_folda/、phase1/stage2pilot_*/）を足した（利用者の判断。契約後も残す）。bengio では今後 stage2pilot_* の新しい出力も git status に出ない。外す時期は未決（控え ~/m2-git-info-exclude.bak-20261019）
+- [ ] 2026-10-19 [cc] bengio の make test は収集の段階で中断する（third_party/Relation-DETR/util/convergence.py が無い）。bengio へ 2026-10-17 の snapshot を戻すかは未決（scripts/restore_relation_detr_source.sh efros/2026-10-17）
+- [ ] 2026-10-19 [cc] fetch_task の extras_from_spec は bytes: true を通す（schema は落とす）。test_fetch_task.py::test_rejects_unknown_file_name は文言の食い違いで変更前から落ちる。どちらも本契約では直していない。直す契約を出すかは未決
+- [ ] 2026-10-19 [cc] arXiv の API は 02:07 の 1 件のあと 02:18〜02:24 にキャッシュに無い問い合わせをすべて 429 で返し、10 分あけて戻った（Retry-After なし）。照合器の待ちは最長 約 19 分にした。同じ出口の IP の他の台の影響かは確かめていない
 
 ## 処理済み（1 件）
 
