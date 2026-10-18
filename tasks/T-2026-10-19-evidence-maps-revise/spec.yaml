@@ -1,0 +1,67 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-19-evidence-maps-revise"
+  kind: impl
+  title: "証拠地図 C・B・N の書誌を 2026-10-19 の照合結果で改めた版（C v2.1・B v2.1・N v1.1）をパッチで置き、様式の検査と照合をやり直す"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-18T18:20:00Z"
+  created_from:
+    runindex_commit: "6680a9aa63d03e944cdea57ca4b0354fbebb7cac"
+    counts: {index: 0, experiments: 0, verdicts: 0}
+  depends_on: ["T-2026-10-18-evidence-verify-place"]
+  amendments: []
+intent:
+  question: "起票者が照合結果で改めた三つの地図が、様式の検査を通り、照合し直して起票者の事前の予測どおりの分類になるか"
+  decision_at_stake: "地図 C（D→P）と地図 B（P→D）を、地図 N を添えて提案カードの生成会話へ渡してよいか（利用者の決定 2026-10-19、直してから渡す）"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "not-referenced"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["tools/verify_evidence_ids.py", "tools/check_evidence_map.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "6680a9aa63d03e944cdea57ca4b0354fbebb7cac"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "起点の確認（分岐、改訂前の地図の要約値、受け渡しのパッチの要約値、照合先への到達）", gpu: false, est: "15m"}
+    - {id: B, name: "パッチを当て、改訂後の地図の要約値と変更範囲を確かめる", gpu: false, est: "10m"}
+    - {id: C, name: "様式の検査と三つの地図の照合をやり直し、予測と並べる", gpu: false, est: "40m"}
+    - {id: D, name: "検証と報告と PR", gpu: false, est: "30m"}
+  gates:
+    - {id: G1, after: A, check: "改訂前の三つの地図の要約値が SPEC の表と一致し、受け渡しのパッチの要約値が SPEC の値と一致し、照合先へ到達できる", on_fail: stop}
+    - {id: G2, after: B, check: "パッチが当たり、改訂後の三つの地図の要約値が SPEC の表と一致し、変更が三つの地図だけ", on_fail: stop}
+    - {id: G3, after: C, check: "様式の検査で違反 0、抽出した ID の集合が改訂前から SPEC の表の差だけ変わる", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md, result.yaml, audit.md]
+  destination: "docs/evidence/"
+  acceptance:
+    - "a: 改訂前の三つの地図の要約値が SPEC の表の改訂前の値と一致し、パッチを当てた後は改訂後の値と一致する"
+    - "b: 変更は三つの地図、docs/evidence/verification/ の六件、tasks/T-2026-10-19-evidence-maps-revise/（パッチの写しを含む）だけ。変えないファイルの要約値は前後で同じ"
+    - "c: 様式の検査が三つの地図で違反 0"
+    - "d: 三つの地図の照合結果が docs/evidence/verification/ にあり、分類の和が抽出した ID の数に等しく、抽出した ID の集合が改訂前から SPEC の表の差だけ変わる"
+    - "e: 地図ごとの分類の件数を SPEC の予測と並べ、予測と違った ID を一件ずつ記録する"
+    - "f: 起票者が新しく書いた ID 三件の分類と、照合先が返した題名・著者を報告する"
+    - "g: 地図 N の書誌の表の行に書いた ID が、その表の行と比べられている"
+    - "h: PR が Draft でなく存在し、base は phase0、分岐は feat/ で始まり、forbidden-check の違反が零"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "改訂前の三つの地図の要約値が SPEC の表と違う場合（起点が想定と違う）"
+    - "受け渡しのパッチが置き場に無い場合、または要約値が SPEC の値と違う場合"
+    - "パッチが当たらない場合、または当てた後の要約値が SPEC の表と違う場合"
+    - "照合先のどれにも到達できない場合"
+    - "照合器または様式の検査の誤りが疑われる場合（道具を直さず、記録して諮る）"
+    - "作業ツリーを別の契約が使っている形跡がある場合（抑止の目印が別の契約の所有、他の分岐の未統合の変更）"

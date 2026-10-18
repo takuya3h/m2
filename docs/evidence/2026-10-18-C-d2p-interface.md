@@ -1,8 +1,8 @@
 # 証拠地図 C — 凍結した検出器の出力を online 工程認識へ渡す（D→P）
 
-**版:** v2（下書き。2026-10-18、起票者が作成。v1 に R1 の行を統合）
+**版:** v2.1（下書き。2026-10-19、起票者が作成。v2〔2026-10-18。v1 に R1 の行を統合〕に、2026-10-19 の書誌の照合の結果を書誌の欄だけ反映）
 **種類:** 探索の地図
-**状態:** 書誌の機械照合は未実施。数値の原典確認は未実施。報告者の解釈と提案は 2026-10-18 に地図から外した（§0.2）
+**状態:** v2 の書誌 ID を 2026-10-19 に機械照合した（ID 29 件、不在 0、到達不能 0、書誌に差 1〔C-21 の題名〕、照合不能 1〔C-12 の出所の欄の別の論文〕）。本版はその結果を書誌の欄に反映したもので、反映の確かめは次の照合で行う。数値の原典確認は未実施。報告者の解釈と提案は 2026-10-18 に地図から外した（§0.2）
 **元の報告:**
 - deep research の報告「C2」（deep-research-report-C2.md、72,966 バイト、sha256 5d3c3ed514551cf11d1b75dcc8b6542b7fb5efefeedb91956a5d561284c141fd）。探索エンジンは本書に記録が無い
 - deep research の報告「R1」（R1-deep-research-report.md、40,202 バイト、156 行、sha256 1f95517bf4ce63015d9574ee7e3616859021882a7014feb4f261d76d9c49dce5）。探索エンジンは本書に記録が無い
@@ -31,13 +31,14 @@ R1 は同じ問いの先行の報告で、①手術映像の器具 → 工程、
 - 出所の列（§2）の「L」は C2 の行番号、「R1 L」は R1 の行番号である
 - 二つの報告が同じ文献を扱うときは一行にまとめ、値の後に出所（C2／R1）を書いた
 - citation の印（報告の参照記号）は除いた
+- 題名・著者・掲載先・書誌 ID の欄で「照合〔2026-10-19〕の値」と書いたものは、2026-10-19 の照合（docs/evidence/verification/ の本書の結果）で照合先が返した値で、報告の記載ではない。報告の記載は括弧の中に残した。行の中身（§3 以降の事実・数値）は変えていない
 
 ### 0.3 この地図にまだ入っていないもの
 
 - C2 が「既所持」として詳細記録を省いた文献のうち、SurgVLP は R1 にも行が無い。Digital-Twin-based Scene Representation は R1 の行から C-21 として入れた
 - 種のうち STLT と SViT は C2 が同定できなかった（§10 の 7）。R1 は二つを C-23（DAIR）の Table VII の比較手法の名前として挙げるが、書誌 ID を書いていない
 - R1 が名前だけ挙げ、詳細記録も書誌 ID も無い文献: MTRCNet-CL（地図 B の B-03）、LAST、LoViT、CholecT50、AutoLaparo、HeiChole、M2CAI16 workflow、EgoSurgery-Tool（地図 B の B-12）、EgoSurgery-HTS（地図 B の B-14）。行にしていない
-- R1 が書誌なしで挙げた 2026 年の腹腔鏡下胃切除の研究は、書誌 ID が無いまま C-24 に置いた。引用規約により、ID が確定するまで引用として使えない
+- R1 が書誌なしで挙げた 2026 年の腹腔鏡下胃切除の研究は、書誌 ID が無いまま C-24 に置いた。引用規約により、ID が確定するまで引用として使えない。起票者が 2026-10-19 に Crossref の書誌検索（2025-06 以降の出版）で探したが、該当する文献は見つからなかった（無いとは言えない）
 
 ---
 
@@ -78,23 +79,23 @@ R1 の行から起票者が足した系統（R1 には系統表も現役度も�
 | C-02 | Ryo Fujii, Masashi Hatano, Hideo Saito, Hiroki Kajita 2024, EgoSurgery-Phase: A Dataset of Surgical Phase Recognition from Egocentric Open Surgery Videos | arXiv 2405.19644 | MICCAI 2024（early accept、査読） | 一 | 要旨と arXiv の書誌。数値表は未確認 | L48–L74、R1 L15、L110 |
 | C-03 | Antonino Furnari, Giovanni Maria Farinella 2020–2021, Rolling-Unrolling LSTMs for Action Anticipation from First-Person Video | arXiv 2005.02190、DOI 10.1109/TPAMI.2020.2992889 | IEEE TPAMI（査読） | 三・問い二 | 本文 | L76–L102 |
 | C-04 | Joanna Materzynska ほか 2020, Something-Else: Compositional Action Recognition with Spatial-Temporal Interaction Networks（STIN） | arXiv 1912.09930 | CVPR 2020（査読） | 四・七 | 本文 | L104–L130 |
-| C-05 | Roei Herzig ほか 2022, Object-Region Video Transformers（ORViT） | arXiv 2110.06915 | 報告の記載は「ECCV 2022 系、査読つき」 | 三・四・七 | 本文・補遺に当たる HTML | L132–L159 |
-| C-06 | （著者は報告に記載なし）2023, Helping Hands: An Object-Aware Ego-Centric Video Recognition Model | arXiv 2308.07918 | ICCV 2023（査読） | 三・四・七 | 本文 | L161–L189 |
+| C-05 | Roei Herzig ほか 2022, Object-Region Video Transformers（ORViT） | arXiv 2110.06915 | 報告の記載は「ECCV 2022 系、査読つき」。照合: arXiv の comment は「CVPR 2022」（journal_ref なし） | 三・四・七 | 本文・補遺に当たる HTML | L132–L159 |
+| C-06 | Chuhan Zhang, Ankush Gupta, Andrew Zisserman 2023, Helping Hands: An Object-Aware Ego-Centric Video Recognition Model（著者は照合〔2026-10-19〕の値。報告に記載なし） | arXiv 2308.07918 | ICCV 2023（査読） | 三・四・七 | 本文 | L161–L189 |
 | C-07 | Eadom Dessalene ほか 2020, Egocentric Object Manipulation Graphs（Ego-OMG） | arXiv 2006.03201 | プレプリント | 三・問い二 | 本文 | L191–L217 |
 | C-08 | Ce Zhang ほか 2024, Object-centric Video Representation for Long-term Action Anticipation | arXiv 2311.00180 | WACV 2024（査読） | 三 | 要旨のみ | L219–L239 |
 | C-09 | Francesco Ragusa, Giovanni Maria Farinella, Antonino Furnari 2023, StillFast: An End-to-End Approach for Short-Term Object Interaction Anticipation | arXiv 2304.03959 | CVPR 2023（査読） | 三・問い二の隣接 | 要旨と結論 | L241–L261 |
 | C-10 | Qiaohui Chu ほか 2026, VISTA: Technical Report for the Ego4D Short-Term Object Interaction Anticipation at EgoVis 2026 | arXiv 2605.20901 | 技術報告・プレプリント | 三・五 | 要旨のみ | L263–L283 |
 | C-11 | Masatoshi Tateno, Alexandros Stergiou, Risa Shinoda, Yoichi Sato, Dima Damen 2026, Do Egocentric Video-Language Models Capture Both Hand- and Object-Centric Cues? | arXiv 2607.08514 | プレプリント（MIRU 2026 発表） | 三・七 | 要旨 | L285–L309 |
-| C-12 | Tobias Rueckert ほか 2026, Comparative validation of surgical phase recognition, instrument keypoint estimation, and instrument instance segmentation in endoscopy: Results of the PhaKIR 2024 challenge | arXiv 2507.16559、DOI 10.1016/j.media.2026.103945 | Medical Image Analysis（査読） | 二・六 | 要旨・書誌 | L311–L331、R1 L19。データセットの論文（arXiv 2511.06549）は別の論文で、N1 が挙げる（地図 N §8） |
+| C-12 | Tobias Rueckert ほか 2026, Comparative validation of surgical phase recognition, instrument keypoint estimation, and instrument instance segmentation in endoscopy: Results of the PhaKIR 2024 challenge | arXiv 2507.16559、DOI 10.1016/j.media.2026.103945 | Medical Image Analysis（査読） | 二・六 | 要旨・書誌 | L311–L331、R1 L19。データセットの論文は別の論文で、N1 が挙げる（地図 N §8 と、地図 N の §2 の末尾の書誌の表） |
 | C-13 | Kostiuchik ほか 2024, Surgical phase and instrument recognition: how to identify appropriate dataset splits（行の書誌欄に著者なし。著者名は系統表 L16 から） | DOI 10.1007/s11548-024-03063-9 | IJCARS（査読） | 六・七 | 本文 | L333–L356 |
 | C-14 | Shu Yang, Luyang Luo, Qiong Wang, Hao Chen 2024, Surgformer: Surgical Transformer with Hierarchical Temporal Attention for Surgical Phase Recognition | arXiv 2408.03867 | プレプリント（査読の採択先は報告では不明） | 二（隣接） | 要旨 | L358–L375、R1 L11、L37、L93 |
 | C-15 | Ethan Perez ほか 2018, FiLM: Visual Reasoning with a General Conditioning Layer | arXiv 1709.07871 | 報告の記載は「査読系論文」 | 五 | 要旨 | L377–L392 |
-| C-16 | Shiota ほか 2024（題名は報告に無い） | DOI 10.1109/WACV57701.2024.00641 | WACV 2024 | 三 | 詳細記録なし | L11、L203 |
-| C-17 | Dessalene ほか, Forecasting Action through Contact Representations from First Person Video | arXiv 2102.00649 | 報告に掲載先の記載なし（L213 は「後続 TPAMI 論文」と書く） | 三 | 要旨 | L193–L198、L213 |
+| C-16 | Shiota ほか 2024, Egocentric Action Recognition by Capturing Hand-Object Contact and Object State（題名は照合〔2026-10-19〕の値。報告に無い） | DOI 10.1109/WACV57701.2024.00641 | WACV 2024 | 三 | 詳細記録なし | L11、L203 |
+| C-17 | Dessalene ほか, Forecasting Action through Contact Representations from First Person Video | arXiv 2102.00649、DOI 10.1109/TPAMI.2021.3055233（DOI は照合〔2026-10-19〕で arXiv の doi 欄が返した値。報告には無い） | 報告に掲載先の記載なし（L213 は「後続 TPAMI 論文」と書く）。照合: arXiv の comment は「in IEEE Transactions on Pattern Analysis and Machine Intelligence, 2021」 | 三 | 要旨 | L193–L198、L213 |
 | C-18 | Sahu, Szengel, Mukhopadhyay, Zachow 2020, Surgical phase recognition by learning phase transitions | DOI 10.1515/cdbme-2020-0037 | Current Directions in Biomedical Engineering 6(1)（N1） | R1 ① | R1 に読んだ範囲の列なし（R1 L23 は「数値は本文・表・図で直接確認したものだけ」と書く）。Table 1 の値あり | R1 L34、L43、L71、L131、N1 L17、L49 |
 | C-19 | Zisimopoulos, Flouty, Luengo, Giataganas, Nehme, Chow, Stoyanov 2018, DeepPhase: Surgical Phase Recognition in CATARACTS Videos | arXiv 1807.10565、DOI 10.1007/978-3-030-00937-3_31 | R1 に記載なし | R1 ① | 同上。Table 1 の値あり | R1 L7、L23、L35、L45、L75、L104、L149、N1 L18、L50、L145 |
 | C-20 | Park, Chi, Park, Lee, Park, Hyung, Choi 2022, Visual Modalities Based Multimodal Fusion for Surgical Phase Recognition | DOI 10.1007/978-3-031-18814-5_2 | R1 に記載なし | R1 ① | 同上。Table 2・4 の値あり | R1 L9、L36、L47、L73 |
-| C-21 | Ding ほか 2024–2025, Towards Robust Algorithms for Surgical Phase Recognition via Digital Twin-based Scene Representation（DTFormer。C2 は既所持として行を作らなかった） | arXiv 2410.20026 | R1 に記載なし | R1 ① | 同上。Table 2・3 の値あり | R1 L11、L37、L77、L93、L129、L133 |
+| C-21 | Ding ほか 2024–2025, Towards Robust Algorithms for Surgical Phase Recognition via Digital Twin Representation（DTFormer。題名は照合〔2026-10-19〕の値〔arXiv の現行版〕。R1 は「…via Digital Twin-based Scene Representation」と書く。C2 は既所持として行を作らなかった） | arXiv 2410.20026 | R1 に記載なし | R1 ① | 同上。Table 2・3 の値あり | R1 L11、L37、L77、L93、L129、L133 |
 | C-22 | Zhou, Arnab, Sun, Schmid 2023, How Can Objects Help Action Recognition?（ObjectViViT） | arXiv 2306.11726 | R1 に記載なし | R1 ②③ | 同上。Fig. 5・Table 2 の値あり | R1 L13、L55、L58–L60、L102 |
 | C-23 | Li, Sun, Liu, Duan, Li 2025（arXiv 2024）, Simultaneous Detection and Interaction Reasoning for Object-Centric Action Recognition（DAIR） | arXiv 2404.11903、DOI 10.1109/TMM.2025.3543033 | R1 に記載なし | R1 ③ | 同上。Table I・VI・VII の値あり | R1 L13、L56、L62–L66、L103 |
 | C-24 | （著者・題名・書誌 ID は R1 に無い）2026, 腹腔鏡下胃切除 93 例で YOLOv8 の器具在否の予測を双方向 LSTM へ渡す二段階のシステム | なし | R1 に記載なし | R1 ① | 同上。Table 4 の値あり | R1 L49 |

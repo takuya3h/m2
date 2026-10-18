@@ -1,0 +1,48 @@
+result_version: 3
+task_id: T-2026-10-19-evidence-maps-revise
+status: pass
+host: Bengio
+branch: feat/evidence-maps-revise
+pr: 233
+merged: false
+gates:
+- id: G1
+  verdict: pass
+  note: 改訂前3件・パッチのSHA-256とバイト数が一致、4照合先HTTP 200。
+- id: G2
+  verdict: pass
+  note: パッチ適用後3件のSHA-256とバイト数・行増減が一致、追跡変更は地図3件のみ。
+- id: G3
+  verdict: pass
+  note: 様式違反0、抽出ID集合差がC/B/Nとも事前指定と一致。
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+deviations:
+- type: environment
+  note: Defaultモード固定。planning-with-filesとagentmemoryが利用不可のため契約のPhase順と契約内の記録で進行。pytestは契約どおり未実行。
+- type: judgement
+  note: 利用者の回答「1」に基づき、契約の変更範囲に tasks/inbox.d/T-2026-10-19-evidence-maps-revise.md
+    一件を追加する。
+issuer_defects:
+- type: self_contradiction
+  note: 契約の完了判定 b は変更範囲を地図・照合結果・本契約のディレクトリだけに限定する一方、実行手順の task スキルは tasks/inbox.d
+    に最低一行の記録を要求しており、両方をそのまま満たすことはできなかった。変更前に利用者へ選択を求め、回答「1」により本契約の inbox.d 一件だけを追加する許可を得た。
+positive_controls:
+- judgement: 'c: 様式検査'
+  breaking_input: メモリ上で C の **版:** 行だけを除く
+  observed: '原文は違反0、欠落入力は違反1: [{''kind'': ''header_field'', ''line'': 0, ''detail'':
+    ''見出しの前に **版:** の欄が無い''}]'
+- judgement: 'd: ID 集合の差'
+  breaking_input: メモリ上で arXiv 9999.99999 を一件追加する
+  observed: 集合差が arxiv 9999.99999 の追加を検出した
+- judgement: 'a: SHA-256'
+  breaking_input: パッチのメモリ上の写しに一バイトを追加する
+  observed: True（契約値と不一致）
+followups:
+- C=29、B=34、N=37の全IDが実在・書誌一致。N追加書誌18 IDは全て該当行と比較。書誌IDなしはC-24だけ。
+unknowns: []
+commits:
+- d8c2c265cdfcdeb2ccec5cd4a7f9616dcaf02d6a
+- fa9fc4b22a95a613963c9b732ec67c9578e75b6c
