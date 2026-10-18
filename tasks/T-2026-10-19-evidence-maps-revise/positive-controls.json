@@ -1,0 +1,17 @@
+[
+  {
+    "judgement": "c: 様式検査",
+    "breaking_input": "メモリ上で C の **版:** 行だけを除く",
+    "observed": "原文は違反0、欠落入力は違反1: [{'kind': 'header_field', 'line': 0, 'detail': '見出しの前に **版:** の欄が無い'}]"
+  },
+  {
+    "judgement": "d: ID 集合の差",
+    "breaking_input": "メモリ上で arXiv 9999.99999 を一件追加する",
+    "observed": "集合差が arxiv 9999.99999 の追加を検出した"
+  },
+  {
+    "judgement": "a: SHA-256",
+    "breaking_input": "パッチのメモリ上の写しに一バイトを追加する",
+    "observed": "True（契約値と不一致）"
+  }
+]

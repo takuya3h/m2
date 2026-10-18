@@ -1,0 +1,292 @@
+diff --git a/docs/evidence/2026-10-18-B-p2d-interface.md b/docs/evidence/2026-10-18-B-p2d-interface.md
+index d886cee..edb4fb2 100644
+--- a/docs/evidence/2026-10-18-B-p2d-interface.md
++++ b/docs/evidence/2026-10-18-B-p2d-interface.md
+@@ -1,8 +1,8 @@
+ # 証拠地図 B — 工程・行動・タスクの信号で検出器を条件付ける（P→D）
+ 
+-**版:** v2（新様式で作り直した下書き。2026-10-18、起票者が作成）
++**版:** v2.1（下書き。2026-10-19、起票者が作成。v2〔2026-10-18。新様式で作り直した版〕に、2026-10-19 の書誌の照合の結果を書誌の欄だけ反映）
+ **種類:** 探索の地図
+-**状態:** B2 の行（B-12〜B-30）は書誌の機械照合が未実施。旧地図の行（B-01〜B-11）は 2026-09-16 に書誌を照合済み。数値の原典確認はどちらも §0.3 のとおり
++**状態:** v2 の書誌 ID を 2026-10-19 に機械照合した（ID 34 件、不在 0、到達不能 0、書誌に差 5〔題名の欄が略称・説明の行〕）。本版はその結果を書誌の欄に反映したもので、反映の確かめは次の照合で行う。旧地図の行（B-01〜B-11）は 2026-09-16 にも照合済み。数値の原典確認は §0.3 のとおり
+ **元の報告:**
+ - deep research の報告「B2」1 件（deep-research-report-B2.md、72,035 バイト、sha256 c7aad1c222d9159c1209a557f765e0400f85a3b6ccd8d92025683a2ce8102116）。探索エンジンは本書に記録が無い
+ - 旧地図 B（docs/evidence/2026-09-16-B-p2d-interface.md、v1）の 11 行。v1 のファイルは置き換えずに repo に残し、冒頭に v1（旧様式）であることと本書（v2）が後継であることを明記する（利用者の決定 2026-10-18。書き込みは照合と配置の契約で行う）。旧地図の元は ChatGPT deep research 一エンジンの報告「B1」で、repo には無いが利用者が 2026-10-18 に添付した（B-chatgpt.md、38,349 バイト、sha256 ef94ea71aba1b5e81dea60ae0b55581dfdfda7cf290fe29d56dcb20b7bc33dd9）。B-01〜B-11 の arXiv ID 11 件と数値 88 件が B1 と一致する。B1 に無い数値 7 件（B-01 の 20・30 動画の値と差、B-03 の TS1・TS2）は、旧地図で利用者が原典から足した値と読める
+@@ -28,12 +28,13 @@
+ - 見つからなかったもの（§11）と未検証の組み合わせ（§12）は、その設計が新しい・価値があるという根拠として読まない。見つからない理由には、技術的な困難、価値が乏しいと見なされていること、偶然がありうる（利用者の指示 2026-10-18）
+ - 出所の列（§2）は B2 の報告の行番号（L）か、旧地図の行（旧 B.1）
+ - citation の印は除いた
++- 題名・著者・掲載先・書誌 ID の欄で「照合〔2026-10-19〕の値」と書いたものは、2026-10-19 の照合（docs/evidence/verification/ の本書の結果）で照合先が返した値で、報告の記載ではない。報告の記載は括弧の中に残した。行の中身（§3 以降の事実・数値）は変えていない
+ 
+ ### 0.3 照合と原典確認の状態
+ 
+ - B-01〜B-11: 2026-09-16 に Crossref と arXiv API で全 11 行が「実在・書誌一致」。数値の原典確認は、旧地図の印に「原典確認（利用者）」とある行（B-01、B-03、B-08、B-09）を §5 に写した
+-- B-12〜B-30: 書誌の機械照合は未実施。数値の原典確認は未実施
+-- B-18（CoTDet）は DOI も arXiv ID も報告が確定できていない。引用規約により、ID が確定するまで引用として使えない
++- B-01〜B-30: 2026-10-19 に書誌を機械照合した（docs/evidence/verification/ の本書の結果。不在 0）。差の出た B-02・B-03・B-06・B-10 は題名の欄が略称・説明だったもので、本版で題名を照合の値に改め、略称は括弧に残した。§5 の最後の列に行ごとの結果を書いた。数値の原典確認は未実施
++- B-18（CoTDet）は報告が ID を確定できなかった。起票者が 2026-10-19 に web 検索で arXiv 2309.01093 を特定した（arXiv の PDF と CVF の open access の頁が同じ題名）。報告には無い ID であり、照合で確かめるまで引用として使わない
+ 
+ ---
+ 
+@@ -66,15 +67,15 @@ B2 の報告は、この系統表から言える事実として「外部の信
+ | ID | 文献 | 書誌 ID | 掲載先 | 方向 | 読んだ範囲 | 出所 |
+ |---|---|---|---|---|---|---|
+ | B-01 | Twinanda ほか 2017, EndoNet | arXiv 1602.03012 | IEEE TMI | 旧地図に記載なし | 全文 | 旧 B.1 |
+-| B-02 | Twinanda ほか 2016, M2CAI 技術報告 | arXiv 1610.08851（N1 は 1610.08844 と書く〔補助調査による〕。食い違い。地図 N §8） | M2CAI 技術報告 | 旧地図に記載なし | 全文 | 旧 B.1 |
+-| B-03 | Jin, Li, Dou, Chen, Qin, Fu, Heng 2020, MTRCNet-CL | arXiv 1907.06099 | Medical Image Analysis | 旧地図に記載なし | 全文 | 旧 B.1 |
++| B-02 | Twinanda ほか 2016, Single- and Multi-Task Architectures for Tool Presence Detection Challenge at M2CAI 2016（M2CAI 技術報告。題名は照合〔2026-10-19〕の値） | arXiv 1610.08851 | M2CAI 技術報告。N1 は別の arXiv ID を挙げたが、照合（2026-10-19）でそれは M2CAI 2016 の工程のチャレンジの論文と分かった（別の文献。地図 N §8） | 旧地図に記載なし | 全文 | 旧 B.1 |
++| B-03 | Jin, Li, Dou, Chen, Qin, Fu, Heng 2020, Multi-Task Recurrent Convolutional Network with Correlation Loss for Surgical Video Analysis（MTRCNet-CL。題名は照合〔2026-10-19〕の値） | arXiv 1907.06099 | Medical Image Analysis | 旧地図に記載なし | 全文 | 旧 B.1 |
+ | B-04 | Perez, Strub, de Vries, Dumoulin, Courville 2018, FiLM | arXiv 1709.07871 | AAAI 2018 | 旧地図に記載なし | 全文 | 旧 B.1 |
+ | B-05 | Yang, Wang, Tang, Chen, Zhao, Torr 2022, LAVT | arXiv 2112.02244 | CVPR 2022 | 旧地図に記載なし | 全文 | 旧 B.1 |
+-| B-06 | Lüddecke, Ecker 2022, CLIPSeg | arXiv 2112.10003 | CVPR 2022 | 旧地図に記載なし | 全文 | 旧 B.1 |
++| B-06 | Lüddecke, Ecker 2022, Image Segmentation Using Text and Image Prompts（CLIPSeg。題名は照合〔2026-10-19〕の値） | arXiv 2112.10003 | CVPR 2022 | 旧地図に記載なし | 全文 | 旧 B.1 |
+ | B-07 | Kamath ほか 2021, MDETR | arXiv 2104.12763 | ICCV 2021 | 旧地図に記載なし | 要旨 | 旧 B.1 |
+ | B-08 | Standley, Zamir, Chen, Guibas, Malik, Savarese 2020, Which Tasks Should Be Learned Together | arXiv 1905.07553 | ICML 2020 | 旧地図に記載なし | 全文 | 旧 B.1 |
+ | B-09 | Beery, Wu, Rathod, Votel, Huang 2020, Context R-CNN | arXiv 1912.03538 | CVPR 2020 | 旧地図に記載なし | 全文 | 旧 B.1 |
+-| B-10 | Wu, Chen, Wang, Zhang 2019, SELSA | arXiv 1907.06390 | ICCV 2019 | 旧地図に記載なし | 全文 | 旧 B.1 |
++| B-10 | Wu, Chen, Wang, Zhang 2019, Sequence Level Semantics Aggregation for Video Object Detection（SELSA。題名は照合〔2026-10-19〕の値） | arXiv 1907.06390 | ICCV 2019 | 旧地図に記載なし | 全文 | 旧 B.1 |
+ | B-11 | Liu, Wang, Shan, Chen 2018, Structure Inference Net（SIN） | arXiv 1807.00119 | CVPR 2018 | 旧地図に記載なし | 要旨 | 旧 B.1 |
+ | B-12 | Ryo Fujii, Hideo Saito, Hiroki Kajita 2024, EgoSurgery-Tool: A Dataset of Surgical Tool and Hand Detection from Egocentric Open Surgery Videos | arXiv 2406.03095 | arXiv プレプリント | 1 | 本文（データ統計、split、Tables 3–5、誤りの分析） | L29–L53 |
+ | B-13 | Ryo Fujii, Masashi Hatano, Hideo Saito, Hiroki Kajita 2024, EgoSurgery-Phase（地図 C の C-02 と同じ論文） | arXiv 2405.19644 | MICCAI 2024（査読） | 1 | 本文 HTML と版の metadata | L55–L69 |
+@@ -82,11 +83,11 @@ B2 の報告は、この系統表から言える事実として「外部の信
+ | B-15 | Bhuvan Sachdeva ほか 2025, Phase-Informed Tool Segmentation for Manual Small-Incision Cataract Surgery（ToolSeg） | DOI 10.1007/978-3-032-05114-1_43、arXiv 2411.16794 | MICCAI 2025（査読） | 2、7 | 本文、method、Tables 1・3・4・5 | L85–L107 |
+ | B-16 | Johann Sawatzky, Yaser Souri, Christian Grund, Juergen Gall 2019, What Object Should I Use? – Task Driven Object Detection（COCO-Tasks） | arXiv 1904.03000 | CVPR 2019（査読） | 5 | 本文 | L109–L126 |
+ | B-17 | Pengfei Li, Beiwen Tian, Yongliang Shi, Xiaoxue Chen, Hao Zhao, Guyue Zhou, Ya-Qin Zhang 2022, TOIST: Task Oriented Instance Segmentation Transformer with Noun-Pronoun Distillation | arXiv 2210.10775 | NeurIPS 2022（査読） | 5 | 本文 HTML を取得したが、数値を引ける表の位置まで再確認できず数値なし | L128–L140 |
+-| B-18 | Jiajin Tang, Ge Zheng, Jingyi Yu, Sibei Yang 2023, CoTDet: Affordance Knowledge Prompting for Task Driven Object Detection | ID 不明（報告が確定できず） | ICCV 2023（査読） | 5 | 著者の公式 project page の method・main results | L142–L155 |
++| B-18 | Jiajin Tang, Ge Zheng, Jingyi Yu, Sibei Yang 2023, CoTDet: Affordance Knowledge Prompting for Task Driven Object Detection | arXiv 2309.01093（起票者が 2026-10-19 に web 検索で特定。報告は ID を確定できなかった） | ICCV 2023（査読） | 5 | 著者の公式 project page の method・main results | L142–L155 |
+ | B-19 | Shilong Liu ほか 2024, Grounding DINO: Marrying DINO with Grounded Pre-Training for Open-Set Object Detection | arXiv 2303.05499 | ECCV 2024（査読） | 5 | 要旨・公式実装の説明が中心 | L157–L170 |
+ | B-20 | Liunian Harold Li ほか 2022, Grounded Language-Image Pre-training（GLIP） | arXiv 2112.03857 | CVPR 2022（査読） | 5 | 要旨のみ | L172–L182 |
+ | B-21 | Depu Meng ほか 2021, Conditional DETR for Fast Training Convergence | arXiv 2108.06152 | ICCV 2021（査読） | 5 | 要旨・既知の手法の定義。個別の一次ページを十分に展開できず数値は不記載 | L184–L193 |
+-| B-22 | （著者は報告に記載なし）2024, ActionVOS: Actions as Prompts for Video Object Segmentation | arXiv 2407.07402、DOI 10.1007/978-3-031-72684-2_13 | ECCV 2024（査読） | 3 | 本文、データ構築、指標、Table 1 | L195–L212 |
++| B-22 | Liangyang Ouyang, Ruicong Liu, Yifei Huang, Ryosuke Furuta, Yoichi Sato 2024, ActionVOS: Actions as Prompts for Video Object Segmentation（著者は照合〔2026-10-19〕の値。報告に記載なし） | arXiv 2407.07402、DOI 10.1007/978-3-031-72684-2_13 | ECCV 2024（査読） | 3 | 本文、データ構築、指標、Table 1 | L195–L212 |
+ | B-23 | Jinrong Yang, Songtao Liu, Zeming Li, Xiaoping Li, Jian Sun 2022, StreamYOLO: Real-time Object Detection for Streaming Perception（査読版の題名は Real-time Object Detection for Streaming Perception） | arXiv 2207.10433 | CVPR 2022（査読） | 4 | 要旨と、後続の LongShortNet の本文の比較 | L214–L226 |
+ | B-24 | Chenyang Li ほか 2023, LongShortNet: Exploring Temporal and Semantic Features Fusion in Streaming Perception | arXiv 2210.15518 | ICASSP 2023（査読） | 4、7 | 本文、Tables 1・3–6 | L228–L246 |
+ | B-25 | Jun-Yan He ほか 2023, DAMO-StreamNet: Optimizing Streaming Perception in Autonomous Driving | DOI 10.24963/ijcai.2023/90、arXiv 2303.17144 | IJCAI 2023（査読） | 4 | arXiv HTML の方法の概要・IJCAI の公式ページ | L248–L260 |
+@@ -176,36 +177,36 @@ B2 の報告は、この系統表から言える事実として「外部の信
+ 
+ | ID | 何と何を比べた差か | その要素だけを変えた比較か | seed・分割・検定 | 著者以外の追試・採用 | 照合・原典確認（旧地図の行は旧地図の印を原文のまま） |
+ |---|---|---|---|---|---|
+-| B-01 | multi-task の EndoNet と single-task の ToolNet | 工程の補助損失だけを切り出した ablation ではない（旧地図） | 旧地図に記載なし | 旧地図に記載なし | 未照合。原典確認（利用者）。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1602.03012） |
+-| B-02 | ToolNet と EndoNet | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1610.08851） |
+-| B-03 | MTRCNet と MTRCNet-CL（Table 1）。写像の空間の比較（Table 2） | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。原典確認（利用者）。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1907.06099）。旧地図の注記: 数値は原典と一致（TS1 85.1、TS2 88.1 も） |
+-| B-04 | FiLM ありとなし（Table 2） | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1709.07871） |
+-| B-05 | 条件付けなし／PWAM のみ／全体（Table 2）、置く場所（Table 3） | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 2112.02244） |
+-| B-06 | FiLM のありとなしの対は number not available。CLIP 事前学習のありとなし（Table 9） | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 2112.10003） |
+-| B-07 | 条件のありとなしは number not available（課題そのものがテキストの条件付き） | 該当なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。要旨。片方。照合2026-09-16: 実在・書誌一致（arXiv 2104.12763） |
+-| B-08 | タスクの組の転移（Table 2 Setting 1）、容量とデータ量（Table 5） | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。原典確認（利用者）。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1905.07553） |
+-| B-09 | 文脈ありとなし（Table 1）、時間幅、集約の方式 | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。原典確認（利用者）。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1912.03538）。旧地図の注記: 数値は原典と一致 |
+-| B-10 | 集約ありとなし | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1907.06390） |
+-| B-11 | number not available（要旨） | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。要旨。片方。照合2026-09-16: 実在・書誌一致（arXiv 1807.00119） |
+-| B-12 | 同じ公式 split・COCO 事前学習の複数の検出器（Table 4）。手の検出の初期化（Table 5） | モデル間の比較であり工程信号の効果ではない | 公式の単一 split。複数の seed・統計検定は本文で確認できず | 確証を得た独立追試は不明 | 未照合 |
+-| B-13 | 検出の条件付けに関する値はなし | 該当なし | 依頼の 15 動画の交差検証とは別の設定 | 不明 | 未照合 |
+-| B-14 | P→D 型の工程 → box 検出の比較はなし | 該当なし | 不明 | 不明 | 未照合 |
+-| B-15 | Table 1 で同じ構造族の中で、工程なし／予測工程／正解工程／疑似ラベルの有無を分けて比較 | データ・fold・分割モデルの族が同じで、工程信号の質を変えた比較 | 動画単位の 5-fold 交差検証。seed 数と統計検定は確認できず。工程モデルは漏れを防ぐため、分割の評価集合とは独立な内部の 90 動画で学習。N1: 工程の予測器 MS-TCN++ は「processes the video at full temporal resolution」（§4.2）で causal かは不明、凍結したかの明示も不明。対照の v0 は条件付けの構造を持たず、界面を保ったまま入力を空にする対照ではない（地図 N の N-20） | 著者以外の十分な追試は確認できず | 未照合 |
+-| B-16 | 同じ task 指向の問題で、分類／ranker／提案＋融合を比較し、さらに正解 box と Faster-RCNN の検出の入力条件を比較（表「Comparison to Baselines mAP@0.5」） | 提案の GGNN／融合と基準の構造が異なり、task の事前分布だけを変えた clean な ablation ではない | 表からは不明 | 後続の TOIST・CoTDet が同じ COCO-Tasks で比較 | 未照合 |
+-| B-17 | 数値は報告に無い | 不明 | 不明 | 不明 | 未照合 |
+-| B-18 | 著者ページは TOIST・GGNN と同じ task 駆動のベンチマークで比較 | 不明 | 不明 | 不明 | ID 不明のため照合できない |
+-| B-19 | 依頼への直接の情報なし | 該当なし | 依頼への直接の情報なし | 不明 | 未照合 |
+-| B-20 | 依頼に対応する clean な ablation なし | 該当なし | 不明 | 不明 | 未照合 |
+-| B-21 | 数値不記載 | 該当なし | 不明 | 不明 | 未照合 |
+-| B-22 | Table 1 で同じ ActionVOS の学習の設定について、行動 prompt のありとなし | 同じ backbone の族で prompt を入れるかだけの比較 | 元の split を使用。複数 seed・統計検定は確認できず | 独立追試を十分に確認できず | 未照合 |
+-| B-23 | LongShortNet の Table 1 での比較 | 外部の工程信号ではなく時間特徴の差 | 不明 | 後続の LongShortNet・DAMO-StreamNet が比較 | 未照合 |
+-| B-24 | Table 5 は同じモデルで時間の範囲（N、δt）だけを変更。現在のみ（N=0）と過去フレームを加えた条件を直接比較。Table 6 は融合の位置と重み付け | Table 5 は clean な比較 | 同じ固定の train／val split。複数 seed・検定は確認できず | 不明 | 未照合 |
+-| B-25 | 外部の意味信号は使わない | 該当なし | 不明 | 不明 | 未照合 |
+-| B-26 | 文脈を使った場合の改善の上限の分析 | 該当なし（分析） | 不明 | 不明 | 未照合 |
+-| B-27 | 典型的な文脈が無いときの汎化（問題設定そのもの） | 不明 | 4 データセット | B-28 が独立に再現 | 未照合 |
+-| B-28 | 元論文の全 12 表の再現と追加の ablation | 該当なし（再現） | 不明 | 著者以外の追試そのもの | 未照合 |
+-| B-29 | 要旨のみ。数値の記載なし | 不明 | 不明 | 不明 | 未照合 |
+-| B-30 | 小標本の交差検証の推定値のばらつき | 該当なし | 該当なし | 不明 | 未照合 |
++| B-01 | multi-task の EndoNet と single-task の ToolNet | 工程の補助損失だけを切り出した ablation ではない（旧地図） | 旧地図に記載なし | 旧地図に記載なし | 未照合。原典確認（利用者）。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1602.03012）。照合2026-10-19: arXiv 1602.03012 実在・書誌一致 |
++| B-02 | ToolNet と EndoNet | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1610.08851）。照合2026-10-19: arXiv 1610.08851 実在・書誌に差（題名の欄が略称・説明だったため。本版で題名を改めた） |
++| B-03 | MTRCNet と MTRCNet-CL（Table 1）。写像の空間の比較（Table 2） | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。原典確認（利用者）。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1907.06099）。旧地図の注記: 数値は原典と一致（TS1 85.1、TS2 88.1 も）。照合2026-10-19: arXiv 1907.06099 実在・書誌に差（題名の欄が略称・説明だったため。本版で題名を改めた） |
++| B-04 | FiLM ありとなし（Table 2） | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1709.07871）。照合2026-10-19: arXiv 1709.07871 実在・書誌一致 |
++| B-05 | 条件付けなし／PWAM のみ／全体（Table 2）、置く場所（Table 3） | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 2112.02244）。照合2026-10-19: arXiv 2112.02244 実在・書誌一致 |
++| B-06 | FiLM のありとなしの対は number not available。CLIP 事前学習のありとなし（Table 9） | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 2112.10003）。照合2026-10-19: arXiv 2112.10003 実在・書誌に差（題名の欄が略称・説明だったため。本版で題名を改めた） |
++| B-07 | 条件のありとなしは number not available（課題そのものがテキストの条件付き） | 該当なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。要旨。片方。照合2026-09-16: 実在・書誌一致（arXiv 2104.12763）。照合2026-10-19: arXiv 2104.12763 実在・書誌一致 |
++| B-08 | タスクの組の転移（Table 2 Setting 1）、容量とデータ量（Table 5） | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。原典確認（利用者）。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1905.07553）。照合2026-10-19: arXiv 1905.07553 実在・書誌一致 |
++| B-09 | 文脈ありとなし（Table 1）、時間幅、集約の方式 | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。原典確認（利用者）。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1912.03538）。旧地図の注記: 数値は原典と一致。照合2026-10-19: arXiv 1912.03538 実在・書誌一致 |
++| B-10 | 集約ありとなし | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1907.06390）。照合2026-10-19: arXiv 1907.06390 実在・書誌に差（題名の欄が略称・説明だったため。本版で題名を改めた） |
++| B-11 | number not available（要旨） | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。要旨。片方。照合2026-09-16: 実在・書誌一致（arXiv 1807.00119）。照合2026-10-19: arXiv 1807.00119 実在・書誌一致 |
++| B-12 | 同じ公式 split・COCO 事前学習の複数の検出器（Table 4）。手の検出の初期化（Table 5） | モデル間の比較であり工程信号の効果ではない | 公式の単一 split。複数の seed・統計検定は本文で確認できず | 確証を得た独立追試は不明 | 照合2026-10-19: arXiv 2406.03095 実在・書誌一致 |
++| B-13 | 検出の条件付けに関する値はなし | 該当なし | 依頼の 15 動画の交差検証とは別の設定 | 不明 | 照合2026-10-19: arXiv 2405.19644 実在・書誌一致 |
++| B-14 | P→D 型の工程 → box 検出の比較はなし | 該当なし | 不明 | 不明 | 照合2026-10-19: arXiv 2503.18755 実在・書誌一致 |
++| B-15 | Table 1 で同じ構造族の中で、工程なし／予測工程／正解工程／疑似ラベルの有無を分けて比較 | データ・fold・分割モデルの族が同じで、工程信号の質を変えた比較 | 動画単位の 5-fold 交差検証。seed 数と統計検定は確認できず。工程モデルは漏れを防ぐため、分割の評価集合とは独立な内部の 90 動画で学習。N1: 工程の予測器 MS-TCN++ は「processes the video at full temporal resolution」（§4.2）で causal かは不明、凍結したかの明示も不明。対照の v0 は条件付けの構造を持たず、界面を保ったまま入力を空にする対照ではない（地図 N の N-20） | 著者以外の十分な追試は確認できず | 照合2026-10-19: DOI 10.1007/978-3-032-05114-1_43 実在・書誌一致、arXiv 2411.16794 実在・書誌一致 |
++| B-16 | 同じ task 指向の問題で、分類／ranker／提案＋融合を比較し、さらに正解 box と Faster-RCNN の検出の入力条件を比較（表「Comparison to Baselines mAP@0.5」） | 提案の GGNN／融合と基準の構造が異なり、task の事前分布だけを変えた clean な ablation ではない | 表からは不明 | 後続の TOIST・CoTDet が同じ COCO-Tasks で比較 | 照合2026-10-19: arXiv 1904.03000 実在・書誌一致 |
++| B-17 | 数値は報告に無い | 不明 | 不明 | 不明 | 照合2026-10-19: arXiv 2210.10775 実在・書誌一致 |
++| B-18 | 著者ページは TOIST・GGNN と同じ task 駆動のベンチマークで比較 | 不明 | 不明 | 不明 | 2026-10-19 の照合の時点では ID なし（報告は ID を確定できなかった）。起票者が特定した ID は次の照合で確かめる |
++| B-19 | 依頼への直接の情報なし | 該当なし | 依頼への直接の情報なし | 不明 | 照合2026-10-19: arXiv 2303.05499 実在・書誌一致 |
++| B-20 | 依頼に対応する clean な ablation なし | 該当なし | 不明 | 不明 | 照合2026-10-19: arXiv 2112.03857 実在・書誌一致 |
++| B-21 | 数値不記載 | 該当なし | 不明 | 不明 | 照合2026-10-19: arXiv 2108.06152 実在・書誌一致 |
++| B-22 | Table 1 で同じ ActionVOS の学習の設定について、行動 prompt のありとなし | 同じ backbone の族で prompt を入れるかだけの比較 | 元の split を使用。複数 seed・統計検定は確認できず | 独立追試を十分に確認できず | 照合2026-10-19: arXiv 2407.07402 実在・書誌一致、DOI 10.1007/978-3-031-72684-2_13 実在・書誌一致 |
++| B-23 | LongShortNet の Table 1 での比較 | 外部の工程信号ではなく時間特徴の差 | 不明 | 後続の LongShortNet・DAMO-StreamNet が比較 | 照合2026-10-19: arXiv 2207.10433 実在・書誌一致 |
++| B-24 | Table 5 は同じモデルで時間の範囲（N、δt）だけを変更。現在のみ（N=0）と過去フレームを加えた条件を直接比較。Table 6 は融合の位置と重み付け | Table 5 は clean な比較 | 同じ固定の train／val split。複数 seed・検定は確認できず | 不明 | 照合2026-10-19: arXiv 2210.15518 実在・書誌一致 |
++| B-25 | 外部の意味信号は使わない | 該当なし | 不明 | 不明 | 照合2026-10-19: DOI 10.24963/ijcai.2023/90 実在・書誌一致、arXiv 2303.17144 実在・書誌一致 |
++| B-26 | 文脈を使った場合の改善の上限の分析 | 該当なし（分析） | 不明 | 不明 | 照合2026-10-19: arXiv 1711.05471 実在・書誌一致 |
++| B-27 | 典型的な文脈が無いときの汎化（問題設定そのもの） | 不明 | 4 データセット | B-28 が独立に再現 | 照合2026-10-19: arXiv 2001.03152 実在・書誌一致 |
++| B-28 | 元論文の全 12 表の再現と追加の ablation | 該当なし（再現） | 不明 | 著者以外の追試そのもの | 照合2026-10-19: arXiv 2104.13582 実在・書誌一致 |
++| B-29 | 要旨のみ。数値の記載なし | 不明 | 不明 | 不明 | 照合2026-10-19: arXiv 2602.06474 実在・書誌一致 |
++| B-30 | 小標本の交差検証の推定値のばらつき | 該当なし | 該当なし | 不明 | 照合2026-10-19: DOI 10.1016/j.neuroimage.2017.06.061 実在・書誌一致、arXiv 1706.07581 実在・書誌一致 |
+ 
+ ---
+ 
+diff --git a/docs/evidence/2026-10-18-C-d2p-interface.md b/docs/evidence/2026-10-18-C-d2p-interface.md
+index 21c1262..98a7e58 100644
+--- a/docs/evidence/2026-10-18-C-d2p-interface.md
++++ b/docs/evidence/2026-10-18-C-d2p-interface.md
+@@ -1,8 +1,8 @@
+ # 証拠地図 C — 凍結した検出器の出力を online 工程認識へ渡す（D→P）
+ 
+-**版:** v2（下書き。2026-10-18、起票者が作成。v1 に R1 の行を統合）
++**版:** v2.1（下書き。2026-10-19、起票者が作成。v2〔2026-10-18。v1 に R1 の行を統合〕に、2026-10-19 の書誌の照合の結果を書誌の欄だけ反映）
+ **種類:** 探索の地図
+-**状態:** 書誌の機械照合は未実施。数値の原典確認は未実施。報告者の解釈と提案は 2026-10-18 に地図から外した（§0.2）
++**状態:** v2 の書誌 ID を 2026-10-19 に機械照合した（ID 29 件、不在 0、到達不能 0、書誌に差 1〔C-21 の題名〕、照合不能 1〔C-12 の出所の欄の別の論文〕）。本版はその結果を書誌の欄に反映したもので、反映の確かめは次の照合で行う。数値の原典確認は未実施。報告者の解釈と提案は 2026-10-18 に地図から外した（§0.2）
+ **元の報告:**
+ - deep research の報告「C2」（deep-research-report-C2.md、72,966 バイト、sha256 5d3c3ed514551cf11d1b75dcc8b6542b7fb5efefeedb91956a5d561284c141fd）。探索エンジンは本書に記録が無い
+ - deep research の報告「R1」（R1-deep-research-report.md、40,202 バイト、156 行、sha256 1f95517bf4ce63015d9574ee7e3616859021882a7014feb4f261d76d9c49dce5）。探索エンジンは本書に記録が無い
+@@ -31,13 +31,14 @@ R1 は同じ問いの先行の報告で、①手術映像の器具 → 工程、
+ - 出所の列（§2）の「L」は C2 の行番号、「R1 L」は R1 の行番号である
+ - 二つの報告が同じ文献を扱うときは一行にまとめ、値の後に出所（C2／R1）を書いた
+ - citation の印（報告の参照記号）は除いた
++- 題名・著者・掲載先・書誌 ID の欄で「照合〔2026-10-19〕の値」と書いたものは、2026-10-19 の照合（docs/evidence/verification/ の本書の結果）で照合先が返した値で、報告の記載ではない。報告の記載は括弧の中に残した。行の中身（§3 以降の事実・数値）は変えていない
+ 
+ ### 0.3 この地図にまだ入っていないもの
+ 
+ - C2 が「既所持」として詳細記録を省いた文献のうち、SurgVLP は R1 にも行が無い。Digital-Twin-based Scene Representation は R1 の行から C-21 として入れた
+ - 種のうち STLT と SViT は C2 が同定できなかった（§10 の 7）。R1 は二つを C-23（DAIR）の Table VII の比較手法の名前として挙げるが、書誌 ID を書いていない
+ - R1 が名前だけ挙げ、詳細記録も書誌 ID も無い文献: MTRCNet-CL（地図 B の B-03）、LAST、LoViT、CholecT50、AutoLaparo、HeiChole、M2CAI16 workflow、EgoSurgery-Tool（地図 B の B-12）、EgoSurgery-HTS（地図 B の B-14）。行にしていない
+-- R1 が書誌なしで挙げた 2026 年の腹腔鏡下胃切除の研究は、書誌 ID が無いまま C-24 に置いた。引用規約により、ID が確定するまで引用として使えない
++- R1 が書誌なしで挙げた 2026 年の腹腔鏡下胃切除の研究は、書誌 ID が無いまま C-24 に置いた。引用規約により、ID が確定するまで引用として使えない。起票者が 2026-10-19 に Crossref の書誌検索（2025-06 以降の出版）で探したが、該当する文献は見つからなかった（無いとは言えない）
+ 
+ ---
+ 
+@@ -78,23 +79,23 @@ R1 の行から起票者が足した系統（R1 には系統表も現役度も
+ | C-02 | Ryo Fujii, Masashi Hatano, Hideo Saito, Hiroki Kajita 2024, EgoSurgery-Phase: A Dataset of Surgical Phase Recognition from Egocentric Open Surgery Videos | arXiv 2405.19644 | MICCAI 2024（early accept、査読） | 一 | 要旨と arXiv の書誌。数値表は未確認 | L48–L74、R1 L15、L110 |
+ | C-03 | Antonino Furnari, Giovanni Maria Farinella 2020–2021, Rolling-Unrolling LSTMs for Action Anticipation from First-Person Video | arXiv 2005.02190、DOI 10.1109/TPAMI.2020.2992889 | IEEE TPAMI（査読） | 三・問い二 | 本文 | L76–L102 |
+ | C-04 | Joanna Materzynska ほか 2020, Something-Else: Compositional Action Recognition with Spatial-Temporal Interaction Networks（STIN） | arXiv 1912.09930 | CVPR 2020（査読） | 四・七 | 本文 | L104–L130 |
+-| C-05 | Roei Herzig ほか 2022, Object-Region Video Transformers（ORViT） | arXiv 2110.06915 | 報告の記載は「ECCV 2022 系、査読つき」 | 三・四・七 | 本文・補遺に当たる HTML | L132–L159 |
+-| C-06 | （著者は報告に記載なし）2023, Helping Hands: An Object-Aware Ego-Centric Video Recognition Model | arXiv 2308.07918 | ICCV 2023（査読） | 三・四・七 | 本文 | L161–L189 |
++| C-05 | Roei Herzig ほか 2022, Object-Region Video Transformers（ORViT） | arXiv 2110.06915 | 報告の記載は「ECCV 2022 系、査読つき」。照合: arXiv の comment は「CVPR 2022」（journal_ref なし） | 三・四・七 | 本文・補遺に当たる HTML | L132–L159 |
++| C-06 | Chuhan Zhang, Ankush Gupta, Andrew Zisserman 2023, Helping Hands: An Object-Aware Ego-Centric Video Recognition Model（著者は照合〔2026-10-19〕の値。報告に記載なし） | arXiv 2308.07918 | ICCV 2023（査読） | 三・四・七 | 本文 | L161–L189 |
+ | C-07 | Eadom Dessalene ほか 2020, Egocentric Object Manipulation Graphs（Ego-OMG） | arXiv 2006.03201 | プレプリント | 三・問い二 | 本文 | L191–L217 |
+ | C-08 | Ce Zhang ほか 2024, Object-centric Video Representation for Long-term Action Anticipation | arXiv 2311.00180 | WACV 2024（査読） | 三 | 要旨のみ | L219–L239 |
+ | C-09 | Francesco Ragusa, Giovanni Maria Farinella, Antonino Furnari 2023, StillFast: An End-to-End Approach for Short-Term Object Interaction Anticipation | arXiv 2304.03959 | CVPR 2023（査読） | 三・問い二の隣接 | 要旨と結論 | L241–L261 |
+ | C-10 | Qiaohui Chu ほか 2026, VISTA: Technical Report for the Ego4D Short-Term Object Interaction Anticipation at EgoVis 2026 | arXiv 2605.20901 | 技術報告・プレプリント | 三・五 | 要旨のみ | L263–L283 |
+ | C-11 | Masatoshi Tateno, Alexandros Stergiou, Risa Shinoda, Yoichi Sato, Dima Damen 2026, Do Egocentric Video-Language Models Capture Both Hand- and Object-Centric Cues? | arXiv 2607.08514 | プレプリント（MIRU 2026 発表） | 三・七 | 要旨 | L285–L309 |
+-| C-12 | Tobias Rueckert ほか 2026, Comparative validation of surgical phase recognition, instrument keypoint estimation, and instrument instance segmentation in endoscopy: Results of the PhaKIR 2024 challenge | arXiv 2507.16559、DOI 10.1016/j.media.2026.103945 | Medical Image Analysis（査読） | 二・六 | 要旨・書誌 | L311–L331、R1 L19。データセットの論文（arXiv 2511.06549）は別の論文で、N1 が挙げる（地図 N §8） |
++| C-12 | Tobias Rueckert ほか 2026, Comparative validation of surgical phase recognition, instrument keypoint estimation, and instrument instance segmentation in endoscopy: Results of the PhaKIR 2024 challenge | arXiv 2507.16559、DOI 10.1016/j.media.2026.103945 | Medical Image Analysis（査読） | 二・六 | 要旨・書誌 | L311–L331、R1 L19。データセットの論文は別の論文で、N1 が挙げる（地図 N §8 と、地図 N の §2 の末尾の書誌の表） |
+ | C-13 | Kostiuchik ほか 2024, Surgical phase and instrument recognition: how to identify appropriate dataset splits（行の書誌欄に著者なし。著者名は系統表 L16 から） | DOI 10.1007/s11548-024-03063-9 | IJCARS（査読） | 六・七 | 本文 | L333–L356 |
+ | C-14 | Shu Yang, Luyang Luo, Qiong Wang, Hao Chen 2024, Surgformer: Surgical Transformer with Hierarchical Temporal Attention for Surgical Phase Recognition | arXiv 2408.03867 | プレプリント（査読の採択先は報告では不明） | 二（隣接） | 要旨 | L358–L375、R1 L11、L37、L93 |
+ | C-15 | Ethan Perez ほか 2018, FiLM: Visual Reasoning with a General Conditioning Layer | arXiv 1709.07871 | 報告の記載は「査読系論文」 | 五 | 要旨 | L377–L392 |
+-| C-16 | Shiota ほか 2024（題名は報告に無い） | DOI 10.1109/WACV57701.2024.00641 | WACV 2024 | 三 | 詳細記録なし | L11、L203 |
+-| C-17 | Dessalene ほか, Forecasting Action through Contact Representations from First Person Video | arXiv 2102.00649 | 報告に掲載先の記載なし（L213 は「後続 TPAMI 論文」と書く） | 三 | 要旨 | L193–L198、L213 |
++| C-16 | Shiota ほか 2024, Egocentric Action Recognition by Capturing Hand-Object Contact and Object State（題名は照合〔2026-10-19〕の値。報告に無い） | DOI 10.1109/WACV57701.2024.00641 | WACV 2024 | 三 | 詳細記録なし | L11、L203 |
++| C-17 | Dessalene ほか, Forecasting Action through Contact Representations from First Person Video | arXiv 2102.00649、DOI 10.1109/TPAMI.2021.3055233（DOI は照合〔2026-10-19〕で arXiv の doi 欄が返した値。報告には無い） | 報告に掲載先の記載なし（L213 は「後続 TPAMI 論文」と書く）。照合: arXiv の comment は「in IEEE Transactions on Pattern Analysis and Machine Intelligence, 2021」 | 三 | 要旨 | L193–L198、L213 |
+ | C-18 | Sahu, Szengel, Mukhopadhyay, Zachow 2020, Surgical phase recognition by learning phase transitions | DOI 10.1515/cdbme-2020-0037 | Current Directions in Biomedical Engineering 6(1)（N1） | R1 ① | R1 に読んだ範囲の列なし（R1 L23 は「数値は本文・表・図で直接確認したものだけ」と書く）。Table 1 の値あり | R1 L34、L43、L71、L131、N1 L17、L49 |
+ | C-19 | Zisimopoulos, Flouty, Luengo, Giataganas, Nehme, Chow, Stoyanov 2018, DeepPhase: Surgical Phase Recognition in CATARACTS Videos | arXiv 1807.10565、DOI 10.1007/978-3-030-00937-3_31 | R1 に記載なし | R1 ① | 同上。Table 1 の値あり | R1 L7、L23、L35、L45、L75、L104、L149、N1 L18、L50、L145 |
+ | C-20 | Park, Chi, Park, Lee, Park, Hyung, Choi 2022, Visual Modalities Based Multimodal Fusion for Surgical Phase Recognition | DOI 10.1007/978-3-031-18814-5_2 | R1 に記載なし | R1 ① | 同上。Table 2・4 の値あり | R1 L9、L36、L47、L73 |
+-| C-21 | Ding ほか 2024–2025, Towards Robust Algorithms for Surgical Phase Recognition via Digital Twin-based Scene Representation（DTFormer。C2 は既所持として行を作らなかった） | arXiv 2410.20026 | R1 に記載なし | R1 ① | 同上。Table 2・3 の値あり | R1 L11、L37、L77、L93、L129、L133 |
++| C-21 | Ding ほか 2024–2025, Towards Robust Algorithms for Surgical Phase Recognition via Digital Twin Representation（DTFormer。題名は照合〔2026-10-19〕の値〔arXiv の現行版〕。R1 は「…via Digital Twin-based Scene Representation」と書く。C2 は既所持として行を作らなかった） | arXiv 2410.20026 | R1 に記載なし | R1 ① | 同上。Table 2・3 の値あり | R1 L11、L37、L77、L93、L129、L133 |
+ | C-22 | Zhou, Arnab, Sun, Schmid 2023, How Can Objects Help Action Recognition?（ObjectViViT） | arXiv 2306.11726 | R1 に記載なし | R1 ②③ | 同上。Fig. 5・Table 2 の値あり | R1 L13、L55、L58–L60、L102 |
+ | C-23 | Li, Sun, Liu, Duan, Li 2025（arXiv 2024）, Simultaneous Detection and Interaction Reasoning for Object-Centric Action Recognition（DAIR） | arXiv 2404.11903、DOI 10.1109/TMM.2025.3543033 | R1 に記載なし | R1 ③ | 同上。Table I・VI・VII の値あり | R1 L13、L56、L62–L66、L103 |
+ | C-24 | （著者・題名・書誌 ID は R1 に無い）2026, 腹腔鏡下胃切除 93 例で YOLOv8 の器具在否の予測を双方向 LSTM へ渡す二段階のシステム | なし | R1 に記載なし | R1 ① | 同上。Table 4 の値あり | R1 L49 |
+diff --git a/docs/evidence/2026-10-18-N-novelty.md b/docs/evidence/2026-10-18-N-novelty.md
+index 6920103..b5ed597 100644
+--- a/docs/evidence/2026-10-18-N-novelty.md
++++ b/docs/evidence/2026-10-18-N-novelty.md
+@@ -1,8 +1,8 @@
+ # 証拠地図 N — 新規性の探索の照合結果（D→P・P→D に共通）
+ 
+-**版:** v1（下書き。2026-10-18、起票者が作成）
++**版:** v1.1（下書き。2026-10-19、起票者が作成。v1〔2026-10-18〕に、2026-10-19 の書誌の照合の結果を書誌の欄だけ反映し、§2 の末尾に照合表の外で使った文献の書誌の表を足した）
+ **種類:** 新規性の照合
+-**状態:** 書誌の機械照合は未実施。数値の原典確認は未実施
++**状態:** v1 の書誌 ID を 2026-10-19 に機械照合した（ID 36 件、不在 0、到達不能 0、書誌に差 2〔N-01 の著者、N-10 の arXiv 版の題名〕、照合不能 18〔書誌の行の無い ID 17 と N-18〕）。本版はその結果を反映したもので、反映の確かめは次の照合で行う。数値の原典確認は未実施
+ **元の報告:** 新規性の探索の報告「N1」（N1-novelty-search-result.md、37,524 バイト、208 行、sha256 9e1dc1b7f9ad99faff469fa7aa001bfc586d98876677c52c2c1c1dcd83cfa3cd）。依頼文は起票者が 2026-10-18 に書いた（照合する要素 E1〜E6、探す範囲、見つからない理由の証拠、出力の様式）
+ **検索日:** 2026-10-18（報告の記載）
+ **検索手段:** 報告の記載は「ウェブ検索（版不明）18 回、ページ取得 3 回（うち 1 回失敗）、補助調査 1 回（検索手段の版・検索語・件数は不明）」。R1・B1 とは引用の書き方が異なる
+@@ -34,6 +34,8 @@
+ - 報告の調査の範囲は限られている。会議・論文誌の目次の系統的な走査、OpenReview、学位論文、有料の本文は見ていない（§7）
+ - 地図 C・B に既に行がある文献は、その行 ID を「対応する地図の行」に書いた。N1 が新しく足した事実は地図 C・B の該当行にも併記した
+ - 出所の列は報告の行番号（N1 L）
++- 題名・著者・掲載先・書誌 ID の欄で「照合〔2026-10-19〕の値」と書いたものは、2026-10-19 の照合（docs/evidence/verification/ の本書の結果）で照合先が返した値で、報告の記載ではない。報告の記載は括弧の中に残した。行の中身（§3 以降の事実・数値）は変えていない
++- §2 の末尾の書誌の表（N-30〜N-46）は、照合表の外（§3〜§5・§8）で ID だけが書かれていた文献の書誌と、N-10 から分けた arXiv 版（N-46）で、題名・著者は照合〔2026-10-19〕の値を写したもの。報告の記載ではない。この表の行を照合し直しても写し誤りの検査にしかならない。各 ID の論文が本書の文脈（その ID が使われている節の記述）と対応することは、起票者が照合先の題名と突き合わせて確かめた（2026-10-19。ID だけが書かれていた 17 件のうち 16 件が対応し、1610.08844 は §8 の記述と対応しなかった。§8 を直した）
+ 
+ ---
+ 
+@@ -52,7 +54,7 @@
+ 
+ | ID | 文献 | DOI または arXiv ID | 掲載先 | E1 | E2 | E3 | E4 | E5 | E6 | 凍結の範囲と学習する部分（報告の記載） | 読んだ範囲 | 出所 |
+ |---|---|---|---|---|---|---|---|---|---|---|---|---|
+-| N-01 | Graham Schwarz 2026, Automated Surgical Phase Recognition In Microvascular Reconstruction Using Artificial Intelligence（PSRC 2026 の学会抄録） | 報告は DOI 10.5281/zenodo.20086606 を挙げるが、表示された Zenodo record 20101483 との対応は未確認 | Zenodo（抄録） | 不明（二段階。凍結の記載なし） | 一致（YOLOv8 の box 座標と確信度を DNN に渡す） | 不一致（D→P だけ） | 不明 | 部分一致（術具の box 検出と工程。微小血管手術） | 不明 | 凍結の範囲は不明 | 要旨のみ | N1 L19、L51 |
++| N-01 | Berk Ozmen, Georgia Babb, Malena Allbright, Chinenye Ogbonnah, Nathan Honn, Graham Schwarz 2026, Automated Surgical Phase Recognition In Microvascular Reconstruction Using Artificial Intelligence（PSRC 2026 の学会抄録。著者は照合〔2026-10-19〕の値〔DataCite〕。報告は Graham Schwarz だけを書く） | DOI 10.5281/zenodo.20086606（照合で実在。登録機関 DataCite。別の版の DOI への IsVersionOf の関係あり。報告が挙げた Zenodo record 20101483 との対応は未確認のまま） | Zenodo（抄録） | 不明（二段階。凍結の記載なし） | 一致（YOLOv8 の box 座標と確信度を DNN に渡す） | 不一致（D→P だけ） | 不明 | 部分一致（術具の box 検出と工程。微小血管手術） | 不明 | 凍結の範囲は不明 | 要旨のみ | N1 L19、L51 |
+ | N-02 | Zamir ほか 2018, Taskonomy: Disentangling Task Transfer Learning | arXiv 1804.08328 | CVPR 2018 | 一致（source の encoder を凍結し小さな readout だけを学習。図 4） | 不一致（渡すのは encoder の表現） | 一致（方向つきの affinity を全ての組で測る） | 不一致 | 不一致（屋内の静止画） | 不一致 | 「A small readout function is trained to map representations of source task's frozen encoder to target task's labels」（図 4） | 本文の一部（検索抜粋） | N1 L35、L53 |
+ | N-03 | Bansal ほか 2021, Revisiting Model Stitching to Compare Neural Representations | arXiv 2106.07682 | NeurIPS 2021 | 一致（「two trained and frozen models A and B… with a simple trainable layer between them」） | 不一致（中間層の表現） | 不一致（同じ課題のモデルどうし） | 不一致 | 不一致 | 不一致 | stitching layer は 1×1 conv と BN（§2） | 要旨のみ（検索抜粋を含む） | N1 L34、L54 |
+ | N-04 | Mai, Zhang, Wang, Wang, Chen, Xia, Sun, Chao, Kuo 2026, Revisiting Model Stitching in the Foundation Model Era | arXiv 2603.12433 | arXiv | 一致（「the stitch layer is the only trainable component; the source and target models are kept frozen」。図 1） | 不一致（中間特徴） | 不一致 | 不一致 | 不一致 | 不一致 | 学習方法として layer feature matching などを比べる（§3.2.1） | 要旨のみ（検索抜粋を含む） | N1 L34、L55 |
+@@ -61,15 +63,15 @@
+ | N-07 | Vandenhende ほか 2020, MTI-Net | arXiv 2001.06902 | ECCV 2020 | 不一致（共同学習） | 部分一致（初期の課題予測の特徴を各スケールで蒸留） | 不一致（N-17 は MTI-Net を一方向と分類） | 不一致 | 不一致 | 不一致 | 「initial task predictions are made at each scale」 | 要旨のみ（検索抜粋を含む） | N1 L39、L58 |
+ | N-08 | An ほか 2024, Object Aware Egocentric Online Action Detection | arXiv 2406.01079 | arXiv（報告は CVPR workshop と推測、未確認） | 部分一致（既製の検出器と、検出出力に注意を向ける学習可能な query。凍結は不明） | 部分一致（「attend to the detected objects' outputs」） | 不一致（検出 → 行動だけ） | 不一致 | 部分一致（一人称、EPIC-Kitchens-100。手術ではない） | 部分一致（online の行動検出） | 「integrating an off-the-shelf detector with the existing OAD framework」（§3.1） | 要旨のみ（検索抜粋を含む） | N1 L59 |
+ | N-09 | Radevski ほか 2023, Multimodal Distillation for Egocentric Action Recognition | arXiv 2307.07483 | 報告は ICCV 2023（未確認） | 不一致（教師から生徒への蒸留） | 部分一致（物体検出の box とカテゴリを一つの入力モダリティとして STLT で符号化） | 不一致 | 不一致 | 部分一致（一人称） | 不明 | 不明 | 要旨のみ（検索抜粋を含む） | N1 L60 |
+-| N-10 | Nguyen ほか 2025, KAFR（YOLOv8 で術具を検出・追跡し、フレーム選択に使う） | arXiv 2501.11153（報告によれば IEEE Access 版 DOI 10.1109/ACCESS.2025.3573264。補助調査による） | IEEE Access 13 | 不明 | 部分一致（YOLO の出力はフレーム選択に使い、工程の分類器への入力にはしない） | 不一致 | 不明 | 部分一致（box 検出と工程） | 不明 | 不明 | 要旨のみ | N1 L61 |
++| N-10 | Nguyen ほか 2025, Kinematic Adaptive Frame Recognition (KAFR): A Novel Framework for Video Segmentation via Frame Similarity and Surgical Tool Tracking（IEEE Access 版。題名は照合〔2026-10-19〕の値。報告の記載は「KAFR」。YOLOv8 で術具を検出・追跡し、フレーム選択に使う） | DOI 10.1109/ACCESS.2025.3573264（IEEE Access 版。補助調査による）。報告が挙げた arXiv 版は題名が違うため、§2 の末尾の N-46 に分けた | IEEE Access 13 | 不明 | 部分一致（YOLO の出力はフレーム選択に使い、工程の分類器への入力にはしない） | 不一致 | 不明 | 部分一致（box 検出と工程） | 不明 | 不明 | 要旨のみ | N1 L61 |
+ | N-11 | Ayobi ほか 2024／2025, Pixel-Wise Recognition for Holistic Surgical Scene Understanding（GraSP、TAPIS） | arXiv 2401.11174 | Medical Image Analysis | 部分一致（分割モデルを region proposal として使う。凍結は不明） | 不一致（segment embedding を渡す） | 不一致 | 不明（分類しない術具領域を使う ablation がある） | 一致（術具の分割と工程。ロボット支援前立腺摘除） | 不明 | 「utilizes a localized instrument segmentation baseline… [that] provides pixel-precise instrument masks and their corresponding segment embeddings」 | 要旨のみ（検索抜粋を含む） | N1 L62 |
+ | N-12 | Czempiel ほか 2020, TeCNO | arXiv 2003.10751 | MICCAI 2020 | 部分一致（特徴抽出器 ResNet50 を先に学習し、抽出した特徴の上で TCN を学習する二段階。§2.1） | 不一致（特徴を渡す） | 不一致 | 不一致 | 部分一致（術具の在否は特徴抽出器の多課題学習のラベルとして使うだけ） | 部分一致（causal・online。交差検証ではなく固定分割 40／8／32） | 「We adopt a two-stage approach so that our temporal refinement pipeline is independent of the feature extractor and the available ground truth」（§2.1） | 本文 | N1 L63 |
+ | N-13 | Padoy ほか 2012, Statistical modeling and recognition of surgical workflow | DOI 10.1016/j.media.2010.10.001 | Medical Image Analysis 16(3) | 不一致 | 部分一致（記録・注釈された術具使用の信号を入力にする。映像の検出器ではない） | 不一致 | 部分一致（入力は正解側の信号だけ） | 部分一致（術具の使用と工程。腹腔鏡 16 例） | 不明 | 不明 | 要旨のみ（補助調査による） | N1 L65 |
+ | N-14 | Yang ほか 2019, Activity Driven Weakly Supervised Object Detection | arXiv 1904.01665 | CVPR 2019 | 不一致（検出と行動分類を同時に学習） | 不一致（行動ラベルは学習時の弱い教師） | 不一致 | 不一致 | 部分一致（行動 → 検出の方向。一人称の動画を含む） | 不明 | 「simultaneously train a joint object detection and action classification model」（要旨） | 要旨のみ | N1 L66、L150 |
+-| N-15 | Yuan ほか 2022, Anticipation for surgical workflow through instrument interaction and recognized Signals | ID 未確認 | Medical Image Analysis | 不明 | 不明 | 部分一致（術具と工程の予期を多課題で同時に行う） | 不明 | 部分一致（術具と工程） | 不明 | 「a multi-task learning schema to jointly anticipate instrument and phase occurrence」 | 要旨のみ | N1 L67 |
++| N-15 | Yuan ほか 2022, Anticipation for surgical workflow through instrument interaction and recognized Signals | DOI 10.1016/j.media.2022.102611（起票者が 2026-10-19 に Crossref の書誌検索で特定。報告は ID 未確認） | Medical Image Analysis | 不明 | 不明 | 部分一致（術具と工程の予期を多課題で同時に行う） | 不明 | 部分一致（術具と工程） | 不明 | 「a multi-task learning schema to jointly anticipate instrument and phase occurrence」 | 要旨のみ | N1 L67 |
+ | N-16 | Garam Kim, Juyoun Park 2026, Temporally Consistent Label Interpolation for Robust Surgical Multi-Task Learning under Challenging Conditions（FAROS） | arXiv 2606.26634 | arXiv | 不一致（多課題学習） | 不明 | 不明 | 不一致 | 一致（分割と workflow。GraSP、MISAW） | 不明 | 不明 | 要旨のみ（検索抜粋を含む） | N1 L68 |
+ | N-17 | Al Shafi, Zunayed, Ahmmed, Hossain, Mephu Nguifo 2026, BTI-Net: Bidirectional Decoder-Level Task Interaction via Uncertainty-Aware Gating for Multi-Task Medical Image Analysis | arXiv 2606.29102 | arXiv | 不一致（共同学習） | 不明（decoder の水準での相互作用） | 部分一致（双方向の相互作用を設計に入れる） | 不一致 | 不一致（超音波・ダーモスコピー・脳 MRI。手術映像ではない） | 不明 | 不明 | 要旨のみ（検索抜粋を含む） | N1 L69 |
+-| N-18 | TD-Graph LSTM（題名・著者は報告に無い） | arXiv 1708.00666 | 報告に記載なし | 報告に判定なし | 報告に判定なし（行動ラベルを学習時の弱い教師として使い、推論時に予測を渡す構成ではない） | 報告に判定なし | 報告に判定なし | 報告に判定なし（行動 → 検出の方向） | 報告に判定なし | 報告に記載なし | 報告に記載なし | N1 L150 |
++| N-18 | Yuan Yuan, Xiaodan Liang, Xiaolong Wang, Dit-Yan Yeung, Abhinav Gupta 2017, Temporal Dynamic Graph LSTM for Action-driven Video Object Detection（TD-Graph LSTM。題名・著者は照合〔2026-10-19〕の値。報告には無い） | arXiv 1708.00666 | 報告に記載なし。照合: arXiv の comment は「To appear in ICCV 2017」 | 報告に判定なし | 報告に判定なし（行動ラベルを学習時の弱い教師として使い、推論時に予測を渡す構成ではない） | 報告に判定なし | 報告に判定なし | 報告に判定なし（行動 → 検出の方向） | 報告に判定なし | 報告に記載なし | 報告に記載なし | N1 L150 |
+ 
+ 地図 C・B に行がある文献（N1 の判定）:
+ 
+@@ -83,6 +85,28 @@
+ 
+ ほかの既知の文献（PhaKIR、Surgformer、LoViT、EgoSurgery の三本、Kostiuchik ほか、M2CAI の技術報告、一般映像・検出の文献）は N1 で照合し直していない。報告が新しく書いた ID・掲載先は §8 にまとめた。
+ 
++照合表の外（§3〜§5・§8）で ID だけが書かれていた文献の書誌（題名・著者は照合〔2026-10-19〕の値。報告の記載ではない。§0.2）:
++
++| ID | 文献 | 書誌 ID | 掲載先 | 本書で使う節 | 出所 |
++|---|---|---|---|---|---|
++| N-30 | Andru P. Twinanda ほか 2016–2017, EndoNet: A Deep Architecture for Recognition Tasks on Laparoscopic Videos（地図 C の C-01、本書の N-23） | arXiv 1602.03012、DOI 10.1109/TMI.2016.2593957 | IEEE Transactions on Medical Imaging 36(1):86–97（照合。Crossref） | §4・§5・§8 | 照合 2026-10-19 |
++| N-31 | Ryo Fujii, Hideo Saito, Hiroki Kajita 2024, EgoSurgery-Tool: A Dataset of Surgical Tool and Hand Detection from Egocentric Open Surgery Videos（地図 B の B-12） | arXiv 2406.03095 | arXiv プレプリント（地図 B） | §4・§5 | 照合 2026-10-19 |
++| N-32 | Tamer Abdulbaki Alshirbaji ほか 2025, Cholec80-Boxes: Bounding Box Labelling Data for Surgical Tools in Cholecystectomy Images | DOI 10.3390/data10010007 | Data 10(1):7（照合。Crossref） | §4・§5・§8 | 照合 2026-10-19 |
++| N-33 | Bhuvan Sachdeva ほか 2024, Phase-Informed Tool Segmentation for Manual Small-Incision Cataract Surgery（ToolSeg。地図 B の B-15、本書の N-20） | arXiv 2411.16794 | MICCAI 2025（地図 B） | §4・§5 | 照合 2026-10-19 |
++| N-34 | Yueming Jin ほか 2019, Multi-Task Recurrent Convolutional Network with Correlation Loss for Surgical Video Analysis（MTRCNet-CL。地図 B の B-03、本書の N-24） | arXiv 1907.06099 | Medical Image Analysis（地図 B） | §4 | 照合 2026-10-19 |
++| N-35 | Isabel Funke, Dominik Rivoir, Stefanie Speidel 2023, Metrics Matter in Surgical Phase Recognition | arXiv 2305.13961 | 照合の値に掲載先なし | §4 | 照合 2026-10-19 |
++| N-36 | Fangqiu Yi, Tingting Jiang 2021, Not End-to-End: Explore Multi-Stage Architecture for Online Surgical Phase Recognition | arXiv 2107.04810 | 照合: arXiv の comment は「Not accepted by M2CAI2021」 | §4 | 照合 2026-10-19 |
++| N-37 | Ryan Cartularo 2025, SepsisSuite: Beyond Risk Stratification -- A Comparative Analysis of Deep Fusion vs. Expert Stacking for Prescriptive Sepsis AI | arXiv 2512.14712 | 照合の値に掲載先なし | §4 | 照合 2026-10-19 |
++| N-38 | Nathan Darjana, Ryo Fujii, Hideo Saito, Hiroki Kajita 2025, EgoSurgery-HTS: A Dataset for Egocentric Hand-Tool Segmentation in Open Surgery Videos（地図 B の B-14） | arXiv 2503.18755 | N1 は Healthcare Technology Letters（PMC 収載）と書く。照合の値に掲載先なし | §5・§8 | 照合 2026-10-19 |
++| N-39 | Ryo Fujii, Masashi Hatano, Hideo Saito, Hiroki Kajita 2024, EgoSurgery-Phase: A Dataset of Surgical Phase Recognition from Egocentric Open Surgery Videos（地図 C の C-02、地図 B の B-13） | arXiv 2405.19644 | MICCAI 2024（地図 C。arXiv の comment は「Early accepted by MICCAI 2024」） | §5 | 照合 2026-10-19 |
++| N-40 | Tobias Rueckert ほか 2025, Video Dataset for Surgical Phase, Keypoint, and Instrument Recognition in Laparoscopic Surgery (PhaKIR) | arXiv 2511.06549 | 照合の値に掲載先なし | §5・§8 | 照合 2026-10-19 |
++| N-41 | Tobias Rueckert ほか 2025–2026, Comparative validation of surgical phase recognition, instrument keypoint estimation, and instrument instance segmentation in endoscopy: Results of the PhaKIR 2024 challenge（地図 C の C-12） | arXiv 2507.16559 | Medical Image Analysis（地図 C） | §5・§8 | 照合 2026-10-19 |
++| N-42 | Martin Wagner ほか 2021, Comparative Validation of Machine Learning Algorithms for Surgical Workflow and Skill Analysis with the HeiChole Benchmark | arXiv 2109.14956 | 照合の値に掲載先なし | §5・§8 | 照合 2026-10-19 |
++| N-43 | Andru P. Twinanda ほか 2016, Single- and Multi-Task Architectures for Tool Presence Detection Challenge at M2CAI 2016（地図 B の B-02） | arXiv 1610.08851 | M2CAI 技術報告（地図 B） | §8 | 照合 2026-10-19 |
++| N-44 | Andru P. Twinanda ほか 2016, Single- and Multi-Task Architectures for Surgical Workflow Challenge at M2CAI 2016（工程のチャレンジの論文。N1 が術具の在否の技術報告として挙げた ID） | arXiv 1610.08844 | 照合の値に掲載先なし | §8 | 照合 2026-10-19 |
++| N-45 | Yang Liu ほか 2025, LoViT: Long Video Transformer for surgical phase recognition | DOI 10.1016/j.media.2024.103366 | Medical Image Analysis 99:103366（照合。Crossref） | §8 | 照合 2026-10-19 |
++| N-46 | Huu Phong Nguyen ほか 2025, Efficient Frame Extraction: A Novel Approach Through Frame Similarity and Surgical Tool Tracking for Video Segmentation（N-10 の arXiv 版。IEEE Access 版とは題名が違う） | arXiv 2501.11153 | arXiv（照合の doi 欄は N-10 の DOI） | §2（N-10） | N1 L61、照合 2026-10-19 |
++
+ ---
+ 
+ ## 3. 予測と正解を入力として比べた値（E4 に近いもの。報告の記載）
+@@ -192,11 +216,11 @@ PhaKIR の動画本数を報告は「不明」とする。地図 C の C-12（Ph
+ 
+ | 文献 | 地図 C・B の記載 | N1 の記載 | 扱い |
+ |---|---|---|---|
+-| M2CAI 2016 tool presence の技術報告 | B-02: arXiv 1610.08851（2026-09-16 に照合済み） | arXiv 1610.08844（補助調査による） | 食い違い。照合で確かめる。地図 B は変えていない |
+-| EgoSurgery-HTS | B-14: プレプリント | Healthcare Technology Letters（PMC 収載） | 掲載先を照合で確かめる |
+-| LoViT | 地図に行なし（名前だけ） | DOI 10.1016/j.media.2024.103366、Medical Image Analysis | 照合の対象に足す |
+-| PhaKIR | C-12: arXiv 2507.16559（challenge の結果の論文） | arXiv 2511.06549（データセットの論文） | 別の論文。照合の対象に足す |
++| M2CAI 2016 の技術報告（術具の在否） | B-02: arXiv 1610.08851（2026-09-16 と 2026-10-19 に照合。術具の在否のチャレンジの論文） | arXiv 1610.08844（補助調査による） | 別の論文（2026-10-19 の照合）。1610.08844 は工程のチャレンジの論文で、N1 が術具の在否の技術報告として挙げたのは誤り。地図 B は正しい。書誌は N-43・N-44 |
++| EgoSurgery-HTS | B-14: プレプリント | Healthcare Technology Letters（PMC 収載） | 2026-10-19 の照合では arXiv に掲載先の記載が無く、確かめられていない（N-38） |
++| LoViT | 地図に行なし（名前だけ） | DOI 10.1016/j.media.2024.103366、Medical Image Analysis | 照合済み（2026-10-19、実在。N-45） |
++| PhaKIR | C-12: arXiv 2507.16559（challenge の結果の論文） | arXiv 2511.06549（データセットの論文） | 別の論文。照合済み（2026-10-19、どちらも実在。N-40・N-41） |
+ | Sahu ほか 2020 | C-18: 掲載先は R1 に記載なし | Current Directions in Biomedical Engineering 6(1) | C-18 に併記した |
+ | EndoNet | C-01: IEEE TMI | IEEE TMI 36(1):86–97, 2017 | 一致 |
+-| Cholec80-Boxes | 地図に行なし | DOI 10.3390/data10010007 | 照合の対象に足す |
+-| HeiChole | 地図に行なし（名前だけ） | arXiv 2109.14956 | 照合の対象に足す |
++| Cholec80-Boxes | 地図に行なし | DOI 10.3390/data10010007 | 照合済み（2026-10-19、実在。N-32） |
++| HeiChole | 地図に行なし（名前だけ） | arXiv 2109.14956 | 照合済み（2026-10-19、実在。N-42） |

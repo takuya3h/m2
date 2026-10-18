@@ -1,8 +1,8 @@
 # 証拠地図 B — 工程・行動・タスクの信号で検出器を条件付ける（P→D）
 
-**版:** v2（新様式で作り直した下書き。2026-10-18、起票者が作成）
+**版:** v2.1（下書き。2026-10-19、起票者が作成。v2〔2026-10-18。新様式で作り直した版〕に、2026-10-19 の書誌の照合の結果を書誌の欄だけ反映）
 **種類:** 探索の地図
-**状態:** B2 の行（B-12〜B-30）は書誌の機械照合が未実施。旧地図の行（B-01〜B-11）は 2026-09-16 に書誌を照合済み。数値の原典確認はどちらも §0.3 のとおり
+**状態:** v2 の書誌 ID を 2026-10-19 に機械照合した（ID 34 件、不在 0、到達不能 0、書誌に差 5〔題名の欄が略称・説明の行〕）。本版はその結果を書誌の欄に反映したもので、反映の確かめは次の照合で行う。旧地図の行（B-01〜B-11）は 2026-09-16 にも照合済み。数値の原典確認は §0.3 のとおり
 **元の報告:**
 - deep research の報告「B2」1 件（deep-research-report-B2.md、72,035 バイト、sha256 c7aad1c222d9159c1209a557f765e0400f85a3b6ccd8d92025683a2ce8102116）。探索エンジンは本書に記録が無い
 - 旧地図 B（docs/evidence/2026-09-16-B-p2d-interface.md、v1）の 11 行。v1 のファイルは置き換えずに repo に残し、冒頭に v1（旧様式）であることと本書（v2）が後継であることを明記する（利用者の決定 2026-10-18。書き込みは照合と配置の契約で行う）。旧地図の元は ChatGPT deep research 一エンジンの報告「B1」で、repo には無いが利用者が 2026-10-18 に添付した（B-chatgpt.md、38,349 バイト、sha256 ef94ea71aba1b5e81dea60ae0b55581dfdfda7cf290fe29d56dcb20b7bc33dd9）。B-01〜B-11 の arXiv ID 11 件と数値 88 件が B1 と一致する。B1 に無い数値 7 件（B-01 の 20・30 動画の値と差、B-03 の TS1・TS2）は、旧地図で利用者が原典から足した値と読める
@@ -28,12 +28,13 @@
 - 見つからなかったもの（§11）と未検証の組み合わせ（§12）は、その設計が新しい・価値があるという根拠として読まない。見つからない理由には、技術的な困難、価値が乏しいと見なされていること、偶然がありうる（利用者の指示 2026-10-18）
 - 出所の列（§2）は B2 の報告の行番号（L）か、旧地図の行（旧 B.1）
 - citation の印は除いた
+- 題名・著者・掲載先・書誌 ID の欄で「照合〔2026-10-19〕の値」と書いたものは、2026-10-19 の照合（docs/evidence/verification/ の本書の結果）で照合先が返した値で、報告の記載ではない。報告の記載は括弧の中に残した。行の中身（§3 以降の事実・数値）は変えていない
 
 ### 0.3 照合と原典確認の状態
 
 - B-01〜B-11: 2026-09-16 に Crossref と arXiv API で全 11 行が「実在・書誌一致」。数値の原典確認は、旧地図の印に「原典確認（利用者）」とある行（B-01、B-03、B-08、B-09）を §5 に写した
-- B-12〜B-30: 書誌の機械照合は未実施。数値の原典確認は未実施
-- B-18（CoTDet）は DOI も arXiv ID も報告が確定できていない。引用規約により、ID が確定するまで引用として使えない
+- B-01〜B-30: 2026-10-19 に書誌を機械照合した（docs/evidence/verification/ の本書の結果。不在 0）。差の出た B-02・B-03・B-06・B-10 は題名の欄が略称・説明だったもので、本版で題名を照合の値に改め、略称は括弧に残した。§5 の最後の列に行ごとの結果を書いた。数値の原典確認は未実施
+- B-18（CoTDet）は報告が ID を確定できなかった。起票者が 2026-10-19 に web 検索で arXiv 2309.01093 を特定した（arXiv の PDF と CVF の open access の頁が同じ題名）。報告には無い ID であり、照合で確かめるまで引用として使わない
 
 ---
 
@@ -66,15 +67,15 @@ B2 の報告は、この系統表から言える事実として「外部の信�
 | ID | 文献 | 書誌 ID | 掲載先 | 方向 | 読んだ範囲 | 出所 |
 |---|---|---|---|---|---|---|
 | B-01 | Twinanda ほか 2017, EndoNet | arXiv 1602.03012 | IEEE TMI | 旧地図に記載なし | 全文 | 旧 B.1 |
-| B-02 | Twinanda ほか 2016, M2CAI 技術報告 | arXiv 1610.08851（N1 は 1610.08844 と書く〔補助調査による〕。食い違い。地図 N §8） | M2CAI 技術報告 | 旧地図に記載なし | 全文 | 旧 B.1 |
-| B-03 | Jin, Li, Dou, Chen, Qin, Fu, Heng 2020, MTRCNet-CL | arXiv 1907.06099 | Medical Image Analysis | 旧地図に記載なし | 全文 | 旧 B.1 |
+| B-02 | Twinanda ほか 2016, Single- and Multi-Task Architectures for Tool Presence Detection Challenge at M2CAI 2016（M2CAI 技術報告。題名は照合〔2026-10-19〕の値） | arXiv 1610.08851 | M2CAI 技術報告。N1 は別の arXiv ID を挙げたが、照合（2026-10-19）でそれは M2CAI 2016 の工程のチャレンジの論文と分かった（別の文献。地図 N §8） | 旧地図に記載なし | 全文 | 旧 B.1 |
+| B-03 | Jin, Li, Dou, Chen, Qin, Fu, Heng 2020, Multi-Task Recurrent Convolutional Network with Correlation Loss for Surgical Video Analysis（MTRCNet-CL。題名は照合〔2026-10-19〕の値） | arXiv 1907.06099 | Medical Image Analysis | 旧地図に記載なし | 全文 | 旧 B.1 |
 | B-04 | Perez, Strub, de Vries, Dumoulin, Courville 2018, FiLM | arXiv 1709.07871 | AAAI 2018 | 旧地図に記載なし | 全文 | 旧 B.1 |
 | B-05 | Yang, Wang, Tang, Chen, Zhao, Torr 2022, LAVT | arXiv 2112.02244 | CVPR 2022 | 旧地図に記載なし | 全文 | 旧 B.1 |
-| B-06 | Lüddecke, Ecker 2022, CLIPSeg | arXiv 2112.10003 | CVPR 2022 | 旧地図に記載なし | 全文 | 旧 B.1 |
+| B-06 | Lüddecke, Ecker 2022, Image Segmentation Using Text and Image Prompts（CLIPSeg。題名は照合〔2026-10-19〕の値） | arXiv 2112.10003 | CVPR 2022 | 旧地図に記載なし | 全文 | 旧 B.1 |
 | B-07 | Kamath ほか 2021, MDETR | arXiv 2104.12763 | ICCV 2021 | 旧地図に記載なし | 要旨 | 旧 B.1 |
 | B-08 | Standley, Zamir, Chen, Guibas, Malik, Savarese 2020, Which Tasks Should Be Learned Together | arXiv 1905.07553 | ICML 2020 | 旧地図に記載なし | 全文 | 旧 B.1 |
 | B-09 | Beery, Wu, Rathod, Votel, Huang 2020, Context R-CNN | arXiv 1912.03538 | CVPR 2020 | 旧地図に記載なし | 全文 | 旧 B.1 |
-| B-10 | Wu, Chen, Wang, Zhang 2019, SELSA | arXiv 1907.06390 | ICCV 2019 | 旧地図に記載なし | 全文 | 旧 B.1 |
+| B-10 | Wu, Chen, Wang, Zhang 2019, Sequence Level Semantics Aggregation for Video Object Detection（SELSA。題名は照合〔2026-10-19〕の値） | arXiv 1907.06390 | ICCV 2019 | 旧地図に記載なし | 全文 | 旧 B.1 |
 | B-11 | Liu, Wang, Shan, Chen 2018, Structure Inference Net（SIN） | arXiv 1807.00119 | CVPR 2018 | 旧地図に記載なし | 要旨 | 旧 B.1 |
 | B-12 | Ryo Fujii, Hideo Saito, Hiroki Kajita 2024, EgoSurgery-Tool: A Dataset of Surgical Tool and Hand Detection from Egocentric Open Surgery Videos | arXiv 2406.03095 | arXiv プレプリント | 1 | 本文（データ統計、split、Tables 3–5、誤りの分析） | L29–L53 |
 | B-13 | Ryo Fujii, Masashi Hatano, Hideo Saito, Hiroki Kajita 2024, EgoSurgery-Phase（地図 C の C-02 と同じ論文） | arXiv 2405.19644 | MICCAI 2024（査読） | 1 | 本文 HTML と版の metadata | L55–L69 |
@@ -82,11 +83,11 @@ B2 の報告は、この系統表から言える事実として「外部の信�
 | B-15 | Bhuvan Sachdeva ほか 2025, Phase-Informed Tool Segmentation for Manual Small-Incision Cataract Surgery（ToolSeg） | DOI 10.1007/978-3-032-05114-1_43、arXiv 2411.16794 | MICCAI 2025（査読） | 2、7 | 本文、method、Tables 1・3・4・5 | L85–L107 |
 | B-16 | Johann Sawatzky, Yaser Souri, Christian Grund, Juergen Gall 2019, What Object Should I Use? – Task Driven Object Detection（COCO-Tasks） | arXiv 1904.03000 | CVPR 2019（査読） | 5 | 本文 | L109–L126 |
 | B-17 | Pengfei Li, Beiwen Tian, Yongliang Shi, Xiaoxue Chen, Hao Zhao, Guyue Zhou, Ya-Qin Zhang 2022, TOIST: Task Oriented Instance Segmentation Transformer with Noun-Pronoun Distillation | arXiv 2210.10775 | NeurIPS 2022（査読） | 5 | 本文 HTML を取得したが、数値を引ける表の位置まで再確認できず数値なし | L128–L140 |
-| B-18 | Jiajin Tang, Ge Zheng, Jingyi Yu, Sibei Yang 2023, CoTDet: Affordance Knowledge Prompting for Task Driven Object Detection | ID 不明（報告が確定できず） | ICCV 2023（査読） | 5 | 著者の公式 project page の method・main results | L142–L155 |
+| B-18 | Jiajin Tang, Ge Zheng, Jingyi Yu, Sibei Yang 2023, CoTDet: Affordance Knowledge Prompting for Task Driven Object Detection | arXiv 2309.01093（起票者が 2026-10-19 に web 検索で特定。報告は ID を確定できなかった） | ICCV 2023（査読） | 5 | 著者の公式 project page の method・main results | L142–L155 |
 | B-19 | Shilong Liu ほか 2024, Grounding DINO: Marrying DINO with Grounded Pre-Training for Open-Set Object Detection | arXiv 2303.05499 | ECCV 2024（査読） | 5 | 要旨・公式実装の説明が中心 | L157–L170 |
 | B-20 | Liunian Harold Li ほか 2022, Grounded Language-Image Pre-training（GLIP） | arXiv 2112.03857 | CVPR 2022（査読） | 5 | 要旨のみ | L172–L182 |
 | B-21 | Depu Meng ほか 2021, Conditional DETR for Fast Training Convergence | arXiv 2108.06152 | ICCV 2021（査読） | 5 | 要旨・既知の手法の定義。個別の一次ページを十分に展開できず数値は不記載 | L184–L193 |
-| B-22 | （著者は報告に記載なし）2024, ActionVOS: Actions as Prompts for Video Object Segmentation | arXiv 2407.07402、DOI 10.1007/978-3-031-72684-2_13 | ECCV 2024（査読） | 3 | 本文、データ構築、指標、Table 1 | L195–L212 |
+| B-22 | Liangyang Ouyang, Ruicong Liu, Yifei Huang, Ryosuke Furuta, Yoichi Sato 2024, ActionVOS: Actions as Prompts for Video Object Segmentation（著者は照合〔2026-10-19〕の値。報告に記載なし） | arXiv 2407.07402、DOI 10.1007/978-3-031-72684-2_13 | ECCV 2024（査読） | 3 | 本文、データ構築、指標、Table 1 | L195–L212 |
 | B-23 | Jinrong Yang, Songtao Liu, Zeming Li, Xiaoping Li, Jian Sun 2022, StreamYOLO: Real-time Object Detection for Streaming Perception（査読版の題名は Real-time Object Detection for Streaming Perception） | arXiv 2207.10433 | CVPR 2022（査読） | 4 | 要旨と、後続の LongShortNet の本文の比較 | L214–L226 |
 | B-24 | Chenyang Li ほか 2023, LongShortNet: Exploring Temporal and Semantic Features Fusion in Streaming Perception | arXiv 2210.15518 | ICASSP 2023（査読） | 4、7 | 本文、Tables 1・3–6 | L228–L246 |
 | B-25 | Jun-Yan He ほか 2023, DAMO-StreamNet: Optimizing Streaming Perception in Autonomous Driving | DOI 10.24963/ijcai.2023/90、arXiv 2303.17144 | IJCAI 2023（査読） | 4 | arXiv HTML の方法の概要・IJCAI の公式ページ | L248–L260 |
@@ -176,36 +177,36 @@ B2 の報告は、この系統表から言える事実として「外部の信�
 
 | ID | 何と何を比べた差か | その要素だけを変えた比較か | seed・分割・検定 | 著者以外の追試・採用 | 照合・原典確認（旧地図の行は旧地図の印を原文のまま） |
 |---|---|---|---|---|---|
-| B-01 | multi-task の EndoNet と single-task の ToolNet | 工程の補助損失だけを切り出した ablation ではない（旧地図） | 旧地図に記載なし | 旧地図に記載なし | 未照合。原典確認（利用者）。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1602.03012） |
-| B-02 | ToolNet と EndoNet | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1610.08851） |
-| B-03 | MTRCNet と MTRCNet-CL（Table 1）。写像の空間の比較（Table 2） | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。原典確認（利用者）。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1907.06099）。旧地図の注記: 数値は原典と一致（TS1 85.1、TS2 88.1 も） |
-| B-04 | FiLM ありとなし（Table 2） | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1709.07871） |
-| B-05 | 条件付けなし／PWAM のみ／全体（Table 2）、置く場所（Table 3） | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 2112.02244） |
-| B-06 | FiLM のありとなしの対は number not available。CLIP 事前学習のありとなし（Table 9） | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 2112.10003） |
-| B-07 | 条件のありとなしは number not available（課題そのものがテキストの条件付き） | 該当なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。要旨。片方。照合2026-09-16: 実在・書誌一致（arXiv 2104.12763） |
-| B-08 | タスクの組の転移（Table 2 Setting 1）、容量とデータ量（Table 5） | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。原典確認（利用者）。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1905.07553） |
-| B-09 | 文脈ありとなし（Table 1）、時間幅、集約の方式 | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。原典確認（利用者）。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1912.03538）。旧地図の注記: 数値は原典と一致 |
-| B-10 | 集約ありとなし | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1907.06390） |
-| B-11 | number not available（要旨） | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。要旨。片方。照合2026-09-16: 実在・書誌一致（arXiv 1807.00119） |
-| B-12 | 同じ公式 split・COCO 事前学習の複数の検出器（Table 4）。手の検出の初期化（Table 5） | モデル間の比較であり工程信号の効果ではない | 公式の単一 split。複数の seed・統計検定は本文で確認できず | 確証を得た独立追試は不明 | 未照合 |
-| B-13 | 検出の条件付けに関する値はなし | 該当なし | 依頼の 15 動画の交差検証とは別の設定 | 不明 | 未照合 |
-| B-14 | P→D 型の工程 → box 検出の比較はなし | 該当なし | 不明 | 不明 | 未照合 |
-| B-15 | Table 1 で同じ構造族の中で、工程なし／予測工程／正解工程／疑似ラベルの有無を分けて比較 | データ・fold・分割モデルの族が同じで、工程信号の質を変えた比較 | 動画単位の 5-fold 交差検証。seed 数と統計検定は確認できず。工程モデルは漏れを防ぐため、分割の評価集合とは独立な内部の 90 動画で学習。N1: 工程の予測器 MS-TCN++ は「processes the video at full temporal resolution」（§4.2）で causal かは不明、凍結したかの明示も不明。対照の v0 は条件付けの構造を持たず、界面を保ったまま入力を空にする対照ではない（地図 N の N-20） | 著者以外の十分な追試は確認できず | 未照合 |
-| B-16 | 同じ task 指向の問題で、分類／ranker／提案＋融合を比較し、さらに正解 box と Faster-RCNN の検出の入力条件を比較（表「Comparison to Baselines mAP@0.5」） | 提案の GGNN／融合と基準の構造が異なり、task の事前分布だけを変えた clean な ablation ではない | 表からは不明 | 後続の TOIST・CoTDet が同じ COCO-Tasks で比較 | 未照合 |
-| B-17 | 数値は報告に無い | 不明 | 不明 | 不明 | 未照合 |
-| B-18 | 著者ページは TOIST・GGNN と同じ task 駆動のベンチマークで比較 | 不明 | 不明 | 不明 | ID 不明のため照合できない |
-| B-19 | 依頼への直接の情報なし | 該当なし | 依頼への直接の情報なし | 不明 | 未照合 |
-| B-20 | 依頼に対応する clean な ablation なし | 該当なし | 不明 | 不明 | 未照合 |
-| B-21 | 数値不記載 | 該当なし | 不明 | 不明 | 未照合 |
-| B-22 | Table 1 で同じ ActionVOS の学習の設定について、行動 prompt のありとなし | 同じ backbone の族で prompt を入れるかだけの比較 | 元の split を使用。複数 seed・統計検定は確認できず | 独立追試を十分に確認できず | 未照合 |
-| B-23 | LongShortNet の Table 1 での比較 | 外部の工程信号ではなく時間特徴の差 | 不明 | 後続の LongShortNet・DAMO-StreamNet が比較 | 未照合 |
-| B-24 | Table 5 は同じモデルで時間の範囲（N、δt）だけを変更。現在のみ（N=0）と過去フレームを加えた条件を直接比較。Table 6 は融合の位置と重み付け | Table 5 は clean な比較 | 同じ固定の train／val split。複数 seed・検定は確認できず | 不明 | 未照合 |
-| B-25 | 外部の意味信号は使わない | 該当なし | 不明 | 不明 | 未照合 |
-| B-26 | 文脈を使った場合の改善の上限の分析 | 該当なし（分析） | 不明 | 不明 | 未照合 |
-| B-27 | 典型的な文脈が無いときの汎化（問題設定そのもの） | 不明 | 4 データセット | B-28 が独立に再現 | 未照合 |
-| B-28 | 元論文の全 12 表の再現と追加の ablation | 該当なし（再現） | 不明 | 著者以外の追試そのもの | 未照合 |
-| B-29 | 要旨のみ。数値の記載なし | 不明 | 不明 | 不明 | 未照合 |
-| B-30 | 小標本の交差検証の推定値のばらつき | 該当なし | 該当なし | 不明 | 未照合 |
+| B-01 | multi-task の EndoNet と single-task の ToolNet | 工程の補助損失だけを切り出した ablation ではない（旧地図） | 旧地図に記載なし | 旧地図に記載なし | 未照合。原典確認（利用者）。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1602.03012）。照合2026-10-19: arXiv 1602.03012 実在・書誌一致 |
+| B-02 | ToolNet と EndoNet | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1610.08851）。照合2026-10-19: arXiv 1610.08851 実在・書誌に差（題名の欄が略称・説明だったため。本版で題名を改めた） |
+| B-03 | MTRCNet と MTRCNet-CL（Table 1）。写像の空間の比較（Table 2） | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。原典確認（利用者）。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1907.06099）。旧地図の注記: 数値は原典と一致（TS1 85.1、TS2 88.1 も）。照合2026-10-19: arXiv 1907.06099 実在・書誌に差（題名の欄が略称・説明だったため。本版で題名を改めた） |
+| B-04 | FiLM ありとなし（Table 2） | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1709.07871）。照合2026-10-19: arXiv 1709.07871 実在・書誌一致 |
+| B-05 | 条件付けなし／PWAM のみ／全体（Table 2）、置く場所（Table 3） | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 2112.02244）。照合2026-10-19: arXiv 2112.02244 実在・書誌一致 |
+| B-06 | FiLM のありとなしの対は number not available。CLIP 事前学習のありとなし（Table 9） | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 2112.10003）。照合2026-10-19: arXiv 2112.10003 実在・書誌に差（題名の欄が略称・説明だったため。本版で題名を改めた） |
+| B-07 | 条件のありとなしは number not available（課題そのものがテキストの条件付き） | 該当なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。要旨。片方。照合2026-09-16: 実在・書誌一致（arXiv 2104.12763）。照合2026-10-19: arXiv 2104.12763 実在・書誌一致 |
+| B-08 | タスクの組の転移（Table 2 Setting 1）、容量とデータ量（Table 5） | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。原典確認（利用者）。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1905.07553）。照合2026-10-19: arXiv 1905.07553 実在・書誌一致 |
+| B-09 | 文脈ありとなし（Table 1）、時間幅、集約の方式 | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。原典確認（利用者）。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1912.03538）。旧地図の注記: 数値は原典と一致。照合2026-10-19: arXiv 1912.03538 実在・書誌一致 |
+| B-10 | 集約ありとなし | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。全文。片方。照合2026-09-16: 実在・書誌一致（arXiv 1907.06390）。照合2026-10-19: arXiv 1907.06390 実在・書誌に差（題名の欄が略称・説明だったため。本版で題名を改めた） |
+| B-11 | number not available（要旨） | 旧地図に記載なし | 旧地図に記載なし | 旧地図に記載なし | 未照合。要旨。片方。照合2026-09-16: 実在・書誌一致（arXiv 1807.00119）。照合2026-10-19: arXiv 1807.00119 実在・書誌一致 |
+| B-12 | 同じ公式 split・COCO 事前学習の複数の検出器（Table 4）。手の検出の初期化（Table 5） | モデル間の比較であり工程信号の効果ではない | 公式の単一 split。複数の seed・統計検定は本文で確認できず | 確証を得た独立追試は不明 | 照合2026-10-19: arXiv 2406.03095 実在・書誌一致 |
+| B-13 | 検出の条件付けに関する値はなし | 該当なし | 依頼の 15 動画の交差検証とは別の設定 | 不明 | 照合2026-10-19: arXiv 2405.19644 実在・書誌一致 |
+| B-14 | P→D 型の工程 → box 検出の比較はなし | 該当なし | 不明 | 不明 | 照合2026-10-19: arXiv 2503.18755 実在・書誌一致 |
+| B-15 | Table 1 で同じ構造族の中で、工程なし／予測工程／正解工程／疑似ラベルの有無を分けて比較 | データ・fold・分割モデルの族が同じで、工程信号の質を変えた比較 | 動画単位の 5-fold 交差検証。seed 数と統計検定は確認できず。工程モデルは漏れを防ぐため、分割の評価集合とは独立な内部の 90 動画で学習。N1: 工程の予測器 MS-TCN++ は「processes the video at full temporal resolution」（§4.2）で causal かは不明、凍結したかの明示も不明。対照の v0 は条件付けの構造を持たず、界面を保ったまま入力を空にする対照ではない（地図 N の N-20） | 著者以外の十分な追試は確認できず | 照合2026-10-19: DOI 10.1007/978-3-032-05114-1_43 実在・書誌一致、arXiv 2411.16794 実在・書誌一致 |
+| B-16 | 同じ task 指向の問題で、分類／ranker／提案＋融合を比較し、さらに正解 box と Faster-RCNN の検出の入力条件を比較（表「Comparison to Baselines mAP@0.5」） | 提案の GGNN／融合と基準の構造が異なり、task の事前分布だけを変えた clean な ablation ではない | 表からは不明 | 後続の TOIST・CoTDet が同じ COCO-Tasks で比較 | 照合2026-10-19: arXiv 1904.03000 実在・書誌一致 |
+| B-17 | 数値は報告に無い | 不明 | 不明 | 不明 | 照合2026-10-19: arXiv 2210.10775 実在・書誌一致 |
+| B-18 | 著者ページは TOIST・GGNN と同じ task 駆動のベンチマークで比較 | 不明 | 不明 | 不明 | 2026-10-19 の照合の時点では ID なし（報告は ID を確定できなかった）。起票者が特定した ID は次の照合で確かめる |
+| B-19 | 依頼への直接の情報なし | 該当なし | 依頼への直接の情報なし | 不明 | 照合2026-10-19: arXiv 2303.05499 実在・書誌一致 |
+| B-20 | 依頼に対応する clean な ablation なし | 該当なし | 不明 | 不明 | 照合2026-10-19: arXiv 2112.03857 実在・書誌一致 |
+| B-21 | 数値不記載 | 該当なし | 不明 | 不明 | 照合2026-10-19: arXiv 2108.06152 実在・書誌一致 |
+| B-22 | Table 1 で同じ ActionVOS の学習の設定について、行動 prompt のありとなし | 同じ backbone の族で prompt を入れるかだけの比較 | 元の split を使用。複数 seed・統計検定は確認できず | 独立追試を十分に確認できず | 照合2026-10-19: arXiv 2407.07402 実在・書誌一致、DOI 10.1007/978-3-031-72684-2_13 実在・書誌一致 |
+| B-23 | LongShortNet の Table 1 での比較 | 外部の工程信号ではなく時間特徴の差 | 不明 | 後続の LongShortNet・DAMO-StreamNet が比較 | 照合2026-10-19: arXiv 2207.10433 実在・書誌一致 |
+| B-24 | Table 5 は同じモデルで時間の範囲（N、δt）だけを変更。現在のみ（N=0）と過去フレームを加えた条件を直接比較。Table 6 は融合の位置と重み付け | Table 5 は clean な比較 | 同じ固定の train／val split。複数 seed・検定は確認できず | 不明 | 照合2026-10-19: arXiv 2210.15518 実在・書誌一致 |
+| B-25 | 外部の意味信号は使わない | 該当なし | 不明 | 不明 | 照合2026-10-19: DOI 10.24963/ijcai.2023/90 実在・書誌一致、arXiv 2303.17144 実在・書誌一致 |
+| B-26 | 文脈を使った場合の改善の上限の分析 | 該当なし（分析） | 不明 | 不明 | 照合2026-10-19: arXiv 1711.05471 実在・書誌一致 |
+| B-27 | 典型的な文脈が無いときの汎化（問題設定そのもの） | 不明 | 4 データセット | B-28 が独立に再現 | 照合2026-10-19: arXiv 2001.03152 実在・書誌一致 |
+| B-28 | 元論文の全 12 表の再現と追加の ablation | 該当なし（再現） | 不明 | 著者以外の追試そのもの | 照合2026-10-19: arXiv 2104.13582 実在・書誌一致 |
+| B-29 | 要旨のみ。数値の記載なし | 不明 | 不明 | 不明 | 照合2026-10-19: arXiv 2602.06474 実在・書誌一致 |
+| B-30 | 小標本の交差検証の推定値のばらつき | 該当なし | 該当なし | 不明 | 照合2026-10-19: DOI 10.1016/j.neuroimage.2017.06.061 実在・書誌一致、arXiv 1706.07581 実在・書誌一致 |
 
 ---
 

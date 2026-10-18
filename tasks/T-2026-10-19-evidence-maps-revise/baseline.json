@@ -1,0 +1,5686 @@
+{
+  "files": {
+    "docs/evidence/2026-10-18-B-p2d-interface.md": {
+      "bytes": 65725,
+      "sha256": "1ab24a3cbfaba4f7b654c8fcd12a9deb9f9556c337b95392d10897011ee9ccca"
+    },
+    "docs/evidence/2026-10-18-C-d2p-interface.md": {
+      "bytes": 71540,
+      "sha256": "05a982ef4c8a9372a3855414393714c15cbb2cebabbbc6a07855eef22a5dc563"
+    },
+    "docs/evidence/2026-10-18-N-novelty.md": {
+      "bytes": 31607,
+      "sha256": "9bb804b2eacdaac8842e2fc952d70479e747c9657186909ea9740b9e0413e6c8"
+    },
+    "docs/evidence/reports/B-chatgpt.md": {
+      "bytes": 38349,
+      "sha256": "ef94ea71aba1b5e81dea60ae0b55581dfdfda7cf290fe29d56dcb20b7bc33dd9"
+    },
+    "docs/evidence/reports/N1-novelty-search-result.md": {
+      "bytes": 37524,
+      "sha256": "9e1dc1b7f9ad99faff469fa7aa001bfc586d98876677c52c2c1c1dcd83cfa3cd"
+    },
+    "docs/evidence/reports/R1-deep-research-report.md": {
+      "bytes": 40202,
+      "sha256": "1f95517bf4ce63015d9574ee7e3616859021882a7014feb4f261d76d9c49dce5"
+    },
+    "docs/evidence/reports/deep-research-report-B2.md": {
+      "bytes": 72035,
+      "sha256": "c7aad1c222d9159c1209a557f765e0400f85a3b6ccd8d92025683a2ce8102116"
+    },
+    "docs/evidence/reports/deep-research-report-C2.md": {
+      "bytes": 72966,
+      "sha256": "5d3c3ed514551cf11d1b75dcc8b6542b7fb5efefeedb91956a5d561284c141fd"
+    },
+    "docs/evidence/2026-09-16-A-phase-tower-candidates.md": {
+      "bytes": 14167,
+      "sha256": "9f723e4b17825b0854930b9a31c92fbf26cb298c20c0d4f133ff8883dfacddf0"
+    },
+    "docs/evidence/2026-09-16-B-p2d-interface.md": {
+      "bytes": 12174,
+      "sha256": "5aab3910cd8e4c04f77f795b8fc3d3930f0751e2a810da541568b53f6bbbad2d"
+    },
+    "docs/evidence/README.md": {
+      "bytes": 9552,
+      "sha256": "35a8922aa6f161bf383fe2eb443cef5aec20318312ddf8b52519c0ddedcdf11c"
+    },
+    "docs/evidence/_template.md": {
+      "bytes": 4474,
+      "sha256": "69e95ea37106fac90b463eabde7879cfc60df1575ffabdd10223f1c9f5b61376"
+    },
+    "tasks/T-2026-10-19-evidence-maps-revise/SPEC.md": {
+      "bytes": 19772,
+      "sha256": "fd8b3dbea0d7546892405316f6ac53e0b4456c92fc2b876ca2008fd93502ea22"
+    }
+  },
+  "before": {
+    "2026-10-18-N-novelty": {
+      "tool": "tools/verify_evidence_ids.py",
+      "map": "docs/evidence/2026-10-18-N-novelty.md",
+      "map_sha256": "9bb804b2eacdaac8842e2fc952d70479e747c9657186909ea9740b9e0413e6c8",
+      "checked_at": "2026-10-19T02:40:19+09:00",
+      "command": "python tools/verify_evidence_ids.py docs/evidence/2026-10-18-N-novelty.md",
+      "user_agent": "egosurgery-evidence-verify/1.0",
+      "endpoints": {
+        "doi": "https://doi.org",
+        "crossref": "https://api.crossref.org",
+        "datacite": "https://api.datacite.org",
+        "arxiv": "https://export.arxiv.org"
+      },
+      "total_ids": 36,
+      "by_kind": {
+        "doi": 7,
+        "arxiv": 29
+      },
+      "counts": {
+        "実在・書誌一致": 16,
+        "実在・書誌に差": 2,
+        "実在・照合不能": 18,
+        "不在": 0,
+        "到達不能": 0
+      },
+      "rows_without_id": [
+        "N-15"
+      ],
+      "results": [
+        {
+          "kind": "doi",
+          "id": "10.5281/zenodo.20086606",
+          "lines": [
+            55
+          ],
+          "registry": "DataCite",
+          "reference": {
+            "title": "Automated Surgical Phase Recognition In Microvascular Reconstruction Using Artificial Intelligence",
+            "authors": [
+              "Berk Ozmen",
+              "Georgia Babb",
+              "Malena Allbright",
+              "Chinenye Ogbonnah",
+              "Nathan Honn",
+              "Graham Schwarz"
+            ],
+            "year": "2026",
+            "venue": "Zenodo",
+            "extra": {
+              "publisher": "Zenodo",
+              "resource_type": "ConferencePaper",
+              "url": "https://zenodo.org/doi/10.5281/zenodo.20086606",
+              "related_identifiers": [
+                "IsVersionOf DOI 10.5281/zenodo.20086605"
+              ]
+            }
+          },
+          "map_row": {
+            "row_id": "N-01",
+            "line": 55,
+            "literature": "Graham Schwarz 2026, Automated Surgical Phase Recognition In Microvascular Reconstruction Using Artificial Intelligence（PSRC 2026 の学会抄録）",
+            "venue": "Zenodo（抄録）",
+            "id_text": "報告は DOI 10.5281/zenodo.20086606 を挙げるが、表示された Zenodo record 20101483 との対応は未確認"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Automated Surgical Phase Recognition In Microvascular Reconstruction Using Artificial Intelligence"
+          },
+          "authors": {
+            "result": "差",
+            "detail": "地図 1 名・照合先 6 名。地図に無い照合先の著者: Berk Ozmen, Georgia Babb, Malena Allbright, Chinenye Ogbonnah, Nathan Honn",
+            "map": [
+              "Graham Schwarz"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": "Zenodo",
+            "map": "Zenodo（抄録）"
+          },
+          "note": "",
+          "class": "実在・書誌に差"
+        },
+        {
+          "kind": "arxiv",
+          "id": "1804.08328",
+          "lines": [
+            56,
+            112
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Taskonomy: Disentangling Task Transfer Learning",
+            "authors": [
+              "Amir Zamir",
+              "Alexander Sax",
+              "William Shen",
+              "Leonidas Guibas",
+              "Jitendra Malik",
+              "Silvio Savarese"
+            ],
+            "year": "2018",
+            "venue": null,
+            "extra": {
+              "comment": "CVPR 2018 (Oral). See project website and live demos at http://taskonomy.vision/"
+            }
+          },
+          "map_row": {
+            "row_id": "N-02",
+            "line": 56,
+            "literature": "Zamir ほか 2018, Taskonomy: Disentangling Task Transfer Learning",
+            "venue": "CVPR 2018",
+            "id_text": "arXiv 1804.08328"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Taskonomy: Disentangling Task Transfer Learning"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Zamir"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "CVPR 2018"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2106.07682",
+          "lines": [
+            57,
+            106
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Revisiting Model Stitching to Compare Neural Representations",
+            "authors": [
+              "Yamini Bansal",
+              "Preetum Nakkiran",
+              "Boaz Barak"
+            ],
+            "year": "2021",
+            "venue": null,
+            "extra": {}
+          },
+          "map_row": {
+            "row_id": "N-03",
+            "line": 57,
+            "literature": "Bansal ほか 2021, Revisiting Model Stitching to Compare Neural Representations",
+            "venue": "NeurIPS 2021",
+            "id_text": "arXiv 2106.07682"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Revisiting Model Stitching to Compare Neural Representations"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Bansal"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "NeurIPS 2021"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2603.12433",
+          "lines": [
+            58,
+            104
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Revisiting Model Stitching In the Foundation Model Era",
+            "authors": [
+              "Zheda Mai",
+              "Ke Zhang",
+              "Fu-En Wang",
+              "Zixiao Ken Wang",
+              "Albert Y. C. Chen",
+              "Lu Xia",
+              "Min Sun",
+              "Wei-Lun Chao",
+              "Cheng-Hao Kuo"
+            ],
+            "year": "2026",
+            "venue": null,
+            "extra": {
+              "comment": "Accepted by CVPR 2026"
+            }
+          },
+          "map_row": {
+            "row_id": "N-04",
+            "line": 58,
+            "literature": "Mai, Zhang, Wang, Wang, Chen, Xia, Sun, Chao, Kuo 2026, Revisiting Model Stitching in the Foundation Model Era",
+            "venue": "arXiv",
+            "id_text": "arXiv 2603.12433"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Revisiting Model Stitching in the Foundation Model Era"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 9 名",
+            "map": [
+              "Mai",
+              "Zhang",
+              "Wang",
+              "Wang",
+              "Chen",
+              "Xia",
+              "Sun",
+              "Chao",
+              "Kuo"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "arXiv"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2006.04096",
+          "lines": [
+            59
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Robust Learning Through Cross-Task Consistency",
+            "authors": [
+              "Amir Zamir",
+              "Alexander Sax",
+              "Teresa Yeo",
+              "Oğuzhan Kar",
+              "Nikhil Cheerla",
+              "Rohan Suri",
+              "Zhangjie Cao",
+              "Jitendra Malik",
+              "Leonidas Guibas"
+            ],
+            "year": "2020",
+            "venue": null,
+            "extra": {
+              "comment": "CVPR 2020 (Oral). Project website, models, live demo at http://consistency.epfl.ch/"
+            }
+          },
+          "map_row": {
+            "row_id": "N-05",
+            "line": 59,
+            "literature": "Zamir ほか 2020, Robust Learning Through Cross-Task Consistency",
+            "venue": "CVPR 2020",
+            "id_text": "arXiv 2006.04096、DOI 10.1109/cvpr42600.2020.01121"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Robust Learning Through Cross-Task Consistency"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Zamir"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "CVPR 2020"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "doi",
+          "id": "10.1109/cvpr42600.2020.01121",
+          "lines": [
+            59
+          ],
+          "registry": "Crossref",
+          "reference": {
+            "title": "Robust Learning Through Cross-Task Consistency",
+            "authors": [
+              "Amir R. Zamir",
+              "Alexander Sax",
+              "Nikhil Cheerla",
+              "Rohan Suri",
+              "Zhangjie Cao",
+              "Jitendra Malik",
+              "Leonidas J. Guibas"
+            ],
+            "year": "2020",
+            "venue": "2020 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)",
+            "extra": {
+              "type": "proceedings-article",
+              "publisher": "IEEE",
+              "page": "11194-11203"
+            }
+          },
+          "map_row": {
+            "row_id": "N-05",
+            "line": 59,
+            "literature": "Zamir ほか 2020, Robust Learning Through Cross-Task Consistency",
+            "venue": "CVPR 2020",
+            "id_text": "arXiv 2006.04096、DOI 10.1109/cvpr42600.2020.01121"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Robust Learning Through Cross-Task Consistency"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Zamir"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": "2020 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)",
+            "map": "CVPR 2020"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "1805.04409",
+          "lines": [
+            60
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "PAD-Net: Multi-Tasks Guided Prediction-and-Distillation Network for Simultaneous Depth Estimation and Scene Parsing",
+            "authors": [
+              "Dan Xu",
+              "Wanli Ouyang",
+              "Xiaogang Wang",
+              "Nicu Sebe"
+            ],
+            "year": "2018",
+            "venue": null,
+            "extra": {
+              "comment": "Accepted at CVPR 2018"
+            }
+          },
+          "map_row": {
+            "row_id": "N-06",
+            "line": 60,
+            "literature": "Xu ほか 2018, PAD-Net",
+            "venue": "CVPR 2018",
+            "id_text": "arXiv 1805.04409"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "部分（地図の題名が照合先の題名の一部）",
+            "map": "PAD-Net"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Xu"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "CVPR 2018"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2001.06902",
+          "lines": [
+            61,
+            111
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "MTI-Net: Multi-Scale Task Interaction Networks for Multi-Task Learning",
+            "authors": [
+              "Simon Vandenhende",
+              "Stamatios Georgoulis",
+              "Luc Van Gool"
+            ],
+            "year": "2020",
+            "venue": null,
+            "extra": {
+              "comment": "Accepted at ECCV2020 (spotlight) - Code: https://github.com/SimonVandenhende/Multi-Task-Learning-PyTorch"
+            }
+          },
+          "map_row": {
+            "row_id": "N-07",
+            "line": 61,
+            "literature": "Vandenhende ほか 2020, MTI-Net",
+            "venue": "ECCV 2020",
+            "id_text": "arXiv 2001.06902"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "部分（地図の題名が照合先の題名の一部）",
+            "map": "MTI-Net"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Vandenhende"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "ECCV 2020"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2406.01079",
+          "lines": [
+            62
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Object Aware Egocentric Online Action Detection",
+            "authors": [
+              "Joungbin An",
+              "Yunsu Park",
+              "Hyolim Kang",
+              "Seon Joo Kim"
+            ],
+            "year": "2024",
+            "venue": null,
+            "extra": {
+              "comment": "CVPR First Joint Egocentric Vision Workshop 2024"
+            }
+          },
+          "map_row": {
+            "row_id": "N-08",
+            "line": 62,
+            "literature": "An ほか 2024, Object Aware Egocentric Online Action Detection",
+            "venue": "arXiv（報告は CVPR workshop と推測、未確認）",
+            "id_text": "arXiv 2406.01079"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Object Aware Egocentric Online Action Detection"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "An"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "arXiv（報告は CVPR workshop と推測、未確認）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2307.07483",
+          "lines": [
+            63
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Multimodal Distillation for Egocentric Action Recognition",
+            "authors": [
+              "Gorjan Radevski",
+              "Dusan Grujicic",
+              "Marie-Francine Moens",
+              "Matthew Blaschko",
+              "Tinne Tuytelaars"
+            ],
+            "year": "2023",
+            "venue": null,
+            "extra": {
+              "comment": "Accepted at ICCV 2023; Codebase released at https://github.com/gorjanradevski/multimodal-distillation"
+            }
+          },
+          "map_row": {
+            "row_id": "N-09",
+            "line": 63,
+            "literature": "Radevski ほか 2023, Multimodal Distillation for Egocentric Action Recognition",
+            "venue": "報告は ICCV 2023（未確認）",
+            "id_text": "arXiv 2307.07483"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Multimodal Distillation for Egocentric Action Recognition"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Radevski"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "報告は ICCV 2023（未確認）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2501.11153",
+          "lines": [
+            64
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Efficient Frame Extraction: A Novel Approach Through Frame Similarity and Surgical Tool Tracking for Video Segmentation",
+            "authors": [
+              "Huu Phong Nguyen",
+              "Shekhar Madhav Khairnar",
+              "Sofia Garces Palacios",
+              "Amr Al-Abbas",
+              "Melissa E. Hogg",
+              "Amer H. Zureikat",
+              "Patricio M. Polanco",
+              "Herbert Zeh",
+              "Ganesh Sankaranarayanan"
+            ],
+            "year": "2025",
+            "venue": null,
+            "extra": {
+              "comment": "18",
+              "doi": "10.1109/ACCESS.2025.3573264"
+            }
+          },
+          "map_row": {
+            "row_id": "N-10",
+            "line": 64,
+            "literature": "Nguyen ほか 2025, KAFR（YOLOv8 で術具を検出・追跡し、フレーム選択に使う）",
+            "venue": "IEEE Access 13",
+            "id_text": "arXiv 2501.11153（報告によれば IEEE Access 版 DOI 10.1109/ACCESS.2025.3573264。補助調査による）"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "差",
+            "detail": "題名が一致しない",
+            "map": "KAFR"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Nguyen"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "IEEE Access 13"
+          },
+          "note": "",
+          "class": "実在・書誌に差"
+        },
+        {
+          "kind": "doi",
+          "id": "10.1109/ACCESS.2025.3573264",
+          "lines": [
+            64
+          ],
+          "registry": "Crossref",
+          "reference": {
+            "title": "Kinematic Adaptive Frame Recognition (KAFR): A Novel Framework for Video Segmentation via Frame Similarity and Surgical Tool Tracking",
+            "authors": [
+              "Huu Phong Nguyen",
+              "Shekhar Madhav Khairnar",
+              "Sofia Garces Palacios",
+              "Amr Al-Abbas",
+              "Melissa E. Hogg",
+              "Amer H. Zureikat",
+              "Patricio M. Polanco",
+              "Herbert J. Zeh",
+              "Ganesh Sankaranarayanan"
+            ],
+            "year": "2025",
+            "venue": "IEEE Access",
+            "extra": {
+              "type": "journal-article",
+              "publisher": "Institute of Electrical and Electronics Engineers (IEEE)",
+              "volume": "13",
+              "page": "101681-101697"
+            }
+          },
+          "map_row": {
+            "row_id": "N-10",
+            "line": 64,
+            "literature": "Nguyen ほか 2025, KAFR（YOLOv8 で術具を検出・追跡し、フレーム選択に使う）",
+            "venue": "IEEE Access 13",
+            "id_text": "arXiv 2501.11153（報告によれば IEEE Access 版 DOI 10.1109/ACCESS.2025.3573264。補助調査による）"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "部分（地図の題名が照合先の題名の一部）",
+            "map": "KAFR"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Nguyen"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": "IEEE Access",
+            "map": "IEEE Access 13"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2401.11174",
+          "lines": [
+            65,
+            135
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Pixel-Wise Recognition for Holistic Surgical Scene Understanding",
+            "authors": [
+              "Nicolás Ayobi",
+              "Santiago Rodríguez",
+              "Alejandra Pérez",
+              "Isabela Hernández",
+              "Nicolás Aparicio",
+              "Eugénie Dessevres",
+              "Sebastián Peña",
+              "Jessica Santander",
+              "Juan Ignacio Caicedo",
+              "Nicolás Fernández",
+              "Pablo Arbeláez"
+            ],
+            "year": "2024",
+            "venue": null,
+            "extra": {
+              "comment": "Preprint submitted to Medical Image Analysis. Official extension of previous MICCAI 2022 (https://link.springer.com/chapter/10.1007/978-3-031-16449-1_42) and ISBI 2023 (https://ieeexplore.ieee.org/document/10230819) orals. Data and codes are available at https://github.com/BCV-Uniandes/GraSP"
+            }
+          },
+          "map_row": {
+            "row_id": "N-11",
+            "line": 65,
+            "literature": "Ayobi ほか 2024／2025, Pixel-Wise Recognition for Holistic Surgical Scene Understanding（GraSP、TAPIS）",
+            "venue": "Medical Image Analysis",
+            "id_text": "arXiv 2401.11174"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Pixel-Wise Recognition for Holistic Surgical Scene Understanding"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Ayobi"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "Medical Image Analysis"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2003.10751",
+          "lines": [
+            66,
+            118,
+            161
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "TeCNO: Surgical Phase Recognition with Multi-Stage Temporal Convolutional Networks",
+            "authors": [
+              "Tobias Czempiel",
+              "Magdalini Paschali",
+              "Matthias Keicher",
+              "Walter Simson",
+              "Hubertus Feussner",
+              "Seong Tae Kim",
+              "Nassir Navab"
+            ],
+            "year": "2020",
+            "venue": null,
+            "extra": {
+              "comment": "10 pages, 2 figures",
+              "doi": "10.1007/978-3-030-59716-0_33"
+            }
+          },
+          "map_row": {
+            "row_id": "N-12",
+            "line": 66,
+            "literature": "Czempiel ほか 2020, TeCNO",
+            "venue": "MICCAI 2020",
+            "id_text": "arXiv 2003.10751"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "部分（地図の題名が照合先の題名の一部）",
+            "map": "TeCNO"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Czempiel"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "MICCAI 2020"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "doi",
+          "id": "10.1016/j.media.2010.10.001",
+          "lines": [
+            67
+          ],
+          "registry": "Crossref",
+          "reference": {
+            "title": "Statistical modeling and recognition of surgical workflow",
+            "authors": [
+              "Nicolas Padoy",
+              "Tobias Blum",
+              "Seyed-Ahmad Ahmadi",
+              "Hubertus Feussner",
+              "Marie-Odile Berger",
+              "Nassir Navab"
+            ],
+            "year": "2012",
+            "venue": "Medical Image Analysis",
+            "extra": {
+              "type": "journal-article",
+              "publisher": "Elsevier BV",
+              "volume": "16",
+              "issue": "3",
+              "page": "632-641"
+            }
+          },
+          "map_row": {
+            "row_id": "N-13",
+            "line": 67,
+            "literature": "Padoy ほか 2012, Statistical modeling and recognition of surgical workflow",
+            "venue": "Medical Image Analysis 16(3)",
+            "id_text": "DOI 10.1016/j.media.2010.10.001"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Statistical modeling and recognition of surgical workflow"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Padoy"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": "Medical Image Analysis",
+            "map": "Medical Image Analysis 16(3)"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "1904.01665",
+          "lines": [
+            68
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Activity Driven Weakly Supervised Object Detection",
+            "authors": [
+              "Zhenheng Yang",
+              "Dhruv Mahajan",
+              "Deepti Ghadiyaram",
+              "Ram Nevatia",
+              "Vignesh Ramanathan"
+            ],
+            "year": "2019",
+            "venue": null,
+            "extra": {
+              "comment": "CVPR'19 camera ready"
+            }
+          },
+          "map_row": {
+            "row_id": "N-14",
+            "line": 68,
+            "literature": "Yang ほか 2019, Activity Driven Weakly Supervised Object Detection",
+            "venue": "CVPR 2019",
+            "id_text": "arXiv 1904.01665"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Activity Driven Weakly Supervised Object Detection"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Yang"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "CVPR 2019"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2606.26634",
+          "lines": [
+            70,
+            101,
+            117
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Temporally Consistent Label Interpolation for Robust Surgical Multi-Task Learning under Challenging Conditions",
+            "authors": [
+              "Garam Kim",
+              "Juyoun Park"
+            ],
+            "year": "2026",
+            "venue": null,
+            "extra": {
+              "comment": "17pages, 16figures"
+            }
+          },
+          "map_row": {
+            "row_id": "N-16",
+            "line": 70,
+            "literature": "Garam Kim, Juyoun Park 2026, Temporally Consistent Label Interpolation for Robust Surgical Multi-Task Learning under Challenging Conditions（FAROS）",
+            "venue": "arXiv",
+            "id_text": "arXiv 2606.26634"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Temporally Consistent Label Interpolation for Robust Surgical Multi-Task Learning under Challenging Conditions"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 2 名",
+            "map": [
+              "Garam Kim",
+              "Juyoun Park"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "arXiv"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2606.29102",
+          "lines": [
+            71,
+            116
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "BTI-Net: Bidirectional Decoder-Level Task Interaction via Uncertainty-Aware Gating for Multi-Task Medical Image Analysis",
+            "authors": [
+              "Abdullah Al Shafi",
+              "Md Kawsar Mahmud Khan Zunayed",
+              "Safin Ahmmed",
+              "Sk Imran Hossain",
+              "Engelbert Mephu Nguifo"
+            ],
+            "year": "2026",
+            "venue": null,
+            "extra": {
+              "comment": "9 pages, 5 figures, 6 tables; supplementary material included (8 pages, 19 figures, 18 tables)"
+            }
+          },
+          "map_row": {
+            "row_id": "N-17",
+            "line": 71,
+            "literature": "Al Shafi, Zunayed, Ahmmed, Hossain, Mephu Nguifo 2026, BTI-Net: Bidirectional Decoder-Level Task Interaction via Uncertainty-Aware Gating for Multi-Task Medical Image Analysis",
+            "venue": "arXiv",
+            "id_text": "arXiv 2606.29102"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "BTI-Net: Bidirectional Decoder-Level Task Interaction via Uncertainty-Aware Gating for Multi-Task Medical Image Analysis"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 5 名",
+            "map": [
+              "Al Shafi",
+              "Zunayed",
+              "Ahmmed",
+              "Hossain",
+              "Mephu Nguifo"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "arXiv"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "1708.00666",
+          "lines": [
+            72
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Temporal Dynamic Graph LSTM for Action-driven Video Object Detection",
+            "authors": [
+              "Yuan Yuan",
+              "Xiaodan Liang",
+              "Xiaolong Wang",
+              "Dit-Yan Yeung",
+              "Abhinav Gupta"
+            ],
+            "year": "2017",
+            "venue": null,
+            "extra": {
+              "comment": "To appear in ICCV 2017"
+            }
+          },
+          "map_row": {
+            "row_id": "N-18",
+            "line": 72,
+            "literature": "TD-Graph LSTM（題名・著者は報告に無い）",
+            "venue": "報告に記載なし",
+            "id_text": "arXiv 1708.00666"
+          },
+          "other_rows": [],
+          "title": {
+            "result": null,
+            "detail": "地図に題名なし",
+            "map": null
+          },
+          "authors": {
+            "result": null,
+            "detail": "地図に著者なし",
+            "map": null,
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "報告に記載なし"
+          },
+          "note": "",
+          "class": "実在・照合不能"
+        },
+        {
+          "kind": "doi",
+          "id": "10.1109/TMI.2016.2593957",
+          "lines": [
+            81
+          ],
+          "registry": "Crossref",
+          "reference": {
+            "title": "EndoNet: A Deep Architecture for Recognition Tasks on Laparoscopic Videos",
+            "authors": [
+              "Andru P. Twinanda",
+              "Sherif Shehata",
+              "Didier Mutter",
+              "Jacques Marescaux",
+              "Michel de Mathelin",
+              "Nicolas Padoy"
+            ],
+            "year": "2017",
+            "venue": "IEEE Transactions on Medical Imaging",
+            "extra": {
+              "type": "journal-article",
+              "publisher": "Institute of Electrical and Electronics Engineers (IEEE)",
+              "volume": "36",
+              "issue": "1",
+              "page": "86-97"
+            }
+          },
+          "map_row": null,
+          "other_rows": [],
+          "title": null,
+          "authors": null,
+          "venue": {
+            "reference": "IEEE Transactions on Medical Imaging",
+            "map": null
+          },
+          "note": "地図に書誌の行（文献と書誌 ID の列を持つ表の行）が無い",
+          "class": "実在・照合不能"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2406.03095",
+          "lines": [
+            102,
+            120,
+            130
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "EgoSurgery-Tool: A Dataset of Surgical Tool and Hand Detection from Egocentric Open Surgery Videos",
+            "authors": [
+              "Ryo Fujii",
+              "Hideo Saito",
+              "Hiroki Kajita"
+            ],
+            "year": "2024",
+            "venue": null,
+            "extra": {}
+          },
+          "map_row": null,
+          "other_rows": [],
+          "title": null,
+          "authors": null,
+          "venue": {
+            "reference": null,
+            "map": null
+          },
+          "note": "地図に書誌の行（文献と書誌 ID の列を持つ表の行）が無い",
+          "class": "実在・照合不能"
+        },
+        {
+          "kind": "doi",
+          "id": "10.3390/data10010007",
+          "lines": [
+            103,
+            132,
+            201
+          ],
+          "registry": "Crossref",
+          "reference": {
+            "title": "Cholec80-Boxes: Bounding Box Labelling Data for Surgical Tools in Cholecystectomy Images",
+            "authors": [
+              "Tamer Abdulbaki Alshirbaji",
+              "Nour Aldeen Jalal",
+              "Herag Arabian",
+              "Alberto Battistel",
+              "Paul David Docherty",
+              "Hisham ElMoaqet",
+              "Thomas Neumuth",
+              "Knut Moeller"
+            ],
+            "year": "2025",
+            "venue": "Data",
+            "extra": {
+              "type": "journal-article",
+              "publisher": "MDPI AG",
+              "volume": "10",
+              "issue": "1",
+              "page": "7"
+            }
+          },
+          "map_row": null,
+          "other_rows": [],
+          "title": null,
+          "authors": null,
+          "venue": {
+            "reference": "Data",
+            "map": null
+          },
+          "note": "地図に書誌の行（文献と書誌 ID の列を持つ表の行）が無い",
+          "class": "実在・照合不能"
+        },
+        {
+          "kind": "arxiv",
+          "id": "1602.03012",
+          "lines": [
+            103,
+            108,
+            131
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "EndoNet: A Deep Architecture for Recognition Tasks on Laparoscopic Videos",
+            "authors": [
+              "Andru P. Twinanda",
+              "Sherif Shehata",
+              "Didier Mutter",
+              "Jacques Marescaux",
+              "Michel de Mathelin",
+              "Nicolas Padoy"
+            ],
+            "year": "2016",
+            "venue": null,
+            "extra": {
+              "comment": "Video: https://www.youtube.com/watch?v=6v0NWrFOUUM"
+            }
+          },
+          "map_row": null,
+          "other_rows": [],
+          "title": null,
+          "authors": null,
+          "venue": {
+            "reference": null,
+            "map": null
+          },
+          "note": "地図に書誌の行（文献と書誌 ID の列を持つ表の行）が無い",
+          "class": "実在・照合不能"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2411.16794",
+          "lines": [
+            105,
+            107,
+            115,
+            119,
+            137,
+            161
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Phase-Informed Tool Segmentation for Manual Small-Incision Cataract Surgery",
+            "authors": [
+              "Bhuvan Sachdeva",
+              "Naren Akash",
+              "Tajamul Ashraf",
+              "Simon Mueller",
+              "Thomas Schultz",
+              "Maximilian W. M. Wintergerst",
+              "Niharika Singri Prasad",
+              "Kaushik Murali",
+              "Mohit Jain"
+            ],
+            "year": "2024",
+            "venue": null,
+            "extra": {}
+          },
+          "map_row": null,
+          "other_rows": [],
+          "title": null,
+          "authors": null,
+          "venue": {
+            "reference": null,
+            "map": null
+          },
+          "note": "地図に書誌の行（文献と書誌 ID の列を持つ表の行）が無い",
+          "class": "実在・照合不能"
+        },
+        {
+          "kind": "arxiv",
+          "id": "1907.06099",
+          "lines": [
+            109
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Multi-Task Recurrent Convolutional Network with Correlation Loss for Surgical Video Analysis",
+            "authors": [
+              "Yueming Jin",
+              "Huaxia Li",
+              "Qi Dou",
+              "Hao Chen",
+              "Jing Qin",
+              "Chi-Wing Fu",
+              "Pheng-Ann Heng"
+            ],
+            "year": "2019",
+            "venue": null,
+            "extra": {
+              "comment": "Minor Revision at Medical Image Analysis"
+            }
+          },
+          "map_row": null,
+          "other_rows": [],
+          "title": null,
+          "authors": null,
+          "venue": {
+            "reference": null,
+            "map": null
+          },
+          "note": "地図に書誌の行（文献と書誌 ID の列を持つ表の行）が無い",
+          "class": "実在・照合不能"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2305.13961",
+          "lines": [
+            110
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Metrics Matter in Surgical Phase Recognition",
+            "authors": [
+              "Isabel Funke",
+              "Dominik Rivoir",
+              "Stefanie Speidel"
+            ],
+            "year": "2023",
+            "venue": null,
+            "extra": {
+              "comment": "Code at https://gitlab.com/nct_tso_public/phasemetrics"
+            }
+          },
+          "map_row": null,
+          "other_rows": [],
+          "title": null,
+          "authors": null,
+          "venue": {
+            "reference": null,
+            "map": null
+          },
+          "note": "地図に書誌の行（文献と書誌 ID の列を持つ表の行）が無い",
+          "class": "実在・照合不能"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2107.04810",
+          "lines": [
+            113
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Not End-to-End: Explore Multi-Stage Architecture for Online Surgical Phase Recognition",
+            "authors": [
+              "Fangqiu Yi",
+              "Tingting Jiang"
+            ],
+            "year": "2021",
+            "venue": null,
+            "extra": {
+              "comment": "Not accepted by M2CAI2021"
+            }
+          },
+          "map_row": null,
+          "other_rows": [],
+          "title": null,
+          "authors": null,
+          "venue": {
+            "reference": null,
+            "map": null
+          },
+          "note": "地図に書誌の行（文献と書誌 ID の列を持つ表の行）が無い",
+          "class": "実在・照合不能"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2512.14712",
+          "lines": [
+            114
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "SepsisSuite: Beyond Risk Stratification -- A Comparative Analysis of Deep Fusion vs. Expert Stacking for Prescriptive Sepsis AI",
+            "authors": [
+              "Ryan Cartularo"
+            ],
+            "year": "2025",
+            "venue": null,
+            "extra": {
+              "comment": "7 Pages, 4 Tables, 9 Figures"
+            }
+          },
+          "map_row": null,
+          "other_rows": [],
+          "title": null,
+          "authors": null,
+          "venue": {
+            "reference": null,
+            "map": null
+          },
+          "note": "地図に書誌の行（文献と書誌 ID の列を持つ表の行）が無い",
+          "class": "実在・照合不能"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2503.18755",
+          "lines": [
+            130
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "EgoSurgery-HTS: A Dataset for Egocentric Hand-Tool Segmentation in Open Surgery Videos",
+            "authors": [
+              "Nathan Darjana",
+              "Ryo Fujii",
+              "Hideo Saito",
+              "Hiroki Kajita"
+            ],
+            "year": "2025",
+            "venue": null,
+            "extra": {}
+          },
+          "map_row": null,
+          "other_rows": [],
+          "title": null,
+          "authors": null,
+          "venue": {
+            "reference": null,
+            "map": null
+          },
+          "note": "地図に書誌の行（文献と書誌 ID の列を持つ表の行）が無い",
+          "class": "実在・照合不能"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2405.19644",
+          "lines": [
+            130
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "EgoSurgery-Phase: A Dataset of Surgical Phase Recognition from Egocentric Open Surgery Videos",
+            "authors": [
+              "Ryo Fujii",
+              "Masashi Hatano",
+              "Hideo Saito",
+              "Hiroki Kajita"
+            ],
+            "year": "2024",
+            "venue": null,
+            "extra": {
+              "comment": "Early accepted by MICCAI 2024"
+            }
+          },
+          "map_row": null,
+          "other_rows": [],
+          "title": null,
+          "authors": null,
+          "venue": {
+            "reference": null,
+            "map": null
+          },
+          "note": "地図に書誌の行（文献と書誌 ID の列を持つ表の行）が無い",
+          "class": "実在・照合不能"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2511.06549",
+          "lines": [
+            136,
+            142,
+            198
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Video Dataset for Surgical Phase, Keypoint, and Instrument Recognition in Laparoscopic Surgery (PhaKIR)",
+            "authors": [
+              "Tobias Rueckert",
+              "Raphaela Maerkl",
+              "David Rauber",
+              "Leonard Klausmann",
+              "Max Gutbrod",
+              "Daniel Rueckert",
+              "Hubertus Feussner",
+              "Dirk Wilhelm",
+              "Christoph Palm"
+            ],
+            "year": "2025",
+            "venue": null,
+            "extra": {
+              "comment": "9 pages, 5 figures, 4 tables"
+            }
+          },
+          "map_row": null,
+          "other_rows": [],
+          "title": null,
+          "authors": null,
+          "venue": {
+            "reference": null,
+            "map": null
+          },
+          "note": "地図に書誌の行（文献と書誌 ID の列を持つ表の行）が無い",
+          "class": "実在・照合不能"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2109.14956",
+          "lines": [
+            139,
+            202
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Comparative Validation of Machine Learning Algorithms for Surgical Workflow and Skill Analysis with the HeiChole Benchmark",
+            "authors": [
+              "Martin Wagner",
+              "Beat-Peter Müller-Stich",
+              "Anna Kisilenko",
+              "Duc Tran",
+              "Patrick Heger",
+              "Lars Mündermann",
+              "David M Lubotsky",
+              "Benjamin Müller",
+              "Tornike Davitashvili",
+              "Manuela Capek",
+              "Annika Reinke",
+              "Tong Yu",
+              "Armine Vardazaryan",
+              "Chinedu Innocent Nwoye",
+              "Nicolas Padoy",
+              "Xinyang Liu",
+              "Eung-Joo Lee",
+              "Constantin Disch",
+              "Hans Meine",
+              "Tong Xia",
+              "Fucang Jia",
+              "Satoshi Kondo",
+              "Wolfgang Reiter",
+              "Yueming Jin",
+              "Yonghao Long",
+              "Meirui Jiang",
+              "Qi Dou",
+              "Pheng Ann Heng",
+              "Isabell Twick",
+              "Kadir Kirtac",
+              "Enes Hosgor",
+              "Jon Lindström Bolmgren",
+              "Michael Stenzel",
+              "Björn von Siemens",
+              "Hannes G. Kenngott",
+              "Felix Nickel",
+              "Moritz von Frankenberg",
+              "Franziska Mathis-Ullrich",
+              "Lena Maier-Hein",
+              "Stefanie Speidel",
+              "Sebastian Bodenstedt"
+            ],
+            "year": "2021",
+            "venue": null,
+            "extra": {}
+          },
+          "map_row": null,
+          "other_rows": [],
+          "title": null,
+          "authors": null,
+          "venue": {
+            "reference": null,
+            "map": null
+          },
+          "note": "地図に書誌の行（文献と書誌 ID の列を持つ表の行）が無い",
+          "class": "実在・照合不能"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2507.16559",
+          "lines": [
+            142,
+            198
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Comparative validation of surgical phase recognition, instrument keypoint estimation, and instrument instance segmentation in endoscopy: Results of the PhaKIR 2024 challenge",
+            "authors": [
+              "Tobias Rueckert",
+              "David Rauber",
+              "Raphaela Maerkl",
+              "Leonard Klausmann",
+              "Suemeyye R. Yildiran",
+              "Max Gutbrod",
+              "Danilo Weber Nunes",
+              "Alvaro Fernandez Moreno",
+              "Imanol Luengo",
+              "Danail Stoyanov",
+              "Nicolas Toussaint",
+              "Enki Cho",
+              "Hyeon Bae Kim",
+              "Oh Sung Choo",
+              "Ka Young Kim",
+              "Seong Tae Kim",
+              "Gonçalo Arantes",
+              "Kehan Song",
+              "Jianjun Zhu",
+              "Junchen Xiong",
+              "Tingyi Lin",
+              "Shunsuke Kikuchi",
+              "Hiroki Matsuzaki",
+              "Atsushi Kouno",
+              "João Renato Ribeiro Manesco",
+              "João Paulo Papa",
+              "Tae-Min Choi",
+              "Tae Kyeong Jeong",
+              "Juyoun Park",
+              "Oluwatosin Alabi",
+              "Meng Wei",
+              "Tom Vercauteren",
+              "Runzhi Wu",
+              "Mengya Xu",
+              "An Wang",
+              "Long Bai",
+              "Hongliang Ren",
+              "Amine Yamlahi",
+              "Jakob Hennighausen",
+              "Lena Maier-Hein",
+              "Satoshi Kondo",
+              "Satoshi Kasai",
+              "Kousuke Hirasawa",
+              "Shu Yang",
+              "Yihui Wang",
+              "Hao Chen",
+              "Santiago Rodríguez",
+              "Nicolás Aparicio",
+              "Leonardo Manrique",
+              "Juan Camilo Lyons",
+              "Olivia Hosie",
+              "Nicolás Ayobi",
+              "Pablo Arbeláez",
+              "Yiping Li",
+              "Yasmina Al Khalil",
+              "Sahar Nasirihaghighi",
+              "Stefanie Speidel",
+              "Daniel Rueckert",
+              "Hubertus Feussner",
+              "Dirk Wilhelm",
+              "Christoph Palm"
+            ],
+            "year": "2025",
+            "venue": null,
+            "extra": {
+              "comment": "A challenge report pre-print accepted by the journal Medical Image Analysis (MedIA), containing 37 pages, 15 figures, and 14 tables",
+              "doi": "10.1016/j.media.2026.103945"
+            }
+          },
+          "map_row": null,
+          "other_rows": [],
+          "title": null,
+          "authors": null,
+          "venue": {
+            "reference": null,
+            "map": null
+          },
+          "note": "地図に書誌の行（文献と書誌 ID の列を持つ表の行）が無い",
+          "class": "実在・照合不能"
+        },
+        {
+          "kind": "arxiv",
+          "id": "1610.08851",
+          "lines": [
+            195
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Single- and Multi-Task Architectures for Tool Presence Detection Challenge at M2CAI 2016",
+            "authors": [
+              "Andru P. Twinanda",
+              "Didier Mutter",
+              "Jacques Marescaux",
+              "Michel de Mathelin",
+              "Nicolas Padoy"
+            ],
+            "year": "2016",
+            "venue": null,
+            "extra": {
+              "comment": "The dataset is available at http://camma.u-strasbg.fr/m2cai2016/ . arXiv admin note: text overlap with arXiv:1610.08844"
+            }
+          },
+          "map_row": null,
+          "other_rows": [],
+          "title": null,
+          "authors": null,
+          "venue": {
+            "reference": null,
+            "map": null
+          },
+          "note": "地図に書誌の行（文献と書誌 ID の列を持つ表の行）が無い",
+          "class": "実在・照合不能"
+        },
+        {
+          "kind": "arxiv",
+          "id": "1610.08844",
+          "lines": [
+            195
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Single- and Multi-Task Architectures for Surgical Workflow Challenge at M2CAI 2016",
+            "authors": [
+              "Andru P. Twinanda",
+              "Didier Mutter",
+              "Jacques Marescaux",
+              "Michel de Mathelin",
+              "Nicolas Padoy"
+            ],
+            "year": "2016",
+            "venue": null,
+            "extra": {
+              "comment": "The dataset is available at http://camma.u-strasbg.fr/m2cai2016/"
+            }
+          },
+          "map_row": null,
+          "other_rows": [],
+          "title": null,
+          "authors": null,
+          "venue": {
+            "reference": null,
+            "map": null
+          },
+          "note": "地図に書誌の行（文献と書誌 ID の列を持つ表の行）が無い",
+          "class": "実在・照合不能"
+        },
+        {
+          "kind": "doi",
+          "id": "10.1016/j.media.2024.103366",
+          "lines": [
+            197
+          ],
+          "registry": "Crossref",
+          "reference": {
+            "title": "LoViT: Long Video Transformer for surgical phase recognition",
+            "authors": [
+              "Yang Liu",
+              "Maxence Boels",
+              "Luis C. Garcia-Peraza-Herrera",
+              "Tom Vercauteren",
+              "Prokar Dasgupta",
+              "Alejandro Granados",
+              "Sébastien Ourselin"
+            ],
+            "year": "2025",
+            "venue": "Medical Image Analysis",
+            "extra": {
+              "type": "journal-article",
+              "publisher": "Elsevier BV",
+              "volume": "99",
+              "page": "103366"
+            }
+          },
+          "map_row": null,
+          "other_rows": [],
+          "title": null,
+          "authors": null,
+          "venue": {
+            "reference": "Medical Image Analysis",
+            "map": null
+          },
+          "note": "地図に書誌の行（文献と書誌 ID の列を持つ表の行）が無い",
+          "class": "実在・照合不能"
+        }
+      ],
+      "requests": [
+        {
+          "service": "doi",
+          "url": "https://doi.org/api/handles/10.5281/zenodo.20086606",
+          "at": "2026-10-19T02:40:19+09:00",
+          "status": 200,
+          "bytes": 403
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/doiRA/10.5281/zenodo.20086606",
+          "at": "2026-10-19T02:40:20+09:00",
+          "status": 200,
+          "bytes": 70
+        },
+        {
+          "service": "datacite",
+          "url": "https://api.datacite.org/dois/10.5281/zenodo.20086606",
+          "at": "2026-10-19T02:40:20+09:00",
+          "status": 200,
+          "bytes": 12196
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/api/handles/10.1109/cvpr42600.2020.01121",
+          "at": "2026-10-19T02:40:21+09:00",
+          "status": 200,
+          "bytes": 539
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/doiRA/10.1109/cvpr42600.2020.01121",
+          "at": "2026-10-19T02:40:22+09:00",
+          "status": 200,
+          "bytes": 75
+        },
+        {
+          "service": "crossref",
+          "url": "https://api.crossref.org/works/10.1109/cvpr42600.2020.01121",
+          "at": "2026-10-19T02:40:22+09:00",
+          "status": 200,
+          "bytes": 9670
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/api/handles/10.1109/ACCESS.2025.3573264",
+          "at": "2026-10-19T02:40:23+09:00",
+          "status": 200,
+          "bytes": 540
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/doiRA/10.1109/ACCESS.2025.3573264",
+          "at": "2026-10-19T02:40:24+09:00",
+          "status": 200,
+          "bytes": 74
+        },
+        {
+          "service": "crossref",
+          "url": "https://api.crossref.org/works/10.1109/ACCESS.2025.3573264",
+          "at": "2026-10-19T02:40:24+09:00",
+          "status": 200,
+          "bytes": 11767
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/api/handles/10.1016/j.media.2010.10.001",
+          "at": "2026-10-19T02:40:25+09:00",
+          "status": 200,
+          "bytes": 555
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/doiRA/10.1016/j.media.2010.10.001",
+          "at": "2026-10-19T02:40:26+09:00",
+          "status": 200,
+          "bytes": 74
+        },
+        {
+          "service": "crossref",
+          "url": "https://api.crossref.org/works/10.1016/j.media.2010.10.001",
+          "at": "2026-10-19T02:40:26+09:00",
+          "status": 200,
+          "bytes": 15844
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/api/handles/10.1109/TMI.2016.2593957",
+          "at": "2026-10-19T02:40:27+09:00",
+          "status": 200,
+          "bytes": 534
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/doiRA/10.1109/TMI.2016.2593957",
+          "at": "2026-10-19T02:40:28+09:00",
+          "status": 200,
+          "bytes": 71
+        },
+        {
+          "service": "crossref",
+          "url": "https://api.crossref.org/works/10.1109/TMI.2016.2593957",
+          "at": "2026-10-19T02:40:28+09:00",
+          "status": 200,
+          "bytes": 8024
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/api/handles/10.3390/data10010007",
+          "at": "2026-10-19T02:40:29+09:00",
+          "status": 200,
+          "bytes": 524
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/doiRA/10.3390/data10010007",
+          "at": "2026-10-19T02:40:30+09:00",
+          "status": 200,
+          "bytes": 67
+        },
+        {
+          "service": "crossref",
+          "url": "https://api.crossref.org/works/10.3390/data10010007",
+          "at": "2026-10-19T02:40:30+09:00",
+          "status": 200,
+          "bytes": 10782
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/api/handles/10.1016/j.media.2024.103366",
+          "at": "2026-10-19T02:40:31+09:00",
+          "status": 200,
+          "bytes": 732
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/doiRA/10.1016/j.media.2024.103366",
+          "at": "2026-10-19T02:40:32+09:00",
+          "status": 200,
+          "bytes": 74
+        },
+        {
+          "service": "crossref",
+          "url": "https://api.crossref.org/works/10.1016/j.media.2024.103366",
+          "at": "2026-10-19T02:40:32+09:00",
+          "status": 200,
+          "bytes": 19958
+        },
+        {
+          "service": "arxiv",
+          "url": "https://export.arxiv.org/api/query?id_list=1804.08328,2106.07682,2603.12433,2006.04096,1805.04409,2001.06902,2406.01079,2307.07483,2501.11153,2401.11174,2003.10751,1904.01665,2606.26634,2606.29102,1708.00666,2406.03095,1602.03012,2411.16794,1907.06099,2305.13961,2107.04810,2512.14712,2503.18755,2405.19644,2511.06549,2109.14956,2507.16559,1610.08851,1610.08844&max_results=29",
+          "at": "2026-10-19T02:40:33+09:00",
+          "status": 200,
+          "bytes": 78799
+        }
+      ]
+    },
+    "2026-10-18-C-d2p-interface": {
+      "tool": "tools/verify_evidence_ids.py",
+      "map": "docs/evidence/2026-10-18-C-d2p-interface.md",
+      "map_sha256": "05a982ef4c8a9372a3855414393714c15cbb2cebabbbc6a07855eef22a5dc563",
+      "checked_at": "2026-10-19T02:39:53+09:00",
+      "command": "python tools/verify_evidence_ids.py docs/evidence/2026-10-18-C-d2p-interface.md",
+      "user_agent": "egosurgery-evidence-verify/1.0",
+      "endpoints": {
+        "doi": "https://doi.org",
+        "crossref": "https://api.crossref.org",
+        "datacite": "https://api.datacite.org",
+        "arxiv": "https://export.arxiv.org"
+      },
+      "total_ids": 29,
+      "by_kind": {
+        "doi": 9,
+        "arxiv": 20
+      },
+      "counts": {
+        "実在・書誌一致": 27,
+        "実在・書誌に差": 1,
+        "実在・照合不能": 1,
+        "不在": 0,
+        "到達不能": 0
+      },
+      "rows_without_id": [
+        "C-24"
+      ],
+      "results": [
+        {
+          "kind": "arxiv",
+          "id": "1602.03012",
+          "lines": [
+            77
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "EndoNet: A Deep Architecture for Recognition Tasks on Laparoscopic Videos",
+            "authors": [
+              "Andru P. Twinanda",
+              "Sherif Shehata",
+              "Didier Mutter",
+              "Jacques Marescaux",
+              "Michel de Mathelin",
+              "Nicolas Padoy"
+            ],
+            "year": "2016",
+            "venue": null,
+            "extra": {
+              "comment": "Video: https://www.youtube.com/watch?v=6v0NWrFOUUM"
+            }
+          },
+          "map_row": {
+            "row_id": "C-01",
+            "line": 77,
+            "literature": "Twinanda ほか, EndoNet: A Deep Architecture for Recognition Tasks on Laparoscopic Videos（C2 は既所持として Fig. 10 と GTBin の比較だけを検証。R1 は Table III・IV(a) の詳細記録あり）",
+            "venue": "IEEE TMI（C2）",
+            "id_text": "arXiv 1602.03012、DOI 10.1109/TMI.2016.2593957（DOI は C2）"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "EndoNet: A Deep Architecture for Recognition Tasks on Laparoscopic Videos"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Twinanda"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "IEEE TMI（C2）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "doi",
+          "id": "10.1109/TMI.2016.2593957",
+          "lines": [
+            77
+          ],
+          "registry": "Crossref",
+          "reference": {
+            "title": "EndoNet: A Deep Architecture for Recognition Tasks on Laparoscopic Videos",
+            "authors": [
+              "Andru P. Twinanda",
+              "Sherif Shehata",
+              "Didier Mutter",
+              "Jacques Marescaux",
+              "Michel de Mathelin",
+              "Nicolas Padoy"
+            ],
+            "year": "2017",
+            "venue": "IEEE Transactions on Medical Imaging",
+            "extra": {
+              "type": "journal-article",
+              "publisher": "Institute of Electrical and Electronics Engineers (IEEE)",
+              "volume": "36",
+              "issue": "1",
+              "page": "86-97"
+            }
+          },
+          "map_row": {
+            "row_id": "C-01",
+            "line": 77,
+            "literature": "Twinanda ほか, EndoNet: A Deep Architecture for Recognition Tasks on Laparoscopic Videos（C2 は既所持として Fig. 10 と GTBin の比較だけを検証。R1 は Table III・IV(a) の詳細記録あり）",
+            "venue": "IEEE TMI（C2）",
+            "id_text": "arXiv 1602.03012、DOI 10.1109/TMI.2016.2593957（DOI は C2）"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "EndoNet: A Deep Architecture for Recognition Tasks on Laparoscopic Videos"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Twinanda"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": "IEEE Transactions on Medical Imaging",
+            "map": "IEEE TMI（C2）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2405.19644",
+          "lines": [
+            78
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "EgoSurgery-Phase: A Dataset of Surgical Phase Recognition from Egocentric Open Surgery Videos",
+            "authors": [
+              "Ryo Fujii",
+              "Masashi Hatano",
+              "Hideo Saito",
+              "Hiroki Kajita"
+            ],
+            "year": "2024",
+            "venue": null,
+            "extra": {
+              "comment": "Early accepted by MICCAI 2024"
+            }
+          },
+          "map_row": {
+            "row_id": "C-02",
+            "line": 78,
+            "literature": "Ryo Fujii, Masashi Hatano, Hideo Saito, Hiroki Kajita 2024, EgoSurgery-Phase: A Dataset of Surgical Phase Recognition from Egocentric Open Surgery Videos",
+            "venue": "MICCAI 2024（early accept、査読）",
+            "id_text": "arXiv 2405.19644"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "EgoSurgery-Phase: A Dataset of Surgical Phase Recognition from Egocentric Open Surgery Videos"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 4 名",
+            "map": [
+              "Ryo Fujii",
+              "Masashi Hatano",
+              "Hideo Saito",
+              "Hiroki Kajita"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "MICCAI 2024（early accept、査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2005.02190",
+          "lines": [
+            79
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Rolling-Unrolling LSTMs for Action Anticipation from First-Person Video",
+            "authors": [
+              "Antonino Furnari",
+              "Giovanni Maria Farinella"
+            ],
+            "year": "2020",
+            "venue": "Published in IEEE Transaction on Pattern Analysis and Machine Interaction, 2020",
+            "extra": {
+              "comment": "arXiv admin note: substantial text overlap with arXiv:1905.09035",
+              "doi": "10.1109/TPAMI.2020.2992889"
+            }
+          },
+          "map_row": {
+            "row_id": "C-03",
+            "line": 79,
+            "literature": "Antonino Furnari, Giovanni Maria Farinella 2020–2021, Rolling-Unrolling LSTMs for Action Anticipation from First-Person Video",
+            "venue": "IEEE TPAMI（査読）",
+            "id_text": "arXiv 2005.02190、DOI 10.1109/TPAMI.2020.2992889"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Rolling-Unrolling LSTMs for Action Anticipation from First-Person Video"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 2 名",
+            "map": [
+              "Antonino Furnari",
+              "Giovanni Maria Farinella"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": "Published in IEEE Transaction on Pattern Analysis and Machine Interaction, 2020",
+            "map": "IEEE TPAMI（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "doi",
+          "id": "10.1109/TPAMI.2020.2992889",
+          "lines": [
+            79
+          ],
+          "registry": "Crossref",
+          "reference": {
+            "title": "Rolling-Unrolling LSTMs for Action Anticipation from First-Person Video",
+            "authors": [
+              "Antonino Furnari",
+              "Giovanni Maria Farinella"
+            ],
+            "year": "2021",
+            "venue": "IEEE Transactions on Pattern Analysis and Machine Intelligence",
+            "extra": {
+              "type": "journal-article",
+              "publisher": "Institute of Electrical and Electronics Engineers (IEEE)",
+              "volume": "43",
+              "issue": "11",
+              "page": "4021-4036"
+            }
+          },
+          "map_row": {
+            "row_id": "C-03",
+            "line": 79,
+            "literature": "Antonino Furnari, Giovanni Maria Farinella 2020–2021, Rolling-Unrolling LSTMs for Action Anticipation from First-Person Video",
+            "venue": "IEEE TPAMI（査読）",
+            "id_text": "arXiv 2005.02190、DOI 10.1109/TPAMI.2020.2992889"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Rolling-Unrolling LSTMs for Action Anticipation from First-Person Video"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 2 名",
+            "map": [
+              "Antonino Furnari",
+              "Giovanni Maria Farinella"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": "IEEE Transactions on Pattern Analysis and Machine Intelligence",
+            "map": "IEEE TPAMI（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "1912.09930",
+          "lines": [
+            80
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Something-Else: Compositional Action Recognition with Spatial-Temporal Interaction Networks",
+            "authors": [
+              "Joanna Materzynska",
+              "Tete Xiao",
+              "Roei Herzig",
+              "Huijuan Xu",
+              "Xiaolong Wang",
+              "Trevor Darrell"
+            ],
+            "year": "2019",
+            "venue": null,
+            "extra": {}
+          },
+          "map_row": {
+            "row_id": "C-04",
+            "line": 80,
+            "literature": "Joanna Materzynska ほか 2020, Something-Else: Compositional Action Recognition with Spatial-Temporal Interaction Networks（STIN）",
+            "venue": "CVPR 2020（査読）",
+            "id_text": "arXiv 1912.09930"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Something-Else: Compositional Action Recognition with Spatial-Temporal Interaction Networks"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Joanna Materzynska"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "CVPR 2020（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2110.06915",
+          "lines": [
+            81
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Object-Region Video Transformers",
+            "authors": [
+              "Roei Herzig",
+              "Elad Ben-Avraham",
+              "Karttikeya Mangalam",
+              "Amir Bar",
+              "Gal Chechik",
+              "Anna Rohrbach",
+              "Trevor Darrell",
+              "Amir Globerson"
+            ],
+            "year": "2021",
+            "venue": null,
+            "extra": {
+              "comment": "CVPR 2022"
+            }
+          },
+          "map_row": {
+            "row_id": "C-05",
+            "line": 81,
+            "literature": "Roei Herzig ほか 2022, Object-Region Video Transformers（ORViT）",
+            "venue": "報告の記載は「ECCV 2022 系、査読つき」",
+            "id_text": "arXiv 2110.06915"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Object-Region Video Transformers"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Roei Herzig"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "報告の記載は「ECCV 2022 系、査読つき」"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2308.07918",
+          "lines": [
+            82
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Helping Hands: An Object-Aware Ego-Centric Video Recognition Model",
+            "authors": [
+              "Chuhan Zhang",
+              "Ankush Gupta",
+              "Andrew Zisserman"
+            ],
+            "year": "2023",
+            "venue": null,
+            "extra": {
+              "comment": "ICCV2023"
+            }
+          },
+          "map_row": {
+            "row_id": "C-06",
+            "line": 82,
+            "literature": "（著者は報告に記載なし）2023, Helping Hands: An Object-Aware Ego-Centric Video Recognition Model",
+            "venue": "ICCV 2023（査読）",
+            "id_text": "arXiv 2308.07918"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Helping Hands: An Object-Aware Ego-Centric Video Recognition Model"
+          },
+          "authors": {
+            "result": null,
+            "detail": "地図に著者なし",
+            "map": null,
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "ICCV 2023（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2006.03201",
+          "lines": [
+            83
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Egocentric Object Manipulation Graphs",
+            "authors": [
+              "Eadom Dessalene",
+              "Michael Maynord",
+              "Chinmaya Devaraj",
+              "Cornelia Fermuller",
+              "Yiannis Aloimonos"
+            ],
+            "year": "2020",
+            "venue": null,
+            "extra": {}
+          },
+          "map_row": {
+            "row_id": "C-07",
+            "line": 83,
+            "literature": "Eadom Dessalene ほか 2020, Egocentric Object Manipulation Graphs（Ego-OMG）",
+            "venue": "プレプリント",
+            "id_text": "arXiv 2006.03201"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Egocentric Object Manipulation Graphs"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Eadom Dessalene"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "プレプリント"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2311.00180",
+          "lines": [
+            84
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Object-centric Video Representation for Long-term Action Anticipation",
+            "authors": [
+              "Ce Zhang",
+              "Changcheng Fu",
+              "Shijie Wang",
+              "Nakul Agarwal",
+              "Kwonjoon Lee",
+              "Chiho Choi",
+              "Chen Sun"
+            ],
+            "year": "2023",
+            "venue": null,
+            "extra": {
+              "comment": "This is an accepted WACV 2024 paper. Our code is available at https://github.com/brown-palm/ObjectPrompt"
+            }
+          },
+          "map_row": {
+            "row_id": "C-08",
+            "line": 84,
+            "literature": "Ce Zhang ほか 2024, Object-centric Video Representation for Long-term Action Anticipation",
+            "venue": "WACV 2024（査読）",
+            "id_text": "arXiv 2311.00180"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Object-centric Video Representation for Long-term Action Anticipation"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Ce Zhang"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "WACV 2024（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2304.03959",
+          "lines": [
+            85
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "StillFast: An End-to-End Approach for Short-Term Object Interaction Anticipation",
+            "authors": [
+              "Francesco Ragusa",
+              "Giovanni Maria Farinella",
+              "Antonino Furnari"
+            ],
+            "year": "2023",
+            "venue": null,
+            "extra": {}
+          },
+          "map_row": {
+            "row_id": "C-09",
+            "line": 85,
+            "literature": "Francesco Ragusa, Giovanni Maria Farinella, Antonino Furnari 2023, StillFast: An End-to-End Approach for Short-Term Object Interaction Anticipation",
+            "venue": "CVPR 2023（査読）",
+            "id_text": "arXiv 2304.03959"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "StillFast: An End-to-End Approach for Short-Term Object Interaction Anticipation"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 3 名",
+            "map": [
+              "Francesco Ragusa",
+              "Giovanni Maria Farinella",
+              "Antonino Furnari"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "CVPR 2023（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2605.20901",
+          "lines": [
+            86
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "VISTA: Technical Report for the Ego4D Short-Term Object Interaction Anticipation at EgoVis 2026",
+            "authors": [
+              "Qiaohui Chu",
+              "Haoyu Zhang",
+              "Yisen Feng",
+              "Meng Liu",
+              "Weili Guan",
+              "Dongmei Jiang",
+              "Liqiang Nie"
+            ],
+            "year": "2026",
+            "venue": null,
+            "extra": {
+              "comment": "The champion solution for the Ego4D Short-Term Object Interaction Anticipation Challenge at the CVPR EgoVis Workshop 2026"
+            }
+          },
+          "map_row": {
+            "row_id": "C-10",
+            "line": 86,
+            "literature": "Qiaohui Chu ほか 2026, VISTA: Technical Report for the Ego4D Short-Term Object Interaction Anticipation at EgoVis 2026",
+            "venue": "技術報告・プレプリント",
+            "id_text": "arXiv 2605.20901"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "VISTA: Technical Report for the Ego4D Short-Term Object Interaction Anticipation at EgoVis 2026"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Qiaohui Chu"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "技術報告・プレプリント"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2607.08514",
+          "lines": [
+            87
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Do Egocentric Video-Language Models Capture Both Hand- and Object-Centric Cues?",
+            "authors": [
+              "Masatoshi Tateno",
+              "Alexandros Stergiou",
+              "Risa Shinoda",
+              "Yoichi Sato",
+              "Dima Damen"
+            ],
+            "year": "2026",
+            "venue": null,
+            "extra": {}
+          },
+          "map_row": {
+            "row_id": "C-11",
+            "line": 87,
+            "literature": "Masatoshi Tateno, Alexandros Stergiou, Risa Shinoda, Yoichi Sato, Dima Damen 2026, Do Egocentric Video-Language Models Capture Both Hand- and Object-Centric Cues?",
+            "venue": "プレプリント（MIRU 2026 発表）",
+            "id_text": "arXiv 2607.08514"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Do Egocentric Video-Language Models Capture Both Hand- and Object-Centric Cues?"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 5 名",
+            "map": [
+              "Masatoshi Tateno",
+              "Alexandros Stergiou",
+              "Risa Shinoda",
+              "Yoichi Sato",
+              "Dima Damen"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "プレプリント（MIRU 2026 発表）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2507.16559",
+          "lines": [
+            88
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Comparative validation of surgical phase recognition, instrument keypoint estimation, and instrument instance segmentation in endoscopy: Results of the PhaKIR 2024 challenge",
+            "authors": [
+              "Tobias Rueckert",
+              "David Rauber",
+              "Raphaela Maerkl",
+              "Leonard Klausmann",
+              "Suemeyye R. Yildiran",
+              "Max Gutbrod",
+              "Danilo Weber Nunes",
+              "Alvaro Fernandez Moreno",
+              "Imanol Luengo",
+              "Danail Stoyanov",
+              "Nicolas Toussaint",
+              "Enki Cho",
+              "Hyeon Bae Kim",
+              "Oh Sung Choo",
+              "Ka Young Kim",
+              "Seong Tae Kim",
+              "Gonçalo Arantes",
+              "Kehan Song",
+              "Jianjun Zhu",
+              "Junchen Xiong",
+              "Tingyi Lin",
+              "Shunsuke Kikuchi",
+              "Hiroki Matsuzaki",
+              "Atsushi Kouno",
+              "João Renato Ribeiro Manesco",
+              "João Paulo Papa",
+              "Tae-Min Choi",
+              "Tae Kyeong Jeong",
+              "Juyoun Park",
+              "Oluwatosin Alabi",
+              "Meng Wei",
+              "Tom Vercauteren",
+              "Runzhi Wu",
+              "Mengya Xu",
+              "An Wang",
+              "Long Bai",
+              "Hongliang Ren",
+              "Amine Yamlahi",
+              "Jakob Hennighausen",
+              "Lena Maier-Hein",
+              "Satoshi Kondo",
+              "Satoshi Kasai",
+              "Kousuke Hirasawa",
+              "Shu Yang",
+              "Yihui Wang",
+              "Hao Chen",
+              "Santiago Rodríguez",
+              "Nicolás Aparicio",
+              "Leonardo Manrique",
+              "Juan Camilo Lyons",
+              "Olivia Hosie",
+              "Nicolás Ayobi",
+              "Pablo Arbeláez",
+              "Yiping Li",
+              "Yasmina Al Khalil",
+              "Sahar Nasirihaghighi",
+              "Stefanie Speidel",
+              "Daniel Rueckert",
+              "Hubertus Feussner",
+              "Dirk Wilhelm",
+              "Christoph Palm"
+            ],
+            "year": "2025",
+            "venue": null,
+            "extra": {
+              "comment": "A challenge report pre-print accepted by the journal Medical Image Analysis (MedIA), containing 37 pages, 15 figures, and 14 tables",
+              "doi": "10.1016/j.media.2026.103945"
+            }
+          },
+          "map_row": {
+            "row_id": "C-12",
+            "line": 88,
+            "literature": "Tobias Rueckert ほか 2026, Comparative validation of surgical phase recognition, instrument keypoint estimation, and instrument instance segmentation in endoscopy: Results of the PhaKIR 2024 challenge",
+            "venue": "Medical Image Analysis（査読）",
+            "id_text": "arXiv 2507.16559、DOI 10.1016/j.media.2026.103945"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Comparative validation of surgical phase recognition, instrument keypoint estimation, and instrument instance segmentation in endoscopy: Results of the PhaKIR 2024 challenge"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Tobias Rueckert"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "Medical Image Analysis（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "doi",
+          "id": "10.1016/j.media.2026.103945",
+          "lines": [
+            88
+          ],
+          "registry": "Crossref",
+          "reference": {
+            "title": "Comparative validation of surgical phase recognition, instrument keypoint estimation, and instrument instance segmentation in endoscopy: Results of the PhaKIR 2024 challenge",
+            "authors": [
+              "Tobias Rueckert",
+              "David Rauber",
+              "Raphaela Maerkl",
+              "Leonard Klausmann",
+              "Suemeyye R. Yildiran",
+              "Max Gutbrod",
+              "Danilo Weber Nunes",
+              "Alvaro Fernandez Moreno",
+              "Imanol Luengo",
+              "Danail Stoyanov",
+              "Nicolas Toussaint",
+              "Enki Cho",
+              "Hyeon Bae Kim",
+              "Oh Sung Choo",
+              "Ka Young Kim",
+              "Seong Tae Kim",
+              "Gonçalo Arantes",
+              "Kehan Song",
+              "Jianjun Zhu",
+              "Junchen Xiong",
+              "Tingyi Lin",
+              "Shunsuke Kikuchi",
+              "Hiroki Matsuzaki",
+              "Atsushi Kouno",
+              "João Renato Ribeiro Manesco",
+              "João Paulo Papa",
+              "Tae-Min Choi",
+              "Tae Kyeong Jeong",
+              "Juyoun Park",
+              "Oluwatosin Alabi",
+              "Meng Wei",
+              "Tom Vercauteren",
+              "Runzhi Wu",
+              "Mengya Xu",
+              "An Wang",
+              "Long Bai",
+              "Hongliang Ren",
+              "Amine Yamlahi",
+              "Jakob Hennighausen",
+              "Lena Maier-Hein",
+              "Satoshi Kondo",
+              "Satoshi Kasai",
+              "Kousuke Hirasawa",
+              "Shu Yang",
+              "Yihui Wang",
+              "Hao Chen",
+              "Santiago Rodríguez",
+              "Nicolás Aparicio",
+              "Leonardo Manrique",
+              "Juan Camilo Lyons",
+              "Olivia Hosie",
+              "Nicolás Ayobi",
+              "Pablo Arbeláez",
+              "Yiping Li",
+              "Yasmina Al Khalil",
+              "Sahar Nasirihaghighi",
+              "Stefanie Speidel",
+              "Daniel Rueckert",
+              "Hubertus Feussner",
+              "Dirk Wilhelm",
+              "Christoph Palm"
+            ],
+            "year": "2026",
+            "venue": "Medical Image Analysis",
+            "extra": {
+              "type": "journal-article",
+              "publisher": "Elsevier BV",
+              "volume": "109",
+              "page": "103945"
+            }
+          },
+          "map_row": {
+            "row_id": "C-12",
+            "line": 88,
+            "literature": "Tobias Rueckert ほか 2026, Comparative validation of surgical phase recognition, instrument keypoint estimation, and instrument instance segmentation in endoscopy: Results of the PhaKIR 2024 challenge",
+            "venue": "Medical Image Analysis（査読）",
+            "id_text": "arXiv 2507.16559、DOI 10.1016/j.media.2026.103945"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Comparative validation of surgical phase recognition, instrument keypoint estimation, and instrument instance segmentation in endoscopy: Results of the PhaKIR 2024 challenge"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Tobias Rueckert"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": "Medical Image Analysis",
+            "map": "Medical Image Analysis（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2511.06549",
+          "lines": [
+            88
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Video Dataset for Surgical Phase, Keypoint, and Instrument Recognition in Laparoscopic Surgery (PhaKIR)",
+            "authors": [
+              "Tobias Rueckert",
+              "Raphaela Maerkl",
+              "David Rauber",
+              "Leonard Klausmann",
+              "Max Gutbrod",
+              "Daniel Rueckert",
+              "Hubertus Feussner",
+              "Dirk Wilhelm",
+              "Christoph Palm"
+            ],
+            "year": "2025",
+            "venue": null,
+            "extra": {
+              "comment": "9 pages, 5 figures, 4 tables"
+            }
+          },
+          "map_row": null,
+          "other_rows": [],
+          "title": null,
+          "authors": null,
+          "venue": {
+            "reference": null,
+            "map": null
+          },
+          "note": "地図に書誌の行（文献と書誌 ID の列を持つ表の行）が無い",
+          "class": "実在・照合不能"
+        },
+        {
+          "kind": "doi",
+          "id": "10.1007/s11548-024-03063-9",
+          "lines": [
+            89
+          ],
+          "registry": "Crossref",
+          "reference": {
+            "title": "Surgical phase and instrument recognition: how to identify appropriate dataset splits",
+            "authors": [
+              "Georgii Kostiuchik",
+              "Lalith Sharan",
+              "Benedikt Mayer",
+              "Ivo Wolf",
+              "Bernhard Preim",
+              "Sandy Engelhardt"
+            ],
+            "year": "2024",
+            "venue": "International Journal of Computer Assisted Radiology and Surgery",
+            "extra": {
+              "type": "journal-article",
+              "publisher": "Springer Science and Business Media LLC",
+              "volume": "19",
+              "issue": "4",
+              "page": "699-711"
+            }
+          },
+          "map_row": {
+            "row_id": "C-13",
+            "line": 89,
+            "literature": "Kostiuchik ほか 2024, Surgical phase and instrument recognition: how to identify appropriate dataset splits（行の書誌欄に著者なし。著者名は系統表 L16 から）",
+            "venue": "IJCARS（査読）",
+            "id_text": "DOI 10.1007/s11548-024-03063-9"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Surgical phase and instrument recognition: how to identify appropriate dataset splits"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Kostiuchik"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": "International Journal of Computer Assisted Radiology and Surgery",
+            "map": "IJCARS（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2408.03867",
+          "lines": [
+            90
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Surgformer: Surgical Transformer with Hierarchical Temporal Attention for Surgical Phase Recognition",
+            "authors": [
+              "Shu Yang",
+              "Luyang Luo",
+              "Qiong Wang",
+              "Hao Chen"
+            ],
+            "year": "2024",
+            "venue": null,
+            "extra": {}
+          },
+          "map_row": {
+            "row_id": "C-14",
+            "line": 90,
+            "literature": "Shu Yang, Luyang Luo, Qiong Wang, Hao Chen 2024, Surgformer: Surgical Transformer with Hierarchical Temporal Attention for Surgical Phase Recognition",
+            "venue": "プレプリント（査読の採択先は報告では不明）",
+            "id_text": "arXiv 2408.03867"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Surgformer: Surgical Transformer with Hierarchical Temporal Attention for Surgical Phase Recognition"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 4 名",
+            "map": [
+              "Shu Yang",
+              "Luyang Luo",
+              "Qiong Wang",
+              "Hao Chen"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "プレプリント（査読の採択先は報告では不明）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "1709.07871",
+          "lines": [
+            91
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "FiLM: Visual Reasoning with a General Conditioning Layer",
+            "authors": [
+              "Ethan Perez",
+              "Florian Strub",
+              "Harm de Vries",
+              "Vincent Dumoulin",
+              "Aaron Courville"
+            ],
+            "year": "2017",
+            "venue": null,
+            "extra": {
+              "comment": "AAAI 2018. Code available at http://github.com/ethanjperez/film . Extends arXiv:1707.03017"
+            }
+          },
+          "map_row": {
+            "row_id": "C-15",
+            "line": 91,
+            "literature": "Ethan Perez ほか 2018, FiLM: Visual Reasoning with a General Conditioning Layer",
+            "venue": "報告の記載は「査読系論文」",
+            "id_text": "arXiv 1709.07871"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "FiLM: Visual Reasoning with a General Conditioning Layer"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Ethan Perez"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "報告の記載は「査読系論文」"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "doi",
+          "id": "10.1109/WACV57701.2024.00641",
+          "lines": [
+            92
+          ],
+          "registry": "Crossref",
+          "reference": {
+            "title": "Egocentric Action Recognition by Capturing Hand-Object Contact and Object State",
+            "authors": [
+              "Tsukasa Shiota",
+              "Motohiro Takagi",
+              "Kaori Kumagai",
+              "Hitoshi Seshimo",
+              "Yushi Aono"
+            ],
+            "year": "2024",
+            "venue": "2024 IEEE/CVF Winter Conference on Applications of Computer Vision (WACV)",
+            "extra": {
+              "type": "proceedings-article",
+              "publisher": "IEEE",
+              "page": "6527-6537"
+            }
+          },
+          "map_row": {
+            "row_id": "C-16",
+            "line": 92,
+            "literature": "Shiota ほか 2024（題名は報告に無い）",
+            "venue": "WACV 2024",
+            "id_text": "DOI 10.1109/WACV57701.2024.00641"
+          },
+          "other_rows": [],
+          "title": {
+            "result": null,
+            "detail": "地図に題名なし",
+            "map": null
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Shiota"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": "2024 IEEE/CVF Winter Conference on Applications of Computer Vision (WACV)",
+            "map": "WACV 2024"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2102.00649",
+          "lines": [
+            93
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Forecasting Action through Contact Representations from First Person Video",
+            "authors": [
+              "Eadom Dessalene",
+              "Chinmaya Devaraj",
+              "Michael Maynord",
+              "Cornelia Fermuller",
+              "Yiannis Aloimonos"
+            ],
+            "year": "2021",
+            "venue": null,
+            "extra": {
+              "comment": "12 pages, 5 figures. in IEEE Transactions on Pattern Analysis and Machine Intelligence, 2021",
+              "doi": "10.1109/TPAMI.2021.3055233"
+            }
+          },
+          "map_row": {
+            "row_id": "C-17",
+            "line": 93,
+            "literature": "Dessalene ほか, Forecasting Action through Contact Representations from First Person Video",
+            "venue": "報告に掲載先の記載なし（L213 は「後続 TPAMI 論文」と書く）",
+            "id_text": "arXiv 2102.00649"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Forecasting Action through Contact Representations from First Person Video"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Dessalene"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "報告に掲載先の記載なし（L213 は「後続 TPAMI 論文」と書く）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "doi",
+          "id": "10.1515/cdbme-2020-0037",
+          "lines": [
+            94
+          ],
+          "registry": "Crossref",
+          "reference": {
+            "title": "Surgical phase recognition by learning phase transitions",
+            "authors": [
+              "Manish Sahu",
+              "Angelika Szengel",
+              "Anirban Mukhopadhyay",
+              "Stefan Zachow"
+            ],
+            "year": "2020",
+            "venue": "Current Directions in Biomedical Engineering",
+            "extra": {
+              "type": "journal-article",
+              "publisher": "Walter de Gruyter GmbH",
+              "volume": "6",
+              "issue": "1"
+            }
+          },
+          "map_row": {
+            "row_id": "C-18",
+            "line": 94,
+            "literature": "Sahu, Szengel, Mukhopadhyay, Zachow 2020, Surgical phase recognition by learning phase transitions",
+            "venue": "Current Directions in Biomedical Engineering 6(1)（N1）",
+            "id_text": "DOI 10.1515/cdbme-2020-0037"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Surgical phase recognition by learning phase transitions"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 4 名",
+            "map": [
+              "Sahu",
+              "Szengel",
+              "Mukhopadhyay",
+              "Zachow"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": "Current Directions in Biomedical Engineering",
+            "map": "Current Directions in Biomedical Engineering 6(1)（N1）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "1807.10565",
+          "lines": [
+            95
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "DeepPhase: Surgical Phase Recognition in CATARACTS Videos",
+            "authors": [
+              "Odysseas Zisimopoulos",
+              "Evangello Flouty",
+              "Imanol Luengo",
+              "Petros Giataganas",
+              "Jean Nehme",
+              "Andre Chow",
+              "Danail Stoyanov"
+            ],
+            "year": "2018",
+            "venue": null,
+            "extra": {
+              "comment": "8 pages, 3 figures, 1 table, MICCAI 2018"
+            }
+          },
+          "map_row": {
+            "row_id": "C-19",
+            "line": 95,
+            "literature": "Zisimopoulos, Flouty, Luengo, Giataganas, Nehme, Chow, Stoyanov 2018, DeepPhase: Surgical Phase Recognition in CATARACTS Videos",
+            "venue": "R1 に記載なし",
+            "id_text": "arXiv 1807.10565、DOI 10.1007/978-3-030-00937-3_31"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "DeepPhase: Surgical Phase Recognition in CATARACTS Videos"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 7 名",
+            "map": [
+              "Zisimopoulos",
+              "Flouty",
+              "Luengo",
+              "Giataganas",
+              "Nehme",
+              "Chow",
+              "Stoyanov"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "R1 に記載なし"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "doi",
+          "id": "10.1007/978-3-030-00937-3_31",
+          "lines": [
+            95
+          ],
+          "registry": "Crossref",
+          "reference": {
+            "title": "DeepPhase: Surgical Phase Recognition in CATARACTS Videos",
+            "authors": [
+              "Odysseas Zisimopoulos",
+              "Evangello Flouty",
+              "Imanol Luengo",
+              "Petros Giataganas",
+              "Jean Nehme",
+              "Andre Chow",
+              "Danail Stoyanov"
+            ],
+            "year": "2018",
+            "venue": "Lecture Notes in Computer Science",
+            "extra": {
+              "type": "book-chapter",
+              "publisher": "Springer International Publishing",
+              "page": "265-272"
+            }
+          },
+          "map_row": {
+            "row_id": "C-19",
+            "line": 95,
+            "literature": "Zisimopoulos, Flouty, Luengo, Giataganas, Nehme, Chow, Stoyanov 2018, DeepPhase: Surgical Phase Recognition in CATARACTS Videos",
+            "venue": "R1 に記載なし",
+            "id_text": "arXiv 1807.10565、DOI 10.1007/978-3-030-00937-3_31"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "DeepPhase: Surgical Phase Recognition in CATARACTS Videos"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 7 名",
+            "map": [
+              "Zisimopoulos",
+              "Flouty",
+              "Luengo",
+              "Giataganas",
+              "Nehme",
+              "Chow",
+              "Stoyanov"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": "Lecture Notes in Computer Science",
+            "map": "R1 に記載なし"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "doi",
+          "id": "10.1007/978-3-031-18814-5_2",
+          "lines": [
+            96
+          ],
+          "registry": "Crossref",
+          "reference": {
+            "title": "Visual Modalities Based Multimodal Fusion for Surgical Phase Recognition",
+            "authors": [
+              "Bogyu Park",
+              "Hyeongyu Chi",
+              "Bokyung Park",
+              "Jiwon Lee",
+              "Sunghyun Park",
+              "Woo Jin Hyung",
+              "Min-Kook Choi"
+            ],
+            "year": "2022",
+            "venue": "Lecture Notes in Computer Science",
+            "extra": {
+              "type": "book-chapter",
+              "publisher": "Springer Nature Switzerland",
+              "page": "11-23"
+            }
+          },
+          "map_row": {
+            "row_id": "C-20",
+            "line": 96,
+            "literature": "Park, Chi, Park, Lee, Park, Hyung, Choi 2022, Visual Modalities Based Multimodal Fusion for Surgical Phase Recognition",
+            "venue": "R1 に記載なし",
+            "id_text": "DOI 10.1007/978-3-031-18814-5_2"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Visual Modalities Based Multimodal Fusion for Surgical Phase Recognition"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 7 名",
+            "map": [
+              "Park",
+              "Chi",
+              "Park",
+              "Lee",
+              "Park",
+              "Hyung",
+              "Choi"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": "Lecture Notes in Computer Science",
+            "map": "R1 に記載なし"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2410.20026",
+          "lines": [
+            97
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Towards Robust Algorithms for Surgical Phase Recognition via Digital Twin Representation",
+            "authors": [
+              "Hao Ding",
+              "Yuqian Zhang",
+              "Wenzheng Cheng",
+              "Xinyu Wang",
+              "Xu Lian",
+              "Chenhao Yu",
+              "Hongchao Shu",
+              "Ji Woong Kim",
+              "Axel Krieger",
+              "Mathias Unberath"
+            ],
+            "year": "2024",
+            "venue": null,
+            "extra": {}
+          },
+          "map_row": {
+            "row_id": "C-21",
+            "line": 97,
+            "literature": "Ding ほか 2024–2025, Towards Robust Algorithms for Surgical Phase Recognition via Digital Twin-based Scene Representation（DTFormer。C2 は既所持として行を作らなかった）",
+            "venue": "R1 に記載なし",
+            "id_text": "arXiv 2410.20026"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "差",
+            "detail": "題名が一致しない",
+            "map": "Towards Robust Algorithms for Surgical Phase Recognition via Digital Twin-based Scene Representation"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Ding"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "R1 に記載なし"
+          },
+          "note": "",
+          "class": "実在・書誌に差"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2306.11726",
+          "lines": [
+            98
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "How can objects help action recognition?",
+            "authors": [
+              "Xingyi Zhou",
+              "Anurag Arnab",
+              "Chen Sun",
+              "Cordelia Schmid"
+            ],
+            "year": "2023",
+            "venue": null,
+            "extra": {
+              "comment": "CVPR 2023"
+            }
+          },
+          "map_row": {
+            "row_id": "C-22",
+            "line": 98,
+            "literature": "Zhou, Arnab, Sun, Schmid 2023, How Can Objects Help Action Recognition?（ObjectViViT）",
+            "venue": "R1 に記載なし",
+            "id_text": "arXiv 2306.11726"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "How Can Objects Help Action Recognition?"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 4 名",
+            "map": [
+              "Zhou",
+              "Arnab",
+              "Sun",
+              "Schmid"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "R1 に記載なし"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2404.11903",
+          "lines": [
+            99
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Simultaneous Detection and Interaction Reasoning for Object-Centric Action Recognition",
+            "authors": [
+              "Xunsong Li",
+              "Pengzhan Sun",
+              "Yangcen Liu",
+              "Lixin Duan",
+              "Wen Li"
+            ],
+            "year": "2024",
+            "venue": null,
+            "extra": {
+              "comment": "12 pages, 5 figures, submitted to IEEE Transactions on Multimedia"
+            }
+          },
+          "map_row": {
+            "row_id": "C-23",
+            "line": 99,
+            "literature": "Li, Sun, Liu, Duan, Li 2025（arXiv 2024）, Simultaneous Detection and Interaction Reasoning for Object-Centric Action Recognition（DAIR）",
+            "venue": "R1 に記載なし",
+            "id_text": "arXiv 2404.11903、DOI 10.1109/TMM.2025.3543033"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Simultaneous Detection and Interaction Reasoning for Object-Centric Action Recognition"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 5 名",
+            "map": [
+              "Li",
+              "Sun",
+              "Liu",
+              "Duan",
+              "Li"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "R1 に記載なし"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "doi",
+          "id": "10.1109/TMM.2025.3543033",
+          "lines": [
+            99
+          ],
+          "registry": "Crossref",
+          "reference": {
+            "title": "Simultaneous Detection and Interaction Reasoning for Object-Centric Action Recognition",
+            "authors": [
+              "Xunsong Li",
+              "Pengzhan Sun",
+              "Yangcen Liu",
+              "Lixin Duan",
+              "Wen Li"
+            ],
+            "year": "2025",
+            "venue": "IEEE Transactions on Multimedia",
+            "extra": {
+              "type": "journal-article",
+              "publisher": "Institute of Electrical and Electronics Engineers (IEEE)",
+              "volume": "27",
+              "page": "5283-5295"
+            }
+          },
+          "map_row": {
+            "row_id": "C-23",
+            "line": 99,
+            "literature": "Li, Sun, Liu, Duan, Li 2025（arXiv 2024）, Simultaneous Detection and Interaction Reasoning for Object-Centric Action Recognition（DAIR）",
+            "venue": "R1 に記載なし",
+            "id_text": "arXiv 2404.11903、DOI 10.1109/TMM.2025.3543033"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Simultaneous Detection and Interaction Reasoning for Object-Centric Action Recognition"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 5 名",
+            "map": [
+              "Li",
+              "Sun",
+              "Liu",
+              "Duan",
+              "Li"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": "IEEE Transactions on Multimedia",
+            "map": "R1 に記載なし"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        }
+      ],
+      "requests": [
+        {
+          "service": "doi",
+          "url": "https://doi.org/api/handles/10.1109/TMI.2016.2593957",
+          "at": "2026-10-19T02:39:53+09:00",
+          "status": 200,
+          "bytes": 534
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/doiRA/10.1109/TMI.2016.2593957",
+          "at": "2026-10-19T02:39:54+09:00",
+          "status": 200,
+          "bytes": 71
+        },
+        {
+          "service": "crossref",
+          "url": "https://api.crossref.org/works/10.1109/TMI.2016.2593957",
+          "at": "2026-10-19T02:39:54+09:00",
+          "status": 200,
+          "bytes": 8024
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/api/handles/10.1109/TPAMI.2020.2992889",
+          "at": "2026-10-19T02:39:55+09:00",
+          "status": 200,
+          "bytes": 537
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/doiRA/10.1109/TPAMI.2020.2992889",
+          "at": "2026-10-19T02:39:56+09:00",
+          "status": 200,
+          "bytes": 73
+        },
+        {
+          "service": "crossref",
+          "url": "https://api.crossref.org/works/10.1109/TPAMI.2020.2992889",
+          "at": "2026-10-19T02:39:56+09:00",
+          "status": 200,
+          "bytes": 11027
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/api/handles/10.1016/j.media.2026.103945",
+          "at": "2026-10-19T02:39:57+09:00",
+          "status": 200,
+          "bytes": 732
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/doiRA/10.1016/j.media.2026.103945",
+          "at": "2026-10-19T02:39:58+09:00",
+          "status": 200,
+          "bytes": 74
+        },
+        {
+          "service": "crossref",
+          "url": "https://api.crossref.org/works/10.1016/j.media.2026.103945",
+          "at": "2026-10-19T02:39:58+09:00",
+          "status": 200,
+          "bytes": 45955
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/api/handles/10.1007/s11548-024-03063-9",
+          "at": "2026-10-19T02:39:59+09:00",
+          "status": 200,
+          "bytes": 544
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/doiRA/10.1007/s11548-024-03063-9",
+          "at": "2026-10-19T02:40:00+09:00",
+          "status": 200,
+          "bytes": 73
+        },
+        {
+          "service": "crossref",
+          "url": "https://api.crossref.org/works/10.1007/s11548-024-03063-9",
+          "at": "2026-10-19T02:40:00+09:00",
+          "status": 200,
+          "bytes": 27198
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/api/handles/10.1109/WACV57701.2024.00641",
+          "at": "2026-10-19T02:40:01+09:00",
+          "status": 200,
+          "bytes": 541
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/doiRA/10.1109/WACV57701.2024.00641",
+          "at": "2026-10-19T02:40:02+09:00",
+          "status": 200,
+          "bytes": 75
+        },
+        {
+          "service": "crossref",
+          "url": "https://api.crossref.org/works/10.1109/WACV57701.2024.00641",
+          "at": "2026-10-19T02:40:02+09:00",
+          "status": 200,
+          "bytes": 8925
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/api/handles/10.1515/cdbme-2020-0037",
+          "at": "2026-10-19T02:40:03+09:00",
+          "status": 200,
+          "bytes": 558
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/doiRA/10.1515/cdbme-2020-0037",
+          "at": "2026-10-19T02:40:04+09:00",
+          "status": 200,
+          "bytes": 70
+        },
+        {
+          "service": "crossref",
+          "url": "https://api.crossref.org/works/10.1515/cdbme-2020-0037",
+          "at": "2026-10-19T02:40:04+09:00",
+          "status": 200,
+          "bytes": 9329
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/api/handles/10.1007/978-3-030-00937-3_31",
+          "at": "2026-10-19T02:40:05+09:00",
+          "status": 200,
+          "bytes": 548
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/doiRA/10.1007/978-3-030-00937-3_31",
+          "at": "2026-10-19T02:40:06+09:00",
+          "status": 200,
+          "bytes": 75
+        },
+        {
+          "service": "crossref",
+          "url": "https://api.crossref.org/works/10.1007/978-3-030-00937-3_31",
+          "at": "2026-10-19T02:40:06+09:00",
+          "status": 200,
+          "bytes": 11522
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/api/handles/10.1007/978-3-031-18814-5_2",
+          "at": "2026-10-19T02:40:07+09:00",
+          "status": 200,
+          "bytes": 546
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/doiRA/10.1007/978-3-031-18814-5_2",
+          "at": "2026-10-19T02:40:08+09:00",
+          "status": 200,
+          "bytes": 74
+        },
+        {
+          "service": "crossref",
+          "url": "https://api.crossref.org/works/10.1007/978-3-031-18814-5_2",
+          "at": "2026-10-19T02:40:08+09:00",
+          "status": 200,
+          "bytes": 19378
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/api/handles/10.1109/TMM.2025.3543033",
+          "at": "2026-10-19T02:40:09+09:00",
+          "status": 200,
+          "bytes": 537
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/doiRA/10.1109/TMM.2025.3543033",
+          "at": "2026-10-19T02:40:10+09:00",
+          "status": 200,
+          "bytes": 71
+        },
+        {
+          "service": "crossref",
+          "url": "https://api.crossref.org/works/10.1109/TMM.2025.3543033",
+          "at": "2026-10-19T02:40:10+09:00",
+          "status": 200,
+          "bytes": 10768
+        },
+        {
+          "service": "arxiv",
+          "url": "https://export.arxiv.org/api/query?id_list=1602.03012,2405.19644,2005.02190,1912.09930,2110.06915,2308.07918,2006.03201,2311.00180,2304.03959,2605.20901,2607.08514,2507.16559,2511.06549,2408.03867,1709.07871,2102.00649,1807.10565,2410.20026,2306.11726,2404.11903&max_results=20",
+          "at": "2026-10-19T02:40:10+09:00",
+          "status": 200,
+          "bytes": 53615
+        }
+      ]
+    },
+    "2026-10-18-B-p2d-interface": {
+      "tool": "tools/verify_evidence_ids.py",
+      "map": "docs/evidence/2026-10-18-B-p2d-interface.md",
+      "map_sha256": "1ab24a3cbfaba4f7b654c8fcd12a9deb9f9556c337b95392d10897011ee9ccca",
+      "checked_at": "2026-10-19T02:40:11+09:00",
+      "command": "python tools/verify_evidence_ids.py docs/evidence/2026-10-18-B-p2d-interface.md",
+      "user_agent": "egosurgery-evidence-verify/1.0",
+      "endpoints": {
+        "doi": "https://doi.org",
+        "crossref": "https://api.crossref.org",
+        "datacite": "https://api.datacite.org",
+        "arxiv": "https://export.arxiv.org"
+      },
+      "total_ids": 34,
+      "by_kind": {
+        "doi": 4,
+        "arxiv": 30
+      },
+      "counts": {
+        "実在・書誌一致": 29,
+        "実在・書誌に差": 5,
+        "実在・照合不能": 0,
+        "不在": 0,
+        "到達不能": 0
+      },
+      "rows_without_id": [
+        "B-18"
+      ],
+      "results": [
+        {
+          "kind": "arxiv",
+          "id": "1602.03012",
+          "lines": [
+            68,
+            179
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "EndoNet: A Deep Architecture for Recognition Tasks on Laparoscopic Videos",
+            "authors": [
+              "Andru P. Twinanda",
+              "Sherif Shehata",
+              "Didier Mutter",
+              "Jacques Marescaux",
+              "Michel de Mathelin",
+              "Nicolas Padoy"
+            ],
+            "year": "2016",
+            "venue": null,
+            "extra": {
+              "comment": "Video: https://www.youtube.com/watch?v=6v0NWrFOUUM"
+            }
+          },
+          "map_row": {
+            "row_id": "B-01",
+            "line": 68,
+            "literature": "Twinanda ほか 2017, EndoNet",
+            "venue": "IEEE TMI",
+            "id_text": "arXiv 1602.03012"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "部分（地図の題名が照合先の題名の一部）",
+            "map": "EndoNet"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Twinanda"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "IEEE TMI"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "1610.08851",
+          "lines": [
+            69,
+            180
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Single- and Multi-Task Architectures for Tool Presence Detection Challenge at M2CAI 2016",
+            "authors": [
+              "Andru P. Twinanda",
+              "Didier Mutter",
+              "Jacques Marescaux",
+              "Michel de Mathelin",
+              "Nicolas Padoy"
+            ],
+            "year": "2016",
+            "venue": null,
+            "extra": {
+              "comment": "The dataset is available at http://camma.u-strasbg.fr/m2cai2016/ . arXiv admin note: text overlap with arXiv:1610.08844"
+            }
+          },
+          "map_row": {
+            "row_id": "B-02",
+            "line": 69,
+            "literature": "Twinanda ほか 2016, M2CAI 技術報告",
+            "venue": "M2CAI 技術報告",
+            "id_text": "arXiv 1610.08851（N1 は 1610.08844 と書く〔補助調査による〕。食い違い。地図 N §8）"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "差",
+            "detail": "題名が一致しない",
+            "map": "M2CAI 技術報告"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Twinanda"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "M2CAI 技術報告"
+          },
+          "note": "",
+          "class": "実在・書誌に差"
+        },
+        {
+          "kind": "arxiv",
+          "id": "1610.08844",
+          "lines": [
+            69
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Single- and Multi-Task Architectures for Surgical Workflow Challenge at M2CAI 2016",
+            "authors": [
+              "Andru P. Twinanda",
+              "Didier Mutter",
+              "Jacques Marescaux",
+              "Michel de Mathelin",
+              "Nicolas Padoy"
+            ],
+            "year": "2016",
+            "venue": null,
+            "extra": {
+              "comment": "The dataset is available at http://camma.u-strasbg.fr/m2cai2016/"
+            }
+          },
+          "map_row": {
+            "row_id": "B-02",
+            "line": 69,
+            "literature": "Twinanda ほか 2016, M2CAI 技術報告",
+            "venue": "M2CAI 技術報告",
+            "id_text": "arXiv 1610.08851（N1 は 1610.08844 と書く〔補助調査による〕。食い違い。地図 N §8）"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "差",
+            "detail": "題名が一致しない",
+            "map": "M2CAI 技術報告"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Twinanda"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "M2CAI 技術報告"
+          },
+          "note": "",
+          "class": "実在・書誌に差"
+        },
+        {
+          "kind": "arxiv",
+          "id": "1907.06099",
+          "lines": [
+            70,
+            181
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Multi-Task Recurrent Convolutional Network with Correlation Loss for Surgical Video Analysis",
+            "authors": [
+              "Yueming Jin",
+              "Huaxia Li",
+              "Qi Dou",
+              "Hao Chen",
+              "Jing Qin",
+              "Chi-Wing Fu",
+              "Pheng-Ann Heng"
+            ],
+            "year": "2019",
+            "venue": null,
+            "extra": {
+              "comment": "Minor Revision at Medical Image Analysis"
+            }
+          },
+          "map_row": {
+            "row_id": "B-03",
+            "line": 70,
+            "literature": "Jin, Li, Dou, Chen, Qin, Fu, Heng 2020, MTRCNet-CL",
+            "venue": "Medical Image Analysis",
+            "id_text": "arXiv 1907.06099"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "差",
+            "detail": "題名が一致しない",
+            "map": "MTRCNet-CL"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 7 名",
+            "map": [
+              "Jin",
+              "Li",
+              "Dou",
+              "Chen",
+              "Qin",
+              "Fu",
+              "Heng"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "Medical Image Analysis"
+          },
+          "note": "",
+          "class": "実在・書誌に差"
+        },
+        {
+          "kind": "arxiv",
+          "id": "1709.07871",
+          "lines": [
+            71,
+            182
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "FiLM: Visual Reasoning with a General Conditioning Layer",
+            "authors": [
+              "Ethan Perez",
+              "Florian Strub",
+              "Harm de Vries",
+              "Vincent Dumoulin",
+              "Aaron Courville"
+            ],
+            "year": "2017",
+            "venue": null,
+            "extra": {
+              "comment": "AAAI 2018. Code available at http://github.com/ethanjperez/film . Extends arXiv:1707.03017"
+            }
+          },
+          "map_row": {
+            "row_id": "B-04",
+            "line": 71,
+            "literature": "Perez, Strub, de Vries, Dumoulin, Courville 2018, FiLM",
+            "venue": "AAAI 2018",
+            "id_text": "arXiv 1709.07871"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "部分（地図の題名が照合先の題名の一部）",
+            "map": "FiLM"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 5 名",
+            "map": [
+              "Perez",
+              "Strub",
+              "de Vries",
+              "Dumoulin",
+              "Courville"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "AAAI 2018"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2112.02244",
+          "lines": [
+            72,
+            183
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "LAVT: Language-Aware Vision Transformer for Referring Image Segmentation",
+            "authors": [
+              "Zhao Yang",
+              "Jiaqi Wang",
+              "Yansong Tang",
+              "Kai Chen",
+              "Hengshuang Zhao",
+              "Philip H. S. Torr"
+            ],
+            "year": "2021",
+            "venue": null,
+            "extra": {
+              "comment": "CVPR 2022"
+            }
+          },
+          "map_row": {
+            "row_id": "B-05",
+            "line": 72,
+            "literature": "Yang, Wang, Tang, Chen, Zhao, Torr 2022, LAVT",
+            "venue": "CVPR 2022",
+            "id_text": "arXiv 2112.02244"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "部分（地図の題名が照合先の題名の一部）",
+            "map": "LAVT"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 6 名",
+            "map": [
+              "Yang",
+              "Wang",
+              "Tang",
+              "Chen",
+              "Zhao",
+              "Torr"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "CVPR 2022"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2112.10003",
+          "lines": [
+            73,
+            184
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Image Segmentation Using Text and Image Prompts",
+            "authors": [
+              "Timo Lüddecke",
+              "Alexander S. Ecker"
+            ],
+            "year": "2021",
+            "venue": null,
+            "extra": {
+              "comment": "CVPR 2022"
+            }
+          },
+          "map_row": {
+            "row_id": "B-06",
+            "line": 73,
+            "literature": "Lüddecke, Ecker 2022, CLIPSeg",
+            "venue": "CVPR 2022",
+            "id_text": "arXiv 2112.10003"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "差",
+            "detail": "題名が一致しない",
+            "map": "CLIPSeg"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 2 名",
+            "map": [
+              "Lüddecke",
+              "Ecker"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "CVPR 2022"
+          },
+          "note": "",
+          "class": "実在・書誌に差"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2104.12763",
+          "lines": [
+            74,
+            185
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "MDETR -- Modulated Detection for End-to-End Multi-Modal Understanding",
+            "authors": [
+              "Aishwarya Kamath",
+              "Mannat Singh",
+              "Yann LeCun",
+              "Gabriel Synnaeve",
+              "Ishan Misra",
+              "Nicolas Carion"
+            ],
+            "year": "2021",
+            "venue": null,
+            "extra": {}
+          },
+          "map_row": {
+            "row_id": "B-07",
+            "line": 74,
+            "literature": "Kamath ほか 2021, MDETR",
+            "venue": "ICCV 2021",
+            "id_text": "arXiv 2104.12763"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "部分（地図の題名が照合先の題名の一部）",
+            "map": "MDETR"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Kamath"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "ICCV 2021"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "1905.07553",
+          "lines": [
+            75,
+            186
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Which Tasks Should Be Learned Together in Multi-task Learning?",
+            "authors": [
+              "Trevor Standley",
+              "Amir R. Zamir",
+              "Dawn Chen",
+              "Leonidas Guibas",
+              "Jitendra Malik",
+              "Silvio Savarese"
+            ],
+            "year": "2019",
+            "venue": null,
+            "extra": {
+              "comment": "Presented to ICML 2020 See project website at http://taskgrouping.stanford.edu/"
+            }
+          },
+          "map_row": {
+            "row_id": "B-08",
+            "line": 75,
+            "literature": "Standley, Zamir, Chen, Guibas, Malik, Savarese 2020, Which Tasks Should Be Learned Together",
+            "venue": "ICML 2020",
+            "id_text": "arXiv 1905.07553"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "部分（地図の題名が照合先の題名の一部）",
+            "map": "Which Tasks Should Be Learned Together"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 6 名",
+            "map": [
+              "Standley",
+              "Zamir",
+              "Chen",
+              "Guibas",
+              "Malik",
+              "Savarese"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "ICML 2020"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "1912.03538",
+          "lines": [
+            76,
+            187
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Context R-CNN: Long Term Temporal Context for Per-Camera Object Detection",
+            "authors": [
+              "Sara Beery",
+              "Guanhang Wu",
+              "Vivek Rathod",
+              "Ronny Votel",
+              "Jonathan Huang"
+            ],
+            "year": "2019",
+            "venue": null,
+            "extra": {
+              "comment": "CVPR 2020"
+            }
+          },
+          "map_row": {
+            "row_id": "B-09",
+            "line": 76,
+            "literature": "Beery, Wu, Rathod, Votel, Huang 2020, Context R-CNN",
+            "venue": "CVPR 2020",
+            "id_text": "arXiv 1912.03538"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "部分（地図の題名が照合先の題名の一部）",
+            "map": "Context R-CNN"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 5 名",
+            "map": [
+              "Beery",
+              "Wu",
+              "Rathod",
+              "Votel",
+              "Huang"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "CVPR 2020"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "1907.06390",
+          "lines": [
+            77,
+            188
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Sequence Level Semantics Aggregation for Video Object Detection",
+            "authors": [
+              "Haiping Wu",
+              "Yuntao Chen",
+              "Naiyan Wang",
+              "Zhaoxiang Zhang"
+            ],
+            "year": "2019",
+            "venue": null,
+            "extra": {
+              "comment": "ICCV 2019 camera ready"
+            }
+          },
+          "map_row": {
+            "row_id": "B-10",
+            "line": 77,
+            "literature": "Wu, Chen, Wang, Zhang 2019, SELSA",
+            "venue": "ICCV 2019",
+            "id_text": "arXiv 1907.06390"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "差",
+            "detail": "題名が一致しない",
+            "map": "SELSA"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 4 名",
+            "map": [
+              "Wu",
+              "Chen",
+              "Wang",
+              "Zhang"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "ICCV 2019"
+          },
+          "note": "",
+          "class": "実在・書誌に差"
+        },
+        {
+          "kind": "arxiv",
+          "id": "1807.00119",
+          "lines": [
+            78,
+            189
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Structure Inference Net: Object Detection Using Scene-Level Context and Instance-Level Relationships",
+            "authors": [
+              "Yong Liu",
+              "Ruiping Wang",
+              "Shiguang Shan",
+              "Xilin Chen"
+            ],
+            "year": "2018",
+            "venue": null,
+            "extra": {
+              "comment": "published in CVPR 2018"
+            }
+          },
+          "map_row": {
+            "row_id": "B-11",
+            "line": 78,
+            "literature": "Liu, Wang, Shan, Chen 2018, Structure Inference Net（SIN）",
+            "venue": "CVPR 2018",
+            "id_text": "arXiv 1807.00119"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "部分（地図の題名が照合先の題名の一部）",
+            "map": "Structure Inference Net"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 4 名",
+            "map": [
+              "Liu",
+              "Wang",
+              "Shan",
+              "Chen"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "CVPR 2018"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2406.03095",
+          "lines": [
+            79
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "EgoSurgery-Tool: A Dataset of Surgical Tool and Hand Detection from Egocentric Open Surgery Videos",
+            "authors": [
+              "Ryo Fujii",
+              "Hideo Saito",
+              "Hiroki Kajita"
+            ],
+            "year": "2024",
+            "venue": null,
+            "extra": {}
+          },
+          "map_row": {
+            "row_id": "B-12",
+            "line": 79,
+            "literature": "Ryo Fujii, Hideo Saito, Hiroki Kajita 2024, EgoSurgery-Tool: A Dataset of Surgical Tool and Hand Detection from Egocentric Open Surgery Videos",
+            "venue": "arXiv プレプリント",
+            "id_text": "arXiv 2406.03095"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "EgoSurgery-Tool: A Dataset of Surgical Tool and Hand Detection from Egocentric Open Surgery Videos"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 3 名",
+            "map": [
+              "Ryo Fujii",
+              "Hideo Saito",
+              "Hiroki Kajita"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "arXiv プレプリント"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2405.19644",
+          "lines": [
+            80
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "EgoSurgery-Phase: A Dataset of Surgical Phase Recognition from Egocentric Open Surgery Videos",
+            "authors": [
+              "Ryo Fujii",
+              "Masashi Hatano",
+              "Hideo Saito",
+              "Hiroki Kajita"
+            ],
+            "year": "2024",
+            "venue": null,
+            "extra": {
+              "comment": "Early accepted by MICCAI 2024"
+            }
+          },
+          "map_row": {
+            "row_id": "B-13",
+            "line": 80,
+            "literature": "Ryo Fujii, Masashi Hatano, Hideo Saito, Hiroki Kajita 2024, EgoSurgery-Phase（地図 C の C-02 と同じ論文）",
+            "venue": "MICCAI 2024（査読）",
+            "id_text": "arXiv 2405.19644"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "部分（地図の題名が照合先の題名の一部）",
+            "map": "EgoSurgery-Phase"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 4 名",
+            "map": [
+              "Ryo Fujii",
+              "Masashi Hatano",
+              "Hideo Saito",
+              "Hiroki Kajita"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "MICCAI 2024（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2503.18755",
+          "lines": [
+            81
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "EgoSurgery-HTS: A Dataset for Egocentric Hand-Tool Segmentation in Open Surgery Videos",
+            "authors": [
+              "Nathan Darjana",
+              "Ryo Fujii",
+              "Hideo Saito",
+              "Hiroki Kajita"
+            ],
+            "year": "2025",
+            "venue": null,
+            "extra": {}
+          },
+          "map_row": {
+            "row_id": "B-14",
+            "line": 81,
+            "literature": "Nathan Darjana, Ryo Fujii, Hideo Saito, Hiroki Kajita 2025, EgoSurgery-HTS: A Dataset for Egocentric Hand-Tool Segmentation in Open Surgery Videos",
+            "venue": "プレプリント。後に Healthcare Technology Letters 系の掲載情報あり（報告の記載）。N1 も Healthcare Technology Letters（PMC 収載）と書く",
+            "id_text": "arXiv 2503.18755"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "EgoSurgery-HTS: A Dataset for Egocentric Hand-Tool Segmentation in Open Surgery Videos"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 4 名",
+            "map": [
+              "Nathan Darjana",
+              "Ryo Fujii",
+              "Hideo Saito",
+              "Hiroki Kajita"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "プレプリント。後に Healthcare Technology Letters 系の掲載情報あり（報告の記載）。N1 も Healthcare Technology Letters（PMC 収載）と書く"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "doi",
+          "id": "10.1007/978-3-032-05114-1_43",
+          "lines": [
+            82
+          ],
+          "registry": "Crossref",
+          "reference": {
+            "title": "Phase-Informed Tool Segmentation for Manual Small-Incision Cataract Surgery",
+            "authors": [
+              "Bhuvan Sachdeva",
+              "Naren Akash",
+              "Tajamul Ashraf",
+              "Simon Müller",
+              "Thomas Schultz",
+              "Maximilian W. M. Wintergerst",
+              "Niharika Singri",
+              "Kaushik Murali",
+              "Mohit Jain"
+            ],
+            "year": "2025",
+            "venue": "Lecture Notes in Computer Science",
+            "extra": {
+              "type": "book-chapter",
+              "publisher": "Springer Nature Switzerland",
+              "page": "446-455"
+            }
+          },
+          "map_row": {
+            "row_id": "B-15",
+            "line": 82,
+            "literature": "Bhuvan Sachdeva ほか 2025, Phase-Informed Tool Segmentation for Manual Small-Incision Cataract Surgery（ToolSeg）",
+            "venue": "MICCAI 2025（査読）",
+            "id_text": "DOI 10.1007/978-3-032-05114-1_43、arXiv 2411.16794"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Phase-Informed Tool Segmentation for Manual Small-Incision Cataract Surgery"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Bhuvan Sachdeva"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": "Lecture Notes in Computer Science",
+            "map": "MICCAI 2025（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2411.16794",
+          "lines": [
+            82
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Phase-Informed Tool Segmentation for Manual Small-Incision Cataract Surgery",
+            "authors": [
+              "Bhuvan Sachdeva",
+              "Naren Akash",
+              "Tajamul Ashraf",
+              "Simon Mueller",
+              "Thomas Schultz",
+              "Maximilian W. M. Wintergerst",
+              "Niharika Singri Prasad",
+              "Kaushik Murali",
+              "Mohit Jain"
+            ],
+            "year": "2024",
+            "venue": null,
+            "extra": {}
+          },
+          "map_row": {
+            "row_id": "B-15",
+            "line": 82,
+            "literature": "Bhuvan Sachdeva ほか 2025, Phase-Informed Tool Segmentation for Manual Small-Incision Cataract Surgery（ToolSeg）",
+            "venue": "MICCAI 2025（査読）",
+            "id_text": "DOI 10.1007/978-3-032-05114-1_43、arXiv 2411.16794"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Phase-Informed Tool Segmentation for Manual Small-Incision Cataract Surgery"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Bhuvan Sachdeva"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "MICCAI 2025（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "1904.03000",
+          "lines": [
+            83
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "What Object Should I Use? - Task Driven Object Detection",
+            "authors": [
+              "Johann Sawatzky",
+              "Yaser Souri",
+              "Christian Grund",
+              "Juergen Gall"
+            ],
+            "year": "2019",
+            "venue": null,
+            "extra": {
+              "comment": "CVPR 2019. The first two authors contributed equally, ordered alphabetically"
+            }
+          },
+          "map_row": {
+            "row_id": "B-16",
+            "line": 83,
+            "literature": "Johann Sawatzky, Yaser Souri, Christian Grund, Juergen Gall 2019, What Object Should I Use? – Task Driven Object Detection（COCO-Tasks）",
+            "venue": "CVPR 2019（査読）",
+            "id_text": "arXiv 1904.03000"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "What Object Should I Use? – Task Driven Object Detection"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 4 名",
+            "map": [
+              "Johann Sawatzky",
+              "Yaser Souri",
+              "Christian Grund",
+              "Juergen Gall"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "CVPR 2019（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2210.10775",
+          "lines": [
+            84
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "TOIST: Task Oriented Instance Segmentation Transformer with Noun-Pronoun Distillation",
+            "authors": [
+              "Pengfei Li",
+              "Beiwen Tian",
+              "Yongliang Shi",
+              "Xiaoxue Chen",
+              "Hao Zhao",
+              "Guyue Zhou",
+              "Ya-Qin Zhang"
+            ],
+            "year": "2022",
+            "venue": null,
+            "extra": {
+              "comment": "Accepted by NeurIPS 2022. Codes are available at https://github.com/AIR-DISCOVER/TOIST"
+            }
+          },
+          "map_row": {
+            "row_id": "B-17",
+            "line": 84,
+            "literature": "Pengfei Li, Beiwen Tian, Yongliang Shi, Xiaoxue Chen, Hao Zhao, Guyue Zhou, Ya-Qin Zhang 2022, TOIST: Task Oriented Instance Segmentation Transformer with Noun-Pronoun Distillation",
+            "venue": "NeurIPS 2022（査読）",
+            "id_text": "arXiv 2210.10775"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "TOIST: Task Oriented Instance Segmentation Transformer with Noun-Pronoun Distillation"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 7 名",
+            "map": [
+              "Pengfei Li",
+              "Beiwen Tian",
+              "Yongliang Shi",
+              "Xiaoxue Chen",
+              "Hao Zhao",
+              "Guyue Zhou",
+              "Ya-Qin Zhang"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "NeurIPS 2022（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2303.05499",
+          "lines": [
+            86
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Grounding DINO: Marrying DINO with Grounded Pre-Training for Open-Set Object Detection",
+            "authors": [
+              "Shilong Liu",
+              "Zhaoyang Zeng",
+              "Tianhe Ren",
+              "Feng Li",
+              "Hao Zhang",
+              "Jie Yang",
+              "Qing Jiang",
+              "Chunyuan Li",
+              "Jianwei Yang",
+              "Hang Su",
+              "Jun Zhu",
+              "Lei Zhang"
+            ],
+            "year": "2023",
+            "venue": null,
+            "extra": {
+              "comment": "Code will be available at https://github.com/IDEA-Research/GroundingDINO"
+            }
+          },
+          "map_row": {
+            "row_id": "B-19",
+            "line": 86,
+            "literature": "Shilong Liu ほか 2024, Grounding DINO: Marrying DINO with Grounded Pre-Training for Open-Set Object Detection",
+            "venue": "ECCV 2024（査読）",
+            "id_text": "arXiv 2303.05499"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Grounding DINO: Marrying DINO with Grounded Pre-Training for Open-Set Object Detection"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Shilong Liu"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "ECCV 2024（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2112.03857",
+          "lines": [
+            87
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Grounded Language-Image Pre-training",
+            "authors": [
+              "Liunian Harold Li",
+              "Pengchuan Zhang",
+              "Haotian Zhang",
+              "Jianwei Yang",
+              "Chunyuan Li",
+              "Yiwu Zhong",
+              "Lijuan Wang",
+              "Lu Yuan",
+              "Lei Zhang",
+              "Jenq-Neng Hwang",
+              "Kai-Wei Chang",
+              "Jianfeng Gao"
+            ],
+            "year": "2021",
+            "venue": null,
+            "extra": {
+              "comment": "CVPR 2022; updated visualizations; fixed hyper-parameters in Appendix C.1"
+            }
+          },
+          "map_row": {
+            "row_id": "B-20",
+            "line": 87,
+            "literature": "Liunian Harold Li ほか 2022, Grounded Language-Image Pre-training（GLIP）",
+            "venue": "CVPR 2022（査読）",
+            "id_text": "arXiv 2112.03857"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Grounded Language-Image Pre-training"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Liunian Harold Li"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "CVPR 2022（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2108.06152",
+          "lines": [
+            88
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Conditional DETR for Fast Training Convergence",
+            "authors": [
+              "Depu Meng",
+              "Xiaokang Chen",
+              "Zejia Fan",
+              "Gang Zeng",
+              "Houqiang Li",
+              "Yuhui Yuan",
+              "Lei Sun",
+              "Jingdong Wang"
+            ],
+            "year": "2021",
+            "venue": null,
+            "extra": {
+              "comment": "Accepted by ICCV 2021. The first two authors share first authorship, and the order was determined by rolling dice"
+            }
+          },
+          "map_row": {
+            "row_id": "B-21",
+            "line": 88,
+            "literature": "Depu Meng ほか 2021, Conditional DETR for Fast Training Convergence",
+            "venue": "ICCV 2021（査読）",
+            "id_text": "arXiv 2108.06152"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Conditional DETR for Fast Training Convergence"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Depu Meng"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "ICCV 2021（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2407.07402",
+          "lines": [
+            89
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "ActionVOS: Actions as Prompts for Video Object Segmentation",
+            "authors": [
+              "Liangyang Ouyang",
+              "Ruicong Liu",
+              "Yifei Huang",
+              "Ryosuke Furuta",
+              "Yoichi Sato"
+            ],
+            "year": "2024",
+            "venue": null,
+            "extra": {
+              "comment": "This paper is accepted by ECCV2024. Code will be released at https://github.com/ut-vision/ActionVOS"
+            }
+          },
+          "map_row": {
+            "row_id": "B-22",
+            "line": 89,
+            "literature": "（著者は報告に記載なし）2024, ActionVOS: Actions as Prompts for Video Object Segmentation",
+            "venue": "ECCV 2024（査読）",
+            "id_text": "arXiv 2407.07402、DOI 10.1007/978-3-031-72684-2_13"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "ActionVOS: Actions as Prompts for Video Object Segmentation"
+          },
+          "authors": {
+            "result": null,
+            "detail": "地図に著者なし",
+            "map": null,
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "ECCV 2024（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "doi",
+          "id": "10.1007/978-3-031-72684-2_13",
+          "lines": [
+            89
+          ],
+          "registry": "Crossref",
+          "reference": {
+            "title": "ActionVOS: Actions as Prompts for Video Object Segmentation",
+            "authors": [
+              "Liangyang Ouyang",
+              "Ruicong Liu",
+              "Yifei Huang",
+              "Ryosuke Furuta",
+              "Yoichi Sato"
+            ],
+            "year": "2024",
+            "venue": "Lecture Notes in Computer Science",
+            "extra": {
+              "type": "book-chapter",
+              "publisher": "Springer Nature Switzerland",
+              "page": "216-235"
+            }
+          },
+          "map_row": {
+            "row_id": "B-22",
+            "line": 89,
+            "literature": "（著者は報告に記載なし）2024, ActionVOS: Actions as Prompts for Video Object Segmentation",
+            "venue": "ECCV 2024（査読）",
+            "id_text": "arXiv 2407.07402、DOI 10.1007/978-3-031-72684-2_13"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "ActionVOS: Actions as Prompts for Video Object Segmentation"
+          },
+          "authors": {
+            "result": null,
+            "detail": "地図に著者なし",
+            "map": null,
+            "et_al": false
+          },
+          "venue": {
+            "reference": "Lecture Notes in Computer Science",
+            "map": "ECCV 2024（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2207.10433",
+          "lines": [
+            90
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "StreamYOLO: Real-time Object Detection for Streaming Perception",
+            "authors": [
+              "Jinrong Yang",
+              "Songtao Liu",
+              "Zeming Li",
+              "Xiaoping Li",
+              "Jian Sun"
+            ],
+            "year": "2022",
+            "venue": null,
+            "extra": {
+              "comment": "Extended version of arXiv:2203.12338"
+            }
+          },
+          "map_row": {
+            "row_id": "B-23",
+            "line": 90,
+            "literature": "Jinrong Yang, Songtao Liu, Zeming Li, Xiaoping Li, Jian Sun 2022, StreamYOLO: Real-time Object Detection for Streaming Perception（査読版の題名は Real-time Object Detection for Streaming Perception）",
+            "venue": "CVPR 2022（査読）",
+            "id_text": "arXiv 2207.10433"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "StreamYOLO: Real-time Object Detection for Streaming Perception"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 5 名",
+            "map": [
+              "Jinrong Yang",
+              "Songtao Liu",
+              "Zeming Li",
+              "Xiaoping Li",
+              "Jian Sun"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "CVPR 2022（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2210.15518",
+          "lines": [
+            91
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "LongShortNet: Exploring Temporal and Semantic Features Fusion in Streaming Perception",
+            "authors": [
+              "Chenyang Li",
+              "Zhi-Qi Cheng",
+              "Jun-Yan He",
+              "Pengyu Li",
+              "Bin Luo",
+              "Hanyuan Chen",
+              "Yifeng Geng",
+              "Jin-Peng Lan",
+              "Xuansong Xie"
+            ],
+            "year": "2022",
+            "venue": null,
+            "extra": {
+              "comment": "Accepted at ICASSP 2023, source code is at https://github.com/zhiqic/LongShortNet"
+            }
+          },
+          "map_row": {
+            "row_id": "B-24",
+            "line": 91,
+            "literature": "Chenyang Li ほか 2023, LongShortNet: Exploring Temporal and Semantic Features Fusion in Streaming Perception",
+            "venue": "ICASSP 2023（査読）",
+            "id_text": "arXiv 2210.15518"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "LongShortNet: Exploring Temporal and Semantic Features Fusion in Streaming Perception"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Chenyang Li"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": null,
+            "map": "ICASSP 2023（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "doi",
+          "id": "10.24963/ijcai.2023/90",
+          "lines": [
+            92
+          ],
+          "registry": "Crossref",
+          "reference": {
+            "title": "DAMO-StreamNet: Optimizing Streaming Perception in Autonomous Driving",
+            "authors": [
+              "Jun-Yan He",
+              "Zhi-Qi Cheng",
+              "Chenyang Li",
+              "Wangmeng Xiang",
+              "Binghui Chen",
+              "Bin Luo",
+              "Yifeng Geng",
+              "Xuansong Xie"
+            ],
+            "year": "2023",
+            "venue": "Proceedings of the Thirty-Second International Joint Conference on Artificial Intelligence",
+            "extra": {
+              "type": "proceedings-article",
+              "publisher": "International Joint Conferences on Artificial Intelligence Organization",
+              "page": "810-818"
+            }
+          },
+          "map_row": {
+            "row_id": "B-25",
+            "line": 92,
+            "literature": "Jun-Yan He ほか 2023, DAMO-StreamNet: Optimizing Streaming Perception in Autonomous Driving",
+            "venue": "IJCAI 2023（査読）",
+            "id_text": "DOI 10.24963/ijcai.2023/90、arXiv 2303.17144"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "DAMO-StreamNet: Optimizing Streaming Perception in Autonomous Driving"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Jun-Yan He"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": "Proceedings of the Thirty-Second International Joint Conference on Artificial Intelligence",
+            "map": "IJCAI 2023（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2303.17144",
+          "lines": [
+            92
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "DAMO-StreamNet: Optimizing Streaming Perception in Autonomous Driving",
+            "authors": [
+              "Jun-Yan He",
+              "Zhi-Qi Cheng",
+              "Chenyang Li",
+              "Wangmeng Xiang",
+              "Binghui Chen",
+              "Bin Luo",
+              "Yifeng Geng",
+              "Xuansong Xie"
+            ],
+            "year": "2023",
+            "venue": "In the 32nd International Joint Conference on Artificial Intelligence (IJCAI 2023)",
+            "extra": {
+              "comment": "Accepted to IJCAI 2023; 9 pages, 4 figures, 6 tables; the code is at https://github.com/zhiqic/DAMO-StreamNet"
+            }
+          },
+          "map_row": {
+            "row_id": "B-25",
+            "line": 92,
+            "literature": "Jun-Yan He ほか 2023, DAMO-StreamNet: Optimizing Streaming Perception in Autonomous Driving",
+            "venue": "IJCAI 2023（査読）",
+            "id_text": "DOI 10.24963/ijcai.2023/90、arXiv 2303.17144"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "DAMO-StreamNet: Optimizing Streaming Perception in Autonomous Driving"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "先頭 1 名（ほか）",
+            "map": [
+              "Jun-Yan He"
+            ],
+            "et_al": true
+          },
+          "venue": {
+            "reference": "In the 32nd International Joint Conference on Artificial Intelligence (IJCAI 2023)",
+            "map": "IJCAI 2023（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "1711.05471",
+          "lines": [
+            93
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Exploring the Bounds of the Utility of Context for Object Detection",
+            "authors": [
+              "Ehud Barnea",
+              "Ohad Ben-Shahar"
+            ],
+            "year": "2017",
+            "venue": null,
+            "extra": {}
+          },
+          "map_row": {
+            "row_id": "B-26",
+            "line": 93,
+            "literature": "Ehud Barnea, Ohad Ben-Shahar 2019, Exploring the Bounds of the Utility of Context for Object Detection",
+            "venue": "CVPR 2019（査読）",
+            "id_text": "arXiv 1711.05471"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Exploring the Bounds of the Utility of Context for Object Detection"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 2 名",
+            "map": [
+              "Ehud Barnea",
+              "Ohad Ben-Shahar"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "CVPR 2019（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2001.03152",
+          "lines": [
+            94
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Don't Judge an Object by Its Context: Learning to Overcome Contextual Bias",
+            "authors": [
+              "Krishna Kumar Singh",
+              "Dhruv Mahajan",
+              "Kristen Grauman",
+              "Yong Jae Lee",
+              "Matt Feiszli",
+              "Deepti Ghadiyaram"
+            ],
+            "year": "2020",
+            "venue": null,
+            "extra": {
+              "comment": "CVPR 2020"
+            }
+          },
+          "map_row": {
+            "row_id": "B-27",
+            "line": 94,
+            "literature": "Krishna Kumar Singh, Dhruv Mahajan, Kristen Grauman, Yong Jae Lee, Matt Feiszli, Deepti Ghadiyaram 2020, Don't Judge an Object by Its Context: Learning to Overcome Contextual Bias",
+            "venue": "CVPR 2020（査読）",
+            "id_text": "arXiv 2001.03152"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Don't Judge an Object by Its Context: Learning to Overcome Contextual Bias"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 6 名",
+            "map": [
+              "Krishna Kumar Singh",
+              "Dhruv Mahajan",
+              "Kristen Grauman",
+              "Yong Jae Lee",
+              "Matt Feiszli",
+              "Deepti Ghadiyaram"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "CVPR 2020（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2104.13582",
+          "lines": [
+            95
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "[Re] Don't Judge an Object by Its Context: Learning to Overcome Contextual Bias",
+            "authors": [
+              "Sunnie S. Y. Kim",
+              "Sharon Zhang",
+              "Nicole Meister",
+              "Olga Russakovsky"
+            ],
+            "year": "2021",
+            "venue": null,
+            "extra": {
+              "comment": "ML Reproducibility Challenge 2020. Accepted for publication in the ReScience C journal",
+              "doi": "10.5281/zenodo.4834352"
+            }
+          },
+          "map_row": {
+            "row_id": "B-28",
+            "line": 95,
+            "literature": "Sunnie S. Y. Kim, Sharon Zhang, Nicole Meister, Olga Russakovsky 2021, [Re] Don't Judge an Object by Its Context: Learning to Overcome Contextual Bias",
+            "venue": "ML Reproducibility Challenge 系の再現",
+            "id_text": "arXiv 2104.13582"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "[Re] Don't Judge an Object by Its Context: Learning to Overcome Contextual Bias"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 4 名",
+            "map": [
+              "Sunnie S. Y. Kim",
+              "Sharon Zhang",
+              "Nicole Meister",
+              "Olga Russakovsky"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "ML Reproducibility Challenge 系の再現"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "2602.06474",
+          "lines": [
+            96
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "LAB-Det: Language as a Domain-Invariant Bridge for Training-Free One-Shot Domain Generalization in Object Detection",
+            "authors": [
+              "Xu Zhang",
+              "Zhe Chen",
+              "Jing Zhang",
+              "Dacheng Tao"
+            ],
+            "year": "2026",
+            "venue": null,
+            "extra": {}
+          },
+          "map_row": {
+            "row_id": "B-29",
+            "line": 96,
+            "literature": "Xu Zhang, Zhe Chen, Jing Zhang, Dacheng Tao 2026, LAB-Det: Language as a Domain-Invariant Bridge for Training-Free One-Shot Domain Generalization in Object Detection",
+            "venue": "プレプリント",
+            "id_text": "arXiv 2602.06474"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "LAB-Det: Language as a Domain-Invariant Bridge for Training-Free One-Shot Domain Generalization in Object Detection"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 4 名",
+            "map": [
+              "Xu Zhang",
+              "Zhe Chen",
+              "Jing Zhang",
+              "Dacheng Tao"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "プレプリント"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "doi",
+          "id": "10.1016/j.neuroimage.2017.06.061",
+          "lines": [
+            97
+          ],
+          "registry": "Crossref",
+          "reference": {
+            "title": "Cross-validation failure: Small sample sizes lead to large error bars",
+            "authors": [
+              "Gaël Varoquaux"
+            ],
+            "year": "2018",
+            "venue": "NeuroImage",
+            "extra": {
+              "type": "journal-article",
+              "publisher": "Elsevier BV",
+              "volume": "180",
+              "page": "68-77"
+            }
+          },
+          "map_row": {
+            "row_id": "B-30",
+            "line": 97,
+            "literature": "Gaël Varoquaux 2018, Cross-validation failure: Small sample sizes lead to large error bars",
+            "venue": "NeuroImage（査読）",
+            "id_text": "DOI 10.1016/j.neuroimage.2017.06.061、arXiv 1706.07581"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Cross-validation failure: Small sample sizes lead to large error bars"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 1 名",
+            "map": [
+              "Gaël Varoquaux"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": "NeuroImage",
+            "map": "NeuroImage（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        },
+        {
+          "kind": "arxiv",
+          "id": "1706.07581",
+          "lines": [
+            97
+          ],
+          "registry": "arXiv",
+          "reference": {
+            "title": "Cross-validation failure: small sample sizes lead to large error bars",
+            "authors": [
+              "Gaël Varoquaux"
+            ],
+            "year": "2017",
+            "venue": null,
+            "extra": {}
+          },
+          "map_row": {
+            "row_id": "B-30",
+            "line": 97,
+            "literature": "Gaël Varoquaux 2018, Cross-validation failure: Small sample sizes lead to large error bars",
+            "venue": "NeuroImage（査読）",
+            "id_text": "DOI 10.1016/j.neuroimage.2017.06.061、arXiv 1706.07581"
+          },
+          "other_rows": [],
+          "title": {
+            "result": "一致",
+            "detail": "全体",
+            "map": "Cross-validation failure: Small sample sizes lead to large error bars"
+          },
+          "authors": {
+            "result": "一致",
+            "detail": "全 1 名",
+            "map": [
+              "Gaël Varoquaux"
+            ],
+            "et_al": false
+          },
+          "venue": {
+            "reference": null,
+            "map": "NeuroImage（査読）"
+          },
+          "note": "",
+          "class": "実在・書誌一致"
+        }
+      ],
+      "requests": [
+        {
+          "service": "doi",
+          "url": "https://doi.org/api/handles/10.1007/978-3-032-05114-1_43",
+          "at": "2026-10-19T02:40:11+09:00",
+          "status": 200,
+          "bytes": 548
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/doiRA/10.1007/978-3-032-05114-1_43",
+          "at": "2026-10-19T02:40:12+09:00",
+          "status": 200,
+          "bytes": 75
+        },
+        {
+          "service": "crossref",
+          "url": "https://api.crossref.org/works/10.1007/978-3-032-05114-1_43",
+          "at": "2026-10-19T02:40:12+09:00",
+          "status": 200,
+          "bytes": 14455
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/api/handles/10.1007/978-3-031-72684-2_13",
+          "at": "2026-10-19T02:40:13+09:00",
+          "status": 200,
+          "bytes": 548
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/doiRA/10.1007/978-3-031-72684-2_13",
+          "at": "2026-10-19T02:40:14+09:00",
+          "status": 200,
+          "bytes": 75
+        },
+        {
+          "service": "crossref",
+          "url": "https://api.crossref.org/works/10.1007/978-3-031-72684-2_13",
+          "at": "2026-10-19T02:40:14+09:00",
+          "status": 200,
+          "bytes": 30424
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/api/handles/10.24963/ijcai.2023/90",
+          "at": "2026-10-19T02:40:15+09:00",
+          "status": 200,
+          "bytes": 527
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/doiRA/10.24963/ijcai.2023/90",
+          "at": "2026-10-19T02:40:16+09:00",
+          "status": 200,
+          "bytes": 69
+        },
+        {
+          "service": "crossref",
+          "url": "https://api.crossref.org/works/10.24963/ijcai.2023/90",
+          "at": "2026-10-19T02:40:16+09:00",
+          "status": 200,
+          "bytes": 4456
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/api/handles/10.1016/j.neuroimage.2017.06.061",
+          "at": "2026-10-19T02:40:17+09:00",
+          "status": 200,
+          "bytes": 737
+        },
+        {
+          "service": "doi",
+          "url": "https://doi.org/doiRA/10.1016/j.neuroimage.2017.06.061",
+          "at": "2026-10-19T02:40:18+09:00",
+          "status": 200,
+          "bytes": 79
+        },
+        {
+          "service": "crossref",
+          "url": "https://api.crossref.org/works/10.1016/j.neuroimage.2017.06.061",
+          "at": "2026-10-19T02:40:18+09:00",
+          "status": 200,
+          "bytes": 19882
+        },
+        {
+          "service": "arxiv",
+          "url": "https://export.arxiv.org/api/query?id_list=1602.03012,1610.08851,1610.08844,1907.06099,1709.07871,2112.02244,2112.10003,2104.12763,1905.07553,1912.03538,1907.06390,1807.00119,2406.03095,2405.19644,2503.18755,2411.16794,1904.03000,2210.10775,2303.05499,2112.03857,2108.06152,2407.07402,2207.10433,2210.15518,2303.17144,1711.05471,2001.03152,2104.13582,2602.06474,1706.07581&max_results=30",
+          "at": "2026-10-19T02:40:19+09:00",
+          "status": 200,
+          "bytes": 72064
+        }
+      ]
+    }
+  }
+}
