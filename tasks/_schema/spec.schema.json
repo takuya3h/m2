@@ -390,6 +390,39 @@
               "minItems": 1
             }
           }
+        },
+        "bundle_extras": {
+          "type": "array",
+          "description": "バンドルに入れる追加ファイルの宣言。tools/fetch_task.py の extras_from_spec と同じ制約にする（経路は契約ディレクトリからの相対で脱出できない形、既定の spec.yaml・SPEC.md・prereg.md は書けない、sha256 は 64 桁の小文字十六進、bytes は非負整数）。同じ経路の二度の宣言は schema では表せないため、取り込みの側が拒む。",
+          "items": {
+            "type": "object",
+            "required": [
+              "path",
+              "sha256",
+              "bytes"
+            ],
+            "properties": {
+              "path": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*(/[A-Za-z0-9][A-Za-z0-9._-]*)*(?![\\s\\S])",
+                "not": {
+                  "enum": [
+                    "spec.yaml",
+                    "SPEC.md",
+                    "prereg.md"
+                  ]
+                }
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}(?![\\s\\S])"
+              },
+              "bytes": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
         }
       }
     },

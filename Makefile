@@ -220,6 +220,20 @@ task-start:
 task-release:
 	@.venv/bin/python scripts/task_release.py $(TASK) --end "$(END)" $(if $(REASON),--reason "$(REASON)",)
 
+# 証拠地図の書誌 ID（DOI と arXiv ID）を照合先に問い合わせて分類する。一つの命令で一つの地図。
+# 結果は docs/evidence/verification/ に書く。地図は書き換えない。読み方は docs/evidence/README.md。
+#   make evidence-verify MAP=docs/evidence/2026-10-18-C-d2p-interface.md
+# make 経由では失敗が終了コード 2 に潰れる。0/1/3 を見分けるなら tools/ を直接呼ぶ。
+.PHONY: evidence-verify
+evidence-verify:
+	@.venv/bin/python tools/verify_evidence_ids.py $(MAP)
+
+# 証拠地図の様式を雛形（docs/evidence/_template.md）の「検査が見る項目」で検査する。
+# MAP を省略すると docs/evidence/ の地図すべて（**種類:** を持たない文書は対象外）。
+.PHONY: evidence-check
+evidence-check:
+	@.venv/bin/python tools/check_evidence_map.py $(MAP)
+
 clean:
 	find . -type d -name __pycache__ -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete
