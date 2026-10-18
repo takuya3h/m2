@@ -1,0 +1,20 @@
+Using /home/ubuntu/.cache/torch_extensions/py311_cu118 as PyTorch extensions root...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /home/ubuntu/.cache/torch_extensions/py311_cu118/MultiScaleDeformableAttention/build.ninja...
+Building extension module MultiScaleDeformableAttention...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+ninja: no work to do.
+Loading extension module MultiScaleDeformableAttention...
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+[det-signal] ckpt=experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth sha=30d199b15201cf3c03954852d8acc6fb58fe5349baef2fd200e877237ff682c4 part=val videos=['09', '10'] images=1515 ms_deform_attn_ext=True
+[det-signal] 500/1515 43s
+[det-signal] 1000/1515 85s
+[det-signal] 1500/1515 128s
+{"task_id": "T-2026-10-18-stage2-pilot-folda", "ckpt": "experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth", "ckpt_sha256": "30d199b15201cf3c03954852d8acc6fb58fe5349baef2fd200e877237ff682c4", "ann_dir": "data/annotations/egosurgery_tool_folds/A", "part": "val", "videos": ["09", "10"], "frames": 1515, "k": 11, "precision": "fp32", "class_order": ["Bipolar Forceps", "Electric Cautery", "Forceps", "Gauze", "Hook", "Mouth Gag", "Needle Holders", "Raspatory", "Retractor", "Scalpel", "Scissors", "Skewer", "Suction Cannula", "Syringe", "Tweezers"], "dup_query_tokens": 7488, "postprocess_topk_mismatch_frames": 0, "gt_boxes_total": 4707, "gt_present_total": 4363, "elapsed_seconds": 129.57220080122352, "check_map_AP": 0.7273450248398429}

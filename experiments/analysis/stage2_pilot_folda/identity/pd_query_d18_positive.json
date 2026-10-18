@@ -1,0 +1,63 @@
+{
+  "task_id": "T-2026-10-18-stage2-pilot-folda",
+  "cfg": "configs/stage2pilot/pd_query_d18.py",
+  "det_ckpt": "/home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth",
+  "det_ckpt_sha256": "30d199b15201cf3c03954852d8acc6fb58fe5349baef2fd200e877237ff682c4",
+  "iface_state": null,
+  "fixed_table": null,
+  "perturb": true,
+  "signal_val": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/arms/PD/gtpred_noCF_val.npz",
+  "zero_ctx": false,
+  "dim": 18,
+  "videos": [
+    "09",
+    "10"
+  ],
+  "eval_detection_mAP": 0.7271761356431075,
+  "load_report": {
+    "missing_from_ckpt": [
+      "phase_iface.bias",
+      "phase_iface.weight"
+    ],
+    "unexpected_in_ckpt": [],
+    "missing_are_interface_only": true
+  },
+  "non_interface_digest": "4fed85166852cd54f07071a5b9ce57804828e95c23148db11bf7bf0afe08ce60",
+  "interface_params": 4864,
+  "metrics": {
+    "AP": 0.7271761356431075,
+    "AP50": 0.851859615975645,
+    "per_class_ap": {
+      "Bipolar Forceps": 0.7900252682084904,
+      "Electric Cautery": 0.9689166214262881,
+      "Forceps": 0.3563589588192981,
+      "Gauze": 0.26945849886192713,
+      "Hook": 0.6358020870758212,
+      "Mouth Gag": 0.7991763533229367,
+      "Needle Holders": 0.8453742497218998,
+      "Raspatory": 0.8036780594384394,
+      "Retractor": NaN,
+      "Scalpel": 0.9005358395474192,
+      "Scissors": 0.7094273170585175,
+      "Skewer": 0.9443247757439192,
+      "Suction Cannula": 0.8347322563314228,
+      "Syringe": 0.5354289035603784,
+      "Tweezers": 0.7872267098867471
+    },
+    "n_images": 1515,
+    "target_AP": 0.7947985692997293,
+    "target_missing": [],
+    "control_AP": 0.6726484546007585,
+    "control_missing": [],
+    "per_video_AP": {
+      "09": 0.703871504069271,
+      "10": 0.6420094418940466
+    }
+  },
+  "diff_vs_ref": {
+    "comparable": true,
+    "max_abs_score_diff": 0.4595635235309601,
+    "max_abs_bbox_diff_px": 1930.2922401428223,
+    "label_mismatch": 286060
+  }
+}

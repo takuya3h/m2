@@ -1,0 +1,94 @@
+{
+  "task_id": "T-2026-10-18-stage2-pilot-folda",
+  "head": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/efros_ptower/experiments/phase1/stage1_ptower_20_009_P15_C_L8_w0.3_h30_foldA_coco_lr0.0001_seed42/checkpoints/best.pth",
+  "head_sha256": "0d76d446796f855a51640d756d6d3436573ff40ed600915980021c5f4cc6ad6d",
+  "cache": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/efros_ptower/data/processed/stage1_features/p15ctl_coco_lr0.0001_foldA_seed42/all_gap.npz",
+  "cache_sha256": "c402e214d28d32c68b396fe84bbefefffdf7577d9550c421364543af78f172da",
+  "part": "train",
+  "videos": [
+    "01",
+    "02",
+    "03",
+    "06",
+    "08",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15"
+  ],
+  "frames": 9657,
+  "class_order": [
+    "anesthesia",
+    "closure",
+    "design",
+    "disinfection",
+    "dissection",
+    "dressing",
+    "hemostasis",
+    "incision",
+    "irrigation"
+  ],
+  "phase_jaccard": 0.8309798026891171,
+  "phase_accuracy": 0.9578544061302682,
+  "per_video": {
+    "01": {
+      "phase_jaccard": 0.9159061610920548,
+      "phase_accuracy": 0.9572836801752465
+    },
+    "02": {
+      "phase_jaccard": 0.9076579729081867,
+      "phase_accuracy": 0.9783080260303688
+    },
+    "03": {
+      "phase_jaccard": 0.8140239319501831,
+      "phase_accuracy": 0.9577594123048668
+    },
+    "06": {
+      "phase_jaccard": 0.9271658891887078,
+      "phase_accuracy": 0.9615663524292966
+    },
+    "08": {
+      "phase_jaccard": 0.9123786521286575,
+      "phase_accuracy": 0.9771428571428571
+    },
+    "11": {
+      "phase_jaccard": 0.8392053714248242,
+      "phase_accuracy": 0.9655172413793104
+    },
+    "12": {
+      "phase_jaccard": 0.8324047600676585,
+      "phase_accuracy": 0.9211822660098522
+    },
+    "13": {
+      "phase_jaccard": 0.7885550584529067,
+      "phase_accuracy": 0.9136253041362531
+    },
+    "14": {
+      "phase_jaccard": 0.8767062809865729,
+      "phase_accuracy": 0.9651933701657458
+    },
+    "15": {
+      "phase_jaccard": 0.9299271787643881,
+      "phase_accuracy": 0.9547619047619048
+    }
+  },
+  "files": {
+    "P0": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P0_train.npz",
+      "shape": [
+        9657,
+        9
+      ],
+      "sha256": "e58308d39813b490de494c8bfaf5fa772c072e39e2c9d19bc011a2f96a056009"
+    },
+    "P-GT": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P-GT_train.npz",
+      "shape": [
+        9657,
+        9
+      ],
+      "sha256": "6cb729a9724efdf51aa8d92e239d7755aa6d564fe4edd2ce1ba76b7e3cf79699"
+    }
+  }
+}

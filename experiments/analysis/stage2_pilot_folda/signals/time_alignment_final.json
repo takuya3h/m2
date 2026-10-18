@@ -1,0 +1,542 @@
+{
+  "tool": "experiments/analysis/frame_signal_audit/tools/time_alignment_check.py",
+  "tool_sha256": "f799624a83ced46085755a5e73d76bab764c4895cfcca7db70034f4cb5b34383",
+  "offsets": [
+    -2,
+    -1,
+    0,
+    1,
+    2
+  ],
+  "signals_dir": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final",
+  "results": {
+    "P0/train": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P0_train.npz",
+      "rows": 9657,
+      "unshifted": {
+        "receiver_keys": 9657,
+        "matched_by_name": 9657,
+        "missing": 0,
+        "agreement_by_offset": {
+          "-2": 0.965632,
+          "-1": 0.966508,
+          "0": 0.957854,
+          "1": 0.937681,
+          "2": 0.918181
+        },
+        "judged_offset": -1,
+        "verdict": "ずらし(-1)"
+      },
+      "shifted_control": {
+        "receiver_keys": 9657,
+        "matched_by_name": 9644,
+        "missing": 13,
+        "agreement_by_offset": {
+          "-2": 0.966462,
+          "-1": 0.957798,
+          "0": 0.937681,
+          "1": 0.918181,
+          "2": 0.899979
+        },
+        "judged_offset": -2,
+        "verdict": "ずらし(-2)"
+      },
+      "control_ok": false
+    },
+    "P-GT/train": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P-GT_train.npz",
+      "rows": 9657,
+      "unshifted": {
+        "receiver_keys": 9657,
+        "matched_by_name": 9657,
+        "missing": 0,
+        "agreement_by_offset": {
+          "-2": 0.957325,
+          "-1": 0.97864,
+          "0": 1.0,
+          "1": 0.97864,
+          "2": 0.957325
+        },
+        "judged_offset": 0,
+        "verdict": "同時刻"
+      },
+      "shifted_control": {
+        "receiver_keys": 9657,
+        "matched_by_name": 9644,
+        "missing": 13,
+        "agreement_by_offset": {
+          "-2": 0.978611,
+          "-1": 1.0,
+          "0": 0.97864,
+          "1": 0.957325,
+          "2": 0.936161
+        },
+        "judged_offset": -1,
+        "verdict": "ずらし(-1)"
+      },
+      "control_ok": true
+    },
+    "D0/train": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D0_train.npz",
+      "rows": 9657,
+      "unshifted": {
+        "receiver_keys": 9657,
+        "matched_by_name": 9657,
+        "missing": 0,
+        "agreement_by_offset": {
+          "-2": 0.957741,
+          "-1": 0.969204,
+          "0": 0.994104,
+          "1": 0.969473,
+          "2": 0.958121
+        },
+        "judged_offset": 0,
+        "verdict": "同時刻"
+      },
+      "shifted_control": {
+        "receiver_keys": 9657,
+        "matched_by_name": 9644,
+        "missing": 13,
+        "agreement_by_offset": {
+          "-2": 0.969204,
+          "-1": 0.994103,
+          "0": 0.969473,
+          "1": 0.958121,
+          "2": 0.949705
+        },
+        "judged_offset": -1,
+        "verdict": "ずらし(-1)"
+      },
+      "control_ok": true
+    },
+    "D-GT/train": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D-GT_train.npz",
+      "rows": 9657,
+      "unshifted": {
+        "receiver_keys": 9657,
+        "matched_by_name": 9657,
+        "missing": 0,
+        "agreement_by_offset": {
+          "-2": 0.57128,
+          "-1": 0.664144,
+          "0": 1.0,
+          "1": 0.664144,
+          "2": 0.57128
+        },
+        "judged_offset": 0,
+        "verdict": "同時刻"
+      },
+      "shifted_control": {
+        "receiver_keys": 9657,
+        "matched_by_name": 9644,
+        "missing": 13,
+        "agreement_by_offset": {
+          "-2": 0.664313,
+          "-1": 1.0,
+          "0": 0.664144,
+          "1": 0.57128,
+          "2": 0.509046
+        },
+        "judged_offset": -1,
+        "verdict": "ずらし(-1)"
+      },
+      "control_ok": true
+    },
+    "D0-RT/train": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D0-RT_train.npz",
+      "rows": 9657,
+      "unshifted": {
+        "receiver_keys": 9657,
+        "matched_by_name": 9657,
+        "missing": 0,
+        "agreement_by_offset": {
+          "-2": 0.957616,
+          "-1": 0.96892,
+          "0": 0.993745,
+          "1": 0.969266,
+          "2": 0.957928
+        },
+        "judged_offset": 0,
+        "verdict": "同時刻"
+      },
+      "shifted_control": {
+        "receiver_keys": 9657,
+        "matched_by_name": 9644,
+        "missing": 13,
+        "agreement_by_offset": {
+          "-2": 0.96892,
+          "-1": 0.993744,
+          "0": 0.969266,
+          "1": 0.957928,
+          "2": 0.949428
+        },
+        "judged_offset": -1,
+        "verdict": "ずらし(-1)"
+      },
+      "control_ok": true
+    },
+    "D0-INST/train": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D0-INST_train.npz",
+      "rows": 9657,
+      "unshifted": {
+        "receiver_keys": 9657,
+        "matched_by_name": 9657,
+        "missing": 0,
+        "agreement_by_offset": {
+          "-2": 0.95781,
+          "-1": 0.969314,
+          "0": 0.994201,
+          "1": 0.969542,
+          "2": 0.958218
+        },
+        "judged_offset": 0,
+        "verdict": "同時刻"
+      },
+      "shifted_control": {
+        "receiver_keys": 9657,
+        "matched_by_name": 9644,
+        "missing": 13,
+        "agreement_by_offset": {
+          "-2": 0.969314,
+          "-1": 0.9942,
+          "0": 0.969542,
+          "1": 0.958218,
+          "2": 0.949802
+        },
+        "judged_offset": -1,
+        "verdict": "ずらし(-1)"
+      },
+      "control_ok": true
+    },
+    "D0-INST-UQ/train": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D0-INST-UQ_train.npz",
+      "rows": 9657,
+      "unshifted": {
+        "receiver_keys": 9657,
+        "matched_by_name": 9657,
+        "missing": 0,
+        "agreement_by_offset": {
+          "-2": 0.95781,
+          "-1": 0.969314,
+          "0": 0.994201,
+          "1": 0.969542,
+          "2": 0.958218
+        },
+        "judged_offset": 0,
+        "verdict": "同時刻"
+      },
+      "shifted_control": {
+        "receiver_keys": 9657,
+        "matched_by_name": 9644,
+        "missing": 13,
+        "agreement_by_offset": {
+          "-2": 0.969314,
+          "-1": 0.9942,
+          "0": 0.969542,
+          "1": 0.958218,
+          "2": 0.949802
+        },
+        "judged_offset": -1,
+        "verdict": "ずらし(-1)"
+      },
+      "control_ok": true
+    },
+    "D-GT-INST/train": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D-GT-INST_train.npz",
+      "rows": 9657,
+      "unshifted": {
+        "receiver_keys": 9657,
+        "matched_by_name": 9657,
+        "missing": 0,
+        "agreement_by_offset": {
+          "-2": 0.57128,
+          "-1": 0.664144,
+          "0": 1.0,
+          "1": 0.664144,
+          "2": 0.57128
+        },
+        "judged_offset": 0,
+        "verdict": "同時刻"
+      },
+      "shifted_control": {
+        "receiver_keys": 9657,
+        "matched_by_name": 9644,
+        "missing": 13,
+        "agreement_by_offset": {
+          "-2": 0.664313,
+          "-1": 1.0,
+          "0": 0.664144,
+          "1": 0.57128,
+          "2": 0.509046
+        },
+        "judged_offset": -1,
+        "verdict": "ずらし(-1)"
+      },
+      "control_ok": true
+    },
+    "P0/val": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P0_val.npz",
+      "rows": 1515,
+      "unshifted": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1515,
+        "missing": 0,
+        "agreement_by_offset": {
+          "-2": 0.865474,
+          "-1": 0.873016,
+          "0": 0.871287,
+          "1": 0.857804,
+          "2": 0.846918
+        },
+        "judged_offset": -1,
+        "verdict": "ずらし(-1)"
+      },
+      "shifted_control": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1512,
+        "missing": 3,
+        "agreement_by_offset": {
+          "-2": 0.872763,
+          "-1": 0.871032,
+          "0": 0.857804,
+          "1": 0.846918,
+          "2": 0.835325
+        },
+        "judged_offset": -2,
+        "verdict": "ずらし(-2)"
+      },
+      "control_ok": false
+    },
+    "P-GT/val": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P-GT_val.npz",
+      "rows": 1515,
+      "unshifted": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1515,
+        "missing": 0,
+        "agreement_by_offset": {
+          "-2": 0.962889,
+          "-1": 0.981481,
+          "0": 1.0,
+          "1": 0.981481,
+          "2": 0.962889
+        },
+        "judged_offset": 0,
+        "verdict": "同時刻"
+      },
+      "shifted_control": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1512,
+        "missing": 3,
+        "agreement_by_offset": {
+          "-2": 0.981445,
+          "-1": 1.0,
+          "0": 0.981481,
+          "1": 0.962889,
+          "2": 0.944887
+        },
+        "judged_offset": -1,
+        "verdict": "ずらし(-1)"
+      },
+      "control_ok": true
+    },
+    "D0/val": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D0_val.npz",
+      "rows": 1515,
+      "unshifted": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1515,
+        "missing": 0,
+        "agreement_by_offset": {
+          "-2": 0.952949,
+          "-1": 0.95948,
+          "0": 0.973025,
+          "1": 0.960758,
+          "2": 0.952728
+        },
+        "judged_offset": 0,
+        "verdict": "同時刻"
+      },
+      "shifted_control": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1512,
+        "missing": 3,
+        "agreement_by_offset": {
+          "-2": 0.959488,
+          "-1": 0.972972,
+          "0": 0.960758,
+          "1": 0.952728,
+          "2": 0.946923
+        },
+        "judged_offset": -1,
+        "verdict": "ずらし(-1)"
+      },
+      "control_ok": true
+    },
+    "D-GT/val": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D-GT_val.npz",
+      "rows": 1515,
+      "unshifted": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1515,
+        "missing": 0,
+        "agreement_by_offset": {
+          "-2": 0.695162,
+          "-1": 0.752646,
+          "0": 1.0,
+          "1": 0.752646,
+          "2": 0.695162
+        },
+        "judged_offset": 0,
+        "verdict": "同時刻"
+      },
+      "shifted_control": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1512,
+        "missing": 3,
+        "agreement_by_offset": {
+          "-2": 0.753479,
+          "-1": 1.0,
+          "0": 0.752646,
+          "1": 0.695162,
+          "2": 0.634794
+        },
+        "judged_offset": -1,
+        "verdict": "ずらし(-1)"
+      },
+      "control_ok": true
+    },
+    "D0-RT/val": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D0-RT_val.npz",
+      "rows": 1515,
+      "unshifted": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1515,
+        "missing": 0,
+        "agreement_by_offset": {
+          "-2": 0.952507,
+          "-1": 0.959039,
+          "0": 0.972585,
+          "1": 0.96045,
+          "2": 0.952154
+        },
+        "judged_offset": 0,
+        "verdict": "同時刻"
+      },
+      "shifted_control": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1512,
+        "missing": 3,
+        "agreement_by_offset": {
+          "-2": 0.95909,
+          "-1": 0.972575,
+          "0": 0.96045,
+          "1": 0.952154,
+          "2": 0.946614
+        },
+        "judged_offset": -1,
+        "verdict": "ずらし(-1)"
+      },
+      "control_ok": true
+    },
+    "D0-INST/val": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D0-INST_val.npz",
+      "rows": 1515,
+      "unshifted": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1515,
+        "missing": 0,
+        "agreement_by_offset": {
+          "-2": 0.9537,
+          "-1": 0.959568,
+          "0": 0.973157,
+          "1": 0.960802,
+          "2": 0.952949
+        },
+        "judged_offset": 0,
+        "verdict": "同時刻"
+      },
+      "shifted_control": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1512,
+        "missing": 3,
+        "agreement_by_offset": {
+          "-2": 0.959576,
+          "-1": 0.973104,
+          "0": 0.960802,
+          "1": 0.952949,
+          "2": 0.947145
+        },
+        "judged_offset": -1,
+        "verdict": "ずらし(-1)"
+      },
+      "control_ok": true
+    },
+    "D0-INST-UQ/val": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D0-INST-UQ_val.npz",
+      "rows": 1515,
+      "unshifted": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1515,
+        "missing": 0,
+        "agreement_by_offset": {
+          "-2": 0.9537,
+          "-1": 0.959568,
+          "0": 0.973157,
+          "1": 0.960802,
+          "2": 0.952949
+        },
+        "judged_offset": 0,
+        "verdict": "同時刻"
+      },
+      "shifted_control": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1512,
+        "missing": 3,
+        "agreement_by_offset": {
+          "-2": 0.959576,
+          "-1": 0.973104,
+          "0": 0.960802,
+          "1": 0.952949,
+          "2": 0.947145
+        },
+        "judged_offset": -1,
+        "verdict": "ずらし(-1)"
+      },
+      "control_ok": true
+    },
+    "D-GT-INST/val": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D-GT-INST_val.npz",
+      "rows": 1515,
+      "unshifted": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1515,
+        "missing": 0,
+        "agreement_by_offset": {
+          "-2": 0.695162,
+          "-1": 0.752646,
+          "0": 1.0,
+          "1": 0.752646,
+          "2": 0.695162
+        },
+        "judged_offset": 0,
+        "verdict": "同時刻"
+      },
+      "shifted_control": {
+        "receiver_keys": 1515,
+        "matched_by_name": 1512,
+        "missing": 3,
+        "agreement_by_offset": {
+          "-2": 0.753479,
+          "-1": 1.0,
+          "0": 0.752646,
+          "1": 0.695162,
+          "2": 0.634794
+        },
+        "judged_offset": -1,
+        "verdict": "ずらし(-1)"
+      },
+      "control_ok": true
+    }
+  }
+}

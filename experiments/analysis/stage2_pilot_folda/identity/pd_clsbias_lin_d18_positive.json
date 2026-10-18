@@ -1,0 +1,63 @@
+{
+  "task_id": "T-2026-10-18-stage2-pilot-folda",
+  "cfg": "configs/stage2pilot/pd_clsbias_lin_d18.py",
+  "det_ckpt": "/home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth",
+  "det_ckpt_sha256": "30d199b15201cf3c03954852d8acc6fb58fe5349baef2fd200e877237ff682c4",
+  "iface_state": null,
+  "fixed_table": null,
+  "perturb": true,
+  "signal_val": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/arms/PD/gtpred_noCF_val.npz",
+  "zero_ctx": false,
+  "dim": 18,
+  "videos": [
+    "09",
+    "10"
+  ],
+  "eval_detection_mAP": 0.7262615782905845,
+  "load_report": {
+    "missing_from_ckpt": [
+      "phase_iface.bias",
+      "phase_iface.weight"
+    ],
+    "unexpected_in_ckpt": [],
+    "missing_are_interface_only": true
+  },
+  "non_interface_digest": "4fed85166852cd54f07071a5b9ce57804828e95c23148db11bf7bf0afe08ce60",
+  "interface_params": 285,
+  "metrics": {
+    "AP": 0.7262615782905845,
+    "AP50": 0.8507665734568437,
+    "per_class_ap": {
+      "Bipolar Forceps": 0.7906620073996674,
+      "Electric Cautery": 0.9684935236462644,
+      "Forceps": 0.3578841641253192,
+      "Gauze": 0.2657899510144625,
+      "Hook": 0.6370493536129208,
+      "Mouth Gag": 0.7986792491888647,
+      "Needle Holders": 0.8447408109335043,
+      "Raspatory": 0.799123219657776,
+      "Retractor": NaN,
+      "Scalpel": 0.8943465413658246,
+      "Scissors": 0.709628693967108,
+      "Skewer": 0.9441936430694821,
+      "Suction Cannula": 0.8344856456663381,
+      "Syringe": 0.5354316746773922,
+      "Tweezers": 0.787153617743259
+    },
+    "n_images": 1515,
+    "target_AP": 0.7927514172340284,
+    "target_missing": [],
+    "control_AP": 0.671527115903231,
+    "control_missing": [],
+    "per_video_AP": {
+      "09": 0.7035077875810077,
+      "10": 0.6390814631615402
+    }
+  },
+  "diff_vs_ref": {
+    "comparable": true,
+    "max_abs_score_diff": 0.04876938462257385,
+    "max_abs_bbox_diff_px": 1945.4985618591309,
+    "label_mismatch": 338787
+  }
+}
