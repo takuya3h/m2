@@ -1,0 +1,25 @@
+Using /home/ubuntu/.cache/torch_extensions/py311_cu118 as PyTorch extensions root...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /home/ubuntu/.cache/torch_extensions/py311_cu118/MultiScaleDeformableAttention/build.ninja...
+Building extension module MultiScaleDeformableAttention...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+ninja: no work to do.
+Loading extension module MultiScaleDeformableAttention...
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+[det-signal] ckpt=/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_dtower/stage2pilot_cf_dcoco_H2_seed42/work/best_ap.pth sha=69b027bc2322b444aa71251a2edf799bd34e2ce670795b450748f9442d7d2cff part=train videos=['01', '06', '11', '12', '15'] images=4075 ms_deform_attn_ext=True
+[det-signal] 500/4075 90s
+[det-signal] 1000/4075 180s
+[det-signal] 1500/4075 269s
+[det-signal] 2000/4075 358s
+[det-signal] 2500/4075 448s
+[det-signal] 3000/4075 537s
+[det-signal] 3500/4075 626s
+[det-signal] 4000/4075 716s
+{"task_id": "T-2026-10-18-stage2-pilot-folda", "ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_dtower/stage2pilot_cf_dcoco_H2_seed42/work/best_ap.pth", "ckpt_sha256": "69b027bc2322b444aa71251a2edf799bd34e2ce670795b450748f9442d7d2cff", "ann_dir": "data/annotations/egosurgery_tool_folds/A", "part": "train", "videos": ["01", "06", "11", "12", "15"], "frames": 4075, "k": 11, "precision": "fp32", "class_order": ["Bipolar Forceps", "Electric Cautery", "Forceps", "Gauze", "Hook", "Mouth Gag", "Needle Holders", "Raspatory", "Retractor", "Scalpel", "Scissors", "Skewer", "Suction Cannula", "Syringe", "Tweezers"], "dup_query_tokens": 16810, "postprocess_topk_mismatch_frames": 0, "gt_boxes_total": 14201, "gt_present_total": 12982, "elapsed_seconds": 729.4355805348605, "check_map_AP": 0.4534499735856436}

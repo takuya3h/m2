@@ -1,0 +1,38 @@
+amp: bf16
+cudnn_allow_tf32: true
+epochs: 4
+eval:
+  note: score 閾値の足切りなし（eval recipe = score_thr 0.0 系）
+  split: val
+  topk: 300
+film_lr: 0.0005
+inject: film
+lr: 0.0001
+matmul_allow_tf32: false
+model_cfg: /home/ubuntu/slocal2/m2/configs/stage2pilot/pd_clsbias_lin_d9.py
+phase_source: real
+rare_slots: null
+run_name: stage2pilot_pd_P2L_empty_seed42
+seed: 42
+smoke: false
+stage2pilot:
+  ann_dir: /home/ubuntu/slocal2/m2/data/annotations/egosurgery_tool_folds/A
+  best_excludes_init: true
+  ckpt_dir: /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/pd_ckpt/stage2pilot_pd_P2L_empty_seed42
+  det_ckpt: /home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth
+  eval_only: false
+  fixed_table: null
+  max_epochs: 4
+  patience: 2
+  phase_params: 150
+  save_trainable_only: true
+  signal_dim: 9
+  signal_train: /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P0_train.npz
+  signal_val: /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P0_val.npz
+  total_trainable: 150
+task_id: T-2026-10-18-stage2-pilot-folda
+tf32: false
+trainable: film
+variant: ctrl
+warm_start_ckpt: /home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth
+zero_ctx: true

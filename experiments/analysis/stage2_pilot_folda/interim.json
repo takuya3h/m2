@@ -1,8 +1,8 @@
 {
   "task_id": "T-2026-10-18-stage2-pilot-folda",
   "interim": true,
-  "n_pd_runs": 5,
-  "n_dp_runs": 39,
+  "n_pd_runs": 8,
+  "n_dp_runs": 57,
   "tables": {
     "P1-W1": {
       "type": "P1-W1",
@@ -175,13 +175,159 @@
     "P2L": {
       "type": "P2L",
       "empty": {
-        "42": null
+        "AP": {
+          "42": 0.7273490138651456
+        },
+        "target_AP": {
+          "42": 0.7950740391280233
+        },
+        "control_AP": {
+          "42": 0.6726742155377732
+        }
       },
-      "arms": {},
+      "arms": {
+        "pred_noCF": {
+          "AP": {
+            "values": {
+              "42": 0.7298350688393593
+            },
+            "delta": {
+              "42": 0.002486054974213725
+            },
+            "mean": 0.002486054974213725,
+            "min": 0.002486054974213725,
+            "max": 0.002486054974213725,
+            "reading": "UNKNOWN（seed 1 つ。幅を測れない）"
+          },
+          "target_AP": {
+            "values": {
+              "42": 0.802364409316476
+            },
+            "delta": {
+              "42": 0.007290370188452688
+            },
+            "mean": 0.007290370188452688,
+            "min": 0.007290370188452688,
+            "max": 0.007290370188452688,
+            "reading": "UNKNOWN（seed 1 つ。幅を測れない）"
+          },
+          "control_AP": {
+            "values": {
+              "42": 0.6725369162188618
+            },
+            "delta": {
+              "42": -0.00013729931891137692
+            },
+            "mean": -0.00013729931891137692,
+            "min": -0.00013729931891137692,
+            "max": -0.00013729931891137692,
+            "reading": "UNKNOWN（seed 1 つ。幅を測れない）"
+          },
+          "per_video_delta": {
+            "09": {
+              "42": 0.0011852625481079127
+            },
+            "10": {
+              "42": 0.005915834143173537
+            }
+          },
+          "runs": {
+            "42": "stage2pilot_pd_P2L_pred_noCF_seed42"
+          },
+          "epochs": {
+            "42": [
+              3,
+              4,
+              true
+            ]
+          },
+          "trainable": {
+            "42": 150
+          },
+          "wall_seconds": {
+            "42": 15767
+          }
+        },
+        "gt": {
+          "AP": {
+            "values": {
+              "42": 0.7327308591313845
+            },
+            "delta": {
+              "42": 0.0053818452662388605
+            },
+            "mean": 0.0053818452662388605,
+            "min": 0.0053818452662388605,
+            "max": 0.0053818452662388605,
+            "reading": "UNKNOWN（seed 1 つ。幅を測れない）"
+          },
+          "target_AP": {
+            "values": {
+              "42": 0.808812014912432
+            },
+            "delta": {
+              "42": 0.013737975784408718
+            },
+            "mean": 0.013737975784408718,
+            "min": 0.013737975784408718,
+            "max": 0.013737975784408718,
+            "reading": "UNKNOWN（seed 1 つ。幅を測れない）"
+          },
+          "control_AP": {
+            "values": {
+              "42": 0.6722988344123944
+            },
+            "delta": {
+              "42": -0.0003753811253788264
+            },
+            "mean": -0.0003753811253788264,
+            "min": -0.0003753811253788264,
+            "max": -0.0003753811253788264,
+            "reading": "UNKNOWN（seed 1 つ。幅を測れない）"
+          },
+          "per_video_delta": {
+            "09": {
+              "42": 0.0014513375257281247
+            },
+            "10": {
+              "42": 0.01103247845084987
+            }
+          },
+          "runs": {
+            "42": "stage2pilot_pd_P2L_gt_seed42"
+          },
+          "epochs": {
+            "42": [
+              3,
+              4,
+              true
+            ]
+          },
+          "trainable": {
+            "42": 150
+          },
+          "wall_seconds": {
+            "42": 14369
+          }
+        }
+      },
       "seeds": [
         42
       ],
-      "status": "UNKNOWN（空の腕が揃っていない）"
+      "R": null,
+      "empty_identical_across_seeds": null,
+      "empty_cost": {
+        "42": {
+          "epochs": [
+            1,
+            4,
+            false
+          ],
+          "trainable": 150,
+          "wall_seconds": 12678
+        }
+      },
+      "realization_rate": "出さない（seed 1 つ。規則 2 を当てられない）"
     },
     "P3": {
       "type": "P3",
@@ -1598,6 +1744,108 @@
         "10": 0.6245738909235108
       },
       "frozen_unchanged": true
+    },
+    "P2L/empty/42": {
+      "run": "stage2pilot_pd_P2L_empty_seed42",
+      "best_epoch": 1,
+      "epochs_run": 4,
+      "trainable": 150,
+      "wall_seconds": 12678,
+      "reached_epoch_cap": false,
+      "eval_detection_mAP": 0.7273490138651456,
+      "AP": 0.7273490138651456,
+      "target_AP": 0.7950740391280233,
+      "control_AP": 0.6726742155377732,
+      "per_class_ap": {
+        "Bipolar Forceps": 0.7898735880576099,
+        "Electric Cautery": 0.9687812331789367,
+        "Forceps": 0.356132430561365,
+        "Gauze": 0.2691812036036994,
+        "Hook": 0.6365466493780776,
+        "Mouth Gag": 0.7992107929571473,
+        "Needle Holders": 0.8456778368643455,
+        "Raspatory": 0.8037733028914329,
+        "Retractor": NaN,
+        "Scalpel": 0.900522275754905,
+        "Scissors": 0.7096809863381062,
+        "Skewer": 0.9443302741412082,
+        "Suction Cannula": 0.8348704773722107,
+        "Syringe": 0.5368707547949608,
+        "Tweezers": 0.7874343882180357
+      },
+      "per_video": {
+        "09": 0.7042765771738814,
+        "10": 0.6420997455222962
+      },
+      "frozen_unchanged": true
+    },
+    "P2L/gt/42": {
+      "run": "stage2pilot_pd_P2L_gt_seed42",
+      "best_epoch": 3,
+      "epochs_run": 4,
+      "trainable": 150,
+      "wall_seconds": 14369,
+      "reached_epoch_cap": true,
+      "eval_detection_mAP": 0.7327308591313845,
+      "AP": 0.7327308591313845,
+      "target_AP": 0.808812014912432,
+      "control_AP": 0.6722988344123944,
+      "per_class_ap": {
+        "Bipolar Forceps": 0.8112794828608959,
+        "Electric Cautery": 0.9686861923172807,
+        "Forceps": 0.35711169354116357,
+        "Gauze": 0.2691912842162604,
+        "Hook": 0.6376514052037172,
+        "Mouth Gag": 0.7996411975150939,
+        "Needle Holders": 0.8488709063326757,
+        "Raspatory": 0.821409789400578,
+        "Retractor": NaN,
+        "Scalpel": 0.9219901775796707,
+        "Scissors": 0.7126564182328078,
+        "Skewer": 0.9468325010751368,
+        "Suction Cannula": 0.8330471940067726,
+        "Syringe": 0.5425481236458789,
+        "Tweezers": 0.7873156619114504
+      },
+      "per_video": {
+        "09": 0.7057279146996095,
+        "10": 0.6531322239731461
+      },
+      "frozen_unchanged": true
+    },
+    "P2L/pred_noCF/42": {
+      "run": "stage2pilot_pd_P2L_pred_noCF_seed42",
+      "best_epoch": 3,
+      "epochs_run": 4,
+      "trainable": 150,
+      "wall_seconds": 15767,
+      "reached_epoch_cap": true,
+      "eval_detection_mAP": 0.7298350688393593,
+      "AP": 0.7298350688393593,
+      "target_AP": 0.802364409316476,
+      "control_AP": 0.6725369162188618,
+      "per_class_ap": {
+        "Bipolar Forceps": 0.7930560213355792,
+        "Electric Cautery": 0.9681085298683233,
+        "Forceps": 0.3579926297102295,
+        "Gauze": 0.2693248727976096,
+        "Hook": 0.6378716799069027,
+        "Mouth Gag": 0.7993074211911965,
+        "Needle Holders": 0.8421202324518948,
+        "Raspatory": 0.8072217686374163,
+        "Retractor": NaN,
+        "Scalpel": 0.9175133618168586,
+        "Scissors": 0.7096281803558522,
+        "Skewer": 0.9471232681949865,
+        "Suction Cannula": 0.834102835447907,
+        "Syringe": 0.5469076265975394,
+        "Tweezers": 0.7874125354387341
+      },
+      "per_video": {
+        "09": 0.7054618397219893,
+        "10": 0.6480155796654697
+      },
+      "frozen_unchanged": true
     }
   },
   "dp_runs": {
@@ -2572,6 +2820,420 @@
       "iface_params": 245760,
       "trainable": 245760,
       "wall_seconds": 172.21520298533142
+    },
+    "D1-L1/pred_CF/42": {
+      "run": "stage2pilot_dp_048_D1-L1_pred_CF_seed42",
+      "best_epoch": 6,
+      "epochs_run": 16,
+      "reached_epoch_cap": false,
+      "phase_jaccard": 0.7849334530804059,
+      "phase_accuracy": 0.8818481848184818,
+      "inst_variant": null,
+      "per_video": {
+        "09": {
+          "phase_accuracy": 0.9961389961389961,
+          "phase_jaccard": 0.9931717398646169
+        },
+        "10": {
+          "phase_accuracy": 0.8224674022066198,
+          "phase_jaccard": 0.6951634006001457
+        }
+      },
+      "negative_control": null,
+      "iface_params": 960,
+      "trainable": 960,
+      "wall_seconds": 493.4621741482988
+    },
+    "D3-L1/pred_CF/42": {
+      "run": "stage2pilot_dp_049_D3-L1_pred_CF_seed42",
+      "best_epoch": 9,
+      "epochs_run": 19,
+      "reached_epoch_cap": false,
+      "phase_jaccard": 0.7566579834401365,
+      "phase_accuracy": 0.8838283828382838,
+      "inst_variant": "uq",
+      "per_video": {
+        "09": {
+          "phase_accuracy": 0.9942084942084942,
+          "phase_jaccard": 0.9845484320370036
+        },
+        "10": {
+          "phase_accuracy": 0.8264794383149449,
+          "phase_jaccard": 0.6690882830303543
+        }
+      },
+      "negative_control": null,
+      "iface_params": 266944,
+      "trainable": 266944,
+      "wall_seconds": 609.0084094703197
+    },
+    "D1-L1/pred_CF/123": {
+      "run": "stage2pilot_dp_050_D1-L1_pred_CF_seed123",
+      "best_epoch": 6,
+      "epochs_run": 16,
+      "reached_epoch_cap": false,
+      "phase_jaccard": 0.7851649881579702,
+      "phase_accuracy": 0.8825082508250826,
+      "inst_variant": null,
+      "per_video": {
+        "09": {
+          "phase_accuracy": 0.9961389961389961,
+          "phase_jaccard": 0.9931717398646169
+        },
+        "10": {
+          "phase_accuracy": 0.8234704112337011,
+          "phase_jaccard": 0.6955325405041693
+        }
+      },
+      "negative_control": null,
+      "iface_params": 960,
+      "trainable": 960,
+      "wall_seconds": 526.6384219508618
+    },
+    "D3-L1/pred_CF/123": {
+      "run": "stage2pilot_dp_051_D3-L1_pred_CF_seed123",
+      "best_epoch": 1,
+      "epochs_run": 11,
+      "reached_epoch_cap": false,
+      "phase_jaccard": 0.7851727096806476,
+      "phase_accuracy": 0.8818481848184818,
+      "inst_variant": "uq",
+      "per_video": {
+        "09": {
+          "phase_accuracy": 0.9922779922779923,
+          "phase_jaccard": 0.9874798384748861
+        },
+        "10": {
+          "phase_accuracy": 0.8244734202607823,
+          "phase_jaccard": 0.7003221139821474
+        }
+      },
+      "negative_control": null,
+      "iface_params": 266944,
+      "trainable": 266944,
+      "wall_seconds": 334.8620773758739
+    },
+    "D3-L1/pred_CF/456": {
+      "run": "stage2pilot_dp_052_D3-L1_pred_CF_seed456",
+      "best_epoch": 1,
+      "epochs_run": 11,
+      "reached_epoch_cap": false,
+      "phase_jaccard": 0.7549167373354926,
+      "phase_accuracy": 0.8818481848184818,
+      "inst_variant": "uq",
+      "per_video": {
+        "09": {
+          "phase_accuracy": 0.9922779922779923,
+          "phase_jaccard": 0.9834459138640237
+        },
+        "10": {
+          "phase_accuracy": 0.8244734202607823,
+          "phase_jaccard": 0.6826885398439584
+        }
+      },
+      "negative_control": null,
+      "iface_params": 266944,
+      "trainable": 266944,
+      "wall_seconds": 322.4221847001463
+    },
+    "D1-L1/pred_CF/456": {
+      "run": "stage2pilot_dp_053_D1-L1_pred_CF_seed456",
+      "best_epoch": 6,
+      "epochs_run": 16,
+      "reached_epoch_cap": false,
+      "phase_jaccard": 0.7851649881579702,
+      "phase_accuracy": 0.8825082508250826,
+      "inst_variant": null,
+      "per_video": {
+        "09": {
+          "phase_accuracy": 0.9961389961389961,
+          "phase_jaccard": 0.9931717398646169
+        },
+        "10": {
+          "phase_accuracy": 0.8234704112337011,
+          "phase_jaccard": 0.6955325405041693
+        }
+      },
+      "negative_control": null,
+      "iface_params": 960,
+      "trainable": 960,
+      "wall_seconds": 495.6701186206192
+    },
+    "D3-L1/gtpred_CF/42": {
+      "run": "stage2pilot_dp_054_D3-L1_gtpred_CF_seed42",
+      "best_epoch": 3,
+      "epochs_run": 13,
+      "reached_epoch_cap": false,
+      "phase_jaccard": 0.7634446643881584,
+      "phase_accuracy": 0.8818481848184818,
+      "inst_variant": "uq",
+      "per_video": {
+        "09": {
+          "phase_accuracy": 0.9942084942084942,
+          "phase_jaccard": 0.9862965091521769
+        },
+        "10": {
+          "phase_accuracy": 0.8234704112337011,
+          "phase_jaccard": 0.6837057903933449
+        }
+      },
+      "negative_control": null,
+      "iface_params": 266944,
+      "trainable": 266944,
+      "wall_seconds": 374.4941134629771
+    },
+    "D1-L1/gtpred_CF/42": {
+      "run": "stage2pilot_dp_055_D1-L1_gtpred_CF_seed42",
+      "best_epoch": 3,
+      "epochs_run": 13,
+      "reached_epoch_cap": false,
+      "phase_jaccard": 0.7849334530804059,
+      "phase_accuracy": 0.8818481848184818,
+      "inst_variant": null,
+      "per_video": {
+        "09": {
+          "phase_accuracy": 0.9961389961389961,
+          "phase_jaccard": 0.9931717398646169
+        },
+        "10": {
+          "phase_accuracy": 0.8224674022066198,
+          "phase_jaccard": 0.6951634006001457
+        }
+      },
+      "negative_control": null,
+      "iface_params": 1920,
+      "trainable": 1920,
+      "wall_seconds": 476.2880000434816
+    },
+    "D3-L1/gtpred_CF/123": {
+      "run": "stage2pilot_dp_056_D3-L1_gtpred_CF_seed123",
+      "best_epoch": 1,
+      "epochs_run": 11,
+      "reached_epoch_cap": false,
+      "phase_jaccard": 0.7874437561001819,
+      "phase_accuracy": 0.8838283828382838,
+      "inst_variant": "uq",
+      "per_video": {
+        "09": {
+          "phase_accuracy": 0.9942084942084942,
+          "phase_jaccard": 0.9903211445764637
+        },
+        "10": {
+          "phase_accuracy": 0.8264794383149449,
+          "phase_jaccard": 0.7028811024671179
+        }
+      },
+      "negative_control": null,
+      "iface_params": 266944,
+      "trainable": 266944,
+      "wall_seconds": 340.5738524189219
+    },
+    "D3-L1/gtpred_CF/456": {
+      "run": "stage2pilot_dp_057_D3-L1_gtpred_CF_seed456",
+      "best_epoch": 70,
+      "epochs_run": 80,
+      "reached_epoch_cap": false,
+      "phase_jaccard": 0.8202788932910557,
+      "phase_accuracy": 0.9419141914191419,
+      "inst_variant": "uq",
+      "per_video": {
+        "09": {
+          "phase_accuracy": 0.9961389961389961,
+          "phase_jaccard": 0.9943049601959584
+        },
+        "10": {
+          "phase_accuracy": 0.9137412236710131,
+          "phase_jaccard": 0.7771736290282963
+        }
+      },
+      "negative_control": null,
+      "iface_params": 266944,
+      "trainable": 266944,
+      "wall_seconds": 1935.665098699741
+    },
+    "D1-L1/gtpred_CF/123": {
+      "run": "stage2pilot_dp_058_D1-L1_gtpred_CF_seed123",
+      "best_epoch": 3,
+      "epochs_run": 13,
+      "reached_epoch_cap": false,
+      "phase_jaccard": 0.7845424641989169,
+      "phase_accuracy": 0.8818481848184818,
+      "inst_variant": null,
+      "per_video": {
+        "09": {
+          "phase_accuracy": 0.9961389961389961,
+          "phase_jaccard": 0.9931717398646169
+        },
+        "10": {
+          "phase_accuracy": 0.8224674022066198,
+          "phase_jaccard": 0.6948623410526477
+        }
+      },
+      "negative_control": null,
+      "iface_params": 1920,
+      "trainable": 1920,
+      "wall_seconds": 299.97596365585923
+    },
+    "D1-L1/gtpred_CF/456": {
+      "run": "stage2pilot_dp_059_D1-L1_gtpred_CF_seed456",
+      "best_epoch": 3,
+      "epochs_run": 13,
+      "reached_epoch_cap": false,
+      "phase_jaccard": 0.784976215915737,
+      "phase_accuracy": 0.8825082508250826,
+      "inst_variant": null,
+      "per_video": {
+        "09": {
+          "phase_accuracy": 0.9961389961389961,
+          "phase_jaccard": 0.9931717398646169
+        },
+        "10": {
+          "phase_accuracy": 0.8234704112337011,
+          "phase_jaccard": 0.6953571886230463
+        }
+      },
+      "negative_control": null,
+      "iface_params": 1920,
+      "trainable": 1920,
+      "wall_seconds": 241.76506726816297
+    },
+    "D1-L2/pred_CF/42": {
+      "run": "stage2pilot_dp_060_D1-L2_pred_CF_seed42",
+      "best_epoch": 1,
+      "epochs_run": 11,
+      "reached_epoch_cap": false,
+      "phase_jaccard": 0.7385636538057722,
+      "phase_accuracy": 0.8877887788778878,
+      "inst_variant": null,
+      "per_video": {
+        "09": {
+          "phase_accuracy": 0.9942084942084942,
+          "phase_jaccard": 0.9903367062277044
+        },
+        "10": {
+          "phase_accuracy": 0.8324974924774323,
+          "phase_jaccard": 0.653722113391103
+        }
+      },
+      "negative_control": null,
+      "iface_params": 245760,
+      "trainable": 245760,
+      "wall_seconds": 172.92390127759427
+    },
+    "D1-L2/pred_CF/123": {
+      "run": "stage2pilot_dp_061_D1-L2_pred_CF_seed123",
+      "best_epoch": 1,
+      "epochs_run": 11,
+      "reached_epoch_cap": false,
+      "phase_jaccard": 0.7353846091098754,
+      "phase_accuracy": 0.9003300330033003,
+      "inst_variant": null,
+      "per_video": {
+        "09": {
+          "phase_accuracy": 0.9942084942084942,
+          "phase_jaccard": 0.9903367062277044
+        },
+        "10": {
+          "phase_accuracy": 0.8515546639919759,
+          "phase_jaccard": 0.65209672980907
+        }
+      },
+      "negative_control": null,
+      "iface_params": 245760,
+      "trainable": 245760,
+      "wall_seconds": 223.01111657824367
+    },
+    "D1-L2/pred_CF/456": {
+      "run": "stage2pilot_dp_062_D1-L2_pred_CF_seed456",
+      "best_epoch": 2,
+      "epochs_run": 12,
+      "reached_epoch_cap": false,
+      "phase_jaccard": 0.7449172261532081,
+      "phase_accuracy": 0.8871287128712871,
+      "inst_variant": null,
+      "per_video": {
+        "09": {
+          "phase_accuracy": 0.9942084942084942,
+          "phase_jaccard": 0.9903367062277044
+        },
+        "10": {
+          "phase_accuracy": 0.831494483450351,
+          "phase_jaccard": 0.6422864176757068
+        }
+      },
+      "negative_control": null,
+      "iface_params": 245760,
+      "trainable": 245760,
+      "wall_seconds": 232.01704665645957
+    },
+    "D2/pred_CF/42": {
+      "run": "stage2pilot_dp_063_D2_pred_CF_seed42",
+      "best_epoch": 1,
+      "epochs_run": 11,
+      "reached_epoch_cap": false,
+      "phase_jaccard": 0.7693831528418088,
+      "phase_accuracy": 0.8831683168316832,
+      "inst_variant": null,
+      "per_video": {
+        "09": {
+          "phase_accuracy": 0.9961389961389961,
+          "phase_jaccard": 0.9931717398646169
+        },
+        "10": {
+          "phase_accuracy": 0.8244734202607823,
+          "phase_jaccard": 0.6779968741510042
+        }
+      },
+      "negative_control": null,
+      "iface_params": 267264,
+      "trainable": 267264,
+      "wall_seconds": 171.48601318337023
+    },
+    "D2/pred_CF/123": {
+      "run": "stage2pilot_dp_064_D2_pred_CF_seed123",
+      "best_epoch": 1,
+      "epochs_run": 11,
+      "reached_epoch_cap": false,
+      "phase_jaccard": 0.7886366504515395,
+      "phase_accuracy": 0.8838283828382838,
+      "inst_variant": null,
+      "per_video": {
+        "09": {
+          "phase_accuracy": 0.9961389961389961,
+          "phase_jaccard": 0.9931717398646169
+        },
+        "10": {
+          "phase_accuracy": 0.8254764292878636,
+          "phase_jaccard": 0.7032222678454961
+        }
+      },
+      "negative_control": null,
+      "iface_params": 267264,
+      "trainable": 267264,
+      "wall_seconds": 230.14891935046762
+    },
+    "D2/pred_CF/456": {
+      "run": "stage2pilot_dp_065_D2_pred_CF_seed456",
+      "best_epoch": 1,
+      "epochs_run": 11,
+      "reached_epoch_cap": false,
+      "phase_jaccard": 0.7724927066309507,
+      "phase_accuracy": 0.8831683168316832,
+      "inst_variant": null,
+      "per_video": {
+        "09": {
+          "phase_accuracy": 0.9961389961389961,
+          "phase_jaccard": 0.9931717398646169
+        },
+        "10": {
+          "phase_accuracy": 0.8244734202607823,
+          "phase_jaccard": 0.6787989419509991
+        }
+      },
+      "negative_control": null,
+      "iface_params": 267264,
+      "trainable": 267264,
+      "wall_seconds": 212.46331922151148
     }
   }
 }

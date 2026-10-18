@@ -1,0 +1,93 @@
+{
+  "task_id": "T-2026-10-18-stage2-pilot-folda",
+  "ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_dtower/stage2pilot_cf_dcoco_H1_seed42/work/best_ap.pth",
+  "ckpt_sha256": "d27d82d6edb5a8eba759fab621530e41797515064965c11dd5c5844118ff4921",
+  "ann_dir": "data/annotations/egosurgery_tool_folds/A",
+  "part": "train",
+  "videos": [
+    "02",
+    "03",
+    "08",
+    "13",
+    "14"
+  ],
+  "frames": 5582,
+  "k": 11,
+  "precision": "fp32",
+  "class_order": [
+    "Bipolar Forceps",
+    "Electric Cautery",
+    "Forceps",
+    "Gauze",
+    "Hook",
+    "Mouth Gag",
+    "Needle Holders",
+    "Raspatory",
+    "Retractor",
+    "Scalpel",
+    "Scissors",
+    "Skewer",
+    "Suction Cannula",
+    "Syringe",
+    "Tweezers"
+  ],
+  "dup_query_tokens": 20322,
+  "postprocess_topk_mismatch_frames": 0,
+  "gt_boxes_total": 18071,
+  "gt_present_total": 15764,
+  "elapsed_seconds": 1334.8435872057453,
+  "files": {
+    "D0": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/cf_det_from_H1/D0_train.npz",
+      "shape": [
+        5582,
+        15
+      ],
+      "sha256": "2c15abcd325261e7a39cce39588fc533d16bc88beabc9a5a8c731a78777c5b1a"
+    },
+    "D-GT": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/cf_det_from_H1/D-GT_train.npz",
+      "shape": [
+        5582,
+        15
+      ],
+      "sha256": "0f9f99bb520bedf1afee5f7b2cb241ef688e3cc2e8ac7b40b204a19b77fc9fe8"
+    },
+    "D0-RT": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/cf_det_from_H1/D0-RT_train.npz",
+      "shape": [
+        5582,
+        3840
+      ],
+      "sha256": "135db40102de3e425153f111ed9efe2302a264fbe7ce138efd2bd10ea348e515"
+    },
+    "D0-INST": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/cf_det_from_H1/D0-INST_train.npz",
+      "shape": [
+        5582,
+        11,
+        275
+      ],
+      "sha256": "dcf942473cf8045dff76c71695211432255bab77a6a6acbe226cf3d4e05a6ac2"
+    },
+    "D0-INST-UQ": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/cf_det_from_H1/D0-INST-UQ_train.npz",
+      "shape": [
+        5582,
+        11,
+        275
+      ],
+      "sha256": "898d21a9266638f01529afe6805fdf0f02a0d45efcf9b8e4bcc7f193f665326e"
+    },
+    "D-GT-INST": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/cf_det_from_H1/D-GT-INST_train.npz",
+      "shape": [
+        5582,
+        11,
+        19
+      ],
+      "sha256": "c13c7a72f0ccddb81ad2b871d9fc895626a169224db798bfc105f4bacb95ee25"
+    }
+  },
+  "check_map_AP": 0.35615499733815353
+}
