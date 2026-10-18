@@ -486,3 +486,20 @@ C-5 の `make evidence-check` のとおり、三つの地図とも**違反 0 件
 | 変更（追加のみ） | `Makefile`（evidence-verify・evidence-check）、`tasks/_schema/spec.schema.json`（bundle_extras）、`docs/evidence/2026-09-16-B-p2d-interface.md`（v1 の一文）、`README.md`（本契約の節） |
 | 変更（契約） | `tasks/T-2026-10-18-evidence-verify-place/spec.yaml`（amendment の追記と decisions_required を空に） |
 | repo の外 | `.git/info/exclude`（3 行と注記。控え `~/m2-git-info-exclude.bak-20261019`） |
+
+## F. 送出
+
+- PR: #231（`gh pr view`: state OPEN、isDraft false、base phase0、head feat/evidence-verify-place）
+- `source scripts/load_env.sh && make task-report TASK=T-2026-10-18-evidence-verify-place`（2026-10-19 02:5x JST、commit `13db8643` の報告を送った）の台帳の応答:
+
+```
+{
+  "task_id": "T-2026-10-18-evidence-verify-place",
+  "verdict": "pass",
+  "n_issuer_defects": 2,
+  "report_sha256": "d91f0276f33498a38514ebb5398b2fe1e549df45cfd5d50d76ec1eb31b443068",
+  "report_bytes": 11368,
+  "replaced_blocks": 0
+}
+exit=0
+```
