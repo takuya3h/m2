@@ -1,0 +1,76 @@
+result_version: 3
+task_id: "T-2026-10-18-evidence-verify-place"
+status: pass
+host: "bengio"
+branch: "feat/evidence-verify-place"
+pr: null
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "Crossref・doi.org（handle と doiRA）・DataCite・arXiv の API に HTTP 200 で到達した。受け渡しの十件を置き場から読み、SPEC の表の sha256 とバイト数に 10 件とも一致した（不一致 0）"}
+  - {id: G2, verdict: pass, note: "照合器: 実際の照合先で Crossref DOI・arXiv 2 件が実在・書誌一致、DataCite DOI が実在（登録機関 DataCite）、架空の DOI・arXiv が不在、127.0.0.1:9 で到達不能 3・不在 0。差し替えの HTTP の試験でも同じ。様式の検査: 写しで零件と四種の各 1 件。schema: 正しい宣言が通り壊れた宣言 9 種が L1-1"}
+  - {id: G3, verdict: pass, note: "照合器の --extract-only の出力と expected-ids.txt を地図ごとに (種別, ID) の集合で比べ、C 29・B 34・N 36 とも差 0 件（DOI の大文字小文字まで一致）"}
+
+# 失敗の集合は収集の誤り 1 件を含む 8 件（--continue-on-collection-errors で測った。make test は前後とも収集で中断）
+tests:
+  before_failed: 8
+  after_failed: 8
+  after_passed: 868
+
+deviations:
+  - {type: environment, note: "作業ツリーに Syncthing で届いた他契約の未追跡の出力 14 件（experiments/）があり task-start が止まった。利用者の判断で .git/info/exclude に 3 行と注記を足し（控えあり）、phase0 へ切り替えて清浄を確かめてから task-start を一度だけやり直した"}
+  - {type: environment, note: "bengio の make test は third_party/Relation-DETR/util/convergence.py が無く収集で中断する。変更前後の失敗の集合は同じ引数に --continue-on-collection-errors を足した pytest で比べた"}
+  - {type: judgement, note: "試験は CUDA_VISIBLE_DEVICES= で GPU を見せずに回した（契約は GPU を使わない。前後とも同じ条件）"}
+  - {type: environment, note: "CLAUDE.md の ctxpack がホストに無く、照合先の作法の文書は WebFetch で読んだ"}
+  - {type: environment, note: "arXiv の API が 02:18〜02:24 JST にキャッシュに無い問い合わせをすべて 429 で返し 10 分あけて戻った。照合器の 429・5xx の待ちを 10〜120 秒の四段から 10〜600 秒の六段へ延ばした"}
+  - {type: judgement, note: "題名の欄が略称・説明の行（B-02・B-03・B-06・B-10・N-10）を書誌に差とする規則を、結果を見た後に緩めなかった。著者は一致しており、内訳を RESULT に分けて書いた"}
+  - {type: judgement, note: "ネットワークを断った状態での試験は unshare -rn が許されず取れなかった。通信の口を塞ぐ仕掛けが実際の呼び出しを止めることを測って代えた"}
+  - {type: judgement, note: "対照の地図と結果は scratchpad に置き repo に入れていない。試験の副産物 .coverage（未追跡）は commit していない"}
+
+issuer_defects:
+  - {type: check_does_not_check, note: "E-1 は実行ホスト bengio で make test の失敗の集合を変更前と比べるとしたが、bengio の make test は third_party/Relation-DETR/util/convergence.py が無く収集の段階で中断し試験を一件も実行しない。指示どおりに比べると前後とも収集の誤り 1 件で一致するだけで、変更の影響を検査しない"}
+  - {type: check_does_not_check, note: "E-1 の make spec-check は TASK を付けていない。字面どおりに打つと全 147 契約が対象になり、過去の契約の 210 件の該当で exit 2 になる。本契約の検査としては働かない（Makefile の注記も TASK の指定を求める）。TASK=本契約で回して該当 0 を確かめた"}
+
+positive_controls:
+  - judgement: "b 照合器の不在の判定"
+    breaking_input: "架空の DOI 10.1109/egosurgery.nonexistent.2026 と架空の arXiv ID 2601.99999 を実際の照合先に問い合わせる"
+    observed: "DOI は doi.org の handle が responseCode 100 で不在、arXiv は totalResults 0 で不在。同じ問い合わせの実在の ID は実在・書誌一致のまま"
+  - judgement: "b 照合器の到達不能と不在の区別"
+    breaking_input: "照合先を 127.0.0.1:9（接続を拒む口）に向ける"
+    observed: "DOI の三件・arXiv の三件とも到達不能、不在 0、終了コード 3"
+  - judgement: "b DataCite 登録 DOI を不在と誤らない"
+    breaking_input: "Crossref に無い Zenodo の DOI 10.5281/zenodo.20086606 を問い合わせる"
+    observed: "handle が responseCode 1 で実在、登録機関 DataCite、DataCite の API から書誌を得た"
+  - judgement: "a 不在の件数が ID の追加に応じて動く"
+    breaking_input: "地図 B の写しの本文に架空の arXiv ID を一件足す"
+    observed: "不在が 0 から 1、ほかの分類の件数は不変、変わった ID は足した一件だけ"
+  - judgement: "c 様式の検査"
+    breaking_input: "地図 C の写しに citation の印・必須の節の削除・禁止語・sha256 の一文字の変更を一種ずつ入れる"
+    observed: "それぞれ citation_residue・missing_section・forbidden_word・report_sha256 が各 1 件、終了コード 1。違反の無い写しは 0 件・終了コード 0"
+  - judgement: "c 雛形と検査器の項目の食い違いを試験が捕まえる"
+    breaking_input: "雛形の写しから必須の節の語「未検証の組み合わせ」を消す"
+    observed: "test_template_required_sections_match_checker が AssertionError で落ちた"
+  - judgement: "d schema が壊れた宣言を落とす"
+    breaking_input: "sha256 63 桁・大文字・末尾改行、path の ../・絶対・spec.yaml、bytes 負・真偽値、path 欠落の 9 種"
+    observed: "9 種とも L1-1 で落ちた。変更前の schema では正しい宣言も L1-1 で落ちた"
+  - judgement: "d 取り込みを通した端から端まで"
+    breaking_input: "宣言と違う中身の追加ファイルを詰めたバンドルを fetch にかける"
+    observed: "「追加ファイルの要約値が宣言と一致しません」で拒まれ tasks/ に何も残らなかった（試験）"
+  - judgement: "h 新しい試験がネットワークを使わない"
+    breaking_input: "通信の口を塞ぐ仕掛けの下で照合器の Client().get を呼ぶ"
+    observed: "AssertionError: 試験がネットワークへ出ようとした で止まった。ネットワークを断った名前空間（unshare -rn）は Operation not permitted で取れず UNKNOWN"
+
+followups:
+  - "照合で書誌に差の 8 件は地図に反映していない（決定 2）。題名の欄が略称・説明の行 6 件（B-02 の 1610.08851 と 1610.08844、B-03 MTRCNet-CL、B-06 CLIPSeg、B-10 SELSA、N-10 KAFR。著者はすべて一致）、題名の語の違い 1 件（C-21 Digital Twin-based Scene Representation → arXiv Digital Twin Representation）、著者の欠け 1 件（N-01 地図 1 名・DataCite 6 名）。反映は起票者が次の契約で決める"
+  - "B-02 の書誌 ID の欄の二つは別の文献。1610.08851 は Single- and Multi-Task Architectures for Tool Presence Detection Challenge at M2CAI 2016、1610.08844 は Single- and Multi-Task Architectures for Surgical Workflow Challenge at M2CAI 2016（著者はどちらも Twinanda, Mutter, Marescaux, de Mathelin, Padoy）"
+  - "C-05（ORViT、2110.06915）の掲載先は地図が ECCV 2022 系、arXiv の comment が CVPR 2022"
+  - "bengio の .git/info/exclude に Syncthing で届いた他契約の出力 3 経路を足した（利用者の判断。契約後も残す）。bengio では今後 experiments/phase1/stage2pilot_*/ の新しい出力も git status に出ない"
+  - "bengio の make test は third_party/Relation-DETR/util/convergence.py が無く収集で中断する。2026-10-17 の snapshot を bengio へ戻すかは未決"
+  - "tools/fetch_task.py の extras_from_spec は bytes: true を通す（schema は落とす）。tests/test_fetch_task.py::test_rejects_unknown_file_name は文言の食い違いで変更前から落ちる。どちらも本契約では直していない"
+  - "試験の副産物 .coverage が bengio の作業ツリーに未追跡で残っている（commit していない）"
+
+unknowns:
+  - "arXiv の 429 が同じ出口の IP の他の台の問い合わせによるものか（この台には arXiv へ問い合わせる他のプロセスが無かった）"
+  - "新しい試験がネットワークを断った状態でも通るか（unshare -rn が許されず測れなかった。通信の口を塞ぐ仕掛けで代えた）"
+
+commits: []

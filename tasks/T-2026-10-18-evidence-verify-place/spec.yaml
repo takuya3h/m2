@@ -1,0 +1,74 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-18-evidence-verify-place"
+  kind: impl
+  title: "証拠地図の照合器と様式の検査を repo に置き、契約の追加ファイルの宣言を schema に通し、地図 B v2・C v2・N v1 と元の報告五件を照合して docs/evidence/ に配置する"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-18T13:50:00Z"
+  created_from:
+    runindex_commit: "40112290ed8e53165d9ea1a0dce6cdc7cddae2ce"
+    counts: {index: 0, experiments: 0, verdicts: 0}
+  depends_on: []
+  amendments:
+    - date: "2026-10-19"
+      reason: "配布前の差し替え（起票者）。実行ホストを bengio に、受け渡しの十件の置き場を ~/slocal2/m2-incoming/T-2026-10-18-evidence-verify-place/ にした（利用者の指定）。SPEC の実行ホスト・起動前・A-2・禁止の四箇所を直した。台帳の旧い添付は消した"
+      diff: "置き場を ~/m2-incoming/ から ~/slocal2/m2-incoming/ へ。実行ホストを andrew 以外から bengio へ"
+    - date: "2026-10-19"
+      reason: "L3 プリフライト P6 decisions_answered が FAIL（未回答 4 件）。利用者が 4 件とも括弧のとおりで回答した。決定1（照合で不在と出た行を地図から外すか）: 外さない。決定2（照合で分かった書誌の差・欠けを地図へ反映するか）: 反映しない（起票者が次の契約で扱う）。決定3（docs/docs_audit.md に docs/evidence/ の文書を登録するか）: 登録しない。決定4（照合器の問い合わせに連絡先を入れるか）: 入れない"
+      diff: "governance.decisions_required の 4 件を回答済みとして空にした（回答は本 amendment の reason に記録）"
+intent:
+  question: "起票者が報告から起こした証拠地図の書誌 ID を一つの命令で機械照合でき、地図と元の報告を様式の検査を通した形で repo に置けるか"
+  decision_at_stake: "地図 C と地図 B を生成会話へ渡してよいか（照合の前に渡さない手順。F 2026-10-03）と、以後の地図の照合を契約なしの一命令で行えるか"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "not-referenced"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["tools/fetch_task.py", "tools/check_proposal.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "40112290ed8e53165d9ea1a0dce6cdc7cddae2ce"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "起点の確認（分岐、受け渡しの十件の要約値、既存の照合の道具、外部への到達）", gpu: false, est: "20m"}
+    - {id: B, name: "照合器と地図の様式の検査を実装し、spec の schema に追加ファイルの宣言を通し、試験と両方向の対照を通す", gpu: false, est: "150m"}
+    - {id: C, name: "地図三件・雛形・元の報告五件・README を docs/evidence/ に置き、旧地図 B に v1 を明記する", gpu: false, est: "30m"}
+    - {id: D, name: "三つの地図を照合し、様式の検査を通し、結果を docs/evidence/verification/ に残す", gpu: false, est: "40m"}
+    - {id: E, name: "検証と報告と PR", gpu: false, est: "40m"}
+  gates:
+    - {id: G1, after: A, check: "照合先へ到達でき、受け渡しの十件が SPEC の表の要約値どおり揃っている", on_fail: stop}
+    - {id: G2, after: B, check: "照合器と様式の検査と schema の両方向の対照が期待どおり", on_fail: stop}
+    - {id: G3, after: D, check: "照合器が抽出した ID の集合が起票者の一覧と一致するか、差の理由が一件ずつ記録された", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md, result.yaml, audit.md]
+  destination: "docs/evidence/"
+  acceptance:
+    - "a: 一つの命令で地図の全 ID を照合でき、地図 C・B・N の三つの結果が docs/evidence/verification/ にある"
+    - "b: 照合器の対照。実在の Crossref 登録 DOI・実在の DataCite 登録 DOI・実在の arXiv ID が実在、架空の DOI・架空の arXiv ID が不在、到達できない場合は到達不能として不在と分けて出る"
+    - "c: 様式の検査が三つの地図で違反零件。写しに四種の違反を一つずつ入れると、それぞれ違反として検出される"
+    - "d: spec の schema が形の正しい追加ファイルの宣言を通し、形の壊れた宣言を落とす。既存の全契約の検証結果は変更前と同じ"
+    - "e: 地図三件と雛形が docs/evidence/、元の報告五件が docs/evidence/reports/ にあり、要約値が SPEC の表と一致する"
+    - "f: 旧地図 B の表題の直後に v1 の明記がある。旧地図 B の削除行は零。旧地図 A は無変更"
+    - "g: docs/evidence/README.md があり、書いた命令を実際に実行した終了コードが記録されている"
+    - "h: 新しい試験が通り、ネットワークに依存しない。全試験の失敗の集合が変更前と同じ"
+    - "i: 照合の結果の要約が RESULT にある。地図の本文は書き換えていない"
+    - "j: PR が Draft でなく存在し、base は phase0、分岐は feat/ で始まり、forbidden-check の違反が零"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "照合先（Crossref、DOI の登録機関の解決、arXiv の API）のどれにも到達できない場合"
+    - "照合器の対照が期待どおりにならない場合"
+    - "受け渡しの十件の要約値が SPEC の表と一致しない場合、または配置後の要約値が SPEC の表と一致しない場合"
+    - "作業ツリーを別の契約が使っている形跡がある場合（抑止の目印が別の契約の所有、他の分岐の未統合の変更）"
