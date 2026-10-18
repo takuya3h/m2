@@ -1970,3 +1970,49 @@ gh pr view feat/evidence-maps-revise --json number,url,baseRefName,headRefName,i
   "url": "https://github.com/takuya3h/m2/pull/233"
 }
 ```
+
+## D 台帳送出
+
+命令: source .venv/bin/activate && source scripts/load_env.sh && make task-report TASK=T-2026-10-19-evidence-maps-revise
+
+exit=0。資格情報の値は出力しない。秘匿検査を経て送信。応答:
+
+```json
+{
+  "task_id": "T-2026-10-19-evidence-maps-revise",
+  "verdict": "pass",
+  "n_issuer_defects": 1,
+  "report_sha256": "8374fb7b542b5a1aed022e427d56c913fd30d0f4a9f6be045b69fe47da28ff12",
+  "report_bytes": 6981,
+  "replaced_blocks": 0
+}
+```
+
+送出した RESULT.md の SHA-256 は上記と一致（送出後も本文を変更していない）。同期抑止解除は全 commit・push の後に task-release で行い、結果は最終応答に残す。
+
+最終の origin/phase0 との差分経路集合（承認済みの範囲のみ、20件）:
+
+```
+docs/evidence/2026-10-18-B-p2d-interface.md
+docs/evidence/2026-10-18-C-d2p-interface.md
+docs/evidence/2026-10-18-N-novelty.md
+docs/evidence/verification/2026-10-18-B-p2d-interface.json
+docs/evidence/verification/2026-10-18-B-p2d-interface.md
+docs/evidence/verification/2026-10-18-C-d2p-interface.json
+docs/evidence/verification/2026-10-18-C-d2p-interface.md
+docs/evidence/verification/2026-10-18-N-novelty.json
+docs/evidence/verification/2026-10-18-N-novelty.md
+tasks/T-2026-10-19-evidence-maps-revise/RESULT.md
+tasks/T-2026-10-19-evidence-maps-revise/SPEC.md
+tasks/T-2026-10-19-evidence-maps-revise/audit.md
+tasks/T-2026-10-19-evidence-maps-revise/baseline.json
+tasks/T-2026-10-19-evidence-maps-revise/comparison.json
+tasks/T-2026-10-19-evidence-maps-revise/maps-2026-10-19.patch
+tasks/T-2026-10-19-evidence-maps-revise/positive-controls.json
+tasks/T-2026-10-19-evidence-maps-revise/reachability.json
+tasks/T-2026-10-19-evidence-maps-revise/result.yaml
+tasks/T-2026-10-19-evidence-maps-revise/spec.yaml
+tasks/inbox.d/T-2026-10-19-evidence-maps-revise.md
+```
+
+変えない九件と SPEC.md の SHA-256 は baseline.json とすべて一致。
