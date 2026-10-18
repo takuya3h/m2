@@ -1953,3 +1953,20 @@ make task-validate TASK=T-2026-10-19-evidence-maps-revise: exit 0、OK、1 task(
 make forbidden-check: exit 0、changed=20、checked=20、status=pass、violations=[]。
 make spec-check TASK=T-2026-10-19-evidence-maps-revise: exit 0、rules_checked=9、hits=0、findings=[]。
 git diff --check: exit 0、出力なし。
+
+## D 版管理・PR
+
+初回 commit: d8c2c265cdfcdeb2ccec5cd4a7f9616dcaf02d6a。git push -u origin feat/evidence-maps-revise: exit 0。
+gh pr create --base phase0 --head feat/evidence-maps-revise --title <題名> --body-file /tmp/evidence-maps-revise-pr.md: exit 0。
+gh pr view feat/evidence-maps-revise --json number,url,baseRefName,headRefName,isDraft,state: exit 0、応答:
+
+```json
+{
+  "baseRefName": "phase0",
+  "headRefName": "feat/evidence-maps-revise",
+  "isDraft": false,
+  "number": 233,
+  "state": "OPEN",
+  "url": "https://github.com/takuya3h/m2/pull/233"
+}
+```

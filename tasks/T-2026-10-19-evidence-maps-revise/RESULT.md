@@ -56,7 +56,7 @@ inputs.data.split_files と inputs.denominator は参照しなかった。frozen
 
 ## 判定・完了判定
 
-G1・G2・G3 は pass。PR・送出・抑止解除は後述。
+verdict: pass。G1・G2・G3 は pass。通常 PR #233（base=phase0）を作成済み。
 
 a: 改訂前後の三件のバイト数・SHA-256 は SPEC の値と一致。b: 変更範囲と無変更九件は audit の最終検証に記録。c: 三件とも検査対象となり違反 0。d: 分類の和は C=29 / B=34 / N=37、ID 集合の差は予測と一致。e: 予測外の ID はなし。f: 新規三件は下表。g: N-30〜N-46 の全17行・18 ID がその行と比較された。h: 最終の PR 応答と forbidden-check は audit に記録。
 
@@ -87,4 +87,4 @@ Default モード固定でプランモードへの切替手段がなく、planni
 
 ## 送出
 
-PR と台帳送出の結果は、確定後ここに記録する。
+PR [#233](https://github.com/takuya3h/m2/pull/233)、base=phase0、Draft=false。台帳送出の実測と終了コードは audit.md 末尾へ追記する。同期抑止の解除結果は最終応答に記載する。
