@@ -38,7 +38,7 @@
 | g | README | `docs/evidence/README.md`（C-4 の六項目） | README の命令を実行し終了コードを記録（evidence-check ×3 と抽出は 0、照合は C が make で 0、B・N が直接で 0。audit:351、audit:382） |
 | h | 試験 | 新しい試験 76 件が通る。失敗の集合は変更前と同一の 8 件（名前で `diff` が空） | 照合器の試験は `urllib.request.urlopen` を塞ぐ仕掛けの下で通り、その仕掛けは実際の呼び出しを止めた。ネットワークを断つ `unshare -rn` はこのホストで許されない（§6） |
 | i | 要約 | §4 | 地図三件の sha256 は照合の後も SPEC の表のまま（`1ab24a3c…`・`05a982ef…`・`9bb804b2…`） |
-| j | PR | （起票後に記入） | |
+| j | PR | #231（`gh pr view` の応答: state OPEN、isDraft false、baseRefName phase0、headRefName feat/evidence-verify-place、headRefOid `db00963d`） | push しただけで終えていない。forbidden-check の違反 0 |
 
 `make forbidden-check` は pass（変更 29、違反 0）。`make spec-check TASK=T-2026-10-18-evidence-verify-place` は該当 0。
 
@@ -104,5 +104,5 @@ D-4:
 
 ## 8. 送出
 
-- PR: （起票後に記入）
-- `make task-report`: （送出後に記入）
+- PR: #231（base phase0、Draft でない）。作業の commit `db00963d`
+- `make task-report`: 送出の結果は audit.md の末尾に記録する（送るのはこの報告を commit した後）

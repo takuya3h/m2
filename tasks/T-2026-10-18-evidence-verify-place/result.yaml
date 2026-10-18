@@ -3,7 +3,7 @@ task_id: "T-2026-10-18-evidence-verify-place"
 status: pass
 host: "bengio"
 branch: "feat/evidence-verify-place"
-pr: null
+pr: 231
 merged: false
 
 gates:
@@ -73,4 +73,5 @@ unknowns:
   - "arXiv の 429 が同じ出口の IP の他の台の問い合わせによるものか（この台には arXiv へ問い合わせる他のプロセスが無かった）"
   - "新しい試験がネットワークを断った状態でも通るか（unshare -rn が許されず測れなかった。通信の口を塞ぐ仕掛けで代えた）"
 
-commits: []
+commits:
+  - "db00963da170e6b3680b8004dc9bbf40a4c7301c"
