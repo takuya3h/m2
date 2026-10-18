@@ -1458,11 +1458,10 @@ forward した region token が既存の `t1a_regiontoken/relation_detr_seed42` 
 
 - `setup_env.sh` は修正後に頭から流していない（検証済みの `.venv` を作り直さないため）。変えたのは検査の削除だけである
 - 検出塔の学習（`main.py`）と逆伝播は andrew では流していない。順伝播の一致だけを見た
-- 🔴 **snapshot は 2026-08-02 時点で、それ以降に efros で足した実装を含まない。** `util/convergence.py` と
-  `main.py` の収束規則（`T-2026-09-19-stage1-detector-towers-r2`）、Stage 1 用の config がそれに当たる。
-  復元しただけのホストでは `tests/test_stage1_dtower_convergence.py` が収集できない。写しは
-  `experiments/baselines/stage1_dtower_r2/impl/` にあるが `main.py` は抜粋だけなので、組み直していない。
-  efros の実体から snapshot を取り直すのが筋である
+- ~~snapshot は 2026-08-02 時点で、それ以降に efros で足した実装を含まない~~ → **2026-10-17 に解消**（`T-2026-10-17-tower-reselect-prereq`）。efros の実体から snapshot を取り直し
+  `third_party_snapshot/efros/2026-10-17/Relation-DETR/` に置いた。andrew へ `util/convergence.py`・`main.py`・
+  Stage 1 の ImageNet 用 config 3 件を戻し、`tests/test_stage1_dtower_convergence.py` は 9 件収集・9 件 PASS。
+  2026-08-02 の snapshot は変えていない（既定の版も efros の 2026-08-02 のまま）
 - テスト: 上の 1 ファイルを除き 793 passed / 6 failed。失敗は既知の 5 件と
   `test_fetch_task.py::test_rejects_unknown_file_name`（エラー文言の食い違い。今回の変更とは無関係）
 - CUDA 11.8 を足す経路も試し、gcc 11 の追加と `CPATH` の解除で動くことは確かめたが、12.9 のままで足りるので採らない
@@ -1478,3 +1477,20 @@ forward した region token が既存の `t1a_regiontoken/relation_detr_seed42` 
 - 番号は区間ごとの抽出の通し番号で、区間が変わると振り直される。0.5 fps は文書の記載で、番号→秒の対応は配布物に無い（仮定として扱う）
 - Stage 1 の工程塔は動画の区間を連結した 1 本の列を見る（履歴は区間の境界をまたぐ）。Jaccard と accuracy は全フレーム合算
 - 既存の送り手信号 6 経路はすべて同時刻 t。「一つ前の時刻まで」の規則は実装にも repo の文書にも無い
+
+### 両塔の学び直しの前提: 検出器の収束規則の復元・評価時の入力の大きさ・規約（2026-10-17、andrew）
+
+契約 `T-2026-10-17-tower-reselect-prereq`（impl。装置は使わない）。記録は `tasks/T-2026-10-17-tower-reselect-prereq/`。
+
+- **新しい snapshot** `third_party_snapshot/efros/2026-10-17/Relation-DETR/`。二周目の D\*-COCO を学習した efros の実体を
+  読むだけで取り寄せた。`util/convergence.py` は二周目の写しと sha256 一致、`main.py` は写しの抜粋 23 + 61 行が行番号ごと一致。
+  2026-08-02 版との差は追加 4（`util/convergence.py`、`train_config_egosurgery_stage1_imagenet_seed{42,123,456}.py`）と変更 1（`main.py`）。
+  復元スクリプトを変えずに `bash scripts/restore_relation_detr_source.sh efros/2026-10-17 <dest>` で指定できる
+- **andrew の検出器**（`third_party/Relation-DETR/`）へ上の 5 件を置いた。上書きは `main.py` の 1 件で、前の版は
+  `~/m2-evacuated/T-2026-10-17-tower-reselect-prereq/` に退避した。拡張の生成物・checkpoints・凍結源・COCO 初期化の重みは前後で sha256 一致。
+  `main.py` は `--convergence-schedule` `--plateau-patience` `--plateau-factor` `--max-epochs` を受け付け、二周目の設定を解釈できる（学習はしていない）
+- **検出塔の評価時の入力の大きさ（実測）**: 原寸 1920×1080 → 縮小後 **1333×749**、pad 後 **1344×768**（W×H）。
+  これまでの計算値 1333×750 は丸めの違いで、実装は `(orig * r).to(int)` で切り捨てる（`base_detector.py:49-50`）。
+  前処理だけを装置なしで動かして測った。学習時の多尺度の変換 `presets.detr` は評価の経路に入らない
+- **規約**: `conventions#symmetry` の「意図的に変える」の理由に 3「各塔の構造の標準の処方」を足した（使える比較・行・条件と使えない行）。
+  `conventions#frame_sets` を新設し、塔と界面が学習・評価に使うフレームの集合を置いた
