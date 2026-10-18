@@ -9,8 +9,10 @@
 #
 # 受け取り手は D*-COCO 折り A seed 42。同じ型の腕は、受け取り手・界面の型と容量（最初の層を除く）・
 # 学習範囲・増強・batch・数値精度・止め方・seed を同じにする。止め方（PD-W1 と PD-W2 に一つずつ。
-# 同じ値）: 学習率一定、val の overall mAP が 2 epoch 改善しなければ止める、上限 8 epoch、
+# 同じ値）: 学習率一定、val の overall mAP が 2 epoch 改善しなければ止める、上限 4 epoch、
 # 最良の時点は学習した epoch から val の overall mAP で選ぶ。
+# 上限は 2026-10-18 19:2x JST に利用者の指示で 8 から 4 にした（締め切り 10/20 01:00 JST。spec の amendments の 4 件目）。
+# 8 で起動済みの P1-W1 の 2 本は cap_watch.sh が 5 epoch 目の始まりで止め、cap_finalize.py が結果を書く。
 # 数値精度: 学習の順伝播は bf16 の自動混合精度（PD の全腕で同じ）。評価は常に単精度（train_t1b.py の --amp の仕様）。
 # 試走（smoke）は fp32 で所要時間だけを測った。
 set -euo pipefail
@@ -21,7 +23,7 @@ S=/home/ubuntu/slocal2/stage2pilot_store/$TASK
 F=$S/signals/final
 CF=$S/signals/cf
 PATIENCE=2
-MAX_EPOCHS=8
+MAX_EPOCHS=4
 
 case "$TYPE" in
   P1-W1) IFACE=film;        TRAINABLE=film ;;

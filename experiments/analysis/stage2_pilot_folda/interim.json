@@ -1,19 +1,165 @@
 {
   "task_id": "T-2026-10-18-stage2-pilot-folda",
   "interim": true,
-  "n_pd_runs": 0,
+  "n_pd_runs": 5,
   "n_dp_runs": 39,
   "tables": {
     "P1-W1": {
       "type": "P1-W1",
       "empty": {
-        "42": null
+        "AP": {
+          "42": 0.7303424792540671
+        },
+        "target_AP": {
+          "42": 0.8015962411396037
+        },
+        "control_AP": {
+          "42": 0.6744411932854092
+        }
       },
-      "arms": {},
+      "arms": {
+        "pred_noCF": {
+          "AP": {
+            "values": {
+              "42": 0.733570489446475
+            },
+            "delta": {
+              "42": 0.0032280101924078153
+            },
+            "mean": 0.0032280101924078153,
+            "min": 0.0032280101924078153,
+            "max": 0.0032280101924078153,
+            "reading": "UNKNOWN（seed 1 つ。幅を測れない）"
+          },
+          "target_AP": {
+            "values": {
+              "42": 0.8102119651914791
+            },
+            "delta": {
+              "42": 0.008615724051875384
+            },
+            "mean": 0.008615724051875384,
+            "min": 0.008615724051875384,
+            "max": 0.008615724051875384,
+            "reading": "UNKNOWN（seed 1 つ。幅を測れない）"
+          },
+          "control_AP": {
+            "values": {
+              "42": 0.6744939739488105
+            },
+            "delta": {
+              "42": 5.278066340130838e-05
+            },
+            "mean": 5.278066340130838e-05,
+            "min": 5.278066340130838e-05,
+            "max": 5.278066340130838e-05,
+            "reading": "UNKNOWN（seed 1 つ。幅を測れない）"
+          },
+          "per_video_delta": {
+            "09": {
+              "42": 0.0035212161875509684
+            },
+            "10": {
+              "42": 0.0010662372725908087
+            }
+          },
+          "runs": {
+            "42": "stage2pilot_pd_P1-W1_pred_noCF_seed42"
+          },
+          "epochs": {
+            "42": [
+              2,
+              4,
+              true
+            ]
+          },
+          "trainable": {
+            "42": 266880
+          },
+          "wall_seconds": {
+            "42": 18521
+          }
+        },
+        "gt": {
+          "AP": {
+            "values": {
+              "42": 0.7381661265899986
+            },
+            "delta": {
+              "42": 0.007823647335931438
+            },
+            "mean": 0.007823647335931438,
+            "min": 0.007823647335931438,
+            "max": 0.007823647335931438,
+            "reading": "UNKNOWN（seed 1 つ。幅を測れない）"
+          },
+          "target_AP": {
+            "values": {
+              "42": 0.8211115831638871
+            },
+            "delta": {
+              "42": 0.0195153420242834
+            },
+            "mean": 0.0195153420242834,
+            "min": 0.0195153420242834,
+            "max": 0.0195153420242834,
+            "reading": "UNKNOWN（seed 1 つ。幅を測れない）"
+          },
+          "control_AP": {
+            "values": {
+              "42": 0.6740412447664077
+            },
+            "delta": {
+              "42": -0.00039994851900149175
+            },
+            "mean": -0.00039994851900149175,
+            "min": -0.00039994851900149175,
+            "max": -0.00039994851900149175,
+            "reading": "UNKNOWN（seed 1 つ。幅を測れない）"
+          },
+          "per_video_delta": {
+            "09": {
+              "42": 0.0021355020056073037
+            },
+            "10": {
+              "42": 0.011458390285925435
+            }
+          },
+          "runs": {
+            "42": "stage2pilot_pd_P1-W1_gt_seed42"
+          },
+          "epochs": {
+            "42": [
+              2,
+              4,
+              true
+            ]
+          },
+          "trainable": {
+            "42": 266880
+          },
+          "wall_seconds": {
+            "42": 18415
+          }
+        }
+      },
       "seeds": [
         42
       ],
-      "status": "UNKNOWN（空の腕が揃っていない）"
+      "R": null,
+      "empty_identical_across_seeds": null,
+      "empty_cost": {
+        "42": {
+          "epochs": [
+            0,
+            3,
+            false
+          ],
+          "trainable": 266880,
+          "wall_seconds": 12191
+        }
+      },
+      "realization_rate": "出さない（seed 1 つ。規則 2 を当てられない）"
     },
     "P1-W2": {
       "type": "P1-W2",
@@ -129,6 +275,16 @@
               16,
               false
             ]
+          },
+          "trainable": {
+            "42": 960,
+            "123": 960,
+            "456": 960
+          },
+          "wall_seconds": {
+            "42": 430.63502683863044,
+            "123": 422.71300325356424,
+            "456": 415.211322045885
           }
         },
         "gt": {
@@ -197,6 +353,16 @@
               16,
               false
             ]
+          },
+          "trainable": {
+            "42": 960,
+            "123": 960,
+            "456": 960
+          },
+          "wall_seconds": {
+            "42": 432.2341404296458,
+            "123": 416.2933522677049,
+            "456": 437.16726764384657
           }
         }
       },
@@ -212,6 +378,35 @@
       "empty_identical_across_seeds": {
         "phase_jaccard": true,
         "phase_accuracy": true
+      },
+      "empty_cost": {
+        "42": {
+          "epochs": [
+            1,
+            11,
+            false
+          ],
+          "trainable": 960,
+          "wall_seconds": 290.8698055939749
+        },
+        "123": {
+          "epochs": [
+            1,
+            11,
+            false
+          ],
+          "trainable": 960,
+          "wall_seconds": 289.26131976023316
+        },
+        "456": {
+          "epochs": [
+            1,
+            11,
+            false
+          ],
+          "trainable": 960,
+          "wall_seconds": 292.1040142159909
+        }
       }
     },
     "D1-L2": {
@@ -295,6 +490,16 @@
               13,
               false
             ]
+          },
+          "trainable": {
+            "42": 245760,
+            "123": 245760,
+            "456": 245760
+          },
+          "wall_seconds": {
+            "42": 136.38408031594008,
+            "123": 171.19337190967053,
+            "456": 172.21520298533142
           }
         }
       },
@@ -310,6 +515,35 @@
       "empty_identical_across_seeds": {
         "phase_jaccard": true,
         "phase_accuracy": true
+      },
+      "empty_cost": {
+        "42": {
+          "epochs": [
+            1,
+            11,
+            false
+          ],
+          "trainable": 245760,
+          "wall_seconds": 171.2505770912394
+        },
+        "123": {
+          "epochs": [
+            1,
+            11,
+            false
+          ],
+          "trainable": 245760,
+          "wall_seconds": 171.60765296779573
+        },
+        "456": {
+          "epochs": [
+            1,
+            11,
+            false
+          ],
+          "trainable": 245760,
+          "wall_seconds": 172.08868302218616
+        }
       }
     },
     "D2": {
@@ -393,6 +627,16 @@
               11,
               false
             ]
+          },
+          "trainable": {
+            "42": 267264,
+            "123": 267264,
+            "456": 267264
+          },
+          "wall_seconds": {
+            "42": 302.2406304543838,
+            "123": 263.51567484252155,
+            "456": 200.1277546370402
           }
         },
         "gt": {
@@ -461,6 +705,16 @@
               11,
               false
             ]
+          },
+          "trainable": {
+            "42": 267264,
+            "123": 267264,
+            "456": 267264
+          },
+          "wall_seconds": {
+            "42": 284.0453855060041,
+            "123": 219.73660209029913,
+            "456": 222.05826466716826
           }
         }
       },
@@ -476,6 +730,35 @@
       "empty_identical_across_seeds": {
         "phase_jaccard": false,
         "phase_accuracy": false
+      },
+      "empty_cost": {
+        "42": {
+          "epochs": [
+            1,
+            11,
+            false
+          ],
+          "trainable": 267264,
+          "wall_seconds": 316.00652626436204
+        },
+        "123": {
+          "epochs": [
+            1,
+            11,
+            false
+          ],
+          "trainable": 267264,
+          "wall_seconds": 323.0710842097178
+        },
+        "456": {
+          "epochs": [
+            1,
+            11,
+            false
+          ],
+          "trainable": 267264,
+          "wall_seconds": 301.9132770104334
+        }
       }
     },
     "D3-L1": {
@@ -559,6 +842,16 @@
               11,
               false
             ]
+          },
+          "trainable": {
+            "42": 266944,
+            "123": 266944,
+            "456": 266944
+          },
+          "wall_seconds": {
+            "42": 380.7346808379516,
+            "123": 324.8748966893181,
+            "456": 300.93623621203005
           }
         },
         "gt": {
@@ -627,6 +920,16 @@
               12,
               false
             ]
+          },
+          "trainable": {
+            "42": 266944,
+            "123": 266944,
+            "456": 266944
+          },
+          "wall_seconds": {
+            "42": 356.60432324558496,
+            "123": 342.77676365245134,
+            "456": 214.7312648622319
           }
         }
       },
@@ -642,6 +945,35 @@
       "empty_identical_across_seeds": {
         "phase_jaccard": true,
         "phase_accuracy": true
+      },
+      "empty_cost": {
+        "42": {
+          "epochs": [
+            1,
+            11,
+            false
+          ],
+          "trainable": 266944,
+          "wall_seconds": 224.93175384681672
+        },
+        "123": {
+          "epochs": [
+            1,
+            11,
+            false
+          ],
+          "trainable": 266944,
+          "wall_seconds": 152.70287704188377
+        },
+        "456": {
+          "epochs": [
+            1,
+            11,
+            false
+          ],
+          "trainable": 266944,
+          "wall_seconds": 109.23803722020239
+        }
       }
     },
     "D3-L2": {
@@ -725,6 +1057,16 @@
               13,
               false
             ]
+          },
+          "trainable": {
+            "42": 299712,
+            "123": 299712,
+            "456": 299712
+          },
+          "wall_seconds": {
+            "42": 203.88982123043388,
+            "123": 197.28843395225704,
+            "456": 199.26058102492243
           }
         }
       },
@@ -740,19 +1082,109 @@
       "empty_identical_across_seeds": {
         "phase_jaccard": true,
         "phase_accuracy": true
+      },
+      "empty_cost": {
+        "42": {
+          "epochs": [
+            1,
+            11,
+            false
+          ],
+          "trainable": 299712,
+          "wall_seconds": 193.21614099573344
+        },
+        "123": {
+          "epochs": [
+            1,
+            11,
+            false
+          ],
+          "trainable": 299712,
+          "wall_seconds": 213.59779771789908
+        },
+        "456": {
+          "epochs": [
+            1,
+            11,
+            false
+          ],
+          "trainable": 299712,
+          "wall_seconds": 209.5866788579151
+        }
       }
     }
   },
-  "p2f": {},
-  "comparisons": [
-    {
-      "pair": "D1-L1 − D2",
-      "arm": "gt",
-      "metric": "phase_jaccard",
-      "diff_of_mean_delta": 0.005751128074677629,
-      "max_R": 0.0117049464408846,
-      "exceeds": false
+  "p2f": {
+    "pred": {
+      "run": "stage2pilot_pd_P2F_pred_seed42",
+      "best_epoch": -1,
+      "epochs_run": null,
+      "trainable": 0,
+      "wall_seconds": 232,
+      "reached_epoch_cap": null,
+      "eval_detection_mAP": 0.7092860812911868,
+      "AP": 0.7092860812911868,
+      "target_AP": 0.7622511979449316,
+      "control_AP": 0.6651809769445631,
+      "per_class_ap": {
+        "Bipolar Forceps": 0.5936242961128767,
+        "Electric Cautery": 0.9626860061255466,
+        "Forceps": 0.37159573999491075,
+        "Gauze": 0.263155910307396,
+        "Hook": 0.6417277016616582,
+        "Mouth Gag": 0.7937576533585758,
+        "Needle Holders": 0.792277293448009,
+        "Raspatory": 0.808131290809101,
+        "Retractor": NaN,
+        "Scalpel": 0.92833818184535,
+        "Scissors": 0.6897384993435792,
+        "Skewer": 0.9363641961441375,
+        "Suction Cannula": 0.826307313855028,
+        "Syringe": 0.544798024813193,
+        "Tweezers": 0.7775030302572528
+      },
+      "per_video": {
+        "09": 0.7041721317028211,
+        "10": 0.6245738909235108
+      },
+      "frozen_unchanged": true
     },
+    "gt_p2f": {
+      "run": "stage2pilot_pd_P2F_gt_seed42",
+      "best_epoch": -1,
+      "epochs_run": null,
+      "trainable": 0,
+      "wall_seconds": 240,
+      "reached_epoch_cap": null,
+      "eval_detection_mAP": 0.7325266012776924,
+      "AP": 0.7325266012776924,
+      "target_AP": 0.8169124076676045,
+      "control_AP": 0.6623599437014711,
+      "per_class_ap": {
+        "Bipolar Forceps": 0.8155655140307935,
+        "Electric Cautery": 0.9673918155412609,
+        "Forceps": 0.36935471019921357,
+        "Gauze": 0.2634997784120839,
+        "Hook": 0.6382742143018524,
+        "Mouth Gag": 0.795391597525992,
+        "Needle Holders": 0.8502374189454938,
+        "Raspatory": 0.8348786865269409,
+        "Retractor": NaN,
+        "Scalpel": 0.9325826357633479,
+        "Scissors": 0.6961124457559663,
+        "Skewer": 0.9477768724858385,
+        "Suction Cannula": 0.806479077698623,
+        "Syringe": 0.5537583295311018,
+        "Tweezers": 0.7840693211691854
+      },
+      "per_video": {
+        "09": 0.7054876121964658,
+        "10": 0.6562320517306943
+      },
+      "frozen_unchanged": true
+    }
+  },
+  "comparisons": [
     {
       "pair": "D1-L1 − D2",
       "arm": "pred_noCF",
@@ -762,12 +1194,12 @@
       "exceeds": false
     },
     {
-      "pair": "D1-L1 − D3-L1",
+      "pair": "D1-L1 − D2",
       "arm": "gt",
       "metric": "phase_jaccard",
-      "diff_of_mean_delta": 0.019021395344458493,
-      "max_R": 0.0,
-      "exceeds": true
+      "diff_of_mean_delta": 0.005751128074677629,
+      "max_R": 0.0117049464408846,
+      "exceeds": false
     },
     {
       "pair": "D1-L1 − D3-L1",
@@ -778,11 +1210,11 @@
       "exceeds": true
     },
     {
-      "pair": "D2 − D3-L1",
+      "pair": "D1-L1 − D3-L1",
       "arm": "gt",
       "metric": "phase_jaccard",
-      "diff_of_mean_delta": 0.013270267269780867,
-      "max_R": 0.0117049464408846,
+      "diff_of_mean_delta": 0.019021395344458493,
+      "max_R": 0.0,
       "exceeds": true
     },
     {
@@ -790,6 +1222,14 @@
       "arm": "pred_noCF",
       "metric": "phase_jaccard",
       "diff_of_mean_delta": 0.013955136814189695,
+      "max_R": 0.0117049464408846,
+      "exceeds": true
+    },
+    {
+      "pair": "D2 − D3-L1",
+      "arm": "gt",
+      "metric": "phase_jaccard",
+      "diff_of_mean_delta": 0.013270267269780867,
       "max_R": 0.0117049464408846,
       "exceeds": true
     },
@@ -802,7 +1242,364 @@
       "exceeds": true
     }
   ],
-  "pd_runs": {},
+  "predictions": [
+    {
+      "no": 1,
+      "about": "D2 正解の Δ（Jaccard）が正で幅を超える",
+      "observed": "平均 +0.0049、幅の内",
+      "verdict": "外れ"
+    },
+    {
+      "no": 1,
+      "about": "D1-L1 正解の Δ（Jaccard）が正で幅を超える",
+      "observed": "平均 +0.0107、seed の幅を超える",
+      "verdict": "当たり"
+    },
+    {
+      "no": 2,
+      "about": "D1-L1 予測-CF の平均 Δ ≤ 正解予測-CF の平均 Δ（Jaccard）",
+      "observed": null,
+      "verdict": "UNKNOWN"
+    },
+    {
+      "no": 2,
+      "about": "D2 予測-CF の平均 Δ ≤ 正解予測-CF の平均 Δ（Jaccard）",
+      "observed": null,
+      "verdict": "UNKNOWN"
+    },
+    {
+      "no": 2,
+      "about": "D3-L1 予測-CF の平均 Δ ≤ 正解予測-CF の平均 Δ（Jaccard）",
+      "observed": null,
+      "verdict": "UNKNOWN"
+    },
+    {
+      "no": 3,
+      "about": "P1-W1 正解の Δ（標的群 AP）が正、陰性対照群 AP の Δ は幅の内",
+      "observed": "標的群 +0.0195、陰性対照群 -0.0004",
+      "verdict": "前半は当たり。後半は UNKNOWN（PD は seed 1 つで幅を測れない）"
+    },
+    {
+      "no": 4,
+      "about": "P1-W1 予測-noCF の平均 Δ < 予測-CF の平均 Δ（AP）",
+      "observed": null,
+      "verdict": "UNKNOWN"
+    },
+    {
+      "no": 4,
+      "about": "P1-W2 予測-noCF の平均 Δ < 予測-CF の平均 Δ（AP）",
+      "observed": null,
+      "verdict": "UNKNOWN"
+    },
+    {
+      "no": 4,
+      "about": "P2L 予測-noCF の平均 Δ < 予測-CF の平均 Δ（AP）",
+      "observed": null,
+      "verdict": "UNKNOWN"
+    },
+    {
+      "no": 4,
+      "about": "P3 予測-noCF の平均 Δ < 予測-CF の平均 Δ（AP）",
+      "observed": null,
+      "verdict": "UNKNOWN"
+    },
+    {
+      "no": 4,
+      "about": "D1-L1 予測-noCF の平均 Δ < 予測-CF の平均 Δ（phase_jaccard）",
+      "observed": null,
+      "verdict": "UNKNOWN"
+    },
+    {
+      "no": 4,
+      "about": "D1-L2 予測-noCF の平均 Δ < 予測-CF の平均 Δ（phase_jaccard）",
+      "observed": null,
+      "verdict": "UNKNOWN"
+    },
+    {
+      "no": 4,
+      "about": "D2 予測-noCF の平均 Δ < 予測-CF の平均 Δ（phase_jaccard）",
+      "observed": null,
+      "verdict": "UNKNOWN"
+    },
+    {
+      "no": 4,
+      "about": "D3-L1 予測-noCF の平均 Δ < 予測-CF の平均 Δ（phase_jaccard）",
+      "observed": null,
+      "verdict": "UNKNOWN"
+    },
+    {
+      "no": 4,
+      "about": "D3-L2 予測-noCF の平均 Δ < 予測-CF の平均 Δ（phase_jaccard）",
+      "observed": null,
+      "verdict": "UNKNOWN"
+    },
+    {
+      "no": 5,
+      "about": "P1-W1 予測-CF の Δ（overall mAP）は幅の内",
+      "observed": null,
+      "verdict": "UNKNOWN（PD は seed 1 つで幅を測れない）"
+    },
+    {
+      "no": 6,
+      "about": "P2F 正解の差（標的群 AP）が正",
+      "observed": "+0.0218",
+      "verdict": "当たり"
+    }
+  ],
+  "flip_check": {
+    "rows": [
+      {
+        "type": "D1-L1",
+        "arm": "pred_noCF",
+        "metric": "phase_jaccard",
+        "flipped": "幅の内"
+      },
+      {
+        "type": "D1-L1",
+        "arm": "pred_noCF",
+        "metric": "phase_accuracy",
+        "flipped": "幅の内"
+      },
+      {
+        "type": "D1-L1",
+        "arm": "gt",
+        "metric": "phase_jaccard",
+        "flipped": "幅の内"
+      },
+      {
+        "type": "D1-L1",
+        "arm": "gt",
+        "metric": "phase_accuracy",
+        "flipped": "幅の内"
+      },
+      {
+        "type": "D1-L2",
+        "arm": "pred_noCF",
+        "metric": "phase_accuracy",
+        "flipped": "幅の内"
+      },
+      {
+        "type": "D2",
+        "arm": "pred_noCF",
+        "metric": "phase_accuracy",
+        "flipped": "幅の内"
+      },
+      {
+        "type": "D2",
+        "arm": "gt",
+        "metric": "phase_accuracy",
+        "flipped": "幅の内"
+      },
+      {
+        "type": "D3-L1",
+        "arm": "pred_noCF",
+        "metric": "phase_accuracy",
+        "flipped": "幅の内"
+      },
+      {
+        "type": "D3-L1",
+        "arm": "gt",
+        "metric": "phase_jaccard",
+        "flipped": "幅の内"
+      },
+      {
+        "type": "D3-L1",
+        "arm": "gt",
+        "metric": "phase_accuracy",
+        "flipped": "幅の内"
+      },
+      {
+        "type": "D3-L2",
+        "arm": "pred_noCF",
+        "metric": "phase_jaccard",
+        "flipped": "幅の内"
+      },
+      {
+        "type": "D3-L2",
+        "arm": "pred_noCF",
+        "metric": "phase_accuracy",
+        "flipped": "幅の内"
+      }
+    ],
+    "n": 12,
+    "all_within": true,
+    "synthetic": [
+      "seed の幅を超える",
+      "幅の内"
+    ]
+  },
+  "pd_runs": {
+    "P1-W1/empty/42": {
+      "run": "stage2pilot_pd_P1-W1_empty_seed42",
+      "best_epoch": 0,
+      "epochs_run": 3,
+      "trainable": 266880,
+      "wall_seconds": 12191,
+      "reached_epoch_cap": false,
+      "eval_detection_mAP": 0.7303424792540671,
+      "AP": 0.7303424792540671,
+      "target_AP": 0.8015962411396037,
+      "control_AP": 0.6744411932854092,
+      "per_class_ap": {
+        "Bipolar Forceps": 0.7925296333046145,
+        "Electric Cautery": 0.9653221945139109,
+        "Forceps": 0.35485798085052067,
+        "Gauze": 0.28231303098373073,
+        "Hook": 0.6412650941386114,
+        "Mouth Gag": 0.7951075229131578,
+        "Needle Holders": 0.8461959787274473,
+        "Raspatory": 0.8099867544852839,
+        "Retractor": NaN,
+        "Scalpel": 0.9108895020940861,
+        "Scissors": 0.7114074824867948,
+        "Skewer": 0.9476718600785025,
+        "Suction Cannula": 0.8324901997488573,
+        "Syringe": 0.5469034557355319,
+        "Tweezers": 0.7878540194958911
+      },
+      "per_video": {
+        "09": 0.7078639888698003,
+        "10": 0.6437183291664109
+      },
+      "frozen_unchanged": true
+    },
+    "P1-W1/gt/42": {
+      "run": "stage2pilot_pd_P1-W1_gt_seed42",
+      "best_epoch": 2,
+      "epochs_run": 4,
+      "trainable": 266880,
+      "wall_seconds": 18415,
+      "reached_epoch_cap": true,
+      "eval_detection_mAP": 0.7381661265899986,
+      "AP": 0.7381661265899986,
+      "target_AP": 0.8211115831638871,
+      "control_AP": 0.6740412447664077,
+      "per_class_ap": {
+        "Bipolar Forceps": 0.8273629200395153,
+        "Electric Cautery": 0.9648871384439595,
+        "Forceps": 0.3570957374693346,
+        "Gauze": 0.2787704939300529,
+        "Hook": 0.6392845664906416,
+        "Mouth Gag": 0.7964730308771428,
+        "Needle Holders": 0.8497188329755164,
+        "Raspatory": 0.8342326616188572,
+        "Retractor": NaN,
+        "Scalpel": 0.9290410387751211,
+        "Scissors": 0.7216166019954632,
+        "Skewer": 0.9513458440489085,
+        "Suction Cannula": 0.8340791574843716,
+        "Syringe": 0.5635754513370327,
+        "Tweezers": 0.7868422967740634
+      },
+      "per_video": {
+        "09": 0.7099994908754076,
+        "10": 0.6551767194523364
+      },
+      "frozen_unchanged": true
+    },
+    "P1-W1/pred_noCF/42": {
+      "run": "stage2pilot_pd_P1-W1_pred_noCF_seed42",
+      "best_epoch": 2,
+      "epochs_run": 4,
+      "trainable": 266880,
+      "wall_seconds": 18521,
+      "reached_epoch_cap": true,
+      "eval_detection_mAP": 0.7336,
+      "AP": 0.733570489446475,
+      "target_AP": 0.8102119651914791,
+      "control_AP": 0.6744939739488105,
+      "per_class_ap": {
+        "Bipolar Forceps": 0.7912236597239168,
+        "Electric Cautery": 0.9652173976967948,
+        "Forceps": 0.3571502246652325,
+        "Gauze": 0.280976963522666,
+        "Hook": 0.6394754529288322,
+        "Mouth Gag": 0.796090059546004,
+        "Needle Holders": 0.8463404956164241,
+        "Raspatory": 0.8208882664716309,
+        "Retractor": NaN,
+        "Scalpel": 0.9210745739398902,
+        "Scissors": 0.7127675595907282,
+        "Skewer": 0.9523771486670803,
+        "Suction Cannula": 0.8341283081061068,
+        "Syringe": 0.5654961771548769,
+        "Tweezers": 0.7867805646204652
+      },
+      "per_video": {
+        "09": 0.7113852050573513,
+        "10": 0.6447845664390017
+      },
+      "frozen_unchanged": null
+    },
+    "P2F/gt_p2f/42": {
+      "run": "stage2pilot_pd_P2F_gt_seed42",
+      "best_epoch": -1,
+      "epochs_run": null,
+      "trainable": 0,
+      "wall_seconds": 240,
+      "reached_epoch_cap": null,
+      "eval_detection_mAP": 0.7325266012776924,
+      "AP": 0.7325266012776924,
+      "target_AP": 0.8169124076676045,
+      "control_AP": 0.6623599437014711,
+      "per_class_ap": {
+        "Bipolar Forceps": 0.8155655140307935,
+        "Electric Cautery": 0.9673918155412609,
+        "Forceps": 0.36935471019921357,
+        "Gauze": 0.2634997784120839,
+        "Hook": 0.6382742143018524,
+        "Mouth Gag": 0.795391597525992,
+        "Needle Holders": 0.8502374189454938,
+        "Raspatory": 0.8348786865269409,
+        "Retractor": NaN,
+        "Scalpel": 0.9325826357633479,
+        "Scissors": 0.6961124457559663,
+        "Skewer": 0.9477768724858385,
+        "Suction Cannula": 0.806479077698623,
+        "Syringe": 0.5537583295311018,
+        "Tweezers": 0.7840693211691854
+      },
+      "per_video": {
+        "09": 0.7054876121964658,
+        "10": 0.6562320517306943
+      },
+      "frozen_unchanged": true
+    },
+    "P2F/pred/42": {
+      "run": "stage2pilot_pd_P2F_pred_seed42",
+      "best_epoch": -1,
+      "epochs_run": null,
+      "trainable": 0,
+      "wall_seconds": 232,
+      "reached_epoch_cap": null,
+      "eval_detection_mAP": 0.7092860812911868,
+      "AP": 0.7092860812911868,
+      "target_AP": 0.7622511979449316,
+      "control_AP": 0.6651809769445631,
+      "per_class_ap": {
+        "Bipolar Forceps": 0.5936242961128767,
+        "Electric Cautery": 0.9626860061255466,
+        "Forceps": 0.37159573999491075,
+        "Gauze": 0.263155910307396,
+        "Hook": 0.6417277016616582,
+        "Mouth Gag": 0.7937576533585758,
+        "Needle Holders": 0.792277293448009,
+        "Raspatory": 0.808131290809101,
+        "Retractor": NaN,
+        "Scalpel": 0.92833818184535,
+        "Scissors": 0.6897384993435792,
+        "Skewer": 0.9363641961441375,
+        "Suction Cannula": 0.826307313855028,
+        "Syringe": 0.544798024813193,
+        "Tweezers": 0.7775030302572528
+      },
+      "per_video": {
+        "09": 0.7041721317028211,
+        "10": 0.6245738909235108
+      },
+      "frozen_unchanged": true
+    }
+  },
   "dp_runs": {
     "D1-L1/empty/42": {
       "run": "stage2pilot_dp_006_D1-L1_empty_seed42",
@@ -828,7 +1625,9 @@
         "unchanged": true,
         "zero_signal_jaccard": 0.7762185528074379
       },
-      "iface_params": 960
+      "iface_params": 960,
+      "trainable": 960,
+      "wall_seconds": 290.8698055939749
     },
     "D1-L1/empty/123": {
       "run": "stage2pilot_dp_007_D1-L1_empty_seed123",
@@ -854,7 +1653,9 @@
         "unchanged": true,
         "zero_signal_jaccard": 0.7762185528074379
       },
-      "iface_params": 960
+      "iface_params": 960,
+      "trainable": 960,
+      "wall_seconds": 289.26131976023316
     },
     "D1-L1/empty/456": {
       "run": "stage2pilot_dp_008_D1-L1_empty_seed456",
@@ -880,7 +1681,9 @@
         "unchanged": true,
         "zero_signal_jaccard": 0.7762185528074379
       },
-      "iface_params": 960
+      "iface_params": 960,
+      "trainable": 960,
+      "wall_seconds": 292.1040142159909
     },
     "D1-L1/pred_noCF/42": {
       "run": "stage2pilot_dp_009_D1-L1_pred_noCF_seed42",
@@ -901,7 +1704,9 @@
         }
       },
       "negative_control": null,
-      "iface_params": 960
+      "iface_params": 960,
+      "trainable": 960,
+      "wall_seconds": 430.63502683863044
     },
     "D1-L1/pred_noCF/123": {
       "run": "stage2pilot_dp_010_D1-L1_pred_noCF_seed123",
@@ -922,7 +1727,9 @@
         }
       },
       "negative_control": null,
-      "iface_params": 960
+      "iface_params": 960,
+      "trainable": 960,
+      "wall_seconds": 422.71300325356424
     },
     "D1-L1/pred_noCF/456": {
       "run": "stage2pilot_dp_011_D1-L1_pred_noCF_seed456",
@@ -943,7 +1750,9 @@
         }
       },
       "negative_control": null,
-      "iface_params": 960
+      "iface_params": 960,
+      "trainable": 960,
+      "wall_seconds": 415.211322045885
     },
     "D1-L1/gt/42": {
       "run": "stage2pilot_dp_012_D1-L1_gt_seed42",
@@ -964,7 +1773,9 @@
         }
       },
       "negative_control": null,
-      "iface_params": 960
+      "iface_params": 960,
+      "trainable": 960,
+      "wall_seconds": 432.2341404296458
     },
     "D1-L1/gt/123": {
       "run": "stage2pilot_dp_013_D1-L1_gt_seed123",
@@ -985,7 +1796,9 @@
         }
       },
       "negative_control": null,
-      "iface_params": 960
+      "iface_params": 960,
+      "trainable": 960,
+      "wall_seconds": 416.2933522677049
     },
     "D1-L1/gt/456": {
       "run": "stage2pilot_dp_014_D1-L1_gt_seed456",
@@ -1006,7 +1819,9 @@
         }
       },
       "negative_control": null,
-      "iface_params": 960
+      "iface_params": 960,
+      "trainable": 960,
+      "wall_seconds": 437.16726764384657
     },
     "D3-L1/pred_noCF/42": {
       "run": "stage2pilot_dp_018_D3-L1_pred_noCF_seed42",
@@ -1027,7 +1842,9 @@
         }
       },
       "negative_control": null,
-      "iface_params": 266944
+      "iface_params": 266944,
+      "trainable": 266944,
+      "wall_seconds": 380.7346808379516
     },
     "D2/empty/42": {
       "run": "stage2pilot_dp_019_D2_empty_seed42",
@@ -1053,7 +1870,9 @@
         "unchanged": false,
         "zero_signal_jaccard": 0.7732530632755051
       },
-      "iface_params": 267264
+      "iface_params": 267264,
+      "trainable": 267264,
+      "wall_seconds": 316.00652626436204
     },
     "D3-L1/pred_noCF/123": {
       "run": "stage2pilot_dp_020_D3-L1_pred_noCF_seed123",
@@ -1074,7 +1893,9 @@
         }
       },
       "negative_control": null,
-      "iface_params": 266944
+      "iface_params": 266944,
+      "trainable": 266944,
+      "wall_seconds": 324.8748966893181
     },
     "D2/empty/123": {
       "run": "stage2pilot_dp_021_D2_empty_seed123",
@@ -1100,7 +1921,9 @@
         "unchanged": false,
         "zero_signal_jaccard": 0.7840169184425726
       },
-      "iface_params": 267264
+      "iface_params": 267264,
+      "trainable": 267264,
+      "wall_seconds": 323.0710842097178
     },
     "D3-L1/pred_noCF/456": {
       "run": "stage2pilot_dp_022_D3-L1_pred_noCF_seed456",
@@ -1121,7 +1944,9 @@
         }
       },
       "negative_control": null,
-      "iface_params": 266944
+      "iface_params": 266944,
+      "trainable": 266944,
+      "wall_seconds": 300.93623621203005
     },
     "D2/empty/456": {
       "run": "stage2pilot_dp_023_D2_empty_seed456",
@@ -1147,7 +1972,9 @@
         "unchanged": false,
         "zero_signal_jaccard": 0.772311972001688
       },
-      "iface_params": 267264
+      "iface_params": 267264,
+      "trainable": 267264,
+      "wall_seconds": 301.9132770104334
     },
     "D3-L1/gt/42": {
       "run": "stage2pilot_dp_024_D3-L1_gt_seed42",
@@ -1168,7 +1995,9 @@
         }
       },
       "negative_control": null,
-      "iface_params": 266944
+      "iface_params": 266944,
+      "trainable": 266944,
+      "wall_seconds": 356.60432324558496
     },
     "D2/pred_noCF/42": {
       "run": "stage2pilot_dp_025_D2_pred_noCF_seed42",
@@ -1189,7 +2018,9 @@
         }
       },
       "negative_control": null,
-      "iface_params": 267264
+      "iface_params": 267264,
+      "trainable": 267264,
+      "wall_seconds": 302.2406304543838
     },
     "D3-L1/gt/123": {
       "run": "stage2pilot_dp_026_D3-L1_gt_seed123",
@@ -1210,7 +2041,9 @@
         }
       },
       "negative_control": null,
-      "iface_params": 266944
+      "iface_params": 266944,
+      "trainable": 266944,
+      "wall_seconds": 342.77676365245134
     },
     "D2/pred_noCF/123": {
       "run": "stage2pilot_dp_027_D2_pred_noCF_seed123",
@@ -1231,7 +2064,9 @@
         }
       },
       "negative_control": null,
-      "iface_params": 267264
+      "iface_params": 267264,
+      "trainable": 267264,
+      "wall_seconds": 263.51567484252155
     },
     "D3-L1/empty/42": {
       "run": "stage2pilot_dp_028_D3-L1_empty_seed42",
@@ -1257,7 +2092,9 @@
         "unchanged": true,
         "zero_signal_jaccard": 0.7762185528074379
       },
-      "iface_params": 266944
+      "iface_params": 266944,
+      "trainable": 266944,
+      "wall_seconds": 224.93175384681672
     },
     "D2/pred_noCF/456": {
       "run": "stage2pilot_dp_029_D2_pred_noCF_seed456",
@@ -1278,7 +2115,9 @@
         }
       },
       "negative_control": null,
-      "iface_params": 267264
+      "iface_params": 267264,
+      "trainable": 267264,
+      "wall_seconds": 200.1277546370402
     },
     "D3-L1/gt/456": {
       "run": "stage2pilot_dp_030_D3-L1_gt_seed456",
@@ -1299,7 +2138,9 @@
         }
       },
       "negative_control": null,
-      "iface_params": 266944
+      "iface_params": 266944,
+      "trainable": 266944,
+      "wall_seconds": 214.7312648622319
     },
     "D3-L1/empty/123": {
       "run": "stage2pilot_dp_031_D3-L1_empty_seed123",
@@ -1325,7 +2166,9 @@
         "unchanged": true,
         "zero_signal_jaccard": 0.7762185528074379
       },
-      "iface_params": 266944
+      "iface_params": 266944,
+      "trainable": 266944,
+      "wall_seconds": 152.70287704188377
     },
     "D3-L1/empty/456": {
       "run": "stage2pilot_dp_032_D3-L1_empty_seed456",
@@ -1351,7 +2194,9 @@
         "unchanged": true,
         "zero_signal_jaccard": 0.7762185528074379
       },
-      "iface_params": 266944
+      "iface_params": 266944,
+      "trainable": 266944,
+      "wall_seconds": 109.23803722020239
     },
     "D2/gt/42": {
       "run": "stage2pilot_dp_033_D2_gt_seed42",
@@ -1372,7 +2217,9 @@
         }
       },
       "negative_control": null,
-      "iface_params": 267264
+      "iface_params": 267264,
+      "trainable": 267264,
+      "wall_seconds": 284.0453855060041
     },
     "D3-L2/empty/42": {
       "run": "stage2pilot_dp_034_D3-L2_empty_seed42",
@@ -1398,7 +2245,9 @@
         "unchanged": true,
         "zero_signal_jaccard": 0.7762185528074379
       },
-      "iface_params": 299712
+      "iface_params": 299712,
+      "trainable": 299712,
+      "wall_seconds": 193.21614099573344
     },
     "D3-L2/empty/123": {
       "run": "stage2pilot_dp_035_D3-L2_empty_seed123",
@@ -1424,7 +2273,9 @@
         "unchanged": true,
         "zero_signal_jaccard": 0.7762185528074379
       },
-      "iface_params": 299712
+      "iface_params": 299712,
+      "trainable": 299712,
+      "wall_seconds": 213.59779771789908
     },
     "D2/gt/123": {
       "run": "stage2pilot_dp_036_D2_gt_seed123",
@@ -1445,7 +2296,9 @@
         }
       },
       "negative_control": null,
-      "iface_params": 267264
+      "iface_params": 267264,
+      "trainable": 267264,
+      "wall_seconds": 219.73660209029913
     },
     "D3-L2/empty/456": {
       "run": "stage2pilot_dp_037_D3-L2_empty_seed456",
@@ -1471,7 +2324,9 @@
         "unchanged": true,
         "zero_signal_jaccard": 0.7762185528074379
       },
-      "iface_params": 299712
+      "iface_params": 299712,
+      "trainable": 299712,
+      "wall_seconds": 209.5866788579151
     },
     "D2/gt/456": {
       "run": "stage2pilot_dp_038_D2_gt_seed456",
@@ -1492,7 +2347,9 @@
         }
       },
       "negative_control": null,
-      "iface_params": 267264
+      "iface_params": 267264,
+      "trainable": 267264,
+      "wall_seconds": 222.05826466716826
     },
     "D3-L2/pred_noCF/42": {
       "run": "stage2pilot_dp_039_D3-L2_pred_noCF_seed42",
@@ -1513,7 +2370,9 @@
         }
       },
       "negative_control": null,
-      "iface_params": 299712
+      "iface_params": 299712,
+      "trainable": 299712,
+      "wall_seconds": 203.88982123043388
     },
     "D1-L2/empty/42": {
       "run": "stage2pilot_dp_040_D1-L2_empty_seed42",
@@ -1539,7 +2398,9 @@
         "unchanged": true,
         "zero_signal_jaccard": 0.7762185528074379
       },
-      "iface_params": 245760
+      "iface_params": 245760,
+      "trainable": 245760,
+      "wall_seconds": 171.2505770912394
     },
     "D3-L2/pred_noCF/123": {
       "run": "stage2pilot_dp_041_D3-L2_pred_noCF_seed123",
@@ -1560,7 +2421,9 @@
         }
       },
       "negative_control": null,
-      "iface_params": 299712
+      "iface_params": 299712,
+      "trainable": 299712,
+      "wall_seconds": 197.28843395225704
     },
     "D1-L2/empty/123": {
       "run": "stage2pilot_dp_042_D1-L2_empty_seed123",
@@ -1586,7 +2449,9 @@
         "unchanged": true,
         "zero_signal_jaccard": 0.7762185528074379
       },
-      "iface_params": 245760
+      "iface_params": 245760,
+      "trainable": 245760,
+      "wall_seconds": 171.60765296779573
     },
     "D3-L2/pred_noCF/456": {
       "run": "stage2pilot_dp_043_D3-L2_pred_noCF_seed456",
@@ -1607,7 +2472,9 @@
         }
       },
       "negative_control": null,
-      "iface_params": 299712
+      "iface_params": 299712,
+      "trainable": 299712,
+      "wall_seconds": 199.26058102492243
     },
     "D1-L2/empty/456": {
       "run": "stage2pilot_dp_044_D1-L2_empty_seed456",
@@ -1633,7 +2500,9 @@
         "unchanged": true,
         "zero_signal_jaccard": 0.7762185528074379
       },
-      "iface_params": 245760
+      "iface_params": 245760,
+      "trainable": 245760,
+      "wall_seconds": 172.08868302218616
     },
     "D1-L2/pred_noCF/42": {
       "run": "stage2pilot_dp_045_D1-L2_pred_noCF_seed42",
@@ -1654,7 +2523,9 @@
         }
       },
       "negative_control": null,
-      "iface_params": 245760
+      "iface_params": 245760,
+      "trainable": 245760,
+      "wall_seconds": 136.38408031594008
     },
     "D1-L2/pred_noCF/123": {
       "run": "stage2pilot_dp_046_D1-L2_pred_noCF_seed123",
@@ -1675,7 +2546,9 @@
         }
       },
       "negative_control": null,
-      "iface_params": 245760
+      "iface_params": 245760,
+      "trainable": 245760,
+      "wall_seconds": 171.19337190967053
     },
     "D1-L2/pred_noCF/456": {
       "run": "stage2pilot_dp_047_D1-L2_pred_noCF_seed456",
@@ -1696,7 +2569,9 @@
         }
       },
       "negative_control": null,
-      "iface_params": 245760
+      "iface_params": 245760,
+      "trainable": 245760,
+      "wall_seconds": 172.21520298533142
     }
   }
 }

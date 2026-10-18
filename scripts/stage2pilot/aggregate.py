@@ -13,9 +13,11 @@
 from __future__ import annotations
 
 import argparse
+import calendar
 import json
 import re
 import sys
+import time
 from pathlib import Path
 
 import numpy as np
@@ -49,14 +51,25 @@ def judge(deltas, r):
     return "seed の幅を超える" if same and abs(d.mean()) > r else "幅の内"
 
 
+def wall_seconds(d):
+    """run_pd.sh が書いた start.txt と end.txt の差（秒）。無ければ None。"""
+    try:
+        t0, t1 = (time.strptime((d / f).read_text().strip(), "%Y-%m-%d %H:%M:%S UTC") for f in ("start.txt", "end.txt"))
+    except (OSError, ValueError):
+        return None
+    return calendar.timegm(t1) - calendar.timegm(t0)
+
+
 def pd_runs():
     out = {}
     for d in sorted((C.ROOT / "experiments/phase1").glob("stage2pilot_pd_*_seed*")):
         m = re.fullmatch(r"stage2pilot_pd_(P1-W1|P1-W2|P2L|P3|P2F)_(\w+?)_seed(\d+)", d.name)
-        if not m or not (d / "t1b_result.json").exists():
+        # cap_result.json: 上限 8 で起動し 5 epoch 目の始まりで止めた run（cap_finalize.py）
+        resp = next((p for p in (d / "t1b_result.json", d / "cap_result.json") if p.exists()), None)
+        if not m or resp is None:
             continue
         typ, arm, seed = m.group(1), m.group(2), int(m.group(3))
-        res = json.loads((d / "t1b_result.json").read_text())
+        res = json.loads(resp.read_text())
         cache = d / "stage2pilot_metrics.json"
         if cache.exists():
             met = json.loads(cache.read_text())
@@ -68,11 +81,14 @@ def pd_runs():
         key = (typ, arm if not (typ == "P2F" and arm == "gt") else "gt_p2f", seed)
         if key in out:
             raise SystemExit(f"同じ型・腕・seed の run が二つある: {key}")
+        sp = yaml.safe_load((d / "config.yaml").read_text()).get("stage2pilot", {})
         out[key] = {"run": d.name, "best_epoch": res["best_epoch"], "epochs_run": res.get("epochs_run"),
+                    "trainable": sp.get("total_trainable"), "wall_seconds": wall_seconds(d),
                     "reached_epoch_cap": res.get("reached_epoch_cap"), "eval_detection_mAP": res["mAP"],
                     "AP": met["AP"], "target_AP": met["target_AP"], "control_AP": met["control_AP"],
                     "per_class_ap": met["per_class_ap"], "per_video": met["per_video_AP"],
-                    "frozen_unchanged": res.get("frozen_digest_before") == res.get("frozen_digest_after")}
+                    "frozen_unchanged": (res["frozen_digest_before"] == res["frozen_digest_after"]
+                                         if res.get("frozen_digest_after") else None)}
     return out
 
 
@@ -93,7 +109,8 @@ def dp_runs():
                     "reached_epoch_cap": met["reached_epoch_cap"], "phase_jaccard": met["phase_jaccard"],
                     "phase_accuracy": met["phase_accuracy"], "inst_variant": cfg.get("inst_variant"),
                     "per_video": {v: met["per_video"][v] for v in sorted(met["per_video"])},
-                    "negative_control": met.get("negative_control"), "iface_params": met.get("iface_params")}
+                    "negative_control": met.get("negative_control"), "iface_params": met.get("iface_params"),
+                    "trainable": met.get("iface_params"), "wall_seconds": met.get("elapsed_seconds")}
     return out
 
 
@@ -132,7 +149,11 @@ def table(runs, typ, metrics, arms, seeds=SEEDS):
                 row["per_video_delta"][v] = {s: rs[s]["per_video"][v] - emp[s]["per_video"][v] for s in seeds}
         row["runs"] = {s: rs[s]["run"] for s in seeds}
         row["epochs"] = {s: (rs[s]["best_epoch"], rs[s]["epochs_run"], rs[s]["reached_epoch_cap"]) for s in seeds}
+        row["trainable"] = {s: rs[s]["trainable"] for s in seeds}
+        row["wall_seconds"] = {s: rs[s]["wall_seconds"] for s in seeds}
         t["arms"][arm] = row
+    t["empty_cost"] = {s: {"epochs": (emp[s]["best_epoch"], emp[s]["epochs_run"], emp[s]["reached_epoch_cap"]),
+                           "trainable": emp[s]["trainable"], "wall_seconds": emp[s]["wall_seconds"]} for s in seeds}
     prim = metrics[0]
     a, b = t["arms"].get("pred_CF", {}), t["arms"].get("gtpred_CF", {})
     if single:
@@ -161,15 +182,75 @@ def compare(tables, pairs, metric):
     return out
 
 
+def flip_check(tables):
+    """完了判定 l: 「seed の幅を超える」の行で Δ の符号を一つだけ反転させると「幅の内」になるか。"""
+    rows = []
+    for typ, t in tables.items():
+        for arm, row in t.get("arms", {}).items():
+            for m, r in row.items():
+                if isinstance(r, dict) and r.get("reading") == "seed の幅を超える":
+                    d = list(r["delta"].values())
+                    d[0] = -d[0]
+                    rows.append({"type": typ, "arm": arm, "metric": m, "flipped": judge(d, t["R"][m])})
+    return {"rows": rows, "n": len(rows), "all_within": all(x["flipped"] == "幅の内" for x in rows),
+            "synthetic": [judge([0.02, 0.03, 0.025], 0.01), judge([-0.02, 0.03, 0.025], 0.01)]}
+
+
+def check_predictions(tables, p2f):
+    """§5.3 の予測との照合（記述のための事前の記録。外れても判定は変わらない）。"""
+    def r(typ, arm, m):
+        return tables.get(typ, {}).get("arms", {}).get(arm, {}).get(m)
+
+    def mean(x):
+        return None if x is None else x["mean"]
+
+    out = []
+    for typ in ("D2", "D1-L1"):
+        x = r(typ, "gt", "phase_jaccard")
+        out.append({"no": 1, "about": f"{typ} 正解の Δ（Jaccard）が正で幅を超える",
+                    "observed": x and f"平均 {x['mean']:+.4f}、{x['reading']}",
+                    "verdict": "UNKNOWN" if x is None else
+                    ("当たり" if x["mean"] > 0 and x["reading"] == "seed の幅を超える" else "外れ")})
+    for typ in ("D1-L1", "D2", "D3-L1"):
+        a, b = mean(r(typ, "pred_CF", "phase_jaccard")), mean(r(typ, "gtpred_CF", "phase_jaccard"))
+        out.append({"no": 2, "about": f"{typ} 予測-CF の平均 Δ ≤ 正解予測-CF の平均 Δ（Jaccard）",
+                    "observed": None if None in (a, b) else f"{a:+.4f} と {b:+.4f}",
+                    "verdict": "UNKNOWN" if None in (a, b) else ("当たり" if a <= b else "外れ")})
+    t = mean(r("P1-W1", "gt", "target_AP"))
+    c = mean(r("P1-W1", "gt", "control_AP"))
+    out.append({"no": 3, "about": "P1-W1 正解の Δ（標的群 AP）が正、陰性対照群 AP の Δ は幅の内",
+                "observed": None if None in (t, c) else f"標的群 {t:+.4f}、陰性対照群 {c:+.4f}",
+                "verdict": "UNKNOWN" if t is None else
+                ("外れ" if t <= 0 else "前半は当たり。後半は UNKNOWN（PD は seed 1 つで幅を測れない）")})
+    for typ in PD_TYPES + DP_TYPES:
+        m = "AP" if typ in PD_TYPES else "phase_jaccard"
+        a, b = mean(r(typ, "pred_noCF", m)), mean(r(typ, "pred_CF", m))
+        out.append({"no": 4, "about": f"{typ} 予測-noCF の平均 Δ < 予測-CF の平均 Δ（{m}）",
+                    "observed": None if None in (a, b) else f"{a:+.4f} と {b:+.4f}",
+                    "verdict": "UNKNOWN" if None in (a, b) else ("当たり" if a < b else "外れ")})
+    x = mean(r("P1-W1", "pred_CF", "AP"))
+    out.append({"no": 5, "about": "P1-W1 予測-CF の Δ（overall mAP）は幅の内",
+                "observed": None if x is None else f"{x:+.4f}", "verdict": "UNKNOWN（PD は seed 1 つで幅を測れない）"})
+    g = p2f.get("gt_p2f")
+    out.append({"no": 6, "about": "P2F 正解の差（標的群 AP）が正",
+                "observed": g and f"{g['target_AP'] - TOWER_DET['target_AP']:+.4f}",
+                "verdict": "UNKNOWN" if g is None else
+                ("当たり" if g["target_AP"] > TOWER_DET["target_AP"] else "外れ")})
+    return out
+
+
 def fmt(x, nd=4):
     return "—" if x is None else (f"{x:+.{nd}f}" if isinstance(x, float) else str(x))
 
 
-def render(res, interim):
+def render(res, interim, head=None, tail=None):
     w = []
     w.append("# Stage 2 予備測定" + ("（中間記録）" if interim else "") + "\n")
     w.append("**非公式の予備測定（T-2026-10-18-stage2-pilot-folda）。関門の判定と設計の判断に使わない。**"
              "折り A の val（動画 09・10）だけ。区間推定もクラスタの推論もしない。\n")
+    if head:
+        w.append(head)
+        w.append("## 結果の表\n")
     w.append(f"生成: `scripts/stage2pilot/aggregate.py`。run 数 PD {res['n_pd_runs']}、DP {res['n_dp_runs']}。"
              "Δ は同じ seed の空の腕との差。R は空の腕の 3 seed の幅。読み方は SPEC §5.2。\n")
     for direction, types, metrics in (("PD（工程から検出）", PD_TYPES, PD_METRICS), ("DP（検出から工程）", DP_TYPES, DP_METRICS)):
@@ -215,6 +296,20 @@ def render(res, interim):
             if "realization_rate" in t:
                 rr = t["realization_rate"]
                 w.append(f"\n実現率: {rr if isinstance(rr, str) else f'{rr:.3f}'}")
+            w.append("\n全値と学習の量（epoch は 0 始まり。所要は run の壁時計）\n")
+            w.append("| 腕 | seed | " + " | ".join(metrics) + " | 最良 epoch | 回した epoch | 上限で停止 | 学習対象 | 所要（分） |"
+                     "\n|---|---|" + "---|" * (len(metrics) + 5))
+            rows = [("empty", {m: t["empty"][m] for m in metrics}, t["empty_cost"])]
+            rows += [(arm, {m: row[m]["values"] for m in metrics},
+                      {s: {"epochs": row["epochs"][s], "trainable": row["trainable"][s],
+                           "wall_seconds": row["wall_seconds"][s]} for s in sd})
+                     for arm, row in t["arms"].items() if "status" not in row]
+            for arm, vals, cost in rows:
+                for s in sd:
+                    be, er, cap = cost[s]["epochs"]
+                    ws = cost[s]["wall_seconds"]
+                    w.append(f"| {ARM_JA[arm]} | {s} | " + " | ".join(f"{vals[m][s]:.4f}" for m in metrics)
+                             + f" | {be} | {er} | {cap} | {cost[s]['trainable']} | {'—' if ws is None else f'{ws / 60:.1f}'} |")
             w.append("")
     if res.get("p2f"):
         w.append("### P2F（学習なし。検出塔単独との差）\n")
@@ -232,6 +327,19 @@ def render(res, interim):
             w.append(f"| {c['pair']} | {ARM_JA[c['arm']]} | {c['metric']} | {fmt(c['diff_of_mean_delta'])} | "
                      f"{c['max_R']:.4f} | {'超える' if c['exceeds'] else '超えない'} |")
         w.append("")
+    if res.get("predictions"):
+        w.append("## §5.3 の予測との照合（記述のための事前の記録。外れても本契約の判定は変わらない）\n")
+        w.append("| 番号 | 予測 | 実測 | 照合 |\n|---|---|---|---|")
+        for p in res["predictions"]:
+            w.append(f"| {p['no']} | {p['about']} | {p['observed'] or '—'} | {p['verdict']} |")
+        w.append("")
+    fc = res.get("flip_check")
+    if fc:
+        w.append(f"完了判定 l の確認: 「seed の幅を超える」の {fc['n']} 行で Δ の符号を一つだけ反転させると、"
+                 + ("すべて「幅の内」になる。" if fc["all_within"] else "「幅の内」にならない行がある。")
+                 + f"作り物の Δ（+0.02、+0.03、+0.025、R 0.01）では「{fc['synthetic'][0]}」、一つ反転で「{fc['synthetic'][1]}」。\n")
+    if tail:
+        w.append(tail)
     return "\n".join(w) + "\n"
 
 
@@ -240,6 +348,8 @@ def main():
     ap.add_argument("--out-json", required=True)
     ap.add_argument("--out-md", required=True)
     ap.add_argument("--interim", action="store_true", help="交差適合を要しない腕だけを表にする")
+    ap.add_argument("--head", help="表の前に置く手書きの節（REPORT.md 用の Markdown）")
+    ap.add_argument("--tail", help="表の後に置く手書きの節（REPORT.md 用の Markdown）")
     a = ap.parse_args()
     pd_r, dp_r = pd_runs(), dp_runs()
     tables = {}
@@ -255,10 +365,12 @@ def main():
                        "phase_jaccard"))
     res = {"task_id": C.TASK_ID, "interim": a.interim, "n_pd_runs": len(pd_r), "n_dp_runs": len(dp_r),
            "tables": tables, "p2f": p2f, "comparisons": comps,
+           "predictions": check_predictions(tables, p2f), "flip_check": flip_check(tables),
            "pd_runs": {f"{k[0]}/{k[1]}/{k[2]}": v for k, v in pd_r.items()},
            "dp_runs": {f"{k[0]}/{k[1]}/{k[2]}": v for k, v in dp_r.items()}}
     C.write_json(a.out_json, res)
-    Path(a.out_md).write_text(render(res, a.interim))
+    head, tail = (Path(p).read_text() if p else None for p in (a.head, a.tail))
+    Path(a.out_md).write_text(render(res, a.interim, head, tail))
     print(f"PD {len(pd_r)} runs, DP {len(dp_r)} runs -> {a.out_md}")
 
 

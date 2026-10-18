@@ -1,0 +1,34 @@
+{
+  "task_id": "T-2026-10-18-stage2-pilot-folda",
+  "source": "scripts/stage2pilot/cap_finalize.py（train_t1b.py の t1b_result.json の代わり）",
+  "seed": 42,
+  "zero_ctx": false,
+  "epoch_cap": 4,
+  "init_mAP": 0.7273,
+  "best_epoch": 2,
+  "mAP": 0.7336,
+  "per_epoch_eval": [
+    {
+      "epoch": 0,
+      "mAP": 0.732
+    },
+    {
+      "epoch": 1,
+      "mAP": 0.7303
+    },
+    {
+      "epoch": 2,
+      "mAP": 0.7336
+    },
+    {
+      "epoch": 3,
+      "mAP": 0.7271
+    }
+  ],
+  "early_stopped_epoch": null,
+  "epochs_run": 4,
+  "reached_epoch_cap": true,
+  "frozen_digest_before": null,
+  "frozen_digest_after": null,
+  "note": "上限 8 で起動し、5 epoch 目の始まりで外から止めた。凍結部の要約値は学習の終わりに書かれるため UNKNOWN"
+}
