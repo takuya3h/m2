@@ -1,0 +1,73 @@
+epoch=1 lr=0.0001 loss=0.994101 val_accuracy=0.568317
+Traceback (most recent call last):
+  File "/home/ubuntu/slocal2/m2/scripts/stage2pilot/cf_ptower.py", line 136, in <module>
+    main()
+  File "/home/ubuntu/slocal2/m2/scripts/stage2pilot/cf_ptower.py", line 128, in main
+    r3.finetune(cfg)
+  File "/home/ubuntu/slocal2/m2/scripts/stage1_ptower_r3.py", line 218, in finetune
+    loss = ce(model(images), y)
+              ^^^^^^^^^^^^^
+  File "/home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/torchvision/models/resnet.py", line 285, in forward
+    return self._forward_impl(x)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/torchvision/models/resnet.py", line 269, in _forward_impl
+    x = self.bn1(x)
+        ^^^^^^^^^^^
+  File "/home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/torch/nn/modules/batchnorm.py", line 171, in forward
+    return F.batch_norm(
+           ^^^^^^^^^^^^^
+  File "/home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/torch/nn/functional.py", line 2478, in batch_norm
+    return torch.batch_norm(
+           ^^^^^^^^^^^^^^^^^
+torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 1.09 GiB. GPU 0 has a total capacty of 47.40 GiB of which 481.62 MiB is free. Process 2033663 has 3.99 GiB memory in use. Process 2084846 has 41.19 GiB memory in use. Including non-PyTorch memory, this process has 1.72 GiB memory in use. Of the allocated memory 1.38 GiB is allocated by PyTorch, and 8.78 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+epoch=1 lr=0.0001 loss=0.994101 val_accuracy=0.568317
+epoch=2 lr=0.0001 loss=0.501208 val_accuracy=0.600660
+epoch=3 lr=0.0001 loss=0.281863 val_accuracy=0.643564
+epoch=4 lr=0.0001 loss=0.159386 val_accuracy=0.579538
+epoch=5 lr=0.0001 loss=0.085906 val_accuracy=0.660726
+epoch=6 lr=0.0001 loss=0.044269 val_accuracy=0.619802
+epoch=7 lr=0.0001 loss=0.045414 val_accuracy=0.590099
+epoch=8 lr=0.0001 loss=0.024828 val_accuracy=0.647525
+epoch=9 lr=0.0001 loss=0.023382 val_accuracy=0.440924
+lr lowered at epoch=9 to 1e-05
+epoch=10 lr=1e-05 loss=0.014238 val_accuracy=0.620462
+epoch=11 lr=1e-05 loss=0.009590 val_accuracy=0.609241
+epoch=12 lr=1e-05 loss=0.007606 val_accuracy=0.646205
+epoch=13 lr=1e-05 loss=0.006486 val_accuracy=0.654125
+early stop at epoch=13
+FINETUNE_COMPLETE /home/ubuntu/slocal2/m2/experiments/phase1/stage2pilot_cf_ptower_001_ft_coco_lr0.0001_foldAH2_seed42 acc=0.6607260726072607
+/home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/torch/_utils.py:831: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return self.fget.__get__(instance, owner)()
+EXTRACT_COMPLETE /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_ptower/H2/all_gap.npz
+epoch=1 val_jaccard=0.056006 accuracy=0.368977
+epoch=2 val_jaccard=0.030377 accuracy=0.120132
+/home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/torch/optim/lr_scheduler.py:149: UserWarning: The epoch parameter in `scheduler.step()` was not necessary and is being deprecated where possible. Please use `scheduler.step()` to step the scheduler. During the deprecation, if epoch is different from None, the closed form is used instead of the new chainable form, where available. Please open an issue if you are unable to replicate your use case: https://github.com/pytorch/pytorch/issues/new/choose.
+  warnings.warn(EPOCH_DEPRECATION_WARNING, UserWarning)
+epoch=3 val_jaccard=0.146586 accuracy=0.213201
+epoch=4 val_jaccard=0.249152 accuracy=0.384818
+epoch=5 val_jaccard=0.467156 accuracy=0.720792
+epoch=6 val_jaccard=0.510851 accuracy=0.774917
+epoch=7 val_jaccard=0.466772 accuracy=0.698350
+epoch=8 val_jaccard=0.408478 accuracy=0.640264
+epoch=9 val_jaccard=0.409376 accuracy=0.585479
+epoch=10 val_jaccard=0.447086 accuracy=0.572277
+epoch=11 val_jaccard=0.488632 accuracy=0.718812
+epoch=12 val_jaccard=0.471614 accuracy=0.654785
+epoch=13 val_jaccard=0.479942 accuracy=0.660726
+epoch=14 val_jaccard=0.473875 accuracy=0.695050
+epoch=15 val_jaccard=0.491725 accuracy=0.714191
+epoch=16 val_jaccard=0.469076 accuracy=0.674587
+RUN_COMPLETE /home/ubuntu/slocal2/m2/experiments/phase1/stage2pilot_cf_ptower_006_P15_C_L8_w0.3_h30_foldAH2_coco_lr0.0001_seed42
+{"task_id": "T-2026-10-18-stage2-pilot-folda", "head": "/home/ubuntu/slocal2/m2/experiments/phase1/stage2pilot_cf_ptower_006_P15_C_L8_w0.3_h30_foldAH2_coco_lr0.0001_seed42/checkpoints/best.pth", "head_sha256": "7c885e1ca29043d12fe41dda03df69201eb5f154fceb9aa0230157d7b7a637b1", "cache": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_ptower/H2/all_gap.npz", "cache_sha256": "eb28aeaa6786a720a842ae9d6c6e6a11b0bfe167f995698a6578392c65361e52", "part": "train", "videos": ["01", "06", "11", "12", "15"], "frames": 4075, "class_order": ["anesthesia", "closure", "design", "disinfection", "dissection", "dressing", "hemostasis", "incision", "irrigation"], "phase_jaccard": 0.2643219637361932, "phase_accuracy": 0.6765644171779142}

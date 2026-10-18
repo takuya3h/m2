@@ -1,8 +1,8 @@
 {
   "task_id": "T-2026-10-18-stage2-pilot-folda",
   "interim": true,
-  "n_pd_runs": 8,
-  "n_dp_runs": 57,
+  "n_pd_runs": 13,
+  "n_dp_runs": 63,
   "tables": {
     "P1-W1": {
       "type": "P1-W1",
@@ -164,13 +164,159 @@
     "P1-W2": {
       "type": "P1-W2",
       "empty": {
-        "42": null
+        "AP": {
+          "42": 0.7289266234183638
+        },
+        "target_AP": {
+          "42": 0.7979955254326152
+        },
+        "control_AP": {
+          "42": 0.6727804139176019
+        }
       },
-      "arms": {},
+      "arms": {
+        "pred_noCF": {
+          "AP": {
+            "values": {
+              "42": 0.7316024391061658
+            },
+            "delta": {
+              "42": 0.0026758156878020634
+            },
+            "mean": 0.0026758156878020634,
+            "min": 0.0026758156878020634,
+            "max": 0.0026758156878020634,
+            "reading": "UNKNOWN（seed 1 つ。幅を測れない）"
+          },
+          "target_AP": {
+            "values": {
+              "42": 0.8105333568956725
+            },
+            "delta": {
+              "42": 0.012537831463057314
+            },
+            "mean": 0.012537831463057314,
+            "min": 0.012537831463057314,
+            "max": 0.012537831463057314,
+            "reading": "UNKNOWN（seed 1 つ。幅を測れない）"
+          },
+          "control_AP": {
+            "values": {
+              "42": 0.6720903758190115
+            },
+            "delta": {
+              "42": -0.000690038098590362
+            },
+            "mean": -0.000690038098590362,
+            "min": -0.000690038098590362,
+            "max": -0.000690038098590362,
+            "reading": "UNKNOWN（seed 1 つ。幅を測れない）"
+          },
+          "per_video_delta": {
+            "09": {
+              "42": -0.0022774701609631354
+            },
+            "10": {
+              "42": 0.0029202247049225916
+            }
+          },
+          "runs": {
+            "42": "stage2pilot_pd_P1-W2_pred_noCF_seed42"
+          },
+          "epochs": {
+            "42": [
+              2,
+              4,
+              true
+            ]
+          },
+          "trainable": {
+            "42": 1949203
+          },
+          "wall_seconds": {
+            "42": 15441
+          }
+        },
+        "gt": {
+          "AP": {
+            "values": {
+              "42": 0.7370402527746103
+            },
+            "delta": {
+              "42": 0.008113629356246488
+            },
+            "mean": 0.008113629356246488,
+            "min": 0.008113629356246488,
+            "max": 0.008113629356246488,
+            "reading": "UNKNOWN（seed 1 つ。幅を測れない）"
+          },
+          "target_AP": {
+            "values": {
+              "42": 0.8208242366611593
+            },
+            "delta": {
+              "42": 0.02282871122854413
+            },
+            "mean": 0.02282871122854413,
+            "min": 0.02282871122854413,
+            "max": 0.02282871122854413,
+            "reading": "UNKNOWN（seed 1 つ。幅を測れない）"
+          },
+          "control_AP": {
+            "values": {
+              "42": 0.6728476499144166
+            },
+            "delta": {
+              "42": 6.723599681468517e-05
+            },
+            "mean": 6.723599681468517e-05,
+            "min": 6.723599681468517e-05,
+            "max": 6.723599681468517e-05,
+            "reading": "UNKNOWN（seed 1 つ。幅を測れない）"
+          },
+          "per_video_delta": {
+            "09": {
+              "42": 0.0007917552159061314
+            },
+            "10": {
+              "42": 0.01276516356371693
+            }
+          },
+          "runs": {
+            "42": "stage2pilot_pd_P1-W2_gt_seed42"
+          },
+          "epochs": {
+            "42": [
+              2,
+              4,
+              true
+            ]
+          },
+          "trainable": {
+            "42": 1949203
+          },
+          "wall_seconds": {
+            "42": 11238
+          }
+        }
+      },
       "seeds": [
         42
       ],
-      "status": "UNKNOWN（空の腕が揃っていない）"
+      "R": null,
+      "empty_identical_across_seeds": null,
+      "empty_cost": {
+        "42": {
+          "epochs": [
+            0,
+            3,
+            false
+          ],
+          "trainable": 1949203,
+          "wall_seconds": 13853
+        }
+      },
+      "realization_rate": "出さない（seed 1 つ。規則 2 を当てられない）"
     },
     "P2L": {
       "type": "P2L",
@@ -332,13 +478,101 @@
     "P3": {
       "type": "P3",
       "empty": {
-        "42": null
+        "AP": {
+          "42": 0.7265779423195141
+        },
+        "target_AP": {
+          "42": 0.7946907638280032
+        },
+        "control_AP": {
+          "42": 0.6727472870425399
+        }
       },
-      "arms": {},
+      "arms": {
+        "pred_noCF": {
+          "AP": {
+            "values": {
+              "42": 0.7263365240345219
+            },
+            "delta": {
+              "42": -0.00024141828499224527
+            },
+            "mean": -0.00024141828499224527,
+            "min": -0.00024141828499224527,
+            "max": -0.00024141828499224527,
+            "reading": "UNKNOWN（seed 1 つ。幅を測れない）"
+          },
+          "target_AP": {
+            "values": {
+              "42": 0.7942457530074833
+            },
+            "delta": {
+              "42": -0.0004450108205198422
+            },
+            "mean": -0.0004450108205198422,
+            "min": -0.0004450108205198422,
+            "max": -0.0004450108205198422,
+            "reading": "UNKNOWN（seed 1 つ。幅を測れない）"
+          },
+          "control_AP": {
+            "values": {
+              "42": 0.6721445720037368
+            },
+            "delta": {
+              "42": -0.0006027150388031588
+            },
+            "mean": -0.0006027150388031588,
+            "min": -0.0006027150388031588,
+            "max": -0.0006027150388031588,
+            "reading": "UNKNOWN（seed 1 つ。幅を測れない）"
+          },
+          "per_video_delta": {
+            "09": {
+              "42": -0.00019253778678296474
+            },
+            "10": {
+              "42": 0.00018438761020533878
+            }
+          },
+          "runs": {
+            "42": "stage2pilot_pd_P3_pred_noCF_seed42"
+          },
+          "epochs": {
+            "42": [
+              0,
+              3,
+              false
+            ]
+          },
+          "trainable": {
+            "42": 1684883
+          },
+          "wall_seconds": {
+            "42": 7754
+          }
+        },
+        "gt": {
+          "status": "UNKNOWN（seed が揃っていない）",
+          "have": []
+        }
+      },
       "seeds": [
         42
       ],
-      "status": "UNKNOWN（空の腕が揃っていない）"
+      "R": null,
+      "empty_identical_across_seeds": null,
+      "empty_cost": {
+        "42": {
+          "epochs": [
+            0,
+            3,
+            false
+          ],
+          "trainable": 1684883,
+          "wall_seconds": 7353
+        }
+      },
+      "realization_rate": "出さない（seed 1 つ。規則 2 を当てられない）"
     },
     "D1-L1": {
       "type": "D1-L1",
@@ -1333,14 +1567,6 @@
   "comparisons": [
     {
       "pair": "D1-L1 − D2",
-      "arm": "pred_noCF",
-      "metric": "phase_jaccard",
-      "diff_of_mean_delta": 0.005726920582957096,
-      "max_R": 0.0117049464408846,
-      "exceeds": false
-    },
-    {
-      "pair": "D1-L1 − D2",
       "arm": "gt",
       "metric": "phase_jaccard",
       "diff_of_mean_delta": 0.005751128074677629,
@@ -1348,12 +1574,12 @@
       "exceeds": false
     },
     {
-      "pair": "D1-L1 − D3-L1",
+      "pair": "D1-L1 − D2",
       "arm": "pred_noCF",
       "metric": "phase_jaccard",
-      "diff_of_mean_delta": 0.01968205739714679,
-      "max_R": 0.0,
-      "exceeds": true
+      "diff_of_mean_delta": 0.005726920582957096,
+      "max_R": 0.0117049464408846,
+      "exceeds": false
     },
     {
       "pair": "D1-L1 − D3-L1",
@@ -1364,11 +1590,11 @@
       "exceeds": true
     },
     {
-      "pair": "D2 − D3-L1",
+      "pair": "D1-L1 − D3-L1",
       "arm": "pred_noCF",
       "metric": "phase_jaccard",
-      "diff_of_mean_delta": 0.013955136814189695,
-      "max_R": 0.0117049464408846,
+      "diff_of_mean_delta": 0.01968205739714679,
+      "max_R": 0.0,
       "exceeds": true
     },
     {
@@ -1376,6 +1602,14 @@
       "arm": "gt",
       "metric": "phase_jaccard",
       "diff_of_mean_delta": 0.013270267269780867,
+      "max_R": 0.0117049464408846,
+      "exceeds": true
+    },
+    {
+      "pair": "D2 − D3-L1",
+      "arm": "pred_noCF",
+      "metric": "phase_jaccard",
+      "diff_of_mean_delta": 0.013955136814189695,
       "max_R": 0.0117049464408846,
       "exceeds": true
     },
@@ -1677,6 +1911,108 @@
       },
       "frozen_unchanged": null
     },
+    "P1-W2/empty/42": {
+      "run": "stage2pilot_pd_P1-W2_empty_seed42",
+      "best_epoch": 0,
+      "epochs_run": 3,
+      "trainable": 1949203,
+      "wall_seconds": 13853,
+      "reached_epoch_cap": false,
+      "eval_detection_mAP": 0.7289266234183638,
+      "AP": 0.7289266234183638,
+      "target_AP": 0.7979955254326152,
+      "control_AP": 0.6727804139176019,
+      "per_class_ap": {
+        "Bipolar Forceps": 0.7939074816651595,
+        "Electric Cautery": 0.9666994879918055,
+        "Forceps": 0.355632504130574,
+        "Gauze": 0.27438286254348104,
+        "Hook": 0.6469122540359219,
+        "Mouth Gag": 0.7938731143946675,
+        "Needle Holders": 0.8435955010670005,
+        "Raspatory": 0.8185396661495207,
+        "Retractor": NaN,
+        "Scalpel": 0.8893633359092762,
+        "Scissors": 0.7110336977983072,
+        "Skewer": 0.9499605236021894,
+        "Suction Cannula": 0.8347578473026551,
+        "Syringe": 0.5382066198369301,
+        "Tweezers": 0.7881078314296039
+      },
+      "per_video": {
+        "09": 0.7042481765596321,
+        "10": 0.6442833156076058
+      },
+      "frozen_unchanged": true
+    },
+    "P1-W2/gt/42": {
+      "run": "stage2pilot_pd_P1-W2_gt_seed42",
+      "best_epoch": 2,
+      "epochs_run": 4,
+      "trainable": 1949203,
+      "wall_seconds": 11238,
+      "reached_epoch_cap": true,
+      "eval_detection_mAP": 0.7370402527746103,
+      "AP": 0.7370402527746103,
+      "target_AP": 0.8208242366611593,
+      "control_AP": 0.6728476499144166,
+      "per_class_ap": {
+        "Bipolar Forceps": 0.8407495110966317,
+        "Electric Cautery": 0.963587900293761,
+        "Forceps": 0.35279880979143824,
+        "Gauze": 0.27370532054048086,
+        "Hook": 0.6421323580992656,
+        "Mouth Gag": 0.7937303500525587,
+        "Needle Holders": 0.8516412835124448,
+        "Raspatory": 0.8315770224068048,
+        "Retractor": NaN,
+        "Scalpel": 0.9309303586108562,
+        "Scissors": 0.712891404184172,
+        "Skewer": 0.955622729776408,
+        "Suction Cannula": 0.8352102619255701,
+        "Syringe": 0.5452415614150957,
+        "Tweezers": 0.7887446671390568
+      },
+      "per_video": {
+        "09": 0.7050399317755383,
+        "10": 0.6570484791713227
+      },
+      "frozen_unchanged": true
+    },
+    "P1-W2/pred_noCF/42": {
+      "run": "stage2pilot_pd_P1-W2_pred_noCF_seed42",
+      "best_epoch": 2,
+      "epochs_run": 4,
+      "trainable": 1949203,
+      "wall_seconds": 15441,
+      "reached_epoch_cap": true,
+      "eval_detection_mAP": 0.7316024391061658,
+      "AP": 0.7316024391061658,
+      "target_AP": 0.8105333568956725,
+      "control_AP": 0.6720903758190115,
+      "per_class_ap": {
+        "Bipolar Forceps": 0.8099554502338427,
+        "Electric Cautery": 0.9613195457675128,
+        "Forceps": 0.34665826943249667,
+        "Gauze": 0.2731877928662305,
+        "Hook": 0.6421670776669307,
+        "Mouth Gag": 0.7923322417368257,
+        "Needle Holders": 0.8490852545948125,
+        "Raspatory": 0.8219252955348171,
+        "Retractor": NaN,
+        "Scalpel": 0.9222521532379834,
+        "Scissors": 0.7021757122701613,
+        "Skewer": 0.9547912812014024,
+        "Suction Cannula": 0.8369460789192027,
+        "Syringe": 0.543742604270317,
+        "Tweezers": 0.785895389753787
+      },
+      "per_video": {
+        "09": 0.701970706398669,
+        "10": 0.6472035403125284
+      },
+      "frozen_unchanged": true
+    },
     "P2F/gt_p2f/42": {
       "run": "stage2pilot_pd_P2F_gt_seed42",
       "best_epoch": -1,
@@ -1844,6 +2180,74 @@
       "per_video": {
         "09": 0.7054618397219893,
         "10": 0.6480155796654697
+      },
+      "frozen_unchanged": true
+    },
+    "P3/empty/42": {
+      "run": "stage2pilot_pd_P3_empty_seed42",
+      "best_epoch": 0,
+      "epochs_run": 3,
+      "trainable": 1684883,
+      "wall_seconds": 7353,
+      "reached_epoch_cap": false,
+      "eval_detection_mAP": 0.7265779423195141,
+      "AP": 0.7265779423195141,
+      "target_AP": 0.7946907638280032,
+      "control_AP": 0.6727472870425399,
+      "per_class_ap": {
+        "Bipolar Forceps": 0.7879760428928865,
+        "Electric Cautery": 0.9660188483872757,
+        "Forceps": 0.35969031252874906,
+        "Gauze": 0.2733538372341139,
+        "Hook": 0.6313496470442328,
+        "Mouth Gag": 0.7990719931864063,
+        "Needle Holders": 0.8463851444068187,
+        "Raspatory": 0.8035429266436518,
+        "Retractor": NaN,
+        "Scalpel": 0.8997019494088746,
+        "Scissors": 0.7042042727959446,
+        "Skewer": 0.9534146432490618,
+        "Suction Cannula": 0.8305932530466889,
+        "Syringe": 0.5288182569455415,
+        "Tweezers": 0.7879700647029507
+      },
+      "per_video": {
+        "09": 0.7033302769165127,
+        "10": 0.6462895475426649
+      },
+      "frozen_unchanged": true
+    },
+    "P3/pred_noCF/42": {
+      "run": "stage2pilot_pd_P3_pred_noCF_seed42",
+      "best_epoch": 0,
+      "epochs_run": 3,
+      "trainable": 1684883,
+      "wall_seconds": 7754,
+      "reached_epoch_cap": false,
+      "eval_detection_mAP": 0.7263365240345219,
+      "AP": 0.7263365240345219,
+      "target_AP": 0.7942457530074833,
+      "control_AP": 0.6721445720037368,
+      "per_class_ap": {
+        "Bipolar Forceps": 0.7858418009216797,
+        "Electric Cautery": 0.9670566407363885,
+        "Forceps": 0.36013191609585443,
+        "Gauze": 0.2711508296087707,
+        "Hook": 0.6306642827488732,
+        "Mouth Gag": 0.7994325295287108,
+        "Needle Holders": 0.8458528300534645,
+        "Raspatory": 0.8027329735455782,
+        "Retractor": NaN,
+        "Scalpel": 0.8996761143200612,
+        "Scissors": 0.7051986137963621,
+        "Skewer": 0.9530068938400528,
+        "Suction Cannula": 0.830994131288428,
+        "Syringe": 0.5299709824100449,
+        "Tweezers": 0.7870007975890373
+      },
+      "per_video": {
+        "09": 0.7031377391297298,
+        "10": 0.6464739351528702
       },
       "frozen_unchanged": true
     }
@@ -3234,6 +3638,144 @@
       "iface_params": 267264,
       "trainable": 267264,
       "wall_seconds": 212.46331922151148
+    },
+    "D2/gtpred_CF/42": {
+      "run": "stage2pilot_dp_066_D2_gtpred_CF_seed42",
+      "best_epoch": 4,
+      "epochs_run": 14,
+      "reached_epoch_cap": false,
+      "phase_jaccard": 0.7725244585137795,
+      "phase_accuracy": 0.8917491749174917,
+      "inst_variant": null,
+      "per_video": {
+        "09": {
+          "phase_accuracy": 0.9942084942084942,
+          "phase_jaccard": 0.9903367062277044
+        },
+        "10": {
+          "phase_accuracy": 0.8385155466399198,
+          "phase_jaccard": 0.7093272129702631
+        }
+      },
+      "negative_control": null,
+      "iface_params": 268224,
+      "trainable": 268224,
+      "wall_seconds": 214.05215333029628
+    },
+    "D3-L2/pred_CF/42": {
+      "run": "stage2pilot_dp_067_D3-L2_pred_CF_seed42",
+      "best_epoch": 2,
+      "epochs_run": 12,
+      "reached_epoch_cap": false,
+      "phase_jaccard": 0.7679154098009819,
+      "phase_accuracy": 0.8910891089108911,
+      "inst_variant": "uq",
+      "per_video": {
+        "09": {
+          "phase_accuracy": 0.9922779922779923,
+          "phase_jaccard": 0.9817378470310726
+        },
+        "10": {
+          "phase_accuracy": 0.8385155466399198,
+          "phase_jaccard": 0.6789335114575208
+        }
+      },
+      "negative_control": null,
+      "iface_params": 299712,
+      "trainable": 299712,
+      "wall_seconds": 200.7745329607278
+    },
+    "D2/gtpred_CF/123": {
+      "run": "stage2pilot_dp_068_D2_gtpred_CF_seed123",
+      "best_epoch": 1,
+      "epochs_run": 11,
+      "reached_epoch_cap": false,
+      "phase_jaccard": 0.7898169694766992,
+      "phase_accuracy": 0.8851485148514852,
+      "inst_variant": null,
+      "per_video": {
+        "09": {
+          "phase_accuracy": 0.9961389961389961,
+          "phase_jaccard": 0.9931717398646169
+        },
+        "10": {
+          "phase_accuracy": 0.827482447342026,
+          "phase_jaccard": 0.7056427693058386
+        }
+      },
+      "negative_control": null,
+      "iface_params": 268224,
+      "trainable": 268224,
+      "wall_seconds": 213.62918288260698
+    },
+    "D3-L2/pred_CF/123": {
+      "run": "stage2pilot_dp_069_D3-L2_pred_CF_seed123",
+      "best_epoch": 3,
+      "epochs_run": 13,
+      "reached_epoch_cap": false,
+      "phase_jaccard": 0.7569917383213286,
+      "phase_accuracy": 0.8871287128712871,
+      "inst_variant": "uq",
+      "per_video": {
+        "09": {
+          "phase_accuracy": 0.9942084942084942,
+          "phase_jaccard": 0.9845484320370036
+        },
+        "10": {
+          "phase_accuracy": 0.831494483450351,
+          "phase_jaccard": 0.6665085098678326
+        }
+      },
+      "negative_control": null,
+      "iface_params": 299712,
+      "trainable": 299712,
+      "wall_seconds": 157.17207575030625
+    },
+    "D2/gtpred_CF/456": {
+      "run": "stage2pilot_dp_070_D2_gtpred_CF_seed456",
+      "best_epoch": 1,
+      "epochs_run": 11,
+      "reached_epoch_cap": false,
+      "phase_jaccard": 0.7650611635584382,
+      "phase_accuracy": 0.8838283828382838,
+      "inst_variant": null,
+      "per_video": {
+        "09": {
+          "phase_accuracy": 0.9961389961389961,
+          "phase_jaccard": 0.9931717398646169
+        },
+        "10": {
+          "phase_accuracy": 0.8254764292878636,
+          "phase_jaccard": 0.6738107704873902
+        }
+      },
+      "negative_control": null,
+      "iface_params": 268224,
+      "trainable": 268224,
+      "wall_seconds": 218.8236167160794
+    },
+    "D3-L2/pred_CF/456": {
+      "run": "stage2pilot_dp_071_D3-L2_pred_CF_seed456",
+      "best_epoch": 1,
+      "epochs_run": 11,
+      "reached_epoch_cap": false,
+      "phase_jaccard": 0.7526823618564655,
+      "phase_accuracy": 0.8891089108910891,
+      "inst_variant": "uq",
+      "per_video": {
+        "09": {
+          "phase_accuracy": 0.9942084942084942,
+          "phase_jaccard": 0.9862965091521769
+        },
+        "10": {
+          "phase_accuracy": 0.8345035105315948,
+          "phase_jaccard": 0.682961615030484
+        }
+      },
+      "negative_control": null,
+      "iface_params": 299712,
+      "trainable": 299712,
+      "wall_seconds": 192.43797427415848
     }
   }
 }

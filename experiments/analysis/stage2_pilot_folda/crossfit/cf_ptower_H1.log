@@ -1,0 +1,46 @@
+epoch=1 lr=0.0001 loss=1.083320 val_accuracy=0.433003
+epoch=2 lr=0.0001 loss=0.517124 val_accuracy=0.623762
+epoch=3 lr=0.0001 loss=0.271357 val_accuracy=0.650165
+epoch=4 lr=0.0001 loss=0.159709 val_accuracy=0.736634
+epoch=5 lr=0.0001 loss=0.100807 val_accuracy=0.664026
+epoch=6 lr=0.0001 loss=0.060584 val_accuracy=0.764356
+epoch=7 lr=0.0001 loss=0.040661 val_accuracy=0.751155
+epoch=8 lr=0.0001 loss=0.036501 val_accuracy=0.732013
+epoch=9 lr=0.0001 loss=0.026221 val_accuracy=0.724092
+epoch=10 lr=0.0001 loss=0.018251 val_accuracy=0.744554
+lr lowered at epoch=10 to 1e-05
+epoch=11 lr=1e-05 loss=0.010911 val_accuracy=0.756436
+epoch=12 lr=1e-05 loss=0.012170 val_accuracy=0.757096
+epoch=13 lr=1e-05 loss=0.005946 val_accuracy=0.753135
+epoch=14 lr=1e-05 loss=0.007150 val_accuracy=0.757096
+early stop at epoch=14
+FINETUNE_COMPLETE /home/ubuntu/slocal2/m2/experiments/phase1/stage2pilot_cf_ptower_002_ft_coco_lr0.0001_foldAH1_seed42 acc=0.7643564356435644
+/home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/torch/_utils.py:831: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  return self.fget.__get__(instance, owner)()
+EXTRACT_COMPLETE /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_ptower/H1/all_gap.npz
+epoch=1 val_jaccard=0.011696 accuracy=0.064686
+epoch=2 val_jaccard=0.140288 accuracy=0.379538
+/home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/torch/optim/lr_scheduler.py:149: UserWarning: The epoch parameter in `scheduler.step()` was not necessary and is being deprecated where possible. Please use `scheduler.step()` to step the scheduler. During the deprecation, if epoch is different from None, the closed form is used instead of the new chainable form, where available. Please open an issue if you are unable to replicate your use case: https://github.com/pytorch/pytorch/issues/new/choose.
+  warnings.warn(EPOCH_DEPRECATION_WARNING, UserWarning)
+epoch=3 val_jaccard=0.119855 accuracy=0.308251
+epoch=4 val_jaccard=0.122580 accuracy=0.353135
+epoch=5 val_jaccard=0.162512 accuracy=0.449505
+epoch=6 val_jaccard=0.333498 accuracy=0.638944
+epoch=7 val_jaccard=0.403564 accuracy=0.693069
+epoch=8 val_jaccard=0.418735 accuracy=0.630363
+epoch=9 val_jaccard=0.373380 accuracy=0.663366
+epoch=10 val_jaccard=0.397224 accuracy=0.672607
+epoch=11 val_jaccard=0.433451 accuracy=0.679868
+epoch=12 val_jaccard=0.510149 accuracy=0.716832
+epoch=13 val_jaccard=0.506330 accuracy=0.705611
+epoch=14 val_jaccard=0.501379 accuracy=0.714191
+epoch=15 val_jaccard=0.489265 accuracy=0.732013
+epoch=16 val_jaccard=0.474777 accuracy=0.733993
+epoch=17 val_jaccard=0.469390 accuracy=0.726073
+epoch=18 val_jaccard=0.434014 accuracy=0.720132
+epoch=19 val_jaccard=0.444515 accuracy=0.730693
+epoch=20 val_jaccard=0.425219 accuracy=0.724752
+epoch=21 val_jaccard=0.420751 accuracy=0.729373
+epoch=22 val_jaccard=0.424515 accuracy=0.728053
+RUN_COMPLETE /home/ubuntu/slocal2/m2/experiments/phase1/stage2pilot_cf_ptower_004_P15_C_L8_w0.3_h30_foldAH1_coco_lr0.0001_seed42
+{"task_id": "T-2026-10-18-stage2-pilot-folda", "head": "/home/ubuntu/slocal2/m2/experiments/phase1/stage2pilot_cf_ptower_004_P15_C_L8_w0.3_h30_foldAH1_coco_lr0.0001_seed42/checkpoints/best.pth", "head_sha256": "3d176ae48f4a3582f782a04082de72f2c3ad92c7a455c44eef0b4df27330c8fd", "cache": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_ptower/H1/all_gap.npz", "cache_sha256": "682538b499ebafe209d583930aa80178adeacee4f0d3a1fdf5773d3b16b9dafc", "part": "train", "videos": ["02", "03", "08", "13", "14"], "frames": 5582, "class_order": ["anesthesia", "closure", "design", "disinfection", "dissection", "dressing", "hemostasis", "incision", "irrigation"], "phase_jaccard": 0.30676248114032006, "phase_accuracy": 0.5204227875313507}
