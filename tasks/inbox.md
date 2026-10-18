@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（662 件）
+## 未処理（666 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -677,6 +677,10 @@
 - [ ] 2026-10-14 [cc] Stage 1 の工程塔は区間を連結した 1 本の列を見ており履歴は境界をまたぐ。Stage 0 の経路は区間ごと。Stage 2 で塔単独の出力を保存する道具はどちらの列に合わせるかが未決（REPORT.md §2.3）
 - [ ] 2026-10-14 [cc] 既存の送り手信号は 6 経路すべて同時刻 t。「一つ前の時刻まで」の規則は実装にも repo の文書にも無く出所が不明。提案カード 3.1 の前提は訂正が要る（REPORT.md §3.1, time_alignment_val.json）
 - [ ] 2026-10-14 [cc] P→D の正解⊕予測 18-d に要る num_phases 18 の設定が版管理下に無い。その段の過去 run の設定の出所を確かめる契約が要るか未決（scripts/train_t1b.py:275-277）
+- [ ] 2026-10-17 [cc] 検出塔の評価時の入力は原寸 1920×1080 → 縮小後 1333×749 → pad 後 1344×768（W×H、前処理だけの実測）。REPORT.md:200 の計算値 1333×750 は丸めの違いで、実装は切り捨てる。次の契約の対称性の表の解像度の行を埋められる（T-2026-10-17-tower-reselect-prereq）
+- [ ] 2026-10-17 [cc] andrew の検出器に二周目の収束規則（util/convergence.py、main.py）と D*-ImageNet の設定 3 件を efros の実体から戻した。収束規則の試験は 9/9 PASS。新しい snapshot は third_party_snapshot/efros/2026-10-17/Relation-DETR/（T-2026-10-17-tower-reselect-prereq）
+- [ ] 2026-10-17 [cc] 規約 frame_sets の「追加動画 17〜21」（SPEC §5.2 の文言どおり）と conventions#folds の「追加 6 動画 17〜22」が食い違う。動画 22 の扱いを明示するかは未決（T-2026-10-17-tower-reselect-prereq）
+- [ ] 2026-10-17 [cc] decisions_required の 2 件（efros に届かない場合の版、andrew だけの改変の扱い）は利用者が回答し amendments に記録。2 件とも発火しなかった（T-2026-10-17-tower-reselect-prereq）
 
 ## 処理済み（1 件）
 

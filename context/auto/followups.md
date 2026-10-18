@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（618 件）
+## 申し送り（624 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -989,7 +989,16 @@
 - 三周目・P*-20 の run は val の予測を保存していない。動画単位の値や区間ごとの値が要るなら、checkpoint と all_gap.npz から再推論する契約が要る（本契約は推論しない）
 - tests/test_stage1_dtower_convergence.py の収集エラー（convergence.py が snapshot に無い）は #226 の報告済み。本契約とは無関係だが、素の pytest が全件を走らせない状態が続いている
 
-## 断定できなかった事項（391 件）
+### T-2026-10-17-tower-reselect-prereq
+
+- 評価時の入力は 1333×749（W×H）で、pad 後 1344×768。次の契約の対称性の表の『入力解像度と切り出し』の検出塔の行はこの実測で埋められる。REPORT.md:200 の 1333×750 は計算値の丸めで、実装は切り捨てる
+- SPEC §5.2 の『追加動画 17〜21 は Stage 2 の主測定に入れない』と conventions#folds の『追加 6 動画 17, 18, 19, 20, 21, 22』が食い違う。規約の frame_sets には SPEC の文言どおり 17〜21 と置いた。動画 22 の扱いを規約で明示するかは起票者の判断
+- context/env-facts.md の『直接接続は不可能』は andrew → efros の ssh には当たらなかった（直接届いた）。記述が何を指すかを確かめて直すかは起票者の判断
+- .venv-relation-detr に pytest が無い。検出器の環境で試験を回すことを契約が求めるなら、依存の追加を利用者に諮る契約が要る
+- 規約の変更により conventions_rev を持つ全契約が L2-6 の WARN になる（想定内。他の契約の conventions_rev は書き換えていない）
+- andrew の main.py の変更前の版は ~/m2-evacuated/T-2026-10-17-tower-reselect-prereq/third_party/Relation-DETR/main.py に残してある。不要になったら利用者の判断で片付ける
+
+## 断定できなかった事項（394 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1721,18 +1730,24 @@
 - §1 の 2 の『一つ前の時刻まで』の規則の出所（repo に無い）
 - 検出塔の特徴の空間の大きさ（1344×768 → 168×96 / 84×48 / 42×24 / 21×12）は設定からの計算値で、推論で確かめていない
 
-## 起票者の誤りの型（359 件）
+### T-2026-10-17-tower-reselect-prereq
+
+- 検出塔の forward の中の特徴の大きさ（168×96 / 84×48 / 42×24 / 21×12）は計算値のまま。本契約は前処理だけを測った
+- andrew で検出塔の学習（逆伝播と収束規則の実際の低下・打ち切り）は流していない
+- context/env-facts.md の『直接接続は不可能』が指す対象
+
+## 起票者の誤りの型（361 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 95 |
-| `asserted_without_measuring` | 150 |
+| `asserted_without_measuring` | 152 |
 | `self_contradiction` | 94 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 0 |
 | `rule_read_narrowly` | 1 |
 
-合計 359 件（対を持つ契約 123 件から）
+合計 361 件（対を持つ契約 124 件から）
 
