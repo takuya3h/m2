@@ -245,7 +245,7 @@ def cmd_train(a):
     if run is None:
         raise RuntimeError("W&B tracking could not start; no experiment executed")
     init_res, _ = evaluate(model, val_data, names)
-    best, best_score, stale, stopped, history = None, -1.0, 0, None, []
+    best, best_score, stale, stopped, history, no_grad_steps = None, -1.0, 0, None, [], 0
     started = time.monotonic()
     ckpt = C.STORE / "dp_ckpt" / f"{manager.exp_id}.pth"
     ckpt.parent.mkdir(parents=True, exist_ok=True)
@@ -264,10 +264,14 @@ def cmd_train(a):
                     logp[:, :, 1:], logp[:, :, :-1].detach(), reduction="none").clamp(max=16).mean()
             if not torch.isfinite(loss):
                 raise RuntimeError(f"非数の損失 epoch {epoch}")
+            total += float(loss)
+            if not loss.requires_grad:
+                # 界面に入力が届かない（D3 の空の腕はトークン 0 個で出力が特徴そのもの）。更新しない
+                no_grad_steps += 1
+                continue
             opt.zero_grad(set_to_none=True)
             loss.backward()
             opt.step()
-            total += float(loss)
         val, probs = evaluate(model, val_data, names)
         score = val["phase_jaccard"]
         history.append({"epoch": epoch, "train_loss": total / len(order), "val_jaccard": score,
@@ -292,6 +296,7 @@ def cmd_train(a):
                "init_phase_accuracy": init_res["phase_accuracy"], "epochs_run": epoch, "early_stopped_epoch": stopped,
                "reached_epoch_cap": stopped is None and epoch == max_epochs,
                "elapsed_seconds": time.monotonic() - started, "receiver_unchanged": head_unchanged,
+               "steps_without_grad": no_grad_steps,
                "iface_params": cfg["iface_params"], "iface_ckpt": str(ckpt), "iface_ckpt_sha256": C.sha256(ckpt)}
     if a.arm == "empty":
         metrics["negative_control"] = negative_control(a, model, ckpt, head, split, feats, names)

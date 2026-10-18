@@ -8,9 +8,11 @@
 #   GPU は CUDA_VISIBLE_DEVICES で渡す。
 #
 # 受け取り手は D*-COCO 折り A seed 42。同じ型の腕は、受け取り手・界面の型と容量（最初の層を除く）・
-# 学習範囲・増強・batch・数値精度（fp32）・止め方・seed を同じにする。止め方（PD-W1 と PD-W2 に一つずつ。
+# 学習範囲・増強・batch・数値精度・止め方・seed を同じにする。止め方（PD-W1 と PD-W2 に一つずつ。
 # 同じ値）: 学習率一定、val の overall mAP が 2 epoch 改善しなければ止める、上限 8 epoch、
 # 最良の時点は学習した epoch から val の overall mAP で選ぶ。
+# 数値精度: 学習の順伝播は bf16 の自動混合精度（PD の全腕で同じ）。評価は常に単精度（train_t1b.py の --amp の仕様）。
+# 試走（smoke）は fp32 で所要時間だけを測った。
 set -euo pipefail
 TYPE="$1"; ARM="$2"; SEED="$3"; MODE="${4:-}"
 BODY=/home/ubuntu/slocal2/m2
@@ -48,7 +50,7 @@ RUN="stage2pilot_pd_${TYPE}_${ARM}_seed${SEED}${MODE:+_$MODE}"
 WORK=$BODY/experiments/phase1/$RUN
 [ -e "$WORK" ] && { echo "既に在る: $WORK" >&2; exit 4; }
 CFG=$BODY/configs/stage2pilot/pd_${IFACE}_d${DIM}.py
-EXTRA=(--patience "$PATIENCE" --epochs "$MAX_EPOCHS" --best-excludes-init)
+EXTRA=(--patience "$PATIENCE" --epochs "$MAX_EPOCHS" --best-excludes-init --amp bf16)
 if [ "$TYPE" = P2F ]; then
   EXTRA=(--eval-only --fixed-table "$BODY/experiments/analysis/stage2_pilot_folda/signals/p2f_table.json")
 elif [ "$MODE" = smoke ]; then

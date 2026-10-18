@@ -15,7 +15,7 @@ export PYTHONPATH=src:scripts
 for spec in "$@"; do
   TYPE=${spec%%:*}; ARM=${spec#*:}
   for SEED in 42 123 456; do
-    if ls -d experiments/phase1/stage2pilot_dp_*_"${TYPE}_${ARM}_seed${SEED}" > /dev/null 2>&1; then
+    if grep -l '"phase_jaccard"' experiments/phase1/stage2pilot_dp_*_"${TYPE}_${ARM}_seed${SEED}"/metrics.json > /dev/null 2>&1; then
       echo "[dp_batch] 済み $TYPE $ARM $SEED"; continue
     fi
     EXTRA=()

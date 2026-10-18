@@ -26,6 +26,8 @@ from stage2pilot import common as C  # noqa: E402
 from stage2pilot import det_metrics as M  # noqa: E402
 
 SEEDS = (42, 123, 456)
+# 利用者の指示（2026-10-18）で PD の腕は seed 42 だけ。PD では R と規則 2 を出さない
+PD_SEEDS = (42,)
 PD_TYPES = ("P1-W1", "P1-W2", "P2L", "P3")
 DP_TYPES = ("D1-L1", "D1-L2", "D2", "D3-L1", "D3-L2")
 A5 = ("pred_noCF", "gt", "pred_CF", "gtpred_CF")
@@ -95,44 +97,47 @@ def dp_runs():
     return out
 
 
-def table(runs, typ, metrics, arms):
-    """型ごとの表。揃っていない腕は UNKNOWN（測っていない）。"""
-    t = {"type": typ, "empty": {}, "arms": {}}
-    emp = {s: runs.get((typ, "empty", s)) for s in SEEDS}
+def table(runs, typ, metrics, arms, seeds=SEEDS):
+    """型ごとの表。揃っていない腕は UNKNOWN（測っていない）。seed が 1 つなら R と読みは UNKNOWN。"""
+    t = {"type": typ, "empty": {}, "arms": {}, "seeds": list(seeds)}
+    single = len(seeds) == 1
+    emp = {s: runs.get((typ, "empty", s)) for s in seeds}
     if not all(emp.values()):
-        t["status"] = "UNKNOWN（空の腕が 3 seed 揃っていない）"
+        t["status"] = "UNKNOWN（空の腕が揃っていない）"
         t["empty"] = {s: (e[metrics[0]] if e else None) for s, e in emp.items()}
         return t
-    t["empty"] = {m: {s: emp[s][m] for s in SEEDS} for m in metrics}
-    t["R"] = {m: max(t["empty"][m].values()) - min(t["empty"][m].values()) for m in metrics}
-    t["empty_identical_across_seeds"] = {m: len(set(t["empty"][m].values())) == 1 for m in metrics}
+    t["empty"] = {m: {s: emp[s][m] for s in seeds} for m in metrics}
+    t["R"] = None if single else {m: max(t["empty"][m].values()) - min(t["empty"][m].values()) for m in metrics}
+    t["empty_identical_across_seeds"] = None if single else {m: len(set(t["empty"][m].values())) == 1 for m in metrics}
     for arm in arms:
-        rs = {s: runs.get((typ, arm, s)) for s in SEEDS}
+        rs = {s: runs.get((typ, arm, s)) for s in seeds}
         if not all(rs.values()):
-            t["arms"][arm] = {"status": "UNKNOWN（3 seed 揃っていない）",
+            t["arms"][arm] = {"status": "UNKNOWN（seed が揃っていない）",
                               "have": sorted(s for s, r in rs.items() if r)}
             continue
         row = {}
         for m in metrics:
-            vals = {s: rs[s][m] for s in SEEDS}
-            deltas = {s: vals[s] - t["empty"][m][s] for s in SEEDS}
+            vals = {s: rs[s][m] for s in seeds}
+            deltas = {s: vals[s] - t["empty"][m][s] for s in seeds}
             dv = list(deltas.values())
             row[m] = {"values": vals, "delta": deltas, "mean": float(np.mean(dv)), "min": min(dv), "max": max(dv),
-                      "reading": judge(dv, t["R"][m])}
-        videos = sorted(rs[SEEDS[0]]["per_video"])
+                      "reading": "UNKNOWN（seed 1 つ。幅を測れない）" if single else judge(dv, t["R"][m])}
+        videos = sorted(rs[seeds[0]]["per_video"])
         key = "phase_jaccard" if typ.startswith("D") else None
         row["per_video_delta"] = {}
         for v in videos:
             if key:
-                row["per_video_delta"][v] = {s: rs[s]["per_video"][v][key] - emp[s]["per_video"][v][key] for s in SEEDS}
+                row["per_video_delta"][v] = {s: rs[s]["per_video"][v][key] - emp[s]["per_video"][v][key] for s in seeds}
             else:
-                row["per_video_delta"][v] = {s: rs[s]["per_video"][v] - emp[s]["per_video"][v] for s in SEEDS}
-        row["runs"] = {s: rs[s]["run"] for s in SEEDS}
-        row["epochs"] = {s: (rs[s]["best_epoch"], rs[s]["epochs_run"], rs[s]["reached_epoch_cap"]) for s in SEEDS}
+                row["per_video_delta"][v] = {s: rs[s]["per_video"][v] - emp[s]["per_video"][v] for s in seeds}
+        row["runs"] = {s: rs[s]["run"] for s in seeds}
+        row["epochs"] = {s: (rs[s]["best_epoch"], rs[s]["epochs_run"], rs[s]["reached_epoch_cap"]) for s in seeds}
         t["arms"][arm] = row
     prim = metrics[0]
     a, b = t["arms"].get("pred_CF", {}), t["arms"].get("gtpred_CF", {})
-    if prim in a and prim in b:
+    if single:
+        t["realization_rate"] = "出さない（seed 1 つ。規則 2 を当てられない）"
+    elif prim in a and prim in b:
         if b[prim]["reading"] == "seed の幅を超える" and b[prim]["mean"] > 0:
             t["realization_rate"] = a[prim]["mean"] / b[prim]["mean"]
         else:
@@ -145,7 +150,7 @@ def compare(tables, pairs, metric):
     out = []
     for x, y in pairs:
         tx, ty = tables.get(x), tables.get(y)
-        if not tx or not ty or "R" not in tx or "R" not in ty:
+        if not tx or not ty or not tx.get("R") or not ty.get("R"):
             continue
         for arm in set(tx["arms"]) & set(ty["arms"]):
             if metric in tx["arms"][arm] and metric in ty["arms"][arm]:
@@ -174,30 +179,39 @@ def render(res, interim):
             if t is None:
                 continue
             w.append(f"### {typ}\n")
-            if "R" not in t:
+            if "status" in t:
                 w.append(f"{t.get('status')}\n")
                 continue
-            w.append("| 指標 | 空 s42 | 空 s123 | 空 s456 | R |\n|---|---|---|---|---|")
+            sd = t["seeds"]
+            hs = " | ".join(f"s{x}" for x in sd)
+            he = " | ".join(f"空 s{x}" for x in sd)
+            hd = " | ".join(f"Δ s{x}" for x in sd)
+            w.append(f"| 指標 | {he} | R |\n|---|" + "---|" * len(sd) + "---|")
             for m in metrics:
                 e = t["empty"][m]
-                w.append(f"| {m} | {e[42]:.4f} | {e[123]:.4f} | {e[456]:.4f} | {t['R'][m]:.4f} |")
+                rr = "UNKNOWN（seed 1 つ）" if t["R"] is None else f"{t['R'][m]:.4f}"
+                w.append(f"| {m} | " + " | ".join(f"{e[x]:.4f}" for x in sd) + f" | {rr} |")
+            if t.get("empty_identical_across_seeds") and all(t["empty_identical_across_seeds"].values()):
+                w.append("\n注: この型の空の腕は構造上 3 seed とも塔単独と同値（零の入力・トークン 0 個では界面に勾配が届かない）。"
+                         "R = 0 のため、規則 2 の「seed の幅を超える」は 3 つの Δ が同符号であればほぼ自動で付き、"
+                         "seed の揺れの目安にならない。")
             w.append("")
-            w.append("| 腕 | 指標 | Δ s42 | Δ s123 | Δ s456 | 平均 | 最小 | 最大 | 読み |\n|---|---|---|---|---|---|---|---|---|")
+            w.append(f"| 腕 | 指標 | {hd} | 平均 | 最小 | 最大 | 読み |\n|---|---|" + "---|" * len(sd) + "---|---|---|---|")
             for arm, row in t["arms"].items():
                 if "status" in row:
-                    w.append(f"| {ARM_JA[arm]} | — | {row['status']} | | | | | | |")
+                    w.append(f"| {ARM_JA[arm]} | — | {row['status']} |" + " |" * (len(sd) + 3))
                     continue
                 for m in metrics:
                     r = row[m]
                     d = r["delta"]
-                    w.append(f"| {ARM_JA[arm]} | {m} | {fmt(d[42])} | {fmt(d[123])} | {fmt(d[456])} | "
-                             f"{fmt(r['mean'])} | {fmt(r['min'])} | {fmt(r['max'])} | {r['reading']} |")
+                    w.append(f"| {ARM_JA[arm]} | {m} | " + " | ".join(fmt(d[x]) for x in sd)
+                             + f" | {fmt(r['mean'])} | {fmt(r['min'])} | {fmt(r['max'])} | {r['reading']} |")
             w.append("")
             w.append("動画ごとの Δ（" + ("macro Jaccard" if typ.startswith("D") else "overall mAP") + "）\n")
-            w.append("| 腕 | 動画 | s42 | s123 | s456 |\n|---|---|---|---|---|")
+            w.append(f"| 腕 | 動画 | {hs} |\n|---|---|" + "---|" * len(sd))
             for arm, row in t["arms"].items():
                 for v, dd in row.get("per_video_delta", {}).items():
-                    w.append(f"| {ARM_JA[arm]} | {v} | {fmt(dd[42])} | {fmt(dd[123])} | {fmt(dd[456])} |")
+                    w.append(f"| {ARM_JA[arm]} | {v} | " + " | ".join(fmt(dd[x]) for x in sd) + " |")
             if "realization_rate" in t:
                 rr = t["realization_rate"]
                 w.append(f"\n実現率: {rr if isinstance(rr, str) else f'{rr:.3f}'}")
@@ -212,6 +226,7 @@ def render(res, interim):
         w.append("")
     if res.get("comparisons"):
         w.append("## 型どうしの比較（同じ腕の平均 Δ の差。優劣は書かない）\n")
+        w.append("R が 0 の型（D1-L1、D1-L2、D3-L1、D3-L2）どうしの比較は、幅の判定が働かない。\n")
         w.append("| 組 | 腕 | 指標 | 平均 Δ の差 | 両型の R の大きい方 | 超えるか |\n|---|---|---|---|---|---|")
         for c in res["comparisons"]:
             w.append(f"| {c['pair']} | {ARM_JA[c['arm']]} | {c['metric']} | {fmt(c['diff_of_mean_delta'])} | "
@@ -229,7 +244,7 @@ def main():
     pd_r, dp_r = pd_runs(), dp_runs()
     tables = {}
     for typ in PD_TYPES:
-        tables[typ] = table(pd_r, typ, PD_METRICS, NOCF if a.interim else ARMS[typ])
+        tables[typ] = table(pd_r, typ, PD_METRICS, NOCF if a.interim else ARMS[typ], PD_SEEDS)
     for typ in DP_TYPES:
         arms = tuple(x for x in ARMS[typ] if x in NOCF) if a.interim else ARMS[typ]
         tables[typ] = table(dp_r, typ, DP_METRICS, arms)

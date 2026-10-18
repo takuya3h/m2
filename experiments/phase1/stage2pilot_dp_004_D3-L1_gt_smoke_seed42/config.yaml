@@ -1,0 +1,69 @@
+task_id: T-2026-10-18-stage2-pilot-folda
+unofficial: 非公式（T-2026-10-18-stage2-pilot-folda）
+direction: DP
+type: D3-L1
+interface: attn
+arm: gt
+seed: 42
+scope: W1
+inst_variant: literal
+signal_dim: 20
+signals_train:
+- path: /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D-GT-INST_train.npz
+  sha256: 12e308efb6cef7300f9b34a909bc1a35385d26f6abee23cdcc9286d78fd081c9
+  gt: true
+signals_val:
+- path: /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D-GT-INST_val.npz
+  sha256: 590a72d47bf220c188d24f099c2c42a41ddf78512c8068ab99ec78a5b5e7753f
+  gt: true
+receiver:
+  head: /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/efros_ptower/experiments/phase1/stage1_ptower_20_009_P15_C_L8_w0.3_h30_foldA_coco_lr0.0001_seed42/checkpoints/best.pth
+  head_sha256: 0d76d446796f855a51640d756d6d3436573ff40ed600915980021c5f4cc6ad6d
+  cache: /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/efros_ptower/data/processed/stage1_features/p15ctl_coco_lr0.0001_foldA_seed42/all_gap.npz
+  cache_sha256: c402e214d28d32c68b396fe84bbefefffdf7577d9550c421364543af78f172da
+  mode: frozen, eval (dropout off)
+stop_rule:
+  lr: 0.0005
+  weight_decay: 0.01
+  patience: 10
+  max_epochs: 3
+  smoothing_weight: 0.3
+  lr_schedule: constant
+  selection: val macro Jaccard, trained epochs only
+class_counts:
+- 281
+- 3595
+- 245
+- 11
+- 3832
+- 12
+- 825
+- 763
+- 93
+class_weights:
+- 0.1636632981864376
+- 0.012792597160052564
+- 0.18771178281791417
+- 4.180853344580815
+- 0.012001405738619249
+- 3.8324488991990804
+- 0.05574471126107754
+- 0.06027442567547702
+- 0.49450953538052655
+videos:
+  train:
+  - '01'
+  - '02'
+  - '03'
+  - '06'
+  - '08'
+  - '11'
+  - '12'
+  - '13'
+  - '14'
+  - '15'
+  val:
+  - '09'
+  - '10'
+smoke: true
+iface_params: 266944

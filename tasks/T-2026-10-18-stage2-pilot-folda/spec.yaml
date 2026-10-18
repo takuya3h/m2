@@ -17,6 +17,9 @@ meta:
     - date: "2026-10-18"
       reason: "Task A-6 による差し替え。conventions.md の実測の最新 commit は b12eda6c（PR #229 の 2da88a8f と b12eda6c）で、起票時の 073f9dc0 と食い違った。inject_verbatim の 8 節（prohibitions、issuer_cautions、env_p0、folds、split、eval_recipe、det_groups、crossfit）の本文は両版で同一（crossfit は末尾の空行 1 行だけの差）。変わったのは symmetry（適用対象外）と frame_sets（新設。本契約の評価のフレーム集合が違うことは SPEC §5.4 が既知の限界として扱う）。meta.created_from は実測と一致（63ae65da、1961/750/1506）。L2-6 の WARN の続行は利用者が承認した"
       diff: "contract.conventions_rev を 073f9dc0b80b7ca48c2766eb6f8f2ccd17cf0fe6 から b12eda6cf0f53f4f0d09e5b6c53bb3afde9831ac へ"
+    - date: "2026-10-18"
+      reason: "実行中の利用者の指示（16:4x JST）。早く終えるため、PD の 4 型（P1-W1、P1-W2、P2L、P3）の腕を seed 42 だけにした（1 型 15 本 → 5 本、計 60 本 → 20 本）。P2F の評価 2 本と DP の 63 本は変えない。PD では空の腕の 3 seed の幅 R が測れないため、§5.2 の規則 2（seed の幅を超える／幅の内）と実現率、型どうしの比較の幅の判定は PD について出さない（UNKNOWN）。Δ（同じ seed 42 の空の腕との差）だけを書く。あわせて D3 の予測トークンは利用者の決定で重複しない query の上位 K 個（D0-INST-UQ）とした"
+      diff: "SPEC §4 Task F の 1（seed は 42、123、456）と §7 の完了判定 k（三つの seed）を PD について seed 42 だけに変更。§3 の D3 のトークンの読みを確定"
 intent:
   question: "今ある検出塔と工程塔を凍結したまま、折り A（公式分割）の val で、界面の入力だけを変えたとき、方向ごと・界面の型ごと・参照入力段ごとの差はどれだけ出るか。非公式の予備測定であり、関門の判定にも設計の判断にも使わない"
   decision_at_stake: "進捗報告の材料。Stage 2 の測定器（塔の信号の保存、受け取り手の差し替え、型ごとの受け口、交差適合用の塔）が今ある塔で動くことの実証と、方向ごと・型ごとの差の大きさの見当。公式の Stage 2 の起票と関門 G1.5 の判定には使わない"

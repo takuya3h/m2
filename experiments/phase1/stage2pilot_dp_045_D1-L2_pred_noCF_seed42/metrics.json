@@ -1,0 +1,35 @@
+{
+  "best_epoch": 3,
+  "early_stopped_epoch": 13,
+  "elapsed_seconds": 136.38408031594008,
+  "epochs_run": 13,
+  "eval_recipe": {
+    "test_cfg": {
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "split": "val",
+      "task": "phase"
+    }
+  },
+  "iface_ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/dp_ckpt/stage2pilot_dp_045_D1-L2_pred_noCF_seed42.pth",
+  "iface_ckpt_sha256": "564f4c63c23eed03d7e697fc448b88edd253a690d8340673cf64bf7373b18f8e",
+  "iface_params": 245760,
+  "init_phase_accuracy": 0.8712871287128713,
+  "init_phase_jaccard": 0.7762185528074379,
+  "per_video": {
+    "09": {
+      "phase_accuracy": 0.9961389961389961,
+      "phase_jaccard": 0.9943049601959584
+    },
+    "10": {
+      "phase_accuracy": 0.8665997993981945,
+      "phase_jaccard": 0.699689340290311
+    }
+  },
+  "phase_accuracy": 0.9108910891089109,
+  "phase_jaccard": 0.7655648132865271,
+  "phase_macro_f1": 0.8395220223348023,
+  "reached_epoch_cap": false,
+  "receiver_unchanged": true,
+  "steps_without_grad": 0
+}
