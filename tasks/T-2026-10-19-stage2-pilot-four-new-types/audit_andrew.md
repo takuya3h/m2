@@ -99,13 +99,53 @@ S4・S5 の後に、main の `third_party`・`experiments/baselines/stage1_dtowe
 上記の `.git` ディレクトリ 1 件を除いて 0 件。main の `experiments/phase1` に `stage2four` の名前は 0 件。main の `status --porcelain` 0 行、分岐は不変。
 前回と直しの保存先（`$OLD`・`$FIX`）で 01:56 JST より新しいものは 0 件。
 
-## S6 試走: 未実施（利用者に諮る）
+## S6 試走（02:40:11〜02:40:22 JST、`andrew/smoke_DX_gt/`）
 
-handoff の命令 `S2FIX_CODE=$WT CUDA_VISIBLE_DEVICES=0 bash scripts/stage2pilot/run_pd_four.sh DX gt smoke` の run の置き場
-`$WT/experiments/phase1/stage2four_pd_DX_gt_ep4_seed42_smoke/` は、bengio の同じ試走として**分岐に commit 済み**（`server.txt` = bengio）。
-`run_pd_four.sh` は置き場が在ると `既に在る` で exit 4 になり、通ったとしても既存の追跡ファイルを上書きする（handoff §0・§1-6 に反する）。
-台本に名前を変える引数は無い（第 3 引数が `smoke` のときだけ試走になり、run 名は `_smoke` で決まる）。台本を変えず、既存のファイルを変えずに S6 を行う形を利用者に諮る。
-本番の 6 本の置き場（`stage2four_pd_DX_<腕>_ep4_seed42`）は分岐に無く、ぶつからない。
+**handoff からの逸脱（利用者の承認、02:38 JST 頃の回答「別の worktree で試走」）。** handoff の命令の run の置き場
+`$WT/experiments/phase1/stage2four_pd_DX_gt_ep4_seed42_smoke/` は、bengio の同じ試走として分岐に commit 済み（`server.txt` = bengio）。
+`run_pd_four.sh` は置き場が在ると `既に在る` で exit 4 になり、通っても既存の追跡ファイルを上書きする。台本に名前を変える引数は無い。
+利用者に諮り、同じ commit の写しの別の場所で回す方針の承認を得た。git worktree として取り出すと bengio の試走の置き場も出てくるので
+（消すとファイルの削除、sparse-checkout は共有の `.git/config` を変える）、次の形にした:
+
+    mkdir /home/ubuntu/slocal2/m2-four-andrew-smoke && git -C $WT archive cf517ee5 | tar -x -C /home/ubuntu/slocal2/m2-four-andrew-smoke --exclude='experiments/phase1/stage2four_pd_DX_gt_ep4_seed42_smoke'
+    → ファイル 22,294 本と記号リンク 4 本（追跡 22,316 から除いた 18 本を引いた数と一致）。run_pd_four.sh・train_t1b.py・pd_four.py・pd_dec_xattn_d9.py・pd_four_finalize.py は $WT と同一（cmp）
+    (cd /home/ubuntu/slocal2/m2-four-andrew-smoke && S2FIX_CODE=/home/ubuntu/slocal2/m2-four-andrew-smoke PYTHONDONTWRITEBYTECODE=1 CUDA_VISIBLE_DEVICES=0 bash scripts/stage2pilot/run_pd_four.sh DX gt smoke)
+    → [run_pd_four] stage2four_pd_DX_gt_ep4_seed42_smoke rc=0
+
+run は写しの場所にできた。予測と `checkpoints/` を除く run のファイルを `andrew/smoke_DX_gt/run/` に写した（命令の出力と時刻は `andrew/smoke_DX_gt/`）。
+写しの場所は git でないので、試走の自動同期は `exp_dir is not inside a git repository` で何もしない。`git_commit.txt` は `$A` の HEAD（42070946）。写しの場所は消していない。
+
+| 項目 | andrew | bengio の試走（01:51 JST） |
+|---|---|---|
+| `env_check.txt` | `ms_deform_attn_ext True` | 同じ |
+| `train.log` | `phase_grad=True init_mAP=0.8917 => PASS`、学習する数 210,374、det_steps/ep 4809 | 同じ |
+| 最初の歩 | `L=25.823 2.3it/s` | `L=25.823 0.9it/s` |
+| 学習前 mAP（val 20 枚） | 0.8916611661166115 | 0.8916611661166115 |
+| 後処理の AP | 0.891661（`finalize.log`、diff 0.00e+00） | 0.891661 |
+| 凍結部の要約値の前後一致 | true | true |
+| epoch 0 の tanh(α_l) | 0.0011766・−0.0007764・−0.0012253・0.0009191・−0.0006288・0.0008164 | 0.0011710・−0.0007627・−0.0012172・0.0009392・−0.0006296・0.0008164 |
+
+epoch 0 のゲートは 1e−5 ほど違う（bf16 の自動混合精度で 6 歩学習した後の値。装置の違いによる程度の差と見ている。原因は確かめていない）。
+重み `$FOUR/pd_ckpt/stage2four_pd_DX_gt_ep4_seed42_smoke/best_t1b.pth` 853,896 B。
+main の作業場所: 試走の後、`$A/experiments` に基準時刻（02:40 直前）より新しいファイル 0 件、`status --porcelain` 0 行。
+
+## S8 本番の 6 本の起動
+
+- 起動の直前（02:41 JST）: GPU の compute プロセス 0 件、python 系 0 件。worktree の HEAD `cf517ee5`（6 本とも同じ commit の台本で起動）
+- 1 回目（02:41:16〜02:42:56 JST）: **失敗（実行者の誤り）**。zsh の `for spec in "0 empty" …; do set -- $spec` は引用符なしの変数を単語に分けないため、
+  GPU 番号と腕の名前が一つの値のまま入り、腕が空になった。6 回とも `run_pd_four.sh: line 18: $2: unbound variable` で即座に止まった
+  （run の置き場も重みも作られていない。残ったのは `$FOUR/queues/andrew_DX_.out` 1 本と `andrew_launch.txt` の記録）
+- 2 回目（02:43:44〜02:45:24 JST）: 起動の手順を bash の台本にして実行した（handoff の命令と同じ形。`PYTHONDONTWRITEBYTECODE=1` を足した）。
+  `(cd $WT && S2FIX_CODE=$WT PYTHONDONTWRITEBYTECODE=1 CUDA_VISIBLE_DEVICES=<G> nohup bash scripts/stage2pilot/run_pd_four.sh DX <腕> > $FOUR/queues/andrew_DX_<腕>.out 2>&1 < /dev/null &)`、20 秒ずつずらした
+
+| GPU | run（起動の時刻 JST） |
+|---|---|
+| 0 | `DX empty`（02:43:44）、`DX pred_noCF`（02:44:04）、`DX gt`（02:44:24） |
+| 1 | `DX pred_CF`（02:44:44）、`DX gtpred_CF`（02:45:04）、`DX shuffle`（02:45:24） |
+
+- 1 枚 3 本にした理由: 6 本が一度に揃い、2 本ずつ 2 回に分けるより早く終わる見込みのため（直しの契約では 3 本目の伸びが 3% 以下。handoff §1-8）。
+  記憶は起動直後（学習前の評価中）で 1 本 1,592 MiB ほど。学習中の値と速さは下に足す
+- 6 本とも `env_check.txt` は `ms_deform_attn_ext True`、`server.txt` は `andrew`
 
 ## 記録の注意（run の `git_commit.txt`）
 
