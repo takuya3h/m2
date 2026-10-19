@@ -363,7 +363,9 @@ def main():
     # 止め方。既定は従来どおり固定 epoch と epochs-2 での学習率低下。`--patience` を渡したときだけ
     # 学習率を一定に保ち、val mAP が patience epoch 改善しなければ止める（上限は --epochs）。
     # 固定の学習率低下と早期打ち切りを組み合わせない（契約 T-2026-10-18-stage2-pilot-folda の止め方の規則）。
-    if args.eval_only or args.patience is not None:
+    if args.fixed_epochs and (args.patience is not None or args.eval_only):
+        raise SystemExit("[t1b] --fixed-epochs は --patience・--eval-only と組み合わせない")
+    if args.eval_only or args.patience is not None or args.fixed_epochs:
         sched = None
     else:
         sched = torch.optim.lr_scheduler.MultiStepLR(opt, milestones=[max(args.epochs - 2, 1)], gamma=0.1)
@@ -410,6 +412,7 @@ def main():
             "best_excludes_init": bool(args.best_excludes_init), "ckpt_dir": args.ckpt_dir,
             "save_trainable_only": bool(args.save_trainable_only),
             "phase_params": n_phase, "total_trainable": n_train,
+            **({"fixed_epochs": True, "result_selection": "final_epoch"} if args.fixed_epochs else {}),
         }} if (args.det_ckpt or args.signal_train or args.patience is not None or args.eval_only) else {}),
     })
 
@@ -499,7 +502,9 @@ def main():
         if save_preds and args.save_predictions_all:
             ra.save_predictions(work, preds["results"], split="val", tag=variant, epoch=epoch,
                                 compress=compress_preds)
-        if mAP > best["mAP"]:
+        # --fixed-epochs: 最良の回を選ばず、最後の epoch の状態を結果にする（checkpoint と予測もその状態）
+        chosen = epoch == args.epochs - 1 if args.fixed_epochs else mAP > best["mAP"]
+        if chosen:
             best = {"mAP": mAP, "epoch": epoch, "per_class_coco_map": per_class}
             stale = 0
             ckpt_dir = Path(args.ckpt_dir) if args.ckpt_dir else ra.checkpoints_dir(work)
@@ -538,6 +543,7 @@ def main():
         "final_per_class_coco_map": final_eval["per_class_coco_map"],
         "per_epoch_eval": per_epoch,
         "best_is_init": best_is_init, "run_dir": str(work),
+        **({"result_selection": "final_epoch"} if args.fixed_epochs else {}),
         **({"frozen_digest_before": frozen_before, "frozen_digest_after": frozen_digest(model)}
            if args.save_trainable_only else {}),
         **({"early_stopped_epoch": stopped_at, "epochs_run": len(per_epoch) - 1,
@@ -571,6 +577,7 @@ def main():
         "final_mAP": final_eval["mAP"], "final_epoch": final_eval["epoch"],
         "delta_detection": best["mAP"] - init_map,
         "best_is_init": best_is_init,
+        **({"result_selection": "final_epoch"} if args.fixed_epochs else {}),
         "artifacts": ra.artifact_paths(work),
     })
     ra.write_per_class_ap(work, best.get("per_class_coco_map", {}))
@@ -684,6 +691,11 @@ def parse_args():
                    help="best_t1b.pth の置き場。既定は従来どおり run の checkpoints/")
     p.add_argument("--save-trainable-only", action="store_true",
                    help="best_t1b.pth に学習対象の重みと注入層の buffer だけを入れる")
+    # 契約 T-2026-10-19-stage2-pilot-fix-epoch4-shuffle で足した。渡さなければ従来の経路のまま
+    p.add_argument("--fixed-epochs", action="store_true",
+                   help="--epochs の回数を止めずに学習し、最後の epoch の状態を結果にする（最良の回を選ばない）。"
+                        "学習率は一定。metrics.json・per_class_ap.json・best_t1b.pth・val の best の予測は"
+                        "最後の epoch の状態になり、result_selection=final_epoch を記録する")
     p.add_argument("--amp", default="no", choices=("no", "bf16", "fp16"),
                    help="学習の順伝播の数値精度。既定 no は従来どおりの単精度で、"
                         "経路も従来と同一（autocast を張らない）。bf16/fp16 は自動混合精度。"
