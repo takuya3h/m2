@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（687 件）
+## 未処理（692 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -702,6 +702,11 @@
 - [ ] 2026-10-19 [cx] G1 stop。前提契約のPR #237はOPENで、起点5a8baa79に契約ディレクトリ・報告がない。規約・手順・雛形は変更せず停止した。前提PRのphase0統合後に再開が必要。（T-2026-10-19-proposal-gate-brief）
 - [ ] 2026-10-19 [cx] 利用者はL2-6警告を記録した続行と規約版更新、範囲外の旧ルール三行の保持、同期で届いた実験ログ二経路の個別除外を許可した。.git/info/excludeでは再包含が優先されたため、追加許可を得て.gitignore末尾へ二行だけ追加。G1/G2 pass、前後47試験合格。（T-2026-10-19-proposal-gate-brief）
 - [ ] 2026-10-19 [cx] 利用者指示でPR #239の.gitignore末尾二行を差し戻す。同期由来の他契約未追跡ログのforbidden-check違反（現在8件）はPR差分と区別し、experiments/がPR差分に無いことを記録する。実験ファイルの移動・削除なし。（T-2026-10-19-proposal-gate-brief）
+- [ ] 2026-10-19 [cc] 非公式の測定（前回の予備測定の直し。4 epoch 目の値と入れ替えの腕）。結果は関門の判定と設計の判断に使わない。全値は experiments/analysis/stage2_pilot_fix/REPORT.md（T-2026-10-19-stage2-pilot-fix-epoch4-shuffle）
+- [ ] 2026-10-19 [cc] 利用者の決定: P3 の予測-CF・正解予測-CF を別ホスト bengio で回した（amendments 2・3 件目）。P3 のこの 2 本の Δ空・Δ入替にはホストの差が混ざる（T-2026-10-19-stage2-pilot-fix-epoch4-shuffle）
+- [ ] 2026-10-19 [cc] bengio の third_party/Relation-DETR は andrew と 23 件違い（増強・最適化の群を含む）、.venv-relation-detr の python のリンク先が無かった。bengio の仮想環境は uv の 3.11.16 に向け直したまま。戻すか、Relation-DETR をそろえるかは未決（T-2026-10-19-stage2-pilot-fix-epoch4-shuffle）
+- [ ] 2026-10-19 [cc] SPEC §1 の「P1-W1 正解の最後の回で +0.0087」は正解 epoch 3 と空 epoch 2 の差だった（長さの違う回の比較）。同じ epoch どうしでは選び方による差は小さい（T-2026-10-19-stage2-pilot-fix-epoch4-shuffle）
+- [ ] 2026-10-20 [cc] 結果の要点（非公式）: 予測-noCF の Δ入替は D1-L1 Jaccard +0.0013（Δ空 +0.0046 の大半は入れ替えた信号でも出る）、P1-W1・P1-W2・P2L で標的群 AP +0.0087・+0.0149・+0.0075、D3 と P3 は負。選び方による差は小さい。§5.3 の予測は 10 件中 8 件が当たり（T-2026-10-19-stage2-pilot-fix-epoch4-shuffle）
 
 ## 処理済み（1 件）
 

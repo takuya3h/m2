@@ -6,8 +6,51 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 129 件）。
-ここに出ない 124 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 130 件）。
+ここに出ない 125 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-10-19-stage2-pilot-fix-epoch4-shuffle
+
+状態 `pass` / ホスト `andrew（P3 の予測-CF・正解予測-CF だけ bengio）` / 起票 `240` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 分岐 feat/stage2-pilot-fix-epoch4-shuffle、起点 origin/phase0 = 5a8baa79、phase0 に scripts/stage2pilot/ 28 ファイル、本契約以外の compute プロセス 0 件、空き 1,681,381,457,920 B、試験の失敗の名前 6 件
+- `G2` pass — 前回の信号 21 本と記録の sha256 がすべて一致。andrew で工程 Jaccard 0.7762186（差 0.0）、検出 mAP 0.7273450（差 0.0）を再現。許容差 0.005
+- `G3` pass — 固定の長さが最後の epoch の状態を結果にし、既定の aggregate.py が前回の report.json を同値で再現（comparisons の並びだけが違う）、入れ替えた信号は値の集合を保ち対応だけを壊し（train 100%、val 99.87%）、入れ替えの腕の学習前の出力が塔単独と差 0.0（PD 4 構成・DP 5 型）、test の動画との共通 0 件
+
+### 起票者の誤り
+
+- `asymmetric_comparison` — SPEC §1 の「P1-W1 の正解の標的群 AP の差は最後の回で +0.0087」は、正解の epoch 3 と空の epoch 2（空は前回 epoch 2 で止まった）の差だった。同じ epoch どうしでは epoch 2 で +0.0195、今回の 4 epoch 目どうしで +0.0197。指示どおりに読むと、選び方の偏り（欠陥 A）を長さの違いの分だけ大きく見積もる
+- `check_does_not_check` — 完了判定 f（入れ替えの腕の学習前の出力が塔単独と一致）は、零初期化の界面ではどんな信号を入れても成り立つ。指示どおりに確かめても、入れ替えが正しく行われたかは何も分からない（入れ替えそのものは e と i が確かめる）
+- `asserted_without_measuring` — SPEC §3 は split 全体で入れ替えれば動画単位の情報を残さないとしたが、val は動画 2 本のため入れ替えた後も 55.6% のフレームが同じ動画の信号を受け取る（train は 11.5%）。指示どおりに作ると、val の入れ替えの腕には動画単位の情報が半分以上残る
+- `asserted_without_measuring` — meta.created_from.runindex_commit と contract.conventions_rev に、Task A-6 の読み（その経路の最新の commit）と違う値（起票時の phase0 の先頭）が書かれていた。内容は同一だが、指示どおりに Task A-6 を実測すると食い違いとなり、差し替えと amendments の記録が要った
+
+### 逸脱
+
+- `judgement` — Task A-6: conventions_rev と runindex_commit を前回と同じ読み（git log -1 -- <経路>）で実測し、起票時の値と違ったため差し替えた（内容は同一。amendments 1 件目）
+- `judgement` — 利用者の承認で、P3 の予測-CF と正解予測-CF を別ホスト bengio で回した（amendments 2・3 件目）。P3 の空・予測-noCF・正解・入れ替えと他のすべての run は andrew。P3 のこの 2 本の Δ空・Δ入替にはホストの差が混ざる
+- `environment` — bengio の .venv-relation-detr は python のリンク先（pyenv 3.11.4）が無く、third_party/Relation-DETR のソースが andrew と 23 件違った。andrew の中身を別の場所（重ねの BODY）に置いて参照させ、仮想環境を uv の CPython 3.11.16 に向け直した（andrew の仮想環境と同じ）。入力の要約値で一致を確かめた
+- `judgement` — 速さの試しとして GPU 1 枚に 3 本目を 1 回だけ足した（GPU 0 で P1-W2 入れ替え、GPU 1 で P3 予測-noCF）。合計の速さの伸びは 3% と 0 で、それ以上は足さなかった
+- `judgement` — 実行者の誤り: PD の試走の後処理が、val 20 枚で群の AP が None になる場合を書式で落とした。直して後処理だけ回し直した
+- `judgement` — 実行者の誤り: andrew で P3 の 4 本を起こしかけた命令が途切れ、正解と予測-CF の 2 本が学習の前で止まった（プロセスは残らなかった）。フォルダを本契約の置き場（FIX/aborted_runs）へ移し、後で同じ名前で回し直した
+- `environment` — bengio の S1 で GPU 2 枚に本件以外のプロセス（/tmp/gpu_dummy_load.py）が居り、利用者の指示で bengio の実行者が止めた（audit_bengio.md）
+- `judgement` — 実行者の誤り: bengio の分岐の統合の 1 回目が index の書き込みの競合（状態行の処理）で途中の状態になった。merge --abort で戻し、ロックが空くのを待ってやり直した。データの損失なし
+- `judgement` — test_audit_fix.py は別ホストの run の注釈の経路（bengio の重ねの BODY）を開けないため、bengio の入力の照合の記録の sha256 が andrew の同じ名前の注釈と一致するときだけ andrew の写しで数える形にした
+- `judgement` — 道具: train_t1b.py に --fixed-epochs、dp_train.py に --fixed-epochs・--task-id・--exp-prefix・--smoke・腕 shuffle・identity --arm、run_pd_fix.sh に置き場の切り替え（S2FIX_BODY、S2FIX_CODE）を足した。既定の経路は変えず、試験で固定した
+
+### 申し送り
+
+- 新しい界面の型の候補を回す次の契約は、固定の長さ（--fixed-epochs）と入れ替えの腕（shuffle_signals.py、腕 shuffle）をそのまま使える
+- 入れ替えの腕は val が 2 動画のため半分以上が同じ動画の信号を受け取る。動画単位の情報を壊したいなら、折りを増やすか動画をまたぐ入れ替えに限る設計を決める
+- 前回の aggregate.py の comparisons の並びが実行ごとに変わる（set の反復順）。並びを固定するかを決める
+- bengio の .venv-relation-detr（向け直した）と third_party/Relation-DETR（andrew と 23 件違う）、重ねの BODY と worktree を残すか戻すかを決める
+
+### 断定できなかったこと
+
+- 回し直さない PD の 8 本の動画ごとの 4 epoch 目の値（epoch 3 の予測と重みが残っていない）。P2L は空の腕の動画ごとが無いため全腕の動画ごとの Δ空
+- andrew で GPU 1 枚に PD を 1 本だけ載せたときの速さ（測っていない）
+- 計算し直しの検査（完了判定 j）が作り物の食い違いを検出するか（陽性対照を入れていない）
 
 ## T-2026-10-19-proposal-gate-brief
 
@@ -136,45 +179,4 @@
 
 - PD の R、§5.2 規則 2 の読み、実現率、型どうしの比較の幅の判定（seed 1 つのため）
 - P1-W1 の予測-noCF の凍結部の要約値（5 epoch 目の始まりで外から止めたため学習の終わりの記録が無い）
-
-## T-2026-10-18-evidence-verify-place
-
-状態 `pass` / ホスト `bengio` / 起票 `231` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — Crossref・doi.org（handle と doiRA）・DataCite・arXiv の API に HTTP 200 で到達した。受け渡しの十件を置き場から読み、SPEC の表の sha256 とバイト数に 10 件とも一致した（不一致 0）
-- `G2` pass — 照合器: 実際の照合先で Crossref DOI・arXiv 2 件が実在・書誌一致、DataCite DOI が実在（登録機関 DataCite）、架空の DOI・arXiv が不在、127.0.0.1:9 で到達不能 3・不在 0。差し替えの HTTP の試験でも同じ。様式の検査: 写しで零件と四種の各 1 件。schema: 正しい宣言が通り壊れた宣言 9 種が L1-1
-- `G3` pass — 照合器の --extract-only の出力と expected-ids.txt を地図ごとに (種別, ID) の集合で比べ、C 29・B 34・N 36 とも差 0 件（DOI の大文字小文字まで一致）
-
-### 起票者の誤り
-
-- `check_does_not_check` — E-1 は実行ホスト bengio で make test の失敗の集合を変更前と比べるとしたが、bengio の make test は third_party/Relation-DETR/util/convergence.py が無く収集の段階で中断し試験を一件も実行しない。指示どおりに比べると前後とも収集の誤り 1 件で一致するだけで、変更の影響を検査しない
-- `check_does_not_check` — E-1 の make spec-check は TASK を付けていない。字面どおりに打つと全 147 契約が対象になり、過去の契約の 210 件の該当で exit 2 になる。本契約の検査としては働かない（Makefile の注記も TASK の指定を求める）。TASK=本契約で回して該当 0 を確かめた
-
-### 逸脱
-
-- `environment` — 作業ツリーに Syncthing で届いた他契約の未追跡の出力 14 件（experiments/）があり task-start が止まった。利用者の判断で .git/info/exclude に 3 行と注記を足し（控えあり）、phase0 へ切り替えて清浄を確かめてから task-start を一度だけやり直した
-- `environment` — bengio の make test は third_party/Relation-DETR/util/convergence.py が無く収集で中断する。変更前後の失敗の集合は同じ引数に --continue-on-collection-errors を足した pytest で比べた
-- `judgement` — 試験は CUDA_VISIBLE_DEVICES= で GPU を見せずに回した（契約は GPU を使わない。前後とも同じ条件）
-- `environment` — CLAUDE.md の ctxpack がホストに無く、照合先の作法の文書は WebFetch で読んだ
-- `environment` — arXiv の API が 02:18〜02:24 JST にキャッシュに無い問い合わせをすべて 429 で返し 10 分あけて戻った。照合器の 429・5xx の待ちを 10〜120 秒の四段から 10〜600 秒の六段へ延ばした
-- `judgement` — 題名の欄が略称・説明の行（B-02・B-03・B-06・B-10・N-10）を書誌に差とする規則を、結果を見た後に緩めなかった。著者は一致しており、内訳を RESULT に分けて書いた
-- `judgement` — ネットワークを断った状態での試験は unshare -rn が許されず取れなかった。通信の口を塞ぐ仕掛けが実際の呼び出しを止めることを測って代えた
-- `judgement` — 対照の地図と結果は scratchpad に置き repo に入れていない。試験の副産物 .coverage（未追跡）は commit していない
-
-### 申し送り
-
-- 照合で書誌に差の 8 件は地図に反映していない（決定 2）。題名の欄が略称・説明の行 6 件（B-02 の 1610.08851 と 1610.08844、B-03 MTRCNet-CL、B-06 CLIPSeg、B-10 SELSA、N-10 KAFR。著者はすべて一致）、題名の語の違い 1 件（C-21 Digital Twin-based Scene Representation → arXiv Digital Twin Representation）、著者の欠け 1 件（N-01 地図 1 名・DataCite 6 名）。反映は起票者が次の契約で決める
-- B-02 の書誌 ID の欄の二つは別の文献。1610.08851 は Single- and Multi-Task Architectures for Tool Presence Detection Challenge at M2CAI 2016、1610.08844 は Single- and Multi-Task Architectures for Surgical Workflow Challenge at M2CAI 2016（著者はどちらも Twinanda, Mutter, Marescaux, de Mathelin, Padoy）
-- C-05（ORViT、2110.06915）の掲載先は地図が ECCV 2022 系、arXiv の comment が CVPR 2022
-- bengio の .git/info/exclude に Syncthing で届いた他契約の出力 3 経路を足した（利用者の判断。契約後も残す）。bengio では今後 experiments/phase1/stage2pilot_*/ の新しい出力も git status に出ない
-- bengio の make test は third_party/Relation-DETR/util/convergence.py が無く収集で中断する。2026-10-17 の snapshot を bengio へ戻すかは未決
-- tools/fetch_task.py の extras_from_spec は bytes: true を通す（schema は落とす）。tests/test_fetch_task.py::test_rejects_unknown_file_name は文言の食い違いで変更前から落ちる。どちらも本契約では直していない
-- 試験の副産物 .coverage が bengio の作業ツリーに未追跡で残っている（commit していない）
-
-### 断定できなかったこと
-
-- arXiv の 429 が同じ出口の IP の他の台の問い合わせによるものか（この台には arXiv へ問い合わせる他のプロセスが無かった）
-- 新しい試験がネットワークを断った状態でも通るか（unshare -rn が許されず測れなかった。通信の口を塞ぐ仕掛けで代えた）
 
