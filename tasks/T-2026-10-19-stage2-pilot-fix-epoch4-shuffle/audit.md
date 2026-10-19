@@ -375,3 +375,5 @@ PD の要約の控え `stage2pilot_metrics.json` は前回の 22 本すべてに
 - 直し方の決定（実行者。利用者の決定「bengio を直す」の中の選び方）: Relation-DETR は (b) andrew の中身を bengio の別の場所に置く「重ねの BODY」（bengio の third_party を変えない）、
   仮想環境は (a) uv の CPython 3.11.16 に向け直す（andrew の `.venv-relation-detr` も uv の cpython-3.11〔3.11.16〕を指す）。
   andrew の仮想環境のパッケージ一覧（72 個）を `experiments/analysis/stage2_pilot_fix/bengio/venv_relation_detr_freeze_andrew.txt` に置いた。手順は `handoff_bengio.md` §6
+- 22:38 JST: P1-W2 入れ替え（GPU 0 の 3 本目として 18:08 に起動）が rc=0。**P1-W2 がそろった**（回し直し 1 本・入れ替え 1 本・前回の記録 4 本）。
+  P1-W2 空は 22:25 に rc=0（val mAP 0.7278 / 0.7258 / 0.7286 / 0.7199）。中間記録を作り直した。andrew の GPU 0 はこの時点で空いた（andrew のキューは空）
