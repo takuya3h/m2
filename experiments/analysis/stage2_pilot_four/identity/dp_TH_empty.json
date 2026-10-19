@@ -1,0 +1,68 @@
+{
+  "task_id": "T-2026-10-19-stage2-pilot-four-new-types",
+  "type": "TH",
+  "inst_variant": "literal",
+  "empty": {
+    "x_layout": {
+      "pred": {
+        "cols": [
+          0,
+          16
+        ],
+        "source": null,
+        "flag": 0
+      },
+      "gt": {
+        "cols": [
+          16,
+          32
+        ],
+        "source": null,
+        "flag": 0
+      }
+    },
+    "trainable": {
+      "trainable_names": [
+        "iface.alpha",
+        "iface.gru.bias_hh_l0",
+        "iface.gru.bias_ih_l0",
+        "iface.gru.weight_hh_l0",
+        "iface.gru.weight_ih_l0",
+        "iface.w_in.bias",
+        "iface.w_in.weight",
+        "iface.w_o.bias",
+        "iface.w_o.weight"
+      ],
+      "iface_names": [
+        "iface.alpha",
+        "iface.gru.bias_hh_l0",
+        "iface.gru.bias_ih_l0",
+        "iface.gru.weight_hh_l0",
+        "iface.gru.weight_ih_l0",
+        "iface.w_in.bias",
+        "iface.w_in.weight",
+        "iface.w_o.bias",
+        "iface.w_o.weight"
+      ],
+      "equal": true,
+      "equal_with_one_head_param_mixed": false
+    },
+    "gate_init": {
+      "tanh_alpha": 0.0
+    },
+    "perturbed_params": [
+      "iface.alpha"
+    ],
+    "signal_files": [],
+    "dim": 32,
+    "iface_params": 31233,
+    "identity_jaccard": 0.7762185528074379,
+    "identity_accuracy": 0.8712871287128713,
+    "identity_max_abs_logit_diff": 0.0,
+    "jaccard_equals_taskB": true,
+    "perturb_scale": 0.05,
+    "positive_jaccard": 0.7762185528074379,
+    "positive_accuracy": 0.8712871287128713,
+    "positive_max_abs_logit_diff": 0.00024366378784179688
+  }
+}

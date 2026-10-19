@@ -1,0 +1,52 @@
+## S1 host/time
+Andrew
+2026-10-20 02:20:43 JST
+## nvidia-smi
+index, name, memory.used [MiB], memory.total [MiB], utilization.gpu [%]
+0, NVIDIA RTX A6000, 16 MiB, 49140 MiB, 0 %
+1, NVIDIA RTX A6000, 16 MiB, 49140 MiB, 0 %
+pid, process_name, used_gpu_memory [MiB]
+## proc_enum --summary
+    9 None
+    8 /usr/bin/dash
+    7 /home/ubuntu/.vscode-server/cli/servers/Stable-6d62b1d5dace93a33b3a6d3eca1317bd5e15bcb1/server/node
+    6 /usr/bin/bash
+    5 /usr/bin/zsh
+    4 /home/ubuntu/.nvm/versions/node/v20.20.2/bin/node
+    3 /home/linuxbrew/.linuxbrew/Cellar/zmx/0.7.0/bin/zmx
+    3 /usr/bin/sleep
+    2 /home/ubuntu/.codex/packages/app-server-daemon/releases/0.163.0-x86_64-unknown-linux-musl/bin/codex
+    2 /home/ubuntu/bin/syncthing
+    1 /home/ubuntu/.local/share/claude/versions/2.1.301
+    1 /home/ubuntu/.local/share/claude/versions/2.1.303
+    1 /home/ubuntu/.vscode-server/cli/servers/Stable-6d62b1d5dace93a33b3a6d3eca1317bd5e15bcb1/server/node_modules/@github/copilot-sdk-linux-x64/prebuilds/linux-x64/copilot-runtime
+    1 /home/ubuntu/.vscode-server/code-110a328ea54b42367b803ec53ee0bf52ef26b419
+    1 /home/ubuntu/.vscode-server/code-6d62b1d5dace93a33b3a6d3eca1317bd5e15bcb1
+    1 /usr/bin/git
+    1 /usr/bin/ssh
+--- python 系（exe の basename が python で始まる）
+## positive check: bash -c 'sleep 15; :' zzz_four_marker
+2854211
+count=1
+## negative check: nonexistent exe
+count=0
+## df/free
+Filesystem         1B-blocks          Used     Available Use% Mounted on
+/dev/sdc1      7937302376448 5857816608768 1679390900224  78% /home/ubuntu/slocal2
+               total        used        free      shared  buff/cache   available
+Mem:     100259065856 12334333952 51797237760    52367360 36580868096 87924731904
+Swap:     2147479552  2076950528    70529024
+## main の作業場所（変えない）
+feat/stage2-pilot-fix-epoch4-shuffle
+0
+42070946a9e7a4d513712f29c094d86ff83debf5
+## m2-sync.sh
+-rwxrwxr-x 1 ubuntu ubuntu 7707 Oct 19 16:55 /home/ubuntu/bin/m2-sync.sh
+29:cd "$M2DIR" || exit 1
+worktree count: 0
+## S2 worktree
+faa0f1aa331a190cf28298e6e784171ee56e8f13
+feat/stage2-pilot-four-new-types-andrew
+/home/ubuntu/slocal2/m2                      42070946 [feat/stage2-pilot-fix-epoch4-shuffle]
+/home/ubuntu/slocal2/m2-four-andrew          faa0f1aa [feat/stage2-pilot-four-new-types-andrew]
+/home/ubuntu/slocal2/m2-s2fix-wt-andrewtest  7ef3ad2b (detached HEAD)

@@ -1,0 +1,43 @@
+# andrew の compute プロセスと記憶領域（副の実行者、/proc/PID/exe の解決。道具は experiments/analysis/stage2_pilot_folda/tools/proc_enum.py を /home/ubuntu/slocal2/m2/.venv/bin/python -I で実行）
+## host/time
+Andrew
+2026-10-20 01:57:28 JST
+## nvidia-smi
+index, name, memory.used [MiB], memory.total [MiB], utilization.gpu [%]
+0, NVIDIA RTX A6000, 16 MiB, 49140 MiB, 0 %
+1, NVIDIA RTX A6000, 16 MiB, 49140 MiB, 0 %
+pid, process_name, used_gpu_memory [MiB]
+## proc_enum --summary
+    9 None
+    8 /usr/bin/dash
+    7 /home/ubuntu/.vscode-server/cli/servers/Stable-6d62b1d5dace93a33b3a6d3eca1317bd5e15bcb1/server/node
+    6 /usr/bin/bash
+    6 /usr/bin/zsh
+    4 /home/ubuntu/.nvm/versions/node/v20.20.2/bin/node
+    3 /home/linuxbrew/.linuxbrew/Cellar/zmx/0.7.0/bin/zmx
+    3 /usr/bin/sleep
+    2 /home/ubuntu/.codex/packages/app-server-daemon/releases/0.163.0-x86_64-unknown-linux-musl/bin/codex
+    2 /home/ubuntu/bin/syncthing
+    1 /home/ubuntu/.local/share/claude/versions/2.1.301
+    1 /home/ubuntu/.local/share/claude/versions/2.1.303
+    1 /home/ubuntu/.vscode-server/cli/servers/Stable-6d62b1d5dace93a33b3a6d3eca1317bd5e15bcb1/server/node_modules/@github/copilot-sdk-linux-x64/prebuilds/linux-x64/copilot-runtime
+    1 /home/ubuntu/.vscode-server/code-110a328ea54b42367b803ec53ee0bf52ef26b419
+    1 /home/ubuntu/.vscode-server/code-6d62b1d5dace93a33b3a6d3eca1317bd5e15bcb1
+    1 /usr/bin/git
+    1 /usr/bin/ssh
+    1 /usr/bin/tee
+--- python 系（exe の basename が python で始まる）
+## empty-check: own shell
+self shell PID 2836612 exe /usr/bin/zsh
+count=0
+## positive check: bash -c 'sleep 15; :' zzz_four_andrew_marker
+2836626
+count=1
+## negative check: nonexistent exe
+count=0
+## df/free
+Filesystem         1B-blocks          Used     Available Use% Mounted on
+/dev/sdc1      7937302376448 5857163567104 1680043941888  78% /home/ubuntu/slocal2
+               total        used        free      shared  buff/cache   available
+Mem:     100259065856 12483985408 52403220480    52322304 35825197056 87775080448
+Swap:     2147479552  2076983296    70496256

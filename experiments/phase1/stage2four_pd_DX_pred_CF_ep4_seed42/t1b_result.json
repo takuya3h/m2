@@ -1,0 +1,229 @@
+{
+  "seed": 42,
+  "inject": "film",
+  "trainable": "film",
+  "zero_ctx": false,
+  "epochs": 4,
+  "lr": 0.0001,
+  "film_lr": 0.0005,
+  "init_mAP": 0.7273450248398429,
+  "best_epoch": 3,
+  "mAP": 0.7280597990708618,
+  "per_class_coco_map": {
+    "Bipolar Forceps": 0.7859839748552302,
+    "Electric Cautery": 0.9655124259174891,
+    "Forceps": 0.3602324019451431,
+    "Gauze": 0.2752247837363833,
+    "Hook": 0.6371023377768043,
+    "Mouth Gag": 0.7995316007896941,
+    "Needle Holders": 0.8479311734322831,
+    "Raspatory": 0.8054403122230077,
+    "Retractor": NaN,
+    "Scalpel": 0.9020920259554138,
+    "Scissors": 0.7070864293337115,
+    "Skewer": 0.9424461089184154,
+    "Suction Cannula": 0.8333552181291882,
+    "Syringe": 0.5423631105608554,
+    "Tweezers": 0.7885352834184466
+  },
+  "init_per_class_coco_map": {
+    "Bipolar Forceps": 0.7898794444235409,
+    "Electric Cautery": 0.9687812331789367,
+    "Forceps": 0.3561239611642256,
+    "Gauze": 0.26918130139973323,
+    "Hook": 0.6365377594169036,
+    "Mouth Gag": 0.799206245873842,
+    "Needle Holders": 0.845680655120691,
+    "Raspatory": 0.803773438439878,
+    "Retractor": NaN,
+    "Scalpel": 0.9005223036860694,
+    "Scissors": 0.7096800075689964,
+    "Skewer": 0.9443283539032797,
+    "Suction Cannula": 0.8348758163714836,
+    "Syringe": 0.5368704638226811,
+    "Tweezers": 0.7873893633875403
+  },
+  "final_epoch": 3,
+  "final_mAP": 0.7280597990708618,
+  "final_per_class_coco_map": {
+    "Bipolar Forceps": 0.7859839748552302,
+    "Electric Cautery": 0.9655124259174891,
+    "Forceps": 0.3602324019451431,
+    "Gauze": 0.2752247837363833,
+    "Hook": 0.6371023377768043,
+    "Mouth Gag": 0.7995316007896941,
+    "Needle Holders": 0.8479311734322831,
+    "Raspatory": 0.8054403122230077,
+    "Retractor": NaN,
+    "Scalpel": 0.9020920259554138,
+    "Scissors": 0.7070864293337115,
+    "Skewer": 0.9424461089184154,
+    "Suction Cannula": 0.8333552181291882,
+    "Syringe": 0.5423631105608554,
+    "Tweezers": 0.7885352834184466
+  },
+  "per_epoch_eval": [
+    {
+      "epoch": -1,
+      "mAP": 0.7273450248398429,
+      "per_class_coco_map": {
+        "Bipolar Forceps": 0.7898794444235409,
+        "Electric Cautery": 0.9687812331789367,
+        "Forceps": 0.3561239611642256,
+        "Gauze": 0.26918130139973323,
+        "Hook": 0.6365377594169036,
+        "Mouth Gag": 0.799206245873842,
+        "Needle Holders": 0.845680655120691,
+        "Raspatory": 0.803773438439878,
+        "Retractor": NaN,
+        "Scalpel": 0.9005223036860694,
+        "Scissors": 0.7096800075689964,
+        "Skewer": 0.9443283539032797,
+        "Suction Cannula": 0.8348758163714836,
+        "Syringe": 0.5368704638226811,
+        "Tweezers": 0.7873893633875403
+      },
+      "gates": {
+        "tanh_alpha": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "epoch": 0,
+      "mAP": 0.7283179598495638,
+      "per_class_coco_map": {
+        "Bipolar Forceps": 0.7896481472787056,
+        "Electric Cautery": 0.9687020846268416,
+        "Forceps": 0.35726532966292956,
+        "Gauze": 0.2713459415419268,
+        "Hook": 0.6392903006812347,
+        "Mouth Gag": 0.7987517953330965,
+        "Needle Holders": 0.8468149108922483,
+        "Raspatory": 0.8034022975695052,
+        "Retractor": NaN,
+        "Scalpel": 0.9051373587046566,
+        "Scissors": 0.7090059459423743,
+        "Skewer": 0.9487087728808218,
+        "Suction Cannula": 0.834916970586848,
+        "Syringe": 0.5372712986030855,
+        "Tweezers": 0.7861902835896192
+      },
+      "gates": {
+        "tanh_alpha": [
+          0.047033727169036865,
+          -0.04737303406000137,
+          -0.05162337049841881,
+          -0.035311829298734665,
+          0.04960202798247337,
+          -0.009095563553273678
+        ]
+      }
+    },
+    {
+      "epoch": 1,
+      "mAP": 0.7284101221735505,
+      "per_class_coco_map": {
+        "Bipolar Forceps": 0.7886565731645719,
+        "Electric Cautery": 0.9681284376314669,
+        "Forceps": 0.3592179659521283,
+        "Gauze": 0.2752925613858454,
+        "Hook": 0.6392879248665326,
+        "Mouth Gag": 0.7982032435770104,
+        "Needle Holders": 0.8468321395901572,
+        "Raspatory": 0.8040740029634955,
+        "Retractor": NaN,
+        "Scalpel": 0.90812335709379,
+        "Scissors": 0.7074450809440591,
+        "Skewer": 0.9460978745367995,
+        "Suction Cannula": 0.8340008790375618,
+        "Syringe": 0.5353604827870662,
+        "Tweezers": 0.787021186899223
+      },
+      "gates": {
+        "tanh_alpha": [
+          0.058788906782865524,
+          -0.058009665459394455,
+          -0.07005134224891663,
+          -0.05217801406979561,
+          0.055808667093515396,
+          -0.026150362566113472
+        ]
+      }
+    },
+    {
+      "epoch": 2,
+      "mAP": 0.7283356924939556,
+      "per_class_coco_map": {
+        "Bipolar Forceps": 0.787643210173098,
+        "Electric Cautery": 0.965669869751654,
+        "Forceps": 0.361772577266505,
+        "Gauze": 0.2742747863333476,
+        "Hook": 0.6373169973779143,
+        "Mouth Gag": 0.7960947717933995,
+        "Needle Holders": 0.8464992697589159,
+        "Raspatory": 0.8046201553309905,
+        "Retractor": NaN,
+        "Scalpel": 0.908368760226507,
+        "Scissors": 0.7077154239048007,
+        "Skewer": 0.9447642849210348,
+        "Suction Cannula": 0.8357365816440795,
+        "Syringe": 0.5396475624482324,
+        "Tweezers": 0.7865754439848995
+      },
+      "gates": {
+        "tanh_alpha": [
+          0.05917008966207504,
+          -0.07242579013109207,
+          -0.08908819407224655,
+          -0.08339830487966537,
+          0.07201249897480011,
+          -0.027181902900338173
+        ]
+      }
+    },
+    {
+      "epoch": 3,
+      "mAP": 0.7280597990708618,
+      "per_class_coco_map": {
+        "Bipolar Forceps": 0.7859839748552302,
+        "Electric Cautery": 0.9655124259174891,
+        "Forceps": 0.3602324019451431,
+        "Gauze": 0.2752247837363833,
+        "Hook": 0.6371023377768043,
+        "Mouth Gag": 0.7995316007896941,
+        "Needle Holders": 0.8479311734322831,
+        "Raspatory": 0.8054403122230077,
+        "Retractor": NaN,
+        "Scalpel": 0.9020920259554138,
+        "Scissors": 0.7070864293337115,
+        "Skewer": 0.9424461089184154,
+        "Suction Cannula": 0.8333552181291882,
+        "Syringe": 0.5423631105608554,
+        "Tweezers": 0.7885352834184466
+      },
+      "gates": {
+        "tanh_alpha": [
+          0.07302004843950272,
+          -0.08695648610591888,
+          -0.09874498844146729,
+          -0.093170665204525,
+          0.07685422897338867,
+          -0.04799945279955864
+        ]
+      }
+    }
+  ],
+  "best_is_init": false,
+  "run_dir": "/home/ubuntu/slocal2/m2-four-andrew/experiments/phase1/stage2four_pd_DX_pred_CF_ep4_seed42",
+  "result_selection": "final_epoch",
+  "frozen_digest_before": "4fed85166852cd54f07071a5b9ce57804828e95c23148db11bf7bf0afe08ce60",
+  "frozen_digest_after": "4fed85166852cd54f07071a5b9ce57804828e95c23148db11bf7bf0afe08ce60",
+  "denominator": "S0-frozen 0.7051±0.0052",
+  "delta_note": "Δ_detection=(T1b − S0-frozen)"
+}

@@ -1,0 +1,16 @@
+# 直しの契約 T-2026-10-19-stage2-pilot-fix-epoch4-shuffle の抑止の目印の確認（andrew、副の実行者、2026-10-20 01:56 JST）
+$ hostname → Andrew
+$ cd /home/ubuntu/slocal2/m2 && git branch --show-current → feat/stage2-pilot-fix-epoch4-shuffle（status --porcelain 0 行）
+$ ls -la .sync-pause → No such file or directory
+$ ls .sync-pause* → no matches（.sync-pause.released.* も無い）
+$ grep M2DIR= scripts/sync/m2-sync.sh → M2DIR=~/slocal2/m2（目印を読む位置は /home/ubuntu/slocal2/m2）
+$ git reflog -2 --date=iso（main の作業場所）
+  42070946 HEAD@{2026-10-19 16:55:36 +0000}: merge origin/phase0: Fast-forward   ← 常駐同期の統合（01:55:36 JST）。同期は再開済み
+  5c89f5d2 HEAD@{2026-10-19 16:25:29 +0000}: merge origin/phase0: Merge made by the 'ort' strategy.
+$ gh pr view 240 → state MERGED、mergedAt 2026-10-19T16:34:51Z（01:34:51 JST）、mergeCommit 2ff8896a、base phase0
+直しの契約の audit.md 22・25 行: task-start が目印を作成（中身 task_id=T-2026-10-19-stage2-pilot-fix-epoch4-shuffle / branch=feat/stage2-pilot-fix-epoch4-shuffle）
+外した記録（andrew の Claude Code のセッション記録 6812517f-… の Bash の出力。版管理の記録には無い）:
+  2026-10-19T16:18:41Z（01:18:41 JST）task-release: RELEASED task=T-2026-10-19-stage2-pilot-fix-epoch4-shuffle end=complete method=removed — 目印が存在しないことを確かめた
+  （同じ表示が 16:18:53Z と 16:49:57Z にも出る。後の 2 回は同じ出力の引用と見られる。区別は確かめていない）
+結論: 目印は直しの契約の実行者が make task-release で外し済み。利用者の指示 0 の条件（目印が在り、中身がその契約の所有）を満たさないので、
+make task-release は実行していない。目印には触れていない。

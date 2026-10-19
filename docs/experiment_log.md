@@ -3098,3 +3098,37 @@ P3 と D3 は入れ替えた信号より予測の信号のほうが低い。1 �
 
 **次.** 新しい界面の型の候補を回す次の契約は、固定の長さ（`--fixed-epochs`）と入れ替えの腕（`shuffle_signals.py`、腕 `shuffle`）をそのまま使える。
 入れ替えの腕は val が 2 動画のため半分以上が同じ動画の信号を受け取る。bengio の `third_party/Relation-DETR` は andrew と 23 件違い、そろえるかは未決。
+
+## 2026-10-20 — Stage 2 予備測定に界面の新しい型を四つ足した（bengio・decoder-xattn は andrew）
+
+**非公式の測定。関門の判定と設計の判断に使わない。** 契約 `T-2026-10-19-stage2-pilot-four-new-types`。全値は `experiments/analysis/stage2_pilot_four/REPORT.md`、
+判定と経緯は `tasks/T-2026-10-19-stage2-pilot-four-new-types/{RESULT.md,audit.md,audit_andrew.md,result.yaml}`。
+
+**仮説.** 提案カードの四つの型は、前回と直しの契約の型と置き場所か仕組みが違う。tool-history（カードどおり）のゲートは 4 epoch では 0.05 未満にとどまり、
+ゲートなし版の方が差が大きく、extra-queries の見落としの割合は train の方が小さく、decoder-xattn の正解の腕は標的群 AP を上げる（SPEC §6.3。記述のための事前の記録）。
+
+**実験.** 前回・直しの契約と同じ受け取り手・処方（折り A、seed 42、4 epoch を止めずに学び 4 epoch 目の状態、W1、6 腕）で、工程から検出の decoder-xattn（decoder の全層に
+工程の token 4 個への cross-attention と層ごとのゲート）と extra-queries（凍結した D\* の train の見落とし 73 個にだけ当てる追加の 30 query）、検出から工程の logit-correction・
+tool-history・ゲートなし版（x(t) は 32 次元）を回した。殺し実験 K1〜K3 を記述として回した。利用者の承認で主のホストを bengio、decoder-xattn だけを andrew にした。
+
+**結果.**（4 epoch 目の状態、seed 42、1 本ずつ。DP は Jaccard、PD は標的群 AP）
+
+| 型 | ホスト | 予測-noCF Δ空 | 予測-noCF Δ入替 | 正解 Δ空 | 正解 Δ入替 | 空の腕の Δ塔 |
+|---|---|---|---|---|---|---|
+| logit-correction | bengio | −0.0021 | +0.0016 | −0.0032 | +0.0006 | −0.0075 |
+| tool-history | bengio | −0.0054 | 0.0000 | −0.0054 | 0.0000 | 0.0000 |
+| ゲートなし版 | bengio | −0.0238 | −0.0045 | −0.0234 | −0.0041 | −0.0815 |
+| decoder-xattn | andrew | +0.0006 | +0.0010 | +0.0051 | +0.0055 | +0.0021 |
+| extra-queries | bengio | 0.0000 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
+
+ゲート: tool-history の tanh(α) は 4 epoch 目で 0.005〜0.012、decoder-xattn の層ごとの tanh(α_l) は ±0.04〜0.12。extra-queries のスコアの定数は −10 → −9.44〜−9.50 で、
+追加の出力は最終の上位 300 に一件も入らなかった。K1 の神託は overall mAP +0.0208（標的群 +0.0000、陰性対照群 +0.0290）、K2 の (ii)−(i) は Jaccard +0.0118、
+K3 の D0 の系列だけの GRU は Jaccard 0.2200 で塔の出力に足すと +0.0009（時間の順を入れ替えても同じ）。§6.3 の予測は 4 件とも当たり。
+
+**解釈.** 検出から工程の三つの型はどれも塔単独を上回らず、信号の中身による差（Δ入替）は ±0.005 以内だった。ゲートなし版は空の腕でも塔単独より大きく下がり、
+GRU が一定の入力からも動画の先頭からの経過を持てるため、空の腕が情報の無い分母になっていない（起票者の誤り 1）。extra-queries は 4 epoch では追加の出力が表に出ず、
+効果の有無を測れていない（起票者の誤り 2）。decoder-xattn は正解の信号で標的群 AP が +0.005 上がり、入れ替えの腕との差でも同じ程度だが、予測の信号では +0.001 にとどまる。
+1 折り・val 2 動画・seed 1 つで、decoder-xattn だけ別ホストなので、型の優劣は読まない。
+
+**次.** extra-queries を測るには、スコアの定数の学習率・初期値・長さを決め直す必要がある（未決）。再帰の界面で空の腕を分母にする読み方も決めておく必要がある。
+bengio の worktree の追跡外の記号リンクと、前回・直しの契約の保存先の bengio の写しに足したファイルは残してある。

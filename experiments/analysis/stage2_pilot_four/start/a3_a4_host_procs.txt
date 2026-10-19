@@ -1,0 +1,56 @@
+## host/time
+Bengio
+2026-10-20 01:19:13 JST
+## nvidia-smi
+index, name, memory.used [MiB], memory.total [MiB], utilization.gpu [%]
+0, NVIDIA RTX A6000, 39 MiB, 49140 MiB, 0 %
+1, NVIDIA RTX A6000, 20 MiB, 49140 MiB, 0 %
+pid, process_name, used_gpu_memory [MiB]
+## proc_enum --summary
+   11 /usr/bin/zsh
+   10 /home/ubuntu/.nvm/versions/node/v20.20.2/bin/node
+    9 /usr/bin/bash
+    8 /home/ubuntu/.vscode-server/cli/servers/Stable-6d62b1d5dace93a33b3a6d3eca1317bd5e15bcb1/server/node
+    8 /usr/bin/dash
+    8 None
+    6 /home/linuxbrew/.linuxbrew/Cellar/zmx/0.7.0/bin/zmx
+    5 /home/ubuntu/.local/share/claude/versions/2.1.303
+    3 /usr/bin/sleep
+    2 /home/ubuntu/.codex/packages/app-server-daemon/releases/0.163.0-x86_64-unknown-linux-musl/bin/codex
+    2 /home/ubuntu/.local/share/claude/versions/2.1.241 (deleted)
+    2 /home/ubuntu/.nvm/versions/node/v20.20.2/lib/node_modules/@openai/.codex-vS3VrhoB/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex (deleted)
+    2 /home/ubuntu/.nvm/versions/node/v20.20.2/lib/node_modules/@openai/.codex-vS3VrhoB/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex-code-mode-host (deleted)
+    2 /home/ubuntu/bin/syncthing
+    2 /usr/bin/nvidia-smi (deleted)
+    1 /home/ubuntu/.codex/packages/app-server-daemon/releases/0.163.0-x86_64-unknown-linux-musl/bin/codex-code-mode-host
+    1 /home/ubuntu/.local/share/claude/versions/2.1.243 (deleted)
+    1 /home/ubuntu/.nvm/versions/node/v20.20.2/lib/node_modules/@openai/codex/node_modules/@openai/codex-linux-x64/vendor/x86_64-unknown-linux-musl/bin/codex
+    1 /home/ubuntu/.vscode-server/cli/servers/Stable-6d62b1d5dace93a33b3a6d3eca1317bd5e15bcb1/server/node_modules/@github/copilot-sdk-linux-x64/prebuilds/linux-x64/copilot-runtime
+    1 /home/ubuntu/.vscode-server/code-6d62b1d5dace93a33b3a6d3eca1317bd5e15bcb1
+    1 /home/ubuntu/.vscode-server/code-a5b500951314efd502d07465bd138dfbd714a960 (deleted)
+    1 /tmp/claude-1000/-home-ubuntu-slocal2-m2/3d5a288b-e7f6-4936-be23-38013b3cabed/scratchpad/codexhome/packages/app-server-daemon/releases/0.163.0-x86_64-unknown-linux-musl/bin/codex
+    1 /usr/bin/paste
+    1 /usr/bin/sed
+    1 /usr/bin/ssh
+    1 /usr/bin/timeout
+--- python 系（exe の basename が python で始まる）
+## empty-check: own shell
+self shell PID 428384 exe /usr/bin/zsh
+count=0
+## empty-check: nonexistent exe
+count=0
+## df/free
+Filesystem         1B-blocks          Used    Available Use% Mounted on
+/dev/sdb1      7937302376448 6657328488448 879879020544  89% /home/ubuntu/slocal2
+               total        used        free      shared  buff/cache   available
+Mem:     134986752000 21994946560 13634408448   174583808 100020518912 112991805440
+Swap:     2147479552  2147377152      102400
+## positive check: own marker process (bash -c 'sleep 15' zzz_four_marker)
+count=0
+## negative check: nonexistent exe with same marker
+count=0
+## positive check (retry): bash -c 'sleep 15; :' zzz_four_marker
+429312
+count=1
+## negative check: nonexistent exe with same marker
+count=0

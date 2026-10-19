@@ -1,0 +1,370 @@
+........................................................................ [  8%]
+........................................................................ [ 16%]
+.......................................F..............................ss [ 24%]
+sFs......................................F.............................. [ 32%]
+..........................................sssssssss..................... [ 40%]
+..................s..................................................... [ 48%]
+...............................................................F....FFF. [ 56%]
+........................................................................ [ 65%]
+...................................................s.F.................. [ 73%]
+........................................................................ [ 81%]
+........................................................................ [ 89%]
+........................................................................ [ 97%]
+.....................                                                    [100%]
+==================================== ERRORS ====================================
+___________ ERROR collecting tests/test_stage1_dtower_convergence.py ___________
+tests/test_stage1_dtower_convergence.py:38: in <module>
+    convergence = _load_convergence()
+                  ^^^^^^^^^^^^^^^^^^^
+tests/test_stage1_dtower_convergence.py:34: in _load_convergence
+    spec.loader.exec_module(module)
+<frozen importlib._bootstrap_external>:936: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1073: in get_code
+    ???
+<frozen importlib._bootstrap_external>:1130: in get_data
+    ???
+E   FileNotFoundError: [Errno 2] No such file or directory: '/home/ubuntu/slocal2/m2-four/third_party/Relation-DETR/util/convergence.py'
+=================================== FAILURES ===================================
+_________________________ test_teacher_detection_rate __________________________
+
+findings_before_completed_exclusion = [{'detail': "読み込みが単独の命令で終わり、次の命令（120 行）へ引き継がれない: source .venv/bin/activate -> python - <<'PY'", 'file': 'tasks/T-2026-...ho "exit=$?"', 'file': 'tasks/T-2026-08-07-task-preflight/SPEC.md', 'line': 421, 'rule': 'separated_source', ...}, ...]
+
+    def test_teacher_detection_rate(findings_before_completed_exclusion):
+        """教師データ 23 件のうち 14 件を検出する（実測 2026-08-11 lecun / 2026-09-23 更新）。
+    
+        `host_mismatch` の 2 件は実行ホストに依存する。宣言と一致するホストでは
+        該当しないのが正しい。**期待値を hostname から計算する。**
+    
+        2026-09-01 に陰性例 3 件を足した（rule=None。該当しないことが正しい例）。
+        **分母だけが 16 から 19 へ動き、検出すべき件数は変えていない。**
+        陰性例は `integration_prohibited_without_pause` の偽陽性を直した際の裏づけで、
+        抑止の手順を日本語で書き目印の文字列を含まない起票を表す。
+    
+        2026-09-23 に `allow_write_incomplete` の裏づけ 4 件を足した（分母 19 → 23）。
+        **裏づけを持つ規則を足したので分母が動く。** うち 3 件を検出し、1 件
+        （stage1-detector-towers#3）は是正後の本文が宣言を満たすため該当しない。
+        """
+        detected, missed = [], []
+        for key, rule, line, _ in TEACHER:
+            task = key.rsplit("#", 1)[0]
+            if rule is None:
+                missed.append(key)
+                continue
+            hits = [
+                f for f in findings_before_completed_exclusion
+                if f["task"] == task and f["rule"] == rule
+            ]
+            if rule == "host_mismatch" and not _host_expectation(task):
+                missed.append(key)
+                continue
+            if not hits or (line is not None and line not in [h["line"] for h in hits]):
+                missed.append(key)
+                continue
+            detected.append(key)
+    
+        expected_host_detected = sum(
+            1 for key, rule, _, _ in TEACHER
+            if rule == "host_mismatch" and _host_expectation(key.rsplit("#", 1)[0])
+        )
+        # 規則を持つ 16 件のうち、ホストに依存しないのは 14 件。そこから検出できない
+        # codex-parity#1 を引いて 13 件。これにホストに依存する分を足す。
+        expected = 13 + expected_host_detected
+>       assert len(detected) == expected, f"検出 {detected} / 未検出 {missed}"
+E       AssertionError: 検出 ['T-2026-08-11-codex-parity#4', 'T-2026-08-11-hts-comparability-audit#2', 'T-2026-08-11-hts-comparability-audit#3', 'T-2026-08-13-implementation-history-index#1', 'T-2026-08-14-bundle-attachment-transport#3', 'T-2026-08-14-bundle-attachment-transport#5', 'T-2026-08-15-template-leak-and-autosync-conflict#1', 'T-2026-08-15-template-leak-and-autosync-conflict#2', 'T-2026-08-15-template-leak-and-autosync-conflict#3', 'T-2026-08-17-report-projection-and-friction#1', 'T-2026-08-17-report-projection-and-friction#2', 'T-2026-09-16-proposal-gate#1', 'T-2026-09-17-amp-compile-timing#5', 'T-2026-09-19-p13-skip-and-enum#4'] / 未検出 ['T-2026-08-11-codex-parity#1', 'T-2026-08-11-codex-parity#2', 'T-2026-08-13-implementation-history-index#2', 'T-2026-08-16-docs-reconciliation#2', 'T-2026-08-16-docs-reconciliation#3', 'T-2026-08-31-notion-legacy-toc-and-export#1', 'T-2026-08-31-notion-repo-followup-and-retire#1', 'T-2026-09-01-notion-retire-scripts-and-speccheck#1', 'T-2026-09-18-stage1-detector-towers#3']
+E       assert 14 == 15
+E        +  where 14 = len(['T-2026-08-11-codex-parity#4', 'T-2026-08-11-hts-comparability-audit#2', 'T-2026-08-11-hts-comparability-audit#3', 'T...tion-history-index#1', 'T-2026-08-14-bundle-attachment-transport#3', 'T-2026-08-14-bundle-attachment-transport#5', ...])
+
+tests/test_check_spec.py:407: AssertionError
+__________________ test_mmdet_trainer_eval_recipe_in_metrics ___________________
+
+    def test_mmdet_trainer_eval_recipe_in_metrics():
+        """過去の S0 スモーク証跡 (退避済み) の metrics.json に eval_recipe が
+        併記されている。本番 S0 が稼働中の experiments/baselines/ は学習途中で
+        metrics が空の場合があるため、明示的に証跡フォルダ (_smoke_*/) を参照する。"""
+        baselines = _PROJECT_ROOT / "experiments" / "baselines"
+    
+        def _has_recipe(path: Path) -> bool:
+            m = path / "metrics.json"
+            if not m.is_file():
+                return False
+            try:
+                data = json.loads(m.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                return False
+            return bool(data) and "eval_recipe" in data
+    
+        # 退避済みの MMDetTrainer 経由スモーク証跡 (_smoke_* 配下) を優先。
+        # ただし StageATrainer (SimpleDetectionHead) 経由の証跡は eval_recipe を
+        # 持たないので、has_recipe フィルタで除外する。
+        candidates: list[Path] = [
+            d
+            for prior in baselines.glob("_smoke_*")
+            for d in prior.glob("s0_*")
+            if _has_recipe(d)
+        ]
+        # 加えてアクティブな baselines/s0_* も対象（学習中なら空 metrics で除外）。
+        candidates.extend(
+            d
+            for d in baselines.glob("s0_*")
+            if not d.name.startswith("_") and _has_recipe(d)
+        )
+        if not candidates:
+            pytest.skip("検証対象の S0 スモーク証跡が無い (退避フォルダもアクティブ実験も該当なし)")
+        for d in candidates:
+            data = json.loads((d / "metrics.json").read_text(encoding="utf-8"))
+            assert "eval_recipe" in data, f"{d.name} に eval_recipe が無い"
+            r = data["eval_recipe"]
+            # MMDetTrainer 経由の証跡なら必ず公式 split + locked-down test_cfg。
+            assert r.get("split_train_images") == 9657, (
+                f"{d.name}: split_train_images={r.get('split_train_images')} (期待 9657)"
+            )
+>           assert r.get("test_cfg", {}).get("score_thr") == 1e-8
+E           AssertionError: assert 0.0 == 1e-08
+E            +  where 0.0 = <built-in method get of dict object at 0x7519a06bcc40>('score_thr')
+E            +    where <built-in method get of dict object at 0x7519a06bcc40> = {'max_per_img': 300, 'nms_iou': None, 'nms_pre': None, 'note': 'Reeval: NMS-free (score_thr=0.0, no NMS)', ...}.get
+E            +      where {'max_per_img': 300, 'nms_iou': None, 'nms_pre': None, 'note': 'Reeval: NMS-free (score_thr=0.0, no NMS)', ...} = <built-in method get of dict object at 0x7519a06d7cc0>('test_cfg', {})
+E            +        where <built-in method get of dict object at 0x7519a06d7cc0> = {'effective_batch_size': 1, 'gpu_count': 1, 'lr_scaling': 'eval_only', 'server_name': 'andrew', ...}.get
+
+tests/test_engines.py:223: AssertionError
+________________________ test_rejects_unknown_file_name ________________________
+
+    def test_rejects_unknown_file_name():
+        text = (
+            f"#!TASK-BUNDLE v1 delim={DELIM}\n"
+            f"{DELIM} FILE spec.yaml\n{SPEC_YAML.rstrip()}\n"
+            f"{DELIM} FILE SPEC.md\n{SPEC_MD.rstrip()}\n"
+            f"{DELIM} FILE ../../etc/passwd\nx\n"
+            f"{DELIM} END\n"
+        )
+        with pytest.raises(BundleError, match="受け取れないファイル"):
+>           parse_bundle(text)
+
+tests/test_fetch_task.py:120: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+text = '#!TASK-BUNDLE v1 delim=dddddddddddddddddddddddddddddddddddddddddddddddd\ndddddddddddddddddddddddddddddddddddddddddddd...ddddddddddddddddddddddddddddddddddddd FILE ../../etc/passwd\nx\ndddddddddddddddddddddddddddddddddddddddddddddddd END\n'
+
+    def parse_bundle(text: str) -> dict[str, str]:
+        """バンドルを {ファイル名: 中身} へ分解する。
+    
+        構造が想定と違えば BundleError を送出する。区切りが本文と衝突した場合も
+        構造違反として現れるため、ここで捕まえる。
+        """
+        lines = text.splitlines()
+        header_index = next((i for i, line in enumerate(lines) if line.strip()), None)
+        if header_index is None:
+            raise BundleError("入力が空です")
+    
+        header = _HEADER_RE.fullmatch(lines[header_index].strip())
+        if not header:
+            raise BundleError(
+                f"先頭行が {BUNDLE_MAGIC} {BUNDLE_VERSION} delim=<区切り> の形式ではありません"
+            )
+        if header.group("version") != BUNDLE_VERSION:
+            raise BundleError(f"未対応のバンドル版です: {header.group('version')}")
+    
+        delim = header.group("delim")
+        if len(delim) < MIN_DELIM_LEN:
+            raise BundleError(f"区切りが短すぎます（{len(delim)} 文字、{MIN_DELIM_LEN} 文字以上が必要）")
+        if not _DELIM_RE.fullmatch(delim):
+            raise BundleError("区切りに使えない文字が含まれます（英数字とハイフンと下線のみ）")
+    
+        files: dict[str, list[str]] = {}
+        current: str | None = None
+        ended = False
+        for line in lines[header_index + 1 :]:
+            if not line.startswith(delim):
+                if ended:
+                    if line.strip():
+                        raise BundleError("END のあとに内容が続いています")
+                    continue
+                if current is None:
+                    if line.strip():
+                        raise BundleError("最初の FILE 標識より前に内容があります")
+                    continue
+                files[current].append(line)
+                continue
+    
+            marker = line[len(delim) :].strip()
+            if ended:
+                raise BundleError("END のあとに標識が続いています")
+            if marker == "END":
+                ended = True
+                continue
+            if not marker.startswith("FILE "):
+                raise BundleError(f"解釈できない標識です: {marker!r}。区切りが本文と衝突した可能性があります")
+            name = marker[len("FILE ") :].strip()
+            # ここでは構造だけを見る。**許可の判定は spec.yaml を読んだ後**に行う
+            # （追加ファイルは spec.yaml の宣言によって許されるため、順序を逆にできない）。
+            # 経路の形だけは先に拒む。ディレクトリ脱出を後段へ持ち越さないため。
+            if not _EXTRA_PATH_RE.fullmatch(name):
+>               raise BundleError(f"経路として受け取れない名前です: {name!r}")
+E               fetch_task.BundleError: 経路として受け取れない名前です: '../../etc/passwd'
+
+tools/fetch_task.py:157: BundleError
+
+During handling of the above exception, another exception occurred:
+
+    def test_rejects_unknown_file_name():
+        text = (
+            f"#!TASK-BUNDLE v1 delim={DELIM}\n"
+            f"{DELIM} FILE spec.yaml\n{SPEC_YAML.rstrip()}\n"
+            f"{DELIM} FILE SPEC.md\n{SPEC_MD.rstrip()}\n"
+            f"{DELIM} FILE ../../etc/passwd\nx\n"
+            f"{DELIM} END\n"
+        )
+>       with pytest.raises(BundleError, match="受け取れないファイル"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: '受け取れないファイル'
+E         Actual message: "経路として受け取れない名前です: '../../etc/passwd'"
+
+tests/test_fetch_task.py:119: AssertionError
+___________________________ test_log_run_idempotent ____________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-ubuntu/pytest-20/test_log_run_idempotent0')
+
+    def test_log_run_idempotent(tmp_path: Path) -> None:
+        """A1: 同じ run を 2 回 log_run → REST create は 1 回のみ."""
+        manager = _fake_manager(tmp_path / "run1")
+        rlog = ResearchLogger(cfg=None, manager=manager)
+    
+        with patch("egosurgery.utils.notion_logger.log_experiment_to_notion") as mocked:
+            mocked.return_value = {"id": "page-abc"}
+            # 1 回目: create → page id 返す + マーカー書く
+>           assert rlog.log_run(step="test") == "page-abc"
+E           AssertionError: assert None == 'page-abc'
+E            +  where None = log_run(step='test')
+E            +    where log_run = <egosurgery.utils.research_logger.ResearchLogger object at 0x7519359ffed0>.log_run
+
+tests/test_research_logger.py:86: AssertionError
+_________________ test_run_logging_invokes_log_run_on_finally __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-ubuntu/pytest-20/test_run_logging_invokes_log_r0')
+
+    def test_run_logging_invokes_log_run_on_finally(tmp_path: Path) -> None:
+        """A4: with ブロック終了時に log_run が呼ばれる."""
+        manager = _fake_manager(tmp_path / "run6")
+        with patch("egosurgery.utils.notion_logger.log_experiment_to_notion") as mocked:
+            mocked.return_value = {"id": "page-X"}
+            with run_logging(cfg=None, manager=manager, step="s0"):
+                pass
+>           assert mocked.call_count == 1
+E           AssertionError: assert 0 == 1
+E            +  where 0 = <MagicMock name='log_experiment_to_notion' id='128751845741840'>.call_count
+
+tests/test_research_logger.py:149: AssertionError
+________________ test_run_logging_no_double_post_on_normal_exit ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-ubuntu/pytest-20/test_run_logging_no_double_pos0')
+
+    def test_run_logging_no_double_post_on_normal_exit(tmp_path: Path) -> None:
+        """A4: 正常終了で finally + atexit が両方走っても、マーカーで 1 回に収束."""
+        manager = _fake_manager(tmp_path / "run7")
+        with patch("egosurgery.utils.notion_logger.log_experiment_to_notion") as mocked:
+            mocked.return_value = {"id": "page-Y"}
+            with run_logging(cfg=None, manager=manager, step="s0"):
+                pass
+            # finally で posted=True になるため、atexit が後で発火しても再投稿しない
+            # ここでは context exit 時点で 1 回のみ呼ばれていることを確認
+>           assert mocked.call_count == 1
+E           AssertionError: assert 0 == 1
+E            +  where 0 = <MagicMock name='log_experiment_to_notion' id='128751134296976'>.call_count
+
+tests/test_research_logger.py:161: AssertionError
+______________ test_run_logging_swallows_exception_in_user_block _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-ubuntu/pytest-20/test_run_logging_swallows_exce0')
+
+    def test_run_logging_swallows_exception_in_user_block(tmp_path: Path) -> None:
+        """ユーザコード例外が出ても finally の log_run は走り、マーカーが書ける."""
+        manager = _fake_manager(tmp_path / "run8")
+        with patch("egosurgery.utils.notion_logger.log_experiment_to_notion") as mocked:
+            mocked.return_value = {"id": "page-Z"}
+            with pytest.raises(ValueError):
+                with run_logging(cfg=None, manager=manager, step="s0"):
+                    raise ValueError("user error")
+>           assert mocked.call_count == 1
+E           AssertionError: assert 0 == 1
+E            +  where 0 = <MagicMock name='log_experiment_to_notion' id='128751846108624'>.call_count
+
+tests/test_research_logger.py:172: AssertionError
+_________________ test_only_the_stem_is_frozen_in_both_chains __________________
+
+    def test_only_the_stem_is_frozen_in_both_chains():
+        for init in runner.INITS:
+>           model, _, _ = r3.build_backbone(9, "cpu", init)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_stage1_ptower_r3.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+scripts/stage1_ptower_r3.py:107: in build_backbone
+    missing, unexpected = model.load_state_dict(coco_backbone_state(), strict=False)
+                                                ^^^^^^^^^^^^^^^^^^^^^
+scripts/stage1_ptower_r3.py:78: in coco_backbone_state
+    checkpoint = torch.load(COCO_CHECKPOINT, map_location="cpu")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../m2/.venv/lib/python3.11/site-packages/torch/serialization.py:986: in load
+    with _open_file_like(f, 'rb') as opened_file:
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+../m2/.venv/lib/python3.11/site-packages/torch/serialization.py:435: in _open_file_like
+    return _open_file(name_or_buffer, mode)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <torch.serialization._open_file object at 0x7519600a0f10>
+name = PosixPath('/home/ubuntu/slocal2/m2-four/data/external/weights/relation_detr_resnet50_800_1333_coco_1x.pth')
+mode = 'rb'
+
+    def __init__(self, name, mode):
+>       super().__init__(open(name, mode))
+                         ^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/ubuntu/slocal2/m2-four/data/external/weights/relation_detr_resnet50_800_1333_coco_1x.pth'
+
+../m2/.venv/lib/python3.11/site-packages/torch/serialization.py:416: FileNotFoundError
+=============================== warnings summary ===============================
+tests/test_models.py::test_dinov2_backbone_forward
+  /home/ubuntu/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+    warnings.warn("xFormers is not available (SwiGLU)")
+
+tests/test_models.py::test_dinov2_backbone_forward
+  /home/ubuntu/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+    warnings.warn("xFormers is not available (Attention)")
+
+tests/test_models.py::test_dinov2_backbone_forward
+  /home/ubuntu/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+    warnings.warn("xFormers is not available (Block)")
+
+tests/test_models.py::test_dinov2_backbone_forward
+  /home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/torch/_utils.py:831: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+    return self.fget.__get__(instance, owner)()
+
+tests/test_models.py::test_build_model_s0
+  /home/ubuntu/slocal2/m2-four/src/egosurgery/models/heads/mask_dino_head.py:137: RuntimeWarning: Detectron2 / Mask DINO が利用できないため、MaskDINOHead は 無効化されます（forward / predict は None を返します）。
+    warnings.warn(
+
+tests/test_models.py::test_build_model_codetr
+  /home/ubuntu/slocal2/m2-four/src/egosurgery/models/heads/codetr_head.py:145: RuntimeWarning: CoDETR の構築に失敗したため無効化します: KeyError('CoDETR is not in the mmdet::model registry. Please check whether the value of `CoDETR` is correct or it was registered as expected. More details can be found at https://mmengine.readthedocs.io/en/latest/advanced_tutorials/config.html#import-the-custom-module')
+    warnings.warn(
+
+tests/test_pipeline.py: 14 warnings
+  /home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/wandb/analytics/sentry.py:269: DeprecationWarning: Read the `app_url` setting from the appropriate Settings object.
+    app_url = wandb.util.app_url(tags["base_url"])  # type: ignore[index]
+
+tests/test_pipeline.py::test_stage_a_trainer_setup
+tests/test_pipeline.py::test_stage_a_trainer_one_epoch
+  /home/ubuntu/slocal2/m2-four/src/egosurgery/engines/stage_a_trainer.py:354: RuntimeWarning: 要求された検出ヘッド 'mask_dino' は本環境で利用できないため、内蔵 SimpleDetectionHead で学習・評価します。
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_check_spec.py::test_teacher_detection_rate - AssertionError...
+FAILED tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics - Ass...
+FAILED tests/test_fetch_task.py::test_rejects_unknown_file_name - AssertionEr...
+FAILED tests/test_research_logger.py::test_log_run_idempotent - AssertionErro...
+FAILED tests/test_research_logger.py::test_run_logging_invokes_log_run_on_finally
+FAILED tests/test_research_logger.py::test_run_logging_no_double_post_on_normal_exit
+FAILED tests/test_research_logger.py::test_run_logging_swallows_exception_in_user_block
+FAILED tests/test_stage1_ptower_r3.py::test_only_the_stem_is_frozen_in_both_chains
+ERROR tests/test_stage1_dtower_convergence.py - FileNotFoundError: [Errno 2] ...
+8 failed, 862 passed, 15 skipped, 22 warnings, 1 error in 31.98s

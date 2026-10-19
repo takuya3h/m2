@@ -1,0 +1,104 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-19-stage2-pilot-four-new-types"
+  kind: analysis
+  title: "Stage 2 の非公式の予備測定に界面の新しい型を四つ足す（decoder-xattn、extra-queries、logit-correction、tool-history とそのゲートなし版）。条件は前回と直しの契約と同じ"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-19T14:30:00Z"
+  created_from:
+    runindex_commit: "63ae65da8c7d32df591f5e2ee4358286b72c726b"
+    counts: {index: 1961, experiments: 750, verdicts: 1506}
+  depends_on: [T-2026-10-19-stage2-pilot-fix-epoch4-shuffle, T-2026-10-18-stage2-pilot-folda]
+  amendments:
+    - date: "2026-10-20"
+      reason: "利用者の承認（2026-10-20 01 時台 JST）による前倒しの開始。直しの契約 T-2026-10-19-stage2-pilot-fix-epoch4-shuffle は andrew で実行中で、PR #240 は開始時に OPEN（未統合）。本契約を /task を使わずに bengio の worktree（/home/ubuntu/slocal2/m2-four、分岐 feat/stage2-pilot-four-new-types）で始める。契約は tools/fetch_task.py --notion でこの worktree の tasks/ に取り込んだ。make task-start と make task-release は使わず、抑止の目印は置かない（worktree は m2-sync.sh の対象の外。Task A-7 は「task-start を使っていない」と記録する）"
+      diff: "§5 Task A-7・Task F-4 の task-start と task-release を行わない。§11 の起動の前提（直しの契約の終了と PR #240 の統合）を待たずに始める"
+    - date: "2026-10-20"
+      reason: "同じ承認。起点を origin/phase0 ではなく origin/feat/stage2-pilot-fix-epoch4-shuffle の先頭（a7a5aa67db5e1ac9c7b978eeb05fa33019948012）にする。直しの契約の道具（--fixed-epochs、shuffle_signals.py、aggregate_fix.py、run_pd_fix.sh、run_dp_fix.sh）はこの起点に在り、phase0 にはまだ無い。Task A-1 はこの起点で確かめる。PR #240 が phase0 に統合されたら、phase0 を本分岐へ merge してから base phase0 の PR にする（それまでの PR は Draft まで）"
+      diff: "G1 の「起点が origin/phase0 で、phase0 に直しの契約の固定の長さと入れ替えの道具が在り」を「起点が直しの分岐の先頭で、起点に道具が在り」と読み替える。§11 の PR は統合後に base phase0 へ"
+    - date: "2026-10-20"
+      reason: "同じ承認。主のホストを bengio（RTX A6000 × 2）にし、run の表のすべての run（検出から工程 18 本、工程から検出 12 本、K3 の GRU 1 本）と試走を bengio で回す。使う GPU は bengio の 2 枚だけで、1 枚に載せるのは 2 本まで。andrew は入力の写しの元として読むだけにし、直しの契約の保存先と run とプロセスに触れない。Task A-3 の compute プロセスの列挙は bengio で行う（本件以外が在れば止めずに諮る）。Task B-2 の塔単独の再現は工程塔・検出塔とも bengio で行う（許容差 0.005）。一つの型の 6 本の腕はすべて bengio で回す"
+      diff: "plan.resources の server を andrew から bengio、gpu を 4 から 2 へ。§4 の run の表のホストの列をすべて bengio へ。Task E-4 の bengio の実行者への引き渡しは要らない（本セッションが bengio で回す）。G1 の「andrew に本契約以外の compute プロセスが無く」を bengio で読む。工程から検出の二つの型も同じホストになるので、§6.2 の 7 のホストをまたぐ読みは本契約の型と前回・直しの契約の型（andrew と bengio が混ざる）の比較にだけ当たる"
+    - date: "2026-10-20"
+      reason: "同じ承認。入力は andrew から bengio の同じ絶対経路へ写す（工程塔の特徴 PT_CACHE と時間ヘッド PT_HEAD_CKPT、前回の保存先の signals/final・signals/cf・arms、直しの契約の保存先の signals/shuffle、bengio に無ければ data/processed/phase_manifest）。写す前に一覧と大きさをバイトで記録して記憶領域と比べ、写した後に全ファイルの sha256 を andrew 側の値と照合する。andrew 側は読むだけにする。環境は直しの契約の handoff_bengio.md §6 の重ねの BODY（/home/ubuntu/slocal2/s2fix-bengio-body）と直した .venv-relation-detr を使い、S2FIX_BODY と EGO_BODY は重ねの BODY にする。使う前に Relation-DETR の中身と仮想環境のパッケージが andrew と同じことを要約値で確かめる。bengio の main の third_party と main の作業場所の分岐・ファイルは変えない"
+      diff: "§2 の「在否は両ホストで実測すること」を、andrew は写しの元の要約値を読むだけ、bengio は写した後の照合と読む。bengio の前回と直しの契約の版管理外の保存先（同じ絶対経路）に andrew と同じ中身のファイルを 32 本足した（rsync --ignore-existing。既存の 8 本は変えていない）。§7-2 の字面に当たるが利用者の指示による。マニフェストは bengio の main に在り andrew と sha256 が一致したので写さず、worktree に記号リンク data/processed/phase_manifest（main を指す）を置いた。本 worktree に追跡外の記号リンク .venv（/home/ubuntu/slocal2/m2/.venv を指す）を置いた（fetch_task.py の検証が worktree 直下の .venv/bin/python を固定で呼ぶため）。どちらも rm で戻せる"
+    - date: "2026-10-20"
+      reason: "同じ承認。Task B-3（直しの契約の集計の道具を既定のまま直しの契約の run に当て、report.json と同じ値が出ることを確かめる）は、直しの契約が終わるまで UNKNOWN とし、終わってから Task F で行う。make task-report も直しの契約が終わってから行う。G1、G3、検出から工程の 18 本の完了の各時点で利用者に短く報告する"
+      diff: "Task B-3 を Task F へ移す。G2・G3 の「既定の経路が直しの契約の集計を同じ値で再現し」は Task F で確かめる"
+    - date: "2026-10-20"
+      reason: "Task A-6 の実測。contract.conventions_rev（5c0eaeeb）は origin/phase0 に在るが、起点（直しの分岐の先頭）の祖先ではない。起点の context/conventions.md の最新 commit は b12eda6c で、起票時の版より古い（逸脱 2 の起点の違いによる。fetch_task.py の検証の WARN L2-6 もこれ）。注入する 7 節を節ごとに比べると、prohibitions・issuer_cautions・env_p0・split・eval_recipe・det_groups は同一で、folds は追加 6 動画の記述（22 が使えず P*-20 と呼ぶこと）だけが違い、折り A の 15 動画の定義は同じ。SPEC が参照する precision 節と symmetry 節の「ホストと装置型」は 5c0eaeeb にだけ在る。起票者が 5c0eaeeb に対して書いたため、conventions_rev は差し替えず、注入する節は 5c0eaeeb の原文（git show 5c0eaeeb:context/conventions.md）で解く。phase0 を merge した後に Task F で測り直す。meta.created_from.runindex_commit は前回・直しの契約と同じ読み（git log -1 -- runindex/）で 63ae65da を実測した。起票時の 31af81e7 はその子孫で、その間に runindex/ を変えた commit は 0 件、31af81e7..HEAD の runindex/ の差分も空。件数 1961/750/1506 は実測と一致"
+      diff: "contract.conventions_rev は 5c0eaeeb4551c66c9b854faaa7a5376dcf755ac7 のまま（差し替えない。Task A-6 の字面からの逸脱）。meta.created_from.runindex_commit を 31af81e7720db51372a1659c844e7806a3b36563 から 63ae65da8c7d32df591f5e2ee4358286b72c726b へ"
+    - date: "2026-10-20"
+      reason: "利用者の指示（直しの契約の完了を受けて。直しの契約は andrew で pass、PR #240 は Draft でなく phase0 と衝突なし）。前倒しの指示の 7 と 9 を更新する。Task B-3 はいま行ってよい。比べる相手は直しの分岐の遠隔の最新の先頭 5c89f5d2 に在る直しの契約の集計で、本分岐の起点は変えずに読むだけにする。報告の限界（§6.4）に二点を足す: (1) 入れ替えた信号は val の 55.6%（train の 11.5%）のフレームが同じ動画の信号を受け取る（直しの契約の audit 226-229 行）、(2) 直しの契約の型は andrew、本契約の型は bengio（と下記の decoder-xattn は andrew）で回しており、型どうしの値を並べるときはホストの差を含む"
+      diff: "amendments 5 件目の「Task B-3 は直しの契約が終わるまで UNKNOWN とし Task F で行う」を「いま行ってよい（相手は 5c89f5d2 の集計）」へ。§6.4 の既知の限界に二点を足す"
+    - date: "2026-10-20"
+      reason: "利用者の決定（2026-10-20 01:44 JST）。空いた andrew も使い、できるだけ早く終える。PR #240 は phase0 に統合された（2ff8896a。phase0 の先頭は 42070946）。(1) ホストの割り振り: 工程から検出の decoder-xattn の 6 本は andrew で回す。extra-queries の 6 本、検出から工程の 18 本、K3 の GRU、殺し実験は bengio のまま。一つの型の 6 本を二つのホストに分けない（SPEC §4 の起票者の推奨〔実装の重い extra-queries を主の実行者の手元に置く〕を、主が bengio になったのに合わせて当てはめた形）。(2) 作業の区切りで origin/phase0 を本分岐へ merge する。merge の後に Task A-6 の conventions_rev を測り直し、Task B-3 を行ってよい。(3) 実装の順: decoder-xattn の実装と G3 の確認（bengio での全腕の学習前の恒等性、ゲートを零でない値にしたときの陽性対照、既存の型と既定の経路が変わらないこと）を最初に終え、次に extra-queries を仕上げて bengio で回し始め、検出から工程の型と殺し実験はその後。(4) decoder-xattn の G3 を満たした commit を push したら、SPEC Task E-4 の形を主と副を入れ替えて tasks/T-2026-10-19-stage2-pilot-four-new-types/handoff_andrew.md に書いて push し、利用者に知らせる（andrew の main の作業場所に触れない、別の worktree と分岐 feat/stage2-pilot-four-new-types-andrew〔起点は引き渡しの commit〕、新しいファイルだけを足す、bengio が自分の分岐へ merge する、andrew では /task・make task-start・make task-release を使わない。andrew の監査は audit_andrew.md）。(5) GPU は両ホストとも 2 枚だけで、1 枚に載せる本数は 3 本まで（本数は実測で決めてよい）。(6) andrew の分岐を merge した後、andrew の記録（恒等性、再現、要約値、所要時間）を audit.md に写す。decoder-xattn と extra-queries の比較はホストをまたぐので §6.2 の 7 のとおり扱う"
+      diff: "amendments 3 件目の「run の表のすべての run を bengio で回す」「andrew は入力の写しの元として読むだけ」「使う GPU は bengio の 2 枚だけで 1 枚に 2 本まで」を置き換える: plan.resources の server を bengio（decoder-xattn の 6 本は andrew）、gpu を 4（両ホスト 2 枚ずつ）へ。1 枚に 3 本まで。Task E-4 の引き渡しは handoff_andrew.md（主と副を入れ替えた形）"
+intent:
+  question: "利用者が送った界面の提案カードのうち四つの型（工程から検出の decoder-xattn と extra-queries、検出から工程の logit-correction と tool-history）を、前回と直しの契約と同じ条件（折り A、seed は一つ、学習の長さを固定、六つの腕）で回すと、空の腕との差と入れ替えの腕との差はどうなるか。非公式の測定であり、関門の判定にも設計の判断（型の採否を含む）にも使わない"
+  decision_at_stake: "進捗報告の材料と、四つの型が今ある塔の上で動くことの実証。カードの批判会話と利用者の判定の参考の値として並べるが、結果で型の採否を決めない"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery の動画 01 から 15 のうち、折り A の train と val の動画（conventions#folds）。前回と直しの契約と同じフレーム集合（術具と工程の両方の注釈があるもの）。折り A の test の動画のフレームは信号の作成と学習と評価に通さない"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/stage2pilot/pd_model.py", "scripts/stage2pilot/dp_model.py", "scripts/stage2pilot/dp_train.py", "scripts/stage2pilot/run_pd_fix.sh", "scripts/stage2pilot/run_dp_fix.sh", "scripts/stage2pilot/shuffle_signals.py", "scripts/stage2pilot/aggregate_fix.py", "scripts/stage2pilot/extract_det_signals.py", "scripts/stage2pilot/det_metrics.py", "scripts/stage2pilot/common.py", "scripts/stage2pilot/test_audit_fix.py", "scripts/train_t1b.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#env_p0, conventions#folds, conventions#split, conventions#eval_recipe, conventions#det_groups]
+  conventions_rev: "5c0eaeeb4551c66c9b854faaa7a5376dcf755ac7"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/analysis/stage2_pilot_four", "experiments/phase1/stage2four", "runindex/"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。分岐、起点、直しの契約の道具が phase0 に在ること、未追跡の退避、task-start が置いた抑止の目印の確認、両ホストの装置の他プロセス、記憶領域、試験の失敗の名前", gpu: false, est: "1h"}
+    - {id: B, name: "材料の確認と再現。前回と直しの契約の信号の要約値を確かめ、塔単独の val を andrew で再現する", gpu: true, est: "1h"}
+    - {id: C, name: "実装と恒等性。五つの界面（四つの型とゲートなし版）、x の組み立て、見落としの集合を作り、既定の挙動が変わらないことと学習前の一致と陽性対照を確かめる", gpu: true, est: "8h"}
+    - {id: D, name: "殺し実験（記述だけ）。見落としの数え上げと神託、多項ロジスティック回帰、検出の系列だけの GRU", gpu: true, est: "2h"}
+    - {id: E, name: "学習。検出から工程の 18 本を andrew で、工程から検出の 12 本を型ごとに一つのホスト（andrew か bengio）で回す", gpu: true, est: "16h"}
+    - {id: F, name: "集計、検証、報告", gpu: false, est: "3h"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、phase0 に直しの契約の固定の長さと入れ替えの道具が在り、andrew に本契約以外の compute プロセスが無く、記憶領域と試験の失敗の名前を記録した", on_fail: stop}
+    - {id: G2, after: B, check: "前回と直しの契約の信号の要約値が記録と一致し、塔単独の val が前回の値と許容差の中で再現した", on_fail: ask}
+    - {id: G3, after: C, check: "五つの界面のすべての腕で学習前の出力が塔単独と一致し、陽性対照で出力が変わり、extra-queries の元の query の出力が界面によらず塔単独と同じで、既定の経路が直しの契約の集計を同じ値で再現し、test の動画のフレームを通していない", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+  resources: {server: bengio, gpu: 4, est_hours: 31, runs: 31}
+outputs:
+  must_have: [REPORT.md, RESULT.md, result.yaml, audit.md]
+  destination: "experiments/analysis/stage2_pilot_four/"
+  acceptance:
+    - "a: 開始状態として、分岐、起点、phase0 に直しの契約の道具が在ること、未追跡の退避、andrew と bengio の装置の compute プロセスの一覧、記憶領域の空き、試験の失敗の名前が記録されている"
+    - "b: 前回と直しの契約の信号（入れ替えた信号を含む）の在否と要約値が記録され、記録と一致している"
+    - "c: 工程塔と検出塔の塔単独の val が andrew で再現され、工程から検出の型を bengio で回すときは検出塔の塔単独の val が bengio でも再現され、差が SPEC の許容差の中にあるか、超えて停止した記録がある"
+    - "d: 五つの界面が SPEC の定義のとおりに実装され、学習するパラメータの名前の集合が界面のパラメータの全部でありそれ以外を含まないことが記録されている。既存の型と既定の経路の挙動は変わらない"
+    - "e: 五つの界面の全腕で学習前の出力が塔単独と一致し、ゲートか最後の層を零でない値にすると出力が変わる。extra-queries では、界面の重みを変えても元の query の出力が塔単独と同じで、mask を外すと変わる"
+    - "f: extra-queries の見落としの集合が SPEC の読み（字面どおり）で train から一度だけ作られ、box の数、クラスごとの数、確信度の閾値ごとの数が記録されている"
+    - "g: 殺し実験の三つ（見落としの数え上げと神託、多項ロジスティック回帰、検出の系列だけの GRU と stacking）の値が記録され、測れなかったものは理由つきで UNKNOWN と書かれている"
+    - "h: SPEC の run の表のすべての run が固定の長さで回り、一つの型の全腕が同じホストで回ったことが記録されている。測れなかった run は理由つきで UNKNOWN と書かれている"
+    - "i: ゲートを持つ型（decoder-xattn の層ごと、tool-history）のゲートの値が epoch ごとに記録され、extra-queries の追加の出力の寄与が記録されている"
+    - "j: 型ごと・腕ごとに、四つ目の epoch の値、空の腕との差、入れ替えの腕との差、動画ごとの差が表にあり、SPEC の読み方の規則で記述されている"
+    - "k: 検出から工程の全腕と、工程から検出の型ごとの中間記録が分岐へ push されている"
+    - "l: test の動画のフレームを信号の作成と学習と評価に一度も通していないことが、通した動画の集合で示されている"
+    - "m: 前回と直しの契約の run の置き場・集計・保存先、data の raw と external、凍結源、既存の checkpoint、third_party に書き込んでいない。試験の失敗が増えていない"
+    - "n: PR が Draft でなく存在し、base が phase0、分岐が feat/stage2-pilot-four-new-types"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "andrew か bengio に本契約以外の compute プロセスがある場合（止めずに利用者に諮る）"
+    - "直しの契約が終わっていないか、その PR が phase0 に統合されておらず、固定の長さと入れ替えの道具が phase0 に無い場合"
+    - "前回か直しの契約の信号が無い、または要約値が記録と食い違う場合"
+    - "塔単独の val が前回の値と許容差を超えて食い違う場合"
+    - "SPEC の型の定義が受け取り手の実装と合わず、意味を変えないと実装できない場合"
+    - "extra-queries の学習前の上位の検出が塔単独と一致しない場合（スコアのずらしの初期値を変えずに諮る）"
+    - "既存スクリプトの既定の挙動を変えないと実装できない場合"
+    - "記憶領域が足りない場合"
+    - "実行基盤が書き込み、移動、削除を拒む場合"

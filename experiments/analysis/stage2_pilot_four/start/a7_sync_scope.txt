@@ -1,0 +1,22 @@
+## A-7 m2-sync scope
+29:cd "$M2DIR" || exit 1
+worktree mentions: 0
+10:M2DIR=$([ -d ~/slocal2 ] && echo ~/slocal2/m2 || echo ~/slocal/m2)
+sync-pause support count: 2
+## .sync-pause
+ls: cannot access '.sync-pause': No such file or directory
+ls: cannot access '/home/ubuntu/slocal2/m2/.sync-pause': No such file or directory
+## main checkout (read only)
+feat/proposal-gate-brief
+main porcelain lines: 14
+## processes with cwd in this worktree
+404788 /home/ubuntu/slocal2/m2-four /usr/bin/zsh 
+405244 /home/ubuntu/slocal2/m2-four bash /home/ubuntu/.local/bin/agent-autoupdate run claude --remote-control 
+405249 /home/ubuntu/slocal2/m2-four /home/ubuntu/.local/bin/claude --session-id 3b1ce848-537b-4944-accf-99ec720d3316
+405553 /home/ubuntu/slocal2/m2-four npm exec @modelcontextprotocol/server-pdf --stdio                               
+405711 /home/ubuntu/slocal2/m2-four sh -c mcp-pdf-server --stdio 
+405712 /home/ubuntu/slocal2/m2-four node /home/ubuntu/.npm/_npx/6583fba12287d067/node_modules/.bin/mcp-pdf-server --
+438125 /home/ubuntu/slocal2/m2-four /usr/bin/zsh -c source /home/ubuntu/.claude/shell-snapshots/snapshot-zsh-1792426
+export CODEX_COMPANION_TRANSCRIPT_PATH='/home/ubuntu/.claude/projects/-home-ubun
+export CLAUDE_PLUGIN_DATA='/home/ubuntu/.claude/plugins/data/codex-openai-codex'
+: && setopt NO_EXTENDED_GLOB NO_BARE_GLOB_QUAL 2>/dev/null || true && { uiltin

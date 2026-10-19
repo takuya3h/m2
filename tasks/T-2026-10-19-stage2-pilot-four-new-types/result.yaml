@@ -1,0 +1,72 @@
+result_version: 3
+task_id: "T-2026-10-19-stage2-pilot-four-new-types"
+status: pass
+host: "bengio（decoder-xattn の 6 本は andrew）"
+branch: "feat/stage2-pilot-four-new-types"
+pr: 243
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "分岐 feat/stage2-pilot-four-new-types、起点は直しの分岐の先頭 a7a5aa67（利用者の承認による逸脱）で直しの道具が在り phase0 には無い、bengio の本契約以外の compute プロセス 0 件、空き 879,879,020,544 B、試験の失敗の名前 9 件"}
+  - {id: G2, verdict: pass, note: "本契約が読む 18 本の sha256 が直しの契約の記録と一致、bengio で工程 Jaccard 0.7762186・検出 mAP 0.7273450 を差 0.0 で再現（andrew の検出塔も一致）、B-3 は既定の集計の道具が直しの契約の report.json を 5c89f5d2 とバイト単位で同じに再現"}
+  - {id: G3, verdict: pass, note: "五つの界面の全 30 腕で学習前の出力が塔単独と差 0、陽性対照で変わる、extra-queries の元の query の出力は界面の重みを乱数にしても差 0 で mask を外すと変わる、学習前の上位 300 は 1,515 枚すべてで塔単独と同じ、既存の型の照合が直しの契約の記録と全項目一致、test の動画との共通 0 件"}
+
+tests:
+  before_failed: 9
+  after_failed: 9
+  after_passed: 862
+
+deviations:
+  - {type: judgement, note: "利用者の承認（2026-10-20 01 時台 JST）で、直しの契約の終了を待たずに /task を使わず bengio の worktree から始めた。make task-start と task-release は使わず、抑止の目印は置いていない（amendments 1 件目）"}
+  - {type: judgement, note: "起点を origin/phase0 ではなく直しの分岐の先頭 a7a5aa67 にした。PR #240 の統合の後に origin/phase0 を merge した（衝突なし。amendments 2・8 件目）"}
+  - {type: judgement, note: "主のホストを bengio にし、decoder-xattn の 6 本だけを andrew で回した（利用者の決定 01:44 JST。amendments 3・8 件目）。一つの型の 6 本は一つのホスト。decoder-xattn と extra-queries の比較はホストをまたぐので参考の表にだけ置いた"}
+  - {type: environment, note: "入力は andrew から bengio の同じ絶対経路へ写した（32 本、既存の 8 本は上書きせず、44 本の sha256 を照合）。前回と直しの契約の版管理外の保存先（bengio の写し）にファイルを足したことは SPEC §7-2 の字面に当たるが利用者の指示による（amendments 4 件目）"}
+  - {type: environment, note: "bengio は直しの契約の重ねの BODY と直した .venv-relation-detr で回した。Relation-DETR のソース 142 本とパッケージ 72 個（本体の .venv は 108 個）が今の andrew と一致することを確かめた"}
+  - {type: judgement, note: "Task A-6: conventions_rev（5c0eaeeb）は起点の祖先でなかった（起点の版は b12eda6c）。注入する 7 節は folds の追加動画の記述以外同一。起票者が 5c0eaeeb に対して書いたため差し替えず原文を 5c0eaeeb から読み、phase0 の merge の後に測り直して一致した。runindex_commit は前回と同じ読みで 63ae65da に差し替えた（amendments 6 件目）"}
+  - {type: judgement, note: "Task B-3 は直しの契約の完了の後に行った（相手は 5c89f5d2。amendments 5・7 件目）。版管理外の前回の run の記録が worktree に無いため、作業用の場所に git archive と bengio の main の同期の写しを重ねて回した"}
+  - {type: judgement, note: "数値精度は規約の precision 節（TF32）ではなく前回の経路のまま（工程から検出は bf16 の自動混合精度、評価は単精度）。SPEC §2 の指示どおり"}
+  - {type: judgement, note: "型の定義の読み: decoder-xattn は token を key・value にそのまま使い、部分層を decoder を通るすべての query に当てた。extra-queries は元の経路を D* のまま回し追加の query だけを別に回す形で mask を実装した（元の出力が構成で塔単独と同じ）。tool-history の GRU の入力は 64 次元。界面の初期化は固定の種で大域の乱数から切り離した"}
+  - {type: judgement, note: "実行者の誤り: 相対経路の --out で回した評価 3 本の json が import 時の作業場所の移動で重ねの BODY の third_party/Relation-DETR/experiments/ の下に書かれた。worktree へ移し、作った空のフォルダを除いた。Relation-DETR のソースの一覧は不変"}
+  - {type: judgement, note: "実行者の誤り: 引き渡しで bengio の decoder-xattn の試走の置き場を分岐に commit していたため、andrew の試走が名前の衝突で止まり、andrew の実行者が利用者の承認を得て同じ commit の写しの場所で回した"}
+  - {type: judgement, note: "1 枚に載せる本数を利用者の決定で 3 本までにした（bengio の extra-queries は 1 枚 3 本で 2.6 it/s、2 本で 3.4〜3.8 it/s）"}
+
+issuer_defects:
+  - {type: asserted_without_measuring, note: "SPEC §4 は空の腕を x(t) がすべて 0 の分母とした。tool-history は GRU が一定の入力からも動画の先頭からの経過を内に持てるため、ゲートなし版の空の腕は塔単独より Jaccard が 0.082 下がった。指示どおりに読むと Δ空 は情報の無い分母との差ではなく、経過の情報を持つ空の腕との差になる"}
+  - {type: asserted_without_measuring, note: "SPEC §3.2 はスコアの定数の初期値 −10 を学習前に上位 300 へ入らないためとしたが、4 epoch・学習率 5e-4・train の見落とし 73 個で上がるかを見積もっていない。定数は −9.44〜−9.50 までしか上がらず、指示どおりに回すと extra-queries の 6 腕すべてが塔単独と同値になった"}
+  - {type: check_does_not_check, note: "Task C-7 は 1 epoch の短い試走で 1 本の所要時間を測るとしたが、試走の経路（train_t1b.py --smoke）は 6 歩・val 20 枚で、1 本の所要は測れない。指示どおりに回しても所要は分からず、本番の壁時計で測った"}
+
+positive_controls:
+  - {judgement: "a compute プロセスの列挙", breaking_input: "目印の引数を持つ自分の bash を起こす／存在しない実行ファイルの経路", observed: "目印の bash を 1 件、存在しない exe で 0 件（bash -c 'sleep 15' は exec で印が消えて 0 件だった）"}
+  - {judgement: "a 直しの道具の在否", breaking_input: "存在しない名前の道具・引数", observed: "ABSENT、0 行"}
+  - {judgement: "b 材料の sha256 の照合", breaking_input: "D0_val.npz の 1 バイトを変えた複製", observed: "記録と一致しなくなった"}
+  - {judgement: "c 塔単独の再現", breaking_input: "別の時間ヘッド（P20 seed42）・別 seed（123）の検出塔", observed: "工程 Jaccard 0.6379（差 −0.138）、検出 mAP 0.7289（差 +0.0015）"}
+  - {judgement: "d 学習する集合の検査", breaking_input: "界面の外のパラメータを一つ混ぜた集合", observed: "全 30 腕で不一致"}
+  - {judgement: "d 既定の集計の再現（B-3）", breaking_input: "直しの report.json の一つの値を 1e−12 変えた写し", observed: "差 1 件"}
+  - {judgement: "e 恒等性", breaking_input: "ゲート・零から始めた層を零でない値に、extra-queries の mask を外す、スコアの定数を 0 に", observed: "出力が変わった（DP ロジット差 0.00024〜0.229、decoder-xattn score 差 0.0070、mask なしで元の出力の score 差 0.564、定数 0 で最終 mAP 0.7176）"}
+  - {judgement: "e extra-queries の元の出力の不変", breaking_input: "界面の重みをすべて乱数に", observed: "元の出力の差 0（最終の出力は変わる）"}
+  - {judgement: "f 見落とし", breaking_input: "ただ一つ覆う検出を消した写し／正解を検出として足した写し", observed: "その正解が見落としに数えられた／見落とし 0 件（train・val）"}
+  - {judgement: "g 殺し実験", breaking_input: "K1 で見落とし 0 件の写し／K2 で D0 を正解の工程の one-hot に", observed: "神託の差 0.0／(ii)−(i) の Jaccard +0.0952"}
+  - {judgement: "i 寄与の数え", breaking_input: "学習後の界面のままスコアの定数を 0 に", observed: "上位 300 の追加 425,322 件、照合した見落とし 3 個"}
+  - {judgement: "l test 不使用", breaking_input: "各段の集合に 04 を混ぜる", observed: "共通 1 件"}
+
+followups:
+  - "extra-queries は 4 epoch では追加の出力が上位 300 に出なかった。カードの意図（見落としにだけ当たる query）を測るには、スコアの定数の学習率・初期値・長さを変える必要がある（本契約では変えていない）"
+  - "tool-history（カードどおり）のゲートは 4 epoch で tanh(α) 0.012 までしか開かなかった（起票者の見積もり 0.02 と同じ程度）。ゲートなし版は空の腕が経過の情報を持つので、空の腕を分母にした比較の読み方を決めておく必要がある"
+  - "worktree の追跡外の記号リンク .venv と data/processed/phase_manifest、bengio の前回・直しの契約の保存先に足した 32 本は残してある（戻すかどうかは利用者が決める）"
+
+unknowns:
+  - "K3 の GRU の最終状態から術式を当てる精度: 動画ごとの術式の対応が repo に無い"
+
+commits:
+  - "ed53c672 docs(stage2-pilot-four): 契約を取り込み、開始状態・入力の写し・塔単独の再現を記録する"
+  - "659378f6 feat(stage2-pilot-four): 五つの界面を実装し、decoder-xattn の G3 と andrew への引き渡しを置く"
+  - "0d717f09 Merge origin/phase0 into feat/stage2-pilot-four-new-types（PR #240 の統合を取り込む）"
+  - "20e42734 docs(stage2-pilot-four): phase0 の取り込み後の A-6・B-3（直しの集計と一致）と C-8 を記録する"
+  - "09aa88a7 exp(stage2-pilot-four): G3 pass（extra-queries の恒等性と陽性対照）を記録し、bengio の学習を起こす"
+  - "02715aaa exp(stage2-pilot-four): 検出から工程の 18 本と K3 の GRU を回し、中間記録を置く"
+  - "7d9c8bd3 docs(stage2-pilot-four): K1 と README の節、寄与・殺し実験・予測・参考の表の集計を足す"
+  - "7de70400 exp(stage2-pilot-four): extra-queries の 6 本と殺し実験 K2・K3 を記録する"
+  - "630b44f4 exp(stage2-pilot-four): extra-queries の学習後の寄与（6 腕とも上位 300 に追加の出力なし）と対照を記録する"
+  - "7cbccdb4 docs(stage2-pilot-four): §6.2 の記述の集計、報告の冒頭と末尾、締めくくりの台本、判断の記録を置く"
+  - "7a2cdcc2 Merge feat/stage2-pilot-four-new-types-andrew: andrew の decoder-xattn の 6 本と監査記録"
+  - "6287b174 docs(stage2-pilot-four): 集計・REPORT・RESULT・result.yaml・監査の F を置き、README と実験ログを更新する"

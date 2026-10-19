@@ -19,6 +19,11 @@
     --task-id / --exp-prefix   run の契約の識別子と名前の接頭辞（界面の重みは stage2pilot_store/<task-id>/dp_ckpt）
     --smoke            --fixed-epochs の短い試走の印（名前に _smoke、config に smoke: true）
     腕 shuffle         予測-noCF と同じ信号の値を、フレームとの対応だけ入れ替えたもの（stage2pilot_store/<直しの契約>/signals/shuffle）
+
+契約 T-2026-10-19-stage2-pilot-four-new-types で足した型（SPEC §3.3〜3.5、§4）。x(t) は 32 次元
+［予測の半分 16 = D0 の 15 と旗｜正解の半分 16 = D-GT の 15 と旗］で、使わない半分は旗ごと 0、空の腕はすべて 0:
+    LC logit_corr、TH tool_hist（カードどおり）、TH-NG tool_hist_nogate（ゲートなし版）
+ゲートを持つ型（TH）は tanh(α) を epoch ごとに logs/history.json に書く。既存の型の経路は変えない。
 """
 from __future__ import annotations
 
@@ -52,7 +57,11 @@ TYPES = {
     "D2": ("film", "vec", "D0", "D-GT", None),
     "D3-L1": ("attn", "tok", "D0-INST", "D-GT-INST", NT + 4),
     "D3-L2": ("attn", "tok", "D0-INST", None, NT + 4 + 256),
+    "LC": ("logit_corr", "x32", "D0", "D-GT", None),
+    "TH": ("tool_hist", "x32", "D0", "D-GT", None),
+    "TH-NG": ("tool_hist_nogate", "x32", "D0", "D-GT", None),
 }
+X32_HALF = NT + 1                                          # 15 と旗。予測の半分が先、正解の半分が後
 ARMS = ("empty", "pred_noCF", "gt", "pred_CF", "gtpred_CF", "shuffle")
 # 止め方の規則（DP・W1）。最初の腕を回す前に固定する
 STOP = {"lr": 5e-4, "weight_decay": 0.01, "patience": 10, "max_epochs": 100, "smoothing_weight": 0.3}
@@ -100,13 +109,32 @@ class Signals:
         pred_path = FINAL / f"{inst_name(pred, variant)}_{part}.npz"
         with np.load(pred_path) as d:
             self.pred_dim = int(d["x"].shape[-1]) if self.kind == "vec" else None
-        self.dim = (sum(x.shape[-1] for (_, x, _), _ in self.loaded) or self.pred_dim) if self.kind == "vec" \
-            else self.tok_base + 1
+        if self.kind == "x32":
+            assert all(x.shape[-1] == NT for (_, x, _), _ in self.loaded)
+            self.dim = 2 * X32_HALF
+        else:
+            self.dim = (sum(x.shape[-1] for (_, x, _), _ in self.loaded) or self.pred_dim) if self.kind == "vec" \
+                else self.tok_base + 1
 
     def files(self):
         return [{"path": str(p), "sha256": C.sha256(p), "gt": g} for p, g in self.srcs]
 
+    def layout(self):
+        """x(t) の 32 次元の各半分の出所と旗（x32 の型だけ。SPEC Task C-3 の記録）。"""
+        halves = {"pred": {"cols": [0, X32_HALF], "source": None, "flag": 0},
+                  "gt": {"cols": [X32_HALF, 2 * X32_HALF], "source": None, "flag": 0}}
+        for p, is_gt in self.srcs:
+            halves["gt" if is_gt else "pred"].update(source=str(p), flag=1)
+        return halves
+
     def for_frames(self, frames):
+        if self.kind == "x32":
+            out = np.zeros((len(frames), self.dim), np.float32)
+            for (ix, x, _), is_gt in self.loaded:
+                off = X32_HALF if is_gt else 0
+                out[:, off:off + NT] = x[[ix[f] for f in frames]]
+                out[:, off + NT] = 1.0
+            return torch.from_numpy(out), None
         if self.kind == "vec":
             if not self.loaded:
                 return torch.zeros(len(frames), self.dim), None
@@ -166,6 +194,18 @@ def max_logit_diff(model_a, model_b_head, data):
     return d
 
 
+def trainable_report(model):
+    """学習するパラメータ（requires_grad）の名前の集合が、界面のパラメータの名前の集合と一致するか（Task C-2）。
+
+    陽性対照として、受け取り手のパラメータを一つ混ぜた集合では一致しないことも返す。
+    """
+    trainable = sorted(n for n, p in model.named_parameters() if p.requires_grad)
+    iface = sorted(f"iface.{n}" for n, _ in model.iface.named_parameters())
+    mixed = sorted(set(trainable) | {next(f"head.{n}" for n, _ in model.head.named_parameters())})
+    return {"trainable_names": trainable, "iface_names": iface, "equal": trainable == iface,
+            "equal_with_one_head_param_mixed": mixed == iface}
+
+
 def setup_common(device="cuda"):
     import stage1_ptower as base
     base.deterministic(42)
@@ -187,13 +227,18 @@ def cmd_identity(a):
         data = build_data(split["val"], sig, feats, "cuda")
         base_res, _ = evaluate(model, data, names)
         diff = max_logit_diff(model, head, data)
+        extra = {}
+        if sig.kind == "x32":
+            extra = {"x_layout": sig.layout(), "trainable": trainable_report(model), "gate_init": model.gate_values(),
+                     "perturbed_params": [n for n, p in model.named_parameters()
+                                          if any(p is q for q in model.iface_last_params())]}
         with torch.no_grad():
             g = torch.Generator().manual_seed(1234)
             for p in model.iface_last_params():
                 p.copy_((torch.randn(p.shape, generator=g) * a.perturb_scale).to(p.device))
         pert, _ = evaluate(model, data, names)
         pdiff = max_logit_diff(model, head, data)
-        out[arm] = {"signal_files": sig.files(), "dim": sig.dim,
+        out[arm] = {**extra, "signal_files": sig.files(), "dim": sig.dim,
                     "iface_params": int(sum(p.numel() for p in model.iface.parameters())),
                     "identity_jaccard": base_res["phase_jaccard"], "identity_accuracy": base_res["phase_accuracy"],
                     "identity_max_abs_logit_diff": diff,
@@ -252,6 +297,8 @@ def cmd_train(a):
            "class_counts": counts.tolist(), "class_weights": weights.tolist(),
            "videos": {"train": tr_videos, "val": va_videos}, "smoke": bool(a.max_epochs or a.smoke),
            "iface_params": int(sum(p.numel() for p in params))}
+    if sig_tr.kind == "x32":
+        cfg.update(x_layout={"train": sig_tr.layout(), "val": sig_va.layout()}, trainable=trainable_report(model))
     desc = f"{a.type}_{a.arm}" + (f"_ep{fixed}" if fixed else "") + ("_smoke" if a.max_epochs or a.smoke else "")
     manager = ExperimentManager(C.ROOT / "experiments", "phase1", a.exp_prefix, desc, a.seed)
     manager.setup(cfg)
@@ -259,6 +306,7 @@ def cmd_train(a):
     if run is None:
         raise RuntimeError("W&B tracking could not start; no experiment executed")
     init_res, _ = evaluate(model, val_data, names)
+    init_gate = model.gate_values()
     best, best_score, stale, stopped, history, no_grad_steps = None, -1.0, 0, None, [], 0
     started = time.monotonic()
     ckpt = C.STORE.parent / a.task_id / "dp_ckpt" / f"{manager.exp_id}.pth"
@@ -288,10 +336,11 @@ def cmd_train(a):
             opt.step()
         val, probs = evaluate(model, val_data, names)
         score = val["phase_jaccard"]
+        gate = model.gate_values()
         history.append({"epoch": epoch, "train_loss": total / len(order), "val_jaccard": score,
-                        "val_accuracy": val["phase_accuracy"]})
-        tracking.log({"train/loss": total / len(order), "val/jaccard": score, "val/accuracy": val["phase_accuracy"]},
-                     step=epoch)
+                        "val_accuracy": val["phase_accuracy"], **({"gate": gate} if gate else {})})
+        tracking.log({"train/loss": total / len(order), "val/jaccard": score, "val/accuracy": val["phase_accuracy"],
+                      **({f"gate/{k}": v for k, v in gate.items()} if gate else {})}, step=epoch)
         # --fixed-epochs: 最良の回を選ばず、最後の epoch の状態を結果にする（界面の重みと確率もその状態）
         if (epoch == fixed) if fixed else score > best_score:
             best_score, stale = score, 0
@@ -314,6 +363,8 @@ def cmd_train(a):
                "elapsed_seconds": time.monotonic() - started, "receiver_unchanged": head_unchanged,
                "steps_without_grad": no_grad_steps,
                "iface_params": cfg["iface_params"], "iface_ckpt": str(ckpt), "iface_ckpt_sha256": C.sha256(ckpt)}
+    if init_gate:
+        metrics.update(init_gate=init_gate, gate_by_epoch={h["epoch"]: h["gate"] for h in history})
     if a.arm == "empty":
         metrics["negative_control"] = negative_control(a, model, ckpt, head, split, feats, names)
     manager.log_metrics(metrics)

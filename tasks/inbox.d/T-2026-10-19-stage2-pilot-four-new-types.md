@@ -1,0 +1,5 @@
+- [ ] 2026-10-20 [cc] 非公式の測定（予備測定に界面の新しい型を四つ足した）。結果は関門の判定と設計の判断に使わない。全値は experiments/analysis/stage2_pilot_four/REPORT.md（T-2026-10-19-stage2-pilot-four-new-types）
+- [ ] 2026-10-20 [cc] 利用者の決定: 直しの契約の終了を待たずに bengio の worktree から前倒しで始め、主のホストを bengio、decoder-xattn の 6 本を andrew にした（amendments 8 件）。decoder-xattn と extra-queries の比較はホストをまたぐ（T-2026-10-19-stage2-pilot-four-new-types）
+- [ ] 2026-10-20 [cc] extra-queries は 6 腕とも 4 epoch で追加の出力が上位 300 に出ず、全腕が塔単独と同値（スコアの定数 −10 → −9.44〜−9.50、train の見落とし 73 個）。カードの意図を測るなら定数の学習率・初期値・長さを決め直す必要がある（未決。T-2026-10-19-stage2-pilot-four-new-types）
+- [ ] 2026-10-20 [cc] tool-history はゲートが開かず（tanh(α) ≤ 0.012）、ゲートなし版は空の腕でも塔単独より Jaccard −0.082（GRU が経過の情報を持つ）。再帰の界面で空の腕を分母にする読み方は未決（T-2026-10-19-stage2-pilot-four-new-types）
+- [ ] 2026-10-20 [cc] bengio の worktree に追跡外の記号リンク .venv と data/processed/phase_manifest、前回・直しの契約の保存先の bengio の写しに andrew と同じ中身の 32 本を足したまま。戻すかは未決（T-2026-10-19-stage2-pilot-four-new-types）

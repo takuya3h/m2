@@ -1,0 +1,158 @@
+{
+  "task_id": "T-2026-10-19-stage2-pilot-four-new-types",
+  "cfg": "configs/stage2pilot/pd_extra_q_d9.py",
+  "interface": "extra_q",
+  "det_ckpt": "/home/ubuntu/slocal2/s2fix-bengio-body/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth",
+  "det_ckpt_sha256": "30d199b15201cf3c03954852d8acc6fb58fe5349baef2fd200e877237ff682c4",
+  "iface_state": null,
+  "perturb": null,
+  "perturb_scale": null,
+  "signal_val": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P-GT_val.npz",
+  "signal_val_sha256": "d21a3cf09246aece268a208ee6fe19ac40bbf561af202143ab3de2e196ccfd2a",
+  "zero_ctx": false,
+  "dim": 9,
+  "videos": [
+    "09",
+    "10"
+  ],
+  "n_images": 1515,
+  "limit_images": null,
+  "load_report": {
+    "missing_from_ckpt": [
+      "phase_iface.adapter.bias",
+      "phase_iface.adapter.weight",
+      "phase_iface.box",
+      "phase_iface.box_lin.bias",
+      "phase_iface.box_lin.weight",
+      "phase_iface.content.bias",
+      "phase_iface.content.weight",
+      "phase_iface.embed",
+      "phase_iface.score"
+    ],
+    "unexpected_in_ckpt": [],
+    "missing_are_interface_only": true
+  },
+  "trainable": {
+    "trainable_names": [
+      "phase_iface.adapter.bias",
+      "phase_iface.adapter.weight",
+      "phase_iface.box",
+      "phase_iface.box_lin.bias",
+      "phase_iface.box_lin.weight",
+      "phase_iface.content.bias",
+      "phase_iface.content.weight",
+      "phase_iface.embed",
+      "phase_iface.score"
+    ],
+    "iface_names": [
+      "phase_iface.adapter.bias",
+      "phase_iface.adapter.weight",
+      "phase_iface.box",
+      "phase_iface.box_lin.bias",
+      "phase_iface.box_lin.weight",
+      "phase_iface.content.bias",
+      "phase_iface.content.weight",
+      "phase_iface.embed",
+      "phase_iface.score"
+    ],
+    "equal": true,
+    "n_trainable": 16701,
+    "equal_with_one_detector_param_mixed": false
+  },
+  "gates_init": {
+    "score_const": -10.0
+  },
+  "gates_eval": {
+    "score_const": -10.0
+  },
+  "interface_params": 16701,
+  "non_interface_digest": "4fed85166852cd54f07071a5b9ce57804828e95c23148db11bf7bf0afe08ce60",
+  "final": {
+    "eval_detection_mAP": 0.7273450248398429,
+    "metrics": {
+      "AP": 0.7273450248398429,
+      "AP50": 0.851807431425236,
+      "per_class_ap": {
+        "Bipolar Forceps": 0.7898794444235409,
+        "Electric Cautery": 0.9687812331789367,
+        "Forceps": 0.3561239611642256,
+        "Gauze": 0.26918130139973323,
+        "Hook": 0.6365377594169036,
+        "Mouth Gag": 0.799206245873842,
+        "Needle Holders": 0.845680655120691,
+        "Raspatory": 0.803773438439878,
+        "Retractor": NaN,
+        "Scalpel": 0.9005223036860694,
+        "Scissors": 0.7096800075689964,
+        "Skewer": 0.9443283539032797,
+        "Suction Cannula": 0.8348758163714836,
+        "Syringe": 0.5368704638226811,
+        "Tweezers": 0.7873893633875403
+      },
+      "n_images": 1515,
+      "target_AP": 0.7950748008550897,
+      "target_missing": [],
+      "control_AP": 0.6726631817581498,
+      "control_missing": [],
+      "per_video_AP": {
+        "09": 0.704273483949694,
+        "10": 0.6420973291237674
+      }
+    },
+    "diff_vs_ref": {
+      "comparable": true,
+      "max_abs_score_diff": 0.0,
+      "max_abs_bbox_diff_px": 0.0,
+      "label_mismatch": 0
+    }
+  },
+  "orig": {
+    "eval_detection_mAP": 0.7273450248398429,
+    "metrics": {
+      "AP": 0.7273450248398429,
+      "AP50": 0.851807431425236,
+      "per_class_ap": {
+        "Bipolar Forceps": 0.7898794444235409,
+        "Electric Cautery": 0.9687812331789367,
+        "Forceps": 0.3561239611642256,
+        "Gauze": 0.26918130139973323,
+        "Hook": 0.6365377594169036,
+        "Mouth Gag": 0.799206245873842,
+        "Needle Holders": 0.845680655120691,
+        "Raspatory": 0.803773438439878,
+        "Retractor": NaN,
+        "Scalpel": 0.9005223036860694,
+        "Scissors": 0.7096800075689964,
+        "Skewer": 0.9443283539032797,
+        "Suction Cannula": 0.8348758163714836,
+        "Syringe": 0.5368704638226811,
+        "Tweezers": 0.7873893633875403
+      },
+      "n_images": 1515,
+      "target_AP": 0.7950748008550897,
+      "target_missing": [],
+      "control_AP": 0.6726631817581498,
+      "control_missing": [],
+      "per_video_AP": {
+        "09": 0.704273483949694,
+        "10": 0.6420973291237674
+      }
+    },
+    "diff_vs_ref": {
+      "comparable": true,
+      "max_abs_score_diff": 0.0,
+      "max_abs_bbox_diff_px": 0.0,
+      "label_mismatch": 0
+    }
+  },
+  "extra_q": {
+    "n_images": 1515,
+    "images_extra_max_ge_orig_300th": 0,
+    "min_margin": 0.00479967868886888,
+    "median_margin": 0.008558322966564447,
+    "max_extra_score": 0.0011241415049880743,
+    "min_orig_300th_score": 0.004803386516869068,
+    "n_extra_in_top300_total": 0,
+    "images_with_extra_in_top300": 0
+  }
+}

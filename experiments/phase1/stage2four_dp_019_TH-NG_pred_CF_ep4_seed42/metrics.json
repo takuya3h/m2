@@ -1,0 +1,37 @@
+{
+  "best_epoch": 4,
+  "early_stopped_epoch": null,
+  "elapsed_seconds": 47.67149651795626,
+  "epochs_run": 4,
+  "eval_recipe": {
+    "test_cfg": {
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "split": "val",
+      "task": "phase"
+    }
+  },
+  "iface_ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-four-new-types/dp_ckpt/stage2four_dp_019_TH-NG_pred_CF_ep4_seed42.pth",
+  "iface_ckpt_sha256": "bd8197675480e9d0a65f15f4fd6756f48375408d82b9ce4f7bd884fe49bc18b8",
+  "iface_params": 31232,
+  "init_phase_accuracy": 0.8712871287128713,
+  "init_phase_jaccard": 0.7762185528074379,
+  "per_video": {
+    "09": {
+      "phase_accuracy": 0.9903474903474904,
+      "phase_jaccard": 0.9794776598957697
+    },
+    "10": {
+      "phase_accuracy": 0.8074222668004012,
+      "phase_jaccard": 0.5811308872847519
+    }
+  },
+  "phase_accuracy": 0.8699669966996699,
+  "phase_jaccard": 0.666390790980281,
+  "phase_macro_f1": 0.734247979452321,
+  "reached_epoch_cap": true,
+  "receiver_unchanged": true,
+  "result_epoch": 4,
+  "result_selection": "final_epoch",
+  "steps_without_grad": 0
+}
