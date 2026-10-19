@@ -152,3 +152,100 @@ main の作業場所: 試走の後、`$A/experiments` に基準時刻（02:40 �
 `scripts/run_artifacts.py` の `_git_commit()` は `EGO_BODY`（andrew では `$A`）で `git rev-parse HEAD` を取るので、andrew の run の `git_commit.txt` は
 **main の作業場所の HEAD** を書く（worktree の HEAD ではない。bengio の run は重ねの BODY が git でないので `unknown`）。台本は変えず、run ごとの worktree の HEAD を本書に書く。
 引き渡しの後の worktree の HEAD は `faa0f1aa`（S2）。
+
+## S9 見守り
+
+- 02:55 JST: GPU 0 の 3 本は ep0 500/4809 歩（1.5・1.7・1.7 it/s）、GPU 1 の 3 本は ep0 0/4809 歩（評価を終えて学習に入ったところ）
+- 02:56 JST: `nvidia-smi` で 1 本 4,434〜4,450 MiB、GPU ごとに 13,383 / 13,364 MiB（49,140 MiB 中）、使用率 98〜100%。`free -b` の available 68,468,060,160
+- 見込み: 4 epoch × 4,809 歩 = 19,236 歩を 1 本 1.5〜1.7 it/s で約 3.2〜3.6 時間（epoch ごとの val 評価を除く）。測った値ではない
+- 6 本とも rc=0（06:31〜06:36 JST に終了）。見守りの間に `Traceback`・`CUDA out of memory`・`not finite`・`Error` の行は 0 件、15 分以上の停止は 0 件。速さは 1 本 1.5〜1.7 it/s（epoch の始めの評価の直後だけ 0.8〜1.2 it/s）。1 epoch は学習と評価でおよそ 55 分
+
+## S10 終わりの確認（06:37 JST、`andrew/check_dx6.py` → `andrew/s10_check.json`）
+
+確認した項目（6 本ともすべて true）: `exit_code.txt` が 0、`t1b_result.json` の `result_selection` が `final_epoch`、`best_epoch` = `final_epoch` = 3、`mAP` = `final_mAP`、`stage2four_metrics.json` の `init` が 0.7273450248398429、`frozen_unchanged` が true、`env_check.txt` に `ms_deform_attn_ext True`、`server.txt` が andrew、学習前のゲート（`gates_by_epoch` の −1）がすべて 0。
+
+### 4 epoch 目の値（val、動画 09・10。非公式。表の値は `stage2four_metrics.json` のまま）
+
+| 腕 | GPU | overall mAP | 標的群 AP | 陰性対照群 AP | 動画 09 | 動画 10 | 起動〜終了（JST） | 所要（時間） |
+|---|---|---|---|---|---|---|---|---|
+| empty | 0 | 0.7286351809653658 | 0.7971802124759885 | 0.674744871212618 | 0.7046779783477529 | 0.6426769384452503 | 02:43:44〜06:30:43 | 3.783 |
+| pred_noCF | 0 | 0.7285507127170769 | 0.7977964150437383 | 0.6743162666121828 | 0.7045593499920725 | 0.6454434789599283 | 02:44:04〜06:31:00 | 3.782 |
+| gt | 0 | 0.7307424633845512 | 0.8023051689913743 | 0.6748186678418289 | 0.7052871016926068 | 0.6471674397790789 | 02:44:24〜06:31:57 | 3.792 |
+| pred_CF | 1 | 0.7280597990708618 | 0.7956651065025846 | 0.674161721518428 | 0.7045969947183123 | 0.6424095936034077 | 02:44:44〜06:34:50 | 3.835 |
+| gtpred_CF | 1 | 0.7304329266677848 | 0.8002190391680053 | 0.6743968833150071 | 0.7071988489831421 | 0.6460686371249901 | 02:45:04〜06:35:06 | 3.834 |
+| shuffle | 1 | 0.728501777648758 | 0.7968013222990057 | 0.6745119663775374 | 0.704305336656446 | 0.6438449077268178 | 02:45:24〜06:35:59 | 3.843 |
+
+GPU ごとの本数: GPU 0 に 3 本（empty・pred_noCF・gt）、GPU 1 に 3 本（pred_CF・gtpred_CF・shuffle）。
+
+### epoch ごとの val の overall mAP（−1 は学習前）
+
+| 腕 | −1 | 0 | 1 | 2 | 3 |
+|---|---|---|---|---|---|
+| empty | 0.7273450248398429 | 0.7281964925627056 | 0.7284762770570204 | 0.7281527176385221 | 0.7286351809653658 |
+| pred_noCF | 0.7273450248398429 | 0.7275298498760622 | 0.7277902902596856 | 0.7278654175953629 | 0.7285507127170769 |
+| gt | 0.7273450248398429 | 0.7282817761342244 | 0.7296023034121155 | 0.7300764882110159 | 0.7307424633845512 |
+| pred_CF | 0.7273450248398429 | 0.7283179598495638 | 0.7284101221735505 | 0.7283356924939556 | 0.7280597990708618 |
+| gtpred_CF | 0.7273450248398429 | 0.7276023078920366 | 0.7287565183052361 | 0.7289712955964566 | 0.7304329266677848 |
+| shuffle | 0.7273450248398429 | 0.7280328186798748 | 0.7284286880071634 | 0.7280319768663919 | 0.728501777648758 |
+
+### epoch ごとの層ごとの tanh(α_l)（層 1〜6。−1 は学習前で 6 本ともすべて 0）
+
+| 腕 | epoch | 層 1 | 層 2 | 層 3 | 層 4 | 層 5 | 層 6 |
+|---|---|---|---|---|---|---|---|
+| empty | 0 | 0.049459 | -0.049042 | -0.061284 | -0.030936 | 0.043932 | 0.026038 |
+| empty | 1 | 0.056248 | -0.058086 | -0.074088 | -0.052001 | 0.055913 | 0.037380 |
+| empty | 2 | 0.051472 | -0.071715 | -0.086606 | -0.069651 | 0.061804 | 0.029051 |
+| empty | 3 | 0.060689 | -0.080099 | -0.092224 | -0.076897 | 0.067752 | 0.046411 |
+| pred_noCF | 0 | 0.049624 | -0.043820 | -0.054026 | -0.042910 | 0.039128 | 0.025657 |
+| pred_noCF | 1 | 0.064854 | -0.060664 | -0.067823 | -0.062642 | 0.066285 | 0.038477 |
+| pred_noCF | 2 | 0.066382 | -0.078937 | -0.090216 | -0.090367 | 0.072748 | 0.040423 |
+| pred_noCF | 3 | 0.082923 | -0.086064 | -0.099763 | -0.093686 | 0.082100 | 0.057186 |
+| gt | 0 | 0.048883 | -0.045762 | -0.052765 | -0.043206 | 0.037998 | -0.032631 |
+| gt | 1 | 0.063444 | -0.061688 | -0.072891 | -0.061628 | 0.058610 | -0.051329 |
+| gt | 2 | 0.063395 | -0.078262 | -0.078263 | -0.098088 | 0.077000 | -0.056612 |
+| gt | 3 | 0.076465 | -0.091421 | -0.088309 | -0.097042 | 0.077875 | -0.075848 |
+| pred_CF | 0 | 0.047034 | -0.047373 | -0.051623 | -0.035312 | 0.049602 | -0.009096 |
+| pred_CF | 1 | 0.058789 | -0.058010 | -0.070051 | -0.052178 | 0.055809 | -0.026150 |
+| pred_CF | 2 | 0.059170 | -0.072426 | -0.089088 | -0.083398 | 0.072012 | -0.027182 |
+| pred_CF | 3 | 0.073020 | -0.086956 | -0.098745 | -0.093171 | 0.076854 | -0.047999 |
+| gtpred_CF | 0 | 0.062597 | -0.043804 | -0.048476 | -0.048162 | 0.048591 | 0.028265 |
+| gtpred_CF | 1 | 0.071746 | -0.069547 | -0.078879 | -0.070149 | 0.067749 | 0.038522 |
+| gtpred_CF | 2 | 0.080907 | -0.084737 | -0.098870 | -0.096550 | 0.083152 | 0.047486 |
+| gtpred_CF | 3 | 0.094462 | -0.091529 | -0.122448 | -0.103655 | 0.098819 | 0.064245 |
+| shuffle | 0 | 0.049912 | -0.040539 | -0.053178 | -0.038285 | 0.044301 | 0.024829 |
+| shuffle | 1 | 0.058515 | -0.055871 | -0.069255 | -0.049912 | 0.042240 | 0.034434 |
+| shuffle | 2 | 0.049329 | -0.059079 | -0.075911 | -0.069180 | 0.051043 | 0.028116 |
+| shuffle | 3 | 0.060523 | -0.064800 | -0.080617 | -0.066017 | 0.077178 | 0.043109 |
+
+### git の外の成果物（andrew に残す）
+
+| 腕 | ファイル | 大きさ（B） | sha256 |
+|---|---|---|---|
+| empty | `$WT/experiments/phase1/stage2four_pd_DX_empty_ep4_seed42/predictions/val_ctrl_best.json.gz` | 13048844 | `23db3023804d5bcdb39d601b4f92bd5ba277bb688c6d52dda5952826b8072673` |
+| empty | `$WT/experiments/phase1/stage2four_pd_DX_empty_ep4_seed42/predictions/val_ctrl_ep-1.json.gz` | 13032761 | `0ac1aae518f8e69d1f8dc0d5f315c1a8285051d3782b73b1d358e6094dcaba19` |
+| empty | `$FOUR/pd_ckpt/stage2four_pd_DX_empty_ep4_seed42/best_t1b.pth` | 853896 | `58a702d3394265d00b375c458c013991a4cbb320d1e5a535048dd98ea6e1f714` |
+| pred_noCF | `$WT/experiments/phase1/stage2four_pd_DX_pred_noCF_ep4_seed42/predictions/val_inj_best.json.gz` | 12971635 | `9405f94be5238c98aa0ea5efc5553bf3873840e6af2ede581c1dd0e6b958a445` |
+| pred_noCF | `$WT/experiments/phase1/stage2four_pd_DX_pred_noCF_ep4_seed42/predictions/val_inj_ep-1.json.gz` | 13032761 | `0ac1aae518f8e69d1f8dc0d5f315c1a8285051d3782b73b1d358e6094dcaba19` |
+| pred_noCF | `$FOUR/pd_ckpt/stage2four_pd_DX_pred_noCF_ep4_seed42/best_t1b.pth` | 853896 | `351ee53fa90e54e2f98277250d14ec8cd6d68dd9daf9da6510b681784bb754df` |
+| gt | `$WT/experiments/phase1/stage2four_pd_DX_gt_ep4_seed42/predictions/val_inj_best.json.gz` | 12638284 | `e1257886fd3b3f6065701514d917ecd6811cdc93a7d0266a4f108f10967ba739` |
+| gt | `$WT/experiments/phase1/stage2four_pd_DX_gt_ep4_seed42/predictions/val_inj_ep-1.json.gz` | 13032761 | `0ac1aae518f8e69d1f8dc0d5f315c1a8285051d3782b73b1d358e6094dcaba19` |
+| gt | `$FOUR/pd_ckpt/stage2four_pd_DX_gt_ep4_seed42/best_t1b.pth` | 853896 | `dfd4837e5c4bc8232aa60a1a78854b55248a0458303a2b5c75c5a5089e0ab1e6` |
+| pred_CF | `$WT/experiments/phase1/stage2four_pd_DX_pred_CF_ep4_seed42/predictions/val_inj_best.json.gz` | 12875866 | `e5df068577cd874e0127c21fcbc558dd6a0fcc535d91fa54f634ee2cfc564ace` |
+| pred_CF | `$WT/experiments/phase1/stage2four_pd_DX_pred_CF_ep4_seed42/predictions/val_inj_ep-1.json.gz` | 13032761 | `0ac1aae518f8e69d1f8dc0d5f315c1a8285051d3782b73b1d358e6094dcaba19` |
+| pred_CF | `$FOUR/pd_ckpt/stage2four_pd_DX_pred_CF_ep4_seed42/best_t1b.pth` | 853896 | `d90d60732091bfd8e1de24edeb471c08a62866fbdebdaea480d17bc6f251e618` |
+| gtpred_CF | `$WT/experiments/phase1/stage2four_pd_DX_gtpred_CF_ep4_seed42/predictions/val_inj_best.json.gz` | 13072124 | `6066ec54bf298e5fc3062fd73e574ef9c0aafb70c7fc14f3ea63b1612680d605` |
+| gtpred_CF | `$WT/experiments/phase1/stage2four_pd_DX_gtpred_CF_ep4_seed42/predictions/val_inj_ep-1.json.gz` | 13032761 | `0ac1aae518f8e69d1f8dc0d5f315c1a8285051d3782b73b1d358e6094dcaba19` |
+| gtpred_CF | `$FOUR/pd_ckpt/stage2four_pd_DX_gtpred_CF_ep4_seed42/best_t1b.pth` | 855048 | `c4d08c774eef5664a03ded6edd32d9e2345c2c37567bd6690e38f6d53df43278` |
+| shuffle | `$WT/experiments/phase1/stage2four_pd_DX_shuffle_ep4_seed42/predictions/val_inj_best.json.gz` | 13176817 | `ae4c099fbfd6f31f4c178c3d5c320d3d59e03d13e08e0603ebb724cce15387eb` |
+| shuffle | `$WT/experiments/phase1/stage2four_pd_DX_shuffle_ep4_seed42/predictions/val_inj_ep-1.json.gz` | 13032761 | `0ac1aae518f8e69d1f8dc0d5f315c1a8285051d3782b73b1d358e6094dcaba19` |
+| shuffle | `$FOUR/pd_ckpt/stage2four_pd_DX_shuffle_ep4_seed42/best_t1b.pth` | 853896 | `ea37e1abee616ed9d08e41f906fd49b16fc0d027e1769b04dffa4eacebd8ff39` |
+
+bengio の `aggregate_four.py` は PD の予測を run の `predictions/val_inj_best.json.gz`（empty は `val_ctrl_best.json.gz`）から読んで値を計算し直す。予測は git に載らないので、bengio で計算し直すときは上の経路を andrew から写し、sha256 を照合すること。
+
+### run の commit
+
+6 本の run の `git_commit.txt` は `42070946a9e7a4d513712f29c094d86ff83debf5`（**main の作業場所の HEAD**。記録の注意を参照）。6 本を起動した時点の worktree の HEAD は `cf517ee5e47056dc9142816b874ed552eecea502`（`$FOUR/queues/andrew_launch.txt`）で、台本・構成はその commit のもの。
+
+### 書き込みの確認（06:37 JST）
+
+main の `third_party`・`experiments`・`data/annotations`・`data/external` で 02:40 より新しいファイル 0 件。`status --porcelain` 0 行、分岐 `feat/stage2-pilot-fix-epoch4-shuffle`、HEAD `42070946`（開始時と同じ）。`$A/third_party/Relation-DETR/.git` の更新時刻は 02:25:39 JST のまま。前回と直しの保存先（`$OLD`・`$FIX`）で 01:56 JST より新しいもの 0 件。書いたのは worktree、写しの場所 `/home/ubuntu/slocal2/m2-four-andrew-smoke`、本契約の置き場 `$FOUR`（`identity/`・`pd_ckpt/`・`queues/`）だけ。
