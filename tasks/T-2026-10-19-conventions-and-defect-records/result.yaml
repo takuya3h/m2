@@ -1,0 +1,57 @@
+result_version: 3
+task_id: T-2026-10-19-conventions-and-defect-records
+status: pass
+host: Bengio
+branch: feat/conventions-and-defect-records
+pr: 237
+merged: false
+gates:
+- id: G1
+  verdict: pass
+  note: 起点5a8baa79、対象分岐・所有者一致。他契約の変更なし。基準試験96 pass、装置状態と禁止操作を記録。
+- id: G2
+  verdict: pass
+  note: 変更節はsymmetry/folds/crossfit/naming、新設precisionのみ。既存アンカー不変、カード検査の出力・終了コードが前後同一。
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 96
+deviations:
+- type: spec_defect
+  note: 初回P7 FAIL後、起票者の指示で本契約のdestinationとallow_writeを是正し、meta.amendmentsに記録して再開した。
+- type: environment
+  note: プランモード切替手段、planning-with-files、agentmemoryが利用不可。契約のフェーズ順と本契約内記録で進行した。
+- type: judgement
+  note: 再開時のallow_write対照の空振りは停止報告の完了扱いによる。結果を再開中へ更新して再測定し、0件/1件を確認。
+issuer_defects:
+- type: asserted_without_measuring
+  note: outputs.destination にディレクトリではなくファイル context/conventions.md を書き、P7 destination_writable
+    が FAIL して Phase A の前で停止させた。起票者は配布前に起動直前の検査を回していなかった。起票者の指示で destination と allow_write
+    を是正し、meta.amendments に記録した後のP7はPASSとなった。
+positive_controls:
+- judgement: 'a: SPEC5.1との対応'
+  breaking_input: メモリ上の規約の写しから入力の縮小規則の使える行の項目だけを除く
+  observed: 5.1-1 の対応が不一致になった。原文では全23項目が一致した。
+- judgement: 'f: 節ハッシュ'
+  breaking_input: メモリ上の規約の写しの sigma 見出しを一文字変える
+  observed: sigma だけが追加の変更節として検出された。
+- judgement: 'd: 折り表の既存行保持'
+  breaking_input: 既存行が一件でも消えれば集合差で検出する
+  observed: 原文では既存行の集合差0。メモリ上の写しから識別子の既存行1本を除くと、その行だけが集合差として検出された。
+- judgement: P7 destination
+  breaking_input: 既存ファイルを destination に指定する（是正前）
+  observed: 是正前 FAIL、起票者指定の是正後 PASS（初回と再開時の実測ログ）。
+- judgement: spec-check allow_write
+  breaking_input: 再開中の契約の別名写しから destination の allow_write 追加だけを外す
+  observed: 再開中の結果に更新後、是正済み契約は0件、許可を外した写しはallow_write_incomplete 1件。前回停止報告のままでは完了扱いによる検査省略で0件だった。
+- judgement: 'i: make forbidden-check'
+  breaking_input: repo外の隔離した写しの data/forbidden-control.txt を追加する
+  observed: 陰性対照は違反0・exit0。隔離した写しにだけdataを足した陽性対照は違反1・make exit2。実repoのdataは無変更。
+followups:
+- 次の実験契約はconventions#symmetryの入力縮小規則・ホスト行とconventions#precisionを参照できる。工程塔の精度はこの契約では定めない。
+unknowns:
+- 古い「直接接続は不可能」という断定の元の測定経路は記録から特定できない。SPEC5.6に従い明記した。
+commits:
+- be3e16bea38038a36accd15807c2832c3a0b8b72
+- 7ba1d60db8c0ea8581bc03d79bafeaec56be1d1d
+- bbcb6ad002d237c300a30e76d365c0f1902736a4
