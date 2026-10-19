@@ -57,7 +57,7 @@ inputs.data.split_files と inputs.denominator は参照しなかった。frozen
 
 ## 判定
 
-verdict: partial（Phase Dのcommit・PR待ち）。G1・G2 pass。前提PR #237統合後、起点を8de3ac54へ更新した。対象文言はSPECと一致し、読みと試験は前後同一。
+verdict: pass。G1・G2 pass。前提PR #237統合後、起点を8de3ac54へ更新した。対象文言はSPECと一致し、読みと試験は前後同一。
 
 ## 完了判定
 
@@ -70,7 +70,7 @@ verdict: partial（Phase Dのcommit・PR待ち）。G1・G2 pass。前提PR #237
 |e|禁止語15・カード16・数値必須5/6/10は前後同一。既存カード0件、雛形の数字欠落3件は不変。費用UNKNOWNの写しは欠落1件|
 |f|二試験ファイルは前後とも47件合格。同じ試験名集合で収集0ではない|
 |g|三文書・本契約内・受け皿と許可された.gitignoreだけ変更。既存カードと検査器の要約値は前後同一|
-|h|契約指定のforbidden-checkは違反0で規約をallow_writeにより許可。通常PRは作成後に記録|
+|h|通常PR #239、base=phase0、head=feat/proposal-gate-brief、Draft=false。契約指定forbidden-checkは違反0、規約はallow_writeで許可|
 
 詳細: [audit.md:111](audit.md#L111) Task A 基準と G1、[audit.md:402](audit.md#L402) Phase C 文言・読みの照合、[audit.md:619](audit.md#L619) G2 最終判定、[audit.md:623](audit.md#L623) Phase D 変更履歴のcommit記入。基準はbaseline.json、試験名集合と結果はtests-before.xml / tests-after.xml、全検索結果はsearch-before.json / search-after.json。三文書の指定変更を逆に戻すと基準全文へ一致することも確認した。
 
@@ -98,4 +98,4 @@ precisionは末尾に位置し、proposal_gateの直後ではない。C-1で読�
 
 ## 送出
 
-PR・台帳送出は最終処理で記録する。同期抑止解除の状態表示は最終応答に残す。
+PR [#239](https://github.com/takuya3h/m2/pull/239)。台帳送出の終了コードと応答はaudit.md末尾へ追記する。同期抑止解除の状態表示は最終応答に残す。

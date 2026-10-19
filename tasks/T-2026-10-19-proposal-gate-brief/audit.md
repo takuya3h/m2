@@ -661,3 +661,42 @@ exit=0
 ```text
 exit=0
 ```
+
+## 通常PRと最終報告
+
+git push -u origin feat/proposal-gate-brief: exit0。gh pr create --base phase0 --head feat/proposal-gate-brief --title <題名> --body-file /tmp/proposal-gate-brief-pr.md: exit0。GitHub応答:
+
+```json
+{
+  "number": 239,
+  "url": "https://github.com/takuya3h/m2/pull/239",
+  "baseRefName": "phase0",
+  "headRefName": "feat/proposal-gate-brief",
+  "isDraft": false,
+  "state": "OPEN"
+}
+```
+
+result.yamlをschemaで検証済み。SPEC.mdのSHA-256は取り込み時と一致。最終のorigin/phase0との差分経路集合は承認済み範囲だけ:
+
+```text
+.gitignore
+context/conventions.md
+docs/proposal-gate.md
+docs/proposals/_template.md
+tasks/T-2026-10-19-proposal-gate-brief/RESULT.md
+tasks/T-2026-10-19-proposal-gate-brief/SPEC.md
+tasks/T-2026-10-19-proposal-gate-brief/audit.md
+tasks/T-2026-10-19-proposal-gate-brief/baseline.json
+tasks/T-2026-10-19-proposal-gate-brief/gitignore-exact-logs.patch
+tasks/T-2026-10-19-proposal-gate-brief/positive-controls.json
+tasks/T-2026-10-19-proposal-gate-brief/positive-cost-unknown.md
+tasks/T-2026-10-19-proposal-gate-brief/result.yaml
+tasks/T-2026-10-19-proposal-gate-brief/search-after.json
+tasks/T-2026-10-19-proposal-gate-brief/search-before.json
+tasks/T-2026-10-19-proposal-gate-brief/search-classification.json
+tasks/T-2026-10-19-proposal-gate-brief/spec.yaml
+tasks/T-2026-10-19-proposal-gate-brief/tests-after.xml
+tasks/T-2026-10-19-proposal-gate-brief/tests-before.xml
+tasks/inbox.d/T-2026-10-19-proposal-gate-brief.md
+```

@@ -1,9 +1,9 @@
 result_version: 3
 task_id: T-2026-10-19-proposal-gate-brief
-status: partial
+status: pass
 host: Bengio
 branch: feat/proposal-gate-brief
-pr: null
+pr: 239
 merged: false
 gates:
 - id: G1
@@ -35,7 +35,7 @@ positive_controls:
   observed: 変更前に規約1行・B.3で1行を両方式が検出。変更後の対象三文書は両方式とも0件。範囲外8行は前後同一。
 followups:
 - 生成会話はプロジェクトの外で、証拠地図・カードの雛形・依頼文だけを受け取る。生成会話の#10と#15はUNKNOWN、起票者がrepo実測で埋めてから批判会話へ。briefs/は本契約では未作成。
-unknowns:
-- Phase Dのcommit・PR・台帳送出は最終処理で実施予定。
+unknowns: []
 commits:
 - e1364772ab5fe9c97d0578bc8aa9d459c9599033
+- 5c0eaeeb4551c66c9b854faaa7a5376dcf755ac7
