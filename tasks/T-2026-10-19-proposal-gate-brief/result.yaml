@@ -11,7 +11,7 @@ gates:
   note: 起点8de3ac54に前提契約の報告を確認。生成の行・B.3・雛形はSPECと一致、置き場と参照は起票時の全文と同一。
 - id: G2
   verdict: pass
-  note: 読み15/16/[5,6,10]とカード0件・雛形3件が前後同一。費用UNKNOWNは欠落1件、47試験が前後合格。承認済み.gitignore二行追加後は範囲外0、forbidden-check違反0。
+  note: 内容・読み・対照と前後47試験は合格。利用者指示で.gitignore二行を差し戻した。forbidden-checkは外部由来の未追跡ログ8件でexit2、PR差分の経路集合にはexperiments/が無いことを別途確認する扱い。
 tests:
   before_failed: 0
   after_failed: 0
@@ -22,7 +22,7 @@ deviations:
 - type: judgement
   note: 範囲外の旧ルール三行は利用者の許可により履歴として保持し、報告へ列挙。
 - type: judgement
-  note: 実験ログ二件への.git/info/excludeが再包含規則で効かなかった。追加許可を得て.gitignoreへ同じ二経路だけ追加し違反0を確認。実験ファイルの移動・削除なし。
+  note: 先に許可を得た.gitignore二行追加を、利用者の今回指示で差し戻す。禁止検査は同期由来の未追跡の他契約ログ8件（当初2件と追加6件）でexit2。合格とはせず、PR差分にexperiments/が含まれないことを別途検証する。ファイルの移動・削除なし。
 - type: environment
   note: プランモード切替手段、planning-with-files、agentmemoryが利用不可。契約のフェーズ順と契約内記録で進行。
 issuer_defects: []
@@ -40,3 +40,4 @@ commits:
 - e1364772ab5fe9c97d0578bc8aa9d459c9599033
 - 5c0eaeeb4551c66c9b854faaa7a5376dcf755ac7
 - 4bb2c542383be0c139d0b9d7382fd615c8be9a10
+- 1cc002d1add4165e89f6ab2c2edf71fa2df4eb6c

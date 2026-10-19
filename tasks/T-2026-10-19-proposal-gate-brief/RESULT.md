@@ -69,8 +69,8 @@ verdict: pass。G1・G2 pass。前提PR #237統合後、起点を8de3ac54へ更�
 |d|B.3と雛形三行目はSPECどおり。対象三文書の旧文言は二方式とも残存0|
 |e|禁止語15・カード16・数値必須5/6/10は前後同一。既存カード0件、雛形の数字欠落3件は不変。費用UNKNOWNの写しは欠落1件|
 |f|二試験ファイルは前後とも47件合格。同じ試験名集合で収集0ではない|
-|g|三文書・本契約内・受け皿と許可された.gitignoreだけ変更。既存カードと検査器の要約値は前後同一|
-|h|通常PR #239、base=phase0、head=feat/proposal-gate-brief、Draft=false。契約指定forbidden-checkは違反0、規約はallow_writeで許可|
+|g|.gitignore末尾の二行を戻し、PR差分は三文書・本契約内・受け皿だけ。experiments/の経路はPR差分に含まれない。既存カードと検査器の要約値は前後同一|
+|h|通常PR #239、base=phase0、head=feat/proposal-gate-brief、Draft=false。現在のforbidden-checkは未追跡の他契約ログ8件（当初2＋追加6）でexit2。PR差分にはexperiments/が無いことを別に確認。規約はallow_writeで許可|
 
 詳細: [audit.md:111](audit.md#L111) Task A 基準と G1、[audit.md:402](audit.md#L402) Phase C 文言・読みの照合、[audit.md:619](audit.md#L619) G2 最終判定、[audit.md:623](audit.md#L623) Phase D 変更履歴のcommit記入。基準はbaseline.json、試験名集合と結果はtests-before.xml / tests-after.xml、全検索結果はsearch-before.json / search-after.json。三文書の指定変更を逆に戻すと基準全文へ一致することも確認した。
 
@@ -92,7 +92,7 @@ precisionは末尾に位置し、proposal_gateの直後ではない。C-1で読�
 ## 起票者の誤り・逸脱・UNKNOWN
 
 起票者の誤りは観測していない。初回G1停止と再開はaudit.mdに連続記録。SPEC.mdは無変更。
-同期で現れた未追跡の実験ログ二件を許可に基づき.git/info/excludeへ個別追加したが、.gitignoreの再包含が優先し禁止検査が違反2件となった。優先順位の事前確認が不足したため、利用者の追加許可を得て.gitignore末尾へ同じ二経路だけを追加し、違反0を確認した。実験ファイルは移動・削除していない。追加した二行を除けば元に戻せる。
+先の完了時は未追跡ログ二件を.gitignoreで除外したが、今回の利用者指示で末尾の二行を戻した。禁止領域検査の違反は同期で届いた他契約の未追跡であり、PR差分と区別する。実測は当初二件に別runの六件が加わった計8件・exit2で、検査合格とは書かない。全違反経路は未追跡で、experiments/はPR差分に含まれない。実験ファイルは移動・削除していない。差し戻し前の経緯はauditに保持。
 基準記録の集合型のJSON変換漏れは記録処理で修正した。検査器・試験は未変更。生成物は再生成していない。
 プリフライト6 PASS / 0 WARN / 8 SKIP / 0 FAIL。SKIP=P2/P3/P4/P5/P11/P12/P13/P14（未実行）。planning-with-files・プランモード切替手段・agentmemoryは利用不可で、契約のフェーズ順と契約内記録で進めた。
 

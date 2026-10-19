@@ -719,3 +719,40 @@ exit=0。秘匿検査を経て送出。資格情報の値は出力しない。�
 ```
 
 送出後のRESULT.mdの要約値とバイト数は応答と一致。本文を変更していない。抑止の解除は全commit・pushの後にtask-releaseで実施し、状態表示を最終応答に残す。
+
+## 利用者指示による.gitignore二行の差し戻し
+
+利用者はPR #239から.gitignore末尾の二行を戻すcommitを同じ分岐に追加してpushし、experimentsの二件を移動・削除せず、検査器の違反とPR差分を分けて報告するよう指示した。
+再開時HEAD=1cc002d1add4165e89f6ab2c2edf71fa2df4eb6c、分岐feat/proposal-gate-brief、PR #239はOPEN。同期抑止は不在だったため、再開例外で本契約所有の目印を置いた。
+
+開始時status:
+
+```text
+?? experiments/phase1/stage2fix_pd_P1-W1_empty_ep4_seed42/logs/eval_meta_val.json
+?? experiments/phase1/stage2fix_pd_P1-W1_pred_noCF_ep4_seed42/logs/eval_meta_val.json
+?? experiments/phase1/stage2fix_pd_P1-W1_shuffle_ep4_seed42/logs/eval_meta_val.json
+?? experiments/phase1/stage2fix_pd_P1-W2_empty_ep4_seed42/logs/eval_meta_val.json
+?? experiments/phase1/stage2fix_pd_P2F_shuffle_ep4_seed42/logs/eval_meta_val.json
+?? experiments/phase1/stage2fix_pd_P2F_shuffle_ep4_seed42/logs/val_metrics_by_epoch.json
+```
+
+.gitignore末尾の二行だけを除き、対象二件が存在し操作前後で同じSHA-256であることを確認（内容は出力しない）。.git/info/excludeの以前の二行は今回は変更していない。
+
+差し戻した経路:
+
+```text
+experiments/phase1/stage2fix_pd_P1-W1_shuffle_ep4_seed42_smoke/logs/eval_meta_val.json
+experiments/phase1/stage2fix_pd_P1-W1_shuffle_ep4_seed42_smoke/logs/val_metrics_by_epoch.json
+```
+
+命令: make forbidden-check TASK=T-2026-10-19-proposal-gate-brief
+
+```text
+{"base": "origin/phase0", "changed": 26, "checked": 26, "declared_allowances": ["context/conventions.md", "docs/proposals/"], "effective_allowances": ["context/conventions.md", "docs/proposals/"], "errors": [], "excluded": 0, "excluded_paths": [], "generated_directories": ["context/auto/"], "generated_files": ["tasks/inbox.md"], "permitted": [{"path": "context/conventions.md", "reason": "契約の allow_write context/conventions.md により許可"}], "rejected_allowances": [], "status": "fail", "task": "T-2026-10-19-proposal-gate-brief", "violations": [{"path": "experiments/phase1/stage2fix_pd_P1-W1_empty_ep4_seed42/logs/eval_meta_val.json", "reason": "禁止領域 experiments/ の内側"}, {"path": "experiments/phase1/stage2fix_pd_P1-W1_pred_noCF_ep4_seed42/logs/eval_meta_val.json", "reason": "禁止領域 experiments/ の内側"}, {"path": "experiments/phase1/stage2fix_pd_P1-W1_shuffle_ep4_seed42/logs/eval_meta_val.json", "reason": "禁止領域 experiments/ の内側"}, {"path": "experiments/phase1/stage2fix_pd_P1-W1_shuffle_ep4_seed42_smoke/logs/eval_meta_val.json", "reason": "禁止領域 experiments/ の内側"}, {"path": "experiments/phase1/stage2fix_pd_P1-W1_shuffle_ep4_seed42_smoke/logs/val_metrics_by_epoch.json", "reason": "禁止領域 experiments/ の内側"}, {"path": "experiments/phase1/stage2fix_pd_P1-W2_empty_ep4_seed42/logs/eval_meta_val.json", "reason": "禁止領域 experiments/ の内側"}, {"path": "experiments/phase1/stage2fix_pd_P2F_shuffle_ep4_seed42/logs/eval_meta_val.json", "reason": "禁止領域 experiments/ の内側"}, {"path": "experiments/phase1/stage2fix_pd_P2F_shuffle_ep4_seed42/logs/val_metrics_by_epoch.json", "reason": "禁止領域 experiments/ の内側"}]}
+make: *** [Makefile:159: forbidden-check] Error 1
+exit=2
+```
+
+当初の二件は同期で届いた他契約の未追跡ログで、本契約が生成・変更したものではない。再開時に別runの六件も届いており、今回の実測違反は計8件。全違反経路についてgit ls-filesは0行で、未追跡。二件だけと報告せず追加分も分けて記録する。実験ファイルは一切移動・削除していない。
+
+RESULT g・h・逸脱とresult.yamlを今回の扱いへ訂正。checkerのexit2を成功と書かず、PR経路集合による範囲検証と分ける。.gitignore実ファイルは起点origin/phase0の.gitignoreとバイト単位で一致（PRに残す変更なし）。コード・検査器・試験には変更がないため、47試験の再実行は行っていない。結果schemaの検証とgit diff --checkを実施。
