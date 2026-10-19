@@ -342,6 +342,49 @@ def render_extras(res):
            f"{', '.join(r['hosts']) or 'UNKNOWN'} |" for r in res["reference"]]
     return md + [""]
 
+
+def sign(x, eps=0.0):
+    return "0" if x is None or abs(x) <= eps else ("+" if x > 0 else "−")
+
+
+def describe(res):
+    """SPEC §6.2 の読み方の規則による記述（記述だけ。陽性・陰性・有意などの語は使わない）。値は表と同じ出所。"""
+    md = ["## 読み方の規則による記述（SPEC §6.2）", "", "符号は +・−・0 の三つで比べる（片方がちょうど 0 のときも食い違いに数える）。一つにまとめずに両方を書く。", ""]
+    for side, types, main, other in (("DP", DP_TYPES, "phase_jaccard", "phase_accuracy"),
+                                     ("PD", PD_TYPES, "target_AP", "AP")):
+        lab = {"phase_jaccard": "Jaccard", "phase_accuracy": "accuracy", "target_AP": "標的群 AP", "AP": "overall mAP"}
+        for typ, name in types.items():
+            rows = res["tables"][side][typ]
+            if not all(rows[a]["value"] for a in ARMS):
+                md.append(f"- {name}: UNKNOWN（そろっていない腕がある）")
+                continue
+            pn, gt = rows["pred_noCF"], rows["gt"]
+            line = (f"- **{name}**: 予測-noCF の Δ入替（その時刻の信号の中身による差）は {lab[main]} {f4(pn['delta_shuffle'][main])}"
+                    f"（Δ空 {f4(pn['delta_empty'][main])}）、正解の Δ入替 {f4(gt['delta_shuffle'][main])}（Δ空 {f4(gt['delta_empty'][main])}）")
+            mis = [ARM_JA[a] for a in ("pred_noCF", "gt", "pred_CF", "gtpred_CF")
+                   if sign(rows[a]["delta_empty"][main]) != sign(rows[a]["delta_shuffle"][main])]
+            mis2 = [ARM_JA[a] for a in ("pred_noCF", "gt", "pred_CF", "gtpred_CF", "shuffle")
+                    if sign(rows[a]["delta_empty"][main]) != sign(rows[a]["delta_empty"][other])]
+            line += (f"。Δ空 と Δ入替 の符号が食い違う腕: {('、'.join(mis)) or 'なし'}"
+                     f"。Δ空 の {lab[main]} と {lab[other]} の符号が食い違う腕: {('、'.join(mis2)) or 'なし'}")
+            if side == "DP":
+                pc = pn.get("per_class_max_abs")
+                line += f"。予測-noCF で空の腕との差が最も大きい工程: {pc}（{f4(pn['per_class_delta_empty'][pc])}）" if pc else ""
+            md.append(line)
+    g = [res["tables"]["DP"]["TH"][a].get("gate_by_epoch") for a in ARMS]
+    if all(g):
+        md.append(f"- tool-history の 4 epoch 目の tanh(α) は {min(x[str(EPOCHS)]['tanh_alpha'] for x in g):+.5f}〜"
+                  f"{max(x[str(EPOCHS)]['tanh_alpha'] for x in g):+.5f}")
+    dxg = [res["tables"]["PD"]["DX"][a].get("gates_by_epoch") for a in ARMS]
+    if all(dxg):
+        vals = [v for x in dxg for v in x[str(EPOCHS - 1)]["tanh_alpha"]]
+        md.append(f"- decoder-xattn の 4 epoch 目の層ごとの tanh(α_l) は全腕・全層で {min(vals):+.5f}〜{max(vals):+.5f}")
+    xc = res["xq_contrib"]
+    if xc:
+        md.append(f"- extra-queries: 4 epoch 目の上位 300 に入った追加の出力は {sum(r.get('n_extra_in_top300') or 0 for r in xc.values())} 件"
+                  f"（{len(xc)} 腕の合計）、スコアの定数は {min(r['score_const'] for r in xc.values()):+.3f}〜{max(r['score_const'] for r in xc.values()):+.3f}")
+    return md + [""]
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out-json", required=True)
@@ -382,7 +425,7 @@ def main():
     rc = res["recompute"]
     md += ["", f"照合（予測・確率から計算し直した値と run の記録の差の最大）: {rc['max_abs'] if rc else 'UNKNOWN'}", ""]
     if not a.interim:
-        md += render_extras(res)
+        md += describe(res) + render_extras(res)
     if a.tail:
         md += [Path(a.tail).read_text().rstrip(), ""]
     Path(a.out_md).write_text("\n".join(md) + "\n")
