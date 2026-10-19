@@ -428,3 +428,15 @@ PD の要約の控え `stage2pilot_metrics.json` は前回の 22 本すべてに
     前回の置き場（experiments/phase1/stage2pilot_*、experiments/analysis/stage2_pilot_folda/、tasks/T-2026-10-18-stage2-pilot-folda/、OLD）で開始後に更新されたもの: 0（C の確認と同じ find）
 
 中間記録の commit（40a8146e、84056eb5、c0f11094、bb0bf533、15d32028、a7a5aa67）が遠隔の分岐の先頭の祖先であることは、送出の commit の push の後に確かめる（F-5）。
+
+### F-5 送出（10/20 01:1x JST）
+
+    中間記録の commit 40a8146e、84056eb5、c0f11094、bb0bf533、15d32028、a7a5aa67、7e5defc1 は、遠隔の分岐の先頭 7e5defc1 の祖先（git merge-base --is-ancestor、7 件とも真）
+    $ gh pr edit 240（説明を最終の内容に）; gh pr ready 240 → isDraft false、base phase0、head feat/stage2-pilot-fix-epoch4-shuffle、MERGEABLE
+    $ source scripts/load_env.sh && make task-report TASK=T-2026-10-19-stage2-pilot-fix-epoch4-shuffle → rc=0
+      {"verdict": "pass", "n_issuer_defects": 4, "report_sha256": "f87244f7cc4dc2dbbdc41ab28d351c12a19b42259dddb74ce7d0118556ea1cee", "report_bytes": 12497, "replaced_blocks": 0}
+    台帳の読み取り（書き込みなし）: status done、verdict pass、completed_at 2026-10-19T16:16:00Z、report_sha256 は上と同じ。
+    送出の後は RESULT.md と result.yaml を変えていない（`report_task.py --dry-run` の要約値が台帳と一致）。送出の結果はこの audit にだけ書く
+
+残したもの（消していない。戻すかは利用者が決める）: andrew の試しの worktree `/home/ubuntu/slocal2/m2-s2fix-wt-andrewtest`（分岐なし）、
+`FIX/aborted_runs/andrew_P3_launch_2235JST/`、bengio の worktree・重ねの BODY・向け直した `.venv-relation-detr`、遠隔の分岐 `feat/stage2-pilot-fix-epoch4-shuffle-bengio`
