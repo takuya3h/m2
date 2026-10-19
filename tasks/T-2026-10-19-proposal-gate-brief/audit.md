@@ -700,3 +700,22 @@ tasks/T-2026-10-19-proposal-gate-brief/tests-after.xml
 tasks/T-2026-10-19-proposal-gate-brief/tests-before.xml
 tasks/inbox.d/T-2026-10-19-proposal-gate-brief.md
 ```
+
+## 台帳送出の実測
+
+命令: source .venv/bin/activate && source scripts/load_env.sh && CUDA_VISIBLE_DEVICES='' make task-report TASK=T-2026-10-19-proposal-gate-brief
+
+exit=0。秘匿検査を経て送出。資格情報の値は出力しない。応答:
+
+```json
+{
+  "task_id": "T-2026-10-19-proposal-gate-brief",
+  "verdict": "pass",
+  "n_issuer_defects": 0,
+  "report_sha256": "7ed097b6281aead73b16c67f0adaf2a9920a7618198d629cebe91c74796482d3",
+  "report_bytes": 7431,
+  "replaced_blocks": 0
+}
+```
+
+送出後のRESULT.mdの要約値とバイト数は応答と一致。本文を変更していない。抑止の解除は全commit・pushの後にtask-releaseで実施し、状態表示を最終応答に残す。
