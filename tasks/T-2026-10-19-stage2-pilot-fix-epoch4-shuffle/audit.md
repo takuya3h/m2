@@ -250,3 +250,38 @@ PD の要約の控え `stage2pilot_metrics.json` は前回の 22 本すべてに
     $ .venv/bin/python scripts/stage2pilot/aggregate_fix.py --self-check
     作り物の PD の記録（最良が epoch 1、epoch 3 は 0.72）→ 0.72 ／ 作り物の DP の記録（最良が epoch 2、5 epoch 目 0.81 もある）→ epoch 4 の 0.72
     epoch 2 で止まった作り物の PD の記録 → None（無いものは無いと返す）。pass true
+
+### C-4 入れ替えの腕の恒等性と陽性対照（17:0x〜17:4x JST、GPU 0）
+
+台本: `experiments/analysis/stage2_pilot_fix/identity/run_identity.sh`（PD は前回の `pd_eval.py`、DP は `dp_train.py identity --arm shuffle`）。
+
+    塔単独の基準の予測を作り直した（FIX/identity/plain_val_preds.json.gz）: 前回の基準（OLD/identity/plain_val_preds.json.gz）との差
+      score 0.0、枠 0.0 px、ラベルの食い違い 0、mAP 0.7273450
+    PD（入れ替えた P0_val を入れ、零初期化の界面のまま）         恒等: mAP / 差              陽性（最後の層を N(0, 0.05²)、P2F は表を入れる）
+      pd_film_d9（P1-W1・P1-W2）                                 0.7273450、score 差 0.0、枠 0.0  0.7287992、score 差の最大 0.4573
+      pd_clsbias_lin_d9（P2L）                                   0.7273450、差 0.0               0.7274197、score 差の最大 0.0450
+      pd_query_d9（P3）                                          0.7273450、差 0.0               0.7271373、score 差の最大 0.3466
+      pd_clsbias_fix_d9（P2F、表なし／表あり）                   0.7273450、差 0.0               0.5843400、score 差の最大 0.9445
+      いずれも界面以外の重みの要約値 4fed85166852…（塔単独と同じ）、checkpoint に無い鍵は界面だけ
+    DP（入れ替えた val の信号。D3 は D0-INST-UQ）                恒等: Jaccard / ロジット差    陽性: Jaccard / ロジット差の最大
+      D1-L1（D0、15 次元）                                       0.7762186 / 0.0              0.766756 / 0.2585
+      D1-L2（D0-RT、3840 次元）                                  0.7762186 / 0.0              0.642680 / 2.0524
+      D2（D0、15 次元）                                          0.7762186 / 0.0              0.774975 / 0.2229
+      D3-L1（D0-INST-UQ から埋め込みを除いたもの、20 次元）       0.7762186 / 0.0              0.761595 / 0.1362
+      D3-L2（D0-INST-UQ、276 次元）                              0.7762186 / 0.0              0.742408 / 0.3986
+    DP の恒等の Jaccard は Task B の値と完全一致（jaccard_equals_taskB True、5 型とも）
+
+注: `pd_eval.py` の出力の `task_id` は道具の定数（前回の契約の識別子）のまま。本契約の記録である（置き場と台本で区別できる）。
+
+### C-5 test 不使用（`scripts/stage2pilot/test_audit_fix.py`、新規）
+
+    $ test_audit_fix.py --out experiments/analysis/stage2_pilot_fix/test_audit_g3.json
+    入れ替えた信号 12 本・対応表 12 本・DP の run の config と信号 12 本・PD の run の信号と注釈 12 本・恒等性と再現の評価 2 本・検出塔の再現の注釈 2 本、共通はすべて 0
+    全体の共通 0 件
+    陽性対照: --inject 04 → 全体の共通 1 件 ['04']
+
+### 関門 G3: **pass**
+
+固定の長さの仕組みが最後の epoch の状態を結果にし（PD・DP の試走、作り物の記録の取り出し）、既定の経路が前回の集計を同じ値で再現し
+（comparisons の並びだけが違う。前回の道具の set の反復順）、入れ替えた信号が値の集合を保ったまま対応だけを壊し（train 100%、val 99.87%）、
+入れ替えの腕の学習前の出力が塔単独と一致し（PD 4 構成・DP 5 型とも差 0.0、最後の層を零でない値にすると変わる）、test の動画を通していない。
