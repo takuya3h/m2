@@ -617,3 +617,9 @@ P1-W2・P3 の予測-CF / 正解予測-CF の 4 本を始めた（1 枚 4 本。
 REPORT.md 597 行、【未】0 件、欠けた腕 0。完了判定 l: 「seed の幅を超える」24 行で符号を一つ反転させると全件「幅の内」。
 RESULT.md（115 行）、result.yaml（版 3）、README.md、docs/experiment_log.md、tasks/inbox.d/T-2026-10-18-stage2-pilot-folda.md を書いた。
 最終の commit の前（05:0x UTC）: `make forbidden-check` → status pass、changed 1,155、permitted 1,110、violations 0、errors 0。`make task-validate` → OK。
+
+### G-5 送出
+
+- PR #235（https://github.com/takuya3h/m2/pull/235）: base `phase0`、head `feat/stage2-pilot-folda`、draft false、OPEN（`gh pr view --json` の実測）
+- `source scripts/load_env.sh && make task-report TASK=T-2026-10-18-stage2-pilot-folda` → **rc=0**。
+  `{"verdict": "pass", "n_issuer_defects": 6, "report_sha256": "133ec795…", "report_bytes": 13309, "replaced_blocks": 0}`。ログ中の資格情報の値の照合 0 件

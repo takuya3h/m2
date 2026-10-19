@@ -112,4 +112,4 @@ PD では正解の腕で標的群 AP が P1 +0.020〜+0.023、P2L +0.014 上が�
 ## 8. 送出
 
 - PR: #235（https://github.com/takuya3h/m2/pull/235）
-- `make task-report`: この RESULT と result.yaml を台帳へ送る。終了コードは送信の後に audit.md の G-5 とこの行に記録する
+- `make task-report`: rc=0（verdict pass、report_sha256 133ec795…、13,309 バイト。audit の G-5）
