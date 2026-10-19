@@ -1,0 +1,97 @@
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/albumentations/core/validation.py:114: UserWarning: ShiftScaleRotate is a special case of Affine transform. Please use Affine transform instead.
+  original_init(self, **validated_kwargs)
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:109: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:140: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:195: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:226: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+Using /home/ubuntu/.cache/torch_extensions/py311_cu118 as PyTorch extensions root...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /home/ubuntu/.cache/torch_extensions/py311_cu118/MultiScaleDeformableAttention/build.ninja...
+Building extension module MultiScaleDeformableAttention...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+loading annotations into memory...
+Done (t=0.22s)
+creating index...
+index created!
+Using [0, 0.5, 0.6299605249474365, 0.7937005259840997, 1.0, 1.259921049894873, 1.5874010519681991, 2.0, inf] as bins for aspect ratio quantization
+Count of instances per bin: [9618]
+loading annotations into memory...
+Done (t=0.01s)
+creating index...
+index created!
+ninja: no work to do.
+Loading extension module MultiScaleDeformableAttention...
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+The model and loaded state dict do not match exactly
+Missing keys: phase_iface.mlp.0.weight, phase_iface.mlp.0.bias, phase_iface.mlp.2.weight, phase_iface.mlp.2.bias
+
+[t1b] warm-start from /home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth
+[t1b] seed=42 inject=film trainable=film zero_ctx=True det_steps/ep=4809 phase_params=266880 total_trainable=266880 miss_ctx(tr/va)=0/0 work=/home/ubuntu/slocal2/m2/experiments/phase1/stage2fix_pd_P1-W1_empty_ep4_seed42
+Accumulating evaluation results...
+DONE (t=1.73s).
+[t1b] warm-start init mAP=0.7273 (S0-frozen 水準なら warm-start+恒等 OK)
+[t1b][ep0 0/4809] L=15.797 1.8it/s eta_ep=45m
+[t1b][ep0 500/4809] L=16.366 1.6it/s eta_ep=44m
+[t1b][ep0 1000/4809] L=22.310 1.7it/s eta_ep=37m
+[t1b][ep0 1500/4809] L=10.943 1.8it/s eta_ep=31m
+[t1b][ep0 2000/4809] L=9.626 1.8it/s eta_ep=26m
+[t1b][ep0 2500/4809] L=12.651 1.8it/s eta_ep=22m
+[t1b][ep0 3000/4809] L=14.857 1.6it/s eta_ep=18m
+[t1b][ep0 3500/4809] L=15.702 1.6it/s eta_ep=14m
+[t1b][ep0 4000/4809] L=25.044 1.5it/s eta_ep=9m
+[t1b][ep0 4500/4809] L=13.671 1.5it/s eta_ep=3m
+Accumulating evaluation results...
+DONE (t=1.95s).
+[t1b][ep0] val mAP=0.7312
+[t1b][ep1 0/4809] L=15.805 1.6it/s eta_ep=50m
+[t1b][ep1 500/4809] L=12.035 1.1it/s eta_ep=65m
+[t1b][ep1 1000/4809] L=14.634 1.2it/s eta_ep=55m
+[t1b][ep1 1500/4809] L=16.651 1.2it/s eta_ep=47m
+[t1b][ep1 2000/4809] L=15.206 1.2it/s eta_ep=39m
+[t1b][ep1 2500/4809] L=10.890 1.2it/s eta_ep=32m
+[t1b][ep1 3000/4809] L=8.175 1.2it/s eta_ep=25m
+[t1b][ep1 3500/4809] L=10.451 1.2it/s eta_ep=18m
+[t1b][ep1 4000/4809] L=17.001 1.2it/s eta_ep=11m
+[t1b][ep1 4500/4809] L=7.535 1.2it/s eta_ep=4m
+Accumulating evaluation results...
+DONE (t=2.06s).
+[t1b][ep1] val mAP=0.7269
+[t1b][ep2 0/4809] L=17.655 1.3it/s eta_ep=61m
+[t1b][ep2 500/4809] L=23.458 1.1it/s eta_ep=64m
+[t1b][ep2 1000/4809] L=22.302 1.2it/s eta_ep=54m
+[t1b][ep2 1500/4809] L=15.413 1.2it/s eta_ep=46m
+[t1b][ep2 2000/4809] L=16.063 1.2it/s eta_ep=39m
+[t1b][ep2 2500/4809] L=17.716 1.2it/s eta_ep=32m
+[t1b][ep2 3000/4809] L=4.461 1.2it/s eta_ep=25m
+[t1b][ep2 3500/4809] L=19.296 1.2it/s eta_ep=18m
+[t1b][ep2 4000/4809] L=15.613 1.2it/s eta_ep=11m
+[t1b][ep2 4500/4809] L=15.976 1.2it/s eta_ep=4m
+Accumulating evaluation results...
+DONE (t=2.03s).
+[t1b][ep2] val mAP=0.7302
+[t1b][ep3 0/4809] L=15.498 1.5it/s eta_ep=53m
+[t1b][ep3 500/4809] L=12.153 1.1it/s eta_ep=63m
+[t1b][ep3 1000/4809] L=12.901 1.2it/s eta_ep=54m
+[t1b][ep3 1500/4809] L=8.787 1.2it/s eta_ep=46m
+[t1b][ep3 2000/4809] L=11.033 1.2it/s eta_ep=39m
+[t1b][ep3 2500/4809] L=15.765 1.2it/s eta_ep=32m
+[t1b][ep3 3000/4809] L=16.162 1.2it/s eta_ep=25m
+[t1b][ep3 3500/4809] L=13.390 1.2it/s eta_ep=18m
+[t1b][ep3 4000/4809] L=12.879 1.2it/s eta_ep=11m
+[t1b][ep3 4500/4809] L=11.548 1.2it/s eta_ep=4m
+Accumulating evaluation results...
+DONE (t=2.05s).
+[t1b][ep3] val mAP=0.7236
+git_autosync: ok=True action=skipped branch=None commit=None staged=0 reason=current branch is not exp/* (branch=feat/stage2-pilot-fix-epoch4-shuffle)
+[t1b] DONE best@ep3 mAP=0.7236 (init 0.7273) -> /home/ubuntu/slocal2/m2/experiments/phase1/stage2fix_pd_P1-W1_empty_ep4_seed42
