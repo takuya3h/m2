@@ -345,3 +345,15 @@ K3 の GRU の試走（`stage2four_k3_001_gru_D0only_ep4_smoke_seed42`、1 epoch
 - tool-history（カードどおり）の 4 epoch 目の tanh(α) は 0.0050〜0.0125。空以外の 5 腕は予測した工程（argmax）がすべて同じで（事後確率の差の最大 2.6e−4〜1.0e−3）、空の腕と 2 フレームだけ違う
 - 空の腕の陰性対照（学んだ界面に零の代わりに予測の信号を入れる）は各 run の `metrics.json` の `negative_control` に在る
 - K3 の GRU（`stage2four_k3_002_gru_D0only_ep4_seed42`、02:52 JST、rc=0）: val の macro Jaccard 0.220015（記述だけ。Task D で使う）
+
+## D. 殺し実験（記述だけ）
+
+### K1 見落としの数え上げと神託（extra-queries。学習なし。02:5x JST、CPU、`kill/k1.json`）
+
+    $ python scripts/stage2pilot/kill_four.py k1 --preds $FOUR/identity/plain_val_preds.json.gz --missed $FOUR/xq/missed_val.json --ann <折り A>/instances_val.json --out .../kill/k1.json
+
+- val の見落とし 78 個（C-4 の表。閾値ごとの数も同じ表）を、正しいクラスと位置・確信度 1 で塔単独の出力に足し、画像ごとに上位 300 を取って評価した
+- 塔単独 → 神託: overall mAP 0.7273450 → 0.7481827（**+0.0208**）、標的群 AP 0.7950748 → 0.7950748（+2.3e−8。val の見落としに標的群のクラスが無い）、
+  陰性対照群 AP 0.6726632 → 0.7017099（**+0.0290**）。動画ごとの mAP: 09 0.70427 → 0.73219、10 0.64210 → 0.65810
+- クラス別の差: Gauze +0.087、Forceps +0.081、Hook +0.075、Scissors +0.020、Tweezers +0.015、Mouth Gag +0.010、Suction Cannula +0.005（他は 1e−9 以下）
+- 空振りでないこと: 見落としを 0 件にした写し（`--empty-missed`）では神託の差が 0.0（`kill/k1_control_empty_missed.json`）

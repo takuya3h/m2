@@ -1552,3 +1552,25 @@ forward した region token が既存の `t1a_regiontoken/relation_detr_seed42` 
 - GPU 1 枚に PD を 3 本載せても合計の速さは伸びない（andrew の実測で 3% と 0）。bengio の `third_party/Relation-DETR` は andrew と 23 件違い、
   検出器の仮想環境も壊れていた（この契約では andrew の中身を別の場所に置いて参照させ、仮想環境を uv の 3.11.16 に向け直して回した）
 - 大きな生成物（入れ替えた信号・重み）は版管理と同期の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/` に置いた
+
+### Stage 2 予備測定に界面の新しい型を四つ足す（2026-10-20、bengio・decoder-xattn は andrew）
+
+契約 `T-2026-10-19-stage2-pilot-four-new-types`（analysis。**非公式の測定。関門の判定と設計の判断に使わない**）。
+結果は `experiments/analysis/stage2_pilot_four/REPORT.md`（実行中は `INTERIM.md`）、記録は `tasks/T-2026-10-19-stage2-pilot-four-new-types/`。
+
+- 前回と直しの契約と同じ条件（折り A、seed 42、4 epoch 目の状態、6 腕）で、利用者が送った界面の提案カードのうち四つの型を回す:
+  工程から検出の **decoder-xattn**（decoder の全層の FFN の後に工程の token 4 個への cross-attention とゲート tanh(α_l)）と **extra-queries**
+  （元の 900 query を変えずに追加の 30 query を足し、凍結した D\* の見落としにだけ当てる）、検出から工程の **logit-correction**
+  （最後の段のロジットに零初期化の補正）と **tool-history**（検出の系列を GRU でまとめて最後の段の特徴に足す。カードどおりのゲートつきとゲートなし版）
+- 利用者の承認で直しの契約の終了を待たずに bengio の worktree から始めた。主のホストは bengio で、decoder-xattn の 6 本は andrew（`handoff_andrew.md`）。
+  逸脱は `spec.yaml` の `meta.amendments`
+- **`scripts/train_t1b.py` に `--missed-set`（extra-queries の train の見落としの印）と、`gate_values` を持つ検出器のゲートの epoch ごとの記録を足した。**
+  **`scripts/stage2pilot/dp_model.py`・`dp_train.py` に型 LC・TH・TH-NG と 32 次元の x(t) を足した。** どれも既定の経路と既存の型は変えていない
+  （`tests/test_train_t1b_stage2pilot_defaults.py`・`tests/test_stage2pilot_dp_train_defaults.py` が通り、既存の型の恒等性と陽性対照が直しの契約の記録と全項目一致）
+- 新しい道具 `scripts/stage2pilot/`: 新しい PD の型（`pd_four.py`、設定 `configs/stage2pilot/pd_{dec_xattn,extra_q}_d{9,18}.py`、生成器 `make_pd_four_configs.py`）、
+  評価（`pd_four_eval.py`）、起動（`run_pd_four.sh`・`run_dp_four.sh`・`run_pd_four_identity.sh`）、後処理（`pd_four_finalize.py`）、
+  見落としの集合と寄与（`xq_missed.py`）、殺し実験（`kill_four.py`）、test 不使用の検査（`test_audit_four.py`）、集計（`aggregate_four.py`）
+- extra-queries は、元の query の出力を構成で塔単独と同じに保つため、元の経路を D\* のまま回し、追加の query だけを各層で元の query の入力を key・value に加えて別に回す
+  （界面の重みを乱数にしても元の出力は塔単独と差 0、mask を外すと変わることを確かめた）
+- 大きな生成物（D\* の train の出力、見落としの集合、界面の重み）は版管理と同期の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-four-new-types/` に置いた
+- 現状（2026-10-20 03:0x JST）: G1・G2・G3 pass。検出から工程の 18 本と K3 の GRU は終わり、extra-queries（bengio）と decoder-xattn（andrew）の 6 本ずつが学習中

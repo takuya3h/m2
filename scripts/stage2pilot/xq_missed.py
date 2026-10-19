@@ -7,6 +7,7 @@
 
     predict  D* の train の出力を作る（.venv-relation-detr。--shard i/n で画像を分ける）
     missed   出力と注釈から見落としを数え、集合（注釈の id）を書く（本体の .venv でも動く。numpy と json だけ）
+    contrib  学習後の extra-queries の最終の上位 300 に入った追加の出力の数と、照合した見落としの数（Task F）
 """
 from __future__ import annotations
 
@@ -197,9 +198,52 @@ def controls(gt, results, coco):
             "add_gt_as_detections": {"n_missed": n_missed_added}}
 
 
+def cmd_contrib(a):
+    """学習後の extra-queries の寄与（SPEC §3.2 の記録）: 最終の上位 300 に入った追加の出力の数と、そのうち val の見落としの box に
+    同じクラスで IoU 0.5 以上で当たったもの（照合した見落としの数）。pd_four_eval.py --save-preds の予測と from_extra の並びを読む。"""
+    coco = load_coco(a.ann)
+    miss = set(json.loads(Path(a.missed).read_text())["missed_ann_ids"])
+    gt = kept_gt(coco)
+    results = load_results([a.preds])
+    with gzip.open(a.from_extra, "rt") as f:
+        flags = json.load(f)
+    by_img = {}
+    for r in results:
+        by_img.setdefault(r["image_id"], []).append(r)
+    n_extra, n_extra_hit_missed, n_extra_hit_gt, matched_missed = 0, 0, 0, set()
+    for img_id, rs in by_img.items():
+        fe = flags[str(img_id)]
+        assert len(fe) == len(rs), (img_id, len(fe), len(rs))
+        extras = [r for r, f in zip(rs, fe) if f]           # 並びは後処理の上位 300 の順（score の降順）
+        n_extra += len(extras)
+        for r in extras:
+            same = [(ann_id, box) for ann_id, cat, box in gt.get(img_id, []) if cat == r["category_id"]]
+            if not same:
+                continue
+            iou = iou_xywh(np.array([r["bbox"]], float), np.array([b for _, b in same], float))[0]
+            hits = [ann_id for (ann_id, _), v in zip(same, iou) if v >= 0.5]
+            n_extra_hit_gt += bool(hits)
+            hm = [h for h in hits if h in miss]
+            n_extra_hit_missed += bool(hm)
+            matched_missed.update(hm)
+    out = {"preds": a.preds, "preds_sha256": sha256(a.preds), "n_images": len(by_img),
+           "n_extra_in_top300": n_extra, "images_with_extra_in_top300": sum(any(flags[str(i)]) for i in by_img),
+           "n_extra_matching_any_gt": n_extra_hit_gt, "n_extra_matching_missed": n_extra_hit_missed,
+           "n_missed_val": len(miss), "n_missed_matched_by_extra": len(matched_missed)}
+    Path(a.out).parent.mkdir(parents=True, exist_ok=True)
+    Path(a.out).write_text(json.dumps(out, ensure_ascii=False, indent=2) + "\n")
+    print(json.dumps(out, ensure_ascii=False))
+
+
 def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
+    c = sub.add_parser("contrib")
+    c.add_argument("--ann", required=True)
+    c.add_argument("--preds", required=True)
+    c.add_argument("--from-extra", required=True)
+    c.add_argument("--missed", required=True)
+    c.add_argument("--out", required=True)
     p = sub.add_parser("predict")
     p.add_argument("--split", default="train", choices=["train", "val"])
     p.add_argument("--shard", default="0/1")
@@ -212,7 +256,7 @@ def main():
     m.add_argument("--controls", action="store_true")
     m.add_argument("--out", required=True)
     a = ap.parse_args()
-    {"predict": cmd_predict, "missed": cmd_missed}[a.cmd](a)
+    {"predict": cmd_predict, "missed": cmd_missed, "contrib": cmd_contrib}[a.cmd](a)
 
 
 if __name__ == "__main__":
