@@ -35,10 +35,12 @@
       → 文献探索（deep research を二エンジン）→ 起票者が証拠地図の下書き
       → CLI が DOI を全件照合し docs/evidence/ に地図を置く
       → 利用者が設定距離 0 から 1 の論文を二から三本読む
-      → 生成会話: 地図だけから提案カード三から五案
+      → 起票者が依頼文を書く（conventions#proposal_gate「生成会話への依頼文」）
+      → 生成会話（プロジェクトの外）: 地図・カードの雛形・依頼文から提案カード三から五案。#10 と #15 は UNKNOWN
+      → 起票者が #10 と #15 を repo の実測で埋める
       → 批判会話: 却下表と順位
       → 利用者が決定。F に決定行
-      → カードを docs/proposals/<YYYY-MM-DD>-<slug>.md に置き、check_proposal.py を通す
+      → カードを docs/proposals/<YYYY-MM-DD>-<slug>.md に置き、check_proposal.py を通す。依頼文は docs/proposals/briefs/ に置く
       → 起票会話: 契約。手法は変えない。exp は intent.proposal_card でカードを参照する
       → 実行・報告。カード #5 #6 の予測と実測を突き合わせ、F に予測外れ行
 
