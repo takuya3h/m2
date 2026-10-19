@@ -619,3 +619,45 @@ tasks/inbox.d/T-2026-10-19-proposal-gate-brief.md
 ## G2 最終判定
 
 G2 pass。ユーザー承認済みの.gitignore追加を含む範囲へ再照合し、範囲外0。forbidden-check TASK指定: exit0 / status=pass / violations=[]、規約は契約allow_writeでpermitted。spec-check TASK指定: exit0 / hits0 / rules9。git diff --check: exit0。内容・読取値・対照・試験は直前に測定した前後同一の結果。
+
+## Phase D 変更履歴のcommit記入
+
+規約変更commit=e1364772ab5fe9c97d0578bc8aa9d459c9599033。その後のcommitで変更履歴の欄へe1364772を記入。git show --format= --name-only e1364772 -- context/conventions.md は context/conventions.md を返した。規約を変えたcommitを指すことを確認。
+
+命令: make forbidden-check TASK=T-2026-10-19-proposal-gate-brief
+
+```text
+{"base": "origin/phase0", "changed": 19, "checked": 19, "declared_allowances": ["context/conventions.md", "docs/proposals/"], "effective_allowances": ["context/conventions.md", "docs/proposals/"], "errors": [], "excluded": 0, "excluded_paths": [], "generated_directories": ["context/auto/"], "generated_files": ["tasks/inbox.md"], "permitted": [{"path": "context/conventions.md", "reason": "契約の allow_write context/conventions.md により許可"}], "rejected_allowances": [], "status": "pass", "task": "T-2026-10-19-proposal-gate-brief", "violations": []}
+exit=0
+```
+
+命令: make spec-check TASK=T-2026-10-19-proposal-gate-brief
+
+```text
+{
+  "errors": [],
+  "findings": [],
+  "hits": 0,
+  "hits_by_rule": {
+    "allow_write_incomplete": 0,
+    "forbidden_vs_output": 0,
+    "gate_requires_report_before_end": 0,
+    "host_mismatch": 0,
+    "integration_prohibited_without_pause": 0,
+    "reverify_contradiction": 0,
+    "separated_source": 0,
+    "truncation_in_measurement": 0,
+    "unquoted_glob": 0
+  },
+  "rules_checked": 9,
+  "status": "pass",
+  "targets": 1
+}
+exit=0
+```
+
+命令: git diff --check
+
+```text
+exit=0
+```

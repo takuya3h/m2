@@ -65,14 +65,14 @@ verdict: partial（Phase Dのcommit・PR待ち）。G1・G2 pass。前提PR #237
 |---|---|
 |a|役割分離は前後4行。生成の会話欄だけ変更。他欄・三行・表下の文は同一|
 |b|依頼文の六項目をSPECと一項目ずつ文字列比較し、すべて一致。置き場と参照の直後に配置|
-|c|変更履歴の指定行を追加。変更commit確定後に要約値を記入する|
+|c|変更履歴の末尾にe1364772を記入。git showでそのcommitに規約変更が含まれることを確認|
 |d|B.3と雛形三行目はSPECどおり。対象三文書の旧文言は二方式とも残存0|
 |e|禁止語15・カード16・数値必須5/6/10は前後同一。既存カード0件、雛形の数字欠落3件は不変。費用UNKNOWNの写しは欠落1件|
 |f|二試験ファイルは前後とも47件合格。同じ試験名集合で収集0ではない|
 |g|三文書・本契約内・受け皿と許可された.gitignoreだけ変更。既存カードと検査器の要約値は前後同一|
 |h|契約指定のforbidden-checkは違反0で規約をallow_writeにより許可。通常PRは作成後に記録|
 
-詳細と全出力はaudit.md。基準はbaseline.json、試験名集合と結果はtests-before.xml / tests-after.xml、全検索結果はsearch-before.json / search-after.json。三文書の指定変更を逆に戻すと基準全文へ一致することも確認した。
+詳細: [audit.md:111](audit.md#L111) Task A 基準と G1、[audit.md:402](audit.md#L402) Phase C 文言・読みの照合、[audit.md:619](audit.md#L619) G2 最終判定、[audit.md:623](audit.md#L623) Phase D 変更履歴のcommit記入。基準はbaseline.json、試験名集合と結果はtests-before.xml / tests-after.xml、全検索結果はsearch-before.json / search-after.json。三文書の指定変更を逆に戻すと基準全文へ一致することも確認した。
 
 ## L2-6警告と規約版
 
