@@ -1,0 +1,22 @@
+## A-1 branch/base
+feat/stage2-pilot-four-new-types
+a7a5aa67db5e1ac9c7b978eeb05fa33019948012
+a7a5aa67db5e1ac9c7b978eeb05fa33019948012
+23183b42fb5609061aab9dceb35afb7198548f9a
+phase0 is NOT ancestor of HEAD
+5a8baa79 Merge pull request #236 from takuya3h/auto/regen-projections
+## A-1 tools at HEAD (git ls-files / grep)
+present scripts/stage2pilot/shuffle_signals.py
+present scripts/stage2pilot/aggregate_fix.py
+present scripts/stage2pilot/run_pd_fix.sh
+present scripts/stage2pilot/run_dp_fix.sh
+ABSENT scripts/stage2pilot/no_such_tool_four.py
+--fixed-epochs in scripts/train_t1b.py: 3
+--fixed-epochs in scripts/stage2pilot/dp_train.py: 7
+--fixed-epochs in scripts/stage2pilot/common.py: 0
+--no-such-flag-four in train_t1b.py: 0
+## A-1 same tools on origin/phase0
+ABSENT(phase0) scripts/stage2pilot/shuffle_signals.py
+ABSENT(phase0) scripts/stage2pilot/aggregate_fix.py
+ABSENT(phase0) scripts/stage2pilot/run_pd_fix.sh
+ABSENT(phase0) scripts/stage2pilot/run_dp_fix.sh

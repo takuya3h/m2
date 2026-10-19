@@ -1,0 +1,16 @@
+P1 venv_active            PASS expected=/home/ubuntu/slocal2/m2/.venv VIRTUAL_ENV=/home/ubuntu/slocal2/m2/.venv sys.prefix=/home/ubuntu/slocal2/m2/.venv
+P2 cuda_ext_loaded        SKIP plan.env.preflight に cuda_ext_loaded の記載なし
+P3 deterministic_flags    SKIP plan.env.preflight に deterministic_flags の記載なし
+P4 prereg_committed       SKIP kind=analysis のため対象外（exp のみ）
+P5 frozen_source_hash     SKIP kind=analysis のため対象外（exp のみ）
+P6 decisions_answered     PASS decisions_required は空
+P7 destination_writable   PASS experiments/analysis/stage2_pilot_four/ へ書き込みと削除ができた
+P8 contract_valid         PASS validate_task.py --level l2 が exit 0
+P9 spec_lint              PASS 規則 9 件を検査し該当なし
+P10 preflight_names_known  PASS 宣言 1 件はすべて実装済み（既知: cuda_ext_loaded, deterministic_flags, gpu_free, venv_active）
+P11 gpu_free               SKIP plan.env.preflight に gpu_free の記載なし
+P12 refs_resolved          SKIP 解決前提の参照は無い
+P13 symmetry_table_complete SKIP kind=analysis のため対象外（exp のみ）
+P14 proposal_card_checked  SKIP kind=analysis のため対象外（exp のみ）
+
+RESULT: 6 PASS / 0 WARN / 8 SKIP / 0 FAIL
