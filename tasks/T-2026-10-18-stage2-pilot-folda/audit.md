@@ -563,3 +563,57 @@ P3 の空の腕は規則で ep2 に停止（0.7266 / 0.7245 / 0.7263、最良 ep
 P3 の予測-noCF も規則で ep2 に停止（0.7263 / 0.7238 / 0.7262、最良 ep0）、凍結部は前後で一致。
 - P1-W2: 23:4x UTC に中間記録を更新（P1-W2 の正解は上限 4 で停止、最良 ep2 0.7370、凍結部は前後で一致）
 - P3: 00:3x UTC に中間記録を更新（P3 の正解は規則で ep2 に停止、最良 ep0 0.7267、凍結部は前後で一致）。**PD の 4 型と DP の 5 型の交差適合を要しない腕がすべて揃った**
+
+## G. 検証と報告
+
+### G-1 試験（完了判定 o、2026-10-19 00:4x UTC）
+
+    $ CUDA_VISIBLE_DEVICES="" PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider -rfE --continue-on-collection-errors
+    FAILED tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics
+    FAILED tests/test_fetch_task.py::test_rejects_unknown_file_name
+    FAILED tests/test_research_logger.py::test_log_run_idempotent
+    FAILED tests/test_research_logger.py::test_run_logging_invokes_log_run_on_finally
+    FAILED tests/test_research_logger.py::test_run_logging_no_double_post_on_normal_exit
+    FAILED tests/test_research_logger.py::test_run_logging_swallows_exception_in_user_block
+    6 failed, 807 passed, 22 warnings in 25.11s
+
+失敗の名前の集合は開始時（A-5）の 6 件と同じ。passed の 802 → 807 は本契約で足した `tests/test_train_t1b_stage2pilot_defaults.py` の 5 件。
+
+### F-7 PD の交差適合の腕の残り 4 本を前倒し（01:36 UTC）
+
+GPU の使用率が 79〜100% で揺れ、記憶は 1 枚 12 GB だったため、取り出し役を GPU ごとに 2 本足して、キューに残っていた
+P1-W2・P3 の予測-CF / 正解予測-CF の 4 本を始めた（1 枚 4 本。計算の中身は変わらない）。これで PD の 20 本がすべて起動した。
+
+### G-2 test 不使用（完了判定 n、最終の状態、02:4x UTC）
+
+    $ PYTHONPATH=src:scripts .venv/bin/python scripts/stage2pilot/test_audit.py --out experiments/analysis/stage2_pilot_folda/test_audit_final.json
+    信号の作成（STORE/signals）: 12 本 共通 0 ／ 腕の信号（STORE/arms）: 12 本 共通 0 ／ PD の学習と評価の注釈: 12 本 共通 0
+    検出の交差適合用の塔の注釈: 12 本 共通 0 ／ 工程の交差適合用の塔の特徴: 12 本 共通 0 ／ DP の学習と評価: 12 本 共通 0
+    恒等性と陽性対照の評価: 2 本 共通 0 ／ 工程の交差適合用の塔の学習: 10 本 共通 0
+    全体の共通 0 件 []
+    $ ... --inject 04 → 全体の共通 1 件 ['04']（`test_audit_final_inject04.json`）
+
+（工程の交差適合用の塔の特徴は train と val の 12 本だけを書き出した。PD の残り 5 本の腕は新しい信号を作らない）
+
+### G-3 禁止領域（完了判定 o、03:0x UTC。最終の commit の前にもう一度回す）
+
+    $ source .venv/bin/activate && make forbidden-check TASK=T-2026-10-18-stage2-pilot-folda   → rc=0
+    {"base": "origin/phase0", "changed": 1114, "checked": 1114, "permitted": 1071, "violations": 0, "errors": 0, "status": "pass",
+     "effective_allowances": ["experiments/analysis/stage2_pilot_folda", "experiments/phase1/stage2pilot", "experiments/baselines/stage2pilot", "runindex/"],
+     "generated_directories": ["context/auto/"], "generated_files": ["tasks/inbox.md"]}
+
+空振りでないことの確認: 同じ道具が本契約の新しいファイル（例 `experiments/analysis/stage2_pilot_folda/INTERIM.md`、`crossfit/cf_det_sender.json`）を
+変更として拾い、契約の allow_write による許可として分類した（`permitted` 1,071 件）。
+
+### F-8 PD の 22 本がそろった（04:5x UTC）
+
+最後の P1-W2 正解予測-CF が rc=0（最良 ep3、0.7305）。PD は 4 型 × 5 腕と P2F の 2 本の計 22 本で、rc はすべて 0
+（P1-W1 予測-noCF だけが外から止めた 143）。凍結部の要約値は 21 本で前後一致、1 本（P1-W1 予測-noCF）UNKNOWN。
+キューの取り出し役は `.stop` を置いて終わらせた。
+
+### G-4 報告
+
+`aggregate.py --head report_head.md --tail report_tail.md --out-md REPORT.md --out-json report.json`（PD 22 runs、DP 63 runs）。
+REPORT.md 597 行、【未】0 件、欠けた腕 0。完了判定 l: 「seed の幅を超える」24 行で符号を一つ反転させると全件「幅の内」。
+RESULT.md（115 行）、result.yaml（版 3）、README.md、docs/experiment_log.md、tasks/inbox.d/T-2026-10-18-stage2-pilot-folda.md を書いた。
+最終の commit の前（05:0x UTC）: `make forbidden-check` → status pass、changed 1,155、permitted 1,110、violations 0、errors 0。`make task-validate` → OK。

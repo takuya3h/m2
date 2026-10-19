@@ -1494,3 +1494,22 @@ forward した region token が既存の `t1a_regiontoken/relation_detr_seed42` 
   前処理だけを装置なしで動かして測った。学習時の多尺度の変換 `presets.detr` は評価の経路に入らない
 - **規約**: `conventions#symmetry` の「意図的に変える」の理由に 3「各塔の構造の標準の処方」を足した（使える比較・行・条件と使えない行）。
   `conventions#frame_sets` を新設し、塔と界面が学習・評価に使うフレームの集合を置いた
+
+### Stage 2 の非公式の予備測定（折り A、今ある塔、界面の型の第一波）（2026-10-18、andrew）
+
+契約 `T-2026-10-18-stage2-pilot-folda`（analysis。**非公式の予備測定。関門の判定と設計の判断に使わない**）。
+結果は `experiments/analysis/stage2_pilot_folda/REPORT.md`、記録は `tasks/T-2026-10-18-stage2-pilot-folda/`。
+
+- 今ある検出塔（D\*-COCO 折り A seed 42）と工程塔（efros の P\*-15-COCO 折り A seed 42）を凍結し、界面だけを学んで、
+  折り A の val で両方向・型ごと・腕ごとの Δ を測った。PD（工程→検出）は P1-W1・P1-W2・P2L・P2F・P3（seed 42 だけ）、
+  DP（検出→工程）は D1-L1・D1-L2・D2・D3-L1・D3-L2（seed 42・123・456）。DP 63 本、PD 22 本、交差適合用の塔 4 本。
+  正解の腕で PD の標的群 AP は P1 +0.020〜+0.023、P2L +0.014、P3 はほぼ零。DP は D1-L1 の全腕で Jaccard が約 +0.009、D1-L2・D3 は Jaccard と accuracy が逆向き。
+  交差適合版の送り手は確定塔の val より大きく弱い（検出 train mAP 0.40、工程 train Jaccard 0.24）。D1・D3 の空の腕は構造上 3 seed で同一（R = 0）
+- **`scripts/train_t1b.py` に引数を足した（既定の経路は変えていない。`tests/test_train_t1b_stage2pilot_defaults.py` で固定）**:
+  `--det-ckpt`、`--signal-train/--signal-val`（次元は信号から決まる）、`--fixed-table`、`--eval-only`、`--patience`（学習率一定・停滞で停止）、
+  `--best-excludes-init`、`--ckpt-dir`、`--save-trainable-only`、`--trainable w2`（decoder の最終層とその層のヘッド）。信号が欠けたフレームがあれば止まる
+- **新しい道具 `scripts/stage2pilot/`**: 信号の保存（`extract_det_signals.py`、`phase_signals.py`）、時刻の確認（`time_check.py`）、
+  PD の界面（`pd_model.py`、設定 `configs/stage2pilot/pd_*`）、DP の受け取り手と学習器（`dp_model.py`、`dp_train.py`）、
+  交差適合（`crossfit_split.py`、`make_cf_annotations.py`、`run_cf_dtower.sh`、`cf_ptower.py`）、集計（`aggregate.py`）、test 不使用の検査（`test_audit.py`）
+- **andrew の GPU 2 枚の DDP は `NCCL_P2P_DISABLE=1` が要る**（IOMMU が有効で、P2P の all_reduce が無言で止まる）。andrew で検出塔の学習が動くことを初めて確かめた
+- 大きな生成物（信号・checkpoint・交差適合用の検出塔）は版管理と同期の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/` に置いた
