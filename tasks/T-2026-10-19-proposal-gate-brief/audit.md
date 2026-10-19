@@ -787,3 +787,19 @@ tasks/inbox.d/T-2026-10-19-proposal-gate-brief.md
 ```
 
 PR経路集合 ∩ experiments/ = 空集合。.gitignoreも含まれない。ローカルのgit diff --name-only origin/phase0...HEADの集合と完全一致する。したがって、禁止検査が拾った同期由来の未追跡ログはPRに含まれない。
+
+### 訂正報告の台帳への再送
+
+source .venv/bin/activate && source scripts/load_env.sh && CUDA_VISIBLE_DEVICES='' make task-report TASK=T-2026-10-19-proposal-gate-brief を実行。exit0、秘匿検査を経て以前の報告1ブロックを訂正本文へ置換した。応答:
+
+```json
+{
+  "task_id": "T-2026-10-19-proposal-gate-brief",
+  "verdict": "pass",
+  "n_issuer_defects": 0,
+  "report_sha256": "ac4b069130b73b445f16c08f6d43d65ecc8b8da0fab41be5ccc3f1303774611c",
+  "report_bytes": 7676,
+  "replaced_blocks": 1
+}
+```
+送出後もRESULT.mdは同じ要約値。実験の未追跡ファイルはそのまま保持し、追跡対象の変更だけをcommit・pushした後にtask-releaseを行う。
