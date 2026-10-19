@@ -248,3 +248,14 @@ S6 の `pd_eval.py` も `EGO_BODY=$OV`、`EGO_ROOT=$OV/data/raw/ego`、`EGO_ANN_
 
 andrew は一度 P3 の 4 本を andrew に戻して起こしかけたが（利用者の一度目の回答）、命令が途切れて正解と予測-CF の 2 本は学習に入る前に止まり、
 利用者が bengio を直す方へ戻した。止まった 2 本の run のフォルダは andrew の `experiments/` から本契約の置き場（同期の外）へ移した。andrew では P3 の 4 本は走っていない。
+
+## 7. 追補（2026-10-19 22:45 JST）: bengio が回すのは 2 本だけになった
+
+利用者の決定で、P3 の 4 本のうち **正解 `gt` と入れ替え `shuffle` は andrew の GPU 0 で回す**（22:44 JST に起動済み）。
+**bengio が回すのは予測-CF `pred_CF` と正解予測-CF `gtpred_CF` の 2 本だけ**。§4 と §6 の手順のうち、次を読み替える。
+
+- S7 の試走は前と同じ `P3 gt smoke`（試走は本番の腕ではない。andrew の本番の `P3 gt` とは名前が `_smoke` で区別される）
+- S8 は **GPU 1 枚に 1 本ずつ**: GPU 0 に `P3 pred_CF`、GPU 1 に `P3 gtpred_CF`。`P3 gt` と `P3 shuffle` は**起こさない**
+- S10 で commit する run は `stage2fix_pd_P3_{pred_CF,gtpred_CF}_ep4_seed42/` と試走だけ
+- 送る信号のうち必要なのは P-GT（試走）、P0_val、交差適合版の P0_train、gtpred_CF_train、gtpred_noCF_val。入れ替えた P0 は恒等性（S6 の 3）にだけ使う
+- 1 本あたりの見込み: GPU 1 枚に 1 本なので 2 本ずつのときより速い（andrew の実測からの推計で 1.5 時間前後。測っていない）

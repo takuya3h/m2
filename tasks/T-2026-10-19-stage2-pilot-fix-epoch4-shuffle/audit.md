@@ -377,3 +377,6 @@ PD の要約の控え `stage2pilot_metrics.json` は前回の 22 本すべてに
   andrew の仮想環境のパッケージ一覧（72 個）を `experiments/analysis/stage2_pilot_fix/bengio/venv_relation_detr_freeze_andrew.txt` に置いた。手順は `handoff_bengio.md` §6
 - 22:38 JST: P1-W2 入れ替え（GPU 0 の 3 本目として 18:08 に起動）が rc=0。**P1-W2 がそろった**（回し直し 1 本・入れ替え 1 本・前回の記録 4 本）。
   P1-W2 空は 22:25 に rc=0（val mAP 0.7278 / 0.7258 / 0.7286 / 0.7199）。中間記録を作り直した。andrew の GPU 0 はこの時点で空いた（andrew のキューは空）
+- 22:44:54 / 22:44:59 JST: 利用者の決定で、P3 の正解と入れ替えを andrew の GPU 0 で起動した（`pd.q.done` に「bengio の 4 本から andrew の GPU 0 へ」と残る）。
+  選んだ理由（実行者）: 読み方の規則の要である予測-noCF の Δ入替（予測-noCF − 入れ替え）と、正解の Δ空・Δ入替を andrew の中で閉じるため。
+  bengio は交差適合版の 2 本（予測-CF、正解予測-CF）を GPU 1 枚に 1 本ずつ回す（`handoff_bengio.md` §7、`meta.amendments` の 3 件目）
