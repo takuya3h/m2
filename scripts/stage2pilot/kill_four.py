@@ -200,7 +200,8 @@ def cmd_k3_train(a):
                        "val": {"path": str(va_sig), "sha256": C.sha256(va_sig)}},
            "videos": {"train": tr_v, "val": va_v}, "class_counts": counts.tolist(), "class_weights": weights.tolist(),
            "params": int(sum(p.numel() for p in model.parameters())), "smoke": bool(a.smoke)}
-    manager = ExperimentManager(C.ROOT / "experiments", "phase1", "stage2four_k3", "gru_D0only_ep4"
+    epochs = 1 if a.smoke else GRU_SETTING["epochs"]
+    manager = ExperimentManager(C.ROOT / "experiments", "phase1", "stage2four_k3", f"gru_D0only_ep{epochs}"
                                 + ("_smoke" if a.smoke else ""), GRU_SETTING["seed"])
     manager.setup(cfg)
     run = tracking.init(manager.exp_id, config=cfg, group=TASK_ID, job_type="stage2four_k3", exp_dir=manager.exp_dir)
@@ -208,7 +209,6 @@ def cmd_k3_train(a):
         raise RuntimeError("W&B tracking could not start; no experiment executed")
     started = time.monotonic()
     history = []
-    epochs = 1 if a.smoke else GRU_SETTING["epochs"]
     for epoch in range(1, epochs + 1):
         model.train()
         order = list(range(len(tr)))

@@ -1,0 +1,58 @@
+task_id: T-2026-10-19-stage2-pilot-four-new-types
+unofficial: 非公式（T-2026-10-19-stage2-pilot-four-new-types）
+kill_experiment: K3 (1)
+layers: 1
+hidden: 64
+head: linear → 9
+lr: 0.0005
+weight_decay: 0.01
+epochs: 4
+step: train の動画 1 本
+seed: 42
+loss: クラスの重みつき交差エントロピー + 平滑化 0.3（DP と同じ）
+train_signal: 交差適合版の D0（signals/cf/D0_train.npz）
+val_signal: 確定塔の D0（signals/final/D0_val.npz）
+signals:
+  train:
+    path: /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/cf/D0_train.npz
+    sha256: fdbf285bc9278e8a333cc6c3496f8ec44b9f37e049d02ee61cfe63cbd76adace
+  val:
+    path: /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D0_val.npz
+    sha256: 4403d1fed34e3115f23d972fa98887fc653209a2e00b995b8ff2d821af3f6650
+videos:
+  train:
+  - '01'
+  - '02'
+  - '03'
+  - '06'
+  - '08'
+  - '11'
+  - '12'
+  - '13'
+  - '14'
+  - '15'
+  val:
+  - '09'
+  - '10'
+class_counts:
+- 281
+- 3595
+- 245
+- 11
+- 3832
+- 12
+- 825
+- 763
+- 93
+class_weights:
+- 0.1636632981864376
+- 0.012792597160052564
+- 0.18771178281791417
+- 4.180853344580815
+- 0.012001405738619249
+- 3.8324488991990804
+- 0.05574471126107754
+- 0.06027442567547702
+- 0.49450953538052655
+params: 16137
+smoke: true
