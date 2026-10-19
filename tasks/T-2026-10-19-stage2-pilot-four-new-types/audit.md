@@ -271,3 +271,27 @@ phase0 を merge した後に、既定の経路を固定する試験（`tests/te
 
 学習前 mAP は直しの契約の P3 の試走（andrew・bengio とも 0.8916612）と同じ。`env_check.txt` は両方 `ms_deform_attn_ext True`。
 試走は 6 歩なので 1 本の所要は本番の run の壁時計で測る（`start.txt`・`end.txt`）。
+
+## phase0 の取り込みと Task A-6 の測り直し・Task B-3（利用者の決定 01:44 JST の 2、02:1x JST）
+
+- 02:1x JST に G3 の記録と引き渡しを commit（`659378f6`）し、`git merge --no-ff origin/phase0`（`42070946`）→ `0d717f09`。衝突なし（事前の `git merge-tree --write-tree` も rc=0）。
+  起点 a7a5aa67 以降に phase0 で変わった scripts・configs は `scripts/stage2pilot/test_audit_fix.py` だけで、本契約の変更と重ならない。push 済み（`ed53c672..0d717f09`）
+- merge の後の既定の経路の試験: `pytest tests/test_train_t1b_stage2pilot_defaults.py tests/test_stage2pilot_dp_train_defaults.py` → **10 passed**
+- A-6 の測り直し: `git log -1 -- context/conventions.md` = **5c0eaeeb**（契約の `conventions_rev` と一致。検証の WARN L2-6 は出なくなった）、
+  `git log -1 -- runindex/` = 63ae65da（差し替え済みの値と一致）、件数 1961 / 750 / 1506 は一致。`make task-validate` OK
+- B-3（amendments 7 件目。相手は直しの分岐の 5c89f5d2 の集計）: 本分岐の `experiments/phase1`・`experiments/analysis/stage2_pilot_fix`・`stage2_pilot_folda` と集計の道具
+  （`aggregate_fix.py`・`aggregate.py`・`common.py`・`det_metrics.py`）は 5c89f5d2 と同じ（`git diff --name-status 5c89f5d2 HEAD` は本契約の `stage2four_*` の追加だけ）
+  - 1 回目（worktree のまま）: rc=1。前回の DP の run の `logs/history.json` が版管理外（共通の `.git/info/exclude` 23 行 `experiments/phase1/stage2pilot_*/`）で worktree に無い
+  - 2 回目: 作業用の場所（scratchpad の `b3tree`）に `git archive HEAD` を書き出し、bengio の main の前回・直しの run 143 本から版管理外のファイルだけを
+    `rsync -a --ignore-existing`（`predictions/`・`checkpoints/`・`visualizations/` を除く）で足した（bengio の main は読むだけ）。その木で
+    `aggregate_fix.py --out-json <本契約>/b3/report.json --out-md <本契約>/b3/REPORT.md --head … --tail …`（既定のまま）→ rc=0、
+    「前回 PD 22・DP 63、本契約 PD 13・DP 26、計算し直し 124 件で食い違い 0 件」（直しの契約の F-1 と同じ行）
+  - 5c89f5d2 の `experiments/analysis/stage2_pilot_fix/report.json` と比べて **値 5,818 個の差 0**、ファイルの sha256 も同じ（`1440d944e832e718…`）。`REPORT.md` も同一
+  - 空振りでないこと: 直しの report.json の一つの値（P3 の空の腕の overall mAP）を 1e−12 だけ変えた写しでは、同じ比べ方の差が 1 件になる
+- **G2: pass**（B-1・B-2・B-3）
+
+### C-8 test 不使用（02:1x JST の時点、`experiments/analysis/stage2_pilot_four/test_audit/test_audit_c8.json`、道具 `scripts/stage2pilot/test_audit_four.py`）
+
+各段の実体（DP の試走の run の config の動画と読んだ信号、PD の試走の run が読んだ信号と注釈、見落としの集合と D\* の train の出力の記録、恒等性・再現・見落としの評価の記録）から
+通した動画の集合を作った: 全体は 01・02・03・06・08・09・10・11・12・13・14・15 の 12 本で、**{04, 05, 07} との共通 0 件**。
+空振りでないこと: `--inject 04` で全体の共通が 1 件（`['04']`）。本番の run の後に Task F で回し直す。
