@@ -31,6 +31,8 @@
 
 ## 禁止と要求が両立しなかった
 
+- **`self_contradiction` — 条件発火後に諮る問いを起動前の必須回答に置いた（既知の再発）**（2026-10-17）。`governance.decisions_required` に条件つきの問いを置いたため、起動前の P6 が未回答として FAIL した。出所: `tasks/T-2026-10-17-tower-reselect-prereq/spec.yaml` の amendments、`tasks/inbox.d/T-2026-08-29-k1-verify-policy-place.md`。**対処**: 条件つきの問いは停止条件にだけ書く。`decisions_required` には起動前に利用者が答える問いだけを置く
+
 - runindex を手で編集しない ↔ runindex 配下へ未解決事項を書かせる
 - 統合しない ↔ **push を統合と読まれた**
 - 中心で命令を実行しない ↔ **到達確認に `ssh ... 'echo'` を書いた**（`ssh -N` なら到達だけ確かめられる）
@@ -43,6 +45,11 @@
 - **報告に含めさせる対照を、報告と送出の後の手順に置いた**（2026-10-07。完了判定 g は実物の目印に対する陰性対照を報告に含めることを求めたが、その操作を含む抑止の解除は報告と送出の後に置き、解除の後は git の操作をしないと定めた。書かれた順では結果が報告に入らない。**対処**: 状態を変えない対照は commit の前に取らせ、状態を変える操作〔抑止の解除〕だけを最後に置く。`T-2026-10-07-pause-release-tool-digest-relocate` RESULT §5-1）
 
 ## 測らずに断定した
+
+- **`asserted_without_measuring` — 直接接続の可否を全経路へ一般化した**（2026-10-17）。SPEC に「直接接続は不可で中継が要る」と書いたが、andrew から efros:50072 へ直接届いた。指示どおりなら不要な中継を組むことになる。出所: `tasks/T-2026-10-17-tower-reselect-prereq/RESULT.md` §5、同 audit C-1。**対処**: 到達性は経路ごとに実測の記録を引く
+- **`asserted_without_measuring` — 試験用の道具の存在を確認しなかった**（2026-10-17）。「検出器の専用の環境で試験が通る」を求めたが、その環境に pytest が無かった。指示どおりなら依存の追加が必要になり、本体 `.venv` で試験した。出所: `tasks/T-2026-10-17-tower-reselect-prereq/RESULT.md` §5。**対処**: 環境ごとに道具の有無を確かめてから求める
+- **`asserted_without_measuring` — 工程塔と検出塔の評価解像度を同じと書いた**（2026-10-19 記録）。三周目の prereg は工程塔の入力 800×1422 を「検出塔の評価解像度と同じ」と書いたが、検出塔の実測は 1333×749 だった。出所: `tasks/T-2026-09-19-stage1-phase-tower-r3/prereg.md` の入力の行、同 RESULT 完了判定 c、`tasks/T-2026-10-17-tower-reselect-prereq/RESULT.md` §4。**対処**: 解像度は両塔の実装の前処理を測ってから並べる
+- **`asserted_without_measuring` — 正規化層全体を eval 固定と要約した**（回答 2026-10-18）。批判会話への回答で工程塔の正規化層を「eval の状態に固定」と書いたが、実装の `stem_eval` は `model.train()` の後に `conv1` と `bn1` だけを eval にする。正規化層で eval になるのは stem の `bn1` だけで、layer1〜4 は学習中に統計を更新する。批判会話はこの回答をもとに論点を一つ取り下げた。出所: `scripts/stage1_ptower_r3.py:129-133`、`tasks/T-2026-10-19-conventions-and-defect-records/SPEC.md` §5.7。**対処**: 実装の要約は関数の本体を読んでから書く
 
 - 設定の場所を「既定ではない」と書いた（**既定だった**）
 - 中心の住所を断定した（**局所から見える値と食い違った**）

@@ -1,0 +1,44 @@
+result_version: 3
+task_id: T-2026-10-19-proposal-gate-brief
+status: pass
+host: Bengio
+branch: feat/proposal-gate-brief
+pr: 239
+merged: false
+gates:
+- id: G1
+  verdict: pass
+  note: 起点8de3ac54に前提契約の報告を確認。生成の行・B.3・雛形はSPECと一致、置き場と参照は起票時の全文と同一。
+- id: G2
+  verdict: pass
+  note: 内容・読み・対照と前後47試験は合格。利用者指示で.gitignore二行を差し戻した。forbidden-checkは外部由来の未追跡ログ8件でexit2、PR差分の経路集合にはexperiments/が無いことをGitHubの19経路集合とローカル差分集合の一致により確認した。
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 47
+deviations:
+- type: judgement
+  note: L2-6警告の差分を確認し、利用者の許可と指示でconventions_revを起点の実測commitへamendments付きで更新。
+- type: judgement
+  note: 範囲外の旧ルール三行は利用者の許可により履歴として保持し、報告へ列挙。
+- type: judgement
+  note: 先に許可を得た.gitignore二行追加を、利用者の今回指示で差し戻す。禁止検査は同期由来の未追跡の他契約ログ8件（当初2件と追加6件）でexit2。合格とはせず、PR差分にexperiments/が含まれないことを別途検証する。ファイルの移動・削除なし。
+- type: environment
+  note: プランモード切替手段、planning-with-files、agentmemoryが利用不可。契約のフェーズ順と契約内記録で進行。
+issuer_defects: []
+positive_controls:
+- judgement: 'e: 費用の数字欠落'
+  breaking_input: 既存カードの#10の本文だけをUNKNOWNにした写し
+  observed: 数字欠落1件・exit1。元の既存カードは前後とも検出0・exit0。
+- judgement: 'd: 旧文言検索'
+  breaking_input: 変更前の現行文書を同じ二方式で検索する
+  observed: 変更前に規約1行・B.3で1行を両方式が検出。変更後の対象三文書は両方式とも0件。範囲外8行は前後同一。
+followups:
+- 生成会話はプロジェクトの外で、証拠地図・カードの雛形・依頼文だけを受け取る。生成会話の#10と#15はUNKNOWN、起票者がrepo実測で埋めてから批判会話へ。briefs/は本契約では未作成。
+unknowns: []
+commits:
+- e1364772ab5fe9c97d0578bc8aa9d459c9599033
+- 5c0eaeeb4551c66c9b854faaa7a5376dcf755ac7
+- 4bb2c542383be0c139d0b9d7382fd615c8be9a10
+- 1cc002d1add4165e89f6ab2c2edf71fa2df4eb6c
+- 5f8f273ab59633a2f1b38b59a8ba08fcc7a5ab1b

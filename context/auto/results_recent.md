@@ -6,8 +6,36 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 127 件）。
-ここに出ない 122 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 129 件）。
+ここに出ない 124 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-10-19-proposal-gate-brief
+
+状態 `pass` / ホスト `Bengio` / 起票 `239` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 起点8de3ac54に前提契約の報告を確認。生成の行・B.3・雛形はSPECと一致、置き場と参照は起票時の全文と同一。
+- `G2` pass — 内容・読み・対照と前後47試験は合格。利用者指示で.gitignore二行を差し戻した。forbidden-checkは外部由来の未追跡ログ8件でexit2、PR差分の経路集合にはexperiments/が無いことをGitHubの19経路集合とローカル差分集合の一致により確認した。
+
+### 起票者の誤り
+
+（なし）
+
+### 逸脱
+
+- `judgement` — L2-6警告の差分を確認し、利用者の許可と指示でconventions_revを起点の実測commitへamendments付きで更新。
+- `judgement` — 範囲外の旧ルール三行は利用者の許可により履歴として保持し、報告へ列挙。
+- `judgement` — 先に許可を得た.gitignore二行追加を、利用者の今回指示で差し戻す。禁止検査は同期由来の未追跡の他契約ログ8件（当初2件と追加6件）でexit2。合格とはせず、PR差分にexperiments/が含まれないことを別途検証する。ファイルの移動・削除なし。
+- `environment` — プランモード切替手段、planning-with-files、agentmemoryが利用不可。契約のフェーズ順と契約内記録で進行。
+
+### 申し送り
+
+- 生成会話はプロジェクトの外で、証拠地図・カードの雛形・依頼文だけを受け取る。生成会話の#10と#15はUNKNOWN、起票者がrepo実測で埋めてから批判会話へ。briefs/は本契約では未作成。
+
+### 断定できなかったこと
+
+（なし）
 
 ## T-2026-10-19-evidence-maps-revise
 
@@ -35,6 +63,33 @@
 ### 断定できなかったこと
 
 （なし）
+
+## T-2026-10-19-conventions-and-defect-records
+
+状態 `pass` / ホスト `Bengio` / 起票 `237` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 起点5a8baa79、対象分岐・所有者一致。他契約の変更なし。基準試験96 pass、装置状態と禁止操作を記録。
+- `G2` pass — 変更節はsymmetry/folds/crossfit/naming、新設precisionのみ。既存アンカー不変、カード検査の出力・終了コードが前後同一。
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — outputs.destination にディレクトリではなくファイル context/conventions.md を書き、P7 destination_writable が FAIL して Phase A の前で停止させた。起票者は配布前に起動直前の検査を回していなかった。起票者の指示で destination と allow_write を是正し、meta.amendments に記録した後のP7はPASSとなった。
+
+### 逸脱
+
+- `spec_defect` — 初回P7 FAIL後、起票者の指示で本契約のdestinationとallow_writeを是正し、meta.amendmentsに記録して再開した。
+- `environment` — プランモード切替手段、planning-with-files、agentmemoryが利用不可。契約のフェーズ順と本契約内記録で進行した。
+- `judgement` — 再開時のallow_write対照の空振りは停止報告の完了扱いによる。結果を再開中へ更新して再測定し、0件/1件を確認。
+
+### 申し送り
+
+- 次の実験契約はconventions#symmetryの入力縮小規則・ホスト行とconventions#precisionを参照できる。工程塔の精度はこの契約では定めない。
+
+### 断定できなかったこと
+
+- 古い「直接接続は不可能」という断定の元の測定経路は記録から特定できない。SPEC5.6に従い明記した。
 
 ## T-2026-10-18-stage2-pilot-folda
 
@@ -122,86 +177,4 @@
 
 - arXiv の 429 が同じ出口の IP の他の台の問い合わせによるものか（この台には arXiv へ問い合わせる他のプロセスが無かった）
 - 新しい試験がネットワークを断った状態でも通るか（unshare -rn が許されず測れなかった。通信の口を塞ぐ仕掛けで代えた）
-
-## T-2026-10-17-tower-reselect-prereq
-
-状態 `pass` / ホスト `andrew` / 起票 `229` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 分岐 feat/tower-reselect-prereq、HEAD = origin/phase0 = merge-base = 31af81e7。開始時の装置は他プロセス 2 件（/usr/bin/python3.12、10/15 起動）だけ。開始時の試験は 6 failed / 793 passed / error 1（test_stage1_dtower_convergence.py の収集エラー）で名前を記録
-- `G2` pass — andrew から efros:50072 へ直接届いた（BatchMode、known_hosts は写しを使用）。efros の util/convergence.py の sha256 = 写し convergence.py.txt = 299597a2…、main.py は写しの抜粋 23/23 行と 61/61 行が行番号ごと一致。取り寄せた 39 件は efros で測った sha256 と全件一致
-- `G3` pass — andrew に main.py（上書き）と 4 件（追加）を置いた後、tests/test_stage1_dtower_convergence.py が 9 件収集・9 件 PASS。拡張の生成物 5・checkpoints 12・COCO 初期化の重み 2 の sha256 が前後で全件一致。凍結源は正本 03936318… と一致
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — SPEC §3 は env-facts.md を引いて『repo の位置は andrew と efros とも ~/slocal2/m2。直接接続は不可で中継が要る（星型、中心は philip）』と確定した事実として書くが、andrew から efros:50072 へ ssh で直接届いた（hostname=efros）。従うと philip を経る中継を組むことになり、触れるホストが一つ増える
-- `asserted_without_measuring` — Task D-4 は『検出器の専用の環境で tests/test_stage1_dtower_convergence.py が収集され全件通る』を求めるが、.venv-relation-detr に pytest が入っていない（ModuleNotFoundError）。字面どおりに実行すると依存の追加（無断実行の禁止事項）が要るか、検査が回らない。本体 .venv で回した
-
-### 逸脱
-
-- `environment` — 検出器の環境 .venv-relation-detr に pytest が無い。依存の追加は無断で行えないため、収束規則の試験は本体 .venv の pytest で回した（試験は convergence.py をファイルから読み main.py を構文木で読むだけで torch を import しない）。検出器の環境では main.py --help、二周目の命令行の parse_args、二周目の設定の Config 解釈を行った
-- `judgement` — Python の処理のうち accelerate の import の確認、注釈 json の読み取り、make の検査道具（task-validate / task-preflight / forbidden-check / spec-check）は CUDA_VISIBLE_DEVICES を空にせず動かした。いずれも装置を使う処理ではなく、終了時の nvidia-smi の compute-apps に本契約の処理は無かった。検出器と前処理の処理はすべて装置を隠し is_available=False を確かめた
-- `judgement` — andrew に置くものを、D*-COCO に要る util/convergence.py と main.py に加え、二周目の D*-ImageNet の設定 3 件（configs/train_config_egosurgery_stage1_imagenet_seed{42,123,456}.py）まで広げた。追加だけで既存のファイルを変えず、andrew の版を efros と同じにするため
-- `judgement` — 新しい snapshot の置き場所を third_party_snapshot/efros/2026-10-17/Relation-DETR/ にした。既存の復元スクリプトを変えずに host 引数 efros/2026-10-17 で指定できる形である。per_class_coco_map の json は SPEC C-4 の評価の出力として含めない（2026-08-02 版は 12 件を含めていた）
-- `environment` — 開始時の素の pytest は収集エラーで全体が中断した。失敗の名前の集合を取るため、前後とも --continue-on-collection-errors を付けて測った
-- `environment` — efros への命令のうち 2 回は手元の誤りで一部が起動しなかった（zsh で $SSH が単語分割されず rc=127、ssh が heredoc の残りを標準入力として読んだ）。bash の配列と ssh -n で流し直し、未実行の分も含めて audit に記録した。efros への書き込みは無い
-- `judgement` — P6 decisions_answered の FAIL で停止し利用者に諮った。回答（決定 1 は発火時に停止して諮る、決定 2 は残す）を spec.yaml の meta.amendments に記録して decisions_required を空にした。2 件とも発火しなかった
-
-### 申し送り
-
-- 評価時の入力は 1333×749（W×H）で、pad 後 1344×768。次の契約の対称性の表の『入力解像度と切り出し』の検出塔の行はこの実測で埋められる。REPORT.md:200 の 1333×750 は計算値の丸めで、実装は切り捨てる
-- SPEC §5.2 の『追加動画 17〜21 は Stage 2 の主測定に入れない』と conventions#folds の『追加 6 動画 17, 18, 19, 20, 21, 22』が食い違う。規約の frame_sets には SPEC の文言どおり 17〜21 と置いた。動画 22 の扱いを規約で明示するかは起票者の判断
-- context/env-facts.md の『直接接続は不可能』は andrew → efros の ssh には当たらなかった（直接届いた）。記述が何を指すかを確かめて直すかは起票者の判断
-- .venv-relation-detr に pytest が無い。検出器の環境で試験を回すことを契約が求めるなら、依存の追加を利用者に諮る契約が要る
-- 規約の変更により conventions_rev を持つ全契約が L2-6 の WARN になる（想定内。他の契約の conventions_rev は書き換えていない）
-- andrew の main.py の変更前の版は ~/m2-evacuated/T-2026-10-17-tower-reselect-prereq/third_party/Relation-DETR/main.py に残してある。不要になったら利用者の判断で片付ける
-
-### 断定できなかったこと
-
-- 検出塔の forward の中の特徴の大きさ（168×96 / 84×48 / 42×24 / 21×12）は計算値のまま。本契約は前処理だけを測った
-- andrew で検出塔の学習（逆伝播と収束規則の実際の低下・打ち切り）は流していない
-- context/env-facts.md の『直接接続は不可能』が指す対象
-
-## T-2026-10-14-frame-signal-audit
-
-状態 `pass` / ホスト `andrew` / 起票 `227` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 分岐 feat/frame-signal-audit、HEAD = origin/phase0 = 57717f6c、注釈 46 ファイルの木の要約値が起点と一致（4bc3bfff… / 6bedcd36…）、nvidia-smi の compute-apps 0 件、.sync-pause は task-start が作成
-- `G2` pass — 方法 A（csv/json/os.walk）と方法 B（cut/grep -o/find -L/comm）の区間ごとの件数が 43 区間 × 20 列 = 860 セルで一致。起票者 §3.2 の 14 項目と動画ごと 15 行 × 4 値がすべて一致
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — §3.3 行 5 は stage1_ptower.py:264-266 を『評価器にクリップの識別子を動画の識別子として渡しているように読める』と書くが、変数名 clip_id を読んだだけで、load_fold（213）が返すのは動画の識別子である。そのまま信じると Stage 1 の評価がクリップ単位だと誤って設計し、動画単位への直しを不要に起票する。実測では列は動画単位に連結済みで、Jaccard は合算なので識別子は segment 系にしか効かない
-- `asserted_without_measuring` — §1 の 2 は『設計文書には工程から検出へは一つ前の時刻までという規則があった』と書くが文書名が無く、docs/ context/ tasks/ を git grep しても該当の文言が無い（過去ラグ特徴の記述だけ）。規則の出所が無いまま『実装がそうなっているか』を測ると、比較の基準が無い。本契約は実装が同時刻 t であることだけを実測し、規則の出所は UNKNOWN とした
-
-### 逸脱
-
-- `environment` — tests/test_stage1_dtower_convergence.py が収集で FileNotFoundError（third_party/Relation-DETR/util/convergence.py が無い）になり素の pytest は全件を走らせない。前後とも --continue-on-collection-errors を付けて測り、error 1 件を両方に数えた
-- `judgement` — 方法 B の awk が COCO の images 要素で id が file_name より後に来ると仮定しており、4 区間の枠 0 個が方法 A と 1 ずつ違った。実物（id → width → height → file_name）に合わせて直し、再実行で 860 セル一致。最初の食い違いも audit に残した
-- `judgement` — 時刻判定の陽性対照は、名前を 1 つ先へ付け替えた写し（名前 t の行が t−1 の情報を持つ）を −1 と判定するのが正しい。最初の版は +1 を期待して control_ok=False になった。期待の符号を直し、k の符号の定義を道具に書いた。データ側の判定値は変えていない
-- `judgement` — Task C.5（動画単位に直したときの変化）は UNKNOWN。三周目・P*-20 の run は val の予測を保存せず、帰属解析の予測は dlsta の repo の外に在り本ホストに無い
-- `environment` — 起点 origin/phase0 が起票時の 8b331ac6 から本日の #226 で 57717f6c に進んでいた。conventions_rev・runindex_commit・counts・注釈の木は起票時と同じなので amendments を書かず続行した
-- `judgement` — 番号→秒の対応は配布物のどこにも無い。0.5 fps は repo の文書（docs/evidence/2026-09-16-A-phase-tower-candidates.md:30 が原著 arXiv 2405.19644 を引く）の記載として出所を書き、秒の値はすべて仮定として列名に assumed_0.5fps を付けた。番号が区間ごとの抽出の通し番号であることは配布物の生フレームの連続性で実測した
-- `judgement` — 1,796 枚の画像が術具注釈の置き場以外（配布物 01_frames）に在ったので、Task B.5 の全数復号をその 1,796 枚にも当てた（復号できないもの 0）
-- `judgement` — 契約の成果物の一覧（Task G.4）に README.md は無いが、プロジェクトの CLAUDE.md は『コード変更後は README.md に変更内容と現状を記録する』を必須とする。読むための道具 3 本を足したので README 末尾の変更記録に 1 節（数行）を追記した。docs/experiment_log.md は実験を行っていないので触れていない
-
-### 申し送り
-
-- 1,796 枚（区間 03_3 の 168 枚を含む）の画像は data/raw/OpenSurgery_Dataset/01_frames/initial_videos/ に在り全数復号できる。工程塔に入れるかは研究上の判断（術具注釈は無い）。入れるなら manifest の生成を変える契約が要る
-- 番号は区間ごとに振り直されるため、経過時間の対照は区間内でしか作れない。区間の間の時間は配布物に無い。動画ごとの術式・術者・撮影日も無いので、術者の対照は本データでは作れない（原著に当たるか著者に問い合わせるかは利用者の判断）
-- Stage 1 の工程塔は区間を連結した列を見る（履歴は境界をまたぐ）。Stage 2 で同時刻の塔単独の出力を保存する経路は無いので、保存する道具を起票するときは列の作り方を Stage 1 と同じにし、区間の境界の扱いを明記すること
-- P→D の『正解⊕予測』18-d は num_phases 18 のモデル設定を T1B_MODEL_CFG で指す必要があるが、版管理下の t1b 系 config 5 本はすべて 9。過去にこの段を回した run があれば設定の出所を確かめること
-- 三周目・P*-20 の run は val の予測を保存していない。動画単位の値や区間ごとの値が要るなら、checkpoint と all_gap.npz から再推論する契約が要る（本契約は推論しない）
-- tests/test_stage1_dtower_convergence.py の収集エラー（convergence.py が snapshot に無い）は #226 の報告済み。本契約とは無関係だが、素の pytest が全件を走らせない状態が続いている
-
-### 断定できなかったこと
-
-- 番号 → 秒の対応（0.5 fps の仮定）。配布物の文書・注釈・JPEG に fps の記載が無い
-- Task C.5: 塔の値を動画単位に直したときの変化。val の予測が本ホストに無い
-- 動画ごとの術式・術者・手術室・撮影日・撮影機器。全体値（10 種類・8 人・15 時間）は HTS 論文の抜き書きのみ
-- §1 の 2 の『一つ前の時刻まで』の規則の出所（repo に無い）
-- 検出塔の特徴の空間の大きさ（1344×768 → 168×96 / 84×48 / 42×24 / 21×12）は設定からの計算値で、推論で確かめていない
 

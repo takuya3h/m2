@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（637 件）
+## 申し送り（639 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1016,11 +1016,19 @@
 - §2 の時刻の道具を、予測の遅れと情報の時刻を区別できる形（構成からの検査）に置き換えるか決める
 - §3 の D3 の予測のトークンの定義を、重複しない query の上位 K と明記する
 
+### T-2026-10-19-conventions-and-defect-records
+
+- 次の実験契約はconventions#symmetryの入力縮小規則・ホスト行とconventions#precisionを参照できる。工程塔の精度はこの契約では定めない。
+
 ### T-2026-10-19-evidence-maps-revise
 
 - C=29、B=34、N=37の全IDが実在・書誌一致。N追加書誌18 IDは全て該当行と比較。書誌IDなしはC-24だけ。
 
-## 断定できなかった事項（398 件）
+### T-2026-10-19-proposal-gate-brief
+
+- 生成会話はプロジェクトの外で、証拠地図・カードの雛形・依頼文だけを受け取る。生成会話の#10と#15はUNKNOWN、起票者がrepo実測で埋めてから批判会話へ。briefs/は本契約では未作成。
+
+## 断定できなかった事項（399 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1768,18 +1776,22 @@
 - PD の R、§5.2 規則 2 の読み、実現率、型どうしの比較の幅の判定（seed 1 つのため）
 - P1-W1 の予測-noCF の凍結部の要約値（5 epoch 目の始まりで外から止めたため学習の終わりの記録が無い）
 
-## 起票者の誤りの型（370 件）
+### T-2026-10-19-conventions-and-defect-records
+
+- 古い「直接接続は不可能」という断定の元の測定経路は記録から特定できない。SPEC5.6に従い明記した。
+
+## 起票者の誤りの型（371 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 100 |
-| `asserted_without_measuring` | 154 |
+| `asserted_without_measuring` | 155 |
 | `self_contradiction` | 96 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 0 |
 | `rule_read_narrowly` | 1 |
 
-合計 370 件（対を持つ契約 127 件から）
+合計 371 件（対を持つ契約 129 件から）
 
