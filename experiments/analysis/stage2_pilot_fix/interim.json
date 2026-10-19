@@ -2,7 +2,7 @@
   "task_id": "T-2026-10-19-stage2-pilot-fix-epoch4-shuffle",
   "interim": true,
   "epochs": 4,
-  "n_new_pd": 6,
+  "n_new_pd": 7,
   "n_new_dp": 26,
   "n_old_pd": 22,
   "n_old_dp": 63,
@@ -888,7 +888,11 @@
             "target_AP": 0.0,
             "control_AP": 0.0
           },
-          "delta_shuffle": null,
+          "delta_shuffle": {
+            "AP": 0.00040522119889174757,
+            "target_AP": 0.0001636829739487533,
+            "control_AP": 0.0011376362161152898
+          },
           "delta_previous": {
             "AP": 0.0,
             "target_AP": 0.0,
@@ -953,7 +957,11 @@
             "target_AP": 0.0072898136933655655,
             "control_AP": -0.0001361801305669319
           },
-          "delta_shuffle": null,
+          "delta_shuffle": {
+            "AP": 0.0028917058050592637,
+            "target_AP": 0.007453496667314319,
+            "control_AP": 0.0010014560855483579
+          },
           "delta_previous": {
             "AP": 0.002486054974213725,
             "target_AP": 0.007290370188452688,
@@ -966,7 +974,10 @@
           },
           "per_video_delta": {
             "empty": "UNKNOWN（epoch 3 の予測と重みが残っていない（前回の最良は epoch 1））",
-            "shuffle": "UNKNOWN（値が無い）"
+            "shuffle": {
+              "09": 0.001791151142937264,
+              "10": 0.006747841688072298
+            }
           }
         },
         "gt": {
@@ -1018,7 +1029,11 @@
             "target_AP": 0.013737419289321595,
             "control_AP": -0.0003742619370343814
           },
-          "delta_shuffle": null,
+          "delta_shuffle": {
+            "AP": 0.005787496097084399,
+            "target_AP": 0.013901102263270348,
+            "control_AP": 0.0007633742790809084
+          },
           "delta_previous": {
             "AP": 0.0053818452662388605,
             "target_AP": 0.013737975784408718,
@@ -1031,7 +1046,10 @@
           },
           "per_video_delta": {
             "empty": "UNKNOWN（epoch 3 の予測と重みが残っていない（前回の最良は epoch 1））",
-            "shuffle": "UNKNOWN（値が無い）"
+            "shuffle": {
+              "09": 0.002057226120557476,
+              "10": 0.01186448599574863
+            }
           }
         },
         "pred_CF": {
@@ -1080,7 +1098,11 @@
             "target_AP": 0.0024465155000320538,
             "control_AP": -0.0010045153625510839
           },
-          "delta_shuffle": null,
+          "delta_shuffle": {
+            "AP": 0.0009498147498638865,
+            "target_AP": 0.002610198473980807,
+            "control_AP": 0.0001331208535642059
+          },
           "delta_previous": {
             "AP": 0.0008253513569222992,
             "target_AP": 0.002328068570068842,
@@ -1145,7 +1167,11 @@
             "target_AP": 0.01394155296489219,
             "control_AP": 9.670553924512326e-05
           },
-          "delta_shuffle": null,
+          "delta_shuffle": {
+            "AP": 0.006092847904402454,
+            "target_AP": 0.014105235938840943,
+            "control_AP": 0.001234341755360413
+          },
           "delta_previous": {
             "AP": 0.0056871970735569155,
             "target_AP": 0.013942109459979313,
@@ -1158,7 +1184,10 @@
           },
           "per_video_delta": {
             "empty": "UNKNOWN（epoch 3 の予測と重みが残っていない（前回の最良は epoch 1））",
-            "shuffle": "UNKNOWN（値が無い）"
+            "shuffle": {
+              "09": 0.0023560875408504822,
+              "10": 0.011797860390984183
+            }
           }
         },
         "shuffle": {
@@ -1168,15 +1197,57 @@
           "previous_epoch4": null,
           "previous_epoch4_reason": null,
           "previous_run": null,
-          "value": null,
-          "source": "UNKNOWN（run が無い）",
-          "delta_empty": null,
-          "delta_shuffle": null,
+          "value": {
+            "AP": 0.7269433630343001,
+            "target_AP": 0.7949109126491617,
+            "control_AP": 0.6715354601333134
+          },
+          "per_video": {
+            "09": 0.703670688579052,
+            "10": 0.6412677379773974
+          },
+          "per_class": {
+            "Bipolar Forceps": 0.7890550584475458,
+            "Electric Cautery": 0.9682278550497277,
+            "Forceps": 0.35620983970828424,
+            "Gauze": 0.2647110293818787,
+            "Hook": 0.637399025514867,
+            "Mouth Gag": 0.7993058976748579,
+            "Needle Holders": 0.8449270877665075,
+            "Raspatory": 0.8033026099509153,
+            "Retractor": NaN,
+            "Scalpel": 0.900822076322636,
+            "Scissors": 0.7097468706617515,
+            "Skewer": 0.9443129495467533,
+            "Suction Cannula": 0.8349227072646254,
+            "Syringe": 0.5370618689779587,
+            "Tweezers": 0.7872022062118915
+          },
+          "source": "回し直し（本契約。4 epoch 目の状態）",
+          "run": "stage2fix_pd_P2L_shuffle_ep4_seed42",
+          "cost": {
+            "trainable": 150,
+            "wall_seconds": 12092,
+            "epochs": 4
+          },
+          "delta_empty": {
+            "AP": -0.00040522119889174757,
+            "target_AP": -0.0001636829739487533,
+            "control_AP": -0.0011376362161152898
+          },
+          "delta_shuffle": {
+            "AP": 0.0,
+            "target_AP": 0.0,
+            "control_AP": 0.0
+          },
           "delta_previous": null,
           "selection_effect": null,
           "per_video_delta": {
             "empty": "UNKNOWN（epoch 3 の予測と重みが残っていない（前回の最良は epoch 1））",
-            "shuffle": "UNKNOWN（値が無い）"
+            "shuffle": {
+              "09": 0.0,
+              "10": 0.0
+            }
           }
         }
       }
@@ -4207,7 +4278,7 @@
     "pass": true
   },
   "recompute_check": {
-    "checked": 103,
+    "checked": 106,
     "mismatch": []
   },
   "read_check": {
@@ -4780,6 +4851,10 @@
       }
     },
     "P1-W2/shuffle": {
+      "init_AP": 0.7273450248398429,
+      "init_equals_tower": true
+    },
+    "P2L/shuffle": {
       "init_AP": 0.7273450248398429,
       "init_equals_tower": true
     }
@@ -7774,6 +7849,47 @@
       "trainable": 0,
       "eval_detection_mAP": 0.584339984903725,
       "source": "評価だけ（本契約）"
+    },
+    "P2L/shuffle": {
+      "run": "stage2fix_pd_P2L_shuffle_ep4_seed42",
+      "AP": 0.7269433630343001,
+      "target_AP": 0.7949109126491617,
+      "control_AP": 0.6715354601333134,
+      "per_class": {
+        "Bipolar Forceps": 0.7890550584475458,
+        "Electric Cautery": 0.9682278550497277,
+        "Forceps": 0.35620983970828424,
+        "Gauze": 0.2647110293818787,
+        "Hook": 0.637399025514867,
+        "Mouth Gag": 0.7993058976748579,
+        "Needle Holders": 0.8449270877665075,
+        "Raspatory": 0.8033026099509153,
+        "Retractor": NaN,
+        "Scalpel": 0.900822076322636,
+        "Scissors": 0.7097468706617515,
+        "Skewer": 0.9443129495467533,
+        "Suction Cannula": 0.8349227072646254,
+        "Syringe": 0.5370618689779587,
+        "Tweezers": 0.7872022062118915
+      },
+      "per_video": {
+        "09": 0.703670688579052,
+        "10": 0.6412677379773974
+      },
+      "init_AP": 0.7273450248398429,
+      "result_epoch": 3,
+      "per_epoch_mAP": {
+        "-1": 0.7273450248398429,
+        "0": 0.7271000740211401,
+        "1": 0.7270456719221795,
+        "2": 0.7268855373149704,
+        "3": 0.7269433630343001
+      },
+      "frozen_unchanged": true,
+      "wall_seconds": 12092,
+      "trainable": 150,
+      "eval_detection_mAP": 0.7269433630343001,
+      "source": "回し直し（本契約。4 epoch 目の状態）"
     }
   },
   "new_dp": {

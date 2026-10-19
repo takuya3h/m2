@@ -382,3 +382,4 @@ PD の要約の控え `stage2pilot_metrics.json` は前回の 22 本すべてに
   bengio は交差適合版の 2 本（予測-CF、正解予測-CF）を GPU 1 枚に 1 本ずつ回す（`handoff_bengio.md` §7、`meta.amendments` の 3 件目）
 - 23:17 JST: 利用者から「bengio 開始した」と伝えられた（P3 の予測-CF・正解予測-CF の 2 本）。bengio の検査（R1〜R5・S6・S7）の結果と本番の記録は、
   bengio の分岐 feat/stage2-pilot-fix-epoch4-shuffle-bengio の audit_bengio.md で受け取り、統合のときに確かめる
+- 00:2x JST（10/20）: P2L 入れ替えが rc=0。**P2L がそろった**（入れ替え 1 本・前回の記録 5 本）。中間記録を作り直した
