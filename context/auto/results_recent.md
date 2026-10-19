@@ -6,8 +6,76 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 124 件）。
-ここに出ない 119 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 126 件）。
+ここに出ない 121 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-10-19-evidence-maps-revise
+
+状態 `pass` / ホスト `Bengio` / 起票 `233` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 改訂前3件・パッチのSHA-256とバイト数が一致、4照合先HTTP 200。
+- `G2` pass — パッチ適用後3件のSHA-256とバイト数・行増減が一致、追跡変更は地図3件のみ。
+- `G3` pass — 様式違反0、抽出ID集合差がC/B/Nとも事前指定と一致。
+
+### 起票者の誤り
+
+- `self_contradiction` — 契約の完了判定 b は変更範囲を地図・照合結果・本契約のディレクトリだけに限定する一方、実行手順の task スキルは tasks/inbox.d に最低一行の記録を要求しており、両方をそのまま満たすことはできなかった。変更前に利用者へ選択を求め、回答「1」により本契約の inbox.d 一件だけを追加する許可を得た。
+
+### 逸脱
+
+- `environment` — Defaultモード固定。planning-with-filesとagentmemoryが利用不可のため契約のPhase順と契約内の記録で進行。pytestは契約どおり未実行。
+- `judgement` — 利用者の回答「1」に基づき、契約の変更範囲に tasks/inbox.d/T-2026-10-19-evidence-maps-revise.md 一件を追加する。
+
+### 申し送り
+
+- C=29、B=34、N=37の全IDが実在・書誌一致。N追加書誌18 IDは全て該当行と比較。書誌IDなしはC-24だけ。
+
+### 断定できなかったこと
+
+（なし）
+
+## T-2026-10-18-evidence-verify-place
+
+状態 `pass` / ホスト `bengio` / 起票 `231` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — Crossref・doi.org（handle と doiRA）・DataCite・arXiv の API に HTTP 200 で到達した。受け渡しの十件を置き場から読み、SPEC の表の sha256 とバイト数に 10 件とも一致した（不一致 0）
+- `G2` pass — 照合器: 実際の照合先で Crossref DOI・arXiv 2 件が実在・書誌一致、DataCite DOI が実在（登録機関 DataCite）、架空の DOI・arXiv が不在、127.0.0.1:9 で到達不能 3・不在 0。差し替えの HTTP の試験でも同じ。様式の検査: 写しで零件と四種の各 1 件。schema: 正しい宣言が通り壊れた宣言 9 種が L1-1
+- `G3` pass — 照合器の --extract-only の出力と expected-ids.txt を地図ごとに (種別, ID) の集合で比べ、C 29・B 34・N 36 とも差 0 件（DOI の大文字小文字まで一致）
+
+### 起票者の誤り
+
+- `check_does_not_check` — E-1 は実行ホスト bengio で make test の失敗の集合を変更前と比べるとしたが、bengio の make test は third_party/Relation-DETR/util/convergence.py が無く収集の段階で中断し試験を一件も実行しない。指示どおりに比べると前後とも収集の誤り 1 件で一致するだけで、変更の影響を検査しない
+- `check_does_not_check` — E-1 の make spec-check は TASK を付けていない。字面どおりに打つと全 147 契約が対象になり、過去の契約の 210 件の該当で exit 2 になる。本契約の検査としては働かない（Makefile の注記も TASK の指定を求める）。TASK=本契約で回して該当 0 を確かめた
+
+### 逸脱
+
+- `environment` — 作業ツリーに Syncthing で届いた他契約の未追跡の出力 14 件（experiments/）があり task-start が止まった。利用者の判断で .git/info/exclude に 3 行と注記を足し（控えあり）、phase0 へ切り替えて清浄を確かめてから task-start を一度だけやり直した
+- `environment` — bengio の make test は third_party/Relation-DETR/util/convergence.py が無く収集で中断する。変更前後の失敗の集合は同じ引数に --continue-on-collection-errors を足した pytest で比べた
+- `judgement` — 試験は CUDA_VISIBLE_DEVICES= で GPU を見せずに回した（契約は GPU を使わない。前後とも同じ条件）
+- `environment` — CLAUDE.md の ctxpack がホストに無く、照合先の作法の文書は WebFetch で読んだ
+- `environment` — arXiv の API が 02:18〜02:24 JST にキャッシュに無い問い合わせをすべて 429 で返し 10 分あけて戻った。照合器の 429・5xx の待ちを 10〜120 秒の四段から 10〜600 秒の六段へ延ばした
+- `judgement` — 題名の欄が略称・説明の行（B-02・B-03・B-06・B-10・N-10）を書誌に差とする規則を、結果を見た後に緩めなかった。著者は一致しており、内訳を RESULT に分けて書いた
+- `judgement` — ネットワークを断った状態での試験は unshare -rn が許されず取れなかった。通信の口を塞ぐ仕掛けが実際の呼び出しを止めることを測って代えた
+- `judgement` — 対照の地図と結果は scratchpad に置き repo に入れていない。試験の副産物 .coverage（未追跡）は commit していない
+
+### 申し送り
+
+- 照合で書誌に差の 8 件は地図に反映していない（決定 2）。題名の欄が略称・説明の行 6 件（B-02 の 1610.08851 と 1610.08844、B-03 MTRCNet-CL、B-06 CLIPSeg、B-10 SELSA、N-10 KAFR。著者はすべて一致）、題名の語の違い 1 件（C-21 Digital Twin-based Scene Representation → arXiv Digital Twin Representation）、著者の欠け 1 件（N-01 地図 1 名・DataCite 6 名）。反映は起票者が次の契約で決める
+- B-02 の書誌 ID の欄の二つは別の文献。1610.08851 は Single- and Multi-Task Architectures for Tool Presence Detection Challenge at M2CAI 2016、1610.08844 は Single- and Multi-Task Architectures for Surgical Workflow Challenge at M2CAI 2016（著者はどちらも Twinanda, Mutter, Marescaux, de Mathelin, Padoy）
+- C-05（ORViT、2110.06915）の掲載先は地図が ECCV 2022 系、arXiv の comment が CVPR 2022
+- bengio の .git/info/exclude に Syncthing で届いた他契約の出力 3 経路を足した（利用者の判断。契約後も残す）。bengio では今後 experiments/phase1/stage2pilot_*/ の新しい出力も git status に出ない
+- bengio の make test は third_party/Relation-DETR/util/convergence.py が無く収集で中断する。2026-10-17 の snapshot を bengio へ戻すかは未決
+- tools/fetch_task.py の extras_from_spec は bytes: true を通す（schema は落とす）。tests/test_fetch_task.py::test_rejects_unknown_file_name は文言の食い違いで変更前から落ちる。どちらも本契約では直していない
+- 試験の副産物 .coverage が bengio の作業ツリーに未追跡で残っている（commit していない）
+
+### 断定できなかったこと
+
+- arXiv の 429 が同じ出口の IP の他の台の問い合わせによるものか（この台には arXiv へ問い合わせる他のプロセスが無かった）
+- 新しい試験がネットワークを断った状態でも通るか（unshare -rn が許されず測れなかった。通信の口を塞ぐ仕掛けで代えた）
 
 ## T-2026-10-17-tower-reselect-prereq
 
@@ -122,71 +190,4 @@
 
 - 他ホストでの動作（他ホストへ接続しないため測っていない）。変更は統合後に各ホストへ届く
 - 旧様式の報告の tests の三整数（旧報告にも旧 RESULT.md にも試験の記録が無く、書き直さない決定のため据え置き）
-
-## T-2026-10-08-doc-checks-clean-and-defect-log
-
-状態 `pass` / ホスト `philip` / 起票 `221` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 手元では agent-check 1 件（docs/experiment_settings.md:155→156）と docs-check 1 件（docs/proposal-gate.md:41）。GitHub から複製した作業ツリーでは agent-check 1 件、docs-check 7 件。手元の repo から複製した場では docs-check 8 件（OPERATION.md:84 が加わる）。全件を audit.md A3・A4 に記録
-- `G2` pass — 手元と GitHub の複製（変更した 3 ファイルを写した）の両方で二つの検査が合格。複製に実在しない経路と分けた読み込みを足すと、それぞれ rc 1 で検出。手元のファイルを touch した場と無い場で docs-check は同じく合格
-
-### 起票者の誤り
-
-- `check_does_not_check` — 完了判定 b の新しく取得した作業ツリーは取得元を定めていない。docs-check は分岐名を遠隔追跡の参照で除外するため、手元の repo から複製すると OPERATION.md:84 の分岐名が実在しない経路として追加で 1 件出る。取得元しだいで結果が変わり、判定 b はホストに左右されないことを測りきれない
-
-### 逸脱
-
-- `judgement` — 新しい作業ツリーを GitHub の origin からの複製と手元の repo からの複製の二つで測り、判定には前者を用いた。後者は遠隔に分岐が揃わず、新しく取得した状態を代表しないため
-- `judgement` — R1 は文書の側を直した。二行は選択肢であり、検査の判定は誤っていないと判断した。見出しの文で塊を分け、続く操作と同じ命令で読み込む形を一文で添えた
-- `judgement` — R2 は雛形の経路を <YYYY-MM-DD>-<slug> の置き場の形に直し、既存の VAR_MARKS 規則で対象外にした。外す印は使っていない
-- `judgement` — R3 は検査器の側で、git check-ignore が無視とする経路を在っても無くても対象外にした。追跡下のファイルは無視とされないため、版管理に在るはずの経路の検出は減らない
-- `environment` — 試験全体は収集のエラー 2 件で中断するため、変更前後とも --continue-on-collection-errors を付けて回した
-
-### 申し送り
-
-- docs-check の分岐名の除外は git branch -r に依存する。手元の repo から複製した作業ツリーや --single-branch の複製では OPERATION.md:84 の docs/plan-rewrite-2026-06 が実在しない経路として出る。分岐名の判定を参照に依存しない形にするかは起票者の判断
-- 以後の契約は、文書の二つの検査の合格そのものを完了条件にできる（手元と GitHub の複製で合格を確認）
-
-### 断定できなかったこと
-
-- 他のホストでの二つの検査の結果（他ホストへ接続しないため測っていない）
-- 本契約の目印による一時停止の記録の出現（確認時点では次のループ待ち）
-
-## T-2026-10-07-track-extra-phase-annotations
-
-状態 `pass` / ホスト `efros` / 起票 `204` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 20 件の名前の集合、合計 210618 バイト、各 sha256 が前の契約の記録と一致し、data/raw と ~/slocal2/EgoSurgery の写しとも 20/20 一致。P*-20 の道具 4 件が起点 b9272cfe に在る
-- `G2` ask — 読む箇所を 2 通りで探し、23 件だけのディレクトリと実ディレクトリで動かして分類した。15 動画前提で全部を読み値が変わる 7 月の監査と EDA の 8 本を利用者に諮り、「直さず表に残す」の回答を得た
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — §2 は動画 22 の注釈は efros に無いと書くが、efros の data/raw/…/annotations/phase/ には 22_1〜22_3 が在る。無いのは data/annotations/egosurgery_phase/ だけ。Task B-4 が懸念した追加 6 動画の節の差分は出ず、生成器の出力は正本と一致した
-- `self_contradiction` — Task B-3 は 15 動画前提で全部を読む箇所を直し生成物が変わらないことを確かめよと定めるが、該当の監査と EDA は出力先が experiments/ で禁止 5 に当たり、import だけで書くものもある。指示どおりでは確認できず、G2 で利用者に諮った
-
-### 逸脱
-
-- `judgement` — Gate G2 で、15 動画前提で全部を読む 8 本（hts_phase_coverage のプロジェクト側、EDA 3 本、audit 系 4 本）を利用者に諮った。出力が experiments/ に在り、直した後の確認に実行が要るため。回答により直さず、文書の表に再実行すると値が変わることを書いた
-- `judgement` — audit・EDA 系は import だけで experiments/ に mkdir するものがあるため、丸ごと動かさず、読み込み部分を同じ書き方で scratchpad の計測スクリプトに写して 2 状態で比べた。関数として切り出されている箇所は import して動かした
-- `judgement` — 実行者の誤り: 計測の初回で verify_thinning_rule の出所をディレクトリの経路のまま比べ、27694 件の差と出した。経路を揃えて測り直し 10461 件（動画 17〜21）とした。出所は使われていない
-- `judgement` — 実行者の誤り: README の確認のつもりで sed -i に p を付けて実行し、前の契約の節の注意書き 2 行を二重にした。差分を見て元に戻した。その注意書きは本契約で解消したため、解消の注記を 1 行足した
-- `judgement` — 生成器の修正は load_phase に videos 引数を足し、main が公式分割の 15 動画を渡す形にした。design_val_subsets は従来どおり引数なしで呼び自分で絞るため変えていない
-- `environment` — ruff が a1_fold_table.py の 555・578 行に F541 を 2 件出す。起点の版でも同じで、本契約の変更行ではないため直していない
-- `environment` — make forbidden-check は契約が想定したとおり fail（違反 20、すべて追跡した 20 件）。起点は分岐点 b9272cfe
-- `judgement` — 起動前に退避した session digest は無かった（未追跡は注釈 CSV 20 件のみ）
-
-### 申し送り
-
-- 他ホストでは同期の前に docs/stage1/extra_phase_annotations.md の手順で、同じ経路の未追跡の写しを照合する。git は内容が同一でも未追跡のファイルを上書きしない
-- 7 月の監査と EDA の 8 本は、20 件の追跡の後に再実行すると 17〜21 が入り、experiments/analysis/ に記録済みの値と変わる。再実行するなら読む動画を 15 本に絞ってから
-- context/conventions.md#folds は追加動画を 17〜22 の 6 本と書くが、追跡したのは 17〜21 の注釈だけ。動画 22 の注釈は data/raw にだけ在る
-- make agent-check の既存の失敗（docs/experiment_settings.md:155）は本契約でも未対応
-
-### 断定できなかったこと
-
-（なし）
 

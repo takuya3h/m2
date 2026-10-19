@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（624 件）
+## 申し送り（632 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -998,7 +998,21 @@
 - 規約の変更により conventions_rev を持つ全契約が L2-6 の WARN になる（想定内。他の契約の conventions_rev は書き換えていない）
 - andrew の main.py の変更前の版は ~/m2-evacuated/T-2026-10-17-tower-reselect-prereq/third_party/Relation-DETR/main.py に残してある。不要になったら利用者の判断で片付ける
 
-## 断定できなかった事項（394 件）
+### T-2026-10-18-evidence-verify-place
+
+- 照合で書誌に差の 8 件は地図に反映していない（決定 2）。題名の欄が略称・説明の行 6 件（B-02 の 1610.08851 と 1610.08844、B-03 MTRCNet-CL、B-06 CLIPSeg、B-10 SELSA、N-10 KAFR。著者はすべて一致）、題名の語の違い 1 件（C-21 Digital Twin-based Scene Representation → arXiv Digital Twin Representation）、著者の欠け 1 件（N-01 地図 1 名・DataCite 6 名）。反映は起票者が次の契約で決める
+- B-02 の書誌 ID の欄の二つは別の文献。1610.08851 は Single- and Multi-Task Architectures for Tool Presence Detection Challenge at M2CAI 2016、1610.08844 は Single- and Multi-Task Architectures for Surgical Workflow Challenge at M2CAI 2016（著者はどちらも Twinanda, Mutter, Marescaux, de Mathelin, Padoy）
+- C-05（ORViT、2110.06915）の掲載先は地図が ECCV 2022 系、arXiv の comment が CVPR 2022
+- bengio の .git/info/exclude に Syncthing で届いた他契約の出力 3 経路を足した（利用者の判断。契約後も残す）。bengio では今後 experiments/phase1/stage2pilot_*/ の新しい出力も git status に出ない
+- bengio の make test は third_party/Relation-DETR/util/convergence.py が無く収集で中断する。2026-10-17 の snapshot を bengio へ戻すかは未決
+- tools/fetch_task.py の extras_from_spec は bytes: true を通す（schema は落とす）。tests/test_fetch_task.py::test_rejects_unknown_file_name は文言の食い違いで変更前から落ちる。どちらも本契約では直していない
+- 試験の副産物 .coverage が bengio の作業ツリーに未追跡で残っている（commit していない）
+
+### T-2026-10-19-evidence-maps-revise
+
+- C=29、B=34、N=37の全IDが実在・書誌一致。N追加書誌18 IDは全て該当行と比較。書誌IDなしはC-24だけ。
+
+## 断定できなかった事項（396 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1736,18 +1750,23 @@
 - andrew で検出塔の学習（逆伝播と収束規則の実際の低下・打ち切り）は流していない
 - context/env-facts.md の『直接接続は不可能』が指す対象
 
-## 起票者の誤りの型（361 件）
+### T-2026-10-18-evidence-verify-place
+
+- arXiv の 429 が同じ出口の IP の他の台の問い合わせによるものか（この台には arXiv へ問い合わせる他のプロセスが無かった）
+- 新しい試験がネットワークを断った状態でも通るか（unshare -rn が許されず測れなかった。通信の口を塞ぐ仕掛けで代えた）
+
+## 起票者の誤りの型（364 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 95 |
+| `check_does_not_check` | 97 |
 | `asserted_without_measuring` | 152 |
-| `self_contradiction` | 94 |
+| `self_contradiction` | 95 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 0 |
 | `rule_read_narrowly` | 1 |
 
-合計 361 件（対を持つ契約 124 件から）
+合計 364 件（対を持つ契約 126 件から）
 

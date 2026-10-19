@@ -1513,3 +1513,21 @@ forward した region token が既存の `t1a_regiontoken/relation_detr_seed42` 
   交差適合（`crossfit_split.py`、`make_cf_annotations.py`、`run_cf_dtower.sh`、`cf_ptower.py`）、集計（`aggregate.py`）、test 不使用の検査（`test_audit.py`）
 - **andrew の GPU 2 枚の DDP は `NCCL_P2P_DISABLE=1` が要る**（IOMMU が有効で、P2P の all_reduce が無言で止まる）。andrew で検出塔の学習が動くことを初めて確かめた
 - 大きな生成物（信号・checkpoint・交差適合用の検出塔）は版管理と同期の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/` に置いた
+
+### 証拠地図の照合器と様式の検査、契約の追加ファイルの宣言（2026-10-19、bengio）
+
+契約 `T-2026-10-18-evidence-verify-place`（impl。装置は使わない）。記録は `tasks/T-2026-10-18-evidence-verify-place/`、置き場の説明は `docs/evidence/README.md`。
+
+- **照合器** `tools/verify_evidence_ids.py`（`make evidence-verify MAP=<地図>`）。地図の DOI と arXiv ID を抜き出し、ID ごとに
+  実在・書誌一致 / 実在・書誌に差 / 実在・照合不能 / 不在 / 到達不能 に分ける。DOI の実在は doi.org の handle で確かめ（登録機関によらない）、
+  書誌は登録機関（Crossref・DataCite）の API、arXiv は API に一つの地図の ID をまとめて引く。問い合わせに連絡先を入れない。
+  結果は `docs/evidence/verification/<地図>.json` と `.md`
+- **様式の検査** `tools/check_evidence_map.py`（`make evidence-check`）。雛形 `docs/evidence/_template.md` の「検査が見る項目」を見る。
+  禁止語は `context/conventions.md` から `tools/check_proposal.py` の関数で読む
+- **spec の schema** に `inputs.bundle_extras` を足した（`tools/fetch_task.py` の `extras_from_spec` と同じ制約）。これまでは宣言つきの契約が
+  取り込みの最後の L1-1 で落ちて巻き戻っていた。全 147 契約（本契約を含む）の `make task-validate` の成否は変更の前後で同じ
+- **置いたもの**: 地図 C v2・B v2・N v1 と雛形を `docs/evidence/`、元の報告五件を `docs/evidence/reports/`（中身は手を加えていない）。
+  旧地図 B（2026-09-16）の冒頭に v1 であることと後継を明記した。旧地図 A は変えていない
+- **照合の結果**（2026-10-19）: 地図 C 29 ID（一致 27・差 1・照合不能 1）、B 34 ID（一致 29・差 5）、N 36 ID（一致 16・差 2・照合不能 18）。
+  不在と到達不能は 0。様式の検査は三つとも違反 0。地図の本文は書き換えていない（差をどう反映するかは起票者が決める）
+- 試験: `tests/test_verify_evidence_ids.py`（HTTP は差し替え、通信の口を塞いで実行）・`tests/test_check_evidence_map.py`・`tests/test_bundle_extras_schema.py`
