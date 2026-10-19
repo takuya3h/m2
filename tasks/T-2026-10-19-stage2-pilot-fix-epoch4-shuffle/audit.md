@@ -383,3 +383,48 @@ PD の要約の控え `stage2pilot_metrics.json` は前回の 22 本すべてに
 - 23:17 JST: 利用者から「bengio 開始した」と伝えられた（P3 の予測-CF・正解予測-CF の 2 本）。bengio の検査（R1〜R5・S6・S7）の結果と本番の記録は、
   bengio の分岐 feat/stage2-pilot-fix-epoch4-shuffle-bengio の audit_bengio.md で受け取り、統合のときに確かめる
 - 00:2x JST（10/20）: P2L 入れ替えが rc=0。**P2L がそろった**（入れ替え 1 本・前回の記録 5 本）。中間記録を作り直した
+- 00:58 JST（10/20）: bengio の分岐 `feat/stage2-pilot-fix-epoch4-shuffle-bengio`（78f8260b）を受け取った。照合（andrew の値と突き合わせ）:
+  新しいファイルだけ（72 件、既存の追跡ファイルの変更 0）。入力の要約値（信号 8 本・重み・注釈・画像）一致、Relation-DETR のソース 142 本の要約値 2f08e521… 一致、
+  MS-Deform-Attn のソース一致、torch 2.1.2+cu118・CUDA 11.8・cuDNN 8700、`.venv-relation-detr` のパッケージ一覧 72 個が同一。
+  塔単独の mAP 0.7273450248398429（andrew と同値）、恒等性（P-GT・入れ替えた P0・gtpred_noCF を入れた零初期化）は score・枠・ラベルの差 0、
+  陽性対照の mAP 0.7271373（andrew と同値）。試走は AP 0.891661（andrew の試走と同値）。
+  本番 2 本: 予測-CF（14:10〜15:52 UTC）、正解予測-CF（14:10〜15:51 UTC）とも rc=0、result_selection final_epoch、epoch 3、学習前 0.7273450、凍結部の前後一致、server bengio
+- bengio の記録（audit_bengio.md）によれば、bengio の S1 で GPU 2 枚に本件以外のプロセス（`/tmp/gpu_dummy_load.py`）が居り、利用者の指示で 22:51 JST に bengio の実行者が止めた
+- 統合: 1 回目は index の書き込みが状態行の処理と競合して失敗し、統合の途中の状態（MERGE_HEAD あり、index は空）になった。`git merge --abort` で戻し
+  （追跡ファイルの変更 0 を確かめてから）、ロックが空くのを待ってやり直した（a7a5aa67）
+- 01:12 JST: andrew の P3 の空・予測-noCF・正解・入れ替えが rc=0（結果は epoch 3、学習前は塔単独と同値）。**P3 がそろい、PD の全 run がそろった**。
+  定時確認（cron b850d33b）と速さの計測（rate_sampler.sh）を止めた。andrew の GPU の compute プロセス 0 件
+
+## F. 集計・検証・報告（10/20 01:1x JST〜）
+
+### F-1 最終の集計
+
+    $ .venv/bin/python scripts/stage2pilot/aggregate_fix.py --out-json experiments/analysis/stage2_pilot_fix/report.json \
+        --out-md experiments/analysis/stage2_pilot_fix/REPORT.md --head .../report_head.md --tail .../report_tail.md
+    前回 PD 22・DP 63、本契約 PD 13・DP 26、計算し直し 124 件で食い違い 0 件
+
+- 値の無い腕 0。動画ごとの値が UNKNOWN の腕は 12（回し直さない 8 本と、空の腕の動画ごとが無い P2L の全腕）
+- PD の回し直しの再現: epoch ごとの val mAP の前回との差の最大 0.0014（P3 予測-CF、bengio）。回し直した 12 本の学習前の値はすべて塔単独と同値
+- PD の 1 本の壁時計: andrew の P1 は 3.35〜4.67 時間（1 枚 2〜3 本）、P2L 入れ替え 3.36、P3 は 2.45〜3.44、bengio の P3 は 1.68 と 1.71（1 枚 1 本）、P2F の評価 0.08
+
+### F-2 test 不使用（完了判定 l）
+
+`test_audit_fix.py` が別ホストの run の注釈の経路（bengio の重ねの BODY）を開けずに落ちた。bengio の入力の照合の記録の sha256 が andrew の同じ名前の注釈と
+一致するときだけ andrew の写しで数える形に直した（一致しなければ止まる）。
+
+    $ test_audit_fix.py --out experiments/analysis/stage2_pilot_fix/test_audit_final.json → 9 段すべて共通 0、全体の共通 0 件
+    $ test_audit_fix.py --out .../test_audit_final_inject04.json --inject 04 → 全体の共通 1 件 ['04']
+
+### F-3 試験（完了判定 m）
+
+    $ CUDA_VISIBLE_DEVICES="" PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider -rfE --continue-on-collection-errors
+    6 failed, 888 passed。失敗の名前は開始時の 6 件と同じ（増えた 5 件は本契約で足した既定の固定の試験）
+
+### F-4 禁止領域・中間記録の push（完了判定 m、k）
+
+    $ make forbidden-check TASK=T-2026-10-19-stage2-pilot-fix-epoch4-shuffle → status pass、changed 586、permitted 563、violations 0、errors 0
+      空振りでないことの確認: 本契約の新しいファイル（experiments/analysis/stage2_pilot_fix/REPORT.md など）を変更として拾い、allow_write の許可として分類した
+    $ make task-validate → OK
+    前回の置き場（experiments/phase1/stage2pilot_*、experiments/analysis/stage2_pilot_folda/、tasks/T-2026-10-18-stage2-pilot-folda/、OLD）で開始後に更新されたもの: 0（C の確認と同じ find）
+
+中間記録の commit（40a8146e、84056eb5、c0f11094、bb0bf533、15d32028、a7a5aa67）が遠隔の分岐の先頭の祖先であることは、送出の commit の push の後に確かめる（F-5）。

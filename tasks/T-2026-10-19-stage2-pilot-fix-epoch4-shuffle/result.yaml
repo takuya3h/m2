@@ -1,6 +1,6 @@
 result_version: 3
 task_id: "T-2026-10-19-stage2-pilot-fix-epoch4-shuffle"
-status: pass   # 【最後に確かめる】
+status: pass
 host: "andrew（P3 の予測-CF・正解予測-CF だけ bengio）"
 branch: "feat/stage2-pilot-fix-epoch4-shuffle"
 pr: 240
@@ -13,8 +13,8 @@ gates:
 
 tests:
   before_failed: 6
-  after_failed: 6        # 【最後に回し直す】
-  after_passed: 888      # 【最後に回し直す】
+  after_failed: 6
+  after_passed: 888
 
 deviations:
   - {type: judgement, note: "Task A-6: conventions_rev と runindex_commit を前回と同じ読み（git log -1 -- <経路>）で実測し、起票時の値と違ったため差し替えた（内容は同一。amendments 1 件目）"}
@@ -23,13 +23,16 @@ deviations:
   - {type: judgement, note: "速さの試しとして GPU 1 枚に 3 本目を 1 回だけ足した（GPU 0 で P1-W2 入れ替え、GPU 1 で P3 予測-noCF）。合計の速さの伸びは 3% と 0 で、それ以上は足さなかった"}
   - {type: judgement, note: "実行者の誤り: PD の試走の後処理が、val 20 枚で群の AP が None になる場合を書式で落とした。直して後処理だけ回し直した"}
   - {type: judgement, note: "実行者の誤り: andrew で P3 の 4 本を起こしかけた命令が途切れ、正解と予測-CF の 2 本が学習の前で止まった（プロセスは残らなかった）。フォルダを本契約の置き場（FIX/aborted_runs）へ移し、後で同じ名前で回し直した"}
+  - {type: environment, note: "bengio の S1 で GPU 2 枚に本件以外のプロセス（/tmp/gpu_dummy_load.py）が居り、利用者の指示で bengio の実行者が止めた（audit_bengio.md）"}
+  - {type: judgement, note: "実行者の誤り: bengio の分岐の統合の 1 回目が index の書き込みの競合（状態行の処理）で途中の状態になった。merge --abort で戻し、ロックが空くのを待ってやり直した。データの損失なし"}
+  - {type: judgement, note: "test_audit_fix.py は別ホストの run の注釈の経路（bengio の重ねの BODY）を開けないため、bengio の入力の照合の記録の sha256 が andrew の同じ名前の注釈と一致するときだけ andrew の写しで数える形にした"}
   - {type: judgement, note: "道具: train_t1b.py に --fixed-epochs、dp_train.py に --fixed-epochs・--task-id・--exp-prefix・--smoke・腕 shuffle・identity --arm、run_pd_fix.sh に置き場の切り替え（S2FIX_BODY、S2FIX_CODE）を足した。既定の経路は変えず、試験で固定した"}
 
 issuer_defects:
-  - {type: asymmetric_comparison, note: "SPEC §1 の「P1-W1 の正解の標的群 AP の差は最後の回で +0.0087」は、正解の epoch 3 と空の epoch 2（空は前回 epoch 2 で止まった）の差だった。同じ epoch どうしでは epoch 2 で +0.0195、今回の 4 epoch 目どうしで +0.0197"}
-  - {type: check_does_not_check, note: "完了判定 f（入れ替えの腕の学習前の出力が塔単独と一致）は零初期化の界面ではどんな信号でも成り立ち、入れ替えが正しいかは確かめない"}
-  - {type: asserted_without_measuring, note: "SPEC §3 は split 全体で入れ替えれば動画単位の情報を残さないとしたが、val は動画 2 本のため入れ替えた後も 55.6% のフレームが同じ動画の信号を受け取る（train は 11.5%）"}
-  - {type: asserted_without_measuring, note: "meta.created_from.runindex_commit と contract.conventions_rev に、Task A-6 の読み（その経路の最新の commit）と違う値（起票時の phase0 の先頭）が書かれていた。内容は同一だが差し替えが要った"}
+  - {type: asymmetric_comparison, note: "SPEC §1 の「P1-W1 の正解の標的群 AP の差は最後の回で +0.0087」は、正解の epoch 3 と空の epoch 2（空は前回 epoch 2 で止まった）の差だった。同じ epoch どうしでは epoch 2 で +0.0195、今回の 4 epoch 目どうしで +0.0197。指示どおりに読むと、選び方の偏り（欠陥 A）を長さの違いの分だけ大きく見積もる"}
+  - {type: check_does_not_check, note: "完了判定 f（入れ替えの腕の学習前の出力が塔単独と一致）は、零初期化の界面ではどんな信号を入れても成り立つ。指示どおりに確かめても、入れ替えが正しく行われたかは何も分からない（入れ替えそのものは e と i が確かめる）"}
+  - {type: asserted_without_measuring, note: "SPEC §3 は split 全体で入れ替えれば動画単位の情報を残さないとしたが、val は動画 2 本のため入れ替えた後も 55.6% のフレームが同じ動画の信号を受け取る（train は 11.5%）。指示どおりに作ると、val の入れ替えの腕には動画単位の情報が半分以上残る"}
+  - {type: asserted_without_measuring, note: "meta.created_from.runindex_commit と contract.conventions_rev に、Task A-6 の読み（その経路の最新の commit）と違う値（起票時の phase0 の先頭）が書かれていた。内容は同一だが、指示どおりに Task A-6 を実測すると食い違いとなり、差し替えと amendments の記録が要った"}
 
 positive_controls:
   - {judgement: "a compute プロセスの列挙", breaking_input: "目印の引数を持つ自分の bash を起こす／zsh を指定する／存在しない実行ファイルの経路", observed: "目印の bash を 1 件、zsh 指定と存在しない exe では 0 件"}
@@ -41,7 +44,9 @@ positive_controls:
   - {judgement: "e 入れ替えの判定", breaking_input: "恒等の並べ替え／値を一つ変えた写し", observed: "対応が変わった割合 0.0／値の集合の一致 False"}
   - {judgement: "f 恒等性", breaking_input: "界面の最後の層を N(0, 0.05²) にする（P2F は表を入れる）", observed: "PD 4 構成と DP 5 型のすべてで出力が変わった（PD score 差の最大 0.045〜0.94、DP ロジット差 0.14〜2.05）"}
   - {judgement: "l test 不使用", breaking_input: "各段の動画の集合に 04 を混ぜる", observed: "全体の共通が 0 件から 1 件（['04']）になった"}
-  - {judgement: "m 禁止領域の検査", breaking_input: "本契約の新しいファイル", observed: "UNKNOWN（最後に回す）"}
+  - {judgement: "m 禁止領域の検査", breaking_input: "本契約の新しいファイル（例 experiments/analysis/stage2_pilot_fix/REPORT.md、experiments/phase1/stage2fix_pd_P3_gt_ep4_seed42/）", observed: "同じ道具が変更として拾い、契約の allow_write による許可として分類した（violations 0）"}
+  - {judgement: "別ホストの入力の照合（input_digest.py）", breaking_input: "bengio の third_party/Relation-DETR（直す前）", observed: "ソース 23 件の違いを検出して止まった。andrew の写しを参照させた後は 142 本の要約値が一致"}
+  - {judgement: "j 計算し直しの検査", breaking_input: "UNKNOWN（作り物の食い違いは入れていない）", observed: "124 件で食い違い 0。食い違いを作って検出するかは測っていない"}
 
 followups:
   - "新しい界面の型の候補を回す次の契約は、固定の長さ（--fixed-epochs）と入れ替えの腕（shuffle_signals.py、腕 shuffle）をそのまま使える"
@@ -50,7 +55,9 @@ followups:
   - "bengio の .venv-relation-detr（向け直した）と third_party/Relation-DETR（andrew と 23 件違う）、重ねの BODY と worktree を残すか戻すかを決める"
 
 unknowns:
-  - "回し直さない PD の 8 本の動画ごとの 4 epoch 目の値（epoch 3 の予測と重みが残っていない）"
+  - "回し直さない PD の 8 本の動画ごとの 4 epoch 目の値（epoch 3 の予測と重みが残っていない）。P2L は空の腕の動画ごとが無いため全腕の動画ごとの Δ空"
+  - "andrew で GPU 1 枚に PD を 1 本だけ載せたときの速さ（測っていない）"
+  - "計算し直しの検査（完了判定 j）が作り物の食い違いを検出するか（陽性対照を入れていない）"
 
 commits:
   - "f1f80a28 task(stage2-pilot-fix): 契約を取り込み、開始状態を記録する（G1 pass）"
@@ -60,3 +67,7 @@ commits:
   - "84056eb5 exp(stage2-pilot-fix): P2F の入れ替えの評価を置く"
   - "c0f11094 exp(stage2-pilot-fix): P1-W1 の回し直し 2 本と入れ替えを揃え、中間記録を更新する"
   - "bb0bf533 exp(stage2-pilot-fix): P1-W2 の回し直しと入れ替えを揃え、中間記録を更新する"
+  - "707d9d4a docs(stage2-pilot-fix): bengio への引き渡し（P3 の 4 本）と入力の照合の道具を置く"
+  - "15d32028 exp(stage2-pilot-fix): P2L の入れ替えを揃え、中間記録を更新する"
+  - "78f8260b exp(stage2-pilot-fix): bengio で P3 の予測-CF と正解予測-CF を回し、照合と監査を置く（bengio）"
+  - "a7a5aa67 Merge feat/stage2-pilot-fix-epoch4-shuffle-bengio"
