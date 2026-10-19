@@ -1,0 +1,32 @@
+[
+  {
+    "judgement": "a: SPEC5.1との対応",
+    "breaking_input": "メモリ上の規約の写しから入力の縮小規則の使える行の項目だけを除く",
+    "observed": "5.1-1 の対応が不一致になった。原文では全23項目が一致した。"
+  },
+  {
+    "judgement": "f: 節ハッシュ",
+    "breaking_input": "メモリ上の規約の写しの sigma 見出しを一文字変える",
+    "observed": "sigma だけが追加の変更節として検出された。"
+  },
+  {
+    "judgement": "d: 折り表の既存行保持",
+    "breaking_input": "既存行が一件でも消えれば集合差で検出する",
+    "observed": "原文では既存行の集合差0。メモリ上の写しから識別子の既存行1本を除くと、その行だけが集合差として検出された。"
+  },
+  {
+    "judgement": "P7 destination",
+    "breaking_input": "既存ファイルを destination に指定する（是正前）",
+    "observed": "是正前 FAIL、起票者指定の是正後 PASS（初回と再開時の実測ログ）。"
+  },
+  {
+    "judgement": "spec-check allow_write",
+    "breaking_input": "再開中の契約の別名写しから destination の allow_write 追加だけを外す",
+    "observed": "再開中の結果に更新後、是正済み契約は0件、許可を外した写しはallow_write_incomplete 1件。前回停止報告のままでは完了扱いによる検査省略で0件だった。"
+  },
+  {
+    "judgement": "i: make forbidden-check",
+    "breaking_input": "repo外の隔離した写しの data/forbidden-control.txt を追加する",
+    "observed": "陰性対照は違反0・exit0。隔離した写しにだけdataを足した陽性対照は違反1・make exit2。実repoのdataは無変更。"
+  }
+]

@@ -1,0 +1,2 @@
+- [ ] 2026-10-19 [cx] L3 P7 が outputs.destination=context/conventions.md をディレクトリではないとして FAIL。契約・検査器を修正せず Phase A の前で停止した。（T-2026-10-19-conventions-and-defect-records）
+- [ ] 2026-10-19 [cx] 起票者の明示指示で本契約のdestination・allow_writeを是正しamendments付きで再開。G1/G2 pass、関連試験96件は前後すべて合格。新アンカーprecision、入力縮小規則と同一ホストを規約化。旧到達性の元の経路はUNKNOWNとして保持。（T-2026-10-19-conventions-and-defect-records）
