@@ -46,7 +46,7 @@ PD では正解の腕で標的群 AP が P1 +0.020〜+0.023、P2L +0.014 上が�
 | m | 達成 | 中間記録を型ごとに push（`00560d62`、`dfe57511`、`7c72edfd`、`78dccc40`、`ec53d70d`）（audit 420-426、522-527） | 各 push の直後に `git ls-remote` の分岐の先頭が当該 commit |
 | n | 達成 | 全段で {04, 05, 07} との共通 0 件（audit 587-597） | `--inject 04` で共通 1 件 |
 | o | 達成 | `make forbidden-check` pass（違反 0、1,114 件を検査）、試験は 6 failed / 807 passed で失敗の名前は開始時と同じ 6 件（audit 569-581、598-606） | 同じ道具が本契約の新しいファイルを変更として拾った |
-| p | 【PR】 | 【PR】 | 分岐名 `feat/stage2-pilot-folda` |
+| p | 達成 | PR #235、base `phase0`、head `feat/stage2-pilot-folda`、draft false、OPEN | `gh pr view --json number,isDraft,baseRefName,headRefName,state` の実測。分岐名 `feat/stage2-pilot-folda` |
 
 ## 4. 実測
 
@@ -111,5 +111,5 @@ PD では正解の腕で標的群 AP が P1 +0.020〜+0.023、P2L +0.014 上が�
 
 ## 8. 送出
 
-- PR: 【PR】
-- `make task-report`: 【送信】
+- PR: #235（https://github.com/takuya3h/m2/pull/235）
+- `make task-report`: この RESULT と result.yaml を台帳へ送る。終了コードは送信の後に audit.md の G-5 とこの行に記録する
