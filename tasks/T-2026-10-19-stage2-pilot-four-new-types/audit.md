@@ -153,3 +153,121 @@ bengio の main の作業場所は分岐 `feat/proposal-gate-brief`、`status --
 **UNKNOWN**（逸脱 5。直しの契約が終わってから Task F で行う）。
 
 ### G2: **pass**（B-1・B-2。B-3 は Task F へ移した）
+
+## C. 実装と恒等性（G3）
+
+### C-1 実装（版管理下、`third_party/` は変えていない）
+
+| ファイル | 中身 | 既存の経路への影響 |
+|---|---|---|
+| `scripts/stage2pilot/dp_model.py`（変更） | 型 `logit_corr`・`tool_hist`・`tool_hist_nogate`（`LogitCorrection`、`ToolHistory`）。時間ヘッドの最後の段（続きの段の最後）だけを変える | 既存の 3 型の分岐は同じ（新しい型の名前のときだけ通る経路を足した） |
+| `scripts/stage2pilot/dp_train.py`（変更） | 型 `LC`・`TH`・`TH-NG`、32 次元の x(t)（`x32`）、`trainable_report`、epoch ごとのゲートの記録 | 既存の型の `Signals` と学習の流れは同じ。ゲートは持つ型だけ記録に足す |
+| `scripts/stage2pilot/pd_four.py`（新規） | `RelationDETRStage2Four`（`dec_xattn`、`extra_q`）、見落としの印つきの train の読み込み | 既存の `pd_model.py` は変えていない |
+| `configs/stage2pilot/pd_{dec_xattn,extra_q}_d{9,18}.py`（新規） | `make_pd_four_configs.py` で `pd_query_d9.py` から生成。差は検出器のクラスと界面の指定だけ | — |
+| `scripts/train_t1b.py`（変更） | `--missed-set`（extra_q の train の読み込み）、`gate_record`（`gate_values` を持つ検出器だけ epoch ごとのゲートを記録） | 渡さなければ従来の経路。`gate_values` の無い検出器では記録の中身も同じ |
+| `scripts/stage2pilot/{run_pd_four.sh,run_dp_four.sh,pd_four_eval.py,pd_four_finalize.py,xq_missed.py,kill_four.py,test_audit_four.py,aggregate_four.py,run_pd_four_identity.sh,make_pd_four_configs.py}`（新規） | 起動・評価・後処理・見落とし・殺し実験・test の監査・集計 | — |
+
+型の定義の読み（SPEC §3 の範囲で実行者が決めたもの）:
+
+- logit-correction: `b` は `W_in` の bias に一つだけ置き、`W_p` は bias なし。`W_out` と bias を零初期化。損失は前回と同じ形で全段の出力に当てる（変わるのは最後の段だけ）
+- tool-history: GRU の入力 `W_in x + b_in` は 64 次元。`W_o` は 64 → 64（z の次元）。ゲートなし版は `W_o` と bias を零初期化、カードどおりの版は α を 0 から（`W_o` は既定の初期化）
+- decoder-xattn: 工程の token は key と value に**そのまま**使う（射影を挟まない。token の生成が学習する線形写像なので）。各層の部分層は LayerNorm・射影・出力射影・α_l を層ごとに持ち、
+  token の生成と入力適合層は全層で共有。forward hook で decoder を通るすべての query（学習時の denoising と hybrid の経路を含む）に当てる
+- extra-queries: 元の query の出力を構成で塔単独と同じに保つため、元の経路は D\* のまま回し、追加の query だけを各層で元の query のその層の入力を key と value に加えて別に回す
+  （mask を張った一つの計算にすると行列積の形が変わって丸めが変わり得るため）。位置関係の埋め込みは追加の query の行について元と追加の両方の box との間で D\* と同じ式で作る。
+  学習では元の経路を勾配なし・評価と同じ形（denoising と hybrid なし）で回し、追加の query だけを見落としの box に `HybridSetCriterion`（各層の補助の損失つき）で当てる。
+  e_i と u_i は正規分布（nn.Embedding の既定と同じ）、スコアの定数は一つのスカラー（−10 から。全層の追加の出力に足す）
+- 界面の初期化は `torch.random.fork_rng` と固定の種で大域の乱数から切り離し、入力適合層を最後に作る（正解予測-CF の 18 次元の腕でも、界面の他の部分の初期値とその後の学習の乱数が同じになる）
+
+### C-2・C-3・C-5 DP（検出から工程）の恒等性（01:42〜01:44 JST、`experiments/analysis/stage2_pilot_four/identity/dp_*.json`、台本 `identity/run_dp_identity.sh`）
+
+三つの型 × 6 腕 = 18 本。すべて rc=0。
+
+- 学習前の val の macro Jaccard は 18 本とも 0.7762185528074379（塔単独と同値、`jaccard_equals_taskB` true）、ロジットの差の最大 **0.0**
+- 陽性対照（零から始めた部分を零でない値にする。LC は `W_out`、TH は α、TH-NG は `W_o`、尺度 0.05）でロジットが変わる: 差の最大 LC 0.164〜0.229、TH 0.000244〜0.000478、TH-NG 0.0624〜0.127
+- 学習する名前の集合（requires_grad）が界面のパラメータの名前の集合と **18 本とも一致**し、受け取り手のパラメータを一つ混ぜた集合では一致しない（`equal_with_one_head_param_mixed` false）。
+  界面のパラメータ数: LC 1,641、TH 31,233、TH-NG 31,232
+- x(t) の旗と出所（`x_layout`）: 空 (0, 0)・すべて 0、予測-noCF と予測-CF (1, 0)・`signals/final/D0_val.npz`、正解 (0, 1)・`signals/final/D-GT_val.npz`、
+  正解予測-CF (1, 1)・D-GT と D0、入れ替え (1, 0)・直しの契約の `signals/shuffle/D0_val.npz`。train は予測-CF と正解予測-CF の予測の半分が `signals/cf/D0_train.npz`（学習の run の config に残る）
+- TH の学習前の tanh(α) は 0.0
+
+### C-7 DP の試走（01:45:21〜01:45:49 JST、`run_dp_four.sh smoke LC TH TH-NG`、腕は予測-noCF、1 epoch）
+
+| run | val Jaccard | 学習の秒 | ゲート | 受け取り手の不変 |
+|---|---|---|---|---|
+| `stage2four_dp_001_LC_pred_noCF_ep1_smoke_seed42` | 0.770786 | 0.5 | — | true |
+| `stage2four_dp_002_TH_pred_noCF_ep1_smoke_seed42` | 0.776219 | 0.6 | tanh(α) 0.000948 | true |
+| `stage2four_dp_003_TH-NG_pred_noCF_ep1_smoke_seed42` | 0.768957 | 0.5 | — | true |
+
+1 epoch（10 歩）の学習が 1 秒未満なので、4 epoch の 1 本は特徴の読み込みを含めて数十秒の見込み（測っていない）。W&B の記録（`wandb_run.json`）は作られた。
+
+### C-5 PD（工程から検出）の decoder-xattn の恒等性と陽性対照（01:52〜02:13 JST、`identity/pd_DX_*.json`、台本 `identity/run_pd_identity.sh`）
+
+道具 `scripts/stage2pilot/pd_four_eval.py`（`pd_eval.py` と同じ評価の経路）。基準は B-2 の塔単独の予測 `$FOUR/identity/plain_val_preds.json.gz`。val 全 1,515 枚、重ねの BODY、bengio。
+
+| 腕 | 信号（val） | overall mAP | score 差の最大 | 枠の差の最大（px） | ラベル不一致 | 学習する集合 = 界面 | 学習対象 |
+|---|---|---|---|---|---|---|---|
+| 空 | `P0_val`（零にする、`--zero-ctx`） | 0.7273450248398429 | 0.0 | 0.0 | 0 | true | 210,374 |
+| 予測-noCF | `signals/final/P0_val` | 0.7273450248398429 | 0.0 | 0.0 | 0 | true | 210,374 |
+| 正解 | `signals/final/P-GT_val` | 0.7273450248398429 | 0.0 | 0.0 | 0 | true | 210,374 |
+| 予測-CF | `signals/final/P0_val` | 0.7273450248398429 | 0.0 | 0.0 | 0 | true | 210,374 |
+| 正解予測-CF | `arms/PD/gtpred_noCF_val`（18） | 0.7273450248398429 | 0.0 | 0.0 | 0 | true | 210,662 |
+| 入れ替え | 直しの契約の `signals/shuffle/P0_val` | 0.7273450248398429 | 0.0 | 0.0 | 0 | true | 210,374 |
+| 陽性対照（`--perturb gate`、α を尺度 0.05 の乱数に） | `P0_val` | 0.7272701920052 | 0.0070025 | 1955.03 | 161,010 | true | 210,374 |
+
+- 6 腕とも標的群 AP 0.7950748008550897、陰性対照群 AP 0.6726631817581498（塔単独と同値）、学習前のゲート tanh(α_l) はすべて 0、
+  凍結部（界面以外の state）の要約値 `4fed85166852…`（B-2 の塔単独と同じ）。陽性対照の α の tanh は [+0.0023, +0.0201, −0.0505, +0.0108, −0.0306, +0.0252]
+- 学習する集合: `--trainable film`（名前に phase を含む）で requires_grad になる名前の集合が `phase_iface.*` の全部と一致し、検出器のパラメータを一つ混ぜると一致しない
+  （`equal_with_one_detector_param_mixed` false）。数は token 8,448 ＋ 層ごと（LN 512・q 16,448・out 16,640）× 6 ＋ α 6 ＋ 入力適合層 320（d18 は 608）
+
+### C-1 既存の型と既定の経路が変わらないこと（02:03〜02:13 JST）
+
+本契約で変えた `train_t1b.py`・`dp_train.py`・`dp_model.py` で、直しの契約と同じ命令を回し、直しの契約の記録と比べた（出力は `identity/existing_*`）:
+
+| 照合 | 相手（直しの契約の記録） | 結果 |
+|---|---|---|
+| PD P3（`pd_query_d9`）入れ替えの陽性対照（`pd_eval.py --perturb`） | `stage2_pilot_fix/bengio/pd_query_d9_shuffle_positive_bengio.json` | 全項目一致（mAP 0.7271372958311481、score 差 0.34662654995918274、枠 1932.9268646240234、ラベル不一致 267,542、凍結部の要約値、群 AP・動画ごと） |
+| PD P1（`pd_film_d9`）入れ替えの陽性対照 | `stage2_pilot_fix/identity/pd_film_d9_shuffle_positive.json`（andrew） | `det_ckpt` の経路の文字列（andrew の main と bengio の重ねの BODY）以外の全項目一致（mAP 0.7287992265410653、score 差 0.45731912553310394） |
+| DP D1-L1・D1-L2・D2・D3-L1・D3-L2 の入れ替えの腕の恒等性と陽性対照（`dp_train.py identity --arm shuffle`） | `stage2_pilot_fix/identity/dp_<型>_shuffle.json`（andrew） | 5 型とも全鍵一致（信号の sha256、恒等性 0.0、陽性対照の Jaccard とロジットの差） |
+
+phase0 を merge した後に、既定の経路を固定する試験（`tests/test_train_t1b_stage2pilot_defaults.py`、`tests/test_stage2pilot_dp_train_defaults.py`）も回す（下記）。
+
+### 誤った書き込み（02:03 JST に気づいた、記録）
+
+`pd_eval.py`・`pd_four_eval.py` は import 時に作業場所を `$EGO_BODY/third_party/Relation-DETR` へ移す。私が**相対経路の `--out`** で回した 3 本
+（`existing_pd_query_d9_shuffle_positive`、`existing_pd_film_d9_shuffle_positive`、`pd_DX_positive_gate`）の json が、
+重ねの BODY の `third_party/Relation-DETR/experiments/analysis/stage2_pilot_four/identity/` に書かれた（重ねの BODY に元は `experiments` が無く、私が作ったフォルダ）。
+3 本を worktree の `experiments/analysis/stage2_pilot_four/identity/` へ `mv -n` で移し、空になった作ったフォルダ 4 段を `rmdir` で除いた（02:1x JST）。
+移した後、重ねの BODY の Relation-DETR のソース 142 本の一覧が `env/reldetr_src_bengio_overlay.txt` と全行一致（`cmp` 一致）。bengio の main の `third_party` には触れていない。
+以後は `--out` を絶対経路で渡す（`run_pd_identity.sh`・`run_pd_four_identity.sh`・`run_repro_bengio.sh` は初めから絶対経路）。
+
+### C-4 extra-queries の見落としの集合（01:50〜02:08 JST、道具 `scripts/stage2pilot/xq_missed.py`、`experiments/analysis/stage2_pilot_four/xq/`）
+
+- D\* の train の出力: `predict --split train --shard {0,1}/2`（GPU 0・1、重ねの BODY、検出塔 `30d199b1…`、上位 300・確信度の下限なし・NMS なし。増強なし）
+  - shard 0: 4,829 枚、1,448,700 件、sha256 `141f43a972b2654c…`（mAP 0.8406 は記述だけ）、shard 1: 4,828 枚、1,448,400 件、sha256 `5ac974d8072590c3…`（0.8383）。
+    動画は 01・02・03・06・08・11〜15。版管理外 `$FOUR/xq/dstar_train_top300_shard{0,1}.json.gz`（要約値は `xq/*.meta.json`）
+- 見落とし（SPEC §3.2 の字面どおり。学習に残る正解の box〔iscrowd 0、幅と高さが正〕で、同じクラスで IoU 0.5 以上の検出が上位 300 に一つも無いもの）:
+
+| | 正解の box | 見落とし | 割合 | 見落としの在る画像 |
+|---|---|---|---|---|
+| train（9,657 枚） | 32,272 | **73** | 0.00226 | 73 |
+| val（1,515 枚、K1 用。B-2 の塔単独の予測から） | 4,707 | **78** | 0.01657 | 74 |
+
+  train のクラスごと: Forceps 18、Tweezers 18、Gauze 13、Retractor 8、Suction Cannula 5、Hook 2、Raspatory 2、Scissors 2、Syringe 2、Electric Cautery 1、Mouth Gag 1、Needle Holders 1（他 0）。
+  val のクラスごと: Gauze 27、Tweezers 13、Forceps 10、Hook 10、Mouth Gag 9、Scissors 7、Suction Cannula 2
+- 確信度の閾値ごとの見落とし（記述。「覆う」に数える検出をスコアが閾値以上のものに限る）: 閾値は、覆われた正解の覆う検出のスコアの最大の分布
+  （最小 0.0069、0.1% 点 0.0217、1% 点 0.330、5% 点 0.719、10% 点 0.807、中央値 0.923）を見て {0（定義）, 0.01, 0.05, 0.1, 0.3, 0.5} に決めた。
+  train 73 / 78 / 131 / 176 / 368 / 632、val 78 / 81 / 215 / 302 / 469 / 638
+- 空振りでないこと（完了判定 f、両方向）: ある正解をただ一つ覆う検出を消した写しで、その正解が見落としに数えられる（train: 画像 41・注釈 42、覆うスコア 0.665 → −1、
+  val: 画像 111・注釈 111、0.487 → −1）。正解をそのまま検出（スコア 1）として足した写しで見落としは 0 件（train・val とも）
+- 集合 `$FOUR/xq/missed_train.json`（注釈の id 73 個。写しを `xq/missed_train.json` に置いた）を、extra-queries の全腕で使う
+
+### C-7 PD の試走（`run_pd_four.sh <型> gt smoke`、1 epoch・6 歩・val 20 枚、GPU 0、重ねの BODY）
+
+| run | 時刻（JST） | 学習対象 | 学習前 mAP（20 枚） | 後処理の AP | 界面への勾配 | 凍結部の前後 | epoch 0 のゲート |
+|---|---|---|---|---|---|---|---|
+| `stage2four_pd_DX_gt_ep4_seed42_smoke` | 01:51:47〜01:52:10 | 210,374 | 0.8916611661166115 | 0.891661 | true | 一致（`4fed8516…`） | tanh(α_l) +0.00117, −0.00076, −0.00122, +0.00094, −0.00063, +0.00082 |
+| `stage2four_pd_EQ_gt_ep4_seed42_smoke` | 02:08:17〜02:08:37 | 16,701 | 0.8916611661166115 | 0.891661 | true | 一致 | スコアの定数（記録は `stage2four_metrics.json`） |
+
+学習前 mAP は直しの契約の P3 の試走（andrew・bengio とも 0.8916612）と同じ。`env_check.txt` は両方 `ms_deform_attn_ext True`。
+試走は 6 歩なので 1 本の所要は本番の run の壁時計で測る（`start.txt`・`end.txt`）。

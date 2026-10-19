@@ -1,0 +1,23 @@
+Using /home/ubuntu/.cache/torch_extensions/py311_cu118 as PyTorch extensions root...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /home/ubuntu/.cache/torch_extensions/py311_cu118/MultiScaleDeformableAttention/build.ninja...
+Building extension module MultiScaleDeformableAttention...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+loading annotations into memory...
+Done (t=0.26s)
+creating index...
+index created!
+ninja: no work to do.
+Loading extension module MultiScaleDeformableAttention...
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+[t1b] warm-start from /home/ubuntu/slocal2/s2fix-bengio-body/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth
+Accumulating evaluation results...
+DONE (t=15.94s).
+{"split": "train", "shard": "1/2", "n_images": 4828, "videos": ["01", "02", "03", "06", "08", "11", "12", "13", "14", "15"], "det_ckpt": "/home/ubuntu/slocal2/s2fix-bengio-body/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth", "det_ckpt_sha256": "30d199b15201cf3c03954852d8acc6fb58fe5349baef2fd200e877237ff682c4", "mAP_on_shard": 0.8382684332236556, "n_results": 1448400, "out": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-four-new-types/xq/dstar_train_top300_shard1.json.gz", "out_sha256": "5ac974d8072590c3dc7876aa5274b87824e94232c7bfbbcb2b4e92740d6958e5"}

@@ -1,0 +1,65 @@
+{
+  "task_id": "T-2026-10-19-stage2-pilot-four-new-types",
+  "type": "LC",
+  "inst_variant": "literal",
+  "pred_noCF": {
+    "x_layout": {
+      "pred": {
+        "cols": [
+          0,
+          16
+        ],
+        "source": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D0_val.npz",
+        "flag": 1
+      },
+      "gt": {
+        "cols": [
+          16,
+          32
+        ],
+        "source": null,
+        "flag": 0
+      }
+    },
+    "trainable": {
+      "trainable_names": [
+        "iface.w_in.bias",
+        "iface.w_in.weight",
+        "iface.w_out.bias",
+        "iface.w_out.weight",
+        "iface.w_p.weight"
+      ],
+      "iface_names": [
+        "iface.w_in.bias",
+        "iface.w_in.weight",
+        "iface.w_out.bias",
+        "iface.w_out.weight",
+        "iface.w_p.weight"
+      ],
+      "equal": true,
+      "equal_with_one_head_param_mixed": false
+    },
+    "gate_init": null,
+    "perturbed_params": [
+      "iface.w_out.weight",
+      "iface.w_out.bias"
+    ],
+    "signal_files": [
+      {
+        "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D0_val.npz",
+        "sha256": "4403d1fed34e3115f23d972fa98887fc653209a2e00b995b8ff2d821af3f6650",
+        "gt": false
+      }
+    ],
+    "dim": 32,
+    "iface_params": 1641,
+    "identity_jaccard": 0.7762185528074379,
+    "identity_accuracy": 0.8712871287128713,
+    "identity_max_abs_logit_diff": 0.0,
+    "jaccard_equals_taskB": true,
+    "perturb_scale": 0.05,
+    "positive_jaccard": 0.763905126939326,
+    "positive_accuracy": 0.8706270627062707,
+    "positive_max_abs_logit_diff": 0.19397014379501343
+  }
+}
