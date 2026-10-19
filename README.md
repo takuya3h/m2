@@ -1540,7 +1540,8 @@ forward した region token が既存の `t1a_regiontoken/relation_detr_seed42` 
 - 前回の予備測定（`T-2026-10-18-stage2-pilot-folda`）の値を、学習を 4 epoch 終えた時点の状態（最良の回を選ばない）で出し直し、
   全型に**入れ替えの腕**（予測-noCF と同じ値の集まりで、フレームとの対応だけを seed 42 の並べ替えで壊した腕）を足した。
   DP 26 本（seed 42 の回し直し 21、入れ替え 5）、PD 12 本（回し直し 8、入れ替え 4）と P2F の入れ替えの評価 1 本。DP の回し直しは前回の epoch 1〜4 と完全一致した。
-  【最後に: 結果の要点 1〜2 行】
+  予測-noCF の Δ入替（信号の中身による差）は D1-L1 で Jaccard +0.0013（Δ空 +0.0046 の大半は入れ替えた信号でも出る）、P1-W1・P1-W2・P2L で標的群 AP +0.0087・+0.0149・+0.0075、
+  D3 と P3 は負。選び方による差は小さかった。P3 の予測-CF・正解予測-CF は利用者の承認で bengio で回した
 - **`scripts/train_t1b.py` に `--fixed-epochs` を足した**（`--epochs` の回数を止めずに学び、最後の epoch の状態を結果にする。学習率一定。
   metrics.json・per_class_ap.json・best_t1b.pth・best の予測がその状態になり、`result_selection: final_epoch` を残す）
 - **`scripts/stage2pilot/dp_train.py` に `--fixed-epochs N`・`--task-id`・`--exp-prefix`・`--smoke`・腕 `shuffle`・`identity --arm` を足した**。

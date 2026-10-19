@@ -1,0 +1,72 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-19-proposal-gate-brief"
+  kind: impl
+  title: "提案関門の役割分離の生成の行を改め、規約に生成会話への依頼文の節を足し、手順の文書とカードの雛形を合わせる"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-19T07:20:00Z"
+  created_from:
+    runindex_commit: "5a8baa790fa31ced4c8b891f7ee5ed5906c9d775"
+    counts: {index: 0, experiments: 0, verdicts: 0}
+  depends_on: ["T-2026-10-19-conventions-and-defect-records"]
+  amendments:
+    - date: "2026-10-19"
+      reason: "前提契約統合後の L2-6 警告の差分を確認し、注入対象二節が前後同一であることを確認して利用者の続行許可を得た。起点で測った規約の commit に更新した"
+      diff: "contract.conventions_rev: 5a8baa790fa31ced4c8b891f7ee5ed5906c9d775 → 7ba1d60db8c0ea8581bc03d79bafeaec56be1d1d"
+    - date: "2026-10-19"
+      reason: "利用者が実験ログ二経路だけの .gitignore 追加を許可した。個別の .git/info/exclude は既存の再包含規則より優先度が低く効かないため、適用範囲を追加した"
+      diff: "変更範囲に .gitignore 一件を追加。末尾へ stage2fix_pd_P1-W1_shuffle_ep4_seed42_smoke/logs/ の eval_meta_val.json と val_metrics_by_epoch.json の二経路だけを追加除外"
+intent:
+  question: "利用者が決めた生成会話の入力の規則（プロジェクトの外で開き、証拠地図とカードの雛形と依頼文だけを渡す。依頼文の書き方）を、規約と手順の文書とカードの雛形に、提案カードの検査器の読みを変えずに置けるか"
+  decision_at_stake: "P→D 界面と D→P 界面の提案カードの生成会話と、以後の生成会話を、repo の規約に置いた規則で運べるか（利用者の決定。F の同日の行）"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "not-referenced"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["tools/check_proposal.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "7ba1d60db8c0ea8581bc03d79bafeaec56be1d1d"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["context/conventions.md", "docs/proposals/"]
+plan:
+  phases:
+    - {id: A, name: "起点の確認（前提の契約の統合、分岐、変える箇所の今の文言、検査器の読みと試験の基準）", gpu: false, est: "20m"}
+    - {id: B, name: "規約の三箇所、手順の文書、カードの雛形を変える", gpu: false, est: "20m"}
+    - {id: C, name: "検査器の読みと対照、試験、変更範囲を確かめる", gpu: false, est: "30m"}
+    - {id: D, name: "変更履歴の commit の記入、報告と PR", gpu: false, est: "30m"}
+  gates:
+    - {id: G1, after: A, check: "前提の契約 T-2026-10-19-conventions-and-defect-records が phase0 に統合されていて、変える箇所の今の文言が SPEC の表と一致する", on_fail: stop}
+    - {id: G2, after: C, check: "検査器が規約から読む値が前後で同じで、対照が両方向で期待どおりで、二つの試験のファイルが前後とも全件通り、変更が宣言した範囲だけ", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md, result.yaml, audit.md]
+  destination: "docs/proposals/"
+  acceptance:
+    - "a: 規約の役割分離の表の生成の行が SPEC の新しい文言で、批判と判定と起票の行は変わっていない"
+    - "b: 規約に新しい節「生成会話への依頼文」が「置き場と参照」の直後にあり、六項目が SPEC の文言どおり"
+    - "c: 規約の変更履歴の最後に本契約の一行があり、commit の欄に規約を変えた commit が記入されている"
+    - "d: docs/proposal-gate.md の B.3 とカードの雛形が SPEC どおりで、生成会話について地図だけを渡すと書いた箇所が変更範囲のファイルに残っていない"
+    - "e: 提案カードの検査器が規約から読む禁止語の数とカードの件数と数値を求める項目が前後で同じ。既存のカードの結果が前後で同じ。費用の項目を UNKNOWN にしたカードの写しで数字の欠落を一件検出する"
+    - "f: 提案カードの検査器と置き場と参照の試験のファイルが、変更の前後とも全件通る"
+    - "g: 変更は規約、手順の文書、カードの雛形、本契約のディレクトリ、受け皿だけ。変えないファイルの要約値が前後で同じ"
+    - "h: PR が Draft でなく存在し、base は phase0、分岐は feat/ で始まり、契約を指定した forbidden-check の違反が零"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "前提の契約 T-2026-10-19-conventions-and-defect-records が phase0 に統合されていない場合"
+    - "変える箇所の今の文言が SPEC の表と違う場合（前提の契約などが先に変えた）"
+    - "提案カードの検査器が規約から読む値が変更で変わる場合、または試験が落ちる場合"
+    - "変更範囲のファイルの外に、生成会話へ地図だけを渡すと書いた箇所が見つかった場合（変えずに記録して諮る）"
+    - "作業ツリーを別の契約が使っている形跡がある場合（抑止の目印が別の契約の所有、他の分岐の未統合の変更）"

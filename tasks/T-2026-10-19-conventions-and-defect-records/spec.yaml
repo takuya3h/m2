@@ -1,0 +1,74 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-19-conventions-and-defect-records"
+  kind: impl
+  title: "規約に入力の縮小規則と同一ホストと数値精度を置き、追加動画と交差適合の記述を実測に合わせ、環境の到達性と起票者の欠陥の記録を直す"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-18T16:00:00Z"
+  created_from:
+    runindex_commit: "63ae65da8c7d32df591f5e2ee4358286b72c726b"
+    counts: {index: 1961, experiments: 750, verdicts: 1506}
+  depends_on: [T-2026-10-17-tower-reselect-prereq]
+  amendments:
+    - date: "2026-10-19"
+      reason: "P7 がファイルの destination を FAIL とした起票者の欠陥を、起票者の指示で是正した"
+      diff: 'outputs.destination: "context/conventions.md" → "tasks/T-2026-10-19-conventions-and-defect-records/"; contract.allow_write: ["context/conventions.md"] → ["context/conventions.md", "tasks/T-2026-10-19-conventions-and-defect-records/"]'
+intent:
+  question: "両塔の学び直しと Stage 2 の契約が引く三つの決定（工程塔と検出塔の入力の縮小規則の違いを各塔の構造の標準の処方として扱うこと、比べる腕と分母を同じホストで回すこと、界面の学習の数値精度）を規約に置けるか。規約と正本と環境の記録のうち、実測と食い違う記述を直せるか"
+  decision_at_stake: "両塔の学び直しの実験契約の起票の可否（対称性の表の入力の縮小規則の行を規約の理由で書けるか）。Stage 2 の契約が Notion にしか無い決定を引かずに済むか"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "なし。本契約はデータを読まない"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["tools/validate_task.py", "tools/check_proposal.py", "tools/preflight_task.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#env_p0, conventions#symmetry, conventions#folds, conventions#crossfit]
+  conventions_rev: "b12eda6cf0f53f4f0d09e5b6c53bb3afde9831ac"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["context/conventions.md", "tasks/T-2026-10-19-conventions-and-defect-records/"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。分岐、作業ツリー、未追跡の退避、同期の抑止、装置を使わないことの記録、起点の実測、節ごとの要約値と試験の前の値", gpu: false, est: "30m"}
+    - {id: B, name: "規約 symmetry に入力の縮小規則とホストの行を足す", gpu: false, est: "30m"}
+    - {id: C, name: "規約に数値精度の節を足す", gpu: false, est: "40m"}
+    - {id: D, name: "規約 folds と crossfit の記述を実測に合わせ、変更履歴に行を足す", gpu: false, est: "30m"}
+    - {id: E, name: "折り表の正本に追加動画の注記を足す", gpu: false, est: "15m"}
+    - {id: F, name: "環境の到達性の記述と、起票者の欠陥の記録を直す", gpu: false, est: "40m"}
+    - {id: G, name: "検証と報告", gpu: false, est: "60m"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、作業ツリーが他の契約の分岐ではなく、装置を使わないことと試験の前の値を記録した", on_fail: stop}
+    - {id: G2, after: D, check: "規約の節ごとの要約値で、変わった節が symmetry と folds と crossfit と naming（変更履歴を含む）と新しい precision だけで、すべてのアンカーが解決し、提案カードの検査の結果が前後で同じ", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md, result.yaml, audit.md]
+  destination: "tasks/T-2026-10-19-conventions-and-defect-records/"
+  acceptance:
+    - "a: 規約 symmetry の各塔の構造の標準の処方に、入力の縮小規則が使える行として、画面の残る割合を揃える条件と切り出しを使えない行とともに足され、SPEC 5.1 と一行ずつ突き合わされている"
+    - "b: 規約 symmetry にホストと装置型が必ず置く行として足され、ホストの規則と出所が SPEC 5.2 と一致する"
+    - "c: 規約に新しい節 precision が在り、界面の学習と検出塔の学習の精度、採用の条件、出所が SPEC 5.3 と一致し、各行の出所が repo の文書の中で確かめられている"
+    - "d: 規約 folds の追加動画の記述が 17 から 21 の 5 本と P-20 の名に合わせられ、正本の折り表にも同じ注記があり、識別子 6 本と重複 0 件の記録は残っている"
+    - "e: 規約 crossfit の工程塔と検出塔の送り手の差の記述が実測に合わせられている"
+    - "f: 規約の変更履歴に本契約の行があり、変わった節が意図した節だけであることが節ごとの要約値の前後で示されている"
+    - "g: 環境の記録の到達性の記述が、元の測定の範囲と 2026-10-17 の実測を分けて書かれ、新しい接続をしていない"
+    - "h: 起票者の欠陥の記録に SPEC 5.7 の 5 件が、型と出所と対処つきで足されている"
+    - "i: 本契約で装置を使っておらず、data 配下に書いておらず、ほかのホストに接続していない"
+    - "j: PR が Draft でなく存在し、base が phase0 で、分岐が feat/conventions-and-defect-records"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "本ホストの repo の位置や起点が env-facts.md の記載と食い違う場合"
+    - "作業ツリーが別の契約の分岐にある、または別の契約が作業ツリーを使っている場合"
+    - "規約に置く行の出所が、SPEC が挙げる repo の文書の中に見つからない場合"
+    - "規約の文言を整えるときに、範囲・条件・数を変えたくなった場合"
+    - "実行基盤が書き込みや移動を拒む場合"

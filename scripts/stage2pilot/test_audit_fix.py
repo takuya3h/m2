@@ -21,6 +21,17 @@ from stage2pilot import common as C  # noqa: E402
 from stage2pilot.test_audit import videos_of_ann, videos_of_npz  # noqa: E402
 
 PHASE1 = C.ROOT / "experiments/phase1"
+REMOTE_DIGEST = C.FIX_ANALYSIS / "bengio/input_digest_bengio.json"
+
+
+def same_as_remote(path: Path) -> Path:
+    """別ホスト（bengio）の run の注釈は andrew に無い。bengio の入力の照合の記録の sha256 が、andrew の同じ名前の注釈と
+    一致するときだけ andrew の写しを返す。一致しなければ止まる（数えずに通さない）。"""
+    remote = json.loads(REMOTE_DIGEST.read_text())["annotations"][path.name]
+    local = C.DET_ANN_A / path.name
+    if C.sha256(local) != remote:
+        raise SystemExit(f"別ホストの注釈 {path} の sha256 が andrew の {local} と一致しない")
+    return local
 
 
 def collect():
@@ -44,7 +55,11 @@ def collect():
         for f in (sp["signal_train"], sp["signal_val"]):
             add("PD の run が読んだ信号ファイル", videos_of_npz(f))
         for part in ("train", "val"):
-            add("PD の学習と評価の注釈（run の config の ann_dir）", videos_of_ann(Path(sp["ann_dir"]) / f"instances_{part}.json"))
+            ann = Path(sp["ann_dir"]) / f"instances_{part}.json"
+            if ann.exists():
+                add("PD の学習と評価の注釈（run の config の ann_dir）", videos_of_ann(ann))
+            else:
+                add("PD の学習と評価の注釈（別ホストの run。sha256 が同じ andrew の写しで数えた）", videos_of_ann(same_as_remote(ann)))
     for p in sorted((C.FIX_ANALYSIS / "identity").glob("*.json")) + sorted((C.FIX_ANALYSIS / "repro").glob("ptower_*.json")):
         d = json.loads(p.read_text())
         if "videos" in d:
