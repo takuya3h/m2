@@ -181,7 +181,7 @@ test は腕ごとに一度だけ触る。** 折りをまたいで val を使い�
 
 ## 判定
 
-verdict: partial（PR 作成待ち）。G1・G2 pass。初回 P7 FAIL は起票者の指示で destination と allow_write だけを是正し、meta.amendments に記録した。SPEC.md は無変更。
+verdict: pass。G1・G2 pass。初回 P7 FAIL は起票者の指示で destination と allow_write だけを是正し、meta.amendments に記録した。SPEC.md は無変更。
 
 ## 完了判定
 
@@ -196,7 +196,7 @@ verdict: partial（PR 作成待ち）。G1・G2 pass。初回 P7 FAIL は起票�
 |g|古い断定の元の測定経路は特定できず、その旨を記載。philip内部の観測とandrew→efrosの実測を区別|
 |h|欠陥5件を型・出所・対処付きで追加。stem_eval は model.train() の後に conv1 / bn1 だけevalと確認|
 |i|CUDA_VISIBLE_DEVICESを空にして実行。装置状態は前後記録。data書き込み0、他計算ホスト接続0、known_hosts要約値は前後同一|
-|j|通常PR作成後に番号・base・headを記録|
+|j|PR #237、base=phase0、head=feat/conventions-and-defect-records、Draft=false、OPEN（GitHub応答）|
 
 根拠: [audit.md:112](audit.md#L112) 基準、[audit.md:217](audit.md#L217) G1/G2と節ハッシュ、[audit.md:266](audit.md#L266) 項目の突き合わせと引用、[audit.md:579](audit.md#L579) 検証。試験は変更前後とも96 passed、失敗・収集エラーの名前集合は両方空。提案カード検査は終了コード・出力が前後完全一致。
 
@@ -218,4 +218,4 @@ asserted_without_measuring: outputs.destination にファイルを書いてP7で
 
 ## 送出
 
-PR・台帳送出は最終処理で記録する。同期抑止の解除結果は最終応答に残す。
+PR [#237](https://github.com/takuya3h/m2/pull/237)。台帳送出の終了コードと応答はaudit.md末尾へ追記する。同期抑止の解除結果は最終応答に残す。

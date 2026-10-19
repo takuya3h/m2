@@ -696,3 +696,44 @@ a: SPEC5.1の全項目が対応表で一致。b: ホスト規則・全数値・�
 規約の変更履歴に実装commit be3e16beを記入。この記入による変更節はnamingだけ。Task Aとの比較は既存4節の変更とprecisionの新設だけのまま。全アンカー解決、既存カードの出力・終了コードはTask Aと完全一致。SPEC.md要約値は取り込み時と一致。
 
 最終naming SHA-256: 34f4804503355f6166b9c92025d5fa601420b98bd78c2afd9edaec5322b7ee2b。全節の最終値は sections-after.json。
+
+## PR・最終報告
+
+git push -u origin feat/conventions-and-defect-records: exit 0。gh pr create --base phase0 --head feat/conventions-and-defect-records --title <題名> --body-file /tmp/conventions-and-defect-records-pr.md: exit 0。
+gh pr view の応答:
+
+```json
+{
+  "number": 237,
+  "url": "https://github.com/takuya3h/m2/pull/237",
+  "baseRefName": "phase0",
+  "headRefName": "feat/conventions-and-defect-records",
+  "isDraft": false,
+  "state": "OPEN"
+}
+```
+
+result.yamlは結果schemaで検証済み。origin/phase0との差分経路集合を許可範囲と照合し、範囲外0件（18件）:
+
+```text
+context/conventions.md
+context/env-facts.md
+docs/issuer-defects.md
+docs/stage0/A1_fold_table.md
+tasks/T-2026-10-19-conventions-and-defect-records/RESULT.md
+tasks/T-2026-10-19-conventions-and-defect-records/SPEC.md
+tasks/T-2026-10-19-conventions-and-defect-records/audit.md
+tasks/T-2026-10-19-conventions-and-defect-records/baseline.json
+tasks/T-2026-10-19-conventions-and-defect-records/positive-controls.json
+tasks/T-2026-10-19-conventions-and-defect-records/positive-without-destination-allowance.yaml
+tasks/T-2026-10-19-conventions-and-defect-records/result.yaml
+tasks/T-2026-10-19-conventions-and-defect-records/resume-spec-before.yaml
+tasks/T-2026-10-19-conventions-and-defect-records/resume-spec-md.sha256
+tasks/T-2026-10-19-conventions-and-defect-records/sections-after.json
+tasks/T-2026-10-19-conventions-and-defect-records/spec.yaml
+tasks/T-2026-10-19-conventions-and-defect-records/tests-after.xml
+tasks/T-2026-10-19-conventions-and-defect-records/tests-before.xml
+tasks/inbox.d/T-2026-10-19-conventions-and-defect-records.md
+```
+
+最終のforbidden-checkは契約指定でexit 0 / violations=[]、git diff --checkはexit 0。
