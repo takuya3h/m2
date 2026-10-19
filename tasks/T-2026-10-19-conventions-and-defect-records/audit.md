@@ -737,3 +737,22 @@ tasks/inbox.d/T-2026-10-19-conventions-and-defect-records.md
 ```
 
 最終のforbidden-checkは契約指定でexit 0 / violations=[]、git diff --checkはexit 0。
+
+## 台帳送出の実測
+
+命令: source .venv/bin/activate && source scripts/load_env.sh && CUDA_VISIBLE_DEVICES='' make task-report TASK=T-2026-10-19-conventions-and-defect-records
+
+exit=0。秘匿検査を経て送出。資格情報の値は出力しない。応答:
+
+```json
+{
+  "task_id": "T-2026-10-19-conventions-and-defect-records",
+  "verdict": "pass",
+  "n_issuer_defects": 1,
+  "report_sha256": "1d2473a9ec0154699ee7671552c425cc627c838281263323313275241a3b0409",
+  "report_bytes": 13524,
+  "replaced_blocks": 0
+}
+```
+
+送出後もRESULT.md本文を変更しておらず、要約値・バイト数は応答と一致。同期抑止の解除は全commit・pushの後にtask-releaseで実施し、状態表示は最終応答に残す。
