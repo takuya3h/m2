@@ -355,3 +355,11 @@ PD の要約の控え `stage2pilot_metrics.json` は前回の 22 本すべてに
   既定は従来どおり）を足した。走っている bash が古い inode を読み続けるよう、写しを書いて `mv` で差し替えた。
   `pd_fix_finalize.py` は `EGO_ANN_DIR` を優先する（worktree には git の外の注釈が無い）。`train_t1b.py` の自動 commit は
   run の置き場から repo を決め、`exp/*` 分岐でなければ何もしない（`git_autosync.py` 171〜175 行）ので、worktree の feat 分岐では動かない
+- 21:54 JST: andrew で worktree からの経路を試した（`git worktree add --detach /home/ubuntu/slocal2/m2-s2fix-wt-andrewtest 7ef3ad2b`、
+  `S2FIX_CODE=<worktree> CUDA_VISIBLE_DEVICES=1 run_pd_fix.sh P3 gt smoke`）。rc=0、run は worktree の中、構成も worktree の
+  `configs/stage2pilot/pd_query_d9.py`、注釈・信号・重みは main と FIX を指した。拡張 True。後処理の AP 0.891661（val 20 枚）、学習前 0.8917。
+  main の作業場所には何も増えていない。試しの worktree（分岐なし）と FIX/pd_ckpt の試走の重みは残してある
+- 入力の照合の道具 `scripts/stage2pilot/input_digest.py`（新規）で andrew の値を取った（`experiments/analysis/stage2_pilot_fix/bengio/input_digest_andrew.json`）:
+  信号 8 本（計 3.5 MB）、検出塔の重み 30d199b1…、注釈 train fc63621e… / val db605c06…、画像 train 9,657 枚 c5c27b85… / val 1,515 枚 025c644b…（欠け 0）、
+  Relation-DETR b485955c・未 commit 42 件・ソース 142 本の要約値 2f08e521…（増強や最適化の群の変更を含むため中身で照合する）、torch 2.1.2+cu118・CUDA 11.8・cuDNN 8700
+- 引き渡しの文書: `tasks/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/handoff_bengio.md`（分岐・くっつけ方・手順・設定・検査）
