@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（637 件）
+## 申し送り（643 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1016,11 +1016,26 @@
 - §2 の時刻の道具を、予測の遅れと情報の時刻を区別できる形（構成からの検査）に置き換えるか決める
 - §3 の D3 の予測のトークンの定義を、重複しない query の上位 K と明記する
 
+### T-2026-10-19-conventions-and-defect-records
+
+- 次の実験契約はconventions#symmetryの入力縮小規則・ホスト行とconventions#precisionを参照できる。工程塔の精度はこの契約では定めない。
+
 ### T-2026-10-19-evidence-maps-revise
 
 - C=29、B=34、N=37の全IDが実在・書誌一致。N追加書誌18 IDは全て該当行と比較。書誌IDなしはC-24だけ。
 
-## 断定できなかった事項（398 件）
+### T-2026-10-19-proposal-gate-brief
+
+- 生成会話はプロジェクトの外で、証拠地図・カードの雛形・依頼文だけを受け取る。生成会話の#10と#15はUNKNOWN、起票者がrepo実測で埋めてから批判会話へ。briefs/は本契約では未作成。
+
+### T-2026-10-19-stage2-pilot-fix-epoch4-shuffle
+
+- 新しい界面の型の候補を回す次の契約は、固定の長さ（--fixed-epochs）と入れ替えの腕（shuffle_signals.py、腕 shuffle）をそのまま使える
+- 入れ替えの腕は val が 2 動画のため半分以上が同じ動画の信号を受け取る。動画単位の情報を壊したいなら、折りを増やすか動画をまたぐ入れ替えに限る設計を決める
+- 前回の aggregate.py の comparisons の並びが実行ごとに変わる（set の反復順）。並びを固定するかを決める
+- bengio の .venv-relation-detr（向け直した）と third_party/Relation-DETR（andrew と 23 件違う）、重ねの BODY と worktree を残すか戻すかを決める
+
+## 断定できなかった事項（402 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1768,18 +1783,28 @@
 - PD の R、§5.2 規則 2 の読み、実現率、型どうしの比較の幅の判定（seed 1 つのため）
 - P1-W1 の予測-noCF の凍結部の要約値（5 epoch 目の始まりで外から止めたため学習の終わりの記録が無い）
 
-## 起票者の誤りの型（370 件）
+### T-2026-10-19-conventions-and-defect-records
+
+- 古い「直接接続は不可能」という断定の元の測定経路は記録から特定できない。SPEC5.6に従い明記した。
+
+### T-2026-10-19-stage2-pilot-fix-epoch4-shuffle
+
+- 回し直さない PD の 8 本の動画ごとの 4 epoch 目の値（epoch 3 の予測と重みが残っていない）。P2L は空の腕の動画ごとが無いため全腕の動画ごとの Δ空
+- andrew で GPU 1 枚に PD を 1 本だけ載せたときの速さ（測っていない）
+- 計算し直しの検査（完了判定 j）が作り物の食い違いを検出するか（陽性対照を入れていない）
+
+## 起票者の誤りの型（375 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 100 |
-| `asserted_without_measuring` | 154 |
+| `check_does_not_check` | 101 |
+| `asserted_without_measuring` | 157 |
 | `self_contradiction` | 96 |
 | `shell_assumption` | 19 |
-| `asymmetric_comparison` | 0 |
+| `asymmetric_comparison` | 1 |
 | `rule_read_narrowly` | 1 |
 
-合計 370 件（対を持つ契約 127 件から）
+合計 375 件（対を持つ契約 130 件から）
 

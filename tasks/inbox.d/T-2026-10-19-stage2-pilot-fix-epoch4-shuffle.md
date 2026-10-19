@@ -2,3 +2,4 @@
 - [ ] 2026-10-19 [cc] 利用者の決定: P3 の予測-CF・正解予測-CF を別ホスト bengio で回した（amendments 2・3 件目）。P3 のこの 2 本の Δ空・Δ入替にはホストの差が混ざる（T-2026-10-19-stage2-pilot-fix-epoch4-shuffle）
 - [ ] 2026-10-19 [cc] bengio の third_party/Relation-DETR は andrew と 23 件違い（増強・最適化の群を含む）、.venv-relation-detr の python のリンク先が無かった。bengio の仮想環境は uv の 3.11.16 に向け直したまま。戻すか、Relation-DETR をそろえるかは未決（T-2026-10-19-stage2-pilot-fix-epoch4-shuffle）
 - [ ] 2026-10-19 [cc] SPEC §1 の「P1-W1 正解の最後の回で +0.0087」は正解 epoch 3 と空 epoch 2 の差だった（長さの違う回の比較）。同じ epoch どうしでは選び方による差は小さい（T-2026-10-19-stage2-pilot-fix-epoch4-shuffle）
+- [ ] 2026-10-20 [cc] 結果の要点（非公式）: 予測-noCF の Δ入替は D1-L1 Jaccard +0.0013（Δ空 +0.0046 の大半は入れ替えた信号でも出る）、P1-W1・P1-W2・P2L で標的群 AP +0.0087・+0.0149・+0.0075、D3 と P3 は負。選び方による差は小さい。§5.3 の予測は 10 件中 8 件が当たり（T-2026-10-19-stage2-pilot-fix-epoch4-shuffle）
