@@ -688,3 +688,11 @@ exit=0
 ### 現行の完了判定
 
 a: SPEC5.1の全項目が対応表で一致。b: ホスト規則・全数値・出所一致。c: precision各行の引用と実装確認済み。d: 正本の既存行の集合差0。e: 3pt閾値行は完全一致。f: 意図した節のみ変更、アンカーは既存集合+precision。g: 元の経路不明を明記し直接到達の別経路と区別。h: 欠陥5件の出所・対処とstem_evalの本体を記録。i: GPU計算起動0、実repoのdataアクセス0、他計算ホスト接続0。j: PR起票後に記録。
+
+## 中断後の再開と変更履歴の確定
+
+中断後の分岐 feat/conventions-and-defect-records、HEAD be3e16bea38038a36accd15807c2832c3a0b8b72、作業ツリー清浄、同期抑止は本契約の所有。PR照会は[]。
+
+規約の変更履歴に実装commit be3e16beを記入。この記入による変更節はnamingだけ。Task Aとの比較は既存4節の変更とprecisionの新設だけのまま。全アンカー解決、既存カードの出力・終了コードはTask Aと完全一致。SPEC.md要約値は取り込み時と一致。
+
+最終naming SHA-256: 34f4804503355f6166b9c92025d5fa601420b98bd78c2afd9edaec5322b7ee2b。全節の最終値は sections-after.json。
