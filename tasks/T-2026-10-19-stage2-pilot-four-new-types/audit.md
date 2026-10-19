@@ -336,3 +336,12 @@ K3 の GRU の試走（`stage2four_k3_001_gru_D0only_ep4_smoke_seed42`、1 epoch
 | 1 | extra-queries の予測-CF・正解予測-CF、3 本目の枠に `launch/gpu1_chain.sh`（検出から工程の 18 本 → K3 の GRU → extra-queries の入れ替え） |
 
 起動の前の GPU の compute プロセスは 0 件。decoder-xattn の 6 本は andrew（`handoff_andrew.md`）。
+
+### E-1 検出から工程の 18 本（02:32〜02:52 JST、bengio の GPU 1、`launch/gpu1_chain.sh` → `run_dp_four.sh`）
+
+18 本とも rc=0、`result_selection` final_epoch・`result_epoch` 4、受け取り手の不変 true。値は `experiments/analysis/stage2_pilot_four/INTERIM.md`（`aggregate_four.py --interim`。
+確率から計算し直した値と run の記録の差の最大 0.0）。1 本の学習の壁時計（`elapsed_seconds`）: LC empty 117.1 秒、LC pred_noCF 97.5 秒、LC gt 20.1 秒、LC pred_CF 18.8 秒、LC gtpred_CF 22.8 秒、LC shuffle 32.6 秒、TH empty 37.2 秒、TH pred_noCF 37.9 秒、TH gt 44.4 秒、TH pred_CF 48.6 秒、TH gtpred_CF 48.2 秒、TH shuffle 48.7 秒、TH-NG empty 43.2 秒、TH-NG pred_noCF 45.8 秒、TH-NG gt 47.5 秒、TH-NG pred_CF 47.7 秒、TH-NG gtpred_CF 39.6 秒、TH-NG shuffle 46.4 秒。
+
+- tool-history（カードどおり）の 4 epoch 目の tanh(α) は 0.0050〜0.0125。空以外の 5 腕は予測した工程（argmax）がすべて同じで（事後確率の差の最大 2.6e−4〜1.0e−3）、空の腕と 2 フレームだけ違う
+- 空の腕の陰性対照（学んだ界面に零の代わりに予測の信号を入れる）は各 run の `metrics.json` の `negative_control` に在る
+- K3 の GRU（`stage2four_k3_002_gru_D0only_ep4_seed42`、02:52 JST、rc=0）: val の macro Jaccard 0.220015（記述だけ。Task D で使う）

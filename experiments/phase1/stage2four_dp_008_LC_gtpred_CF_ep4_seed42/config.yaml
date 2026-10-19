@@ -1,0 +1,119 @@
+task_id: T-2026-10-19-stage2-pilot-four-new-types
+unofficial: 非公式（T-2026-10-19-stage2-pilot-four-new-types）
+direction: DP
+type: LC
+interface: logit_corr
+arm: gtpred_CF
+seed: 42
+scope: W1
+inst_variant: null
+signal_dim: 32
+signals_train:
+- path: /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D-GT_train.npz
+  sha256: 058a9a82d3edfb89ca14819f07928707eb7ca94b82f62738fc4f20d8edfe7ab7
+  gt: true
+- path: /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/cf/D0_train.npz
+  sha256: fdbf285bc9278e8a333cc6c3496f8ec44b9f37e049d02ee61cfe63cbd76adace
+  gt: false
+signals_val:
+- path: /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D-GT_val.npz
+  sha256: 3e81cb221c074c7d6bf45c6c70cc8284a2d13724f15a1407986f8c47ef0570f0
+  gt: true
+- path: /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D0_val.npz
+  sha256: 4403d1fed34e3115f23d972fa98887fc653209a2e00b995b8ff2d821af3f6650
+  gt: false
+receiver:
+  head: /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/efros_ptower/experiments/phase1/stage1_ptower_20_009_P15_C_L8_w0.3_h30_foldA_coco_lr0.0001_seed42/checkpoints/best.pth
+  head_sha256: 0d76d446796f855a51640d756d6d3436573ff40ed600915980021c5f4cc6ad6d
+  cache: /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/efros_ptower/data/processed/stage1_features/p15ctl_coco_lr0.0001_foldA_seed42/all_gap.npz
+  cache_sha256: c402e214d28d32c68b396fe84bbefefffdf7577d9550c421364543af78f172da
+  mode: frozen, eval (dropout off)
+stop_rule:
+  lr: 0.0005
+  weight_decay: 0.01
+  patience: null
+  max_epochs: 4
+  smoothing_weight: 0.3
+  fixed_epochs: 4
+  lr_schedule: constant
+  selection: none (state after epoch 4)
+result_selection: final_epoch
+class_counts:
+- 281
+- 3595
+- 245
+- 11
+- 3832
+- 12
+- 825
+- 763
+- 93
+class_weights:
+- 0.1636632981864376
+- 0.012792597160052564
+- 0.18771178281791417
+- 4.180853344580815
+- 0.012001405738619249
+- 3.8324488991990804
+- 0.05574471126107754
+- 0.06027442567547702
+- 0.49450953538052655
+videos:
+  train:
+  - '01'
+  - '02'
+  - '03'
+  - '06'
+  - '08'
+  - '11'
+  - '12'
+  - '13'
+  - '14'
+  - '15'
+  val:
+  - '09'
+  - '10'
+smoke: false
+iface_params: 1641
+x_layout:
+  train:
+    pred:
+      cols:
+      - 0
+      - 16
+      source: /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/cf/D0_train.npz
+      flag: 1
+    gt:
+      cols:
+      - 16
+      - 32
+      source: /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D-GT_train.npz
+      flag: 1
+  val:
+    pred:
+      cols:
+      - 0
+      - 16
+      source: /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D0_val.npz
+      flag: 1
+    gt:
+      cols:
+      - 16
+      - 32
+      source: /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D-GT_val.npz
+      flag: 1
+trainable:
+  trainable_names:
+  - iface.w_in.bias
+  - iface.w_in.weight
+  - iface.w_out.bias
+  - iface.w_out.weight
+  - iface.w_p.weight
+  iface_names:
+  - iface.w_in.bias
+  - iface.w_in.weight
+  - iface.w_out.bias
+  - iface.w_out.weight
+  - iface.w_p.weight
+  equal: true
+  equal_with_one_head_param_mixed: false

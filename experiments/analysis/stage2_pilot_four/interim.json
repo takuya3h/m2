@@ -1,0 +1,2218 @@
+{
+  "task_id": "T-2026-10-19-stage2-pilot-four-new-types",
+  "unofficial": true,
+  "tower": {
+    "PD": {
+      "AP": 0.7273450248398429,
+      "target_AP": 0.7950748008550897,
+      "control_AP": 0.6726631817581498,
+      "per_video": {
+        "09": 0.704273483949694,
+        "10": 0.6420973291237674
+      }
+    },
+    "DP": {
+      "phase_jaccard": 0.7762185528074379,
+      "phase_accuracy": 0.8712871287128713,
+      "per_video": {
+        "09": {
+          "phase_jaccard": 0.9931717398646169,
+          "phase_accuracy": 0.9961389961389961
+        },
+        "10": {
+          "phase_jaccard": 0.6753695847911568,
+          "phase_accuracy": 0.8064192577733199
+        }
+      }
+    }
+  },
+  "tables": {
+    "PD": {
+      "DX": {
+        "empty": {
+          "value": null,
+          "delta_empty": null,
+          "delta_shuffle": null,
+          "delta_tower": null,
+          "per_video_delta": {}
+        },
+        "pred_noCF": {
+          "value": null,
+          "delta_empty": null,
+          "delta_shuffle": null,
+          "delta_tower": null,
+          "per_video_delta": {}
+        },
+        "gt": {
+          "value": null,
+          "delta_empty": null,
+          "delta_shuffle": null,
+          "delta_tower": null,
+          "per_video_delta": {}
+        },
+        "pred_CF": {
+          "value": null,
+          "delta_empty": null,
+          "delta_shuffle": null,
+          "delta_tower": null,
+          "per_video_delta": {}
+        },
+        "gtpred_CF": {
+          "value": null,
+          "delta_empty": null,
+          "delta_shuffle": null,
+          "delta_tower": null,
+          "per_video_delta": {}
+        },
+        "shuffle": {
+          "value": null,
+          "delta_empty": null,
+          "delta_shuffle": null,
+          "delta_tower": null,
+          "per_video_delta": {}
+        }
+      },
+      "EQ": {
+        "empty": {
+          "value": null,
+          "delta_empty": null,
+          "delta_shuffle": null,
+          "delta_tower": null,
+          "per_video_delta": {}
+        },
+        "pred_noCF": {
+          "value": null,
+          "delta_empty": null,
+          "delta_shuffle": null,
+          "delta_tower": null,
+          "per_video_delta": {}
+        },
+        "gt": {
+          "value": null,
+          "delta_empty": null,
+          "delta_shuffle": null,
+          "delta_tower": null,
+          "per_video_delta": {}
+        },
+        "pred_CF": {
+          "value": null,
+          "delta_empty": null,
+          "delta_shuffle": null,
+          "delta_tower": null,
+          "per_video_delta": {}
+        },
+        "gtpred_CF": {
+          "value": null,
+          "delta_empty": null,
+          "delta_shuffle": null,
+          "delta_tower": null,
+          "per_video_delta": {}
+        },
+        "shuffle": {
+          "value": null,
+          "delta_empty": null,
+          "delta_shuffle": null,
+          "delta_tower": null,
+          "per_video_delta": {}
+        }
+      }
+    },
+    "DP": {
+      "LC": {
+        "empty": {
+          "run": "stage2four_dp_004_LC_empty_ep4_seed42",
+          "phase_jaccard": 0.7687047212243804,
+          "phase_accuracy": 0.8706270627062707,
+          "per_video": {
+            "09": {
+              "phase_accuracy": 0.9961389961389961,
+              "phase_jaccard": 0.9931717398646169
+            },
+            "10": {
+              "phase_accuracy": 0.8054162487462387,
+              "phase_jaccard": 0.667737167384085
+            }
+          },
+          "per_class": {
+            "anesthesia": 0.9603960396039604,
+            "closure": 0.7544169611307421,
+            "design": 0.9615384615384616,
+            "disinfection": 0.0,
+            "dissection": 0.7766990291262136,
+            "dressing": 0.7307692307692307,
+            "hemostasis": 0.3493975903614458,
+            "incision": 0.8477157360406091,
+            "irrigation": 0.0
+          },
+          "init_jaccard": 0.7762185528074379,
+          "history": [
+            {
+              "epoch": 1,
+              "train_loss": 0.5148440539836884,
+              "val_jaccard": 0.770786141633759,
+              "val_accuracy": 0.8712871287128713
+            },
+            {
+              "epoch": 2,
+              "train_loss": 0.5135179936885834,
+              "val_jaccard": 0.770786141633759,
+              "val_accuracy": 0.8712871287128713
+            },
+            {
+              "epoch": 3,
+              "train_loss": 0.5122042149305344,
+              "val_jaccard": 0.7688845542943332,
+              "val_accuracy": 0.8706270627062707
+            },
+            {
+              "epoch": 4,
+              "train_loss": 0.5110331296920776,
+              "val_jaccard": 0.7687047212243804,
+              "val_accuracy": 0.8706270627062707
+            }
+          ],
+          "gate_by_epoch": null,
+          "init_gate": null,
+          "receiver_unchanged": true,
+          "negative_control": {
+            "max_abs_logit_diff": 0.020313739776611328,
+            "pred_signal_jaccard": 0.7687047212243804,
+            "unchanged": false,
+            "zero_signal_jaccard": 0.7687047212243804
+          },
+          "host": "bengio",
+          "wall_seconds": 117.14396979287267,
+          "trainable": 1641,
+          "probs_file": "/home/ubuntu/slocal2/m2-four/experiments/phase1/stage2four_dp_004_LC_empty_ep4_seed42/predictions/val_probs_best.npz",
+          "value": {
+            "phase_jaccard": 0.7687047212243804,
+            "phase_accuracy": 0.8706270627062707
+          },
+          "delta_empty": {
+            "phase_jaccard": 0.0,
+            "phase_accuracy": 0.0
+          },
+          "delta_shuffle": {
+            "phase_jaccard": 0.003728235012074199,
+            "phase_accuracy": -0.0013201320132012473
+          },
+          "delta_tower": {
+            "phase_jaccard": -0.0075138315830575175,
+            "phase_accuracy": -0.0006600660066006236
+          },
+          "per_video_delta": {
+            "empty": {
+              "09": 0.0,
+              "10": 0.0
+            },
+            "shuffle": {
+              "09": 0.0,
+              "10": 0.0021452327680655525
+            }
+          }
+        },
+        "pred_noCF": {
+          "run": "stage2four_dp_005_LC_pred_noCF_ep4_seed42",
+          "phase_jaccard": 0.7665837609456805,
+          "phase_accuracy": 0.8745874587458746,
+          "per_video": {
+            "09": {
+              "phase_accuracy": 0.9961389961389961,
+              "phase_jaccard": 0.9931717398646169
+            },
+            "10": {
+              "phase_accuracy": 0.8114343029087262,
+              "phase_jaccard": 0.6691649998016848
+            }
+          },
+          "per_class": {
+            "anesthesia": 0.9603960396039604,
+            "closure": 0.7561837455830389,
+            "design": 0.9615384615384616,
+            "disinfection": 0.0,
+            "dissection": 0.7851373182552503,
+            "dressing": 0.6923076923076923,
+            "hemostasis": 0.34523809523809523,
+            "incision": 0.8652849740932642,
+            "irrigation": 0.0
+          },
+          "init_jaccard": 0.7762185528074379,
+          "history": [
+            {
+              "epoch": 1,
+              "train_loss": 0.5147869765758515,
+              "val_jaccard": 0.770786141633759,
+              "val_accuracy": 0.8712871287128713
+            },
+            {
+              "epoch": 2,
+              "train_loss": 0.5131331145763397,
+              "val_jaccard": 0.7706057246902025,
+              "val_accuracy": 0.8712871287128713
+            },
+            {
+              "epoch": 3,
+              "train_loss": 0.5114319443702697,
+              "val_jaccard": 0.7704091164135718,
+              "val_accuracy": 0.8719471947194719
+            },
+            {
+              "epoch": 4,
+              "train_loss": 0.5098797917366028,
+              "val_jaccard": 0.7665837609456805,
+              "val_accuracy": 0.8745874587458746
+            }
+          ],
+          "gate_by_epoch": null,
+          "init_gate": null,
+          "receiver_unchanged": true,
+          "negative_control": null,
+          "host": "bengio",
+          "wall_seconds": 97.45804145745933,
+          "trainable": 1641,
+          "probs_file": "/home/ubuntu/slocal2/m2-four/experiments/phase1/stage2four_dp_005_LC_pred_noCF_ep4_seed42/predictions/val_probs_best.npz",
+          "value": {
+            "phase_jaccard": 0.7665837609456805,
+            "phase_accuracy": 0.8745874587458746
+          },
+          "delta_empty": {
+            "phase_jaccard": -0.0021209602786999016,
+            "phase_accuracy": 0.003960396039603964
+          },
+          "delta_shuffle": {
+            "phase_jaccard": 0.0016072747333742976,
+            "phase_accuracy": 0.0026402640264027166
+          },
+          "delta_tower": {
+            "phase_jaccard": -0.009634791861757419,
+            "phase_accuracy": 0.0033003300330033403
+          },
+          "per_video_delta": {
+            "empty": {
+              "09": 0.0,
+              "10": 0.0014278324175998058
+            },
+            "shuffle": {
+              "09": 0.0,
+              "10": 0.0035730651856653584
+            }
+          },
+          "per_class_delta_empty": {
+            "anesthesia": 0.0,
+            "closure": 0.0017667844522968323,
+            "design": 0.0,
+            "disinfection": 0.0,
+            "dissection": 0.008438289129036769,
+            "dressing": -0.038461538461538436,
+            "hemostasis": -0.004159495123350565,
+            "incision": 0.01756923805265509,
+            "irrigation": 0.0
+          },
+          "per_class_max_abs": "dressing"
+        },
+        "gt": {
+          "run": "stage2four_dp_006_LC_gt_ep4_seed42",
+          "phase_jaccard": 0.765535263007917,
+          "phase_accuracy": 0.8739273927392739,
+          "per_video": {
+            "09": {
+              "phase_accuracy": 0.9961389961389961,
+              "phase_jaccard": 0.9931717398646169
+            },
+            "10": {
+              "phase_accuracy": 0.8104312938816449,
+              "phase_jaccard": 0.6671571525132437
+            }
+          },
+          "per_class": {
+            "anesthesia": 0.9603960396039604,
+            "closure": 0.7561837455830389,
+            "design": 0.9615384615384616,
+            "disinfection": 0.0,
+            "dissection": 0.782258064516129,
+            "dressing": 0.6923076923076923,
+            "hemostasis": 0.34523809523809523,
+            "incision": 0.8608247422680413,
+            "irrigation": 0.0
+          },
+          "init_jaccard": 0.7762185528074379,
+          "history": [
+            {
+              "epoch": 1,
+              "train_loss": 0.5148083060979843,
+              "val_jaccard": 0.770786141633759,
+              "val_accuracy": 0.8712871287128713
+            },
+            {
+              "epoch": 2,
+              "train_loss": 0.5132170855998993,
+              "val_jaccard": 0.7714551283800413,
+              "val_accuracy": 0.8719471947194719
+            },
+            {
+              "epoch": 3,
+              "train_loss": 0.5115816801786423,
+              "val_jaccard": 0.7695537502619901,
+              "val_accuracy": 0.8712871287128713
+            },
+            {
+              "epoch": 4,
+              "train_loss": 0.5100887894630433,
+              "val_jaccard": 0.765535263007917,
+              "val_accuracy": 0.8739273927392739
+            }
+          ],
+          "gate_by_epoch": null,
+          "init_gate": null,
+          "receiver_unchanged": true,
+          "negative_control": null,
+          "host": "bengio",
+          "wall_seconds": 20.12173334043473,
+          "trainable": 1641,
+          "probs_file": "/home/ubuntu/slocal2/m2-four/experiments/phase1/stage2four_dp_006_LC_gt_ep4_seed42/predictions/val_probs_best.npz",
+          "value": {
+            "phase_jaccard": 0.765535263007917,
+            "phase_accuracy": 0.8739273927392739
+          },
+          "delta_empty": {
+            "phase_jaccard": -0.0031694582164634166,
+            "phase_accuracy": 0.0033003300330032292
+          },
+          "delta_shuffle": {
+            "phase_jaccard": 0.0005587767956107825,
+            "phase_accuracy": 0.001980198019801982
+          },
+          "delta_tower": {
+            "phase_jaccard": -0.010683289799520934,
+            "phase_accuracy": 0.0026402640264026056
+          },
+          "per_video_delta": {
+            "empty": {
+              "09": 0.0,
+              "10": -0.00058001487084125
+            },
+            "shuffle": {
+              "09": 0.0,
+              "10": 0.0015652178972243025
+            }
+          },
+          "per_class_delta_empty": {
+            "anesthesia": 0.0,
+            "closure": 0.0017667844522968323,
+            "design": 0.0,
+            "disinfection": 0.0,
+            "dissection": 0.005559035389915423,
+            "dressing": -0.038461538461538436,
+            "hemostasis": -0.004159495123350565,
+            "incision": 0.013109006227432163,
+            "irrigation": 0.0
+          },
+          "per_class_max_abs": "dressing"
+        },
+        "pred_CF": {
+          "run": "stage2four_dp_007_LC_pred_CF_ep4_seed42",
+          "phase_jaccard": 0.7648543701665939,
+          "phase_accuracy": 0.8732673267326733,
+          "per_video": {
+            "09": {
+              "phase_accuracy": 0.9961389961389961,
+              "phase_jaccard": 0.9931717398646169
+            },
+            "10": {
+              "phase_accuracy": 0.8094282848545636,
+              "phase_jaccard": 0.6656832630294597
+            }
+          },
+          "per_class": {
+            "anesthesia": 0.9603960396039604,
+            "closure": 0.7561837455830389,
+            "design": 0.9615384615384616,
+            "disinfection": 0.0,
+            "dissection": 0.7819063004846527,
+            "dressing": 0.6923076923076923,
+            "hemostasis": 0.34523809523809523,
+            "incision": 0.8564102564102564,
+            "irrigation": 0.0
+          },
+          "init_jaccard": 0.7762185528074379,
+          "history": [
+            {
+              "epoch": 1,
+              "train_loss": 0.5148184299468994,
+              "val_jaccard": 0.770786141633759,
+              "val_accuracy": 0.8712871287128713
+            },
+            {
+              "epoch": 2,
+              "train_loss": 0.5132090985774994,
+              "val_jaccard": 0.7706057246902025,
+              "val_accuracy": 0.8712871287128713
+            },
+            {
+              "epoch": 3,
+              "train_loss": 0.5115484476089478,
+              "val_jaccard": 0.7695537502619901,
+              "val_accuracy": 0.8712871287128713
+            },
+            {
+              "epoch": 4,
+              "train_loss": 0.5100583374500275,
+              "val_jaccard": 0.7648543701665939,
+              "val_accuracy": 0.8732673267326733
+            }
+          ],
+          "gate_by_epoch": null,
+          "init_gate": null,
+          "receiver_unchanged": true,
+          "negative_control": null,
+          "host": "bengio",
+          "wall_seconds": 18.778039439581335,
+          "trainable": 1641,
+          "probs_file": "/home/ubuntu/slocal2/m2-four/experiments/phase1/stage2four_dp_007_LC_pred_CF_ep4_seed42/predictions/val_probs_best.npz",
+          "value": {
+            "phase_jaccard": 0.7648543701665939,
+            "phase_accuracy": 0.8732673267326733
+          },
+          "delta_empty": {
+            "phase_jaccard": -0.0038503510577865274,
+            "phase_accuracy": 0.0026402640264026056
+          },
+          "delta_shuffle": {
+            "phase_jaccard": -0.00012211604571232826,
+            "phase_accuracy": 0.0013201320132013583
+          },
+          "delta_tower": {
+            "phase_jaccard": -0.011364182640844045,
+            "phase_accuracy": 0.001980198019801982
+          },
+          "per_video_delta": {
+            "empty": {
+              "09": 0.0,
+              "10": -0.002053904354625269
+            },
+            "shuffle": {
+              "09": 0.0,
+              "10": 9.132841344028364e-05
+            }
+          },
+          "per_class_delta_empty": {
+            "anesthesia": 0.0,
+            "closure": 0.0017667844522968323,
+            "design": 0.0,
+            "disinfection": 0.0,
+            "dissection": 0.005207271358439125,
+            "dressing": -0.038461538461538436,
+            "hemostasis": -0.004159495123350565,
+            "incision": 0.00869452036964724,
+            "irrigation": 0.0
+          },
+          "per_class_max_abs": "dressing"
+        },
+        "gtpred_CF": {
+          "run": "stage2four_dp_008_LC_gtpred_CF_ep4_seed42",
+          "phase_jaccard": 0.7587454056619819,
+          "phase_accuracy": 0.8745874587458746,
+          "per_video": {
+            "09": {
+              "phase_accuracy": 0.9961389961389961,
+              "phase_jaccard": 0.9931717398646169
+            },
+            "10": {
+              "phase_accuracy": 0.8114343029087262,
+              "phase_jaccard": 0.6620309796165241
+            }
+          },
+          "per_class": {
+            "anesthesia": 0.9603960396039604,
+            "closure": 0.7566137566137566,
+            "design": 0.9615384615384616,
+            "disinfection": 0.0,
+            "dissection": 0.7817014446227929,
+            "dressing": 0.64,
+            "hemostasis": 0.3411764705882353,
+            "incision": 0.8697916666666666,
+            "irrigation": 0.0
+          },
+          "init_jaccard": 0.7762185528074379,
+          "history": [
+            {
+              "epoch": 1,
+              "train_loss": 0.5147288799285888,
+              "val_jaccard": 0.7706057246902025,
+              "val_accuracy": 0.8712871287128713
+            },
+            {
+              "epoch": 2,
+              "train_loss": 0.5127918511629105,
+              "val_jaccard": 0.7695537502619901,
+              "val_accuracy": 0.8712871287128713
+            },
+            {
+              "epoch": 3,
+              "train_loss": 0.5107340931892395,
+              "val_jaccard": 0.765535263007917,
+              "val_accuracy": 0.8739273927392739
+            },
+            {
+              "epoch": 4,
+              "train_loss": 0.508755910396576,
+              "val_jaccard": 0.7587454056619819,
+              "val_accuracy": 0.8745874587458746
+            }
+          ],
+          "gate_by_epoch": null,
+          "init_gate": null,
+          "receiver_unchanged": true,
+          "negative_control": null,
+          "host": "bengio",
+          "wall_seconds": 22.759766114875674,
+          "trainable": 1641,
+          "probs_file": "/home/ubuntu/slocal2/m2-four/experiments/phase1/stage2four_dp_008_LC_gtpred_CF_ep4_seed42/predictions/val_probs_best.npz",
+          "value": {
+            "phase_jaccard": 0.7587454056619819,
+            "phase_accuracy": 0.8745874587458746
+          },
+          "delta_empty": {
+            "phase_jaccard": -0.009959315562398485,
+            "phase_accuracy": 0.003960396039603964
+          },
+          "delta_shuffle": {
+            "phase_jaccard": -0.006231080550324286,
+            "phase_accuracy": 0.0026402640264027166
+          },
+          "delta_tower": {
+            "phase_jaccard": -0.017473147145456003,
+            "phase_accuracy": 0.0033003300330033403
+          },
+          "per_video_delta": {
+            "empty": {
+              "09": 0.0,
+              "10": -0.005706187767560822
+            },
+            "shuffle": {
+              "09": 0.0,
+              "10": -0.0035609549994952694
+            }
+          },
+          "per_class_delta_empty": {
+            "anesthesia": 0.0,
+            "closure": 0.0021967954830145464,
+            "design": 0.0,
+            "disinfection": 0.0,
+            "dissection": 0.0050024154965793155,
+            "dressing": -0.09076923076923071,
+            "hemostasis": -0.008221119773210495,
+            "incision": 0.022075930626057505,
+            "irrigation": 0.0
+          },
+          "per_class_max_abs": "dressing"
+        },
+        "shuffle": {
+          "run": "stage2four_dp_009_LC_shuffle_ep4_seed42",
+          "phase_jaccard": 0.7649764862123062,
+          "phase_accuracy": 0.8719471947194719,
+          "per_video": {
+            "09": {
+              "phase_accuracy": 0.9961389961389961,
+              "phase_jaccard": 0.9931717398646169
+            },
+            "10": {
+              "phase_accuracy": 0.8074222668004012,
+              "phase_jaccard": 0.6655919346160194
+            }
+          },
+          "per_class": {
+            "anesthesia": 0.9603960396039604,
+            "closure": 0.7548500881834215,
+            "design": 0.9615384615384616,
+            "disinfection": 0.0,
+            "dissection": 0.7799352750809061,
+            "dressing": 0.6923076923076923,
+            "hemostasis": 0.3493975903614458,
+            "incision": 0.8564102564102564,
+            "irrigation": 0.0
+          },
+          "init_jaccard": 0.7762185528074379,
+          "history": [
+            {
+              "epoch": 1,
+              "train_loss": 0.5148520201444626,
+              "val_jaccard": 0.770786141633759,
+              "val_accuracy": 0.8712871287128713
+            },
+            {
+              "epoch": 2,
+              "train_loss": 0.5133310109376907,
+              "val_jaccard": 0.7706057246902025,
+              "val_accuracy": 0.8712871287128713
+            },
+            {
+              "epoch": 3,
+              "train_loss": 0.5117575287818908,
+              "val_jaccard": 0.7687047212243804,
+              "val_accuracy": 0.8706270627062707
+            },
+            {
+              "epoch": 4,
+              "train_loss": 0.510412073135376,
+              "val_jaccard": 0.7649764862123062,
+              "val_accuracy": 0.8719471947194719
+            }
+          ],
+          "gate_by_epoch": null,
+          "init_gate": null,
+          "receiver_unchanged": true,
+          "negative_control": null,
+          "host": "bengio",
+          "wall_seconds": 32.551182901486754,
+          "trainable": 1641,
+          "probs_file": "/home/ubuntu/slocal2/m2-four/experiments/phase1/stage2four_dp_009_LC_shuffle_ep4_seed42/predictions/val_probs_best.npz",
+          "value": {
+            "phase_jaccard": 0.7649764862123062,
+            "phase_accuracy": 0.8719471947194719
+          },
+          "delta_empty": {
+            "phase_jaccard": -0.003728235012074199,
+            "phase_accuracy": 0.0013201320132012473
+          },
+          "delta_shuffle": {
+            "phase_jaccard": 0.0,
+            "phase_accuracy": 0.0
+          },
+          "delta_tower": {
+            "phase_jaccard": -0.011242066595131717,
+            "phase_accuracy": 0.0006600660066006236
+          },
+          "per_video_delta": {
+            "empty": {
+              "09": 0.0,
+              "10": -0.0021452327680655525
+            },
+            "shuffle": {
+              "09": 0.0,
+              "10": 0.0
+            }
+          },
+          "per_class_delta_empty": {
+            "anesthesia": 0.0,
+            "closure": 0.000433127052679394,
+            "design": 0.0,
+            "disinfection": 0.0,
+            "dissection": 0.003236245954692518,
+            "dressing": -0.038461538461538436,
+            "hemostasis": 0.0,
+            "incision": 0.00869452036964724,
+            "irrigation": 0.0
+          },
+          "per_class_max_abs": "dressing"
+        }
+      },
+      "TH": {
+        "empty": {
+          "run": "stage2four_dp_010_TH_empty_ep4_seed42",
+          "phase_jaccard": 0.7762185528074379,
+          "phase_accuracy": 0.8712871287128713,
+          "per_video": {
+            "09": {
+              "phase_accuracy": 0.9961389961389961,
+              "phase_jaccard": 0.9931717398646169
+            },
+            "10": {
+              "phase_accuracy": 0.8064192577733199,
+              "phase_jaccard": 0.6753695847911568
+            }
+          },
+          "per_class": {
+            "anesthesia": 0.9603960396039604,
+            "closure": 0.7539823008849558,
+            "design": 0.9615384615384616,
+            "disinfection": 0.0,
+            "dissection": 0.7792207792207793,
+            "dressing": 0.7692307692307693,
+            "hemostasis": 0.3614457831325301,
+            "incision": 0.8477157360406091,
+            "irrigation": 0.0
+          },
+          "init_jaccard": 0.7762185528074379,
+          "history": [
+            {
+              "epoch": 1,
+              "train_loss": 0.5151992201805115,
+              "val_jaccard": 0.7762185528074379,
+              "val_accuracy": 0.8712871287128713,
+              "gate": {
+                "tanh_alpha": -0.00018282636301591992
+              }
+            },
+            {
+              "epoch": 2,
+              "train_loss": 0.5151980608701706,
+              "val_jaccard": 0.7762185528074379,
+              "val_accuracy": 0.8712871287128713,
+              "gate": {
+                "tanh_alpha": 0.0006686702254228294
+              }
+            },
+            {
+              "epoch": 3,
+              "train_loss": 0.5151943504810333,
+              "val_jaccard": 0.7762185528074379,
+              "val_accuracy": 0.8712871287128713,
+              "gate": {
+                "tanh_alpha": 0.0018545903731137514
+              }
+            },
+            {
+              "epoch": 4,
+              "train_loss": 0.5151822209358216,
+              "val_jaccard": 0.7762185528074379,
+              "val_accuracy": 0.8712871287128713,
+              "gate": {
+                "tanh_alpha": 0.005006860010325909
+              }
+            }
+          ],
+          "gate_by_epoch": {
+            "1": {
+              "tanh_alpha": -0.00018282636301591992
+            },
+            "2": {
+              "tanh_alpha": 0.0006686702254228294
+            },
+            "3": {
+              "tanh_alpha": 0.0018545903731137514
+            },
+            "4": {
+              "tanh_alpha": 0.005006860010325909
+            }
+          },
+          "init_gate": {
+            "tanh_alpha": 0.0
+          },
+          "receiver_unchanged": true,
+          "negative_control": {
+            "max_abs_logit_diff": 0.0005402565002441406,
+            "pred_signal_jaccard": 0.7762185528074379,
+            "unchanged": false,
+            "zero_signal_jaccard": 0.7762185528074379
+          },
+          "host": "bengio",
+          "wall_seconds": 37.198974094353616,
+          "trainable": 31233,
+          "probs_file": "/home/ubuntu/slocal2/m2-four/experiments/phase1/stage2four_dp_010_TH_empty_ep4_seed42/predictions/val_probs_best.npz",
+          "value": {
+            "phase_jaccard": 0.7762185528074379,
+            "phase_accuracy": 0.8712871287128713
+          },
+          "delta_empty": {
+            "phase_jaccard": 0.0,
+            "phase_accuracy": 0.0
+          },
+          "delta_shuffle": {
+            "phase_jaccard": 0.005432411173678875,
+            "phase_accuracy": 0.0
+          },
+          "delta_tower": {
+            "phase_jaccard": 0.0,
+            "phase_accuracy": 0.0
+          },
+          "per_video_delta": {
+            "empty": {
+              "09": 0.0,
+              "10": 0.0
+            },
+            "shuffle": {
+              "09": 0.0,
+              "10": 0.005432411173678875
+            }
+          }
+        },
+        "pred_noCF": {
+          "run": "stage2four_dp_011_TH_pred_noCF_ep4_seed42",
+          "phase_jaccard": 0.770786141633759,
+          "phase_accuracy": 0.8712871287128713,
+          "per_video": {
+            "09": {
+              "phase_accuracy": 0.9961389961389961,
+              "phase_jaccard": 0.9931717398646169
+            },
+            "10": {
+              "phase_accuracy": 0.8064192577733199,
+              "phase_jaccard": 0.669937173617478
+            }
+          },
+          "per_class": {
+            "anesthesia": 0.9603960396039604,
+            "closure": 0.7544169611307421,
+            "design": 0.9615384615384616,
+            "disinfection": 0.0,
+            "dissection": 0.7792207792207793,
+            "dressing": 0.7307692307692307,
+            "hemostasis": 0.3614457831325301,
+            "incision": 0.8477157360406091,
+            "irrigation": 0.0
+          },
+          "init_jaccard": 0.7762185528074379,
+          "history": [
+            {
+              "epoch": 1,
+              "train_loss": 0.5151978760957718,
+              "val_jaccard": 0.7762185528074379,
+              "val_accuracy": 0.8712871287128713,
+              "gate": {
+                "tanh_alpha": 0.000948314496781677
+              }
+            },
+            {
+              "epoch": 2,
+              "train_loss": 0.5151810735464096,
+              "val_jaccard": 0.7762185528074379,
+              "val_accuracy": 0.8712871287128713,
+              "gate": {
+                "tanh_alpha": 0.003278457559645176
+              }
+            },
+            {
+              "epoch": 3,
+              "train_loss": 0.515098175406456,
+              "val_jaccard": 0.770786141633759,
+              "val_accuracy": 0.8712871287128713,
+              "gate": {
+                "tanh_alpha": 0.006603050045669079
+              }
+            },
+            {
+              "epoch": 4,
+              "train_loss": 0.5149449974298477,
+              "val_jaccard": 0.770786141633759,
+              "val_accuracy": 0.8712871287128713,
+              "gate": {
+                "tanh_alpha": 0.011238139122724533
+              }
+            }
+          ],
+          "gate_by_epoch": {
+            "1": {
+              "tanh_alpha": 0.000948314496781677
+            },
+            "2": {
+              "tanh_alpha": 0.003278457559645176
+            },
+            "3": {
+              "tanh_alpha": 0.006603050045669079
+            },
+            "4": {
+              "tanh_alpha": 0.011238139122724533
+            }
+          },
+          "init_gate": {
+            "tanh_alpha": 0.0
+          },
+          "receiver_unchanged": true,
+          "negative_control": null,
+          "host": "bengio",
+          "wall_seconds": 37.880708357319236,
+          "trainable": 31233,
+          "probs_file": "/home/ubuntu/slocal2/m2-four/experiments/phase1/stage2four_dp_011_TH_pred_noCF_ep4_seed42/predictions/val_probs_best.npz",
+          "value": {
+            "phase_jaccard": 0.770786141633759,
+            "phase_accuracy": 0.8712871287128713
+          },
+          "delta_empty": {
+            "phase_jaccard": -0.005432411173678875,
+            "phase_accuracy": 0.0
+          },
+          "delta_shuffle": {
+            "phase_jaccard": 0.0,
+            "phase_accuracy": 0.0
+          },
+          "delta_tower": {
+            "phase_jaccard": -0.005432411173678875,
+            "phase_accuracy": 0.0
+          },
+          "per_video_delta": {
+            "empty": {
+              "09": 0.0,
+              "10": -0.005432411173678875
+            },
+            "shuffle": {
+              "09": 0.0,
+              "10": 0.0
+            }
+          },
+          "per_class_delta_empty": {
+            "anesthesia": 0.0,
+            "closure": 0.00043466024578631135,
+            "design": 0.0,
+            "disinfection": 0.0,
+            "dissection": 0.0,
+            "dressing": -0.03846153846153855,
+            "hemostasis": 0.0,
+            "incision": 0.0,
+            "irrigation": 0.0
+          },
+          "per_class_max_abs": "dressing"
+        },
+        "gt": {
+          "run": "stage2four_dp_012_TH_gt_ep4_seed42",
+          "phase_jaccard": 0.770786141633759,
+          "phase_accuracy": 0.8712871287128713,
+          "per_video": {
+            "09": {
+              "phase_accuracy": 0.9961389961389961,
+              "phase_jaccard": 0.9931717398646169
+            },
+            "10": {
+              "phase_accuracy": 0.8064192577733199,
+              "phase_jaccard": 0.669937173617478
+            }
+          },
+          "per_class": {
+            "anesthesia": 0.9603960396039604,
+            "closure": 0.7544169611307421,
+            "design": 0.9615384615384616,
+            "disinfection": 0.0,
+            "dissection": 0.7792207792207793,
+            "dressing": 0.7307692307692307,
+            "hemostasis": 0.3614457831325301,
+            "incision": 0.8477157360406091,
+            "irrigation": 0.0
+          },
+          "init_jaccard": 0.7762185528074379,
+          "history": [
+            {
+              "epoch": 1,
+              "train_loss": 0.5151990294456482,
+              "val_jaccard": 0.7762185528074379,
+              "val_accuracy": 0.8712871287128713,
+              "gate": {
+                "tanh_alpha": -7.709804776823148e-06
+              }
+            },
+            {
+              "epoch": 2,
+              "train_loss": 0.5151951640844346,
+              "val_jaccard": 0.7762185528074379,
+              "val_accuracy": 0.8712871287128713,
+              "gate": {
+                "tanh_alpha": 0.0017041706014424562
+              }
+            },
+            {
+              "epoch": 3,
+              "train_loss": 0.515163591504097,
+              "val_jaccard": 0.77647139730807,
+              "val_accuracy": 0.8719471947194719,
+              "gate": {
+                "tanh_alpha": 0.0045663234777748585
+              }
+            },
+            {
+              "epoch": 4,
+              "train_loss": 0.5150668293237686,
+              "val_jaccard": 0.770786141633759,
+              "val_accuracy": 0.8712871287128713,
+              "gate": {
+                "tanh_alpha": 0.009337866678833961
+              }
+            }
+          ],
+          "gate_by_epoch": {
+            "1": {
+              "tanh_alpha": -7.709804776823148e-06
+            },
+            "2": {
+              "tanh_alpha": 0.0017041706014424562
+            },
+            "3": {
+              "tanh_alpha": 0.0045663234777748585
+            },
+            "4": {
+              "tanh_alpha": 0.009337866678833961
+            }
+          },
+          "init_gate": {
+            "tanh_alpha": 0.0
+          },
+          "receiver_unchanged": true,
+          "negative_control": null,
+          "host": "bengio",
+          "wall_seconds": 44.440354564227164,
+          "trainable": 31233,
+          "probs_file": "/home/ubuntu/slocal2/m2-four/experiments/phase1/stage2four_dp_012_TH_gt_ep4_seed42/predictions/val_probs_best.npz",
+          "value": {
+            "phase_jaccard": 0.770786141633759,
+            "phase_accuracy": 0.8712871287128713
+          },
+          "delta_empty": {
+            "phase_jaccard": -0.005432411173678875,
+            "phase_accuracy": 0.0
+          },
+          "delta_shuffle": {
+            "phase_jaccard": 0.0,
+            "phase_accuracy": 0.0
+          },
+          "delta_tower": {
+            "phase_jaccard": -0.005432411173678875,
+            "phase_accuracy": 0.0
+          },
+          "per_video_delta": {
+            "empty": {
+              "09": 0.0,
+              "10": -0.005432411173678875
+            },
+            "shuffle": {
+              "09": 0.0,
+              "10": 0.0
+            }
+          },
+          "per_class_delta_empty": {
+            "anesthesia": 0.0,
+            "closure": 0.00043466024578631135,
+            "design": 0.0,
+            "disinfection": 0.0,
+            "dissection": 0.0,
+            "dressing": -0.03846153846153855,
+            "hemostasis": 0.0,
+            "incision": 0.0,
+            "irrigation": 0.0
+          },
+          "per_class_max_abs": "dressing"
+        },
+        "pred_CF": {
+          "run": "stage2four_dp_013_TH_pred_CF_ep4_seed42",
+          "phase_jaccard": 0.770786141633759,
+          "phase_accuracy": 0.8712871287128713,
+          "per_video": {
+            "09": {
+              "phase_accuracy": 0.9961389961389961,
+              "phase_jaccard": 0.9931717398646169
+            },
+            "10": {
+              "phase_accuracy": 0.8064192577733199,
+              "phase_jaccard": 0.669937173617478
+            }
+          },
+          "per_class": {
+            "anesthesia": 0.9603960396039604,
+            "closure": 0.7544169611307421,
+            "design": 0.9615384615384616,
+            "disinfection": 0.0,
+            "dissection": 0.7792207792207793,
+            "dressing": 0.7307692307692307,
+            "hemostasis": 0.3614457831325301,
+            "incision": 0.8477157360406091,
+            "irrigation": 0.0
+          },
+          "init_jaccard": 0.7762185528074379,
+          "history": [
+            {
+              "epoch": 1,
+              "train_loss": 0.5151980072259903,
+              "val_jaccard": 0.7762185528074379,
+              "val_accuracy": 0.8712871287128713,
+              "gate": {
+                "tanh_alpha": 0.0008958964026533067
+              }
+            },
+            {
+              "epoch": 2,
+              "train_loss": 0.5151830077171325,
+              "val_jaccard": 0.7762185528074379,
+              "val_accuracy": 0.8712871287128713,
+              "gate": {
+                "tanh_alpha": 0.0030815659556537867
+              }
+            },
+            {
+              "epoch": 3,
+              "train_loss": 0.5151074230670929,
+              "val_jaccard": 0.770786141633759,
+              "val_accuracy": 0.8712871287128713,
+              "gate": {
+                "tanh_alpha": 0.006173529662191868
+              }
+            },
+            {
+              "epoch": 4,
+              "train_loss": 0.5149740606546402,
+              "val_jaccard": 0.770786141633759,
+              "val_accuracy": 0.8712871287128713,
+              "gate": {
+                "tanh_alpha": 0.010627910494804382
+              }
+            }
+          ],
+          "gate_by_epoch": {
+            "1": {
+              "tanh_alpha": 0.0008958964026533067
+            },
+            "2": {
+              "tanh_alpha": 0.0030815659556537867
+            },
+            "3": {
+              "tanh_alpha": 0.006173529662191868
+            },
+            "4": {
+              "tanh_alpha": 0.010627910494804382
+            }
+          },
+          "init_gate": {
+            "tanh_alpha": 0.0
+          },
+          "receiver_unchanged": true,
+          "negative_control": null,
+          "host": "bengio",
+          "wall_seconds": 48.623764622956514,
+          "trainable": 31233,
+          "probs_file": "/home/ubuntu/slocal2/m2-four/experiments/phase1/stage2four_dp_013_TH_pred_CF_ep4_seed42/predictions/val_probs_best.npz",
+          "value": {
+            "phase_jaccard": 0.770786141633759,
+            "phase_accuracy": 0.8712871287128713
+          },
+          "delta_empty": {
+            "phase_jaccard": -0.005432411173678875,
+            "phase_accuracy": 0.0
+          },
+          "delta_shuffle": {
+            "phase_jaccard": 0.0,
+            "phase_accuracy": 0.0
+          },
+          "delta_tower": {
+            "phase_jaccard": -0.005432411173678875,
+            "phase_accuracy": 0.0
+          },
+          "per_video_delta": {
+            "empty": {
+              "09": 0.0,
+              "10": -0.005432411173678875
+            },
+            "shuffle": {
+              "09": 0.0,
+              "10": 0.0
+            }
+          },
+          "per_class_delta_empty": {
+            "anesthesia": 0.0,
+            "closure": 0.00043466024578631135,
+            "design": 0.0,
+            "disinfection": 0.0,
+            "dissection": 0.0,
+            "dressing": -0.03846153846153855,
+            "hemostasis": 0.0,
+            "incision": 0.0,
+            "irrigation": 0.0
+          },
+          "per_class_max_abs": "dressing"
+        },
+        "gtpred_CF": {
+          "run": "stage2four_dp_014_TH_gtpred_CF_ep4_seed42",
+          "phase_jaccard": 0.770786141633759,
+          "phase_accuracy": 0.8712871287128713,
+          "per_video": {
+            "09": {
+              "phase_accuracy": 0.9961389961389961,
+              "phase_jaccard": 0.9931717398646169
+            },
+            "10": {
+              "phase_accuracy": 0.8064192577733199,
+              "phase_jaccard": 0.669937173617478
+            }
+          },
+          "per_class": {
+            "anesthesia": 0.9603960396039604,
+            "closure": 0.7544169611307421,
+            "design": 0.9615384615384616,
+            "disinfection": 0.0,
+            "dissection": 0.7792207792207793,
+            "dressing": 0.7307692307692307,
+            "hemostasis": 0.3614457831325301,
+            "incision": 0.8477157360406091,
+            "irrigation": 0.0
+          },
+          "init_jaccard": 0.7762185528074379,
+          "history": [
+            {
+              "epoch": 1,
+              "train_loss": 0.515197080373764,
+              "val_jaccard": 0.7762185528074379,
+              "val_accuracy": 0.8712871287128713,
+              "gate": {
+                "tanh_alpha": 0.0013252298813313246
+              }
+            },
+            {
+              "epoch": 2,
+              "train_loss": 0.5151692986488342,
+              "val_jaccard": 0.7762185528074379,
+              "val_accuracy": 0.8712871287128713,
+              "gate": {
+                "tanh_alpha": 0.0039108446799218655
+              }
+            },
+            {
+              "epoch": 3,
+              "train_loss": 0.5150482207536697,
+              "val_jaccard": 0.770786141633759,
+              "val_accuracy": 0.8712871287128713,
+              "gate": {
+                "tanh_alpha": 0.007598251104354858
+              }
+            },
+            {
+              "epoch": 4,
+              "train_loss": 0.5148170560598373,
+              "val_jaccard": 0.770786141633759,
+              "val_accuracy": 0.8712871287128713,
+              "gate": {
+                "tanh_alpha": 0.012481864541769028
+              }
+            }
+          ],
+          "gate_by_epoch": {
+            "1": {
+              "tanh_alpha": 0.0013252298813313246
+            },
+            "2": {
+              "tanh_alpha": 0.0039108446799218655
+            },
+            "3": {
+              "tanh_alpha": 0.007598251104354858
+            },
+            "4": {
+              "tanh_alpha": 0.012481864541769028
+            }
+          },
+          "init_gate": {
+            "tanh_alpha": 0.0
+          },
+          "receiver_unchanged": true,
+          "negative_control": null,
+          "host": "bengio",
+          "wall_seconds": 48.15065334737301,
+          "trainable": 31233,
+          "probs_file": "/home/ubuntu/slocal2/m2-four/experiments/phase1/stage2four_dp_014_TH_gtpred_CF_ep4_seed42/predictions/val_probs_best.npz",
+          "value": {
+            "phase_jaccard": 0.770786141633759,
+            "phase_accuracy": 0.8712871287128713
+          },
+          "delta_empty": {
+            "phase_jaccard": -0.005432411173678875,
+            "phase_accuracy": 0.0
+          },
+          "delta_shuffle": {
+            "phase_jaccard": 0.0,
+            "phase_accuracy": 0.0
+          },
+          "delta_tower": {
+            "phase_jaccard": -0.005432411173678875,
+            "phase_accuracy": 0.0
+          },
+          "per_video_delta": {
+            "empty": {
+              "09": 0.0,
+              "10": -0.005432411173678875
+            },
+            "shuffle": {
+              "09": 0.0,
+              "10": 0.0
+            }
+          },
+          "per_class_delta_empty": {
+            "anesthesia": 0.0,
+            "closure": 0.00043466024578631135,
+            "design": 0.0,
+            "disinfection": 0.0,
+            "dissection": 0.0,
+            "dressing": -0.03846153846153855,
+            "hemostasis": 0.0,
+            "incision": 0.0,
+            "irrigation": 0.0
+          },
+          "per_class_max_abs": "dressing"
+        },
+        "shuffle": {
+          "run": "stage2four_dp_015_TH_shuffle_ep4_seed42",
+          "phase_jaccard": 0.770786141633759,
+          "phase_accuracy": 0.8712871287128713,
+          "per_video": {
+            "09": {
+              "phase_accuracy": 0.9961389961389961,
+              "phase_jaccard": 0.9931717398646169
+            },
+            "10": {
+              "phase_accuracy": 0.8064192577733199,
+              "phase_jaccard": 0.669937173617478
+            }
+          },
+          "per_class": {
+            "anesthesia": 0.9603960396039604,
+            "closure": 0.7544169611307421,
+            "design": 0.9615384615384616,
+            "disinfection": 0.0,
+            "dissection": 0.7792207792207793,
+            "dressing": 0.7307692307692307,
+            "hemostasis": 0.3614457831325301,
+            "incision": 0.8477157360406091,
+            "irrigation": 0.0
+          },
+          "init_jaccard": 0.7762185528074379,
+          "history": [
+            {
+              "epoch": 1,
+              "train_loss": 0.5151989072561264,
+              "val_jaccard": 0.7762185528074379,
+              "val_accuracy": 0.8712871287128713,
+              "gate": {
+                "tanh_alpha": 0.0002351681177970022
+              }
+            },
+            {
+              "epoch": 2,
+              "train_loss": 0.5151930779218674,
+              "val_jaccard": 0.7762185528074379,
+              "val_accuracy": 0.8712871287128713,
+              "gate": {
+                "tanh_alpha": 0.0019422941841185093
+              }
+            },
+            {
+              "epoch": 3,
+              "train_loss": 0.5151546686887741,
+              "val_jaccard": 0.7762185528074379,
+              "val_accuracy": 0.8712871287128713,
+              "gate": {
+                "tanh_alpha": 0.004313901532441378
+              }
+            },
+            {
+              "epoch": 4,
+              "train_loss": 0.515079990029335,
+              "val_jaccard": 0.770786141633759,
+              "val_accuracy": 0.8712871287128713,
+              "gate": {
+                "tanh_alpha": 0.008421102538704872
+              }
+            }
+          ],
+          "gate_by_epoch": {
+            "1": {
+              "tanh_alpha": 0.0002351681177970022
+            },
+            "2": {
+              "tanh_alpha": 0.0019422941841185093
+            },
+            "3": {
+              "tanh_alpha": 0.004313901532441378
+            },
+            "4": {
+              "tanh_alpha": 0.008421102538704872
+            }
+          },
+          "init_gate": {
+            "tanh_alpha": 0.0
+          },
+          "receiver_unchanged": true,
+          "negative_control": null,
+          "host": "bengio",
+          "wall_seconds": 48.71836201753467,
+          "trainable": 31233,
+          "probs_file": "/home/ubuntu/slocal2/m2-four/experiments/phase1/stage2four_dp_015_TH_shuffle_ep4_seed42/predictions/val_probs_best.npz",
+          "value": {
+            "phase_jaccard": 0.770786141633759,
+            "phase_accuracy": 0.8712871287128713
+          },
+          "delta_empty": {
+            "phase_jaccard": -0.005432411173678875,
+            "phase_accuracy": 0.0
+          },
+          "delta_shuffle": {
+            "phase_jaccard": 0.0,
+            "phase_accuracy": 0.0
+          },
+          "delta_tower": {
+            "phase_jaccard": -0.005432411173678875,
+            "phase_accuracy": 0.0
+          },
+          "per_video_delta": {
+            "empty": {
+              "09": 0.0,
+              "10": -0.005432411173678875
+            },
+            "shuffle": {
+              "09": 0.0,
+              "10": 0.0
+            }
+          },
+          "per_class_delta_empty": {
+            "anesthesia": 0.0,
+            "closure": 0.00043466024578631135,
+            "design": 0.0,
+            "disinfection": 0.0,
+            "dissection": 0.0,
+            "dressing": -0.03846153846153855,
+            "hemostasis": 0.0,
+            "incision": 0.0,
+            "irrigation": 0.0
+          },
+          "per_class_max_abs": "dressing"
+        }
+      },
+      "TH-NG": {
+        "empty": {
+          "run": "stage2four_dp_016_TH-NG_empty_ep4_seed42",
+          "phase_jaccard": 0.6947002304604489,
+          "phase_accuracy": 0.8712871287128713,
+          "per_video": {
+            "09": {
+              "phase_accuracy": 0.9942084942084942,
+              "phase_jaccard": 0.9903211445764637
+            },
+            "10": {
+              "phase_accuracy": 0.8074222668004012,
+              "phase_jaccard": 0.6006359943617892
+            }
+          },
+          "per_class": {
+            "anesthesia": 0.9603960396039604,
+            "closure": 0.7547495682210709,
+            "design": 0.9615384615384616,
+            "disinfection": 0.0,
+            "dissection": 0.7792,
+            "dressing": 0.2,
+            "hemostasis": 0.3333333333333333,
+            "incision": 0.8736842105263158,
+            "irrigation": 0.0
+          },
+          "init_jaccard": 0.7762185528074379,
+          "history": [
+            {
+              "epoch": 1,
+              "train_loss": 0.5150510609149933,
+              "val_jaccard": 0.7688845542943332,
+              "val_accuracy": 0.8706270627062707
+            },
+            {
+              "epoch": 2,
+              "train_loss": 0.5124696314334869,
+              "val_jaccard": 0.76350325144845,
+              "val_accuracy": 0.8712871287128713
+            },
+            {
+              "epoch": 3,
+              "train_loss": 0.5086830079555511,
+              "val_jaccard": 0.7235067906595535,
+              "val_accuracy": 0.8719471947194719
+            },
+            {
+              "epoch": 4,
+              "train_loss": 0.5060041040182114,
+              "val_jaccard": 0.6947002304604489,
+              "val_accuracy": 0.8712871287128713
+            }
+          ],
+          "gate_by_epoch": null,
+          "init_gate": null,
+          "receiver_unchanged": true,
+          "negative_control": {
+            "max_abs_logit_diff": 0.06031358242034912,
+            "pred_signal_jaccard": 0.6778905456159777,
+            "unchanged": false,
+            "zero_signal_jaccard": 0.6947002304604489
+          },
+          "host": "bengio",
+          "wall_seconds": 43.18919566459954,
+          "trainable": 31232,
+          "probs_file": "/home/ubuntu/slocal2/m2-four/experiments/phase1/stage2four_dp_016_TH-NG_empty_ep4_seed42/predictions/val_probs_best.npz",
+          "value": {
+            "phase_jaccard": 0.6947002304604489,
+            "phase_accuracy": 0.8712871287128713
+          },
+          "delta_empty": {
+            "phase_jaccard": 0.0,
+            "phase_accuracy": 0.0
+          },
+          "delta_shuffle": {
+            "phase_jaccard": 0.01927069388135627,
+            "phase_accuracy": 0.0006600660066006236
+          },
+          "delta_tower": {
+            "phase_jaccard": -0.08151832234698897,
+            "phase_accuracy": 0.0
+          },
+          "per_video_delta": {
+            "empty": {
+              "09": 0.0,
+              "10": 0.0
+            },
+            "shuffle": {
+              "09": 0.013684790782271583,
+              "10": -0.006193314357970103
+            }
+          }
+        },
+        "pred_noCF": {
+          "run": "stage2four_dp_017_TH-NG_pred_noCF_ep4_seed42",
+          "phase_jaccard": 0.6709182506817043,
+          "phase_accuracy": 0.8712871287128713,
+          "per_video": {
+            "09": {
+              "phase_accuracy": 0.9922779922779923,
+              "phase_jaccard": 0.9863528906082097
+            },
+            "10": {
+              "phase_accuracy": 0.8084252758274825,
+              "phase_jaccard": 0.590084713505531
+            }
+          },
+          "per_class": {
+            "anesthesia": 0.96,
+            "closure": 0.7491467576791809,
+            "design": 0.9711538461538461,
+            "disinfection": 0.0,
+            "dissection": 0.7827476038338658,
+            "dressing": 0.0,
+            "hemostasis": 0.345679012345679,
+            "incision": 0.8877005347593583,
+            "irrigation": 0.0
+          },
+          "init_jaccard": 0.7762185528074379,
+          "history": [
+            {
+              "epoch": 1,
+              "train_loss": 0.5147400498390198,
+              "val_jaccard": 0.7689571190032799,
+              "val_accuracy": 0.8712871287128713
+            },
+            {
+              "epoch": 2,
+              "train_loss": 0.5105353444814682,
+              "val_jaccard": 0.7437854529247147,
+              "val_accuracy": 0.8739273927392739
+            },
+            {
+              "epoch": 3,
+              "train_loss": 0.5045774430036545,
+              "val_jaccard": 0.703410967535166,
+              "val_accuracy": 0.8732673267326733
+            },
+            {
+              "epoch": 4,
+              "train_loss": 0.49997020363807676,
+              "val_jaccard": 0.6709182506817043,
+              "val_accuracy": 0.8712871287128713
+            }
+          ],
+          "gate_by_epoch": null,
+          "init_gate": null,
+          "receiver_unchanged": true,
+          "negative_control": null,
+          "host": "bengio",
+          "wall_seconds": 45.76044159755111,
+          "trainable": 31232,
+          "probs_file": "/home/ubuntu/slocal2/m2-four/experiments/phase1/stage2four_dp_017_TH-NG_pred_noCF_ep4_seed42/predictions/val_probs_best.npz",
+          "value": {
+            "phase_jaccard": 0.6709182506817043,
+            "phase_accuracy": 0.8712871287128713
+          },
+          "delta_empty": {
+            "phase_jaccard": -0.023781979778744633,
+            "phase_accuracy": 0.0
+          },
+          "delta_shuffle": {
+            "phase_jaccard": -0.004511285897388362,
+            "phase_accuracy": 0.0006600660066006236
+          },
+          "delta_tower": {
+            "phase_jaccard": -0.1053003021257336,
+            "phase_accuracy": 0.0
+          },
+          "per_video_delta": {
+            "empty": {
+              "09": -0.003968253968253954,
+              "10": -0.010551280856258116
+            },
+            "shuffle": {
+              "09": 0.009716536814017629,
+              "10": -0.01674459521422822
+            }
+          },
+          "per_class_delta_empty": {
+            "anesthesia": -0.0003960396039603964,
+            "closure": -0.0056028105418899354,
+            "design": 0.009615384615384581,
+            "disinfection": 0.0,
+            "dissection": 0.0035476038338657645,
+            "dressing": -0.2,
+            "hemostasis": 0.012345679012345678,
+            "incision": 0.014016324233042443,
+            "irrigation": 0.0
+          },
+          "per_class_max_abs": "dressing"
+        },
+        "gt": {
+          "run": "stage2four_dp_018_TH-NG_gt_ep4_seed42",
+          "phase_jaccard": 0.6713409479399575,
+          "phase_accuracy": 0.8719471947194719,
+          "per_video": {
+            "09": {
+              "phase_accuracy": 0.9922779922779923,
+              "phase_jaccard": 0.9863528906082097
+            },
+            "10": {
+              "phase_accuracy": 0.8094282848545636,
+              "phase_jaccard": 0.5905680762475457
+            }
+          },
+          "per_class": {
+            "anesthesia": 0.96,
+            "closure": 0.7508532423208191,
+            "design": 0.9711538461538461,
+            "disinfection": 0.0,
+            "dissection": 0.784,
+            "dressing": 0.0,
+            "hemostasis": 0.345679012345679,
+            "incision": 0.8877005347593583,
+            "irrigation": 0.0
+          },
+          "init_jaccard": 0.7762185528074379,
+          "history": [
+            {
+              "epoch": 1,
+              "train_loss": 0.5146352738142014,
+              "val_jaccard": 0.770858122469102,
+              "val_accuracy": 0.8719471947194719
+            },
+            {
+              "epoch": 2,
+              "train_loss": 0.5105041205883026,
+              "val_jaccard": 0.7403648849114438,
+              "val_accuracy": 0.8732673267326733
+            },
+            {
+              "epoch": 3,
+              "train_loss": 0.5048168420791626,
+              "val_jaccard": 0.7046790328880128,
+              "val_accuracy": 0.8745874587458746
+            },
+            {
+              "epoch": 4,
+              "train_loss": 0.4999650180339813,
+              "val_jaccard": 0.6713409479399575,
+              "val_accuracy": 0.8719471947194719
+            }
+          ],
+          "gate_by_epoch": null,
+          "init_gate": null,
+          "receiver_unchanged": true,
+          "negative_control": null,
+          "host": "bengio",
+          "wall_seconds": 47.45107226725668,
+          "trainable": 31232,
+          "probs_file": "/home/ubuntu/slocal2/m2-four/experiments/phase1/stage2four_dp_018_TH-NG_gt_ep4_seed42/predictions/val_probs_best.npz",
+          "value": {
+            "phase_jaccard": 0.6713409479399575,
+            "phase_accuracy": 0.8719471947194719
+          },
+          "delta_empty": {
+            "phase_jaccard": -0.023359282520491464,
+            "phase_accuracy": 0.0006600660066006236
+          },
+          "delta_shuffle": {
+            "phase_jaccard": -0.004088588639135193,
+            "phase_accuracy": 0.0013201320132012473
+          },
+          "delta_tower": {
+            "phase_jaccard": -0.10487760486748043,
+            "phase_accuracy": 0.0006600660066006236
+          },
+          "per_video_delta": {
+            "empty": {
+              "09": -0.003968253968253954,
+              "10": -0.010067918114243457
+            },
+            "shuffle": {
+              "09": 0.009716536814017629,
+              "10": -0.01626123247221356
+            }
+          },
+          "per_class_delta_empty": {
+            "anesthesia": -0.0003960396039603964,
+            "closure": -0.003896325900251796,
+            "design": 0.009615384615384581,
+            "disinfection": 0.0,
+            "dissection": 0.0048000000000000265,
+            "dressing": -0.2,
+            "hemostasis": 0.012345679012345678,
+            "incision": 0.014016324233042443,
+            "irrigation": 0.0
+          },
+          "per_class_max_abs": "dressing"
+        },
+        "pred_CF": {
+          "run": "stage2four_dp_019_TH-NG_pred_CF_ep4_seed42",
+          "phase_jaccard": 0.666390790980281,
+          "phase_accuracy": 0.8699669966996699,
+          "per_video": {
+            "09": {
+              "phase_accuracy": 0.9903474903474904,
+              "phase_jaccard": 0.9794776598957697
+            },
+            "10": {
+              "phase_accuracy": 0.8074222668004012,
+              "phase_jaccard": 0.5811308872847519
+            }
+          },
+          "per_class": {
+            "anesthesia": 0.9405940594059405,
+            "closure": 0.7474402730375427,
+            "design": 0.9523809523809523,
+            "disinfection": 0.0,
+            "dissection": 0.7818471337579618,
+            "dressing": 0.0,
+            "hemostasis": 0.35,
+            "incision": 0.8924731182795699,
+            "irrigation": 0.0
+          },
+          "init_jaccard": 0.7762185528074379,
+          "history": [
+            {
+              "epoch": 1,
+              "train_loss": 0.5147993683815002,
+              "val_jaccard": 0.7689571190032799,
+              "val_accuracy": 0.8712871287128713
+            },
+            {
+              "epoch": 2,
+              "train_loss": 0.510704630613327,
+              "val_jaccard": 0.7381113649224359,
+              "val_accuracy": 0.8732673267326733
+            },
+            {
+              "epoch": 3,
+              "train_loss": 0.504713374376297,
+              "val_jaccard": 0.7024801268824786,
+              "val_accuracy": 0.8726072607260726
+            },
+            {
+              "epoch": 4,
+              "train_loss": 0.5002309262752533,
+              "val_jaccard": 0.666390790980281,
+              "val_accuracy": 0.8699669966996699
+            }
+          ],
+          "gate_by_epoch": null,
+          "init_gate": null,
+          "receiver_unchanged": true,
+          "negative_control": null,
+          "host": "bengio",
+          "wall_seconds": 47.67149651795626,
+          "trainable": 31232,
+          "probs_file": "/home/ubuntu/slocal2/m2-four/experiments/phase1/stage2four_dp_019_TH-NG_pred_CF_ep4_seed42/predictions/val_probs_best.npz",
+          "value": {
+            "phase_jaccard": 0.666390790980281,
+            "phase_accuracy": 0.8699669966996699
+          },
+          "delta_empty": {
+            "phase_jaccard": -0.028309439480167953,
+            "phase_accuracy": -0.0013201320132013583
+          },
+          "delta_shuffle": {
+            "phase_jaccard": -0.009038745598811682,
+            "phase_accuracy": -0.0006600660066007347
+          },
+          "delta_tower": {
+            "phase_jaccard": -0.10982776182715692,
+            "phase_accuracy": -0.0013201320132013583
+          },
+          "per_video_delta": {
+            "empty": {
+              "09": -0.01084348468069396,
+              "10": -0.01950510707703723
+            },
+            "shuffle": {
+              "09": 0.002841306101577623,
+              "10": -0.025698421435007335
+            }
+          },
+          "per_class_delta_empty": {
+            "anesthesia": -0.01980198019801982,
+            "closure": -0.007309295183528186,
+            "design": -0.009157509157509236,
+            "disinfection": 0.0,
+            "dissection": 0.0026471337579617726,
+            "dressing": -0.2,
+            "hemostasis": 0.016666666666666663,
+            "incision": 0.018788907753254036,
+            "irrigation": 0.0
+          },
+          "per_class_max_abs": "dressing"
+        },
+        "gtpred_CF": {
+          "run": "stage2four_dp_020_TH-NG_gtpred_CF_ep4_seed42",
+          "phase_jaccard": 0.6726708485068917,
+          "phase_accuracy": 0.8726072607260726,
+          "per_video": {
+            "09": {
+              "phase_accuracy": 0.9903474903474904,
+              "phase_jaccard": 0.9794776598957697
+            },
+            "10": {
+              "phase_accuracy": 0.8114343029087262,
+              "phase_jaccard": 0.6044433494126872
+            }
+          },
+          "per_class": {
+            "anesthesia": 0.9595959595959596,
+            "closure": 0.7508532423208191,
+            "design": 0.9714285714285714,
+            "disinfection": 0.0,
+            "dissection": 0.7843450479233227,
+            "dressing": 0.0,
+            "hemostasis": 0.35,
+            "incision": 0.8924731182795699,
+            "irrigation": 0.0
+          },
+          "init_jaccard": 0.7762185528074379,
+          "history": [
+            {
+              "epoch": 1,
+              "train_loss": 0.5144601255655289,
+              "val_jaccard": 0.7637552040813551,
+              "val_accuracy": 0.8719471947194719
+            },
+            {
+              "epoch": 2,
+              "train_loss": 0.5091600030660629,
+              "val_jaccard": 0.7291254915556692,
+              "val_accuracy": 0.8739273927392739
+            },
+            {
+              "epoch": 3,
+              "train_loss": 0.50185267329216,
+              "val_jaccard": 0.6760842756723809,
+              "val_accuracy": 0.8719471947194719
+            },
+            {
+              "epoch": 4,
+              "train_loss": 0.49694496393203735,
+              "val_jaccard": 0.6726708485068917,
+              "val_accuracy": 0.8726072607260726
+            }
+          ],
+          "gate_by_epoch": null,
+          "init_gate": null,
+          "receiver_unchanged": true,
+          "negative_control": null,
+          "host": "bengio",
+          "wall_seconds": 39.62213754002005,
+          "trainable": 31232,
+          "probs_file": "/home/ubuntu/slocal2/m2-four/experiments/phase1/stage2four_dp_020_TH-NG_gtpred_CF_ep4_seed42/predictions/val_probs_best.npz",
+          "value": {
+            "phase_jaccard": 0.6726708485068917,
+            "phase_accuracy": 0.8726072607260726
+          },
+          "delta_empty": {
+            "phase_jaccard": -0.022029381953557192,
+            "phase_accuracy": 0.0013201320132013583
+          },
+          "delta_shuffle": {
+            "phase_jaccard": -0.002758688072200921,
+            "phase_accuracy": 0.001980198019801982
+          },
+          "delta_tower": {
+            "phase_jaccard": -0.10354770430054616,
+            "phase_accuracy": 0.0013201320132013583
+          },
+          "per_video_delta": {
+            "empty": {
+              "09": -0.01084348468069396,
+              "10": 0.0038073550508980203
+            },
+            "shuffle": {
+              "09": 0.002841306101577623,
+              "10": -0.002385959307072083
+            }
+          },
+          "per_class_delta_empty": {
+            "anesthesia": -0.000800080008000803,
+            "closure": -0.003896325900251796,
+            "design": 0.009890109890109855,
+            "disinfection": 0.0,
+            "dissection": 0.00514504792332271,
+            "dressing": -0.2,
+            "hemostasis": 0.016666666666666663,
+            "incision": 0.018788907753254036,
+            "irrigation": 0.0
+          },
+          "per_class_max_abs": "dressing"
+        },
+        "shuffle": {
+          "run": "stage2four_dp_021_TH-NG_shuffle_ep4_seed42",
+          "phase_jaccard": 0.6754295365790927,
+          "phase_accuracy": 0.8706270627062707,
+          "per_video": {
+            "09": {
+              "phase_accuracy": 0.9884169884169884,
+              "phase_jaccard": 0.9766363537941921
+            },
+            "10": {
+              "phase_accuracy": 0.8094282848545636,
+              "phase_jaccard": 0.6068293087197593
+            }
+          },
+          "per_class": {
+            "anesthesia": 0.9595959595959596,
+            "closure": 0.75,
+            "design": 0.9714285714285714,
+            "disinfection": 0.0,
+            "dissection": 0.7814992025518341,
+            "dressing": 0.041666666666666664,
+            "hemostasis": 0.34146341463414637,
+            "incision": 0.8823529411764706,
+            "irrigation": 0.0
+          },
+          "init_jaccard": 0.7762185528074379,
+          "history": [
+            {
+              "epoch": 1,
+              "train_loss": 0.5150224179029464,
+              "val_jaccard": 0.7687047212243804,
+              "val_accuracy": 0.8706270627062707
+            },
+            {
+              "epoch": 2,
+              "train_loss": 0.5115159749984741,
+              "val_jaccard": 0.7546535630700671,
+              "val_accuracy": 0.8739273927392739
+            },
+            {
+              "epoch": 3,
+              "train_loss": 0.5060515344142914,
+              "val_jaccard": 0.7179476287249908,
+              "val_accuracy": 0.8732673267326733
+            },
+            {
+              "epoch": 4,
+              "train_loss": 0.5029288172721863,
+              "val_jaccard": 0.6754295365790927,
+              "val_accuracy": 0.8706270627062707
+            }
+          ],
+          "gate_by_epoch": null,
+          "init_gate": null,
+          "receiver_unchanged": true,
+          "negative_control": null,
+          "host": "bengio",
+          "wall_seconds": 46.446399338543415,
+          "trainable": 31232,
+          "probs_file": "/home/ubuntu/slocal2/m2-four/experiments/phase1/stage2four_dp_021_TH-NG_shuffle_ep4_seed42/predictions/val_probs_best.npz",
+          "value": {
+            "phase_jaccard": 0.6754295365790927,
+            "phase_accuracy": 0.8706270627062707
+          },
+          "delta_empty": {
+            "phase_jaccard": -0.01927069388135627,
+            "phase_accuracy": -0.0006600660066006236
+          },
+          "delta_shuffle": {
+            "phase_jaccard": 0.0,
+            "phase_accuracy": 0.0
+          },
+          "delta_tower": {
+            "phase_jaccard": -0.10078901622834524,
+            "phase_accuracy": -0.0006600660066006236
+          },
+          "per_video_delta": {
+            "empty": {
+              "09": -0.013684790782271583,
+              "10": 0.006193314357970103
+            },
+            "shuffle": {
+              "09": 0.0,
+              "10": 0.0
+            }
+          },
+          "per_class_delta_empty": {
+            "anesthesia": -0.000800080008000803,
+            "closure": -0.004749568221070866,
+            "design": 0.009890109890109855,
+            "disinfection": 0.0,
+            "dissection": 0.002299202551834134,
+            "dressing": -0.15833333333333335,
+            "hemostasis": 0.008130081300813052,
+            "incision": 0.008668730650154721,
+            "irrigation": 0.0
+          },
+          "per_class_max_abs": "dressing"
+        }
+      }
+    }
+  },
+  "hosts_by_type": {
+    "DX": [],
+    "EQ": [],
+    "LC": [
+      "bengio"
+    ],
+    "TH": [
+      "bengio"
+    ],
+    "TH-NG": [
+      "bengio"
+    ]
+  },
+  "n_runs": {
+    "PD": 0,
+    "DP": 18
+  },
+  "recompute": {
+    "DP LC empty": {
+      "phase_jaccard": 0.0,
+      "phase_accuracy": 0.0
+    },
+    "DP LC pred_noCF": {
+      "phase_jaccard": 0.0,
+      "phase_accuracy": 0.0
+    },
+    "DP LC gt": {
+      "phase_jaccard": 0.0,
+      "phase_accuracy": 0.0
+    },
+    "DP LC pred_CF": {
+      "phase_jaccard": 0.0,
+      "phase_accuracy": 0.0
+    },
+    "DP LC gtpred_CF": {
+      "phase_jaccard": 0.0,
+      "phase_accuracy": 0.0
+    },
+    "DP LC shuffle": {
+      "phase_jaccard": 0.0,
+      "phase_accuracy": 0.0
+    },
+    "DP TH empty": {
+      "phase_jaccard": 0.0,
+      "phase_accuracy": 0.0
+    },
+    "DP TH pred_noCF": {
+      "phase_jaccard": 0.0,
+      "phase_accuracy": 0.0
+    },
+    "DP TH gt": {
+      "phase_jaccard": 0.0,
+      "phase_accuracy": 0.0
+    },
+    "DP TH pred_CF": {
+      "phase_jaccard": 0.0,
+      "phase_accuracy": 0.0
+    },
+    "DP TH gtpred_CF": {
+      "phase_jaccard": 0.0,
+      "phase_accuracy": 0.0
+    },
+    "DP TH shuffle": {
+      "phase_jaccard": 0.0,
+      "phase_accuracy": 0.0
+    },
+    "DP TH-NG empty": {
+      "phase_jaccard": 0.0,
+      "phase_accuracy": 0.0
+    },
+    "DP TH-NG pred_noCF": {
+      "phase_jaccard": 0.0,
+      "phase_accuracy": 0.0
+    },
+    "DP TH-NG gt": {
+      "phase_jaccard": 0.0,
+      "phase_accuracy": 0.0
+    },
+    "DP TH-NG pred_CF": {
+      "phase_jaccard": 0.0,
+      "phase_accuracy": 0.0
+    },
+    "DP TH-NG gtpred_CF": {
+      "phase_jaccard": 0.0,
+      "phase_accuracy": 0.0
+    },
+    "DP TH-NG shuffle": {
+      "phase_jaccard": 0.0,
+      "phase_accuracy": 0.0
+    },
+    "max_abs": 0.0
+  },
+  "costs": {
+    "LC empty": {
+      "wall_seconds": 117.14396979287267,
+      "trainable": 1641
+    },
+    "LC pred_noCF": {
+      "wall_seconds": 97.45804145745933,
+      "trainable": 1641
+    },
+    "LC gt": {
+      "wall_seconds": 20.12173334043473,
+      "trainable": 1641
+    },
+    "LC pred_CF": {
+      "wall_seconds": 18.778039439581335,
+      "trainable": 1641
+    },
+    "LC gtpred_CF": {
+      "wall_seconds": 22.759766114875674,
+      "trainable": 1641
+    },
+    "LC shuffle": {
+      "wall_seconds": 32.551182901486754,
+      "trainable": 1641
+    },
+    "TH empty": {
+      "wall_seconds": 37.198974094353616,
+      "trainable": 31233
+    },
+    "TH pred_noCF": {
+      "wall_seconds": 37.880708357319236,
+      "trainable": 31233
+    },
+    "TH gt": {
+      "wall_seconds": 44.440354564227164,
+      "trainable": 31233
+    },
+    "TH pred_CF": {
+      "wall_seconds": 48.623764622956514,
+      "trainable": 31233
+    },
+    "TH gtpred_CF": {
+      "wall_seconds": 48.15065334737301,
+      "trainable": 31233
+    },
+    "TH shuffle": {
+      "wall_seconds": 48.71836201753467,
+      "trainable": 31233
+    },
+    "TH-NG empty": {
+      "wall_seconds": 43.18919566459954,
+      "trainable": 31232
+    },
+    "TH-NG pred_noCF": {
+      "wall_seconds": 45.76044159755111,
+      "trainable": 31232
+    },
+    "TH-NG gt": {
+      "wall_seconds": 47.45107226725668,
+      "trainable": 31232
+    },
+    "TH-NG pred_CF": {
+      "wall_seconds": 47.67149651795626,
+      "trainable": 31232
+    },
+    "TH-NG gtpred_CF": {
+      "wall_seconds": 39.62213754002005,
+      "trainable": 31232
+    },
+    "TH-NG shuffle": {
+      "wall_seconds": 46.446399338543415,
+      "trainable": 31232
+    }
+  }
+}

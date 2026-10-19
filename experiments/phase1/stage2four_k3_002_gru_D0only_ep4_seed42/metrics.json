@@ -1,0 +1,27 @@
+{
+  "ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-four-new-types/k3/stage2four_k3_002_gru_D0only_ep4_seed42.pth",
+  "ckpt_sha256": "b433a521d22c59730e3ef6b7d40b9b4534ef40ca08299f84b6a53ec9b889b8ba",
+  "elapsed_seconds": 0.647447650320828,
+  "eval_recipe": {
+    "test_cfg": {
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "split": "val",
+      "task": "phase"
+    }
+  },
+  "per_video": {
+    "09": {
+      "phase_accuracy": 0.38223938223938225,
+      "phase_jaccard": 0.26517739610104685
+    },
+    "10": {
+      "phase_accuracy": 0.4383149448345035,
+      "phase_jaccard": 0.1678549346501576
+    }
+  },
+  "phase_accuracy": 0.41914191419141916,
+  "phase_jaccard": 0.2200154780028233,
+  "result_epoch": 4,
+  "result_selection": "final_epoch"
+}
