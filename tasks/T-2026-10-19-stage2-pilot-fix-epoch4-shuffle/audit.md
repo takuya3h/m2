@@ -366,3 +366,12 @@ PD の要約の控え `stage2pilot_metrics.json` は前回の 22 本すべてに
 - 22:20 JST: P1-W1 空が rc=0（epoch ごとの val mAP 0.7312 / 0.7269 / 0.7302 / 0.7236、結果は epoch 3）。**P1-W1 がそろった**（回し直し 2 本・入れ替え 1 本・前回の記録 3 本）。
   回し直しの再現: 空の epoch 0〜2 は前回の val_metrics_by_epoch.json との差 +0.0008 / −0.0006 / 0.0、予測-noCF の epoch 0〜3 は 0.0 / +0.0001 / −0.0006 / −0.0003（前回は 4 桁の表示）。
   学習前の値はすべて塔単独と同値。中間記録を作り直した（計算し直しの検査 85 件で食い違い 0）
+- 22:3x JST: bengio が S4 で止まった（Relation-DETR のソースが 23 件違う〔andrew にだけ在る 15、中身が違う 8。transforms/presets.py・optimizer/param_dict.py・main.py を含む〕、
+  `.venv-relation-detr` の python のリンク先 ~/.pyenv/versions/3.11.4 が bengio に無い）。本番は起動していない。利用者に 3 案を示し、一度目の回答は「andrew に戻す」
+- 22:35 JST: andrew で P3 の 4 本を起こし始めた（GPU 0 に正解・予測-CF・正解予測-CF、GPU 1 に入れ替え）が、命令が途切れ（道具の内部の誤り）、
+  正解は模型の読み込み、予測-CF は拡張の確認までで止まり、プロセスは残らなかった。正解予測-CF と入れ替えは起こしていない。
+  直後に利用者が「bengio を直す方でいく」に変えた。止まった 2 本の run（`stage2fix_pd_P3_{gt,pred_CF}_ep4_seed42`）は、後で bengio の結果と同じ経路で衝突しないよう
+  `FIX/aborted_runs/andrew_P3_launch_2235JST/` へ移した（消していない。同期の外）
+- 直し方の決定（実行者。利用者の決定「bengio を直す」の中の選び方）: Relation-DETR は (b) andrew の中身を bengio の別の場所に置く「重ねの BODY」（bengio の third_party を変えない）、
+  仮想環境は (a) uv の CPython 3.11.16 に向け直す（andrew の `.venv-relation-detr` も uv の cpython-3.11〔3.11.16〕を指す）。
+  andrew の仮想環境のパッケージ一覧（72 個）を `experiments/analysis/stage2_pilot_fix/bengio/venv_relation_detr_freeze_andrew.txt` に置いた。手順は `handoff_bengio.md` §6

@@ -177,3 +177,74 @@ commit の文の末尾には bengio のセッションの帰属の行を付け�
 - bengio の push の後、`origin/feat/stage2-pilot-fix-epoch4-shuffle-bengio` を fetch し、新しいファイルだけであることを確かめて `git merge --no-ff` で統合する
 - `aggregate_fix.py` で P3 の表を作る。P3 の空・予測-noCF は andrew、他の 4 本は bengio で回ったこと（`server.txt`）を報告の限界と逸脱に書く
 - `test_audit_fix.py`・`make forbidden-check`・報告・PR・`make task-report`・`make task-release`
+
+## 6. 追補（2026-10-19 22:4x JST）: bengio の S4 の停止への回答
+
+bengio の報告（Relation-DETR のソースが 23 件違う、`.venv-relation-detr` の python のリンク先が無い）を受けて、利用者が **bengio を直して回す**と決めた。
+直し方は次のとおり（andrew の実行者が決めた。bengio のほかの作業に影響を与えない方を選んだ）。
+
+| 問い | 決定 | 理由 |
+|---|---|---|
+| 1. Relation-DETR | **(b)** andrew の中身を別の場所に置き、「重ねの BODY」で参照させる。bengio の `third_party/Relation-DETR` は変えない | 台本の変更は要らない（`S2FIX_BODY` と、台本が渡す `EGO_BODY` で切り替わる）。bengio のほかの作業に触れない |
+| 2. 仮想環境 | **(a)** `.venv-relation-detr` の python を uv の CPython 3.11.16 に向け直す | andrew の `.venv-relation-detr` も uv の `cpython-3.11-linux-x86_64-gnu`（3.11.16）を指し、`pyvenv.cfg` の `home` も uv の bin。直すと andrew と同じになる |
+
+以下 `OV=/home/ubuntu/slocal2/s2fix-bengio-body`（重ねの BODY。repo と同期の外）、`WT=/home/ubuntu/slocal2/m2-s2fix-bengio`。
+
+### R1 仮想環境を直す（2 の a）
+
+1. 直す前の状態を `audit_bengio.md` に残す: `ls -la /home/ubuntu/slocal2/m2/.venv-relation-detr/bin/python*`、`cat .../pyvenv.cfg`。
+   `pyvenv.cfg` は `pyvenv.cfg.before_s2fix` という名前で写しを残す（戻すときはこの写しとリンクの元の値を使う）
+2. `bin/python` を uv の CPython 3.11.16 の `bin/python3.11` へ向け直す（`ln -sfn`）。`pyvenv.cfg` の `home` をその bin に、`version_info` を 3.11.16 にする
+   （andrew の値: `home = /home/ubuntu/.local/share/uv/python/cpython-3.11-linux-x86_64-gnu/bin`。bengio の uv の実際の経路を使う）
+3. 確かめる: `.venv-relation-detr/bin/python -c "import sys, torch; print(sys.version, torch.__version__, torch.version.cuda, torch.backends.cudnn.version(), torch.cuda.is_available())"`
+   → 3.11.16、2.1.2+cu118、11.8、8700、True
+4. パッケージの一覧を andrew と比べる。andrew の一覧は `experiments/analysis/stage2_pilot_fix/bengio/venv_relation_detr_freeze_andrew.txt`（72 個。pip は入っていないので
+   `python -c "import importlib.metadata as m; ..."` で「名前（小文字）==版」を名前の順に出したもの。同じ書き方で bengio の一覧を作る）。
+   **違いがあれば、入れ替えずに一覧を利用者に示して諮る**（依存の追加・削除は利用者の承認が要る）
+
+### R2 重ねの BODY を作る（1 の b）
+
+    mkdir -p $OV/third_party
+    ln -s /home/ubuntu/slocal2/m2/data $OV/data
+    ln -s /home/ubuntu/slocal2/m2/experiments $OV/experiments
+    ln -s /home/ubuntu/slocal2/m2/.venv $OV/.venv
+    ln -s /home/ubuntu/slocal2/m2/.venv-relation-detr $OV/.venv-relation-detr
+
+`$OV/third_party/Relation-DETR` には andrew の `/home/ubuntu/slocal2/m2/third_party/Relation-DETR` を、次を除いて写す（約 2.2 MB。信号と同じ経路で運ぶ）:
+`.git`、`checkpoints`、`experiments`、`third_party`、`per_class_coco_map`、`__pycache__`、`data`、`outputs`、`work_dirs`。
+写した後は中身を変えない。bengio の main の `third_party/Relation-DETR` は変えない。
+
+### R3 正式な S4
+
+    $OV/.venv-relation-detr/bin/python $WT/scripts/stage2pilot/input_digest.py --body $OV --out $WT/experiments/analysis/stage2_pilot_fix/bengio/input_digest_bengio.json
+
+andrew の値と、`relation_detr.commit`・`relation_detr.uncommitted`（写しに `.git` が無いので比べない）と `torch.gpus` を除く**すべての値が一致**すること。
+特に `relation_detr.source_files` 142、`source_tree_sha256` 2f08e5213cb5c377c576172b0d39964f46fb6afb80532ce11f8bad7437f1e393。違えば止めて諮る。
+
+### R4 拡張の読み込み（conventions#env_p0）
+
+    cd $OV/third_party/Relation-DETR && CUDA_HOME=/usr/local/cuda $OV/.venv-relation-detr/bin/python -c "import models.bricks.ms_deform_attn as m; print('ms_deform_attn_ext', m._C is not None)"
+
+初回は `~/.cache/torch_extensions/py311_cu118` に nvcc でビルドする（数分）。True であること。
+
+### R5 塔単独の再現（S5 の置き換え）
+
+前回の `eval_dtower_val.sh` は main の `third_party` を使うため使わない。代わりに S6 の 1（`pd_eval.py --cfg plain`）を `EGO_BODY=$OV` で回し、
+その `eval_detection_mAP` が andrew の **0.7273450248398429** と一致するか（許容差 0.005。andrew では差 0）を見る。超えたら止めて諮る。
+
+### R6 以降
+
+S6（恒等性）・S7（試走）・S8（本番）・S9・S10 は §4 のとおり。ただし環境の `S2FIX_BODY` と `EGO_BODY` は **`$OV`** にする:
+
+    cd $WT && S2FIX_BODY=/home/ubuntu/slocal2/s2fix-bengio-body S2FIX_CODE=/home/ubuntu/slocal2/m2-s2fix-bengio CUDA_VISIBLE_DEVICES=0 bash scripts/stage2pilot/run_pd_fix.sh P3 gt smoke
+
+（`run_pd_fix.sh` は `S2FIX_BODY` から仮想環境・データ・検出塔の重み・Relation-DETR を引き、`EGO_BODY` を同じ値で渡す。run は `S2FIX_CODE` の中にできる）。
+S6 の `pd_eval.py` も `EGO_BODY=$OV`、`EGO_ROOT=$OV/data/raw/ego`、`EGO_ANN_DIR=$OV/data/annotations/egosurgery_tool_folds/A`、`--det-ckpt $OV/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth`。
+
+`audit_bengio.md` には、22:3x JST の停止（S4 の不一致 23 件の一覧、仮想環境の故障、予備の S4）と、R1〜R6 の命令と出力を書く。終わったら仮想環境は直したまま、
+重ねの BODY と worktree も残し、その旨を報告する（戻すかどうかは利用者が決める）。
+
+### andrew の側（22:3x JST）
+
+andrew は一度 P3 の 4 本を andrew に戻して起こしかけたが（利用者の一度目の回答）、命令が途切れて正解と予測-CF の 2 本は学習に入る前に止まり、
+利用者が bengio を直す方へ戻した。止まった 2 本の run のフォルダは andrew の `experiments/` から本契約の置き場（同期の外）へ移した。andrew では P3 の 4 本は走っていない。
