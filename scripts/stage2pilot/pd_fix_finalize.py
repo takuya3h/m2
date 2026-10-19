@@ -10,6 +10,7 @@ overall mAP・クラス別 AP・標的群 AP・陰性対照群 AP・動画ごと
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -19,7 +20,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from stage2pilot import common as C  # noqa: E402
 from stage2pilot import det_metrics as M  # noqa: E402
 
-VAL_ANN = C.DET_ANN_A / "instances_val.json"
+# run_pd_fix.sh が渡す EGO_ANN_DIR を優先する（worktree から回すとき、注釈は git の外の S2FIX_BODY に在る）
+VAL_ANN = Path(os.environ.get("EGO_ANN_DIR") or C.DET_ANN_A) / "instances_val.json"
 
 
 def f6(x):

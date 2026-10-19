@@ -11,11 +11,17 @@
 # 受け取り手・界面の型と容量・学習範囲・学習率・増強・batch・数値精度（学習の順伝播は bf16 の自動混合精度、評価は単精度）・
 # seed は前回の run_pd.sh と同じ。変えるのは止め方と、入れ替えの腕の信号だけ（SPEC Task E-1）。
 # 前回の信号は OLD から読むだけ。入れ替えた信号・重み・記録の写しは本契約の置き場（FIX）へ。
+#
+# 置き場の切り替え（2026-10-19 21:5x JST に足した。既定のままなら従来と同じ）:
+#   S2FIX_BODY  データ（data/raw、注釈）・仮想環境・third_party/Relation-DETR・検出塔の重みを読む repo（既定 /home/ubuntu/slocal2/m2）
+#   S2FIX_CODE  台本・構成・run の置き場（experiments/phase1/<run>）の repo。既定は S2FIX_BODY と同じ。
+#               別ホストで git worktree から回すときに worktree を渡す（同期と自動同期の外で回すため）
 set -euo pipefail
 TYPE="$1"; ARM="$2"; MODE="${3:-}"
 SEED=42
 EPOCHS=4
-BODY=/home/ubuntu/slocal2/m2
+BODY=${S2FIX_BODY:-/home/ubuntu/slocal2/m2}
+CODE=${S2FIX_CODE:-$BODY}
 TASK=T-2026-10-19-stage2-pilot-fix-epoch4-shuffle
 OLD=/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda
 FIX=/home/ubuntu/slocal2/stage2pilot_store/$TASK
@@ -47,20 +53,21 @@ esac
 for f in "$TR" "$VA"; do [ -f "$f" ] || { echo "信号が無い: $f" >&2; exit 3; }; done
 
 RUN="stage2fix_pd_${TYPE}_${ARM}_ep${EPOCHS}_seed${SEED}${MODE:+_$MODE}"
-WORK=$BODY/experiments/phase1/$RUN
+WORK=$CODE/experiments/phase1/$RUN
 [ -e "$WORK" ] && { echo "既に在る: $WORK" >&2; exit 4; }
-CFG=$BODY/configs/stage2pilot/pd_${IFACE}_d${DIM}.py
+CFG=$CODE/configs/stage2pilot/pd_${IFACE}_d${DIM}.py
 EXTRA=(--epochs "$EPOCHS" --fixed-epochs --amp bf16)
 if [ "$TYPE" = P2F ]; then
-  EXTRA=(--eval-only --fixed-table "$BODY/experiments/analysis/stage2_pilot_folda/signals/p2f_table.json")
+  EXTRA=(--eval-only --fixed-table "$CODE/experiments/analysis/stage2_pilot_folda/signals/p2f_table.json")
 elif [ "$MODE" = smoke ]; then
   EXTRA=(--epochs 1 --fixed-epochs --amp bf16 --smoke)
 fi
 
-cd "$BODY"
+cd "$CODE"
 # shellcheck disable=SC1091
 source "$BODY/.venv-relation-detr/bin/activate"
 export CUDA_HOME=/usr/local/cuda
+export EGO_BODY=$BODY      # train_t1b.py が third_party/Relation-DETR を BODY から引く（既定では台本の位置から引く値と同じ）
 export EGO_ROOT=$BODY/data/raw/ego
 export EGO_ANN_DIR=$BODY/data/annotations/egosurgery_tool_folds/A
 export T1B_MODEL_CFG=$CFG
@@ -70,7 +77,7 @@ date -u '+%Y-%m-%d %H:%M:%S UTC' > "$WORK/start.txt"
 nvidia-smi --query-compute-apps=pid,used_memory --format=csv > "$WORK/gpu_at_start.txt"
 set +e
 # conventions#env_p0: 拡張の読み込みを記録に残す（読めていなければ ms_deform_attn_ext=False）
-(cd third_party/Relation-DETR && python -c "import torch, models.bricks.ms_deform_attn as m; print('[env] torch', torch.__version__, 'cuda', torch.cuda.is_available(), 'ms_deform_attn_ext', m._C is not None)") \
+(cd "$BODY/third_party/Relation-DETR" && python -c "import torch, models.bricks.ms_deform_attn as m; print('[env] torch', torch.__version__, 'cuda', torch.cuda.is_available(), 'ms_deform_attn_ext', m._C is not None)") \
   > "$WORK/env_check.txt" 2>&1
 python scripts/train_t1b.py --seed "$SEED" --trainable "$TRAINABLE" --task-id "$TASK" --run-name "$RUN" \
   --det-ckpt "$BODY/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth" \
