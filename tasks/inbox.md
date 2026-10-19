@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（692 件）
+## 未処理（697 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -707,6 +707,11 @@
 - [ ] 2026-10-19 [cc] bengio の third_party/Relation-DETR は andrew と 23 件違い（増強・最適化の群を含む）、.venv-relation-detr の python のリンク先が無かった。bengio の仮想環境は uv の 3.11.16 に向け直したまま。戻すか、Relation-DETR をそろえるかは未決（T-2026-10-19-stage2-pilot-fix-epoch4-shuffle）
 - [ ] 2026-10-19 [cc] SPEC §1 の「P1-W1 正解の最後の回で +0.0087」は正解 epoch 3 と空 epoch 2 の差だった（長さの違う回の比較）。同じ epoch どうしでは選び方による差は小さい（T-2026-10-19-stage2-pilot-fix-epoch4-shuffle）
 - [ ] 2026-10-20 [cc] 結果の要点（非公式）: 予測-noCF の Δ入替は D1-L1 Jaccard +0.0013（Δ空 +0.0046 の大半は入れ替えた信号でも出る）、P1-W1・P1-W2・P2L で標的群 AP +0.0087・+0.0149・+0.0075、D3 と P3 は負。選び方による差は小さい。§5.3 の予測は 10 件中 8 件が当たり（T-2026-10-19-stage2-pilot-fix-epoch4-shuffle）
+- [ ] 2026-10-20 [cc] 非公式の測定（予備測定に界面の新しい型を四つ足した）。結果は関門の判定と設計の判断に使わない。全値は experiments/analysis/stage2_pilot_four/REPORT.md（T-2026-10-19-stage2-pilot-four-new-types）
+- [ ] 2026-10-20 [cc] 利用者の決定: 直しの契約の終了を待たずに bengio の worktree から前倒しで始め、主のホストを bengio、decoder-xattn の 6 本を andrew にした（amendments 8 件）。decoder-xattn と extra-queries の比較はホストをまたぐ（T-2026-10-19-stage2-pilot-four-new-types）
+- [ ] 2026-10-20 [cc] extra-queries は 6 腕とも 4 epoch で追加の出力が上位 300 に出ず、全腕が塔単独と同値（スコアの定数 −10 → −9.44〜−9.50、train の見落とし 73 個）。カードの意図を測るなら定数の学習率・初期値・長さを決め直す必要がある（未決。T-2026-10-19-stage2-pilot-four-new-types）
+- [ ] 2026-10-20 [cc] tool-history はゲートが開かず（tanh(α) ≤ 0.012）、ゲートなし版は空の腕でも塔単独より Jaccard −0.082（GRU が経過の情報を持つ）。再帰の界面で空の腕を分母にする読み方は未決（T-2026-10-19-stage2-pilot-four-new-types）
+- [ ] 2026-10-20 [cc] bengio の worktree に追跡外の記号リンク .venv と data/processed/phase_manifest、前回・直しの契約の保存先の bengio の写しに andrew と同じ中身の 32 本を足したまま。戻すかは未決（T-2026-10-19-stage2-pilot-four-new-types）
 
 ## 処理済み（1 件）
 

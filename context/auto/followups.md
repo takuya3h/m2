@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（643 件）
+## 申し送り（646 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1035,7 +1035,13 @@
 - 前回の aggregate.py の comparisons の並びが実行ごとに変わる（set の反復順）。並びを固定するかを決める
 - bengio の .venv-relation-detr（向け直した）と third_party/Relation-DETR（andrew と 23 件違う）、重ねの BODY と worktree を残すか戻すかを決める
 
-## 断定できなかった事項（402 件）
+### T-2026-10-19-stage2-pilot-four-new-types
+
+- extra-queries は 4 epoch では追加の出力が上位 300 に出なかった。カードの意図（見落としにだけ当たる query）を測るには、スコアの定数の学習率・初期値・長さを変える必要がある（本契約では変えていない）
+- tool-history（カードどおり）のゲートは 4 epoch で tanh(α) 0.012 までしか開かなかった（起票者の見積もり 0.02 と同じ程度）。ゲートなし版は空の腕が経過の情報を持つので、空の腕を分母にした比較の読み方を決めておく必要がある
+- worktree の追跡外の記号リンク .venv と data/processed/phase_manifest、bengio の前回・直しの契約の保存先に足した 32 本は残してある（戻すかどうかは利用者が決める）
+
+## 断定できなかった事項（403 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1793,18 +1799,22 @@
 - andrew で GPU 1 枚に PD を 1 本だけ載せたときの速さ（測っていない）
 - 計算し直しの検査（完了判定 j）が作り物の食い違いを検出するか（陽性対照を入れていない）
 
-## 起票者の誤りの型（375 件）
+### T-2026-10-19-stage2-pilot-four-new-types
+
+- K3 の GRU の最終状態から術式を当てる精度: 動画ごとの術式の対応が repo に無い
+
+## 起票者の誤りの型（378 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 101 |
-| `asserted_without_measuring` | 157 |
+| `check_does_not_check` | 102 |
+| `asserted_without_measuring` | 159 |
 | `self_contradiction` | 96 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 1 |
 | `rule_read_narrowly` | 1 |
 
-合計 375 件（対を持つ契約 130 件から）
+合計 378 件（対を持つ契約 131 件から）
 
