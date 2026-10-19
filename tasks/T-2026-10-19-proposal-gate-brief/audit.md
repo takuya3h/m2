@@ -756,3 +756,34 @@ exit=2
 当初の二件は同期で届いた他契約の未追跡ログで、本契約が生成・変更したものではない。再開時に別runの六件も届いており、今回の実測違反は計8件。全違反経路についてgit ls-filesは0行で、未追跡。二件だけと報告せず追加分も分けて記録する。実験ファイルは一切移動・削除していない。
 
 RESULT g・h・逸脱とresult.yamlを今回の扱いへ訂正。checkerのexit2を成功と書かず、PR経路集合による範囲検証と分ける。.gitignore実ファイルは起点origin/phase0の.gitignoreとバイト単位で一致（PRに残す変更なし）。コード・検査器・試験には変更がないため、47試験の再実行は行っていない。結果schemaの検証とgit diff --checkを実施。
+
+### Push後のGitHub PR経路集合による証明
+
+命令: gh pr view 239 --json files,headRefOid,baseRefName,headRefName,isDraft,body,url
+GitHubの応答: head=5f8f273ab59633a2f1b38b59a8ba08fcc7a5ab1b、base=phase0、headRef=feat/proposal-gate-brief、isDraft=false。
+
+PR差分の経路集合（19件）:
+
+```text
+context/conventions.md
+docs/proposal-gate.md
+docs/proposals/_template.md
+tasks/T-2026-10-19-proposal-gate-brief/RESULT.md
+tasks/T-2026-10-19-proposal-gate-brief/SPEC.md
+tasks/T-2026-10-19-proposal-gate-brief/audit.md
+tasks/T-2026-10-19-proposal-gate-brief/baseline.json
+tasks/T-2026-10-19-proposal-gate-brief/correction-forbidden-check.json
+tasks/T-2026-10-19-proposal-gate-brief/gitignore-exact-logs.patch
+tasks/T-2026-10-19-proposal-gate-brief/positive-controls.json
+tasks/T-2026-10-19-proposal-gate-brief/positive-cost-unknown.md
+tasks/T-2026-10-19-proposal-gate-brief/result.yaml
+tasks/T-2026-10-19-proposal-gate-brief/search-after.json
+tasks/T-2026-10-19-proposal-gate-brief/search-before.json
+tasks/T-2026-10-19-proposal-gate-brief/search-classification.json
+tasks/T-2026-10-19-proposal-gate-brief/spec.yaml
+tasks/T-2026-10-19-proposal-gate-brief/tests-after.xml
+tasks/T-2026-10-19-proposal-gate-brief/tests-before.xml
+tasks/inbox.d/T-2026-10-19-proposal-gate-brief.md
+```
+
+PR経路集合 ∩ experiments/ = 空集合。.gitignoreも含まれない。ローカルのgit diff --name-only origin/phase0...HEADの集合と完全一致する。したがって、禁止検査が拾った同期由来の未追跡ログはPRに含まれない。

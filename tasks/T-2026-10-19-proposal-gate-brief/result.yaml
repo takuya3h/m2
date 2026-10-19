@@ -11,7 +11,7 @@ gates:
   note: 起点8de3ac54に前提契約の報告を確認。生成の行・B.3・雛形はSPECと一致、置き場と参照は起票時の全文と同一。
 - id: G2
   verdict: pass
-  note: 内容・読み・対照と前後47試験は合格。利用者指示で.gitignore二行を差し戻した。forbidden-checkは外部由来の未追跡ログ8件でexit2、PR差分の経路集合にはexperiments/が無いことを別途確認する扱い。
+  note: 内容・読み・対照と前後47試験は合格。利用者指示で.gitignore二行を差し戻した。forbidden-checkは外部由来の未追跡ログ8件でexit2、PR差分の経路集合にはexperiments/が無いことをGitHubの19経路集合とローカル差分集合の一致により確認した。
 tests:
   before_failed: 0
   after_failed: 0
@@ -41,3 +41,4 @@ commits:
 - 5c0eaeeb4551c66c9b854faaa7a5376dcf755ac7
 - 4bb2c542383be0c139d0b9d7382fd615c8be9a10
 - 1cc002d1add4165e89f6ab2c2edf71fa2df4eb6c
+- 5f8f273ab59633a2f1b38b59a8ba08fcc7a5ab1b
