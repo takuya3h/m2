@@ -285,3 +285,36 @@ PD の要約の控え `stage2pilot_metrics.json` は前回の 22 本すべてに
 固定の長さの仕組みが最後の epoch の状態を結果にし（PD・DP の試走、作り物の記録の取り出し）、既定の経路が前回の集計を同じ値で再現し
 （comparisons の並びだけが違う。前回の道具の set の反復順）、入れ替えた信号が値の集合を保ったまま対応だけを壊し（train 100%、val 99.87%）、
 入れ替えの腕の学習前の出力が塔単独と一致し（PD 4 構成・DP 5 型とも差 0.0、最後の層を零でない値にすると変わる）、test の動画を通していない。
+
+## D. 再計算（GPU を使わない）
+
+`scripts/stage2pilot/aggregate_fix.py` が前回の 85 本（PD 22、DP 63）の最良の回の値と 4 epoch 目の値を並べる（表は REPORT.md と report.json の `previous_values`）。
+
+- 読む位置の検査（完了判定 g の四列目）: 前回の最良の値は、各 run の epoch ごとの記録の最大と全件一致（PD 20 本〔P2F 2 本は学習なしで対象外〕、DP 63 本）。
+  P1-W1 予測-noCF は cap_result.json の epoch ごとの mAP（学習ログの 4 桁の表示）で照合した
+- 前回の学習中の評価器（val_metrics_by_epoch.json のクラス別 AP）と、前回の報告の値を作った評価器（best の予測から計算し直す det_metrics）の
+  クラス別 AP は、最良の epoch で全 run 差 0.0（P1-W1 予測-noCF は記録が無く対象外）。したがって epoch 3 の行から作る群の AP は前回の報告と同じ物差し
+- 4 epoch 目の値が無い run: SPEC §2 の PD 8 本（B-2）。DP は無い run 0 本
+- P1-W1 予測-noCF（Task D-3）: andrew に epoch 3 のクラス別の値は残っていない（最良は epoch 2 で、best の予測と重みは epoch 2 の状態）。回し直しの表どおり回し直す
+
+## E. 学習
+
+### E-1 DP の 26 本（17:37:43〜17:39:07 JST、GPU 0 と 1 に 13 本ずつ）
+
+    $ CUDA_VISIBLE_DEVICES=0 bash scripts/stage2pilot/run_dp_fix.sh D1-L1:{empty,pred_noCF,gt,pred_CF,gtpred_CF,shuffle} D1-L2:{empty,pred_noCF,pred_CF,shuffle} D2:{empty,pred_noCF,gt}
+    $ CUDA_VISIBLE_DEVICES=1 bash scripts/stage2pilot/run_dp_fix.sh D2:{pred_CF,gtpred_CF,shuffle} D3-L1:{6 腕} D3-L2:{empty,pred_noCF,pred_CF,shuffle}
+    26 本すべて rc=0、DP_RUN_COMPLETE、result epoch 4。run は stage2fix_dp_002〜027（通し番号の重なりなし。001 は試走）
+
+- 回し直しの 21 本は、前回の同じ run（seed 42）の history.json の epoch 1〜4 と、損失・Jaccard・accuracy の全項目が**完全一致**（差の最大 0）。
+  4 epoch 目の値は前回の記録の epoch 4 と同値。違うのは選び方だけ
+- 1 本の所要: 数秒（特徴と信号の読み込みを含めて 10 秒前後）
+- 中間記録: `experiments/analysis/stage2_pilot_fix/INTERIM.md`（`aggregate_fix.py --interim`。計算し直しの検査 67 件で食い違い 0）。
+  commit 40a8146e を push し、Draft の PR #240（base phase0）を開いた
+
+### E-2 PD（17:39 JST〜）
+
+キュー `FIX/queues/pd.q`（13 行。P2F 入れ替えの評価 → P1-W1 の空・予測-noCF・入れ替え → P1-W2 の空・入れ替え → P2L 入れ替え → P3 の 6 本）を、
+前回の `scripts/stage2pilot/gpu_queue.sh` の取り手 4 本（GPU 0 に 2 本、GPU 1 に 2 本）で流す。`pd.q.stop` を置いてあり、キューが空になれば取り手は終わる。
+
+- P2F 入れ替え（評価だけ、17:39:49〜17:44:36 JST、GPU 0）: rc=0。overall mAP 0.584340、標的群 AP 0.483404、陰性対照群 AP 0.659562、
+  動画 09 0.548540 / 10 0.497360。G3 の陽性対照（表あり＋入れ替えた P0）の mAP 0.5843400 と同値。拡張 ms_deform_attn_ext True
