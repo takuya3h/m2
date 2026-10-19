@@ -415,3 +415,44 @@ val の 2 本で、片方で当てはめもう片方で測った。特徴 (i) �
 評価し直した最終の mAP は 6 腕とも run の記録と同値。追加の出力を除いたとき（元の出力だけ）との差はクラス別 AP・群 AP ともすべて 0。
 空振りでないこと: 予測-noCF の学習した界面のままスコアの定数を 0 にした評価（`xq_contrib/control_score0_*`）では、上位 300 に入った追加が 425,322 件（1,515 枚すべて）、
 そのうち正解に当たる 5,247 件、見落としに当たる 4 件で、照合した見落としは 3 / 78 個。
+
+### E-4・E-5 decoder-xattn の 6 本（andrew、副の実行者。詳細は `audit_andrew.md`）
+
+andrew の記録の写し（利用者の決定 01:44 JST の 6）:
+
+| 項目 | andrew の値 | bengio との照合 |
+|---|---|---|
+| S1 開始状態（02:20 JST） | compute プロセス 0 件、RTX A6000 × 2、main の作業場所は変えていない | — |
+| S3 環境 | `input_digest.py --body $A` が bengio の `env/input_digest_bengio.json` と、除く 3 個以外の 177 個（末端まで平らにした数え方）で一致。Relation-DETR のソース 142 本・パッケージ 72 個も一致 | 一致 |
+| S4 検出塔の塔単独の val | overall mAP 0.7273450248398429、標的群 0.7950748008550897、陰性対照群 0.6726631817581498（seed 123 の対照も bengio と全項目一致） | 差 0.0 |
+| S5 恒等性と陽性対照（全 6 腕と陽性対照） | 6 腕とも学習前 mAP 0.7273450248398429、score・枠の差 0.0、ラベル不一致 0、学習する集合 = 界面（210,374、d18 は 210,662）、学習前のゲート 0。陽性対照で変わる | bengio の `identity/pd_DX_*.json` と同値 |
+| S6 試走（写しの場所） | 学習前 mAP（20 枚）0.8916611661166115、後処理の AP 0.891661、epoch 0 の tanh(α_l) は bengio と 1e−5 程度違う（bf16 で 6 歩の後） | 学習前の値は同値 |
+| S8 起動 | 02:43:44〜02:45:24 JST、GPU 0 に empty・pred_noCF・gt、GPU 1 に pred_CF・gtpred_CF・shuffle（1 枚 3 本）。1 回目は zsh の単語分割で 6 本とも即座に止まった（run は作られていない） | — |
+| S10 終わり（06:37 JST） | 6 本とも rc=0、final_epoch・epoch 3、`init` 0.7273450248398429、`frozen_unchanged` true、`ms_deform_attn_ext True`、`server.txt` andrew、学習前のゲート 0。所要 3.782〜3.843 時間 | bengio で `stage2four_metrics.json` を読み直して学習前の値とゲートを確かめた |
+
+4 epoch 目の値（val、`stage2four_metrics.json`）:
+
+| 腕 | overall mAP | 標的群 AP | 陰性対照群 AP | 4 epoch 目の tanh(α_l)（層 1〜6） |
+|---|---|---|---|---|
+| 空 | 0.7286351809653658 | 0.7971802124759885 | 0.674744871212618 | +0.0607, −0.0801, −0.0922, −0.0769, +0.0678, +0.0464 |
+| 予測-noCF | 0.7285507127170769 | 0.7977964150437383 | 0.6743162666121828 | +0.0829, −0.0861, −0.0998, −0.0937, +0.0821, +0.0572 |
+| 正解 | 0.7307424633845512 | 0.8023051689913743 | 0.6748186678418289 | +0.0765, −0.0914, −0.0883, −0.0970, +0.0779, −0.0758 |
+| 予測-CF | 0.7280597990708618 | 0.7956651065025846 | 0.674161721518428 | +0.0730, −0.0870, −0.0987, −0.0932, +0.0769, −0.0480 |
+| 正解予測-CF | 0.7304329266677848 | 0.8002190391680053 | 0.6743968833150071 | +0.0945, −0.0915, −0.1224, −0.1037, +0.0988, +0.0642 |
+| 入れ替え | 0.728501777648758 | 0.7968013222990057 | 0.6745119663775374 | +0.0605, −0.0648, −0.0806, −0.0660, +0.0772, +0.0431 |
+
+引き渡しの不備（bengio の誤り）: bengio の decoder-xattn の試走の置き場を分岐に commit していたため、andrew の S6 の試走が名前の衝突で止まり、andrew の実行者が利用者の承認を得て
+同じ commit の写しの場所で回した。andrew の run の `git_commit.txt` は main の作業場所の HEAD を書く（`EGO_BODY` で取るため）。
+
+## F. 集計・検証・報告（06:40 JST〜）
+
+### 統合と照合（`launch/finalize_after_andrew.sh`、06:40:46〜06:46:49 JST、出力 `experiments/analysis/stage2_pilot_four/final/`）
+
+- andrew の分岐（5d753beb）と本分岐の差は新しいファイルの追加 170 本だけ（`andrew_diff_name_status.txt`）。6 本の `stage2four_metrics.json` と `audit_andrew.md` の S10 の節を確かめてから
+  `git merge --no-ff` → **7a2cdcc2**
+- 照合（完了判定 j）に要る 6 本の val の予測（版管理外）12 本を andrew から bengio の同じ run の置き場へ写し、sha256 が **12/12 一致**（`dx_predictions_sha256.txt`）
+- `aggregate_four.py`（REPORT.md・report.json）: PD 12 本・DP 18 本、予測と事後確率から計算し直した値と run の記録の差の最大 **0.0**、型ごとのホスト decoder-xattn {andrew}、他 {bengio}
+- `test_audit_four.py`: 全体の共通 **0 件**、`--inject 04` で 1 件（`test_audit/test_audit_final*.json`）。andrew の run の注釈の経路（andrew の main）は bengio の main にも同じ経路で在り、
+  その sha256 が andrew と同じことは andrew の S3（`input_digest`）で確かめてある
+- 試験（終了時）: 8 failed、862 passed、15 skipped、収集の誤り 1（`final/pytest_end.txt`）。**失敗の名前の集合は開始時と同じ**
+- `make forbidden-check TASK=T-2026-10-19-stage2-pilot-four-new-types`: status pass、変更 722 本、**violations 0**

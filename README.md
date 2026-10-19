@@ -1573,4 +1573,4 @@ forward した region token が既存の `t1a_regiontoken/relation_detr_seed42` 
 - extra-queries は、元の query の出力を構成で塔単独と同じに保つため、元の経路を D\* のまま回し、追加の query だけを各層で元の query の入力を key・value に加えて別に回す
   （界面の重みを乱数にしても元の出力は塔単独と差 0、mask を外すと変わることを確かめた）
 - 大きな生成物（D\* の train の出力、見落としの集合、界面の重み）は版管理と同期の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-four-new-types/` に置いた
-- 現状（2026-10-20 03:0x JST）: G1・G2・G3 pass。検出から工程の 18 本と K3 の GRU は終わり、extra-queries（bengio）と decoder-xattn（andrew）の 6 本ずつが学習中
+- 結果（2026-10-20、非公式。1 折り・val 2 動画・seed 1 つの 1 本ずつの差）: 検出から工程の三つの型はどれも塔単独を上回らず、予測-noCF の Δ入替（信号の中身による差）は logit-correction +0.0016・tool-history 0.0000・ゲートなし版 −0.0045（Jaccard）。tool-history のゲートは開かず（tanh(α) ≤ 0.012）、ゲートなし版は空の腕でも −0.082。extra-queries は追加の出力が上位 300 に一件も出ず全腕が塔単独と同値（スコアの定数 −10 → −9.5）。decoder-xattn は正解の腕で標的群 AP の Δ空 +0.0051・Δ入替 +0.0055、予測-noCF で +0.0006・+0.0010。G1・G2・G3 pass、31 本すべて完了
