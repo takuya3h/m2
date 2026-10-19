@@ -1,0 +1,26 @@
+# 検出塔の塔単独の val の再現: andrew（run_repro_andrew.sh、2026-10-20 02:03:57〜02:06:38 JST）と bengio（run_repro_bengio.sh）の照合
+# 前回の記録 AP 0.7273450248398429 / 標的群 0.7950748008550899 / 陰性対照群 0.6726631817581498。許容差 0.005
+== dtower_val_seed42_andrew vs bengio dtower_val_seed42
+ ckpt_sha256 30d199b15201cf3c same_as_bengio True
+ videos ['09', '10'] n_images 1515
+ non_interface_digest same True
+ AP: andrew 0.7273450248398429 bengio 0.7273450248398429 diff 0.0 vs_record 0.0
+ AP50: andrew 0.851807431425236 bengio 0.851807431425236 diff 0.0
+ target_AP: andrew 0.7950748008550897 bengio 0.7950748008550897 diff 0.0 vs_record -1.1102230246251565e-16
+ control_AP: andrew 0.6726631817581498 bengio 0.6726631817581498 diff 0.0 vs_record 0.0
+ per_class_ap identical to bengio: True | keys: ['AP', 'AP50', 'control_AP', 'control_missing', 'n_images', 'per_video_AP', 'target_AP', 'target_missing']
+ target_missing [] control_missing []
+== dtower_val_control_seed123_andrew vs bengio dtower_val_control_seed123
+ ckpt_sha256 5842a2ae11999e61 same_as_bengio True
+ videos ['09', '10'] n_images 1515
+ non_interface_digest same True
+ AP: andrew 0.728863105195762 bengio 0.728863105195762 diff 0.0
+ AP50: andrew 0.85167484955022 bengio 0.85167484955022 diff 0.0
+ target_AP: andrew 0.8234320705537787 bengio 0.8234320705537787 diff 0.0
+ control_AP: andrew 0.6701777002060821 bengio 0.6701777002060821 diff 0.0
+ per_class_ap identical to bengio: True | keys: ['AP', 'AP50', 'control_AP', 'control_missing', 'n_images', 'per_video_AP', 'target_AP', 'target_missing']
+ target_missing [] control_missing []
+dtower_val_seed42_andrew per_video_AP {'09': 0.704273483949694, '10': 0.6420973291237674}
+dtower_val_control_seed123_andrew per_video_AP {'09': 0.697344665870463, '10': 0.6581516828826168}
+# main の third_party/Relation-DETR・experiments/baselines/stage1_dtower_r2・data/annotations で起動前の基準時刻より新しいファイル: 0 件（find -newer）。main の status --porcelain 0 行、分岐 feat/stage2-pilot-fix-epoch4-shuffle のまま
+# 予測（版管理外）: /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-four-new-types/identity/plain_val_preds.json.gz 26,929,542 B sha256 258ebd7c9901706244e5015177ed71c9590c5710a49ff28dd7a3a14c0cd46385
