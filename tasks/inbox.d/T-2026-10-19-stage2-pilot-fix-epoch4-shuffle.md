@@ -1,0 +1,4 @@
+- [ ] 2026-10-19 [cc] 非公式の測定（前回の予備測定の直し。4 epoch 目の値と入れ替えの腕）。結果は関門の判定と設計の判断に使わない。全値は experiments/analysis/stage2_pilot_fix/REPORT.md（T-2026-10-19-stage2-pilot-fix-epoch4-shuffle）
+- [ ] 2026-10-19 [cc] 利用者の決定: P3 の予測-CF・正解予測-CF を別ホスト bengio で回した（amendments 2・3 件目）。P3 のこの 2 本の Δ空・Δ入替にはホストの差が混ざる（T-2026-10-19-stage2-pilot-fix-epoch4-shuffle）
+- [ ] 2026-10-19 [cc] bengio の third_party/Relation-DETR は andrew と 23 件違い（増強・最適化の群を含む）、.venv-relation-detr の python のリンク先が無かった。bengio の仮想環境は uv の 3.11.16 に向け直したまま。戻すか、Relation-DETR をそろえるかは未決（T-2026-10-19-stage2-pilot-fix-epoch4-shuffle）
+- [ ] 2026-10-19 [cc] SPEC §1 の「P1-W1 正解の最後の回で +0.0087」は正解 epoch 3 と空 epoch 2 の差だった（長さの違う回の比較）。同じ epoch どうしでは選び方による差は小さい（T-2026-10-19-stage2-pilot-fix-epoch4-shuffle）

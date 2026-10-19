@@ -380,3 +380,5 @@ PD の要約の控え `stage2pilot_metrics.json` は前回の 22 本すべてに
 - 22:44:54 / 22:44:59 JST: 利用者の決定で、P3 の正解と入れ替えを andrew の GPU 0 で起動した（`pd.q.done` に「bengio の 4 本から andrew の GPU 0 へ」と残る）。
   選んだ理由（実行者）: 読み方の規則の要である予測-noCF の Δ入替（予測-noCF − 入れ替え）と、正解の Δ空・Δ入替を andrew の中で閉じるため。
   bengio は交差適合版の 2 本（予測-CF、正解予測-CF）を GPU 1 枚に 1 本ずつ回す（`handoff_bengio.md` §7、`meta.amendments` の 3 件目）
+- 23:17 JST: 利用者から「bengio 開始した」と伝えられた（P3 の予測-CF・正解予測-CF の 2 本）。bengio の検査（R1〜R5・S6・S7）の結果と本番の記録は、
+  bengio の分岐 feat/stage2-pilot-fix-epoch4-shuffle-bengio の audit_bengio.md で受け取り、統合のときに確かめる

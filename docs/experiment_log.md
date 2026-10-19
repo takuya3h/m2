@@ -3063,3 +3063,21 @@ D1・D3 の空の腕は構造上 3 seed とも塔単独と同値（R = 0）。�
 
 **次.** 本測定に進むなら、交差適合の分割の粒度（半分ではなく 5 分割など）、PD の seed と止め方の上限、完了判定 k と陰性対照の設計（R = 0 の型と FiLM の扱い）を先に決める。
 andrew では GPU 2 枚の DDP に `NCCL_P2P_DISABLE=1`、工程塔の fine-tune に `expandable_segments` が要る。
+
+## 2026-10-20 — Stage 2 予備測定の直し: 4 epoch 目の値と入れ替えの腕（andrew・一部 bengio）
+
+**非公式の測定。関門の判定と設計の判断に使わない。** 契約 `T-2026-10-19-stage2-pilot-fix-epoch4-shuffle`。全値は `experiments/analysis/stage2_pilot_fix/REPORT.md`、
+判定と経緯は `tasks/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/{RESULT.md,audit.md,result.yaml}`。
+
+**仮説.** 前回の差には、最良の回を評価と同じ val で選んだ分（欠陥 A）と、D1・D3 の空の腕が学ばないことで界面が学べるようになった分（欠陥 B）が乗っている。
+4 epoch 目の値にすると P1 の正解の Δ は小さくなり、入れ替えの腕との差（Δ入替）は空の腕との差（Δ空）より小さくなる（SPEC §5.3）。
+
+**実験.** 前回と同じ受け取り手・界面・設定で、止め方だけを「4 epoch を止めずに学び、4 epoch 目の状態を結果にする」に変えた。
+4 epoch 目の値が無い run（PD 8 本）と DP の seed 42 の全腕（21 本）を回し直し、全型に入れ替えの腕（P0・D0・D0-RT・D0-INST-UQ を split ごとに seed 42 で並べ替え）を足した。
+回し直さない PD 12 本は前回の run の epoch 3 の記録を使った。P3 の予測-CF・正解予測-CF は利用者の承認で bengio で回した。
+
+**結果.** 【最後に: 表】
+
+**解釈.** 【最後に】
+
+**次.** 【最後に】

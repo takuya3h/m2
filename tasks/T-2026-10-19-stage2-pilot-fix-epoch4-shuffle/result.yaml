@@ -1,0 +1,62 @@
+result_version: 3
+task_id: "T-2026-10-19-stage2-pilot-fix-epoch4-shuffle"
+status: pass   # 【最後に確かめる】
+host: "andrew（P3 の予測-CF・正解予測-CF だけ bengio）"
+branch: "feat/stage2-pilot-fix-epoch4-shuffle"
+pr: 240
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "分岐 feat/stage2-pilot-fix-epoch4-shuffle、起点 origin/phase0 = 5a8baa79、phase0 に scripts/stage2pilot/ 28 ファイル、本契約以外の compute プロセス 0 件、空き 1,681,381,457,920 B、試験の失敗の名前 6 件"}
+  - {id: G2, verdict: pass, note: "前回の信号 21 本と記録の sha256 がすべて一致。andrew で工程 Jaccard 0.7762186（差 0.0）、検出 mAP 0.7273450（差 0.0）を再現。許容差 0.005"}
+  - {id: G3, verdict: pass, note: "固定の長さが最後の epoch の状態を結果にし、既定の aggregate.py が前回の report.json を同値で再現（comparisons の並びだけが違う）、入れ替えた信号は値の集合を保ち対応だけを壊し（train 100%、val 99.87%）、入れ替えの腕の学習前の出力が塔単独と差 0.0（PD 4 構成・DP 5 型）、test の動画との共通 0 件"}
+
+tests:
+  before_failed: 6
+  after_failed: 6        # 【最後に回し直す】
+  after_passed: 888      # 【最後に回し直す】
+
+deviations:
+  - {type: judgement, note: "Task A-6: conventions_rev と runindex_commit を前回と同じ読み（git log -1 -- <経路>）で実測し、起票時の値と違ったため差し替えた（内容は同一。amendments 1 件目）"}
+  - {type: judgement, note: "利用者の承認で、P3 の予測-CF と正解予測-CF を別ホスト bengio で回した（amendments 2・3 件目）。P3 の空・予測-noCF・正解・入れ替えと他のすべての run は andrew。P3 のこの 2 本の Δ空・Δ入替にはホストの差が混ざる"}
+  - {type: environment, note: "bengio の .venv-relation-detr は python のリンク先（pyenv 3.11.4）が無く、third_party/Relation-DETR のソースが andrew と 23 件違った。andrew の中身を別の場所（重ねの BODY）に置いて参照させ、仮想環境を uv の CPython 3.11.16 に向け直した（andrew の仮想環境と同じ）。入力の要約値で一致を確かめた"}
+  - {type: judgement, note: "速さの試しとして GPU 1 枚に 3 本目を 1 回だけ足した（GPU 0 で P1-W2 入れ替え、GPU 1 で P3 予測-noCF）。合計の速さの伸びは 3% と 0 で、それ以上は足さなかった"}
+  - {type: judgement, note: "実行者の誤り: PD の試走の後処理が、val 20 枚で群の AP が None になる場合を書式で落とした。直して後処理だけ回し直した"}
+  - {type: judgement, note: "実行者の誤り: andrew で P3 の 4 本を起こしかけた命令が途切れ、正解と予測-CF の 2 本が学習の前で止まった（プロセスは残らなかった）。フォルダを本契約の置き場（FIX/aborted_runs）へ移し、後で同じ名前で回し直した"}
+  - {type: judgement, note: "道具: train_t1b.py に --fixed-epochs、dp_train.py に --fixed-epochs・--task-id・--exp-prefix・--smoke・腕 shuffle・identity --arm、run_pd_fix.sh に置き場の切り替え（S2FIX_BODY、S2FIX_CODE）を足した。既定の経路は変えず、試験で固定した"}
+
+issuer_defects:
+  - {type: asymmetric_comparison, note: "SPEC §1 の「P1-W1 の正解の標的群 AP の差は最後の回で +0.0087」は、正解の epoch 3 と空の epoch 2（空は前回 epoch 2 で止まった）の差だった。同じ epoch どうしでは epoch 2 で +0.0195、今回の 4 epoch 目どうしで +0.0197"}
+  - {type: check_does_not_check, note: "完了判定 f（入れ替えの腕の学習前の出力が塔単独と一致）は零初期化の界面ではどんな信号でも成り立ち、入れ替えが正しいかは確かめない"}
+  - {type: asserted_without_measuring, note: "SPEC §3 は split 全体で入れ替えれば動画単位の情報を残さないとしたが、val は動画 2 本のため入れ替えた後も 55.6% のフレームが同じ動画の信号を受け取る（train は 11.5%）"}
+  - {type: asserted_without_measuring, note: "meta.created_from.runindex_commit と contract.conventions_rev に、Task A-6 の読み（その経路の最新の commit）と違う値（起票時の phase0 の先頭）が書かれていた。内容は同一だが差し替えが要った"}
+
+positive_controls:
+  - {judgement: "a compute プロセスの列挙", breaking_input: "目印の引数を持つ自分の bash を起こす／zsh を指定する／存在しない実行ファイルの経路", observed: "目印の bash を 1 件、zsh 指定と存在しない exe では 0 件"}
+  - {judgement: "b 前回の信号の sha256 の一致", breaking_input: "D0_val.npz を 1 バイト変えた複製", observed: "記録と一致しなくなった"}
+  - {judgement: "b history.json の数え", breaking_input: "存在しない run の名前", observed: "0 件"}
+  - {judgement: "c 塔単独の再現", breaking_input: "別の時間ヘッド（P20 seed42）／別 seed（123）の検出塔", observed: "Jaccard 0.6379、mAP 0.7289 に変わった"}
+  - {judgement: "d 4 epoch 目の取り出し", breaking_input: "最良が epoch 1・2 の作り物の記録／epoch 2 で止まった作り物の記録", observed: "epoch 3（PD）・epoch 4（DP）の値を取り、止まった記録では None を返した"}
+  - {judgement: "d 既定の経路の試験", breaking_input: "--fixed-epochs の既定を True にした train_t1b.py の写し", observed: "test_new_options_default_to_off の 1 件が失敗（EGO_BODY を repo に向けたとき）"}
+  - {judgement: "e 入れ替えの判定", breaking_input: "恒等の並べ替え／値を一つ変えた写し", observed: "対応が変わった割合 0.0／値の集合の一致 False"}
+  - {judgement: "f 恒等性", breaking_input: "界面の最後の層を N(0, 0.05²) にする（P2F は表を入れる）", observed: "PD 4 構成と DP 5 型のすべてで出力が変わった（PD score 差の最大 0.045〜0.94、DP ロジット差 0.14〜2.05）"}
+  - {judgement: "l test 不使用", breaking_input: "各段の動画の集合に 04 を混ぜる", observed: "全体の共通が 0 件から 1 件（['04']）になった"}
+  - {judgement: "m 禁止領域の検査", breaking_input: "本契約の新しいファイル", observed: "UNKNOWN（最後に回す）"}
+
+followups:
+  - "新しい界面の型の候補を回す次の契約は、固定の長さ（--fixed-epochs）と入れ替えの腕（shuffle_signals.py、腕 shuffle）をそのまま使える"
+  - "入れ替えの腕は val が 2 動画のため半分以上が同じ動画の信号を受け取る。動画単位の情報を壊したいなら、折りを増やすか動画をまたぐ入れ替えに限る設計を決める"
+  - "前回の aggregate.py の comparisons の並びが実行ごとに変わる（set の反復順）。並びを固定するかを決める"
+  - "bengio の .venv-relation-detr（向け直した）と third_party/Relation-DETR（andrew と 23 件違う）、重ねの BODY と worktree を残すか戻すかを決める"
+
+unknowns:
+  - "回し直さない PD の 8 本の動画ごとの 4 epoch 目の値（epoch 3 の予測と重みが残っていない）"
+
+commits:
+  - "f1f80a28 task(stage2-pilot-fix): 契約を取り込み、開始状態を記録する（G1 pass）"
+  - "6a5d4d37 impl(stage2-pilot-fix): 固定の長さ・入れ替えの腕・集計の道具を足し、材料と塔単独の再現を記録する（G2 pass）"
+  - "ce1eefa3 exp(stage2-pilot-fix): 入れ替えの腕の恒等性と test 不使用を記録する（G3 pass）"
+  - "40a8146e exp(stage2-pilot-fix): DP の 26 本（回し直し 21・入れ替え 5）を揃え、中間記録を置く"
+  - "84056eb5 exp(stage2-pilot-fix): P2F の入れ替えの評価を置く"
+  - "c0f11094 exp(stage2-pilot-fix): P1-W1 の回し直し 2 本と入れ替えを揃え、中間記録を更新する"
+  - "bb0bf533 exp(stage2-pilot-fix): P1-W2 の回し直しと入れ替えを揃え、中間記録を更新する"
