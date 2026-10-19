@@ -357,3 +357,46 @@ K3 の GRU の試走（`stage2four_k3_001_gru_D0only_ep4_smoke_seed42`、1 epoch
   陰性対照群 AP 0.6726632 → 0.7017099（**+0.0290**）。動画ごとの mAP: 09 0.70427 → 0.73219、10 0.64210 → 0.65810
 - クラス別の差: Gauze +0.087、Forceps +0.081、Hook +0.075、Scissors +0.020、Tweezers +0.015、Mouth Gag +0.010、Suction Cannula +0.005（他は 1e−9 以下）
 - 空振りでないこと: 見落としを 0 件にした写し（`--empty-missed`）では神託の差が 0.0（`kill/k1_control_empty_missed.json`）
+
+### K2 多項ロジスティック回帰（logit-correction。界面の学習なし。05:0x JST、GPU 1、`kill/k2.json`）
+
+設定は測る前に一つに固定した（`kill_four.py` の `LR_SETTING`: sklearn の LogisticRegression、L2、C=1.0、lbfgs、max_iter 5000、特徴の標準化なし）。
+val の 2 本で、片方で当てはめもう片方で測った。特徴 (i) 工程塔単独の softmax(ℓ0)、(ii) (i) と D0（確定塔）、(iii) (ii) と D-GT。
+
+| 特徴 | 09 で当てはめ 10 で測る（Jaccard / accuracy / NLL） | 10 で当てはめ 09 で測る（同） |
+|---|---|---|
+| (i) | 0.3122 / 0.3420 / 17.75 | 0.9366 / 0.9614 / 0.286 |
+| (ii) | 0.2892 / 0.3571 / 17.74 | 0.9832 / 0.9865 / 0.177 |
+| (iii) | 0.2875 / 0.3581 / 17.75 | 0.9751 / 0.9710 / 0.192 |
+
+- 2 方向の平均: (ii)−(i) Jaccard **+0.0118**・accuracy +0.0201・NLL −0.0577、(iii)−(i) Jaccard **+0.0069**・accuracy +0.0129・NLL −0.0456
+- 当てはめた動画に無い工程: 09 には closure・dressing・hemostasis が無く、10 のその 638 フレーム（1,015 中）は当てはめた回帰が出せない工程（NLL は確率を 1e−12 で切って数えた。`mean_nll_seen_only` も記録）。10 には 09 の工程がすべて在る
+- 空振りでないこと: (ii) の D0 を正解の工程の one-hot に替えた写し（`kill/k2_control_onehot.json`）で (ii)−(i) の Jaccard が **+0.0952**（正）
+
+### K3 検出の系列だけの GRU と stacking（tool-history。`stage2four_k3_002_gru_D0only_ep4_seed42`、`kill/k3.json`）
+
+- (1) GRU（1 層、64、線形で 9 工程。train は交差適合版の D0、val は確定塔の D0。学習率 5e-4 一定・weight decay 0.01・1 歩 = train の動画 1 本・4 epoch・seed 42、
+  損失は DP と同じクラスの重みつき交差エントロピーと平滑化 0.3）: val の macro Jaccard **0.2200**（動画の中で時間の順だけ入れ替えた D0 を入れると 0.0398）
+- (2) K2 と同じ形で (i) と「(i) と (1) の事後確率」を比べる: 2 方向の平均の差 Jaccard **+0.0009**・accuracy 0.0000・NLL −0.0000
+- (3) (1) の GRU に時間の順を入れ替えた val の D0（seed 42、動画ごとに一つの並べ替え）を入れて (2) を繰り返す: Jaccard **+0.0009**。(3)−(2) は Jaccard 0.0000、NLL +0.0001
+- 「GRU の最終状態から術式を当てる精度」: **UNKNOWN**（動画ごとの術式の対応が repo に無い。`context/auto/results_recent.md` 194・204 行。作っていない）
+
+### extra-queries の寄与（予測-CF、学習後。`xq_contrib/pd_EQ_pred_CF_{trained,contrib}.json`）
+
+4 epoch 目の界面で val を評価し直すと、最終の mAP は run の記録と同じ 0.7273450248398429 で塔単独と出力の差 0（score・枠・ラベル）。
+スコアの定数は −10 → −9.500。追加の出力の最大スコア 0.00126 は元の 300 番目の最小 0.00480 を下回ったままで、**上位 300 に入った追加の出力は 0 件**、照合した見落としは val 78 個中 0 個。
+
+### E-2 extra-queries の 6 本（bengio、02:32〜05:17 JST）
+
+6 本とも rc=0、`result_selection` final_epoch・`result_epoch` 3、`frozen_unchanged` true、`env_check.txt` `ms_deform_attn_ext True`、`server.txt` bengio、学習前の mAP 0.7273450248398429。
+
+| 腕 | GPU | 開始〜終了（JST） | 所要 | 4 epoch 目の overall mAP | 標的群 AP | 陰性対照群 AP | スコアの定数（4 epoch 目） |
+|---|---|---|---|---|---|---|---|
+| 空 | 0 | 02:32:42〜05:15:23 | 2.71 時間 | 0.7273450248398429 | 0.7950748008550897 | 0.6726631817581498 | −9.4633 |
+| 予測-noCF | 0 | 02:33:02〜05:16:27 | 2.72 時間 | 同上 | 同上 | 同上 | −9.4708 |
+| 正解 | 0 | 02:33:22〜05:16:48 | 2.72 時間 | 同上 | 同上 | 同上 | −9.4986 |
+| 予測-CF | 1 | 02:33:42〜05:01:38 | 2.47 時間 | 同上 | 同上 | 同上 | −9.5002 |
+| 正解予測-CF | 1 | 02:34:02〜05:02:20 | 2.47 時間 | 同上 | 同上 | 同上 | −9.4351 |
+| 入れ替え | 1 | 02:52:20〜05:17:19 | 2.42 時間 | 同上 | 同上 | 同上 | −9.4993 |
+
+6 腕とも epoch 0〜3 のすべての val の mAP が塔単独と同値（`per_epoch_mAP` の値が一つ）。速さは 1 枚 3 本で 2.6 it/s、2 本で 3.4〜3.8 it/s（1 epoch 4,809 歩）。

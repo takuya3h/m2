@@ -1,0 +1,181 @@
+{
+  "task_id": "T-2026-10-19-stage2-pilot-four-new-types",
+  "setting": {
+    "model": "sklearn.linear_model.LogisticRegression",
+    "multi_class": "multinomial（lbfgs の既定）",
+    "penalty": "l2",
+    "C": 1.0,
+    "solver": "lbfgs",
+    "max_iter": 5000,
+    "standardize": false
+  },
+  "control_onehot": true,
+  "videos": [
+    "09",
+    "10"
+  ],
+  "features": {
+    "i": "softmax(ℓ0)（工程塔単独）",
+    "ii": "(i) と正解の工程の one-hot（陽性対照）",
+    "iii": "(ii) と D-GT（15）"
+  },
+  "values": {
+    "i": {
+      "fit09_test10": {
+        "phase_jaccard": 0.3122045889290998,
+        "phase_accuracy": 0.3420260782347041,
+        "mean_nll": 17.749788930514434,
+        "mean_nll_seen_only": 0.18927045058629513,
+        "phases_in_fit": [
+          "anesthesia",
+          "design",
+          "dissection",
+          "incision"
+        ],
+        "phases_in_test_not_in_fit": [
+          "closure",
+          "dressing",
+          "hemostasis"
+        ],
+        "frames_test_label_unseen": 638,
+        "n_frames_test": 997
+      },
+      "fit10_test09": {
+        "phase_jaccard": 0.9366112422930605,
+        "phase_accuracy": 0.9613899613899614,
+        "mean_nll": 0.2856610574865105,
+        "mean_nll_seen_only": 0.2856610574865105,
+        "phases_in_fit": [
+          "anesthesia",
+          "closure",
+          "design",
+          "dissection",
+          "dressing",
+          "hemostasis",
+          "incision"
+        ],
+        "phases_in_test_not_in_fit": [],
+        "frames_test_label_unseen": 0,
+        "n_frames_test": 518
+      }
+    },
+    "ii": {
+      "fit09_test10": {
+        "phase_jaccard": 0.439171877845911,
+        "phase_accuracy": 0.3600802407221665,
+        "mean_nll": 17.690435947882317,
+        "mean_nll_seen_only": 0.02443779408428867,
+        "phases_in_fit": [
+          "anesthesia",
+          "design",
+          "dissection",
+          "incision"
+        ],
+        "phases_in_test_not_in_fit": [
+          "closure",
+          "dressing",
+          "hemostasis"
+        ],
+        "frames_test_label_unseen": 638,
+        "n_frames_test": 997
+      },
+      "fit10_test09": {
+        "phase_jaccard": 1.0,
+        "phase_accuracy": 1.0,
+        "mean_nll": 0.05275503818155556,
+        "mean_nll_seen_only": 0.05275503818155556,
+        "phases_in_fit": [
+          "anesthesia",
+          "closure",
+          "design",
+          "dissection",
+          "dressing",
+          "hemostasis",
+          "incision"
+        ],
+        "phases_in_test_not_in_fit": [],
+        "frames_test_label_unseen": 0,
+        "n_frames_test": 518
+      }
+    },
+    "iii": {
+      "fit09_test10": {
+        "phase_jaccard": 0.2874940855465321,
+        "phase_accuracy": 0.35807422266800404,
+        "mean_nll": 17.752112406099485,
+        "mean_nll_seen_only": 0.1957231111943576,
+        "phases_in_fit": [
+          "anesthesia",
+          "design",
+          "dissection",
+          "incision"
+        ],
+        "phases_in_test_not_in_fit": [
+          "closure",
+          "dressing",
+          "hemostasis"
+        ],
+        "frames_test_label_unseen": 638,
+        "n_frames_test": 997
+      },
+      "fit10_test09": {
+        "phase_jaccard": 0.9751380262249828,
+        "phase_accuracy": 0.971042471042471,
+        "mean_nll": 0.1921939309216901,
+        "mean_nll_seen_only": 0.1921939309216901,
+        "phases_in_fit": [
+          "anesthesia",
+          "closure",
+          "design",
+          "dissection",
+          "dressing",
+          "hemostasis",
+          "incision"
+        ],
+        "phases_in_test_not_in_fit": [],
+        "frames_test_label_unseen": 0,
+        "n_frames_test": 518
+      }
+    }
+  },
+  "diffs": {
+    "ii-i": {
+      "per_direction": {
+        "fit09_test10": {
+          "phase_jaccard": 0.1269672889168112,
+          "phase_accuracy": 0.01805416248746239,
+          "mean_nll": -0.059352982632116635
+        },
+        "fit10_test09": {
+          "phase_jaccard": 0.06338875770693952,
+          "phase_accuracy": 0.038610038610038644,
+          "mean_nll": -0.23290601930495494
+        }
+      },
+      "mean_over_directions": {
+        "phase_jaccard": 0.09517802331187536,
+        "phase_accuracy": 0.028332100548750516,
+        "mean_nll": -0.14612950096853577
+      }
+    },
+    "iii-i": {
+      "per_direction": {
+        "fit09_test10": {
+          "phase_jaccard": -0.024710503382567695,
+          "phase_accuracy": 0.016048144433299938,
+          "mean_nll": 0.0023234755850509714
+        },
+        "fit10_test09": {
+          "phase_jaccard": 0.038526783931922326,
+          "phase_accuracy": 0.009652509652509633,
+          "mean_nll": -0.0934671265648204
+        }
+      },
+      "mean_over_directions": {
+        "phase_jaccard": 0.006908140274677316,
+        "phase_accuracy": 0.012850327042904786,
+        "mean_nll": -0.04557182548988471
+      }
+    }
+  }
+}
