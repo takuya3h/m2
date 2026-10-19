@@ -1,0 +1,65 @@
+{
+  "task_id": "T-2026-10-18-stage2-pilot-folda",
+  "cfg": "configs/stage2pilot/pd_film_d18.py",
+  "det_ckpt": "/home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth",
+  "det_ckpt_sha256": "30d199b15201cf3c03954852d8acc6fb58fe5349baef2fd200e877237ff682c4",
+  "iface_state": null,
+  "fixed_table": null,
+  "perturb": true,
+  "signal_val": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/arms/PD/gtpred_noCF_val.npz",
+  "zero_ctx": false,
+  "dim": 18,
+  "videos": [
+    "09",
+    "10"
+  ],
+  "eval_detection_mAP": 0.7286067717872438,
+  "load_report": {
+    "missing_from_ckpt": [
+      "phase_iface.mlp.0.bias",
+      "phase_iface.mlp.0.weight",
+      "phase_iface.mlp.2.bias",
+      "phase_iface.mlp.2.weight"
+    ],
+    "unexpected_in_ckpt": [],
+    "missing_are_interface_only": true
+  },
+  "non_interface_digest": "4fed85166852cd54f07071a5b9ce57804828e95c23148db11bf7bf0afe08ce60",
+  "interface_params": 267456,
+  "metrics": {
+    "AP": 0.7286067717872438,
+    "AP50": 0.8533876086003341,
+    "per_class_ap": {
+      "Bipolar Forceps": 0.7851459560823045,
+      "Electric Cautery": 0.9677981162768328,
+      "Forceps": 0.35365228897206874,
+      "Gauze": 0.2745722963966997,
+      "Hook": 0.6420741958117016,
+      "Mouth Gag": 0.8020498529274441,
+      "Needle Holders": 0.8454729753502772,
+      "Raspatory": 0.7984957548512728,
+      "Retractor": NaN,
+      "Scalpel": 0.9083456417232549,
+      "Scissors": 0.7080568132753754,
+      "Skewer": 0.9454312585517595,
+      "Suction Cannula": 0.8356111030804255,
+      "Syringe": 0.5451975462712201,
+      "Tweezers": 0.7885910054507761
+    },
+    "n_images": 1515,
+    "target_AP": 0.7965232314959625,
+    "target_missing": [],
+    "control_AP": 0.6752060644638364,
+    "control_missing": [],
+    "per_video_AP": {
+      "09": 0.7053716102942594,
+      "10": 0.6442992428159002
+    }
+  },
+  "diff_vs_ref": {
+    "comparable": true,
+    "max_abs_score_diff": 0.6295148879289627,
+    "max_abs_bbox_diff_px": 1946.184341430664,
+    "label_mismatch": 341179
+  }
+}

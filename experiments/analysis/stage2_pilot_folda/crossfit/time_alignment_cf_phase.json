@@ -1,0 +1,47 @@
+{
+  "tool": "experiments/analysis/frame_signal_audit/tools/time_alignment_check.py",
+  "tool_sha256": "f799624a83ced46085755a5e73d76bab764c4895cfcca7db70034f4cb5b34383",
+  "offsets": [
+    -2,
+    -1,
+    0,
+    1,
+    2
+  ],
+  "signals_dir": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/cf",
+  "results": {
+    "P0/train": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/cf/P0_train.npz",
+      "rows": 9657,
+      "unshifted": {
+        "receiver_keys": 9657,
+        "matched_by_name": 9657,
+        "missing": 0,
+        "agreement_by_offset": {
+          "-2": 0.589035,
+          "-1": 0.588967,
+          "0": 0.58631,
+          "1": 0.581813,
+          "2": 0.576576
+        },
+        "judged_offset": -2,
+        "verdict": "ずらし(-2)"
+      },
+      "shifted_control": {
+        "receiver_keys": 9657,
+        "matched_by_name": 9644,
+        "missing": 13,
+        "agreement_by_offset": {
+          "-2": 0.589035,
+          "-1": 0.586375,
+          "0": 0.581813,
+          "1": 0.576576,
+          "2": 0.572468
+        },
+        "judged_offset": -2,
+        "verdict": "ずらし(-2)"
+      },
+      "control_ok": false
+    }
+  }
+}

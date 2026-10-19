@@ -1,0 +1,71 @@
+result_version: 3
+task_id: "T-2026-10-18-stage2-pilot-folda"
+status: pass
+host: "andrew"
+branch: "feat/stage2-pilot-folda"
+pr: 235
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "分岐 feat/stage2-pilot-folda、起点 origin/phase0 = 40112290、/proc の exe と引数の完全一致で本契約以外の compute プロセス 0 件、空き 1,697,432,907,776 B、試験の失敗の名前 6 件を記録した"}
+  - {id: G2, verdict: pass, note: "andrew で工程塔の val の macro Jaccard 0.7762186（記録との差 0.0）と検出塔の val の overall mAP 0.7273450（差 0.0）を再現した。許容差 0.005"}
+  - {id: G3, verdict: pass, note: "P1-W1（film d9）の学習前の val mAP 0.7273450 で score と枠の差の最大 0.0、D2 の学習前の Jaccard 0.7762186 でロジット差 0.0。最後の層を N(0,0.05²) にすると出力が変わった。test の動画との共通 0 件"}
+  - {id: G4, verdict: pass, note: "交差適合用の塔 4 本（検出 H1 は epoch 21、H2 は epoch 17。工程 H1 は fine-tune ep14、H2 は ep13）がすべて止め方の規則で停止し上限に達しなかった。各塔が信号を出した動画の集合は学習に使っていない半分と一致し、学習に使った半分との共通は 0 件"}
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 807
+
+deviations:
+  - {type: judgement, note: "利用者の指示で PD の 4 型の腕を seed 42 だけにした（amendments 3 件目）。PD では R と §5.2 規則 2 の読み、実現率を出さない"}
+  - {type: judgement, note: "利用者の指示で PD の止め方の上限を 8 から 4 epoch にした（締め切り 10/20 01:00 JST、amendments 4 件目）。上限 8 で起動済みの P1-W1 の予測-noCF は 5 epoch 目の始まりで外から止め、4 epoch 目までの最良で結果を書いた（cap_result.json）。P1-W1 の空は規則で先に止まった"}
+  - {type: judgement, note: "D3 の予測のトークンを、後処理後の出力の重複しない query の上位 K 個（D0-INST-UQ）にした。字面どおりの読みでは 45% の枠が同じ query の重複になり、利用者が重複しない版を選んだ"}
+  - {type: judgement, note: "PD の学習の順伝播を bf16 の自動混合精度にした（実行者の判断、速さのため。PD の全腕で同じ。評価は常に単精度）"}
+  - {type: judgement, note: "DP の交差適合の腕を、工程の交差適合用の塔の完了（G4 の全体）を待たずに回した。使う信号は検出の塔 2 本だけで、その 2 本は止め方の規則で止まり、学習に使っていない半分にだけ信号を出していた"}
+  - {type: environment, note: "andrew は IOMMU が有効で GPU 間 P2P の all_reduce が止まるため、2 プロセスの命令に NCCL_P2P_DISABLE=1 を足した。工程の交差適合用の塔は caching allocator の確保が 42 GB まで膨らんだため PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True を足した（どちらも計算は変わらない）"}
+  - {type: environment, note: "syncthing が experiments/ の版管理外の成果物を全台に配るため、信号・checkpoint・交差適合用の検出塔の作業フォルダを版管理と同期の外（stage2pilot_store）に置いた"}
+  - {type: judgement, note: "実行者の誤り: 検出の交差適合用の塔 H1 の 1 回目を、PD の試走と検出塔 2 本の相乗りによる記憶不足で落とし、同じ処方で最初から学び直した。工程の交差適合用の塔 H2 の学び直しで、止めた python の解放を待たずに次を始めて 1 回落とした。落ちた run は STORE/failed_runs へ移した"}
+  - {type: judgement, note: "実行者の誤り: 走っている台本を書き換え、PD の試走 2 本が後処理の手前で rc=2 になった（学習は完了）。task-start の出力を秘匿の濾過で落とし、目印の作成を状態で確かめた。追記の Edit で契約の一行を一度書き換え、直後に戻した"}
+  - {type: judgement, note: "B-5（写した fine-tune の重みで特徴を作り直す）は「記録だけでよい」とされた任意の項で、行っていない"}
+
+issuer_defects:
+  - {type: asserted_without_measuring, note: "SPEC §2 は工程塔の三つの run を andrew には無いものとして扱うと書いたが、実測では同じ 30 ファイルが andrew に在り efros と sha256 が同一だった。指示どおりに写すと、既に在るものを二重に置くことになる（写しは STORE に置いた）"}
+  - {type: self_contradiction, note: "完了判定 k の四列目は空の腕の 3 seed の値が同一でないことを求めるが、§3 の零初期化と空の腕の零入力の下では D1 と D3 の界面に勾配が届かず、3 seed とも塔単独と同値になる。指示どおりに測ると R = 0 になり、規則 2 の幅の判定が働かない"}
+  - {type: check_does_not_check, note: "Task D-5 の陰性対照（空の腕の界面に信号を入れ替えても出力が変わらない）は、線形の型（D1・D3・P2L・P3）では信号にかかる重みが零のまま残るため自明に通り、FiLM（D2・P1-W1・P1-W2）では定数の変調を学ぶため構造上通らない。指示どおりに測っても界面の妥当性は分からない"}
+  - {type: check_does_not_check, note: "§2 の時刻の道具は予測の argmax が何フレームずらした正解と最も一致するかで判定するため、切り替わりを遅れて捉える因果の予測 P0 を −1（交差適合版は −2）と判定する。指示どおりに使うと同時刻の信号をずれと誤判定する（構成からの検査で同時刻を確かめた）"}
+  - {type: asserted_without_measuring, note: "§3 は D3 の予測のトークンを後処理後の出力のスコアの上位 K 個としたが、後処理の出力は（query, クラス）の組で並ぶため上位 K の 45% が同じ query の重複だった。字面どおりに作ると 1 つの query が 11 枠中 7 枠を占めるフレームが出る"}
+  - {type: check_does_not_check, note: "完了判定 f の確認「train と val を入れ替えると差の符号が反転する」は差の定義から算術で常に成り立ち、送り手の差や較正の計算が正しいかを何も確かめない。指示どおりに書くと空振りの確認が記録に残る"}
+
+positive_controls:
+  - {judgement: "a compute プロセスの列挙", breaking_input: "目印の引数を持つ自分の bash を起こす／存在しない実行ファイルの経路を指す", observed: "目印の bash を 1 件拾い、存在しない exe では 0 件"}
+  - {judgement: "b 写しの sha256 の一致", breaking_input: "写した 009 の best.pth を 1 バイト変えた複製", observed: "sha256 が 0d76d446… から df7e96d3… に変わった"}
+  - {judgement: "c 塔単独の再現", breaking_input: "別の時間ヘッド（P20 seed42）／別 seed（123）の検出塔で同じ評価", observed: "工程 Jaccard 0.6379、検出 mAP 0.7289 に変わった"}
+  - {judgement: "e 同時刻", breaking_input: "名前を一つずらした写し", observed: "道具は −1（P0 は −2）、構成からの確認は t−1 で一致と検出（確定塔と交差適合版の両方）"}
+  - {judgement: "g 既定の経路の試験", breaking_input: "既定の checkpoint を best_ap50.pth に変えた train_t1b.py の写し", observed: "5 件中 2 件が失敗した"}
+  - {judgement: "h 恒等性", breaking_input: "界面の最後の層を N(0, 0.05²) にする", observed: "PD 7 設定と DP 5 型のすべてで出力が変わった（例: P1 film d9 の mAP 0.7273 → 0.7308、score の差の最大 0.49）"}
+  - {judgement: "k 陰性対照（空の腕）", breaking_input: "空の腕で学んだ界面に零の代わりに確定塔の予測を入れる", observed: "FiLM の型（D2・P1-W1・P1-W2）は出力が変わり（score 差の最大 0.54〜0.59、ロジット差 0.043〜0.059）、線形の型は差 0.0"}
+  - {judgement: "l 規則 2 の判定", breaking_input: "「seed の幅を超える」の行で Δ の符号を一つだけ反転", observed: "24 行すべてが「幅の内」になった。作り物の Δ（+0.02、+0.03、+0.025、R 0.01）でも「超える」→「幅の内」"}
+  - {judgement: "n test 不使用", breaking_input: "各段の動画の集合に 04 を混ぜる", observed: "全体の共通が 0 件から 1 件（['04']）になった"}
+  - {judgement: "o 禁止領域の検査", breaking_input: "本契約の新しいファイル", observed: "同じ道具が新しいファイルを変更として拾い、契約の allow_write による許可として分類した（permitted 1,071 件、違反 0）"}
+  - {judgement: "上限 4 の結果の書き出し（cap_finalize.py）", breaking_input: "最良の重みの epoch をログの最良と違う値にした作り物の run", observed: "食い違いを検出して止まった（同値の epoch では早い方を選んだ）"}
+
+followups:
+  - "本測定に進むなら、PD の seed（今回は 42 だけ）と止め方の上限（今回は 4）を戻すかを決める"
+  - "完了判定 k の四列目と Task D-5 の陰性対照を、空の腕が構造上塔単独と同値になる型（D1・D3）と、定数の変調を学ぶ型（FiLM）に分けて設計し直す"
+  - "交差適合用の塔を train の半分で学ぶと送り手が確定塔の val より大きく弱くなる（検出 mAP 0.40 対 0.73、工程 Jaccard 0.24 対 0.78）。分割の粒度（5 分割など）を決める"
+  - "§2 の時刻の道具を、予測の遅れと情報の時刻を区別できる形（構成からの検査）に置き換えるか決める"
+  - "§3 の D3 の予測のトークンの定義を、重複しない query の上位 K と明記する"
+
+unknowns:
+  - "PD の R、§5.2 規則 2 の読み、実現率、型どうしの比較の幅の判定（seed 1 つのため）"
+  - "P1-W1 の予測-noCF の凍結部の要約値（5 epoch 目の始まりで外から止めたため学習の終わりの記録が無い）"
+
+commits:
+  - "1fa5fa58 impl(stage2-pilot-folda): 信号の保存・界面の受け口・恒等性まで（G1〜G3 pass）"
+  - "00560d62 exp(stage2-pilot-folda): DP の 5 型の交差適合を要しない腕を揃え、中間記録を置く"
+  - "dfe57511 exp(stage2-pilot-folda): P1-W1 の交差適合を要しない腕を揃え、中間記録を更新する"
+  - "7c72edfd exp(stage2-pilot-folda): P2L の交差適合を要しない腕を揃え、中間記録を更新する"
+  - "3bab0377 exp(stage2-pilot-folda): DP の交差適合を要する腕 24 本を揃える"
+  - "78dccc40 exp(stage2-pilot-folda): P1-W2 の交差適合を要しない腕を揃え、工程の交差適合用の塔を記録する"
+  - "ec53d70d exp(stage2-pilot-folda): P3 の交差適合を要しない腕を揃え、中間記録を更新する"

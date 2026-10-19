@@ -1,0 +1,36 @@
+Using /home/ubuntu/.cache/torch_extensions/py311_cu118 as PyTorch extensions root...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /home/ubuntu/.cache/torch_extensions/py311_cu118/MultiScaleDeformableAttention/build.ninja...
+Building extension module MultiScaleDeformableAttention...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+ninja: no work to do.
+Loading extension module MultiScaleDeformableAttention...
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+[det-signal] ckpt=experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth sha=30d199b15201cf3c03954852d8acc6fb58fe5349baef2fd200e877237ff682c4 part=train videos=['01', '02', '03', '06', '08', '11', '12', '13', '14', '15'] images=9657 ms_deform_attn_ext=True
+[det-signal] 500/9657 43s
+[det-signal] 1000/9657 87s
+[det-signal] 1500/9657 130s
+[det-signal] 2000/9657 174s
+[det-signal] 2500/9657 217s
+[det-signal] 3000/9657 261s
+[det-signal] 3500/9657 304s
+[det-signal] 4000/9657 348s
+[det-signal] 4500/9657 391s
+[det-signal] 5000/9657 435s
+[det-signal] 5500/9657 478s
+[det-signal] 6000/9657 522s
+[det-signal] 6500/9657 565s
+[det-signal] 7000/9657 609s
+[det-signal] 7500/9657 653s
+[det-signal] 8000/9657 696s
+[det-signal] 8500/9657 740s
+[det-signal] 9000/9657 783s
+[det-signal] 9500/9657 827s
+{"task_id": "T-2026-10-18-stage2-pilot-folda", "ckpt": "experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth", "ckpt_sha256": "30d199b15201cf3c03954852d8acc6fb58fe5349baef2fd200e877237ff682c4", "ann_dir": "data/annotations/egosurgery_tool_folds/A", "part": "train", "videos": ["01", "02", "03", "06", "08", "11", "12", "13", "14", "15"], "frames": 9657, "k": 11, "precision": "fp32", "class_order": ["Bipolar Forceps", "Electric Cautery", "Forceps", "Gauze", "Hook", "Mouth Gag", "Needle Holders", "Raspatory", "Retractor", "Scalpel", "Scissors", "Skewer", "Suction Cannula", "Syringe", "Tweezers"], "dup_query_tokens": 48087, "postprocess_topk_mismatch_frames": 0, "gt_boxes_total": 32272, "gt_present_total": 28746, "elapsed_seconds": 840.7649936182424}

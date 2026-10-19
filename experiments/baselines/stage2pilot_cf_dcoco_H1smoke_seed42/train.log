@@ -1,0 +1,577 @@
+The following values were not passed to `accelerate launch` and had defaults used instead:
+		More than one GPU was found, enabling multi-GPU training.
+		If this was unintended please pass in `--num_processes=1`.
+	`--num_machines` was set to a value of `1`
+	`--mixed_precision` was set to a value of `'no'`
+	`--dynamo_backend` was set to a value of `'no'`
+To avoid this warning pass in values for each of the problematic parameters or run `accelerate config`.
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/albumentations/core/validation.py:114: UserWarning: ShiftScaleRotate is a special case of Affine transform. Please use Affine transform instead.
+  original_init(self, **validated_kwargs)
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:109: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:140: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:195: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:226: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+loading annotations into memory...
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/albumentations/core/validation.py:114: UserWarning: ShiftScaleRotate is a special case of Affine transform. Please use Affine transform instead.
+  original_init(self, **validated_kwargs)
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:109: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:140: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:195: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:226: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+loading annotations into memory...
+Done (t=0.02s)
+creating index...
+index created!
+Done (t=0.01s)
+creating index...
+index created!
+[2026-10-18 06:06:32 det.util.misc]: [RANK 0] Rank of current process: 0, World size: 2
+Using [0, 0.5, 0.6299605249474365, 0.7937005259840997, 1.0, 1.259921049894873, 1.5874010519681991, 2.0, inf] as bins for aspect ratio quantization
+Count of instances per bin: [40]
+Using /home/ubuntu/.cache/torch_extensions/py311_cu118 as PyTorch extensions root...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /home/ubuntu/.cache/torch_extensions/py311_cu118/MultiScaleDeformableAttention/build.ninja...
+Building extension module MultiScaleDeformableAttention...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+ninja: no work to do.
+Loading extension module MultiScaleDeformableAttention...
+[2026-10-18 06:06:32 det.util.misc]: [RANK 0] Environment info: 
+-------------------------------  --------------------------------------------------------------------------------------------------
+sys.platform                     linux
+Python                           3.11.16 (main, Aug 14 2026, 15:35:36) [Clang 22.1.3 ]
+numpy                            1.26.4
+PyTorch                          2.1.2+cu118 @/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch
+PyTorch debug build              False
+torch._C._GLIBCXX_USE_CXX11_ABI  False
+GPU available                    Yes
+GPU 0,1                          NVIDIA RTX A6000 (arch=8.6)
+Driver version                   595.84
+CUDA_HOME                        /usr/local/cuda
+Pillow                           12.2.0
+torchvision                      0.16.2+cu118 @/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torchvision
+torchvision arch flags           3.5, 5.0, 6.0, 7.0, 7.5, 8.0, 8.6
+fvcore                           0.1.5.post20221221
+iopath                           0.1.10
+cv2                              4.13.0
+-------------------------------  --------------------------------------------------------------------------------------------------
+PyTorch built with:
+  - GCC 9.3
+  - C++ Version: 201703
+  - Intel(R) oneAPI Math Kernel Library Version 2022.2-Product Build 20220804 for Intel(R) 64 architecture applications
+  - Intel(R) MKL-DNN v3.1.1 (Git Hash 64f6bcbcbab628e96f33a62c3e975f8535a7bde4)
+  - OpenMP 201511 (a.k.a. OpenMP 4.5)
+  - LAPACK is enabled (usually provided by MKL)
+  - NNPACK is enabled
+  - CPU capability usage: AVX512
+  - CUDA Runtime 11.8
+  - NVCC architecture flags: -gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86;-gencode;arch=compute_37,code=sm_37;-gencode;arch=compute_90,code=sm_90
+  - CuDNN 8.7
+  - Magma 2.6.1
+  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=11.8, CUDNN_VERSION=8.7.0, CXX_COMPILER=/opt/rh/devtoolset-9/root/usr/bin/c++, CXX_FLAGS= -D_GLIBCXX_USE_CXX11_ABI=0 -fabi-version=11 -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -DNDEBUG -DUSE_KINETO -DLIBKINETO_NOROCTRACER -DUSE_FBGEMM -DUSE_QNNPACK -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -O2 -fPIC -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor -Werror=bool-operation -Wnarrowing -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-strict-overflow -Wno-strict-aliasing -Wno-stringop-overflow -Wno-psabi -Wno-error=pedantic -Wno-error=old-style-cast -Wno-invalid-partial-specialization -Wno-unused-private-field -Wno-aligned-allocation-unavailable -Wno-missing-braces -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Werror=cast-function-type -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_DISABLE_GPU_ASSERTS=ON, TORCH_VERSION=2.1.2, USE_CUDA=ON, USE_CUDNN=ON, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=1, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, 
+
+[2026-10-18 06:06:32 det.util.misc]: [RANK 0] Command line arguments: Namespace(config_file='configs/train_config_egosurgery_seed42.py', mixed_precision='fp16', accumulate_steps=1, seed=42, convergence_schedule=True, plateau_patience=4, plateau_factor=0.1, max_epochs=2, use_deterministic_algorithms=False, dynamo_backend='no')
+[2026-10-18 06:06:32 det.util.misc]: [RANK 0] Contents of args.config_file=configs/train_config_egosurgery_seed42.py:
+[38;5;245m# DRAFT (not for direct training) — Relation-DETR train_config adapted to EgoSurgery.[39m
+[38;5;245m# Run from inside third_party/Relation-DETR with the .venv-relation-detr venv:[39m
+[38;5;245m#   CUDA_VISIBLE_DEVICES=0,1 accelerate launch --num_processes 2 main.py \[39m
+[38;5;245m#       --config-file <this file> --seed 42 --mixed-precision fp16[39m
+[38;5;245m# Lines marked # <CHANGED> are EgoSurgery-specific.[39m
+[38;5;204mimport[39m[38;5;255m [39m[38;5;255mos[39m
+[38;5;204mfrom[39m[38;5;255m [39m[38;5;255mtorch[39m[38;5;255m [39m[38;5;204mimport[39m[38;5;255m [39m[38;5;255moptim[39m
+
+[38;5;204mfrom[39m[38;5;255m [39m[38;5;255mdatasets[39m[38;5;255m.[39m[38;5;255mcoco[39m[38;5;255m [39m[38;5;204mimport[39m[38;5;255m [39m[38;5;255mCocoDetection[39m
+[38;5;204mfrom[39m[38;5;255m [39m[38;5;255mtransforms[39m[38;5;255m [39m[38;5;204mimport[39m[38;5;255m [39m[38;5;255mpresets[39m
+[38;5;204mfrom[39m[38;5;255m [39m[38;5;255moptimizer[39m[38;5;255m [39m[38;5;204mimport[39m[38;5;255m [39m[38;5;255mparam_dict[39m
+
+[38;5;245m# ---- training schedule (matches S0: 12 epochs, step at 10) ----[39m
+[38;5;255mnum_epochs[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;141m12[39m[38;5;255m          [39m[38;5;245m# S0 parity[39m
+[38;5;255mbatch_size[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;141m2[39m[38;5;255m           [39m[38;5;245m# <CHANGED-ish> per-GPU bs; with 2 GPUs -> effective bs = 4 (S0 parity)[39m
+[38;5;255mnum_workers[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;141m4[39m
+[38;5;255mpin_memory[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;81mTrue[39m
+[38;5;255mprint_freq[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;141m50[39m
+[38;5;255mstarting_epoch[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;141m0[39m
+[38;5;255mmax_norm[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;141m0.1[39m
+
+[38;5;245m# このファイルは third_party/Relation-DETR/configs/ にあるので、m2 リポジトリ root は 3 階層上。[39m
+[38;5;255m_PROJECT_ROOT[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;255mos[39m[38;5;204m.[39m[38;5;255menviron[39m[38;5;204m.[39m[38;5;255mget[39m[38;5;255m([39m
+[38;5;255m    [39m[38;5;186m"[39m[38;5;186mEGO_BODY[39m[38;5;186m"[39m[38;5;255m,[39m
+[38;5;255m    [39m[38;5;255mos[39m[38;5;204m.[39m[38;5;255mpath[39m[38;5;204m.[39m[38;5;255mdirname[39m[38;5;255m([39m[38;5;255mos[39m[38;5;204m.[39m[38;5;255mpath[39m[38;5;204m.[39m[38;5;255mdirname[39m[38;5;255m([39m[38;5;255mos[39m[38;5;204m.[39m[38;5;255mpath[39m[38;5;204m.[39m[38;5;255mdirname[39m[38;5;255m([39m[38;5;255mos[39m[38;5;204m.[39m[38;5;255mpath[39m[38;5;204m.[39m[38;5;255mabspath[39m[38;5;255m([39m[38;5;255m__file__[39m[38;5;255m)[39m[38;5;255m)[39m[38;5;255m)[39m[38;5;255m)[39m[38;5;255m,[39m
+[38;5;255m)[39m
+
+[38;5;245m# 成果物は experiments/ 配下に永続化する（/tmp は再起動で消える）。[39m
+[38;5;245m# RELDETR_OUTPUT_DIR で上書き可。[39m
+[38;5;255moutput_dir[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;255mos[39m[38;5;204m.[39m[38;5;255menviron[39m[38;5;204m.[39m[38;5;255mget[39m[38;5;255m([39m
+[38;5;255m    [39m[38;5;186m"[39m[38;5;186mRELDETR_OUTPUT_DIR[39m[38;5;186m"[39m[38;5;255m,[39m
+[38;5;255m    [39m[38;5;255mos[39m[38;5;204m.[39m[38;5;255mpath[39m[38;5;204m.[39m[38;5;255mjoin[39m[38;5;255m([39m[38;5;255m_PROJECT_ROOT[39m[38;5;255m,[39m[38;5;255m [39m[38;5;186m"[39m[38;5;186mexperiments[39m[38;5;186m"[39m[38;5;255m,[39m[38;5;255m [39m[38;5;186m"[39m[38;5;186mtransfer[39m[38;5;186m"[39m[38;5;255m,[39m
+[38;5;255m                 [39m[38;5;186m"[39m[38;5;186mreldetr_work_seed42[39m[38;5;186m"[39m[38;5;255m)[39m[38;5;255m,[39m
+[38;5;255m)[39m
+[38;5;255mfind_unused_parameters[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;81mFalse[39m
+
+[38;5;245m# ---- EgoSurgery dataset (COCO-format, bbox-only, 15 classes) ----  # <CHANGED block>[39m
+[38;5;245m# NOTE: instances_*.json file_name fields already include the split prefix[39m
+[38;5;245m#       e.g. "train/01/01_1_0124.jpg", so img_folder must be the PARENT (data/raw/ego).[39m
+[38;5;255mEGO_ROOT[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;255mos[39m[38;5;204m.[39m[38;5;255menviron[39m[38;5;204m.[39m[38;5;255mget[39m[38;5;255m([39m[38;5;186m"[39m[38;5;186mEGO_ROOT[39m[38;5;186m"[39m[38;5;255m,[39m[38;5;255m [39m[38;5;186m"[39m[38;5;186m/home/ubuntu/slocal2/m2/data/raw/ego[39m[38;5;186m"[39m[38;5;255m)[39m
+[38;5;255mANN_DIR[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;255mos[39m[38;5;204m.[39m[38;5;255menviron[39m[38;5;204m.[39m[38;5;255mget[39m[38;5;255m([39m
+[38;5;255m    [39m[38;5;186m"[39m[38;5;186mEGO_ANN_DIR[39m[38;5;186m"[39m[38;5;255m,[39m[38;5;255m [39m[38;5;186m"[39m[38;5;186m/home/ubuntu/slocal2/m2/data/annotations/egosurgery_tool[39m[38;5;186m"[39m
+[38;5;255m)[39m
+[38;5;255mtrain_dataset[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;255mCocoDetection[39m[38;5;255m([39m
+[38;5;255m    [39m[38;5;255mimg_folder[39m[38;5;204m=[39m[38;5;255mEGO_ROOT[39m[38;5;255m,[39m
+[38;5;255m    [39m[38;5;255mann_file[39m[38;5;204m=[39m[38;5;186mf[39m[38;5;186m"[39m[38;5;186m{[39m[38;5;255mANN_DIR[39m[38;5;186m}[39m[38;5;186m/instances_train.json[39m[38;5;186m"[39m[38;5;255m,[39m
+[38;5;255m    [39m[38;5;255mtransforms[39m[38;5;204m=[39m[38;5;255mpresets[39m[38;5;204m.[39m[38;5;255mdetr[39m[38;5;255m,[39m
+[38;5;255m    [39m[38;5;255mtrain[39m[38;5;204m=[39m[38;5;81mTrue[39m[38;5;255m,[39m
+[38;5;255m)[39m
+[38;5;255mtest_dataset[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;255mCocoDetection[39m[38;5;255m([39m
+[38;5;255m    [39m[38;5;255mimg_folder[39m[38;5;204m=[39m[38;5;255mEGO_ROOT[39m[38;5;255m,[39m
+[38;5;255m    [39m[38;5;255mann_file[39m[38;5;204m=[39m[38;5;186mf[39m[38;5;186m"[39m[38;5;186m{[39m[38;5;255mANN_DIR[39m[38;5;186m}[39m[38;5;186m/instances_val.json[39m[38;5;186m"[39m[38;5;255m,[39m[38;5;255m   [39m[38;5;245m# use instances_test.json for final test eval[39m
+[38;5;255m    [39m[38;5;255mtransforms[39m[38;5;204m=[39m[38;5;81mNone[39m[38;5;255m,[39m
+[38;5;255m)[39m
+
+[38;5;245m# model config to train[39m
+[38;5;255mmodel_path[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;186m"[39m[38;5;186mconfigs/relation_detr/relation_detr_resnet50_egosurgery.py[39m[38;5;186m"[39m[38;5;255m  [39m[38;5;245m# <CHANGED> drafted above[39m
+
+[38;5;245m# ---- COCO-pretrained finetune (S0 load_from parity) ----  # <CHANGED>[39m
+[38;5;245m# Pointing resume_from_checkpoint at a .pth FILE => finetune. main.py loads it via[39m
+[38;5;245m# load_state_dict(), and filter_mismatched_weights() auto-drops the 91->15 class-head[39m
+[38;5;245m# mismatch (backbone + transformer load, class heads reinit). A local copy is preferred[39m
+[38;5;245m# to avoid network access at train time; download once to data/external/weights/.[39m
+[38;5;255mresume_from_checkpoint[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;255mos[39m[38;5;204m.[39m[38;5;255menviron[39m[38;5;204m.[39m[38;5;255mget[39m[38;5;255m([39m
+[38;5;255m    [39m[38;5;186m"[39m[38;5;186mRELDETR_COCO_CKPT[39m[38;5;186m"[39m[38;5;255m,[39m
+[38;5;255m    [39m[38;5;186m"[39m[38;5;186m/home/ubuntu/slocal2/m2/data/external/weights/relation_detr_resnet50_800_1333_coco_1x.pth[39m[38;5;186m"[39m[38;5;255m,[39m
+[38;5;255m)[39m
+
+[38;5;245m# ---- optimizer / scheduler (Relation-DETR defaults; 1x schedule) ----[39m
+[38;5;255mlearning_rate[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;141m1e-4[39m[38;5;255m     [39m[38;5;245m# see report: S0 lr_scaling=linear_x2 maps to doubling base lr for eff bs[39m
+[38;5;255moptimizer[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;255moptim[39m[38;5;204m.[39m[38;5;255mAdamW[39m[38;5;255m([39m[38;5;255mlr[39m[38;5;204m=[39m[38;5;255mlearning_rate[39m[38;5;255m,[39m[38;5;255m [39m[38;5;255mweight_decay[39m[38;5;204m=[39m[38;5;141m1e-4[39m[38;5;255m,[39m[38;5;255m [39m[38;5;255mbetas[39m[38;5;204m=[39m[38;5;255m([39m[38;5;141m0.9[39m[38;5;255m,[39m[38;5;255m [39m[38;5;141m0.999[39m[38;5;255m)[39m[38;5;255m)[39m
+[38;5;255mlr_scheduler[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;255moptim[39m[38;5;204m.[39m[38;5;255mlr_scheduler[39m[38;5;204m.[39m[38;5;255mMultiStepLR[39m[38;5;255m([39m[38;5;255mmilestones[39m[38;5;204m=[39m[38;5;255m[[39m[38;5;141m10[39m[38;5;255m][39m[38;5;255m,[39m[38;5;255m [39m[38;5;255mgamma[39m[38;5;204m=[39m[38;5;141m0.1[39m[38;5;255m)[39m
+[38;5;255mparam_dicts[39m[38;5;255m [39m[38;5;204m=[39m[38;5;255m [39m[38;5;255mparam_dict[39m[38;5;204m.[39m[38;5;255mfinetune_backbone_and_linear_projection[39m[38;5;255m([39m[38;5;255mlr[39m[38;5;204m=[39m[38;5;255mlearning_rate[39m[38;5;255m)[39m
+
+[2026-10-18 06:06:32 det.util.misc]: [RANK 0] Using the random seed: 42
+Using [0, 0.5, 0.6299605249474365, 0.7937005259840997, 1.0, 1.259921049894873, 1.5874010519681991, 2.0, inf] as bins for aspect ratio quantization
+Count of instances per bin: [40]
+Using /home/ubuntu/.cache/torch_extensions/py311_cu118 as PyTorch extensions root...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /home/ubuntu/.cache/torch_extensions/py311_cu118/MultiScaleDeformableAttention/build.ninja...
+Building extension module MultiScaleDeformableAttention...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+ninja: no work to do.
+Loading extension module MultiScaleDeformableAttention...
+[2026-10-18 06:06:32 det.models.backbones.base_backbone]: Backbone architecture: resnet50
+[2026-10-18 06:06:33 det.util.utils]: <All keys matched successfully>
+WARNING [2026-10-18 06:06:33 py.warnings]: /home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+
+WARNING [2026-10-18 06:06:33 py.warnings]: /home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+
+WARNING [2026-10-18 06:06:33 py.warnings]: /home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+
+WARNING [2026-10-18 06:06:33 py.warnings]: /home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+
+WARNING [2026-10-18 06:06:33 det.util.utils]: The model and loaded state dict do not match exactly
+WARNING [2026-10-18 06:06:33 det.util.utils]: Size mismatch keys: transformer.decoder.class_head.0.weight, transformer.decoder.class_head.0.bias, transformer.decoder.class_head.1.weight, transformer.decoder.class_head.1.bias, transformer.decoder.class_head.2.weight, transformer.decoder.class_head.2.bias, transformer.decoder.class_head.3.weight, transformer.decoder.class_head.3.bias, transformer.decoder.class_head.4.weight, transformer.decoder.class_head.4.bias, transformer.decoder.class_head.5.weight, transformer.decoder.class_head.5.bias, transformer.encoder_class_head.weight, transformer.encoder_class_head.bias, transformer.hybrid_class_head.weight, transformer.hybrid_class_head.bias, denoising_generator.label_encoder.weight
++------------------------------------------+----------------+---------------------+
+| key name                                 | shape in model | shape in state dict |
++------------------------------------------+----------------+---------------------+
+| transformer.decoder.class_head.0.weight  | (15, 256)      | (91, 256)           |
+| transformer.decoder.class_head.0.bias    | (15,)          | (91,)               |
+| transformer.decoder.class_head.1.weight  | (15, 256)      | (91, 256)           |
+| transformer.decoder.class_head.1.bias    | (15,)          | (91,)               |
+| transformer.decoder.class_head.2.weight  | (15, 256)      | (91, 256)           |
+| transformer.decoder.class_head.2.bias    | (15,)          | (91,)               |
+| transformer.decoder.class_head.3.weight  | (15, 256)      | (91, 256)           |
+| transformer.decoder.class_head.3.bias    | (15,)          | (91,)               |
+| transformer.decoder.class_head.4.weight  | (15, 256)      | (91, 256)           |
+| transformer.decoder.class_head.4.bias    | (15,)          | (91,)               |
+| transformer.decoder.class_head.5.weight  | (15, 256)      | (91, 256)           |
+| transformer.decoder.class_head.5.bias    | (15,)          | (91,)               |
+| transformer.encoder_class_head.weight    | (15, 256)      | (91, 256)           |
+| transformer.encoder_class_head.bias      | (15,)          | (91,)               |
+| transformer.hybrid_class_head.weight     | (15, 256)      | (91, 256)           |
+| transformer.hybrid_class_head.bias       | (15,)          | (91,)               |
++------------------------------------------+----------------+---------------------+
+| denoising_generator.label_encoder.weight | (15, 256)      | (91, 256)           |
++------------------------------------------+----------------+---------------------+
+
+[2026-10-18 06:06:33 det.__main__]: [RANK 0] load pretrained from /home/ubuntu/slocal2/m2/data/external/weights/relation_detr_resnet50_800_1333_coco_1x.pth
+[2026-10-18 06:06:34 det.__main__]: [RANK 0] model parameters: 48471200
+[2026-10-18 06:06:34 det.__main__]: [RANK 0] optimizer: AcceleratedOptimizer (
+Parameter Group 0
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    initial_lr: 0.0001
+    lr: 0.0001
+    maximize: False
+    weight_decay: 0.0001
+
+Parameter Group 1
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    initial_lr: 1e-05
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0.0001
+
+Parameter Group 2
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    initial_lr: 1e-05
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0
+
+Parameter Group 3
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    initial_lr: 1e-05
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0.0001
+
+Parameter Group 4
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    initial_lr: 1e-05
+    lr: 1e-05
+    maximize: False
+    weight_decay: 0
+
+Parameter Group 5
+    amsgrad: False
+    betas: (0.9, 0.999)
+    capturable: False
+    differentiable: False
+    eps: 1e-08
+    foreach: None
+    fused: None
+    initial_lr: 0.0001
+    lr: 0.0001
+    maximize: False
+    weight_decay: 0
+)
+[2026-10-18 06:06:34 det.__main__]: [RANK 0] lr_scheduler: {'_get_lr_called_within_step': False,
+ '_last_lr': [0.0001, 1e-05, 1e-05, 1e-05, 1e-05, 0.0001],
+ '_step_count': 1,
+ 'base_lrs': [0.0001, 1e-05, 1e-05, 1e-05, 1e-05, 0.0001],
+ 'gamma': 0.1,
+ 'last_epoch': 0,
+ 'milestones': Counter({10: 1}),
+ 'verbose': False}
+[2026-10-18 06:06:34 det.__main__]: [RANK 0] Label names is saved to /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_dtower/stage2pilot_cf_dcoco_H1smoke_seed42/work/label_names.txt
+[2026-10-18 06:06:34 det.__main__]: [RANK 0] Start training
+WARNING [2026-10-18 06:06:37 py.warnings]: /home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/autograd/__init__.py:251: UserWarning: Grad strides do not match bucket view strides. This may indicate grad was not created according to the gradient layout contract, or that the param's strides changed since DDP was constructed.  This is not an error, but may impair performance.
+grad.sizes() = [8, 64, 1, 1], strides() = [64, 1, 64, 64]
+bucket_view.sizes() = [8, 64, 1, 1], strides() = [64, 1, 1, 1] (Triggered internally at ../torch/csrc/distributed/c10d/reducer.cpp:320.)
+  Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+
+[2026-10-18 06:06:37 det.util.engine]: Epoch: [0]  [0/10]  eta: 0:00:18  lr: 0.000011  data_time: 0.0082  iter_time: 1.8465  loss: 71.9398 (71.9398)  loss_class: 2.9504 (2.9504)  loss_bbox: 0.3664 (0.3664)  loss_giou: 0.3031 (0.3031)  loss_class_0: 1.7514 (1.7514)  loss_bbox_0: 0.6431 (0.6431)  loss_giou_0: 0.6440 (0.6440)  loss_class_1: 2.4011 (2.4011)  loss_bbox_1: 0.4673 (0.4673)  loss_giou_1: 0.4210 (0.4210)  loss_class_2: 2.5264 (2.5264)  loss_bbox_2: 0.3914 (0.3914)  loss_giou_2: 0.3587 (0.3587)  loss_class_3: 2.7995 (2.7995)  loss_bbox_3: 0.3455 (0.3455)  loss_giou_3: 0.2907 (0.2907)  loss_class_4: 2.5147 (2.5147)  loss_bbox_4: 0.3679 (0.3679)  loss_giou_4: 0.3032 (0.3032)  loss_class_enc: 1.6093 (1.6093)  loss_bbox_enc: 0.8360 (0.8360)  loss_giou_enc: 0.8863 (0.8863)  loss_class_dn: 0.9876 (0.9876)  loss_bbox_dn: 1.7931 (1.7931)  loss_giou_dn: 1.2338 (1.2338)  loss_class_dn_0: 0.8453 (0.8453)  loss_bbox_dn_0: 1.6845 (1.6845)  loss_giou_dn_0: 1.2281 (1.2281)  loss_class_dn_1: 1.0064 (1.0064)  loss_bbox_dn_1: 1.6512 (1.6512)  loss_giou_dn_1: 1.1478 (1.1478)  loss_class_dn_2: 0.9976 (0.9976)  loss_bbox_dn_2: 1.6621 (1.6621)  loss_giou_dn_2: 1.1442 (1.1442)  loss_class_dn_3: 0.9261 (0.9261)  loss_bbox_dn_3: 1.8116 (1.8116)  loss_giou_dn_3: 1.2492 (1.2492)  loss_class_dn_4: 0.8427 (0.8427)  loss_bbox_dn_4: 1.7940 (1.7940)  loss_giou_dn_4: 1.2336 (1.2336)  loss_class_hybrid: 3.0381 (3.0381)  loss_bbox_hybrid: 0.3930 (0.3930)  loss_giou_hybrid: 0.2501 (0.2501)  loss_class_0_hybrid: 2.3358 (2.3358)  loss_bbox_0_hybrid: 0.6742 (0.6742)  loss_giou_0_hybrid: 0.5222 (0.5222)  loss_class_1_hybrid: 2.8162 (2.8162)  loss_bbox_1_hybrid: 0.5067 (0.5067)  loss_giou_1_hybrid: 0.3643 (0.3643)  loss_class_2_hybrid: 2.9883 (2.9883)  loss_bbox_2_hybrid: 0.4122 (0.4122)  loss_giou_2_hybrid: 0.2724 (0.2724)  loss_class_3_hybrid: 2.9862 (2.9862)  loss_bbox_3_hybrid: 0.3889 (0.3889)  loss_giou_3_hybrid: 0.2479 (0.2479)  loss_class_4_hybrid: 2.6898 (2.6898)  loss_bbox_4_hybrid: 0.3954 (0.3954)  loss_giou_4_hybrid: 0.2516 (0.2516)  loss_class_enc_hybrid: 2.6736 (2.6736)  loss_bbox_enc_hybrid: 0.7413 (0.7413)  loss_giou_enc_hybrid: 0.5752 (0.5752)  mem: 607  max mem: 7115
+[2026-10-18 06:06:37 accelerate.tracking]: [RANK 0] Successfully logged to TensorBoard
+[2026-10-18 06:06:45 det.util.engine]: Averaged stats: lr: 0.000100  data_time: 0.0015  iter_time: 1.0350  loss: 67.4288 (68.9109)  loss_class: 2.8437 (2.8176)  loss_bbox: 0.3438 (0.3635)  loss_giou: 0.3112 (0.3623)  loss_class_0: 1.7697 (2.0507)  loss_bbox_0: 0.3892 (0.5475)  loss_giou_0: 0.4764 (0.5305)  loss_class_1: 2.4011 (2.3549)  loss_bbox_1: 0.4438 (0.4460)  loss_giou_1: 0.4166 (0.4484)  loss_class_2: 2.5002 (2.4870)  loss_bbox_2: 0.3517 (0.3759)  loss_giou_2: 0.3587 (0.3807)  loss_class_3: 2.5221 (2.5158)  loss_bbox_3: 0.3455 (0.3801)  loss_giou_3: 0.3232 (0.3702)  loss_class_4: 2.3830 (2.3884)  loss_bbox_4: 0.3628 (0.3682)  loss_giou_4: 0.3358 (0.3681)  loss_class_enc: 2.1345 (2.3282)  loss_bbox_enc: 0.6155 (0.6551)  loss_giou_enc: 0.5118 (0.6501)  loss_class_dn: 0.9732 (0.9508)  loss_bbox_dn: 1.6027 (1.6498)  loss_giou_dn: 1.2235 (1.2247)  loss_class_dn_0: 0.8314 (0.8277)  loss_bbox_dn_0: 1.4611 (1.4842)  loss_giou_dn_0: 1.1996 (1.2031)  loss_class_dn_1: 0.9643 (0.9549)  loss_bbox_dn_1: 1.4275 (1.4908)  loss_giou_dn_1: 1.1358 (1.1364)  loss_class_dn_2: 0.9511 (0.9358)  loss_bbox_dn_2: 1.4923 (1.5208)  loss_giou_dn_2: 1.1276 (1.1348)  loss_class_dn_3: 0.8804 (0.8533)  loss_bbox_dn_3: 1.6250 (1.6678)  loss_giou_dn_3: 1.2399 (1.2406)  loss_class_dn_4: 0.7997 (0.7930)  loss_bbox_dn_4: 1.6029 (1.6503)  loss_giou_dn_4: 1.2234 (1.2245)  loss_class_hybrid: 2.7316 (2.7405)  loss_bbox_hybrid: 0.3925 (0.4351)  loss_giou_hybrid: 0.2965 (0.3765)  loss_class_0_hybrid: 2.0405 (2.1898)  loss_bbox_0_hybrid: 0.4614 (0.5580)  loss_giou_0_hybrid: 0.4931 (0.5071)  loss_class_1_hybrid: 2.3969 (2.5253)  loss_bbox_1_hybrid: 0.4723 (0.4879)  loss_giou_1_hybrid: 0.3846 (0.4334)  loss_class_2_hybrid: 2.3823 (2.5314)  loss_bbox_2_hybrid: 0.4119 (0.4451)  loss_giou_2_hybrid: 0.3069 (0.3894)  loss_class_3_hybrid: 2.3457 (2.4664)  loss_bbox_3_hybrid: 0.3889 (0.4465)  loss_giou_3_hybrid: 0.2945 (0.3841)  loss_class_4_hybrid: 2.2483 (2.2495)  loss_bbox_4_hybrid: 0.3954 (0.4390)  loss_giou_4_hybrid: 0.3015 (0.3810)  loss_class_enc_hybrid: 2.4851 (2.5566)  loss_bbox_enc_hybrid: 0.5337 (0.6329)  loss_giou_enc_hybrid: 0.5786 (0.6027)
+[2026-10-18 06:06:45 accelerate.accelerator]: [RANK 0] Saving current state to /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_dtower/stage2pilot_cf_dcoco_H1smoke_seed42/work/checkpoints/checkpoint_0
+[2026-10-18 06:06:46 accelerate.checkpointing]: [RANK 0] Model weights saved in /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_dtower/stage2pilot_cf_dcoco_H1smoke_seed42/work/checkpoints/checkpoint_0/pytorch_model.bin
+[2026-10-18 06:06:46 accelerate.checkpointing]: [RANK 0] Optimizer state saved in /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_dtower/stage2pilot_cf_dcoco_H1smoke_seed42/work/checkpoints/checkpoint_0/optimizer.bin
+[2026-10-18 06:06:46 accelerate.checkpointing]: [RANK 0] Scheduler state saved in /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_dtower/stage2pilot_cf_dcoco_H1smoke_seed42/work/checkpoints/checkpoint_0/scheduler.bin
+[2026-10-18 06:06:46 accelerate.checkpointing]: [RANK 0] Sampler state for dataloader 0 saved in /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_dtower/stage2pilot_cf_dcoco_H1smoke_seed42/work/checkpoints/checkpoint_0/sampler.bin
+[2026-10-18 06:06:46 accelerate.checkpointing]: [RANK 0] Sampler state for dataloader 1 saved in /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_dtower/stage2pilot_cf_dcoco_H1smoke_seed42/work/checkpoints/checkpoint_0/sampler_1.bin
+[2026-10-18 06:06:46 accelerate.checkpointing]: [RANK 0] Gradient scaler state saved in /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_dtower/stage2pilot_cf_dcoco_H1smoke_seed42/work/checkpoints/checkpoint_0/scaler.pt
+[2026-10-18 06:06:46 accelerate.checkpointing]: [RANK 0] Random states saved in /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_dtower/stage2pilot_cf_dcoco_H1smoke_seed42/work/checkpoints/checkpoint_0/random_states_0.pkl
+[2026-10-18 06:06:46 det.__main__]: [RANK 0] Start evaluation
+[2026-10-18 06:06:46 det.util.utils]: Test:  [  0/758]  eta: 0:04:09  model_time: 0.1459 (0.1459)  evaluator_time: 0.0028 (0.0028)  time: 0.3293  data: 0.1804  mem: 970  max mem: 9362
+[2026-10-18 06:06:47 det.util.utils]: Test:  [ 10/758]  eta: 0:01:03  model_time: 0.0571 (0.0651)  evaluator_time: 0.0027 (0.0026)  time: 0.0847  data: 0.0168  mem: 970  max mem: 9362
+[2026-10-18 06:06:47 det.util.utils]: Test:  [ 20/758]  eta: 0:00:54  model_time: 0.0573 (0.0615)  evaluator_time: 0.0026 (0.0027)  time: 0.0606  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:06:48 det.util.utils]: Test:  [ 30/758]  eta: 0:00:50  model_time: 0.0574 (0.0602)  evaluator_time: 0.0026 (0.0027)  time: 0.0608  data: 0.0004  mem: 970  max mem: 9362
+[2026-10-18 06:06:49 det.util.utils]: Test:  [ 40/758]  eta: 0:00:48  model_time: 0.0571 (0.0594)  evaluator_time: 0.0027 (0.0027)  time: 0.0604  data: 0.0004  mem: 970  max mem: 9362
+[2026-10-18 06:06:49 det.util.utils]: Test:  [ 50/758]  eta: 0:00:46  model_time: 0.0569 (0.0589)  evaluator_time: 0.0026 (0.0025)  time: 0.0600  data: 0.0004  mem: 970  max mem: 9362
+[2026-10-18 06:06:50 det.util.utils]: Test:  [ 60/758]  eta: 0:00:45  model_time: 0.0571 (0.0586)  evaluator_time: 0.0016 (0.0024)  time: 0.0596  data: 0.0004  mem: 970  max mem: 9362
+[2026-10-18 06:06:50 det.util.utils]: Test:  [ 70/758]  eta: 0:00:43  model_time: 0.0572 (0.0585)  evaluator_time: 0.0016 (0.0023)  time: 0.0595  data: 0.0004  mem: 970  max mem: 9362
+[2026-10-18 06:06:51 det.util.utils]: Test:  [ 80/758]  eta: 0:00:42  model_time: 0.0572 (0.0583)  evaluator_time: 0.0016 (0.0022)  time: 0.0595  data: 0.0004  mem: 970  max mem: 9362
+[2026-10-18 06:06:52 det.util.utils]: Test:  [ 90/758]  eta: 0:00:42  model_time: 0.0571 (0.0582)  evaluator_time: 0.0016 (0.0022)  time: 0.0593  data: 0.0004  mem: 970  max mem: 9362
+[2026-10-18 06:06:52 det.util.utils]: Test:  [100/758]  eta: 0:00:41  model_time: 0.0570 (0.0581)  evaluator_time: 0.0016 (0.0021)  time: 0.0593  data: 0.0004  mem: 970  max mem: 9362
+[2026-10-18 06:06:53 det.util.utils]: Test:  [110/758]  eta: 0:00:40  model_time: 0.0572 (0.0580)  evaluator_time: 0.0017 (0.0021)  time: 0.0599  data: 0.0004  mem: 970  max mem: 9362
+[2026-10-18 06:06:54 det.util.utils]: Test:  [120/758]  eta: 0:00:40  model_time: 0.0577 (0.0580)  evaluator_time: 0.0019 (0.0035)  time: 0.0686  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:06:54 det.util.utils]: Test:  [130/758]  eta: 0:00:39  model_time: 0.0578 (0.0580)  evaluator_time: 0.0017 (0.0033)  time: 0.0685  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:06:55 det.util.utils]: Test:  [140/758]  eta: 0:00:38  model_time: 0.0578 (0.0580)  evaluator_time: 0.0018 (0.0032)  time: 0.0603  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:06:55 det.util.utils]: Test:  [150/758]  eta: 0:00:38  model_time: 0.0579 (0.0580)  evaluator_time: 0.0019 (0.0032)  time: 0.0609  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:06:56 det.util.utils]: Test:  [160/758]  eta: 0:00:37  model_time: 0.0580 (0.0580)  evaluator_time: 0.0023 (0.0031)  time: 0.0612  data: 0.0006  mem: 970  max mem: 9362
+[2026-10-18 06:06:57 det.util.utils]: Test:  [170/758]  eta: 0:00:36  model_time: 0.0577 (0.0580)  evaluator_time: 0.0022 (0.0031)  time: 0.0610  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:06:57 det.util.utils]: Test:  [180/758]  eta: 0:00:36  model_time: 0.0577 (0.0580)  evaluator_time: 0.0020 (0.0030)  time: 0.0607  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:06:58 det.util.utils]: Test:  [190/758]  eta: 0:00:35  model_time: 0.0577 (0.0579)  evaluator_time: 0.0019 (0.0030)  time: 0.0604  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:06:58 det.util.utils]: Test:  [200/758]  eta: 0:00:34  model_time: 0.0575 (0.0579)  evaluator_time: 0.0018 (0.0029)  time: 0.0600  data: 0.0004  mem: 970  max mem: 9362
+[2026-10-18 06:06:59 det.util.utils]: Test:  [210/758]  eta: 0:00:34  model_time: 0.0574 (0.0579)  evaluator_time: 0.0019 (0.0029)  time: 0.0601  data: 0.0004  mem: 970  max mem: 9362
+[2026-10-18 06:07:00 det.util.utils]: Test:  [220/758]  eta: 0:00:33  model_time: 0.0573 (0.0579)  evaluator_time: 0.0018 (0.0028)  time: 0.0601  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:00 det.util.utils]: Test:  [230/758]  eta: 0:00:32  model_time: 0.0579 (0.0579)  evaluator_time: 0.0019 (0.0028)  time: 0.0606  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:01 det.util.utils]: Test:  [240/758]  eta: 0:00:32  model_time: 0.0585 (0.0580)  evaluator_time: 0.0025 (0.0028)  time: 0.0621  data: 0.0006  mem: 970  max mem: 9362
+[2026-10-18 06:07:02 det.util.utils]: Test:  [250/758]  eta: 0:00:31  model_time: 0.0581 (0.0580)  evaluator_time: 0.0024 (0.0028)  time: 0.0619  data: 0.0006  mem: 970  max mem: 9362
+[2026-10-18 06:07:02 det.util.utils]: Test:  [260/758]  eta: 0:00:30  model_time: 0.0579 (0.0579)  evaluator_time: 0.0020 (0.0028)  time: 0.0608  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:03 det.util.utils]: Test:  [270/758]  eta: 0:00:30  model_time: 0.0578 (0.0579)  evaluator_time: 0.0020 (0.0027)  time: 0.0608  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:03 det.util.utils]: Test:  [280/758]  eta: 0:00:29  model_time: 0.0579 (0.0579)  evaluator_time: 0.0018 (0.0027)  time: 0.0607  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:04 det.util.utils]: Test:  [290/758]  eta: 0:00:28  model_time: 0.0575 (0.0579)  evaluator_time: 0.0017 (0.0027)  time: 0.0602  data: 0.0004  mem: 970  max mem: 9362
+[2026-10-18 06:07:05 det.util.utils]: Test:  [300/758]  eta: 0:00:28  model_time: 0.0574 (0.0579)  evaluator_time: 0.0018 (0.0027)  time: 0.0604  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:05 det.util.utils]: Test:  [310/758]  eta: 0:00:27  model_time: 0.0575 (0.0579)  evaluator_time: 0.0026 (0.0027)  time: 0.0610  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:06 det.util.utils]: Test:  [320/758]  eta: 0:00:27  model_time: 0.0577 (0.0579)  evaluator_time: 0.0020 (0.0027)  time: 0.0607  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:06 det.util.utils]: Test:  [330/758]  eta: 0:00:26  model_time: 0.0576 (0.0579)  evaluator_time: 0.0018 (0.0026)  time: 0.0602  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:07 det.util.utils]: Test:  [340/758]  eta: 0:00:25  model_time: 0.0576 (0.0579)  evaluator_time: 0.0018 (0.0026)  time: 0.0601  data: 0.0004  mem: 970  max mem: 9362
+[2026-10-18 06:07:08 det.util.utils]: Test:  [350/758]  eta: 0:00:25  model_time: 0.0573 (0.0579)  evaluator_time: 0.0018 (0.0026)  time: 0.0600  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:08 det.util.utils]: Test:  [360/758]  eta: 0:00:24  model_time: 0.0572 (0.0579)  evaluator_time: 0.0017 (0.0026)  time: 0.0598  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:09 det.util.utils]: Test:  [370/758]  eta: 0:00:23  model_time: 0.0573 (0.0578)  evaluator_time: 0.0017 (0.0026)  time: 0.0597  data: 0.0004  mem: 970  max mem: 9362
+[2026-10-18 06:07:09 det.util.utils]: Test:  [380/758]  eta: 0:00:23  model_time: 0.0573 (0.0578)  evaluator_time: 0.0018 (0.0025)  time: 0.0599  data: 0.0004  mem: 970  max mem: 9362
+[2026-10-18 06:07:10 det.util.utils]: Test:  [390/758]  eta: 0:00:22  model_time: 0.0576 (0.0578)  evaluator_time: 0.0018 (0.0025)  time: 0.0602  data: 0.0004  mem: 970  max mem: 9362
+[2026-10-18 06:07:11 det.util.utils]: Test:  [400/758]  eta: 0:00:22  model_time: 0.0577 (0.0578)  evaluator_time: 0.0020 (0.0025)  time: 0.0608  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:11 det.util.utils]: Test:  [410/758]  eta: 0:00:21  model_time: 0.0576 (0.0578)  evaluator_time: 0.0019 (0.0025)  time: 0.0607  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:12 det.util.utils]: Test:  [420/758]  eta: 0:00:20  model_time: 0.0575 (0.0578)  evaluator_time: 0.0018 (0.0025)  time: 0.0601  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:12 det.util.utils]: Test:  [430/758]  eta: 0:00:20  model_time: 0.0576 (0.0578)  evaluator_time: 0.0018 (0.0025)  time: 0.0601  data: 0.0004  mem: 970  max mem: 9362
+[2026-10-18 06:07:13 det.util.utils]: Test:  [440/758]  eta: 0:00:19  model_time: 0.0578 (0.0578)  evaluator_time: 0.0018 (0.0025)  time: 0.0605  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:14 det.util.utils]: Test:  [450/758]  eta: 0:00:18  model_time: 0.0579 (0.0578)  evaluator_time: 0.0019 (0.0025)  time: 0.0607  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:14 det.util.utils]: Test:  [460/758]  eta: 0:00:18  model_time: 0.0578 (0.0578)  evaluator_time: 0.0020 (0.0025)  time: 0.0606  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:15 det.util.utils]: Test:  [470/758]  eta: 0:00:17  model_time: 0.0578 (0.0578)  evaluator_time: 0.0020 (0.0024)  time: 0.0608  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:15 det.util.utils]: Test:  [480/758]  eta: 0:00:17  model_time: 0.0576 (0.0578)  evaluator_time: 0.0019 (0.0024)  time: 0.0607  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:16 det.util.utils]: Test:  [490/758]  eta: 0:00:16  model_time: 0.0576 (0.0578)  evaluator_time: 0.0019 (0.0027)  time: 0.0671  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:17 det.util.utils]: Test:  [500/758]  eta: 0:00:15  model_time: 0.0577 (0.0578)  evaluator_time: 0.0019 (0.0027)  time: 0.0670  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:17 det.util.utils]: Test:  [510/758]  eta: 0:00:15  model_time: 0.0582 (0.0578)  evaluator_time: 0.0019 (0.0027)  time: 0.0608  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:18 det.util.utils]: Test:  [520/758]  eta: 0:00:14  model_time: 0.0585 (0.0579)  evaluator_time: 0.0020 (0.0027)  time: 0.0616  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:19 det.util.utils]: Test:  [530/758]  eta: 0:00:14  model_time: 0.0587 (0.0579)  evaluator_time: 0.0021 (0.0027)  time: 0.0622  data: 0.0006  mem: 970  max mem: 9362
+[2026-10-18 06:07:19 det.util.utils]: Test:  [540/758]  eta: 0:00:13  model_time: 0.0591 (0.0579)  evaluator_time: 0.0024 (0.0027)  time: 0.0627  data: 0.0006  mem: 970  max mem: 9362
+[2026-10-18 06:07:20 det.util.utils]: Test:  [550/758]  eta: 0:00:12  model_time: 0.0587 (0.0579)  evaluator_time: 0.0020 (0.0026)  time: 0.0623  data: 0.0006  mem: 970  max mem: 9362
+[2026-10-18 06:07:21 det.util.utils]: Test:  [560/758]  eta: 0:00:12  model_time: 0.0586 (0.0580)  evaluator_time: 0.0020 (0.0026)  time: 0.0624  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:21 det.util.utils]: Test:  [570/758]  eta: 0:00:11  model_time: 0.0586 (0.0580)  evaluator_time: 0.0020 (0.0026)  time: 0.0626  data: 0.0006  mem: 970  max mem: 9362
+[2026-10-18 06:07:22 det.util.utils]: Test:  [580/758]  eta: 0:00:10  model_time: 0.0588 (0.0580)  evaluator_time: 0.0020 (0.0026)  time: 0.0623  data: 0.0006  mem: 970  max mem: 9362
+[2026-10-18 06:07:22 det.util.utils]: Test:  [590/758]  eta: 0:00:10  model_time: 0.0587 (0.0580)  evaluator_time: 0.0019 (0.0026)  time: 0.0616  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:23 det.util.utils]: Test:  [600/758]  eta: 0:00:09  model_time: 0.0581 (0.0580)  evaluator_time: 0.0019 (0.0026)  time: 0.0609  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:24 det.util.utils]: Test:  [610/758]  eta: 0:00:09  model_time: 0.0582 (0.0580)  evaluator_time: 0.0020 (0.0026)  time: 0.0611  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:24 det.util.utils]: Test:  [620/758]  eta: 0:00:08  model_time: 0.0583 (0.0580)  evaluator_time: 0.0019 (0.0026)  time: 0.0612  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:25 det.util.utils]: Test:  [630/758]  eta: 0:00:07  model_time: 0.0584 (0.0581)  evaluator_time: 0.0021 (0.0026)  time: 0.0624  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:26 det.util.utils]: Test:  [640/758]  eta: 0:00:07  model_time: 0.0595 (0.0581)  evaluator_time: 0.0022 (0.0026)  time: 0.0638  data: 0.0007  mem: 970  max mem: 9362
+[2026-10-18 06:07:26 det.util.utils]: Test:  [650/758]  eta: 0:00:06  model_time: 0.0594 (0.0581)  evaluator_time: 0.0022 (0.0026)  time: 0.0639  data: 0.0007  mem: 970  max mem: 9362
+[2026-10-18 06:07:27 det.util.utils]: Test:  [660/758]  eta: 0:00:06  model_time: 0.0591 (0.0582)  evaluator_time: 0.0020 (0.0026)  time: 0.0627  data: 0.0006  mem: 970  max mem: 9362
+[2026-10-18 06:07:27 det.util.utils]: Test:  [670/758]  eta: 0:00:05  model_time: 0.0581 (0.0582)  evaluator_time: 0.0019 (0.0026)  time: 0.0612  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:28 det.util.utils]: Test:  [680/758]  eta: 0:00:04  model_time: 0.0580 (0.0582)  evaluator_time: 0.0018 (0.0026)  time: 0.0607  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:29 det.util.utils]: Test:  [690/758]  eta: 0:00:04  model_time: 0.0582 (0.0582)  evaluator_time: 0.0018 (0.0026)  time: 0.0612  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:29 det.util.utils]: Test:  [700/758]  eta: 0:00:03  model_time: 0.0584 (0.0582)  evaluator_time: 0.0020 (0.0026)  time: 0.0618  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:30 det.util.utils]: Test:  [710/758]  eta: 0:00:02  model_time: 0.0583 (0.0582)  evaluator_time: 0.0019 (0.0025)  time: 0.0613  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:30 det.util.utils]: Test:  [720/758]  eta: 0:00:02  model_time: 0.0584 (0.0582)  evaluator_time: 0.0020 (0.0025)  time: 0.0618  data: 0.0005  mem: 970  max mem: 9362
+[2026-10-18 06:07:31 det.util.utils]: Test:  [730/758]  eta: 0:00:01  model_time: 0.0593 (0.0582)  evaluator_time: 0.0022 (0.0025)  time: 0.0630  data: 0.0006  mem: 970  max mem: 9362
+[2026-10-18 06:07:32 det.util.utils]: Test:  [740/758]  eta: 0:00:01  model_time: 0.0589 (0.0582)  evaluator_time: 0.0021 (0.0025)  time: 0.0630  data: 0.0006  mem: 970  max mem: 9362
+[2026-10-18 06:07:32 det.util.utils]: Test:  [750/758]  eta: 0:00:00  model_time: 0.0585 (0.0582)  evaluator_time: 0.0019 (0.0025)  time: 0.0624  data: 0.0006  mem: 970  max mem: 9362
+[2026-10-18 06:07:33 det.util.utils]: Test:  [757/758]  eta: 0:00:00  model_time: 0.0573 (0.0582)  evaluator_time: 0.0018 (0.0025)  time: 0.0608  data: 0.0005  mem: 970  max mem: 9362
+Test: Total time: 0:00:46 (0.0617 s / it)
+Test: Total time: 0:01:13 (0.0967 s / it)
+[2026-10-18 06:07:59 det.util.engine]: Averaged stats: model_time: 0.0573 (0.0740)  evaluator_time: 0.0018 (0.0025)
+WARNING [2026-10-18 06:07:59 py.warnings]: /home/ubuntu/slocal2/m2/third_party/Relation-DETR/util/utils.py:93: UserWarning: TypedStorage is deprecated. It will be removed in the future and UntypedStorage will be the only storage class. This should only matter to you if you are using storages directly.  To access UntypedStorage directly, use tensor.untyped_storage() instead of tensor.storage()
+  storage = torch.ByteStorage.from_buffer(buffer)
+
+[2026-10-18 06:08:02 det.util.engine]: Accumulating evaluation results...
+DONE (t=0.90s).
+IoU metric: bbox
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.007
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.023
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.043
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.043
+
+[2026-10-18 06:08:02 det.util.engine]: 
++------------------+------+-----+--------+--------+--------+
+| class            | imgs | gts | dets   | recall | ap     |
++------------------+------+-----+--------+--------+--------+
+| Bipolar Forceps  | 0    | 209 | 52431  | 0.200  | 0.000  |
+| Electric Cautery | 101  | 101 | 0      | 0.000  | 0.000  |
+| Forceps          | 130  | 154 | 0      | 0.000  | 0.000  |
+| Gauze            | 316  | 455 | 0      | 0.000  | 0.000  |
+| Hook             | 100  | 147 | 0      | 0.000  | 0.000  |
+| Mouth Gag        | 989  | 990 | 0      | 0.000  | 0.000  |
+| Needle Holders   | 510  | 512 | 129    | 0.002  | 0.000  |
+| Raspatory        | 75   | 76  | 0      | 0.000  | 0.000  |
+| Retractor        | 0    | 0   | 0      | -1.000 | -1.000 |
+| Scalpel          | 168  | 168 | 174    | 0.012  | 0.000  |
+| Scissors         | 390  | 391 | 0      | 0.000  | 0.000  |
+| Skewer           | 103  | 103 | 174666 | 0.816  | 0.001  |
+| Suction Cannula  | 507  | 509 | 0      | 0.000  | 0.000  |
+| Syringe          | 96   | 96  | 0      | 0.000  | 0.000  |
+| Tweezers         | 825  | 950 | 0      | 0.000  | 0.000  |
++------------------+------+-----+--------+--------+--------+
+| mean results     |      |     |        | 0.074  | 0.000  |
++------------------+------+-----+--------+--------+--------+
+[2026-10-18 06:08:02 accelerate.tracking]: [RANK 0] Successfully logged to TensorBoard
+[2026-10-18 06:08:02 det.util.utils]: [RANK 0] the best ap model is saved to /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_dtower/stage2pilot_cf_dcoco_H1smoke_seed42/work/best_ap.pth
+[2026-10-18 06:08:02 det.util.utils]: [RANK 0] the best ap50 model is saved to /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_dtower/stage2pilot_cf_dcoco_H1smoke_seed42/work/best_ap50.pth
+[2026-10-18 06:08:04 det.util.engine]: Epoch: [1]  [0/10]  eta: 0:00:10  lr: 0.000100  data_time: 0.0052  iter_time: 1.0352  loss: 58.8634 (58.8634)  loss_class: 2.1880 (2.1880)  loss_bbox: 0.2627 (0.2627)  loss_giou: 0.2673 (0.2673)  loss_class_0: 1.8190 (1.8190)  loss_bbox_0: 0.4872 (0.4872)  loss_giou_0: 0.5097 (0.5097)  loss_class_1: 1.8413 (1.8413)  loss_bbox_1: 0.4022 (0.4022)  loss_giou_1: 0.4515 (0.4515)  loss_class_2: 1.9042 (1.9042)  loss_bbox_2: 0.3758 (0.3758)  loss_giou_2: 0.3447 (0.3447)  loss_class_3: 2.0213 (2.0213)  loss_bbox_3: 0.3104 (0.3104)  loss_giou_3: 0.3116 (0.3116)  loss_class_4: 2.2590 (2.2590)  loss_bbox_4: 0.2545 (0.2545)  loss_giou_4: 0.2598 (0.2598)  loss_class_enc: 2.5373 (2.5373)  loss_bbox_enc: 0.6132 (0.6132)  loss_giou_enc: 0.5999 (0.5999)  loss_class_dn: 0.9813 (0.9813)  loss_bbox_dn: 1.3559 (1.3559)  loss_giou_dn: 0.9783 (0.9783)  loss_class_dn_0: 0.8008 (0.8008)  loss_bbox_dn_0: 1.4259 (1.4259)  loss_giou_dn_0: 1.1563 (1.1563)  loss_class_dn_1: 0.8823 (0.8823)  loss_bbox_dn_1: 1.3789 (1.3789)  loss_giou_dn_1: 1.0218 (1.0218)  loss_class_dn_2: 0.9259 (0.9259)  loss_bbox_dn_2: 1.3489 (1.3489)  loss_giou_dn_2: 0.9809 (0.9809)  loss_class_dn_3: 0.8347 (0.8347)  loss_bbox_dn_3: 1.3601 (1.3601)  loss_giou_dn_3: 0.9847 (0.9847)  loss_class_dn_4: 0.7120 (0.7120)  loss_bbox_dn_4: 1.3572 (1.3572)  loss_giou_dn_4: 0.9784 (0.9784)  loss_class_hybrid: 2.3785 (2.3785)  loss_bbox_hybrid: 0.1288 (0.1288)  loss_giou_hybrid: 0.1394 (0.1394)  loss_class_0_hybrid: 2.3719 (2.3719)  loss_bbox_0_hybrid: 0.2969 (0.2969)  loss_giou_0_hybrid: 0.2862 (0.2862)  loss_class_1_hybrid: 2.4635 (2.4635)  loss_bbox_1_hybrid: 0.1732 (0.1732)  loss_giou_1_hybrid: 0.1849 (0.1849)  loss_class_2_hybrid: 2.2689 (2.2689)  loss_bbox_2_hybrid: 0.1281 (0.1281)  loss_giou_2_hybrid: 0.1414 (0.1414)  loss_class_3_hybrid: 2.1048 (2.1048)  loss_bbox_3_hybrid: 0.1213 (0.1213)  loss_giou_3_hybrid: 0.1359 (0.1359)  loss_class_4_hybrid: 1.7576 (1.7576)  loss_bbox_4_hybrid: 0.1291 (0.1291)  loss_giou_4_hybrid: 0.1395 (0.1395)  loss_class_enc_hybrid: 3.4149 (3.4149)  loss_bbox_enc_hybrid: 0.2788 (0.2788)  loss_giou_enc_hybrid: 0.3349 (0.3349)  mem: 1001  max mem: 9362
+[2026-10-18 06:08:04 accelerate.tracking]: [RANK 0] Successfully logged to TensorBoard
+[2026-10-18 06:08:12 det.util.engine]: Averaged stats: lr: 0.000100  data_time: 0.0012  iter_time: 0.9325  loss: 51.8680 (53.6246)  loss_class: 1.6450 (2.0166)  loss_bbox: 0.2313 (0.2216)  loss_giou: 0.2480 (0.2547)  loss_class_0: 1.8190 (1.8363)  loss_bbox_0: 0.2524 (0.3259)  loss_giou_0: 0.2812 (0.3517)  loss_class_1: 2.0145 (2.2534)  loss_bbox_1: 0.2065 (0.2590)  loss_giou_1: 0.2654 (0.2869)  loss_class_2: 2.0677 (2.2715)  loss_bbox_2: 0.1719 (0.2395)  loss_giou_2: 0.1794 (0.2523)  loss_class_3: 2.0679 (2.5839)  loss_bbox_3: 0.1691 (0.2161)  loss_giou_3: 0.1905 (0.2403)  loss_class_4: 2.0524 (2.2276)  loss_bbox_4: 0.1772 (0.2234)  loss_giou_4: 0.2061 (0.2516)  loss_class_enc: 2.5373 (2.5420)  loss_bbox_enc: 0.4251 (0.4911)  loss_giou_enc: 0.5639 (0.5448)  loss_class_dn: 1.0013 (1.0540)  loss_bbox_dn: 0.7706 (0.9101)  loss_giou_dn: 0.6470 (0.6941)  loss_class_dn_0: 0.8951 (0.9401)  loss_bbox_dn_0: 1.1250 (1.1645)  loss_giou_dn_0: 0.9625 (0.9819)  loss_class_dn_1: 0.9629 (0.9783)  loss_bbox_dn_1: 0.8406 (0.9860)  loss_giou_dn_1: 0.7407 (0.7811)  loss_class_dn_2: 0.9802 (1.0189)  loss_bbox_dn_2: 0.7835 (0.9297)  loss_giou_dn_2: 0.6933 (0.7206)  loss_class_dn_3: 0.8347 (0.9343)  loss_bbox_dn_3: 0.7850 (0.9197)  loss_giou_dn_3: 0.6595 (0.7024)  loss_class_dn_4: 0.8257 (0.9840)  loss_bbox_dn_4: 0.7703 (0.9102)  loss_giou_dn_4: 0.6472 (0.6939)  loss_class_hybrid: 1.5882 (1.7058)  loss_bbox_hybrid: 0.1288 (0.1603)  loss_giou_hybrid: 0.1394 (0.1856)  loss_class_0_hybrid: 1.8948 (1.9384)  loss_bbox_0_hybrid: 0.1982 (0.2147)  loss_giou_0_hybrid: 0.2406 (0.2598)  loss_class_1_hybrid: 1.7866 (1.9001)  loss_bbox_1_hybrid: 0.1643 (0.1760)  loss_giou_1_hybrid: 0.1764 (0.2067)  loss_class_2_hybrid: 2.0191 (2.0098)  loss_bbox_2_hybrid: 0.1165 (0.1467)  loss_giou_2_hybrid: 0.1409 (0.1757)  loss_class_3_hybrid: 1.7432 (1.9758)  loss_bbox_3_hybrid: 0.1092 (0.1444)  loss_giou_3_hybrid: 0.1281 (0.1740)  loss_class_4_hybrid: 1.7576 (1.9258)  loss_bbox_4_hybrid: 0.1258 (0.1602)  loss_giou_4_hybrid: 0.1407 (0.1837)  loss_class_enc_hybrid: 3.2284 (3.1677)  loss_bbox_enc_hybrid: 0.2618 (0.2792)  loss_giou_enc_hybrid: 0.3349 (0.3403)
+[2026-10-18 06:08:12 accelerate.accelerator]: [RANK 0] Saving current state to /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_dtower/stage2pilot_cf_dcoco_H1smoke_seed42/work/checkpoints/checkpoint_1
+[2026-10-18 06:08:12 accelerate.checkpointing]: [RANK 0] Model weights saved in /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_dtower/stage2pilot_cf_dcoco_H1smoke_seed42/work/checkpoints/checkpoint_1/pytorch_model.bin
+[2026-10-18 06:08:12 accelerate.checkpointing]: [RANK 0] Optimizer state saved in /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_dtower/stage2pilot_cf_dcoco_H1smoke_seed42/work/checkpoints/checkpoint_1/optimizer.bin
+[2026-10-18 06:08:12 accelerate.checkpointing]: [RANK 0] Scheduler state saved in /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_dtower/stage2pilot_cf_dcoco_H1smoke_seed42/work/checkpoints/checkpoint_1/scheduler.bin
+[2026-10-18 06:08:12 accelerate.checkpointing]: [RANK 0] Sampler state for dataloader 0 saved in /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_dtower/stage2pilot_cf_dcoco_H1smoke_seed42/work/checkpoints/checkpoint_1/sampler.bin
+[2026-10-18 06:08:12 accelerate.checkpointing]: [RANK 0] Sampler state for dataloader 1 saved in /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_dtower/stage2pilot_cf_dcoco_H1smoke_seed42/work/checkpoints/checkpoint_1/sampler_1.bin
+[2026-10-18 06:08:12 accelerate.checkpointing]: [RANK 0] Gradient scaler state saved in /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_dtower/stage2pilot_cf_dcoco_H1smoke_seed42/work/checkpoints/checkpoint_1/scaler.pt
+[2026-10-18 06:08:12 accelerate.checkpointing]: [RANK 0] Random states saved in /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_dtower/stage2pilot_cf_dcoco_H1smoke_seed42/work/checkpoints/checkpoint_1/random_states_0.pkl
+[2026-10-18 06:08:12 det.__main__]: [RANK 0] Start evaluation
+[2026-10-18 06:08:13 det.util.utils]: Test:  [  0/758]  eta: 0:01:10  model_time: 0.0607 (0.0607)  evaluator_time: 0.0024 (0.0024)  time: 0.0936  data: 0.0304  mem: 971  max mem: 9740
+[2026-10-18 06:08:13 det.util.utils]: Test:  [ 10/758]  eta: 0:00:47  model_time: 0.0574 (0.0577)  evaluator_time: 0.0022 (0.0022)  time: 0.0631  data: 0.0032  mem: 971  max mem: 9740
+[2026-10-18 06:08:14 det.util.utils]: Test:  [ 20/758]  eta: 0:00:45  model_time: 0.0573 (0.0575)  evaluator_time: 0.0022 (0.0022)  time: 0.0602  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:14 det.util.utils]: Test:  [ 30/758]  eta: 0:00:44  model_time: 0.0573 (0.0575)  evaluator_time: 0.0023 (0.0022)  time: 0.0603  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:15 det.util.utils]: Test:  [ 40/758]  eta: 0:00:43  model_time: 0.0573 (0.0574)  evaluator_time: 0.0023 (0.0023)  time: 0.0603  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:16 det.util.utils]: Test:  [ 50/758]  eta: 0:00:43  model_time: 0.0573 (0.0575)  evaluator_time: 0.0023 (0.0022)  time: 0.0601  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:16 det.util.utils]: Test:  [ 60/758]  eta: 0:00:42  model_time: 0.0575 (0.0575)  evaluator_time: 0.0014 (0.0020)  time: 0.0597  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:17 det.util.utils]: Test:  [ 70/758]  eta: 0:00:41  model_time: 0.0573 (0.0574)  evaluator_time: 0.0014 (0.0020)  time: 0.0594  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:17 det.util.utils]: Test:  [ 80/758]  eta: 0:00:40  model_time: 0.0573 (0.0574)  evaluator_time: 0.0014 (0.0019)  time: 0.0595  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:18 det.util.utils]: Test:  [ 90/758]  eta: 0:00:40  model_time: 0.0576 (0.0575)  evaluator_time: 0.0015 (0.0019)  time: 0.0600  data: 0.0005  mem: 971  max mem: 9740
+[2026-10-18 06:08:19 det.util.utils]: Test:  [100/758]  eta: 0:00:39  model_time: 0.0576 (0.0575)  evaluator_time: 0.0015 (0.0019)  time: 0.0600  data: 0.0005  mem: 971  max mem: 9740
+[2026-10-18 06:08:19 det.util.utils]: Test:  [110/758]  eta: 0:00:39  model_time: 0.0574 (0.0575)  evaluator_time: 0.0015 (0.0018)  time: 0.0596  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:20 det.util.utils]: Test:  [120/758]  eta: 0:00:38  model_time: 0.0574 (0.0575)  evaluator_time: 0.0016 (0.0018)  time: 0.0597  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:20 det.util.utils]: Test:  [130/758]  eta: 0:00:37  model_time: 0.0576 (0.0575)  evaluator_time: 0.0016 (0.0018)  time: 0.0598  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:21 det.util.utils]: Test:  [140/758]  eta: 0:00:37  model_time: 0.0578 (0.0576)  evaluator_time: 0.0016 (0.0018)  time: 0.0601  data: 0.0005  mem: 971  max mem: 9740
+[2026-10-18 06:08:22 det.util.utils]: Test:  [150/758]  eta: 0:00:36  model_time: 0.0579 (0.0576)  evaluator_time: 0.0017 (0.0018)  time: 0.0602  data: 0.0005  mem: 971  max mem: 9740
+[2026-10-18 06:08:22 det.util.utils]: Test:  [160/758]  eta: 0:00:35  model_time: 0.0574 (0.0576)  evaluator_time: 0.0017 (0.0018)  time: 0.0599  data: 0.0005  mem: 971  max mem: 9740
+[2026-10-18 06:08:23 det.util.utils]: Test:  [170/758]  eta: 0:00:35  model_time: 0.0572 (0.0575)  evaluator_time: 0.0017 (0.0018)  time: 0.0596  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:23 det.util.utils]: Test:  [180/758]  eta: 0:00:34  model_time: 0.0573 (0.0575)  evaluator_time: 0.0017 (0.0018)  time: 0.0596  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:24 det.util.utils]: Test:  [190/758]  eta: 0:00:34  model_time: 0.0573 (0.0575)  evaluator_time: 0.0016 (0.0018)  time: 0.0596  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:24 det.util.utils]: Test:  [200/758]  eta: 0:00:33  model_time: 0.0572 (0.0575)  evaluator_time: 0.0016 (0.0018)  time: 0.0594  data: 0.0005  mem: 971  max mem: 9740
+[2026-10-18 06:08:25 det.util.utils]: Test:  [210/758]  eta: 0:00:32  model_time: 0.0572 (0.0575)  evaluator_time: 0.0015 (0.0017)  time: 0.0594  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:26 det.util.utils]: Test:  [220/758]  eta: 0:00:32  model_time: 0.0574 (0.0575)  evaluator_time: 0.0015 (0.0017)  time: 0.0596  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:26 det.util.utils]: Test:  [230/758]  eta: 0:00:31  model_time: 0.0573 (0.0575)  evaluator_time: 0.0015 (0.0017)  time: 0.0596  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:27 det.util.utils]: Test:  [240/758]  eta: 0:00:31  model_time: 0.0572 (0.0575)  evaluator_time: 0.0015 (0.0017)  time: 0.0594  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:27 det.util.utils]: Test:  [250/758]  eta: 0:00:30  model_time: 0.0573 (0.0575)  evaluator_time: 0.0015 (0.0017)  time: 0.0594  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:28 det.util.utils]: Test:  [260/758]  eta: 0:00:29  model_time: 0.0574 (0.0575)  evaluator_time: 0.0015 (0.0017)  time: 0.0596  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:29 det.util.utils]: Test:  [270/758]  eta: 0:00:29  model_time: 0.0574 (0.0575)  evaluator_time: 0.0016 (0.0017)  time: 0.0599  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:29 det.util.utils]: Test:  [280/758]  eta: 0:00:28  model_time: 0.0574 (0.0575)  evaluator_time: 0.0015 (0.0017)  time: 0.0598  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:30 det.util.utils]: Test:  [290/758]  eta: 0:00:28  model_time: 0.0574 (0.0575)  evaluator_time: 0.0015 (0.0017)  time: 0.0595  data: 0.0005  mem: 971  max mem: 9740
+[2026-10-18 06:08:30 det.util.utils]: Test:  [300/758]  eta: 0:00:27  model_time: 0.0574 (0.0575)  evaluator_time: 0.0015 (0.0017)  time: 0.0596  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:31 det.util.utils]: Test:  [310/758]  eta: 0:00:26  model_time: 0.0574 (0.0575)  evaluator_time: 0.0015 (0.0017)  time: 0.0595  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:32 det.util.utils]: Test:  [320/758]  eta: 0:00:26  model_time: 0.0573 (0.0574)  evaluator_time: 0.0015 (0.0017)  time: 0.0594  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:32 det.util.utils]: Test:  [330/758]  eta: 0:00:25  model_time: 0.0573 (0.0574)  evaluator_time: 0.0015 (0.0017)  time: 0.0595  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:33 det.util.utils]: Test:  [340/758]  eta: 0:00:25  model_time: 0.0574 (0.0574)  evaluator_time: 0.0015 (0.0017)  time: 0.0595  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:33 det.util.utils]: Test:  [350/758]  eta: 0:00:24  model_time: 0.0573 (0.0574)  evaluator_time: 0.0015 (0.0017)  time: 0.0595  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:34 det.util.utils]: Test:  [360/758]  eta: 0:00:23  model_time: 0.0573 (0.0574)  evaluator_time: 0.0015 (0.0017)  time: 0.0594  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:35 det.util.utils]: Test:  [370/758]  eta: 0:00:23  model_time: 0.0573 (0.0574)  evaluator_time: 0.0015 (0.0017)  time: 0.0594  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:35 det.util.utils]: Test:  [380/758]  eta: 0:00:22  model_time: 0.0574 (0.0574)  evaluator_time: 0.0015 (0.0017)  time: 0.0596  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:36 det.util.utils]: Test:  [390/758]  eta: 0:00:22  model_time: 0.0574 (0.0574)  evaluator_time: 0.0016 (0.0017)  time: 0.0597  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:36 det.util.utils]: Test:  [400/758]  eta: 0:00:21  model_time: 0.0574 (0.0574)  evaluator_time: 0.0015 (0.0017)  time: 0.0596  data: 0.0005  mem: 971  max mem: 9740
+[2026-10-18 06:08:37 det.util.utils]: Test:  [410/758]  eta: 0:00:20  model_time: 0.0573 (0.0574)  evaluator_time: 0.0015 (0.0017)  time: 0.0594  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:38 det.util.utils]: Test:  [420/758]  eta: 0:00:20  model_time: 0.0573 (0.0574)  evaluator_time: 0.0015 (0.0017)  time: 0.0594  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:38 det.util.utils]: Test:  [430/758]  eta: 0:00:19  model_time: 0.0574 (0.0574)  evaluator_time: 0.0015 (0.0017)  time: 0.0595  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:39 det.util.utils]: Test:  [440/758]  eta: 0:00:18  model_time: 0.0573 (0.0574)  evaluator_time: 0.0015 (0.0017)  time: 0.0594  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:39 det.util.utils]: Test:  [450/758]  eta: 0:00:18  model_time: 0.0573 (0.0574)  evaluator_time: 0.0015 (0.0017)  time: 0.0594  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:40 det.util.utils]: Test:  [460/758]  eta: 0:00:17  model_time: 0.0573 (0.0574)  evaluator_time: 0.0015 (0.0017)  time: 0.0595  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:41 det.util.utils]: Test:  [470/758]  eta: 0:00:17  model_time: 0.0572 (0.0574)  evaluator_time: 0.0015 (0.0017)  time: 0.0596  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:41 det.util.utils]: Test:  [480/758]  eta: 0:00:16  model_time: 0.0574 (0.0574)  evaluator_time: 0.0015 (0.0017)  time: 0.0596  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:42 det.util.utils]: Test:  [490/758]  eta: 0:00:16  model_time: 0.0574 (0.0574)  evaluator_time: 0.0015 (0.0017)  time: 0.0596  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:42 det.util.utils]: Test:  [500/758]  eta: 0:00:15  model_time: 0.0573 (0.0574)  evaluator_time: 0.0015 (0.0017)  time: 0.0595  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:43 det.util.utils]: Test:  [510/758]  eta: 0:00:14  model_time: 0.0573 (0.0574)  evaluator_time: 0.0015 (0.0017)  time: 0.0595  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:44 det.util.utils]: Test:  [520/758]  eta: 0:00:14  model_time: 0.0574 (0.0574)  evaluator_time: 0.0015 (0.0016)  time: 0.0595  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:44 det.util.utils]: Test:  [530/758]  eta: 0:00:13  model_time: 0.0573 (0.0574)  evaluator_time: 0.0015 (0.0016)  time: 0.0594  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:45 det.util.utils]: Test:  [540/758]  eta: 0:00:13  model_time: 0.0573 (0.0574)  evaluator_time: 0.0015 (0.0016)  time: 0.0594  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:45 det.util.utils]: Test:  [550/758]  eta: 0:00:12  model_time: 0.0573 (0.0574)  evaluator_time: 0.0015 (0.0016)  time: 0.0594  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:46 det.util.utils]: Test:  [560/758]  eta: 0:00:11  model_time: 0.0573 (0.0574)  evaluator_time: 0.0015 (0.0016)  time: 0.0594  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:47 det.util.utils]: Test:  [570/758]  eta: 0:00:11  model_time: 0.0573 (0.0574)  evaluator_time: 0.0014 (0.0016)  time: 0.0594  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:47 det.util.utils]: Test:  [580/758]  eta: 0:00:10  model_time: 0.0573 (0.0574)  evaluator_time: 0.0014 (0.0016)  time: 0.0594  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:48 det.util.utils]: Test:  [590/758]  eta: 0:00:10  model_time: 0.0573 (0.0574)  evaluator_time: 0.0015 (0.0016)  time: 0.0594  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:48 det.util.utils]: Test:  [600/758]  eta: 0:00:09  model_time: 0.0574 (0.0574)  evaluator_time: 0.0016 (0.0016)  time: 0.0599  data: 0.0005  mem: 971  max mem: 9740
+[2026-10-18 06:08:49 det.util.utils]: Test:  [610/758]  eta: 0:00:08  model_time: 0.0574 (0.0574)  evaluator_time: 0.0016 (0.0016)  time: 0.0599  data: 0.0005  mem: 971  max mem: 9740
+[2026-10-18 06:08:50 det.util.utils]: Test:  [620/758]  eta: 0:00:08  model_time: 0.0573 (0.0574)  evaluator_time: 0.0015 (0.0016)  time: 0.0595  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:50 det.util.utils]: Test:  [630/758]  eta: 0:00:07  model_time: 0.0574 (0.0574)  evaluator_time: 0.0015 (0.0016)  time: 0.0594  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:51 det.util.utils]: Test:  [640/758]  eta: 0:00:07  model_time: 0.0574 (0.0574)  evaluator_time: 0.0015 (0.0016)  time: 0.0596  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:51 det.util.utils]: Test:  [650/758]  eta: 0:00:06  model_time: 0.0574 (0.0574)  evaluator_time: 0.0015 (0.0016)  time: 0.0595  data: 0.0005  mem: 971  max mem: 9740
+[2026-10-18 06:08:52 det.util.utils]: Test:  [660/758]  eta: 0:00:05  model_time: 0.0574 (0.0574)  evaluator_time: 0.0015 (0.0016)  time: 0.0600  data: 0.0005  mem: 971  max mem: 9740
+[2026-10-18 06:08:53 det.util.utils]: Test:  [670/758]  eta: 0:00:05  model_time: 0.0582 (0.0574)  evaluator_time: 0.0017 (0.0016)  time: 0.0606  data: 0.0005  mem: 971  max mem: 9740
+[2026-10-18 06:08:53 det.util.utils]: Test:  [680/758]  eta: 0:00:04  model_time: 0.0582 (0.0574)  evaluator_time: 0.0017 (0.0016)  time: 0.0607  data: 0.0005  mem: 971  max mem: 9740
+[2026-10-18 06:08:54 det.util.utils]: Test:  [690/758]  eta: 0:00:04  model_time: 0.0581 (0.0575)  evaluator_time: 0.0018 (0.0016)  time: 0.0606  data: 0.0005  mem: 971  max mem: 9740
+[2026-10-18 06:08:54 det.util.utils]: Test:  [700/758]  eta: 0:00:03  model_time: 0.0579 (0.0575)  evaluator_time: 0.0017 (0.0016)  time: 0.0603  data: 0.0005  mem: 971  max mem: 9740
+[2026-10-18 06:08:55 det.util.utils]: Test:  [710/758]  eta: 0:00:02  model_time: 0.0576 (0.0575)  evaluator_time: 0.0015 (0.0016)  time: 0.0599  data: 0.0005  mem: 971  max mem: 9740
+[2026-10-18 06:08:56 det.util.utils]: Test:  [720/758]  eta: 0:00:02  model_time: 0.0580 (0.0575)  evaluator_time: 0.0015 (0.0016)  time: 0.0602  data: 0.0005  mem: 971  max mem: 9740
+[2026-10-18 06:08:56 det.util.utils]: Test:  [730/758]  eta: 0:00:01  model_time: 0.0580 (0.0575)  evaluator_time: 0.0015 (0.0016)  time: 0.0602  data: 0.0005  mem: 971  max mem: 9740
+[2026-10-18 06:08:57 det.util.utils]: Test:  [740/758]  eta: 0:00:01  model_time: 0.0575 (0.0575)  evaluator_time: 0.0015 (0.0016)  time: 0.0597  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:57 det.util.utils]: Test:  [750/758]  eta: 0:00:00  model_time: 0.0574 (0.0575)  evaluator_time: 0.0015 (0.0016)  time: 0.0595  data: 0.0004  mem: 971  max mem: 9740
+[2026-10-18 06:08:58 det.util.utils]: Test:  [757/758]  eta: 0:00:00  model_time: 0.0573 (0.0575)  evaluator_time: 0.0014 (0.0016)  time: 0.0594  data: 0.0004  mem: 972  max mem: 9740
+Test: Total time: 0:00:45 (0.0598 s / it)
+Test: Total time: 0:01:53 (0.1501 s / it)
+[2026-10-18 06:10:06 det.util.engine]: Averaged stats: model_time: 0.0573 (0.0990)  evaluator_time: 0.0014 (0.0016)
+[2026-10-18 06:10:08 det.util.engine]: Accumulating evaluation results...
+DONE (t=0.44s).
+IoU metric: bbox
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.000
+ Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.005
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.022
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.049
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.000
+ Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.049
+
+[2026-10-18 06:10:08 det.util.engine]: 
++------------------+------+-----+--------+--------+--------+
+| class            | imgs | gts | dets   | recall | ap     |
++------------------+------+-----+--------+--------+--------+
+| Bipolar Forceps  | 0    | 209 | 0      | 0.000  | 0.000  |
+| Electric Cautery | 101  | 101 | 0      | 0.000  | 0.000  |
+| Forceps          | 130  | 154 | 0      | 0.000  | 0.000  |
+| Gauze            | 316  | 455 | 0      | 0.000  | 0.000  |
+| Hook             | 100  | 147 | 0      | 0.000  | 0.000  |
+| Mouth Gag        | 989  | 990 | 0      | 0.000  | 0.000  |
+| Needle Holders   | 510  | 512 | 0      | 0.000  | 0.000  |
+| Raspatory        | 75   | 76  | 0      | 0.000  | 0.000  |
+| Retractor        | 0    | 0   | 0      | -1.000 | -1.000 |
+| Scalpel          | 168  | 168 | 0      | 0.000  | 0.000  |
+| Scissors         | 390  | 391 | 0      | 0.000  | 0.000  |
+| Skewer           | 103  | 103 | 227400 | 0.883  | 0.001  |
+| Suction Cannula  | 507  | 509 | 0      | 0.000  | 0.000  |
+| Syringe          | 96   | 96  | 0      | 0.000  | 0.000  |
+| Tweezers         | 825  | 950 | 0      | 0.000  | 0.000  |
++------------------+------+-----+--------+--------+--------+
+| mean results     |      |     |        | 0.063  | 0.000  |
++------------------+------+-----+--------+--------+--------+
+[2026-10-18 06:10:08 accelerate.tracking]: [RANK 0] Successfully logged to TensorBoard
+[2026-10-18 06:10:08 det.__main__]: [RANK 0] Training time: 0:03:33
+[2026-10-18 06:10:08 accelerate.tracking]: [RANK 0] TensorBoard writer closed

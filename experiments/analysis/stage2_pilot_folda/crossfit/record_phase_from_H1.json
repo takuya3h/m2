@@ -1,0 +1,69 @@
+{
+  "task_id": "T-2026-10-18-stage2-pilot-folda",
+  "head": "/home/ubuntu/slocal2/m2/experiments/phase1/stage2pilot_cf_ptower_004_P15_C_L8_w0.3_h30_foldAH1_coco_lr0.0001_seed42/checkpoints/best.pth",
+  "head_sha256": "3d176ae48f4a3582f782a04082de72f2c3ad92c7a455c44eef0b4df27330c8fd",
+  "cache": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_ptower/H1/all_gap.npz",
+  "cache_sha256": "682538b499ebafe209d583930aa80178adeacee4f0d3a1fdf5773d3b16b9dafc",
+  "part": "train",
+  "videos": [
+    "02",
+    "03",
+    "08",
+    "13",
+    "14"
+  ],
+  "frames": 5582,
+  "class_order": [
+    "anesthesia",
+    "closure",
+    "design",
+    "disinfection",
+    "dissection",
+    "dressing",
+    "hemostasis",
+    "incision",
+    "irrigation"
+  ],
+  "phase_jaccard": 0.30676248114032006,
+  "phase_accuracy": 0.5204227875313507,
+  "per_video": {
+    "02": {
+      "phase_jaccard": 0.28321785221664914,
+      "phase_accuracy": 0.368763557483731
+    },
+    "03": {
+      "phase_jaccard": 0.3763429575603274,
+      "phase_accuracy": 0.7998163452708907
+    },
+    "08": {
+      "phase_jaccard": 0.2611508501981521,
+      "phase_accuracy": 0.5271428571428571
+    },
+    "13": {
+      "phase_jaccard": 0.326226995690784,
+      "phase_accuracy": 0.5681265206812652
+    },
+    "14": {
+      "phase_jaccard": 0.33644541797118915,
+      "phase_accuracy": 0.36408839779005525
+    }
+  },
+  "files": {
+    "P0": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/cf_phase_from_H1/P0_train.npz",
+      "shape": [
+        5582,
+        9
+      ],
+      "sha256": "8870b9893f67041ce9ea0c12e70234dfa44724729fef549fb64938befa735733"
+    },
+    "P-GT": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/cf_phase_from_H1/P-GT_train.npz",
+      "shape": [
+        5582,
+        9
+      ],
+      "sha256": "2f92de5e11f002c10002da5719573f505fbff08e63581c1bd0d508fe38de045c"
+    }
+  }
+}

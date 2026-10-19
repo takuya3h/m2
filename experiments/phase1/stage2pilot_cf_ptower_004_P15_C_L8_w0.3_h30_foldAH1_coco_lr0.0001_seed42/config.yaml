@@ -1,0 +1,83 @@
+task_id: T-2026-10-18-stage2-pilot-folda
+step: stage2pilot_cf_ptower
+action: train
+data_setting: P15
+fold: AH1
+seed: 42
+init: coco
+ft_lr: 0.0001
+ft_weight_decay: 0.0001
+ft_batch_size: 16
+ft_accum_steps: 4
+ft_epochs: 36
+ft_patience: 4
+ft_lr_decay: 0.1
+backbone_tag: coco_r50_ft800_lr0.0001_cfH1
+checkpoint: null
+verify_determinism: false
+candidate: C
+layers: 8
+smoothing_weight: 0.3
+history: 30
+epochs: 50
+patience: 10
+lr: 0.0005
+weight_decay: 0.01
+warmup_epochs: 2
+maps: 64
+desc_suffix: _coco_lr0.0001
+device: cuda:0
+cache: /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/cf_ptower/H1/all_gap.npz
+manifest_dir: data/processed/phase_manifest
+batch_size: 16
+workers: 4
+pin_memory: false
+crossfit:
+  half: H1
+  train_videos:
+  - '01'
+  - '06'
+  - '11'
+  - '12'
+  - '15'
+  unofficial: T-2026-10-18-stage2-pilot-folda
+data:
+  videos:
+    test:
+    - '04'
+    - '05'
+    - '07'
+    val:
+    - '09'
+    - '10'
+    train:
+    - '01'
+    - '06'
+    - '11'
+    - '12'
+    - '15'
+  class_counts:
+  - 134
+  - 1574
+  - 78
+  - 11
+  - 1530
+  - 12
+  - 346
+  - 352
+  - 38
+class_weights:
+- 0.29475889669083394
+- 0.025093832373933766
+- 0.5063806686739967
+- 3.5906992869610677
+- 0.025815485069654732
+- 3.2914743463809786
+- 0.11415517964327093
+- 0.11220935271753336
+- 1.03941295148873
+receptive_field: 1021
+selection_metric: phase_jaccard
+cache_sha256: 682538b499ebafe209d583930aa80178adeacee4f0d3a1fdf5773d3b16b9dafc
+source_sha256: 4ec5b57451f46d66473913361203e65ae1460222fd57860bd126e0d0ef2aeb5e
+contract_sha256: a58a1dc1023f28a1b3800cedd2924f3ae53e6c92c7c1d8272d539e179d09c04b

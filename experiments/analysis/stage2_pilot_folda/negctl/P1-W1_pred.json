@@ -1,0 +1,71 @@
+{
+  "task_id": "T-2026-10-18-stage2-pilot-folda",
+  "cfg": "configs/stage2pilot/pd_film_d9.py",
+  "det_ckpt": "/home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth",
+  "det_ckpt_sha256": "30d199b15201cf3c03954852d8acc6fb58fe5349baef2fd200e877237ff682c4",
+  "iface_state": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/pd_ckpt/stage2pilot_pd_P1-W1_empty_seed42/best_t1b.pth",
+  "fixed_table": null,
+  "perturb": false,
+  "signal_val": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P0_val.npz",
+  "zero_ctx": false,
+  "dim": 9,
+  "videos": [
+    "09",
+    "10"
+  ],
+  "eval_detection_mAP": 0.7302817479573869,
+  "load_report": {
+    "missing_from_ckpt": [
+      "phase_iface.mlp.0.bias",
+      "phase_iface.mlp.0.weight",
+      "phase_iface.mlp.2.bias",
+      "phase_iface.mlp.2.weight"
+    ],
+    "unexpected_in_ckpt": [],
+    "missing_are_interface_only": true,
+    "iface_state_keys": [
+      "phase_iface.mlp.0.bias",
+      "phase_iface.mlp.0.weight",
+      "phase_iface.mlp.2.bias",
+      "phase_iface.mlp.2.weight"
+    ]
+  },
+  "non_interface_digest": "4fed85166852cd54f07071a5b9ce57804828e95c23148db11bf7bf0afe08ce60",
+  "interface_params": 266880,
+  "metrics": {
+    "AP": 0.7302817479573869,
+    "AP50": 0.8547439123902871,
+    "per_class_ap": {
+      "Bipolar Forceps": 0.7882709561618534,
+      "Electric Cautery": 0.9655292313582204,
+      "Forceps": 0.3525539526360015,
+      "Gauze": 0.28666799256721315,
+      "Hook": 0.6404386313294123,
+      "Mouth Gag": 0.7940463863368364,
+      "Needle Holders": 0.8473977424605218,
+      "Raspatory": 0.8114057999873966,
+      "Retractor": NaN,
+      "Scalpel": 0.9130190803785606,
+      "Scissors": 0.7064219978410311,
+      "Skewer": 0.9513742411635486,
+      "Suction Cannula": 0.8307397196148909,
+      "Syringe": 0.5502298892806855,
+      "Tweezers": 0.7858488502872433
+    },
+    "n_images": 1515,
+    "target_AP": 0.8028599933944089,
+    "target_missing": [],
+    "control_AP": 0.674325737201546,
+    "control_missing": [],
+    "per_video_AP": {
+      "09": 0.7076414319597655,
+      "10": 0.6432800839625853
+    }
+  },
+  "diff_vs_ref": {
+    "comparable": true,
+    "max_abs_score_diff": 0.5906813442707062,
+    "max_abs_bbox_diff_px": 1954.106918334961,
+    "label_mismatch": 332219
+  }
+}

@@ -1,0 +1,8 @@
+- [ ] 2026-10-18 [cc] 非公式の予備測定（折り A、今ある塔）。結果は関門の判定と設計の判断に使わない。全値は experiments/analysis/stage2_pilot_folda/REPORT.md（T-2026-10-18-stage2-pilot-folda）
+- [ ] 2026-10-18 [cc] 利用者の決定: D3 の予測のトークンは後処理後の出力の重複しない query の上位 K（D0-INST-UQ）。字面どおりの読みでは上位 K の 45% が同じ query の重複だった。SPEC §3 の書き方を直すかは未決（T-2026-10-18-stage2-pilot-folda）
+- [ ] 2026-10-18 [cc] 利用者の決定: PD は seed 42 だけ（amendments 3 件目）、PD の止め方の上限は 8 から 4 epoch（4 件目、締め切りのため）。PD では R と §5.2 規則 2 を出していない。本測定で seed と上限を戻すかは未決（T-2026-10-18-stage2-pilot-folda）
+- [ ] 2026-10-18 [cc] 空の腕の幅 R は D1・D3 で構造上 0（零入力・トークン 0 個では勾配が届かない）。FiLM（D2・P1）の空の腕は定数の変調を学び、陰性対照（信号を入れ替えても出力が同じ）は FiLM だけが通らない。完了判定 k と Task D-5 の対照の設計を見直す必要（T-2026-10-18-stage2-pilot-folda）
+- [ ] 2026-10-18 [cc] 交差適合版の送り手は確定塔の val より大きく弱い（検出 train mAP 0.4002 対 val 0.7273、工程 train Jaccard 0.2449 対 val 0.7762）。半分のデータで学ぶ交差適合用の塔では、予測-CF の腕の学習時の信号が評価時より弱くなる。本測定での二分割の粒度（5 分割など）は未決（T-2026-10-18-stage2-pilot-folda）
+- [ ] 2026-10-18 [cc] andrew の GPU 2 枚の DDP は NCCL_P2P_DISABLE=1 が要る（IOMMU で P2P の all_reduce が無言で止まる）。工程塔の fine-tune は caching allocator の確保が 42 GB まで膨らみ、PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True で 28〜29 GB に収まった（T-2026-10-18-stage2-pilot-folda）
+- [ ] 2026-10-18 [cc] §2 の時刻の道具は因果の予測（P0）を −1／−2 と判定する（情報の時刻と予測の遅れを区別できない）。構成からの検査（先頭から t までの特徴だけを時間ヘッドに通す）で同時刻を確かめた。道具の改修は未決（T-2026-10-18-stage2-pilot-folda）
+- [ ] 2026-10-19 [cc] 結果の要点（非公式）: 正解の腕で PD の標的群 AP は P1 +0.020〜+0.023、P2L +0.014、P3 はほぼ零。DP は D1-L1 の全腕で Jaccard 約 +0.009、D1-L2・D3 は Jaccard と accuracy が逆向き。予測-CF は予測-noCF より小さい（交差適合版の送り手が弱い）。§5.3 の予測は 6 が当たり、4 は 9 型中 3（T-2026-10-18-stage2-pilot-folda）

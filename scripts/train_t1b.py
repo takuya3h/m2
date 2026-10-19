@@ -122,7 +122,32 @@ def resolve_phase_ctx_loader(source: str):
     return load_phase_ctx
 
 
-def build_imgid_to_ctx(coco, ctx_by_frame: dict):
+def load_signal_npz(path) -> dict:
+    """frame_id -> 信号（float32）。``np.savez(frame_ids=, x=)`` の形（scripts/stage2pilot/common.save_signal）。
+
+    `--signal-train/--signal-val` を渡したときだけ使う（契約 T-2026-10-18-stage2-pilot-folda）。
+    次元は 9 に限らない（正解 ⊕ 予測の 18 など）。
+    """
+    d = np.load(path)
+    x = d["x"].astype(np.float32)  # d["x"] は参照のたびに全体を読み直すので一度だけ読む
+    return {str(fid): x[i] for i, fid in enumerate(d["frame_ids"])}
+
+
+def resolve_ctx_sources(args):
+    """(train の ctx, val の ctx, 次元) を返す。既定は従来どおり `--phase-source` の loader（9 次元）。"""
+    if args.signal_train or args.signal_val:
+        if not (args.signal_train and args.signal_val):
+            raise SystemExit("[t1b] --signal-train と --signal-val は両方渡す")
+        tr, va = load_signal_npz(args.signal_train), load_signal_npz(args.signal_val)
+        dims = {v.shape[0] for v in tr.values()} | {v.shape[0] for v in va.values()}
+        if len(dims) != 1:
+            raise SystemExit(f"[t1b] 信号の次元が揃わない: {dims}")
+        return tr, va, dims.pop()
+    loader = resolve_phase_ctx_loader(args.phase_source)
+    return loader("train"), loader("val"), NUM_PHASES
+
+
+def build_imgid_to_ctx(coco, ctx_by_frame: dict, dim: int = NUM_PHASES):
     """coco.imgs[image_id].file_name の stem を frame_id とみなし image_id->ctx を作る。
 
     欠落（検出 frame に phase ctx 無し）は zero ctx（=恒等 FiLM）で fail-safe。件数を返す。
@@ -132,7 +157,7 @@ def build_imgid_to_ctx(coco, ctx_by_frame: dict):
         fid = Path(info["file_name"]).stem
         ctx = ctx_by_frame.get(fid)
         if ctx is None:
-            ctx = np.zeros(NUM_PHASES, dtype=np.float32)
+            ctx = np.zeros(dim, dtype=np.float32)
             miss += 1
         imgid_to_ctx[image_id] = ctx
     return imgid_to_ctx, miss
@@ -168,11 +193,16 @@ def detector_ckpt(seed: int) -> Path:
     return RELDETR / f"checkpoints/incoming/seed{seed}/best_ap.pth"
 
 
-def build_model(device, seed: int, model_cfg: str = MODEL_CFG):
+def resolve_detector_ckpt(seed: int, override=None) -> Path:
+    """`--det-ckpt` を渡したときだけそれを使う。既定は従来どおり ``detector_ckpt(seed)``。"""
+    return Path(override) if override else detector_ckpt(seed)
+
+
+def build_model(device, seed: int, model_cfg: str = MODEL_CFG, ckpt_override=None):
     from util.lazy_load import Config
     from util.utils import load_checkpoint, load_state_dict
     model = Config(model_cfg).model
-    ck = detector_ckpt(seed)
+    ck = resolve_detector_ckpt(seed, ckpt_override)
     if not ck.exists():
         raise FileNotFoundError(f"学習済み検出器 ckpt が無い: {ck}（s0_01{{6,7,8}} を転送せよ）")
     ckpt = load_checkpoint(str(ck))
@@ -191,19 +221,19 @@ def register_classes(model, det_loader):
     model.register_buffer("_classes_", torch.tensor(encode_labels(classes)))
 
 
-def ctx_for_targets(targets, imgid_to_ctx, device, zero_ctx: bool):
-    """det バッチの targets（image_id 付き）→ (B,9) phase context。zero_ctx 対照は 0。"""
+def ctx_for_targets(targets, imgid_to_ctx, device, zero_ctx: bool, dim: int = NUM_PHASES):
+    """det バッチの targets（image_id 付き）→ (B,dim) phase context。zero_ctx 対照は 0。"""
     B = len(targets)
     if zero_ctx:
-        return torch.zeros(B, NUM_PHASES, device=device)
-    rows = [imgid_to_ctx.get(int(t["image_id"]), np.zeros(NUM_PHASES, dtype=np.float32))
+        return torch.zeros(B, dim, device=device)
+    rows = [imgid_to_ctx.get(int(t["image_id"]), np.zeros(dim, dtype=np.float32))
             for t in targets]
     return torch.from_numpy(np.stack(rows)).to(device)
 
 
 @torch.no_grad()
 def eval_detection(model, loader, imgid_to_ctx, device, zero_ctx, limit=None,
-                   collect_predictions=False):
+                   collect_predictions=False, dim: int = NUM_PHASES):
     """val 検出評価。``collect_predictions=True`` のときだけ per-image 予測も返す。
 
     戻り値の arity を既定では変えない（既存呼び出しは無改変で動く）。
@@ -222,7 +252,7 @@ def eval_detection(model, loader, imgid_to_ctx, device, zero_ctx, limit=None,
         if limit is not None and i >= limit:
             break
         images = [img.to(device) for img in images]
-        model.set_phase_context(ctx_for_targets(targets, imgid_to_ctx, device, zero_ctx))
+        model.set_phase_context(ctx_for_targets(targets, imgid_to_ctx, device, zero_ctx, dim))
         outputs = model(images)
         outputs = [{k: v.to("cpu") for k, v in t.items()} for t in outputs]
         evaluator.update({t["image_id"]: o for t, o in zip(targets, outputs)})
@@ -254,11 +284,38 @@ def set_trainable(model, mode: str):
 
     注入層は FiLM の ``phase_film.*`` / CA の ``phase_embed|phase_attn|phase_norm.*`` を ``phase`` で一括選択
     （base 検出器に ``phase`` を含む param は無いので film/ca どちらでも安全）。
+    w2=注入層 + decoder の最終層とその層のクラスと box のヘッド（契約 T-2026-10-18-stage2-pilot-folda の W2）。
     """
     if mode == "film":
         for name, p in model.named_parameters():
             p.requires_grad_("phase" in name)
+    elif mode == "w2":
+        from stage2pilot.pd_model import w2_parameter_names
+        w2 = set(w2_parameter_names(model))
+        for name, p in model.named_parameters():
+            p.requires_grad_("phase" in name or name in w2)
     # mode == "all" は config の freeze_indices(backbone) 以外すべて学習（既定の requires_grad）。
+
+
+def frozen_digest(model) -> str:
+    """学習しない重みと、注入層以外の buffer の要約値（学習の前後で同じであることの確認用）。"""
+    import hashlib
+    trainable = {n for n, p in model.named_parameters() if p.requires_grad}
+    h = hashlib.sha256()
+    for k, v in sorted(model.state_dict().items()):
+        if k in trainable or k.startswith("phase"):
+            continue
+        h.update(k.encode())
+        h.update(v.detach().cpu().contiguous().float().numpy().tobytes())
+    return h.hexdigest()
+
+
+def trainable_state(model) -> dict:
+    """学習対象の重みと注入層の buffer だけの state（`--save-trainable-only`）。"""
+    names = {n for n, p in model.named_parameters() if p.requires_grad}
+    state = {k: v.detach().cpu() for k, v in model.state_dict().items()
+             if k in names or k.startswith("phase")}
+    return state
 
 
 def main():
@@ -275,19 +332,27 @@ def main():
     # 明示 override（T1B_WORK_DIR / T1B_RUN_NAME と同じ作法）。phase ctx の次元を変える段
     # （正解 ⊕ 予測 = 18-d）で num_phases 違いの model config を指すために要る。
     model_cfg = os.environ.get("T1B_MODEL_CFG") or model_cfg
-    model = build_model(device, args.seed, model_cfg)
+    model = build_model(device, args.seed, model_cfg, ckpt_override=args.det_ckpt)
     register_classes(model, det_train)
     set_trainable(model, args.trainable)
+    frozen_before = frozen_digest(model) if args.save_trainable_only else None
+    if args.fixed_table:
+        model.set_fixed_table(np.asarray(json.loads(Path(args.fixed_table).read_text())["B"], dtype=np.float32))
 
-    phase_ctx_loader = resolve_phase_ctx_loader(args.phase_source)
-    ctx_tr = build_imgid_to_ctx(det_train.dataset.coco, phase_ctx_loader("train"))
-    ctx_va = build_imgid_to_ctx(det_val.dataset.coco, phase_ctx_loader("val"))
+    ctx_train_src, ctx_val_src, ctx_dim = resolve_ctx_sources(args)
+    ctx_tr = build_imgid_to_ctx(det_train.dataset.coco, ctx_train_src, ctx_dim)
+    ctx_va = build_imgid_to_ctx(det_val.dataset.coco, ctx_val_src, ctx_dim)
     imgid_to_ctx_tr, miss_tr = ctx_tr
     imgid_to_ctx_va, miss_va = ctx_va
+    if args.signal_train and (miss_tr or miss_va):
+        raise SystemExit(f"[t1b] 信号の無い検出フレームがある（train {miss_tr} / val {miss_va}）。補完しない")
 
-    from optimizer import param_dict
-    groups = param_dict.finetune_t1b(model, lr=args.lr, film_lr=args.film_lr)
-    opt = torch.optim.AdamW(groups, lr=args.lr, weight_decay=1e-4, betas=(0.9, 0.999))
+    if args.eval_only:
+        args.epochs = 0  # 学習しない（学習対象の無い型の評価）。学習前の評価だけを残す
+    else:
+        from optimizer import param_dict
+        groups = param_dict.finetune_t1b(model, lr=args.lr, film_lr=args.film_lr)
+        opt = torch.optim.AdamW(groups, lr=args.lr, weight_decay=1e-4, betas=(0.9, 0.999))
     # TF32。**既定 off では設定に触れない**（触れること自体が既定値の再確認になり、
     # 将来 torch の既定が変わったときに挙動が固定されてしまうため）。
     if args.tf32:
@@ -295,7 +360,13 @@ def main():
     # 自動混合精度。既定 no では autocast を張らず scaler も作らないため、経路は従来と同一。
     amp_dtype = {"bf16": torch.bfloat16, "fp16": torch.float16}.get(args.amp)
     scaler = torch.cuda.amp.GradScaler() if args.amp == "fp16" else None
-    sched = torch.optim.lr_scheduler.MultiStepLR(opt, milestones=[max(args.epochs - 2, 1)], gamma=0.1)
+    # 止め方。既定は従来どおり固定 epoch と epochs-2 での学習率低下。`--patience` を渡したときだけ
+    # 学習率を一定に保ち、val mAP が patience epoch 改善しなければ止める（上限は --epochs）。
+    # 固定の学習率低下と早期打ち切りを組み合わせない（契約 T-2026-10-18-stage2-pilot-folda の止め方の規則）。
+    if args.eval_only or args.patience is not None:
+        sched = None
+    else:
+        sched = torch.optim.lr_scheduler.MultiStepLR(opt, milestones=[max(args.epochs - 2, 1)], gamma=0.1)
 
     det_steps_per_ep = len(det_train)
     if args.smoke:
@@ -329,15 +400,23 @@ def main():
         # 契約 (tasks/<task_id>/spec.yaml) と run を結ぶ鍵。harvester は最上位を読む。
         "task_id": args.task_id,
         "rare_slots": os.environ.get("T1B_RARE_SLOTS"),
-        "warm_start_ckpt": str(detector_ckpt(args.seed)),
+        "warm_start_ckpt": str(resolve_detector_ckpt(args.seed, args.det_ckpt)),
         "eval": {"split": "val", "topk": ra.EVAL_TOPK,
                  "note": "score 閾値の足切りなし（eval recipe = score_thr 0.0 系）"},
+        **({"stage2pilot": {
+            "det_ckpt": args.det_ckpt, "ann_dir": ANN_DIR, "signal_train": args.signal_train,
+            "signal_val": args.signal_val, "signal_dim": ctx_dim, "fixed_table": args.fixed_table,
+            "eval_only": bool(args.eval_only), "patience": args.patience, "max_epochs": args.epochs,
+            "best_excludes_init": bool(args.best_excludes_init), "ckpt_dir": args.ckpt_dir,
+            "save_trainable_only": bool(args.save_trainable_only),
+            "phase_params": n_phase, "total_trainable": n_train,
+        }} if (args.det_ckpt or args.signal_train or args.patience is not None or args.eval_only) else {}),
     })
 
     # warm-start 健全性: 学習前 mAP（FiLM zero-init 恒等 → S0-frozen 水準のはず）
     init_map, init_per_class, init_preds = eval_detection(
         model, det_val, imgid_to_ctx_va, device, args.zero_ctx,
-        limit=20 if args.smoke else None, collect_predictions=True)
+        limit=20 if args.smoke else None, collect_predictions=True, dim=ctx_dim)
     init_pred_path = None
     if save_preds:
         # init（warm-start 恒等点）の予測は必須。恒等性の検証と init 比較の絶対値解析に要る。
@@ -360,6 +439,10 @@ def main():
     phase_named = [(n, p) for n, p in model.named_parameters() if "phase" in n]
     phase_grad_seen = False
     best = {"mAP": init_map, "epoch": -1, "per_class_coco_map": {}}
+    if args.best_excludes_init and not args.eval_only:
+        # 最良の時点を学習した epoch の中から選ぶ（学習前の恒等点は候補にしない）
+        best = {"mAP": -math.inf, "epoch": -1, "per_class_coco_map": {}}
+    stale, stopped_at = 0, None
     # epoch 別 per_class を全保存（frozen 検出器で best-overall が動かない/空になる不具合の回避。
     # inj/ctrl を同一 final epoch で公平比較するため。init(epoch=-1) も含める）。
     per_epoch = [{"epoch": -1, "mAP": init_map, "per_class_coco_map": init_per_class}]
@@ -374,7 +457,7 @@ def main():
             if batch is None:
                 break
             images, targets = batch
-            model.set_phase_context(ctx_for_targets(targets, imgid_to_ctx_tr, device, args.zero_ctx))
+            model.set_phase_context(ctx_for_targets(targets, imgid_to_ctx_tr, device, args.zero_ctx, ctx_dim))
             if amp_dtype is None:
                 loss_dict = model(images, targets)
                 loss = sum(loss_dict.values())
@@ -405,11 +488,12 @@ def main():
             if not math.isfinite(float(loss)):
                 print("[t1b] loss not finite, stop")
                 sys.exit(1)
-        sched.step()
+        if sched is not None:
+            sched.step()
 
         mAP, per_class, preds = eval_detection(
             model, det_val, imgid_to_ctx_va, device, args.zero_ctx,
-            limit=20 if args.smoke else None, collect_predictions=True)
+            limit=20 if args.smoke else None, collect_predictions=True, dim=ctx_dim)
         print(f"[t1b][ep{epoch}] val mAP={mAP:.4f}", flush=True)
         per_epoch.append({"epoch": epoch, "mAP": mAP, "per_class_coco_map": per_class})
         if save_preds and args.save_predictions_all:
@@ -417,12 +501,21 @@ def main():
                                 compress=compress_preds)
         if mAP > best["mAP"]:
             best = {"mAP": mAP, "epoch": epoch, "per_class_coco_map": per_class}
-            torch.save({"model": model.state_dict(), "epoch": epoch, "seed": args.seed},
-                       ra.checkpoints_dir(work) / "best_t1b.pth")
+            stale = 0
+            ckpt_dir = Path(args.ckpt_dir) if args.ckpt_dir else ra.checkpoints_dir(work)
+            ckpt_dir.mkdir(parents=True, exist_ok=True)
+            torch.save({"model": trainable_state(model) if args.save_trainable_only else model.state_dict(),
+                        "epoch": epoch, "seed": args.seed}, ckpt_dir / "best_t1b.pth")
             if save_preds:
                 # best epoch の予測は必須（ckpt が失われても per-image 解析を可能にする）。
                 ra.save_predictions(work, preds["results"], split="val", tag=variant, best=True,
                                     compress=compress_preds)
+        else:
+            stale += 1
+        if args.patience is not None and stale >= args.patience:
+            stopped_at = epoch
+            print(f"[t1b] val mAP が {args.patience} epoch 改善しないため ep{epoch} で止める", flush=True)
+            break
 
     # frozen 検出器では init を超える epoch が無いことがあり、その場合 best ckpt も
     # best predictions も生成されない（= 過去に「ckpt 不在 seed を恒等代替」が必要になった原因）。
@@ -445,6 +538,11 @@ def main():
         "final_per_class_coco_map": final_eval["per_class_coco_map"],
         "per_epoch_eval": per_epoch,
         "best_is_init": best_is_init, "run_dir": str(work),
+        **({"frozen_digest_before": frozen_before, "frozen_digest_after": frozen_digest(model)}
+           if args.save_trainable_only else {}),
+        **({"early_stopped_epoch": stopped_at, "epochs_run": len(per_epoch) - 1,
+            "reached_epoch_cap": stopped_at is None and len(per_epoch) - 1 == args.epochs}
+           if args.patience is not None else {}),
         "denominator": "S0-frozen 0.7051±0.0052", "delta_note": "Δ_detection=(T1b − S0-frozen)",
     }
     (work / "t1b_result.json").write_text(json.dumps(result, indent=2, ensure_ascii=False))
@@ -536,7 +634,7 @@ def parse_args():
     p.add_argument("--epochs", type=int, default=6)
     p.add_argument("--lr", type=float, default=1e-4)
     p.add_argument("--film-lr", type=float, default=5e-4)
-    p.add_argument("--trainable", choices=["film", "all"], default="all")
+    p.add_argument("--trainable", choices=["film", "all", "w2"], default="all")
     p.add_argument("--inject", choices=["film", "ca", "camt", "hc", "clsbias"], default="film",
                    help="phase 注入機構: film(§4.6下限・C5 FiLM) / ca(§4.6 primary・decoder cross-attn) / "
                         "hc(§7.2 H-C-v1 = ca + per-frame entropy gate)")
@@ -567,6 +665,25 @@ def parse_args():
     p.add_argument("--tf32", action="store_true",
                    help="行列積で TF32 を許す（torch の既定は False。畳み込み側の cudnn は既定で True）。"
                         "既定 off ではこの設定に触れないため、経路は従来と同一")
+    # 以下は契約 T-2026-10-18-stage2-pilot-folda で足した。**どれも渡さなければ従来の経路のまま**
+    p.add_argument("--det-ckpt", default=None,
+                   help="受け取り手の検出器 checkpoint。既定は従来どおり checkpoints/incoming/seed{seed}/best_ap.pth")
+    p.add_argument("--signal-train", default=None,
+                   help="train の信号 npz（frame_ids, x）。--signal-val と組で渡す。既定は --phase-source の経路")
+    p.add_argument("--signal-val", default=None, help="val の信号 npz（frame_ids, x）")
+    p.add_argument("--fixed-table", default=None,
+                   help="学習しない型（clsbias_fix）の表 B を持つ json（キー B）。既定は表を入れない（零＝恒等）")
+    p.add_argument("--eval-only", action="store_true",
+                   help="学習せず学習前の評価だけを残す（学習対象の無い型）")
+    p.add_argument("--patience", type=int, default=None,
+                   help="渡すと学習率を一定にし、val mAP が patience epoch 改善しなければ止める（上限 --epochs）。"
+                        "既定は従来どおり固定 epoch と epochs-2 での学習率低下")
+    p.add_argument("--best-excludes-init", action="store_true",
+                   help="最良の時点を学習した epoch から選ぶ（学習前の恒等点を候補にしない）")
+    p.add_argument("--ckpt-dir", default=None,
+                   help="best_t1b.pth の置き場。既定は従来どおり run の checkpoints/")
+    p.add_argument("--save-trainable-only", action="store_true",
+                   help="best_t1b.pth に学習対象の重みと注入層の buffer だけを入れる")
     p.add_argument("--amp", default="no", choices=("no", "bf16", "fp16"),
                    help="学習の順伝播の数値精度。既定 no は従来どおりの単精度で、"
                         "経路も従来と同一（autocast を張らない）。bf16/fp16 は自動混合精度。"

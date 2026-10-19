@@ -1,0 +1,95 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-18-stage2-pilot-folda"
+  kind: analysis
+  title: "Stage 2 の非公式の予備測定。今ある検出塔と工程塔を凍結したまま、折り A の val で、両方向・界面の型ごと・参照入力段ごとの差を測る。信号の保存、受け取り手の差し替え、型ごとの受け口、交差適合用の塔を同じ契約で用意する"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-18T05:00:00Z"
+  created_from:
+    runindex_commit: "63ae65da8c7d32df591f5e2ee4358286b72c726b"
+    counts: {index: 1961, experiments: 750, verdicts: 1506}
+  depends_on: [T-2026-09-19-stage1-detector-towers-r2, T-2026-09-27-stage1-ptower-20, T-2026-10-14-frame-signal-audit, T-2026-10-17-tower-reselect-prereq]
+  amendments:
+    - date: "2026-10-18"
+      reason: "取り込み前の差し替え。利用者の指示で、界面の型を利用者の候補文書（第一波）に増やした。工程から検出は FiLM（W1 と W2）、クラスの点数へのバイアス（学習版と固定版）、query 条件付け（W2）。検出から工程は連結（在否と領域トークン）、FiLM、集合への注意（在否と枠、埋め込みつき）。型ごとに空の腕を置く。前版の要約値は台帳の記録にある"
+      diff: "SPEC の Task C、D、E、F、5、7、8 と、本ファイルの title、phases、gates、resources、acceptance を書き換えた"
+    - date: "2026-10-18"
+      reason: "Task A-6 による差し替え。conventions.md の実測の最新 commit は b12eda6c（PR #229 の 2da88a8f と b12eda6c）で、起票時の 073f9dc0 と食い違った。inject_verbatim の 8 節（prohibitions、issuer_cautions、env_p0、folds、split、eval_recipe、det_groups、crossfit）の本文は両版で同一（crossfit は末尾の空行 1 行だけの差）。変わったのは symmetry（適用対象外）と frame_sets（新設。本契約の評価のフレーム集合が違うことは SPEC §5.4 が既知の限界として扱う）。meta.created_from は実測と一致（63ae65da、1961/750/1506）。L2-6 の WARN の続行は利用者が承認した"
+      diff: "contract.conventions_rev を 073f9dc0b80b7ca48c2766eb6f8f2ccd17cf0fe6 から b12eda6cf0f53f4f0d09e5b6c53bb3afde9831ac へ"
+    - date: "2026-10-18"
+      reason: "実行中の利用者の指示（16:4x JST）。早く終えるため、PD の 4 型（P1-W1、P1-W2、P2L、P3）の腕を seed 42 だけにした（1 型 15 本 → 5 本、計 60 本 → 20 本）。P2F の評価 2 本と DP の 63 本は変えない。PD では空の腕の 3 seed の幅 R が測れないため、§5.2 の規則 2（seed の幅を超える／幅の内）と実現率、型どうしの比較の幅の判定は PD について出さない（UNKNOWN）。Δ（同じ seed 42 の空の腕との差）だけを書く。あわせて D3 の予測トークンは利用者の決定で重複しない query の上位 K 個（D0-INST-UQ）とした"
+      diff: "SPEC §4 Task F の 1（seed は 42、123、456）と §7 の完了判定 k（三つの seed）を PD について seed 42 だけに変更。§3 の D3 のトークンの読みを確定"
+    - date: "2026-10-18"
+      reason: "実行中の利用者の指示（19:2x JST）。締め切り 2026-10-20 01:00 JST に間に合わせるため、PD の止め方の上限を 8 から 4 epoch にした（PD-W1 と PD-W2 の両方、PD の全腕で同じ）。理由は所要時間で、結果を見たからではない。決めた時点で学習中だったのは P1-W1 の空と予測-noCF の 2 本（どちらも 2 epoch 目）で、上限 8 で起動していたため、5 epoch 目の始まりで外から止め（scripts/stage2pilot/cap_watch.sh）、4 epoch 目までの最良で結果を書く（cap_finalize.py、cap_result.json）。上限 4 で起動した run と同じ選び方になる"
+      diff: "SPEC §4 Task F の止め方（上限 8 epoch）を上限 4 epoch に変更。scripts/stage2pilot/run_pd.sh の MAX_EPOCHS を 8 から 4 へ"
+intent:
+  question: "今ある検出塔と工程塔を凍結したまま、折り A（公式分割）の val で、界面の入力だけを変えたとき、方向ごと・界面の型ごと・参照入力段ごとの差はどれだけ出るか。非公式の予備測定であり、関門の判定にも設計の判断にも使わない"
+  decision_at_stake: "進捗報告の材料。Stage 2 の測定器（塔の信号の保存、受け取り手の差し替え、型ごとの受け口、交差適合用の塔）が今ある塔で動くことの実証と、方向ごと・型ごとの差の大きさの見当。公式の Stage 2 の起票と関門 G1.5 の判定には使わない"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery の動画 01 から 15 のうち、折り A の train と val の動画（conventions#folds）。術具と工程の両方の注釈があるフレームだけ（今ある塔の集合）。折り A の test の動画のフレームは信号の作成と学習と評価に通さない"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/train_t1b.py", "scripts/stage1_ptower.py", "scripts/stage1_ptower_r3.py", "scripts/stage1_ptower_20.py", "scripts/run_stage1_ptower_20.py", "scripts/ptower_attribution.py", "scripts/extract_b2a_detsignal.py", "scripts/extract_t1a_regiontoken.py", "scripts/build_oracle_toolpresence.py", "scripts/run_stage1_dtower.sh", "scripts/eval_stage1_dtower.sh", "scripts/make_fold_annotations.py", "scripts/analysis/a1_fold_table.py", "scripts/build_stage1_group_ap.py", "experiments/analysis/frame_signal_audit/tools/time_alignment_check.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#env_p0, conventions#folds, conventions#split, conventions#eval_recipe, conventions#det_groups, conventions#crossfit]
+  conventions_rev: "b12eda6cf0f53f4f0d09e5b6c53bb3afde9831ac"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/analysis/stage2_pilot_folda", "experiments/phase1/stage2pilot", "experiments/baselines/stage2pilot", "runindex/"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。分岐、起点、未追跡の退避、task-start が置いた抑止の目印の確認、装置の他プロセス、記憶領域、試験の失敗の名前", gpu: false, est: "45m"}
+    - {id: B, name: "材料の取り寄せと再現。efros の工程塔の三つの run を andrew へ写し、andrew の検出塔と合わせて塔単独の val を再現する", gpu: true, est: "3h"}
+    - {id: C, name: "確定塔の信号の保存。折り A の train と val の全フレームに、両塔の出力、領域トークン、術具ごとのトークン、正解の信号を作り、送り手の train と val の差と較正を測る", gpu: true, est: "6h"}
+    - {id: D, name: "界面の実装と恒等性。型ごとの受け口を作り、学習前の出力が塔単独と一致することと陽性対照を型ごとに確かめる", gpu: true, est: "16h"}
+    - {id: E, name: "交差適合用の塔。train を二分割し、工程塔二本と検出塔二本を確定塔と同じ処方で学び、学習に使っていない半分に全種類の信号を出す", gpu: true, est: "48h"}
+    - {id: F, name: "測定。交差適合を要しない腕を型ごとに先に回して中間記録を push し、次に交差適合を要する腕を回す", gpu: true, est: "200h"}
+    - {id: G, name: "検証と報告", gpu: false, est: "4h"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、装置に本契約以外の compute プロセスが無く、記憶領域と試験の失敗の名前を記録した", on_fail: stop}
+    - {id: G2, after: B, check: "efros の工程塔と andrew の検出塔の塔単独の val の値が、記録と許容差の中で再現した", on_fail: ask}
+    - {id: G3, after: D, check: "基準の型（工程から検出の FiLM の W1、検出から工程の FiLM）が学習前に塔単独と同じ出力を出し、陽性対照で出力が変わり、test の動画のフレームを信号の作成と学習と評価に一度も通していない", on_fail: stop}
+    - {id: G4, after: E, check: "交差適合用の塔が四本とも止め方の規則で止まり、各塔が学習に使っていない半分にだけ信号を出した", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+  resources: {server: andrew, gpu: 2, est_hours: 280, runs: 127}
+outputs:
+  must_have: [REPORT.md, RESULT.md, result.yaml, audit.md]
+  destination: "experiments/analysis/stage2_pilot_folda/"
+  acceptance:
+    - "a: 開始状態として、分岐、起点、未追跡の退避、装置の compute プロセスの一覧、記憶領域の空き、試験の失敗の名前が記録されている"
+    - "b: efros の工程塔の三つの run の重みと特徴が andrew に写され、両端の要約値が一致し、efros に書き込んでいない"
+    - "c: 工程塔と検出塔の塔単独の val が andrew で再現され、記録との差が SPEC の許容差の中にあるか、超えて停止した記録がある"
+    - "d: 折り A の train と val の全フレームについて、SPEC の信号の表のすべての信号が、フレームの名前で引ける形で保存され、要約値と経路が記録されている"
+    - "e: 保存した信号の時刻が同時刻であることが道具で確かめられ、一つずらした写しが検出されている"
+    - "f: 両塔の送り手の train と val の差が主指標で記録され（検出は overall mAP と標的群 AP の両方）、工程塔の較正（ECE と温度）が記録されている"
+    - "g: 工程から検出の学習器が検出塔を受け取り手にでき、既存の既定の挙動が変わっていない"
+    - "h: SPEC の型の表のすべての型について、学習前の出力が塔単独と一致するか、一致しない型が理由つきで UNKNOWN と書かれている"
+    - "i: 型ごと・腕ごとの学習対象の数と、方向と学習範囲ごとの止め方の規則が記録され、同じ型の腕で同じ規則が使われている"
+    - "j: train の二分割が SPEC の規則で選ばれ、交差適合用の塔四本が確定塔と同じ処方で学ばれ、交差適合版の送り手の値が記録されている"
+    - "k: SPEC の腕の表のすべての腕が三つの seed で回り（固定版は評価だけ）、測れなかった腕は理由つきで UNKNOWN と書かれている"
+    - "l: 型ごと・腕ごとに、seed ごとの差、平均、最小、最大、動画ごとの差、その型の空の腕の seed 間の幅が表にあり、SPEC の読み方の規則で記述されている"
+    - "m: 交差適合を要しない腕の中間記録が、型ごとに分岐へ push されている"
+    - "n: test の動画のフレームを信号の作成と学習と評価に一度も通していないことが、通した動画の集合で示されている"
+    - "o: data の raw と external、凍結源、既存の run と checkpoint に書き込んでいない。試験の失敗が増えていない"
+    - "p: PR が Draft でなく存在し、base が phase0、分岐が feat/stage2-pilot-folda"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "装置に本契約以外の compute プロセスがある場合（止めずに利用者に諮る）"
+    - "efros から読むのに実行者が扱えない資格情報が要る場合、または efros への書き込みが要る場合"
+    - "塔単独の val が記録と許容差を超えて食い違う場合"
+    - "andrew で検出塔の学習（逆伝播を含む）が動かない場合"
+    - "記憶領域が足りない場合"
+    - "既存スクリプトの既定の挙動を変えないと実装できない場合"
+    - "SPEC の型の定義が実装の構造と合わず、型の意味を変えないと実装できない場合"
+    - "実行基盤が書き込み、移動、削除を拒む場合"
