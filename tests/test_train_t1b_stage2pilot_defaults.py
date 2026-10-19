@@ -38,6 +38,7 @@ def test_new_options_default_to_off(t1b):
     assert a.fixed_table is None and a.ckpt_dir is None and a.patience is None
     assert not a.eval_only and not a.best_excludes_init and not a.save_trainable_only
     assert a.trainable == "all" and a.phase_source == "real" and a.epochs == 6 and a.inject == "film"
+    assert not a.fixed_epochs                                  # 契約 T-2026-10-19-stage2-pilot-fix-epoch4-shuffle で足した
 
 
 def test_default_detector_checkpoint_is_unchanged(t1b):

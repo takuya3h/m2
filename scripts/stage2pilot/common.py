@@ -20,6 +20,10 @@ ROOT = Path(__file__).resolve().parents[2]
 TASK_ID = "T-2026-10-18-stage2-pilot-folda"
 STORE = Path("/home/ubuntu/slocal2/stage2pilot_store") / TASK_ID
 ANALYSIS = ROOT / "experiments/analysis/stage2_pilot_folda"
+# 直しの契約（4 epoch 目の値と入れ替えの腕）。前回の STORE と ANALYSIS は読むだけで、書き込みはこちらへ
+FIX_TASK_ID = "T-2026-10-19-stage2-pilot-fix-epoch4-shuffle"
+FIX_STORE = Path("/home/ubuntu/slocal2/stage2pilot_store") / FIX_TASK_ID
+FIX_ANALYSIS = ROOT / "experiments/analysis/stage2_pilot_fix"
 
 # 写した工程塔（Task B-1）。経路は efros の repo と同じ相対経路を STORE/efros_ptower の下に保つ
 EFROS = STORE / "efros_ptower"

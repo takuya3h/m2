@@ -1,0 +1,230 @@
+Using /home/ubuntu/.cache/torch_extensions/py311_cu118 as PyTorch extensions root...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /home/ubuntu/.cache/torch_extensions/py311_cu118/MultiScaleDeformableAttention/build.ninja...
+Building extension module MultiScaleDeformableAttention...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+[1/2] /usr/local/cuda/bin/nvcc  -DTORCH_EXTENSION_NAME=MultiScaleDeformableAttention -DTORCH_API_INCLUDE_EXTENSION_H -DPYBIND11_COMPILER_TYPE=\"_gcc\" -DPYBIND11_STDLIB=\"_libstdcpp\" -DPYBIND11_BUILD_ABI=\"_cxxabi1011\" -isystem /home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include -isystem /home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/torch/csrc/api/include -isystem /home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/TH -isystem /home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/THC -isystem /usr/local/cuda/include -isystem /home/ubuntu/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/include/python3.11 -D_GLIBCXX_USE_CXX11_ABI=0 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_86,code=compute_86 -gencode=arch=compute_86,code=sm_86 --compiler-options '-fPIC' -std=c++17 -c /home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu -o ms_deform_attn_cuda.cuda.o 
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_im2col_cuda.cuh(250): warning #177-D: variable "q_col" was declared but never referenced
+      const int q_col = _temp % num_query;
+                ^
+          detected during instantiation of "void ms_deformable_im2col_cuda(cudaStream_t, const scalar_t *, const int64_t *, const int64_t *, const scalar_t *, const scalar_t *, int, int, int, int, int, int, int, scalar_t *) [with scalar_t=double]" at line 56 of /home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu
+
+Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
+
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_im2col_cuda.cuh(751): warning #177-D: variable "q_col" was declared but never referenced
+      const int q_col = _temp % num_query;
+                ^
+          detected during instantiation of "void ms_deformable_col2im_cuda(cudaStream_t, const scalar_t *, const scalar_t *, const int64_t *, const int64_t *, const scalar_t *, const scalar_t *, int, int, int, int, int, int, int, scalar_t *, scalar_t *, scalar_t *) [with scalar_t=double]" at line 126 of /home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu
+
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_im2col_cuda.cuh(861): warning #177-D: variable "q_col" was declared but never referenced
+      const int q_col = _temp % num_query;
+                ^
+          detected during instantiation of "void ms_deformable_col2im_cuda(cudaStream_t, const scalar_t *, const scalar_t *, const int64_t *, const int64_t *, const scalar_t *, const scalar_t *, int, int, int, int, int, int, int, scalar_t *, scalar_t *, scalar_t *) [with scalar_t=double]" at line 126 of /home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu
+
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_im2col_cuda.cuh(320): warning #177-D: variable "q_col" was declared but never referenced
+      const int q_col = _temp % num_query;
+                ^
+          detected during instantiation of "void ms_deformable_col2im_cuda(cudaStream_t, const scalar_t *, const scalar_t *, const int64_t *, const int64_t *, const scalar_t *, const scalar_t *, int, int, int, int, int, int, int, scalar_t *, scalar_t *, scalar_t *) [with scalar_t=double]" at line 126 of /home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu
+
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_im2col_cuda.cuh(425): warning #177-D: variable "q_col" was declared but never referenced
+      const int q_col = _temp % num_query;
+                ^
+          detected during instantiation of "void ms_deformable_col2im_cuda(cudaStream_t, const scalar_t *, const scalar_t *, const int64_t *, const int64_t *, const scalar_t *, const scalar_t *, int, int, int, int, int, int, int, scalar_t *, scalar_t *, scalar_t *) [with scalar_t=double]" at line 126 of /home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu
+
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_im2col_cuda.cuh(533): warning #177-D: variable "q_col" was declared but never referenced
+      const int q_col = _temp % num_query;
+                ^
+          detected during instantiation of "void ms_deformable_col2im_cuda(cudaStream_t, const scalar_t *, const scalar_t *, const int64_t *, const int64_t *, const scalar_t *, const scalar_t *, int, int, int, int, int, int, int, scalar_t *, scalar_t *, scalar_t *) [with scalar_t=double]" at line 126 of /home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu
+
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_im2col_cuda.cuh(638): warning #177-D: variable "q_col" was declared but never referenced
+      const int q_col = _temp % num_query;
+                ^
+          detected during instantiation of "void ms_deformable_col2im_cuda(cudaStream_t, const scalar_t *, const scalar_t *, const int64_t *, const int64_t *, const scalar_t *, const scalar_t *, int, int, int, int, int, int, int, scalar_t *, scalar_t *, scalar_t *) [with scalar_t=double]" at line 126 of /home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu
+
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu: In lambda function:
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:56:85: warning: ‘T* at::Tensor::data() const [with T = double]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+   56 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_forward_cuda", ([&] {
+      |                                                               ~~~~~~~~~~~~~~~~~~~~~~^~
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:56:171: warning: ‘T* at::Tensor::data() const [with T = long int]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+   56 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_forward_cuda", ([&] {
+      |                                                                                                                                                                           ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:56:214: warning: ‘T* at::Tensor::data() const [with T = long int]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+   56 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_forward_cuda", ([&] {
+      |                                                                                                                                                                                                                      ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:56:247: warning: ‘T* at::Tensor::data() const [with T = double]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+   56 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_forward_cuda", ([&] {
+      |                                                                                                                                                                                                                                                       ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:56:330: warning: ‘T* at::Tensor::data() const [with T = double]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+   56 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_forward_cuda", ([&] {
+      |                                                                                                                                                                                                                                                                                                                                          ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:56:488: warning: ‘T* at::Tensor::data() const [with T = double]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+   56 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_forward_cuda", ([&] {
+      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu: In lambda function:
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:56:84: warning: ‘T* at::Tensor::data() const [with T = float]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+   56 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_forward_cuda", ([&] {
+      |                                                               ~~~~~~~~~~~~~~~~~~~~~^~
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:56:170: warning: ‘T* at::Tensor::data() const [with T = long int]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+   56 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_forward_cuda", ([&] {
+      |                                                                                                                                                                          ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:56:213: warning: ‘T* at::Tensor::data() const [with T = long int]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+   56 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_forward_cuda", ([&] {
+      |                                                                                                                                                                                                                     ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:56:245: warning: ‘T* at::Tensor::data() const [with T = float]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+   56 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_forward_cuda", ([&] {
+      |                                                                                                                                                                                                                                                     ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:56:327: warning: ‘T* at::Tensor::data() const [with T = float]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+   56 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_forward_cuda", ([&] {
+      |                                                                                                                                                                                                                                                                                                                                       ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:56:484: warning: ‘T* at::Tensor::data() const [with T = float]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+   56 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_forward_cuda", ([&] {
+      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu: In lambda function:
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:126:93: warning: ‘T* at::Tensor::data() const [with T = double]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+  126 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_backward_cuda", ([&] {
+      |                                                               ~~~~~~~~~~~~~~~~~~~~~~~~~     ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:126:119: warning: ‘T* at::Tensor::data() const [with T = double]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+  126 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_backward_cuda", ([&] {
+      |                                                                                                                       ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:126:205: warning: ‘T* at::Tensor::data() const [with T = long int]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+  126 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_backward_cuda", ([&] {
+      |                                                                                                                                                                                                             ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:126:248: warning: ‘T* at::Tensor::data() const [with T = long int]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+  126 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_backward_cuda", ([&] {
+      |                                                                                                                                                                                                                                                        ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:126:281: warning: ‘T* at::Tensor::data() const [with T = double]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+  126 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_backward_cuda", ([&] {
+      |                                                                                                                                                                                                                                                                                         ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:126:364: warning: ‘T* at::Tensor::data() const [with T = double]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+  126 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_backward_cuda", ([&] {
+      |                                                                                                                                                                                                                                                                                                                                                                            ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:126:525: warning: ‘T* at::Tensor::data() const [with T = double]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+  126 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_backward_cuda", ([&] {
+      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:126:609: warning: ‘T* at::Tensor::data() const [with T = double]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+  126 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_backward_cuda", ([&] {
+      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:126:697: warning: ‘T* at::Tensor::data() const [with T = double]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+  126 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_backward_cuda", ([&] {
+      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu: In lambda function:
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:126:92: warning: ‘T* at::Tensor::data() const [with T = float]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+  126 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_backward_cuda", ([&] {
+      |                                                               ~~~~~~~~~~~~~~~~~~~~~~~~~    ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:126:117: warning: ‘T* at::Tensor::data() const [with T = float]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+  126 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_backward_cuda", ([&] {
+      |                                                                                                                     ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:126:203: warning: ‘T* at::Tensor::data() const [with T = long int]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+  126 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_backward_cuda", ([&] {
+      |                                                                                                                                                                                                           ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:126:246: warning: ‘T* at::Tensor::data() const [with T = long int]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+  126 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_backward_cuda", ([&] {
+      |                                                                                                                                                                                                                                                      ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:126:278: warning: ‘T* at::Tensor::data() const [with T = float]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+  126 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_backward_cuda", ([&] {
+      |                                                                                                                                                                                                                                                                                      ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:126:360: warning: ‘T* at::Tensor::data() const [with T = float]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+  126 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_backward_cuda", ([&] {
+      |                                                                                                                                                                                                                                                                                                                                                                        ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:126:520: warning: ‘T* at::Tensor::data() const [with T = float]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+  126 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_backward_cuda", ([&] {
+      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:126:603: warning: ‘T* at::Tensor::data() const [with T = float]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+  126 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_backward_cuda", ([&] {
+      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/models/bricks/ops/cuda/ms_deform_attn_cuda.cu:126:690: warning: ‘T* at::Tensor::data() const [with T = float]’ is deprecated: Tensor.data<T>() is deprecated. Please use Tensor.data_ptr<T>() instead. [-Wdeprecated-declarations]
+  126 |         AT_DISPATCH_FLOATING_TYPES(value.type(), "ms_deform_attn_backward_cuda", ([&] {
+      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  ^ 
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/include/ATen/core/TensorBody.h:247:1: note: declared here
+  247 |   T * data() const {
+      | ^ ~~
+[2/2] c++ ms_deform_attn_cuda.cuda.o -shared -L/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/lib -lc10 -lc10_cuda -ltorch_cpu -ltorch_cuda -ltorch -ltorch_python -L/usr/local/cuda/lib64 -lcudart -o MultiScaleDeformableAttention.so
+Loading extension module MultiScaleDeformableAttention...
+ms_deform_attn_ext True

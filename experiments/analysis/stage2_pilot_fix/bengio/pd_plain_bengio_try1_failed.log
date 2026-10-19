@@ -1,0 +1,56 @@
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/albumentations/core/validation.py:114: UserWarning: ShiftScaleRotate is a special case of Affine transform. Please use Affine transform instead.
+  original_init(self, **validated_kwargs)
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/transforms/presets.py:109: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/transforms/presets.py:140: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/transforms/presets.py:195: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR/transforms/presets.py:226: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+Using /home/ubuntu/.cache/torch_extensions/py311_cu118 as PyTorch extensions root...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /home/ubuntu/.cache/torch_extensions/py311_cu118/MultiScaleDeformableAttention/build.ninja...
+Building extension module MultiScaleDeformableAttention...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+loading annotations into memory...
+Done (t=0.08s)
+creating index...
+index created!
+ninja: no work to do.
+Loading extension module MultiScaleDeformableAttention...
+Downloading: "https://download.pytorch.org/models/resnet50-11ad3fa6.pth" to /home/ubuntu/.cache/torch/hub/checkpoints/resnet50-11ad3fa6.pth
+  0%|          | 0.00/97.8M [00:00<?, ?B/s]  6%|▌         | 5.80M/97.8M [00:00<00:01, 60.8MB/s] 13%|█▎        | 12.4M/97.8M [00:00<00:01, 65.9MB/s] 20%|█▉        | 19.6M/97.8M [00:00<00:01, 69.8MB/s] 27%|██▋       | 26.2M/97.8M [00:00<00:01, 69.6MB/s] 34%|███▎      | 32.9M/97.8M [00:00<00:00, 68.8MB/s] 41%|████      | 39.9M/97.8M [00:00<00:00, 70.6MB/s] 48%|████▊     | 46.7M/97.8M [00:00<00:00, 70.6MB/s] 55%|█████▍    | 53.4M/97.8M [00:00<00:00, 70.0MB/s] 62%|██████▏   | 60.5M/97.8M [00:00<00:00, 71.3MB/s] 69%|██████▉   | 67.3M/97.8M [00:01<00:00, 71.2MB/s] 76%|███████▌  | 74.3M/97.8M [00:01<00:00, 71.8MB/s] 83%|████████▎ | 81.3M/97.8M [00:01<00:00, 72.4MB/s] 90%|█████████ | 88.4M/97.8M [00:01<00:00, 72.9MB/s] 98%|█████████▊| 95.4M/97.8M [00:01<00:00, 72.4MB/s]100%|██████████| 97.8M/97.8M [00:01<00:00, 71.0MB/s]
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+[t1b] warm-start from /home/ubuntu/slocal2/s2fix-bengio-body/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth
+Accumulating evaluation results...
+DONE (t=2.49s).
+Traceback (most recent call last):
+  File "/home/ubuntu/slocal2/m2-s2fix-bengio/scripts/stage2pilot/pd_eval.py", line 129, in <module>
+    main()
+  File "/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 115, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/slocal2/m2-s2fix-bengio/scripts/stage2pilot/pd_eval.py", line 115, in main
+    "metrics": M.summary(Path(t1b.ANN_DIR) / "instances_val.json", preds["results"])}
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/slocal2/m2-s2fix-bengio/scripts/stage2pilot/det_metrics.py", line 61, in summary
+    for g, classes in read_groups().items():
+                      ^^^^^^^^^^^^^
+  File "/home/ubuntu/slocal2/m2-s2fix-bengio/scripts/stage2pilot/det_metrics.py", line 26, in read_groups
+    text = (ROOT / "context/conventions.md").read_text()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/pathlib.py", line 1059, in read_text
+    return f.read()
+           ^^^^^^^^
+  File "/home/ubuntu/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/encodings/ascii.py", line 26, in decode
+    return codecs.ascii_decode(input, self.errors)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'ascii' codec can't decode byte 0xe2 in position 14: ordinal not in range(128)

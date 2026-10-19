@@ -13,6 +13,12 @@
 
 止め方（方向と学習範囲ごとに一つ。DP は W1 だけ）: 学習率一定、val の macro Jaccard が patience epoch
 改善しなければ止める、上限 max_epochs。最良の時点は学習した epoch の val の macro Jaccard で選ぶ。
+
+直しの契約（T-2026-10-19-stage2-pilot-fix-epoch4-shuffle）で足した引数。渡さなければ従来の経路のまま:
+    --fixed-epochs N   N epoch 学習し、途中で止めず、最良の回を選ばずに N epoch 目の状態を結果にする
+    --task-id / --exp-prefix   run の契約の識別子と名前の接頭辞（界面の重みは stage2pilot_store/<task-id>/dp_ckpt）
+    --smoke            --fixed-epochs の短い試走の印（名前に _smoke、config に smoke: true）
+    腕 shuffle         予測-noCF と同じ信号の値を、フレームとの対応だけ入れ替えたもの（stage2pilot_store/<直しの契約>/signals/shuffle）
 """
 from __future__ import annotations
 
@@ -37,6 +43,7 @@ from stage2pilot.dp_model import DPReceiver  # noqa: E402
 
 FINAL = C.STORE / "signals/final"
 CF = C.STORE / "signals/cf"
+SHUF = C.FIX_STORE / "signals/shuffle"
 NT = 15
 # 型 → (界面, 信号の種類, 予測の信号名, 正解の信号名, トークンの基底次元)
 TYPES = {
@@ -46,7 +53,7 @@ TYPES = {
     "D3-L1": ("attn", "tok", "D0-INST", "D-GT-INST", NT + 4),
     "D3-L2": ("attn", "tok", "D0-INST", None, NT + 4 + 256),
 }
-ARMS = ("empty", "pred_noCF", "gt", "pred_CF", "gtpred_CF")
+ARMS = ("empty", "pred_noCF", "gt", "pred_CF", "gtpred_CF", "shuffle")
 # 止め方の規則（DP・W1）。最初の腕を回す前に固定する
 STOP = {"lr": 5e-4, "weight_decay": 0.01, "patience": 10, "max_epochs": 100, "smoothing_weight": 0.3}
 
@@ -65,6 +72,8 @@ def sources(type_name, arm, part, variant):
         return []
     if arm == "pred_noCF":
         return [final_pred]
+    if arm == "shuffle":
+        return [(SHUF / f"{pred}_{part}.npz", False)]
     if arm == "pred_CF":
         return [pred_src]
     if gt is None:
@@ -169,8 +178,8 @@ def setup_common(device="cuda"):
 
 def cmd_identity(a):
     names, split, feats, head = setup_common()
-    out = {"task_id": C.TASK_ID, "type": a.type, "inst_variant": a.inst_variant}
-    arms = [arm for arm in ("pred_noCF", "gt") if not (arm == "gt" and TYPES[a.type][3] is None)]
+    out = {"task_id": a.task_id, "type": a.type, "inst_variant": a.inst_variant}
+    arms = [a.arm] if a.arm else [arm for arm in ("pred_noCF", "gt") if not (arm == "gt" and TYPES[a.type][3] is None)]
     for arm in arms:
         sig = Signals(a.type, arm, "val", a.inst_variant)
         torch.manual_seed(0)
@@ -226,28 +235,33 @@ def cmd_train(a):
     opt = torch.optim.AdamW(params, lr=STOP["lr"], weight_decay=STOP["weight_decay"])
     head_digest = C.sha256(C.PT_HEAD_CKPT)
     head_state0 = {k: v.clone() for k, v in model.head.state_dict().items()}
-    max_epochs = a.max_epochs or STOP["max_epochs"]
-    cfg = {"task_id": C.TASK_ID, "unofficial": "非公式（T-2026-10-18-stage2-pilot-folda）", "direction": "DP",
+    fixed = a.fixed_epochs
+    max_epochs = fixed or a.max_epochs or STOP["max_epochs"]
+    stop_rule = {**STOP, "max_epochs": max_epochs, "lr_schedule": "constant",
+                 "selection": "val macro Jaccard, trained epochs only"}
+    if fixed:
+        stop_rule = {**STOP, "patience": None, "max_epochs": fixed, "fixed_epochs": fixed, "lr_schedule": "constant",
+                     "selection": f"none (state after epoch {fixed})"}
+    cfg = {"task_id": a.task_id, "unofficial": f"非公式（{a.task_id}）", "direction": "DP",
            "type": a.type, "interface": TYPES[a.type][0], "arm": a.arm, "seed": a.seed, "scope": "W1",
            "inst_variant": a.inst_variant, "signal_dim": sig_tr.dim,
            "signals_train": sig_tr.files(), "signals_val": sig_va.files(),
            "receiver": {"head": str(C.PT_HEAD_CKPT), "head_sha256": head_digest, "cache": str(C.PT_CACHE),
                         "cache_sha256": C.sha256(C.PT_CACHE), "mode": "frozen, eval (dropout off)"},
-           "stop_rule": {**STOP, "max_epochs": max_epochs, "lr_schedule": "constant",
-                         "selection": "val macro Jaccard, trained epochs only"},
+           "stop_rule": stop_rule, **({"result_selection": "final_epoch"} if fixed else {}),
            "class_counts": counts.tolist(), "class_weights": weights.tolist(),
-           "videos": {"train": tr_videos, "val": va_videos}, "smoke": bool(a.max_epochs),
+           "videos": {"train": tr_videos, "val": va_videos}, "smoke": bool(a.max_epochs or a.smoke),
            "iface_params": int(sum(p.numel() for p in params))}
-    desc = f"{a.type}_{a.arm}" + ("_smoke" if a.max_epochs else "")
-    manager = ExperimentManager(C.ROOT / "experiments", "phase1", "stage2pilot_dp", desc, a.seed)
+    desc = f"{a.type}_{a.arm}" + (f"_ep{fixed}" if fixed else "") + ("_smoke" if a.max_epochs or a.smoke else "")
+    manager = ExperimentManager(C.ROOT / "experiments", "phase1", a.exp_prefix, desc, a.seed)
     manager.setup(cfg)
-    run = tracking.init(manager.exp_id, config=cfg, group=C.TASK_ID, job_type="stage2pilot_dp", exp_dir=manager.exp_dir)
+    run = tracking.init(manager.exp_id, config=cfg, group=a.task_id, job_type=a.exp_prefix, exp_dir=manager.exp_dir)
     if run is None:
         raise RuntimeError("W&B tracking could not start; no experiment executed")
     init_res, _ = evaluate(model, val_data, names)
     best, best_score, stale, stopped, history, no_grad_steps = None, -1.0, 0, None, [], 0
     started = time.monotonic()
-    ckpt = C.STORE / "dp_ckpt" / f"{manager.exp_id}.pth"
+    ckpt = C.STORE.parent / a.task_id / "dp_ckpt" / f"{manager.exp_id}.pth"
     ckpt.parent.mkdir(parents=True, exist_ok=True)
     for epoch in range(1, max_epochs + 1):
         model.train()
@@ -278,7 +292,8 @@ def cmd_train(a):
                         "val_accuracy": val["phase_accuracy"]})
         tracking.log({"train/loss": total / len(order), "val/jaccard": score, "val/accuracy": val["phase_accuracy"]},
                      step=epoch)
-        if score > best_score:
+        # --fixed-epochs: 最良の回を選ばず、最後の epoch の状態を結果にする（界面の重みと確率もその状態）
+        if (epoch == fixed) if fixed else score > best_score:
             best_score, stale = score, 0
             best = {**val, "epoch": epoch}
             best_probs = probs
@@ -286,12 +301,13 @@ def cmd_train(a):
                         "seed": a.seed, "signal_dim": sig_tr.dim}, ckpt)
         else:
             stale += 1
-        if stale >= STOP["patience"]:
+        if not fixed and stale >= STOP["patience"]:
             stopped = epoch
             break
     head_unchanged = all(torch.equal(v, model.head.state_dict()[k]) for k, v in head_state0.items())
     metrics = {"phase_jaccard": best["phase_jaccard"], "phase_accuracy": best["phase_accuracy"],
                "phase_macro_f1": best["phase_macro_f1"], "best_epoch": best["epoch"],
+               **({"result_selection": "final_epoch", "result_epoch": best["epoch"]} if fixed else {}),
                "per_video": best["per_video"], "init_phase_jaccard": init_res["phase_jaccard"],
                "init_phase_accuracy": init_res["phase_accuracy"], "epochs_run": epoch, "early_stopped_epoch": stopped,
                "reached_epoch_cap": stopped is None and epoch == max_epochs,
@@ -307,10 +323,13 @@ def cmd_train(a):
     C.write_json(manager.exp_dir / "logs/history.json", history)
     np.savez(manager.exp_dir / "predictions/val_probs_best.npz",
              **{v: p.astype(np.float32) for v, p in best_probs.items()})
+    how = (f"{fixed} epoch 学習し途中で止めない。結果は {fixed} epoch 目の状態（最良の回を選ばない）。" if fixed
+           else "val だけで評価し選ぶ。")
     (manager.exp_dir / "notes.md").write_text(
-        f"# 非公式（T-2026-10-18-stage2-pilot-folda） DP {a.type} {a.arm} seed {a.seed}\n\n"
-        f"受け取り手は確定塔の時間ヘッド（凍結）。界面だけを学ぶ（W1）。val だけで評価し選ぶ。test は通していない。\n"
-        f"best epoch {best['epoch']} / val macro Jaccard {best['phase_jaccard']} / accuracy {best['phase_accuracy']}\n"
+        f"# 非公式（{a.task_id}） DP {a.type} {a.arm} seed {a.seed}\n\n"
+        f"受け取り手は確定塔の時間ヘッド（凍結）。界面だけを学ぶ（W1）。{how}test は通していない。\n"
+        f"{'result' if fixed else 'best'} epoch {best['epoch']} / val macro Jaccard {best['phase_jaccard']} / "
+        f"accuracy {best['phase_accuracy']}\n"
         f"epochs {epoch}（停止 {stopped}）、学習前 Jaccard {init_res['phase_jaccard']}\n")
     tracking.finish()
     print(f"DP_RUN_COMPLETE {manager.exp_dir} jaccard={best['phase_jaccard']:.6f} epoch={best['epoch']}", flush=True)
@@ -340,13 +359,24 @@ def main():
     i.add_argument("--inst-variant", choices=["literal", "uq"], default="literal")
     i.add_argument("--perturb-scale", type=float, default=0.05)
     i.add_argument("--out", required=True)
+    i.add_argument("--arm", choices=ARMS, default=None, help="一つの腕だけを調べる（既定は予測-noCF と正解）")
+    i.add_argument("--task-id", default=C.TASK_ID, help="記録に書く契約の識別子")
     t = sub.add_parser("train")
     t.add_argument("--type", required=True, choices=list(TYPES))
     t.add_argument("--arm", required=True, choices=ARMS)
     t.add_argument("--seed", type=int, required=True)
     t.add_argument("--inst-variant", choices=["literal", "uq"], default=None)
     t.add_argument("--max-epochs", type=int, default=None, help="短い試走だけに使う（腕の本番では渡さない）")
+    t.add_argument("--fixed-epochs", type=int, default=None,
+                   help="この回数だけ止めずに学習し、最後の epoch の状態を結果にする（最良の回を選ばない）")
+    t.add_argument("--task-id", default=C.TASK_ID, help="run の契約の識別子（config・notes・界面の重みの置き場）")
+    t.add_argument("--exp-prefix", default="stage2pilot_dp", help="実験フォルダの名前の接頭辞")
+    t.add_argument("--smoke", action="store_true", help="--fixed-epochs の短い試走の印")
     a = ap.parse_args()
+    if a.cmd == "train" and a.fixed_epochs and a.max_epochs:
+        raise SystemExit("--fixed-epochs と --max-epochs は組み合わせない")
+    if a.cmd == "train" and a.smoke and not a.fixed_epochs:
+        raise SystemExit("--smoke は --fixed-epochs と組で使う（従来の試走は --max-epochs）")
     if a.cmd == "train" and TYPES[a.type][1] == "tok" and a.inst_variant is None:
         raise SystemExit("D3 の型は --inst-variant（literal か uq）を渡す")
     {"identity": cmd_identity, "train": cmd_train}[a.cmd](a)

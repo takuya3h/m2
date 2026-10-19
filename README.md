@@ -1531,3 +1531,24 @@ forward した region token が既存の `t1a_regiontoken/relation_detr_seed42` 
 - **照合の結果**（2026-10-19）: 地図 C 29 ID（一致 27・差 1・照合不能 1）、B 34 ID（一致 29・差 5）、N 36 ID（一致 16・差 2・照合不能 18）。
   不在と到達不能は 0。様式の検査は三つとも違反 0。地図の本文は書き換えていない（差をどう反映するかは起票者が決める）
 - 試験: `tests/test_verify_evidence_ids.py`（HTTP は差し替え、通信の口を塞いで実行）・`tests/test_check_evidence_map.py`・`tests/test_bundle_extras_schema.py`
+
+### Stage 2 予備測定の直し: 4 epoch 目の値と入れ替えの腕（2026-10-19、andrew・一部 bengio）
+
+契約 `T-2026-10-19-stage2-pilot-fix-epoch4-shuffle`（analysis。**非公式の測定。関門の判定と設計の判断に使わない**）。
+結果は `experiments/analysis/stage2_pilot_fix/REPORT.md`、記録は `tasks/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/`。
+
+- 前回の予備測定（`T-2026-10-18-stage2-pilot-folda`）の値を、学習を 4 epoch 終えた時点の状態（最良の回を選ばない）で出し直し、
+  全型に**入れ替えの腕**（予測-noCF と同じ値の集まりで、フレームとの対応だけを seed 42 の並べ替えで壊した腕）を足した。
+  DP 26 本（seed 42 の回し直し 21、入れ替え 5）、PD 12 本（回し直し 8、入れ替え 4）と P2F の入れ替えの評価 1 本。DP の回し直しは前回の epoch 1〜4 と完全一致した。
+  予測-noCF の Δ入替（信号の中身による差）は D1-L1 で Jaccard +0.0013（Δ空 +0.0046 の大半は入れ替えた信号でも出る）、P1-W1・P1-W2・P2L で標的群 AP +0.0087・+0.0149・+0.0075、
+  D3 と P3 は負。選び方による差は小さかった。P3 の予測-CF・正解予測-CF は利用者の承認で bengio で回した
+- **`scripts/train_t1b.py` に `--fixed-epochs` を足した**（`--epochs` の回数を止めずに学び、最後の epoch の状態を結果にする。学習率一定。
+  metrics.json・per_class_ap.json・best_t1b.pth・best の予測がその状態になり、`result_selection: final_epoch` を残す）
+- **`scripts/stage2pilot/dp_train.py` に `--fixed-epochs N`・`--task-id`・`--exp-prefix`・`--smoke`・腕 `shuffle`・`identity --arm` を足した**。
+  どちらも既定の経路は変えていない（`tests/test_train_t1b_stage2pilot_defaults.py`、`tests/test_stage2pilot_dp_train_defaults.py` で固定）
+- 新しい道具 `scripts/stage2pilot/`: 入れ替えた信号（`shuffle_signals.py`）、起動（`run_pd_fix.sh`・`run_dp_fix.sh`。`run_pd_fix.sh` は
+  `S2FIX_BODY`・`S2FIX_CODE` で別ホストの worktree から回せる）、後処理（`pd_fix_finalize.py`）、集計（`aggregate_fix.py`）、
+  前回の材料の照合（`material_check.py`）、test 不使用の検査（`test_audit_fix.py`）、別ホストの入力の照合（`input_digest.py`。Relation-DETR の未 commit の変更を中身で比べる）
+- GPU 1 枚に PD を 3 本載せても合計の速さは伸びない（andrew の実測で 3% と 0）。bengio の `third_party/Relation-DETR` は andrew と 23 件違い、
+  検出器の仮想環境も壊れていた（この契約では andrew の中身を別の場所に置いて参照させ、仮想環境を uv の 3.11.16 に向け直して回した）
+- 大きな生成物（入れ替えた信号・重み）は版管理と同期の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/` に置いた

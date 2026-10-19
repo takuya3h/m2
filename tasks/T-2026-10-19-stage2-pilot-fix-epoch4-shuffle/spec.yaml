@@ -1,0 +1,87 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-19-stage2-pilot-fix-epoch4-shuffle"
+  kind: analysis
+  title: "Stage 2 の非公式の予備測定の直し。前回の全 run の値を四つ目の epoch を終えた時点の値で出し直し、前回の全型に入れ替えの腕を足す"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-19T08:00:00Z"
+  created_from:
+    runindex_commit: "63ae65da8c7d32df591f5e2ee4358286b72c726b"
+    counts: {index: 1961, experiments: 750, verdicts: 1506}
+  depends_on: [T-2026-10-18-stage2-pilot-folda]
+  amendments:
+    - date: "2026-10-19"
+      reason: "Task A-6 による差し替え。前回の契約と同じ読み（git log -1 -- <経路> の最新 commit）で実測すると、runindex/ は 63ae65da、context/conventions.md は b12eda6c で、起票時の値（31af81e7、4d42edb9）と食い違った。起票時の値はどちらも最新 commit の子孫で、その間に両経路を変えた commit は 0 件、63ae65da..HEAD と b12eda6c..HEAD の差分も空。内容は同一で、本契約の実行に影響しない。件数（1961/750/1506）は実測と一致"
+      diff: "meta.created_from.runindex_commit を 31af81e7720db51372a1659c844e7806a3b36563 から 63ae65da8c7d32df591f5e2ee4358286b72c726b へ。contract.conventions_rev を 4d42edb93ed68f7103d52c54a1064a1d454f8984 から b12eda6cf0f53f4f0d09e5b6c53bb3afde9831ac へ"
+    - date: "2026-10-19"
+      reason: "実行中の利用者の承認（21:4x JST）。終わりを早めるため、PD の P3 の 4 本（正解、予測-CF、正解予測-CF、入れ替え）を別ホスト bengio（RTX A6000 × 2）で回す。andrew で走っていた P3 の空と予測-noCF は止めずに andrew で終える。利用者は P3 の中で空の腕と他の腕のホストが違うこと（Δ空・Δ入替にホストの差が混ざる）を承知のうえで、P3 の 6 本を bengio にそろえる案（約 35 分早い）ではなくこの案（約 1 時間 45 分早い）を選んだ。設定（受け取り手・界面・学習範囲・学習率・増強・batch・数値精度・長さ・seed・信号）は andrew と同じで、bengio は git worktree（同期と自動同期の外）で回し、結果は別の分岐で受け取って統合する。efros と ilya には接続しない"
+      diff: "spec.yaml の plan.resources.server（andrew）に対し、P3 の 4 本だけ bengio。scripts/stage2pilot/run_pd_fix.sh に置き場の切り替え（S2FIX_BODY、S2FIX_CODE。既定は従来どおり）、pd_fix_finalize.py に EGO_ANN_DIR の優先を足した"
+    - date: "2026-10-19"
+      reason: "実行中の利用者の決定（22:4x JST）。bengio は S4 で止まった（Relation-DETR のソースの違いと検出器の仮想環境の故障）。利用者は bengio を直して回すと決め、さらに空いた andrew の GPU 0 を使うため、P3 の 4 本のうち正解と入れ替えを andrew で回すことにした。結果として P3 は空・予測-noCF・正解・入れ替えが andrew、予測-CF・正解予測-CF が bengio になる。予測-noCF の Δ入替と正解の Δ空・Δ入替は andrew の中で閉じる"
+      diff: "2 件目の bengio の分担を P3 の 4 本から 2 本（予測-CF、正解予測-CF）へ。handoff_bengio.md の §6・§7"
+intent:
+  question: "前回の予備測定の差は、最良の回を評価と同じ val で選んだことと、空の腕が学ばない型があったことで、どれだけ変わって見えていたか。学習の長さを固定した値と、信号の中身だけを壊した入れ替えの腕との差で測り直すと、方向ごと・型ごとの差はどうなるか。非公式の測定であり、関門の判定にも設計の判断にも使わない"
+  decision_at_stake: "前回の予備測定の値を、選び方の偏りを除き、信号の中身の効果を切り分けた形で進捗報告に使えるようにする。新しい界面の型の候補を回す次の契約は、本契約の道具（学習の長さの固定、入れ替えの腕）をそのまま使う"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery の動画 01 から 15 のうち、折り A の train と val の動画（conventions#folds）。前回の契約と同じフレーム集合（術具と工程の両方の注釈があるもの）。折り A の test の動画のフレームは信号の作成と学習と評価に通さない"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/stage2pilot/dp_train.py", "scripts/stage2pilot/dp_model.py", "scripts/stage2pilot/run_dp_batch.sh", "scripts/stage2pilot/run_pd.sh", "scripts/stage2pilot/pd_model.py", "scripts/stage2pilot/pd_eval.py", "scripts/stage2pilot/arm_signals.py", "scripts/stage2pilot/common.py", "scripts/stage2pilot/aggregate.py", "scripts/stage2pilot/test_audit.py", "scripts/train_t1b.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#env_p0, conventions#folds, conventions#split, conventions#eval_recipe, conventions#det_groups]
+  conventions_rev: "b12eda6cf0f53f4f0d09e5b6c53bb3afde9831ac"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/analysis/stage2_pilot_fix", "experiments/phase1/stage2fix", "runindex/"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。分岐、起点、未追跡の退避、task-start が置いた抑止の目印の確認、装置の他プロセス、記憶領域、試験の失敗の名前", gpu: false, est: "45m"}
+    - {id: B, name: "材料の確認と再現。前回の信号と run の記録が andrew に在り要約値が一致することを確かめ、塔単独の val を再現する", gpu: true, est: "1h"}
+    - {id: C, name: "道具の変更。学習の長さを固定して四つ目の epoch の状態を結果にする仕組みと、入れ替えの腕を足し、既定の挙動が変わらないことと恒等性を確かめる", gpu: true, est: "4h"}
+    - {id: D, name: "再計算。前回の全 run の四つ目の epoch の値を記録から出す（学習なし）", gpu: false, est: "1h"}
+    - {id: E, name: "学習。四つ目の epoch の値が無い工程から検出の run と、検出から工程の seed 42 の腕を固定の長さで回し直し、全型に入れ替えの腕を回す", gpu: true, est: "36h"}
+    - {id: F, name: "集計、検証、報告", gpu: false, est: "3h"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、phase0 に前回の道具が在り、装置に本契約以外の compute プロセスが無く、記憶領域と試験の失敗の名前を記録した", on_fail: stop}
+    - {id: G2, after: B, check: "前回の信号の要約値が前回の記録と一致し、塔単独の val が前回の値と許容差の中で再現した", on_fail: ask}
+    - {id: G3, after: C, check: "固定の長さの仕組みが四つ目の epoch の状態を結果にし、既定の経路が前回の集計を同じ値で再現し、入れ替えの信号が値の集合を保ったまま対応だけを壊し、入れ替えの腕の学習前の出力が塔単独と一致し、test の動画のフレームを通していない", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+  resources: {server: andrew, gpu: 2, est_hours: 46, runs: 39}
+outputs:
+  must_have: [REPORT.md, RESULT.md, result.yaml, audit.md]
+  destination: "experiments/analysis/stage2_pilot_fix/"
+  acceptance:
+    - "a: 開始状態として、分岐、起点、phase0 に前回の道具が在ること、未追跡の退避、装置の compute プロセスの一覧、記憶領域の空き、試験の失敗の名前が記録されている"
+    - "b: 前回の信号と run の記録（工程から検出の epoch ごとの記録、検出から工程の epoch ごとの記録）の在否と要約値が記録され、前回の記録と一致している"
+    - "c: 工程塔と検出塔の塔単独の val が andrew で再現され、前回の値との差が SPEC の許容差の中にあるか、超えて停止した記録がある"
+    - "d: 学習の長さを固定する仕組みが、四つ目の epoch を終えた時点の状態を結果（指標、クラス別、動画別）にし、最良の回を選ばない。既定のままでは前回と同じ挙動になる"
+    - "e: 入れ替えの信号が、元の信号と値の集合が同じで、フレームとの対応だけが変わっていることが記録されている"
+    - "f: 入れ替えの腕の学習前の出力が塔単独と一致し、界面の最後の層を零でない値にすると出力が変わる"
+    - "g: 前回の全 run について、前回の最良の回の値と四つ目の epoch の値が並んだ表があり、四つ目の値が無い run は理由つきで書かれている"
+    - "h: SPEC の回し直しの表のすべての run が固定の長さで回り、前回の記録との再現の差が記録されている"
+    - "i: SPEC の入れ替えの腕の表のすべての腕が回り（固定版は評価だけ）、測れなかった腕は理由つきで UNKNOWN と書かれている"
+    - "j: 型ごと・腕ごとに、四つ目の epoch の値、空の腕との差、入れ替えの腕との差、前回の最良の回の差が表にあり、SPEC の読み方の規則で記述されている"
+    - "k: 検出から工程の全腕と、工程から検出の型ごとの中間記録が分岐へ push されている"
+    - "l: test の動画のフレームを信号の作成と学習と評価に一度も通していないことが、通した動画の集合で示されている"
+    - "m: 前回の run の置き場、前回の報告、data の raw と external、凍結源、既存の checkpoint に書き込んでいない。試験の失敗が増えていない"
+    - "n: PR が Draft でなく存在し、base が phase0、分岐が feat/stage2-pilot-fix-epoch4-shuffle"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "装置に本契約以外の compute プロセスがある場合（止めずに利用者に諮る）"
+    - "前回の信号か run の記録が andrew に無い、または要約値が前回の記録と食い違う場合"
+    - "塔単独の val が前回の値と許容差を超えて食い違う場合"
+    - "既存スクリプトの既定の挙動を変えないと実装できない場合"
+    - "入れ替えの腕の定義が型の構造と合わず、意味を変えないと実装できない場合"
+    - "記憶領域が足りない場合"
+    - "実行基盤が書き込み、移動、削除を拒む場合"
