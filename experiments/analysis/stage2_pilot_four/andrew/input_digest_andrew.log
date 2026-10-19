@@ -1,0 +1,61 @@
+{
+ "signals": {
+  "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P-GT_train.npz": "6cb729a9724efdf51aa8d92e239d7755aa6d564fe4edd2ce1ba76b7e3cf79699",
+  "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P-GT_val.npz": "d21a3cf09246aece268a208ee6fe19ac40bbf561af202143ab3de2e196ccfd2a",
+  "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P0_val.npz": "082387a092fe456d349c8cc46d6344042396bc39911461d88d2c51841b03dae8",
+  "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/cf/P0_train.npz": "e7b23991bce769abf6de804b59a9fd7813cca2f969d1655b9d2be0ef8e631cb8",
+  "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/arms/PD/gtpred_CF_train.npz": "6b0e99369b350caf4677f0861a0b93d7604d00ef0b81aeafaad0e7be30b19ac9",
+  "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/arms/PD/gtpred_noCF_val.npz": "5fe0a89c8402f455bbc0a3d85d7f00041f888e26fc334a62ab1c416ea94a5b8e",
+  "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/signals/shuffle/P0_train.npz": "09814ab2f51153a8c4b3640de5613ed121b47bf7dafa6519014daef15598e843",
+  "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/signals/shuffle/P0_val.npz": "9ffc4e4d84a430106d12af43e6e26c81280e73e7ef7eddc850a0b2f93e01a113"
+ },
+ "det_ckpt": "30d199b15201cf3c03954852d8acc6fb58fe5349baef2fd200e877237ff682c4",
+ "annotations": {
+  "instances_train.json": "fc63621ea496ccdc7f49099b1f0b58763d3302e13611f40d6812e258f829db2f",
+  "instances_val.json": "db605c06626ff82407f88d9342af339914bda1c24c2ee291fc860cd46542c615"
+ },
+ "images": {
+  "train": {
+   "count": 9657,
+   "missing": 0,
+   "videos": [
+    "01",
+    "02",
+    "03",
+    "06",
+    "08",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15"
+   ],
+   "list_sha256": "c5c27b8585bfd8449f9a9261b7e141a2bad25c655939e624066a057b90f3e829"
+  },
+  "val": {
+   "count": 1515,
+   "missing": 0,
+   "videos": [
+    "09",
+    "10"
+   ],
+   "list_sha256": "025c644b0b06d379ad59c06adf22edbe97f09fe8cb727f7fe3e7f08f138e75e7"
+  }
+ },
+ "relation_detr": {
+  "commit": "b485955c72452788240600da6d0f0b8cc49f33c7",
+  "uncommitted": 42,
+  "msda_cuda_sha256": "307450b39b66d140e95ca80d8ff40b2979b03d848a53ee415afbb2f0e7314dcd",
+  "source_files": 142,
+  "source_tree_sha256": "2f08e5213cb5c377c576172b0d39964f46fb6afb80532ce11f8bad7437f1e393"
+ },
+ "torch": {
+  "version": "2.1.2+cu118",
+  "cuda": "11.8",
+  "cudnn": 8700,
+  "gpus": [
+   "NVIDIA RTX A6000",
+   "NVIDIA RTX A6000"
+  ]
+ }
+}
