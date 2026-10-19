@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（674 件）
+## 未処理（682 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -681,6 +681,13 @@
 - [ ] 2026-10-17 [cc] andrew の検出器に二周目の収束規則（util/convergence.py、main.py）と D*-ImageNet の設定 3 件を efros の実体から戻した。収束規則の試験は 9/9 PASS。新しい snapshot は third_party_snapshot/efros/2026-10-17/Relation-DETR/（T-2026-10-17-tower-reselect-prereq）
 - [ ] 2026-10-17 [cc] 規約 frame_sets の「追加動画 17〜21」（SPEC §5.2 の文言どおり）と conventions#folds の「追加 6 動画 17〜22」が食い違う。動画 22 の扱いを明示するかは未決（T-2026-10-17-tower-reselect-prereq）
 - [ ] 2026-10-17 [cc] decisions_required の 2 件（efros に届かない場合の版、andrew だけの改変の扱い）は利用者が回答し amendments に記録。2 件とも発火しなかった（T-2026-10-17-tower-reselect-prereq）
+- [ ] 2026-10-18 [cc] 非公式の予備測定（折り A、今ある塔）。結果は関門の判定と設計の判断に使わない。全値は experiments/analysis/stage2_pilot_folda/REPORT.md（T-2026-10-18-stage2-pilot-folda）
+- [ ] 2026-10-18 [cc] 利用者の決定: D3 の予測のトークンは後処理後の出力の重複しない query の上位 K（D0-INST-UQ）。字面どおりの読みでは上位 K の 45% が同じ query の重複だった。SPEC §3 の書き方を直すかは未決（T-2026-10-18-stage2-pilot-folda）
+- [ ] 2026-10-18 [cc] 利用者の決定: PD は seed 42 だけ（amendments 3 件目）、PD の止め方の上限は 8 から 4 epoch（4 件目、締め切りのため）。PD では R と §5.2 規則 2 を出していない。本測定で seed と上限を戻すかは未決（T-2026-10-18-stage2-pilot-folda）
+- [ ] 2026-10-18 [cc] 空の腕の幅 R は D1・D3 で構造上 0（零入力・トークン 0 個では勾配が届かない）。FiLM（D2・P1）の空の腕は定数の変調を学び、陰性対照（信号を入れ替えても出力が同じ）は FiLM だけが通らない。完了判定 k と Task D-5 の対照の設計を見直す必要（T-2026-10-18-stage2-pilot-folda）
+- [ ] 2026-10-18 [cc] 交差適合版の送り手は確定塔の val より大きく弱い（検出 train mAP 0.4002 対 val 0.7273、工程 train Jaccard 0.2449 対 val 0.7762）。半分のデータで学ぶ交差適合用の塔では、予測-CF の腕の学習時の信号が評価時より弱くなる。本測定での二分割の粒度（5 分割など）は未決（T-2026-10-18-stage2-pilot-folda）
+- [ ] 2026-10-18 [cc] andrew の GPU 2 枚の DDP は NCCL_P2P_DISABLE=1 が要る（IOMMU で P2P の all_reduce が無言で止まる）。工程塔の fine-tune は caching allocator の確保が 42 GB まで膨らみ、PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True で 28〜29 GB に収まった（T-2026-10-18-stage2-pilot-folda）
+- [ ] 2026-10-18 [cc] §2 の時刻の道具は因果の予測（P0）を −1／−2 と判定する（情報の時刻と予測の遅れを区別できない）。構成からの検査（先頭から t までの特徴だけを時間ヘッドに通す）で同時刻を確かめた。道具の改修は未決（T-2026-10-18-stage2-pilot-folda）
 - [ ] 2026-10-19 [cc] 照合で「書誌に差」の 8 件は地図に反映していない（決定 2）。内訳は題名の欄が略称・説明の行 6 件（B-02 の 1610.08851 と 1610.08844「M2CAI 技術報告」、B-03「MTRCNet-CL」、B-06「CLIPSeg」、B-10「SELSA」、N-10「KAFR」。著者はすべて一致）、題名の語の違い 1 件（C-21「…Digital Twin-based Scene Representation」→ arXiv「…Digital Twin Representation」）、著者の欠け 1 件（N-01 地図 1 名・DataCite 6 名）。題名の欄に正式の題名を書くかは起票者が次の契約で決める（docs/evidence/verification/）
 - [ ] 2026-10-19 [cc] B-02 の書誌 ID の欄の二つは別の文献。1610.08851 は「Single- and Multi-Task Architectures for Tool Presence Detection Challenge at M2CAI 2016」、1610.08844 は「…for Surgical Workflow Challenge at M2CAI 2016」（著者はどちらも Twinanda, Mutter, Marescaux, de Mathelin, Padoy）。B-02 がどちらを指すかは起票者が決める
 - [ ] 2026-10-19 [cc] C-05（ORViT、2110.06915）の掲載先は地図が「ECCV 2022 系」、arXiv の comment が「CVPR 2022」。掲載先は分類に入れていない。地図へ反映するかは起票者が決める
@@ -688,6 +695,7 @@
 - [ ] 2026-10-19 [cc] bengio の make test は収集の段階で中断する（third_party/Relation-DETR/util/convergence.py が無い）。bengio へ 2026-10-17 の snapshot を戻すかは未決（scripts/restore_relation_detr_source.sh efros/2026-10-17）
 - [ ] 2026-10-19 [cc] fetch_task の extras_from_spec は bytes: true を通す（schema は落とす）。test_fetch_task.py::test_rejects_unknown_file_name は文言の食い違いで変更前から落ちる。どちらも本契約では直していない。直す契約を出すかは未決
 - [ ] 2026-10-19 [cc] arXiv の API は 02:07 の 1 件のあと 02:18〜02:24 にキャッシュに無い問い合わせをすべて 429 で返し、10 分あけて戻った（Retry-After なし）。照合器の待ちは最長 約 19 分にした。同じ出口の IP の他の台の影響かは確かめていない
+- [ ] 2026-10-19 [cc] 結果の要点（非公式）: 正解の腕で PD の標的群 AP は P1 +0.020〜+0.023、P2L +0.014、P3 はほぼ零。DP は D1-L1 の全腕で Jaccard 約 +0.009、D1-L2・D3 は Jaccard と accuracy が逆向き。予測-CF は予測-noCF より小さい（交差適合版の送り手が弱い）。§5.3 の予測は 6 が当たり、4 は 9 型中 3（T-2026-10-18-stage2-pilot-folda）
 - [ ] 2026-10-19 [cx] 契約の変更範囲と task スキルの必須記録の衝突について、利用者は選択肢1（本契約の inbox.d 一件の追加）を許可した。C=29・B=34・N=37件すべて書誌一致、様式違反0、G1〜G3 pass。（T-2026-10-19-evidence-maps-revise）
 
 ## 処理済み（1 件）

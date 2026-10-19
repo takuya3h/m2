@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（632 件）
+## 申し送り（637 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1008,11 +1008,19 @@
 - tools/fetch_task.py の extras_from_spec は bytes: true を通す（schema は落とす）。tests/test_fetch_task.py::test_rejects_unknown_file_name は文言の食い違いで変更前から落ちる。どちらも本契約では直していない
 - 試験の副産物 .coverage が bengio の作業ツリーに未追跡で残っている（commit していない）
 
+### T-2026-10-18-stage2-pilot-folda
+
+- 本測定に進むなら、PD の seed（今回は 42 だけ）と止め方の上限（今回は 4）を戻すかを決める
+- 完了判定 k の四列目と Task D-5 の陰性対照を、空の腕が構造上塔単独と同値になる型（D1・D3）と、定数の変調を学ぶ型（FiLM）に分けて設計し直す
+- 交差適合用の塔を train の半分で学ぶと送り手が確定塔の val より大きく弱くなる（検出 mAP 0.40 対 0.73、工程 Jaccard 0.24 対 0.78）。分割の粒度（5 分割など）を決める
+- §2 の時刻の道具を、予測の遅れと情報の時刻を区別できる形（構成からの検査）に置き換えるか決める
+- §3 の D3 の予測のトークンの定義を、重複しない query の上位 K と明記する
+
 ### T-2026-10-19-evidence-maps-revise
 
 - C=29、B=34、N=37の全IDが実在・書誌一致。N追加書誌18 IDは全て該当行と比較。書誌IDなしはC-24だけ。
 
-## 断定できなかった事項（396 件）
+## 断定できなかった事項（398 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1755,18 +1763,23 @@
 - arXiv の 429 が同じ出口の IP の他の台の問い合わせによるものか（この台には arXiv へ問い合わせる他のプロセスが無かった）
 - 新しい試験がネットワークを断った状態でも通るか（unshare -rn が許されず測れなかった。通信の口を塞ぐ仕掛けで代えた）
 
-## 起票者の誤りの型（364 件）
+### T-2026-10-18-stage2-pilot-folda
+
+- PD の R、§5.2 規則 2 の読み、実現率、型どうしの比較の幅の判定（seed 1 つのため）
+- P1-W1 の予測-noCF の凍結部の要約値（5 epoch 目の始まりで外から止めたため学習の終わりの記録が無い）
+
+## 起票者の誤りの型（370 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 97 |
-| `asserted_without_measuring` | 152 |
-| `self_contradiction` | 95 |
+| `check_does_not_check` | 100 |
+| `asserted_without_measuring` | 154 |
+| `self_contradiction` | 96 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 0 |
 | `rule_read_narrowly` | 1 |
 
-合計 364 件（対を持つ契約 126 件から）
+合計 370 件（対を持つ契約 127 件から）
 
