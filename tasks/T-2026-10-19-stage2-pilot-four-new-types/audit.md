@@ -456,3 +456,11 @@ andrew の記録の写し（利用者の決定 01:44 JST の 6）:
   その sha256 が andrew と同じことは andrew の S3（`input_digest`）で確かめてある
 - 試験（終了時）: 8 failed、862 passed、15 skipped、収集の誤り 1（`final/pytest_end.txt`）。**失敗の名前の集合は開始時と同じ**
 - `make forbidden-check TASK=T-2026-10-19-stage2-pilot-four-new-types`: status pass、変更 722 本、**violations 0**
+
+### 送出（07:0x JST）
+
+- 報告一式の commit `6287b174` を push。挙げた commit 15 個（andrew の 3 個を含む）がすべて遠隔の先頭の祖先（`git merge-base --is-ancestor`。存在しない commit では祖先でない）
+- `gh pr edit 243`（題から「実行中」を外し、本文を完了の内容に）→ `gh pr ready 243` → `isDraft: false`、base phase0、head `feat/stage2-pilot-four-new-types`
+- `source scripts/load_env.sh && make task-report TASK=T-2026-10-19-stage2-pilot-four-new-types` → **rc=0**（verdict pass、n_issuer_defects 3、report_sha256 `b47dc73cd4911776a9dd6d1d6321e25beb5ae90a1417d3ae1c2c147a83533a10`、
+  13,579 B。出力は `final/task_report.txt`）
+- `make task-release` は回していない（task-start を使っていないため。amendments 1 件目）

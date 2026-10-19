@@ -90,4 +90,4 @@ tool-history のゲートは開かず（4 epoch 目の tanh(α) 0.005〜0.012）
 
 ## 8. 送出
 
-PR #243（base phase0、〔送出〕）。`make task-report` の終了コード 〔送出〕。`make task-release` は使っていない（task-start を使っていないため。amendments 1 件目）。
+PR #243（base phase0、head `feat/stage2-pilot-four-new-types`、Draft でない。07:0x JST に Draft を外した）。`make task-report` の終了コード **0**（判定 pass、起票者の誤り 3 件、報告 13,579 B、sha256 `b47dc73cd4911776…`）。`make task-release` は使っていない（task-start を使っていないため。amendments 1 件目）。
