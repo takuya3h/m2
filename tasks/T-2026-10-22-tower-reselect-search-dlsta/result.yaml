@@ -1,0 +1,41 @@
+result_version: 3
+task_id: T-2026-10-22-tower-reselect-search-dlsta
+status: stopped
+host: dlsta
+branch: feat/tower-reselect-search-dlsta
+pr: null
+merged: false
+gates:
+- id: L3
+  verdict: stop
+  note: P5 frozen_source_hash FAIL。checkpoint 不在。9 PASS / 1 WARN / 3 SKIP / 1 FAIL。make
+    exit 2。G1〜G4 未評価。
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+deviations:
+- type: environment
+  note: checkpoint が無く andrew への SSH も認証拒否（exit 255）のため、L3 失敗で学習前に停止。
+- type: judgement
+  note: 再開時に目印が無く task スキルの例外で所有情報つき .sync-pause を置いた。学習前必須準備として prereg をコミットし実測情報を
+    spec に記録。参照原文は契約 §9 に従い audit.md に保存。
+issuer_defects:
+- type: check_does_not_check
+  note: plan.env.preflight は deterministic_flags を宣言しているが、現在の検査器の P3 は判定基準未確定という固定の理由で常に
+    SKIP を返し、決定論的アルゴリズムと TF32 の実行時設定を一切測らない。今回も SKIP であり、設定が有効な証拠としては使えず、学習時の全 rank
+    の値を別に記録する必要がある。
+positive_controls:
+- judgement: P5 が欠落した checkpoint を拒否する
+  breaking_input: 規約の incoming/seed42/best_ap.pth が存在しない状態
+  observed: P5 frozen_source_hash FAIL 凍結源が存在しない。make exit 2。
+- judgement: P13 と P14 の破損入力対照
+  breaking_input: 対称性の UNKNOWN と存在しない提案カード経路の写し
+  observed: UNKNOWN（L3 停止により未実施）
+followups:
+- andrew に SSH 認証できる既存経路を用意して指定チェックポイントを取得し、正本 SHA-256 とサイズ照合後に L3 を再実行する。鍵やトークンの値を会話・監査記録に書かない。
+unknowns:
+- 全試験未実施。tests の 0 は観測した実行件数 0 を表し、既存試験の失敗数や合格を表さない。
+- checkpoint ローカル SHA-256、探索の値と順位、G1〜G4、P9 host_mismatch の原因。
+commits:
+- e9f4e3b4f34410c023c7a4ab240971c1d70c2510
