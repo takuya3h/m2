@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（657 件）
+## 申し送り（661 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1058,7 +1058,14 @@
 - skip-worktree の印つきで変更のあるファイルは git status に出ず、新しい分類でも数えない（§5.1 の外）。phase0 がその経路を変えると切り替えが拒まれ終了コード 4 で巻き戻る。andrew の docs/analysis_scripts/README.md がこれに当たる
 - andrew の .git/info/exclude に 2026-10-21 起動前に足した 3 行と README の skip-worktree の印は残したまま（控え ~/m2-hold/T-2026-10-21-ops-taskstart-resume-folds-val/）。戻すかは利用者の判断
 
-## 断定できなかった事項（409 件）
+### T-2026-10-21-ptower-multigpu-syncbn
+
+- 二枚の道は float64 で一枚と 1e-13 の桁で一致するが、fp32 では一枚の道そのものが float64 から最初の更新で 1.1e-2 ずれ、AdamW の更新を重ねると 0.2〜0.35 に広がる。dlsta の二枚の道で選んだ処方を andrew の一枚で回し直すとき、同じ処方でも重みは一致しない（一枚の道どうしでも足し合わせの順序が変われば同じ）。探索の手続きのカードで、この差を前提に置くか決めること
+- 処方のままの二枚は一歩 0.79〜0.80 s（GPU ごと 8 枚）、一 epoch の学習の計算値は約 480 s（val を含まない）。二本同時は 0.806〜0.822 s。探索で二本を並べる材料
+- NODE の組（GPU0+GPU1）は利用者の指示で測っていない。GPU0 と GPU1 には容器の外の使用が出る（env-facts に追記）
+- repo の外 ~/m2-scratch/T-2026-10-21-ptower-multigpu-syncbn/（約 10 GB）を残した。片付けは利用者の判断
+
+## 断定できなかった事項（412 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1832,18 +1839,24 @@
 
 - dlsta・bengio など他の台での分類の所要時間と git の版（--pathspec-from-file は git 2.26 以上を要する。andrew は 2.43.0）
 
-## 起票者の誤りの型（382 件）
+### T-2026-10-21-ptower-multigpu-syncbn
+
+- acceptance c: 契約の字面（fp32 で測る前の許容差に本番が収まる）は未達。利用者の判断で float64 の照合を判定に使った
+- NODE の組（GPU0+GPU1）の一歩の時間と記憶量
+- val を含む一 epoch の時間、全 epoch を通した溢れの有無（68 歩だけ測った）
+
+## 起票者の誤りの型（384 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 103 |
+| `check_does_not_check` | 104 |
 | `asserted_without_measuring` | 161 |
-| `self_contradiction` | 97 |
+| `self_contradiction` | 98 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 1 |
 | `rule_read_narrowly` | 1 |
 
-合計 382 件（対を持つ契約 133 件から）
+合計 384 件（対を持つ契約 134 件から）
 
