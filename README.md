@@ -910,6 +910,8 @@ best predictions は init の複製として必ず出力する（init ckpt 自�
 - [`docs/analysis_scripts/proxy_lovo_gap_vs_presence.py`](docs/analysis_scripts/proxy_lovo_gap_vs_presence.py) / [`proxy_lovo_recommended.py`](docs/analysis_scripts/proxy_lovo_recommended.py) / [`proxy_lovo_flicker_scaling.py`](docs/analysis_scripts/proxy_lovo_flicker_scaling.py) — LOVO で P1 を確認 / 推奨構成の 4 腕比較 / 6 凍結源での再現性
 - [`docs/analysis_scripts/hmm_presence_fixed_lag.py`](docs/analysis_scripts/hmm_presence_fixed_lag.py) — 固定ラグ平滑化の品質/遅延曲線（遅延 2 frame でオフライン平滑化と同等）
 - [`docs/analysis_scripts/signal_video_identity_probe.py`](docs/analysis_scripts/signal_video_identity_probe.py) — 各信号が動画 ID をどれだけ符号化しているかの線形 probe（GAP 0.998 / region 0.975 / 予測 presence 0.716 / オラクル presence 0.629）
+- [`docs/phase_tool_annotation_stats.md`](docs/phase_tool_annotation_stats.md) — **注釈の EDA（動画 01〜15：術具・工程・手）**。旧 `experiments/analysis/annotations_eda/` と `dataset_eda/` の REPORT を統合し、全値を注釈から再計算（手は raw02）。動画 17〜21 の工程 CSV は [`docs/phase_annotation_stats_videos17-21.md`](docs/phase_annotation_stats_videos17-21.md)。生成は `docs/analysis_scripts/phase_tool_annotation_stats.py`
+- [`docs/hts_phase_tool_annotation_stats.md`](docs/hts_phase_tool_annotation_stats.md) — **EgoSurgery-HTS 注釈の EDA**（hand_seg・tool_seg・hand_tool_seg と工程・術具 bbox の関係、動画 01〜15）。把持は box の重なりで決まること、未注釈フレームの正体、把持 × 工程。生成は `docs/analysis_scripts/hts_phase_tool_annotation_stats.py`
 
 ## runindex と context の再生成
 

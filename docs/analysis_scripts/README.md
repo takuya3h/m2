@@ -55,6 +55,8 @@ uv pip install --python /tmp/an/bin/python numpy scikit-learn
 | `proxy_lovo_flicker_scaling.py` | LOVO：6 つの凍結源でデノイズ利得を測り、ちらつき倍率との関係を見る（§3.16(a)） | 約 25 分 |
 | `per_video_difficulty.py` | 動画ごとの難しさの分解（多数決ベースライン・動画長・工程分布）。引数に `proxy_lovo_gap_vs_presence.py` のログ（§3.13） | 数十秒 |
 | `signature_stability_correlation.py` | 動画ごとの `P(tool\|phase)` のずれ 4 指標が per-video 性能を説明するか（§3.12・ほぼ負の結果）。引数に `proxy_lovo_gap_vs_presence.py` のログを渡す | 数十秒 |
+| `phase_tool_annotation_stats.py` | 注釈の EDA（術具・工程・手の分布、工程 × 術具の対応、時間構造、動画ごとの工程の並び、公式 split の偏り）を `docs/phase_tool_annotation_stats.md`（動画 01〜15）と `docs/phase_annotation_stats_videos17-21.md`（動画 17〜21 の工程 CSV）に書く。入力は `data/processed/joint_manifest/`・工程 CSV・術具 COCO・手 raw02（`data/raw/OpenSurgery_Dataset/02_hand/json_per_video/`）。scipy も使う | 数秒 |
+| `hts_phase_tool_annotation_stats.py` | EgoSurgery-HTS の 3 種（hand_seg・tool_seg・hand_tool_seg）と工程 CSV・術具 bbox の関係（注釈どうしの構造、未注釈フレームの正体、把持 × 工程、tool_seg だけのクラス × 工程）を `docs/hts_phase_tool_annotation_stats.md` に書く。入力は `data/annotations/egosurgery_hts/`・`data/processed/joint_manifest/`・工程 CSV・手 raw02・HTS の元の注釈（`00_master_annotations/`）。pycocotools を使う | 約 10 秒 |
 
 ## 再現性の確認（2026-08-22）
 
