@@ -22,7 +22,7 @@ tests:
   after_passed: 927
 deviations:
 - type: environment
-  note: 配布画像とrawの重複15437枚中6001枚がSHA-256不一致。契約の停止条件に従い新manifest生成・学習を停止して原因調査のみ継続するか利用者の判断待ち。
+  note: 配布画像とrawの重複15437枚中6001枚がSHA-256・画素とも不一致。利用者の承認を受け画像を変更せず原因調査のみ実施した。入力条件の改訂・学習再開は未承認。
 - type: judgement
   note: 取得済みcheckpointは~/third_partyに在ったため正本照合後repoの指定先へコピーし、元は残した。再開時に同期抑止が不在だったためtaskスキルの再開例外で所有情報つき目印を作成。
 issuer_defects:
@@ -46,11 +46,18 @@ positive_controls:
 - judgement: 追加CPU試験
   breaking_input: preregの点番号13を99に変更、群のlr/weight_decayを変更、補完画像を欠いたコピー
   observed: 3 passed。壊れた点表とoptimizer群をValueErrorで拒否し、補完画像欠落でフレーム数が2から1へ減少。
+- judgement: 全数画素比較の感度
+  breaking_input: 同じ画像との比較、1画素の1チャンネルを1だけ変えたコピーとの比較
+  observed: 同じ画像は差0。変更コピーはpixel_equal false、最大差1、平均差1.6075102880658437e-07。実画像ファイルは変更していない。
+- judgement: 近隣フレームの取り違えの標本検査
+  breaking_input: 15_1_0659.jpgの相手を+1位置のフレームへ変更
+  observed: 96x54 RGBの平均差が0.23193158436213993から23.115805041152264へ増加。同名フレームは47例すべてで前後2位置より近かった。
 followups:
-- 学習を停止したまま画像不一致の原因調査のみ継続するか利用者の返答待ち。画像の変更やバイト不一致の許容を実行者は決めない。
-- 探索用コードは準備途中でGPU動作未検証。再開の判断後に残りのTask BとG2の全項目を検証する。
+- IMAGE_MISMATCH_ANALYSIS.mdの調査結果とproposed_image_amendment.mdを提示し、既存画像を維持して既知の差を固定する案／配布画像へ統一する別契約／中止から利用者に判断してもらう。
+- 画像の置換・再符号化・学習再開は行っていない。契約とpreregも未改訂。承認後に残りのTask BとG2の全項目を検証する。
 unknowns:
-- 画素内容の一致、不一致の原因（再圧縮・異なるフレームなど）は未測定。
+- JPEGの保存形式の差と画素差は測定済み。別版を作った実行者・時点・命令は未特定。品質95での単純再保存は代表13例を完全再現しなかった。
+- モデル性能への影響と、標本47例を除く時間対応は未測定。
 - 探索用起動口・W&B別プロセス・optimizerと勾配のGPU動作、全260runの結果と順位は未測定。
 - P3は検査器の基準未確定でSKIP。P9 host_mismatchの原因は未測定。
 commits:

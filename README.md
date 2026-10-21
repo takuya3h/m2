@@ -1614,6 +1614,8 @@ forward した region token が既存の `t1a_regiontoken/relation_detr_seed42` 
 
 ### 両塔の探索準備（2026-10-22、dlsta、停止中）
 
-`T-2026-10-22-tower-reselect-search-dlsta` は checkpoint の正本照合と G1 を通過したが、配布画像と `data/raw/ego` の重複15,437枚中6,001枚で SHA-256 が異なり、契約の停止条件で判断待ち。新 manifest の生成と探索学習は未開始。画素内容の一致は未測定。
+`T-2026-10-22-tower-reselect-search-dlsta` は checkpoint の正本照合と G1 を通過したが、配布画像と `data/raw/ego` の重複15,437枚中6,001枚で SHA-256 が異なり、契約の停止条件で判断待ち。新 manifest の生成と探索学習は未開始。後続調査で6,001対すべての画素も不一致と確認した。
 
 `build_phase_manifest.py` に別名の出力先と補完元の引数、検出塔の起動に探索設定・外部の work・ログの指定を追加した。既定値は従来どおり。探索用の設定と観測用スクリプトも追加したが、GPU での動作は未検証で、実行準備は未完了。入力監査は `experiments/analysis/tower_reselect_search_dlsta/`、停止記録は契約の `RESULT.md` を参照。
+
+画像不一致の原因調査は、全6,001対の画素差とJPEG保存形式の違いを確認した。別のJPEG版が混在する状態で、生成経路は未特定。画像を変更せず学習も停止中。入力条件の扱いの改訂案と詳細は契約内の `IMAGE_MISMATCH_ANALYSIS.md` と `proposed_image_amendment.md` を参照（いずれも学習再開を承認するものではない）。

@@ -559,3 +559,9 @@ make 終了コード 2。プリフライト本体の失敗により手順 4 で�
 ## 停止時の検証
 
 画像照合の再実行は count15437 /missing0 /different6001、exit1。全試験変更後は927 passed /6 failed /1 skipped、失敗名の集合は開始前と同じで新しい失敗0。追加CPU試験3件、ruff、bash -nは通過。ログはrepo外の tests_after_B_partial.log・tests_after_B_partial.xml。
+
+## 画像原因調査の承認と結果（2026-10-22T05:23:10.959091+09:00）
+
+利用者の「よい」は、学習を停止し画像を変更せず原因調査のみ続けることへの承認として扱った。analyze_image_overlap.pyで6001対を全数復号。エラー0・寸法同一6001・画素完全一致0・開始前ハッシュ維持True。JPEG保存形式は不一致分のrawのみ全て共通JFIF/品質95相当、配布側はLavcコメント。別コピーの在る5997枚は全て配布側と一致。平均RGB差は要約JSONを参照。標本47例の近隣比較は47例全て同名が最小。単純再保存13例の3方法は完全再現0。具体的な生成経路はUNKNOWN。
+
+IMAGE_MISMATCH_ANALYSIS.mdに実測・推論・限界を分けて記録。proposed_image_amendment.mdに未承認の選択肢を作成した。契約・preregは変更せず、画像の書換・学習再開もしていない。詳細JSONLはrepo外、要約と試行結果JSONはanalysis配下。
