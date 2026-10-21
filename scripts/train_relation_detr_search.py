@@ -1,6 +1,8 @@
 """Observe the existing detector training loop; leave its updates and recipe intact."""
 from __future__ import annotations
 
+import hashlib
+import itertools
 import json
 import os
 import sys
@@ -31,6 +33,19 @@ def install_observers(point, work, tracker):
     rank = int(os.environ.get("RANK", "0"))
     history = []
 
+    class ControlComplete(Exception):
+        pass
+
+    class LimitedBatches:
+        def __init__(self, loader, count):
+            self.loader, self.count = loader, min(len(loader), count)
+
+        def __len__(self):
+            return self.count
+
+        def __iter__(self):
+            return itertools.islice(self.loader, self.count)
+
     def loaded(model, checkpoint):
         result = load_state(model, checkpoint)
         state = model.state_dict()
@@ -39,6 +54,7 @@ def install_observers(point, work, tracker):
             raise RuntimeError("COCO initialization did not reach the detector")
         write_json(work / f"initialization_rank{rank}.json", {
             "source": os.environ["RELDETR_COCO_CKPT"], "matching_tensors": len(checked),
+            "source_sha256": hashlib.sha256(Path(os.environ["RELDETR_COCO_CKPT"]).read_bytes()).hexdigest(),
             "matched": True, "runtime": runtime_state()})
         return result
 
@@ -52,8 +68,14 @@ def install_observers(point, work, tracker):
                                for p in g["params"]) ** .5) for g in optimizer.param_groups]
             write_json(work / f"optimizer_rank{rank}.json", {
                 "point": point, "groups": groups, "initial_weight_norms": norms,
+                "parameter_names": [[name for name, p in accelerator.unwrap_model(kwargs["model"]).named_parameters()
+                                     if id(p) in {id(q) for q in g["params"]}]
+                                    for g in optimizer.param_groups],
                 "max_norm": kwargs["max_grad_norm"], "runtime": runtime_state(),
                 "autocast": accelerator.mixed_precision})
+        if os.environ.get("TOWER_SEARCH_CONTROL_STEPS"):
+            kwargs["data_loader"] = LimitedBatches(kwargs["data_loader"],
+                                                    int(os.environ["TOWER_SEARCH_CONTROL_STEPS"]))
         clip = accelerator.clip_grad_norm_
         gradient_file = work / f"gradients_rank{rank}.jsonl"
         with gradient_file.open("a", buffering=1) as handle:
@@ -75,6 +97,16 @@ def install_observers(point, work, tracker):
                   "peak_memory_bytes": torch.cuda.max_memory_allocated(accelerator.device),
                   "groups": groups}
         write_json(work / f"train_epoch_{epoch:03d}_rank{rank}.json", record)
+        if os.environ.get("TOWER_SEARCH_CONTROL_STEPS"):
+            write_json(work / f"control_complete_rank{rank}.json", {
+                "steps": len(kwargs["data_loader"]), "point": point,
+                "groups_after_warmup": optimizer_groups(optimizer),
+                "successful_optimizer_steps": max((int(s["step"]) for s in optimizer.state.values()
+                                                    if "step" in s), default=0),
+                "final_weight_norms": [float(sum(p.detach().double().square().sum().cpu().item()
+                                                 for p in g["params"]) ** .5)
+                                       for g in optimizer.param_groups]})
+            raise ControlComplete()
         return result
 
     def evaluated(model, data_loader, epoch, accelerator=None):
@@ -89,6 +121,7 @@ def install_observers(point, work, tracker):
     detector.load_state_dict = loaded
     detector.train_one_epoch_acc = train
     detector.evaluate_acc = evaluated
+    return ControlComplete
 
 
 def main():
@@ -99,9 +132,11 @@ def main():
     tracker = (OfflineTracker(f"detector_point{point['point']:02d}",
                               {"task_id": TASK, "point": point, "fold": "A", "seed": 42},
                               work / "wandb") if is_main else None)
-    install_observers(point, work, tracker)
+    control_complete = install_observers(point, work, tracker)
     try:
         detector.train()
+    except control_complete:
+        print("CONTROL_COMPLETE (no evaluation; excluded from search)", flush=True)
     finally:
         if tracker is not None:
             tracker.finish()

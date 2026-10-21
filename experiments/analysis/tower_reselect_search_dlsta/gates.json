@@ -10,8 +10,13 @@
     "notes": "prereg e9f4e3b4。旧0b不在、入力全一致、空き758310752256 bytes > 150GB。"
   },
   "G2": {
-    "verdict": "stop",
-    "reason": "重複画像15437枚中6001枚がSHA-256不一致。新manifest生成前に停止し利用者の判断待ち。",
-    "evidence": "image_overlap_summary.json"
+    "verdict": "pass",
+    "time_jst": "2026-10-22T06:32:11.539506+09:00",
+    "evidence": [
+      "manifest_summary.json",
+      "image_input_lock.json",
+      "g2_evidence.json"
+    ],
+    "note": "承認された既存15437枚＋補完1796枚を全数照合。検出2点で実更新・6群確認、工程2点で2rank確認。失敗名集合増加なし。third_party変更なし。"
   }
 }

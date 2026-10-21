@@ -19,6 +19,9 @@ weight_decay = float(os.environ["DTOWER_WEIGHT_DECAY"])
 output_dir = os.environ["RELDETR_OUTPUT_DIR"]
 EGO_ROOT = os.environ["EGO_ROOT"]
 ANN_DIR = os.environ["EGO_ANN_DIR"]
+evaluation_split = os.environ.get("DTOWER_EVAL_SPLIT", "val")
+if evaluation_split not in ("train", "val"):
+    raise ValueError("Search never evaluates test")
 resume_from_checkpoint = os.environ["RELDETR_COCO_CKPT"]
 if not os.path.isfile(resume_from_checkpoint):
     raise FileNotFoundError(resume_from_checkpoint)
@@ -27,7 +30,7 @@ train_dataset = CocoDetection(img_folder=EGO_ROOT,
                               ann_file=f"{ANN_DIR}/instances_train.json",
                               transforms=presets.detr, train=True)
 test_dataset = CocoDetection(img_folder=EGO_ROOT,
-                             ann_file=f"{ANN_DIR}/instances_val.json", transforms=None)
+                             ann_file=f"{ANN_DIR}/instances_{evaluation_split}.json", transforms=None)
 model_path = "configs/relation_detr/relation_detr_resnet50_egosurgery.py"
 optimizer = optim.AdamW(lr=learning_rate, weight_decay=weight_decay, betas=(0.9, 0.999))
 lr_scheduler = optim.lr_scheduler.MultiStepLR(milestones=[10], gamma=0.1)

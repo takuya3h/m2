@@ -9,6 +9,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
+import run_tower_search as search  # noqa: E402
 from tower_search_common import check_detector_groups, points_from_prereg  # noqa: E402
 
 
@@ -66,3 +67,18 @@ def test_full_manifest_uses_fallback_without_changing_default(tmp_path, monkeypa
     assert json.loads((tmp_path / "missing/train.json").read_text())["num_frames"] == 1
     with pytest.raises(ValueError, match="separate"):
         module.build(fallback_root=tmp_path / "distributed")
+
+
+def test_kill_gate_rejects_four_points_of_the_wrong_kinds(monkeypatch):
+    monkeypatch.setattr(search, "records", [{"kind": "detector", "point": {"point": p}}
+                                          for p in (0, 1, 2, 13)])
+    with pytest.raises(RuntimeError, match="four successful"):
+        search.gate_c()
+
+
+def test_kill_gate_rejects_missing_initialization_evidence(tmp_path, monkeypatch):
+    monkeypatch.setattr(search, "records", [{"kind": kind, "point": {"point": p}, "work": str(tmp_path)}
+                                          for kind, p in [("detector", 0), ("detector", 13),
+                                                          ("phase", 0), ("phase", 13)]])
+    with pytest.raises(FileNotFoundError):
+        search.gate_c()

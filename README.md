@@ -1612,10 +1612,8 @@ forward した region token が既存の `t1a_regiontoken/relation_detr_seed42` 
   一歩 0.79〜0.80 s（`context/env-facts.md` の dlsta の行）
 - 試験: `tests/test_stage1_ptower_r3_dist.py`（CPU 13 件、二枚の GPU 1 件。二枚が無ければ skip）
 
-### 両塔の探索準備（2026-10-22、dlsta、停止中）
+### 両塔の探索再開（2026-10-22、dlsta）
 
-`T-2026-10-22-tower-reselect-search-dlsta` は checkpoint の正本照合と G1 を通過したが、配布画像と `data/raw/ego` の重複15,437枚中6,001枚で SHA-256 が異なり、契約の停止条件で判断待ち。新 manifest の生成と探索学習は未開始。後続調査で6,001対すべての画素も不一致と確認した。
+`T-2026-10-22-tower-reselect-search-dlsta` は利用者承認により、既存15,437枚と `initial_videos/` の不足1,796枚を使う。画像は変更せず参照先とSHA-256を固定。新manifestは `phase_manifest_all_phase` に分離し17,233枚、fold Aのtrain10,580 /val1,904 /test4,749。testはモデル評価しない。
 
-`build_phase_manifest.py` に別名の出力先と補完元の引数、検出塔の起動に探索設定・外部の work・ログの指定を追加した。既定値は従来どおり。探索用の設定と観測用スクリプトも追加したが、GPU での動作は未検証で、実行準備は未完了。入力監査は `experiments/analysis/tower_reselect_search_dlsta/`、停止記録は契約の `RESULT.md` を参照。
-
-画像不一致の原因調査は、全6,001対の画素差とJPEG保存形式の違いを確認した。別のJPEG版が混在する状態で、生成経路は未特定。画像を変更せず学習も停止中。入力条件の扱いの改訂案と詳細は契約内の `IMAGE_MISMATCH_ANALYSIS.md` と `proposed_image_amendment.md` を参照（いずれも学習再開を承認するものではない）。
+探索用起動口は元の学習処理を呼び、実optimizer群・初期化・時間・メモリ・収束を観測する。checkpoint・特徴・raw logとoffline W&Bはrepo外のscratchへ保存。小規模GPU検証と入力全数照合でG2通過、関連14試験通過、全試験927 passed /6 failed /1 skipped（失敗名の増加0）。`scripts/run_tower_search.py` がGPU1–2 /3–4だけでC→G3→残り探索を監視実行し、異常時は停止する。GPU0は使わない。現況は `experiments/analysis/tower_reselect_search_dlsta/live_status.json`、詳細は契約の `RESULT.md`。

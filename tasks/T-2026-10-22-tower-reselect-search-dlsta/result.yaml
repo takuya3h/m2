@@ -1,6 +1,6 @@
 result_version: 3
 task_id: T-2026-10-22-tower-reselect-search-dlsta
-status: stopped
+status: partial
 host: dlsta
 branch: feat/tower-reselect-search-dlsta
 pr: null
@@ -14,15 +14,15 @@ gates:
   verdict: pass
   note: 旧0b記録を削除し不在確認。入力全一致。空き758310752256 bytes。prereg e9f4e3b4。GPU所有者対照1と0。
 - id: G2
-  verdict: stop
-  note: 重複画像15437枚中6001枚のSHA-256が不一致。新manifest生成前に停止して利用者の判断待ち。残りのG2項目とG3/G4は未評価。
+  verdict: pass
+  note: 承認された既存15437枚＋補完1796枚を全数照合。検出2点で実更新・6群確認、工程2点で2rank確認。失敗名集合増加なし。third_party変更なし。
 tests:
   before_failed: 6
   after_failed: 6
   after_passed: 927
 deviations:
 - type: environment
-  note: 配布画像とrawの重複15437枚中6001枚がSHA-256・画素とも不一致。利用者の承認を受け画像を変更せず原因調査のみ実施した。入力条件の改訂・学習再開は未承認。
+  note: 画像不一致で停止後、利用者が既存15437枚＋不足1796枚で続行を承認。既知6001対の差を許容し、全参照先とSHA-256を固定して契約・preregを学習前に改訂。画像は変更していない。
 - type: judgement
   note: 取得済みcheckpointは~/third_partyに在ったため正本照合後repoの指定先へコピーし、元は残した。再開時に同期抑止が不在だったためtaskスキルの再開例外で所有情報つき目印を作成。
 issuer_defects:
@@ -52,14 +52,21 @@ positive_controls:
 - judgement: 近隣フレームの取り違えの標本検査
   breaking_input: 15_1_0659.jpgの相手を+1位置のフレームへ変更
   observed: 96x54 RGBの平均差が0.23193158436213993から23.115805041152264へ増加。同名フレームは47例すべてで前後2位置より近かった。
+- judgement: 入力固定の改変検知
+  breaking_input: 入力記録の写しの先頭ハッシュを零に変更
+  observed: 終了コード1で拒否。元画像は変更なし。正本17233枚は全数PASS。
+- judgement: optimizer群と二枚の道
+  breaking_input: 検出0/13番でlr・weight decay・max_normを変え、工程0/1番でweight decayと累積を変える
+  observed: 検出12stepで実更新6/7回。実6群とclip閾値一致。工程world_size2、実効batch64/32。g2_evidence.json。
 followups:
-- IMAGE_MISMATCH_ANALYSIS.mdの調査結果とproposed_image_amendment.mdを提示し、既存画像を維持して既知の差を固定する案／配布画像へ統一する別契約／中止から利用者に判断してもらう。
-- 画像の置換・再符号化・学習再開は行っていない。契約とpreregも未改訂。承認後に残りのTask BとG2の全項目を検証する。
+- 監視付きでCの4点を実行しG3を判定。通過後残り36点を実行。
+- 全探索後に表・順位・runindex・最終試験・PR・台帳報告を行う。完了までは同期抑止を維持。
 unknowns:
 - JPEGの保存形式の差と画素差は測定済み。別版を作った実行者・時点・命令は未特定。品質95での単純再保存は代表13例を完全再現しなかった。
 - モデル性能への影響と、標本47例を除く時間対応は未測定。
-- 探索用起動口・W&B別プロセス・optimizerと勾配のGPU動作、全260runの結果と順位は未測定。
 - P3は検査器の基準未確定でSKIP。P9 host_mismatchの原因は未測定。
+- 探索260runの本番結果・順位・全点収束は未測定。
 commits:
 - e9f4e3b4f34410c023c7a4ab240971c1d70c2510
 - 0660c1be
+- 177e547f31e5d33bb5b3a57662a0c0d27c5bb1c7

@@ -1,0 +1,48 @@
+{
+  "detector": [
+    {
+      "point": 0,
+      "steps": 12,
+      "successful_optimizer_steps": 6,
+      "max_norm": 0.1,
+      "finite_gradient_steps": 6
+    },
+    {
+      "point": 13,
+      "steps": 12,
+      "successful_optimizer_steps": 7,
+      "max_norm": 0.162,
+      "finite_gradient_steps": 7
+    }
+  ],
+  "phase": [
+    {
+      "point": 0,
+      "world_size": 2,
+      "effective_batch": 64,
+      "weight_decay": 0.0001
+    },
+    {
+      "point": 1,
+      "world_size": 2,
+      "effective_batch": 32,
+      "weight_decay": 0.00327
+    }
+  ],
+  "original_training_sources_unchanged": true,
+  "third_party_modified": false,
+  "input_lock_bad_control_rejected": true,
+  "tests": {
+    "before_failed": 6,
+    "after_failed": 6,
+    "after_passed": 927,
+    "new_failed_names": [],
+    "additional_gate_tests_passed": 14
+  },
+  "phase_feature_head_control": {
+    "directory": "~/m2-scratch/T-2026-10-22-tower-reselect-search-dlsta/controls/phase_head_chain",
+    "extract_exit": 0,
+    "head_exit": 0,
+    "note": "各train/val動画2フレームのscratch manifest、2epoch。探索には含めない。"
+  }
+}
