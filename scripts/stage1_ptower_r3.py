@@ -360,7 +360,13 @@ def main(cfg):
     base.deterministic(cfg.seed)
     if not torch.cuda.is_available():
         raise RuntimeError("CUDA required by task")
-    if cfg.action == "finetune":
+    import stage1_ptower_r3_dist as dist_path
+    if dist_path.requested():
+        # Only the fine-tune runs on several GPUs; a plain launch never comes here.
+        if cfg.action != "finetune":
+            raise ValueError(f"action={cfg.action} runs on one GPU only")
+        dist_path.finetune(cfg)
+    elif cfg.action == "finetune":
         finetune(cfg)
     elif cfg.action == "extract":
         extract(cfg)

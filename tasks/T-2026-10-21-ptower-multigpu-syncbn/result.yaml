@@ -1,0 +1,58 @@
+result_version: 3
+task_id: "T-2026-10-21-ptower-multigpu-syncbn"
+status: partial
+host: "dlsta"
+branch: "feat/ptower-multigpu-syncbn"
+pr: null
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "分岐 feat/ptower-multigpu-syncbn、merge-base = origin/phase0 = 0a111a6e、porcelain は契約のディレクトリだけ、python/torchrun の処理 0。GPU0（利用者の指示と 99〜813 MiB の外部使用）と GPU1（442〜737 MiB の外部使用）を除いて空きは GPU2〜4 の三枚"}
+  - {id: G2, verdict: pass, note: "single_path.py（実物の main → finetune、38 枚・10 歩・1 epoch）で直す前 0e7bc8889d88… を二度、直した後も 0e7bc8889d88…。ft_lr 0.0001 は前後とも 98ea7600c1cf…。pytest の失敗の名前 6 → 6（新規 0）、924 passed、1 skipped"}
+  - {id: G3, verdict: ask, note: "fp32 の照合（77 枚、B=4、累積 4、更新 3 回）で陰性対照 0、陽性対照 grad 1.4、本番 grad 8.4e-3（最初の更新）・loss 4.0e-4 で本番が許容差 1e-3 を外れた。float64（B=2）で本番 1.4e-13、陽性対照 1.5、一枚どうしの fp32 対 float64 が 1.1e-2。利用者は float64 で判定し続行を選んだ。決定性の設定のもとで止まった演算 0"}
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 924
+
+deviations:
+  - {type: judgement, note: "利用者の指示（『GPU0だけ他ユーザーが使ってるから使用しないで』）で GPU0 を使わなかった。契約 §2 の GPU0〜GPU4 の許可を狭めた。Task E の NODE の組（GPU0+GPU1）は UNKNOWN"}
+  - {type: environment, note: "GPU1 にも容器の外の使用が断続的に出た（08:36〜09:00 UTC に 442〜737 MiB・最大 96%）。Task A〜C は GPU2〜4 だけを使い、Task E の前に利用者に諮り『1-2, 3-4を確実に使って良い』を得て GPU1 を使った"}
+  - {type: judgement, note: "測る前に書いた fp32 の許容差（勾配 1e-3）が fp32 の丸めの床（一枚どうしの fp32 対 float64 で 1.1e-2）より厳しかった。実行者の見積もりの誤り。許容差は後から変えず、G3 で利用者が float64 の照合を判定に使うことを選んだ。acceptance c は字面では未達のまま記録した"}
+  - {type: judgement, note: "原因の切り分けのため、契約に無い float64・B=2（22 枚と 23 枚）の照合を足した。照合の道具の引数 --b/--n は torchrun が自分の省略形と取り違えたので --per-gpu/--frames に改名した"}
+  - {type: judgement, note: "照合では増強を外した（train=False、§5.2.9）。通しと再現では増強ありで、反転の引きを rank ごとに記録した"}
+  - {type: judgement, note: "W&B はオフライン（WANDB_MODE=offline、WANDB_DIR は repo の外）にして送らなかった。証拠は ExperimentManager の置き場だけを repo の外へ差し替え、実物の base.evidence を通した"}
+  - {type: judgement, note: "CLAUDE.md の docs/experiment_log.md は更新していない。run を作らない impl で、前の同種の契約（dlsta-tower-feasibility）も更新していないため。README.md には節を足した"}
+
+issuer_defects:
+  - {type: check_does_not_check, note: "plan.env.preflight に宣言した gpu_free は容器の中の compute プロセスだけを数え、開始時に GPU0 が 99〜813 MiB・最大 96%、GPU1 が 442 MiB・96% と他の利用者に使われていても PASS（compute プロセス 0 件）を返した。字面どおりなら他の利用者の GPU を空きと判定する。GPU ごとの使用量の記録で見つけた"}
+  - {type: self_contradiction, note: "A.3 は他の利用者の使用が見える GPU を使わないと定めるが、Task E の NVLink の組（GPU1–GPU2）、SYS の組（GPU1+GPU3）、二本同時（GPU1–2 と GPU3–4）はすべて GPU1 を前提にし、代わりは GPU0 にしか書いていない。GPU1 に外部使用が出て字面どおりでは E.1〜E.3 を回せず、利用者に諮って許可を得た"}
+
+positive_controls:
+  - {judgement: "a: GPU の所有者の数え方が働く", breaking_input: "自分の python を GPU2 に 1 本起こす。存在しない実行ファイル /nonexistent/bin/python3.11", observed: "GPU2 の owners ['ubuntu']、--count-exe（uv の python3.11）で 1、存在しない経路で 0"}
+  - {judgement: "b: 一枚の道の要約値が変化を検出する", breaking_input: "ft_lr を 0.0003 から 0.0001 に変えた写し", observed: "0e7bc888… に対して 98ea7600…（直す前・後とも同じ値）"}
+  - {judgement: "c: 照合が SyncBatchNorm の有無を分ける", breaking_input: "二枚で SyncBatchNorm を外す（各 rank が 4 枚の統計）", observed: "fp32 で grad 1.4、loss 1.1e-2、bn 0.18。float64 で grad 1.5（本番は 1.4e-13）"}
+  - {judgement: "c: 照合の陰性対照", breaking_input: "一枚を同じ設定で二度", observed: "四つの量すべて 0（ビット単位で一致）"}
+  - {judgement: "d: 割り振りの試験が重複を検出する", breaking_input: "rank 1 の最初の batch の一件を rank 0 の一件に書き換えた写し", observed: "duplicates 1、missing 1 を検出（本物は 0 / 0）"}
+  - {judgement: "d: 末尾の損失の重みが効く", breaking_input: "末尾の不均等な shard（2/1、3/2）で各 rank の平均を使う写し", observed: "float64 で末尾の更新だけ grad 0.31（本番は 5.4e-13）。fp32 では本番との差が末尾の更新だけ 0.21"}
+  - {judgement: "e: 増強の乱数の試験が揃った列を検出する", breaking_input: "全 rank に同じ種（42）を与える（workers 0 と 2）", observed: "rank 0 と 1 の反転の列が一致することを試験が検出。rank ごとの種では不一致"}
+  - {judgement: "e: 再現の比較が seed に反応する", breaking_input: "seed を 42 から 43 に変える", observed: "要約値 f43442a6… から 7fb6b73f…、反転と画像の列も変わる"}
+  - {judgement: "f: stem の bn1 の不変の確かめが働く", breaking_input: "stem を train にした写し（一枚）", observed: "bn1 の running_mean・running_var が初期値から変わり、照合も grad 1.6 外れる"}
+  - {judgement: "g: rank 0 だけの出力の試験が働く", breaking_input: "finetune の末尾に条件の外の torch.save を足した写し（試験の中）", observed: "_unguarded_writes が ['torch.save'] を返す。本物は []"}
+  - {judgement: "i: 決定性の読み出しが切れたことを示す", breaking_input: "base.deterministic を呼ばない二枚の写し", observed: "両 rank で deterministic_algorithms=False。照合は grad 0.43 外れた"}
+  - {judgement: "j: 行の集合差が消えた行を検出する", breaking_input: "現在の env-facts から既存の 48 行目（dlsta の装置の行）を消した写し（scratchpad）", observed: "消えた行 1 を検出（本物は 0）。足した行 2 は本物と同じ"}
+  - {judgement: "k: forbidden-check が data への書き込みを検出する", breaking_input: "repo の外の worktree の写しに data/splits/control_write.txt を足す", observed: "足す前 pass []、足すと fail（禁止領域 data/ の内側）。写しは消した"}
+
+followups:
+  - "二枚の道は float64 で一枚と 1e-13 の桁で一致するが、fp32 では一枚の道そのものが float64 から最初の更新で 1.1e-2 ずれ、AdamW の更新を重ねると 0.2〜0.35 に広がる。dlsta の二枚の道で選んだ処方を andrew の一枚で回し直すとき、同じ処方でも重みは一致しない（一枚の道どうしでも足し合わせの順序が変われば同じ）。探索の手続きのカードで、この差を前提に置くか決めること"
+  - "処方のままの二枚は一歩 0.79〜0.80 s（GPU ごと 8 枚）、一 epoch の学習の計算値は約 480 s（val を含まない）。二本同時は 0.806〜0.822 s。探索で二本を並べる材料"
+  - "NODE の組（GPU0+GPU1）は利用者の指示で測っていない。GPU0 と GPU1 には容器の外の使用が出る（env-facts に追記）"
+  - "repo の外 ~/m2-scratch/T-2026-10-21-ptower-multigpu-syncbn/（約 10 GB）を残した。片付けは利用者の判断"
+
+unknowns:
+  - "acceptance c: 契約の字面（fp32 で測る前の許容差に本番が収まる）は未達。利用者の判断で float64 の照合を判定に使った"
+  - "NODE の組（GPU0+GPU1）の一歩の時間と記憶量"
+  - "val を含む一 epoch の時間、全 epoch を通した溢れの有無（68 歩だけ測った）"
+
+commits: []

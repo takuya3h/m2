@@ -1,0 +1,3 @@
+- [ ] 2026-10-21 [cc] 利用者が「GPU0だけ他ユーザーが使ってるから使用しないで」と指示。GPU0 を使わず、Task E の NODE の組（GPU0+GPU1）は UNKNOWN とした（tasks/T-2026-10-21-ptower-multigpu-syncbn/RESULT.md）
+- [ ] 2026-10-21 [cc] GPU1 にも容器の外の使用が断続的に出たが、利用者は「1-2, 3-4を確実に使って良い」と許可。GPU1 を含む組で測った（context/env-facts.md）
+- [ ] 2026-10-21 [cc] 関門 G3: fp32 の照合で本番が測る前の許容差を外れ、float64 では 1e-13 で一致。利用者は「float64 で判定し続行」を選んだ。fp32 では一枚の道どうしでも 1e-2 ずれる前提を探索の手続きに置くか決める（tasks/T-2026-10-21-ptower-multigpu-syncbn/audit.md）
