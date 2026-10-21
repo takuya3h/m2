@@ -510,9 +510,9 @@ def rule_allow_write_incomplete(c: Contract) -> list[Finding]:
     if not missing:
         return []
     # **完了済みの契約は対象外。** 過去の契約に宣言漏れを出し続けても、直せる人がいない。
-    # 判定は P13・P14 と同じ `completed_verdicts`（`gates[].verdict` に空でない値）で、
-    # `stop` や `ask` も完了に含む。定義は変えない。未完了（報告が無い・壊れている・
-    # `gates` が無い・`verdict` が空）は従来どおり検出する。
+    # 判定は P13・P14 と同じ `completed_verdicts`（統合済みで `gates[].verdict` に空でない値）で、
+    # 統合済みなら `stop` や `ask` も完了に含む。未完了（報告が無い・壊れている・`gates` が無い・
+    # `verdict` が空・報告が `origin/phase0` に無い）は従来どおり検出する。
     if preflight_task.completed_verdicts(c.task):
         return []
 

@@ -23,6 +23,14 @@
 #   3. 資格情報の値を出力にも記録にも残さない。**存在の真偽だけを扱う**
 #   4. 二度実行しても壊れない
 #
+# **取得（git fetch）は巻き戻しの対象外である。** 汚れの判定の前に行い、最新の起点と比べる。
+# 遠隔の参照を更新するだけで、作業ツリー・索引・分岐を変えない。
+#
+# 汚れは起点と比べて分類する（scripts/task_start_classify.py。分類はそこ一か所）。
+# 起点に同じ経路が在り中身が同じ未追跡・無視されたファイルは通し、切り替えの前に索引へ載せる。
+# 載せたファイルは切り替えで書き直されない。巻き戻しでは索引から外してから元の分岐の木へ戻すため、
+# **作業ツリーのファイルを消さず、repo の外へも移さない**（同期処理は削除を他の台へ伝えうる）。
+#
 # 終了コード:
 #   0  成功
 #   2  使い方の誤り（識別子が空・形式が不正）
@@ -35,12 +43,15 @@ set -euo pipefail
 
 BASE_REF="origin/phase0"      # 分岐の起点。契約はここから分岐して作業する
 PAUSE_MARKER=".sync-pause"    # 常駐同期の抑止。既にあれば触れない
+CLASSIFY="scripts/task_start_classify.py"   # 汚れの分類（task スキルも同じものを呼ぶ）
 
 # 巻き戻しのために控える状態。**実行前の状態を必ず先に記録する。**
 original_branch=""
 created_branch=0
 created_pause=0
 branch=""
+adopt_list=""                 # 通した経路（NUL 区切り）。索引へ載せたものを巻き戻しで外す
+adopted=0
 
 usage() {
     cat >&2 <<'USAGE'
@@ -59,12 +70,39 @@ die() {  # die <終了コード> <本文...>
     exit "${code}"
 }
 
+cleanup() {
+    if [ -n "${adopt_list}" ]; then
+        rm -f "${adopt_list}"
+    fi
+}
+trap cleanup EXIT
+
+unadopt() {
+    # 索引へ載せた経路を外す。**作業ツリーのファイルには触れない**（--cached）。
+    git --literal-pathspecs rm -q --cached --ignore-unmatch \
+        --pathspec-from-file="${adopt_list}" --pathspec-file-nul
+}
+
 rollback() {
     # **自分が作ったものだけを消す。** 実行前からあったものには触れない。
     if [ "${created_pause}" -eq 1 ]; then
         rm -f "${PAUSE_MARKER}"
     fi
-    if [ "${created_branch}" -eq 1 ] && [ -n "${original_branch}" ]; then
+    if [ "${created_branch}" -eq 1 ] && [ -n "${original_branch}" ] && [ "${adopted}" -eq 1 ]; then
+        # 通した経路は起点で追跡されている。checkout で戻ると、無視されたものは黙って消され、
+        # 無視されていないものは拒まれる。索引から外した木を旧い側として元の分岐の木へ移す。
+        { unadopt \
+            && git read-tree -m -u "$(git write-tree)" "${original_branch}" \
+            && git symbolic-ref HEAD "refs/heads/${original_branch}"; } || {
+            printf '[task-start] 元の分岐へ戻れませんでした: %s\n' "${original_branch}" >&2
+            printf '[task-start] 分岐 %s が残っています。手で確認してください\n' "${branch}" >&2
+            return
+        }
+        git branch -q -D "${branch}" >/dev/null 2>&1 || {
+            printf '[task-start] 分岐を消せませんでした: %s\n' "${branch}" >&2
+            return
+        }
+    elif [ "${created_branch}" -eq 1 ] && [ -n "${original_branch}" ]; then
         git checkout -q "${original_branch}" || {
             printf '[task-start] 元の分岐へ戻れませんでした: %s\n' "${original_branch}" >&2
             printf '[task-start] 分岐 %s が残っています。手で確認してください\n' "${branch}" >&2
@@ -103,12 +141,19 @@ main() {
         die 3 "NOTION_API_KEY が未設定です。先に source scripts/load_env.sh を実行してください"
     fi
 
-    # --- 4. 作業ツリーが汚れていないか -----------------------------------
-    local dirty
-    dirty="$(git status --porcelain | wc -l)"
-    if [ "${dirty}" -ne 0 ]; then
-        git status --short >&2
-        die 3 "作業ツリーに未commitの変更が ${dirty} 件あります。片付けてから実行してください"
+    # --- 4. 取得してから、作業ツリーの汚れを起点と比べて分類する ----------
+    # 取得は巻き戻しの対象外（作業ツリー・索引・分岐を変えない）。
+    printf '[task-start] git fetch origin\n'
+    if ! git fetch origin; then
+        die 4 "git fetch に失敗しました"
+    fi
+    adopt_list="$(mktemp)"
+    local rc=0
+    python3 "${CLASSIFY}" --base "${BASE_REF}" --adopt-list "${adopt_list}" || rc=$?
+    if [ "${rc}" -eq 3 ]; then
+        die 3 "作業ツリーに止める分類の汚れがあります（上の一覧）。片付けてから実行してください"
+    elif [ "${rc}" -ne 0 ]; then
+        die 4 "作業ツリーの分類に失敗しました"
     fi
 
     # --- 5. 分岐が既に存在しないか ---------------------------------------
@@ -127,15 +172,22 @@ main() {
         created_pause=1
     fi
 
-    # --- 6. 取得 ----------------------------------------------------------
-    printf '[task-start] git fetch origin\n'
-    if ! git fetch origin; then
-        die 4 "git fetch に失敗しました"
+    # --- 6. 通した経路を索引へ載せる（取得は 4 で済ませた） ---------------
+    # 起点と同じ中身なので、載せたまま切り替えても書き直されない。無視されたものは -f が要る。
+    if [ -s "${adopt_list}" ]; then
+        if ! git --literal-pathspecs add -f --pathspec-from-file="${adopt_list}" --pathspec-file-nul; then
+            unadopt || true
+            die 4 "通す経路を索引へ載せられませんでした"
+        fi
+        adopted=1
     fi
 
     # --- 7. 分岐を作って切り替える ---------------------------------------
     printf '[task-start] 分岐を作成: %s（起点 %s）\n' "${branch}" "${BASE_REF}"
     if ! git checkout -q -b "${branch}" "${BASE_REF}"; then
+        if [ "${adopted}" -eq 1 ]; then
+            unadopt || true
+        fi
         die 4 "分岐を作成できませんでした: ${branch}"
     fi
     created_branch=1
@@ -150,7 +202,7 @@ main() {
         printf '[task-start] %s は実行前から存在するため触れません\n' "${PAUSE_MARKER}"
     fi
 
-    # --- 9. 契約を取り込む。失敗したら 7 と 8 を巻き戻す ------------------
+    # --- 9. 契約を取り込む。失敗したら 6〜8 を巻き戻す -----------------
     printf '[task-start] 契約を取り込みます: %s\n' "${task_id}"
     if ! make task-notion "TASK=${task_id}"; then
         printf '[task-start] 取り込みに失敗しました。巻き戻します\n' >&2

@@ -1574,3 +1574,18 @@ forward した region token が既存の `t1a_regiontoken/relation_detr_seed42` 
   （界面の重みを乱数にしても元の出力は塔単独と差 0、mask を外すと変わることを確かめた）
 - 大きな生成物（D\* の train の出力、見落としの集合、界面の重み）は版管理と同期の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-four-new-types/` に置いた
 - 結果（2026-10-20、非公式。1 折り・val 2 動画・seed 1 つの 1 本ずつの差）: 検出から工程の三つの型はどれも塔単独を上回らず、予測-noCF の Δ入替（信号の中身による差）は logit-correction +0.0016・tool-history 0.0000・ゲートなし版 −0.0045（Jaccard）。tool-history のゲートは開かず（tanh(α) ≤ 0.012）、ゲートなし版は空の腕でも −0.082。extra-queries は追加の出力が上位 300 に一件も出ず全腕が塔単独と同値（スコアの定数 −10 → −9.5）。decoder-xattn は正解の腕で標的群 AP の Δ空 +0.0051・Δ入替 +0.0055、予測-noCF で +0.0006・+0.0010。G1・G2・G3 pass、31 本すべて完了
+
+### task-start の汚れの分類・停止して再開した契約の検査・folds の重なり（2026-10-21、andrew）
+
+契約 `T-2026-10-21-ops-taskstart-resume-folds-val`（impl。GPU 不使用）。記録は `tasks/T-2026-10-21-ops-taskstart-resume-folds-val/`。
+
+- **`scripts/task_start_classify.py` を足した。** 作業ツリーの汚れを `origin/phase0` の木と中身（`git cat-file --filters`）で比べて分類する（読み取りだけ）。
+  起点と同じ中身の未追跡・無視されたファイルは通し、中身が違えば無視されていても止める（git は無視された未追跡を切り替えで黙って上書きする）。
+  追跡下の変更と起点に無い未追跡は従来どおり止める。止めたときは分類ごとの件数と経路を出す（中身は出さない）
+- **`scripts/task_start.sh`**: 取得を汚れの判定の前へ移した（巻き戻しの対象外）。通した経路は切り替えの前に索引へ載せ（書き直されない）、
+  巻き戻しでは索引から外してから `read-tree -m -u` で元の木へ戻す（作業ツリーのファイルを消さない）。終了コードの意味は変えていない
+- **task スキルの「0. 始める」**は同じ分類器を読む。無視の一覧に足してよいのは分類で phase0 に無いと出た経路だけ（`.codex/skills/task` はシンボリックリンクで写しは一つ）
+- **`tools/preflight_task.py` の `completed_verdicts`**: 完了済みを「verdict に空でない値があり、かつ `tasks/<id>/result.yaml` が `origin/phase0` の木に在る」とした。
+  停止して再開した契約で P13・P14・allow_write の規則が働く。参照が解決しないときは従来の判定へ戻り、警告を一行出す。phase0 の上の完了済みは前後 128 件・差 0 件
+- **規約 `folds` に「val と test の重なり」を置いた**（利用者の決定 2026-10-19）。`docs/issuer-defects.md` に測らずに断定した例を 2 件足した
+- 試験: `tests/test_task_start_classify.py`（新規）、`tests/test_symmetry_gate.py`・`tests/test_legacy_exclusions.py`・`tests/test_proposal_card_gate.py`（完了済みの新しい定義）

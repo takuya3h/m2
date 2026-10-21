@@ -138,6 +138,9 @@ def _contract_tree(tmp_path, monkeypatch, task, kind, result):
         (d / "result.yaml").write_text(result, encoding="utf-8")
     monkeypatch.setattr(check_spec, "TASKS_DIR", tmp_path / "tasks")
     monkeypatch.setattr(preflight_task, "TASKS_DIR", tmp_path / "tasks")
+    # 一時の木の報告は統合済みとみなす（未統合の扱いは個別の試験で差し替える）
+    monkeypatch.setattr(preflight_task, "merged_task_ids",
+                        lambda: frozenset(q.parent.name for q in (tmp_path / "tasks").glob("*/result.yaml")))
     return check_spec.load_contract(task)
 
 
@@ -164,7 +167,7 @@ def test_incomplete_contracts_are_still_detected(tmp_path, monkeypatch, kind, re
 @pytest.mark.parametrize("verdict", ["pass", "ask", "stop", "skip"])
 @pytest.mark.parametrize("kind", ["exp", "impl"])
 def test_completed_contracts_are_not_detected(tmp_path, monkeypatch, kind, verdict):
-    """verdict に空でない値があれば完了（stop・ask を含む。定義は変えない）。"""
+    """統合済みで verdict に空でない値があれば完了（stop・ask を含む）。"""
     done = {"gates": [{"id": "G1", "verdict": verdict}]}
     assert not _detected(_contract_tree(tmp_path, monkeypatch, "T-2026-01-01-x", kind, done))
 
@@ -201,3 +204,20 @@ def test_the_completed_check_is_the_same_function_as_p13_and_p14(tmp_path, monke
     monkeypatch.setattr(preflight_task, "completed_verdicts", lambda task_id: [])
     assert _detected(c)  # 除外が消えた
     assert p13() != "SKIP" and p14() != "SKIP"  # P13・P14 の SKIP も同時に消えた
+
+
+def test_stopped_unmerged_contract_is_checked_by_all_three(tmp_path, monkeypatch):
+    """完了判定 e。未統合の stop の契約では、allow_write の規則・P13・P14 がそろって働く。
+
+    陰性対照として、同じ木で統合済みとみなすとそろって対象外へ戻る。
+    """
+    task = "T-2026-10-21-resumed"
+    stopped = {"status": "stopped", "gates": [{"id": "G1", "verdict": "stop"}]}
+    c = _contract_tree(tmp_path, monkeypatch, task, "exp", stopped)
+    spec = {"meta": {"kind": "exp"}}
+    p13 = lambda: preflight_task.check_symmetry_table(task).status  # noqa: E731
+    p14 = lambda: preflight_task.check_proposal_card(task, spec).status  # noqa: E731
+
+    assert not _detected(c) and p13() == "SKIP" and p14() == "SKIP"  # 統合済みとみなす
+    monkeypatch.setattr(preflight_task, "merged_task_ids", lambda: frozenset())
+    assert _detected(c) and p13() == "FAIL" and p14() == "FAIL"  # 未統合: 三つとも働く

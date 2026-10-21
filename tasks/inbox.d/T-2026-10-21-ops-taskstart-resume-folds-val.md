@@ -1,0 +1,2 @@
+- [ ] 2026-10-21 [cc] 利用者の決定: 実行ホストを andrew とした（取り込んだ SPEC はすでに andrew と書いており読み替えは不要だった）。起動前の汚れは利用者が .git/info/exclude と skip-worktree で隠し、控えを ~/m2-hold/ に置いた。戻すかは未決（T-2026-10-21-ops-taskstart-resume-folds-val）
+- [ ] 2026-10-21 [cc] task-start は無視されたファイルも phase0 と中身で比べ、違えば止めるようになった。無視の一覧に足してよいのは分類で phase0 に無いと出た経路だけ。skip-worktree の変更は分類の外のまま（T-2026-10-21-ops-taskstart-resume-folds-val）

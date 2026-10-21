@@ -1,0 +1,74 @@
+result_version: 3
+task_id: "T-2026-10-21-ops-taskstart-resume-folds-val"
+status: pass
+host: "andrew"
+branch: "feat/ops-taskstart-resume-folds-val"
+pr: 247
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "分岐 feat/ops-taskstart-resume-folds-val、HEAD=origin/phase0=merge-base=3cb3db07、契約の 2 ファイルを commit 後に status 0 行、目印はこの契約の所有の記録、無視された未追跡で phase0 と中身の違うもの 0 件（二方法で一致）"}
+  - {id: G2, verdict: pass, note: "tests/test_task_start_classify.py 18 件と test_task_start_pause_owner.py 8 件が通過。全試験 912 件で失敗 6 件、名前の集合は開始時と同じ、収集エラー 0"}
+  - {id: G3, verdict: pass, note: "アンカーごとの節の sha256 を前後で比べ、変わったのは folds と naming だけ。アンカー 15 個の名前と数は同じで conventions_anchors がすべて返す"}
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 911
+
+deviations:
+  - {type: judgement, note: "利用者の「SPEC の bengio を andrew と読み替える」指示は、取り込んだ SPEC がすでに実行ホストを andrew と書いていたため、読み替えた箇所は無い（bengio は §1・§10 の事実の記述だけ）"}
+  - {type: judgement, note: "2 回目の /task は再開から始まり（task-start は利用者が実行）、未追跡は契約自身の SPEC.md と spec.yaml だけだったため最初に commit して G1 の清浄を満たした"}
+  - {type: spec_defect, note: "「無視・起点に無い」は件数を出さない。B-5 は分類ごとの件数を求めるが、数えるには無視されたファイルの全数列挙が要り §5.1 の突き合わせの方針と両立しない"}
+  - {type: judgement, note: "tests/test_task_start_pause_owner.py の場に分類器の写しを 1 行足した（主張は無変更）。D-3 が名指ししない tests/test_proposal_card_gate.py の場にも統合済みとみなす差し替えを足した"}
+  - {type: judgement, note: "規約の変更履歴の commit 欄は小節を置いた 4e67202c を書き、行は次の commit 2d946b07 で足した"}
+  - {type: judgement, note: "巻き戻しは、戻した後に phase0 の版で作り直す方式を採らず、通した経路を索引に載せて外す方式にした。作り直す方式は一時的に削除が起き同期で他の台へ伝わりうる"}
+
+issuer_defects:
+  - {type: asserted_without_measuring, note: "Task B-7 は §3.2 の三つの振る舞いを直す前の task-start で再現せよとしたが、1 行目（無視されていない未追跡）は直す前の版がその前の汚れの判定で終了コード 3 になり切り替えに届かない。指示どおりには再現できず、git そのもので再現した"}
+  - {type: asserted_without_measuring, note: "§3.1 と Task C-4 は .claude と .codex の SKILL.md を二つの写しとして同じにせよとしたが、.codex/skills/task は .claude/skills/task へのシンボリックリンクで実体は一つ。指示どおり写すと同じファイルへの複写になり、写しの一致は検査として何も測らない"}
+
+positive_controls:
+  - judgement: "A-5 の数え方（無視された未追跡と phase0 の突き合わせ）"
+    breaking_input: "隔離した場で phase0 と同じ中身・違う中身・phase0 に無いファイルを一件ずつ無視して置く"
+    observed: "same=1 diff=1、phase0 に無い一件は数えに入らない。二方法とも 2 件で一致"
+  - judgement: "task-start の分類が中身の差で止める（§5.1）"
+    breaking_input: "通る場合の手元のファイルを一文字変える／無視を外す"
+    observed: "未追跡・無視とも rc 0 から rc 3 に変わり、止めた理由の行に経路が出て、状態の要約値は前後で同じ"
+  - judgement: "巻き戻しが実行前へ戻す（完了判定 c）"
+    breaking_input: "巻き戻しの「索引から外す」を true に替えた写しで、通した後に取り込みを失敗させる"
+    observed: "p0/same.txt と p0/other.txt が作業ツリーから消え、試験が状態の差を検出した（表示は「戻しました」のまま）"
+  - judgement: "直す前の task-start が無視された未追跡を黙って上書きする（§3.2 の 2 行目）"
+    breaking_input: "3cb3db07 の task_start.sh で、phase0 と中身の違う無視されたファイルを置いて開始する"
+    observed: "rc 0 で手元の中身が phase0 の版になった。直した版では rc 3 で止まり中身は同じ"
+  - judgement: "停止して再開した契約で P13・P14・allow_write が働く（完了判定 e）"
+    breaking_input: "stop の報告を持つ契約を、統合済みとみなす集合から外す"
+    observed: "allow_write 非検出→検出、P13 SKIP→FAIL、P14 SKIP→FAIL。新しい定義のまま試験の場を直す前は 12 件が落ちた"
+  - judgement: "参照が解決しないときの戻り（完了判定 f）"
+    breaking_input: "MERGED_REF を存在しない refs/remotes/origin/no-such-ref-zz にする"
+    observed: "印だけの判定 [\"stop\"] に戻り、二回呼んで警告は一行"
+  - judgement: "規約の節ごとの比較が意図しない変更を捕まえる（G3）"
+    breaking_input: "規約の写しの prohibitions 節を一文字変える"
+    observed: "CHANGED prohibitions が出た"
+  - judgement: "make forbidden-check が data への書き込みを捕まえる"
+    breaking_input: "変更の一覧に data/splits/ego_val.txt を足した写し（changed_paths の差し替え。data へは書かない）"
+    observed: "status fail、禁止領域 data/ の内側"
+
+followups:
+  - "各ホストの task-start とスキルは居る分岐の版で動く。dlsta のように分岐が古いままの台では、本契約が統合された phase0 から分岐するまで旧い task-start（同じ中身の未追跡でも止まり、無視された違う中身を黙って上書きする）が動く"
+  - "skip-worktree の印つきで変更のあるファイルは git status に出ず、新しい分類でも数えない（§5.1 の外）。phase0 がその経路を変えると切り替えが拒まれ終了コード 4 で巻き戻る。andrew の docs/analysis_scripts/README.md がこれに当たる"
+  - "andrew の .git/info/exclude に 2026-10-21 起動前に足した 3 行と README の skip-worktree の印は残したまま（控え ~/m2-hold/T-2026-10-21-ops-taskstart-resume-folds-val/）。戻すかは利用者の判断"
+
+unknowns:
+  - "dlsta・bengio など他の台での分類の所要時間と git の版（--pathspec-from-file は git 2.26 以上を要する。andrew は 2.43.0）"
+
+commits:
+  - "cbcf05f5"
+  - "50157601"
+  - "bf04c998"
+  - "c250d5ec"
+  - "4e67202c"
+  - "2d946b07"
+  - "6dfa2481"
+  - "2892ba6a"
+  - "1ded8df9"
