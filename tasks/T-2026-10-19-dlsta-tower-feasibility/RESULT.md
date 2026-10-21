@@ -132,4 +132,6 @@ result.yaml の `deviations` に 11 件。主なもの: GPU0 の除外と利用�
 
 ## 8. 送出
 
-（commit と PR の後に記入）
+- PR #245（`gh pr view` の実測: isDraft false、baseRefName phase0、headRefName feat/dlsta-tower-feasibility）
+- commit 1e2d7444（成果）と、本節を埋めた commit。commit した 17 件の最大は `audit.md` 40,636 bytes
+- `make task-report` の終了コードは audit の末尾（送った後に記録）

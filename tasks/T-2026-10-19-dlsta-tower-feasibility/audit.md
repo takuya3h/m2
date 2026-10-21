@@ -580,3 +580,10 @@ Task D と E の測定は epoch の終わりに届く前に止めたので、検
 
 `git add` の 1 回目は `fatal: Unable to create '.git/index.lock': File exists.` で失敗した。直後に `index.lock` は無く、
 git のプロセスも見えなかった（ほかの git 操作と一時的に重なった）。もう一度実行した。
+
+### I.6 送出（07:1x UTC）
+
+    git push -u origin feat/dlsta-tower-feasibility → [new branch]、遠隔の先頭 1e2d7444ee92da3f07fc219af94e39f661d7c3a1
+    gh pr create --base phase0 --head feat/dlsta-tower-feasibility → https://github.com/takuya3h/m2/pull/245
+    gh pr view --json number,isDraft,baseRefName,headRefName
+      → {"baseRefName":"phase0","headRefName":"feat/dlsta-tower-feasibility","isDraft":false,"number":245}
