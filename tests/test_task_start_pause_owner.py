@@ -40,6 +40,7 @@ def sandbox(tmp_path: Path) -> Path:
     _git(work, "checkout", "-q", "-b", "phase0")
     (work / "scripts").mkdir()
     shutil.copy2(SCRIPT, work / "scripts" / "task_start.sh")
+    shutil.copy2(SCRIPT.parent / "task_start_classify.py", work / "scripts" / "task_start_classify.py")
     (work / "Makefile").write_text("task-notion:\n\t@test -z \"$$FAIL_NOTION\"\n", encoding="utf-8")
     (work / ".gitignore").write_text(".sync-pause*\n", encoding="utf-8")
     _git(work, "add", ".")
