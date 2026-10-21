@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（654 件）
+## 申し送り（657 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1052,7 +1052,13 @@
 - tool-history（カードどおり）のゲートは 4 epoch で tanh(α) 0.012 までしか開かなかった（起票者の見積もり 0.02 と同じ程度）。ゲートなし版は空の腕が経過の情報を持つので、空の腕を分母にした比較の読み方を決めておく必要がある
 - worktree の追跡外の記号リンク .venv と data/processed/phase_manifest、bengio の前回・直しの契約の保存先に足した 32 本は残してある（戻すかどうかは利用者が決める）
 
-## 断定できなかった事項（408 件）
+### T-2026-10-21-ops-taskstart-resume-folds-val
+
+- 各ホストの task-start とスキルは居る分岐の版で動く。dlsta のように分岐が古いままの台では、本契約が統合された phase0 から分岐するまで旧い task-start（同じ中身の未追跡でも止まり、無視された違う中身を黙って上書きする）が動く
+- skip-worktree の印つきで変更のあるファイルは git status に出ず、新しい分類でも数えない（§5.1 の外）。phase0 がその経路を変えると切り替えが拒まれ終了コード 4 で巻き戻る。andrew の docs/analysis_scripts/README.md がこれに当たる
+- andrew の .git/info/exclude に 2026-10-21 起動前に足した 3 行と README の skip-worktree の印は残したまま（控え ~/m2-hold/T-2026-10-21-ops-taskstart-resume-folds-val/）。戻すかは利用者の判断
+
+## 断定できなかった事項（409 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1822,18 +1828,22 @@
 
 - K3 の GRU の最終状態から術式を当てる精度: 動画ごとの術式の対応が repo に無い
 
-## 起票者の誤りの型（380 件）
+### T-2026-10-21-ops-taskstart-resume-folds-val
+
+- dlsta・bengio など他の台での分類の所要時間と git の版（--pathspec-from-file は git 2.26 以上を要する。andrew は 2.43.0）
+
+## 起票者の誤りの型（382 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 103 |
-| `asserted_without_measuring` | 159 |
+| `asserted_without_measuring` | 161 |
 | `self_contradiction` | 97 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 1 |
 | `rule_read_narrowly` | 1 |
 
-合計 380 件（対を持つ契約 132 件から）
+合計 382 件（対を持つ契約 133 件から）
 

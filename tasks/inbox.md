@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（701 件）
+## 未処理（703 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -716,6 +716,8 @@
 - [ ] 2026-10-21 [cc] 利用者が「空いてる計算資源はすべて使って最速で」と指示。時間を測らない測定を並べ、時間の値には同時実行の条件を併記した（experiments/analysis/dlsta_tower_feasibility/REPORT.md）
 - [ ] 2026-10-21 [cc] 利用者が「GPU0もつかってよい」と許可。GPU0 は容器の外の 77 MiB の確保があるため除外していた。学び直しで GPU0 を使うかは改めて決める（context/env-facts.md）
 - [ ] 2026-10-21 [cc] dlsta で run_stage1_dtower.sh をそのまま使うと COCO の重みを読まない学習になりうる。学び直しの契約の前に直すか手続きで環境変数を与えるかを決める（third_party/Relation-DETR/configs/train_config_egosurgery_seed42.py）
+- [ ] 2026-10-21 [cc] 利用者の決定: 実行ホストを andrew とした（取り込んだ SPEC はすでに andrew と書いており読み替えは不要だった）。起動前の汚れは利用者が .git/info/exclude と skip-worktree で隠し、控えを ~/m2-hold/ に置いた。戻すかは未決（T-2026-10-21-ops-taskstart-resume-folds-val）
+- [ ] 2026-10-21 [cc] task-start は無視されたファイルも phase0 と中身で比べ、違えば止めるようになった。無視の一覧に足してよいのは分類で phase0 に無いと出た経路だけ。skip-worktree の変更は分類の外のまま（T-2026-10-21-ops-taskstart-resume-folds-val）
 
 ## 処理済み（1 件）
 
