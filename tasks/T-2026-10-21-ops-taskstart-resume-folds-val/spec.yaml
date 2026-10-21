@@ -1,0 +1,72 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-21-ops-taskstart-resume-folds-val"
+  kind: impl
+  title: "運用の残件（task-start が phase0 と同じ中身の未追跡を通し違う中身で止まる、停止して再開した契約の検査、val と test の重なりの規則、起票者の欠陥 2 件）"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-21T07:20:00Z"
+  created_from:
+    runindex_commit: "63ae65da8c7d32df591f5e2ee4358286b72c726b"
+    counts: {index: 1961, experiments: 750, verdicts: 1506}
+  depends_on: [T-2026-10-19-conventions-and-defect-records]
+  amendments: []
+intent:
+  question: "契約の開始で、phase0 と中身が同じ未追跡を汚れに数えず、中身の違うファイルを黙って上書きさせないようにできるか。停止して再開した契約で検査が飛ばないようにできるか。val と test の重なりの扱いを規約から引けるようにできるか"
+  decision_at_stake: "同期で他の契約の出力が届く台で、手作業の片付けなしに契約を始められるか。両塔の学び直しの prereg が val と test の重なりの規則を規約から引けるか"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "本契約はデータを読まない"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/task_start.sh", "tools/preflight_task.py", "tools/check_spec.py", "tests/test_task_start_pause_owner.py", "tests/test_symmetry_gate.py", "tests/test_legacy_exclusions.py", "tests/test_check_spec.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#folds]
+  conventions_rev: "5c0eaeeb4551c66c9b854faaa7a5376dcf755ac7"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["context/conventions.md", "tasks/T-2026-10-21-ops-taskstart-resume-folds-val/"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。分岐、作業ツリー、同期の抑止、装置を使わないこと、起点の実測、無視されたファイルと phase0 の突き合わせ、試験の前の値、規約の節ごとの要約値", gpu: false, est: "40m"}
+    - {id: B, name: "task-start の直し。未追跡と無視されたファイルを phase0 の中身と比べて分類し、同じなら通し、違えば止める。試験と対照", gpu: false, est: "2h"}
+    - {id: C, name: "task スキルの始める段を task-start の分類に合わせる。二つの写しを同じにする", gpu: false, est: "40m"}
+    - {id: D, name: "停止して再開した契約の検査。統合済みの契約だけを完了済みと扱う。試験と対照", gpu: false, est: "90m"}
+    - {id: E, name: "規約 folds に val と test の重なりの規則を置き、変更履歴に一行足す", gpu: false, est: "30m"}
+    - {id: F, name: "起票者の欠陥 2 件を記録する", gpu: false, est: "20m"}
+    - {id: G, name: "検証と報告", gpu: false, est: "60m"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、作業ツリーが清浄で、別の契約が作業中でない", on_fail: stop}
+    - {id: G2, after: B, check: "task-start の分類の試験が陽性と陰性の対照を含めて通り、既存の試験の失敗の名前の集合が増えていない", on_fail: stop}
+    - {id: G3, after: E, check: "規約で変わった節が folds と変更履歴を含む節だけで、すべてのアンカーが解決する", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-10-21-ops-taskstart-resume-folds-val/"
+  acceptance:
+    - "a: 開始状態、起点の実測、無視されたファイルのうち phase0 に同じ経路が在るものの件数と中身の一致の内訳が記録されている"
+    - "b: task-start が SPEC の分類の表のとおりに振る舞い、通した場合は該当ファイルの中身が前後で同じで、止めた場合は作業ツリーと分岐と抑止の目印が前と同じである"
+    - "c: task-start の巻き戻しが、新しい分類で通した後の取り込みの失敗でも実行前の状態に戻す"
+    - "d: task スキルの始める段が task-start と同じ分類を使い、二つの写しが同じで、無視の一覧に足してよいのは phase0 に無いと分類で確かめた経路だけだと書かれている"
+    - "e: 停止して再開した契約で P13 と P14 と allow_write の規則が働き、統合済みの契約の完了済みの扱いが前後で変わらない"
+    - "f: 統合の判定の参照が解決しないとき、元の振る舞いに戻り一行の警告を出す"
+    - "g: 規約 folds に val と test の重なりの規則が SPEC の内容どおりに在り、変更履歴に一行あり、意図しない節が変わっていない"
+    - "h: 起票者の欠陥 2 件が型と出所と対処つきで記録されている"
+    - "i: 装置の使用、data 配下への書き込み、ほかのホストへの接続がいずれも無く、試験の失敗の名前の集合が増えていない"
+    - "j: PR が存在し、base が phase0、分岐が feat/ops-taskstart-resume-folds-val、Draft でない"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "本ホストの repo の位置や起点が env-facts.md と食い違う場合"
+    - "作業ツリーが別の契約の分岐にある、または別の契約が作業中の場合"
+    - "task-start の直しが、作業ツリーのファイルを消すか repo の外へ移さなければ実現できないと分かった場合"
+    - "統合済みの契約の完了済みの扱いが一件でも変わる場合"
+    - "規約に置く規則の中身（範囲、条件、動画の識別子、本数）を変えたくなった場合"
