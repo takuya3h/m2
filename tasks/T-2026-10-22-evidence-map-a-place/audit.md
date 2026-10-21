@@ -284,3 +284,27 @@ commit・push・PRの作成と台帳の応答は、実施後にこの節へ追�
 ```
 
 - PR #254、OPEN、Draftではない、base=phase0、head=feat/evidence-map-a-place。これにより受入条件gも充足した。報告をpassに更新した。統合・自動統合の有効化は行っていない。
+
+### D-3b. 配布台帳への送信
+
+確定版の報告を commit `e21a18b6` で版管理し、push後に次を実行した。
+
+```sh
+source .venv/bin/activate && source scripts/load_env.sh && make task-report TASK=T-2026-10-22-evidence-map-a-place
+```
+
+終了コード0。内蔵の秘匿検査を通過して送信された。返値は [task-report.json](task-report.json)。
+
+```json
+{
+  "task_id": "T-2026-10-22-evidence-map-a-place",
+  "verdict": "pass",
+  "n_issuer_defects": 1,
+  "report_sha256": "6f60a2e7fcd3e42a0446713d0a596ed076442c3e85c2190bb9daa8b217fb07a3",
+  "report_bytes": 7993,
+  "replaced_blocks": 0
+}
+```
+
+送信後にRESULT.mdは変更していない。監査記録と送信応答を追加commit・pushしてから、`make task-release TASK=T-2026-10-22-evidence-map-a-place END=complete` を呼ぶ。解除の返値は、手順書どおり最後の対話応答にそのまま報告する。
+
