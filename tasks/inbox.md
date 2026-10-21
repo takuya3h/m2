@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（697 件）
+## 未処理（701 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -712,6 +712,10 @@
 - [ ] 2026-10-20 [cc] extra-queries は 6 腕とも 4 epoch で追加の出力が上位 300 に出ず、全腕が塔単独と同値（スコアの定数 −10 → −9.44〜−9.50、train の見落とし 73 個）。カードの意図を測るなら定数の学習率・初期値・長さを決め直す必要がある（未決。T-2026-10-19-stage2-pilot-four-new-types）
 - [ ] 2026-10-20 [cc] tool-history はゲートが開かず（tanh(α) ≤ 0.012）、ゲートなし版は空の腕でも塔単独より Jaccard −0.082（GRU が経過の情報を持つ）。再帰の界面で空の腕を分母にする読み方は未決（T-2026-10-19-stage2-pilot-four-new-types）
 - [ ] 2026-10-20 [cc] bengio の worktree に追跡外の記号リンク .venv と data/processed/phase_manifest、前回・直しの契約の保存先の bengio の写しに andrew と同じ中身の 32 本を足したまま。戻すかは未決（T-2026-10-19-stage2-pilot-four-new-types）
+- [ ] 2026-10-21 [cc] L2-6 の WARN（規約が 7ba1d60d の後に変わった）を示し、利用者は続行を選んだ。conventions_rev を 5c0eaeeb に差し替えた（tasks/T-2026-10-19-dlsta-tower-feasibility/spec.yaml）
+- [ ] 2026-10-21 [cc] 利用者が「空いてる計算資源はすべて使って最速で」と指示。時間を測らない測定を並べ、時間の値には同時実行の条件を併記した（experiments/analysis/dlsta_tower_feasibility/REPORT.md）
+- [ ] 2026-10-21 [cc] 利用者が「GPU0もつかってよい」と許可。GPU0 は容器の外の 77 MiB の確保があるため除外していた。学び直しで GPU0 を使うかは改めて決める（context/env-facts.md）
+- [ ] 2026-10-21 [cc] dlsta で run_stage1_dtower.sh をそのまま使うと COCO の重みを読まない学習になりうる。学び直しの契約の前に直すか手続きで環境変数を与えるかを決める（third_party/Relation-DETR/configs/train_config_egosurgery_seed42.py）
 
 ## 処理済み（1 件）
 
