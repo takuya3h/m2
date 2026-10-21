@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（703 件）
+## 未処理（706 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -718,6 +718,9 @@
 - [ ] 2026-10-21 [cc] dlsta で run_stage1_dtower.sh をそのまま使うと COCO の重みを読まない学習になりうる。学び直しの契約の前に直すか手続きで環境変数を与えるかを決める（third_party/Relation-DETR/configs/train_config_egosurgery_seed42.py）
 - [ ] 2026-10-21 [cc] 利用者の決定: 実行ホストを andrew とした（取り込んだ SPEC はすでに andrew と書いており読み替えは不要だった）。起動前の汚れは利用者が .git/info/exclude と skip-worktree で隠し、控えを ~/m2-hold/ に置いた。戻すかは未決（T-2026-10-21-ops-taskstart-resume-folds-val）
 - [ ] 2026-10-21 [cc] task-start は無視されたファイルも phase0 と中身で比べ、違えば止めるようになった。無視の一覧に足してよいのは分類で phase0 に無いと出た経路だけ。skip-worktree の変更は分類の外のまま（T-2026-10-21-ops-taskstart-resume-folds-val）
+- [ ] 2026-10-21 [cc] 利用者が「GPU0だけ他ユーザーが使ってるから使用しないで」と指示。GPU0 を使わず、Task E の NODE の組（GPU0+GPU1）は UNKNOWN とした（tasks/T-2026-10-21-ptower-multigpu-syncbn/RESULT.md）
+- [ ] 2026-10-21 [cc] GPU1 にも容器の外の使用が断続的に出たが、利用者は「1-2, 3-4を確実に使って良い」と許可。GPU1 を含む組で測った（context/env-facts.md）
+- [ ] 2026-10-21 [cc] 関門 G3: fp32 の照合で本番が測る前の許容差を外れ、float64 では 1e-13 で一致。利用者は「float64 で判定し続行」を選んだ。fp32 では一枚の道どうしでも 1e-2 ずれる前提を探索の手続きに置くか決める（tasks/T-2026-10-21-ptower-multigpu-syncbn/audit.md）
 
 ## 処理済み（1 件）
 

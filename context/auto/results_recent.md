@@ -6,8 +6,46 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 133 件）。
-ここに出ない 128 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 134 件）。
+ここに出ない 129 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-10-21-ptower-multigpu-syncbn
+
+状態 `partial` / ホスト `dlsta` / 起票 `249` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 分岐 feat/ptower-multigpu-syncbn、merge-base = origin/phase0 = 0a111a6e、porcelain は契約のディレクトリだけ、python/torchrun の処理 0。GPU0（利用者の指示と 99〜813 MiB の外部使用）と GPU1（442〜737 MiB の外部使用）を除いて空きは GPU2〜4 の三枚
+- `G2` pass — single_path.py（実物の main → finetune、38 枚・10 歩・1 epoch）で直す前 0e7bc8889d88… を二度、直した後も 0e7bc8889d88…。ft_lr 0.0001 は前後とも 98ea7600c1cf…。pytest の失敗の名前 6 → 6（新規 0）、924 passed、1 skipped
+- `G3` ask — fp32 の照合（77 枚、B=4、累積 4、更新 3 回）で陰性対照 0、陽性対照 grad 1.4、本番 grad 8.4e-3（最初の更新）・loss 4.0e-4 で本番が許容差 1e-3 を外れた。float64（B=2）で本番 1.4e-13、陽性対照 1.5、一枚どうしの fp32 対 float64 が 1.1e-2。利用者は float64 で判定し続行を選んだ。決定性の設定のもとで止まった演算 0
+
+### 起票者の誤り
+
+- `check_does_not_check` — plan.env.preflight に宣言した gpu_free は容器の中の compute プロセスだけを数え、開始時に GPU0 が 99〜813 MiB・最大 96%、GPU1 が 442 MiB・96% と他の利用者に使われていても PASS（compute プロセス 0 件）を返した。字面どおりなら他の利用者の GPU を空きと判定する。GPU ごとの使用量の記録で見つけた
+- `self_contradiction` — A.3 は他の利用者の使用が見える GPU を使わないと定めるが、Task E の NVLink の組（GPU1–GPU2）、SYS の組（GPU1+GPU3）、二本同時（GPU1–2 と GPU3–4）はすべて GPU1 を前提にし、代わりは GPU0 にしか書いていない。GPU1 に外部使用が出て字面どおりでは E.1〜E.3 を回せず、利用者に諮って許可を得た
+
+### 逸脱
+
+- `judgement` — 利用者の指示（『GPU0だけ他ユーザーが使ってるから使用しないで』）で GPU0 を使わなかった。契約 §2 の GPU0〜GPU4 の許可を狭めた。Task E の NODE の組（GPU0+GPU1）は UNKNOWN
+- `environment` — GPU1 にも容器の外の使用が断続的に出た（08:36〜09:00 UTC に 442〜737 MiB・最大 96%）。Task A〜C は GPU2〜4 だけを使い、Task E の前に利用者に諮り『1-2, 3-4を確実に使って良い』を得て GPU1 を使った
+- `judgement` — 測る前に書いた fp32 の許容差（勾配 1e-3）が fp32 の丸めの床（一枚どうしの fp32 対 float64 で 1.1e-2）より厳しかった。実行者の見積もりの誤り。許容差は後から変えず、G3 で利用者が float64 の照合を判定に使うことを選んだ。acceptance c は字面では未達のまま記録した
+- `judgement` — 原因の切り分けのため、契約に無い float64・B=2（22 枚と 23 枚）の照合を足した。照合の道具の引数 --b/--n は torchrun が自分の省略形と取り違えたので --per-gpu/--frames に改名した
+- `judgement` — 照合では増強を外した（train=False、§5.2.9）。通しと再現では増強ありで、反転の引きを rank ごとに記録した
+- `judgement` — W&B はオフライン（WANDB_MODE=offline、WANDB_DIR は repo の外）にして送らなかった。証拠は ExperimentManager の置き場だけを repo の外へ差し替え、実物の base.evidence を通した
+- `judgement` — CLAUDE.md の docs/experiment_log.md は更新していない。run を作らない impl で、前の同種の契約（dlsta-tower-feasibility）も更新していないため。README.md には節を足した
+
+### 申し送り
+
+- 二枚の道は float64 で一枚と 1e-13 の桁で一致するが、fp32 では一枚の道そのものが float64 から最初の更新で 1.1e-2 ずれ、AdamW の更新を重ねると 0.2〜0.35 に広がる。dlsta の二枚の道で選んだ処方を andrew の一枚で回し直すとき、同じ処方でも重みは一致しない（一枚の道どうしでも足し合わせの順序が変われば同じ）。探索の手続きのカードで、この差を前提に置くか決めること
+- 処方のままの二枚は一歩 0.79〜0.80 s（GPU ごと 8 枚）、一 epoch の学習の計算値は約 480 s（val を含まない）。二本同時は 0.806〜0.822 s。探索で二本を並べる材料
+- NODE の組（GPU0+GPU1）は利用者の指示で測っていない。GPU0 と GPU1 には容器の外の使用が出る（env-facts に追記）
+- repo の外 ~/m2-scratch/T-2026-10-21-ptower-multigpu-syncbn/（約 10 GB）を残した。片付けは利用者の判断
+
+### 断定できなかったこと
+
+- acceptance c: 契約の字面（fp32 で測る前の許容差に本番が収まる）は未達。利用者の判断で float64 の照合を判定に使った
+- NODE の組（GPU0+GPU1）の一歩の時間と記憶量
+- val を含む一 epoch の時間、全 epoch を通した溢れの有無（68 歩だけ測った）
 
 ## T-2026-10-21-ops-taskstart-resume-folds-val
 
@@ -150,33 +188,6 @@
 ### 申し送り
 
 - 生成会話はプロジェクトの外で、証拠地図・カードの雛形・依頼文だけを受け取る。生成会話の#10と#15はUNKNOWN、起票者がrepo実測で埋めてから批判会話へ。briefs/は本契約では未作成。
-
-### 断定できなかったこと
-
-（なし）
-
-## T-2026-10-19-evidence-maps-revise
-
-状態 `pass` / ホスト `Bengio` / 起票 `233` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 改訂前3件・パッチのSHA-256とバイト数が一致、4照合先HTTP 200。
-- `G2` pass — パッチ適用後3件のSHA-256とバイト数・行増減が一致、追跡変更は地図3件のみ。
-- `G3` pass — 様式違反0、抽出ID集合差がC/B/Nとも事前指定と一致。
-
-### 起票者の誤り
-
-- `self_contradiction` — 契約の完了判定 b は変更範囲を地図・照合結果・本契約のディレクトリだけに限定する一方、実行手順の task スキルは tasks/inbox.d に最低一行の記録を要求しており、両方をそのまま満たすことはできなかった。変更前に利用者へ選択を求め、回答「1」により本契約の inbox.d 一件だけを追加する許可を得た。
-
-### 逸脱
-
-- `environment` — Defaultモード固定。planning-with-filesとagentmemoryが利用不可のため契約のPhase順と契約内の記録で進行。pytestは契約どおり未実行。
-- `judgement` — 利用者の回答「1」に基づき、契約の変更範囲に tasks/inbox.d/T-2026-10-19-evidence-maps-revise.md 一件を追加する。
-
-### 申し送り
-
-- C=29、B=34、N=37の全IDが実在・書誌一致。N追加書誌18 IDは全て該当行と比較。書誌IDなしはC-24だけ。
 
 ### 断定できなかったこと
 
