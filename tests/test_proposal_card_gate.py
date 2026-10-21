@@ -32,8 +32,10 @@ TEMPLATE_EMPTY_NUMERIC = (5, 6, 10)
 
 @pytest.fixture
 def tasks_dir(tmp_path, monkeypatch):
-    """P14 が完了済みを引く場所を一時ディレクトリへ移す。"""
+    """P14 が完了済みを引く場所を一時ディレクトリへ移す。一時の木の報告は統合済みとみなす。"""
     monkeypatch.setattr(preflight_task, "TASKS_DIR", tmp_path)
+    monkeypatch.setattr(preflight_task, "merged_task_ids",
+                        lambda: frozenset(q.parent.name for q in tmp_path.glob("*/result.yaml")))
     return tmp_path
 
 
@@ -152,7 +154,7 @@ def test_p14_applies_to_exp():
 
 
 def test_p14_skips_for_completed_contract(tasks_dir):
-    """完了済みは対象外。判定は `result.yaml` の `gates[].verdict` だけに委ねる。"""
+    """完了済みは対象外。判定は `completed_verdicts`（統合済みで `gates[].verdict` がある）に委ねる。"""
     task_id = "T-2026-09-23-completed"
     (tasks_dir / task_id).mkdir()
     (tasks_dir / task_id / "result.yaml").write_text(

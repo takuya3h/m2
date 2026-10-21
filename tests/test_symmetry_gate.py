@@ -38,7 +38,10 @@ def _prereg(tmp_path: Path, task_id: str, body: str) -> Path:
 
 @pytest.fixture
 def tasks_dir(tmp_path, monkeypatch):
+    """一時の木の報告は統合済みとみなす（未統合の扱いは個別の試験で差し替える）。"""
     monkeypatch.setattr(preflight_task, "TASKS_DIR", tmp_path)
+    monkeypatch.setattr(preflight_task, "merged_task_ids",
+                        lambda: frozenset(q.parent.name for q in tmp_path.glob("*/result.yaml")))
     return tmp_path
 
 
@@ -315,6 +318,58 @@ def test_completed_verdicts_reads_only_the_gates(tasks_dir):
     _result(tasks_dir, "T-2026-08-01-x", "status: pass\ngates:\n  - {id: G1, verdict: stop}\n")
     assert preflight_task.completed_verdicts("T-2026-08-01-x") == ["stop"]
     assert preflight_task.completed_verdicts("T-2026-08-01-missing") == []
+
+
+# --- 停止して再開した契約（T-2026-10-21-ops-taskstart-resume-folds-val） -------
+#
+# 統合済みの契約だけを完了済みとする。印（stop）が残っていても、報告が origin/phase0 に
+# 無ければ P13 は従来どおり検査する。**対照は両方向に置く。**
+
+def test_stopped_unmerged_contract_is_checked(tasks_dir, monkeypatch):
+    """完了判定 e。未統合の stop の契約で、表を欠く prereg は P13 の FAIL を出す。"""
+    _prereg(tasks_dir, "T-2026-10-21-resumed", "表なし\n")
+    _result(tasks_dir, "T-2026-10-21-resumed", "status: stopped\ngates:\n  - {id: G1, verdict: stop}\n")
+    monkeypatch.setattr(preflight_task, "merged_task_ids", lambda: frozenset())
+    assert preflight_task.completed_verdicts("T-2026-10-21-resumed") == []
+    assert preflight_task.check_symmetry_table("T-2026-10-21-resumed").status == "FAIL"
+
+
+def test_stopped_merged_contract_is_still_skipped(tasks_dir, monkeypatch):
+    """上の陰性対照。同じ報告が統合済みなら、今と同じく完了済み（SKIP）。"""
+    _prereg(tasks_dir, "T-2026-10-21-resumed", "表なし\n")
+    _result(tasks_dir, "T-2026-10-21-resumed", "status: stopped\ngates:\n  - {id: G1, verdict: stop}\n")
+    monkeypatch.setattr(preflight_task, "merged_task_ids", lambda: frozenset({"T-2026-10-21-resumed"}))
+    assert preflight_task.check_symmetry_table("T-2026-10-21-resumed").status == "SKIP"
+
+
+def test_merged_ids_come_from_the_phase0_tree():
+    """実物の木を読む。統合済みの契約は入り、存在しない契約と本契約（未統合）は入らない。"""
+    preflight_task.merged_task_ids.cache_clear()
+    try:
+        merged = preflight_task.merged_task_ids()
+    finally:
+        preflight_task.merged_task_ids.cache_clear()
+    if merged is None:
+        pytest.skip(f"{preflight_task.MERGED_REF} が解決しない複製")
+    assert "T-2026-09-19-symmetry-gate" in merged
+    assert "T-2026-01-01-no-such-contract" not in merged
+    assert all("/" not in t for t in merged)  # 経路ではなく識別子（雛形 _templates も入るが問われない）
+
+
+def test_unresolvable_ref_falls_back_with_one_warning(tasks_dir, monkeypatch, capsys):
+    """完了判定 f。参照が解決しないと、印だけの判定へ戻り、警告が一行だけ出る。"""
+    _result(tasks_dir, "T-2026-10-21-resumed", "gates:\n  - {id: G1, verdict: stop}\n")
+    monkeypatch.undo()  # 統合済みとみなす差し替えを外し、実物の関数を参照の無い名で呼ぶ
+    monkeypatch.setattr(preflight_task, "TASKS_DIR", tasks_dir)
+    monkeypatch.setattr(preflight_task, "MERGED_REF", "refs/remotes/origin/no-such-ref-zz")
+    preflight_task.merged_task_ids.cache_clear()
+    try:
+        assert preflight_task.completed_verdicts("T-2026-10-21-resumed") == ["stop"]  # 元の振る舞い
+        assert preflight_task.completed_verdicts("T-2026-10-21-resumed") == ["stop"]
+        err = capsys.readouterr().err
+    finally:
+        preflight_task.merged_task_ids.cache_clear()
+    assert err.count("\n") == 1 and "no-such-ref-zz を解決できない" in err
 
 
 # --- 二型が様式の列挙に入った（完了判定 d・e） -----------------------------

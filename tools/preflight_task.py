@@ -11,6 +11,7 @@ sys.prefix が一致して P1 が通ってしまう（実測済み）。PATH 上
 from __future__ import annotations
 
 import argparse
+import functools
 import hashlib
 import os
 import re
@@ -76,7 +77,12 @@ PREREG_FILE = "prereg.md"
 # 台帳は使わない。部分一致は無関係な契約を完了済みと誤認する（issuer_cautions #13 と同型）。
 # **`verdict` は最上位の項目ではない。** 様式が持つのは `gates[].verdict` であり、
 # 最上位は `status` である（result.schema.json を実測して確かめた）。
+# **統合済みの契約だけを完了済みとする**（T-2026-10-21-ops-taskstart-resume-folds-val）。
+# 停止（stop）した契約の `result.yaml` が残ったまま再開すると、verdict の有無だけでは
+# 完了済みと扱われ P13・P14・allow_write の規則が黙って飛んだ。報告が `MERGED_REF` の木に
+# 在ることを条件に足す。参照が解決しないときは条件を外し、警告を一行出す。
 RESULT_FILE = "result.yaml"
+MERGED_REF = "origin/phase0"
 SYMMETRY_CONDITION_HEADER = "条件"
 SYMMETRY_VERDICT_HEADER = "判定"
 SYMMETRY_REASON_HEADER = "理由"
@@ -591,11 +597,38 @@ def symmetry_tables(text: str) -> list[tuple[dict[str, int], list[list[str]]]]:
     return tables
 
 
+@functools.lru_cache(maxsize=1)
+def merged_task_ids() -> frozenset[str] | None:
+    """`MERGED_REF` の木に `tasks/<id>/result.yaml` が在る契約の識別子。
+
+    参照が解決しなければ None を返し、警告を一行出す（一度だけ）。
+    """
+    proc = subprocess.run(
+        ["git", "-C", str(REPO_ROOT), "ls-tree", "-r", "-z", "--name-only", MERGED_REF, "--", "tasks/"],
+        capture_output=True,
+    )
+    if proc.returncode != 0:
+        print(
+            f"警告: {MERGED_REF} を解決できないため、完了済みの判定から統合の条件を外す"
+            f"（{RESULT_FILE} の gates[].verdict に空でない値があれば完了）",
+            file=sys.stderr,
+        )
+        return None
+    ids = set()
+    for path in proc.stdout.decode("utf-8", "replace").split("\0"):
+        parts = path.split("/")
+        if len(parts) == 3 and parts[0] == "tasks" and parts[2] == RESULT_FILE:
+            ids.add(parts[1])
+    return frozenset(ids)
+
+
 def completed_verdicts(task_id: str) -> list[str]:
     """完了済みの印を返す。`result.yaml` の `gates[].verdict` のうち空でない値。
 
     読めない・様式に合わない場合は空を返して「完了済みでない」と扱う。
     **推測で補わない。** 印が無いなら未完了として従来どおり検査する。
+    印があっても、その報告が `MERGED_REF` の木に無い（停止して再開した、まだ統合していない）
+    なら空を返す。参照が解決しないときは印だけで判定する（`merged_task_ids`）。
     """
     path = TASKS_DIR / task_id / RESULT_FILE
     if not path.exists():
@@ -609,11 +642,15 @@ def completed_verdicts(task_id: str) -> list[str]:
     gates = data.get("gates")
     if not isinstance(gates, list):
         return []
-    return [
+    verdicts = [
         str(gate["verdict"]).strip()
         for gate in gates
         if isinstance(gate, dict) and str(gate.get("verdict") or "").strip()
     ]
+    merged = merged_task_ids() if verdicts else None
+    if merged is not None and task_id not in merged:
+        return []
+    return verdicts
 
 
 def check_symmetry_table(task_id: str) -> Check:
@@ -684,7 +721,7 @@ def check_proposal_card(task_id: str, spec: dict) -> Check:
 
     正本は `conventions#proposal_gate` の「置き場と参照」。判定は次の順で行う。
 
-    1. 完了済み（`result.yaml` に `gates[].verdict` がある）→ SKIP。P13 と同じ判定に委ねる
+    1. 完了済み（`completed_verdicts`。統合済みで `gates[].verdict` がある）→ SKIP。P13 と同じ判定に委ねる
     2. 導入前に配布済みの契約（`PRE_GATE_EXEMPT_TASKS` の完全一致）→ SKIP
     3. `intent.proposal_card` が無い → FAIL
     4. 経路のファイルが無い → FAIL
