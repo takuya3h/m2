@@ -1,6 +1,6 @@
 # audit — T-2026-10-22-evidence-map-a-place
 
-実行ホストは Bengio。時刻は JST。Phase A〜C完了、Phase Dの報告作成中。
+実行ホストは Bengio。時刻は JST。受入条件a〜gとG1〜G3を充足。送出・終了は末尾に記録する。
 
 ## 0. 開始と作業ツリーの整備
 
@@ -264,3 +264,23 @@ SPECの「罠5」は、同じ起点39dd92d6でSHA-256を1か所壊したコピ�
 ## D-3. 版管理・PR・配布台帳
 
 commit・push・PRの作成と台帳の応答は、実施後にこの節へ追記する。PRのbaseはphase0、Draftにしない。
+
+### D-3a. commitとPR
+
+- 成果物のcommit: `92c368fd18c1b781a4eaa3dd34591ec967686a28`。32ファイルの追加・挿入だけで、削除・名前変更なし。契約分岐を `git push -u origin feat/evidence-map-a-place` でpushした（終了コード0）。
+- `gh pr create --base phase0 --head feat/evidence-map-a-place --body-file <repo外の本文ファイル>` で通常PRを作成した。終了コード0。
+- `gh pr view --json number,url,state,isDraft,baseRefName,headRefName,headRefOid` の応答を [pr.json](pr.json) へ保存した。
+
+```json
+{
+  "baseRefName": "phase0",
+  "headRefName": "feat/evidence-map-a-place",
+  "headRefOid": "92c368fd18c1b781a4eaa3dd34591ec967686a28",
+  "isDraft": false,
+  "number": 254,
+  "state": "OPEN",
+  "url": "https://github.com/takuya3h/m2/pull/254"
+}
+```
+
+- PR #254、OPEN、Draftではない、base=phase0、head=feat/evidence-map-a-place。これにより受入条件gも充足した。報告をpassに更新した。統合・自動統合の有効化は行っていない。

@@ -2,7 +2,7 @@
 
 ## 判定
 
-実装・検査・照合は完了。G1・G2・G3はPASS。PR起票と台帳報告は未実施のため、現時点のstatusはpartial。
+契約の受入条件a〜gを充足し、statusはpass。G1・G2・G3はPASS。書誌の正誤の判断と差の反映は起票者が扱う。
 
 ## 完了判定
 
@@ -14,7 +14,7 @@
 | d ID | 126件（arXiv 96・DOI 30）、分類の和126。指定一覧との集合の差は両方向0 |
 | e 予測 | 予測外3 IDと、名指しされた要注意29 ID、照合不能20 IDの返値を記録 |
 | f 旧地図A | 追加2行・削除0行。指定の挿入以外の全バイト列は起点と同一 |
-| g PR | 未起票。forbidden-checkは違反0、spec-checkは該当0（各終了コード0） |
+| g PR | PR #254はOPEN、Draftではなく、base=phase0、head=feat/evidence-map-a-place。forbidden-checkは違反0 |
 
 配置・保護の根拠は [audit.md](audit.md) L92、L253。検査・集合比較はL104〜L127。
 
@@ -44,7 +44,7 @@
 
 ## 送出
 
-PR未起票。書誌照合・forbidden-check・spec-checkの終了コードはいずれも0。配布台帳の送信結果は、送信後に [audit.md](audit.md) L264 へ記録する。
+PR #254。書誌照合・forbidden-check・spec-checkの終了コードはいずれも0。配布台帳の送信結果は、送信後に [audit.md](audit.md) L264 へ記録する。
 
 ## 1. 解決された参照
 

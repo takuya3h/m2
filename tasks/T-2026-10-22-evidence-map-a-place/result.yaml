@@ -1,9 +1,9 @@
 result_version: 3
 task_id: T-2026-10-22-evidence-map-a-place
-status: partial
+status: pass
 host: Bengio
 branch: feat/evidence-map-a-place
-pr: null
+pr: 254
 merged: false
 gates:
 - id: G1
@@ -51,7 +51,7 @@ followups:
 - 起票者は予測外のA-04のarXiv 2503.18755・DOI 10.1049/htl2.70049とA-109のarXiv 2202.02326を含む書誌差5件の扱いを、返値を見て判断する。本契約では地図・報告の本文を変更していない。
 - SPEC罠5の終了コード0という断定は陽性対照で再現しなかった。現在の検査器では違反1件で終了コード1だった。
 unknowns:
-- PRの起票と配布台帳への完了報告は未実施。
 - APIの返した書誌情報と原典の正誤は別であり、特にA-109の著者要素の分割の原因は本契約では判断していない。
 - agentmemoryはツール未提供のため読み書き未実施。
-commits: []
+commits:
+- 92c368fd18c1b781a4eaa3dd34591ec967686a28
