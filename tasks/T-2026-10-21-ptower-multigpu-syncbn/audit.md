@@ -354,3 +354,6 @@ repo の外に残したもの: `~/m2-scratch/T-2026-10-21-ptower-multigpu-syncbn
     gh pr view --json number,isDraft,baseRefName,headRefName → {"number":249,"isDraft":false,"baseRefName":"phase0","headRefName":"feat/ptower-multigpu-syncbn"}
 
 作業の commit: 010984e8。
+
+    source scripts/load_env.sh && make task-report TASK=T-2026-10-21-ptower-multigpu-syncbn → rc=0
+      verdict partial、n_issuer_defects 2、report_sha256 1bff66312c7c0ed70ad9f020c9117d1534e0cbdf4ba83ec542ec38119b14ca71、report_bytes 8754、replaced_blocks 0
