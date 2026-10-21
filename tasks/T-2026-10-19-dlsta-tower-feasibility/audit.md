@@ -587,3 +587,11 @@ git のプロセスも見えなかった（ほかの git 操作と一時的に�
     gh pr create --base phase0 --head feat/dlsta-tower-feasibility → https://github.com/takuya3h/m2/pull/245
     gh pr view --json number,isDraft,baseRefName,headRefName
       → {"baseRefName":"phase0","headRefName":"feat/dlsta-tower-feasibility","isDraft":false,"number":245}
+
+### I.7 台帳への送り返し（commit c19ccde3 を push した後）
+
+    source scripts/load_env.sh && make task-report TASK=T-2026-10-19-dlsta-tower-feasibility → rc=0
+    {"task_id": "T-2026-10-19-dlsta-tower-feasibility", "verdict": "pass", "n_issuer_defects": 2,
+     "report_sha256": "f21f494d451591b99b6f951e1c27269d571eab598976b98cc1dc872f5e7a01a6", "report_bytes": 10032, "replaced_blocks": 0}
+
+この節を足した commit を push した後に、定期監視を止め、`make task-release END=complete` で抑止を外す。
