@@ -1,0 +1,4 @@
+- [ ] 2026-10-21 [cc] L2-6 の WARN（規約が 7ba1d60d の後に変わった）を示し、利用者は続行を選んだ。conventions_rev を 5c0eaeeb に差し替えた（tasks/T-2026-10-19-dlsta-tower-feasibility/spec.yaml）
+- [ ] 2026-10-21 [cc] 利用者が「空いてる計算資源はすべて使って最速で」と指示。時間を測らない測定を並べ、時間の値には同時実行の条件を併記した（experiments/analysis/dlsta_tower_feasibility/REPORT.md）
+- [ ] 2026-10-21 [cc] 利用者が「GPU0もつかってよい」と許可。GPU0 は容器の外の 77 MiB の確保があるため除外していた。学び直しで GPU0 を使うかは改めて決める（context/env-facts.md）
+- [ ] 2026-10-21 [cc] dlsta で run_stage1_dtower.sh をそのまま使うと COCO の重みを読まない学習になりうる。学び直しの契約の前に直すか手続きで環境変数を与えるかを決める（third_party/Relation-DETR/configs/train_config_egosurgery_seed42.py）

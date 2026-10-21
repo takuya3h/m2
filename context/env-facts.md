@@ -17,6 +17,8 @@
 - 中心は **philip**（`192.168.196.150`）。参加する 6 台は philip / lecun / bengio / andrew / ilya / **efros**
 - **efros は復旧した**（2026-09-17 実測）。**基盤のみで、中心への登録は後続の契約**。**he は未確認**
 - **dlsta が七台目として加わる見込み**（2026-09-20 実測）。**基盤のみで、中心への登録・中継・起動は後続の契約**。住所は `192.168.196.54`（`scripts/sync/hosts/` の記載）だが、**容器の内側からは `172.17.0.12` しか見えず照合できない**
+  - **↑ 旧記述（2026-10-21 実測で食い違い。`T-2026-10-19-dlsta-tower-feasibility`）:** dlsta では `syncthing serve`（2 件）と `keeper.sh` が動き、Syncthing の folder に `~/local/m2` を含む 6 件がある。philip への常駐の中継 `ssh -N -L 22001:127.0.0.1:22000 -p 50072 … ubuntu@192.168.196.150` と目印 `~/.tunnel_to_philip` が在る。`m2-sync.sh` は `.sync-pause` を読んで書き込みを止めた（`sync-alerts.log` の `[dlsta] 一時停止中`）。登録がどの契約で行われたかは調べていない
+  - dlsta から andrew（`192.168.196.190:50072`）と philip（`192.168.196.150:50072`）へ TCP で届き、どちらも `SSH-2.0-OpenSSH_9.6p` を返す。port 1 は `Connection refused`（2026-10-21、認証なしの接続だけ。同契約）
 - **パスワード認証は通る。** 一台から全台を確認できる
 - 住所の一覧は全 15 台。`scripts/sync/hosts/` に保全済み
 
@@ -44,6 +46,13 @@
 ## 装置
 
 - **dlsta** — **RTX A5000 × 5**（各 24564 MiB）、driver 595.84、torch 2.1.2+cu118、cuDNN 8700、nvcc 12.9。**NVLink は GPU1–GPU2 と GPU3–GPU4 の 2 対**（NV4）、GPU0 は単独。NUMA 0 が GPU0–2、NUMA 1 が GPU3–4。容器内で OS のホスト名は英数の識別子（`dlsta` ではない）。**`third_party/Relation-DETR` の本体が無い**（2026-09-26 実測。`T-2026-09-23-dlsta-host-fairness`）
+  - **↑ 本体が無いは旧記述（2026-10-21）。** `bash scripts/restore_relation_detr_source.sh efros/2026-10-17` で復元し、写しの要約値 39/39 一致。`scripts/setup_env_relation_detr.sh` で `.venv-relation-detr`（5.0 GB）を作り、MS-Deform-Attn を nvcc 12.9 でビルドして読み込めた。収束規則の試験 9/9。外への到達は github（上流）と pypi.org・download.pytorch.org で足りた（`T-2026-10-19-dlsta-tower-feasibility`）
+  - **装置と組の再実測（2026-10-21、同契約）:** 型・容量・NVLink・NUMA は上の行と同じ。driver 595.84、nvcc 12.9.86、gcc 13.3.0。**GPU0 は compute プロセスが見えないのに 99 MiB 確保されている**（ほかは 22 MiB。自分のプロセスは容器内の `nvidia-smi` に見えるので、容器の外の確保）。2026-10-05 には GPU0 に他の利用者の処理（4397 MiB、100%）が載っていた。GPU0 を使うかは利用者に確かめる（本契約では途中から利用者の許可で使った）
+  - **検出塔の 2 プロセスの学習に通信の設定は要らない**（`NCCL_P2P_DISABLE` なしで NVLink の組も NVLink の無い組も動いた。andrew では要った）
+  - **検出塔の処方そのまま（GPU ごとの batch 2、fp16）:** GPU ごとの torch の最大確保 12,285,587,968 / 11,599,943,168 bytes、nvidia-smi 12,563 / 12,145 MiB。定常の一歩 0.598 s（NVLink の組 GPU1–2）、0.606 s（GPU1+GPU3、SYS）、0.600 s（GPU0+GPU1、NODE）。二つの NVLink の組で 2 本同時に回しても 0.596 / 0.586 s で遅くならない。GPU ごとの batch 3 は 300 歩まで収まり、4 は OOM（`expandable_segments:True` なら 300 歩は通るが最大確保は容量の 96%）
+  - **既存の設定の既定値は andrew の位置を指す:** `configs/train_config_egosurgery_seed42.py` の `EGO_ROOT` と `resume_from_checkpoint` の既定は `/home/ubuntu/slocal2/m2/...`。dlsta では環境変数 `EGO_ROOT` と `RELDETR_COCO_CKPT` を与えないと、COCO の重みを**読まずに**学習が進む（`main.py` はファイルでなければ読み込みを飛ばす）。`scripts/eval_relation_detr_map.py` は `third_party/Relation-DETR` へ `chdir` するので、checkpoint は**絶対経路**で渡す（相対経路は読み込みを飛ばして AP 0 を返す）
+  - **工程塔三周目の処方（物理 batch 16、800×1422）は A5000 一枚に収まらない**（最初の forward で OOM）。一枚の最大は batch 13（torch の最大確保 23,689,911,808 bytes）、14 は OOM。特徴の取り出し（batch 16、15,437 フレーム）は最大確保 4.1 GB で 400.7 s、時間ヘッドは 0.1 GB
+  - **ホストをまたぐ評価:** 工程塔三周目 005 の折り A の val は記録（ilya）と 7 指標全桁一致、取り出した特徴は記録と bit 一致。検出塔二周目 D\*-COCO 折り A seed 42 の val は記録（andrew）と全桁一致せず、AP の差 −2.31e−07、標的群 AP の差 −7.59e−07（seed 間の標準偏差 0.0053）
 
 ## シェル
 

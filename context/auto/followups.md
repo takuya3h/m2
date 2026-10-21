@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（646 件）
+## 申し送り（654 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1020,6 +1020,17 @@
 
 - 次の実験契約はconventions#symmetryの入力縮小規則・ホスト行とconventions#precisionを参照できる。工程塔の精度はこの契約では定めない。
 
+### T-2026-10-19-dlsta-tower-feasibility
+
+- dlsta で scripts/run_stage1_dtower.sh をそのまま使うと、設定の既定値（/home/ubuntu/slocal2/m2/...）のため COCO の重みを読まない学習になりうる（main.py はファイルでないと読み込みを飛ばす）。学び直しの契約では EGO_ROOT と RELDETR_COCO_CKPT を与えるか、スクリプトを直す契約が要る。学習の記録の load pretrained の行を検査に入れるとよい
+- scripts/eval_relation_detr_map.py は相対経路の checkpoint で重みを読まずに AP 0 を返し、失敗にしない。読み込みの失敗を止める修正の契約か、手続きで絶対経路を必須にすることが要る
+- 工程塔を複数の GPU で回す実装の契約の材料は REPORT §5（足すもの 8 項目と、同じ学び方の確かめ方の案）。一枚の最大は batch 13 で、処方の batch 16 は一枚に収まらない
+- 検出塔の処方は 2 本を二つの NVLink の組で同時に回しても遅くならなかった（0.596 / 0.586 s、単独 0.598 s）。探索の手続きのカードで装置の並べ方を書くときの材料
+- GPU0 は compute プロセスが見えないまま 99 MiB 確保されている（容器の外）。学び直しで GPU0 を使うかは利用者の判断（本契約では許可を得て使った）
+- 検出塔のホストをまたぐ評価は全桁一致しなかった（AP の差 −2.31e−07、標的群 −7.59e−07）。工程塔は全桁一致。この大きさの差を許すかは起票者の判断
+- README.md と docs/experiment_log.md は allow_write の外なので更新していない。記録が要るなら起票者か次の契約で
+- dlsta に third_party/Relation-DETR のソースと .venv-relation-detr（5,036,875,209 bytes）を残した。repo の外 ~/m2-scratch/dlsta_tower_feasibility/（145,612,791 bytes。ログ、特徴、時間ヘッドの checkpoint）を残すか片付けるかは利用者の判断
+
 ### T-2026-10-19-evidence-maps-revise
 
 - C=29、B=34、N=37の全IDが実在・書誌一致。N追加書誌18 IDは全て該当行と比較。書誌IDなしはC-24だけ。
@@ -1041,7 +1052,7 @@
 - tool-history（カードどおり）のゲートは 4 epoch で tanh(α) 0.012 までしか開かなかった（起票者の見積もり 0.02 と同じ程度）。ゲートなし版は空の腕が経過の情報を持つので、空の腕を分母にした比較の読み方を決めておく必要がある
 - worktree の追跡外の記号リンク .venv と data/processed/phase_manifest、bengio の前回・直しの契約の保存先に足した 32 本は残してある（戻すかどうかは利用者が決める）
 
-## 断定できなかった事項（403 件）
+## 断定できなかった事項（408 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1793,6 +1804,14 @@
 
 - 古い「直接接続は不可能」という断定の元の測定経路は記録から特定できない。SPEC5.6に従い明記した。
 
+### T-2026-10-19-dlsta-tower-feasibility
+
+- 検出塔の評価の差の原因
+- 検出塔の GPU ごとの batch 3 が全 epoch で溢れないか（300 歩だけ測った）
+- 工程塔の一歩の時間、特徴の取り出しの時間の単独の値（他の測定と同時に測った）
+- andrew から dlsta へ届くか、SSH の認証が通るか、転送の速さ、andrew が Syncthing の同じ folder に参加しているか
+- repo の置き場の空きが開始時から約 74 GB 減ったうち、本契約以外の出所
+
 ### T-2026-10-19-stage2-pilot-fix-epoch4-shuffle
 
 - 回し直さない PD の 8 本の動画ごとの 4 epoch 目の値（epoch 3 の予測と重みが残っていない）。P2L は空の腕の動画ごとが無いため全腕の動画ごとの Δ空
@@ -1803,18 +1822,18 @@
 
 - K3 の GRU の最終状態から術式を当てる精度: 動画ごとの術式の対応が repo に無い
 
-## 起票者の誤りの型（378 件）
+## 起票者の誤りの型（380 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 102 |
+| `check_does_not_check` | 103 |
 | `asserted_without_measuring` | 159 |
-| `self_contradiction` | 96 |
+| `self_contradiction` | 97 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 1 |
 | `rule_read_narrowly` | 1 |
 
-合計 378 件（対を持つ契約 131 件から）
+合計 380 件（対を持つ契約 132 件から）
 
