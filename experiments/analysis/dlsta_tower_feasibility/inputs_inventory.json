@@ -1,0 +1,467 @@
+{
+  "task_id": "T-2026-10-19-dlsta-tower-feasibility",
+  "items": [
+    {
+      "item": "B1 画像 01-15（data/raw/ego）",
+      "present": true,
+      "count": 15437,
+      "expected": 15437,
+      "match": true,
+      "digest": "45ee4cc2e9ed72df8cc530119f47de1c97c5d22b4043449bdd1338f035e17b78",
+      "note": "bytes=1204884895。要約値は frame_signal_audit と同じ取り方（動画ごとに記録と照合）"
+    },
+    {
+      "item": "B2 工程注釈だけのフレーム（initial_videos）",
+      "present": true,
+      "count": 1796,
+      "expected": 1796,
+      "match": true,
+      "digest": "477738645db8d601233c94b105e2807e22e49ae299b38644c9b2a6a4c0101f13",
+      "note": "工程 CSV 01-15 の行 17233 − 画像 15437 = 1796。bytes=134760136"
+    },
+    {
+      "item": "B3a 工程 CSV 01-15 の行",
+      "present": true,
+      "count": 17233,
+      "expected": 17233,
+      "match": true,
+      "digest": null,
+      "note": "CSV ファイル 43 件"
+    },
+    {
+      "item": "B3b 工程塔の manifest（data/processed/phase_manifest）",
+      "present": true,
+      "count": 15437,
+      "expected": 15437,
+      "match": true,
+      "digest": {
+        "train": "f8bee9f9b4651add6f692e4deb70c29bdfb6493cd85eca634446054acfe2b19d",
+        "val": "9f935375a093024a5124b873e243954d048d091c518534b7ee50079767309bd2",
+        "test": "f2077541feb0b3c98cdef34e7c1707b667c50316cf6f768f2a36f7da3dc6db4d",
+        "phase_vocab": "ad3c1e4a4b0913bc849c66acbecacd31a747a9c6a77191879acc1c92fb11dacf"
+      },
+      "note": "image_path の欠け 0"
+    },
+    {
+      "item": "B3c 術具注釈 公式 train",
+      "present": true,
+      "count": [
+        9657,
+        32272
+      ],
+      "expected": [
+        9657,
+        32272
+      ],
+      "match": true,
+      "digest": "fc63621ea496ccdc7f49099b1f0b58763d3302e13611f40d6812e258f829db2f",
+      "note": "file_name の画像の欠け 0"
+    },
+    {
+      "item": "B3c 術具注釈 公式 val",
+      "present": true,
+      "count": [
+        1515,
+        4707
+      ],
+      "expected": [
+        1515,
+        4707
+      ],
+      "match": true,
+      "digest": "db605c06626ff82407f88d9342af339914bda1c24c2ee291fc860cd46542c615",
+      "note": "file_name の画像の欠け 0"
+    },
+    {
+      "item": "B3c 術具注釈 公式 test",
+      "present": true,
+      "count": [
+        4265,
+        12673
+      ],
+      "expected": [
+        4265,
+        12673
+      ],
+      "match": true,
+      "digest": "f4ce5243fd01fc6e856a5747de6ef38f8e91eec7e7c17da1de25178b011cfa88",
+      "note": "file_name の画像の欠け 0"
+    },
+    {
+      "item": "B4 折り A train",
+      "present": true,
+      "count": [
+        9657,
+        32272
+      ],
+      "expected": [
+        9657,
+        32272
+      ],
+      "match": true,
+      "digest": "fc63621ea496ccdc7f49099b1f0b58763d3302e13611f40d6812e258f829db2f",
+      "note": "file_name の画像の欠け 0"
+    },
+    {
+      "item": "B4 折り A val",
+      "present": true,
+      "count": [
+        1515,
+        4707
+      ],
+      "expected": [
+        1515,
+        4707
+      ],
+      "match": true,
+      "digest": "db605c06626ff82407f88d9342af339914bda1c24c2ee291fc860cd46542c615",
+      "note": "file_name の画像の欠け 0"
+    },
+    {
+      "item": "B4 折り A test",
+      "present": true,
+      "count": [
+        4265,
+        12673
+      ],
+      "expected": [
+        4265,
+        12673
+      ],
+      "match": true,
+      "digest": "f4ce5243fd01fc6e856a5747de6ef38f8e91eec7e7c17da1de25178b011cfa88",
+      "note": "file_name の画像の欠け 0"
+    },
+    {
+      "item": "B4 折り B train",
+      "present": true,
+      "count": [
+        9764,
+        31119
+      ],
+      "expected": [
+        9764,
+        31119
+      ],
+      "match": true,
+      "digest": "6a4b2d1e9ca209f22aad1384ba5daeb719225e9ba2da0fb2d32ee97581e3d1b9",
+      "note": "file_name の画像の欠け 0"
+    },
+    {
+      "item": "B4 折り B val",
+      "present": true,
+      "count": [
+        1861,
+        4922
+      ],
+      "expected": [
+        1861,
+        4922
+      ],
+      "match": true,
+      "digest": "cdc0c5a73eedd6adbd43a0e32b0eca646dc4afa68041c4c333cf52ac2fa2eae3",
+      "note": "file_name の画像の欠け 0"
+    },
+    {
+      "item": "B4 折り B test",
+      "present": true,
+      "count": [
+        3812,
+        13611
+      ],
+      "expected": [
+        3812,
+        13611
+      ],
+      "match": true,
+      "digest": "94a54dd492ab78db4e1f4e81a6eed7253100ef03679a5197bb96d142c89ee95d",
+      "note": "file_name の画像の欠け 0"
+    },
+    {
+      "item": "B4 折り C train",
+      "present": true,
+      "count": [
+        10834,
+        34769
+      ],
+      "expected": [
+        10834,
+        34769
+      ],
+      "match": true,
+      "digest": "9a30b9a8e902cee009558a126a46793ef8641ed38b40718584f6e3ed07bb7df6",
+      "note": "file_name の画像の欠け 0"
+    },
+    {
+      "item": "B4 折り C val",
+      "present": true,
+      "count": [
+        1988,
+        7516
+      ],
+      "expected": [
+        1988,
+        7516
+      ],
+      "match": true,
+      "digest": "9e8bdc2e501acfe8e37afa58f4f47a9d51ceae775019f6392c5607cf53110221",
+      "note": "file_name の画像の欠け 0"
+    },
+    {
+      "item": "B4 折り C test",
+      "present": true,
+      "count": [
+        2615,
+        7367
+      ],
+      "expected": [
+        2615,
+        7367
+      ],
+      "match": true,
+      "digest": "86423dc6ac487fb9988016f5aa0be35b181c48814a11577c574e62406288eeaf",
+      "note": "file_name の画像の欠け 0"
+    },
+    {
+      "item": "B4 折り D train",
+      "present": true,
+      "count": [
+        10262,
+        35078
+      ],
+      "expected": [
+        10262,
+        35078
+      ],
+      "match": true,
+      "digest": "a4caac8e78d6db2df84525056e1b191b2ea1a217deb74c595228a805f8385210",
+      "note": "file_name の画像の欠け 0"
+    },
+    {
+      "item": "B4 折り D val",
+      "present": true,
+      "count": [
+        2554,
+        5751
+      ],
+      "expected": [
+        2554,
+        5751
+      ],
+      "match": true,
+      "digest": "2108db7904f728bb8974964d167db16512007b4d92ab8529b0c61f88a9965007",
+      "note": "file_name の画像の欠け 0"
+    },
+    {
+      "item": "B4 折り D test",
+      "present": true,
+      "count": [
+        2621,
+        8823
+      ],
+      "expected": [
+        2621,
+        8823
+      ],
+      "match": true,
+      "digest": "04574e9d56b4faa433a996ab32c1916f9ce76676da32d48f60809ad2721c0344",
+      "note": "file_name の画像の欠け 0"
+    },
+    {
+      "item": "B4 折り E train",
+      "present": true,
+      "count": [
+        11182,
+        33724
+      ],
+      "expected": [
+        11182,
+        33724
+      ],
+      "match": true,
+      "digest": "e7da2a9351188cf55a50689864657e6a74ca6afba318bac00c0fd0311819366d",
+      "note": "file_name の画像の欠け 0"
+    },
+    {
+      "item": "B4 折り E val",
+      "present": true,
+      "count": [
+        2131,
+        8750
+      ],
+      "expected": [
+        2131,
+        8750
+      ],
+      "match": true,
+      "digest": "d2701bea92190601cbdcc2cdb56ac66ab3edb7eab449e9cd79d9a641d430f175",
+      "note": "file_name の画像の欠け 0"
+    },
+    {
+      "item": "B4 折り E test",
+      "present": true,
+      "count": [
+        2124,
+        7178
+      ],
+      "expected": [
+        2124,
+        7178
+      ],
+      "match": true,
+      "digest": "57b052da3ec8249dee7d5ca6d15b0473265d7cba0e43cda43dd7b0be29b67740",
+      "note": "file_name の画像の欠け 0"
+    },
+    {
+      "item": "B5a COCO の初期化の重み（大きさ bytes）",
+      "present": true,
+      "count": 196140106,
+      "expected": 196140106,
+      "match": true,
+      "digest": "2d2c19a7a49e7d77dfb1253bdeba8414785af9f0786fb51651b4a25325c6e8ff",
+      "note": "docs/experiment_settings.md 193 行"
+    },
+    {
+      "item": "B5b COCO の重みの backbone の要約値（stage1_ptower_r3.backbone_digest）",
+      "present": true,
+      "count": "a755b3eb22a3c1996ff88bb5797690ceb5605eedef5c24f980e1cac4c07fc98f",
+      "expected": "a755b3eb22a3c1996ff88bb5797690ceb5605eedef5c24f980e1cac4c07fc98f",
+      "match": true,
+      "digest": null,
+      "note": "記録は experiments/phase1/stage1_ptower_r3_005_ft_coco_lr0.0001_foldA_seed42/config.yaml"
+    },
+    {
+      "item": "B6a 検出塔二周目 D*-COCO 折り A seed 42 best_ap.pth",
+      "present": true,
+      "count": "30d199b15201cf3c03954852d8acc6fb58fe5349baef2fd200e877237ff682c4",
+      "expected": "30d199b15201cf3c03954852d8acc6fb58fe5349baef2fd200e877237ff682c4",
+      "match": true,
+      "digest": null,
+      "note": "bytes=195421066。記録は test_access_ledger.csv の checkpoint_sha256"
+    },
+    {
+      "item": "B6a 検出塔二周目 D*-COCO 折り B seed 42 best_ap.pth",
+      "present": true,
+      "count": "be84c64bea271eae6332eaff4c59abc82d4e6fb860352e1611de84da05bf5bf4",
+      "expected": "be84c64bea271eae6332eaff4c59abc82d4e6fb860352e1611de84da05bf5bf4",
+      "match": true,
+      "digest": null,
+      "note": "bytes=195421066。記録は test_access_ledger.csv の checkpoint_sha256"
+    },
+    {
+      "item": "B6b 工程塔三周目 005_ft_coco_lr0.0001_foldA_seed42 best.pth",
+      "present": true,
+      "count": "a90cf04de88fcd0265791f508cc3c566316e23136ed571d941bf7d94628b13f6",
+      "expected": "a90cf04de88fcd0265791f508cc3c566316e23136ed571d941bf7d94628b13f6",
+      "match": true,
+      "digest": null,
+      "note": "bytes=94405478。記録は finetune_history.json"
+    },
+    {
+      "item": "B6b 工程塔三周目 008_ft_coco_lr0.0001_foldB_seed42 best.pth",
+      "present": true,
+      "count": "835d556855a4cd8cfc011cac1eb909d3af0fd78fc0b9bbe327e017579ebda1b4",
+      "expected": "835d556855a4cd8cfc011cac1eb909d3af0fd78fc0b9bbe327e017579ebda1b4",
+      "match": true,
+      "digest": null,
+      "note": "bytes=94405478。記録は finetune_history.json"
+    }
+  ],
+  "images_per_video": {
+    "01": {
+      "count": 913,
+      "sha256": "bcfccdcdac157ec0eb5f16de5f9682cef1fbf4d90487642ae61a954900fb8a32",
+      "recorded_sha256": "bcfccdcdac157ec0eb5f16de5f9682cef1fbf4d90487642ae61a954900fb8a32",
+      "sha256_match": true
+    },
+    "02": {
+      "count": 461,
+      "sha256": "a6814e55bf8a9c7d3a9364cfc116dec38dfed12788476d05e915cced6551241f",
+      "recorded_sha256": "a6814e55bf8a9c7d3a9364cfc116dec38dfed12788476d05e915cced6551241f",
+      "sha256_match": true
+    },
+    "03": {
+      "count": 1089,
+      "sha256": "78ec8a4a751791c845ce42cea6c3760073d1daeb99805644a7916617e229d0bd",
+      "recorded_sha256": "78ec8a4a751791c845ce42cea6c3760073d1daeb99805644a7916617e229d0bd",
+      "sha256_match": true
+    },
+    "04": {
+      "count": 1329,
+      "sha256": "1f6c32337abcf9bd379b2728cf8ed42f71b6dee45825c00debc8d3ca824ee032",
+      "recorded_sha256": "1f6c32337abcf9bd379b2728cf8ed42f71b6dee45825c00debc8d3ca824ee032",
+      "sha256_match": true
+    },
+    "05": {
+      "count": 1225,
+      "sha256": "efeec4822518f8b5dd0594627e26f0285e590ad079f5bc41420d68ece922c6c6",
+      "recorded_sha256": "efeec4822518f8b5dd0594627e26f0285e590ad079f5bc41420d68ece922c6c6",
+      "sha256_match": true
+    },
+    "06": {
+      "count": 1379,
+      "sha256": "9236132904f50946a5736b512b2e6a1e51c8cdba34dc310f32e7b1c67b137497",
+      "recorded_sha256": "9236132904f50946a5736b512b2e6a1e51c8cdba34dc310f32e7b1c67b137497",
+      "sha256_match": true
+    },
+    "07": {
+      "count": 1711,
+      "sha256": "a959642dd48146d26bdbe86d069cea5bea5ebf82dd206f3ccd7c9b6bc6938fae",
+      "recorded_sha256": "a959642dd48146d26bdbe86d069cea5bea5ebf82dd206f3ccd7c9b6bc6938fae",
+      "sha256_match": true
+    },
+    "08": {
+      "count": 1400,
+      "sha256": "cdac779055b1a2d1e5feed08bacbdc36904bd6a393a16bbc5e0bbee56796e77f",
+      "recorded_sha256": "cdac779055b1a2d1e5feed08bacbdc36904bd6a393a16bbc5e0bbee56796e77f",
+      "sha256_match": true
+    },
+    "09": {
+      "count": 518,
+      "sha256": "9edd3eeb32d81c139955cc3dd6004194ee8956a29ee7f9711348a0951536bea0",
+      "recorded_sha256": "9edd3eeb32d81c139955cc3dd6004194ee8956a29ee7f9711348a0951536bea0",
+      "sha256_match": true
+    },
+    "10": {
+      "count": 997,
+      "sha256": "5f47cf8f8104b574ffe87b4862fb5f253fdd34e6b2afa7ef81b6aff361d31209",
+      "recorded_sha256": "5f47cf8f8104b574ffe87b4862fb5f253fdd34e6b2afa7ef81b6aff361d31209",
+      "sha256_match": true
+    },
+    "11": {
+      "count": 754,
+      "sha256": "8262fb999954798a10a5dae2f9ec0a9a448a6aa849a51aa787842e6eee82dd7b",
+      "recorded_sha256": "8262fb999954798a10a5dae2f9ec0a9a448a6aa849a51aa787842e6eee82dd7b",
+      "sha256_match": true
+    },
+    "12": {
+      "count": 609,
+      "sha256": "f18e9230bfbf59f527d363853a2b39982775c2bb08f32639ebdf5c7a28d34065",
+      "recorded_sha256": "f18e9230bfbf59f527d363853a2b39982775c2bb08f32639ebdf5c7a28d34065",
+      "sha256_match": true
+    },
+    "13": {
+      "count": 822,
+      "sha256": "699c8df595186f898f64ec97809bf57a214c65a0c17cea4ec49720476f0dc4e4",
+      "recorded_sha256": "699c8df595186f898f64ec97809bf57a214c65a0c17cea4ec49720476f0dc4e4",
+      "sha256_match": true
+    },
+    "14": {
+      "count": 1810,
+      "sha256": "ba0492e289e02bf705ea0b76169f4417ac2100d2ce0f29f86e012f77d1ffd458",
+      "recorded_sha256": "ba0492e289e02bf705ea0b76169f4417ac2100d2ce0f29f86e012f77d1ffd458",
+      "sha256_match": true
+    },
+    "15": {
+      "count": 420,
+      "sha256": "f2f73a634180089fc1c26c9759536cb27ef31bd8186c6795bb4d9fd97781e7cc",
+      "recorded_sha256": "f2f73a634180089fc1c26c9759536cb27ef31bd8186c6795bb4d9fd97781e7cc",
+      "sha256_match": true
+    }
+  },
+  "controls": {
+    "expected_changed_15438": false,
+    "missing_path_count": 0
+  },
+  "all_match": true
+}
