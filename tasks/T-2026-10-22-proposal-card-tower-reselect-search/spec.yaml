@@ -1,0 +1,63 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-22-proposal-card-tower-reselect-search"
+  kind: impl
+  title: "両塔の学び直しの探索の手続きのカード（四版）と批判会話の依頼文を docs/proposals/ に置き、提案関門の検査を通す"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-21T18:40:00Z"
+  created_from:
+    runindex_commit: "63ae65da8c7d32df591f5e2ee4358286b72c726b"
+    counts: {index: 1961, experiments: 750, verdicts: 1506}
+  depends_on: []
+  amendments: []
+intent:
+  question: "利用者の判定を経た探索の手続きのカードを、exp の実行直前検査 P14 が参照できる置き場に、配布した本文のまま置けるか"
+  decision_at_stake: "両塔の学び直しの探索（dlsta）の exp を起票できるか。exp は intent.proposal_card でこのカードを参照する"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "使わない（文書の配置だけ。データとモデルには触れない）"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["tools/check_proposal.py", "docs/proposal-gate.md", "docs/proposals/_template.md"]
+  bundle_extras:
+    - {path: "proposal_card.md", sha256: "671486dfd36f4b50ae5c322a1ada49de871edf3b5719c18fc1bb5321fb6049be", bytes: 63215}
+    - {path: "critique_brief.md", sha256: "eef6a488028bc30cfecc3285713d9e57f3cb6e47c1a2e374f87f8cfecceb1ec5", bytes: 5935}
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#proposal_gate]
+  conventions_rev: "2d946b07a57abebc4a8f66150d6dbaf2ccd22186"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "開始状態。分岐、作業ツリー、試験の前の値、既存の docs/proposals/ の一覧", gpu: false, est: "15m"}
+    - {id: B, name: "二つの文書を置き場へ写し、要約値を宣言と照合する", gpu: false, est: "15m"}
+    - {id: C, name: "提案関門の検査。陰性と陽性の対照。試験", gpu: false, est: "20m"}
+    - {id: D, name: "検証と報告、PR", gpu: false, est: "30m"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、作業ツリーが清浄で、docs/proposals/ に同名のファイルが無い", on_fail: stop}
+    - {id: G2, after: C, check: "置いたカードが tools/check_proposal.py で検出 0 件、陽性対照の二つの写しがそれぞれ 1 件以上を検出し、試験の失敗の名前の集合が増えていない", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md]
+  destination: "docs/proposals/"
+  acceptance:
+    - "a: 開始状態（分岐、起点、作業ツリー、試験の前の値、docs/proposals/ の一覧）が記録されている"
+    - "b: 二つの文書が置き場に在り、各々の sha256 が spec の bundle_extras の宣言と一致している"
+    - "c: docs/proposals/ のカードが tools/check_proposal.py で検出 0 件で、陽性対照（禁止語を足した写し、見出しを一つ消した写し）がそれぞれ 1 件以上を検出した"
+    - "d: 二つの文書以外に追跡されるファイルの変更が無く、生成物と規約と runindex に触れていない。試験の失敗の名前の集合が増えていない"
+    - "e: PR が存在し、base が phase0、分岐が feat/proposal-card-tower-reselect-search、Draft でない"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "docs/proposals/ に同名のファイルが既に在る場合"
+    - "写した文書の sha256 が宣言と一致しない場合"
+    - "カードが check_proposal.py を通らない場合（本文を直して通さない。停止して諮る）"
