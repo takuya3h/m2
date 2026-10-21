@@ -1,5 +1,7 @@
 # 証拠地図 A — 工程塔のトーナメント候補
 
+**この版は v1（旧様式、2026-09-16）。** 後継は新様式の v2（docs/evidence/2026-10-21-A-phase-tower-candidates.md、2026-10-21）。本書は履歴として残し、更新しない。
+
 **版:** v1
 **元の報告:** repo に deep research の出力ファイルは無い。出所は本契約の契約書
 `tasks/T-2026-09-16-evidence-map-ab/SPEC.md`（30894 バイト、sha256 先頭 c17c2d9961aeb979）の

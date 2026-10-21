@@ -1,0 +1,69 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-22-evidence-map-a-place"
+  kind: impl
+  title: "証拠地図 A v2（工程塔の候補）と元の報告七件を docs/evidence/ に置き、様式の検査と書誌の照合を行う"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-21T20:15:00Z"
+  created_from:
+    runindex_commit: "63ae65da8c7d32df591f5e2ee4358286b72c726b"
+    counts: {index: 0, experiments: 0, verdicts: 0}
+  depends_on: ["T-2026-10-18-evidence-verify-place"]
+  amendments:
+    - date: "2026-10-22"
+      reason: "起票時に利用者の回答を記録する（前例 T-2026-10-18-evidence-verify-place と同じ形）。決定1（旧地図 A の扱い）: 置き換えずに残し、表題の直後に v1 と後継を明記する一段落を挿入する（利用者 2026-10-21）。決定2（A2 の ChatGPT の報告の repo での名前）: 半角スペースを除いた A2-deep-research-report.md（利用者 2026-10-21）。決定3（A2 の補足の報告の repo での名前）: A2-supplement-deep-research-report.md（利用者 2026-10-22。手元の名前 A2_supplimental_deep-research-report.md から改めて置く）"
+      diff: "governance.decisions_required は空のまま（回答は本 amendment の reason に記録）"
+intent:
+  question: "地図 A v2 と元の報告七件を置いたとき、地図が様式の検査を通り、書誌 ID の照合の分類が起票者の事前の予測どおりになるか"
+  decision_at_stake: "地図 A を工程塔の追加候補のカードの生成会話へ渡してよいか（照合の前に渡さない。docs/evidence/README）"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "not-referenced"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["tools/verify_evidence_ids.py", "tools/check_evidence_map.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "2d946b07a57abebc4a8f66150d6dbaf2ccd22186"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "起点の確認（分岐、変えないファイルの要約値、受け渡しの九件の要約値、照合先への到達）", gpu: false, est: "15m"}
+    - {id: B, name: "地図・報告七件・expected-ids.txt を置き、要約値と変更範囲を確かめ、旧地図 A に v1 と後継の一段落を挿入する", gpu: false, est: "15m"}
+    - {id: C, name: "様式の検査と地図 A の照合を行い、抽出の集合と分類を予測と並べる", gpu: false, est: "40m"}
+    - {id: D, name: "検証と報告と PR", gpu: false, est: "30m"}
+  gates:
+    - {id: G1, after: A, check: "変えないファイルの要約値が SPEC の表と一致し、受け渡しの九件の要約値が SPEC の表と一致し、照合先へ到達できる", on_fail: stop}
+    - {id: G2, after: B, check: "置いた九件の要約値が SPEC の表と一致し、変更が SPEC の変更範囲だけ", on_fail: stop}
+    - {id: G3, after: C, check: "様式の検査で違反 0、抽出した ID の集合が expected-ids.txt と一致する", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md, result.yaml, audit.md]
+  destination: "docs/evidence/"
+  acceptance:
+    - "a: 置いた地図・報告七件・expected-ids.txt の要約値が SPEC の表と一致する（置いた後のファイルから計算）"
+    - "b: 変更は地図 A v2、reports/ の七件、verification/ の地図 A の二件、tasks/T-2026-10-22-evidence-map-a-place/、tasks/inbox.d/T-2026-10-22-evidence-map-a-place.md、旧地図 A の挿入だけ。変えないファイルの要約値は前後で同じ"
+    - "c: 様式の検査が地図 A v2 で違反 0。既存の地図 C・B・N も違反 0 のまま"
+    - "d: 地図 A の照合結果が docs/evidence/verification/ にあり、分類の和が抽出した ID の数（126）に等しく、抽出した ID の集合が expected-ids.txt と集合の差で一致する"
+    - "e: 分類の件数を SPEC の予測と並べ、予測と違った ID と、SPEC が名指しした ID を一件ずつ記録する"
+    - "f: 旧地図 A は表題の直後の挿入だけ（削除行 0）。既存の行は一字も変わらない"
+    - "g: PR が Draft でなく存在し、base は phase0、分岐は feat/ で始まり、forbidden-check の違反が零"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "変えないファイルの要約値が SPEC の表と違う場合（起点が想定と違う）"
+    - "受け渡しの九件が置き場に無い場合、または要約値が SPEC の表と違う場合"
+    - "照合先のどれにも到達できない場合"
+    - "様式の検査で違反が出た場合、抽出した ID の集合が expected-ids.txt と違う場合（地図も照合器も直さず、記録して利用者に判断を求める）"
+    - "照合器または様式の検査の誤りが疑われる場合（道具を直さず、記録して利用者に判断を求める）"
+    - "作業ツリーを別の契約が使っている形跡がある場合（抑止の目印が別の契約の所有、他の分岐の未統合の変更）"
