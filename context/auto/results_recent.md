@@ -6,8 +6,38 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 134 件）。
-ここに出ない 129 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 135 件）。
+ここに出ない 130 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-10-22-proposal-card-tower-reselect-search
+
+状態 `pass` / ホスト `dlsta` / 起票 `252` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — branch feat/proposal-card-tower-reselect-search、HEAD = merge-base = origin/phase0 = 7e30bdde、porcelain は契約のディレクトリの未追跡 4 件だけ。docs/proposals/ は 2026-09-27-ptower-20.md と _template.md、briefs/ 無し。§4 の二つの名前は ABSENT、同じ命令で ptower-20 は EXISTS
+- `G2` pass — check_proposal.py で置いたカードは検出 0（禁止語 0 / 見出し欠落 0 / 数字欠落 0、禁止語 15 語・カード 16 件を規約から読んだ）。禁止語「本命」を足した写しで禁止語 1、見出し「## 9. 最安の殺し実験」を消した写しで見出し欠落 1。pytest の失敗の名前は前後とも同じ 6 件、925 passed
+
+### 起票者の誤り
+
+- `self_contradiction` — acceptance d は「二つの文書以外に追跡されるファイルの変更が無く」と書くが、Task D.1 は本契約のディレクトリの変更を認め、手順書は tasks/inbox.d/<task_id>.md を 1 契約 1 行以上求める。字面どおりに実行すると RESULT.md と result.yaml を commit できず（task-release の前提を満たせない）、inbox.d も書けない。D.1 と手順書に従い、二文書・契約のディレクトリ・inbox.d の 1 件を変更範囲とした
+
+### 逸脱
+
+- `judgement` — 開始前の pytest を背景で回している間に Phase B の写しを置いた。tests/ で docs/proposals を参照するのは test_proposal_card_gate.py だけで、_template.md と固定の存在しない名前を見るだけで置き場を走査しないため、前の値は配置の影響を受けない
+- `judgement` — §7 d の空振りでないことの確認（data/ に一件足した写し）は、§6.4 の data/ に書かない禁止と両立させるため、repo の外（scratchpad）に git clone した写しで行い、写しは消した
+- `judgement` — 手順書は RESULT.md の「1. 解決された参照」に規約の原文を求めるが、SPEC §8 は 60 行以内と節の構成を指定する。原文は audit.md に置き、RESULT.md の冒頭の 1 行から行番号で指した
+- `judgement` — CLAUDE.md はコード変更後の README.md の更新を求めるが、acceptance d が追跡される変更の範囲を限るため README.md は更新していない。本契約はコードを変えない
+
+### 申し送り
+
+- 置いたカードは批判会話への依頼文 docs/proposals/briefs/2026-10-21-tower-reselect-search-critique-brief.md を経路で指していない（冒頭の「依頼文: なし」は生成会話の依頼文の欄）。規約 proposal_gate は生成会話の依頼文について「カードから参照する」と書く。批判会話の依頼文にも同じ参照を求めるかは起票者が決める
+- カードが置き換えるとする前のカード 2026-10-17-tower-reselect-andrew は docs/proposals/ に無い
+- 本 PR の統合の後に、dlsta の探索の exp を intent.proposal_card: docs/proposals/2026-10-21-tower-reselect-search.md で配布できる（P14 の関数で PASS を確認済み）
+
+### 断定できなかったこと
+
+- 既存の 6 件の試験の失敗（test_engines 1、test_fetch_task 1、test_research_logger 4）の原因は調べていない
 
 ## T-2026-10-21-ptower-multigpu-syncbn
 
@@ -164,32 +194,4 @@
 - 回し直さない PD の 8 本の動画ごとの 4 epoch 目の値（epoch 3 の予測と重みが残っていない）。P2L は空の腕の動画ごとが無いため全腕の動画ごとの Δ空
 - andrew で GPU 1 枚に PD を 1 本だけ載せたときの速さ（測っていない）
 - 計算し直しの検査（完了判定 j）が作り物の食い違いを検出するか（陽性対照を入れていない）
-
-## T-2026-10-19-proposal-gate-brief
-
-状態 `pass` / ホスト `Bengio` / 起票 `239` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 起点8de3ac54に前提契約の報告を確認。生成の行・B.3・雛形はSPECと一致、置き場と参照は起票時の全文と同一。
-- `G2` pass — 内容・読み・対照と前後47試験は合格。利用者指示で.gitignore二行を差し戻した。forbidden-checkは外部由来の未追跡ログ8件でexit2、PR差分の経路集合にはexperiments/が無いことをGitHubの19経路集合とローカル差分集合の一致により確認した。
-
-### 起票者の誤り
-
-（なし）
-
-### 逸脱
-
-- `judgement` — L2-6警告の差分を確認し、利用者の許可と指示でconventions_revを起点の実測commitへamendments付きで更新。
-- `judgement` — 範囲外の旧ルール三行は利用者の許可により履歴として保持し、報告へ列挙。
-- `judgement` — 先に許可を得た.gitignore二行追加を、利用者の今回指示で差し戻す。禁止検査は同期由来の未追跡の他契約ログ8件（当初2件と追加6件）でexit2。合格とはせず、PR差分にexperiments/が含まれないことを別途検証する。ファイルの移動・削除なし。
-- `environment` — プランモード切替手段、planning-with-files、agentmemoryが利用不可。契約のフェーズ順と契約内記録で進行。
-
-### 申し送り
-
-- 生成会話はプロジェクトの外で、証拠地図・カードの雛形・依頼文だけを受け取る。生成会話の#10と#15はUNKNOWN、起票者がrepo実測で埋めてから批判会話へ。briefs/は本契約では未作成。
-
-### 断定できなかったこと
-
-（なし）
 
