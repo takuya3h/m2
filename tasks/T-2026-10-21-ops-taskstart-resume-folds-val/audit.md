@@ -201,3 +201,4 @@ A-6 の失敗 6 件（3 回とも同じ集合）:
 - `git push -u origin feat/ops-taskstart-resume-folds-val` → 新しい分岐。`gh pr list --head … --state all` → `[]`（自動の Draft PR は無かった）
 - `gh pr create --base phase0 …` → https://github.com/takuya3h/m2/pull/247
 - `gh pr view --json number,isDraft,baseRefName,headRefName,state` → `{"baseRefName":"phase0","headRefName":"feat/ops-taskstart-resume-folds-val","isDraft":false,"number":247,"state":"OPEN"}`
+- `source scripts/load_env.sh && make task-report TASK=…`（16:42、7aa0cc8c の後）→ rc 0。応答 `{"task_id": "T-2026-10-21-ops-taskstart-resume-folds-val", "verdict": "pass", "n_issuer_defects": 2, "report_sha256": "856007fd3931e2850f14bd2ca7481472b21533f2067813f2a51dbdb296f584d0", "report_bytes": 13118, "replaced_blocks": 0}`

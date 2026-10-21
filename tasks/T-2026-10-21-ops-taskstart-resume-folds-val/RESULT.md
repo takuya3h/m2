@@ -160,4 +160,4 @@
 ## 8. 送出
 
 - PR #247（https://github.com/takuya3h/m2/pull/247）、Draft でない
-- `make task-report`: 次の commit で追記する
+- `make task-report`（16:42）: rc 0、verdict pass、n_issuer_defects 2、report_bytes 13118、replaced_blocks 0
