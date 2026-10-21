@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（661 件）
+## 申し送り（664 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1065,7 +1065,13 @@
 - NODE の組（GPU0+GPU1）は利用者の指示で測っていない。GPU0 と GPU1 には容器の外の使用が出る（env-facts に追記）
 - repo の外 ~/m2-scratch/T-2026-10-21-ptower-multigpu-syncbn/（約 10 GB）を残した。片付けは利用者の判断
 
-## 断定できなかった事項（412 件）
+### T-2026-10-22-proposal-card-tower-reselect-search
+
+- 置いたカードは批判会話への依頼文 docs/proposals/briefs/2026-10-21-tower-reselect-search-critique-brief.md を経路で指していない（冒頭の「依頼文: なし」は生成会話の依頼文の欄）。規約 proposal_gate は生成会話の依頼文について「カードから参照する」と書く。批判会話の依頼文にも同じ参照を求めるかは起票者が決める
+- カードが置き換えるとする前のカード 2026-10-17-tower-reselect-andrew は docs/proposals/ に無い
+- 本 PR の統合の後に、dlsta の探索の exp を intent.proposal_card: docs/proposals/2026-10-21-tower-reselect-search.md で配布できる（P14 の関数で PASS を確認済み）
+
+## 断定できなかった事項（413 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1845,7 +1851,11 @@
 - NODE の組（GPU0+GPU1）の一歩の時間と記憶量
 - val を含む一 epoch の時間、全 epoch を通した溢れの有無（68 歩だけ測った）
 
-## 起票者の誤りの型（384 件）
+### T-2026-10-22-proposal-card-tower-reselect-search
+
+- 既存の 6 件の試験の失敗（test_engines 1、test_fetch_task 1、test_research_logger 4）の原因は調べていない
+
+## 起票者の誤りの型（385 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
@@ -1853,10 +1863,10 @@
 |---|---:|
 | `check_does_not_check` | 104 |
 | `asserted_without_measuring` | 161 |
-| `self_contradiction` | 98 |
+| `self_contradiction` | 99 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 1 |
 | `rule_read_narrowly` | 1 |
 
-合計 384 件（対を持つ契約 134 件から）
+合計 385 件（対を持つ契約 135 件から）
 
