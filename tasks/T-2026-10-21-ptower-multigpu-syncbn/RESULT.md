@@ -35,7 +35,7 @@
 | i | 済 | 全 rank で決定性の設定が True。止まった演算 0 件（SyncBatchNorm・NCCL とも） | 切った写しで両 rank が `deterministic_algorithms=False` と読み出し、照合も 0.43 ずれた |
 | j | 済 | env-facts の dlsta の行の下に 2 行（日付と契約つき） | 行の集合差: 消えた行 0、足した行 2 |
 | k | 済 | 使った GPU は 1〜4（利用者の許可の範囲）。experiments・runindex の追加 0、data の差 0 行、新しい失敗 0 | 写しで data へ 1 件足すと forbidden-check が fail、足さなければ pass |
-| l | — | PR は §7 に記す | 実測で draft・base・head を記録する |
+| l | 済 | PR #249、base phase0、head feat/ptower-multigpu-syncbn | `gh pr view` の実測で isDraft false、baseRefName phase0、headRefName feat/ptower-multigpu-syncbn |
 
 ## 4. 実測（次の契約で使う値）
 
@@ -84,4 +84,4 @@ dlsta の版: git 2.43.0、torch 2.1.2+cu118、NCCL 2.18.6、cuDNN 8700、driver
 
 - UNKNOWN: NODE の組の一歩の時間と記憶量。val を含む一 epoch の時間。全 epoch を通した溢れの有無（68 歩だけ測った）
 - repo の外 `~/m2-scratch/T-2026-10-21-ptower-multigpu-syncbn/`（約 10 GB。照合の run と checkpoint、測定、GPU の記録）を残した。片付けは利用者の判断
-- 送出: PR と `make task-report` の結果は commit の後に audit へ記す
+- 送出: PR #249（作業の commit `010984e8`）。`make task-report` の終了コードは audit の末尾

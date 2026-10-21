@@ -345,3 +345,12 @@ forbidden-check の陽性対照: repo の外の worktree の写し（HEAD + 本�
 repo の外に残したもの: `~/m2-scratch/T-2026-10-21-ptower-multigpu-syncbn/`（照合の run、通しの実験フォルダと checkpoint、測定、GPU の記録）。
 
 行の集合差の陽性対照: 現在の env-facts から既存の 48 行目（dlsta の装置の行）を消した写し（repo の外の scratchpad）では、消えた行 1・足した行 2。本物は消えた行 0・足した行 2。
+
+## 送出
+
+    git fetch origin; git rev-parse origin/phase0 → 0a111a6eb9edde53e0118c46cfded37b6f6247b8（起点から進んでいない。取り込みは不要）
+    git push -u origin feat/ptower-multigpu-syncbn → [new branch]
+    gh pr create --base phase0 → https://github.com/takuya3h/m2/pull/249
+    gh pr view --json number,isDraft,baseRefName,headRefName → {"number":249,"isDraft":false,"baseRefName":"phase0","headRefName":"feat/ptower-multigpu-syncbn"}
+
+作業の commit: 010984e8。
