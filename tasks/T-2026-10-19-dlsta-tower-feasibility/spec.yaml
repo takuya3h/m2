@@ -1,0 +1,78 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-19-dlsta-tower-feasibility"
+  kind: analysis
+  title: "dlsta で両塔を学べるかの実測（入力の実在、検出塔の構築、両塔の記憶領域と処理量、ホストをまたぐ評価、受け渡しの経路）"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-19T08:55:00Z"
+  created_from:
+    runindex_commit: "63ae65da8c7d32df591f5e2ee4358286b72c726b"
+    counts: {index: 1961, experiments: 750, verdicts: 1506}
+  depends_on: [T-2026-10-17-tower-reselect-prereq, T-2026-10-19-conventions-and-defect-records]
+  amendments:
+    - date: "2026-10-21"
+      diff: "contract.conventions_rev"
+      reason: "Task A.11 の実測。context/conventions.md を最後に変えた commit は 5c0eaeeb（起票時 7ba1d60d の後に e1364772 と 5c0eaeeb が proposal_gate 節と履歴表を変えた。注入する prohibitions・issuer_cautions・env_p0 の本文は変わっていない）。runindex_commit 63ae65da と counts 1961 / 750 / 1506 は起票時と一致したので変えない。L2-6 の WARN を利用者に示し続行の判断を得た（2026-10-21）"
+intent:
+  question: "dlsta の A5000 で、検出塔と工程塔の学び直しの処方を変えずに回せるか。回せないなら何が足りないか。dlsta で学んだ塔をほかのホストで使えるか"
+  decision_at_stake: "両塔の学び直しの塔の学習をすべて dlsta で行う利用者の決定を実行に移せるか。探索の手続きのカードに書く装置の構成と並べ方、工程塔を複数の GPU で回すための実装の契約の要否、学び直しの実験契約の起票の可否。選定と関門の判定には使わない"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery-Tool と EgoSurgery-Phase の動画一から十五（折りは conventions#folds）、工程注釈だけのフレーム、COCO の初期化の重み、既存の塔の checkpoint。在否は本契約で測る"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt", "data/splits/ego_test.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/restore_relation_detr_source.sh", "scripts/setup_env_relation_detr.sh", "scripts/run_stage1_dtower.sh", "scripts/eval_stage1_dtower.sh", "scripts/make_fold_annotations.py", "scripts/stage1_ptower_r3.py", "scripts/stage1_ptower.py", "tools/preflight_task.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#env_p0]
+  conventions_rev: "5c0eaeeb4551c66c9b854faaa7a5376dcf755ac7"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/analysis/dlsta_tower_feasibility", "context/env-facts.md"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。分岐、未追跡の退避、同期の抑止、ホストの確認、装置の空きと組、版、空き容量、外への到達、起点の実測、試験の前の値", gpu: false, est: "40m"}
+    - {id: B, name: "入力の実在。画像、工程注釈だけのフレーム、注釈と折りごとの注釈、manifest、COCO の初期化の重み、既存の塔の checkpoint", gpu: false, est: "40m"}
+    - {id: C, name: "検出塔の構築。repo の写しから復元し、要約値で照合し、拡張を作って読み込み、収束規則の試験を通す", gpu: false, est: "60m"}
+    - {id: D, name: "検出塔の記憶領域と処理量。処方そのままの短い学習、GPU ごとの最大、一歩の時間、組の違い、並べたときの時間", gpu: true, est: "2h"}
+    - {id: E, name: "工程塔の記憶領域と処理量。三周目の処方を一枚で、収まる最大、特徴の取り出しと時間ヘッド、複数枚で回す道を実装から読む", gpu: true, est: "2h"}
+    - {id: F, name: "ホストをまたぐ評価。既存の検出塔と工程塔を dlsta で評価し記録と比べる", gpu: true, est: "60m"}
+    - {id: G, name: "受け渡しの経路。接続の可否だけ、同期の有無、空き容量と checkpoint の大きさ", gpu: false, est: "30m"}
+    - {id: H, name: "env-facts の dlsta の記述を実測で足す", gpu: false, est: "20m"}
+    - {id: I, name: "検証と報告", gpu: false, est: "60m"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、repo の位置と装置から dlsta と確かめ、他の利用者が使っていない GPU が二枚以上ある", on_fail: stop}
+    - {id: G2, after: B, check: "学習と評価に要る入力がすべて在り、件数と要約値が期待と一致する。欠けがあれば一覧にして利用者に諮る", on_fail: ask}
+    - {id: G3, after: C, check: "検出塔のソースの要約値が写しの記録とすべて一致し、拡張が読み込まれ、収束規則の試験が通る", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [REPORT.md]
+  destination: "experiments/analysis/dlsta_tower_feasibility/"
+  acceptance:
+    - "a: repo の位置と装置から dlsta と確かめ、GPU 五枚の型と容量と使用中のプロセスの所有者、NVLink の組、版、空き容量、外への到達が記録されている"
+    - "b: 入力の一覧の各項目に在否と件数と要約値と期待値があり、欠けは利用者に諮った記録がある"
+    - "c: 検出塔のソースが repo の写しから復元され、要約値が写しの記録とすべて一致し、拡張が読み込まれ、収束規則の試験が通る"
+    - "d: 検出塔の処方そのままの短い学習で、GPU ごとの記憶領域の最大と一歩の時間と通信の設定の要否、GPU ごとの batch の上限、組の違いと並べたときの時間が記録されている"
+    - "e: 工程塔の三周目の処方を一枚で回した結果、一枚に収まる最大の batch と時間、特徴の取り出しと時間ヘッドの可否が記録されている"
+    - "f: 工程塔を複数の GPU で回す対応の有無と正規化層の扱いが実装の行で示され、処方を変えずに複数枚で回すために足すものが列挙されている"
+    - "g: 既存の検出塔と工程塔を dlsta で評価した値が記録の値と並べられ、差が書かれている"
+    - "h: ほかのホストへの接続の可否と同期の有無と空き容量と checkpoint の大きさが記録され、既知のホストの記録の要約値が前後で同じ"
+    - "i: env-facts の dlsta の記述に日付と契約つきで実測が足され、既存の行が減っていない"
+    - "j: 他の利用者のプロセスと GPU に触れておらず、data の raw と external の一覧の要約値が前後で同じで、大きな出力を commit しておらず、試験の失敗が増えていない"
+    - "k: PR が存在し、base が phase0、分岐が feat/dlsta-tower-feasibility、Draft でない"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "本ホストの repo の位置や装置が env-facts.md と食い違い、dlsta と確かめられない場合"
+    - "他の利用者が使っていない GPU が二枚未満の場合、または途中で他の利用者のプロセスが使用中の GPU に現れた場合"
+    - "検出塔の復元や環境の構築に、repo の写しと公開の上流と公開の package index 以外からの取り寄せが要る場合"
+    - "検出塔のソースの要約値が写しの記録と一致しない場合"
+    - "測るために既存のスクリプトや道具の挙動を変える必要が出た場合"
