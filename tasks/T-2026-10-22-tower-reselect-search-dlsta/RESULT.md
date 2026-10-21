@@ -2,9 +2,9 @@
 
 ## 判定
 
-**partial（G2通過、探索開始準備完了）。探索本番の完了0 /260 run。**
+**partial（G2通過、監視付き探索を起動済み）。探索本番の完了0 /260 run。**
 利用者が「既存画像15437枚＋initial_videosの不足1796枚」で続行を承認。既知6001対の差を許容し、参照先とSHA-256を固定した。改訂preregは177e547f（2026-10-22 06:08:31 JST）。同期抑止を維持。
-小規模GPU検証は本番260 runに含めない。G3・G4は未評価。
+小規模GPU検証は本番260 runに含めない。G3・G4は未評価。2026-10-22 06:34:57 JSTにsupervisor PID 2475419を起動、Cの検出0番（GPU1–2）と13番（GPU3–4）を開始。両点でCOCO初期化・実optimizer群・有限勾配の反復を確認（launch_evidence.json）。GPU0の所有プロセス0。状態は live_status.json、raw logはrepo外scratch。
 
 ## 1. 解決された参照
 
