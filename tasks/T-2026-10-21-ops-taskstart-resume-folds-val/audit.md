@@ -198,4 +198,6 @@ A-6 の失敗 6 件（3 回とも同じ集合）:
 
 ## 送出
 
-（commit・push・PR・`make task-report` の後に追記する）
+- `git push -u origin feat/ops-taskstart-resume-folds-val` → 新しい分岐。`gh pr list --head … --state all` → `[]`（自動の Draft PR は無かった）
+- `gh pr create --base phase0 …` → https://github.com/takuya3h/m2/pull/247
+- `gh pr view --json number,isDraft,baseRefName,headRefName,state` → `{"baseRefName":"phase0","headRefName":"feat/ops-taskstart-resume-folds-val","isDraft":false,"number":247,"state":"OPEN"}`

@@ -124,7 +124,7 @@
 | g | folds に小節、変更履歴に 1 行（4e67202c）。変わった節は folds と naming だけ、アンカー 15 個すべて解決。対応と 5 本の識別子と本数は表と一致。写しの prohibitions を一文字変えると「変わった」に出る（A§E） |
 | h | 2 件を型・出所（行番号つき）・対処つきで追加、消えた行 0 件（A§F） |
 | i | 装置: 開始と終了とも compute apps 0 件。data への書き込み 0（forbidden-check pass、data を含む写しで fail）。接続は ls-remote・push・PR・task-report だけ。試験の失敗の集合は 6 件のまま（894 → 917 件）（A§G） |
-| j | 送出の節（PR 起票後に追記） |
+| j | PR #247。実測 `gh pr view`: number 247、isDraft false、baseRefName phase0、headRefName feat/ops-taskstart-resume-folds-val、state OPEN |
 
 ## 4. 実測（次の契約で使う値）
 
@@ -159,4 +159,5 @@
 
 ## 8. 送出
 
-（PR 起票と `make task-report` の後に追記する）
+- PR #247（https://github.com/takuya3h/m2/pull/247）、Draft でない
+- `make task-report`: 次の commit で追記する
