@@ -1,0 +1,1 @@
+- [ ] 2026-10-21 [cc] 置いたカードは批判会話への依頼文（docs/proposals/briefs/2026-10-21-tower-reselect-search-critique-brief.md）を経路で指しておらず、置き換えるとする前のカード 2026-10-17-tower-reselect-andrew は docs/proposals/ に無い。本文は変えていない。dlsta の exp の起票の前に、カードの参照を足すかを起票者が決める（tasks/T-2026-10-22-proposal-card-tower-reselect-search/RESULT.md）

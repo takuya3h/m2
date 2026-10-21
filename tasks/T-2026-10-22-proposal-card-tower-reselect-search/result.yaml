@@ -1,0 +1,44 @@
+result_version: 3
+task_id: "T-2026-10-22-proposal-card-tower-reselect-search"
+status: pass
+host: "dlsta"
+branch: "feat/proposal-card-tower-reselect-search"
+pr: null
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "branch feat/proposal-card-tower-reselect-search、HEAD = merge-base = origin/phase0 = 7e30bdde、porcelain は契約のディレクトリの未追跡 4 件だけ。docs/proposals/ は 2026-09-27-ptower-20.md と _template.md、briefs/ 無し。§4 の二つの名前は ABSENT、同じ命令で ptower-20 は EXISTS"}
+  - {id: G2, verdict: pass, note: "check_proposal.py で置いたカードは検出 0（禁止語 0 / 見出し欠落 0 / 数字欠落 0、禁止語 15 語・カード 16 件を規約から読んだ）。禁止語「本命」を足した写しで禁止語 1、見出し「## 9. 最安の殺し実験」を消した写しで見出し欠落 1。pytest の失敗の名前は前後とも同じ 6 件、925 passed"}
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 925
+
+deviations:
+  - {type: judgement, note: "開始前の pytest を背景で回している間に Phase B の写しを置いた。tests/ で docs/proposals を参照するのは test_proposal_card_gate.py だけで、_template.md と固定の存在しない名前を見るだけで置き場を走査しないため、前の値は配置の影響を受けない"}
+  - {type: judgement, note: "§7 d の空振りでないことの確認（data/ に一件足した写し）は、§6.4 の data/ に書かない禁止と両立させるため、repo の外（scratchpad）に git clone した写しで行い、写しは消した"}
+  - {type: judgement, note: "手順書は RESULT.md の「1. 解決された参照」に規約の原文を求めるが、SPEC §8 は 60 行以内と節の構成を指定する。原文は audit.md に置き、RESULT.md の冒頭の 1 行から行番号で指した"}
+  - {type: judgement, note: "CLAUDE.md はコード変更後の README.md の更新を求めるが、acceptance d が追跡される変更の範囲を限るため README.md は更新していない。本契約はコードを変えない"}
+
+issuer_defects:
+  - {type: self_contradiction, note: "acceptance d は「二つの文書以外に追跡されるファイルの変更が無く」と書くが、Task D.1 は本契約のディレクトリの変更を認め、手順書は tasks/inbox.d/<task_id>.md を 1 契約 1 行以上求める。字面どおりに実行すると RESULT.md と result.yaml を commit できず（task-release の前提を満たせない）、inbox.d も書けない。D.1 と手順書に従い、二文書・契約のディレクトリ・inbox.d の 1 件を変更範囲とした"}
+
+positive_controls:
+  - {judgement: "a: 名前の有無の確かめが在る名前を在ると出す", breaking_input: "同じ test -e の命令に既存の docs/proposals/2026-09-27-ptower-20.md を渡す", observed: "EXISTS（§4 の二つの名前は ABSENT）"}
+  - {judgement: "b: sha256 の照合が 1 バイトの差を検出する", breaking_input: "置いたカードの写しの末尾に 'x' を 1 バイト足す", observed: "671486df… から cfe50dcc2a8a445ecc49028bdfe2dd1a0929434ed69f8806c31811f2d3525b53 に変わった"}
+  - {judgement: "c: 検査器が禁止語を検出する", breaking_input: "カードの写し（repo の外）の末尾に「本命」を一行足す", observed: "forbidden_word 1 件（441 行）、exit 1"}
+  - {judgement: "c: 検査器が見出しの欠落を検出する", breaking_input: "カードの写しから行「## 9. 最安の殺し実験」を消す（消えた行 1）", observed: "missing_heading 1 件（カード #9）、exit 1"}
+  - {judgement: "c: 陰性対照", breaking_input: "置いたカードをもう一度検査する", observed: "検出 0 件、exit 0"}
+  - {judgement: "c: P14 の関数がカードの実在を見る", breaking_input: "check_proposal_card に存在しない docs/proposals/2026-10-21-tower-reselect-search-NOPE.md を渡す", observed: "FAIL「提案カードが無い」。置いたカードでは PASS"}
+  - {judgement: "d: forbidden-check が data/ への書き込みを検出する", breaking_input: "repo の外の clone（7e30bdde + 本体と同じ 6 件）に data/_pc_control.txt を足す", observed: "足す前 pass（violations []）、足すと fail（禁止領域 data/ の内側）、exit 1。写しは消した"}
+
+followups:
+  - "置いたカードは批判会話への依頼文 docs/proposals/briefs/2026-10-21-tower-reselect-search-critique-brief.md を経路で指していない（冒頭の「依頼文: なし」は生成会話の依頼文の欄）。規約 proposal_gate は生成会話の依頼文について「カードから参照する」と書く。批判会話の依頼文にも同じ参照を求めるかは起票者が決める"
+  - "カードが置き換えるとする前のカード 2026-10-17-tower-reselect-andrew は docs/proposals/ に無い"
+  - "本 PR の統合の後に、dlsta の探索の exp を intent.proposal_card: docs/proposals/2026-10-21-tower-reselect-search.md で配布できる（P14 の関数で PASS を確認済み）"
+
+unknowns:
+  - "既存の 6 件の試験の失敗（test_engines 1、test_fetch_task 1、test_research_logger 4）の原因は調べていない"
+
+commits: []
