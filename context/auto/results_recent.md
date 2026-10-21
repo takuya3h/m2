@@ -6,8 +6,42 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 132 件）。
-ここに出ない 127 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 133 件）。
+ここに出ない 128 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-10-21-ops-taskstart-resume-folds-val
+
+状態 `pass` / ホスト `andrew` / 起票 `247` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 分岐 feat/ops-taskstart-resume-folds-val、HEAD=origin/phase0=merge-base=3cb3db07、契約の 2 ファイルを commit 後に status 0 行、目印はこの契約の所有の記録、無視された未追跡で phase0 と中身の違うもの 0 件（二方法で一致）
+- `G2` pass — tests/test_task_start_classify.py 18 件と test_task_start_pause_owner.py 8 件が通過。全試験 912 件で失敗 6 件、名前の集合は開始時と同じ、収集エラー 0
+- `G3` pass — アンカーごとの節の sha256 を前後で比べ、変わったのは folds と naming だけ。アンカー 15 個の名前と数は同じで conventions_anchors がすべて返す
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — Task B-7 は §3.2 の三つの振る舞いを直す前の task-start で再現せよとしたが、1 行目（無視されていない未追跡）は直す前の版がその前の汚れの判定で終了コード 3 になり切り替えに届かない。指示どおりには再現できず、git そのもので再現した
+- `asserted_without_measuring` — §3.1 と Task C-4 は .claude と .codex の SKILL.md を二つの写しとして同じにせよとしたが、.codex/skills/task は .claude/skills/task へのシンボリックリンクで実体は一つ。指示どおり写すと同じファイルへの複写になり、写しの一致は検査として何も測らない
+
+### 逸脱
+
+- `judgement` — 利用者の「SPEC の bengio を andrew と読み替える」指示は、取り込んだ SPEC がすでに実行ホストを andrew と書いていたため、読み替えた箇所は無い（bengio は §1・§10 の事実の記述だけ）
+- `judgement` — 2 回目の /task は再開から始まり（task-start は利用者が実行）、未追跡は契約自身の SPEC.md と spec.yaml だけだったため最初に commit して G1 の清浄を満たした
+- `spec_defect` — 「無視・起点に無い」は件数を出さない。B-5 は分類ごとの件数を求めるが、数えるには無視されたファイルの全数列挙が要り §5.1 の突き合わせの方針と両立しない
+- `judgement` — tests/test_task_start_pause_owner.py の場に分類器の写しを 1 行足した（主張は無変更）。D-3 が名指ししない tests/test_proposal_card_gate.py の場にも統合済みとみなす差し替えを足した
+- `judgement` — 規約の変更履歴の commit 欄は小節を置いた 4e67202c を書き、行は次の commit 2d946b07 で足した
+- `judgement` — 巻き戻しは、戻した後に phase0 の版で作り直す方式を採らず、通した経路を索引に載せて外す方式にした。作り直す方式は一時的に削除が起き同期で他の台へ伝わりうる
+
+### 申し送り
+
+- 各ホストの task-start とスキルは居る分岐の版で動く。dlsta のように分岐が古いままの台では、本契約が統合された phase0 から分岐するまで旧い task-start（同じ中身の未追跡でも止まり、無視された違う中身を黙って上書きする）が動く
+- skip-worktree の印つきで変更のあるファイルは git status に出ず、新しい分類でも数えない（§5.1 の外）。phase0 がその経路を変えると切り替えが拒まれ終了コード 4 で巻き戻る。andrew の docs/analysis_scripts/README.md がこれに当たる
+- andrew の .git/info/exclude に 2026-10-21 起動前に足した 3 行と README の skip-worktree の印は残したまま（控え ~/m2-hold/T-2026-10-21-ops-taskstart-resume-folds-val/）。戻すかは利用者の判断
+
+### 断定できなかったこと
+
+- dlsta・bengio など他の台での分類の所要時間と git の版（--pathspec-from-file は git 2.26 以上を要する。andrew は 2.43.0）
 
 ## T-2026-10-19-stage2-pilot-four-new-types
 
@@ -147,52 +181,4 @@
 ### 断定できなかったこと
 
 （なし）
-
-## T-2026-10-19-dlsta-tower-feasibility
-
-状態 `pass` / ホスト `dlsta` / 起票 `245` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 分岐 feat/dlsta-tower-feasibility、HEAD = origin/phase0 = merge-base = 3cb3db07。repo /home/ubuntu/local/m2 と RTX A5000 × 5（24564 MiB）で dlsta。compute プロセスは 5 枚とも 0。GPU0 だけ 99 MiB（ほか 22 MiB）で容器の外の確保とみて除外し、GPU1〜4 の 4 枚が空き
-- `G2` pass — inputs_inventory.py で 28 項目すべて在り期待と一致。画像 15437（動画ごとの内容の要約値が andrew の記録と 15/15 一致）、工程注釈だけ 1796、manifest 15437、折りごとの注釈 15 件、COCO の重み 196140106 bytes と backbone の要約値 a755b3eb、checkpoint 4 件の sha256 が記録と一致
-- `G3` pass — restore_relation_detr_source.sh efros/2026-10-17 で復元し sha256sum -c が 39/39 OK。setup_env_relation_detr.sh で MS-Deform-Attn ビルド OK・ロード OK（nvcc 12.9）。tests/test_stage1_dtower_convergence.py が 9 passed（構築前は収集エラー）
-
-### 起票者の誤り
-
-- `check_does_not_check` — A.5 は compute プロセスの所有者を /proc/PID/exe か引数で数えよと指定するが、dlsta は容器の中で、nvidia-smi の compute-apps には容器の外のプロセスが現れない。字面どおりに数えると GPU0 の 77 MiB の確保（2026-10-05 には他の利用者が使っていた GPU）を 0 件と判定し、他の利用者の GPU を使うことになる。GPU ごとの使用量の差で見つけた
-- `self_contradiction` — D.6 は NVLink の無い組として GPU0 を含む組を指定するが、A.5 は他の利用者のプロセスがある GPU を以後使わないと定め、§3.2 は GPU0 を他の利用者が使った前例を挙げる。GPU0 が除外に当たる場合の代わりが無く、字面どおりでは D.6 を回せない。GPU1+GPU3 で測り、利用者の許可の後に GPU0+GPU1 でも測った
-
-### 逸脱
-
-- `judgement` — GPU0 は compute プロセスが見えないのに 77 MiB 多く確保されていたため、他の利用者の確保が在るものとして除外した。利用者の許可（2026-10-21『GPU0もつかってよい』）の後は使った。D.6 の NVLink の無い組は許可の前に GPU1+GPU3（SYS）で測り、許可の後に GPU0+GPU1（NODE）でも測った
-- `judgement` — 利用者の指示（『空いてるVRAM、GPUなどの計算資源はすべて使って最速で終わらせて』）で、時間を測らない測定を並べて回した。D6、工程塔の一歩の時間、特徴の取り出し、時間ヘッドは他の測定と同時に回した値で、audit と REPORT に同時に動いていたものを併記した。D1、D6b、D7 は他に GPU を使うものが無い状態で測った
-- `judgement` — 記憶領域を丸めずに取るため、main.py を同じ引数のまま runpy で呼ぶ包み（tools/memprobe_main.py）から起動した。main.py への引数は二周目の command.sh と port 以外同一。出力先は repo の外（RELDETR_OUTPUT_DIR）
-- `environment` — 設定の EGO_ROOT と resume_from_checkpoint の既定が andrew の位置（/home/ubuntu/slocal2/m2）を指すため、環境変数 EGO_ROOT と RELDETR_COCO_CKPT を dlsta の位置で与えた。学習の記録に load pretrained from /home/ubuntu/local/m2/... が出たことを確かめた。既存のスクリプトは変えていない
-- `judgement` — D.5 の batch の上限は、記憶領域だけを測るので batch 4（GPU1,2）と batch 3（GPU3,4）を同時に回した。batch 4 が OOM したため、計算の変わらない expandable_segments:True で batch 4 を一度だけ追加で試した
-- `environment` — 検出塔の評価の 1 回目は checkpoint を repo 相対で渡し、eval_relation_detr_map.py が third_party/Relation-DETR へ chdir するため重みを読まずに AP 0 を返した（ログに State dict is None, skip loading）。絶対経路で回し直し、1 回目の出力は relative_path_failed/ に退けた
-- `environment` — 時間ヘッドの 1 回目は本契約の道具の誤り（CUDA の初期化前に reset_peak_memory_stats）で学習に入る前に落ちた。torch.cuda.init() を足して回し直した
-- `judgement` — E.3 の『一本の時間』を測るため、時間ヘッド（候補 A）は既存の早期打ち切りまで 1 本回した（22 epoch、10.4 s）。塔の backbone の学習と検出塔の学習は収束規則まで回していない（600 歩で止めた）
-- `judgement` — 工程塔の測定は base.evidence を本プロセスの中だけ repo の外へ書く代わりのものに差し替え、experiments/phase1 に実験フォルダを作らず W&B にも送らなかった。finetune の測定は stage1_ptower_r3.finetune の内側の繰り返しと同じ手順を本契約の道具に置いた
-- `judgement` — 開始前の試験は収集エラーで全体が止まったので、失敗の名前の集合を取るため前後とも --continue-on-collection-errors を付けて回した。setup_env_relation_detr.sh と試験は GPU0 を避けるため CUDA_VISIBLE_DEVICES を付けて回した
-- `judgement` — CLAUDE.md はコード変更後の README.md と実験後の docs/experiment_log.md の更新を求めるが、契約の allow_write は experiments/analysis/dlsta_tower_feasibility と context/env-facts.md だけなので更新していない。conventions_rev は Task A.11 に従い 5c0eaeeb へ差し替え meta.amendments に記録した（利用者の続行判断 2026-10-21）
-
-### 申し送り
-
-- dlsta で scripts/run_stage1_dtower.sh をそのまま使うと、設定の既定値（/home/ubuntu/slocal2/m2/...）のため COCO の重みを読まない学習になりうる（main.py はファイルでないと読み込みを飛ばす）。学び直しの契約では EGO_ROOT と RELDETR_COCO_CKPT を与えるか、スクリプトを直す契約が要る。学習の記録の load pretrained の行を検査に入れるとよい
-- scripts/eval_relation_detr_map.py は相対経路の checkpoint で重みを読まずに AP 0 を返し、失敗にしない。読み込みの失敗を止める修正の契約か、手続きで絶対経路を必須にすることが要る
-- 工程塔を複数の GPU で回す実装の契約の材料は REPORT §5（足すもの 8 項目と、同じ学び方の確かめ方の案）。一枚の最大は batch 13 で、処方の batch 16 は一枚に収まらない
-- 検出塔の処方は 2 本を二つの NVLink の組で同時に回しても遅くならなかった（0.596 / 0.586 s、単独 0.598 s）。探索の手続きのカードで装置の並べ方を書くときの材料
-- GPU0 は compute プロセスが見えないまま 99 MiB 確保されている（容器の外）。学び直しで GPU0 を使うかは利用者の判断（本契約では許可を得て使った）
-- 検出塔のホストをまたぐ評価は全桁一致しなかった（AP の差 −2.31e−07、標的群 −7.59e−07）。工程塔は全桁一致。この大きさの差を許すかは起票者の判断
-- README.md と docs/experiment_log.md は allow_write の外なので更新していない。記録が要るなら起票者か次の契約で
-- dlsta に third_party/Relation-DETR のソースと .venv-relation-detr（5,036,875,209 bytes）を残した。repo の外 ~/m2-scratch/dlsta_tower_feasibility/（145,612,791 bytes。ログ、特徴、時間ヘッドの checkpoint）を残すか片付けるかは利用者の判断
-
-### 断定できなかったこと
-
-- 検出塔の評価の差の原因
-- 検出塔の GPU ごとの batch 3 が全 epoch で溢れないか（300 歩だけ測った）
-- 工程塔の一歩の時間、特徴の取り出しの時間の単独の値（他の測定と同時に測った）
-- andrew から dlsta へ届くか、SSH の認証が通るか、転送の速さ、andrew が Syncthing の同じ folder に参加しているか
-- repo の置き場の空きが開始時から約 74 GB 減ったうち、本契約以外の出所
 
