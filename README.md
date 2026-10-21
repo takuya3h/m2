@@ -1611,3 +1611,9 @@ forward した region token が既存の `t1a_regiontoken/relation_detr_seed42` 
   float64 から 1.1e-2 ずれ、二枚との差（8.4e-3）はその範囲にある。dlsta の A5000 で処方のまま（GPU ごと 8 枚）溢れず、
   一歩 0.79〜0.80 s（`context/env-facts.md` の dlsta の行）
 - 試験: `tests/test_stage1_ptower_r3_dist.py`（CPU 13 件、二枚の GPU 1 件。二枚が無ければ skip）
+
+### 両塔の探索準備（2026-10-22、dlsta、停止中）
+
+`T-2026-10-22-tower-reselect-search-dlsta` は checkpoint の正本照合と G1 を通過したが、配布画像と `data/raw/ego` の重複15,437枚中6,001枚で SHA-256 が異なり、契約の停止条件で判断待ち。新 manifest の生成と探索学習は未開始。画素内容の一致は未測定。
+
+`build_phase_manifest.py` に別名の出力先と補完元の引数、検出塔の起動に探索設定・外部の work・ログの指定を追加した。既定値は従来どおり。探索用の設定と観測用スクリプトも追加したが、GPU での動作は未検証で、実行準備は未完了。入力監査は `experiments/analysis/tower_reselect_search_dlsta/`、停止記録は契約の `RESULT.md` を参照。

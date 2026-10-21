@@ -537,3 +537,25 @@ make 終了コード 2。プリフライト本体の失敗により手順 4 で�
 ## 停止時の実施範囲
 
 学習 0 run、GPU を使うコマンド 0、試験未実施（result.yaml の tests は実行して観測した件数 0 であり、既存の失敗数が零という主張ではない）。旧 0b 記録の削除・実装変更・runindex 再生成・PR 起票・台帳送信は未実施。
+
+## 再開（2026-10-22 JST）
+
+利用者が転送完了を伝え再開を指示。実体は ~/third_party/Relation-DETR/checkpoints/incoming/seed42/best_ap.pth に在った。SHA-256 とサイズの正本一致を確認し repo の指定先へコピー（元は残した）。再開時の追跡変更・未追跡は0、目印不在なので所有記録つきで設置。L3 は10 PASS /1 WARN /3 SKIP /0 FAIL。G1 PASS。全試験924 passed /6 failed /1 skipped。開始状態・環境・入力・試験は experiments/analysis/tower_reselect_search_dlsta/、生記録は ~/m2-scratch/T-2026-10-22-tower-reselect-search-dlsta/ に保存。Task B→G2→C→G3→D→G4→E→F の順を守る。
+
+## Task A の完了と Task B の停止
+
+- checkpoint: 195421066 bytes、SHA-256 03936318f9d45ac956fa928278cff9a869d3c2583e86b3af3ac1bbd27675e824、正本一致。元の ~/third_party/ のファイルは残存。
+- G1 PASS。入力監査は前回の全項目について count と digest も一致。旧0b記録は削除前10708453397 bytes、削除後不在、隣接する dlsta_tower_feasibility の記録は前後とも在る。
+- GPU所有者対照: GPU1 の自分のPythonをPIDとexe完全一致で1件、存在しないPIDで0件。使用プローブ終了コード0。GPU0の使用なし。
+- 環境は env_dlsta.json。これは学習前プローブの値で、学習時の決定性設定の証明ではない。
+- 重複画像15437枚、欠け0、SHA-256不一致6001。内訳 train3998 /val961 /test1042。代表例と両側のハッシュは image_overlap_summary.json、全不一致は image_overlap.json。
+- 再現: `source .venv/bin/activate && python tasks/T-2026-10-22-tower-reselect-search-dlsta/check_image_overlap.py`。画像を変更せず、count・missing・differentだけを標準出力へ出す。不一致ならexit1。
+- SPEC Task B.1 と prereg の停止条件に従い、新manifest生成と探索学習を停止。画素内容・再圧縮・対応フレームなどの原因は未測定。
+- 利用者に「学習を停止したまま原因調査のみ続ける／ここで止める」を問い合わせた。返事待ちのため task-release は呼ばず所有情報つき .sync-pause を維持。
+- 探索用設定・起動・記録口は下書き状態。追加CPU試験3件とlintは通過。GPU経路、W&B別プロセス、勾配ノルムの記録、二枚の実データ対照は未検証。
+- third_party 本体と既存の二枚の道は未変更。新しいsnapshotの作成は不要だった。依存の追加・削除は実施していない。
+- data/processed の新manifestは生成していない。既存manifest、raw、external、splitsは変更していない。
+
+## 停止時の検証
+
+画像照合の再実行は count15437 /missing0 /different6001、exit1。全試験変更後は927 passed /6 failed /1 skipped、失敗名の集合は開始前と同じで新しい失敗0。追加CPU試験3件、ruff、bash -nは通過。ログはrepo外の tests_after_B_partial.log・tests_after_B_partial.xml。

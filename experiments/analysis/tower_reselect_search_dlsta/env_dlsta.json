@@ -1,0 +1,44 @@
+{
+  "body": {
+    "torch": "2.1.2+cu118",
+    "torchvision": "0.16.2+cu118",
+    "cuda": "11.8",
+    "cudnn": 8700,
+    "nccl": [
+      2,
+      18,
+      6
+    ],
+    "accelerate": "1.13.0",
+    "pillow": "12.2.0",
+    "decoder": "PIL.Image",
+    "tf32_matmul": false,
+    "tf32_cudnn": true,
+    "deterministic_algorithms": false
+  },
+  "detector": {
+    "torch": "2.1.2+cu118",
+    "torchvision": "0.16.2+cu118",
+    "cuda": "11.8",
+    "cudnn": 8700,
+    "nccl": [
+      2,
+      18,
+      6
+    ],
+    "accelerate": "1.14.0",
+    "pillow": "12.2.0",
+    "decoder": "PIL.Image",
+    "tf32_matmul": false,
+    "tf32_cudnn": true,
+    "deterministic_algorithms": false
+  },
+  "driver": [
+    "595.84",
+    "595.84",
+    "595.84",
+    "595.84",
+    "595.84"
+  ],
+  "note": "学習前プローブの値。学習プロセス内の実際の設定は各 run で別途記録する。"
+}

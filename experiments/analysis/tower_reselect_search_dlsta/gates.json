@@ -1,0 +1,17 @@
+{
+  "G1": {
+    "verdict": "pass",
+    "evidence": [
+      "start.json",
+      "inputs_inventory.json",
+      "tests_before.json",
+      "env_dlsta.json"
+    ],
+    "notes": "prereg e9f4e3b4。旧0b不在、入力全一致、空き758310752256 bytes > 150GB。"
+  },
+  "G2": {
+    "verdict": "stop",
+    "reason": "重複画像15437枚中6001枚がSHA-256不一致。新manifest生成前に停止し利用者の判断待ち。",
+    "evidence": "image_overlap_summary.json"
+  }
+}

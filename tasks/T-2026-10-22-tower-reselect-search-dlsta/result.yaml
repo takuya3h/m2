@@ -7,19 +7,24 @@ pr: null
 merged: false
 gates:
 - id: L3
+  verdict: pass
+  note: 再開後10 PASS /1 WARN /3 SKIP /0 FAIL。checkpointサイズとSHA-256正本一致。P2/P3/P12はSKIP。P9
+    host_mismatchはWARN。
+- id: G1
+  verdict: pass
+  note: 旧0b記録を削除し不在確認。入力全一致。空き758310752256 bytes。prereg e9f4e3b4。GPU所有者対照1と0。
+- id: G2
   verdict: stop
-  note: P5 frozen_source_hash FAIL。checkpoint 不在。9 PASS / 1 WARN / 3 SKIP / 1 FAIL。make
-    exit 2。G1〜G4 未評価。
+  note: 重複画像15437枚中6001枚のSHA-256が不一致。新manifest生成前に停止して利用者の判断待ち。残りのG2項目とG3/G4は未評価。
 tests:
-  before_failed: 0
-  after_failed: 0
-  after_passed: 0
+  before_failed: 6
+  after_failed: 6
+  after_passed: 927
 deviations:
 - type: environment
-  note: checkpoint が無く andrew への SSH も認証拒否（exit 255）のため、L3 失敗で学習前に停止。
+  note: 配布画像とrawの重複15437枚中6001枚がSHA-256不一致。契約の停止条件に従い新manifest生成・学習を停止して原因調査のみ継続するか利用者の判断待ち。
 - type: judgement
-  note: 再開時に目印が無く task スキルの例外で所有情報つき .sync-pause を置いた。学習前必須準備として prereg をコミットし実測情報を
-    spec に記録。参照原文は契約 §9 に従い audit.md に保存。
+  note: 取得済みcheckpointは~/third_partyに在ったため正本照合後repoの指定先へコピーし、元は残した。再開時に同期抑止が不在だったためtaskスキルの再開例外で所有情報つき目印を作成。
 issuer_defects:
 - type: check_does_not_check
   note: plan.env.preflight は deterministic_flags を宣言しているが、現在の検査器の P3 は判定基準未確定という固定の理由で常に
@@ -32,10 +37,22 @@ positive_controls:
 - judgement: P13 と P14 の破損入力対照
   breaking_input: 対称性の UNKNOWN と存在しない提案カード経路の写し
   observed: UNKNOWN（L3 停止により未実施）
+- judgement: Task A GPU所有者の数え方
+  breaking_input: GPU1に自分のPythonを1件起こし、存在しないPIDとも照合
+  observed: 自分のプローブはPIDとexeの完全一致で1件、存在しないPIDは0件。終了コード0。
+- judgement: 画像同一性
+  breaking_input: 配布画像とrawの重複を全件比較。不一致なら拒否する。
+  observed: 欠け0、不一致6001。Task Bの画像同一性条件で停止。
+- judgement: 追加CPU試験
+  breaking_input: preregの点番号13を99に変更、群のlr/weight_decayを変更、補完画像を欠いたコピー
+  observed: 3 passed。壊れた点表とoptimizer群をValueErrorで拒否し、補完画像欠落でフレーム数が2から1へ減少。
 followups:
-- andrew に SSH 認証できる既存経路を用意して指定チェックポイントを取得し、正本 SHA-256 とサイズ照合後に L3 を再実行する。鍵やトークンの値を会話・監査記録に書かない。
+- 学習を停止したまま画像不一致の原因調査のみ継続するか利用者の返答待ち。画像の変更やバイト不一致の許容を実行者は決めない。
+- 探索用コードは準備途中でGPU動作未検証。再開の判断後に残りのTask BとG2の全項目を検証する。
 unknowns:
-- 全試験未実施。tests の 0 は観測した実行件数 0 を表し、既存試験の失敗数や合格を表さない。
-- checkpoint ローカル SHA-256、探索の値と順位、G1〜G4、P9 host_mismatch の原因。
+- 画素内容の一致、不一致の原因（再圧縮・異なるフレームなど）は未測定。
+- 探索用起動口・W&B別プロセス・optimizerと勾配のGPU動作、全260runの結果と順位は未測定。
+- P3は検査器の基準未確定でSKIP。P9 host_mismatchの原因は未測定。
 commits:
 - e9f4e3b4f34410c023c7a4ab240971c1d70c2510
+- 0660c1be

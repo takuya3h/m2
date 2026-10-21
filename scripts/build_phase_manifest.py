@@ -18,6 +18,7 @@ TeCNO（S4）はこの clip 単位の時系列を入力にする。online/causal
 """
 from __future__ import annotations
 
+import argparse
 import csv
 import json
 from collections import OrderedDict
@@ -44,7 +45,10 @@ def _read_clip_csv(csv_path: Path) -> list[tuple[str, str]]:
     return rows
 
 
-def build() -> None:
+def build(*, fallback_root: Path | None = None, out_dir: Path | None = None) -> None:
+    out_dir = OUT_DIR if out_dir is None else Path(out_dir)
+    if fallback_root is not None and out_dir.resolve() == OUT_DIR.resolve():
+        raise ValueError("Full phase manifests need a separate output directory")
     # video -> split 逆引き
     video_to_split = {}
     for split, videos in PAPER_SPLIT_VIDEOS.items():
@@ -61,8 +65,8 @@ def build() -> None:
         all_phases.update(p for _, p in rows)
     vocab = OrderedDict((p, i) for i, p in enumerate(sorted(all_phases)))
 
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    (OUT_DIR / "phase_vocab.json").write_text(
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / "phase_vocab.json").write_text(
         json.dumps(vocab, ensure_ascii=False, indent=2), encoding="utf-8"
     )
 
@@ -77,6 +81,8 @@ def build() -> None:
             frames = []
             for frame, phase in rows:                 # 時系列順を維持
                 img = EGO_ROOT / split / video / f"{frame}.jpg"
+                if not img.exists() and fallback_root is not None:
+                    img = fallback_root / frame.rsplit("_", 1)[0] / f"{frame}.jpg"
                 if img.exists() and img.stat().st_size > 0:
                     frames.append({
                         "frame": frame,
@@ -93,7 +99,7 @@ def build() -> None:
                 n_frames += len(frames)
         manifest = {"split": split, "num_clips": len(clips_out),
                     "num_frames": n_frames, "clips": clips_out}
-        (OUT_DIR / f"{split}.json").write_text(
+        (out_dir / f"{split}.json").write_text(
             json.dumps(manifest, ensure_ascii=False), encoding="utf-8"
         )
         summary[split] = {"clips": len(clips_out), "frames": n_frames,
@@ -103,8 +109,12 @@ def build() -> None:
     for split, s in summary.items():
         print(f"[{split}] clips={s['clips']}  frames={s['frames']}  "
               f"missing(no image)={s['missing_no_image']}  zero_byte(空/破損)={s['zero_byte']}")
-    print(f"written -> {OUT_DIR}")
+    print(f"written -> {out_dir}")
 
 
 if __name__ == "__main__":
-    build()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--fallback-root", type=Path)
+    parser.add_argument("--out-dir", type=Path)
+    args = parser.parse_args()
+    build(fallback_root=args.fallback_root, out_dir=args.out_dir)
