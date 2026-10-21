@@ -153,7 +153,23 @@ git log -1 -- runindex/              = 63ae65da8c7d32df591f5e2ee4358286b72c726b�
 runindex の行数（見出しを除く）: index 1961 / experiments 750 / verdicts 1506（counts と一致）
 ```
 
-### D.3 追跡される変更の集合（commit の後に測る。下の「送出」に追記）
+### D.3 追跡される変更の集合（commit 4ddfa00e の後、`git diff --name-status origin/phase0...HEAD`）
+
+```
+A docs/proposals/2026-10-21-tower-reselect-search.md
+A docs/proposals/briefs/2026-10-21-tower-reselect-search-critique-brief.md
+A tasks/T-2026-10-22-proposal-card-tower-reselect-search/{RESULT.md,SPEC.md,audit.md,critique_brief.md,proposal_card.md,result.yaml,spec.yaml}
+A tasks/inbox.d/T-2026-10-22-proposal-card-tower-reselect-search.md
+集合差（変更 − {二文書, 契約のディレクトリ, inbox.d の 1 件}）: 空
+格納後: git show HEAD:<二文書> | sha256sum → 671486df…49be / eef6a488…c1ec5（宣言と一致）
+```
+
+### D.4 PR
+
+```
+$ gh pr view feat/proposal-card-tower-reselect-search --json number,baseRefName,headRefName,isDraft,state
+{"baseRefName":"phase0","headRefName":"feat/proposal-card-tower-reselect-search","isDraft":false,"number":252,"state":"OPEN"}
+```
 
 ## 解決された参照（`contract.inject_verbatim` の原文）
 

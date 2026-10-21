@@ -1,7 +1,7 @@
 # RESULT — T-2026-10-22-proposal-card-tower-reselect-search
 
 ホスト dlsta（容器 `4f3861ae8d3b`）。分岐 `feat/proposal-card-tower-reselect-search`（起点 origin/phase0 `7e30bdde`）。時刻は JST。
-命令と出力の全文は `audit.md`（以下 `audit:行`）。参照の原文（prohibitions・issuer_cautions・proposal_gate）は audit:158 に置いた。
+命令と出力の全文は `audit.md`（以下 `audit:行`）。参照の原文（prohibitions・issuer_cautions・proposal_gate）は audit:174 に置いた。
 `conventions_rev` `2d946b07`・`runindex_commit` `63ae65da`・counts 1961/750/1506 は起票時と一致（audit:148）。
 
 ## 判定
@@ -21,7 +21,7 @@
 | b | 済 | 二つとも写す前・写した後で sha256 と bytes が宣言と一致、cmp 差なし、CR 0、属性なし（audit:79、86） | カードの写しに 1 バイト足すと `cfe50dcc…` に変わる |
 | c | 済 | 置いたカード検出 0。既存カード ptower-20 も 0（audit:99） | 禁止語「本命」を足した写しで禁止語 1、`## 9. 最安の殺し実験` を消した写しで見出し欠落 1。陰性対照（二度目）0 |
 | d | 済（字面との差は §起票者の誤り） | 追跡される変更は二文書の追加・契約のディレクトリ・`tasks/inbox.d/` の 1 件（audit:156）。forbidden-check pass。失敗の名前の集合は同一 | repo の外の clone の写しに `data/_pc_control.txt` を足すと fail（写しは消した）（audit:135） |
-| e | 済 | 下の「送出」 | `gh pr view` の実測（number・baseRefName・headRefName・isDraft） |
+| e | 済 | PR #252、base phase0、head feat/proposal-card-tower-reselect-search、isDraft false、OPEN（audit:167） | `gh pr view` の実測（number・baseRefName・headRefName・isDraft） |
 
 ## 実測
 
@@ -53,5 +53,5 @@ P14 の関数 `check_proposal_card` に `intent.proposal_card` としてこの�
 
 ## 送出
 
-- PR: PENDING
-- `make task-report`: PENDING
+- PR: #252（https://github.com/takuya3h/m2/pull/252）。commit `4ddfa00e`（配置と報告）と本報告の更新
+- `make task-report`: 報告の commit の後に送る（結果は最後の応答で伝える。台帳の応答は版管理に残らない）
