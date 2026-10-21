@@ -1,0 +1,74 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-21-ptower-multigpu-syncbn"
+  kind: impl
+  title: "工程塔の三周目の処方を複数の GPU で回す実装（DDP と SyncBatchNorm、一枚と同じ学び方の照合、dlsta での記憶量と時間）"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-21T08:20:00Z"
+  created_from:
+    runindex_commit: "63ae65da8c7d32df591f5e2ee4358286b72c726b"
+    counts: {index: 1961, experiments: 750, verdicts: 1506}
+  depends_on: [T-2026-10-19-dlsta-tower-feasibility]
+  amendments: []
+intent:
+  question: "工程塔の三周目の処方を、物理 batch を GPU 二枚に分けて回しても、正規化層の統計と勾配の累積と画像の割り振りを一枚と同じにして学べるか。一枚の既定の振る舞いを変えずに足せるか"
+  decision_at_stake: "dlsta での両塔の学び直しの折り A の探索で、工程塔を三周目の処方のまま回せるか。探索の手続きのカードに書く工程塔の装置の構成、並べ方、記憶量と時間"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery-Phase の折り A の train と val の画像と工程注釈（照合と測定に使う。書き込まない）、COCO の初期化の重み"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/stage1_ptower_r3.py", "scripts/stage1_ptower.py", "configs/stage1_ptower_r3.yaml", "tests/test_stage1_ptower_r3.py", "src/egosurgery/utils/experiment_manager.py", "experiments/analysis/dlsta_tower_feasibility/REPORT.md", "experiments/analysis/dlsta_tower_feasibility/tools/ptower_probe.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#env_p0]
+  conventions_rev: "2d946b07a57abebc4a8f66150d6dbaf2ccd22186"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "開始状態。分岐、作業ツリー、同期の抑止、GPU の所有者と使用量、版、起点の実測、試験の前の値、一枚の道の直す前の値", gpu: true, est: "40m"}
+    - {id: B, name: "実装。一枚の既定を変えずに、二枚以上で回す道を足す。CPU の試験", gpu: false, est: "3h"}
+    - {id: C, name: "一枚と同じ学び方の照合。一枚に収まる大きさで、陽性と陰性の対照つき。末尾の端数、増強の乱数、再現", gpu: true, est: "2h"}
+    - {id: D, name: "学習の流れの通し。rank 0 だけの評価と保存と記録、学習率の低下と打ち切りの揃い、checkpoint の一枚の道での読み込み", gpu: true, est: "90m"}
+    - {id: E, name: "処方のままの記憶量と時間。NVLink の組、NVLink の無い組、二本同時", gpu: true, est: "90m"}
+    - {id: F, name: "env-facts の dlsta の行に実測を足す", gpu: false, est: "20m"}
+    - {id: G, name: "検証と報告", gpu: false, est: "60m"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、作業ツリーが清浄で、別の契約が作業中でなく、他の利用者が使っていない GPU が二枚以上ある", on_fail: stop}
+    - {id: G2, after: B, check: "一枚の道の値が直す前と一致し、既存の試験の失敗の名前の集合が増えていない", on_fail: stop}
+    - {id: G3, after: C, check: "一枚と二枚の照合で、陰性対照が許容差に収まり、陽性対照が許容差を外れ、本番の二枚が許容差に収まる。決定性の設定のもとで止まらない", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, gpu_free]
+outputs:
+  must_have: [RESULT.md]
+  destination: "tasks/T-2026-10-21-ptower-multigpu-syncbn/"
+  acceptance:
+    - "a: 開始状態、GPU 五枚の所有者と使用量、git の版、起点の実測、試験の前の値が記録されている"
+    - "b: 一枚の道で、直す前と直した後の同じ小さな設定の重みの要約値が一致し、既存の試験の失敗の名前の集合が増えていない"
+    - "c: 一枚と二枚の照合の差が、測る前に書いた許容差で判定され、陰性対照が収まり陽性対照が外れ、本番の二枚が収まる"
+    - "d: 各 epoch で学習に使う画像の集合が一枚と同じで重複も欠けも無く、末尾の端数の歩の勾配が一枚と同じ"
+    - "e: rank ごとの増強の乱数が互いに同じ列にならず、同じ seed で二度回すと同じ結果になる"
+    - "f: stem の bn1 の統計が学習の歩で変わらず、layer1 から layer4 の正規化層の統計が全 rank の画像で取られている"
+    - "g: 評価と保存と記録が rank 0 だけで行われ、学習率の低下と打ち切りが全 rank で同じ epoch に起き、保存した checkpoint が一枚の道で鍵を変えずに読める"
+    - "h: 処方のままの二枚の構成で、rank ごとの記憶量の最大と一歩の時間が、NVLink の組、NVLink の無い組、二本同時について記録されている"
+    - "i: 決定性の設定が二枚の道の全 rank で有効で、止まった演算が無いか、止まった場合は演算の名前を記録して停止している"
+    - "j: env-facts の dlsta の行に日付と契約つきで実測が足され、既存の行が減っていない"
+    - "k: 使った GPU が許された範囲にあり、他の利用者のプロセスに触れておらず、data と experiments と runindex に足したものが無く、接続が取得と送信だけで、試験の失敗の名前の集合が増えていない"
+    - "l: PR が存在し、base が phase0、分岐が feat/ptower-multigpu-syncbn、Draft でない"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "本ホストの repo の位置や装置が env-facts.md と食い違い、dlsta と確かめられない場合"
+    - "他の利用者が使っていない GPU が二枚未満の場合、または途中で他の利用者の使用が使用中の GPU に現れた場合"
+    - "決定性の設定のもとで SyncBatchNorm か GPU の間の集計が止まった場合（利用者の決定 2026-10-21。緩め方は利用者が決める）"
+    - "同じ seed で二度回した二枚の道の結果が一致しない場合"
+    - "末尾の端数の扱いを一枚と同じにできない場合、または一枚の既定の振る舞いを変えずに足せない場合"
+    - "照合の許容差で陰性対照と陽性対照を分けられない場合"

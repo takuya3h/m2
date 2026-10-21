@@ -1591,3 +1591,23 @@ forward した region token が既存の `t1a_regiontoken/relation_detr_seed42` 
   停止して再開した契約で P13・P14・allow_write の規則が働く。参照が解決しないときは従来の判定へ戻り、警告を一行出す。phase0 の上の完了済みは前後 128 件・差 0 件
 - **規約 `folds` に「val と test の重なり」を置いた**（利用者の決定 2026-10-19）。`docs/issuer-defects.md` に測らずに断定した例を 2 件足した
 - 試験: `tests/test_task_start_classify.py`（新規）、`tests/test_symmetry_gate.py`・`tests/test_legacy_exclusions.py`・`tests/test_proposal_card_gate.py`（完了済みの新しい定義）
+
+### 工程塔三周目を複数の GPU で回す道（2026-10-21、dlsta）
+
+契約 `T-2026-10-21-ptower-multigpu-syncbn`（impl）。記録は `tasks/T-2026-10-21-ptower-multigpu-syncbn/`。
+
+- **`scripts/stage1_ptower_r3_dist.py` を足した。** `torchrun` で起こしたとき（`WORLD_SIZE>1`）だけ `stage1_ptower_r3.main` が
+  ここへ振り分ける。**普通の起動（一枚の道）は 1 行も変えていない**（直す前と後で重みの要約値が一致）。finetune 以外の action は二枚以上では止める
+- 処方は一枚のまま: `ft_batch_size` は全 rank を合わせた物理 batch（rank の数で割り切れなければ始める前に止める）、
+  layer1〜4 の BatchNorm を SyncBatchNorm にし、stem の `bn1` は BatchNorm2d のまま eval。勾配は累積の境でだけ集める（`no_sync`）。
+  大域 batch を一枚と同じに切って rank に分け（末尾も残す）、末尾の不均等は損失の尺度で補う。増強の乱数は rank ごとの種。
+  評価・checkpoint・証拠・W&B は rank 0 だけで、学習率の低下と打ち切りは全 rank が同じ epoch に行う。checkpoint の鍵は一枚の道と同じ
+- **起動の仕方**（GPU は `CUDA_VISIBLE_DEVICES` で選ぶ。設定の `device` は二枚以上の道では使わない）:
+
+      CUDA_VISIBLE_DEVICES=1,2 torchrun --nproc_per_node=2 --master_port=29501 scripts/stage1_ptower_r3.py action=finetune ...
+
+  **同じホストで二本を同時に起こすときは `--master_port` を分ける**（例: GPU1–2 は 29501、GPU3–4 は 29502）
+- 照合（float64）: 一枚 batch 4 と二枚 2 枚ずつの勾配の相対差 1.4e-13（SyncBatchNorm を外すと 1.5）。fp32 では一枚の道そのものが
+  float64 から 1.1e-2 ずれ、二枚との差（8.4e-3）はその範囲にある。dlsta の A5000 で処方のまま（GPU ごと 8 枚）溢れず、
+  一歩 0.79〜0.80 s（`context/env-facts.md` の dlsta の行）
+- 試験: `tests/test_stage1_ptower_r3_dist.py`（CPU 13 件、二枚の GPU 1 件。二枚が無ければ skip）
