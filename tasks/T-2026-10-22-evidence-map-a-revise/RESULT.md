@@ -13,7 +13,7 @@ status: pass。G1・G2・G3 はすべて pass。地図 A v2.1 は様式の検査
 | c | 地図 A v2.1・B・C・N の 4 地図が「検査」として出力に現れ、各違反 0、exit 0。陽性対照では違反 1 件・exit 1（L72） |
 | d | 結果は verification/ の二件。分類の和は 126。抽出集合と expected-ids.txt の集合の差は両方向 0。結果の md に記録された地図の sha256 は v2.1 の値（L89、L94） |
 | e | 予測との並べと C-5 の各点は下と L112・L124。SPEC.md の sha256 は取り込み時と報告前で同じ `24023b7b…5887` |
-| f | 「送出」の節に記載 |
+| f | PR #256 は OPEN・Draft でない・base phase0・head feat/evidence-map-a-revise（gh pr view の応答）。forbidden-check の違反 0 |
 
 ## 実測
 
@@ -49,7 +49,7 @@ status: pass。G1・G2・G3 はすべて pass。地図 A v2.1 は様式の検査
 
 ## 送出
 
-（PR 番号と台帳の終了コードを追記する）
+PR #256。照合（2 回目）・様式の検査・forbidden-check・spec-check・task-validate の終了コードは 0。照合の 1 回目は exit 3。台帳への送り返しの結果は audit の「E. 送出」に記録する。
 
 ## 1. 解決された参照
 

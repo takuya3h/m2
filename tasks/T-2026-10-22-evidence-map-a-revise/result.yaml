@@ -3,7 +3,7 @@ task_id: T-2026-10-22-evidence-map-a-revise
 status: pass
 host: Bengio
 branch: feat/evidence-map-a-revise
-pr: null
+pr: 256
 merged: false
 gates:
 - id: G1
@@ -43,8 +43,8 @@ positive_controls:
   breaking_input: 照合先の arXiv が読み取りのタイムアウトを返す
   observed: 1 回目の照合で、該当の 50 ID は到達不能に分類され、exit 3 だった（不在にも一致にも数えられなかった）。意図して入れた入力ではなく、偶然に起きた事象の観測である。
 - judgement: 書誌の比較が差を検出する（照合器の差の判定が働いている）
-  breaking_input: 地図の題名か著者を照合先と違う値にする
-  observed: UNKNOWN。本契約では測っていない。前回の照合（v2）では同じ照合器が 5 件を書誌に差と判定しており、v2.1 ではその行の文献の欄が書き直されて一致になった。
+  breaking_input: repo の外に地図 A の表の見出しと A-01 の 1 行だけを写し、題名を別の題名に変え、DOI 10.1007/978-3-031-72089-5_18 だけを残して照合する（結果は repo の外へ出す）
+  observed: "実在・書誌に差 1、題名「差: 題名が一致しない」、著者「一致: 全 4 名」、問い合わせ 3 回、exit 0。"
 followups:
 - 地図 A v2.1 は 126 ID がすべて実在し、書誌一致 123・照合不能 3（地図に書誌の行が無い arXiv 2505.12890・2106.11028・2112.07219）。工程塔の追加候補のカードの生成会話へ渡すかどうかは、起票者が判断する。
 - 照合器は読み取りのタイムアウトを接続の失敗として扱い、引き直しは 1 回だけ（CONNECT_RETRY_WAITS）。arXiv が 429 とタイムアウトを交互に返すと、束全体（最大 50 ID）が到達不能になる。照合器は変えていない。直すかどうかは利用者が判断する。
@@ -52,4 +52,5 @@ followups:
 unknowns:
 - API の返値と原典の表記の正誤は判断していない。
 - 1 回目の arXiv のタイムアウトの原因は分からない。
-commits: []
+commits:
+- 1f6f39b2efb6e00cf3acff1973c8163c9366f245

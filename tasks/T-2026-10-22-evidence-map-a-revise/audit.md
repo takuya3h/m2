@@ -165,4 +165,11 @@ G3: pass（違反 0、集合の差 0）。
 
 ## E. 送出
 
-（commit・PR・台帳の応答を追記する）
+
+
+- commit `1f6f39b2` を `origin/feat/evidence-map-a-revise` へ push。
+- `gh pr create --base phase0` → https://github.com/takuya3h/m2/pull/256。`gh pr view` の応答: `{"baseRefName":"phase0","headRefName":"feat/evidence-map-a-revise","isDraft":false,"number":256,"state":"OPEN"}`。
+
+### 追加の陽性対照（書誌の差の判定）
+
+repo の外（scratchpad）に、v2.1 の §2 の表の見出し 2 行と A-01 の 1 行だけを写した。題名を `Completely Different Title About Kitchen Robots` に変え、arXiv の ID を外して DOI 10.1007/978-3-031-72089-5_18 だけを残した。`verify_evidence_ids.py --out-dir <scratchpad>` で照合した結果は `実在・書誌一致 0 / 実在・書誌に差 1 / … （計 1）`、exit 0。題名は「差: 題名が一致しない」、著者は「一致: 全 4 名」、問い合わせは 3 回。repo の作業ツリーは変わっていない。
