@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（666 件）
+## 申し送り（669 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1070,13 +1070,19 @@
 - 起票者は予測外のA-04のarXiv 2503.18755・DOI 10.1049/htl2.70049とA-109のarXiv 2202.02326を含む書誌差5件の扱いを、返値を見て判断する。本契約では地図・報告の本文を変更していない。
 - SPEC罠5の終了コード0という断定は陽性対照で再現しなかった。現在の検査器では違反1件で終了コード1だった。
 
+### T-2026-10-22-evidence-map-a-revise
+
+- 地図 A v2.1 は 126 ID がすべて実在し、書誌一致 123・照合不能 3（地図に書誌の行が無い arXiv 2505.12890・2106.11028・2112.07219）。工程塔の追加候補のカードの生成会話へ渡すかどうかは、起票者が判断する。
+- 照合器は読み取りのタイムアウトを接続の失敗として扱い、引き直しは 1 回だけ（CONNECT_RETRY_WAITS）。arXiv が 429 とタイムアウトを交互に返すと、束全体（最大 50 ID）が到達不能になる。照合器は変えていない。直すかどうかは利用者が判断する。
+- 完了判定とゲートに「到達不能 0」を入れるかどうかを、次の契約の起票で検討する。
+
 ### T-2026-10-22-proposal-card-tower-reselect-search
 
 - 置いたカードは批判会話への依頼文 docs/proposals/briefs/2026-10-21-tower-reselect-search-critique-brief.md を経路で指していない（冒頭の「依頼文: なし」は生成会話の依頼文の欄）。規約 proposal_gate は生成会話の依頼文について「カードから参照する」と書く。批判会話の依頼文にも同じ参照を求めるかは起票者が決める
 - カードが置き換えるとする前のカード 2026-10-17-tower-reselect-andrew は docs/proposals/ に無い
 - 本 PR の統合の後に、dlsta の探索の exp を intent.proposal_card: docs/proposals/2026-10-21-tower-reselect-search.md で配布できる（P14 の関数で PASS を確認済み）
 
-## 断定できなかった事項（415 件）
+## 断定できなかった事項（417 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1861,22 +1867,27 @@
 - APIの返した書誌情報と原典の正誤は別であり、特にA-109の著者要素の分割の原因は本契約では判断していない。
 - agentmemoryはツール未提供のため読み書き未実施。
 
+### T-2026-10-22-evidence-map-a-revise
+
+- API の返値と原典の表記の正誤は判断していない。
+- 1 回目の arXiv のタイムアウトの原因は分からない。
+
 ### T-2026-10-22-proposal-card-tower-reselect-search
 
 - 既存の 6 件の試験の失敗（test_engines 1、test_fetch_task 1、test_research_logger 4）の原因は調べていない
 
-## 起票者の誤りの型（386 件）
+## 起票者の誤りの型（387 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 104 |
+| `check_does_not_check` | 105 |
 | `asserted_without_measuring` | 162 |
 | `self_contradiction` | 99 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 1 |
 | `rule_read_narrowly` | 1 |
 
-合計 386 件（対を持つ契約 136 件から）
+合計 387 件（対を持つ契約 137 件から）
 
