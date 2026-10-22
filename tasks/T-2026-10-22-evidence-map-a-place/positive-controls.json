@@ -1,0 +1,37 @@
+{
+  "format": {
+    "command": [
+      "/home/ubuntu/slocal2/m2/.venv/bin/python",
+      "tools/check_evidence_map.py",
+      "/tmp/evidence-map-a-positive-control-cs8r72_u/2026-10-21-A-phase-tower-candidates.md"
+    ],
+    "control_copy": "/tmp/evidence-map-a-positive-control-cs8r72_u/2026-10-21-A-phase-tower-candidates.md",
+    "mutated_report_sha256": "2fd5e851851ca78f6df2bd5b9728a1f2c3e341066e0ff8ee587c06256290d0ca",
+    "replacement": "0000000000000000000000000000000000000000000000000000000000000000",
+    "violations": [
+      1
+    ],
+    "exit_code": 1,
+    "stdout": "report_sha256    /tmp/evidence-map-a-positive-control-cs8r72_u/2026-10-21-A-phase-tower-candidates.md:13  sha256 0000000000000000000000000000000000000000000000000000000000000000 に一致するファイルが reports/ に無い\n検査 /tmp/evidence-map-a-positive-control-cs8r72_u/2026-10-21-A-phase-tower-candidates.md: 違反 1 件\n\n規約から読んだ禁止語 15 語 / reports/ のファイル 12 件\n",
+    "stderr": "",
+    "original_map_unchanged": true
+  },
+  "id_missing": {
+    "removed": "2026-10-21-A-phase-tower-candidates.md\tarxiv\t1602.03012",
+    "expected_minus_actual": [
+      "2026-10-21-A-phase-tower-candidates.md\tarxiv\t1602.03012"
+    ],
+    "actual_minus_expected": []
+  },
+  "id_extra": {
+    "added": "2026-10-21-A-phase-tower-candidates.md\tarxiv\t9999.99999",
+    "expected_minus_actual": [],
+    "actual_minus_expected": [
+      "2026-10-21-A-phase-tower-candidates.md\tarxiv\t9999.99999"
+    ]
+  },
+  "material_digest": {
+    "baseline_all_match": true,
+    "one_byte_changed_matches_expected": false
+  }
+}
