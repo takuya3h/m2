@@ -1,0 +1,55 @@
+result_version: 3
+task_id: T-2026-10-22-evidence-map-a-revise
+status: pass
+host: Bengio
+branch: feat/evidence-map-a-revise
+pr: null
+merged: false
+gates:
+- id: G1
+  verdict: pass
+  note: 起点 112b09bd。SPEC の表の 10 件の sha256 が 10/10 一致。受け渡しの一件は 265380 バイト・sha256 941f4c8d が一致し、置き場は repo の外。照合先 4 系統は HTTP 200。
+- id: G2
+  verdict: pass
+  note: 置き換え後の sha256 は 941f4c8d。差は 24 行追加・23 行削除で、版・状態の 2 行、§0.2 の 1 行の追加、§2 の 21 行（SPEC の 21 ID と一致し、変わった列は文献・掲載先だけ）。
+- id: G3
+  verdict: pass
+  note: 4 地図が「検査」として現れ、各違反 0・exit 0。抽出 126 ID（arXiv 96・DOI 30）と expected-ids.txt の集合の差は両方向 0。
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+deviations:
+- type: environment
+  note: 1 回目の照合で arXiv の一つの束（50 ID）がタイムアウト・429・タイムアウトとなり、到達不能 50・exit 3 だった。地図と照合器を変えず、約 10 分あけて同じ命令を一回だけ流し直した。2 回目は到達不能 0・exit 0。報告の値は 2 回目。
+- type: environment
+  note: 開始の時点で受け渡しの置き場が無かった。利用者に伝えて待ち、置かれてから要約値を照合した。
+- type: judgement
+  note: CLAUDE.md の README.md 更新の要求は、コードを変えておらず変更範囲（完了判定 b）の外になるため適用しなかった。SPEC の罠 7 に従い make test は回していない。
+issuer_defects:
+- type: check_does_not_check
+  note: 完了判定 d とゲート G3 は分類の和 126 と ID 集合の一致だけを見ていて、到達不能を数えていない。到達不能 50 で exit 3 だった 1 回目の照合でもこの二つは通っており、50 ID については予測との比較（完了判定 e）が成り立たないまま合格になりえた。
+positive_controls:
+- judgement: 完了判定 c の様式の検査が違反を検出する
+  breaking_input: repo の外の v2.1 の写しで、A-chatgpt の報告の sha256 を 0 が 64 個の文字列に 1 か所だけ置き換える
+  observed: report_sha256 の違反 1 件、exit 1。実物の地図の sha256 は変わっていない。
+- judgement: 完了判定 d の ID 集合の比較（欠落）
+  breaking_input: 抽出集合から 1 ID を除く
+  observed: expected − 抽出 = 1、抽出 − expected = 0
+- judgement: 完了判定 d の ID 集合の比較（余分）
+  breaking_input: 抽出集合に arXiv 9999.99999 を 1 件足す
+  observed: expected − 抽出 = 0、抽出 − expected = 1
+- judgement: 到達不能を書誌一致や不在と取り違えない
+  breaking_input: 照合先の arXiv が読み取りのタイムアウトを返す
+  observed: 1 回目の照合で、該当の 50 ID は到達不能に分類され、exit 3 だった（不在にも一致にも数えられなかった）。意図して入れた入力ではなく、偶然に起きた事象の観測である。
+- judgement: 書誌の比較が差を検出する（照合器の差の判定が働いている）
+  breaking_input: 地図の題名か著者を照合先と違う値にする
+  observed: UNKNOWN。本契約では測っていない。前回の照合（v2）では同じ照合器が 5 件を書誌に差と判定しており、v2.1 ではその行の文献の欄が書き直されて一致になった。
+followups:
+- 地図 A v2.1 は 126 ID がすべて実在し、書誌一致 123・照合不能 3（地図に書誌の行が無い arXiv 2505.12890・2106.11028・2112.07219）。工程塔の追加候補のカードの生成会話へ渡すかどうかは、起票者が判断する。
+- 照合器は読み取りのタイムアウトを接続の失敗として扱い、引き直しは 1 回だけ（CONNECT_RETRY_WAITS）。arXiv が 429 とタイムアウトを交互に返すと、束全体（最大 50 ID）が到達不能になる。照合器は変えていない。直すかどうかは利用者が判断する。
+- 完了判定とゲートに「到達不能 0」を入れるかどうかを、次の契約の起票で検討する。
+unknowns:
+- API の返値と原典の表記の正誤は判断していない。
+- 1 回目の arXiv のタイムアウトの原因は分からない。
+commits: []

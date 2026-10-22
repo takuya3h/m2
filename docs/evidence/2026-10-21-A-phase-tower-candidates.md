@@ -1,8 +1,8 @@
 # 証拠地図 A — 一人称の開放手術の online 工程認識で、工程塔の候補（時間モデル・事前学習・基盤モデル）をどう選ぶか
 
-**版:** v2（下書き。2026-10-21 に地図 A の作り直しの会話が作成し、2026-10-22 に A2 の補足の報告〔A2s〕の行を足した。旧地図 A〔v1、2026-09-16、docs/evidence/2026-09-16-A-phase-tower-candidates.md〕の 15 行を移し、A2・A3 の報告六件の行を足した）
+**版:** v2.1（2026-10-22。v2〔2026-10-21 に地図 A の作り直しの会話が作成し、2026-10-22 に A2 の補足の報告〔A2s〕の行を足した。契約 T-2026-10-22-evidence-map-a-place で配置・照合、PR #254〕の書誌の欄を照合先の値で改めた。行の中身・数値は変えていない。旧地図 A〔v1、2026-09-16、docs/evidence/2026-09-16-A-phase-tower-candidates.md〕の 15 行を移し、A2・A3 の報告六件の行を足した）
 **種類:** 探索の地図
-**状態:** 書誌の機械照合は未実施（作成した環境から照合先に届かなかったため。ID の抽出〔verify_evidence_ids.py --extract-only〕と様式の検査〔check_evidence_map.py〕だけを通した）。数値の原典確認は未実施。旧地図 A から移した 15 行は 2026-09-16 に Crossref と arXiv API で「実在・書誌一致」（旧地図の記載）。報告者の解釈と提案は地図に載せていない（§0.2）
+**状態:** v2 の書誌の機械照合は済み（2026-10-22、bengio。126 ID: 実在・書誌一致 101、実在・書誌に差 5、実在・照合不能 20、不在 0。結果は docs/evidence/verification/2026-10-21-A-phase-tower-candidates.md）。v2.1 では、差の 5 件（A-04、A-11、A-28、A-109）と、報告に著者・年が無かった 17 件（A-05、A-22、A-48〜A-52、A-55、A-56、A-60、A-68〜A-73、A-105）の文献・掲載先の欄を照合先の値で改めた（全角の括弧の中に報告の記載との違いを残した）。v2.1 の再照合は未実施。数値の原典確認は未実施。旧地図 A から移した 15 行は 2026-09-16 に Crossref と arXiv API で「実在・書誌一致」（旧地図の記載）。報告者の解釈と提案は地図に載せていない（§0.2）
 **元の報告:**
 - A2 の報告（ChatGPT の deep research。エンジンは利用者の記載）「A2-deep-research-report.md」（利用者の手元の名前は「A2-deep-research-report .md」。repo では名前の中の半角スペースを除く案）、68,253 バイト、828 行、sha256 6edb3e0773344f02bb4cfd3dacf966bd49d3a042b9d853b43addcbf37e2d7558。出所の記号は A2g
 - A2 の報告（Claude の調査。同上）「A2-research_claude.md」、35,635 バイト、615 行、sha256 f2d829ba68f84c4e2097488aee1358f0faa46d07c4155b751771f9710b03ed3a。記号は A2c
@@ -62,6 +62,7 @@
 - 報告者の解釈と提案（各報告の (6) の節、A2g の「解釈と提案」、A3g の「あなたの解釈と提案」、A2c・A2f・A3c の TL;DR のうち提案の行）と、報告者の読みを含む要約は地図に載せず、起票者用の文書に移した（F 2026-10-18）。旧地図の「A.4 起票者の読み」と「未検証の理由の仮説」も移していない
 - 見つからなかったもの（§10）と未検証の組み合わせ（§11）は、その設計が新しい・価値があるという根拠として読まない。見つからない理由には、技術的な困難、価値が乏しいと見なされていること、偶然がありうる（F 2026-10-18）
 - 出所の列（§2）の「A2g L」「A1 L」などは各報告の行番号（1 から数える）。報告の参照記号（citation の印）は除いた
+- 文献と掲載先の欄のうち「照合先の値」と注記したものは、2026-10-22 の機械照合（Crossref・arXiv の API）が返した題名・著者・年・掲載先で、報告の記載を置き換えたもの。報告の記載との違いは同じ欄の括弧の中に残した。API の返値であり、原典の表記の正誤はここでは判断していない
 - 二つ以上の報告が同じ文献を扱うときは一行にまとめ、値の後に出所の記号を書いた。報告どうしの値の食い違いは両方を残した
 - 方向の番号は依頼文の 7 方向（一 同じデータ・同じ設定、二 手術一般、三 一人称の非手術、四 一般映像、五 機構の一般論、六 方法論、七 否定的な結果）
 - 行の並び: A-01〜A-06 は EgoSurgery とその周辺、A-07〜A-22 は手術の時間モデル、A-23〜A-33 は非手術の時間モデル（行動分割・online 行動検出・一人称）、A-34〜A-52 は手術の事前学習・基盤モデル、A-53〜A-73 は一般・一人称の事前学習と視線、A-74〜A-93 は評価・区間の欠け・再現性（A2f まで）、A-94〜A-115 は A2s の詳細記録（A-94〜A-96 欠け・破損のある映像、A-97〜A-108 経過時間・連続時間・不規則時刻のモデル、A-109〜A-115 計算環境・決定性）。並びは優先度ではない
@@ -191,14 +192,14 @@ A2s は、S5 が実在する（arXiv 2208.04933、ICLR 2023）こと、種とし
 | A-01 | Fujii, Hatano, Saito, Kajita 2024, EgoSurgery-Phase: A Dataset of Surgical Phase Recognition from Egocentric Open Surgery Videos（GGMAE と同じ論文） | arXiv 2405.19644、DOI 10.1007/978-3-031-72089-5_18 | MICCAI 2024（査読つき、pp.187–196〔A3c〕） | 一 | A2c・A2f 本文。A2g arXiv HTML の本文と実験表、MICCAI の公式頁。A3c 本文全体（v3 PDF。補足資料は未読）。A3g 本文と実験表。旧 A は全文 | 旧 A.1 の 1 行目（A1 L21）、A2c L34–L81、A2f L43–L63、A2g L7、L30、L60–L81、L110–L137、L487、A3c L28–L36、A3g L41–L56。A2s L3、L11、L509、L577、L714 |
 | A-02 | Wu, Holm, Chen ほか 2026, SurgMotion: A Video-Native Foundation Model for Universal Understanding of Surgical Videos（責任著者は Lei。v1 の題名は UniSurg〔A3c〕） | arXiv 2602.05638 | プレプリント（A2c は v2、A2f・A3c は v5〔2026-09-22〕、A3g は v2〔2026-03-24〕を読んだ。査読つきの掲載先は見つからない〔A3c、A3g〕） | 一・二・三・四・五・七（A2c は一・二、A2g は一・二・三・五、A3g は一・二・四・七） | A2c 本文（Table 7 まで）。A2f 要旨・1〜3.2 節・Table 1（EgoSurgery の結果の表は未読）。A2g HTML の本文・Table 3・事前学習の表。A3c 本文全体（v5 HTML）と README（サブエージェント経由）。A3g 本文・Table 1〜3 | A2c L83–L129、A2f L79–L99、A2g L15、L85–L102、L138–L165、A3c L38–L47、A3g L33、L167–L180。A2s L11 |
 | A-03 | Fujii, Saito, Kajita 2024, EgoSurgery-Tool: A Dataset of Surgical Tool and Hand Detection from Egocentric Open Surgery Videos | arXiv 2406.03095 | プレプリント | 一 | A2c 要旨と抜粋。A2f 本文 2 節のスニペット。A3c は確認のみ | A2c L512–L522、A2f L73–L77、A3c L123。A2s L11 |
-| A-04 | Fujii ほか 2025, EgoSurgery-HTS: A Dataset for Egocentric Hand-Tool Segmentation in Open Surgery Videos | arXiv 2503.18755、DOI 10.1049/htl2.70049 | Healthcare Technology Letters（査読つき）。DOI は A3c の記載 | 一 | A2c 要旨と抜粋。A2f は要旨の断片だけで未確認。A3c は確認のみ | A2c L524–L532、A2f L392、A3c L123。A2s L11 |
-| A-05 | SURGE Phase 1: An AR/VR-Based Deep Learning Framework for Surgical Scene Analysis（著者と年は報告に無い） | DOI 10.1007/978-3-032-31119-1_38 | Springer の会議録 | 一 | 要旨のみ | A2c L534–L541 |
+| A-04 | Darjana, Fujii, Saito, Kajita 2025, EgoSurgery-HTS: A Dataset for Egocentric Hand-Tool Segmentation in Open Surgery Videos（著者は照合先〔arXiv・Crossref〕の値。報告は Fujii ほかと書いていた） | arXiv 2503.18755、DOI 10.1049/htl2.70049 | Healthcare Technology Letters 12(1)（査読つき。Crossref） | 一 | A2c 要旨と抜粋。A2f は要旨の断片だけで未確認。A3c は確認のみ | A2c L524–L532、A2f L392、A3c L123。A2s L11 |
+| A-05 | Mahajan, Singh, Joshi ほか 2026, SURGE Phase 1: An AR/VR-Based Deep Learning Framework for Surgical Scene Analysis（著者と年は照合先〔Crossref〕の値。報告に無い） | DOI 10.1007/978-3-032-31119-1_38 | Lecture Notes in Networks and Systems（Springer、pp.408–416。Crossref） | 一 | 要旨のみ | A2c L534–L541 |
 | A-06 | Fujii ほか, EgoSurgery 公式リポジトリ（GitHub Fujiry0/EgoSurgery の README） | なし（GitHub） | GitHub（査読なし） | 一 | README の全文 | A2f L65–L71。A2s L11 |
 | A-07 | Czempiel ほか 2020（TeCNO。旧地図は題名を書いていない） | DOI 10.1007/978-3-030-59716-0_33、arXiv 2003.10751 | MICCAI 2020 | 二 | 全文（旧地図の印） | 旧 A.1 の 3 行目（A1 L23）。A2s L13 |
 | A-08 | Gao, Jin, Long, Dou, Heng 2021（Trans-SVNet。旧地図は題名を書いていない） | arXiv 2103.09712 | MICCAI 2021 | 二 | 全文（旧地図の印） | 旧 A.1 の 4 行目（A1 L24） |
 | A-09 | Liu, Boels, Garcia-Peraza-Herrera, Vercauteren, Dasgupta, Granados, Ourselin 2025（LoViT。旧地図は題名を書いていない） | DOI 10.1016/j.media.2024.103366、arXiv 2305.08989 | Medical Image Analysis 99, 103366（2024-10 にオンライン） | 二 | 全文（旧地図の印） | 旧 A.1 の 5 行目（A1 L25） |
 | A-10 | Twinanda ほか 2016／2017（EndoNet。旧地図は題名を書いていない） | arXiv 1602.03012 | IEEE TMI | 二 | 全文（旧地図の印） | 旧 A.1 の 2 行目（A1 L22） |
-| A-11 | 2021, TMRNet: Surgical Phase Recognition with Temporal Memory Relation Network（題名は A2g の記載） | arXiv 2103.16327 | IEEE TMI 系（A2g）。A2c は IEEE TMI 2021 と書き ID は未確認 | 二・六・七（A2g） | 要旨とリポジトリの評価の手順（A2g） | A2g L396–L422、A2c L546 |
+| A-11 | Jin, Long, Chen, Zhao, Dou, Heng 2021, Temporal Memory Relation Network for Workflow Recognition from Surgical Video（TMRNet。題名と著者は照合先〔arXiv〕の値。A2g の記載の題名「TMRNet: Surgical Phase Recognition with Temporal Memory Relation Network」は照合先と違った） | arXiv 2103.16327 | IEEE TMI（arXiv の注記「Accepted at IEEE TMI」。A2c は IEEE TMI 2021） | 二・六・七（A2g） | 要旨とリポジトリの評価の手順（A2g） | A2g L396–L422、A2c L546 |
 | A-12 | Funke, Rivoir, Krell, Speidel 2023／2025, TUNeS: A Temporal U-Net with Self-Attention for Video-based Surgical Phase Recognition | arXiv 2307.09997 | IEEE TBME（査読つき、PubMed 40031317） | 二・六 | 本文（サブエージェントによる全文の読解を含む） | A2c L308–L351 |
 | A-13 | Zhang, Meng, Cheng, Biskup, Petculescu, Chapman 2024, Friends Across Time: Multi-Scale Action Segmentation Transformer for Surgical Phase Recognition（MS-ASCT） | arXiv 2401.11644 | プレプリント（A2c）。査読版の DOI は不明（A2g） | 二・四 | A2c 要旨のみ。A2g arXiv HTML の本文と実験表の該当部 | A2c L226–L243、A2g L166–L192 |
 | A-14 | Yang, Luo, Wang, Chen 2024, Surgformer: Surgical Transformer with Hierarchical Temporal Attention for Surgical Phase Recognition | arXiv 2408.03867、DOI 10.1007/978-3-031-72089-5_57 | MICCAI 2024（査読つき） | 二 | A2c 要旨と抜粋。A2g 要旨のみ。A3c は窓の規約の確認 | A2c L245–L269、A2g L423–L450、A3c L112 |
@@ -209,13 +210,13 @@ A2s は、S5 が実在する（arXiv 2208.04933、ICLR 2023）こと、種とし
 | A-19 | Oh, Sun 2026, SurgicalMamba: Dual-Path SSD with State Regramming for Online Surgical Phase Recognition | arXiv 2605.14889 | プレプリント（A2c は v3。A2f は著者を未確認と書く） | 二（A2c、A2f）。四・六（A3c の記録 R13） | A2c 要旨と序論のみ。A2f 関連研究と付録 H のスニペット。A3c は窓の規約の確認 | A2c L131–L157、A2f L169–L175、A3c L112。A2s L19 |
 | A-20 | PhaseMamba（報告の呼び名。題名・著者・ID は報告に無い。MICCAI 2026） | なし（報告に ID が無い） | MICCAI 2026（A2g の記載） | 二・五 | 報告に記載なし | A2g L11、L46 |
 | A-21 | Zhen Chen, Xingjian Luo, Jinlin Wu ほか 2024, SurgPLAN++: Universal Surgical Phase Localization Network for Online and Offline Inference | arXiv 2409.12467 | IEEE ICRA 2025 に採択（A2c）。A2g はプレプリントと書く | 二・四・七 | A2c 抜粋のみ。A2g arXiv HTML の本文と online・offline の推論の手順 | A2c L498–L510、A2g L272–L298 |
-| A-22 | SemiVT-Surge（報告の呼び名。題名と著者は報告に無い） | arXiv 2506.01471 | 報告に記載なし | 二 | 報告に記載なし（窓の規約の確認だけ） | A3c L112 |
+| A-22 | Li, de Jong, Nasirihaghighi ほか 2025, SemiVT-Surge: Semi-Supervised Video Transformer for Surgical Phase Recognition（題名と著者は照合先〔arXiv〕の値。報告は呼び名だけ） | arXiv 2506.01471 | MICCAI 2025（arXiv の注記「Accepted for MICCAI 2025」） | 二 | 報告に記載なし（窓の規約の確認だけ） | A3c L112 |
 | A-23 | Zhong, Ding, Yao 2024, OnlineTAS: An Online Baseline for Temporal Action Segmentation | arXiv 2411.01122、DOI 10.52202/079017-1881 | NeurIPS 2024（査読つき） | 三・四・五・七 | A2c 本文。A2f 本文の一部（スニペット、数値は未読）。A2g arXiv HTML の本文・付録・Table 1〜12 | A2c L395–L422、A2f L233–L238、A2g L13、L17、L299–L341、L451–L458。A2s L13 |
 | A-24 | Shen, Elhamifar 2024, Progress-Aware Online Action Segmentation for Egocentric Procedural Task Videos（ProTAS） | DOI 10.1109/CVPR52733.2024.01722 | CVPR 2024（査読つき、pp. 18186–18197）。arXiv の ID は不明 | 三・四・五 | A2c 本文。A2g は CVPR の公式頁と公式コードの README（PDF の表は表番号つきで確かめられず数値を引かない） | A2c L8、L424–L455、A2g L342–L367 |
 | A-25 | An, Kang, Han, Yang, Kim 2023, MiniROAD: Minimal RNN Framework for Online Action Detection | DOI 10.1109/ICCV51070.2023.00949 | ICCV 2023（arXiv の ID は見つからない。頁番号は CVF 版 10341–10350、IEEE CSDL 版 10307–10316 で違う） | 四 | 本文と補遺（サブエージェントの報告） | A2f L212–L231。A2s L13 |
 | A-26 | Abu Farha, Gall 2019, MS-TCN: Multi-Stage Temporal Convolutional Network for Action Segmentation | arXiv 1903.01945 | CVPR 2019 | 四 | 旧 A は全文。A2f は Table 6 と Table 7（スニペット） | 旧 A.1 の 9 行目（A1 L38）、A2f L177–L196。A2s L13、L20 |
 | A-27 | Yi, Wen, Jiang 2021（ASFormer。旧地図は題名を書いていない） | arXiv 2110.08568 | 旧地図に記載なし | 四 | 全文（旧地図の印） | 旧 A.1 の 10 行目（A1 L39）。因果化の比較は A-23 の行（A2g L328–L338） |
-| A-28 | Xu, Gao, Chen, Davis, Crandall 2021（LSTR。旧地図の記載。旧地図は題名を書いていない） | arXiv 2107.03377 | 旧地図に記載なし | 四 | 全文（旧地図の印） | 旧 A.1 の 11 行目（A1 L40）、A2c L27、L417、A2g L45 |
+| A-28 | Xu, Xiong, Chen, Li, Xia, Tu, Soatto 2021, Long Short-Term Transformer for Online Action Detection（LSTR。題名と著者は照合先〔arXiv〕の値。旧地図の著者の欄「Xu, Gao, Chen, Davis, Crandall」は照合先と合わなかった） | arXiv 2107.03377 | NeurIPS 2021（arXiv の注記「Spotlight」） | 四 | 全文（旧地図の印） | 旧 A.1 の 11 行目（A1 L40）、A2c L27、L417、A2g L45 |
 | A-29 | Dipika Singhania, Rahul Rahaman, Angela Yao 2022, C2F-TCN: A Framework for Semi and Fully Supervised Temporal Action Segmentation | arXiv 2212.11078 | プレプリント | 四 | 付録 B.5 のスニペット | A2f L382–L386。A2s L20、L24、L527 |
 | A-30 | Grauman ほか 2024, Ego-Exo4D: Understanding Skilled Human Activity from First- and Third-Person Perspectives | arXiv 2311.18259 | CVPR 2024（査読つき） | 三 | A2c 抜粋のみ。A2f 5.2 節のスニペットと公式の文書 | A2c L457–L468、A2f L198–L203。A2s L15、L579 |
 | A-31 | Zachary Chavis, Stephen J. Guy, Hyun Soo Park 2025, Improving Keystep Recognition in Ego-Video via Dexterous Focus | arXiv 2506.00827 | EgoVis workshop の論文 | 三・七 | 数値は補助の取得経由（A2c） | A2c L470–L482 |
@@ -235,19 +236,19 @@ A2s は、S5 が実在する（arXiv 2208.04933、ICLR 2023）こと、種とし
 | A-45 | GastroNet-5M（報告の呼び名。題名・著者・ID は報告に無い。Gastroenterology 2025〔A3c〕） | なし（報告に ID が無い） | Gastroenterology 2025（A3c） | 二・六 | A3c 簡略の記録。A3g 後続の査読論文の比較の記述と表 | A3c L82、A3g L34、L181–L188 |
 | A-46 | Hirsch ほか 2023, Self-supervised learning for endoscopic video analysis（EndoSSL） | arXiv 2308.12394 | MICCAI 2023（A3c、A3g） | 二 | A3c 簡略の記録。A3g は本文を未精査（後続の論文の記述による） | A3c L81、A3g L35、L189–L195 |
 | A-47 | Shu Yang, Zhiyuan Cai, Luyang Luo, Ning Ma, Shuchang Xu, Hao Chen 2024（SurgPETL。旧地図は題名を書いていない） | arXiv 2409.20083 | 旧地図に記載なし（arXiv の ID だけ） | 二 | 全文（旧地図の印） | 旧 A.1 の 8 行目（A1 L28） |
-| A-48 | AVOS（報告の呼び名。題名と著者は報告に無い。JAMA Surgery 2024） | DOI 10.1001/jamasurg.2023.6262 | JAMA Surgery 159(2):185–192 | 二 | 本文（PMC10701669。A3c） | A3c L92–L93、A3g L33 |
-| A-49 | OVFM（報告の呼び名。題名と著者は報告に無い。Nature Biomedical Engineering 2026） | DOI 10.1038/s41551-026-01622-w | Nature Biomedical Engineering 2026 | 二 | 要旨のみ | A3c L95–L96 |
-| A-50 | OmniRAS（報告の呼び名。題名と著者は報告に無い） | arXiv 2608.31048 | 報告に記載なし | 二・七 | 要旨と一部 | A3c L86–L87、L90 |
-| A-51 | ZEN（報告の呼び名。題名と著者は報告に無い） | arXiv 2602.13633 | 報告に記載なし | 二 | 一部 | A3c L88、L90 |
-| A-52 | DART（報告の呼び名。題名と著者は報告に無い） | arXiv 2609.04555 | 報告に記載なし | 二・七 | 一部 | A3c L89–L90 |
+| A-48 | Goodman, Patel, Zhang ほか 2024, Analyzing Surgical Technique in Diverse Open Surgical Videos With Multitask Machine Learning（AVOS。題名と著者は照合先〔Crossref〕の値） | DOI 10.1001/jamasurg.2023.6262 | JAMA Surgery 159(2):185–192 | 二 | 本文（PMC10701669。A3c） | A3c L92–L93、A3g L33 |
+| A-49 | Tu, Zheng, Xie ほか 2026, An ophthalmic video foundation model for surgical recognition and navigation with wet-lab porcine eye validation（OVFM。題名と著者は照合先〔Crossref〕の値） | DOI 10.1038/s41551-026-01622-w | Nature Biomedical Engineering 2026 | 二 | 要旨のみ | A3c L95–L96 |
+| A-50 | Borgioli, Getty, Xiu ほか 2026, OmniRAS: Standardizing Foundation Model Training and Evaluation in Robot-Assisted Surgery（題名と著者は照合先〔arXiv〕の値） | arXiv 2608.31048 | プレプリント（arXiv の注記: IEEE T-RO に投稿中） | 二・七 | 要旨と一部 | A3c L86–L87、L90 |
+| A-51 | Park, Jeon, Lim ほか 2026, A generalizable foundation model for intraoperative understanding across surgical procedures（ZEN。題名と著者は照合先〔arXiv〕の値） | arXiv 2602.13633 | プレプリント | 二 | 一部 | A3c L88、L90 |
+| A-52 | Han, Schmidt, Jamal, Wu, Mohareri 2026, DART: Depth-as-Target Pretraining for Surgical Vision Foundation Models（題名と著者は照合先〔arXiv〕の値） | arXiv 2609.04555 | BMVC 2026（arXiv の注記「Accepted to BMVC 2026」） | 二・七 | 一部 | A3c L89–L90 |
 | A-53 | 2022, VideoMAE: Masked Autoencoders are Data-Efficient Learners for Self-Supervised Video Pre-Training | arXiv 2203.12602 | NeurIPS 2022（査読つき） | 四 | A3g は元論文を読み直さず、EgoSurgery・SurgVISTA・SurgMotion の比較の側を確認。A3c は本文の表 | A3c L114、A3g L196–L203 |
 | A-54 | 2023, VideoMAE V2: Scaling Video Masked Autoencoders with Dual Masking | arXiv 2303.16727 | CVPR 2023（査読つき） | 四 | 報告に記載なし（比較の側の確認） | A3g L204–L210 |
-| A-55 | MME（報告の呼び名。題名と著者は報告に無い。CVPR 2023） | arXiv 2210.06096 | CVPR 2023 | 四・五 | 報告に記載なし | A3c L114、A3c L15 |
-| A-56 | DINOv3（報告の呼び名。題名と著者は報告に無い。2025） | arXiv 2508.10104 | プレプリント（A3g は原論文の構造と評価の節を確認） | 四・五 | A3g は原論文の構造と評価の節、手術への転移は SurgMotion の表で確認。A3c は引用で実在を確認 | A3c L143、A3g L211–L219 |
+| A-55 | Sun, Chen, Chen ほか 2022, Masked Motion Encoding for Self-Supervised Video Representation Learning（MME。題名と著者は照合先〔arXiv〕の値。arXiv の年は 2022、注記は CVPR 2023） | arXiv 2210.06096 | CVPR 2023 | 四・五 | 報告に記載なし | A3c L114、A3c L15 |
+| A-56 | Siméoni, Vo, Seitzer ほか 2025, DINOv3（著者は照合先〔arXiv〕の値） | arXiv 2508.10104 | プレプリント（A3g は原論文の構造と評価の節を確認） | 四・五 | A3g は原論文の構造と評価の節、手術への転移は SurgMotion の表で確認。A3c は引用で実在を確認 | A3c L143、A3g L211–L219 |
 | A-57 | 2025, V-JEPA 2: Self-Supervised Video Models Enable Understanding, Prediction and Planning | arXiv 2506.09985 | プレプリント | 四・五 | 原論文の評価と構造の節（A3g）。A3c は引用で実在を確認 | A3c L143、A3g L220–L227 |
 | A-58 | Lin ほか 2022, Egocentric Video-Language Pretraining（EgoVLP） | arXiv 2206.01670 | NeurIPS 2022（Spotlight。A3c） | 三 | 旧 A は全文。A3c 本文の記述。A3g は書誌と公式のコード・モデル（全表は未精査） | 旧 A.1 の 12 行目（A1 L52）、A3c L107、A3g L228–L235 |
 | A-59 | 2023, EgoVLPv2: Egocentric Video-Language Pre-training with Fusion in the Backbone | arXiv 2307.05463 | ICCV 2023 | 三 | モデルとコードの情報（A3g） | A3g L236–L243、A2c L29 |
-| A-60 | InternVideo-Ego4D（報告の呼び名。題名と著者は報告に無い） | arXiv 2211.09529 | 報告に記載なし | 三 | 報告に記載なし | A3c L108 |
+| A-60 | Chen, Xing, Chen ほか 2022, InternVideo-Ego4D: A Pack of Champion Solutions to Ego4D Challenges（題名と著者は照合先〔arXiv〕の値） | arXiv 2211.09529 | 技術報告（2nd International Ego4D Workshop at ECCV 2022。arXiv の注記） | 三 | 報告に記載なし | A3c L108 |
 | A-61 | Li, Nagarajan, Xiong, Grauman 2021（Ego-Exo。旧地図は題名を書いていない） | arXiv 2104.07905 | CVPR 2021 | 三 | 要旨（旧地図の印） | 旧 A.1 の 13 行目（A1 L53） |
 | A-62 | Li, Liu, Rehg 2020（EGTEA Gaze+。旧地図は題名を書いていない） | arXiv 2006.00626 | 旧地図に記載なし | 三 | 要旨（旧地図の印） | 旧 A.1 の 14 行目（A1 L54） |
 | A-63 | Damen ほか 2018（EPIC-KITCHENS。旧地図は題名を書いていない） | arXiv 1804.02748 | ECCV 2018 | 三 | 全文（旧地図の印） | 旧 A.1 の 15 行目（A1 L55） |
@@ -255,12 +256,12 @@ A2s は、S5 が実在する（arXiv 2208.04933、ICLR 2023）こと、種とし
 | A-65 | Li, Liu, Rehg 2018（In the Eye of Beholder。題名は報告の呼び方。ECCV 2018） | なし（報告に ID が無い） | ECCV 2018 | 三 | 報告に記載なし | A3c L99 |
 | A-66 | Min, Corso 2021（題名は報告に無い。WACV 2021） | なし（報告に ID が無い） | WACV 2021 | 三 | 報告に記載なし | A3c L100 |
 | A-67 | Can Gaze Inform Egocentric Action Recognition?（著者は報告に無い。ETRA 2022） | なし（報告に ID が無い） | ETRA 2022 | 三・七 | 要旨のみ | A3c L101 |
-| A-68 | Human Gaze Guided Attention for Surgical Activity Recognition（著者と年は報告に無い） | arXiv 2203.04752 | 報告に記載なし | 二・三 | 報告に記載なし | A3c L102 |
-| A-69 | G3Ego（報告の呼び名。題名と著者は報告に無い） | arXiv 2608.20157 | 報告に記載なし | 三 | 報告に記載なし | A3c L103 |
-| A-70 | Roth ほか（題名は報告に無い。EVA-02 を内視鏡画像で継続事前学習） | arXiv 2410.21302 | 報告に記載なし | 二・五・六 | 報告に記載なし | A3c L117 |
-| A-71 | 鳥類の音響の MAE（報告の呼び名。題名と著者は報告に無い） | arXiv 2605.14031 | 報告に記載なし | 五・七 | 報告に記載なし | A3c L118 |
-| A-72 | Dive into the details of SSL（報告の呼び名。題名と著者は報告に無い。Medical Image Analysis 2023） | arXiv 2209.12157 | Medical Image Analysis 2023 | 六・七 | 報告に記載なし | A3c L119 |
-| A-73 | Toward Clinically Ready FMs（報告の呼び名。題名と著者は報告に無い） | arXiv 2603.14271 | 報告に記載なし | 六 | 報告に記載なし | A3c L120 |
+| A-68 | Awale, Sarikaya 2022, Human Gaze Guided Attention for Surgical Activity Recognition（著者と年は照合先〔arXiv〕の値） | arXiv 2203.04752 | プレプリント | 二・三 | 報告に記載なし | A3c L102 |
+| A-69 | Haralović, Ramakrishnan, Talavera Martinez 2026, G3Ego: Gaze-Guided Graphs for Egocentric Action Understanding（題名と著者は照合先〔arXiv〕の値） | arXiv 2608.20157 | CONTEXTUS Workshop at ECCV 2026（arXiv の注記） | 三 | 報告に記載なし | A3c L103 |
+| A-70 | Roth, Nowak, Krenzer, Puppe 2024, Domain-Adaptive Pre-training of Self-Supervised Foundation Models for Medical Image Classification in Gastrointestinal Endoscopy（題名・著者・年は照合先〔arXiv〕の値） | arXiv 2410.21302 | プレプリント | 二・五・六 | 報告に記載なし | A3c L117 |
+| A-71 | Liu, Chasmai, Maji, Van Horn 2026, Masked Autoencoders with Limited Data: Does It Work? A Fine-Grained Bioacoustics Case Study（報告の呼び名は「鳥類の音響の MAE」。題名と著者は照合先〔arXiv〕の値） | arXiv 2605.14031 | FGVC Workshop at CVPR 2026（arXiv の注記） | 五・七 | 報告に記載なし | A3c L118 |
+| A-72 | Zhang, Gu 2022, Dive into Self-Supervised Learning for Medical Image Analysis: Data, Models and Tasks（題名と著者は照合先〔arXiv〕の値。arXiv の年は 2022。報告は Medical Image Analysis 2023） | arXiv 2209.12157 | Medical Image Analysis 2023 | 六・七 | 報告に記載なし | A3c L119 |
+| A-73 | Phuntsho, Abdullah, Lee, Lee, Ahn 2026, Toward Clinically Ready Foundation Models in Medical Image Analysis: Adaptation Mechanisms and Deployment Trade-offs（題名と著者は照合先〔arXiv〕の値） | arXiv 2603.14271 | プレプリント | 六 | 報告に記載なし | A3c L120 |
 | A-74 | Funke, Rivoir, Speidel 2023, Metrics Matter in Surgical Phase Recognition | arXiv 2305.13961 | 技術報告（プレプリント） | 二・六・七 | A2c 本文（サブエージェントによる全文の読解）。A2f 5 節のスニペット。A2g arXiv HTML の本文 | A2c L353–L381、A2f L370–L374、A2g L368–L395、A3c L113。A2s L20、L24、L527 |
 | A-75 | Rivoir, Funke, Speidel 2024, On the Pitfalls of Batch Normalization for End-to-End Video Learning: A Study on Surgical Workflow Analysis | arXiv 2203.07976、DOI 10.1016/j.media.2024.103126 | Medical Image Analysis 94:103126（査読つき） | 二（A2f）・六（A2c） | A2c 要旨のみ。A2f 要旨は自分で確認、表の数値は arXiv v5 の本文と付録を読んだサブエージェントの報告による | A2c L383–L393、A2f L144–L167。A2s L12、L561、L692 |
 | A-76 | Özkurt, Bajraktari, Pott 2026, Systematic analysis of evaluation metrics for deep learning-based surgical phase recognition in laparoscopic cholecystectomy | なし（PMID 42488379、PMC13388889。DOI は報告に無い） | Frontiers in Artificial Intelligence 9:1873219（査読つき） | 六 | 要旨と抜粋のみ | A2c L484–L496 |
@@ -292,11 +293,11 @@ A2s は、S5 が実在する（arXiv 2208.04933、ICLR 2023）こと、種とし
 | A-102 | De Brouwer, Simm, Arany, Moreau 2019, GRU-ODE-Bayes: Continuous Modeling of Sporadically-Observed Time Series | arXiv 1905.12374 | NeurIPS 2019（査読つき） | 五 | 要旨 | A2s L225–L241、L17、L28 |
 | A-103 | Kidger, Morrill, Foster, Lyons 2020, Neural Controlled Differential Equations for Irregular Time Series | arXiv 2005.08926 | NeurIPS 2020（査読つき） | 五 | 要旨。online の予測への派生論文（Neural CDEs for Online Prediction Tasks、arXiv 2106.11028。年は報告に無い）も確認（A2s） | A2s L243–L260、L17、L28、L554 |
 | A-104 | Zhang ほか 2022, Raindrop: A Graph-Guided Network for Irregularly Sampled Multivariate Time Series | arXiv 2110.05357 | ICLR 2022（査読つき） | 五 | 要旨 | A2s L264–L282、L18、L28 |
-| A-105 | ContiFormer: Continuous-Time Transformer for Irregular Time Series Modeling（著者と年は報告が確定できず。報告は 2023〜24、NeurIPS 系と書く） | arXiv 2402.10635 | NeurIPS 系（報告の記載） | 五 | 要旨 | A2s L284–L298、L18、L28 |
+| A-105 | Chen, Ren, Wang, Fang, Sun, Li 2024, ContiFormer: Continuous-Time Transformer for Irregular Time Series Modeling（著者と年は照合先〔arXiv〕の値。報告は著者を確定できず、2023〜24 と書いていた） | arXiv 2402.10635 | NeurIPS 2023（arXiv の注記「Neurips 2023 Poster」） | 五 | 要旨 | A2s L284–L298、L18、L28 |
 | A-106 | Smith, Warrington, Linderman 2023, Simplified State Space Layers for Sequence Modeling（S5） | arXiv 2208.04933 | ICLR 2023（査読つき） | 五（否定的な側面は TIDES〔A-107〕の解析として報告が書く） | 要旨、実装の appendix、後続の TIDES による機構の比較 | A2s L302–L322、L19、L26、L28、L519、L553 |
 | A-107 | Soydan, Bessa, Mohr, Barreira 2026, TIDES: Implicit Time-Awareness in Selective State Space Models | arXiv 2605.09742 | プレプリント | 五・七 | 本文 | A2s L324–L348、L19、L26、L519、L553、L583 |
 | A-108 | Jung, Kim, Park 2026, MASCIT: A Mask-Aware State Space Classifier for Naturally Irregular Time Series | arXiv 2609.34409 | プレプリント | 五・七 | 本文 | A2s L350–L374、L18、L19、L521、L552、L583 |
-| A-109 | Chen, Wen, Shi, Lin, Rajbahadur, Jiang 2022, Towards Training Reproducible Deep Learning Models | arXiv 2202.02326、DOI 10.1145/3510003.3510163 | ICSE 2022（査読つき） | 五・六・七 | 本文 | A2s L378–L404、L21、L22、L28、L559、L623、L708 |
+| A-109 | Chen, Wen, Shi ほか 2022, Towards Training Reproducible Deep Learning Models（著者は Chen, Wen, Shi, Lin, Rajbahadur, Jiang の 6 名〔Crossref は 6 名で一致〕。arXiv の API は Jiang の名を二つの要素に分けて返すため「ほか」の形で書いた） | arXiv 2202.02326、DOI 10.1145/3510003.3510163 | ICSE 2022（査読つき） | 五・六・七 | 本文 | A2s L378–L404、L21、L22、L28、L559、L623、L708 |
 | A-110 | Coakley, Kirkpatrick, Gundersen 2022, Examining the Effect of Implementation Factors on Deep Learning Reproducibility | DOI 10.1109/eScience55777.2022.00056、arXiv 2312.06633 | IEEE eScience 2022（arXiv 掲載は 2023） | 五・六 | 本文 2 ページ | A2s L406–L423、L21、L596、L599、L682 |
 | A-111 | Shahriari, Ramler, Fischer 2022, How Do Deep-Learning Framework Versions Affect the Reproducibility of Neural Network Models? | DOI 10.3390/make4040045 | Machine Learning and Knowledge Extraction 4(4), 888–911（査読つき） | 五・六 | 要旨・本文の冒頭 | A2s L425–L439、L687、L720 |
 | A-112 | Pham, Kim, Tan, Yu, Nagappan 2021, DEVIATE: A Deep Learning Variance Testing Framework | DOI 10.1109/ASE51524.2021.9678540 | ASE 2021（査読つき） | 五・六 | 要旨・書誌 | A2s L441–L453、L21、L28、L596、L682 |

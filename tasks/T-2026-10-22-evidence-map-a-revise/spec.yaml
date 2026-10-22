@@ -1,0 +1,65 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-22-evidence-map-a-revise"
+  kind: impl
+  title: "証拠地図 A の書誌を 2026-10-22 の照合結果で改めた版（v2.1）に置き換え、様式の検査と照合をやり直す"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-22T04:10:00Z"
+  created_from:
+    runindex_commit: "63ae65da8c7d32df591f5e2ee4358286b72c726b"
+    counts: {index: 0, experiments: 0, verdicts: 0}
+  depends_on: ["T-2026-10-22-evidence-map-a-place"]
+  amendments: []
+intent:
+  question: "書誌の欄を照合結果で改めた地図 A v2.1 が、様式の検査を通り、照合し直して起票者の事前の予測どおりの分類になるか"
+  decision_at_stake: "地図 A を工程塔の追加候補のカードの生成会話へ渡してよいか（照合結果で直してから渡す。docs/evidence/README）"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "not-referenced"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["tools/verify_evidence_ids.py", "tools/check_evidence_map.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "2d946b07a57abebc4a8f66150d6dbaf2ccd22186"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "起点の確認（分岐、置き換える前の地図と変えないファイルの要約値、受け渡しの一件の要約値、照合先への到達）", gpu: false, est: "15m"}
+    - {id: B, name: "地図を v2.1 に置き換え、要約値と変更範囲を確かめる", gpu: false, est: "10m"}
+    - {id: C, name: "様式の検査と照合をやり直し、抽出の集合と分類を予測と並べる", gpu: false, est: "40m"}
+    - {id: D, name: "検証と報告と PR", gpu: false, est: "30m"}
+  gates:
+    - {id: G1, after: A, check: "置き換える前の地図と変えないファイルの要約値が SPEC の表と一致し、受け渡しの一件の要約値が SPEC の値と一致し、照合先へ到達できる", on_fail: stop}
+    - {id: G2, after: B, check: "置き換えた地図の要約値が SPEC の値と一致し、変更が SPEC の変更範囲だけ", on_fail: stop}
+    - {id: G3, after: C, check: "様式の検査で違反 0、抽出した ID の集合が v2 と同じ（phase0 の expected-ids.txt と一致）", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md, result.yaml, audit.md]
+  destination: "docs/evidence/"
+  acceptance:
+    - "a: 置き換える前の地図の要約値が SPEC の v2 の値と一致し、置き換えた後は v2.1 の値と一致する"
+    - "b: 変更は地図 A、docs/evidence/verification/ の地図 A の二件、tasks/T-2026-10-22-evidence-map-a-revise/、tasks/inbox.d/T-2026-10-22-evidence-map-a-revise.md だけ。変えないファイルの要約値は前後で同じ"
+    - "c: 様式の検査が地図 A v2.1 と既存の地図で違反 0"
+    - "d: 地図 A の照合結果が docs/evidence/verification/ にあり、分類の和が 126、抽出した ID の集合が expected-ids.txt と集合の差で一致する"
+    - "e: 分類の件数を SPEC の予測と並べ、予測と違った ID と、SPEC が名指しした ID を一件ずつ記録する"
+    - "f: PR が Draft でなく存在し、base は phase0、分岐は feat/ で始まり、forbidden-check の違反が零"
+  report_to: []
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "置き換える前の地図か変えないファイルの要約値が SPEC の表と違う場合（起点が想定と違う）"
+    - "受け渡しの一件が置き場に無い場合、または要約値が SPEC の値と違う場合"
+    - "照合先のどれにも到達できない場合"
+    - "様式の検査で違反が出た場合、抽出した ID の集合が expected-ids.txt と違う場合（地図も照合器も直さず、記録して利用者に判断を求める）"
+    - "照合器または様式の検査の誤りが疑われる場合（道具を直さず、記録して利用者に判断を求める）"
+    - "作業ツリーを別の契約が使っている形跡がある場合（抑止の目印が別の契約の所有、他の分岐の未統合の変更）"
