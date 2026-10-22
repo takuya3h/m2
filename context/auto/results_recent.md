@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 135 件）。
-ここに出ない 130 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 136 件）。
+ここに出ない 131 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-10-22-proposal-card-tower-reselect-search
 
@@ -38,6 +38,37 @@
 ### 断定できなかったこと
 
 - 既存の 6 件の試験の失敗（test_engines 1、test_fetch_task 1、test_research_logger 4）の原因は調べていない
+
+## T-2026-10-22-evidence-map-a-place
+
+状態 `pass` / ホスト `Bengio` / 起票 `254` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 起点39dd92d6、保護対象7/7一致、指定名の受け渡し9/9のSHA-256とバイト数一致、照合先4系統がHTTP 200。
+- `G2` pass — 配置後9/9一致。旧地図Aは指定の挿入のみで追加2行・削除0行。経路集合の許可範囲外0件。
+- `G3` pass — A v2/B/C/Nの4地図で各違反0。抽出126 ID（arXiv96/DOI30）と指定一覧の集合差は両方向0、照合結果も同集合で分類合計126。
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — SPECの罠5は、起点39dd92d6の検査器で報告のSHA-256を一か所壊したコピーが違反1件でも終了コード0になると断定した。しかし同一起点の実物をrepo外のコピーで測ると、違反1件・終了コード1であり断定と食い違った。指示どおり違反件数を読んだため判定は成立したが、現在の終了コードの挙動について契約の断定を根拠にはできなかった。
+
+### 逸脱
+
+- `judgement` — 利用者の明示許可に基づき、受け渡しの不足4件を照合済みアーカイブから指定名でコピーして直下に配置した。元ファイル・別名ファイルは保持し、以後の契約内の通常操作は追加承認なしで進めた。
+- `spec_defect` — SPEC罠5の終了コード0という断定と異なり、陽性対照の違反1件で検査器は終了コード1だった。件数で判定する指示は守り、地図も道具も変更していない。
+- `environment` — agentmemoryの検索・保存ツールは提供されず読み書き未実施。repoのtasks/lessons.mdを確認し、判断を本契約のauditとtasks/inbox.dへ記録した。
+- `judgement` — 解決された規約の原文を省略しない要件を優先し、RESULT.mdは100行の目安を超えた。コード変更が無いためSPECに従いmake testは実行していない。
+
+### 申し送り
+
+- 起票者は予測外のA-04のarXiv 2503.18755・DOI 10.1049/htl2.70049とA-109のarXiv 2202.02326を含む書誌差5件の扱いを、返値を見て判断する。本契約では地図・報告の本文を変更していない。
+- SPEC罠5の終了コード0という断定は陽性対照で再現しなかった。現在の検査器では違反1件で終了コード1だった。
+
+### 断定できなかったこと
+
+- APIの返した書誌情報と原典の正誤は別であり、特にA-109の著者要素の分割の原因は本契約では判断していない。
+- agentmemoryはツール未提供のため読み書き未実施。
 
 ## T-2026-10-21-ptower-multigpu-syncbn
 
@@ -151,47 +182,4 @@
 ### 断定できなかったこと
 
 - K3 の GRU の最終状態から術式を当てる精度: 動画ごとの術式の対応が repo に無い
-
-## T-2026-10-19-stage2-pilot-fix-epoch4-shuffle
-
-状態 `pass` / ホスト `andrew（P3 の予測-CF・正解予測-CF だけ bengio）` / 起票 `240` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 分岐 feat/stage2-pilot-fix-epoch4-shuffle、起点 origin/phase0 = 5a8baa79、phase0 に scripts/stage2pilot/ 28 ファイル、本契約以外の compute プロセス 0 件、空き 1,681,381,457,920 B、試験の失敗の名前 6 件
-- `G2` pass — 前回の信号 21 本と記録の sha256 がすべて一致。andrew で工程 Jaccard 0.7762186（差 0.0）、検出 mAP 0.7273450（差 0.0）を再現。許容差 0.005
-- `G3` pass — 固定の長さが最後の epoch の状態を結果にし、既定の aggregate.py が前回の report.json を同値で再現（comparisons の並びだけが違う）、入れ替えた信号は値の集合を保ち対応だけを壊し（train 100%、val 99.87%）、入れ替えの腕の学習前の出力が塔単独と差 0.0（PD 4 構成・DP 5 型）、test の動画との共通 0 件
-
-### 起票者の誤り
-
-- `asymmetric_comparison` — SPEC §1 の「P1-W1 の正解の標的群 AP の差は最後の回で +0.0087」は、正解の epoch 3 と空の epoch 2（空は前回 epoch 2 で止まった）の差だった。同じ epoch どうしでは epoch 2 で +0.0195、今回の 4 epoch 目どうしで +0.0197。指示どおりに読むと、選び方の偏り（欠陥 A）を長さの違いの分だけ大きく見積もる
-- `check_does_not_check` — 完了判定 f（入れ替えの腕の学習前の出力が塔単独と一致）は、零初期化の界面ではどんな信号を入れても成り立つ。指示どおりに確かめても、入れ替えが正しく行われたかは何も分からない（入れ替えそのものは e と i が確かめる）
-- `asserted_without_measuring` — SPEC §3 は split 全体で入れ替えれば動画単位の情報を残さないとしたが、val は動画 2 本のため入れ替えた後も 55.6% のフレームが同じ動画の信号を受け取る（train は 11.5%）。指示どおりに作ると、val の入れ替えの腕には動画単位の情報が半分以上残る
-- `asserted_without_measuring` — meta.created_from.runindex_commit と contract.conventions_rev に、Task A-6 の読み（その経路の最新の commit）と違う値（起票時の phase0 の先頭）が書かれていた。内容は同一だが、指示どおりに Task A-6 を実測すると食い違いとなり、差し替えと amendments の記録が要った
-
-### 逸脱
-
-- `judgement` — Task A-6: conventions_rev と runindex_commit を前回と同じ読み（git log -1 -- <経路>）で実測し、起票時の値と違ったため差し替えた（内容は同一。amendments 1 件目）
-- `judgement` — 利用者の承認で、P3 の予測-CF と正解予測-CF を別ホスト bengio で回した（amendments 2・3 件目）。P3 の空・予測-noCF・正解・入れ替えと他のすべての run は andrew。P3 のこの 2 本の Δ空・Δ入替にはホストの差が混ざる
-- `environment` — bengio の .venv-relation-detr は python のリンク先（pyenv 3.11.4）が無く、third_party/Relation-DETR のソースが andrew と 23 件違った。andrew の中身を別の場所（重ねの BODY）に置いて参照させ、仮想環境を uv の CPython 3.11.16 に向け直した（andrew の仮想環境と同じ）。入力の要約値で一致を確かめた
-- `judgement` — 速さの試しとして GPU 1 枚に 3 本目を 1 回だけ足した（GPU 0 で P1-W2 入れ替え、GPU 1 で P3 予測-noCF）。合計の速さの伸びは 3% と 0 で、それ以上は足さなかった
-- `judgement` — 実行者の誤り: PD の試走の後処理が、val 20 枚で群の AP が None になる場合を書式で落とした。直して後処理だけ回し直した
-- `judgement` — 実行者の誤り: andrew で P3 の 4 本を起こしかけた命令が途切れ、正解と予測-CF の 2 本が学習の前で止まった（プロセスは残らなかった）。フォルダを本契約の置き場（FIX/aborted_runs）へ移し、後で同じ名前で回し直した
-- `environment` — bengio の S1 で GPU 2 枚に本件以外のプロセス（/tmp/gpu_dummy_load.py）が居り、利用者の指示で bengio の実行者が止めた（audit_bengio.md）
-- `judgement` — 実行者の誤り: bengio の分岐の統合の 1 回目が index の書き込みの競合（状態行の処理）で途中の状態になった。merge --abort で戻し、ロックが空くのを待ってやり直した。データの損失なし
-- `judgement` — test_audit_fix.py は別ホストの run の注釈の経路（bengio の重ねの BODY）を開けないため、bengio の入力の照合の記録の sha256 が andrew の同じ名前の注釈と一致するときだけ andrew の写しで数える形にした
-- `judgement` — 道具: train_t1b.py に --fixed-epochs、dp_train.py に --fixed-epochs・--task-id・--exp-prefix・--smoke・腕 shuffle・identity --arm、run_pd_fix.sh に置き場の切り替え（S2FIX_BODY、S2FIX_CODE）を足した。既定の経路は変えず、試験で固定した
-
-### 申し送り
-
-- 新しい界面の型の候補を回す次の契約は、固定の長さ（--fixed-epochs）と入れ替えの腕（shuffle_signals.py、腕 shuffle）をそのまま使える
-- 入れ替えの腕は val が 2 動画のため半分以上が同じ動画の信号を受け取る。動画単位の情報を壊したいなら、折りを増やすか動画をまたぐ入れ替えに限る設計を決める
-- 前回の aggregate.py の comparisons の並びが実行ごとに変わる（set の反復順）。並びを固定するかを決める
-- bengio の .venv-relation-detr（向け直した）と third_party/Relation-DETR（andrew と 23 件違う）、重ねの BODY と worktree を残すか戻すかを決める
-
-### 断定できなかったこと
-
-- 回し直さない PD の 8 本の動画ごとの 4 epoch 目の値（epoch 3 の予測と重みが残っていない）。P2L は空の腕の動画ごとが無いため全腕の動画ごとの Δ空
-- andrew で GPU 1 枚に PD を 1 本だけ載せたときの速さ（測っていない）
-- 計算し直しの検査（完了判定 j）が作り物の食い違いを検出するか（陽性対照を入れていない）
 
