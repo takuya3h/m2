@@ -40,6 +40,7 @@ status: pass。G1・G2・G3 はすべて pass。地図 A v2.1 は様式の検査
 - environment: arXiv の一時的な不調で 1 回目の照合が到達不能 50 になった。地図と照合器を変えず、同じ命令をもう一度だけ流した。1 回目の結果は repo の外に退避し、記録は audit に残した。
 - environment: 開始の時点で受け渡しの置き場が無かった。利用者に伝えて待ち、置かれてから要約値を照合した。
 - judgement: プロジェクトの CLAUDE.md は、コード変更の後に README.md を更新することを求めている。本契約はコードを変えておらず、変更範囲（完了判定 b）の外になるため README.md は変えていない。
+- judgement: 規約の原文を省略しないため、本報告は目安の 100 行を超える。
 - GPU・学習・make test は回していない（SPEC の罠 7）。L3 は 6 PASS / 0 WARN / 8 SKIP / 0 FAIL。SKIP は P2・P3・P4・P5・P11・P12・P13・P14（L12）。
 
 ## 想定外・UNKNOWN

@@ -173,3 +173,7 @@ G3: pass（違反 0、集合の差 0）。
 ### 追加の陽性対照（書誌の差の判定）
 
 repo の外（scratchpad）に、v2.1 の §2 の表の見出し 2 行と A-01 の 1 行だけを写した。題名を `Completely Different Title About Kitchen Robots` に変え、arXiv の ID を外して DOI 10.1007/978-3-031-72089-5_18 だけを残した。`verify_evidence_ids.py --out-dir <scratchpad>` で照合した結果は `実在・書誌一致 0 / 実在・書誌に差 1 / … （計 1）`、exit 0。題名は「差: 題名が一致しない」、著者は「一致: 全 4 名」、問い合わせは 3 回。repo の作業ツリーは変わっていない。
+
+### 台帳への送り返し
+
+`source scripts/load_env.sh && make task-report TASK=T-2026-10-22-evidence-map-a-revise`（commit 77a93b26 の push 後）の応答: `{"task_id": "T-2026-10-22-evidence-map-a-revise", "verdict": "pass", "n_issuer_defects": 1, "report_sha256": "f553ba99086f923c2a3674548d1f9afd5ae3451d73c6f2dccfa6608b695dab41", "report_bytes": 7883, "replaced_blocks": 0}`。秘匿の検査で止まっていない。

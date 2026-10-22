@@ -26,6 +26,8 @@ deviations:
   note: 開始の時点で受け渡しの置き場が無かった。利用者に伝えて待ち、置かれてから要約値を照合した。
 - type: judgement
   note: CLAUDE.md の README.md 更新の要求は、コードを変えておらず変更範囲（完了判定 b）の外になるため適用しなかった。SPEC の罠 7 に従い make test は回していない。
+- type: judgement
+  note: 規約の原文を省略せずに写す要件を優先したため、RESULT.md は目安の 100 行を超えた（109 行）。前の契約と同じ扱いである。
 issuer_defects:
 - type: check_does_not_check
   note: 完了判定 d とゲート G3 は分類の和 126 と ID 集合の一致だけを見ていて、到達不能を数えていない。到達不能 50 で exit 3 だった 1 回目の照合でもこの二つは通っており、50 ID については予測との比較（完了判定 e）が成り立たないまま合格になりえた。
