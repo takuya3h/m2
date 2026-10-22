@@ -138,6 +138,10 @@ commit 前の `git status --porcelain --untracked-files=all`（11 件、すべ�
     commit 165cd94c（主作業）→ git push -u origin feat/ptower-cand5-compute-probe（新しい分岐）
     $ gh pr view feat/ptower-cand5-compute-probe --json number,baseRefName,headRefName,isDraft,state
     {"baseRefName":"phase0","headRefName":"feat/ptower-cand5-compute-probe","isDraft":false,"number":259,"state":"OPEN"}
+    commit fbb7a46f（PR 番号の記帳）→ push
+    $ source scripts/load_env.sh && make task-report TASK=T-2026-10-23-ptower-cand5-compute-probe   → exit 0
+    {"task_id": "T-2026-10-23-ptower-cand5-compute-probe", "verdict": "pass", "n_issuer_defects": 3,
+     "report_sha256": "37faa4a74e9928648df31d59c6deeb510e8824282c447b6a600eb725fe51ab93", "report_bytes": 8428, "replaced_blocks": 0}
 
 ## 解決された参照（手順書 3。原文、conventions_rev ceb7ef0f と blob 一致）
 
