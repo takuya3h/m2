@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 136 件）。
-ここに出ない 131 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 137 件）。
+ここに出ない 132 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-10-22-proposal-card-tower-reselect-search
 
@@ -38,6 +38,38 @@
 ### 断定できなかったこと
 
 - 既存の 6 件の試験の失敗（test_engines 1、test_fetch_task 1、test_research_logger 4）の原因は調べていない
+
+## T-2026-10-22-evidence-map-a-revise
+
+状態 `pass` / ホスト `Bengio` / 起票 `256` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 起点 112b09bd。SPEC の表の 10 件の sha256 が 10/10 一致。受け渡しの一件は 265380 バイト・sha256 941f4c8d が一致し、置き場は repo の外。照合先 4 系統は HTTP 200。
+- `G2` pass — 置き換え後の sha256 は 941f4c8d。差は 24 行追加・23 行削除で、版・状態の 2 行、§0.2 の 1 行の追加、§2 の 21 行（SPEC の 21 ID と一致し、変わった列は文献・掲載先だけ）。
+- `G3` pass — 4 地図が「検査」として現れ、各違反 0・exit 0。抽出 126 ID（arXiv 96・DOI 30）と expected-ids.txt の集合の差は両方向 0。
+
+### 起票者の誤り
+
+- `check_does_not_check` — 完了判定 d とゲート G3 は分類の和 126 と ID 集合の一致だけを見ていて、到達不能を数えていない。到達不能 50 で exit 3 だった 1 回目の照合でもこの二つは通っており、50 ID については予測との比較（完了判定 e）が成り立たないまま合格になりえた。
+
+### 逸脱
+
+- `environment` — 1 回目の照合で arXiv の一つの束（50 ID）がタイムアウト・429・タイムアウトとなり、到達不能 50・exit 3 だった。地図と照合器を変えず、約 10 分あけて同じ命令を一回だけ流し直した。2 回目は到達不能 0・exit 0。報告の値は 2 回目。
+- `environment` — 開始の時点で受け渡しの置き場が無かった。利用者に伝えて待ち、置かれてから要約値を照合した。
+- `judgement` — CLAUDE.md の README.md 更新の要求は、コードを変えておらず変更範囲（完了判定 b）の外になるため適用しなかった。SPEC の罠 7 に従い make test は回していない。
+- `judgement` — 規約の原文を省略せずに写す要件を優先したため、RESULT.md は目安の 100 行を超えた（109 行）。前の契約と同じ扱いである。
+
+### 申し送り
+
+- 地図 A v2.1 は 126 ID がすべて実在し、書誌一致 123・照合不能 3（地図に書誌の行が無い arXiv 2505.12890・2106.11028・2112.07219）。工程塔の追加候補のカードの生成会話へ渡すかどうかは、起票者が判断する。
+- 照合器は読み取りのタイムアウトを接続の失敗として扱い、引き直しは 1 回だけ（CONNECT_RETRY_WAITS）。arXiv が 429 とタイムアウトを交互に返すと、束全体（最大 50 ID）が到達不能になる。照合器は変えていない。直すかどうかは利用者が判断する。
+- 完了判定とゲートに「到達不能 0」を入れるかどうかを、次の契約の起票で検討する。
+
+### 断定できなかったこと
+
+- API の返値と原典の表記の正誤は判断していない。
+- 1 回目の arXiv のタイムアウトの原因は分からない。
 
 ## T-2026-10-22-evidence-map-a-place
 
@@ -141,45 +173,4 @@
 ### 断定できなかったこと
 
 - dlsta・bengio など他の台での分類の所要時間と git の版（--pathspec-from-file は git 2.26 以上を要する。andrew は 2.43.0）
-
-## T-2026-10-19-stage2-pilot-four-new-types
-
-状態 `pass` / ホスト `bengio（decoder-xattn の 6 本は andrew）` / 起票 `243` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 分岐 feat/stage2-pilot-four-new-types、起点は直しの分岐の先頭 a7a5aa67（利用者の承認による逸脱）で直しの道具が在り phase0 には無い、bengio の本契約以外の compute プロセス 0 件、空き 879,879,020,544 B、試験の失敗の名前 9 件
-- `G2` pass — 本契約が読む 18 本の sha256 が直しの契約の記録と一致、bengio で工程 Jaccard 0.7762186・検出 mAP 0.7273450 を差 0.0 で再現（andrew の検出塔も一致）、B-3 は既定の集計の道具が直しの契約の report.json を 5c89f5d2 とバイト単位で同じに再現
-- `G3` pass — 五つの界面の全 30 腕で学習前の出力が塔単独と差 0、陽性対照で変わる、extra-queries の元の query の出力は界面の重みを乱数にしても差 0 で mask を外すと変わる、学習前の上位 300 は 1,515 枚すべてで塔単独と同じ、既存の型の照合が直しの契約の記録と全項目一致、test の動画との共通 0 件
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — SPEC §4 は空の腕を x(t) がすべて 0 の分母とした。tool-history は GRU が一定の入力からも動画の先頭からの経過を内に持てるため、ゲートなし版の空の腕は塔単独より Jaccard が 0.082 下がった。指示どおりに読むと Δ空 は情報の無い分母との差ではなく、経過の情報を持つ空の腕との差になる
-- `asserted_without_measuring` — SPEC §3.2 はスコアの定数の初期値 −10 を学習前に上位 300 へ入らないためとしたが、4 epoch・学習率 5e-4・train の見落とし 73 個で上がるかを見積もっていない。定数は −9.44〜−9.50 までしか上がらず、指示どおりに回すと extra-queries の 6 腕すべてが塔単独と同値になった
-- `check_does_not_check` — Task C-7 は 1 epoch の短い試走で 1 本の所要時間を測るとしたが、試走の経路（train_t1b.py --smoke）は 6 歩・val 20 枚で、1 本の所要は測れない。指示どおりに回しても所要は分からず、本番の壁時計で測った
-
-### 逸脱
-
-- `judgement` — 利用者の承認（2026-10-20 01 時台 JST）で、直しの契約の終了を待たずに /task を使わず bengio の worktree から始めた。make task-start と task-release は使わず、抑止の目印は置いていない（amendments 1 件目）
-- `judgement` — 起点を origin/phase0 ではなく直しの分岐の先頭 a7a5aa67 にした。PR #240 の統合の後に origin/phase0 を merge した（衝突なし。amendments 2・8 件目）
-- `judgement` — 主のホストを bengio にし、decoder-xattn の 6 本だけを andrew で回した（利用者の決定 01:44 JST。amendments 3・8 件目）。一つの型の 6 本は一つのホスト。decoder-xattn と extra-queries の比較はホストをまたぐので参考の表にだけ置いた
-- `environment` — 入力は andrew から bengio の同じ絶対経路へ写した（32 本、既存の 8 本は上書きせず、44 本の sha256 を照合）。前回と直しの契約の版管理外の保存先（bengio の写し）にファイルを足したことは SPEC §7-2 の字面に当たるが利用者の指示による（amendments 4 件目）
-- `environment` — bengio は直しの契約の重ねの BODY と直した .venv-relation-detr で回した。Relation-DETR のソース 142 本とパッケージ 72 個（本体の .venv は 108 個）が今の andrew と一致することを確かめた
-- `judgement` — Task A-6: conventions_rev（5c0eaeeb）は起点の祖先でなかった（起点の版は b12eda6c）。注入する 7 節は folds の追加動画の記述以外同一。起票者が 5c0eaeeb に対して書いたため差し替えず原文を 5c0eaeeb から読み、phase0 の merge の後に測り直して一致した。runindex_commit は前回と同じ読みで 63ae65da に差し替えた（amendments 6 件目）
-- `judgement` — Task B-3 は直しの契約の完了の後に行った（相手は 5c89f5d2。amendments 5・7 件目）。版管理外の前回の run の記録が worktree に無いため、作業用の場所に git archive と bengio の main の同期の写しを重ねて回した
-- `judgement` — 数値精度は規約の precision 節（TF32）ではなく前回の経路のまま（工程から検出は bf16 の自動混合精度、評価は単精度）。SPEC §2 の指示どおり
-- `judgement` — 型の定義の読み: decoder-xattn は token を key・value にそのまま使い、部分層を decoder を通るすべての query に当てた。extra-queries は元の経路を D* のまま回し追加の query だけを別に回す形で mask を実装した（元の出力が構成で塔単独と同じ）。tool-history の GRU の入力は 64 次元。界面の初期化は固定の種で大域の乱数から切り離した
-- `judgement` — 実行者の誤り: 相対経路の --out で回した評価 3 本の json が import 時の作業場所の移動で重ねの BODY の third_party/Relation-DETR/experiments/ の下に書かれた。worktree へ移し、作った空のフォルダを除いた。Relation-DETR のソースの一覧は不変
-- `judgement` — 実行者の誤り: 引き渡しで bengio の decoder-xattn の試走の置き場を分岐に commit していたため、andrew の試走が名前の衝突で止まり、andrew の実行者が利用者の承認を得て同じ commit の写しの場所で回した
-- `judgement` — 1 枚に載せる本数を利用者の決定で 3 本までにした（bengio の extra-queries は 1 枚 3 本で 2.6 it/s、2 本で 3.4〜3.8 it/s）
-
-### 申し送り
-
-- extra-queries は 4 epoch では追加の出力が上位 300 に出なかった。カードの意図（見落としにだけ当たる query）を測るには、スコアの定数の学習率・初期値・長さを変える必要がある（本契約では変えていない）
-- tool-history（カードどおり）のゲートは 4 epoch で tanh(α) 0.012 までしか開かなかった（起票者の見積もり 0.02 と同じ程度）。ゲートなし版は空の腕が経過の情報を持つので、空の腕を分母にした比較の読み方を決めておく必要がある
-- worktree の追跡外の記号リンク .venv と data/processed/phase_manifest、bengio の前回・直しの契約の保存先に足した 32 本は残してある（戻すかどうかは利用者が決める）
-
-### 断定できなかったこと
-
-- K3 の GRU の最終状態から術式を当てる精度: 動画ごとの術式の対応が repo に無い
 
