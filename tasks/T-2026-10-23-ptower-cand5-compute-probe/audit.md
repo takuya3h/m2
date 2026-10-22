@@ -135,6 +135,10 @@ commit 前の `git status --porcelain --untracked-files=all`（11 件、すべ�
 
 ## commit と送出
 
+    commit 165cd94c（主作業）→ git push -u origin feat/ptower-cand5-compute-probe（新しい分岐）
+    $ gh pr view feat/ptower-cand5-compute-probe --json number,baseRefName,headRefName,isDraft,state
+    {"baseRefName":"phase0","headRefName":"feat/ptower-cand5-compute-probe","isDraft":false,"number":259,"state":"OPEN"}
+
 ## 解決された参照（手順書 3。原文、conventions_rev ceb7ef0f と blob 一致）
 
 `git rev-parse HEAD:context/conventions.md` = `git hash-object context/conventions.md` = ceb7ef0f88a3f30279930be96ab9a5722acc2f09。下は各アンカーの節の原文をそのまま写したもの。

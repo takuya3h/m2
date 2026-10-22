@@ -16,7 +16,9 @@ ViT 18 行、MoCo v2 の batch 256、映像 MAE の batch 256 がすべて収ま
 | d | MoCo v2 は batch 256 で 23.54 GiB・0.858 s。映像 MAE は batch 256 で 25.97 GiB・0.916 s。どちらも batch 512 は OOM（L81）。1 epoch の見込みは式つきで書き、式の枚数 10,580 は Task A の値と一致する |
 | e | 同じ seed の二度の差は、決定論的な設定で出力 0.0・勾配 5.684e-14。陽性対照（決定論的を切り、入力に 1e-3 を足す）では出力 1.272e-06・勾配 1.199e-07。別プロセスで二度目を流しても同じ値だった（L81、L91） |
 | f | 変更は置き場・契約のディレクトリ・受け皿の一件だけ（L125）。checkpoint は 0 件。forbidden-check は pass で違反 0。試験の後は 6 failed / 924 passed で、失敗の名前の集合は前と同じ。陽性対照として、写しの data/ に一件足すと fail・exit 1 になった（L106） |
-| g | 下の「送出」と audit L125 を参照 |
+| g | PR #259、base phase0、head feat/ptower-cand5-compute-probe、isDraft false、OPEN（gh pr view の応答。audit「commit と送出」） |
+
+解決された参照（手順書 3）: `inject_verbatim` の 4 節（prohibitions・issuer_cautions・precision・folds）の原文は、audit.md の「解決された参照」に写した。conventions の blob ceb7ef0f は契約の conventions_rev と一致する。denominator・frozen_source の参照は無い。
 
 ## 実測（次の契約で使う値）
 
@@ -62,4 +64,4 @@ A6000 一枚、fp32、TF32 は切った。expandable_segments は無し。1 epoc
 
 ## 送出
 
-audit.md L125 以降に記録する（PR 番号、task-report の終了コード）。
+PR #259（主作業の commit 165cd94c）。task-report の終了コードと台帳の応答は audit.md の「commit と送出」に記録する。
