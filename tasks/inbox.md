@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（709 件）
+## 未処理（710 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -724,6 +724,7 @@
 - [ ] 2026-10-21 [cc] 置いたカードは批判会話への依頼文（docs/proposals/briefs/2026-10-21-tower-reselect-search-critique-brief.md）を経路で指しておらず、置き換えるとする前のカード 2026-10-17-tower-reselect-andrew は docs/proposals/ に無い。本文は変えていない。dlsta の exp の起票の前に、カードの参照を足すかを起票者が決める（tasks/T-2026-10-22-proposal-card-tower-reselect-search/RESULT.md）
 - [ ] 2026-10-22 [human] 利用者は照合済みアーカイブから不足4件を指定名でコピーして続行することを許可し、「今後承認不要」と指示した。元ファイルは残す。契約内の通常操作は追加承認なしで進める（T-2026-10-22-evidence-map-a-place）。
 - [ ] 2026-10-22 [human] 受け渡しの置き場が開始時に無く、利用者が置いてから再開した。照合の 1 回目は arXiv の一時不調で到達不能 50 となり、同じ命令を一回だけ流し直した（照合器の引き直しの規則を直すかは未決）（T-2026-10-22-evidence-map-a-revise）。
+- [ ] 2026-10-23 [cc] 候補 5 の全構成が A6000 一枚・fp32 の目標 batch で収まった。mamba-ssm は決定論的な設定でも勾配が非決定（5.684e-14）で、P-A のカード #15 に写す必要がある。MoCo の原典の照合は外部接続を控えて未実施（T-2026-10-23-ptower-cand5-compute-probe）。
 
 ## 処理済み（1 件）
 
