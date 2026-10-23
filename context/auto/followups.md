@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（671 件）
+## 申し送り（673 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1087,7 +1087,12 @@
 - 時間ヘッドの案 P-A のカード
 - 事前学習の exp の起票では、ViT-L の 800×1424 全体の fine-tune が batch 4 で 36.66 GiB・5.125 s/歩、1 epoch の見込み 225.9 min（読み込みを除く）であることを、案 2 の解像度の軸の費用に入れる。
 
-## 断定できなかった事項（420 件）
+### T-2026-10-23-ptower-cand5-heads-impl
+
+- 時間ヘッドの exp の起票では、カードに残る食い違い（P-C の進捗損失 L1 と MSE、P-D の α {3, 11} と {7, 19}、P-B の GRU 単独の腕の有無）をどちらに取るか決め、egtp_k の値を決める（実装は既定を置かず必須にした）。
+- 原典（OnlineTAS の記憶 §3.3、StableSPR の TEC §2.1 と EGTP 式 (6)、ProTAS の進捗の頭）との照合は、外部への接続の承認を得てから行う。食い違えば実装の形を直す契約が要る。
+
+## 断定できなかった事項（423 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1887,18 +1892,24 @@
 - データの読み込みを含む一歩の時間（較正以外の行）。MoCo v2 と映像 MAE は、batch 256 の読み込みが律速になりうる。
 - mamba-ssm の非決定が selective scan と causal-conv1d のどちらの核の逆伝播によるか。
 
-## 起票者の誤りの型（390 件）
+### T-2026-10-23-ptower-cand5-heads-impl
+
+- 記憶・TEC・EGTP・進捗の頭が原典の形と一致するか（照合していない）。
+- 実データ（17,233 フレームの保存特徴）での 1 本の所要時間。
+- SSM の逆伝播の決定性（前の契約で、決定論的な設定でも勾配が 5.7e-14 で非決定と測られている。本契約では測っていない）。
+
+## 起票者の誤りの型（394 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 106 |
-| `asserted_without_measuring` | 164 |
-| `self_contradiction` | 99 |
+| `asserted_without_measuring` | 165 |
+| `self_contradiction` | 102 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 1 |
 | `rule_read_narrowly` | 1 |
 
-合計 390 件（対を持つ契約 138 件から）
+合計 394 件（対を持つ契約 139 件から）
 
