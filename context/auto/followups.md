@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（673 件）
+## 申し送り（677 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1082,6 +1082,13 @@
 - カードが置き換えるとする前のカード 2026-10-17-tower-reselect-andrew は docs/proposals/ に無い
 - 本 PR の統合の後に、dlsta の探索の exp を intent.proposal_card: docs/proposals/2026-10-21-tower-reselect-search.md で配布できる（P14 の関数で PASS を確認済み）
 
+### T-2026-10-23-egtp-original-form
+
+- 前の契約の BASELINE（tests/test_stage1_ptower_heads.py）は bengio では一致しない（linear 0235f4de、A と C e4f2eed5、B 379cc43e）。基準値をホストごとに持つか、取ったホストで比べるかは起票者が決める。
+- ssm の出力が変わらないことを、GPU のあるホストで確かめるかどうかは起票者が決める。本契約では関数単位のソースの一致だけを示した。
+- 検証器 L2-6 は conventions_rev が commit でないときに黙って通る。直すかどうかは利用者が決める。
+- P-D の exp の prereg には、n と σ の決め方と下限（σ 1e-3、p 1e-12）、n < 2 で Z = 0 を書き、k の掃引の範囲をこの正規化に合わせて選ぶ。
+
 ### T-2026-10-23-ptower-cand5-compute-probe
 
 - 時間ヘッドの案 P-A のカード
@@ -1092,7 +1099,7 @@
 - 時間ヘッドの exp の起票では、カードに残る食い違い（P-C の進捗損失 L1 と MSE、P-D の α {3, 11} と {7, 19}、P-B の GRU 単独の腕の有無）をどちらに取るか決め、egtp_k の値を決める（実装は既定を置かず必須にした）。
 - 原典（OnlineTAS の記憶 §3.3、StableSPR の TEC §2.1 と EGTP 式 (6)、ProTAS の進捗の頭）との照合は、外部への接続の承認を得てから行う。食い違えば実装の形を直す契約が要る。
 
-## 断定できなかった事項（423 件）
+## 断定できなかった事項（425 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1886,6 +1893,11 @@
 
 - 既存の 6 件の試験の失敗（test_engines 1、test_fetch_task 1、test_research_logger 4）の原因は調べていない
 
+### T-2026-10-23-egtp-original-form
+
+- ssm の出力のビット一致（GPU が要る）。
+- 原典の n と σ の定義そのもの（原典に書かれていない）。
+
 ### T-2026-10-23-ptower-cand5-compute-probe
 
 - 目標で収まった構成の、収まる batch の上限（探索の規則により測っていない）。
@@ -1898,18 +1910,18 @@
 - 実データ（17,233 フレームの保存特徴）での 1 本の所要時間。
 - SSM の逆伝播の決定性（前の契約で、決定論的な設定でも勾配が 5.7e-14 で非決定と測られている。本契約では測っていない）。
 
-## 起票者の誤りの型（394 件）
+## 起票者の誤りの型（397 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 106 |
-| `asserted_without_measuring` | 165 |
-| `self_contradiction` | 102 |
+| `check_does_not_check` | 107 |
+| `asserted_without_measuring` | 166 |
+| `self_contradiction` | 103 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 1 |
 | `rule_read_narrowly` | 1 |
 
-合計 394 件（対を持つ契約 139 件から）
+合計 397 件（対を持つ契約 140 件から）
 
