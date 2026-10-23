@@ -1,0 +1,60 @@
+result_version: 3
+task_id: T-2026-10-23-ptower-cand5-compute-probe
+status: pass
+host: Andrew
+branch: feat/ptower-cand5-compute-probe
+pr: 259
+merged: false
+gates:
+- id: G1
+  verdict: pass
+  note: 分岐 feat/ptower-cand5-compute-probe、起点 origin/phase0 bfe45510、分類器の未追跡と変更は 0 件、nvidia-smi の compute プロセスは二枚とも 0 件（各 GPU 段の直前にも 0）。
+- id: G2
+  verdict: pass
+  note: r3 の処方（R50、800×1422、fp32、deterministic、実データ）の最大確保は batch 1・2・16 で 2.05・4.14・26.97 GiB。三周目の記録 27.06 GiB と同じ桁で、単調に増える。
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 924
+deviations:
+- type: judgement
+  note: manifest は phase_manifest_all_phase（17,233）を使った。r3 の manifest_dir の phase_manifest は 15,437 で、17,233 と一致しない。
+- type: judgement
+  note: 全構成が目標の batch で収まったため、探索が失敗を拾えることの対照として、目標の倍（ViT-L 800 全体の b8、MoCo b512、MAE b512）を別に測った。三本とも OOM。mamba は別プロセスで再実行し、パラメータごとに切り分けた。
+- type: judgement
+  note: 800 系統の入力は 800×1424（幅を 16 の倍数へ切り上げ、4,450 トークン）。ViT は timm の vit_*_patch16_dinov3 を乱数初期化で使った。映像 MAE の tubelet 2・decoder 192 次元 4 層・可視 95 は実装者の選択。
+- type: judgement
+  note: MoCo v2 の K 65,536・m 0.999・T 0.2 は既知の原典の既定値を置いた。外部への接続は事前の確認を要するため、このセッションでは原典を引いて照合していない。shuffle BN は単一 GPU のため再現していない。
+- type: judgement
+  note: ViT・MoCo・MAE の行は fp32 で TF32 を切っただけで、決定論的な設定は使っていない。較正と mamba は stage1_ptower.deterministic を使った。
+- type: judgement
+  note: CLAUDE.md の README.md・experiment_log・W&B の要求は、コードを変えず run も作らない測定で、変更範囲の外になるため適用しなかった。
+issuer_defects:
+- type: check_does_not_check
+  note: 完了判定 c と d の空振りの確認は「batch を一つ上げると失敗する」だが、手順は「目標が収まればそれ以上は探さない」と定め、D と E も 256 から下げるだけである。実際に全構成が目標で収まり、指示どおりの探索では失敗が一度も起きず、確認が成り立たなかった。
+- type: asserted_without_measuring
+  note: SPEC は「17,233 フレームの manifest」と書くが経路を名指ししない。参照先の configs/stage1_ptower_r3.yaml の manifest_dir（data/processed/phase_manifest）は 15,437 で、Task A-5 を字義どおりに読むと停止に当たる。一致するのは phase_manifest_all_phase である。
+- type: asserted_without_measuring
+  note: SPEC §2 は「工程塔の数値精度は fp32（規約 conventions#precision）」と出所を示すが、規約の precision 節の原文は「工程塔の学習の精度は本節で定めない」と書く。本契約は SPEC の指定どおり fp32 で測ったため値は変わらないが、出所の記述は規約と食い違う。
+positive_controls:
+- judgement: 完了判定 c・d の batch 探索が収まらない構成を失敗として拾う
+  breaking_input: 目標の倍の batch（ViT-L 800×1424 全体 b8、MoCo v2 b512、映像 MAE b512）
+  observed: 三本とも status oom（確保 46.46・44.98・46.58 GiB の時点）。探索の OOM の経路が働く。
+- judgement: 完了判定 b の較正が測り方の不備を拾う（単調性）
+  breaking_input: batch を 1 → 2 → 16 と変える
+  observed: 2.05 → 4.14 → 26.97 GiB と単調に増えた。壊れた測り方（常に同じ値を返す）なら単調にならない。
+- judgement: 完了判定 e の決定性の比較が差を検出する
+  breaking_input: 決定論的な設定を切り、二度目の入力に 1e-3 を足す
+  observed: 出力の最大絶対差 1.272e-06、勾配 1.199e-07 で、0 でない。決定論的な設定の行でも勾配に 5.684e-14 の差を検出した。
+- judgement: 完了判定 f の forbidden-check が禁止領域への書き込みを拾う
+  breaking_input: repo の外の clone の写し（起点 bfe45510）で data/zz_probe_control.txt を git add -f する
+  observed: 足す前は pass・exit 0。足した後は fail・exit 1、違反 data/zz_probe_control.txt（禁止領域 data/ の内側）。写しは削除した。
+followups:
+- 時間ヘッドの案 P-A のカード #15 の決定性の行に写す値：mamba-ssm 2.2.2 と causal-conv1d 1.4.0 は、torch.use_deterministic_algorithms(True) のもとでも勾配がビット単位で一致しない（最大絶対差 5.684e-14、出力は一致）。差は Mamba 層のパラメータだけに出て、Linear の勾配は一致する。selective scan と causal-conv1d のどちらの核の逆伝播かは切り分けていない。
+- 事前学習の exp の起票では、ViT-L の 800×1424 全体の fine-tune が batch 4 で 36.66 GiB・5.125 s/歩、1 epoch の見込み 225.9 min（読み込みを除く）であることを、案 2 の解像度の軸の費用に入れる。
+unknowns:
+- 目標で収まった構成の、収まる batch の上限（探索の規則により測っていない）。
+- データの読み込みを含む一歩の時間（較正以外の行）。MoCo v2 と映像 MAE は、batch 256 の読み込みが律速になりうる。
+- mamba-ssm の非決定が selective scan と causal-conv1d のどちらの核の逆伝播によるか。
+commits:
+- 165cd94c

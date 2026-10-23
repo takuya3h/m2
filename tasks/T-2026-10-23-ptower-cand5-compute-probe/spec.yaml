@@ -1,0 +1,67 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-23-ptower-cand5-compute-probe"
+  kind: analysis
+  title: "候補 5（事前学習の四案・時間ヘッドの一案）の計算量の実測。andrew の A6000 一枚で、ViT の 800 系統の記憶量と一歩の時間、MoCo v2 の batch 256、映像 MAE の一歩、mamba-ssm の決定性を測る"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-22T21:20:00Z"
+  created_from:
+    runindex_commit: "63ae65da8c7d32df591f5e2ee4358286b72c726b"
+    counts: {index: 1961, experiments: 750, verdicts: 1506}
+  depends_on: []
+  amendments: []
+intent:
+  question: "候補 5 の事前学習の四案が前提にする構成（DINOv3 型 ViT-B/L の 224・448・短辺 800 系統の fine-tune、ResNet-50 の MoCo v2 の batch 256、ViT-S の 10 フレーム映像 MAE）は andrew の A6000 一枚に fp32 で載るか。載るなら一歩の時間はいくらか。mamba-ssm の演算は同じ seed で同じ値を返すか"
+  decision_at_stake: "事前学習の exp の掃引集合（案 2 の解像度の軸、案 1 の batch と epoch、案 4 の batch）と費用（カード #10 の UNKNOWN）を実測で置き換えられるか。時間ヘッドの案 P-A の決定性の行（カード #15）を埋められるか"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery の 15 動画の工程注釈つきフレーム（17,233 フレームの manifest）。枚数の計数と、記憶量と時間の実測の入力にだけ使う。学習は収束まで回さない"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/stage1_ptower_r3.py", "scripts/stage1_ptower.py", "tools/profile_speed.py", "configs/stage1_ptower_r3.yaml"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#precision, conventions#folds]
+  conventions_rev: "ceb7ef0f88a3f30279930be96ab9a5722acc2f09"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/analysis/ptower_cand5_compute_probe"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。分岐、作業ツリー、装置と空き、版、空き容量、manifest の枚数、試験の前の値", gpu: false, est: "30m"}
+    - {id: B, name: "較正。三周目の工程塔の処方（ResNet-50、800×1422、batch 16、fp32）の一歩の記憶量を測り、三周目の記録と並べる", gpu: true, est: "30m"}
+    - {id: C, name: "ViT-B/16 と ViT-L/16 の fine-tune の記憶量と一歩の時間。入力 224²・448²・短辺 800 の全画面、学ぶ範囲 三水準、batch を下げて収まる最大", gpu: true, est: "3h"}
+    - {id: D, name: "ResNet-50 の MoCo v2 の一歩。224 のクロップ、batch 256 から下げて収まる最大", gpu: true, est: "1h"}
+    - {id: E, name: "ViT-S の 10 フレーム映像 MAE の一歩。224²、マスク 0.90、batch 256 から下げて収まる最大", gpu: true, est: "1h"}
+    - {id: F, name: "mamba-ssm の決定性。同じ seed の二度で出力と勾配が一致するか", gpu: true, est: "30m"}
+    - {id: G, name: "検証と報告", gpu: false, est: "60m"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、作業ツリーが清浄で、使う GPU に compute プロセスが無い", on_fail: stop}
+    - {id: G2, after: B, check: "較正の一歩の最大確保が三周目の記録（27.06 GiB、batch 16 と累積 4）と同じ桁で、batch 1 と 2 で単調に増える", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, gpu_free]
+outputs:
+  must_have: [REPORT.md]
+  destination: "experiments/analysis/ptower_cand5_compute_probe/"
+  acceptance:
+    - "a: 開始状態（分岐、起点、作業ツリー、装置の型と容量、driver と torch と timm の版、空き容量、manifest の枚数、試験の前の値）が記録されている"
+    - "b: 較正の行（三周目の処方の一歩）が在り、最大確保が三周目の記録と同じ桁で、batch 1 と 2 と 16 で単調に増えている"
+    - "c: ViT の表が在り、構成（規模 2 × 入力 3 × 学ぶ範囲 3）の各行に、収まる最大の batch、最大確保、一歩の時間、注意の実装、収まらない場合はその最小の batch での失敗の記録がある。計算量の多い行（ViT-L の 800 系統の全体）も省かずに測った"
+    - "d: MoCo v2 と映像 MAE の行が在り、batch 256 が収まるか、収まらなければ収まる最大と、一歩の時間と、1 epoch の見込み（manifest の枚数から計算。式を書く）がある"
+    - "e: mamba-ssm の決定性の行が在り、同じ seed の二度の出力と勾配の最大絶対差が記録され、決定性の設定を切った陽性対照との違いが分かる"
+    - "f: 学習は一つも収束まで回しておらず、checkpoint を残しておらず、data/ と experiments/ の既存の run と runindex/ に触れていない。生成物の再生成と -check を回していない"
+    - "g: PR が存在し、base が phase0、分岐が feat/ で始まり、Draft でない"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "andrew の GPU に compute プロセスがある場合（空くまで待たず、停止して諮る）"
+    - "timm か mamba-ssm が .venv に無い、または読み込めない場合（導入せず停止して諮る）"
+    - "較正の行が三周目の記録と桁で食い違う場合"
+    - "一つの構成の測定に 30 分を超える場合（その構成を UNKNOWN とし、理由を書いて次へ進む。契約は止めない）"
