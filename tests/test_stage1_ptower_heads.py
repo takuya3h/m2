@@ -5,11 +5,18 @@ tasks/T-2026-10-23-ptower-cand5-heads-impl/audit.md); existing candidates must k
 """
 import hashlib
 import importlib.util
+import io
+import json
+import tempfile
+from contextlib import redirect_stdout
 from pathlib import Path
 
+import numpy as np
 import pytest
 import torch
+import torch.nn.functional as F
 from omegaconf import OmegaConf
+from torch import nn
 
 ROOT = Path(__file__).parents[1]
 SPEC = importlib.util.spec_from_file_location("stage1_ptower", ROOT / "scripts/stage1_ptower.py")
@@ -53,3 +60,331 @@ def test_existing_candidates_match_baseline(candidate):
 
 def test_baseline_check_detects_a_changed_config():
     assert output_digest("A", layers=7) != BASELINE["A"]
+
+
+def test_new_keys_are_absent_from_the_default_config():
+    cfg = OmegaConf.load(ROOT / "configs/stage1_ptower.yaml")
+    new = {"boundary_flag", "reset_at_clip", "gap_input", "ssm_state_dim", "ssm_layers",
+           "ssm_selective", "memory_len", "progress_weight", "transition_prior", "tec_alpha",
+           "tec_m", "tec_sigma", "egtp", "egtp_k", "egtp_reset_at_clip", "base_candidate"}
+    assert not new & set(cfg)
+    assert not tower.needs_info(cfg) and tower.input_dim(cfg) == 2048
+
+
+# --- sequence information -------------------------------------------------------------
+
+MANIFEST = ROOT / "data/processed/phase_manifest_all_phase"
+
+
+@pytest.mark.skipif(not MANIFEST.exists(), reason="17,233-frame manifest absent on this host")
+def test_manifest_gaps_reproduce_the_eda():
+    clips = tower.manifests(OmegaConf.create({"manifest_dir": str(MANIFEST)}))
+    summary = tower.gap_summary(clips)
+    assert summary == {"videos": 15, "clips": 23, "frames": 17233, "pairs": 17210,
+                       "delta_one": 16663, "delta_max": 254, "unknown": 23,
+                       "unknown_between_clips": 8}
+    assert round(100 * summary["delta_one"] / summary["pairs"], 1) == 96.8
+    # Ignoring one clip boundary must leave one fewer unknown between clips.
+    first, second = [c for c in clips if c["video"] == "03"]
+    merged = [c for c in clips if c["video"] != "03"] + [
+        {**first, "frames": first["frames"] + second["frames"]}]
+    assert tower.gap_summary(merged)["unknown_between_clips"] == 7
+
+
+def frames(clip, numbers):
+    return [{"frame": f"01_{clip}_{n:04d}"} for n in numbers]
+
+
+def test_sequence_info_keeps_unknown_gaps_apart_from_zero_and_one():
+    info = tower.sequence_info([frames(1, [5, 6, 9]), frames(2, [1, 2])])
+    assert info["clip"].tolist() == [0, 0, 0, 1, 1]
+    assert info["delta"].tolist() == [tower.GAP_UNKNOWN, 1, 3, tower.GAP_UNKNOWN, 1]
+    assert info["boundary"].tolist() == [1, 0, 0, 1, 0]
+    assert tower.GAP_UNKNOWN not in (0, 1)
+
+
+def write_fold(tmp_path):
+    clips, ids = [], []
+    for video in range(1, 16):
+        for clip, numbers in ((2, (1, 2)), (1, (3, 7))):
+            fids = [f"{video:02d}_{clip}_{n:04d}" for n in numbers]
+            ids += fids
+            clips.append({"video": f"{video:02d}", "clip_id": f"{video:02d}_{clip}",
+                          "frames": [{"frame": f, "label": clip} for f in fids]})
+    for split in ("train", "val", "test"):
+        (tmp_path / f"{split}.json").write_text(json.dumps({"clips": clips if split == "train" else []}))
+    cache = tmp_path / "features.npz"
+    features = np.random.default_rng(0).normal(size=(len(ids), 2048)).astype(np.float32)
+    np.savez(cache, frame_ids=np.array(ids), features=features)
+    cache.with_suffix(".json").write_text(json.dumps({"cache_sha256": tower.sha256(cache)}))
+    return OmegaConf.create({"cache": str(cache), "manifest_dir": str(tmp_path), "fold": "A"})
+
+
+def test_load_fold_info_is_additive(tmp_path):
+    cfg = write_fold(tmp_path)
+    splits, plain = tower.load_fold(cfg)
+    _, rich = tower.load_fold(cfg, info=True)
+    for part in ("train", "val"):
+        assert all(len(v) == 3 for v in plain[part])
+        for a, b in zip(plain[part], rich[part]):
+            assert a[0] == b[0] and np.array_equal(a[1], b[1]) and np.array_equal(a[2], b[2])
+            assert b[3]["boundary"].tolist() == [1, 0, 1, 0]
+            assert b[3]["delta"].tolist() == [tower.GAP_UNKNOWN, 4, tower.GAP_UNKNOWN, 1]
+            assert b[3]["clip"].tolist() == [0, 0, 1, 1]
+
+
+# --- heads: interface, causality, boundaries ------------------------------------------
+
+CPU_HEADS = [("memory", {}), ("progress", {}), ("stabilize", {"base_candidate": "A"}),
+             ("stabilize", {"base_candidate": "B"}), ("stabilize", {"base_candidate": "C"})]
+GPU = pytest.mark.skipif(not torch.cuda.is_available(), reason="mamba-ssm kernels need CUDA")
+
+
+def head(candidate, device="cpu", **overrides):
+    torch.manual_seed(0)
+    cfg = config(candidate=candidate, layers=3, maps=16, history=5, memory_len=8, **overrides)
+    return tower.build_model(cfg, 9).to(device).eval(), cfg
+
+
+def prefix_unchanged(model, x, t):
+    """Outputs at positions < t are bit-identical when inputs at positions >= t change."""
+    changed = x.clone()
+    changed[:, :, t:] += 50
+    with torch.no_grad():
+        before, after = model(x), model(changed)
+    return (all(torch.equal(a[:, :, :t], b[:, :, :t]) for a, b in zip(before, after))
+            and not torch.equal(before[-1], after[-1]))
+
+
+@pytest.mark.parametrize("candidate,extra", CPU_HEADS)
+def test_cpu_heads_keep_the_interface_and_are_causal(candidate, extra):
+    model, _ = head(candidate, **extra)
+    x = torch.randn(1, 2048, 40)
+    outs = model(x)
+    assert isinstance(outs, list) and all(o.shape == (1, 9, 40) for o in outs)
+    assert prefix_unchanged(model, x, 20)
+
+
+@GPU
+@pytest.mark.parametrize("selective", [True, False])
+def test_ssm_keeps_the_interface_and_is_causal_on_gpu(selective):
+    model, _ = head("ssm", "cuda", ssm_selective=selective, ssm_state_dim=16)
+    x = torch.randn(1, 2048, 60, device="cuda")
+    outs = model(x)
+    assert len(outs) == 1 and outs[0].shape == (1, 9, 60)
+    # Measured prefix difference on andrew's A6000 was 0.0, so the tolerance is zero.
+    assert prefix_unchanged(model, x, 30)
+
+
+@GPU
+def test_ssm_selective_false_freezes_delta():
+    model, _ = head("ssm", "cuda", ssm_selective=False)
+    for layer in model.layers:
+        assert not layer.dt_proj.weight.any() and not layer.dt_proj.weight.requires_grad
+        assert not layer.dt_proj.bias.requires_grad
+    selective, _ = head("ssm", "cuda")
+    assert all(layer.dt_proj.weight.requires_grad for layer in selective.layers)
+
+
+def test_progress_head_is_causal_too():
+    model, _ = head("progress")
+    x = torch.randn(1, 2048, 40)
+    changed = x.clone()
+    changed[:, :, 20:] += 50
+    with torch.no_grad():
+        before, after = model(x, with_progress=True)[-1], model(changed, with_progress=True)[-1]
+    assert before.shape == (1, 9, 40) and ((before >= 0) & (before <= 1)).all()
+    assert torch.equal(before[:, :, :20], after[:, :, :20])
+
+
+class Bidirectional(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.gru = nn.GRU(2048, 8, batch_first=True, bidirectional=True)
+        self.head = nn.Linear(16, 9)
+
+    def forward(self, x):
+        return [self.head(self.gru(x.transpose(1, 2))[0]).transpose(1, 2)]
+
+
+def test_causality_check_rejects_a_bidirectional_model():
+    torch.manual_seed(0)
+    assert not prefix_unchanged(Bidirectional().eval(), torch.randn(1, 2048, 40), 20)
+
+
+def test_unknown_candidate_names_raise():
+    with pytest.raises(ValueError):
+        tower.build_model(config(candidate="nope"), 9)
+    with pytest.raises(ValueError):
+        tower.build_model(config(candidate="stabilize", base_candidate="ssm"), 9)
+    with pytest.raises(ValueError):
+        tower.input_dim(config(gap_input="seconds"))
+
+
+def two_clip_info(t, cut):
+    delta = np.ones(t, dtype=np.int64)
+    delta[[0, cut]] = tower.GAP_UNKNOWN
+    delta[cut + 3] = 5
+    return {"clip": (np.arange(t) >= cut).astype(int), "delta": delta,
+            "boundary": np.isin(np.arange(t), [0, cut]).astype(int)}
+
+
+@pytest.mark.parametrize("reset", [True, False])
+def test_reset_at_clip_cuts_the_dependence_on_the_previous_clip(reset):
+    model, cfg = head("memory", reset_at_clip=reset, boundary_flag=True)
+    info = two_clip_info(40, 25)
+    x = np.random.default_rng(0).normal(size=(40, 2048)).astype(np.float32)
+    changed = x.copy()
+    changed[:25] += 50
+    with torch.no_grad():
+        before = tower.run_video(model, cfg, x, info, "cpu")[-1]
+        after = tower.run_video(model, cfg, changed, info, "cpu")[-1]
+    assert before.shape == (1, 9, 40)
+    assert torch.equal(before[:, :, 25:], after[:, :, 25:]) == reset
+
+
+def test_gap_input_switches_between_delta_and_flag():
+    info = two_clip_info(40, 25)
+    x = np.zeros((40, 2048), dtype=np.float32)
+    flag = tower.model_input(config(gap_input="flag"), x, info)
+    delta = tower.model_input(config(gap_input="delta", boundary_flag=True), x, info)
+    assert flag.shape == (1, 2049, 40) and delta.shape == (1, 2051, 40)
+    assert tower.input_dim(config(gap_input="delta", boundary_flag=True)) == 2051
+    unknown = torch.tensor(info["delta"] == tower.GAP_UNKNOWN, dtype=torch.float32)
+    assert torch.equal(flag[0, 2048], unknown) and torch.equal(delta[0, 2050], unknown)
+    assert torch.equal(delta[0, 2048], torch.tensor(info["boundary"], dtype=torch.float32))
+    expected = np.log(np.where(info["delta"] == tower.GAP_UNKNOWN, tower.GAP_CAP, info["delta"]))
+    assert torch.allclose(delta[0, 2049], torch.tensor(expected, dtype=torch.float32))
+    assert delta[0, 2049, 28].item() == pytest.approx(np.log(5))
+
+
+# --- losses and inference rules -------------------------------------------------------
+
+def test_progress_target_rises_in_each_run_and_ignores_clip_starts():
+    y = np.array([2, 2, 2, 2, 5, 5, 5, 2])
+    # A clip starts at index 2 inside the first run of phase 2; the run stays whole.
+    target = tower.progress_target(y)
+    assert target[:4].tolist() == pytest.approx([0, 1 / 3, 2 / 3, 1])
+    assert target[4:7].tolist() == pytest.approx([0, 0.5, 1])
+    assert target[7] == 0
+    for a, b in ((0, 4), (4, 7)):
+        assert (np.diff(target[a:b]) > 0).all()
+
+
+def test_transition_matrix_uses_train_videos_only():
+    data = {"train": [("01", None, np.array([0, 0, 1, 2])), ("02", None, np.array([3, 1]))],
+            "val": [("03", None, np.array([4, 5]))]}
+    allowed = tower.transition_matrix(data, 9)
+    assert allowed[0, 1] and allowed[1, 2] and allowed[3, 1] and allowed.diagonal().all()
+    assert allowed.sum() == 9 + 3
+    data["val"] = [("03", None, np.array([7, 8, 0]))]
+    assert np.array_equal(tower.transition_matrix(data, 9), allowed)
+    data["train"].append(("04", None, np.array([4, 5])))
+    assert not np.array_equal(tower.transition_matrix(data, 9), allowed)
+
+
+def test_transition_decode_blocks_unseen_transitions():
+    scores = np.array([[3.0, 1.0, 1.0], [0.0, 2.0, 0.0], [0.0, 0.0, 2.0]])
+    allowed = np.eye(3, dtype=bool)
+    allowed[0, 2] = True
+    assert tower.transition_decode(scores, allowed).tolist() == [0, 0, 2]
+    assert tower.transition_decode(scores, np.ones((3, 3), bool)).tolist() == [0, 1, 2]
+
+
+def test_tec_weights_cover_the_first_m_frames_of_each_wrong_run():
+    labels = torch.zeros(30, dtype=torch.long)
+    pred = torch.zeros(30, dtype=torch.long)
+    pred[5:17] = 1   # wrong run of 12 frames
+    pred[20:23] = 2  # wrong run of 3 frames
+    w = tower.tec_weights(pred, labels, 3.0, 8, 1.5)
+    expected = torch.ones(30)
+    for s, n in ((5, 8), (20, 3)):
+        for d in range(n):
+            expected[s + d] = 1 + 3.0 * np.exp(-d ** 2 / (2 * 1.5 ** 2))
+    torch.testing.assert_close(w, expected, rtol=0, atol=0)
+    assert w[5] == 4.0 and (w[13:17] == 1).all() and (w[:5] == 1).all()
+
+
+def test_tec_loss_equals_weighted_ce_at_alpha_zero_and_not_above():
+    torch.manual_seed(0)
+    logits = torch.randn(50, 9)
+    labels = torch.randint(0, 9, (50,))
+    class_weights = torch.rand(9) + 0.5
+    ce = F.cross_entropy(logits, labels, weight=class_weights)
+    torch.testing.assert_close(tower.tec_loss(logits, labels, class_weights, 0.0, 8, 1.5), ce,
+                               rtol=1e-6, atol=0)
+    assert not torch.allclose(tower.tec_loss(logits, labels, class_weights, 3.0, 8, 1.5), ce)
+
+
+def test_egtp_keeps_probabilities_and_holds_the_state():
+    prob = np.array([[0.6, 0.45, 0.45, 0.45, 0.2, 0.2],
+                     [0.4, 0.55, 0.55, 0.55, 0.8, 0.8]])
+    original = prob.copy()
+    returned, held = tower.egtp(prob, 0.25)
+    assert returned is prob and np.array_equal(prob, original)
+    # Evidence 0.1, 0.2, 0.3 > 0.25 at index 3, so the state switches there.
+    assert held.tolist() == [0, 0, 0, 1, 1, 1]
+    assert tower.egtp(prob, 0.0)[1].tolist() == prob.argmax(0).tolist()
+    assert tower.egtp(prob, 10.0)[1].tolist() == [0] * 6
+    assert tower.egtp(prob, 10.0, starts=[4])[1].tolist() == [0, 0, 0, 0, 1, 1]
+
+
+# --- smoke: two epochs through train on synthetic features ----------------------------
+
+def synthetic_fold(info, rng):
+    def video(name):
+        t = int(rng.integers(200, 320))
+        cut = t // 2
+        y = np.repeat(np.arange(9), int(np.ceil(t / 9)))[:t]
+        x = (rng.normal(size=(t, 2048)) + y[:, None] * 0.1).astype(np.float32)
+        clip = [{"frame": f"{name}_1_{n:04d}"} for n in range(1, cut + 1)]
+        clip2 = [{"frame": f"{name}_2_{n:04d}"} for n in range(1, t - cut + 1)]
+        return (name, x, y) + ((tower.sequence_info([clip, clip2]),) if info else ())
+    splits = {"train": ["01", "02", "03", "04"], "val": ["05", "06"], "test": []}
+    return splits, {part: [video(v) for v in splits[part]] for part in ("train", "val")}
+
+
+SMOKE = [("A", "cpu", {}),
+         ("memory", "cpu", {"reset_at_clip": True, "boundary_flag": True}),
+         ("progress", "cpu", {"progress_weight": 1.0, "transition_prior": True, "gap_input": "delta"}),
+         ("stabilize", "cpu", {"base_candidate": "C", "smoothing_weight": 0.3, "tec_alpha": 7.0,
+                               "egtp": True, "egtp_k": 0.5, "egtp_reset_at_clip": True}),
+         ("ssm", "cuda:0", {"boundary_flag": True, "ssm_state_dim": 16})]
+
+
+@pytest.mark.parametrize("candidate,device,extra", SMOKE)
+def test_two_epoch_smoke_leaves_no_checkpoint(candidate, device, extra, monkeypatch):
+    if device.startswith("cuda") and not torch.cuda.is_available():
+        pytest.skip("mamba-ssm kernels need CUDA")
+    rng = np.random.default_rng(0)
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = Path(tmp)
+        (tmp / "phase_vocab.json").write_text(json.dumps({f"p{i}": i for i in range(9)}))
+        (tmp / "cache.npz").write_bytes(b"synthetic")
+        monkeypatch.setattr(tower, "load_fold",
+                            lambda cfg, parts=("train", "val"), info=False: synthetic_fold(info, rng))
+        managers = []
+
+        def evidence(cfg, description):
+            manager = tower.ExperimentManager(tmp / "experiments", "phase1", "smoke", description, cfg.seed)
+            manager.setup(OmegaConf.to_container(cfg, resolve=True))
+            managers.append(manager)
+            return manager
+
+        monkeypatch.setattr(tower, "evidence", evidence)
+        cfg = config(action="train", candidate=candidate, device=device, epochs=2, warmup_epochs=1,
+                     cache=str(tmp / "cache.npz"), manifest_dir=str(tmp), task_id="smoke", **extra)
+        torch.manual_seed(0)
+        out = io.StringIO()
+        with redirect_stdout(out):
+            tower.train(cfg)
+        assert "RUN_COMPLETE" in out.getvalue() and out.getvalue().count("epoch=") == 2
+        exp_dir = managers[0].exp_dir
+        assert (exp_dir / "checkpoints/best.pth").exists()
+        metrics = json.loads((exp_dir / "metrics.json").read_text())
+        assert "phase_jaccard" in json.dumps(metrics)
+        if extra.get("egtp"):
+            assert "egtp/phase_jaccard" in json.dumps(metrics)
+        if extra.get("transition_prior"):
+            assert (exp_dir / "transition_matrix.json").exists()
+    assert not tmp.exists() and not list(tmp.parent.glob(f"{tmp.name}/**/*.pth"))
