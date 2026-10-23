@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（669 件）
+## 申し送り（671 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1082,7 +1082,12 @@
 - カードが置き換えるとする前のカード 2026-10-17-tower-reselect-andrew は docs/proposals/ に無い
 - 本 PR の統合の後に、dlsta の探索の exp を intent.proposal_card: docs/proposals/2026-10-21-tower-reselect-search.md で配布できる（P14 の関数で PASS を確認済み）
 
-## 断定できなかった事項（417 件）
+### T-2026-10-23-ptower-cand5-compute-probe
+
+- 時間ヘッドの案 P-A のカード
+- 事前学習の exp の起票では、ViT-L の 800×1424 全体の fine-tune が batch 4 で 36.66 GiB・5.125 s/歩、1 epoch の見込み 225.9 min（読み込みを除く）であることを、案 2 の解像度の軸の費用に入れる。
+
+## 断定できなかった事項（420 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1876,18 +1881,24 @@
 
 - 既存の 6 件の試験の失敗（test_engines 1、test_fetch_task 1、test_research_logger 4）の原因は調べていない
 
-## 起票者の誤りの型（387 件）
+### T-2026-10-23-ptower-cand5-compute-probe
+
+- 目標で収まった構成の、収まる batch の上限（探索の規則により測っていない）。
+- データの読み込みを含む一歩の時間（較正以外の行）。MoCo v2 と映像 MAE は、batch 256 の読み込みが律速になりうる。
+- mamba-ssm の非決定が selective scan と causal-conv1d のどちらの核の逆伝播によるか。
+
+## 起票者の誤りの型（390 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 105 |
-| `asserted_without_measuring` | 162 |
+| `check_does_not_check` | 106 |
+| `asserted_without_measuring` | 164 |
 | `self_contradiction` | 99 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 1 |
 | `rule_read_narrowly` | 1 |
 
-合計 387 件（対を持つ契約 137 件から）
+合計 390 件（対を持つ契約 138 件から）
 

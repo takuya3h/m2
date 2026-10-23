@@ -6,8 +6,43 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 137 件）。
-ここに出ない 132 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 138 件）。
+ここに出ない 133 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-10-23-ptower-cand5-compute-probe
+
+状態 `pass` / ホスト `Andrew` / 起票 `259` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 分岐 feat/ptower-cand5-compute-probe、起点 origin/phase0 bfe45510、分類器の未追跡と変更は 0 件、nvidia-smi の compute プロセスは二枚とも 0 件（各 GPU 段の直前にも 0）。
+- `G2` pass — r3 の処方（R50、800×1422、fp32、deterministic、実データ）の最大確保は batch 1・2・16 で 2.05・4.14・26.97 GiB。三周目の記録 27.06 GiB と同じ桁で、単調に増える。
+
+### 起票者の誤り
+
+- `check_does_not_check` — 完了判定 c と d の空振りの確認は「batch を一つ上げると失敗する」だが、手順は「目標が収まればそれ以上は探さない」と定め、D と E も 256 から下げるだけである。実際に全構成が目標で収まり、指示どおりの探索では失敗が一度も起きず、確認が成り立たなかった。
+- `asserted_without_measuring` — SPEC は「17,233 フレームの manifest」と書くが経路を名指ししない。参照先の configs/stage1_ptower_r3.yaml の manifest_dir（data/processed/phase_manifest）は 15,437 で、Task A-5 を字義どおりに読むと停止に当たる。一致するのは phase_manifest_all_phase である。
+- `asserted_without_measuring` — SPEC §2 は「工程塔の数値精度は fp32（規約 conventions#precision）」と出所を示すが、規約の precision 節の原文は「工程塔の学習の精度は本節で定めない」と書く。本契約は SPEC の指定どおり fp32 で測ったため値は変わらないが、出所の記述は規約と食い違う。
+
+### 逸脱
+
+- `judgement` — manifest は phase_manifest_all_phase（17,233）を使った。r3 の manifest_dir の phase_manifest は 15,437 で、17,233 と一致しない。
+- `judgement` — 全構成が目標の batch で収まったため、探索が失敗を拾えることの対照として、目標の倍（ViT-L 800 全体の b8、MoCo b512、MAE b512）を別に測った。三本とも OOM。mamba は別プロセスで再実行し、パラメータごとに切り分けた。
+- `judgement` — 800 系統の入力は 800×1424（幅を 16 の倍数へ切り上げ、4,450 トークン）。ViT は timm の vit_*_patch16_dinov3 を乱数初期化で使った。映像 MAE の tubelet 2・decoder 192 次元 4 層・可視 95 は実装者の選択。
+- `judgement` — MoCo v2 の K 65,536・m 0.999・T 0.2 は既知の原典の既定値を置いた。外部への接続は事前の確認を要するため、このセッションでは原典を引いて照合していない。shuffle BN は単一 GPU のため再現していない。
+- `judgement` — ViT・MoCo・MAE の行は fp32 で TF32 を切っただけで、決定論的な設定は使っていない。較正と mamba は stage1_ptower.deterministic を使った。
+- `judgement` — CLAUDE.md の README.md・experiment_log・W&B の要求は、コードを変えず run も作らない測定で、変更範囲の外になるため適用しなかった。
+
+### 申し送り
+
+- 時間ヘッドの案 P-A のカード
+- 事前学習の exp の起票では、ViT-L の 800×1424 全体の fine-tune が batch 4 で 36.66 GiB・5.125 s/歩、1 epoch の見込み 225.9 min（読み込みを除く）であることを、案 2 の解像度の軸の費用に入れる。
+
+### 断定できなかったこと
+
+- 目標で収まった構成の、収まる batch の上限（探索の規則により測っていない）。
+- データの読み込みを含む一歩の時間（較正以外の行）。MoCo v2 と映像 MAE は、batch 256 の読み込みが律速になりうる。
+- mamba-ssm の非決定が selective scan と causal-conv1d のどちらの核の逆伝播によるか。
 
 ## T-2026-10-22-proposal-card-tower-reselect-search
 
@@ -139,38 +174,4 @@
 - acceptance c: 契約の字面（fp32 で測る前の許容差に本番が収まる）は未達。利用者の判断で float64 の照合を判定に使った
 - NODE の組（GPU0+GPU1）の一歩の時間と記憶量
 - val を含む一 epoch の時間、全 epoch を通した溢れの有無（68 歩だけ測った）
-
-## T-2026-10-21-ops-taskstart-resume-folds-val
-
-状態 `pass` / ホスト `andrew` / 起票 `247` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 分岐 feat/ops-taskstart-resume-folds-val、HEAD=origin/phase0=merge-base=3cb3db07、契約の 2 ファイルを commit 後に status 0 行、目印はこの契約の所有の記録、無視された未追跡で phase0 と中身の違うもの 0 件（二方法で一致）
-- `G2` pass — tests/test_task_start_classify.py 18 件と test_task_start_pause_owner.py 8 件が通過。全試験 912 件で失敗 6 件、名前の集合は開始時と同じ、収集エラー 0
-- `G3` pass — アンカーごとの節の sha256 を前後で比べ、変わったのは folds と naming だけ。アンカー 15 個の名前と数は同じで conventions_anchors がすべて返す
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — Task B-7 は §3.2 の三つの振る舞いを直す前の task-start で再現せよとしたが、1 行目（無視されていない未追跡）は直す前の版がその前の汚れの判定で終了コード 3 になり切り替えに届かない。指示どおりには再現できず、git そのもので再現した
-- `asserted_without_measuring` — §3.1 と Task C-4 は .claude と .codex の SKILL.md を二つの写しとして同じにせよとしたが、.codex/skills/task は .claude/skills/task へのシンボリックリンクで実体は一つ。指示どおり写すと同じファイルへの複写になり、写しの一致は検査として何も測らない
-
-### 逸脱
-
-- `judgement` — 利用者の「SPEC の bengio を andrew と読み替える」指示は、取り込んだ SPEC がすでに実行ホストを andrew と書いていたため、読み替えた箇所は無い（bengio は §1・§10 の事実の記述だけ）
-- `judgement` — 2 回目の /task は再開から始まり（task-start は利用者が実行）、未追跡は契約自身の SPEC.md と spec.yaml だけだったため最初に commit して G1 の清浄を満たした
-- `spec_defect` — 「無視・起点に無い」は件数を出さない。B-5 は分類ごとの件数を求めるが、数えるには無視されたファイルの全数列挙が要り §5.1 の突き合わせの方針と両立しない
-- `judgement` — tests/test_task_start_pause_owner.py の場に分類器の写しを 1 行足した（主張は無変更）。D-3 が名指ししない tests/test_proposal_card_gate.py の場にも統合済みとみなす差し替えを足した
-- `judgement` — 規約の変更履歴の commit 欄は小節を置いた 4e67202c を書き、行は次の commit 2d946b07 で足した
-- `judgement` — 巻き戻しは、戻した後に phase0 の版で作り直す方式を採らず、通した経路を索引に載せて外す方式にした。作り直す方式は一時的に削除が起き同期で他の台へ伝わりうる
-
-### 申し送り
-
-- 各ホストの task-start とスキルは居る分岐の版で動く。dlsta のように分岐が古いままの台では、本契約が統合された phase0 から分岐するまで旧い task-start（同じ中身の未追跡でも止まり、無視された違う中身を黙って上書きする）が動く
-- skip-worktree の印つきで変更のあるファイルは git status に出ず、新しい分類でも数えない（§5.1 の外）。phase0 がその経路を変えると切り替えが拒まれ終了コード 4 で巻き戻る。andrew の docs/analysis_scripts/README.md がこれに当たる
-- andrew の .git/info/exclude に 2026-10-21 起動前に足した 3 行と README の skip-worktree の印は残したまま（控え ~/m2-hold/T-2026-10-21-ops-taskstart-resume-folds-val/）。戻すかは利用者の判断
-
-### 断定できなかったこと
-
-- dlsta・bengio など他の台での分類の所要時間と git の版（--pathspec-from-file は git 2.26 以上を要する。andrew は 2.43.0）
 
