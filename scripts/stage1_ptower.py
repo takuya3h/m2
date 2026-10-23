@@ -483,25 +483,52 @@ def tec_loss(logits, labels, class_weights, alpha, m, sigma):
     return (weights * per_frame).sum() / class_weights[labels].sum()
 
 
-def egtp(prob, k, starts=()):
-    """EGTP-style causal state over (C, T) probabilities, which are returned unchanged.
+EGTP_P_FLOOR = 1e-12  # lower bound of p before the log
+EGTP_SIGMA_FLOOR = 1e-3  # lower bound of σ, so a constant δ still gives a finite Z
 
-    Evidence for c accumulates max(0, e + p_c − p_state); the state switches to the class
-    whose evidence first exceeds k. At each index in starts the state restarts from argmax.
+
+def egtp_steps(prob, k, starts=()):
+    """Yield (state, E, n, σ, Z) per frame of EGTP (StableSPR eqs. 3–6) over (C, T) probabilities.
+
+    δ(c) = log p(c) − log p(state); E(c) = max(0, E(c) + δ(c)). n(c) and σ(c) are the count and
+    sample standard deviation of the δ(c) added since E(c) was last 0; Z(c) = E/(√n·max(σ, floor)),
+    and Z is 0 while n < 2. The state moves to argmax Z once it exceeds k, and E, n and σ restart
+    at 0 after a switch and at the first frame and each index in starts (state from argmax there).
+    The frame of a switch yields the restarted E, n and σ with the Z that caused it.
     """
-    state = np.empty(prob.shape[1], dtype=np.int64)
+    classes = prob.shape[0]
     restart = set(int(s) for s in starts)
-    current, evidence = None, np.zeros(prob.shape[0])
+    logp = np.log(np.maximum(prob.astype(np.float64), EGTP_P_FLOOR))
+    current = None
     for t in range(prob.shape[1]):
-        p = prob[:, t]
         if current is None or t in restart:
-            current, evidence = int(p.argmax()), np.zeros(prob.shape[0])
-        else:
-            evidence = np.maximum(0.0, evidence + p - p[current])
-            evidence[current] = 0.0
-            if evidence.max() > k:
-                current, evidence = int(evidence.argmax()), np.zeros(prob.shape[0])
-        state[t] = current
+            current = int(prob[:, t].argmax())
+            evidence, n, mean, m2 = (np.zeros(classes) for _ in range(4))
+            yield current, evidence.copy(), n.copy(), np.zeros(classes), np.zeros(classes)
+            continue
+        delta = logp[:, t] - logp[current, t]
+        evidence = np.maximum(0.0, evidence + delta)
+        run = evidence > 0
+        run[current] = False
+        evidence[~run] = 0.0
+        # Welford update of the δ in the current run; a run that fell to 0 starts again.
+        n = np.where(run, n + 1, 0.0)
+        step = np.where(run, delta - mean, 0.0)
+        mean = np.where(run, mean + step / np.maximum(n, 1), 0.0)
+        m2 = np.where(run, m2 + step * (delta - mean), 0.0)
+        sigma = np.sqrt(m2 / np.maximum(n - 1, 1))
+        scale = np.sqrt(np.maximum(n, 1)) * np.maximum(sigma, EGTP_SIGMA_FLOOR)
+        z = np.where(n >= 2, evidence / scale, 0.0)
+        if z.max() > k:
+            current = int(z.argmax())
+            evidence, n, mean, m2, sigma = (np.zeros(classes) for _ in range(5))
+        yield current, evidence.copy(), n.copy(), sigma, z
+
+
+def egtp(prob, k, starts=()):
+    """EGTP causal state over (C, T) probabilities, which are returned unchanged (see egtp_steps)."""
+    state = np.fromiter((step[0] for step in egtp_steps(prob, k, starts)), dtype=np.int64,
+                        count=prob.shape[1])
     return prob, state
 
 

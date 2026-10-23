@@ -1,0 +1,60 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-23-egtp-original-form"
+  kind: impl
+  title: "時間ヘッド stabilize の EGTP 推論を原典（StableSPR 式 3〜6）の形に直す。log 比の証拠、片側の累積、√n·σ の正規化、遷移後の初期化。確率は変えない"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-23T06:40:00Z"
+  created_from:
+    runindex_commit: "63ae65da8c7d32df591f5e2ee4358286b72c726b"
+    counts: {index: 1961, experiments: 750, verdicts: 1506}
+  depends_on: ["T-2026-10-23-ptower-cand5-heads-impl"]
+  amendments: []
+intent:
+  question: "T-2026-10-23-ptower-cand5-heads-impl が置いた EGTP の決定規則（確率の差を累積、正規化なし）を、原典 StableSPR の式 3〜6（log 比の証拠、片側の累積、√n·σ の正規化、閾値 k、遷移後の統計の初期化）に置き換え、確率を変えない性質と因果性を保てるか"
+  decision_at_stake: "時間ヘッドの案 P-D の exp で、推論機構を原典どおりの形で掃引できるか（カード #14 の EGTP の行）"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "使わない（合成の確率列だけ。実データとモデルには触れない）"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/stage1_ptower.py", "tests/test_stage1_ptower_heads.py", "docs/proposals/2026-10-23-ptower-temporal-head.md"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions]
+  conventions_rev: "ceb7ef0f88a3f30279930be96ab9a5722acc2f09"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "開始状態。分岐、作業ツリー、試験の前の値、EGTP 以外の出力の基準値", gpu: false, est: "20m"}
+    - {id: B, name: "EGTP を原典の式に置き換える", gpu: false, est: "90m"}
+    - {id: C, name: "試験。確率の不変、因果性、累積と初期化の性質、既存の出力の不変", gpu: false, est: "60m"}
+    - {id: D, name: "検証と報告、PR", gpu: false, est: "40m"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、作業ツリーが清浄", on_fail: stop}
+    - {id: G2, after: C, check: "EGTP 以外の全候補の出力が基準値とビット一致し、EGTP の試験が通る", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [RESULT.md]
+  destination: "scripts/"
+  acceptance:
+    - "a: 開始状態と、変更の前に取った既存の候補（linear、A、B、C、ssm、memory、progress、stabilize の EGTP なし）の出力の基準値が記録されている"
+    - "b: EGTP が SPEC §4 の式のとおりに動く。確率は変えず、状態の列を返す。試験は、評価の列に対する証拠の累積の値を手で計算した期待と一致させる"
+    - "c: 因果性: t より後の確率を変えても t 以前の状態が変わらない。遷移後に統計が初期化される。閾値を十分大きくすると状態が変わらず、証拠が一方向に積まれ続けると有限の時刻で遷移する"
+    - "d: EGTP 以外の候補と、EGTP なしの stabilize の出力が基準値とビット一致する"
+    - "e: 追跡される変更が scripts/・tests/・README.md の該当箇所と本契約のディレクトリと受け皿だけ。新しい依存なし。試験の失敗の集合が増えていない。forbidden-check が通る"
+    - "f: PR が存在し、base が phase0、分岐が feat/ で始まり、Draft でない"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "原典の式に実装者が決めるほかない箇所（n と σ の更新と初期値、σ が 0 のとき）が SPEC §4 の指定の外に出る場合（停止せず、選んだ形と理由を RESULT に書く）"
+    - "既存の候補の出力を変えずには直せない場合（停止して利用者の判断を待つ）"
