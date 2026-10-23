@@ -183,6 +183,11 @@ experiments/・runindex/・data/・docs/proposals/ の内側: 0 件。`make task
 - PR（`gh pr view` の応答）:
 
       {"baseRefName":"phase0","headRefName":"feat/ptower-cand5-heads-impl","isDraft":false,"number":261,"state":"OPEN","url":"https://github.com/takuya3h/m2/pull/261"}
+- task-report（`source scripts/load_env.sh && make task-report TASK=T-2026-10-23-ptower-cand5-heads-impl`）: exit 0、応答:
+
+      {"task_id": "T-2026-10-23-ptower-cand5-heads-impl", "verdict": "pass", "n_issuer_defects": 4,
+       "report_sha256": "651d36f9a76d44adef3fda26b948fa8e099ab09feeb72f06409084f3b43316af",
+       "report_bytes": 11002, "replaced_blocks": 0}
 
 ## 解決された参照（手順書 3。原文、conventions_rev ceb7ef0f と blob 一致）
 
@@ -314,4 +319,3 @@ denominator・sigma_policy・frozen_source の参照は無い。
 
     出所: 利用者の決定 2026-10-19（契約 `T-2026-10-21-ops-taskstart-resume-folds-val` SPEC §2）、上の折りの表、
     `docs/stage1/design_val_subsets.md` 223 行。
-
