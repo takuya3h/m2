@@ -70,3 +70,5 @@
 - 追跡されるファイルの変更（commit 前）: `README.md`、`scripts/stage1_ptower.py`、`tests/test_stage1_ptower_heads.py`。ほかは `tasks/T-2026-10-23-egtp-original-form/` と `tasks/inbox.d/T-2026-10-23-egtp-original-form.md`。許される集合との差は 0。設定の既定値（`configs/stage1_ptower.yaml`）は変えていない。
 
 ## E. 送出
+
+- commit `7cf83fed` を push。`gh pr create --base phase0` → https://github.com/takuya3h/m2/pull/263。`gh pr view` の応答: `{"baseRefName":"phase0","headRefName":"feat/egtp-original-form","isDraft":false,"number":263,"state":"OPEN"}`。

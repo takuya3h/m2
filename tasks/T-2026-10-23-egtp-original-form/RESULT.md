@@ -13,7 +13,7 @@ status: partial。EGTP を原典（StableSPR 式 3〜6）の形に置き換え�
 | c | 確率は同一の物として返る。t=120 より後を変えても前の状態は同じ。k 1e9 では状態が一つ、一定の反証では有限の時刻で遷移する。遷移の時刻に E・n・σ が 0 になる。starts の位置は argmax から始まる |
 | d | 10 通り（linear・A・B・C・memory 2 通り・progress・stabilize A/B/C、egtp 無し）の出力と復号がビット一致。ssm は UNKNOWN（CUDA が要る）。egtp 以外の関数 32 件のソースは同一（L41） |
 | e | 変更は README.md・scripts/・tests/・本契約のディレクトリ・受け皿だけ。依存の差分 0。forbidden-check pass。失敗の集合は前後で同じ 12 件（L65） |
-| f | 「送出」に記載 |
+| f | PR #263 は OPEN・Draft でない・base phase0・head feat/egtp-original-form（gh pr view の応答） |
 
 ## 実測
 
@@ -44,7 +44,7 @@ status: partial。EGTP を原典（StableSPR 式 3〜6）の形に置き換え�
 
 ## 送出
 
-（PR 番号と台帳の結果を追記する）
+PR #263。forbidden-check・spec-check・task-validate は exit 0。pytest は exit 1（変更前と同じ 12 件の失敗）。台帳への送り返しの結果は audit の「E. 送出」に記録する。
 
 ## 1. 解決された参照
 
