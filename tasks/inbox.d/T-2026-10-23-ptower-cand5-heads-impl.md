@@ -1,0 +1,1 @@
+- [ ] 2026-10-23 [cc] 候補 5 の時間ヘッド四案（ssm、memory、progress、stabilize）を既存の四候補の出力をビット一致のまま足した。exp の起票の前に、カードに残る三つの食い違い（P-C の損失、P-D の α、P-B の GRU 単独の腕）と egtp_k を決め、原典との照合を外部接続の承認を得て行う（T-2026-10-23-ptower-cand5-heads-impl）。

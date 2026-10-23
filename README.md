@@ -1611,3 +1611,23 @@ forward した region token が既存の `t1a_regiontoken/relation_detr_seed42` 
   float64 から 1.1e-2 ずれ、二枚との差（8.4e-3）はその範囲にある。dlsta の A5000 で処方のまま（GPU ごと 8 枚）溢れず、
   一歩 0.79〜0.80 s（`context/env-facts.md` の dlsta の行）
 - 試験: `tests/test_stage1_ptower_r3_dist.py`（CPU 13 件、二枚の GPU 1 件。二枚が無ければ skip）
+
+### 候補 5 の時間ヘッド四案（2026-10-23、andrew）
+
+契約 `T-2026-10-23-ptower-cand5-heads-impl`（impl。実験は回していない）。記録は `tasks/T-2026-10-23-ptower-cand5-heads-impl/`、
+設計はカード `docs/proposals/2026-10-23-ptower-temporal-head.md`。
+
+- **`scripts/stage1_ptower.py` の時間ヘッドの道に四案を足した。** 既存の候補（`linear`／`A`／`B`／`C`）の出力は、足す前の
+  commit で取った要約値とビット一致する（`tests/test_stage1_ptower_heads.py`）。足した鍵は `configs/stage1_ptower.yaml` に書かず、
+  無いときは既存の挙動になる（鍵の一覧と既定値は同じファイルの注記）
+- 候補名: `ssm`（P-A。mamba-ssm の単方向の選択的 SSM、CUDA だけ）、`memory`（P-B。A の TCN に GRU と適応的な記憶）、
+  `progress`（P-C。A の TCN に工程内の進捗の頭、MSE。`transition_prior` で折りの train 動画の遷移行列による復号）、
+  `stabilize`（P-D。`base_candidate` の A・B・C と同じ構造に TEC の重み付き CE。`egtp` で EGTP 型の状態 ŷ_t も記録し、
+  主の値は p_t の argmax のまま）
+- 列の情報: `load_fold(cfg, info=True)` は動画の組に、フレームごとのクリップの順位・Δ（クリップ内のフレーム番号の差。
+  クリップの先頭は `GAP_UNKNOWN` = −1 で 0 や 1 と混ぜない）・境の目印を四つ目の要素として添える。既定の呼び方の三つ組は変えていない。
+  17,233 の manifest（`data/processed/phase_manifest_all_phase`）で 23 クリップ・Δ が 1 の割合 96.8%・最大 254・クリップ間の不明 8 を確かめる
+- 境の扱い: `boundary_flag`（どの候補でも、入力に境の目印を 1 次元連結）、`reset_at_clip`（クリップごとに模型を走らせ、状態と記憶を
+  初期化）、`gap_input`（`flag` は不明の目印、`delta` は log Δ と不明の目印）、`egtp_reset_at_clip`
+- 試験: `tests/test_stage1_ptower_heads.py`（基準値、因果性と双方向の模型の陽性対照、境、進捗の教師、遷移行列、TEC、EGTP、
+  四案と A の 2 epoch の煙試験。SSM の試験は GPU が無ければ skip）

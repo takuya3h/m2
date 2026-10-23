@@ -1,0 +1,68 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-23-ptower-cand5-heads-impl"
+  kind: impl
+  title: "候補 5 の時間ヘッド四案（選択的 SSM、GRU と記憶、進捗と遷移行列、TEC 損失と EGTP 推論）を工程塔の時間ヘッドの道に実装し、列のクリップ情報と欠けの長さを添え、因果性と境の扱いを試験で固める。実験は回さない"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-23T04:10:00Z"
+  created_from:
+    runindex_commit: "63ae65da8c7d32df591f5e2ee4358286b72c726b"
+    counts: {index: 1961, experiments: 750, verdicts: 1506}
+  depends_on: []
+  amendments: []
+intent:
+  question: "候補 5 の時間ヘッド四案を、既存の時間ヘッドの道（保存した backbone の特徴の列を動画ごとに学ぶ）に、既存の候補の出力を一ビットも変えずに足せるか。四案はすべて online-causal で、クリップの境の扱い（持ち越し、初期化、欠けの長さの入力）を設定で切り替えられるか"
+  decision_at_stake: "候補 0 の回し直し（andrew）が終わった時点で、時間ヘッドの exp を実装の待ちなしに起票できるか。exp は intent.proposal_card で docs/proposals/2026-10-23-ptower-temporal-head.md を参照する"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "工程塔の時間ヘッドの入力は保存した特徴（フレームごと 2048 次元）。本契約は実データの特徴を学習に使わない。クリップ情報と欠けの長さの検算に、17,233 フレームの manifest（data/processed/phase_manifest_all_phase）だけを読む"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/stage1_ptower.py", "scripts/stage1_ptower_r3.py", "configs/stage1_ptower.yaml", "configs/stage1_ptower_r3.yaml", "tests/test_stage1_ptower.py", "tests/test_stage1_ptower_r3.py", "docs/proposals/2026-10-23-ptower-temporal-head.md"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#folds]
+  conventions_rev: "ceb7ef0f88a3f30279930be96ab9a5722acc2f09"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+plan:
+  phases:
+    - {id: A, name: "開始状態。分岐、作業ツリー、装置、試験の前の値、既存の候補の出力の基準値（変更の前に取る）", gpu: true, est: "40m"}
+    - {id: B, name: "列の情報。動画の列にクリップの番号、クリップ内のフレーム番号の差、境の目印を添える。manifest で検算", gpu: false, est: "2h"}
+    - {id: C, name: "四つのヘッドと、損失と推論の部品。既存の候補と同じ呼び口に合わせる", gpu: true, est: "6h"}
+    - {id: D, name: "試験。既存の候補の不変、因果性、境の扱い、損失と推論の性質、小さな入力での学習の煙試験", gpu: true, est: "3h"}
+    - {id: E, name: "設定と文書。設定の鍵の説明、README の節", gpu: false, est: "40m"}
+    - {id: F, name: "検証と報告、PR", gpu: false, est: "60m"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、作業ツリーが清浄で、既存の四候補（linear、A、B、C）の基準値が取れている", on_fail: stop}
+    - {id: G2, after: D, check: "既存の四候補の出力が基準値とビット一致し、四つのヘッドが因果性の試験を通り、陽性対照（非因果の模型）が同じ試験で落ちる", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, gpu_free]
+outputs:
+  must_have: [RESULT.md]
+  destination: "scripts/"
+  acceptance:
+    - "a: 開始状態（分岐、起点、作業ツリー、装置、版、試験の前の値）と、変更の前に取った既存の四候補の出力の基準値（固定 seed の合成入力に対する最終段の出力の要約値）が記録されている"
+    - "b: 変更の後、既存の四候補の出力が基準値とビット一致する。既存の設定ファイルの既定値は変わっていない"
+    - "c: 動画の列に、フレームごとのクリップの番号と、クリップ内のフレーム番号の差と、境の目印が添えられる。17,233 の manifest で、クリップ数 23、番号の差が 1 の割合 96.8 パーセント、最大 254 が再現する（EDA の値）。クリップ間の差は不明として区別される"
+    - "d: 四つのヘッド（選択的 SSM、GRU と記憶、進捗と遷移行列、TEC と EGTP）が設定の候補名で選べ、既存の呼び口（入力 1 × 2048 × T、出力は段ごとの 1 × クラス × T の列）で動く。設定の鍵は SPEC §4 の表のとおり"
+    - "e: 四つのヘッドが因果性の試験を通る（t より後のフレームを変えても t 以前の出力が変わらない）。陽性対照として、意図的に双方向にした模型が同じ試験で落ちる"
+    - "f: 境の扱いの試験を通る。初期化ありでは境の後の出力が境の前のフレームに依らず、初期化なしでは依る。欠けの長さの入力は Δ と二値の目印を切り替えられる"
+    - "g: 損失と推論の部品の試験を通る。進捗の教師は区間内で 0 から 1 へ単調で、クリップの境をまたぐ同じ工程は一つの区間。遷移行列は折りの train 動画だけから作られる。TEC は α が 0 のとき通常の CE と一致し、重みは誤り区間の先頭 M フレームだけに付く。EGTP は確率を変えず、状態の列を返し、証拠が閾値を超えるまで状態を保つ"
+    - "h: 四つのヘッドで、小さな合成の特徴（数動画、数百フレーム）の学習の煙試験が 2 epoch 通り、checkpoint は一時の置き場だけに書かれ残らない。SSM は GPU で、ほかは CPU でも通る"
+    - "i: 追跡される変更が scripts/・configs/・tests/・README.md の該当箇所と本契約のディレクトリと受け皿だけで、experiments/・runindex/・data/・docs/proposals/ に触れていない。新しい依存を導入していない。試験の失敗の名前の集合が増えていない。forbidden-check が通る"
+    - "j: PR が存在し、base が phase0、分岐が feat/ で始まり、Draft でない"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "既存の四候補の出力を変えずには実装できない箇所が見つかった場合（停止して諮る。既存の挙動を変えない）"
+    - "mamba-ssm か causal-conv1d が読み込めない場合（導入せず停止して諮る）"
+    - "manifest の検算が EDA の値と合わない場合"
+    - "カードの記述と実装の都合が食い違い、カードを変えないと実装できない場合（停止して諮る。カードを変えない）"

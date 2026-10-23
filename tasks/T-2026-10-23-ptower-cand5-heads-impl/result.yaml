@@ -1,0 +1,82 @@
+result_version: 3
+task_id: T-2026-10-23-ptower-cand5-heads-impl
+status: pass
+host: Andrew
+branch: feat/ptower-cand5-heads-impl
+pr: 261
+merged: false
+gates:
+- id: G1
+  verdict: pass
+  note: 分岐 feat/ptower-cand5-heads-impl、起点 origin/phase0 ea73a8ba、汚れは task-start が取り込んだ契約 2 件だけ。四候補の基準値（最終段の出力の sha256）を scripts 未変更の HEAD ea73a8ba で取り、二つのプロセスで一致、試験だけの commit ed0fee7a に置いた。
+- id: G2
+  verdict: pass
+  note: 変更後、四候補の要約値が基準値と一致（試験 4 件）。四ヘッド（memory は memory_len 0 も、stabilize は A・B・C、ssm は GPU で selective 真偽）が t より前の出力の厳密一致を通り、双方向 GRU は同じ検査で落ちた。
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 959
+deviations:
+- type: judgement
+  note: reset_at_clip はクリップごとに模型全体（TCN を含む）を走らせる形にした。GRU と記憶だけの初期化では完了判定 f を満たせないため。どの候補でも使える。
+- type: judgement
+  note: gap_input flag は不明の目印（クリップの先頭）1 列、delta は log Δ と不明の目印の 2 列で、不明の Δ には 256 を入れる（観測の最大 254 の上）。
+- type: judgement
+  note: '記憶は B に倣い TCN の最終段の出力を埋め込んで GRU に入れ、直近 memory_len 状態への因果の注意とゲートで読む。memory_len 0 を GRU だけの腕として足した（カード P-B #9 の三版）。'
+- type: judgement
+  note: 進捗の頭は stage 1 の内部特徴から工程ごとの sigmoid、正解の工程の列に MSE。遷移行列は自己遷移を含み、直前の予測から届かない工程を除外する復号にした。
+- type: judgement
+  note: TEC の誤り区間は各段の argmax から取り、正規化はクラス重みの和。EGTP の証拠は max(0, e + p_c − p_state) で積む実装者の設計。egtp_k は既定値を置かず egtp 真のとき必須にした。
+- type: judgement
+  note: SPEC に既定の無い鍵はカードの殺し実験の中央に合わせた（ssm_state_dim 64、ssm_layers 2、memory_len 128）。base_candidate の既定は A。
+- type: judgement
+  note: 原典（OnlineTAS arXiv 2411.01122、StableSPR arXiv 2605.16387）は外部への接続を事前の確認なしに行わない規約のため引いておらず、形は SPEC とカードの記述の範囲で決めた。
+- type: judgement
+  note: 煙試験は evidence と load_fold を差し替えて一時の置き場で回した。既存の A を煙試験に足し、phase0 の版との学習後の重みの一致を scratchpad で確かめた（SPEC に無い追加の確認）。
+- type: judgement
+  note: CLAUDE.md の experiment_log と W&B は適用していない（実験を回していない。SPEC Task E-2）。README には候補名と鍵の節を足した。
+issuer_defects:
+- type: self_contradiction
+  note: SPEC §4.3 は P-B の初期化を「クリップの先頭で GRU の状態と記憶を初期化する」と書くが、完了判定 f は境の後の出力が境の前に依らないことを求める。GRU と記憶だけを初期化すると下の TCN（受容野 253 フレーム）が境をまたぎ、f は落ちる。模型全体をクリップごとに走らせて満たした。
+- type: asserted_without_measuring
+  note: Task D-7 は煙試験を「train の道で 2 epoch、checkpoint は一時の置き場」とするが、train は evidence() で experiments/ に実験フォルダを作り（禁止領域）、W&B が始まらなければ RuntimeError を出す。指示どおり呼ぶと禁止領域に書くか失敗する。試験の中で evidence と load_fold を差し替えた。
+- type: self_contradiction
+  note: '設計の出所のカードに三版の改訂と古い記述の食い違いが残る。P-C は #14 の改訂が MSE で固定の行と #15 が L1、P-D は改訂が α {7, 19} で掃引の行と #15 が {3, 11}、P-B は #9 の改訂が GRU 単独の腕を足し備考は入れないと書く。SPEC は MSE だけを決めており、残りは exp の起票で選ぶ必要がある。'
+- type: self_contradiction
+  note: §4.1 はクリップの先頭とクリップをまたぐ位置を不明とする（数えると 23）一方、完了判定 c は「クリップ間 8 箇所が不明」とし、対照を「不明の数が 7」とする。どちらの数かが読みで分かれるため、全体 23 とクリップ間 8（境を一つ無視すると 7）の両方を数えて書いた。
+positive_controls:
+- judgement: 完了判定 b の基準値の比較が違いを検出する
+  breaking_input: 候補 A の layers を 6 から 7 にする
+  observed: 要約値が 636de74d… になり、基準値 a3cd6d08… と一致しない（試験 test_baseline_check_detects_a_changed_config が pass）。
+- judgement: 完了判定 c の不明の数え方がクリップ間の境を拾う
+  breaking_input: 動画 03 の 2 クリップを 1 本につないだ manifest の写し
+  observed: クリップ間の不明が 8 から 7 になった。
+- judgement: 完了判定 d の候補名の分岐が未知の名前を通さない
+  breaking_input: candidate nope、stabilize の base_candidate ssm、gap_input seconds
+  observed: 三つとも ValueError。
+- judgement: 完了判定 e の因果性の検査が未来を使う模型を落とす
+  breaking_input: 双方向 GRU の模型を同じ検査にかける
+  observed: 検査が偽を返した（t より前の出力が変わった）。四ヘッドは真。
+- judgement: 完了判定 f の境の検査が依存を検出する
+  breaking_input: reset_at_clip を偽にする
+  observed: 境の前を変えると境の後の出力が変わった（真では不変）。
+- judgement: 完了判定 g の TEC と EGTP と遷移行列の検査が働く
+  breaking_input: TEC の α を 3 にする / EGTP の閾値を 0 にする / train 動画に遷移 4→5 を足す
+  observed: TEC は CE と一致しない。EGTP の状態は毎フレームの argmax（0,1,1,1,1,1）になる。遷移行列が変わる（val を変えたときは不変）。
+- judgement: 完了判定 h の checkpoint の確認が空振りでない
+  breaking_input: 一時の置き場を消す前に best.pth を探す
+  observed: 消す前は best.pth が在り（5 本とも）、消した後の *.pth は 0 件。
+- judgement: 完了判定 i の forbidden-check が禁止領域への書き込みを拾う
+  breaking_input: repo の外の clone の写し（HEAD 1afc4ad1）で data/zz_heads_control.txt を git add -f する
+  observed: 足す前は pass・exit 0、足した後は fail・exit 1、違反 data/zz_heads_control.txt（禁止領域 data/ の内側）。写しは削除した。
+followups:
+- 時間ヘッドの exp の起票では、カードに残る食い違い（P-C の進捗損失 L1 と MSE、P-D の α {3, 11} と {7, 19}、P-B の GRU 単独の腕の有無）をどちらに取るか決め、egtp_k の値を決める（実装は既定を置かず必須にした）。
+- 原典（OnlineTAS の記憶 §3.3、StableSPR の TEC §2.1 と EGTP 式 (6)、ProTAS の進捗の頭）との照合は、外部への接続の承認を得てから行う。食い違えば実装の形を直す契約が要る。
+unknowns:
+- 記憶・TEC・EGTP・進捗の頭が原典の形と一致するか（照合していない）。
+- 実データ（17,233 フレームの保存特徴）での 1 本の所要時間。
+- SSM の逆伝播の決定性（前の契約で、決定論的な設定でも勾配が 5.7e-14 で非決定と測られている。本契約では測っていない）。
+commits:
+- ed0fee7a
+- 1afc4ad1
+- 502e6af7
