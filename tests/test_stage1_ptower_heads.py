@@ -7,6 +7,8 @@ import hashlib
 import importlib.util
 import io
 import json
+import math
+import statistics
 import tempfile
 from contextlib import redirect_stdout
 from pathlib import Path
@@ -318,17 +320,67 @@ def test_tec_loss_equals_weighted_ce_at_alpha_zero_and_not_above():
     assert not torch.allclose(tower.tec_loss(logits, labels, class_weights, 3.0, 8, 1.5), ce)
 
 
-def test_egtp_keeps_probabilities_and_holds_the_state():
-    prob = np.array([[0.6, 0.45, 0.45, 0.45, 0.2, 0.2],
-                     [0.4, 0.55, 0.55, 0.55, 0.8, 0.8]])
+EGTP_P1 = [0.4, 0.55, 0.6, 0.6, 0.8]  # p of class 1; class 0 holds the rest
+
+
+def egtp_prob(p1=EGTP_P1):
+    p1 = np.array(p1)
+    return np.stack([1 - p1, p1])
+
+
+def test_egtp_keeps_probabilities_and_matches_the_hand_computed_evidence():
+    prob = egtp_prob()
     original = prob.copy()
-    returned, held = tower.egtp(prob, 0.25)
+    returned, held = tower.egtp(prob, 3.0)
     assert returned is prob and np.array_equal(prob, original)
-    # Evidence 0.1, 0.2, 0.3 > 0.25 at index 3, so the state switches there.
-    assert held.tolist() == [0, 0, 0, 1, 1, 1]
-    assert tower.egtp(prob, 0.0)[1].tolist() == prob.argmax(0).tolist()
-    assert tower.egtp(prob, 10.0)[1].tolist() == [0] * 6
-    assert tower.egtp(prob, 10.0, starts=[4])[1].tolist() == [0, 0, 0, 0, 1, 1]
+    # State 0 from argmax at t=0; δ = log p1 − log p0 for class 1 from t=1.
+    d1, d2, d3 = math.log(0.55 / 0.45), math.log(0.6 / 0.4), math.log(0.6 / 0.4)
+    steps = list(tower.egtp_steps(prob, 3.0))
+    assert steps[1][1][1] == pytest.approx(d1, abs=1e-12) and steps[1][2][1] == 1
+    assert steps[1][4][1] == 0.0  # Z is 0 while n < 2
+    # n = 2: σ = |d2 − d1|/√2, so Z = (d1 + d2)/(√2·σ) = (d1 + d2)/(d2 − d1) ≈ 2.96 < 3.
+    assert steps[2][1][1] == pytest.approx(d1 + d2, abs=1e-12) and steps[2][2][1] == 2
+    assert steps[2][4][1] == pytest.approx((d1 + d2) / (d2 - d1), abs=1e-12)
+    # n = 3: Z = (d1 + d2 + d3)/(√3·stdev(d1, d2, d3)) ≈ 4.94 > 3, so the state switches at t=3.
+    z3 = (d1 + d2 + d3) / (math.sqrt(3) * statistics.stdev([d1, d2, d3]))
+    assert steps[3][4][1] == pytest.approx(z3, abs=1e-12)
+    assert held.tolist() == [0, 0, 0, 1, 1]
+    assert tower.egtp(prob, 2.9)[1].tolist() == [0, 0, 1, 1, 1]
+
+
+def test_egtp_restarts_the_statistics_after_a_switch():
+    # Switch to 1 at t=2 (k=2.9); class 0 has p 0.4 < 0.6 at t=3 and p 0.7 > 0.3 at t=4.
+    steps = list(tower.egtp_steps(egtp_prob([0.4, 0.55, 0.6, 0.6, 0.3]), 2.9))
+    assert [s[0] for s in steps] == [0, 0, 1, 1, 1]
+    assert not steps[2][1].any() and not steps[2][2].any() and not steps[2][3].any()
+    assert steps[3][1][0] == 0.0 and steps[3][2][0] == 0
+    # Only the evidence after the switch is left: one increment, n = 1.
+    assert steps[4][1][0] == pytest.approx(math.log(0.7 / 0.3), abs=1e-12) and steps[4][2][0] == 1
+
+
+def test_egtp_is_causal():
+    rng = np.random.default_rng(0)
+    prob = rng.dirichlet(np.ones(9), size=200).T
+    changed = prob.copy()
+    changed[:, 120:] = rng.dirichlet(np.ones(9), size=80).T
+    before, after = tower.egtp(prob, 0.5)[1], tower.egtp(changed, 0.5)[1]
+    assert np.array_equal(before[:120], after[:120]) and not np.array_equal(before, after)
+
+
+def test_egtp_threshold_holds_or_lets_the_state_move():
+    rng = np.random.default_rng(1)
+    prob = rng.dirichlet(np.ones(9), size=200).T
+    assert set(tower.egtp(prob, 1e9)[1].tolist()) == {int(prob[:, 0].argmax())}
+    assert len(set(tower.egtp(prob, 0.0)[1].tolist())) > 1
+    # Constant evidence against the state (σ = 0, so the floor applies) switches in finite time.
+    held = tower.egtp(egtp_prob([0.4] + [0.6] * 20), 5.0)[1]
+    assert held[0] == 0 and held[-1] == 1
+
+
+def test_egtp_starts_restart_from_argmax():
+    prob = egtp_prob([0.4, 0.45, 0.45, 0.45, 0.8, 0.8])
+    assert tower.egtp(prob, 1e9)[1].tolist() == [0] * 6
+    assert tower.egtp(prob, 1e9, starts=[4])[1].tolist() == [0, 0, 0, 0, 1, 1]
 
 
 # --- smoke: two epochs through train on synthetic features ----------------------------

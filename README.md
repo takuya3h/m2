@@ -1631,3 +1631,16 @@ forward した region token が既存の `t1a_regiontoken/relation_detr_seed42` 
   初期化）、`gap_input`（`flag` は不明の目印、`delta` は log Δ と不明の目印）、`egtp_reset_at_clip`
 - 試験: `tests/test_stage1_ptower_heads.py`（基準値、因果性と双方向の模型の陽性対照、境、進捗の教師、遷移行列、TEC、EGTP、
   四案と A の 2 epoch の煙試験。SSM の試験は GPU が無ければ skip）
+
+### EGTP を原典の形に直した（2026-10-23、bengio）
+
+契約 `T-2026-10-23-egtp-original-form`（impl。実験は回していない）。記録は `tasks/T-2026-10-23-egtp-original-form/`。
+
+- **`egtp` を StableSPR（arXiv 2605.16387 §2.2）の式 3〜6 に合わせた。** δ(c) = log p(c) − log p(ŷ)、
+  E(c) = max(0, E(c) + δ(c))、Z(c) = E/(√n·σ)、Z の最大が `egtp_k` を超えたら遷移し、遷移の後に E・n・σ を 0 に戻す。
+  確率は変えず、呼び口（`egtp(prob, k, starts)` → `(prob, state)`）と `decoders` との接続は前のまま
+- 原典が書いていない箇所の決め方: n(c) と σ(c) は E(c) が最後に 0 だった後に積んだ δ(c) の個数と標本標準偏差（Welford）。
+  n < 2 の間は Z = 0。σ の下限 `EGTP_SIGMA_FLOOR` = 1e-3（一定の δ でも Z が有限）、log の前の p の下限 `EGTP_P_FLOOR` = 1e-12。
+  各時刻の (状態, E, n, σ, Z) は `egtp_steps` で読める
+- ほかの候補の出力と設定の既定値は変えていない（変更前と後の要約値が bengio でビット一致。ssm は CUDA が要るため出力は測らず、
+  関数単位のソースの一致で示した）。前の契約の基準値（`BASELINE`）は bengio では変更前から一致しない（ホストによる差）
