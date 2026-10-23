@@ -573,3 +573,9 @@ IMAGE_MISMATCH_ANALYSIS.mdに実測・推論・限界を分けて記録。propos
 ## G2再検証と再開（2026-10-22 JST）
 
 利用者指示を受け案1を適用。改訂prereg177e547fは本番学習前。manifest17,233枚（raw15,437＋不足1,796）、train10,580、val1,904、test4,749、余り4。全参照先とSHA-256を固定し全数再照合PASS、改変コピーは拒否。g2_evidence.jsonに検出2点の実6群・clip・実更新、工程2点の2rankと実効batch、元学習コード不変、試験失敗集合不変を記録。検出用venvに依存を追加せずbody venvの別プロセスでoffline W&B動作確認。全試験927 pass/6 fail/1 skip、既知6失敗の名前に増加なし、追加関連試験14 pass。third_partyソース変更なしのためsnapshot差分なし。検証用成果物は証拠としてscratchに保持。監視ツールが利用できないため専用supervisorで10秒間隔GPU所有者・メモリを監視する。
+
+## GPU利用の改善（2026-10-23T17:00:41.848625+09:00）
+
+利用者が短縮と計算資源の活用を指示。GPU0禁止・全40点・seed42・学習条件は維持。検出の学習後評価は既存の分散評価経路で2GPUへ分担し、全12指標と15クラスAPが旧1GPU評価に完全一致。工程は追加評価と特徴抽出を並行、時間ヘッドは2GPUの動的キューへ分配し構成ごとに独立したworkへ保存。実A/6・A/8の並列検証は旧実行とJaccard・accuracy・最良epoch・総epochが完全一致。関連19試験とlint通過。親監視の交代後も別sessionの子が継続し、完了証拠で引き継げることをCPU対照で確認。元親から引き継ぐ処理の終了コードは取得不能なためnullと明記し、終了ログ・収束記録・実出力を照合する。記録の重複追加は拒否・同値の再登録は無操作。co-primaryの最終表はprereg §2.3どおりbackboneのframe accuracyへ修正（表はまだ未生成）。実測証拠scheduler_revision.json。
+
+今回のforbidden-checkは別作業の未追跡6件（gaze_data_survey/survey.py、ptower_cand5_compute_probeの5件）に反応してfail。本変更のパスとの重複は0件。これらは本契約で作成・変更しておらず触れない。実出力はscratch/forbidden_scheduler_revision.json。タスク全体の検査は未通過として残す。

@@ -124,7 +124,7 @@ def main(cfg):
         for manager in managers:
             if manager.exp_dir is not None:
                 write_json(manager.exp_dir / "search_epoch_history.json", epoch_history)
-                if not cfg.get("control_frames", 0):
+                if not cfg.get("control_frames", 0) and not cfg.get("control_only", False):
                     publish(manager, ROOT / "experiments/phase1/stage1_ptower_search")
                 write_json(work / f"{cfg.action}_last_run.json", {
                     "exp_id": manager.exp_id, "path": str(manager.exp_dir),

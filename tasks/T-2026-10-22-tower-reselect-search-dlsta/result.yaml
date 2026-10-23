@@ -16,6 +16,9 @@ gates:
 - id: G2
   verdict: pass
   note: 承認された既存15437枚＋補完1796枚を全数照合。検出2点で実更新・6群確認、工程2点で2rank確認。失敗名集合増加なし。third_party変更なし。
+- id: G3
+  verdict: pass
+  note: 2026-10-23 01:53:35 JST、最初の4点完了。全設定・COCO初期化・二枚の道を確認。
 tests:
   before_failed: 6
   after_failed: 6
@@ -58,9 +61,12 @@ positive_controls:
 - judgement: optimizer群と二枚の道
   breaking_input: 検出0/13番でlr・weight decay・max_normを変え、工程0/1番でweight decayと累積を変える
   observed: 検出12stepで実更新6/7回。実6群とclip閾値一致。工程world_size2、実効batch64/32。g2_evidence.json。
+- judgement: 複数GPUへ分配しても結果が一致する
+  breaking_input: 検出の評価を1GPUから2GPUへ分担し、工程時間ヘッド2構成を並列化する
+  observed: 評価12指標・15クラスAPの差0。ヘッド2構成のJaccard・accuracy・最良epoch・総epochの差0。関連19試験通過。
 followups:
-- 監視付きでCの4点を実行しG3を判定。通過後残り36点を実行。
-- 全探索後に表・順位・runindex・最終試験・PR・台帳報告を行う。完了までは同期抑止を維持。
+- Dの残り探索を監視実行中。全探索後に表・runindex・最終検証・PR・台帳報告。
+- 利用者指示で学習後の処理を複数GPUへ分配し、稼働中の学習を維持して監視を交代。
 unknowns:
 - JPEGの保存形式の差と画素差は測定済み。別版を作った実行者・時点・命令は未特定。品質95での単純再保存は代表13例を完全再現しなかった。
 - モデル性能への影響と、標本47例を除く時間対応は未測定。

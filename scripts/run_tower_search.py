@@ -1,6 +1,7 @@
 """Run the preregistered search in the background, with explicit stop gates and GPU logs."""
 from __future__ import annotations
 
+import argparse
 import csv
 import json
 import math
@@ -38,6 +39,63 @@ guard = threading.Lock()
 stopping = threading.Event()
 processes = {}
 started = time.monotonic()
+handoff_commands = {}
+handoff_points = set()
+adopted_roots = {}
+handoff_started = {}
+running_actions = {}
+current_stage = "C"
+
+
+def process_identity(pid):
+    try:
+        fields = Path(f"/proc/{pid}/stat").read_text().rpartition(") ")[2].split()
+        return None if fields[0] == "Z" else fields[19]
+    except FileNotFoundError:
+        return None
+
+
+def completed_command(log):
+    """Require actual end-of-stage evidence when adopting a reaped process."""
+    text = log.read_text(errors="replace")
+    if "Traceback (most recent call last)" in text:
+        return False
+    if log.name == "train.log":
+        convergence = log.parent / "convergence.json"
+        if not convergence.exists() or "Training time:" not in text:
+            return False
+        result = json.loads(convergence.read_text())
+        return (result["stopped_epoch"] is not None or result["observed_epochs"] == 36) and (log.parent / "best_ap.pth").exists()
+    if log.name.startswith("eval_"):
+        path = log.with_suffix(".json")
+        return "[eval] stats ->" in text and path.exists() and math.isfinite(json.loads(path.read_text())["AP"])
+    markers = {"finetune.log": "FINETUNE_COMPLETE", "extract.log": "EXTRACT_COMPLETE"}
+    marker = markers.get(log.name, "RECORDS_COMPLETE" if "records" in log.name else None)
+    return marker is not None and marker in text
+
+
+def adopt_command(log, tag, timeout_hours):
+    info = handoff_commands.pop(str(log), None)
+    if info is None:
+        return False
+    pid, identity = info["pid"], info["identity"]
+    begin = datetime.fromisoformat(info["time_jst"]).timestamp()
+    with guard:
+        running_actions[pid] = {"tag": tag, "gpus": info["gpus"], "log": str(log), "adopted": True}
+    try:
+        while identity is not None and process_identity(pid) == identity:
+            if stopping.wait(2) or time.time() - begin > timeout_hours * 3600:
+                os.killpg(pid, signal.SIGTERM)
+                raise RuntimeError(f"Adopted command stopped or timed out: {tag}")
+    finally:
+        with guard:
+            running_actions.pop(pid, None)
+    if not completed_command(log):
+        raise RuntimeError(f"Adopted command lacks completion evidence: {tag}; {log}")
+    write_json(log.with_suffix(".adopted.json"), {
+        "original_pid": pid, "completed_jst": now(), "completion_evidence_checked": True,
+        "exit_code": None, "note": "Original parent was replaced; completion verified from stage output and log."})
+    return True
 
 
 def now():
@@ -48,7 +106,8 @@ def status(state, **values):
     with guard:
         write_json(ANALYSIS / "live_status.json", {
             "state": state, "time_jst": now(), "supervisor_pid": os.getpid(),
-            "active": dict(active), "completed_points": len(records), **values})
+            "active": dict(active), "completed_points": len(records),
+            "running_commands": dict(running_actions), "stage": current_stage, **values})
 
 
 def gpu_snapshot():
@@ -68,7 +127,8 @@ def descendants():
                 parents[int(entry.name)] = int(fields[1])
             except (FileNotFoundError, ProcessLookupError, PermissionError):
                 continue
-    owned = {os.getpid()}
+    owned = {os.getpid()} | {pid for pid, identity in adopted_roots.items()
+                            if process_identity(pid) == identity}
     while True:
         more = {pid for pid, parent in parents.items() if parent in owned} - owned
         if not more:
@@ -103,6 +163,8 @@ def monitor():
                     current = dict(active)
                 output.write(json.dumps({"time_jst": now(), "gpus": gpus,
                                          "processes": procs, "active": current}) + "\n")
+                if not stopping.is_set():
+                    status("running")
             except Exception as exc:
                 stopping.set()
                 status("stopped", reason=f"GPU monitoring failed: {type(exc).__name__}")
@@ -123,6 +185,8 @@ def command(cmd, env, cwd, log, tag, timeout_hours):
         raise RuntimeError("Search stopped")
     if shutil.disk_usage(SCRATCH).free < 150_000_000_000:
         raise RuntimeError("Scratch free space below 150 GB")
+    if adopt_command(log, tag, timeout_hours):
+        return
     log.parent.mkdir(parents=True, exist_ok=True)
     keys = ("CUDA_VISIBLE_DEVICES", "WANDB_MODE", "WANDB_DIR", "PYTHONPATH", "CUDA_HOME",
             "EGO_ROOT", "EGO_ANN_DIR", "RELDETR_COCO_CKPT", "RELDETR_OUTPUT_DIR", "RELDETR_EVIDENCE_DIR",
@@ -137,6 +201,8 @@ def command(cmd, env, cwd, log, tag, timeout_hours):
                                 stderr=subprocess.STDOUT, start_new_session=True)
         with guard:
             processes[proc.pid] = proc
+            running_actions[proc.pid] = {"tag": tag, "gpus": env.get("CUDA_VISIBLE_DEVICES", ""),
+                                         "log": str(log), "adopted": False}
         write_json(log.with_suffix(".command.json"), {"cmd": cmd, "pid": proc.pid,
                                                     "time_jst": now(), "tag": tag})
         begin = time.monotonic()
@@ -151,6 +217,7 @@ def command(cmd, env, cwd, log, tag, timeout_hours):
         finally:
             with guard:
                 processes.pop(proc.pid, None)
+                running_actions.pop(proc.pid, None)
 
 
 def environment(pair, work):
@@ -178,6 +245,15 @@ def record_run(kind, number, action, run, pair):
     path = ANALYSIS / "records.csv"
     with guard:
         exists = path.exists()
+        if exists:
+            with path.open(encoding="utf-8-sig", newline="") as handle:
+                prior = [r for r in csv.DictReader(handle) if
+                         (r["kind"], r["point"], r["action"], r["run"]) ==
+                         (kind, str(number), action, str(run))]
+            if prior:
+                if len(prior) != 1 or json.loads(prior[0]["metrics_json"]) != metrics:
+                    raise RuntimeError("Conflicting completed run record during handoff")
+                return
         with path.open("a", encoding="utf-8-sig" if not exists else "utf-8", newline="") as handle:
             writer = csv.DictWriter(handle, fieldnames=["task_id", "kind", "point", "action", "run",
                                                        "gpus", "metrics_json", "records_json"])
@@ -206,26 +282,34 @@ def publish_phase(work, action, launch_name=None):
 def detector_point(number, pair, slot):
     point = load_point(number)
     work = SCRATCH / "detector" / f"point{number:02d}"
-    work.mkdir(parents=True, exist_ok=False)
+    resuming = ("detector", number) in handoff_points
+    work.mkdir(parents=True, exist_ok=resuming)
     env = detector_environment(pair, work, point)
     out = ROOT / "experiments/baselines/stage1_dtower_search" / f"point{number:02d}_dcoco_foldA_seed42"
-    out.mkdir(parents=True, exist_ok=False)
+    out.mkdir(parents=True, exist_ok=resuming)
     config = {"task_id": TASK, "point_id": number, "point": point, "seed": 42,
               "fold": "A", "kind": "detector", "gpus": pair, "work": str(work),
               "epochs": 36, "mixed_precision": "fp16"}
-    (out / "config.yaml").write_text(yaml.safe_dump(config, sort_keys=False))
-    (out / "git_commit.txt").write_text(subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True))
-    (out / "notes.md").write_text(f"Artifacts and raw logs: {work}\nValidation selection only; no test evaluation.\n")
+    if resuming:
+        existing = yaml.safe_load((out / "config.yaml").read_text())
+        if existing["task_id"] != TASK or existing["point"] != point:
+            raise RuntimeError("Resumed detector config differs")
+    else:
+        (out / "config.yaml").write_text(yaml.safe_dump(config, sort_keys=False))
+        (out / "git_commit.txt").write_text(subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True))
+        (out / "notes.md").write_text(f"Artifacts and raw logs: {work}\nValidation selection only; no test evaluation.\n")
     cmd = [DET, "launch", "--multi_gpu", "--num_processes", "2", "--main_process_port", str(29801 + slot),
            str(ROOT / "scripts/train_relation_detr_search.py"), "--config-file",
            str(ROOT / "configs/detector_relation_detr/train_search.py"), "--seed", "42",
            "--mixed-precision", "fp16", "--convergence-schedule", "--max-epochs", "36"]
-    (out / "command.sh").write_text("#!/usr/bin/env bash\n" + shlex.join(cmd) + "\n")
+    if not resuming:
+        (out / "command.sh").write_text("#!/usr/bin/env bash\n" + shlex.join(cmd) + "\n")
     command(cmd, env, ROOT / "third_party/Relation-DETR", work / "train.log", f"detector{number}", 48)
     shutil.copy2(work / "train.command.sh", out / "command.sh")
     for split in ("val", "train"):
-        eval_env = {**env, "CUDA_VISIBLE_DEVICES": pair.split(",")[0], "DTOWER_EVAL_SPLIT": split}
-        cmd = [str(ROOT / ".venv-relation-detr/bin/python"), str(ROOT / "scripts/eval_relation_detr_map.py"),
+        eval_env = {**env, "DTOWER_EVAL_SPLIT": split}
+        cmd = [DET, "launch", "--multi_gpu", "--num_processes", "2", "--mixed_precision", "no",
+               "--main_process_port", str(29821 + slot), str(ROOT / "scripts/eval_relation_detr_map.py"),
                "--config", str(ROOT / "configs/detector_relation_detr/train_search.py"),
                "--checkpoint", str(work / "best_ap.pth"), "--out", str(work / f"eval_{split}.json")]
         command(cmd, eval_env, ROOT, work / f"eval_{split}.log", f"detector{number}_{split}", 8)
@@ -250,7 +334,7 @@ def detector_point(number, pair, slot):
 def phase_point(number, pair, slot):
     point = load_point(number)
     work = SCRATCH / "phase" / f"point{number:02d}"
-    work.mkdir(parents=True, exist_ok=False)
+    work.mkdir(parents=True, exist_ok=("phase", number) in handoff_points)
     env = environment(pair, work)
     cache = work / "features/all_gap.npz"
     common = [f"+point_id={number}", f"+artifact_root={work}", f"manifest_dir={MANIFEST}",
@@ -258,31 +342,64 @@ def phase_point(number, pair, slot):
     cmd = [BODY, "-m", "torch.distributed.run", "--nproc_per_node=2", f"--master_port={29811 + slot}",
            "scripts/run_ptower_search.py", "action=finetune", *common]
     command(cmd, env, ROOT, work / "finetune.log", f"phase{number}_finetune", 16)
-    single = {**env, "CUDA_VISIBLE_DEVICES": pair.split(",")[0]}
-    command([BODY, "scripts/tower_search_records.py", "phase", str(work), "--action", "finetune"],
-            single, ROOT, work / "finetune_records.log", f"phase{number}_train_eval", 2)
-    backbone = publish_phase(work, "finetune")
-    record_run("phase", number, "finetune", backbone, pair)
-    backbone_metrics = json.loads((backbone / "metrics.json").read_text())
+    first, second = pair.split(",")
+    backbone = Path(json.loads((work / "finetune_last_run.json").read_text())["path"])
     checkpoint = backbone / "checkpoints/best.pth"
-    command([BODY, "scripts/run_ptower_search.py", "action=extract", f"checkpoint={checkpoint}", *common],
-            single, ROOT, work / "extract.log", f"phase{number}_extract", 2)
-    command([BODY, "scripts/tower_search_records.py", "phase", str(work), "--action", "extract"],
-            single, ROOT, work / "extract_records.log", f"phase{number}_extract_records", 1)
-    extracted = publish_phase(work, "extract")
-    record_run("phase", number, "extract", extracted, pair)
+
+    def measure_backbone():
+        command([BODY, "scripts/tower_search_records.py", "phase", str(work), "--action", "finetune"],
+                environment(first, work), ROOT, work / "finetune_records.log", f"phase{number}_train_eval", 2)
+        publish_phase(work, "finetune")
+        record_run("phase", number, "finetune", backbone, first)
+
+    def extract():
+        command([BODY, "scripts/run_ptower_search.py", "action=extract", f"checkpoint={checkpoint}", *common],
+                environment(second, work), ROOT, work / "extract.log", f"phase{number}_extract", 2)
+        command([BODY, "scripts/tower_search_records.py", "phase", str(work), "--action", "extract"],
+                environment("", work), ROOT, work / "extract_records.log", f"phase{number}_extract_records", 1)
+        extracted = publish_phase(work, "extract")
+        record_run("phase", number, "extract", extracted, second)
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        futures = [pool.submit(fn) for fn in (measure_backbone, extract)]
+        for future in as_completed(futures):
+            future.result()
+    backbone_metrics = json.loads((backbone / "metrics.json").read_text())
     from run_stage1_ptower_r3 import heads
-    head_records = []
-    for index, recipe in enumerate(heads()):
-        cmd = [BODY, "scripts/run_ptower_search.py", "action=train", *common,
+    recipes = heads()
+    pending_heads = queue.Queue()
+    for index in range(len(recipes)):
+        pending_heads.put(index)
+
+    def run_heads(gpu):
+        results = []
+        while True:
+            try:
+                index = pending_heads.get_nowait()
+            except queue.Empty:
+                return results
+            recipe = recipes[index]
+            head_work = work / f"head{index:02d}"
+            head_work.mkdir(exist_ok=False)
+            head_common = [arg for arg in common if not arg.startswith("+artifact_root=")]
+            cmd = [BODY, "scripts/run_ptower_search.py", "action=train", *head_common,
+               f"+artifact_root={head_work}",
                *(f"{key}={value}" for key, value in recipe.items())]
-        command(cmd, single, ROOT, work / f"head{index:02d}.log", f"phase{number}_head{index}", 1)
-        command([BODY, "scripts/tower_search_records.py", "phase", str(work), "--action", "train"],
-                single, ROOT, work / f"head{index:02d}_records.log", f"phase{number}_head{index}_records", 1)
-        run = publish_phase(work, "train", f"head{index:02d}")
-        record_run("phase", number, f"head{index:02d}", run, pair)
-        metrics = json.loads((run / "metrics.json").read_text())
-        head_records.append({"recipe": recipe, "metrics": metrics, "run": str(run)})
+            head_env = environment(gpu, head_work)
+            command(cmd, head_env, ROOT, head_work / "train.log", f"phase{number}_head{index}", 1)
+            command([BODY, "scripts/tower_search_records.py", "phase", str(head_work), "--action", "train"],
+                    head_env, ROOT, head_work / "records.log", f"phase{number}_head{index}_records", 1)
+            run = publish_phase(head_work, "train")
+            record_run("phase", number, f"head{index:02d}", run, gpu)
+            metrics = json.loads((run / "metrics.json").read_text())
+            results.append((index, {"recipe": recipe, "metrics": metrics, "run": str(run)}))
+
+    head_results = []
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        futures = [pool.submit(run_heads, gpu) for gpu in (first, second)]
+        for future in as_completed(futures):
+            head_results.extend(future.result())
+    head_records = [r for _, r in sorted(head_results)]
     return {"kind": "phase", "point": point,
             "metric": max(r["metrics"]["phase_jaccard"] for r in head_records),
             "backbone_metrics": backbone_metrics, "heads": head_records,
@@ -290,15 +407,19 @@ def phase_point(number, pair, slot):
 
 
 def run_point(kind, number, pair, slot):
-    free_pair(pair)
+    if (kind, number) not in handoff_points:
+        free_pair(pair)
     tag = f"{kind}_point{number:02d}"
     with guard:
         active[pair] = tag
     status("running", stage="C" if number in (0, 13) and len(records) < 4 else "D")
     begin = time.monotonic()
+    if (kind, number) in handoff_started:
+        begin -= time.time() - datetime.fromisoformat(handoff_started[(kind, number)]).timestamp()
     verify_cmd = [BODY, str(ROOT / "tasks" / TASK / "prepare_inputs.py"),
                   "--verify", str(ANALYSIS / "image_input_lock.json")]
-    command(verify_cmd, environment("", SCRATCH), ROOT, SCRATCH / f"{tag}_input_before.log", tag + "_inputs", 1)
+    suffix = "resume_before" if (kind, number) in handoff_points else "before"
+    command(verify_cmd, environment("", SCRATCH), ROOT, SCRATCH / f"{tag}_input_{suffix}.log", tag + "_inputs", 1)
     try:
         result = detector_point(number, pair, slot) if kind == "detector" else phase_point(number, pair, slot)
     except RuntimeError:
@@ -356,7 +477,7 @@ def tables():
                               "lr": r["point"]["lr"],
                               "weight_decay": r["point"]["phase_weight_decay" if kind == "phase" else "detector_weight_decay"],
                               "accum_or_max_norm": r["point"]["accum" if kind == "phase" else "max_norm"],
-                              "co_primary": ((max(r["heads"], key=lambda h: h["metrics"]["phase_jaccard"])["metrics"]["phase_accuracy"] if kind == "phase" else r["metrics"]["AP_target"])
+                              "co_primary": ((r["backbone_metrics"]["phase_accuracy"] if kind == "phase" else r["metrics"]["AP_target"])
                                              if r["metric"] is not None else None),
                               "diverged": r.get("diverged", False),
                               "reached_epoch_cap": ((r["backbone_metrics"] if kind == "phase" else r["metrics"])["reached_epoch_cap"]
@@ -414,13 +535,16 @@ def gate_c():
                     raise RuntimeError("G3: phase determinism differs")
 
 
-def remaining_points(jobs):
+def remaining_points(jobs, resume=None):
     pending = queue.Queue()
     for job in jobs:
         pending.put(job)
 
     def worker(slot):
         try:
+            if resume and PAIRS[slot] in resume:
+                kind, number = resume[PAIRS[slot]]
+                run_point(kind, number, PAIRS[slot], slot)
             while not stopping.is_set():
                 try:
                     kind, number = pending.get_nowait()
@@ -438,25 +562,56 @@ def remaining_points(jobs):
 
 
 def main():
+    global current_stage
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--resume-handoff", type=Path)
+    args = parser.parse_args()
     SCRATCH.mkdir(parents=True, exist_ok=True)
-    if json.loads((ANALYSIS / "gates.json").read_text()).get("G2", {}).get("verdict") != "pass":
+    gates = json.loads((ANALYSIS / "gates.json").read_text())
+    if gates.get("G2", {}).get("verdict") != "pass":
         raise RuntimeError("G2 has not passed; training must not start")
-    if (ANALYSIS / "point_records.json").exists():
+    resume = None
+    if args.resume_handoff:
+        if gates.get("G3", {}).get("verdict") != "pass":
+            raise RuntimeError("Handoff requires completed G3")
+        handoff = json.loads(args.resume_handoff.read_text())
+        if handoff["task_id"] != TASK:
+            raise RuntimeError("Handoff belongs to another task")
+        old = Path(f"/proc/{handoff['old_pid']}/stat").read_text().rpartition(") ")[2].split()
+        if old[0] != "T" or old[19] != handoff["old_identity"]:
+            raise RuntimeError("Previous supervisor must be stopped for an exclusive handoff")
+        handoff_commands.update(handoff["commands"])
+        adopted_roots.update({r["pid"]: r["identity"] for r in handoff_commands.values() if r["identity"] is not None})
+        records.extend(json.loads((ANALYSIS / "point_records.json").read_text()))
+        resume = {pair: (tag.split("_point")[0], int(tag.split("_point")[1]))
+                  for pair, tag in handoff["active"].items()}
+        handoff_points.update(resume.values())
+        for pair, job in resume.items():
+            handoff_started[job] = handoff["point_started_jst"][pair]
+    elif (ANALYSIS / "point_records.json").exists():
         raise RuntimeError("Search records exist; do not start a duplicate supervisor")
+    if resume:
+        current_stage = "D"
     write_json(SCRATCH / "supervisor.json", {"pid": os.getpid(), "started_jst": now(),
+                                            "handoff": str(args.resume_handoff) if args.resume_handoff else None,
                                             "training_command_wall_limit_hours": {"detector": 48, "phase": 16}})
     thread = threading.Thread(target=monitor, daemon=True)
     thread.start()
     try:
-        batch([("detector", 0), ("detector", 13)])
-        batch([("phase", 0), ("phase", 13)])
-        gate_c()
-        gates = json.loads((ANALYSIS / "gates.json").read_text())
-        gates["G3"] = {"verdict": "pass", "completed_points": 4, "time_jst": now()}
-        write_json(ANALYSIS / "gates.json", gates)
+        if not resume:
+            batch([("detector", 0), ("detector", 13)])
+            batch([("phase", 0), ("phase", 13)])
+            gate_c()
+            gates["G3"] = {"verdict": "pass", "completed_points": 4, "time_jst": now()}
+            write_json(ANALYSIS / "gates.json", gates)
+            current_stage = "D"
+        else:
+            write_json(SCRATCH / "handoff_ready.json", {"pid": os.getpid(), "time_jst": now(),
+                                                       "source": str(args.resume_handoff)})
         remaining = [i for i in range(1, 20) if i != 13]
-        jobs = [(kind, i) for i in remaining for kind in ("detector", "phase")]
-        remaining_points(jobs)
+        accounted = {(r["kind"], r["point"]["point"]) for r in records} | handoff_points
+        jobs = [(kind, i) for i in remaining for kind in ("detector", "phase") if (kind, i) not in accounted]
+        remaining_points(jobs, resume)
         if len(records) != 40:
             raise RuntimeError("G4: forty point records are required")
         gates["G4"] = {"verdict": "pass", "completed_points": 40, "time_jst": now(),
@@ -473,6 +628,9 @@ def main():
         for proc in children:
             if proc.poll() is None:
                 os.killpg(proc.pid, signal.SIGTERM)
+        for pid, identity in adopted_roots.items():
+            if process_identity(pid) == identity:
+                os.killpg(pid, signal.SIGTERM)
         raise
     finally:
         stopping.set()
