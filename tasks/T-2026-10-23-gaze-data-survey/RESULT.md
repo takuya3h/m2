@@ -19,7 +19,7 @@
 | d | 動画ごとの表を作った。分母は注釈の行と、`raw/ego` の画像のファイル（01〜15 は 15,437 枚で全数が対応、17〜21 は 10,453 / 10,461）。画面内は 100%。1 フレームのサンプル数は 1。対照: 動画 05 を抜いた写しで 17,233 → 15,915、画面外の 1 点で 17,233 → 17,232（audit L953〜L1027、REPORT L62〜L110） |
 | e | 01_1_0004 で、σ = 64 px（仮）の 1080 × 1920 のヒートマップを作った。最大値の位置 (1225, 689) は視線点 (1224.99, 689.06) と画素の単位で一致した。対照: 点を (0.2, 0.3) に移すと最大値の位置は (384, 324) に動いた。図は 1 枚（REPORT L111〜L120） |
 | f | 追跡される変更は置き場、契約のディレクトリ、受け皿だけで、data/ への変更は無い（audit「F4」）。forbidden-check は pass（起点基準、audit「F1」）。陽性対照として clone の写しの data/ に 1 件足すと fail になった（audit「F2」）。試験の失敗の集合は audit「F3」 |
-| g | PR は audit「commit と送出」に記録した |
+| g | PR #265。base は phase0、head は feat/gaze-data-survey、isDraft false、OPEN（audit「commit と送出」） |
 
 解決された参照: `inject_verbatim` 3 節の原文は audit の末尾に写した。conventions の blob ceb7ef0f は契約の conventions_rev と一致する。
 
@@ -64,4 +64,4 @@
 
 ## 送出
 
-PR、task-report の終了コード、台帳の応答は audit「commit と送出」に記録する。
+PR #265（base phase0、Draft でない）。commit は eb36ef52、f4e7fb5c。task-report の終了コードと台帳の応答は audit「commit と送出」に記録する。

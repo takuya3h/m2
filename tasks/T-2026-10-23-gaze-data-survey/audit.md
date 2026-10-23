@@ -1084,7 +1084,11 @@
 
 ## commit と送出
 
-@@SEND@@
+    $ git log --oneline d013c5f1..HEAD
+    f4e7fb5c docs: report gaze data survey (T-2026-10-23-gaze-data-survey)
+    eb36ef52 analysis: survey gaze data for candidate 5 pretraining plan 1
+    $ gh pr view feat/gaze-data-survey --json number,baseRefName,headRefName,isDraft,state
+    {"baseRefName":"phase0","headRefName":"feat/gaze-data-survey","isDraft":false,"number":265,"state":"OPEN"}
 
 ## 規約（inject_verbatim の原文。context/conventions.md、blob ceb7ef0f88a3f30279930be96ab9a5722acc2f09 は契約の conventions_rev と一致）
 
