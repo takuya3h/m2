@@ -1089,6 +1089,16 @@
     eb36ef52 analysis: survey gaze data for candidate 5 pretraining plan 1
     $ gh pr view feat/gaze-data-survey --json number,baseRefName,headRefName,isDraft,state
     {"baseRefName":"phase0","headRefName":"feat/gaze-data-survey","isDraft":false,"number":265,"state":"OPEN"}
+    $ make task-report TASK=T-2026-10-23-gaze-data-survey（HEAD 2f2c3f7b の報告を送った）
+    {
+      "task_id": "T-2026-10-23-gaze-data-survey",
+      "verdict": "pass",
+      "n_issuer_defects": 2,
+      "report_sha256": "dd24b5d0737ab763b21a9667473ee6839d6be00acc19e9c99b87fcf0c3dec8d8",
+      "report_bytes": 7098,
+      "replaced_blocks": 0
+    }
+    exit=0
 
 ## 規約（inject_verbatim の原文。context/conventions.md、blob ceb7ef0f88a3f30279930be96ab9a5722acc2f09 は契約の conventions_rev と一致）
 
