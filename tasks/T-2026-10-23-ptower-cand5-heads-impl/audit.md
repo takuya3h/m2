@@ -178,6 +178,12 @@ experiments/・runindex/・data/・docs/proposals/ の内側: 0 件。`make task
 
 ## commit と送出
 
+- commit: ed0fee7a（基準値の試験）、1afc4ad1（実装）、502e6af7（memory_len 0）、7489e421（報告）
+- push: `* [new branch] feat/ptower-cand5-heads-impl -> feat/ptower-cand5-heads-impl`
+- PR（`gh pr view` の応答）:
+
+      {"baseRefName":"phase0","headRefName":"feat/ptower-cand5-heads-impl","isDraft":false,"number":261,"state":"OPEN","url":"https://github.com/takuya3h/m2/pull/261"}
+
 ## 解決された参照（手順書 3。原文、conventions_rev ceb7ef0f と blob 一致）
 
 `git hash-object context/conventions.md` = ceb7ef0f88a3f30279930be96ab9a5722acc2f09（契約の conventions_rev と一致）。

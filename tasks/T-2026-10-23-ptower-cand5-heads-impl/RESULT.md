@@ -20,7 +20,7 @@ checkpoint は残していない。原典（OnlineTAS、StableSPR）は外部へ
 | g | 進捗の教師は区間ごとに 0 から 1 へ単調で、クリップの境をまたぐ同じ工程は一つの区間になった。遷移行列は val を変えても不変で、train を変えると変わった。TEC は α が 0 のとき重み付き CE と一致し（相対差 1e-6 以内）、α を正にすると一致しない。重みは誤り区間の先頭 m フレームだけに付く。EGTP は確率を変えず、閾値まで状態を保つ。閾値を 0 にすると毎フレームの argmax になった。境での初期化も試した |
 | h | 煙試験は 5 本（A、memory、progress、stabilize が CPU、ssm が GPU）。どれも 2 epoch 完走し、checkpoint を一時の置き場に書いた。置き場を消した後、`*.pth` は 0 件（L130〜L134） |
 | i | 変更は scripts・configs・tests・README と、契約のディレクトリ・受け皿だけ（L164）。依存の差分なし。forbidden-check は pass。試験の後は 6 failed / 959 passed で、失敗の集合は前と同じ。陽性対照として、clone の写しの data/ に一件足すと fail・exit 1 になった（L153〜L162） |
-| j | PR は audit「commit と送出」に記録する |
+| j | PR #261、base phase0、head feat/ptower-cand5-heads-impl、isDraft false、OPEN（gh pr view の応答。audit「commit と送出」） |
 
 解決された参照（手順書 3）: `inject_verbatim` の 3 節（prohibitions、issuer_cautions、folds）の原文は audit.md の末尾に写した。conventions の blob ceb7ef0f は契約の conventions_rev と一致する。
 
@@ -90,4 +90,4 @@ checkpoint は残していない。原典（OnlineTAS、StableSPR）は外部へ
 
 ## 送出
 
-PR と task-report の終了コードは audit.md の「commit と送出」に記録する。
+PR #261（主作業の commit 1afc4ad1、502e6af7）。task-report の終了コードと台帳の応答は audit.md の「commit と送出」に記録する。
