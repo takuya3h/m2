@@ -72,3 +72,4 @@
 ## E. 送出
 
 - commit `7cf83fed` を push。`gh pr create --base phase0` → https://github.com/takuya3h/m2/pull/263。`gh pr view` の応答: `{"baseRefName":"phase0","headRefName":"feat/egtp-original-form","isDraft":false,"number":263,"state":"OPEN"}`。
+- `source scripts/load_env.sh && make task-report TASK=T-2026-10-23-egtp-original-form`（commit 1df05e2f の push 後）の応答: `{"task_id": "T-2026-10-23-egtp-original-form", "verdict": "partial", "n_issuer_defects": 3, "report_sha256": "bb75c80b7b1019026251a0f464c6cac84a33c663c440f2a632535f1cbb5e7953", "report_bytes": 7801, "replaced_blocks": 0}`。秘匿の検査で止まっていない。
