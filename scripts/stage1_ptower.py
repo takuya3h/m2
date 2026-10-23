@@ -363,6 +363,7 @@ class MemoryTeCNO(nn.Module):
 
     The memory holds the last memory_len GRU states (the current one included); a causal
     attention reads it and a learned gate decides how much of the read joins the state.
+    memory_len 0 drops the memory (the card's GRU-only arm).
     """
     def __init__(self, cfg, classes):
         super().__init__()
@@ -380,6 +381,8 @@ class MemoryTeCNO(nn.Module):
     def forward(self, x):
         outputs = self.base(x)
         h, _ = self.gru(self.embedding(outputs[-1].transpose(1, 2)))
+        if self.memory_len == 0:
+            return outputs[:-1] + [self.head(self.dropout(h)).transpose(1, 2)]
         positions = torch.arange(h.shape[1], device=h.device)
         distance = positions[:, None] - positions[None, :]
         scores = self.query(h) @ self.key(h).transpose(1, 2) / h.shape[2] ** 0.5

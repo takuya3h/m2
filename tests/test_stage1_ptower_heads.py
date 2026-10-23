@@ -135,14 +135,16 @@ def test_load_fold_info_is_additive(tmp_path):
 
 # --- heads: interface, causality, boundaries ------------------------------------------
 
-CPU_HEADS = [("memory", {}), ("progress", {}), ("stabilize", {"base_candidate": "A"}),
+CPU_HEADS = [("memory", {}), ("memory", {"memory_len": 0}), ("progress", {}),
+             ("stabilize", {"base_candidate": "A"}),
              ("stabilize", {"base_candidate": "B"}), ("stabilize", {"base_candidate": "C"})]
 GPU = pytest.mark.skipif(not torch.cuda.is_available(), reason="mamba-ssm kernels need CUDA")
 
 
 def head(candidate, device="cpu", **overrides):
     torch.manual_seed(0)
-    cfg = config(candidate=candidate, layers=3, maps=16, history=5, memory_len=8, **overrides)
+    cfg = config(**{"candidate": candidate, "layers": 3, "maps": 16, "history": 5, "memory_len": 8,
+                    **overrides})
     return tower.build_model(cfg, 9).to(device).eval(), cfg
 
 
