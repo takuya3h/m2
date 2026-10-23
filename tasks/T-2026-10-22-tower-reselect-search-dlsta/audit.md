@@ -581,3 +581,5 @@ IMAGE_MISMATCH_ANALYSIS.mdに実測・推論・限界を分けて記録。propos
 今回のforbidden-checkは別作業の未追跡6件（gaze_data_survey/survey.py、ptower_cand5_compute_probeの5件）に反応してfail。本変更のパスとの重複は0件。これらは本契約で作成・変更しておらず触れない。実出力はscratch/forbidden_scheduler_revision.json。タスク全体の検査は未通過として残す。
 
 初回引き継ぎ後、GPU1は使用率0・計算プロセス0・空き23899MiBでも665MiBの使用表示で旧判定（使用100MiB未満）に阻まれた。残量の由来はUNKNOWN。GPUはresetせず、他のプロセスにも触れず、対象のNVLink組・計算プロセス0・使用率0・各GPU空き22000MiB以上を投入条件に変更。GPU0・欠けたGPU・計算中・空き不足を拒否する対照を追加し関連20試験pass。監視だけを再度引き継ぐ。
+
+運用反映確認 2026-10-23T17:08:23.930772+09:00: 新supervisor PID2654889。GPU1–2で工程塔2番、GPU3–4で検出塔2番、検出学習root PID2607058は引き継ぎ前と同一。全4枚で計算を確認、監視で本契約のGPU0使用0。39件のrun記録・6点の完了に重複なし。記録scheduler_handoff_evidence.json。
