@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 140 件）。
-ここに出ない 135 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 141 件）。
+ここに出ない 136 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-10-23-ptower-cand5-heads-impl
 
@@ -83,6 +83,42 @@
 - データの読み込みを含む一歩の時間（較正以外の行）。MoCo v2 と映像 MAE は、batch 256 の読み込みが律速になりうる。
 - mamba-ssm の非決定が selective scan と causal-conv1d のどちらの核の逆伝播によるか。
 
+## T-2026-10-23-gaze-data-survey
+
+状態 `pass` / ホスト `Andrew` / 起票 `265` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 分岐 feat/gaze-data-survey、HEAD と merge-base はともに origin/phase0 d013c5f1、作業ツリーの汚れは task-start が取り込んだ契約 2 件（SPEC.md と spec.yaml）だけ。
+
+### 起票者の誤り
+
+- `check_does_not_check` — Task B-2 の内容の探索は対象を raw/ego の各動画のディレクトリと annotations/ に限るが、視線が実際に届いた data/raw/gaze/ はその集合の外にある。書かれたとおりに探すと、data/raw の下に置かれた視線を見落とす。実行では data/raw と data/annotations の全体に広げた。
+- `asserted_without_measuring` — §3 は README の値を確定した事実として書くが、raw/ego の 01〜15 の jpg は 15,440 ではなく 15,437 枚で、manifest の 1,796 枚は raw/ego ではなく data/raw/OpenSurgery_Dataset/01_frames/initial_videos/ にある。画像のファイルを分母にすると、§3 の数と置き場では照合できない。
+
+### 逸脱
+
+- `judgement` — 名前の探索を andrew の全 4 装置とホームへ、内容の探索を data/raw と data/annotations の全体へ広げた（SPEC は data/ と ~/slocal2/ の直下、raw/ego と annotations/ に限る）。
+- `judgement` — 三つの方法で見つからなかった後に利用者へ置き場を聞き、利用者が契約の途中で data/raw/gaze/ に送った（ディレクトリの更新は JST 16:01）。b の「対象が無い」は届く前の判定で、c〜e は届いた版を測った。
+- `environment` — 公式配布の確認は CLAUDE.md の ctxpack が andrew に無いため WebFetch で読んだ。利用者の承認を得て、読むだけで取得はしていない。
+- `judgement` — 全行 x==y のまま計測した（利用者の決定）。ヒートマップは原点を左上と仮定し、σ は仮の 64 px。
+- `environment` — origin/phase0 が契約の開始後に f3d5945f へ進んだ（PR 263 と 264）ため、forbidden-check を起点 d013c5f1 を基準にしても回した。既定の基準でも pass。
+- `judgement` — 置き場に計測のスクリプト survey.py と出力 summary.json、coverage_by_video.csv を置いた（図は 1 枚）。
+- `environment` — 試験の前の失敗は 7 件で、前の契約の 6 件に 2 GPU の試験 test_stage1_ptower_r3_dist の 1 件が加わっている。本契約の変更より前からある。
+
+### 申し送り
+
+- 視線の書き出しを直した版（x と y が別の値）を利用者から受け取り、同じ survey.py で測り直す。案 1 の実装の契約はそれを待つ。
+- 座標の原点（左上か左下か）と元のサンプリングのレートを、視線の書き出しの元（記録の装置と書き出しの処理）から確かめる。
+- prereg には、17〜21 の末尾 8 枚（20_6_0284、20_7_0092〜0098）の扱いと、視線はあるが工程注釈の無い 14 クリップ（22,254 フレーム）を事前学習に使うかを書く。
+
+### 断定できなかったこと
+
+- 座標の原点（左上か左下か）。
+- 元のサンプリングのレート（ファイルは 1 フレーム 1 点に集約済み）。
+- x と y のどちらが正しい値か、あるいはどちらでもないか。
+- raw/ego の 15,440 と 15,437 の差の 3 が .gitkeep の数か。
+
 ## T-2026-10-23-egtp-original-form
 
 状態 `partial` / ホスト `Bengio` / 起票 `263` / 様式 `v3`
@@ -147,36 +183,4 @@
 ### 断定できなかったこと
 
 - 既存の 6 件の試験の失敗（test_engines 1、test_fetch_task 1、test_research_logger 4）の原因は調べていない
-
-## T-2026-10-22-evidence-map-a-revise
-
-状態 `pass` / ホスト `Bengio` / 起票 `256` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 起点 112b09bd。SPEC の表の 10 件の sha256 が 10/10 一致。受け渡しの一件は 265380 バイト・sha256 941f4c8d が一致し、置き場は repo の外。照合先 4 系統は HTTP 200。
-- `G2` pass — 置き換え後の sha256 は 941f4c8d。差は 24 行追加・23 行削除で、版・状態の 2 行、§0.2 の 1 行の追加、§2 の 21 行（SPEC の 21 ID と一致し、変わった列は文献・掲載先だけ）。
-- `G3` pass — 4 地図が「検査」として現れ、各違反 0・exit 0。抽出 126 ID（arXiv 96・DOI 30）と expected-ids.txt の集合の差は両方向 0。
-
-### 起票者の誤り
-
-- `check_does_not_check` — 完了判定 d とゲート G3 は分類の和 126 と ID 集合の一致だけを見ていて、到達不能を数えていない。到達不能 50 で exit 3 だった 1 回目の照合でもこの二つは通っており、50 ID については予測との比較（完了判定 e）が成り立たないまま合格になりえた。
-
-### 逸脱
-
-- `environment` — 1 回目の照合で arXiv の一つの束（50 ID）がタイムアウト・429・タイムアウトとなり、到達不能 50・exit 3 だった。地図と照合器を変えず、約 10 分あけて同じ命令を一回だけ流し直した。2 回目は到達不能 0・exit 0。報告の値は 2 回目。
-- `environment` — 開始の時点で受け渡しの置き場が無かった。利用者に伝えて待ち、置かれてから要約値を照合した。
-- `judgement` — CLAUDE.md の README.md 更新の要求は、コードを変えておらず変更範囲（完了判定 b）の外になるため適用しなかった。SPEC の罠 7 に従い make test は回していない。
-- `judgement` — 規約の原文を省略せずに写す要件を優先したため、RESULT.md は目安の 100 行を超えた（109 行）。前の契約と同じ扱いである。
-
-### 申し送り
-
-- 地図 A v2.1 は 126 ID がすべて実在し、書誌一致 123・照合不能 3（地図に書誌の行が無い arXiv 2505.12890・2106.11028・2112.07219）。工程塔の追加候補のカードの生成会話へ渡すかどうかは、起票者が判断する。
-- 照合器は読み取りのタイムアウトを接続の失敗として扱い、引き直しは 1 回だけ（CONNECT_RETRY_WAITS）。arXiv が 429 とタイムアウトを交互に返すと、束全体（最大 50 ID）が到達不能になる。照合器は変えていない。直すかどうかは利用者が判断する。
-- 完了判定とゲートに「到達不能 0」を入れるかどうかを、次の契約の起票で検討する。
-
-### 断定できなかったこと
-
-- API の返値と原典の表記の正誤は判断していない。
-- 1 回目の arXiv のタイムアウトの原因は分からない。
 
