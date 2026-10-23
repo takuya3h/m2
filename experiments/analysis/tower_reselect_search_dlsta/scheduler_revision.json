@@ -30,7 +30,7 @@
       "2"
     ]
   },
-  "targeted_tests_passed": 19,
+  "targeted_tests_passed": 20,
   "handoff_control": "Detached CPU command survives parent replacement; incomplete completion rejected; duplicate run records rejected.",
   "limits": "Ready independent work is dispatched; dependency waits and process setup still exist. No promise of 100% utilization.",
   "forbidden_check": {
@@ -38,5 +38,15 @@
     "unrelated_untracked_paths": 6,
     "intersection_with_this_change": 0,
     "evidence": "scratch/forbidden_scheduler_revision.json"
+  },
+  "pair_eligibility": {
+    "compute_processes": 0,
+    "utilization_percent": 0,
+    "minimum_free_mib_per_gpu": 22000,
+    "pairs": [
+      "1,2",
+      "3,4"
+    ],
+    "residual_memory_origin": "UNKNOWN; do not reset GPU or touch other processes"
   }
 }

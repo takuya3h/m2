@@ -23,7 +23,7 @@ def main():
         raise RuntimeError("Previous search supervisor identity differs")
     source = search.SCRATCH / f"handoff_{time.time_ns()}.json"
     log_path = source.with_suffix(".log")
-    ready = search.SCRATCH / "handoff_ready.json"
+    ready = source.with_suffix(".ready.json")
     if ready.exists():
         raise RuntimeError("A handoff has already been prepared; inspect it before another")
     replacement = None

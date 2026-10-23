@@ -211,3 +211,18 @@ def test_completed_run_record_is_idempotent_and_conflicts_fail(tmp_path, monkeyp
     metrics.write_text('{"mAP": 0.6}')
     with pytest.raises(RuntimeError, match="Conflicting"):
         search.record_run("detector", 1, "train", run, "1,2")
+
+
+def test_pair_eligibility_uses_free_memory_and_active_compute():
+    gpus = [{"index": str(i), "uuid": f"gpu{i}", "memory.used": "665",
+             "memory.free": "23899", "utilization.gpu": "0"} for i in (1, 2)]
+    assert search.pair_is_available("1,2", gpus, set())
+    assert not search.pair_is_available("1,2", gpus, {"gpu1"})
+    gpus[0]["utilization.gpu"] = "10"
+    assert not search.pair_is_available("1,2", gpus, set())
+    gpus[0]["utilization.gpu"] = "0"
+    gpus[0]["memory.free"] = "18000"
+    assert not search.pair_is_available("1,2", gpus, set())
+    assert not search.pair_is_available("1,2", [], set())
+    with pytest.raises(RuntimeError, match="authorized"):
+        search.pair_is_available("0,1", gpus, set())

@@ -579,3 +579,5 @@ IMAGE_MISMATCH_ANALYSIS.mdに実測・推論・限界を分けて記録。propos
 利用者が短縮と計算資源の活用を指示。GPU0禁止・全40点・seed42・学習条件は維持。検出の学習後評価は既存の分散評価経路で2GPUへ分担し、全12指標と15クラスAPが旧1GPU評価に完全一致。工程は追加評価と特徴抽出を並行、時間ヘッドは2GPUの動的キューへ分配し構成ごとに独立したworkへ保存。実A/6・A/8の並列検証は旧実行とJaccard・accuracy・最良epoch・総epochが完全一致。関連19試験とlint通過。親監視の交代後も別sessionの子が継続し、完了証拠で引き継げることをCPU対照で確認。元親から引き継ぐ処理の終了コードは取得不能なためnullと明記し、終了ログ・収束記録・実出力を照合する。記録の重複追加は拒否・同値の再登録は無操作。co-primaryの最終表はprereg §2.3どおりbackboneのframe accuracyへ修正（表はまだ未生成）。実測証拠scheduler_revision.json。
 
 今回のforbidden-checkは別作業の未追跡6件（gaze_data_survey/survey.py、ptower_cand5_compute_probeの5件）に反応してfail。本変更のパスとの重複は0件。これらは本契約で作成・変更しておらず触れない。実出力はscratch/forbidden_scheduler_revision.json。タスク全体の検査は未通過として残す。
+
+初回引き継ぎ後、GPU1は使用率0・計算プロセス0・空き23899MiBでも665MiBの使用表示で旧判定（使用100MiB未満）に阻まれた。残量の由来はUNKNOWN。GPUはresetせず、他のプロセスにも触れず、対象のNVLink組・計算プロセス0・使用率0・各GPU空き22000MiB以上を投入条件に変更。GPU0・欠けたGPU・計算中・空き不足を拒否する対照を追加し関連20試験pass。監視だけを再度引き継ぐ。

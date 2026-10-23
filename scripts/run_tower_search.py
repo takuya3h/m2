@@ -111,7 +111,7 @@ def status(state, **values):
 
 
 def gpu_snapshot():
-    fields = ["index", "uuid", "memory.used", "utilization.gpu"]
+    fields = ["index", "uuid", "memory.used", "memory.free", "utilization.gpu"]
     output = subprocess.check_output(["nvidia-smi", f"--query-gpu={','.join(fields)}",
                                       "--format=csv,noheader,nounits"], text=True)
     return [dict(zip(fields, (v.strip() for v in row.split(","))))
@@ -171,10 +171,20 @@ def monitor():
             stopping.wait(10)
 
 
+def pair_is_available(pair, gpus, busy_uuids):
+    if pair not in PAIRS:
+        raise RuntimeError("Only the two authorized GPU pairs are allowed")
+    rows = [g for g in gpus if g["index"] in pair.split(",")]
+    return len(rows) == 2 and all(
+        g["uuid"] not in busy_uuids and int(g["memory.free"]) >= 22000 and
+        int(g["utilization.gpu"]) == 0 for g in rows)
+
+
 def free_pair(pair):
     while not stopping.is_set():
-        rows = [g for g in gpu_snapshot() if g["index"] in pair.split(",")]
-        if all(int(g["memory.used"]) < 100 and int(g["utilization.gpu"]) == 0 for g in rows):
+        output = subprocess.check_output(["nvidia-smi", "--query-compute-apps=gpu_uuid",
+                                          "--format=csv,noheader,nounits"], text=True)
+        if pair_is_available(pair, gpu_snapshot(), set(output.splitlines())):
             return
         stopping.wait(10)
     raise RuntimeError("Stopped while waiting for free GPUs")
@@ -606,8 +616,8 @@ def main():
             write_json(ANALYSIS / "gates.json", gates)
             current_stage = "D"
         else:
-            write_json(SCRATCH / "handoff_ready.json", {"pid": os.getpid(), "time_jst": now(),
-                                                       "source": str(args.resume_handoff)})
+            write_json(args.resume_handoff.with_suffix(".ready.json"), {
+                "pid": os.getpid(), "time_jst": now(), "source": str(args.resume_handoff)})
         remaining = [i for i in range(1, 20) if i != 13]
         accounted = {(r["kind"], r["point"]["point"]) for r in records} | handoff_points
         jobs = [(kind, i) for i in remaining for kind in ("detector", "phase") if (kind, i) not in accounted]

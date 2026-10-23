@@ -1619,3 +1619,5 @@ forward した region token が既存の `t1a_regiontoken/relation_detr_seed42` 
 探索用起動口は元の学習処理を呼び、実optimizer群・初期化・時間・メモリ・収束を観測する。checkpoint・特徴・raw logとoffline W&Bはrepo外のscratchへ保存。小規模GPU検証と入力全数照合でG2通過、関連14試験通過、全試験927 passed /6 failed /1 skipped（失敗名の増加0）。`scripts/run_tower_search.py` がGPU1–2 /3–4だけでC→G3→残り探索を監視実行し、異常時は停止する。GPU0は使わない。現況は `experiments/analysis/tower_reselect_search_dlsta/live_status.json`、詳細は契約の `RESULT.md`。
 
 2026-10-23の利用者指示で探索のGPU利用を改善。検出塔の学習後評価は2GPUで分担し、工程塔の追加評価と特徴抽出は並行、時間ヘッドは構成別workから2GPUの動的キューで実行する。全点・学習条件は維持。実機で評価指標と時間ヘッド2構成の結果の一致を確認、関連19試験通過。監視の引き継ぎは `tasks/T-2026-10-22-tower-reselect-search-dlsta/handoff_supervisor.py`、稼働中の具体的な処理とGPUはlive_status.jsonに10秒ごとに記録する。
+
+GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0かつ各GPUの空きが22000MiB以上であること。少量のメモリ使用表示だけで待機させない。GPU0・計算中・空き不足を拒否する対照を含め関連20試験通過。
