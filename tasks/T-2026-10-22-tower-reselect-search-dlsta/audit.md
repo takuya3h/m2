@@ -600,3 +600,7 @@ IMAGE_MISMATCH_ANALYSIS.mdに実測・推論・限界を分けて記録。propos
 最終task-validateは0 failed、収穫で件数がindex1961→2363、experiments750→1130、verdicts1506→1736となったためL2-8のWARN3件。起票時の件数は履歴として保持する。git diff --checkは生成器由来runindex/anomalies.mdの末尾空白1件を検出。生成器と生成結果を手修正せず、生成器以外のソース・報告に同検査を実行する。
 
 禁止領域の最終検査: 契約開始時の確定起点39dd92d671466edb7c96edf6c34af34c9c29ef62（start.json、現在のmerge-baseとも一致）をBASEに指定し、HEADの隔離worktreeでmake forbidden-check pass。data/forbidden_positive_control.txtを同じ隔離コピーに追加した対照でFAIL。rootの別作業ファイルには触れない。初回隔離検査ではorigin/phase0がf3d5945まで進んでおり、未統合の別作業ファイルの差分を検出した。コミット混入と説明したのは読み違いであり、git ls-filesと履歴で訂正。旧分岐へ統合・上流の取り込みは行っていない。forbidden_final.jsonに実測。
+
+## 送出（2026-10-29T17:34:26.308821+09:00）
+
+PR #267 https://github.com/takuya3h/m2/pull/267、baseRefName=phase0、headRefName=feat/tower-reselect-search-dlsta、isDraft=false、state=OPEN。mergeable=CONFLICTING / mergeStateStatus=DIRTY。契約の禁止に従い上流の統合・rebase・auto-mergeは行わず、統合担当へ申し送る。初回make task-reportはexit0、verdict=pass、report_sha256=fc846a27639e27c87186fdcf326fd3a7f67751ff58c0b9db586a4981444f68a9、4693bytes。競合の記録を加えて再送する。
