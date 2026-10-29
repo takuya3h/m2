@@ -598,3 +598,5 @@ IMAGE_MISMATCH_ANALYSIS.mdに実測・推論・限界を分けて記録。propos
 - 予測一: 両塔とも0番はtop3外で一致。予測二: 発散0件、偏りは評価不能。予測三: 上限到達0件、学習率による偏りは評価不能。全点探索の最大値であり効果の確定値と解釈しない。
 
 最終task-validateは0 failed、収穫で件数がindex1961→2363、experiments750→1130、verdicts1506→1736となったためL2-8のWARN3件。起票時の件数は履歴として保持する。git diff --checkは生成器由来runindex/anomalies.mdの末尾空白1件を検出。生成器と生成結果を手修正せず、生成器以外のソース・報告に同検査を実行する。
+
+禁止領域の最終検査: 契約開始時の確定起点39dd92d671466edb7c96edf6c34af34c9c29ef62（start.json、現在のmerge-baseとも一致）をBASEに指定し、HEADの隔離worktreeでmake forbidden-check pass。data/forbidden_positive_control.txtを同じ隔離コピーに追加した対照でFAIL。rootの別作業ファイルには触れない。初回隔離検査ではorigin/phase0がf3d5945まで進んでおり、未統合の別作業ファイルの差分を検出した。コミット混入と説明したのは読み違いであり、git ls-filesと履歴で訂正。旧分岐へ統合・上流の取り込みは行っていない。forbidden_final.jsonに実測。

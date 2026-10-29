@@ -21,7 +21,7 @@
 | j | 監視上のGPU0所有プロセス0。特徴はtrain+val12484枚でtest動画なし |
 | k | checkpoint・特徴はrepo外。公開最大image_input_lock.json=5,660,823bytes |
 | l | 対称性2表34行、UNKNOWN0。P13/P14破損コピーはFAIL。異常は下記 |
-| m | runindexに本契約260行、経路集合一致。935 pass/6 fail/1 skip、新しい失敗0。禁止領域の隔離検査は後続 |
+| m | runindexに本契約260行、経路集合一致。935 pass/6 fail/1 skip、新しい失敗0。開始時の確定起点で隔離forbidden-check pass、禁止ファイル追加対照はFAIL |
 | n | PR起票前 |
 
 ## 実測
