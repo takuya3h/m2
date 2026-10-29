@@ -604,3 +604,5 @@ IMAGE_MISMATCH_ANALYSIS.mdに実測・推論・限界を分けて記録。propos
 ## 送出（2026-10-29T17:34:26.308821+09:00）
 
 PR #267 https://github.com/takuya3h/m2/pull/267、baseRefName=phase0、headRefName=feat/tower-reselect-search-dlsta、isDraft=false、state=OPEN。mergeable=CONFLICTING / mergeStateStatus=DIRTY。契約の禁止に従い上流の統合・rebase・auto-mergeは行わず、統合担当へ申し送る。初回make task-reportはexit0、verdict=pass、report_sha256=fc846a27639e27c87186fdcf326fd3a7f67751ff58c0b9db586a4981444f68a9、4693bytes。競合の記録を加えて再送する。
+
+最終make task-report exit0、verdict=pass、report_sha256=36903be91f94dc5969aa1db753a4b1780301e34b29d442aa819619b96b241b65、report_bytes=4819、replaced_blocks=1。応答原本はscratch/task_report_final.json。結果と競合の申し送りを配布台帳へ送信済み。
