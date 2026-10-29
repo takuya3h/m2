@@ -1,0 +1,116 @@
+{
+  "arm": "unknown",
+  "attributes": {
+    "best_is_init": false,
+    "result_selection": "final_epoch"
+  },
+  "command": "#!/usr/bin/env bash\n# 自動生成: この run を起動したコマンドの記録\n# 生成日時: 2026-10-19T17:45:09+00:00\npython scripts/train_t1b.py --seed 42 --trainable film --task-id T-2026-10-19-stage2-pilot-four-new-types --run-name stage2four_pd_DX_gtpred_CF_ep4_seed42 --det-ckpt /home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth --signal-train /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/arms/PD/gtpred_CF_train.npz --signal-val /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/arms/PD/gtpred_noCF_val.npz --epochs 4 --fixed-epochs --amp bf16 --ckpt-dir /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-four-new-types/pd_ckpt/stage2four_pd_DX_gtpred_CF_ep4_seed42 --save-trainable-only --print-freq 500\n",
+  "commit": "42070946a9e7a4d513712f29c094d86ff83debf5",
+  "config_path": "experiments/phase1/stage2four_pd_DX_gtpred_CF_ep4_seed42/config.yaml",
+  "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
+  "description": "stage2four_pd_DX_gtpred_CF_ep4",
+  "duplicate_bare_keys": [],
+  "epoch": 3,
+  "eval_recipe": null,
+  "eval_recipe_id": null,
+  "evidence_completeness": "full",
+  "excluded": false,
+  "exclusion_reason": null,
+  "experiment_id": "phase1/stage2four_pd_DX_gtpred_CF_ep4/stage2four_pd_DX_gtpred_CF_ep4@val",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_seed_declared": null,
+  "frozen_source_tag": null,
+  "gpu": null,
+  "group": "phase1",
+  "harvest_warnings": [
+    "run 名に seq (3 桁連番) が無い別系統の命名: stage2four_pd_DX_gtpred_CF_ep4_seed42。step には description を充てた。"
+  ],
+  "host": "andrew",
+  "host_raw": "andrew",
+  "ledger_key": "phase1__stage2four_pd_DX_gtpred_CF_ep4_seed42",
+  "metrics": {
+    "delta_detection": 0.0030879018279419412,
+    "final_epoch": 3,
+    "final_mAP": 0.7304329266677848,
+    "init_mAP": 0.7273450248398429,
+    "mAP": 0.7304329266677848
+  },
+  "metrics_by_split": {
+    "unknown": {
+      "delta_detection": 0.0030879018279419412,
+      "final_epoch": 3,
+      "final_mAP": 0.7304329266677848,
+      "init_mAP": 0.7273450248398429,
+      "mAP": 0.7304329266677848
+    }
+  },
+  "metrics_nested": {
+    "artifacts": {
+      "checkpoints": "andrew:/home/ubuntu/slocal2/m2-four-andrew/experiments/phase1/stage2four_pd_DX_gtpred_CF_ep4_seed42/checkpoints",
+      "logs": "andrew:/home/ubuntu/slocal2/m2-four-andrew/experiments/phase1/stage2four_pd_DX_gtpred_CF_ep4_seed42/logs",
+      "predictions": "andrew:/home/ubuntu/slocal2/m2-four-andrew/experiments/phase1/stage2four_pd_DX_gtpred_CF_ep4_seed42/predictions",
+      "run_dir": "andrew:/home/ubuntu/slocal2/m2-four-andrew/experiments/phase1/stage2four_pd_DX_gtpred_CF_ep4_seed42"
+    }
+  },
+  "metrics_primary_split": null,
+  "metrics_source": "metrics_json",
+  "notes": "# 非公式（T-2026-10-19-stage2-pilot-four-new-types） PD decoder-xattn（DX） gtpred_CF seed 42\n\n受け取り手は D*-COCO 折り A seed 42 の検出塔（凍結。学習範囲 W1 = 界面だけ、--trainable film）。4 epoch 学習し途中で止めない。結果は 4 epoch 目（epoch 3）の状態で、最良の回を選ばない。val（動画 09・10）だけで評価した。test は通していない。\n\n- overall mAP 0.730433、標的群 AP 0.800219、陰性対照群 AP 0.674397（群に欠けたクラス: 標的群 []、陰性対照群 []）\n- 学習前 mAP 0.727345\n- epoch ごとの val mAP（epoch は 0 始まり、−1 は学習前）: {-1: 0.7273450248398429, 0: 0.7276023078920366, 1: 0.7287565183052361, 2: 0.7289712955964566, 3: 0.7304329266677848}\n- epoch ごとのゲート: {-1: {'tanh_alpha': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, 0: {'tanh_alpha': [0.0625968873500824, -0.04380444064736366, -0.04847608879208565, -0.04816248640418053, 0.048590872436761856, 0.028264811262488365]}, 1: {'tanh_alpha': [0.07174602150917053, -0.06954716891050339, -0.0788794755935669, -0.07014854997396469, 0.06774912774562836, 0.03852173313498497]}, 2: {'tanh_alpha': [0.08090683817863464, -0.08473661541938782, -0.0988696739077568, -0.09654990583658218, 0.0831516832113266, 0.04748598113656044]}, 3: {'tanh_alpha': [0.09446165710687637, -0.09152857959270477, -0.12244774401187897, -0.10365462303161621, 0.09881935268640518, 0.06424465775489807]}}\n- 動画ごとの mAP: {'09': 0.7071988489831421, '10': 0.6460686371249901}\n- 凍結部の要約値の前後一致: True\n",
+  "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
+  "path": "experiments/phase1/stage2four_pd_DX_gtpred_CF_ep4_seed42",
+  "per_class": {
+    "Bipolar Forceps": 0.7857415591432192,
+    "Electric Cautery": 0.9657171015054815,
+    "Forceps": 0.3627876638887041,
+    "Gauze": 0.2780718089126859,
+    "Hook": 0.6376046290076085,
+    "Mouth Gag": 0.7996474744141796,
+    "Needle Holders": 0.8510001703575867,
+    "Raspatory": 0.8138799306787083,
+    "Retractor": null,
+    "Scalpel": 0.9164241932347874,
+    "Scissors": 0.7102686794895517,
+    "Skewer": 0.9438258474645813,
+    "Suction Cannula": 0.8316855299010791,
+    "Syringe": 0.54122366531873,
+    "Tweezers": 0.7881827200320839
+  },
+  "per_class_kind": "tool",
+  "per_class_metric": "AP",
+  "per_class_nan_classes": [
+    "Retractor"
+  ],
+  "per_class_source": "experiments/phase1/stage2four_pd_DX_gtpred_CF_ep4_seed42/per_class_ap.json",
+  "per_class_valid_count": 14,
+  "provenance": {
+    "aux_token": "no_aux_token",
+    "commit": "from_git_commit_txt",
+    "epoch": "from_metrics_json",
+    "host": "from_server_txt",
+    "name": "from_dirname_desc_seed_no_seq",
+    "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
+    "seed": "from_dirname_verified_by_command_sh_and_config_yaml",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "from_plan_section_16_7",
+    "step": "from_dirname"
+  },
+  "run_id": "stage2four_pd_DX_gtpred_CF_ep4_seed42",
+  "seed": 42,
+  "seed_agreement": "agree",
+  "seed_command": 42,
+  "seed_config": 42,
+  "seed_detector": null,
+  "seed_phase": null,
+  "seq": null,
+  "split": "val",
+  "step": "stage2four_pd_DX_gtpred_CF_ep4",
+  "subgroup": null,
+  "task_id": "T-2026-10-19-stage2-pilot-four-new-types",
+  "wandb_run_id": null,
+  "wandb_run_url": null
+}

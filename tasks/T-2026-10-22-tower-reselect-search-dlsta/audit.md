@@ -583,3 +583,18 @@ IMAGE_MISMATCH_ANALYSIS.mdに実測・推論・限界を分けて記録。propos
 初回引き継ぎ後、GPU1は使用率0・計算プロセス0・空き23899MiBでも665MiBの使用表示で旧判定（使用100MiB未満）に阻まれた。残量の由来はUNKNOWN。GPUはresetせず、他のプロセスにも触れず、対象のNVLink組・計算プロセス0・使用率0・各GPU空き22000MiB以上を投入条件に変更。GPU0・欠けたGPU・計算中・空き不足を拒否する対照を追加し関連20試験pass。監視だけを再度引き継ぐ。
 
 運用反映確認 2026-10-23T17:08:23.930772+09:00: 新supervisor PID2654889。GPU1–2で工程塔2番、GPU3–4で検出塔2番、検出学習root PID2607058は引き継ぎ前と同一。全4枚で計算を確認、監視で本契約のGPU0使用0。39件のrun記録・6点の完了に重複なし。記録scheduler_handoff_evidence.json。
+
+## 最終監査（2026-10-29T17:26:04.852068+09:00）
+
+- 全40点・260処理（検出20、工程backbone20・特徴20・時間ヘッド200）完了。発散0、backbone/検出の上限到達0。最終完了2026-10-29 01:18:38 JST。G1〜G4 pass。
+- 全260公開runのconfig/task_id/点の値/指標/notes/command/commit/per-class/posthoc/offline W&Bの実在と対応を照合。特徴は全点12484(train+val)フレームでtest動画を含まない。全点のoptimizer群・COCO初期化・二枚の道と実効batchを確認。
+- final_verification.json: GPU0所有プロセス0、全期間の監視最大間隔12.664秒、入力照合82回すべてPASS。最大公開ファイルexperiments/analysis/tower_reselect_search_dlsta/image_input_lock.json=5660823bytes。checkpoint・特徴は全てrepo外。
+- make runindex exit0、回帰全項目PASS、dummy混入0。全2363行のうち本契約260行で原本の経路集合と完全一致。全試験935 pass/6 fail/1 skip、失敗名は開始前と同じ。GPUを使うテスト1件はCUDA_VISIBLE_DEVICES空でskip、実機検証は既に実施済み。
+- 順位を変更するコピーと同点コピーを実際のtables()へ渡し、順位変更・小番号優先を確認。P13 UNKNOWNコピーとP14不存在カードコピーは実検査器でFAIL。原本は変更していない。
+- 検出の最終epochの標的群APは既存per_class_coco_map/epoch_NNN.jsonとhistoryのoverall APの一致から回収しfinal_verification.json epoch_notesへ保存。
+- 過去のhead optimizer_recordのeffective_batchはbackbone設定の継承値で、headのbatch単位は実装どおり動画1本。実測の群値・初期/最終重みnormと学習条件は正しく、継承フィールドをheadのフレームbatchとして解釈しない。原本は保持。
+- 索引の既知の制約: dlstaがhost alias表に無いためhost=null、host_raw=dlsta。検出valはRetractorのAPが未定義のため公開per_classは有限14クラス、収穫器のkind=unknown。時間headのper_class原本はJaccardだが収穫器は工程9クラスをF1と固定分類する。いずれも一次指標・順位には影響しない。禁止された収穫器・登録簿は変更しない。
+- 全体forbidden-checkは別作業の未追跡6ファイルだけを検出。本契約のPR内容を隔離したworktreeで改めて実検査する。原本の別作業ファイルは触らない。
+- 予測一: 両塔とも0番はtop3外で一致。予測二: 発散0件、偏りは評価不能。予測三: 上限到達0件、学習率による偏りは評価不能。全点探索の最大値であり効果の確定値と解釈しない。
+
+最終task-validateは0 failed、収穫で件数がindex1961→2363、experiments750→1130、verdicts1506→1736となったためL2-8のWARN3件。起票時の件数は履歴として保持する。git diff --checkは生成器由来runindex/anomalies.mdの末尾空白1件を検出。生成器と生成結果を手修正せず、生成器以外のソース・報告に同検査を実行する。

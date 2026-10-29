@@ -1,0 +1,140 @@
+{
+  "arm": "unknown",
+  "attributes": {
+    "best_epoch": 4,
+    "early_stopped_epoch": null,
+    "iface_ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/dp_ckpt/stage2fix_dp_009_D3-L1_empty_ep4_seed42.pth",
+    "iface_ckpt_sha256": "6e1d2fbfa3ae7859e0018d25005a0a05b98e78b288aad6c995a67beec4ca1530",
+    "reached_epoch_cap": true,
+    "receiver_unchanged": true,
+    "result_selection": "final_epoch"
+  },
+  "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-10-19T08:38:03+00:00\npython scripts/stage2pilot/dp_train.py train --type D3-L1 --arm empty --seed 42 --inst-variant uq --fixed-epochs 4 --task-id T-2026-10-19-stage2-pilot-fix-epoch4-shuffle --exp-prefix stage2fix_dp\n",
+  "commit": "ce1eefa37ad4ef9fb65767123d7844587a24a5c2",
+  "config_path": "experiments/phase1/stage2fix_dp_009_D3-L1_empty_ep4_seed42/config.yaml",
+  "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
+  "description": "D3-L1_empty_ep4",
+  "duplicate_bare_keys": [],
+  "epoch": null,
+  "eval_recipe": {
+    "test_cfg": {
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "split": "val",
+      "task": "phase"
+    }
+  },
+  "eval_recipe_id": "dc7cd36509d5",
+  "evidence_completeness": "full",
+  "excluded": false,
+  "exclusion_reason": null,
+  "experiment_id": "phase1/stage2fix_dp/D3-L1_empty_ep4@val",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_seed_declared": null,
+  "frozen_source_tag": null,
+  "gpu": null,
+  "group": "phase1",
+  "harvest_warnings": [],
+  "host": "andrew",
+  "host_raw": "andrew",
+  "ledger_key": "phase1__stage2fix_dp_009_D3-L1_empty_ep4_seed42",
+  "metrics": {
+    "accuracy": 0.8712871287128713,
+    "elapsed_seconds": 0.5715731689706445,
+    "epochs_run": 4,
+    "iface_params": 266944,
+    "init_phase_accuracy": 0.8712871287128713,
+    "init_phase_jaccard": 0.7762185528074379,
+    "jaccard": 0.7762185528074379,
+    "macro_f1": 0.8591373243528205,
+    "result_epoch": 4,
+    "steps_without_grad": 40
+  },
+  "metrics_by_split": {
+    "unknown": {
+      "elapsed_seconds": 0.5715731689706445,
+      "epochs_run": 4,
+      "iface_params": 266944,
+      "init_phase_accuracy": 0.8712871287128713,
+      "init_phase_jaccard": 0.7762185528074379,
+      "result_epoch": 4,
+      "steps_without_grad": 40
+    },
+    "val": {
+      "accuracy": 0.8712871287128713,
+      "jaccard": 0.7762185528074379,
+      "macro_f1": 0.8591373243528205
+    }
+  },
+  "metrics_nested": {
+    "negative_control": {
+      "max_abs_logit_diff": 0.0,
+      "pred_signal_jaccard": 0.7762185528074379,
+      "unchanged": true,
+      "zero_signal_jaccard": 0.7762185528074379
+    },
+    "per_video": {
+      "09": {
+        "phase_accuracy": 0.9961389961389961,
+        "phase_jaccard": 0.9931717398646169
+      },
+      "10": {
+        "phase_accuracy": 0.8064192577733199,
+        "phase_jaccard": 0.6753695847911568
+      }
+    }
+  },
+  "metrics_primary_split": "val",
+  "metrics_source": "metrics_json",
+  "notes": "# 非公式（T-2026-10-19-stage2-pilot-fix-epoch4-shuffle） DP D3-L1 empty seed 42\n\n受け取り手は確定塔の時間ヘッド（凍結）。界面だけを学ぶ（W1）。4 epoch 学習し途中で止めない。結果は 4 epoch 目の状態（最良の回を選ばない）。test は通していない。\nresult epoch 4 / val macro Jaccard 0.7762185528074379 / accuracy 0.8712871287128713\nepochs 4（停止 None）、学習前 Jaccard 0.7762185528074379\n",
+  "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
+  "path": "experiments/phase1/stage2fix_dp_009_D3-L1_empty_ep4_seed42",
+  "per_class": {
+    "anesthesia": 0.9603960396039604,
+    "closure": 0.7539823008849558,
+    "design": 0.9615384615384616,
+    "disinfection": 0.0,
+    "dissection": 0.7792207792207793,
+    "dressing": 0.7692307692307693,
+    "hemostasis": 0.3614457831325301,
+    "incision": 0.8477157360406091,
+    "irrigation": 0.0
+  },
+  "per_class_kind": "phase",
+  "per_class_metric": "F1",
+  "per_class_nan_classes": [],
+  "per_class_source": "experiments/phase1/stage2fix_dp_009_D3-L1_empty_ep4_seed42/per_class_ap.json",
+  "per_class_valid_count": 9,
+  "provenance": {
+    "aux_token": "no_aux_token",
+    "commit": "from_git_commit_txt",
+    "epoch": "not_determinable",
+    "host": "from_server_txt",
+    "name": "from_dirname_step_seq_desc_seed",
+    "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
+    "seed": "from_dirname_verified_by_command_sh_and_config_yaml",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "from_metric_key_prefix",
+    "step": "from_dirname"
+  },
+  "run_id": "stage2fix_dp_009_D3-L1_empty_ep4_seed42",
+  "seed": 42,
+  "seed_agreement": "agree",
+  "seed_command": 42,
+  "seed_config": 42,
+  "seed_detector": null,
+  "seed_phase": null,
+  "seq": 9,
+  "split": "val",
+  "step": "stage2fix_dp",
+  "subgroup": null,
+  "task_id": "T-2026-10-19-stage2-pilot-fix-epoch4-shuffle",
+  "wandb_run_id": "4sot4ygm",
+  "wandb_run_url": "https://wandb.ai/daky-o7600/egosurgery_multitask/runs/4sot4ygm"
+}

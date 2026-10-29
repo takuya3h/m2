@@ -1,0 +1,18 @@
+task_id: T-2026-10-22-tower-reselect-search-dlsta
+point_id: 3
+point:
+  point: 3
+  lr: 2.0e-05
+  phase_S: 0.18
+  phase_weight_decay: 2.71
+  accum: 4
+  detector_S: 0.21
+  detector_weight_decay: 0.215
+  max_norm: 0.138
+seed: 42
+fold: A
+kind: detector
+gpus: 1,2
+work: /home/ubuntu/m2-scratch/T-2026-10-22-tower-reselect-search-dlsta/detector/point03
+epochs: 36
+mixed_precision: fp16

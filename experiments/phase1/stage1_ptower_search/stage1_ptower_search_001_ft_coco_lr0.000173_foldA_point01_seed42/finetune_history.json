@@ -1,0 +1,176 @@
+{
+  "task_id": "T-2026-10-22-tower-reselect-search-dlsta",
+  "fold": "A",
+  "seed": 42,
+  "init": "coco",
+  "ft_lr": 0.000173,
+  "trainable_params": {
+    "stem": 0,
+    "layer1": 215808,
+    "layer2": 1219584,
+    "layer3": 7098368,
+    "layer4": 14964736,
+    "fc": 18441
+  },
+  "backbone_init_sha256": "a755b3eb22a3c1996ff88bb5797690ceb5605eedef5c24f980e1cac4c07fc98f",
+  "weights": "data/external/weights/relation_detr_resnet50_800_1333_coco_1x.pth",
+  "effective_batch_size": 32,
+  "world_size": 2,
+  "per_gpu_batch_size": 8,
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.7543944338966858,
+      "lr": 0.000173,
+      "val_accuracy": 0.6775210084033614,
+      "val_macro_f1": 0.48090931843398155
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.3112820710898826,
+      "lr": 0.000173,
+      "val_accuracy": 0.7163865546218487,
+      "val_macro_f1": 0.528699406673691
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.18288996140917127,
+      "lr": 0.000173,
+      "val_accuracy": 0.7573529411764706,
+      "val_macro_f1": 0.5622477031654496
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.12232209120569874,
+      "lr": 0.000173,
+      "val_accuracy": 0.7636554621848739,
+      "val_macro_f1": 0.6077746879008078
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.10721981811822641,
+      "lr": 0.000173,
+      "val_accuracy": 0.6612394957983193,
+      "val_macro_f1": 0.5251033036940723
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.08077850999754707,
+      "lr": 0.000173,
+      "val_accuracy": 0.7773109243697479,
+      "val_macro_f1": 0.6222571315140055
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.062074586786650496,
+      "lr": 0.000173,
+      "val_accuracy": 0.7463235294117647,
+      "val_macro_f1": 0.5590934769776652
+    },
+    {
+      "epoch": 8,
+      "train_loss": 0.07219710934118864,
+      "lr": 0.000173,
+      "val_accuracy": 0.6659663865546218,
+      "val_macro_f1": 0.48398672234730383
+    },
+    {
+      "epoch": 9,
+      "train_loss": 0.04494087186054468,
+      "lr": 0.000173,
+      "val_accuracy": 0.7064075630252101,
+      "val_macro_f1": 0.4711310972982776
+    },
+    {
+      "epoch": 10,
+      "train_loss": 0.04705950812424255,
+      "lr": 0.000173,
+      "val_accuracy": 0.6307773109243697,
+      "val_macro_f1": 0.46332450516957313
+    },
+    {
+      "epoch": 11,
+      "train_loss": 0.02514904773453967,
+      "lr": 1.73e-05,
+      "val_accuracy": 0.7783613445378151,
+      "val_macro_f1": 0.585912782757277
+    },
+    {
+      "epoch": 12,
+      "train_loss": 0.0090238351665057,
+      "lr": 1.73e-05,
+      "val_accuracy": 0.7783613445378151,
+      "val_macro_f1": 0.5793336840038594
+    },
+    {
+      "epoch": 13,
+      "train_loss": 0.007225368127205352,
+      "lr": 1.73e-05,
+      "val_accuracy": 0.7878151260504201,
+      "val_macro_f1": 0.5871418688881196
+    },
+    {
+      "epoch": 14,
+      "train_loss": 0.005855525011212591,
+      "lr": 1.73e-05,
+      "val_accuracy": 0.779936974789916,
+      "val_macro_f1": 0.5855039852175173
+    },
+    {
+      "epoch": 15,
+      "train_loss": 0.004305512727561729,
+      "lr": 1.73e-05,
+      "val_accuracy": 0.7857142857142857,
+      "val_macro_f1": 0.5876246326943568
+    },
+    {
+      "epoch": 16,
+      "train_loss": 0.0031322242955200597,
+      "lr": 1.73e-05,
+      "val_accuracy": 0.7652310924369747,
+      "val_macro_f1": 0.5773995034004236
+    },
+    {
+      "epoch": 17,
+      "train_loss": 0.002877567205179802,
+      "lr": 1.73e-05,
+      "val_accuracy": 0.7762605042016807,
+      "val_macro_f1": 0.5764682930324128
+    }
+  ],
+  "best_epoch": 13,
+  "best_val_accuracy": 0.7878151260504201,
+  "lr_lowered_epoch": 10,
+  "early_stopped_epoch": 17,
+  "peak_memory_per_rank": [
+    {
+      "device": "cuda:0",
+      "peak_memory_bytes": 14868907520,
+      "peak_reserved_bytes": 21053308928
+    },
+    {
+      "device": "cuda:1",
+      "peak_memory_bytes": 14869399040,
+      "peak_reserved_bytes": 17492344832
+    }
+  ],
+  "determinism_per_rank": [
+    {
+      "deterministic_algorithms": true,
+      "cudnn_deterministic": true,
+      "cudnn_benchmark": false,
+      "matmul_tf32": false,
+      "cudnn_tf32": false,
+      "cublas_workspace_config": ":4096:8"
+    },
+    {
+      "deterministic_algorithms": true,
+      "cudnn_deterministic": true,
+      "cudnn_benchmark": false,
+      "matmul_tf32": false,
+      "cudnn_tf32": false,
+      "cublas_workspace_config": ":4096:8"
+    }
+  ],
+  "checkpoint_sha256": "6d25a7fbef0e20edd94842a6708ce7f6941b9ed4c6e1e209a22a12c5919e4ef0"
+}

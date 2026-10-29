@@ -1,0 +1,169 @@
+{
+  "task_id": "T-2026-10-22-tower-reselect-search-dlsta",
+  "fold": "A",
+  "seed": 42,
+  "init": "coco",
+  "ft_lr": 0.000219,
+  "trainable_params": {
+    "stem": 0,
+    "layer1": 215808,
+    "layer2": 1219584,
+    "layer3": 7098368,
+    "layer4": 14964736,
+    "fc": 18441
+  },
+  "backbone_init_sha256": "a755b3eb22a3c1996ff88bb5797690ceb5605eedef5c24f980e1cac4c07fc98f",
+  "weights": "data/external/weights/relation_detr_resnet50_800_1333_coco_1x.pth",
+  "effective_batch_size": 128,
+  "world_size": 2,
+  "per_gpu_batch_size": 8,
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.9295831402781329,
+      "lr": 0.000219,
+      "val_accuracy": 0.4322478991596639,
+      "val_macro_f1": 0.21499115719226825
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.44489271916265977,
+      "lr": 0.000219,
+      "val_accuracy": 0.6990546218487395,
+      "val_macro_f1": 0.47100561396149193
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.2517761955598443,
+      "lr": 0.000219,
+      "val_accuracy": 0.7394957983193278,
+      "val_macro_f1": 0.562418861688315
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.14626346357750605,
+      "lr": 0.000219,
+      "val_accuracy": 0.7163865546218487,
+      "val_macro_f1": 0.5363914371680158
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.1092013799081229,
+      "lr": 0.000219,
+      "val_accuracy": 0.7489495798319328,
+      "val_macro_f1": 0.5746168308535926
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.07907683769461482,
+      "lr": 0.000219,
+      "val_accuracy": 0.7058823529411765,
+      "val_macro_f1": 0.5463964084736369
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.06082071704098546,
+      "lr": 0.000219,
+      "val_accuracy": 0.7741596638655462,
+      "val_macro_f1": 0.5745741224205554
+    },
+    {
+      "epoch": 8,
+      "train_loss": 0.04640422767027772,
+      "lr": 0.000219,
+      "val_accuracy": 0.6980042016806722,
+      "val_macro_f1": 0.5711127085818138
+    },
+    {
+      "epoch": 9,
+      "train_loss": 0.038213255332739074,
+      "lr": 0.000219,
+      "val_accuracy": 0.7316176470588235,
+      "val_macro_f1": 0.5545657687334676
+    },
+    {
+      "epoch": 10,
+      "train_loss": 0.03486958882819407,
+      "lr": 0.000219,
+      "val_accuracy": 0.7048319327731093,
+      "val_macro_f1": 0.5363355910157216
+    },
+    {
+      "epoch": 11,
+      "train_loss": 0.038411977027874036,
+      "lr": 0.000219,
+      "val_accuracy": 0.7699579831932774,
+      "val_macro_f1": 0.5755464259017422
+    },
+    {
+      "epoch": 12,
+      "train_loss": 0.016378248701829246,
+      "lr": 2.1900000000000004e-05,
+      "val_accuracy": 0.8019957983193278,
+      "val_macro_f1": 0.6161731304868803
+    },
+    {
+      "epoch": 13,
+      "train_loss": 0.008225444781084442,
+      "lr": 2.1900000000000004e-05,
+      "val_accuracy": 0.7993697478991597,
+      "val_macro_f1": 0.6256623449450323
+    },
+    {
+      "epoch": 14,
+      "train_loss": 0.0063392191249853555,
+      "lr": 2.1900000000000004e-05,
+      "val_accuracy": 0.7951680672268907,
+      "val_macro_f1": 0.6182109878569416
+    },
+    {
+      "epoch": 15,
+      "train_loss": 0.005877703034950314,
+      "lr": 2.1900000000000004e-05,
+      "val_accuracy": 0.7909663865546218,
+      "val_macro_f1": 0.6215397323520867
+    },
+    {
+      "epoch": 16,
+      "train_loss": 0.004186152752910534,
+      "lr": 2.1900000000000004e-05,
+      "val_accuracy": 0.7678571428571429,
+      "val_macro_f1": 0.6090917474637831
+    }
+  ],
+  "best_epoch": 12,
+  "best_val_accuracy": 0.8019957983193278,
+  "lr_lowered_epoch": 11,
+  "early_stopped_epoch": 16,
+  "peak_memory_per_rank": [
+    {
+      "device": "cuda:0",
+      "peak_memory_bytes": 14869399040,
+      "peak_reserved_bytes": 20994588672
+    },
+    {
+      "device": "cuda:1",
+      "peak_memory_bytes": 14869399040,
+      "peak_reserved_bytes": 17492344832
+    }
+  ],
+  "determinism_per_rank": [
+    {
+      "deterministic_algorithms": true,
+      "cudnn_deterministic": true,
+      "cudnn_benchmark": false,
+      "matmul_tf32": false,
+      "cudnn_tf32": false,
+      "cublas_workspace_config": ":4096:8"
+    },
+    {
+      "deterministic_algorithms": true,
+      "cudnn_deterministic": true,
+      "cudnn_benchmark": false,
+      "matmul_tf32": false,
+      "cudnn_tf32": false,
+      "cublas_workspace_config": ":4096:8"
+    }
+  ],
+  "checkpoint_sha256": "f99323b8fc395b1a0e4eca4491ff63e4f7a6ae035c2be006c3fdd6a4d1a41fa6"
+}

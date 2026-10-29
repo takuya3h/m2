@@ -1,0 +1,142 @@
+{
+  "arm": "unknown",
+  "attributes": {
+    "best_epoch": 1,
+    "early_stopped_epoch": null,
+    "iface_ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-four-new-types/dp_ckpt/stage2four_dp_002_TH_pred_noCF_ep1_smoke_seed42.pth",
+    "iface_ckpt_sha256": "12b63697cbe1b5819787f708dedf205751832b3ba7858dcabd01123732d7d480",
+    "reached_epoch_cap": true,
+    "receiver_unchanged": true,
+    "result_selection": "final_epoch"
+  },
+  "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-10-19T16:45:33+00:00\npython scripts/stage2pilot/dp_train.py train --type TH --arm pred_noCF --seed 42 --fixed-epochs 1 --smoke --task-id T-2026-10-19-stage2-pilot-four-new-types --exp-prefix stage2four_dp\n",
+  "commit": "ed53c6729eecd0d45967376eaf8c82ef83960f93",
+  "config_path": "experiments/phase1/stage2four_dp_002_TH_pred_noCF_ep1_smoke_seed42/config.yaml",
+  "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
+  "description": "TH_pred_noCF_ep1_smoke",
+  "duplicate_bare_keys": [],
+  "epoch": null,
+  "eval_recipe": {
+    "test_cfg": {
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "split": "val",
+      "task": "phase"
+    }
+  },
+  "eval_recipe_id": "dc7cd36509d5",
+  "evidence_completeness": "full",
+  "excluded": false,
+  "exclusion_reason": null,
+  "experiment_id": "phase1/stage2four_dp/TH_pred_noCF_ep1_smoke@val",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_seed_declared": null,
+  "frozen_source_tag": null,
+  "gpu": null,
+  "group": "phase1",
+  "harvest_warnings": [],
+  "host": "bengio",
+  "host_raw": "bengio",
+  "ledger_key": "phase1__stage2four_dp_002_TH_pred_noCF_ep1_smoke_seed42",
+  "metrics": {
+    "accuracy": 0.8712871287128713,
+    "elapsed_seconds": 0.5791952637955546,
+    "epochs_run": 1,
+    "iface_params": 31233,
+    "init_phase_accuracy": 0.8712871287128713,
+    "init_phase_jaccard": 0.7762185528074379,
+    "jaccard": 0.7762185528074379,
+    "macro_f1": 0.8591373243528205,
+    "result_epoch": 1,
+    "steps_without_grad": 0
+  },
+  "metrics_by_split": {
+    "unknown": {
+      "elapsed_seconds": 0.5791952637955546,
+      "epochs_run": 1,
+      "iface_params": 31233,
+      "init_phase_accuracy": 0.8712871287128713,
+      "init_phase_jaccard": 0.7762185528074379,
+      "result_epoch": 1,
+      "steps_without_grad": 0
+    },
+    "val": {
+      "accuracy": 0.8712871287128713,
+      "jaccard": 0.7762185528074379,
+      "macro_f1": 0.8591373243528205
+    }
+  },
+  "metrics_nested": {
+    "gate_by_epoch": {
+      "1": {
+        "tanh_alpha": 0.000948314496781677
+      }
+    },
+    "init_gate": {
+      "tanh_alpha": 0.0
+    },
+    "per_video": {
+      "09": {
+        "phase_accuracy": 0.9961389961389961,
+        "phase_jaccard": 0.9931717398646169
+      },
+      "10": {
+        "phase_accuracy": 0.8064192577733199,
+        "phase_jaccard": 0.6753695847911568
+      }
+    }
+  },
+  "metrics_primary_split": "val",
+  "metrics_source": "metrics_json",
+  "notes": "# 非公式（T-2026-10-19-stage2-pilot-four-new-types） DP TH pred_noCF seed 42\n\n受け取り手は確定塔の時間ヘッド（凍結）。界面だけを学ぶ（W1）。1 epoch 学習し途中で止めない。結果は 1 epoch 目の状態（最良の回を選ばない）。test は通していない。\nresult epoch 1 / val macro Jaccard 0.7762185528074379 / accuracy 0.8712871287128713\nepochs 1（停止 None）、学習前 Jaccard 0.7762185528074379\n",
+  "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
+  "path": "experiments/phase1/stage2four_dp_002_TH_pred_noCF_ep1_smoke_seed42",
+  "per_class": {
+    "anesthesia": 0.9603960396039604,
+    "closure": 0.7539823008849558,
+    "design": 0.9615384615384616,
+    "disinfection": 0.0,
+    "dissection": 0.7792207792207793,
+    "dressing": 0.7692307692307693,
+    "hemostasis": 0.3614457831325301,
+    "incision": 0.8477157360406091,
+    "irrigation": 0.0
+  },
+  "per_class_kind": "phase",
+  "per_class_metric": "F1",
+  "per_class_nan_classes": [],
+  "per_class_source": "experiments/phase1/stage2four_dp_002_TH_pred_noCF_ep1_smoke_seed42/per_class_ap.json",
+  "per_class_valid_count": 9,
+  "provenance": {
+    "aux_token": "no_aux_token",
+    "commit": "from_git_commit_txt",
+    "epoch": "not_determinable",
+    "host": "from_server_txt",
+    "name": "from_dirname_step_seq_desc_seed",
+    "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
+    "seed": "from_dirname_verified_by_command_sh_and_config_yaml",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "from_metric_key_prefix",
+    "step": "from_dirname"
+  },
+  "run_id": "stage2four_dp_002_TH_pred_noCF_ep1_smoke_seed42",
+  "seed": 42,
+  "seed_agreement": "agree",
+  "seed_command": 42,
+  "seed_config": 42,
+  "seed_detector": null,
+  "seed_phase": null,
+  "seq": 2,
+  "split": "val",
+  "step": "stage2four_dp",
+  "subgroup": null,
+  "task_id": "T-2026-10-19-stage2-pilot-four-new-types",
+  "wandb_run_id": "j2xjk74p",
+  "wandb_run_url": "https://wandb.ai/daky-o7600/egosurgery_multitask/runs/j2xjk74p"
+}
