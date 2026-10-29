@@ -1,9 +1,9 @@
 result_version: 3
 task_id: T-2026-10-22-tower-reselect-search-dlsta
-status: partial
+status: pass
 host: dlsta
 branch: feat/tower-reselect-search-dlsta
-pr: null
+pr: 267
 merged: false
 gates:
 - id: L3
@@ -31,6 +31,8 @@ deviations:
   note: 画像不一致で停止後、利用者が既存15437枚＋不足1796枚で続行を承認。既知6001対の差を許容し、全参照先とSHA-256を固定して契約・preregを学習前に改訂。画像は変更していない。
 - type: judgement
   note: 取得済みcheckpointは~/third_partyに在ったため正本照合後repoの指定先へコピーし、元は残した。再開時に同期抑止が不在だったためtaskスキルの再開例外で所有情報つき目印を作成。
+- type: environment
+  note: 並行作業でorigin/phase0が前進し、既定のforbidden-checkは他作業の差分も検出。開始時に記録した起点をBASEへ指定し、PR内容の隔離worktreeでPASSと禁止ファイル追加のFAILを確認。rootの別作業ファイルは触らない。
 issuer_defects:
 - type: check_does_not_check
   note: plan.env.preflight は deterministic_flags を宣言しているが、現在の検査器の P3 は判定基準未確定という固定の理由で常に
@@ -70,10 +72,12 @@ positive_controls:
 - judgement: 順位の値変更と同点の規則
   breaking_input: 全点のscratchコピーで工程0番を最大値より高くし、その後最大値と同点にする
   observed: 実際のtables()で両方とも0番が1位。値変更と小番号優先が働く。原本は変更なし。
+- judgement: 禁止領域の検査が新規違反を拒否する
+  breaking_input: 開始時の確定起点に対する隔離worktreeでdata/forbidden_positive_control.txtを追加
+  observed: 追加前PASS、追加後FAIL。本契約の原本と別作業のファイルは変更していない。
 followups:
 - top3.mdの工程6/8/10、検出12/5/15と0番を、次の回し直し契約でprereg §3.2どおり検証する。本契約では選定しない。
 - 索引のhost別名とクラス別指標分類の制約は別契約で扱う。
-- PR起票・送出・同期抑止解除が残る。
 unknowns:
 - JPEG別版の生成命令とモデル性能への影響は未特定。
 - 索引のhostはnull（raw dlsta保持）。検出14有限クラスはkind unknown、時間headのper-class Jaccardは既存収穫器がF1と誤分類。一次指標と順位は原本と一致。
@@ -82,3 +86,5 @@ commits:
 - e9f4e3b4f34410c023c7a4ab240971c1d70c2510
 - 0660c1be
 - 177e547f31e5d33bb5b3a57662a0c0d27c5bb1c7
+- 68996775f56d1c5369d0f0ef53bac734fe89c47a
+- 68befc3b62ffc071077cca446df5d3c83b8c38b9

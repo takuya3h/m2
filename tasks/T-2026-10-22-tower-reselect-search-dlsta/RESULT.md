@@ -2,7 +2,7 @@
 
 ## 判定
 
-**partial（全探索・集計・索引登録・最終試験は完了。PRと送出の前）。**
+**pass。全探索・集計・索引登録・最終検証を完了。**
 2026-10-29 01:18:38 JSTに全40設定・260処理を完了。G1〜G4 pass、発散0、上限36への到達0。GPU0使用0、test評価0。探索順位を記録し、処方の選定は行っていない。
 
 ## 完了判定
@@ -22,7 +22,7 @@
 | k | checkpoint・特徴はrepo外。公開最大image_input_lock.json=5,660,823bytes |
 | l | 対称性2表34行、UNKNOWN0。P13/P14破損コピーはFAIL。異常は下記 |
 | m | runindexに本契約260行、経路集合一致。935 pass/6 fail/1 skip、新しい失敗0。開始時の確定起点で隔離forbidden-check pass、禁止ファイル追加対照はFAIL |
-| n | PR起票前 |
+| n | PR #267、base phase0、feat/tower-reselect-search-dlsta、Draftではない |
 
 ## 実測
 
@@ -57,4 +57,4 @@ JPEG別版の生成経路と性能への影響は未特定。探索値は最大�
 
 ## 送出
 
-PR未起票。台帳送信未実施。同期抑止維持。
+PR #267。台帳送信と同期抑止解除の実測はaudit.mdと最終応答へ記録する。
