@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 141 件）。
-ここに出ない 136 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 142 件）。
+ここに出ない 137 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-10-23-ptower-cand5-heads-impl
 
@@ -154,33 +154,37 @@
 - ssm の出力のビット一致（GPU が要る）。
 - 原典の n と σ の定義そのもの（原典に書かれていない）。
 
-## T-2026-10-22-proposal-card-tower-reselect-search
+## T-2026-10-22-tower-reselect-search-dlsta
 
-状態 `pass` / ホスト `dlsta` / 起票 `252` / 様式 `v3`
+状態 `pass` / ホスト `dlsta` / 起票 `267` / 様式 `v3`
 
 ### ゲート
 
-- `G1` pass — branch feat/proposal-card-tower-reselect-search、HEAD = merge-base = origin/phase0 = 7e30bdde、porcelain は契約のディレクトリの未追跡 4 件だけ。docs/proposals/ は 2026-09-27-ptower-20.md と _template.md、briefs/ 無し。§4 の二つの名前は ABSENT、同じ命令で ptower-20 は EXISTS
-- `G2` pass — check_proposal.py で置いたカードは検出 0（禁止語 0 / 見出し欠落 0 / 数字欠落 0、禁止語 15 語・カード 16 件を規約から読んだ）。禁止語「本命」を足した写しで禁止語 1、見出し「## 9. 最安の殺し実験」を消した写しで見出し欠落 1。pytest の失敗の名前は前後とも同じ 6 件、925 passed
+- `L3` pass — 再開後10 PASS /1 WARN /3 SKIP /0 FAIL。checkpointサイズとSHA-256正本一致。P2/P3/P12はSKIP。P9 host_mismatchはWARN。
+- `G1` pass — 旧0b記録を削除し不在確認。入力全一致。空き758310752256 bytes。prereg e9f4e3b4。GPU所有者対照1と0。
+- `G2` pass — 承認された既存15437枚＋補完1796枚を全数照合。検出2点で実更新・6群確認、工程2点で2rank確認。失敗名集合増加なし。third_party変更なし。
+- `G3` pass — 2026-10-23 01:53:35 JST、最初の4点完了。全設定・COCO初期化・二枚の道を確認。
+- `G4` pass — 全40点・260処理完了、発散0、上限到達0、GPU0使用0。最終完了2026-10-29 01:18:38 JST。
 
 ### 起票者の誤り
 
-- `self_contradiction` — acceptance d は「二つの文書以外に追跡されるファイルの変更が無く」と書くが、Task D.1 は本契約のディレクトリの変更を認め、手順書は tasks/inbox.d/<task_id>.md を 1 契約 1 行以上求める。字面どおりに実行すると RESULT.md と result.yaml を commit できず（task-release の前提を満たせない）、inbox.d も書けない。D.1 と手順書に従い、二文書・契約のディレクトリ・inbox.d の 1 件を変更範囲とした
+- `check_does_not_check` — plan.env.preflight は deterministic_flags を宣言しているが、現在の検査器の P3 は判定基準未確定という固定の理由で常に SKIP を返し、決定論的アルゴリズムと TF32 の実行時設定を一切測らない。今回も SKIP であり、設定が有効な証拠としては使えず、学習時の全 rank の値を別に記録する必要がある。
 
 ### 逸脱
 
-- `judgement` — 開始前の pytest を背景で回している間に Phase B の写しを置いた。tests/ で docs/proposals を参照するのは test_proposal_card_gate.py だけで、_template.md と固定の存在しない名前を見るだけで置き場を走査しないため、前の値は配置の影響を受けない
-- `judgement` — §7 d の空振りでないことの確認（data/ に一件足した写し）は、§6.4 の data/ に書かない禁止と両立させるため、repo の外（scratchpad）に git clone した写しで行い、写しは消した
-- `judgement` — 手順書は RESULT.md の「1. 解決された参照」に規約の原文を求めるが、SPEC §8 は 60 行以内と節の構成を指定する。原文は audit.md に置き、RESULT.md の冒頭の 1 行から行番号で指した
-- `judgement` — CLAUDE.md はコード変更後の README.md の更新を求めるが、acceptance d が追跡される変更の範囲を限るため README.md は更新していない。本契約はコードを変えない
+- `environment` — 画像不一致で停止後、利用者が既存15437枚＋不足1796枚で続行を承認。既知6001対の差を許容し、全参照先とSHA-256を固定して契約・preregを学習前に改訂。画像は変更していない。
+- `judgement` — 取得済みcheckpointは~/third_partyに在ったため正本照合後repoの指定先へコピーし、元は残した。再開時に同期抑止が不在だったためtaskスキルの再開例外で所有情報つき目印を作成。
+- `environment` — 並行作業でorigin/phase0が前進し、既定のforbidden-checkは他作業の差分も検出。開始時に記録した起点をBASEへ指定し、PR内容の隔離worktreeでPASSと禁止ファイル追加のFAILを確認。rootの別作業ファイルは触らない。
 
 ### 申し送り
 
-- 置いたカードは批判会話への依頼文 docs/proposals/briefs/2026-10-21-tower-reselect-search-critique-brief.md を経路で指していない（冒頭の「依頼文: なし」は生成会話の依頼文の欄）。規約 proposal_gate は生成会話の依頼文について「カードから参照する」と書く。批判会話の依頼文にも同じ参照を求めるかは起票者が決める
-- カードが置き換えるとする前のカード 2026-10-17-tower-reselect-andrew は docs/proposals/ に無い
-- 本 PR の統合の後に、dlsta の探索の exp を intent.proposal_card: docs/proposals/2026-10-21-tower-reselect-search.md で配布できる（P14 の関数で PASS を確認済み）
+- top3.mdの工程6/8/10、検出12/5/15と0番を、次の回し直し契約でprereg §3.2どおり検証する。本契約では選定しない。
+- 索引のhost別名とクラス別指標分類の制約は別契約で扱う。
+- PR #267はphase0とCONFLICTING。契約は上流取り込みを禁じるため統合せず、統合担当の調整へ渡す。
 
 ### 断定できなかったこと
 
-- 既存の 6 件の試験の失敗（test_engines 1、test_fetch_task 1、test_research_logger 4）の原因は調べていない
+- JPEG別版の生成命令とモデル性能への影響は未特定。
+- 索引のhostはnull（raw dlsta保持）。検出14有限クラスはkind unknown、時間headのper-class Jaccardは既存収穫器がF1と誤分類。一次指標と順位は原本と一致。
+- head optimizer_record.effective_batchはbackboneの継承メタデータ。head実行単位は動画1本。
 
