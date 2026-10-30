@@ -1,0 +1,103 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-22-tower-reselect-search-dlsta"
+  kind: exp
+  title: "両塔の学び直し: 折り A のハイパーパラメータ探索（dlsta。P*-15-COCO と D*-COCO を各 20 点、seed 42、各点 1 本）"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-22T04:30:00Z"
+  created_from:
+    runindex_commit: "63ae65da8c7d32df591f5e2ee4358286b72c726b"
+    counts: {index: 1961, experiments: 750, verdicts: 1506}
+  depends_on: [T-2026-10-22-proposal-card-tower-reselect-search, T-2026-10-21-ptower-multigpu-syncbn, T-2026-10-19-dlsta-tower-feasibility]
+  amendments:
+    - date: "2026-10-22T06:08:31.303021+09:00"
+      reason: "利用者が、補完1796枚の容量が既存画像と同程度なら既存15437枚＋不足分補完で続行するよう指示。中央値は補完49126 bytes、既存全体53469 bytes。既知6001対のJPEG・画素差を記録して許容し、以後は入力ハッシュの変化と欠けで停止する。原画像は変更しない。"
+      diff: "G2・画像の停止条件・完了判定eを既存画像維持と入力ハッシュ固定へ改訂。点の値・学習規則・分割は変更しない。"
+    - date: "2026-10-23T17:00:41.848625+09:00"
+      reason: "利用者が短縮と利用可能な計算資源の活用を指示。GPU0禁止は維持。"
+      diff: "検出の学習後評価を2GPUで分担。工程の追加評価と特徴抽出を並行実行し、時間ヘッドを2GPUの動的キューへ分配。学習条件・点の値・本数・分割・seed・順位規則は変更しない。"
+intent:
+  question: "カード §14 の 20 点（0 番は現行の処方、1〜19 番は準乱数）を両塔とも折り A・seed 42・各点 1 本で dlsta に学び、val の主指標で並べたとき、各塔の上位 3 件と 1 位はどの点か"
+  decision_at_stake: "andrew で 5 折り × 2 種に回し直す上位 3 件（塔ごと）の決定。回し直しの契約の起票。探索の 1 位は、回し直しの選択と同じかを問うカード #1 の片側になる"
+  hypothesis: "探索の値は 20 点の最大を取るので真の値より高く出る（カード #5）。工程塔の点ごとの値（10 の時間ヘッドの最大）と検出塔の val mAP は、0 番（現行の処方）を含む範囲で学習率が現行の近傍にある点が上位に入りやすい。発散は学習率が最も高い点に出うる。予測の数値はカード #5・#6 と prereg の本文"
+  proposal_card: "docs/proposals/2026-10-21-tower-reselect-search.md"
+  related:
+    backlog: []
+inputs:
+  denominator:
+    ref: "exp:phase1/stage1_ptower_r3/P15_C_L8_w0.3_h30_foldA_coco_lr0.0001@val"
+    metric: "jaccard"
+    require: {n_seeds: ">=3", sigma: present, split: val}
+  data:
+    dataset: "EgoSurgery。工程塔は動画 01〜15 の工程注釈のある全フレーム（conventions#frame_sets の主測定の集合。術具注釈の無いフレームを含む）。検出塔は術具注釈のあるフレーム。折り A（conventions#folds。公式分割と同じ）。train 動画 10 本で学び、val 動画 09・10 で測る。test は本契約で一度も評価しない"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt", "data/splits/ego_test.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/stage1_ptower_r3.py", "scripts/stage1_ptower_r3_dist.py", "scripts/stage1_ptower.py", "scripts/run_stage1_dtower.sh", "scripts/eval_relation_detr_map.py", "scripts/build_phase_manifest.py", "scripts/restore_relation_detr_source.sh", "tools/preflight_task.py", "tools/check_proposal.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#proposal_gate, conventions#folds, conventions#eval_recipe, conventions#symmetry, conventions#frame_sets, conventions#det_groups, conventions#precision, conventions#env_p0]
+  conventions_rev: "2d946b07a57abebc4a8f66150d6dbaf2ccd22186"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/phase1/stage1_ptower_search/", "experiments/baselines/stage1_dtower_search/", "experiments/analysis/tower_reselect_search_dlsta/", "runindex/"]
+plan:
+  phases:
+    - {id: A, name: "prereg の commit。開始状態。0b の repo の外の記録の削除。入力・道具・記憶領域の実在。環境の記録", gpu: false, est: "2h"}
+    - {id: B, name: "道具の準備（工程注釈のある全フレームの manifest、検出塔の点ごとの値を渡す口と記録、checkpoint の置き場）。試験", gpu: false, est: "4h"}
+    - {id: C, name: "殺し実験の 4 本（両塔の 0 番と 13 番）。設定の到達、COCO の重みの読み込み、二枚の道、収束規則、記録の量を確かめる", gpu: true, est: "30h"}
+    - {id: D, name: "残りの 36 本（両塔の 1〜19 番のうち 13 番を除く）。工程塔は各点で特徴の取り出しと時間ヘッド 10 本", gpu: true, est: "170h"}
+    - {id: E, name: "点ごとの値の表。上位 3 件と 1 位。0 番との差。記録する量の表。§8 の異常の有無", gpu: false, est: "3h"}
+    - {id: F, name: "収穫（runindex）、検証、報告、PR", gpu: false, est: "3h"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0。prereg の commit が学習の前。0b の記録のディレクトリが無い。両塔の入力・道具・COCO の checkpoint が在り要約値が記録と一致。記憶領域の空きが見込みの 2 倍以上", on_fail: stop}
+    - {id: G2, after: B, check: "新しい manifest のフレーム数が規約の集合と一致（折り A の train を 16 で割った余りが 1 でない）。既存15437枚と補完1796枚の参照先・SHA-256が承認後の入力記録と一致。検出塔の口が optimizer の群に届く（陽性対照で値が変わる）。試験の失敗の名前の集合が増えていない。third_party の変更が snapshot に写っている", on_fail: stop}
+    - {id: G3, after: C, check: "4 本すべてで、設定の値が optimizer の群に届き、COCO の重みを読んだ行が在り、工程塔が二枚の道で回り、収束規則が働き、付録 B の量が揃い、§8 の異常が無い", on_fail: stop}
+    - {id: G4, after: D, check: "40 本の完走または発散の記録。GPU0 を本契約のプロセスが一度も使っていない。§8 の停止条件に当たらない", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, gpu_free, deterministic_flags]
+  resources: {server: "dlsta", gpu: 4, est_hours: 210, runs: 260}
+prereg:
+  prediction: "回し直しの契約で確かめるカード #1 の片側として、各塔の探索の 1 位の番号を記録する。本契約での予測は三つ。一、両塔とも 0 番は上位 3 件に入らない（確率は prereg §3 の値。付録 C の試算から）。二、発散・非数は学習率が最も高い点（13 番）を含む高い側に偏り、一つの塔で 2 件以下。三、上限の epoch に達する点は学習率が低い側に偏る。予測の当たり外れは F の較正の記録に積む。値の読み方は prereg §3 の「探索の値を処方の効果として読まない」"
+  primary_endpoint: "塔ごとに、点の値。工程塔は折り A の val macro Jaccard（その backbone の 10 の時間ヘッドのうちの最大）。検出塔は折り A の val mAP（conventions#eval_recipe の NMS-free の規約）。co-primary は工程塔が val frame accuracy、検出塔が val 標的群 AP（conventions#det_groups）。記録だけで順位に使わない"
+  decision_rule: "値の大きい順に上位 3 件を取り、1 位を記録する。全桁で並んだときは番号の小さい点を上にする。発散・非数の点は順位から外して記録する。上限の epoch に達した点は順位に残し印を付ける。選定（処方の確定）は本契約では行わない。回し直し（andrew）の規則は prereg §3 に全段を書き、回し直しの契約はそれを引く。探索の値と順位を、ほかのホストの値と順位に並べて読まない"
+  stop_conditions:
+    - "0 番の学習の記録に COCO の重みを読んだ行が無い、または読んだ初期化の重みの要約値が COCO の checkpoint（工程塔はその R50 部分）と違う: 停止して諮る"
+    - "評価の道具が checkpoint を読まずに値を返した（読み込みを飛ばした記録、または AP が零）: 停止して諮る"
+    - "optimizer の群ごとの学習率と weight decay の実際の値が点の値と違う（検出塔は本体の 2 群が点の値、4 群がその一割）: 停止して諮る"
+    - "一つの塔で発散・非数が 5 件以上、または 0 番が発散: 停止して諮る"
+    - "一つの塔で有効な点が 3 件未満: 停止して諮る"
+    - "上位 3 件がすべて上限の epoch に到達: 諮る（収束規則がその範囲で働いていない）"
+    - "折り A の train のフレーム数を 16 で割った余りが 1（二枚の道が始まらない）: 停止して諮る"
+    - "記憶領域の空きが見込みの 2 倍を下回る、または一本の学習の壁時計が見込みの上限の 2 倍を超える: 諮る"
+    - "GPU0 を使う以外に空きが無い: 待つ。GPU0 は使わない"
+    - "入力画像の参照先・SHA-256が承認後の記録から変化した、画像が欠けた、または新しい manifest のフレーム数が規約の集合と合わない: 停止して諮る"
+  committed_at: "2026-10-22T06:08:31+09:00"
+  commit: "177e547f31e5d33bb5b3a57662a0c0d27c5bb1c7"
+outputs:
+  expected_runs: 260
+  must_have: [metrics.json, config.yaml, notes.md]
+  destination: "experiments/phase1/stage1_ptower_search/"
+  stamp: {task_id_in: config.yaml}
+  acceptance:
+    - "a: prereg.md が学習の開始より前に commit され、spec の prereg.commit と committed_at が実測で埋まっている。実行前の L3 で P4・P13・P14 が PASS"
+    - "b: 開始状態（分岐、起点、作業ツリー、五枚の GPU の使用量と所有者、版、試験の前の値）と環境（driver、CUDA、cuDNN、NCCL、torch、torchvision、accelerate、画像の復号の実装、TF32 の設定）が記録されている"
+    - "c: 0b の repo の外の記録のディレクトリが消え、消す前の大きさと消した後の不在が記録されている"
+    - "d: 両塔の入力（折り A の注釈、画像、COCO の checkpoint、工程注釈だけのフレームの画像）と道具の実在と要約値が記録と一致し、記憶領域の空きが見込みの 2 倍以上"
+    - "e: 工程塔の manifest が規約の主測定の集合（動画 01〜15 の工程注釈のある全フレーム）と一致し、旧い manifest と名前が分かれ、折り A の train・val の数と 16 で割った余りが記録されている。既存15437枚と補完1796枚の参照先・SHA-256が承認後の入力記録と一致"
+    - "f: 検出塔の点ごとの値（学習率・weight decay・max_norm）を渡す口が在り、一枚の既定の振る舞いを変えず、optimizer の群ごとの実際の値が各 run の記録に在る。third_party への変更は snapshot として版管理に写っている"
+    - "g: 40 本すべてが完走または発散として記録され、各 run の config.yaml に task_id と点の番号と点の値が刻まれている。工程塔は各点で特徴の取り出しと時間ヘッド 10 本が在る"
+    - "h: 各 run に付録 B の量（学習率を下げた epoch、打ち切り、上限到達、checkpoint の epoch、主指標と co-primary、train と val の差、発散の有無、時間と記憶量、群ごとの実際の値、勾配のノルム、重みのノルムの変化、上限到達の点の傾き、時間ヘッド 10 本の値）が記録されている。測れなかった量は UNKNOWN と理由"
+    - "i: 塔ごとの点の値の表（20 行）、上位 3 件、1 位、0 番との差が在り、prereg の規則だけで決まっている。選定は行っていない"
+    - "j: 本契約のプロセスが GPU0 を一度も使っていない（GPU の記録と所有者の照合）。test を一度も評価していない（評価の記録の集合）"
+    - "k: checkpoint・accelerate の状態・特徴は同期の対象の経路（experiments と data/processed）の外に在り、本契約が experiments と data/processed に足したファイルの最大の大きさが記録されている"
+    - "l: 対称性の表が prereg に在り UNKNOWN が零件。§8 の異常の有無が表で示されている"
+    - "m: 収穫後の runindex に本契約の全 run が task_id で現れる。試験の失敗の名前の集合が増えていない。forbidden-check が通る"
+    - "n: PR が存在し、base が phase0、分岐が feat/ で始まり、Draft でない"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: ["COCO の重みを読まずに学習が進んだ", "評価の道具が checkpoint を読まずに値を返した", "点の値が optimizer の群に届かない", "一つの塔で発散が 5 件以上", "入力画像の参照先・SHA-256が承認後の記録から変化した、または画像が欠けた", "記憶領域の空きが見込みの 2 倍を下回る", "GPU1〜4 に他の利用者の使用が続き空きが無い", "一本の壁時計が見込みの上限の 2 倍を超える"]

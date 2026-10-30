@@ -1,0 +1,282 @@
+{
+  "time_jst": "2026-10-23T17:08:23.930772+09:00",
+  "state": {
+    "state": "running",
+    "time_jst": "2026-10-23T17:08:14.633185+09:00",
+    "supervisor_pid": 2654889,
+    "active": {
+      "3,4": "detector_point02",
+      "1,2": "phase_point02"
+    },
+    "completed_points": 6,
+    "running_commands": {
+      "2607058": {
+        "tag": "detector2",
+        "gpus": "3,4",
+        "log": "/home/ubuntu/m2-scratch/T-2026-10-22-tower-reselect-search-dlsta/detector/point02/train.log",
+        "adopted": true
+      },
+      "2655027": {
+        "tag": "phase2_finetune",
+        "gpus": "1,2",
+        "log": "/home/ubuntu/m2-scratch/T-2026-10-22-tower-reselect-search-dlsta/phase/point02/finetune.log",
+        "adopted": false
+      }
+    },
+    "stage": "D"
+  },
+  "monitor": {
+    "time_jst": "2026-10-23T17:08:14.633019+09:00",
+    "gpus": [
+      {
+        "index": "0",
+        "uuid": "GPU-4b512832-64a5-c2f2-43ee-81fd2ed3ef6b",
+        "memory.used": "915",
+        "memory.free": "23198",
+        "utilization.gpu": "100"
+      },
+      {
+        "index": "1",
+        "uuid": "GPU-a9fe09a2-9017-c23e-6ae5-d93ad49d6cdc",
+        "memory.used": "16982",
+        "memory.free": "7133",
+        "utilization.gpu": "100"
+      },
+      {
+        "index": "2",
+        "uuid": "GPU-49e96974-9a33-dc97-9e6d-ae404c0dd9af",
+        "memory.used": "16130",
+        "memory.free": "7985",
+        "utilization.gpu": "100"
+      },
+      {
+        "index": "3",
+        "uuid": "GPU-15a15a81-0cd0-ef99-32d8-c62d79416069",
+        "memory.used": "15280",
+        "memory.free": "8835",
+        "utilization.gpu": "100"
+      },
+      {
+        "index": "4",
+        "uuid": "GPU-cec6bfc8-ba77-1e5a-699d-4f3f42ee8b1a",
+        "memory.used": "15352",
+        "memory.free": "8763",
+        "utilization.gpu": "100"
+      }
+    ],
+    "processes": [
+      {
+        "uuid": "GPU-a9fe09a2-9017-c23e-6ae5-d93ad49d6cdc",
+        "pid": 2655097,
+        "memory": "16098",
+        "exe": "/home/ubuntu/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/bin/python3.11",
+        "owned": true
+      },
+      {
+        "uuid": "GPU-49e96974-9a33-dc97-9e6d-ae404c0dd9af",
+        "pid": 2655098,
+        "memory": "16098",
+        "exe": "/home/ubuntu/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/bin/python3.11",
+        "owned": true
+      },
+      {
+        "uuid": "GPU-15a15a81-0cd0-ef99-32d8-c62d79416069",
+        "pid": 2607126,
+        "memory": "14402",
+        "exe": "/home/ubuntu/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/bin/python3.11",
+        "owned": true
+      },
+      {
+        "uuid": "GPU-cec6bfc8-ba77-1e5a-699d-4f3f42ee8b1a",
+        "pid": 2607127,
+        "memory": "14472",
+        "exe": "/home/ubuntu/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/bin/python3.11",
+        "owned": true
+      }
+    ],
+    "active": {
+      "3,4": "detector_point02",
+      "1,2": "phase_point02"
+    }
+  },
+  "handoffs": [
+    {
+      "task_id": "T-2026-10-22-tower-reselect-search-dlsta",
+      "time_jst": "2026-10-23T17:01:46.718045+09:00",
+      "old_pid": 2475419,
+      "old_identity": "556247461",
+      "active": {
+        "1,2": "detector_point01",
+        "3,4": "detector_point02"
+      },
+      "commands": {
+        "/home/ubuntu/m2-scratch/T-2026-10-22-tower-reselect-search-dlsta/detector/point01/train.log": {
+          "cmd": [
+            "/home/ubuntu/local/m2/.venv-relation-detr/bin/accelerate",
+            "launch",
+            "--multi_gpu",
+            "--num_processes",
+            "2",
+            "--main_process_port",
+            "29801",
+            "/home/ubuntu/local/m2/scripts/train_relation_detr_search.py",
+            "--config-file",
+            "/home/ubuntu/local/m2/configs/detector_relation_detr/train_search.py",
+            "--seed",
+            "42",
+            "--mixed-precision",
+            "fp16",
+            "--convergence-schedule",
+            "--max-epochs",
+            "36"
+          ],
+          "pid": 2582624,
+          "time_jst": "2026-10-23T02:40:53.214029+09:00",
+          "tag": "detector1",
+          "identity": null,
+          "gpus": "1,2"
+        },
+        "/home/ubuntu/m2-scratch/T-2026-10-22-tower-reselect-search-dlsta/detector/point01/eval_val.log": {
+          "cmd": [
+            "/home/ubuntu/local/m2/.venv-relation-detr/bin/python",
+            "/home/ubuntu/local/m2/scripts/eval_relation_detr_map.py",
+            "--config",
+            "/home/ubuntu/local/m2/configs/detector_relation_detr/train_search.py",
+            "--checkpoint",
+            "/home/ubuntu/m2-scratch/T-2026-10-22-tower-reselect-search-dlsta/detector/point01/best_ap.pth",
+            "--out",
+            "/home/ubuntu/m2-scratch/T-2026-10-22-tower-reselect-search-dlsta/detector/point01/eval_val.json"
+          ],
+          "pid": 2644854,
+          "time_jst": "2026-10-23T16:15:40.070812+09:00",
+          "tag": "detector1_val",
+          "identity": null,
+          "gpus": "1"
+        },
+        "/home/ubuntu/m2-scratch/T-2026-10-22-tower-reselect-search-dlsta/detector/point01/eval_train.log": {
+          "cmd": [
+            "/home/ubuntu/local/m2/.venv-relation-detr/bin/python",
+            "/home/ubuntu/local/m2/scripts/eval_relation_detr_map.py",
+            "--config",
+            "/home/ubuntu/local/m2/configs/detector_relation_detr/train_search.py",
+            "--checkpoint",
+            "/home/ubuntu/m2-scratch/T-2026-10-22-tower-reselect-search-dlsta/detector/point01/best_ap.pth",
+            "--out",
+            "/home/ubuntu/m2-scratch/T-2026-10-22-tower-reselect-search-dlsta/detector/point01/eval_train.json"
+          ],
+          "pid": 2645786,
+          "time_jst": "2026-10-23T16:21:25.086496+09:00",
+          "tag": "detector1_train",
+          "identity": null,
+          "gpus": "1"
+        },
+        "/home/ubuntu/m2-scratch/T-2026-10-22-tower-reselect-search-dlsta/detector/point01/records.log": {
+          "cmd": [
+            "/home/ubuntu/local/m2/.venv/bin/python",
+            "/home/ubuntu/local/m2/scripts/tower_search_records.py",
+            "detector",
+            "/home/ubuntu/m2-scratch/T-2026-10-22-tower-reselect-search-dlsta/detector/point01"
+          ],
+          "pid": 2654166,
+          "time_jst": "2026-10-23T17:01:45.181553+09:00",
+          "tag": "detector1_records",
+          "identity": "568648236",
+          "gpus": ""
+        },
+        "/home/ubuntu/m2-scratch/T-2026-10-22-tower-reselect-search-dlsta/detector/point02/train.log": {
+          "cmd": [
+            "/home/ubuntu/local/m2/.venv-relation-detr/bin/accelerate",
+            "launch",
+            "--multi_gpu",
+            "--num_processes",
+            "2",
+            "--main_process_port",
+            "29802",
+            "/home/ubuntu/local/m2/scripts/train_relation_detr_search.py",
+            "--config-file",
+            "/home/ubuntu/local/m2/configs/detector_relation_detr/train_search.py",
+            "--seed",
+            "42",
+            "--mixed-precision",
+            "fp16",
+            "--convergence-schedule",
+            "--max-epochs",
+            "36"
+          ],
+          "pid": 2607058,
+          "time_jst": "2026-10-23T07:25:51.463453+09:00",
+          "tag": "detector2",
+          "identity": "565192864",
+          "gpus": "3,4"
+        }
+      },
+      "point_started_jst": {
+        "1,2": "2026-10-23T02:40:43.201265+09:00",
+        "3,4": "2026-10-23T07:25:41.435782+09:00"
+      },
+      "previous_supervisor": {
+        "pid": 2475419,
+        "started_jst": "2026-10-22T06:34:57.510489+09:00",
+        "training_command_wall_limit_hours": {
+          "detector": 48,
+          "phase": 16
+        }
+      }
+    },
+    {
+      "task_id": "T-2026-10-22-tower-reselect-search-dlsta",
+      "time_jst": "2026-10-23T17:05:41.382910+09:00",
+      "old_pid": 2654242,
+      "old_identity": "568648390",
+      "active": {
+        "3,4": "detector_point02"
+      },
+      "commands": {
+        "/home/ubuntu/m2-scratch/T-2026-10-22-tower-reselect-search-dlsta/detector/point02/train.log": {
+          "cmd": [
+            "/home/ubuntu/local/m2/.venv-relation-detr/bin/accelerate",
+            "launch",
+            "--multi_gpu",
+            "--num_processes",
+            "2",
+            "--main_process_port",
+            "29802",
+            "/home/ubuntu/local/m2/scripts/train_relation_detr_search.py",
+            "--config-file",
+            "/home/ubuntu/local/m2/configs/detector_relation_detr/train_search.py",
+            "--seed",
+            "42",
+            "--mixed-precision",
+            "fp16",
+            "--convergence-schedule",
+            "--max-epochs",
+            "36"
+          ],
+          "pid": 2607058,
+          "time_jst": "2026-10-23T07:25:51.463453+09:00",
+          "tag": "detector2",
+          "identity": "565192864",
+          "gpus": "3,4"
+        }
+      },
+      "point_started_jst": {
+        "3,4": "2026-10-23T07:25:41.435782+09:00"
+      },
+      "previous_supervisor": {
+        "pid": 2654242,
+        "started_jst": "2026-10-23T17:01:46.795014+09:00",
+        "handoff": "/home/ubuntu/m2-scratch/T-2026-10-22-tower-reselect-search-dlsta/handoff_1792742506675166874.json",
+        "training_command_wall_limit_hours": {
+          "detector": 48,
+          "phase": 16
+        }
+      }
+    },
+    {
+      "pid": 2654242,
+      "time_jst": "2026-10-23T17:01:46.795673+09:00",
+      "source": "/home/ubuntu/m2-scratch/T-2026-10-22-tower-reselect-search-dlsta/handoff_1792742506675166874.json"
+    }
+  ],
+  "notes": "Ongoing detector point02 training root PID2607058 preserved; no training restart."
+}

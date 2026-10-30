@@ -22,25 +22,29 @@ BODY="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 EXP_DIR="${DTOWER_EXP_DIR:-stage1_dtower}"
 TASK_ID="${DTOWER_TASK_ID:-T-2026-09-18-stage1-detector-towers}"
 EXTRA_ARGS="${DTOWER_EXTRA_ARGS:-}"
-RUN="d${TOWER}_fold${FOLD}_seed${SEED}"
+RUN="${DTOWER_RUN_NAME:-d${TOWER}_fold${FOLD}_seed${SEED}}"
 DIR="$BODY/experiments/baselines/$EXP_DIR/$RUN"
+WORK_DIR="${DTOWER_WORK_DIR:-$DIR/work}"
+TRAIN_LOG="${DTOWER_TRAIN_LOG:-$DIR/train.log}"
+ENTRYPOINT="${DTOWER_ENTRYPOINT:-main.py}"
 
 case "$TOWER" in
   coco)     CFG="configs/train_config_egosurgery_seed${SEED}.py" ;;
   imagenet) CFG="configs/train_config_egosurgery_stage1_imagenet_seed${SEED}.py" ;;
   *) echo "[ERROR] tower は coco か imagenet" >&2; exit 2 ;;
 esac
+CFG="${DTOWER_CONFIG:-$CFG}"
 
-mkdir -p "$DIR/work"
+mkdir -p "$DIR" "$WORK_DIR" "$(dirname "$TRAIN_LOG")"
 cat > "$DIR/command.sh" <<CMD
 #!/usr/bin/env bash
 # 自動生成: この run を起動したコマンドの記録
 # 契約 ${TASK_ID} / 塔 ${TOWER} / 折り ${FOLD} / seed ${SEED}
 cd third_party/Relation-DETR
 export EGO_ANN_DIR=$BODY/data/annotations/egosurgery_tool_folds/${FOLD}
-export RELDETR_OUTPUT_DIR=$DIR/work
+export RELDETR_OUTPUT_DIR=$WORK_DIR
 export CUDA_HOME=/usr/local/cuda
-accelerate launch --num_processes 2 --main_process_port ${PORT} main.py \\
+accelerate launch --num_processes 2 --main_process_port ${PORT} ${ENTRYPOINT} \\
     --config-file ${CFG} --seed ${SEED} --mixed-precision fp16 ${EXTRA_ARGS}
 CMD
 chmod +x "$DIR/command.sh"
@@ -53,10 +57,10 @@ cd "$BODY/third_party/Relation-DETR"
 # shellcheck disable=SC1091
 source "$BODY/.venv-relation-detr/bin/activate"
 export EGO_ANN_DIR="$BODY/data/annotations/egosurgery_tool_folds/${FOLD}"
-export RELDETR_OUTPUT_DIR="$DIR/work"
+export RELDETR_OUTPUT_DIR="$WORK_DIR"
 export CUDA_HOME=/usr/local/cuda
 # 記録は run ディレクトリの中に置く（呼び出し側で経路がばらつかないようにする）。
 # shellcheck disable=SC2086
-exec accelerate launch --num_processes 2 --main_process_port "$PORT" main.py \
+exec accelerate launch --num_processes 2 --main_process_port "$PORT" "$ENTRYPOINT" \
     --config-file "$CFG" --seed "$SEED" --mixed-precision fp16 $EXTRA_ARGS \
-    >> "$DIR/train.log" 2>&1
+    >> "$TRAIN_LOG" 2>&1

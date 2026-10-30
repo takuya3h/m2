@@ -1,0 +1,132 @@
+{
+  "arm": "unknown",
+  "attributes": {
+    "best_epoch": 2,
+    "iface_ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/dp_ckpt/stage2pilot_dp_062_D1-L2_pred_CF_seed456.pth",
+    "iface_ckpt_sha256": "5bcbeec66ec7234a688edf533fe495174a1a98741f98ec32b986f4808160b711",
+    "reached_epoch_cap": false,
+    "receiver_unchanged": true
+  },
+  "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-10-18T19:09:16+00:00\npython scripts/stage2pilot/dp_train.py train --type D1-L2 --arm pred_CF --seed 456\n",
+  "commit": "dfe575111945640b81da48eb8b6adade3221c5b9",
+  "config_path": "experiments/phase1/stage2pilot_dp_062_D1-L2_pred_CF_seed456/config.yaml",
+  "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
+  "description": "D1-L2_pred_CF",
+  "duplicate_bare_keys": [],
+  "epoch": null,
+  "eval_recipe": {
+    "test_cfg": {
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "split": "val",
+      "task": "phase"
+    }
+  },
+  "eval_recipe_id": "dc7cd36509d5",
+  "evidence_completeness": "full",
+  "excluded": false,
+  "exclusion_reason": null,
+  "experiment_id": "phase1/stage2pilot_dp/D1-L2_pred_CF@val",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_seed_declared": null,
+  "frozen_source_tag": null,
+  "gpu": null,
+  "group": "phase1",
+  "harvest_warnings": [],
+  "host": "andrew",
+  "host_raw": "andrew",
+  "ledger_key": "phase1__stage2pilot_dp_062_D1-L2_pred_CF_seed456",
+  "metrics": {
+    "accuracy": 0.8871287128712871,
+    "early_stopped_epoch": 12,
+    "elapsed_seconds": 232.01704665645957,
+    "epochs_run": 12,
+    "iface_params": 245760,
+    "init_phase_accuracy": 0.8712871287128713,
+    "init_phase_jaccard": 0.7762185528074379,
+    "jaccard": 0.7449172261532081,
+    "macro_f1": 0.8339408572961694,
+    "steps_without_grad": 0
+  },
+  "metrics_by_split": {
+    "unknown": {
+      "early_stopped_epoch": 12,
+      "elapsed_seconds": 232.01704665645957,
+      "epochs_run": 12,
+      "iface_params": 245760,
+      "init_phase_accuracy": 0.8712871287128713,
+      "init_phase_jaccard": 0.7762185528074379,
+      "steps_without_grad": 0
+    },
+    "val": {
+      "accuracy": 0.8871287128712871,
+      "jaccard": 0.7449172261532081,
+      "macro_f1": 0.8339408572961694
+    }
+  },
+  "metrics_nested": {
+    "per_video": {
+      "09": {
+        "phase_accuracy": 0.9942084942084942,
+        "phase_jaccard": 0.9903367062277044
+      },
+      "10": {
+        "phase_accuracy": 0.831494483450351,
+        "phase_jaccard": 0.6422864176757068
+      }
+    }
+  },
+  "metrics_primary_split": "val",
+  "metrics_source": "metrics_json",
+  "notes": "# 非公式（T-2026-10-18-stage2-pilot-folda） DP D1-L2 pred_CF seed 456\n\n受け取り手は確定塔の時間ヘッド（凍結）。界面だけを学ぶ（W1）。val だけで評価し選ぶ。test は通していない。\nbest epoch 2 / val macro Jaccard 0.7449172261532081 / accuracy 0.8871287128712871\nepochs 12（停止 12）、学習前 Jaccard 0.7762185528074379\n",
+  "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
+  "path": "experiments/phase1/stage2pilot_dp_062_D1-L2_pred_CF_seed456",
+  "per_class": {
+    "anesthesia": 0.9509803921568627,
+    "closure": 0.7905759162303665,
+    "design": 0.9611650485436893,
+    "disinfection": 0.0,
+    "dissection": 0.7881219903691814,
+    "dressing": 0.3902439024390244,
+    "hemostasis": 0.4444444444444444,
+    "incision": 0.8888888888888888,
+    "irrigation": 0.0
+  },
+  "per_class_kind": "phase",
+  "per_class_metric": "F1",
+  "per_class_nan_classes": [],
+  "per_class_source": "experiments/phase1/stage2pilot_dp_062_D1-L2_pred_CF_seed456/per_class_ap.json",
+  "per_class_valid_count": 9,
+  "provenance": {
+    "aux_token": "no_aux_token",
+    "commit": "from_git_commit_txt",
+    "epoch": "not_determinable",
+    "host": "from_server_txt",
+    "name": "from_dirname_step_seq_desc_seed",
+    "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
+    "seed": "from_dirname_verified_by_command_sh_and_config_yaml",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "from_metric_key_prefix",
+    "step": "from_dirname"
+  },
+  "run_id": "stage2pilot_dp_062_D1-L2_pred_CF_seed456",
+  "seed": 456,
+  "seed_agreement": "agree",
+  "seed_command": 456,
+  "seed_config": 456,
+  "seed_detector": null,
+  "seed_phase": null,
+  "seq": 62,
+  "split": "val",
+  "step": "stage2pilot_dp",
+  "subgroup": null,
+  "task_id": "T-2026-10-18-stage2-pilot-folda",
+  "wandb_run_id": "fydnip62",
+  "wandb_run_url": "https://wandb.ai/daky-o7600/egosurgery_multitask/runs/fydnip62"
+}

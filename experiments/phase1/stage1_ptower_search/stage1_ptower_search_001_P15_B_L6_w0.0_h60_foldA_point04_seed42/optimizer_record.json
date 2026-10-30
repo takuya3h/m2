@@ -1,0 +1,32 @@
+{
+  "groups": [
+    {
+      "group": 0,
+      "lr": 0.0005,
+      "weight_decay": 0.01,
+      "parameters": 382299
+    }
+  ],
+  "point": {
+    "point": 4,
+    "lr": 0.000335,
+    "phase_S": 4.1e-05,
+    "phase_weight_decay": 3.65e-05,
+    "accum": 4,
+    "detector_S": 0.0005,
+    "detector_weight_decay": 3.08e-05,
+    "max_norm": 0.198
+  },
+  "initial_weight_norms": [
+    30.804646467747872
+  ],
+  "runtime": {
+    "tf32_matmul": false,
+    "tf32_cudnn": false,
+    "deterministic_algorithms": true,
+    "cudnn_deterministic": true,
+    "cudnn_benchmark": false,
+    "cuda_visible_devices": "2"
+  },
+  "effective_batch": 64
+}

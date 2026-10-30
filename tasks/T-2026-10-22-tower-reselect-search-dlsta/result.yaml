@@ -1,0 +1,91 @@
+result_version: 3
+task_id: T-2026-10-22-tower-reselect-search-dlsta
+status: pass
+host: dlsta
+branch: feat/tower-reselect-search-dlsta
+pr: 267
+merged: false
+gates:
+- id: L3
+  verdict: pass
+  note: 再開後10 PASS /1 WARN /3 SKIP /0 FAIL。checkpointサイズとSHA-256正本一致。P2/P3/P12はSKIP。P9
+    host_mismatchはWARN。
+- id: G1
+  verdict: pass
+  note: 旧0b記録を削除し不在確認。入力全一致。空き758310752256 bytes。prereg e9f4e3b4。GPU所有者対照1と0。
+- id: G2
+  verdict: pass
+  note: 承認された既存15437枚＋補完1796枚を全数照合。検出2点で実更新・6群確認、工程2点で2rank確認。失敗名集合増加なし。third_party変更なし。
+- id: G3
+  verdict: pass
+  note: 2026-10-23 01:53:35 JST、最初の4点完了。全設定・COCO初期化・二枚の道を確認。
+- id: G4
+  verdict: pass
+  note: 全40点・260処理完了、発散0、上限到達0、GPU0使用0。最終完了2026-10-29 01:18:38 JST。
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 935
+deviations:
+- type: environment
+  note: 画像不一致で停止後、利用者が既存15437枚＋不足1796枚で続行を承認。既知6001対の差を許容し、全参照先とSHA-256を固定して契約・preregを学習前に改訂。画像は変更していない。
+- type: judgement
+  note: 取得済みcheckpointは~/third_partyに在ったため正本照合後repoの指定先へコピーし、元は残した。再開時に同期抑止が不在だったためtaskスキルの再開例外で所有情報つき目印を作成。
+- type: environment
+  note: 並行作業でorigin/phase0が前進し、既定のforbidden-checkは他作業の差分も検出。開始時に記録した起点をBASEへ指定し、PR内容の隔離worktreeでPASSと禁止ファイル追加のFAILを確認。rootの別作業ファイルは触らない。
+issuer_defects:
+- type: check_does_not_check
+  note: plan.env.preflight は deterministic_flags を宣言しているが、現在の検査器の P3 は判定基準未確定という固定の理由で常に
+    SKIP を返し、決定論的アルゴリズムと TF32 の実行時設定を一切測らない。今回も SKIP であり、設定が有効な証拠としては使えず、学習時の全 rank
+    の値を別に記録する必要がある。
+positive_controls:
+- judgement: P5 が欠落した checkpoint を拒否する
+  breaking_input: 規約の incoming/seed42/best_ap.pth が存在しない状態
+  observed: P5 frozen_source_hash FAIL 凍結源が存在しない。make exit 2。
+- judgement: P13 と P14 の破損入力対照
+  breaking_input: 対称性の UNKNOWN と存在しない提案カード経路の写し
+  observed: P13のUNKNOWNを含むpreregコピーと、P14の不存在カード参照を実検査器へ渡し、どちらもFAIL。最終監査に詳細。
+- judgement: Task A GPU所有者の数え方
+  breaking_input: GPU1に自分のPythonを1件起こし、存在しないPIDとも照合
+  observed: 自分のプローブはPIDとexeの完全一致で1件、存在しないPIDは0件。終了コード0。
+- judgement: 画像同一性
+  breaking_input: 配布画像とrawの重複を全件比較。不一致なら拒否する。
+  observed: 欠け0、不一致6001。Task Bの画像同一性条件で停止。
+- judgement: 追加CPU試験
+  breaking_input: preregの点番号13を99に変更、群のlr/weight_decayを変更、補完画像を欠いたコピー
+  observed: 3 passed。壊れた点表とoptimizer群をValueErrorで拒否し、補完画像欠落でフレーム数が2から1へ減少。
+- judgement: 全数画素比較の感度
+  breaking_input: 同じ画像との比較、1画素の1チャンネルを1だけ変えたコピーとの比較
+  observed: 同じ画像は差0。変更コピーはpixel_equal false、最大差1、平均差1.6075102880658437e-07。実画像ファイルは変更していない。
+- judgement: 近隣フレームの取り違えの標本検査
+  breaking_input: 15_1_0659.jpgの相手を+1位置のフレームへ変更
+  observed: 96x54 RGBの平均差が0.23193158436213993から23.115805041152264へ増加。同名フレームは47例すべてで前後2位置より近かった。
+- judgement: 入力固定の改変検知
+  breaking_input: 入力記録の写しの先頭ハッシュを零に変更
+  observed: 終了コード1で拒否。元画像は変更なし。正本17233枚は全数PASS。
+- judgement: optimizer群と二枚の道
+  breaking_input: 検出0/13番でlr・weight decay・max_normを変え、工程0/1番でweight decayと累積を変える
+  observed: 検出12stepで実更新6/7回。実6群とclip閾値一致。工程world_size2、実効batch64/32。g2_evidence.json。
+- judgement: 複数GPUへ分配しても結果が一致する
+  breaking_input: 検出の評価を1GPUから2GPUへ分担し、工程時間ヘッド2構成を並列化する
+  observed: 評価12指標・15クラスAPの差0。ヘッド2構成のJaccard・accuracy・最良epoch・総epochの差0。関連19試験通過。
+- judgement: 順位の値変更と同点の規則
+  breaking_input: 全点のscratchコピーで工程0番を最大値より高くし、その後最大値と同点にする
+  observed: 実際のtables()で両方とも0番が1位。値変更と小番号優先が働く。原本は変更なし。
+- judgement: 禁止領域の検査が新規違反を拒否する
+  breaking_input: 開始時の確定起点に対する隔離worktreeでdata/forbidden_positive_control.txtを追加
+  observed: 追加前PASS、追加後FAIL。本契約の原本と別作業のファイルは変更していない。
+followups:
+- top3.mdの工程6/8/10、検出12/5/15と0番を、次の回し直し契約でprereg §3.2どおり検証する。本契約では選定しない。
+- 索引のhost別名とクラス別指標分類の制約は別契約で扱う。
+- 'PR #267はphase0とCONFLICTING。契約は上流取り込みを禁じるため統合せず、統合担当の調整へ渡す。'
+unknowns:
+- JPEG別版の生成命令とモデル性能への影響は未特定。
+- 索引のhostはnull（raw dlsta保持）。検出14有限クラスはkind unknown、時間headのper-class Jaccardは既存収穫器がF1と誤分類。一次指標と順位は原本と一致。
+- head optimizer_record.effective_batchはbackboneの継承メタデータ。head実行単位は動画1本。
+commits:
+- e9f4e3b4f34410c023c7a4ab240971c1d70c2510
+- 0660c1be
+- 177e547f31e5d33bb5b3a57662a0c0d27c5bb1c7
+- 68996775f56d1c5369d0f0ef53bac734fe89c47a
+- 68befc3b62ffc071077cca446df5d3c83b8c38b9

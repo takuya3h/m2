@@ -1,0 +1,16 @@
+{
+  "scope": "Clean review worktree at task commits, unrelated user files remain untouched in original workspace",
+  "task_start_base": "39dd92d671466edb7c96edf6c34af34c9c29ef62",
+  "verdict": "pass",
+  "checked": 3415,
+  "violations": [],
+  "breaking_copy_verdict": "fail",
+  "breaking_copy_violations": [
+    {
+      "path": "data/forbidden_positive_control.txt",
+      "reason": "禁止領域 data/ の内側"
+    }
+  ],
+  "current_origin_phase0": "f3d5945f624606110c31b234e9d32f1d900eb9e7",
+  "reason_for_fixed_base": "start.json records this exact base; origin/phase0 advanced during the experiment; merge-base still equals the task starting base"
+}

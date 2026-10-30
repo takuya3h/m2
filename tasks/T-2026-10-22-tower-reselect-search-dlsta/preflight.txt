@@ -1,0 +1,17 @@
+P1 venv_active            PASS expected=/home/ubuntu/local/m2/.venv VIRTUAL_ENV=/home/ubuntu/local/m2/.venv sys.prefix=/home/ubuntu/local/m2/.venv
+P2 cuda_ext_loaded        SKIP plan.env.preflight に cuda_ext_loaded の記載なし
+P3 deterministic_flags    SKIP UNKNOWN 判定基準が未確定。決定性設定は実行プロセス内で行われ外部から観測できない。backlog B-20 が未解決
+P4 prereg_committed       PASS e9f4e3b4f34410c023c7a4ab240971c1d70c2510 committed_at=2026-10-21T19:55:13+00:00
+P5 frozen_source_hash     FAIL 凍結源が存在しない: third_party/Relation-DETR/checkpoints/incoming/seed42/best_ap.pth
+P6 decisions_answered     PASS decisions_required は空
+P7 destination_writable   PASS experiments/phase1/stage1_ptower_search/ は未作成だが作成可能（experiments/phase1 へ書き込みと削除ができた）
+P8 contract_valid         PASS validate_task.py --level l2 が exit 0
+P9 spec_lint              WARN 規則 9 件のうち 1 件が該当: host_mismatch@tasks/T-2026-10-22-tower-reselect-search-dlsta/SPEC.md:5（終了コードは変わらない）
+P10 preflight_names_known  PASS 宣言 3 件はすべて実装済み（既知: cuda_ext_loaded, deterministic_flags, gpu_free, venv_active）
+P11 gpu_free               PASS GPU を占有する compute プロセスは 0 件
+P12 refs_resolved          SKIP 解決前提の参照は無い
+P13 symmetry_table_complete PASS 対称性の表 2 個 / 34 行に UNKNOWN と理由欠落は無い
+P14 proposal_card_checked  PASS docs/proposals/2026-10-21-tower-reselect-search.md は検出 0 件（カード 16 件 / 禁止語 15 語を検査）
+
+RESULT: 9 PASS / 1 WARN / 3 SKIP / 1 FAIL
+make: *** [Makefile:179: task-preflight] Error 1

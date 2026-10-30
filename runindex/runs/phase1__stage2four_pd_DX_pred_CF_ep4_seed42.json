@@ -1,0 +1,116 @@
+{
+  "arm": "unknown",
+  "attributes": {
+    "best_is_init": false,
+    "result_selection": "final_epoch"
+  },
+  "command": "#!/usr/bin/env bash\n# 自動生成: この run を起動したコマンドの記録\n# 生成日時: 2026-10-19T17:44:49+00:00\npython scripts/train_t1b.py --seed 42 --trainable film --task-id T-2026-10-19-stage2-pilot-four-new-types --run-name stage2four_pd_DX_pred_CF_ep4_seed42 --det-ckpt /home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth --signal-train /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/cf/P0_train.npz --signal-val /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P0_val.npz --epochs 4 --fixed-epochs --amp bf16 --ckpt-dir /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-four-new-types/pd_ckpt/stage2four_pd_DX_pred_CF_ep4_seed42 --save-trainable-only --print-freq 500\n",
+  "commit": "42070946a9e7a4d513712f29c094d86ff83debf5",
+  "config_path": "experiments/phase1/stage2four_pd_DX_pred_CF_ep4_seed42/config.yaml",
+  "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
+  "description": "stage2four_pd_DX_pred_CF_ep4",
+  "duplicate_bare_keys": [],
+  "epoch": 3,
+  "eval_recipe": null,
+  "eval_recipe_id": null,
+  "evidence_completeness": "full",
+  "excluded": false,
+  "exclusion_reason": null,
+  "experiment_id": "phase1/stage2four_pd_DX_pred_CF_ep4/stage2four_pd_DX_pred_CF_ep4@val",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_seed_declared": null,
+  "frozen_source_tag": null,
+  "gpu": null,
+  "group": "phase1",
+  "harvest_warnings": [
+    "run 名に seq (3 桁連番) が無い別系統の命名: stage2four_pd_DX_pred_CF_ep4_seed42。step には description を充てた。"
+  ],
+  "host": "andrew",
+  "host_raw": "andrew",
+  "ledger_key": "phase1__stage2four_pd_DX_pred_CF_ep4_seed42",
+  "metrics": {
+    "delta_detection": 0.0007147742310189553,
+    "final_epoch": 3,
+    "final_mAP": 0.7280597990708618,
+    "init_mAP": 0.7273450248398429,
+    "mAP": 0.7280597990708618
+  },
+  "metrics_by_split": {
+    "unknown": {
+      "delta_detection": 0.0007147742310189553,
+      "final_epoch": 3,
+      "final_mAP": 0.7280597990708618,
+      "init_mAP": 0.7273450248398429,
+      "mAP": 0.7280597990708618
+    }
+  },
+  "metrics_nested": {
+    "artifacts": {
+      "checkpoints": "andrew:/home/ubuntu/slocal2/m2-four-andrew/experiments/phase1/stage2four_pd_DX_pred_CF_ep4_seed42/checkpoints",
+      "logs": "andrew:/home/ubuntu/slocal2/m2-four-andrew/experiments/phase1/stage2four_pd_DX_pred_CF_ep4_seed42/logs",
+      "predictions": "andrew:/home/ubuntu/slocal2/m2-four-andrew/experiments/phase1/stage2four_pd_DX_pred_CF_ep4_seed42/predictions",
+      "run_dir": "andrew:/home/ubuntu/slocal2/m2-four-andrew/experiments/phase1/stage2four_pd_DX_pred_CF_ep4_seed42"
+    }
+  },
+  "metrics_primary_split": null,
+  "metrics_source": "metrics_json",
+  "notes": "# 非公式（T-2026-10-19-stage2-pilot-four-new-types） PD decoder-xattn（DX） pred_CF seed 42\n\n受け取り手は D*-COCO 折り A seed 42 の検出塔（凍結。学習範囲 W1 = 界面だけ、--trainable film）。4 epoch 学習し途中で止めない。結果は 4 epoch 目（epoch 3）の状態で、最良の回を選ばない。val（動画 09・10）だけで評価した。test は通していない。\n\n- overall mAP 0.728060、標的群 AP 0.795665、陰性対照群 AP 0.674162（群に欠けたクラス: 標的群 []、陰性対照群 []）\n- 学習前 mAP 0.727345\n- epoch ごとの val mAP（epoch は 0 始まり、−1 は学習前）: {-1: 0.7273450248398429, 0: 0.7283179598495638, 1: 0.7284101221735505, 2: 0.7283356924939556, 3: 0.7280597990708618}\n- epoch ごとのゲート: {-1: {'tanh_alpha': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, 0: {'tanh_alpha': [0.047033727169036865, -0.04737303406000137, -0.05162337049841881, -0.035311829298734665, 0.04960202798247337, -0.009095563553273678]}, 1: {'tanh_alpha': [0.058788906782865524, -0.058009665459394455, -0.07005134224891663, -0.05217801406979561, 0.055808667093515396, -0.026150362566113472]}, 2: {'tanh_alpha': [0.05917008966207504, -0.07242579013109207, -0.08908819407224655, -0.08339830487966537, 0.07201249897480011, -0.027181902900338173]}, 3: {'tanh_alpha': [0.07302004843950272, -0.08695648610591888, -0.09874498844146729, -0.093170665204525, 0.07685422897338867, -0.04799945279955864]}}\n- 動画ごとの mAP: {'09': 0.7045969947183123, '10': 0.6424095936034077}\n- 凍結部の要約値の前後一致: True\n",
+  "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
+  "path": "experiments/phase1/stage2four_pd_DX_pred_CF_ep4_seed42",
+  "per_class": {
+    "Bipolar Forceps": 0.7859839748552302,
+    "Electric Cautery": 0.9655124259174891,
+    "Forceps": 0.3602324019451431,
+    "Gauze": 0.2752247837363833,
+    "Hook": 0.6371023377768043,
+    "Mouth Gag": 0.7995316007896941,
+    "Needle Holders": 0.8479311734322831,
+    "Raspatory": 0.8054403122230077,
+    "Retractor": null,
+    "Scalpel": 0.9020920259554138,
+    "Scissors": 0.7070864293337115,
+    "Skewer": 0.9424461089184154,
+    "Suction Cannula": 0.8333552181291882,
+    "Syringe": 0.5423631105608554,
+    "Tweezers": 0.7885352834184466
+  },
+  "per_class_kind": "tool",
+  "per_class_metric": "AP",
+  "per_class_nan_classes": [
+    "Retractor"
+  ],
+  "per_class_source": "experiments/phase1/stage2four_pd_DX_pred_CF_ep4_seed42/per_class_ap.json",
+  "per_class_valid_count": 14,
+  "provenance": {
+    "aux_token": "no_aux_token",
+    "commit": "from_git_commit_txt",
+    "epoch": "from_metrics_json",
+    "host": "from_server_txt",
+    "name": "from_dirname_desc_seed_no_seq",
+    "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
+    "seed": "from_dirname_verified_by_command_sh_and_config_yaml",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "from_plan_section_16_7",
+    "step": "from_dirname"
+  },
+  "run_id": "stage2four_pd_DX_pred_CF_ep4_seed42",
+  "seed": 42,
+  "seed_agreement": "agree",
+  "seed_command": 42,
+  "seed_config": 42,
+  "seed_detector": null,
+  "seed_phase": null,
+  "seq": null,
+  "split": "val",
+  "step": "stage2four_pd_DX_pred_CF_ep4",
+  "subgroup": null,
+  "task_id": "T-2026-10-19-stage2-pilot-four-new-types",
+  "wandb_run_id": null,
+  "wandb_run_url": null
+}

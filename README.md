@@ -1612,6 +1612,18 @@ forward した region token が既存の `t1a_regiontoken/relation_detr_seed42` 
   一歩 0.79〜0.80 s（`context/env-facts.md` の dlsta の行）
 - 試験: `tests/test_stage1_ptower_r3_dist.py`（CPU 13 件、二枚の GPU 1 件。二枚が無ければ skip）
 
+### 両塔の探索再開（2026-10-22、dlsta）
+
+`T-2026-10-22-tower-reselect-search-dlsta` は利用者承認により、既存15,437枚と `initial_videos/` の不足1,796枚を使う。画像は変更せず参照先とSHA-256を固定。新manifestは `phase_manifest_all_phase` に分離し17,233枚、fold Aのtrain10,580 /val1,904 /test4,749。testはモデル評価しない。
+
+探索用起動口は元の学習処理を呼び、実optimizer群・初期化・時間・メモリ・収束を観測する。checkpoint・特徴・raw logとoffline W&Bはrepo外のscratchへ保存。小規模GPU検証と入力全数照合でG2通過、関連14試験通過、全試験927 passed /6 failed /1 skipped（失敗名の増加0）。`scripts/run_tower_search.py` がGPU1–2 /3–4だけでC→G3→残り探索を監視実行し、異常時は停止する。GPU0は使わない。現況は `experiments/analysis/tower_reselect_search_dlsta/live_status.json`、詳細は契約の `RESULT.md`。
+
+2026-10-23の利用者指示で探索のGPU利用を改善。検出塔の学習後評価は2GPUで分担し、工程塔の追加評価と特徴抽出は並行、時間ヘッドは構成別workから2GPUの動的キューで実行する。全点・学習条件は維持。実機で評価指標と時間ヘッド2構成の結果の一致を確認、関連19試験通過。監視の引き継ぎは `tasks/T-2026-10-22-tower-reselect-search-dlsta/handoff_supervisor.py`、稼働中の具体的な処理とGPUはlive_status.jsonに10秒ごとに記録する。
+
+GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0かつ各GPUの空きが22000MiB以上であること。少量のメモリ使用表示だけで待機させない。GPU0・計算中・空き不足を拒否する対照を含め関連20試験通過。
+
+2026-10-29 01:18 JST、両塔の全40設定・260処理が完了。発散0・上限36到達0。探索top3は工程6/8/10（Jaccard 0.730171/0.721449/0.720918）、検出12/5/15（mAP 0.737380/0.735090/0.734821）。選定は行わない。全試験935 pass/6 fail/1 skipで既知失敗集合の増加0。索引に全260行、回帰全項目pass。詳細と収穫器のメタデータ制約は契約RESULT.mdとfinal_verification.json。
+
 ### 候補 5 の時間ヘッド四案（2026-10-23、andrew）
 
 契約 `T-2026-10-23-ptower-cand5-heads-impl`（impl。実験は回していない）。記録は `tasks/T-2026-10-23-ptower-cand5-heads-impl/`、

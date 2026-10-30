@@ -1,0 +1,89 @@
+task_id: T-2026-10-22-tower-reselect-search-dlsta
+step: stage1_ptower_search
+action: train
+fold: A
+seed: 42
+init: coco
+ft_lr: 2.0e-05
+ft_weight_decay: 2.71
+ft_batch_size: 16
+ft_accum_steps: 4
+ft_epochs: 36
+ft_patience: 4
+ft_lr_decay: 0.1
+backbone_tag: coco_r50_ft_800
+checkpoint: null
+verify_determinism: false
+candidate: B
+layers: 6
+smoothing_weight: 0.0
+history: 60
+epochs: 50
+patience: 10
+lr: 0.0005
+weight_decay: 0.01
+warmup_epochs: 2
+maps: 64
+desc_suffix: ''
+device: cuda:0
+cache: /home/ubuntu/m2-scratch/T-2026-10-22-tower-reselect-search-dlsta/phase/point03/features/all_gap.npz
+manifest_dir: data/processed/phase_manifest_all_phase
+batch_size: 16
+workers: 4
+point_id: 3
+artifact_root: /home/ubuntu/m2-scratch/T-2026-10-22-tower-reselect-search-dlsta/phase/point03/head03
+point:
+  point: 3
+  lr: 2.0e-05
+  phase_S: 0.18
+  phase_weight_decay: 2.71
+  accum: 4
+  detector_S: 0.21
+  detector_weight_decay: 0.215
+  max_norm: 0.138
+data:
+  videos:
+    test:
+    - '04'
+    - '05'
+    - '07'
+    val:
+    - '09'
+    - '10'
+    train:
+    - '01'
+    - '02'
+    - '03'
+    - '06'
+    - '08'
+    - '11'
+    - '12'
+    - '13'
+    - '14'
+    - '15'
+  class_counts:
+  - 309
+  - 4051
+  - 304
+  - 71
+  - 4028
+  - 37
+  - 864
+  - 795
+  - 121
+class_weights:
+- 0.49524185357507194
+- 0.03777579184268013
+- 0.5033872787983461
+- 2.155348348657707
+- 0.03799149273949782
+- 4.135938723099925
+- 0.1771177462438625
+- 0.19249022988012227
+- 1.264708535162787
+data_setting: P15
+receptive_field: 253
+selection_metric: phase_jaccard
+cache_sha256: cb7840aba16aa0e9c3aa37c024336b2a4b970ac91f958c39e0f6e21f92b57f78
+source_sha256: 4ec5b57451f46d66473913361203e65ae1460222fd57860bd126e0d0ef2aeb5e
+contract_sha256: a61f9e11747d163ce4a45c79d80bc7c07468c1df674d3e0311a631fa23adaeea

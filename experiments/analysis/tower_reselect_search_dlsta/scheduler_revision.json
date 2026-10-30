@@ -1,0 +1,59 @@
+{
+  "task_id": "T-2026-10-22-tower-reselect-search-dlsta",
+  "time_jst": "2026-10-23T17:00:41.848625+09:00",
+  "user_instruction": "短縮して。使える計算リソースは常にフルで使うこと。",
+  "allowed_gpus": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "excluded_gpus": [
+    0
+  ],
+  "training_points_and_rules_unchanged": true,
+  "detector_evaluation": {
+    "baseline_AP": 0.7189153001770568,
+    "parallel_AP": 0.7189153001770568,
+    "max_scalar_difference": 0.0,
+    "max_perclass_difference": 0.0,
+    "gpus": [
+      "1",
+      "2"
+    ]
+  },
+  "parallel_heads": {
+    "compared_heads": 2,
+    "exact_metrics": true,
+    "gpus": [
+      "1",
+      "2"
+    ]
+  },
+  "targeted_tests_passed": 20,
+  "handoff_control": "Detached CPU command survives parent replacement; incomplete completion rejected; duplicate run records rejected.",
+  "limits": "Ready independent work is dispatched; dependency waits and process setup still exist. No promise of 100% utilization.",
+  "forbidden_check": {
+    "status": "fail",
+    "unrelated_untracked_paths": 6,
+    "intersection_with_this_change": 0,
+    "evidence": "scratch/forbidden_scheduler_revision.json"
+  },
+  "pair_eligibility": {
+    "compute_processes": 0,
+    "utilization_percent": 0,
+    "minimum_free_mib_per_gpu": 22000,
+    "pairs": [
+      "1,2",
+      "3,4"
+    ],
+    "residual_memory_origin": "UNKNOWN; do not reset GPU or touch other processes"
+  },
+  "activated_jst": "2026-10-23T17:08:23.930772+09:00",
+  "supervisor_pid": 2654889,
+  "preserved_training_pid": 2607058,
+  "active": {
+    "3,4": "detector_point02",
+    "1,2": "phase_point02"
+  }
+}

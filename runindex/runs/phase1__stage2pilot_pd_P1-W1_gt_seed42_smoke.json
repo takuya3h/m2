@@ -1,0 +1,115 @@
+{
+  "arm": "unknown",
+  "attributes": {
+    "best_is_init": false
+  },
+  "command": "#!/usr/bin/env bash\n# 自動生成: この run を起動したコマンドの記録\n# 生成日時: 2026-10-18T06:11:49+00:00\npython scripts/train_t1b.py --seed 42 --trainable film --task-id T-2026-10-18-stage2-pilot-folda --run-name stage2pilot_pd_P1-W1_gt_seed42_smoke --det-ckpt /home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth --signal-train /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P-GT_train.npz --signal-val /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P-GT_val.npz --patience 2 --epochs 1 --best-excludes-init --ckpt-dir /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/pd_ckpt/stage2pilot_pd_P1-W1_gt_seed42_smoke --save-trainable-only --print-freq 500\n",
+  "commit": "40112290ed8e53165d9ea1a0dce6cdc7cddae2ce",
+  "config_path": "experiments/phase1/stage2pilot_pd_P1-W1_gt_seed42_smoke/config.yaml",
+  "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
+  "description": null,
+  "duplicate_bare_keys": [],
+  "epoch": 0,
+  "eval_recipe": null,
+  "eval_recipe_id": null,
+  "evidence_completeness": "full",
+  "excluded": false,
+  "exclusion_reason": null,
+  "experiment_id": null,
+  "experiment_id_provenance": "not_determinable",
+  "frozen_source_seed_declared": null,
+  "frozen_source_tag": null,
+  "gpu": null,
+  "group": "phase1",
+  "harvest_warnings": [
+    "run 名が命名規約 <step>_<seq3>_<desc>_seed<N> に一致しない: stage2pilot_pd_P1-W1_gt_seed42_smoke"
+  ],
+  "host": "andrew",
+  "host_raw": "andrew",
+  "ledger_key": "phase1__stage2pilot_pd_P1-W1_gt_seed42_smoke",
+  "metrics": {
+    "delta_detection": 0.009114189646254545,
+    "final_epoch": 0,
+    "final_mAP": 0.7364592144860974,
+    "init_mAP": 0.7273450248398429,
+    "mAP": 0.7364592144860974
+  },
+  "metrics_by_split": {
+    "unknown": {
+      "delta_detection": 0.009114189646254545,
+      "final_epoch": 0,
+      "final_mAP": 0.7364592144860974,
+      "init_mAP": 0.7273450248398429,
+      "mAP": 0.7364592144860974
+    }
+  },
+  "metrics_nested": {
+    "artifacts": {
+      "checkpoints": "andrew:/home/ubuntu/slocal2/m2/experiments/phase1/stage2pilot_pd_P1-W1_gt_seed42_smoke/checkpoints",
+      "logs": "andrew:/home/ubuntu/slocal2/m2/experiments/phase1/stage2pilot_pd_P1-W1_gt_seed42_smoke/logs",
+      "predictions": "andrew:/home/ubuntu/slocal2/m2/experiments/phase1/stage2pilot_pd_P1-W1_gt_seed42_smoke/predictions",
+      "run_dir": "andrew:/home/ubuntu/slocal2/m2/experiments/phase1/stage2pilot_pd_P1-W1_gt_seed42_smoke"
+    }
+  },
+  "metrics_primary_split": null,
+  "metrics_source": "metrics_json",
+  "notes": null,
+  "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
+  "path": "experiments/phase1/stage2pilot_pd_P1-W1_gt_seed42_smoke",
+  "per_class": {
+    "Bipolar Forceps": 0.839801126840357,
+    "Electric Cautery": 0.9650293458628235,
+    "Forceps": 0.35532367778702584,
+    "Gauze": 0.277593227356084,
+    "Hook": 0.6417033680453241,
+    "Mouth Gag": 0.7936704200356309,
+    "Needle Holders": 0.8483705990029609,
+    "Raspatory": 0.831937544688214,
+    "Retractor": null,
+    "Scalpel": 0.9228733070825308,
+    "Scissors": 0.7151748018271372,
+    "Skewer": 0.9489993508706659,
+    "Suction Cannula": 0.8336146463255842,
+    "Syringe": 0.5464012657402256,
+    "Tweezers": 0.7899363213408002
+  },
+  "per_class_kind": "tool",
+  "per_class_metric": "AP",
+  "per_class_nan_classes": [
+    "Retractor"
+  ],
+  "per_class_source": "experiments/phase1/stage2pilot_pd_P1-W1_gt_seed42_smoke/per_class_ap.json",
+  "per_class_valid_count": 14,
+  "provenance": {
+    "aux_token": "no_aux_token",
+    "commit": "from_git_commit_txt",
+    "epoch": "from_metrics_json",
+    "host": "from_server_txt",
+    "name": "not_determinable",
+    "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
+    "seed": "not_determinable",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "from_plan_section_16_7",
+    "step": "not_determinable"
+  },
+  "run_id": "stage2pilot_pd_P1-W1_gt_seed42_smoke",
+  "seed": null,
+  "seed_agreement": "no_seed_in_dirname",
+  "seed_command": 42,
+  "seed_config": 42,
+  "seed_detector": null,
+  "seed_phase": null,
+  "seq": null,
+  "split": "val",
+  "step": null,
+  "subgroup": null,
+  "task_id": "T-2026-10-18-stage2-pilot-folda",
+  "wandb_run_id": null,
+  "wandb_run_url": null
+}
