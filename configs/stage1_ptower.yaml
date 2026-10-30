@@ -17,6 +17,25 @@ warmup_epochs: 2
 maps: 64
 batch_size: 32
 workers: 4
+# Candidate 5 temporal heads (T-2026-10-23-ptower-cand5-heads-impl). The keys below are
+# not set here; when absent the code uses the default shown, which is the existing behaviour.
+# Card: docs/proposals/2026-10-23-ptower-temporal-head.md.
+#   candidate: also ssm (P-A) | memory (P-B) | progress (P-C) | stabilize (P-D)
+#   boundary_flag: false        any candidate; appends the clip-start flag as one input column
+#   reset_at_clip: false        runs each clip on its own, so state and memory restart (P-B)
+#   gap_input: none             none | flag (unknown-Δ flag) | delta (log Δ and the flag) (P-C)
+#   ssm_state_dim: 64           Mamba d_state (P-A); d_conv is fixed at 4
+#   ssm_layers: 2               Mamba layers on a maps-dim projection (P-A)
+#   ssm_selective: true         false fixes Δ at softplus(dt bias) and does not learn it (P-A)
+#   memory_len: 128             GRU states the adaptive memory holds, current one included;
+#                               0 drops the memory (GRU-only arm) (P-B)
+#   progress_weight: 0          weight of the MSE progress loss (P-C)
+#   transition_prior: false     decode with the fold's train-video transition matrix (P-C)
+#   base_candidate: A           head of stabilize: A | B | C (P-D)
+#   tec_alpha: 0, tec_m: 8, tec_sigma: 1.5   TEC-weighted CE; alpha 0 is the plain CE (P-D)
+#   egtp: false                 also report the EGTP state; p_t and the main metric are unchanged
+#   egtp_k: (required when egtp is true)   evidence threshold of the state switch (P-D)
+#   egtp_reset_at_clip: false   restart the EGTP state at each clip start (P-D)
 hydra:
   run:
     dir: .

@@ -6,8 +6,153 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 135 件）。
-ここに出ない 130 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 141 件）。
+ここに出ない 136 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-10-23-ptower-cand5-heads-impl
+
+状態 `pass` / ホスト `Andrew` / 起票 `261` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 分岐 feat/ptower-cand5-heads-impl、起点 origin/phase0 ea73a8ba、汚れは task-start が取り込んだ契約 2 件だけ。四候補の基準値（最終段の出力の sha256）を scripts 未変更の HEAD ea73a8ba で取り、二つのプロセスで一致、試験だけの commit ed0fee7a に置いた。
+- `G2` pass — 変更後、四候補の要約値が基準値と一致（試験 4 件）。四ヘッド（memory は memory_len 0 も、stabilize は A・B・C、ssm は GPU で selective 真偽）が t より前の出力の厳密一致を通り、双方向 GRU は同じ検査で落ちた。
+
+### 起票者の誤り
+
+- `self_contradiction` — SPEC §4.3 は P-B の初期化を「クリップの先頭で GRU の状態と記憶を初期化する」と書くが、完了判定 f は境の後の出力が境の前に依らないことを求める。GRU と記憶だけを初期化すると下の TCN（受容野 253 フレーム）が境をまたぎ、f は落ちる。模型全体をクリップごとに走らせて満たした。
+- `asserted_without_measuring` — Task D-7 は煙試験を「train の道で 2 epoch、checkpoint は一時の置き場」とするが、train は evidence() で experiments/ に実験フォルダを作り（禁止領域）、W&B が始まらなければ RuntimeError を出す。指示どおり呼ぶと禁止領域に書くか失敗する。試験の中で evidence と load_fold を差し替えた。
+- `self_contradiction` — 設計の出所のカードに三版の改訂と古い記述の食い違いが残る。P-C は #14 の改訂が MSE で固定の行と #15 が L1、P-D は改訂が α {7, 19} で掃引の行と #15 が {3, 11}、P-B は #9 の改訂が GRU 単独の腕を足し備考は入れないと書く。SPEC は MSE だけを決めており、残りは exp の起票で選ぶ必要がある。
+- `self_contradiction` — §4.1 はクリップの先頭とクリップをまたぐ位置を不明とする（数えると 23）一方、完了判定 c は「クリップ間 8 箇所が不明」とし、対照を「不明の数が 7」とする。どちらの数かが読みで分かれるため、全体 23 とクリップ間 8（境を一つ無視すると 7）の両方を数えて書いた。
+
+### 逸脱
+
+- `judgement` — reset_at_clip はクリップごとに模型全体（TCN を含む）を走らせる形にした。GRU と記憶だけの初期化では完了判定 f を満たせないため。どの候補でも使える。
+- `judgement` — gap_input flag は不明の目印（クリップの先頭）1 列、delta は log Δ と不明の目印の 2 列で、不明の Δ には 256 を入れる（観測の最大 254 の上）。
+- `judgement` — 記憶は B に倣い TCN の最終段の出力を埋め込んで GRU に入れ、直近 memory_len 状態への因果の注意とゲートで読む。memory_len 0 を GRU だけの腕として足した（カード P-B #9 の三版）。
+- `judgement` — 進捗の頭は stage 1 の内部特徴から工程ごとの sigmoid、正解の工程の列に MSE。遷移行列は自己遷移を含み、直前の予測から届かない工程を除外する復号にした。
+- `judgement` — TEC の誤り区間は各段の argmax から取り、正規化はクラス重みの和。EGTP の証拠は max(0, e + p_c − p_state) で積む実装者の設計。egtp_k は既定値を置かず egtp 真のとき必須にした。
+- `judgement` — SPEC に既定の無い鍵はカードの殺し実験の中央に合わせた（ssm_state_dim 64、ssm_layers 2、memory_len 128）。base_candidate の既定は A。
+- `judgement` — 原典（OnlineTAS arXiv 2411.01122、StableSPR arXiv 2605.16387）は外部への接続を事前の確認なしに行わない規約のため引いておらず、形は SPEC とカードの記述の範囲で決めた。
+- `judgement` — 煙試験は evidence と load_fold を差し替えて一時の置き場で回した。既存の A を煙試験に足し、phase0 の版との学習後の重みの一致を scratchpad で確かめた（SPEC に無い追加の確認）。
+- `judgement` — CLAUDE.md の experiment_log と W&B は適用していない（実験を回していない。SPEC Task E-2）。README には候補名と鍵の節を足した。
+
+### 申し送り
+
+- 時間ヘッドの exp の起票では、カードに残る食い違い（P-C の進捗損失 L1 と MSE、P-D の α {3, 11} と {7, 19}、P-B の GRU 単独の腕の有無）をどちらに取るか決め、egtp_k の値を決める（実装は既定を置かず必須にした）。
+- 原典（OnlineTAS の記憶 §3.3、StableSPR の TEC §2.1 と EGTP 式 (6)、ProTAS の進捗の頭）との照合は、外部への接続の承認を得てから行う。食い違えば実装の形を直す契約が要る。
+
+### 断定できなかったこと
+
+- 記憶・TEC・EGTP・進捗の頭が原典の形と一致するか（照合していない）。
+- 実データ（17,233 フレームの保存特徴）での 1 本の所要時間。
+- SSM の逆伝播の決定性（前の契約で、決定論的な設定でも勾配が 5.7e-14 で非決定と測られている。本契約では測っていない）。
+
+## T-2026-10-23-ptower-cand5-compute-probe
+
+状態 `pass` / ホスト `Andrew` / 起票 `259` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 分岐 feat/ptower-cand5-compute-probe、起点 origin/phase0 bfe45510、分類器の未追跡と変更は 0 件、nvidia-smi の compute プロセスは二枚とも 0 件（各 GPU 段の直前にも 0）。
+- `G2` pass — r3 の処方（R50、800×1422、fp32、deterministic、実データ）の最大確保は batch 1・2・16 で 2.05・4.14・26.97 GiB。三周目の記録 27.06 GiB と同じ桁で、単調に増える。
+
+### 起票者の誤り
+
+- `check_does_not_check` — 完了判定 c と d の空振りの確認は「batch を一つ上げると失敗する」だが、手順は「目標が収まればそれ以上は探さない」と定め、D と E も 256 から下げるだけである。実際に全構成が目標で収まり、指示どおりの探索では失敗が一度も起きず、確認が成り立たなかった。
+- `asserted_without_measuring` — SPEC は「17,233 フレームの manifest」と書くが経路を名指ししない。参照先の configs/stage1_ptower_r3.yaml の manifest_dir（data/processed/phase_manifest）は 15,437 で、Task A-5 を字義どおりに読むと停止に当たる。一致するのは phase_manifest_all_phase である。
+- `asserted_without_measuring` — SPEC §2 は「工程塔の数値精度は fp32（規約 conventions#precision）」と出所を示すが、規約の precision 節の原文は「工程塔の学習の精度は本節で定めない」と書く。本契約は SPEC の指定どおり fp32 で測ったため値は変わらないが、出所の記述は規約と食い違う。
+
+### 逸脱
+
+- `judgement` — manifest は phase_manifest_all_phase（17,233）を使った。r3 の manifest_dir の phase_manifest は 15,437 で、17,233 と一致しない。
+- `judgement` — 全構成が目標の batch で収まったため、探索が失敗を拾えることの対照として、目標の倍（ViT-L 800 全体の b8、MoCo b512、MAE b512）を別に測った。三本とも OOM。mamba は別プロセスで再実行し、パラメータごとに切り分けた。
+- `judgement` — 800 系統の入力は 800×1424（幅を 16 の倍数へ切り上げ、4,450 トークン）。ViT は timm の vit_*_patch16_dinov3 を乱数初期化で使った。映像 MAE の tubelet 2・decoder 192 次元 4 層・可視 95 は実装者の選択。
+- `judgement` — MoCo v2 の K 65,536・m 0.999・T 0.2 は既知の原典の既定値を置いた。外部への接続は事前の確認を要するため、このセッションでは原典を引いて照合していない。shuffle BN は単一 GPU のため再現していない。
+- `judgement` — ViT・MoCo・MAE の行は fp32 で TF32 を切っただけで、決定論的な設定は使っていない。較正と mamba は stage1_ptower.deterministic を使った。
+- `judgement` — CLAUDE.md の README.md・experiment_log・W&B の要求は、コードを変えず run も作らない測定で、変更範囲の外になるため適用しなかった。
+
+### 申し送り
+
+- 時間ヘッドの案 P-A のカード
+- 事前学習の exp の起票では、ViT-L の 800×1424 全体の fine-tune が batch 4 で 36.66 GiB・5.125 s/歩、1 epoch の見込み 225.9 min（読み込みを除く）であることを、案 2 の解像度の軸の費用に入れる。
+
+### 断定できなかったこと
+
+- 目標で収まった構成の、収まる batch の上限（探索の規則により測っていない）。
+- データの読み込みを含む一歩の時間（較正以外の行）。MoCo v2 と映像 MAE は、batch 256 の読み込みが律速になりうる。
+- mamba-ssm の非決定が selective scan と causal-conv1d のどちらの核の逆伝播によるか。
+
+## T-2026-10-23-gaze-data-survey
+
+状態 `pass` / ホスト `Andrew` / 起票 `265` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 分岐 feat/gaze-data-survey、HEAD と merge-base はともに origin/phase0 d013c5f1、作業ツリーの汚れは task-start が取り込んだ契約 2 件（SPEC.md と spec.yaml）だけ。
+
+### 起票者の誤り
+
+- `check_does_not_check` — Task B-2 の内容の探索は対象を raw/ego の各動画のディレクトリと annotations/ に限るが、視線が実際に届いた data/raw/gaze/ はその集合の外にある。書かれたとおりに探すと、data/raw の下に置かれた視線を見落とす。実行では data/raw と data/annotations の全体に広げた。
+- `asserted_without_measuring` — §3 は README の値を確定した事実として書くが、raw/ego の 01〜15 の jpg は 15,440 ではなく 15,437 枚で、manifest の 1,796 枚は raw/ego ではなく data/raw/OpenSurgery_Dataset/01_frames/initial_videos/ にある。画像のファイルを分母にすると、§3 の数と置き場では照合できない。
+
+### 逸脱
+
+- `judgement` — 名前の探索を andrew の全 4 装置とホームへ、内容の探索を data/raw と data/annotations の全体へ広げた（SPEC は data/ と ~/slocal2/ の直下、raw/ego と annotations/ に限る）。
+- `judgement` — 三つの方法で見つからなかった後に利用者へ置き場を聞き、利用者が契約の途中で data/raw/gaze/ に送った（ディレクトリの更新は JST 16:01）。b の「対象が無い」は届く前の判定で、c〜e は届いた版を測った。
+- `environment` — 公式配布の確認は CLAUDE.md の ctxpack が andrew に無いため WebFetch で読んだ。利用者の承認を得て、読むだけで取得はしていない。
+- `judgement` — 全行 x==y のまま計測した（利用者の決定）。ヒートマップは原点を左上と仮定し、σ は仮の 64 px。
+- `environment` — origin/phase0 が契約の開始後に f3d5945f へ進んだ（PR 263 と 264）ため、forbidden-check を起点 d013c5f1 を基準にしても回した。既定の基準でも pass。
+- `judgement` — 置き場に計測のスクリプト survey.py と出力 summary.json、coverage_by_video.csv を置いた（図は 1 枚）。
+- `environment` — 試験の前の失敗は 7 件で、前の契約の 6 件に 2 GPU の試験 test_stage1_ptower_r3_dist の 1 件が加わっている。本契約の変更より前からある。
+
+### 申し送り
+
+- 視線の書き出しを直した版（x と y が別の値）を利用者から受け取り、同じ survey.py で測り直す。案 1 の実装の契約はそれを待つ。
+- 座標の原点（左上か左下か）と元のサンプリングのレートを、視線の書き出しの元（記録の装置と書き出しの処理）から確かめる。
+- prereg には、17〜21 の末尾 8 枚（20_6_0284、20_7_0092〜0098）の扱いと、視線はあるが工程注釈の無い 14 クリップ（22,254 フレーム）を事前学習に使うかを書く。
+
+### 断定できなかったこと
+
+- 座標の原点（左上か左下か）。
+- 元のサンプリングのレート（ファイルは 1 フレーム 1 点に集約済み）。
+- x と y のどちらが正しい値か、あるいはどちらでもないか。
+- raw/ego の 15,440 と 15,437 の差の 3 が .gitkeep の数か。
+
+## T-2026-10-23-egtp-original-form
+
+状態 `partial` / ホスト `Bengio` / 起票 `263` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 分岐 feat/egtp-original-form、HEAD = origin/phase0 = d013c5f1、追跡下の変更 0。
+- `G2` pass — 10 通りの出力の要約値と復号が変更前とビット一致し、EGTP の試験 5 件が通った。ssm の出力は GPU 禁止のため測らず、egtp 以外の関数 32 件のソースの一致で代えた。
+
+### 起票者の誤り
+
+- `check_does_not_check` — spec の conventions_rev に commit ではなく HEAD の規約の blob（ceb7ef0f）が書かれていた。検証器 L2-6 は git diff の失敗を空の出力として扱い、警告せずに通した。中身が同じことは実行者が手で確かめた。
+- `asserted_without_measuring` — SPEC §3 は八候補のビット不変を求め、前の契約の試験の基準値の流用を勧めていた。しかし BASELINE は 4 候補だけで、bengio では変更前から 4 件とも一致しなかった。そのため変更前に基準値を取り直した。ssm は CPU では動かず、出力は測れなかった。
+- `self_contradiction` — Task C-8 は試験の全件を回すことを求め、そこには ssm の GPU の試験が含まれる。一方 §6 は GPU の使用を禁じる。指示どおり全件を回すと GPU を使い、実際に 1 回目はそうなった。
+
+### 逸脱
+
+- `environment` — 試験の 1 回目は GPU が見えた状態で回り、ssm の試験が cuda で走った。以後は CUDA_VISIBLE_DEVICES を空にして回し、変更前後の比較はその条件だけで行った。
+- `environment` — 引数なしの pytest は third_party/Relation-DETR の欠落により収集で止まる。このため --continue-on-collection-errors を付けて回した。失敗の数は収集のエラー 1 件を含めて 12。
+- `judgement` — 試験で E と Z を手計算と比べるため、補助の生成器 egtp_steps と定数 EGTP_P_FLOOR・EGTP_SIGMA_FLOOR を足した。egtp の引数・返り値と decoders との接続は変えていない。
+- `judgement` — 原典が書いていない n と σ は、E が最後に 0 だった後に積んだ δ の個数と標本標準偏差（ddof 1）とした。n < 2 では Z = 0、σ の下限は 1e-3、log の前の p の下限は 1e-12 とした。
+- `judgement` — 規約の原文を写す要件を優先したため、RESULT.md は SPEC の目安の 60 行を超えた（102 行）。
+
+### 申し送り
+
+- 前の契約の BASELINE（tests/test_stage1_ptower_heads.py）は bengio では一致しない（linear 0235f4de、A と C e4f2eed5、B 379cc43e）。基準値をホストごとに持つか、取ったホストで比べるかは起票者が決める。
+- ssm の出力が変わらないことを、GPU のあるホストで確かめるかどうかは起票者が決める。本契約では関数単位のソースの一致だけを示した。
+- 検証器 L2-6 は conventions_rev が commit でないときに黙って通る。直すかどうかは利用者が決める。
+- P-D の exp の prereg には、n と σ の決め方と下限（σ 1e-3、p 1e-12）、n < 2 で Z = 0 を書き、k の掃引の範囲をこの正規化に合わせて選ぶ。
+
+### 断定できなかったこと
+
+- ssm の出力のビット一致（GPU が要る）。
+- 原典の n と σ の定義そのもの（原典に書かれていない）。
 
 ## T-2026-10-22-proposal-card-tower-reselect-search
 
@@ -38,160 +183,4 @@
 ### 断定できなかったこと
 
 - 既存の 6 件の試験の失敗（test_engines 1、test_fetch_task 1、test_research_logger 4）の原因は調べていない
-
-## T-2026-10-21-ptower-multigpu-syncbn
-
-状態 `partial` / ホスト `dlsta` / 起票 `249` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 分岐 feat/ptower-multigpu-syncbn、merge-base = origin/phase0 = 0a111a6e、porcelain は契約のディレクトリだけ、python/torchrun の処理 0。GPU0（利用者の指示と 99〜813 MiB の外部使用）と GPU1（442〜737 MiB の外部使用）を除いて空きは GPU2〜4 の三枚
-- `G2` pass — single_path.py（実物の main → finetune、38 枚・10 歩・1 epoch）で直す前 0e7bc8889d88… を二度、直した後も 0e7bc8889d88…。ft_lr 0.0001 は前後とも 98ea7600c1cf…。pytest の失敗の名前 6 → 6（新規 0）、924 passed、1 skipped
-- `G3` ask — fp32 の照合（77 枚、B=4、累積 4、更新 3 回）で陰性対照 0、陽性対照 grad 1.4、本番 grad 8.4e-3（最初の更新）・loss 4.0e-4 で本番が許容差 1e-3 を外れた。float64（B=2）で本番 1.4e-13、陽性対照 1.5、一枚どうしの fp32 対 float64 が 1.1e-2。利用者は float64 で判定し続行を選んだ。決定性の設定のもとで止まった演算 0
-
-### 起票者の誤り
-
-- `check_does_not_check` — plan.env.preflight に宣言した gpu_free は容器の中の compute プロセスだけを数え、開始時に GPU0 が 99〜813 MiB・最大 96%、GPU1 が 442 MiB・96% と他の利用者に使われていても PASS（compute プロセス 0 件）を返した。字面どおりなら他の利用者の GPU を空きと判定する。GPU ごとの使用量の記録で見つけた
-- `self_contradiction` — A.3 は他の利用者の使用が見える GPU を使わないと定めるが、Task E の NVLink の組（GPU1–GPU2）、SYS の組（GPU1+GPU3）、二本同時（GPU1–2 と GPU3–4）はすべて GPU1 を前提にし、代わりは GPU0 にしか書いていない。GPU1 に外部使用が出て字面どおりでは E.1〜E.3 を回せず、利用者に諮って許可を得た
-
-### 逸脱
-
-- `judgement` — 利用者の指示（『GPU0だけ他ユーザーが使ってるから使用しないで』）で GPU0 を使わなかった。契約 §2 の GPU0〜GPU4 の許可を狭めた。Task E の NODE の組（GPU0+GPU1）は UNKNOWN
-- `environment` — GPU1 にも容器の外の使用が断続的に出た（08:36〜09:00 UTC に 442〜737 MiB・最大 96%）。Task A〜C は GPU2〜4 だけを使い、Task E の前に利用者に諮り『1-2, 3-4を確実に使って良い』を得て GPU1 を使った
-- `judgement` — 測る前に書いた fp32 の許容差（勾配 1e-3）が fp32 の丸めの床（一枚どうしの fp32 対 float64 で 1.1e-2）より厳しかった。実行者の見積もりの誤り。許容差は後から変えず、G3 で利用者が float64 の照合を判定に使うことを選んだ。acceptance c は字面では未達のまま記録した
-- `judgement` — 原因の切り分けのため、契約に無い float64・B=2（22 枚と 23 枚）の照合を足した。照合の道具の引数 --b/--n は torchrun が自分の省略形と取り違えたので --per-gpu/--frames に改名した
-- `judgement` — 照合では増強を外した（train=False、§5.2.9）。通しと再現では増強ありで、反転の引きを rank ごとに記録した
-- `judgement` — W&B はオフライン（WANDB_MODE=offline、WANDB_DIR は repo の外）にして送らなかった。証拠は ExperimentManager の置き場だけを repo の外へ差し替え、実物の base.evidence を通した
-- `judgement` — CLAUDE.md の docs/experiment_log.md は更新していない。run を作らない impl で、前の同種の契約（dlsta-tower-feasibility）も更新していないため。README.md には節を足した
-
-### 申し送り
-
-- 二枚の道は float64 で一枚と 1e-13 の桁で一致するが、fp32 では一枚の道そのものが float64 から最初の更新で 1.1e-2 ずれ、AdamW の更新を重ねると 0.2〜0.35 に広がる。dlsta の二枚の道で選んだ処方を andrew の一枚で回し直すとき、同じ処方でも重みは一致しない（一枚の道どうしでも足し合わせの順序が変われば同じ）。探索の手続きのカードで、この差を前提に置くか決めること
-- 処方のままの二枚は一歩 0.79〜0.80 s（GPU ごと 8 枚）、一 epoch の学習の計算値は約 480 s（val を含まない）。二本同時は 0.806〜0.822 s。探索で二本を並べる材料
-- NODE の組（GPU0+GPU1）は利用者の指示で測っていない。GPU0 と GPU1 には容器の外の使用が出る（env-facts に追記）
-- repo の外 ~/m2-scratch/T-2026-10-21-ptower-multigpu-syncbn/（約 10 GB）を残した。片付けは利用者の判断
-
-### 断定できなかったこと
-
-- acceptance c: 契約の字面（fp32 で測る前の許容差に本番が収まる）は未達。利用者の判断で float64 の照合を判定に使った
-- NODE の組（GPU0+GPU1）の一歩の時間と記憶量
-- val を含む一 epoch の時間、全 epoch を通した溢れの有無（68 歩だけ測った）
-
-## T-2026-10-21-ops-taskstart-resume-folds-val
-
-状態 `pass` / ホスト `andrew` / 起票 `247` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 分岐 feat/ops-taskstart-resume-folds-val、HEAD=origin/phase0=merge-base=3cb3db07、契約の 2 ファイルを commit 後に status 0 行、目印はこの契約の所有の記録、無視された未追跡で phase0 と中身の違うもの 0 件（二方法で一致）
-- `G2` pass — tests/test_task_start_classify.py 18 件と test_task_start_pause_owner.py 8 件が通過。全試験 912 件で失敗 6 件、名前の集合は開始時と同じ、収集エラー 0
-- `G3` pass — アンカーごとの節の sha256 を前後で比べ、変わったのは folds と naming だけ。アンカー 15 個の名前と数は同じで conventions_anchors がすべて返す
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — Task B-7 は §3.2 の三つの振る舞いを直す前の task-start で再現せよとしたが、1 行目（無視されていない未追跡）は直す前の版がその前の汚れの判定で終了コード 3 になり切り替えに届かない。指示どおりには再現できず、git そのもので再現した
-- `asserted_without_measuring` — §3.1 と Task C-4 は .claude と .codex の SKILL.md を二つの写しとして同じにせよとしたが、.codex/skills/task は .claude/skills/task へのシンボリックリンクで実体は一つ。指示どおり写すと同じファイルへの複写になり、写しの一致は検査として何も測らない
-
-### 逸脱
-
-- `judgement` — 利用者の「SPEC の bengio を andrew と読み替える」指示は、取り込んだ SPEC がすでに実行ホストを andrew と書いていたため、読み替えた箇所は無い（bengio は §1・§10 の事実の記述だけ）
-- `judgement` — 2 回目の /task は再開から始まり（task-start は利用者が実行）、未追跡は契約自身の SPEC.md と spec.yaml だけだったため最初に commit して G1 の清浄を満たした
-- `spec_defect` — 「無視・起点に無い」は件数を出さない。B-5 は分類ごとの件数を求めるが、数えるには無視されたファイルの全数列挙が要り §5.1 の突き合わせの方針と両立しない
-- `judgement` — tests/test_task_start_pause_owner.py の場に分類器の写しを 1 行足した（主張は無変更）。D-3 が名指ししない tests/test_proposal_card_gate.py の場にも統合済みとみなす差し替えを足した
-- `judgement` — 規約の変更履歴の commit 欄は小節を置いた 4e67202c を書き、行は次の commit 2d946b07 で足した
-- `judgement` — 巻き戻しは、戻した後に phase0 の版で作り直す方式を採らず、通した経路を索引に載せて外す方式にした。作り直す方式は一時的に削除が起き同期で他の台へ伝わりうる
-
-### 申し送り
-
-- 各ホストの task-start とスキルは居る分岐の版で動く。dlsta のように分岐が古いままの台では、本契約が統合された phase0 から分岐するまで旧い task-start（同じ中身の未追跡でも止まり、無視された違う中身を黙って上書きする）が動く
-- skip-worktree の印つきで変更のあるファイルは git status に出ず、新しい分類でも数えない（§5.1 の外）。phase0 がその経路を変えると切り替えが拒まれ終了コード 4 で巻き戻る。andrew の docs/analysis_scripts/README.md がこれに当たる
-- andrew の .git/info/exclude に 2026-10-21 起動前に足した 3 行と README の skip-worktree の印は残したまま（控え ~/m2-hold/T-2026-10-21-ops-taskstart-resume-folds-val/）。戻すかは利用者の判断
-
-### 断定できなかったこと
-
-- dlsta・bengio など他の台での分類の所要時間と git の版（--pathspec-from-file は git 2.26 以上を要する。andrew は 2.43.0）
-
-## T-2026-10-19-stage2-pilot-four-new-types
-
-状態 `pass` / ホスト `bengio（decoder-xattn の 6 本は andrew）` / 起票 `243` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 分岐 feat/stage2-pilot-four-new-types、起点は直しの分岐の先頭 a7a5aa67（利用者の承認による逸脱）で直しの道具が在り phase0 には無い、bengio の本契約以外の compute プロセス 0 件、空き 879,879,020,544 B、試験の失敗の名前 9 件
-- `G2` pass — 本契約が読む 18 本の sha256 が直しの契約の記録と一致、bengio で工程 Jaccard 0.7762186・検出 mAP 0.7273450 を差 0.0 で再現（andrew の検出塔も一致）、B-3 は既定の集計の道具が直しの契約の report.json を 5c89f5d2 とバイト単位で同じに再現
-- `G3` pass — 五つの界面の全 30 腕で学習前の出力が塔単独と差 0、陽性対照で変わる、extra-queries の元の query の出力は界面の重みを乱数にしても差 0 で mask を外すと変わる、学習前の上位 300 は 1,515 枚すべてで塔単独と同じ、既存の型の照合が直しの契約の記録と全項目一致、test の動画との共通 0 件
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — SPEC §4 は空の腕を x(t) がすべて 0 の分母とした。tool-history は GRU が一定の入力からも動画の先頭からの経過を内に持てるため、ゲートなし版の空の腕は塔単独より Jaccard が 0.082 下がった。指示どおりに読むと Δ空 は情報の無い分母との差ではなく、経過の情報を持つ空の腕との差になる
-- `asserted_without_measuring` — SPEC §3.2 はスコアの定数の初期値 −10 を学習前に上位 300 へ入らないためとしたが、4 epoch・学習率 5e-4・train の見落とし 73 個で上がるかを見積もっていない。定数は −9.44〜−9.50 までしか上がらず、指示どおりに回すと extra-queries の 6 腕すべてが塔単独と同値になった
-- `check_does_not_check` — Task C-7 は 1 epoch の短い試走で 1 本の所要時間を測るとしたが、試走の経路（train_t1b.py --smoke）は 6 歩・val 20 枚で、1 本の所要は測れない。指示どおりに回しても所要は分からず、本番の壁時計で測った
-
-### 逸脱
-
-- `judgement` — 利用者の承認（2026-10-20 01 時台 JST）で、直しの契約の終了を待たずに /task を使わず bengio の worktree から始めた。make task-start と task-release は使わず、抑止の目印は置いていない（amendments 1 件目）
-- `judgement` — 起点を origin/phase0 ではなく直しの分岐の先頭 a7a5aa67 にした。PR #240 の統合の後に origin/phase0 を merge した（衝突なし。amendments 2・8 件目）
-- `judgement` — 主のホストを bengio にし、decoder-xattn の 6 本だけを andrew で回した（利用者の決定 01:44 JST。amendments 3・8 件目）。一つの型の 6 本は一つのホスト。decoder-xattn と extra-queries の比較はホストをまたぐので参考の表にだけ置いた
-- `environment` — 入力は andrew から bengio の同じ絶対経路へ写した（32 本、既存の 8 本は上書きせず、44 本の sha256 を照合）。前回と直しの契約の版管理外の保存先（bengio の写し）にファイルを足したことは SPEC §7-2 の字面に当たるが利用者の指示による（amendments 4 件目）
-- `environment` — bengio は直しの契約の重ねの BODY と直した .venv-relation-detr で回した。Relation-DETR のソース 142 本とパッケージ 72 個（本体の .venv は 108 個）が今の andrew と一致することを確かめた
-- `judgement` — Task A-6: conventions_rev（5c0eaeeb）は起点の祖先でなかった（起点の版は b12eda6c）。注入する 7 節は folds の追加動画の記述以外同一。起票者が 5c0eaeeb に対して書いたため差し替えず原文を 5c0eaeeb から読み、phase0 の merge の後に測り直して一致した。runindex_commit は前回と同じ読みで 63ae65da に差し替えた（amendments 6 件目）
-- `judgement` — Task B-3 は直しの契約の完了の後に行った（相手は 5c89f5d2。amendments 5・7 件目）。版管理外の前回の run の記録が worktree に無いため、作業用の場所に git archive と bengio の main の同期の写しを重ねて回した
-- `judgement` — 数値精度は規約の precision 節（TF32）ではなく前回の経路のまま（工程から検出は bf16 の自動混合精度、評価は単精度）。SPEC §2 の指示どおり
-- `judgement` — 型の定義の読み: decoder-xattn は token を key・value にそのまま使い、部分層を decoder を通るすべての query に当てた。extra-queries は元の経路を D* のまま回し追加の query だけを別に回す形で mask を実装した（元の出力が構成で塔単独と同じ）。tool-history の GRU の入力は 64 次元。界面の初期化は固定の種で大域の乱数から切り離した
-- `judgement` — 実行者の誤り: 相対経路の --out で回した評価 3 本の json が import 時の作業場所の移動で重ねの BODY の third_party/Relation-DETR/experiments/ の下に書かれた。worktree へ移し、作った空のフォルダを除いた。Relation-DETR のソースの一覧は不変
-- `judgement` — 実行者の誤り: 引き渡しで bengio の decoder-xattn の試走の置き場を分岐に commit していたため、andrew の試走が名前の衝突で止まり、andrew の実行者が利用者の承認を得て同じ commit の写しの場所で回した
-- `judgement` — 1 枚に載せる本数を利用者の決定で 3 本までにした（bengio の extra-queries は 1 枚 3 本で 2.6 it/s、2 本で 3.4〜3.8 it/s）
-
-### 申し送り
-
-- extra-queries は 4 epoch では追加の出力が上位 300 に出なかった。カードの意図（見落としにだけ当たる query）を測るには、スコアの定数の学習率・初期値・長さを変える必要がある（本契約では変えていない）
-- tool-history（カードどおり）のゲートは 4 epoch で tanh(α) 0.012 までしか開かなかった（起票者の見積もり 0.02 と同じ程度）。ゲートなし版は空の腕が経過の情報を持つので、空の腕を分母にした比較の読み方を決めておく必要がある
-- worktree の追跡外の記号リンク .venv と data/processed/phase_manifest、bengio の前回・直しの契約の保存先に足した 32 本は残してある（戻すかどうかは利用者が決める）
-
-### 断定できなかったこと
-
-- K3 の GRU の最終状態から術式を当てる精度: 動画ごとの術式の対応が repo に無い
-
-## T-2026-10-19-stage2-pilot-fix-epoch4-shuffle
-
-状態 `pass` / ホスト `andrew（P3 の予測-CF・正解予測-CF だけ bengio）` / 起票 `240` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 分岐 feat/stage2-pilot-fix-epoch4-shuffle、起点 origin/phase0 = 5a8baa79、phase0 に scripts/stage2pilot/ 28 ファイル、本契約以外の compute プロセス 0 件、空き 1,681,381,457,920 B、試験の失敗の名前 6 件
-- `G2` pass — 前回の信号 21 本と記録の sha256 がすべて一致。andrew で工程 Jaccard 0.7762186（差 0.0）、検出 mAP 0.7273450（差 0.0）を再現。許容差 0.005
-- `G3` pass — 固定の長さが最後の epoch の状態を結果にし、既定の aggregate.py が前回の report.json を同値で再現（comparisons の並びだけが違う）、入れ替えた信号は値の集合を保ち対応だけを壊し（train 100%、val 99.87%）、入れ替えの腕の学習前の出力が塔単独と差 0.0（PD 4 構成・DP 5 型）、test の動画との共通 0 件
-
-### 起票者の誤り
-
-- `asymmetric_comparison` — SPEC §1 の「P1-W1 の正解の標的群 AP の差は最後の回で +0.0087」は、正解の epoch 3 と空の epoch 2（空は前回 epoch 2 で止まった）の差だった。同じ epoch どうしでは epoch 2 で +0.0195、今回の 4 epoch 目どうしで +0.0197。指示どおりに読むと、選び方の偏り（欠陥 A）を長さの違いの分だけ大きく見積もる
-- `check_does_not_check` — 完了判定 f（入れ替えの腕の学習前の出力が塔単独と一致）は、零初期化の界面ではどんな信号を入れても成り立つ。指示どおりに確かめても、入れ替えが正しく行われたかは何も分からない（入れ替えそのものは e と i が確かめる）
-- `asserted_without_measuring` — SPEC §3 は split 全体で入れ替えれば動画単位の情報を残さないとしたが、val は動画 2 本のため入れ替えた後も 55.6% のフレームが同じ動画の信号を受け取る（train は 11.5%）。指示どおりに作ると、val の入れ替えの腕には動画単位の情報が半分以上残る
-- `asserted_without_measuring` — meta.created_from.runindex_commit と contract.conventions_rev に、Task A-6 の読み（その経路の最新の commit）と違う値（起票時の phase0 の先頭）が書かれていた。内容は同一だが、指示どおりに Task A-6 を実測すると食い違いとなり、差し替えと amendments の記録が要った
-
-### 逸脱
-
-- `judgement` — Task A-6: conventions_rev と runindex_commit を前回と同じ読み（git log -1 -- <経路>）で実測し、起票時の値と違ったため差し替えた（内容は同一。amendments 1 件目）
-- `judgement` — 利用者の承認で、P3 の予測-CF と正解予測-CF を別ホスト bengio で回した（amendments 2・3 件目）。P3 の空・予測-noCF・正解・入れ替えと他のすべての run は andrew。P3 のこの 2 本の Δ空・Δ入替にはホストの差が混ざる
-- `environment` — bengio の .venv-relation-detr は python のリンク先（pyenv 3.11.4）が無く、third_party/Relation-DETR のソースが andrew と 23 件違った。andrew の中身を別の場所（重ねの BODY）に置いて参照させ、仮想環境を uv の CPython 3.11.16 に向け直した（andrew の仮想環境と同じ）。入力の要約値で一致を確かめた
-- `judgement` — 速さの試しとして GPU 1 枚に 3 本目を 1 回だけ足した（GPU 0 で P1-W2 入れ替え、GPU 1 で P3 予測-noCF）。合計の速さの伸びは 3% と 0 で、それ以上は足さなかった
-- `judgement` — 実行者の誤り: PD の試走の後処理が、val 20 枚で群の AP が None になる場合を書式で落とした。直して後処理だけ回し直した
-- `judgement` — 実行者の誤り: andrew で P3 の 4 本を起こしかけた命令が途切れ、正解と予測-CF の 2 本が学習の前で止まった（プロセスは残らなかった）。フォルダを本契約の置き場（FIX/aborted_runs）へ移し、後で同じ名前で回し直した
-- `environment` — bengio の S1 で GPU 2 枚に本件以外のプロセス（/tmp/gpu_dummy_load.py）が居り、利用者の指示で bengio の実行者が止めた（audit_bengio.md）
-- `judgement` — 実行者の誤り: bengio の分岐の統合の 1 回目が index の書き込みの競合（状態行の処理）で途中の状態になった。merge --abort で戻し、ロックが空くのを待ってやり直した。データの損失なし
-- `judgement` — test_audit_fix.py は別ホストの run の注釈の経路（bengio の重ねの BODY）を開けないため、bengio の入力の照合の記録の sha256 が andrew の同じ名前の注釈と一致するときだけ andrew の写しで数える形にした
-- `judgement` — 道具: train_t1b.py に --fixed-epochs、dp_train.py に --fixed-epochs・--task-id・--exp-prefix・--smoke・腕 shuffle・identity --arm、run_pd_fix.sh に置き場の切り替え（S2FIX_BODY、S2FIX_CODE）を足した。既定の経路は変えず、試験で固定した
-
-### 申し送り
-
-- 新しい界面の型の候補を回す次の契約は、固定の長さ（--fixed-epochs）と入れ替えの腕（shuffle_signals.py、腕 shuffle）をそのまま使える
-- 入れ替えの腕は val が 2 動画のため半分以上が同じ動画の信号を受け取る。動画単位の情報を壊したいなら、折りを増やすか動画をまたぐ入れ替えに限る設計を決める
-- 前回の aggregate.py の comparisons の並びが実行ごとに変わる（set の反復順）。並びを固定するかを決める
-- bengio の .venv-relation-detr（向け直した）と third_party/Relation-DETR（andrew と 23 件違う）、重ねの BODY と worktree を残すか戻すかを決める
-
-### 断定できなかったこと
-
-- 回し直さない PD の 8 本の動画ごとの 4 epoch 目の値（epoch 3 の予測と重みが残っていない）。P2L は空の腕の動画ごとが無いため全腕の動画ごとの Δ空
-- andrew で GPU 1 枚に PD を 1 本だけ載せたときの速さ（測っていない）
-- 計算し直しの検査（完了判定 j）が作り物の食い違いを検出するか（陽性対照を入れていない）
 

@@ -1,0 +1,62 @@
+result_version: 3
+task_id: T-2026-10-23-egtp-original-form
+status: partial
+host: Bengio
+branch: feat/egtp-original-form
+pr: 263
+merged: false
+gates:
+- id: G1
+  verdict: pass
+  note: 分岐 feat/egtp-original-form、HEAD = origin/phase0 = d013c5f1、追跡下の変更 0。
+- id: G2
+  verdict: pass
+  note: "10 通りの出力の要約値と復号が変更前とビット一致し、EGTP の試験 5 件が通った。ssm の出力は GPU 禁止のため測らず、egtp 以外の関数 32 件のソースの一致で代えた。"
+tests:
+  before_failed: 12
+  after_failed: 12
+  after_passed: 945
+deviations:
+- type: environment
+  note: 試験の 1 回目は GPU が見えた状態で回り、ssm の試験が cuda で走った。以後は CUDA_VISIBLE_DEVICES を空にして回し、変更前後の比較はその条件だけで行った。
+- type: environment
+  note: 引数なしの pytest は third_party/Relation-DETR の欠落により収集で止まる。このため --continue-on-collection-errors を付けて回した。失敗の数は収集のエラー 1 件を含めて 12。
+- type: judgement
+  note: 試験で E と Z を手計算と比べるため、補助の生成器 egtp_steps と定数 EGTP_P_FLOOR・EGTP_SIGMA_FLOOR を足した。egtp の引数・返り値と decoders との接続は変えていない。
+- type: judgement
+  note: "原典が書いていない n と σ は、E が最後に 0 だった後に積んだ δ の個数と標本標準偏差（ddof 1）とした。n < 2 では Z = 0、σ の下限は 1e-3、log の前の p の下限は 1e-12 とした。"
+- type: judgement
+  note: 規約の原文を写す要件を優先したため、RESULT.md は SPEC の目安の 60 行を超えた（102 行）。
+issuer_defects:
+- type: check_does_not_check
+  note: spec の conventions_rev に commit ではなく HEAD の規約の blob（ceb7ef0f）が書かれていた。検証器 L2-6 は git diff の失敗を空の出力として扱い、警告せずに通した。中身が同じことは実行者が手で確かめた。
+- type: asserted_without_measuring
+  note: SPEC §3 は八候補のビット不変を求め、前の契約の試験の基準値の流用を勧めていた。しかし BASELINE は 4 候補だけで、bengio では変更前から 4 件とも一致しなかった。そのため変更前に基準値を取り直した。ssm は CPU では動かず、出力は測れなかった。
+- type: self_contradiction
+  note: Task C-8 は試験の全件を回すことを求め、そこには ssm の GPU の試験が含まれる。一方 §6 は GPU の使用を禁じる。指示どおり全件を回すと GPU を使い、実際に 1 回目はそうなった。
+positive_controls:
+- judgement: 完了判定 b の手計算の期待値
+  breaking_input: repo の外の試験の写しで、状態の期待を [0,0,0,1,1] から [0,0,1,1,1] に変える。Z の期待に 1e-9 を足す
+  observed: どちらも 1 failed・4 passed。変えない写しは 5 passed。
+- judgement: 完了判定 c の閾値
+  breaking_input: 同じ乱数の確率列に k 0 と k 1e9 を当てる。一定の反証の列に k 0 を当てる
+  observed: "k 1e9 は状態が一つ、k 0 は複数。一定の反証で k 0 は t=2 で遷移した（SPEC の言う最初の反証の t=1 ではない。n < 2 では Z = 0 のため）。"
+- judgement: 完了判定 d の出力の不変
+  breaking_input: A を layers 7 で作る
+  observed: 要約値 4a386c8c… が bengio の基準値 e4f2eed5… と一致しなかった。
+- judgement: 完了判定 e の禁止領域
+  breaking_input: repo の外の clone で data/positive-control.txt を足し、--base d013c5f1 で検査する
+  observed: 足す前は pass・exit 0、足した後は fail・違反 1 件・exit 1。clone は消した。
+- judgement: ssm の出力の不変
+  breaking_input: ssm の出力を変える変更
+  observed: UNKNOWN。GPU 禁止のため ssm の出力を測っていない。
+followups:
+- 前の契約の BASELINE（tests/test_stage1_ptower_heads.py）は bengio では一致しない（linear 0235f4de、A と C e4f2eed5、B 379cc43e）。基準値をホストごとに持つか、取ったホストで比べるかは起票者が決める。
+- ssm の出力が変わらないことを、GPU のあるホストで確かめるかどうかは起票者が決める。本契約では関数単位のソースの一致だけを示した。
+- 検証器 L2-6 は conventions_rev が commit でないときに黙って通る。直すかどうかは利用者が決める。
+- P-D の exp の prereg には、n と σ の決め方と下限（σ 1e-3、p 1e-12）、n < 2 で Z = 0 を書き、k の掃引の範囲をこの正規化に合わせて選ぶ。
+unknowns:
+- ssm の出力のビット一致（GPU が要る）。
+- 原典の n と σ の定義そのもの（原典に書かれていない）。
+commits:
+- 7cf83fedf75fded1aa1ea7f4dc2dec90e9e62058

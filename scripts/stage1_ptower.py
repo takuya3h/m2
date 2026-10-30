@@ -76,6 +76,46 @@ def manifests(cfg):
     return clips
 
 
+# Δ at a clip start, inside or between clips, is not in the release: kept apart from 0 and 1.
+GAP_UNKNOWN = -1
+# Δ fed for an unknown gap under gap_input=delta, above the largest observed Δ (254).
+GAP_CAP = 256
+GAP_INPUTS = {"none": 0, "flag": 1, "delta": 2}
+
+
+def clip_number(clip_id):
+    return int(clip_id.split("_")[1])
+
+
+def sequence_info(clip_frames):
+    """Per-frame clip order, Δ and clip-start flag of one video joined clip by clip.
+
+    Δ is the manifest frame-number difference to the previous frame of the same clip.
+    """
+    order, delta, boundary = [], [], []
+    for index, frames in enumerate(clip_frames):
+        numbers = [int(f["frame"].rsplit("_", 1)[1]) for f in frames]
+        order += [index] * len(numbers)
+        delta += [GAP_UNKNOWN] + [b - a for a, b in zip(numbers, numbers[1:])]
+        boundary += [1] + [0] * (len(numbers) - 1)
+    return {"clip": np.array(order), "delta": np.array(delta), "boundary": np.array(boundary)}
+
+
+def gap_summary(clips):
+    """Clip count and Δ statistics over the videos joined in load_fold's clip order."""
+    videos = {}
+    for c in clips:
+        videos.setdefault(c["video"], []).append(c)
+    infos = [sequence_info([c["frames"] for c in sorted(v, key=lambda c: clip_number(c["clip_id"]))])
+             for v in videos.values()]
+    delta = np.concatenate([i["delta"] for i in infos])
+    known = delta[delta != GAP_UNKNOWN]
+    return {"videos": len(infos), "clips": sum(int(i["clip"].max()) + 1 for i in infos),
+            "frames": len(delta), "pairs": len(known), "delta_one": int((known == 1).sum()),
+            "delta_max": int(known.max()), "unknown": int((delta == GAP_UNKNOWN).sum()),
+            "unknown_between_clips": sum(int((i["delta"][1:] == GAP_UNKNOWN).sum()) for i in infos)}
+
+
 class Frames(Dataset):
     def __init__(self, clips):
         self.frames = [f for c in clips for f in c["frames"]]
@@ -186,7 +226,8 @@ def extract(cfg):
     print(json.dumps(report), flush=True)
 
 
-def load_fold(cfg, parts=("train", "val")):
+def load_fold(cfg, parts=("train", "val"), info=False):
+    """Videos as (video, x, y); info=True appends sequence_info as a fourth element."""
     split = folds()[cfg.fold]
     cache_path = ROOT / cfg.cache
     audit = json.loads(cache_path.with_suffix(".json").read_text())
@@ -195,6 +236,7 @@ def load_fold(cfg, parts=("train", "val")):
         features = cache["features"]
         by_id = {str(fid): i for i, fid in enumerate(cache["frame_ids"])}
     result = {part: [] for part in parts}
+    frames = {}
     # Test frame features exist but no test labels or predictions enter training.
     for c in manifests(cfg):
         for part in result:
@@ -202,24 +244,64 @@ def load_fold(cfg, parts=("train", "val")):
                 x = np.stack([features[by_id[f["frame"]]] for f in c["frames"]])
                 y = np.array([f["label"] for f in c["frames"]], dtype=np.int64)
                 result[part].append((c["clip_id"], x, y))
+                frames[c["clip_id"]] = c["frames"]
     # One batch is one complete video, ordered by clip then manifest frame order.
     for part, clips in result.items():
         videos = []
         for video in split[part]:
             selected = sorted((c for c in clips if c[0].split("_")[0] == video),
-                              key=lambda c: int(c[0].split("_")[1]))
+                              key=lambda c: clip_number(c[0]))
             if not selected:
                 raise ValueError(f"Missing video {video} in {part}")
             videos.append((video, np.concatenate([c[1] for c in selected]),
-                           np.concatenate([c[2] for c in selected])))
+                           np.concatenate([c[2] for c in selected]))
+                          + ((sequence_info([frames[c[0]] for c in selected]),) if info else ()))
         result[part] = videos
     return split, result
 
 
+def input_dim(cfg):
+    """2048 features plus the boundary-flag and gap-input columns when they are enabled."""
+    gap = cfg.get("gap_input", "none")
+    if gap not in GAP_INPUTS:
+        raise ValueError(gap)
+    return 2048 + int(cfg.get("boundary_flag", False)) + GAP_INPUTS[gap]
+
+
+def model_input(cfg, x, info):
+    """(T, 2048) features with the enabled columns appended, as a (1, C, T) tensor.
+
+    gap_input=flag appends the unknown-Δ flag (a clip start); delta also prepends log Δ,
+    with GAP_CAP standing in where Δ is unknown.
+    """
+    columns = [x]
+    if cfg.get("boundary_flag", False):
+        columns.append(info["boundary"][:, None])
+    gap = cfg.get("gap_input", "none")
+    if gap != "none":
+        unknown = info["delta"] == GAP_UNKNOWN
+        if gap == "delta":
+            columns.append(np.log(np.where(unknown, GAP_CAP, info["delta"]))[:, None])
+        columns.append(unknown[:, None])
+    return torch.from_numpy(np.concatenate(columns, 1).astype(np.float32)).T[None]
+
+
+def run_video(model, cfg, x, info, device, **kwargs):
+    """Model outputs for one video; reset_at_clip runs every clip on its own."""
+    if info is None:
+        return model(torch.from_numpy(x).T[None].to(device), **kwargs)
+    inputs = model_input(cfg, x, info).to(device)
+    if not cfg.get("reset_at_clip", False):
+        return model(inputs, **kwargs)
+    edges = [*np.flatnonzero(info["boundary"]).tolist(), inputs.shape[2]]
+    parts = [model(inputs[:, :, a:b], **kwargs) for a, b in zip(edges, edges[1:])]
+    return [torch.cat(stage, 2) for stage in zip(*parts)]
+
+
 class LinearFrame(nn.Module):
-    def __init__(self, classes):
+    def __init__(self, classes, in_dim=2048):
         super().__init__()
-        self.head = nn.Conv1d(2048, classes, 1)
+        self.head = nn.Conv1d(in_dim, classes, 1)
 
     def forward(self, x):
         return [self.head(x)]
@@ -229,7 +311,7 @@ class AggregatedTeCNO(nn.Module):
     """A output embedding followed by one local causal Transformer, without PE."""
     def __init__(self, cfg, classes):
         super().__init__()
-        self.base = TeCNO(2, cfg.layers, cfg.maps, 2048, classes)
+        self.base = TeCNO(2, cfg.layers, cfg.maps, input_dim(cfg), classes)
         self.embedding = nn.Linear(classes, cfg.maps)
         self.attention = nn.TransformerEncoderLayer(
             cfg.maps, 4, dim_feedforward=4 * cfg.maps, dropout=0.5, batch_first=True)
@@ -246,31 +328,257 @@ class AggregatedTeCNO(nn.Module):
         return outputs[:-1] + [self.head(z).transpose(1, 2)]
 
 
+class SelectiveSSM(nn.Module):
+    """Candidate ssm (P-A): unidirectional Mamba layers on a maps-dim projection.
+
+    The state runs on from the video start. ssm_selective false zeroes and freezes dt_proj,
+    so Δ = softplus(dt bias) is input-independent and not learned. Mamba runs on CUDA only.
+    """
+    def __init__(self, cfg, classes):
+        super().__init__()
+        from mamba_ssm import Mamba
+        layers = cfg.get("ssm_layers", 2)
+        self.projection = nn.Conv1d(input_dim(cfg), cfg.maps, 1)
+        self.norms = nn.ModuleList(nn.LayerNorm(cfg.maps) for _ in range(layers))
+        # d_conv 4 is the Mamba default (arXiv 2312.00752), fixed by the card.
+        self.layers = nn.ModuleList(
+            Mamba(cfg.maps, d_state=cfg.get("ssm_state_dim", 64), d_conv=4, expand=2)
+            for _ in range(layers))
+        self.dropout = nn.Dropout(0.5)
+        self.head = nn.Linear(cfg.maps, classes)
+        if not cfg.get("ssm_selective", True):
+            for layer in self.layers:
+                layer.dt_proj.weight.data.zero_()
+                layer.dt_proj.requires_grad_(False)
+
+    def forward(self, x):
+        z = self.projection(x).transpose(1, 2)
+        for norm, layer in zip(self.norms, self.layers):
+            z = z + self.dropout(layer(norm(z)))
+        return [self.head(z).transpose(1, 2)]
+
+
+class MemoryTeCNO(nn.Module):
+    """Candidate memory (P-B): A's TCN, a GRU on its output, and an adaptive memory.
+
+    The memory holds the last memory_len GRU states (the current one included); a causal
+    attention reads it and a learned gate decides how much of the read joins the state.
+    memory_len 0 drops the memory (the card's GRU-only arm).
+    """
+    def __init__(self, cfg, classes):
+        super().__init__()
+        self.base = TeCNO(2, cfg.layers, cfg.maps, input_dim(cfg), classes)
+        self.embedding = nn.Linear(classes, cfg.maps)
+        self.gru = nn.GRU(cfg.maps, cfg.maps, batch_first=True)
+        self.query = nn.Linear(cfg.maps, cfg.maps)
+        self.key = nn.Linear(cfg.maps, cfg.maps)
+        self.value = nn.Linear(cfg.maps, cfg.maps)
+        self.gate = nn.Linear(2 * cfg.maps, cfg.maps)
+        self.dropout = nn.Dropout(0.5)
+        self.head = nn.Linear(cfg.maps, classes)
+        self.memory_len = cfg.get("memory_len", 128)
+
+    def forward(self, x):
+        outputs = self.base(x)
+        h, _ = self.gru(self.embedding(outputs[-1].transpose(1, 2)))
+        if self.memory_len == 0:
+            return outputs[:-1] + [self.head(self.dropout(h)).transpose(1, 2)]
+        positions = torch.arange(h.shape[1], device=h.device)
+        distance = positions[:, None] - positions[None, :]
+        scores = self.query(h) @ self.key(h).transpose(1, 2) / h.shape[2] ** 0.5
+        scores = scores.masked_fill((distance < 0) | (distance >= self.memory_len), float("-inf"))
+        read = torch.softmax(scores, -1) @ self.value(h)
+        z = h + torch.sigmoid(self.gate(torch.cat([h, read], 2))) * read
+        return outputs[:-1] + [self.head(self.dropout(z)).transpose(1, 2)]
+
+
+class ProgressTeCNO(TeCNO):
+    """Candidate progress (P-C): A's TCN plus a per-phase progress head on stage-1 maps."""
+    def __init__(self, cfg, classes):
+        super().__init__(2, cfg.layers, cfg.maps, input_dim(cfg), classes)
+        self.progress = nn.Conv1d(cfg.maps, classes, 1)
+
+    def forward(self, x, with_progress=False):
+        hidden = self.stage1.conv_in(x)
+        for layer in self.stage1.layers:
+            hidden = layer(hidden)
+        out = self.stage1.conv_out(hidden)
+        outputs = [out]
+        for stage in self.refine_stages:
+            out = stage(F.softmax(out, dim=1))
+            outputs.append(out)
+        if with_progress:
+            return outputs + [torch.sigmoid(self.progress(hidden))]
+        return outputs
+
+
 def build_model(cfg, classes):
     if cfg.candidate == "linear":
-        return LinearFrame(classes)
+        return LinearFrame(classes, input_dim(cfg))
     if cfg.candidate == "B":
         return AggregatedTeCNO(cfg, classes)
+    if cfg.candidate == "ssm":
+        return SelectiveSSM(cfg, classes)
+    if cfg.candidate == "memory":
+        return MemoryTeCNO(cfg, classes)
+    if cfg.candidate == "progress":
+        return ProgressTeCNO(cfg, classes)
+    if cfg.candidate == "stabilize":
+        # P-D keeps the head of an existing candidate; only the loss and the decoding change.
+        base = cfg.get("base_candidate", "A")
+        if base not in ("A", "B", "C"):
+            raise ValueError(base)
+        return build_model(OmegaConf.merge(cfg, {"candidate": base}), classes)
     if cfg.candidate not in ("A", "C"):
         raise ValueError(cfg.candidate)
     return TeCNO(num_stages=2, num_layers=cfg.layers, num_f_maps=cfg.maps,
-                 in_dim=2048, num_classes=classes)
+                 in_dim=input_dim(cfg), num_classes=classes)
+
+
+def progress_target(y):
+    """Elapsed fraction 0..1 in each run of one phase over the joined video.
+
+    A phase that continues across a clip start stays one run.
+    """
+    target = np.zeros(len(y), dtype=np.float32)
+    starts = np.flatnonzero(np.r_[True, y[1:] != y[:-1]])
+    for a, b in zip(starts, np.r_[starts[1:], len(y)]):
+        target[a:b] = np.linspace(0, 1, b - a)
+    return target
+
+
+def transition_matrix(data, classes):
+    """Allowed phase transitions (staying included) seen in the fold's train videos only."""
+    allowed = np.eye(classes, dtype=bool)
+    for _, _, y, *_ in data["train"]:
+        allowed[y[:-1], y[1:]] = True
+    return allowed
+
+
+def transition_decode(scores, allowed):
+    """Causal argmax over (C, T) scores that excludes phases unreachable from the previous one."""
+    pred = np.empty(scores.shape[1], dtype=np.int64)
+    for t in range(scores.shape[1]):
+        s = scores[:, t] if t == 0 else np.where(allowed[pred[t - 1]], scores[:, t], -np.inf)
+        pred[t] = s.argmax()
+    return pred
+
+
+def tec_weights(pred, labels, alpha, m, sigma):
+    """1 + α·exp(−(t−s)²/2σ²) on the first m frames of each wrong run starting at s, else 1."""
+    wrong = (pred != labels).cpu().numpy()
+    weights = np.ones(len(wrong), dtype=np.float32)
+    start = None
+    for t, miss in enumerate(wrong):
+        start = (t if start is None else start) if miss else None
+        if miss and t - start < m:
+            weights[t] = 1 + alpha * np.exp(-(t - start) ** 2 / (2 * sigma ** 2))
+    return torch.from_numpy(weights).to(labels.device)
+
+
+def tec_loss(logits, labels, class_weights, alpha, m, sigma):
+    """Class-weighted CE on (T, C) logits with TEC frame weights; α 0 is the plain weighted CE."""
+    per_frame = F.cross_entropy(logits, labels, weight=class_weights, reduction="none")
+    weights = tec_weights(logits.detach().argmax(1), labels, alpha, m, sigma)
+    return (weights * per_frame).sum() / class_weights[labels].sum()
+
+
+EGTP_P_FLOOR = 1e-12  # lower bound of p before the log
+EGTP_SIGMA_FLOOR = 1e-3  # lower bound of σ, so a constant δ still gives a finite Z
+
+
+def egtp_steps(prob, k, starts=()):
+    """Yield (state, E, n, σ, Z) per frame of EGTP (StableSPR eqs. 3–6) over (C, T) probabilities.
+
+    δ(c) = log p(c) − log p(state); E(c) = max(0, E(c) + δ(c)). n(c) and σ(c) are the count and
+    sample standard deviation of the δ(c) added since E(c) was last 0; Z(c) = E/(√n·max(σ, floor)),
+    and Z is 0 while n < 2. The state moves to argmax Z once it exceeds k, and E, n and σ restart
+    at 0 after a switch and at the first frame and each index in starts (state from argmax there).
+    The frame of a switch yields the restarted E, n and σ with the Z that caused it.
+    """
+    classes = prob.shape[0]
+    restart = set(int(s) for s in starts)
+    logp = np.log(np.maximum(prob.astype(np.float64), EGTP_P_FLOOR))
+    current = None
+    for t in range(prob.shape[1]):
+        if current is None or t in restart:
+            current = int(prob[:, t].argmax())
+            evidence, n, mean, m2 = (np.zeros(classes) for _ in range(4))
+            yield current, evidence.copy(), n.copy(), np.zeros(classes), np.zeros(classes)
+            continue
+        delta = logp[:, t] - logp[current, t]
+        evidence = np.maximum(0.0, evidence + delta)
+        run = evidence > 0
+        run[current] = False
+        evidence[~run] = 0.0
+        # Welford update of the δ in the current run; a run that fell to 0 starts again.
+        n = np.where(run, n + 1, 0.0)
+        step = np.where(run, delta - mean, 0.0)
+        mean = np.where(run, mean + step / np.maximum(n, 1), 0.0)
+        m2 = np.where(run, m2 + step * (delta - mean), 0.0)
+        sigma = np.sqrt(m2 / np.maximum(n - 1, 1))
+        scale = np.sqrt(np.maximum(n, 1)) * np.maximum(sigma, EGTP_SIGMA_FLOOR)
+        z = np.where(n >= 2, evidence / scale, 0.0)
+        if z.max() > k:
+            current = int(z.argmax())
+            evidence, n, mean, m2, sigma = (np.zeros(classes) for _ in range(5))
+        yield current, evidence.copy(), n.copy(), sigma, z
+
+
+def egtp(prob, k, starts=()):
+    """EGTP causal state over (C, T) probabilities, which are returned unchanged (see egtp_steps)."""
+    state = np.fromiter((step[0] for step in egtp_steps(prob, k, starts)), dtype=np.int64,
+                        count=prob.shape[1])
+    return prob, state
 
 
 @torch.no_grad()
-def evaluate(model, clips, device, names):
+def evaluate(model, clips, device, names, cfg=None, decoders=None):
+    """Main metrics from argmax, or decoders[""]; other decoders are reported under their key."""
     model.eval()
-    evaluator = PhaseEvaluator(num_classes=len(names), class_names=names)
-    for clip_id, x, y in clips:
-        pred = model(torch.from_numpy(x).T[None].to(device))[-1][0].argmax(0).cpu().numpy()
-        evaluator.update(pred, y, video_id=clip_id)
-    return evaluator.compute()
+    decoders = decoders or {}
+    evaluators = {key: PhaseEvaluator(num_classes=len(names), class_names=names)
+                  for key in {"", *decoders}}
+    for clip_id, x, y, *info in clips:
+        logits = run_video(model, cfg, x, info[0] if info else None, device)[-1][0]
+        for key, evaluator in evaluators.items():
+            if key in decoders:
+                pred = decoders[key](logits, info[0] if info else None)
+            else:
+                pred = logits.argmax(0).cpu().numpy()
+            evaluator.update(pred, y, video_id=clip_id)
+    result = evaluators[""].compute()
+    for key in decoders.keys() - {""}:
+        result.update({f"{key}/{name}": value for name, value in evaluators[key].compute().items()})
+    return result
+
+
+NEW_CANDIDATES = ("ssm", "memory", "progress", "stabilize")
+
+
+def needs_info(cfg):
+    return (cfg.candidate in NEW_CANDIDATES or cfg.get("boundary_flag", False)
+            or cfg.get("gap_input", "none") != "none" or cfg.get("reset_at_clip", False))
+
+
+def decoders(cfg, data, classes):
+    """Inference rules of the new candidates; p_t itself is never changed."""
+    result = {}
+    if cfg.candidate == "progress" and cfg.get("transition_prior", False):
+        allowed = transition_matrix(data, classes)
+        result[""] = lambda logits, info: transition_decode(logits.cpu().numpy(), allowed)
+    if cfg.candidate == "stabilize" and cfg.get("egtp", False):
+        reset = cfg.get("egtp_reset_at_clip", False)
+        result["egtp"] = lambda logits, info: egtp(
+            F.softmax(logits, 0).cpu().numpy(), cfg.egtp_k,
+            np.flatnonzero(info["boundary"]) if reset else ())[1]
+    return result
 
 
 def train(cfg):
-    splits, data = load_fold(cfg)
+    splits, data = load_fold(cfg, info=needs_info(cfg))
     names = list(json.loads((ROOT / cfg.manifest_dir / "phase_vocab.json").read_text()))
-    counts = np.bincount(np.concatenate([y for _, _, y in data["train"]]), minlength=len(names))
+    counts = np.bincount(np.concatenate([y for _, _, y, *_ in data["train"]]), minlength=len(names))
     # Inverse frequency weights use the current training fold only.
     weights = np.divide(1.0, counts, out=np.zeros(len(counts)), where=counts > 0)
     weights /= weights[weights > 0].mean()
@@ -289,6 +597,12 @@ def train(cfg):
     cosine = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=cfg.epochs-cfg.warmup_epochs)
     scheduler = torch.optim.lr_scheduler.SequentialLR(optimizer, [warm, cosine], [cfg.warmup_epochs])
     ce = nn.CrossEntropyLoss(weight=torch.tensor(weights, dtype=torch.float32, device=cfg.device))
+    rules = decoders(cfg, data, len(names))
+    if "" in rules:
+        write_json(manager.exp_dir / "transition_matrix.json",
+                   transition_matrix(data, len(names)).astype(int).tolist())
+    kind = cfg.get("base_candidate", "A") if cfg.candidate == "stabilize" else cfg.candidate
+    progress_on = cfg.candidate == "progress"
     best_score, stale = -1.0, 0
     started = time.monotonic()
     best = None
@@ -296,11 +610,21 @@ def train(cfg):
         model.train()
         random.shuffle(data["train"])
         total = 0.0
-        for _, x, y in data["train"]:
-            outs = model(torch.from_numpy(x).T[None].to(cfg.device))
+        for _, x, y, *info in data["train"]:
+            outs = run_video(model, cfg, x, info[0] if info else None, cfg.device,
+                             **({"with_progress": True} if progress_on else {}))
             labels = torch.from_numpy(y).to(cfg.device)
-            loss = sum(ce(o[0].T, labels) for o in outs)
-            if cfg.candidate == "C":
+            progress = outs.pop() if progress_on else None
+            if cfg.get("tec_alpha", 0):
+                loss = sum(tec_loss(o[0].T, labels, ce.weight, cfg.tec_alpha, cfg.get("tec_m", 8),
+                                    cfg.get("tec_sigma", 1.5)) for o in outs)
+            else:
+                loss = sum(ce(o[0].T, labels) for o in outs)
+            if progress is not None and cfg.get("progress_weight", 0):
+                target = torch.from_numpy(progress_target(y)).to(cfg.device)
+                loss = loss + cfg.progress_weight * F.mse_loss(progress[0].gather(0, labels[None])[0],
+                                                               target)
+            if kind == "C":
                 for o in outs:
                     logp = F.log_softmax(o, dim=1)
                     loss = loss + cfg.smoothing_weight * F.mse_loss(
@@ -309,10 +633,12 @@ def train(cfg):
             loss.backward()
             optimizer.step()
             total += loss.item()
-        val = evaluate(model, data["val"], cfg.device, names)
+        val = evaluate(model, data["val"], cfg.device, names, cfg, rules)
         score = val["phase_jaccard"]
         tracking.log({"train/loss": total / len(data["train"]),
-                      "val/jaccard": score, "val/accuracy": val["phase_accuracy"]}, step=epoch)
+                      "val/jaccard": score, "val/accuracy": val["phase_accuracy"],
+                      **({"val/egtp_jaccard": val["egtp/phase_jaccard"]} if "egtp" in rules else {})},
+                     step=epoch)
         print(f"epoch={epoch} val_jaccard={score:.6f} accuracy={val['phase_accuracy']:.6f}", flush=True)
         if score > best_score:
             best_score, stale = score, 0

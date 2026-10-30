@@ -1623,3 +1623,36 @@ forward した region token が既存の `t1a_regiontoken/relation_detr_seed42` 
 GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0かつ各GPUの空きが22000MiB以上であること。少量のメモリ使用表示だけで待機させない。GPU0・計算中・空き不足を拒否する対照を含め関連20試験通過。
 
 2026-10-29 01:18 JST、両塔の全40設定・260処理が完了。発散0・上限36到達0。探索top3は工程6/8/10（Jaccard 0.730171/0.721449/0.720918）、検出12/5/15（mAP 0.737380/0.735090/0.734821）。選定は行わない。全試験935 pass/6 fail/1 skipで既知失敗集合の増加0。索引に全260行、回帰全項目pass。詳細と収穫器のメタデータ制約は契約RESULT.mdとfinal_verification.json。
+
+### 候補 5 の時間ヘッド四案（2026-10-23、andrew）
+
+契約 `T-2026-10-23-ptower-cand5-heads-impl`（impl。実験は回していない）。記録は `tasks/T-2026-10-23-ptower-cand5-heads-impl/`、
+設計はカード `docs/proposals/2026-10-23-ptower-temporal-head.md`。
+
+- **`scripts/stage1_ptower.py` の時間ヘッドの道に四案を足した。** 既存の候補（`linear`／`A`／`B`／`C`）の出力は、足す前の
+  commit で取った要約値とビット一致する（`tests/test_stage1_ptower_heads.py`）。足した鍵は `configs/stage1_ptower.yaml` に書かず、
+  無いときは既存の挙動になる（鍵の一覧と既定値は同じファイルの注記）
+- 候補名: `ssm`（P-A。mamba-ssm の単方向の選択的 SSM、CUDA だけ）、`memory`（P-B。A の TCN に GRU と適応的な記憶）、
+  `progress`（P-C。A の TCN に工程内の進捗の頭、MSE。`transition_prior` で折りの train 動画の遷移行列による復号）、
+  `stabilize`（P-D。`base_candidate` の A・B・C と同じ構造に TEC の重み付き CE。`egtp` で EGTP 型の状態 ŷ_t も記録し、
+  主の値は p_t の argmax のまま）
+- 列の情報: `load_fold(cfg, info=True)` は動画の組に、フレームごとのクリップの順位・Δ（クリップ内のフレーム番号の差。
+  クリップの先頭は `GAP_UNKNOWN` = −1 で 0 や 1 と混ぜない）・境の目印を四つ目の要素として添える。既定の呼び方の三つ組は変えていない。
+  17,233 の manifest（`data/processed/phase_manifest_all_phase`）で 23 クリップ・Δ が 1 の割合 96.8%・最大 254・クリップ間の不明 8 を確かめる
+- 境の扱い: `boundary_flag`（どの候補でも、入力に境の目印を 1 次元連結）、`reset_at_clip`（クリップごとに模型を走らせ、状態と記憶を
+  初期化）、`gap_input`（`flag` は不明の目印、`delta` は log Δ と不明の目印）、`egtp_reset_at_clip`
+- 試験: `tests/test_stage1_ptower_heads.py`（基準値、因果性と双方向の模型の陽性対照、境、進捗の教師、遷移行列、TEC、EGTP、
+  四案と A の 2 epoch の煙試験。SSM の試験は GPU が無ければ skip）
+
+### EGTP を原典の形に直した（2026-10-23、bengio）
+
+契約 `T-2026-10-23-egtp-original-form`（impl。実験は回していない）。記録は `tasks/T-2026-10-23-egtp-original-form/`。
+
+- **`egtp` を StableSPR（arXiv 2605.16387 §2.2）の式 3〜6 に合わせた。** δ(c) = log p(c) − log p(ŷ)、
+  E(c) = max(0, E(c) + δ(c))、Z(c) = E/(√n·σ)、Z の最大が `egtp_k` を超えたら遷移し、遷移の後に E・n・σ を 0 に戻す。
+  確率は変えず、呼び口（`egtp(prob, k, starts)` → `(prob, state)`）と `decoders` との接続は前のまま
+- 原典が書いていない箇所の決め方: n(c) と σ(c) は E(c) が最後に 0 だった後に積んだ δ(c) の個数と標本標準偏差（Welford）。
+  n < 2 の間は Z = 0。σ の下限 `EGTP_SIGMA_FLOOR` = 1e-3（一定の δ でも Z が有限）、log の前の p の下限 `EGTP_P_FLOOR` = 1e-12。
+  各時刻の (状態, E, n, σ, Z) は `egtp_steps` で読める
+- ほかの候補の出力と設定の既定値は変えていない（変更前と後の要約値が bengio でビット一致。ssm は CUDA が要るため出力は測らず、
+  関数単位のソースの一致で示した）。前の契約の基準値（`BASELINE`）は bengio では変更前から一致しない（ホストによる差）

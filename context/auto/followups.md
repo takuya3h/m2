@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（664 件）
+## 申し送り（680 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1065,13 +1065,47 @@
 - NODE の組（GPU0+GPU1）は利用者の指示で測っていない。GPU0 と GPU1 には容器の外の使用が出る（env-facts に追記）
 - repo の外 ~/m2-scratch/T-2026-10-21-ptower-multigpu-syncbn/（約 10 GB）を残した。片付けは利用者の判断
 
+### T-2026-10-22-evidence-map-a-place
+
+- 起票者は予測外のA-04のarXiv 2503.18755・DOI 10.1049/htl2.70049とA-109のarXiv 2202.02326を含む書誌差5件の扱いを、返値を見て判断する。本契約では地図・報告の本文を変更していない。
+- SPEC罠5の終了コード0という断定は陽性対照で再現しなかった。現在の検査器では違反1件で終了コード1だった。
+
+### T-2026-10-22-evidence-map-a-revise
+
+- 地図 A v2.1 は 126 ID がすべて実在し、書誌一致 123・照合不能 3（地図に書誌の行が無い arXiv 2505.12890・2106.11028・2112.07219）。工程塔の追加候補のカードの生成会話へ渡すかどうかは、起票者が判断する。
+- 照合器は読み取りのタイムアウトを接続の失敗として扱い、引き直しは 1 回だけ（CONNECT_RETRY_WAITS）。arXiv が 429 とタイムアウトを交互に返すと、束全体（最大 50 ID）が到達不能になる。照合器は変えていない。直すかどうかは利用者が判断する。
+- 完了判定とゲートに「到達不能 0」を入れるかどうかを、次の契約の起票で検討する。
+
 ### T-2026-10-22-proposal-card-tower-reselect-search
 
 - 置いたカードは批判会話への依頼文 docs/proposals/briefs/2026-10-21-tower-reselect-search-critique-brief.md を経路で指していない（冒頭の「依頼文: なし」は生成会話の依頼文の欄）。規約 proposal_gate は生成会話の依頼文について「カードから参照する」と書く。批判会話の依頼文にも同じ参照を求めるかは起票者が決める
 - カードが置き換えるとする前のカード 2026-10-17-tower-reselect-andrew は docs/proposals/ に無い
 - 本 PR の統合の後に、dlsta の探索の exp を intent.proposal_card: docs/proposals/2026-10-21-tower-reselect-search.md で配布できる（P14 の関数で PASS を確認済み）
 
-## 断定できなかった事項（413 件）
+### T-2026-10-23-egtp-original-form
+
+- 前の契約の BASELINE（tests/test_stage1_ptower_heads.py）は bengio では一致しない（linear 0235f4de、A と C e4f2eed5、B 379cc43e）。基準値をホストごとに持つか、取ったホストで比べるかは起票者が決める。
+- ssm の出力が変わらないことを、GPU のあるホストで確かめるかどうかは起票者が決める。本契約では関数単位のソースの一致だけを示した。
+- 検証器 L2-6 は conventions_rev が commit でないときに黙って通る。直すかどうかは利用者が決める。
+- P-D の exp の prereg には、n と σ の決め方と下限（σ 1e-3、p 1e-12）、n < 2 で Z = 0 を書き、k の掃引の範囲をこの正規化に合わせて選ぶ。
+
+### T-2026-10-23-gaze-data-survey
+
+- 視線の書き出しを直した版（x と y が別の値）を利用者から受け取り、同じ survey.py で測り直す。案 1 の実装の契約はそれを待つ。
+- 座標の原点（左上か左下か）と元のサンプリングのレートを、視線の書き出しの元（記録の装置と書き出しの処理）から確かめる。
+- prereg には、17〜21 の末尾 8 枚（20_6_0284、20_7_0092〜0098）の扱いと、視線はあるが工程注釈の無い 14 クリップ（22,254 フレーム）を事前学習に使うかを書く。
+
+### T-2026-10-23-ptower-cand5-compute-probe
+
+- 時間ヘッドの案 P-A のカード
+- 事前学習の exp の起票では、ViT-L の 800×1424 全体の fine-tune が batch 4 で 36.66 GiB・5.125 s/歩、1 epoch の見込み 225.9 min（読み込みを除く）であることを、案 2 の解像度の軸の費用に入れる。
+
+### T-2026-10-23-ptower-cand5-heads-impl
+
+- 時間ヘッドの exp の起票では、カードに残る食い違い（P-C の進捗損失 L1 と MSE、P-D の α {3, 11} と {7, 19}、P-B の GRU 単独の腕の有無）をどちらに取るか決め、egtp_k の値を決める（実装は既定を置かず必須にした）。
+- 原典（OnlineTAS の記憶 §3.3、StableSPR の TEC §2.1 と EGTP 式 (6)、ProTAS の進捗の頭）との照合は、外部への接続の承認を得てから行う。食い違えば実装の形を直す契約が要る。
+
+## 断定できなかった事項（429 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1851,22 +1885,56 @@
 - NODE の組（GPU0+GPU1）の一歩の時間と記憶量
 - val を含む一 epoch の時間、全 epoch を通した溢れの有無（68 歩だけ測った）
 
+### T-2026-10-22-evidence-map-a-place
+
+- APIの返した書誌情報と原典の正誤は別であり、特にA-109の著者要素の分割の原因は本契約では判断していない。
+- agentmemoryはツール未提供のため読み書き未実施。
+
+### T-2026-10-22-evidence-map-a-revise
+
+- API の返値と原典の表記の正誤は判断していない。
+- 1 回目の arXiv のタイムアウトの原因は分からない。
+
 ### T-2026-10-22-proposal-card-tower-reselect-search
 
 - 既存の 6 件の試験の失敗（test_engines 1、test_fetch_task 1、test_research_logger 4）の原因は調べていない
 
-## 起票者の誤りの型（385 件）
+### T-2026-10-23-egtp-original-form
+
+- ssm の出力のビット一致（GPU が要る）。
+- 原典の n と σ の定義そのもの（原典に書かれていない）。
+
+### T-2026-10-23-gaze-data-survey
+
+- 座標の原点（左上か左下か）。
+- 元のサンプリングのレート（ファイルは 1 フレーム 1 点に集約済み）。
+- x と y のどちらが正しい値か、あるいはどちらでもないか。
+- raw/ego の 15,440 と 15,437 の差の 3 が .gitkeep の数か。
+
+### T-2026-10-23-ptower-cand5-compute-probe
+
+- 目標で収まった構成の、収まる batch の上限（探索の規則により測っていない）。
+- データの読み込みを含む一歩の時間（較正以外の行）。MoCo v2 と映像 MAE は、batch 256 の読み込みが律速になりうる。
+- mamba-ssm の非決定が selective scan と causal-conv1d のどちらの核の逆伝播によるか。
+
+### T-2026-10-23-ptower-cand5-heads-impl
+
+- 記憶・TEC・EGTP・進捗の頭が原典の形と一致するか（照合していない）。
+- 実データ（17,233 フレームの保存特徴）での 1 本の所要時間。
+- SSM の逆伝播の決定性（前の契約で、決定論的な設定でも勾配が 5.7e-14 で非決定と測られている。本契約では測っていない）。
+
+## 起票者の誤りの型（399 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 104 |
-| `asserted_without_measuring` | 161 |
-| `self_contradiction` | 99 |
+| `check_does_not_check` | 108 |
+| `asserted_without_measuring` | 167 |
+| `self_contradiction` | 103 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 1 |
 | `rule_read_narrowly` | 1 |
 
-合計 385 件（対を持つ契約 135 件から）
+合計 399 件（対を持つ契約 141 件から）
 

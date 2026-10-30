@@ -1,0 +1,57 @@
+result_version: 3
+task_id: T-2026-10-22-evidence-map-a-place
+status: pass
+host: Bengio
+branch: feat/evidence-map-a-place
+pr: 254
+merged: false
+gates:
+- id: G1
+  verdict: pass
+  note: 起点39dd92d6、保護対象7/7一致、指定名の受け渡し9/9のSHA-256とバイト数一致、照合先4系統がHTTP 200。
+- id: G2
+  verdict: pass
+  note: 配置後9/9一致。旧地図Aは指定の挿入のみで追加2行・削除0行。経路集合の許可範囲外0件。
+- id: G3
+  verdict: pass
+  note: A v2/B/C/Nの4地図で各違反0。抽出126 ID（arXiv96/DOI30）と指定一覧の集合差は両方向0、照合結果も同集合で分類合計126。
+tests:
+  before_failed: 0
+  after_failed: 0
+  after_passed: 0
+deviations:
+- type: judgement
+  note: 利用者の明示許可に基づき、受け渡しの不足4件を照合済みアーカイブから指定名でコピーして直下に配置した。元ファイル・別名ファイルは保持し、以後の契約内の通常操作は追加承認なしで進めた。
+- type: spec_defect
+  note: SPEC罠5の終了コード0という断定と異なり、陽性対照の違反1件で検査器は終了コード1だった。件数で判定する指示は守り、地図も道具も変更していない。
+- type: environment
+  note: agentmemoryの検索・保存ツールは提供されず読み書き未実施。repoのtasks/lessons.mdを確認し、判断を本契約のauditとtasks/inbox.dへ記録した。
+- type: judgement
+  note: 解決された規約の原文を省略しない要件を優先し、RESULT.mdは100行の目安を超えた。コード変更が無いためSPECに従いmake testは実行していない。
+issuer_defects:
+- type: asserted_without_measuring
+  note: SPECの罠5は、起点39dd92d6の検査器で報告のSHA-256を一か所壊したコピーが違反1件でも終了コード0になると断定した。しかし同一起点の実物をrepo外のコピーで測ると、違反1件・終了コード1であり断定と食い違った。指示どおり違反件数を読んだため判定は成立したが、現在の終了コードの挙動について契約の断定を根拠にはできなかった。
+positive_controls:
+- judgement: 完了判定aのSHA-256照合
+  breaking_input: 地図の先頭1バイトをメモリ上のコピーだけで変更する。
+  observed: 期待SHA-256と不一致になった。実ファイルの9/9一致と元地図の不変は維持した。
+- judgement: 完了判定cの報告SHA-256検査
+  breaking_input: repo外の地図コピーでA-chatgptの参照SHA-256を64個の0へ1か所だけ置換する。
+  observed: report_sha256違反1件、終了コード1。実物の地図は変更していない。
+- judgement: 完了判定dのID集合比較（欠落）
+  breaking_input: 実際の抽出集合から1 IDだけ除く。
+  observed: 指定集合から実集合を引いた差が1、逆方向の差が0となった。
+- judgement: 完了判定dのID集合比較（余分）
+  breaking_input: 実際の抽出集合に対照用のarXiv 9999.99999を1件だけ足す。
+  observed: 指定集合から実集合を引いた差が0、逆方向の差が1となった。
+- judgement: 書誌照合の不在と到達不能の区別
+  breaking_input: 照合先が無いと答えるIDと、接続できない照合先をそれぞれ入力する。
+  observed: UNKNOWN。本契約の本番126 IDは全て実在、全92問い合わせがHTTP 200であり、この区別の追加対照は実施していない。
+followups:
+- 起票者は予測外のA-04のarXiv 2503.18755・DOI 10.1049/htl2.70049とA-109のarXiv 2202.02326を含む書誌差5件の扱いを、返値を見て判断する。本契約では地図・報告の本文を変更していない。
+- SPEC罠5の終了コード0という断定は陽性対照で再現しなかった。現在の検査器では違反1件で終了コード1だった。
+unknowns:
+- APIの返した書誌情報と原典の正誤は別であり、特にA-109の著者要素の分割の原因は本契約では判断していない。
+- agentmemoryはツール未提供のため読み書き未実施。
+commits:
+- 92c368fd18c1b781a4eaa3dd34591ec967686a28

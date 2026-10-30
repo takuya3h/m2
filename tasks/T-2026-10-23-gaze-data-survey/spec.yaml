@@ -1,0 +1,64 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-23-gaze-data-survey"
+  kind: analysis
+  title: "候補 5 の事前学習の案 1（視線誘導の映像 MAE）の前提になる視線データの実態を andrew で測る。置き場、形式、manifest のフレームとの対応、被覆、座標の範囲。GPU を使わない"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-23T06:50:00Z"
+  created_from:
+    runindex_commit: "63ae65da8c7d32df591f5e2ee4358286b72c726b"
+    counts: {index: 1961, experiments: 750, verdicts: 1506}
+  depends_on: []
+  amendments: []
+intent:
+  question: "EgoSurgery の視線データは andrew のどこに、どの形式で在るか。動画 01〜15 と 17〜21 の、17,233 と 10,461 の manifest のフレームのうち、視線の値が対応づくフレームは何枚か。座標の単位と範囲、フレームの解像度、欠けの扱いは何か。GGMAE 型の視線マスク（フレームごとの視線点に Gaussian を置いたヒートマップ）を作るのに足りるか"
+  decision_at_stake: "案 1（視線 MAE）の実装の契約を起票できるか。視線の無いフレームの扱い（random マスクに落とすか、クリップから除くか）を prereg に書けるか。カード #14 の「データ範囲 ＋17〜21」の腕が視線つきで定義できるか"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery の生データ（data/raw/ 配下。視線の置き場は本契約で測る）と、工程注釈つきフレームの manifest（17,233 フレーム。data/processed/phase_manifest_all_phase）、追加動画 17〜21 の工程注釈（10,461 行）"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/build_phase_manifest.py", "docs/phase_annotation_stats_videos17-21.md", "data/README.md", "docs/proposals/2026-10-23-ptower-pretraining.md"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#folds]
+  conventions_rev: "ceb7ef0f88a3f30279930be96ab9a5722acc2f09"
+  prohibitions: [no_split_redefine, no_raw_write, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/analysis/gaze_data_survey"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。分岐、作業ツリー、空き容量、manifest の枚数、試験の前の値", gpu: false, est: "20m"}
+    - {id: B, name: "視線の置き場を探す。三つの異質な方法で、先頭がドットのものを含めて", gpu: false, est: "40m"}
+    - {id: C, name: "形式を読む。欄、単位、座標系、レート、フレームとの対応の鍵", gpu: false, est: "60m"}
+    - {id: D, name: "被覆と範囲。manifest のフレームとの対応、動画ごとの被覆、座標が画面内に収まる割合、欠けの印", gpu: false, est: "60m"}
+    - {id: E, name: "GGMAE 型のマスクの入力に足りるかの確認（ヒートマップを一枚作って形を見る。学習はしない）", gpu: false, est: "30m"}
+    - {id: F, name: "検証と報告、PR", gpu: false, est: "40m"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、作業ツリーが清浄", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [REPORT.md]
+  destination: "experiments/analysis/gaze_data_survey/"
+  acceptance:
+    - "a: 開始状態（分岐、起点、作業ツリー、空き容量、manifest の枚数 17,233 と 17〜21 の行数 10,461、試験の前の値）が記録されている"
+    - "b: 視線の置き場の探索が三つの異質な方法で記録され、見つかった場合はその経路と大きさとファイル数、見つからない場合は探した範囲と方法が記録されている（対象が無い／条件に合わない／対象集合の誤りを区別する）"
+    - "c: 見つかった場合、形式（欄、単位、座標系、レート、フレームとの対応の鍵）が実物の数行の写しとともに記録されている"
+    - "d: 動画 01〜15 と 17〜21 の各動画で、manifest のフレームのうち視線が対応づく枚数と割合、座標が画面内に収まる割合、欠けや無効の印の扱いが表になっている。合計は manifest の枚数と照合されている"
+    - "e: 一枚のフレームで、視線点に Gaussian を置いたヒートマップを作り、その形（大きさ、最大値の位置が視線点と一致する）が記録されている。σ は仮の値で、値は記録だけ"
+    - "f: 追跡される変更が置き場と本契約のディレクトリと受け皿だけで、data/・runindex/ に書いていない。forbidden-check が通る。試験の失敗の集合が増えていない"
+    - "g: PR が存在し、base が phase0、分岐が feat/ で始まり、Draft でない"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "視線データが andrew のどこにも見つからない場合（探した範囲を書いて報告し、置き場は利用者に聞く。契約は見つからないという報告で終えてよい）"
+    - "形式が読めない（独自の二進形式など）場合（読まずに記録し、利用者の判断を待つ）"
+    - "公式配布の視線データの有無を確かめるために外部へ接続する場合は、読むだけに留め、取得しない（取得の可否は利用者が決める。本契約では決めない）"
