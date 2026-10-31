@@ -206,3 +206,47 @@ missing は `grasp_head.weight`・`grasp_head.bias` だけ）。
     start.txt 2026-10-31 16:44:5x UTC（01:45 JST）、commit 23c34e5a
     training.log 142 行: load pretrained from /home/ubuntu/slocal2/s2fix-bengio-body/data/external/weights/relation_detr_resnet50_800_1333_coco_1x.pth
     Epoch: [0] [100/4809] eta 0:34:43、GPU 0 は 207 W・12.9 GB
+
+## 追加の測定（利用者の指示、2026-11-01 02:1x JST。`meta.amendments` の 1 件目）
+
+一本目の正解の腕を別の seed と長い学習で回す。非公式の参考の測定で、本契約の 3 腕の比べ方には混ぜない。GPU 1 だけを使う。
+保存先 `$S/extra/`、集計 `experiments/analysis/grasp_pilot_d/extra/`、run の名前は `grasppilot3x_`。
+
+### X-1 入力の照合（`$S/extra/start/`）
+
+- 一本目の信号を andrew の `/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-31-grasp-pilot-probe/signals/` から `$S/extra/signals/` へ写した（andrew は読むだけ）。
+  5 ファイルの sha256 は andrew と一致（`signals_sha256_{andrew,bengio}.txt`）。`g_train.npz` 741cecb5…6996・`g_val.npz` 235e2c2b…1943・
+  `boxstate_train.npz` fb7af1a3…f709・`boxstate_val.npz` 70b3f5f4…b20e は summary.json の記録と一致、`g_*` は一本目の audit.md C-1 の値とも一致。summary.json は bf1cd898…e0dd
+- 工程塔の材料と把持の注釈（14 件、`materials_sha256_{bengio,andrew}.txt`）: PT_CACHE c402e214…172da、時間ヘッド 0d76d446…c6ad6d、
+  マニフェスト 3 本、`data/annotations/egosurgery_hts` の 8 本は bengio と andrew で一致。**fine-tune の重み（PT_FT_CKPT 79c2c478…acf6b）は bengio に無い。**
+  どの道具も使わない（評価は特徴の写しと時間ヘッドから行う）ので写していない
+- 最初の照合の命令は zsh で変数が単語に分かれず崩れた（andrew 側で JSON の経路が命令として解釈され「permission denied」。何も実行・変更されていない）。bash の台本で取り直した
+
+### X-2 塔単独と恒等性（bengio、`experiments/analysis/grasp_pilot_d/extra/`）
+
+    $ CUDA_VISIBLE_DEVICES=1 .venv/bin/python scripts/stage2pilot/repro_ptower.py --out .../extra/ptower_val_bengio.json
+    phase_jaccard 0.7762185528、phase_accuracy 0.8712871287（記録との差 0.0）。09: J 0.99317、10: J 0.67537
+    $ bash .../extra/identity/run_caseB_identity.sh     （pd_grasp_eval.py、EGO_BODY=重ねの BODY、基準は Task B-1 の塔単独の予測）
+    案 B 正解の地図: mAP 0.7273450248、score・枠の差 0.0、ラベルの食い違い 0。陽性対照（界面の重み N(0, 0.05²)）: mAP 0.7278873、score の差の最大 0.3827
+    $ .venv/bin/python scripts/stage2pilot/dp_train.py identity --type GA --arm gt ...
+    案 A 正解: Jaccard 0.7762185528・accuracy 0.8712871287、ロジットの差の最大 0.0。陽性対照 Jaccard 0.7630357、差の最大 0.3322。学習する集合は iface.weight だけ
+
+### X-3 道具の直し（既定の挙動は変えない）
+
+- `scripts/grasppilot/run_pd_grasp.sh`: `GP_SEED`・`GP_EPOCHS`・`GP_TASK`・`GP_STORE`・`GP_BODY`・`GP_PREFIX` で上書きできるようにした（渡さなければ従来どおり）
+- `scripts/grasppilot/pd_grasp_finalize.py`: 記録の印の TASK を `GP_TASK` で上書きできるようにした
+
+### X-4 run
+
+| run | 起動（JST） | GPU | 備考 |
+|---|---|---|---|
+| `grasppilot3x_pd_B_gt_ep4_seed123` | 02:20 | 1 | 起動 4 分後の記憶 7,576 MiB・使用率 49% を見て、456 を同じ GPU に載せた。学習前の mAP 0.7273 |
+| `grasppilot3x_pd_B_gt_ep4_seed456` | 02:24 | 1 | 2 本で GPU 1 は 16.0 GB、各 1.7 it/s |
+| `grasppilot3x_dp_001_GA_gt_ep4_seed123` | 03:01 | 1 | 学習 42 秒。学習前 J 0.7762185528（塔単独と同値）、4 epoch 目 J 0.7820573・acc 0.8805281 |
+| `grasppilot3x_dp_002_GA_gt_ep4_seed456` | 03:02 | 1 | 学習 41 秒。学習前 J 0.7762185528、4 epoch 目 J 0.7796430・acc 0.8792079 |
+
+- 案 A の一度目（02:5x）は `dp_train.py` が W&B の追跡が始まらないと実験を止める作りで、2 本とも学習の前に止まった（`W&B tracking could not start; no experiment executed`）。
+  契約 §7.11 は外部への送信を禁じるため利用者に諮り、**「W&B を手元だけに記録」**に決まった: `WANDB_MODE=offline`、`WANDB_API_KEY` に仮の値、`WANDB_DIR=$S/extra/wandb`。
+  外部へは送っていない（offline-run のフォルダ 2 つが手元にできた）
+- 止まった 2 本の空の実験フォルダ（`grasppilot3x_dp_00{1,2}_…`）は、利用者の決定で `$S/extra/failed/` へ移した（消していない）。回し直しは同じ名前で作られた
+- 案 A の界面の重みは `dp_train.py` の規則で `$S/dp_ckpt/`（本契約の保存先の直下）に置かれた
