@@ -1,0 +1,9 @@
+/home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/mmdet/apis/inference.py:70: UserWarning: checkpoint is None, use COCO classes by default.
+  warnings.warn('checkpoint is None, use COCO classes by default.')
+/home/ubuntu/slocal2/m2/scripts/grasppilot/g_bench.py:123: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at ../torch/csrc/utils/tensor_numpy.cpp:206.)
+  tens.append(torch.from_numpy(arr).permute(2, 0, 1).contiguous())
+/home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/torch/functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at ../aten/src/ATen/native/TensorShape.cpp:3526.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+{"cand": "mmdet", "step_seconds_mean": 0.7771731632295996, "step_seconds_median": 0.7769881249405444, "peak_alloc_bytes_by_gpu": {"0": 10024972288}, "infer_images_per_sec_batch1": 4.210929736549618}
+/home/ubuntu/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/tempfile.py:934: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp3ydid66r'>
+  _warnings.warn(warn_message, ResourceWarning)

@@ -1,0 +1,63 @@
+{
+  "task_id": "T-2026-10-31-grasp-pilot-probe",
+  "unofficial": true,
+  "cfg": "/home/ubuntu/slocal2/m2/configs/stage2pilot/pd_graspmap_d5.py",
+  "cfg_sha256": "fe9d65ce7e4f558e65704d3768f12bebbfe5b45b55be2185d18e666742ac7fa4",
+  "det_ckpt_sha256": "30d199b15201cf3c03954852d8acc6fb58fe5349baef2fd200e877237ff682c4",
+  "mode": "gt",
+  "iface_state": null,
+  "perturb": true,
+  "perturb_scale": 0.05,
+  "videos": [
+    "09",
+    "10"
+  ],
+  "load_report": {
+    "missing_from_ckpt": [
+      "phase_iface.weight"
+    ],
+    "unexpected_in_ckpt": []
+  },
+  "non_interface_digest": "4fed85166852cd54f07071a5b9ce57804828e95c23148db11bf7bf0afe08ce60",
+  "iface_weight": {
+    "iface_max_abs": 0.2034391164779663,
+    "iface_l2": 5.094513416290283
+  },
+  "eval_detection_mAP": 0.7278872601546986,
+  "metrics": {
+    "AP": 0.7278872601546986,
+    "AP50": 0.8513144789943763,
+    "per_class_ap": {
+      "Bipolar Forceps": 0.7914642002298262,
+      "Electric Cautery": 0.969254887533205,
+      "Forceps": 0.35813511772439754,
+      "Gauze": 0.2686530283704841,
+      "Hook": 0.6367768409828721,
+      "Mouth Gag": 0.7994745133802333,
+      "Needle Holders": 0.845538240297331,
+      "Raspatory": 0.7979310523411177,
+      "Retractor": NaN,
+      "Scalpel": 0.9054938278040886,
+      "Scissors": 0.7112298594694951,
+      "Skewer": 0.9449175305604424,
+      "Suction Cannula": 0.8338373201682242,
+      "Syringe": 0.5403409230210803,
+      "Tweezers": 0.7873743002829835
+    },
+    "n_images": 1515,
+    "target_AP": 0.7960295067913111,
+    "target_missing": [],
+    "control_AP": 0.6723347905504813,
+    "control_missing": [],
+    "per_video_AP": {
+      "09": 0.7062339917313235,
+      "10": 0.6418788187647575
+    }
+  },
+  "diff_vs_ref": {
+    "comparable": true,
+    "max_abs_score_diff": 0.3826628029346466,
+    "max_abs_bbox_diff_px": 1938.3391647338867,
+    "label_mismatch": 329465
+  }
+}

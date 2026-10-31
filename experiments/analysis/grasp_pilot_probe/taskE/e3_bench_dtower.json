@@ -1,0 +1,16 @@
+{
+  "tower": "dtower full",
+  "batch": 2,
+  "steps_per_epoch_1gpu": 4809,
+  "precision": "fp16 autocast",
+  "trainable": 48471200,
+  "peak_alloc_bytes": 12538171904,
+  "note": "記録の処方は 2 GPU・GPU ごとに batch 2。ここは 1 GPU・batch 2。データの読み込みの待ちを含まない",
+  "warmup": 10,
+  "steps": 60,
+  "step_seconds_mean": 0.6421308090599874,
+  "step_seconds_median": 0.647710969671607,
+  "gpu": "NVIDIA RTX A6000",
+  "gpu_shared_with_other_runs": true,
+  "task_id": "T-2026-10-31-grasp-pilot-probe"
+}

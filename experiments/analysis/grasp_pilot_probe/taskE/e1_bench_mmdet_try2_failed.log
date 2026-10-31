@@ -1,0 +1,42 @@
+/home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/mmdet/apis/inference.py:70: UserWarning: checkpoint is None, use COCO classes by default.
+  warnings.warn('checkpoint is None, use COCO classes by default.')
+/home/ubuntu/slocal2/m2/scripts/grasppilot/g_bench.py:121: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at ../torch/csrc/utils/tensor_numpy.cpp:206.)
+  tens.append(torch.from_numpy(arr).permute(2, 0, 1).contiguous())
+Traceback (most recent call last):
+  File "/home/ubuntu/slocal2/m2/scripts/grasppilot/g_bench.py", line 279, in <module>
+    main()
+  File "/home/ubuntu/slocal2/m2/scripts/grasppilot/g_bench.py", line 275, in main
+    {"check": cmd_check, "bench": cmd_bench}[a.cmd](a)
+  File "/home/ubuntu/slocal2/m2/scripts/grasppilot/g_bench.py", line 219, in cmd_bench
+    x, ds = mmdet_inputs(model, batch, tg)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/slocal2/m2/scripts/grasppilot/g_bench.py", line 137, in mmdet_inputs
+    data = model.data_preprocessor({"inputs": tens, "data_samples": samples}, training=targets is not None)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/mmdet/models/data_preprocessors/data_preprocessor.py", line 147, in forward
+    inputs, data_samples = batch_aug(inputs, data_samples)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/mmdet/models/data_preprocessors/data_preprocessor.py", line 361, in forward
+    data_sample.gt_instances.masks = masks.pad(
+                                     ^^^^^^^^^^
+  File "/home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/mmdet/structures/mask/structures.py", line 345, in pad
+    return BitmapMasks(padded_masks, *out_shape)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ubuntu/slocal2/m2/.venv/lib/python3.11/site-packages/mmdet/structures/mask/structures.py", line 268, in __init__
+    self.masks = np.stack(masks).reshape(-1, height, width)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: cannot reshape array of size 2752512 into shape (1024,1024)
+/home/ubuntu/.local/share/uv/python/cpython-3.11.16-linux-x86_64-gnu/lib/python3.11/tempfile.py:934: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmp34gyzrbg'>
+  _warnings.warn(warn_message, ResourceWarning)

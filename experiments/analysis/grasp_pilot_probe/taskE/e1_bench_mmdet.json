@@ -1,0 +1,45 @@
+{
+  "cand": "mmdet",
+  "load": {
+    "loaded": 608,
+    "skipped_shape": 2,
+    "missing": 2
+  },
+  "label_set": "把持関係 5 クラス（E-2 の候補 1）",
+  "batch": 2,
+  "input": "短辺 800・長辺 1333 まで（画像の縮小は PIL の既定）",
+  "precision": "fp32",
+  "optimizer": "AdamW lr 1e-4 wd 0.05",
+  "warmup_steps": 10,
+  "steps": 60,
+  "step_seconds_mean": 0.7771731632295996,
+  "step_seconds_median": 0.7769881249405444,
+  "step_seconds_p90": 0.8065500981174409,
+  "input_shapes_seen": [
+    [
+      2,
+      3,
+      768,
+      1344
+    ]
+  ],
+  "peak_alloc_bytes_by_gpu": {
+    "0": 10024972288
+  },
+  "infer_images_per_sec_batch1": 4.210929736549618,
+  "n_infer": 50,
+  "train_videos": [
+    "01",
+    "02",
+    "03",
+    "06",
+    "08",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15"
+  ],
+  "gpu": "NVIDIA RTX A6000",
+  "gpu_shared_with_other_runs": true
+}

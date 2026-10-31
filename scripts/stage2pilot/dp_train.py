@@ -24,6 +24,12 @@
 ［予測の半分 16 = D0 の 15 と旗｜正解の半分 16 = D-GT の 15 と旗］で、使わない半分は旗ごと 0、空の腕はすべて 0:
     LC logit_corr、TH tool_hist（カードどおり）、TH-NG tool_hist_nogate（ゲートなし版）
 ゲートを持つ型（TH）は tanh(α) を epoch ごとに logs/history.json に書く。既存の型の経路は変えない。
+
+契約 T-2026-10-31-grasp-pilot-probe で足した型（SPEC §3.1、案 A）。x(t) は 30 次元
+［予測の半分 15 = g の 14 と旗｜正解の半分 15 = g の 14 と旗］。旗は信号のファイルの flag（注釈のあるフレームで 1）:
+    GA concat（D1 と同じ界面、入力 30 次元）。腕は空と正解だけ（予測の半分は二本目の契約）
+    --grasp-signal-dir   g_{train,val}.npz の置き場（GA のときだけ要る。既定は無い）
+GA は epoch ごとの界面の重みの絶対値の最大と L2 ノルムを logs/history.json に書く。
 """
 from __future__ import annotations
 
@@ -60,7 +66,10 @@ TYPES = {
     "LC": ("logit_corr", "x32", "D0", "D-GT", None),
     "TH": ("tool_hist", "x32", "D0", "D-GT", None),
     "TH-NG": ("tool_hist_nogate", "x32", "D0", "D-GT", None),
+    "GA": ("concat", "g30", None, "GRASP-GT", None),
 }
+G30_HALF = 14 + 1                                          # g の 14 と旗。予測の半分が先、正解の半分が後
+GRASP_DIR = None                                           # --grasp-signal-dir（GA のときだけ）
 X32_HALF = NT + 1                                          # 15 と旗。予測の半分が先、正解の半分が後
 ARMS = ("empty", "pred_noCF", "gt", "pred_CF", "gtpred_CF", "shuffle")
 # 止め方の規則（DP・W1）。最初の腕を回す前に固定する
@@ -73,7 +82,15 @@ def inst_name(base, variant):
 
 def sources(type_name, arm, part, variant):
     """腕の信号の出所の並び [(ファイル, 正解か), ...]。空の腕は []。"""
-    _, _, pred, gt, _ = TYPES[type_name]
+    _, kind, pred, gt, _ = TYPES[type_name]
+    if kind == "g30":
+        if arm == "empty":
+            return []
+        if arm != "gt":
+            raise ValueError(f"{type_name} の腕は空と正解だけ（予測の腕は二本目の契約）")
+        if GRASP_DIR is None:
+            raise SystemExit("GA は --grasp-signal-dir を渡す")
+        return [(Path(GRASP_DIR) / f"g_{part}.npz", True)]
     pred = inst_name(pred, variant)
     final_pred = (FINAL / f"{pred}_{part}.npz", False)
     pred_src = (CF / f"{pred}_train.npz", False) if (part == "train" and arm.endswith("_CF")) else final_pred
@@ -106,6 +123,11 @@ class Signals:
         self.iface, self.kind, pred, _, self.tok_base = TYPES[type_name]
         self.srcs = sources(type_name, arm, part, variant)
         self.loaded = [(load_npz(p), is_gt) for p, is_gt in self.srcs]
+        if self.kind == "g30":
+            self.flags = [_load_flag(p) for p, _ in self.srcs]
+            self.dim = 2 * G30_HALF
+            self.pred_dim = None
+            return
         pred_path = FINAL / f"{inst_name(pred, variant)}_{part}.npz"
         with np.load(pred_path) as d:
             self.pred_dim = int(d["x"].shape[-1]) if self.kind == "vec" else None
@@ -119,6 +141,14 @@ class Signals:
     def files(self):
         return [{"path": str(p), "sha256": C.sha256(p), "gt": g} for p, g in self.srcs]
 
+    def layout_g30(self):
+        """x(t) の 30 次元の各半分の出所（GA だけ）。旗は信号のファイルの flag。"""
+        halves = {"pred": {"cols": [0, G30_HALF], "source": None, "flag": "0"},
+                  "gt": {"cols": [G30_HALF, 2 * G30_HALF], "source": None, "flag": "0"}}
+        for p, is_gt in self.srcs:
+            halves["gt" if is_gt else "pred"].update(source=str(p), flag="file flag (annotated frame = 1)")
+        return halves
+
     def layout(self):
         """x(t) の 32 次元の各半分の出所と旗（x32 の型だけ。SPEC Task C-3 の記録）。"""
         halves = {"pred": {"cols": [0, X32_HALF], "source": None, "flag": 0},
@@ -128,6 +158,14 @@ class Signals:
         return halves
 
     def for_frames(self, frames):
+        if self.kind == "g30":
+            out = np.zeros((len(frames), self.dim), np.float32)
+            for ((ix, x, _), is_gt), flag in zip(self.loaded, self.flags):
+                off = G30_HALF if is_gt else 0
+                rows = [ix[f] for f in frames]
+                out[:, off:off + 14] = x[rows]
+                out[:, off + 14] = flag[rows]
+            return torch.from_numpy(out), None
         if self.kind == "x32":
             out = np.zeros((len(frames), self.dim), np.float32)
             for (ix, x, _), is_gt in self.loaded:
@@ -154,6 +192,11 @@ class Signals:
         if not toks:
             return torch.zeros(len(frames), 0, self.dim), torch.zeros(len(frames), 0, dtype=torch.bool)
         return torch.from_numpy(np.concatenate(toks, 1)), torch.from_numpy(np.concatenate(masks, 1))
+
+
+def _load_flag(path):
+    with np.load(path) as d:
+        return d["flag"].astype(np.float32)
 
 
 def build_data(videos, sig, feats, device):
@@ -220,6 +263,8 @@ def cmd_identity(a):
     names, split, feats, head = setup_common()
     out = {"task_id": a.task_id, "type": a.type, "inst_variant": a.inst_variant}
     arms = [a.arm] if a.arm else [arm for arm in ("pred_noCF", "gt") if not (arm == "gt" and TYPES[a.type][3] is None)]
+    if TYPES[a.type][1] == "g30" and not a.arm:
+        arms = ["empty", "gt"]
     for arm in arms:
         sig = Signals(a.type, arm, "val", a.inst_variant)
         torch.manual_seed(0)
@@ -228,6 +273,10 @@ def cmd_identity(a):
         base_res, _ = evaluate(model, data, names)
         diff = max_logit_diff(model, head, data)
         extra = {}
+        if sig.kind == "g30":
+            extra = {"x_layout": sig.layout_g30(), "trainable": trainable_report(model),
+                     "perturbed_params": [n for n, p in model.named_parameters()
+                                          if any(p is q for q in model.iface_last_params())]}
         if sig.kind == "x32":
             extra = {"x_layout": sig.layout(), "trainable": trainable_report(model), "gate_init": model.gate_values(),
                      "perturbed_params": [n for n, p in model.named_parameters()
@@ -297,6 +346,9 @@ def cmd_train(a):
            "class_counts": counts.tolist(), "class_weights": weights.tolist(),
            "videos": {"train": tr_videos, "val": va_videos}, "smoke": bool(a.max_epochs or a.smoke),
            "iface_params": int(sum(p.numel() for p in params))}
+    if sig_tr.kind == "g30":
+        cfg.update(x_layout={"train": sig_tr.layout_g30(), "val": sig_va.layout_g30()}, trainable=trainable_report(model),
+                   grasp_signal_dir=str(GRASP_DIR))
     if sig_tr.kind == "x32":
         cfg.update(x_layout={"train": sig_tr.layout(), "val": sig_va.layout()}, trainable=trainable_report(model))
     desc = f"{a.type}_{a.arm}" + (f"_ep{fixed}" if fixed else "") + ("_smoke" if a.max_epochs or a.smoke else "")
@@ -339,6 +391,9 @@ def cmd_train(a):
         gate = model.gate_values()
         history.append({"epoch": epoch, "train_loss": total / len(order), "val_jaccard": score,
                         "val_accuracy": val["phase_accuracy"], **({"gate": gate} if gate else {})})
+        if sig_tr.kind == "g30":
+            w = model.iface.weight.detach()
+            history[-1].update(iface_max_abs=float(w.abs().max()), iface_l2=float(w.norm()))
         tracking.log({"train/loss": total / len(order), "val/jaccard": score, "val/accuracy": val["phase_accuracy"],
                       **({f"gate/{k}": v for k, v in gate.items()} if gate else {})}, step=epoch)
         # --fixed-epochs: 最良の回を選ばず、最後の epoch の状態を結果にする（界面の重みと確率もその状態）
@@ -392,13 +447,14 @@ def negative_control(a, model, ckpt, head, split, feats, names):
     state = torch.load(ckpt, map_location="cuda")
     model.iface.load_state_dict(state["iface"])
     zero = build_data(split["val"], Signals(a.type, "empty", "val", a.inst_variant), feats, "cuda")
-    real = build_data(split["val"], Signals(a.type, "pred_noCF", "val", a.inst_variant), feats, "cuda")
+    other = "gt" if TYPES[a.type][1] == "g30" else "pred_noCF"           # GA は予測の腕が無いので正解を入れる
+    real = build_data(split["val"], Signals(a.type, other, "val", a.inst_variant), feats, "cuda")
     rz, _ = evaluate(model, zero, names)
     rr, _ = evaluate(model, real, names)
     d = 0.0
     for (_, x, s0, m0, _), (_, _, s1, m1, _) in zip(zero, real):
         d = max(d, float((model(x, s0, m0)[-1] - model(x, s1, m1)[-1]).abs().max()))
-    return {"zero_signal_jaccard": rz["phase_jaccard"], "pred_signal_jaccard": rr["phase_jaccard"],
+    return {"zero_signal_jaccard": rz["phase_jaccard"], "pred_signal_jaccard": rr["phase_jaccard"], "other_arm": other,
             "max_abs_logit_diff": d, "unchanged": d == 0.0}
 
 
@@ -412,6 +468,7 @@ def main():
     i.add_argument("--out", required=True)
     i.add_argument("--arm", choices=ARMS, default=None, help="一つの腕だけを調べる（既定は予測-noCF と正解）")
     i.add_argument("--task-id", default=C.TASK_ID, help="記録に書く契約の識別子")
+    i.add_argument("--grasp-signal-dir", default=None, help="GA の g_{train,val}.npz の置き場")
     t = sub.add_parser("train")
     t.add_argument("--type", required=True, choices=list(TYPES))
     t.add_argument("--arm", required=True, choices=ARMS)
@@ -423,7 +480,10 @@ def main():
     t.add_argument("--task-id", default=C.TASK_ID, help="run の契約の識別子（config・notes・界面の重みの置き場）")
     t.add_argument("--exp-prefix", default="stage2pilot_dp", help="実験フォルダの名前の接頭辞")
     t.add_argument("--smoke", action="store_true", help="--fixed-epochs の短い試走の印")
+    t.add_argument("--grasp-signal-dir", default=None, help="GA の g_{train,val}.npz の置き場")
     a = ap.parse_args()
+    global GRASP_DIR
+    GRASP_DIR = a.grasp_signal_dir
     if a.cmd == "train" and a.fixed_epochs and a.max_epochs:
         raise SystemExit("--fixed-epochs と --max-epochs は組み合わせない")
     if a.cmd == "train" and a.smoke and not a.fixed_epochs:

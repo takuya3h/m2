@@ -1,0 +1,96 @@
+result_version: 3
+task_id: "T-2026-10-31-grasp-pilot-probe"
+status: pass
+host: "andrew"
+branch: "feat/grasp-pilot-probe"
+pr: 272
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "proc_enum で本契約以外の compute プロセス 0 件（nvidia-smi の compute 0 件、ps で全利用者の python・torchrun 0 件）。起点 origin/phase0 8d3a72b7、空き 1,678,369,779,712 B、試験の失敗 6 件の名前、二つの仮想環境のパッケージの一覧の sha256 を記録した"}
+  - {id: G2, verdict: pass, note: "hand_tool_seg/ の train 9,356・val 1,514 が被覆の文書の v2 の値と一致し、三種の注釈の動画は train 10・val {09,10} だけ。PT_CACHE・PT_HEAD_CKPT・DET_CKPT の sha256 が記録と一致し、塔単独の val は工程 Jaccard 0.7762185528・検出 mAP 0.7273450248 で差 0"}
+  - {id: G3, verdict: pass, note: "案 A・案 B の空と正解の 4 腕で学習前の出力が塔単独と差 0、重み N(0,0.05^2) で正解の腕の出力が変わる（Jaccard 0.7630、score の差 0.383）。地図の対応 0.977 対 反転の対照 0.393。学習する集合は iface.weight と phase_iface.weight だけ"}
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 975
+
+deviations:
+  - {type: environment, note: "E-1・E-3 の一歩の時間を案 B の学習と同じ GPU で並べて測った（利用者の指示「計算リソースすべて使ってなるべく早く終わらせて」）。gpu_shared_with_other_runs true と記録し、専有の値より遅い側に偏りうる"}
+  - {type: environment, note: "公式の Mask2Former（facebookresearch/Mask2Former と detectron2）の取得と組み立てを本契約の保存先の下の新しい仮想環境で試みる命令を、実行基盤が外部のコードとして拒んだ。回避せず、この候補は未測定とした"}
+  - {type: judgement, note: "mmdet の計測は gt_sem_seg = None の代入と LSJ の 1024x1024 への詰め物で 2 回失敗した。三回目は前処理の batch_augments を外し、hf と同じ短辺 800 の入力で測った。失敗の記録は taskE に残した"}
+  - {type: judgement, note: "g の手の存在を把持関係の 1・2 クラスから読んだ。手 4 クラスの自分の手とは両方があるフレームで IoU が全件 1.0 で、どちらから読んでも値は同じ"}
+  - {type: judgement, note: "実行済みの台本と、写した設定 pd_graspmap_d5.py（元の pd_film_d9.py の F401 を引き継ぐ）に ruff の指摘 I001・E702・E741・F401 が残る。run に記録した code_sha256 を保つため直さず、実行していない台本だけ直した"}
+  - {type: judgement, note: "案 B は --zero-ctx を使わず、地図の型の側で工程の ctx を空にした。R は詰め物まで含めた格子から C5 の格子への adaptive_avg_pool2d とした（評価時の経路と同じ形）"}
+  - {type: environment, note: "andrew に /usr/bin/time と bc が無く、案 A の一度目の起動が rc 127 で何も走らずに終わった（実験フォルダは作られていない）。起動し直し、所要は metrics.json の elapsed_seconds から取った"}
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "§6.4 は注釈の無い工程のフレームを「全 15 動画で工程注釈のあるフレームの約 13%」と書くが、これは工程注釈の CSV を分母にした値である。この契約の経路の工程のマニフェストは術具の枠と同じフレーム集合で、測ると注釈の無いフレームは train 301（3.1%）・val 1（0.07%）だった。書かれた値のまま限界を書くと、正解の腕の信号の欠けを約 4 倍に過大に伝える"
+  - type: check_does_not_check
+    note: "§8-c と §9 は塔単独の再現の許容差を 0.005 とするが、overall mAP では別 seed（123）の検出塔の差が +0.0015 で許容差の中に入り、別の塔を見分けられない。書かれたとおりの照合では違う checkpoint でも再現が通る。標的群 AP の差（+0.028）なら見分けられ、差 0 の再現も記録した"
+  - type: asserted_without_measuring
+    note: "§2 は被覆の文書を引いて hand_tool_seg/ を旧版（被覆 65.82%）、hand_tool_seg_v2/ を現行と書くが、在処に hand_tool_seg_v2/ は無く、hand_tool_seg/ の train 9,356・val 1,514 が v2 の値と一致した（egosurgery_hts/README.md §8 が 2026-07-31 に統合と書く）。名前で選ぶと存在しないディレクトリを探す。被覆の数で同定せよという指示に従い誤らなかった"
+
+positive_controls:
+  - judgement: "a 開始状態の compute プロセスの列挙"
+    breaking_input: "自分のシェルの実行ファイル /usr/bin/zsh と、存在しない /nonexistent/bin/python9 で列挙する"
+    observed: "zsh は自分のシェル PID 401469 を含む 5 件、存在しない経路は 0 件"
+  - judgement: "b 注釈の同定（被覆の数の照合）"
+    breaking_input: "把持関係の train から 1 フレームを除いた写しで照合する"
+    observed: "一致する文書の値が無くなった（match_one_frame_dropped.hand_tool_seg = []）"
+  - judgement: "b・l 使ったファイルの動画の検査"
+    breaking_input: "train に 04_1_0001 を足した写し"
+    observed: "外れが ['04'] の 1 件"
+  - judgement: "c 塔単独の再現の照合"
+    breaking_input: "別の時間ヘッド（P20 seed 42）と別 seed（123）の検出塔で同じ評価をする"
+    observed: "工程は Jaccard 0.6379 に変わった。検出は mAP 0.72886（差 +0.0015）で許容差 0.005 の中に入り、overall mAP では見分けられなかった。標的群 AP は 0.82343（差 +0.028）"
+  - judgement: "d 正解の信号の関数"
+    breaking_input: "人工の矩形のマスクと空のマスクを当てる"
+    observed: "面積・重心・重なりが手で決めた値になり、空のマスクで全 0 と旗 0（tests/test_grasppilot_signals.py 5 passed）"
+  - judgement: "e 読み出しの検査"
+    breaking_input: "標的そのものを特徴に足す。特徴を乱数に替える。標的を並べ替える"
+    observed: "標的を足すと二値の 5 個とも ROC-AUC 1.000。乱数の特徴は 0.47〜0.55、並べ替えは 0.40〜0.68（L_grasp の並べ替えは 0.54〜0.68 で 0.5 からやや離れた）。decoder の検査は乱数 0.2500、並べ替え 0.248〜0.251、陽性対照（クラス）0.8543"
+  - judgement: "f 誤りの数え上げ"
+    breaking_input: "ann 318 を覆う唯一の検出を消した写しと、正解の枠を確信度 1 の検出として足した写し"
+    observed: "消すとその枠だけが correct から missed へ移った（変わった枠は 1 件）。足すと見逃しが 59 から 0"
+  - judgement: "g 案 A の恒等性"
+    breaking_input: "界面の重みを N(0, 0.05^2) にする"
+    observed: "正解の信号で Jaccard 0.7630357、ロジットの差の最大 0.3322。零の信号では差 0.0"
+  - judgement: "h 案 B の学習する集合"
+    breaking_input: "界面の外の backbone.conv1.weight を混ぜた集合"
+    observed: "不一致を出した"
+  - judgement: "h 案 B の地図の幾何の対応"
+    breaking_input: "左右反転させた地図"
+    observed: "対応が 0.977 から 0.393 に下がった（評価時の経路で 0.986 から 0.337）"
+  - judgement: "h 案 B の恒等性"
+    breaking_input: "界面の重みを N(0, 0.05^2) にして正解の地図を入れる"
+    observed: "mAP 0.7278873、score の差の最大 0.3827。零の地図では差 0.0"
+  - judgement: "i 重みのファイルの照合"
+    breaking_input: "期待の sha256 を 1 文字変えた写しで照合する"
+    observed: "拒まれた（weight_tampered_copy_rejected: true）"
+  - judgement: "j 表の Δ の計算し直し"
+    breaking_input: "各 run の予測から指標を計算し直して記録と比べる"
+    observed: "案 A の二腕で recompute_matches_record true。案 B は grasppilot_metrics.json から Δ を計算し直した"
+  - judgement: "m 禁止領域の検査"
+    breaking_input: "本契約の新しいファイル（REPORT.md や run の記録）"
+    observed: "changed 131 件として拾われ、allow_write の許可の一覧に名前で出た。違反 0"
+
+followups:
+  - "残りの四腕（予測の腕と G の学習）は二本目の契約で、同じ andrew・同じ界面のコードで回す。案 B の run の code_sha256.txt と code_commit.txt、案 A の dp_train.py の sha256 を照合に使う"
+  - "G の実装の候補は mmdet 3.3.0（R50、既存の .venv のまま動く）と HF transformers 4.44.2（Swin-T）を測った。公式の Mask2Former は外部のコードの取得が拒まれて未測定。採るかどうかと epoch 数は二本目の契約で決める"
+  - "三種の注釈を一つの塔で賄う形の候補は 3 つ（把持関係 5 クラスだけ、三種を合わせた 38 クラス、欠けた種類を損失から外す）を並べた。選んでいない"
+  - "E-1・E-3 の一歩の時間は案 B と GPU を共有して測った値で、専有の値より遅い側に偏りうる。費用の見積もりに使うときは測り直すか、この偏りを書く"
+  - "塔単独の再現の許容差は overall mAP の 0.005 では別 seed の塔を見分けられない。次の契約では標的群 AP か予測の一致で照合する"
+
+unknowns:
+  - "公式の Mask2Former（facebookresearch/Mask2Former）の版・組み立ての結果・一歩の時間"
+  - "検出塔（experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42）の学習ホスト。記録に無い"
+  - "HF の重み facebook/mask2former-swin-tiny-coco-instance のカードの使用許諾"
+  - "折り A の val の術具の注釈の sha256（db605c06…）は前回の記録に見当たらず照合できない"
+  - "案 B の run の W&B の記録。train_t1b.py の既存の経路で回し、run の置き場に W&B の記録のファイルは無い"
+
+commits:
+  - "1f4af29e"
+  - "d5ecca75"

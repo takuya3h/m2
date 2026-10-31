@@ -1,0 +1,71 @@
+{
+  "AP": 0.7366076819070422,
+  "AP50": 0.8604142234018834,
+  "per_class_ap": {
+    "Bipolar Forceps": 0.8134686215840182,
+    "Electric Cautery": 0.9665794417184977,
+    "Forceps": 0.3632598821475975,
+    "Gauze": 0.2875756191871772,
+    "Hook": 0.6428612888130003,
+    "Mouth Gag": 0.7994427568604212,
+    "Needle Holders": 0.8550794410749711,
+    "Raspatory": 0.8154119216064102,
+    "Retractor": NaN,
+    "Scalpel": 0.9160748738726172,
+    "Scissors": 0.7263617040608433,
+    "Skewer": 0.9476147505806678,
+    "Suction Cannula": 0.8322740934135912,
+    "Syringe": 0.5591305603338876,
+    "Tweezers": 0.787372591444891
+  },
+  "n_images": 1515,
+  "target_AP": 0.81034014559552,
+  "target_missing": [],
+  "control_AP": 0.6766662652265201,
+  "control_missing": [],
+  "per_video_AP": {
+    "09": 0.7153927017229218,
+    "10": 0.651403148558622
+  },
+  "task_id": "T-2026-10-31-grasp-pilot-probe",
+  "unofficial": true,
+  "type": "B-map",
+  "arm": "gt",
+  "result_selection": "final_epoch",
+  "result_epoch": 3,
+  "eval_detection_mAP": 0.7366076819070422,
+  "diff_vs_eval_detection_mAP": 0.0,
+  "init": 0.7273450248398429,
+  "init_target_AP": 0.7950748008550897,
+  "init_control_AP": 0.6726631817581498,
+  "per_epoch_mAP": {
+    "-1": 0.7273450248398429,
+    "0": 0.7341930701832988,
+    "1": 0.7348699908223568,
+    "2": 0.7360242005606374,
+    "3": 0.7366076819070422
+  },
+  "iface_weight_by_epoch": {
+    "-1": {
+      "iface_max_abs": 0.0,
+      "iface_l2": 0.0
+    },
+    "0": {
+      "iface_max_abs": 0.21492469310760498,
+      "iface_l2": 4.860815048217773
+    },
+    "1": {
+      "iface_max_abs": 0.30778682231903076,
+      "iface_l2": 7.086477756500244
+    },
+    "2": {
+      "iface_max_abs": 0.38740459084510803,
+      "iface_l2": 8.768916130065918
+    },
+    "3": {
+      "iface_max_abs": 0.40276992321014404,
+      "iface_l2": 9.723272323608398
+    }
+  },
+  "frozen_unchanged": true
+}

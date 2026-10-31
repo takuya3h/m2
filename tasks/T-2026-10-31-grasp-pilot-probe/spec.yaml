@@ -1,0 +1,81 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-10-31-grasp-pilot-probe"
+  kind: analysis
+  title: "把持の信号の四案（A〜D）の非公式の予備測定の一本目。把持塔を使わずにできる測定（正解の把持から作った信号での案 A と案 B の空と正解の腕、読み出しの検査、検出塔の誤りの数え上げ）と、把持塔の構造の実装と学び直しの費用の調査。条件は前回の予備測定と同じ"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-10-31T12:15:00Z"
+  created_from:
+    runindex_commit: "68befc3b62ffc071077cca446df5d3c83b8c38b9"
+    counts: {index: 2363, experiments: 1130, verdicts: 1736}
+  depends_on: [T-2026-10-18-stage2-pilot-folda, T-2026-10-19-stage2-pilot-fix-epoch4-shuffle, T-2026-10-19-stage2-pilot-four-new-types]
+  amendments: []
+intent:
+  question: "把持の信号の四案のうち、把持塔（G）を学習せずに測れる部分はどうなるか。(1) 正解の把持から作った要約を工程塔の界面に入れた腕（案 A）と、正解の把持から作った確率地図を検出塔の C5 に足す新しい型の腕（案 B）は、空の腕と比べて val の値がどう動くか。(2) 正解の把持の要約は工程塔の凍結特徴から、把持の状態は検出塔の decoder の特徴から、線形にどこまで読めるか。(3) 検出塔の val の誤りのうち、握られている術具が占める割合はどれだけか。(4) G の構造（Mask2Former）を andrew で動かせるか、G と学び直しの腕の費用はどれだけか。非公式の測定であり、関門の判定にも設計の判断（案の採否を含む）にも使わない"
+  decision_at_stake: "二本目の契約（G の学習と、案 A と案 B の残りの四腕）と三本目の契約（案 C と案 D の学び直しの腕）を起票するための実測。案の採否は結果で決めない"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery の動画 01 から 15 のうち、折り A の train と val の動画（conventions#folds）。工程の値は工程注釈のある全フレーム、検出の値は術具注釈のあるフレーム（conventions#frame_sets）。手・術具・把持の分割の注釈（data/annotations/egosurgery_hts/ の三種）は折り A の train と val の動画の分だけを使う。折り A の test の動画のフレームは信号の作成・学習・評価・調査のどれにも通さない"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/stage2pilot/dp_model.py", "scripts/stage2pilot/dp_train.py", "scripts/stage2pilot/pd_model.py", "scripts/train_t1b.py", "scripts/stage2pilot/common.py", "scripts/stage2pilot/run_pd_fix.sh", "scripts/stage2pilot/run_dp_fix.sh", "scripts/stage2pilot/det_metrics.py", "src/egosurgery/datasets/grasp_targets.py", "scripts/stage1_ptower_r3.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#env_p0, conventions#folds, conventions#split, conventions#eval_recipe, conventions#det_groups, conventions#frame_sets]
+  conventions_rev: "2d946b07a57abebc4a8f66150d6dbaf2ccd22186"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/analysis/grasp_pilot_probe", "experiments/phase1/grasppilot", "runindex/"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。分岐、andrew の装置の他プロセス、記憶領域、試験の失敗の名前、既存の仮想環境の要約値", gpu: false, est: "1h"}
+    - {id: B, name: "注釈と材料の確認。把持の三種の注釈を被覆の数で同定し、前回の予備測定の材料の要約値を確かめ、塔単独の val を andrew で再現する", gpu: true, est: "2h"}
+    - {id: C, name: "正解の把持から作る信号と、学習なしの測定。要約・地図・枠の状態を作り、案 C の標的の材料を測り、読み出しの検査と検出塔の誤りの数え上げを行う", gpu: true, est: "4h"}
+    - {id: D, name: "案 A と案 B の空と正解の腕。界面の実装、学習前の一致と陽性対照、地図の幾何の対応の確認、固定の長さの学習", gpu: true, est: "10h"}
+    - {id: E, name: "調査。G の構造の実装の候補と計測、三種の注釈を一つの塔で賄う形、学び直しの費用、補助の頭の付け所", gpu: true, est: "6h"}
+    - {id: F, name: "集計、検証、報告", gpu: false, est: "2h"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、andrew に本契約以外の compute プロセスが無く、記憶領域と試験の失敗の名前と既存の仮想環境の要約値を記録した", on_fail: stop}
+    - {id: G2, after: B, check: "把持の三種の注釈が andrew に在り、使う集合を被覆の数で同定でき、使うファイルの動画が折り A の train と val に含まれ、前回の材料の要約値が記録と一致し、塔単独の val が許容差の中で再現した", on_fail: stop}
+    - {id: G3, after: D, check: "案 A と案 B の全腕で学習前の出力が塔単独と一致し、陽性対照で出力が変わり、案 B の地図が学習時の画像の幾何の変換に従うことを対照つきで示し、学習する集合が界面のパラメータだけで、test の動画のフレームを通していない", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, gpu_free]
+  resources: {server: andrew, gpu: 2, est_hours: 25, runs: 4}
+outputs:
+  must_have: [REPORT.md, RESULT.md, result.yaml, audit.md]
+  destination: "experiments/analysis/grasp_pilot_probe/"
+  acceptance:
+    - "a: 開始状態として、分岐、起点、開始前から在る未追跡、andrew の compute プロセスの一覧、記憶領域の空き、試験の失敗の名前、既存の二つの仮想環境のパッケージの一覧の要約値が記録されている"
+    - "b: 把持の三種の注釈の在処、使った集合とその同定の根拠（被覆の数と被覆の文書の値の照合）、クラスの名前、欠落の印の意味、使ったファイルの動画の集合が記録され、使ったファイルに折り A の train と val 以外の動画のフレームが無い"
+    - "c: 前回の予備測定の材料（工程塔の特徴と時間ヘッド、検出塔の checkpoint）の要約値が記録と一致し、塔単独の val が andrew で再現され、差が SPEC の許容差の中にあるか、超えて停止した記録がある"
+    - "d: 正解の把持から作る信号（案 A の要約、案 B の地図、案 D の枠ごとの状態）が SPEC の定義のとおりに作られ、split ごとの被覆と要約値と、作る関数の要約値が記録されている。案 C の標的を作る材料（術具の分割のクラスと手ごとの度数）が記録されている"
+    - "e: 読み出しの検査（工程塔の特徴から把持の要約、検出塔の decoder の特徴から枠の状態）の値が、陽性対照・陰性対照・比べる基準とともに記録されている"
+    - "f: 検出塔の val の誤りの数え上げが、把持の状態ごと・確信度の閾値ごと・群ごとの表で記録されている"
+    - "g: 案 A の界面が SPEC のとおりに実装され、全腕で学習前の出力が塔単独と一致し、陽性対照で変わり、空と正解の腕の固定の長さの学習の値が記録されている"
+    - "h: 案 B の新しい型が SPEC のとおりに実装され、学習する集合が界面のパラメータの全部でそれ以外を含まず、地図が画像の幾何の変換に従うことが対照つきで示され、全腕で学習前の出力が塔単独と一致し、陽性対照で変わり、空と正解の腕の固定の長さの学習の値が記録されている"
+    - "i: 調査の結果（G の構造の実装の候補ごとの計測、三種の注釈を一つの塔で賄う形の候補、案 C と案 D の学び直しの処方の長さと費用、補助の頭の付け所）が記録され、測れなかったものは理由つきで UNKNOWN と書かれている"
+    - "j: 案 A と案 B の腕ごとに、4 epoch 目の値、空の腕との差、塔単独との差、動画ごとの差が表にあり、SPEC の読み方の規則で記述されている"
+    - "k: 案 A の二腕と学習なしの測定の中間記録が、案 B の学習が終わる前に分岐へ push されている"
+    - "l: test の動画のフレームを信号の作成・学習・評価・調査に一度も通していないことが、各段で通した動画の集合で示されている"
+    - "m: 前回までの予備測定の run の置き場・集計・保存先、data の raw と external と注釈、凍結源、既存の checkpoint、third_party、既存の二つの仮想環境を変えていない。試験の失敗が増えていない"
+    - "n: PR が Draft でなく存在し、base が phase0、分岐が feat/grasp-pilot-probe"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "andrew に本契約以外の compute プロセスがある場合（止めずに利用者に諮る）"
+    - "把持の三種の注釈が andrew に無い、被覆の数が被覆の文書の値と食い違う、または使うファイルに折り A の train と val 以外の動画のフレームがある場合"
+    - "前回の材料が無い、または要約値が記録と食い違う場合"
+    - "塔単独の val が記録と許容差を超えて食い違う場合"
+    - "案 A か案 B の型が受け取り手の実装と合わず、意味を変えないと実装できない、または既存スクリプトの既定の挙動や third_party を変えないと実装できない場合"
+    - "案 B の地図を学習時の画像の幾何の変換に従わせられない、または対応の確認が対照と区別できない場合"
+    - "学習前の出力が塔単独と一致しない場合"
+    - "G の構造の調査で、既存の仮想環境・third_party・data/raw・data/external を変えないと進めない場合（回避せず諮る）"
+    - "記憶領域が足りない場合"
+    - "実行基盤が書き込み、移動、削除を拒む場合"
