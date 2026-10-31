@@ -94,4 +94,4 @@
 ## 8. 送出
 
 - PR: #272（https://github.com/takuya3h/m2/pull/272、base phase0、Draft でない）
-- `make task-report`: 未実行（実行後に追記）
+- `make task-report`: 終了コード 0（verdict pass、issuer_defects 3 件、本文 10,348 B を送った。この行は送信の後に足した）
