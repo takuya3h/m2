@@ -116,7 +116,7 @@ def main():
         p = out / f"g38_{part}.json"
         p.write_text(json.dumps(coco))
         inst = collections.Counter(x["category_id"] for x in annotations)
-        frm = collections.Counter(c for c in {(x["image_id"], x["category_id"]) for x in annotations})
+        frm = collections.Counter(c for _, c in {(x["image_id"], x["category_id"]) for x in annotations})
         vids = collections.Counter(im["video"] for im in images)
         summary["parts"][part] = {
             "path": str(p), "sha256": C.sha256(p), "phase_frames": len(stems), "frames_all_three": len(keep),
