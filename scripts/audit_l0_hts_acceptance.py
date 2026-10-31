@@ -15,16 +15,22 @@
 受入基準（台帳 Primary Metric より）: 主判定量 = C1/C2/C3/C4 の 4 項目すべて合格。
   C1 ポリゴン点数分布       : HTS の seg が真マスク（RLE / 多頂点 polygon）か。master の 4 頂点矩形は不可。
   C2 Hand-Tool ラベルに値5   : 把持関係 GT に "Two Hands Tool"(=5) が出現するか。
-  C3 手インスタンス 57,173   : 欠落4動画(03_1/03_3/12_2/15_2)を復活し 26 セグメント総手数 = 57,173 か。
+  C3 手の被覆と件数         : raw 02_hand に手注釈が 1 件以上実在する区間（25 件、03_3 を含まない）を
+                              候補がすべて被覆し、手インスタンスの集合件数（同じフレーム・枠・クラスを一つに数える）
+                              = 57,172 か（利用者の決定 2026-11-01、T-2026-11-01-grasp-pilot-g §3.1）。
+                              両辺はともに file_name から導く区間の名前で比べる（旧版はディレクトリ名 26 件と比べていた）。
   C4 リーク指紋の不在        : train/val/test が frame・video を共有しない（データリーク無し）。
   C5 公式 split 整合         : images 数が公式 9657/1515/4265 に一致。
   C6 phase 共存フレーム数    : phase アノテーションと HTS が共存するフレーム数（報告値）。
   C7 クラス対応表            : カテゴリ id↔名 の対応表（報告）。
   C8 手 bbox 正本決定        : 手 bbox の正本ソース（報告・決定）。
 
-出力: experiments/audit/l0_hts_acceptance/acceptance_report.json（+ 標準出力に要約）
+入力が一つでも無ければ、0 件として通さず FileNotFoundError で止める。C1 は全件を見る。
+
+出力: experiments/audit/l0_hts_acceptance/acceptance_report.json（+ 標準出力に要約）。`--out` で別の場所へ書く
 使い方: .venv-relation-detr/bin/python scripts/audit_l0_hts_acceptance.py
-        （stdlib のみ。pycocotools 不要）
+        [--hand-dir DIR --hand-prefix P --hand-splits train,val,test,extra --toolhand-dir DIR --toolhand-prefix P --out JSON]
+        （stdlib のみ。pycocotools 不要。引数を渡さなければ入力と出力は従来の経路）
 """
 from __future__ import annotations
 
@@ -44,9 +50,16 @@ RAW_HAND_PV = RAW / "02_hand/json_per_video"           # 手 正本（57,173）
 RAW_HT_5CLS = RAW / "04_handtool/coco_splits_5cls"     # 値5=Two Hands Tool を持つ
 RAW_MASTER = RAW / "00_master_annotations/annotations_raw"
 
+HAND_PREFIX = "instances_"
+HAND_SPLITS = ("train", "val", "test")
+TOOLHAND_PREFIX = "instances_"
+TOOLHAND_SPLITS = ("train", "val", "test")
+
 OFFICIAL_SPLIT = {"train": 9657, "val": 1515, "test": 4265}
-HAND_TOTAL_TARGET = 57173
-MISSING_VIDEO_TARGET = {"03_1", "03_3", "12_2", "15_2"}  # 完全版で復活すべき
+HAND_TOTAL_TARGET = 57172          # 集合件数（同じフレーム・枠・クラスを一つに数える）。単純加算は 57,173
+HAND_SEGMENTS_TARGET = 25          # raw 02_hand に手注釈が実在する区間の数
+NO_HAND_SEGMENT = "03_3"           # 手・把持の注釈がどこにも無い区間（被覆の対象外）
+MISSING_VIDEO_TARGET = {"03_1", "03_3", "12_2", "15_2"}  # 旧版の欠落 4 区間（報告用）
 
 
 def _load(p: Path) -> dict:
@@ -60,20 +73,30 @@ def _vid_of(file_name: str) -> str:
     return "_".join(b.split("_")[:2])
 
 
-def _splits(dirpath: Path, prefix: str = "instances_"):
+def _splits(dirpath: Path, prefix: str = "instances_", splits=("train", "val", "test")):
+    """split ごとの注釈。**一つでも無ければ止める**（旧版は黙って飛ばし、入力の不在を 0 件として通した）。"""
     out = {}
-    for sp in ("train", "val", "test"):
+    for sp in splits:
         p = dirpath / f"{prefix}{sp}.json"
-        if p.exists():
-            out[sp] = _load(p)
+        if not p.exists():
+            raise FileNotFoundError(f"入力が無い: {p}")
+        out[sp] = _load(p)
     return out
+
+
+def _hand():
+    return _splits(HAND4, HAND_PREFIX, HAND_SPLITS)
+
+
+def _toolhand():
+    return _splits(TOOLHAND, TOOLHAND_PREFIX, TOOLHAND_SPLITS)
 
 
 # ---------------------------------------------------------------------------
 # C1 ポリゴン点数分布: HTS seg が真マスクか（master の 4 頂点矩形は不可）
 # ---------------------------------------------------------------------------
 def check_c1_polygon_points() -> dict:
-    def seg_profile(anns, n=3000):
+    def seg_profile(anns, n=None):  # 全件（旧版は先頭 3,000 件だけ見ていた）
         types = Counter()
         vtx = Counter()
         for a in anns[:n]:
@@ -87,7 +110,7 @@ def check_c1_polygon_points() -> dict:
         return dict(types), dict(sorted(vtx.items()))
 
     # 把持関係 GT（HTS 本体）の seg 形式
-    ht = _splits(TOOLHAND)
+    ht = _toolhand()
     ht_types, ht_vtx = ({}, {})
     if "train" in ht:
         ht_types, ht_vtx = seg_profile(ht["train"]["annotations"])
@@ -125,7 +148,7 @@ def check_c2_value5() -> dict:
         cnt = Counter(a["category_id"] for a in d["annotations"])
         return cats, cnt
 
-    ht = _splits(TOOLHAND)
+    ht = _toolhand()
     res = {"pass": False}
     has5 = False
     if "train" in ht:
@@ -148,31 +171,56 @@ def check_c2_value5() -> dict:
 
 
 # ---------------------------------------------------------------------------
-# C3 手インスタンス 57,173・欠落4動画の復活
+# C3 手の被覆（手注釈が実在する 25 区間）と集合件数 57,172
 # ---------------------------------------------------------------------------
+def _annotated_segments_and_keys(datasets):
+    """注釈が 1 件以上ある画像の区間の集合、(フレーム, 枠, クラス) の鍵の数え、単純加算の件数。"""
+    segments, keys, total = set(), Counter(), 0
+    for d in datasets:
+        names = {im["id"]: os.path.basename(im["file_name"]) for im in d["images"]}
+        for a in d["annotations"]:
+            fn = names[a["image_id"]]
+            segments.add(_vid_of(fn))
+            keys[(fn, tuple(round(float(x), 2) for x in a.get("bbox", [])), a.get("category_id"))] += 1
+            total += 1
+    return segments, keys, total
+
+
 def check_c3_hand_total() -> dict:
-    hand = _splits(HAND4)
-    total = sum(len(d["annotations"]) for d in hand.values())
-    present = set()
-    for d in hand.values():
-        present |= {_vid_of(im["file_name"]) for im in d["images"]}
-    raw_vids = {os.path.basename(p) for p in glob.glob(str(RAW_HAND_PV / "*"))}
-    missing = sorted(raw_vids - present)
-    # 参照: raw 02_hand per_video 総手数
-    raw_total = 0
-    for f in glob.glob(str(RAW_HAND_PV / "*/*.json")):
-        raw_total += len(_load(Path(f))["annotations"])
-    passed = (total == HAND_TOTAL_TARGET) and (len(missing) == 0)
+    hand = _hand()
+    raw_files = sorted(glob.glob(str(RAW_HAND_PV / "*/*.json")))
+    if not raw_files:
+        raise FileNotFoundError(f"入力が無い: {RAW_HAND_PV}/*/*.json")
+    # 両辺とも file_name から導く区間の名前（旧版は左辺がディレクトリ名で、03_3 が構成上いつも欠けた）
+    raw_segments, raw_keys, raw_total = _annotated_segments_and_keys(_load(Path(f)) for f in raw_files)
+    present, keys, total = _annotated_segments_and_keys(hand.values())
+    missing = sorted(raw_segments - present)
+    duplicates = [{"file_name": k[0], "bbox": list(k[1]), "category_id": k[2], "count": c}
+                  for k, c in sorted(keys.items()) if c > 1]
+    set_count = len(keys)
+    coverage_ok = (len(raw_segments) == HAND_SEGMENTS_TARGET and NO_HAND_SEGMENT not in raw_segments
+                   and not missing)
+    passed = coverage_ok and set_count == HAND_TOTAL_TARGET
     return {
         "pass": passed,
-        "hand_instances_current": total,
+        "coverage_pass": coverage_ok,
+        "count_pass": set_count == HAND_TOTAL_TARGET,
+        "hand_instances_set": set_count,
+        "hand_instances_simple_sum": total,
         "hand_instances_target": HAND_TOTAL_TARGET,
+        "duplicates": duplicates,
         "raw02_hand_total": raw_total,
-        "segments_present": len(present),
-        "segments_raw": len(raw_vids),
+        "raw02_hand_set": len(raw_keys),
+        "segments_raw_annotated": sorted(raw_segments),
+        "segments_raw_annotated_n": len(raw_segments),
+        "segments_raw_dirs_n": len(glob.glob(str(RAW_HAND_PV / "*"))),
+        "segments_present_n": len(present),
+        "segments_target": HAND_SEGMENTS_TARGET,
+        "no_hand_segment": NO_HAND_SEGMENT,
         "missing_videos": missing,
-        "missing_videos_expected": sorted(MISSING_VIDEO_TARGET),
-        "note": "完全版は欠落4動画(03_1/03_3/12_2/15_2)を復活し 26 セグメント総手数=57,173 が要件。",
+        "missing_videos_old_definition": sorted(MISSING_VIDEO_TARGET),
+        "note": ("raw 02_hand に手注釈が実在する 25 区間（03_3 を含まない）を候補がすべて被覆し、"
+                 "集合件数（同じフレーム・枠・クラスを一つに数える）が 57,172 であること。"),
     }
 
 
@@ -180,7 +228,7 @@ def check_c3_hand_total() -> dict:
 # C4 リーク指紋の不在: train/val/test が frame/video を共有しない
 # ---------------------------------------------------------------------------
 def check_c4_leakage() -> dict:
-    hand = _splits(HAND4)
+    hand = _hand()
     frames = {sp: {im["file_name"] for im in d["images"]} for sp, d in hand.items()}
     vids = {sp: {_vid_of(fn) for fn in fs} for sp, fs in frames.items()}
     pairs = [("train", "val"), ("train", "test"), ("val", "test")]
@@ -199,7 +247,7 @@ def check_c4_leakage() -> dict:
 # C5 公式 split 整合 / C6 phase 共存 / C7 クラス対応表 / C8 手 bbox 正本
 # ---------------------------------------------------------------------------
 def check_c5_split() -> dict:
-    hand = _splits(HAND4)
+    hand = _hand()
     counts = {sp: len(d["images"]) for sp, d in hand.items()}
     passed = all(counts.get(sp) == n for sp, n in OFFICIAL_SPLIT.items())
     return {"pass": passed, "image_counts": counts, "official": OFFICIAL_SPLIT}
@@ -212,7 +260,7 @@ def check_c6_phase_coexist() -> dict:
     for csv in glob.glob(str(phase_dir / "*.csv")):
         vid = os.path.basename(csv).replace(".csv", "")
         phase_frames.add(vid)  # video 粒度（frame 粒度 CSV の詳細解析は scope 外）
-    hand = _splits(HAND4)
+    hand = _hand()
     hts_vids = set()
     for d in hand.values():
         hts_vids |= {_vid_of(im["file_name"]) for im in d["images"]}
@@ -224,10 +272,10 @@ def check_c6_phase_coexist() -> dict:
 
 def check_c7_class_map() -> dict:
     out = {"pass": None}
-    hand = _splits(HAND4)
+    hand = _hand()
     if "train" in hand:
         out["hand4_categories"] = {c["id"]: c["name"] for c in hand["train"]["categories"]}
-    ht = _splits(TOOLHAND)
+    ht = _toolhand()
     if "train" in ht:
         out["toolhand_categories"] = {c["id"]: c["name"] for c in ht["train"]["categories"]}
     raw = _load(RAW_HT_5CLS / "train.json")
@@ -248,11 +296,36 @@ def check_c8_hand_bbox_source() -> dict:
             "note": "報告/決定（合否対象外）。"}
 
 
-def main() -> int:
+def _parse_args(argv=None):
+    import argparse
+    ap = argparse.ArgumentParser(description="HTS 受入検査（C1–C8）")
+    ap.add_argument("--hand-dir", type=Path, default=None, help="手 GT のディレクトリ（既定 egosurgery_hand4）")
+    ap.add_argument("--hand-prefix", default=None, help="手 GT のファイル名の接頭辞（既定 instances_）")
+    ap.add_argument("--hand-splits", default=None, help="手 GT の split（カンマ区切り。既定 train,val,test）")
+    ap.add_argument("--toolhand-dir", type=Path, default=None, help="把持関係 GT のディレクトリ（既定 egosurgery_tool_hand）")
+    ap.add_argument("--toolhand-prefix", default=None, help="把持関係 GT の接頭辞（既定 instances_）")
+    ap.add_argument("--out", type=Path, default=None,
+                    help="出力の JSON（既定 experiments/audit/l0_hts_acceptance/acceptance_report.json）")
+    return ap.parse_args(argv)
+
+
+def main(argv=None) -> int:
+    global HAND4, HAND_PREFIX, HAND_SPLITS, TOOLHAND, TOOLHAND_PREFIX
+    args = _parse_args(argv)
+    if args.hand_dir is not None:
+        HAND4 = args.hand_dir
+    if args.hand_prefix is not None:
+        HAND_PREFIX = args.hand_prefix
+    if args.hand_splits is not None:
+        HAND_SPLITS = tuple(args.hand_splits.split(","))
+    if args.toolhand_dir is not None:
+        TOOLHAND = args.toolhand_dir
+    if args.toolhand_prefix is not None:
+        TOOLHAND_PREFIX = args.toolhand_prefix
     checks = {
         "C1_polygon_points": check_c1_polygon_points(),
         "C2_value5_two_hands_tool": check_c2_value5(),
-        "C3_hand_total_57173": check_c3_hand_total(),
+        "C3_hand_coverage_57172": check_c3_hand_total(),
         "C4_leakage_fingerprint": check_c4_leakage(),
         "C5_official_split": check_c5_split(),
         "C6_phase_coexist": check_c6_phase_coexist(),
@@ -260,22 +333,25 @@ def main() -> int:
         "C8_hand_bbox_source": check_c8_hand_bbox_source(),
     }
     main_keys = ["C1_polygon_points", "C2_value5_two_hands_tool",
-                 "C3_hand_total_57173", "C4_leakage_fingerprint"]
+                 "C3_hand_coverage_57172", "C4_leakage_fingerprint"]
     main_pass = all(bool(checks[k]["pass"]) for k in main_keys)
 
     report = {
         "run": "l0_hts_acceptance_2026-07-28",
         "target": "HTS(Hand-Tool-Seg)公式GT完全版 候補=現行 data/annotations 派生",
+        "inputs": {"hand": [str(HAND4 / f"{HAND_PREFIX}{sp}.json") for sp in HAND_SPLITS],
+                   "toolhand": [str(TOOLHAND / f"{TOOLHAND_PREFIX}{sp}.json") for sp in TOOLHAND_SPLITS]},
         "main_criteria": main_keys,
         "main_pass": main_pass,
         "checks": checks,
         "verdict": ("ACCEPTED" if main_pass else "NOT ACCEPTED (完全版 未達)"),
     }
-    out_dir = ROOT / "experiments/audit/l0_hts_acceptance"
-    out_dir.mkdir(parents=True, exist_ok=True)
-    with open(out_dir / "acceptance_report.json", "w") as f:
+    out = args.out or ROOT / "experiments/audit/l0_hts_acceptance/acceptance_report.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with open(out, "w") as f:
         json.dump(report, f, indent=2, ensure_ascii=False)
 
+    c3 = checks["C3_hand_coverage_57172"]
     print("=" * 70)
     print(f"l0 HTS 受入検査 — 主判定(C1/C2/C3/C4): "
           f"{'ALL PASS ✓' if main_pass else 'FAIL ✗ (完全版 未達)'}")
@@ -284,12 +360,12 @@ def main() -> int:
         p = v.get("pass")
         mark = "✓" if p is True else ("✗" if p is False else "·(報告)")
         print(f"  {mark} {k}")
-    print(f"\n  C3: 手 {checks['C3_hand_total_57173']['hand_instances_current']} / "
-          f"目標 {HAND_TOTAL_TARGET} / 欠落動画 {checks['C3_hand_total_57173']['missing_videos']}")
+    print(f"\n  C3: 手 集合 {c3['hand_instances_set']}（単純加算 {c3['hand_instances_simple_sum']}）/ "
+          f"目標 {HAND_TOTAL_TARGET} / 手注釈のある区間 {c3['segments_raw_annotated_n']} / 欠落 {c3['missing_videos']}")
     print(f"  C2: toolhand cat5 = {checks['C2_value5_two_hands_tool'].get('toolhand_cat5_name')} "
           f"/ raw04 cat5 = {checks['C2_value5_two_hands_tool'].get('raw04_cat5_name')}")
     print(f"\n  → verdict: {report['verdict']}")
-    print(f"  出力: {out_dir / 'acceptance_report.json'}")
+    print(f"  出力: {out}")
     return 0 if main_pass else 1
 
 

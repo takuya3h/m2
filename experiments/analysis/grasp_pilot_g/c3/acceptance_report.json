@@ -1,0 +1,184 @@
+{
+  "run": "l0_hts_acceptance_2026-07-28",
+  "target": "HTS(Hand-Tool-Seg)公式GT完全版 候補=現行 data/annotations 派生",
+  "inputs": {
+    "hand": [
+      "data/annotations/egosurgery_hts/hand_seg/train.json",
+      "data/annotations/egosurgery_hts/hand_seg/val.json",
+      "data/annotations/egosurgery_hts/hand_seg/test.json",
+      "data/annotations/egosurgery_hts/hand_seg/extra.json"
+    ],
+    "toolhand": [
+      "data/annotations/egosurgery_hts/hand_tool_seg/train.json",
+      "data/annotations/egosurgery_hts/hand_tool_seg/val.json",
+      "data/annotations/egosurgery_hts/hand_tool_seg/test.json"
+    ]
+  },
+  "main_criteria": [
+    "C1_polygon_points",
+    "C2_value5_two_hands_tool",
+    "C3_hand_coverage_57172",
+    "C4_leakage_fingerprint"
+  ],
+  "main_pass": true,
+  "checks": {
+    "C1_polygon_points": {
+      "pass": true,
+      "toolhand_seg_types": {
+        "rle": 32408
+      },
+      "toolhand_vertex_hist": {},
+      "raw04_seg_types": {
+        "rle": 21949
+      },
+      "master_seg_types": {
+        "polygon": 7507
+      },
+      "master_vertex_hist": {
+        "4": 7507
+      },
+      "note": "master は 100% 4 頂点矩形(bbox 相当)=真マスク不可。HTS は RLE/多頂点でなければ FAIL。"
+    },
+    "C2_value5_two_hands_tool": {
+      "pass": true,
+      "toolhand_cat5_name": "Two Hands Tool",
+      "toolhand_cat5_count": 952,
+      "raw04_cat5_name": "Two Hands Tool",
+      "raw04_cat5_count": 399,
+      "note": "HTS 把持関係 GT に Two Hands Tool(=5) が必要。現行 egosurgery_tool_hand が 19クラス(手混在)で値5=Mouth Gag なら不合格。正本源 raw 04_handtool 5cls は値5=Two Hands Tool を保持。"
+    },
+    "C3_hand_coverage_57172": {
+      "pass": true,
+      "coverage_pass": true,
+      "count_pass": true,
+      "hand_instances_set": 57172,
+      "hand_instances_simple_sum": 57173,
+      "hand_instances_target": 57172,
+      "duplicates": [
+        {
+          "file_name": "05_1_0575.jpg",
+          "bbox": [
+            0.0,
+            6.0,
+            940.0,
+            1066.0
+          ],
+          "category_id": 4,
+          "count": 2
+        }
+      ],
+      "raw02_hand_total": 57173,
+      "raw02_hand_set": 57172,
+      "segments_raw_annotated": [
+        "01_1",
+        "02_1",
+        "03_1",
+        "03_2",
+        "04_1",
+        "04_2",
+        "05_1",
+        "05_2",
+        "06_1",
+        "06_2",
+        "07_1",
+        "07_2",
+        "08_1",
+        "08_2",
+        "09_1",
+        "10_1",
+        "10_2",
+        "11_1",
+        "12_1",
+        "12_2",
+        "13_1",
+        "14_1",
+        "14_2",
+        "15_1",
+        "15_2"
+      ],
+      "segments_raw_annotated_n": 25,
+      "segments_raw_dirs_n": 26,
+      "segments_present_n": 25,
+      "segments_target": 25,
+      "no_hand_segment": "03_3",
+      "missing_videos": [],
+      "missing_videos_old_definition": [
+        "03_1",
+        "03_3",
+        "12_2",
+        "15_2"
+      ],
+      "note": "raw 02_hand に手注釈が実在する 25 区間（03_3 を含まない）を候補がすべて被覆し、集合件数（同じフレーム・枠・クラスを一つに数える）が 57,172 であること。"
+    },
+    "C4_leakage_fingerprint": {
+      "pass": true,
+      "frame_overlap": {
+        "train∩val": 0,
+        "train∩test": 0,
+        "val∩test": 0
+      },
+      "video_overlap": {
+        "train∩val": [],
+        "train∩test": [],
+        "val∩test": []
+      },
+      "note": "同一 frame も同一 video も split 跨ぎで共有しないこと（動画単位リークの封じ）。"
+    },
+    "C5_official_split": {
+      "pass": false,
+      "image_counts": {
+        "train": 9627,
+        "val": 1515,
+        "test": 4255,
+        "extra": 4035
+      },
+      "official": {
+        "train": 9657,
+        "val": 1515,
+        "test": 4265
+      }
+    },
+    "C6_phase_coexist": {
+      "pass": null,
+      "phase_video_segments": 43,
+      "hts_video_segments": 25,
+      "coexist_video_segments": 22,
+      "note": "報告値（合否対象外）。frame 粒度の共存数は完全版組立時に再算出。"
+    },
+    "C7_class_map": {
+      "pass": null,
+      "hand4_categories": {
+        "1": "First Person's Left Hand",
+        "2": "First Person's Right Hand",
+        "3": "Other Person's Left Hand",
+        "4": "Other Person's Right Hand"
+      },
+      "toolhand_categories": {
+        "1": "First Person's Left Hand",
+        "2": "First Person's Right Hand",
+        "3": "Left Hand Tool",
+        "4": "Right Hand Tool",
+        "5": "Two Hands Tool"
+      },
+      "raw04_5cls_categories": {
+        "1": "First Person's Left Hand",
+        "2": "First Person's Right Hand",
+        "3": "Left Hand Tool",
+        "4": "Right Hand Tool",
+        "5": "Two Hands Tool"
+      },
+      "note": "報告（合否対象外）。完全版のクラス対応表の正本化に用いる。"
+    },
+    "C8_hand_bbox_source": {
+      "pass": null,
+      "candidates": {
+        "egosurgery_hand4": "4クラス手・現行派生（22セグメント・46,320）",
+        "raw_02_hand_json_per_video": "手 正本 57,173（26セグメント・欠落なし）",
+        "master_38cls": "seg=4頂点矩形(bbox相当)・手id 10/11/21/22"
+      },
+      "recommended_canonical": "raw_02_hand_json_per_video（完全性・欠落なし）",
+      "note": "報告/決定（合否対象外）。"
+    }
+  },
+  "verdict": "ACCEPTED"
+}
