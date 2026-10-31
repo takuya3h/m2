@@ -1,0 +1,6 @@
+Some weights of Mask2FormerForUniversalSegmentation were not initialized from the model checkpoint at /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-31-grasp-pilot-probe/e/weights/hf/hub/models--facebook--mask2former-swin-tiny-coco-instance/snapshots/22c4a2f15dc88149b8b8d9f4d42c54431fbd66f6 and are newly initialized because the shapes did not match:
+- class_predictor.bias: found shape torch.Size([81]) in the checkpoint and torch.Size([6]) in the model instantiated
+- class_predictor.weight: found shape torch.Size([81, 256]) in the checkpoint and torch.Size([6, 256]) in the model instantiated
+- criterion.empty_weight: found shape torch.Size([81]) in the checkpoint and torch.Size([6]) in the model instantiated
+You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.
+{"cand": "hf", "step_seconds_mean": 1.0584749658436825, "step_seconds_median": 1.0723618254996836, "peak_alloc_bytes_by_gpu": {"0": 14615869440}, "infer_images_per_sec_batch1": 4.624248274473951}

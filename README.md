@@ -1656,3 +1656,21 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
   各時刻の (状態, E, n, σ, Z) は `egtp_steps` で読める
 - ほかの候補の出力と設定の既定値は変えていない（変更前と後の要約値が bengio でビット一致。ssm は CUDA が要るため出力は測らず、
   関数単位のソースの一致で示した）。前の契約の基準値（`BASELINE`）は bengio では変更前から一致しない（ホストによる差）
+
+### 把持の信号の四案の予備測定（一本目）（2026-10-31、andrew）
+
+契約 `T-2026-10-31-grasp-pilot-probe`（analysis。**非公式の測定。関門の判定と設計の判断に使わない**）。
+結果は `experiments/analysis/grasp_pilot_probe/REPORT.md`（中間は `INTERIM.md`）、記録は `tasks/T-2026-10-31-grasp-pilot-probe/`。
+
+- 把持の信号の四案（A 要約 g(t) を工程へ、B 地図 m(t) を検出の C5 へ、C 工程塔の補助の標的、D 検出の枠ごとの把持の状態）のうち、
+  把持塔 G を使わずに測れるもの（正解の把持から作る信号、空と正解の腕、読み出しの検査、誤りの数え上げ）と、G の実装と学び直しの費用の調査
+- **`scripts/stage2pilot/dp_train.py` に型 `GA`（D1 concat、30 次元の x = 予測の半分 15 ＋ 正解の半分 15）と `--grasp-signal-dir` を足した。**
+  **`scripts/train_t1b.py` に `--grasp-map {zero,gt}`（5 チャネルの地図を学習時の幾何の変換に従わせて読み込む）を足した。** どちらも既定の経路と既存の型は変えていない
+- 新しい道具 `scripts/grasppilot/`: 注釈の同定（`ann_check.py`）、信号の関数と作成（`grasp_signals.py`・`build_signals.py`）、案 B の型と読み込み
+  （`pd_grasp_model.py`・`pd_grasp.py`、設定 `configs/stage2pilot/pd_graspmap_d5.py`）、恒等性と幾何の検査（`pd_grasp_eval.py`・`geom_check.py`）、
+  誤りの数え上げ（`error_count.py`）、読み出しの検査（`probe.py`・`extract_decfeat.py`）、調査の計測（`g_bench.py`・`tower_bench.py`）、集計（`aggregate.py`・`make_report.py`）。
+  試験 `tests/test_grasppilot_signals.py`
+- 大きな生成物（信号、decoder の特徴、案 B の界面の重み、Mask2Former の重み）は版管理と同期の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-31-grasp-pilot-probe/` に置いた
+- 結果（2026-11-01、非公式。1 折り・val 2 動画・seed 1 つの 1 本ずつの差）: 案 A の正解の腕は Jaccard Δ空 +0.0028（動画 09 −0.0029・10 +0.0120）、
+  案 B の正解の腕は標的群 AP Δ空 +0.0153・overall mAP +0.0093。空の腕は両案とも塔単独と同値。握られている枠が誤りに占める割合（0.456）は全枠に占める割合（0.479）を上回らない。
+  decoder の特徴から把持の状態を当てる balanced accuracy 0.553（正解のクラスだけ 0.437）。G の候補は mmdet（R50）と HF（Swin-T）を測り、公式の実装は未測定。G1・G2・G3 pass

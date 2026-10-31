@@ -101,6 +101,8 @@ def mmdet_model(num_classes=None):
         cfg.model.panoptic_head.loss_cls.class_weight = [1.0] * num_classes + [0.1]
         cfg.model.panoptic_fusion_head.num_things_classes = num_classes
         cfg.num_things_classes = num_classes
+        # LSJ の 1024×1024 への詰め物（batch_augments）を外し、hf と同じ入力（短辺 800、32 の倍数へ詰める）で測る
+        cfg.model.data_preprocessor.batch_augments = None
     return init_detector(cfg, None, device="cuda"), cfg
 
 
@@ -133,7 +135,6 @@ def mmdet_inputs(model, imgs, targets=None):
                 boxes.append([xx.min(), yy.min(), xx.max() + 1, yy.max() + 1] if len(xx) else [0, 0, 1, 1])
             gi.bboxes = torch.tensor(boxes, dtype=torch.float32).reshape(-1, 4)
             ds.gt_instances = gi
-            ds.gt_sem_seg = None
         samples.append(ds)
     data = model.data_preprocessor({"inputs": tens, "data_samples": samples}, training=targets is not None)
     return data["inputs"], data["data_samples"]

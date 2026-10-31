@@ -290,3 +290,90 @@ basename が python で始まるか、引数の要素が `torchrun`・`accelerat
 | 1. 把持関係 5 クラスだけ | 9,356 / 1,514 | 案 A・B（手の 2 チャネルは同一マスク）・D。案 C の術具の種類は出ない | 両候補とも既存の頭のクラス数を変えるだけ（E-1 で一歩を測った集合） |
 | 2. 三種を合わせた一つの集合（把持関係 5 + 他者の手 2 + 術具 31、自分の手は把持関係の 1・2 と同一なので一度だけ） | 三種すべて 9,269 / 1,511 | 四案すべて | クラス数 38 の instance の頭。器具は「扱う器具」と術具の分割で同じ画素が二つのインスタンスになる（IoU 中央値 1.0）ため、重なりを許す instance の形にする |
 | 3. 候補 2 の集合で、欠けた種類のクラスを損失から外す | いずれか一つ 9,650 / 1,515 | 四案すべて | 種類ごとに照合と損失を分ける印が要る。mmdet・HF とも頭の損失を写した派生の型が要る（third_party・既存の環境は変えずに書ける見込み。未実装） |
+
+### E-1 G の構造の候補（`experiments/analysis/grasp_pilot_probe/taskE/`、道具 `scripts/grasppilot/g_bench.py`）
+
+| 候補 | 出所と版 | 使用許諾 | 独自の CUDA の演算 | COCO の重み | 取得元・andrew から | sha256 |
+|---|---|---|---|---|---|---|
+| mmdet | mmdet 3.3.0 / mmcv 2.1.0（**既存の `.venv` をそのまま使う。変えない**）、設定 `mask2former_r50_8xb2-lsj-50e_coco.py` | Apache-2.0（mmdet・mmcv） | 要（mmcv の `MultiScaleDeformableAttention`）。導入済みの mmcv の `_ext` に `ms_deform_attn_forward` が在り、読み込めた（組み立ては不要） | instance、R50、lsj 50e | download.openmmlab.com、HTTP 200 | 41b088b62838c986…（ファイル名の 41b088b6 と一致） |
+| hf | transformers 4.44.2（既存の `.venv`）、`Mask2FormerForUniversalSegmentation` | Apache-2.0（transformers）。重みのカードの許諾は確かめていない | 不要（変形注意は PyTorch の実装） | instance、Swin-T（`facebook/mask2former-swin-tiny-coco-instance`。HF に R50 の COCO instance は無い） | huggingface.co、HTTP 200 | model.safetensors 3550e8b21381d082… |
+| official | facebookresearch/Mask2Former（detectron2 と独自の MSDeformAttn の組み立て） | MIT（Mask2Former） | 要（組み立てが要る） | — | — | **未測定**: 本契約の保存先の下の新しい仮想環境で取得と組み立てを試みる命令を、実行基盤が「外部のコード」として拒んだ。回避していない |
+
+- 重みは `$S/e/weights/` に置いた（既存の場所を使っていない）。HF は `HF_HUB_OFFLINE=1` で保存先から読んだ
+- 推論の確認（val の 09_1_0446 の 1 枚、`e1_check_*.json`）: mmdet は 610 個の重みを全部読み、100 件の予測のうち score ≥ 0.5 が 3 件、
+  マスク 100 × 750 × 1333。HF は 100 query のうち ≥ 0.5 が 7 件（上位は person・bed）。どちらも通った
+- 重みの照合の空振りの確認: 期待の値を 1 文字変えた照合は拒まれる（`weight_tampered_copy_rejected: true`）
+- 一歩と推論の速さの計測は、案 B の学習と GPU を分けると歪むため、案 B の学習の後に行う（下に追記）
+
+### E-3 学び直しの費用（記録から）
+
+| 塔・段 | 処方 | 上限 | 収束規則 | 回した | 最良 | 壁時計・ホスト |
+|---|---|---:|---|---:|---:|---|
+| 工程塔 fine-tune（`STORE/efros_ptower/.../stage1_ptower_20_005_...`） | R50 COCO 初期化、stem 凍結、短辺 800、反転、batch 16 × accum 4、AdamW lr 1e-4 wd 1e-4、単精度、選択は val frame accuracy | 36 | 停滞 4 で lr × 0.1、再停滞で打ち切り | 21（lr 低下 17） | 13 | 16,076 秒（4.47 時間）、efros、最大確保 29.05 GB |
+| 工程塔 特徴（`..._008_features...`） | fine-tune の best で 15,437 フレームの GAP | — | — | — | — | 366 秒、efros |
+| 工程塔 時間ヘッド（`..._009_P15_C_L8...`） | TeCNO C 8 層、lr 5e-4 wd 0.01、平滑化 0.3、warmup 2、選択は val Jaccard | 50 | 停滞 10 で打ち切り | 18 | 8 | 7.1 秒、efros |
+| 検出塔（`experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42`） | Relation-DETR R50、COCO 1x 初期化、presets.detr、2 GPU × batch 2、AdamW lr 1e-4 wd 1e-4、fp16、max_norm 0.1 | 36 | 停滞 4 で lr × 0.1（epoch 9）、再停滞で打ち切り（epoch 14） | 15（0〜14） | 10 | 9:58:04（2 GPU）。**ホストは記録に無い（UNKNOWN）** |
+
+### E-4 補助の頭の付け所（実装はしない）
+
+- 案 C・fine-tune の段: `scripts/stage1_ptower_r3.py:100-118`（`build_backbone` が torchvision R50 の `fc` を工程 9 の線形に替える）、損失は
+  `scripts/stage1_ptower_r3.py:218`（`loss = ce(model(images), y)`）。`model` を包む派生（`fc` の前の GAP 特徴に 45 次元の線形の頭を並べ、損失を足す）を
+  別の台本に書けば、既定の挙動と third_party を変えずに付けられる。学び直しの後は特徴の取り出し（`stage1_ptower_r3.py:290-296` `_features`、
+  記録 366 秒）と時間ヘッドの学習（7.1 秒）をやり直す要がある
+- 案 C・時間ヘッドの段: `scripts/stage1_ptower.py:578-635`（`train`。損失は 619-631 行）。凍結特徴の上の頭なので学び直しは数秒だが、
+  特徴そのもの（fine-tune の段）は変わらない
+- 案 D・照合の結果: `third_party/Relation-DETR/models/bricks/set_criterion.py:120-128`（`calculate_loss` の中で `self.matcher` が indices を返す）。
+  `HungarianMatcher` の forward に前向きのフックを掛けるか、`RelationDETR` の派生（`scripts/` に置く。`pd_grasp_model.py` と同じ作法）で
+  `criterion` を包めば、third_party を変えずに主経路の indices を取れる
+- 案 D・対応した query の decoder の出力: `third_party/Relation-DETR/models/bricks/relation_transformer.py:357`（`class_head[layer_idx](self.norm(query))`）。
+  C-5 と同じく最終層の `class_head[-1]` の入力をフックで取れる。学習時の decoder の入力は denoising の query が主経路の 900 の前に連結され
+  （`relation_detr.py:99-107` の `dn_post_process` が分ける）、hybrid の経路（`relation_transformer.py:145`、`skip_relation=True`）は decoder を
+  もう一度呼ぶ。フックは一度の順伝播で 2 回呼ばれるため、`skip_relation` を見て主経路だけを取り、主経路の出力の末尾 900 個に照合の indices を当てる
+- 検出塔の学習は third_party の `main.py`（accelerate、`util/engine.py:19` `train_one_epoch_acc`）で回した。補助の頭を付けるなら、検出器の派生を
+  設定で指す形にすれば `main.py` を変えずに済む見込み（未確認）
+
+### E-1・E-3 の計測（`experiments/analysis/grasp_pilot_probe/taskE/run_bench.sh`。**案 B の学習と同じ GPU で並べて測った**（利用者の指示「計算リソースすべて使ってなるべく早く」、`gpu_shared_with_other_runs: true`）。専有の値より遅い側に偏りうる）
+
+| 計測 | 一歩（平均 / 中央値） | batch・入力 | 最大確保 | 推論 |
+|---|---|---|---|---|
+| G 候補 mmdet（R50、把持関係 5 クラス、fp32） | 0.7772 / 0.7770 秒 | 2、短辺 800（32 の倍数へ詰める） | 10.02 GB | 4.21 枚/秒（batch 1） |
+| G 候補 hf（Swin-T、同） | 1.0585 / 1.0724 秒 | 同 | 14.62 GB | 4.62 枚/秒 |
+| 工程塔 fine-tune | 0.9978 / 1.0014 秒（batch 16 の順・逆伝播。4 歩ごとに更新） | 16 × 3 × 800 × 1422 | 28.80 GB | — |
+| 検出塔 全体（fp16、1 GPU） | 0.6421 / 0.6477 秒 | 2（presets.detr） | 12.54 GB | — |
+
+- 立ち上がり 10 歩を除いた 60 歩。データの読み込みの待ちは含まない（GPU の計算だけ）
+- mmdet の一回目は `gt_sem_seg = None` を入れられず、二回目は LSJ の設定の前処理が 1024×1024 へ詰めるため入力と合わず失敗した（`e1_bench_mmdet_try{1,2}_failed.log`）。
+  三回目は前処理の batch_augments を外し、hf と同じ入力で測った
+
+費用の式（E = epoch 数。ラベルの集合は把持関係 5 クラス、batch 2、1 GPU、上の一歩の時間。読み込みの待ちを含まない）:
+
+- 一 epoch の歩数: 確定の G 9,356 枚 → 4,678 歩、H1 3,913 枚 → 1,957 歩、H2 5,443 枚 → 2,722 歩（注釈のあるフレーム）
+- mmdet: 確定 3,635 秒 + H1 1,521 秒 + H2 2,115 秒 = **7,271 秒 × E（2.02 時間 × E）**
+- hf: 4,949 + 2,071 + 2,880 = **9,900 秒 × E（2.75 時間 × E）**
+- 信号を作る推論: 確定の G で train と val の 11,172 枚（工程注釈と術具注釈のフレームは同じ集合）、交差適合の半分で train の 9,657 枚、計 20,829 枚
+  → mmdet 4,947 秒（1.37 時間）、hf 4,508 秒（1.25 時間）
+- 学び直し（「今の塔の処方の長さ」= 記録の回した epoch 数）:
+  - 工程塔 fine-tune: 604 歩/epoch × 1.00 秒 = 604 秒/epoch、21 epoch で **12,684 秒（3.52 時間）/ 本**（記録の efros は 16,076 秒）。
+    これに特徴の取り出し（記録 366 秒）と時間ヘッド（7 秒）。3 腕で 10.6 時間（1 GPU ずつ並べれば壁時計は 1 本分）
+  - 検出塔: 4,809 歩/epoch × 0.642 秒 = 3,088 秒/epoch（1 GPU）、15 epoch で **46,320 秒（12.9 時間）/ 本**。3 腕で 38.6 GPU 時間
+    （記録は 2 GPU で 9:58:04）。最良の epoch（工程 13、検出 10）で止める長さなら、工程 13 × 604 = 7,852 秒、検出 11 × 3,088 = 33,968 秒
+- 検算: 上の積は記録した一歩の時間と歩数から計算し直したもの（REPORT.md の表と同じ）
+
+## Task D（続き）— 案 B の二腕の終了
+
+- 空: 起動 22:09:24、終了 00:02:29（2026-11-01）、rc 0、GPU 0。val mAP は ep0〜3 とも 0.7273450（塔単独と同値）、界面の重みは全 epoch で 0、凍結部の一致 True
+- 正解: 起動 22:09:24、終了 00:05:11、rc 0、GPU 1。val mAP 0.7342 → 0.7349 → 0.7360 → 0.7366、界面の重みの L2 4.86 → 9.72、凍結部の一致 True
+- 中間記録の commit 1f4af29e の push（22:24:05）は案 B の最後の run の終了（00:05:11）より前
+
+## Task F — 集計・検証・報告
+
+    $ .venv/bin/python scripts/grasppilot/aggregate.py --with-b --signals $S/signals --out experiments/analysis/grasp_pilot_probe/report.json
+    A gt all (0.7790407, 0.8792079, d_empty J +0.0028222 acc +0.0079208) recompute_matches_record True
+    B gt AP 0.7366077 target 0.8103401 control 0.6766663, d_empty +0.0092627 / +0.0152653 / +0.0040031
+    $ .venv/bin/python scripts/grasppilot/make_report.py experiments/analysis/grasp_pilot_probe/report.json > .../report_tables.md
+
+- 表の Δ は各 run の記録（案 A は予測の npz、案 B は grasppilot_metrics.json）から計算し直した。案 A の計算し直しは記録の値と一致（`recompute_matches_record: true`）
+- 試験（終了時、`$S/final/pytest_end.txt`）: `6 failed, 975 passed, 5 skipped`。失敗の名前の集合は A-5 と同じ 6 件（増えていない。passed の 5 件の増加は `tests/test_grasppilot_signals.py`）
+- 既存の仮想環境のパッケージの一覧の要約値（Task F で再測）: `.venv` 9c7be5c9…94c0、`.venv-relation-detr` a74c9c78…b090。A-6 と一致
+- `make forbidden-check TASK=T-2026-10-31-grasp-pilot-probe` → `status: pass`、changed 131・checked 131、violations []。
+  空振りの確認: 本契約の新しいファイル（REPORT.md、run の記録など）が変更として拾われ、allow_write によって許可された一覧に名前で出る
