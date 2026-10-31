@@ -237,3 +237,12 @@ task-start の前の分類器で全区分 0 件。task-start の後に在る無�
   一方、GPU 1 は案 C の補助損失なしの fine-tune が終わる 08:00 頃から、H1・H2 の交差適合の信号を待つ間（約 7 時間）が空く
 - 案 B の空と正解の腕（ep0 3000/4809、約 70 分）を止め、出力を `$S/aborted/try1_B/` へ移した（消していない）。止めたのは本契約が起こした 2 本だけ
 - `$S/logs/launch_B_after_C.sh` が、案 C の補助損失なしの `metrics_finetune.json` が出たら GPU 1 で 2 本を起動し直す（処方と名前は同じ）
+
+### 案 C の補助損失なしの腕の終わりと、H1・H2 の後の自動化（2026-11-01 08:36 JST）
+
+- `grasppilot2_C_noaux_seed42` は rc 0。fine-tune 21 epoch（17 epoch の後に 1e-5、最後の val accuracy 0.8587）、特徴 11,172 フレーム、
+  時間ヘッドの最後の状態で Jaccard 0.688638・accuracy 0.877888（動画 09 0.9932、10 0.5997）。全歩で「合計 − 工程の損失」= 0
+- 案 B の空と正解の腕は 07:45 に GPU 1 で自動で起動した（`$S/logs/launch_B_after_C.log`）
+- `scripts/grasppilot/pipeline_after_H.sh` を背景で起こした。H1・H2 の exit_code が 0 になったら、空き記憶で GPU を選び、
+  交差適合の推論（H1 の G → H2 の動画、H2 の G → H1 の動画）→ `g_signals.py assemble-c`（案 C の train の標的と入れ替え、交差適合の外れがあれば止まる）→
+  案 C の教師・入れ替えた教師の腕（空き 31 GB 以上の GPU に一本ずつ）。記録は `$S/logs/pipeline_after_H.log`
