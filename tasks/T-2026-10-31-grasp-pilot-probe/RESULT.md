@@ -24,10 +24,10 @@
 | h | audit.md:209-245。学習する集合 `phase_iface.weight` だけ、対応 0.977 | `backbone.conv1.weight` を混ぜると不一致。反転の地図で 0.393。重みの摂動で score の差 0.383 |
 | i | audit.md:267-360 | 費用は一歩の時間 × 歩数から計算し直して一致。重みの期待値を 1 文字変えると照合で拒まれる |
 | j | REPORT §1・§5 | 表の Δ は `aggregate.py` が各 run の記録から計算し直した値 |
-| k | 1f4af29e を 22:24:05 に push | 案 B の最後の run の終了 00:05:11 より前。遠隔の先頭の祖先であることは §8 の送出で確かめる |
+| k | 1f4af29e を 22:24:05 に push | 案 B の最後の run の終了 00:05:11 より前。`git merge-base --is-ancestor 1f4af29e origin/feat/grasp-pilot-probe` が真 |
 | l | REPORT §4。各段の動画は train 10・val {09,10}、{04,05,07} と共通 0 | 04 を混ぜた写しで共通 1 件（audit.md:104） |
 | m | forbidden-check pass（131 件、違反 0）、仮想環境の要約値一致、失敗 6 → 6 | 本契約の新しいファイルが変更として拾われる（audit.md:368 以降） |
-| n | §8 送出 | 分岐名 `feat/grasp-pilot-probe` |
+| n | PR #272、base phase0、isDraft false、OPEN | head は `feat/grasp-pilot-probe` |
 
 ## 3. 実測
 
@@ -93,5 +93,5 @@
 
 ## 8. 送出
 
-- PR: 未起票（起票後に追記）
+- PR: #272（https://github.com/takuya3h/m2/pull/272、base phase0、Draft でない）
 - `make task-report`: 未実行（実行後に追記）
