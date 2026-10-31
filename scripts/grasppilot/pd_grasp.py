@@ -23,7 +23,33 @@ import torch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from grasppilot import grasp_signals as G  # noqa: E402
 
-MODES = ("zero", "gt", "gt_flip")     # gt_flip は Task D-3 の対照だけに使う（腕ではない）
+MODES = ("zero", "gt", "gt_flip", "pred", "gt_pred")   # gt_flip は Task D-3 の対照だけに使う（腕ではない）
+# pred と gt_pred は契約 T-2026-11-01-grasp-pilot-g で足した。G の予測の地図は 270×480 の uint8（round(p × 255)）で保存してあり、
+# 画像の大きさへ双線形で戻して uint8（0〜255）のまま変換に通す。値の尺度（1/255）は型の channel_scale で戻す。
+# gt_pred は [正解の 5（0 と 1）, 予測の 5（0〜255）] の 10 チャネル。
+
+
+class PredView:
+    """予測の地図の見取り（json: maps = (N, 5, 270, 480) の uint8 の .npy、frame_ids = 行の並び、mapping = 入れ替えの対応 or null）。
+
+    フレーム f の地図 = maps[行(mapping[f] if mapping else f)]。入れ替えの腕は mapping で行を引き替える（地図そのものは写さない）。
+    """
+
+    def __init__(self, path):
+        import json
+        d = json.loads(Path(path).read_text())
+        self.path, self.maps_path = str(path), d["maps"]
+        self.row = {f: i for i, f in enumerate(d["frame_ids"])}
+        self.mapping = d.get("mapping")
+        self._maps = None
+
+    def get(self, stem, shape):
+        if self._maps is None:                      # worker ごとに開く
+            self._maps = np.load(self.maps_path, mmap_mode="r")
+        src = self.mapping[stem] if self.mapping else stem
+        m = torch.from_numpy(np.ascontiguousarray(self._maps[self.row[src]])).float()[None]
+        m = torch.nn.functional.interpolate(m, size=tuple(shape), mode="bilinear", align_corners=False)[0]
+        return m.round().clamp(0, 255).to(torch.uint8).numpy()
 
 
 def make_dataset_class():
@@ -33,12 +59,15 @@ def make_dataset_class():
     from util import datapoints
 
     class GraspMapCocoDetection(CocoDetection):
-        def __init__(self, *args, mode: str, index: G.HTSIndex, **kwargs):
+        def __init__(self, *args, mode: str, index: G.HTSIndex, pred_view=None, **kwargs):
             super().__init__(*args, **kwargs)
             if mode not in MODES:
                 raise ValueError(mode)
+            if (mode in ("pred", "gt_pred")) != (pred_view is not None):
+                raise ValueError(f"pred_view は mode pred・gt_pred のときだけ渡す: {mode}")
             self.mode = mode
             self.index = index
+            self.pred = PredView(pred_view) if pred_view is not None else None
             self._geo = self._sanitize = None
             if self._transforms is not None:
                 steps = list(self._transforms.transforms)
@@ -53,6 +82,12 @@ def make_dataset_class():
         def grasp_map(self, image_id, shape):
             if self.mode == "zero":
                 return np.zeros((len(G.MAP_CHANNELS),) + tuple(shape), np.uint8)
+            if self.mode == "pred":
+                return self.pred.get(self.stem(image_id), shape)
+            if self.mode == "gt_pred":
+                gt = self.index.map_channels(self.stem(image_id))
+                assert gt.shape[1:] == tuple(shape), (gt.shape, shape)
+                return np.concatenate([gt, self.pred.get(self.stem(image_id), shape)], 0)
             m = self.index.map_channels(self.stem(image_id))
             assert m.shape[1:] == tuple(shape), (m.shape, shape)
             return m
@@ -75,7 +110,7 @@ def make_dataset_class():
     return GraspMapCocoDetection
 
 
-def build_grasp_loader(ego_root: str, ann_dir: str, train: bool, mode: str, index=None, shuffle_seed=None):
+def build_grasp_loader(ego_root: str, ann_dir: str, train: bool, mode: str, index=None, shuffle_seed=None, pred_view=None):
     """train_t1b.build_det_loader と同じ形の DataLoader（地図つき）。"""
     from torch.utils import data
     from transforms import presets
@@ -86,7 +121,7 @@ def build_grasp_loader(ego_root: str, ann_dir: str, train: bool, mode: str, inde
     index = index or G.HTSIndex(("train", "val"))
     ann = "instances_train.json" if train else "instances_val.json"
     ds = cls(img_folder=ego_root, ann_file=f"{ann_dir}/{ann}", transforms=presets.detr if train else None,
-             train=train, mode=mode, index=index)
+             train=train, mode=mode, index=index, pred_view=pred_view)
     params = dict(num_workers=4, collate_fn=collate_fn, pin_memory=True)  # nosemgrep
     if train:
         group_ids = create_aspect_ratio_groups(ds, k=3)

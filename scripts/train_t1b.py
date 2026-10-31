@@ -341,11 +341,16 @@ def main():
         from grasppilot import grasp_signals as grasp_g
         from grasppilot.pd_grasp import build_grasp_loader
         grasp_index = grasp_g.HTSIndex(("train", "val"))
-        det_train = build_grasp_loader(EGO_ROOT, ANN_DIR, True, args.grasp_map, grasp_index)
+        # 契約 T-2026-11-01-grasp-pilot-g の予測の地図（pred・gt_pred のときだけ。zero・gt は従来どおり）
+        pred_tr = args.grasp_pred_train if args.grasp_map in ("pred", "gt_pred") else None
+        pred_va = args.grasp_pred_val if args.grasp_map in ("pred", "gt_pred") else None
+        if args.grasp_map in ("pred", "gt_pred") and not (pred_tr and pred_va):
+            raise SystemExit("[t1b] --grasp-map pred・gt_pred には --grasp-pred-train と --grasp-pred-val が要る")
+        det_train = build_grasp_loader(EGO_ROOT, ANN_DIR, True, args.grasp_map, grasp_index, pred_view=pred_tr)
     else:
         det_train = build_det_loader(train=True)
     if args.grasp_map:
-        det_val = build_grasp_loader(EGO_ROOT, ANN_DIR, False, args.grasp_map, grasp_index)
+        det_val = build_grasp_loader(EGO_ROOT, ANN_DIR, False, args.grasp_map, grasp_index, pred_view=pred_va)
     else:
         det_val = build_det_loader(train=False)
     model_cfg = {"ca": MODEL_CFG_CA, "camt": MODEL_CFG_CAMT, "hc": MODEL_CFG_HC,
@@ -441,6 +446,8 @@ def main():
             **({"fixed_epochs": True, "result_selection": "final_epoch"} if args.fixed_epochs else {}),
             **({"missed_set": args.missed_set} if args.missed_set else {}),
             **({"grasp_map": args.grasp_map} if args.grasp_map else {}),
+            **({"grasp_pred_train": args.grasp_pred_train, "grasp_pred_val": args.grasp_pred_val}
+               if args.grasp_map in ("pred", "gt_pred") else {}),
         }} if (args.det_ckpt or args.signal_train or args.patience is not None or args.eval_only) else {}),
     })
 
@@ -731,9 +738,13 @@ def parse_args():
                         "経路も従来と同一（autocast を張らない）。bf16/fp16 は自動混合精度。"
                         "fp16 は GradScaler による勾配の尺度調整を伴う。**評価は常に単精度で行う**")
     # 契約 T-2026-10-19-stage2-pilot-four-new-types で足した。渡さなければ従来の経路のまま
-    p.add_argument("--grasp-map", default=None, choices=("zero", "gt"),
+    p.add_argument("--grasp-map", default=None, choices=("zero", "gt", "pred", "gt_pred"),
                    help="契約 T-2026-10-31-grasp-pilot-probe の案 B。把持の地図（zero は全 0、gt は正解）を画像と同じ変換で読み、"
-                        "検出器の set_grasp_maps に渡す。渡さなければ従来の経路のまま")
+                        "検出器の set_grasp_maps に渡す。渡さなければ従来の経路のまま。"
+                        "pred（G の予測の地図）と gt_pred（正解と予測の連結、10 チャネル）は契約 T-2026-11-01-grasp-pilot-g で足した")
+    p.add_argument("--grasp-pred-train", default=None,
+                   help="--grasp-map pred・gt_pred の train の予測の地図の見取り（json。g_signals.py assemble が書く）")
+    p.add_argument("--grasp-pred-val", default=None, help="同じく val の見取り")
     p.add_argument("--missed-set", default=None,
                    help="extra_q の学習に使う見落としの集合の json（キー missed_ann_ids）。train の labels に見落としの印を足す")
     return p.parse_args()

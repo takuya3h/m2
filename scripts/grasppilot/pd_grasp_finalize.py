@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from stage2pilot import common as C  # noqa: E402
 from stage2pilot import det_metrics as M  # noqa: E402
 
-TASK = "T-2026-10-31-grasp-pilot-probe"
+TASK = os.environ.get("GRASPPILOT_TASK", "T-2026-10-31-grasp-pilot-probe")  # 二本目の契約は環境変数で渡す
 VAL_ANN = Path(os.environ.get("EGO_ANN_DIR") or C.DET_ANN_A) / "instances_val.json"
 
 
