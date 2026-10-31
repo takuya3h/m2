@@ -389,6 +389,37 @@ def compare(a):
     print(json.dumps(res, ensure_ascii=False), flush=True)
 
 
+def assemble_c(a):
+    """案 C の train の標的（交差適合の t と、それを並べ替えた t）を H1・H2 の出力だけから作る（確定の G を待たずに教師の腕を始めるため）。
+    assemble と同じ作り方（同じ並べ替え・同じ出所の規則）。"""
+    raw, out = Path(a.raw), Path(a.out)
+    (out / "C").mkdir(parents=True, exist_ok=True)
+    fold = C.fold_a()
+    seqs = {v: fr for v, fr, _ in C.phase_sequences(fold["train"])}
+    frames = [f for v in fold["train"] for f in seqs[v]]
+    R = {"H1_on_H2": load_raw(raw / "H1_on_H2"), "H2_on_H1": load_raw(raw / "H2_on_H1")}
+    learned = {g: json.loads(Path(p).read_text())["train_videos"] for g, p in zip(("H1", "H2"), a.g_run)}
+    sources, rows = {}, []
+    for f in frames:
+        g = cf_source(C.video_of(f))
+        sources[f] = g
+        k = "H1_on_H2" if g == "H1" else "H2_on_H1"
+        rows.append(R[k]["t"][R[k]["row"][f]])
+    t = np.stack(rows)
+    mapping = make_mapping(frames)
+    pos = {f: i for i, f in enumerate(frames)}
+    rep = {"task_id": TASK, "provenance": provenance_check(sources, learned), "shuffle": mapping_stats(mapping)}
+    for name, arr in (("teacher_train", t), ("shuffled_train", t[[pos[mapping[f]] for f in frames]])):
+        path = out / f"C/t_{name}.npz"
+        np.savez(path, frame_ids=np.asarray(frames), t=arr.astype(np.float32), values=np.asarray(T_VALUES))
+        rep[name] = {"path": str(path), "sha256": sha(path), "frames": len(frames),
+                     "rowsum_maxdev": float(np.abs(arr.reshape(-1, 3, 16).sum(2) - 1).max())}
+    if rep["provenance"]["violations"]:
+        raise RuntimeError(f"交差適合の外れ: {rep['provenance']}")
+    C.write_json(out / "assemble_c_report.json", rep)
+    print(json.dumps(rep, ensure_ascii=False), flush=True)
+
+
 def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -412,10 +443,14 @@ def main():
     p.add_argument("--out", required=True)
     p.add_argument("--max-frames", type=int, default=0, help="地図の IoU に使うフレームの数（0 なら全部）")
     p.add_argument("--workers", type=int, default=8)
+    p = sub.add_parser("assemble-c")
+    p.add_argument("--raw", required=True)
+    p.add_argument("--out", required=True)
+    p.add_argument("--g-run", nargs=2, metavar=("H1", "H2"), required=True, help="H1・H2 の config.json")
     a = ap.parse_args()
     if a.cmd == "assemble":
         a.g_runs = dict(zip(("all", "H1", "H2"), a.g_run))
-    {"infer": infer, "assemble": assemble, "compare": compare}[a.cmd](a)
+    {"infer": infer, "assemble": assemble, "compare": compare, "assemble-c": assemble_c}[a.cmd](a)
 
 
 if __name__ == "__main__":
