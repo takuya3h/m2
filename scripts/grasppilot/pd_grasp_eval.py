@@ -2,7 +2,7 @@
 
 .venv-relation-detr で動かす。train_t1b.py と同じ評価の経路（eval_detection）に、pd_grasp の val の読み込みを使う。
 
-    --mode zero|gt          評価時の地図
+    --mode zero|gt          評価時の地図（pred・gt_pred と --pred-view・--cfg は契約 T-2026-11-01-grasp-pilot-g で足した）
     --iface-state <pth>     学習した界面（無ければ零初期化のまま）
     --perturb               界面の重みを N(0, scale²) にする（陽性対照）
     --ref-preds <json.gz>   基準の予測（塔単独）との出力の差の最大値を記録
@@ -44,7 +44,9 @@ def trainable_check(model):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--mode", required=True, choices=("zero", "gt"))
+    ap.add_argument("--mode", required=True, choices=("zero", "gt", "pred", "gt_pred"))
+    ap.add_argument("--pred-view", default=None, help="pred・gt_pred の val の見取り（json）")
+    ap.add_argument("--cfg", default=str(CFG), help="検出器の設定（既定は 5 チャネルの正解の型）")
     ap.add_argument("--iface-state", default=None)
     ap.add_argument("--perturb", action="store_true")
     ap.add_argument("--perturb-scale", type=float, default=0.05)
@@ -56,10 +58,10 @@ def main():
     device = torch.device("cuda")
     torch.manual_seed(0)
     index = G.HTSIndex(("train", "val"))
-    det_val = build_grasp_loader(t1b.EGO_ROOT, t1b.ANN_DIR, False, a.mode, index)
+    det_val = build_grasp_loader(t1b.EGO_ROOT, t1b.ANN_DIR, False, a.mode, index, pred_view=a.pred_view)
     stems = [Path(im["file_name"]).stem for im in det_val.dataset.coco.imgs.values()]
     videos = C.assert_no_test(stems, "pd_grasp_eval")
-    model = t1b.build_model(device, 42, str(CFG), ckpt_override=str(C.DET_CKPT))
+    model = t1b.build_model(device, 42, str(a.cfg), ckpt_override=str(C.DET_CKPT))
     t1b.register_classes(model, det_val)
     from util.utils import load_checkpoint
     ck = load_checkpoint(str(C.DET_CKPT))
@@ -67,7 +69,7 @@ def main():
     keys = set(model.state_dict())
     load_report = {"missing_from_ckpt": sorted(keys - set(ck)), "unexpected_in_ckpt": sorted(set(ck) - keys)}
     res = {"task_id": "T-2026-10-31-grasp-pilot-probe", "unofficial": True, "cfg": str(CFG),
-           "cfg_sha256": C.sha256(CFG), "det_ckpt_sha256": C.sha256(C.DET_CKPT), "mode": a.mode,
+           "cfg": str(a.cfg), "cfg_sha256": C.sha256(Path(a.cfg)), "pred_view": a.pred_view, "det_ckpt_sha256": C.sha256(C.DET_CKPT), "mode": a.mode,
            "iface_state": a.iface_state, "perturb": a.perturb, "perturb_scale": a.perturb_scale, "videos": videos,
            "load_report": load_report}
     if a.trainable_check:
