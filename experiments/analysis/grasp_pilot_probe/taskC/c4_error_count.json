@@ -1,0 +1,1371 @@
+{
+  "task_id": "T-2026-10-31-grasp-pilot-probe",
+  "unofficial": true,
+  "preds": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-31-grasp-pilot-probe/b/plain_val_preds.json.gz",
+  "preds_sha256": "34a440031f0e62d5ace6f50e7dce6e070afcaf5711798471706364f71a452765",
+  "boxstate": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-31-grasp-pilot-probe/signals/boxstate_val.npz",
+  "boxstate_sha256": "70b3f5f4f0cb4d148c66e1df9809f98f175ef39c0ec68ba82e83c7761f0fb20e",
+  "videos": [
+    "09",
+    "10"
+  ],
+  "n_gt_kept": 4707,
+  "n_gt_without_state": 0,
+  "groups": {
+    "target": [
+      "Skewer",
+      "Bipolar Forceps",
+      "Scalpel",
+      "Syringe",
+      "Raspatory"
+    ],
+    "control": [
+      "Gauze",
+      "Mouth Gag",
+      "Suction Cannula",
+      "Tweezers"
+    ]
+  },
+  "tables": {
+    "tau0.05_s0.3": {
+      "all": {
+        "left": {
+          "n": 1480,
+          "correct": 1350,
+          "confused": 24,
+          "missed": 106,
+          "correct_rate": 0.9121621621621622,
+          "confused_rate": 0.016216216216216217,
+          "missed_rate": 0.07162162162162163
+        },
+        "right": {
+          "n": 1387,
+          "correct": 1267,
+          "confused": 39,
+          "missed": 81,
+          "correct_rate": 0.9134823359769286,
+          "confused_rate": 0.028118240807498196,
+          "missed_rate": 0.058399423215573176
+        },
+        "both": {
+          "n": 168,
+          "correct": 157,
+          "confused": 0,
+          "missed": 11,
+          "correct_rate": 0.9345238095238095,
+          "confused_rate": 0.0,
+          "missed_rate": 0.06547619047619048
+        },
+        "none": {
+          "n": 1668,
+          "correct": 1461,
+          "confused": 31,
+          "missed": 176,
+          "correct_rate": 0.8758992805755396,
+          "confused_rate": 0.01858513189448441,
+          "missed_rate": 0.10551558752997602
+        },
+        "no_annotation": {
+          "n": 4,
+          "correct": 3,
+          "confused": 1,
+          "missed": 0,
+          "correct_rate": 0.75,
+          "confused_rate": 0.25,
+          "missed_rate": 0.0
+        },
+        "summary": {
+          "n_boxes": 4707,
+          "n_errors": 469,
+          "held_share_of_errors": 0.5565031982942431,
+          "held_share_of_boxes": 0.644784363713618,
+          "held_share_of_boxes_annotated": 0.6453327663193706,
+          "held_share_of_errors_annotated": 0.5576923076923077
+        }
+      },
+      "target": {
+        "left": {
+          "n": 24,
+          "correct": 19,
+          "confused": 5,
+          "missed": 0,
+          "correct_rate": 0.7916666666666666,
+          "confused_rate": 0.20833333333333334,
+          "missed_rate": 0.0
+        },
+        "right": {
+          "n": 284,
+          "correct": 272,
+          "confused": 8,
+          "missed": 4,
+          "correct_rate": 0.9577464788732394,
+          "confused_rate": 0.028169014084507043,
+          "missed_rate": 0.014084507042253521
+        },
+        "both": {
+          "n": 101,
+          "correct": 96,
+          "confused": 0,
+          "missed": 5,
+          "correct_rate": 0.9504950495049505,
+          "confused_rate": 0.0,
+          "missed_rate": 0.04950495049504951
+        },
+        "none": {
+          "n": 88,
+          "correct": 86,
+          "confused": 0,
+          "missed": 2,
+          "correct_rate": 0.9772727272727273,
+          "confused_rate": 0.0,
+          "missed_rate": 0.022727272727272728
+        },
+        "no_annotation": {
+          "n": 1,
+          "correct": 0,
+          "confused": 1,
+          "missed": 0,
+          "correct_rate": 0.0,
+          "confused_rate": 1.0,
+          "missed_rate": 0.0
+        },
+        "summary": {
+          "n_boxes": 498,
+          "n_errors": 25,
+          "held_share_of_errors": 0.88,
+          "held_share_of_boxes": 0.821285140562249,
+          "held_share_of_boxes_annotated": 0.8229376257545271,
+          "held_share_of_errors_annotated": 0.9166666666666666
+        }
+      },
+      "control": {
+        "left": {
+          "n": 1298,
+          "correct": 1226,
+          "confused": 6,
+          "missed": 66,
+          "correct_rate": 0.9445300462249615,
+          "confused_rate": 0.004622496147919877,
+          "missed_rate": 0.05084745762711865
+        },
+        "right": {
+          "n": 256,
+          "correct": 198,
+          "confused": 7,
+          "missed": 51,
+          "correct_rate": 0.7734375,
+          "confused_rate": 0.02734375,
+          "missed_rate": 0.19921875
+        },
+        "both": {
+          "n": 42,
+          "correct": 38,
+          "confused": 0,
+          "missed": 4,
+          "correct_rate": 0.9047619047619048,
+          "confused_rate": 0.0,
+          "missed_rate": 0.09523809523809523
+        },
+        "none": {
+          "n": 1305,
+          "correct": 1185,
+          "confused": 7,
+          "missed": 113,
+          "correct_rate": 0.9080459770114943,
+          "confused_rate": 0.0053639846743295016,
+          "missed_rate": 0.08659003831417625
+        },
+        "no_annotation": {
+          "n": 3,
+          "correct": 3,
+          "confused": 0,
+          "missed": 0,
+          "correct_rate": 1.0,
+          "confused_rate": 0.0,
+          "missed_rate": 0.0
+        },
+        "summary": {
+          "n_boxes": 2904,
+          "n_errors": 254,
+          "held_share_of_errors": 0.5275590551181102,
+          "held_share_of_boxes": 0.5495867768595041,
+          "held_share_of_boxes_annotated": 0.5501551189245087,
+          "held_share_of_errors_annotated": 0.5275590551181102
+        }
+      },
+      "other": {
+        "left": {
+          "n": 158,
+          "correct": 105,
+          "confused": 13,
+          "missed": 40,
+          "correct_rate": 0.6645569620253164,
+          "confused_rate": 0.08227848101265822,
+          "missed_rate": 0.25316455696202533
+        },
+        "right": {
+          "n": 847,
+          "correct": 797,
+          "confused": 24,
+          "missed": 26,
+          "correct_rate": 0.9409681227863046,
+          "confused_rate": 0.02833530106257379,
+          "missed_rate": 0.030696576151121605
+        },
+        "both": {
+          "n": 25,
+          "correct": 23,
+          "confused": 0,
+          "missed": 2,
+          "correct_rate": 0.92,
+          "confused_rate": 0.0,
+          "missed_rate": 0.08
+        },
+        "none": {
+          "n": 275,
+          "correct": 190,
+          "confused": 24,
+          "missed": 61,
+          "correct_rate": 0.6909090909090909,
+          "confused_rate": 0.08727272727272728,
+          "missed_rate": 0.22181818181818183
+        },
+        "no_annotation": {
+          "n": 0,
+          "correct": 0,
+          "confused": 0,
+          "missed": 0,
+          "correct_rate": null,
+          "confused_rate": null,
+          "missed_rate": null
+        },
+        "summary": {
+          "n_boxes": 1305,
+          "n_errors": 190,
+          "held_share_of_errors": 0.5526315789473685,
+          "held_share_of_boxes": 0.789272030651341,
+          "held_share_of_boxes_annotated": 0.789272030651341,
+          "held_share_of_errors_annotated": 0.5526315789473685
+        }
+      }
+    },
+    "tau0.1_s0.0": {
+      "all": {
+        "left": {
+          "n": 1255,
+          "correct": 1237,
+          "confused": 5,
+          "missed": 13,
+          "correct_rate": 0.9856573705179282,
+          "confused_rate": 0.00398406374501992,
+          "missed_rate": 0.010358565737051793
+        },
+        "right": {
+          "n": 851,
+          "correct": 832,
+          "confused": 5,
+          "missed": 14,
+          "correct_rate": 0.9776733254994124,
+          "confused_rate": 0.005875440658049354,
+          "missed_rate": 0.01645123384253819
+        },
+        "both": {
+          "n": 150,
+          "correct": 148,
+          "confused": 0,
+          "missed": 2,
+          "correct_rate": 0.9866666666666667,
+          "confused_rate": 0.0,
+          "missed_rate": 0.013333333333333334
+        },
+        "none": {
+          "n": 2447,
+          "correct": 2408,
+          "confused": 9,
+          "missed": 30,
+          "correct_rate": 0.9840621168778095,
+          "confused_rate": 0.0036779730281977932,
+          "missed_rate": 0.012259910093992644
+        },
+        "no_annotation": {
+          "n": 4,
+          "correct": 4,
+          "confused": 0,
+          "missed": 0,
+          "correct_rate": 1.0,
+          "confused_rate": 0.0,
+          "missed_rate": 0.0
+        },
+        "summary": {
+          "n_boxes": 4707,
+          "n_errors": 78,
+          "held_share_of_errors": 0.5,
+          "held_share_of_boxes": 0.4792861695347355,
+          "held_share_of_boxes_annotated": 0.4796938124601318,
+          "held_share_of_errors_annotated": 0.5
+        }
+      },
+      "target": {
+        "left": {
+          "n": 23,
+          "correct": 23,
+          "confused": 0,
+          "missed": 0,
+          "correct_rate": 1.0,
+          "confused_rate": 0.0,
+          "missed_rate": 0.0
+        },
+        "right": {
+          "n": 231,
+          "correct": 231,
+          "confused": 0,
+          "missed": 0,
+          "correct_rate": 1.0,
+          "confused_rate": 0.0,
+          "missed_rate": 0.0
+        },
+        "both": {
+          "n": 99,
+          "correct": 99,
+          "confused": 0,
+          "missed": 0,
+          "correct_rate": 1.0,
+          "confused_rate": 0.0,
+          "missed_rate": 0.0
+        },
+        "none": {
+          "n": 144,
+          "correct": 144,
+          "confused": 0,
+          "missed": 0,
+          "correct_rate": 1.0,
+          "confused_rate": 0.0,
+          "missed_rate": 0.0
+        },
+        "no_annotation": {
+          "n": 1,
+          "correct": 1,
+          "confused": 0,
+          "missed": 0,
+          "correct_rate": 1.0,
+          "confused_rate": 0.0,
+          "missed_rate": 0.0
+        },
+        "summary": {
+          "n_boxes": 498,
+          "n_errors": 0,
+          "held_share_of_errors": null,
+          "held_share_of_boxes": 0.7088353413654619,
+          "held_share_of_boxes_annotated": 0.710261569416499,
+          "held_share_of_errors_annotated": null
+        }
+      },
+      "control": {
+        "left": {
+          "n": 1103,
+          "correct": 1093,
+          "confused": 2,
+          "missed": 8,
+          "correct_rate": 0.9909338168631007,
+          "confused_rate": 0.001813236627379873,
+          "missed_rate": 0.007252946509519492
+        },
+        "right": {
+          "n": 123,
+          "correct": 107,
+          "confused": 4,
+          "missed": 12,
+          "correct_rate": 0.8699186991869918,
+          "confused_rate": 0.032520325203252036,
+          "missed_rate": 0.0975609756097561
+        },
+        "both": {
+          "n": 39,
+          "correct": 37,
+          "confused": 0,
+          "missed": 2,
+          "correct_rate": 0.9487179487179487,
+          "confused_rate": 0.0,
+          "missed_rate": 0.05128205128205128
+        },
+        "none": {
+          "n": 1636,
+          "correct": 1613,
+          "confused": 6,
+          "missed": 17,
+          "correct_rate": 0.9859413202933985,
+          "confused_rate": 0.003667481662591687,
+          "missed_rate": 0.01039119804400978
+        },
+        "no_annotation": {
+          "n": 3,
+          "correct": 3,
+          "confused": 0,
+          "missed": 0,
+          "correct_rate": 1.0,
+          "confused_rate": 0.0,
+          "missed_rate": 0.0
+        },
+        "summary": {
+          "n_boxes": 2904,
+          "n_errors": 51,
+          "held_share_of_errors": 0.5490196078431373,
+          "held_share_of_boxes": 0.4356060606060606,
+          "held_share_of_boxes_annotated": 0.4360565322302654,
+          "held_share_of_errors_annotated": 0.5490196078431373
+        }
+      },
+      "other": {
+        "left": {
+          "n": 129,
+          "correct": 121,
+          "confused": 3,
+          "missed": 5,
+          "correct_rate": 0.937984496124031,
+          "confused_rate": 0.023255813953488372,
+          "missed_rate": 0.03875968992248062
+        },
+        "right": {
+          "n": 497,
+          "correct": 494,
+          "confused": 1,
+          "missed": 2,
+          "correct_rate": 0.993963782696177,
+          "confused_rate": 0.002012072434607646,
+          "missed_rate": 0.004024144869215292
+        },
+        "both": {
+          "n": 12,
+          "correct": 12,
+          "confused": 0,
+          "missed": 0,
+          "correct_rate": 1.0,
+          "confused_rate": 0.0,
+          "missed_rate": 0.0
+        },
+        "none": {
+          "n": 667,
+          "correct": 651,
+          "confused": 3,
+          "missed": 13,
+          "correct_rate": 0.9760119940029985,
+          "confused_rate": 0.004497751124437781,
+          "missed_rate": 0.019490254872563718
+        },
+        "no_annotation": {
+          "n": 0,
+          "correct": 0,
+          "confused": 0,
+          "missed": 0,
+          "correct_rate": null,
+          "confused_rate": null,
+          "missed_rate": null
+        },
+        "summary": {
+          "n_boxes": 1305,
+          "n_errors": 27,
+          "held_share_of_errors": 0.4074074074074074,
+          "held_share_of_boxes": 0.4888888888888889,
+          "held_share_of_boxes_annotated": 0.4888888888888889,
+          "held_share_of_errors_annotated": 0.4074074074074074
+        }
+      }
+    },
+    "tau0.1_s0.1": {
+      "all": {
+        "left": {
+          "n": 1255,
+          "correct": 1190,
+          "confused": 13,
+          "missed": 52,
+          "correct_rate": 0.9482071713147411,
+          "confused_rate": 0.010358565737051793,
+          "missed_rate": 0.04143426294820717
+        },
+        "right": {
+          "n": 851,
+          "correct": 781,
+          "confused": 12,
+          "missed": 58,
+          "correct_rate": 0.917743830787309,
+          "confused_rate": 0.01410105757931845,
+          "missed_rate": 0.0681551116333725
+        },
+        "both": {
+          "n": 150,
+          "correct": 146,
+          "confused": 1,
+          "missed": 3,
+          "correct_rate": 0.9733333333333334,
+          "confused_rate": 0.006666666666666667,
+          "missed_rate": 0.02
+        },
+        "none": {
+          "n": 2447,
+          "correct": 2285,
+          "confused": 38,
+          "missed": 124,
+          "correct_rate": 0.9337964854924398,
+          "confused_rate": 0.015529219452390683,
+          "missed_rate": 0.05067429505516959
+        },
+        "no_annotation": {
+          "n": 4,
+          "correct": 3,
+          "confused": 1,
+          "missed": 0,
+          "correct_rate": 0.75,
+          "confused_rate": 0.25,
+          "missed_rate": 0.0
+        },
+        "summary": {
+          "n_boxes": 4707,
+          "n_errors": 302,
+          "held_share_of_errors": 0.4602649006622517,
+          "held_share_of_boxes": 0.4792861695347355,
+          "held_share_of_boxes_annotated": 0.4796938124601318,
+          "held_share_of_errors_annotated": 0.46179401993355484
+        }
+      },
+      "target": {
+        "left": {
+          "n": 23,
+          "correct": 20,
+          "confused": 3,
+          "missed": 0,
+          "correct_rate": 0.8695652173913043,
+          "confused_rate": 0.13043478260869565,
+          "missed_rate": 0.0
+        },
+        "right": {
+          "n": 231,
+          "correct": 226,
+          "confused": 2,
+          "missed": 3,
+          "correct_rate": 0.9783549783549783,
+          "confused_rate": 0.008658008658008658,
+          "missed_rate": 0.012987012987012988
+        },
+        "both": {
+          "n": 99,
+          "correct": 98,
+          "confused": 0,
+          "missed": 1,
+          "correct_rate": 0.98989898989899,
+          "confused_rate": 0.0,
+          "missed_rate": 0.010101010101010102
+        },
+        "none": {
+          "n": 144,
+          "correct": 140,
+          "confused": 2,
+          "missed": 2,
+          "correct_rate": 0.9722222222222222,
+          "confused_rate": 0.013888888888888888,
+          "missed_rate": 0.013888888888888888
+        },
+        "no_annotation": {
+          "n": 1,
+          "correct": 0,
+          "confused": 1,
+          "missed": 0,
+          "correct_rate": 0.0,
+          "confused_rate": 1.0,
+          "missed_rate": 0.0
+        },
+        "summary": {
+          "n_boxes": 498,
+          "n_errors": 14,
+          "held_share_of_errors": 0.6428571428571429,
+          "held_share_of_boxes": 0.7088353413654619,
+          "held_share_of_boxes_annotated": 0.710261569416499,
+          "held_share_of_errors_annotated": 0.6923076923076923
+        }
+      },
+      "control": {
+        "left": {
+          "n": 1103,
+          "correct": 1066,
+          "confused": 3,
+          "missed": 34,
+          "correct_rate": 0.9664551223934723,
+          "confused_rate": 0.0027198549410698096,
+          "missed_rate": 0.030825022665457842
+        },
+        "right": {
+          "n": 123,
+          "correct": 79,
+          "confused": 4,
+          "missed": 40,
+          "correct_rate": 0.6422764227642277,
+          "confused_rate": 0.032520325203252036,
+          "missed_rate": 0.3252032520325203
+        },
+        "both": {
+          "n": 39,
+          "correct": 37,
+          "confused": 0,
+          "missed": 2,
+          "correct_rate": 0.9487179487179487,
+          "confused_rate": 0.0,
+          "missed_rate": 0.05128205128205128
+        },
+        "none": {
+          "n": 1636,
+          "correct": 1555,
+          "confused": 6,
+          "missed": 75,
+          "correct_rate": 0.9504889975550123,
+          "confused_rate": 0.003667481662591687,
+          "missed_rate": 0.04584352078239609
+        },
+        "no_annotation": {
+          "n": 3,
+          "correct": 3,
+          "confused": 0,
+          "missed": 0,
+          "correct_rate": 1.0,
+          "confused_rate": 0.0,
+          "missed_rate": 0.0
+        },
+        "summary": {
+          "n_boxes": 2904,
+          "n_errors": 164,
+          "held_share_of_errors": 0.5060975609756098,
+          "held_share_of_boxes": 0.4356060606060606,
+          "held_share_of_boxes_annotated": 0.4360565322302654,
+          "held_share_of_errors_annotated": 0.5060975609756098
+        }
+      },
+      "other": {
+        "left": {
+          "n": 129,
+          "correct": 104,
+          "confused": 7,
+          "missed": 18,
+          "correct_rate": 0.8062015503875969,
+          "confused_rate": 0.05426356589147287,
+          "missed_rate": 0.13953488372093023
+        },
+        "right": {
+          "n": 497,
+          "correct": 476,
+          "confused": 6,
+          "missed": 15,
+          "correct_rate": 0.9577464788732394,
+          "confused_rate": 0.012072434607645875,
+          "missed_rate": 0.030181086519114688
+        },
+        "both": {
+          "n": 12,
+          "correct": 11,
+          "confused": 1,
+          "missed": 0,
+          "correct_rate": 0.9166666666666666,
+          "confused_rate": 0.08333333333333333,
+          "missed_rate": 0.0
+        },
+        "none": {
+          "n": 667,
+          "correct": 590,
+          "confused": 30,
+          "missed": 47,
+          "correct_rate": 0.8845577211394303,
+          "confused_rate": 0.044977511244377814,
+          "missed_rate": 0.0704647676161919
+        },
+        "no_annotation": {
+          "n": 0,
+          "correct": 0,
+          "confused": 0,
+          "missed": 0,
+          "correct_rate": null,
+          "confused_rate": null,
+          "missed_rate": null
+        },
+        "summary": {
+          "n_boxes": 1305,
+          "n_errors": 124,
+          "held_share_of_errors": 0.3790322580645161,
+          "held_share_of_boxes": 0.4888888888888889,
+          "held_share_of_boxes_annotated": 0.4888888888888889,
+          "held_share_of_errors_annotated": 0.3790322580645161
+        }
+      }
+    },
+    "tau0.1_s0.3": {
+      "all": {
+        "left": {
+          "n": 1255,
+          "correct": 1148,
+          "confused": 19,
+          "missed": 88,
+          "correct_rate": 0.9147410358565737,
+          "confused_rate": 0.015139442231075698,
+          "missed_rate": 0.0701195219123506
+        },
+        "right": {
+          "n": 851,
+          "correct": 754,
+          "confused": 27,
+          "missed": 70,
+          "correct_rate": 0.8860164512338425,
+          "confused_rate": 0.03172737955346651,
+          "missed_rate": 0.08225616921269095
+        },
+        "both": {
+          "n": 150,
+          "correct": 140,
+          "confused": 0,
+          "missed": 10,
+          "correct_rate": 0.9333333333333333,
+          "confused_rate": 0.0,
+          "missed_rate": 0.06666666666666667
+        },
+        "none": {
+          "n": 2447,
+          "correct": 2193,
+          "confused": 48,
+          "missed": 206,
+          "correct_rate": 0.8961994278708623,
+          "confused_rate": 0.01961585615038823,
+          "missed_rate": 0.08418471597874949
+        },
+        "no_annotation": {
+          "n": 4,
+          "correct": 3,
+          "confused": 1,
+          "missed": 0,
+          "correct_rate": 0.75,
+          "confused_rate": 0.25,
+          "missed_rate": 0.0
+        },
+        "summary": {
+          "n_boxes": 4707,
+          "n_errors": 469,
+          "held_share_of_errors": 0.4562899786780384,
+          "held_share_of_boxes": 0.4792861695347355,
+          "held_share_of_boxes_annotated": 0.4796938124601318,
+          "held_share_of_errors_annotated": 0.45726495726495725
+        }
+      },
+      "target": {
+        "left": {
+          "n": 23,
+          "correct": 19,
+          "confused": 4,
+          "missed": 0,
+          "correct_rate": 0.8260869565217391,
+          "confused_rate": 0.17391304347826086,
+          "missed_rate": 0.0
+        },
+        "right": {
+          "n": 231,
+          "correct": 221,
+          "confused": 7,
+          "missed": 3,
+          "correct_rate": 0.9567099567099567,
+          "confused_rate": 0.030303030303030304,
+          "missed_rate": 0.012987012987012988
+        },
+        "both": {
+          "n": 99,
+          "correct": 94,
+          "confused": 0,
+          "missed": 5,
+          "correct_rate": 0.9494949494949495,
+          "confused_rate": 0.0,
+          "missed_rate": 0.050505050505050504
+        },
+        "none": {
+          "n": 144,
+          "correct": 139,
+          "confused": 2,
+          "missed": 3,
+          "correct_rate": 0.9652777777777778,
+          "confused_rate": 0.013888888888888888,
+          "missed_rate": 0.020833333333333332
+        },
+        "no_annotation": {
+          "n": 1,
+          "correct": 0,
+          "confused": 1,
+          "missed": 0,
+          "correct_rate": 0.0,
+          "confused_rate": 1.0,
+          "missed_rate": 0.0
+        },
+        "summary": {
+          "n_boxes": 498,
+          "n_errors": 25,
+          "held_share_of_errors": 0.76,
+          "held_share_of_boxes": 0.7088353413654619,
+          "held_share_of_boxes_annotated": 0.710261569416499,
+          "held_share_of_errors_annotated": 0.7916666666666666
+        }
+      },
+      "control": {
+        "left": {
+          "n": 1103,
+          "correct": 1037,
+          "confused": 6,
+          "missed": 60,
+          "correct_rate": 0.9401631912964642,
+          "confused_rate": 0.005439709882139619,
+          "missed_rate": 0.05439709882139619
+        },
+        "right": {
+          "n": 123,
+          "correct": 70,
+          "confused": 7,
+          "missed": 46,
+          "correct_rate": 0.5691056910569106,
+          "confused_rate": 0.056910569105691054,
+          "missed_rate": 0.37398373983739835
+        },
+        "both": {
+          "n": 39,
+          "correct": 35,
+          "confused": 0,
+          "missed": 4,
+          "correct_rate": 0.8974358974358975,
+          "confused_rate": 0.0,
+          "missed_rate": 0.10256410256410256
+        },
+        "none": {
+          "n": 1636,
+          "correct": 1505,
+          "confused": 7,
+          "missed": 124,
+          "correct_rate": 0.9199266503667481,
+          "confused_rate": 0.004278728606356968,
+          "missed_rate": 0.07579462102689487
+        },
+        "no_annotation": {
+          "n": 3,
+          "correct": 3,
+          "confused": 0,
+          "missed": 0,
+          "correct_rate": 1.0,
+          "confused_rate": 0.0,
+          "missed_rate": 0.0
+        },
+        "summary": {
+          "n_boxes": 2904,
+          "n_errors": 254,
+          "held_share_of_errors": 0.484251968503937,
+          "held_share_of_boxes": 0.4356060606060606,
+          "held_share_of_boxes_annotated": 0.4360565322302654,
+          "held_share_of_errors_annotated": 0.484251968503937
+        }
+      },
+      "other": {
+        "left": {
+          "n": 129,
+          "correct": 92,
+          "confused": 9,
+          "missed": 28,
+          "correct_rate": 0.7131782945736435,
+          "confused_rate": 0.06976744186046512,
+          "missed_rate": 0.21705426356589147
+        },
+        "right": {
+          "n": 497,
+          "correct": 463,
+          "confused": 13,
+          "missed": 21,
+          "correct_rate": 0.93158953722334,
+          "confused_rate": 0.026156941649899398,
+          "missed_rate": 0.04225352112676056
+        },
+        "both": {
+          "n": 12,
+          "correct": 11,
+          "confused": 0,
+          "missed": 1,
+          "correct_rate": 0.9166666666666666,
+          "confused_rate": 0.0,
+          "missed_rate": 0.08333333333333333
+        },
+        "none": {
+          "n": 667,
+          "correct": 549,
+          "confused": 39,
+          "missed": 79,
+          "correct_rate": 0.823088455772114,
+          "confused_rate": 0.05847076461769116,
+          "missed_rate": 0.1184407796101949
+        },
+        "no_annotation": {
+          "n": 0,
+          "correct": 0,
+          "confused": 0,
+          "missed": 0,
+          "correct_rate": null,
+          "confused_rate": null,
+          "missed_rate": null
+        },
+        "summary": {
+          "n_boxes": 1305,
+          "n_errors": 190,
+          "held_share_of_errors": 0.37894736842105264,
+          "held_share_of_boxes": 0.4888888888888889,
+          "held_share_of_boxes_annotated": 0.4888888888888889,
+          "held_share_of_errors_annotated": 0.37894736842105264
+        }
+      }
+    },
+    "tau0.1_s0.5": {
+      "all": {
+        "left": {
+          "n": 1255,
+          "correct": 1115,
+          "confused": 24,
+          "missed": 116,
+          "correct_rate": 0.8884462151394422,
+          "confused_rate": 0.019123505976095617,
+          "missed_rate": 0.09243027888446215
+        },
+        "right": {
+          "n": 851,
+          "correct": 731,
+          "confused": 38,
+          "missed": 82,
+          "correct_rate": 0.8589894242068156,
+          "confused_rate": 0.04465334900117509,
+          "missed_rate": 0.0963572267920094
+        },
+        "both": {
+          "n": 150,
+          "correct": 135,
+          "confused": 0,
+          "missed": 15,
+          "correct_rate": 0.9,
+          "confused_rate": 0.0,
+          "missed_rate": 0.1
+        },
+        "none": {
+          "n": 2447,
+          "correct": 2085,
+          "confused": 59,
+          "missed": 303,
+          "correct_rate": 0.8520637515324888,
+          "confused_rate": 0.024111156518185534,
+          "missed_rate": 0.1238250919493257
+        },
+        "no_annotation": {
+          "n": 4,
+          "correct": 3,
+          "confused": 0,
+          "missed": 1,
+          "correct_rate": 0.75,
+          "confused_rate": 0.0,
+          "missed_rate": 0.25
+        },
+        "summary": {
+          "n_boxes": 4707,
+          "n_errors": 638,
+          "held_share_of_errors": 0.43103448275862066,
+          "held_share_of_boxes": 0.4792861695347355,
+          "held_share_of_boxes_annotated": 0.4796938124601318,
+          "held_share_of_errors_annotated": 0.4317111459968603
+        }
+      },
+      "target": {
+        "left": {
+          "n": 23,
+          "correct": 17,
+          "confused": 6,
+          "missed": 0,
+          "correct_rate": 0.7391304347826086,
+          "confused_rate": 0.2608695652173913,
+          "missed_rate": 0.0
+        },
+        "right": {
+          "n": 231,
+          "correct": 214,
+          "confused": 13,
+          "missed": 4,
+          "correct_rate": 0.9264069264069265,
+          "confused_rate": 0.05627705627705628,
+          "missed_rate": 0.017316017316017316
+        },
+        "both": {
+          "n": 99,
+          "correct": 91,
+          "confused": 0,
+          "missed": 8,
+          "correct_rate": 0.9191919191919192,
+          "confused_rate": 0.0,
+          "missed_rate": 0.08080808080808081
+        },
+        "none": {
+          "n": 144,
+          "correct": 129,
+          "confused": 10,
+          "missed": 5,
+          "correct_rate": 0.8958333333333334,
+          "confused_rate": 0.06944444444444445,
+          "missed_rate": 0.034722222222222224
+        },
+        "no_annotation": {
+          "n": 1,
+          "correct": 0,
+          "confused": 0,
+          "missed": 1,
+          "correct_rate": 0.0,
+          "confused_rate": 0.0,
+          "missed_rate": 1.0
+        },
+        "summary": {
+          "n_boxes": 498,
+          "n_errors": 47,
+          "held_share_of_errors": 0.6595744680851063,
+          "held_share_of_boxes": 0.7088353413654619,
+          "held_share_of_boxes_annotated": 0.710261569416499,
+          "held_share_of_errors_annotated": 0.6739130434782609
+        }
+      },
+      "control": {
+        "left": {
+          "n": 1103,
+          "correct": 1018,
+          "confused": 7,
+          "missed": 78,
+          "correct_rate": 0.9229374433363554,
+          "confused_rate": 0.006346328195829556,
+          "missed_rate": 0.07071622846781506
+        },
+        "right": {
+          "n": 123,
+          "correct": 68,
+          "confused": 7,
+          "missed": 48,
+          "correct_rate": 0.5528455284552846,
+          "confused_rate": 0.056910569105691054,
+          "missed_rate": 0.3902439024390244
+        },
+        "both": {
+          "n": 39,
+          "correct": 33,
+          "confused": 0,
+          "missed": 6,
+          "correct_rate": 0.8461538461538461,
+          "confused_rate": 0.0,
+          "missed_rate": 0.15384615384615385
+        },
+        "none": {
+          "n": 1636,
+          "correct": 1438,
+          "confused": 13,
+          "missed": 185,
+          "correct_rate": 0.8789731051344744,
+          "confused_rate": 0.007946210268948655,
+          "missed_rate": 0.11308068459657701
+        },
+        "no_annotation": {
+          "n": 3,
+          "correct": 3,
+          "confused": 0,
+          "missed": 0,
+          "correct_rate": 1.0,
+          "confused_rate": 0.0,
+          "missed_rate": 0.0
+        },
+        "summary": {
+          "n_boxes": 2904,
+          "n_errors": 344,
+          "held_share_of_errors": 0.42441860465116277,
+          "held_share_of_boxes": 0.4356060606060606,
+          "held_share_of_boxes_annotated": 0.4360565322302654,
+          "held_share_of_errors_annotated": 0.42441860465116277
+        }
+      },
+      "other": {
+        "left": {
+          "n": 129,
+          "correct": 80,
+          "confused": 11,
+          "missed": 38,
+          "correct_rate": 0.6201550387596899,
+          "confused_rate": 0.08527131782945736,
+          "missed_rate": 0.29457364341085274
+        },
+        "right": {
+          "n": 497,
+          "correct": 449,
+          "confused": 18,
+          "missed": 30,
+          "correct_rate": 0.903420523138833,
+          "confused_rate": 0.03621730382293763,
+          "missed_rate": 0.060362173038229376
+        },
+        "both": {
+          "n": 12,
+          "correct": 11,
+          "confused": 0,
+          "missed": 1,
+          "correct_rate": 0.9166666666666666,
+          "confused_rate": 0.0,
+          "missed_rate": 0.08333333333333333
+        },
+        "none": {
+          "n": 667,
+          "correct": 518,
+          "confused": 36,
+          "missed": 113,
+          "correct_rate": 0.7766116941529235,
+          "confused_rate": 0.053973013493253376,
+          "missed_rate": 0.16941529235382308
+        },
+        "no_annotation": {
+          "n": 0,
+          "correct": 0,
+          "confused": 0,
+          "missed": 0,
+          "correct_rate": null,
+          "confused_rate": null,
+          "missed_rate": null
+        },
+        "summary": {
+          "n_boxes": 1305,
+          "n_errors": 247,
+          "held_share_of_errors": 0.3967611336032389,
+          "held_share_of_boxes": 0.4888888888888889,
+          "held_share_of_boxes_annotated": 0.4888888888888889,
+          "held_share_of_errors_annotated": 0.3967611336032389
+        }
+      }
+    },
+    "tau0.2_s0.3": {
+      "all": {
+        "left": {
+          "n": 904,
+          "correct": 838,
+          "confused": 8,
+          "missed": 58,
+          "correct_rate": 0.9269911504424779,
+          "confused_rate": 0.008849557522123894,
+          "missed_rate": 0.06415929203539823
+        },
+        "right": {
+          "n": 327,
+          "correct": 279,
+          "confused": 13,
+          "missed": 35,
+          "correct_rate": 0.8532110091743119,
+          "confused_rate": 0.039755351681957186,
+          "missed_rate": 0.10703363914373089
+        },
+        "both": {
+          "n": 97,
+          "correct": 93,
+          "confused": 0,
+          "missed": 4,
+          "correct_rate": 0.9587628865979382,
+          "confused_rate": 0.0,
+          "missed_rate": 0.041237113402061855
+        },
+        "none": {
+          "n": 3375,
+          "correct": 3025,
+          "confused": 73,
+          "missed": 277,
+          "correct_rate": 0.8962962962962963,
+          "confused_rate": 0.02162962962962963,
+          "missed_rate": 0.08207407407407408
+        },
+        "no_annotation": {
+          "n": 4,
+          "correct": 3,
+          "confused": 1,
+          "missed": 0,
+          "correct_rate": 0.75,
+          "confused_rate": 0.25,
+          "missed_rate": 0.0
+        },
+        "summary": {
+          "n_boxes": 4707,
+          "n_errors": 469,
+          "held_share_of_errors": 0.2515991471215352,
+          "held_share_of_boxes": 0.28213299341406417,
+          "held_share_of_boxes_annotated": 0.28237295343397834,
+          "held_share_of_errors_annotated": 0.25213675213675213
+        }
+      },
+      "target": {
+        "left": {
+          "n": 13,
+          "correct": 12,
+          "confused": 1,
+          "missed": 0,
+          "correct_rate": 0.9230769230769231,
+          "confused_rate": 0.07692307692307693,
+          "missed_rate": 0.0
+        },
+        "right": {
+          "n": 148,
+          "correct": 140,
+          "confused": 6,
+          "missed": 2,
+          "correct_rate": 0.9459459459459459,
+          "confused_rate": 0.04054054054054054,
+          "missed_rate": 0.013513513513513514
+        },
+        "both": {
+          "n": 64,
+          "correct": 63,
+          "confused": 0,
+          "missed": 1,
+          "correct_rate": 0.984375,
+          "confused_rate": 0.0,
+          "missed_rate": 0.015625
+        },
+        "none": {
+          "n": 272,
+          "correct": 258,
+          "confused": 6,
+          "missed": 8,
+          "correct_rate": 0.9485294117647058,
+          "confused_rate": 0.022058823529411766,
+          "missed_rate": 0.029411764705882353
+        },
+        "no_annotation": {
+          "n": 1,
+          "correct": 0,
+          "confused": 1,
+          "missed": 0,
+          "correct_rate": 0.0,
+          "confused_rate": 1.0,
+          "missed_rate": 0.0
+        },
+        "summary": {
+          "n_boxes": 498,
+          "n_errors": 25,
+          "held_share_of_errors": 0.4,
+          "held_share_of_boxes": 0.45180722891566266,
+          "held_share_of_boxes_annotated": 0.45271629778672035,
+          "held_share_of_errors_annotated": 0.4166666666666667
+        }
+      },
+      "control": {
+        "left": {
+          "n": 810,
+          "correct": 763,
+          "confused": 5,
+          "missed": 42,
+          "correct_rate": 0.9419753086419753,
+          "confused_rate": 0.006172839506172839,
+          "missed_rate": 0.05185185185185185
+        },
+        "right": {
+          "n": 73,
+          "correct": 53,
+          "confused": 2,
+          "missed": 18,
+          "correct_rate": 0.726027397260274,
+          "confused_rate": 0.0273972602739726,
+          "missed_rate": 0.2465753424657534
+        },
+        "both": {
+          "n": 30,
+          "correct": 28,
+          "confused": 0,
+          "missed": 2,
+          "correct_rate": 0.9333333333333333,
+          "confused_rate": 0.0,
+          "missed_rate": 0.06666666666666667
+        },
+        "none": {
+          "n": 1988,
+          "correct": 1803,
+          "confused": 13,
+          "missed": 172,
+          "correct_rate": 0.9069416498993964,
+          "confused_rate": 0.006539235412474849,
+          "missed_rate": 0.08651911468812877
+        },
+        "no_annotation": {
+          "n": 3,
+          "correct": 3,
+          "confused": 0,
+          "missed": 0,
+          "correct_rate": 1.0,
+          "confused_rate": 0.0,
+          "missed_rate": 0.0
+        },
+        "summary": {
+          "n_boxes": 2904,
+          "n_errors": 254,
+          "held_share_of_errors": 0.27165354330708663,
+          "held_share_of_boxes": 0.3143939393939394,
+          "held_share_of_boxes_annotated": 0.31471906239227854,
+          "held_share_of_errors_annotated": 0.27165354330708663
+        }
+      },
+      "other": {
+        "left": {
+          "n": 81,
+          "correct": 63,
+          "confused": 2,
+          "missed": 16,
+          "correct_rate": 0.7777777777777778,
+          "confused_rate": 0.024691358024691357,
+          "missed_rate": 0.19753086419753085
+        },
+        "right": {
+          "n": 106,
+          "correct": 86,
+          "confused": 5,
+          "missed": 15,
+          "correct_rate": 0.8113207547169812,
+          "confused_rate": 0.04716981132075472,
+          "missed_rate": 0.14150943396226415
+        },
+        "both": {
+          "n": 3,
+          "correct": 2,
+          "confused": 0,
+          "missed": 1,
+          "correct_rate": 0.6666666666666666,
+          "confused_rate": 0.0,
+          "missed_rate": 0.3333333333333333
+        },
+        "none": {
+          "n": 1115,
+          "correct": 964,
+          "confused": 54,
+          "missed": 97,
+          "correct_rate": 0.8645739910313901,
+          "confused_rate": 0.0484304932735426,
+          "missed_rate": 0.08699551569506726
+        },
+        "no_annotation": {
+          "n": 0,
+          "correct": 0,
+          "confused": 0,
+          "missed": 0,
+          "correct_rate": null,
+          "confused_rate": null,
+          "missed_rate": null
+        },
+        "summary": {
+          "n_boxes": 1305,
+          "n_errors": 190,
+          "held_share_of_errors": 0.20526315789473684,
+          "held_share_of_boxes": 0.14559386973180077,
+          "held_share_of_boxes_annotated": 0.14559386973180077,
+          "held_share_of_errors_annotated": 0.20526315789473684
+        }
+      }
+    }
+  },
+  "positive_controls": {
+    "victim_ann_id": 318,
+    "victim_before": "correct",
+    "victim_after_drop": "missed",
+    "n_changed_by_drop": 1,
+    "missed_before": 59,
+    "missed_with_gt_added": 0
+  }
+}

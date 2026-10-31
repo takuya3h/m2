@@ -253,6 +253,8 @@ def eval_detection(model, loader, imgid_to_ctx, device, zero_ctx, limit=None,
             break
         images = [img.to(device) for img in images]
         model.set_phase_context(ctx_for_targets(targets, imgid_to_ctx, device, zero_ctx, dim))
+        if hasattr(model, "set_grasp_maps"):  # 案 B の地図（契約 T-2026-10-31-grasp-pilot-probe）。持たない検出器では何もしない
+            model.set_grasp_maps([t["grasp_map"] for t in targets])
         outputs = model(images)
         outputs = [{k: v.to("cpu") for k, v in t.items()} for t in outputs]
         evaluator.update({t["image_id"]: o for t, o in zip(targets, outputs)})
@@ -334,9 +336,18 @@ def main():
         # 契約 T-2026-10-19-stage2-pilot-four-new-types の extra_q。labels に見落としの印を足した train の読み込み（同じ増強）
         from stage2pilot.pd_four import build_missed_train_loader, load_missed_ids
         det_train = build_missed_train_loader(EGO_ROOT, ANN_DIR, load_missed_ids(args.missed_set))
+    elif args.grasp_map:
+        # 契約 T-2026-10-31-grasp-pilot-probe の案 B。同じ読み込み・同じ増強に、画像と同じ変換を掛けた把持の地図を足す
+        from grasppilot import grasp_signals as grasp_g
+        from grasppilot.pd_grasp import build_grasp_loader
+        grasp_index = grasp_g.HTSIndex(("train", "val"))
+        det_train = build_grasp_loader(EGO_ROOT, ANN_DIR, True, args.grasp_map, grasp_index)
     else:
         det_train = build_det_loader(train=True)
-    det_val = build_det_loader(train=False)
+    if args.grasp_map:
+        det_val = build_grasp_loader(EGO_ROOT, ANN_DIR, False, args.grasp_map, grasp_index)
+    else:
+        det_val = build_det_loader(train=False)
     model_cfg = {"ca": MODEL_CFG_CA, "camt": MODEL_CFG_CAMT, "hc": MODEL_CFG_HC,
                  "clsbias": MODEL_CFG_CLSBIAS}.get(args.inject, MODEL_CFG)
     # 明示 override（T1B_WORK_DIR / T1B_RUN_NAME と同じ作法）。phase ctx の次元を変える段
@@ -349,7 +360,12 @@ def main():
     if args.fixed_table:
         model.set_fixed_table(np.asarray(json.loads(Path(args.fixed_table).read_text())["B"], dtype=np.float32))
 
-    ctx_train_src, ctx_val_src, ctx_dim = resolve_ctx_sources(args)
+    if args.grasp_map:
+        if args.signal_train or args.signal_val:
+            raise SystemExit("[t1b] --grasp-map は --signal-train・--signal-val と組み合わせない")
+        ctx_train_src, ctx_val_src, ctx_dim = {}, {}, 1  # 案 B の検出器は信号を使わない（地図だけ）
+    else:
+        ctx_train_src, ctx_val_src, ctx_dim = resolve_ctx_sources(args)
     ctx_tr = build_imgid_to_ctx(det_train.dataset.coco, ctx_train_src, ctx_dim)
     ctx_va = build_imgid_to_ctx(det_val.dataset.coco, ctx_val_src, ctx_dim)
     imgid_to_ctx_tr, miss_tr = ctx_tr
@@ -424,6 +440,7 @@ def main():
             "phase_params": n_phase, "total_trainable": n_train,
             **({"fixed_epochs": True, "result_selection": "final_epoch"} if args.fixed_epochs else {}),
             **({"missed_set": args.missed_set} if args.missed_set else {}),
+            **({"grasp_map": args.grasp_map} if args.grasp_map else {}),
         }} if (args.det_ckpt or args.signal_train or args.patience is not None or args.eval_only) else {}),
     })
 
@@ -472,6 +489,8 @@ def main():
                 break
             images, targets = batch
             model.set_phase_context(ctx_for_targets(targets, imgid_to_ctx_tr, device, args.zero_ctx, ctx_dim))
+            if args.grasp_map:
+                model.set_grasp_maps([t["grasp_map"] for t in targets])
             if amp_dtype is None:
                 loss_dict = model(images, targets)
                 loss = sum(loss_dict.values())
@@ -712,6 +731,9 @@ def parse_args():
                         "経路も従来と同一（autocast を張らない）。bf16/fp16 は自動混合精度。"
                         "fp16 は GradScaler による勾配の尺度調整を伴う。**評価は常に単精度で行う**")
     # 契約 T-2026-10-19-stage2-pilot-four-new-types で足した。渡さなければ従来の経路のまま
+    p.add_argument("--grasp-map", default=None, choices=("zero", "gt"),
+                   help="契約 T-2026-10-31-grasp-pilot-probe の案 B。把持の地図（zero は全 0、gt は正解）を画像と同じ変換で読み、"
+                        "検出器の set_grasp_maps に渡す。渡さなければ従来の経路のまま")
     p.add_argument("--missed-set", default=None,
                    help="extra_q の学習に使う見落としの集合の json（キー missed_ann_ids）。train の labels に見落としの印を足す")
     return p.parse_args()

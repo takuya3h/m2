@@ -1,0 +1,332 @@
+{
+  "task_id": "T-2026-10-31-grasp-pilot-probe",
+  "unofficial": true,
+  "case_A": {
+    "tower": {
+      "all": {
+        "jaccard": 0.7762185528074379,
+        "accuracy": 0.8712871287128713,
+        "per_class_jaccard": {
+          "anesthesia": 0.9603960396039604,
+          "closure": 0.7539823008849558,
+          "design": 0.9615384615384616,
+          "disinfection": 0.0,
+          "dissection": 0.7792207792207793,
+          "dressing": 0.7692307692307693,
+          "hemostasis": 0.3614457831325301,
+          "incision": 0.8477157360406091,
+          "irrigation": 0.0
+        },
+        "per_video": {
+          "09": {
+            "jaccard": 0.9931717398646169,
+            "accuracy": 0.9961389961389961,
+            "n": 518
+          },
+          "10": {
+            "jaccard": 0.6753695847911568,
+            "accuracy": 0.8064192577733199,
+            "n": 997
+          }
+        },
+        "n": 1515
+      },
+      "annotated": {
+        "jaccard": 0.7770292529590558,
+        "accuracy": 0.8718626155878467,
+        "per_class_jaccard": {
+          "anesthesia": 0.9603960396039604,
+          "closure": 0.7539823008849558,
+          "design": 0.9615384615384616,
+          "disinfection": 0.0,
+          "dissection": 0.7804878048780488,
+          "dressing": 0.7692307692307693,
+          "hemostasis": 0.36585365853658536,
+          "incision": 0.8477157360406091,
+          "irrigation": 0.0
+        },
+        "per_video": {
+          "09": {
+            "jaccard": 0.9931717398646169,
+            "accuracy": 0.9961389961389961,
+            "n": 518
+          },
+          "10": {
+            "jaccard": 0.6762405647903847,
+            "accuracy": 0.8072289156626506,
+            "n": 996
+          }
+        },
+        "n": 1514
+      }
+    },
+    "empty": {
+      "run": "grasppilot_dp_001_GA_empty_ep4_seed42",
+      "all": {
+        "jaccard": 0.7762185528074379,
+        "accuracy": 0.8712871287128713,
+        "per_class_jaccard": {
+          "anesthesia": 0.9603960396039604,
+          "closure": 0.7539823008849558,
+          "design": 0.9615384615384616,
+          "disinfection": 0.0,
+          "dissection": 0.7792207792207793,
+          "dressing": 0.7692307692307693,
+          "hemostasis": 0.3614457831325301,
+          "incision": 0.8477157360406091,
+          "irrigation": 0.0
+        },
+        "per_video": {
+          "09": {
+            "jaccard": 0.9931717398646169,
+            "accuracy": 0.9961389961389961,
+            "n": 518
+          },
+          "10": {
+            "jaccard": 0.6753695847911568,
+            "accuracy": 0.8064192577733199,
+            "n": 997
+          }
+        },
+        "n": 1515,
+        "d_empty": {
+          "jaccard": 0.0,
+          "accuracy": 0.0
+        },
+        "d_tower": {
+          "jaccard": 0.0,
+          "accuracy": 0.0
+        },
+        "d_empty_per_video": {
+          "09": {
+            "jaccard": 0.0,
+            "accuracy": 0.0
+          },
+          "10": {
+            "jaccard": 0.0,
+            "accuracy": 0.0
+          }
+        }
+      },
+      "annotated": {
+        "jaccard": 0.7770292529590558,
+        "accuracy": 0.8718626155878467,
+        "per_class_jaccard": {
+          "anesthesia": 0.9603960396039604,
+          "closure": 0.7539823008849558,
+          "design": 0.9615384615384616,
+          "disinfection": 0.0,
+          "dissection": 0.7804878048780488,
+          "dressing": 0.7692307692307693,
+          "hemostasis": 0.36585365853658536,
+          "incision": 0.8477157360406091,
+          "irrigation": 0.0
+        },
+        "per_video": {
+          "09": {
+            "jaccard": 0.9931717398646169,
+            "accuracy": 0.9961389961389961,
+            "n": 518
+          },
+          "10": {
+            "jaccard": 0.6762405647903847,
+            "accuracy": 0.8072289156626506,
+            "n": 996
+          }
+        },
+        "n": 1514,
+        "d_empty": {
+          "jaccard": 0.0,
+          "accuracy": 0.0
+        },
+        "d_tower": {
+          "jaccard": 0.0,
+          "accuracy": 0.0
+        },
+        "d_empty_per_video": {
+          "09": {
+            "jaccard": 0.0,
+            "accuracy": 0.0
+          },
+          "10": {
+            "jaccard": 0.0,
+            "accuracy": 0.0
+          }
+        }
+      },
+      "recorded_jaccard": 0.7762185528074379,
+      "recorded_accuracy": 0.8712871287128713,
+      "result_epoch": 4,
+      "elapsed_seconds": 0.7655619792640209,
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 0.5151980727910995,
+          "val_jaccard": 0.7762185528074379,
+          "val_accuracy": 0.8712871287128713,
+          "iface_max_abs": 0.0,
+          "iface_l2": 0.0
+        },
+        {
+          "epoch": 2,
+          "train_loss": 0.5151980727910995,
+          "val_jaccard": 0.7762185528074379,
+          "val_accuracy": 0.8712871287128713,
+          "iface_max_abs": 0.0,
+          "iface_l2": 0.0
+        },
+        {
+          "epoch": 3,
+          "train_loss": 0.5151980727910995,
+          "val_jaccard": 0.7762185528074379,
+          "val_accuracy": 0.8712871287128713,
+          "iface_max_abs": 0.0,
+          "iface_l2": 0.0
+        },
+        {
+          "epoch": 4,
+          "train_loss": 0.5151980727910995,
+          "val_jaccard": 0.7762185528074379,
+          "val_accuracy": 0.8712871287128713,
+          "iface_max_abs": 0.0,
+          "iface_l2": 0.0
+        }
+      ],
+      "recompute_matches_record": true
+    },
+    "gt": {
+      "run": "grasppilot_dp_002_GA_gt_ep4_seed42",
+      "all": {
+        "jaccard": 0.779040733851697,
+        "accuracy": 0.8792079207920792,
+        "per_class_jaccard": {
+          "anesthesia": 0.9603960396039604,
+          "closure": 0.7689594356261023,
+          "design": 0.970873786407767,
+          "disinfection": 0.0,
+          "dissection": 0.782258064516129,
+          "dressing": 0.7692307692307693,
+          "hemostasis": 0.34146341463414637,
+          "incision": 0.8601036269430051,
+          "irrigation": 0.0
+        },
+        "per_video": {
+          "09": {
+            "jaccard": 0.9903211445764637,
+            "accuracy": 0.9942084942084942,
+            "n": 518
+          },
+          "10": {
+            "jaccard": 0.6873382914299127,
+            "accuracy": 0.8194583751253761,
+            "n": 997
+          }
+        },
+        "n": 1515,
+        "d_empty": {
+          "jaccard": 0.002822181044259131,
+          "accuracy": 0.007920792079207928
+        },
+        "d_tower": {
+          "jaccard": 0.002822181044259131,
+          "accuracy": 0.007920792079207928
+        },
+        "d_empty_per_video": {
+          "09": {
+            "jaccard": -0.002850595288153235,
+            "accuracy": -0.0019305019305019266
+          },
+          "10": {
+            "jaccard": 0.011968706638755822,
+            "accuracy": 0.013039117352056206
+          }
+        }
+      },
+      "annotated": {
+        "jaccard": 0.7798234970753192,
+        "accuracy": 0.8797886393659181,
+        "per_class_jaccard": {
+          "anesthesia": 0.9603960396039604,
+          "closure": 0.7689594356261023,
+          "design": 0.970873786407767,
+          "disinfection": 0.0,
+          "dissection": 0.7835218093699515,
+          "dressing": 0.7692307692307693,
+          "hemostasis": 0.345679012345679,
+          "incision": 0.8601036269430051,
+          "irrigation": 0.0
+        },
+        "per_video": {
+          "09": {
+            "jaccard": 0.9903211445764637,
+            "accuracy": 0.9942084942084942,
+            "n": 518
+          },
+          "10": {
+            "jaccard": 0.6881828236826557,
+            "accuracy": 0.820281124497992,
+            "n": 996
+          }
+        },
+        "n": 1514,
+        "d_empty": {
+          "jaccard": 0.002794244116263389,
+          "accuracy": 0.00792602377807139
+        },
+        "d_tower": {
+          "jaccard": 0.002794244116263389,
+          "accuracy": 0.00792602377807139
+        },
+        "d_empty_per_video": {
+          "09": {
+            "jaccard": -0.002850595288153235,
+            "accuracy": -0.0019305019305019266
+          },
+          "10": {
+            "jaccard": 0.011942258892270963,
+            "accuracy": 0.013052208835341306
+          }
+        }
+      },
+      "recorded_jaccard": 0.779040733851697,
+      "recorded_accuracy": 0.8792079207920792,
+      "result_epoch": 4,
+      "elapsed_seconds": 0.7477628653869033,
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 0.5146612614393234,
+          "val_jaccard": 0.7705028520133486,
+          "val_accuracy": 0.8732673267326733,
+          "iface_max_abs": 0.0048557184636592865,
+          "iface_l2": 0.07864562422037125
+        },
+        {
+          "epoch": 2,
+          "train_loss": 0.5132241249084473,
+          "val_jaccard": 0.7780500381175222,
+          "val_accuracy": 0.8765676567656766,
+          "iface_max_abs": 0.00954773835837841,
+          "iface_l2": 0.14563101530075073
+        },
+        {
+          "epoch": 3,
+          "train_loss": 0.5122650504112244,
+          "val_jaccard": 0.7794066254578124,
+          "val_accuracy": 0.8778877887788779,
+          "iface_max_abs": 0.014225051738321781,
+          "iface_l2": 0.20962080359458923
+        },
+        {
+          "epoch": 4,
+          "train_loss": 0.511515673995018,
+          "val_jaccard": 0.779040733851697,
+          "val_accuracy": 0.8792079207920792,
+          "iface_max_abs": 0.018697069957852364,
+          "iface_l2": 0.26915591955184937
+        }
+      ],
+      "recompute_matches_record": true
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "cand": "mmdet",
+  "val_image": "09_1_0446",
+  "videos": [
+    "09"
+  ],
+  "source": "mmdet 3.3.0 / mmcv 2.1.0（既存の .venv）",
+  "config": "mask2former/mask2former_r50_8xb2-lsj-50e_coco.py",
+  "weight": {
+    "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-31-grasp-pilot-probe/e/weights/mmdet/mask2former_r50_8xb2-lsj-50e_coco_20220506_191028-41b088b6.pth",
+    "sha256": "41b088b62838c986004f94bab2870395b669ec6bd11b6590369b838b0de06879",
+    "expected_prefix": "41b088b6",
+    "ok": true
+  },
+  "weight_tampered_copy_rejected": true,
+  "load": {
+    "loaded": 610,
+    "skipped_shape": 0,
+    "missing": 0
+  },
+  "n_pred": 100,
+  "n_score_ge_0_5": 3,
+  "top_labels": [
+    0,
+    59,
+    73,
+    56,
+    59,
+    57,
+    59,
+    59,
+    57,
+    59
+  ],
+  "mask_shape": [
+    100,
+    750,
+    1333
+  ]
+}
