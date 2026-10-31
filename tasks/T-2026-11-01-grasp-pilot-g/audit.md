@@ -181,3 +181,33 @@ task-start の前の分類器で全区分 0 件。task-start の後に在る無�
 - GPU 1: `grasppilot2_G_H1_seed42`、終われば続けて `grasppilot2_G_H2_seed42`。GPU 1 には案 C の補助損失なしの腕（01:31 起動、最大確保 29.0 GB）を並べた
   （G 1 本 10.3 GB ＋ 工程塔 29.0 GB ≒ 39 GB < 48 GB。確定の G は信号と腕の全部の前にあるため GPU 0 に単独で置いた）
 - 学習前の val（確定の G）: segm mAP 0.0004、把持関係 5 クラス 0.0015（頭は乱数）
+
+## Task F — 案 C の 3 腕（準備）
+
+### F-1 補助の頭（`scripts/grasppilot/ptower_aux.py`、起動 `scripts/grasppilot/run_c.sh`）
+
+- 記録の工程塔（`STORE/efros_ptower` の stage1_ptower_20_005・008・009。`scripts/stage1_ptower_20.py` の P15 = 三周目の関数）と同じ部品を呼ぶ派生。
+  `stage1_ptower_r3.py`・`stage1_ptower.py`・third_party は変えていない
+- 頭: GAP の特徴（2048）→ 48 の線形。手ごとの 16 値の softmax と t の交差エントロピーを 3 つの手で平均。損失 = 工程の交差エントロピー + w × 補助損失
+  （G を教師・入れ替えた教師 w = 0.3、補助損失なし w = 0 で標的は一様 1/16。頭は 3 腕とも置き、最適化の対象に入れる）
+- 長さ: 記録の `finetune_history.json` は 21 epoch 回し、17 epoch 目の検証の後に学習率を下げた（18 epoch 目から 1e-5）。
+  本契約は止めずに 21 epoch 回し、17 epoch 目の後に × 0.1（`ft_lr_decay`）。最後の状態を使う。選ばない
+- 処方は記録の config.yaml を読む（batch 16 × accum 4、AdamW lr 1e-4・wd 1e-4、単精度、短辺 800、反転、stem 凍結、COCO の初期化）
+- 特徴の取り出しは折り A の train と val の 11,172 フレームだけ（記録は全動画 15,437 フレーム）。時間ヘッドは記録の 009 の config.yaml の処方
+  （TeCNO C、8 層、平滑化 0.3、lr 5e-4・wd 0.01、warmup 2、cosine の T_max = 50 − 2）で 18 epoch、最後の状態。test のマニフェストは開かない
+
+### F-1 重み 0 の経路と頭の無い経路（`experiments/analysis/grasp_pilot_g/caseC/f1_aux0_check.json`）
+
+    $ CUDA_VISIBLE_DEVICES=1 .venv/bin/python scripts/grasppilot/ptower_aux.py check --steps 4 --out …/f1_aux0_check.json
+    plain losses [2.148359537124634, 1.9859226942062378, 1.7949228286743164, 1.612847089767456]
+    aux0  losses [2.148359537124634, 1.9859226942062378, 1.7949228286743164, 1.612847089767456]
+    max_abs_loss_diff 0.0、layer4 の和の差 0.0、fc の和の差 0.0
+
+同じ初期化・同じ 4 batch（batch 4、反転なし）で、頭の無い経路（`model(images)` の交差エントロピー）と重み 0 の経路の損失と 4 歩の更新の後の重みがビットで一致
+
+### F-3 時間ヘッドの経路の確かめ（`experiments/analysis/grasp_pilot_g/caseC/head_on_record_features.json`）
+
+記録の特徴（`PT_CACHE`、一本目と同じ）の train・val の行に本契約の `head` を当てた（試走の置き場 `$S/smoke/head_record_features`）。
+**epoch 8 の val は Jaccard 0.776219・accuracy 0.871287 で、記録の塔（最良 epoch 8、0.7762186・0.8712871）と一致した**。
+**epoch 18（契約の止め方の「最後の状態」）は Jaccard 0.686459・accuracy 0.879208**（動画 09 0.9692、10 0.6257）。epoch 8〜18 の Jaccard は 0.660〜0.776 で揺れる。
+案 C の 3 腕は同じ止め方なので腕の間の比べ方は揃うが、時間ヘッドの最後の状態は記録の最良の回より約 0.09 低い（§6.4 の「止め方の違い」の大きさ）
