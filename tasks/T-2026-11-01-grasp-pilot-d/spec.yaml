@@ -10,7 +10,10 @@ meta:
     runindex_commit: "68befc3b62ffc071077cca446df5d3c83b8c38b9"
     counts: {index: 2363, experiments: 1130, verdicts: 1736}
   depends_on: [T-2026-10-31-grasp-pilot-probe]
-  amendments: []
+  amendments:
+    - date: "2026-11-01"
+      reason: "利用者の指示（2026-11-01 02:1x JST）。bengio の GPU 1 が空いている間に、一本目 T-2026-10-31-grasp-pilot-probe の正解の腕を別の seed と長い学習で回し、seed による揺れと学習の長さの影響を見る。非公式の参考の測定で、本契約の 3 腕の比べ方に混ぜず、関門と設計の判断に使わない。教師の 2 腕を優先する"
+      diff: "追加の run（GPU 1 だけ）: (a) 案 B の正解 seed 123・456（4 epoch 固定、W1）、(b) 案 A の正解 seed 123・456、(c) 時間が残れば案 B の正解 seed 42 の 12 epoch。名前は grasppilot3x_、集計は experiments/analysis/grasp_pilot_d/extra/、保存先は $S/extra/。scripts/grasppilot/run_pd_grasp.sh と pd_grasp_finalize.py に環境変数の上書きを足す（既定の挙動は変えない）"
 intent:
   question: "検出塔を同じ処方で COCO から学び直すときに、正解の枠ごとの G の把持の状態を decoder の出力から当てる補助損失を足した腕は、補助損失なしの腕と、同じフレームの枠の間で標的を入れ替えた腕と比べて、val の overall mAP・標的群 AP・陰性対照群 AP がどう動くか。非公式の測定であり、関門の判定にも設計の判断（案の採否を含む）にも使わない"
   decision_at_stake: "進捗報告の材料と、案 D が今ある検出塔の処方の上で動くことの実証。案の採否は結果で決めない"

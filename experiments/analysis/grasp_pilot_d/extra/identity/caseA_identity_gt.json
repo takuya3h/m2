@@ -1,0 +1,55 @@
+{
+  "task_id": "T-2026-11-01-grasp-pilot-d",
+  "type": "GA",
+  "inst_variant": "literal",
+  "gt": {
+    "x_layout": {
+      "pred": {
+        "cols": [
+          0,
+          15
+        ],
+        "source": null,
+        "flag": "0"
+      },
+      "gt": {
+        "cols": [
+          15,
+          30
+        ],
+        "source": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/extra/signals/g_val.npz",
+        "flag": "file flag (annotated frame = 1)"
+      }
+    },
+    "trainable": {
+      "trainable_names": [
+        "iface.weight"
+      ],
+      "iface_names": [
+        "iface.weight"
+      ],
+      "equal": true,
+      "equal_with_one_head_param_mixed": false
+    },
+    "perturbed_params": [
+      "iface.weight"
+    ],
+    "signal_files": [
+      {
+        "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/extra/signals/g_val.npz",
+        "sha256": "235e2c2bde3a04787d7a8a96085f80f7dfa0241afd3eb6c297e5daf26da51943",
+        "gt": true
+      }
+    ],
+    "dim": 30,
+    "iface_params": 1920,
+    "identity_jaccard": 0.7762185528074379,
+    "identity_accuracy": 0.8712871287128713,
+    "identity_max_abs_logit_diff": 0.0,
+    "jaccard_equals_taskB": true,
+    "perturb_scale": 0.05,
+    "positive_jaccard": 0.7630357012181458,
+    "positive_accuracy": 0.8785478547854786,
+    "positive_max_abs_logit_diff": 0.33217471837997437
+  }
+}
