@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（683 件）
+## 申し送り（688 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1111,7 +1111,15 @@
 - 時間ヘッドの exp の起票では、カードに残る食い違い（P-C の進捗損失 L1 と MSE、P-D の α {3, 11} と {7, 19}、P-B の GRU 単独の腕の有無）をどちらに取るか決め、egtp_k の値を決める（実装は既定を置かず必須にした）。
 - 原典（OnlineTAS の記憶 §3.3、StableSPR の TEC §2.1 と EGTP 式 (6)、ProTAS の進捗の頭）との照合は、外部への接続の承認を得てから行う。食い違えば実装の形を直す契約が要る。
 
-## 断定できなかった事項（432 件）
+### T-2026-10-31-grasp-pilot-probe
+
+- 残りの四腕（予測の腕と G の学習）は二本目の契約で、同じ andrew・同じ界面のコードで回す。案 B の run の code_sha256.txt と code_commit.txt、案 A の dp_train.py の sha256 を照合に使う
+- G の実装の候補は mmdet 3.3.0（R50、既存の .venv のまま動く）と HF transformers 4.44.2（Swin-T）を測った。公式の Mask2Former は外部のコードの取得が拒まれて未測定。採るかどうかと epoch 数は二本目の契約で決める
+- 三種の注釈を一つの塔で賄う形の候補は 3 つ（把持関係 5 クラスだけ、三種を合わせた 38 クラス、欠けた種類を損失から外す）を並べた。選んでいない
+- E-1・E-3 の一歩の時間は案 B と GPU を共有して測った値で、専有の値より遅い側に偏りうる。費用の見積もりに使うときは測り直すか、この偏りを書く
+- 塔単独の再現の許容差は overall mAP の 0.005 では別 seed の塔を見分けられない。次の契約では標的群 AP か予測の一致で照合する
+
+## 断定できなかった事項（437 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1935,18 +1943,26 @@
 - 実データ（17,233 フレームの保存特徴）での 1 本の所要時間。
 - SSM の逆伝播の決定性（前の契約で、決定論的な設定でも勾配が 5.7e-14 で非決定と測られている。本契約では測っていない）。
 
-## 起票者の誤りの型（400 件）
+### T-2026-10-31-grasp-pilot-probe
+
+- 公式の Mask2Former（facebookresearch/Mask2Former）の版・組み立ての結果・一歩の時間
+- 検出塔（experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42）の学習ホスト。記録に無い
+- HF の重み facebook/mask2former-swin-tiny-coco-instance のカードの使用許諾
+- 折り A の val の術具の注釈の sha256（db605c06…）は前回の記録に見当たらず照合できない
+- 案 B の run の W&B の記録。train_t1b.py の既存の経路で回し、run の置き場に W&B の記録のファイルは無い
+
+## 起票者の誤りの型（403 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 109 |
-| `asserted_without_measuring` | 167 |
+| `check_does_not_check` | 110 |
+| `asserted_without_measuring` | 169 |
 | `self_contradiction` | 103 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 1 |
 | `rule_read_narrowly` | 1 |
 
-合計 400 件（対を持つ契約 142 件から）
+合計 403 件（対を持つ契約 143 件から）
 

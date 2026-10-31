@@ -6,8 +6,50 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 142 件）。
-ここに出ない 137 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 143 件）。
+ここに出ない 138 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-10-31-grasp-pilot-probe
+
+状態 `pass` / ホスト `andrew` / 起票 `272` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — proc_enum で本契約以外の compute プロセス 0 件（nvidia-smi の compute 0 件、ps で全利用者の python・torchrun 0 件）。起点 origin/phase0 8d3a72b7、空き 1,678,369,779,712 B、試験の失敗 6 件の名前、二つの仮想環境のパッケージの一覧の sha256 を記録した
+- `G2` pass — hand_tool_seg/ の train 9,356・val 1,514 が被覆の文書の v2 の値と一致し、三種の注釈の動画は train 10・val {09,10} だけ。PT_CACHE・PT_HEAD_CKPT・DET_CKPT の sha256 が記録と一致し、塔単独の val は工程 Jaccard 0.7762185528・検出 mAP 0.7273450248 で差 0
+- `G3` pass — 案 A・案 B の空と正解の 4 腕で学習前の出力が塔単独と差 0、重み N(0,0.05^2) で正解の腕の出力が変わる（Jaccard 0.7630、score の差 0.383）。地図の対応 0.977 対 反転の対照 0.393。学習する集合は iface.weight と phase_iface.weight だけ
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — §6.4 は注釈の無い工程のフレームを「全 15 動画で工程注釈のあるフレームの約 13%」と書くが、これは工程注釈の CSV を分母にした値である。この契約の経路の工程のマニフェストは術具の枠と同じフレーム集合で、測ると注釈の無いフレームは train 301（3.1%）・val 1（0.07%）だった。書かれた値のまま限界を書くと、正解の腕の信号の欠けを約 4 倍に過大に伝える
+- `check_does_not_check` — §8-c と §9 は塔単独の再現の許容差を 0.005 とするが、overall mAP では別 seed（123）の検出塔の差が +0.0015 で許容差の中に入り、別の塔を見分けられない。書かれたとおりの照合では違う checkpoint でも再現が通る。標的群 AP の差（+0.028）なら見分けられ、差 0 の再現も記録した
+- `asserted_without_measuring` — §2 は被覆の文書を引いて hand_tool_seg/ を旧版（被覆 65.82%）、hand_tool_seg_v2/ を現行と書くが、在処に hand_tool_seg_v2/ は無く、hand_tool_seg/ の train 9,356・val 1,514 が v2 の値と一致した（egosurgery_hts/README.md §8 が 2026-07-31 に統合と書く）。名前で選ぶと存在しないディレクトリを探す。被覆の数で同定せよという指示に従い誤らなかった
+
+### 逸脱
+
+- `environment` — E-1・E-3 の一歩の時間を案 B の学習と同じ GPU で並べて測った（利用者の指示「計算リソースすべて使ってなるべく早く終わらせて」）。gpu_shared_with_other_runs true と記録し、専有の値より遅い側に偏りうる
+- `environment` — 公式の Mask2Former（facebookresearch/Mask2Former と detectron2）の取得と組み立てを本契約の保存先の下の新しい仮想環境で試みる命令を、実行基盤が外部のコードとして拒んだ。回避せず、この候補は未測定とした
+- `judgement` — mmdet の計測は gt_sem_seg = None の代入と LSJ の 1024x1024 への詰め物で 2 回失敗した。三回目は前処理の batch_augments を外し、hf と同じ短辺 800 の入力で測った。失敗の記録は taskE に残した
+- `judgement` — g の手の存在を把持関係の 1・2 クラスから読んだ。手 4 クラスの自分の手とは両方があるフレームで IoU が全件 1.0 で、どちらから読んでも値は同じ
+- `judgement` — 実行済みの台本と、写した設定 pd_graspmap_d5.py（元の pd_film_d9.py の F401 を引き継ぐ）に ruff の指摘 I001・E702・E741・F401 が残る。run に記録した code_sha256 を保つため直さず、実行していない台本だけ直した
+- `judgement` — 案 B は --zero-ctx を使わず、地図の型の側で工程の ctx を空にした。R は詰め物まで含めた格子から C5 の格子への adaptive_avg_pool2d とした（評価時の経路と同じ形）
+- `environment` — andrew に /usr/bin/time と bc が無く、案 A の一度目の起動が rc 127 で何も走らずに終わった（実験フォルダは作られていない）。起動し直し、所要は metrics.json の elapsed_seconds から取った
+
+### 申し送り
+
+- 残りの四腕（予測の腕と G の学習）は二本目の契約で、同じ andrew・同じ界面のコードで回す。案 B の run の code_sha256.txt と code_commit.txt、案 A の dp_train.py の sha256 を照合に使う
+- G の実装の候補は mmdet 3.3.0（R50、既存の .venv のまま動く）と HF transformers 4.44.2（Swin-T）を測った。公式の Mask2Former は外部のコードの取得が拒まれて未測定。採るかどうかと epoch 数は二本目の契約で決める
+- 三種の注釈を一つの塔で賄う形の候補は 3 つ（把持関係 5 クラスだけ、三種を合わせた 38 クラス、欠けた種類を損失から外す）を並べた。選んでいない
+- E-1・E-3 の一歩の時間は案 B と GPU を共有して測った値で、専有の値より遅い側に偏りうる。費用の見積もりに使うときは測り直すか、この偏りを書く
+- 塔単独の再現の許容差は overall mAP の 0.005 では別 seed の塔を見分けられない。次の契約では標的群 AP か予測の一致で照合する
+
+### 断定できなかったこと
+
+- 公式の Mask2Former（facebookresearch/Mask2Former）の版・組み立ての結果・一歩の時間
+- 検出塔（experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42）の学習ホスト。記録に無い
+- HF の重み facebook/mask2former-swin-tiny-coco-instance のカードの使用許諾
+- 折り A の val の術具の注釈の sha256（db605c06…）は前回の記録に見当たらず照合できない
+- 案 B の run の W&B の記録。train_t1b.py の既存の経路で回し、run の置き場に W&B の記録のファイルは無い
 
 ## T-2026-10-23-ptower-cand5-heads-impl
 
@@ -153,38 +195,4 @@
 
 - ssm の出力のビット一致（GPU が要る）。
 - 原典の n と σ の定義そのもの（原典に書かれていない）。
-
-## T-2026-10-22-tower-reselect-search-dlsta
-
-状態 `pass` / ホスト `dlsta` / 起票 `267` / 様式 `v3`
-
-### ゲート
-
-- `L3` pass — 再開後10 PASS /1 WARN /3 SKIP /0 FAIL。checkpointサイズとSHA-256正本一致。P2/P3/P12はSKIP。P9 host_mismatchはWARN。
-- `G1` pass — 旧0b記録を削除し不在確認。入力全一致。空き758310752256 bytes。prereg e9f4e3b4。GPU所有者対照1と0。
-- `G2` pass — 承認された既存15437枚＋補完1796枚を全数照合。検出2点で実更新・6群確認、工程2点で2rank確認。失敗名集合増加なし。third_party変更なし。
-- `G3` pass — 2026-10-23 01:53:35 JST、最初の4点完了。全設定・COCO初期化・二枚の道を確認。
-- `G4` pass — 全40点・260処理完了、発散0、上限到達0、GPU0使用0。最終完了2026-10-29 01:18:38 JST。
-
-### 起票者の誤り
-
-- `check_does_not_check` — plan.env.preflight は deterministic_flags を宣言しているが、現在の検査器の P3 は判定基準未確定という固定の理由で常に SKIP を返し、決定論的アルゴリズムと TF32 の実行時設定を一切測らない。今回も SKIP であり、設定が有効な証拠としては使えず、学習時の全 rank の値を別に記録する必要がある。
-
-### 逸脱
-
-- `environment` — 画像不一致で停止後、利用者が既存15437枚＋不足1796枚で続行を承認。既知6001対の差を許容し、全参照先とSHA-256を固定して契約・preregを学習前に改訂。画像は変更していない。
-- `judgement` — 取得済みcheckpointは~/third_partyに在ったため正本照合後repoの指定先へコピーし、元は残した。再開時に同期抑止が不在だったためtaskスキルの再開例外で所有情報つき目印を作成。
-- `environment` — 並行作業でorigin/phase0が前進し、既定のforbidden-checkは他作業の差分も検出。開始時に記録した起点をBASEへ指定し、PR内容の隔離worktreeでPASSと禁止ファイル追加のFAILを確認。rootの別作業ファイルは触らない。
-
-### 申し送り
-
-- top3.mdの工程6/8/10、検出12/5/15と0番を、次の回し直し契約でprereg §3.2どおり検証する。本契約では選定しない。
-- 索引のhost別名とクラス別指標分類の制約は別契約で扱う。
-- PR #267はphase0とCONFLICTING。契約は上流取り込みを禁じるため統合せず、統合担当の調整へ渡す。
-
-### 断定できなかったこと
-
-- JPEG別版の生成命令とモデル性能への影響は未特定。
-- 索引のhostはnull（raw dlsta保持）。検出14有限クラスはkind unknown、時間headのper-class Jaccardは既存収穫器がF1と誤分類。一次指標と順位は原本と一致。
-- head optimizer_record.effective_batchはbackboneの継承メタデータ。head実行単位は動画1本。
 
