@@ -1,8 +1,8 @@
 # 証拠地図 H — 把持（手と物体の相互作用）の推論を、物体検出と行動・手順・工程の認識の補助信号にする
 
-**版:** v2.1（下書き。2026-10-31、起票者が作成。v2.1 は v2〔同日〕の §2 の文献の欄を 7 行〔H-18・H-19・H-35・H-36・H-37・H-46・H-56〕で照合器が読める形〔「著者 ほか, 題名」か「年, 題名」〕に直した版。値は報告の記載で、行の中身・数値・書誌 ID は変えていない。v2 は報告五件から作り直した。v1〔同日、R8-1・R8-2 だけから作成〕を置き換える。v1 は repo に置いていない）
+**版:** v2.2（2026-10-31、起票者が作成。v2.2 は v2.1 の照合〔PR #269〕の結果で §2 の書誌の欄を直した版: 照合不能だった行に照合先の著者と題名を書き、三つの文献をまとめた H-16・H-60 を一文献一行に分け〔H-64〜H-67 を足した〕、照合で別の文献と分かった ID を別の行〔H-62・H-63〕にし、H-44 に照合で分かった ID を書いた。行の中身・数値は変えていない。v2.1 は v2〔同日〕の §2 の文献の欄を 7 行〔H-18・H-19・H-35・H-36・H-37・H-46・H-56〕で照合器が読める形〔「著者 ほか, 題名」か「年, 題名」〕に直した版。値は報告の記載で、行の中身・数値・書誌 ID は変えていない。v2 は報告五件から作り直した。v1〔同日、R8-1・R8-2 だけから作成〕を置き換える。v1 は repo に置いていない）
 **種類:** 探索の地図
-**状態:** 書誌の機械照合は未実施。数値の原典確認は未実施。起票者が web 検索で確かめたものは §0.3
+**状態:** v2.1 の書誌の機械照合は済み（2026-10-31、andrew、PR #269。65 ID: 実在・書誌一致 49、実在・書誌に差 2、実在・照合不能 14、不在 0、到達不能 0。起票者の事前の予測と同じ。結果は docs/evidence/verification/2026-10-31-H-grasp-signal.md）。v2.2 は未照合。数値の原典確認は未実施。起票者が web 検索で確かめたものは §0.3
 **元の報告:**
 - 報告「R8-1」（Claude。依頼文 R8 の本文だけで投げた。添付の名前は文字化けしており元の名前は不明。repo では R8-1-research_claude.md。59,684 バイト、sha256 3dd471d27a99bee6d2ba3e0eeb08fd00c5315c723a3b7ba2ea2eb8b500263b30）
 - 報告「R8-2」（ChatGPT。依頼文 R8 の本文だけ。deep-research-report_8.md、repo では R8-2-deep-research-report.md。21,064 バイト、sha256 690c749f9c9b9e343d43455e80f221deb651a58aff227d8c6af18aff9d03a211）
@@ -36,6 +36,7 @@
 - 出所の列は報告の行番号。「4:L82」は R8-4 の 82 行目
 - citation の印は除いた
 - 書誌 ID の欄で「起票者が特定」と書いたものは報告に無い ID であり、照合で確かめるまで引用として使わない
+- v2.2 で H-16 を H-16・H-64・H-65 に、H-60 を H-60・H-66・H-67 に分けた。§3 以降の H-16・H-60 の行は、分ける前の三件をまとめて書いている（それぞれ H-16・H-64・H-65 と H-60・H-66・H-67 の三件を指す）
 
 ### 0.3 照合と原典確認の状態
 
@@ -98,6 +99,7 @@ R8-2 の L9 の「EgoSurgery 系で工具や組織の空間情報を workflow re
 | H-48 の把持の定義 | 論文は「手のセグメンテーションに対する IoU が最大の術具」と書く（R8-1・R8-5）。依頼文の「枠の重なりでほぼ決まる」は repo の注釈の実測（`docs/hts_phase_tool_annotation_stats.md` §0.3）による |
 | H-10 の年 | R8-1・R8-4・R8-5 は 2025、R8-2 は「2026 年」 |
 | H-52 の表 2 | R8-1 は「対象の手の選択精度 0.943（F1 0.971）」、R8-5 は「0.943／0.996／0.946／0.971（列名は未確認）」 |
+| H-66 の第一著者 | R8-1 は Ke Sun と書く。照合先（arXiv）は Kedi Sun |
 
 ---
 
@@ -131,14 +133,14 @@ R8-2 の L9 の「EgoSurgery 系で工具や組織の空間情報を workflow re
 | H-06 | Takehiko Ohkawa ほか 2023, AssemblyHands: Towards Egocentric Activity Understanding via 3D Hand Pose Estimation | arXiv 2304.12301 | CVPR 2023（査読つき） | 3、7 | 要旨のみ | 1:L188〜L192 |
 | H-07 | Sener ほか 2022, Assembly101: A Large-Scale Multi-View Video Dataset for Understanding Procedural Activities | arXiv 2203.14712 | CVPR 2022（査読つき） | 3 | 本文の抜粋（表 8 の段落） | 5:L203〜L210、1:L194〜L200 |
 | H-08 | Md Salman Shamil, Dibyadip Chatterjee, Fadime Sener, Shugao Ma, Angela Yao 2024, On the Utility of 3D Hand Poses for Action Recognition（HandFormer） | arXiv 2403.09805、DOI 10.1007/978-3-031-72658-3_25 | ECCV 2024（査読つき） | 3 | 本文（R8-4 は表 1・4・5） | 4:L97〜L112、5:L193〜L201、1:L194〜L200 |
-| H-09 | Yao Lu, Walterio W. Mayol-Cuevas 2021, Egocentric Hand-object Interaction Detection and Application | arXiv 2109.14734（重なる版 arXiv 2211.09067） | プレプリント | 3 | 要旨のみ | 5:L248〜L255、1:L202〜L206 |
+| H-09 | Yao Lu, Walterio W. Mayol-Cuevas 2021, Egocentric Hand-object Interaction Detection and Application | arXiv 2109.14734（R8-5 が重なる版とした ID は照合で著者が違うと分かり、H-62 に分けた） | プレプリント | 3 | 要旨のみ | 5:L248〜L255、1:L202〜L206 |
 | H-10 | Antonio Finocchiaro, Alessandro Sebastiano Catinello, Michele Mazzamuto, Rosario Leonardi, Antonino Furnari, Giovanni Maria Farinella 2025, A Real-Time System for Egocentric Hand-Object Interaction Detection in Industrial Domains | arXiv 2507.13326 | ICIAP 2025（arXiv の注記による） | 3 | 要旨のみ | 5:L239〜L246、4:L211〜L221、1:L208〜L212 |
 | H-11 | Ragusa ほか 2024, ENIGMA-51: Towards a Fine-Grained Understanding of Human-Object Interactions in Industrial Scenarios | arXiv 2309.14809 | WACV 2024（査読つき） | 3 | 要旨と本文の一部 | 1:L214〜L218、3:L131 |
 | H-12 | Rosario Leonardi, Antonino Furnari, Francesco Ragusa, Giovanni Maria Farinella 2024, Are Synthetic Data Useful for Egocentric Hand-Object Interaction Detection? | arXiv 2312.02672 | ECCV 2024（査読つき） | 3 | 要旨と本文の抜粋 | 5:L266〜L273、1:L220〜L223 |
 | H-13 | Lingzhi Zhang, Shenghao Zhou, Simon Stent, Jianbo Shi 2022, Fine-Grained Egocentric Hand-Object Segmentation: Dataset, Model, and Applications（EgoHOS） | arXiv 2208.03826 | ECCV 2022（査読つき） | 3 | 本文と補足資料の一部（R8-5） | 5:L164〜L183、1:L225〜L228 |
 | H-14 | Antonino Furnari, Sebastiano Battiato, Kristen Grauman, Giovanni Maria Farinella 2017, Next-Active-Object Prediction from Egocentric Videos | DOI 10.1016/j.jvcir.2017.10.004 | Journal of Visual Communication and Image Representation（査読つき） | 3、7 | 要旨と抜粋 | 4:L179〜L188、5:L286・L293、1:L235〜L238 |
 | H-15 | Sanket Thakur, Cigdem Beyan, Pietro Morerio, Vittorio Murino, Alessio Del Bue 2024, Leveraging Next-Active Objects for Context-Aware Anticipation in Egocentric Videos（NAOGAT） | arXiv 2308.08303 | WACV 2024 | 3 | 関連研究の抜粋 | 1:L240〜L242、5:L289 |
-| H-16 | next active object の予測の論文群（R8-5 のまとめ）: Anticipating Next Active Objects for Egocentric Videos（ANACTO）、Enhancing Next Active Object-based Egocentric Action Anticipation with Guided Attention、AFF-ttention! Affordances and Attention models for Short-Term Object Interaction Anticipation | arXiv 2302.06358、arXiv 2305.12953、arXiv 2406.01194 | ICIP 2023（2305.12953）、ECCV 2024（2406.01194） | 3 | 要旨と抜粋 | 5:L284〜L295 |
+| H-16 | Sanket Thakur ほか, Anticipating Next Active Objects for Egocentric Videos（ANACTO。R8-5 は next active object の予測の論文群として三件をまとめた。残りの二件は H-64・H-65。著者は照合先の値） | arXiv 2302.06358 | 報告に記載なし | 3 | 要旨と抜粋 | 5:L284〜L295 |
 | H-17 | Zhiyi Gao ほか 2022, Learning Using Privileged Information for Zero-Shot Action Recognition | arXiv 2206.08632 | ACCV 2022 | 5 | 要旨と関連研究の節 | 1:L321〜L324 |
 | H-18 | Takehiko Ohkawa ほか, Exo2EgoDVC（著者 7 名の並びは R8-1 の記載: Ohkawa, Yagi, Nishimura, Furuta, Hashimoto, Ushiku, Sato） | arXiv 2311.16444 | 年・掲載先は未確認 | 3 | 本文の一部（検索結果の抜粋） | 1:L230〜L233 |
 | H-19 | 2026, VidParse: Online Parsing of Egocentric Procedures Like a Pro（年は R8-2 の「ECCV 2026」。副題は起票者が arXiv で確かめた。著者は報告に記載なし） | 報告に記載なし。起票者が特定: arXiv 2608.27562 | R8-2 は ECCV 2026 と書く（起票者は未確認） | 3 | 報告に記載なし | 2:L5・L25・L34・L46・L52・L54 |
@@ -150,8 +152,8 @@ R8-2 の L9 の「EgoSurgery 系で工具や組織の空間情報を workflow re
 | H-25 | Tekin, Bogo, Pollefeys 2019, H+O: Unified Egocentric Recognition of 3D Hand-Object Poses and Interactions | arXiv 1904.05349 | CVPR 2019（査読つき） | 3 | 要旨と抜粋 | 5:L212〜L219、2:L46 |
 | H-26 | Wen ほかの階層の temporal transformer、Kapidis ほか、EgoExoLearn（R8-2 だけに名前がある三件） | 報告に記載なし | 報告に記載なし | 3 | 報告に記載なし | 2:L38・L46・L50 |
 | H-27 | Jian Ma, Dima Damen 2022, Hand-Object Interaction Reasoning（IRN） | 報告に記載なし。起票者が特定: arXiv 2201.04906 | 報告に記載なし | 3 | 報告に記載なし | 3:L7・L23・L32〜L34・L84 |
-| H-28 | Forecasting Action Through Contact Representations From First Person Video（著者は §0.5） | DOI 10.1109/TPAMI.2021.3055233 | IEEE TPAMI | 3 | 要旨・書誌 | 4:L114〜L125 |
-| H-29 | Ego-OMG: Egocentric Object Manipulation Graphs | arXiv 2006.03201 | 報告に記載なし | 3 | 要旨 | 4:L127〜L137 |
+| H-28 | Eadom Dessalene ほか, Forecasting Action Through Contact Representations From First Person Video（著者は照合先の値。R8-4 の記載は §0.5） | DOI 10.1109/TPAMI.2021.3055233 | IEEE TPAMI | 3 | 要旨・書誌 | 4:L114〜L125 |
+| H-29 | Eadom Dessalene ほか, Egocentric Object Manipulation Graphs（Ego-OMG。著者と題名は照合先の値） | arXiv 2006.03201 | 報告に記載なし | 3 | 要旨 | 4:L127〜L137 |
 | H-30 | Jiang ほか 2021, Predicting short-term next-active-object through visual attention and hand position | DOI 10.1016/j.neucom.2020.12.069 | Neurocomputing | 3 | 要旨 | 4:L190〜L198 |
 | H-31 | Haoran Wang ほか 2025, Distilling interaction knowledge for semi-supervised egocentric action recognition（IKD） | DOI 10.1016/j.patcog.2024.110927 | Pattern Recognition | 3、5 | 要旨・出版社の概要 | 4:L151〜L162 |
 | H-32 | Dejie Yang, Yang Liu 2024, Active Object Detection with Knowledge Aggregation and Distillation from Large Models（KAD） | ID 不明 | CVPR 2024（査読つき） | 3、5 | 本文の概要・CVF の頁 | 4:L164〜L177 |
@@ -164,9 +166,9 @@ R8-2 の L9 の「EgoSurgery 系で工具や組織の空間情報を workflow re
 | H-39 | VISOR（EPIC-KITCHENS の上の手と物体のマスク） | 報告に記載なし | 報告に記載なし | 3 | 報告に記載なし | 4:L334、3:L72 |
 | H-40 | Wang ほか, SAP（物体検出の特徴を特権の枝にする） | 報告に記載なし | 報告に記載なし | 3、5 | 報告に記載なし | 3:L28 |
 | H-41 | Luo ほか 2018, Graph Distillation for Action Detection with Privileged Modalities | arXiv 1712.00108 | ECCV 2018（査読つき） | 5 | 要旨と抜粋 | 5:L342・L348 |
-| H-42 | Garcia, Morerio, Murino 2019, Learning with privileged information via adversarial discriminative modality distillation | ID 不明（会議版は arXiv 1806.07110） | IEEE TPAMI 42(10)（査読つき） | 5 | 要旨と抜粋 | 5:L343 |
+| H-42 | Garcia, Morerio, Murino 2019, Learning with privileged information via adversarial discriminative modality distillation | ID 不明（R8-5 が会議版とした ID は照合で題名が違うと分かり、H-63 に分けた） | IEEE TPAMI 42(10)（査読つき） | 5 | 要旨と抜粋 | 5:L343 |
 | H-43 | Progressive privileged knowledge distillation for online action detection | ID 不明（ScienceDirect の記事番号 S0031320322002229） | Pattern Recognition 2022 | 5 | 要旨と抜粋 | 5:L344・L349 |
-| H-44 | Modeling Fine-Grained Hand-Object Dynamics for Egocentric Video Representation Learning | 報告に記載なし | ICLR 2025（R8-3） | 3 | 報告に記載なし | 3:L80 |
+| H-44 | Baoqi Pei ほか, Modeling Fine-Grained Hand-Object Dynamics for Egocentric Video Representation Learning（著者は照合先の値） | 報告に記載なし。起票者が照合の結果で特定: arXiv 2503.00986（R8-1 が §1・§4 で「Helping Hands を比較対象に使う」と書いた ID。題名が一致した） | ICLR 2025（R8-3） | 3 | 報告に記載なし | 3:L80 |
 | H-45 | Do Egocentric Video-Language Models Truly Understand Hand-Object Interactions? | 報告に記載なし | ICLR 2025（R8-3） | 3、7 | 報告に記載なし | 3:L143 |
 | H-46 | 2026, Leak-Free Cross-Validated Stacking with Per-Architecture Calibration for Sand-Boil Segmentation in Earthen Levees（年は R8-5 の記載。著者は報告に記載なし） | arXiv 2607.25367 | プレプリント | 6 | 抜粋のみ | 5:L354〜L360 |
 | H-47 | Li ほか 2025（Simultaneous Detection and Interaction Reasoning for Object-Centric Action Recognition。依頼文の既有）と SViT（既有） | 報告に記載なし | TMM 2025（R8-4） | 4 | 報告に記載なし | 4:L34 |
@@ -177,13 +179,19 @@ R8-2 の L9 の「EgoSurgery 系で工具や組織の空間情報を workflow re
 | H-52 | Shimizu, Hachiuma, Kajita, Takatsume, Saito 2021, Hand Motion-Aware Surgical Tool Localization and Classification from an Egocentric Camera | DOI 10.3390/jimaging7020015 | J. Imaging 7(2):15（査読つき） | 2（視点は方向 1 に近い） | 方法の節まで（R8-5 のサブ調査） | 5:L99〜L106、4:L236〜L246、1:L282〜L295 |
 | H-53 | Bogyu Park ほか 2022／2023, Visual modalities-based multimodal fusion for surgical phase recognition | DOI 10.1007/978-3-031-18814-5_2（MMMI 2022）、DOI 10.1016/j.compbiomed.2023.107453（Comput Biol Med 166）、訂正 DOI 10.1016/j.compbiomed.2026.111850 | 査読つき | 2 | 要旨とハイライト | 5:L90〜L97、1:L297〜L300 |
 | H-54 | Yuan ほか 2022, IIA-Net: Anticipation for surgical workflow through instrument interaction and recognized signals | DOI 10.1016/j.media.2022.102611 | Medical Image Analysis | 2 | 要旨 | 4:L223〜L234 |
-| H-55 | ESIP（術具の分割から術具ごとの視覚のプロンプトを作る） | DOI 10.1109/JBHI.2025.3625420 | JBHI 2025 | 2 | 報告に記載なし | 4:L322 |
+| H-55 | Yixuan Qiu ほか, ESIP: Explicit Surgical Instrument Prompting for Surgical Workflow Recognition（術具の分割から術具ごとの視覚のプロンプトを作る。題名と著者は照合先の値） | DOI 10.1109/JBHI.2025.3625420 | JBHI 2025 | 2 | 報告に記載なし | 4:L322 |
 | H-56 | 2025, Enhancing open-surgery gesture recognition using 3D pose estimation（開放手術のジェスチャ認識に 3 次元の手と術具の姿勢を使う研究。年は R8-5 の記載、題名は R8-5 の参照の一覧。著者は報告に記載なし） | DOI 10.1007/s11548-025-03564-1 | Int J CARS 2025（査読つき） | 2 | 抜粋のみ | 5:L115〜L121 |
 | H-57 | Kristina Basiev, Adam Goldbraikh, Carla M. Pugh, Shlomi Laufer 2022, Open surgery tool classification and hand utilization using a multi-camera system | arXiv 2111.06098、DOI 10.1007/s11548-022-02691-3 | Int J CARS 17(8)（査読つき） | 2 | 要旨 | 4:L248〜L257、1:L317〜L319、5:L108〜L113 |
 | H-58 | Adam Goldbraikh, Anne-Lise D'Angelo, Carla M. Pugh, Shlomi Laufer 2022, Video-based fully automatic assessment of open surgery suturing skills | 報告に記載なし。起票者が特定: arXiv 2110.13972 | Int J CARS 17(3)（査読つき） | 2 | 報告に記載なし | 3:L163 |
 | H-59 | Goodman ほか（行動分割・術具・手・キーポイントの多タスク）、Fujii ほかの開放手術の術具検出（R8-3 は「survey 部分」と書く） | 報告に記載なし | 報告に記載なし | 2 | 報告に記載なし | 3:L163 |
-| H-60 | 手術の手の信号の三件: Özsoy ほか 2025 EgoExOR、Ke Sun と Le Zhang 2026 の手の位置と左右の多タスク検出、Michael Zhang ほか 2021 の開放手術の手の検出と追跡 | arXiv 2505.24287、arXiv 2602.18959、arXiv 2012.06948 | NeurIPS 2025 Datasets track、TrackRAD@MICCAI 2026（Semantic Scholar の表記）、AMIA | 2 | 要旨か抜粋 | 1:L302〜L315、5:L123〜L136 |
+| H-60 | Ege Özsoy ほか 2025, EgoExOR: An Ego-Exo-Centric Operating Room Dataset for Surgical Activity Understanding（R8-1 は手術の手の信号の三件をまとめた。残りの二件は H-66・H-67。題名は照合先の値） | arXiv 2505.24287 | NeurIPS 2025 Datasets track | 2 | 要旨か抜粋 | 1:L302〜L315、5:L123〜L136 |
 | H-61 | Li ほか 2015, Delving into Egocentric Actions | ID 不明（本文は PMC4784702） | CVPR 2015 | 3、7 | 本文の一部（検索結果の抜粋） | 1:L326〜L329 |
+| H-62 | Yao Lu, Yanan Liu 2022, Egocentric Hand-object Interaction Detection（年は arXiv の投稿年。著者と題名は照合先の値） | arXiv 2211.09067 | プレプリント | 3 | 報告に記載なし（R8-5 は H-09 と内容が大きく重なる版と書き、2211.09067 版の抜粋に MS-TCN との比較の記述があると書く） | 5:L249・L255 |
+| H-63 | Nuno Garcia, Pietro Morerio, Vittorio Murino 2018, Modality Distillation with Multiple Stream Networks for Action Recognition（年は arXiv の投稿年。題名は照合先の値） | arXiv 1806.07110 | 報告に記載なし（R8-5 は H-42 の会議版と書く） | 5 | 報告に記載なし | 5:L343 |
+| H-64 | Sanket Thakur ほか, Enhancing Next Active Object-based Egocentric Action Anticipation with Guided Attention（H-16 から分けた。著者は照合先の値） | arXiv 2305.12953 | ICIP 2023（R8-5） | 3 | 要旨と抜粋 | 5:L284〜L295 |
+| H-65 | Lorenzo Mur-Labadia ほか, AFF-ttention! Affordances and Attention models for Short-Term Object Interaction Anticipation（H-16 から分けた。著者は照合先の値） | arXiv 2406.01194 | ECCV 2024（R8-5） | 3 | 要旨と抜粋 | 5:L284〜L295 |
+| H-66 | Kedi Sun, Le Zhang 2026, YOLOv10-Based Multi-Task Framework for Hand Localization and Laterality Classification in Surgical Videos（H-60 から分けた。題名と著者は照合先の値。R8-1 は第一著者を Ke Sun と書く） | arXiv 2602.18959 | TrackRAD@MICCAI 2026（Semantic Scholar の表記。R8-1） | 2 | 要旨か抜粋 | 1:L302〜L315、5:L123〜L136 |
+| H-67 | Michael Zhang ほか 2021, Using Computer Vision to Automate Hand Detection and Tracking of Surgeon Movements in Videos of Open Surgery（H-60 から分けた） | arXiv 2012.06948 | AMIA（R8-1） | 2 | 要旨のみ | 1:L302〜L315 |
 
 ---
 
