@@ -1,0 +1,29 @@
+task_id: T-2026-11-01-grasp-pilot-d
+unofficial: true
+run_name: grasppilot3_d_smoke
+arm: smoke
+aux_weight: 0.3
+targets: "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/targets/trial_q_probe_gt_train.npz"
+targets_sha256: "6d2375f49978da14379030c535147212e24dcf04ec0c97d23bc443cd317fbbb1"
+swap_lr_on_flip: true
+seed: 42
+max_epochs: 12
+gpus: 1
+batch_size_per_gpu: 2
+accumulate_steps: 2
+effective_batch_size: 4
+mixed_precision: fp16
+lr: 0.0001
+lr_schedule: "MultiStepLR milestones [10] gamma 0.1（記録の低下 epoch 9 の後と同じ位置）。収束規則は使わない。最後の状態を使う"
+weight_decay: 0.0001
+max_norm: 0.1
+transforms: presets.detr
+init: COCO 1x（/home/ubuntu/slocal2/s2fix-bengio-body/data/external/weights/relation_detr_resnet50_800_1333_coco_1x.pth）
+fold: A
+fold_test_videos: "04,05,07"
+fold_val_videos: "09,10"
+annotations: /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/smoke_ann
+relation_detr: /home/ubuntu/slocal2/s2fix-bengio-body/third_party/Relation-DETR（重ねの BODY。andrew と同じ中身）
+code: /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/code/1b94c24a85114494
+work_dir: /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/work/grasppilot3_d_smoke
+entrypoint: third_party/Relation-DETR/main.py（accelerate launch --num_processes 1）

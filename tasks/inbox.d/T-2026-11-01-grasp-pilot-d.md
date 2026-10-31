@@ -1,0 +1,1 @@
+- [x] 2026-11-01 [cc] 案 D の q(b) は presets.detr の左右反転のとき左手と右手を入れ替える（両手・なしはそのまま）。SPEC に記載が無く、利用者が決めた（tasks/T-2026-11-01-grasp-pilot-d/audit.md C-1）
