@@ -1,0 +1,74 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-11-01-grasp-pilot-d"
+  kind: analysis
+  title: "把持の信号の四案の非公式の予備測定の三本目。案 D（把持塔 G の枠ごとの把持の状態を補助損失の教師にして検出塔を COCO から学び直す）の 3 腕（補助損失なし、G を教師、同じフレームの枠の間で入れ替えた教師）を bengio で回す。補助損失なしの腕を先に始め、G の標的は二本目から受け取る"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-11-01T00:00:00Z"
+  created_from:
+    runindex_commit: "68befc3b62ffc071077cca446df5d3c83b8c38b9"
+    counts: {index: 2363, experiments: 1130, verdicts: 1736}
+  depends_on: [T-2026-10-31-grasp-pilot-probe]
+  amendments: []
+intent:
+  question: "検出塔を同じ処方で COCO から学び直すときに、正解の枠ごとの G の把持の状態を decoder の出力から当てる補助損失を足した腕は、補助損失なしの腕と、同じフレームの枠の間で標的を入れ替えた腕と比べて、val の overall mAP・標的群 AP・陰性対照群 AP がどう動くか。非公式の測定であり、関門の判定にも設計の判断（案の採否を含む）にも使わない"
+  decision_at_stake: "進捗報告の材料と、案 D が今ある検出塔の処方の上で動くことの実証。案の採否は結果で決めない"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery の動画 01 から 15 のうち、折り A の train と val の動画（conventions#folds）の術具注釈のあるフレーム。案 D の標的は二本目 T-2026-11-01-grasp-pilot-g が train の正解の枠ごとに作る。折り A の test の動画のフレームは学習・評価のどれにも通さない"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/train_t1b.py", "scripts/stage2pilot/pd_model.py", "scripts/grasppilot/pd_grasp_model.py", "scripts/grasppilot/extract_decfeat.py", "scripts/grasppilot/error_count.py", "scripts/eval_relation_detr_map.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#env_p0, conventions#folds, conventions#split, conventions#eval_recipe, conventions#det_groups]
+  conventions_rev: "2d946b07a57abebc4a8f66150d6dbaf2ccd22186"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/analysis/grasp_pilot_d", "experiments/phase1/grasppilot3", "runindex/"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。分岐、bengio の装置の他プロセス、記憶領域、試験の失敗の名前、仮想環境と Relation-DETR の中身が andrew と同じこと、COCO の重み、GPU の電力の上限", gpu: false, est: "1h"}
+    - {id: B, name: "検出塔の塔単独の val を bengio で再現し、処方を記録から読む", gpu: true, est: "1h"}
+    - {id: C, name: "補助の頭の実装と恒等性。補助損失なしの腕を始める", gpu: true, est: "14h"}
+    - {id: D, name: "二本目から標的を受け取り、入れ替えた標的を作り、G を教師と入れ替えた教師の腕を回す", gpu: true, est: "14h"}
+    - {id: E, name: "集計、検証、報告", gpu: false, est: "2h"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、bengio に本契約以外の compute プロセスが無く、Relation-DETR の中身と仮想環境が andrew と同じか重ねの BODY で揃え、COCO の重みが在り、記憶領域と失敗の名前と電力の上限を記録した", on_fail: stop}
+    - {id: G2, after: B, check: "検出塔の塔単独の val が bengio で overall mAP と標的群 AP とも許容差の中で再現した", on_fail: stop}
+    - {id: G3, after: C, check: "補助損失の重み 0 で頭の無い経路と同じ損失になり、重みを正にすると補助損失が入り、COCO の重みを読んだことを示し、3 腕の設定が同じである", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, gpu_free]
+  resources: {server: bengio, gpu: 2, est_hours: 32, runs: 3}
+outputs:
+  must_have: [REPORT.md, RESULT.md, result.yaml, audit.md]
+  destination: "experiments/analysis/grasp_pilot_d/"
+  acceptance:
+    - "a: 開始状態として、分岐、起点、開始前から在る未追跡、bengio の compute プロセスの一覧、記憶領域の空き、試験の失敗の名前、Relation-DETR の中身と検出器の仮想環境の要約値（andrew との照合）、COCO の重みの sha256、GPU ごとの電力の上限と装置の型が記録されている"
+    - "b: 検出塔の塔単独の val が bengio で再現され、overall mAP と標的群 AP の差が SPEC の許容差の中にあるか、超えて停止した記録がある。記録から読んだ処方（学習率を下げた epoch、回した epoch 数、batch、GPU 数）が記録されている"
+    - "c: 補助の頭が SPEC の定義のとおりに実装され、重み 0 で頭の無い経路と同じ損失になり、重みを正にすると補助損失が入ることが示され、COCO の重みを読んだことが示されている"
+    - "d: 二本目の目録から標的を写し sha256 が一致し、同じフレームの枠の間で入れ替えた標的が SPEC の定義どおりに作られ、枠が一つのフレームの数が記録されている"
+    - "e: 3 腕が同じ設定と SPEC の処方（記録と同じ学習率の予定と長さ、最後の状態）で回り、epoch ごとの検出の損失・補助損失・学習率、val の値が記録されている"
+    - "f: 腕ごとに val の overall mAP・標的群 AP・陰性対照群 AP、比べる腕との差、動画ごとの差、クラス別 AP が表にあり、SPEC の読み方の規則で記述されている"
+    - "g: test の動画のフレームを学習と評価に一度も通していないことが、通した動画の集合で示されている"
+    - "h: bengio の main の third_party と作業場所、前回までの予備測定と一本目・二本目の置き場と保存先、data の raw と external と注釈、凍結源、既存の checkpoint、既存の仮想環境を変えていない。試験の失敗が増えていない"
+    - "i: PR が Draft でなく存在し、base が phase0、分岐が feat/grasp-pilot-d"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "bengio に本契約以外の compute プロセスがある場合（止めずに利用者に諮る）"
+    - "Relation-DETR の中身か検出器の仮想環境が andrew と違い、bengio の main を変えずに揃えられない場合"
+    - "COCO の重みが無い、または読まれない場合"
+    - "塔単独の val が許容差を超えて食い違う場合"
+    - "補助の頭を、既存スクリプトの既定の挙動や third_party を変えないと実装できない場合"
+    - "3 腕を同じ設定で回せない場合"
+    - "二本目の標的の sha256 が目録と一致しない場合"
+    - "記憶領域が足りない場合"
+    - "実行基盤が書き込み、移動、削除を拒む場合"
