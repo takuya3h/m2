@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（692 件）
+## 申し送り（697 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1126,7 +1126,15 @@
 - SPEC の評価の入口 scripts/eval_relation_detr_map.py は台本の位置から third_party を引くため、重ねの BODY を使うホストでは使えない。入口に pd_eval.py を挙げるか、本体を引数で渡せるようにする
 - 標的の 97.5% は「なし」が最大の枠で、補助の頭の train の当たり 0.977 はほぼその割合に等しい。補助損失の設計を見直すなら、なし以外の枠の当たりを別に測る
 
-## 断定できなかった事項（439 件）
+### T-2026-11-01-grasp-pilot-g
+
+- 三本目（T-2026-11-01-grasp-pilot-d、bengio）は experiments/analysis/grasp_pilot_g/targets/D_manifest.json を見て andrew の /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/signals/D/q_CF_train.npz を写す（sha256 6c41a912ac745f3b0deb09304bbe627da3c9830993083c090ffaf91914fbfa8d、32,272 枠）。11 枠で q の行の和が 1 を超えるので、確率として使うなら正規化を決める
+- 案 A の予測の腕の Δ空 は旗の列の分を含む。信号の中身の差は Δ入替（予測-noCF − 入れ替え）で読む。空の腕の旗を 1 にした腕を置くかは次の契約で決める
+- 案 C の時間ヘッドは最後の状態（epoch 18）で約 0.09 低い。補助損失の効果を読むなら止め方の扱い（最良の回か最後の状態か）を決め直す必要がある
+- G の val の値は epoch の間で ±0.03 揺れ、改善の幅と同じくらい。G の最良の epoch の選び方に偶然が入る
+- experiments/phase1/grasppilot3x_* は同期で届いた別の契約の出力。本契約は触れていない。その契約の統合を確かめる
+
+## 断定できなかった事項（442 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1963,18 +1971,24 @@
 - 記録の検出塔（stage1_dtower_r2/dcoco_foldA_seed42）のホストは記録に無い
 - commit のとき .git/index.lock が 2 回残っていた（数秒で消えた）。作った処理は特定していない
 
-## 起票者の誤りの型（406 件）
+### T-2026-11-01-grasp-pilot-g
+
+- experiments/phase1/grasppilot3x_* の出所の契約とホスト（本契約からは他の台を見ない）
+- 案 B の正解の腕の一本目との差（0.7366077 → 0.7364481）が bf16 の非決定性だけによるか
+- G と案 C の run の W&B の記録の有無（tracking.init は呼んだが、run の置き場に wandb_run.json は無い）
+
+## 起票者の誤りの型（410 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 111 |
-| `asserted_without_measuring` | 171 |
+| `check_does_not_check` | 112 |
+| `asserted_without_measuring` | 173 |
 | `self_contradiction` | 103 |
 | `shell_assumption` | 19 |
-| `asymmetric_comparison` | 1 |
+| `asymmetric_comparison` | 2 |
 | `rule_read_narrowly` | 1 |
 
-合計 406 件（対を持つ契約 144 件から）
+合計 410 件（対を持つ契約 145 件から）
 
