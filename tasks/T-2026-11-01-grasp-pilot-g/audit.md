@@ -303,3 +303,11 @@ task-start の前の分類器で全区分 0 件。task-start の後に在る無�
 - `scripts/grasppilot/pipeline_after_G.sh` を背景で起こした: 確定の G の終わり → val と train の推論（train は 2 つに分けて `g_signals.py merge`）→ `assemble`
   （既にある案 C の標的・案 D の q・目録の train は書き直さず中身の一致を比べ、目録に val の q を足して push）→ 案 B の予測の四腕 → 案 A の六腕と恒等性 →
   正解との比べ → 案 B の恒等性 → 案 C の補助の頭の val。記録は `$S/logs/pipeline_after_G.log`
+- 案 B の恒等性の空・正解の分を GPU 1 で前倒し（12:58 JST）。一度目は設定の経路が相対で読み込みに失敗（ModuleNotFoundError: pd_graspmap_d5）。経路を絶対に直して起こし直した。台本は既にある出力を飛ばす
+
+### 案 C の教師の腕の置き場の切り替え（2026-11-01 14:18 JST、終了時刻を早めるため）
+
+- 確定の G は epoch 8 で最良を更新（0.5358）し、打ち切りは早くても epoch 12 の後（17:10 頃）。教師の腕をそれまで GPU 0 で止めて待つと 22 時頃に終わる
+- 入れ替えた教師の腕は GPU 1 で 16:20 頃に終わる。`$S/logs/teacher_switch.sh` を置いた: 入れ替えた教師の腕が先に終われば、教師の腕（epoch 1 まで、約 18 分ぶん）を止めて出力を
+  `$S/aborted/try1_C_teacher/` へ移し、GPU 1 で最初から起こし直す（見込み 20:30 頃に終わる）。確定の G が先に終われば GPU 0 で再開する
+- 古い再開の見張り（resume_teacher_after_G.sh）は止めた
