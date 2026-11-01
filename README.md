@@ -1674,3 +1674,22 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
 - 結果（2026-11-01、非公式。1 折り・val 2 動画・seed 1 つの 1 本ずつの差）: 案 A の正解の腕は Jaccard Δ空 +0.0028（動画 09 −0.0029・10 +0.0120）、
   案 B の正解の腕は標的群 AP Δ空 +0.0153・overall mAP +0.0093。空の腕は両案とも塔単独と同値。握られている枠が誤りに占める割合（0.456）は全枠に占める割合（0.479）を上回らない。
   decoder の特徴から把持の状態を当てる balanced accuracy 0.553（正解のクラスだけ 0.437）。G の候補は mmdet（R50）と HF（Swin-T）を測り、公式の実装は未測定。G1・G2・G3 pass
+
+### 把持の信号の四案の予備測定（二本目）（2026-11-01、andrew）
+
+契約 `T-2026-11-01-grasp-pilot-g`（analysis。**非公式の測定。関門の判定と設計の判断に使わない**）。
+結果は `experiments/analysis/grasp_pilot_g/REPORT.md`、記録は `tasks/T-2026-11-01-grasp-pilot-g/`。三本目（案 D、bengio）へ渡す標的の目録は
+`experiments/analysis/grasp_pilot_g/targets/D_manifest.json`。
+
+- **`scripts/audit_l0_hts_acceptance.py` の C3 を直した**（利用者の決定）: 手注釈が実在する 25 区間（03_3 を含まない）の被覆と集合件数 57,172。入力が無ければ止め、C1 は全件を見る。
+  入出力の引数を足した（既定の入出力は従来の経路）。HTS の候補で主判定 C1〜C4 は ALL PASS
+- **把持塔 G**（mmdet の Mask2Former R50、38 クラス = 把持関係 5 ＋ 他者の手 2 ＋ 術具 31）を確定・H1・H2 の 3 本学んだ（`scripts/grasppilot/g38_build.py`・`g_train.py`、
+  評価の RLE 化は GPU。打ち切りは利用者の決定で「最良が 4 epoch 更新されなければ」、`g_early_stop.py`）
+- G の信号と教師の標的（`scripts/grasppilot/g_signals.py`: infer・merge・assemble・assemble-c・compare）、案 A・B の予測の腕の経路
+  （`dp_train.py --grasp-pred-dir`、`train_t1b.py --grasp-map pred|gt_pred --grasp-pred-train/val`、`pd_grasp.py` の PredView、`pd_grasp_model.py` の channel_scale、
+  設定 `pd_graspmap_pred5.py`・`pd_graspmap_d10.py`、起動 `run_pd_grasp2.sh`）。どれも既定の経路は変えていない
+- 案 C の派生 `scripts/grasppilot/ptower_aux.py`（補助の頭 2048→48、固定の 21 epoch、最後の状態、test を開かない）。集計 `aggregate2.py`・`make_report2.py`
+- 大きな生成物（38 クラスの注釈、G の重み、信号、標的、工程塔の重みと特徴）は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/`
+- 結果（2026-11-02、非公式。1 折り・val 2 動画・seed 1 つの 1 本ずつの差）: G の確定は val の 38 クラスの mask mAP 0.540・把持関係 5 クラス 0.628。
+  案 B の予測-noCF は標的群 AP の Δ空 +0.0111（正解 +0.0156、入れ替え +0.0035）。案 A の予測-noCF は Jaccard の Δ空 −0.0065 だが入れ替えとの差 −0.0002 で、信号の中身による差はほぼ 0。
+  案 C の G を教師 − 補助損失なし は Jaccard −0.0120。G1・G2・G3 pass

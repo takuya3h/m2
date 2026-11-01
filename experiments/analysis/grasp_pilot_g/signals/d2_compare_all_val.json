@@ -1,0 +1,36 @@
+{
+  "raw": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/signals/raw/all_val",
+  "part": "val",
+  "g": "all",
+  "frames_annotated": 1514,
+  "roc_auc": {
+    "L_hand": 0.7963724375236929,
+    "L_grasp": 0.9076277438263011,
+    "R_hand": 0.85850991114149,
+    "R_grasp": 0.8464351125065411,
+    "B_present": 0.9260302011142818
+  },
+  "pred_mean": {
+    "L_hand": 0.9533059000968933,
+    "L_grasp": 0.7904950380325317,
+    "R_hand": 0.9222909808158875,
+    "R_grasp": 0.8804348111152649,
+    "B_present": 0.14798603951931
+  },
+  "gt_positive_rate": {
+    "L_hand": 0.9848084544253632,
+    "L_grasp": 0.8130779392338177,
+    "R_hand": 0.9663143989431968,
+    "R_grasp": 0.8414795244385733,
+    "B_present": 0.11624834874504623
+  },
+  "map_iou": {
+    "tool_L": 0.4552,
+    "tool_R": 0.5391,
+    "tool_B": 0.3343,
+    "hand_L": 0.8107,
+    "hand_R": 0.7652
+  },
+  "map_frames": 1514,
+  "map_rule": "予測 ≥ 128/255（0.5）と、正解の地図の 4×4 の平均 ≥ 0.5 を 270×480 で比べ、全フレームの画素で IoU"
+}

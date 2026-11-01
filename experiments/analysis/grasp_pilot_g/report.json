@@ -1,0 +1,3863 @@
+{
+  "task_id": "T-2026-11-01-grasp-pilot-g",
+  "unofficial": true,
+  "G": {
+    "all": {
+      "task_id": "T-2026-11-01-grasp-pilot-g",
+      "unofficial": true,
+      "run": "grasppilot2_G_all_seed42",
+      "videos": "all",
+      "best_epoch": 11,
+      "best_segm_mAP": 0.5396196397784581,
+      "best_grasp5_mAP": 0.6278460890402944,
+      "pre_segm_mAP": 0.00041028689239478355,
+      "pre_grasp5_mAP": 0.0015024195272746368,
+      "epochs_completed": 15,
+      "lr_lowered_epoch": 15,
+      "early_stopped_epoch": 15,
+      "reached_epoch_cap": false,
+      "stop_rule": "利用者の決定: 最良が 4 epoch 更新されなければ打ち切り（g_early_stop.py）",
+      "stale_epochs_at_stop": 4,
+      "killed_pids": [
+        555745,
+        555760,
+        560776,
+        560808,
+        560840,
+        560872,
+        560904,
+        560936,
+        560968,
+        561000
+      ],
+      "elapsed_seconds": 62457.9644203186,
+      "peak_alloc_bytes": 10606152704,
+      "best_ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/g/ckpt/grasppilot2_G_all_seed42/best.pth",
+      "best_ckpt_sha256": "42c1f3bce6ed20270d7dd5d582a54984eeb094e9dd233089a28b8fb411fa149b",
+      "last_ckpt_sha256": null,
+      "history": [
+        {
+          "epoch": 0,
+          "lr": 0.0001,
+          "train_loss": null,
+          "segm_mAP": 0.00041028689239478355,
+          "grasp5_mAP": 0.0015024195272746368,
+          "action": null,
+          "train_seconds": null,
+          "infer_seconds": 1214.9663009038195,
+          "eval_seconds": 8.096888417378068
+        },
+        {
+          "epoch": 1,
+          "lr": 0.0001,
+          "train_loss": 20.168210220275174,
+          "segm_mAP": 0.4755167783005972,
+          "grasp5_mAP": 0.5395273584160621,
+          "action": "continue",
+          "train_seconds": 5482.737458574586,
+          "infer_seconds": 573.0832389295101,
+          "eval_seconds": 8.475922621786594
+        },
+        {
+          "epoch": 2,
+          "lr": 0.0001,
+          "train_loss": 13.661290416853356,
+          "segm_mAP": 0.49616658070750247,
+          "grasp5_mAP": 0.5863593501727953,
+          "action": "continue",
+          "train_seconds": 4386.113012238406,
+          "infer_seconds": 485.87402997072786,
+          "eval_seconds": 8.475820437073708
+        },
+        {
+          "epoch": 3,
+          "lr": 0.0001,
+          "train_loss": 12.19947352386725,
+          "segm_mAP": 0.5302438087924631,
+          "grasp5_mAP": 0.6363001721895516,
+          "action": "continue",
+          "train_seconds": 4504.9567957781255,
+          "infer_seconds": 574.2665195809677,
+          "eval_seconds": 8.663827498443425
+        },
+        {
+          "epoch": 4,
+          "lr": 0.0001,
+          "train_loss": 11.333210244279615,
+          "segm_mAP": 0.514522006480091,
+          "grasp5_mAP": 0.5867593411028555,
+          "action": "continue",
+          "train_seconds": 4311.923468458466,
+          "infer_seconds": 572.2391630336642,
+          "eval_seconds": 8.250423659570515
+        },
+        {
+          "epoch": 5,
+          "lr": 0.0001,
+          "train_loss": 10.64826233823288,
+          "segm_mAP": 0.5205161244698594,
+          "grasp5_mAP": 0.593604874275312,
+          "action": "continue",
+          "train_seconds": 4510.61129808519,
+          "infer_seconds": 543.1658895658329,
+          "eval_seconds": 8.633014201186597
+        },
+        {
+          "epoch": 6,
+          "lr": 0.0001,
+          "train_loss": 10.14335516155615,
+          "segm_mAP": 0.5331631684854431,
+          "grasp5_mAP": 0.613523103581923,
+          "action": "continue",
+          "train_seconds": 10811.809548249468,
+          "infer_seconds": 162.37545639369637,
+          "eval_seconds": 8.259548024274409
+        },
+        {
+          "epoch": 7,
+          "lr": 0.0001,
+          "train_loss": 9.669780830653721,
+          "segm_mAP": 0.5301833354279805,
+          "grasp5_mAP": 0.6015803193857542,
+          "action": "continue",
+          "train_seconds": 2506.0536135258153,
+          "infer_seconds": 162.3648347388953,
+          "eval_seconds": 7.861255392432213
+        },
+        {
+          "epoch": 8,
+          "lr": 0.0001,
+          "train_loss": 9.296277399406796,
+          "segm_mAP": 0.5357685161992938,
+          "grasp5_mAP": 0.5857807247388468,
+          "action": "continue",
+          "train_seconds": 2518.7023356799036,
+          "infer_seconds": 162.72477905731648,
+          "eval_seconds": 7.959561171010137
+        },
+        {
+          "epoch": 9,
+          "lr": 0.0001,
+          "train_loss": 8.968347987173752,
+          "segm_mAP": 0.5302261686177175,
+          "grasp5_mAP": 0.6050953844422853,
+          "action": "continue",
+          "train_seconds": 2518.8942163288593,
+          "infer_seconds": 162.92135848291218,
+          "eval_seconds": 8.04712132178247
+        },
+        {
+          "epoch": 10,
+          "lr": 0.0001,
+          "train_loss": 8.678717020620907,
+          "segm_mAP": 0.5003249646108204,
+          "grasp5_mAP": 0.543792933214361,
+          "action": "continue",
+          "train_seconds": 2522.2123133176938,
+          "infer_seconds": 164.93736185505986,
+          "eval_seconds": 8.470470706000924
+        },
+        {
+          "epoch": 11,
+          "lr": 0.0001,
+          "train_loss": 8.431100541319783,
+          "segm_mAP": 0.5396196397784581,
+          "grasp5_mAP": 0.6278460890402944,
+          "action": "continue",
+          "train_seconds": 2518.4745212662965,
+          "infer_seconds": 162.79143258929253,
+          "eval_seconds": 8.658634157851338
+        },
+        {
+          "epoch": 12,
+          "lr": 0.0001,
+          "train_loss": 8.179857242863704,
+          "segm_mAP": 0.5063527362904628,
+          "grasp5_mAP": 0.5671944889230129,
+          "action": "continue",
+          "train_seconds": 2535.1094452282414,
+          "infer_seconds": 163.2241918966174,
+          "eval_seconds": 8.15092322230339
+        },
+        {
+          "epoch": 13,
+          "lr": 0.0001,
+          "train_loss": 7.988520314892047,
+          "segm_mAP": 0.5235858211223596,
+          "grasp5_mAP": 0.583317019245852,
+          "action": "continue",
+          "train_seconds": 2523.2256185868755,
+          "infer_seconds": 163.26649013906717,
+          "eval_seconds": 8.24371995870024
+        },
+        {
+          "epoch": 14,
+          "lr": 0.0001,
+          "train_loss": 7.806288469542601,
+          "segm_mAP": 0.4915239431805944,
+          "grasp5_mAP": 0.5809845068494065,
+          "action": "continue",
+          "train_seconds": 2527.9930334324017,
+          "infer_seconds": 163.83312040474266,
+          "eval_seconds": 8.557119013741612
+        },
+        {
+          "epoch": 15,
+          "lr": 0.0001,
+          "train_loss": 7.632518219700856,
+          "segm_mAP": 0.5176246915248894,
+          "grasp5_mAP": 0.568555270973984,
+          "action": "lower",
+          "train_seconds": 2524.1929677221924,
+          "infer_seconds": 162.68803351465613,
+          "eval_seconds": 8.370372824370861
+        }
+      ],
+      "per_class_ap_best": {
+        "grasp:First Person's Left Hand": 0.7081292442544282,
+        "grasp:First Person's Right Hand": 0.7930480021812042,
+        "grasp:Left Hand Tool": 0.48266408005670136,
+        "grasp:Right Hand Tool": 0.6473412505902327,
+        "grasp:Two Hands Tool": 0.5080478681189055,
+        "hand:Other Person's Left Hand": 0.28498123969751993,
+        "hand:Other Person's Right Hand": 0.1901013826372892,
+        "tool:BiClamp": null,
+        "tool:Bipolar Forceps": 0.19696158624588053,
+        "tool:Chisel": null,
+        "tool:Cup": 0.01634732176089902,
+        "tool:Drill": null,
+        "tool:Electric Cautery": 0.9380452247650685,
+        "tool:Forceps": 0.21312294761793688,
+        "tool:Gauze": 0.26512492569868074,
+        "tool:Hammer": null,
+        "tool:Hook": 0.5180152391304859,
+        "tool:Kidney Dish": null,
+        "tool:Malleable Retractor": null,
+        "tool:Mouth Gag": null,
+        "tool:Nasogastric Tube": null,
+        "tool:Needle Holders": 0.6554748042238971,
+        "tool:Pen": null,
+        "tool:Petri Dish": null,
+        "tool:Raspatory": 0.4521403006215545,
+        "tool:Retractor": null,
+        "tool:Ruler": null,
+        "tool:Scalpel": 0.9253683105299356,
+        "tool:Scissors": 0.47101963608670877,
+        "tool:Screwdriver": null,
+        "tool:Skewer": 0.8616095306148114,
+        "tool:Spoon": null,
+        "tool:Suction Cannula": 0.7548736575827418,
+        "tool:Suction Tube": null,
+        "tool:Suture, Suture Needle": null,
+        "tool:Syringe": 0.7522457964273322,
+        "tool:Trephine": null,
+        "tool:Tweezers": 0.6973500865054069
+      },
+      "config": {
+        "task_id": "T-2026-11-01-grasp-pilot-g",
+        "unofficial": true,
+        "run": "grasppilot2_G_all_seed42",
+        "videos": "all",
+        "train_videos": [
+          "01",
+          "02",
+          "03",
+          "06",
+          "08",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15"
+        ],
+        "val_videos": [
+          "09",
+          "10"
+        ],
+        "train_frames": 9269,
+        "train_instances": 72113,
+        "val_frames": 1511,
+        "classes": 38,
+        "ann_sha256": {
+          "train": "3485bb69bcc6e2f3985fd988cdead40941f3750d206de0f38e9532071c64eccd",
+          "val": "d985397786d6d8d4f3bca57a7046d3a455b22e8af45be2e52654102fda0abf47"
+        },
+        "model": "mmdet Mask2Former R50 (mask2former_r50_8xb2-lsj-50e_coco)",
+        "init": {
+          "checkpoint": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-31-grasp-pilot-probe/e/weights/mmdet/mask2former_r50_8xb2-lsj-50e_coco_20220506_191028-41b088b6.pth",
+          "sha256": "41b088b62838c986004f94bab2870395b669ec6bd11b6590369b838b0de06879",
+          "n_checkpoint": 610,
+          "loaded": 608,
+          "skipped_shape": [
+            "panoptic_head.cls_embed.bias",
+            "panoptic_head.cls_embed.weight"
+          ],
+          "absent_in_model": [],
+          "model_params_not_loaded": [
+            "panoptic_head.cls_embed.bias",
+            "panoptic_head.cls_embed.weight"
+          ]
+        },
+        "input": "短辺 800・長辺 1333 まで（双線形）、学習は左右反転 0.5、batch_augments なし、32 の倍数へ詰める",
+        "batch": 2,
+        "optim_wrapper": {
+          "type": "OptimWrapper",
+          "optimizer": {
+            "type": "AdamW",
+            "lr": 0.0001,
+            "weight_decay": 0.05,
+            "eps": 1e-08,
+            "betas": [
+              0.9,
+              0.999
+            ]
+          },
+          "paramwise_cfg": {
+            "custom_keys": {
+              "backbone": {
+                "lr_mult": 0.1,
+                "decay_mult": 1.0
+              },
+              "query_embed": {
+                "lr_mult": 1.0,
+                "decay_mult": 0.0
+              },
+              "query_feat": {
+                "lr_mult": 1.0,
+                "decay_mult": 0.0
+              },
+              "level_embed": {
+                "lr_mult": 1.0,
+                "decay_mult": 0.0
+              }
+            },
+            "norm_decay_mult": 0.0
+          },
+          "clip_grad": {
+            "max_norm": 0.01,
+            "norm_type": 2
+          }
+        },
+        "amp": "none",
+        "max_epochs": 36,
+        "patience": 4,
+        "lr_decay": 0.1,
+        "selection": "val の 38 クラスの mask mAP（pycocotools segm、元の解像度、上位 100）。改善 = 最良を厳密に上回る",
+        "plateau_rule": "scripts/stage1_ptower_r3.py の plateau_action",
+        "seed": 42,
+        "smoke": false,
+        "git_commit": "d67875b73c88e920019a9e3fef4a40a2cc24aedf",
+        "code_sha256": {
+          "scripts/grasppilot/g_train.py": "ed1897807c2bbb4d48ce52bc5eb22dd2bf0420e0f347f88f5473c993db9f452f",
+          "scripts/grasppilot/g_bench.py": "356550c85a7d88f54dd3bffaf033b5f4193867e3da73f719f0ca7353886732cb",
+          "scripts/grasppilot/g38_build.py": "917ff2ae0221fbd5ff6d35881e2a66dbb1ef8f0a78dc6c8bb3027150abeffa0b"
+        },
+        "host": "Andrew",
+        "cuda_visible_devices": "0"
+      }
+    },
+    "H1": {
+      "task_id": "T-2026-11-01-grasp-pilot-g",
+      "unofficial": true,
+      "run": "grasppilot2_G_H1_seed42",
+      "videos": "H1",
+      "best_epoch": 3,
+      "best_segm_mAP": 0.4399422897327718,
+      "best_grasp5_mAP": 0.5331583626742195,
+      "pre_segm_mAP": 0.00041028689239478355,
+      "pre_grasp5_mAP": 0.0015024195272746368,
+      "epochs_completed": 7,
+      "lr_lowered_epoch": 7,
+      "early_stopped_epoch": 7,
+      "reached_epoch_cap": false,
+      "stop_rule": "利用者の決定: 最良が 4 epoch 更新されなければ打ち切り（g_early_stop.py）",
+      "stale_epochs_at_stop": 4,
+      "killed_pids": [
+        555842,
+        555858,
+        560329,
+        560361,
+        560393,
+        560425,
+        560457,
+        560489,
+        560521,
+        560553
+      ],
+      "elapsed_seconds": 28728.263789653778,
+      "peak_alloc_bytes": 10429275136,
+      "best_ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/g/ckpt/grasppilot2_G_H1_seed42/best.pth",
+      "best_ckpt_sha256": "e702af3e096eeb729c78b9b933ba91f0693f3094e80ee9d9cae93ccbb59f1cef",
+      "last_ckpt_sha256": null,
+      "history": [
+        {
+          "epoch": 0,
+          "lr": 0.0001,
+          "train_loss": null,
+          "segm_mAP": 0.00041028689239478355,
+          "grasp5_mAP": 0.0015024195272746368,
+          "action": null,
+          "train_seconds": null,
+          "infer_seconds": 1066.7071938533336,
+          "eval_seconds": 7.943224593997002
+        },
+        {
+          "epoch": 1,
+          "lr": 0.0001,
+          "train_loss": 21.863313826346484,
+          "segm_mAP": 0.33216389969128834,
+          "grasp5_mAP": 0.44604562586540447,
+          "action": "continue",
+          "train_seconds": 2916.77451943513,
+          "infer_seconds": 1065.3277027439326,
+          "eval_seconds": 8.17629102896899
+        },
+        {
+          "epoch": 2,
+          "lr": 0.0001,
+          "train_loss": 13.39302091910185,
+          "segm_mAP": 0.4190697007762253,
+          "grasp5_mAP": 0.5322474581504351,
+          "action": "continue",
+          "train_seconds": 2931.3707068301737,
+          "infer_seconds": 1044.9412228446454,
+          "eval_seconds": 9.6824786728248
+        },
+        {
+          "epoch": 3,
+          "lr": 0.0001,
+          "train_loss": 11.559293728910397,
+          "segm_mAP": 0.4399422897327718,
+          "grasp5_mAP": 0.5331583626742195,
+          "action": "continue",
+          "train_seconds": 2926.3115523131564,
+          "infer_seconds": 1066.4428741447628,
+          "eval_seconds": 8.557807615958154
+        },
+        {
+          "epoch": 4,
+          "lr": 0.0001,
+          "train_loss": 10.564441121489622,
+          "segm_mAP": 0.43659724542403144,
+          "grasp5_mAP": 0.5892472495280465,
+          "action": "continue",
+          "train_seconds": 2915.473455474712,
+          "infer_seconds": 1067.9515592800453,
+          "eval_seconds": 7.9423816706985235
+        },
+        {
+          "epoch": 5,
+          "lr": 0.0001,
+          "train_loss": 9.851319734423171,
+          "segm_mAP": 0.4188095503931317,
+          "grasp5_mAP": 0.5331619390922725,
+          "action": "continue",
+          "train_seconds": 2929.473499374464,
+          "infer_seconds": 1006.8904982199892,
+          "eval_seconds": 10.40276424586773
+        },
+        {
+          "epoch": 6,
+          "lr": 0.0001,
+          "train_loss": 9.364864035727619,
+          "segm_mAP": 0.403791259203711,
+          "grasp5_mAP": 0.519362764356216,
+          "action": "continue",
+          "train_seconds": 2593.317685230635,
+          "infer_seconds": 1001.4179646577686,
+          "eval_seconds": 8.147757513448596
+        },
+        {
+          "epoch": 7,
+          "lr": 0.0001,
+          "train_loss": 8.920600827674061,
+          "segm_mAP": 0.4380313772894267,
+          "grasp5_mAP": 0.5900126720028784,
+          "action": "lower",
+          "train_seconds": 2436.5133710810915,
+          "infer_seconds": 996.9021776542068,
+          "eval_seconds": 8.295733160339296
+        }
+      ],
+      "per_class_ap_best": {
+        "grasp:First Person's Left Hand": 0.6418609754070103,
+        "grasp:First Person's Right Hand": 0.7721746683257228,
+        "grasp:Left Hand Tool": 0.4438739404385098,
+        "grasp:Right Hand Tool": 0.5329191225902482,
+        "grasp:Two Hands Tool": 0.27496310660960627,
+        "hand:Other Person's Left Hand": 0.18570368519076894,
+        "hand:Other Person's Right Hand": 0.17487189747353754,
+        "tool:BiClamp": null,
+        "tool:Bipolar Forceps": 0.20268687898112103,
+        "tool:Chisel": null,
+        "tool:Cup": 0.0,
+        "tool:Drill": null,
+        "tool:Electric Cautery": 0.3255761890405118,
+        "tool:Forceps": 0.01871005709916071,
+        "tool:Gauze": 0.2112858652945431,
+        "tool:Hammer": null,
+        "tool:Hook": 0.4676731182218117,
+        "tool:Kidney Dish": null,
+        "tool:Malleable Retractor": null,
+        "tool:Mouth Gag": null,
+        "tool:Nasogastric Tube": null,
+        "tool:Needle Holders": 0.5802122060660299,
+        "tool:Pen": null,
+        "tool:Petri Dish": null,
+        "tool:Raspatory": 0.4140555680478395,
+        "tool:Retractor": null,
+        "tool:Ruler": null,
+        "tool:Scalpel": 0.8012430589629279,
+        "tool:Scissors": 0.4340580437365361,
+        "tool:Screwdriver": null,
+        "tool:Skewer": 0.7976027095608558,
+        "tool:Spoon": null,
+        "tool:Suction Cannula": 0.75001281492873,
+        "tool:Suction Tube": null,
+        "tool:Suture, Suture Needle": null,
+        "tool:Syringe": 0.6034119206636506,
+        "tool:Trephine": null,
+        "tool:Tweezers": 0.6058922577490848
+      },
+      "config": {
+        "task_id": "T-2026-11-01-grasp-pilot-g",
+        "unofficial": true,
+        "run": "grasppilot2_G_H1_seed42",
+        "videos": "H1",
+        "train_videos": [
+          "01",
+          "06",
+          "11",
+          "12",
+          "15"
+        ],
+        "val_videos": [
+          "09",
+          "10"
+        ],
+        "train_frames": 3886,
+        "train_instances": 31361,
+        "val_frames": 1511,
+        "classes": 38,
+        "ann_sha256": {
+          "train": "3485bb69bcc6e2f3985fd988cdead40941f3750d206de0f38e9532071c64eccd",
+          "val": "d985397786d6d8d4f3bca57a7046d3a455b22e8af45be2e52654102fda0abf47"
+        },
+        "model": "mmdet Mask2Former R50 (mask2former_r50_8xb2-lsj-50e_coco)",
+        "init": {
+          "checkpoint": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-31-grasp-pilot-probe/e/weights/mmdet/mask2former_r50_8xb2-lsj-50e_coco_20220506_191028-41b088b6.pth",
+          "sha256": "41b088b62838c986004f94bab2870395b669ec6bd11b6590369b838b0de06879",
+          "n_checkpoint": 610,
+          "loaded": 608,
+          "skipped_shape": [
+            "panoptic_head.cls_embed.bias",
+            "panoptic_head.cls_embed.weight"
+          ],
+          "absent_in_model": [],
+          "model_params_not_loaded": [
+            "panoptic_head.cls_embed.bias",
+            "panoptic_head.cls_embed.weight"
+          ]
+        },
+        "input": "短辺 800・長辺 1333 まで（双線形）、学習は左右反転 0.5、batch_augments なし、32 の倍数へ詰める",
+        "batch": 2,
+        "optim_wrapper": {
+          "type": "OptimWrapper",
+          "optimizer": {
+            "type": "AdamW",
+            "lr": 0.0001,
+            "weight_decay": 0.05,
+            "eps": 1e-08,
+            "betas": [
+              0.9,
+              0.999
+            ]
+          },
+          "paramwise_cfg": {
+            "custom_keys": {
+              "backbone": {
+                "lr_mult": 0.1,
+                "decay_mult": 1.0
+              },
+              "query_embed": {
+                "lr_mult": 1.0,
+                "decay_mult": 0.0
+              },
+              "query_feat": {
+                "lr_mult": 1.0,
+                "decay_mult": 0.0
+              },
+              "level_embed": {
+                "lr_mult": 1.0,
+                "decay_mult": 0.0
+              }
+            },
+            "norm_decay_mult": 0.0
+          },
+          "clip_grad": {
+            "max_norm": 0.01,
+            "norm_type": 2
+          }
+        },
+        "amp": "none",
+        "max_epochs": 36,
+        "patience": 4,
+        "lr_decay": 0.1,
+        "selection": "val の 38 クラスの mask mAP（pycocotools segm、元の解像度、上位 100）。改善 = 最良を厳密に上回る",
+        "plateau_rule": "scripts/stage1_ptower_r3.py の plateau_action",
+        "seed": 42,
+        "smoke": false,
+        "git_commit": "d67875b73c88e920019a9e3fef4a40a2cc24aedf",
+        "code_sha256": {
+          "scripts/grasppilot/g_train.py": "ed1897807c2bbb4d48ce52bc5eb22dd2bf0420e0f347f88f5473c993db9f452f",
+          "scripts/grasppilot/g_bench.py": "356550c85a7d88f54dd3bffaf033b5f4193867e3da73f719f0ca7353886732cb",
+          "scripts/grasppilot/g38_build.py": "917ff2ae0221fbd5ff6d35881e2a66dbb1ef8f0a78dc6c8bb3027150abeffa0b"
+        },
+        "host": "Andrew",
+        "cuda_visible_devices": "1"
+      }
+    },
+    "H2": {
+      "task_id": "T-2026-11-01-grasp-pilot-g",
+      "unofficial": true,
+      "run": "grasppilot2_G_H2_seed42",
+      "videos": "H2",
+      "best_epoch": 8,
+      "best_segm_mAP": 0.49638196803248524,
+      "best_grasp5_mAP": 0.5617969116213313,
+      "pre_segm_mAP": 0.00041028689239478355,
+      "pre_grasp5_mAP": 0.0015024195272746368,
+      "epochs_completed": 12,
+      "lr_lowered_epoch": 12,
+      "early_stopped_epoch": 12,
+      "reached_epoch_cap": false,
+      "stop_rule": "利用者の決定: 最良が 4 epoch 更新されなければ打ち切り（g_early_stop.py）",
+      "stale_epochs_at_stop": 4,
+      "killed_pids": [
+        555794,
+        555810,
+        561056,
+        561088,
+        561120,
+        561152,
+        561184,
+        561216,
+        561248,
+        561280
+      ],
+      "elapsed_seconds": 34882.47852683067,
+      "peak_alloc_bytes": 10534313472,
+      "best_ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/g/ckpt/grasppilot2_G_H2_seed42/best.pth",
+      "best_ckpt_sha256": "52d4b3aa178433b5fce984ba2eeb446a1c3fdcfceeb43c263a4e21e4b67ca6bf",
+      "last_ckpt_sha256": null,
+      "history": [
+        {
+          "epoch": 0,
+          "lr": 0.0001,
+          "train_loss": null,
+          "segm_mAP": 0.00041028689239478355,
+          "grasp5_mAP": 0.0015024195272746368,
+          "action": null,
+          "train_seconds": null,
+          "infer_seconds": 1216.4240110451356,
+          "eval_seconds": 8.171309236437082
+        },
+        {
+          "epoch": 1,
+          "lr": 0.0001,
+          "train_loss": 22.185845032893607,
+          "segm_mAP": 0.4475207830020917,
+          "grasp5_mAP": 0.508404341598029,
+          "action": "continue",
+          "train_seconds": 3684.9642698923126,
+          "infer_seconds": 544.0956492656842,
+          "eval_seconds": 8.597204645164311
+        },
+        {
+          "epoch": 2,
+          "lr": 0.0001,
+          "train_loss": 14.700757751053747,
+          "segm_mAP": 0.42043797993997384,
+          "grasp5_mAP": 0.4538854191167358,
+          "action": "continue",
+          "train_seconds": 2530.6119461394846,
+          "infer_seconds": 565.7529573487118,
+          "eval_seconds": 8.466445007361472
+        },
+        {
+          "epoch": 3,
+          "lr": 0.0001,
+          "train_loss": 13.05504876634349,
+          "segm_mAP": 0.47567807978031973,
+          "grasp5_mAP": 0.5673601532559394,
+          "action": "continue",
+          "train_seconds": 2730.5371857304126,
+          "infer_seconds": 509.71856564376503,
+          "eval_seconds": 8.087317972443998
+        },
+        {
+          "epoch": 4,
+          "lr": 0.0001,
+          "train_loss": 12.124507039242719,
+          "segm_mAP": 0.4822546012977772,
+          "grasp5_mAP": 0.5699130298467195,
+          "action": "continue",
+          "train_seconds": 2606.7324684727937,
+          "infer_seconds": 576.5090254805982,
+          "eval_seconds": 8.41648296173662
+        },
+        {
+          "epoch": 5,
+          "lr": 0.0001,
+          "train_loss": 11.396600992960453,
+          "segm_mAP": 0.484023039493848,
+          "grasp5_mAP": 0.5604721377585481,
+          "action": "continue",
+          "train_seconds": 2534.29752543848,
+          "infer_seconds": 575.1061737965792,
+          "eval_seconds": 8.414139348082244
+        },
+        {
+          "epoch": 6,
+          "lr": 0.0001,
+          "train_loss": 10.768066166413846,
+          "segm_mAP": 0.487242056837094,
+          "grasp5_mAP": 0.548426143517641,
+          "action": "continue",
+          "train_seconds": 2734.2808102555573,
+          "infer_seconds": 580.4767189538106,
+          "eval_seconds": 8.75526319257915
+        },
+        {
+          "epoch": 7,
+          "lr": 0.0001,
+          "train_loss": 10.236966841905723,
+          "segm_mAP": 0.47031438928190655,
+          "grasp5_mAP": 0.5156917464756102,
+          "action": "continue",
+          "train_seconds": 2530.748594558798,
+          "infer_seconds": 575.6727123185992,
+          "eval_seconds": 8.76193227712065
+        },
+        {
+          "epoch": 8,
+          "lr": 0.0001,
+          "train_loss": 9.868695518156269,
+          "segm_mAP": 0.49638196803248524,
+          "grasp5_mAP": 0.5617969116213313,
+          "action": "continue",
+          "train_seconds": 2571.81222347077,
+          "infer_seconds": 500.69177518598735,
+          "eval_seconds": 8.544918983243406
+        },
+        {
+          "epoch": 9,
+          "lr": 0.0001,
+          "train_loss": 9.525539575567567,
+          "segm_mAP": 0.48051903574551313,
+          "grasp5_mAP": 0.5493029749628706,
+          "action": "continue",
+          "train_seconds": 2183.5319938044995,
+          "infer_seconds": 162.46279211062938,
+          "eval_seconds": 8.44069154560566
+        },
+        {
+          "epoch": 10,
+          "lr": 0.0001,
+          "train_loss": 9.13356491191287,
+          "segm_mAP": 0.456630059369762,
+          "grasp5_mAP": 0.5098258702936402,
+          "action": "continue",
+          "train_seconds": 1456.5508578019217,
+          "infer_seconds": 162.6722363019362,
+          "eval_seconds": 8.764943632297218
+        },
+        {
+          "epoch": 11,
+          "lr": 0.0001,
+          "train_loss": 8.911528907536308,
+          "segm_mAP": 0.4343909881177025,
+          "grasp5_mAP": 0.49774201787679456,
+          "action": "continue",
+          "train_seconds": 1442.7805510014296,
+          "infer_seconds": 162.20177471730858,
+          "eval_seconds": 8.144576705992222
+        },
+        {
+          "epoch": 12,
+          "lr": 0.0001,
+          "train_loss": 8.513811031268547,
+          "segm_mAP": 0.44486051179108504,
+          "grasp5_mAP": 0.5193824665229755,
+          "action": "lower",
+          "train_seconds": 1442.3251772867516,
+          "infer_seconds": 162.2860690858215,
+          "eval_seconds": 8.297562238760293
+        }
+      ],
+      "per_class_ap_best": {
+        "grasp:First Person's Left Hand": 0.5379458088601692,
+        "grasp:First Person's Right Hand": 0.7146515588317398,
+        "grasp:Left Hand Tool": 0.4714096183099113,
+        "grasp:Right Hand Tool": 0.5986071881328543,
+        "grasp:Two Hands Tool": 0.4863703839719822,
+        "hand:Other Person's Left Hand": 0.15953023963700327,
+        "hand:Other Person's Right Hand": 0.13812424556033223,
+        "tool:BiClamp": null,
+        "tool:Bipolar Forceps": 0.10957412748255602,
+        "tool:Chisel": null,
+        "tool:Cup": 0.04393631400417103,
+        "tool:Drill": null,
+        "tool:Electric Cautery": 0.9164313513053648,
+        "tool:Forceps": 0.21018227690738198,
+        "tool:Gauze": 0.30463047120910886,
+        "tool:Hammer": null,
+        "tool:Hook": 0.3935568211157569,
+        "tool:Kidney Dish": null,
+        "tool:Malleable Retractor": null,
+        "tool:Mouth Gag": null,
+        "tool:Nasogastric Tube": null,
+        "tool:Needle Holders": 0.5894645709265357,
+        "tool:Pen": null,
+        "tool:Petri Dish": null,
+        "tool:Raspatory": 0.4821809251334073,
+        "tool:Retractor": null,
+        "tool:Ruler": null,
+        "tool:Scalpel": 0.897052523302527,
+        "tool:Scissors": 0.4700770007780587,
+        "tool:Screwdriver": null,
+        "tool:Skewer": 0.8121180577005672,
+        "tool:Spoon": null,
+        "tool:Suction Cannula": 0.722882667543581,
+        "tool:Suction Tube": null,
+        "tool:Suture, Suture Needle": null,
+        "tool:Syringe": 0.7530286364282873,
+        "tool:Trephine": null,
+        "tool:Tweezers": 0.6122665415408945
+      },
+      "config": {
+        "task_id": "T-2026-11-01-grasp-pilot-g",
+        "unofficial": true,
+        "run": "grasppilot2_G_H2_seed42",
+        "videos": "H2",
+        "train_videos": [
+          "02",
+          "03",
+          "08",
+          "13",
+          "14"
+        ],
+        "val_videos": [
+          "09",
+          "10"
+        ],
+        "train_frames": 5383,
+        "train_instances": 40752,
+        "val_frames": 1511,
+        "classes": 38,
+        "ann_sha256": {
+          "train": "3485bb69bcc6e2f3985fd988cdead40941f3750d206de0f38e9532071c64eccd",
+          "val": "d985397786d6d8d4f3bca57a7046d3a455b22e8af45be2e52654102fda0abf47"
+        },
+        "model": "mmdet Mask2Former R50 (mask2former_r50_8xb2-lsj-50e_coco)",
+        "init": {
+          "checkpoint": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-31-grasp-pilot-probe/e/weights/mmdet/mask2former_r50_8xb2-lsj-50e_coco_20220506_191028-41b088b6.pth",
+          "sha256": "41b088b62838c986004f94bab2870395b669ec6bd11b6590369b838b0de06879",
+          "n_checkpoint": 610,
+          "loaded": 608,
+          "skipped_shape": [
+            "panoptic_head.cls_embed.bias",
+            "panoptic_head.cls_embed.weight"
+          ],
+          "absent_in_model": [],
+          "model_params_not_loaded": [
+            "panoptic_head.cls_embed.bias",
+            "panoptic_head.cls_embed.weight"
+          ]
+        },
+        "input": "短辺 800・長辺 1333 まで（双線形）、学習は左右反転 0.5、batch_augments なし、32 の倍数へ詰める",
+        "batch": 2,
+        "optim_wrapper": {
+          "type": "OptimWrapper",
+          "optimizer": {
+            "type": "AdamW",
+            "lr": 0.0001,
+            "weight_decay": 0.05,
+            "eps": 1e-08,
+            "betas": [
+              0.9,
+              0.999
+            ]
+          },
+          "paramwise_cfg": {
+            "custom_keys": {
+              "backbone": {
+                "lr_mult": 0.1,
+                "decay_mult": 1.0
+              },
+              "query_embed": {
+                "lr_mult": 1.0,
+                "decay_mult": 0.0
+              },
+              "query_feat": {
+                "lr_mult": 1.0,
+                "decay_mult": 0.0
+              },
+              "level_embed": {
+                "lr_mult": 1.0,
+                "decay_mult": 0.0
+              }
+            },
+            "norm_decay_mult": 0.0
+          },
+          "clip_grad": {
+            "max_norm": 0.01,
+            "norm_type": 2
+          }
+        },
+        "amp": "none",
+        "max_epochs": 36,
+        "patience": 4,
+        "lr_decay": 0.1,
+        "selection": "val の 38 クラスの mask mAP（pycocotools segm、元の解像度、上位 100）。改善 = 最良を厳密に上回る",
+        "plateau_rule": "scripts/stage1_ptower_r3.py の plateau_action",
+        "seed": 42,
+        "smoke": false,
+        "git_commit": "d67875b73c88e920019a9e3fef4a40a2cc24aedf",
+        "code_sha256": {
+          "scripts/grasppilot/g_train.py": "ed1897807c2bbb4d48ce52bc5eb22dd2bf0420e0f347f88f5473c993db9f452f",
+          "scripts/grasppilot/g_bench.py": "356550c85a7d88f54dd3bffaf033b5f4193867e3da73f719f0ca7353886732cb",
+          "scripts/grasppilot/g38_build.py": "917ff2ae0221fbd5ff6d35881e2a66dbb1ef8f0a78dc6c8bb3027150abeffa0b"
+        },
+        "host": "Andrew",
+        "cuda_visible_devices": "0"
+      }
+    }
+  },
+  "case_A": {
+    "tower": {
+      "all": {
+        "jaccard": 0.7762185528074379,
+        "accuracy": 0.8712871287128713,
+        "per_class_jaccard": {
+          "anesthesia": 0.9603960396039604,
+          "closure": 0.7539823008849558,
+          "design": 0.9615384615384616,
+          "disinfection": 0.0,
+          "dissection": 0.7792207792207793,
+          "dressing": 0.7692307692307693,
+          "hemostasis": 0.3614457831325301,
+          "incision": 0.8477157360406091,
+          "irrigation": 0.0
+        },
+        "per_video": {
+          "09": {
+            "jaccard": 0.9931717398646169,
+            "accuracy": 0.9961389961389961,
+            "n": 518
+          },
+          "10": {
+            "jaccard": 0.6753695847911568,
+            "accuracy": 0.8064192577733199,
+            "n": 997
+          }
+        },
+        "n": 1515
+      },
+      "annotated": {
+        "jaccard": 0.7770292529590558,
+        "accuracy": 0.8718626155878467,
+        "per_class_jaccard": {
+          "anesthesia": 0.9603960396039604,
+          "closure": 0.7539823008849558,
+          "design": 0.9615384615384616,
+          "disinfection": 0.0,
+          "dissection": 0.7804878048780488,
+          "dressing": 0.7692307692307693,
+          "hemostasis": 0.36585365853658536,
+          "incision": 0.8477157360406091,
+          "irrigation": 0.0
+        },
+        "per_video": {
+          "09": {
+            "jaccard": 0.9931717398646169,
+            "accuracy": 0.9961389961389961,
+            "n": 518
+          },
+          "10": {
+            "jaccard": 0.6762405647903847,
+            "accuracy": 0.8072289156626506,
+            "n": 996
+          }
+        },
+        "n": 1514
+      }
+    },
+    "empty": {
+      "run": "grasppilot2_dp_001_GA_empty_ep4_seed42",
+      "all": {
+        "jaccard": 0.7762185528074379,
+        "accuracy": 0.8712871287128713,
+        "per_class_jaccard": {
+          "anesthesia": 0.9603960396039604,
+          "closure": 0.7539823008849558,
+          "design": 0.9615384615384616,
+          "disinfection": 0.0,
+          "dissection": 0.7792207792207793,
+          "dressing": 0.7692307692307693,
+          "hemostasis": 0.3614457831325301,
+          "incision": 0.8477157360406091,
+          "irrigation": 0.0
+        },
+        "per_video": {
+          "09": {
+            "jaccard": 0.9931717398646169,
+            "accuracy": 0.9961389961389961,
+            "n": 518
+          },
+          "10": {
+            "jaccard": 0.6753695847911568,
+            "accuracy": 0.8064192577733199,
+            "n": 997
+          }
+        },
+        "n": 1515,
+        "d_empty": {
+          "jaccard": 0.0,
+          "accuracy": 0.0
+        },
+        "d_shuffle": {
+          "jaccard": 0.006232180158826095,
+          "accuracy": -0.009240924092409286
+        },
+        "d_tower": {
+          "jaccard": 0.0,
+          "accuracy": 0.0
+        },
+        "d_gt": {
+          "jaccard": -0.002822181044259131,
+          "accuracy": -0.007920792079207928
+        },
+        "d_empty_per_video": {
+          "09": {
+            "jaccard": 0.0,
+            "accuracy": 0.0
+          },
+          "10": {
+            "jaccard": 0.0,
+            "accuracy": 0.0
+          }
+        }
+      },
+      "annotated": {
+        "jaccard": 0.7770292529590558,
+        "accuracy": 0.8718626155878467,
+        "per_class_jaccard": {
+          "anesthesia": 0.9603960396039604,
+          "closure": 0.7539823008849558,
+          "design": 0.9615384615384616,
+          "disinfection": 0.0,
+          "dissection": 0.7804878048780488,
+          "dressing": 0.7692307692307693,
+          "hemostasis": 0.36585365853658536,
+          "incision": 0.8477157360406091,
+          "irrigation": 0.0
+        },
+        "per_video": {
+          "09": {
+            "jaccard": 0.9931717398646169,
+            "accuracy": 0.9961389961389961,
+            "n": 518
+          },
+          "10": {
+            "jaccard": 0.6762405647903847,
+            "accuracy": 0.8072289156626506,
+            "n": 996
+          }
+        },
+        "n": 1514,
+        "d_empty": {
+          "jaccard": 0.0,
+          "accuracy": 0.0
+        },
+        "d_shuffle": {
+          "jaccard": 0.006228211070775758,
+          "accuracy": -0.009247027741083214
+        },
+        "d_tower": {
+          "jaccard": 0.0,
+          "accuracy": 0.0
+        },
+        "d_gt": {
+          "jaccard": -0.002794244116263389,
+          "accuracy": -0.00792602377807139
+        },
+        "d_empty_per_video": {
+          "09": {
+            "jaccard": 0.0,
+            "accuracy": 0.0
+          },
+          "10": {
+            "jaccard": 0.0,
+            "accuracy": 0.0
+          }
+        }
+      },
+      "recorded_jaccard": 0.7762185528074379,
+      "recorded_accuracy": 0.8712871287128713,
+      "elapsed_seconds": 43.98489655274898,
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 0.5151980727910995,
+          "val_jaccard": 0.7762185528074379,
+          "val_accuracy": 0.8712871287128713,
+          "iface_max_abs": 0.0,
+          "iface_l2": 0.0
+        },
+        {
+          "epoch": 2,
+          "train_loss": 0.5151980727910995,
+          "val_jaccard": 0.7762185528074379,
+          "val_accuracy": 0.8712871287128713,
+          "iface_max_abs": 0.0,
+          "iface_l2": 0.0
+        },
+        {
+          "epoch": 3,
+          "train_loss": 0.5151980727910995,
+          "val_jaccard": 0.7762185528074379,
+          "val_accuracy": 0.8712871287128713,
+          "iface_max_abs": 0.0,
+          "iface_l2": 0.0
+        },
+        {
+          "epoch": 4,
+          "train_loss": 0.5151980727910995,
+          "val_jaccard": 0.7762185528074379,
+          "val_accuracy": 0.8712871287128713,
+          "iface_max_abs": 0.0,
+          "iface_l2": 0.0
+        }
+      ],
+      "recompute_matches_record": true
+    },
+    "pred_noCF": {
+      "run": "grasppilot2_dp_002_GA_pred_noCF_ep4_seed42",
+      "all": {
+        "jaccard": 0.7697516924554283,
+        "accuracy": 0.8805280528052806,
+        "per_class_jaccard": {
+          "anesthesia": 0.9603960396039604,
+          "closure": 0.7764084507042254,
+          "design": 0.970873786407767,
+          "disinfection": 0.0,
+          "dissection": 0.7815533980582524,
+          "dressing": 0.6896551724137931,
+          "hemostasis": 0.35,
+          "incision": 0.859375,
+          "irrigation": 0.0
+        },
+        "per_video": {
+          "09": {
+            "jaccard": 0.9903211445764637,
+            "accuracy": 0.9942084942084942,
+            "n": 518
+          },
+          "10": {
+            "jaccard": 0.6766548941361331,
+            "accuracy": 0.8214643931795386,
+            "n": 997
+          }
+        },
+        "n": 1515,
+        "d_empty": {
+          "jaccard": -0.006466860352009607,
+          "accuracy": 0.009240924092409286
+        },
+        "d_shuffle": {
+          "jaccard": -0.00023468019318351185,
+          "accuracy": 0.0
+        },
+        "d_tower": {
+          "jaccard": -0.006466860352009607,
+          "accuracy": 0.009240924092409286
+        },
+        "d_gt": {
+          "jaccard": -0.009289041396268738,
+          "accuracy": 0.0013201320132013583
+        },
+        "d_empty_per_video": {
+          "09": {
+            "jaccard": -0.002850595288153235,
+            "accuracy": -0.0019305019305019266
+          },
+          "10": {
+            "jaccard": 0.001285309344976282,
+            "accuracy": 0.015045135406218657
+          }
+        }
+      },
+      "annotated": {
+        "jaccard": 0.7705655608744735,
+        "accuracy": 0.8811096433289299,
+        "per_class_jaccard": {
+          "anesthesia": 0.9603960396039604,
+          "closure": 0.7764084507042254,
+          "design": 0.970873786407767,
+          "disinfection": 0.0,
+          "dissection": 0.7828200972447326,
+          "dressing": 0.6896551724137931,
+          "hemostasis": 0.35443037974683544,
+          "incision": 0.859375,
+          "irrigation": 0.0
+        },
+        "per_video": {
+          "09": {
+            "jaccard": 0.9903211445764637,
+            "accuracy": 0.9942084942084942,
+            "n": 518
+          },
+          "10": {
+            "jaccard": 0.6775307110612376,
+            "accuracy": 0.822289156626506,
+            "n": 996
+          }
+        },
+        "n": 1514,
+        "d_empty": {
+          "jaccard": -0.0064636920845823065,
+          "accuracy": 0.009247027741083214
+        },
+        "d_shuffle": {
+          "jaccard": -0.00023548101380654884,
+          "accuracy": 0.0
+        },
+        "d_tower": {
+          "jaccard": -0.0064636920845823065,
+          "accuracy": 0.009247027741083214
+        },
+        "d_gt": {
+          "jaccard": -0.009257936200845696,
+          "accuracy": 0.0013210039630118242
+        },
+        "d_empty_per_video": {
+          "09": {
+            "jaccard": -0.002850595288153235,
+            "accuracy": -0.0019305019305019266
+          },
+          "10": {
+            "jaccard": 0.0012901462708528877,
+            "accuracy": 0.015060240963855387
+          }
+        }
+      },
+      "recorded_jaccard": 0.7697516924554283,
+      "recorded_accuracy": 0.8805280528052806,
+      "elapsed_seconds": 44.65016556251794,
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 0.5144195199012757,
+          "val_jaccard": 0.7718118009107984,
+          "val_accuracy": 0.8745874587458746,
+          "iface_max_abs": 0.004714299459010363,
+          "iface_l2": 0.08228154480457306
+        },
+        {
+          "epoch": 2,
+          "train_loss": 0.5125378489494323,
+          "val_jaccard": 0.7784832287086108,
+          "val_accuracy": 0.8772277227722772,
+          "iface_max_abs": 0.00907816831022501,
+          "iface_l2": 0.1514454334974289
+        },
+        {
+          "epoch": 3,
+          "train_loss": 0.5112441539764404,
+          "val_jaccard": 0.7721427787305923,
+          "val_accuracy": 0.8785478547854786,
+          "iface_max_abs": 0.013286866247653961,
+          "iface_l2": 0.21854330599308014
+        },
+        {
+          "epoch": 4,
+          "train_loss": 0.5102098107337951,
+          "val_jaccard": 0.7697516924554283,
+          "val_accuracy": 0.8805280528052806,
+          "iface_max_abs": 0.01722821034491062,
+          "iface_l2": 0.278852254152298
+        }
+      ],
+      "recompute_matches_record": true
+    },
+    "gt": {
+      "run": "grasppilot2_dp_003_GA_gt_ep4_seed42",
+      "all": {
+        "jaccard": 0.779040733851697,
+        "accuracy": 0.8792079207920792,
+        "per_class_jaccard": {
+          "anesthesia": 0.9603960396039604,
+          "closure": 0.7689594356261023,
+          "design": 0.970873786407767,
+          "disinfection": 0.0,
+          "dissection": 0.782258064516129,
+          "dressing": 0.7692307692307693,
+          "hemostasis": 0.34146341463414637,
+          "incision": 0.8601036269430051,
+          "irrigation": 0.0
+        },
+        "per_video": {
+          "09": {
+            "jaccard": 0.9903211445764637,
+            "accuracy": 0.9942084942084942,
+            "n": 518
+          },
+          "10": {
+            "jaccard": 0.6873382914299127,
+            "accuracy": 0.8194583751253761,
+            "n": 997
+          }
+        },
+        "n": 1515,
+        "d_empty": {
+          "jaccard": 0.002822181044259131,
+          "accuracy": 0.007920792079207928
+        },
+        "d_shuffle": {
+          "jaccard": 0.009054361203085226,
+          "accuracy": -0.0013201320132013583
+        },
+        "d_tower": {
+          "jaccard": 0.002822181044259131,
+          "accuracy": 0.007920792079207928
+        },
+        "d_gt": {
+          "jaccard": 0.0,
+          "accuracy": 0.0
+        },
+        "d_empty_per_video": {
+          "09": {
+            "jaccard": -0.002850595288153235,
+            "accuracy": -0.0019305019305019266
+          },
+          "10": {
+            "jaccard": 0.011968706638755822,
+            "accuracy": 0.013039117352056206
+          }
+        }
+      },
+      "annotated": {
+        "jaccard": 0.7798234970753192,
+        "accuracy": 0.8797886393659181,
+        "per_class_jaccard": {
+          "anesthesia": 0.9603960396039604,
+          "closure": 0.7689594356261023,
+          "design": 0.970873786407767,
+          "disinfection": 0.0,
+          "dissection": 0.7835218093699515,
+          "dressing": 0.7692307692307693,
+          "hemostasis": 0.345679012345679,
+          "incision": 0.8601036269430051,
+          "irrigation": 0.0
+        },
+        "per_video": {
+          "09": {
+            "jaccard": 0.9903211445764637,
+            "accuracy": 0.9942084942084942,
+            "n": 518
+          },
+          "10": {
+            "jaccard": 0.6881828236826557,
+            "accuracy": 0.820281124497992,
+            "n": 996
+          }
+        },
+        "n": 1514,
+        "d_empty": {
+          "jaccard": 0.002794244116263389,
+          "accuracy": 0.00792602377807139
+        },
+        "d_shuffle": {
+          "jaccard": 0.009022455187039147,
+          "accuracy": -0.0013210039630118242
+        },
+        "d_tower": {
+          "jaccard": 0.002794244116263389,
+          "accuracy": 0.00792602377807139
+        },
+        "d_gt": {
+          "jaccard": 0.0,
+          "accuracy": 0.0
+        },
+        "d_empty_per_video": {
+          "09": {
+            "jaccard": -0.002850595288153235,
+            "accuracy": -0.0019305019305019266
+          },
+          "10": {
+            "jaccard": 0.011942258892270963,
+            "accuracy": 0.013052208835341306
+          }
+        }
+      },
+      "recorded_jaccard": 0.779040733851697,
+      "recorded_accuracy": 0.8792079207920792,
+      "elapsed_seconds": 40.36119106505066,
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 0.5146612614393234,
+          "val_jaccard": 0.7705028520133486,
+          "val_accuracy": 0.8732673267326733,
+          "iface_max_abs": 0.0048557184636592865,
+          "iface_l2": 0.07864562422037125
+        },
+        {
+          "epoch": 2,
+          "train_loss": 0.5132241249084473,
+          "val_jaccard": 0.7780500381175222,
+          "val_accuracy": 0.8765676567656766,
+          "iface_max_abs": 0.00954773835837841,
+          "iface_l2": 0.14563101530075073
+        },
+        {
+          "epoch": 3,
+          "train_loss": 0.5122650504112244,
+          "val_jaccard": 0.7794066254578124,
+          "val_accuracy": 0.8778877887788779,
+          "iface_max_abs": 0.014225051738321781,
+          "iface_l2": 0.20962080359458923
+        },
+        {
+          "epoch": 4,
+          "train_loss": 0.511515673995018,
+          "val_jaccard": 0.779040733851697,
+          "val_accuracy": 0.8792079207920792,
+          "iface_max_abs": 0.018697069957852364,
+          "iface_l2": 0.26915591955184937
+        }
+      ],
+      "recompute_matches_record": true
+    },
+    "pred_CF": {
+      "run": "grasppilot2_dp_004_GA_pred_CF_ep4_seed42",
+      "all": {
+        "jaccard": 0.7683903608857634,
+        "accuracy": 0.8798679867986798,
+        "per_class_jaccard": {
+          "anesthesia": 0.9603960396039604,
+          "closure": 0.7764084507042254,
+          "design": 0.970873786407767,
+          "disinfection": 0.0,
+          "dissection": 0.7815533980582524,
+          "dressing": 0.6896551724137931,
+          "hemostasis": 0.345679012345679,
+          "incision": 0.8541666666666666,
+          "irrigation": 0.0
+        },
+        "per_video": {
+          "09": {
+            "jaccard": 0.9903211445764637,
+            "accuracy": 0.9942084942084942,
+            "n": 518
+          },
+          "10": {
+            "jaccard": 0.6732364897373365,
+            "accuracy": 0.8204613841524574,
+            "n": 997
+          }
+        },
+        "n": 1515,
+        "d_empty": {
+          "jaccard": -0.007828191921674499,
+          "accuracy": 0.008580858085808551
+        },
+        "d_shuffle": {
+          "jaccard": -0.0015960117628484038,
+          "accuracy": -0.0006600660066007347
+        },
+        "d_tower": {
+          "jaccard": -0.007828191921674499,
+          "accuracy": 0.008580858085808551
+        },
+        "d_gt": {
+          "jaccard": -0.01065037296593363,
+          "accuracy": 0.0006600660066006236
+        },
+        "d_empty_per_video": {
+          "09": {
+            "jaccard": -0.002850595288153235,
+            "accuracy": -0.0019305019305019266
+          },
+          "10": {
+            "jaccard": -0.002133095053820311,
+            "accuracy": 0.014042126379137487
+          }
+        }
+      },
+      "annotated": {
+        "jaccard": 0.7691886018630207,
+        "accuracy": 0.880449141347424,
+        "per_class_jaccard": {
+          "anesthesia": 0.9603960396039604,
+          "closure": 0.7764084507042254,
+          "design": 0.970873786407767,
+          "disinfection": 0.0,
+          "dissection": 0.7828200972447326,
+          "dressing": 0.6896551724137931,
+          "hemostasis": 0.35,
+          "incision": 0.8541666666666666,
+          "irrigation": 0.0
+        },
+        "per_video": {
+          "09": {
+            "jaccard": 0.9903211445764637,
+            "accuracy": 0.9942084942084942,
+            "n": 518
+          },
+          "10": {
+            "jaccard": 0.6740966792206534,
+            "accuracy": 0.821285140562249,
+            "n": 996
+          }
+        },
+        "n": 1514,
+        "d_empty": {
+          "jaccard": -0.007840651096035045,
+          "accuracy": 0.008586525759577301
+        },
+        "d_shuffle": {
+          "jaccard": -0.0016124400252592874,
+          "accuracy": -0.0006605019815059121
+        },
+        "d_tower": {
+          "jaccard": -0.007840651096035045,
+          "accuracy": 0.008586525759577301
+        },
+        "d_gt": {
+          "jaccard": -0.010634895212298434,
+          "accuracy": 0.0006605019815059121
+        },
+        "d_empty_per_video": {
+          "09": {
+            "jaccard": -0.002850595288153235,
+            "accuracy": -0.0019305019305019266
+          },
+          "10": {
+            "jaccard": -0.0021438855697313297,
+            "accuracy": 0.014056224899598346
+          }
+        }
+      },
+      "recorded_jaccard": 0.7683903608857634,
+      "recorded_accuracy": 0.8798679867986798,
+      "elapsed_seconds": 44.07823348045349,
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 0.5143878847360611,
+          "val_jaccard": 0.7722452023550221,
+          "val_accuracy": 0.8752475247524752,
+          "iface_max_abs": 0.004829176235944033,
+          "iface_l2": 0.08243510872125626
+        },
+        {
+          "epoch": 2,
+          "train_loss": 0.5124724745750427,
+          "val_jaccard": 0.7784832287086108,
+          "val_accuracy": 0.8772277227722772,
+          "iface_max_abs": 0.009395888075232506,
+          "iface_l2": 0.15217694640159607
+        },
+        {
+          "epoch": 3,
+          "train_loss": 0.5111676037311554,
+          "val_jaccard": 0.7707772666055864,
+          "val_accuracy": 0.8778877887788779,
+          "iface_max_abs": 0.013830309733748436,
+          "iface_l2": 0.22050198912620544
+        },
+        {
+          "epoch": 4,
+          "train_loss": 0.5101260334253311,
+          "val_jaccard": 0.7683903608857634,
+          "val_accuracy": 0.8798679867986798,
+          "iface_max_abs": 0.017958706244826317,
+          "iface_l2": 0.2819305956363678
+        }
+      ],
+      "recompute_matches_record": true
+    },
+    "gtpred_CF": {
+      "run": "grasppilot2_dp_005_GA_gtpred_CF_ep4_seed42",
+      "all": {
+        "jaccard": 0.7698139742214868,
+        "accuracy": 0.8838283828382838,
+        "per_class_jaccard": {
+          "anesthesia": 0.9603960396039604,
+          "closure": 0.7750439367311072,
+          "design": 0.970873786407767,
+          "disinfection": 0.0,
+          "dissection": 0.7865168539325843,
+          "dressing": 0.6551724137931034,
+          "hemostasis": 0.358974358974359,
+          "incision": 0.8817204301075269,
+          "irrigation": 0.0
+        },
+        "per_video": {
+          "09": {
+            "jaccard": 0.9874798384748861,
+            "accuracy": 0.9922779922779923,
+            "n": 518
+          },
+          "10": {
+            "jaccard": 0.6841248048249007,
+            "accuracy": 0.827482447342026,
+            "n": 997
+          }
+        },
+        "n": 1515,
+        "d_empty": {
+          "jaccard": -0.006404578585951115,
+          "accuracy": 0.012541254125412515
+        },
+        "d_shuffle": {
+          "jaccard": -0.00017239842712502007,
+          "accuracy": 0.0033003300330032292
+        },
+        "d_tower": {
+          "jaccard": -0.006404578585951115,
+          "accuracy": 0.012541254125412515
+        },
+        "d_gt": {
+          "jaccard": -0.009226759630210246,
+          "accuracy": 0.0046204620462045876
+        },
+        "d_empty_per_video": {
+          "09": {
+            "jaccard": -0.005691901389730858,
+            "accuracy": -0.0038610038610038533
+          },
+          "10": {
+            "jaccard": 0.008755220033743849,
+            "accuracy": 0.02106318956870612
+          }
+        }
+      },
+      "annotated": {
+        "jaccard": 0.7706606172517347,
+        "accuracy": 0.8844121532364597,
+        "per_class_jaccard": {
+          "anesthesia": 0.9603960396039604,
+          "closure": 0.7750439367311072,
+          "design": 0.970873786407767,
+          "disinfection": 0.0,
+          "dissection": 0.7877813504823151,
+          "dressing": 0.6551724137931034,
+          "hemostasis": 0.36363636363636365,
+          "incision": 0.8817204301075269,
+          "irrigation": 0.0
+        },
+        "per_video": {
+          "09": {
+            "jaccard": 0.9874798384748861,
+            "accuracy": 0.9922779922779923,
+            "n": 518
+          },
+          "10": {
+            "jaccard": 0.6850353180116288,
+            "accuracy": 0.8283132530120482,
+            "n": 996
+          }
+        },
+        "n": 1514,
+        "d_empty": {
+          "jaccard": -0.0063686357073210464,
+          "accuracy": 0.012549537648612996
+        },
+        "d_shuffle": {
+          "jaccard": -0.0001404246365452888,
+          "accuracy": 0.0033025099075297826
+        },
+        "d_tower": {
+          "jaccard": -0.0063686357073210464,
+          "accuracy": 0.012549537648612996
+        },
+        "d_gt": {
+          "jaccard": -0.009162879823584436,
+          "accuracy": 0.004623513870541607
+        },
+        "d_empty_per_video": {
+          "09": {
+            "jaccard": -0.005691901389730858,
+            "accuracy": -0.0038610038610038533
+          },
+          "10": {
+            "jaccard": 0.008794753221244012,
+            "accuracy": 0.02108433734939752
+          }
+        }
+      },
+      "recorded_jaccard": 0.7698139742214868,
+      "recorded_accuracy": 0.8838283828382838,
+      "elapsed_seconds": 42.73086306359619,
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 0.5139412462711335,
+          "val_jaccard": 0.7784832287086108,
+          "val_accuracy": 0.8772277227722772,
+          "iface_max_abs": 0.004855501931160688,
+          "iface_l2": 0.11180630326271057
+        },
+        {
+          "epoch": 2,
+          "train_loss": 0.5111442506313324,
+          "val_jaccard": 0.7683903608857634,
+          "val_accuracy": 0.8798679867986798,
+          "iface_max_abs": 0.009464530274271965,
+          "iface_l2": 0.2010028064250946
+        },
+        {
+          "epoch": 3,
+          "train_loss": 0.5096930623054504,
+          "val_jaccard": 0.769806112036458,
+          "val_accuracy": 0.8831683168316832,
+          "iface_max_abs": 0.013986347243189812,
+          "iface_l2": 0.2820286154747009
+        },
+        {
+          "epoch": 4,
+          "train_loss": 0.5087627470493317,
+          "val_jaccard": 0.7698139742214868,
+          "val_accuracy": 0.8838283828382838,
+          "iface_max_abs": 0.018179554492235184,
+          "iface_l2": 0.3520166873931885
+        }
+      ],
+      "recompute_matches_record": true
+    },
+    "shuffle": {
+      "run": "grasppilot2_dp_006_GA_shuffle_ep4_seed42",
+      "all": {
+        "jaccard": 0.7699863726486118,
+        "accuracy": 0.8805280528052806,
+        "per_class_jaccard": {
+          "anesthesia": 0.9603960396039604,
+          "closure": 0.7764084507042254,
+          "design": 0.970873786407767,
+          "disinfection": 0.0,
+          "dissection": 0.7824675324675324,
+          "dressing": 0.6896551724137931,
+          "hemostasis": 0.35,
+          "incision": 0.8601036269430051,
+          "irrigation": 0.0
+        },
+        "per_video": {
+          "09": {
+            "jaccard": 0.9931717398646169,
+            "accuracy": 0.9961389961389961,
+            "n": 518
+          },
+          "10": {
+            "jaccard": 0.6751271432197246,
+            "accuracy": 0.8204613841524574,
+            "n": 997
+          }
+        },
+        "n": 1515,
+        "d_empty": {
+          "jaccard": -0.006232180158826095,
+          "accuracy": 0.009240924092409286
+        },
+        "d_shuffle": {
+          "jaccard": 0.0,
+          "accuracy": 0.0
+        },
+        "d_tower": {
+          "jaccard": -0.006232180158826095,
+          "accuracy": 0.009240924092409286
+        },
+        "d_gt": {
+          "jaccard": -0.009054361203085226,
+          "accuracy": 0.0013201320132013583
+        },
+        "d_empty_per_video": {
+          "09": {
+            "jaccard": 0.0,
+            "accuracy": 0.0
+          },
+          "10": {
+            "jaccard": -0.00024244157143227252,
+            "accuracy": 0.014042126379137487
+          }
+        }
+      },
+      "annotated": {
+        "jaccard": 0.77080104188828,
+        "accuracy": 0.8811096433289299,
+        "per_class_jaccard": {
+          "anesthesia": 0.9603960396039604,
+          "closure": 0.7764084507042254,
+          "design": 0.970873786407767,
+          "disinfection": 0.0,
+          "dissection": 0.7837398373983739,
+          "dressing": 0.6896551724137931,
+          "hemostasis": 0.35443037974683544,
+          "incision": 0.8601036269430051,
+          "irrigation": 0.0
+        },
+        "per_video": {
+          "09": {
+            "jaccard": 0.9931717398646169,
+            "accuracy": 0.9961389961389961,
+            "n": 518
+          },
+          "10": {
+            "jaccard": 0.676003260702856,
+            "accuracy": 0.821285140562249,
+            "n": 996
+          }
+        },
+        "n": 1514,
+        "d_empty": {
+          "jaccard": -0.006228211070775758,
+          "accuracy": 0.009247027741083214
+        },
+        "d_shuffle": {
+          "jaccard": 0.0,
+          "accuracy": 0.0
+        },
+        "d_tower": {
+          "jaccard": -0.006228211070775758,
+          "accuracy": 0.009247027741083214
+        },
+        "d_gt": {
+          "jaccard": -0.009022455187039147,
+          "accuracy": 0.0013210039630118242
+        },
+        "d_empty_per_video": {
+          "09": {
+            "jaccard": 0.0,
+            "accuracy": 0.0
+          },
+          "10": {
+            "jaccard": -0.00023730408752875576,
+            "accuracy": 0.014056224899598346
+          }
+        }
+      },
+      "recorded_jaccard": 0.7699863726486118,
+      "recorded_accuracy": 0.8805280528052806,
+      "elapsed_seconds": 44.85060614719987,
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 0.514311546087265,
+          "val_jaccard": 0.7726791933877323,
+          "val_accuracy": 0.8759075907590759,
+          "iface_max_abs": 0.004696411080658436,
+          "iface_l2": 0.08583712577819824
+        },
+        {
+          "epoch": 2,
+          "train_loss": 0.5122514218091965,
+          "val_jaccard": 0.777199734171154,
+          "val_accuracy": 0.8765676567656766,
+          "iface_max_abs": 0.009077143855392933,
+          "iface_l2": 0.1571466475725174
+        },
+        {
+          "epoch": 3,
+          "train_loss": 0.5108523368835449,
+          "val_jaccard": 0.7686060798830503,
+          "val_accuracy": 0.8792079207920792,
+          "iface_max_abs": 0.013349652290344238,
+          "iface_l2": 0.22723570466041565
+        },
+        {
+          "epoch": 4,
+          "train_loss": 0.5097498506307602,
+          "val_jaccard": 0.7699863726486118,
+          "val_accuracy": 0.8805280528052806,
+          "iface_max_abs": 0.017364034429192543,
+          "iface_l2": 0.28897416591644287
+        }
+      ],
+      "recompute_matches_record": true
+    }
+  },
+  "case_B": {
+    "tower": {
+      "AP": 0.7273450248398429,
+      "target_AP": 0.7950748008550897,
+      "control_AP": 0.6726631817581498,
+      "per_video_AP": {
+        "09": 0.704273483949694,
+        "10": 0.6420973291237674
+      }
+    },
+    "empty": {
+      "run": "grasppilot2_B_empty_ep4_seed42",
+      "AP": 0.7273450248398429,
+      "target_AP": 0.7950748008550897,
+      "control_AP": 0.6726631817581498,
+      "per_video_AP": {
+        "09": 0.704273483949694,
+        "10": 0.6420973291237674
+      },
+      "per_class_ap": {
+        "Bipolar Forceps": 0.7898794444235409,
+        "Electric Cautery": 0.9687812331789367,
+        "Forceps": 0.3561239611642256,
+        "Gauze": 0.26918130139973323,
+        "Hook": 0.6365377594169036,
+        "Mouth Gag": 0.799206245873842,
+        "Needle Holders": 0.845680655120691,
+        "Raspatory": 0.803773438439878,
+        "Retractor": NaN,
+        "Scalpel": 0.9005223036860694,
+        "Scissors": 0.7096800075689964,
+        "Skewer": 0.9443283539032797,
+        "Suction Cannula": 0.8348758163714836,
+        "Syringe": 0.5368704638226811,
+        "Tweezers": 0.7873893633875403
+      },
+      "result_epoch": 3,
+      "per_epoch_mAP": {
+        "-1": 0.7273450248398429,
+        "0": 0.7273450248398429,
+        "1": 0.7273450248398429,
+        "2": 0.7273450248398429,
+        "3": 0.7273450248398429
+      },
+      "iface_weight_by_epoch": {
+        "-1": {
+          "iface_max_abs": 0.0,
+          "iface_l2": 0.0
+        },
+        "0": {
+          "iface_max_abs": 0.0,
+          "iface_l2": 0.0
+        },
+        "1": {
+          "iface_max_abs": 0.0,
+          "iface_l2": 0.0
+        },
+        "2": {
+          "iface_max_abs": 0.0,
+          "iface_l2": 0.0
+        },
+        "3": {
+          "iface_max_abs": 0.0,
+          "iface_l2": 0.0
+        }
+      },
+      "frozen_unchanged": true,
+      "start_utc": "2026-10-31 22:45:41 UTC",
+      "end_utc": "2026-11-01 03:17:33 UTC",
+      "code_sha256": "e763bf0feae85031c59cb937eaaf0a50077346ac076f998c5bd05eed2d574742  scripts/grasppilot/pd_grasp.py\n08da2875d0fc0b7b23de18c4f94814ed4f3178f09a03e61d40b3f20ed4b05a9b  scripts/grasppilot/pd_grasp_model.py\n5dcfbc1ae9d1093808faeb84a561cff8763af2506a4bcc715cfed1e913e49e23  scripts/grasppilot/grasp_signals.py\n501f4413ec29e7edd8b9a9d433d38dccf4e3424bc0b68f58f8a986a098a228f0  scripts/train_t1b.py\nfe9d65ce7e4f558e65704d3768f12bebbfe5b45b55be2185d18e666742ac7fa4  configs/stage2pilot/pd_graspmap_d5.py\n3e06cd4a8138743b54999bf21de4a8df4153efe229473db6f3db5af93d9d77d6  configs/stage2pilot/pd_graspmap_pred5.py\n017a8fee6984c12294d2e1db52d1a38f93e6cf26a8243888ba869f156b1460a9  configs/stage2pilot/pd_graspmap_d10.py\n",
+      "d_empty": {
+        "AP": 0.0,
+        "target_AP": 0.0,
+        "control_AP": 0.0
+      },
+      "d_shuffle": {
+        "AP": -0.001567440321622926,
+        "target_AP": -0.003485100568288879,
+        "control_AP": 0.0001378831132924363
+      },
+      "d_tower": {
+        "AP": 0.0,
+        "target_AP": 0.0,
+        "control_AP": 0.0
+      },
+      "d_gt": {
+        "AP": -0.009103031693279307,
+        "target_AP": -0.01562866429727572,
+        "control_AP": -0.0036694002555061056
+      },
+      "d_empty_per_video": {
+        "09": 0.0,
+        "10": 0.0
+      }
+    },
+    "pred_noCF": {
+      "run": "grasppilot2_B_pred_noCF_ep4_seed42",
+      "AP": 0.7318841410381639,
+      "target_AP": 0.806189719490521,
+      "control_AP": 0.672256486467787,
+      "per_video_AP": {
+        "09": 0.7101992853455887,
+        "10": 0.6476235995155851
+      },
+      "per_class_ap": {
+        "Bipolar Forceps": 0.8008857662896954,
+        "Electric Cautery": 0.9668341977818248,
+        "Forceps": 0.34963243563581176,
+        "Gauze": 0.27673012487847815,
+        "Hook": 0.6448925392815612,
+        "Mouth Gag": 0.7979997028474876,
+        "Needle Holders": 0.8484105900672733,
+        "Raspatory": 0.8140132606505835,
+        "Retractor": NaN,
+        "Scalpel": 0.9164844264684229,
+        "Scissors": 0.7166336684440705,
+        "Skewer": 0.947365126153531,
+        "Suction Cannula": 0.8292042492959397,
+        "Syringe": 0.5522000178903722,
+        "Tweezers": 0.7850918688492426
+      },
+      "result_epoch": 3,
+      "per_epoch_mAP": {
+        "-1": 0.7273450248398429,
+        "0": 0.7317406561828745,
+        "1": 0.7318081485167716,
+        "2": 0.7323485161202952,
+        "3": 0.7318841410381639
+      },
+      "iface_weight_by_epoch": {
+        "-1": {
+          "iface_max_abs": 0.0,
+          "iface_l2": 0.0
+        },
+        "0": {
+          "iface_max_abs": 0.18637286126613617,
+          "iface_l2": 4.4661712646484375
+        },
+        "1": {
+          "iface_max_abs": 0.2762130796909332,
+          "iface_l2": 6.511236190795898
+        },
+        "2": {
+          "iface_max_abs": 0.3290509581565857,
+          "iface_l2": 7.991074085235596
+        },
+        "3": {
+          "iface_max_abs": 0.41886502504348755,
+          "iface_l2": 9.016575813293457
+        }
+      },
+      "frozen_unchanged": true,
+      "start_utc": "2026-11-01 10:42:39 UTC",
+      "end_utc": "2026-11-01 14:20:46 UTC",
+      "code_sha256": "e763bf0feae85031c59cb937eaaf0a50077346ac076f998c5bd05eed2d574742  scripts/grasppilot/pd_grasp.py\n08da2875d0fc0b7b23de18c4f94814ed4f3178f09a03e61d40b3f20ed4b05a9b  scripts/grasppilot/pd_grasp_model.py\n5dcfbc1ae9d1093808faeb84a561cff8763af2506a4bcc715cfed1e913e49e23  scripts/grasppilot/grasp_signals.py\n501f4413ec29e7edd8b9a9d433d38dccf4e3424bc0b68f58f8a986a098a228f0  scripts/train_t1b.py\nfe9d65ce7e4f558e65704d3768f12bebbfe5b45b55be2185d18e666742ac7fa4  configs/stage2pilot/pd_graspmap_d5.py\n3e06cd4a8138743b54999bf21de4a8df4153efe229473db6f3db5af93d9d77d6  configs/stage2pilot/pd_graspmap_pred5.py\n017a8fee6984c12294d2e1db52d1a38f93e6cf26a8243888ba869f156b1460a9  configs/stage2pilot/pd_graspmap_d10.py\n",
+      "d_empty": {
+        "AP": 0.004539116198321036,
+        "target_AP": 0.011114918635431237,
+        "control_AP": -0.0004066952903627463
+      },
+      "d_shuffle": {
+        "AP": 0.00297167587669811,
+        "target_AP": 0.007629818067142358,
+        "control_AP": -0.00026881217707031
+      },
+      "d_tower": {
+        "AP": 0.004539116198321036,
+        "target_AP": 0.011114918635431237,
+        "control_AP": -0.0004066952903627463
+      },
+      "d_gt": {
+        "AP": -0.0045639154949582705,
+        "target_AP": -0.0045137456618444816,
+        "control_AP": -0.004076095545868852
+      },
+      "d_empty_per_video": {
+        "09": 0.005925801395894714,
+        "10": 0.005526270391817745
+      }
+    },
+    "gt": {
+      "run": "grasppilot2_B_gt_ep4_seed42",
+      "AP": 0.7364480565331222,
+      "target_AP": 0.8107034651523655,
+      "control_AP": 0.6763325820136559,
+      "per_video_AP": {
+        "09": 0.7150633443369818,
+        "10": 0.6518581403600751
+      },
+      "per_class_ap": {
+        "Bipolar Forceps": 0.8123951466483176,
+        "Electric Cautery": 0.9660891657295704,
+        "Forceps": 0.3614707983848127,
+        "Gauze": 0.28673641031647545,
+        "Hook": 0.6421786909963672,
+        "Mouth Gag": 0.7996093930279299,
+        "Needle Holders": 0.8551293132839838,
+        "Raspatory": 0.8139839707464165,
+        "Retractor": NaN,
+        "Scalpel": 0.9178551305924605,
+        "Scissors": 0.726557169252526,
+        "Skewer": 0.9479830774242992,
+        "Suction Cannula": 0.8323425207049189,
+        "Syringe": 0.5613000003503338,
+        "Tweezers": 0.7866420040052995
+      },
+      "result_epoch": 3,
+      "per_epoch_mAP": {
+        "-1": 0.7273450248398429,
+        "0": 0.7341892356583145,
+        "1": 0.7347556408095092,
+        "2": 0.7356814115235818,
+        "3": 0.7364480565331222
+      },
+      "iface_weight_by_epoch": {
+        "-1": {
+          "iface_max_abs": 0.0,
+          "iface_l2": 0.0
+        },
+        "0": {
+          "iface_max_abs": 0.21431507170200348,
+          "iface_l2": 4.900234222412109
+        },
+        "1": {
+          "iface_max_abs": 0.30591365694999695,
+          "iface_l2": 7.107229709625244
+        },
+        "2": {
+          "iface_max_abs": 0.38687634468078613,
+          "iface_l2": 8.765179634094238
+        },
+        "3": {
+          "iface_max_abs": 0.3965856730937958,
+          "iface_l2": 9.718179702758789
+        }
+      },
+      "frozen_unchanged": true,
+      "start_utc": "2026-10-31 22:45:46 UTC",
+      "end_utc": "2026-11-01 03:17:34 UTC",
+      "code_sha256": "e763bf0feae85031c59cb937eaaf0a50077346ac076f998c5bd05eed2d574742  scripts/grasppilot/pd_grasp.py\n08da2875d0fc0b7b23de18c4f94814ed4f3178f09a03e61d40b3f20ed4b05a9b  scripts/grasppilot/pd_grasp_model.py\n5dcfbc1ae9d1093808faeb84a561cff8763af2506a4bcc715cfed1e913e49e23  scripts/grasppilot/grasp_signals.py\n501f4413ec29e7edd8b9a9d433d38dccf4e3424bc0b68f58f8a986a098a228f0  scripts/train_t1b.py\nfe9d65ce7e4f558e65704d3768f12bebbfe5b45b55be2185d18e666742ac7fa4  configs/stage2pilot/pd_graspmap_d5.py\n3e06cd4a8138743b54999bf21de4a8df4153efe229473db6f3db5af93d9d77d6  configs/stage2pilot/pd_graspmap_pred5.py\n017a8fee6984c12294d2e1db52d1a38f93e6cf26a8243888ba869f156b1460a9  configs/stage2pilot/pd_graspmap_d10.py\n",
+      "d_empty": {
+        "AP": 0.009103031693279307,
+        "target_AP": 0.01562866429727572,
+        "control_AP": 0.0036694002555061056
+      },
+      "d_shuffle": {
+        "AP": 0.0075355913716563805,
+        "target_AP": 0.01214356372898684,
+        "control_AP": 0.003807283368798542
+      },
+      "d_tower": {
+        "AP": 0.009103031693279307,
+        "target_AP": 0.01562866429727572,
+        "control_AP": 0.0036694002555061056
+      },
+      "d_gt": {
+        "AP": 0.0,
+        "target_AP": 0.0,
+        "control_AP": 0.0
+      },
+      "d_empty_per_video": {
+        "09": 0.010789860387287797,
+        "10": 0.009760811236307676
+      }
+    },
+    "pred_CF": {
+      "run": "grasppilot2_B_pred_CF_ep4_seed42",
+      "AP": 0.7313407804575022,
+      "target_AP": 0.8042573578870794,
+      "control_AP": 0.6722080837515492,
+      "per_video_AP": {
+        "09": 0.7103409840209349,
+        "10": 0.646135588577084
+      },
+      "per_class_ap": {
+        "Bipolar Forceps": 0.7963539417098201,
+        "Electric Cautery": 0.9694128108691557,
+        "Forceps": 0.3557077053743036,
+        "Gauze": 0.2765205758097402,
+        "Hook": 0.6436816586577265,
+        "Mouth Gag": 0.7978344856471704,
+        "Needle Holders": 0.8472162242805789,
+        "Raspatory": 0.8196289460748677,
+        "Retractor": NaN,
+        "Scalpel": 0.9068250043681927,
+        "Scissors": 0.7126334027816719,
+        "Skewer": 0.9459647620870015,
+        "Suction Cannula": 0.8288068983102567,
+        "Syringe": 0.5525141351955145,
+        "Tweezers": 0.7856703752390295
+      },
+      "result_epoch": 3,
+      "per_epoch_mAP": {
+        "-1": 0.7273450248398429,
+        "0": 0.7310291663528428,
+        "1": 0.7308037285277169,
+        "2": 0.7316697669763452,
+        "3": 0.7313407804575022
+      },
+      "iface_weight_by_epoch": {
+        "-1": {
+          "iface_max_abs": 0.0,
+          "iface_l2": 0.0
+        },
+        "0": {
+          "iface_max_abs": 0.18515843152999878,
+          "iface_l2": 4.186893463134766
+        },
+        "1": {
+          "iface_max_abs": 0.2431558221578598,
+          "iface_l2": 5.882110118865967
+        },
+        "2": {
+          "iface_max_abs": 0.31911998987197876,
+          "iface_l2": 7.444802284240723
+        },
+        "3": {
+          "iface_max_abs": 0.36342179775238037,
+          "iface_l2": 8.453051567077637
+        }
+      },
+      "frozen_unchanged": true,
+      "start_utc": "2026-11-01 10:45:09 UTC",
+      "end_utc": "2026-11-01 14:22:34 UTC",
+      "code_sha256": "e763bf0feae85031c59cb937eaaf0a50077346ac076f998c5bd05eed2d574742  scripts/grasppilot/pd_grasp.py\n08da2875d0fc0b7b23de18c4f94814ed4f3178f09a03e61d40b3f20ed4b05a9b  scripts/grasppilot/pd_grasp_model.py\n5dcfbc1ae9d1093808faeb84a561cff8763af2506a4bcc715cfed1e913e49e23  scripts/grasppilot/grasp_signals.py\n501f4413ec29e7edd8b9a9d433d38dccf4e3424bc0b68f58f8a986a098a228f0  scripts/train_t1b.py\nfe9d65ce7e4f558e65704d3768f12bebbfe5b45b55be2185d18e666742ac7fa4  configs/stage2pilot/pd_graspmap_d5.py\n3e06cd4a8138743b54999bf21de4a8df4153efe229473db6f3db5af93d9d77d6  configs/stage2pilot/pd_graspmap_pred5.py\n017a8fee6984c12294d2e1db52d1a38f93e6cf26a8243888ba869f156b1460a9  configs/stage2pilot/pd_graspmap_d10.py\n",
+      "d_empty": {
+        "AP": 0.003995755617659302,
+        "target_AP": 0.009182557031989669,
+        "control_AP": -0.00045509800660059607
+      },
+      "d_shuffle": {
+        "AP": 0.0024283152960363763,
+        "target_AP": 0.00569745646370079,
+        "control_AP": -0.0003172148933081598
+      },
+      "d_tower": {
+        "AP": 0.003995755617659302,
+        "target_AP": 0.009182557031989669,
+        "control_AP": -0.00045509800660059607
+      },
+      "d_gt": {
+        "AP": -0.005107276075620004,
+        "target_AP": -0.00644610726528605,
+        "control_AP": -0.004124498262106702
+      },
+      "d_empty_per_video": {
+        "09": 0.0060675000712409055,
+        "10": 0.004038259453316595
+      }
+    },
+    "gtpred_CF": {
+      "run": "grasppilot2_B_gtpred_CF_ep4_seed42",
+      "AP": 0.7356662516732971,
+      "target_AP": 0.8090992989652331,
+      "control_AP": 0.6761297989264916,
+      "per_video_AP": {
+        "09": 0.7133636564593412,
+        "10": 0.6513132104322493
+      },
+      "per_class_ap": {
+        "Bipolar Forceps": 0.8105504755992228,
+        "Electric Cautery": 0.9665524047473556,
+        "Forceps": 0.360252425456401,
+        "Gauze": 0.2823350251067586,
+        "Hook": 0.640688880694184,
+        "Mouth Gag": 0.800638757381148,
+        "Needle Holders": 0.8558496974337406,
+        "Raspatory": 0.8191553566335782,
+        "Retractor": NaN,
+        "Scalpel": 0.9105280925761841,
+        "Scissors": 0.7259684245623462,
+        "Skewer": 0.948660962905107,
+        "Suction Cannula": 0.8335199351721051,
+        "Syringe": 0.5566016071120743,
+        "Tweezers": 0.7880254780459546
+      },
+      "result_epoch": 3,
+      "per_epoch_mAP": {
+        "-1": 0.7273450248398429,
+        "0": 0.7337930097115974,
+        "1": 0.7342851871093081,
+        "2": 0.7331815911002341,
+        "3": 0.7356662516732971
+      },
+      "iface_weight_by_epoch": {
+        "-1": {
+          "iface_max_abs": 0.0,
+          "iface_l2": 0.0
+        },
+        "0": {
+          "iface_max_abs": 0.2068205177783966,
+          "iface_l2": 5.775406837463379
+        },
+        "1": {
+          "iface_max_abs": 0.2821241617202759,
+          "iface_l2": 8.365594863891602
+        },
+        "2": {
+          "iface_max_abs": 0.3416816294193268,
+          "iface_l2": 10.285656929016113
+        },
+        "3": {
+          "iface_max_abs": 0.38017943501472473,
+          "iface_l2": 11.609740257263184
+        }
+      },
+      "frozen_unchanged": true,
+      "start_utc": "2026-11-01 10:56:22 UTC",
+      "end_utc": "2026-11-01 15:01:35 UTC",
+      "code_sha256": "e763bf0feae85031c59cb937eaaf0a50077346ac076f998c5bd05eed2d574742  scripts/grasppilot/pd_grasp.py\n08da2875d0fc0b7b23de18c4f94814ed4f3178f09a03e61d40b3f20ed4b05a9b  scripts/grasppilot/pd_grasp_model.py\n5dcfbc1ae9d1093808faeb84a561cff8763af2506a4bcc715cfed1e913e49e23  scripts/grasppilot/grasp_signals.py\n501f4413ec29e7edd8b9a9d433d38dccf4e3424bc0b68f58f8a986a098a228f0  scripts/train_t1b.py\nfe9d65ce7e4f558e65704d3768f12bebbfe5b45b55be2185d18e666742ac7fa4  configs/stage2pilot/pd_graspmap_d5.py\n3e06cd4a8138743b54999bf21de4a8df4153efe229473db6f3db5af93d9d77d6  configs/stage2pilot/pd_graspmap_pred5.py\n017a8fee6984c12294d2e1db52d1a38f93e6cf26a8243888ba869f156b1460a9  configs/stage2pilot/pd_graspmap_d10.py\n",
+      "d_empty": {
+        "AP": 0.008321226833454265,
+        "target_AP": 0.01402449811014339,
+        "control_AP": 0.0034666171683418456
+      },
+      "d_shuffle": {
+        "AP": 0.006753786511831339,
+        "target_AP": 0.010539397541854512,
+        "control_AP": 0.003604500281634282
+      },
+      "d_tower": {
+        "AP": 0.008321226833454265,
+        "target_AP": 0.01402449811014339,
+        "control_AP": 0.0034666171683418456
+      },
+      "d_gt": {
+        "AP": -0.0007818048598250416,
+        "target_AP": -0.0016041661871323276,
+        "control_AP": -0.00020278308716425997
+      },
+      "d_empty_per_video": {
+        "09": 0.009090172509647165,
+        "10": 0.009215881308481944
+      }
+    },
+    "shuffle": {
+      "run": "grasppilot2_B_shuffle_ep4_seed42",
+      "AP": 0.7289124651614658,
+      "target_AP": 0.7985599014233786,
+      "control_AP": 0.6725252986448573,
+      "per_video_AP": {
+        "09": 0.7071065497657072,
+        "10": 0.6421273393190227
+      },
+      "per_class_ap": {
+        "Bipolar Forceps": 0.7912170598852216,
+        "Electric Cautery": 0.9676477493025339,
+        "Forceps": 0.3583838212316961,
+        "Gauze": 0.2733196877451757,
+        "Hook": 0.6420474377797797,
+        "Mouth Gag": 0.7979536298776329,
+        "Needle Holders": 0.8481329061244862,
+        "Raspatory": 0.8113536317343217,
+        "Retractor": NaN,
+        "Scalpel": 0.9031215972898325,
+        "Scissors": 0.7056618961257041,
+        "Skewer": 0.9445540463753791,
+        "Suction Cannula": 0.8310115925891101,
+        "Syringe": 0.5425531718321381,
+        "Tweezers": 0.7878162843675106
+      },
+      "result_epoch": 3,
+      "per_epoch_mAP": {
+        "-1": 0.7273450248398429,
+        "0": 0.7287922477730707,
+        "1": 0.7288742410298927,
+        "2": 0.7287963488306195,
+        "3": 0.7289124651614658
+      },
+      "iface_weight_by_epoch": {
+        "-1": {
+          "iface_max_abs": 0.0,
+          "iface_l2": 0.0
+        },
+        "0": {
+          "iface_max_abs": 0.13472774624824524,
+          "iface_l2": 3.38736629486084
+        },
+        "1": {
+          "iface_max_abs": 0.21005237102508545,
+          "iface_l2": 4.96608304977417
+        },
+        "2": {
+          "iface_max_abs": 0.24429412186145782,
+          "iface_l2": 5.904547214508057
+        },
+        "3": {
+          "iface_max_abs": 0.265733540058136,
+          "iface_l2": 6.596716403961182
+        }
+      },
+      "frozen_unchanged": true,
+      "start_utc": "2026-11-01 10:56:25 UTC",
+      "end_utc": "2026-11-01 15:01:03 UTC",
+      "code_sha256": "e763bf0feae85031c59cb937eaaf0a50077346ac076f998c5bd05eed2d574742  scripts/grasppilot/pd_grasp.py\n08da2875d0fc0b7b23de18c4f94814ed4f3178f09a03e61d40b3f20ed4b05a9b  scripts/grasppilot/pd_grasp_model.py\n5dcfbc1ae9d1093808faeb84a561cff8763af2506a4bcc715cfed1e913e49e23  scripts/grasppilot/grasp_signals.py\n501f4413ec29e7edd8b9a9d433d38dccf4e3424bc0b68f58f8a986a098a228f0  scripts/train_t1b.py\nfe9d65ce7e4f558e65704d3768f12bebbfe5b45b55be2185d18e666742ac7fa4  configs/stage2pilot/pd_graspmap_d5.py\n3e06cd4a8138743b54999bf21de4a8df4153efe229473db6f3db5af93d9d77d6  configs/stage2pilot/pd_graspmap_pred5.py\n017a8fee6984c12294d2e1db52d1a38f93e6cf26a8243888ba869f156b1460a9  configs/stage2pilot/pd_graspmap_d10.py\n",
+      "d_empty": {
+        "AP": 0.001567440321622926,
+        "target_AP": 0.003485100568288879,
+        "control_AP": -0.0001378831132924363
+      },
+      "d_shuffle": {
+        "AP": 0.0,
+        "target_AP": 0.0,
+        "control_AP": 0.0
+      },
+      "d_tower": {
+        "AP": 0.001567440321622926,
+        "target_AP": 0.003485100568288879,
+        "control_AP": -0.0001378831132924363
+      },
+      "d_gt": {
+        "AP": -0.0075355913716563805,
+        "target_AP": -0.01214356372898684,
+        "control_AP": -0.003807283368798542
+      },
+      "d_empty_per_video": {
+        "09": 0.0028330658160131694,
+        "10": 3.0010195255281147e-05
+      }
+    },
+    "code_identical_across_arms": true
+  },
+  "case_C": {
+    "arms": {
+      "noaux": {
+        "run": "grasppilot2_C_noaux_seed42",
+        "jaccard": 0.688638480860546,
+        "accuracy": 0.8778877887788779,
+        "per_class_jaccard": {
+          "anesthesia": 0.98,
+          "closure": 0.7530017152658662,
+          "design": 0.9528301886792453,
+          "disinfection": 0.0,
+          "dissection": 0.7876823338735819,
+          "dressing": 0.0,
+          "hemostasis": 0.46153846153846156,
+          "incision": 0.8854166666666666,
+          "irrigation": 0.0
+        },
+        "per_video": {
+          "09": {
+            "jaccard": 0.9932180036742192,
+            "accuracy": 0.9942084942084942
+          },
+          "10": {
+            "jaccard": 0.5996622195205533,
+            "accuracy": 0.8174523570712137
+          }
+        },
+        "head_history": [
+          {
+            "epoch": 1,
+            "train_loss": 4.125812530517578,
+            "lr": 0.00025,
+            "val_jaccard": 0.028372283481268284,
+            "val_accuracy": 0.09372937293729373
+          },
+          {
+            "epoch": 2,
+            "train_loss": 2.9561696529388426,
+            "lr": 0.000375,
+            "val_jaccard": 0.13263690162715702,
+            "val_accuracy": 0.31353135313531355
+          },
+          {
+            "epoch": 3,
+            "train_loss": 2.594318652153015,
+            "lr": 0.0005,
+            "val_jaccard": 0.5097381050213624,
+            "val_accuracy": 0.6983498349834983
+          },
+          {
+            "epoch": 4,
+            "train_loss": 2.1485623002052305,
+            "lr": 0.0004994647308096509,
+            "val_jaccard": 0.5909947865308796,
+            "val_accuracy": 0.8198019801980198
+          },
+          {
+            "epoch": 5,
+            "train_loss": 1.6853357076644897,
+            "lr": 0.0004978612153434526,
+            "val_jaccard": 0.6120095451072783,
+            "val_accuracy": 0.8198019801980198
+          },
+          {
+            "epoch": 6,
+            "train_loss": 1.3206299543380737,
+            "lr": 0.0004951963201008077,
+            "val_jaccard": 0.6356750480612738,
+            "val_accuracy": 0.8435643564356435
+          },
+          {
+            "epoch": 7,
+            "train_loss": 1.0946435630321503,
+            "lr": 0.0004914814565722672,
+            "val_jaccard": 0.6973760644185226,
+            "val_accuracy": 0.8521452145214522
+          },
+          {
+            "epoch": 8,
+            "train_loss": 0.9904028594493866,
+            "lr": 0.0004867325323737766,
+            "val_jaccard": 0.714673402108487,
+            "val_accuracy": 0.858085808580858
+          },
+          {
+            "epoch": 9,
+            "train_loss": 0.8788184404373169,
+            "lr": 0.00048096988312782183,
+            "val_jaccard": 0.6963537820164748,
+            "val_accuracy": 0.8858085808580858
+          },
+          {
+            "epoch": 10,
+            "train_loss": 0.7777820646762847,
+            "lr": 0.0004742181853831722,
+            "val_jaccard": 0.7119132870851864,
+            "val_accuracy": 0.8303630363036304
+          },
+          {
+            "epoch": 11,
+            "train_loss": 0.7168180763721466,
+            "lr": 0.00046650635094610984,
+            "val_jaccard": 0.6929591510719418,
+            "val_accuracy": 0.8871287128712871
+          },
+          {
+            "epoch": 12,
+            "train_loss": 0.6678478181362152,
+            "lr": 0.0004578674030756365,
+            "val_jaccard": 0.6848827357312367,
+            "val_accuracy": 0.8448844884488449
+          },
+          {
+            "epoch": 13,
+            "train_loss": 0.6231415629386902,
+            "lr": 0.0004483383350728089,
+            "val_jaccard": 0.6918883210623088,
+            "val_accuracy": 0.8844884488448845
+          },
+          {
+            "epoch": 14,
+            "train_loss": 0.5956681907176972,
+            "lr": 0.00043795995186974446,
+            "val_jaccard": 0.6787151651497513,
+            "val_accuracy": 0.8706270627062707
+          },
+          {
+            "epoch": 15,
+            "train_loss": 0.5522517412900925,
+            "lr": 0.00042677669529663696,
+            "val_jaccard": 0.6829174299794246,
+            "val_accuracy": 0.86006600660066
+          },
+          {
+            "epoch": 16,
+            "train_loss": 0.545439499616623,
+            "lr": 0.0004148364537750173,
+            "val_jaccard": 0.6849230974808284,
+            "val_accuracy": 0.8798679867986798
+          },
+          {
+            "epoch": 17,
+            "train_loss": 0.5257958441972732,
+            "lr": 0.0004021903572521803,
+            "val_jaccard": 0.6927266437526611,
+            "val_accuracy": 0.8752475247524752
+          },
+          {
+            "epoch": 18,
+            "train_loss": 0.5064963191747666,
+            "lr": 0.0003888925582549007,
+            "val_jaccard": 0.688638480860546,
+            "val_accuracy": 0.8778877887788779
+          }
+        ],
+        "finetune_history": [
+          {
+            "epoch": 1,
+            "lr": 0.0001,
+            "train_phase_loss": 0.8912863355992904,
+            "train_aux_loss": 2.7989683611195217,
+            "train_total_loss": 0.8912863355992904,
+            "total_minus_phase_abs_max": 0.0,
+            "total_minus_phase_abs_min": 0.0,
+            "val_accuracy": 0.7029702970297029,
+            "val_macro_f1": 0.3118296380575888,
+            "train_seconds": 880.9351421743631,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 2,
+            "lr": 0.0001,
+            "train_phase_loss": 0.3910682234776937,
+            "train_aux_loss": 2.8089471513888995,
+            "train_total_loss": 0.3910682234776937,
+            "total_minus_phase_abs_max": 0.0,
+            "total_minus_phase_abs_min": 0.0,
+            "val_accuracy": 0.7551155115511551,
+            "val_macro_f1": 0.5963575167709703,
+            "train_seconds": 967.6859763776883,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 3,
+            "lr": 0.0001,
+            "train_phase_loss": 0.2098233068725072,
+            "train_aux_loss": 2.8132687110492034,
+            "train_total_loss": 0.2098233068725072,
+            "total_minus_phase_abs_max": 0.0,
+            "total_minus_phase_abs_min": 0.0,
+            "val_accuracy": 0.8481848184818482,
+            "val_macro_f1": 0.7160505040620421,
+            "train_seconds": 954.9479402396828,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 4,
+            "lr": 0.0001,
+            "train_phase_loss": 0.11726942848992535,
+            "train_aux_loss": 2.8135370602824494,
+            "train_total_loss": 0.11726942848992535,
+            "total_minus_phase_abs_max": 0.0,
+            "total_minus_phase_abs_min": 0.0,
+            "val_accuracy": 0.7485148514851485,
+            "val_macro_f1": 0.6650929121920959,
+            "train_seconds": 1100.1195414727554,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 5,
+            "lr": 0.0001,
+            "train_phase_loss": 0.06765389494598684,
+            "train_aux_loss": 2.8151506555985253,
+            "train_total_loss": 0.06765389494598684,
+            "total_minus_phase_abs_max": 0.0,
+            "total_minus_phase_abs_min": 0.0,
+            "val_accuracy": 0.8356435643564356,
+            "val_macro_f1": 0.7228022475651859,
+            "train_seconds": 1100.6354900393635,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 6,
+            "lr": 0.0001,
+            "train_phase_loss": 0.045630114532230225,
+            "train_aux_loss": 2.816629640851392,
+            "train_total_loss": 0.045630114532230225,
+            "total_minus_phase_abs_max": 0.0,
+            "total_minus_phase_abs_min": 0.0,
+            "val_accuracy": 0.8277227722772277,
+            "val_macro_f1": 0.7265542660139097,
+            "train_seconds": 916.2424978194758,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 7,
+            "lr": 0.0001,
+            "train_phase_loss": 0.0381495951690743,
+            "train_aux_loss": 2.815188168022738,
+            "train_total_loss": 0.0381495951690743,
+            "total_minus_phase_abs_max": 0.0,
+            "total_minus_phase_abs_min": 0.0,
+            "val_accuracy": 0.8409240924092409,
+            "val_macro_f1": 0.7222056913336379,
+            "train_seconds": 1026.0399038465694,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 8,
+            "lr": 0.0001,
+            "train_phase_loss": 0.038520430675783465,
+            "train_aux_loss": 2.8157450216606783,
+            "train_total_loss": 0.038520430675783465,
+            "total_minus_phase_abs_max": 0.0,
+            "total_minus_phase_abs_min": 0.0,
+            "val_accuracy": 0.7597359735973598,
+            "val_macro_f1": 0.7008743516341058,
+            "train_seconds": 1101.685855529271,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 9,
+            "lr": 0.0001,
+            "train_phase_loss": 0.03710566536410856,
+            "train_aux_loss": 2.8150409959643183,
+            "train_total_loss": 0.03710566536410856,
+            "total_minus_phase_abs_max": 0.0,
+            "total_minus_phase_abs_min": 0.0,
+            "val_accuracy": 0.8323432343234324,
+            "val_macro_f1": 0.7057273990359392,
+            "train_seconds": 1077.2834768434986,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 10,
+            "lr": 0.0001,
+            "train_phase_loss": 0.025313331250139806,
+            "train_aux_loss": 2.8140110527369204,
+            "train_total_loss": 0.025313331250139806,
+            "total_minus_phase_abs_max": 0.0,
+            "total_minus_phase_abs_min": 0.0,
+            "val_accuracy": 0.8085808580858086,
+            "val_macro_f1": 0.7133006841710477,
+            "train_seconds": 882.0141456946731,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 11,
+            "lr": 0.0001,
+            "train_phase_loss": 0.012985502665170387,
+            "train_aux_loss": 2.814674930393764,
+            "train_total_loss": 0.012985502665170387,
+            "total_minus_phase_abs_max": 0.0,
+            "total_minus_phase_abs_min": 0.0,
+            "val_accuracy": 0.8336633663366336,
+            "val_macro_f1": 0.7298156014479795,
+            "train_seconds": 1102.162181802094,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 12,
+            "lr": 0.0001,
+            "train_phase_loss": 0.013070052634877202,
+            "train_aux_loss": 2.813937944050987,
+            "train_total_loss": 0.013070052634877202,
+            "total_minus_phase_abs_max": 0.0,
+            "total_minus_phase_abs_min": 0.0,
+            "val_accuracy": 0.8646864686468647,
+            "val_macro_f1": 0.7543863096419374,
+            "train_seconds": 1101.4248546417803,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 13,
+            "lr": 0.0001,
+            "train_phase_loss": 0.008582285342595686,
+            "train_aux_loss": 2.81455566562875,
+            "train_total_loss": 0.008582285342595686,
+            "total_minus_phase_abs_max": 0.0,
+            "total_minus_phase_abs_min": 0.0,
+            "val_accuracy": 0.8198019801980198,
+            "val_macro_f1": 0.7175817340567908,
+            "train_seconds": 1003.9222495434806,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 14,
+            "lr": 0.0001,
+            "train_phase_loss": 0.01921119774257105,
+            "train_aux_loss": 2.814929688064482,
+            "train_total_loss": 0.01921119774257105,
+            "total_minus_phase_abs_max": 0.0,
+            "total_minus_phase_abs_min": 0.0,
+            "val_accuracy": 0.8316831683168316,
+            "val_macro_f1": 0.7015396349183486,
+            "train_seconds": 940.0306681385264,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 15,
+            "lr": 0.0001,
+            "train_phase_loss": 0.03452315238758718,
+            "train_aux_loss": 2.8136192592908422,
+            "train_total_loss": 0.03452315238758718,
+            "total_minus_phase_abs_max": 0.0,
+            "total_minus_phase_abs_min": 0.0,
+            "val_accuracy": 0.7927392739273927,
+            "val_macro_f1": 0.6835965532230378,
+            "train_seconds": 1102.3640017723665,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 16,
+            "lr": 0.0001,
+            "train_phase_loss": 0.01782743059602572,
+            "train_aux_loss": 2.8124036191474384,
+            "train_total_loss": 0.01782743059602572,
+            "total_minus_phase_abs_max": 0.0,
+            "total_minus_phase_abs_min": 0.0,
+            "val_accuracy": 0.8409240924092409,
+            "val_macro_f1": 0.7108593300795105,
+            "train_seconds": 1102.4098327634856,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 17,
+            "lr": 0.0001,
+            "train_phase_loss": 0.006681426284526423,
+            "train_aux_loss": 2.813412765470538,
+            "train_total_loss": 0.006681426284526423,
+            "total_minus_phase_abs_max": 0.0,
+            "total_minus_phase_abs_min": 0.0,
+            "val_accuracy": 0.7947194719471947,
+            "val_macro_f1": 0.7037522609280302,
+            "train_seconds": 933.0155363501981,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 18,
+            "lr": 1e-05,
+            "train_phase_loss": 0.0032351445031734097,
+            "train_aux_loss": 2.8129705343111167,
+            "train_total_loss": 0.0032351445031734097,
+            "total_minus_phase_abs_max": 0.0,
+            "total_minus_phase_abs_min": 0.0,
+            "val_accuracy": 0.8475247524752475,
+            "val_macro_f1": 0.73584866618754,
+            "train_seconds": 1011.1637171339244,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 19,
+            "lr": 1e-05,
+            "train_phase_loss": 0.00276161408758586,
+            "train_aux_loss": 2.812912460413855,
+            "train_total_loss": 0.00276161408758586,
+            "total_minus_phase_abs_max": 0.0,
+            "total_minus_phase_abs_min": 0.0,
+            "val_accuracy": 0.8501650165016502,
+            "val_macro_f1": 0.7382827735891313,
+            "train_seconds": 1101.5808592373505,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 20,
+            "lr": 1e-05,
+            "train_phase_loss": 0.0021867511767230015,
+            "train_aux_loss": 2.812791791554254,
+            "train_total_loss": 0.0021867511767230015,
+            "total_minus_phase_abs_max": 0.0,
+            "total_minus_phase_abs_min": 0.0,
+            "val_accuracy": 0.8514851485148515,
+            "val_macro_f1": 0.7379837368706326,
+            "train_seconds": 1093.742606249638,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 21,
+            "lr": 1e-05,
+            "train_phase_loss": 0.002233992066994769,
+            "train_aux_loss": 2.8130439775286593,
+            "train_total_loss": 0.002233992066994769,
+            "total_minus_phase_abs_max": 0.0,
+            "total_minus_phase_abs_min": 0.0,
+            "val_accuracy": 0.8587458745874588,
+            "val_macro_f1": 0.7467828865004195,
+            "train_seconds": 882.8361777225509,
+            "peak_alloc_bytes": 29044387328
+          }
+        ],
+        "finetune": {
+          "task_id": "T-2026-11-01-grasp-pilot-g",
+          "unofficial": true,
+          "run": "grasppilot2_C_noaux_seed42",
+          "arm": "noaux",
+          "epochs_completed": 21,
+          "last_val_accuracy": 0.8587458745874588,
+          "elapsed_seconds": 22417.72116212733,
+          "peak_alloc_bytes": 29044387328,
+          "last_ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/ptower/grasppilot2_C_noaux_seed42/last.pth",
+          "last_ckpt_sha256": "6feb6a95546b05b7b9915826696199db2ac66afacd31f0b502decd1716df99f5"
+        },
+        "aux_val": {
+          "ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/ptower/grasppilot2_C_noaux_seed42/last.pth",
+          "targets": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/signals/C/t_val.npz",
+          "targets_sha256": "5771790ff8d76c8517abb25479bc09ea2d5a6618213878a53a5d64675a65d33c",
+          "frames": 1515,
+          "ce_per_hand": {
+            "left": 2.79580030032117,
+            "right": 2.7650997728404434,
+            "both": 2.899494483368625
+          },
+          "ce_uniform_per_hand": {
+            "left": 2.7725887298583984,
+            "right": 2.7725887298583984,
+            "both": 2.7725887298583984
+          }
+        }
+      },
+      "teacher": {
+        "run": "grasppilot2_C_teacher_seed42",
+        "jaccard": 0.6766016799584474,
+        "accuracy": 0.862046204620462,
+        "per_class_jaccard": {
+          "anesthesia": 0.9897959183673469,
+          "closure": 0.7304347826086957,
+          "design": 0.9809523809523809,
+          "disinfection": 0.0,
+          "dissection": 0.7423780487804879,
+          "dressing": 0.0,
+          "hemostasis": 0.43478260869565216,
+          "incision": 0.8578680203045685,
+          "irrigation": 0.0
+        },
+        "per_video": {
+          "09": {
+            "jaccard": 0.9942893985447177,
+            "accuracy": 0.9961389961389961
+          },
+          "10": {
+            "jaccard": 0.597059867425231,
+            "accuracy": 0.7923771313941825
+          }
+        },
+        "head_history": [
+          {
+            "epoch": 1,
+            "train_loss": 4.2079038381576535,
+            "lr": 0.00025,
+            "val_jaccard": 0.0313615215649196,
+            "val_accuracy": 0.11485148514851486
+          },
+          {
+            "epoch": 2,
+            "train_loss": 3.0309144496917724,
+            "lr": 0.000375,
+            "val_jaccard": 0.05736811172653366,
+            "val_accuracy": 0.11353135313531353
+          },
+          {
+            "epoch": 3,
+            "train_loss": 2.5574917078018187,
+            "lr": 0.0005,
+            "val_jaccard": 0.462331453869785,
+            "val_accuracy": 0.6600660066006601
+          },
+          {
+            "epoch": 4,
+            "train_loss": 2.150103306770325,
+            "lr": 0.0004994647308096509,
+            "val_jaccard": 0.5607492822266382,
+            "val_accuracy": 0.8132013201320132
+          },
+          {
+            "epoch": 5,
+            "train_loss": 1.698168969154358,
+            "lr": 0.0004978612153434526,
+            "val_jaccard": 0.5714406245832754,
+            "val_accuracy": 0.7775577557755775
+          },
+          {
+            "epoch": 6,
+            "train_loss": 1.30610648393631,
+            "lr": 0.0004951963201008077,
+            "val_jaccard": 0.6451183579480384,
+            "val_accuracy": 0.8501650165016502
+          },
+          {
+            "epoch": 7,
+            "train_loss": 1.075786793231964,
+            "lr": 0.0004914814565722672,
+            "val_jaccard": 0.6568679932869728,
+            "val_accuracy": 0.7735973597359735
+          },
+          {
+            "epoch": 8,
+            "train_loss": 0.9522536158561706,
+            "lr": 0.0004867325323737766,
+            "val_jaccard": 0.7108878263952824,
+            "val_accuracy": 0.8712871287128713
+          },
+          {
+            "epoch": 9,
+            "train_loss": 0.8497709512710572,
+            "lr": 0.00048096988312782183,
+            "val_jaccard": 0.6986916937182572,
+            "val_accuracy": 0.8633663366336634
+          },
+          {
+            "epoch": 10,
+            "train_loss": 0.7459331452846527,
+            "lr": 0.0004742181853831722,
+            "val_jaccard": 0.7145902521862989,
+            "val_accuracy": 0.8646864686468647
+          },
+          {
+            "epoch": 11,
+            "train_loss": 0.6948189020156861,
+            "lr": 0.00046650635094610984,
+            "val_jaccard": 0.6889477075484215,
+            "val_accuracy": 0.8785478547854786
+          },
+          {
+            "epoch": 12,
+            "train_loss": 0.6357230901718139,
+            "lr": 0.0004578674030756365,
+            "val_jaccard": 0.6899360802101294,
+            "val_accuracy": 0.8528052805280528
+          },
+          {
+            "epoch": 13,
+            "train_loss": 0.5961590558290482,
+            "lr": 0.0004483383350728089,
+            "val_jaccard": 0.6768966288719164,
+            "val_accuracy": 0.866006600660066
+          },
+          {
+            "epoch": 14,
+            "train_loss": 0.5613003373146057,
+            "lr": 0.00043795995186974446,
+            "val_jaccard": 0.685507045119362,
+            "val_accuracy": 0.8844884488448845
+          },
+          {
+            "epoch": 15,
+            "train_loss": 0.5297233819961548,
+            "lr": 0.00042677669529663696,
+            "val_jaccard": 0.6793728619962236,
+            "val_accuracy": 0.866006600660066
+          },
+          {
+            "epoch": 16,
+            "train_loss": 0.526213389635086,
+            "lr": 0.0004148364537750173,
+            "val_jaccard": 0.6622050957956512,
+            "val_accuracy": 0.8481848184818482
+          },
+          {
+            "epoch": 17,
+            "train_loss": 0.49642685055732727,
+            "lr": 0.0004021903572521803,
+            "val_jaccard": 0.7034792856377982,
+            "val_accuracy": 0.8917491749174917
+          },
+          {
+            "epoch": 18,
+            "train_loss": 0.48939924836158755,
+            "lr": 0.0003888925582549007,
+            "val_jaccard": 0.6766016799584474,
+            "val_accuracy": 0.862046204620462
+          }
+        ],
+        "finetune_history": [
+          {
+            "epoch": 1,
+            "lr": 0.0001,
+            "train_phase_loss": 0.8806193764966208,
+            "train_aux_loss": 1.5277694204869052,
+            "train_total_loss": 1.3389502227139718,
+            "total_minus_phase_abs_max": 0.8358321189880371,
+            "total_minus_phase_abs_min": 0.334547758102417,
+            "val_accuracy": 0.6646864686468646,
+            "val_macro_f1": 0.2994393795013229,
+            "train_seconds": 681.8132699551061,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 2,
+            "lr": 0.0001,
+            "train_phase_loss": 0.36439734741781543,
+            "train_aux_loss": 1.3066559458810918,
+            "train_total_loss": 0.7563941463298823,
+            "total_minus_phase_abs_max": 0.5128229260444641,
+            "total_minus_phase_abs_min": 0.314531147480011,
+            "val_accuracy": 0.7782178217821782,
+            "val_macro_f1": 0.5676969087675097,
+            "train_seconds": 681.096776900813,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 3,
+            "lr": 0.0001,
+            "train_phase_loss": 0.1909556818700323,
+            "train_aux_loss": 1.2401114553475436,
+            "train_total_loss": 0.5629891342191923,
+            "total_minus_phase_abs_max": 0.4875383675098419,
+            "total_minus_phase_abs_min": 0.2951548397541046,
+            "val_accuracy": 0.8224422442244225,
+            "val_macro_f1": 0.6989817450358135,
+            "train_seconds": 681.1145083783194,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 4,
+            "lr": 0.0001,
+            "train_phase_loss": 0.10463956049784742,
+            "train_aux_loss": 1.2021846895794623,
+            "train_total_loss": 0.46529498126635926,
+            "total_minus_phase_abs_max": 0.4834977686405182,
+            "total_minus_phase_abs_min": 0.2739616930484772,
+            "val_accuracy": 0.7702970297029703,
+            "val_macro_f1": 0.6546936592180191,
+            "train_seconds": 681.0334687689319,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 5,
+            "lr": 0.0001,
+            "train_phase_loss": 0.06332772827352427,
+            "train_aux_loss": 1.167495012999297,
+            "train_total_loss": 0.4135762447894601,
+            "total_minus_phase_abs_max": 0.4890354871749878,
+            "total_minus_phase_abs_min": 0.25610071420669556,
+            "val_accuracy": 0.8435643564356435,
+            "val_macro_f1": 0.7085096648010428,
+            "train_seconds": 680.9813980022445,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 6,
+            "lr": 0.0001,
+            "train_phase_loss": 0.04507231654400064,
+            "train_aux_loss": 1.1414580401690886,
+            "train_total_loss": 0.387509741329611,
+            "total_minus_phase_abs_max": 0.45830094814300537,
+            "total_minus_phase_abs_min": 0.25931575894355774,
+            "val_accuracy": 0.8396039603960396,
+            "val_macro_f1": 0.7117977416165999,
+            "train_seconds": 680.992412420921,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 7,
+            "lr": 0.0001,
+            "train_phase_loss": 0.03741351766551338,
+            "train_aux_loss": 1.1236452650330113,
+            "train_total_loss": 0.3745071103240289,
+            "total_minus_phase_abs_max": 0.4476921856403351,
+            "total_minus_phase_abs_min": 0.24780771136283875,
+            "val_accuracy": 0.8297029702970297,
+            "val_macro_f1": 0.679325115953446,
+            "train_seconds": 680.9721083678305,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 8,
+            "lr": 0.0001,
+            "train_phase_loss": 0.02476769839933759,
+            "train_aux_loss": 1.1012492947935428,
+            "train_total_loss": 0.3551425003383277,
+            "total_minus_phase_abs_max": 0.4428726136684418,
+            "total_minus_phase_abs_min": 0.24280895292758942,
+            "val_accuracy": 0.838943894389439,
+            "val_macro_f1": 0.741713229483845,
+            "train_seconds": 680.8264209870249,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 9,
+            "lr": 0.0001,
+            "train_phase_loss": 0.021460225246769524,
+            "train_aux_loss": 1.0888186902613253,
+            "train_total_loss": 0.34810584417235796,
+            "total_minus_phase_abs_max": 0.44576171040534973,
+            "total_minus_phase_abs_min": 0.23668122291564941,
+            "val_accuracy": 0.8514851485148515,
+            "val_macro_f1": 0.7249681722586067,
+            "train_seconds": 680.7447680216283,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 10,
+            "lr": 0.0001,
+            "train_phase_loss": 0.020282305483123316,
+            "train_aux_loss": 1.0713036845186377,
+            "train_total_loss": 0.3416734235780733,
+            "total_minus_phase_abs_max": 0.44616231322288513,
+            "total_minus_phase_abs_min": 0.2384386658668518,
+            "val_accuracy": 0.7894389438943894,
+            "val_macro_f1": 0.6819898689209197,
+            "train_seconds": 680.1069089770317,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 11,
+            "lr": 0.0001,
+            "train_phase_loss": 0.013489610880102773,
+            "train_aux_loss": 1.0560939260134974,
+            "train_total_loss": 0.3303178008007339,
+            "total_minus_phase_abs_max": 0.4213733971118927,
+            "total_minus_phase_abs_min": 0.22820961475372314,
+            "val_accuracy": 0.8468646864686469,
+            "val_macro_f1": 0.729214524260475,
+            "train_seconds": 680.2840341310948,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 12,
+            "lr": 0.0001,
+            "train_phase_loss": 0.010139125377713032,
+            "train_aux_loss": 1.043297533355935,
+            "train_total_loss": 0.3231283974280895,
+            "total_minus_phase_abs_max": 0.4161333441734314,
+            "total_minus_phase_abs_min": 0.23395512998104095,
+            "val_accuracy": 0.8594059405940594,
+            "val_macro_f1": 0.731659919737832,
+            "train_seconds": 680.1861949330196,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 13,
+            "lr": 0.0001,
+            "train_phase_loss": 0.015672048361161105,
+            "train_aux_loss": 1.0343050761932393,
+            "train_total_loss": 0.32596358217116134,
+            "total_minus_phase_abs_max": 0.4201149046421051,
+            "total_minus_phase_abs_min": 0.2393065243959427,
+            "val_accuracy": 0.8422442244224423,
+            "val_macro_f1": 0.7176864070226986,
+            "train_seconds": 680.0234236298129,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 14,
+            "lr": 0.0001,
+            "train_phase_loss": 0.01676204979454041,
+            "train_aux_loss": 1.029166105322627,
+            "train_total_loss": 0.3255118925841536,
+            "total_minus_phase_abs_max": 0.4279789328575134,
+            "total_minus_phase_abs_min": 0.22657641768455505,
+            "val_accuracy": 0.8448844884488449,
+            "val_macro_f1": 0.7201619154503767,
+            "train_seconds": 680.1321943178773,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 15,
+            "lr": 0.0001,
+            "train_phase_loss": 0.0062870026673474315,
+            "train_aux_loss": 1.008285804232838,
+            "train_total_loss": 0.30877275651837155,
+            "total_minus_phase_abs_max": 0.41346657276153564,
+            "total_minus_phase_abs_min": 0.2196369469165802,
+            "val_accuracy": 0.8851485148514852,
+            "val_macro_f1": 0.7590350672737068,
+            "train_seconds": 680.059863445349,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 16,
+            "lr": 0.0001,
+            "train_phase_loss": 0.004570335960025058,
+            "train_aux_loss": 0.993396763569748,
+            "train_total_loss": 0.30258937716866746,
+            "total_minus_phase_abs_max": 0.42316725850105286,
+            "total_minus_phase_abs_min": 0.21814113855361938,
+            "val_accuracy": 0.8719471947194719,
+            "val_macro_f1": 0.7493301901796274,
+            "train_seconds": 680.0774166546762,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 17,
+            "lr": 0.0001,
+            "train_phase_loss": 0.002945984393732708,
+            "train_aux_loss": 0.974420339347438,
+            "train_total_loss": 0.29527209717516106,
+            "total_minus_phase_abs_max": 0.39188244938850403,
+            "total_minus_phase_abs_min": 0.2238994836807251,
+            "val_accuracy": 0.8646864686468647,
+            "val_macro_f1": 0.7445355883920662,
+            "train_seconds": 679.5557347806171,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 18,
+            "lr": 1e-05,
+            "train_phase_loss": 0.0015328819452783702,
+            "train_aux_loss": 0.9504097876828242,
+            "train_total_loss": 0.28665583068828004,
+            "total_minus_phase_abs_max": 0.3870407044887543,
+            "total_minus_phase_abs_min": 0.19367091357707977,
+            "val_accuracy": 0.8693069306930693,
+            "val_macro_f1": 0.7524136067533449,
+            "train_seconds": 679.9034689366817,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 19,
+            "lr": 1e-05,
+            "train_phase_loss": 0.0017739570827246603,
+            "train_aux_loss": 0.945964258737022,
+            "train_total_loss": 0.2855632466856115,
+            "total_minus_phase_abs_max": 0.40162193775177,
+            "total_minus_phase_abs_min": 0.2108638733625412,
+            "val_accuracy": 0.8627062706270627,
+            "val_macro_f1": 0.7403055866737324,
+            "train_seconds": 1264.9107805714011,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 20,
+            "lr": 1e-05,
+            "train_phase_loss": 0.0015229285034754942,
+            "train_aux_loss": 0.942716478443521,
+            "train_total_loss": 0.2843378834550618,
+            "total_minus_phase_abs_max": 0.3804240822792053,
+            "total_minus_phase_abs_min": 0.2048773616552353,
+            "val_accuracy": 0.8679867986798679,
+            "val_macro_f1": 0.7478726960596768,
+            "train_seconds": 1203.336248125881,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 21,
+            "lr": 1e-05,
+            "train_phase_loss": 0.0015663437409101921,
+            "train_aux_loss": 0.9402153213670736,
+            "train_total_loss": 0.28363095149374706,
+            "total_minus_phase_abs_max": 0.3897343873977661,
+            "total_minus_phase_abs_min": 0.19892622530460358,
+            "val_accuracy": 0.8686468646864687,
+            "val_macro_f1": 0.7514964640320663,
+            "train_seconds": 1206.4186341185123,
+            "peak_alloc_bytes": 29044387328
+          }
+        ],
+        "finetune": {
+          "task_id": "T-2026-11-01-grasp-pilot-g",
+          "unofficial": true,
+          "run": "grasppilot2_C_teacher_seed42",
+          "arm": "teacher",
+          "epochs_completed": 21,
+          "last_val_accuracy": 0.8686468646864687,
+          "elapsed_seconds": 16682.75774587877,
+          "peak_alloc_bytes": 29044387328,
+          "last_ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/ptower/grasppilot2_C_teacher_seed42/last.pth",
+          "last_ckpt_sha256": "bb9db093224070ee64946485caa9b7307dfc64ee9e1d9d9d3bcc625279f700e0"
+        },
+        "aux_val": {
+          "ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/ptower/grasppilot2_C_teacher_seed42/last.pth",
+          "targets": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/signals/C/t_val.npz",
+          "targets_sha256": "5771790ff8d76c8517abb25479bc09ea2d5a6618213878a53a5d64675a65d33c",
+          "frames": 1515,
+          "ce_per_hand": {
+            "left": 1.0987151416614898,
+            "right": 1.514460045591046,
+            "both": 0.530140356714576
+          },
+          "ce_uniform_per_hand": {
+            "left": 2.7725887298583984,
+            "right": 2.7725887298583984,
+            "both": 2.7725887298583984
+          }
+        }
+      },
+      "shuffled": {
+        "run": "grasppilot2_C_shuffled_seed42",
+        "jaccard": 0.6827732773624383,
+        "accuracy": 0.8792079207920792,
+        "per_class_jaccard": {
+          "anesthesia": 0.9591836734693877,
+          "closure": 0.7542087542087542,
+          "design": 0.9809523809523809,
+          "disinfection": 0.0,
+          "dissection": 0.803921568627451,
+          "dressing": 0.0,
+          "hemostasis": 0.3855421686746988,
+          "incision": 0.8956043956043956,
+          "irrigation": 0.0
+        },
+        "per_video": {
+          "09": {
+            "jaccard": 0.9692615002022799,
+            "accuracy": 0.9884169884169884
+          },
+          "10": {
+            "jaccard": 0.6337305081739972,
+            "accuracy": 0.8224674022066198
+          }
+        },
+        "head_history": [
+          {
+            "epoch": 1,
+            "train_loss": 4.161377358436584,
+            "lr": 0.00025,
+            "val_jaccard": 0.029404504782474545,
+            "val_accuracy": 0.10627062706270628
+          },
+          {
+            "epoch": 2,
+            "train_loss": 2.966993260383606,
+            "lr": 0.000375,
+            "val_jaccard": 0.111914403584527,
+            "val_accuracy": 0.25214521452145217
+          },
+          {
+            "epoch": 3,
+            "train_loss": 2.570267343521118,
+            "lr": 0.0005,
+            "val_jaccard": 0.4993388730516877,
+            "val_accuracy": 0.6712871287128713
+          },
+          {
+            "epoch": 4,
+            "train_loss": 2.1385820269584657,
+            "lr": 0.0004994647308096509,
+            "val_jaccard": 0.6037499597443021,
+            "val_accuracy": 0.8409240924092409
+          },
+          {
+            "epoch": 5,
+            "train_loss": 1.6811587452888488,
+            "lr": 0.0004978612153434526,
+            "val_jaccard": 0.6175677084257712,
+            "val_accuracy": 0.8198019801980198
+          },
+          {
+            "epoch": 6,
+            "train_loss": 1.2959724903106689,
+            "lr": 0.0004951963201008077,
+            "val_jaccard": 0.6322128910325533,
+            "val_accuracy": 0.8528052805280528
+          },
+          {
+            "epoch": 7,
+            "train_loss": 1.0699483931064606,
+            "lr": 0.0004914814565722672,
+            "val_jaccard": 0.6701419945457909,
+            "val_accuracy": 0.8435643564356435
+          },
+          {
+            "epoch": 8,
+            "train_loss": 0.9574971079826355,
+            "lr": 0.0004867325323737766,
+            "val_jaccard": 0.7012834966162574,
+            "val_accuracy": 0.8712871287128713
+          },
+          {
+            "epoch": 9,
+            "train_loss": 0.8541260838508606,
+            "lr": 0.00048096988312782183,
+            "val_jaccard": 0.6924429366671193,
+            "val_accuracy": 0.8726072607260726
+          },
+          {
+            "epoch": 10,
+            "train_loss": 0.7513918876647949,
+            "lr": 0.0004742181853831722,
+            "val_jaccard": 0.7197481112404317,
+            "val_accuracy": 0.862046204620462
+          },
+          {
+            "epoch": 11,
+            "train_loss": 0.6997457325458527,
+            "lr": 0.00046650635094610984,
+            "val_jaccard": 0.6922267007037723,
+            "val_accuracy": 0.8759075907590759
+          },
+          {
+            "epoch": 12,
+            "train_loss": 0.6450423121452331,
+            "lr": 0.0004578674030756365,
+            "val_jaccard": 0.6985632155597225,
+            "val_accuracy": 0.8627062706270627
+          },
+          {
+            "epoch": 13,
+            "train_loss": 0.6048539817333222,
+            "lr": 0.0004483383350728089,
+            "val_jaccard": 0.6855813598644815,
+            "val_accuracy": 0.8838283828382838
+          },
+          {
+            "epoch": 14,
+            "train_loss": 0.5695905297994613,
+            "lr": 0.00043795995186974446,
+            "val_jaccard": 0.693548611920023,
+            "val_accuracy": 0.8851485148514852
+          },
+          {
+            "epoch": 15,
+            "train_loss": 0.5419371962547302,
+            "lr": 0.00042677669529663696,
+            "val_jaccard": 0.6860415811151025,
+            "val_accuracy": 0.8752475247524752
+          },
+          {
+            "epoch": 16,
+            "train_loss": 0.5342921704053879,
+            "lr": 0.0004148364537750173,
+            "val_jaccard": 0.6820795803510394,
+            "val_accuracy": 0.8778877887788779
+          },
+          {
+            "epoch": 17,
+            "train_loss": 0.5065581321716308,
+            "lr": 0.0004021903572521803,
+            "val_jaccard": 0.6810947789377472,
+            "val_accuracy": 0.8739273927392739
+          },
+          {
+            "epoch": 18,
+            "train_loss": 0.49437461197376253,
+            "lr": 0.0003888925582549007,
+            "val_jaccard": 0.6827732773624383,
+            "val_accuracy": 0.8792079207920792
+          }
+        ],
+        "finetune_history": [
+          {
+            "epoch": 1,
+            "lr": 0.0001,
+            "train_phase_loss": 0.87814320574343,
+            "train_aux_loss": 1.6236092287819863,
+            "train_total_loss": 1.365225993242646,
+            "total_minus_phase_abs_max": 0.8378095626831055,
+            "total_minus_phase_abs_min": 0.3719068169593811,
+            "val_accuracy": 0.6297029702970297,
+            "val_macro_f1": 0.29667555589272343,
+            "train_seconds": 1259.2441224539652,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 2,
+            "lr": 0.0001,
+            "train_phase_loss": 0.3611999956843299,
+            "train_aux_loss": 1.5051317756388565,
+            "train_total_loss": 0.8127395461604772,
+            "total_minus_phase_abs_max": 0.5773630142211914,
+            "total_minus_phase_abs_min": 0.36598438024520874,
+            "val_accuracy": 0.8072607260726072,
+            "val_macro_f1": 0.6639776955954437,
+            "train_seconds": 803.3562392750755,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 3,
+            "lr": 0.0001,
+            "train_phase_loss": 0.1823902873881142,
+            "train_aux_loss": 1.4961393776055485,
+            "train_total_loss": 0.6312321190188683,
+            "total_minus_phase_abs_max": 0.5552029013633728,
+            "total_minus_phase_abs_min": 0.3607690632343292,
+            "val_accuracy": 0.8013201320132013,
+            "val_macro_f1": 0.6851727629382304,
+            "train_seconds": 682.4043164225295,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 4,
+            "lr": 0.0001,
+            "train_phase_loss": 0.10549281839429067,
+            "train_aux_loss": 1.4903028322769716,
+            "train_total_loss": 0.5525836864280148,
+            "total_minus_phase_abs_max": 0.5721603631973267,
+            "total_minus_phase_abs_min": 0.3677901029586792,
+            "val_accuracy": 0.7920792079207921,
+            "val_macro_f1": 0.6933381945000688,
+            "train_seconds": 680.2847199905664,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 5,
+            "lr": 0.0001,
+            "train_phase_loss": 0.05954077220802026,
+            "train_aux_loss": 1.4870374959683188,
+            "train_total_loss": 0.5056520376909566,
+            "total_minus_phase_abs_max": 0.5775353312492371,
+            "total_minus_phase_abs_min": 0.3517966866493225,
+            "val_accuracy": 0.8250825082508251,
+            "val_macro_f1": 0.7194418483205466,
+            "train_seconds": 904.823588328436,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 6,
+            "lr": 0.0001,
+            "train_phase_loss": 0.044525216518540314,
+            "train_aux_loss": 1.4837988642810775,
+            "train_total_loss": 0.4896648944109336,
+            "total_minus_phase_abs_max": 0.5506094098091125,
+            "total_minus_phase_abs_min": 0.3663180470466614,
+            "val_accuracy": 0.8,
+            "val_macro_f1": 0.7102561778865576,
+            "train_seconds": 727.4292843248695,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 7,
+            "lr": 0.0001,
+            "train_phase_loss": 0.03454350853656897,
+            "train_aux_loss": 1.4811033217744254,
+            "train_total_loss": 0.4788745227679217,
+            "total_minus_phase_abs_max": 0.5478452444076538,
+            "total_minus_phase_abs_min": 0.35248956084251404,
+            "val_accuracy": 0.8165016501650165,
+            "val_macro_f1": 0.7164315305905667,
+            "train_seconds": 680.5955549255013,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 8,
+            "lr": 0.0001,
+            "train_phase_loss": 0.02393337055406959,
+            "train_aux_loss": 1.4786040164477043,
+            "train_total_loss": 0.46751459405031387,
+            "total_minus_phase_abs_max": 0.5654782652854919,
+            "total_minus_phase_abs_min": 0.3581753373146057,
+            "val_accuracy": 0.759075907590759,
+            "val_macro_f1": 0.7037437958488825,
+            "train_seconds": 680.7661804398522,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 9,
+            "lr": 0.0001,
+            "train_phase_loss": 0.01956539764876707,
+            "train_aux_loss": 1.4767522479209692,
+            "train_total_loss": 0.46259108959141015,
+            "total_minus_phase_abs_max": 0.5778316259384155,
+            "total_minus_phase_abs_min": 0.36494705080986023,
+            "val_accuracy": 0.8429042904290429,
+            "val_macro_f1": 0.7313969857903893,
+            "train_seconds": 680.7404474010691,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 10,
+            "lr": 0.0001,
+            "train_phase_loss": 0.02955302645927674,
+            "train_aux_loss": 1.4764445182316,
+            "train_total_loss": 0.47248639987408037,
+            "total_minus_phase_abs_max": 0.57574462890625,
+            "total_minus_phase_abs_min": 0.35340815782546997,
+            "val_accuracy": 0.8231023102310231,
+            "val_macro_f1": 0.7190996913273884,
+            "train_seconds": 680.5996466921642,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 11,
+            "lr": 0.0001,
+            "train_phase_loss": 0.026617235570550107,
+            "train_aux_loss": 1.4764709697076348,
+            "train_total_loss": 0.46955854457345847,
+            "total_minus_phase_abs_max": 0.547983705997467,
+            "total_minus_phase_abs_min": 0.36442863941192627,
+            "val_accuracy": 0.803960396039604,
+            "val_macro_f1": 0.7035962263882309,
+            "train_seconds": 680.8178218901157,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 12,
+            "lr": 0.0001,
+            "train_phase_loss": 0.01876258198748084,
+            "train_aux_loss": 1.474778717788984,
+            "train_total_loss": 0.4611962153524719,
+            "total_minus_phase_abs_max": 0.563035249710083,
+            "total_minus_phase_abs_min": 0.3635140657424927,
+            "val_accuracy": 0.8316831683168316,
+            "val_macro_f1": 0.7125780400072641,
+            "train_seconds": 680.9038428906351,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 13,
+            "lr": 0.0001,
+            "train_phase_loss": 0.011190915641118258,
+            "train_aux_loss": 1.472497203661885,
+            "train_total_loss": 0.4529400946339231,
+            "total_minus_phase_abs_max": 0.5546057224273682,
+            "total_minus_phase_abs_min": 0.3514518737792969,
+            "val_accuracy": 0.8052805280528053,
+            "val_macro_f1": 0.7026599215729732,
+            "train_seconds": 680.6775755379349,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 14,
+            "lr": 0.0001,
+            "train_phase_loss": 0.012105772642299542,
+            "train_aux_loss": 1.4712926192820361,
+            "train_total_loss": 0.45349357648951005,
+            "total_minus_phase_abs_max": 0.5608112812042236,
+            "total_minus_phase_abs_min": 0.3489055633544922,
+            "val_accuracy": 0.8409240924092409,
+            "val_macro_f1": 0.7274113810650192,
+            "train_seconds": 680.8456742754206,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 15,
+            "lr": 0.0001,
+            "train_phase_loss": 0.007820462701591252,
+            "train_aux_loss": 1.4707331590503345,
+            "train_total_loss": 0.44904042753704687,
+            "total_minus_phase_abs_max": 0.5536243319511414,
+            "total_minus_phase_abs_min": 0.3526083528995514,
+            "val_accuracy": 0.831023102310231,
+            "val_macro_f1": 0.7140436749696784,
+            "train_seconds": 681.0710744624957,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 16,
+            "lr": 0.0001,
+            "train_phase_loss": 0.010274291834741184,
+            "train_aux_loss": 1.469347884754494,
+            "train_total_loss": 0.4510786745801801,
+            "total_minus_phase_abs_max": 0.5453078746795654,
+            "total_minus_phase_abs_min": 0.366901695728302,
+            "val_accuracy": 0.8884488448844885,
+            "val_macro_f1": 0.7565887314838108,
+            "train_seconds": 680.8833461292088,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 17,
+            "lr": 0.0001,
+            "train_phase_loss": 0.009411512501554677,
+            "train_aux_loss": 1.4679800115091357,
+            "train_total_loss": 0.4498055349062155,
+            "total_minus_phase_abs_max": 0.5304502844810486,
+            "total_minus_phase_abs_min": 0.35875004529953003,
+            "val_accuracy": 0.8277227722772277,
+            "val_macro_f1": 0.7033123878827728,
+            "train_seconds": 681.2587903784588,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 18,
+            "lr": 1e-05,
+            "train_phase_loss": 0.004210898274030638,
+            "train_aux_loss": 1.461672366794943,
+            "train_total_loss": 0.4427126264632631,
+            "total_minus_phase_abs_max": 0.5378889441490173,
+            "total_minus_phase_abs_min": 0.3464905619621277,
+            "val_accuracy": 0.8514851485148515,
+            "val_macro_f1": 0.7282983149303076,
+            "train_seconds": 680.8970668585971,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 19,
+            "lr": 1e-05,
+            "train_phase_loss": 0.0026259311299085476,
+            "train_aux_loss": 1.4593498671636258,
+            "train_total_loss": 0.44043091045374505,
+            "total_minus_phase_abs_max": 0.55544114112854,
+            "total_minus_phase_abs_min": 0.3630264103412628,
+            "val_accuracy": 0.858085808580858,
+            "val_macro_f1": 0.7363330947266963,
+            "train_seconds": 681.253191309981,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 20,
+            "lr": 1e-05,
+            "train_phase_loss": 0.0021896698894871744,
+            "train_aux_loss": 1.4590826212551278,
+            "train_total_loss": 0.43991447363789066,
+            "total_minus_phase_abs_max": 0.5510168671607971,
+            "total_minus_phase_abs_min": 0.3486112356185913,
+            "val_accuracy": 0.8554455445544554,
+            "val_macro_f1": 0.73469028142442,
+            "train_seconds": 680.653235765174,
+            "peak_alloc_bytes": 29044387328
+          },
+          {
+            "epoch": 21,
+            "lr": 1e-05,
+            "train_phase_loss": 0.0018281017189186008,
+            "train_aux_loss": 1.458549017564004,
+            "train_total_loss": 0.43939282476402064,
+            "total_minus_phase_abs_max": 0.5566352009773254,
+            "total_minus_phase_abs_min": 0.36081475019454956,
+            "val_accuracy": 0.8501650165016502,
+            "val_macro_f1": 0.7309301529553782,
+            "train_seconds": 680.7379435161129,
+            "peak_alloc_bytes": 29044387328
+          }
+        ],
+        "finetune": {
+          "task_id": "T-2026-11-01-grasp-pilot-g",
+          "unofficial": true,
+          "run": "grasppilot2_C_shuffled_seed42",
+          "arm": "shuffled",
+          "epochs_completed": 21,
+          "last_val_accuracy": 0.8501650165016502,
+          "elapsed_seconds": 16013.783387980424,
+          "peak_alloc_bytes": 29044387328,
+          "last_ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/ptower/grasppilot2_C_shuffled_seed42/last.pth",
+          "last_ckpt_sha256": "20889b890a4c8c5df376d82fe7447250fdff1baa05764004d81b6951f9dfc276"
+        },
+        "aux_val": {
+          "ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/ptower/grasppilot2_C_shuffled_seed42/last.pth",
+          "targets": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/signals/C/t_val.npz",
+          "targets_sha256": "5771790ff8d76c8517abb25479bc09ea2d5a6618213878a53a5d64675a65d33c",
+          "frames": 1515,
+          "ce_per_hand": {
+            "left": 1.731294545088664,
+            "right": 2.427479880556415,
+            "both": 0.8252697255351756
+          },
+          "ce_uniform_per_hand": {
+            "left": 2.7725887298583984,
+            "right": 2.7725887298583984,
+            "both": 2.7725887298583984
+          }
+        }
+      }
+    },
+    "teacher_minus_noaux": {
+      "jaccard": -0.012036800902098577,
+      "accuracy": -0.015841584158415856,
+      "per_video": {
+        "09": {
+          "jaccard": 0.0010713948704984544,
+          "accuracy": 0.0019305019305019266
+        },
+        "10": {
+          "jaccard": -0.0026023520953223356,
+          "accuracy": -0.025075225677031132
+        }
+      },
+      "per_class_jaccard": {
+        "anesthesia": 0.009795918367346945,
+        "closure": -0.02256693265717058,
+        "design": 0.028122192273135616,
+        "disinfection": 0.0,
+        "dissection": -0.04530428509309403,
+        "dressing": 0.0,
+        "hemostasis": -0.026755852842809402,
+        "incision": -0.027548646362098084,
+        "irrigation": 0.0
+      }
+    },
+    "shuffled_minus_noaux": {
+      "jaccard": -0.005865203498107707,
+      "accuracy": 0.0013201320132013583,
+      "per_video": {
+        "09": {
+          "jaccard": -0.02395650347193934,
+          "accuracy": -0.00579150579150578
+        },
+        "10": {
+          "jaccard": 0.03406828865344391,
+          "accuracy": 0.005015045135406182
+        }
+      },
+      "per_class_jaccard": {
+        "anesthesia": -0.020816326530612272,
+        "closure": 0.0012070389428879835,
+        "design": 0.028122192273135616,
+        "disinfection": 0.0,
+        "dissection": 0.016239234753869125,
+        "dressing": 0.0,
+        "hemostasis": -0.07599629286376275,
+        "incision": 0.010187728937729013,
+        "irrigation": 0.0
+      }
+    },
+    "teacher_minus_shuffled": {
+      "jaccard": -0.006171597403990869,
+      "accuracy": -0.017161716171617214,
+      "per_video": {
+        "09": {
+          "jaccard": 0.025027898342437793,
+          "accuracy": 0.007722007722007707
+        },
+        "10": {
+          "jaccard": -0.03667064074876625,
+          "accuracy": -0.030090270812437314
+        }
+      },
+      "per_class_jaccard": {
+        "anesthesia": 0.030612244897959218,
+        "closure": -0.023773971600058563,
+        "design": 0.0,
+        "disinfection": 0.0,
+        "dissection": -0.06154351984696316,
+        "dressing": 0.0,
+        "hemostasis": 0.04924044002095335,
+        "incision": -0.037736375299827096,
+        "irrigation": 0.0
+      }
+    }
+  }
+}

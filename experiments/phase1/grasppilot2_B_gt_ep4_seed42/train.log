@@ -1,0 +1,97 @@
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/albumentations/core/validation.py:114: UserWarning: ShiftScaleRotate is a special case of Affine transform. Please use Affine transform instead.
+  original_init(self, **validated_kwargs)
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:109: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:140: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:195: UserWarning: Argument(s) 'value' are not valid for transform ShiftScaleRotate
+  A.ShiftScaleRotate(
+/home/ubuntu/slocal2/m2/third_party/Relation-DETR/transforms/presets.py:226: UserWarning: Argument(s) 'quality_lower, quality_upper' are not valid for transform ImageCompression
+  A.ImageCompression(quality_lower=85, quality_upper=95, p=0.2),
+Using /home/ubuntu/.cache/torch_extensions/py311_cu118 as PyTorch extensions root...
+Detected CUDA files, patching ldflags
+Emitting ninja build file /home/ubuntu/.cache/torch_extensions/py311_cu118/MultiScaleDeformableAttention/build.ninja...
+Building extension module MultiScaleDeformableAttention...
+Allowing ninja to set a default number of workers... (overridable by setting the environment variable MAX_JOBS=N)
+loading annotations into memory...
+Done (t=0.33s)
+creating index...
+index created!
+Using [0, 0.5, 0.6299605249474365, 0.7937005259840997, 1.0, 1.259921049894873, 1.5874010519681991, 2.0, inf] as bins for aspect ratio quantization
+Count of instances per bin: [9618]
+loading annotations into memory...
+Done (t=0.01s)
+creating index...
+index created!
+ninja: no work to do.
+Loading extension module MultiScaleDeformableAttention...
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+/home/ubuntu/slocal2/m2/.venv-relation-detr/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+The model and loaded state dict do not match exactly
+Missing keys: phase_iface.weight
+
+[t1b] warm-start from /home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth
+[t1b] seed=42 inject=film trainable=film zero_ctx=False det_steps/ep=4809 phase_params=10240 total_trainable=10240 miss_ctx(tr/va)=9657/1515 work=/home/ubuntu/slocal2/m2/experiments/phase1/grasppilot2_B_gt_ep4_seed42
+Accumulating evaluation results...
+DONE (t=1.98s).
+[t1b] warm-start init mAP=0.7273 (S0-frozen 水準なら warm-start+恒等 OK)
+[t1b][ep0 0/4809] L=10.829 0.6it/s eta_ep=137m
+[t1b][ep0 500/4809] L=11.761 1.0it/s eta_ep=71m
+[t1b][ep0 1000/4809] L=13.963 1.0it/s eta_ep=62m
+[t1b][ep0 1500/4809] L=8.389 1.0it/s eta_ep=54m
+[t1b][ep0 2000/4809] L=7.202 1.0it/s eta_ep=45m
+[t1b][ep0 2500/4809] L=18.385 1.1it/s eta_ep=35m
+[t1b][ep0 3000/4809] L=12.844 1.1it/s eta_ep=27m
+[t1b][ep0 3500/4809] L=16.097 1.2it/s eta_ep=19m
+[t1b][ep0 4000/4809] L=11.628 1.2it/s eta_ep=12m
+[t1b][ep0 4500/4809] L=12.970 1.1it/s eta_ep=4m
+Accumulating evaluation results...
+DONE (t=1.91s).
+[t1b][ep0] val mAP=0.7342
+[t1b][ep1 0/4809] L=29.594 1.3it/s eta_ep=64m
+[t1b][ep1 500/4809] L=16.729 1.0it/s eta_ep=69m
+[t1b][ep1 1000/4809] L=25.015 1.1it/s eta_ep=59m
+[t1b][ep1 1500/4809] L=13.194 1.2it/s eta_ep=47m
+[t1b][ep1 2000/4809] L=11.437 1.2it/s eta_ep=38m
+[t1b][ep1 2500/4809] L=12.646 1.3it/s eta_ep=31m
+[t1b][ep1 3000/4809] L=21.483 1.2it/s eta_ep=25m
+[t1b][ep1 3500/4809] L=10.486 1.2it/s eta_ep=18m
+[t1b][ep1 4000/4809] L=16.536 1.2it/s eta_ep=11m
+[t1b][ep1 4500/4809] L=12.436 1.2it/s eta_ep=4m
+Accumulating evaluation results...
+DONE (t=2.36s).
+[t1b][ep1] val mAP=0.7348
+[t1b][ep2 0/4809] L=8.671 1.3it/s eta_ep=60m
+[t1b][ep2 500/4809] L=24.082 1.4it/s eta_ep=50m
+[t1b][ep2 1000/4809] L=11.977 1.6it/s eta_ep=40m
+[t1b][ep2 1500/4809] L=10.717 1.6it/s eta_ep=33m
+[t1b][ep2 2000/4809] L=26.594 1.7it/s eta_ep=28m
+[t1b][ep2 2500/4809] L=15.281 1.7it/s eta_ep=23m
+[t1b][ep2 3000/4809] L=16.602 1.7it/s eta_ep=18m
+[t1b][ep2 3500/4809] L=18.785 1.7it/s eta_ep=13m
+[t1b][ep2 4000/4809] L=12.523 1.7it/s eta_ep=8m
+[t1b][ep2 4500/4809] L=21.403 1.7it/s eta_ep=3m
+Accumulating evaluation results...
+DONE (t=1.98s).
+[t1b][ep2] val mAP=0.7357
+[t1b][ep3 0/4809] L=17.527 2.0it/s eta_ep=40m
+[t1b][ep3 500/4809] L=13.852 1.8it/s eta_ep=40m
+[t1b][ep3 1000/4809] L=14.312 1.8it/s eta_ep=35m
+[t1b][ep3 1500/4809] L=7.071 1.8it/s eta_ep=31m
+[t1b][ep3 2000/4809] L=13.225 1.8it/s eta_ep=26m
+[t1b][ep3 2500/4809] L=36.265 1.8it/s eta_ep=22m
+[t1b][ep3 3000/4809] L=21.516 1.8it/s eta_ep=17m
+[t1b][ep3 3500/4809] L=15.700 1.8it/s eta_ep=12m
+[t1b][ep3 4000/4809] L=12.652 1.8it/s eta_ep=8m
+[t1b][ep3 4500/4809] L=14.779 1.6it/s eta_ep=3m
+Accumulating evaluation results...
+DONE (t=2.39s).
+[t1b][ep3] val mAP=0.7364
+git_autosync: ok=True action=skipped branch=None commit=None staged=0 reason=current branch is not exp/* (branch=feat/grasp-pilot-g)
+[t1b] DONE best@ep3 mAP=0.7364 (init 0.7273) -> /home/ubuntu/slocal2/m2/experiments/phase1/grasppilot2_B_gt_ep4_seed42

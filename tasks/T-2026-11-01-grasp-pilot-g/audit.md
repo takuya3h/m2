@@ -396,3 +396,14 @@ G の 3 本が収束規則（利用者の決定で変えた規則を含む）で
 - 3 腕とも 21 epoch、17 epoch の後に 1e-5（記録と同じ位置）、最後の状態。時間ヘッドは 18 epoch の最後の状態
 - 教師の腕は 16:21 に GPU 1 で最初から起こし直した版（一時停止して止めた版は `$S/aborted/try1_C_teacher/`）
 - 補助の頭の val（Task F-4）は `ptower_aux.py auxval` で、確定の G の t_val（1,515 フレーム）に当てた
+
+## Task G — 集計・検証（途中、2026-11-01 22:57〜23:05 JST）
+
+- 試験（`$S/final/pytest_end.txt`）: `6 failed, 979 passed, 5 skipped`。失敗の名前の集合は A-5 と同じ 6 件（増えていない。passed の 4 件の増加は `tests/test_grasppilot_g.py`）
+- 既存の仮想環境のパッケージの一覧の要約値: `.venv` 9c7be5c9…94c0、`.venv-relation-detr` a74c9c78…b090。A-5 と一致
+- `experiments/audit/l0_hts_acceptance/acceptance_report.json` の sha256 は d9ac7ced… のまま（上書きしていない）
+- **作業ツリーで `make forbidden-check TASK=…` を回すと違反 6 件**: すべて `experiments/phase1/grasppilot3x_pd_B_*/logs/*.json`（追跡外）。
+  `grasppilot3x_*` の 5 つのフォルダは本契約の開始の後に置き場に現れた（中のファイルの時刻は 11-01 02:20〜12:25 JST）。andrew にこれを書くプロセスは無く、
+  本契約の commit にも含まれない（`git log origin/phase0..HEAD --name-only` に 0 件）。**同期処理が別の台から運んだ別の契約の出力とみる。消さず、触れていない**
+- そのため、分岐の HEAD の写し（scratchpad に clone、origin/phase0 = ebc35d7b）で同じ道具を回した: `status: pass`、changed 36・checked 36、violations []。
+  空振りの確認: 作業ツリーでは同期で届いたファイルを違反として拾う（上の 6 件）

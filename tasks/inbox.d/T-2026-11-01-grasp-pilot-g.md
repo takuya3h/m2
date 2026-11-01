@@ -1,0 +1,4 @@
+- [ ] 2026-11-01 [cc] 利用者の決定: G の収束規則を「最良が 4 epoch 更新されなければ打ち切り」に変えた（SPEC §3.2 の学習率を下げた後の再停滞を待たない）。案 A・B・C の長さは変えていない（scripts/grasppilot/g_early_stop.py）
+- [ ] 2026-11-01 [cc] 利用者の指示「三本目の案 D に渡す標的を最優先」で、案 D の目録を H1・H2 だけで作り 11:47 に push した（確定の G を 10:03〜11:48 一時停止）。q の行の和が 1 を超える枠が 11 個あり、正規化するかは三本目で決める（experiments/analysis/grasp_pilot_g/targets/D_manifest.json）
+- [ ] 2026-11-01 [cc] 案 A の予測の腕は旗が全フレーム 1、空の腕は 0 のため、Δ空 に旗の分が混ざる（予測-noCF −0.0065、入れ替え −0.0062）。空の腕の旗の扱いを次の契約で決める（tasks/T-2026-11-01-grasp-pilot-g/RESULT.md §4）
+- [ ] 2026-11-01 [cc] 同期で別の契約の出力 experiments/phase1/grasppilot3x_* が andrew の作業ツリーに届き、作業ツリーの forbidden-check が違反を出す。本契約は触れていない。出所の契約の統合を確かめる
