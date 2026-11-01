@@ -1,0 +1,708 @@
+{
+ "task_id": "T-2026-11-01-grasp-pilot-d",
+ "unofficial": true,
+ "arms": {
+  "none": {
+   "run": "grasppilot3_d_none_ep15_seed42",
+   "aux_weight": 0.0,
+   "mAP": 0.7227620874958235,
+   "target_AP": 0.8165308405898681,
+   "control_AP": 0.6728240572527417,
+   "per_video_AP": {
+    "09": 0.6944511118976082,
+    "10": 0.6532274339645767
+   },
+   "per_class_AP": {
+    "Bipolar Forceps": 0.8091219482956583,
+    "Electric Cautery": 0.9663175747982139,
+    "Forceps": 0.29725308650803345,
+    "Gauze": 0.2645619454465713,
+    "Hook": 0.5534568084005511,
+    "Mouth Gag": 0.8071182779196207,
+    "Needle Holders": 0.8424138185603479,
+    "Raspatory": 0.8012424736704922,
+    "Retractor": NaN,
+    "Scalpel": 0.921348355633908,
+    "Scissors": 0.685277504714075,
+    "Skewer": 0.9571476937945227,
+    "Suction Cannula": 0.8333769486113912,
+    "Syringe": 0.5937937315547593,
+    "Tweezers": 0.7862390570333841
+   },
+   "final_epoch": 14,
+   "n_epochs": 15,
+   "last_epoch_aux_ce": 1.5203671861175787,
+   "last_epoch_aux_acc": 0.07192439453520642,
+   "aux_ce_by_epoch": [
+    1.4850571055401385,
+    1.495410913785497,
+    1.488939777608472,
+    1.4965668855969736,
+    1.5017417816541676,
+    1.5021908899235066,
+    1.5039922928309386,
+    1.5008645061148653,
+    1.5061802465718857,
+    1.5119083545936272,
+    1.5176146549999057,
+    1.5190139317567048,
+    1.5217515037569938,
+    1.5217432001817497,
+    1.5203671861175787
+   ],
+   "inloop_val_mAP_by_epoch": [
+    0.559,
+    0.603,
+    0.595,
+    0.678,
+    0.691,
+    0.677,
+    0.69,
+    0.675,
+    0.68,
+    0.709,
+    0.721,
+    0.723,
+    0.727,
+    0.728,
+    0.722
+   ],
+   "lr_by_epoch": [
+    0.0,
+    0.0001,
+    0.0001,
+    0.0001,
+    0.0001,
+    0.0001,
+    0.0001,
+    0.0001,
+    0.0001,
+    0.0001,
+    1e-05,
+    1e-05,
+    1e-05,
+    1e-05,
+    1e-05
+   ],
+   "det_loss_by_epoch": [
+    37.3179,
+    26.2082,
+    24.066000000000006,
+    22.715099999999996,
+    21.9355,
+    21.219499999999996,
+    20.824300000000004,
+    20.371300000000005,
+    20.086999999999996,
+    19.6675,
+    17.836199999999998,
+    17.343199999999996,
+    17.0338,
+    16.792799999999996,
+    16.676499999999997
+   ],
+   "videos_passed": {
+    "train": [
+     "01",
+     "02",
+     "03",
+     "06",
+     "08",
+     "11",
+     "12",
+     "13",
+     "14",
+     "15"
+    ],
+    "val": [
+     "09",
+     "10"
+    ],
+    "test_overlap": []
+   }
+  },
+  "gteach": {
+   "run": "grasppilot3_d_gteach_ep15_seed42",
+   "aux_weight": 0.3,
+   "mAP": 0.7265707429144682,
+   "target_AP": 0.8149186935306961,
+   "control_AP": 0.6737714726184402,
+   "per_video_AP": {
+    "09": 0.7034874984537359,
+    "10": 0.6471396412220587
+   },
+   "per_class_AP": {
+    "Bipolar Forceps": 0.8351984821398764,
+    "Electric Cautery": 0.9599589878064412,
+    "Forceps": 0.3598291886779801,
+    "Gauze": 0.2702817491340809,
+    "Hook": 0.5279096062118465,
+    "Mouth Gag": 0.8137475940020441,
+    "Needle Holders": 0.842912891902064,
+    "Raspatory": 0.7694290672266034,
+    "Retractor": NaN,
+    "Scalpel": 0.8861927765075255,
+    "Scissors": 0.7117003680769811,
+    "Skewer": 0.9526138302052902,
+    "Suction Cannula": 0.8223240941922881,
+    "Syringe": 0.6311593115741855,
+    "Tweezers": 0.7887324531453476
+   },
+   "final_epoch": 14,
+   "n_epochs": 15,
+   "last_epoch_aux_ce": 0.5114559612054294,
+   "last_epoch_aux_acc": 0.9766987164944765,
+   "aux_ce_by_epoch": [
+    0.6006882213262145,
+    0.5504231203907516,
+    0.5413184052886723,
+    0.5348773232881382,
+    0.5305774583854826,
+    0.5271448169479154,
+    0.5247483564407891,
+    0.525001032780302,
+    0.5212444225742555,
+    0.5218824673514526,
+    0.5146141302969208,
+    0.512894188965475,
+    0.5130774268249534,
+    0.5105783653329925,
+    0.5114559612054294
+   ],
+   "inloop_val_mAP_by_epoch": [
+    0.558,
+    0.622,
+    0.635,
+    0.676,
+    0.69,
+    0.679,
+    0.693,
+    0.682,
+    0.695,
+    0.705,
+    0.726,
+    0.732,
+    0.732,
+    0.733,
+    0.726
+   ],
+   "lr_by_epoch": [
+    0.0,
+    0.0001,
+    0.0001,
+    0.0001,
+    0.0001,
+    0.0001,
+    0.0001,
+    0.0001,
+    0.0001,
+    0.0001,
+    1e-05,
+    1e-05,
+    1e-05,
+    1e-05,
+    1e-05
+   ],
+   "det_loss_by_epoch": [
+    37.4861,
+    26.18519999999999,
+    24.0203,
+    22.729199999999995,
+    22.008800000000004,
+    21.276100000000003,
+    20.8491,
+    20.3647,
+    20.1516,
+    19.665399999999998,
+    17.838199999999997,
+    17.349900000000005,
+    17.0561,
+    16.844800000000006,
+    16.715400000000002
+   ],
+   "videos_passed": {
+    "train": [
+     "01",
+     "02",
+     "03",
+     "06",
+     "08",
+     "11",
+     "12",
+     "13",
+     "14",
+     "15"
+    ],
+    "val": [
+     "09",
+     "10"
+    ],
+    "test_overlap": []
+   }
+  },
+  "shuf": {
+   "run": "grasppilot3_d_shuf_ep15_seed42",
+   "aux_weight": 0.3,
+   "mAP": 0.726387797266003,
+   "target_AP": 0.8242032347333789,
+   "control_AP": 0.6741003225535308,
+   "per_video_AP": {
+    "09": 0.7011968294696722,
+    "10": 0.6534811713614027
+   },
+   "per_class_AP": {
+    "Bipolar Forceps": 0.8374254248066212,
+    "Electric Cautery": 0.9657268208588475,
+    "Forceps": 0.30738105018711226,
+    "Gauze": 0.2727060880707597,
+    "Hook": 0.5251307075807409,
+    "Mouth Gag": 0.8170978498574449,
+    "Needle Holders": 0.8472701198254651,
+    "Raspatory": 0.7943884209772522,
+    "Retractor": NaN,
+    "Scalpel": 0.910960751844735,
+    "Scissors": 0.7065029993908593,
+    "Skewer": 0.9506452975127777,
+    "Suction Cannula": 0.8244800230222867,
+    "Syringe": 0.6275962785255087,
+    "Tweezers": 0.7821173292636318
+   },
+   "final_epoch": 14,
+   "n_epochs": 15,
+   "last_epoch_aux_ce": 0.5697974719496025,
+   "last_epoch_aux_acc": 0.9751670236557999,
+   "aux_ce_by_epoch": [
+    0.6160453083169859,
+    0.5780634994899986,
+    0.5769287280089197,
+    0.5765522602325072,
+    0.5744851640187224,
+    0.5740884055489437,
+    0.573647729539653,
+    0.5735737079671972,
+    0.5724378636675829,
+    0.5746829460591332,
+    0.5723050918331709,
+    0.5684500531208047,
+    0.5708833049249193,
+    0.5685398665125688,
+    0.5697974719496025
+   ],
+   "inloop_val_mAP_by_epoch": [
+    0.537,
+    0.61,
+    0.607,
+    0.679,
+    0.695,
+    0.678,
+    0.693,
+    0.681,
+    0.697,
+    0.694,
+    0.723,
+    0.729,
+    0.728,
+    0.732,
+    0.727
+   ],
+   "lr_by_epoch": [
+    0.0,
+    0.0001,
+    0.0001,
+    0.0001,
+    0.0001,
+    0.0001,
+    0.0001,
+    0.0001,
+    0.0001,
+    0.0001,
+    1e-05,
+    1e-05,
+    1e-05,
+    1e-05,
+    1e-05
+   ],
+   "det_loss_by_epoch": [
+    37.50889999999999,
+    26.309899999999995,
+    24.0532,
+    22.80130000000001,
+    22.0329,
+    21.267899999999997,
+    20.8813,
+    20.4617,
+    20.1114,
+    19.708100000000005,
+    17.875500000000002,
+    17.411000000000005,
+    17.1168,
+    16.870799999999996,
+    16.7296
+   ],
+   "videos_passed": {
+    "train": [
+     "01",
+     "02",
+     "03",
+     "06",
+     "08",
+     "11",
+     "12",
+     "13",
+     "14",
+     "15"
+    ],
+    "val": [
+     "09",
+     "10"
+    ],
+    "test_overlap": []
+   }
+  }
+ },
+ "diffs": {
+  "gteach-none": {
+   "mAP": 0.003808655418644724,
+   "target_AP": -0.0016121470591720088,
+   "control_AP": 0.000947415365698423,
+   "per_video_AP": {
+    "09": 0.009036386556127707,
+    "10": -0.006087792742518028
+   },
+   "per_class_AP": {
+    "Bipolar Forceps": 0.02607653384421804,
+    "Electric Cautery": -0.006358586991772719,
+    "Forceps": 0.06257610216994663,
+    "Gauze": 0.005719803687509573,
+    "Hook": -0.025547202188704654,
+    "Mouth Gag": 0.006629316082423453,
+    "Needle Holders": 0.0004990733417160609,
+    "Raspatory": -0.03181340644388875,
+    "Scalpel": -0.03515557912638256,
+    "Scissors": 0.026422863362906113,
+    "Skewer": -0.0045338635892324675,
+    "Suction Cannula": -0.011052854419103086,
+    "Syringe": 0.03736558001942614,
+    "Tweezers": 0.0024933961119634196
+   }
+  },
+  "shuf-none": {
+   "mAP": 0.0036257097701795082,
+   "target_AP": 0.00767239414351073,
+   "control_AP": 0.001276265300789059,
+   "per_video_AP": {
+    "09": 0.006745717572063992,
+    "10": 0.0002537373968259926
+   },
+   "per_class_AP": {
+    "Bipolar Forceps": 0.028303476510962877,
+    "Electric Cautery": -0.0005907539393663619,
+    "Forceps": 0.01012796367907881,
+    "Gauze": 0.008144142624188389,
+    "Hook": -0.02832610081981024,
+    "Mouth Gag": 0.009979571937824283,
+    "Needle Holders": 0.004856301265117158,
+    "Raspatory": -0.00685405269324002,
+    "Scalpel": -0.010387603789173028,
+    "Scissors": 0.02122549467678425,
+    "Skewer": -0.006502396281744982,
+    "Suction Cannula": -0.008896925589104487,
+    "Syringe": 0.03380254697074936,
+    "Tweezers": -0.004121727769752392
+   }
+  },
+  "gteach-shuf": {
+   "mAP": 0.00018294564846521588,
+   "target_AP": -0.009284541202682739,
+   "control_AP": -0.000328849935090636,
+   "per_video_AP": {
+    "09": 0.002290668984063715,
+    "10": -0.00634153013934402
+   },
+   "per_class_AP": {
+    "Bipolar Forceps": -0.0022269426667448355,
+    "Electric Cautery": -0.005767833052406357,
+    "Forceps": 0.052448138490867824,
+    "Gauze": -0.002424338936678816,
+    "Hook": 0.0027788986311055863,
+    "Mouth Gag": -0.00335025585540083,
+    "Needle Holders": -0.004357227923401097,
+    "Raspatory": -0.024959353750648727,
+    "Scalpel": -0.024767975337209536,
+    "Scissors": 0.0051973686861218615,
+    "Skewer": 0.0019685326925125146,
+    "Suction Cannula": -0.002155928829998599,
+    "Syringe": 0.003563033048676778,
+    "Tweezers": 0.006615123881715812
+   }
+  }
+ },
+ "recompute": {
+  "none": {
+   "mAP": 0.7227620874958235,
+   "target_AP": 0.8165308405898681,
+   "control_AP": 0.6728240572527417,
+   "matches": true
+  },
+  "gteach": {
+   "mAP": 0.7265707429144682,
+   "target_AP": 0.8149186935306961,
+   "control_AP": 0.6737714726184402,
+   "matches": true
+  },
+  "shuf": {
+   "mAP": 0.726387797266003,
+   "target_AP": 0.8242032347333789,
+   "control_AP": 0.6741003225535308,
+   "matches": true
+  }
+ },
+ "config_diff": [
+  {
+   "key": "arm",
+   "values": {
+    "none": [
+     "arm: none"
+    ],
+    "gteach": [
+     "arm: gteach"
+    ],
+    "shuf": [
+     "arm: shuf"
+    ]
+   }
+  },
+  {
+   "key": "aux_weight",
+   "values": {
+    "none": [
+     "aux_weight: 0.0"
+    ],
+    "gteach": [
+     "aux_weight: 0.3"
+    ],
+    "shuf": [
+     "aux_weight: 0.3"
+    ]
+   }
+  },
+  {
+   "key": "run_name",
+   "values": {
+    "none": [
+     "run_name: grasppilot3_d_none_ep15_seed42"
+    ],
+    "gteach": [
+     "run_name: grasppilot3_d_gteach_ep15_seed42"
+    ],
+    "shuf": [
+     "run_name: grasppilot3_d_shuf_ep15_seed42"
+    ]
+   }
+  },
+  {
+   "key": "targets",
+   "values": {
+    "none": [
+     "targets: \"\""
+    ],
+    "gteach": [
+     "targets: \"/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/targets/q_G_train.npz\""
+    ],
+    "shuf": [
+     "targets: \"/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/targets/q_G_shuf_train.npz\""
+    ]
+   }
+  },
+  {
+   "key": "targets_sha256",
+   "values": {
+    "none": [
+     "targets_sha256: \"\""
+    ],
+    "gteach": [
+     "targets_sha256: \"5725a2569e6199499400a9b4fc960365c6d642c8b3bf50732a3c80a722985681\""
+    ],
+    "shuf": [
+     "targets_sha256: \"e99cc91c43dcf7a4f39c822757816e0b2012d81910a21baa619af1bf3d573e15\""
+    ]
+   }
+  },
+  {
+   "key": "work_dir",
+   "values": {
+    "none": [
+     "work_dir: /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/work/grasppilot3_d_none_ep15_seed42"
+    ],
+    "gteach": [
+     "work_dir: /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/work/grasppilot3_d_gteach_ep15_seed42"
+    ],
+    "shuf": [
+     "work_dir: /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/work/grasppilot3_d_shuf_ep15_seed42"
+    ]
+   }
+  }
+ ],
+ "command_diff": [
+  {
+   "key": "# 非公式（T-2026-11-01-grasp-pilot-d）。案 D の腕 gteach。自動生成",
+   "values": {
+    "none": [],
+    "gteach": [
+     "# 非公式（T-2026-11-01-grasp-pilot-d）。案 D の腕 gteach。自動生成: この run を起動した命令の記録"
+    ],
+    "shuf": []
+   }
+  },
+  {
+   "key": "# 非公式（T-2026-11-01-grasp-pilot-d）。案 D の腕 none。自動生成",
+   "values": {
+    "none": [
+     "# 非公式（T-2026-11-01-grasp-pilot-d）。案 D の腕 none。自動生成: この run を起動した命令の記録"
+    ],
+    "gteach": [],
+    "shuf": []
+   }
+  },
+  {
+   "key": "# 非公式（T-2026-11-01-grasp-pilot-d）。案 D の腕 shuf。自動生成",
+   "values": {
+    "none": [],
+    "gteach": [],
+    "shuf": [
+     "# 非公式（T-2026-11-01-grasp-pilot-d）。案 D の腕 shuf。自動生成: この run を起動した命令の記録"
+    ]
+   }
+  },
+  {
+   "key": "accelerate launch --num_processes 1 --main_process_port 29821 main.py --config-file /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/code/9b1ecd5fa432ea69/d_train_config.py --seed 42 --mixed-precision fp16 --accumulate-steps 2 --max-epochs 15",
+   "values": {
+    "none": [
+     "accelerate launch --num_processes 1 --main_process_port 29821 main.py --config-file /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/code/9b1ecd5fa432ea69/d_train_config.py --seed 42 --mixed-precision fp16 --accumulate-steps 2 --max-epochs 15"
+    ],
+    "gteach": [],
+    "shuf": []
+   }
+  },
+  {
+   "key": "accelerate launch --num_processes 1 --main_process_port 29822 main.py --config-file /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/code/9b1ecd5fa432ea69/d_train_config.py --seed 42 --mixed-precision fp16 --accumulate-steps 2 --max-epochs 15",
+   "values": {
+    "none": [],
+    "gteach": [
+     "accelerate launch --num_processes 1 --main_process_port 29822 main.py --config-file /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/code/9b1ecd5fa432ea69/d_train_config.py --seed 42 --mixed-precision fp16 --accumulate-steps 2 --max-epochs 15"
+    ],
+    "shuf": []
+   }
+  },
+  {
+   "key": "accelerate launch --num_processes 1 --main_process_port 29823 main.py --config-file /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/code/9b1ecd5fa432ea69/d_train_config.py --seed 42 --mixed-precision fp16 --accumulate-steps 2 --max-epochs 15",
+   "values": {
+    "none": [],
+    "gteach": [],
+    "shuf": [
+     "accelerate launch --num_processes 1 --main_process_port 29823 main.py --config-file /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/code/9b1ecd5fa432ea69/d_train_config.py --seed 42 --mixed-precision fp16 --accumulate-steps 2 --max-epochs 15"
+    ]
+   }
+  },
+  {
+   "key": "export CUDA_VISIBLE_DEVICES",
+   "values": {
+    "none": [
+     "export CUDA_VISIBLE_DEVICES=0"
+    ],
+    "gteach": [
+     "export CUDA_VISIBLE_DEVICES=0"
+    ],
+    "shuf": [
+     "export CUDA_VISIBLE_DEVICES=1"
+    ]
+   }
+  },
+  {
+   "key": "export GRASP_AUX_WEIGHT",
+   "values": {
+    "none": [
+     "export GRASP_AUX_WEIGHT=0.0"
+    ],
+    "gteach": [
+     "export GRASP_AUX_WEIGHT=0.3"
+    ],
+    "shuf": [
+     "export GRASP_AUX_WEIGHT=0.3"
+    ]
+   }
+  },
+  {
+   "key": "export GRASP_STEPLOG",
+   "values": {
+    "none": [
+     "export GRASP_STEPLOG=/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/work/grasppilot3_d_none_ep15_seed42/grasp_steplog.jsonl"
+    ],
+    "gteach": [
+     "export GRASP_STEPLOG=/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/work/grasppilot3_d_gteach_ep15_seed42/grasp_steplog.jsonl"
+    ],
+    "shuf": [
+     "export GRASP_STEPLOG=/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/work/grasppilot3_d_shuf_ep15_seed42/grasp_steplog.jsonl"
+    ]
+   }
+  },
+  {
+   "key": "export GRASP_TARGETS",
+   "values": {
+    "none": [
+     "export GRASP_TARGETS="
+    ],
+    "gteach": [
+     "export GRASP_TARGETS=/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/targets/q_G_train.npz"
+    ],
+    "shuf": [
+     "export GRASP_TARGETS=/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/targets/q_G_shuf_train.npz"
+    ]
+   }
+  },
+  {
+   "key": "export RELDETR_OUTPUT_DIR",
+   "values": {
+    "none": [
+     "export RELDETR_OUTPUT_DIR=/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/work/grasppilot3_d_none_ep15_seed42"
+    ],
+    "gteach": [
+     "export RELDETR_OUTPUT_DIR=/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/work/grasppilot3_d_gteach_ep15_seed42"
+    ],
+    "shuf": [
+     "export RELDETR_OUTPUT_DIR=/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/work/grasppilot3_d_shuf_ep15_seed42"
+    ]
+   }
+  }
+ ],
+ "code_identical": true,
+ "videos_passed_all": [
+  "01",
+  "02",
+  "03",
+  "06",
+  "08",
+  "09",
+  "10",
+  "11",
+  "12",
+  "13",
+  "14",
+  "15"
+ ],
+ "test_overlap": [],
+ "test_overlap_control_with_04": [
+  "04"
+ ],
+ "prediction_1": {
+  "text": "G を教師 − 補助損失なし の overall mAP の絶対値は 0.01 未満",
+  "value": 0.003808655418644724,
+  "held": true
+ },
+ "prediction_2": {
+  "text": "入れ替えた教師の腕の補助損失は、G を教師の腕より最後の epoch で大きい",
+  "gteach": 0.5114559612054294,
+  "shuf": 0.5697974719496025,
+  "held": true
+ }
+}
