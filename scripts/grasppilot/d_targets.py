@@ -10,6 +10,8 @@
     python scripts/grasppilot/d_targets.py shuffle --src <q.npz> --ann <instances_train.json> --seed 42 --out <q.npz>
         各画像の中で、正解の枠の間で q を並べ替える（画像ごとに seed から決まる固定の並べ替えを一度だけ作る）
         --identity で恒等の並べ替え（陽性対照。元と同じ枠に戻った割合が 1 になる）
+    python scripts/grasppilot/d_targets.py normalize --src <q.npz> --out <q.npz>
+        4 値の和が 1 を超える行だけ和で割る（利用者の決定 2026-11-01。ほかの行は変えない）
 """
 from __future__ import annotations
 
@@ -118,6 +120,20 @@ def cmd_shuffle(a):
                                  "n_boxes_in_multi_box_images": n_multi})
 
 
+def cmd_normalize(a):
+    d = np.load(a.src)
+    ids = d["ann_ids"].astype(np.int64)
+    q = d["q"].astype(np.float64)
+    s = q.sum(1)
+    over = s > 1.0 + 1e-6
+    out = q.copy()
+    out[over] = q[over] / s[over][:, None]
+    save(a.out, ids, out, {"kind": "normalize_rows_over_1", "src": a.src, "src_sha256": sha256(a.src),
+                           "n_rows_normalized": int(over.sum()), "normalized_ann_ids": ids[over].tolist(),
+                           "sums_before": s[over].tolist(), "rows_unchanged": int((~over).sum()),
+                           "max_abs_change_unchanged_rows": float(np.abs(out[~over] - q[~over]).max())})
+
+
 def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -134,8 +150,11 @@ def main():
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--identity", action="store_true")
     p.add_argument("--out", required=True)
+    p = sub.add_parser("normalize")
+    p.add_argument("--src", required=True)
+    p.add_argument("--out", required=True)
     a = ap.parse_args()
-    {"from-boxstate": cmd_from_boxstate, "check": cmd_check, "shuffle": cmd_shuffle}[a.cmd](a)
+    {"normalize": cmd_normalize, "from-boxstate": cmd_from_boxstate, "check": cmd_check, "shuffle": cmd_shuffle}[a.cmd](a)
 
 
 if __name__ == "__main__":

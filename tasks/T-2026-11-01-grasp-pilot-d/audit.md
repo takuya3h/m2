@@ -250,3 +250,56 @@ missing は `grasp_head.weight`・`grasp_head.bias` だけ）。
   外部へは送っていない（offline-run のフォルダ 2 つが手元にできた）
 - 止まった 2 本の空の実験フォルダ（`grasppilot3x_dp_00{1,2}_…`）は、利用者の決定で `$S/extra/failed/` へ移した（消していない）。回し直しは同じ名前で作られた
 - 案 A の界面の重みは `dp_train.py` の規則で `$S/dp_ckpt/`（本契約の保存先の直下）に置かれた
+
+## ダミーの負荷（利用者の指示、2026-11-01 09:5x JST）
+
+指示: 「bengio でやれることが終わってから標的が届くまでの間、GPU と計算のリソースを 70% ほど使用するダミープロセスを起動する。届いたら kill してやるべきことを再開する」。
+**計算の結果には関わらない**（腕も run も走っていない間だけ起こす）。
+
+- 台本は版管理の外 `$S/dummy/`: `dummy_load.py`（GPU は 0.1 秒の周期の 70% だけ 8192² の行列積を回す。記憶は約 1.3 GB。CPU は論理コア 24 × 0.7 = 17 プロセスの空回り）、
+  `dummy_ctl.sh`（補助損失なしの腕と追加の (c) の `exit_code.txt` がそろい、目録がまだ無ければ GPU 0・1 と CPU に起こす。5 分ごとに `origin/feat/grasp-pilot-g` の
+  `D_manifest.json` を確かめ、現れたら process group ごと kill して終わる。起動・停止の時刻は `started.txt`・`killed.txt`、起動 60 秒後の使用率は `check_after_start.txt`）
+- 試し（09:5x、GPU 1 で 10 秒、(c) と並べて）: 1,318 MiB、`kill -- -PID` で止まる。CPU も 2 秒試して止まる
+  （試しの後の `pgrep -fc` の 1 件は自分のシェルの命令行で、負荷のプロセスではなかった。conventions#issuer_cautions の注意 6 と同じ）
+
+## Task C-3（続き）— 補助損失なしの腕の終わり
+
+- 学習 01:45〜12:1x JST、rc 0（`exit_code.txt`）。学習率は epoch 0〜9 が 1e-4、10〜14 が 1e-5（各 epoch の歩 0 の lr）。重みを掛けた補助損失は全 epoch で 0.0、対応づいた枠 = 正解の枠（全 epoch）
+- 学習中の val mAP（main.py の evaluate_acc）: 0.559, 0.603, 0.595, 0.678, 0.691, 0.677, 0.690, 0.675, 0.680, 0.709, 0.721, 0.723, 0.727, 0.728, 0.722
+- 後処理 `d_finalize.py`（最後の状態 = checkpoint_14、補助の頭を除いた重みを `pd_eval.py --cfg plain` で評価）: overall mAP 0.7227621、標的群 AP 0.8165308、陰性対照群 AP 0.6728241。
+  読み込みの欠け・余り 0。通した動画 train {01,02,03,06,08,11,12,13,14,15}、val {09,10}、test との共通 0
+
+## Task D — 標的の受け取りと、教師の 2 腕
+
+### D-1 目録と標的（`experiments/analysis/grasp_pilot_d/taskD/`）
+
+- 目録は 11:48 JST に `origin/feat/grasp-pilot-g` の ee23928a に現れた（`D_manifest_copy.json`）。標的は andrew の
+  `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/signals/D/q_CF_train.npz` を `$S/targets/g_copy/` へ写した（andrew は読むだけ）
+- sha256: andrew 6c41a912…fa8d、写し 6c41a912…fa8d、目録 6c41a912…fa8d。**一致**。枠の数 32,272（目録の boxes・unique と一致）
+- 陽性対照（`d1_sha_control.txt`）: 1 バイト（offset 1000、0 → 255）を反転した写しは ff131286… で不一致。
+  一度目は 0x00 を書いたが元のバイトも 0 で、写しが変わらず「一致」になった（対照の作り方の不備。作り直した）
+
+### D-2 対応と和（`d2_check_raw.json`、`d2_check_q_G.json`）
+
+- train の注釈の全 32,272 枠に q があり、欠け 0・余り 0・重複 0。test の動画は注釈に無い
+- **4 値の和が 1 を超える枠が 11 個**（最大 1.538。11 個とも「なし」が 0。式 なし = 1 − min(Σr, 1) の性質で、試走の標的にも同じ形が 3 枠あった）。
+  SPEC D-2 は和が 1 であることを確かめるとだけ書き、外れたときの扱いは無いため利用者に諮り、**「その 11 枠だけ和で割る」**に決まった（12:1x JST）。
+  `d_targets.py normalize` で作った `$S/targets/q_G_train.npz`（5725a256…）: 正規化 11 行（ann_id 7808, 7834, 7835, 9970, 13045, 14857, 14860, 15488, 16241, 16546, 24406）、
+  ほかの 32,261 行は変化 0。照合 ok（和の誤差の最大 4.5e-8）
+- q の最大の値の度数: 左 538、右 249、両手 14、なし 31,471。平均 (0.080, 0.064, 0.009, 0.846)
+
+### D-3 入れ替えた標的（`q_G_shuf_train.meta.json`）
+
+- `d_targets.py shuffle --seed 42`: 各画像の中で正解の枠の間で q を並べ替えた（画像 id の昇順に `np.random.default_rng(42).permutation`、一度だけ作って全 epoch で使う）
+- 画像 9,618、**枠が一つの画像 575（575 枠）**。元と同じ枠に戻った割合: 全体 0.2997、枠が二つ以上の画像だけ 0.2870
+- 陽性対照: 恒等の並べ替え（`--identity`）では割合 1.0・1.0。照合 ok
+
+### D-4 教師の 2 腕
+
+| 腕 | 起動（JST） | GPU | 標的 |
+|---|---|---|---|
+| `grasppilot3_d_gteach_ep15_seed42` | 12:23 | 0 | `$S/targets/q_G_train.npz` |
+| `grasppilot3_d_shuf_ep15_seed42` | 12:26 | 1 | `$S/targets/q_G_shuf_train.npz` |
+
+- 利用者の決定で追加の (c) は最後まで回し（12:26 に終わった）、その直後に入れ替えた教師の腕を GPU 1 で起こした
+- コードの要約値（`code_sha256.txt`）は 3 腕で同一。COCO の重みの読み込みの行は各 1 行
