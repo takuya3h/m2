@@ -99,6 +99,8 @@ cd "$M"
 source "$M/.venv-relation-detr/bin/activate"
 export CUDA_HOME=/usr/local/cuda EGO_BODY=$M EGO_ROOT=$M/data/raw/ego EGO_ANN_DIR=$M/data/annotations/egosurgery_tool_folds/A
 export PYTHONUTF8=1 PYTHONDONTWRITEBYTECODE=1
+# 利用者の指示（2026-11-02）: W&B は手元だけ。外へ送らない（資格情報も読み込まない）
+export WANDB_MODE=offline WANDB_DIR=$S/wandb
 
 if [ "$MODE" = identity ] || [ "$MODE" = perturb ] || [ "$MODE" = setcheck ]; then
   OUTD=$A/identity; mkdir -p "$OUTD"
@@ -116,7 +118,7 @@ fi
 
 if [ "$MODE" = smoke ]; then
   RUN=${RUN}_smoke; WORK=$S/smoke/$RUN
-  EXTRA=(--epochs 1 --fixed-epochs --amp bf16 --smoke)
+  EXTRA=(--epochs 1 --fixed-epochs --amp bf16 --smoke --save-predictions-all)
 else
   WORK=$M/experiments/phase1/$RUN
   EXTRA=(--epochs "$EPOCHS" --fixed-epochs --amp bf16 --save-predictions-all)

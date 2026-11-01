@@ -170,3 +170,19 @@ DX は `stage2four_pd_DX_<腕>_ep4_seed42`、案 B は `grasppilot2_B_<腕>_ep4_
     {'swap': None, 'n': 36, 'n_match': 36, 'all_match': True}
     $ .venv/bin/python scripts/w23/w23a_armcheck.py --swap gt,pred_noCF --out $A/armcheck/armcheck_swap_control.json
     {'swap': 'gt,pred_noCF', 'n': 36, 'n_match': 24, 'all_match': False}     ← 陽性対照（入れ替えた 12 件が不一致）
+
+## 利用者の指示（2026-11-02 00:52 JST 頃。`meta.amendments` に記録）
+
+Task C の途中で、SPEC §1 の「これまでの界面の型はすべて W1」が実測と食い違う（P1 は直しの契約で P1-W2 として 6 腕とも測られている。
+`experiments/analysis/stage2_pilot_fix/REPORT.md` の「P1-W2」節）ことを報告した。利用者の指示:
+
+1. P1 は回さない（W2 は直しの契約の値を参考に使う。W3 は bengio の契約が回す）
+2. decoder-xattn と案 B の W2・W3 は、空・予測-noCF・正解・入れ替えの四腕だけ回す（予測-CF と正解予測-CF は回さない）。計 16 本
+3. W3 の試走で 1 本の所要と記憶を測り、全体が開始から 15 時間を超える見込みなら学習を始める前に諮る
+4. W&B は手元だけ（offline）。外へ送らない
+
+対応:
+- `spec.yaml` の `meta.amendments` に 1 件を足した（`make task-validate` → OK）
+- 台本に `WANDB_MODE=offline`、`WANDB_DIR=$S/wandb` を置いた。`train_t1b.py` は W&B を配線していない（既存のファイルは変えない）ため、
+  後処理 `w23a_finalize.py` が epoch ごとの val を `wandb.init(mode="offline", dir=$S/wandb)` で手元に記録する。`load_env.sh` は読まない（資格情報を環境に入れない）
+- 既に始めていた恒等性の検査（P1 と、DX・案 B の予測-CF・正解予測-CF を含む）は止めずに最後まで回した。P1 の分と二腕の分は記録として残すが、run の表には入らない

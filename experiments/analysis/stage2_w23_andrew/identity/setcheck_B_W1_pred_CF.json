@@ -1,0 +1,35 @@
+{
+  "task_id": "T-2026-11-01-stage2-w23-andrew",
+  "unofficial": true,
+  "type": "B",
+  "w": "W1",
+  "arm": "pred_CF",
+  "cfg": "/home/ubuntu/slocal2/m2/configs/stage2pilot/pd_graspmap_pred5.py",
+  "cfg_sha256": "3e06cd4a8138743b54999bf21de4a8df4153efe229473db6f3db5af93d9d77d6",
+  "det_ckpt_sha256": "30d199b15201cf3c03954852d8acc6fb58fe5349baef2fd200e877237ff682c4",
+  "signal_val": null,
+  "zero_ctx": false,
+  "grasp_map": "pred",
+  "grasp_pred_val": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/signals/views/B_pred_CF_val.json",
+  "videos": [
+    "09",
+    "10"
+  ],
+  "n_images": 1515,
+  "trainable_set": {
+    "w": "W1",
+    "trainable_arg": "film",
+    "n_names": 1,
+    "n_elements": 10240,
+    "n_iface_elements": 10240,
+    "equal": true,
+    "only_in_trainable": [],
+    "only_in_expected": [],
+    "mixed_name": "backbone.conv1.weight",
+    "equal_with_one_outside_mixed": false,
+    "names": [
+      "phase_iface.weight"
+    ]
+  },
+  "non_interface_digest": "4fed85166852cd54f07071a5b9ce57804828e95c23148db11bf7bf0afe08ce60"
+}

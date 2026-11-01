@@ -67,6 +67,25 @@ def receiver_motion(ckpt_path: Path, det_ckpt: Path) -> dict:
             "ckpt": str(ckpt_path), "ckpt_sha256": C.sha256(ckpt_path)}
 
 
+def wandb_offline(run: str, config: dict, per_epoch: dict, summary: dict) -> dict:
+    """W&B へ手元だけ（offline）で記録する（利用者の指示 2026-11-02。外へ送らない。資格情報を読まない）。"""
+    try:
+        import wandb
+        (S / "wandb").mkdir(parents=True, exist_ok=True)
+        r = wandb.init(mode="offline", dir=str(S / "wandb"), project="egosurgery_multitask", name=run,
+                       group=TASK_ID, config=config)
+        for e in sorted(per_epoch):
+            v = per_epoch[e]
+            wandb.log({"epoch": e, "val/AP": v["AP"], "val/AP50": v["AP50"], "val/target_AP": v["target_AP"],
+                       "val/control_AP": v["control_AP"]}, step=e + 1)
+        r.summary.update(summary)
+        out = {"mode": "offline", "run_id": r.id, "dir": str(Path(r.dir).parent)}
+        wandb.finish()
+        return out
+    except Exception as exc:  # noqa: BLE001 — 追跡の失敗で後処理を止めない
+        return {"mode": "offline", "error": repr(exc)}
+
+
 def main():
     work, typ, w, arm = Path(sys.argv[1]), sys.argv[2], sys.argv[3], sys.argv[4]
     res = json.loads((work / "t1b_result.json").read_text())
@@ -105,6 +124,9 @@ def main():
                 "frozen_unchanged": res["frozen_digest_before"] == res["frozen_digest_after"],
                 "videos": vids, "server": (work / "server.txt").read_text().strip(),
                 "seconds_to_finalize": (datetime.now(timezone.utc) - start).total_seconds()})
+    met["wandb"] = wandb_offline(work.name, {"task_id": TASK_ID, "type": typ, "w": w, "arm": arm,
+                                             "trainable": res["trainable"], "seed": res["seed"], "epochs": res["epochs"]},
+                                 per_epoch, {"AP": met["AP"], "target_AP": met["target_AP"], "control_AP": met["control_AP"]})
     C.write_json(work / "w23a_metrics.json", met)
     (work / "notes.md").write_text(
         f"# 非公式（{TASK_ID}） PD {TYPE_NAME[typ]} {w} {arm} seed {res['seed']}\n\n"
