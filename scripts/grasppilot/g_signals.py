@@ -416,6 +416,30 @@ def assemble_c(a):
                      "rowsum_maxdev": float(np.abs(arr.reshape(-1, 3, 16).sum(2) - 1).max())}
     if rep["provenance"]["violations"]:
         raise RuntimeError(f"交差適合の外れ: {rep['provenance']}")
+    # 案 D の train の q（交差適合）と目録（三本目へ渡す。確定の G の val の q は assemble で足す）
+    (out / "D").mkdir(parents=True, exist_ok=True)
+    parts = [R["H1_on_H2"], R["H2_on_H1"]]
+    box_ids = np.concatenate([x["box_ids"] for x in parts])
+    q = np.concatenate([x["q"] for x in parts])
+    r = np.concatenate([x["r"] for x in parts])
+    order = np.argsort(box_ids)
+    dpath = out / "D/q_CF_train.npz"
+    np.savez(dpath, ann_ids=box_ids[order], q=q[order], r=r[order], values=np.asarray(["left", "right", "both", "none"]))
+    n_ann = len(json.loads((C.DET_ANN_A / "instances_train.json").read_text())["annotations"])
+    dtrain = {"path": str(dpath), "sha256": sha(dpath), "boxes": int(len(box_ids)), "boxes_in_annotation_file": n_ann,
+              "unique": int(len(np.unique(box_ids))), "q_rowsum_range": [float(q.sum(1).min()), float(q.sum(1).max())],
+              "made_by": "交差適合（H1 の G を H2 の動画に、H2 の G を H1 の動画に）"}
+    rep["D_train"] = dtrain
+    man = {"task_id": TASK, "unofficial": True, "for": "T-2026-11-01-grasp-pilot-d（三本目、bengio）", "host": "andrew",
+           "train_q": dtrain, "val_q": None,
+           "format": {"ann_ids": "折り A の術具の注釈（data/annotations/egosurgery_tool_folds/A/instances_train.json）の annotation id、昇順",
+                      "q": "(枠, 4) の軟らかい 4 値 [左, 右, 両手, なし]（一本目の SPEC §3.3 の式に G の P_c を当てた）",
+                      "r": "(枠, 3) の r_c(b)（左・右・両手の器具の確率の枠の中の平均）"},
+           "g_runs": {"H1": {"config": a.g_run[0], "ckpt_sha256": R["H1_on_H2"]["report"]["ckpt_sha256"]},
+                      "H2": {"config": a.g_run[1], "ckpt_sha256": R["H2_on_H1"]["report"]["ckpt_sha256"]}},
+           "note": "val の q（確定の G）は確定の G の後に足す。三本目の教師の腕に要るのは train の q",
+           "code_sha256": sha(Path(__file__))}
+    C.write_json(Path(a.manifest), man)
     C.write_json(out / "assemble_c_report.json", rep)
     print(json.dumps(rep, ensure_ascii=False), flush=True)
 
@@ -447,6 +471,7 @@ def main():
     p.add_argument("--raw", required=True)
     p.add_argument("--out", required=True)
     p.add_argument("--g-run", nargs=2, metavar=("H1", "H2"), required=True, help="H1・H2 の config.json")
+    p.add_argument("--manifest", default=str(PROJ / "experiments/analysis/grasp_pilot_g/targets/D_manifest.json"))
     a = ap.parse_args()
     if a.cmd == "assemble":
         a.g_runs = dict(zip(("all", "H1", "H2"), a.g_run))

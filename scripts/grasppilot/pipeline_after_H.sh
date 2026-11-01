@@ -33,7 +33,15 @@ log "交差適合の推論 終了"
 .venv/bin/python scripts/grasppilot/g_signals.py assemble-c --raw "$S/signals/raw" --out "$S/signals" \
   --g-run "$P1/grasppilot2_G_H1_seed42/config.json" "$P1/grasppilot2_G_H2_seed42/config.json" > "$S/logs/assemble_c.log" 2>&1 \
   || { log "assemble-c 失敗"; exit 1; }
-log "案 C の train の標的 作成"
+log "案 C の train の標的と案 D の train の q 作成"
+# 案 D の目録を分岐へ push する（Task D-6。三本目はこのファイルを見て andrew から写す）
+for i in $(seq 1 60); do git add experiments/analysis/grasp_pilot_g/targets/D_manifest.json && git commit -q -m "feat(grasppilot): 案 D の train の標的（交差適合の q）の目録を置く
+
+非公式（T-2026-11-01-grasp-pilot-g）Task D-6。三本目（T-2026-11-01-grasp-pilot-d、bengio）へ渡す。
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01Cv1YxnSzNtByYThFEJdQ1f" && break; sleep 0.5; done
+for i in 1 2 3 4 5; do git push -q origin feat/grasp-pilot-g && { log "案 D の目録を push $(git rev-parse --short HEAD)"; break; }; sleep 30; done
 for ARM in teacher shuffled; do
   G=$(wait_gpu 31000)
   nohup bash scripts/grasppilot/run_c.sh "$ARM" "$G" "$S/signals/C/t_${ARM}_train.npz" > "$S/logs/run_C_$ARM.out" 2>&1 &
