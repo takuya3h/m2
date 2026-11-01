@@ -317,3 +317,12 @@ task-start の前の分類器で全区分 0 件。task-start の後に在る無�
 - `grasppilot2_C_shuffled_seed42` は rc 0。fine-tune 21 epoch（最後の val accuracy 0.8502）、時間ヘッドの最後の状態で Jaccard 0.682773・accuracy 0.879208（動画 09 0.9693、10 0.6337）
 - `teacher_switch.sh` が 16:21 に教師の腕（GPU 0 で一時停止、epoch 1 まで）を止めて `$S/aborted/try1_C_teacher/` へ移し、GPU 1 で最初から起こし直した（同じ標的・同じ処方）
 - 確定の G は epoch 11 で最良を更新（0.5396）。打ち切りは早くても epoch 15 の後（19:00 頃）
+
+### 確定の G の打ち切りと、確定の G の後の自動化（2026-11-01 19:17〜19:56 JST）
+
+- 確定の G は 19:17 に打ち切り（最良 epoch 11: segm mAP 0.5396・把持関係 5 クラス 0.6278、epoch 12〜15 は更新なし）
+- `pipeline_after_G.sh`: val（1,515）と train（5,242 + 4,415、`merge`）の推論（GPU 0、0.28 秒/フレーム）→ `assemble`（19:42）。
+  交差適合の外れ 0 件 / 9,657、陽性対照（確定の G で作った train の信号を 5 フレーム混ぜた写し）で外れ 5 件、val の出所の外れ 0 件。
+  案 D の目録に val の q を足して push（1f672646）。案 C の標的と案 D の train の q は書き直さず中身の一致を確かめた
+- 案 B の予測の四腕は、起動の時点で空きの大きい GPU 0 に 4 本とも載り（各 0.5〜1.0 it/s）、終わりが 2 時頃になる見込みだった。
+  始めたばかりの gtpred_CF・shuffle（数分ぶん）を止めて `$S/aborted/try1_B2/` へ移し、GPU 1 で起こし直した（19:56。GPU 1 は案 C の教師の腕と同居）
