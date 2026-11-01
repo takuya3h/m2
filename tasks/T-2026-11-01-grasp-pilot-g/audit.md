@@ -246,3 +246,9 @@ task-start の前の分類器で全区分 0 件。task-start の後に在る無�
 - `scripts/grasppilot/pipeline_after_H.sh` を背景で起こした。H1・H2 の exit_code が 0 になったら、空き記憶で GPU を選び、
   交差適合の推論（H1 の G → H2 の動画、H2 の G → H1 の動画）→ `g_signals.py assemble-c`（案 C の train の標的と入れ替え、交差適合の外れがあれば止まる）→
   案 C の教師・入れ替えた教師の腕（空き 31 GB 以上の GPU に一本ずつ）。記録は `$S/logs/pipeline_after_H.log`
+
+### 案 D の目録の前倒し（2026-11-01 09:48 JST、利用者の問い「bengio で案 D の教師の 2 腕を始めるのに必要な二本目の標的」）
+
+- 三本目（案 D の教師の腕）に要るのは train の q（交差適合 = H1 の G → H2 の動画、H2 の G → H1 の動画）だけで、確定の G を要らない
+- `g_signals.py assemble-c` が `$S/signals/D/q_CF_train.npz` と `experiments/analysis/grasp_pilot_g/targets/D_manifest.json`（val_q は null）も書くように直し、
+  `pipeline_after_H.sh` が目録を commit して分岐へ push するようにした。待っていた古い版の台本（PID 610111、待ちの段）を止め、新しい版を 09:48 に起こした
