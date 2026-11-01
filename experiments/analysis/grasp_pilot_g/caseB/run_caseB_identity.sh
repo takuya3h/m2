@@ -14,7 +14,7 @@ cd "$M"
 source "$M/.venv-relation-detr/bin/activate"
 export CUDA_HOME=/usr/local/cuda EGO_BODY=$M EGO_ROOT=$M/data/raw/ego EGO_ANN_DIR=$M/data/annotations/egosurgery_tool_folds/A
 export PYTHONPATH=src:scripts PYTHONDONTWRITEBYTECODE=1 CUDA_VISIBLE_DEVICES=$GPU
-D5=configs/stage2pilot/pd_graspmap_d5.py; P5=configs/stage2pilot/pd_graspmap_pred5.py; D10=configs/stage2pilot/pd_graspmap_d10.py
+D5=$M/configs/stage2pilot/pd_graspmap_d5.py; P5=$M/configs/stage2pilot/pd_graspmap_pred5.py; D10=$M/configs/stage2pilot/pd_graspmap_d10.py
 run() { name=$1; shift; [ -s "$R/identity_$name.json" ] && { echo "$name skip（既にある）"; return; }; python scripts/grasppilot/pd_grasp_eval.py "$@" --ref-preds "$REF" --out "$R/identity_$name.json" > "$R/identity_$name.log" 2>&1; echo "$name rc=$?"; }
 run empty        --mode zero --cfg $D5 --trainable-check
 run gt           --mode gt   --cfg $D5
