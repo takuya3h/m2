@@ -287,3 +287,11 @@ task-start の前の分類器で全区分 0 件。task-start の後に在る無�
 - Draft の PR #274（base phase0）を開いた（SPEC Task D-6 が許す）
 - 正解との比べ（H1 の G → H2 の動画、注釈のある 5,443 フレーム）: g の二値の ROC-AUC L_hand 0.774・L_grasp 0.712・R_hand 0.729・R_grasp 0.675・B_present 0.746、
   m の IoU tool_L 0.297・tool_R 0.274・tool_B 0.035・hand_L 0.527・hand_R 0.460（`experiments/analysis/grasp_pilot_g/signals/d2_compare_H1_on_H2_train.json`）
+
+### 案 C の教師の腕の一時停止（2026-11-01 12:17 JST、終了時刻を早めるため）
+
+- 確定の G は 11:48 に再開したが、GPU 0 で案 C の教師の腕（工程塔 29 GB）と同居して一歩約 1.6 秒になり、確定の G → 信号 → 案 B の予測の 4 腕の道が全体を決めるようになった
+  （見積もり: このままでは確定の G の終わり 15:20 頃・全体 21:20 頃。最良を更新しない場合）
+- 案 C の教師の腕（PID 644470 と worker 4 本、epoch 1 を終えたところ）を SIGSTOP で一時停止した。`$S/logs/resume_teacher_after_G.sh` が、確定の G の
+  exit_code.txt が出るか学習のプロセスが消えたら SIGCONT で再開する（見積もり: 確定の G 13:30 頃、全体 20:30 頃）。処方と長さは変えていない
+- 案 C の入れ替えた教師の腕は GPU 1 で続けている（GPU 0 の確定の G に影響しない）
