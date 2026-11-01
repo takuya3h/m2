@@ -311,3 +311,9 @@ task-start の前の分類器で全区分 0 件。task-start の後に在る無�
 - 入れ替えた教師の腕は GPU 1 で 16:20 頃に終わる。`$S/logs/teacher_switch.sh` を置いた: 入れ替えた教師の腕が先に終われば、教師の腕（epoch 1 まで、約 18 分ぶん）を止めて出力を
   `$S/aborted/try1_C_teacher/` へ移し、GPU 1 で最初から起こし直す（見込み 20:30 頃に終わる）。確定の G が先に終われば GPU 0 で再開する
 - 古い再開の見張り（resume_teacher_after_G.sh）は止めた
+
+### 案 C の入れ替えた教師の腕の終わりと教師の腕の起こし直し（2026-11-01 16:21 JST）
+
+- `grasppilot2_C_shuffled_seed42` は rc 0。fine-tune 21 epoch（最後の val accuracy 0.8502）、時間ヘッドの最後の状態で Jaccard 0.682773・accuracy 0.879208（動画 09 0.9693、10 0.6337）
+- `teacher_switch.sh` が 16:21 に教師の腕（GPU 0 で一時停止、epoch 1 まで）を止めて `$S/aborted/try1_C_teacher/` へ移し、GPU 1 で最初から起こし直した（同じ標的・同じ処方）
+- 確定の G は epoch 11 で最良を更新（0.5396）。打ち切りは早くても epoch 15 の後（19:00 頃）
