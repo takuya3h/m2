@@ -295,3 +295,11 @@ task-start の前の分類器で全区分 0 件。task-start の後に在る無�
 - 案 C の教師の腕（PID 644470 と worker 4 本、epoch 1 を終えたところ）を SIGSTOP で一時停止した。`$S/logs/resume_teacher_after_G.sh` が、確定の G の
   exit_code.txt が出るか学習のプロセスが消えたら SIGCONT で再開する（見積もり: 確定の G 13:30 頃、全体 20:30 頃）。処方と長さは変えていない
 - 案 C の入れ替えた教師の腕は GPU 1 で続けている（GPU 0 の確定の G に影響しない）
+
+### 案 B の空・正解の腕の終わりと、確定の G の後の自動化（2026-11-01 12:40 JST）
+
+- `grasppilot2_B_{empty,gt}_ep4_seed42` は rc 0。4 epoch 目の val mAP は空 0.7273（塔単独と同値）、正解 0.7364（一本目は 0.7366077。bf16 の非決定性による差とみる。詳しくは集計で）
+- 確定の G は epoch 6 で最良を更新した（0.5332）ため、打ち切りは早くても epoch 10 の後。案 C の教師の腕の一時停止は続ける（再開すると確定の G が約 3 倍遅くなる）
+- `scripts/grasppilot/pipeline_after_G.sh` を背景で起こした: 確定の G の終わり → val と train の推論（train は 2 つに分けて `g_signals.py merge`）→ `assemble`
+  （既にある案 C の標的・案 D の q・目録の train は書き直さず中身の一致を比べ、目録に val の q を足して push）→ 案 B の予測の四腕 → 案 A の六腕と恒等性 →
+  正解との比べ → 案 B の恒等性 → 案 C の補助の頭の val。記録は `$S/logs/pipeline_after_G.log`
