@@ -29,6 +29,8 @@
 ［予測の半分 15 = g の 14 と旗｜正解の半分 15 = g の 14 と旗］。旗は信号のファイルの flag（注釈のあるフレームで 1）:
     GA concat（D1 と同じ界面、入力 30 次元）。腕は空と正解だけ（予測の半分は二本目の契約）
     --grasp-signal-dir   g_{train,val}.npz の置き場（GA のときだけ要る。既定は無い）
+    --grasp-pred-dir     G の予測の g の置き場（契約 T-2026-11-01-grasp-pilot-g で足した。GA の予測の腕のときだけ要る）
+                         g_pred_noCF_{part}.npz・g_pred_CF_{part}.npz・g_shuffle_{part}.npz（frame_ids、x (N, 14)、flag）
 GA は epoch ごとの界面の重みの絶対値の最大と L2 ノルムを logs/history.json に書く。
 """
 from __future__ import annotations
@@ -70,6 +72,7 @@ TYPES = {
 }
 G30_HALF = 14 + 1                                          # g の 14 と旗。予測の半分が先、正解の半分が後
 GRASP_DIR = None                                           # --grasp-signal-dir（GA のときだけ）
+GRASP_PRED_DIR = None                                      # --grasp-pred-dir（GA の予測の腕のときだけ）
 X32_HALF = NT + 1                                          # 15 と旗。予測の半分が先、正解の半分が後
 ARMS = ("empty", "pred_noCF", "gt", "pred_CF", "gtpred_CF", "shuffle")
 # 止め方の規則（DP・W1）。最初の腕を回す前に固定する
@@ -86,11 +89,17 @@ def sources(type_name, arm, part, variant):
     if kind == "g30":
         if arm == "empty":
             return []
+        out = []
+        if arm in ("gt", "gtpred_CF"):
+            if GRASP_DIR is None:
+                raise SystemExit("GA は --grasp-signal-dir を渡す")
+            out.append((Path(GRASP_DIR) / f"g_{part}.npz", True))
         if arm != "gt":
-            raise ValueError(f"{type_name} の腕は空と正解だけ（予測の腕は二本目の契約）")
-        if GRASP_DIR is None:
-            raise SystemExit("GA は --grasp-signal-dir を渡す")
-        return [(Path(GRASP_DIR) / f"g_{part}.npz", True)]
+            if GRASP_PRED_DIR is None:
+                raise SystemExit("GA の予測の腕は --grasp-pred-dir を渡す")
+            name = {"pred_noCF": "pred_noCF", "pred_CF": "pred_CF", "gtpred_CF": "pred_CF", "shuffle": "shuffle"}[arm]
+            out.append((Path(GRASP_PRED_DIR) / f"g_{name}_{part}.npz", False))
+        return out
     pred = inst_name(pred, variant)
     final_pred = (FINAL / f"{pred}_{part}.npz", False)
     pred_src = (CF / f"{pred}_train.npz", False) if (part == "train" and arm.endswith("_CF")) else final_pred
@@ -348,7 +357,7 @@ def cmd_train(a):
            "iface_params": int(sum(p.numel() for p in params))}
     if sig_tr.kind == "g30":
         cfg.update(x_layout={"train": sig_tr.layout_g30(), "val": sig_va.layout_g30()}, trainable=trainable_report(model),
-                   grasp_signal_dir=str(GRASP_DIR))
+                   grasp_signal_dir=str(GRASP_DIR), grasp_pred_dir=str(GRASP_PRED_DIR))
     if sig_tr.kind == "x32":
         cfg.update(x_layout={"train": sig_tr.layout(), "val": sig_va.layout()}, trainable=trainable_report(model))
     desc = f"{a.type}_{a.arm}" + (f"_ep{fixed}" if fixed else "") + ("_smoke" if a.max_epochs or a.smoke else "")
@@ -469,6 +478,7 @@ def main():
     i.add_argument("--arm", choices=ARMS, default=None, help="一つの腕だけを調べる（既定は予測-noCF と正解）")
     i.add_argument("--task-id", default=C.TASK_ID, help="記録に書く契約の識別子")
     i.add_argument("--grasp-signal-dir", default=None, help="GA の g_{train,val}.npz の置き場")
+    i.add_argument("--grasp-pred-dir", default=None, help="GA の予測の g の置き場")
     t = sub.add_parser("train")
     t.add_argument("--type", required=True, choices=list(TYPES))
     t.add_argument("--arm", required=True, choices=ARMS)
@@ -481,9 +491,11 @@ def main():
     t.add_argument("--exp-prefix", default="stage2pilot_dp", help="実験フォルダの名前の接頭辞")
     t.add_argument("--smoke", action="store_true", help="--fixed-epochs の短い試走の印")
     t.add_argument("--grasp-signal-dir", default=None, help="GA の g_{train,val}.npz の置き場")
+    t.add_argument("--grasp-pred-dir", default=None, help="GA の予測の g の置き場")
     a = ap.parse_args()
-    global GRASP_DIR
+    global GRASP_DIR, GRASP_PRED_DIR
     GRASP_DIR = a.grasp_signal_dir
+    GRASP_PRED_DIR = a.grasp_pred_dir
     if a.cmd == "train" and a.fixed_epochs and a.max_epochs:
         raise SystemExit("--fixed-epochs と --max-epochs は組み合わせない")
     if a.cmd == "train" and a.smoke and not a.fixed_epochs:

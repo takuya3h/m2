@@ -23,9 +23,12 @@ N_CHANNELS = 5
 
 
 class RelationDETRGraspMap(RelationDETR):
-    def __init__(self, *args, c5_dim: int = 2048, n_channels: int = N_CHANNELS, **kwargs) -> None:
+    def __init__(self, *args, c5_dim: int = 2048, n_channels: int = N_CHANNELS, channel_scale=None, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.phase_iface = nn.Conv2d(n_channels, c5_dim, 1, bias=False)
+        # 契約 T-2026-11-01-grasp-pilot-g: チャネルごとに値へ掛ける尺度（予測の地図の 0〜255 を 0〜1 へ戻す）。None なら掛けない（従来）
+        self.channel_scale = None if channel_scale is None else [float(x) for x in channel_scale]
+        assert self.channel_scale is None or len(self.channel_scale) == n_channels
         nn.init.zeros_(self.phase_iface.weight)
         self._grasp_maps = None
         self.last_reduced = None                 # 直前の R(T(m))（検査用。学習には使わない）
@@ -50,6 +53,8 @@ class RelationDETRGraspMap(RelationDETR):
             if tuple(m.shape[-2:]) != (int(h), int(w)):
                 m = NF.interpolate(m, size=(int(h), int(w)), mode="nearest")
             canvas[i, :, :h, :w] = m[0]
+        if self.channel_scale is not None:
+            canvas = canvas * torch.tensor(self.channel_scale, device=dev, dtype=torch.float32)[None, :, None, None]
         return NF.adaptive_avg_pool2d(canvas, c5_hw)
 
     def get_multi_levels(self, images, mask):

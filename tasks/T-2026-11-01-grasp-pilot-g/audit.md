@@ -1,0 +1,416 @@
+# audit — T-2026-11-01-grasp-pilot-g（非公式の測定）
+
+時刻は JST。ホストは andrew。版管理の外の置き場は
+`S=/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g`。
+
+## 0. 始める（手順書の 0〜4）
+
+- 開始時の分岐は `feat/grasp-pilot-probe`（清浄）。`feat/grasp-pilot-g` は手元にも遠隔にも無く、契約の履歴も `.sync-pause` も無かった
+- `python3 scripts/task_start_classify.py` → 全区分 0 件、`[task-start] 分類: 通す`（比較先 origin/phase0 ebc35d7b）
+- `make task-start` → `分岐を作成: feat/grasp-pilot-g（起点 origin/phase0）`、**`.sync-pause を作成`**（この契約が置いた目印）、`完了。`
+- `make task-validate` → `OK`、exit 0
+- `make task-preflight` → 7 PASS / 0 WARN / 7 SKIP / 0 FAIL、exit 0。SKIP: P2 cuda_ext_loaded・P3 deterministic_flags（契約に記載なし）、
+  P4 prereg_committed・P5 frozen_source_hash・P13・P14（kind=analysis で対象外）、P12 refs_resolved（解決前提の参照なし）。P9 spec_lint は該当なし
+
+## Task A — 開始状態（G1）
+
+### A-1 分岐と起点、PR 272
+
+    $ git branch --show-current; git rev-parse HEAD origin/phase0; git merge-base HEAD origin/phase0
+    feat/grasp-pilot-g
+    ebc35d7b67d85983d31af087a08a4c2968950fad（3 つとも同じ）
+    $ gh pr view 272 --json state,mergedAt,mergeCommit
+    MERGED 2026-10-31T15:57:36Z、merge commit c942fd13
+    $ git merge-base --is-ancestor 3eb81227 origin/phase0   → 真（一本目の分岐の先頭が起点の祖先）
+    $ git ls-tree --name-only origin/phase0 scripts/grasppilot/ | wc -l   → 17
+    $ git ls-tree --name-only origin/phase0 tasks/T-2026-10-31-grasp-pilot-probe/  → RESULT.md SPEC.md audit.md result.yaml spec.yaml
+
+### A-2 開始前から在る未追跡
+
+task-start の前の分類器で全区分 0 件。task-start の後に在る無視されていない未追跡は、取り込んだ契約の 2 本だけ
+（`tasks/T-2026-11-01-grasp-pilot-g/SPEC.md`、`spec.yaml`）。消していない
+
+### A-3 compute プロセス（`$S/start/a3_procs.txt`、道具 `scripts/grasppilot/proc_enum.py`）
+
+    $ python3 scripts/grasppilot/proc_enum.py
+    n_processes 39、gpu_pids []、n_compute 0
+    $ python3 scripts/grasppilot/proc_enum.py --match-exe /usr/bin/zsh            → count 5（自分のシェルの親を含む）
+    $ python3 scripts/grasppilot/proc_enum.py --match-exe /nonexistent/bin/python9 → count 0
+    $ ps -eo pid,user,comm,args で comm が python・torchrun で始まるもの（道具自身を除く）→ 0 件
+    $ nvidia-smi --query-compute-apps → 0 件
+
+**本契約以外の compute プロセスは 0 件**
+
+### A-4 記憶領域（`$S/start/a4_df.txt`）
+
+    $ df -B1 /home/ubuntu/slocal2
+    /dev/sdc1  7937302376448  5859693723648  1677513785344  78%
+
+空き 1,677,513,785,344 B。見積もり（上限側）: 38 クラスの注釈 ≤ 2 GB、G の重み 3 本 × （最良と最後）≤ 3 GB、
+信号と標的 ≤ 10 GB、工程塔の重み 3 本 ≤ 1 GB と特徴 3 組 ≤ 1 GB、案 B の界面の重み ≤ 1 GB、予測と記録 ≤ 10 GB。合計 ≤ 28 GB（空きの 1.7%）。足りる
+
+### A-5 試験と仮想環境（`$S/start/a5_pytest_start.txt`・`a5_pkgs_*.txt`）
+
+    $ CUDA_VISIBLE_DEVICES="" PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider -rfE --continue-on-collection-errors
+    6 failed, 975 passed, 5 skipped, 26 warnings in 27.73s
+
+失敗の名前（一本目の開始時・終了時と同じ 6 件）:
+
+    tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics
+    tests/test_fetch_task.py::test_rejects_unknown_file_name
+    tests/test_research_logger.py::test_log_run_idempotent
+    tests/test_research_logger.py::test_run_logging_invokes_log_run_on_finally
+    tests/test_research_logger.py::test_run_logging_no_double_post_on_normal_exit
+    tests/test_research_logger.py::test_run_logging_swallows_exception_in_user_block
+
+    $ uv pip list --python <venv>/bin/python --format freeze | sha256sum
+    .venv                 108 行  9c7be5c99d6b768ab3cfa5a0c2f479520b7486cffbd866de0f3759a6682f94c0
+    .venv-relation-detr    72 行  a74c9c787e79f01405b27797cf5fa9b3ff3f3858caf65e641bec1a86dad5b090
+    （どちらも一本目の値と一致）
+
+### A-6 GPU（`$S/start/a6_gpu_power.csv`）
+
+| GPU | 型 | 電力の上限 | 既定の上限 | 最大の上限 | 記憶 |
+|---|---|---:|---:|---:|---:|
+| 0 | NVIDIA RTX A6000 | 300.00 W | 300.00 W | 300.00 W | 49,140 MiB |
+| 1 | NVIDIA RTX A6000 | 300.00 W | 300.00 W | 300.00 W | 49,140 MiB |
+
+### A-7 起票時の値
+
+    $ git log -1 --format=%H -- context/conventions.md → 2d946b07a57abebc4a8f66150d6dbaf2ccd22186（contract.conventions_rev と一致）
+    $ git log -1 --format=%H -- runindex/              → 68befc3b62ffc071077cca446df5d3c83b8c38b9（created_from.runindex_commit と一致）
+    行数（見出しを除く）: index 2363、experiments 1130、verdicts 1736（created_from.counts と一致）
+
+差し替えは無い。`meta.amendments` は空のまま
+
+### G1 の判定
+
+分岐 `feat/grasp-pilot-g`、起点 origin/phase0 ebc35d7b に PR 272 の内容が在り、本契約以外の compute プロセス 0 件、
+空き・失敗の名前・仮想環境の要約値・電力の上限を記録した。**通過。**
+
+## Task B — C3 の直し（G2）
+
+### B-1 直したところ（`scripts/audit_l0_hts_acceptance.py`。直す前の写しは `$S/b/audit_l0_hts_acceptance.orig.py`、sha256 06ba1b2d…0899 → bbd23ef3…805a）
+
+- **C3 の定義（§3.1）**: 左辺は raw 02_hand の注釈の `file_name` から導く区間の集合（手注釈が 1 件以上ある区間）、右辺は候補の注釈の `file_name` から導く区間の集合。
+  両辺とも区間の名前で比べる（旧版の左辺はディレクトリ名 26 件で、`03_3` が構成上いつも欠けた＝欠陥 2）。
+  合格は「左辺が 25 件で `03_3` を含まず、右辺に欠けが無く、集合件数が 57,172」。判定の鍵は `C3_hand_coverage_57172`（旧 `C3_hand_total_57173`）
+- **集合件数の鍵は (フレーム名, 枠を小数 2 桁に丸めたもの, クラス)**。前回の数え（`experiments/analysis/hts_candidate_acceptance/hand_count.py` の `set_by_frame_bbox_cat`）と同じ鍵。
+  **重複の 1 件（`05_1_0575.jpg`、cat 4、bbox (0, 6, 940, 1066)、`hand_seg/test.json` の ann 5889・5890、正本の ann 1519・1520）はマスクが同一ではない**:
+  RLE の sha256 は 4366db94… と 735dcfdb…、面積は 542,293 と 542,541。マスクまで鍵に入れると集合件数は 57,173 になり、57,172 にならない
+- **欠陥 1**: `_splits()` は指定の split のファイルが一つでも無ければ `FileNotFoundError` で止まる（旧版は黙って飛ばし、0 件として通した）。raw 02_hand の JSON が一つも無いときも止まる
+- **欠陥 3**: C1 の `seg_profile` は全件を見る（旧版は先頭 3,000 件）
+- 入力と出力の引数を足した（`--hand-dir`・`--hand-prefix`・`--hand-splits`・`--toolhand-dir`・`--toolhand-prefix`・`--out`）。**渡さなければ入力と出力は従来の経路**
+  （既定の出力は従来どおり `experiments/audit/l0_hts_acceptance/acceptance_report.json`。本契約は `--out` で本契約の出力先へ書いた）
+
+### B-3 受け入れの測り直し（`experiments/analysis/grasp_pilot_g/c3/run_c3.sh` → `acceptance_report.json`、sha256 97f3195e…2d34）
+
+    $ bash experiments/analysis/grasp_pilot_g/c3/run_c3.sh     （4.0 秒、rc 0）
+    主判定(C1/C2/C3/C4): ALL PASS ✓   verdict: ACCEPTED
+    C3: 手 集合 57172（単純加算 57173）/ 目標 57172 / 手注釈のある区間 25 / 欠落 []
+
+候補: 手 = `egosurgery_hts/hand_seg/{train,val,test,extra}.json`、把持関係 = `egosurgery_hts/hand_tool_seg/{train,val,test}.json`
+
+| 基準 | 結果 | 実測 |
+|---|---|---|
+| C1 真マスク | ✓ | 把持関係 train 32,408 件すべて RLE（全件を見た。profiled 32,408 = 注釈 32,408）。raw 04 5cls RLE 21,949、master は polygon 7,507（4 頂点） |
+| C2 値 5 | ✓ | `hand_tool_seg` train の cat 5 = Two Hands Tool、952 件。raw 04 の cat 5 は 399 件 |
+| C3 被覆と件数 | ✓ | 手注釈のある区間 25（`03_3` を含まない。raw のディレクトリは 26）、欠けなし。集合 57,172・単純加算 57,173、raw 02_hand は単純加算 57,173・集合 57,172 |
+| C4 リーク | ✓ | train・val・test のフレームと動画の共有 0（extra は検査器の対象の組に入らない） |
+| C5 公式 split | ✗（主判定でない） | 9,627 / 1,515 / 4,255（公式 9,657 / 1,515 / 4,265。前回と同じく手注釈 0 件のフレーム 40 枚の差） |
+| C6 | 報告 | 工程の区間 43、HTS の区間 25、共存 22 |
+
+- 既存の `experiments/audit/l0_hts_acceptance/acceptance_report.json` の sha256 は前後で d9ac7ced…7126 のまま（上書きしていない）
+- この検査は 25 区間（test の動画 04・05・07 を含む）の手の注釈の**件数と区間名だけ**を読む。G の学習・信号の作成・腕の学習・評価の経路ではない（§7-1 の対象外。test のフレームの画像は開いていない）
+
+### B-2 対照（`experiments/analysis/grasp_pilot_g/c3/c3_controls.py` → `c3_controls.json`。判定の関数を import して呼び、`main()` を呼ばない。写しは `$S/b/controls/`）
+
+| 入力 | 期待 | 実測 |
+|---|---|---|
+| そのまま | 合格 | pass、区間 25、集合 57,172 |
+| raw 02_hand の写しの `03_3` に手を 1 件足す（03_3 を被覆の対象に戻す） | 不合格 | pass false（coverage false、区間 26、欠け `['03_3']`） |
+| 候補の val の注釈を 1 件除いた写し（ann id 0） | 不合格 | pass false（count false、集合 57,171） |
+| 候補の `extra.json` を隠した写し | 止まる | `FileNotFoundError: 入力が無い: <work>/hand_hidden_extra/extra.json` |
+| 候補の `val.json` を隠した写し | 止まる | `FileNotFoundError`（**直す前の版は止まらず手 41,402 件を返した**＝欠陥 1 の再現） |
+| 直す前の版の C3 を候補（train・val・test）に当てる | 構成上落ちる | pass false、欠け `['03_1','03_3','12_2','15_2']`（ディレクトリ 26 対 区間 22）＝欠陥 2 の再現 |
+
+### G2 の判定
+
+直した C3 が §3.1 の定義（25 区間の被覆、集合件数 57,172）で判定し、三つの対照で不合格か停止になり、欠陥 1・3 が直り、
+受け入れを測り直した結果（主判定 ALL PASS）を本契約の出力先に記録した。**通過。**
+
+## Task C — G の学習
+
+### C-1 38 クラスの注釈（`scripts/grasppilot/g38_build.py` → `$S/g/ann/g38_{train,val}.json`、要約 `experiments/analysis/grasp_pilot_g/g/g38_summary.json`）
+
+    $ PYTHONPATH=src .venv/bin/python scripts/grasppilot/g38_build.py --out $S/g/ann --check-frames 8     （3.4 秒）
+    train 9657 9269 72113 {'01': 912, '02': 460, '03': 1051, '06': 1335, '08': 1268, '11': 745, '12': 484, '13': 806, '14': 1798, '15': 410} True
+    val   1515 1511 11314 {'09': 518, '10': 993} True
+
+- 38 クラス = 把持関係 5（hand_tool_seg 1〜5 → 1〜5）＋ 他者の手 2（hand_seg 3・4 → 6・7）＋ 術具 31（tool_seg 1〜31 → 8〜38）。名前は `grasp:`・`hand:`・`tool:` を前置き
+- 学ぶフレーム = 三種の注釈がそろうフレーム（一本目の E-2 の組み合わせ 111 と同じ定義）: train 9,269・val 1,511（一本目の値と一致）。
+  H1 = {01,06,11,12,15} は 3,886 枚、H2 = {02,03,08,13,14} は 5,383 枚
+- sha256: g38_train.json 3485bb69bcc6e2f3…、g38_val.json d985397786d6d8d4…
+- クラスごとのインスタンス数とフレーム数は要約にある。train で 0 件のクラスは 9 個（Chisel、Drill、Hammer、Malleable Retractor、Mouth Gag、Ruler、Screwdriver、
+  Suture・Suture Needle、Trephine）、val で 0 件は 17 個。**COCO の評価の平均は val に正解のあるクラス（21 個）にわたる**
+- 一度目の要約はクラスごとのフレーム数の数え方を誤り（集合の要素の組を数えた）、全クラス 0 と書いた。直して `$S/g/ann_rebuild` に組み直し、
+  注釈の JSON の sha256 が train・val とも同じであることを確かめて、要約だけを差し替えた。G の 3 本が記録した `g38_build.py` の sha256 は直す前の版のもの
+
+### C-2 戻しの照合
+
+組んだ注釈から三種のマスクを戻し、元の注釈と画素で比べた（train・val 各 8 フレーム、seed 42 で選ぶ。hand_seg の 1・2 は把持関係の 1・2 から戻す）。
+16 フレームすべてで三種とも一致（`g38_summary.json` の `check`）。人工の入力の試験 `tests/test_grasppilot_g.py`（4 件 pass）
+
+### C-3 処方（`scripts/grasppilot/g_train.py`、起動 `scripts/grasppilot/run_g.sh`）
+
+- mmdet 3.3.0 の Mask2Former R50（`mask2former_r50_8xb2-lsj-50e_coco.py`）。重みは一本目の保存先の `e/weights/mmdet/…-41b088b6.pth`（sha256 が 41b088b62838c986 で始まることを照合）。
+  **610 個のうち 608 個を読んだ**。読まなかったのはクラス数で形が変わる `panoptic_head.cls_embed.{weight,bias}` の 2 個
+- 入力: 短辺 800・長辺 1333 まで（PIL の双線形）、学習は左右反転 0.5、batch 2、LSJ の 1024 への詰め物（batch_augments）を外す（一本目の計測と同じ）。マスクは最近傍で縮める
+- 最適化: 設定の optim_wrapper のまま（AdamW lr 1e-4・wd 0.05・eps 1e-8、backbone の lr ×0.1、query_embed・query_feat・level_embed と norm の減衰 0、勾配の L2 の切り 0.01）。
+  学習率の予定は一定（設定の MultiStepLR の節目 327,778 歩は本契約の長さに届かない）で、収束規則だけが下げる
+- 収束規則: epoch ごとに val の 38 クラスの mask mAP（pycocotools の segm、元の解像度 1080×1920、上位 100、`ev.stats[0]`）。
+  **改善の判定は `scripts/stage1_ptower_r3.py` の `plateau_action` を import して使う**（改善 = 最良の値を厳密に上回る。4 epoch 停滞で学習率 × 0.1、再び 4 epoch で打ち切り、上限 36）。
+  最良の epoch の重みを `$S/g/ckpt/<run>/best.pth` に置く。把持関係 5 クラスの mask mAP は同じ評価のクラス別 AP（IoU 0.5:0.95 の平均）の 5 個の平均
+- 数値精度は fp32。**fp16 の自動混合精度を試走で試したら 40 歩目で損失が非数になった**（`$S/smoke/G_fp16.log`）。fp32 の試走は 60 歩・val 20 枚で通った（一歩 0.53 秒、最大確保 10.3 GB）
+- 3 本で同じ処方。学ぶ動画だけが違う（all = train 10 動画、H1、H2）。val は 3 本とも折り A の val（1,511 枚）
+- W&B: `egosurgery.utils.tracking` の init・log・finish を配線した（group grasppilot2_G）
+
+### C-3 起動（2026-11-01 01:22 JST）
+
+- GPU 0: `experiments/phase1/grasppilot2_G_all_seed42`（確定の G）
+- GPU 1: `grasppilot2_G_H1_seed42`、終われば続けて `grasppilot2_G_H2_seed42`。GPU 1 には案 C の補助損失なしの腕（01:31 起動、最大確保 29.0 GB）を並べた
+  （G 1 本 10.3 GB ＋ 工程塔 29.0 GB ≒ 39 GB < 48 GB。確定の G は信号と腕の全部の前にあるため GPU 0 に単独で置いた）
+- 学習前の val（確定の G）: segm mAP 0.0004、把持関係 5 クラス 0.0015（頭は乱数）
+
+## Task F — 案 C の 3 腕（準備）
+
+### F-1 補助の頭（`scripts/grasppilot/ptower_aux.py`、起動 `scripts/grasppilot/run_c.sh`）
+
+- 記録の工程塔（`STORE/efros_ptower` の stage1_ptower_20_005・008・009。`scripts/stage1_ptower_20.py` の P15 = 三周目の関数）と同じ部品を呼ぶ派生。
+  `stage1_ptower_r3.py`・`stage1_ptower.py`・third_party は変えていない
+- 頭: GAP の特徴（2048）→ 48 の線形。手ごとの 16 値の softmax と t の交差エントロピーを 3 つの手で平均。損失 = 工程の交差エントロピー + w × 補助損失
+  （G を教師・入れ替えた教師 w = 0.3、補助損失なし w = 0 で標的は一様 1/16。頭は 3 腕とも置き、最適化の対象に入れる）
+- 長さ: 記録の `finetune_history.json` は 21 epoch 回し、17 epoch 目の検証の後に学習率を下げた（18 epoch 目から 1e-5）。
+  本契約は止めずに 21 epoch 回し、17 epoch 目の後に × 0.1（`ft_lr_decay`）。最後の状態を使う。選ばない
+- 処方は記録の config.yaml を読む（batch 16 × accum 4、AdamW lr 1e-4・wd 1e-4、単精度、短辺 800、反転、stem 凍結、COCO の初期化）
+- 特徴の取り出しは折り A の train と val の 11,172 フレームだけ（記録は全動画 15,437 フレーム）。時間ヘッドは記録の 009 の config.yaml の処方
+  （TeCNO C、8 層、平滑化 0.3、lr 5e-4・wd 0.01、warmup 2、cosine の T_max = 50 − 2）で 18 epoch、最後の状態。test のマニフェストは開かない
+
+### F-1 重み 0 の経路と頭の無い経路（`experiments/analysis/grasp_pilot_g/caseC/f1_aux0_check.json`）
+
+    $ CUDA_VISIBLE_DEVICES=1 .venv/bin/python scripts/grasppilot/ptower_aux.py check --steps 4 --out …/f1_aux0_check.json
+    plain losses [2.148359537124634, 1.9859226942062378, 1.7949228286743164, 1.612847089767456]
+    aux0  losses [2.148359537124634, 1.9859226942062378, 1.7949228286743164, 1.612847089767456]
+    max_abs_loss_diff 0.0、layer4 の和の差 0.0、fc の和の差 0.0
+
+同じ初期化・同じ 4 batch（batch 4、反転なし）で、頭の無い経路（`model(images)` の交差エントロピー）と重み 0 の経路の損失と 4 歩の更新の後の重みがビットで一致
+
+### F-3 時間ヘッドの経路の確かめ（`experiments/analysis/grasp_pilot_g/caseC/head_on_record_features.json`）
+
+記録の特徴（`PT_CACHE`、一本目と同じ）の train・val の行に本契約の `head` を当てた（試走の置き場 `$S/smoke/head_record_features`）。
+**epoch 8 の val は Jaccard 0.776219・accuracy 0.871287 で、記録の塔（最良 epoch 8、0.7762186・0.8712871）と一致した**。
+**epoch 18（契約の止め方の「最後の状態」）は Jaccard 0.686459・accuracy 0.879208**（動画 09 0.9692、10 0.6257）。epoch 8〜18 の Jaccard は 0.660〜0.776 で揺れる。
+案 C の 3 腕は同じ止め方なので腕の間の比べ方は揃うが、時間ヘッドの最後の状態は記録の最良の回より約 0.09 低い（§6.4 の「止め方の違い」の大きさ）
+
+### 並べ方の変更（2026-11-01 01:46 JST、利用者の指示「計算リソースすべて使ってなるべく早く終わらせて」）
+
+- GPU 0 は確定の G だけで 11 GB しか使っておらず、G の評価の間（RLE 化と COCO の評価は CPU）は GPU が空く。GPU 1 は H1 と工程塔で 39 GB
+- H1 → H2 の連鎖を起こしていた外側のシェル（PID 518336）だけを止め（H1 の run_g.sh 518338 と学習 518352 は続く）、**H2 を GPU 0 で今すぐ起動した**
+  （`experiments/phase1/grasppilot2_G_H2_seed42`、01:46）
+- **案 B の空と正解の腕の回し直し**（§3.4: 経路のコードを変えたため）を、G を要らないので GPU 0 で今すぐ起動した（`grasppilot2_B_{empty,gt}_ep4_seed42`、01:47）
+- GPU 0 に 4 本（確定の G、H2、案 B 2 本）、GPU 1 に 2 本（H1、案 C 補助損失なし）。止めたのは本契約が起こした外側のシェルだけで、他のプロセスには触れていない
+
+### G の起動し直し（2026-11-01 01:55 JST。利用者の指示「終了時間を早く出来る余地があれば改善して」）
+
+- 評価（毎 epoch、val 1,511 枚）の 1 枚 0.37 秒の大半は、元の解像度の 100 マスクの CPU の RLE 化（`mask_utils.encode`）だった
+- `g_train.py` の評価の RLE 化を GPU に移した（`rle_gpu`: 列優先の連長を GPU で数え、`frPyObjects` で圧縮）。
+  **試走の重みの val 6 枚の 600 マスクで、`mask_utils.encode` と counts・size がビットで一致**。RLE 化は 1 枚 0.318 秒 → 0.035 秒
+  （照合の台本は scratchpad。評価の値は同じ規則のまま変わらない）。commit d67875b7
+- 走っていた G の 3 本（確定 ep1 1600/4634、H1 ep1 400/1943、H2 は学習前の評価の途中）を止め、出力を `$S/aborted/try1/`（run の置き場と ckpt）へ移した（消していない）
+- 01:55 に起動し直した。GPU 0: 確定の G・H2（＋案 B の空・正解）、GPU 1: H1（＋案 C 補助損失なし）。小さい H1 を工程塔と同居で遅い GPU 1 に置いた
+- 試走で一度、新しい評価の経路を GPU 1 で回したとき学習の段で記憶が足りず落ちた（`$S/smoke/G_fp32b.log`。学習前の評価は通った）。同じ GPU の H1 と工程塔は影響を受けていない
+- 止めるときの `pkill -f` の照合の文字列が命令の行自体にも含まれ、命令を起こしたシェルも止まった（G の 3 本のほかに止まったものは無いことを確かめた）
+
+### 案 B の空・正解の腕の移し替え（2026-11-01 02:56 JST、終了時刻を早めるため）
+
+- GPU 0 に 4 本を並べた結果、確定の G の一歩が 0.55 秒（単独）→ 1.67 秒になり、信号と腕の全部の前にある確定の G が最後を決める道になった。
+  一方、GPU 1 は案 C の補助損失なしの fine-tune が終わる 08:00 頃から、H1・H2 の交差適合の信号を待つ間（約 7 時間）が空く
+- 案 B の空と正解の腕（ep0 3000/4809、約 70 分）を止め、出力を `$S/aborted/try1_B/` へ移した（消していない）。止めたのは本契約が起こした 2 本だけ
+- `$S/logs/launch_B_after_C.sh` が、案 C の補助損失なしの `metrics_finetune.json` が出たら GPU 1 で 2 本を起動し直す（処方と名前は同じ）
+
+### 案 C の補助損失なしの腕の終わりと、H1・H2 の後の自動化（2026-11-01 08:36 JST）
+
+- `grasppilot2_C_noaux_seed42` は rc 0。fine-tune 21 epoch（17 epoch の後に 1e-5、最後の val accuracy 0.8587）、特徴 11,172 フレーム、
+  時間ヘッドの最後の状態で Jaccard 0.688638・accuracy 0.877888（動画 09 0.9932、10 0.5997）。全歩で「合計 − 工程の損失」= 0
+- 案 B の空と正解の腕は 07:45 に GPU 1 で自動で起動した（`$S/logs/launch_B_after_C.log`）
+- `scripts/grasppilot/pipeline_after_H.sh` を背景で起こした。H1・H2 の exit_code が 0 になったら、空き記憶で GPU を選び、
+  交差適合の推論（H1 の G → H2 の動画、H2 の G → H1 の動画）→ `g_signals.py assemble-c`（案 C の train の標的と入れ替え、交差適合の外れがあれば止まる）→
+  案 C の教師・入れ替えた教師の腕（空き 31 GB 以上の GPU に一本ずつ）。記録は `$S/logs/pipeline_after_H.log`
+
+### 案 D の目録の前倒し（2026-11-01 09:48 JST、利用者の問い「bengio で案 D の教師の 2 腕を始めるのに必要な二本目の標的」）
+
+- 三本目（案 D の教師の腕）に要るのは train の q（交差適合 = H1 の G → H2 の動画、H2 の G → H1 の動画）だけで、確定の G を要らない
+- `g_signals.py assemble-c` が `$S/signals/D/q_CF_train.npz` と `experiments/analysis/grasp_pilot_g/targets/D_manifest.json`（val_q は null）も書くように直し、
+  `pipeline_after_H.sh` が目録を commit して分岐へ push するようにした。待っていた古い版の台本（PID 610111、待ちの段）を止め、新しい版を 09:48 に起こした
+
+### 収束規則の変更（利用者の決定 2026-11-01 09:5x JST「各実験について、val の数値が 4 エポックほど変わらなくなったら打ち切って良い」）
+
+- 適用は G の 3 本（val で止め方を決めるのは G だけ）。**新しい規則: val の 38 クラスの mask mAP の最良が 4 epoch 続けて更新されなければ打ち切り**
+  （SPEC §3.2 の「4 epoch 停滞で学習率 × 0.1、再び 4 epoch で打ち切り」の二段目を待たない）。改善の判定は従来どおり厳密に上回ること。最良の epoch の重みを使う
+- 案 A・B の腕（固定 4 epoch）と案 C の 3 腕（記録と同じ 21 epoch。補助損失なしは既に 21 epoch で終えた）は変えない
+- 走っている `g_train.py` には差し込めないため、`scripts/grasppilot/g_early_stop.py` が `logs/history.json` を 30 秒ごとに見て、条件を満たした run の起動のシェルと学習を止め、
+  `g_train.py` の終わりと同じ記録（metrics.json・per_class_ap.json・notes.md・end.txt・exit_code.txt = 0）を書く（`stop_rule` に規則を明記、last.pth は無い）
+- **H1 は即時に打ち切った**（最良 epoch 3 の 0.4399、epoch 4〜7 は更新なし、epoch 7 の後に学習率を下げていた。走っていた epoch 8 の途中は捨てた）
+- GPU 1 が空いたので、H1 の G → H2 の動画の推論を前倒しで起こした（09:54）。`pipeline_after_H.sh` は推論の出力が在るか走っていれば待つだけにする版に直し、起こし直した
+
+### 案 D の標的を最優先にした一時停止（2026-11-01 09:58 JST、利用者の指示「三本目の案 D に渡す標的を andrew に送ることを最優先に動いて」）
+
+- 案 D の train の q に要るのは H1 と H2 の G だけ。H1 は打ち切り済みで H1 の G → H2 の動画の推論は GPU 1 で走っている。残る律速は H2（GPU 0 を確定の G と分け、1 epoch 約 53 分）
+- **確定の G の学習（PID 555760 と worker 8 本）を SIGSTOP で一時停止した**（捨てていない。状態は GPU の記憶に残る）。H2 が GPU 0 をほぼ専有する
+- `$S/logs/resume_all_after_D.sh` が、`pipeline_after_H.log` に「案 D の目録を push」（または失敗・停止の行）が出るか自動化が消えたら SIGCONT で再開する
+- 一時停止の間は全体の終わりがその分遅れる（利用者の優先の指示による）
+- **取りやめ（09:59 JST、利用者の指示「全体の終わりが遅れるなら実行しなくて良い」）**: 確定の G を SIGCONT で再開し（一時停止は約 1 分）、再開の見張りを止めた。
+  並べ方は一時停止の前と同じ（GPU 0: 確定の G・H2、GPU 1: 案 B 2 本・H1 の G の推論）
+- **やり直し（10:03 JST、利用者の指示「一時停止の案でやり直して」）**: 見積もり（H2 から案 C の 2 腕へ続く道が全体を決めるため、一時停止は全体を遅らせず、
+  案 D の目録の push を 13:30 頃 → 12:15 頃に早める。どちらの G も最良を更新しない場合）を利用者に示した上で、確定の G（同じ 9 本）を再び SIGSTOP し、
+  `resume_all_after_D.sh` を起こし直した。止めた時点の確定の G は epoch 6 の 2000/4634、H2 は epoch 9 の 1600/2691
+
+### H2 の打ち切りと案 D の目録（Task D-6、2026-11-01 11:36〜11:58 JST）
+
+- H2 は 11:36 に打ち切り（最良 epoch 8 の 0.4964、epoch 9〜12 は更新なし、epoch 12 の後の action は lower）。`g_early_stop.py` が記録を書いた
+- `pipeline_after_H.sh`: H2 の G → H1 の動画の推論（GPU 0、11:36〜11:47）→ `assemble-c`（交差適合の外れ 0 件 / 9,657 フレーム、入れ替えで元と同じフレームが来た割合 0.0、同じ動画から来た割合 0.115）
+  → **案 D の目録を push（11:47:54、ee23928a）** → 確定の G を再開（11:48:03、SIGCONT。一時停止は 10:03〜11:48 の 1 時間 45 分）
+  → 案 C の教師の腕を GPU 0（11:47）、入れ替えた教師の腕を GPU 1（11:50）で起動
+- 案 D の train の q: `$S/signals/D/q_CF_train.npz`（sha256 6c41a912ac745f3b…fa8d）、枠 32,272（術具の注釈の全件と一致、重複なし）。
+  argmax は 左 538・右 249・両手 14・なし 31,471。**行の和が 1 を超える枠が 11 個（最大 1.538）**: q = (r, 1 − min(Σr, 1)) で、G の確率の地図では
+  左右・両手の器具が同じ画素で重なりうるため。目録に書き足した（2325a7c0）。正規化はしていない
+- Draft の PR #274（base phase0）を開いた（SPEC Task D-6 が許す）
+- 正解との比べ（H1 の G → H2 の動画、注釈のある 5,443 フレーム）: g の二値の ROC-AUC L_hand 0.774・L_grasp 0.712・R_hand 0.729・R_grasp 0.675・B_present 0.746、
+  m の IoU tool_L 0.297・tool_R 0.274・tool_B 0.035・hand_L 0.527・hand_R 0.460（`experiments/analysis/grasp_pilot_g/signals/d2_compare_H1_on_H2_train.json`）
+
+### 案 C の教師の腕の一時停止（2026-11-01 12:17 JST、終了時刻を早めるため）
+
+- 確定の G は 11:48 に再開したが、GPU 0 で案 C の教師の腕（工程塔 29 GB）と同居して一歩約 1.6 秒になり、確定の G → 信号 → 案 B の予測の 4 腕の道が全体を決めるようになった
+  （見積もり: このままでは確定の G の終わり 15:20 頃・全体 21:20 頃。最良を更新しない場合）
+- 案 C の教師の腕（PID 644470 と worker 4 本、epoch 1 を終えたところ）を SIGSTOP で一時停止した。`$S/logs/resume_teacher_after_G.sh` が、確定の G の
+  exit_code.txt が出るか学習のプロセスが消えたら SIGCONT で再開する（見積もり: 確定の G 13:30 頃、全体 20:30 頃）。処方と長さは変えていない
+- 案 C の入れ替えた教師の腕は GPU 1 で続けている（GPU 0 の確定の G に影響しない）
+
+### 案 B の空・正解の腕の終わりと、確定の G の後の自動化（2026-11-01 12:40 JST）
+
+- `grasppilot2_B_{empty,gt}_ep4_seed42` は rc 0。4 epoch 目の val mAP は空 0.7273（塔単独と同値）、正解 0.7364（一本目は 0.7366077。bf16 の非決定性による差とみる。詳しくは集計で）
+- 確定の G は epoch 6 で最良を更新した（0.5332）ため、打ち切りは早くても epoch 10 の後。案 C の教師の腕の一時停止は続ける（再開すると確定の G が約 3 倍遅くなる）
+- `scripts/grasppilot/pipeline_after_G.sh` を背景で起こした: 確定の G の終わり → val と train の推論（train は 2 つに分けて `g_signals.py merge`）→ `assemble`
+  （既にある案 C の標的・案 D の q・目録の train は書き直さず中身の一致を比べ、目録に val の q を足して push）→ 案 B の予測の四腕 → 案 A の六腕と恒等性 →
+  正解との比べ → 案 B の恒等性 → 案 C の補助の頭の val。記録は `$S/logs/pipeline_after_G.log`
+- 案 B の恒等性の空・正解の分を GPU 1 で前倒し（12:58 JST）。一度目は設定の経路が相対で読み込みに失敗（ModuleNotFoundError: pd_graspmap_d5）。経路を絶対に直して起こし直した。台本は既にある出力を飛ばす
+
+### 案 C の教師の腕の置き場の切り替え（2026-11-01 14:18 JST、終了時刻を早めるため）
+
+- 確定の G は epoch 8 で最良を更新（0.5358）し、打ち切りは早くても epoch 12 の後（17:10 頃）。教師の腕をそれまで GPU 0 で止めて待つと 22 時頃に終わる
+- 入れ替えた教師の腕は GPU 1 で 16:20 頃に終わる。`$S/logs/teacher_switch.sh` を置いた: 入れ替えた教師の腕が先に終われば、教師の腕（epoch 1 まで、約 18 分ぶん）を止めて出力を
+  `$S/aborted/try1_C_teacher/` へ移し、GPU 1 で最初から起こし直す（見込み 20:30 頃に終わる）。確定の G が先に終われば GPU 0 で再開する
+- 古い再開の見張り（resume_teacher_after_G.sh）は止めた
+
+### 案 C の入れ替えた教師の腕の終わりと教師の腕の起こし直し（2026-11-01 16:21 JST）
+
+- `grasppilot2_C_shuffled_seed42` は rc 0。fine-tune 21 epoch（最後の val accuracy 0.8502）、時間ヘッドの最後の状態で Jaccard 0.682773・accuracy 0.879208（動画 09 0.9693、10 0.6337）
+- `teacher_switch.sh` が 16:21 に教師の腕（GPU 0 で一時停止、epoch 1 まで）を止めて `$S/aborted/try1_C_teacher/` へ移し、GPU 1 で最初から起こし直した（同じ標的・同じ処方）
+- 確定の G は epoch 11 で最良を更新（0.5396）。打ち切りは早くても epoch 15 の後（19:00 頃）
+
+### 確定の G の打ち切りと、確定の G の後の自動化（2026-11-01 19:17〜19:56 JST）
+
+- 確定の G は 19:17 に打ち切り（最良 epoch 11: segm mAP 0.5396・把持関係 5 クラス 0.6278、epoch 12〜15 は更新なし）
+- `pipeline_after_G.sh`: val（1,515）と train（5,242 + 4,415、`merge`）の推論（GPU 0、0.28 秒/フレーム）→ `assemble`（19:42）。
+  交差適合の外れ 0 件 / 9,657、陽性対照（確定の G で作った train の信号を 5 フレーム混ぜた写し）で外れ 5 件、val の出所の外れ 0 件。
+  案 D の目録に val の q を足して push（1f672646）。案 C の標的と案 D の train の q は書き直さず中身の一致を確かめた
+- 案 B の予測の四腕は、起動の時点で空きの大きい GPU 0 に 4 本とも載り（各 0.5〜1.0 it/s）、終わりが 2 時頃になる見込みだった。
+  始めたばかりの gtpred_CF・shuffle（数分ぶん）を止めて `$S/aborted/try1_B2/` へ移し、GPU 1 で起こし直した（19:56。GPU 1 は案 C の教師の腕と同居）
+
+## Task D — G の信号と教師の標的（G3）
+
+### D-1 作ったもの（`scripts/grasppilot/g_signals.py`、組み立ての記録 `$S/signals/assemble_report.json`）
+
+- 出所: train の交差適合は H1 の G → 動画 {02,03,08,13,14}（5,582 フレーム）、H2 の G → 動画 {01,06,11,12,15}（4,075 フレーム）。val と予測-noCF は確定の G（val 1,515・train 9,657）
+- P_c(x) は元の解像度で、上位 100 のインスタンスの（スコア × sigmoid のマスクの確率）の最大。旗は全フレーム 1
+- 案 A（`$S/signals/A/`）: g_pred_noCF_train ddc41ea5…、g_pred_CF_train ed086f44…、g_shuffle_train 3138ea72…、g_pred_noCF_val = g_pred_CF_val 616121b2…、g_shuffle_val d92f029f…。値の範囲 0〜0.998
+- 案 B（`$S/signals/views/`、地図は 270×480 の uint8）: pred_noCF train の地図 10577ab8…・val 911951db…、pred_CF train c55cbfd7…（交差適合の 2 つを連結）
+- 案 C（`$S/signals/C/`）: t_teacher_train cc78ada6…、t_shuffled_train fbbea061…、t_val 5771790f…。16 値の和の誤差の最大 1.2e-7
+- 案 D（`$S/signals/D/`）: q_CF_train 6c41a912…（32,272 枠）、q_noCF_val c8536f1d…（4,707 枠）
+
+### D-2 正解との比べ（`experiments/analysis/grasp_pilot_g/signals/d2_compare_*.json`。g の二値の ROC-AUC は注釈のあるフレーム、m は 270×480 の IoU）
+
+| 出所 | フレーム | L_hand | L_grasp | R_hand | R_grasp | B_present | m の IoU tool_L / tool_R / tool_B / hand_L / hand_R |
+|---|---:|---:|---:|---:|---:|---:|---|
+| 確定の G → val | 1,514 | 0.796 | 0.908 | 0.859 | 0.846 | 0.926 | 0.455 / 0.539 / 0.334 / 0.811 / 0.765 |
+| H1 の G → H2 の動画（train） | 5,443 | 0.774 | 0.712 | 0.729 | 0.675 | 0.746 | 0.297 / 0.274 / 0.035 / 0.527 / 0.460 |
+| H2 の G → H1 の動画（train） | 3,913 | 0.806 | 0.834 | 0.829 | 0.786 | 0.802 | 0.425 / 0.388 / 0.164 / 0.609 / 0.612 |
+
+交差適合の train の信号は確定の G の val の信号より正解との一致が低い（§6.4 の「train と val の信号の質が違いうる」の大きさ）
+
+### D-3 交差適合の確かめ
+
+- train の 9,657 フレームの全部で、信号を作った G がその動画を学んでいない（外れ 0 件）。動画ごと: 01・06・11・12・15 は H2、02・03・08・13・14 は H1
+- 陽性対照: 確定の G で作った信号を 5 フレーム混ぜた写しで外れ 5 件。val の 1,515 フレームは確定の G（外れ 0 件）
+
+### D-4 t の確かめ
+
+- 手ごとの 16 値の和の誤差の最大 1.2e-7（train・val）。陽性対照: 値を一つ 0.5 変えた写しで誤差 0.5
+- なしの質量の分位（10・25・50・75・90%、train の教師）: 左 0.026・0.056・0.203・0.565・0.797、右 0.039・0.065・0.155・0.410・0.756、両手 0.672・0.883・0.963・0.992・1.0
+- 14 種とその他の質量（train の教師、上位）: 左 Tweezers 3,382・Gauze 1,651・Suction Cannula 591・Needle Holders 318、右 Needle Holders 1,942・Scissors 1,119・Gauze 856・Scalpel 799、
+  両手 Gauze 163・Scalpel 157・Needle Holders 154・Tweezers 143。一本目の正解の度数（握られている術具のクラス、train）: 左 Tweezers 4,130・Gauze 1,079・Suction Cannula 667、
+  右 Needle Holders 2,113・Scissors 1,257・Electric Cautery 966、両手 Electric Cautery 280・BiClamp 118・Syringe 110（全表は assemble_report.json の C）
+
+### D-5 入れ替えの記録
+
+train: 9,657 フレーム、元と同じフレームが来た割合 0.0、同じ動画から来た割合 0.115、全単射。val: 1,515、0.0013、0.556（val は 2 動画なので同じ動画の割合が高い）
+
+### G3 の判定
+
+G の 3 本が収束規則（利用者の決定で変えた規則を含む）で止まり、信号と標的が §3.3 の定義どおりに作られ、train の信号が交差適合の半分から作られ（外れ 0 件、対照で外れ 5 件）、
+通した動画は train {01,02,03,06,08,11,12,13,14,15}・val {09,10}。**通過。**
+
+## Task E — 案 A・B の残りの四腕
+
+### E-2 恒等性（`experiments/analysis/grasp_pilot_g/caseA/identity_*.json`、`caseB/identity_*.json`）
+
+| 案 | 腕 | 学習前の val | 塔単独との差 | 陽性対照（重み N(0, 0.05²)） |
+|---|---|---|---|---|
+| A | 6 腕すべて | Jaccard 0.7762185528・accuracy 0.8712871 | ロジットの差の最大 0.0 | 空は 0.0（零の信号）、予測-noCF 0.351、正解 0.332、予測-CF 0.351、正解予測-CF 0.578、入れ替え 0.291 |
+| B | 空・正解・予測-noCF・入れ替え・正解予測-CF | mAP 0.7273450・標的群 0.7950748 | score・枠の差 0.0、ラベルの食い違い 0 | 予測-noCF: mAP 0.7283008、score の差 0.356。正解予測-CF: 0.7282077、0.436 |
+
+- 案 B の予測-CF の val の見取りは予測-noCF と同じ地図（確定の G）なので、恒等性は予測-noCF で代表した
+- 学習する集合: 案 A `iface.weight`（1,920）、案 B `phase_iface.weight`（5 チャネル 10,240、10 チャネル 20,480）。界面の外を一つ混ぜると不一致
+
+### E-3 案 A の六腕（`experiments/phase1/grasppilot2_dp_00{1..6}_GA_<腕>_ep4_seed42`）は 20:01 に終わった。値は REPORT.md
+
+## Task F — 案 C の 3 腕（結果）
+
+| 腕 | run | fine-tune の最後の val acc | 時間ヘッドの最後の状態 Jaccard / accuracy | 09 / 10 の Jaccard | 補助の頭の val CE 左 / 右 / 両手 | 全歩の \|合計 − 工程\| の最大 |
+|---|---|---:|---|---|---|---:|
+| 補助損失なし | grasppilot2_C_noaux_seed42 | 0.8587 | 0.688638 / 0.877888 | 0.9932 / 0.5997 | 2.796 / 2.765 / 2.900 | 0（全 epoch） |
+| G を教師 | grasppilot2_C_teacher_seed42 | 0.8693 | 0.676602 / 0.862046 | REPORT | 1.099 / 1.515 / 0.530 | 0.38〜0.84（> 0） |
+| 入れ替えた教師 | grasppilot2_C_shuffled_seed42 | 0.8502 | 0.682773 / 0.879208 | 0.9693 / 0.6337 | 1.731 / 2.428 / 0.825 | 0.53〜0.84（> 0） |
+
+- 一様の標的に対する CE は 2.7726（ln 16）。補助損失なしの腕の頭は w = 0 で学ばれないので、val の CE は一様より少し大きい
+- 3 腕とも 21 epoch、17 epoch の後に 1e-5（記録と同じ位置）、最後の状態。時間ヘッドは 18 epoch の最後の状態
+- 教師の腕は 16:21 に GPU 1 で最初から起こし直した版（一時停止して止めた版は `$S/aborted/try1_C_teacher/`）
+- 補助の頭の val（Task F-4）は `ptower_aux.py auxval` で、確定の G の t_val（1,515 フレーム）に当てた
+
+## Task G — 集計・検証（途中、2026-11-01 22:57〜23:05 JST）
+
+- 試験（`$S/final/pytest_end.txt`）: `6 failed, 979 passed, 5 skipped`。失敗の名前の集合は A-5 と同じ 6 件（増えていない。passed の 4 件の増加は `tests/test_grasppilot_g.py`）
+- 既存の仮想環境のパッケージの一覧の要約値: `.venv` 9c7be5c9…94c0、`.venv-relation-detr` a74c9c78…b090。A-5 と一致
+- `experiments/audit/l0_hts_acceptance/acceptance_report.json` の sha256 は d9ac7ced… のまま（上書きしていない）
+- **作業ツリーで `make forbidden-check TASK=…` を回すと違反 6 件**: すべて `experiments/phase1/grasppilot3x_pd_B_*/logs/*.json`（追跡外）。
+  `grasppilot3x_*` の 5 つのフォルダは本契約の開始の後に置き場に現れた（中のファイルの時刻は 11-01 02:20〜12:25 JST）。andrew にこれを書くプロセスは無く、
+  本契約の commit にも含まれない（`git log origin/phase0..HEAD --name-only` に 0 件）。**同期処理が別の台から運んだ別の契約の出力とみる。消さず、触れていない**
+- そのため、分岐の HEAD の写し（scratchpad に clone、origin/phase0 = ebc35d7b）で同じ道具を回した: `status: pass`、changed 36・checked 36、violations []。
+  空振りの確認: 作業ツリーでは同期で届いたファイルを違反として拾う（上の 6 件）
+
+## Task G — 集計・検証・報告（2026-11-02 00:01〜 JST）
+
+- 案 B の予測の四腕は rc 0（pred_noCF・pred_CF 23:20 頃、gtpred_CF・shuffle 00:01）。`aggregate2.py --out experiments/analysis/grasp_pilot_g/report.json`、
+  `make_report2.py report.json > report_tables.md`。案 A の 6 腕は予測の npz から計算し直して記録と一致（recompute_matches_record true）。案 B の code_sha256 は 6 腕で同一
+- 最後の commit（c076e2a2）の後に、分岐の HEAD の写しで `tools/check_forbidden.py --task T-2026-11-01-grasp-pilot-g` → `status: pass`、changed 325・checked 325、violations []
+- `make task-validate` → OK。result.yaml は様式（tasks/_schema/result.schema.json）に合う

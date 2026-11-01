@@ -1,0 +1,48 @@
+{
+  "task_id": "T-2026-11-01-grasp-pilot-g",
+  "unofficial": true,
+  "run": "grasppilot2_C_noaux_seed42",
+  "arm": "noaux",
+  "aux_weight": 0.0,
+  "targets": "一様 1/16（重み 0）",
+  "targets_sha256": null,
+  "record_finetune": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/efros_ptower/experiments/phase1/stage1_ptower_20_005_ft_coco_lr0.0001_foldA_seed42",
+  "init": "data/external/weights/relation_detr_resnet50_800_1333_coco_1x.pth",
+  "backbone_init_sha256": "a755b3eb22a3c1996ff88bb5797690ceb5605eedef5c24f980e1cac4c07fc98f",
+  "ft_batch_size": 16,
+  "ft_accum_steps": 4,
+  "ft_lr": 0.0001,
+  "ft_weight_decay": 0.0001,
+  "epochs": 21,
+  "lr_lower_after_epoch": 17,
+  "lr_decay": 0.1,
+  "selection": "最後の状態（選ばない）",
+  "precision": "fp32",
+  "train_videos": [
+    "01",
+    "02",
+    "03",
+    "06",
+    "08",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15"
+  ],
+  "val_videos": [
+    "09",
+    "10"
+  ],
+  "train_frames": 9657,
+  "val_frames": 1515,
+  "seed": 42,
+  "git_commit": "5580fd869cf2515f984d87490be701859dc2a67c",
+  "code_sha256": {
+    "ptower_aux.py": "6782f313feb8b6773fa73460db55d910c2f046ef427f8d568c8926b9ea4aa339",
+    "stage1_ptower_r3.py": "0ffd75652258aa98bdff8fca168ac42dd5fc5afc45d11cea5998c9169f1550e7",
+    "stage1_ptower.py": "77485307be5be6bcc9a21c2a01ce5a48400d830fdff4ee684bf39843e5ea6f05"
+  },
+  "host": "Andrew",
+  "cuda_visible_devices": "1"
+}

@@ -1,0 +1,76 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-11-01-grasp-pilot-g"
+  kind: analysis
+  title: "把持の信号の四案の非公式の予備測定の二本目。HTS の C3 の検査器を利用者の決定どおりに直して受け入れを測り直し、把持塔 G（mmdet の Mask2Former R50、38 クラス）を確定の 1 本と交差適合の 2 本で学び、G の信号と教師の標的を作り、案 A と案 B の残りの四腕と、案 C（工程塔の学び直し）の 3 腕を andrew で回す"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-11-01T00:00:00Z"
+  created_from:
+    runindex_commit: "68befc3b62ffc071077cca446df5d3c83b8c38b9"
+    counts: {index: 2363, experiments: 1130, verdicts: 1736}
+  depends_on: [T-2026-10-31-grasp-pilot-probe]
+  amendments: []
+intent:
+  question: "G の予測を界面に入れた腕（案 A は工程塔、案 B は検出塔の C5）は、空の腕・正解の腕・入れ替えの腕と比べて val の値がどう動くか。G の把持の分布を補助損失の教師にして工程塔を学び直した腕（案 C）は、補助損失なしの腕と入れ替えた教師の腕と比べて val の値がどう動くか。非公式の測定であり、関門の判定にも設計の判断（案の採否を含む）にも使わない"
+  decision_at_stake: "進捗報告の材料と、四案が今ある塔の上で動くことの実証。三本目の契約（案 D、bengio）へ教師の標的を渡す。案の採否は結果で決めない"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery の動画 01 から 15 のうち、折り A の train と val の動画（conventions#folds）。手・術具・把持の分割の注釈（data/annotations/egosurgery_hts/ の hand_tool_seg・hand_seg・tool_seg）は折り A の train と val の動画の分だけを使う。折り A の test の動画のフレームは G の学習・信号の作成・腕の学習・評価のどれにも通さない"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/audit_l0_hts_acceptance.py", "scripts/grasppilot/grasp_signals.py", "scripts/grasppilot/build_signals.py", "scripts/grasppilot/g_bench.py", "scripts/grasppilot/pd_grasp.py", "scripts/grasppilot/pd_grasp_model.py", "scripts/grasppilot/run_pd_grasp.sh", "scripts/stage2pilot/dp_train.py", "scripts/stage2pilot/shuffle_signals.py", "scripts/train_t1b.py", "scripts/stage1_ptower_r3.py", "scripts/stage1_ptower.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#env_p0, conventions#folds, conventions#split, conventions#eval_recipe, conventions#det_groups, conventions#crossfit]
+  conventions_rev: "2d946b07a57abebc4a8f66150d6dbaf2ccd22186"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/analysis/grasp_pilot_g", "experiments/phase1/grasppilot2", "runindex/"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。分岐、一本目の統合、andrew の装置の他プロセス、記憶領域、試験の失敗の名前、既存の仮想環境の要約値、GPU の電力の上限", gpu: false, est: "1h"}
+    - {id: B, name: "HTS の C3 の検査器を直し、受け入れを測り直す", gpu: false, est: "2h"}
+    - {id: C, name: "G の学習。38 クラスの注釈を組み、確定の G と交差適合の二つの半分を収束規則で学ぶ", gpu: true, est: "22h"}
+    - {id: D, name: "G の信号と教師の標的。案 A の要約、案 B の地図、案 C の 48 次元、案 D の枠ごとの 4 値と、入れ替えたもの", gpu: true, est: "3h"}
+    - {id: E, name: "案 A と案 B の残りの四腕", gpu: true, est: "6h"}
+    - {id: F, name: "案 C の 3 腕（工程塔の学び直し、特徴の取り出し、時間ヘッド）", gpu: true, est: "8h"}
+    - {id: G, name: "集計、検証、報告", gpu: false, est: "2h"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、PR 272 の内容が起点に在り、andrew に本契約以外の compute プロセスが無く、記憶領域・試験の失敗の名前・仮想環境の要約値・GPU の電力の上限を記録した", on_fail: stop}
+    - {id: G2, after: B, check: "直した C3 の判定が SPEC の定義どおりで、陽性対照と陰性対照で働くことを示し、受け入れを測り直した結果を記録した", on_fail: stop}
+    - {id: G3, after: D, check: "G の 3 本が収束規則で止まり、信号と標的が SPEC の定義どおりに作られ、train の信号が交差適合の半分から作られ、test の動画のフレームを通していない", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, gpu_free]
+  resources: {server: andrew, gpu: 2, est_hours: 44, runs: 14}
+outputs:
+  must_have: [REPORT.md, RESULT.md, result.yaml, audit.md]
+  destination: "experiments/analysis/grasp_pilot_g/"
+  acceptance:
+    - "a: 開始状態として、分岐、起点、PR 272 の内容が起点に在ること、開始前から在る未追跡、andrew の compute プロセスの一覧、記憶領域の空き、試験の失敗の名前、既存の二つの仮想環境のパッケージの一覧の要約値、GPU ごとの電力の上限が記録されている"
+    - "b: C3 の検査器が SPEC の定義（手注釈が実在する 25 動画の被覆、手のインスタンスの集合件数 57,172）で判定し、SPEC の三つの欠陥が直り、陽性対照と陰性対照で働くことが示され、受け入れを測り直した結果が本契約の出力先に記録されている"
+    - "c: G の 3 本（確定、H1、H2）が SPEC の処方と収束規則で学ばれ、epoch ごとの val の 38 クラスの mask mAP と把持関係 5 クラスの mask mAP、学習率の変化、止まった epoch、選んだ epoch、所要が記録されている"
+    - "d: G の信号と教師の標的（案 A の要約、案 B の地図、案 C の 48 次元、案 D の枠ごとの 4 値、それぞれの入れ替え）が SPEC の定義どおりに作られ、train は交差適合の半分から、val は確定の G から作られ、要約値と被覆が記録され、案 D の標的の目録が分岐に push されている"
+    - "e: 案 A の六腕（空・正解を含めて回し直す）と案 B の残りの四腕が固定の長さで回り、案 B の空と正解の腕との同一のコードであることが要約値で示されるか回し直されている"
+    - "f: 案 C の 3 腕が SPEC の処方（記録と同じ学習率の予定と長さ、最後の状態）で回り、補助損失の値の推移と val の値が記録されている"
+    - "g: 腕ごとに、val の値、比べる腕との差、動画ごとの差、クラス別の値が表にあり、SPEC の読み方の規則で記述されている"
+    - "h: test の動画のフレームを G の学習・信号の作成・腕の学習・評価に一度も通していないことが、各段で通した動画の集合で示されている"
+    - "i: 前回までの予備測定の run の置き場・集計・保存先、data の raw と external と注釈、凍結源、既存の checkpoint、third_party、既存の二つの仮想環境を変えていない。試験の失敗が増えていない"
+    - "j: PR が Draft でなく存在し、base が phase0、分岐が feat/grasp-pilot-g"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "andrew に本契約以外の compute プロセスがある場合（止めずに利用者に諮る）"
+    - "PR 272 の内容が起点に無い場合"
+    - "直した C3 が SPEC の定義で判定しても満たされない場合"
+    - "G の学習が発散する、または上限の 36 epoch で止まらない場合"
+    - "G の val の把持関係 5 クラスの mask mAP が、学習前の値を上回らない場合"
+    - "案 A か案 B の界面か案 C の補助の頭を、既存スクリプトの既定の挙動や third_party を変えないと実装できない場合"
+    - "記憶領域が足りない場合"
+    - "実行基盤が書き込み、移動、削除、外部の取得を拒む場合"

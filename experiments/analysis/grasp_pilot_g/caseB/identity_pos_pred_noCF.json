@@ -1,0 +1,64 @@
+{
+  "task_id": "T-2026-10-31-grasp-pilot-probe",
+  "unofficial": true,
+  "cfg": "/home/ubuntu/slocal2/m2/configs/stage2pilot/pd_graspmap_pred5.py",
+  "cfg_sha256": "3e06cd4a8138743b54999bf21de4a8df4153efe229473db6f3db5af93d9d77d6",
+  "pred_view": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/signals/views/B_pred_noCF_val.json",
+  "det_ckpt_sha256": "30d199b15201cf3c03954852d8acc6fb58fe5349baef2fd200e877237ff682c4",
+  "mode": "pred",
+  "iface_state": null,
+  "perturb": true,
+  "perturb_scale": 0.05,
+  "videos": [
+    "09",
+    "10"
+  ],
+  "load_report": {
+    "missing_from_ckpt": [
+      "phase_iface.weight"
+    ],
+    "unexpected_in_ckpt": []
+  },
+  "non_interface_digest": "4fed85166852cd54f07071a5b9ce57804828e95c23148db11bf7bf0afe08ce60",
+  "iface_weight": {
+    "iface_max_abs": 0.2034391164779663,
+    "iface_l2": 5.094513416290283
+  },
+  "eval_detection_mAP": 0.7283007692386658,
+  "metrics": {
+    "AP": 0.7283007692386658,
+    "AP50": 0.8523525373815521,
+    "per_class_ap": {
+      "Bipolar Forceps": 0.7938691451989739,
+      "Electric Cautery": 0.9695550386402206,
+      "Forceps": 0.3564650395136805,
+      "Gauze": 0.26926819684615677,
+      "Hook": 0.6377798341066727,
+      "Mouth Gag": 0.7992345454461294,
+      "Needle Holders": 0.8458714481778942,
+      "Raspatory": 0.8017647398055474,
+      "Retractor": NaN,
+      "Scalpel": 0.905306546374152,
+      "Scissors": 0.7103648714635401,
+      "Skewer": 0.9462491740106417,
+      "Suction Cannula": 0.8329626023478163,
+      "Syringe": 0.5395747323684218,
+      "Tweezers": 0.7879448550414747
+    },
+    "n_images": 1515,
+    "target_AP": 0.7973528675515473,
+    "target_missing": [],
+    "control_AP": 0.6723525499203943,
+    "control_missing": [],
+    "per_video_AP": {
+      "09": 0.7051610275880299,
+      "10": 0.6434497025277827
+    }
+  },
+  "diff_vs_ref": {
+    "comparable": true,
+    "max_abs_score_diff": 0.35617876052856445,
+    "max_abs_bbox_diff_px": 1966.9934616088867,
+    "label_mismatch": 329787
+  }
+}
