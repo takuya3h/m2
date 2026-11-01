@@ -274,3 +274,16 @@ task-start の前の分類器で全区分 0 件。task-start の後に在る無�
 - **やり直し（10:03 JST、利用者の指示「一時停止の案でやり直して」）**: 見積もり（H2 から案 C の 2 腕へ続く道が全体を決めるため、一時停止は全体を遅らせず、
   案 D の目録の push を 13:30 頃 → 12:15 頃に早める。どちらの G も最良を更新しない場合）を利用者に示した上で、確定の G（同じ 9 本）を再び SIGSTOP し、
   `resume_all_after_D.sh` を起こし直した。止めた時点の確定の G は epoch 6 の 2000/4634、H2 は epoch 9 の 1600/2691
+
+### H2 の打ち切りと案 D の目録（Task D-6、2026-11-01 11:36〜11:58 JST）
+
+- H2 は 11:36 に打ち切り（最良 epoch 8 の 0.4964、epoch 9〜12 は更新なし、epoch 12 の後の action は lower）。`g_early_stop.py` が記録を書いた
+- `pipeline_after_H.sh`: H2 の G → H1 の動画の推論（GPU 0、11:36〜11:47）→ `assemble-c`（交差適合の外れ 0 件 / 9,657 フレーム、入れ替えで元と同じフレームが来た割合 0.0、同じ動画から来た割合 0.115）
+  → **案 D の目録を push（11:47:54、ee23928a）** → 確定の G を再開（11:48:03、SIGCONT。一時停止は 10:03〜11:48 の 1 時間 45 分）
+  → 案 C の教師の腕を GPU 0（11:47）、入れ替えた教師の腕を GPU 1（11:50）で起動
+- 案 D の train の q: `$S/signals/D/q_CF_train.npz`（sha256 6c41a912ac745f3b…fa8d）、枠 32,272（術具の注釈の全件と一致、重複なし）。
+  argmax は 左 538・右 249・両手 14・なし 31,471。**行の和が 1 を超える枠が 11 個（最大 1.538）**: q = (r, 1 − min(Σr, 1)) で、G の確率の地図では
+  左右・両手の器具が同じ画素で重なりうるため。目録に書き足した（2325a7c0）。正規化はしていない
+- Draft の PR #274（base phase0）を開いた（SPEC Task D-6 が許す）
+- 正解との比べ（H1 の G → H2 の動画、注釈のある 5,443 フレーム）: g の二値の ROC-AUC L_hand 0.774・L_grasp 0.712・R_hand 0.729・R_grasp 0.675・B_present 0.746、
+  m の IoU tool_L 0.297・tool_R 0.274・tool_B 0.035・hand_L 0.527・hand_R 0.460（`experiments/analysis/grasp_pilot_g/signals/d2_compare_H1_on_H2_train.json`）
