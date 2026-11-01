@@ -326,3 +326,60 @@ task-start の前の分類器で全区分 0 件。task-start の後に在る無�
   案 D の目録に val の q を足して push（1f672646）。案 C の標的と案 D の train の q は書き直さず中身の一致を確かめた
 - 案 B の予測の四腕は、起動の時点で空きの大きい GPU 0 に 4 本とも載り（各 0.5〜1.0 it/s）、終わりが 2 時頃になる見込みだった。
   始めたばかりの gtpred_CF・shuffle（数分ぶん）を止めて `$S/aborted/try1_B2/` へ移し、GPU 1 で起こし直した（19:56。GPU 1 は案 C の教師の腕と同居）
+
+## Task D — G の信号と教師の標的（G3）
+
+### D-1 作ったもの（`scripts/grasppilot/g_signals.py`、組み立ての記録 `$S/signals/assemble_report.json`）
+
+- 出所: train の交差適合は H1 の G → 動画 {02,03,08,13,14}（5,582 フレーム）、H2 の G → 動画 {01,06,11,12,15}（4,075 フレーム）。val と予測-noCF は確定の G（val 1,515・train 9,657）
+- P_c(x) は元の解像度で、上位 100 のインスタンスの（スコア × sigmoid のマスクの確率）の最大。旗は全フレーム 1
+- 案 A（`$S/signals/A/`）: g_pred_noCF_train ddc41ea5…、g_pred_CF_train ed086f44…、g_shuffle_train 3138ea72…、g_pred_noCF_val = g_pred_CF_val 616121b2…、g_shuffle_val d92f029f…。値の範囲 0〜0.998
+- 案 B（`$S/signals/views/`、地図は 270×480 の uint8）: pred_noCF train の地図 10577ab8…・val 911951db…、pred_CF train c55cbfd7…（交差適合の 2 つを連結）
+- 案 C（`$S/signals/C/`）: t_teacher_train cc78ada6…、t_shuffled_train fbbea061…、t_val 5771790f…。16 値の和の誤差の最大 1.2e-7
+- 案 D（`$S/signals/D/`）: q_CF_train 6c41a912…（32,272 枠）、q_noCF_val c8536f1d…（4,707 枠）
+
+### D-2 正解との比べ（`experiments/analysis/grasp_pilot_g/signals/d2_compare_*.json`。g の二値の ROC-AUC は注釈のあるフレーム、m は 270×480 の IoU）
+
+| 出所 | フレーム | L_hand | L_grasp | R_hand | R_grasp | B_present | m の IoU tool_L / tool_R / tool_B / hand_L / hand_R |
+|---|---:|---:|---:|---:|---:|---:|---|
+| 確定の G → val | 1,514 | 0.796 | 0.908 | 0.859 | 0.846 | 0.926 | 0.455 / 0.539 / 0.334 / 0.811 / 0.765 |
+| H1 の G → H2 の動画（train） | 5,443 | 0.774 | 0.712 | 0.729 | 0.675 | 0.746 | 0.297 / 0.274 / 0.035 / 0.527 / 0.460 |
+| H2 の G → H1 の動画（train） | 3,913 | 0.806 | 0.834 | 0.829 | 0.786 | 0.802 | 0.425 / 0.388 / 0.164 / 0.609 / 0.612 |
+
+交差適合の train の信号は確定の G の val の信号より正解との一致が低い（§6.4 の「train と val の信号の質が違いうる」の大きさ）
+
+### D-3 交差適合の確かめ
+
+- train の 9,657 フレームの全部で、信号を作った G がその動画を学んでいない（外れ 0 件）。動画ごと: 01・06・11・12・15 は H2、02・03・08・13・14 は H1
+- 陽性対照: 確定の G で作った信号を 5 フレーム混ぜた写しで外れ 5 件。val の 1,515 フレームは確定の G（外れ 0 件）
+
+### D-4 t の確かめ
+
+- 手ごとの 16 値の和の誤差の最大 1.2e-7（train・val）。陽性対照: 値を一つ 0.5 変えた写しで誤差 0.5
+- なしの質量の分位（10・25・50・75・90%、train の教師）: 左 0.026・0.056・0.203・0.565・0.797、右 0.039・0.065・0.155・0.410・0.756、両手 0.672・0.883・0.963・0.992・1.0
+- 14 種とその他の質量（train の教師、上位）: 左 Tweezers 3,382・Gauze 1,651・Suction Cannula 591・Needle Holders 318、右 Needle Holders 1,942・Scissors 1,119・Gauze 856・Scalpel 799、
+  両手 Gauze 163・Scalpel 157・Needle Holders 154・Tweezers 143。一本目の正解の度数（握られている術具のクラス、train）: 左 Tweezers 4,130・Gauze 1,079・Suction Cannula 667、
+  右 Needle Holders 2,113・Scissors 1,257・Electric Cautery 966、両手 Electric Cautery 280・BiClamp 118・Syringe 110（全表は assemble_report.json の C）
+
+### D-5 入れ替えの記録
+
+train: 9,657 フレーム、元と同じフレームが来た割合 0.0、同じ動画から来た割合 0.115、全単射。val: 1,515、0.0013、0.556（val は 2 動画なので同じ動画の割合が高い）
+
+### G3 の判定
+
+G の 3 本が収束規則（利用者の決定で変えた規則を含む）で止まり、信号と標的が §3.3 の定義どおりに作られ、train の信号が交差適合の半分から作られ（外れ 0 件、対照で外れ 5 件）、
+通した動画は train {01,02,03,06,08,11,12,13,14,15}・val {09,10}。**通過。**
+
+## Task E — 案 A・B の残りの四腕
+
+### E-2 恒等性（`experiments/analysis/grasp_pilot_g/caseA/identity_*.json`、`caseB/identity_*.json`）
+
+| 案 | 腕 | 学習前の val | 塔単独との差 | 陽性対照（重み N(0, 0.05²)） |
+|---|---|---|---|---|
+| A | 6 腕すべて | Jaccard 0.7762185528・accuracy 0.8712871 | ロジットの差の最大 0.0 | 空は 0.0（零の信号）、予測-noCF 0.351、正解 0.332、予測-CF 0.351、正解予測-CF 0.578、入れ替え 0.291 |
+| B | 空・正解・予測-noCF・入れ替え・正解予測-CF | mAP 0.7273450・標的群 0.7950748 | score・枠の差 0.0、ラベルの食い違い 0 | 予測-noCF: mAP 0.7283008、score の差 0.356。正解予測-CF: 0.7282077、0.436 |
+
+- 案 B の予測-CF の val の見取りは予測-noCF と同じ地図（確定の G）なので、恒等性は予測-noCF で代表した
+- 学習する集合: 案 A `iface.weight`（1,920）、案 B `phase_iface.weight`（5 チャネル 10,240、10 チャネル 20,480）。界面の外を一つ混ぜると不一致
+
+### E-3 案 A の六腕（`experiments/phase1/grasppilot2_dp_00{1..6}_GA_<腕>_ep4_seed42`）は 20:01 に終わった。値は REPORT.md
