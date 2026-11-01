@@ -407,3 +407,10 @@ G の 3 本が収束規則（利用者の決定で変えた規則を含む）で
   本契約の commit にも含まれない（`git log origin/phase0..HEAD --name-only` に 0 件）。**同期処理が別の台から運んだ別の契約の出力とみる。消さず、触れていない**
 - そのため、分岐の HEAD の写し（scratchpad に clone、origin/phase0 = ebc35d7b）で同じ道具を回した: `status: pass`、changed 36・checked 36、violations []。
   空振りの確認: 作業ツリーでは同期で届いたファイルを違反として拾う（上の 6 件）
+
+## Task G — 集計・検証・報告（2026-11-02 00:01〜 JST）
+
+- 案 B の予測の四腕は rc 0（pred_noCF・pred_CF 23:20 頃、gtpred_CF・shuffle 00:01）。`aggregate2.py --out experiments/analysis/grasp_pilot_g/report.json`、
+  `make_report2.py report.json > report_tables.md`。案 A の 6 腕は予測の npz から計算し直して記録と一致（recompute_matches_record true）。案 B の code_sha256 は 6 腕で同一
+- 最後の commit（c076e2a2）の後に、分岐の HEAD の写しで `tools/check_forbidden.py --task T-2026-11-01-grasp-pilot-g` → `status: pass`、changed 325・checked 325、violations []
+- `make task-validate` → OK。result.yaml は様式（tasks/_schema/result.schema.json）に合う

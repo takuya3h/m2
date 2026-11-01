@@ -23,7 +23,7 @@
 | g | REPORT §1・§5 | 表の差は aggregate2.py が各 run の記録から計算し直した値（案 A は予測の npz から計算し直して記録と一致） |
 | h | 各段の動画は train 10・val {09,10} | `assert_no_test` が各段で確かめる（04 を混ぜると止まる） |
 | i | 試験 6 → 6 failed（979 passed）、仮想環境の要約値一致、既存の受け入れ報告の sha256 不変、分岐の写しで forbidden-check pass（audit.md:400 以降） | 作業ツリーでは同期で届いた別の契約の出力 6 件を違反として拾う |
-| j | §8 送出 | 分岐名 `feat/grasp-pilot-g` |
+| j | PR #274、base phase0、isDraft false、OPEN | head は `feat/grasp-pilot-g` |
 
 ## 3. 実測
 
@@ -94,5 +94,5 @@
 
 ## 7. 送出
 
-- PR: 未記入（起票後に追記）
+- PR: #274（https://github.com/takuya3h/m2/pull/274、base phase0、Draft でない。11:58 に Draft で開き、00:05 に Draft を外した）
 - `make task-report`: 未実行（実行後に追記）
