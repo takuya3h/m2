@@ -22,7 +22,18 @@
       31471
     ]
   },
-  "val_q": null,
+  "val_q": {
+    "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/signals/D/q_noCF_val.npz",
+    "sha256": "c8536f1d1618d8304fde4033954eaa24ef3c3534034502e4f92543610e7c717a",
+    "boxes": 4707,
+    "boxes_in_annotation_file": 4707,
+    "unique": 4707,
+    "q_rowsum_range": [
+      0.9999999403953552,
+      1.223706841468811
+    ],
+    "made_by": "確定の G"
+  },
   "format": {
     "ann_ids": "折り A の術具の注釈（data/annotations/egosurgery_tool_folds/A/instances_train.json）の annotation id、昇順",
     "q": "(枠, 4) の軟らかい 4 値 [左, 右, 両手, なし]（一本目の SPEC §3.3 の式に G の P_c を当てた）",
@@ -36,9 +47,13 @@
     "H2": {
       "config": "experiments/phase1/grasppilot2_G_H2_seed42/config.json",
       "ckpt_sha256": "52d4b3aa178433b5fce984ba2eeb446a1c3fdcfceeb43c263a4e21e4b67ca6bf"
+    },
+    "all": {
+      "config": "experiments/phase1/grasppilot2_G_all_seed42/config.json",
+      "ckpt_sha256": "42c1f3bce6ed20270d7dd5d582a54984eeb094e9dd233089a28b8fb411fa149b"
     }
   },
-  "note": "val の q（確定の G）は確定の G の後に足す。三本目の教師の腕に要るのは train の q",
+  "note": "val の q は確定の G から作った（三本目の教師の腕に要るのは train の q）",
   "code_sha256": "4d61617431ae78c39695e6bbc30df879abe3f28fab1b6bbe27ec5d2d605b2994",
   "note_q_sum": "q = (r_左, r_右, r_両手, 1 − min(Σr, 1))（一本目の grasp_signals.box_state と同じ）。G の確率の地図は左右・両手の器具が同じ画素で重なりうるため、Σr > 1 の枠では行の和が 1 を超える（32,272 個のうち 11 個、最大 1.538）。正規化はしていない"
 }
