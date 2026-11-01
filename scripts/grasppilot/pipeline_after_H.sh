@@ -21,9 +21,15 @@ source scripts/load_env.sh >/dev/null 2>&1 || true
 export PYTHONPATH=src
 mkdir -p "$S/signals/raw"
 H1V=01,06,11,12,15; H2V=02,03,08,13,14
-G1=$(wait_gpu 9000); CUDA_VISIBLE_DEVICES=$G1 .venv/bin/python scripts/grasppilot/g_signals.py infer --ckpt "$S/g/ckpt/grasppilot2_G_H1_seed42/best.pth" \
-  --g H1 --part train --videos $H2V --out "$S/signals/raw/H1_on_H2" > "$S/logs/infer_H1_on_H2.log" 2>&1 &
-P_A=$!; log "H1 の G → H2 の動画 GPU $G1"; sleep 90
+# H1 の推論は H1 が先に終わったとき前倒しで回す（infer_H1_early.sh）。出力が在れば、またはまだ走っていれば待つだけにする
+if [ -f "$S/signals/raw/H1_on_H2_report.json" ] || pgrep -f "signals/raw/H1_on_H2" > /dev/null; then
+  ( while pgrep -f "signals/raw/H1_on_H2" > /dev/null; do sleep 30; done; [ -f "$S/signals/raw/H1_on_H2_report.json" ] ) &
+  P_A=$!; log "H1 の G → H2 の動画 は前倒しの推論を待つ"
+else
+  G1=$(wait_gpu 9000); CUDA_VISIBLE_DEVICES=$G1 .venv/bin/python scripts/grasppilot/g_signals.py infer --ckpt "$S/g/ckpt/grasppilot2_G_H1_seed42/best.pth" \
+    --g H1 --part train --videos $H2V --out "$S/signals/raw/H1_on_H2" > "$S/logs/infer_H1_on_H2.log" 2>&1 &
+  P_A=$!; log "H1 の G → H2 の動画 GPU $G1"; sleep 90
+fi
 G2=$(wait_gpu 9000); CUDA_VISIBLE_DEVICES=$G2 .venv/bin/python scripts/grasppilot/g_signals.py infer --ckpt "$S/g/ckpt/grasppilot2_G_H2_seed42/best.pth" \
   --g H2 --part train --videos $H1V --out "$S/signals/raw/H2_on_H1" > "$S/logs/infer_H2_on_H1.log" 2>&1 &
 P_B=$!; log "H2 の G → H1 の動画 GPU $G2"

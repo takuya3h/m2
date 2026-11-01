@@ -252,3 +252,13 @@ task-start の前の分類器で全区分 0 件。task-start の後に在る無�
 - 三本目（案 D の教師の腕）に要るのは train の q（交差適合 = H1 の G → H2 の動画、H2 の G → H1 の動画）だけで、確定の G を要らない
 - `g_signals.py assemble-c` が `$S/signals/D/q_CF_train.npz` と `experiments/analysis/grasp_pilot_g/targets/D_manifest.json`（val_q は null）も書くように直し、
   `pipeline_after_H.sh` が目録を commit して分岐へ push するようにした。待っていた古い版の台本（PID 610111、待ちの段）を止め、新しい版を 09:48 に起こした
+
+### 収束規則の変更（利用者の決定 2026-11-01 09:5x JST「各実験について、val の数値が 4 エポックほど変わらなくなったら打ち切って良い」）
+
+- 適用は G の 3 本（val で止め方を決めるのは G だけ）。**新しい規則: val の 38 クラスの mask mAP の最良が 4 epoch 続けて更新されなければ打ち切り**
+  （SPEC §3.2 の「4 epoch 停滞で学習率 × 0.1、再び 4 epoch で打ち切り」の二段目を待たない）。改善の判定は従来どおり厳密に上回ること。最良の epoch の重みを使う
+- 案 A・B の腕（固定 4 epoch）と案 C の 3 腕（記録と同じ 21 epoch。補助損失なしは既に 21 epoch で終えた）は変えない
+- 走っている `g_train.py` には差し込めないため、`scripts/grasppilot/g_early_stop.py` が `logs/history.json` を 30 秒ごとに見て、条件を満たした run の起動のシェルと学習を止め、
+  `g_train.py` の終わりと同じ記録（metrics.json・per_class_ap.json・notes.md・end.txt・exit_code.txt = 0）を書く（`stop_rule` に規則を明記、last.pth は無い）
+- **H1 は即時に打ち切った**（最良 epoch 3 の 0.4399、epoch 4〜7 は更新なし、epoch 7 の後に学習率を下げていた。走っていた epoch 8 の途中は捨てた）
+- GPU 1 が空いたので、H1 の G → H2 の動画の推論を前倒しで起こした（09:54）。`pipeline_after_H.sh` は推論の出力が在るか走っていれば待つだけにする版に直し、起こし直した
