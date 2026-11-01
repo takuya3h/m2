@@ -262,3 +262,10 @@ task-start の前の分類器で全区分 0 件。task-start の後に在る無�
   `g_train.py` の終わりと同じ記録（metrics.json・per_class_ap.json・notes.md・end.txt・exit_code.txt = 0）を書く（`stop_rule` に規則を明記、last.pth は無い）
 - **H1 は即時に打ち切った**（最良 epoch 3 の 0.4399、epoch 4〜7 は更新なし、epoch 7 の後に学習率を下げていた。走っていた epoch 8 の途中は捨てた）
 - GPU 1 が空いたので、H1 の G → H2 の動画の推論を前倒しで起こした（09:54）。`pipeline_after_H.sh` は推論の出力が在るか走っていれば待つだけにする版に直し、起こし直した
+
+### 案 D の標的を最優先にした一時停止（2026-11-01 09:58 JST、利用者の指示「三本目の案 D に渡す標的を andrew に送ることを最優先に動いて」）
+
+- 案 D の train の q に要るのは H1 と H2 の G だけ。H1 は打ち切り済みで H1 の G → H2 の動画の推論は GPU 1 で走っている。残る律速は H2（GPU 0 を確定の G と分け、1 epoch 約 53 分）
+- **確定の G の学習（PID 555760 と worker 8 本）を SIGSTOP で一時停止した**（捨てていない。状態は GPU の記憶に残る）。H2 が GPU 0 をほぼ専有する
+- `$S/logs/resume_all_after_D.sh` が、`pipeline_after_H.log` に「案 D の目録を push」（または失敗・停止の行）が出るか自動化が消えたら SIGCONT で再開する
+- 一時停止の間は全体の終わりがその分遅れる（利用者の優先の指示による）
