@@ -1,0 +1,79 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-11-01-stage2-w23-bengio"
+  kind: analysis
+  title: "Stage 2 の界面の型と把持の案を W2（界面と受け取り手の後段を学ぶ）と W3（界面と受け取り手の全体を学ぶ）で回す非公式の予備測定のうち、bengio に配分した分（工程から検出の extra-queries・P2L・P3、検出から工程の全 8 型、把持の案 A）。条件はこれまでと同一"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-11-01T14:40:00Z"
+  created_from:
+    runindex_commit: "68befc3b62ffc071077cca446df5d3c83b8c38b9"
+    counts: {index: 2363, experiments: 1130, verdicts: 1736}
+  depends_on: [T-2026-10-19-stage2-pilot-fix-epoch4-shuffle, T-2026-10-19-stage2-pilot-four-new-types, T-2026-10-31-grasp-pilot-probe]
+  amendments:
+    - date: "2026-11-02"
+      reason: "利用者の決定（実行中）。P3 の W1 が既に --trainable w2 で回っており（run_pd_fix.sh の P3、stage2fix_pd_P3_*_ep4_seed42 の total_trainable 1684883）、SPEC §3.1 の P3 の W2 が W1 と同じ学ぶ集合になるため、P3 は W3 だけ回す"
+      diff: "§4 の run の表から P3 の W2 を除く。W2 の欄には W1 の値を参考として置く"
+    - date: "2026-11-02"
+      reason: "利用者の指示（実行中）。(1) extra-queries の W2・W3 は回さない（W1 で足した出力が上位 300 に一度も入らず、W2・W3 でも仕組みが変わらないため）。(2) P1（FiLM）の W3 を足す（andrew の契約から移す。腕と信号は直しの契約の run_pd_fix.sh の P1 と同じ。W1・W2 は andrew の値で、ホストをまたぐ参考の表に置く）。(3) 工程から検出の W2・W3（P2L の W2・W3、P3 と P1 の W3）は、空・予測-noCF・正解・入れ替えの四腕だけ回す。検出から工程と案 A は六腕のまま。(4) 全体が開始から 15 時間を超える見込みなら諮る"
+      diff: "§4 の工程から検出を P2L の W2・W3、P3 の W3、P1 の W3 の各 4 腕（16 本）にする。extra-queries を除き、P1 の W3 を足す。開始（2026-11-02 00:20 JST 頃の task-start）から 15 時間（15:20 JST 頃）を超える見込みで諮る"
+intent:
+  question: "これまで W1 で回した界面の型を、受け取り手の後段（W2）や全体（W3）も学ぶ形で回すと、同じ型・同じ W の空の腕と入れ替えの腕との差はどうなるか。界面だけを学ぶ経路の狭さが差を小さくしているかを見る。非公式の測定であり、関門の判定にも設計の判断（型の採否を含む）にも使わない"
+  decision_at_stake: "進捗報告の材料と、W1 の差の小ささの理由を考える手がかり。型の採否は結果で決めない"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery の動画 01 から 15 のうち、折り A の train と val の動画（conventions#folds）。工程の値と検出の値のフレーム集合は W1 の各契約と同じ。折り A の test の動画のフレームは学習と評価のどれにも通さない"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/stage2pilot/dp_train.py", "scripts/stage2pilot/dp_model.py", "scripts/stage2pilot/run_dp_fix.sh", "scripts/stage2pilot/run_dp_four.sh", "scripts/stage2pilot/run_pd_fix.sh", "scripts/stage2pilot/run_pd_four.sh", "scripts/stage2pilot/pd_eval.py", "scripts/train_t1b.py", "scripts/stage2pilot/pd_model.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#env_p0, conventions#folds, conventions#split, conventions#eval_recipe, conventions#det_groups]
+  conventions_rev: "2d946b07a57abebc4a8f66150d6dbaf2ccd22186"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/analysis/stage2_w23_bengio", "experiments/phase1/w23b", "runindex/"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。分岐、前提の統合、装置の他プロセス、記憶領域、試験の失敗の名前、仮想環境の要約値、電力の上限", gpu: false, est: "1h"}
+    - {id: B, name: "材料と再現。信号と checkpoint の要約値、塔単独の val の再現", gpu: true, est: "1h"}
+    - {id: C, name: "W2・W3 の実装と恒等性", gpu: true, est: "3h"}
+    - {id: D, name: "学習", gpu: true, est: "20h"}
+    - {id: E, name: "集計、検証、報告", gpu: false, est: "2h"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、前提の統合が起点に在り、本契約以外の compute プロセスが無く、記憶領域と失敗の名前と仮想環境の要約値と電力の上限を記録した", on_fail: stop}
+    - {id: G2, after: B, check: "使う信号と checkpoint の要約値が記録と一致し、塔単独の val が許容差の中で再現した", on_fail: stop}
+    - {id: G3, after: C, check: "学ぶ集合が SPEC の定義と一致し、全腕で学習前の出力が塔単独と一致し、陽性対照で出力が変わり、既定の挙動が変わらない", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, gpu_free]
+  resources: {server: bengio, gpu: 2, est_hours: 27}
+outputs:
+  must_have: [REPORT.md, RESULT.md, result.yaml, audit.md]
+  destination: "experiments/analysis/stage2_w23_bengio/"
+  acceptance:
+    - "a: 開始状態として、分岐、起点、前提の統合が起点に在ること、開始前から在る未追跡、compute プロセスの一覧、記憶領域の空き、試験の失敗の名前、既存の仮想環境のパッケージの一覧の要約値、GPU ごとの電力の上限と装置の型が記録されている"
+    - "b: 使う信号と checkpoint の要約値が各契約の記録と一致し、塔単独の val が SPEC の許容差の中で再現されているか、超えて停止した記録がある"
+    - "c: W2・W3 で学ぶパラメータの名前の集合が型と W ごとに記録され、SPEC の定義と一致し、W1 の指定で W1 の集合と一致し、既存スクリプトの既定の挙動が変わらない"
+    - "d: 型と W ごとに全腕で学習前の出力が塔単独と一致し、界面の重みを零でない値にすると出力が変わる"
+    - "e: SPEC の run の表のすべての run が固定の長さで回り、一つの型の腕が一つのホストで回ったことが記録されている。測れなかった run は理由つきで UNKNOWN と書かれている"
+    - "f: 型と W ごとに、4 epoch 目の値、Δ空、Δ入替、Δ塔、動画ごとの差が表にあり、W1 の値と並べた参考の表があり、SPEC の読み方の規則で記述されている"
+    - "g: test の動画のフレームを学習と評価に一度も通していないことが、通した動画の集合で示されている"
+    - "h: 前回までの契約の run の置き場・集計・保存先、data の raw と external と注釈、凍結源、既存の checkpoint、third_party、既存の仮想環境を変えていない。試験の失敗が増えていない。forbidden-check の違反のうち本契約の経路のものが 0 件"
+    - "i: PR が Draft でなく存在し、base が phase0、分岐が feat/stage2-w23-bengio"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "本契約以外の compute プロセスがある場合（止めずに利用者に諮る）"
+    - "前提の統合が起点に無い場合"
+    - "信号か checkpoint が無く andrew からも写せない、または要約値が記録と食い違う場合"
+    - "塔単独の val が許容差を超えて食い違う場合"
+    - "W2・W3 を、既存スクリプトの既定の挙動か third_party か SPEC が挙げた以外の既存のファイルを変えないと実装できない場合"
+    - "学習前の出力が塔単独と一致しない場合"
+    - "記憶領域が足りない場合"
+    - "実行基盤が書き込み、移動、削除を拒む場合"

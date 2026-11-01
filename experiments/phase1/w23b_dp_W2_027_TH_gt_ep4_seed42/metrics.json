@@ -1,0 +1,58 @@
+{
+  "best_epoch": 4,
+  "early_stopped_epoch": null,
+  "elapsed_seconds": 1.9335729563608766,
+  "epochs_run": 4,
+  "eval_recipe": {
+    "test_cfg": {
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "split": "val",
+      "task": "phase"
+    }
+  },
+  "gate_by_epoch": {
+    "1": {
+      "tanh_alpha": -0.0012167798122391105
+    },
+    "2": {
+      "tanh_alpha": -0.0013651881599798799
+    },
+    "3": {
+      "tanh_alpha": -0.0013766338815912604
+    },
+    "4": {
+      "tanh_alpha": -0.0019112497102469206
+    }
+  },
+  "iface_ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-stage2-w23-bengio/dp_ckpt/w23b_dp_W2_027_TH_gt_ep4_seed42.pth",
+  "iface_ckpt_sha256": "03e7eff5542890e9073c50d2dda01be08863226cc2851c535cc088ff06fbc57f",
+  "iface_params": 31233,
+  "init_gate": {
+    "tanh_alpha": 0.0
+  },
+  "init_phase_accuracy": 0.8712871287128713,
+  "init_phase_jaccard": 0.7762185528074379,
+  "per_video": {
+    "09": {
+      "phase_accuracy": 0.9826254826254827,
+      "phase_jaccard": 0.9704634978991598
+    },
+    "10": {
+      "phase_accuracy": 0.8144433299899699,
+      "phase_jaccard": 0.5964958425285881
+    }
+  },
+  "phase_accuracy": 0.8719471947194719,
+  "phase_jaccard": 0.674472772559981,
+  "phase_macro_f1": 0.7406063331760127,
+  "reached_epoch_cap": true,
+  "receiver_outside_scope_n": 36,
+  "receiver_outside_scope_unchanged": true,
+  "receiver_trained_changed": true,
+  "receiver_unchanged": false,
+  "result_epoch": 4,
+  "result_selection": "final_epoch",
+  "scope": "W2",
+  "steps_without_grad": 0
+}

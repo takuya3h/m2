@@ -1,0 +1,41 @@
+{
+  "best_epoch": 4,
+  "early_stopped_epoch": null,
+  "elapsed_seconds": 7.0144685646519065,
+  "epochs_run": 4,
+  "eval_recipe": {
+    "test_cfg": {
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "split": "val",
+      "task": "phase"
+    }
+  },
+  "iface_ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-stage2-w23-bengio/dp_ckpt/w23b_dp_W3_045_TH-NG_pred_CF_ep4_seed42.pth",
+  "iface_ckpt_sha256": "e19ea59b04bd074d85ed91b822da02d5ddca80f515ee89fae7e04ddcc797ee77",
+  "iface_params": 31232,
+  "init_phase_accuracy": 0.8712871287128713,
+  "init_phase_jaccard": 0.7762185528074379,
+  "per_video": {
+    "09": {
+      "phase_accuracy": 0.9459459459459459,
+      "phase_jaccard": 0.9156756125415282
+    },
+    "10": {
+      "phase_accuracy": 0.847542627883651,
+      "phase_jaccard": 0.5536206332651299
+    }
+  },
+  "phase_accuracy": 0.8811881188118812,
+  "phase_jaccard": 0.6436537806915299,
+  "phase_macro_f1": 0.7197853206700954,
+  "reached_epoch_cap": true,
+  "receiver_outside_scope_n": 0,
+  "receiver_outside_scope_unchanged": true,
+  "receiver_trained_changed": true,
+  "receiver_unchanged": false,
+  "result_epoch": 4,
+  "result_selection": "final_epoch",
+  "scope": "W3",
+  "steps_without_grad": 0
+}

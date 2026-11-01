@@ -1,0 +1,567 @@
+{
+ "task_id": "T-2026-11-01-stage2-w23-bengio",
+ "n_files": 40,
+ "all_exist": true,
+ "all_match": true,
+ "pd_signals_without_record": [],
+ "dp_runs_read": {
+  "D1-L1": [
+   "stage2fix_dp_002_D1-L1_empty_ep4_seed42",
+   "stage2fix_dp_004_D1-L1_pred_noCF_ep4_seed42",
+   "stage2fix_dp_006_D1-L1_gt_ep4_seed42",
+   "stage2fix_dp_008_D1-L1_pred_CF_ep4_seed42",
+   "stage2fix_dp_010_D1-L1_gtpred_CF_ep4_seed42",
+   "stage2fix_dp_012_D1-L1_shuffle_ep4_seed42"
+  ],
+  "D1-L2": [
+   "stage2fix_dp_014_D1-L2_empty_ep4_seed42",
+   "stage2fix_dp_016_D1-L2_pred_noCF_ep4_seed42",
+   "stage2fix_dp_018_D1-L2_pred_CF_ep4_seed42",
+   "stage2fix_dp_020_D1-L2_shuffle_ep4_seed42"
+  ],
+  "D2": [
+   "stage2fix_dp_003_D2_pred_CF_ep4_seed42",
+   "stage2fix_dp_005_D2_gtpred_CF_ep4_seed42",
+   "stage2fix_dp_007_D2_shuffle_ep4_seed42",
+   "stage2fix_dp_022_D2_empty_ep4_seed42",
+   "stage2fix_dp_024_D2_pred_noCF_ep4_seed42",
+   "stage2fix_dp_026_D2_gt_ep4_seed42"
+  ],
+  "D3-L1": [
+   "stage2fix_dp_009_D3-L1_empty_ep4_seed42",
+   "stage2fix_dp_011_D3-L1_pred_noCF_ep4_seed42",
+   "stage2fix_dp_013_D3-L1_gt_ep4_seed42",
+   "stage2fix_dp_015_D3-L1_pred_CF_ep4_seed42",
+   "stage2fix_dp_017_D3-L1_gtpred_CF_ep4_seed42",
+   "stage2fix_dp_019_D3-L1_shuffle_ep4_seed42"
+  ],
+  "D3-L2": [
+   "stage2fix_dp_021_D3-L2_empty_ep4_seed42",
+   "stage2fix_dp_023_D3-L2_pred_noCF_ep4_seed42",
+   "stage2fix_dp_025_D3-L2_pred_CF_ep4_seed42",
+   "stage2fix_dp_027_D3-L2_shuffle_ep4_seed42"
+  ],
+  "LC": [
+   "stage2four_dp_004_LC_empty_ep4_seed42",
+   "stage2four_dp_005_LC_pred_noCF_ep4_seed42",
+   "stage2four_dp_006_LC_gt_ep4_seed42",
+   "stage2four_dp_007_LC_pred_CF_ep4_seed42",
+   "stage2four_dp_008_LC_gtpred_CF_ep4_seed42",
+   "stage2four_dp_009_LC_shuffle_ep4_seed42"
+  ],
+  "TH": [
+   "stage2four_dp_010_TH_empty_ep4_seed42",
+   "stage2four_dp_011_TH_pred_noCF_ep4_seed42",
+   "stage2four_dp_012_TH_gt_ep4_seed42",
+   "stage2four_dp_013_TH_pred_CF_ep4_seed42",
+   "stage2four_dp_014_TH_gtpred_CF_ep4_seed42",
+   "stage2four_dp_015_TH_shuffle_ep4_seed42"
+  ],
+  "TH-NG": [
+   "stage2four_dp_016_TH-NG_empty_ep4_seed42",
+   "stage2four_dp_017_TH-NG_pred_noCF_ep4_seed42",
+   "stage2four_dp_018_TH-NG_gt_ep4_seed42",
+   "stage2four_dp_019_TH-NG_pred_CF_ep4_seed42",
+   "stage2four_dp_020_TH-NG_gtpred_CF_ep4_seed42",
+   "stage2four_dp_021_TH-NG_shuffle_ep4_seed42"
+  ],
+  "GA": [
+   "grasppilot_dp_001_GA_empty_ep4_seed42",
+   "grasppilot_dp_002_GA_gt_ep4_seed42",
+   "grasppilot2_dp_001_GA_empty_ep4_seed42",
+   "grasppilot2_dp_002_GA_pred_noCF_ep4_seed42",
+   "grasppilot2_dp_003_GA_gt_ep4_seed42",
+   "grasppilot2_dp_004_GA_pred_CF_ep4_seed42",
+   "grasppilot2_dp_005_GA_gtpred_CF_ep4_seed42",
+   "grasppilot2_dp_006_GA_shuffle_ep4_seed42"
+  ]
+ },
+ "files": [
+  {
+   "recorded_path": "/home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth",
+   "local_path": "/home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth",
+   "exists": true,
+   "sha256": "30d199b15201cf3c03954852d8acc6fb58fe5349baef2fd200e877237ff682c4",
+   "recorded_sha256": [
+    "30d199b15201cf3c03954852d8acc6fb58fe5349baef2fd200e877237ff682c4"
+   ],
+   "n_records": 1,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/arms/PD/gtpred_CF_train.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/arms/PD/gtpred_CF_train.npz",
+   "exists": true,
+   "sha256": "6b0e99369b350caf4677f0861a0b93d7604d00ef0b81aeafaad0e7be30b19ac9",
+   "recorded_sha256": [
+    "6b0e99369b350caf4677f0861a0b93d7604d00ef0b81aeafaad0e7be30b19ac9"
+   ],
+   "n_records": 2,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/arms/PD/gtpred_noCF_val.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/arms/PD/gtpred_noCF_val.npz",
+   "exists": true,
+   "sha256": "5fe0a89c8402f455bbc0a3d85d7f00041f888e26fc334a62ab1c416ea94a5b8e",
+   "recorded_sha256": [
+    "5fe0a89c8402f455bbc0a3d85d7f00041f888e26fc334a62ab1c416ea94a5b8e"
+   ],
+   "n_records": 2,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/efros_ptower/data/processed/stage1_features/p15ctl_coco_lr0.0001_foldA_seed42/all_gap.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/efros_ptower/data/processed/stage1_features/p15ctl_coco_lr0.0001_foldA_seed42/all_gap.npz",
+   "exists": true,
+   "sha256": "c402e214d28d32c68b396fe84bbefefffdf7577d9550c421364543af78f172da",
+   "recorded_sha256": [
+    "c402e214d28d32c68b396fe84bbefefffdf7577d9550c421364543af78f172da"
+   ],
+   "n_records": 52,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/efros_ptower/experiments/phase1/stage1_ptower_20_009_P15_C_L8_w0.3_h30_foldA_coco_lr0.0001_seed42/checkpoints/best.pth",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/efros_ptower/experiments/phase1/stage1_ptower_20_009_P15_C_L8_w0.3_h30_foldA_coco_lr0.0001_seed42/checkpoints/best.pth",
+   "exists": true,
+   "sha256": "0d76d446796f855a51640d756d6d3436573ff40ed600915980021c5f4cc6ad6d",
+   "recorded_sha256": [
+    "0d76d446796f855a51640d756d6d3436573ff40ed600915980021c5f4cc6ad6d"
+   ],
+   "n_records": 52,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/cf/D0-INST-UQ_train.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/cf/D0-INST-UQ_train.npz",
+   "exists": true,
+   "sha256": "603a1ef90dbb8af219621557fe107bb6496dda0a6c88c909a43013a797d16c79",
+   "recorded_sha256": [
+    "603a1ef90dbb8af219621557fe107bb6496dda0a6c88c909a43013a797d16c79"
+   ],
+   "n_records": 4,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/cf/D0-RT_train.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/cf/D0-RT_train.npz",
+   "exists": true,
+   "sha256": "d4cb0a79874032f9d7a8effe3e7d96891eccbb8ad72e9cd60eaf92b2d5d932a4",
+   "recorded_sha256": [
+    "d4cb0a79874032f9d7a8effe3e7d96891eccbb8ad72e9cd60eaf92b2d5d932a4"
+   ],
+   "n_records": 2,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/cf/D0_train.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/cf/D0_train.npz",
+   "exists": true,
+   "sha256": "fdbf285bc9278e8a333cc6c3496f8ec44b9f37e049d02ee61cfe63cbd76adace",
+   "recorded_sha256": [
+    "fdbf285bc9278e8a333cc6c3496f8ec44b9f37e049d02ee61cfe63cbd76adace"
+   ],
+   "n_records": 11,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/cf/P0_train.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/cf/P0_train.npz",
+   "exists": true,
+   "sha256": "e7b23991bce769abf6de804b59a9fd7813cca2f969d1655b9d2be0ef8e631cb8",
+   "recorded_sha256": [
+    "e7b23991bce769abf6de804b59a9fd7813cca2f969d1655b9d2be0ef8e631cb8"
+   ],
+   "n_records": 2,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D-GT-INST_train.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D-GT-INST_train.npz",
+   "exists": true,
+   "sha256": "12e308efb6cef7300f9b34a909bc1a35385d26f6abee23cdcc9286d78fd081c9",
+   "recorded_sha256": [
+    "12e308efb6cef7300f9b34a909bc1a35385d26f6abee23cdcc9286d78fd081c9"
+   ],
+   "n_records": 3,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D-GT-INST_val.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D-GT-INST_val.npz",
+   "exists": true,
+   "sha256": "590a72d47bf220c188d24f099c2c42a41ddf78512c8068ab99ec78a5b5e7753f",
+   "recorded_sha256": [
+    "590a72d47bf220c188d24f099c2c42a41ddf78512c8068ab99ec78a5b5e7753f"
+   ],
+   "n_records": 3,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D-GT_train.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D-GT_train.npz",
+   "exists": true,
+   "sha256": "058a9a82d3edfb89ca14819f07928707eb7ca94b82f62738fc4f20d8edfe7ab7",
+   "recorded_sha256": [
+    "058a9a82d3edfb89ca14819f07928707eb7ca94b82f62738fc4f20d8edfe7ab7"
+   ],
+   "n_records": 11,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D-GT_val.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D-GT_val.npz",
+   "exists": true,
+   "sha256": "3e81cb221c074c7d6bf45c6c70cc8284a2d13724f15a1407986f8c47ef0570f0",
+   "recorded_sha256": [
+    "3e81cb221c074c7d6bf45c6c70cc8284a2d13724f15a1407986f8c47ef0570f0"
+   ],
+   "n_records": 11,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D0-INST-UQ_train.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D0-INST-UQ_train.npz",
+   "exists": true,
+   "sha256": "7624d3c86cf2a4a8f7997a3d26450d87a75666bbb1c01058e6cd653a3ab4ff98",
+   "recorded_sha256": [
+    "7624d3c86cf2a4a8f7997a3d26450d87a75666bbb1c01058e6cd653a3ab4ff98"
+   ],
+   "n_records": 3,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D0-INST-UQ_val.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D0-INST-UQ_val.npz",
+   "exists": true,
+   "sha256": "3a090681fcbbbb439f9c2bd5c02f35a47af40671d3b0c641a935537edeee3d16",
+   "recorded_sha256": [
+    "3a090681fcbbbb439f9c2bd5c02f35a47af40671d3b0c641a935537edeee3d16"
+   ],
+   "n_records": 6,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D0-RT_train.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D0-RT_train.npz",
+   "exists": true,
+   "sha256": "9892e3e236abdbd5790a884d6f456cfcdb1fb79b02c2fe0653716769d17b76ad",
+   "recorded_sha256": [
+    "9892e3e236abdbd5790a884d6f456cfcdb1fb79b02c2fe0653716769d17b76ad"
+   ],
+   "n_records": 2,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D0-RT_val.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D0-RT_val.npz",
+   "exists": true,
+   "sha256": "259ff024f6d7cf458d473cffd0785f2613b13bb406c676b85d99d9570e961aa1",
+   "recorded_sha256": [
+    "259ff024f6d7cf458d473cffd0785f2613b13bb406c676b85d99d9570e961aa1"
+   ],
+   "n_records": 3,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D0_train.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D0_train.npz",
+   "exists": true,
+   "sha256": "cdecdb958fd97d0ab5848f89e914fe049ecd776a89391096eced9185241288da",
+   "recorded_sha256": [
+    "cdecdb958fd97d0ab5848f89e914fe049ecd776a89391096eced9185241288da"
+   ],
+   "n_records": 6,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D0_val.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/D0_val.npz",
+   "exists": true,
+   "sha256": "4403d1fed34e3115f23d972fa98887fc653209a2e00b995b8ff2d821af3f6650",
+   "recorded_sha256": [
+    "4403d1fed34e3115f23d972fa98887fc653209a2e00b995b8ff2d821af3f6650"
+   ],
+   "n_records": 16,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P-GT_train.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P-GT_train.npz",
+   "exists": true,
+   "sha256": "6cb729a9724efdf51aa8d92e239d7755aa6d564fe4edd2ce1ba76b7e3cf79699",
+   "recorded_sha256": [
+    "6cb729a9724efdf51aa8d92e239d7755aa6d564fe4edd2ce1ba76b7e3cf79699"
+   ],
+   "n_records": 2,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P-GT_val.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P-GT_val.npz",
+   "exists": true,
+   "sha256": "d21a3cf09246aece268a208ee6fe19ac40bbf561af202143ab3de2e196ccfd2a",
+   "recorded_sha256": [
+    "d21a3cf09246aece268a208ee6fe19ac40bbf561af202143ab3de2e196ccfd2a"
+   ],
+   "n_records": 2,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P0_train.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P0_train.npz",
+   "exists": true,
+   "sha256": "e58308d39813b490de494c8bfaf5fa772c072e39e2c9d19bc011a2f96a056009",
+   "recorded_sha256": [
+    "e58308d39813b490de494c8bfaf5fa772c072e39e2c9d19bc011a2f96a056009"
+   ],
+   "n_records": 1,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P0_val.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P0_val.npz",
+   "exists": true,
+   "sha256": "082387a092fe456d349c8cc46d6344042396bc39911461d88d2c51841b03dae8",
+   "recorded_sha256": [
+    "082387a092fe456d349c8cc46d6344042396bc39911461d88d2c51841b03dae8"
+   ],
+   "n_records": 2,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/signals/shuffle/D0-INST-UQ_train.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/signals/shuffle/D0-INST-UQ_train.npz",
+   "exists": true,
+   "sha256": "534360a1afeba62093c42b226a1a0b323b7c34f72bf74b705e35241f6582f1e4",
+   "recorded_sha256": [
+    "534360a1afeba62093c42b226a1a0b323b7c34f72bf74b705e35241f6582f1e4"
+   ],
+   "n_records": 2,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/signals/shuffle/D0-INST-UQ_val.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/signals/shuffle/D0-INST-UQ_val.npz",
+   "exists": true,
+   "sha256": "e010ba9bf3de861b4771f434116cea0ca396b4513f8d2c155e71835778fe9c6f",
+   "recorded_sha256": [
+    "e010ba9bf3de861b4771f434116cea0ca396b4513f8d2c155e71835778fe9c6f"
+   ],
+   "n_records": 2,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/signals/shuffle/D0-RT_train.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/signals/shuffle/D0-RT_train.npz",
+   "exists": true,
+   "sha256": "902e1ef1921a7811e197736df667ab02b1e35779c193a8cdfa76f56cc0b0a228",
+   "recorded_sha256": [
+    "902e1ef1921a7811e197736df667ab02b1e35779c193a8cdfa76f56cc0b0a228"
+   ],
+   "n_records": 1,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/signals/shuffle/D0-RT_val.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/signals/shuffle/D0-RT_val.npz",
+   "exists": true,
+   "sha256": "7712b191a7d2ca924b6945220b73cae9eba80274644374cd7ed3a736271994bf",
+   "recorded_sha256": [
+    "7712b191a7d2ca924b6945220b73cae9eba80274644374cd7ed3a736271994bf"
+   ],
+   "n_records": 1,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/signals/shuffle/D0_train.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/signals/shuffle/D0_train.npz",
+   "exists": true,
+   "sha256": "3db75c460cbffef563bf32fe1e96eba69fd3a0a22db0e7acb32499c8bd442a7d",
+   "recorded_sha256": [
+    "3db75c460cbffef563bf32fe1e96eba69fd3a0a22db0e7acb32499c8bd442a7d"
+   ],
+   "n_records": 5,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/signals/shuffle/D0_val.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/signals/shuffle/D0_val.npz",
+   "exists": true,
+   "sha256": "ee6c21da462bf4ad7996cd3d5dd19ae671dc8418da69aad2de4f216e132991c3",
+   "recorded_sha256": [
+    "ee6c21da462bf4ad7996cd3d5dd19ae671dc8418da69aad2de4f216e132991c3"
+   ],
+   "n_records": 5,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/signals/shuffle/P0_train.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/signals/shuffle/P0_train.npz",
+   "exists": true,
+   "sha256": "09814ab2f51153a8c4b3640de5613ed121b47bf7dafa6519014daef15598e843",
+   "recorded_sha256": [
+    "09814ab2f51153a8c4b3640de5613ed121b47bf7dafa6519014daef15598e843"
+   ],
+   "n_records": 1,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/signals/shuffle/P0_val.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/signals/shuffle/P0_val.npz",
+   "exists": true,
+   "sha256": "9ffc4e4d84a430106d12af43e6e26c81280e73e7ef7eddc850a0b2f93e01a113",
+   "recorded_sha256": [
+    "9ffc4e4d84a430106d12af43e6e26c81280e73e7ef7eddc850a0b2f93e01a113"
+   ],
+   "n_records": 1,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-four-new-types/xq/missed_train.json",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-four-new-types/xq/missed_train.json",
+   "exists": true,
+   "sha256": "c312323d6decfc0e0aadebef1cc280f06fe3b0ad64775c2f51fe8dcee1d30a6d",
+   "recorded_sha256": [
+    "c312323d6decfc0e0aadebef1cc280f06fe3b0ad64775c2f51fe8dcee1d30a6d"
+   ],
+   "n_records": 1,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-31-grasp-pilot-probe/signals/g_train.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-stage2-w23-bengio/copied/grasp-pilot-probe/signals/g_train.npz",
+   "exists": true,
+   "sha256": "741cecb5d42decd74b472340465888f0c4be1dc40681530725576a9f97496996",
+   "recorded_sha256": [
+    "741cecb5d42decd74b472340465888f0c4be1dc40681530725576a9f97496996"
+   ],
+   "n_records": 3,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-10-31-grasp-pilot-probe/signals/g_val.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-stage2-w23-bengio/copied/grasp-pilot-probe/signals/g_val.npz",
+   "exists": true,
+   "sha256": "235e2c2bde3a04787d7a8a96085f80f7dfa0241afd3eb6c297e5daf26da51943",
+   "recorded_sha256": [
+    "235e2c2bde3a04787d7a8a96085f80f7dfa0241afd3eb6c297e5daf26da51943"
+   ],
+   "n_records": 3,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/signals/A/g_pred_CF_train.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-stage2-w23-bengio/copied/grasp-pilot-g/signals/A/g_pred_CF_train.npz",
+   "exists": true,
+   "sha256": "ed086f44877f8097d041a2374ab63607b1651798add61ed8fd138efa7b978b60",
+   "recorded_sha256": [
+    "ed086f44877f8097d041a2374ab63607b1651798add61ed8fd138efa7b978b60"
+   ],
+   "n_records": 2,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/signals/A/g_pred_CF_val.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-stage2-w23-bengio/copied/grasp-pilot-g/signals/A/g_pred_CF_val.npz",
+   "exists": true,
+   "sha256": "616121b2a18b58999384ef5cd6c801cb553dcf188754c92d25ca1a09d2933831",
+   "recorded_sha256": [
+    "616121b2a18b58999384ef5cd6c801cb553dcf188754c92d25ca1a09d2933831"
+   ],
+   "n_records": 2,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/signals/A/g_pred_noCF_train.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-stage2-w23-bengio/copied/grasp-pilot-g/signals/A/g_pred_noCF_train.npz",
+   "exists": true,
+   "sha256": "ddc41ea5243e5abe11c0286b218eceaee752176aa63f0da6584980e3c6f47939",
+   "recorded_sha256": [
+    "ddc41ea5243e5abe11c0286b218eceaee752176aa63f0da6584980e3c6f47939"
+   ],
+   "n_records": 1,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/signals/A/g_pred_noCF_val.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-stage2-w23-bengio/copied/grasp-pilot-g/signals/A/g_pred_noCF_val.npz",
+   "exists": true,
+   "sha256": "616121b2a18b58999384ef5cd6c801cb553dcf188754c92d25ca1a09d2933831",
+   "recorded_sha256": [
+    "616121b2a18b58999384ef5cd6c801cb553dcf188754c92d25ca1a09d2933831"
+   ],
+   "n_records": 1,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/signals/A/g_shuffle_train.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-stage2-w23-bengio/copied/grasp-pilot-g/signals/A/g_shuffle_train.npz",
+   "exists": true,
+   "sha256": "3138ea720b813dbb5b87c3a99f5822a7ac883950ffada9c9bd02de3954423d6e",
+   "recorded_sha256": [
+    "3138ea720b813dbb5b87c3a99f5822a7ac883950ffada9c9bd02de3954423d6e"
+   ],
+   "n_records": 1,
+   "records_agree": true,
+   "match": true
+  },
+  {
+   "recorded_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/signals/A/g_shuffle_val.npz",
+   "local_path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-stage2-w23-bengio/copied/grasp-pilot-g/signals/A/g_shuffle_val.npz",
+   "exists": true,
+   "sha256": "d92f029f1d9c3329ea8f6f42073ac762628445070d699072b247b1e26778c78f",
+   "recorded_sha256": [
+    "d92f029f1d9c3329ea8f6f42073ac762628445070d699072b247b1e26778c78f"
+   ],
+   "n_records": 1,
+   "records_agree": true,
+   "match": true
+  }
+ ],
+ "flip_control": {
+  "source": "/home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth",
+  "copy": "/tmp/claude-1000/-home-ubuntu-slocal2-m2/851ef26f-d50d-4197-98b6-75400e690796/scratchpad/flip/flipped_best_ap.pth",
+  "sha256": "576df307fb0fcc714240204c71812b3888c9a6099464159e6b2157407dc38ecf",
+  "matches_record": false
+ }
+}

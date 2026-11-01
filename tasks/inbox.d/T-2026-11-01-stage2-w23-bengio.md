@@ -1,0 +1,4 @@
+- [x] 2026-11-02 [cc] P3 は W3 だけ回す。P3 の W1 が既に --trainable w2 で、SPEC §3.1 の P3 の W2 が W1 と同じ学ぶ集合になるため。利用者が決めた（tasks/T-2026-11-01-stage2-w23-bengio/audit.md「利用者の決定」）
+- [x] 2026-11-02 [cc] dp_train.py の W&B は手元だけに記録する（WANDB_MODE=offline、仮の WANDB_API_KEY、WANDB_DIR=本契約の置き場）。契約 §7.10 が外部への送信を task-report に限るため。三本目と同じ形で、利用者が決めた（audit.md C-1b）
+- [x] 2026-11-02 [cc] 確認不足で W&B へオンラインで送られた試走 1 本（run ntyprqmi）は削除せず残し、報告の逸脱に書く。利用者が決めた（audit.md C-1b）
+- [ ] 2026-11-02 [cc] scripts/task_start_classify.py の「起点に無い経路は .git/info/exclude に足せば切り替えで触れられない」という案内は、.gitignore の打ち消し（!experiments/**/logs/*.json など）が exclude より優先する経路では効かない。案内に条件を足すか、足した後に分類をやり直して確かめる形を検討する（audit.md 0-1）

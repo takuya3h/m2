@@ -32,6 +32,14 @@
     --grasp-pred-dir     G の予測の g の置き場（契約 T-2026-11-01-grasp-pilot-g で足した。GA の予測の腕のときだけ要る）
                          g_pred_noCF_{part}.npz・g_pred_CF_{part}.npz・g_shuffle_{part}.npz（frame_ids、x (N, 14)、flag）
 GA は epoch ごとの界面の重みの絶対値の最大と L2 ノルムを logs/history.json に書く。
+
+契約 T-2026-11-01-stage2-w23-bengio（SPEC §3.1）で足した学習範囲。渡さなければ（既定 W1）従来の経路のまま:
+    --scope W2   界面 ＋ 時間ヘッドの最後の段（refine_stages の最後の要素の全体）を学ぶ（train と identity）
+    --scope W3   界面 ＋ 時間ヘッドの全体を学ぶ
+                 受け取り手の学習率と重み減衰は RECEIVER（5e-4、0.01）。時間ヘッドは W1 と同じく eval（dropout なし）。
+                 --fixed-epochs と組で使う。界面の重みの置き場に受け取り手の状態も書く
+    scopes       学ぶパラメータの名前の集合を型と学習範囲ごとに出し、SPEC §3.1 の定義（名前の接頭辞）と比べる（学習しない）
+    identity --arms   調べる腕を並べる（--arm より優先）
 """
 from __future__ import annotations
 
@@ -77,6 +85,9 @@ X32_HALF = NT + 1                                          # 15 と旗。予測�
 ARMS = ("empty", "pred_noCF", "gt", "pred_CF", "gtpred_CF", "shuffle")
 # 止め方の規則（DP・W1）。最初の腕を回す前に固定する
 STOP = {"lr": 5e-4, "weight_decay": 0.01, "patience": 10, "max_epochs": 100, "smoothing_weight": 0.3}
+SCOPES = ("W1", "W2", "W3")
+# W2・W3 の受け取り手（時間ヘッド）の学習率と重み減衰（契約 T-2026-11-01-stage2-w23-bengio、SPEC §3.1・§2）
+RECEIVER = {"lr": 5e-4, "weight_decay": 0.01}
 
 
 def inst_name(base, variant):
@@ -258,6 +269,41 @@ def trainable_report(model):
             "equal_with_one_head_param_mixed": mixed == iface}
 
 
+def apply_scope(model, scope):
+    """学習範囲の受け取り手のモジュールを学ぶ（requires_grad）。W1 は何もしない。学ぶ受け取り手のパラメータを返す。"""
+    if scope == "W1":
+        return []
+    module = model.head.refine_stages[-1] if scope == "W2" else model.head
+    params = list(module.parameters())
+    for p in params:
+        p.requires_grad_(True)
+    return params
+
+
+def scope_report(model, scope):
+    """学ぶパラメータの名前の集合が SPEC §3.1 の定義と一致するか（Task C-2）。
+
+    定義は名前の接頭辞で引く（apply_scope のモジュールからの引き方とは別の経路）:
+    W1 = 界面、W2 = 界面 ＋ ``head.refine_stages.<最後>.``、W3 = 界面 ＋ ``head.``。
+    陽性対照として、定義の外のパラメータを一つ混ぜた集合では一致しないことも返す（W3 は外のパラメータが無いので、
+    実在しない名前を一つ混ぜる）。
+    """
+    names = [n for n, _ in model.named_parameters()]
+    trainable = sorted(n for n, p in model.named_parameters() if p.requires_grad)
+    last = len(model.head.refine_stages) - 1
+    prefix = {"W1": (), "W2": (f"head.refine_stages.{last}.",), "W3": ("head.",)}[scope]
+    expected = sorted(n for n in names if n.startswith("iface.") or n.startswith(prefix))
+    outside = [n for n in names if n not in expected]
+    extra = outside[0] if outside else "head.__not_a_parameter__"
+    mixed = sorted(set(trainable) | {extra})
+    receiver = [n for n in trainable if n.startswith("head.")]
+    return {"scope": scope, "definition_prefixes": ["iface.", *prefix], "trainable_names": trainable,
+            "expected_names": expected, "equal": trainable == expected, "n_trainable": len(trainable),
+            "n_receiver_trainable": len(receiver),
+            "receiver_trainable_params": int(sum(p.numel() for n, p in model.named_parameters() if n in receiver)),
+            "mixed_name": extra, "equal_with_one_outside_mixed": mixed == expected}
+
+
 def setup_common(device="cuda"):
     import stage1_ptower as base
     base.deterministic(42)
@@ -274,10 +320,15 @@ def cmd_identity(a):
     arms = [a.arm] if a.arm else [arm for arm in ("pred_noCF", "gt") if not (arm == "gt" and TYPES[a.type][3] is None)]
     if TYPES[a.type][1] == "g30" and not a.arm:
         arms = ["empty", "gt"]
+    if a.arms:
+        arms = a.arms
+    if a.scope != "W1":
+        out["scope"] = a.scope
     for arm in arms:
         sig = Signals(a.type, arm, "val", a.inst_variant)
         torch.manual_seed(0)
         model = DPReceiver(head, TYPES[a.type][0], sig.dim).cuda()
+        apply_scope(model, a.scope)
         data = build_data(split["val"], sig, feats, "cuda")
         base_res, _ = evaluate(model, data, names)
         diff = max_logit_diff(model, head, data)
@@ -303,6 +354,8 @@ def cmd_identity(a):
                     "jaccard_equals_taskB": base_res["phase_jaccard"] == C.PT_RECORD["phase_jaccard"],
                     "perturb_scale": a.perturb_scale, "positive_jaccard": pert["phase_jaccard"],
                     "positive_accuracy": pert["phase_accuracy"], "positive_max_abs_logit_diff": pdiff}
+        if a.scope != "W1":
+            out[arm]["scope_check"] = scope_report(model, a.scope)
     C.write_json(a.out, out)
     print(json.dumps(out, ensure_ascii=False)[:1500])
 
@@ -335,7 +388,13 @@ def cmd_train(a):
     weights, counts = class_weights(train_data, len(names))
     ce = nn.CrossEntropyLoss(weight=torch.tensor(weights, dtype=torch.float32, device="cuda"))
     params = [p for p in model.iface.parameters()]
-    opt = torch.optim.AdamW(params, lr=STOP["lr"], weight_decay=STOP["weight_decay"])
+    if a.scope == "W1":
+        opt = torch.optim.AdamW(params, lr=STOP["lr"], weight_decay=STOP["weight_decay"])
+    else:
+        recv_params = apply_scope(model, a.scope)
+        opt = torch.optim.AdamW([{"params": params},
+                                 {"params": recv_params, "lr": RECEIVER["lr"], "weight_decay": RECEIVER["weight_decay"]}],
+                                lr=STOP["lr"], weight_decay=STOP["weight_decay"])
     head_digest = C.sha256(C.PT_HEAD_CKPT)
     head_state0 = {k: v.clone() for k, v in model.head.state_dict().items()}
     fixed = a.fixed_epochs
@@ -360,7 +419,15 @@ def cmd_train(a):
                    grasp_signal_dir=str(GRASP_DIR), grasp_pred_dir=str(GRASP_PRED_DIR))
     if sig_tr.kind == "x32":
         cfg.update(x_layout={"train": sig_tr.layout(), "val": sig_va.layout()}, trainable=trainable_report(model))
-    desc = f"{a.type}_{a.arm}" + (f"_ep{fixed}" if fixed else "") + ("_smoke" if a.max_epochs or a.smoke else "")
+    if a.scope != "W1":
+        sc = scope_report(model, a.scope)
+        cfg.update(scope=a.scope, scope_check=sc, receiver_optim={**RECEIVER, "optimizer": "AdamW（界面と別の群）"},
+                   receiver_trainable_params=sc["receiver_trainable_params"])
+        cfg["receiver"]["mode"] = (f"trained ({a.scope}: " + ("last refine stage" if a.scope == "W2" else "whole temporal head")
+                                   + "), eval (dropout off)")
+        if not sc["equal"]:
+            raise SystemExit(f"学ぶ集合が定義と一致しない: {a.scope}")
+    desc =f"{a.type}_{a.arm}" + (f"_ep{fixed}" if fixed else "") + ("_smoke" if a.max_epochs or a.smoke else "")
     manager = ExperimentManager(C.ROOT / "experiments", "phase1", a.exp_prefix, desc, a.seed)
     manager.setup(cfg)
     run = tracking.init(manager.exp_id, config=cfg, group=a.task_id, job_type=a.exp_prefix, exp_dir=manager.exp_dir)
@@ -410,8 +477,11 @@ def cmd_train(a):
             best_score, stale = score, 0
             best = {**val, "epoch": epoch}
             best_probs = probs
-            torch.save({"iface": model.iface.state_dict(), "epoch": epoch, "type": a.type, "arm": a.arm,
-                        "seed": a.seed, "signal_dim": sig_tr.dim}, ckpt)
+            state = {"iface": model.iface.state_dict(), "epoch": epoch, "type": a.type, "arm": a.arm,
+                     "seed": a.seed, "signal_dim": sig_tr.dim}
+            if a.scope != "W1":
+                state.update(scope=a.scope, receiver=model.head.state_dict())
+            torch.save(state, ckpt)
         else:
             stale += 1
         if not fixed and stale >= STOP["patience"]:
@@ -429,6 +499,13 @@ def cmd_train(a):
                "iface_params": cfg["iface_params"], "iface_ckpt": str(ckpt), "iface_ckpt_sha256": C.sha256(ckpt)}
     if init_gate:
         metrics.update(init_gate=init_gate, gate_by_epoch={h["epoch"]: h["gate"] for h in history})
+    if a.scope != "W1":
+        trained = {n[len("head."):] for n in cfg["scope_check"]["trainable_names"] if n.startswith("head.")}
+        now = model.head.state_dict()
+        outside = [k for k in head_state0 if k not in trained]
+        metrics.update(scope=a.scope, receiver_trained_changed=any(not torch.equal(head_state0[k], now[k]) for k in trained),
+                       receiver_outside_scope_unchanged=all(torch.equal(head_state0[k], now[k]) for k in outside),
+                       receiver_outside_scope_n=len(outside))
     if a.arm == "empty":
         metrics["negative_control"] = negative_control(a, model, ckpt, head, split, feats, names)
     manager.log_metrics(metrics)
@@ -440,9 +517,12 @@ def cmd_train(a):
              **{v: p.astype(np.float32) for v, p in best_probs.items()})
     how = (f"{fixed} epoch 学習し途中で止めない。結果は {fixed} epoch 目の状態（最良の回を選ばない）。" if fixed
            else "val だけで評価し選ぶ。")
+    scope_text = "受け取り手は確定塔の時間ヘッド（凍結）。界面だけを学ぶ（W1）。" if a.scope == "W1" else (
+        f"受け取り手は確定塔の時間ヘッド（eval、dropout なし）。界面と時間ヘッドの"
+        f"{'最後の段' if a.scope == 'W2' else '全体'}を学ぶ（{a.scope}、受け取り手の学習率 {RECEIVER['lr']}）。")
     (manager.exp_dir / "notes.md").write_text(
-        f"# 非公式（{a.task_id}） DP {a.type} {a.arm} seed {a.seed}\n\n"
-        f"受け取り手は確定塔の時間ヘッド（凍結）。界面だけを学ぶ（W1）。{how}test は通していない。\n"
+        f"# 非公式（{a.task_id}） DP {a.type} {a.arm} seed {a.seed}{'' if a.scope == 'W1' else ' ' + a.scope}\n\n"
+        f"{scope_text}{how}test は通していない。\n"
         f"{'result' if fixed else 'best'} epoch {best['epoch']} / val macro Jaccard {best['phase_jaccard']} / "
         f"accuracy {best['phase_accuracy']}\n"
         f"epochs {epoch}（停止 {stopped}）、学習前 Jaccard {init_res['phase_jaccard']}\n")
@@ -467,6 +547,27 @@ def negative_control(a, model, ckpt, head, split, feats, names):
             "max_abs_logit_diff": d, "unchanged": d == 0.0}
 
 
+def cmd_scopes(a):
+    """型と学習範囲ごとの学ぶパラメータの名前の集合（Task C-2・C-4。学習しない、特徴も読まない）。"""
+    head = C.load_ptower_head(device="cpu")
+    out = {"task_id": a.task_id, "types": {}}
+    for t in a.types or list(TYPES):
+        dim = Signals(t, "empty", "val", "uq").dim
+        row = {"signal_dim": dim}
+        for scope in a.scopes:
+            model = DPReceiver(head, TYPES[t][0], dim)
+            apply_scope(model, scope)
+            rep = scope_report(model, scope)
+            if scope == "W1":
+                rep["equals_trainable_report"] = trainable_report(model)["equal"]
+            row[scope] = rep
+        out["types"][t] = row
+    C.write_json(a.out, out)
+    print(json.dumps({t: {s: (r[s]["equal"], r[s]["equal_with_one_outside_mixed"], r[s]["n_trainable"],
+                              r[s].get("equals_trainable_report")) for s in a.scopes}
+                      for t, r in out["types"].items()}, ensure_ascii=False))
+
+
 def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -479,6 +580,13 @@ def main():
     i.add_argument("--task-id", default=C.TASK_ID, help="記録に書く契約の識別子")
     i.add_argument("--grasp-signal-dir", default=None, help="GA の g_{train,val}.npz の置き場")
     i.add_argument("--grasp-pred-dir", default=None, help="GA の予測の g の置き場")
+    i.add_argument("--arms", nargs="+", choices=ARMS, default=None, help="調べる腕を並べる（--arm より優先）")
+    i.add_argument("--scope", choices=SCOPES, default="W1", help="学習範囲（学ぶ集合を記録する。出力は変えない）")
+    s = sub.add_parser("scopes")
+    s.add_argument("--types", nargs="+", choices=list(TYPES), default=None)
+    s.add_argument("--scopes", nargs="+", choices=SCOPES, default=list(SCOPES))
+    s.add_argument("--out", required=True)
+    s.add_argument("--task-id", default=C.TASK_ID, help="記録に書く契約の識別子")
     t = sub.add_parser("train")
     t.add_argument("--type", required=True, choices=list(TYPES))
     t.add_argument("--arm", required=True, choices=ARMS)
@@ -492,17 +600,21 @@ def main():
     t.add_argument("--smoke", action="store_true", help="--fixed-epochs の短い試走の印")
     t.add_argument("--grasp-signal-dir", default=None, help="GA の g_{train,val}.npz の置き場")
     t.add_argument("--grasp-pred-dir", default=None, help="GA の予測の g の置き場")
+    t.add_argument("--scope", choices=SCOPES, default="W1",
+                   help="学習範囲。W2 = 界面 ＋ 時間ヘッドの最後の段、W3 = 界面 ＋ 時間ヘッドの全体（既定 W1 = 界面だけ）")
     a = ap.parse_args()
     global GRASP_DIR, GRASP_PRED_DIR
-    GRASP_DIR = a.grasp_signal_dir
-    GRASP_PRED_DIR = a.grasp_pred_dir
+    GRASP_DIR = getattr(a, "grasp_signal_dir", None)
+    GRASP_PRED_DIR = getattr(a, "grasp_pred_dir", None)
+    if a.cmd == "train" and a.scope != "W1" and not a.fixed_epochs:
+        raise SystemExit("--scope W2・W3 は --fixed-epochs と組で使う")
     if a.cmd == "train" and a.fixed_epochs and a.max_epochs:
         raise SystemExit("--fixed-epochs と --max-epochs は組み合わせない")
     if a.cmd == "train" and a.smoke and not a.fixed_epochs:
         raise SystemExit("--smoke は --fixed-epochs と組で使う（従来の試走は --max-epochs）")
     if a.cmd == "train" and TYPES[a.type][1] == "tok" and a.inst_variant is None:
         raise SystemExit("D3 の型は --inst-variant（literal か uq）を渡す")
-    {"identity": cmd_identity, "train": cmd_train}[a.cmd](a)
+    {"identity": cmd_identity, "train": cmd_train, "scopes": cmd_scopes}[a.cmd](a)
 
 
 if __name__ == "__main__":
