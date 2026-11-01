@@ -6,8 +6,51 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 144 件）。
-ここに出ない 139 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 145 件）。
+ここに出ない 140 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-11-01-grasp-pilot-g
+
+状態 `pass` / ホスト `andrew` / 起票 `274` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 起点 origin/phase0 ebc35d7b に PR 272（merge commit c942fd13）の scripts/grasppilot/ 17 ファイルと一本目の契約のフォルダが在る。proc_enum で本契約以外の compute プロセス 0 件、空き 1,677,513,785,344 B、試験の失敗 6 件、二つの仮想環境の要約値、GPU 0・1 の電力の上限 300 W（RTX A6000）を記録した
+- `G2` pass — 直した C3 が手注釈の実在する 25 区間（03_3 を含まない）の被覆と集合件数 57,172 で判定し、HTS の候補（hand_seg・hand_tool_seg）の主判定 C1〜C4 は ALL PASS。03_3 を戻した写しで不合格、1 件除いた写しで 57,171・不合格、入力を隠した写しで FileNotFoundError。既存の acceptance_report.json の sha256 は不変
+- `G3` pass — G の 3 本が収束規則（利用者の決定で最良が 4 epoch 更新されなければ打ち切りに変えた）で止まり、train の 9,657 フレームの信号はすべてその動画を学んでいない半分の G から作った（外れ 0 件、確定の G の信号を 5 フレーム混ぜた写しで 5 件）。t の 16 値の和の誤差 1.2e-7。通した動画は train 10・val {09,10}
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — SPEC §2 と利用者の決定 1 は 57,172 と 57,173 の差 1 件を正本の完全重複とするが、05_1_0575.jpg の ann 1519・1520 はフレーム・枠・クラスが同じでマスクが違う（面積 542,293 と 542,541、RLE の sha256 が違う）。マスクまで鍵に入れると集合件数は 57,173 になり閾値 57,172 を満たさない。前回の数え方の鍵（フレーム・枠・クラス）で判定した
+- `check_does_not_check` — SPEC §8-a と Task A-3・A-2 の確認は開始時の状態だけを見るが、実行中に同期処理が別の契約の出力（experiments/phase1/grasppilot3x_* の 5 フォルダ）を置き場へ運んだ。指示どおり作業ツリーで forbidden-check を回すと違反 6 件を出し、開始時の検査ではこれを捕まえられない
+- `asymmetric_comparison` — SPEC §3.4 は案 A の予測の腕の旗を全フレーム 1、空の腕を全 0 とするため、Δ空 に一定の入力（旗の列）を学んだ分が混ざる。書かれたとおりに Δ空 を読むと予測-noCF の −0.0065 を信号の効果と読むが、入れ替えの腕も −0.0062 で、信号の中身による差（Δ入替）は −0.0002 だった
+- `asserted_without_measuring` — SPEC §3.3 は案 D の q に一本目の §3.3 の式（正解の 0 と 1 のマスク向け）を G の確率にそのまま当てるとするが、G の確率の地図では左右と両手の器具が同じ画素で重なり、train の 32,272 枠のうち 11 枠で行の和が 1 を超えた（最大 1.538）。q を確率の分布として使う前提が崩れる
+
+### 逸脱
+
+- `judgement` — 利用者の決定（2026-11-01）: G の収束規則を「val の 38 クラスの mask mAP の最良が 4 epoch 更新されなければ打ち切り」に変えた（SPEC §3.2 の学習率を下げた後の再停滞を待たない）。scripts/grasppilot/g_early_stop.py が外から打ち切り、記録を書いた。H1 は即時に打ち切り。案 A・B・C の長さは変えていない
+- `judgement` — C3 の集合件数の鍵を（フレーム名, 枠を小数 2 桁に丸めたもの, クラス）にした（前回の hand_count.py と同じ）。マスクは鍵に入れない（入れると 57,173）。検査器に入出力の引数を足し、既定の入出力は従来の経路のまま
+- `environment` — G は fp32 で学習した。fp16 の自動混合精度は試走の 40 歩目で損失が非数になった
+- `judgement` — G の評価の RLE 化を GPU に移した（600 マスクで pycocotools の encode と counts・size がビット一致、1 枚 0.318 → 0.035 秒）。そのため G の 3 本を 01:55 に止めて起動し直した。途中の出力は $S/aborted/try1/ へ移した
+- `judgement` — 終わりを早めるため、案 B の空・正解の腕を一度止めて GPU 1 の空く時間に回し直し、確定の G を 10:03〜11:48 に一時停止して案 D の標的を先に出し、案 C の教師の腕を一時停止の後に GPU 1 で最初から起こし直し、案 B の 2 腕を GPU 0 から GPU 1 へ移した。止めた run の出力は消さず $S/aborted/ へ移した
+- `judgement` — 案 D の train の q と目録を H1・H2 の G だけで作り、確定の G を待たずに分岐へ push した（11:47、ee23928a）。val の q は確定の G の後に足した（1f672646）。Draft の PR #274 を開いた
+- `judgement` — 案 C の特徴の取り出しは折り A の train と val の 11,172 フレームだけにし（記録は全動画 15,437）、test のマニフェストを開かない派生（ptower_aux.py）にした。処方は記録の config.yaml を読む
+- `judgement` — 案 D の q の行の和が 1 を超える枠 11 個（Σr > 1、最大 1.538）を正規化せず、目録に件数と注記を書いた
+- `environment` — 作業ツリーの make forbidden-check は、実行中に同期処理が運んだ別の契約の出力（experiments/phase1/grasppilot3x_*）で違反 6 件を出す。分岐の HEAD の写しで同じ道具を回して pass を確かめた。届いたファイルには触れていない
+
+### 申し送り
+
+- 三本目（T-2026-11-01-grasp-pilot-d、bengio）は experiments/analysis/grasp_pilot_g/targets/D_manifest.json を見て andrew の /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/signals/D/q_CF_train.npz を写す（sha256 6c41a912ac745f3b0deb09304bbe627da3c9830993083c090ffaf91914fbfa8d、32,272 枠）。11 枠で q の行の和が 1 を超えるので、確率として使うなら正規化を決める
+- 案 A の予測の腕の Δ空 は旗の列の分を含む。信号の中身の差は Δ入替（予測-noCF − 入れ替え）で読む。空の腕の旗を 1 にした腕を置くかは次の契約で決める
+- 案 C の時間ヘッドは最後の状態（epoch 18）で約 0.09 低い。補助損失の効果を読むなら止め方の扱い（最良の回か最後の状態か）を決め直す必要がある
+- G の val の値は epoch の間で ±0.03 揺れ、改善の幅と同じくらい。G の最良の epoch の選び方に偶然が入る
+- experiments/phase1/grasppilot3x_* は同期で届いた別の契約の出力。本契約は触れていない。その契約の統合を確かめる
+
+### 断定できなかったこと
+
+- experiments/phase1/grasppilot3x_* の出所の契約とホスト（本契約からは他の台を見ない）
+- 案 B の正解の腕の一本目との差（0.7366077 → 0.7364481）が bf16 の非決定性だけによるか
+- G と案 C の run の W&B の記録の有無（tracking.init は呼んだが、run の置き場に wandb_run.json は無い）
 
 ## T-2026-11-01-grasp-pilot-d
 
@@ -165,40 +208,4 @@
 - 目標で収まった構成の、収まる batch の上限（探索の規則により測っていない）。
 - データの読み込みを含む一歩の時間（較正以外の行）。MoCo v2 と映像 MAE は、batch 256 の読み込みが律速になりうる。
 - mamba-ssm の非決定が selective scan と causal-conv1d のどちらの核の逆伝播によるか。
-
-## T-2026-10-23-gaze-data-survey
-
-状態 `pass` / ホスト `Andrew` / 起票 `265` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 分岐 feat/gaze-data-survey、HEAD と merge-base はともに origin/phase0 d013c5f1、作業ツリーの汚れは task-start が取り込んだ契約 2 件（SPEC.md と spec.yaml）だけ。
-
-### 起票者の誤り
-
-- `check_does_not_check` — Task B-2 の内容の探索は対象を raw/ego の各動画のディレクトリと annotations/ に限るが、視線が実際に届いた data/raw/gaze/ はその集合の外にある。書かれたとおりに探すと、data/raw の下に置かれた視線を見落とす。実行では data/raw と data/annotations の全体に広げた。
-- `asserted_without_measuring` — §3 は README の値を確定した事実として書くが、raw/ego の 01〜15 の jpg は 15,440 ではなく 15,437 枚で、manifest の 1,796 枚は raw/ego ではなく data/raw/OpenSurgery_Dataset/01_frames/initial_videos/ にある。画像のファイルを分母にすると、§3 の数と置き場では照合できない。
-
-### 逸脱
-
-- `judgement` — 名前の探索を andrew の全 4 装置とホームへ、内容の探索を data/raw と data/annotations の全体へ広げた（SPEC は data/ と ~/slocal2/ の直下、raw/ego と annotations/ に限る）。
-- `judgement` — 三つの方法で見つからなかった後に利用者へ置き場を聞き、利用者が契約の途中で data/raw/gaze/ に送った（ディレクトリの更新は JST 16:01）。b の「対象が無い」は届く前の判定で、c〜e は届いた版を測った。
-- `environment` — 公式配布の確認は CLAUDE.md の ctxpack が andrew に無いため WebFetch で読んだ。利用者の承認を得て、読むだけで取得はしていない。
-- `judgement` — 全行 x==y のまま計測した（利用者の決定）。ヒートマップは原点を左上と仮定し、σ は仮の 64 px。
-- `environment` — origin/phase0 が契約の開始後に f3d5945f へ進んだ（PR 263 と 264）ため、forbidden-check を起点 d013c5f1 を基準にしても回した。既定の基準でも pass。
-- `judgement` — 置き場に計測のスクリプト survey.py と出力 summary.json、coverage_by_video.csv を置いた（図は 1 枚）。
-- `environment` — 試験の前の失敗は 7 件で、前の契約の 6 件に 2 GPU の試験 test_stage1_ptower_r3_dist の 1 件が加わっている。本契約の変更より前からある。
-
-### 申し送り
-
-- 視線の書き出しを直した版（x と y が別の値）を利用者から受け取り、同じ survey.py で測り直す。案 1 の実装の契約はそれを待つ。
-- 座標の原点（左上か左下か）と元のサンプリングのレートを、視線の書き出しの元（記録の装置と書き出しの処理）から確かめる。
-- prereg には、17〜21 の末尾 8 枚（20_6_0284、20_7_0092〜0098）の扱いと、視線はあるが工程注釈の無い 14 クリップ（22,254 フレーム）を事前学習に使うかを書く。
-
-### 断定できなかったこと
-
-- 座標の原点（左上か左下か）。
-- 元のサンプリングのレート（ファイルは 1 フレーム 1 点に集約済み）。
-- x と y のどちらが正しい値か、あるいはどちらでもないか。
-- raw/ego の 15,440 と 15,437 の差の 3 が .gitkeep の数か。
 

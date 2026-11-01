@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（718 件）
+## 未処理（722 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -733,6 +733,10 @@
 - [ ] 2026-10-31 [cc] 塔単独の再現の許容差 0.005（overall mAP）は別 seed の検出塔を見分けられない。次の契約では標的群 AP か予測の一致で照合する（tasks/T-2026-10-31-grasp-pilot-probe/RESULT.md §5）
 - [ ] 2026-11-01 [cc] make forbidden-check は未追跡のファイルを数えるため、並行する契約の出力が同期で届くと本契約の操作によらず fail する。追跡下か commit の差分だけを見る形を検討する（RESULT.md §5）
 - [ ] 2026-11-01 [cc] 案 D の標的は 97.5% が「なし」最大で、頭の当たり 0.977 はほぼその割合。続けるなら、なし以外の枠の当たりを別に測る（experiments/analysis/grasp_pilot_d/REPORT.md §3）
+- [ ] 2026-11-01 [cc] 利用者の決定: G の収束規則を「最良が 4 epoch 更新されなければ打ち切り」に変えた（SPEC §3.2 の学習率を下げた後の再停滞を待たない）。案 A・B・C の長さは変えていない（scripts/grasppilot/g_early_stop.py）
+- [ ] 2026-11-01 [cc] 利用者の指示「三本目の案 D に渡す標的を最優先」で、案 D の目録を H1・H2 だけで作り 11:47 に push した（確定の G を 10:03〜11:48 一時停止）。q の行の和が 1 を超える枠が 11 個あり、正規化するかは三本目で決める（experiments/analysis/grasp_pilot_g/targets/D_manifest.json）
+- [ ] 2026-11-01 [cc] 案 A の予測の腕は旗が全フレーム 1、空の腕は 0 のため、Δ空 に旗の分が混ざる（予測-noCF −0.0065、入れ替え −0.0062）。空の腕の旗の扱いを次の契約で決める（tasks/T-2026-11-01-grasp-pilot-g/RESULT.md §4）
+- [ ] 2026-11-01 [cc] 同期で別の契約の出力 experiments/phase1/grasppilot3x_* が andrew の作業ツリーに届き、作業ツリーの forbidden-check が違反を出す。本契約は触れていない。出所の契約の統合を確かめる
 
 ## 処理済み（4 件）
 
