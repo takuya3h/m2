@@ -75,4 +75,4 @@
 ## 8. 送出
 
 - PR: #275（Draft でない、base phase0、分岐 feat/grasp-pilot-d）
-- `make task-report` の終了コード: （送出後に追記）
+- `make task-report` の終了コード: 0（verdict pass、n_issuer_defects 3、report_sha256 46d15adf…a6e5、7,906 B、2026-11-01 22:5x JST）
