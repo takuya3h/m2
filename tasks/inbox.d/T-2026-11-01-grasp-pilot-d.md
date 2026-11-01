@@ -1,1 +1,5 @@
 - [x] 2026-11-01 [cc] 案 D の q(b) は presets.detr の左右反転のとき左手と右手を入れ替える（両手・なしはそのまま）。SPEC に記載が無く、利用者が決めた（tasks/T-2026-11-01-grasp-pilot-d/audit.md C-1）
+- [x] 2026-11-01 [cc] 二本目の案 D の q のうち 4 値の和が 1 を超える 11 枠（Σr > 1、最大 1.538）は、その枠だけ和で割って使う。SPEC D-2 に扱いが無く、利用者が決めた（tasks/T-2026-11-01-grasp-pilot-d/audit.md D-2）
+- [x] 2026-11-01 [cc] 案 A の dp_train.py が W&B を必須にして止まったため、W&B は WANDB_MODE=offline で手元だけに記録し、止まった空の実験フォルダは版管理の外へ移す。利用者が決めた（audit.md 追加の測定 X-4）
+- [ ] 2026-11-01 [cc] make forbidden-check は未追跡のファイルを数えるため、並行する契約の出力が同期で届くと本契約の操作によらず fail する。追跡下か commit の差分だけを見る形を検討する（RESULT.md §5）
+- [ ] 2026-11-01 [cc] 案 D の標的は 97.5% が「なし」最大で、頭の当たり 0.977 はほぼその割合。続けるなら、なし以外の枠の当たりを別に測る（experiments/analysis/grasp_pilot_d/REPORT.md §3）

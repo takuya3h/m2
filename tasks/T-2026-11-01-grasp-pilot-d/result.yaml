@@ -1,0 +1,90 @@
+result_version: 3
+task_id: "T-2026-11-01-grasp-pilot-d"
+status: pass
+host: "bengio"
+branch: "feat/grasp-pilot-d"
+pr: null
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "proc_enum で本契約以外の compute 0 件（nvidia-smi の compute 0、ps の python・torchrun・accelerate 0）。bengio main の Relation-DETR は andrew と違い（source 127 vs 142）、重ねの BODY が andrew と source 142・全 155 ファイル・importlib のパッケージ 72 個で一致。COCO 1x の重み 2d2c19a7… が在り andrew と同値。空き 1,445,682,802,688 B、失敗 11 件と error 1 件の名前、電力の上限 220 W × 2 を記録"}
+  - {id: G2, verdict: pass, note: "pd_eval.py --cfg plain を重ねの BODY で回し、塔単独の val は overall mAP 0.7273450248・標的群 AP 0.7950748009・陰性対照群 0.6726631818。記録との差 0 と 1e-7 未満。別 seed 123 の塔は標的群 +0.0284 で許容差を超えた"}
+  - {id: G3, verdict: pass, note: "d_check.py の 4 batch で重み 0 の全項と合計が頭の無い元の模型・同じ実体の元の forward と差 0.0、0.3 で 全損失−検出の損失 0.351〜0.388（≈0.3×CE）、頭の勾配は 0 と 2.1〜2.7、対応づいた枠 = 正解の枠、取った indices = 照合の計算し直し、COCO の読み込みで要約値 d2586acb→6a26aac9。3 腕のコードの要約値は同一"}
+
+tests:
+  before_failed: 11
+  after_failed: 11
+  after_passed: 961
+
+deviations:
+  - {type: environment, note: "1 腕を GPU 1 枚・batch 2・勾配のため込み 2 で回した（記録は GPU 2 枚・batch 2）。main.py の warmup は各マイクロ歩で進むため更新 500 回で終わり（記録は 1,000 回）、損失はマイクロ歩ごとの枠の数で割って 2 回の平均になる（記録は 2 過程の平均で割り DDP で平均）"}
+  - {type: environment, note: "bengio main の third_party/Relation-DETR が andrew と違うため、前例（handoff_bengio §6）の重ねの BODY /home/ubuntu/slocal2/s2fix-bengio-body を読むだけで使った。中身は andrew と全ファイルで一致し、本契約の前後で要約値が変わっていない"}
+  - {type: judgement, note: "presets.detr の左右反転の画像で q の左手と右手を入れ替えた。SPEC に記載が無く利用者に諮って決めた。反転は FlipProbe が _get_params の呼び出しで記録し、乱数の消費は元と同じ（データの 64 項目で元と一致）"}
+  - {type: judgement, note: "二本目の q のうち 4 値の和が 1 を超える 11 枠（最大 1.538）を和で割った。SPEC D-2 は和が 1 であることを確かめるとだけ書くため利用者に諮って決めた。ほかの 32,261 枠は変えていない"}
+  - {type: judgement, note: "利用者の指示（meta.amendments の 1 件目）で、一本目の正解の腕を seed 123・456 と 12 epoch で GPU 1 で回した。run_pd_grasp.sh と pd_grasp_finalize.py に環境変数の上書きを足した（既定は不変）。本契約の 3 腕の比べ方には混ぜていない"}
+  - {type: judgement, note: "案 A の dp_train.py が W&B の追跡を必須にしていて止まったため、利用者の決定で WANDB_MODE=offline と仮の資格情報の値で手元だけに記録した（外部送信なし）。止まった空の実験フォルダ 2 つは利用者の決定で版管理の外 $S/extra/failed/ へ移した"}
+  - {type: judgement, note: "利用者の指示で、bengio の作業が尽きてから標的が届くまで GPU と CPU を約 70% 使うダミーの負荷の台本を用意した。目録が bengio の run の終わる前（11:48 JST）に届いたため一度も起動していない"}
+  - {type: environment, note: "W&B に記録しなかった。契約 §7.11 が外部への送信を make task-report 以外で禁じるため。記録は main.py の TensorBoard（tf_log）と run の置き場の記録"}
+  - {type: judgement, note: "評価は SPEC の入口 eval_relation_detr_map.py ではなく pd_eval.py --cfg plain を使った（前者は台本の位置から bengio main の違う Relation-DETR を読む）。一本目 B-4 と handoff_bengio R5 と同じ経路"}
+  - {type: judgement, note: "3 腕の設定の差分には、重みと標的の経路のほか、腕の名前・run ごとの置き場・歩ごとの記録の経路・起動のポートと GPU 番号が出る。どれも run を区別するための値で、学習の処方には入らない"}
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "§5 D-2 は q の 4 値の和が 1 であることを確かめるとするが、二本目の q は なし = 1 − min(Σr, 1) で作られ、Σr が 1 を超える 11 枠で和が最大 1.538 になった。和が 1 である前提の手順のとおりに照合すると落ちて止まり、扱いが書かれていないため利用者に諮るしかなかった"
+  - type: asserted_without_measuring
+    note: "§2 は評価の入口に scripts/eval_relation_detr_map.py を挙げ、checkpoint を絶対経路で渡せばよいと書くが、この台本は自分の位置から third_party/Relation-DETR を引く。bengio でそのまま使うと andrew と違う main の中身（source 127 対 142 ファイル）で評価し、黙って別の模型の値を出す"
+  - type: check_does_not_check
+    note: "§5 E-1 と §8-h は make forbidden-check の合格を求めるが、道具は未追跡のファイルも数え、並行する二本目の契約の出力が同期で届くと本契約の操作によらず fail する（違反 9 件はすべて grasppilot2_* と grasp_pilot_g）。本契約の書き込みの検査としては合否が働かない"
+
+positive_controls:
+  - judgement: "a compute プロセスの列挙"
+    breaking_input: "自分のシェルの実行ファイル /usr/bin/zsh と、存在しない /nonexistent/bin/python9 で列挙する"
+    observed: "zsh は自分のシェル PID 3241355 を含む 8 件、存在しない経路は 0 件"
+  - judgement: "a Relation-DETR の中身の照合"
+    breaking_input: "重ねの BODY の写しの main.py に 1 行足す"
+    observed: "source_tree_sha256 と all_tree_sha256 がともに不一致"
+  - judgement: "b 塔単独の再現の照合"
+    breaking_input: "別 seed（123）の検出塔を同じ経路で評価する"
+    observed: "overall mAP 0.7288631（差 +0.0015）、標的群 AP 0.8234321（差 +0.0284 で許容差 0.005 を超える）"
+  - judgement: "c 補助損失が全損失に入る"
+    breaking_input: "補助損失の重みを 0.3 にする"
+    observed: "全損失 − 検出の損失 が 0.388・0.380・0.374・0.351、頭の勾配のノルム 2.12〜2.70。重み 0 では差 0.0・勾配 0.0"
+  - judgement: "c COCO の重みを読んだことの記録"
+    breaking_input: "COCO の重みの経路を /nonexistent/... にする（試走 grasppilot3_d_smoke_nococo）"
+    observed: "load pretrained の行が 0 件、load_record.jsonl が作られない。実物の経路では 1 行と要約値の変化"
+  - judgement: "c 反転の検出"
+    breaking_input: "同じ型の FlipProbe を p=1 と p=0 で 20 回ずつ呼ぶ"
+    observed: "20/20 と 0/20。p=0.5 の 64 項目で 33 回"
+  - judgement: "c データの派生が元と同じ出力を返す"
+    breaking_input: "torch の種だけを揃え python の random を揃えない（一回目の確かめ）"
+    observed: "画像・枠の一致が 34/64 に落ちた。三つの種を揃えると 64/64"
+  - judgement: "d 標的の sha256 の照合"
+    breaking_input: "写しの offset 1000 のバイトを反転する"
+    observed: "ff131286… で不一致。一度目は 0x00 を書き元も 0 で写しが変わらず一致になった（対照の作り方の不備。作り直した）"
+  - judgement: "d 入れ替えの検査"
+    breaking_input: "恒等の並べ替え（--identity）"
+    observed: "元と同じ枠に戻った割合 1.0（全体）・1.0（枠が二つ以上の画像）。本番の入れ替えは 0.2997・0.2870"
+  - judgement: "d 和の検査"
+    breaking_input: "一本目の正解の r から作った試走の q（Σr > 1 の 3 枠を含む）と二本目の生の q"
+    observed: "どちらも ok false（和の誤差の最大 0.22 と 0.538）。11 枠を和で割った表は ok true（4.5e-8）"
+  - judgement: "f 表の差の計算し直し"
+    breaking_input: "各 run の保存した予測から det_metrics.summary で計算し直して記録と比べる"
+    observed: "3 腕とも overall・標的群・陰性対照群・動画ごとが記録と一致（recompute_ok true）"
+  - judgement: "g test 不使用"
+    breaking_input: "通した動画の集合に 04 を混ぜる"
+    observed: "共通が ['04'] の 1 件。本来の集合では 0 件"
+  - judgement: "h 禁止領域の検査"
+    breaking_input: "本契約の新しいファイル（REPORT.md、run の記録、scripts）"
+    observed: "changed 212 件として拾われ、187 件が allow_write の許可の一覧に名前で出た。違反 9 件はすべて二本目の未追跡ファイル"
+
+followups:
+  - "make forbidden-check は未追跡のファイルを数えるため、並行する契約の出力が同期で届くと fail する。並行の契約を前提にするなら、追跡下のファイルか本契約の commit の差分だけを見る形を検討する"
+  - "二本目の案 D の q は なし = 1 − min(Σr, 1) で、Σr > 1 の枠で和が 1 を超える。標的の定義に和の扱い（割る、切る、そのまま）を書く"
+  - "SPEC の評価の入口 scripts/eval_relation_detr_map.py は台本の位置から third_party を引くため、重ねの BODY を使うホストでは使えない。入口に pd_eval.py を挙げるか、本体を引数で渡せるようにする"
+  - "標的の 97.5% は「なし」が最大の枠で、補助の頭の train の当たり 0.977 はほぼその割合に等しい。補助損失の設計を見直すなら、なし以外の枠の当たりを別に測る"
+
+unknowns:
+  - "記録の検出塔（stage1_dtower_r2/dcoco_foldA_seed42）のホストは記録に無い"
+  - "commit のとき .git/index.lock が 2 回残っていた（数秒で消えた）。作った処理は特定していない"
+
+commits: []

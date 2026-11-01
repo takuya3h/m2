@@ -303,3 +303,25 @@ missing は `grasp_head.weight`・`grasp_head.bias` だけ）。
 
 - 利用者の決定で追加の (c) は最後まで回し（12:26 に終わった）、その直後に入れ替えた教師の腕を GPU 1 で起こした
 - コードの要約値（`code_sha256.txt`）は 3 腕で同一。COCO の重みの読み込みの行は各 1 行
+
+### D-4（続き）教師の 2 腕の終わり
+
+- 入れ替えた教師 13:31:28 UTC（22:31 JST）rc 0、G を教師 13:38:09 UTC（22:38 JST）rc 0。どちらも 15 epoch、学習率は epoch 10 から 1e-5、対応づいた枠 = 正解の枠（全 epoch）
+- 後処理 `d_finalize.py`（GPU 0・1 で並べて）: G を教師 overall 0.7265707・標的群 0.8149187・陰性対照群 0.6737715、入れ替えた教師 0.7263878・0.8242032・0.6741003。rc 0
+
+## Task E — 集計・検証・報告
+
+    $ .venv/bin/python scripts/grasppilot/d_aggregate.py --out experiments/analysis/grasp_pilot_d/report.json   → rc 0
+    recompute_ok {none: true, gteach: true, shuf: true}、code_identical true、test_overlap []、test_overlap_control_with_04 ['04']
+    prediction_1 held（+0.0038087）、prediction_2 held（入替 0.5698 > G 0.5115）
+    $ make forbidden-check TASK=T-2026-11-01-grasp-pilot-d   → status fail、changed 212・checked 212、permitted 187、violations 9（`$S/final/forbidden_check.txt`）
+
+- 違反 9 件はすべて二本目の契約の同期で届いた未追跡ファイル（`experiments/analysis/grasp_pilot_g/c3/c3_controls.py`、`experiments/phase1/grasppilot2_B_{empty,gt,gtpred_CF,pred_CF,pred_noCF,shuffle}_ep4_seed42/logs/*.json`。
+  mtime 10-31 16:15〜11-01 11:05 UTC）。本契約は作っておらず、消していない。許可の一覧に本契約のファイルが名前で出る（grasppilot3x_ 76、grasppilot3_d 80、grasp_pilot_d 31）
+- `make task-validate` → OK（L1 + L2）
+- 試験（`$S/final/pytest_end.txt`）: `11 failed, 961 passed, 5 skipped, 1 error`。失敗と error の名前の集合は開始時（A-5）と同じ
+- 仮想環境の一覧（`uv pip list --format freeze`）: `.venv` 108 行 9c7be5c9…、`.venv-relation-detr` 72 行 a74c9c78…。A-7 と一致
+- 書き込みの検査（`$S/final/`）: bengio main の `third_party/Relation-DETR` と重ねの BODY の `source_tree_sha256`・`all_tree_sha256` が開始時と一致。
+  COCO の重み 2d2c19a7…、検出塔 seed 42 30d199b1…・seed 123 5842a2ae…、注釈 fc63621e…・db605c06…、工程塔の材料と把持の注釈 13 件（`materials_sha256_bengio_end.txt`）が開始時と一致。
+  `git status -- third_party data experiments/baselines` は空。andrew では rsync の読み出しと ssh の読むだけの命令だけを使った
+- 3 腕の最後の状態の重み（補助の頭を除く）と予測の sha256: なし 297caaa5…・7f3a31f2…、G c5f67bda…・d4665465…、入替 81a3a611…・c536174b…（各 run の metrics.json に全桁）

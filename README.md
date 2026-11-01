@@ -1674,3 +1674,20 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
 - 結果（2026-11-01、非公式。1 折り・val 2 動画・seed 1 つの 1 本ずつの差）: 案 A の正解の腕は Jaccard Δ空 +0.0028（動画 09 −0.0029・10 +0.0120）、
   案 B の正解の腕は標的群 AP Δ空 +0.0153・overall mAP +0.0093。空の腕は両案とも塔単独と同値。握られている枠が誤りに占める割合（0.456）は全枠に占める割合（0.479）を上回らない。
   decoder の特徴から把持の状態を当てる balanced accuracy 0.553（正解のクラスだけ 0.437）。G の候補は mmdet（R50）と HF（Swin-T）を測り、公式の実装は未測定。G1・G2・G3 pass
+
+### 把持の信号の四案の予備測定（三本目、案 D）（2026-11-01、bengio）
+
+契約 `T-2026-11-01-grasp-pilot-d`（analysis。**非公式の測定。関門の判定と設計の判断に使わない**）。
+結果は `experiments/analysis/grasp_pilot_d/REPORT.md`（追加の測定は `extra/REPORT.md`）、記録は `tasks/T-2026-11-01-grasp-pilot-d/`。
+
+- 案 D: 検出塔を COCO から同じ処方で学び直すときに、正解の枠ごとの把持塔 G の状態（左手・右手・両手・なし）を decoder の出力から当てる補助損失（重み 0.3）を足す。
+  3 腕（補助損失なし、G を教師、同じ画像の枠の間で入れ替えた教師）を bengio で 1 腕 = GPU 1 枚・batch 2・ため込み 2 で回した
+- 新しい道具 `scripts/grasppilot/`: 派生の模型とデータセット（`grasp_aux_d.py`。third_party を変えず、元の模型設定を実行した実体の型を差し替えて頭を足す）、
+  設定（`d_model_config.py`・`d_train_config.py`）、起動（`run_d_arm.sh`）、確かめ（`d_check.py`）、標的の表（`d_targets.py`）、後処理と集計（`d_finalize.py`・`d_aggregate.py`・`d_extra_aggregate.py`）、
+  Relation-DETR の中身の要約値（`reldetr_digest.py`）
+- `scripts/grasppilot/run_pd_grasp.sh` と `pd_grasp_finalize.py` に環境変数の上書き（seed・契約・保存先・本体・接頭・epoch 数）を足した。渡さなければ従来どおり
+- bengio main の `third_party/Relation-DETR` は andrew と違うため、前例の重ねの BODY（`/home/ubuntu/slocal2/s2fix-bengio-body`）を読むだけで使った
+- 大きな生成物（checkpoint、最後の重み、予測、標的の写し）は版管理と同期の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-d/` に置いた
+- 結果（非公式。1 折り・val 2 動画・seed 1 つの 1 本ずつの差。最後の状態）: overall mAP は なし 0.7227621、G を教師 0.7265707、入れ替えた教師 0.7263878。
+  G − なし は overall +0.0038・標的群 −0.0016、G − 入替 は overall +0.0002・標的群 −0.0093。陰性対照群の差は絶対値 0.0013 以下。G1・G2・G3 pass
+- 追加の測定（利用者の指示）: 一本目の正解の腕を seed 123・456 で回した。案 B の overall mAP の塔単独との差は 3 seed で +0.0085〜+0.0093、案 A の Jaccard は +0.0028〜+0.0058
