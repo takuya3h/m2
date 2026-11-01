@@ -13,7 +13,14 @@
       0.9999998807907104,
       1.5380828380584717
     ],
-    "made_by": "交差適合（H1 の G を H2 の動画に、H2 の G を H1 の動画に）"
+    "made_by": "交差適合（H1 の G を H2 の動画に、H2 の G を H1 の動画に）",
+    "rows_sum_gt_1": 11,
+    "argmax_counts_left_right_both_none": [
+      538,
+      249,
+      14,
+      31471
+    ]
   },
   "val_q": null,
   "format": {
@@ -32,5 +39,6 @@
     }
   },
   "note": "val の q（確定の G）は確定の G の後に足す。三本目の教師の腕に要るのは train の q",
-  "code_sha256": "4d61617431ae78c39695e6bbc30df879abe3f28fab1b6bbe27ec5d2d605b2994"
+  "code_sha256": "4d61617431ae78c39695e6bbc30df879abe3f28fab1b6bbe27ec5d2d605b2994",
+  "note_q_sum": "q = (r_左, r_右, r_両手, 1 − min(Σr, 1))（一本目の grasp_signals.box_state と同じ）。G の確率の地図は左右・両手の器具が同じ画素で重なりうるため、Σr > 1 の枠では行の和が 1 を超える（32,272 個のうち 11 個、最大 1.538）。正規化はしていない"
 }
