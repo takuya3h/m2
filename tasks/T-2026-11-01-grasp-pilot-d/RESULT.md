@@ -24,7 +24,7 @@
 | f | 記述 | REPORT §2・§4 | 保存した予測から計算し直した値が 3 腕で記録と一致 |
 | g | test 不使用 | 通した動画 train 10 本と val {09,10}、{04,05,07} との共通 0 | 04 を混ぜると 1 件 |
 | h | 書き込みと試験 | bengio main と重ねの BODY の Relation-DETR、重み、注釈、工程塔の材料の要約値が開始時と一致。venv の一覧 9c7be5c9…・a74c9c78… が一致。試験の失敗の名前の集合は同じ（11 failed・1 error）。`forbidden-check` は fail（違反 9 件はすべて二本目の `grasppilot2_*`・`grasp_pilot_g` の同期で届いた未追跡ファイル） | 本契約の新しいファイル 187 件が許可の一覧に名前で出る |
-| i | PR | §7 | 分岐名 `feat/grasp-pilot-d` |
+| i | PR | #275、Draft でない、base phase0 | 分岐名 `feat/grasp-pilot-d`（`gh pr view 275`） |
 
 ## 3. 実測
 
@@ -74,4 +74,5 @@
 
 ## 8. 送出
 
-- PR: （起票後に記入）、`make task-report` の終了コード: （送出後に記入）
+- PR: #275（Draft でない、base phase0、分岐 feat/grasp-pilot-d）
+- `make task-report` の終了コード: （送出後に追記）
