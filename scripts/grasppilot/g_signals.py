@@ -304,7 +304,13 @@ def assemble(a):
                           ("shuffled_train", tcf[[pos[maps["train"][f]] for f in frames["train"]]], frames["train"]),
                           ("val", R["all_val"]["t"][allrow["val"]], frames["val"])):
         path = out / f"C/t_{name}.npz"
-        np.savez(path, frame_ids=np.asarray(fr), t=arr.astype(np.float32), values=np.asarray(T_VALUES))
+        if path.exists():                                   # assemble-c が書いて腕が使っている標的は書き直さない
+            with np.load(path) as z:
+                same = [str(x) for x in z["frame_ids"]] == list(fr) and np.array_equal(z["t"], arr.astype(np.float32))
+            if not same:
+                raise RuntimeError(f"既にある標的と中身が違う: {path}")
+        else:
+            np.savez(path, frame_ids=np.asarray(fr), t=arr.astype(np.float32), values=np.asarray(T_VALUES))
         r3 = arr.reshape(-1, 3, 16)
         Cc[name] = {"path": str(path), "sha256": sha(path), "frames": len(fr),
                     "rowsum_maxdev": float(np.abs(r3.sum(2) - 1).max()),
@@ -328,13 +334,30 @@ def assemble(a):
         r = np.concatenate([x["r"] for x in parts])
         order = np.argsort(box_ids)
         path = out / f"D/q_{'CF' if p == 'train' else 'noCF'}_{p}.npz"
-        np.savez(path, ann_ids=box_ids[order], q=q[order], r=r[order], values=np.asarray(["left", "right", "both", "none"]))
+        if path.exists():                                   # 三本目へ渡した train の q は書き直さない
+            with np.load(path) as z:
+                if not (np.array_equal(z["ann_ids"], box_ids[order]) and np.array_equal(z["q"], q[order])):
+                    raise RuntimeError(f"既にある q と中身が違う: {path}")
+        else:
+            np.savez(path, ann_ids=box_ids[order], q=q[order], r=r[order], values=np.asarray(["left", "right", "both", "none"]))
         tool = json.loads((C.DET_ANN_A / f"instances_{p}.json").read_text())
         n_ann = len(tool["annotations"])
         Dd[p] = {"path": str(path), "sha256": sha(path), "boxes": int(len(box_ids)), "boxes_in_annotation_file": n_ann,
                  "unique": int(len(np.unique(box_ids))), "q_rowsum_range": [float(q.sum(1).min()), float(q.sum(1).max())],
                  "made_by": "交差適合（H1 の G を H2 の動画に、H2 の G を H1 の動画に）" if p == "train" else "確定の G"}
     rep["D"] = Dd
+    mp = Path(a.manifest)
+    if mp.exists():                                         # 三本目へ渡した目録は train の値を変えず val_q だけ足す
+        man = json.loads(mp.read_text())
+        if man["train_q"]["sha256"] != Dd["train"]["sha256"]:
+            raise RuntimeError("目録の train の q の要約値が今のファイルと違う")
+        man["val_q"] = Dd["val"]
+        man["g_runs"]["all"] = {"config": a.g_runs["all"], "ckpt_sha256": R["all_val"]["report"]["ckpt_sha256"]}
+        man["note"] = "val の q は確定の G から作った（三本目の教師の腕に要るのは train の q）"
+        C.write_json(mp, man)
+        C.write_json(out / "assemble_report.json", rep)
+        print(json.dumps({k: rep[k] for k in ("D3_crossfit", "D3_crossfit_control_mixed_all", "D3_val_from")}, ensure_ascii=False))
+        return
     man = {"task_id": TASK, "unofficial": True, "for": "T-2026-11-01-grasp-pilot-d（三本目、bengio）",
            "host": "andrew", "train_q": Dd["train"], "val_q": Dd["val"],
            "format": {"ann_ids": "折り A の術具の注釈（data/annotations/egosurgery_tool_folds/A/instances_{part}.json）の annotation id、昇順",
@@ -444,6 +467,32 @@ def assemble_c(a):
     print(json.dumps(rep, ensure_ascii=False), flush=True)
 
 
+def merge(a):
+    """同じ G・同じ split の infer の出力を動画の並びのまま一つにまとめる（train の推論を 2 枚の GPU に分けたとき）。"""
+    parts = [load_raw(p) for p in a.parts]
+    out = str(a.out)
+    frames = [f for d in parts for f in d["frame_ids"]]
+    assert len(frames) == len(set(frames))
+    maps = np.lib.format.open_memmap(out + "_m.npy", mode="w+", dtype=np.uint8, shape=(len(frames), 5, MAP_H, MAP_W))
+    k = 0
+    for d in parts:
+        m = np.load(d["maps_path"], mmap_mode="r")
+        maps[k:k + len(m)] = m
+        k += len(m)
+    maps.flush()
+    cat = {key: np.concatenate([d[key] for d in parts]) for key in ("g", "t", "flag", "box_ids", "q", "r")}
+    np.savez(out + "_sig.npz", frame_ids=np.asarray(frames), **cat)
+    reps = [d["report"] for d in parts]
+    rep = {**reps[0], "videos": [v for r in reps for v in r["videos"]], "frames": len(frames),
+           "boxes": int(len(cat["box_ids"])), "seconds": sum(r["seconds"] for r in reps), "merged_from": list(map(str, a.parts)),
+           "sig_sha256": sha(out + "_sig.npz"), "maps_sha256": sha(out + "_m.npy"), "maps_shape": list(maps.shape),
+           "g_range": [float(cat["g"].min()), float(cat["g"].max())],
+           "t_rowsum_maxdev": float(np.abs(cat["t"].reshape(-1, 3, 16).sum(2) - 1).max())}
+    assert len({r["ckpt_sha256"] for r in reps}) == 1
+    C.write_json(out + "_report.json", rep)
+    print("[merge]", json.dumps(rep, ensure_ascii=False), flush=True)
+
+
 def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -472,10 +521,13 @@ def main():
     p.add_argument("--out", required=True)
     p.add_argument("--g-run", nargs=2, metavar=("H1", "H2"), required=True, help="H1・H2 の config.json")
     p.add_argument("--manifest", default=str(PROJ / "experiments/analysis/grasp_pilot_g/targets/D_manifest.json"))
+    p = sub.add_parser("merge")
+    p.add_argument("--parts", nargs="+", required=True)
+    p.add_argument("--out", required=True)
     a = ap.parse_args()
     if a.cmd == "assemble":
         a.g_runs = dict(zip(("all", "H1", "H2"), a.g_run))
-    {"infer": infer, "assemble": assemble, "compare": compare, "assemble-c": assemble_c}[a.cmd](a)
+    {"infer": infer, "assemble": assemble, "compare": compare, "assemble-c": assemble_c, "merge": merge}[a.cmd](a)
 
 
 if __name__ == "__main__":
