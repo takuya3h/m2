@@ -1,0 +1,263 @@
+{
+  "AP": 0.7170704784404089,
+  "AP50": 0.8417856020922233,
+  "per_class_ap": {
+    "Bipolar Forceps": 0.807451806458411,
+    "Electric Cautery": 0.9495308622469775,
+    "Forceps": 0.32048630402152584,
+    "Gauze": 0.311406756187679,
+    "Hook": 0.6223690375713387,
+    "Mouth Gag": 0.7973076407099282,
+    "Needle Holders": 0.8348182921619037,
+    "Raspatory": 0.7149976306749746,
+    "Retractor": NaN,
+    "Scalpel": 0.872064561347986,
+    "Scissors": 0.6784143213882127,
+    "Skewer": 0.9137903529014729,
+    "Suction Cannula": 0.8233256277316133,
+    "Syringe": 0.6082206986388848,
+    "Tweezers": 0.784802806124816
+  },
+  "n_images": 1515,
+  "target_AP": 0.7833050100043458,
+  "target_missing": [],
+  "control_AP": 0.6792107076885092,
+  "control_missing": [],
+  "per_video_AP": {
+    "09": 0.7002133246251971,
+    "10": 0.608117597881699
+  },
+  "task_id": "T-2026-11-01-stage2-w23-andrew",
+  "unofficial": true,
+  "type": "DX",
+  "type_name": "decoder-xattn",
+  "w": "W3",
+  "arm": "shuffle",
+  "trainable_arg": "all",
+  "result_selection": "final_epoch",
+  "result_epoch": 3,
+  "eval_detection_mAP": 0.7170704784404089,
+  "diff_vs_eval_detection_mAP": 0.0,
+  "init": {
+    "AP": 0.7273450248398429,
+    "AP50": 0.851807431425236,
+    "target_AP": 0.7950748008550897,
+    "control_AP": 0.6726631817581498,
+    "per_video_AP": {
+      "09": 0.704273483949694,
+      "10": 0.6420973291237674
+    },
+    "target_missing": [],
+    "control_missing": []
+  },
+  "init_diff_vs_tower": {
+    "comparable": true,
+    "max_abs_score_diff": 0.0,
+    "max_abs_bbox_diff_px": 0.0,
+    "label_mismatch": 0
+  },
+  "per_epoch": {
+    "-1": {
+      "AP": 0.7273450248398429,
+      "AP50": 0.851807431425236,
+      "target_AP": 0.7950748008550897,
+      "control_AP": 0.6726631817581498,
+      "per_video_AP": {
+        "09": 0.704273483949694,
+        "10": 0.6420973291237674
+      },
+      "target_missing": [],
+      "control_missing": []
+    },
+    "0": {
+      "AP": 0.6792352678962799,
+      "AP50": 0.8101964237421955,
+      "target_AP": 0.7462390661546298,
+      "control_AP": 0.6238920040318229,
+      "per_video_AP": {
+        "09": 0.6705783358387079,
+        "10": 0.5928011647144501
+      },
+      "target_missing": [],
+      "control_missing": []
+    },
+    "1": {
+      "AP": 0.6881155240490706,
+      "AP50": 0.8143935337636239,
+      "target_AP": 0.7563828249437368,
+      "control_AP": 0.634877498231541,
+      "per_video_AP": {
+        "09": 0.6744427586590522,
+        "10": 0.5895191580923989
+      },
+      "target_missing": [],
+      "control_missing": []
+    },
+    "2": {
+      "AP": 0.7018994143630173,
+      "AP50": 0.8310438556379407,
+      "target_AP": 0.7846997390705451,
+      "control_AP": 0.6518550098623275,
+      "per_video_AP": {
+        "09": 0.663657486828661,
+        "10": 0.6240000201633326
+      },
+      "target_missing": [],
+      "control_missing": []
+    },
+    "3": {
+      "AP": 0.7170704784404089,
+      "AP50": 0.8417856020922233,
+      "target_AP": 0.7833050100043458,
+      "control_AP": 0.6792107076885092,
+      "per_video_AP": {
+        "09": 0.7002133246251971,
+        "10": 0.608117597881699
+      },
+      "target_missing": [],
+      "control_missing": []
+    }
+  },
+  "last_epoch_matches_best_preds": true,
+  "per_epoch_eval_detection_mAP": {
+    "-1": 0.7273450248398429,
+    "0": 0.6792352678962799,
+    "1": 0.6881155240490706,
+    "2": 0.7018994143630173,
+    "3": 0.7170704784404089
+  },
+  "gates_by_epoch": {
+    "-1": {
+      "tanh_alpha": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "0": {
+      "tanh_alpha": [
+        0.005046856589615345,
+        -0.00103004090487957,
+        0.006966121960431337,
+        0.003303605131804943,
+        -0.0039005056023597717,
+        0.008487600833177567
+      ]
+    },
+    "1": {
+      "tanh_alpha": [
+        0.00042396760545670986,
+        0.0024416318628937006,
+        -0.002798529341816902,
+        0.00758622121065855,
+        -0.0031392406672239304,
+        -0.0006195230525918305
+      ]
+    },
+    "2": {
+      "tanh_alpha": [
+        0.004971194546669722,
+        0.004082296509295702,
+        -0.0021175064612179995,
+        0.0057505276054143906,
+        -0.007220249157398939,
+        0.007716234773397446
+      ]
+    },
+    "3": {
+      "tanh_alpha": [
+        -0.0016857152804732323,
+        0.004050396848469973,
+        -0.00029335563885979354,
+        0.0012208175612613559,
+        -0.002143195830285549,
+        0.0001334489934379235
+      ]
+    }
+  },
+  "receiver_motion": {
+    "iface_l2_by_param": {
+      "phase_iface.alpha": 0.005043322686105967,
+      "phase_iface.token.weight": 9.319503784179688,
+      "phase_iface.token.bias": 1.5334813594818115,
+      "phase_iface.norm.0.weight": 15.964771270751953,
+      "phase_iface.norm.0.bias": 0.022270213812589645,
+      "phase_iface.norm.1.weight": 15.974381446838379,
+      "phase_iface.norm.1.bias": 0.012984986416995525,
+      "phase_iface.norm.2.weight": 15.975837707519531,
+      "phase_iface.norm.2.bias": 0.010645740665495396,
+      "phase_iface.norm.3.weight": 15.979593276977539,
+      "phase_iface.norm.3.bias": 0.008571949787437916,
+      "phase_iface.norm.4.weight": 15.980578422546387,
+      "phase_iface.norm.4.bias": 0.004760609474033117,
+      "phase_iface.norm.5.weight": 15.981432914733887,
+      "phase_iface.norm.5.bias": 0.002618852537125349,
+      "phase_iface.q.0.weight": 4.660961151123047,
+      "phase_iface.q.0.bias": 0.26893460750579834,
+      "phase_iface.q.1.weight": 4.654414653778076,
+      "phase_iface.q.1.bias": 0.27917686104774475,
+      "phase_iface.q.2.weight": 4.635180950164795,
+      "phase_iface.q.2.bias": 0.27839529514312744,
+      "phase_iface.q.3.weight": 4.631234645843506,
+      "phase_iface.q.3.bias": 0.2756536900997162,
+      "phase_iface.q.4.weight": 4.605783462524414,
+      "phase_iface.q.4.bias": 0.26552143692970276,
+      "phase_iface.q.5.weight": 4.6205363273620605,
+      "phase_iface.q.5.bias": 0.2799980938434601,
+      "phase_iface.out.0.weight": 9.471271514892578,
+      "phase_iface.out.0.bias": 1.0640671253204346,
+      "phase_iface.out.1.weight": 9.274166107177734,
+      "phase_iface.out.1.bias": 1.1110763549804688,
+      "phase_iface.out.2.weight": 9.29448413848877,
+      "phase_iface.out.2.bias": 1.0915082693099976,
+      "phase_iface.out.3.weight": 9.280782699584961,
+      "phase_iface.out.3.bias": 1.1452254056930542,
+      "phase_iface.out.4.weight": 9.22524642944336,
+      "phase_iface.out.4.bias": 1.1185373067855835,
+      "phase_iface.out.5.weight": 9.210572242736816,
+      "phase_iface.out.5.bias": 1.0783023834228516,
+      "phase_iface.adapter.weight": 3.3272948265075684,
+      "phase_iface.adapter.bias": 0.7465810775756836
+    },
+    "receiver_keys": 372,
+    "receiver_elements": 48471200,
+    "receiver_delta_l2": 47.10893260433792,
+    "receiver_l2": 854.9175937568142,
+    "receiver_rel_delta": 0.05510347774845105,
+    "keys_not_in_det_ckpt": [],
+    "ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-stage2-w23-andrew/pd_ckpt/w23a_pd_DX_W3_shuffle_ep4_seed42/best_t1b.pth",
+    "ckpt_sha256": "ae6acb1f99a666691e31a14001eb1c9e81fe9c37618d08c83a52107bdf892096"
+  },
+  "total_trainable": 48681574,
+  "phase_params": 210374,
+  "frozen_unchanged": true,
+  "videos": {
+    "train": [
+      "01",
+      "02",
+      "03",
+      "06",
+      "08",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15"
+    ],
+    "val_evaluated": [
+      "09",
+      "10"
+    ],
+    "test_overlap": []
+  },
+  "server": "andrew",
+  "seconds_to_finalize": 20940.533032,
+  "wandb": {
+    "mode": "offline",
+    "run_id": "thfz661i",
+    "dir": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-stage2-w23-andrew/wandb/wandb/offline-run-20261101_221720-thfz661i"
+  }
+}
