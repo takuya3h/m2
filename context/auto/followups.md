@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（688 件）
+## 申し送り（692 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1119,7 +1119,14 @@
 - E-1・E-3 の一歩の時間は案 B と GPU を共有して測った値で、専有の値より遅い側に偏りうる。費用の見積もりに使うときは測り直すか、この偏りを書く
 - 塔単独の再現の許容差は overall mAP の 0.005 では別 seed の塔を見分けられない。次の契約では標的群 AP か予測の一致で照合する
 
-## 断定できなかった事項（437 件）
+### T-2026-11-01-grasp-pilot-d
+
+- make forbidden-check は未追跡のファイルを数えるため、並行する契約の出力が同期で届くと fail する。並行の契約を前提にするなら、追跡下のファイルか本契約の commit の差分だけを見る形を検討する
+- 二本目の案 D の q は なし = 1 − min(Σr, 1) で、Σr > 1 の枠で和が 1 を超える。標的の定義に和の扱い（割る、切る、そのまま）を書く
+- SPEC の評価の入口 scripts/eval_relation_detr_map.py は台本の位置から third_party を引くため、重ねの BODY を使うホストでは使えない。入口に pd_eval.py を挙げるか、本体を引数で渡せるようにする
+- 標的の 97.5% は「なし」が最大の枠で、補助の頭の train の当たり 0.977 はほぼその割合に等しい。補助損失の設計を見直すなら、なし以外の枠の当たりを別に測る
+
+## 断定できなかった事項（439 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1951,18 +1958,23 @@
 - 折り A の val の術具の注釈の sha256（db605c06…）は前回の記録に見当たらず照合できない
 - 案 B の run の W&B の記録。train_t1b.py の既存の経路で回し、run の置き場に W&B の記録のファイルは無い
 
-## 起票者の誤りの型（403 件）
+### T-2026-11-01-grasp-pilot-d
+
+- 記録の検出塔（stage1_dtower_r2/dcoco_foldA_seed42）のホストは記録に無い
+- commit のとき .git/index.lock が 2 回残っていた（数秒で消えた）。作った処理は特定していない
+
+## 起票者の誤りの型（406 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 110 |
-| `asserted_without_measuring` | 169 |
+| `check_does_not_check` | 111 |
+| `asserted_without_measuring` | 171 |
 | `self_contradiction` | 103 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 1 |
 | `rule_read_narrowly` | 1 |
 
-合計 403 件（対を持つ契約 143 件から）
+合計 406 件（対を持つ契約 144 件から）
 

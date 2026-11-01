@@ -5,23 +5,28 @@
 #     腕: empty（地図は全 0）、gt（正解の地図）
 #     smoke を付けると 1 epoch・6 step・val 20 枚の試走（腕ではない。run の置き場は版管理の外の $S/smoke）
 #   GPU は CUDA_VISIBLE_DEVICES で渡す。seed は 42 だけ。
+#   追加（T-2026-11-01-grasp-pilot-d の利用者の指示）: 次の環境変数で上書きできる。渡さなければ従来どおり。
+#     GP_SEED（seed）、GP_EPOCHS（epoch 数）、GP_TASK（契約。保存先と記録の印）、GP_STORE（版管理の外の保存先）、
+#     GP_BODY（Relation-DETR と検出塔の重みを引く本体。重ねの BODY を渡す）、GP_PREFIX（run の名前の接頭。既定 grasppilot）
 #
 # 受け取り手・学習範囲（W1 = --trainable film、名前に phase を含むパラメータだけ）・学習率（lr 1e-4・film_lr 5e-4 の既定）・
 # 増強（presets.detr）・batch 2・数値精度（学習は bf16 の自動混合精度、評価は単精度）・seed は前回の run_pd_fix.sh と同じ。
 # 4 epoch 学習し、途中で止めず、4 epoch 目の状態を結果にする（--fixed-epochs）。
 set -euo pipefail
 ARM="$1"; MODE="${2:-}"
-SEED=42
-EPOCHS=4
+SEED=${GP_SEED:-42}
+EPOCHS=${GP_EPOCHS:-4}
 M=/home/ubuntu/slocal2/m2
-TASK=T-2026-10-31-grasp-pilot-probe
-S=/home/ubuntu/slocal2/stage2pilot_store/$TASK
+TASK=${GP_TASK:-T-2026-10-31-grasp-pilot-probe}
+S=${GP_STORE:-/home/ubuntu/slocal2/stage2pilot_store/$TASK}
+B=${GP_BODY:-$M}
+PREFIX=${GP_PREFIX:-grasppilot}
 case "$ARM" in
   empty) GMAP=zero ;;
   gt)    GMAP=gt ;;
   *) echo "腕が不明: $ARM" >&2; exit 2 ;;
 esac
-RUN="grasppilot_pd_B_${ARM}_ep${EPOCHS}_seed${SEED}${MODE:+_$MODE}"
+RUN="${PREFIX}_pd_B_${ARM}_ep${EPOCHS}_seed${SEED}${MODE:+_$MODE}"
 if [ "$MODE" = smoke ]; then WORK=$S/smoke/$RUN; else WORK=$M/experiments/phase1/$RUN; fi
 [ -e "$WORK" ] && { echo "既に在る: $WORK" >&2; exit 4; }
 CFG=$M/configs/stage2pilot/pd_graspmap_d5.py
@@ -30,7 +35,7 @@ EXTRA=(--epochs "$EPOCHS" --fixed-epochs --amp bf16)
 cd "$M"
 # shellcheck disable=SC1091
 source "$M/.venv-relation-detr/bin/activate"
-export CUDA_HOME=/usr/local/cuda EGO_BODY=$M EGO_ROOT=$M/data/raw/ego EGO_ANN_DIR=$M/data/annotations/egosurgery_tool_folds/A
+export CUDA_HOME=/usr/local/cuda EGO_BODY=$B EGO_ROOT=$B/data/raw/ego EGO_ANN_DIR=$B/data/annotations/egosurgery_tool_folds/A GP_TASK=$TASK
 export T1B_MODEL_CFG=$CFG T1B_WORK_DIR=$WORK PYTHONDONTWRITEBYTECODE=1
 mkdir -p "$WORK"
 date -u '+%Y-%m-%d %H:%M:%S UTC' > "$WORK/start.txt"
@@ -39,10 +44,10 @@ sha256sum scripts/grasppilot/pd_grasp.py scripts/grasppilot/pd_grasp_model.py sc
   scripts/train_t1b.py "$CFG" > "$WORK/code_sha256.txt"
 git rev-parse HEAD > "$WORK/code_commit.txt"
 set +e
-(cd "$M/third_party/Relation-DETR" && python -c "import torch, models.bricks.ms_deform_attn as m; print('[env] torch', torch.__version__, 'cuda', torch.cuda.is_available(), 'ms_deform_attn_ext', m._C is not None)") \
+(cd "$B/third_party/Relation-DETR" && python -c "import torch, models.bricks.ms_deform_attn as m; print('[env] torch', torch.__version__, 'cuda', torch.cuda.is_available(), 'ms_deform_attn_ext', m._C is not None)") \
   > "$WORK/env_check.txt" 2>&1
 python scripts/train_t1b.py --seed "$SEED" --trainable film --task-id "$TASK" --run-name "$RUN" \
-  --det-ckpt "$M/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth" \
+  --det-ckpt "$B/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth" \
   --grasp-map "$GMAP" "${EXTRA[@]}" \
   --ckpt-dir "$S/pd_ckpt/$RUN" --save-trainable-only --print-freq 500 > "$WORK/train.log" 2>&1
 RC=$?
