@@ -54,4 +54,5 @@ runindex 68befc3b・2363/1130/1736 は起票時と同じ。分母は本契約に
 
 ## 7. 送出
 
-（commit・push・PR の後に記入）
+- PR #284（base phase0、分岐 feat/bengio-align-andrew、Draft でない）
+- `make task-report`: 送信の後に audit の末尾へ記録する
