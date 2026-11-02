@@ -133,3 +133,32 @@ config.yaml（`tools/config_diff.py --seed`。`A/config_diff_seed{42,123}.json`�
 ### G1
 
 分岐と起点、Relation-DETR、入力、起動の設定（command.sh・config）が一致し、GPU 2 枚が空いている → **通過**。
+
+## B. 工程塔の決定性の確かめ（G2）
+
+- `run_hostdiff.py determinism`、2026-11-02 22:45:03〜22:49:33 JST。seed 42、0 番の設定に `+control_frames=3200 ft_epochs=1` と `TOWER_SEARCH_LOSS_HEX=1` を足した fine-tune を二度（a・b、壁時計 135.0 s・135.0 s）。出力は repo の外 `~/m2-scratch/T-2026-11-02-hostdiff-andrew/determinism/`（control の経路なので repo へ写さない）
+- 両 rank の記録: `deterministic_algorithms True、cudnn_deterministic True、cudnn_benchmark False、matmul_tf32 False、cudnn_tf32 False、CUBLAS_WORKSPACE_CONFIG :4096:8`。COCO の重みを読んだ行 `load pretrained COCO backbone … sha256=a755b3eb…` が二回とも両 rank にある
+- `tools/compare_determinism.py a b`（`determinism/compare.json`）:
+
+  | rank | micro-step | optimizer step | 損失の列の sha256（a・b） | 一致 |
+  |---|---|---|---|---|
+  | 0 | 200・200 | 50・50 | 3cd3c19c313a27b3…・同じ | 一致（bit 単位） |
+  | 1 | 200・200 | 50・50 | 4a89babb4fda3f8a…・同じ | 一致（bit 単位） |
+
+- 空振りの対照（`--self-test`、二回目の列の 100 番目の値の最下位 bit を反転）: 両 rank とも不一致、最初の差は 100 番目
+- epoch の平均損失 1.288784 は a・b とも同じ
+- **G2 通過**
+
+### B-1 試行の実物の config.yaml（`determinism/config_diff_actual.json`）
+
+手本と比べた差: 許した欄（task_id・contract_sha256・artifact_root・cache）のほか、`control_frames`・`ft_epochs`・`data.train_frames`・`data.val_frames`（試行だけの値。本測定には付かない）と `source_sha256`。
+`source_sha256` は `scripts/stage1_ptower.py` の要約値（手本 4ec5b574…、本契約 77485307…）。手本の commit 11ab3747 の後に、新しいヘッドの候補を足す変更が入った（`train`・`evaluate`・`build_model`・`load_fold` に分岐の追加）。
+既存の候補 A・B・C の出力が変わっていないことは `tests/test_stage1_ptower_heads.py` が固定の要約値で確かめる。andrew で 35 passed・4 skipped（CUDA が要る mamba の 2 件ほか）。`test_existing_candidates_match_baseline` の 5 件と `test_new_keys_are_absent_from_the_default_config` が通った。
+判断: これは SPEC §3 の「コード: 起点 origin/phase0 の同じ commit（揃える）」の行であって、§4 の起動の設定ではない。手本の版のコードへ戻すと §3 に反する。止めずに続け、逸脱として報告に書く。
+
+## C 前. 検出塔の経路の対照（本測定に数えない）
+
+- 検出塔の学習の経路（観測器・warmup の LinearLR・COCO の読み込み）を、`TOWER_SEARCH_CONTROL_STEPS=60`・`--max-epochs 1` で一度だけ確かめた。2026-11-02 22:50〜22:52 JST 頃、`~/m2-scratch/T-2026-11-02-hostdiff-andrew/controls/detector_seed42/`
+- exit 0。`load pretrained from …/relation_detr_resnet50_800_1333_coco_1x.pth` と `CONTROL_COMPLETE` が両 rank に出た。`initialization_rank0.json` は matched True・sha256 2d2c19a7…。autocast fp16。プロセスが読んだ値は tf32_matmul False・tf32_cudnn True・deterministic_algorithms False・cudnn_benchmark False
+- 観測器は rank ごとに 60 歩の optimizer step の時刻を書いた。ログの `raise ValueError(...)` などの 2 行は、設定ファイルの本文の色付きの印字で、Traceback は 0 件
+- MS-Deform-Attn の `.so` は作り直されていない（d1d9d1ac…、`.ninja_log` の最後の行は 13:27:34 UTC のまま）
