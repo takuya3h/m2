@@ -1711,6 +1711,23 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
   G − なし は overall +0.0038・標的群 −0.0016、G − 入替 は overall +0.0002・標的群 −0.0093。陰性対照群の差は絶対値 0.0013 以下。G1・G2・G3 pass
 - 追加の測定（利用者の指示）: 一本目の正解の腕を seed 123・456 で回した。案 B の overall mAP の塔単独との差は 3 seed で +0.0085〜+0.0093、案 A の Jaccard は +0.0028〜+0.0058
 
+### Stage 2 の界面の型を W2・W3 で回す予備測定（andrew の分）（2026-11-02、andrew）
+
+契約 `T-2026-11-01-stage2-w23-andrew`（analysis。**非公式の測定。関門の判定と設計の判断に使わない**）。
+結果は `experiments/analysis/stage2_w23_andrew/REPORT.md`、記録は `tasks/T-2026-11-01-stage2-w23-andrew/`。並行する bengio の契約が残りの型を回す。
+
+- これまで W1（界面だけを学ぶ）で回した decoder-xattn（工程から検出）と案 B（把持の地図を C5 に足す型）を、W2（界面 ＋ decoder の最終層とその層の
+  クラスと box の頭。`train_t1b.py --trainable w2`）と W3（界面 ＋ 設定の凍結以外の検出器の全体。`--trainable all`）で回した。
+  利用者の指示（2026-11-02）で P1 は回さず、腕は空・予測-noCF・正解・入れ替えの四つ（計 16 本）。W&B は手元だけ（offline）
+- 新しい道具 `scripts/w23/`（既存のファイルは変えていない）: 起動 `run_pd_w23_andrew.sh`（腕と信号の対応は W1 の台本の写し。identity・perturb・
+  setcheck・smoke・dryrun のモードを持つ）、学ぶ集合と恒等性の検査 `w23a_identity.py`、後処理 `w23a_finalize.py`（epoch ごとの val、学習の経路の中の
+  恒等性、受け取り手の動いた量、W&B offline）、材料の照合 `w23a_material.py`、腕と信号の照合 `w23a_armcheck.py`、計測 `w23a_bench.py`、
+  集計 `w23a_aggregate.py`、表 `w23a_report.py`
+- 大きな生成物（W2・W3 の重み、試走、W&B の手元記録）は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-stage2-w23-andrew/`
+- 結果（2026-11-02、非公式。1 折り・val 2 動画・seed 1 つの 1 本ずつの差）: 学習前の出力は 16 本すべてで塔単独と差 0。W2 の正解の腕は overall mAP の Δ空・Δ入替 が
+  DX +0.0043・+0.0046、案 B +0.0065・+0.0071。W3 は全腕が塔単独より下がり（Δ塔 −0.010〜−0.038）、入れ替えの腕が空の腕より高い（DX +0.0224、案 B +0.0193）。
+  W3 の正解の腕の Δ入替 は DX −0.0079・案 B +0.0034。G1・G2・G3 pass、16 本すべて完了（学習 13.8 時間）
+
 ### Stage 2 の界面の型を W2・W3 で回す予備測定（bengio の分）（2026-11-02、bengio）
 
 契約 `T-2026-11-01-stage2-w23-bengio`（analysis。**非公式の測定。関門の判定と設計の判断に使わない**）。

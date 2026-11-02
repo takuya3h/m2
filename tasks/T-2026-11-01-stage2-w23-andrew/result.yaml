@@ -1,0 +1,86 @@
+result_version: 3
+task_id: "T-2026-11-01-stage2-w23-andrew"
+status: pass
+host: "andrew"
+branch: "feat/stage2-w23-andrew"
+pr: 279
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "起点 origin/phase0 392cf287 に PR 274（merge commit 5c7c2068）の tasks/T-2026-11-01-grasp-pilot-g/ と scripts/grasppilot/run_pd_grasp2.sh が在る。proc_enum で本契約以外の compute プロセス 0 件（zsh で 5 件、存在しない経路で 0 件）、空き 1,648,606,932,992 B、試験の失敗 6 件、二つの仮想環境の要約値、GPU 0・1 は RTX A6000・電力の上限 300 W を記録した。conventions_rev と created_from は実測と一致"}
+  - {id: G2, verdict: pass, note: "PD の信号 9 本・検出塔の重み・案 B の見取り 6 本と地図 3 本の計 19 本が前の契約の記録と sha256 で一致。把持の注釈 6 本は sha256 の記録が無く、画像数・注釈数・クラス・動画と C1（RLE 32,408）・C2（952）の数えの記録と一致。検出塔の塔単独の val は overall 0.7273450・標的群 0.7950748・陰性対照群 0.6726632 で記録との差 0.0。seed 123 の検出塔は標的群 AP の差 +0.0284"}
+  - {id: G3, verdict: pass, note: "型 × W × 腕の 60 件で train_t1b.set_trainable の後の学ぶ集合が SPEC §3.1 から接頭で組んだ集合と一致し、外を一つ混ぜると不一致。W1 の指定（18 件）は W1 の run の記録の要素数と一致。学習前の val の出力は 36 件で塔単独の予測と score・box・ラベルとも差 0、界面の重みを N(0, 0.05²) にした 6 件はすべて出力が変わった。既存のファイルの変更 0 件"}
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 979
+
+deviations:
+  - {type: judgement, note: "利用者の指示（2026-11-02）で run の表を 36 本から 16 本に変えた: P1 を回さない（W2 は直しの契約の値を参考、W3 は bengio）、decoder-xattn と案 B は空・予測-noCF・正解・入れ替えの四腕。W3 の試走で 15 時間を超える見込みなら諮る。W&B は offline。meta.amendments に記録した"}
+  - {type: judgement, note: "train_t1b の --smoke は 6 step で打ち切り速さを測れないため、学習の経路と同じ関数で 130 step 回す計測の道具 scripts/w23/w23a_bench.py を足した（重みを保存しない）。試走の台本の smoke に --save-predictions-all を足し、後処理を試走の出力で通した。本番の学習の引数は変えていない"}
+  - {type: judgement, note: "学習の開始の前の見積もり 10.5〜12.9 時間は、計測の条件（1 枚に W1・W2・W3 を混ぜた）が本番（1 枚に W3 を 3 本）より軽かったため外れた。02:09 に 14〜15 時間へ直して利用者に報告し、学習は続けた。実際は 13.8 時間"}
+  - {type: environment, note: "train_t1b.py は W&B を配線していない（既存のファイルは変えない）。後処理 w23a_finalize.py が epoch ごとの val を wandb.init(mode=offline, dir=$S/wandb) で手元に記録した。資格情報は読み込んでいない"}
+  - {type: judgement, note: "Task D-2 の INTERIM は検出から工程の分の後に書く定めだが、本契約に検出から工程の型が無く該当しない。代わりに W3 の最初の 6 本の後（f7babc26）と W2 の 4 本の後（b6bab0fb）に証跡を push した"}
+  - {type: judgement, note: "把持の注釈 6 本の照合を、記録の無い sha256 ではなく、一本目の b1_ann_check.json と二本目の acceptance_report.json の中身の数えとの照合で行った（train と val のファイルだけ開いた）"}
+  - {type: judgement, note: "利用者の指示の前に始めた恒等性と学ぶ集合の検査は、P1 と予測-CF・正解予測-CF の分も含めて最後まで回した。記録として残すが run の表には入らない"}
+  - {type: environment, note: "作業ツリーの make forbidden-check は、同期で届いた並行する bengio の契約の出力（experiments/phase1/w23b_* と experiments/analysis/stage2_w23_bengio/）30 件を違反として fail を返す。本契約の経路の違反は 0 件。届いたファイルには触れていない。分岐の HEAD 7bdd21ae の写しで同じ検査器を回すと status pass・違反 0 件"}
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "SPEC §0・§1 は「これまでの予備測定の界面の型はすべて W1 で回した」とするが、P1 は folda と直しの契約で P1-W2（train_t1b --trainable w2）として 6 腕とも測られていた（stage2_pilot_fix/REPORT.md の P1-W2 節）。書かれたとおりに回すと同じ処方の P1-W2 の 6 腕（約 18 GPU 時間）を回し直す。報告し、利用者が P1 を外した"
+  - type: asserted_without_measuring
+    note: "Task B-1 は使う材料の要約値を各契約の記録と照合させるが、正解の地図の出所である把持の注釈 6 本（data/annotations/egosurgery_hts の train と val）の sha256 はどの記録にも無い。そのままでは照合が UNKNOWN になる。一本目・二本目の数えの記録との照合で代えた"
+  - type: asserted_without_measuring
+    note: "plan の見積もり（Task D 18 時間、全体 25 時間）は SPEC §2 の W1 の所要（1 本 1.9〜3.8 時間）を基にしたが、W3 は 1 枚 3 本で 1 本 5.3〜5.9 時間かかった。元の 36 本の表なら学習だけで 30 時間前後になり、見積もりを大きく超える"
+  - type: self_contradiction
+    note: "Task C-1 と §7-5 は「本契約で変えてよい既存のファイルは無い」とするが、Task E-3 は既存の README.md と docs/experiment_log.md に書かせる。二つの指示は同時には守れない。E-3 の指示に従い、二つのファイルの末尾に本契約の節を足した"
+
+positive_controls:
+  - judgement: "a（compute プロセスの列挙）"
+    breaking_input: "存在する実行ファイル（/usr/bin/zsh）と存在しない経路を渡す"
+    observed: "zsh で 5 件（自分のシェルを含む）、/nonexistent/bin/python9 で 0 件"
+  - judgement: "b（材料の要約値の照合）"
+    breaking_input: "P0_val.npz の複製の 1000 バイト目を反転する。把持の注釈の注釈を 1 件除いた数にする"
+    observed: "反転した複製は記録と不一致（変えない複製は一致）。1 件除いた数は不一致（all_match false）"
+  - judgement: "b（塔単独の再現の許容差）"
+    breaking_input: "別 seed（123）の検出塔を評価する"
+    observed: "overall mAP の差 +0.0015 は許容差の中だが、標的群 AP の差 +0.0284 で許容差 0.005 を超えた"
+  - judgement: "c（学ぶ集合の照合）"
+    breaking_input: "定義の外のパラメータを一つ混ぜた集合で比べる"
+    observed: "60 件すべてで不一致になった"
+  - judgement: "c（腕と信号の対応の照合）"
+    breaking_input: "台本の正解と予測-noCF の腕を入れ替えて照合する"
+    observed: "36 件中 12 件が不一致になった（入れ替えない照合は 36/36 一致）"
+  - judgement: "d（学習前の恒等性）"
+    breaking_input: "零から始まる界面の重みを N(0, 0.05²) にする（P1 は FiLM の最後の層、DX は α、案 B は 1×1 の畳み込み。正解の腕）"
+    observed: "6 件すべて出力が変わった（score の差の最大 P1 0.511、DX 0.0070、案 B 0.383）"
+  - judgement: "e（run の本数）"
+    breaking_input: "存在しない run の名前 w23a_pd_ZZ_W9_none_ep4_seed42 を数える"
+    observed: "0 件"
+  - judgement: "f（表の差の再計算）"
+    breaking_input: "DX W2 正解の記録に、別の run（DX W2 空）の 4 epoch 目の予測から計算した値を突き合わせる"
+    observed: "差は overall −0.004338、標的群 −0.007732、陰性対照群 −0.000301 で 0 でない（正しい対応では 16 本とも差 0.0）"
+  - judgement: "g（test の動画の不使用）"
+    breaking_input: "通した動画の集合に 04 を混ぜる"
+    observed: "test との共通が 1 件になった（混ぜない集合は 0 件）"
+  - judgement: "h（既存のファイルの不変）"
+    breaking_input: "同じ git diff の除外から scripts/w23 を外す"
+    observed: "本契約の新しいファイルが追加（A）として出た"
+
+followups:
+  - "W3 では全腕が塔単独より下がり（Δ塔 −0.010〜−0.038）、入れ替えの腕が空の腕より DX +0.0224、案 B +0.0193 高い。W3 の Δ空 と Δ入替 は DX の予測-noCF・正解と案 B の予測-noCF で符号が食い違う。seed 一つでは信号の中身の効果と受け取り手の学習の揺れを分けられない。W3 を読むなら、少なくとも空と入れ替えの腕で seed を増やして揺れの幅を測る"
+  - "W2 の正解の腕は Δ空 と Δ入替 が同じ向き（overall DX +0.0043・+0.0046、案 B +0.0065・+0.0071）。予測-noCF の腕は W2 でも +0.0006〜+0.0014 にとどまる"
+  - "§6.3 の予測 1 の対象は、P1 を外したため decoder-xattn の 1 型だけになった。P1 の W3 と並べるときは bengio の契約の値を使い、ホストの差を含める"
+  - "W3 の 4 epoch 目でも val は epoch ごとに動いている（例: 案 B の正解 0.6794 → 0.7125）。長さを固定したことの影響は分けていない"
+
+unknowns:
+  - "W3 で全腕が下がった理由（train に寄ること、学習率が一定であること、受け取り手全体を動かす初期の乱れ）は分けて測っていない"
+
+commits:
+  - "f391f9a5"
+  - "6edae0e9"
+  - "f7babc26"
+  - "b6bab0fb"
+  - "7bdd21ae"
+  - "e986f96d"

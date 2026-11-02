@@ -6,8 +6,47 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 145 件）。
-ここに出ない 140 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 146 件）。
+ここに出ない 141 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-11-01-stage2-w23-andrew
+
+状態 `pass` / ホスト `andrew` / 起票 `279` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 起点 origin/phase0 392cf287 に PR 274（merge commit 5c7c2068）の tasks/T-2026-11-01-grasp-pilot-g/ と scripts/grasppilot/run_pd_grasp2.sh が在る。proc_enum で本契約以外の compute プロセス 0 件（zsh で 5 件、存在しない経路で 0 件）、空き 1,648,606,932,992 B、試験の失敗 6 件、二つの仮想環境の要約値、GPU 0・1 は RTX A6000・電力の上限 300 W を記録した。conventions_rev と created_from は実測と一致
+- `G2` pass — PD の信号 9 本・検出塔の重み・案 B の見取り 6 本と地図 3 本の計 19 本が前の契約の記録と sha256 で一致。把持の注釈 6 本は sha256 の記録が無く、画像数・注釈数・クラス・動画と C1（RLE 32,408）・C2（952）の数えの記録と一致。検出塔の塔単独の val は overall 0.7273450・標的群 0.7950748・陰性対照群 0.6726632 で記録との差 0.0。seed 123 の検出塔は標的群 AP の差 +0.0284
+- `G3` pass — 型 × W × 腕の 60 件で train_t1b.set_trainable の後の学ぶ集合が SPEC §3.1 から接頭で組んだ集合と一致し、外を一つ混ぜると不一致。W1 の指定（18 件）は W1 の run の記録の要素数と一致。学習前の val の出力は 36 件で塔単独の予測と score・box・ラベルとも差 0、界面の重みを N(0, 0.05²) にした 6 件はすべて出力が変わった。既存のファイルの変更 0 件
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — SPEC §0・§1 は「これまでの予備測定の界面の型はすべて W1 で回した」とするが、P1 は folda と直しの契約で P1-W2（train_t1b --trainable w2）として 6 腕とも測られていた（stage2_pilot_fix/REPORT.md の P1-W2 節）。書かれたとおりに回すと同じ処方の P1-W2 の 6 腕（約 18 GPU 時間）を回し直す。報告し、利用者が P1 を外した
+- `asserted_without_measuring` — Task B-1 は使う材料の要約値を各契約の記録と照合させるが、正解の地図の出所である把持の注釈 6 本（data/annotations/egosurgery_hts の train と val）の sha256 はどの記録にも無い。そのままでは照合が UNKNOWN になる。一本目・二本目の数えの記録との照合で代えた
+- `asserted_without_measuring` — plan の見積もり（Task D 18 時間、全体 25 時間）は SPEC §2 の W1 の所要（1 本 1.9〜3.8 時間）を基にしたが、W3 は 1 枚 3 本で 1 本 5.3〜5.9 時間かかった。元の 36 本の表なら学習だけで 30 時間前後になり、見積もりを大きく超える
+- `self_contradiction` — Task C-1 と §7-5 は「本契約で変えてよい既存のファイルは無い」とするが、Task E-3 は既存の README.md と docs/experiment_log.md に書かせる。二つの指示は同時には守れない。E-3 の指示に従い、二つのファイルの末尾に本契約の節を足した
+
+### 逸脱
+
+- `judgement` — 利用者の指示（2026-11-02）で run の表を 36 本から 16 本に変えた: P1 を回さない（W2 は直しの契約の値を参考、W3 は bengio）、decoder-xattn と案 B は空・予測-noCF・正解・入れ替えの四腕。W3 の試走で 15 時間を超える見込みなら諮る。W&B は offline。meta.amendments に記録した
+- `judgement` — train_t1b の --smoke は 6 step で打ち切り速さを測れないため、学習の経路と同じ関数で 130 step 回す計測の道具 scripts/w23/w23a_bench.py を足した（重みを保存しない）。試走の台本の smoke に --save-predictions-all を足し、後処理を試走の出力で通した。本番の学習の引数は変えていない
+- `judgement` — 学習の開始の前の見積もり 10.5〜12.9 時間は、計測の条件（1 枚に W1・W2・W3 を混ぜた）が本番（1 枚に W3 を 3 本）より軽かったため外れた。02:09 に 14〜15 時間へ直して利用者に報告し、学習は続けた。実際は 13.8 時間
+- `environment` — train_t1b.py は W&B を配線していない（既存のファイルは変えない）。後処理 w23a_finalize.py が epoch ごとの val を wandb.init(mode=offline, dir=$S/wandb) で手元に記録した。資格情報は読み込んでいない
+- `judgement` — Task D-2 の INTERIM は検出から工程の分の後に書く定めだが、本契約に検出から工程の型が無く該当しない。代わりに W3 の最初の 6 本の後（f7babc26）と W2 の 4 本の後（b6bab0fb）に証跡を push した
+- `judgement` — 把持の注釈 6 本の照合を、記録の無い sha256 ではなく、一本目の b1_ann_check.json と二本目の acceptance_report.json の中身の数えとの照合で行った（train と val のファイルだけ開いた）
+- `judgement` — 利用者の指示の前に始めた恒等性と学ぶ集合の検査は、P1 と予測-CF・正解予測-CF の分も含めて最後まで回した。記録として残すが run の表には入らない
+- `environment` — 作業ツリーの make forbidden-check は、同期で届いた並行する bengio の契約の出力（experiments/phase1/w23b_* と experiments/analysis/stage2_w23_bengio/）30 件を違反として fail を返す。本契約の経路の違反は 0 件。届いたファイルには触れていない。分岐の HEAD 7bdd21ae の写しで同じ検査器を回すと status pass・違反 0 件
+
+### 申し送り
+
+- W3 では全腕が塔単独より下がり（Δ塔 −0.010〜−0.038）、入れ替えの腕が空の腕より DX +0.0224、案 B +0.0193 高い。W3 の Δ空 と Δ入替 は DX の予測-noCF・正解と案 B の予測-noCF で符号が食い違う。seed 一つでは信号の中身の効果と受け取り手の学習の揺れを分けられない。W3 を読むなら、少なくとも空と入れ替えの腕で seed を増やして揺れの幅を測る
+- W2 の正解の腕は Δ空 と Δ入替 が同じ向き（overall DX +0.0043・+0.0046、案 B +0.0065・+0.0071）。予測-noCF の腕は W2 でも +0.0006〜+0.0014 にとどまる
+- §6.3 の予測 1 の対象は、P1 を外したため decoder-xattn の 1 型だけになった。P1 の W3 と並べるときは bengio の契約の値を使い、ホストの差を含める
+- W3 の 4 epoch 目でも val は epoch ごとに動いている（例: 案 B の正解 0.6794 → 0.7125）。長さを固定したことの影響は分けていない
+
+### 断定できなかったこと
+
+- W3 で全腕が下がった理由（train に寄ること、学習率が一定であること、受け取り手全体を動かす初期の乱れ）は分けて測っていない
 
 ## T-2026-11-01-grasp-pilot-g
 
@@ -173,39 +212,4 @@
 - 記憶・TEC・EGTP・進捗の頭が原典の形と一致するか（照合していない）。
 - 実データ（17,233 フレームの保存特徴）での 1 本の所要時間。
 - SSM の逆伝播の決定性（前の契約で、決定論的な設定でも勾配が 5.7e-14 で非決定と測られている。本契約では測っていない）。
-
-## T-2026-10-23-ptower-cand5-compute-probe
-
-状態 `pass` / ホスト `Andrew` / 起票 `259` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 分岐 feat/ptower-cand5-compute-probe、起点 origin/phase0 bfe45510、分類器の未追跡と変更は 0 件、nvidia-smi の compute プロセスは二枚とも 0 件（各 GPU 段の直前にも 0）。
-- `G2` pass — r3 の処方（R50、800×1422、fp32、deterministic、実データ）の最大確保は batch 1・2・16 で 2.05・4.14・26.97 GiB。三周目の記録 27.06 GiB と同じ桁で、単調に増える。
-
-### 起票者の誤り
-
-- `check_does_not_check` — 完了判定 c と d の空振りの確認は「batch を一つ上げると失敗する」だが、手順は「目標が収まればそれ以上は探さない」と定め、D と E も 256 から下げるだけである。実際に全構成が目標で収まり、指示どおりの探索では失敗が一度も起きず、確認が成り立たなかった。
-- `asserted_without_measuring` — SPEC は「17,233 フレームの manifest」と書くが経路を名指ししない。参照先の configs/stage1_ptower_r3.yaml の manifest_dir（data/processed/phase_manifest）は 15,437 で、Task A-5 を字義どおりに読むと停止に当たる。一致するのは phase_manifest_all_phase である。
-- `asserted_without_measuring` — SPEC §2 は「工程塔の数値精度は fp32（規約 conventions#precision）」と出所を示すが、規約の precision 節の原文は「工程塔の学習の精度は本節で定めない」と書く。本契約は SPEC の指定どおり fp32 で測ったため値は変わらないが、出所の記述は規約と食い違う。
-
-### 逸脱
-
-- `judgement` — manifest は phase_manifest_all_phase（17,233）を使った。r3 の manifest_dir の phase_manifest は 15,437 で、17,233 と一致しない。
-- `judgement` — 全構成が目標の batch で収まったため、探索が失敗を拾えることの対照として、目標の倍（ViT-L 800 全体の b8、MoCo b512、MAE b512）を別に測った。三本とも OOM。mamba は別プロセスで再実行し、パラメータごとに切り分けた。
-- `judgement` — 800 系統の入力は 800×1424（幅を 16 の倍数へ切り上げ、4,450 トークン）。ViT は timm の vit_*_patch16_dinov3 を乱数初期化で使った。映像 MAE の tubelet 2・decoder 192 次元 4 層・可視 95 は実装者の選択。
-- `judgement` — MoCo v2 の K 65,536・m 0.999・T 0.2 は既知の原典の既定値を置いた。外部への接続は事前の確認を要するため、このセッションでは原典を引いて照合していない。shuffle BN は単一 GPU のため再現していない。
-- `judgement` — ViT・MoCo・MAE の行は fp32 で TF32 を切っただけで、決定論的な設定は使っていない。較正と mamba は stage1_ptower.deterministic を使った。
-- `judgement` — CLAUDE.md の README.md・experiment_log・W&B の要求は、コードを変えず run も作らない測定で、変更範囲の外になるため適用しなかった。
-
-### 申し送り
-
-- 時間ヘッドの案 P-A のカード
-- 事前学習の exp の起票では、ViT-L の 800×1424 全体の fine-tune が batch 4 で 36.66 GiB・5.125 s/歩、1 epoch の見込み 225.9 min（読み込みを除く）であることを、案 2 の解像度の軸の費用に入れる。
-
-### 断定できなかったこと
-
-- 目標で収まった構成の、収まる batch の上限（探索の規則により測っていない）。
-- データの読み込みを含む一歩の時間（較正以外の行）。MoCo v2 と映像 MAE は、batch 256 の読み込みが律速になりうる。
-- mamba-ssm の非決定が selective scan と causal-conv1d のどちらの核の逆伝播によるか。
 
