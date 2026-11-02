@@ -6,7 +6,7 @@
 #   GPU は CUDA_VISIBLE_DEVICES で渡す。seed は 42 だけ。既に在る run（同じ型・腕・W）は飛ばす。
 #
 # 設定は W1 の台本（scripts/stage2pilot/run_dp_fix.sh・run_dp_four.sh、案 A は二本目）と同じ（4 epoch を止めずに学んで
-# 4 epoch 目の状態を結果にする、学習率一定 5e-4、重み減衰 0.01、平滑化 0.3、1 歩 = train の動画 1 本、seed 42、
+# 4 epoch 目の状態を結果にする、学習率一定 5e-4、重み減衰 0.01、平滑化 0.3、1 ステップ = train の動画 1 本、seed 42、
 # D3 は --inst-variant uq）。変えるのは学習範囲だけ（dp_train.py --scope W2・W3）。
 # 案 A の信号は andrew から本契約の置き場へ写したもの（audit.md の Task B-1。要約値は記録と一致）。
 # run は experiments/phase1/w23b_dp_<W>_*、界面と受け取り手の重みは stage2pilot_store/<本契約>/dp_ckpt。

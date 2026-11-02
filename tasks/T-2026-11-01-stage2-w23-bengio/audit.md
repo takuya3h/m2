@@ -225,3 +225,49 @@ exe の basename に `python3.11` が 1 件あるのは列挙の道具自身（`
 
 学ぶ集合が §3.1 と一致（DP 9 型・PD 4 型 × 3 範囲）、W1 の指定で W1 の集合と一致、全腕で学習前の出力が塔単独と一致、陽性対照で出力が変わる
 （構造上成り立たない空の腕 10 行を除く）、既定の挙動が変わらない。**通過。**（01:09 JST）
+
+## Task D — 学習
+
+### D-1 検出から工程と案 A（`scripts/w23/run_dp_w23_bengio.sh`、4 列 = GPU 2 枚 × 2、01:10:08〜01:14:48 JST）
+
+- 100 本すべて rc=0、`metrics.json` に `phase_jaccard` が在る、`code_sha256.txt` 100 本。W&B は offline（`$S/wandb`）
+- 1 本の学習は 2 秒前後（特徴は保存済み）。同時に起きた run で ExperimentManager の通し番号が重なる（例 `w23b_dp_W2_001_` が複数）。名前の後半（型・腕）が違うので実験フォルダは重複しない
+- 中間の表 `experiments/analysis/stage2_w23_bengio/INTERIM.md`（`tools/aggregate.py --part dp`）。commit c36ecf3f を push、Draft の PR #278
+
+### D-1 工程から検出（`tools/pd_queue.sh`、8 列 = GPU 2 枚 × 4、01:15 JST から）
+
+- 試走 `w23b_pd_P1-W3_gt_ep4_seed42_smoke`（1 epoch・6 ステップ・val 20 枚、01:10:35〜01:10:56）: rc=0、記憶の山 1 本 約 10.8 GiB。腕に数えない
+- 一巡目は P2L の W2・W3 の 8 本。500 ステップの時点（01:36 JST）で 0.8〜1.1 it/s（W2 0.9〜1.1、W3 0.8〜0.9）、1 epoch 4,809 ステップの学習は 68〜87 分、GPU は 2 枚とも 100%・33 GiB
+- 見込み: 1 本 約 6.3 時間（学習前の評価 約 12 分を含む）。一巡目 07:35、二巡目（P3・P1 の W3）14:10、報告まで 15:10 JST 頃。
+  開始（00:20 JST）から 15 時間 = 15:20 JST に対し余裕 10 分ほど。1 epoch 目の評価の後に実測で見積もり直す
+- 02:24 JST の見積もり直し: W3 は実測 0.82 it/s 前後、1 epoch の学習 約 98 分・評価を含め 約 110 分、1 本 約 7.5 時間（W2 は 約 6 時間）。
+  一巡目 W2 07:15・W3 08:45、二巡目 14:45・16:15、報告まで 17:00 JST 頃（開始から 約 16.5 時間）。GPU は 2 枚とも 99〜100% で、本数を変えても速くならない見込み
+- **利用者の決定（02:2x JST）: そのまま続ける。15 時間を超えることは逸脱にしない**
+- 06:50・06:51 JST: P2L W2 の予測-noCF・入れ替えが終わった（rc=0、学習前と塔単独の差 0.0）。overall 0.724726・0.722051。列 1・3 は P3 W3 の予測-noCF・入れ替えへ移った
+- **06:59 JST: P3 W3 の入れ替えが `torch.cuda.OutOfMemoryError` で止まった**（GPU 1、`exit_code.txt` 1）。W3 は学習中 1 本 約 13.5 GiB（試走の 10.8 GiB より多い）で、
+  GPU 1 に W3 が 3 本（13.8・13.8・11.5 GiB）載っているところへ 4 本目を載せたため。列 3 の `pd_queue` の end 行の rc=0 は、台本の echo の書き方による誤表示（実際は 1）
+- 07:08 JST: 列 2 が GPU 0 で P3 W3 の正解を始めた（GPU 0 にも W3 が 3 本）。同じ溢れで学習中の P2L W3 が落ちるのを防ぐため、**実行者の判断で列 2 の親と、始まって 56 秒の P3 W3 の正解を止めた**
+- 利用者の決定（07:1x、回答の受け取りは 09:3x JST）: 枠が空き次第回す。止まった 2 本の実験フォルダは消さずに `$S/aborted/phase1/` へ移した（重みの置き場は作られていなかった）
+- 06:50〜07:08 JST: P2L W2 の 4 本が終わった。08:04〜08:22 JST: P2L W3 の 4 本が終わった（8 本とも rc=0、学習前と塔単独の差 0.0）。列 4〜7 は P1 W3 の 4 本を自動で始め、W3 は 1 枚 3 本に収まった
+- 09:3x JST: `tools/pd_sched.sh`（GPU ごとの run の起動台本を数え、1 枚 3 本まで）で、残りの P3 W3 の正解・入れ替えを、枠が空き次第始める
+- 09:5x JST: `tools/aggregate.py` の PD の参考（W1・P1 の W2）を、直しの契約の `experiments/analysis/stage2_pilot_fix/report.json` の表から読むように直した（P2L の 5 腕と P1 の一部は前回の run の epoch 3 の記録で、行ごとの source に出所がある。ホストは run の server.txt）
+- 13:00 JST: P3 W3 の予測-noCF が終わった（rc=0、学習前と塔単独の差 0.0、overall 0.698023）。13:01 に pd_sched.sh が GPU 1 で P3 W3 の正解を始めた（gpu0=3 gpu1=2）
+- 13:3x JST: P3 W3 の空が終わった（rc=0、学習前と塔単独の差 0.0、overall 0.698119）。13:33 に pd_sched.sh が GPU 0 で P3 W3 の入れ替えを始めた（gpu0=2 gpu1=3）。待ち行列の 2 本はすべて始まった
+
+## Task E — 集計・検証・報告（学習と並行して 13:5x〜14:3x JST に行った分。PD の残りが終わったら再集計する）
+
+- g と e（`final/test_audit.json`、`tools/test_audit.py`）: 本契約の 110 本（その時点）で通した動画 {01,02,03,06,08,09,10,11,12,13,14,15}、{04,05,07} との共通 0 件。04 を混ぜると [04]。
+  型ごとのホストの集合はすべて {bengio}。存在しない run の名前で 0 件
+- h（`final/write_audit/`、`tools/write_audit.sh`）: 開始（2026-11-01 15:20 UTC = 11-02 00:20 JST）より後に変わったファイル。
+  他の契約の置き場 4 つ・data/raw・data/external・data/annotations・third_party（main と重ね）・.venv・.venv-relation-detr・experiments/baselines・runindex は **0 件**（__pycache__ も 0）。
+  experiments/phase1 の他 349・experiments/analysis の他 47・tasks の他 7 の計 403 件は、git の状態で分類すると、
+  追跡下で HEAD と同じ 291 件（15:21 UTC = task-start の切り替えで git が phase0 の版を書いた grasp-pilot-g の出力）と、andrew の `w23a_*` の同期 112 件（未追跡 28・無視 84）（`classify.txt`）。
+  陽性対照: 同じ探し方で本契約の置き場は experiments/phase1/w23b_* 1,430 件、stage2pilot_store/本契約 718 件
+- `make forbidden-check TASK=T-2026-11-01-stage2-w23-bengio`（`final/forbidden_check.txt`、`final/forbidden_split.json`）: status fail、exit 2。
+  changed 1,389、違反 28 件はすべて `experiments/phase1/w23a_*`（andrew の並行する契約の未追跡の出力が同期で届いたもの）。**本契約の経路の違反 0 件**
+- 試験（`final/pytest_end.txt`）: `11 failed, 965 passed, 5 skipped, 1 error`。失敗と error の名前の集合は開始時と同じ（diff 0）
+- 仮想環境（`final/pkgs_end_summary.txt`）: `.venv` 108 行 9c7be5c9…、`.venv-relation-detr` 72 行 a74c9c78…。開始時と同じ
+- Relation-DETR（`final/reldetr_end_{main,overlay}.json`）: bengio main 3ade18f0…/89dc93b4…、重ねの BODY 2f08e521…/20f15c06…。開始時と同じ
+- 報告: `REPORT.md` は `tools/make_report.py` が `final/aggregate.json`（`tools/aggregate.py --part all`）から作る。`RESULT.md`・`result.yaml`・`resolved_refs.md`（inject_verbatim の 7 アンカーの原文を機械で切り出した）、
+  `README.md` と `docs/experiment_log.md` の項を書いた。PD の残り 6 本の値の箇所は「【終了後】」の印を置いた
+- PD の参考の値（W1 と P1 の W2）は直しの契約の `report.json` の表から読んだ（`tools/aggregate.py`）

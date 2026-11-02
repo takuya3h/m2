@@ -2,3 +2,5 @@
 - [x] 2026-11-02 [cc] dp_train.py の W&B は手元だけに記録する（WANDB_MODE=offline、仮の WANDB_API_KEY、WANDB_DIR=本契約の置き場）。契約 §7.10 が外部への送信を task-report に限るため。三本目と同じ形で、利用者が決めた（audit.md C-1b）
 - [x] 2026-11-02 [cc] 確認不足で W&B へオンラインで送られた試走 1 本（run ntyprqmi）は削除せず残し、報告の逸脱に書く。利用者が決めた（audit.md C-1b）
 - [ ] 2026-11-02 [cc] scripts/task_start_classify.py の「起点に無い経路は .git/info/exclude に足せば切り替えで触れられない」という案内は、.gitignore の打ち消し（!experiments/**/logs/*.json など）が exclude より優先する経路では効かない。案内に条件を足すか、足した後に分類をやり直して確かめる形を検討する（audit.md 0-1）
+- [x] 2026-11-02 [cc] 工程から検出の W3 が 1 本 約 7.5 時間で、完了が開始から 15 時間（amendments の (4)）を超えて 17:00 JST 頃になる見込みだが、run の表を変えずに続ける。逸脱にしない。利用者が決めた（audit.md Task D）
+- [x] 2026-11-02 [cc] GPU の記憶の不足で止まった P3 W3 の入れ替えと、実行者が止めた P3 W3 の正解は、1 枚 3 本までの待ち行列で、枠が空き次第回し直す。止まった実験フォルダは aborted/ へ移す。利用者が決めた（audit.md Task D）

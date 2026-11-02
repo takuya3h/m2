@@ -27,9 +27,10 @@ W1_DP = {"stage2fix_dp_*_{t}_{a}_ep4_seed42": ("D1-L1", "D1-L2", "D2", "D3-L1", 
          "grasppilot2_dp_*_{t}_{a}_ep4_seed42": ("GA",)}
 PD_SETS = (("P2L", "W2"), ("P2L", "W3"), ("P3", "W3"), ("P1", "W3"))
 PD_ARMS = ("empty", "pred_noCF", "gt", "shuffle")
-# W1・W2 の参考（PD）: 直しの契約の run（P2L・P3 は W1、P1 は W1 と W2。P3 の W1 は --trainable w2、P1-W2 は andrew）
-W1_PD = {("P2L", "W1"): "stage2fix_pd_P2L_{a}_ep4_seed42", ("P3", "W1"): "stage2fix_pd_P3_{a}_ep4_seed42",
-         ("P1", "W1"): "stage2fix_pd_P1-W1_{a}_ep4_seed42", ("P1", "W2"): "stage2fix_pd_P1-W2_{a}_ep4_seed42"}
+# W1・W2 の参考（PD）: 直しの契約の report.json の表（4 epoch 目の値。回し直していない腕は前回の run の epoch 3 の記録で、
+# 出所は各行の source）。P3 の W1 は --trainable w2、P1-W2 は andrew
+FIX_REPORT = ROOT / "experiments/analysis/stage2_pilot_fix/report.json"
+W1_PD = {("P2L", "W1"): "P2L", ("P3", "W1"): "P3", ("P1", "W1"): "P1-W1", ("P1", "W2"): "P1-W2"}
 
 
 def one(pattern):
@@ -118,12 +119,16 @@ def aggregate_pd():
                 r[f"d_empty_{key}"] = r[key] - e[key] if e and r[key] is not None else None
                 r[f"d_shuffle_{key}"] = r[key] - s[key] if s and r[key] is not None else None
         out.setdefault(t, {})[w] = rows
-    for (t, w), pat in W1_PD.items():
+    fix = json.loads(FIX_REPORT.read_text())["tables"]
+    for (t, w), key in W1_PD.items():
         rows = {}
-        for a in ARMS:
-            d = PH / pat.format(a=a)
-            if (d / "stage2fix_metrics.json").exists():
-                rows[a] = pd_run(d, "stage2fix_metrics.json")
+        for a, r in fix[key]["rows"].items():
+            run = PH / r["run"] if r.get("run") else None
+            rows[a] = {"run": r.get("run"), "host": host(run) if run else None, "source": r.get("source"),
+                       **{k: r["value"][k] for k in ("AP", "target_AP", "control_AP")},
+                       "d_empty_AP": r["delta_empty"]["AP"], "d_empty_target_AP": r["delta_empty"]["target_AP"],
+                       "d_shuffle_AP": (r.get("delta_shuffle") or {}).get("AP"),
+                       "d_shuffle_target_AP": (r.get("delta_shuffle") or {}).get("target_AP")}
         out.setdefault(t, {})[f"{w}_ref"] = rows
     return out
 
