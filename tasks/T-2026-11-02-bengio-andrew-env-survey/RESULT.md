@@ -76,4 +76,5 @@
 
 ## 7. 送出
 
-（commit・push・PR の後に記入）
+- PR #282（base phase0、分岐 feat/bengio-andrew-env-survey、Draft でない）
+- `make task-report`: 送信の後に audit の末尾へ記録する
