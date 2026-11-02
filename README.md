@@ -1727,3 +1727,24 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
 - 結果（2026-11-02、非公式。1 折り・val 2 動画・seed 1 つの 1 本ずつの差）: 学習前の出力は 16 本すべてで塔単独と差 0。W2 の正解の腕は overall mAP の Δ空・Δ入替 が
   DX +0.0043・+0.0046、案 B +0.0065・+0.0071。W3 は全腕が塔単独より下がり（Δ塔 −0.010〜−0.038）、入れ替えの腕が空の腕より高い（DX +0.0224、案 B +0.0193）。
   W3 の正解の腕の Δ入替 は DX −0.0079・案 B +0.0034。G1・G2・G3 pass、16 本すべて完了（学習 13.8 時間）
+
+### Stage 2 の界面の型を W2・W3 で回す予備測定（bengio の分）（2026-11-02、bengio）
+
+契約 `T-2026-11-01-stage2-w23-bengio`（analysis。**非公式の測定。関門の判定と設計の判断に使わない**）。
+結果は `experiments/analysis/stage2_w23_bengio/REPORT.md`、記録は `tasks/T-2026-11-01-stage2-w23-bengio/`。並行する andrew の分は `T-2026-11-01-stage2-w23-andrew`。
+
+- これまで W1（受け取り手を凍結し界面だけを学ぶ）で回した界面の型を、W2（界面 ＋ 受け取り手の後段）と W3（界面 ＋ 受け取り手の全体）で回した。
+  検出から工程の 8 型と案 A は六腕 × W2・W3 の 100 本、工程から検出は P2L の W2・W3、P3 と P1 の W3 の各四腕の 16 本（利用者の決定と指示で表を変えた。`spec.yaml` の `meta.amendments`）
+- `scripts/stage2pilot/dp_train.py` に `--scope {W1,W2,W3}`（train・identity）、`identity --arms`、下位命令 `scopes` を足した。
+  W2 = 時間ヘッドの最後の段（refine_stages の最後）、W3 = 時間ヘッドの全体を界面と一緒に学ぶ（受け取り手の学習率 5e-4・重み減衰 0.01、時間ヘッドは eval のまま）。
+  **既定の W1 は変えていない**（起点の版と identity・試走の出力が一致）
+- 新しい台本 `scripts/w23/run_pd_w23_bengio.sh`（PD。既存の `train_t1b.py --trainable w2|all` と `--lr 1e-4 --film-lr 5e-4`）と `scripts/w23/run_dp_w23_bengio.sh`（DP と案 A）。
+  集計・確定・確かめの道具は `experiments/analysis/stage2_w23_bengio/tools/`（`aggregate.py`・`make_report.py`・`pd_w23_finalize.py`・`pd_scopes.py`・`pd_sched.sh` ほか）
+- W&B は offline（契約 §7.10 が外部への送信を task-report に限るため。利用者の決定）。PD の予測と重みは版管理と同期の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-stage2-w23-bengio/`
+- PD の W3 は学習中 1 本 約 13.5 GiB で、RTX A6000 1 枚に 3 本まで（4 本で記憶が溢れた）
+- 結果（非公式。1 折り・val 2 動画・seed 1 つの 1 本ずつの差。4 epoch 目の状態）:
+  検出から工程では、空の腕の macro Jaccard が塔単独より W2 で −0.101・W3 で −0.133 下がった（受け取り手を学んだこと自体の動き）。
+  空の腕との差は D1-L2・D3-L2 の予測-noCF で W2 +0.063・+0.058 と大きく、LC・TH・TH-NG はほぼ 0。
+  工程から検出（overall / 標的群）: 正解の腕の Δ空 は P2L W2 +0.0090 / +0.0219、P2L W3 −0.0066 / −0.0043、P3 W3 −0.0062 / −0.0131、P1 W3 +0.0333 / +0.0637。
+  W3 では空の腕も塔単独より下がった（overall で P2L −0.037、P3 −0.029、P1 −0.058）
+- **status: stopped**（利用者の指示による中止。把持塔 G の設計の誤りが分かったため。止めた時点で 116 本すべてに値がある。案 A の予測の腕の信号は二本目の G から作られている）

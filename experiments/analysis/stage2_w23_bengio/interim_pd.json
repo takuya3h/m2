@@ -1,0 +1,1207 @@
+{
+ "task_id": "T-2026-11-01-stage2-w23-bengio",
+ "tower_dp": {
+  "jaccard": 0.7762185528074379,
+  "accuracy": 0.8712871287128713
+ },
+ "tower_pd": {
+  "AP": 0.7273450248398429,
+  "target_AP": 0.7950748008550897,
+  "control_AP": 0.6726631817581498,
+  "AP50": 0.851807431425236
+ },
+ "pd": {
+  "P2L": {
+   "W2": {
+    "empty": {
+     "run": "w23b_pd_P2L-W2_empty_ep4_seed42",
+     "host": "bengio",
+     "AP": 0.7208069187956349,
+     "target_AP": 0.7826240535493947,
+     "control_AP": 0.671386098486517,
+     "AP50": 0.8459569675695211,
+     "per_video": {
+      "09": 0.7009795713017831,
+      "10": 0.6385725117695936
+     },
+     "per_class": {
+      "Bipolar Forceps": 0.7479502624884709,
+      "Electric Cautery": 0.9635087713046753,
+      "Forceps": 0.35379718600208304,
+      "Gauze": 0.2701497910825606,
+      "Hook": 0.6319697019142863,
+      "Mouth Gag": 0.7994610972150648,
+      "Needle Holders": 0.8446265764869914,
+      "Raspatory": 0.7890104049620401,
+      "Retractor": NaN,
+      "Scalpel": 0.8915761660063497,
+      "Scissors": 0.6987299657378105,
+      "Skewer": 0.9476468760941181,
+      "Suction Cannula": 0.8270937854338064,
+      "Syringe": 0.5369365581959945,
+      "Tweezers": 0.7888397202146361
+     },
+     "per_epoch_mAP": {
+      "-1": 0.7273450248398429,
+      "0": 0.7262362839297727,
+      "1": 0.7261948127362996,
+      "2": 0.72058399175549,
+      "3": 0.7208069187956349
+     },
+     "init": 0.7273450248398429,
+     "result_epoch": 3,
+     "init_vs_tower_alone": {
+      "comparable": true,
+      "max_abs_score_diff": 0.0,
+      "max_abs_bbox_diff_px": 0.0,
+      "label_mismatch": 0
+     },
+     "frozen_unchanged": true,
+     "d_tower_AP": -0.006538106044208014,
+     "d_empty_AP": 0.0,
+     "d_shuffle_AP": -0.0012438177369266112,
+     "d_tower_target_AP": -0.012450747305695065,
+     "d_empty_target_AP": 0.0,
+     "d_shuffle_target_AP": -0.002252157093445173,
+     "d_tower_control_AP": -0.001277083271632784,
+     "d_empty_control_AP": 0.0,
+     "d_shuffle_control_AP": -4.707175117102391e-05,
+     "d_tower_AP50": -0.00585046385571486,
+     "d_empty_AP50": 0.0,
+     "d_shuffle_AP50": -0.0012813756199794302
+    },
+    "pred_noCF": {
+     "run": "w23b_pd_P2L-W2_pred_noCF_ep4_seed42",
+     "host": "bengio",
+     "AP": 0.7247257097422923,
+     "target_AP": 0.7926912732795472,
+     "control_AP": 0.6728293102938323,
+     "AP50": 0.8509725657332488,
+     "per_video": {
+      "09": 0.7043157178115684,
+      "10": 0.6455965717360111
+     },
+     "per_class": {
+      "Bipolar Forceps": 0.7590883044349188,
+      "Electric Cautery": 0.9620832378046316,
+      "Forceps": 0.3530737809639461,
+      "Gauze": 0.27618336735285365,
+      "Hook": 0.6329355472100372,
+      "Mouth Gag": 0.7988352983468966,
+      "Needle Holders": 0.8413571026149039,
+      "Raspatory": 0.7936106010133924,
+      "Retractor": NaN,
+      "Scalpel": 0.9146427281050419,
+      "Scissors": 0.7019366602255104,
+      "Skewer": 0.9511389164410372,
+      "Suction Cannula": 0.8277716684806218,
+      "Syringe": 0.5449758164033457,
+      "Tweezers": 0.788526906994957
+     },
+     "per_epoch_mAP": {
+      "-1": 0.7273450248398429,
+      "0": 0.7278840021575382,
+      "1": 0.7283866923949638,
+      "2": 0.7247393210824867,
+      "3": 0.7247257097422923
+     },
+     "init": 0.7273450248398429,
+     "result_epoch": 3,
+     "init_vs_tower_alone": {
+      "comparable": true,
+      "max_abs_score_diff": 0.0,
+      "max_abs_bbox_diff_px": 0.0,
+      "label_mismatch": 0
+     },
+     "frozen_unchanged": true,
+     "d_tower_AP": -0.002619315097550534,
+     "d_empty_AP": 0.00391879094665748,
+     "d_shuffle_AP": 0.0026749732097308687,
+     "d_tower_target_AP": -0.002383527575542499,
+     "d_empty_target_AP": 0.010067219730152566,
+     "d_shuffle_target_AP": 0.007815062636707393,
+     "d_tower_control_AP": 0.0001661285356825415,
+     "d_empty_control_AP": 0.0014432118073153255,
+     "d_shuffle_control_AP": 0.0013961400561443016,
+     "d_tower_AP50": -0.0008348656919872077,
+     "d_empty_AP50": 0.0050155981637276525,
+     "d_shuffle_AP50": 0.0037342225437482224
+    },
+    "gt": {
+     "run": "w23b_pd_P2L-W2_gt_ep4_seed42",
+     "host": "bengio",
+     "AP": 0.7298230608920799,
+     "target_AP": 0.8045520022272517,
+     "control_AP": 0.6720696020291088,
+     "AP50": 0.8559675168764601,
+     "per_video": {
+      "09": 0.7045027572752444,
+      "10": 0.6524535444563627
+     },
+     "per_class": {
+      "Bipolar Forceps": 0.8015684947256649,
+      "Electric Cautery": 0.9639992629376375,
+      "Forceps": 0.35336770629382785,
+      "Gauze": 0.2747902004006523,
+      "Hook": 0.6336311548517192,
+      "Mouth Gag": 0.7994024266808474,
+      "Needle Holders": 0.8494697339062771,
+      "Raspatory": 0.8034936150995327,
+      "Retractor": NaN,
+      "Scalpel": 0.9227066576000159,
+      "Scissors": 0.7060165752469648,
+      "Skewer": 0.9515272148808815,
+      "Suction Cannula": 0.8248684365911897,
+      "Syringe": 0.543464028830163,
+      "Tweezers": 0.7892173444437457
+     },
+     "per_epoch_mAP": {
+      "-1": 0.7273450248398429,
+      "0": 0.7294263839354731,
+      "1": 0.7299264397418688,
+      "2": 0.7276312252476368,
+      "3": 0.7298230608920799
+     },
+     "init": 0.7273450248398429,
+     "result_epoch": 3,
+     "init_vs_tower_alone": {
+      "comparable": true,
+      "max_abs_score_diff": 0.0,
+      "max_abs_bbox_diff_px": 0.0,
+      "label_mismatch": 0
+     },
+     "frozen_unchanged": true,
+     "d_tower_AP": 0.002478036052237065,
+     "d_empty_AP": 0.009016142096445079,
+     "d_shuffle_AP": 0.007772324359518468,
+     "d_tower_target_AP": 0.009477201372161903,
+     "d_empty_target_AP": 0.021927948677856968,
+     "d_shuffle_target_AP": 0.019675791584411795,
+     "d_tower_control_AP": -0.0005935797290409495,
+     "d_empty_control_AP": 0.0006835035425918345,
+     "d_shuffle_control_AP": 0.0006364317914208106,
+     "d_tower_AP50": 0.004160085451224149,
+     "d_empty_AP50": 0.01001054930693901,
+     "d_shuffle_AP50": 0.00872917368695958
+    },
+    "shuffle": {
+     "run": "w23b_pd_P2L-W2_shuffle_ep4_seed42",
+     "host": "bengio",
+     "AP": 0.7220507365325615,
+     "target_AP": 0.7848762106428399,
+     "control_AP": 0.671433170237688,
+     "AP50": 0.8472383431895005,
+     "per_video": {
+      "09": 0.701540509109181,
+      "10": 0.638608977731842
+     },
+     "per_class": {
+      "Bipolar Forceps": 0.7603962933638239,
+      "Electric Cautery": 0.9626835704513941,
+      "Forceps": 0.35747786907763773,
+      "Gauze": 0.2692778958298907,
+      "Hook": 0.6343358120869446,
+      "Mouth Gag": 0.798932121354638,
+      "Needle Holders": 0.8428605584253034,
+      "Raspatory": 0.7918139930087179,
+      "Retractor": NaN,
+      "Scalpel": 0.8883654449310071,
+      "Scissors": 0.7012387672496302,
+      "Skewer": 0.9483352738106593,
+      "Suction Cannula": 0.827889211841663,
+      "Syringe": 0.5354700480999911,
+      "Tweezers": 0.7896334519245604
+     },
+     "per_epoch_mAP": {
+      "-1": 0.7273450248398429,
+      "0": 0.7260383736087742,
+      "1": 0.7256851650075319,
+      "2": 0.7200045453747403,
+      "3": 0.7220507365325615
+     },
+     "init": 0.7273450248398429,
+     "result_epoch": 3,
+     "init_vs_tower_alone": {
+      "comparable": true,
+      "max_abs_score_diff": 0.0,
+      "max_abs_bbox_diff_px": 0.0,
+      "label_mismatch": 0
+     },
+     "frozen_unchanged": true,
+     "d_tower_AP": -0.005294288307281403,
+     "d_empty_AP": 0.0012438177369266112,
+     "d_shuffle_AP": 0.0,
+     "d_tower_target_AP": -0.010198590212249892,
+     "d_empty_target_AP": 0.002252157093445173,
+     "d_shuffle_target_AP": 0.0,
+     "d_tower_control_AP": -0.00123001152046176,
+     "d_empty_control_AP": 4.707175117102391e-05,
+     "d_shuffle_control_AP": 0.0,
+     "d_tower_AP50": -0.00456908823573543,
+     "d_empty_AP50": 0.0012813756199794302,
+     "d_shuffle_AP50": 0.0
+    }
+   },
+   "W3": {
+    "empty": {
+     "run": "w23b_pd_P2L-W3_empty_ep4_seed42",
+     "host": "bengio",
+     "AP": 0.6900963078998631,
+     "target_AP": 0.7515158046067962,
+     "control_AP": 0.6546235629735502,
+     "AP50": 0.8175675530221075,
+     "per_video": {
+      "09": 0.6728613138762733,
+      "10": 0.6088178220362882
+     },
+     "per_class": {
+      "Bipolar Forceps": 0.7337343790805325,
+      "Electric Cautery": 0.9522711822165293,
+      "Forceps": 0.310684500863661,
+      "Gauze": 0.24950690259570868,
+      "Hook": 0.521368979407903,
+      "Mouth Gag": 0.7926202876970192,
+      "Needle Holders": 0.8351833892992476,
+      "Raspatory": 0.6200343961627204,
+      "Retractor": NaN,
+      "Scalpel": 0.9088526899756258,
+      "Scissors": 0.6657669838825618,
+      "Skewer": 0.9347238101624613,
+      "Suction Cannula": 0.8341233696000102,
+      "Syringe": 0.5602337476526407,
+      "Tweezers": 0.7422436920014626
+     },
+     "per_epoch_mAP": {
+      "-1": 0.7273450248398429,
+      "0": 0.6788415412315875,
+      "1": 0.6756763667931369,
+      "2": 0.6878570753285516,
+      "3": 0.6900963078998631
+     },
+     "init": 0.7273450248398429,
+     "result_epoch": 3,
+     "init_vs_tower_alone": {
+      "comparable": true,
+      "max_abs_score_diff": 0.0,
+      "max_abs_bbox_diff_px": 0.0,
+      "label_mismatch": 0
+     },
+     "frozen_unchanged": true,
+     "d_tower_AP": -0.037248716939979776,
+     "d_empty_AP": 0.0,
+     "d_shuffle_AP": 0.012085961643020338,
+     "d_tower_target_AP": -0.04355899624829351,
+     "d_empty_target_AP": 0.0,
+     "d_shuffle_target_AP": 0.015179183967344412,
+     "d_tower_control_AP": -0.018039618784599587,
+     "d_empty_control_AP": 0.0,
+     "d_shuffle_control_AP": 0.00166088732273173,
+     "d_tower_AP50": -0.034239878403128476,
+     "d_empty_AP50": 0.0,
+     "d_shuffle_AP50": 0.014540974896856684
+    },
+    "pred_noCF": {
+     "run": "w23b_pd_P2L-W3_pred_noCF_ep4_seed42",
+     "host": "bengio",
+     "AP": 0.6718983105693322,
+     "target_AP": 0.7389296985107144,
+     "control_AP": 0.6367267508673693,
+     "AP50": 0.8010152507505219,
+     "per_video": {
+      "09": 0.6399529842060873,
+      "10": 0.6004625234836247
+     },
+     "per_class": {
+      "Bipolar Forceps": 0.735719242546738,
+      "Electric Cautery": 0.952975541744901,
+      "Forceps": 0.2794161291148429,
+      "Gauze": 0.19639152577392183,
+      "Hook": 0.4692318310196463,
+      "Mouth Gag": 0.7937118486475508,
+      "Needle Holders": 0.8262651705785935,
+      "Raspatory": 0.5978630301143086,
+      "Retractor": NaN,
+      "Scalpel": 0.8848873932632197,
+      "Scissors": 0.637132179489618,
+      "Skewer": 0.959193467196537,
+      "Suction Cannula": 0.8194973360083188,
+      "Syringe": 0.5169853594327687,
+      "Tweezers": 0.7373062930396854
+     },
+     "per_epoch_mAP": {
+      "-1": 0.7273450248398429,
+      "0": 0.6729282491476287,
+      "1": 0.689089344603638,
+      "2": 0.6911741068940597,
+      "3": 0.6718983105693322
+     },
+     "init": 0.7273450248398429,
+     "result_epoch": 3,
+     "init_vs_tower_alone": {
+      "comparable": true,
+      "max_abs_score_diff": 0.0,
+      "max_abs_bbox_diff_px": 0.0,
+      "label_mismatch": 0
+     },
+     "frozen_unchanged": true,
+     "d_tower_AP": -0.05544671427051062,
+     "d_empty_AP": -0.018197997330530846,
+     "d_shuffle_AP": -0.006112035687510509,
+     "d_tower_target_AP": -0.05614510234437531,
+     "d_empty_target_AP": -0.012586106096081795,
+     "d_shuffle_target_AP": 0.002593077871262617,
+     "d_tower_control_AP": -0.03593643089078047,
+     "d_empty_control_AP": -0.01789681210618088,
+     "d_shuffle_control_AP": -0.01623592478344915,
+     "d_tower_AP50": -0.05079218067471403,
+     "d_empty_AP50": -0.01655230227158555,
+     "d_shuffle_AP50": -0.0020113273747288662
+    },
+    "gt": {
+     "run": "w23b_pd_P2L-W3_gt_ep4_seed42",
+     "host": "bengio",
+     "AP": 0.6834930944552231,
+     "target_AP": 0.7471824724238834,
+     "control_AP": 0.6399811602596823,
+     "AP50": 0.8178532822980391,
+     "per_video": {
+      "09": 0.6719066992949531,
+      "10": 0.6051563747326356
+     },
+     "per_class": {
+      "Bipolar Forceps": 0.7456815832960679,
+      "Electric Cautery": 0.9582891420106974,
+      "Forceps": 0.3264319355118916,
+      "Gauze": 0.19911858902022161,
+      "Hook": 0.5145940022659325,
+      "Mouth Gag": 0.7966049360940041,
+      "Needle Holders": 0.8200692026711872,
+      "Raspatory": 0.598288190941481,
+      "Retractor": NaN,
+      "Scalpel": 0.9035520441358857,
+      "Scissors": 0.6536820367552683,
+      "Skewer": 0.9337293142349447,
+      "Suction Cannula": 0.8294500051133197,
+      "Syringe": 0.5546612295110374,
+      "Tweezers": 0.7347511108111839
+     },
+     "per_epoch_mAP": {
+      "-1": 0.7273450248398429,
+      "0": 0.6943822439328213,
+      "1": 0.6925136571956254,
+      "2": 0.714734463109446,
+      "3": 0.6834930944552231
+     },
+     "init": 0.7273450248398429,
+     "result_epoch": 3,
+     "init_vs_tower_alone": {
+      "comparable": true,
+      "max_abs_score_diff": 0.0,
+      "max_abs_bbox_diff_px": 0.0,
+      "label_mismatch": 0
+     },
+     "frozen_unchanged": true,
+     "d_tower_AP": -0.043851930384619764,
+     "d_empty_AP": -0.006603213444639988,
+     "d_shuffle_AP": 0.0054827481983803494,
+     "d_tower_target_AP": -0.04789232843120639,
+     "d_empty_target_AP": -0.004333332182912875,
+     "d_shuffle_target_AP": 0.010845851784431537,
+     "d_tower_control_AP": -0.03268202149846744,
+     "d_empty_control_AP": -0.014642402713867853,
+     "d_shuffle_control_AP": -0.012981515391136123,
+     "d_tower_AP50": -0.03395414912719685,
+     "d_empty_AP50": 0.00028572927593162323,
+     "d_shuffle_AP50": 0.014826704172788308
+    },
+    "shuffle": {
+     "run": "w23b_pd_P2L-W3_shuffle_ep4_seed42",
+     "host": "bengio",
+     "AP": 0.6780103462568428,
+     "target_AP": 0.7363366206394518,
+     "control_AP": 0.6529626756508184,
+     "AP50": 0.8030265781252508,
+     "per_video": {
+      "09": 0.6802837339781675,
+      "10": 0.5991178108835201
+     },
+     "per_class": {
+      "Bipolar Forceps": 0.6978957604544125,
+      "Electric Cautery": 0.9468295046004441,
+      "Forceps": 0.26702244816207493,
+      "Gauze": 0.23013779450746627,
+      "Hook": 0.4891948828582339,
+      "Mouth Gag": 0.8201065845957858,
+      "Needle Holders": 0.814869668405431,
+      "Raspatory": 0.6042619816700598,
+      "Retractor": NaN,
+      "Scalpel": 0.8824953927509748,
+      "Scissors": 0.6806945377690805,
+      "Skewer": 0.9253160350746088,
+      "Suction Cannula": 0.8160702565607123,
+      "Syringe": 0.5717139332472032,
+      "Tweezers": 0.7455360669393096
+     },
+     "per_epoch_mAP": {
+      "-1": 0.7273450248398429,
+      "0": 0.6762000585067947,
+      "1": 0.6904128858397579,
+      "2": 0.6912012074008694,
+      "3": 0.6780103462568428
+     },
+     "init": 0.7273450248398429,
+     "result_epoch": 3,
+     "init_vs_tower_alone": {
+      "comparable": true,
+      "max_abs_score_diff": 0.0,
+      "max_abs_bbox_diff_px": 0.0,
+      "label_mismatch": 0
+     },
+     "frozen_unchanged": true,
+     "d_tower_AP": -0.04933467858300011,
+     "d_empty_AP": -0.012085961643020338,
+     "d_shuffle_AP": 0.0,
+     "d_tower_target_AP": -0.058738180215637925,
+     "d_empty_target_AP": -0.015179183967344412,
+     "d_shuffle_target_AP": 0.0,
+     "d_tower_control_AP": -0.019700506107331317,
+     "d_empty_control_AP": -0.00166088732273173,
+     "d_shuffle_control_AP": 0.0,
+     "d_tower_AP50": -0.04878085329998516,
+     "d_empty_AP50": -0.014540974896856684,
+     "d_shuffle_AP50": 0.0
+    }
+   },
+   "W1_ref": {
+    "empty": {
+     "run": "stage2pilot_pd_P2L_empty_seed42",
+     "host": "andrew",
+     "source": "前回の記録 val_metrics_by_epoch.json の epoch 3",
+     "AP": 0.7273485842331918,
+     "target_AP": 0.7950745956231104,
+     "control_AP": 0.6726730963494287,
+     "d_empty_AP": 0.0,
+     "d_empty_target_AP": 0.0,
+     "d_shuffle_AP": 0.00040522119889174757,
+     "d_shuffle_target_AP": 0.0001636829739487533
+    },
+    "pred_noCF": {
+     "run": "stage2pilot_pd_P2L_pred_noCF_seed42",
+     "host": "andrew",
+     "source": "前回の記録 val_metrics_by_epoch.json の epoch 3",
+     "AP": 0.7298350688393593,
+     "target_AP": 0.802364409316476,
+     "control_AP": 0.6725369162188618,
+     "d_empty_AP": 0.002486484606167516,
+     "d_empty_target_AP": 0.0072898136933655655,
+     "d_shuffle_AP": 0.0028917058050592637,
+     "d_shuffle_target_AP": 0.007453496667314319
+    },
+    "gt": {
+     "run": "stage2pilot_pd_P2L_gt_seed42",
+     "host": "andrew",
+     "source": "前回の記録 val_metrics_by_epoch.json の epoch 3",
+     "AP": 0.7327308591313845,
+     "target_AP": 0.808812014912432,
+     "control_AP": 0.6722988344123944,
+     "d_empty_AP": 0.005382274898192652,
+     "d_empty_target_AP": 0.013737419289321595,
+     "d_shuffle_AP": 0.005787496097084399,
+     "d_shuffle_target_AP": 0.013901102263270348
+    },
+    "pred_CF": {
+     "run": "stage2pilot_pd_P2L_pred_CF_seed42",
+     "host": "andrew",
+     "source": "前回の記録 val_metrics_by_epoch.json の epoch 3",
+     "AP": 0.727893177784164,
+     "target_AP": 0.7975211111231425,
+     "control_AP": 0.6716685809868777,
+     "d_empty_AP": 0.0005445935509721389,
+     "d_empty_target_AP": 0.0024465155000320538,
+     "d_shuffle_AP": 0.0009498147498638865,
+     "d_shuffle_target_AP": 0.002610198473980807
+    },
+    "gtpred_CF": {
+     "run": "stage2pilot_pd_P2L_gtpred_CF_seed42",
+     "host": "andrew",
+     "source": "前回の記録 val_metrics_by_epoch.json の epoch 3",
+     "AP": 0.7330362109387025,
+     "target_AP": 0.8090161485880026,
+     "control_AP": 0.6727698018886739,
+     "d_empty_AP": 0.005687626705510707,
+     "d_empty_target_AP": 0.01394155296489219,
+     "d_shuffle_AP": 0.006092847904402454,
+     "d_shuffle_target_AP": 0.014105235938840943
+    },
+    "shuffle": {
+     "run": "stage2fix_pd_P2L_shuffle_ep4_seed42",
+     "host": "andrew",
+     "source": "回し直し（本契約。4 epoch 目の状態）",
+     "AP": 0.7269433630343001,
+     "target_AP": 0.7949109126491617,
+     "control_AP": 0.6715354601333134,
+     "d_empty_AP": -0.00040522119889174757,
+     "d_empty_target_AP": -0.0001636829739487533,
+     "d_shuffle_AP": 0.0,
+     "d_shuffle_target_AP": 0.0
+    }
+   }
+  },
+  "P3": {
+   "W3": {
+    "empty": {
+     "run": "w23b_pd_P3-W3_empty_ep4_seed42",
+     "host": "bengio",
+     "AP": 0.6981189733091626,
+     "target_AP": 0.785253421262454,
+     "control_AP": 0.6525643270816421,
+     "AP50": 0.8311540728067494,
+     "per_video": {
+      "09": 0.6741576613861315,
+      "10": 0.6299489903700531
+     },
+     "per_class": {
+      "Bipolar Forceps": 0.7646914187710073,
+      "Electric Cautery": 0.9506554851201399,
+      "Forceps": 0.2976752513563147,
+      "Gauze": 0.2533035054808741,
+      "Hook": 0.49099342335914387,
+      "Mouth Gag": 0.8017548586191857,
+      "Needle Holders": 0.8135705117606773,
+      "Raspatory": 0.7903296474821861,
+      "Retractor": NaN,
+      "Scalpel": 0.8599218409271813,
+      "Scissors": 0.6842465400931639,
+      "Skewer": 0.9387289740643348,
+      "Suction Cannula": 0.813650283070089,
+      "Syringe": 0.5725952250675609,
+      "Tweezers": 0.7415486611564198
+     },
+     "per_epoch_mAP": {
+      "-1": 0.7273450248398429,
+      "0": 0.6905851859143938,
+      "1": 0.6719741034479669,
+      "2": 0.690346919487713,
+      "3": 0.6981189733091626
+     },
+     "init": 0.7273450248398429,
+     "result_epoch": 3,
+     "init_vs_tower_alone": {
+      "comparable": true,
+      "max_abs_score_diff": 0.0,
+      "max_abs_bbox_diff_px": 0.0,
+      "label_mismatch": 0
+     },
+     "frozen_unchanged": true,
+     "d_tower_AP": -0.029226051530680253,
+     "d_empty_AP": 0.0,
+     "d_shuffle_AP": null,
+     "d_tower_target_AP": -0.009821379592635737,
+     "d_empty_target_AP": 0.0,
+     "d_shuffle_target_AP": null,
+     "d_tower_control_AP": -0.020098854676507627,
+     "d_empty_control_AP": 0.0,
+     "d_shuffle_control_AP": null,
+     "d_tower_AP50": -0.020653358618486606,
+     "d_empty_AP50": 0.0,
+     "d_shuffle_AP50": null
+    },
+    "pred_noCF": {
+     "run": "w23b_pd_P3-W3_pred_noCF_ep4_seed42",
+     "host": "bengio",
+     "AP": 0.6980227999663459,
+     "target_AP": 0.7758024258486544,
+     "control_AP": 0.6467305398820679,
+     "AP50": 0.8308047736693721,
+     "per_video": {
+      "09": 0.6689390310685376,
+      "10": 0.6247554371067933
+     },
+     "per_class": {
+      "Bipolar Forceps": 0.794681602358494,
+      "Electric Cautery": 0.9525510800552663,
+      "Forceps": 0.31537594828526216,
+      "Gauze": 0.2533329770674179,
+      "Hook": 0.5441029214898809,
+      "Mouth Gag": 0.796917938552137,
+      "Needle Holders": 0.8074809423403025,
+      "Raspatory": 0.7612688442595005,
+      "Retractor": NaN,
+      "Scalpel": 0.8759520023623162,
+      "Scissors": 0.6868740185865858,
+      "Skewer": 0.9417663069105253,
+      "Suction Cannula": 0.7888269375559471,
+      "Syringe": 0.5053433733524362,
+      "Tweezers": 0.7478443063527694
+     },
+     "per_epoch_mAP": {
+      "-1": 0.7273450248398429,
+      "0": 0.7015784692886331,
+      "1": 0.699731658035766,
+      "2": 0.6825528559012669,
+      "3": 0.6980227999663459
+     },
+     "init": 0.7273450248398429,
+     "result_epoch": 3,
+     "init_vs_tower_alone": {
+      "comparable": true,
+      "max_abs_score_diff": 0.0,
+      "max_abs_bbox_diff_px": 0.0,
+      "label_mismatch": 0
+     },
+     "frozen_unchanged": true,
+     "d_tower_AP": -0.029322224873497005,
+     "d_empty_AP": -9.617334281675216e-05,
+     "d_shuffle_AP": null,
+     "d_tower_target_AP": -0.019272375006435305,
+     "d_empty_target_AP": -0.009450995413799568,
+     "d_shuffle_target_AP": null,
+     "d_tower_control_AP": -0.025932641876081908,
+     "d_empty_control_AP": -0.005833787199574281,
+     "d_shuffle_control_AP": null,
+     "d_tower_AP50": -0.02100265775586385,
+     "d_empty_AP50": -0.00034929913737724583,
+     "d_shuffle_AP50": null
+    },
+    "gt": {
+     "run": "w23b_pd_P3-W3_gt_ep4_seed42",
+     "host": "bengio",
+     "AP": 0.6918815397445995,
+     "target_AP": 0.7721895963330565,
+     "control_AP": 0.6387447698973298,
+     "AP50": 0.8295831909441627,
+     "per_video": {
+      "09": 0.6676082475170311,
+      "10": 0.6109458852547937
+     },
+     "per_class": {
+      "Bipolar Forceps": 0.7269402643392905,
+      "Electric Cautery": 0.9568442438519036,
+      "Forceps": 0.28972124662864335,
+      "Gauze": 0.23267961562229136,
+      "Hook": 0.5868076075144077,
+      "Mouth Gag": 0.7795683688119424,
+      "Needle Holders": 0.7840159702021996,
+      "Raspatory": 0.7810415252187289,
+      "Retractor": NaN,
+      "Scalpel": 0.8428286469012392,
+      "Scissors": 0.6530254269726381,
+      "Skewer": 0.9336625405604014,
+      "Suction Cannula": 0.7948450902346528,
+      "Syringe": 0.5764750046456227,
+      "Tweezers": 0.7478860049204322
+     },
+     "per_epoch_mAP": {
+      "-1": 0.7273450248398429,
+      "0": 0.6831466636851727,
+      "1": 0.6848276423180255,
+      "2": 0.6635418125820343,
+      "3": 0.6918815397445995
+     },
+     "init": 0.7273450248398429,
+     "result_epoch": 3,
+     "init_vs_tower_alone": {
+      "comparable": true,
+      "max_abs_score_diff": 0.0,
+      "max_abs_bbox_diff_px": 0.0,
+      "label_mismatch": 0
+     },
+     "frozen_unchanged": true,
+     "d_tower_AP": -0.03546348509524333,
+     "d_empty_AP": -0.006237433564563077,
+     "d_shuffle_AP": null,
+     "d_tower_target_AP": -0.022885204522033242,
+     "d_empty_target_AP": -0.013063824929397505,
+     "d_shuffle_target_AP": null,
+     "d_tower_control_AP": -0.03391841186082001,
+     "d_empty_control_AP": -0.013819557184312381,
+     "d_shuffle_control_AP": null,
+     "d_tower_AP50": -0.0222242404810733,
+     "d_empty_AP50": -0.0015708818625866927,
+     "d_shuffle_AP50": null
+    }
+   },
+   "W1_ref": {
+    "empty": {
+     "run": "stage2fix_pd_P3_empty_ep4_seed42",
+     "host": "andrew",
+     "source": "回し直し（本契約。4 epoch 目の状態）",
+     "AP": 0.7258711638793289,
+     "target_AP": 0.7950231506392851,
+     "control_AP": 0.6727083162773396,
+     "d_empty_AP": 0.0,
+     "d_empty_target_AP": 0.0,
+     "d_shuffle_AP": -0.0008428964502288361,
+     "d_shuffle_target_AP": -0.0019034765363372674
+    },
+    "pred_noCF": {
+     "run": "stage2fix_pd_P3_pred_noCF_ep4_seed42",
+     "host": "andrew",
+     "source": "回し直し（本契約。4 epoch 目の状態）",
+     "AP": 0.7264738091689782,
+     "target_AP": 0.7960323720417825,
+     "control_AP": 0.672426699605583,
+     "d_empty_AP": 0.0006026452896492618,
+     "d_empty_target_AP": 0.0010092214024973734,
+     "d_shuffle_AP": -0.0002402511605795743,
+     "d_shuffle_target_AP": -0.0008942551338398941
+    },
+    "gt": {
+     "run": "stage2fix_pd_P3_gt_ep4_seed42",
+     "host": "andrew",
+     "source": "回し直し（本契約。4 epoch 目の状態）",
+     "AP": 0.7259925542380068,
+     "target_AP": 0.7957010801176334,
+     "control_AP": 0.6728089671101279,
+     "d_empty_AP": 0.00012139035867786419,
+     "d_empty_target_AP": 0.000677929478348327,
+     "d_shuffle_AP": -0.0007215060915509719,
+     "d_shuffle_target_AP": -0.0012255470579889405
+    },
+    "pred_CF": {
+     "run": "stage2fix_pd_P3_pred_CF_ep4_seed42",
+     "host": "bengio",
+     "source": "回し直し（本契約。4 epoch 目の状態）",
+     "AP": 0.7257542556839381,
+     "target_AP": 0.7938630711330552,
+     "control_AP": 0.6729980900055019,
+     "d_empty_AP": -0.00011690819539078579,
+     "d_empty_target_AP": -0.0011600795062298719,
+     "d_shuffle_AP": -0.0009598046456196219,
+     "d_shuffle_target_AP": -0.0030635560425671393
+    },
+    "gtpred_CF": {
+     "run": "stage2fix_pd_P3_gtpred_CF_ep4_seed42",
+     "host": "bengio",
+     "source": "回し直し（本契約。4 epoch 目の状態）",
+     "AP": 0.7254988345581337,
+     "target_AP": 0.7910986571916249,
+     "control_AP": 0.675991920878969,
+     "d_empty_AP": -0.00037232932119524165,
+     "d_empty_target_AP": -0.003924493447660216,
+     "d_shuffle_AP": -0.0012152257714240777,
+     "d_shuffle_target_AP": -0.005827969983997483
+    },
+    "shuffle": {
+     "run": "stage2fix_pd_P3_shuffle_ep4_seed42",
+     "host": "andrew",
+     "source": "回し直し（本契約。4 epoch 目の状態）",
+     "AP": 0.7267140603295578,
+     "target_AP": 0.7969266271756223,
+     "control_AP": 0.6728120931965625,
+     "d_empty_AP": 0.0008428964502288361,
+     "d_empty_target_AP": 0.0019034765363372674,
+     "d_shuffle_AP": 0.0,
+     "d_shuffle_target_AP": 0.0
+    }
+   }
+  },
+  "P1": {
+   "W3": {
+    "empty": {
+     "run": "w23b_pd_P1-W3_empty_ep4_seed42",
+     "host": "bengio",
+     "AP": 0.6695064067493597,
+     "target_AP": 0.7247535352398087,
+     "control_AP": 0.6376211494160522,
+     "AP50": 0.8061539095885112,
+     "per_video": {
+      "09": 0.6238465147715901,
+      "10": 0.6092187118144644
+     },
+     "per_class": {
+      "Bipolar Forceps": 0.6284569155089603,
+      "Electric Cautery": 0.9588029611275943,
+      "Forceps": 0.22330030737479203,
+      "Gauze": 0.24117624646093766,
+      "Hook": 0.597600153880156,
+      "Mouth Gag": 0.7707325946288671,
+      "Needle Holders": 0.8035889915279155,
+      "Raspatory": 0.8106160621968252,
+      "Retractor": NaN,
+      "Scalpel": 0.9034783360275397,
+      "Scissors": 0.615545006717326,
+      "Skewer": 0.9069527003934963,
+      "Suction Cannula": 0.8006357069604901,
+      "Syringe": 0.37426366207222195,
+      "Tweezers": 0.7379400496139139
+     },
+     "per_epoch_mAP": {
+      "-1": 0.7273450248398429,
+      "0": 0.6969929712350019,
+      "1": 0.680882462410263,
+      "2": 0.6668711316047484,
+      "3": 0.6695064067493597
+     },
+     "init": 0.7273450248398429,
+     "result_epoch": 3,
+     "init_vs_tower_alone": {
+      "comparable": true,
+      "max_abs_score_diff": 0.0,
+      "max_abs_bbox_diff_px": 0.0,
+      "label_mismatch": 0
+     },
+     "frozen_unchanged": true,
+     "d_tower_AP": -0.057838618090483185,
+     "d_empty_AP": 0.0,
+     "d_shuffle_AP": -0.0191003158553118,
+     "d_tower_target_AP": -0.07032126561528107,
+     "d_empty_target_AP": 0.0,
+     "d_shuffle_target_AP": -0.04807324359578413,
+     "d_tower_control_AP": -0.03504203234209757,
+     "d_empty_control_AP": 0.0,
+     "d_shuffle_control_AP": -0.0016440474002233918,
+     "d_tower_AP50": -0.045653521836724775,
+     "d_empty_AP50": 0.0,
+     "d_shuffle_AP50": -0.018222138971014656
+    },
+    "pred_noCF": {
+     "run": "w23b_pd_P1-W3_pred_noCF_ep4_seed42",
+     "host": "bengio",
+     "AP": 0.6941439165258269,
+     "target_AP": 0.7819374904503824,
+     "control_AP": 0.6382812588856861,
+     "AP50": 0.8385391805396708,
+     "per_video": {
+      "09": 0.6714153063782782,
+      "10": 0.61618309757925
+     },
+     "per_class": {
+      "Bipolar Forceps": 0.7473313289742032,
+      "Electric Cautery": 0.9600867560779832,
+      "Forceps": 0.26796022936398417,
+      "Gauze": 0.258472195321437,
+      "Hook": 0.5648555860033555,
+      "Mouth Gag": 0.7579445788089832,
+      "Needle Holders": 0.7968084597092652,
+      "Raspatory": 0.7854033877022353,
+      "Retractor": NaN,
+      "Scalpel": 0.8937740028070835,
+      "Scissors": 0.665491312412333,
+      "Skewer": 0.9514835202914635,
+      "Suction Cannula": 0.799442996333701,
+      "Syringe": 0.5316952124769265,
+      "Tweezers": 0.7372652650786231
+     },
+     "per_epoch_mAP": {
+      "-1": 0.7273450248398429,
+      "0": 0.7012217196021673,
+      "1": 0.6795661379602393,
+      "2": 0.6893538579053349,
+      "3": 0.6941439165258269
+     },
+     "init": 0.7273450248398429,
+     "result_epoch": 3,
+     "init_vs_tower_alone": {
+      "comparable": true,
+      "max_abs_score_diff": 0.0,
+      "max_abs_bbox_diff_px": 0.0,
+      "label_mismatch": 0
+     },
+     "frozen_unchanged": true,
+     "d_tower_AP": -0.033201108314016015,
+     "d_empty_AP": 0.02463750977646717,
+     "d_shuffle_AP": 0.00553719392115537,
+     "d_tower_target_AP": -0.013137310404707336,
+     "d_empty_target_AP": 0.057183955210573734,
+     "d_shuffle_target_AP": 0.009110711614789602,
+     "d_tower_control_AP": -0.034381922872463666,
+     "d_empty_control_AP": 0.0006601094696339072,
+     "d_shuffle_control_AP": -0.0009839379305894846,
+     "d_tower_AP50": -0.013268250885565158,
+     "d_empty_AP50": 0.03238527095115962,
+     "d_shuffle_AP50": 0.01416313198014496
+    },
+    "gt": {
+     "run": "w23b_pd_P1-W3_gt_ep4_seed42",
+     "host": "bengio",
+     "AP": 0.7028505203044184,
+     "target_AP": 0.7884216703367988,
+     "control_AP": 0.6404231425561839,
+     "AP50": 0.8398145150737375,
+     "per_video": {
+      "09": 0.6595746819001714,
+      "10": 0.6307274177109565
+     },
+     "per_class": {
+      "Bipolar Forceps": 0.7867192371968157,
+      "Electric Cautery": 0.9614592094355615,
+      "Forceps": 0.30386546517094987,
+      "Gauze": 0.22359952638394864,
+      "Hook": 0.5875720062719922,
+      "Mouth Gag": 0.7736835433621219,
+      "Needle Holders": 0.8204807750342923,
+      "Raspatory": 0.8087951373223938,
+      "Retractor": NaN,
+      "Scalpel": 0.9269712403110095,
+      "Scissors": 0.6627289064403316,
+      "Skewer": 0.9484278502882095,
+      "Suction Cannula": 0.827920968542061,
+      "Syringe": 0.4711948865655657,
+      "Tweezers": 0.7364885319366041
+     },
+     "per_epoch_mAP": {
+      "-1": 0.7273450248398429,
+      "0": 0.7052914310548638,
+      "1": 0.6966603828910592,
+      "2": 0.7035231805621943,
+      "3": 0.7028505203044184
+     },
+     "init": 0.7273450248398429,
+     "result_epoch": 3,
+     "init_vs_tower_alone": {
+      "comparable": true,
+      "max_abs_score_diff": 0.0,
+      "max_abs_bbox_diff_px": 0.0,
+      "label_mismatch": 0
+     },
+     "frozen_unchanged": true,
+     "d_tower_AP": -0.024494504535424455,
+     "d_empty_AP": 0.03334411355505873,
+     "d_shuffle_AP": 0.01424379769974693,
+     "d_tower_target_AP": -0.006653130518290973,
+     "d_empty_target_AP": 0.0636681350969901,
+     "d_shuffle_target_AP": 0.015594891501205965,
+     "d_tower_control_AP": -0.03224003920196583,
+     "d_empty_control_AP": 0.002801993140131742,
+     "d_shuffle_control_AP": 0.0011579457399083504,
+     "d_tower_AP50": -0.011992916351498462,
+     "d_empty_AP50": 0.033660605485226314,
+     "d_shuffle_AP50": 0.015438466514211657
+    },
+    "shuffle": {
+     "run": "w23b_pd_P1-W3_shuffle_ep4_seed42",
+     "host": "bengio",
+     "AP": 0.6886067226046715,
+     "target_AP": 0.7728267788355928,
+     "control_AP": 0.6392651968162756,
+     "AP50": 0.8243760485595258,
+     "per_video": {
+      "09": 0.673290931422145,
+      "10": 0.6094765383486163
+     },
+     "per_class": {
+      "Bipolar Forceps": 0.7481851892026589,
+      "Electric Cautery": 0.9631708205231292,
+      "Forceps": 0.27561350961833625,
+      "Gauze": 0.23518417616512244,
+      "Hook": 0.48163621127138617,
+      "Mouth Gag": 0.7629963175119819,
+      "Needle Holders": 0.8194214356136125,
+      "Raspatory": 0.7351279173475862,
+      "Retractor": NaN,
+      "Scalpel": 0.886143137785398,
+      "Scissors": 0.6794574579958713,
+      "Skewer": 0.9380981329835597,
+      "Suction Cannula": 0.8226872748393637,
+      "Syringe": 0.5565795168587611,
+      "Tweezers": 0.7361930187486342
+     },
+     "per_epoch_mAP": {
+      "-1": 0.7273450248398429,
+      "0": 0.7052053401522516,
+      "1": 0.6679651190061956,
+      "2": 0.6958854143993501,
+      "3": 0.6886067226046715
+     },
+     "init": 0.7273450248398429,
+     "result_epoch": 3,
+     "init_vs_tower_alone": {
+      "comparable": true,
+      "max_abs_score_diff": 0.0,
+      "max_abs_bbox_diff_px": 0.0,
+      "label_mismatch": 0
+     },
+     "frozen_unchanged": true,
+     "d_tower_AP": -0.038738302235171385,
+     "d_empty_AP": 0.0191003158553118,
+     "d_shuffle_AP": 0.0,
+     "d_tower_target_AP": -0.022248022019496938,
+     "d_empty_target_AP": 0.04807324359578413,
+     "d_shuffle_target_AP": 0.0,
+     "d_tower_control_AP": -0.03339798494187418,
+     "d_empty_control_AP": 0.0016440474002233918,
+     "d_shuffle_control_AP": 0.0,
+     "d_tower_AP50": -0.02743138286571012,
+     "d_empty_AP50": 0.018222138971014656,
+     "d_shuffle_AP50": 0.0
+    }
+   },
+   "W1_ref": {
+    "empty": {
+     "run": "stage2fix_pd_P1-W1_empty_ep4_seed42",
+     "host": "andrew",
+     "source": "回し直し（本契約。4 epoch 目の状態）",
+     "AP": 0.7236014260649793,
+     "target_AP": 0.7906069000552268,
+     "control_AP": 0.6707950028656637,
+     "d_empty_AP": 0.0,
+     "d_empty_target_AP": 0.0,
+     "d_shuffle_AP": -0.00035898892600960686,
+     "d_shuffle_target_AP": -0.0003312007699425301
+    },
+    "pred_noCF": {
+     "run": "stage2fix_pd_P1-W1_pred_noCF_ep4_seed42",
+     "host": "andrew",
+     "source": "回し直し（本契約。4 epoch 目の状態）",
+     "AP": 0.7268417830784337,
+     "target_AP": 0.7996129190405252,
+     "control_AP": 0.6694427228686299,
+     "d_empty_AP": 0.0032403570134543758,
+     "d_empty_target_AP": 0.009006018985298403,
+     "d_shuffle_AP": 0.002881368087444769,
+     "d_shuffle_target_AP": 0.008674818215355873
+    },
+    "gt": {
+     "run": "stage2pilot_pd_P1-W1_gt_seed42",
+     "host": "andrew",
+     "source": "前回の記録 val_metrics_by_epoch.json の epoch 3",
+     "AP": 0.7308701608727483,
+     "target_AP": 0.8103484672988458,
+     "control_AP": 0.6689126266281029,
+     "d_empty_AP": 0.007268734807768906,
+     "d_empty_target_AP": 0.019741567243618974,
+     "d_shuffle_AP": 0.006909745881759299,
+     "d_shuffle_target_AP": 0.019410366473676444
+    },
+    "pred_CF": {
+     "run": "stage2pilot_pd_P1-W1_pred_CF_seed42",
+     "host": "andrew",
+     "source": "前回の記録 val_metrics_by_epoch.json の epoch 3",
+     "AP": 0.7255030091322798,
+     "target_AP": 0.8089777391151184,
+     "control_AP": 0.6641421139312562,
+     "d_empty_AP": 0.001901583067300483,
+     "d_empty_target_AP": 0.018370839059891564,
+     "d_shuffle_AP": 0.0015425941412908761,
+     "d_shuffle_target_AP": 0.018039638289949034
+    },
+    "gtpred_CF": {
+     "run": "stage2pilot_pd_P1-W1_gtpred_CF_seed42",
+     "host": "andrew",
+     "source": "前回の記録 val_metrics_by_epoch.json の epoch 3",
+     "AP": 0.7324422302513842,
+     "target_AP": 0.8181275138786189,
+     "control_AP": 0.6632007449343482,
+     "d_empty_AP": 0.008840804186404871,
+     "d_empty_target_AP": 0.027520613823392104,
+     "d_shuffle_AP": 0.008481815260395265,
+     "d_shuffle_target_AP": 0.027189413053449574
+    },
+    "shuffle": {
+     "run": "stage2fix_pd_P1-W1_shuffle_ep4_seed42",
+     "host": "andrew",
+     "source": "回し直し（本契約。4 epoch 目の状態）",
+     "AP": 0.723960414990989,
+     "target_AP": 0.7909381008251694,
+     "control_AP": 0.6706962506259945,
+     "d_empty_AP": 0.00035898892600960686,
+     "d_empty_target_AP": 0.0003312007699425301,
+     "d_shuffle_AP": 0.0,
+     "d_shuffle_target_AP": 0.0
+    }
+   },
+   "W2_ref": {
+    "empty": {
+     "run": "stage2fix_pd_P1-W2_empty_ep4_seed42",
+     "host": "andrew",
+     "source": "回し直し（本契約。4 epoch 目の状態）",
+     "AP": 0.7199105717447102,
+     "target_AP": 0.7841048747432146,
+     "control_AP": 0.6690346744999388,
+     "d_empty_AP": 0.0,
+     "d_empty_target_AP": 0.0,
+     "d_shuffle_AP": 0.0011947991592065055,
+     "d_shuffle_target_AP": 0.004422511007648233
+    },
+    "pred_noCF": {
+     "run": "stage2pilot_pd_P1-W2_pred_noCF_seed42",
+     "host": "andrew",
+     "source": "前回の記録 val_metrics_by_epoch.json の epoch 3",
+     "AP": 0.724381607738798,
+     "target_AP": 0.7945913895733675,
+     "control_AP": 0.6679413623789424,
+     "d_empty_AP": 0.004471035994087824,
+     "d_empty_target_AP": 0.010486514830152949,
+     "d_shuffle_AP": 0.00566583515329433,
+     "d_shuffle_target_AP": 0.014909025837801182
+    },
+    "gt": {
+     "run": "stage2pilot_pd_P1-W2_gt_seed42",
+     "host": "andrew",
+     "source": "前回の記録 val_metrics_by_epoch.json の epoch 3",
+     "AP": 0.7312076026629839,
+     "target_AP": 0.8110960143021695,
+     "control_AP": 0.6675830935576779,
+     "d_empty_AP": 0.01129703091827372,
+     "d_empty_target_AP": 0.026991139558954935,
+     "d_shuffle_AP": 0.012491830077480226,
+     "d_shuffle_target_AP": 0.03141365056660317
+    },
+    "pred_CF": {
+     "run": "stage2pilot_pd_P1-W2_pred_CF_seed42",
+     "host": "andrew",
+     "source": "前回の記録 val_metrics_by_epoch.json の epoch 3",
+     "AP": 0.7231981007272577,
+     "target_AP": 0.8054863118959481,
+     "control_AP": 0.6631061611993023,
+     "d_empty_AP": 0.003287528982547472,
+     "d_empty_target_AP": 0.02138143715273355,
+     "d_shuffle_AP": 0.004482328141753977,
+     "d_shuffle_target_AP": 0.025803948160381784
+    },
+    "gtpred_CF": {
+     "run": "stage2pilot_pd_P1-W2_gtpred_CF_seed42",
+     "host": "andrew",
+     "source": "前回の記録 val_metrics_by_epoch.json の epoch 3",
+     "AP": 0.730500459751592,
+     "target_AP": 0.8160923947998702,
+     "control_AP": 0.6621552122546803,
+     "d_empty_AP": 0.010589888006881765,
+     "d_empty_target_AP": 0.031987520056655616,
+     "d_shuffle_AP": 0.01178468716608827,
+     "d_shuffle_target_AP": 0.03641003106430385
+    },
+    "shuffle": {
+     "run": "stage2fix_pd_P1-W2_shuffle_ep4_seed42",
+     "host": "andrew",
+     "source": "回し直し（本契約。4 epoch 目の状態）",
+     "AP": 0.7187157725855037,
+     "target_AP": 0.7796823637355663,
+     "control_AP": 0.6687353345519246,
+     "d_empty_AP": -0.0011947991592065055,
+     "d_empty_target_AP": -0.004422511007648233,
+     "d_shuffle_AP": 0.0,
+     "d_shuffle_target_AP": 0.0
+    }
+   }
+  }
+ },
+ "pd_hosts": {
+  "P2L": [
+   "bengio"
+  ],
+  "P3": [
+   "bengio"
+  ],
+  "P1": [
+   "bengio"
+  ]
+ },
+ "pd_counts": {
+  "P2L": {
+   "W2": 4,
+   "W3": 4,
+   "W1_ref": 6
+  },
+  "P3": {
+   "W3": 3,
+   "W1_ref": 6
+  },
+  "P1": {
+   "W3": 4,
+   "W1_ref": 6,
+   "W2_ref": 6
+  }
+ }
+}

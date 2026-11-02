@@ -1,0 +1,67 @@
+{
+  "AP": 0.6780103462568428,
+  "AP50": 0.8030265781252508,
+  "per_class_ap": {
+    "Bipolar Forceps": 0.6978957604544125,
+    "Electric Cautery": 0.9468295046004441,
+    "Forceps": 0.26702244816207493,
+    "Gauze": 0.23013779450746627,
+    "Hook": 0.4891948828582339,
+    "Mouth Gag": 0.8201065845957858,
+    "Needle Holders": 0.814869668405431,
+    "Raspatory": 0.6042619816700598,
+    "Retractor": NaN,
+    "Scalpel": 0.8824953927509748,
+    "Scissors": 0.6806945377690805,
+    "Skewer": 0.9253160350746088,
+    "Suction Cannula": 0.8160702565607123,
+    "Syringe": 0.5717139332472032,
+    "Tweezers": 0.7455360669393096
+  },
+  "n_images": 1515,
+  "target_AP": 0.7363366206394518,
+  "target_missing": [],
+  "control_AP": 0.6529626756508184,
+  "control_missing": [],
+  "per_video_AP": {
+    "09": 0.6802837339781675,
+    "10": 0.5991178108835201
+  },
+  "task_id": "T-2026-11-01-stage2-w23-bengio",
+  "unofficial": "非公式（T-2026-11-01-stage2-w23-bengio）",
+  "type": "P2L",
+  "type_name": "P2L",
+  "arm": "shuffle",
+  "scope": "W3",
+  "trainable": "all",
+  "result_selection": "final_epoch",
+  "result_epoch": 3,
+  "eval_detection_mAP": 0.6780103462568428,
+  "diff_vs_eval_detection_mAP": 0.0,
+  "init": 0.7273450248398429,
+  "init_target_AP": 0.7950748008550897,
+  "init_control_AP": 0.6726631817581498,
+  "init_vs_tower_alone": {
+    "comparable": true,
+    "max_abs_score_diff": 0.0,
+    "max_abs_bbox_diff_px": 0.0,
+    "label_mismatch": 0
+  },
+  "tower_alone_preds": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-stage2-w23-bengio/b/plain_val_preds_seed42.json.gz",
+  "per_epoch_mAP": {
+    "-1": 0.7273450248398429,
+    "0": 0.6762000585067947,
+    "1": 0.6904128858397579,
+    "2": 0.6912012074008694,
+    "3": 0.6780103462568428
+  },
+  "gates_by_epoch": {
+    "-1": null,
+    "0": null,
+    "1": null,
+    "2": null,
+    "3": null
+  },
+  "frozen_unchanged": true,
+  "host": "bengio"
+}

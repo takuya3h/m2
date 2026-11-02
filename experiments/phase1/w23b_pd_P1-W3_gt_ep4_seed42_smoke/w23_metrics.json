@@ -1,0 +1,65 @@
+{
+  "AP": 0.8787066676592472,
+  "AP50": 0.9055559691307479,
+  "per_class_ap": {
+    "Bipolar Forceps": NaN,
+    "Electric Cautery": NaN,
+    "Forceps": NaN,
+    "Gauze": NaN,
+    "Hook": NaN,
+    "Mouth Gag": NaN,
+    "Needle Holders": NaN,
+    "Raspatory": NaN,
+    "Retractor": NaN,
+    "Scalpel": NaN,
+    "Scissors": NaN,
+    "Skewer": 0.8787066676592472,
+    "Suction Cannula": NaN,
+    "Syringe": NaN,
+    "Tweezers": NaN
+  },
+  "n_images": 20,
+  "target_AP": 0.8787066676592472,
+  "target_missing": [
+    "Bipolar Forceps",
+    "Scalpel",
+    "Syringe",
+    "Raspatory"
+  ],
+  "control_AP": null,
+  "control_missing": [
+    "Gauze",
+    "Mouth Gag",
+    "Suction Cannula",
+    "Tweezers"
+  ],
+  "per_video_AP": {
+    "09": 0.8787066676592472
+  },
+  "task_id": "T-2026-11-01-stage2-w23-bengio",
+  "unofficial": "非公式（T-2026-11-01-stage2-w23-bengio）",
+  "type": "P1",
+  "type_name": "P1 FiLM",
+  "arm": "gt",
+  "scope": "W3",
+  "trainable": "all",
+  "result_selection": "final_epoch",
+  "result_epoch": 0,
+  "eval_detection_mAP": 0.8787066676592472,
+  "diff_vs_eval_detection_mAP": 0.0,
+  "init": 0.8916611661166115,
+  "init_target_AP": 0.8916611661166115,
+  "init_control_AP": null,
+  "init_vs_tower_alone": null,
+  "tower_alone_preds": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-stage2-w23-bengio/b/plain_val_preds_seed42.json.gz",
+  "per_epoch_mAP": {
+    "-1": 0.8916611661166115,
+    "0": 0.8787066676592472
+  },
+  "gates_by_epoch": {
+    "-1": null,
+    "0": null
+  },
+  "frozen_unchanged": true,
+  "host": "bengio"
+}
