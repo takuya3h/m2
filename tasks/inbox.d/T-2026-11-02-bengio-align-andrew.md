@@ -1,0 +1,4 @@
+- [x] 2026-11-02 [cc] worktree m2-four・m2-s2fix-bengio は無視された未追跡に m2 本体に無い実験の出力などがあるため残した。利用者が決めた（tasks/T-2026-11-02-bengio-align-andrew/audit.md Task E）
+- [x] 2026-11-02 [cc] worktree wt_phase0 は未追跡の spec.yaml 1 件が phase0 と違う中身のため残した。利用者が決めた（audit.md Task E）
+- [x] 2026-11-02 [cc] .git/info/exclude の bengio だけの 5 行は、23 行目を外すと 192 件が現れるため 5 行とも残した（控えも残した）。利用者が決めた（audit.md Task E）
+- [ ] 2026-11-02 [cc] 重ねの BODY ~/slocal2/s2fix-bengio-body は版管理下の台本 4 本が経路を既定値に持つため残した。片付けるなら台本の既定値の扱いを先に決める（audit.md Task E）

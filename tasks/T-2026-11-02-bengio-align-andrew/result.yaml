@@ -1,0 +1,67 @@
+result_version: 3
+task_id: "T-2026-11-02-bengio-align-andrew"
+status: pass
+host: "bengio"
+branch: "feat/bengio-align-andrew"
+pr: null
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "分岐 feat/bengio-align-andrew、起点 = HEAD = origin/phase0 d145854e。reldetr_digest の値が調査と一致（andrew main 142/2f08e521・155/20f15c06、bengio main 127/3ade18f0・140/89dc93b4、重ねの BODY 142/2f08e521・155/20f15c06）。andrew の Stage 2 の材料 17 件の sha256 とバイト数が調査と 17/17 一致"}
+  - {id: G2, verdict: pass, note: "重ねの BODY から 23 件を写した後、bengio main の source 142/2f08e521・all 155/20f15c06 が andrew main と一致。三分類 (15,0,8) → (0,0,0)。checkpoints 12 件の sha256 が前後一致"}
+  - {id: G3, verdict: pass, note: "build.ninja は bengio main の .cu を指し andrew と差 0 行。pd_eval.py --cfg plain で overall AP 0.7273450248398429（差 0.0）、標的群 AP 0.7950748008550897（差 -4.49e-11）。ms_deform_attn_ext True と warm-start の記録あり"}
+
+tests:
+  before_failed: 12
+  after_failed: 11
+  after_passed: 974
+
+deviations:
+  - {type: judgement, note: "E1・E2・E3 の worktree は無視された未追跡に m2 本体に無い実験の出力などがあったため利用者に諮り、残した"}
+  - {type: judgement, note: "E6 の除外の 5 行は 23 行目を外すと 192 件が現れるため利用者に諮り、5 行とも残した（E7 の控えも残した）"}
+  - {type: judgement, note: "E5 の重ねの BODY は版管理下の台本 4 本が経路を既定値に持つため、残す条件に当たるとして残した"}
+  - {type: judgement, note: "開始時の試験の終わり 5 秒が Task B の写しと重なった。収集は写しの前で、結果は調査時と同じ"}
+  - {type: environment, note: "Task D の一回目で andrew 側の ~ が単一引用符で展開されず、本契約が作った 0 バイトのファイル 1 件を /bin/rm -f で消した。rm は対話の確認の別名で止まった"}
+  - {type: judgement, note: "c の陰性対照（存在しない checkpoint）は GPU を評価一本に限る決定のため回さず、env-facts の既知の挙動を引いた"}
+
+issuer_defects:
+  - {type: asserted_without_measuring, note: "E5 の片付ける条件を拡張のビルドが BODY を指していないことだけで書いたが、版管理下の台本 4 本（scripts/grasppilot と scripts/w23）が BODY の経路を既定値に持つことを確かめていなかった。条件どおりに消すとそれらの台本が動かなくなる"}
+  - {type: rule_read_narrowly, note: "E1〜E3 の条件「commit されていない変更が 0 件」は追跡下の変更だけと読めるが、worktree の無視された未追跡に m2 本体に無い実験の出力（m2-four 314 MB、m2-s2fix-bengio 51 MB）があった。追跡下だけで判定して外すと失われる"}
+
+positive_controls:
+  - judgement: "a プロセスの計数"
+    breaking_input: "実在する /usr/bin/zsh と存在しない /nonexistent/bin/python9 を数える"
+    observed: "zsh 8、存在しない経路 0"
+  - judgement: "b 揃える前の版を戻せること"
+    breaking_input: "戻した main.py の 100 バイト目を変える"
+    observed: "今の bengio の版と sha256 が一致しなくなった"
+  - judgement: "b 三分類"
+    breaking_input: "揃える前の bengio main で同じ比べをする"
+    observed: "andrew だけ 15、違う 8 が出た（調査と同じ）"
+  - judgement: "c 拡張と評価"
+    breaking_input: "checkpoint の経路を存在しない経路にする"
+    observed: "UNKNOWN（回していない。既知の挙動は env-facts の装置の節）"
+  - judgement: "d Stage 2 の材料"
+    breaking_input: "存在しない経路 signals/no_such_file.npz を調べる"
+    observed: "無いと出た"
+  - judgement: "f 対象外の無変更"
+    breaking_input: "同じ取り方で本契約が変えた bengio main の Relation-DETR を前後で比べる"
+    observed: "all の要約値が 89dc93b4 から 20f15c06 に変わった"
+  - judgement: "g 試験の差"
+    breaking_input: "終了時の名前の集合に名前を 1 つ足す"
+    observed: "足した名前が差に出た"
+  - judgement: "h andrew と同期"
+    breaking_input: "andrew の既知の経路 experiments/analysis/bengio_andrew_env_survey を同じ確かめ方で調べる。同期の照合に experiments/x/foo.py を入れる"
+    observed: "既知の経路は在ると出た。foo.py は同期の対象に当たると出た"
+
+followups:
+  - "残した worktree m2-four と m2-s2fix-bengio の無視された未追跡（m2 本体に無い実験の出力・wandb の run・configs と scripts の差）の保全先を決めてから片付ける"
+  - "重ねの BODY を片付けるには、scripts/grasppilot/d_aggregate.py:27・d_extra_aggregate.py:129・run_d_arm.sh:15・scripts/w23/run_pd_w23_bengio.sh:24 の BODY の経路の既定値をどうするかを先に決める"
+  - ".git/info/exclude の 23 行目 experiments/phase1/stage2pilot_*/ が隠す 192 件 873,052,232 B の扱い（.gitignore に足すか、同期・保全するか）を決める"
+  - "拡張の .so の要約値は andrew と違う（build.ninja は同一）。学習で差が出るかは次の測定の契約で見る"
+
+unknowns:
+  - "存在しない checkpoint を渡したときの評価の挙動（本契約では回していない）"
+  - "拡張の .so の違いが学習の数値に影響するか"
+
+commits: []
