@@ -116,3 +116,8 @@ source と all が andrew main と一致、checkpoints 前後一致。**通過�
   `~/slocal2/stage2pilot_store/` の 17 件の追加と `T-2026-11-02-bengio-align-andrew/`（予測 1 件）の追加、`.venv-relation-detr/pyvenv.cfg.before_s2fix` の削除、
   手元の分岐 1 本の削除、`/tmp` の 23 件の削除
 - scratchpad: 戻せることの確かめ（`restore/`）、作り直す前のビルド物（`ext_before/`）、データの項目表の生の出力
+
+## 送出
+
+- PR #284（base phase0、head feat/bengio-align-andrew、isDraft false、OPEN）。
+- `make task-report`: 終了コード 0。台帳の応答 `verdict pass`、`n_issuer_defects 2`、`report_sha256 0be336712da02fca…`、`report_bytes 6608`、`replaced_blocks 0`。
