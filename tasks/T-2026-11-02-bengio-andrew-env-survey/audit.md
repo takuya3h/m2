@@ -197,3 +197,8 @@ python の台本は結果を標準出力へ出すだけで、ファイルを開�
 本契約が書いたのは `tasks/T-2026-11-02-bengio-andrew-env-survey/` と `experiments/analysis/bengio_andrew_env_survey/` だけ（`make forbidden-check TASK=...` で pass）。
 ほかに bengio の scratchpad（`/tmp/claude-1000/.../scratchpad/`）に一時ファイル（andrew へ渡す一覧を埋めた台本、両ホストの一覧の生の出力）を置いた。
 `.sync-pause` は task-start が置いた。試験は `/tmp` に pytest の一時ディレクトリを作る（bengio）。
+
+## 送出
+
+- PR #282（base phase0、head feat/bengio-andrew-env-survey、isDraft false、OPEN）。
+- `make task-report`（2026-11-02 11:4x UTC）: 終了コード 0。台帳の応答 `verdict pass`、`n_issuer_defects 2`、`report_sha256 0f9be6c1e9cc237e…`、`report_bytes 9303`、`replaced_blocks 0`。

@@ -77,4 +77,4 @@
 ## 7. 送出
 
 - PR #282（base phase0、分岐 feat/bengio-andrew-env-survey、Draft でない）
-- `make task-report`: 送信の後に audit の末尾へ記録する
+- `make task-report`: 終了コード 0（audit「送出」）
