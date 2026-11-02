@@ -168,7 +168,7 @@ andrew: Relation-DETR と二つの仮想環境の要約値が開始時と一致�
 ### G-2 andrew に送った命令
 
 全件 `andrew_cmds.log`。読み取り（`git`・`ls`・`find`・`cat`・`nvidia-smi`・`lscpu`・`df` など）と、標準入力で渡した python（`-B -I`、`PYTHONDONTWRITEBYTECODE=1`）だけ。
-書き込みを起こす命令は送っていない。`>`・`mv`・`rm`・`cp`・`tee`・`touch`・`mkdir`・`uv`・`pip`・`pytest` を grep すると 32 行中 7 行に当たるが、`2>&1`・`2>/dev/null`・`=>` を除くと 2 行（15・20 行）が残る。残りは echo の文字列 `->` と、`uv --version`（15 行は PATH に uv が無く実行されず、20 行は `~/.local/bin/uv --version` で版を表示しただけ）。`uv pip` は andrew で回していない。ファイルへの書き込みの向き先を持つ命令は 0 件。
+書き込みを起こす命令は送っていない。`>`・`mv`・`rm`・`cp`・`tee`・`touch`・`mkdir`・`uv`・`pip`・`pytest` を grep すると 34 行中 9 行に当たるが、`2>&1`・`2>/dev/null`・`=>` を除くと 2 行（15・20 行）が残る。残りは echo の文字列 `->` と、`uv --version`（15 行は PATH に uv が無く実行されず、20 行は `~/.local/bin/uv --version` で版を表示しただけ）。`uv pip` は andrew で回していない。ファイルへの書き込みの向き先を持つ命令は 0 件。
 python の台本は結果を標準出力へ出すだけで、ファイルを開いて書く処理を持たない。
 
 **想定外（同期による副作用）**: andrew の 11:15 以降の更新を読んだところ（`$D/end/andrew_after.txt`）、repo の中に
@@ -188,7 +188,8 @@ python の台本は結果を標準出力へ出すだけで、ファイルを開�
 
 - 11:37:25 UTC: まだ 8 件が在り、未追跡 49 件（改名から 24 秒）。
 - 11:40:37 UTC: `experiments/analysis/bengio_andrew_env_survey/` の下のファイル 0 件、**未追跡 41 件（開始時と同じ）**、HEAD a78e2f3c（同じ）。
-  同期が削除を andrew へ渡した。空のディレクトリが残るかは `ls` の出力が空で、ディレクトリの在否は確かめていない（UNKNOWN）。
+  同期が削除を andrew へ渡した。
+- 11:44:49 UTC（`andrew_cmds.log` 34 行）: andrew に**空のディレクトリが 3 つ残る**（`experiments/analysis/bengio_andrew_env_survey/`・`b/`・`b/andrew_copies/`、同期が 11:23 に作り、`andrew_copies` は 11:38 に中身が消えた）。ファイルは 0、未追跡は 41 件のまま（git は空のディレクトリを数えない）。andrew には書かない約束なので消していない。phase0 への統合の後は、同じ経路に本契約の記録が git で届く。
 - 改名した `.py.txt` は `.stignore` の同期対象に当たらない（`**` で無視）。本契約の置き場のほかのファイル（`.json`・`.txt`・`.md`・`.patch`・`.tsv`・`.ninja`・`.diff`・`.err`）も当たらない。
 
 ## 変更範囲

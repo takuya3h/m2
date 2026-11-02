@@ -17,7 +17,7 @@ tests:
 
 deviations:
   - {type: judgement, note: "~/.ssh の sha256 は秘密鍵を読むため利用者に確かめ、「取る」の回答で取った（名前・バイト数・sha256 だけを記録）"}
-  - {type: judgement, note: "本契約の置き場の andrew の写し 8 件（.py）が同期で andrew に渡ったため、利用者の決定で .py.txt に改名した。同期が andrew の 8 件を消し、未追跡は 41 件に戻った"}
+  - {type: judgement, note: "本契約の置き場の andrew の写し 8 件（.py）が同期で andrew に渡ったため、利用者の決定で .py.txt に改名した。同期が andrew の 8 件を消し、未追跡は 41 件に戻った。同期が作った空のディレクトリ 3 つは andrew に残る（消していない）"}
   - {type: judgement, note: "試験に PYTHONDONTWRITEBYTECODE=1 を足した。andrew の試験は /tmp への書き込みが避けられず回さず、w23-andrew の記録（当時の分岐の起点）を使った"}
   - {type: environment, note: "装置を見せない形では上流の ms_deform_attn.py が拡張の読み込みを試みないため、ビルド物の .so を importlib で直接読んで確かめた"}
   - {type: judgement, note: "make forbidden-check は TASK を渡さないと allow_write が効かず fail（違反 59）。TASK= を渡して pass（違反 0）"}
@@ -67,6 +67,5 @@ unknowns:
   - "andrew の現在の起点（a78e2f3c）での試験の失敗の名前。記録は andrew の 2026-11-01 の分岐の起点で取ったもの"
   - "PCIe の負荷時の世代と幅（無負荷で測った）"
   - "test_stage1_ptower_heads の 4 件の差が CPU の型による数値の違いか"
-  - "改名の後、andrew に空のディレクトリ experiments/analysis/bengio_andrew_env_survey/b/andrew_copies が残るか"
 
 commits: []

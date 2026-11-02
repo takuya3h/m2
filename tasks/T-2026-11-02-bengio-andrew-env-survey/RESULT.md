@@ -19,7 +19,7 @@
 | e | 残り物 | repo 393、`~/slocal2` 直下 14、家の直下 9、`/tmp` 直下 514、worktree 3、除外の行 5、上流の無い分岐 1。全件 JSON、REPORT に欄つき。§3.3 の行方は REPORT の Task E | `README.md`（andrew にもある）は出ない。`~/m2-git-info-exclude.bak-20261019` は出る |
 | f | 装置と系 | 両ホストの GPU（型・UUID・VBIOS・driver・電力・クロック・永続・ECC・PCIe）、接続、NUMA、IOMMU、CPU、メモリ、cgroup、記憶領域、kernel、容器、nvcc・gcc を並べた | 存在しない GPU 番号 7 は両ホストで `No devices were found`・終了コード 6 |
 | g | 試験 | bengio 11 failed・1 error（名前 12）、andrew の記録 6 failed。差 6 件のうち 1 件（`test_stage1_dtower_convergence.py` の収集）は Relation-DETR の差で説明が付き、5 件は付かない | andrew の集合に名前を 1 つ足すと差が 6 → 5 |
-| h | 無変更 | andrew に書き込みの向き先を持つ命令 0 件（32 行の全件、audit 167〜178 行）。bengio の Relation-DETR 3 か所・stat の木 12 個・認証情報 16 件が前後一致。andrew の要約値も前後一致。**ただし本契約の出力の 8 件が同期で andrew に渡り、利用者の決定で改名して同期が消した（7.）** | 本契約の出力の置き場は同じ取り方で前後が違う値 |
+| h | 無変更 | andrew に書き込みの向き先を持つ命令 0 件（34 行の全件、audit 167〜178 行）。bengio の Relation-DETR 3 か所・stat の木 12 個・認証情報 16 件が前後一致。andrew の要約値も前後一致。**ただし本契約の出力の 8 件が同期で andrew に渡り、利用者の決定で改名して同期が消した。andrew には空のディレクトリ 3 つが残る（5.）** | 本契約の出力の置き場は同じ取り方で前後が違う値 |
 | i | GPU 不使用 | torch を読む命令は 4 回とも `CUDA_VISIBLE_DEVICES=` で `device_count 0`・`cuda_initialized false`。compute の計数は開始時 0 | 陽性 zsh 8、陰性 0 |
 | j | PR | 本ファイルの 6. | — |
 
@@ -59,7 +59,7 @@
 ## 5. 逸脱
 
 - `~/.ssh` の sha256（秘密鍵を読む）は利用者の方針に従い事前に確かめ、「取る」の回答で取った
-- 同期で andrew に渡った写し 8 件は、利用者の決定で `.py.txt` に改名し同期から外した（andrew では同期が消し、未追跡は 41 件に戻った）
+- 同期で andrew に渡った写し 8 件は、利用者の決定で `.py.txt` に改名し同期から外した（andrew では同期が消し、未追跡は 41 件に戻った。同期が作った空のディレクトリ 3 つは andrew に残る。消していない）
 - 試験に `PYTHONDONTWRITEBYTECODE=1` を足した（repo に `__pycache__` を書かないため）。andrew の試験は `/tmp` への書き込みが避けられず回さず、別の起点（andrew の当時の分岐）の記録を使った
 - 拡張の読み込みは上流の `load()` ではなく `.so` の直接の読み込みで確かめた（装置を見せない形では上流の経路が読み込みを試みない）
 - `make forbidden-check` は TASK を渡さないと allow_write が効かず fail（違反 59）。`TASK=` を渡して pass
@@ -72,7 +72,6 @@
 - andrew の現在の起点での試験の名前: UNKNOWN（記録は andrew の 2026-11-01 の分岐の起点で取ったもの）
 - PCIe の負荷時の世代と幅: UNKNOWN（無負荷で測った）。`dmesg` は両ホストで出力なし
 - 試験の CPU 出力の bit 一致の差が CPU の型によるか: 測っていない
-- 改名の後、andrew に空のディレクトリ `experiments/analysis/bengio_andrew_env_survey/b/andrew_copies` が残るか: UNKNOWN
 - 同期の欄は `.stignore` の近似の照合（Syncthing の実装そのものではない）
 
 ## 7. 送出
