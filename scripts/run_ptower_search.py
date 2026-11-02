@@ -17,11 +17,15 @@ from tower_search_common import (
     ANALYSIS,
     ROOT,
     TASK,
+    load_observer,
     load_point,
     optimizer_groups,
     runtime_state,
     write_json,
 )
+
+# Where finished runs are copied in the repo; unset keeps the dlsta search's place.
+PUBLISH = os.environ.get("TOWER_SEARCH_PHASE_PUBLISH", "experiments/phase1/stage1_ptower_search")
 
 
 def publish(manager, destination):
@@ -114,6 +118,9 @@ def main(cfg):
         allowed = set(base.folds()[cfg.fold]["train"] + base.folds()[cfg.fold]["val"])
         extract_manifest_source = base.manifests
         base.manifests = lambda config: [c for c in extract_manifest_source(config) if c["video"] in allowed]
+    observer = load_observer()
+    if observer is not None:
+        observer.install_phase(cfg=cfg, work=work)
     try:
         r3.main(cfg)
     finally:
@@ -125,7 +132,7 @@ def main(cfg):
             if manager.exp_dir is not None:
                 write_json(manager.exp_dir / "search_epoch_history.json", epoch_history)
                 if not cfg.get("control_frames", 0) and not cfg.get("control_only", False):
-                    publish(manager, ROOT / "experiments/phase1/stage1_ptower_search")
+                    publish(manager, ROOT / PUBLISH)
                 write_json(work / f"{cfg.action}_last_run.json", {
                     "exp_id": manager.exp_id, "path": str(manager.exp_dir),
                     "config": OmegaConf.to_container(cfg, resolve=True)})

@@ -19,6 +19,7 @@ from tower_search_common import (  # noqa: E402
     TASK,
     OfflineTracker,
     check_detector_groups,
+    load_observer,
     load_point,
     optimizer_groups,
     runtime_state,
@@ -130,9 +131,13 @@ def main():
     work.mkdir(parents=True, exist_ok=True)
     is_main = int(os.environ.get("RANK", "0")) == 0
     tracker = (OfflineTracker(f"detector_point{point['point']:02d}",
-                              {"task_id": TASK, "point": point, "fold": "A", "seed": 42},
+                              {"task_id": TASK, "point": point, "fold": "A",
+                               "seed": int(os.environ.get("TOWER_SEARCH_SEED", "42"))},
                               work / "wandb") if is_main else None)
     control_complete = install_observers(point, work, tracker)
+    observer = load_observer()
+    if observer is not None:
+        observer.install_detector(detector=detector, work=work)
     try:
         detector.train()
     except control_complete:
