@@ -74,4 +74,4 @@ W1 との並べ（参考。W1 は前の契約の run、すべて andrew）: 正�
 ## 7. 送出
 
 - PR: #279（base phase0、isDraft false、OPEN、head `feat/stage2-w23-andrew`）
-- `make task-report`: 送出後に記す
+- `make task-report`: rc 0（verdict pass、n_issuer_defects 4、report_sha256 ef408c2e…b0、8,540 バイト）。送った本文は b611c079 の版で、この行は送った後に足した

@@ -338,3 +338,5 @@ test との共通 0、W&B の手元記録（offline、`$S/wandb/`）が書けた
     $ gh pr create --base phase0 --head feat/stage2-w23-andrew ...   → https://github.com/takuya3h/m2/pull/279
     $ gh pr view 279 --json number,isDraft,baseRefName,headRefName,state
     {"baseRefName":"phase0","headRefName":"feat/stage2-w23-andrew","isDraft":false,"number":279,"state":"OPEN"}
+    $ source scripts/load_env.sh && make task-report TASK=T-2026-11-01-stage2-w23-andrew    （b611c079 の版を送った）
+    rc 0、verdict pass、n_issuer_defects 4、report_sha256 ef408c2efca70351af97a9886a2d5a7103e69ffe98485c0b45f7503fdcb8ffb0、report_bytes 8540、replaced_blocks 0
