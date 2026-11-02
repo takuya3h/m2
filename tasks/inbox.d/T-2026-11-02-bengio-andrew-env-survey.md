@@ -1,0 +1,4 @@
+- [x] 2026-11-02 [cc] ~/.ssh の sha256（秘密鍵を読む）は、利用者の方針に従い事前に確かめ、「取る」の回答で取った。名前・バイト数・sha256 だけを記録した（tasks/T-2026-11-02-bengio-andrew-env-survey/audit.md A-5）
+- [x] 2026-11-02 [cc] 本契約の置き場に .py で置いた andrew の写し 8 件が Syncthing で andrew に渡った。利用者の決定で .py.txt に改名し、同期が andrew の 8 件を消した（audit.md G-2・G-2b）
+- [ ] 2026-11-02 [cc] andrew を読むだけの契約で、書き込み先が experiments/ の下にあると .py・.npy・.pt・.pth・logs などが Syncthing で全台に配られる。契約の雛形か手順書に「写しは同期の対象の拡張子で置かない」を足すかを検討する（audit.md G-2）
+- [ ] 2026-11-02 [cc] 手順書の「禁止領域に触れていないことを確かめる」の make forbidden-check に TASK= が無く、そのままでは allow_write が効かず fail する。手順書に TASK= を足すかを検討する（audit.md G-3）
