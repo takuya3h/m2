@@ -1,0 +1,683 @@
+--- andrew/configs/train_config_egosurgery_s0_frozen.py
++++ bengio/configs/train_config_egosurgery_s0_frozen.py
+@@ -1,8 +1,8 @@
+ # S0-frozen train config for EgoSurgery.
+ #
+ # Run from third_party/Relation-DETR with .venv-relation-detr:
+-#   RELDETR_OUTPUT_DIR=experiments/transfer/reldetr_work_s0_frozen_seed42 \
+-#   RELDETR_EVIDENCE_DIR=experiments/transfer/reldetr_work_s0_frozen_seed42 \
++#   RELDETR_OUTPUT_DIR=/tmp/reldetr_work_s0_frozen_seed42 \
++#   RELDETR_EVIDENCE_DIR=/tmp/reldetr_work_s0_frozen_seed42 \
+ #   CUDA_VISIBLE_DEVICES=0 accelerate launch --num_processes 1 main.py \
+ #     --config-file configs/train_config_egosurgery_s0_frozen.py \
+ #     --seed 42 --mixed-precision fp16
+--- andrew/configs/train_config_egosurgery_s0_frozen_neck.py
++++ bengio/configs/train_config_egosurgery_s0_frozen_neck.py
+@@ -5,8 +5,8 @@
+ # s0_frozen と完全一致 → 「neck の有無」の1軸のみ変える（比較の三角形 ②）。
+ #
+ # Run from third_party/Relation-DETR with .venv-relation-detr:
+-#   RELDETR_OUTPUT_DIR=experiments/transfer/reldetr_work_s0_frozen_neck_seed42 \
+-#   RELDETR_EVIDENCE_DIR=experiments/transfer/reldetr_work_s0_frozen_neck_seed42 \
++#   RELDETR_OUTPUT_DIR=/tmp/reldetr_work_s0_frozen_neck_seed42 \
++#   RELDETR_EVIDENCE_DIR=/tmp/reldetr_work_s0_frozen_neck_seed42 \
+ #   CUDA_VISIBLE_DEVICES=0 accelerate launch --num_processes 1 main.py \
+ #     --config-file configs/train_config_egosurgery_s0_frozen_neck.py \
+ #     --seed 42 --mixed-precision fp16
+--- andrew/configs/train_config_egosurgery_seed123.py
++++ bengio/configs/train_config_egosurgery_seed123.py
+@@ -19,19 +19,7 @@
+ starting_epoch = 0
+ max_norm = 0.1
+ 
+-# このファイルは third_party/Relation-DETR/configs/ にあるので、m2 リポジトリ root は 3 階層上。
+-_PROJECT_ROOT = os.environ.get(
+-    "EGO_BODY",
+-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+-)
+-
+-# 成果物は experiments/ 配下に永続化する（/tmp は再起動で消える）。
+-# RELDETR_OUTPUT_DIR で上書き可。
+-output_dir = os.environ.get(
+-    "RELDETR_OUTPUT_DIR",
+-    os.path.join(_PROJECT_ROOT, "experiments", "transfer",
+-                 "reldetr_work_seed123"),
+-)
++output_dir = "/tmp/reldetr_work_seed123"
+ find_unused_parameters = False
+ 
+ # ---- EgoSurgery dataset (COCO-format, bbox-only, 15 classes) ----  # <CHANGED block>
+--- andrew/configs/train_config_egosurgery_seed42.py
++++ bengio/configs/train_config_egosurgery_seed42.py
+@@ -19,19 +19,7 @@
+ starting_epoch = 0
+ max_norm = 0.1
+ 
+-# このファイルは third_party/Relation-DETR/configs/ にあるので、m2 リポジトリ root は 3 階層上。
+-_PROJECT_ROOT = os.environ.get(
+-    "EGO_BODY",
+-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+-)
+-
+-# 成果物は experiments/ 配下に永続化する（/tmp は再起動で消える）。
+-# RELDETR_OUTPUT_DIR で上書き可。
+-output_dir = os.environ.get(
+-    "RELDETR_OUTPUT_DIR",
+-    os.path.join(_PROJECT_ROOT, "experiments", "transfer",
+-                 "reldetr_work_seed42"),
+-)
++output_dir = "/tmp/reldetr_work_seed42"
+ find_unused_parameters = False
+ 
+ # ---- EgoSurgery dataset (COCO-format, bbox-only, 15 classes) ----  # <CHANGED block>
+--- andrew/configs/train_config_egosurgery_seed456.py
++++ bengio/configs/train_config_egosurgery_seed456.py
+@@ -19,19 +19,7 @@
+ starting_epoch = 0
+ max_norm = 0.1
+ 
+-# このファイルは third_party/Relation-DETR/configs/ にあるので、m2 リポジトリ root は 3 階層上。
+-_PROJECT_ROOT = os.environ.get(
+-    "EGO_BODY",
+-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+-)
+-
+-# 成果物は experiments/ 配下に永続化する（/tmp は再起動で消える）。
+-# RELDETR_OUTPUT_DIR で上書き可。
+-output_dir = os.environ.get(
+-    "RELDETR_OUTPUT_DIR",
+-    os.path.join(_PROJECT_ROOT, "experiments", "transfer",
+-                 "reldetr_work_seed456"),
+-)
++output_dir = "/tmp/reldetr_work_seed456"
+ find_unused_parameters = False
+ 
+ # ---- EgoSurgery dataset (COCO-format, bbox-only, 15 classes) ----  # <CHANGED block>
+--- andrew/main.py
++++ bengio/main.py
+@@ -1,279 +1,213 @@
+-import argparse
+-import datetime
+-import json
+-import os
+-import pprint
+-import re
+-import time
+-
+-import accelerate
+-import torch
+-from accelerate import Accelerator, DistributedDataParallelKwargs
+-from accelerate.logging import get_logger
+-from accelerate.tracking import TensorBoardTracker
+-from accelerate.utils import ProjectConfiguration, broadcast
+-from torch.utils import data
+-
+-from util.collate_fn import collate_fn
+-from util.convergence import DECAY, STOP, PlateauSchedule
+-from util.engine import evaluate_acc, train_one_epoch_acc
+-from util.group_by_aspect_ratio import GroupedBatchSampler, create_aspect_ratio_groups
+-from util.lazy_load import Config
+-from util.misc import default_setup, encode_labels, fixed_generator, seed_worker
+-from util.utils import HighestCheckpoint, load_checkpoint, load_state_dict
+-
+-
+-def parse_args():
+-    parser = argparse.ArgumentParser(description="Train a detector")
+-    parser.add_argument("--config-file", default="configs/train_config.py")
+-    parser.add_argument(
+-        "--mixed-precision",
+-        type=str,
+-        default=None,
+-        choices=["no", "fp16", "bf16", "fp8"],
+-        help="Whether to use mixed precision. Choose"
+-        "between fp16 and bf16 (bfloat16). Bf16 requires PyTorch >= 1.10."
+-        "and an Nvidia Ampere GPU.",
+-    )
+-    parser.add_argument(
+-        "--accumulate-steps", type=int, default=1, help="Steps to accumulate gradients"
+-    )
+-    parser.add_argument("--seed", type=int, help="Random seed")
+-    # ---- 収束基準で学習の長さを決める（契約 T-2026-09-19-stage1-detector-towers-r2）----
+-    # **既定は off。** off のとき学習ループは一周目（12 epoch 固定・MultiStepLR([10])）と
+-    # 同一の経路を通る。on にしたときだけ val mAP の停滞で学習率を下げ、再停滞で打ち切る。
+-    parser.add_argument(
+-        "--convergence-schedule",
+-        action="store_true",
+-        help="val mAP が停滞したら学習率を下げ（一度だけ）、再び停滞したら打ち切る。"
+-        "有効にすると config の lr_scheduler は進めない",
+-    )
+-    parser.add_argument(
+-        "--plateau-patience", type=int, default=4,
+-        help="何 epoch 続けて val mAP の最良を更新しなければ動くか",
+-    )
+-    parser.add_argument(
+-        "--plateau-factor", type=float, default=0.1,
+-        help="停滞したときに学習率へ掛ける倍率",
+-    )
+-    parser.add_argument(
+-        "--max-epochs", type=int, default=None,
+-        help="epoch 数の上限。config の num_epochs を上書きする",
+-    )
+-    parser.add_argument("--use-deterministic-algorithms", action="store_true")
+-    dynamo_backend = ["no", "eager", "aot_eager", "inductor", "aot_ts_nvfuser", "nvprims_nvfuser"]
+-    dynamo_backend += ["cudagraphs", "ofi", "fx2trt", "onnxrt", "tensorrt", "ipex", "tvm"]
+-    parser.add_argument(
+-        "--dynamo-backend",
+-        type=str,
+-        default="no",
+-        choices=dynamo_backend,
+-        help="""
+-        Set to one of the possible dynamo backends to optimize the training with torch dynamo.
+-        See https://pytorch.org/docs/stable/torch.compiler.html and
+-        https://huggingface.co/docs/accelerate/main/en/package_reference/utilities#accelerate.utils.DynamoBackend
+-        """,
+-    )
+-
+-    args = parser.parse_args()
+-    return args
+-
+-
+-def update_checkpoint_path(cfg: Config):
+-    # modify output directory
+-    weight_path = getattr(cfg, "resume_from_checkpoint", None)
+-    if weight_path is not None and os.path.isdir(weight_path):
+-        cfg.output_dir = weight_path
+-    elif getattr(cfg, "output_dir", None) is None:
+-        # make sure all processes have same output directory
+-        accelerate.utils.wait_for_everyone()
+-        cfg.output_dir = os.path.join(
+-            "checkpoints",
+-            os.path.basename(cfg.model_path).split(".")[0],
+-            "train",
+-            datetime.datetime.now().strftime("%Y-%m-%d-%H_%M_%S"),
+-        )
+-
+-    # modify checkpoint directory
+-    if weight_path is not None and os.path.isdir(weight_path):
+-        # default path: xxxx-xx-xx-yy_yy_yy/checkpoints/{checkpoint_1}
+-        if "checkpoints" in os.listdir(cfg.resume_from_checkpoint):
+-            # if given output_dir, find the newest checkpoint under checkpoints directory
+-            output_dir = os.path.join(cfg.resume_from_checkpoint, "checkpoints")
+-            folders = [os.path.join(output_dir, folder) for folder in os.listdir(output_dir)]
+-            folders.sort(
+-                key=lambda folder: list(map(int, re.findall(r"[\/]?([0-9]+)(?=[^\/]*$)", folder)))[
+-                    0]
+-            )
+-            cfg.resume_from_checkpoint = folders[-1]
+-        else:
+-            # if there is not saved checkpoints, do not resume
+-            cfg.resume_from_checkpoint = None
+-
+-    return cfg
+-
+-
+-def train():
+-    args = parse_args()
+-
+-    # lazy load, for logging purpose and decouple with model initialization
+-    lazy_loads = ("lr_scheduler", "optimizer", "param_dicts")
+-    cfg = Config(file_path=args.config_file, partials=lazy_loads)
+-    cfg = update_checkpoint_path(cfg)
+-
+-    # Initialize accelerator
+-    project_config = ProjectConfiguration(
+-        project_dir=cfg.output_dir, total_limit=5, automatic_checkpoint_naming=True
+-    )
+-    tensorboard_tracker = TensorBoardTracker(run_name="tf_log", logging_dir=cfg.output_dir)
+-    kwargs = DistributedDataParallelKwargs(find_unused_parameters=cfg.find_unused_parameters)
+-    accelerator = Accelerator(
+-        log_with=tensorboard_tracker,
+-        project_config=project_config,
+-        mixed_precision=args.mixed_precision,
+-        gradient_accumulation_steps=args.accumulate_steps,
+-        dynamo_backend=args.dynamo_backend,
+-        step_scheduler_with_optimizer=False,
+-        kwargs_handlers=[kwargs],
+-    )
+-    accelerator.init_trackers("det_train")
+-    default_setup(args, cfg, accelerator)
+-    logger = get_logger(os.path.basename(os.getcwd()) + "." + __name__)
+-
+-    # instantiate dataset
+-    params = dict(num_workers=cfg.num_workers, collate_fn=collate_fn)
+-    params.update(dict(pin_memory=cfg.pin_memory, persistent_workers=True))
+-    if args.use_deterministic_algorithms:
+-        # set using deterministic algorithms
+-        torch.backends.cudnn.benchmark = False
+-        torch.use_deterministic_algorithms(True, warn_only=True)
+-        params.update({"worker_init_fn": seed_worker, "generator": fixed_generator()})
+-    # we use group_based sampler, which increases training speed slightly
+-    group_ids = create_aspect_ratio_groups(cfg.train_dataset, k=3)
+-    train_batch_sampler = GroupedBatchSampler(
+-        data.RandomSampler(cfg.train_dataset), group_ids, cfg.batch_size
+-    )
+-    train_loader = data.DataLoader(cfg.train_dataset, batch_sampler=train_batch_sampler, **params)
+-    test_loader = data.DataLoader(cfg.test_dataset, 1, shuffle=False, **params)
+-
+-    # instantiate model, optimizer and lr_scheduler
+-    model = Config(cfg.model_path).model
+-    if accelerator.use_distributed:
+-        model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
+-    optimizer = cfg.optimizer(cfg.param_dicts(model))
+-    lr_scheduler = cfg.lr_scheduler(optimizer)
+-
+-    # load from a pretrained weight and fine-tune on it
+-    weight_path = getattr(cfg, "resume_from_checkpoint", None)
+-    if weight_path is not None and os.path.isfile(weight_path):
+-        checkpoint = load_checkpoint(cfg.resume_from_checkpoint)
+-        load_state_dict(model, checkpoint)
+-        logger.info(f"load pretrained from {cfg.resume_from_checkpoint}")
+-
+-    # register dataset class information into the model, useful for inference
+-    cat_ids = list(range(max(cfg.train_dataset.coco.cats.keys()) + 1))
+-    classes = tuple(cfg.train_dataset.coco.cats.get(c, {"name": "none"})["name"] for c in cat_ids)
+-    model.register_buffer("_classes_", torch.tensor(encode_labels(classes)))
+-
+-    # prepare for distributed training
+-    model, optimizer, train_loader, test_loader, lr_scheduler = accelerator.prepare(
+-        model, optimizer, train_loader, test_loader, lr_scheduler
+-    )
+-
+-    # load from a directory, which means resume training
+-    if weight_path is not None and os.path.isdir(weight_path):
+-        accelerator.load_state(cfg.resume_from_checkpoint)
+-        path = os.path.basename(cfg.resume_from_checkpoint)
+-        cfg.starting_epoch = int(path.split("_")[-1]) + 1
+-        accelerator.project_configuration.iteration = cfg.starting_epoch
+-        logger.info(f"resume training of {cfg.output_dir}, from {path}")
+-    else:
+-        n_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+-        logger.info("model parameters: {}".format(n_params))
+-        logger.info("optimizer: {}".format(optimizer))
+-        logger.info("lr_scheduler: {}".format(pprint.pformat(lr_scheduler.state_dict())))
+-
+-    # save dataset name, useful for inference
+-    if accelerator.is_main_process:
+-        label_file = os.path.join(cfg.output_dir, "label_names.txt")
+-        with open(label_file, "w") as f:
+-            caid_name = [f"{k} {v['name']}" for k, v in cfg.train_dataset.coco.cats.items()]
+-            caid_name = "\n".join(caid_name)
+-            f.write(caid_name)
+-        logger.info(f"Label names is saved to {label_file}")
+-
+-    logger.info("Start training")
+-    start_time = time.perf_counter()
+-    highest_checkpoint = HighestCheckpoint(accelerator, model)
+-    # 収束基準で長さを決めるときだけ立てる。**ここに塔を見る分岐は無い。**
+-    # D*-COCO と D*-ImageNet は同じ 1 本の規則を通り、低下と打ち切りの epoch が
+-    # 違うのは入力（val mAP の並び）の違いだけである。
+-    schedule = (
+-        PlateauSchedule(patience=args.plateau_patience, factor=args.plateau_factor)
+-        if args.convergence_schedule
+-        else None
+-    )
+-    num_epochs = cfg.num_epochs if args.max_epochs is None else args.max_epochs
+-    for epoch in range(cfg.starting_epoch, num_epochs):
+-        train_one_epoch_acc(
+-            model=model,
+-            optimizer=optimizer,
+-            data_loader=train_loader,
+-            epoch=epoch,
+-            print_freq=cfg.print_freq,
+-            max_grad_norm=cfg.max_norm,
+-            accelerator=accelerator,
+-        )
+-        # 収束基準のときは config の lr_scheduler（MultiStepLR）を進めない。
+-        # 学習率を動かすのは下の停滞判定だけにする（二重に下がらないようにする）。
+-        if schedule is None:
+-            lr_scheduler.step()
+-
+-        # we save model and labels together
+-        accelerator.save_state(safe_serialization=False)
+-        logger.info("Start evaluation")
+-        coco_evaluator = evaluate_acc(model, test_loader, epoch, accelerator)
+-
+-        # save best results
+-        cur_ap, cur_ap50 = coco_evaluator.coco_eval["bbox"].stats[:2]
+-        highest_checkpoint.update(ap=cur_ap, ap50=cur_ap50)
+-
+-        if schedule is None:
+-            continue
+-        # **判断の入力を全過程で揃える。** 評価器は同期済みで各過程の stats は一致する
+-        # はずだが、一致しなければ片方だけが loop を抜けて DDP が停止する。
+-        # 主過程の値を配ってから判定する。
+-        shared_ap = broadcast(
+-            torch.tensor([float(cur_ap)], device=accelerator.device), from_process=0
+-        )
+-        action = schedule.observe(epoch, float(shared_ap.item()))
+-        if action == DECAY:
+-            for group in optimizer.param_groups:
+-                group["lr"] *= args.plateau_factor
+-            logger.info(
+-                f"[convergence] epoch {epoch}: val mAP が {args.plateau_patience} epoch "
+-                f"続けて最良を更新しなかったため学習率を {args.plateau_factor} 倍にした "
+-                f"(lr={[g['lr'] for g in optimizer.param_groups]})"
+-            )
+-        elif action == STOP:
+-            logger.info(
+-                f"[convergence] epoch {epoch}: 学習率の低下（epoch "
+-                f"{schedule.decayed_epoch}）の後も {args.plateau_patience} epoch "
+-                f"続けて最良を更新しなかったため打ち切る"
+-            )
+-        if accelerator.is_main_process:
+-            # **途中で落ちても読めるように毎 epoch 書く。** 報告の低下 epoch・
+-            # 打ち切り epoch・最良 epoch はこの記録から取る（log の丸めを使わない）。
+-            with open(os.path.join(cfg.output_dir, "convergence.json"), "w") as f:
+-                json.dump(schedule.summary(), f, ensure_ascii=False, indent=2)
+-        if action == STOP:
+-            break
+-
+-    total_time = time.perf_counter() - start_time
+-    total_time = str(datetime.timedelta(seconds=int(total_time)))
+-    logger.info("Training time: {}".format(total_time))
+-    accelerator.end_training()
+-
+-
+-if __name__ == "__main__":
+-    train()
++import argparse
++import datetime
++import os
++import pprint
++import re
++import time
++
++import accelerate
++import torch
++from accelerate import Accelerator, DistributedDataParallelKwargs
++from accelerate.logging import get_logger
++from accelerate.tracking import TensorBoardTracker
++from accelerate.utils import ProjectConfiguration
++from torch.utils import data
++
++from util.collate_fn import collate_fn
++from util.engine import evaluate_acc, train_one_epoch_acc
++from util.group_by_aspect_ratio import GroupedBatchSampler, create_aspect_ratio_groups
++from util.lazy_load import Config
++from util.misc import default_setup, encode_labels, fixed_generator, seed_worker
++from util.utils import HighestCheckpoint, load_checkpoint, load_state_dict
++
++
++def parse_args():
++    parser = argparse.ArgumentParser(description="Train a detector")
++    parser.add_argument("--config-file", default="configs/train_config.py")
++    parser.add_argument(
++        "--mixed-precision",
++        type=str,
++        default=None,
++        choices=["no", "fp16", "bf16", "fp8"],
++        help="Whether to use mixed precision. Choose"
++        "between fp16 and bf16 (bfloat16). Bf16 requires PyTorch >= 1.10."
++        "and an Nvidia Ampere GPU.",
++    )
++    parser.add_argument(
++        "--accumulate-steps", type=int, default=1, help="Steps to accumulate gradients"
++    )
++    parser.add_argument("--seed", type=int, help="Random seed")
++    parser.add_argument("--use-deterministic-algorithms", action="store_true")
++    dynamo_backend = ["no", "eager", "aot_eager", "inductor", "aot_ts_nvfuser", "nvprims_nvfuser"]
++    dynamo_backend += ["cudagraphs", "ofi", "fx2trt", "onnxrt", "tensorrt", "ipex", "tvm"]
++    parser.add_argument(
++        "--dynamo-backend",
++        type=str,
++        default="no",
++        choices=dynamo_backend,
++        help="""
++        Set to one of the possible dynamo backends to optimize the training with torch dynamo.
++        See https://pytorch.org/docs/stable/torch.compiler.html and
++        https://huggingface.co/docs/accelerate/main/en/package_reference/utilities#accelerate.utils.DynamoBackend
++        """,
++    )
++
++    args = parser.parse_args()
++    return args
++
++
++def update_checkpoint_path(cfg: Config):
++    # modify output directory
++    weight_path = getattr(cfg, "resume_from_checkpoint", None)
++    if weight_path is not None and os.path.isdir(weight_path):
++        cfg.output_dir = weight_path
++    elif getattr(cfg, "output_dir", None) is None:
++        # make sure all processes have same output directory
++        accelerate.utils.wait_for_everyone()
++        cfg.output_dir = os.path.join(
++            "checkpoints",
++            os.path.basename(cfg.model_path).split(".")[0],
++            "train",
++            datetime.datetime.now().strftime("%Y-%m-%d-%H_%M_%S"),
++        )
++
++    # modify checkpoint directory
++    if weight_path is not None and os.path.isdir(weight_path):
++        # default path: xxxx-xx-xx-yy_yy_yy/checkpoints/{checkpoint_1}
++        if "checkpoints" in os.listdir(cfg.resume_from_checkpoint):
++            # if given output_dir, find the newest checkpoint under checkpoints directory
++            output_dir = os.path.join(cfg.resume_from_checkpoint, "checkpoints")
++            folders = [os.path.join(output_dir, folder) for folder in os.listdir(output_dir)]
++            folders.sort(
++                key=lambda folder: list(map(int, re.findall(r"[\/]?([0-9]+)(?=[^\/]*$)", folder)))[
++                    0]
++            )
++            cfg.resume_from_checkpoint = folders[-1]
++        else:
++            # if there is not saved checkpoints, do not resume
++            cfg.resume_from_checkpoint = None
++
++    return cfg
++
++
++def train():
++    args = parse_args()
++
++    # lazy load, for logging purpose and decouple with model initialization
++    lazy_loads = ("lr_scheduler", "optimizer", "param_dicts")
++    cfg = Config(file_path=args.config_file, partials=lazy_loads)
++    cfg = update_checkpoint_path(cfg)
++
++    # Initialize accelerator
++    project_config = ProjectConfiguration(
++        project_dir=cfg.output_dir, total_limit=5, automatic_checkpoint_naming=True
++    )
++    tensorboard_tracker = TensorBoardTracker(run_name="tf_log", logging_dir=cfg.output_dir)
++    kwargs = DistributedDataParallelKwargs(find_unused_parameters=cfg.find_unused_parameters)
++    accelerator = Accelerator(
++        log_with=tensorboard_tracker,
++        project_config=project_config,
++        mixed_precision=args.mixed_precision,
++        gradient_accumulation_steps=args.accumulate_steps,
++        dynamo_backend=args.dynamo_backend,
++        step_scheduler_with_optimizer=False,
++        kwargs_handlers=[kwargs],
++    )
++    accelerator.init_trackers("det_train")
++    default_setup(args, cfg, accelerator)
++    logger = get_logger(os.path.basename(os.getcwd()) + "." + __name__)
++
++    # instantiate dataset
++    params = dict(num_workers=cfg.num_workers, collate_fn=collate_fn)
++    params.update(dict(pin_memory=cfg.pin_memory, persistent_workers=True))
++    if args.use_deterministic_algorithms:
++        # set using deterministic algorithms
++        torch.backends.cudnn.benchmark = False
++        torch.use_deterministic_algorithms(True, warn_only=True)
++        params.update({"worker_init_fn": seed_worker, "generator": fixed_generator()})
++    # we use group_based sampler, which increases training speed slightly
++    group_ids = create_aspect_ratio_groups(cfg.train_dataset, k=3)
++    train_batch_sampler = GroupedBatchSampler(
++        data.RandomSampler(cfg.train_dataset), group_ids, cfg.batch_size
++    )
++    train_loader = data.DataLoader(cfg.train_dataset, batch_sampler=train_batch_sampler, **params)
++    test_loader = data.DataLoader(cfg.test_dataset, 1, shuffle=False, **params)
++
++    # instantiate model, optimizer and lr_scheduler
++    model = Config(cfg.model_path).model
++    if accelerator.use_distributed:
++        model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
++    optimizer = cfg.optimizer(cfg.param_dicts(model))
++    lr_scheduler = cfg.lr_scheduler(optimizer)
++
++    # load from a pretrained weight and fine-tune on it
++    weight_path = getattr(cfg, "resume_from_checkpoint", None)
++    if weight_path is not None and os.path.isfile(weight_path):
++        checkpoint = load_checkpoint(cfg.resume_from_checkpoint)
++        load_state_dict(model, checkpoint)
++        logger.info(f"load pretrained from {cfg.resume_from_checkpoint}")
++
++    # register dataset class information into the model, useful for inference
++    cat_ids = list(range(max(cfg.train_dataset.coco.cats.keys()) + 1))
++    classes = tuple(cfg.train_dataset.coco.cats.get(c, {"name": "none"})["name"] for c in cat_ids)
++    model.register_buffer("_classes_", torch.tensor(encode_labels(classes)))
++
++    # prepare for distributed training
++    model, optimizer, train_loader, test_loader, lr_scheduler = accelerator.prepare(
++        model, optimizer, train_loader, test_loader, lr_scheduler
++    )
++
++    # load from a directory, which means resume training
++    if weight_path is not None and os.path.isdir(weight_path):
++        accelerator.load_state(cfg.resume_from_checkpoint)
++        path = os.path.basename(cfg.resume_from_checkpoint)
++        cfg.starting_epoch = int(path.split("_")[-1]) + 1
++        accelerator.project_configuration.iteration = cfg.starting_epoch
++        logger.info(f"resume training of {cfg.output_dir}, from {path}")
++    else:
++        n_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
++        logger.info("model parameters: {}".format(n_params))
++        logger.info("optimizer: {}".format(optimizer))
++        logger.info("lr_scheduler: {}".format(pprint.pformat(lr_scheduler.state_dict())))
++
++    # save dataset name, useful for inference
++    if accelerator.is_main_process:
++        label_file = os.path.join(cfg.output_dir, "label_names.txt")
++        with open(label_file, "w") as f:
++            caid_name = [f"{k} {v['name']}" for k, v in cfg.train_dataset.coco.cats.items()]
++            caid_name = "\n".join(caid_name)
++            f.write(caid_name)
++        logger.info(f"Label names is saved to {label_file}")
++
++    logger.info("Start training")
++    start_time = time.perf_counter()
++    highest_checkpoint = HighestCheckpoint(accelerator, model)
++    for epoch in range(cfg.starting_epoch, cfg.num_epochs):
++        train_one_epoch_acc(
++            model=model,
++            optimizer=optimizer,
++            data_loader=train_loader,
++            epoch=epoch,
++            print_freq=cfg.print_freq,
++            max_grad_norm=cfg.max_norm,
++            accelerator=accelerator,
++        )
++        lr_scheduler.step()
++
++        # we save model and labels together
++        accelerator.save_state(safe_serialization=False)
++        logger.info("Start evaluation")
++        coco_evaluator = evaluate_acc(model, test_loader, epoch, accelerator)
++
++        # save best results
++        cur_ap, cur_ap50 = coco_evaluator.coco_eval["bbox"].stats[:2]
++        highest_checkpoint.update(ap=cur_ap, ap50=cur_ap50)
++
++    total_time = time.perf_counter() - start_time
++    total_time = str(datetime.timedelta(seconds=int(total_time)))
++    logger.info("Training time: {}".format(total_time))
++    accelerator.end_training()
++
++
++if __name__ == "__main__":
++    train()
+--- andrew/optimizer/param_dict.py
++++ bengio/optimizer/param_dict.py
+@@ -273,63 +273,3 @@
+     if other:  # film-only 時は空になり得る
+         groups.insert(0, {"params": other})
+     return groups
+-
+-
+-def finetune_hand2det(model, lr, inject_lr=5e-4):
+-    """Hand-mask→Det 用 param group（L2/L1a・C5 zero-init 残差注入）。
+-
+-    finetune_t1b と同一分類だが、注入枝を ``phase`` ではなく ``hand_prior``（zero-init 1x1 conv）で
+-    一括し独立 ``inject_lr`` 群にする（base 検出器に ``hand_prior`` を含む param は無い）。
+-    トレーナーが ``requires_grad=False`` で凍結した層は自動除外される（film-only=注入のみ学習に対応）。
+-    """
+-    linear_keywords = ("reference_points", "sampling_offsets")
+-    norm_bias_keywords = ("norm", "bias")
+-    backbone, backbone_norm = [], []
+-    linear_projection, linear_projection_norm = [], []
+-    other, other_norm = [], []
+-    inject_params = []
+-    for name, parameters in model.named_parameters():
+-        if not parameters.requires_grad:
+-            continue
+-        if match_name_keywords(name, "hand_prior"):
+-            inject_params.append(parameters)
+-        elif (
+-            match_name_keywords(name, "backbone")
+-            and not match_name_keywords(name, linear_keywords)
+-            and match_name_keywords(name, norm_bias_keywords)
+-        ):
+-            backbone_norm.append(parameters)
+-        elif (
+-            match_name_keywords(name, "backbone")
+-            and not match_name_keywords(name, linear_keywords)
+-            and not match_name_keywords(name, norm_bias_keywords)
+-        ):
+-            backbone.append(parameters)
+-        elif (
+-            not match_name_keywords(name, "backbone")
+-            and match_name_keywords(name, linear_keywords)
+-            and match_name_keywords(name, norm_bias_keywords)
+-        ):
+-            linear_projection_norm.append(parameters)
+-        elif (
+-            not match_name_keywords(name, "backbone")
+-            and match_name_keywords(name, linear_keywords)
+-            and not match_name_keywords(name, norm_bias_keywords)
+-        ):
+-            linear_projection.append(parameters)
+-        elif match_name_keywords(name, norm_bias_keywords):
+-            other_norm.append(parameters)
+-        else:
+-            other.append(parameters)
+-
+-    groups = [
+-        {"params": backbone, "lr": lr * 0.1},
+-        {"params": backbone_norm, "lr": lr * 0.1, "weight_decay": 0},
+-        {"params": linear_projection, "lr": lr * 0.1},
+-        {"params": linear_projection_norm, "lr": lr * 0.1, "weight_decay": 0},
+-        {"params": other_norm, "weight_decay": 0},
+-        {"params": inject_params, "lr": inject_lr},
+-    ]
+-    if other:  # film-only（注入のみ）時は空になり得る
+-        groups.insert(0, {"params": other})
+-    return groups
+--- andrew/transforms/presets.py
++++ bengio/transforms/presets.py
+@@ -162,24 +162,6 @@
+ 
+ scales_1200 = [int(t * 1.5) for t in [480, 512, 544, 576, 608, 640, 672, 704, 736, 768, 800]]
+ 
+-# detr プリセットを高解像度化したもの（aug 種類は detr と同一・解像度のみ 1 軸変更）。
+-# Method B（解像度単独）用。scales_1200=720..1200 / max_size=2000。
+-detr_1200 = T.Compose([
+-    T.RandomHorizontalFlip(),
+-    T.RandomChoice([
+-        T.RandomShortestSize(min_size=scales_1200, max_size=2000, antialias=True),
+-        T.Compose([
+-            T.RandomShortestSize([600, 750, 900], antialias=True),
+-            RandomSizeCrop(576, 900),
+-            T.RandomShortestSize(min_size=scales_1200, max_size=2000, antialias=True),
+-        ]),
+-    ]),
+-    T.PILToTensor(),
+-    T.ConvertImageDtype(torch.float),
+-    T.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+-    T.SanitizeBoundingBox(labels_getter=labels_getter),
+-])
+-
+ strong_album_1200_2000 = T.Compose([
+     T.RandomChoice([
+         T.RandomShortestSize(min_size=scales_1200, max_size=2000, antialias=True),

@@ -1,0 +1,89 @@
+## date
+2026-11-02T11:29:40+00:00
+## gpu
+index, name, uuid, vbios_version, driver_version, memory.total [MiB], power.limit [W], power.default_limit [W], power.max_limit [W], power.min_limit [W], enforced.power.limit [W], clocks.max.sm [MHz], clocks.max.memory [MHz], clocks.current.sm [MHz], clocks.current.memory [MHz], persistence_mode, ecc.mode.current, ecc.mode.pending, pcie.link.gen.current, pcie.link.gen.max, pcie.link.gen.gpumax, pcie.link.gen.hostmax, pcie.link.width.current, pcie.link.width.max, utilization.gpu [%], memory.used [MiB], pstate, temperature.gpu, power.draw [W], compute_mode, pci.bus_id
+0, NVIDIA RTX A6000, GPU-06de23a6-117b-46f2-427c-002409cf5a05, 94.02.5C.00.02, 595.84, 49140 MiB, 300.00 W, 300.00 W, 300.00 W, 100.00 W, 300.00 W, 2100 MHz, 8001 MHz, 210 MHz, 405 MHz, Disabled, Disabled, Disabled, 1, 4, 4, 5, 16, 16, 0 %, 16 MiB, P8, 38, 28.68 W, Default, 00000000:01:00.0
+1, NVIDIA RTX A6000, GPU-07e03d7e-7920-b988-01b6-02389e69294c, 94.02.5C.00.02, 595.84, 49140 MiB, 300.00 W, 300.00 W, 300.00 W, 100.00 W, 300.00 W, 2100 MHz, 8001 MHz, 210 MHz, 405 MHz, Disabled, Disabled, Disabled, 1, 4, 4, 5, 4, 16, 0 %, 16 MiB, P8, 37, 32.77 W, Default, 00000000:17:00.0
+## gpu_nonexistent (index 7)
+No devices were found
+rc=6
+## compute apps
+pid, process_name, used_gpu_memory [MiB]
+## topo
+	[4mGPU0	GPU1	CPU Affinity	NUMA Affinity	GPU NUMA ID[0m
+GPU0	 X 	PHB	0-31	0		N/A
+GPU1	PHB	 X 	0-31	0		N/A
+
+Legend:
+
+  X    = Self
+  SYS  = Connection traversing PCIe as well as the SMP interconnect between NUMA nodes (e.g., QPI/UPI)
+  NODE = Connection traversing PCIe as well as the interconnect between PCIe Host Bridges within a NUMA node
+  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)
+  PXB  = Connection traversing multiple PCIe bridges (without traversing the PCIe Host Bridge)
+  PIX  = Connection traversing at most a single PCIe bridge
+  NV#  = Connection traversing a bonded set of # NVLinks
+## nvidia-smi version
+NVIDIA-SMI version  : 595.84
+NVML version        : 595.84
+DRIVER version      : 595.84
+CUDA Version        : 13.2
+## iommu cmdline
+BOOT_IMAGE=/boot/vmlinuz-6.8.0-138-generic root=UUID=8f154805-f1db-46e7-8acb-032063e4811a ro quiet splash vt.handoff=7
+## iommu groups
+32
+ivhd0
+gpu 00000000:01:00.0 -> ../../../../kernel/iommu_groups/13
+gpu 00000000:17:00.0 -> ../../../../kernel/iommu_groups/24
+## dmesg iommu
+## cpu
+Architecture:                            x86_64
+CPU(s):                                  32
+Model name:                              AMD Ryzen 9 7950X 16-Core Processor
+Thread(s) per core:                      2
+Core(s) per socket:                      16
+Socket(s):                               1
+CPU(s) scaling MHz:                      48%
+NUMA node(s):                            1
+NUMA node0 CPU(s):                       0-31
+## numa gpu
+gpu 00000000:01:00.0 numa_node=-1
+gpu 00000000:17:00.0 numa_node=-1
+## mem
+MemTotal:       97909244 kB
+MemAvailable:   86440872 kB
+SwapTotal:       2097148 kB
+## cgroup
+0::/
+memory.max=89120571392
+memory.high=max
+cpu.max=max 100000
+pids.max=max
+## container
+-rwxr-xr-x 1 root root 0 Aug 18 08:25 /.dockerenv
+docker
+docker
+0
+## fs
+Filesystem     Type        1B-blocks          Used         Avail Mounted on
+/dev/sdc1      ext4    7937302376448 5891826118656 1645381390336 /home/ubuntu/slocal2
+/dev/sdc1      ext4    7937302376448 5891826118656 1645381390336 /home/ubuntu/slocal2
+overlay        overlay 2014574526464  406840725504 1505323528192 /
+overlay        overlay 2014574526464  406840725504 1505323528192 /
+SOURCE                 FSTYPE OPTIONS
+/dev/sdc1[/tuchihashi] ext4   rw,relatime
+## kernel
+Linux Andrew 6.8.0-138-generic #138-Ubuntu SMP PREEMPT_DYNAMIC Fri Jul 31 22:41:49 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+PRETTY_NAME="Ubuntu 24.04.4 LTS"
+VERSION_ID="24.04"
+## nvcc gcc
+Cuda compilation tools, release 12.9, V12.9.86
+Build cuda_12.9.r12.9/compiler.36037853_0
+gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+## libs
+	libnccl.so.2 (libc6,x86-64) => /lib/x86_64-linux-gnu/libnccl.so.2
+	libnccl.so (libc6,x86-64) => /lib/x86_64-linux-gnu/libnccl.so
+	libcudnn.so.9 (libc6,x86-64) => /lib/x86_64-linux-gnu/libcudnn.so.9
+	libcudnn.so (libc6,x86-64) => /lib/x86_64-linux-gnu/libcudnn.so
+	libcudart.so.12 (libc6,x86-64) => /usr/local/cuda/targets/x86_64-linux/lib/libcudart.so.12
+	libcudart.so (libc6,x86-64) => /usr/local/cuda/targets/x86_64-linux/lib/libcudart.so

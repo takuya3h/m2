@@ -1,0 +1,72 @@
+result_version: 3
+task_id: "T-2026-11-02-bengio-andrew-env-survey"
+status: pass
+host: "bengio"
+branch: "feat/bengio-andrew-env-survey"
+pr: null
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "分岐 feat/bengio-andrew-env-survey、起点 = HEAD = origin/phase0 231c280e。GPU を使わないことを記録。andrew へ BatchMode の ssh で届き、分岐 feat/stage2-w23-andrew・HEAD a78e2f3c・変更 0・未追跡 41・compute 0 を記録。third_party と venv の作業の兆しは要約値の一致で否定"}
+  - {id: G2, verdict: pass, note: "reldetr_digest.py の値が §3.2 と三つとも一致: andrew main 142/2f08e521・155/20f15c06、bengio main 127/3ade18f0・140/89dc93b4、重ねの BODY 142/2f08e521・155/20f15c06"}
+
+tests:
+  before_failed: 12
+  after_failed: 12
+  after_passed: 965
+
+deviations:
+  - {type: judgement, note: "~/.ssh の sha256 は秘密鍵を読むため利用者に確かめ、「取る」の回答で取った（名前・バイト数・sha256 だけを記録）"}
+  - {type: judgement, note: "本契約の置き場の andrew の写し 8 件（.py）が同期で andrew に渡ったため、利用者の決定で .py.txt に改名した。同期が andrew の 8 件を消し、未追跡は 41 件に戻った"}
+  - {type: judgement, note: "試験に PYTHONDONTWRITEBYTECODE=1 を足した。andrew の試験は /tmp への書き込みが避けられず回さず、w23-andrew の記録（当時の分岐の起点）を使った"}
+  - {type: environment, note: "装置を見せない形では上流の ms_deform_attn.py が拡張の読み込みを試みないため、ビルド物の .so を importlib で直接読んで確かめた"}
+  - {type: judgement, note: "make forbidden-check は TASK を渡さないと allow_write が効かず fail（違反 59）。TASK= を渡して pass（違反 0）"}
+  - {type: judgement, note: "Task E の定義の外の補足として stage2pilot_store の二段目の差を並べた（一覧の本体には入れていない）"}
+  - {type: judgement, note: "README.md と docs/experiment_log.md は更新していない（契約の allow_write が二つの置き場に限る）"}
+
+issuer_defects:
+  - {type: asserted_without_measuring, note: "本契約の書き込み先 experiments/analysis/... が bengio に留まる前提で andrew 無書き込みを求めたが、.stignore の !experiments/**/*.py を確かめていなかった。指示どおり diff の材料を置くと、.py の 8 件が Syncthing で andrew の repo に配られ、andrew の未追跡が 41 から 49 に増えた"}
+  - {type: self_contradiction, note: "Task E の定義は ~/slocal2 を直下の名前だけで比べるため、andrew にも同名がある stage2pilot_store は残り物から外れる。一方 §3.3 は同じ置き場を残り物の手がかりに挙げる。定義どおりに実行すると、bengio だけにある約 21 GB の契約の置き場（grasp-pilot-d、w23-bengio）が一覧に出ない"}
+
+positive_controls:
+  - judgement: "a・i プロセスの計数（proc_enum.py）"
+    breaking_input: "実在する実行ファイル /usr/bin/zsh と存在しない経路 /nonexistent/bin/python9 を数える"
+    observed: "zsh 8、存在しない経路 0"
+  - judgement: "b Relation-DETR の三分類"
+    breaking_input: "bengio の 1 ファイルの sha256 を別の値に置き換えた写しを入れる"
+    observed: "中身が違うファイルが 8 から 9 に増えた。三分類の和 155 は和集合 155 と一致"
+  - judgement: "c パッケージの列の比較"
+    breaking_input: "bengio の列の先頭の行の版に .post999 を足す"
+    observed: "二つの venv とも version_differ に 1 件出た（accelerate、absl-py）"
+  - judgement: "d 画像の要約値の照合"
+    breaking_input: "固定記録の一画像の sha256 の先頭 1 文字を変える"
+    observed: "不一致 1。存在しない経路（Stage 2 の材料の片方のホスト）は exists false"
+  - judgement: "e 残り物の一覧"
+    breaking_input: "andrew にもある README.md（出てはいけない）と既知の残り物 ~/m2-git-info-exclude.bak-20261019（出るべき）"
+    observed: "README.md は出ない、控えは出る"
+  - judgement: "f 装置の問い合わせ"
+    breaking_input: "存在しない GPU 番号 7 を同じ問い合わせで指定する"
+    observed: "両ホストとも No devices were found、終了コード 6"
+  - judgement: "g 試験の名前の差"
+    breaking_input: "andrew の 6 件の集合に名前を 1 つ足す"
+    observed: "差（bengio − andrew）が 6 から 5 に変わった"
+  - judgement: "h 前後比較"
+    breaking_input: "同じ stat の木の取り方で本契約の出力の置き場を前後で比べる（変わっているはず）"
+    observed: "own_out ff09ce59 → c940cfd5、own_task 6a755258 → 80b4c4dd と違う値になった"
+
+followups:
+  - "bengio の MS-Deform-Attn のビルド物（~/.cache/torch_extensions/py311_cu118/MultiScaleDeformableAttention/build.ninja 27 行目）は ~/slocal2/s2fix-bengio-body の .cu を指す。重ねの BODY を片付ける前に、Relation-DETR を揃えた main で拡張がどう読み込まれるか（ビルドし直しの要否）を装置のある形で確かめる"
+  - "揃えると失われる bengio の中身は main.py（CRLF の上流の原形）と transforms/presets.py（上流の原形）の 2 件。どちらも third_party_snapshot/Bengio の tar に無い。揃える前に保全するかを決める"
+  - "andrew の .venv/pyvenv.cfg の home は存在しない ~/.pyenv/versions/3.11.4/bin を指す（bin/python は uv の 3.11.16）。基準の側の不整合として扱いを決める"
+  - "IOMMU は andrew だけ有効の手がかりがある（2 枚の DDP で NCCL_P2P_DISABLE=1 が要るという記録と符合する）。(b) の速さの比較では、この差と電力の上限 300 W 対 220 W、CPU 7950X 対 3900X を別々に扱う"
+  - "契約の書き込み先が experiments/ の下にあると、.py・.npy・.pt・.pth・logs などは Syncthing で全台に配られる（.stignore の 43〜54 行）。andrew を読むだけの契約では、写しを .py などの拡張子で置かない"
+  - "make forbidden-check は TASK= を渡さないと allow_write が効かない。手順書の「禁止領域に触れていないことを確かめる」の命令に TASK= が無い"
+
+unknowns:
+  - "上流の load() 経路での MS-Deform-Attn の読み込み（ビルドし直しの要否を含む）。装置が要る"
+  - "andrew の現在の起点（a78e2f3c）での試験の失敗の名前。記録は andrew の 2026-11-01 の分岐の起点で取ったもの"
+  - "PCIe の負荷時の世代と幅（無負荷で測った）"
+  - "test_stage1_ptower_heads の 4 件の差が CPU の型による数値の違いか"
+  - "改名の後、andrew に空のディレクトリ experiments/analysis/bengio_andrew_env_survey/b/andrew_copies が残るか"
+
+commits: []

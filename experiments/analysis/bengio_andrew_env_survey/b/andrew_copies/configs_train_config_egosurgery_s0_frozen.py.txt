@@ -1,0 +1,53 @@
+# S0-frozen train config for EgoSurgery.
+#
+# Run from third_party/Relation-DETR with .venv-relation-detr:
+#   RELDETR_OUTPUT_DIR=experiments/transfer/reldetr_work_s0_frozen_seed42 \
+#   RELDETR_EVIDENCE_DIR=experiments/transfer/reldetr_work_s0_frozen_seed42 \
+#   CUDA_VISIBLE_DEVICES=0 accelerate launch --num_processes 1 main.py \
+#     --config-file configs/train_config_egosurgery_s0_frozen.py \
+#     --seed 42 --mixed-precision fp16
+import os
+from torch import optim
+
+from datasets.coco import CocoDetection
+from transforms import presets
+from optimizer import param_dict
+
+num_epochs = int(os.environ.get("RELDETR_NUM_EPOCHS", "12"))
+batch_size = int(os.environ.get("RELDETR_BATCH_SIZE", "2"))
+num_workers = int(os.environ.get("RELDETR_NUM_WORKERS", "4"))
+pin_memory = True
+print_freq = int(os.environ.get("RELDETR_PRINT_FREQ", "50"))
+starting_epoch = 0
+max_norm = 0.1
+
+output_dir = os.environ.get("RELDETR_OUTPUT_DIR")
+find_unused_parameters = False
+
+EGO_ROOT = os.environ.get("EGO_ROOT", "/home/ubuntu/slocal2/m2/data/raw/ego")
+ANN_DIR = os.environ.get(
+    "EGO_ANN_DIR", "/home/ubuntu/slocal2/m2/data/annotations/egosurgery_tool"
+)
+train_dataset = CocoDetection(
+    img_folder=EGO_ROOT,
+    ann_file=f"{ANN_DIR}/instances_train.json",
+    transforms=presets.detr,
+    train=True,
+)
+test_dataset = CocoDetection(
+    img_folder=EGO_ROOT,
+    ann_file=f"{ANN_DIR}/instances_val.json",
+    transforms=None,
+)
+
+model_path = "configs/relation_detr/relation_detr_resnet50_egosurgery_s0_frozen.py"
+
+resume_from_checkpoint = os.environ.get(
+    "RELDETR_S0FROZEN_INIT",
+    "/home/ubuntu/slocal2/m2/data/external/weights/relation_detr_s0frozen_init_seed42.pth",
+)
+
+learning_rate = float(os.environ.get("RELDETR_LR", "1e-4"))
+optimizer = optim.AdamW(lr=learning_rate, weight_decay=1e-4, betas=(0.9, 0.999))
+lr_scheduler = optim.lr_scheduler.MultiStepLR(milestones=[10], gamma=0.1)
+param_dicts = param_dict.finetune_backbone_and_linear_projection(lr=learning_rate)

@@ -1,0 +1,70 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-11-02-bengio-andrew-env-survey"
+  kind: analysis
+  title: "bengio を andrew に揃える前の調査: Relation-DETR、仮想環境、データと checkpoint、前の契約の残り物、装置と系の違い"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-11-02T11:30:00Z"
+  created_from:
+    runindex_commit: "68befc3b62ffc071077cca446df5d3c83b8c38b9"
+    counts: {index: 2363, experiments: 1130, verdicts: 1736}
+  depends_on: [T-2026-11-01-stage2-w23-bengio, T-2026-11-01-grasp-pilot-d]
+  amendments: []
+intent:
+  question: "bengio の repo と実行環境は andrew とどこが違うか。Relation-DETR の本体、二つの仮想環境、塔と Stage 2 が読むデータと checkpoint、bengio にだけある前の契約の残り物、装置と系の設定を、andrew を基準に一覧にする"
+  decision_at_stake: "後続の実装契約で bengio を andrew に揃える範囲と方法、片付ける残り物の一覧、その後に両ホストで同じ設定の学習を回して指標の差と学習の速さの差を測る契約の前提。本契約では何も揃えず、何も消さない"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery-Phase と EgoSurgery-Tool のフレーム画像と注釈、工程塔の manifest、折り表（conventions#folds）"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt", "data/splits/ego_test.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/grasppilot/reldetr_digest.py", "scripts/grasppilot/proc_enum.py", "scripts/restore_relation_detr_source.sh", "scripts/stage1_ptower_r3.py", "scripts/run_stage1_dtower.sh", "scripts/eval_relation_detr_map.py", "scripts/build_phase_manifest.py", "scripts/setup_env_relation_detr.sh", "scripts/task_start_classify.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#env_p0, conventions#frame_sets]
+  conventions_rev: "2d946b07a57abebc4a8f66150d6dbaf2ccd22186"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/analysis/bengio_andrew_env_survey/"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。分岐、起点、GPU を使わないことの記録、andrew の状態の記録、読むだけで andrew へ届くこと", gpu: false, est: "45m"}
+    - {id: B, name: "Relation-DETR の本体。ファイル単位の違いの表と、bengio にだけある中身が保全されているか", gpu: false, est: "1h"}
+    - {id: C, name: "二つの仮想環境。パッケージ、python の実体と版、拡張のビルド物、CUDA と cuDNN と NCCL の版", gpu: false, est: "1h"}
+    - {id: D, name: "データと checkpoint。塔と Stage 2 が読む集合を実装から特定し、両ホストの在否と要約値を突き合わせる", gpu: false, est: "3h"}
+    - {id: E, name: "前の契約の残り物の一覧（bengio）", gpu: false, est: "1h"}
+    - {id: F, name: "装置と系の設定（両ホスト）と、試験の失敗の名前", gpu: false, est: "1h"}
+    - {id: G, name: "検証、報告、PR", gpu: false, est: "1h"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0。本契約が GPU を使わないことを記録した。andrew へ読むだけで届き、andrew の repo の分岐・HEAD・未追跡の件数を記録した", on_fail: stop}
+    - {id: G2, after: B, check: "andrew main と bengio main の Relation-DETR の要約値が 2026-11-01 の記録と一致するか、食い違いの内容と時期の手がかりが書けた", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+outputs:
+  must_have: [REPORT.md]
+  destination: "experiments/analysis/bengio_andrew_env_survey/"
+  acceptance:
+    - "a: 開始状態（分岐、起点、bengio と andrew の repo の分岐・HEAD・未追跡と変更の件数、本契約以外の compute の件数、記憶領域の空き）が記録されている"
+    - "b: Relation-DETR の本体について、片方にだけあるファイルと中身の違うファイルの一覧が両ホストの全ファイルの要約値から作られ、bengio にだけある中身が third_party_snapshot に保全されているかがファイルごとに書かれている"
+    - "c: 二つの仮想環境について、パッケージの一覧の差、python の実体の経路と版、pyvenv.cfg の home、拡張のビルド物の要約値、torch が報告する CUDA・cuDNN・NCCL の版が両ホストで並んでいる"
+    - "d: 塔と Stage 2 が読むデータと checkpoint の集合が実装の行を根拠に列挙され、項目ごとに両ホストの在否・バイト数・要約値と一致の判定がある"
+    - "e: bengio にあり andrew に無い前の契約の残り物が、経路・種類・大きさ・作った契約・参照しているもの・同期で他のホストへ渡るかの欄つきで一覧にある"
+    - "f: 装置と系の設定（GPU の型と UUID、driver、電力の上限の現在値と既定値と最大値、最大クロック、PCIe の世代と幅、GPU 間の接続、CPU、メモリと cgroup の上限、記憶領域、kernel、IOMMU の状態の手がかり）が両ホストで並んでいる"
+    - "g: 試験の失敗と収集の失敗の名前の集合が両ホストで並び、差の名前ごとに Relation-DETR の違いと結び付くかが書かれている"
+    - "h: andrew に何も書いておらず、bengio の data・third_party・二つの仮想環境・他の契約の置き場が開始時と同じ要約値である"
+    - "i: GPU を使っていない"
+    - "j: PR が存在し、base が phase0、分岐が feat/bengio-andrew-env-survey、Draft でない"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "andrew の repo が作業中の分岐にあり、third_party か仮想環境が作業中に変わっている兆しがある場合"
+    - "andrew で読むために何かを書く必要が出た場合"
+    - "認証情報の置き場への接触が実行基盤に拒まれた場合"
+    - "データの要約値を取るために data 配下へ書く必要が出た場合"
