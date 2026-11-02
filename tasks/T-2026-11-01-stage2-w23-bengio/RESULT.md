@@ -85,4 +85,4 @@
 
 ## 7. 送出
 
-- PR: #278（base phase0、分岐 `feat/stage2-w23-bengio`）。`make task-report` の終了コード: 送出の後に追記する
+- PR: #278（base phase0、分岐 `feat/stage2-w23-bengio`）。`make task-report` の終了コード: 0（17:1x JST、verdict stopped、起票者の誤り 3 件、report_sha256 54cf0c4b…、10,094 B）

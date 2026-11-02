@@ -292,3 +292,4 @@ commit・push・PR（base phase0）・make task-report まで行う。meta.amend
 - REPORT.md は `tools/make_report.py --status-note` で冒頭に中止の旨を置いて作り直した。予測 §6.3 の照合は (1) 外れ（W3 が W1 より大きい型は P1 だけ）、(2) 当たり（P2L −0.0372、P3 −0.0292、P1 −0.0578）
 - 案 A（GA）の予測の腕（予測-noCF・予測-CF・正解予測-CF・入れ替え）の信号は、二本目（T-2026-11-01-grasp-pilot-g）の把持塔 G の予測から作られている（`$S/copied/grasp-pilot-g/signals/A/`）。中止の理由に関わる可能性がある
 - 17:0x JST（最後）: `make forbidden-check` をもう一度回した（`final/forbidden_check_end.txt`）。status fail、exit 2、changed 1,474、違反 32 件はすべて `w23a_*`（andrew の同期）、**本契約の経路 0 件**
+- 17:1x JST: `make task-report` exit 0（verdict stopped、n_issuer_defects 3、report_sha256 54cf0c4bf7f1…、report_bytes 10094、replaced_blocks 0）。PR #278 は Draft を外した（base phase0）
