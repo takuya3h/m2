@@ -6,8 +6,48 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 147 件）。
-ここに出ない 142 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 148 件）。
+ここに出ない 143 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-11-02-bengio-andrew-env-survey
+
+状態 `pass` / ホスト `bengio` / 起票 `282` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 分岐 feat/bengio-andrew-env-survey、起点 = HEAD = origin/phase0 231c280e。GPU を使わないことを記録。andrew へ BatchMode の ssh で届き、分岐 feat/stage2-w23-andrew・HEAD a78e2f3c・変更 0・未追跡 41・compute 0 を記録。third_party と venv の作業の兆しは要約値の一致で否定
+- `G2` pass — reldetr_digest.py の値が §3.2 と三つとも一致: andrew main 142/2f08e521・155/20f15c06、bengio main 127/3ade18f0・140/89dc93b4、重ねの BODY 142/2f08e521・155/20f15c06
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — 本契約の書き込み先 experiments/analysis/... が bengio に留まる前提で andrew 無書き込みを求めたが、.stignore の !experiments/**/*.py を確かめていなかった。指示どおり diff の材料を置くと、.py の 8 件が Syncthing で andrew の repo に配られ、andrew の未追跡が 41 から 49 に増えた
+- `self_contradiction` — Task E の定義は ~/slocal2 を直下の名前だけで比べるため、andrew にも同名がある stage2pilot_store は残り物から外れる。一方 §3.3 は同じ置き場を残り物の手がかりに挙げる。定義どおりに実行すると、bengio だけにある約 21 GB の契約の置き場（grasp-pilot-d、w23-bengio）が一覧に出ない
+
+### 逸脱
+
+- `judgement` — ~/.ssh の sha256 は秘密鍵を読むため利用者に確かめ、「取る」の回答で取った（名前・バイト数・sha256 だけを記録）
+- `judgement` — 本契約の置き場の andrew の写し 8 件（.py）が同期で andrew に渡ったため、利用者の決定で .py.txt に改名した。同期が andrew の 8 件を消し、未追跡は 41 件に戻った。同期が作った空のディレクトリ 3 つは andrew に残る（消していない）
+- `judgement` — 試験に PYTHONDONTWRITEBYTECODE=1 を足した。andrew の試験は /tmp への書き込みが避けられず回さず、w23-andrew の記録（当時の分岐の起点）を使った
+- `environment` — 装置を見せない形では上流の ms_deform_attn.py が拡張の読み込みを試みないため、ビルド物の .so を importlib で直接読んで確かめた
+- `judgement` — make forbidden-check は TASK を渡さないと allow_write が効かず fail（違反 59）。TASK= を渡して pass（違反 0）
+- `judgement` — Task E の定義の外の補足として stage2pilot_store の二段目の差を並べた（一覧の本体には入れていない）
+- `judgement` — README.md と docs/experiment_log.md は更新していない（契約の allow_write が二つの置き場に限る）
+
+### 申し送り
+
+- bengio の MS-Deform-Attn のビルド物（~/.cache/torch_extensions/py311_cu118/MultiScaleDeformableAttention/build.ninja 27 行目）は ~/slocal2/s2fix-bengio-body の .cu を指す。重ねの BODY を片付ける前に、Relation-DETR を揃えた main で拡張がどう読み込まれるか（ビルドし直しの要否）を装置のある形で確かめる
+- 揃えると失われる bengio の中身は main.py（CRLF の上流の原形）と transforms/presets.py（上流の原形）の 2 件。どちらも third_party_snapshot/Bengio の tar に無い。揃える前に保全するかを決める
+- andrew の .venv/pyvenv.cfg の home は存在しない ~/.pyenv/versions/3.11.4/bin を指す（bin/python は uv の 3.11.16）。基準の側の不整合として扱いを決める
+- IOMMU は andrew だけ有効の手がかりがある（2 枚の DDP で NCCL_P2P_DISABLE=1 が要るという記録と符合する）。(b) の速さの比較では、この差と電力の上限 300 W 対 220 W、CPU 7950X 対 3900X を別々に扱う
+- 契約の書き込み先が experiments/ の下にあると、.py・.npy・.pt・.pth・logs などは Syncthing で全台に配られる（.stignore の 43〜54 行）。andrew を読むだけの契約では、写しを .py などの拡張子で置かない
+- make forbidden-check は TASK= を渡さないと allow_write が効かない。手順書の「禁止領域に触れていないことを確かめる」の命令に TASK= が無い
+
+### 断定できなかったこと
+
+- 上流の load() 経路での MS-Deform-Attn の読み込み（ビルドし直しの要否を含む）。装置が要る
+- andrew の現在の起点（a78e2f3c）での試験の失敗の名前。記録は andrew の 2026-11-01 の分岐の起点で取ったもの
+- PCIe の負荷時の世代と幅（無負荷で測った）
+- test_stage1_ptower_heads の 4 件の差が CPU の型による数値の違いか
 
 ## T-2026-11-01-stage2-w23-bengio
 
@@ -174,46 +214,4 @@
 
 - 記録の検出塔（stage1_dtower_r2/dcoco_foldA_seed42）のホストは記録に無い
 - commit のとき .git/index.lock が 2 回残っていた（数秒で消えた）。作った処理は特定していない
-
-## T-2026-10-31-grasp-pilot-probe
-
-状態 `pass` / ホスト `andrew` / 起票 `272` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — proc_enum で本契約以外の compute プロセス 0 件（nvidia-smi の compute 0 件、ps で全利用者の python・torchrun 0 件）。起点 origin/phase0 8d3a72b7、空き 1,678,369,779,712 B、試験の失敗 6 件の名前、二つの仮想環境のパッケージの一覧の sha256 を記録した
-- `G2` pass — hand_tool_seg/ の train 9,356・val 1,514 が被覆の文書の v2 の値と一致し、三種の注釈の動画は train 10・val {09,10} だけ。PT_CACHE・PT_HEAD_CKPT・DET_CKPT の sha256 が記録と一致し、塔単独の val は工程 Jaccard 0.7762185528・検出 mAP 0.7273450248 で差 0
-- `G3` pass — 案 A・案 B の空と正解の 4 腕で学習前の出力が塔単独と差 0、重み N(0,0.05^2) で正解の腕の出力が変わる（Jaccard 0.7630、score の差 0.383）。地図の対応 0.977 対 反転の対照 0.393。学習する集合は iface.weight と phase_iface.weight だけ
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — §6.4 は注釈の無い工程のフレームを「全 15 動画で工程注釈のあるフレームの約 13%」と書くが、これは工程注釈の CSV を分母にした値である。この契約の経路の工程のマニフェストは術具の枠と同じフレーム集合で、測ると注釈の無いフレームは train 301（3.1%）・val 1（0.07%）だった。書かれた値のまま限界を書くと、正解の腕の信号の欠けを約 4 倍に過大に伝える
-- `check_does_not_check` — §8-c と §9 は塔単独の再現の許容差を 0.005 とするが、overall mAP では別 seed（123）の検出塔の差が +0.0015 で許容差の中に入り、別の塔を見分けられない。書かれたとおりの照合では違う checkpoint でも再現が通る。標的群 AP の差（+0.028）なら見分けられ、差 0 の再現も記録した
-- `asserted_without_measuring` — §2 は被覆の文書を引いて hand_tool_seg/ を旧版（被覆 65.82%）、hand_tool_seg_v2/ を現行と書くが、在処に hand_tool_seg_v2/ は無く、hand_tool_seg/ の train 9,356・val 1,514 が v2 の値と一致した（egosurgery_hts/README.md §8 が 2026-07-31 に統合と書く）。名前で選ぶと存在しないディレクトリを探す。被覆の数で同定せよという指示に従い誤らなかった
-
-### 逸脱
-
-- `environment` — E-1・E-3 の一歩の時間を案 B の学習と同じ GPU で並べて測った（利用者の指示「計算リソースすべて使ってなるべく早く終わらせて」）。gpu_shared_with_other_runs true と記録し、専有の値より遅い側に偏りうる
-- `environment` — 公式の Mask2Former（facebookresearch/Mask2Former と detectron2）の取得と組み立てを本契約の保存先の下の新しい仮想環境で試みる命令を、実行基盤が外部のコードとして拒んだ。回避せず、この候補は未測定とした
-- `judgement` — mmdet の計測は gt_sem_seg = None の代入と LSJ の 1024x1024 への詰め物で 2 回失敗した。三回目は前処理の batch_augments を外し、hf と同じ短辺 800 の入力で測った。失敗の記録は taskE に残した
-- `judgement` — g の手の存在を把持関係の 1・2 クラスから読んだ。手 4 クラスの自分の手とは両方があるフレームで IoU が全件 1.0 で、どちらから読んでも値は同じ
-- `judgement` — 実行済みの台本と、写した設定 pd_graspmap_d5.py（元の pd_film_d9.py の F401 を引き継ぐ）に ruff の指摘 I001・E702・E741・F401 が残る。run に記録した code_sha256 を保つため直さず、実行していない台本だけ直した
-- `judgement` — 案 B は --zero-ctx を使わず、地図の型の側で工程の ctx を空にした。R は詰め物まで含めた格子から C5 の格子への adaptive_avg_pool2d とした（評価時の経路と同じ形）
-- `environment` — andrew に /usr/bin/time と bc が無く、案 A の一度目の起動が rc 127 で何も走らずに終わった（実験フォルダは作られていない）。起動し直し、所要は metrics.json の elapsed_seconds から取った
-
-### 申し送り
-
-- 残りの四腕（予測の腕と G の学習）は二本目の契約で、同じ andrew・同じ界面のコードで回す。案 B の run の code_sha256.txt と code_commit.txt、案 A の dp_train.py の sha256 を照合に使う
-- G の実装の候補は mmdet 3.3.0（R50、既存の .venv のまま動く）と HF transformers 4.44.2（Swin-T）を測った。公式の Mask2Former は外部のコードの取得が拒まれて未測定。採るかどうかと epoch 数は二本目の契約で決める
-- 三種の注釈を一つの塔で賄う形の候補は 3 つ（把持関係 5 クラスだけ、三種を合わせた 38 クラス、欠けた種類を損失から外す）を並べた。選んでいない
-- E-1・E-3 の一歩の時間は案 B と GPU を共有して測った値で、専有の値より遅い側に偏りうる。費用の見積もりに使うときは測り直すか、この偏りを書く
-- 塔単独の再現の許容差は overall mAP の 0.005 では別 seed の塔を見分けられない。次の契約では標的群 AP か予測の一致で照合する
-
-### 断定できなかったこと
-
-- 公式の Mask2Former（facebookresearch/Mask2Former）の版・組み立ての結果・一歩の時間
-- 検出塔（experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42）の学習ホスト。記録に無い
-- HF の重み facebook/mask2former-swin-tiny-coco-instance のカードの使用許諾
-- 折り A の val の術具の注釈の sha256（db605c06…）は前回の記録に見当たらず照合できない
-- 案 B の run の W&B の記録。train_t1b.py の既存の経路で回し、run の置き場に W&B の記録のファイルは無い
 

@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（705 件）
+## 申し送り（711 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1148,7 +1148,16 @@
 - PD の W3（--trainable all）は学習中 1 本 約 13.5 GiB で、RTX A6000 1 枚に 3 本まで。1 epoch・6 ステップの試走（10.8 GiB）では過小に見える
 - 受け取り手を学ぶと、4 epoch の固定の長さで空の腕の val が塔単独より下がる（DP の macro Jaccard で W2 −0.101・W3 −0.133、PD の P2L W3 で overall −0.037）。W2・W3 の差を読むなら、受け取り手を学ぶときの長さの規則を先に決める必要がある
 
-## 断定できなかった事項（446 件）
+### T-2026-11-02-bengio-andrew-env-survey
+
+- bengio の MS-Deform-Attn のビルド物（~/.cache/torch_extensions/py311_cu118/MultiScaleDeformableAttention/build.ninja 27 行目）は ~/slocal2/s2fix-bengio-body の .cu を指す。重ねの BODY を片付ける前に、Relation-DETR を揃えた main で拡張がどう読み込まれるか（ビルドし直しの要否）を装置のある形で確かめる
+- 揃えると失われる bengio の中身は main.py（CRLF の上流の原形）と transforms/presets.py（上流の原形）の 2 件。どちらも third_party_snapshot/Bengio の tar に無い。揃える前に保全するかを決める
+- andrew の .venv/pyvenv.cfg の home は存在しない ~/.pyenv/versions/3.11.4/bin を指す（bin/python は uv の 3.11.16）。基準の側の不整合として扱いを決める
+- IOMMU は andrew だけ有効の手がかりがある（2 枚の DDP で NCCL_P2P_DISABLE=1 が要るという記録と符合する）。(b) の速さの比較では、この差と電力の上限 300 W 対 220 W、CPU 7950X 対 3900X を別々に扱う
+- 契約の書き込み先が experiments/ の下にあると、.py・.npy・.pt・.pth・logs などは Syncthing で全台に配られる（.stignore の 43〜54 行）。andrew を読むだけの契約では、写しを .py などの拡張子で置かない
+- make forbidden-check は TASK= を渡さないと allow_write が効かない。手順書の「禁止領域に触れていないことを確かめる」の命令に TASK= が無い
+
+## 断定できなかった事項（450 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -2001,18 +2010,25 @@
 - 利用者の指示による中止（把持塔 G の設計の誤りが分かったため、2026-11-02 16:5x JST、meta.amendments の 3 件目）。止めた時点で走っていたのは w23b_pd_P3-W3_shuffle_ep4_seed42 だけで、4 epoch 目の学習・評価と確定は済み、起動台本の後片付けの前で止まった（end.txt・exit_code.txt なし）。116 本すべてに値がある。REPORT の解釈と次の提案は書いていない
 - 案 A（GA）の予測の腕の信号は二本目の把持塔 G から作られており、中止の理由の G の誤りがその値にどれだけ関わるかは測っていない
 
-## 起票者の誤りの型（417 件）
+### T-2026-11-02-bengio-andrew-env-survey
+
+- 上流の load() 経路での MS-Deform-Attn の読み込み（ビルドし直しの要否を含む）。装置が要る
+- andrew の現在の起点（a78e2f3c）での試験の失敗の名前。記録は andrew の 2026-11-01 の分岐の起点で取ったもの
+- PCIe の負荷時の世代と幅（無負荷で測った）
+- test_stage1_ptower_heads の 4 件の差が CPU の型による数値の違いか
+
+## 起票者の誤りの型（419 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 112 |
-| `asserted_without_measuring` | 177 |
-| `self_contradiction` | 106 |
+| `asserted_without_measuring` | 178 |
+| `self_contradiction` | 107 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 2 |
 | `rule_read_narrowly` | 1 |
 
-合計 417 件（対を持つ契約 147 件から）
+合計 419 件（対を持つ契約 148 件から）
 
