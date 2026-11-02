@@ -6,8 +6,51 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 146 件）。
-ここに出ない 141 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 147 件）。
+ここに出ない 142 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-11-01-stage2-w23-bengio
+
+状態 `stopped` / ホスト `bengio` / 起票 `278` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 起点 origin/phase0 392cf287 に PR 272・274・275 の統合が在る。proc_enum で本契約以外の compute 0 件（自分のシェルを含む zsh 8 件、存在しない経路 0 件）。空き 1,419,559,088,128 B、失敗 11 件と error 1 件の名前、venv 108 行 9c7be5c9…・72 行 a74c9c78…、RTX A6000 × 2 で電力の上限 220 W。bengio main の Relation-DETR は andrew と違い（source 127 vs 142）、重ねの BODY が andrew と source 142・全 155 ファイル・パッケージ 72 個で一致
+- `G2` pass — 信号と checkpoint 40 ファイルの sha256 が W1 の run の config と直しの契約の material_check・input_digest の記録と一致（案 A の信号は andrew から写した）。pd_eval.py --cfg plain（重ねの BODY）で検出塔 overall 0.7273450248・標的群 0.7950748009（差 2.5e-8・8.6e-10）、repro_ptower.py で工程塔 macro Jaccard 0.7762185528（差 0.0）
+- `G3` pass — 学ぶ集合: DP 9 型と PD 4 型（P2L・P3・EQ・P1）× W1・W2・W3 で SPEC §3.1 の定義と一致。恒等性: DP 100 行で学習前のロジットの差 0.0・Jaccard が塔単独と完全一致、PD 16 組でスコアの差 0.0・box 0.0 px。陽性対照で DP 90 行・PD 3 型の出力が変わる。W1 の既定の挙動は起点の版と identity・試走の metrics・config・history・確率・重みが一致
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — SPEC §0 は「これまでの予備測定の界面の型は、すべて W1 で回した」とするが、P3 の W1 は run_pd_fix.sh で --trainable w2（total_trainable 1,684,883）だった。§3.1 の P3 の W2 は W1 と同じ学ぶ集合になり、指示どおりに回すと W1 と同じ設定の run を W2 と名付けて 6 本回し直すことになった
+- `self_contradiction` — SPEC の入口の dp_train.py は W&B の追跡が始まらないと実験を止める（RuntimeError）が、§7.10 は外部への送信を make task-report 以外の経路で禁じる。指示どおりでは DP と案 A の run が一本も回らないか外部へ送るかの二択になり、三本目と同じく利用者に諮るしかなかった
+- `self_contradiction` — SPEC §8-h は禁止の場所の要約値が前後で一致することを求めるが、Task A-4 は開始時に記録する要約値に禁止の場所（前回の run の置き場・凍結源・data・注釈）を挙げない。指示どおりに Task A を行うと比べる前の値が残らず、h を要約値で判定できない。更新時刻の列挙で代えた
+
+### 逸脱
+
+- `judgement` — P3 は W3 だけ回した。P3 の W1 が既に --trainable w2 で、SPEC §3.1 の P3 の W2 が W1 と同じ学ぶ集合になるため利用者に諮った（meta.amendments の 1 件目）。W2 の欄には W1 の値を参考として置いた
+- `judgement` — 利用者の指示（meta.amendments の 2 件目）で run の表を変えた: extra-queries の W2・W3 を回さない、P1（FiLM）の W3 を足す、工程から検出の W2・W3 は空・予測-noCF・正解・入れ替えの四腕。検出から工程と案 A は六腕のまま
+- `judgement` — dp_train.py が W&B を必須にし、契約 §7.10 が外部への送信を task-report に限るため、利用者の決定で WANDB_MODE=offline・仮の WANDB_API_KEY・WANDB_DIR=本契約の置き場で手元だけに記録した。資格情報は読み込まない
+- `judgement` — 実行者の確認不足で、W1 の既定の挙動を確かめる試走 1 本（w23b_chk_dpold_001_D1-L1_gt_ep1_smoke_seed42、W&B run ntyprqmi）が load_env.sh の資格情報で W&B へオンラインで送られた。契約 §7.10 の逸脱。中身は config と 1 epoch の指標で資格情報は含まない。利用者の決定で削除せず残した
+- `environment` — P3 W3 の入れ替えが torch.cuda.OutOfMemoryError で止まった。W3 は学習中 1 本 約 13.5 GiB（試走の 10.8 GiB より多い）で 1 枚 4 本は 47.4 GiB に載らない。同じ溢れで学習中の P2L W3 が落ちるのを防ぐため、実行者が始まって 56 秒の P3 W3 の正解を止めた。2 本は利用者の決定で 1 枚 3 本までの待ち行列から回し直し、止まった実験フォルダは $S/aborted/ へ移した
+- `judgement` — PD の確定は既存の pd_fix_finalize.py・pd_four_finalize.py ではなく新しい tools/pd_w23_finalize.py で行った（既存の道具は別の契約の task_id を notes と metrics に書くため）。計算は同じで、学習前と塔単独の差・予測の移し先・code_sha256 を足した
+- `judgement` — PD の予測（1 本 25MB 前後、experiments/**/predictions は同期の対象）は確定の後に版管理と同期の外 $S/pd_preds/<run>/ へ移し、経路と sha256 を run の predictions_moved.json に残した（SPEC §4 の大きな生成物の扱い）
+- `judgement` — DP の受け取り手の重み減衰を 0.01 にした。SPEC §3.1 は受け取り手の学習率（5e-4）と界面の重み減衰だけを定めるため、§2 の DP の処方（weight decay 0.01）を当てた。AdamW の 2 群で、値は界面と同じ
+- `judgement` — §8-h の前後の比べは、開始時に禁止の場所の要約値を取っていなかったため、開始（00:20 JST）より後の更新時刻で列挙して代えた。変わった 403 件は git の切り替えか andrew の w23a_* の同期によるものと git の状態で分類した
+- `environment` — bengio main の third_party/Relation-DETR が andrew と違うため、三本目と同じ重ねの BODY /home/ubuntu/slocal2/s2fix-bengio-body を読むだけで使った（PD の学習・評価は EGO_BODY=重ねの BODY）。中身の要約値は前後で一致
+- `judgement` — PD の恒等性は型と腕ごとに一回 pd_eval.py・pd_four_eval.py で評価した。W は requires_grad だけを変え学習前の順伝播を変えないため、W2・W3 の両方の学習前に当たる。各 run の学習前の予測と塔単独の差も pd_w23_finalize.py が run ごとに記録した
+
+### 申し送り
+
+- scripts/task_start_classify.py の「起点に無いと分類で確かめた経路は、無視の一覧（.git/info/exclude）に足せば切り替えで触れられない」という案内は、.gitignore の打ち消し（!experiments/**/logs/eval_meta_*.json・val_metrics_by_epoch.json・!experiments/analysis/**/*.py）が exclude より優先する経路では効かない。足しても分類は変わらなかった（audit 0-1）
+- make forbidden-check は未追跡のファイルを数えるため、並行する andrew の契約の w23a_* が同期で届くと本契約の操作によらず fail する（違反 28 件はすべて w23a_*）。三本目と同じ。追跡下か commit の差分だけを見る形を検討する
+- PD の W3（--trainable all）は学習中 1 本 約 13.5 GiB で、RTX A6000 1 枚に 3 本まで。1 epoch・6 ステップの試走（10.8 GiB）では過小に見える
+- 受け取り手を学ぶと、4 epoch の固定の長さで空の腕の val が塔単独より下がる（DP の macro Jaccard で W2 −0.101・W3 −0.133、PD の P2L W3 で overall −0.037）。W2・W3 の差を読むなら、受け取り手を学ぶときの長さの規則を先に決める必要がある
+
+### 断定できなかったこと
+
+- P3 の W2 と extra-queries の W2・W3 は回していない（利用者の決定・指示）
+- 利用者の指示による中止（把持塔 G の設計の誤りが分かったため、2026-11-02 16:5x JST、meta.amendments の 3 件目）。止めた時点で走っていたのは w23b_pd_P3-W3_shuffle_ep4_seed42 だけで、4 epoch 目の学習・評価と確定は済み、起動台本の後片付けの前で止まった（end.txt・exit_code.txt なし）。116 本すべてに値がある。REPORT の解釈と次の提案は書いていない
+- 案 A（GA）の予測の腕の信号は二本目の把持塔 G から作られており、中止の理由の G の誤りがその値にどれだけ関わるかは測っていない
 
 ## T-2026-11-01-stage2-w23-andrew
 
@@ -173,43 +216,4 @@
 - HF の重み facebook/mask2former-swin-tiny-coco-instance のカードの使用許諾
 - 折り A の val の術具の注釈の sha256（db605c06…）は前回の記録に見当たらず照合できない
 - 案 B の run の W&B の記録。train_t1b.py の既存の経路で回し、run の置き場に W&B の記録のファイルは無い
-
-## T-2026-10-23-ptower-cand5-heads-impl
-
-状態 `pass` / ホスト `Andrew` / 起票 `261` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 分岐 feat/ptower-cand5-heads-impl、起点 origin/phase0 ea73a8ba、汚れは task-start が取り込んだ契約 2 件だけ。四候補の基準値（最終段の出力の sha256）を scripts 未変更の HEAD ea73a8ba で取り、二つのプロセスで一致、試験だけの commit ed0fee7a に置いた。
-- `G2` pass — 変更後、四候補の要約値が基準値と一致（試験 4 件）。四ヘッド（memory は memory_len 0 も、stabilize は A・B・C、ssm は GPU で selective 真偽）が t より前の出力の厳密一致を通り、双方向 GRU は同じ検査で落ちた。
-
-### 起票者の誤り
-
-- `self_contradiction` — SPEC §4.3 は P-B の初期化を「クリップの先頭で GRU の状態と記憶を初期化する」と書くが、完了判定 f は境の後の出力が境の前に依らないことを求める。GRU と記憶だけを初期化すると下の TCN（受容野 253 フレーム）が境をまたぎ、f は落ちる。模型全体をクリップごとに走らせて満たした。
-- `asserted_without_measuring` — Task D-7 は煙試験を「train の道で 2 epoch、checkpoint は一時の置き場」とするが、train は evidence() で experiments/ に実験フォルダを作り（禁止領域）、W&B が始まらなければ RuntimeError を出す。指示どおり呼ぶと禁止領域に書くか失敗する。試験の中で evidence と load_fold を差し替えた。
-- `self_contradiction` — 設計の出所のカードに三版の改訂と古い記述の食い違いが残る。P-C は #14 の改訂が MSE で固定の行と #15 が L1、P-D は改訂が α {7, 19} で掃引の行と #15 が {3, 11}、P-B は #9 の改訂が GRU 単独の腕を足し備考は入れないと書く。SPEC は MSE だけを決めており、残りは exp の起票で選ぶ必要がある。
-- `self_contradiction` — §4.1 はクリップの先頭とクリップをまたぐ位置を不明とする（数えると 23）一方、完了判定 c は「クリップ間 8 箇所が不明」とし、対照を「不明の数が 7」とする。どちらの数かが読みで分かれるため、全体 23 とクリップ間 8（境を一つ無視すると 7）の両方を数えて書いた。
-
-### 逸脱
-
-- `judgement` — reset_at_clip はクリップごとに模型全体（TCN を含む）を走らせる形にした。GRU と記憶だけの初期化では完了判定 f を満たせないため。どの候補でも使える。
-- `judgement` — gap_input flag は不明の目印（クリップの先頭）1 列、delta は log Δ と不明の目印の 2 列で、不明の Δ には 256 を入れる（観測の最大 254 の上）。
-- `judgement` — 記憶は B に倣い TCN の最終段の出力を埋め込んで GRU に入れ、直近 memory_len 状態への因果の注意とゲートで読む。memory_len 0 を GRU だけの腕として足した（カード P-B #9 の三版）。
-- `judgement` — 進捗の頭は stage 1 の内部特徴から工程ごとの sigmoid、正解の工程の列に MSE。遷移行列は自己遷移を含み、直前の予測から届かない工程を除外する復号にした。
-- `judgement` — TEC の誤り区間は各段の argmax から取り、正規化はクラス重みの和。EGTP の証拠は max(0, e + p_c − p_state) で積む実装者の設計。egtp_k は既定値を置かず egtp 真のとき必須にした。
-- `judgement` — SPEC に既定の無い鍵はカードの殺し実験の中央に合わせた（ssm_state_dim 64、ssm_layers 2、memory_len 128）。base_candidate の既定は A。
-- `judgement` — 原典（OnlineTAS arXiv 2411.01122、StableSPR arXiv 2605.16387）は外部への接続を事前の確認なしに行わない規約のため引いておらず、形は SPEC とカードの記述の範囲で決めた。
-- `judgement` — 煙試験は evidence と load_fold を差し替えて一時の置き場で回した。既存の A を煙試験に足し、phase0 の版との学習後の重みの一致を scratchpad で確かめた（SPEC に無い追加の確認）。
-- `judgement` — CLAUDE.md の experiment_log と W&B は適用していない（実験を回していない。SPEC Task E-2）。README には候補名と鍵の節を足した。
-
-### 申し送り
-
-- 時間ヘッドの exp の起票では、カードに残る食い違い（P-C の進捗損失 L1 と MSE、P-D の α {3, 11} と {7, 19}、P-B の GRU 単独の腕の有無）をどちらに取るか決め、egtp_k の値を決める（実装は既定を置かず必須にした）。
-- 原典（OnlineTAS の記憶 §3.3、StableSPR の TEC §2.1 と EGTP 式 (6)、ProTAS の進捗の頭）との照合は、外部への接続の承認を得てから行う。食い違えば実装の形を直す契約が要る。
-
-### 断定できなかったこと
-
-- 記憶・TEC・EGTP・進捗の頭が原典の形と一致するか（照合していない）。
-- 実データ（17,233 フレームの保存特徴）での 1 本の所要時間。
-- SSM の逆伝播の決定性（前の契約で、決定論的な設定でも勾配が 5.7e-14 で非決定と測られている。本契約では測っていない）。
 

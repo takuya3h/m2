@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（701 件）
+## 申し送り（705 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1141,7 +1141,14 @@
 - §6.3 の予測 1 の対象は、P1 を外したため decoder-xattn の 1 型だけになった。P1 の W3 と並べるときは bengio の契約の値を使い、ホストの差を含める
 - W3 の 4 epoch 目でも val は epoch ごとに動いている（例: 案 B の正解 0.6794 → 0.7125）。長さを固定したことの影響は分けていない
 
-## 断定できなかった事項（443 件）
+### T-2026-11-01-stage2-w23-bengio
+
+- scripts/task_start_classify.py の「起点に無いと分類で確かめた経路は、無視の一覧（.git/info/exclude）に足せば切り替えで触れられない」という案内は、.gitignore の打ち消し（!experiments/**/logs/eval_meta_*.json・val_metrics_by_epoch.json・!experiments/analysis/**/*.py）が exclude より優先する経路では効かない。足しても分類は変わらなかった（audit 0-1）
+- make forbidden-check は未追跡のファイルを数えるため、並行する andrew の契約の w23a_* が同期で届くと本契約の操作によらず fail する（違反 28 件はすべて w23a_*）。三本目と同じ。追跡下か commit の差分だけを見る形を検討する
+- PD の W3（--trainable all）は学習中 1 本 約 13.5 GiB で、RTX A6000 1 枚に 3 本まで。1 epoch・6 ステップの試走（10.8 GiB）では過小に見える
+- 受け取り手を学ぶと、4 epoch の固定の長さで空の腕の val が塔単独より下がる（DP の macro Jaccard で W2 −0.101・W3 −0.133、PD の P2L W3 で overall −0.037）。W2・W3 の差を読むなら、受け取り手を学ぶときの長さの規則を先に決める必要がある
+
+## 断定できなかった事項（446 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1988,18 +1995,24 @@
 
 - W3 で全腕が下がった理由（train に寄ること、学習率が一定であること、受け取り手全体を動かす初期の乱れ）は分けて測っていない
 
-## 起票者の誤りの型（414 件）
+### T-2026-11-01-stage2-w23-bengio
+
+- P3 の W2 と extra-queries の W2・W3 は回していない（利用者の決定・指示）
+- 利用者の指示による中止（把持塔 G の設計の誤りが分かったため、2026-11-02 16:5x JST、meta.amendments の 3 件目）。止めた時点で走っていたのは w23b_pd_P3-W3_shuffle_ep4_seed42 だけで、4 epoch 目の学習・評価と確定は済み、起動台本の後片付けの前で止まった（end.txt・exit_code.txt なし）。116 本すべてに値がある。REPORT の解釈と次の提案は書いていない
+- 案 A（GA）の予測の腕の信号は二本目の把持塔 G から作られており、中止の理由の G の誤りがその値にどれだけ関わるかは測っていない
+
+## 起票者の誤りの型（417 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 112 |
-| `asserted_without_measuring` | 176 |
-| `self_contradiction` | 104 |
+| `asserted_without_measuring` | 177 |
+| `self_contradiction` | 106 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 2 |
 | `rule_read_narrowly` | 1 |
 
-合計 414 件（対を持つ契約 146 件から）
+合計 417 件（対を持つ契約 147 件から）
 
