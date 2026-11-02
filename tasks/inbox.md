@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（729 件）
+## 未処理（730 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -742,10 +742,11 @@
 - [ ] 2026-11-02 [cc] W3 は全腕が塔単独より下がり、入れ替えの腕が空の腕より高い（DX +0.0224、案 B +0.0193）。W3 の腕の差は seed 一つでは受け取り手の学習の揺れと分けられない。W3 を読むなら空と入れ替えの腕の seed を増やす（experiments/analysis/stage2_w23_andrew/REPORT.md §2）
 - [ ] 2026-11-02 [cc] 15 分ごとの点検（利用者の指示）を学習の間ずっと回した。異常は 0 件。12:00 以降は 1 枚 2 本以下の時間帯があったが未着手の run が無く付け替えの余地は無かった
 - [ ] 2026-11-02 [cc] scripts/task_start_classify.py の「起点に無い経路は .git/info/exclude に足せば切り替えで触れられない」という案内は、.gitignore の打ち消し（!experiments/**/logs/*.json など）が exclude より優先する経路では効かない。案内に条件を足すか、足した後に分類をやり直して確かめる形を検討する（audit.md 0-1）
+- [ ] 2026-11-02 [cc] 重ねの BODY ~/slocal2/s2fix-bengio-body は版管理下の台本 4 本が経路を既定値に持つため残した。片付けるなら台本の既定値の扱いを先に決める（audit.md Task E）
 - [ ] 2026-11-02 [cc] andrew を読むだけの契約で、書き込み先が experiments/ の下にあると .py・.npy・.pt・.pth・logs などが Syncthing で全台に配られる。契約の雛形か手順書に「写しは同期の対象の拡張子で置かない」を足すかを検討する（audit.md G-2）
 - [ ] 2026-11-02 [cc] 手順書の「禁止領域に触れていないことを確かめる」の make forbidden-check に TASK= が無く、そのままでは allow_write が効かず fail する。手順書に TASK= を足すかを検討する（audit.md G-3）
 
-## 処理済み（12 件）
+## 処理済み（15 件）
 
 - [x] 2026-08-15 [cx] 再実行で証跡5件がバイト一致することを確認し、台帳へ送信して要約値の一致も読み戻しで照合した。commit 2件のみ手動で作り、push と Draft PR 作成は常駐処理の自動処理に委ねる判断をした（T-2026-08-11-grasp-linear-probe）
 - [x] 2026-11-01 [cc] 案 D の q(b) は presets.detr の左右反転のとき左手と右手を入れ替える（両手・なしはそのまま）。SPEC に記載が無く、利用者が決めた（tasks/T-2026-11-01-grasp-pilot-d/audit.md C-1）
@@ -757,6 +758,9 @@
 - [x] 2026-11-02 [cc] 工程から検出の W3 が 1 本 約 7.5 時間で、完了が開始から 15 時間（amendments の (4)）を超えて 17:00 JST 頃になる見込みだが、run の表を変えずに続ける。逸脱にしない。利用者が決めた（audit.md Task D）
 - [x] 2026-11-02 [cc] GPU の記憶の不足で止まった P3 W3 の入れ替えと、実行者が止めた P3 W3 の正解は、1 枚 3 本までの待ち行列で、枠が空き次第回し直す。止まった実験フォルダは aborted/ へ移す。利用者が決めた（audit.md Task D）
 - [x] 2026-11-02 [cc] 利用者の指示で本契約を中止した（把持塔 G の設計の誤りが分かったため）。status は stopped、止めた時点までの実測で報告する。止めた run の出力は残す（audit.md 中止）
+- [x] 2026-11-02 [cc] worktree m2-four・m2-s2fix-bengio は無視された未追跡に m2 本体に無い実験の出力などがあるため残した。利用者が決めた（tasks/T-2026-11-02-bengio-align-andrew/audit.md Task E）
+- [x] 2026-11-02 [cc] worktree wt_phase0 は未追跡の spec.yaml 1 件が phase0 と違う中身のため残した。利用者が決めた（audit.md Task E）
+- [x] 2026-11-02 [cc] .git/info/exclude の bengio だけの 5 行は、23 行目を外すと 192 件が現れるため 5 行とも残した（控えも残した）。利用者が決めた（audit.md Task E）
 - [x] 2026-11-02 [cc] ~/.ssh の sha256（秘密鍵を読む）は、利用者の方針に従い事前に確かめ、「取る」の回答で取った。名前・バイト数・sha256 だけを記録した（tasks/T-2026-11-02-bengio-andrew-env-survey/audit.md A-5）
 - [x] 2026-11-02 [cc] 本契約の置き場に .py で置いた andrew の写し 8 件が Syncthing で andrew に渡った。利用者の決定で .py.txt に改名し、同期が andrew の 8 件を消した（audit.md G-2・G-2b）
 
