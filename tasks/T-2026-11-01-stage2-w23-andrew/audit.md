@@ -332,3 +332,9 @@ test との共通 0、W&B の手元記録（offline、`$S/wandb/`）が書けた
     $ git worktree remove --force $SCRATCH/wt_fc; git worktree prune
 
 同期で届いた bengio の出力は版管理に入っていないので、写しには現れない。**本契約の分岐の内容は違反 0 件**
+
+### E-5 送出
+
+    $ gh pr create --base phase0 --head feat/stage2-w23-andrew ...   → https://github.com/takuya3h/m2/pull/279
+    $ gh pr view 279 --json number,isDraft,baseRefName,headRefName,state
+    {"baseRefName":"phase0","headRefName":"feat/stage2-w23-andrew","isDraft":false,"number":279,"state":"OPEN"}

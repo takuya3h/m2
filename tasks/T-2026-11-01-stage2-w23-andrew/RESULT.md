@@ -24,7 +24,7 @@
 | f | REPORT §2・§5 の表は report.json から生成。差は各 run の記録から計算 | 4 epoch 目の予測から計算し直した値と記録の差 0.0（動画ごとも 0.0、16 本）。別の run の予測と突き合わせると差 −0.0043（overall） |
 | g | 学習と評価に通した動画 {01,02,03,06,08,09,10,11,12,13,14,15}、test {04,05,07} との共通 0 件 | 04 を混ぜた集合で共通 1 件 |
 | h | 前の契約の材料 25 本の要約値が前後で一致、仮想環境の一覧が一致、試験の失敗の名前は同じ 6 件、本契約の経路の forbidden-check の違反 0 件（audit.md:300-330） | 同じ diff の道具は本契約の新しいファイルを追加として出す。作業ツリーの forbidden-check は bengio の出力 30 件を違反として拾う |
-| i | PR は下の §7 | 分岐 `feat/stage2-w23-andrew`、base phase0 |
+| i | PR #279、base phase0、isDraft false、OPEN | head は `feat/stage2-w23-andrew` |
 
 ## 3. 実測
 
@@ -73,5 +73,5 @@ W1 との並べ（参考。W1 は前の契約の run、すべて andrew）: 正�
 
 ## 7. 送出
 
-- PR: 起票後に記す
+- PR: #279（base phase0、isDraft false、OPEN、head `feat/stage2-w23-andrew`）
 - `make task-report`: 送出後に記す
