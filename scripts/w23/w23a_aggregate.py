@@ -45,6 +45,11 @@ def wall_seconds(d: Path):
         return None
 
 
+def server_of(run):
+    f = P1DIR / str(run) / "server.txt"
+    return f.read_text().strip() if run and f.exists() else None
+
+
 def diff(a: dict, b: dict, keys=KEYS) -> dict:
     return {k: (a[k] - b[k]) if a.get(k) is not None and b.get(k) is not None else None for k in keys}
 
@@ -121,7 +126,8 @@ def main():
     # P1 の参考（直しの契約の report.json の P1-W1・P1-W2。本契約では回さない。利用者の指示 2026-11-02）
     fix = json.loads(FIX_REPORT.read_text())["tables"]
     res["p1_reference"] = {typ: {arm: {"value": fix[typ]["rows"][arm]["value"], "delta_empty": fix[typ]["rows"][arm].get("delta_empty"),
-                                       "source": fix[typ]["rows"][arm]["source"], "run": fix[typ]["rows"][arm].get("run")}
+                                       "source": fix[typ]["rows"][arm]["source"], "run": fix[typ]["rows"][arm].get("run"),
+                                       "server": server_of(fix[typ]["rows"][arm].get("run"))}
                                  for arm in ARMS if arm in fix[typ]["rows"]} for typ in ("P1-W1", "P1-W2")}
     # §6.3 の予測（記述のための事前の記録）
     pred1 = {}

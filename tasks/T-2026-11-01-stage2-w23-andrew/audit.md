@@ -264,3 +264,62 @@ test との共通 0、W&B の手元記録（offline、`$S/wandb/`）が書けた
   02:39 の点検で、同じ step（同じ seed なので同じバッチ）の損失の表示が DX の W3 で W1 より 3〜5 高い水準にあったことも記録する
 - 点検 07:24: 最初の巡（W3 の 6 本）が 07:17〜07:20 に rc 0 で終わり、次の巡（各 GPU に W3 1 本・W2 2 本）が始まった。6 本とも後処理の記録で
   学習前の恒等性（塔単独との差 0）、凍結部の一致、test との共通 0、W&B の手元記録あり。所要 5.82〜5.87 時間。証跡を commit して push した
+- 点検 07:39〜15:24（15 分ごと）: 異常（Traceback・非数・OOM・CUDA error・落ちた run）は 0 件。本契約以外の compute プロセスは 0 件
+  （14:54 に 1 件と出たのは本契約の後処理 `w23a_finalize.py` で、数えの除外の語に入っていなかった）。空きは 1.5 TB のまま。
+  12:00 以降は 1 枚 2 本以下の時間帯があったが、未着手の run が無く付け替えの余地は無かった。運用は変えていない
+- 損失の表示の観察: 02:39 に案 B の W3 で 33〜36 と出たのは epoch 3 の 2,500 step の重いバッチ（W1 の同じ step でも 36.1〜36.3）。発散ではない
+
+### 終わり（15:13:28 に 16 本目）
+
+| run | 終わり | rc | 所要（時間） |
+|---|---|---|---:|
+| DX W3 空・正解・入れ替え | 07:17〜07:20 | 0 | 5.82〜5.85 |
+| B W3 空・正解・入れ替え | 07:17〜07:21 | 0 | 5.82〜5.87 |
+| B W3 予測-noCF・DX W3 予測-noCF | 12:37・12:45 | 0 | 5.33・5.42 |
+| DX W2 空・正解 | 11:47・11:42 | 0 | 4.44・4.41 |
+| B W2 空・正解 | 12:00・12:06 | 0 | 4.70・4.76 |
+| DX W2 入れ替え・予測-noCF | 14:56・15:13 | 0 | 3.24・3.12 |
+| B W2 予測-noCF・入れ替え | 15:06・15:10 | 0 | 3.11・3.39 |
+
+学習の開始（01:28）から 13.8 時間。学習の開始の前の見積もり（10.5〜12.9 時間）を超え、点検 02:09 の見直し（14〜15 時間）の範囲に入った。
+16 本すべてで後処理の記録が、学習の経路の中の学習前の出力と塔単独の予測の差 0（score・box・ラベル）、凍結部の要約値の前後一致、W&B の手元記録を示した。
+定期の点検 aac653a2 を 15:24 に止めた。
+
+## Task E — 集計・検証・報告（15:24〜）
+
+### E-1 集計（`$A/report.json`、道具 `scripts/w23/w23a_aggregate.py --recompute`、表 `scripts/w23/w23a_report.py` → `report_tables.md`）
+
+    $ PYTHONPATH=src:scripts .venv/bin/python scripts/w23/w23a_aggregate.py --out $A/report.json --recompute
+    acceptance_e: expected 16, measured 16, hosts_by_type {DX: [andrew], B: [andrew]}, unmeasured [], control_nonexistent_name_count 0
+    acceptance_g: videos_used 01 02 03 06 08 09 10 11 12 13 14 15、overlap []、control_overlap_with_04 ["04"]
+    acceptance_f: recompute_max_abs_diff 0.0、recompute_per_video_max_abs_diff 0.0（16 本。4 epoch 目の予測から M.summary で計算し直した値と後処理の記録の差）
+    predictions: 1 DX W1 +0.0021 → W3 +0.0145（当たり）、2 DX −0.0327・B −0.0375（当たり）
+
+`REPORT.md` = `report_head.md`（手で書いた記述。数値は report.json から写した）＋ `report_tables.md`（生成）。
+
+### E-1 終了時の試験と仮想環境（`$S/end/`）
+
+    $ CUDA_VISIBLE_DEVICES="" PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider -rfE --continue-on-collection-errors
+    6 failed, 979 passed, 5 skipped, 26 warnings in 29.74s
+    $ diff $S/start/a4_fail_names.txt $S/end/fail_names.txt   → 差なし（失敗の名前は開始時と同じ 6 件）
+    .venv 108 行 9c7be5c9…、.venv-relation-detr 72 行 a74c9c78…（開始時と一致）
+
+開始時も 979 passed（二本目の記録は 975 passed。失敗の名前は同じ。起点の違いで試験が増えた分とみる）。
+
+### E-1 禁止の場所の不変
+
+- 材料の照合を終了時にもう一度回した（`$S/end/material_end.json`）: 前の契約の信号・検出塔の重み・案 B の見取りと地図・把持の注釈の 25 本の sha256 が開始時と全件一致
+- `git diff --name-status 392cf287 -- . ':!scripts/w23' ':!tasks/T-2026-11-01-stage2-w23-andrew' ':!experiments/analysis/stage2_w23_andrew' ':!experiments/phase1/w23a_*'` → 空（README.md を除く。README は Task E-3 で足した）。
+  陽性対照: 同じ命令で `scripts/w23` を除外から外すと、本契約の新しいファイルが `A` として出る
+- `third_party/`・`data/raw`・`data/external`・注釈・凍結源・既存の checkpoint・既存の仮想環境は触れていない（上の diff と要約値で確かめた）
+
+### E-2 forbidden-check（作業ツリー、14:0x の試しと同じ結果）
+
+    $ source .venv/bin/activate && make forbidden-check TASK=T-2026-11-01-stage2-w23-andrew
+    status fail、changed 495、permitted 453、violations 30
+
+違反 30 件の内訳: `experiments/analysis/stage2_w23_bengio/` 5 件、`experiments/phase1/w23b_*` 25 件（並行する bengio の契約の出力が同期で届いたもの。本契約の操作ではない）。
+**本契約の経路（`w23a_`・`stage2_w23_andrew`・`scripts/w23`・本契約の tasks/）の違反 0 件。** 分岐の HEAD の写しでの結果は下に足す
+
+完了判定 f の陽性対照: DX W2 正解の記録に、DX W2 空の 4 epoch 目の予測（`val_ctrl_best.json.gz`）から `M.summary` で計算した値を突き合わせると、
+差は overall −0.004338・標的群 −0.007732・陰性対照群 −0.000301（0 でない）
