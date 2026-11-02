@@ -323,3 +323,12 @@ test との共通 0、W&B の手元記録（offline、`$S/wandb/`）が書けた
 
 完了判定 f の陽性対照: DX W2 正解の記録に、DX W2 空の 4 epoch 目の予測（`val_ctrl_best.json.gz`）から `M.summary` で計算した値を突き合わせると、
 差は overall −0.004338・標的群 −0.007732・陰性対照群 −0.000301（0 でない）
+
+### E-2 forbidden-check（分岐の HEAD 7bdd21ae の写し）
+
+    $ git worktree add --detach $SCRATCH/wt_fc HEAD; cd $SCRATCH/wt_fc
+    $ /home/ubuntu/slocal2/m2/.venv/bin/python tools/check_forbidden.py --task T-2026-11-01-stage2-w23-andrew    （make は写しに .venv が無いため Makefile の行を直接）
+    rc 0、status pass、changed 509、permitted 493、violations 0
+    $ git worktree remove --force $SCRATCH/wt_fc; git worktree prune
+
+同期で届いた bengio の出力は版管理に入っていないので、写しには現れない。**本契約の分岐の内容は違反 0 件**

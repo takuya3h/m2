@@ -24,7 +24,7 @@ deviations:
   - {type: judgement, note: "Task D-2 の INTERIM は検出から工程の分の後に書く定めだが、本契約に検出から工程の型が無く該当しない。代わりに W3 の最初の 6 本の後（f7babc26）と W2 の 4 本の後（b6bab0fb）に証跡を push した"}
   - {type: judgement, note: "把持の注釈 6 本の照合を、記録の無い sha256 ではなく、一本目の b1_ann_check.json と二本目の acceptance_report.json の中身の数えとの照合で行った（train と val のファイルだけ開いた）"}
   - {type: judgement, note: "利用者の指示の前に始めた恒等性と学ぶ集合の検査は、P1 と予測-CF・正解予測-CF の分も含めて最後まで回した。記録として残すが run の表には入らない"}
-  - {type: environment, note: "作業ツリーの make forbidden-check は、同期で届いた並行する bengio の契約の出力（experiments/phase1/w23b_* と experiments/analysis/stage2_w23_bengio/）30 件を違反として fail を返す。本契約の経路の違反は 0 件。届いたファイルには触れていない"}
+  - {type: environment, note: "作業ツリーの make forbidden-check は、同期で届いた並行する bengio の契約の出力（experiments/phase1/w23b_* と experiments/analysis/stage2_w23_bengio/）30 件を違反として fail を返す。本契約の経路の違反は 0 件。届いたファイルには触れていない。分岐の HEAD 7bdd21ae の写しで同じ検査器を回すと status pass・違反 0 件"}
 
 issuer_defects:
   - type: asserted_without_measuring
@@ -75,7 +75,6 @@ followups:
   - "W3 の 4 epoch 目でも val は epoch ごとに動いている（例: 案 B の正解 0.6794 → 0.7125）。長さを固定したことの影響は分けていない"
 
 unknowns:
-  - "分岐の HEAD の写しでの forbidden-check の結果は、本 result.yaml の commit の後に audit.md の E-2 に足す"
   - "W3 で全腕が下がった理由（train に寄ること、学習率が一定であること、受け取り手全体を動かす初期の乱れ）は分けて測っていない"
 
 commits:
