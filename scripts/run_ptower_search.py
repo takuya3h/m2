@@ -23,6 +23,51 @@ from tower_search_common import (
     write_json,
 )
 
+# 既定の公開先は dlsta の探索の置き場。別の契約は環境変数で置き場を分ける（既定の挙動は変えない）。
+PUBLISH_DEFAULT = "experiments/phase1/stage1_ptower_search"
+
+
+def publish_root():
+    return ROOT / os.environ.get("TOWER_SEARCH_PHASE_PUBLISH", PUBLISH_DEFAULT)
+
+
+def install_step_log(cfg, directory):
+    """``TOWER_SEARCH_STEP_LOG`` があるときだけ、backbone の学習の一歩ごとの時刻を記録する。
+
+    micro-step の入口の時刻、optimizer step の後の時刻、val の始めと終わりの時刻を書く。
+    ``TOWER_SEARCH_LOSS_LOG=1`` のときだけ micro-step の損失（この rank の和）を 16 進で書く
+    （値を読むと GPU と同期するため、速さを測る run では書かない）。戻り値は元に戻す関数。
+    """
+    import stage1_ptower_r3_dist as dist_path
+    rank = os.environ.get("RANK", "0")
+    path = Path(directory) / f"{cfg.action}_steps_rank{rank}.jsonl"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    handle = path.open("a", buffering=1)
+    record_loss = os.environ.get("TOWER_SEARCH_LOSS_LOG") == "1"
+    original_micro, original_predictions = dist_path.micro_step, r3.frame_predictions
+
+    def timed_micro(*args, **kwargs):
+        begin = time.monotonic()
+        result = original_micro(*args, **kwargs)
+        row = {"event": "micro", "t": begin}
+        if record_loss:
+            row["loss_hex"] = float(result).hex()
+        handle.write(json.dumps(row) + "\n")
+        return result
+
+    def timed_predictions(*args, **kwargs):
+        handle.write(json.dumps({"event": "val_start", "t": time.monotonic()}) + "\n")
+        result = original_predictions(*args, **kwargs)
+        handle.write(json.dumps({"event": "val_end", "t": time.monotonic()}) + "\n")
+        return result
+
+    dist_path.micro_step, r3.frame_predictions = timed_micro, timed_predictions
+
+    def restore():
+        dist_path.micro_step, r3.frame_predictions = original_micro, original_predictions
+        handle.close()
+    return handle, restore
+
 
 def publish(manager, destination):
     out = Path(destination) / manager.exp_id
@@ -87,6 +132,12 @@ def main(cfg):
                         "runtime": runtime_state(),
                         "effective_batch": int(cfg.ft_batch_size) * int(cfg.ft_accum_steps)})
 
+        def step(self, *args, **kwargs):
+            result = super().step(*args, **kwargs)
+            if step_handle is not None:
+                step_handle.write(json.dumps({"event": "optimizer", "t": time.monotonic()}) + "\n")
+            return result
+
     cfg = base.enrich(cfg, {"task_id": TASK, "point": point, "ft_lr": point["lr"],
                             "ft_weight_decay": point["phase_weight_decay"],
                             "ft_accum_steps": point["accum"], "step": "stage1_ptower_search"})
@@ -114,9 +165,14 @@ def main(cfg):
         allowed = set(base.folds()[cfg.fold]["train"] + base.folds()[cfg.fold]["val"])
         extract_manifest_source = base.manifests
         base.manifests = lambda config: [c for c in extract_manifest_source(config) if c["video"] in allowed]
+    step_handle, restore_step_log = None, None
+    if os.environ.get("TOWER_SEARCH_STEP_LOG") and cfg.action == "finetune":
+        step_handle, restore_step_log = install_step_log(cfg, os.environ["TOWER_SEARCH_STEP_LOG"])
     try:
         r3.main(cfg)
     finally:
+        if restore_step_log is not None:
+            restore_step_log()
         torch.optim.AdamW = adamw
         base.ExperimentManager = original_manager
         base.tracking.log = original_log
@@ -125,7 +181,7 @@ def main(cfg):
             if manager.exp_dir is not None:
                 write_json(manager.exp_dir / "search_epoch_history.json", epoch_history)
                 if not cfg.get("control_frames", 0) and not cfg.get("control_only", False):
-                    publish(manager, ROOT / "experiments/phase1/stage1_ptower_search")
+                    publish(manager, publish_root())
                 write_json(work / f"{cfg.action}_last_run.json", {
                     "exp_id": manager.exp_id, "path": str(manager.exp_dir),
                     "config": OmegaConf.to_container(cfg, resolve=True)})

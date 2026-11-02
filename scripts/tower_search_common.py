@@ -8,8 +8,10 @@ import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-TASK = "T-2026-10-22-tower-reselect-search-dlsta"
-SCRATCH = Path.home() / "m2-scratch" / TASK
+# 既定は dlsta の探索の契約。別の契約が同じ道具を使うときだけ環境変数で上書きする
+# （T-2026-11-02-hostdiff-*。既定の挙動は変えない）。
+TASK = os.environ.get("TOWER_SEARCH_TASK", "T-2026-10-22-tower-reselect-search-dlsta")
+SCRATCH = Path(os.environ.get("TOWER_SEARCH_SCRATCH", str(Path.home() / "m2-scratch" / TASK)))
 ANALYSIS = ROOT / "experiments/analysis/tower_reselect_search_dlsta"
 POINTS = ANALYSIS / "points.csv"
 
