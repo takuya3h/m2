@@ -1,6 +1,6 @@
 result_version: 3
 task_id: "T-2026-11-01-stage2-w23-bengio"
-status: pass   # 【終了後】PD の 16 本の完了を確かめて決める
+status: stopped
 host: "bengio"
 branch: "feat/stage2-w23-bengio"
 pr: 278
@@ -74,5 +74,7 @@ followups:
 
 unknowns:
   - "P3 の W2 と extra-queries の W2・W3 は回していない（利用者の決定・指示）"
+  - "利用者の指示による中止（把持塔 G の設計の誤りが分かったため、2026-11-02 16:5x JST、meta.amendments の 3 件目）。止めた時点で走っていたのは w23b_pd_P3-W3_shuffle_ep4_seed42 だけで、4 epoch 目の学習・評価と確定は済み、起動台本の後片付けの前で止まった（end.txt・exit_code.txt なし）。116 本すべてに値がある。REPORT の解釈と次の提案は書いていない"
+  - "案 A（GA）の予測の腕の信号は二本目の把持塔 G から作られており、中止の理由の G の誤りがその値にどれだけ関わるかは測っていない"
 
 commits: []

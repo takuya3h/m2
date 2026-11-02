@@ -271,3 +271,24 @@ exe の basename に `python3.11` が 1 件あるのは列挙の道具自身（`
 - 報告: `REPORT.md` は `tools/make_report.py` が `final/aggregate.json`（`tools/aggregate.py --part all`）から作る。`RESULT.md`・`result.yaml`・`resolved_refs.md`（inject_verbatim の 7 アンカーの原文を機械で切り出した）、
   `README.md` と `docs/experiment_log.md` の項を書いた。PD の残り 6 本の値の箇所は「【終了後】」の印を置いた
 - PD の参考の値（W1 と P1 の W2）は直しの契約の `report.json` の表から読んだ（`tools/aggregate.py`）
+- 14:0x JST: P1 W3 の予測-noCF・入れ替えが終わった（rc=0、学習前と塔単独の差 0.0、overall 0.694144・0.688607）。GPU 1 は P3 W3 の正解 1 本だけになり、使用率 39%
+- 14:42 JST: P1 W3 の空・正解が終わった（rc=0、学習前と塔単独の差 0.0、overall 0.669506・0.702851）。P1 W3 の 4 腕が揃った。pd_queue の 8 列はすべて終わり、残りは pd_sched.sh の P3 W3 の正解・入れ替え（各 GPU 1 本）
+- 16:21 JST: P3 W3 の正解（回し直し）が終わった（rc=0、学習前と塔単独の差 0.0、overall 0.691882）。残りは P3 W3 の入れ替え（GPU 0）だけ
+
+## 中止（利用者の指示、2026-11-02 16:5x JST、`meta.amendments` の 3 件目）
+
+原文: 「本契約をここで止める。走っている run をすべて止め、新しい run を起動しない。止めた時点までの実測（終わった run の値、止めた run の名前と止めた epoch）を
+RESULT.md と audit.md に書き、status は stopped とする。理由は「利用者の指示による中止（把持塔 G の設計の誤りが分かったため）」。止めた run の出力は消さずに残す。
+commit・push・PR（base phase0）・make task-report まで行う。meta.amendments に利用者の指示として記録する。」（直前に「実験設定に不備があったので直ちに実験を中止して」）
+
+- 止めた時点で走っていたのは `w23b_pd_P3-W3_shuffle_ep4_seed42` だけ（GPU 0。待ち行列 `pd_sched.sh` の最後の 1 本）。ほかの 115 本は終わっていた
+  - 16:56:55 JST: `pd_sched.sh`（PID 3882866）、起動台本 `run_pd_w23_bengio.sh`（3971618・3971620）、確定 `pd_w23_finalize.py`（4046560）に SIGTERM。`train_t1b.py` の過程はもう無かった
+  - 止めた epoch: 4 epoch 目（epoch 3）の学習と val の評価は終わっていた（train.log `[t1b] DONE best@ep3 mAP=0.6970 (init 0.7273)`）。
+    確定の出力（`w23_metrics.json`・`notes.md`・`predictions_moved.json`）は 16:56:57 JST に書かれ、予測 2 ファイルは `$S/pd_preds/` へ移っていた（sha256 c5067147…・0ac1aae5…）。
+    確定の過程は SIGTERM の後もしばらく残り、16:57 に二度目の SIGTERM で消えた
+  - 起動台本を止めたので、この run には `end.txt` と `exit_code.txt` が無い（ほかの記録は揃っている）。出力は消さずに残した
+- GPU の compute のプロセス 0 件を確かめた。15 分ごとの確認（このセッションの定期実行）も止めた
+- 最終の集計（16:5x JST、`final/aggregate.json`）: PD 16/16、DP と案 A 100/100。`final/test_audit.json`: 116 本で test との共通 0、型ごとのホストはすべて {bengio}
+- REPORT.md は `tools/make_report.py --status-note` で冒頭に中止の旨を置いて作り直した。予測 §6.3 の照合は (1) 外れ（W3 が W1 より大きい型は P1 だけ）、(2) 当たり（P2L −0.0372、P3 −0.0292、P1 −0.0578）
+- 案 A（GA）の予測の腕（予測-noCF・予測-CF・正解予測-CF・入れ替え）の信号は、二本目（T-2026-11-01-grasp-pilot-g）の把持塔 G の予測から作られている（`$S/copied/grasp-pilot-g/signals/A/`）。中止の理由に関わる可能性がある
+- 17:0x JST（最後）: `make forbidden-check` をもう一度回した（`final/forbidden_check_end.txt`）。status fail、exit 2、changed 1,474、違反 32 件はすべて `w23a_*`（andrew の同期）、**本契約の経路 0 件**

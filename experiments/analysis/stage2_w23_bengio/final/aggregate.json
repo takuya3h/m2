@@ -9511,16 +9511,16 @@
      "frozen_unchanged": true,
      "d_tower_AP": -0.029226051530680253,
      "d_empty_AP": 0.0,
-     "d_shuffle_AP": null,
+     "d_shuffle_AP": 0.0011220700915961501,
      "d_tower_target_AP": -0.009821379592635737,
      "d_empty_target_AP": 0.0,
-     "d_shuffle_target_AP": null,
+     "d_shuffle_target_AP": 0.01060762990884867,
      "d_tower_control_AP": -0.020098854676507627,
      "d_empty_control_AP": 0.0,
-     "d_shuffle_control_AP": null,
+     "d_shuffle_control_AP": 0.00688420714281146,
      "d_tower_AP50": -0.020653358618486606,
      "d_empty_AP50": 0.0,
-     "d_shuffle_AP50": null
+     "d_shuffle_AP50": -0.0014289120715720305
     },
     "pred_noCF": {
      "run": "w23b_pd_P3-W3_pred_noCF_ep4_seed42",
@@ -9568,16 +9568,130 @@
      "frozen_unchanged": true,
      "d_tower_AP": -0.029322224873497005,
      "d_empty_AP": -9.617334281675216e-05,
-     "d_shuffle_AP": null,
+     "d_shuffle_AP": 0.001025896748779398,
      "d_tower_target_AP": -0.019272375006435305,
      "d_empty_target_AP": -0.009450995413799568,
-     "d_shuffle_target_AP": null,
+     "d_shuffle_target_AP": 0.0011566344950491025,
      "d_tower_control_AP": -0.025932641876081908,
      "d_empty_control_AP": -0.005833787199574281,
-     "d_shuffle_control_AP": null,
+     "d_shuffle_control_AP": 0.0010504199432371797,
      "d_tower_AP50": -0.02100265775586385,
      "d_empty_AP50": -0.00034929913737724583,
-     "d_shuffle_AP50": null
+     "d_shuffle_AP50": -0.0017782112089492763
+    },
+    "gt": {
+     "run": "w23b_pd_P3-W3_gt_ep4_seed42",
+     "host": "bengio",
+     "AP": 0.6918815397445995,
+     "target_AP": 0.7721895963330565,
+     "control_AP": 0.6387447698973298,
+     "AP50": 0.8295831909441627,
+     "per_video": {
+      "09": 0.6676082475170311,
+      "10": 0.6109458852547937
+     },
+     "per_class": {
+      "Bipolar Forceps": 0.7269402643392905,
+      "Electric Cautery": 0.9568442438519036,
+      "Forceps": 0.28972124662864335,
+      "Gauze": 0.23267961562229136,
+      "Hook": 0.5868076075144077,
+      "Mouth Gag": 0.7795683688119424,
+      "Needle Holders": 0.7840159702021996,
+      "Raspatory": 0.7810415252187289,
+      "Retractor": NaN,
+      "Scalpel": 0.8428286469012392,
+      "Scissors": 0.6530254269726381,
+      "Skewer": 0.9336625405604014,
+      "Suction Cannula": 0.7948450902346528,
+      "Syringe": 0.5764750046456227,
+      "Tweezers": 0.7478860049204322
+     },
+     "per_epoch_mAP": {
+      "-1": 0.7273450248398429,
+      "0": 0.6831466636851727,
+      "1": 0.6848276423180255,
+      "2": 0.6635418125820343,
+      "3": 0.6918815397445995
+     },
+     "init": 0.7273450248398429,
+     "result_epoch": 3,
+     "init_vs_tower_alone": {
+      "comparable": true,
+      "max_abs_score_diff": 0.0,
+      "max_abs_bbox_diff_px": 0.0,
+      "label_mismatch": 0
+     },
+     "frozen_unchanged": true,
+     "d_tower_AP": -0.03546348509524333,
+     "d_empty_AP": -0.006237433564563077,
+     "d_shuffle_AP": -0.005115363472966927,
+     "d_tower_target_AP": -0.022885204522033242,
+     "d_empty_target_AP": -0.013063824929397505,
+     "d_shuffle_target_AP": -0.0024561950205488348,
+     "d_tower_control_AP": -0.03391841186082001,
+     "d_empty_control_AP": -0.013819557184312381,
+     "d_shuffle_control_AP": -0.006935350041500921,
+     "d_tower_AP50": -0.0222242404810733,
+     "d_empty_AP50": -0.0015708818625866927,
+     "d_shuffle_AP50": -0.002999793934158723
+    },
+    "shuffle": {
+     "run": "w23b_pd_P3-W3_shuffle_ep4_seed42",
+     "host": "bengio",
+     "AP": 0.6969969032175665,
+     "target_AP": 0.7746457913536053,
+     "control_AP": 0.6456801199388307,
+     "AP50": 0.8325829848783214,
+     "per_video": {
+      "09": 0.6882244483616314,
+      "10": 0.6208298724129451
+     },
+     "per_class": {
+      "Bipolar Forceps": 0.6876271807939556,
+      "Electric Cautery": 0.9531061338292331,
+      "Forceps": 0.337129159843193,
+      "Gauze": 0.23997798088336267,
+      "Hook": 0.5738076004271667,
+      "Mouth Gag": 0.7988615446366084,
+      "Needle Holders": 0.7739489168147938,
+      "Raspatory": 0.7815416892490767,
+      "Retractor": NaN,
+      "Scalpel": 0.8869182279134324,
+      "Scissors": 0.6640153976081927,
+      "Skewer": 0.9245572452878346,
+      "Suction Cannula": 0.7938909907746748,
+      "Syringe": 0.5925846135237275,
+      "Tweezers": 0.7499899634606767
+     },
+     "per_epoch_mAP": {
+      "-1": 0.7273450248398429,
+      "0": 0.6860196896938581,
+      "1": 0.6821010401434937,
+      "2": 0.6863274763225107,
+      "3": 0.6969969032175665
+     },
+     "init": 0.7273450248398429,
+     "result_epoch": 3,
+     "init_vs_tower_alone": {
+      "comparable": true,
+      "max_abs_score_diff": 0.0,
+      "max_abs_bbox_diff_px": 0.0,
+      "label_mismatch": 0
+     },
+     "frozen_unchanged": true,
+     "d_tower_AP": -0.030348121622276403,
+     "d_empty_AP": -0.0011220700915961501,
+     "d_shuffle_AP": 0.0,
+     "d_tower_target_AP": -0.020429009501484408,
+     "d_empty_target_AP": -0.01060762990884867,
+     "d_shuffle_target_AP": 0.0,
+     "d_tower_control_AP": -0.026983061819319087,
+     "d_empty_control_AP": -0.00688420714281146,
+     "d_shuffle_control_AP": 0.0,
+     "d_tower_AP50": -0.019224446546914575,
+     "d_empty_AP50": 0.0014289120715720305,
+     "d_shuffle_AP50": 0.0
     }
    },
    "W1_ref": {
@@ -9656,7 +9770,236 @@
    }
   },
   "P1": {
-   "W3": {},
+   "W3": {
+    "empty": {
+     "run": "w23b_pd_P1-W3_empty_ep4_seed42",
+     "host": "bengio",
+     "AP": 0.6695064067493597,
+     "target_AP": 0.7247535352398087,
+     "control_AP": 0.6376211494160522,
+     "AP50": 0.8061539095885112,
+     "per_video": {
+      "09": 0.6238465147715901,
+      "10": 0.6092187118144644
+     },
+     "per_class": {
+      "Bipolar Forceps": 0.6284569155089603,
+      "Electric Cautery": 0.9588029611275943,
+      "Forceps": 0.22330030737479203,
+      "Gauze": 0.24117624646093766,
+      "Hook": 0.597600153880156,
+      "Mouth Gag": 0.7707325946288671,
+      "Needle Holders": 0.8035889915279155,
+      "Raspatory": 0.8106160621968252,
+      "Retractor": NaN,
+      "Scalpel": 0.9034783360275397,
+      "Scissors": 0.615545006717326,
+      "Skewer": 0.9069527003934963,
+      "Suction Cannula": 0.8006357069604901,
+      "Syringe": 0.37426366207222195,
+      "Tweezers": 0.7379400496139139
+     },
+     "per_epoch_mAP": {
+      "-1": 0.7273450248398429,
+      "0": 0.6969929712350019,
+      "1": 0.680882462410263,
+      "2": 0.6668711316047484,
+      "3": 0.6695064067493597
+     },
+     "init": 0.7273450248398429,
+     "result_epoch": 3,
+     "init_vs_tower_alone": {
+      "comparable": true,
+      "max_abs_score_diff": 0.0,
+      "max_abs_bbox_diff_px": 0.0,
+      "label_mismatch": 0
+     },
+     "frozen_unchanged": true,
+     "d_tower_AP": -0.057838618090483185,
+     "d_empty_AP": 0.0,
+     "d_shuffle_AP": -0.0191003158553118,
+     "d_tower_target_AP": -0.07032126561528107,
+     "d_empty_target_AP": 0.0,
+     "d_shuffle_target_AP": -0.04807324359578413,
+     "d_tower_control_AP": -0.03504203234209757,
+     "d_empty_control_AP": 0.0,
+     "d_shuffle_control_AP": -0.0016440474002233918,
+     "d_tower_AP50": -0.045653521836724775,
+     "d_empty_AP50": 0.0,
+     "d_shuffle_AP50": -0.018222138971014656
+    },
+    "pred_noCF": {
+     "run": "w23b_pd_P1-W3_pred_noCF_ep4_seed42",
+     "host": "bengio",
+     "AP": 0.6941439165258269,
+     "target_AP": 0.7819374904503824,
+     "control_AP": 0.6382812588856861,
+     "AP50": 0.8385391805396708,
+     "per_video": {
+      "09": 0.6714153063782782,
+      "10": 0.61618309757925
+     },
+     "per_class": {
+      "Bipolar Forceps": 0.7473313289742032,
+      "Electric Cautery": 0.9600867560779832,
+      "Forceps": 0.26796022936398417,
+      "Gauze": 0.258472195321437,
+      "Hook": 0.5648555860033555,
+      "Mouth Gag": 0.7579445788089832,
+      "Needle Holders": 0.7968084597092652,
+      "Raspatory": 0.7854033877022353,
+      "Retractor": NaN,
+      "Scalpel": 0.8937740028070835,
+      "Scissors": 0.665491312412333,
+      "Skewer": 0.9514835202914635,
+      "Suction Cannula": 0.799442996333701,
+      "Syringe": 0.5316952124769265,
+      "Tweezers": 0.7372652650786231
+     },
+     "per_epoch_mAP": {
+      "-1": 0.7273450248398429,
+      "0": 0.7012217196021673,
+      "1": 0.6795661379602393,
+      "2": 0.6893538579053349,
+      "3": 0.6941439165258269
+     },
+     "init": 0.7273450248398429,
+     "result_epoch": 3,
+     "init_vs_tower_alone": {
+      "comparable": true,
+      "max_abs_score_diff": 0.0,
+      "max_abs_bbox_diff_px": 0.0,
+      "label_mismatch": 0
+     },
+     "frozen_unchanged": true,
+     "d_tower_AP": -0.033201108314016015,
+     "d_empty_AP": 0.02463750977646717,
+     "d_shuffle_AP": 0.00553719392115537,
+     "d_tower_target_AP": -0.013137310404707336,
+     "d_empty_target_AP": 0.057183955210573734,
+     "d_shuffle_target_AP": 0.009110711614789602,
+     "d_tower_control_AP": -0.034381922872463666,
+     "d_empty_control_AP": 0.0006601094696339072,
+     "d_shuffle_control_AP": -0.0009839379305894846,
+     "d_tower_AP50": -0.013268250885565158,
+     "d_empty_AP50": 0.03238527095115962,
+     "d_shuffle_AP50": 0.01416313198014496
+    },
+    "gt": {
+     "run": "w23b_pd_P1-W3_gt_ep4_seed42",
+     "host": "bengio",
+     "AP": 0.7028505203044184,
+     "target_AP": 0.7884216703367988,
+     "control_AP": 0.6404231425561839,
+     "AP50": 0.8398145150737375,
+     "per_video": {
+      "09": 0.6595746819001714,
+      "10": 0.6307274177109565
+     },
+     "per_class": {
+      "Bipolar Forceps": 0.7867192371968157,
+      "Electric Cautery": 0.9614592094355615,
+      "Forceps": 0.30386546517094987,
+      "Gauze": 0.22359952638394864,
+      "Hook": 0.5875720062719922,
+      "Mouth Gag": 0.7736835433621219,
+      "Needle Holders": 0.8204807750342923,
+      "Raspatory": 0.8087951373223938,
+      "Retractor": NaN,
+      "Scalpel": 0.9269712403110095,
+      "Scissors": 0.6627289064403316,
+      "Skewer": 0.9484278502882095,
+      "Suction Cannula": 0.827920968542061,
+      "Syringe": 0.4711948865655657,
+      "Tweezers": 0.7364885319366041
+     },
+     "per_epoch_mAP": {
+      "-1": 0.7273450248398429,
+      "0": 0.7052914310548638,
+      "1": 0.6966603828910592,
+      "2": 0.7035231805621943,
+      "3": 0.7028505203044184
+     },
+     "init": 0.7273450248398429,
+     "result_epoch": 3,
+     "init_vs_tower_alone": {
+      "comparable": true,
+      "max_abs_score_diff": 0.0,
+      "max_abs_bbox_diff_px": 0.0,
+      "label_mismatch": 0
+     },
+     "frozen_unchanged": true,
+     "d_tower_AP": -0.024494504535424455,
+     "d_empty_AP": 0.03334411355505873,
+     "d_shuffle_AP": 0.01424379769974693,
+     "d_tower_target_AP": -0.006653130518290973,
+     "d_empty_target_AP": 0.0636681350969901,
+     "d_shuffle_target_AP": 0.015594891501205965,
+     "d_tower_control_AP": -0.03224003920196583,
+     "d_empty_control_AP": 0.002801993140131742,
+     "d_shuffle_control_AP": 0.0011579457399083504,
+     "d_tower_AP50": -0.011992916351498462,
+     "d_empty_AP50": 0.033660605485226314,
+     "d_shuffle_AP50": 0.015438466514211657
+    },
+    "shuffle": {
+     "run": "w23b_pd_P1-W3_shuffle_ep4_seed42",
+     "host": "bengio",
+     "AP": 0.6886067226046715,
+     "target_AP": 0.7728267788355928,
+     "control_AP": 0.6392651968162756,
+     "AP50": 0.8243760485595258,
+     "per_video": {
+      "09": 0.673290931422145,
+      "10": 0.6094765383486163
+     },
+     "per_class": {
+      "Bipolar Forceps": 0.7481851892026589,
+      "Electric Cautery": 0.9631708205231292,
+      "Forceps": 0.27561350961833625,
+      "Gauze": 0.23518417616512244,
+      "Hook": 0.48163621127138617,
+      "Mouth Gag": 0.7629963175119819,
+      "Needle Holders": 0.8194214356136125,
+      "Raspatory": 0.7351279173475862,
+      "Retractor": NaN,
+      "Scalpel": 0.886143137785398,
+      "Scissors": 0.6794574579958713,
+      "Skewer": 0.9380981329835597,
+      "Suction Cannula": 0.8226872748393637,
+      "Syringe": 0.5565795168587611,
+      "Tweezers": 0.7361930187486342
+     },
+     "per_epoch_mAP": {
+      "-1": 0.7273450248398429,
+      "0": 0.7052053401522516,
+      "1": 0.6679651190061956,
+      "2": 0.6958854143993501,
+      "3": 0.6886067226046715
+     },
+     "init": 0.7273450248398429,
+     "result_epoch": 3,
+     "init_vs_tower_alone": {
+      "comparable": true,
+      "max_abs_score_diff": 0.0,
+      "max_abs_bbox_diff_px": 0.0,
+      "label_mismatch": 0
+     },
+     "frozen_unchanged": true,
+     "d_tower_AP": -0.038738302235171385,
+     "d_empty_AP": 0.0191003158553118,
+     "d_shuffle_AP": 0.0,
+     "d_tower_target_AP": -0.022248022019496938,
+     "d_empty_target_AP": 0.04807324359578413,
+     "d_shuffle_target_AP": 0.0,
+     "d_tower_control_AP": -0.03339798494187418,
+     "d_empty_control_AP": 0.0016440474002233918,
+     "d_shuffle_control_AP": 0.0,
+     "d_tower_AP50": -0.02743138286571012,
+     "d_empty_AP50": 0.018222138971014656,
+     "d_shuffle_AP50": 0.0
+    }
+   },
    "W1_ref": {
     "empty": {
      "run": "stage2fix_pd_P1-W1_empty_ep4_seed42",
@@ -9814,7 +10157,9 @@
   "P3": [
    "bengio"
   ],
-  "P1": []
+  "P1": [
+   "bengio"
+  ]
  },
  "pd_counts": {
   "P2L": {
@@ -9823,11 +10168,11 @@
    "W1_ref": 6
   },
   "P3": {
-   "W3": 2,
+   "W3": 4,
    "W1_ref": 6
   },
   "P1": {
-   "W3": 0,
+   "W3": 4,
    "W1_ref": 6,
    "W2_ref": 6
   }

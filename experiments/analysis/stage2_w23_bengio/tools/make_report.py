@@ -233,6 +233,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--agg", required=True)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--status-note", default=None, help="冒頭に置く状態の注記（中止の理由など。数値は書かない）")
     a = ap.parse_args()
     agg = json.loads(Path(a.agg).read_text())
     dp, pd = agg["dp"], agg["pd"]
@@ -337,6 +338,9 @@ def main():
 - 数値精度は前回の経路のまま（工程から検出は bf16 の自動混合精度）
 - 工程から検出の W3 は 1 枚に 3 本までしか載らず（学習中 1 本 約 13.5 GiB）、P3 の W3 の正解・入れ替えは一度止まって回し直した（同時に回った本数が他の run と違う）
 """
+    if a.status_note:
+        head, rest = out.split("\n", 1)
+        out = f"{head}\n\n**{a.status_note}**\n{rest}"
     Path(a.out).write_text(out)
     print(f"wrote {a.out}: pd {n_pd}/16, p1={p1}, p2={p2}")
 
