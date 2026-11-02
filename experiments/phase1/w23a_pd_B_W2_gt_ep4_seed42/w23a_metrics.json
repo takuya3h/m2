@@ -1,0 +1,193 @@
+{
+  "AP": 0.7306441880016222,
+  "AP50": 0.8548254510501229,
+  "per_class_ap": {
+    "Bipolar Forceps": 0.7650401554805167,
+    "Electric Cautery": 0.9608485791539445,
+    "Forceps": 0.36437788201764454,
+    "Gauze": 0.29220593010675733,
+    "Hook": 0.644875959418119,
+    "Mouth Gag": 0.7994773238149752,
+    "Needle Holders": 0.8550257203694651,
+    "Raspatory": 0.8069101682912299,
+    "Retractor": NaN,
+    "Scalpel": 0.9083079754275097,
+    "Scissors": 0.7189492234063257,
+    "Skewer": 0.9480544972534762,
+    "Suction Cannula": 0.8328955628839686,
+    "Syringe": 0.545788853031695,
+    "Tweezers": 0.786260801367085
+  },
+  "n_images": 1515,
+  "target_AP": 0.7948203298968854,
+  "target_missing": [],
+  "control_AP": 0.6777099045431966,
+  "control_missing": [],
+  "per_video_AP": {
+    "09": 0.7113701557806735,
+    "10": 0.6446085617319375
+  },
+  "task_id": "T-2026-11-01-stage2-w23-andrew",
+  "unofficial": true,
+  "type": "B",
+  "type_name": "案 B（把持の地図を C5 に足す型）",
+  "w": "W2",
+  "arm": "gt",
+  "trainable_arg": "w2",
+  "result_selection": "final_epoch",
+  "result_epoch": 3,
+  "eval_detection_mAP": 0.7306441880016222,
+  "diff_vs_eval_detection_mAP": 0.0,
+  "init": {
+    "AP": 0.7273450248398429,
+    "AP50": 0.851807431425236,
+    "target_AP": 0.7950748008550897,
+    "control_AP": 0.6726631817581498,
+    "per_video_AP": {
+      "09": 0.704273483949694,
+      "10": 0.6420973291237674
+    },
+    "target_missing": [],
+    "control_missing": []
+  },
+  "init_diff_vs_tower": {
+    "comparable": true,
+    "max_abs_score_diff": 0.0,
+    "max_abs_bbox_diff_px": 0.0,
+    "label_mismatch": 0
+  },
+  "per_epoch": {
+    "-1": {
+      "AP": 0.7273450248398429,
+      "AP50": 0.851807431425236,
+      "target_AP": 0.7950748008550897,
+      "control_AP": 0.6726631817581498,
+      "per_video_AP": {
+        "09": 0.704273483949694,
+        "10": 0.6420973291237674
+      },
+      "target_missing": [],
+      "control_missing": []
+    },
+    "0": {
+      "AP": 0.7321892040311947,
+      "AP50": 0.8563270580322129,
+      "target_AP": 0.8009618687152642,
+      "control_AP": 0.674669607914501,
+      "per_video_AP": {
+        "09": 0.7091913022165366,
+        "10": 0.6509667844395469
+      },
+      "target_missing": [],
+      "control_missing": []
+    },
+    "1": {
+      "AP": 0.7322840276580529,
+      "AP50": 0.8573740052811682,
+      "target_AP": 0.8010572466845698,
+      "control_AP": 0.6760394021128067,
+      "per_video_AP": {
+        "09": 0.7106382254963844,
+        "10": 0.6502153039682256
+      },
+      "target_missing": [],
+      "control_missing": []
+    },
+    "2": {
+      "AP": 0.7240908897804862,
+      "AP50": 0.8478574559113222,
+      "target_AP": 0.7842904768638707,
+      "control_AP": 0.6754676767071722,
+      "per_video_AP": {
+        "09": 0.701728751540602,
+        "10": 0.6392234806423718
+      },
+      "target_missing": [],
+      "control_missing": []
+    },
+    "3": {
+      "AP": 0.7306441880016222,
+      "AP50": 0.8548254510501229,
+      "target_AP": 0.7948203298968854,
+      "control_AP": 0.6777099045431966,
+      "per_video_AP": {
+        "09": 0.7113701557806735,
+        "10": 0.6446085617319375
+      },
+      "target_missing": [],
+      "control_missing": []
+    }
+  },
+  "last_epoch_matches_best_preds": true,
+  "per_epoch_eval_detection_mAP": {
+    "-1": 0.7273450248398429,
+    "0": 0.7321892040311947,
+    "1": 0.7322840276580529,
+    "2": 0.7240908897804862,
+    "3": 0.7306441880016222
+  },
+  "gates_by_epoch": {
+    "-1": {
+      "iface_max_abs": 0.0,
+      "iface_l2": 0.0
+    },
+    "0": {
+      "iface_max_abs": 0.166774719953537,
+      "iface_l2": 4.379668235778809
+    },
+    "1": {
+      "iface_max_abs": 0.2709086537361145,
+      "iface_l2": 6.126617431640625
+    },
+    "2": {
+      "iface_max_abs": 0.3173687756061554,
+      "iface_l2": 7.355764389038086
+    },
+    "3": {
+      "iface_max_abs": 0.40194714069366455,
+      "iface_l2": 8.444714546203613
+    }
+  },
+  "receiver_motion": {
+    "iface_l2_by_param": {
+      "phase_iface.weight": 8.444714546203613
+    },
+    "receiver_keys": 30,
+    "receiver_elements": 1682323,
+    "receiver_delta_l2": 11.551855832632903,
+    "receiver_l2": 81.59494376257177,
+    "receiver_rel_delta": 0.14157563324324304,
+    "keys_not_in_det_ckpt": [],
+    "ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-stage2-w23-andrew/pd_ckpt/w23a_pd_B_W2_gt_ep4_seed42/best_t1b.pth",
+    "ckpt_sha256": "02209e0cb5365fb1ae72748c8295d83c262ba03b10bf04af5a88ea414a5dc6c0"
+  },
+  "total_trainable": 1692563,
+  "phase_params": 10240,
+  "frozen_unchanged": true,
+  "videos": {
+    "train": [
+      "01",
+      "02",
+      "03",
+      "06",
+      "08",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15"
+    ],
+    "val_evaluated": [
+      "09",
+      "10"
+    ],
+    "test_overlap": []
+  },
+  "server": "andrew",
+  "seconds_to_finalize": 17128.851241,
+  "wandb": {
+    "mode": "offline",
+    "run_id": "m8mdw9gr",
+    "dir": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-stage2-w23-andrew/wandb/wandb/offline-run-20261102_030557-m8mdw9gr"
+  }
+}
