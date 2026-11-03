@@ -1,0 +1,5 @@
+- [x] 2026-11-02 [cc] プリフライト P2 の FAIL（本体 .venv に fvcore が無い）は、利用者の「2」で構造的な FAIL として承認して続けた（tasks/T-2026-11-02-hostdiff-andrew/audit.md 0.1）
+- [x] 2026-11-03 [cc] 利用者の指示で、測定の途中に終わった run の記録を commit・push した。PR はそのとき作らず、全 run の後に #286 を作った（audit.md C・D）
+- [ ] 2026-11-03 [cc] プリフライト P2 は本体 .venv で Relation-DETR の拡張を import し、共有の torch_extensions の置き場で MS-Deform-Attn の .so を作り直す。検出塔の .venv-relation-detr で回すか、読むだけの検査に替えるかを検討する（tools/preflight_task.py:217、audit.md 0.3）
+- [ ] 2026-11-03 [cc] 検出塔 seed 42 の二回（42a・42b）は同じ設定でも値と停止の epoch（21 と 16）が違った。原因（fp16・MS-Deform-Attn の加算の順など）は確かめていない。後の比べ（SPEC §6.2）で同じ seed の揺れの扱いを決めるときの材料（experiments/analysis/hostdiff_andrew_bengio/andrew/REPORT.md §2）
+- [ ] 2026-11-03 [cc] repo 直下に空の run_ptower_search.log（11-02 22:45 JST）が残る。本契約の置き場の外なので commit も削除もしていない。消すかは利用者の判断（~/slocal2/m2/run_ptower_search.log）

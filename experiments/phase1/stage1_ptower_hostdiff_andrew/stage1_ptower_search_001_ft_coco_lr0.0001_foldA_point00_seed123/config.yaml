@@ -1,0 +1,85 @@
+task_id: T-2026-11-02-hostdiff-andrew
+step: stage1_ptower_search
+action: finetune
+fold: A
+seed: 123
+init: coco
+ft_lr: 0.0001
+ft_weight_decay: 0.0001
+ft_batch_size: 16
+ft_accum_steps: 4
+ft_epochs: 36
+ft_patience: 4
+ft_lr_decay: 0.1
+backbone_tag: coco_r50_ft_800
+checkpoint: null
+verify_determinism: false
+candidate: A
+layers: 6
+smoothing_weight: 0.0
+history: 30
+epochs: 50
+patience: 10
+lr: 0.0005
+weight_decay: 0.01
+warmup_epochs: 2
+maps: 64
+desc_suffix: ''
+device: cuda:0
+cache: /home/ubuntu/m2-scratch/T-2026-11-02-hostdiff-andrew/phase/seed123/features/all_gap.npz
+manifest_dir: data/processed/phase_manifest_all_phase
+batch_size: 16
+workers: 4
+point_id: 0
+artifact_root: /home/ubuntu/m2-scratch/T-2026-11-02-hostdiff-andrew/phase/seed123
+point:
+  point: 0
+  lr: 0.0001
+  phase_S: 3.3e-05
+  phase_weight_decay: 0.0001
+  accum: 4
+  detector_S: 0.00048
+  detector_weight_decay: 0.0001
+  max_norm: 0.1
+data:
+  videos:
+    test:
+    - '04'
+    - '05'
+    - '07'
+    val:
+    - '09'
+    - '10'
+    train:
+    - '01'
+    - '02'
+    - '03'
+    - '06'
+    - '08'
+    - '11'
+    - '12'
+    - '13'
+    - '14'
+    - '15'
+  train_frames: 10580
+  val_frames: 1904
+weights: data/external/weights/relation_detr_resnet50_800_1333_coco_1x.pth
+backbone_init_sha256: a755b3eb22a3c1996ff88bb5797690ceb5605eedef5c24f980e1cac4c07fc98f
+transform_train: "Compose(\n    RandomHorizontalFlip(p=0.5)\n    Compose(\n    Resize(size=800,\
+  \ interpolation=bilinear, max_size=None, antialias=warn)\n    ToTensor()\n    Normalize(mean=[0.485,\
+  \ 0.456, 0.406], std=[0.229, 0.224, 0.225])\n)\n)"
+transform_eval: "Compose(\n    Resize(size=800, interpolation=bilinear, max_size=None,\
+  \ antialias=warn)\n    ToTensor()\n    Normalize(mean=[0.485, 0.456, 0.406], std=[0.229,\
+  \ 0.224, 0.225])\n)"
+short_side: 800
+crop: none
+frame_kept_fraction: 1.0
+effective_batch_size: 64
+world_size: 2
+per_gpu_batch_size: 8
+sync_batchnorm: layer1-4 (stem bn1 stays BatchNorm2d in eval)
+freeze: stem (conv1, bn1); layer1-4 and fc trained
+selection_metric: phase_accuracy
+data_setting: P15
+source_sha256: 77485307be5be6bcc9a21c2a01ce5a48400d830fdff4ee684bf39843e5ea6f05
+contract_sha256: 82c7dc5685732179f4a7dac20a121b77d39f2af429cb26011aee947d18a124c5

@@ -2,16 +2,29 @@
 from __future__ import annotations
 
 import csv
+import importlib.util
 import json
 import os
 import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-TASK = "T-2026-10-22-tower-reselect-search-dlsta"
+# Another contract may reuse the tools under its own id; unset keeps the dlsta search.
+TASK = os.environ.get("TOWER_SEARCH_TASK", "T-2026-10-22-tower-reselect-search-dlsta")
 SCRATCH = Path.home() / "m2-scratch" / TASK
 ANALYSIS = ROOT / "experiments/analysis/tower_reselect_search_dlsta"
 POINTS = ANALYSIS / "points.csv"
+
+
+def load_observer():
+    """Optional measurement hook named by ``TOWER_SEARCH_OBSERVER``; unset means none."""
+    path = os.environ.get("TOWER_SEARCH_OBSERVER")
+    if not path:
+        return None
+    spec = importlib.util.spec_from_file_location("tower_search_observer", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def write_json(path, value):
