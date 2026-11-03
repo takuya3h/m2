@@ -19,6 +19,7 @@ from tower_search_common import (  # noqa: E402
     TASK,
     OfflineTracker,
     check_detector_groups,
+    load_observer,
     load_point,
     optimizer_groups,
     runtime_state,
@@ -77,20 +78,10 @@ def install_observers(point, work, tracker):
             kwargs["data_loader"] = LimitedBatches(kwargs["data_loader"],
                                                     int(os.environ["TOWER_SEARCH_CONTROL_STEPS"]))
         clip = accelerator.clip_grad_norm_
-        # TOWER_SEARCH_STEP_LOG があるときだけ、一歩ごとの勾配のクリップ（毎歩一度）の時刻を書く（既定は書かない）。
-        # optimizer.step は差し替えない（epoch ごとの warmup の scheduler が束縛メソッドを要求するため）。
-        step_log = os.environ.get("TOWER_SEARCH_STEP_LOG")
-        step_handle = None
-        if step_log:
-            Path(step_log).mkdir(parents=True, exist_ok=True)
-            step_handle = (Path(step_log) / f"detector_steps_rank{rank}.jsonl").open("a", buffering=1)
-            step_handle.write(json.dumps({"event": "epoch_start", "epoch": epoch, "t": time.monotonic()}) + "\n")
         gradient_file = work / f"gradients_rank{rank}.jsonl"
         with gradient_file.open("a", buffering=1) as handle:
             def clipped(parameters, max_norm, *args, **kw):
                 norm = clip(parameters, max_norm, *args, **kw)
-                if step_handle is not None:
-                    step_handle.write(json.dumps({"event": "clip", "epoch": epoch, "t": time.monotonic()}) + "\n")
                 value = float(norm)
                 handle.write(json.dumps({"epoch": epoch, "norm": value,
                                          "clipped": value > max_norm,
@@ -103,9 +94,6 @@ def install_observers(point, work, tracker):
                 result = train_epoch(**kwargs)
             finally:
                 accelerator.clip_grad_norm_ = clip
-                if step_handle is not None:
-                    step_handle.write(json.dumps({"event": "epoch_end", "epoch": epoch, "t": time.monotonic()}) + "\n")
-                    step_handle.close()
         record = {"epoch": epoch, "seconds": time.monotonic() - started,
                   "peak_memory_bytes": torch.cuda.max_memory_allocated(accelerator.device),
                   "groups": groups}
@@ -143,9 +131,13 @@ def main():
     work.mkdir(parents=True, exist_ok=True)
     is_main = int(os.environ.get("RANK", "0")) == 0
     tracker = (OfflineTracker(f"detector_point{point['point']:02d}",
-                              {"task_id": TASK, "point": point, "fold": "A", "seed": 42},
+                              {"task_id": TASK, "point": point, "fold": "A",
+                               "seed": int(os.environ.get("TOWER_SEARCH_SEED", "42"))},
                               work / "wandb") if is_main else None)
     control_complete = install_observers(point, work, tracker)
+    observer = load_observer()
+    if observer is not None:
+        observer.install_detector(detector=detector, work=work)
     try:
         detector.train()
     except control_complete:

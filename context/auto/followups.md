@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（711 件）
+## 申し送り（718 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1148,6 +1148,13 @@
 - PD の W3（--trainable all）は学習中 1 本 約 13.5 GiB で、RTX A6000 1 枚に 3 本まで。1 epoch・6 ステップの試走（10.8 GiB）では過小に見える
 - 受け取り手を学ぶと、4 epoch の固定の長さで空の腕の val が塔単独より下がる（DP の macro Jaccard で W2 −0.101・W3 −0.133、PD の P2L W3 で overall −0.037）。W2・W3 の差を読むなら、受け取り手を学ぶときの長さの規則を先に決める必要がある
 
+### T-2026-11-02-bengio-align-andrew
+
+- 残した worktree m2-four と m2-s2fix-bengio の無視された未追跡（m2 本体に無い実験の出力・wandb の run・configs と scripts の差）の保全先を決めてから片付ける
+- 重ねの BODY を片付けるには、scripts/grasppilot/d_aggregate.py:27・d_extra_aggregate.py:129・run_d_arm.sh:15・scripts/w23/run_pd_w23_bengio.sh:24 の BODY の経路の既定値をどうするかを先に決める
+- .git/info/exclude の 23 行目 experiments/phase1/stage2pilot_*/ が隠す 192 件 873,052,232 B の扱い（.gitignore に足すか、同期・保全するか）を決める
+- 拡張の .so の要約値は andrew と違う（build.ninja は同一）。学習で差が出るかは次の測定の契約で見る
+
 ### T-2026-11-02-bengio-andrew-env-survey
 
 - bengio の MS-Deform-Attn のビルド物（~/.cache/torch_extensions/py311_cu118/MultiScaleDeformableAttention/build.ninja 27 行目）は ~/slocal2/s2fix-bengio-body の .cu を指す。重ねの BODY を片付ける前に、Relation-DETR を揃えた main で拡張がどう読み込まれるか（ビルドし直しの要否）を装置のある形で確かめる
@@ -1157,7 +1164,13 @@
 - 契約の書き込み先が experiments/ の下にあると、.py・.npy・.pt・.pth・logs などは Syncthing で全台に配られる（.stignore の 43〜54 行）。andrew を読むだけの契約では、写しを .py などの拡張子で置かない
 - make forbidden-check は TASK= を渡さないと allow_write が効かない。手順書の「禁止領域に触れていないことを確かめる」の命令に TASK= が無い
 
-## 断定できなかった事項（450 件）
+### T-2026-11-02-hostdiff-andrew
+
+- プリフライト P2 は本体 .venv で Relation-DETR の拡張を import し、共有の torch_extensions の置き場で MS-Deform-Attn の .so を作り直す。検出塔の .venv-relation-detr で回すか、読むだけの検査に替えるかを検討する（tools/preflight_task.py:217）
+- 検出塔 seed 42 の二回（42a・42b）は同じ設定でも値と停止の epoch（21 と 16）が違った。後の比べ（SPEC §6.2）で同じ seed の揺れをどう扱うかの材料にする
+- test_stage1_ptower_r3_dist.py の 2 枚の試験は andrew で NCCL_P2P_DISABLE=1 が無いと時間切れで落ちる（与えると通る）。試験の側で与えるかを検討する
+
+## 断定できなかった事項（454 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -2010,6 +2023,11 @@
 - 利用者の指示による中止（把持塔 G の設計の誤りが分かったため、2026-11-02 16:5x JST、meta.amendments の 3 件目）。止めた時点で走っていたのは w23b_pd_P3-W3_shuffle_ep4_seed42 だけで、4 epoch 目の学習・評価と確定は済み、起動台本の後片付けの前で止まった（end.txt・exit_code.txt なし）。116 本すべてに値がある。REPORT の解釈と次の提案は書いていない
 - 案 A（GA）の予測の腕の信号は二本目の把持塔 G から作られており、中止の理由の G の誤りがその値にどれだけ関わるかは測っていない
 
+### T-2026-11-02-bengio-align-andrew
+
+- 存在しない checkpoint を渡したときの評価の挙動（本契約では回していない）
+- 拡張の .so の違いが学習の数値に影響するか
+
 ### T-2026-11-02-bengio-andrew-env-survey
 
 - 上流の load() 経路での MS-Deform-Attn の読み込み（ビルドし直しの要否を含む）。装置が要る
@@ -2017,18 +2035,23 @@
 - PCIe の負荷時の世代と幅（無負荷で測った）
 - test_stage1_ptower_heads の 4 件の差が CPU の型による数値の違いか
 
-## 起票者の誤りの型（419 件）
+### T-2026-11-02-hostdiff-andrew
+
+- 検出塔の同じ seed の二回の値が違った原因（fp16、MS-Deform-Attn の加算の順などの候補を確かめていない）
+- 完了判定 c の COCO の経路を壊した対照は回していない
+
+## 起票者の誤りの型（424 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 112 |
-| `asserted_without_measuring` | 178 |
+| `check_does_not_check` | 113 |
+| `asserted_without_measuring` | 180 |
 | `self_contradiction` | 107 |
 | `shell_assumption` | 19 |
-| `asymmetric_comparison` | 2 |
-| `rule_read_narrowly` | 1 |
+| `asymmetric_comparison` | 3 |
+| `rule_read_narrowly` | 2 |
 
-合計 419 件（対を持つ契約 148 件から）
+合計 424 件（対を持つ契約 150 件から）
 

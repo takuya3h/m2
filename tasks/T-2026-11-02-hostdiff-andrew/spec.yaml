@@ -1,0 +1,68 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-11-02-hostdiff-andrew"
+  kind: analysis
+  title: "andrew と bengio のホスト差の測定（andrew 側）: dlsta 探索の 0 番の学習設定で工程塔 2 本と検出塔 3 本を回し、値と速さを記録する"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-11-02T14:00:00Z"
+  created_from:
+    runindex_commit: "68befc3b62ffc071077cca446df5d3c83b8c38b9"
+    counts: {index: 2363, experiments: 1130, verdicts: 1736}
+  depends_on: [T-2026-11-02-bengio-align-andrew, T-2026-10-22-tower-reselect-search-dlsta]
+  amendments: []
+intent:
+  question: "同じコード、同じデータ、同じ学習設定、同じ seed で、andrew で学習した塔の val の値と学習の速さはいくつか。相手のホストの同じ契約の値と並べるための値を、事前に決めた形で出す"
+  decision_at_stake: "同一ホストの規則（conventions#symmetry のホストと装置型）を緩めるかの材料。区分は dlsta のホスト公平性の契約と同じ。値の比べと区分の判定は、二つのホストの契約が統合された後に行う"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery-Phase（工程注釈のある 17,233 フレーム）と EgoSurgery-Tool（15,437 枚）の折り A。conventions#frame_sets"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt", "data/splits/ego_test.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/run_ptower_search.py", "scripts/train_relation_detr_search.py", "scripts/run_tower_search.py", "scripts/tower_search_common.py", "scripts/tower_search_records.py", "configs/detector_relation_detr/train_search.py", "scripts/grasppilot/proc_enum.py", "tasks/T-2026-10-22-tower-reselect-search-dlsta/run_control.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#env_p0, conventions#folds, conventions#frame_sets, conventions#det_groups, conventions#symmetry, conventions#precision]
+  conventions_rev: "d145854ef39e82c6af5b24c1905c33176fe0c768"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/phase1/stage1_ptower_hostdiff_andrew/", "experiments/baselines/stage1_dtower_hostdiff_andrew/", "experiments/analysis/hostdiff_andrew_bengio/andrew/"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。環境の記録。入力と学習設定が dlsta 探索の 0 番と同じであることの照合。道具をこのホストで動く形にする", gpu: false, est: "3h"}
+    - {id: B, name: "工程塔の決定性の確かめ（同じ seed の短い学習を二度）", gpu: true, est: "1h"}
+    - {id: C, name: "工程塔 2 本（seed 42、123）。backbone、特徴、時間ヘッド 10 本", gpu: true, est: "12h"}
+    - {id: D, name: "検出塔 3 本（seed 42 を二度、seed 123）", gpu: true, est: "50h"}
+    - {id: E, name: "値と速さの表。事前に決めた形の JSON", gpu: false, est: "2h"}
+    - {id: F, name: "検証、報告、PR", gpu: false, est: "1h"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0。Relation-DETR の要約値が andrew main と同じ。入力の要約値が記録と同じ。両塔の起動の設定が dlsta 探索の 0 番の run と、許した欄の他で同じ。GPU 2 枚が空いている", on_fail: stop}
+    - {id: G2, after: B, check: "同じ seed の短い学習二回の損失の列が bit 単位で一致", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, gpu_free, cuda_ext_loaded, deterministic_flags]
+outputs:
+  must_have: [values.json, REPORT.md]
+  destination: "experiments/analysis/hostdiff_andrew_bengio/andrew/"
+  acceptance:
+    - "a: 開始状態、環境の記録、入力と学習設定の照合の結果がある"
+    - "b: 工程塔の決定性の確かめの結果がある"
+    - "c: 工程塔 2 本と検出塔 3 本が収束規則で終わり、各 run に値と所要時間と収束の記録がある"
+    - "d: values.json が SPEC の形で、値と速さの全欄が埋まるか理由つきの UNKNOWN である"
+    - "e: 各 run の間に本契約以外の GPU の使用があったかが、時刻つきで記録されている"
+    - "f: test を読んでいない。checkpoint と特徴を repo の外に置いた。同期の型のファイルを出力先に置いていない"
+    - "g: 既定の挙動を変えずに道具を合わせたことが試験で確かめてある"
+    - "h: PR が存在し、base が phase0、分岐が feat/hostdiff-andrew、Draft でない"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "両塔の起動の設定が dlsta 探索の 0 番の run と、許した欄の他で違う場合"
+    - "COCO の重みを読んだ記録が無い場合"
+    - "発散か非数が出た場合"
+    - "本契約以外の GPU の使用が run の途中で 10 分以上続いた場合"
+    - "相手のホストの値を読む必要が出た場合"

@@ -1748,3 +1748,13 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
   工程から検出（overall / 標的群）: 正解の腕の Δ空 は P2L W2 +0.0090 / +0.0219、P2L W3 −0.0066 / −0.0043、P3 W3 −0.0062 / −0.0131、P1 W3 +0.0333 / +0.0637。
   W3 では空の腕も塔単独より下がった（overall で P2L −0.037、P3 −0.029、P1 −0.058）
 - **status: stopped**（利用者の指示による中止。把持塔 G の設計の誤りが分かったため。止めた時点で 116 本すべてに値がある。案 A の予測の腕の信号は二本目の G から作られている）
+
+### andrew と bengio のホスト差の測定（andrew の分）（2026-11-03、andrew）
+
+契約 `T-2026-11-02-hostdiff-andrew`（analysis）。結果は `experiments/analysis/hostdiff_andrew_bengio/andrew/{values.json,REPORT.md}`、記録は `tasks/T-2026-11-02-hostdiff-andrew/`。
+並行する bengio の契約が同じ設定を回す。**ホストの比べは両方の統合の後に行い、ここには書かない。**
+
+- dlsta 探索の 0 番の学習設定で、工程塔 2 本（seed 42・123。fine-tune・特徴の取り出し・時間ヘッド 10 本）と検出塔 3 本（seed 42 を二回、seed 123）を andrew の GPU 0・1 で一本ずつ回し、値・一歩の秒数・壁時計・GPU の標本・本契約以外の GPU の使用を記録した。W&B は手元だけ（offline）
+- `scripts/` の変更（未設定のときの挙動は変えない）: `tower_search_common.py` の識別子を `TOWER_SEARCH_TASK` で上書きでき、`TOWER_SEARCH_OBSERVER` の観測器を読み込む。`run_ptower_search.py` の公開先を `TOWER_SEARCH_PHASE_PUBLISH` で上書きできる。`train_relation_detr_search.py` の W&B に書く seed を `TOWER_SEARCH_SEED` で上書きできる。試験 `tests/test_tower_search_overrides.py`（8 件）
+- 管理と検査の台本は `tasks/T-2026-11-02-hostdiff-andrew/`（`run_hostdiff.py`、`tools/` の観測器・照合・集計・検査）。checkpoint・特徴・ログは版管理の外 `~/m2-scratch/T-2026-11-02-hostdiff-andrew/`
+- 結果（2026-11-03）: 工程塔の J_mean は seed 42 0.5903・seed 123 0.6189、検出塔の val mAP は 42a 0.7157・42b 0.7286・seed 123 0.7242。5 本とも収束規則で停止（上限 36 に未到達）、本契約以外の GPU の使用 0。G1・G2 pass。PR #286
