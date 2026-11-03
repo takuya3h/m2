@@ -6,6 +6,12 @@
     TOWER_TOOLS_DIR=<scripts の置き場> .venv/bin/python -m pytest -q -p no:cacheprovider <この試験>
 
 ``TOWER_TOOLS_DIR`` を変えた写しの置き場に向けると、陽性対照（写しの既定を一つ変えると落ちる）に使える。
+
+対象は run が使った版（commit 22ce24b2）の scripts/ である。phase0 の取り込みで scripts/ は phase0 の版に替わったため、
+取り込みの後は 22ce24b2 を repo の外へ展開して回す（ROOT を揃えるため scripts・src・configs・本契約の置き場を一緒に展開する）。
+
+    git archive 22ce24b2 scripts src configs tasks/T-2026-11-02-hostdiff-bengio | tar -x -C <X>
+    cd <X> && TOWER_TOOLS_DIR=<X>/scripts <repo>/.venv/bin/python -m pytest -q -p no:cacheprovider tasks/T-2026-11-02-hostdiff-bengio/tools/test_defaults.py
 """
 from __future__ import annotations
 

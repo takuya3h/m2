@@ -109,3 +109,29 @@
   lr を下げた epoch 8、最良 13、停止 17、観測 18 epoch（0 起点）、上限に届かず。val mAP 0.7296（標的群 0.8230、陰性対照群 0.6708）、AP50 0.8550、train mAP 0.8455。
   学習の記録に非数なし。GPU の見本 2,420 件のうち本契約以外の使用 0。17:38:37 に `ALL_DONE`。
 - 5 本の後に `values.json` を作り直した（欠け 0、UNKNOWN 0）。repo 直下の Hydra の記録 `run_ptower_search.log` を `$S/` へ移した。
+
+## phase0 の取り込み（利用者の指示）
+
+- 利用者の指示（2026-11-03）: andrew 側の PR #286（統合済み）と scripts/ の 3 ファイルが衝突するため、PR の前に origin/phase0 を取り込み、scripts/ の衝突は phase0 の版を採る。
+  run が使った版は 22ce24b2 と RESULT の逸脱と values.json の code_commit に書く。分岐は消さない。
+- 検出塔 123 の評価と記録（学習の後に起動し、その時点の scripts/ を読む）が終わるまで待ってから行った。
+- 79faa636（5 本の結果）の後、`git merge --no-ff --no-commit origin/phase0`（89fe4a41 = #287、#286 の後の作り直し）。衝突は `scripts/run_ptower_search.py`・`scripts/tower_search_common.py`。
+  `train_relation_detr_search.py` は自動で併合できたが、指示の「3 ファイル」に合わせて 3 本とも `git checkout origin/phase0 -- <3 本>`。merge commit c518bf6d。
+  `git diff origin/phase0 HEAD` は本契約の 4 か所の置き場だけ（scripts/ の差 0）。
+- 道具の試験 `test_defaults.py` は 22ce24b2 の版に向けて回し直した: `git archive 22ce24b2 scripts src configs tasks/T-2026-11-02-hostdiff-bengio` を `$S/tree_22ce24b2/` に展開し 4 passed。
+  取り込み後の scripts/（phase0 の版）に向けると 3 failed（bengio の仕掛けが無いため。想定どおり）。
+
+## Task F — 検証
+
+- F-1（`tools/check_test_videos.py` → `$D/f_test_videos.json`）: 工程塔の manifest の train 10 動画・val 09・10、検出塔の折り A の instances_train 10 動画・val 09・10。
+  test 04・05・07 との共通 0。対照: 学習の集合に 04 を混ぜると共通 1。
+- F-2（`tools/check_sync_types.py` → `$D/f_sync_types.json`）: `.stglobalignore` を先に当たった行が勝つ読み方で、phase0 との差の 317 経路と置き場の未追跡に当てて同期の型 0。
+  対照: `experiments/x/foo.npy` は `!experiments/**/*.npy` に当たり、`experiments/x/foo.json` は `**`（同期しない）に当たる。
+  checkpoint（`best_ap.pth` 等）と特徴（`all_gap.npz`）は `$S/` にだけある。
+- 相手のホスト: 本契約の期間（2026-11-02 13:20 UTC 以降）のこのセッションの Bash 148 件余りに ssh・scp・rsync・sftp・`andrew:`・`@andrew` は 0 件。
+  phase0 の取り込みで andrew 側の契約の出力が木に入ったが、読んでいない（values.json・REPORT.md はその値を使わない）。
+- pytest（`tests/`）: 分岐の先頭 11 failed / 985 passed。phase0 を一時の worktree（`$S/wt_phase0`、data/ と third_party/ は読み取りのため symlink、終わった後に symlink を外して `git worktree remove`）
+  で 12 failed / 968 passed / 16 skipped。先頭の 11 件は phase0 の 12 件に含まれる（phase0 だけの 1 件 `test_stage1_ptower_r3::test_only_the_stem_is_frozen_in_both_chains` と skipped は worktree に未追跡の入力が無いため）。
+  `test_stage1_ptower_heads::test_existing_candidates_match_baseline[*]` 4 件は 22ce24b2 の版でも落ちる。CPU の float 出力のバイトの要約値を比べる試験で、このホストでは要約値が違う。
+- `make forbidden-check TASK=T-2026-11-02-hostdiff-bengio`: `status pass`、changed 318・checked 318、violations []。
+- 参照: `context/conventions.md` は d145854e から差なし（最後の変更 2d946b07）。runindex 68befc3b・2363/1130/1736 は起票時と同じ。注入の 8 アンカーの原文は `resolved_refs.md`（機械で切り出し）。

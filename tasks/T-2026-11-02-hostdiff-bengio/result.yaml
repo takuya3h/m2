@@ -1,0 +1,77 @@
+result_version: 3
+task_id: "T-2026-11-02-hostdiff-bengio"
+status: pass
+host: "bengio"
+branch: "feat/hostdiff-bengio"
+pr: null
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "分岐 feat/hostdiff-bengio、起点 origin/phase0 8aefdce3。Relation-DETR source 142/2f08e521・all 155/20f15c06 が andrew main と同じ。image_input_lock 32,670 経路の不一致 0、manifest 4 件と折り A の注釈と COCO の重み 2d2c19a7 が記録と同じ。起動の設定 27/27 が許した違いの他で同じ。GPU 0・1 は 39・20 MiB、compute 0"}
+  - {id: G2, verdict: pass, note: "工程塔の backbone を +control_frames=3200 ft_epochs=1 で二度。rank0・rank1 とも micro-step 200・optimizer step 50 の損失の列が bit 単位で一致（rank0 3cd3c19c…、rank1 4a89babb…）"}
+
+tests:
+  before_failed: 12
+  after_failed: 11
+  after_passed: 985
+
+deviations:
+  - {type: spec_defect, note: "利用者の指示で、5 本の後に origin/phase0（#286 hostdiff-andrew の統合後、89fe4a41）を取り込んだ（merge c518bf6d）。scripts/run_ptower_search.py・tower_search_common.py・train_relation_detr_search.py は phase0 の版を採った。bengio の 5 本の run が使った版は commit 22ce24b2。両方の契約が同じ scripts/ を別々に変えてよい形だったため衝突した"}
+  - {type: judgement, note: "取り込みは検出塔 123 の評価と記録（学習の後に起動し、その時点の scripts/ を読む）が終わってから行った"}
+  - {type: judgement, note: "道具の試験 test_defaults.py は取り込みの後、22ce24b2 を repo の外へ展開して回した（4 passed）。分岐の先頭の scripts/ に向けると 3 failed（bengio の仕掛けが無い）"}
+  - {type: judgement, note: "工程塔 seed42 の backbone の git_commit.txt は 8aefdce3。起動の 69 秒後に道具の変更を 22ce24b2 として commit したため。変更の最後は起動の前で、動いた内容は 22ce24b2 と同じ"}
+  - {type: judgement, note: "時間ヘッドの公開名は 10 本とも 001_P15_…（手本は 003〜012）。1 本ずつ別の作業場で回すため連番が振り直された。起動の引数は照合済み"}
+  - {type: judgement, note: "契約の「一度に走らせる学習は一本」と手本の並行の手順の関係を利用者に諮り、手本どおり並行にした（塔の run を同時に 2 本走らせない）"}
+  - {type: judgement, note: "プリフライト P2 cuda_ext_loaded の FAIL は利用者の判断で記録して続けた。拡張と COCO の重みの読み込みは各 run の記録で確かめた"}
+  - {type: judgement, note: "一歩ごとの時刻を取るため scripts/ の道具に TOWER_SEARCH_STEP_LOG があるときだけ働く記録を足し、起動の照合では許した違いに数えた"}
+  - {type: environment, note: "本測定の前の検出塔の 12 ステップの確かめで optimizer.step の差し替えが util/engine.py の LinearLR を壊した。記録の位置を勾配のクリップへ移して直した"}
+  - {type: environment, note: "SPEC §1 の前提の #284 が OPEN だった。利用者が統合し、分岐を git merge --ff-only で 8aefdce3 へ早送りした"}
+
+issuer_defects:
+  - {type: check_does_not_check, note: "プリフライト P2 cuda_ext_loaded は sys.executable（契約の env.venv .venv）で検出器を import するが、検出器は .venv-relation-detr で動く。指示どおり回すと .venv に fvcore が無いため FAIL になり、検出の拡張が読み込めるかを確かめていない（.venv-relation-detr では読み込める）"}
+  - {type: asserted_without_measuring, note: "SPEC §1 は #284 が phase0 に統合済みであることを前提に置いたが、起票の時点で #284 は OPEN だった。指示どおり task-start から始めると分岐の起点が #284 を含まず、揃えた後の bengio を測れない。利用者が統合して解消した"}
+  - {type: self_contradiction, note: "契約は「一度に走らせる学習は一本」とし、同時に手本と同じ手順（backbone の後の記録の評価と特徴の取り出しを GPU 2 枚で並行、時間ヘッドを 2 本ずつ）を求めた。字面どおりでは両方を満たせず、どちらかを破る。利用者の判断で手本どおりにした"}
+
+positive_controls:
+  - judgement: "a 入力の照合"
+    breaking_input: "記録の一画像の要約値を一文字変える"
+    observed: "不一致になった"
+  - judgement: "a 起動の設定の照合"
+    breaking_input: "手本の command.sh の workers=4 を workers=2 に変えた写しと比べる"
+    observed: "phase42_finetune が不一致（false）"
+  - judgement: "b 決定性"
+    breaking_input: "二回目の損失の列の一値の最下位の bit を変える"
+    observed: "identical が false になった"
+  - judgement: "c COCO の重みの読み込みの行"
+    breaking_input: "COCO の重みの経路を存在しない経路にした設定で回す"
+    observed: "UNKNOWN（回していない）"
+  - judgement: "d values.json の欠けの検査"
+    breaking_input: "写しから detector.seed42b.AP50 を消す"
+    observed: "欠けとして /detector/seed42b/AP50 が出た（元は欠け 0）"
+  - judgement: "e 列挙の道具"
+    breaking_input: "実在の /usr/bin/zsh と存在しない経路を数える"
+    observed: "zsh 8、存在しない経路 0"
+  - judgement: "f test 動画との共通"
+    breaking_input: "学習の集合に 04 を混ぜる"
+    observed: "共通 1"
+  - judgement: "f 同期の型"
+    breaking_input: "experiments/x/foo.npy を照合にかける"
+    observed: "!experiments/**/*.npy に当たり同期すると出た（foo.json は ** に当たり同期しない）"
+  - judgement: "g 既定の挙動の試験"
+    breaking_input: "既定の契約名を一つ変えた写しに向ける"
+    observed: "2 failed"
+
+followups:
+  - "分岐の先頭の scripts/ は phase0（andrew 側の版）であり、bengio の 5 本の run が使った版は 22ce24b2。bengio の run を再現するときは 22ce24b2 の scripts/ を使う"
+  - "test_stage1_ptower_heads::test_existing_candidates_match_baseline の 4 件は CPU の float 出力のバイトの要約値を比べるため bengio で落ちる。ホストに依らない比べ方にするかを決める"
+  - "並行する二つの契約が同じ scripts/ を別々に変えてよい形は衝突を生む。次の対の契約では道具の変更を一方に寄せるか、先に共通の版を統合する"
+
+unknowns:
+  - "COCO の重みの経路を存在しない経路にしたときの読み込みの行の挙動（本契約では回していない）"
+  - "同じ seed の検出塔 42a と 42b の差（mAP 0.7264 と 0.7318）がホストの差の比べにどう効くか。§6.2 の比べで扱う"
+
+commits:
+  - "22ce24b2"
+  - "bb44ba64"
+  - "79faa636"
+  - "c518bf6d"

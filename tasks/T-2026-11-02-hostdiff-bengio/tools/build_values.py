@@ -277,6 +277,9 @@ def build():
                         "note": ("phase42 の backbone（14:00:17 UTC 起動）は起動時の HEAD 8aefdce3 を記録した。道具の変更は起動前"
                                  "（最後の変更 13:59:16 UTC）に作業ツリーにあり、14:01:26 UTC に 22ce24b2 として commit した。"
                                  "5 本とも 22ce24b2 の内容で動いた"),
+                        "merge_note": ("5 本の後に origin/phase0（#286 hostdiff-andrew の統合後、89fe4a41）を分岐へ取り込んだ（c518bf6d）。"
+                                       "scripts/run_ptower_search.py・tower_search_common.py・train_relation_detr_search.py は phase0 の版を採った。"
+                                       "分岐の先頭の scripts/ は run が使った版ではない。run が使った版は 22ce24b2"),
                         "recorded_per_run": per_run, "values_built_at": commit},
         "env": env(),
         "determinism_check": {"identical": det["identical"],
