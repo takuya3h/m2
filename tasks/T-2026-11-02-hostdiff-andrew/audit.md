@@ -234,3 +234,7 @@ config.yaml（`tools/config_diff.py --seed`。`A/config_diff_seed{42,123}.json`�
 - 変更の前（起点 7f9e31f6 の一時の作業場所。`data` は実体への symlink。終わった後に外した）: 同じ 7 件の名前の試験だけを回した → 6 件が失敗、2 枚の試験は 900 s の時間切れで止まった（`F/pytest_before_subset.txt`、出力 `FF....F....FFF` の後に止まる）。7 件とも起点で既に通っていない
 - 2 枚の試験は `NCCL_P2P_DISABLE=1` を与えると HEAD で 1 passed（8.5 s）。andrew の装置の既知の挙動（P2P が無いと all_reduce が止まる）
 - 本契約が変えた `scripts/` の 3 ファイルを読む試験（`test_tower_search*.py`）は 17 passed
+
+### F-7 台帳への送り返し
+
+- `source scripts/load_env.sh && make task-report TASK=T-2026-11-02-hostdiff-andrew`（a4143a72 の後）→ 終了コード 0。応答: verdict pass、n_issuer_defects 3、report_sha256 aee0d1febbc5d08f0fef455814f2d8ab4225acd5d408ca9fbf95624317638d82、report_bytes 7,644、replaced_blocks 0

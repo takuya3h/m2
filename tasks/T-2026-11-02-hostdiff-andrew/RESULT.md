@@ -67,4 +67,4 @@
 ## 8. 送出
 
 - PR #286
-- `make task-report`: 終了コードは下に追記する
+- `make task-report`: 終了コード 0（audit F-7）
