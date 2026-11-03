@@ -162,3 +162,9 @@ config.yaml（`tools/config_diff.py --seed`。`A/config_diff_seed{42,123}.json`�
 - exit 0。`load pretrained from …/relation_detr_resnet50_800_1333_coco_1x.pth` と `CONTROL_COMPLETE` が両 rank に出た。`initialization_rank0.json` は matched True・sha256 2d2c19a7…。autocast fp16。プロセスが読んだ値は tf32_matmul False・tf32_cudnn True・deterministic_algorithms False・cudnn_benchmark False
 - 観測器は rank ごとに 60 歩の optimizer step の時刻を書いた。ログの `raise ValueError(...)` などの 2 行は、設定ファイルの本文の色付きの印字で、Traceback は 0 件
 - MS-Deform-Attn の `.so` は作り直されていない（d1d9d1ac…、`.ninja_log` の最後の行は 13:27:34 UTC のまま）
+
+## C の途中の所見（2026-11-03 04:20 JST）
+
+- 段ごとの壁時計（`*.timing.json` の `wall_s`）は、監督の処理が子の終わりを 5 秒ごとに見る（`run_hostdiff.py` の `stopping.wait(5)`）ため、**5 秒の刻み**で丸まる。ヘッド一本 10.0 s・記録の段 5.0 s・特徴の取り出し 245.0 s はこの刻みの値であり、実際の所要はその値以下 5 秒の幅に在る。一歩の秒数と epoch の秒数は観測器が `time.perf_counter` で書くので、この刻みを受けない。
+- 工程塔 seed 123: 01:21:32 開始、04:19:47 終了（JST）。上限 36 epoch に達していない（停止 epoch 23）。COCO の重みを読んだ記録あり。本契約以外の GPU の使用なし。
+- 検出塔 seed 42a: 04:19:52 JST に `load pretrained from .../relation_detr_resnet50_800_1333_coco_1x.pth` の行を確認。
