@@ -73,4 +73,4 @@
 ## 8. 送出
 
 - PR: #288（base phase0、分岐 feat/hostdiff-bengio、Draft でない）
-- `make task-report`: 未送出
+- `make task-report`: 終了コード 0（verdict pass、report_sha256 55a7b1ad…、8,171 B）

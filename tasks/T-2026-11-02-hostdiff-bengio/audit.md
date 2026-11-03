@@ -135,3 +135,7 @@
   `test_stage1_ptower_heads::test_existing_candidates_match_baseline[*]` 4 件は 22ce24b2 の版でも落ちる。CPU の float 出力のバイトの要約値を比べる試験で、このホストでは要約値が違う。
 - `make forbidden-check TASK=T-2026-11-02-hostdiff-bengio`: `status pass`、changed 318・checked 318、violations []。
 - 参照: `context/conventions.md` は d145854e から差なし（最後の変更 2d946b07）。runindex 68befc3b・2363/1130/1736 は起票時と同じ。注入の 8 アンカーの原文は `resolved_refs.md`（機械で切り出し）。
+
+## 送出
+
+- PR #288（base phase0、Draft でない）。`make task-report` 終了コード 0、verdict pass、n_issuer_defects 3、report_sha256 55a7b1ad990808b8929c00ba0492b2d8494128ef3e5dea9037e94cbe0abc88ec、8,171 B、replaced_blocks 0
