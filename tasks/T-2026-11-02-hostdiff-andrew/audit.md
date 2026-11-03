@@ -168,3 +168,69 @@ config.yaml（`tools/config_diff.py --seed`。`A/config_diff_seed{42,123}.json`�
 - 段ごとの壁時計（`*.timing.json` の `wall_s`）は、監督の処理が子の終わりを 5 秒ごとに見る（`run_hostdiff.py` の `stopping.wait(5)`）ため、**5 秒の刻み**で丸まる。ヘッド一本 10.0 s・記録の段 5.0 s・特徴の取り出し 245.0 s はこの刻みの値であり、実際の所要はその値以下 5 秒の幅に在る。一歩の秒数と epoch の秒数は観測器が `time.perf_counter` で書くので、この刻みを受けない。
 - 工程塔 seed 123: 01:21:32 開始、04:19:47 終了（JST）。上限 36 epoch に達していない（停止 epoch 23）。COCO の重みを読んだ記録あり。本契約以外の GPU の使用なし。
 - 検出塔 seed 42a: 04:19:52 JST に `load pretrained from .../relation_detr_resnet50_800_1333_coco_1x.pth` の行を確認。
+
+## C・D. 本測定（2026-11-02 22:52:21 〜 2026-11-03 21:56:43 JST）
+
+`nohup setsid .venv/bin/python tasks/T-2026-11-02-hostdiff-andrew/run_hostdiff.py measure`（監督 pid 1033115）。一度に一つの学習だけを回した。順と区間（JST）:
+
+| run | 開始 | 終了 | 壁時計 s | 停止の理由 |
+|---|---|---|---:|---|
+| 工程塔 seed 42 | 11-02 22:52:21 | 11-03 01:21:32 | 8,950.4 | 学習率の低下（epoch 15）の後 plateau 4 で epoch 19 |
+| 工程塔 seed 123 | 11-03 01:21:32 | 04:19:47 | 10,695.3 | 低下 epoch 12、打ち切り epoch 23 |
+| 検出塔 seed 42a | 04:19:47 | 11:12:37 | 24,770.5 | 低下 epoch 13、打ち切り epoch 21（学習 6:34:50） |
+| 検出塔 seed 42b | 11:12:37 | 16:34:43 | 19,325.4 | 低下 epoch 11、打ち切り epoch 16（学習 5:04:09） |
+| 検出塔 seed 123 | 16:34:43 | 21:56:43 | 19,320.4 | 低下 epoch 10、打ち切り epoch 16 |
+
+- 5 本とも上限 36 epoch に達していない。発散・非数・Traceback は 0（見張りが `Traceback|Non-finite|loss is nan` を毎分照合）
+- COCO の重み: 工程塔は各 rank の `load pretrained COCO backbone … sha256=a755b3eb…`、検出塔は `load pretrained from /home/ubuntu/slocal2/m2/data/external/weights/relation_detr_resnet50_800_1333_coco_1x.pth`（3 本とも）。検出塔の学習後の評価のログに `skip loading` は 0 件
+- 学習後の評価は `--checkpoint /home/ubuntu/m2-scratch/T-2026-11-02-hostdiff-andrew/detector/<run>/best_ap.pth`（絶対経路）、`DTOWER_EVAL_SPLIT` は val と train
+- 公開: 工程塔 24 run（2 seed × finetune・extract・head 10 本）、検出塔 3 run を、手本と同じ型（.json・.yaml・.md・.sh・.txt）だけ repo へ写した。checkpoint・特徴・W&B の手元記録は scratch に残る
+- 見張りの記録 `~/m2-scratch/T-2026-11-02-hostdiff-andrew/gpu_monitor.jsonl`: 8,275 標本（22:45:03〜21:56:35）。本契約の子でないプロセスの標本 0、子のプロセスの標本 16,078。30 秒を超える切れ目は 22:49:25→22:52:21 の 176 s の 1 か所（決定性の確かめと本測定の間、検出塔の経路の対照の時間。どの run の区間にも入らない）
+- run の commit（`git_commit.txt`）: 工程塔 seed 42 の fine-tune は fdbb6ff6（起動 22:52:21 は fb6f8038 の commit 22:53:59 より前）、その後の 22 run と検出塔 42a・42b は 7e6a4035、検出塔 seed 123 は d406f9a6（途中の push の commit）。fdbb6ff6..d406f9a6 の差は `tasks/T-2026-11-02-hostdiff-andrew/` の台本（aggregate・check_values・plan_diff の import 一つ）と audit.md と `experiments/` の写しだけで、学習のコードは同じ
+- 2026-11-03 13:51 JST に利用者の指示で途中の記録を commit・push した（d406f9a6、分岐 `feat/hostdiff-andrew` を遠隔に作った）。PR はそのとき作っていない
+
+## E. 値の表
+
+- `tools/aggregate.py --out experiments/analysis/hostdiff_andrew_bengio/andrew/values.json`。`code_commit` は初め集計の時の HEAD だけを書いていたので、run の `git_commit.txt` の集合（`runs`）と集計の時の HEAD（`aggregated_at`）を分けて書く形に直した
+- `tools/check_values.py values.json` → `{"missing": [], "ok": true}`、exit 0。UNKNOWN の欄は 0
+- 空振りの対照（`--self-test`、`detector.seed123.AP_signature` を消した写し）→ `{"self_test_missing": ["detector.seed123.AP_signature"]}`
+- `REPORT.md` は同じ置き場。相手のホストとも dlsta とも並べていない
+
+## F. 検証
+
+### F-1 test を読んでいない（`tools/check_test_videos.py`）
+
+- 検出塔: 学習は `instances_train.json`、学習中と学習後の評価は `DTOWER_EVAL_SPLIT` の val・train（各 run の command.sh から読んだ。設定 `train_search.py` は test を拒む）。注釈の `file_name` から取った動画は 3 本とも 01・02・03・06・08・09・10・11・12・13・14・15
+- 工程塔: 24 run の config.yaml の `data.videos` の train・val と `feature_audit.json` の `video_counts`（ヘッドはこの特徴だけを読む）。同じ 12 動画（train 10,580 枚・val 1,904 枚と `video_counts` の和が一致）
+- test 動画 04・05・07 との共通: **0**（`common_total 0`）
+- 空振りの対照（`--self-test`、検出塔 42a の集合に 04 を足す）→ `{"detector.seed42a": ["04"]}`、共通 1
+
+### F-2 置き場と相手のホスト
+
+- `tools/check_sync_types.py`: 本契約の三つの置き場の全ファイルと `origin/phase0...HEAD` の変更、計 313 ファイルを `.stignore` の `!experiments/**/<X>` 12 型と照合 → 当たり **0**
+- 空振りの対照（`--self-test`）: `experiments/x/foo.npy` は `*.npy` に当たる、`experiments/x/a.json` は当たらない
+- 相手のホスト: 本契約の対話の記録の Bash 命令 244 件に、bengio への ssh・scp・rsync・curl は 0（照合に掛かった 1 件はこの照合の grep 自身）。台本に bengio の経路は無い（`check_inputs.py` が読む `experiments/analysis/bengio_andrew_env_survey/d/data_compare.json` は repo の中の記録で、その `andrew` の列だけを使う。A-4）。bengio の値を待っていない
+
+### F-3 起動の設定の実物（`tools/config_diff.py --actual`）
+
+- 13 本 × 3 組（工程塔の seed と検出塔の run の組）を比べた。検出塔の config.yaml は 3 本とも許した違い（`repeat`・経路・seed）の他の差 0
+- 工程塔の許していない差は二つだけ。(1) 24 run すべての `source_sha256`（B-1 の判断のとおり。コードの版の行）。(2) seed 123 の extract の `best_epoch`・`checkpoint_sha256` と head 10 本の `cache_sha256`。手本は seed 42 の run しか無く、これらは学習の結果に由来する値で、起動の設定ではない
+- 出力: `~/m2-scratch/T-2026-11-02-hostdiff-andrew/F/cd_point00_dcoco_foldA_seed{42a,42b,123}.json`（回した台本 `F/cdall.sh`）。空振りの対照（`--self-test`、`ft_patience` を 5 にした写し）は A-6 のとおり差に出る
+
+### F-4 禁止領域と試験
+
+- `make forbidden-check TASK=T-2026-11-02-hostdiff-andrew` → `status: pass`、変更 316・照合 316・許可 297・違反 0・誤り 0。make の終了コード 0
+- `pytest tests/test_tower_search_overrides.py tests/test_tower_search.py` → 17 passed
+
+### F-5 規約の版と索引の commit（SPEC §11）
+
+- `contract.conventions_rev` d145854e: `git diff d145854e HEAD -- context/conventions.md` は空。conventions.md の最後の変更は 2d946b07（起票の前）。実行時も同じ本文
+- `meta.created_from.runindex_commit` 68befc3b: `runindex/` の最後の変更は 68befc3b（2026-10-29 08:27:51 UTC）。`git diff 68befc3b HEAD -- runindex/` は空
+
+### F-6 全試験
+
+- 変更の後（HEAD d406f9a6 ＋ 未 commit の報告）: `.venv/bin/python -m pytest -q -p no:cacheprovider` → **7 failed、989 passed**（1,834.6 s。`~/m2-scratch/T-2026-11-02-hostdiff-andrew/F/pytest_after.txt`）
+  - `test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics`、`test_fetch_task.py::test_rejects_unknown_file_name`、`test_research_logger.py` の 4 件、`test_stage1_ptower_r3_dist.py::test_two_gpus_give_the_one_gpu_gradient_over_an_uneven_tail`（NCCL の時間切れ）
+- 変更の前（起点 7f9e31f6 の一時の作業場所。`data` は実体への symlink。終わった後に外した）: 同じ 7 件の名前の試験だけを回した → 6 件が失敗、2 枚の試験は 900 s の時間切れで止まった（`F/pytest_before_subset.txt`、出力 `FF....F....FFF` の後に止まる）。7 件とも起点で既に通っていない
+- 2 枚の試験は `NCCL_P2P_DISABLE=1` を与えると HEAD で 1 passed（8.5 s）。andrew の装置の既知の挙動（P2P が無いと all_reduce が止まる）
+- 本契約が変えた `scripts/` の 3 ファイルを読む試験（`test_tower_search*.py`）は 17 passed

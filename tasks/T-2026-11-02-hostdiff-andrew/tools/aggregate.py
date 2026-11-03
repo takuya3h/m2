@@ -239,7 +239,11 @@ def main():
     import subprocess
     values = {
         "host": "andrew", "task_id": TASK,
-        "code_commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
+        # 測った run が起動時に書いた commit（git_commit.txt）と、集計した時の HEAD を分けて書く
+        "code_commit": {
+            "runs": sorted({p.read_text().split()[0] for pub in (PHASE_PUBLISH, DET_PUBLISH)
+                            for p in pub.glob("*/git_commit.txt")}),
+            "aggregated_at": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()},
         "env": env(), "determinism_check": determinism(),
         "phase": {"seed42": phase(42), "seed123": phase(123)},
         "detector": {"seed42a": detector("seed42a"), "seed42b": detector("seed42b"), "seed123": detector("seed123")},
