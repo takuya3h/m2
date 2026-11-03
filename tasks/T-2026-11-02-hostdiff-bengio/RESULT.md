@@ -26,7 +26,7 @@
 | e | 5 本とも `foreign_gpu_use: []`（標本 956〜2,892 件） | 列挙の道具 `proc_enum.py` が陽性（zsh）8・陰性 0（audit A-1） |
 | f | test 04・05・07 との共通 0（`f_test_videos.json`）。同期の型 0 / 317 経路（`f_sync_types.json`） | 04 を混ぜると共通 1。`experiments/x/foo.npy` は `!experiments/**/*.npy` に当たる |
 | g | 道具の試験 4 passed（22ce24b2 の版） | 既定の契約名を一つ変えた写しで 2 failed |
-| h | PR は §7 | — |
+| h | PR #288、base phase0、分岐 feat/hostdiff-bengio、Draft でない | — |
 
 ## 4. 実測
 
@@ -72,5 +72,5 @@
 
 ## 8. 送出
 
-- PR: 未起票（起票後に記録する）
+- PR: #288（base phase0、分岐 feat/hostdiff-bengio、Draft でない）
 - `make task-report`: 未送出
