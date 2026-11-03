@@ -74,3 +74,27 @@
 - やり直し（`$S/controls/detector12b/`）: 終了コード 0、`CONTROL_COMPLETE`、クリップの記録 12 件、`initialization_rank0.json` の `matched true`・COCO 2d2c19a7…、
   `runtime`（tf32 matmul false・cudnn true、決定性 false、benchmark false）。
 - 本測定（`launch.sh phase42 phase123 det42a det42b det123`）は 14:00:17 UTC に起こした。
+- 道具は repo 直下に Hydra の記録 `run_ptower_search.log` を書く（手本の道具と同じ挙動。`.stignore` の同期の対象には当たらない）。学習の後に repo の外へ移す。
+
+## Task C — 工程塔（本測定）
+
+- phase42（14:00:17〜16:47:10、終了コード 0、wall 10,013 s）: backbone の学習 9,642 s、両 rank とも `load pretrained COCO backbone ... sha256=a755b3eb…`、
+  `early stop at epoch=19`、`FINETUNE_COMPLETE ... acc=0.8125`。取り出し 265 s、記録の評価 298 s、ヘッド 10 本（各 10〜14 s、2 本ずつ）は全部 `RUN_COMPLETE`、指標は有限。
+  GPU の見本 993 件のうち本契約以外の使用 0。公開先に同期の対象の種類（.py/.npy/.pt/.pth、logs・checkpoints・predictions）は無い（676 KB）。
+- 公開名の番号: ヘッドは 1 本ずつ別の作業場で回すため `ExperimentManager` の連番が振り直され、10 本とも `001_P15_…` になった（手本は `003`〜`012`）。
+  名前の後半（`P15_A_L6_w0.0_h30` 等）で手本の順へ対応づける。起動の引数は A-6 で照合済みで、この差は公開名だけ。
+- phase123（16:47:10〜20:08:45、終了コード 0）: backbone の学習 11,722 s、両 rank とも COCO の重み a755b3eb… を読み込み、lr を epoch 12 で下げ、epoch 23 で早期停止、
+  `acc=0.7957`。設定に `seed: 123`。ヘッド 10 本とも `RUN_COMPLETE`、記録に非数なし。GPU の見本 1,199 件のうち本契約以外の使用 0。公開先に同期の対象の種類は無い。
+
+## Task D — 検出塔（本測定）
+
+- det42a（2026-11-02 20:08:45〜11-03 04:25:24、終了コード 0）: 学習 29,164 s、評価 val 89 s・train 543 s（どちらも "skip loading" なし）。`initialization_rank0.json` は `matched true`。
+  `convergence.json`: lr を下げた epoch 15、最良 17、停止 21、観測 22 epoch（番号は 0 起点）、上限に届かず。val mAP 0.7264（標的群 0.8133、陰性対照群 0.6616）、train mAP 0.8644。
+  学習の記録に非数なし。GPU の見本 2,955 件のうち本契約以外の使用 0。公開先に同期の対象の種類は無い（128 KB）。
+
+## Task E — 値の表（下書き）
+
+- 道具 `tools/build_values.py`: 記録のファイルだけから `values.json` を書き、§6.1 のキーの欠けを検査する。未完了の run の欄は理由つきの UNKNOWN。
+  対照（`--selftest`）: 写しから `detector.seed42b.AP50` を消すと `broken_missing: ["/detector/seed42b/AP50"]`、元は `[]`。ruff 通過。
+- commit の記録: phase42 の backbone だけ `git_commit.txt` が 8aefdce3（14:00:17 起動、22ce24b2 の commit は 14:01:26）。
+  道具 3 本と起動の台本の最後の変更は 13:48〜13:59 で起動より前のため、5 本とも 22ce24b2 の内容で動いた。`values.json` の `code_commit.note` に書いた。
