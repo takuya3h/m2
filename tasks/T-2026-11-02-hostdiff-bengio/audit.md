@@ -98,3 +98,14 @@
   対照（`--selftest`）: 写しから `detector.seed42b.AP50` を消すと `broken_missing: ["/detector/seed42b/AP50"]`、元は `[]`。ruff 通過。
 - commit の記録: phase42 の backbone だけ `git_commit.txt` が 8aefdce3（14:00:17 起動、22ce24b2 の commit は 14:01:26）。
   道具 3 本と起動の台本の最後の変更は 13:48〜13:59 で起動より前のため、5 本とも 22ce24b2 の内容で動いた。`values.json` の `code_commit.note` に書いた。
+
+## Task D（続き）
+
+- det42b（2026-11-03 04:25:24〜10:51:49、終了コード 0）: 学習 22,548 s、評価 val 89 s・train 545 s（"skip loading" なし）。`matched true`。
+  lr を下げた epoch 9、最良 12、停止 16、観測 17 epoch（0 起点）、上限に届かず。val mAP 0.7318（標的群 0.8118、陰性対照群 0.6777）、AP50 0.8578、train mAP 0.8455。
+  学習の記録に非数なし。GPU の見本 2,299 件のうち本契約以外の使用 0。検出塔は決定性を有効にしない設定（`deterministic_algorithms false`）で、同じ seed の 42a と値も停止の epoch も違う。
+- det123 は 10:51:49 に起動。`initialization_rank0.json` は `matched true`。
+- det123（2026-11-03 10:51:49〜17:38:37、終了コード 0、`--seed 123`）: 学習 23,771 s、評価 val 89 s・train 547 s（"skip loading" なし）。`matched true`。
+  lr を下げた epoch 8、最良 13、停止 17、観測 18 epoch（0 起点）、上限に届かず。val mAP 0.7296（標的群 0.8230、陰性対照群 0.6708）、AP50 0.8550、train mAP 0.8455。
+  学習の記録に非数なし。GPU の見本 2,420 件のうち本契約以外の使用 0。17:38:37 に `ALL_DONE`。
+- 5 本の後に `values.json` を作り直した（欠け 0、UNKNOWN 0）。repo 直下の Hydra の記録 `run_ptower_search.log` を `$S/` へ移した。
