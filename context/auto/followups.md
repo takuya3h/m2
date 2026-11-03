@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（715 件）
+## 申し送り（718 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1164,7 +1164,13 @@
 - 契約の書き込み先が experiments/ の下にあると、.py・.npy・.pt・.pth・logs などは Syncthing で全台に配られる（.stignore の 43〜54 行）。andrew を読むだけの契約では、写しを .py などの拡張子で置かない
 - make forbidden-check は TASK= を渡さないと allow_write が効かない。手順書の「禁止領域に触れていないことを確かめる」の命令に TASK= が無い
 
-## 断定できなかった事項（452 件）
+### T-2026-11-02-hostdiff-andrew
+
+- プリフライト P2 は本体 .venv で Relation-DETR の拡張を import し、共有の torch_extensions の置き場で MS-Deform-Attn の .so を作り直す。検出塔の .venv-relation-detr で回すか、読むだけの検査に替えるかを検討する（tools/preflight_task.py:217）
+- 検出塔 seed 42 の二回（42a・42b）は同じ設定でも値と停止の epoch（21 と 16）が違った。後の比べ（SPEC §6.2）で同じ seed の揺れをどう扱うかの材料にする
+- test_stage1_ptower_r3_dist.py の 2 枚の試験は andrew で NCCL_P2P_DISABLE=1 が無いと時間切れで落ちる（与えると通る）。試験の側で与えるかを検討する
+
+## 断定できなかった事項（454 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -2029,18 +2035,23 @@
 - PCIe の負荷時の世代と幅（無負荷で測った）
 - test_stage1_ptower_heads の 4 件の差が CPU の型による数値の違いか
 
-## 起票者の誤りの型（421 件）
+### T-2026-11-02-hostdiff-andrew
+
+- 検出塔の同じ seed の二回の値が違った原因（fp16、MS-Deform-Attn の加算の順などの候補を確かめていない）
+- 完了判定 c の COCO の経路を壊した対照は回していない
+
+## 起票者の誤りの型（424 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 112 |
-| `asserted_without_measuring` | 179 |
+| `check_does_not_check` | 113 |
+| `asserted_without_measuring` | 180 |
 | `self_contradiction` | 107 |
 | `shell_assumption` | 19 |
-| `asymmetric_comparison` | 2 |
+| `asymmetric_comparison` | 3 |
 | `rule_read_narrowly` | 2 |
 
-合計 421 件（対を持つ契約 149 件から）
+合計 424 件（対を持つ契約 150 件から）
 
