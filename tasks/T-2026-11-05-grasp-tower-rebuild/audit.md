@@ -183,3 +183,23 @@
 - `g5_train.patch_msda_bf16()` を足した（mmcv の `multi_scale_deform_attn` モジュールが名前で引く `MultiScaleDeformableAttnFunction` を、この過程の中だけ包みに差し替える）。確かめ（`$S/b0/msda_patch_check.txt`）:
   包まない bf16 → not implemented、fp32・fp16 は素通しでビット一致、bf16 の出力は bf16・fp32 との差の最大 0.0041、勾配は bf16 で有限
 - 2 回目（02:38〜02:43 JST、commit 61c364bd）: batch 2〜12 は収まり非数 0、batch 16 は 1 ステップ目で溢れた。表は `batch_probe.md`。再び止まって諮る
+
+### C-1 本番の 3 本（2 回目。利用者の回答の後。起動 2026-11-06 02:5x JST、commit ff954d9f）
+
+- 利用者の回答: batch 8、bf16（変形注意だけ fp32）、学習率 1e-4 のまま。GPU 0 に確定、GPU 1 に H1 の後 H2
+- `g5_train.py` に `--batch`・`--amp none|bf16` を足した（既定は batch 2・単精度で従来どおり）。評価は単精度・batch 2 のまま
+- 試走（`$S/logs/c0_smoke_b8bf16.txt`）: 1 epoch 1,169 ステップ、20 ステップの後の val 10 枚 0.5576、最大確保 25,634,898,432 B、COCO の重み 608 / 610、非数なし
+- 起動前: 本契約以外の compute 0 件（数えた 1 件は確かめの命令の python 自身）、GPU 0・1 とも 39・37 MiB、run の置き場は空
+
+      CUDA_VISIBLE_DEVICES=0 python scripts/grasppilot/g5_train.py --run-dir experiments/phase1/grasptower_G_all_seed42 --ckpt-dir $S/g/ckpt/all --ann-dir $S/g/ann --videos all --batch 8 --amp bf16
+      CUDA_VISIBLE_DEVICES=1 （H1 → H2 の順）... --run-dir experiments/phase1/grasptower_G_{H1,H2}_seed42 --ckpt-dir $S/g/ckpt/{H1,H2} --videos {H1,H2} --batch 8 --amp bf16
+
+### C-1 の途中: GPU 1 の共有（本契約の外、使用者は不明）
+
+- 03:24 JST（ホストの時計 18:24 UTC）に気づいた: GPU 1 の全体の使用 47,250 MiB・使用率 100%・218 W に対し、本契約の H1 は 26,152 MiB。
+  約 21 GB を `nvidia-smi` のプロセスの一覧に出ない使用者が使っている。起動の時点（02:53 JST）の GPU 1 は 37 MiB だった
+- この機械から見える root のプロセスは 2 件だけ（コンテナか別の名前空間の中とみる）。使用者は UNKNOWN。
+  `experiments/analysis/tower_batch_probe/tools/`（別の契約、同期で届いた。最終更新 02:30 JST、GPU の指定を含む）との関係も UNKNOWN
+- 影響: H1 の 1 ステップが epoch 1 の 1.23 秒から epoch 2 は 2.27 秒（約 1.8 倍）。GPU 0 の確定の G は 1.27 秒で影響なし。値は変わらない見込み（記憶の領域は分かれ、cudnn.benchmark は無効）。記憶の余裕は約 1.9 GB
+- 契約の停止の条件（本契約以外の compute プロセス）に当たるため、相手を止めずに利用者に諮った → **利用者の決定（03:5x JST）: このまま続ける**
+- 監視（Monitor）は 2 回、出力を一件も届けずに切れた（`cut` のため込み、次に背景の部分シェル）。一本の `tail -F | awk`（fflush）に直した
