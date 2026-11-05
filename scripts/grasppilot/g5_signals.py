@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -335,7 +336,7 @@ def assemble(a):
             raise RuntimeError(f"q の確かめの外れ {name}: {ent['check']}")
         Dd[name] = ent
     rep["D"] = Dd
-    man = {"task_id": TASK, "unofficial": True, "host": "andrew", "replaces": "T-2026-11-01-grasp-pilot-g の信号と標的",
+    man = {"task_id": TASK, "unofficial": True, "host": os.uname().nodename, "replaces": "T-2026-11-01-grasp-pilot-g の信号と標的",
            "g_runs": {g: {"config": p, "best_ckpt_sha256": json.loads((Path(p).parent / "metrics.json").read_text())["best_ckpt_sha256"]}
                       for g, p in zip(("all", "H1", "H2"), a.g_run)},
            "A_g": A, "B_m": Bm, "D_q": {k: {"q": v["q"], "shuffle": {kk: v["shuffle"][kk] for kk in ("path", "sha256", "boxes")},

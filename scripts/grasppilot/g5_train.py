@@ -37,6 +37,9 @@ HALVES = T.HALVES
 SWAP0 = np.array([1, 0, 3, 2, 4], np.int64)   # 0 始まりのラベルの入れ替え（左手 ↔ 右手、左手の器具 ↔ 右手の器具、両手はそのまま）
 STORE = Path("/home/ubuntu/slocal2/stage2pilot_store") / TASK
 LOSS_MASK_DIR = PROJ / "data/annotations/egosurgery_hts/hand_tool_seg/loss_mask"
+# COCO の重み: bengio には一本目の保存先の写しが無いので、andrew から本契約の保存先へ写したもの（sha256 は T.WEIGHT_SHA256 で照合）。
+# 一本目・二本目の保存先には書き込まない（SPEC §7-2）
+COCO_W = STORE / "inputs/coco" / B.MMDET_W.name
 
 
 class G5Flip(T.G38):
@@ -99,16 +102,16 @@ def stale_since_best(history):
 
 def build_model():
     model, cfg = B.mmdet_model(num_classes=NUM_CLASSES)
-    wcheck = B.verify_weight(B.MMDET_W, T.WEIGHT_SHA256)
+    wcheck = B.verify_weight(COCO_W, T.WEIGHT_SHA256)
     if not wcheck["ok"]:
         raise RuntimeError(f"COCO の重みの要約値が違う: {wcheck}")
-    st = torch.load(B.MMDET_W, map_location="cpu")["state_dict"]
+    st = torch.load(COCO_W, map_location="cpu")["state_dict"]
     own = model.state_dict()
     keepw = {k: v for k, v in st.items() if k in own and own[k].shape == v.shape}
     skipped = sorted(k for k in st if k in own and own[k].shape != st[k].shape)
     absent = sorted(k for k in st if k not in own)
     missing, _ = model.load_state_dict(keepw, strict=False)
-    rep = {"checkpoint": str(B.MMDET_W), "sha256": wcheck["sha256"], "n_checkpoint": len(st), "loaded": len(keepw),
+    rep = {"checkpoint": str(COCO_W), "sha256": wcheck["sha256"], "n_checkpoint": len(st), "loaded": len(keepw),
            "skipped_shape": skipped, "absent_in_model": absent, "model_params_not_loaded": sorted(missing)}
     return model, cfg, rep
 
