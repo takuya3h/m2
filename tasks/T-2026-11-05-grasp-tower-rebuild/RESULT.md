@@ -61,4 +61,4 @@
 ## 7. 送出
 
 - PR: #289（https://github.com/takuya3h/m2/pull/289、base phase0、Draft でない、head `feat/grasp-tower-rebuild`）。利用者の確認の上で送出した
-- `make task-report`: この commit の後に送る（結果は最後の応答で伝える）
+- `make task-report`: 終了コード 0（verdict stopped、issuer_defects 1 件、本文 6,744 B。この行は送信の後に足した）
