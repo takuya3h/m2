@@ -1,0 +1,5 @@
+- [ ] 2026-11-06 [cc] 利用者の指示で契約を中止した（00:55「バッチサイズについて検討するので停止して」、01:05「契約も停止して良い」）。G の 3 本は epoch 1（確定 0.5747・H1 0.5179・H2 0.5666）まで。途中の出力は $S/aborted/try1/。batch を変えて回し直すなら新しい契約で起票する（tasks/T-2026-11-05-grasp-tower-rebuild/RESULT.md §1）
+- [ ] 2026-11-06 [cc] 欠落の印の付いたフレーム（train 301・val 1）は把持関係の注釈ファイルに含まれず、学ぶフレームに最初から入らない。次の契約の §3.1 はこの前提で書く（RESULT.md §4）
+- [ ] 2026-11-06 [cc] 退避した run_ptower_search.log（0 B）は ~/m2-evacuated/T-2026-11-05-grasp-tower-rebuild/。戻すかを利用者に確かめる
+- [ ] 2026-11-06 [cc] bengio 版: 利用者の決定で andrew の分岐と PR #289 を使い続け、実験は bengio で一からやり直す。台帳の改訂版（Task B0）を「読み直し」の指示で取り込んだ（eb4c4925）
+- [ ] 2026-11-06 [cc] Task B0 の回答: GPU ごとの batch 8、bf16（変形注意だけ fp32。mmcv 2.1.0 に bf16 の実装が無く、利用者の決定で入力が bf16 のときだけ fp32 で計算）、学習率 1e-4 のまま。GPU 0 に確定、GPU 1 に H1 の後 H2。二本目との差は batch と精度の重なりとして書く（experiments/analysis/grasp_tower_rebuild/batch_probe.md）
