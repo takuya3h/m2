@@ -1,6 +1,6 @@
 # 把持塔 G の作り直し — 把持関係 5 クラスの頭、左右反転でラベルを入れ替える、信号と標的の作り直し
 
-**task_id:** T-2026-11-05-grasp-tower-rebuild  **kind:** analysis  **ホスト:** andrew  **PR の base:** phase0  **分岐:** feat/grasp-tower-rebuild
+**task_id:** T-2026-11-05-grasp-tower-rebuild  **kind:** analysis  **ホスト:** bengio  **PR の base:** phase0  **分岐:** feat/grasp-tower-rebuild
 
 ## 0. この契約の位置づけ
 
@@ -9,6 +9,7 @@
   1. 把持関係 5 クラス・他者の手 2 クラス・術具 31 クラスの三種のラベルを、一つの 38 クラスの頭で分類させた。三種は互いに排他でないので、一つの softmax の頭で扱う設計は成り立たない
   2. 学習の左右反転（確率 0.5）で、左手と右手、左手の器具と右手の器具のラベルを入れ替えなかった（`scripts/grasppilot/g_train.py` の `G38.__getitem__`）
 - このため、G の出力を使った腕（案 A・B の予測の腕と入れ替えの腕、案 C・D の教師の腕と入れ替えた教師の腕、W2・W3 の案 A・B の予測の腕）はすべて無効である。**本契約は G を作り直し、信号と標的を作り直す。腕は回さない**（腕の回し直しは、本契約の報告の後に別の契約で起票する）
+- ホストは bengio（利用者の決定 2026-11-06。andrew 指定の版を置き換えた）。二本目の保存先（G の重み、組んだ注釈、信号）と一本目の保存先（COCO の重み、正解の信号）は andrew に在る。bengio に同じ経路で無ければ andrew から ssh で読んで写し、sha256 を照合する（andrew には書き込まない）。bengio の電力の上限は 220 W で、所要は二本目（andrew）より延びうる
 - 利用者の決定（2026-11-05、起票の会話）:
   1. G の出力は把持関係 5 クラス（自分の左手、自分の右手、左手が扱う器具、右手が扱う器具、両手で扱う器具）だけ。左右反転でラベルを入れ替える
   2. 学ぶフレームは把持関係の注釈があるフレームの全体（三種がそろうフレームに限らない）。構造的欠落の印（loss_mask）の付いたフレームの扱いは §3.1
@@ -40,7 +41,9 @@
 | 入れ替えの作り方 | split ごとに一つの固定の並べ替え（seed 42）、フレーム名の昇順の全体にわたる | `scripts/stage2pilot/shuffle_signals.py` の docstring |
 | 案 D の q の行の和 | 二本目の q は train の 11 枠で行の和が 1 を超えた（最大 1.538）。三本目は `d_targets.py normalize` で正規化して使った | 二本目の `RESULT.md` 起票者の誤り 4、三本目の `RESULT.md` |
 | 一本目の正解の信号 | g（14 次元）と m（5 チャネル）、q の作り方は一本目の SPEC §3。置き場は一本目の保存先 | 一本目の `RESULT.md` §3、`scripts/grasppilot/grasp_signals.py` |
-| 二本目の保存先 | `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/`（読むだけ） | 二本目の SPEC §7 |
+| 二本目の保存先 | `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/`（andrew。読むだけ。bengio に無ければ写す） | 二本目の SPEC §7 |
+| 一本目の保存先 | COCO instance の重みは一本目の保存先の `e/weights/`（andrew）、正解の g と m も同じ保存先。bengio に無ければ写す | 一本目の RESULT.md §3 |
+| bengio の装置 | RTX A6000 × 2、電力の上限 220 W。main の Relation-DETR と Stage 2 の材料は andrew と一致（本契約には不要） | `tasks/T-2026-11-02-bengio-align-andrew/RESULT.md` |
 
 ## 3. 定義
 
@@ -63,7 +66,7 @@
 
 - 学習の前（COCO の重みの状態）と学習の後（選んだ epoch）で、val の数十フレームについて: 反転した画像に G を当て、予測のラベルを 1 ↔ 2、3 ↔ 4 で入れ替え、マスクを反転して、元の画像の予測と比べる。クラスごとの P_c（§3.4）の一致を IoU か相関で測る
 - 陽性対照: ラベルを入れ替えない写しで同じ検査をすると、一致が下がる（学習の後の G で見せる）
-- 二本目の G（反転でラベルを入れ替えずに学んだもの）でも同じ検査を 1 回行い、本契約の G と並べる（二本目の重みは読むだけ）
+- 二本目の G（反転でラベルを入れ替えずに学んだもの。andrew から写した重み）でも同じ検査を 1 回行い、本契約の G と並べる（二本目の重みは読むだけ）
 
 ### 3.4 信号と標的
 
@@ -85,10 +88,10 @@
 
 | 段 | run | 本数 | ホスト |
 |---|---|---|---|
-| G | 確定、H1、H2 | 3 | andrew |
+| G | 確定、H1、H2 | 3 | bengio |
 
 - seed 42。run の置き場は `experiments/phase1/grasptower_` で始まる名前。大きな生成物（G の重み、組んだ注釈、信号、標的）は版管理と同期の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/` に置き、経路と sha256 を残す
-- 確定の G と H1・H2 は 2 枚で並行してよい。1 枚に載せる本数は記憶の確保で決め、記録する
+- 確定の G と H1・H2 は bengio の 2 枚で並行してよい。1 枚に載せる本数は記憶の確保で決め、記録する
 - 腕は回さない
 
 ## 5. Task
@@ -99,8 +102,8 @@
 
 1. 分岐が `feat/` で始まり、起点が `origin/phase0` で、起点に二本目（`tasks/T-2026-11-01-grasp-pilot-g/`、`scripts/grasppilot/g_train.py`）と三本目（`tasks/T-2026-11-01-grasp-pilot-d/`、`scripts/grasppilot/d_targets.py`）の内容が在ることを記録する。無ければ停止
 2. 開始前から在る未追跡を消さない。一覧を記録する
-3. andrew の compute プロセスを `/proc/PID/exe` の解決と引数の要素の完全一致で列挙する。本契約以外が一件でもあれば止めずに停止し、利用者に諮る
-4. 記憶領域の空きをバイトで記録し、本契約の生成物の見積もり（二本目の保存先の大きさを測って目安にする）と比べる
+3. bengio の compute プロセスを `/proc/PID/exe` の解決と引数の要素の完全一致で列挙する。本契約以外が一件でもあれば止めずに停止し、利用者に諮る
+4. 記憶領域の空きをバイトで記録し、本契約の生成物の見積もり（andrew の二本目の保存先の大きさを ssh で測って目安にする）と比べる。bengio に二本目・一本目の保存先が無ければ、必要なファイル（二本目の G の重み 3 本、COCO の重み、一本目の正解の g と m）だけを andrew から写し、sha256 を照合して記録する
 5. 試験の失敗の名前の集合、既存の `.venv` と `.venv-relation-detr` のパッケージの一覧の要約値を記録する
 6. GPU ごとの電力の上限と装置の型を記録する
 7. `contract.conventions_rev` と `meta.created_from` を実測し、食い違えば差し替えて `meta.amendments` に記録する
@@ -174,7 +177,7 @@
 6. 既存スクリプトの既定の挙動を変えない（二本目の経路で学ぶと 38 クラスのまま動くこと）
 7. `context/auto/*` と `tasks/inbox.md` を再生成しない。生成物を作り直す検査（context、inbox、taskindex の check）を回さない。`forbidden-check` は回す
 8. **装置の他のプロセスを止めない。** 他の compute プロセスが在れば停止して諮る
-9. andrew だけを使う。bengio、efros、ilya、dlsta に接続しない。GPU は andrew の 2 枚まで
+9. bengio だけで計算する。andrew には ssh で読むだけ（写すための読み取り。書き込まない）。efros、ilya、dlsta に接続しない。GPU は bengio の 2 枚まで
 10. 開始前から在る未追跡を消さない。同期で届く他の契約のファイルを消さない・動かさない
 11. 外部への送信は `make task-report` 以外の経路で行わない。W&B は offline にする
 12. 抑止の目印を手で置かない・手で外さない
@@ -200,7 +203,8 @@
 
 ## 9. 停止して諮る条件
 
-- andrew に本契約以外の compute プロセスがある（Task A-3）
+- bengio に本契約以外の compute プロセスがある（Task A-3）
+- 二本目・一本目の保存先が bengio に無く、andrew からも写せない、または sha256 が記録と食い違う
 - 二本目か三本目の内容が起点に無い（Task A-1）
 - 注釈のフレーム数が §2 の値と食い違う（Task B-1）
 - G の学習が発散する、上限で止まらない、選んだ epoch の値が学習前を上回らない、反転の整合の検査を通らない（Task C）
