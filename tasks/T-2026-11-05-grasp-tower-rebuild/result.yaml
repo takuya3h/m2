@@ -1,0 +1,62 @@
+result_version: 3
+task_id: "T-2026-11-05-grasp-tower-rebuild"
+status: stopped
+host: "andrew"
+branch: "feat/grasp-tower-rebuild"
+pr: null
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "起点 origin/phase0 89fe4a41 に tasks/T-2026-11-01-grasp-pilot-g（5 ファイル）・g_train.py・tasks/T-2026-11-01-grasp-pilot-d（5 ファイル）・d_targets.py が在る。proc_enum で本契約以外の compute プロセス 0 件、空き 1,645,222,965,248 B、試験の失敗 6 件の名前、二つの仮想環境の要約値（二本目と一致）、GPU 0・1 の電力の上限 300 W（RTX A6000）を記録した"}
+  - {id: G2, verdict: pass, note: "5 クラスの注釈（train 9,356 フレーム・32,408 インスタンス、val 1,514・5,653）から 16 フレームで元のマスクが画素で一致した。反転の経路は 24 フレームで 1↔2・3↔4 を 24/24 入れ替え、入れ替えない写しと二本目の G38 は 0/24 だった"}
+  - {id: G3, verdict: skip, note: "利用者の指示で Task C の途中（3 本とも epoch 2 の途中）に契約を中止したので判定していない。epoch 1 の val の 5 クラスの mask mAP は確定 0.5747・H1 0.5179・H2 0.5666（学習前 0.0060）"}
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 985
+
+deviations:
+  - {type: judgement, note: "利用者の指示（2026-11-06 00:55「バッチサイズについて検討するので停止して」、01:05「契約も停止して良い」）で、G の 3 本を一時停止したあと終了し、契約を中止した。G3・Task D・Task E の集計、README・experiment_log への記入は行っていない。途中の出力は $S/aborted/try1/ へ移した"}
+  - {type: judgement, note: "収束規則（最良が 4 epoch 更新されなければ打ち切り、上限 36、学習率は下げない）を、二本目の外からの監視 g_early_stop.py ではなく、学習の繰り返しの中で判定する派生 g5_train.py にした（SPEC §3.2 が許す）"}
+  - {type: judgement, note: "欠落の印の付いたフレームは注釈を持たず、学ぶフレームに入らない。g5_train.py は、印のフレームが 1 件でも入っていれば学習を始めない形で対象外にした。val の含めた値は、印のフレーム 10_1_0595 を注釈なしの画像として足して測った"}
+  - {type: judgement, note: "二本目の道具（g38_build.py・g_train.py・g_signals.py）は変えず、派生 g5_build.py・g5_train.py・g5_flip_test.py・g5_signals.py を足した。g5_signals.py の infer・merge・assemble は中止のため実行していない"}
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "SPEC §3.1 は、欠落の印の付いたフレームが把持関係の注釈があるフレームの中にあるとして損失からの除き方を決めているが、train の印 301 件・val の 1 件は注釈ファイルの画像に 1 件も含まれない。指示どおり学ぶフレームを組むと印のフレームは最初から入らず、val の印を含めた値は注釈なしの画像を足す形でしか作れない"
+
+positive_controls:
+  - judgement: "a 開始状態の compute プロセスの列挙"
+    breaking_input: "自分のシェルの実行ファイル /usr/bin/zsh と、存在しない /nonexistent/bin/python9 で列挙する"
+    observed: "zsh は 6 件（自分のシェルの親を含む）、存在しない経路は 0 件"
+  - judgement: "b 5 クラスの対応表の検査"
+    breaking_input: "手 4 クラスの注釈（source hand_seg、id 3）を 1 件混ぜた写し"
+    observed: "train・val とも外れ 1 件（本物は 0 件）"
+  - judgement: "b 印のフレームの除外"
+    breaking_input: "印の付いたフレーム 01_1_0698 を train の注釈に 1 件足した写しで g5_train.py を起動する"
+    observed: "RuntimeError で学習を始めずに止まり、歩は 0、run の置き場も作られない。本物の注釈では 0 件で試走が通った"
+  - judgement: "c 反転のラベルの入れ替え"
+    breaking_input: "入れ替えない写し（G5Flip swap=False）と二本目の G38（torch.rand を差し替えて反転を強制）"
+    observed: "どちらもラベルの入れ替えが 0/24・元のまま 24/24（本契約の経路は 24/24 で入れ替え）。画像とマスクは 3 経路とも 24/24 で反転"
+  - judgement: "c 反転の整合の検査"
+    breaking_input: "反転でラベルを入れ替えずに学んだ二本目の確定の G"
+    observed: "左右のクラスの soft IoU は swap 0.002〜0.025、noswap 0.735〜0.921。検査は入れ替えの有無を見分ける。本契約の学習後の G では UNKNOWN（中止）"
+  - judgement: "d G の学習の効き"
+    breaking_input: "学習前の重み（頭は乱数）で val を測る"
+    observed: "学習前 0.0060、epoch 1 で 0.5179〜0.5747。最良の epoch の値は UNKNOWN（中止）"
+  - judgement: "i forbidden-check"
+    breaking_input: "作業ツリーにある、禁止領域の内側の未追跡のファイル"
+    observed: "同期で届いた別の契約のファイル 10 件を違反として拾った。本契約の経路の違反は 0 件"
+
+followups:
+  - "batch の変更を利用者が検討中（2026-11-06）。再開するなら、batch と学習率を決めたうえで新しい契約として G の 3 本を最初から学ぶ。注釈 $S/g/ann/ と派生の道具はそのまま使える"
+  - "中止した 3 本の途中の出力（epoch 1 の best.pth、ログ、run の置き場）は $S/aborted/try1/ にある"
+  - "退避した run_ptower_search.log（0 B）は ~/m2-evacuated/T-2026-11-05-grasp-tower-rebuild/ にある。戻すかどうかは利用者に確かめる"
+
+unknowns:
+  - "学習を終えた G の値・止まる epoch・所要、学習後の反転の整合、信号と標的、正解との比べ（中止）"
+  - "同期で届いた stage2_pd_w3_lowlr・w3lr_* の出所の契約（触れていない）"
+
+commits:
+  - "3d348a22"

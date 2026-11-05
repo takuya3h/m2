@@ -1,15 +1,15 @@
 # audit — T-2026-11-05-grasp-tower-rebuild（非公式の測定。関門と設計の判断に使わない）
 
-時刻は JST。ホストは andrew。版管理の外の置き場は
+時刻は JST（ホストの時計は UTC なので +9 時間して書く）。ホストは andrew。版管理の外の置き場は
 `S=/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild`。
 
 ## 0. 始める（手順書の 0〜4）
 
 - 開始時の分岐は `feat/hostdiff-andrew`。`feat/grasp-tower-rebuild` は手元にも遠隔にも無く、契約の履歴も `.sync-pause` も無かった
 - `python3 scripts/task_start_classify.py` → `止めた理由 [未追跡・起点に無い] run_ptower_search.log`、`分類: 止める`（比較先 origin/phase0 89fe4a41）
-  - `run_ptower_search.log`: 0 バイト、更新 2026-11-02 13:45、禁止領域に属さない
+  - `run_ptower_search.log`: 0 バイト、更新 2026-11-02 22:45 JST、禁止領域に属さない
 - 利用者の選択（選択肢 1）: repo の外へ移して退避し、task-start を一度だけやり直す
-  - **退避先** `~/m2-evacuated/T-2026-11-05-grasp-tower-rebuild/`。**一覧**: `run_ptower_search.log`（0 B、14:34 に移した）。消していない。戻すかは報告の後に利用者へ確かめる
+  - **退避先** `~/m2-evacuated/T-2026-11-05-grasp-tower-rebuild/`。**一覧**: `run_ptower_search.log`（0 B、2026-11-05 23:34 JST に移した）。消していない。戻すかは報告の後に利用者へ確かめる
 - 退避の後の分類 → `分類: 通す`
 - `make task-start` → `分岐を作成: feat/grasp-tower-rebuild（起点 origin/phase0）`、**`.sync-pause を作成`**（この契約が置いた目印）、`完了。`
   - 目印の中身: `task_id=T-2026-11-05-grasp-tower-rebuild` / `branch=feat/grasp-tower-rebuild`
@@ -156,3 +156,63 @@ task-start の後に在る無視されていない未追跡は、取り込んだ
 ### G2 の判定
 
 5 クラスの注釈から元のマスクが戻り（16 フレーム）、反転の経路が左右のラベルを入れ替え（24/24）、入れ替えない写しと二本目の経路が同じ検査で見分けられる（0/24）。**通過。**
+
+## Task C — G の学習（G3）
+
+### C-1 起動と並べ方（`$S/logs/G_{all,H1,H2}.log`）
+
+    2026-11-05 23:42 JST 起動（setsid nohup で親から切り離した。終了コードは $S/logs/G_<g>.rc）
+    CUDA_VISIBLE_DEVICES=0  g5_train.py --run-dir experiments/phase1/grasptower_G_all_seed42 --ckpt-dir $S/g/ckpt/all --ann-dir $S/g/ann --videos all
+    CUDA_VISIBLE_DEVICES=1  g5_train.py --run-dir experiments/phase1/grasptower_G_H1_seed42  --ckpt-dir $S/g/ckpt/H1  --ann-dir $S/g/ann --videos H1
+    CUDA_VISIBLE_DEVICES=1  g5_train.py --run-dir experiments/phase1/grasptower_G_H2_seed42  --ckpt-dir $S/g/ckpt/H2  --ann-dir $S/g/ann --videos H2
+
+- 1 枚に載せる本数: 試走の最大確保 9.85 GB/本（`$S/smoke/smoke_all.log`）から、GPU 0 に確定の G 1 本、GPU 1 に H1・H2 の 2 本（約 20 GB < 48 GB）。worker 8 × 3 = 24 < 32 CPU
+- 学習前の val（3 本とも）: 5 クラスの mask mAP 0.0060。一歩の速さ（epoch 1 の 200 歩目）: 確定 0.726 秒、H1 1.011 秒、H2 1.013 秒。1 epoch の歩数 4,678・1,956・2,721
+
+### C-3 反転の整合（学習前と二本目の G。`scripts/grasppilot/g5_signals.py flipcheck`、出力 `$S/flip/`）
+
+val の 40 フレーム（seed 42）。P_c を 270×480 で作り、反転した画像の P を入れ替え（swap: 1↔2、3↔4）または入れ替えず（noswap）に反転し直して元の画像の P と比べた。
+soft IoU = Σmin/Σmax、相関 = 画素の Pearson。両方の最大が 0.05 未満のクラスは数えない（括弧はフレーム数）
+
+| G | 比べ方 | hand_L | hand_R | tool_L | tool_R | tool_B |
+|---|---|---|---|---|---|---|
+| 二本目の確定の G（38 クラス、読むだけ） | swap | 0.002 / −0.082 (40) | 0.002 / −0.094 (40) | 0.018 / 0.136 (40) | 0.025 / 0.147 (40) | 0.624 / 0.927 (8) |
+| 同上 | noswap | 0.921 / 0.983 (40) | 0.901 / 0.983 (40) | 0.735 / 0.931 (35) | 0.755 / 0.913 (40) | 0.624 / 0.927 (8) |
+| 学習前（COCO の重み、頭 5 クラスは乱数の初期値） | swap | 0.483 / 0.276 (40) | 0.394 / 0.136 (40) | 0.298 / 0.065 (40) | 0.278 / 0.009 (40) | 0.741 / 0.670 (40) |
+| 同上 | noswap | 0.799 / 0.695 (40) | 0.521 / 0.606 (40) | 0.679 / 0.709 (40) | 0.426 / 0.533 (40) | 0.741 / 0.670 (40) |
+
+（値は soft IoU / 相関）。二本目の G は、反転した画像でも左右のラベルを変えずに出す（入れ替えると一致がほぼ 0）。反転でラベルを入れ替えずに学んだことと合う
+
+### 学習前の val（印を除いた値と含めた値。`g5_signals.py evalval --ckpt coco`、`$S/flip/evalval_pre_coco.json`）
+
+- val の印の付いたフレーム: `10_1_0595` の 1 件。含めた値は、このフレームを注釈なしの画像として評価に足した値
+- 除いた値（1,514）0.006026350690、含めた値（1,515）0.006025121379。除いた値は学習の記録の epoch 0（0.0060）と一致（同じ順で初期化を再現）
+
+### C-2 利用者の指示による一時停止（2026-11-06 00:55 JST）
+
+- 00:08 JST の測定: GPU 0（確定の G）使用率 66〜92%・VRAM 10.3/48 GB、GPU 1（H1・H2）使用率 100%・VRAM 20.6/48 GB。律速は計算で、全体の終わりは確定の G（1 epoch 約 52 分）
+- 利用者の指示「VRAM の余裕あるからフルで使って一番早く終わるようにして」→ 選択肢（処方を保って詰める / DDP / batch を上げる）を示した →
+  **利用者「一旦、バッチサイズについて検討するので停止して」**
+- 3 本のプロセスグループ（pgid 1748461・1748462・1748463、各 10 プロセス）に SIGSTOP。状態は全員 T、GPU 使用率 0%（VRAM は確保されたまま）。出力は消していない
+- 止めた時点: 確定 epoch 1 = 0.5747・epoch 2 の 2,600/4,678 歩、H1 epoch 1 = 0.5179・epoch 2 の 1,600/1,956 歩、H2 epoch 1 = 0.5666・epoch 2 の 800/2,721 歩
+- 再開は SIGCONT（`kill -CONT -- -<pgid>`）。batch を変えるなら 3 本を止め、出力を `$S/aborted/` へ移してから起動し直す（利用者の決定を待つ）
+
+### C-4 利用者の指示による契約の中止（2026-11-06 01:05 JST）
+
+- 利用者「ごめん契約も停止して良い」→ 3 本のプロセスグループに SIGTERM、続けて SIGCONT（停止中のプロセスに終了を届けるため）。8 秒後に各グループの残り 0、GPU 0・1 とも 16 MiB・compute 0 件
+- 終了の処理は走らない形で終わった（`$S/logs/G_<g>.rc` は書かれていない。metrics.json・per_class_ap.json・notes.md・end.txt も無い）
+- 途中の出力は消さずに移した: `experiments/phase1/grasptower_G_{all,H1,H2}_seed42/` → `$S/aborted/try1/`、`$S/g/ckpt/` → `$S/aborted/try1/ckpt/`（各 best.pth は epoch 1 の重み）、
+  ログの写し `$S/aborted/try1/G_*.log`。`experiments/phase1/` に本契約の run は残っていない（`grasptower` の件数 0）
+
+## Task E — 終わりの確かめ（中止の時点）
+
+    $ CUDA_VISIBLE_DEVICES="" PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider -rfE --continue-on-collection-errors
+    6 failed, 985 passed, 5 skipped, 26 warnings in 28.65s（失敗の名前の集合は開始時と diff なし。$S/end/pytest_end.txt）
+    $ uv pip list --python <venv>/bin/python --format freeze | sha256sum
+    .venv 9c7be5c9…94c0、.venv-relation-detr a74c9c78…b090（開始時と一致）
+    $ make forbidden-check TASK=T-2026-11-05-grasp-tower-rebuild
+    changed 17、violations 10、status fail
+
+- 違反 10 件はすべて同期処理が実行中に運んだ別の契約の未追跡のファイル（`experiments/analysis/stage2_pd_w3_lowlr/tools/*.py` 4 件、
+  `experiments/phase1/w3lr_pd_*/logs/eval_meta_val.json` 6 件）。**本契約の経路の違反は 0 件**。届いたファイルには触れていない（§7-10）
+- changed 17 のうち 7 件は本契約のファイル（契約 2 本、audit、scripts/grasppilot/g5_*.py 4 本）で、道具は本契約の新しいファイルを変更として拾っている（禁止領域の外なので違反にならない）
