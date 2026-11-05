@@ -6,10 +6,12 @@
     3. 収束規則: epoch ごとに val の 5 クラスの mask mAP を測り、最良（厳密に上回ったら更新）が 4 epoch 更新されなければ打ち切る。
        上限 36。学習率は下げない（二本目の利用者の決定 2026-11-01 の規則を学習の繰り返しの中で行う）。最良の epoch の重みを使う
 処方は二本目と同じ（mmdet の設定の optim_wrapper のまま、短辺 800・長辺 1333、batch 2、単精度、seed 42）。
+--batch と --amp で batch と数値精度を変えられる（既定は batch 2・単精度で従来どおり）。--amp bf16 は AmpOptimWrapper の dtype bfloat16・
+loss_scale dynamic で、変形注意だけ fp32（`patch_msda_bf16`。利用者の決定 2026-11-06、Task B0 の後）。評価は従来どおり単精度。
 欠落の印（loss_mask）の付いたフレームが学ぶフレームに入っていれば、学習を始めずに止める。W&B は offline に固定する。
 
     .venv/bin/python scripts/grasppilot/g5_train.py --run-dir <experiments/phase1/grasptower_G_...> --ckpt-dir <S/g/ckpt/...>
-        --ann-dir <S/g/ann> --videos all|H1|H2 [--smoke]
+        --ann-dir <S/g/ann> --videos all|H1|H2 [--batch 2] [--amp none|bf16] [--smoke]
 """
 from __future__ import annotations
 
@@ -154,6 +156,8 @@ def main():
     ap.add_argument("--max-epochs", type=int, default=36)
     ap.add_argument("--patience", type=int, default=4)
     ap.add_argument("--workers", type=int, default=8)
+    ap.add_argument("--batch", type=int, default=2, help="学習の GPU ごとの batch（評価は 2 のまま）")
+    ap.add_argument("--amp", choices=("none", "bf16"), default="none", help="bf16 は変形注意だけ fp32")
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--smoke", action="store_true", help="数歩と val の数枚で通るかだけ見る")
     ap.add_argument("--smoke-steps", type=int, default=20)
@@ -191,11 +195,16 @@ def main():
     ckpt.mkdir(parents=True, exist_ok=True)
 
     model, cfg, load_report = build_model()
+    if a.amp == "bf16":
+        cfg.optim_wrapper.type = "AmpOptimWrapper"
+        cfg.optim_wrapper.loss_scale = "dynamic"
+        cfg.optim_wrapper.dtype = "bfloat16"
+        patch_msda_bf16()
     optim = build_optim_wrapper(model, cfg.optim_wrapper)
 
     g = torch.Generator()
     g.manual_seed(a.seed)
-    train_loader = torch.utils.data.DataLoader(G5Flip(tr, True), batch_size=2, shuffle=True, num_workers=a.workers,
+    train_loader = torch.utils.data.DataLoader(G5Flip(tr, True), batch_size=a.batch, shuffle=True, num_workers=a.workers,
                                                collate_fn=T.collate, generator=g, persistent_workers=True,
                                                pin_memory=False, drop_last=True)  # nosemgrep
     val_loader = torch.utils.data.DataLoader(G5Flip(va, False), batch_size=2, shuffle=False, num_workers=a.workers,
@@ -210,8 +219,8 @@ def main():
               "input": f"短辺 {T.SHORT}・長辺 {T.LONG} まで（双線形）、学習は左右反転 0.5 でラベル 1↔2・3↔4 を入れ替える、"
                        "batch_augments なし、32 の倍数へ詰める",
               "flip_label_swap": {"1": 2, "2": 1, "3": 4, "4": 3, "5": 5},
-              "batch": 2, "optim_wrapper": json.loads(json.dumps(cfg.optim_wrapper.to_dict(), default=str)),
-              "amp": "none", "max_epochs": a.max_epochs, "patience": a.patience, "lr_decay": None,
+              "batch": a.batch, "val_batch": 2, "optim_wrapper": json.loads(json.dumps(cfg.optim_wrapper.to_dict(), default=str)),
+              "amp": a.amp, "msda_fp32_for_bf16": a.amp == "bf16", "eval_precision": "fp32", "max_epochs": a.max_epochs, "patience": a.patience, "lr_decay": None,
               "selection": "val の 5 クラスの mask mAP（pycocotools segm、元の解像度、上位 100）。頭が 5 クラスなので segm_mAP と grasp5_mAP は同じ量。"
                            "改善 = 最良を厳密に上回る",
               "stop_rule": f"最良が {a.patience} epoch 更新されなければ打ち切り、上限 {a.max_epochs}、学習率は下げない（学習の繰り返しの中で判定）",
