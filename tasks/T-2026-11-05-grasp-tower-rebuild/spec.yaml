@@ -5,7 +5,7 @@ meta:
   title: "把持塔 G の作り直し。頭を把持関係 5 クラスだけにし、左右反転でラベルを入れ替える。確定の G と交差適合の二つの半分を学び、案 A の信号・案 B の把持のマスク・案 D の標的を作り直す（bengio。andrew 指定の版を 2026-11-06 に置き換え）。二本目 T-2026-11-01-grasp-pilot-g の G（38 クラスを一つの頭、反転でラベルを入れ替えない）を置き換える"
   origin: claude-app
   chat_url: ""
-  created_at: "2026-11-05T16:10:00Z"
+  created_at: "2026-11-05T16:45:00Z"
   created_from:
     runindex_commit: "68befc3b62ffc071077cca446df5d3c83b8c38b9"
     counts: {index: 2363, experiments: 1130, verdicts: 1736}
@@ -33,17 +33,19 @@ plan:
   phases:
     - {id: A, name: "開始状態。分岐、前提の統合、bengio の他プロセス、記憶領域、試験の失敗の名前、仮想環境の要約値、電力の上限", gpu: false, est: "1h"}
     - {id: B, name: "5 クラスの注釈を組む。反転でラベルを入れ替える学習経路を足し、対照で確かめる", gpu: true, est: "3h"}
-    - {id: C, name: "確定の G と H1・H2 の学習", gpu: true, est: "30h"}
+    - {id: B0, name: "G の batch と数値精度の計測（12 水準、数十歩）。表を出して利用者に諮る", gpu: true, est: "3h"}
+    - {id: C, name: "確定の G と H1・H2 の学習（利用者が決めた batch と数値精度）", gpu: true, est: "30h"}
     - {id: D, name: "信号と標的を作り、正解と比べ、交差適合を確かめる", gpu: true, est: "3h"}
     - {id: E, name: "集計、検証、報告", gpu: false, est: "2h"}
   gates:
     - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、二本目と三本目の内容が起点に在り、本契約以外の compute プロセスが無く、記憶領域と失敗の名前と仮想環境の要約値と電力の上限を記録した", on_fail: stop}
     - {id: G2, after: B, check: "5 クラスの注釈から元のマスクが戻り、反転の経路が左右のラベルを入れ替え、入れ替えない写しが対照で見分けられる", on_fail: stop}
+    - {id: G2b, after: B0, check: "12 水準の表が在り、読み込んだ枚数が batch の値と一致し、利用者の回答（batch、数値精度、学習率）が記録された", on_fail: stop}
     - {id: G3, after: C, check: "3 本の G が収束規則で止まり、選んだ epoch の 5 クラスの mask mAP が学習前を上回り、反転の整合の検査を通る", on_fail: stop}
   env:
     venv: ".venv"
     preflight: [venv_active, gpu_free]
-  resources: {server: bengio, gpu: 2, est_hours: 39, runs: 3}
+  resources: {server: bengio, gpu: 2, est_hours: 42, runs: 3}
 outputs:
   must_have: [REPORT.md, RESULT.md, result.yaml, audit.md]
   destination: "experiments/analysis/grasp_tower_rebuild/"
@@ -57,6 +59,7 @@ outputs:
     - "g: 入れ替えの信号が split ごとの固定の並べ替えで作られ、元と同じフレームが来た割合と同じ動画から来た割合が記録されている"
     - "h: test の動画のフレームを学習と信号の作成と評価に一度も通していないことが、通した動画の集合で示されている"
     - "i: 二本目と三本目と前回までの予備測定の run の置き場と保存先、data の raw と external と注釈、凍結源、既存の checkpoint、third_party、既存の仮想環境を変えていない。試験の失敗が増えていない。forbidden-check の違反のうち本契約の経路のものが 0 件"
+    - "k: Task B0 の 12 水準（batch 2・4・6・8・12・16 × fp32・fp16）の表に、収まったか、torch の最大確保と予約、nvidia-smi の最大、一歩の時間の平均と標準偏差、1 epoch の歩数と見込み時間があり、読み込んだ枚数が batch の値と一致することと、利用者の回答が記録されている"
     - "j: PR が Draft でなく存在し、base が phase0、分岐が feat/grasp-tower-rebuild"
   report_to: [notion_run_ledger]
 governance:
@@ -68,6 +71,7 @@ governance:
     - "二本目・一本目の保存先が bengio に無く andrew からも写せない、または sha256 が記録と食い違う場合"
     - "二本目か三本目の内容が起点に無い場合"
     - "把持関係の注釈のフレーム数が被覆の文書の値（train 9,356、val 1,514）と食い違う場合"
+    - "Task B0 の表を出した時点で必ず停止して諮る（G の batch・数値精度・学習率は利用者が決める。回答まで G を学ばない）"
     - "G の学習が発散する、上限で止まらない、選んだ epoch の 5 クラスの mask mAP が学習前を上回らない場合"
     - "反転の整合の検査を通らない場合"
     - "記憶領域が足りない場合"

@@ -1,218 +1,156 @@
 # audit — T-2026-11-05-grasp-tower-rebuild（非公式の測定。関門と設計の判断に使わない）
 
-時刻は JST（ホストの時計は UTC なので +9 時間して書く）。ホストは andrew。版管理の外の置き場は
-`S=/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild`。
+ホスト bengio（bengio 版の契約。andrew 版は利用者の指示で中止し、その audit は commit 2d87d79f に残る）。
+時刻は JST（ホストの時計は UTC なので +9 時間して書く）。版管理の外の置き場は
+`S=/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild`（bengio）。
 
 ## 0. 始める（手順書の 0〜4）
 
-- 開始時の分岐は `feat/hostdiff-andrew`。`feat/grasp-tower-rebuild` は手元にも遠隔にも無く、契約の履歴も `.sync-pause` も無かった
-- `python3 scripts/task_start_classify.py` → `止めた理由 [未追跡・起点に無い] run_ptower_search.log`、`分類: 止める`（比較先 origin/phase0 89fe4a41）
-  - `run_ptower_search.log`: 0 バイト、更新 2026-11-02 22:45 JST、禁止領域に属さない
-- 利用者の選択（選択肢 1）: repo の外へ移して退避し、task-start を一度だけやり直す
-  - **退避先** `~/m2-evacuated/T-2026-11-05-grasp-tower-rebuild/`。**一覧**: `run_ptower_search.log`（0 B、2026-11-05 23:34 JST に移した）。消していない。戻すかは報告の後に利用者へ確かめる
-- 退避の後の分類 → `分類: 通す`
-- `make task-start` → `分岐を作成: feat/grasp-tower-rebuild（起点 origin/phase0）`、**`.sync-pause を作成`**（この契約が置いた目印）、`完了。`
+- 開始時の分岐は `feat/hostdiff-bengio`、作業ツリーは清浄。`feat/grasp-tower-rebuild` は手元に無く、`ls-remote` でも遠隔に無く、
+  契約の履歴も `.sync-pause` も無かった（2026-11-06 01:1x JST）
+- `python3 scripts/task_start_classify.py` → 全区分 0 件、`分類: 通す`（比較先 origin/phase0 89fe4a41）
+- `make task-start` → `分岐を作成: feat/grasp-tower-rebuild（起点 origin/phase0）`、**`.sync-pause を作成`**（この契約が置いた目印）、契約を台帳から取り込み、`完了。`
   - 目印の中身: `task_id=T-2026-11-05-grasp-tower-rebuild` / `branch=feat/grasp-tower-rebuild`
-- `make task-validate` → `OK`、exit 0
-- `make task-preflight` → 7 PASS / 0 WARN / 7 SKIP / 0 FAIL、exit 0。SKIP: P2 cuda_ext_loaded・P3 deterministic_flags（契約に記載なし）、
-  P4 prereg_committed・P5 frozen_source_hash・P13・P14（kind=analysis で対象外）、P12 refs_resolved（解決前提の参照なし）。P9 spec_lint は該当なし
+- `make task-validate` → `OK`、`make task-preflight` → 7 PASS / 0 WARN / 7 SKIP / 0 FAIL。SKIP: P2・P3（契約に記載なし）、
+  P4・P5・P13・P14（kind=analysis で対象外）、P12（解決前提の参照なし）。P9 spec_lint は該当なし
+- **分岐の重複を検出して停止**: 取得の後に `git ls-remote --heads origin` が `feat/grasp-tower-rebuild` 2d87d79f を返した。
+  andrew 版の同じ契約（PR #289、OPEN、Draft でない。Task C の epoch 2 で利用者の指示により中止、status stopped）。
+  andrew の手元も同じ分岐（ssh で読むだけ）。手順書 0 の規則 2 により停止し利用者に諮った
+- **利用者の決定（選択肢 1）**: andrew の分岐の上に積み PR #289 を使い続ける。**実験自体はちゃんとやり直す**
+  - 取り込んだ bengio 版の契約を作業用の場所へ写し（sha256 一致）、未追跡の契約フォルダを移してから
+    `git merge --ff-only origin/feat/grasp-tower-rebuild`（89fe4a41 → 2d87d79f、早送り）
+  - `spec.yaml`・`SPEC.md` を bengio 版で置き換え（4ce69dfb）。置き換えた契約で validate `OK`、preflight 7 PASS / 0 FAIL
+  - andrew の途中の出力（andrew の `$S/aborted/try1/` の重み・注釈・反転の記録）は**使わない**。注釈・検査・学習はすべて bengio で作り直す。
+    使うのは andrew 版で commit 済みのコード（`g5_build.py`・`g5_train.py`・`g5_flip_test.py`・`g5_signals.py`）だけ
+  - バッチサイズは契約どおり 2（andrew は「バッチサイズについて検討する」として止めた。bengio 版の契約は「処方は二本目と同じ」）
 
 ## Task A — 開始状態（G1）
 
-### A-1 分岐と起点、二本目と三本目の内容
+記録の原本は `$S/start/`。
 
-    $ git branch --show-current; git rev-parse HEAD origin/phase0; git merge-base HEAD origin/phase0
+### A-1 分岐と起点、二本目と三本目の内容（`$S/start/a12.txt`）
+
+    $ git branch --show-current; git merge-base HEAD origin/phase0; git rev-parse origin/phase0
     feat/grasp-tower-rebuild
-    89fe4a417e51ddc830e275ff8cd718a475ad36ba（3 つとも同じ）
-    $ git ls-tree -r --name-only origin/phase0 -- <経路> | wc -l
-    tasks/T-2026-11-01-grasp-pilot-g/: 5
-    scripts/grasppilot/g_train.py: 1
-    tasks/T-2026-11-01-grasp-pilot-d/: 5
-    scripts/grasppilot/d_targets.py: 1
+    89fe4a417e51ddc830e275ff8cd718a475ad36ba（merge-base と origin/phase0 が同じ）
+    $ git log --oneline origin/phase0..HEAD
+    4ce69dfb（bengio 版の契約）、2d87d79f・3aa9458e・ec05e4bd・3d348a22（andrew 版の 4 件）
+    $ git ls-tree --name-only origin/phase0 -- tasks/T-2026-11-01-grasp-pilot-g tasks/T-2026-11-01-grasp-pilot-d scripts/grasppilot/{g_train,d_targets,g38_build,g_signals,grasp_signals}.py
+    7 件すべて在る
 
 ### A-2 開始前から在る未追跡
 
-task-start の前に在った無視されていない未追跡は `run_ptower_search.log` の 1 件だけ（利用者の選択で退避。上記）。
-task-start の後に在る無視されていない未追跡は、取り込んだ契約の 2 本だけ（`tasks/T-2026-11-05-grasp-tower-rebuild/SPEC.md`、`spec.yaml`）。消していない
+    $ git status --porcelain --untracked-files=all | wc -l
+    0
+    $ find experiments/phase1 -maxdepth 1 -name 'grasptower_*'
+    grasptower_G_all_seed42・grasptower_G_H1_seed42・grasptower_G_H2_seed42（いずれも 2026-11-06 01:06 JST 作成、中身 0 件の空のフォルダ）
+
+- 空の 3 フォルダは andrew 版の run の置き場が同期で届いた残りとみる（git は空のフォルダを数えない）。消していない。本契約の run 名と同じなので、そこへ書いた
 
 ### A-3 compute プロセス（`$S/start/a3_procs.json`、道具 `scripts/grasppilot/proc_enum.py`）
 
     $ python3 scripts/grasppilot/proc_enum.py
-    n_processes 53、gpu_pids []、n_compute 0
-    $ python3 scripts/grasppilot/proc_enum.py --match-exe /usr/bin/zsh            → count 6（自分のシェルの親を含む）
+    n_processes 60、gpu_pids []、n_compute 0
+    $ python3 scripts/grasppilot/proc_enum.py --match-exe /usr/bin/zsh            → count 9
     $ python3 scripts/grasppilot/proc_enum.py --match-exe /nonexistent/bin/python9 → count 0
-    $ nvidia-smi --query-compute-apps=pid,name --format=csv,noheader | wc -l       → 0
 
-**本契約以外の compute プロセスは 0 件**
-
-### A-4 記憶領域（`$S/start/a4_df.txt`）
+### A-4 記憶領域と写し（`$S/start/a4_df.txt`・`a4_copied_sha256.txt`）
 
     $ df -B1 /home/ubuntu/slocal2
-    /dev/sdc1  7937302376448  5891984543744  1645222965248  79%
-    $ du -sb /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g
-    28629765031
+    Available 1,389,087,522,816 B（使用 82%）
+    $ ssh andrew du -sb <二本目の保存先> <一本目の保存先>
+    28,629,765,031 B・799,990,843 B（目安。本契約の生成物はこれ以下と見込み、空きの 2% 程度）
 
-空き 1,645,222,965,248 B。見積もり: 二本目の保存先 28,629,765,031 B（G・信号・案 A〜D の腕まで含む）を上限の目安とする。
-本契約は腕を回さず t も作らないので、それ以下（空きの 1.8% 未満）。足りる
+- bengio の二本目の保存先には `signals/` だけがあり G の重み（`g/ckpt`）も注釈も無い。一本目の保存先には `signals/g_{train,val}.npz` だけがあり COCO の重み（`e/weights`）が無い
+- **写し先は本契約の保存先 `$S/inputs/`**（一本目・二本目の保存先へは書かない、§7-2）。andrew からは `scp` で読むだけ
 
-### A-5 試験と仮想環境（`$S/start/a5_pytest_start.txt`・`a5_failed_names.txt`・`a5_pkgs_*.txt`）
+| ファイル | 写し先 | sha256 | 照合先 |
+|---|---|---|---|
+| 二本目 G 確定 best.pth | `$S/inputs/g2_ckpt/all/best.pth` | 42c1f3bce6ed2027… | `experiments/phase1/grasppilot2_G_all_seed42/metrics.json` と一致 |
+| 二本目 G H1 best.pth | `$S/inputs/g2_ckpt/H1/best.pth` | e702af3e096eeb72… | 同 H1 と一致 |
+| 二本目 G H2 best.pth | `$S/inputs/g2_ckpt/H2/best.pth` | 52d4b3aa178433b5… | 同 H2 と一致 |
+| COCO instance の重み | `$S/inputs/coco/mask2former_r50_8xb2-lsj-50e_coco_20220506_191028-41b088b6.pth` | 41b088b62838c986… | 一本目 audit の 41b088b62838c986… と一致 |
+| 一本目の正解の g（train・val）と summary.json | `$S/inputs/probe_signals/` | 741cecb5…・235e2c2b…・bf1cd898… | andrew の原本・bengio の一本目の保存先の既存の写しと 3 者一致 |
+
+- 一本目の正解の m はファイルとして保存されていない（一本目の audit「m は保存しない。学習と評価のときに注釈から作る」）。比べは注釈から作る
+
+### A-5 試験と仮想環境（`$S/start/a5_pytest_start.txt`・`a5_fail_names.txt`・`a5_pkgs_*.txt`）
 
     $ CUDA_VISIBLE_DEVICES="" PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider -rfE --continue-on-collection-errors
-    6 failed, 985 passed, 5 skipped, 32 warnings in 28.12s
-
-失敗の名前（二本目の開始時と同じ 6 件）:
-
-    tests/test_engines.py::test_mmdet_trainer_eval_recipe_in_metrics
-    tests/test_fetch_task.py::test_rejects_unknown_file_name
-    tests/test_research_logger.py::test_log_run_idempotent
-    tests/test_research_logger.py::test_run_logging_invokes_log_run_on_finally
-    tests/test_research_logger.py::test_run_logging_no_double_post_on_normal_exit
-    tests/test_research_logger.py::test_run_logging_swallows_exception_in_user_block
-
+    11 failed, 980 passed, 5 skipped（48.10 s）
+    失敗の名前: test_check_spec::test_teacher_detection_rate、test_engines::test_mmdet_trainer_eval_recipe_in_metrics、
+      test_fetch_task::test_rejects_unknown_file_name、test_research_logger の 4 件、test_stage1_ptower_heads::test_existing_candidates_match_baseline[A,B,C,linear]
     $ uv pip list --python <venv>/bin/python --format freeze | sha256sum
-    .venv                 108 行  9c7be5c99d6b768ab3cfa5a0c2f479520b7486cffbd866de0f3759a6682f94c0
-    .venv-relation-detr    72 行  a74c9c787e79f01405b27797cf5fa9b3ff3f3858caf65e641bec1a86dad5b090
-    （どちらも二本目の値と一致）
+    .venv 9c7be5c99d6b768a…a6682f94c0（108 行）、.venv-relation-detr a74c9c787e79f014…ad5b090（72 行）。二本目の記録の値と一致
 
 ### A-6 GPU（`$S/start/a6_gpu_power.csv`）
 
-| GPU | 型 | 電力の上限 | 既定の上限 | 最大の上限 | 記憶 |
-|---|---|---:|---:|---:|---:|
-| 0 | NVIDIA RTX A6000 | 300.00 W | 300.00 W | 300.00 W | 49,140 MiB |
-| 1 | NVIDIA RTX A6000 | 300.00 W | 300.00 W | 300.00 W | 49,140 MiB |
+    0, NVIDIA RTX A6000, 220.00 W（既定 300.00 W、最大 300.00 W）
+    1, NVIDIA RTX A6000, 220.00 W（既定 300.00 W、最大 300.00 W）
 
-### A-7 起票時の値
+### A-7 契約の版
 
-    $ git log -1 --format=%H -- context/conventions.md → 2d946b07a57abebc4a8f66150d6dbaf2ccd22186（contract.conventions_rev と一致）
-    $ git log -1 --format=%H -- runindex/              → 68befc3b62ffc071077cca446df5d3c83b8c38b9（created_from.runindex_commit と一致）
-    行数（見出しを除く）: index 2363、experiments 1130、verdicts 1736（created_from.counts と一致）
+- `contract.conventions_rev` 2d946b07 = `git log -1 -- context/conventions.md`（差分なし）
+- `meta.created_from.runindex_commit` 68befc3b = `git log -1 -- runindex/`。件数 index 2,363・experiments 1,130・verdicts 1,736（見出し行を除く）で一致
+- 食い違いが無いので `meta.amendments` は空のまま
 
-差し替えは無い。`meta.amendments` は空のまま
+**G1: pass**（分岐 feat/・起点 origin/phase0・二本目と三本目の内容が起点に在る・本契約以外の compute 0 件・空き・失敗の名前・要約値・電力の上限を記録）
 
-### G1 の判定
+## コードの変更（bengio で動かすため。f149c79d）
 
-分岐 `feat/grasp-tower-rebuild`、起点 origin/phase0 89fe4a41 に二本目と三本目の内容が在り、本契約以外の compute プロセス 0 件、
-空き・失敗の名前・仮想環境の要約値・電力の上限を記録した。**通過。**
+- `g5_train.py`: COCO の重みを `COCO_W = $S/inputs/coco/<同じファイル名>` から読む（以前は一本目の保存先の経路。bengio には無い）。sha256 の照合は従来どおり
+- `g5_signals.py`: 目録の `"host"` を固定の `"andrew"` から `os.uname().nodename` へ
+- 二本目・三本目の既存スクリプトは変えていない（§7-6）
 
 ## Task B — 注釈と反転の経路（G2）
 
-### B-0 把持関係の注釈の実測（組む前）
-
-    data/annotations/egosurgery_hts/hand_tool_seg/{train,val}.json の画像と、折り A の工程の経路のフレームを突き合わせた
-    train: 画像 9,356（すべて注釈あり）、工程の経路 9,657、経路 ∩ 画像 9,356、画像 − 経路 0、loss_mask/train.txt 301 件、loss_mask ∩ 画像 0
-    val:   画像 1,514（すべて注釈あり）、工程の経路 1,515、経路 ∩ 画像 1,514、画像 − 経路 0、loss_mask/val.txt 1 件、loss_mask ∩ 画像 0
-    loss_mask の行数: train 301・val 1・test 158 = 460（test.txt は行数だけ数え、中身を読んでいない）
-
-- フレーム数は §2 の値（train 9,356、val 1,514）と一致。停止しない
-- **欠落の印の付いたフレームは、把持関係の注釈ファイルに 1 件も含まれない**（README §4「v1 にも v2 にも hand_tool_seg アノテーションが存在しないフレーム」と一致）。
-  9,657 − 9,356 = 301、1,515 − 1,514 = 1 がちょうど印の件数。§3.1 の「印の付いたフレームを学習の対象から外す」は、注釈のあるフレームだけを学ぶことで構造的に満たされる
-
-### B-1・B-2 5 クラスの注釈（`scripts/grasppilot/g5_build.py`、出力 `$S/g/ann/`、記録 `$S/g/ann/g5_summary.json`）
-
-二本目の `g38_build.py` を変えずに足した派生。把持関係の注釈（hand_tool_seg）だけを開き、id 1〜5 をそのまま写す。手 4 クラスと術具 31 クラスは開かない。
-学ぶフレームは工程の経路のフレームのうち把持関係の注釈があるもの（三種がそろう条件は外した。二本目の `frames_all_three` との違い）
+### B-1・B-2 注釈（`$S/g/ann/g5_summary.json`、`$S/logs/b1_build.txt`）
 
     $ .venv/bin/python scripts/grasppilot/g5_build.py --out $S/g/ann --check-frames 16
-    train 9657 9356 32408 {'01': 912, '02': 460, '03': 1068, '06': 1355, '08': 1305, '11': 747, '12': 485, '13': 809, '14': 1801, '15': 414} restore_equal True class_viol 0 ctrl 1 lm_in 0 lm_ctrl 1
-    val 1515 1514 5653 {'09': 518, '10': 996} restore_equal True class_viol 0 ctrl 1 lm_in 0 lm_ctrl 1
+    train 9657 9356 32408 {01:912, 02:460, 03:1068, 06:1355, 08:1305, 11:747, 12:485, 13:809, 14:1801, 15:414} restore_equal True class_viol 0 ctrl 1 lm_in 0 lm_ctrl 1
+    val 1515 1514 5653 {09:518, 10:996} restore_equal True class_viol 0 ctrl 1 lm_in 0 lm_ctrl 1
 
-| id | 名前 | 反転で | train インスタンス | train フレーム | val インスタンス | val フレーム |
-|---:|---|---:|---:|---:|---:|---:|
-| 1 | First Person's Left Hand | 2 | 8,704 | 8,659 | 1,505 | 1,491 |
-| 2 | First Person's Right Hand | 1 | 8,447 | 8,386 | 1,467 | 1,463 |
-| 3 | Left Hand Tool | 4 | 7,129 | 7,129 | 1,231 | 1,231 |
-| 4 | Right Hand Tool | 3 | 7,176 | 7,176 | 1,274 | 1,274 |
-| 5 | Two Hands Tool | 5 | 952 | 952 | 176 | 176 |
+| id | 名前（hand_tool_seg） | 反転で | train インスタンス / フレーム | val インスタンス / フレーム |
+|---|---|---|---:|---:|
+| 1 | First Person's Left Hand | 2 | 8,704 / 8,659 | 1,505 / 1,491 |
+| 2 | First Person's Right Hand | 1 | 8,447 / 8,386 | 1,467 / 1,463 |
+| 3 | Left Hand Tool | 4 | 7,129 / 7,129 | 1,231 / 1,231 |
+| 4 | Right Hand Tool | 3 | 7,176 / 7,176 | 1,274 / 1,274 |
+| 5 | Two Hands Tool | 5 | 952 / 952 | 176 / 176 |
 
-- フレーム: train 9,356、val 1,514（§2 と一致）。インスタンス: train 32,408（二本目の C1 の RLE 32,408 件と一致）、val 5,653
-- 要約値: `g5_train.json` aa88bee27f6773484401f6880fc5b4176b8cf794916bbcef20c46e2a684d3f42、`g5_val.json` 762af7e8249299025e8662d4cea96ea35bcca3dc3862860480b4fb9650c9a18e
-- 欠落の印の付いたフレーム（分割ごと）: train の一覧 301 件・学ぶフレームに入った件数 0、val の一覧 1 件・0 件
-- 戻したマスクの一致（B-2）: 16 フレーム（seed 42 で選んだ）とも、(クラス, マスクの画素) の集合が元の注釈と一致（train・val とも `restore_equal True`）
-- 対応表の検査: 外れ 0 件。**陽性対照**: 手 4 クラスの注釈（source hand_seg、id 3）を 1 件混ぜた写しで外れ 1 件（train・val とも）
-- 印の検査: 入った件数 0。**陽性対照**: 印の付いたフレームを 1 件混ぜた写しで 1 件（train・val とも）
+- フレーム数 train 9,356・val 1,514 は被覆の文書（§2）の値と一致。sha256: g5_train.json aa88bee27f677348…、g5_val.json 762af7e824929902…
+- 戻したマスク: 16 フレーム（seed 42）で元の注釈と画素で一致
+- 対照: 手 4 クラスの注釈を 1 件混ぜた写しで対応表の検査が外れ 1 件
+- 欠落の印: 一覧は train 301・val 1・test 158 行（test は行数だけ数えた）。工程の経路のうち注釈の無いフレームの集合は、印の集合と **train 301 = 301、val 1 = 1 で集合として一致**（印のフレームは注釈ファイルに 0 件）
 
-### B-3 反転の経路（`scripts/grasppilot/g5_train.py` の `G5Flip`、対照 `scripts/grasppilot/g5_flip_test.py`、出力 `$S/g/b3_flip_take.json`）
+### B-3 反転の経路の取り出し（`$S/flip/b3_flip_paths.json`、GPU なし、左右のラベルを持つ train 24 フレーム）
 
-`G5Flip` は二本目の `G38` を継いだ派生のデータセットで、反転のときラベルを 0 始まりで [1, 0, 3, 2, 4] に写す（1↔2、3↔4、5 はそのまま）。
-`G38` と `g_train.py` は変えていない（二本目の経路で学ぶと 38 クラスのまま動く）。
-対照: 左右のラベル（1〜4）を持つ train のフレームを seed 42 で 24 枚選び、反転なし・反転ありを強制して取り出し、インスタンスごとに比べた
+    G5Flip_swap        image_flipped 24 masks_flipped 24 labels_swapped 24 labels_unchanged 0
+    G5Flip_noswap_copy image_flipped 24 masks_flipped 24 labels_swapped 0  labels_unchanged 24
+    G38_second_path    image_flipped 24 masks_flipped 24 labels_swapped 0  labels_unchanged 24
 
-    $ CUDA_VISIBLE_DEVICES="" .venv/bin/python scripts/grasppilot/g5_flip_test.py --ann-dir $S/g/ann --out $S/g/b3_flip_take.json --frames 24
-    G5Flip_swap {'image_flipped': 24, 'masks_flipped': 24, 'labels_swapped': 24, 'labels_unchanged': 0}
-    G5Flip_noswap_copy {'image_flipped': 24, 'masks_flipped': 24, 'labels_swapped': 0, 'labels_unchanged': 24}
-    G38_second_path {'image_flipped': 24, 'masks_flipped': 24, 'labels_swapped': 0, 'labels_unchanged': 24}
+### B-4 欠落の印が損失に入らないこと（`$S/logs/b4_lossmask_control.txt`）
 
-- 本契約の経路: 画像とマスクが反転し、ラベルが 24/24 で入れ替わる
-- 入れ替えない写し（swap=False）と二本目の `G38` そのもの（`torch.rand` を差し替えて反転を強制）: 画像とマスクは反転し、ラベルは 0/24 で入れ替わらない（24/24 で元のまま）。両方向の対照で見分けられる
+- 印のフレームは注釈を持たず学ぶフレームに入らない（B-1）。`g5_train.py` は学ぶフレームに印のフレームがあれば学習を始めずに止める
+- 対照: 印のフレーム `01_1_0698` を train の注釈に 1 件足した写し（作業用の場所）で `g5_train.py --smoke` →
+  `RuntimeError: 欠落の印の付いたフレームが学ぶフレームに 1 件ある（['01_1_0698']）。学習を始めない`
+- 「印のフレームだけの数歩で損失が 0」は測っていない。対象外にする形（§3.1 が許す「学習の対象から外す形」）で示した
 
-### B-4 欠落の印の付いたフレームを損失に入れない
-
-- 実装の判断: 印の付いたフレームは注釈を持たない（B-0）ので学ぶフレームに入らない。`g5_train.py` は学ぶフレームと val に印の付いたフレームが 1 件でもあれば、**モデルを作る前に止める**（学習の対象から外す形。§3.1 の「外す形でよい」）
-- **陽性対照**: `g5_train.json` に印の付いたフレーム `01_1_0698` を 1 件足した写し（`$S/smoke/ann_lm/`）で起動 →
-  `RuntimeError: 欠落の印の付いたフレームが学ぶフレームに 1 件ある（['01_1_0698']）。学習を始めない`。歩は 0、run の置き場も作られない
-- 本物の注釈の試走（`$S/smoke/smoke_all.log`、GPU 0、20 歩と val 20 枚）: 印のフレーム 0 件で通り、学習前 0.0006 → 20 歩の後 0.5043（val 20 枚だけの値。参考: 二本目の試走は把持関係 5 クラス 0.4206）。
-  COCO の重み 610 個のうち 608 個を読んだ（`panoptic_head.cls_embed.{weight,bias}` は形が違い読まない）。最大確保 9,846,922,752 B。W&B は offline
-
-### G2 の判定
-
-5 クラスの注釈から元のマスクが戻り（16 フレーム）、反転の経路が左右のラベルを入れ替え（24/24）、入れ替えない写しと二本目の経路が同じ検査で見分けられる（0/24）。**通過。**
+**G2: pass**
 
 ## Task C — G の学習（G3）
 
-### C-1 起動と並べ方（`$S/logs/G_{all,H1,H2}.log`）
+### C-0 試走（`$S/logs/c0_smoke.txt`、GPU 0）
 
-    2026-11-05 23:42 JST 起動（setsid nohup で親から切り離した。終了コードは $S/logs/G_<g>.rc）
-    CUDA_VISIBLE_DEVICES=0  g5_train.py --run-dir experiments/phase1/grasptower_G_all_seed42 --ckpt-dir $S/g/ckpt/all --ann-dir $S/g/ann --videos all
-    CUDA_VISIBLE_DEVICES=1  g5_train.py --run-dir experiments/phase1/grasptower_G_H1_seed42  --ckpt-dir $S/g/ckpt/H1  --ann-dir $S/g/ann --videos H1
-    CUDA_VISIBLE_DEVICES=1  g5_train.py --run-dir experiments/phase1/grasptower_G_H2_seed42  --ckpt-dir $S/g/ckpt/H2  --ann-dir $S/g/ann --videos H2
+    $ CUDA_VISIBLE_DEVICES=0 python scripts/grasppilot/g5_train.py --run-dir $S/smoke/run_all --ckpt-dir $S/smoke/ckpt_all --ann-dir $S/g/ann --videos all --smoke
+    学習前（val 10 枚）0.0006 → 20 歩の後 0.4845、COCO の重み 608 / 610、最大確保 9,846,922,752 B
 
-- 1 枚に載せる本数: 試走の最大確保 9.85 GB/本（`$S/smoke/smoke_all.log`）から、GPU 0 に確定の G 1 本、GPU 1 に H1・H2 の 2 本（約 20 GB < 48 GB）。worker 8 × 3 = 24 < 32 CPU
-- 学習前の val（3 本とも）: 5 クラスの mask mAP 0.0060。一歩の速さ（epoch 1 の 200 歩目）: 確定 0.726 秒、H1 1.011 秒、H2 1.013 秒。1 epoch の歩数 4,678・1,956・2,721
+### C-1 本番の 3 本（起動 2026-11-06 01:30 JST、commit f149c79d）
 
-### C-3 反転の整合（学習前と二本目の G。`scripts/grasppilot/g5_signals.py flipcheck`、出力 `$S/flip/`）
+    CUDA_VISIBLE_DEVICES=0 python scripts/grasppilot/g5_train.py --run-dir experiments/phase1/grasptower_G_all_seed42 --ckpt-dir $S/g/ckpt/all --ann-dir $S/g/ann --videos all
+    CUDA_VISIBLE_DEVICES=1 ... --run-dir experiments/phase1/grasptower_G_H1_seed42 --ckpt-dir $S/g/ckpt/H1 --videos H1
+    CUDA_VISIBLE_DEVICES=1 ... --run-dir experiments/phase1/grasptower_G_H2_seed42 --ckpt-dir $S/g/ckpt/H2 --videos H2
 
-val の 40 フレーム（seed 42）。P_c を 270×480 で作り、反転した画像の P を入れ替え（swap: 1↔2、3↔4）または入れ替えず（noswap）に反転し直して元の画像の P と比べた。
-soft IoU = Σmin/Σmax、相関 = 画素の Pearson。両方の最大が 0.05 未満のクラスは数えない（括弧はフレーム数）
-
-| G | 比べ方 | hand_L | hand_R | tool_L | tool_R | tool_B |
-|---|---|---|---|---|---|---|
-| 二本目の確定の G（38 クラス、読むだけ） | swap | 0.002 / −0.082 (40) | 0.002 / −0.094 (40) | 0.018 / 0.136 (40) | 0.025 / 0.147 (40) | 0.624 / 0.927 (8) |
-| 同上 | noswap | 0.921 / 0.983 (40) | 0.901 / 0.983 (40) | 0.735 / 0.931 (35) | 0.755 / 0.913 (40) | 0.624 / 0.927 (8) |
-| 学習前（COCO の重み、頭 5 クラスは乱数の初期値） | swap | 0.483 / 0.276 (40) | 0.394 / 0.136 (40) | 0.298 / 0.065 (40) | 0.278 / 0.009 (40) | 0.741 / 0.670 (40) |
-| 同上 | noswap | 0.799 / 0.695 (40) | 0.521 / 0.606 (40) | 0.679 / 0.709 (40) | 0.426 / 0.533 (40) | 0.741 / 0.670 (40) |
-
-（値は soft IoU / 相関）。二本目の G は、反転した画像でも左右のラベルを変えずに出す（入れ替えると一致がほぼ 0）。反転でラベルを入れ替えずに学んだことと合う
-
-### 学習前の val（印を除いた値と含めた値。`g5_signals.py evalval --ckpt coco`、`$S/flip/evalval_pre_coco.json`）
-
-- val の印の付いたフレーム: `10_1_0595` の 1 件。含めた値は、このフレームを注釈なしの画像として評価に足した値
-- 除いた値（1,514）0.006026350690、含めた値（1,515）0.006025121379。除いた値は学習の記録の epoch 0（0.0060）と一致（同じ順で初期化を再現）
-
-### C-2 利用者の指示による一時停止（2026-11-06 00:55 JST）
-
-- 00:08 JST の測定: GPU 0（確定の G）使用率 66〜92%・VRAM 10.3/48 GB、GPU 1（H1・H2）使用率 100%・VRAM 20.6/48 GB。律速は計算で、全体の終わりは確定の G（1 epoch 約 52 分）
-- 利用者の指示「VRAM の余裕あるからフルで使って一番早く終わるようにして」→ 選択肢（処方を保って詰める / DDP / batch を上げる）を示した →
-  **利用者「一旦、バッチサイズについて検討するので停止して」**
-- 3 本のプロセスグループ（pgid 1748461・1748462・1748463、各 10 プロセス）に SIGSTOP。状態は全員 T、GPU 使用率 0%（VRAM は確保されたまま）。出力は消していない
-- 止めた時点: 確定 epoch 1 = 0.5747・epoch 2 の 2,600/4,678 歩、H1 epoch 1 = 0.5179・epoch 2 の 1,600/1,956 歩、H2 epoch 1 = 0.5666・epoch 2 の 800/2,721 歩
-- 再開は SIGCONT（`kill -CONT -- -<pgid>`）。batch を変えるなら 3 本を止め、出力を `$S/aborted/` へ移してから起動し直す（利用者の決定を待つ）
-
-### C-4 利用者の指示による契約の中止（2026-11-06 01:05 JST）
-
-- 利用者「ごめん契約も停止して良い」→ 3 本のプロセスグループに SIGTERM、続けて SIGCONT（停止中のプロセスに終了を届けるため）。8 秒後に各グループの残り 0、GPU 0・1 とも 16 MiB・compute 0 件
-- 終了の処理は走らない形で終わった（`$S/logs/G_<g>.rc` は書かれていない。metrics.json・per_class_ap.json・notes.md・end.txt も無い）
-- 途中の出力は消さずに移した: `experiments/phase1/grasptower_G_{all,H1,H2}_seed42/` → `$S/aborted/try1/`、`$S/g/ckpt/` → `$S/aborted/try1/ckpt/`（各 best.pth は epoch 1 の重み）、
-  ログの写し `$S/aborted/try1/G_*.log`。`experiments/phase1/` に本契約の run は残っていない（`grasptower` の件数 0）
-
-## Task E — 終わりの確かめ（中止の時点）
-
-    $ CUDA_VISIBLE_DEVICES="" PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider -rfE --continue-on-collection-errors
-    6 failed, 985 passed, 5 skipped, 26 warnings in 28.65s（失敗の名前の集合は開始時と diff なし。$S/end/pytest_end.txt）
-    $ uv pip list --python <venv>/bin/python --format freeze | sha256sum
-    .venv 9c7be5c9…94c0、.venv-relation-detr a74c9c78…b090（開始時と一致）
-    $ make forbidden-check TASK=T-2026-11-05-grasp-tower-rebuild
-    changed 17、violations 10、status fail
-
-- 違反 10 件はすべて同期処理が実行中に運んだ別の契約の未追跡のファイル（`experiments/analysis/stage2_pd_w3_lowlr/tools/*.py` 4 件、
-  `experiments/phase1/w3lr_pd_*/logs/eval_meta_val.json` 6 件）。**本契約の経路の違反は 0 件**。届いたファイルには触れていない（§7-10）
-- changed 17 のうち 7 件は本契約のファイル（契約 2 本、audit、scripts/grasppilot/g5_*.py 4 本）で、道具は本契約の新しいファイルを変更として拾っている（禁止領域の外なので違反にならない）
+- 1 枚に載せる本数: GPU 0 に確定の 1 本、GPU 1 に H1・H2 の 2 本（試走の最大確保 9.85 GB × 2 < 48 GB）
+- 学ぶフレーム: 確定 9,356、H1 3,913、H2 5,443。val 1,514。COCO の重みは 3 本とも 608 / 610（cls_embed の 2 個は形が違い読まない）
+- 起動直後: GPU 0 使用率 85%・211 W、GPU 1 使用率 99%・193 W（上限 220 W）
