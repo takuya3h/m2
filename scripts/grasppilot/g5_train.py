@@ -83,6 +83,35 @@ class G5Flip(T.G38):
         return arr, out, (masks, labels)
 
 
+def patch_msda_bf16():
+    """bf16 の自動混合精度で、変形注意（mmcv の ms_deform_attn）だけを fp32 で計算する（利用者の決定 2026-11-06、選択肢 1）。
+
+    mmcv 2.1.0 の `ms_deform_attn_forward_cuda` は bf16 の実装を持たない（`not implemented for 'BFloat16'`）。
+    仮想環境と third_party を変えずに、mmcv の `MultiScaleDeformableAttention.forward` が名前で引く
+    `MultiScaleDeformableAttnFunction` を、入力の value が bf16 のときだけ fp32 に変換して呼び、出力を bf16 に戻す包みに差し替える。
+    value が bf16 でなければ元の関数をそのまま呼ぶ（fp32・fp16 の経路は変わらない）。この過程の中だけに効く。二度呼んでも一度だけ差し替える。
+    """
+    from mmcv.ops import multi_scale_deform_attn as M
+    if getattr(M.MultiScaleDeformableAttnFunction, "_grasptower_bf16_fp32", False):
+        return M.MultiScaleDeformableAttnFunction
+    orig = M.MultiScaleDeformableAttnFunction
+
+    class MSDAFp32ForBf16:
+        _grasptower_bf16_fp32 = True
+        original = orig
+
+        @staticmethod
+        def apply(value, spatial_shapes, level_start_index, sampling_locations, attention_weights, im2col_step):
+            if value.dtype != torch.bfloat16:
+                return orig.apply(value, spatial_shapes, level_start_index, sampling_locations, attention_weights, im2col_step)
+            out = orig.apply(value.float(), spatial_shapes, level_start_index, sampling_locations.float(),
+                             attention_weights.float(), im2col_step)
+            return out.to(torch.bfloat16)
+
+    M.MultiScaleDeformableAttnFunction = MSDAFp32ForBf16
+    return MSDAFp32ForBf16
+
+
 def loss_mask_stems():
     return set().union(*[set((LOSS_MASK_DIR / f"{p}.txt").read_text().split()) for p in ("train", "val")])
 

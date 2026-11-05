@@ -4,6 +4,7 @@
 学習の部品は `g5_train.py`（構造・COCO の重み・反転でラベルを入れ替える取り出し）と `g_train.py`（入力の組み立て）をそのまま使う。
 fp16 は `g_train.py --amp fp16` と同じ形（optim_wrapper を AmpOptimWrapper、loss_scale dynamic）。学習率は変えない。
 bf16（利用者の追加の指示 2026-11-06）は同じ AmpOptimWrapper・loss_scale dynamic で dtype だけ bfloat16 にする。
+変形注意（ms_deform_attn）だけは `g5_train.patch_msda_bf16` で fp32 にして計算し、出力を bf16 に戻す（利用者の決定 2026-11-06）。
 
 一歩の時間 = 前の歩の更新の終わりから、この歩の更新の終わりまで（読み込みの待ちを含む。cuda の同期の後に測る）。
 最初の --warmup 歩を除いた --measure 歩の平均と標準偏差。溢れた（CUDA の記憶の不足）ら、その歩と記憶を記録して終わる。
@@ -87,6 +88,7 @@ def main():
         cfg.optim_wrapper.loss_scale = "dynamic"
         if a.amp == "bf16":
             cfg.optim_wrapper.dtype = "bfloat16"
+            G5.patch_msda_bf16()                             # 変形注意だけ fp32（mmcv 2.1.0 に bf16 の実装が無い）
     optim = build_optim_wrapper(model, cfg.optim_wrapper)
     g = torch.Generator()
     g.manual_seed(a.seed)
@@ -102,7 +104,7 @@ def main():
            "steps_per_epoch": len(loader), "warmup": a.warmup, "measure": a.measure, "init": load,
            "lr_max": max(gr["lr"] for gr in optim.optimizer.param_groups), "accumulation": 1,
            "optim_wrapper": json.loads(json.dumps(cfg.optim_wrapper.to_dict(), default=str)),
-           "expandable_segments": os.environ.get("PYTORCH_CUDA_ALLOC_CONF"), "host": os.uname().nodename,
+           "expandable_segments": os.environ.get("PYTORCH_CUDA_ALLOC_CONF"), "msda_fp32_for_bf16": a.amp == "bf16", "host": os.uname().nodename,
            "code_sha256": T.sha(Path(__file__)), "git_commit": T.git("rev-parse", "HEAD")}
     times, images, nonfinite, losses = [], [], [], []
     status, oom = "ok", None
