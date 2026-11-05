@@ -63,4 +63,4 @@
 ## 送出
 
 - PR: #290（base phase0、Draft でない、分岐 feat/tower-batch-probe）
-- `make task-report`: この版の後に送る（終了コードは次の commit で記録）
+- `make task-report`: 終了コード 0（16c94a59 の版を送った。verdict pass、report_sha256 be30948a…、6,374 bytes）
