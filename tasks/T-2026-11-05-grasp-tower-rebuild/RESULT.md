@@ -60,4 +60,5 @@
 
 ## 7. 送出
 
-- PR・`make task-report`: 利用者に確かめてから行う（中止の時点では未実施）
+- PR: #289（https://github.com/takuya3h/m2/pull/289、base phase0、Draft でない、head `feat/grasp-tower-rebuild`）。利用者の確認の上で送出した
+- `make task-report`: この commit の後に送る（結果は最後の応答で伝える）
