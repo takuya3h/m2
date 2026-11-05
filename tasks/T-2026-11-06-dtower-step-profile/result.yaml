@@ -1,0 +1,61 @@
+result_version: 3
+task_id: "T-2026-11-06-dtower-step-profile"
+status: pass
+host: "andrew"
+branch: "feat/dtower-step-profile"
+pr: 292
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "分岐 feat/dtower-step-profile、merge-base = origin/phase0 = HEAD = 271cf8c0。git ls-tree origin/phase0 に tasks/T-2026-11-06-tower-batch-probe/ の 5 ファイルと experiments/analysis/tower_batch_probe/ の 9 ファイルが在る。/proc/PID/exe と argv の完全一致で compute プロセス 0 件（陽性対照 1、部分一致 0、存在しない経路 0。試験の後にも 0）、nvidia-smi の compute 0。空き 1,644,104,179,712 bytes、試験の失敗 7 件の名前、.venv の freeze f6c43729…・.venv-relation-detr d0724876…、両 GPU の power.limit 300.00 W、論理 CPU 32 を記録"}
+
+tests:
+  before_failed: 7
+  after_failed: 7
+  after_passed: 989
+
+deviations:
+  - {type: spec_defect, note: "train_search.py は batch_size = 2 と num_workers = 4 を固定し口が無い。この 2 行だけを環境変数 PROBE_BATCH_SIZE・PROBE_NUM_WORKERS にした写しを repo の外（$STORE/config/train_search_profile.py）に置いて渡した。原本は無変更（要約値が前後で一致）"}
+  - {type: judgement, note: "内訳は既存の観測口 TOWER_SEARCH_OBSERVER に tools/observer.py を渡し、実行中にモデル・criterion・matcher の hook、util.engine.DataPrefetcher、accelerator.backward / reduce、optimizer.step、linear_sum_assignment、torch.distributed.all_reduce を包んで測った。ループの順序と更新は変えていない。ファイル・既定の挙動・third_party は無変更"}
+  - {type: judgement, note: "optimizer.step は素の関数で包むと epoch 0 の LinearLR（method.__self__ / __func__ で包む）が壊れるため、types.MethodType で束縛して包んだ"}
+  - {type: judgement, note: "読み込み無しの水準は、rank の batch sampler（accelerate の BatchSamplerShard）の最初の batch を主プロセスでデータセットから組んで GPU に置き、DataLoader を一度も回さずに worker を起こさなかった。prepare_targets が targets を deepcopy するので入力は書き換わらない。batch の和は始めと終わりで一致"}
+  - {type: judgement, note: "80 歩を得るため順伝播の入りを 81 回にした（TOWER_SEARCH_CONTROL_STEPS=81）。集計は歩 21〜80 の 60 歩"}
+  - {type: judgement, note: "§5 b の対照（同期を入れない写し）は §6.11 と衝突するので別の run を回さず、同じ run の中で各部分の終わりの同期の前の時計を記録し、同期なしの時計で読んだ場合に当たる値として使った"}
+  - {type: judgement, note: "2 プロセスの同期の待ちは、明示の集団通信（criterion の box 数の all_reduce）と記録用の loss_dict の集約を両側の同期つきで直接測り、勾配の all_reduce はプロセス数 1 との差でだけ書いた"}
+  - {type: judgement, note: "要約値の経路に experiments/analysis/tower_batch_probe を足した（PR 290 の道具を土台にしたため）。歩ごとの表は版管理の外と本契約の置き場の steps/ の両方に置いた"}
+  - {type: judgement, note: "手順 0 の汚れの判定で、repo 直下の空の run_ptower_search.log（PR 290 の工程塔の起動で Hydra が作ったもの）で止まった。利用者の選択 1 により ~/m2-evacuated/T-2026-11-06-dtower-step-profile/ へ移し、task-start を一度だけやり直した"}
+  - {type: environment, note: "py_compile と要約値の対照で tools/__pycache__/ ができた（git では無視）。rm が対話の確認つきで一度目は消えず、後で rm -rf で消した。commit していない"}
+
+issuer_defects:
+  - {type: asserted_without_measuring, note: "完了判定 d の『各水準で読み込んだ枚数が batch × 歩数と一致』は worker の先読みを数えていない。字面どおりデータセットが読んだ枚数で数えると、水準 1 は 360 枚で 81 回 × 2 × 2 rank = 324 を超え、worker 16 では 456 になって一致しない。モデルに渡った枚数で読むと全水準で一致するので、両方を書いた"}
+  - {type: asserted_without_measuring, note: "SPEC §2.2 は内訳を 1 読み込みの待ち（batch を受け取るまで）→ 2 順伝播 → … の順に並べるが、実装 util/engine.py では次の batch の読み込みは順伝播と逆伝播の間で行われる。並びどおりに区切ると歩の始めに読み込みの区間が無く、実装の順のまま測った"}
+  - {type: self_contradiction, note: "§5 b の空振りの確認『順伝播の前後に同期を入れない写しでは内訳の和が一歩と合わない』は §2.1 に無い run を要し、§6.11『§2.1 に無い水準を足さない』と衝突する。さらに残りを『一歩 − 1〜5 の和』と定義するので和と一歩の差は定義上いつも残りに等しく、この対照は字面のままでは失敗しえない。同じ run の同期の前の時計で代えた"}
+  - {type: self_contradiction, note: "完了判定 b は内訳に『2 プロセスの同期の待ち』を独立の項目として挙げるが、§2.2 の 4 は同期を逆伝播に含めてプロセス数 1 の水準との差で見ると書く。字面どおり両方は満たせないので、明示の集団通信と記録用の集約を直接測り、勾配の同期は差で書いた"}
+
+positive_controls:
+  - {judgement: "a: プロセスの列挙が /proc/PID/exe と argv の完全一致で働く", breaking_input: "自分のシェルから bash -c 'sleep 25; true' probe_self_marker_8842 を起こす。部分一致の probe_self_marker_884。存在しない /nonexistent/zzz_no_such_exe", observed: "1 件・0 件・0 件"}
+  - {judgement: "b: 同期が無いと内訳が一歩を説明しない", breaking_input: "各部分の終わりの同期の前の時計で 1〜5 を取る（同じ run の中。別の写しの run は回していない）", observed: "水準 1 の rank 0 で 0.3542 s（同期ありの 1〜5 の和 0.3841 s、一歩 0.3905 s）。逆伝播 0.1906 → 0.1644、最適化器 0.0107 → 0.0071。別の写しの run は UNKNOWN"}
+  - {judgement: "b: 読み込みの待ちの区間が読み込みに反応する", breaking_input: "読み込み無しの水準（同じ batch を GPU に置いて繰り返す）", observed: "読み込み有り 0.0010〜0.0050 s に対し、読み込み無し 4.8〜5.5 × 10⁻⁶ s"}
+  - {judgement: "b: 残りの分解が一歩の区間を漏れなく覆う", breaking_input: "残り − (損失の和 + zero_grad + 末尾) を歩ごとに計算する", observed: "全水準・全 rank・全 60 歩で最大の差 0.0"}
+  - {judgement: "c: 同じ入力の繰り返しで読んだ枚数が増えない", breaking_input: "読み込み無しの水準のデータセットの読みの記録を数える", observed: "batch × rank のまま 4 枚・8 枚（読み込み有りは 360・720 枚）"}
+  - {judgement: "d: 枚数の記録が batch に反応する", breaking_input: "batch の値を 2 から 4 に変える", observed: "各歩でモデルに渡った枚数の集合が {2} から {4} に変わり、80 歩の合計が 160 から 320 に変わった"}
+  - {judgement: "d: 要約値が変化を検出する", breaking_input: "scratchpad の写しに新しいファイルを足し、その中身を 1 文字変える", observed: "63b6958c2988 → b54463479e52 → 57381016e080"}
+  - {judgement: "d: forbidden-check が本契約の新しいファイルを変更として拾う", breaking_input: "本契約の道具・REPORT・表・集約・歩ごとの表", observed: "changed 29、うち本契約の置き場の 26 件が allow_write で permitted、violations []"}
+  - {judgement: "e: test 不使用の検査が test の動画を検出する", breaking_input: "読んだ動画の集合に 04 を足す（summarize.py --inject-video 04）", observed: "全 8 水準で共通 1 件（本物は 0 件）"}
+  - {judgement: "f: 見込み時間が歩数 × 平均と一致する", breaking_input: "summarize.py が実の歩数と換算の歩数で計算し直して assert。derive.py が epoch の差 = 2 倍の歩数の分 − 同期の分を assert", observed: "全 rank で差 < 1e-9、assert が通った。壊した入力は試していない（UNKNOWN）"}
+
+followups:
+  - "検出塔の GPU 使用率は歩の区間だけで平均すると 77〜92 %（使用率 0 の標本 0 個）。PR 290 の 43〜69 % は起動と止めを含む窓での平均だった。使用率を比べるときは平均の窓を揃えること"
+  - "検出塔の読み込みの待ちは 0.001〜0.005 s/歩。worker 数 4・8・16 で一歩は 0.3905・0.3938・0.3920 s。batch と読み込み・プロセス数の設定の採否は利用者が決める"
+  - "読み込み無しの一歩が短い理由（入力の大きさか読み込みか）を分けるには、入力の tensor の形を歩ごとに記録する必要がある"
+  - "手順 0 で退避した空の run_ptower_search.log が ~/m2-evacuated/T-2026-11-06-dtower-step-profile/ に在る。戻すか消すかは利用者の判断"
+  - "版管理の外の生の記録 /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-step-profile/（重みなし）を残した。片付けは利用者の判断"
+
+unknowns:
+  - "入力の tensor の形（乱択の解像度）。読み込み無しの一歩が短い理由は分けていない"
+  - "逆伝播の区間の中の勾配の all_reduce の量"
+  - "同期を入れない写しの run での内訳（§6.11 との衝突で回していない）"
+  - "同期を入れたことの一歩への影響（PR 290 とは窓と乱択の入力が違う）"
+
+commits:
+  - "6f230616"
