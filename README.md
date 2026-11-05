@@ -1769,3 +1769,13 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
 - 結果（RTX A6000 × 2、300 W）: 検出塔は 2・4・6 が収まり、8 は歩 38 で OOM。工程塔は二枚の道 8・12・16 と一枚の道 16・24 が収まり、一枚の道 32 は歩 1 で OOM。
   1 epoch の見込み（歩数 × 一歩の平均。val を含まない）は検出塔 941.5・802.4・783.5 s、工程塔の二枚の道 391.2・380.0・377.6 s、一枚の道 718.2・718.9 s
 - 生の記録は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-tower-batch-probe/`
+
+### 検出塔の一歩の内訳の計測（2026-11-06、andrew）
+
+契約 `T-2026-11-06-dtower-step-profile`（analysis）。**学習ではなく計測**（各水準 81 回の順伝播の入りで止め、重みは保存しない。val・評価なし）。
+結果は `experiments/analysis/dtower_step_profile/{REPORT.md,levels.json,tables.md,derived.json,steps/}`、記録は `tasks/T-2026-11-06-dtower-step-profile/`。設定の採否は書かない（利用者が決める）。
+
+- 検出塔の探索の 0 番の学習設定（fp16）で、SPEC §2.1 の 8 水準（GPU ごとの batch 2・4、プロセス数 2・1、worker 数 4・8・16、読み込み有り・無し）について、一歩を読み込みの待ち・順伝播・損失と対応づけ・逆伝播・最適化器・残りに分けて測った（各境界で `torch.cuda.synchronize()`、歩 21〜80 の 60 歩）
+- 道具は `experiments/analysis/dtower_step_profile/tools/`（実行器 `run_level.py`、観測器 `observer.py` を `TOWER_SEARCH_OBSERVER` で読ませる、集計 `summarize.py`・`derive.py`、`procs.py`・`digests.py` は PR 290 の写し）。**既存のスクリプト・設定・third_party は変えていない。** batch と worker 数は `train_search.py` の写し（2 行だけを環境変数にしたもの）を repo の外に置いて渡した
+- 結果（RTX A6000 × 2、300 W）: batch 2 × 2 プロセスの一歩 0.3905 s のうち、読み込みの待ち 0.0010 s、順伝播 0.139 s、損失と対応づけ 0.043 s、逆伝播 0.191 s、最適化器 0.011 s、残り 0.006 s。歩の区間だけの GPU 使用率は 77〜92 %（使用率 0 の標本 0 個）。worker 数 4・8・16 の一歩は 0.3905・0.3938・0.3920 s
+- 生の記録は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-step-profile/`
