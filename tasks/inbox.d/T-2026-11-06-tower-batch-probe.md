@@ -1,0 +1,3 @@
+- [ ] 2026-11-06 [cc] 工程塔の 1 epoch の歩数は manifest で変わる（旧 phase_manifest 604 歩、探索の phase_manifest_all_phase 662 歩。GPU ごと 8 × 2 枚）。塔の選び直しの所要は使う manifest の歩数で見込むこと（experiments/analysis/tower_batch_probe/REPORT.md §3）
+- [ ] 2026-11-06 [cc] 検出塔の train_search.py には batch を点ごとに渡す口が無い。batch の軸を足すなら、口を足すか写しを使うかを決める（T-2026-11-06-tower-batch-probe）
+- [ ] 2026-11-06 [cc] 版管理の外の生の記録 /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-tower-batch-probe/（重みなし）を残した。片付けは利用者の判断（T-2026-11-06-tower-batch-probe）

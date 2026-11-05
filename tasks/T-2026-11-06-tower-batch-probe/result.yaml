@@ -1,0 +1,54 @@
+result_version: 3
+task_id: "T-2026-11-06-tower-batch-probe"
+status: pass
+host: "andrew"
+branch: "feat/tower-batch-probe"
+pr: null
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "分岐 feat/tower-batch-probe、merge-base = origin/phase0 = HEAD = 89fe4a41。/proc/PID/exe の完全一致で compute プロセス 0 件（陽性対照 1、部分一致 0、存在しない経路 0）、nvidia-smi の compute 0。空き 1,644,111,155,200 bytes、試験の失敗 7 件の名前、.venv の freeze f6c43729…・.venv-relation-detr d0724876…、両 GPU の power.limit 300.00 W を記録"}
+  - {id: G2, verdict: pass, note: "検出塔の batch 2・4・6 は 61 歩を完走し記憶と歩 11〜60 の一歩の平均・sd を記録、8 は rank 1 が歩 38 で OOM（最大確保 44,484,340,736 bytes）。全水準・全 rank で各歩の枚数の集合が {2}・{4}・{6}・{8}。COCO の重みの読み込みはログ行と initialization_rank*.json（matched、596 テンソル）"}
+
+tests:
+  before_failed: 7
+  after_failed: 7
+  after_passed: 989
+
+deviations:
+  - {type: spec_defect, note: "SPEC §3.3 の『train_search.py の batch_size を点ごとに渡す口』は無かったので、batch_size の 1 行だけを環境変数 PROBE_BATCH_SIZE にした写しを repo の外（$STORE/config/train_search_batch.py）に置いて渡した。原本は無変更"}
+  - {type: judgement, note: "工程塔には歩数で止める口が無く、既存の観測口 TOWER_SEARCH_OBSERVER に tools/observer.py を渡して 61 歩目の後（val と checkpoint の保存の前）に SystemExit(0) で止めた。repo への公開は既存の +control_only=true で止めた。scripts/ は無変更"}
+  - {type: judgement, note: "一歩の時間は、検出塔ではモデルの forward に入った時刻の間隔、工程塔では前の歩の GPU 処理を torch.cuda.synchronize() で待ってから次の batch を受け取った時刻の間隔とした。どちらも読み込みの待ちを含む。定常は歩 11〜60 の 50 歩"}
+  - {type: judgement, note: "工程塔は探索と同じ manifest（phase_manifest_all_phase、折り A の train 10,580 フレーム）で測った。dlsta の 604 歩は旧 phase_manifest（9,657 フレーム）の値で、本契約は 662 歩。並べるときは別の値として書いた"}
+  - {type: judgement, note: "§6 b・c の対照『重みを読まない写しで記憶が変わる』は §3.1 に無い run を要し §7.11 と衝突するので回さなかった（positive_controls で UNKNOWN）"}
+  - {type: judgement, note: "起動の失敗 3 回: 実行器が自分の PID を compute として数えて拒んだ（--exclude-pid を足した）、load_env.sh を読まずに W&B の追跡が起きなかった、zsh で for lv in 'ph2 8' の $lv が分かれず 6 本とも IndexError。前二つの記録は消さず $STORE/refused_det_b2_try1/ と $STORE/failed_det_b2_try2_no_env/ へ移した"}
+  - {type: judgement, note: "W&B の追跡を起こすため load_env.sh で資格情報を読み込んだが、WANDB_MODE=offline で手元（作業場所）にだけ書き、送っていない"}
+  - {type: judgement, note: "要約値に工程塔が読む画像の置き場 data/raw/OpenSurgery_Dataset/01_frames/initial_videos を加えるため、計測の前に基準を取り直した（digests_before2.json）。一度目と重なる項目は全項目同じ"}
+  - {type: environment, note: "det_b8 では rank 1 の OOM で rank 0 が止められ、rank 0 の torch の記憶の記録が書かれなかった（UNKNOWN。nvidia-smi の最大 48,150 MiB は在る）"}
+
+issuer_defects:
+  - {type: asserted_without_measuring, note: "SPEC §3.3 は『train_search.py の batch_size を点ごとに渡す口があるので、それを使う』と書くが、実装は batch_size = 2 の固定で口が無い。指示どおり口を探すと見つからず、括弧の但し書き（写しを repo の外に置く）に従って写しを作ることになった"}
+  - {type: asserted_without_measuring, note: "SPEC §2 は工程塔の二枚の道の 1 epoch を 604 歩とするが、それは旧 phase_manifest（9,657 フレーム）の値である。§3.3 が指す探索と同じ起動の形（phase_manifest_all_phase、10,580 フレーム）で回すと 662 歩になり、§2 の値とは一致しない"}
+  - {type: self_contradiction, note: "§6 b・c の空振りの確認『重みを読まない写しで記憶が変わる』は §3.1 に無い run を足すことを要し、§7.11『§3.1 に無い水準を足さない』と衝突する。字面どおり両方は満たせないので、本契約は対照を回さず UNKNOWN と記録した"}
+
+positive_controls:
+  - {judgement: "a: プロセスの列挙が /proc/PID/exe と argv の完全一致で働く", breaking_input: "bash -c 'sleep 20; true' probe_self_marker_7731 を起こす。部分一致の probe_self_marker_773。存在しない /nonexistent/zzz_no_such_exe", observed: "1 件・0 件・0 件。一度目の bash -c 'sleep 20' は exec で置き換わり 0 件（対照の作り方の誤り）"}
+  - {judgement: "b・c: 読み込んだ枚数の記録が batch に反応する", breaking_input: "batch の値を変える", observed: "各歩の枚数の集合が検出塔 {2}・{4}・{6}・{8}、工程塔 {8}・{12}・{16}（rank ごと）と {16}・{24}・{32} に変わった"}
+  - {judgement: "b・c: 重みを読まないと記憶が変わる", breaking_input: "COCO の重みを読まない写し", observed: "UNKNOWN（§7.11 との衝突で回していない）"}
+  - {judgement: "d: 要約値が変化を検出する", breaking_input: "scratchpad の写しに新しいファイルを足し、その中身を 1 文字変える", observed: "63b6958c2988 → d8eabb91c346 → da0f0800c0d8"}
+  - {judgement: "d: forbidden-check が本契約の新しいファイルを変更として拾う", breaking_input: "本契約の 15 ファイル（道具・REPORT・levels.json ほか）", observed: "changed 15、すべて allow_write で permitted、violations []"}
+  - {judgement: "e: test 不使用の検査が test の動画を検出する", breaking_input: "読んだ動画の集合に 04 を足す（summarize.py --inject-video 04）", observed: "全 10 水準で共通 1 件（本物は 0 件）"}
+  - {judgement: "f: 見込み時間が歩数 × 平均と一致する", breaking_input: "make_tables.py が各 rank で計算し直して assert", observed: "全 rank で差 < 1e-9（assert が通った）。壊した入力は試していない"}
+
+followups:
+  - "工程塔の歩数は manifest で変わる（旧 phase_manifest 604 歩、phase_manifest_all_phase 662 歩、GPU ごと 8 × 2 枚）。塔の選び直しの所要の見込みは、使う manifest の歩数で計算すること"
+  - "検出塔の GPU 使用率の平均は b2〜b6 で 43〜69 % と低く、学習ログの data_time は 0.01 s 未満だった。律速の箇所は切り分けていない"
+  - "版管理の外の生の記録 /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-tower-batch-probe/ を残した（重みは無い）。片付けは利用者の判断"
+
+unknowns:
+  - "det_b8 の rank 0 の torch の最大確保と予約"
+  - "COCO の重みを読まないときの記憶（§6 b・c の対照）"
+  - "検出塔の GPU 使用率が低い理由"
+  - "val・評価・起動を含めた 1 epoch の時間と、61 歩より先の歩で溢れるかどうか"
+
+commits: []

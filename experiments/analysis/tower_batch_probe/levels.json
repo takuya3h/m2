@@ -1,0 +1,887 @@
+[
+ {
+  "level": "det_b2",
+  "kind": "det",
+  "batch_per_gpu": 2,
+  "gpus": "0,1",
+  "status": "exited",
+  "returncode": 0,
+  "wall_seconds": 52.31169390678406,
+  "fitted": true,
+  "ranks": [
+   {
+    "rank": "0",
+    "steps_started": 61,
+    "steps_per_epoch": 2405,
+    "dataset_frames": 9618,
+    "frames_per_step_set": [
+     2
+    ],
+    "frames_match_batch": true,
+    "frames_total": 122,
+    "oom": null,
+    "error": "ControlComplete",
+    "max_memory_allocated_bytes": 12282841088,
+    "max_memory_reserved_bytes": 12597592064,
+    "alloc_conf": null,
+    "steady_steps": 50,
+    "step_seconds_mean": 0.3914844200946391,
+    "step_seconds_sd": 0.029590259085929008,
+    "first_step_seconds": 0.9206417798995972,
+    "epoch_seconds_projected": 941.520030327607,
+    "ms_deform_attn_cuda_ext_loaded": true,
+    "mixed_precision": "fp16",
+    "num_processes": 2
+   },
+   {
+    "rank": "1",
+    "steps_started": 61,
+    "steps_per_epoch": 2405,
+    "dataset_frames": 9618,
+    "frames_per_step_set": [
+     2
+    ],
+    "frames_match_batch": true,
+    "frames_total": 122,
+    "oom": null,
+    "error": "ControlComplete",
+    "max_memory_allocated_bytes": 10726588416,
+    "max_memory_reserved_bytes": 11454644224,
+    "alloc_conf": null,
+    "steady_steps": 50,
+    "step_seconds_mean": 0.3914840780943632,
+    "step_seconds_sd": 0.02976933899430587,
+    "first_step_seconds": 0.9492224603891373,
+    "epoch_seconds_projected": 941.5192078169434,
+    "ms_deform_attn_cuda_ext_loaded": true,
+    "mixed_precision": "fp16",
+    "num_processes": 2
+   }
+  ],
+  "nvidia_smi": {
+   "0": {
+    "peak_mib": 12516,
+    "util_mean_while_loaded": 43.27753303964758,
+    "util_samples": 227,
+    "power_peak_w": 265.53
+   },
+   "1": {
+    "peak_mib": 11426,
+    "util_mean_while_loaded": 44.35398230088496,
+    "util_samples": 226,
+    "power_peak_w": 269.33
+   }
+  },
+  "videos_read": {
+   "01": 24,
+   "02": 19,
+   "03": 33,
+   "06": 38,
+   "08": 36,
+   "11": 32,
+   "12": 13,
+   "13": 25,
+   "14": 48,
+   "15": 12
+  },
+  "test_videos_read": [],
+  "weight_files": []
+ },
+ {
+  "level": "det_b4",
+  "kind": "det",
+  "batch_per_gpu": 4,
+  "gpus": "0,1",
+  "status": "exited",
+  "returncode": 0,
+  "wall_seconds": 69.14365744590759,
+  "fitted": true,
+  "ranks": [
+   {
+    "rank": "0",
+    "steps_started": 61,
+    "steps_per_epoch": 1202,
+    "dataset_frames": 9618,
+    "frames_per_step_set": [
+     4
+    ],
+    "frames_match_batch": true,
+    "frames_total": 244,
+    "oom": null,
+    "error": "ControlComplete",
+    "max_memory_allocated_bytes": 23871739904,
+    "max_memory_reserved_bytes": 26856128512,
+    "alloc_conf": null,
+    "steady_steps": 50,
+    "step_seconds_mean": 0.6675524306297302,
+    "step_seconds_sd": 0.05052618609799807,
+    "first_step_seconds": 1.3478726372122765,
+    "epoch_seconds_projected": 802.3980216169358,
+    "ms_deform_attn_cuda_ext_loaded": true,
+    "mixed_precision": "fp16",
+    "num_processes": 2
+   },
+   {
+    "rank": "1",
+    "steps_started": 61,
+    "steps_per_epoch": 1202,
+    "dataset_frames": 9618,
+    "frames_per_step_set": [
+     4
+    ],
+    "frames_match_batch": true,
+    "frames_total": 244,
+    "oom": null,
+    "error": "ControlComplete",
+    "max_memory_allocated_bytes": 22438667776,
+    "max_memory_reserved_bytes": 24639438848,
+    "alloc_conf": null,
+    "steady_steps": 50,
+    "step_seconds_mean": 0.6675521898642183,
+    "step_seconds_sd": 0.05038101763860078,
+    "first_step_seconds": 1.3877321425825357,
+    "epoch_seconds_projected": 802.3977322167904,
+    "ms_deform_attn_cuda_ext_loaded": true,
+    "mixed_precision": "fp16",
+    "num_processes": 2
+   }
+  ],
+  "nvidia_smi": {
+   "0": {
+    "peak_mib": 26114,
+    "util_mean_while_loaded": 59.42628205128205,
+    "util_samples": 312,
+    "power_peak_w": 290.41
+   },
+   "1": {
+    "peak_mib": 24000,
+    "util_mean_while_loaded": 60.035369774919616,
+    "util_samples": 311,
+    "power_peak_w": 291.84
+   }
+  },
+  "videos_read": {
+   "01": 43,
+   "02": 35,
+   "03": 59,
+   "06": 85,
+   "08": 66,
+   "11": 60,
+   "12": 32,
+   "13": 52,
+   "14": 106,
+   "15": 22
+  },
+  "test_videos_read": [],
+  "weight_files": []
+ },
+ {
+  "level": "det_b6",
+  "kind": "det",
+  "batch_per_gpu": 6,
+  "gpus": "0,1",
+  "status": "exited",
+  "returncode": 0,
+  "wall_seconds": 88.31911396980286,
+  "fitted": true,
+  "ranks": [
+   {
+    "rank": "0",
+    "steps_started": 61,
+    "steps_per_epoch": 802,
+    "dataset_frames": 9618,
+    "frames_per_step_set": [
+     6
+    ],
+    "frames_match_batch": true,
+    "frames_total": 366,
+    "oom": null,
+    "error": "ControlComplete",
+    "max_memory_allocated_bytes": 34559065600,
+    "max_memory_reserved_bytes": 38136709120,
+    "alloc_conf": null,
+    "steady_steps": 50,
+    "step_seconds_mean": 0.9769490499794483,
+    "step_seconds_sd": 0.07147267592682126,
+    "first_step_seconds": 1.7743068560957909,
+    "epoch_seconds_projected": 783.5131380835176,
+    "ms_deform_attn_cuda_ext_loaded": true,
+    "mixed_precision": "fp16",
+    "num_processes": 2
+   },
+   {
+    "rank": "1",
+    "steps_started": 61,
+    "steps_per_epoch": 802,
+    "dataset_frames": 9618,
+    "frames_per_step_set": [
+     6
+    ],
+    "frames_match_batch": true,
+    "frames_total": 366,
+    "oom": null,
+    "error": "ControlComplete",
+    "max_memory_allocated_bytes": 33175203328,
+    "max_memory_reserved_bytes": 36154900480,
+    "alloc_conf": null,
+    "steady_steps": 50,
+    "step_seconds_mean": 0.976948362980038,
+    "step_seconds_sd": 0.07152695248006931,
+    "first_step_seconds": 1.7416159911081195,
+    "epoch_seconds_projected": 783.5125871099905,
+    "ms_deform_attn_cuda_ext_loaded": true,
+    "mixed_precision": "fp16",
+    "num_processes": 2
+   }
+  ],
+  "nvidia_smi": {
+   "0": {
+    "peak_mib": 36874,
+    "util_mean_while_loaded": 67.43488943488944,
+    "util_samples": 407,
+    "power_peak_w": 291.31
+   },
+   "1": {
+    "peak_mib": 34984,
+    "util_mean_while_loaded": 68.97536945812809,
+    "util_samples": 406,
+    "power_peak_w": 289.07
+   }
+  },
+  "videos_read": {
+   "01": 78,
+   "02": 51,
+   "03": 85,
+   "06": 126,
+   "08": 118,
+   "11": 80,
+   "12": 48,
+   "13": 77,
+   "14": 147,
+   "15": 30
+  },
+  "test_videos_read": [],
+  "weight_files": []
+ },
+ {
+  "level": "det_b8",
+  "kind": "det",
+  "batch_per_gpu": 8,
+  "gpus": "0,1",
+  "status": "exited",
+  "returncode": 1,
+  "wall_seconds": 77.73398518562317,
+  "fitted": false,
+  "ranks": [
+   {
+    "rank": "0",
+    "steps_started": 38,
+    "steps_per_epoch": 601,
+    "dataset_frames": 9618,
+    "frames_per_step_set": [
+     8
+    ],
+    "frames_match_batch": true,
+    "frames_total": 304,
+    "oom": null,
+    "error": null,
+    "max_memory_allocated_bytes": null,
+    "max_memory_reserved_bytes": null,
+    "alloc_conf": "UNKNOWN",
+    "ms_deform_attn_cuda_ext_loaded": true,
+    "mixed_precision": "fp16",
+    "num_processes": 2
+   },
+   {
+    "rank": "1",
+    "steps_started": 38,
+    "steps_per_epoch": 601,
+    "dataset_frames": 9618,
+    "frames_per_step_set": [
+     8
+    ],
+    "frames_match_batch": true,
+    "frames_total": 304,
+    "oom": {
+     "step": 38,
+     "message": "CUDA out of memory. Tried to allocate 2.28 GiB. GPU 1 has a total capacty of 47.40 GiB of which 1.32 GiB is free. Including non-PyTorch memory, this process has 46.06 GiB memory in use. Of the allocated memory 41.12 GiB is allocated by PyTorch, and 4.47 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF",
+     "max_memory_allocated_bytes": 44484340736,
+     "max_memory_reserved_bytes": 48951721984,
+     "memory_allocated_bytes": 41710391296,
+     "memory_reserved_bytes": 48951721984,
+     "device": "cuda:1",
+     "device_name": "NVIDIA RTX A6000",
+     "cuda_visible_devices": "0,1",
+     "alloc_conf": null
+    },
+    "error": null,
+    "max_memory_allocated_bytes": 44484340736,
+    "max_memory_reserved_bytes": 48951721984,
+    "alloc_conf": null,
+    "ms_deform_attn_cuda_ext_loaded": true,
+    "mixed_precision": "fp16",
+    "num_processes": 2
+   }
+  ],
+  "nvidia_smi": {
+   "0": {
+    "peak_mib": 48150,
+    "util_mean_while_loaded": 94.81267217630854,
+    "util_samples": 363,
+    "power_peak_w": 298.88
+   },
+   "1": {
+    "peak_mib": 47188,
+    "util_mean_while_loaded": 64.34188034188034,
+    "util_samples": 351,
+    "power_peak_w": 298.9
+   }
+  },
+  "videos_read": {
+   "01": 68,
+   "02": 47,
+   "03": 78,
+   "06": 113,
+   "08": 106,
+   "11": 75,
+   "12": 45,
+   "13": 70,
+   "14": 138,
+   "15": 28
+  },
+  "test_videos_read": [],
+  "weight_files": []
+ },
+ {
+  "level": "ph1_b16",
+  "kind": "ph1",
+  "batch_per_gpu": 16,
+  "gpus": "0",
+  "status": "exited",
+  "returncode": 0,
+  "wall_seconds": 71.9208254814148,
+  "fitted": true,
+  "ranks": [
+   {
+    "rank": "0",
+    "steps_started": 61,
+    "steps_per_epoch": 662,
+    "dataset_frames": 10580,
+    "frames_per_step_set": [
+     16
+    ],
+    "frames_match_batch": true,
+    "frames_total": 976,
+    "oom": null,
+    "error": null,
+    "max_memory_allocated_bytes": 29054649856,
+    "max_memory_reserved_bytes": 34189869056,
+    "alloc_conf": null,
+    "steady_steps": 50,
+    "step_seconds_mean": 1.0849106374569237,
+    "step_seconds_sd": 0.00413013365443257,
+    "first_step_seconds": 1.7467806311324239,
+    "gpu_part_seconds_mean": 1.0847899316437541,
+    "load_wait_seconds_mean": 0.00012070581316947937,
+    "epoch_seconds_projected": 718.2108419964835,
+    "world_size": 1,
+    "ft_batch_size": 16,
+    "ft_accum_steps": 4,
+    "input_shape": [
+     16,
+     3,
+     800,
+     1422
+    ]
+   }
+  ],
+  "nvidia_smi": {
+   "0": {
+    "peak_mib": 33078,
+    "util_mean_while_loaded": 97.07121661721068,
+    "util_samples": 337,
+    "power_peak_w": 297.75
+   },
+   "1": {
+    "peak_mib": 16,
+    "util_mean_while_loaded": null,
+    "util_samples": 0,
+    "power_peak_w": 0.0
+   }
+  },
+  "videos_read": {
+   "01": 101,
+   "02": 64,
+   "03": 152,
+   "06": 138,
+   "08": 174,
+   "11": 97,
+   "12": 53,
+   "13": 98,
+   "14": 177,
+   "15": 50
+  },
+  "test_videos_read": [],
+  "weight_files": []
+ },
+ {
+  "level": "ph1_b24",
+  "kind": "ph1",
+  "batch_per_gpu": 24,
+  "gpus": "0",
+  "status": "exited",
+  "returncode": 0,
+  "wall_seconds": 106.44105267524719,
+  "fitted": true,
+  "ranks": [
+   {
+    "rank": "0",
+    "steps_started": 61,
+    "steps_per_epoch": 441,
+    "dataset_frames": 10580,
+    "frames_per_step_set": [
+     24
+    ],
+    "frames_match_batch": true,
+    "frames_total": 1464,
+    "oom": null,
+    "error": null,
+    "max_memory_allocated_bytes": 43360091648,
+    "max_memory_reserved_bytes": 49398415360,
+    "alloc_conf": null,
+    "steady_steps": 50,
+    "step_seconds_mean": 1.6300959442928433,
+    "step_seconds_sd": 0.004949379667070301,
+    "first_step_seconds": 3.270699927583337,
+    "gpu_part_seconds_mean": 1.6299713389016688,
+    "load_wait_seconds_mean": 0.00012460539117455482,
+    "epoch_seconds_projected": 718.8723114331439,
+    "world_size": 1,
+    "ft_batch_size": 24,
+    "ft_accum_steps": 4,
+    "input_shape": [
+     24,
+     3,
+     800,
+     1422
+    ]
+   }
+  ],
+  "nvidia_smi": {
+   "0": {
+    "peak_mib": 47586,
+    "util_mean_while_loaded": 97.71850393700787,
+    "util_samples": 508,
+    "power_peak_w": 299.38
+   },
+   "1": {
+    "peak_mib": 16,
+    "util_mean_while_loaded": null,
+    "util_samples": 0,
+    "power_peak_w": 0.0
+   }
+  },
+  "videos_read": {
+   "01": 176,
+   "02": 85,
+   "03": 211,
+   "06": 207,
+   "08": 262,
+   "11": 136,
+   "12": 86,
+   "13": 136,
+   "14": 284,
+   "15": 73
+  },
+  "test_videos_read": [],
+  "weight_files": []
+ },
+ {
+  "level": "ph1_b32",
+  "kind": "ph1",
+  "batch_per_gpu": 32,
+  "gpus": "0",
+  "status": "exited",
+  "returncode": 1,
+  "wall_seconds": 7.3835461139678955,
+  "fitted": false,
+  "ranks": [
+   {
+    "rank": "0",
+    "steps_started": 1,
+    "steps_per_epoch": 331,
+    "dataset_frames": 10580,
+    "frames_per_step_set": [
+     32
+    ],
+    "frames_match_batch": true,
+    "frames_total": 32,
+    "oom": {
+     "step": 1,
+     "message": "CUDA out of memory. Tried to allocate 558.00 MiB. GPU 0 has a total capacty of 47.40 GiB of which 21.94 MiB is free. Including non-PyTorch memory, this process has 47.36 GiB memory in use. Of the allocated memory 45.86 GiB is allocated by PyTorch, and 1.16 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF",
+     "max_memory_allocated_bytes": 49246183936,
+     "max_memory_reserved_bytes": 50488934400,
+     "memory_allocated_bytes": 49244717568,
+     "memory_reserved_bytes": 50488934400,
+     "device": "0",
+     "device_name": "NVIDIA RTX A6000",
+     "cuda_visible_devices": "0",
+     "alloc_conf": null
+    },
+    "error": null,
+    "max_memory_allocated_bytes": 49246183936,
+    "max_memory_reserved_bytes": 50488934400,
+    "alloc_conf": null,
+    "world_size": 1,
+    "ft_batch_size": 32,
+    "ft_accum_steps": 4,
+    "input_shape": [
+     32,
+     3,
+     800,
+     1422
+    ]
+   }
+  ],
+  "nvidia_smi": {
+   "0": {
+    "peak_mib": 48520,
+    "util_mean_while_loaded": 43.27272727272727,
+    "util_samples": 11,
+    "power_peak_w": 203.8
+   },
+   "1": {
+    "peak_mib": 16,
+    "util_mean_while_loaded": null,
+    "util_samples": 0,
+    "power_peak_w": 0.0
+   }
+  },
+  "videos_read": {
+   "01": 25,
+   "02": 11,
+   "03": 37,
+   "06": 39,
+   "08": 47,
+   "11": 21,
+   "12": 17,
+   "13": 31,
+   "14": 45,
+   "15": 15
+  },
+  "test_videos_read": [],
+  "weight_files": []
+ },
+ {
+  "level": "ph2_b12",
+  "kind": "ph2",
+  "batch_per_gpu": 12,
+  "gpus": "0,1",
+  "status": "exited",
+  "returncode": 0,
+  "wall_seconds": 60.87795329093933,
+  "fitted": true,
+  "ranks": [
+   {
+    "rank": "0",
+    "steps_started": 61,
+    "steps_per_epoch": 441,
+    "dataset_frames": 10580,
+    "frames_per_step_set": [
+     12
+    ],
+    "frames_match_batch": true,
+    "frames_total": 732,
+    "oom": null,
+    "error": null,
+    "max_memory_allocated_bytes": 22005946368,
+    "max_memory_reserved_bytes": 25958547456,
+    "alloc_conf": null,
+    "steady_steps": 50,
+    "step_seconds_mean": 0.8616547882370651,
+    "step_seconds_sd": 0.012322199924867525,
+    "first_step_seconds": 2.282254822552204,
+    "gpu_part_seconds_mean": 0.8614297989569605,
+    "load_wait_seconds_mean": 0.00022498928010463714,
+    "epoch_seconds_projected": 379.9897616125457,
+    "world_size": 2,
+    "ft_batch_size": 24,
+    "ft_accum_steps": 4,
+    "input_shape": [
+     12,
+     3,
+     800,
+     1422
+    ]
+   },
+   {
+    "rank": "1",
+    "steps_started": 61,
+    "steps_per_epoch": 441,
+    "dataset_frames": 10580,
+    "frames_per_step_set": [
+     12
+    ],
+    "frames_match_batch": true,
+    "frames_total": 732,
+    "oom": null,
+    "error": null,
+    "max_memory_allocated_bytes": 22005946368,
+    "max_memory_reserved_bytes": 25958547456,
+    "alloc_conf": null,
+    "steady_steps": 50,
+    "step_seconds_mean": 0.8616543744318187,
+    "step_seconds_sd": 0.012333908417711849,
+    "first_step_seconds": 3.1866190060973167,
+    "gpu_part_seconds_mean": 0.8614431633986532,
+    "load_wait_seconds_mean": 0.00021121103316545486,
+    "epoch_seconds_projected": 379.98957912443205,
+    "world_size": 2,
+    "ft_batch_size": 24,
+    "ft_accum_steps": 4,
+    "input_shape": [
+     12,
+     3,
+     800,
+     1422
+    ]
+   }
+  ],
+  "nvidia_smi": {
+   "0": {
+    "peak_mib": 25340,
+    "util_mean_while_loaded": 96.26739926739927,
+    "util_samples": 273,
+    "power_peak_w": 300.53
+   },
+   "1": {
+    "peak_mib": 25340,
+    "util_mean_while_loaded": 95.33212996389892,
+    "util_samples": 277,
+    "power_peak_w": 301.02
+   }
+  },
+  "videos_read": {
+   "01": 161,
+   "02": 80,
+   "03": 215,
+   "06": 217,
+   "08": 249,
+   "11": 127,
+   "12": 91,
+   "13": 141,
+   "14": 304,
+   "15": 71
+  },
+  "test_videos_read": [],
+  "weight_files": []
+ },
+ {
+  "level": "ph2_b16",
+  "kind": "ph2",
+  "batch_per_gpu": 16,
+  "gpus": "0,1",
+  "status": "exited",
+  "returncode": 0,
+  "wall_seconds": 80.8636999130249,
+  "fitted": true,
+  "ranks": [
+   {
+    "rank": "0",
+    "steps_started": 61,
+    "steps_per_epoch": 331,
+    "dataset_frames": 10580,
+    "frames_per_step_set": [
+     16
+    ],
+    "frames_match_batch": true,
+    "frames_total": 976,
+    "oom": null,
+    "error": null,
+    "max_memory_allocated_bytes": 29149765632,
+    "max_memory_reserved_bytes": 34267463680,
+    "alloc_conf": null,
+    "steady_steps": 50,
+    "step_seconds_mean": 1.1408000903576612,
+    "step_seconds_sd": 0.012192876423330222,
+    "first_step_seconds": 2.167868033051491,
+    "gpu_part_seconds_mean": 1.1405623308941721,
+    "load_wait_seconds_mean": 0.00023775946348905563,
+    "epoch_seconds_projected": 377.60482990838585,
+    "world_size": 2,
+    "ft_batch_size": 32,
+    "ft_accum_steps": 4,
+    "input_shape": [
+     16,
+     3,
+     800,
+     1422
+    ]
+   },
+   {
+    "rank": "1",
+    "steps_started": 61,
+    "steps_per_epoch": 331,
+    "dataset_frames": 10580,
+    "frames_per_step_set": [
+     16
+    ],
+    "frames_match_batch": true,
+    "frames_total": 976,
+    "oom": null,
+    "error": null,
+    "max_memory_allocated_bytes": 29149765632,
+    "max_memory_reserved_bytes": 34267463680,
+    "alloc_conf": null,
+    "steady_steps": 50,
+    "step_seconds_mean": 1.1408025519736111,
+    "step_seconds_sd": 0.012222283511604821,
+    "first_step_seconds": 4.117499821819365,
+    "gpu_part_seconds_mean": 1.140616327598691,
+    "load_wait_seconds_mean": 0.00018622437492012977,
+    "epoch_seconds_projected": 377.6056447032653,
+    "world_size": 2,
+    "ft_batch_size": 32,
+    "ft_accum_steps": 4,
+    "input_shape": [
+     16,
+     3,
+     800,
+     1422
+    ]
+   }
+  ],
+  "nvidia_smi": {
+   "0": {
+    "peak_mib": 33264,
+    "util_mean_while_loaded": 96.76966292134831,
+    "util_samples": 356,
+    "power_peak_w": 295.96
+   },
+   "1": {
+    "peak_mib": 33264,
+    "util_mean_while_loaded": 96.54794520547945,
+    "util_samples": 365,
+    "power_peak_w": 296.65
+   }
+  },
+  "videos_read": {
+   "01": 219,
+   "02": 108,
+   "03": 291,
+   "06": 280,
+   "08": 335,
+   "11": 175,
+   "12": 124,
+   "13": 178,
+   "14": 401,
+   "15": 97
+  },
+  "test_videos_read": [],
+  "weight_files": []
+ },
+ {
+  "level": "ph2_b8",
+  "kind": "ph2",
+  "batch_per_gpu": 8,
+  "gpus": "0,1",
+  "status": "exited",
+  "returncode": 0,
+  "wall_seconds": 45.890969038009644,
+  "fitted": true,
+  "ranks": [
+   {
+    "rank": "0",
+    "steps_started": 61,
+    "steps_per_epoch": 662,
+    "dataset_frames": 10580,
+    "frames_per_step_set": [
+     8
+    ],
+    "frames_match_batch": true,
+    "frames_total": 488,
+    "oom": null,
+    "error": null,
+    "max_memory_allocated_bytes": 14868907520,
+    "max_memory_reserved_bytes": 16336814080,
+    "alloc_conf": null,
+    "steady_steps": 50,
+    "step_seconds_mean": 0.5908887091837823,
+    "step_seconds_sd": 0.01040405423753451,
+    "first_step_seconds": 1.323338153772056,
+    "gpu_part_seconds_mean": 0.5906891552172602,
+    "load_wait_seconds_mean": 0.0001995539665222168,
+    "epoch_seconds_projected": 391.1683254796639,
+    "world_size": 2,
+    "ft_batch_size": 16,
+    "ft_accum_steps": 4,
+    "input_shape": [
+     8,
+     3,
+     800,
+     1422
+    ]
+   },
+   {
+    "rank": "1",
+    "steps_started": 61,
+    "steps_per_epoch": 662,
+    "dataset_frames": 10580,
+    "frames_per_step_set": [
+     8
+    ],
+    "frames_match_batch": true,
+    "frames_total": 488,
+    "oom": null,
+    "error": null,
+    "max_memory_allocated_bytes": 14868907520,
+    "max_memory_reserved_bytes": 16336814080,
+    "alloc_conf": null,
+    "steady_steps": 50,
+    "step_seconds_mean": 0.5908891653828323,
+    "step_seconds_sd": 0.010457541665451897,
+    "first_step_seconds": 2.5284307934343815,
+    "gpu_part_seconds_mean": 0.5906792519241572,
+    "load_wait_seconds_mean": 0.0002099134586751461,
+    "epoch_seconds_projected": 391.168627483435,
+    "world_size": 2,
+    "ft_batch_size": 16,
+    "ft_accum_steps": 4,
+    "input_shape": [
+     8,
+     3,
+     800,
+     1422
+    ]
+   }
+  ],
+  "nvidia_smi": {
+   "0": {
+    "peak_mib": 16162,
+    "util_mean_while_loaded": 94.57219251336899,
+    "util_samples": 187,
+    "power_peak_w": 297.97
+   },
+   "1": {
+    "peak_mib": 16162,
+    "util_mean_while_loaded": 95.23958333333333,
+    "util_samples": 192,
+    "power_peak_w": 296.83
+   }
+  },
+  "videos_read": {
+   "01": 113,
+   "02": 44,
+   "03": 158,
+   "06": 135,
+   "08": 166,
+   "11": 86,
+   "12": 58,
+   "13": 98,
+   "14": 199,
+   "15": 47
+  },
+  "test_videos_read": [],
+  "weight_files": []
+ }
+]
