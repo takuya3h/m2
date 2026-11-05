@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（718 件）
+## 申し送り（728 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1170,7 +1170,26 @@
 - 検出塔 seed 42 の二回（42a・42b）は同じ設定でも値と停止の epoch（21 と 16）が違った。後の比べ（SPEC §6.2）で同じ seed の揺れをどう扱うかの材料にする
 - test_stage1_ptower_r3_dist.py の 2 枚の試験は andrew で NCCL_P2P_DISABLE=1 が無いと時間切れで落ちる（与えると通る）。試験の側で与えるかを検討する
 
-## 断定できなかった事項（454 件）
+### T-2026-11-02-hostdiff-bengio
+
+- 分岐の先頭の scripts/ は phase0（andrew 側の版）であり、bengio の 5 本の run が使った版は 22ce24b2。bengio の run を再現するときは 22ce24b2 の scripts/ を使う
+- test_stage1_ptower_heads::test_existing_candidates_match_baseline の 4 件は CPU の float 出力のバイトの要約値を比べるため bengio で落ちる。ホストに依らない比べ方にするかを決める
+- 並行する二つの契約が同じ scripts/ を別々に変えてよい形は衝突を生む。次の対の契約では道具の変更を一方に寄せるか、先に共通の版を統合する
+
+### T-2026-11-05-grasp-tower-rebuild
+
+- batch の変更を利用者が検討中（2026-11-06）。再開するなら、batch と学習率を決めたうえで新しい契約として G の 3 本を最初から学ぶ。注釈 $S/g/ann/ と派生の道具はそのまま使える
+- 中止した 3 本の途中の出力（epoch 1 の best.pth、ログ、run の置き場）は $S/aborted/try1/ にある
+- 退避した run_ptower_search.log（0 B）は ~/m2-evacuated/T-2026-11-05-grasp-tower-rebuild/ にある。戻すかどうかは利用者に確かめる
+
+### T-2026-11-06-tower-batch-probe
+
+- 工程塔の歩数は manifest で変わる（旧 phase_manifest 604 歩、phase_manifest_all_phase 662 歩、GPU ごと 8 × 2 枚）。塔の選び直しの所要の見込みは、使う manifest の歩数で計算すること
+- 検出塔の GPU 使用率の平均は b2〜b6 で 43〜69 % と低く、学習ログの data_time は 0.01 s 未満だった。律速の箇所は切り分けていない
+- repo 直下の空の run_ptower_search.log（本契約の工程塔の起動で Hydra が作った）を消すかは利用者の判断
+- 版管理の外の生の記録 /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-tower-batch-probe/ を残した（重みは無い）。片付けは利用者の判断
+
+## 断定できなかった事項（462 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -2040,18 +2059,35 @@
 - 検出塔の同じ seed の二回の値が違った原因（fp16、MS-Deform-Attn の加算の順などの候補を確かめていない）
 - 完了判定 c の COCO の経路を壊した対照は回していない
 
-## 起票者の誤りの型（424 件）
+### T-2026-11-02-hostdiff-bengio
+
+- COCO の重みの経路を存在しない経路にしたときの読み込みの行の挙動（本契約では回していない）
+- 同じ seed の検出塔 42a と 42b の差（mAP 0.7264 と 0.7318）がホストの差の比べにどう効くか。§6.2 の比べで扱う
+
+### T-2026-11-05-grasp-tower-rebuild
+
+- 学習を終えた G の値・止まる epoch・所要、学習後の反転の整合、信号と標的、正解との比べ（中止）
+- 同期で届いた stage2_pd_w3_lowlr・w3lr_* の出所の契約（触れていない）
+
+### T-2026-11-06-tower-batch-probe
+
+- det_b8 の rank 0 の torch の最大確保と予約
+- COCO の重みを読まないときの記憶（§6 b・c の対照）
+- 検出塔の GPU 使用率が低い理由
+- val・評価・起動を含めた 1 epoch の時間と、61 歩より先の歩で溢れるかどうか
+
+## 起票者の誤りの型（431 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 113 |
-| `asserted_without_measuring` | 180 |
-| `self_contradiction` | 107 |
+| `check_does_not_check` | 114 |
+| `asserted_without_measuring` | 184 |
+| `self_contradiction` | 109 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 3 |
 | `rule_read_narrowly` | 2 |
 
-合計 424 件（対を持つ契約 150 件から）
+合計 431 件（対を持つ契約 153 件から）
 
