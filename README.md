@@ -1758,3 +1758,14 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
 - `scripts/` の変更（未設定のときの挙動は変えない）: `tower_search_common.py` の識別子を `TOWER_SEARCH_TASK` で上書きでき、`TOWER_SEARCH_OBSERVER` の観測器を読み込む。`run_ptower_search.py` の公開先を `TOWER_SEARCH_PHASE_PUBLISH` で上書きできる。`train_relation_detr_search.py` の W&B に書く seed を `TOWER_SEARCH_SEED` で上書きできる。試験 `tests/test_tower_search_overrides.py`（8 件）
 - 管理と検査の台本は `tasks/T-2026-11-02-hostdiff-andrew/`（`run_hostdiff.py`、`tools/` の観測器・照合・集計・検査）。checkpoint・特徴・ログは版管理の外 `~/m2-scratch/T-2026-11-02-hostdiff-andrew/`
 - 結果（2026-11-03）: 工程塔の J_mean は seed 42 0.5903・seed 123 0.6189、検出塔の val mAP は 42a 0.7157・42b 0.7286・seed 123 0.7242。5 本とも収束規則で停止（上限 36 に未到達）、本契約以外の GPU の使用 0。G1・G2 pass。PR #286
+
+### 両塔の batch の実測（2026-11-06、andrew）
+
+契約 `T-2026-11-06-tower-batch-probe`（analysis）。**学習ではなく計測**（各水準 61 歩で止め、重みは保存しない。val・評価なし）。
+結果は `experiments/analysis/tower_batch_probe/{REPORT.md,levels.json}`、記録は `tasks/T-2026-11-06-tower-batch-probe/`。設定の採否は書かない（利用者が決める）。
+
+- 検出塔は探索の 0 番の学習設定（2 枚、fp16）で GPU ごとの batch 2・4・6・8、工程塔は二枚の道（SyncBatchNorm、fp32）で GPU ごと 8・12・16、一枚の道で 16・24・32 を測った
+- 道具は `experiments/analysis/tower_batch_probe/tools/`（実行器 `run_level.py`、観測器 `observer.py` を `TOWER_SEARCH_OBSERVER` で読ませる、集計 `summarize.py`・`make_tables.py`、プロセスの列挙 `procs.py`、要約値 `digests.py`）。**既存のスクリプトと設定は変えていない。** 検出塔の batch は `train_search.py` の写し（`batch_size` の 1 行だけを環境変数にしたもの）を repo の外に置いて渡した
+- 結果（RTX A6000 × 2、300 W）: 検出塔は 2・4・6 が収まり、8 は歩 38 で OOM。工程塔は二枚の道 8・12・16 と一枚の道 16・24 が収まり、一枚の道 32 は歩 1 で OOM。
+  1 epoch の見込み（歩数 × 一歩の平均。val を含まない）は検出塔 941.5・802.4・783.5 s、工程塔の二枚の道 391.2・380.0・377.6 s、一枚の道 718.2・718.9 s
+- 生の記録は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-tower-batch-probe/`
