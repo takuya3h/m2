@@ -21,7 +21,7 @@
 | d | 無変更と枚数 | 各歩でモデルに渡った枚数は全水準で batch。80 歩で batch × 80 に一致。COCO の重みは全 rank で 596 テンソル matched。保存された重み 0 件。禁止の場所 17 経路・凍結源・両仮想環境の要約値が前後で一致（audit:178）。失敗の名前 7 → 7（同じ集合）。forbidden-check の違反 0 件（audit:192） |
 | e | test 不使用 | 読んだ動画は全水準で折り A の train だけ。{04,05,07} との共通は 0 件。04 を足した入力では全水準で 1 件（audit:177） |
 | f | 記述 | 見込み = 歩数 × 平均を `summarize.py` が計算し直して一致（assert）。プロセス数の差の分け方は `derive.py` が assert。採否・推奨を書いていない |
-| g | PR | 送出の節に書く |
+| g | PR | #292、base phase0、isDraft false、head feat/dtower-step-profile |
 
 ## 実測（rank 0、秒。内訳は同期を入れた壁時計の区間）
 
@@ -83,5 +83,5 @@
 
 ## 送出
 
-- PR: （起票後に追記）
-- `make task-report`: （送信後に追記）
+- PR: #292（base phase0、isDraft false、head feat/dtower-step-profile。内容の commit 6f230616）
+- `make task-report`: この記録を commit した後に送る（結果は送信の後に追記する）

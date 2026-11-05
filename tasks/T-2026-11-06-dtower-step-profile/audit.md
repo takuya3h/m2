@@ -193,3 +193,5 @@
   - changed 29。うち本契約の置き場の 26 件が `allow_write experiments/analysis/dtower_step_profile` で permitted
   - 本契約の新しいファイル（道具 7 本・REPORT・表・集約・歩ごとの表 14 本）がすべて変更として検出された
 - 追跡下の変更は `README.md` と `docs/experiment_log.md` の追記だけ（本契約の記録）
+- push: `git push -u origin feat/dtower-step-profile`（内容の commit 6f230616）
+- PR: `gh pr create --base phase0 --head feat/dtower-step-profile` → #292。`gh pr view 292` で `baseRefName: phase0`、`headRefName: feat/dtower-step-profile`、`isDraft: false`、`state: OPEN`
