@@ -1,0 +1,73 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-11-05-grasp-tower-rebuild"
+  kind: analysis
+  title: "把持塔 G の作り直し。頭を把持関係 5 クラスだけにし、左右反転でラベルを入れ替える。確定の G と交差適合の二つの半分を学び、案 A の信号・案 B の把持のマスク・案 D の標的を作り直す（andrew）。二本目 T-2026-11-01-grasp-pilot-g の G（38 クラスを一つの頭、反転でラベルを入れ替えない）を置き換える"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-11-05T14:30:00Z"
+  created_from:
+    runindex_commit: "68befc3b62ffc071077cca446df5d3c83b8c38b9"
+    counts: {index: 2363, experiments: 1130, verdicts: 1736}
+  depends_on: [T-2026-10-31-grasp-pilot-probe, T-2026-11-01-grasp-pilot-g, T-2026-11-01-grasp-pilot-d]
+  amendments: []
+intent:
+  question: "把持関係 5 クラスだけを学び左右反転でラベルを入れ替える G は、折り A の val で 5 クラスの mask mAP をどこまで出すか。その G から作った案 A の信号・案 B の把持のマスク・案 D の標的は、一本目の正解とどれだけ合うか。非公式の測定であり、関門の判定にも設計の判断（案の採否を含む）にも使わない"
+  decision_at_stake: "二本目の G の設計の誤りで無効になった腕（案 A・B の予測の腕、案 C・D の教師の腕）を回し直すための信号を作る。案の採否は結果で決めない"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery の動画 01 から 15 のうち、折り A の train と val の動画（conventions#folds）で、把持関係の注釈（hand_tool_seg、5 クラス、v2 を統合した版）があるフレーム。折り A の test の動画のフレームは学習・信号の作成・評価のどれにも通さない"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/grasppilot/g38_build.py", "scripts/grasppilot/g_train.py", "scripts/grasppilot/g_signals.py", "scripts/grasppilot/grasp_signals.py", "scripts/grasppilot/d_targets.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#env_p0, conventions#folds, conventions#split, conventions#crossfit]
+  conventions_rev: "2d946b07a57abebc4a8f66150d6dbaf2ccd22186"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/analysis/grasp_tower_rebuild", "runindex/"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。分岐、前提の統合、andrew の他プロセス、記憶領域、試験の失敗の名前、仮想環境の要約値、電力の上限", gpu: false, est: "1h"}
+    - {id: B, name: "5 クラスの注釈を組む。反転でラベルを入れ替える学習経路を足し、対照で確かめる", gpu: true, est: "3h"}
+    - {id: C, name: "確定の G と H1・H2 の学習", gpu: true, est: "30h"}
+    - {id: D, name: "信号と標的を作り、正解と比べ、交差適合を確かめる", gpu: true, est: "3h"}
+    - {id: E, name: "集計、検証、報告", gpu: false, est: "2h"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、二本目と三本目の内容が起点に在り、本契約以外の compute プロセスが無く、記憶領域と失敗の名前と仮想環境の要約値と電力の上限を記録した", on_fail: stop}
+    - {id: G2, after: B, check: "5 クラスの注釈から元のマスクが戻り、反転の経路が左右のラベルを入れ替え、入れ替えない写しが対照で見分けられる", on_fail: stop}
+    - {id: G3, after: C, check: "3 本の G が収束規則で止まり、選んだ epoch の 5 クラスの mask mAP が学習前を上回り、反転の整合の検査を通る", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, gpu_free]
+  resources: {server: andrew, gpu: 2, est_hours: 39, runs: 3}
+outputs:
+  must_have: [REPORT.md, RESULT.md, result.yaml, audit.md]
+  destination: "experiments/analysis/grasp_tower_rebuild/"
+  acceptance:
+    - "a: 開始状態として、分岐、起点、二本目と三本目の内容が起点に在ること、開始前から在る未追跡、andrew の compute プロセスの一覧、記憶領域の空き、試験の失敗の名前、既存の仮想環境のパッケージの一覧の要約値、GPU ごとの電力の上限と装置の型が記録されている"
+    - "b: 5 クラスの注釈が把持関係の注釈だけから組まれ、クラスの対応表とフレーム数とインスタンス数が記録され、組んだ注釈から元のマスクが数フレームで一致し、欠落の印の画素が損失から除かれていることが示されている"
+    - "c: 左右反転のとき左手と右手、左手の器具と右手の器具のラベルが入れ替わることが、反転した画像の予測をラベルを入れ替えて元と比べる検査で示され、入れ替えない写しが同じ検査で外れを出す"
+    - "d: 確定の G と H1・H2 が収束規則で止まり、epoch ごとの 5 クラスの mask mAP とクラス別 AP と学習率、止まった epoch、選んだ epoch、所要、COCO の重みを読んだ件数が記録されている。選んだ epoch の 5 クラスの mask mAP が学習前を上回る"
+    - "e: 案 A の g、案 B の m、案 D の q が定義どおりに作られ、各ファイルの sha256 とフレーム数と値の範囲が記録され、train の信号が交差適合の規律を満たし、確定の G の val の g と m が一本目の正解と比べられている（二値の次元の ROC-AUC、チャネルごとの IoU）"
+    - "f: 案 D の q の行の和が 1 を超える枠が正規化で 1 になり、超えた枠の数と最大の和が記録されている"
+    - "g: 入れ替えの信号が split ごとの固定の並べ替えで作られ、元と同じフレームが来た割合と同じ動画から来た割合が記録されている"
+    - "h: test の動画のフレームを学習と信号の作成と評価に一度も通していないことが、通した動画の集合で示されている"
+    - "i: 二本目と三本目と前回までの予備測定の run の置き場と保存先、data の raw と external と注釈、凍結源、既存の checkpoint、third_party、既存の仮想環境を変えていない。試験の失敗が増えていない。forbidden-check の違反のうち本契約の経路のものが 0 件"
+    - "j: PR が Draft でなく存在し、base が phase0、分岐が feat/grasp-tower-rebuild"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "andrew に本契約以外の compute プロセスがある場合（止めずに利用者に諮る）"
+    - "二本目か三本目の内容が起点に無い場合"
+    - "把持関係の注釈のフレーム数が被覆の文書の値（train 9,356、val 1,514）と食い違う場合"
+    - "G の学習が発散する、上限で止まらない、選んだ epoch の 5 クラスの mask mAP が学習前を上回らない場合"
+    - "反転の整合の検査を通らない場合"
+    - "記憶領域が足りない場合"
+    - "実行基盤が書き込み、移動、削除を拒む場合"
