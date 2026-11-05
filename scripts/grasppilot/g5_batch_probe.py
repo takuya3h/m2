@@ -3,12 +3,13 @@
 一つの水準（GPU ごとの batch × 数値精度）を GPU 1 枚で数十歩だけ学び、記憶と一歩の時間を測る。重みは保存しない。
 学習の部品は `g5_train.py`（構造・COCO の重み・反転でラベルを入れ替える取り出し）と `g_train.py`（入力の組み立て）をそのまま使う。
 fp16 は `g_train.py --amp fp16` と同じ形（optim_wrapper を AmpOptimWrapper、loss_scale dynamic）。学習率は変えない。
+bf16（利用者の追加の指示 2026-11-06）は同じ AmpOptimWrapper・loss_scale dynamic で dtype だけ bfloat16 にする。
 
 一歩の時間 = 前の歩の更新の終わりから、この歩の更新の終わりまで（読み込みの待ちを含む。cuda の同期の後に測る）。
 最初の --warmup 歩を除いた --measure 歩の平均と標準偏差。溢れた（CUDA の記憶の不足）ら、その歩と記憶を記録して終わる。
 nvidia-smi の記憶・使用率・電力は別の糸で 0.5 秒ごとに読む。
 
-    .venv/bin/python scripts/grasppilot/g5_batch_probe.py --batch 2 --amp none --ann-dir <S/g/ann> --out <json> [--no-weights]
+    .venv/bin/python scripts/grasppilot/g5_batch_probe.py --batch 2 --amp none|fp16|bf16 --ann-dir <S/g/ann> --out <json> [--no-weights]
 """
 from __future__ import annotations
 
@@ -60,7 +61,7 @@ def physical_gpu():
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--batch", type=int, required=True)
-    ap.add_argument("--amp", choices=("none", "fp16"), required=True)
+    ap.add_argument("--amp", choices=("none", "fp16", "bf16"), required=True)
     ap.add_argument("--ann-dir", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--warmup", type=int, default=10)
@@ -81,9 +82,11 @@ def main():
         load = {"loaded": 0, "n_checkpoint": None, "note": "対照: COCO の重みを読まない"}
     else:
         model, cfg, load = G5.build_model()
-    if a.amp == "fp16":
+    if a.amp in ("fp16", "bf16"):
         cfg.optim_wrapper.type = "AmpOptimWrapper"
         cfg.optim_wrapper.loss_scale = "dynamic"
+        if a.amp == "bf16":
+            cfg.optim_wrapper.dtype = "bfloat16"
     optim = build_optim_wrapper(model, cfg.optim_wrapper)
     g = torch.Generator()
     g.manual_seed(a.seed)
@@ -98,6 +101,7 @@ def main():
            "gpu_index": gpu, "gpu_name": torch.cuda.get_device_name(0), "train_frames": len(tr["images"]),
            "steps_per_epoch": len(loader), "warmup": a.warmup, "measure": a.measure, "init": load,
            "lr_max": max(gr["lr"] for gr in optim.optimizer.param_groups), "accumulation": 1,
+           "optim_wrapper": json.loads(json.dumps(cfg.optim_wrapper.to_dict(), default=str)),
            "expandable_segments": os.environ.get("PYTORCH_CUDA_ALLOC_CONF"), "host": os.uname().nodename,
            "code_sha256": T.sha(Path(__file__)), "git_commit": T.git("rev-parse", "HEAD")}
     times, images, nonfinite, losses = [], [], [], []
