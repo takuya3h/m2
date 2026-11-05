@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（728 件）
+## 申し送り（733 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1182,6 +1182,14 @@
 - 中止した 3 本の途中の出力（epoch 1 の best.pth、ログ、run の置き場）は $S/aborted/try1/ にある
 - 退避した run_ptower_search.log（0 B）は ~/m2-evacuated/T-2026-11-05-grasp-tower-rebuild/ にある。戻すかどうかは利用者に確かめる
 
+### T-2026-11-06-dtower-step-profile
+
+- 検出塔の GPU 使用率は歩の区間だけで平均すると 77〜92 %（使用率 0 の標本 0 個）。PR 290 の 43〜69 % は起動と止めを含む窓での平均だった。使用率を比べるときは平均の窓を揃えること
+- 検出塔の読み込みの待ちは 0.001〜0.005 s/歩。worker 数 4・8・16 で一歩は 0.3905・0.3938・0.3920 s。batch と読み込み・プロセス数の設定の採否は利用者が決める
+- 読み込み無しの一歩が短い理由（入力の大きさか読み込みか）を分けるには、入力の tensor の形を歩ごとに記録する必要がある
+- 手順 0 で退避した空の run_ptower_search.log が ~/m2-evacuated/T-2026-11-06-dtower-step-profile/ に在る。戻すか消すかは利用者の判断
+- 版管理の外の生の記録 /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-step-profile/（重みなし）を残した。片付けは利用者の判断
+
 ### T-2026-11-06-tower-batch-probe
 
 - 工程塔の歩数は manifest で変わる（旧 phase_manifest 604 歩、phase_manifest_all_phase 662 歩、GPU ごと 8 × 2 枚）。塔の選び直しの所要の見込みは、使う manifest の歩数で計算すること
@@ -1189,7 +1197,7 @@
 - repo 直下の空の run_ptower_search.log（本契約の工程塔の起動で Hydra が作った）を消すかは利用者の判断
 - 版管理の外の生の記録 /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-tower-batch-probe/ を残した（重みは無い）。片付けは利用者の判断
 
-## 断定できなかった事項（462 件）
+## 断定できなかった事項（466 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -2069,6 +2077,13 @@
 - 学習を終えた G の値・止まる epoch・所要、学習後の反転の整合、信号と標的、正解との比べ（中止）
 - 同期で届いた stage2_pd_w3_lowlr・w3lr_* の出所の契約（触れていない）
 
+### T-2026-11-06-dtower-step-profile
+
+- 入力の tensor の形（乱択の解像度）。読み込み無しの一歩が短い理由は分けていない
+- 逆伝播の区間の中の勾配の all_reduce の量
+- 同期を入れない写しの run での内訳（§6.11 との衝突で回していない）
+- 同期を入れたことの一歩への影響（PR 290 とは窓と乱択の入力が違う）
+
 ### T-2026-11-06-tower-batch-probe
 
 - det_b8 の rank 0 の torch の最大確保と予約
@@ -2076,18 +2091,18 @@
 - 検出塔の GPU 使用率が低い理由
 - val・評価・起動を含めた 1 epoch の時間と、61 歩より先の歩で溢れるかどうか
 
-## 起票者の誤りの型（431 件）
+## 起票者の誤りの型（435 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 114 |
-| `asserted_without_measuring` | 184 |
-| `self_contradiction` | 109 |
+| `asserted_without_measuring` | 186 |
+| `self_contradiction` | 111 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 3 |
 | `rule_read_narrowly` | 2 |
 
-合計 431 件（対を持つ契約 153 件から）
+合計 435 件（対を持つ契約 154 件から）
 

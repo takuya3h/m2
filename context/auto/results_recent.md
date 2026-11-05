@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 153 件）。
-ここに出ない 148 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 154 件）。
+ここに出ない 149 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-11-06-tower-batch-probe
 
@@ -50,6 +50,49 @@
 - COCO の重みを読まないときの記憶（§6 b・c の対照）
 - 検出塔の GPU 使用率が低い理由
 - val・評価・起動を含めた 1 epoch の時間と、61 歩より先の歩で溢れるかどうか
+
+## T-2026-11-06-dtower-step-profile
+
+状態 `pass` / ホスト `andrew` / 起票 `292` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 分岐 feat/dtower-step-profile、merge-base = origin/phase0 = HEAD = 271cf8c0。git ls-tree origin/phase0 に tasks/T-2026-11-06-tower-batch-probe/ の 5 ファイルと experiments/analysis/tower_batch_probe/ の 9 ファイルが在る。/proc/PID/exe と argv の完全一致で compute プロセス 0 件（陽性対照 1、部分一致 0、存在しない経路 0。試験の後にも 0）、nvidia-smi の compute 0。空き 1,644,104,179,712 bytes、試験の失敗 7 件の名前、.venv の freeze f6c43729…・.venv-relation-detr d0724876…、両 GPU の power.limit 300.00 W、論理 CPU 32 を記録
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — 完了判定 d の『各水準で読み込んだ枚数が batch × 歩数と一致』は worker の先読みを数えていない。字面どおりデータセットが読んだ枚数で数えると、水準 1 は 360 枚で 81 回 × 2 × 2 rank = 324 を超え、worker 16 では 456 になって一致しない。モデルに渡った枚数で読むと全水準で一致するので、両方を書いた
+- `asserted_without_measuring` — SPEC §2.2 は内訳を 1 読み込みの待ち（batch を受け取るまで）→ 2 順伝播 → … の順に並べるが、実装 util/engine.py では次の batch の読み込みは順伝播と逆伝播の間で行われる。並びどおりに区切ると歩の始めに読み込みの区間が無く、実装の順のまま測った
+- `self_contradiction` — §5 b の空振りの確認『順伝播の前後に同期を入れない写しでは内訳の和が一歩と合わない』は §2.1 に無い run を要し、§6.11『§2.1 に無い水準を足さない』と衝突する。さらに残りを『一歩 − 1〜5 の和』と定義するので和と一歩の差は定義上いつも残りに等しく、この対照は字面のままでは失敗しえない。同じ run の同期の前の時計で代えた
+- `self_contradiction` — 完了判定 b は内訳に『2 プロセスの同期の待ち』を独立の項目として挙げるが、§2.2 の 4 は同期を逆伝播に含めてプロセス数 1 の水準との差で見ると書く。字面どおり両方は満たせないので、明示の集団通信と記録用の集約を直接測り、勾配の同期は差で書いた
+
+### 逸脱
+
+- `spec_defect` — train_search.py は batch_size = 2 と num_workers = 4 を固定し口が無い。この 2 行だけを環境変数 PROBE_BATCH_SIZE・PROBE_NUM_WORKERS にした写しを repo の外（$STORE/config/train_search_profile.py）に置いて渡した。原本は無変更（要約値が前後で一致）
+- `judgement` — 内訳は既存の観測口 TOWER_SEARCH_OBSERVER に tools/observer.py を渡し、実行中にモデル・criterion・matcher の hook、util.engine.DataPrefetcher、accelerator.backward / reduce、optimizer.step、linear_sum_assignment、torch.distributed.all_reduce を包んで測った。ループの順序と更新は変えていない。ファイル・既定の挙動・third_party は無変更
+- `judgement` — optimizer.step は素の関数で包むと epoch 0 の LinearLR（method.__self__ / __func__ で包む）が壊れるため、types.MethodType で束縛して包んだ
+- `judgement` — 読み込み無しの水準は、rank の batch sampler（accelerate の BatchSamplerShard）の最初の batch を主プロセスでデータセットから組んで GPU に置き、DataLoader を一度も回さずに worker を起こさなかった。prepare_targets が targets を deepcopy するので入力は書き換わらない。batch の和は始めと終わりで一致
+- `judgement` — 80 歩を得るため順伝播の入りを 81 回にした（TOWER_SEARCH_CONTROL_STEPS=81）。集計は歩 21〜80 の 60 歩
+- `judgement` — §5 b の対照（同期を入れない写し）は §6.11 と衝突するので別の run を回さず、同じ run の中で各部分の終わりの同期の前の時計を記録し、同期なしの時計で読んだ場合に当たる値として使った
+- `judgement` — 2 プロセスの同期の待ちは、明示の集団通信（criterion の box 数の all_reduce）と記録用の loss_dict の集約を両側の同期つきで直接測り、勾配の all_reduce はプロセス数 1 との差でだけ書いた
+- `judgement` — 要約値の経路に experiments/analysis/tower_batch_probe を足した（PR 290 の道具を土台にしたため）。歩ごとの表は版管理の外と本契約の置き場の steps/ の両方に置いた
+- `judgement` — 手順 0 の汚れの判定で、repo 直下の空の run_ptower_search.log（PR 290 の工程塔の起動で Hydra が作ったもの）で止まった。利用者の選択 1 により ~/m2-evacuated/T-2026-11-06-dtower-step-profile/ へ移し、task-start を一度だけやり直した
+- `environment` — py_compile と要約値の対照で tools/__pycache__/ ができた（git では無視）。rm が対話の確認つきで一度目は消えず、後で rm -rf で消した。commit していない
+
+### 申し送り
+
+- 検出塔の GPU 使用率は歩の区間だけで平均すると 77〜92 %（使用率 0 の標本 0 個）。PR 290 の 43〜69 % は起動と止めを含む窓での平均だった。使用率を比べるときは平均の窓を揃えること
+- 検出塔の読み込みの待ちは 0.001〜0.005 s/歩。worker 数 4・8・16 で一歩は 0.3905・0.3938・0.3920 s。batch と読み込み・プロセス数の設定の採否は利用者が決める
+- 読み込み無しの一歩が短い理由（入力の大きさか読み込みか）を分けるには、入力の tensor の形を歩ごとに記録する必要がある
+- 手順 0 で退避した空の run_ptower_search.log が ~/m2-evacuated/T-2026-11-06-dtower-step-profile/ に在る。戻すか消すかは利用者の判断
+- 版管理の外の生の記録 /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-step-profile/（重みなし）を残した。片付けは利用者の判断
+
+### 断定できなかったこと
+
+- 入力の tensor の形（乱択の解像度）。読み込み無しの一歩が短い理由は分けていない
+- 逆伝播の区間の中の勾配の all_reduce の量
+- 同期を入れない写しの run での内訳（§6.11 との衝突で回していない）
+- 同期を入れたことの一歩への影響（PR 290 とは窓と乱択の入力が違う）
 
 ## T-2026-11-05-grasp-tower-rebuild
 
@@ -161,44 +204,4 @@
 
 - 検出塔の同じ seed の二回の値が違った原因（fp16、MS-Deform-Attn の加算の順などの候補を確かめていない）
 - 完了判定 c の COCO の経路を壊した対照は回していない
-
-## T-2026-11-02-bengio-andrew-env-survey
-
-状態 `pass` / ホスト `bengio` / 起票 `282` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 分岐 feat/bengio-andrew-env-survey、起点 = HEAD = origin/phase0 231c280e。GPU を使わないことを記録。andrew へ BatchMode の ssh で届き、分岐 feat/stage2-w23-andrew・HEAD a78e2f3c・変更 0・未追跡 41・compute 0 を記録。third_party と venv の作業の兆しは要約値の一致で否定
-- `G2` pass — reldetr_digest.py の値が §3.2 と三つとも一致: andrew main 142/2f08e521・155/20f15c06、bengio main 127/3ade18f0・140/89dc93b4、重ねの BODY 142/2f08e521・155/20f15c06
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — 本契約の書き込み先 experiments/analysis/... が bengio に留まる前提で andrew 無書き込みを求めたが、.stignore の !experiments/**/*.py を確かめていなかった。指示どおり diff の材料を置くと、.py の 8 件が Syncthing で andrew の repo に配られ、andrew の未追跡が 41 から 49 に増えた
-- `self_contradiction` — Task E の定義は ~/slocal2 を直下の名前だけで比べるため、andrew にも同名がある stage2pilot_store は残り物から外れる。一方 §3.3 は同じ置き場を残り物の手がかりに挙げる。定義どおりに実行すると、bengio だけにある約 21 GB の契約の置き場（grasp-pilot-d、w23-bengio）が一覧に出ない
-
-### 逸脱
-
-- `judgement` — ~/.ssh の sha256 は秘密鍵を読むため利用者に確かめ、「取る」の回答で取った（名前・バイト数・sha256 だけを記録）
-- `judgement` — 本契約の置き場の andrew の写し 8 件（.py）が同期で andrew に渡ったため、利用者の決定で .py.txt に改名した。同期が andrew の 8 件を消し、未追跡は 41 件に戻った。同期が作った空のディレクトリ 3 つは andrew に残る（消していない）
-- `judgement` — 試験に PYTHONDONTWRITEBYTECODE=1 を足した。andrew の試験は /tmp への書き込みが避けられず回さず、w23-andrew の記録（当時の分岐の起点）を使った
-- `environment` — 装置を見せない形では上流の ms_deform_attn.py が拡張の読み込みを試みないため、ビルド物の .so を importlib で直接読んで確かめた
-- `judgement` — make forbidden-check は TASK を渡さないと allow_write が効かず fail（違反 59）。TASK= を渡して pass（違反 0）
-- `judgement` — Task E の定義の外の補足として stage2pilot_store の二段目の差を並べた（一覧の本体には入れていない）
-- `judgement` — README.md と docs/experiment_log.md は更新していない（契約の allow_write が二つの置き場に限る）
-
-### 申し送り
-
-- bengio の MS-Deform-Attn のビルド物（~/.cache/torch_extensions/py311_cu118/MultiScaleDeformableAttention/build.ninja 27 行目）は ~/slocal2/s2fix-bengio-body の .cu を指す。重ねの BODY を片付ける前に、Relation-DETR を揃えた main で拡張がどう読み込まれるか（ビルドし直しの要否）を装置のある形で確かめる
-- 揃えると失われる bengio の中身は main.py（CRLF の上流の原形）と transforms/presets.py（上流の原形）の 2 件。どちらも third_party_snapshot/Bengio の tar に無い。揃える前に保全するかを決める
-- andrew の .venv/pyvenv.cfg の home は存在しない ~/.pyenv/versions/3.11.4/bin を指す（bin/python は uv の 3.11.16）。基準の側の不整合として扱いを決める
-- IOMMU は andrew だけ有効の手がかりがある（2 枚の DDP で NCCL_P2P_DISABLE=1 が要るという記録と符合する）。(b) の速さの比較では、この差と電力の上限 300 W 対 220 W、CPU 7950X 対 3900X を別々に扱う
-- 契約の書き込み先が experiments/ の下にあると、.py・.npy・.pt・.pth・logs などは Syncthing で全台に配られる（.stignore の 43〜54 行）。andrew を読むだけの契約では、写しを .py などの拡張子で置かない
-- make forbidden-check は TASK= を渡さないと allow_write が効かない。手順書の「禁止領域に触れていないことを確かめる」の命令に TASK= が無い
-
-### 断定できなかったこと
-
-- 上流の load() 経路での MS-Deform-Attn の読み込み（ビルドし直しの要否を含む）。装置が要る
-- andrew の現在の起点（a78e2f3c）での試験の失敗の名前。記録は andrew の 2026-11-01 の分岐の起点で取ったもの
-- PCIe の負荷時の世代と幅（無負荷で測った）
-- test_stage1_ptower_heads の 4 件の差が CPU の型による数値の違いか
 
