@@ -3,7 +3,7 @@ task_id: "T-2026-11-06-tower-batch-probe"
 status: pass
 host: "andrew"
 branch: "feat/tower-batch-probe"
-pr: null
+pr: 290
 merged: false
 
 gates:
@@ -53,4 +53,6 @@ unknowns:
   - "検出塔の GPU 使用率が低い理由"
   - "val・評価・起動を含めた 1 epoch の時間と、61 歩より先の歩で溢れるかどうか"
 
-commits: []
+commits:
+  - "b31246aa"
+  - "584f5e37"

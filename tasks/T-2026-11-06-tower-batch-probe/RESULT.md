@@ -19,7 +19,7 @@
 | d | 無変更 | 保存された重み 0 件（全水準）。禁止の場所・凍結源・両仮想環境の要約値が開始前と全項目一致。試験の失敗の名前 7 → 7（同じ名前の集合、新規 0）。forbidden-check は pass、違反 0 件 |
 | e | test 不使用 | 読んだ動画は全水準で 01,02,03,06,08,11,12,13,14,15。{04,05,07} との共通 0 件。04 を足した入力で全水準 1 件 |
 | f | 記述 | 見込み = 歩数 × 平均を `make_tables.py` が計算し直して一致（assert）。採否・推奨・「上限」の語を書いていない |
-| g | PR | 送出の節 |
+| g | PR | #290、base phase0、isDraft false、head feat/tower-batch-probe |
 
 ## 実測（rank 0。見込みは val・評価を含まない）
 
@@ -62,5 +62,5 @@
 
 ## 送出
 
-- PR: PR_NUMBER（base phase0、Draft でない）
-- `make task-report`: REPORT_EXIT
+- PR: #290（base phase0、Draft でない、分岐 feat/tower-batch-probe）
+- `make task-report`: この版の後に送る（終了コードは次の commit で記録）
