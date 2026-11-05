@@ -175,3 +175,11 @@
 - batch 16・fp16 は 1 回目が `CUDNN_STATUS_NOT_INITIALIZED` で記録なく終わった（rc 1、`$S/b0/b16_fp16_try1.log`）。道具がこの誤りも記録するよう直して（`g5_batch_probe.py`）02:16 に測り直し、1 歩目で再現（最大予約 50.40 GB）
 - COCO の重みは全水準で 608 / 610 を読んだ（対照を除く）
 - 表を commit・push して停止し、利用者に batch・数値精度・学習率を諮る（G2b）
+
+### B0 の追加: bf16（利用者の追加の指示、2026-11-06）
+
+- 1 回目（02:35 JST、commit aa8de639）: 6 水準すべて rc 1、1 ステップ目で `RuntimeError: "ms_deform_attn_forward_cuda" not implemented for 'BFloat16'`（mmcv 2.1.0）。ログは `$S/b0/bf16_try1/`
+- 利用者の決定（選択肢 1）: 変形注意の入力が bf16 のときだけ fp32 に変換して計算し、出力を bf16 に戻す。ほかは bf16。仮想環境と third_party は変えない。学習でも同じ形を使う。`meta.amendments` に記録
+- `g5_train.patch_msda_bf16()` を足した（mmcv の `multi_scale_deform_attn` モジュールが名前で引く `MultiScaleDeformableAttnFunction` を、この過程の中だけ包みに差し替える）。確かめ（`$S/b0/msda_patch_check.txt`）:
+  包まない bf16 → not implemented、fp32・fp16 は素通しでビット一致、bf16 の出力は bf16・fp32 との差の最大 0.0041、勾配は bf16 で有限
+- 2 回目（02:38〜02:43 JST、commit 61c364bd）: batch 2〜12 は収まり非数 0、batch 16 は 1 ステップ目で溢れた。表は `batch_probe.md`。再び止まって諮る
