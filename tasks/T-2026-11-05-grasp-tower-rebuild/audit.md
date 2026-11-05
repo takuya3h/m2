@@ -154,3 +154,24 @@
 - 1 枚に載せる本数: GPU 0 に確定の 1 本、GPU 1 に H1・H2 の 2 本（試走の最大確保 9.85 GB × 2 < 48 GB）
 - 学ぶフレーム: 確定 9,356、H1 3,913、H2 5,443。val 1,514。COCO の重みは 3 本とも 608 / 610（cls_embed の 2 個は形が違い読まない）
 - 起動直後: GPU 0 使用率 85%・211 W、GPU 1 使用率 99%・193 W（上限 220 W）
+
+### C-1 の中止（利用者の指示、2026-11-06 01:42 JST 一時停止 → 01:59 終了）
+
+- 01:42 利用者「一度学習止めてもらって良い？」→ 3 本の python（本体と worker の 27 プロセス）を SIGSTOP。止めた位置は 3 本とも epoch 1 の途中（確定 600 / 4,678 歩過ぎ）
+  - 最初の `kill -STOP $pids` は zsh が一覧を一語として渡したため効かず（`illegal pid`）、`pgrep … | xargs kill -STOP` でやり直した
+- 利用者が `/task` を再び呼んだ → 手順 0 は「再開」。プリフライトは **P11 gpu_free FAIL**（一時停止中の本契約の 3 本が GPU の記憶を持つ）で停止して諮った
+- 利用者「よみなおし」→ 台帳の現在の版を `fetch_task.read_notion_bundle`（要約値の照合つき）で作業用の場所へ読み出して手元と比べた。
+  台帳の版は Task B0（batch と数値精度の計測、12 水準）と G2b・完了判定 k を足していた（spec.yaml a386ecd6…、SPEC.md 97306ba1…）
+- 旧版の条件で起動した 3 本は新しい版の Task C の条件に当たらないため、01:59 に SIGKILL で終了した（exit 137）。
+  出力（run の記録、ログ、ckpt の置き場）は消さずに `$S/aborted/try1/` へ移した。epoch 1 を終えていないので、評価の値も重みも無い
+- 台帳の版で `spec.yaml`・`SPEC.md` を置き換え（eb4c4925）→ validate OK、preflight 7 PASS / 0 FAIL（P11 PASS）
+
+## Task B0 — batch と数値精度の計測（G2b）
+
+    $ $S/b0/run_b0.sh     （GPU 0、水準ごとに GPU 0 の記憶 39 MiB・compute 0 件を確かめてから起動）
+    CUDA_VISIBLE_DEVICES=0 python scripts/grasppilot/g5_batch_probe.py --batch <b> --amp none|fp16 --ann-dir $S/g/ann --out $S/b0/b<b>_<amp>.json [--no-weights]
+
+- 12 水準 + 対照（batch 2・fp32・重みを読まない）。02:00:59〜02:13:42 JST。結果の表は `experiments/analysis/grasp_tower_rebuild/batch_probe.md`
+- batch 16・fp16 は 1 回目が `CUDNN_STATUS_NOT_INITIALIZED` で記録なく終わった（rc 1、`$S/b0/b16_fp16_try1.log`）。道具がこの誤りも記録するよう直して（`g5_batch_probe.py`）02:16 に測り直し、1 歩目で再現（最大予約 50.40 GB）
+- COCO の重みは全水準で 608 / 610 を読んだ（対照を除く）
+- 表を commit・push して停止し、利用者に batch・数値精度・学習率を諮る（G2b）
