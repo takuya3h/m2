@@ -144,3 +144,4 @@ bash のプロセスが残らないためである（命令を二つにした二
 - 要約値の道具の陽性対照（scratchpad の写し）: 1 ファイルの場所 `63b6958c2988` → 新しいファイルを足すと `d8eabb91c346` → その中身を 1 文字変えると `da0f0800c0d8`
 - `make forbidden-check TASK=T-2026-11-06-tower-batch-probe`: `status: pass`、`violations: []`、changed 15（本契約の新しいファイルがすべて変更として検出され、`allow_write experiments/analysis/tower_batch_probe` で許可）
 - 事後の試験（17:30Z〜、30 分 33 秒）: **7 failed, 989 passed**、rc=1。失敗の名前の集合は開始前と同じ（新規 0、消えた 0。`$STORE/A/pytest_after_failed.json`）
+- repo 直下に未追跡の `run_ptower_search.log` が出た（0 bytes、mtime 2026-11-05T17:21:03Z = ph2_b8 の起動時刻）。`configs/stage1_ptower_r3.yaml` の `hydra.run.dir: .` により Hydra がジョブのログを cwd（repo 直下）に作ったもの。消さず、commit もしていない

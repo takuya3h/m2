@@ -51,6 +51,7 @@
 - 一歩の時間は、検出塔では forward に入った時刻の間隔、工程塔では前の歩の後に `cuda.synchronize` してから batch を受け取った時刻の間隔で測った（audit:84-97）
 - 起動の失敗 3 回（自分の PID を数えた・`load_env.sh` を読まずに W&B の追跡が起きない・zsh で引数が分かれない）。前の二つの記録は消さずに `$STORE/refused_det_b2_try1/` と `$STORE/failed_det_b2_try2_no_env/` へ移した
 - W&B を有効にするため `load_env.sh` で資格情報を読み込み、`WANDB_MODE=offline` で手元にだけ記録した
+- 工程塔の起動で Hydra が repo 直下に空の `run_ptower_search.log`（0 bytes、17:21:03Z）を作った。禁止領域ではないが本契約の置き場の外。消さずに残し、commit していない（消すかは利用者の判断）
 - 要約値に `data/raw/OpenSurgery_Dataset/01_frames/initial_videos` を加えるため、計測の前に基準を取り直した（`digests_before2.json`）
 
 ## 想定外・UNKNOWN

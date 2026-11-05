@@ -24,6 +24,7 @@ deviations:
   - {type: judgement, note: "起動の失敗 3 回: 実行器が自分の PID を compute として数えて拒んだ（--exclude-pid を足した）、load_env.sh を読まずに W&B の追跡が起きなかった、zsh で for lv in 'ph2 8' の $lv が分かれず 6 本とも IndexError。前二つの記録は消さず $STORE/refused_det_b2_try1/ と $STORE/failed_det_b2_try2_no_env/ へ移した"}
   - {type: judgement, note: "W&B の追跡を起こすため load_env.sh で資格情報を読み込んだが、WANDB_MODE=offline で手元（作業場所）にだけ書き、送っていない"}
   - {type: judgement, note: "要約値に工程塔が読む画像の置き場 data/raw/OpenSurgery_Dataset/01_frames/initial_videos を加えるため、計測の前に基準を取り直した（digests_before2.json）。一度目と重なる項目は全項目同じ"}
+  - {type: judgement, note: "工程塔の起動で Hydra（run.dir が . ）が repo 直下に空の run_ptower_search.log（0 bytes、2026-11-05T17:21:03Z、ph2_b8 の起動時刻）を作った。本契約の置き場の外だが禁止領域ではない。ファイルの削除は無断で行わない規則なので残し、commit していない"}
   - {type: environment, note: "det_b8 では rank 1 の OOM で rank 0 が止められ、rank 0 の torch の記憶の記録が書かれなかった（UNKNOWN。nvidia-smi の最大 48,150 MiB は在る）"}
 
 issuer_defects:
@@ -43,6 +44,7 @@ positive_controls:
 followups:
   - "工程塔の歩数は manifest で変わる（旧 phase_manifest 604 歩、phase_manifest_all_phase 662 歩、GPU ごと 8 × 2 枚）。塔の選び直しの所要の見込みは、使う manifest の歩数で計算すること"
   - "検出塔の GPU 使用率の平均は b2〜b6 で 43〜69 % と低く、学習ログの data_time は 0.01 s 未満だった。律速の箇所は切り分けていない"
+  - "repo 直下の空の run_ptower_search.log（本契約の工程塔の起動で Hydra が作った）を消すかは利用者の判断"
   - "版管理の外の生の記録 /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-tower-batch-probe/ を残した（重みは無い）。片付けは利用者の判断"
 
 unknowns:
