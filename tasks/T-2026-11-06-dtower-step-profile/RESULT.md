@@ -84,4 +84,4 @@
 ## 送出
 
 - PR: #292（base phase0、isDraft false、head feat/dtower-step-profile。内容の commit 6f230616）
-- `make task-report`: この記録を commit した後に送る（結果は送信の後に追記する）
+- `make task-report`: 終了コード 0（d4923dce の版を送った。verdict pass、report_sha256 a23c2a54…、8,363 bytes）

@@ -195,3 +195,4 @@
 - 追跡下の変更は `README.md` と `docs/experiment_log.md` の追記だけ（本契約の記録）
 - push: `git push -u origin feat/dtower-step-profile`（内容の commit 6f230616）
 - PR: `gh pr create --base phase0 --head feat/dtower-step-profile` → #292。`gh pr view 292` で `baseRefName: phase0`、`headRefName: feat/dtower-step-profile`、`isDraft: false`、`state: OPEN`
+- `make task-report`（d4923dce の版）: 終了コード 0。`verdict: pass`、`n_issuer_defects: 4`、`report_sha256 a23c2a54760e…`、`report_bytes 8363`、`replaced_blocks 0`
