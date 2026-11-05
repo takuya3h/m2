@@ -1,0 +1,5 @@
+- [x] 2026-11-02 [cc] #284 が OPEN だったため利用者が統合し、分岐を早送りで 8aefdce3 へ合わせた（tasks/T-2026-11-02-hostdiff-bengio/audit.md「0. 始める」）
+- [x] 2026-11-02 [cc] プリフライト P2 cuda_ext_loaded の FAIL（.venv に fvcore が無い）は記録して続けた。利用者が決めた（audit.md「0. 始める」）
+- [x] 2026-11-02 [cc] 「一度に走らせる学習は一本」と手本の並行の手順は、手本どおり並行にした（塔の run を同時に 2 本走らせない）。利用者が決めた（audit.md Task A）
+- [x] 2026-11-03 [cc] PR の前に origin/phase0（#286 の統合後）を取り込み、scripts/ の 3 ファイルは phase0 の版を採った。bengio の run が使った版は 22ce24b2。利用者が決めた（audit.md「phase0 の取り込み」）
+- [ ] 2026-11-04 [cc] test_stage1_ptower_heads の要約値の試験 4 件が bengio で落ちる（CPU の float 出力のバイトを比べる）。ホストに依らない比べ方にするかを決める（RESULT.md §7）
