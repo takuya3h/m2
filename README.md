@@ -1808,3 +1808,17 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
 - 結果（非公式。1 折り・val 2 動画・seed 1 つ。W1、4 epoch の固定の長さ）: 12 本すべて完走。案 B の予測-noCF は標的群 AP の Δ空 +0.0095、Δ入替 +0.0053、
   二本目の正解との差 −0.0061。術具だけ（誰の手かを落とす）は Δ空 +0.0031、Δ入替 +0.0014、案 B の予測-noCF との差 −0.0064。
   案 A の予測-noCF は Δ空 が Jaccard −0.0069（dressing の当たり外れ）・accuracy +0.0092・6 工程の平均 +0.0052、Δ入替 は 6 工程の平均 −0.0006。G1・G2・G3 pass
+
+### 把持の信号の予備測定の五本目: 案 D の教師の 2 腕を作り直した G の標的で回し直し、案 B の空と正解を bengio で回す（2026-11-07、bengio）
+
+契約 `T-2026-11-06-grasp-pilot-d-rerun`（analysis。**非公式の測定。関門の判定と設計の判断に使わない**）。**三本目 `T-2026-11-01-grasp-pilot-d` の無効な腕（G を教師・入れ替えた教師）を置き換え**、
+**四本目 `T-2026-11-06-grasp-pilot-arms` の空と正解をホストを揃えて（bengio で）回す**。記録は `tasks/T-2026-11-06-grasp-pilot-d-rerun/`、結果は `experiments/analysis/grasp_pilot_d_rerun/REPORT.md`。
+
+- **現状（途中。学習は未実施）**: 開始状態・材料・確かめ（G1・G2・G3）は pass。学習 4 本（案 D の G を教師・入れ替えた教師、案 B の空・正解）は、bengio の GPU に本契約以外の
+  使用（両 GPU 約 26 GiB の学習が繰り返し現れる）があるため、利用者の決定で、外部の使用が長く止むのを待っている。数値の結果はまだ無い
+- 新しいスクリプト（`scripts/grasppilot/`）: `run_d_arm_rerun.sh`（三本目の `run_d_arm.sh` の写し。契約の識別子・保存先・標的の経路〔目録の q〕・run の名前・腕だけ変えた）、
+  `d_finalize_rerun.py`（`d_finalize.py` の写し。`TASK` だけ）、`run_pd_grasparms_rerun.sh`（四本目の台本の写し。`TASK` と正解の腕 `gt` の追加だけ）、`rerun_check_q.py`（目録の q の照合）、
+  `rerun_digest.py`（禁止の場所の内容ハッシュの取得と開始時・終了時の比べ）、`rerun_aggregate.py`（集計・検算・test 不使用の確かめ）。既存のスクリプトと案 B・案 D の学習のコード
+  （`grasp_aux_d.py`・`d_model_config.py`・`d_train_config.py`、`pd_grasp*.py`・`grasp_signals.py`・`train_t1b.py`・設定 3 本）は変えていない（`code_sha256` が三本目・四本目・二本目の run と一致）
+- 補助損失なしの腕は回し直さない（三本目の `code_sha256` が本契約の案 D の経路と一致し、GPU の使い方も同じ）
+- 大きな生成物は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-grasp-pilot-d-rerun/`
