@@ -28,7 +28,7 @@ conventions の blob ceb7ef0f は契約の conventions_rev 2d946b07 と一致す
 | g | g・m: train は元と同じフレーム 0.000・同じ動画 0.115、val 0.001・0.556。q: 元と同じ枠 0.300・0.318 | seed 43 の写しで割合と並べ替えの要約値が変わった（train 0.0001・0.118） |
 | h | G の学習 3 本と推論 4 つの動画の集合と {04, 05, 07} の共通 0 件 | 04 を混ぜた入力で共通 1 件 |
 | i | 試験 11 → 11 failed（名前の集合が一致）、仮想環境の要約値一致、forbidden-check の本契約の経路の違反 0 件（下の注） | 道具は本契約の新しいファイル（run の記録 27 件）を変更として拾っている |
-| j | PR #289、base phase0、Draft でない、分岐 `feat/grasp-tower-rebuild` | head は `feat/grasp-tower-rebuild` |
+| j | PR #295（OPEN、base phase0、Draft でない）。同じ分岐の PR #289 は途中（ff954d9f まで）で利用者が統合済み | head は両方 `feat/grasp-tower-rebuild` |
 | k | 12 水準＋bf16 の 6 水準の表（`batch_probe.md`）、枚数の一致、一本目との並べ、利用者の回答 | batch を変えると枚数が変わる（120・240・360・480・720）。重みを読まない写しで記憶は**変わらなかった**（起票者の誤り 3） |
 
 - i の注: 違反 51 件のうち 24 件は同期で届いた別の契約のファイル（触れていない）、27 件は本契約の run の記録（`experiments/phase1/grasptower_G_*_seed42/`）。
@@ -86,5 +86,6 @@ conventions の blob ceb7ef0f は契約の conventions_rev 2d946b07 と一致す
 
 ## 7. 送出
 
-- PR: #289（https://github.com/takuya3h/m2/pull/289、base phase0、Draft でない）
+- PR: #295（https://github.com/takuya3h/m2/pull/295、base phase0、Draft でない、OPEN）。#289（同じ分岐）は 2026-11-06 03:39 JST に利用者が統合済み（head ff954d9f、batch の決定の記録まで）。
+  #295 は残りの commit を足す。`README.md` と `docs/experiment_log.md` が phase0 と衝突する（両方とも末尾に節を足しただけ。両方を残すのが解き方。分岐では解いていない）
 - `make task-report`: （送信の後に記入）

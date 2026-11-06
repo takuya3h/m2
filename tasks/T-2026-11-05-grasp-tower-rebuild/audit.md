@@ -272,6 +272,13 @@
 - 利用者の決定（選択肢 1）: `allow_write` に `experiments/phase1/grasptower` を足し、`meta.amendments` に記録した。validate OK
 - 足した後の `make forbidden-check`（作業ツリー）: status fail、changed 67・violations 24・permitted 30。違反はすべて別の契約のファイル（dtower_batch_search 10・dtower_step_profile 7・tower_batch_probe 7）。本契約の経路（run の記録 27 件と `experiments/analysis/grasp_tower_rebuild/` の 3 件）は permitted
 
+## 送出
+
+- commit 959f8143 を push（遠隔の先頭と一致）
+- 分岐の HEAD の写し（`git clone --shared` を作業用の場所へ、origin/phase0 89fe4a41 を取得）で `tools/check_forbidden.py --task T-2026-11-05-grasp-tower-rebuild` → status pass、changed 43・checked 43・violations []
+- PR #289 は 2026-11-06 03:39 JST（18:39:53 UTC）に利用者（takuya3h）が統合済みだった（head ff954d9f、merge commit 6e28c49d）。残りの commit を PR #295 で起票した（base phase0、Draft でない）
+- `git merge-tree --write-tree origin/phase0 HEAD` → README.md と docs/experiment_log.md が衝突。phase0 側の T-2026-11-06-tower-batch-probe・T-2026-11-06-dtower-step-profile（andrew）の末尾の追記と、本契約の末尾の追記。分岐では解いていない
+
 ## 解決された参照（手順書 3、`contract.inject_verbatim` の原文）
 
 `context/conventions.md` の blob ceb7ef0f（`git log -1 -- context/conventions.md` = 2d946b07 = 契約の `conventions_rev`）から、6 節を原文のまま写す。denominator・frozen_source・sigma_policy の参照は契約に無い。

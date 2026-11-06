@@ -3,7 +3,7 @@ task_id: "T-2026-11-05-grasp-tower-rebuild"
 status: pass
 host: "bengio"
 branch: "feat/grasp-tower-rebuild"
-pr: 289
+pr: 295
 merged: false
 
 gates:
@@ -26,6 +26,7 @@ deviations:
   - {type: judgement, note: "欠落の印のフレームは注釈ファイルに 0 件で学ぶフレームに入らないため、Task B-4 の「印のフレームだけの数歩で損失が 0」は行えず、学ぶフレームから外れること（集合の一致）と、印のフレームを足した写しで学習が始まらずに止まることで示した。val は印のフレーム 1 枚を注釈なしの画像として足した値も記録した"}
   - {type: judgement, note: "conventions#crossfit の「交差適合版と非適用版を両方記録」に従い、確定の G で作った train の信号（学んだ動画）も一本目の正解と比べた（ROC-AUC 0.884〜0.945、交差適合の train と val より高い）"}
   - {type: environment, note: "学習の途中（03:2x〜04:2x JST ごろ）に GPU 1 を、プロセスの一覧に出ない本契約の外の使用者が約 21 GB 使った（bengio はコンテナの中で外のプロセスが見えない）。契約の停止の条件として諮り、利用者の決定でそのまま続けた。H1 の 1 ステップが 1.23 秒から 2.27 秒に延びた。値は変わらない見込み"}
+  - {type: judgement, note: "同じ分岐の PR #289 は利用者が途中（2026-11-06 03:39 JST、head ff954d9f）で統合していたため、残りの commit を新しい PR #295（base phase0）で起票した。README.md と docs/experiment_log.md は phase0 と末尾の追記どうしで衝突する。契約が分岐への統合を禁じるため分岐では解かず、PR に解き方（両方の節を残す）を書いた"}
   - {type: environment, note: "作業ツリーの make forbidden-check は status fail、違反 51 件。24 件は同期で届いた別の契約のファイル（experiments/analysis/dtower_batch_search・dtower_step_profile・tower_batch_probe の tools）で触れていない。27 件は本契約の run の記録（experiments/phase1/grasptower_G_*_seed42/）で、契約の allow_write に run の置き場が無いため（起票者の誤り）"}
   - {type: judgement, note: "利用者の決定（2026-11-06）: 契約の allow_write に run の置き場 experiments/phase1/grasptower を足し（meta.amendments に記録）、run の記録を版管理に残した（二本目・三本目と同じ形）。足した後の作業ツリーの forbidden-check は違反 24 件で、すべて同期で届いた別の契約のファイル。本契約の経路の違反は 0 件"}
 
@@ -113,3 +114,4 @@ commits:
   - "8980e2e7"
   - "ff954d9f"
   - "7b56c945"
+  - "959f8143"
