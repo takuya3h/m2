@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（733 件）
+## 申し送り（735 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1178,9 +1178,11 @@
 
 ### T-2026-11-05-grasp-tower-rebuild
 
-- batch の変更を利用者が検討中（2026-11-06）。再開するなら、batch と学習率を決めたうえで新しい契約として G の 3 本を最初から学ぶ。注釈 $S/g/ann/ と派生の道具はそのまま使える
-- 中止した 3 本の途中の出力（epoch 1 の best.pth、ログ、run の置き場）は $S/aborted/try1/ にある
-- 退避した run_ptower_search.log（0 B）は ~/m2-evacuated/T-2026-11-05-grasp-tower-rebuild/ にある。戻すかどうかは利用者に確かめる
+- 無効になった腕（案 A・B の予測の腕と入れ替えの腕、案 C・D の教師の腕と入れ替えた教師の腕、W2・W3 の案 A・B の予測の腕）を、experiments/analysis/grasp_tower_rebuild/signals_manifest.json の信号と標的で別の契約が回し直す。案 A は全腕を旗なしで回す
+- 案 D の q は約半数の枠（交差適合の train 16,021 / 32,272、val 2,327 / 4,707）で行の和が 1 を超え、4 値を和で割った（二本目は 11 枠）。和を超えた枠では「なし」の値が 0 になる。案 D の契約の起票で、この標的の性質を考える
+- 案 C の t は本契約で作っていない。5 クラスの G で作れる t の定義は案 C の契約で決める
+- G は batch 8・bf16（変形注意だけ fp32）で学んだ。二本目（batch 2・fp32）との差は batch と精度を含む設計の違いが重なったもので、どれか一つの効果とは読まない
+- 契約の allow_write に run の置き場（experiments/phase1/grasptower）が無かった。run の置き場を作る契約は allow_write に含める
 
 ### T-2026-11-06-dtower-step-profile
 
@@ -1197,7 +1199,7 @@
 - repo 直下の空の run_ptower_search.log（本契約の工程塔の起動で Hydra が作った）を消すかは利用者の判断
 - 版管理の外の生の記録 /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-tower-batch-probe/ を残した（重みは無い）。片付けは利用者の判断
 
-## 断定できなかった事項（466 件）
+## 断定できなかった事項（469 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -2074,8 +2076,11 @@
 
 ### T-2026-11-05-grasp-tower-rebuild
 
-- 学習を終えた G の値・止まる epoch・所要、学習後の反転の整合、信号と標的、正解との比べ（中止）
-- 同期で届いた stage2_pd_w3_lowlr・w3lr_* の出所の契約（触れていない）
+- GPU 1 を共有した本契約の外の使用者（約 21 GB、03:2x〜04:2x JST ごろ）
+- 左のクラスの AP が右より低い理由（反転の整合の左右の一致と val の左右のインスタンス数は近い）
+- q の行の和が約半数の枠で 1 を超える理由の切り分け
+- 同じ seed の run の間のビットの非決定性の大きさ
+- fp16 の非数が長く学んだときにどうなるか、bf16（変形注意だけ fp32）の学習の質と fp32 との比べ
 
 ### T-2026-11-06-dtower-step-profile
 
@@ -2091,18 +2096,18 @@
 - 検出塔の GPU 使用率が低い理由
 - val・評価・起動を含めた 1 epoch の時間と、61 歩より先の歩で溢れるかどうか
 
-## 起票者の誤りの型（435 件）
+## 起票者の誤りの型（439 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 114 |
+| `check_does_not_check` | 116 |
 | `asserted_without_measuring` | 186 |
-| `self_contradiction` | 111 |
+| `self_contradiction` | 113 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 3 |
 | `rule_read_narrowly` | 2 |
 
-合計 435 件（対を持つ契約 154 件から）
+合計 439 件（対を持つ契約 154 件から）
 
