@@ -1,0 +1,4 @@
+- [ ] 2026-11-06 [cc] 開始時の作業ツリーに別の契約 T-2026-11-06-dtower-batch-search の未 commit の道具 10 件（experiments/analysis/dtower_batch_search/tools/*.py）が同期で届いていた。利用者の決定で移さず消さず、.git/info/exclude に経路を 1 行足して task-start を通した。その契約が統合されたら除外の行を外すかを利用者に確かめる
+- [ ] 2026-11-06 [cc] 案 B の空と正解の腕は二本目の andrew の run の値（code_sha256 7 件は一致）。正解との差（標的群 −0.0061）にホストの差を含めないなら、正解の腕を bengio で回す契約を起票する（tasks/T-2026-11-06-grasp-pilot-arms/RESULT.md §4-4）
+- [ ] 2026-11-06 [cc] 案 A の予測の腕は Jaccard の Δ空 が負・accuracy と 6 工程の平均の Δ空 が正（dressing 0.769 → 0.690）。案 A の読みには 6 工程の平均と accuracy を必ず並べる（experiments/analysis/grasp_pilot_arms/REPORT.md §1）
+- [ ] 2026-11-06 [cc] SPEC §1 の二本目の案 B の正解の標的群 0.8067 は記録 0.8107035 の誤り（Δ空 +0.0156 は記録と合う）。参考の表は記録の値を使った

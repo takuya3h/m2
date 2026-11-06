@@ -1,0 +1,49 @@
+{
+  "task_id": "T-2026-11-06-grasp-pilot-arms",
+  "type": "GA",
+  "inst_variant": "literal",
+  "empty": {
+    "x_layout": {
+      "pred": {
+        "cols": [
+          0,
+          14
+        ],
+        "source": null,
+        "flag": "none (no flag column)"
+      },
+      "gt": {
+        "cols": [
+          14,
+          28
+        ],
+        "source": null,
+        "flag": "none (no flag column)"
+      }
+    },
+    "trainable": {
+      "trainable_names": [
+        "iface.weight"
+      ],
+      "iface_names": [
+        "iface.weight"
+      ],
+      "equal": true,
+      "equal_with_one_head_param_mixed": false
+    },
+    "perturbed_params": [
+      "iface.weight"
+    ],
+    "signal_files": [],
+    "dim": 28,
+    "iface_params": 1792,
+    "identity_jaccard": 0.7762185528074379,
+    "identity_accuracy": 0.8712871287128713,
+    "identity_max_abs_logit_diff": 0.0,
+    "jaccard_equals_taskB": true,
+    "perturb_scale": 0.05,
+    "positive_jaccard": 0.7762185528074379,
+    "positive_accuracy": 0.8712871287128713,
+    "positive_max_abs_logit_diff": 0.0
+  }
+}

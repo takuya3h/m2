@@ -1,0 +1,74 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-11-06-grasp-pilot-arms"
+  kind: analysis
+  title: "把持の信号の予備測定の四本目（bengio）。作り直した把持塔 G（T-2026-11-05-grasp-tower-rebuild）の信号で、案 A（把持の要約を工程塔へ。旗なし 28 次元）の全 6 腕と、案 B（把持のマスク 5 チャネルを検出塔の C5 へ）の予測の 4 腕、および術具だけを渡す対照の送り手（器具の 3 チャネルの最大を 1 チャネルに。誰の手かの情報を落とす）の 2 腕を、今の塔・折り A・W1 で回す。二本目の無効な腕を置き換える"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-11-06T07:00:00Z"
+  created_from:
+    runindex_commit: "68befc3b62ffc071077cca446df5d3c83b8c38b9"
+    counts: {index: 2363, experiments: 1130, verdicts: 1736}
+  depends_on: [T-2026-11-05-grasp-tower-rebuild, T-2026-10-31-grasp-pilot-probe, T-2026-11-01-grasp-pilot-g]
+  amendments: []
+intent:
+  question: "作り直した G の信号を interface だけ学ぶ W1 で入れたとき、案 A と案 B の予測の腕は、同じ型の空の腕と入れ替えの腕と比べてどれだけ動くか。正解の腕との差（G の質による損失）はどれだけか。案 B で誰の手かの情報を落とした術具だけの信号は、把持のマスクと比べてどれだけか。非公式の測定であり、関門の判定にも設計の判断（案の採否を含む）にも使わない"
+  decision_at_stake: "進捗報告の材料と、把持の案を正式に進めるかを利用者が考える手がかり。案の採否は結果で決めない"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery の動画 01 から 15 のうち、折り A の train と val の動画（conventions#folds）。工程の経路のフレームと術具注釈のあるフレームは一本目と同じ。信号は T-2026-11-05-grasp-tower-rebuild の目録のものを読むだけ。折り A の test の動画のフレームは学習と評価のどれにも通さない"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/stage2pilot/dp_train.py", "scripts/grasppilot/pd_grasp.py", "scripts/grasppilot/pd_grasp_model.py", "scripts/grasppilot/run_pd_grasp2.sh", "scripts/grasppilot/g5_signals.py", "scripts/eval_relation_detr_map.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#env_p0, conventions#folds, conventions#split, conventions#eval_recipe, conventions#det_groups, conventions#crossfit]
+  conventions_rev: "2d946b07a57abebc4a8f66150d6dbaf2ccd22186"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/analysis/grasp_pilot_arms", "experiments/phase1/grasparms", "runindex/"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。分岐、前提の統合、bengio の GPU の使用（nvidia-smi の全体の使用量との差で見る）、記憶領域、試験の失敗の名前、仮想環境の要約値、電力の上限", gpu: false, est: "1h"}
+    - {id: B, name: "材料。目録の信号と checkpoint の要約値の照合、塔単独の val の再現、旗なしの案 A の口、術具だけの信号の作成", gpu: true, est: "2h"}
+    - {id: C, name: "恒等性と対照", gpu: true, est: "1h"}
+    - {id: D, name: "学習（案 A 6 本、案 B 4 本、術具だけ 2 本）", gpu: true, est: "14h"}
+    - {id: E, name: "集計、検証、報告", gpu: false, est: "2h"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、PR 295 の内容（目録と run の記録）が起点に在り、bengio の GPU に本契約以外の使用が無く、記憶領域と失敗の名前と仮想環境の要約値と電力の上限を記録した", on_fail: stop}
+    - {id: G2, after: B, check: "目録の信号と G の重みの sha256 が一致し、塔単独の val が許容差の中で再現し、術具だけの信号が定義どおりに作られ、旗なしの案 A の入力が 28 次元である", on_fail: stop}
+    - {id: G3, after: C, check: "全腕で学習前の出力が塔単独と一致し、陽性対照で出力が変わり、既定の挙動が変わらない", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, gpu_free]
+  resources: {server: bengio, gpu: 2, est_hours: 20, runs: 12}
+outputs:
+  must_have: [REPORT.md, RESULT.md, result.yaml, audit.md]
+  destination: "experiments/analysis/grasp_pilot_arms/"
+  acceptance:
+    - "a: 開始状態として、分岐、起点、PR 295 の内容が起点に在ること、開始前から在る未追跡、bengio の GPU の使用量と一覧（nvidia-smi）、記憶領域の空き、試験の失敗の名前、既存の仮想環境のパッケージの一覧の要約値、GPU ごとの電力の上限と装置の型が記録されている"
+    - "b: 目録 signals_manifest.json の信号（案 A の g、案 B の m、入れ替え、交差適合）と G の重みの sha256 が一致し、塔単独の val（工程 macro Jaccard と accuracy、検出 overall mAP と標的群 AP）が SPEC の許容差の中で再現されているか、超えて停止した記録がある"
+    - "c: 案 A の入力が旗なしの 28 次元（予測の 14 と正解の 14）であることと、既存の 30 次元の経路の既定の挙動が変わらないことが示されている"
+    - "d: 術具だけの信号が定義どおり（器具の 3 チャネルの画素ごとの最大を 1 チャネル、他の 4 チャネルは零）に作られ、sha256 とフレーム数と値の範囲が記録され、対照（手のチャネルを零にしない写しで一致しない）がある"
+    - "e: 全腕で学習前の出力が塔単独と一致し、interface の重みを零でない値にすると出力が変わる"
+    - "f: run の表の 12 本が固定の長さで回り、epoch ごとの val の値が記録されている。測れなかった run は理由つきで UNKNOWN"
+    - "g: 案 A は Jaccard と accuracy とクラス別 Jaccard と dressing を除く 6 工程の平均、案 B は overall mAP と標的群 AP と陰性対照群 AP とクラス別 AP について、全腕の値、Δ空、Δ入替、正解の腕との差、動画ごとの差が表にあり、一本目と二本目の有効な値（空、正解）と並べた参考の表があり、SPEC の読み方の規則で記述されている"
+    - "h: test の動画のフレームを学習と評価に一度も通していないことが、通した動画の集合で示されている"
+    - "i: 前回までの契約の run の置き場・集計・保存先、data の raw と external と注釈、凍結源、既存の checkpoint、third_party、既存の仮想環境を変えていない。試験の失敗が増えていない。forbidden-check の違反のうち本契約の経路のものが 0 件"
+    - "j: PR が Draft でなく存在し、base が phase0、分岐が feat/grasp-pilot-arms"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "bengio の GPU に本契約以外の使用がある場合（止めずに利用者に諮る）"
+    - "PR 295 の内容が起点に無い場合"
+    - "目録の信号か G の重みが無い、または sha256 が目録と食い違う場合"
+    - "塔単独の val が許容差を超えて食い違う場合"
+    - "旗なしの口か術具だけの信号を、既存スクリプトの既定の挙動か third_party を変えないと作れない場合"
+    - "学習前の出力が塔単独と一致しない場合"
+    - "記憶領域が足りない場合"
+    - "実行基盤が書き込み、移動、削除を拒む場合"

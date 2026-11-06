@@ -1,0 +1,55 @@
+{
+  "task_id": "T-2026-11-06-grasp-pilot-arms",
+  "type": "GA",
+  "inst_variant": "literal",
+  "gt": {
+    "x_layout": {
+      "pred": {
+        "cols": [
+          0,
+          14
+        ],
+        "source": null,
+        "flag": "none (no flag column)"
+      },
+      "gt": {
+        "cols": [
+          14,
+          28
+        ],
+        "source": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/inputs/probe_signals/g_val.npz",
+        "flag": "none (no flag column)"
+      }
+    },
+    "trainable": {
+      "trainable_names": [
+        "iface.weight"
+      ],
+      "iface_names": [
+        "iface.weight"
+      ],
+      "equal": true,
+      "equal_with_one_head_param_mixed": false
+    },
+    "perturbed_params": [
+      "iface.weight"
+    ],
+    "signal_files": [
+      {
+        "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/inputs/probe_signals/g_val.npz",
+        "sha256": "235e2c2bde3a04787d7a8a96085f80f7dfa0241afd3eb6c297e5daf26da51943",
+        "gt": true
+      }
+    ],
+    "dim": 28,
+    "iface_params": 1792,
+    "identity_jaccard": 0.7762185528074379,
+    "identity_accuracy": 0.8712871287128713,
+    "identity_max_abs_logit_diff": 0.0,
+    "jaccard_equals_taskB": true,
+    "perturb_scale": 0.05,
+    "positive_jaccard": 0.7822880286289823,
+    "positive_accuracy": 0.8752475247524752,
+    "positive_max_abs_logit_diff": 0.263702392578125
+  }
+}
