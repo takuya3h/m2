@@ -1,0 +1,295 @@
+{
+  "task_id": "T-2026-11-05-grasp-tower-rebuild",
+  "unofficial": true,
+  "host": "Bengio",
+  "replaces": "T-2026-11-01-grasp-pilot-g の信号と標的",
+  "g_runs": {
+    "all": {
+      "config": "experiments/phase1/grasptower_G_all_seed42/config.json",
+      "best_ckpt_sha256": "5ea2cbf479254d78330664415e639929a86f704e5fe8b5ac8a485c7d3d9964d1"
+    },
+    "H1": {
+      "config": "experiments/phase1/grasptower_G_H1_seed42/config.json",
+      "best_ckpt_sha256": "5cfa055cbc72329ca1eb8f0bd8a487b64af8eaa88daac5657067cba7b9cd17c7"
+    },
+    "H2": {
+      "config": "experiments/phase1/grasptower_G_H2_seed42/config.json",
+      "best_ckpt_sha256": "efdefccd4484fc6af0238e14044c89ec3010a83744db455734a019702377098b"
+    }
+  },
+  "A_g": {
+    "pred_noCF_train": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/A/g_pred_noCF_train.npz",
+      "sha256": "a5961316ef766cbb0ad699bca9f270c3e7068ec8b1ddcfc23b8f5d33835141be",
+      "frames": 9657,
+      "dims": 14,
+      "range": [
+        0.0,
+        0.9955396056175232
+      ],
+      "has_flag": false
+    },
+    "pred_CF_train": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/A/g_pred_CF_train.npz",
+      "sha256": "a983e8c4d98a777ff81e088d78b4efbefb4eab19193ccb49533c8323c3b15aba",
+      "frames": 9657,
+      "dims": 14,
+      "range": [
+        0.0,
+        0.9969180226325989
+      ],
+      "has_flag": false
+    },
+    "shuffle_train": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/A/g_shuffle_train.npz",
+      "sha256": "1f757945d1e046ad833e9beb11ca6a0ff128aaa193bd27996b99d14709d72457",
+      "frames": 9657,
+      "dims": 14,
+      "range": [
+        0.0,
+        0.9955396056175232
+      ],
+      "has_flag": false
+    },
+    "shuffle_CF_train": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/A/g_shuffle_CF_train.npz",
+      "sha256": "25753043b65d967a78052253b87f9e32a73616e6b42fc9e37ad6069fd0e45e19",
+      "frames": 9657,
+      "dims": 14,
+      "range": [
+        0.0,
+        0.9969180226325989
+      ],
+      "has_flag": false
+    },
+    "pred_noCF_val": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/A/g_pred_noCF_val.npz",
+      "sha256": "791cd07b42ab7b2d16503659581bed83b0ffd2a1b8438708f954cb72be4677e2",
+      "frames": 1515,
+      "dims": 14,
+      "range": [
+        0.0,
+        0.994715690612793
+      ],
+      "has_flag": false
+    },
+    "pred_CF_val": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/A/g_pred_CF_val.npz",
+      "sha256": "791cd07b42ab7b2d16503659581bed83b0ffd2a1b8438708f954cb72be4677e2",
+      "frames": 1515,
+      "dims": 14,
+      "range": [
+        0.0,
+        0.994715690612793
+      ],
+      "has_flag": false
+    },
+    "shuffle_val": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/A/g_shuffle_val.npz",
+      "sha256": "828933be5cc1011b2c576c80a98b565ab99c9bf6c98c7d1d89a8b03e1b69f0ab",
+      "frames": 1515,
+      "dims": 14,
+      "range": [
+        0.0,
+        0.994715690612793
+      ],
+      "has_flag": false
+    },
+    "shuffle_CF_val": {
+      "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/A/g_shuffle_CF_val.npz",
+      "sha256": "828933be5cc1011b2c576c80a98b565ab99c9bf6c98c7d1d89a8b03e1b69f0ab",
+      "frames": 1515,
+      "dims": 14,
+      "range": [
+        0.0,
+        0.994715690612793
+      ],
+      "has_flag": false
+    },
+    "made_by": {
+      "pred_noCF": "確定の G",
+      "pred_CF_train": "交差適合（H1 の G を H2 の動画に、H2 の G を H1 の動画に）",
+      "pred_CF_val": "確定の G",
+      "shuffle": "pred_noCF をフレームの間で並べ替え",
+      "shuffle_CF": "pred_CF をフレームの間で並べ替え"
+    }
+  },
+  "B_m": {
+    "pred_noCF_train": {
+      "view": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/views/B_pred_noCF_train.json",
+      "view_sha256": "10121dd6dbb53f32df373c85f00d5c449d4d9eb075ee15429f8e129c21104dac",
+      "maps": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/raw/all_train_m.npy",
+      "maps_sha256": "76db223a0a48c405fd31b3d4128a619d57e1f7c52805cc02ec103e66960b5c06",
+      "frames": 9657,
+      "range": [
+        0,
+        254
+      ]
+    },
+    "pred_noCF_val": {
+      "view": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/views/B_pred_noCF_val.json",
+      "view_sha256": "6e639261e8e6eeed2b9579bdca79b27ff2e172acc44117fcbb9351b48c987f06",
+      "maps": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/raw/all_val_m.npy",
+      "maps_sha256": "31318b026d2bd0b17bfa598504475ef2971d8339385fc82ce4753543583f466f",
+      "frames": 1515,
+      "range": [
+        0,
+        254
+      ]
+    },
+    "pred_CF_train": {
+      "view": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/views/B_pred_CF_train.json",
+      "view_sha256": "d74592216d141be6f8c77bcb63c954eda2cca88f15397369c504f4f291e7900a",
+      "maps": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/B/pred_CF_train_m.npy",
+      "maps_sha256": "57d819a684469d511353c626e7fc2316ea82866753550eb00248be4bc5b93140",
+      "frames": 9657,
+      "range": [
+        0,
+        254
+      ]
+    },
+    "pred_CF_val": {
+      "view": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/views/B_pred_CF_val.json",
+      "view_sha256": "42a152feb0fcc8ca99c0aa67327412794a54f3dcf49bc602f7847b4e1e4abff6",
+      "maps": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/raw/all_val_m.npy",
+      "maps_sha256": "31318b026d2bd0b17bfa598504475ef2971d8339385fc82ce4753543583f466f",
+      "frames": 1515,
+      "range": [
+        0,
+        254
+      ]
+    },
+    "shuffle_train": {
+      "view": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/views/B_shuffle_train.json",
+      "view_sha256": "d695af8accc0bee06b8ff19358da4779426ed260d567fe0a6412443ede2d67ed",
+      "maps": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/raw/all_train_m.npy",
+      "maps_sha256": "76db223a0a48c405fd31b3d4128a619d57e1f7c52805cc02ec103e66960b5c06",
+      "frames": 9657,
+      "range": [
+        0,
+        254
+      ]
+    },
+    "shuffle_val": {
+      "view": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/views/B_shuffle_val.json",
+      "view_sha256": "5307811832087d9770225b042fa0a34716a6b772a6f3edda35e103b62c8ee9c8",
+      "maps": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/raw/all_val_m.npy",
+      "maps_sha256": "31318b026d2bd0b17bfa598504475ef2971d8339385fc82ce4753543583f466f",
+      "frames": 1515,
+      "range": [
+        0,
+        254
+      ]
+    },
+    "shuffle_CF_train": {
+      "view": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/views/B_shuffle_CF_train.json",
+      "view_sha256": "44dcc9179bb4d6cb44d5606881dc7310da9adaf1792d645d583a4218d95b21c5",
+      "maps": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/B/pred_CF_train_m.npy",
+      "maps_sha256": "57d819a684469d511353c626e7fc2316ea82866753550eb00248be4bc5b93140",
+      "frames": 9657,
+      "range": [
+        0,
+        254
+      ]
+    },
+    "shuffle_CF_val": {
+      "view": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/views/B_shuffle_CF_val.json",
+      "view_sha256": "15bde7ff8ddfb716556912555d772e3e7f684d1d7ddf006340566d05f657ecf8",
+      "maps": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/raw/all_val_m.npy",
+      "maps_sha256": "31318b026d2bd0b17bfa598504475ef2971d8339385fc82ce4753543583f466f",
+      "frames": 1515,
+      "range": [
+        0,
+        254
+      ]
+    }
+  },
+  "D_q": {
+    "CF_train": {
+      "q": {
+        "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/D/q_CF_train.npz",
+        "sha256": "ab5dc79ec36bef77cb8bc4250649900594fc40f34f93784a6f563fc50d6b4b47",
+        "boxes": 32272,
+        "range": [
+          0.0,
+          1.0
+        ],
+        "rowsum_range": [
+          0.9999998807907104,
+          1.0000001192092896
+        ]
+      },
+      "shuffle": {
+        "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/D/q_shuffle_CF_train.npz",
+        "sha256": "722b93711149e0f65e9aa4188b7d4449e0b013dd125a2655f42f057698ccbfc5",
+        "boxes": 32272
+      },
+      "made_by": "交差適合",
+      "normalize": {
+        "boxes": 32272,
+        "rows_over_1": 16021,
+        "max_rowsum_before": 1.5464128833264112
+      }
+    },
+    "noCF_train": {
+      "q": {
+        "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/D/q_noCF_train.npz",
+        "sha256": "128464fc540d48dbf1da2e4217f8351b7d0215208456b26949e1f27c3709ebeb",
+        "boxes": 32272,
+        "range": [
+          0.0,
+          1.0
+        ],
+        "rowsum_range": [
+          0.9999998807907104,
+          1.0000001192092896
+        ]
+      },
+      "shuffle": {
+        "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/D/q_shuffle_noCF_train.npz",
+        "sha256": "dad82abeccb7e2fbe6871c3fc526ffbf828cc006eb4a0d84c636aafb242422d6",
+        "boxes": 32272
+      },
+      "made_by": "確定の G",
+      "normalize": {
+        "boxes": 32272,
+        "rows_over_1": 16089,
+        "max_rowsum_before": 1.6344099715352058
+      }
+    },
+    "noCF_val": {
+      "q": {
+        "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/D/q_noCF_val.npz",
+        "sha256": "1992541adbf7f11d74a12e4295abbf7d4d7f6a03d146bac85a9ad1ff042bcd2f",
+        "boxes": 4707,
+        "range": [
+          0.0,
+          0.9999998807907104
+        ],
+        "rowsum_range": [
+          0.9999999403953552,
+          1.0000001192092896
+        ]
+      },
+      "shuffle": {
+        "path": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/D/q_shuffle_noCF_val.npz",
+        "sha256": "2a721f8439acc75fb059587d512805dc238865952f9093ff6f91d1f1689b6553",
+        "boxes": 4707
+      },
+      "made_by": "確定の G",
+      "normalize": {
+        "boxes": 4707,
+        "rows_over_1": 2327,
+        "max_rowsum_before": 1.219403862953186
+      }
+    }
+  },
+  "format": {
+    "A": "npz: frame_ids (N,)、x (N, 14)（G_NAMES の順）、names。旗の列は無い",
+    "B": "見取りの json: maps（(N, 5, 270, 480) uint8 の npy）、frame_ids、mapping（入れ替えの腕だけ。フレーム → 値を持ってくるフレーム）",
+    "D": "npz: ann_ids（折り A の術具の注釈の annotation id、昇順）、q (枠, 4) [左, 右, 両手, なし]、行の和 1（超えた行は和で割った）"
+  },
+  "shuffle_rule": "g と m: split ごとに一つの固定の並べ替え（stage2pilot.shuffle_signals.make_mapping、seed 42、フレーム名の昇順）。q: 同じフレームの枠の間で並べ替え（画像 id の昇順、画像ごとに rng.permutation、seed 42）",
+  "assemble_report": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/signals/assemble_report.json",
+  "code_sha256": "6c5ee1afe94b34a1011e1b73fad1b525fc961d52b339901260a81e3e5704c710"
+}
