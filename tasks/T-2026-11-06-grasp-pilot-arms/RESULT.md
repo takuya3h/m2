@@ -97,5 +97,5 @@
 
 ## 7. 送出
 
-- PR: （起票の後に足す）
+- PR: #297（https://github.com/takuya3h/m2/pull/297、base phase0、Draft でない、OPEN、head `feat/grasp-pilot-arms`）
 - `make task-report`: （送信の後に足す）
