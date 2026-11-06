@@ -98,4 +98,4 @@
 ## 7. 送出
 
 - PR: #297（https://github.com/takuya3h/m2/pull/297、base phase0、Draft でない、OPEN、head `feat/grasp-pilot-arms`）
-- `make task-report`: （送信の後に足す）
+- `make task-report`: 終了コード 0（verdict pass、issuer_defects 4 件、本文 11,345 B、report_sha256 74bd9ab2…。この行は送信の後に足した）
