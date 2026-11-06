@@ -113,7 +113,7 @@
     $ … --corrupt-copy $S/b/corrupt --out $S/b/b1_inputs_corrupt.json   （対照: pred_noCF_val を写して 100 バイト目を反転）
     一致 25 / 26（NG A_g pred_noCF_val 1831819e…）
 
-### B-2 塔単独の val（`experiments/analysis/grasp_pilot_arms/repro/run_repro.sh`、`b2_summary.json`、16:0x〜16:2x JST）
+### B-2 塔単独の val（`experiments/analysis/grasp_pilot_arms/repro/run_repro.sh`、`b2_summary.json`、15:58〜16:05 JST）
 
 台本は T-2026-11-01-stage2-w23-bengio の `run_repro.sh` の写しで、BODY を m2 本体（T-2026-11-02-bengio-align-andrew で andrew と一致させた）、置き場を本契約にした（差分は 3 行と見出し）。
 拡張の読み込み: `env_check_det.txt` に `ms_deform_attn_ext True`。要約値（`b2_sha256.txt`）: 検出塔 seed 42 30d199b1…（w23-bengio の B-2 と同じ）
@@ -170,7 +170,7 @@
 
 ## Task C — 恒等性と対照（G3）
 
-台本は `experiments/analysis/grasp_pilot_arms/taskC/`。GPU 0・1 で並行（16:3x〜16:5x JST）。記録 `$S/logs/c_*.log`
+台本は `experiments/analysis/grasp_pilot_arms/taskC/`。GPU 0・1 で並行（16:06〜16:20 JST ごろ）。記録 `$S/logs/c_*.log`
 
 ### C-1・C-2 案 A（`taskC/caseA/identity_<腕>.json`、`run_caseA_identity.sh`。`dp_train.py identity --type GA --grasp-no-flag`）
 
@@ -220,3 +220,79 @@
 - 試走の run（`grasparms_chk_dp{old,new}_*`、smoke）は腕に数えない
 
 **G3: pass**（全腕で学習前の出力が塔単独と一致、陽性対照で出力が変わり、既定の挙動が変わらない）
+
+## Task D — 学習
+
+台本は `experiments/analysis/grasp_pilot_arms/taskD/`。記録 `$S/logs/d_*.log`・`gpu_watch.csv`・`d_gpu_watch_summary.txt`
+
+### D-0 起動の直前（`$S/logs/d_start_gpu.txt`）
+
+    2026-11-06 16:23:25 JST
+    0, 39 MiB, 0 %
+    1, 37 MiB, 0 %
+    n_compute=0
+
+- 記憶の確保: 試走の山 約 6.8 GiB（5 秒ごとの観測。28 秒の試走なので山を取り逃しうる）。前例（w23-bengio）の試走 10.8 GiB → 本番 13.5 GiB の比を見込んでも
+  1 枚 3 本で 48 GiB に収まるとして、1 枚 3 本に決めた。実測の山は 1 本 約 7.4〜8.3 GiB、1 枚 約 25 GiB（3 本）
+
+### D-1 案 B と術具だけの 6 本（`run_caseB.sh` → `scripts/grasppilot/run_pd_grasparms.sh`）
+
+| run | GPU | 開始（JST） | 終了（JST） | rc | 結果の epoch | 凍結部の前後一致 | code_sha256 が二本目の空の腕と一致 |
+|---|---|---|---|---|---|---|---|
+| `grasparms_B_pred_noCF_ep4_seed42` | 0 | 16:23:34 | 21:55:24 | 0 | 3（4 epoch 目） | True | 一致 |
+| `grasparms_B_pred_CF_ep4_seed42` | 0 | 16:24:04 | 21:55:48 | 0 | 3 | True | 一致 |
+| `grasparms_B_gtpred_CF_ep4_seed42` | 0 | 16:24:34 | 21:57:14 | 0 | 3 | True | 一致 |
+| `grasparms_B_shuffle_ep4_seed42` | 1 | 16:25:04 | 21:40:55 | 0 | 3 | True | 一致 |
+| `grasparms_B_toolonly_pred_noCF_ep4_seed42` | 1 | 16:25:34 | 21:41:26 | 0 | 3 | True | 一致 |
+| `grasparms_B_toolonly_shuffle_ep4_seed42` | 1 | 16:26:04 | 21:42:48 | 0 | 3 | True | 一致 |
+
+- 6 本とも `env_check.txt` に `ms_deform_attn_ext True`、`host.txt` は Bengio。epoch ごとの val mAP と界面の重みは各 run の `grasppilot_metrics.json`（REPORT §5 の表）
+- 外の使用の見張り（`gpu_watch.csv`、07:23:34〜12:57:07 UTC、334 時点）: 全体の使用量 − 一覧の和 の最大 69 MiB、500 MiB を超えた時点 0 件。
+  一覧に出た pid は GPU 0 に 7 件（案 B の 3 本と、同じ GPU で回した案 A の dp_train）、GPU 1 に 3 件。本契約以外の使用は無かった
+
+### D-2 案 A の 6 本（`run_caseA.sh 0`、16:23〜16:33 JST、GPU 0）
+
+| run | rc | 結果の epoch | val Jaccard | 受け取り手の不変 | 所要 |
+|---|---|---|---|---|---|
+| `grasparms_dp_001_GA-noflag_empty_ep4_seed42` | 0 | 4 | 0.776219 | True | 11.9 秒 |
+| `grasparms_dp_002_GA-noflag_gt_ep4_seed42` | 0 | 4 | 0.779152 | True | 23.3 秒 |
+| `grasparms_dp_003_GA-noflag_pred_noCF_ep4_seed42` | 0 | 4 | 0.769315 | True | 187.2 秒 |
+| `grasparms_dp_004_GA-noflag_pred_CF_ep4_seed42` | 0 | 4 | 0.769986 | True | 176.7 秒 |
+| `grasparms_dp_005_GA-noflag_gtpred_CF_ep4_seed42` | 0 | 4 | 0.769806 | True | 58.9 秒 |
+| `grasparms_dp_006_GA-noflag_shuffle_ep4_seed42` | 0 | 4 | 0.769805 | True | 64.4 秒 |
+
+- epoch ごとの val の Jaccard・accuracy と界面の重みの絶対値の最大・L2 は各 run の `logs/history.json`（REPORT §5 の表）
+- 裏の命令の終了の通知は終了コード −1 だったが（セッションの入れ替わりの後に届いた）、記録は 6 本とも `DP_RUN_COMPLETE` と rc=0。
+  案 B の起動の通知も −1 で、6 本の rc は 0、`all done` の行がある
+- W&B は手元だけ（offline。`$S/wandb/`）。止まった run は無く、`aborted/` へ移したものは無い
+
+## Task E — 集計・検証（22:0x JST〜）
+
+### E-1 集計と検算（`scripts/grasppilot/arms_aggregate.py`、`experiments/analysis/grasp_pilot_arms/{summary.json,tables.md,verify.json,testcheck.json}`）
+
+    $ arms_aggregate.py aggregate --out summary.json --tables tables.md
+    {"missing_A": [], "missing_B": []}
+    $ arms_aggregate.py verify --summary summary.json --out verify.json
+    n_runs_in_summary 12、n_runs_present 12、n_fake_runs_present 0（存在しない run の名前 2 つで 0 件）
+    recompute_equal true（差を各 run の記録のファイルから別の経路で計算し直して一致）
+    対照: B pred_noCF の target_AP の差を 1e-6 ずらした写しで不一致 1 件（control_detects true）
+    $ arms_aggregate.py testcheck --out testcheck.json
+    union 01・02・03・06・08・09・10・11・12・13・14・15、test との共通 []、04 を混ぜた対照で ["04"]
+
+- 案 A の train・val は各 run の config の `videos`。案 B の train は注釈 `instances_train.json` の画像の動画、val は `logs/eval_meta_val.json` の画像 id の動画
+- 「dressing を除く 6 工程の平均」: val に現れる工程は 7（anesthesia・closure・design・dissection・dressing・hemostasis・incision。disinfection・irrigation は 0 フレーム）。
+  macro Jaccard はこの 7 の平均（空の腕で計算し直して 0.7762 と一致）。6 工程の平均は dressing を除く 6 の平均とした
+- 二本目の正解の腕の標的群 AP は記録で 0.8107035（SPEC §1 は 0.8067。Δ空 +0.0156 は 0.8107 と合う。起票者の誤り）
+
+### E-1 禁止の場所と試験・仮想環境（`$S/end/`）
+
+- 変更の数え方: 契約の取り込みの時刻（`spec.yaml` の mtime 2026-11-06 06:52:21 UTC）より新しいファイルを `find -newer` で数えた（開始前の要約値は取っていない。逸脱）
+  - 0 件: data/raw・data/external・data/annotations・third_party・.venv・.venv-relation-detr・experiments/baselines、stage2pilot_store の前回までの 9 契約の保存先、
+    experiments/phase1 の本契約以外、experiments/analysis の本契約以外、tasks の本契約以外、runindex
+  - 対照（同じ数え方で本契約の新しいファイル）: experiments/phase1/grasparms_* 242 件、experiments/analysis/grasp_pilot_arms 68 件
+- 材料の照合を終わりにもう一度: `arms_check_inputs.py` → 一致 26 / 26（`e_inputs.json`。目録の信号・G の重み・一本目の正解の g は開始時と同じ）
+- `make forbidden-check TASK=T-2026-11-06-grasp-pilot-arms` → status pass、changed 290・checked 290、violations 0、許可は allow_write の 3 経路（`e_forbidden.txt`）。
+  開始前から在る dtower の 10 件は無視の一覧に入れたため数えられていない
+- `make task-validate` → `OK`
+- 試験: 11 failed, 980 passed, 5 skipped（47.23 s）。失敗の名前の集合は開始時と一致（`e_fail_names.txt`）
+- 仮想環境の要約値: .venv 9c7be5c9…、.venv-relation-detr a74c9c78…（開始時と一致）

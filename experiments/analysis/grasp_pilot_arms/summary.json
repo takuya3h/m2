@@ -1,0 +1,1417 @@
+{
+ "task_id": "T-2026-11-06-grasp-pilot-arms",
+ "unofficial": true,
+ "six_phases": [
+  "anesthesia",
+  "closure",
+  "design",
+  "dissection",
+  "hemostasis",
+  "incision"
+ ],
+ "missing_A": [],
+ "missing_B": [],
+ "A": {
+  "empty": {
+   "run": "grasparms_dp_001_GA-noflag_empty_ep4_seed42",
+   "jaccard": 0.7762185528074379,
+   "accuracy": 0.8712871287128713,
+   "six_mean": 0.7773831834035493,
+   "per_class": {
+    "anesthesia": 0.9603960396039604,
+    "closure": 0.7539823008849558,
+    "design": 0.9615384615384616,
+    "disinfection": 0.0,
+    "dissection": 0.7792207792207793,
+    "dressing": 0.7692307692307693,
+    "hemostasis": 0.3614457831325301,
+    "incision": 0.8477157360406091,
+    "irrigation": 0.0
+   },
+   "per_video": {
+    "09": {
+     "jaccard": 0.9931717398646169,
+     "accuracy": 0.9961389961389961
+    },
+    "10": {
+     "jaccard": 0.6753695847911568,
+     "accuracy": 0.8064192577733199
+    }
+   },
+   "epochs": [
+    {
+     "epoch": 1,
+     "train_loss": 0.5151980727910995,
+     "val_jaccard": 0.7762185528074379,
+     "val_accuracy": 0.8712871287128713,
+     "iface_max_abs": 0.0,
+     "iface_l2": 0.0
+    },
+    {
+     "epoch": 2,
+     "train_loss": 0.5151980727910995,
+     "val_jaccard": 0.7762185528074379,
+     "val_accuracy": 0.8712871287128713,
+     "iface_max_abs": 0.0,
+     "iface_l2": 0.0
+    },
+    {
+     "epoch": 3,
+     "train_loss": 0.5151980727910995,
+     "val_jaccard": 0.7762185528074379,
+     "val_accuracy": 0.8712871287128713,
+     "iface_max_abs": 0.0,
+     "iface_l2": 0.0
+    },
+    {
+     "epoch": 4,
+     "train_loss": 0.5151980727910995,
+     "val_jaccard": 0.7762185528074379,
+     "val_accuracy": 0.8712871287128713,
+     "iface_max_abs": 0.0,
+     "iface_l2": 0.0
+    }
+   ],
+   "result_epoch": 4,
+   "receiver_unchanged": true,
+   "elapsed_seconds": 11.896095391362906
+  },
+  "gt": {
+   "run": "grasparms_dp_002_GA-noflag_gt_ep4_seed42",
+   "jaccard": 0.7791522966460062,
+   "accuracy": 0.8778877887788779,
+   "six_mean": 0.7808058845485455,
+   "per_class": {
+    "anesthesia": 0.9603960396039604,
+    "closure": 0.7667844522968198,
+    "design": 0.970873786407767,
+    "disinfection": 0.0,
+    "dissection": 0.7809983896940419,
+    "dressing": 0.7692307692307693,
+    "hemostasis": 0.345679012345679,
+    "incision": 0.8601036269430051,
+    "irrigation": 0.0
+   },
+   "per_video": {
+    "09": {
+     "jaccard": 0.9903211445764637,
+     "accuracy": 0.9942084942084942
+    },
+    "10": {
+     "jaccard": 0.6873887463466535,
+     "accuracy": 0.8174523570712137
+    }
+   },
+   "epochs": [
+    {
+     "epoch": 1,
+     "train_loss": 0.5147558450698853,
+     "val_jaccard": 0.7698182233855967,
+     "val_accuracy": 0.8719471947194719,
+     "iface_max_abs": 0.004855541046708822,
+     "iface_l2": 0.0757753923535347
+    },
+    {
+     "epoch": 2,
+     "train_loss": 0.513544037938118,
+     "val_jaccard": 0.7705369115045635,
+     "val_accuracy": 0.8745874587458746,
+     "iface_max_abs": 0.009552783332765102,
+     "iface_l2": 0.14080704748630524
+    },
+    {
+     "epoch": 3,
+     "train_loss": 0.5127119928598404,
+     "val_jaccard": 0.7795869978090837,
+     "val_accuracy": 0.8778877887788779,
+     "iface_max_abs": 0.014247257262468338,
+     "iface_l2": 0.20342330634593964
+    },
+    {
+     "epoch": 4,
+     "train_loss": 0.5120389789342881,
+     "val_jaccard": 0.7791522966460062,
+     "val_accuracy": 0.8778877887788779,
+     "iface_max_abs": 0.018739815801382065,
+     "iface_l2": 0.26247140765190125
+    }
+   ],
+   "result_epoch": 4,
+   "receiver_unchanged": true,
+   "elapsed_seconds": 23.344816936179996
+  },
+  "pred_noCF": {
+   "run": "grasparms_dp_003_GA-noflag_pred_noCF_ep4_seed42",
+   "jaccard": 0.7693153655314511,
+   "accuracy": 0.8805280528052806,
+   "six_mean": 0.782592064384394,
+   "per_class": {
+    "anesthesia": 0.9603960396039604,
+    "closure": 0.7764084507042254,
+    "design": 0.970873786407767,
+    "disinfection": 0.0,
+    "dissection": 0.7828200972447326,
+    "dressing": 0.6896551724137931,
+    "hemostasis": 0.345679012345679,
+    "incision": 0.859375,
+    "irrigation": 0.0
+   },
+   "per_video": {
+    "09": {
+     "jaccard": 0.9931717398646169,
+     "accuracy": 0.9961389961389961
+    },
+    "10": {
+     "jaccard": 0.6732364897373365,
+     "accuracy": 0.8204613841524574
+    }
+   },
+   "epochs": [
+    {
+     "epoch": 1,
+     "train_loss": 0.5143948376178742,
+     "val_jaccard": 0.7722452023550221,
+     "val_accuracy": 0.8752475247524752,
+     "iface_max_abs": 0.00471413554623723,
+     "iface_l2": 0.08155534416437149
+    },
+    {
+     "epoch": 2,
+     "train_loss": 0.5124835550785065,
+     "val_jaccard": 0.7786646094649045,
+     "val_accuracy": 0.8772277227722772,
+     "iface_max_abs": 0.009027968160808086,
+     "iface_l2": 0.1501721441745758
+    },
+    {
+     "epoch": 3,
+     "train_loss": 0.5111664563417435,
+     "val_jaccard": 0.7707772666055864,
+     "val_accuracy": 0.8778877887788779,
+     "iface_max_abs": 0.013416139408946037,
+     "iface_l2": 0.21678610146045685
+    },
+    {
+     "epoch": 4,
+     "train_loss": 0.5101002842187882,
+     "val_jaccard": 0.7693153655314511,
+     "val_accuracy": 0.8805280528052806,
+     "iface_max_abs": 0.01759352721273899,
+     "iface_l2": 0.2767010033130646
+    }
+   ],
+   "result_epoch": 4,
+   "receiver_unchanged": true,
+   "elapsed_seconds": 187.24375520367175
+  },
+  "pred_CF": {
+   "run": "grasparms_dp_004_GA-noflag_pred_CF_ep4_seed42",
+   "jaccard": 0.7699863726486118,
+   "accuracy": 0.8805280528052806,
+   "six_mean": 0.7833749060210818,
+   "per_class": {
+    "anesthesia": 0.9603960396039604,
+    "closure": 0.7764084507042254,
+    "design": 0.970873786407767,
+    "disinfection": 0.0,
+    "dissection": 0.7824675324675324,
+    "dressing": 0.6896551724137931,
+    "hemostasis": 0.35,
+    "incision": 0.8601036269430051,
+    "irrigation": 0.0
+   },
+   "per_video": {
+    "09": {
+     "jaccard": 0.9931717398646169,
+     "accuracy": 0.9961389961389961
+    },
+    "10": {
+     "jaccard": 0.6751271432197246,
+     "accuracy": 0.8204613841524574
+    }
+   },
+   "epochs": [
+    {
+     "epoch": 1,
+     "train_loss": 0.5144420266151428,
+     "val_jaccard": 0.7722452023550221,
+     "val_accuracy": 0.8752475247524752,
+     "iface_max_abs": 0.004701684694737196,
+     "iface_l2": 0.08042004704475403
+    },
+    {
+     "epoch": 2,
+     "train_loss": 0.5125927478075027,
+     "val_jaccard": 0.7778144528154638,
+     "val_accuracy": 0.8765676567656766,
+     "iface_max_abs": 0.009115181863307953,
+     "iface_l2": 0.1486411839723587
+    },
+    {
+     "epoch": 3,
+     "train_loss": 0.5113040298223496,
+     "val_jaccard": 0.7721427787305923,
+     "val_accuracy": 0.8785478547854786,
+     "iface_max_abs": 0.01344490610063076,
+     "iface_l2": 0.21597115695476532
+    },
+    {
+     "epoch": 4,
+     "train_loss": 0.5102400541305542,
+     "val_jaccard": 0.7699863726486118,
+     "val_accuracy": 0.8805280528052806,
+     "iface_max_abs": 0.017452647909522057,
+     "iface_l2": 0.27698376774787903
+    }
+   ],
+   "result_epoch": 4,
+   "receiver_unchanged": true,
+   "elapsed_seconds": 176.71217707544565
+  },
+  "gtpred_CF": {
+   "run": "grasparms_dp_005_GA-noflag_gtpred_CF_ep4_seed42",
+   "jaccard": 0.769806112036458,
+   "accuracy": 0.8831683168316832,
+   "six_mean": 0.7889117284103504,
+   "per_class": {
+    "anesthesia": 0.9603960396039604,
+    "closure": 0.7750439367311072,
+    "design": 0.970873786407767,
+    "disinfection": 0.0,
+    "dissection": 0.785829307568438,
+    "dressing": 0.6551724137931034,
+    "hemostasis": 0.358974358974359,
+    "incision": 0.8823529411764706,
+    "irrigation": 0.0
+   },
+   "per_video": {
+    "09": {
+     "jaccard": 0.9903211445764637,
+     "accuracy": 0.9942084942084942
+    },
+    "10": {
+     "jaccard": 0.6818423756882517,
+     "accuracy": 0.8254764292878636
+    }
+   },
+   "epochs": [
+    {
+     "epoch": 1,
+     "train_loss": 0.5140711545944214,
+     "val_jaccard": 0.7784832287086108,
+     "val_accuracy": 0.8772277227722772,
+     "iface_max_abs": 0.00485248165205121,
+     "iface_l2": 0.10881941765546799
+    },
+    {
+     "epoch": 2,
+     "train_loss": 0.5114439904689789,
+     "val_jaccard": 0.7705655608744735,
+     "val_accuracy": 0.8805280528052806,
+     "iface_max_abs": 0.00948505848646164,
+     "iface_l2": 0.19687767326831818
+    },
+    {
+     "epoch": 3,
+     "train_loss": 0.5100110650062561,
+     "val_jaccard": 0.77113713306166,
+     "val_accuracy": 0.8805280528052806,
+     "iface_max_abs": 0.014060710556805134,
+     "iface_l2": 0.27805018424987793
+    },
+    {
+     "epoch": 4,
+     "train_loss": 0.5090345442295074,
+     "val_jaccard": 0.769806112036458,
+     "val_accuracy": 0.8831683168316832,
+     "iface_max_abs": 0.018334971740841866,
+     "iface_l2": 0.34908396005630493
+    }
+   ],
+   "result_epoch": 4,
+   "receiver_unchanged": true,
+   "elapsed_seconds": 58.85975847300142
+  },
+  "shuffle": {
+   "run": "grasparms_dp_006_GA-noflag_shuffle_ep4_seed42",
+   "jaccard": 0.7698052039677906,
+   "accuracy": 0.8805280528052806,
+   "six_mean": 0.7831635425601234,
+   "per_class": {
+    "anesthesia": 0.9603960396039604,
+    "closure": 0.7764084507042254,
+    "design": 0.970873786407767,
+    "disinfection": 0.0,
+    "dissection": 0.7811993517017828,
+    "dressing": 0.6896551724137931,
+    "hemostasis": 0.35,
+    "incision": 0.8601036269430051,
+    "irrigation": 0.0
+   },
+   "per_video": {
+    "09": {
+     "jaccard": 0.9931717398646169,
+     "accuracy": 0.9961389961389961
+    },
+    "10": {
+     "jaccard": 0.6748851940080199,
+     "accuracy": 0.8204613841524574
+    }
+   },
+   "epochs": [
+    {
+     "epoch": 1,
+     "train_loss": 0.5143432319164276,
+     "val_jaccard": 0.7722452023550221,
+     "val_accuracy": 0.8752475247524752,
+     "iface_max_abs": 0.004811209626495838,
+     "iface_l2": 0.08356968313455582
+    },
+    {
+     "epoch": 2,
+     "train_loss": 0.5123179078102111,
+     "val_jaccard": 0.7778019624156586,
+     "val_accuracy": 0.8765676567656766,
+     "iface_max_abs": 0.009392610751092434,
+     "iface_l2": 0.15341660380363464
+    },
+    {
+     "epoch": 3,
+     "train_loss": 0.510920962691307,
+     "val_jaccard": 0.7719427571488068,
+     "val_accuracy": 0.8792079207920792,
+     "iface_max_abs": 0.013555096462368965,
+     "iface_l2": 0.22222508490085602
+    },
+    {
+     "epoch": 4,
+     "train_loss": 0.5098053246736527,
+     "val_jaccard": 0.7698052039677906,
+     "val_accuracy": 0.8805280528052806,
+     "iface_max_abs": 0.01724018156528473,
+     "iface_l2": 0.28326287865638733
+    }
+   ],
+   "result_epoch": 4,
+   "receiver_unchanged": true,
+   "elapsed_seconds": 64.40923430398107
+  }
+ },
+ "B": {
+  "pred_noCF": {
+   "run": "grasparms_B_pred_noCF_ep4_seed42",
+   "AP": 0.7324900343236975,
+   "target_AP": 0.8045917070706821,
+   "control_AP": 0.6720501440554133,
+   "target_missing": [],
+   "control_missing": [],
+   "per_class": {
+    "Bipolar Forceps": 0.803137077596418,
+    "Electric Cautery": 0.9651889453559485,
+    "Forceps": 0.36949968443333464,
+    "Gauze": 0.2735161265504337,
+    "Hook": 0.6432623401414304,
+    "Mouth Gag": 0.7979853281358213,
+    "Needle Holders": 0.8481415887864125,
+    "Raspatory": 0.8048627996846552,
+    "Retractor": NaN,
+    "Scalpel": 0.9149778335479539,
+    "Scissors": 0.7176088102395757,
+    "Skewer": 0.9480492500404523,
+    "Suction Cannula": 0.8304616114806319,
+    "Syringe": 0.5519315744839317,
+    "Tweezers": 0.7862375100547662
+   },
+   "per_video": {
+    "09": 0.7120886274847192,
+    "10": 0.6475360873194039
+   },
+   "per_epoch_mAP": {
+    "-1": 0.7273450248398429,
+    "0": 0.7321446684804697,
+    "1": 0.7326792369253554,
+    "2": 0.7323603635517026,
+    "3": 0.7324900343236975
+   },
+   "iface_weight_by_epoch": {
+    "-1": {
+     "iface_max_abs": 0.0,
+     "iface_l2": 0.0
+    },
+    "0": {
+     "iface_max_abs": 0.17654888331890106,
+     "iface_l2": 4.279810428619385
+    },
+    "1": {
+     "iface_max_abs": 0.25750887393951416,
+     "iface_l2": 5.893589973449707
+    },
+    "2": {
+     "iface_max_abs": 0.31924426555633545,
+     "iface_l2": 7.336324214935303
+    },
+    "3": {
+     "iface_max_abs": 0.35911038517951965,
+     "iface_l2": 8.170488357543945
+    }
+   },
+   "init": 0.7273450248398429,
+   "result_epoch": 3,
+   "frozen_unchanged": true,
+   "start": "2026-11-06 07:23:34 UTC",
+   "end": "2026-11-06 12:55:24 UTC",
+   "host": "Bengio"
+  },
+  "pred_CF": {
+   "run": "grasparms_B_pred_CF_ep4_seed42",
+   "AP": 0.7320279220578817,
+   "target_AP": 0.8047313984039537,
+   "control_AP": 0.6723952612455848,
+   "target_missing": [],
+   "control_missing": [],
+   "per_class": {
+    "Bipolar Forceps": 0.8026147442646747,
+    "Electric Cautery": 0.96607838546044,
+    "Forceps": 0.3628688585082527,
+    "Gauze": 0.274184960300591,
+    "Hook": 0.6406277434687094,
+    "Mouth Gag": 0.7967051320778779,
+    "Needle Holders": 0.8488427512119174,
+    "Raspatory": 0.8090468280479095,
+    "Retractor": NaN,
+    "Scalpel": 0.9096426930681626,
+    "Scissors": 0.7167351331589168,
+    "Skewer": 0.9474854578588018,
+    "Suction Cannula": 0.8326664883947005,
+    "Syringe": 0.5548672687802201,
+    "Tweezers": 0.7860244642091699
+   },
+   "per_video": {
+    "09": 0.7111325259941679,
+    "10": 0.6468645537086367
+   },
+   "per_epoch_mAP": {
+    "-1": 0.7273450248398429,
+    "0": 0.7320763316126628,
+    "1": 0.7314145427800707,
+    "2": 0.7319116142904557,
+    "3": 0.7320279220578817
+   },
+   "iface_weight_by_epoch": {
+    "-1": {
+     "iface_max_abs": 0.0,
+     "iface_l2": 0.0
+    },
+    "0": {
+     "iface_max_abs": 0.18896551430225372,
+     "iface_l2": 3.9238057136535645
+    },
+    "1": {
+     "iface_max_abs": 0.23099033534526825,
+     "iface_l2": 5.493422508239746
+    },
+    "2": {
+     "iface_max_abs": 0.29796501994132996,
+     "iface_l2": 6.843768119812012
+    },
+    "3": {
+     "iface_max_abs": 0.34125566482543945,
+     "iface_l2": 7.722959518432617
+    }
+   },
+   "init": 0.7273450248398429,
+   "result_epoch": 3,
+   "frozen_unchanged": true,
+   "start": "2026-11-06 07:24:04 UTC",
+   "end": "2026-11-06 12:55:48 UTC",
+   "host": "Bengio"
+  },
+  "gtpred_CF": {
+   "run": "grasparms_B_gtpred_CF_ep4_seed42",
+   "AP": 0.7347282794873558,
+   "target_AP": 0.8072095298692842,
+   "control_AP": 0.6758848931116492,
+   "target_missing": [],
+   "control_missing": [],
+   "per_class": {
+    "Bipolar Forceps": 0.8078643427493625,
+    "Electric Cautery": 0.965867630101813,
+    "Forceps": 0.3627442538760731,
+    "Gauze": 0.2839449276153075,
+    "Hook": 0.6416074931586412,
+    "Mouth Gag": 0.7997234312194862,
+    "Needle Holders": 0.8516202780944022,
+    "Raspatory": 0.813467222707987,
+    "Retractor": NaN,
+    "Scalpel": 0.9090999231013203,
+    "Scissors": 0.7247690357990342,
+    "Skewer": 0.945454163330197,
+    "Suction Cannula": 0.8320653190911461,
+    "Syringe": 0.5601619974575536,
+    "Tweezers": 0.7878058945206573
+   },
+   "per_video": {
+    "09": 0.7143086149815109,
+    "10": 0.6489941513652179
+   },
+   "per_epoch_mAP": {
+    "-1": 0.7273450248398429,
+    "0": 0.7336845802919235,
+    "1": 0.7340231723883214,
+    "2": 0.7327849001102127,
+    "3": 0.7347282794873558
+   },
+   "iface_weight_by_epoch": {
+    "-1": {
+     "iface_max_abs": 0.0,
+     "iface_l2": 0.0
+    },
+    "0": {
+     "iface_max_abs": 0.20232897996902466,
+     "iface_l2": 5.708442211151123
+    },
+    "1": {
+     "iface_max_abs": 0.28822457790374756,
+     "iface_l2": 8.195667266845703
+    },
+    "2": {
+     "iface_max_abs": 0.3534165322780609,
+     "iface_l2": 9.992361068725586
+    },
+    "3": {
+     "iface_max_abs": 0.3874589502811432,
+     "iface_l2": 11.439141273498535
+    }
+   },
+   "init": 0.7273450248398429,
+   "result_epoch": 3,
+   "frozen_unchanged": true,
+   "start": "2026-11-06 07:24:34 UTC",
+   "end": "2026-11-06 12:57:14 UTC",
+   "host": "Bengio"
+  },
+  "shuffle": {
+   "run": "grasparms_B_shuffle_ep4_seed42",
+   "AP": 0.7294139340633229,
+   "target_AP": 0.799277956053532,
+   "control_AP": 0.6719039542945263,
+   "target_missing": [],
+   "control_missing": [],
+   "per_class": {
+    "Bipolar Forceps": 0.7884752912855795,
+    "Electric Cautery": 0.9707856392949117,
+    "Forceps": 0.36147630146882465,
+    "Gauze": 0.2741465845089703,
+    "Hook": 0.6418254835826643,
+    "Mouth Gag": 0.7967873648977849,
+    "Needle Holders": 0.8484735715370644,
+    "Raspatory": 0.814138324435319,
+    "Retractor": NaN,
+    "Scalpel": 0.9051111950037986,
+    "Scissors": 0.7052284835572907,
+    "Skewer": 0.9446336903441772,
+    "Suction Cannula": 0.8304215654545696,
+    "Syringe": 0.5440312791987859,
+    "Tweezers": 0.7862603023167806
+   },
+   "per_video": {
+    "09": 0.7080383091010702,
+    "10": 0.6431169581036431
+   },
+   "per_epoch_mAP": {
+    "-1": 0.7273450248398429,
+    "0": 0.7292770118245696,
+    "1": 0.7286942429019792,
+    "2": 0.7291505658220386,
+    "3": 0.7294139340633229
+   },
+   "iface_weight_by_epoch": {
+    "-1": {
+     "iface_max_abs": 0.0,
+     "iface_l2": 0.0
+    },
+    "0": {
+     "iface_max_abs": 0.14159750938415527,
+     "iface_l2": 3.318281412124634
+    },
+    "1": {
+     "iface_max_abs": 0.19099757075309753,
+     "iface_l2": 4.779862880706787
+    },
+    "2": {
+     "iface_max_abs": 0.2159603089094162,
+     "iface_l2": 5.568766117095947
+    },
+    "3": {
+     "iface_max_abs": 0.2539847195148468,
+     "iface_l2": 6.149871826171875
+    }
+   },
+   "init": 0.7273450248398429,
+   "result_epoch": 3,
+   "frozen_unchanged": true,
+   "start": "2026-11-06 07:25:04 UTC",
+   "end": "2026-11-06 12:40:55 UTC",
+   "host": "Bengio"
+  },
+  "toolonly_pred_noCF": {
+   "run": "grasparms_B_toolonly_pred_noCF_ep4_seed42",
+   "AP": 0.7292769357274976,
+   "target_AP": 0.7981725974713472,
+   "control_AP": 0.6736443837845386,
+   "target_missing": [],
+   "control_missing": [],
+   "per_class": {
+    "Bipolar Forceps": 0.7939556654658257,
+    "Electric Cautery": 0.9647576338062922,
+    "Forceps": 0.3563411411922258,
+    "Gauze": 0.27341532315794703,
+    "Hook": 0.6431363960330071,
+    "Mouth Gag": 0.7988251398853955,
+    "Needle Holders": 0.8491061074950845,
+    "Raspatory": 0.808491449895756,
+    "Retractor": NaN,
+    "Scalpel": 0.8996795752282617,
+    "Scissors": 0.7110952991634676,
+    "Skewer": 0.9437937283566039,
+    "Suction Cannula": 0.8336733637625066,
+    "Syringe": 0.5449425684102884,
+    "Tweezers": 0.7886637083323054
+   },
+   "per_video": {
+    "09": 0.705731068393556,
+    "10": 0.6442201233407819
+   },
+   "per_epoch_mAP": {
+    "-1": 0.7273450248398429,
+    "0": 0.729315209399298,
+    "1": 0.7285330304111255,
+    "2": 0.7289415593862776,
+    "3": 0.7292769357274976
+   },
+   "iface_weight_by_epoch": {
+    "-1": {
+     "iface_max_abs": 0.0,
+     "iface_l2": 0.0
+    },
+    "0": {
+     "iface_max_abs": 0.22841081023216248,
+     "iface_l2": 2.5759425163269043
+    },
+    "1": {
+     "iface_max_abs": 0.3023774027824402,
+     "iface_l2": 3.4152987003326416
+    },
+    "2": {
+     "iface_max_abs": 0.3713551461696625,
+     "iface_l2": 4.116875648498535
+    },
+    "3": {
+     "iface_max_abs": 0.3891350030899048,
+     "iface_l2": 4.625377655029297
+    }
+   },
+   "init": 0.7273450248398429,
+   "result_epoch": 3,
+   "frozen_unchanged": true,
+   "start": "2026-11-06 07:25:34 UTC",
+   "end": "2026-11-06 12:41:26 UTC",
+   "host": "Bengio"
+  },
+  "toolonly_shuffle": {
+   "run": "grasparms_B_toolonly_shuffle_ep4_seed42",
+   "AP": 0.7283139489701418,
+   "target_AP": 0.7967755505949674,
+   "control_AP": 0.6732206546491394,
+   "target_missing": [],
+   "control_missing": [],
+   "per_class": {
+    "Bipolar Forceps": 0.7890447761105489,
+    "Electric Cautery": 0.9697348204832372,
+    "Forceps": 0.35639546843939396,
+    "Gauze": 0.2737110030766745,
+    "Hook": 0.6395056826413525,
+    "Mouth Gag": 0.7980388501513567,
+    "Needle Holders": 0.8469700621889487,
+    "Raspatory": 0.8055414570753431,
+    "Retractor": NaN,
+    "Scalpel": 0.9038497766621155,
+    "Scissors": 0.7070288802576571,
+    "Skewer": 0.9427100880050239,
+    "Suction Cannula": 0.8337346515134202,
+    "Syringe": 0.5427316551218051,
+    "Tweezers": 0.7873981138551064
+   },
+   "per_video": {
+    "09": 0.7064477303756984,
+    "10": 0.6428111291371196
+   },
+   "per_epoch_mAP": {
+    "-1": 0.7273450248398429,
+    "0": 0.728422687036901,
+    "1": 0.7275423136028013,
+    "2": 0.7280467880514819,
+    "3": 0.7283139489701418
+   },
+   "iface_weight_by_epoch": {
+    "-1": {
+     "iface_max_abs": 0.0,
+     "iface_l2": 0.0
+    },
+    "0": {
+     "iface_max_abs": 0.15301428735256195,
+     "iface_l2": 2.2845311164855957
+    },
+    "1": {
+     "iface_max_abs": 0.2500957250595093,
+     "iface_l2": 3.3140554428100586
+    },
+    "2": {
+     "iface_max_abs": 0.3184574842453003,
+     "iface_l2": 3.7958154678344727
+    },
+    "3": {
+     "iface_max_abs": 0.3628635108470917,
+     "iface_l2": 4.0991530418396
+    }
+   },
+   "init": 0.7273450248398429,
+   "result_epoch": 3,
+   "frozen_unchanged": true,
+   "start": "2026-11-06 07:26:04 UTC",
+   "end": "2026-11-06 12:42:48 UTC",
+   "host": "Bengio"
+  }
+ },
+ "B_second": {
+  "empty": {
+   "run": "grasppilot2_B_empty_ep4_seed42",
+   "AP": 0.7273450248398429,
+   "target_AP": 0.7950748008550897,
+   "control_AP": 0.6726631817581498,
+   "target_missing": [],
+   "control_missing": [],
+   "per_class": {
+    "Bipolar Forceps": 0.7898794444235409,
+    "Electric Cautery": 0.9687812331789367,
+    "Forceps": 0.3561239611642256,
+    "Gauze": 0.26918130139973323,
+    "Hook": 0.6365377594169036,
+    "Mouth Gag": 0.799206245873842,
+    "Needle Holders": 0.845680655120691,
+    "Raspatory": 0.803773438439878,
+    "Retractor": NaN,
+    "Scalpel": 0.9005223036860694,
+    "Scissors": 0.7096800075689964,
+    "Skewer": 0.9443283539032797,
+    "Suction Cannula": 0.8348758163714836,
+    "Syringe": 0.5368704638226811,
+    "Tweezers": 0.7873893633875403
+   },
+   "per_video": {
+    "09": 0.704273483949694,
+    "10": 0.6420973291237674
+   },
+   "per_epoch_mAP": {
+    "-1": 0.7273450248398429,
+    "0": 0.7273450248398429,
+    "1": 0.7273450248398429,
+    "2": 0.7273450248398429,
+    "3": 0.7273450248398429
+   },
+   "iface_weight_by_epoch": {
+    "-1": {
+     "iface_max_abs": 0.0,
+     "iface_l2": 0.0
+    },
+    "0": {
+     "iface_max_abs": 0.0,
+     "iface_l2": 0.0
+    },
+    "1": {
+     "iface_max_abs": 0.0,
+     "iface_l2": 0.0
+    },
+    "2": {
+     "iface_max_abs": 0.0,
+     "iface_l2": 0.0
+    },
+    "3": {
+     "iface_max_abs": 0.0,
+     "iface_l2": 0.0
+    }
+   },
+   "init": 0.7273450248398429,
+   "result_epoch": 3,
+   "frozen_unchanged": true,
+   "start": "2026-10-31 22:45:41 UTC",
+   "end": "2026-11-01 03:17:33 UTC",
+   "host": "andrew"
+  },
+  "gt": {
+   "run": "grasppilot2_B_gt_ep4_seed42",
+   "AP": 0.7364480565331222,
+   "target_AP": 0.8107034651523655,
+   "control_AP": 0.6763325820136559,
+   "target_missing": [],
+   "control_missing": [],
+   "per_class": {
+    "Bipolar Forceps": 0.8123951466483176,
+    "Electric Cautery": 0.9660891657295704,
+    "Forceps": 0.3614707983848127,
+    "Gauze": 0.28673641031647545,
+    "Hook": 0.6421786909963672,
+    "Mouth Gag": 0.7996093930279299,
+    "Needle Holders": 0.8551293132839838,
+    "Raspatory": 0.8139839707464165,
+    "Retractor": NaN,
+    "Scalpel": 0.9178551305924605,
+    "Scissors": 0.726557169252526,
+    "Skewer": 0.9479830774242992,
+    "Suction Cannula": 0.8323425207049189,
+    "Syringe": 0.5613000003503338,
+    "Tweezers": 0.7866420040052995
+   },
+   "per_video": {
+    "09": 0.7150633443369818,
+    "10": 0.6518581403600751
+   },
+   "per_epoch_mAP": {
+    "-1": 0.7273450248398429,
+    "0": 0.7341892356583145,
+    "1": 0.7347556408095092,
+    "2": 0.7356814115235818,
+    "3": 0.7364480565331222
+   },
+   "iface_weight_by_epoch": {
+    "-1": {
+     "iface_max_abs": 0.0,
+     "iface_l2": 0.0
+    },
+    "0": {
+     "iface_max_abs": 0.21431507170200348,
+     "iface_l2": 4.900234222412109
+    },
+    "1": {
+     "iface_max_abs": 0.30591365694999695,
+     "iface_l2": 7.107229709625244
+    },
+    "2": {
+     "iface_max_abs": 0.38687634468078613,
+     "iface_l2": 8.765179634094238
+    },
+    "3": {
+     "iface_max_abs": 0.3965856730937958,
+     "iface_l2": 9.718179702758789
+    }
+   },
+   "init": 0.7273450248398429,
+   "result_epoch": 3,
+   "frozen_unchanged": true,
+   "start": "2026-10-31 22:45:46 UTC",
+   "end": "2026-11-01 03:17:34 UTC",
+   "host": "andrew"
+  }
+ },
+ "diffs": {
+  "A_vs_empty": {
+   "gt": {
+    "jaccard": 0.002933743838568259,
+    "accuracy": 0.0066006600660065695,
+    "six_mean": 0.0034227011449962097
+   },
+   "pred_noCF": {
+    "jaccard": -0.006903187275986822,
+    "accuracy": 0.009240924092409286,
+    "six_mean": 0.00520888098084471
+   },
+   "pred_CF": {
+    "jaccard": -0.006232180158826095,
+    "accuracy": 0.009240924092409286,
+    "six_mean": 0.005991722617532558
+   },
+   "gtpred_CF": {
+    "jaccard": -0.00641244077097991,
+    "accuracy": 0.011881188118811892,
+    "six_mean": 0.011528545006801116
+   },
+   "shuffle": {
+    "jaccard": -0.0064133488396472815,
+    "accuracy": 0.009240924092409286,
+    "six_mean": 0.005780359156574155
+   }
+  },
+  "A_vs_empty_per_video": {
+   "gt": {
+    "jaccard": {
+     "09": -0.002850595288153235,
+     "10": 0.012019161555496649
+    },
+    "accuracy": {
+     "09": -0.0019305019305019266,
+     "10": 0.011033099297893756
+    }
+   },
+   "pred_noCF": {
+    "jaccard": {
+     "09": 0.0,
+     "10": -0.002133095053820311
+    },
+    "accuracy": {
+     "09": 0.0,
+     "10": 0.014042126379137487
+    }
+   },
+   "pred_CF": {
+    "jaccard": {
+     "09": 0.0,
+     "10": -0.00024244157143227252
+    },
+    "accuracy": {
+     "09": 0.0,
+     "10": 0.014042126379137487
+    }
+   },
+   "gtpred_CF": {
+    "jaccard": {
+     "09": -0.002850595288153235,
+     "10": 0.006472790897094849
+    },
+    "accuracy": {
+     "09": -0.0019305019305019266,
+     "10": 0.01905717151454367
+    }
+   },
+   "shuffle": {
+    "jaccard": {
+     "09": 0.0,
+     "10": -0.0004843907831368899
+    },
+    "accuracy": {
+     "09": 0.0,
+     "10": 0.014042126379137487
+    }
+   }
+  },
+  "A_vs_empty_per_class": {
+   "gt": {
+    "anesthesia": 0.0,
+    "closure": 0.012802151411864027,
+    "design": 0.00933532486930544,
+    "disinfection": 0.0,
+    "dissection": 0.0017776104732626363,
+    "dressing": 0.0,
+    "hemostasis": -0.015766770786851125,
+    "incision": 0.012387890902396004,
+    "irrigation": 0.0
+   },
+   "pred_noCF": {
+    "anesthesia": 0.0,
+    "closure": 0.022426149819269603,
+    "design": 0.00933532486930544,
+    "disinfection": 0.0,
+    "dissection": 0.003599318023953302,
+    "dressing": -0.07957559681697612,
+    "hemostasis": -0.015766770786851125,
+    "incision": 0.011659263959390875,
+    "irrigation": 0.0
+   },
+   "pred_CF": {
+    "anesthesia": 0.0,
+    "closure": 0.022426149819269603,
+    "design": 0.00933532486930544,
+    "disinfection": 0.0,
+    "dissection": 0.0032467532467531646,
+    "dressing": -0.07957559681697612,
+    "hemostasis": -0.01144578313253014,
+    "incision": 0.012387890902396004,
+    "irrigation": 0.0
+   },
+   "gtpred_CF": {
+    "anesthesia": 0.0,
+    "closure": 0.021061635846151394,
+    "design": 0.00933532486930544,
+    "disinfection": 0.0,
+    "dissection": 0.006608528347658793,
+    "dressing": -0.11405835543766585,
+    "hemostasis": -0.0024714241581711427,
+    "incision": 0.03463720513586144,
+    "irrigation": 0.0
+   },
+   "shuffle": {
+    "anesthesia": 0.0,
+    "closure": 0.022426149819269603,
+    "design": 0.00933532486930544,
+    "disinfection": 0.0,
+    "dissection": 0.0019785724810035266,
+    "dressing": -0.07957559681697612,
+    "hemostasis": -0.01144578313253014,
+    "incision": 0.012387890902396004,
+    "irrigation": 0.0
+   }
+  },
+  "A_pred_noCF_minus_shuffle": {
+   "jaccard": -0.0004898384363395403,
+   "accuracy": 0.0,
+   "six_mean": -0.0005714781757294451
+  },
+  "A_pred_noCF_minus_shuffle_per_video": {
+   "jaccard": {
+    "09": 0.0,
+    "10": -0.001648704270683421
+   },
+   "accuracy": {
+    "09": 0.0,
+    "10": 0.0
+   }
+  },
+  "A_pred_noCF_minus_gt": {
+   "jaccard": -0.00983693111455508,
+   "accuracy": 0.0026402640264027166,
+   "six_mean": 0.0017861798358485004
+  },
+  "A_pred_noCF_minus_gt_per_video": {
+   "jaccard": {
+    "09": 0.002850595288153235,
+    "10": -0.01415225660931696
+   },
+   "accuracy": {
+    "09": 0.0019305019305019266,
+    "10": 0.0030090270812437314
+   }
+  },
+  "B_vs_empty": {
+   "pred_noCF": {
+    "AP": 0.005145009483854657,
+    "target_AP": 0.009516906215592313,
+    "control_AP": -0.0006130377027364631
+   },
+   "pred_CF": {
+    "AP": 0.004682897218038828,
+    "target_AP": 0.009656597548863943,
+    "control_AP": -0.0002679205125649675
+   },
+   "gtpred_CF": {
+    "AP": 0.007383254647512882,
+    "target_AP": 0.012134729014194434,
+    "control_AP": 0.003221711353499468
+   },
+   "shuffle": {
+    "AP": 0.00206890922348002,
+    "target_AP": 0.004203155198442277,
+    "control_AP": -0.0007592274636234464
+   },
+   "toolonly_pred_noCF": {
+    "AP": 0.0019319108876547642,
+    "target_AP": 0.00309779661625742,
+    "control_AP": 0.00098120202638885
+   },
+   "toolonly_shuffle": {
+    "AP": 0.0009689241302989204,
+    "target_AP": 0.0017007497398776605,
+    "control_AP": 0.0005574728909896187
+   }
+  },
+  "B_vs_empty_per_video": {
+   "pred_noCF": {
+    "09": 0.007815143535025215,
+    "10": 0.0054387581956365505
+   },
+   "pred_CF": {
+    "09": 0.006859042044473851,
+    "10": 0.004767224584869334
+   },
+   "gtpred_CF": {
+    "09": 0.010035131031816857,
+    "10": 0.006896822241450495
+   },
+   "shuffle": {
+    "09": 0.0037648251513762165,
+    "10": 0.0010196289798757308
+   },
+   "toolonly_pred_noCF": {
+    "09": 0.0014575844438620145,
+    "10": 0.0021227942170145564
+   },
+   "toolonly_shuffle": {
+    "09": 0.0021742464260043892,
+    "10": 0.0007138000133521949
+   }
+  },
+  "B_vs_empty_per_class": {
+   "pred_noCF": {
+    "Bipolar Forceps": 0.013257633172877092,
+    "Electric Cautery": -0.0035922878229882604,
+    "Forceps": 0.013375723269109019,
+    "Gauze": 0.004334825150700494,
+    "Hook": 0.006724580724526752,
+    "Mouth Gag": -0.0012209177380206881,
+    "Needle Holders": 0.002460933665721532,
+    "Raspatory": 0.0010893612447772094,
+    "Retractor": NaN,
+    "Scalpel": 0.014455529861884475,
+    "Scissors": 0.007928802670579271,
+    "Skewer": 0.0037208961371725247,
+    "Suction Cannula": -0.004414204890851647,
+    "Syringe": 0.015061110661250598,
+    "Tweezers": -0.001151853332774122
+   },
+   "pred_CF": {
+    "Bipolar Forceps": 0.012735299841133862,
+    "Electric Cautery": -0.002702847718496715,
+    "Forceps": 0.0067448973440270565,
+    "Gauze": 0.005003658900857744,
+    "Hook": 0.004089984051805828,
+    "Mouth Gag": -0.0025011137959641827,
+    "Needle Holders": 0.0031620960912264184,
+    "Raspatory": 0.005273389608031476,
+    "Retractor": NaN,
+    "Scalpel": 0.009120389382093141,
+    "Scissors": 0.007055125589920386,
+    "Skewer": 0.003157103955522045,
+    "Suction Cannula": -0.002209327976783082,
+    "Syringe": 0.01799680495753897,
+    "Tweezers": -0.001364899178370349
+   },
+   "gtpred_CF": {
+    "Bipolar Forceps": 0.01798489832582162,
+    "Electric Cautery": -0.0029136030771237387,
+    "Forceps": 0.0066202927118474975,
+    "Gauze": 0.014763626215574255,
+    "Hook": 0.005069733741737581,
+    "Mouth Gag": 0.0005171853456441555,
+    "Needle Holders": 0.0059396229737112005,
+    "Raspatory": 0.009693784268108963,
+    "Retractor": NaN,
+    "Scalpel": 0.008577619415250815,
+    "Scissors": 0.015089028230037771,
+    "Skewer": 0.0011258094269173125,
+    "Suction Cannula": -0.002810497280337443,
+    "Syringe": 0.023291533634872463,
+    "Tweezers": 0.0004165311331170152
+   },
+   "shuffle": {
+    "Bipolar Forceps": -0.0014041531379613836,
+    "Electric Cautery": 0.002004406115974966,
+    "Forceps": 0.005352340304599024,
+    "Gauze": 0.004965283109237051,
+    "Hook": 0.005287724165760732,
+    "Mouth Gag": -0.002418880976057136,
+    "Needle Holders": 0.002792916416373359,
+    "Raspatory": 0.010364885995440942,
+    "Retractor": NaN,
+    "Scalpel": 0.004588891317729105,
+    "Scissors": -0.0044515240117056765,
+    "Skewer": 0.0003053364408974746,
+    "Suction Cannula": -0.004454250916913982,
+    "Syringe": 0.007160815376104801,
+    "Tweezers": -0.0011290610707597182
+   },
+   "toolonly_pred_noCF": {
+    "Bipolar Forceps": 0.004076221042284889,
+    "Electric Cautery": -0.004023599372644515,
+    "Forceps": 0.00021718002800019676,
+    "Gauze": 0.004234021758213802,
+    "Hook": 0.006598636616103493,
+    "Mouth Gag": -0.00038110598844653953,
+    "Needle Holders": 0.0034254523743935117,
+    "Raspatory": 0.004718011455878024,
+    "Retractor": NaN,
+    "Scalpel": -0.000842728457807751,
+    "Scissors": 0.0014152915944711797,
+    "Skewer": -0.0005346255466758265,
+    "Suction Cannula": -0.0012024526089770005,
+    "Syringe": 0.00807210458760732,
+    "Tweezers": 0.0012743449447650823
+   },
+   "toolonly_shuffle": {
+    "Bipolar Forceps": -0.0008346683129919485,
+    "Electric Cautery": 0.0009535873043005072,
+    "Forceps": 0.0002715072751683367,
+    "Gauze": 0.004529701676941278,
+    "Hook": 0.002967923224448943,
+    "Mouth Gag": -0.0011673957224853648,
+    "Needle Holders": 0.001289407068257642,
+    "Raspatory": 0.0017680186354650518,
+    "Retractor": NaN,
+    "Scalpel": 0.0033274729760460753,
+    "Scissors": -0.0026511273113393186,
+    "Skewer": -0.0016182658982558662,
+    "Suction Cannula": -0.0011411648580633704,
+    "Syringe": 0.005861191299123991,
+    "Tweezers": 8.750467566098763e-06
+   }
+  },
+  "B_gt_second_vs_empty": {
+   "AP": 0.009103031693279307,
+   "target_AP": 0.01562866429727572,
+   "control_AP": 0.0036694002555061056
+  },
+  "B_pred_noCF_minus_shuffle": {
+   "AP": 0.003076100260374637,
+   "target_AP": 0.005313751017150037,
+   "control_AP": 0.00014618976088698332
+  },
+  "B_pred_noCF_minus_shuffle_per_video": {
+   "09": 0.004050318383648999,
+   "10": 0.00441912921576082
+  },
+  "T_pred_noCF_minus_shuffle": {
+   "AP": 0.0009629867573558437,
+   "target_AP": 0.0013970468763797594,
+   "control_AP": 0.0004237291353992312
+  },
+  "T_pred_noCF_minus_shuffle_per_video": {
+   "09": -0.0007166619821423748,
+   "10": 0.0014089942036623615
+  },
+  "T_minus_B_pred_noCF": {
+   "AP": -0.0032130985961998926,
+   "target_AP": -0.0064191095993348934,
+   "control_AP": 0.001594239729125313
+  },
+  "T_minus_B_pred_noCF_per_video": {
+   "09": -0.006357559091163201,
+   "10": -0.003315963978621994
+  },
+  "B_pred_noCF_minus_gt_second": {
+   "AP": -0.00395802220942465,
+   "target_AP": -0.006111758081683405,
+   "control_AP": -0.004282437958242569
+  },
+  "B_pred_noCF_minus_gt_second_per_video": {
+   "09": -0.002974716852262582,
+   "10": -0.0043220530406711255
+  }
+ },
+ "A_first_reference_flag30": {
+  "empty": {
+   "run": "grasppilot_dp_001_GA_empty_ep4_seed42",
+   "jaccard": 0.7762185528074379,
+   "accuracy": 0.8712871287128713,
+   "six_mean": 0.7773831834035493,
+   "per_class": {
+    "anesthesia": 0.9603960396039604,
+    "closure": 0.7539823008849558,
+    "design": 0.9615384615384616,
+    "disinfection": 0.0,
+    "dissection": 0.7792207792207793,
+    "dressing": 0.7692307692307693,
+    "hemostasis": 0.3614457831325301,
+    "incision": 0.8477157360406091,
+    "irrigation": 0.0
+   },
+   "per_video": {
+    "09": {
+     "jaccard": 0.9931717398646169,
+     "accuracy": 0.9961389961389961
+    },
+    "10": {
+     "jaccard": 0.6753695847911568,
+     "accuracy": 0.8064192577733199
+    }
+   },
+   "epochs": [
+    {
+     "epoch": 1,
+     "train_loss": 0.5151980727910995,
+     "val_jaccard": 0.7762185528074379,
+     "val_accuracy": 0.8712871287128713,
+     "iface_max_abs": 0.0,
+     "iface_l2": 0.0
+    },
+    {
+     "epoch": 2,
+     "train_loss": 0.5151980727910995,
+     "val_jaccard": 0.7762185528074379,
+     "val_accuracy": 0.8712871287128713,
+     "iface_max_abs": 0.0,
+     "iface_l2": 0.0
+    },
+    {
+     "epoch": 3,
+     "train_loss": 0.5151980727910995,
+     "val_jaccard": 0.7762185528074379,
+     "val_accuracy": 0.8712871287128713,
+     "iface_max_abs": 0.0,
+     "iface_l2": 0.0
+    },
+    {
+     "epoch": 4,
+     "train_loss": 0.5151980727910995,
+     "val_jaccard": 0.7762185528074379,
+     "val_accuracy": 0.8712871287128713,
+     "iface_max_abs": 0.0,
+     "iface_l2": 0.0
+    }
+   ],
+   "result_epoch": 4,
+   "receiver_unchanged": true,
+   "elapsed_seconds": 0.7655619792640209
+  },
+  "gt": {
+   "run": "grasppilot_dp_002_GA_gt_ep4_seed42",
+   "jaccard": 0.779040733851697,
+   "accuracy": 0.8792079207920792,
+   "six_mean": 0.780675727955185,
+   "per_class": {
+    "anesthesia": 0.9603960396039604,
+    "closure": 0.7689594356261023,
+    "design": 0.970873786407767,
+    "disinfection": 0.0,
+    "dissection": 0.782258064516129,
+    "dressing": 0.7692307692307693,
+    "hemostasis": 0.34146341463414637,
+    "incision": 0.8601036269430051,
+    "irrigation": 0.0
+   },
+   "per_video": {
+    "09": {
+     "jaccard": 0.9903211445764637,
+     "accuracy": 0.9942084942084942
+    },
+    "10": {
+     "jaccard": 0.6873382914299127,
+     "accuracy": 0.8194583751253761
+    }
+   },
+   "epochs": [
+    {
+     "epoch": 1,
+     "train_loss": 0.5146612614393234,
+     "val_jaccard": 0.7705028520133486,
+     "val_accuracy": 0.8732673267326733,
+     "iface_max_abs": 0.0048557184636592865,
+     "iface_l2": 0.07864562422037125
+    },
+    {
+     "epoch": 2,
+     "train_loss": 0.5132241249084473,
+     "val_jaccard": 0.7780500381175222,
+     "val_accuracy": 0.8765676567656766,
+     "iface_max_abs": 0.00954773835837841,
+     "iface_l2": 0.14563101530075073
+    },
+    {
+     "epoch": 3,
+     "train_loss": 0.5122650504112244,
+     "val_jaccard": 0.7794066254578124,
+     "val_accuracy": 0.8778877887788779,
+     "iface_max_abs": 0.014225051738321781,
+     "iface_l2": 0.20962080359458923
+    },
+    {
+     "epoch": 4,
+     "train_loss": 0.511515673995018,
+     "val_jaccard": 0.779040733851697,
+     "val_accuracy": 0.8792079207920792,
+     "iface_max_abs": 0.018697069957852364,
+     "iface_l2": 0.26915591955184937
+    }
+   ],
+   "result_epoch": 4,
+   "receiver_unchanged": true,
+   "elapsed_seconds": 0.7477628653869033
+  }
+ }
+}

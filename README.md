@@ -1795,3 +1795,16 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
   val の 5 クラスの mask mAP は確定 0.6460（epoch 3）・H1 0.5939・H2 0.5814（学習前 0.0060）。反転の整合（入れ替えて比べる soft IoU）0.693、入れ替えない対照 0.118（二本目の G は 0.134・0.787）。
   **二本目（batch 2・fp32）との差は、頭のクラス数・反転のラベル・学ぶフレーム・batch と精度が重なったもの**で、どれか一つの効果とは読まない。
   案 D の q は約半数の枠で行の和が 1 を超え、和で割って正規化した。案 C の t は作っていない。G1・G2・G2b・G3 pass
+
+### 把持の信号の予備測定の四本目: 作り直した G の信号で案 A・案 B・術具だけの腕（2026-11-06、bengio）
+
+契約 `T-2026-11-06-grasp-pilot-arms`（analysis。**非公式の測定。関門の判定と設計の判断に使わない**）。**二本目 `T-2026-11-01-grasp-pilot-g` の無効な腕を置き換える**
+（作り直した G の信号は `experiments/analysis/grasp_tower_rebuild/signals_manifest.json`）。結果は `experiments/analysis/grasp_pilot_arms/REPORT.md`、記録は `tasks/T-2026-11-06-grasp-pilot-arms/`。
+
+- 変更: `scripts/stage2pilot/dp_train.py` に `--grasp-no-flag`（案 A の旗なし 28 次元。**渡さなければ旗あり 30 次元のまま**。起点の版と出力が一致することを確かめた）
+- 新しいスクリプト: `scripts/grasppilot/arms_check_inputs.py`（材料の照合）、`arms_tool_only.py`（術具だけの信号）、`run_pd_grasparms.sh`（案 B の起動。二本目の台本の写しで置き場と腕だけ変えた）、
+  `arms_aggregate.py`（集計・検算・test 不使用の確かめ）。案 B の学習のコード 7 件（`pd_grasp*.py`・`grasp_signals.py`・`train_t1b.py`・設定 3 本）は変えていない
+- 大きな生成物（術具だけの地図、学ぶ部分の重み、記録）は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-grasp-pilot-arms/`
+- 結果（非公式。1 折り・val 2 動画・seed 1 つ。W1、4 epoch の固定の長さ）: 12 本すべて完走。案 B の予測-noCF は標的群 AP の Δ空 +0.0095、Δ入替 +0.0053、
+  二本目の正解との差 −0.0061。術具だけ（誰の手かを落とす）は Δ空 +0.0031、Δ入替 +0.0014、案 B の予測-noCF との差 −0.0064。
+  案 A の予測-noCF は Δ空 が Jaccard −0.0069（dressing の当たり外れ）・accuracy +0.0092・6 工程の平均 +0.0052、Δ入替 は 6 工程の平均 −0.0006。G1・G2・G3 pass
