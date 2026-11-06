@@ -96,35 +96,52 @@
 
 ## T-2026-11-05-grasp-tower-rebuild
 
-状態 `stopped` / ホスト `andrew` / 起票 `289` / 様式 `v3`
+状態 `pass` / ホスト `bengio` / 起票 `295` / 様式 `v3`
 
 ### ゲート
 
-- `G1` pass — 起点 origin/phase0 89fe4a41 に tasks/T-2026-11-01-grasp-pilot-g（5 ファイル）・g_train.py・tasks/T-2026-11-01-grasp-pilot-d（5 ファイル）・d_targets.py が在る。proc_enum で本契約以外の compute プロセス 0 件、空き 1,645,222,965,248 B、試験の失敗 6 件の名前、二つの仮想環境の要約値（二本目と一致）、GPU 0・1 の電力の上限 300 W（RTX A6000）を記録した
-- `G2` pass — 5 クラスの注釈（train 9,356 フレーム・32,408 インスタンス、val 1,514・5,653）から 16 フレームで元のマスクが画素で一致した。反転の経路は 24 フレームで 1↔2・3↔4 を 24/24 入れ替え、入れ替えない写しと二本目の G38 は 0/24 だった
-- `G3` skip — 利用者の指示で Task C の途中（3 本とも epoch 2 の途中）に契約を中止したので判定していない。epoch 1 の val の 5 クラスの mask mAP は確定 0.5747・H1 0.5179・H2 0.5666（学習前 0.0060）
+- `G1` pass — 起点 origin/phase0 89fe4a41 に二本目・三本目の契約のフォルダと g_train.py・d_targets.py・g38_build.py・g_signals.py・grasp_signals.py が在る。proc_enum で本契約以外の compute 0 件（zsh は 9 件、存在しない経路は 0 件）、空き 1,389,087,522,816 B、試験の失敗 11 件、二つの仮想環境の要約値、GPU 0・1 の電力の上限 220 W（RTX A6000）を記録した。写した 7 ファイルの sha256 が記録と一致
+- `G2` pass — 把持関係の注釈だけから train 9,356・val 1,514 フレームを組み、16 フレームで元のマスクと画素で一致。反転の経路は 24/24 フレームで 1↔2・3↔4 を入れ替え、入れ替えない写しと二本目の G38 は 0/24。印のフレームは注釈に 0 件で、1 件足した写しは学習を始めずに止まった
+- `G2b` pass — batch 2・4・6・8・12・16 × fp32・fp16 の 12 水準と bf16（変形注意だけ fp32）の 6 水準を測り表を commit・push して停止し、利用者の回答（batch 8、bf16（変形注意だけ fp32）、学習率 1e-4）を記録した。収まった水準の読み込んだ枚数は 60 ステップ × batch と一致
+- `G3` pass — 3 本が最良 4 epoch 不更新の規則で止まった（確定 epoch 7・H1 7・H2 10、上限 36 に達せず）。選んだ epoch の val 5 クラス mask mAP 0.6460・0.5939・0.5814 は学習前 0.0060 を上回る。反転の整合は入れ替えて比べる soft IoU 0.693、入れ替えない対照 0.118（二本目の G は 0.134・0.787）
 
 ### 起票者の誤り
 
-- `asserted_without_measuring` — SPEC §3.1 は、欠落の印の付いたフレームが把持関係の注釈があるフレームの中にあるとして損失からの除き方を決めているが、train の印 301 件・val の 1 件は注釈ファイルの画像に 1 件も含まれない。指示どおり学ぶフレームを組むと印のフレームは最初から入らず、val の印を含めた値は注釈なしの画像を足す形でしか作れない
+- `self_contradiction` — SPEC §4 は run の置き場を experiments/phase1/grasptower_ で始まる名前とするが、contract.allow_write は experiments/analysis/grasp_tower_rebuild と runindex/ だけで、run の置き場を含まない（二本目・三本目は含めていた）。指示どおりに置くと forbidden-check が本契約の run の記録 27 件を違反とし、完了判定 i の「本契約の経路の違反 0 件」と両立しない
+- `self_contradiction` — SPEC §0 と Task A-4 は bengio に二本目・一本目の保存先が無ければ andrew から写すとし、同じ経路へ写すと読めるが、§7-2 は一本目・二本目の版管理の外の保存先への書き込みを禁じる。同じ経路へ写すと禁止に触れ、g_bench.py の既定の COCO の重みの経路は一本目の保存先を指したままになる。本契約の保存先へ写して経路を直した
+- `check_does_not_check` — Task B0-2 の対照「重みを読まない写しで記憶が変わること」は、COCO の重みを読むかどうかがパラメータの数と形を変えないため、記憶の大きさを変えない。実測で batch 2・fp32 の最大確保は重みの有無で 9,895,972,352 B とバイトまで同じで、この対照は計測の空振りを見分けない。違いは 1 ステップ目の損失（119.4 と 61.8）にだけ現れた
+- `asserted_without_measuring` — §3.1 と Task B-4 は欠落の印の付いたフレームが学ぶフレームに入る前提で「印のフレームだけの数歩で損失が 0 か対象外」を求めるが、印のフレーム（train 301・val 1）は把持関係の注釈ファイルに 1 件も含まれず、工程の経路の注釈の無いフレームの集合とちょうど一致する。書かれた検査は対象のフレームが無く実行できない
+- `check_does_not_check` — Task A-3 と §8-a の compute プロセスの列挙は /proc を読むが、bengio はコンテナ（root のプロセスが 2 件しか見えない）の中で、外のプロセスは列挙に出ない。学習の途中に GPU 1 を約 21 GB 使う一覧に出ない使用者が現れ、開始時の列挙もプリフライトの gpu_free も捕まえられない。nvidia-smi の全体の使用と本契約のプロセスの使用の差で気づいた
 
 ### 逸脱
 
-- `judgement` — 利用者の指示（2026-11-06 00:55「バッチサイズについて検討するので停止して」、01:05「契約も停止して良い」）で、G の 3 本を一時停止したあと終了し、契約を中止した。G3・Task D・Task E の集計、README・experiment_log への記入は行っていない。途中の出力は $S/aborted/try1/ へ移した
-- `judgement` — 収束規則（最良が 4 epoch 更新されなければ打ち切り、上限 36、学習率は下げない）を、二本目の外からの監視 g_early_stop.py ではなく、学習の繰り返しの中で判定する派生 g5_train.py にした（SPEC §3.2 が許す）
-- `judgement` — 欠落の印の付いたフレームは注釈を持たず、学ぶフレームに入らない。g5_train.py は、印のフレームが 1 件でも入っていれば学習を始めない形で対象外にした。val の含めた値は、印のフレーム 10_1_0595 を注釈なしの画像として足して測った
-- `judgement` — 二本目の道具（g38_build.py・g_train.py・g_signals.py）は変えず、派生 g5_build.py・g5_train.py・g5_flip_test.py・g5_signals.py を足した。g5_signals.py の infer・merge・assemble は中止のため実行していない
+- `judgement` — 利用者の決定（2026-11-05）: 遠隔に同名の分岐（andrew 版、利用者の指示で中止、PR #289）があったため手順 0 の規則 2 で停止して諮り、andrew の分岐の上に早送りで積んで PR #289 を使い続けた。実験は bengio で一からやり直し、andrew の途中の出力（重み・注釈・反転の記録）は使っていない。使ったのは andrew 版で commit 済みの g5_* のコードだけ
+- `judgement` — 利用者の指示「読み直し」で台帳の改訂版（Task B0・G2b・完了判定 k を足した版）を要約値の照合つきで取り込んだ。旧版の条件（batch 2・fp32）で起動した G の 3 本は epoch 1 の途中で一時停止の後に終了し、出力を $S/aborted/try1/ へ移した（評価の値も重みも無い）
+- `judgement` — 利用者の決定: Task B0 に bf16 の 6 水準を足し、mmcv 2.1.0 の ms_deform_attn_forward_cuda に bf16 の実装が無いため、変形注意の入力が bf16 のときだけ fp32 で計算して出力を bf16 に戻した（g5_train.patch_msda_bf16、fp32・fp16 は素通しでビット一致）。meta.amendments に記録。G は batch 8・bf16（変形注意だけ fp32）・学習率 1e-4、GPU 0 に確定、GPU 1 に H1 の後 H2 で学んだ
+- `judgement` — bengio に二本目の G の重みと COCO の重みが無く、§7-2 が一本目・二本目の保存先への書き込みを禁じるため、andrew から本契約の保存先 $S/inputs/ へ写した（sha256 は記録と一致）。g5_train.py の COCO の重みの経路をそこへ向け、g5_signals.py の目録のホスト名を固定の andrew から実行ホストへ直した（f149c79d）
+- `judgement` — batch 16・fp16 の 1 回目は 1 ステップ目の CUDNN_STATUS_NOT_INITIALIZED で記録が残らなかった。計測の道具がこの誤りも記録するよう直して測り直し、同じ誤りが最大予約 50.40 GB で再現した。記憶の不足が原因とみるが確かめていない
+- `judgement` — 欠落の印のフレームは注釈ファイルに 0 件で学ぶフレームに入らないため、Task B-4 の「印のフレームだけの数歩で損失が 0」は行えず、学ぶフレームから外れること（集合の一致）と、印のフレームを足した写しで学習が始まらずに止まることで示した。val は印のフレーム 1 枚を注釈なしの画像として足した値も記録した
+- `judgement` — conventions#crossfit の「交差適合版と非適用版を両方記録」に従い、確定の G で作った train の信号（学んだ動画）も一本目の正解と比べた（ROC-AUC 0.884〜0.945、交差適合の train と val より高い）
+- `environment` — 学習の途中（03:2x〜04:2x JST ごろ）に GPU 1 を、プロセスの一覧に出ない本契約の外の使用者が約 21 GB 使った（bengio はコンテナの中で外のプロセスが見えない）。契約の停止の条件として諮り、利用者の決定でそのまま続けた。H1 の 1 ステップが 1.23 秒から 2.27 秒に延びた。値は変わらない見込み
+- `judgement` — 同じ分岐の PR #289 は利用者が途中（2026-11-06 03:39 JST、head ff954d9f）で統合していたため、残りの commit を新しい PR #295（base phase0）で起票した。README.md と docs/experiment_log.md は phase0 と末尾の追記どうしで衝突する。契約が分岐への統合を禁じるため分岐では解かず、PR に解き方（両方の節を残す）を書いた
+- `environment` — 作業ツリーの make forbidden-check は status fail、違反 51 件。24 件は同期で届いた別の契約のファイル（experiments/analysis/dtower_batch_search・dtower_step_profile・tower_batch_probe の tools）で触れていない。27 件は本契約の run の記録（experiments/phase1/grasptower_G_*_seed42/）で、契約の allow_write に run の置き場が無いため（起票者の誤り）
+- `judgement` — 利用者の決定（2026-11-06）: 契約の allow_write に run の置き場 experiments/phase1/grasptower を足し（meta.amendments に記録）、run の記録を版管理に残した（二本目・三本目と同じ形）。足した後の作業ツリーの forbidden-check は違反 24 件で、すべて同期で届いた別の契約のファイル。本契約の経路の違反は 0 件
 
 ### 申し送り
 
-- batch の変更を利用者が検討中（2026-11-06）。再開するなら、batch と学習率を決めたうえで新しい契約として G の 3 本を最初から学ぶ。注釈 $S/g/ann/ と派生の道具はそのまま使える
-- 中止した 3 本の途中の出力（epoch 1 の best.pth、ログ、run の置き場）は $S/aborted/try1/ にある
-- 退避した run_ptower_search.log（0 B）は ~/m2-evacuated/T-2026-11-05-grasp-tower-rebuild/ にある。戻すかどうかは利用者に確かめる
+- 無効になった腕（案 A・B の予測の腕と入れ替えの腕、案 C・D の教師の腕と入れ替えた教師の腕、W2・W3 の案 A・B の予測の腕）を、experiments/analysis/grasp_tower_rebuild/signals_manifest.json の信号と標的で別の契約が回し直す。案 A は全腕を旗なしで回す
+- 案 D の q は約半数の枠（交差適合の train 16,021 / 32,272、val 2,327 / 4,707）で行の和が 1 を超え、4 値を和で割った（二本目は 11 枠）。和を超えた枠では「なし」の値が 0 になる。案 D の契約の起票で、この標的の性質を考える
+- 案 C の t は本契約で作っていない。5 クラスの G で作れる t の定義は案 C の契約で決める
+- G は batch 8・bf16（変形注意だけ fp32）で学んだ。二本目（batch 2・fp32）との差は batch と精度を含む設計の違いが重なったもので、どれか一つの効果とは読まない
+- 契約の allow_write に run の置き場（experiments/phase1/grasptower）が無かった。run の置き場を作る契約は allow_write に含める
 
 ### 断定できなかったこと
 
-- 学習を終えた G の値・止まる epoch・所要、学習後の反転の整合、信号と標的、正解との比べ（中止）
-- 同期で届いた stage2_pd_w3_lowlr・w3lr_* の出所の契約（触れていない）
+- GPU 1 を共有した本契約の外の使用者（約 21 GB、03:2x〜04:2x JST ごろ）
+- 左のクラスの AP が右より低い理由（反転の整合の左右の一致と val の左右のインスタンス数は近い）
+- q の行の和が約半数の枠で 1 を超える理由の切り分け
+- 同じ seed の run の間のビットの非決定性の大きさ
+- fp16 の非数が長く学んだときにどうなるか、bf16（変形注意だけ fp32）の学習の質と fp32 との比べ
 
 ## T-2026-11-02-hostdiff-bengio
 
