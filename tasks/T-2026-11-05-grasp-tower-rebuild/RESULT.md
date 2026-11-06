@@ -88,4 +88,4 @@ conventions の blob ceb7ef0f は契約の conventions_rev 2d946b07 と一致す
 
 - PR: #295（https://github.com/takuya3h/m2/pull/295、base phase0、Draft でない、OPEN）。#289（同じ分岐）は 2026-11-06 03:39 JST に利用者が統合済み（head ff954d9f、batch の決定の記録まで）。
   #295 は残りの commit を足す。`README.md` と `docs/experiment_log.md` が phase0 と衝突する（両方とも末尾に節を足しただけ。両方を残すのが解き方。分岐では解いていない）
-- `make task-report`: （送信の後に記入）
+- `make task-report`: 終了コード 0（verdict pass、issuer_defects 5 件、本文 12,457 B、report_sha256 7a0824d3…。この行は送信の後に足した）
