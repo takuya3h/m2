@@ -1,0 +1,1078 @@
+{
+ "host": "bengio",
+ "task_id": "T-2026-11-02-hostdiff-bengio",
+ "code_commit": {
+  "code": "22ce24b268f29563857b11ddab325e45076ec074",
+  "note": "phase42 の backbone（14:00:17 UTC 起動）は起動時の HEAD 8aefdce3 を記録した。道具の変更は起動前（最後の変更 13:59:16 UTC）に作業ツリーにあり、14:01:26 UTC に 22ce24b2 として commit した。5 本とも 22ce24b2 の内容で動いた",
+  "merge_note": "5 本の後に origin/phase0（#286 hostdiff-andrew の統合後、89fe4a41）を分岐へ取り込んだ（c518bf6d）。scripts/run_ptower_search.py・tower_search_common.py・train_relation_detr_search.py は phase0 の版を採った。分岐の先頭の scripts/ は run が使った版ではない。run が使った版は 22ce24b2",
+  "recorded_per_run": {
+   "123_dcoco_foldA_seed123": "bb44ba64138395f202275227eb2b5d2cf7a144ca",
+   "42a_dcoco_foldA_seed42": "22ce24b268f29563857b11ddab325e45076ec074",
+   "42b_dcoco_foldA_seed42": "22ce24b268f29563857b11ddab325e45076ec074",
+   "stage1_ptower_search_001_P15_A_L6_w0.0_h30_foldA_point00_seed123": "22ce24b268f29563857b11ddab325e45076ec074",
+   "stage1_ptower_search_001_P15_A_L6_w0.0_h30_foldA_point00_seed42": "22ce24b268f29563857b11ddab325e45076ec074",
+   "stage1_ptower_search_001_P15_A_L8_w0.0_h30_foldA_point00_seed123": "22ce24b268f29563857b11ddab325e45076ec074",
+   "stage1_ptower_search_001_P15_A_L8_w0.0_h30_foldA_point00_seed42": "22ce24b268f29563857b11ddab325e45076ec074",
+   "stage1_ptower_search_001_P15_B_L6_w0.0_h30_foldA_point00_seed123": "22ce24b268f29563857b11ddab325e45076ec074",
+   "stage1_ptower_search_001_P15_B_L6_w0.0_h30_foldA_point00_seed42": "22ce24b268f29563857b11ddab325e45076ec074",
+   "stage1_ptower_search_001_P15_B_L6_w0.0_h60_foldA_point00_seed123": "22ce24b268f29563857b11ddab325e45076ec074",
+   "stage1_ptower_search_001_P15_B_L6_w0.0_h60_foldA_point00_seed42": "22ce24b268f29563857b11ddab325e45076ec074",
+   "stage1_ptower_search_001_P15_B_L8_w0.0_h30_foldA_point00_seed123": "22ce24b268f29563857b11ddab325e45076ec074",
+   "stage1_ptower_search_001_P15_B_L8_w0.0_h30_foldA_point00_seed42": "22ce24b268f29563857b11ddab325e45076ec074",
+   "stage1_ptower_search_001_P15_B_L8_w0.0_h60_foldA_point00_seed123": "22ce24b268f29563857b11ddab325e45076ec074",
+   "stage1_ptower_search_001_P15_B_L8_w0.0_h60_foldA_point00_seed42": "22ce24b268f29563857b11ddab325e45076ec074",
+   "stage1_ptower_search_001_P15_C_L6_w0.15_h30_foldA_point00_seed123": "22ce24b268f29563857b11ddab325e45076ec074",
+   "stage1_ptower_search_001_P15_C_L6_w0.15_h30_foldA_point00_seed42": "22ce24b268f29563857b11ddab325e45076ec074",
+   "stage1_ptower_search_001_P15_C_L6_w0.3_h30_foldA_point00_seed123": "22ce24b268f29563857b11ddab325e45076ec074",
+   "stage1_ptower_search_001_P15_C_L6_w0.3_h30_foldA_point00_seed42": "22ce24b268f29563857b11ddab325e45076ec074",
+   "stage1_ptower_search_001_P15_C_L8_w0.15_h30_foldA_point00_seed123": "22ce24b268f29563857b11ddab325e45076ec074",
+   "stage1_ptower_search_001_P15_C_L8_w0.15_h30_foldA_point00_seed42": "22ce24b268f29563857b11ddab325e45076ec074",
+   "stage1_ptower_search_001_P15_C_L8_w0.3_h30_foldA_point00_seed123": "22ce24b268f29563857b11ddab325e45076ec074",
+   "stage1_ptower_search_001_P15_C_L8_w0.3_h30_foldA_point00_seed42": "22ce24b268f29563857b11ddab325e45076ec074",
+   "stage1_ptower_search_001_ft_coco_lr0.0001_foldA_point00_seed123": "22ce24b268f29563857b11ddab325e45076ec074",
+   "stage1_ptower_search_001_ft_coco_lr0.0001_foldA_point00_seed42": "8aefdce3463ab431b42af56c2aa921341acf4429",
+   "stage1_ptower_search_002_features_coco_lr0.0001_foldA_point00_seed123": "22ce24b268f29563857b11ddab325e45076ec074",
+   "stage1_ptower_search_002_features_coco_lr0.0001_foldA_point00_seed42": "22ce24b268f29563857b11ddab325e45076ec074"
+  },
+  "values_built_at": "c518bf6d73733db53aba7a62dc5cdafd538e3e78"
+ },
+ "env": {
+  "driver": "595.84",
+  "cuda_runtime": "11.8",
+  "cudnn": 8700,
+  "nccl": "2.18.6",
+  "torch": "2.1.2+cu118",
+  "torchvision": "0.16.2+cu118",
+  "accelerate": {
+   "body": "1.13.0",
+   "detector": "1.14.0"
+  },
+  "image_decode": {
+   "backend": "PIL",
+   "PIL": "12.2.0",
+   "libjpeg_turbo": true,
+   "jpg_version": "6.2"
+  },
+  "tf32_default": {
+   "matmul": false,
+   "cudnn": true
+  },
+  "NCCL_P2P_DISABLE": [
+   "export NCCL_P2P_DISABLE=1"
+  ],
+  "power_limit": {
+   "enforced": "220.00 W",
+   "default": "300.00 W",
+   "max": "300.00 W"
+  },
+  "process_runtime": {
+   "phase_seed42": {
+    "runtime": {
+     "tf32_matmul": false,
+     "tf32_cudnn": false,
+     "deterministic_algorithms": true,
+     "cudnn_deterministic": true,
+     "cudnn_benchmark": false,
+     "cuda_visible_devices": "0,1"
+    }
+   },
+   "phase_seed123": {
+    "runtime": {
+     "tf32_matmul": false,
+     "tf32_cudnn": false,
+     "deterministic_algorithms": true,
+     "cudnn_deterministic": true,
+     "cudnn_benchmark": false,
+     "cuda_visible_devices": "0,1"
+    }
+   },
+   "detector_42a": {
+    "runtime": {
+     "tf32_matmul": false,
+     "tf32_cudnn": true,
+     "deterministic_algorithms": false,
+     "cudnn_deterministic": false,
+     "cudnn_benchmark": false,
+     "cuda_visible_devices": "0,1"
+    },
+    "autocast": "fp16"
+   },
+   "detector_42b": {
+    "runtime": {
+     "tf32_matmul": false,
+     "tf32_cudnn": true,
+     "deterministic_algorithms": false,
+     "cudnn_deterministic": false,
+     "cudnn_benchmark": false,
+     "cuda_visible_devices": "0,1"
+    },
+    "autocast": "fp16"
+   },
+   "detector_123": {
+    "runtime": {
+     "tf32_matmul": false,
+     "tf32_cudnn": true,
+     "deterministic_algorithms": false,
+     "cudnn_deterministic": false,
+     "cudnn_benchmark": false,
+     "cuda_visible_devices": "0,1"
+    },
+    "autocast": "fp16"
+   }
+  },
+  "static_source": "a_env_static.json"
+ },
+ "determinism_check": {
+  "identical": true,
+  "per_rank": {
+   "rank0": {
+    "sha256": "3cd3c19c313a27b315cd5173c5a1a1946138d1d0a5f3a9c4d5b74719892a450b",
+    "micro_steps": 200,
+    "optimizer_steps": 50,
+    "identical": true
+   },
+   "rank1": {
+    "sha256": "4a89babb4fda3f8a0fbe1f1c351e316851cac5d5a88d449173b2913a324f90bf",
+    "micro_steps": 200,
+    "optimizer_steps": 50,
+    "identical": true
+   }
+  },
+  "source": "b_determinism.json"
+ },
+ "phase": {
+  "seed42": {
+   "J_heads": [
+    0.5515703573440752,
+    0.589075193770114,
+    0.5494791228233978,
+    0.5564897557389872,
+    0.5918688418944509,
+    0.5799941579382312,
+    0.5801867113241626,
+    0.5881657171762795,
+    0.6576501644543032,
+    0.6588895739600743
+   ],
+   "J_heads_order": [
+    "A_L6_w0.0_h30",
+    "A_L8_w0.0_h30",
+    "B_L6_w0.0_h30",
+    "B_L6_w0.0_h60",
+    "C_L6_w0.15_h30",
+    "C_L6_w0.3_h30",
+    "B_L8_w0.0_h30",
+    "B_L8_w0.0_h60",
+    "C_L8_w0.15_h30",
+    "C_L8_w0.3_h30"
+   ],
+   "J_mean": 0.5903369596424076,
+   "J_max": 0.6588895739600743,
+   "backbone_val_frame_acc": 0.8125,
+   "backbone_val_macro_jaccard": 0.5348108308218105,
+   "lr_drop_epoch": 15,
+   "stop_epoch": 19,
+   "checkpoint_epoch": 11,
+   "epochs_completed": 19,
+   "epoch_numbering": "1 起点（学習の記録の epoch=）",
+   "cap_reached": false,
+   "coco_loaded": {
+    "value": true,
+    "sha256": [
+     "a755b3eb22a3c1996ff88bb5797690ceb5605eedef5c24f980e1cac4c07fc98f"
+    ],
+    "lines": 2
+   },
+   "head_epochs": {
+    "A_L6_w0.0_h30": {
+     "checkpoint_epoch": 7,
+     "epochs_completed": 17
+    },
+    "A_L8_w0.0_h30": {
+     "checkpoint_epoch": 7,
+     "epochs_completed": 17
+    },
+    "B_L6_w0.0_h30": {
+     "checkpoint_epoch": 13,
+     "epochs_completed": 23
+    },
+    "B_L6_w0.0_h60": {
+     "checkpoint_epoch": 7,
+     "epochs_completed": 17
+    },
+    "C_L6_w0.15_h30": {
+     "checkpoint_epoch": 10,
+     "epochs_completed": 20
+    },
+    "C_L6_w0.3_h30": {
+     "checkpoint_epoch": 8,
+     "epochs_completed": 18
+    },
+    "B_L8_w0.0_h30": {
+     "checkpoint_epoch": 10,
+     "epochs_completed": 20
+    },
+    "B_L8_w0.0_h60": {
+     "checkpoint_epoch": 10,
+     "epochs_completed": 20
+    },
+    "C_L8_w0.15_h30": {
+     "checkpoint_epoch": 7,
+     "epochs_completed": 17
+    },
+    "C_L8_w0.3_h30": {
+     "checkpoint_epoch": 7,
+     "epochs_completed": 17
+    }
+   },
+   "timing": {
+    "wall_s": 10013.11633182317,
+    "train_s_per_epoch": {
+     "per_epoch": [
+      459.15040671639144,
+      459.9597557634115,
+      462.53507460374385,
+      461.39835208281875,
+      460.1732370220125,
+      462.6127129094675,
+      462.60419998317957,
+      462.9776583397761,
+      462.05103249195963,
+      462.08544190973043,
+      461.1495869755745,
+      462.0988269755617,
+      461.7679119128734,
+      462.6351443193853,
+      460.02690574899316,
+      461.18919226154685,
+      463.55188780184835,
+      461.9936559535563,
+      461.0750535828993
+     ],
+     "median": 461.9936559535563,
+     "definition": "rank0 の直前の val の終わり（初回は最初の micro-step）から val の始めまで"
+    },
+    "s_per_step_median": {
+     "micro_step": 0.6929200449958444,
+     "optimizer_step": 2.7845859909430146,
+     "definition": "rank0、隣り合う記録の時刻の差、最初の 50 歩を除く、val をまたぐ差は除く"
+    },
+    "eval_s": {
+     "val_per_epoch": [
+      46.16341960988939,
+      45.08803150430322,
+      45.10716149304062,
+      44.95545169711113,
+      45.33705839794129,
+      45.091873995028436,
+      44.94347344804555,
+      45.38271501753479,
+      45.09244835656136,
+      45.07249231077731,
+      45.20746180601418,
+      45.10502309259027,
+      45.43285342492163,
+      45.09487414546311,
+      45.29353855084628,
+      45.14563385490328,
+      45.15719534084201,
+      45.449347488582134,
+      45.25631787534803
+     ],
+     "val_per_epoch_median": 45.14563385490328,
+     "train_records_s": 297.91783063299954
+    },
+    "finetune_s": 9641.641609788872,
+    "features_s": 265.2759451158345,
+    "heads_s": 73.54957316070795,
+    "head_s": [
+     9.862851989455521,
+     10.636677047237754,
+     12.790637500584126,
+     10.742077588103712,
+     9.774609110318124,
+     9.6409751502797,
+     12.56669682636857,
+     13.785574651323259,
+     10.47514841426164,
+     11.1823625350371
+    ]
+   },
+   "gpu": {
+    "window": "学習のプロセスの起動から終わりまで",
+    "n_samples": 956,
+    "per_gpu": {
+     "0": {
+      "power.draw": {
+       "mean": 218.3234937238494,
+       "median": 218.925
+      },
+      "clocks.sm": {
+       "mean": 1211.0774058577406,
+       "median": 1200.0
+      },
+      "clocks.mem": {
+       "mean": 7593.47280334728,
+       "median": 7601.0
+      },
+      "utilization.gpu": {
+       "mean": 98.08891213389121,
+       "median": 100.0
+      },
+      "memory.used": {
+       "mean": 20448.75941422594,
+       "median": 20687.0
+      },
+      "temperature.gpu": {
+       "mean": 79.51987447698745,
+       "median": 80.0
+      }
+     },
+     "1": {
+      "power.draw": {
+       "mean": 208.37397489539748,
+       "median": 218.0
+      },
+      "clocks.sm": {
+       "mean": 1488.4989539748954,
+       "median": 1440.0
+      },
+      "clocks.mem": {
+       "mean": 7593.47280334728,
+       "median": 7601.0
+      },
+      "utilization.gpu": {
+       "mean": 98.50523012552301,
+       "median": 100.0
+      },
+      "memory.used": {
+       "mean": 17250.16108786611,
+       "median": 17324.0
+      },
+      "temperature.gpu": {
+       "mean": 78.39539748953975,
+       "median": 80.0
+      }
+     }
+    }
+   },
+   "foreign_gpu_use": []
+  },
+  "seed123": {
+   "J_heads": [
+    0.5873878577685978,
+    0.6227484324135437,
+    0.5982675804306639,
+    0.5921629226431981,
+    0.6372711300615201,
+    0.6360374862004705,
+    0.6190252262005176,
+    0.6259388468500943,
+    0.6356851324486017,
+    0.6342545745439921
+   ],
+   "J_heads_order": [
+    "A_L6_w0.0_h30",
+    "A_L8_w0.0_h30",
+    "B_L6_w0.0_h30",
+    "B_L6_w0.0_h60",
+    "C_L6_w0.15_h30",
+    "C_L6_w0.3_h30",
+    "B_L8_w0.0_h30",
+    "B_L8_w0.0_h60",
+    "C_L8_w0.15_h30",
+    "C_L8_w0.3_h30"
+   ],
+   "J_mean": 0.61887791895612,
+   "J_max": 0.6372711300615201,
+   "backbone_val_frame_acc": 0.7956932773109243,
+   "backbone_val_macro_jaccard": 0.5283300110496667,
+   "lr_drop_epoch": 12,
+   "stop_epoch": 23,
+   "checkpoint_epoch": 19,
+   "epochs_completed": 23,
+   "epoch_numbering": "1 起点（学習の記録の epoch=）",
+   "cap_reached": false,
+   "coco_loaded": {
+    "value": true,
+    "sha256": [
+     "a755b3eb22a3c1996ff88bb5797690ceb5605eedef5c24f980e1cac4c07fc98f"
+    ],
+    "lines": 2
+   },
+   "head_epochs": {
+    "A_L6_w0.0_h30": {
+     "checkpoint_epoch": 7,
+     "epochs_completed": 17
+    },
+    "A_L8_w0.0_h30": {
+     "checkpoint_epoch": 7,
+     "epochs_completed": 17
+    },
+    "B_L6_w0.0_h30": {
+     "checkpoint_epoch": 13,
+     "epochs_completed": 23
+    },
+    "B_L6_w0.0_h60": {
+     "checkpoint_epoch": 9,
+     "epochs_completed": 19
+    },
+    "C_L6_w0.15_h30": {
+     "checkpoint_epoch": 7,
+     "epochs_completed": 17
+    },
+    "C_L6_w0.3_h30": {
+     "checkpoint_epoch": 7,
+     "epochs_completed": 17
+    },
+    "B_L8_w0.0_h30": {
+     "checkpoint_epoch": 7,
+     "epochs_completed": 17
+    },
+    "B_L8_w0.0_h60": {
+     "checkpoint_epoch": 7,
+     "epochs_completed": 17
+    },
+    "C_L8_w0.15_h30": {
+     "checkpoint_epoch": 7,
+     "epochs_completed": 17
+    },
+    "C_L8_w0.3_h30": {
+     "checkpoint_epoch": 7,
+     "epochs_completed": 17
+    }
+   },
+   "timing": {
+    "wall_s": 12094.594619263895,
+    "train_s_per_epoch": {
+     "per_epoch": [
+      460.5000866558403,
+      460.75542228575796,
+      461.9121974017471,
+      463.16359421797097,
+      462.8822552980855,
+      463.90580089762807,
+      461.9405274372548,
+      462.8541086409241,
+      464.5142177734524,
+      462.4767358349636,
+      463.01454727724195,
+      464.4104777928442,
+      464.49073170498013,
+      465.4997468609363,
+      464.88438428752124,
+      465.1770820626989,
+      465.43025918956846,
+      463.24465000163764,
+      465.26692447066307,
+      463.78463598620147,
+      464.5402712551877,
+      464.88537471275777,
+      464.04343680571765
+     ],
+     "median": 463.90580089762807,
+     "definition": "rank0 の直前の val の終わり（初回は最初の micro-step）から val の始めまで"
+    },
+    "s_per_step_median": {
+     "micro_step": 0.695963560603559,
+     "optimizer_step": 2.7979213651269674,
+     "definition": "rank0、隣り合う記録の時刻の差、最初の 50 歩を除く、val をまたぐ差は除く"
+    },
+    "eval_s": {
+     "val_per_epoch": [
+      46.262344921939075,
+      45.18148235883564,
+      45.253792649134994,
+      45.354023021645844,
+      45.33558347262442,
+      45.26814244315028,
+      45.353585636243224,
+      45.22320105135441,
+      45.517368824221194,
+      45.27076168358326,
+      45.6063673235476,
+      45.14647371787578,
+      45.456168125383556,
+      45.574082309380174,
+      45.19541621301323,
+      45.67418811749667,
+      45.500518198125064,
+      45.20995078328997,
+      45.31467702332884,
+      45.25936738029122,
+      45.509566330350935,
+      45.332956317812204,
+      45.51260628644377
+     ],
+     "val_per_epoch_median": 45.33558347262442,
+     "train_records_s": 301.7964463522658
+    },
+    "finetune_s": 11721.71942625288,
+    "features_s": 265.7336952239275,
+    "heads_s": 71.0712415650487,
+    "head_s": [
+     10.031239286996424,
+     10.908877866342664,
+     12.792257635854185,
+     10.717220578342676,
+     8.94514541234821,
+     9.524252446368337,
+     11.387951880693436,
+     12.008200919255614,
+     10.495717318728566,
+     10.964911295101047
+    ]
+   },
+   "gpu": {
+    "window": "学習のプロセスの起動から終わりまで",
+    "n_samples": 1162,
+    "per_gpu": {
+     "0": {
+      "power.draw": {
+       "mean": 218.57773666092942,
+       "median": 218.95
+      },
+      "clocks.sm": {
+       "mean": 1201.7426850258175,
+       "median": 1185.0
+      },
+      "clocks.mem": {
+       "mean": 7601.0,
+       "median": 7601.0
+      },
+      "utilization.gpu": {
+       "mean": 98.26592082616179,
+       "median": 100.0
+      },
+      "memory.used": {
+       "mean": 20490.99483648881,
+       "median": 20687.0
+      },
+      "temperature.gpu": {
+       "mean": 80.20998278829605,
+       "median": 80.0
+      }
+     },
+     "1": {
+      "power.draw": {
+       "mean": 208.53376936316695,
+       "median": 218.01
+      },
+      "clocks.sm": {
+       "mean": 1486.7555938037865,
+       "median": 1440.0
+      },
+      "clocks.mem": {
+       "mean": 7594.807228915663,
+       "median": 7601.0
+      },
+      "utilization.gpu": {
+       "mean": 98.54819277108433,
+       "median": 100.0
+      },
+      "memory.used": {
+       "mean": 17263.251290877797,
+       "median": 17324.0
+      },
+      "temperature.gpu": {
+       "mean": 79.12478485370052,
+       "median": 80.0
+      }
+     }
+    }
+   },
+   "foreign_gpu_use": []
+  }
+ },
+ "detector": {
+  "seed42a": {
+   "mAP": 0.7263668362128703,
+   "AP_signature": 0.8133243746538715,
+   "AP_negative": 0.6615639978902689,
+   "AP50": 0.8491772914095639,
+   "AP75": 0.7773820762487827,
+   "train_mAP": 0.8643622508557871,
+   "lr_drop_epoch": 15,
+   "stop_epoch": 21,
+   "checkpoint_epoch": 17,
+   "epochs_completed": 22,
+   "epoch_numbering": "0 起点（convergence.json）",
+   "val_ap_per_epoch": [
+    0.5902125835418701,
+    0.6571012139320374,
+    0.6883646845817566,
+    0.7155441045761108,
+    0.7100192308425903,
+    0.7086973786354065,
+    0.7160173058509827,
+    0.7196553349494934,
+    0.7049967050552368,
+    0.7203451991081238,
+    0.6990095376968384,
+    0.720751166343689,
+    0.684749960899353,
+    0.7080733180046082,
+    0.7020262479782104,
+    0.7084013819694519,
+    0.7224144339561462,
+    0.726108193397522,
+    0.7207437753677368,
+    0.7215785384178162,
+    0.724095344543457,
+    0.7201259732246399
+   ],
+   "cap_reached": false,
+   "coco_loaded": {
+    "value": true,
+    "source": "initialization_rank0.json の matched",
+    "detail": {
+     "source": "/home/ubuntu/slocal2/m2/data/external/weights/relation_detr_resnet50_800_1333_coco_1x.pth",
+     "matching_tensors": 596,
+     "source_sha256": "2d2c19a7a49e7d77dfb1253bdeba8414785af9f0786fb51651b4a25325c6e8ff",
+     "matched": true
+    }
+   },
+   "timing": {
+    "wall_s": 29798.55174573511,
+    "train_s_per_epoch": {
+     "per_epoch": [
+      1170.4230081513524,
+      1197.0491891046986,
+      1213.2988975476474,
+      1217.9740683287382,
+      1220.5621734531596,
+      1229.0304173687473,
+      1229.7169830566272,
+      1241.6354298507795,
+      1241.178175699897,
+      1247.939189421013,
+      1243.2588505372405,
+      1249.4227792937309,
+      1244.2109280312434,
+      1245.9194090161473,
+      1251.4682933632284,
+      1249.4545744312927,
+      1247.4973803535104,
+      1249.627925585024,
+      1245.8762749060988,
+      1249.3133297758177,
+      1254.1152870804071,
+      1253.7867947844788
+     ],
+     "median": 1245.043601468671,
+     "definition": "rank0 の epoch の始めから終わりまで（val は epoch の外）"
+    },
+    "s_per_step_median": {
+     "optimizer_step": 0.5102662341669202,
+     "definition": "rank0、勾配のクリップの記録（一歩に一度）の時刻の差、最初の 50 歩を除く、epoch をまたぐ差は除く"
+    },
+    "eval_s": {
+     "between_epochs": [
+      76.35077432263643,
+      84.02879615779966,
+      84.47656440362334,
+      85.79789718985558,
+      86.11263011116534,
+      85.98171282280236,
+      89.16850458830595,
+      89.67276972346008,
+      86.8245725268498,
+      89.12749290280044,
+      87.15879723057151,
+      89.46870979294181,
+      88.09805800206959,
+      89.41810059919953,
+      87.66552299354225,
+      87.93770801927894,
+      88.7267360650003,
+      89.55922740139067,
+      88.00903820991516,
+      89.13628715928644,
+      88.67727696243674
+     ],
+     "between_epochs_median": 88.00903820991516,
+     "between_epochs_definition": "epoch の終わりから次の始めまで（学習中の val と checkpoint の保存を含む）",
+     "final_val_s": 88.58811883442104,
+     "final_train_s": 543.3092237114906
+    },
+    "train_s": 29164.25095277466
+   },
+   "gpu": {
+    "window": "学習のプロセスの起動から終わりまで",
+    "n_samples": 2892,
+    "per_gpu": {
+     "0": {
+      "power.draw": {
+       "mean": 205.79279045643153,
+       "median": 206.57
+      },
+      "clocks.sm": {
+       "mean": 1661.1203319502074,
+       "median": 1695.0
+      },
+      "clocks.mem": {
+       "mean": 7593.535269709543,
+       "median": 7601.0
+      },
+      "utilization.gpu": {
+       "mean": 66.18879668049793,
+       "median": 68.0
+      },
+      "memory.used": {
+       "mean": 13942.545643153528,
+       "median": 13833.0
+      },
+      "temperature.gpu": {
+       "mean": 78.93153526970954,
+       "median": 79.0
+      }
+     },
+     "1": {
+      "power.draw": {
+       "mean": 185.9191459197787,
+       "median": 186.425
+      },
+      "clocks.sm": {
+       "mean": 1750.7365145228216,
+       "median": 1815.0
+      },
+      "clocks.mem": {
+       "mean": 7591.046680497925,
+       "median": 7601.0
+      },
+      "utilization.gpu": {
+       "mean": 67.88969571230982,
+       "median": 71.0
+      },
+      "memory.used": {
+       "mean": 14309.701244813277,
+       "median": 14506.0
+      },
+      "temperature.gpu": {
+       "mean": 76.54426002766252,
+       "median": 77.0
+      }
+     }
+    }
+   },
+   "foreign_gpu_use": []
+  },
+  "seed42b": {
+   "mAP": 0.7318139648771456,
+   "AP_signature": 0.8118009251272256,
+   "AP_negative": 0.6776543434212443,
+   "AP50": 0.8577774722535906,
+   "AP75": 0.78827687458608,
+   "train_mAP": 0.8454559459652616,
+   "lr_drop_epoch": 9,
+   "stop_epoch": 16,
+   "checkpoint_epoch": 12,
+   "epochs_completed": 17,
+   "epoch_numbering": "0 起点（convergence.json）",
+   "val_ap_per_epoch": [
+    0.5759497284889221,
+    0.6709569692611694,
+    0.6925063729286194,
+    0.7018729448318481,
+    0.7048549056053162,
+    0.7173008918762207,
+    0.6997748613357544,
+    0.7131201028823853,
+    0.6934279203414917,
+    0.7083393335342407,
+    0.7260249257087708,
+    0.7314785718917847,
+    0.7319644093513489,
+    0.7287441492080688,
+    0.7278534770011902,
+    0.7282052636146545,
+    0.7225565314292908
+   ],
+   "cap_reached": false,
+   "coco_loaded": {
+    "value": true,
+    "source": "initialization_rank0.json の matched",
+    "detail": {
+     "source": "/home/ubuntu/slocal2/m2/data/external/weights/relation_detr_resnet50_800_1333_coco_1x.pth",
+     "matching_tensors": 596,
+     "source_sha256": "2d2c19a7a49e7d77dfb1253bdeba8414785af9f0786fb51651b4a25325c6e8ff",
+     "matched": true
+    }
+   },
+   "timing": {
+    "wall_s": 23184.990137194283,
+    "train_s_per_epoch": {
+     "per_epoch": [
+      1167.054509025067,
+      1193.476851559244,
+      1211.148014399223,
+      1218.2085008379072,
+      1223.4126010211185,
+      1232.8266216339543,
+      1238.3046321859583,
+      1246.5025265030563,
+      1253.6224297499284,
+      1252.1848612260073,
+      1252.509445921518,
+      1254.7795843724161,
+      1253.6427539288998,
+      1253.3976995944977,
+      1255.0651457235217,
+      1255.500830980949,
+      1249.8742380486801
+     ],
+     "median": 1249.8742380486801,
+     "definition": "rank0 の epoch の始めから終わりまで（val は epoch の外）"
+    },
+    "s_per_step_median": {
+     "optimizer_step": 0.5106707802042365,
+     "definition": "rank0、勾配のクリップの記録（一歩に一度）の時刻の差、最初の 50 歩を除く、epoch をまたぐ差は除く"
+    },
+    "eval_s": {
+     "between_epochs": [
+      75.69870111811906,
+      81.33954716101289,
+      85.17345457430929,
+      86.39672500733286,
+      87.42676602769643,
+      88.72308639064431,
+      88.33218078128994,
+      88.76148447394371,
+      87.55375069845468,
+      88.62538535706699,
+      90.74403536692262,
+      90.5487408041954,
+      90.08398408629,
+      89.1396560203284,
+      88.57611550111324,
+      88.89506139792502
+     ],
+     "between_epochs_median": 88.60075042909011,
+     "between_epochs_definition": "epoch の終わりから次の始めまで（学習中の val と checkpoint の保存を含む）",
+     "final_val_s": 89.16018947772682,
+     "final_train_s": 544.9345861272886
+    },
+    "train_s": 22547.621937459335
+   },
+   "gpu": {
+    "window": "学習のプロセスの起動から終わりまで",
+    "n_samples": 2236,
+    "per_gpu": {
+     "0": {
+      "power.draw": {
+       "mean": 205.49504919499105,
+       "median": 206.345
+      },
+      "clocks.sm": {
+       "mean": 1666.1739713774598,
+       "median": 1710.0
+      },
+      "clocks.mem": {
+       "mean": 7590.182468694096,
+       "median": 7601.0
+      },
+      "utilization.gpu": {
+       "mean": 65.94275491949911,
+       "median": 67.0
+      },
+      "memory.used": {
+       "mean": 13798.397137745975,
+       "median": 13831.0
+      },
+      "temperature.gpu": {
+       "mean": 78.28533094812164,
+       "median": 78.0
+      }
+     },
+     "1": {
+      "power.draw": {
+       "mean": 185.76197674418606,
+       "median": 186.65
+      },
+      "clocks.sm": {
+       "mean": 1749.4856887298747,
+       "median": 1800.0
+      },
+      "clocks.mem": {
+       "mean": 7588.308139534884,
+       "median": 7601.0
+      },
+      "utilization.gpu": {
+       "mean": 67.17173524150269,
+       "median": 70.0
+      },
+      "memory.used": {
+       "mean": 14252.90518783542,
+       "median": 14506.0
+      },
+      "temperature.gpu": {
+       "mean": 75.85152057245081,
+       "median": 76.0
+      }
+     }
+    }
+   },
+   "foreign_gpu_use": []
+  },
+  "seed123": {
+   "mAP": 0.729553335344446,
+   "AP_signature": 0.8230418750175458,
+   "AP_negative": 0.6708457526597242,
+   "AP50": 0.8550056511446928,
+   "AP75": 0.78153276743207,
+   "train_mAP": 0.8455380572992535,
+   "lr_drop_epoch": 8,
+   "stop_epoch": 17,
+   "checkpoint_epoch": 13,
+   "epochs_completed": 18,
+   "epoch_numbering": "0 起点（convergence.json）",
+   "val_ap_per_epoch": [
+    0.6001686453819275,
+    0.6853081583976746,
+    0.7034317851066589,
+    0.6880433559417725,
+    0.7147347331047058,
+    0.6947144865989685,
+    0.6986075043678284,
+    0.7019366025924683,
+    0.7093067765235901,
+    0.72562575340271,
+    0.7274409532546997,
+    0.7273561954498291,
+    0.7243935465812683,
+    0.7295460104942322,
+    0.7225130200386047,
+    0.7223281860351562,
+    0.7236297130584717,
+    0.7186539769172668
+   ],
+   "cap_reached": false,
+   "coco_loaded": {
+    "value": true,
+    "source": "initialization_rank0.json の matched",
+    "detail": {
+     "source": "/home/ubuntu/slocal2/m2/data/external/weights/relation_detr_resnet50_800_1333_coco_1x.pth",
+     "matching_tensors": 596,
+     "source_sha256": "2d2c19a7a49e7d77dfb1253bdeba8414785af9f0786fb51651b4a25325c6e8ff",
+     "matched": true
+    }
+   },
+   "timing": {
+    "wall_s": 24408.662388188764,
+    "train_s_per_epoch": {
+     "per_epoch": [
+      1165.9494035113603,
+      1191.9710819423199,
+      1208.6812589094043,
+      1213.1681554457173,
+      1217.5818916019052,
+      1224.403061453253,
+      1228.4027698384598,
+      1234.9416344137862,
+      1240.4884216981009,
+      1245.2343969745561,
+      1243.6863039145246,
+      1244.2377122910693,
+      1245.630074785091,
+      1246.4706427138299,
+      1249.3775670137256,
+      1249.0898569226265,
+      1245.4610280320048,
+      1249.8250966891646
+     ],
+     "median": 1242.0873628063127,
+     "definition": "rank0 の epoch の始めから終わりまで（val は epoch の外）"
+    },
+    "s_per_step_median": {
+     "optimizer_step": 0.5078206495381892,
+     "definition": "rank0、勾配のクリップの記録（一歩に一度）の時刻の差、最初の 50 歩を除く、epoch をまたぐ差は除く"
+    },
+    "eval_s": {
+     "between_epochs": [
+      75.31807034648955,
+      80.22666052170098,
+      85.58507801499218,
+      85.09915826935321,
+      88.43531036470085,
+      87.46161468885839,
+      88.95535398088396,
+      88.80767801404,
+      90.17295897845179,
+      90.3002250501886,
+      89.8113441998139,
+      89.09980724286288,
+      89.80218214355409,
+      90.82976758852601,
+      88.67680067755282,
+      88.23977852240205,
+      89.17593041621149
+     ],
+     "between_epochs_median": 88.80767801404,
+     "between_epochs_definition": "epoch の終わりから次の始めまで（学習中の val と checkpoint の保存を含む）",
+     "final_val_s": 88.99196118023247,
+     "final_train_s": 546.5120194135234
+    },
+    "train_s": 23770.7522101691
+   },
+   "gpu": {
+    "window": "学習のプロセスの起動から終わりまで",
+    "n_samples": 2357,
+    "per_gpu": {
+     "0": {
+      "power.draw": {
+       "mean": 205.6050487908358,
+       "median": 206.43
+      },
+      "clocks.sm": {
+       "mean": 1660.2333474756047,
+       "median": 1695.0
+      },
+      "clocks.mem": {
+       "mean": 7591.840899448452,
+       "median": 7601.0
+      },
+      "utilization.gpu": {
+       "mean": 66.52991090369113,
+       "median": 68.0
+      },
+      "memory.used": {
+       "mean": 14249.34111158252,
+       "median": 14261.0
+      },
+      "temperature.gpu": {
+       "mean": 78.24862112855324,
+       "median": 78.0
+      }
+     },
+     "1": {
+      "power.draw": {
+       "mean": 185.5319558761137,
+       "median": 186.25
+      },
+      "clocks.sm": {
+       "mean": 1753.3771743742045,
+       "median": 1815.0
+      },
+      "clocks.mem": {
+       "mean": 7591.840899448452,
+       "median": 7601.0
+      },
+      "utilization.gpu": {
+       "mean": 67.90920661858294,
+       "median": 72.0
+      },
+      "memory.used": {
+       "mean": 14039.748833262622,
+       "median": 14100.0
+      },
+      "temperature.gpu": {
+       "mean": 75.83114128128977,
+       "median": 76.0
+      }
+     }
+    }
+   },
+   "foreign_gpu_use": []
+  }
+ }
+}

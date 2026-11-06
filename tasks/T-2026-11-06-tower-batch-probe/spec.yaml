@@ -1,0 +1,66 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-11-06-tower-batch-probe"
+  kind: analysis
+  title: "両塔の batch の実測（andrew）。検出塔は GPU ごとの batch 2・4・6・8、工程塔は GPU ごとの物理 batch 8・12・16（二枚の道）と 16・24・32（一枚の道）で、数十歩の記憶の最大確保と一歩の時間を測り、1 epoch の見込み時間を出す。学習はしない。塔の選び直しに batch の軸を足すための材料"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-11-05T16:30:00Z"
+  created_from:
+    runindex_commit: "68befc3b62ffc071077cca446df5d3c83b8c38b9"
+    counts: {index: 2363, experiments: 1130, verdicts: 1736}
+  depends_on: [T-2026-10-22-tower-reselect-search-dlsta, T-2026-10-21-ptower-multigpu-syncbn, T-2026-10-19-dlsta-tower-feasibility]
+  amendments: []
+intent:
+  question: "andrew の RTX A6000 で、検出塔と工程塔の学習は GPU ごとの batch をどこまで上げられ、batch ごとに一歩の時間と 1 epoch の見込み時間はどうなるか。測るだけで、設定の採否は決めない"
+  decision_at_stake: "両塔の学び直しの選定（上位 3 件の回し直し）に batch の軸を足すかどうかと、足す場合の候補の値（利用者が決める）"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery の折り A の train の動画（conventions#folds）の術具注釈のあるフレーム（検出塔）と工程注釈の全フレーム（工程塔）。数十歩だけ読む。折り A の test の動画のフレームは読まない"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/run_tower_search.py", "scripts/run_stage1_dtower.sh", "scripts/stage1_ptower_r3.py", "configs/detector_relation_detr/train_search.py", "configs/stage1_ptower_r3.yaml"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#env_p0, conventions#folds]
+  conventions_rev: "2d946b07a57abebc4a8f66150d6dbaf2ccd22186"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/analysis/tower_batch_probe", "runindex/"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。分岐、andrew の他プロセス、記憶領域、試験の失敗の名前、仮想環境の要約値、装置と電力の上限", gpu: false, est: "1h"}
+    - {id: B, name: "検出塔の batch の計測（4 水準、2 枚）", gpu: true, est: "2h"}
+    - {id: C, name: "工程塔の batch の計測（二枚の道 3 水準、一枚の道 3 水準）", gpu: true, est: "2h"}
+    - {id: D, name: "集計、検証、報告", gpu: false, est: "1h"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、本契約以外の compute プロセスが無く、記憶領域と失敗の名前と仮想環境の要約値と電力の上限を記録した", on_fail: stop}
+    - {id: G2, after: B, check: "検出塔の各水準で、収まったか溢れたか、記憶の最大確保、一歩の時間が記録され、batch の値が記録の読み込み枚数から確かめられた", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, gpu_free]
+  resources: {server: andrew, gpu: 2, est_hours: 6}
+outputs:
+  must_have: [REPORT.md, RESULT.md, result.yaml, audit.md]
+  destination: "experiments/analysis/tower_batch_probe/"
+  acceptance:
+    - "a: 開始状態として、分岐、起点、開始前から在る未追跡、andrew の compute プロセスの一覧、記憶領域の空き、試験の失敗の名前、既存の仮想環境のパッケージの一覧の要約値、GPU ごとの電力の上限と装置の型と driver が記録されている"
+    - "b: 検出塔の GPU ごとの batch 2・4・6・8（2 枚、fp16、学習設定は探索の 0 番）で、各水準の収まったか溢れたか、GPU ごとの torch の最大確保と予約、nvidia-smi の最大、定常の一歩の時間（最初の歩を除く平均と標準偏差）、1 epoch の歩数と見込み時間が表にある。各水準で実際に読み込んだ枚数が batch の値と一致することが記録から示されている"
+    - "c: 工程塔の二枚の道（GPU ごとの物理 batch 8・12・16、SyncBatchNorm、fp32）と一枚の道（物理 batch 16・24・32）で、同じ項目が表にある。溢れた水準は溢れた歩と記憶を記録する"
+    - "d: 各水準は同じコードと同じデータの並びで測られ、学習の重みは保存されず、既存の run・checkpoint・凍結源・既存の仮想環境・third_party を変えていない。試験の失敗が増えていない。forbidden-check の違反のうち本契約の経路のものが 0 件"
+    - "e: test の動画のフレームを一度も読んでいないことが、読んだ動画の集合で示されている"
+    - "f: 記述が SPEC の読み方の規則に沿い、設定の採否や推奨を書いていない"
+    - "g: PR が Draft でなく存在し、base が phase0、分岐が feat/tower-batch-probe"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "andrew に本契約以外の compute プロセスがある場合（止めずに利用者に諮る）"
+    - "batch を変える口が、既存スクリプトの既定の挙動か third_party を変えないと作れない場合"
+    - "計測の写しが repo の外に置けない場合"
+    - "記憶領域が足りない場合"
+    - "実行基盤が書き込み、移動、削除を拒む場合"

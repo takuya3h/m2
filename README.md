@@ -1759,6 +1759,27 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
 - 管理と検査の台本は `tasks/T-2026-11-02-hostdiff-andrew/`（`run_hostdiff.py`、`tools/` の観測器・照合・集計・検査）。checkpoint・特徴・ログは版管理の外 `~/m2-scratch/T-2026-11-02-hostdiff-andrew/`
 - 結果（2026-11-03）: 工程塔の J_mean は seed 42 0.5903・seed 123 0.6189、検出塔の val mAP は 42a 0.7157・42b 0.7286・seed 123 0.7242。5 本とも収束規則で停止（上限 36 に未到達）、本契約以外の GPU の使用 0。G1・G2 pass。PR #286
 
+### 両塔の batch の実測（2026-11-06、andrew）
+
+契約 `T-2026-11-06-tower-batch-probe`（analysis）。**学習ではなく計測**（各水準 61 歩で止め、重みは保存しない。val・評価なし）。
+結果は `experiments/analysis/tower_batch_probe/{REPORT.md,levels.json}`、記録は `tasks/T-2026-11-06-tower-batch-probe/`。設定の採否は書かない（利用者が決める）。
+
+- 検出塔は探索の 0 番の学習設定（2 枚、fp16）で GPU ごとの batch 2・4・6・8、工程塔は二枚の道（SyncBatchNorm、fp32）で GPU ごと 8・12・16、一枚の道で 16・24・32 を測った
+- 道具は `experiments/analysis/tower_batch_probe/tools/`（実行器 `run_level.py`、観測器 `observer.py` を `TOWER_SEARCH_OBSERVER` で読ませる、集計 `summarize.py`・`make_tables.py`、プロセスの列挙 `procs.py`、要約値 `digests.py`）。**既存のスクリプトと設定は変えていない。** 検出塔の batch は `train_search.py` の写し（`batch_size` の 1 行だけを環境変数にしたもの）を repo の外に置いて渡した
+- 結果（RTX A6000 × 2、300 W）: 検出塔は 2・4・6 が収まり、8 は歩 38 で OOM。工程塔は二枚の道 8・12・16 と一枚の道 16・24 が収まり、一枚の道 32 は歩 1 で OOM。
+  1 epoch の見込み（歩数 × 一歩の平均。val を含まない）は検出塔 941.5・802.4・783.5 s、工程塔の二枚の道 391.2・380.0・377.6 s、一枚の道 718.2・718.9 s
+- 生の記録は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-tower-batch-probe/`
+
+### 検出塔の一歩の内訳の計測（2026-11-06、andrew）
+
+契約 `T-2026-11-06-dtower-step-profile`（analysis）。**学習ではなく計測**（各水準 81 回の順伝播の入りで止め、重みは保存しない。val・評価なし）。
+結果は `experiments/analysis/dtower_step_profile/{REPORT.md,levels.json,tables.md,derived.json,steps/}`、記録は `tasks/T-2026-11-06-dtower-step-profile/`。設定の採否は書かない（利用者が決める）。
+
+- 検出塔の探索の 0 番の学習設定（fp16）で、SPEC §2.1 の 8 水準（GPU ごとの batch 2・4、プロセス数 2・1、worker 数 4・8・16、読み込み有り・無し）について、一歩を読み込みの待ち・順伝播・損失と対応づけ・逆伝播・最適化器・残りに分けて測った（各境界で `torch.cuda.synchronize()`、歩 21〜80 の 60 歩）
+- 道具は `experiments/analysis/dtower_step_profile/tools/`（実行器 `run_level.py`、観測器 `observer.py` を `TOWER_SEARCH_OBSERVER` で読ませる、集計 `summarize.py`・`derive.py`、`procs.py`・`digests.py` は PR 290 の写し）。**既存のスクリプト・設定・third_party は変えていない。** batch と worker 数は `train_search.py` の写し（2 行だけを環境変数にしたもの）を repo の外に置いて渡した
+- 結果（RTX A6000 × 2、300 W）: batch 2 × 2 プロセスの一歩 0.3905 s のうち、読み込みの待ち 0.0010 s、順伝播 0.139 s、損失と対応づけ 0.043 s、逆伝播 0.191 s、最適化器 0.011 s、残り 0.006 s。歩の区間だけの GPU 使用率は 77〜92 %（使用率 0 の標本 0 個）。worker 数 4・8・16 の一歩は 0.3905・0.3938・0.3920 s
+- 生の記録は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-step-profile/`
+
 ### 把持塔 G の作り直し（2026-11-06、bengio）
 
 契約 `T-2026-11-05-grasp-tower-rebuild`（analysis。**非公式の測定。関門の判定と設計の判断に使わない**）。**二本目 `T-2026-11-01-grasp-pilot-g` の G を置き換える**

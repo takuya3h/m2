@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（733 件）
+## 未処理（748 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -748,8 +748,23 @@
 - [ ] 2026-11-03 [cc] プリフライト P2 は本体 .venv で Relation-DETR の拡張を import し、共有の torch_extensions の置き場で MS-Deform-Attn の .so を作り直す。検出塔の .venv-relation-detr で回すか、読むだけの検査に替えるかを検討する（tools/preflight_task.py:217、audit.md 0.3）
 - [ ] 2026-11-03 [cc] 検出塔 seed 42 の二回（42a・42b）は同じ設定でも値と停止の epoch（21 と 16）が違った。原因（fp16・MS-Deform-Attn の加算の順など）は確かめていない。後の比べ（SPEC §6.2）で同じ seed の揺れの扱いを決めるときの材料（experiments/analysis/hostdiff_andrew_bengio/andrew/REPORT.md §2）
 - [ ] 2026-11-03 [cc] repo 直下に空の run_ptower_search.log（11-02 22:45 JST）が残る。本契約の置き場の外なので commit も削除もしていない。消すかは利用者の判断（~/slocal2/m2/run_ptower_search.log）
+- [ ] 2026-11-04 [cc] test_stage1_ptower_heads の要約値の試験 4 件が bengio で落ちる（CPU の float 出力のバイトを比べる）。ホストに依らない比べ方にするかを決める（RESULT.md §7）
+- [ ] 2026-11-06 [cc] 利用者の指示で契約を中止した（00:55「バッチサイズについて検討するので停止して」、01:05「契約も停止して良い」）。G の 3 本は epoch 1（確定 0.5747・H1 0.5179・H2 0.5666）まで。途中の出力は $S/aborted/try1/。batch を変えて回し直すなら新しい契約で起票する（tasks/T-2026-11-05-grasp-tower-rebuild/RESULT.md §1）
+- [ ] 2026-11-06 [cc] 欠落の印の付いたフレーム（train 301・val 1）は把持関係の注釈ファイルに含まれず、学ぶフレームに最初から入らない。次の契約の §3.1 はこの前提で書く（RESULT.md §4）
+- [ ] 2026-11-06 [cc] 退避した run_ptower_search.log（0 B）は ~/m2-evacuated/T-2026-11-05-grasp-tower-rebuild/。戻すかを利用者に確かめる
+- [ ] 2026-11-06 [cc] bengio 版: 利用者の決定で andrew の分岐と PR #289 を使い続け、実験は bengio で一からやり直す。台帳の改訂版（Task B0）を「読み直し」の指示で取り込んだ（eb4c4925）
+- [ ] 2026-11-06 [cc] Task B0 の回答: GPU ごとの batch 8、bf16（変形注意だけ fp32。mmcv 2.1.0 に bf16 の実装が無く、利用者の決定で入力が bf16 のときだけ fp32 で計算）、学習率 1e-4 のまま。GPU 0 に確定、GPU 1 に H1 の後 H2。二本目との差は batch と精度の重なりとして書く（experiments/analysis/grasp_tower_rebuild/batch_probe.md）
+- [ ] 2026-11-06 [cc] 検出塔の GPU 使用率は、歩の区間だけで平均すると 77〜92 %（使用率 0 の標本 0 個）。PR 290 の 43〜69 % は起動と止めの間を含む窓での平均だった。使用率を比べるときは平均の窓を揃えること（experiments/analysis/dtower_step_profile/REPORT.md §5.3）
+- [ ] 2026-11-06 [cc] 検出塔の一歩の読み込みの待ちは 0.001〜0.005 s。worker 数 4・8・16 で一歩は 0.3905・0.3938・0.3920 s（sd 0.021〜0.032 s）。batch と読み込み・プロセス数の設定の採否は利用者が決める（T-2026-11-06-dtower-step-profile）
+- [ ] 2026-11-06 [cc] 読み込み無しの水準の一歩が短い理由（入力の大きさか、読み込みか）は分けていない。入力の tensor の形を記録していないため（T-2026-11-06-dtower-step-profile）
+- [ ] 2026-11-06 [cc] 手順 0 で退避した空の run_ptower_search.log（PR 290 の工程塔の起動で Hydra が作ったもの）が ~/m2-evacuated/T-2026-11-06-dtower-step-profile/ に在る。戻すか消すかは利用者の判断
+- [ ] 2026-11-06 [cc] 版管理の外の生の記録 /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-step-profile/（重みなし）を残した。片付けは利用者の判断
+- [ ] 2026-11-06 [cc] 工程塔の 1 epoch の歩数は manifest で変わる（旧 phase_manifest 604 歩、探索の phase_manifest_all_phase 662 歩。GPU ごと 8 × 2 枚）。塔の選び直しの所要は使う manifest の歩数で見込むこと（experiments/analysis/tower_batch_probe/REPORT.md §3）
+- [ ] 2026-11-06 [cc] 検出塔の train_search.py には batch を点ごとに渡す口が無い。batch の軸を足すなら、口を足すか写しを使うかを決める（T-2026-11-06-tower-batch-probe）
+- [ ] 2026-11-06 [cc] 版管理の外の生の記録 /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-tower-batch-probe/（重みなし）を残した。片付けは利用者の判断（T-2026-11-06-tower-batch-probe）
+- [ ] 2026-11-06 [cc] 工程塔の起動で Hydra が repo 直下に空の run_ptower_search.log を作る（hydra.run.dir が .）。本契約の分も残してある。消すか、無視の一覧に足すかは利用者の判断（T-2026-11-06-tower-batch-probe）
 
-## 処理済み（17 件）
+## 処理済み（21 件）
 
 - [x] 2026-08-15 [cx] 再実行で証跡5件がバイト一致することを確認し、台帳へ送信して要約値の一致も読み戻しで照合した。commit 2件のみ手動で作り、push と Draft PR 作成は常駐処理の自動処理に委ねる判断をした（T-2026-08-11-grasp-linear-probe）
 - [x] 2026-11-01 [cc] 案 D の q(b) は presets.detr の左右反転のとき左手と右手を入れ替える（両手・なしはそのまま）。SPEC に記載が無く、利用者が決めた（tasks/T-2026-11-01-grasp-pilot-d/audit.md C-1）
@@ -767,5 +782,9 @@
 - [x] 2026-11-02 [cc] ~/.ssh の sha256（秘密鍵を読む）は、利用者の方針に従い事前に確かめ、「取る」の回答で取った。名前・バイト数・sha256 だけを記録した（tasks/T-2026-11-02-bengio-andrew-env-survey/audit.md A-5）
 - [x] 2026-11-02 [cc] 本契約の置き場に .py で置いた andrew の写し 8 件が Syncthing で andrew に渡った。利用者の決定で .py.txt に改名し、同期が andrew の 8 件を消した（audit.md G-2・G-2b）
 - [x] 2026-11-02 [cc] プリフライト P2 の FAIL（本体 .venv に fvcore が無い）は、利用者の「2」で構造的な FAIL として承認して続けた（tasks/T-2026-11-02-hostdiff-andrew/audit.md 0.1）
+- [x] 2026-11-02 [cc] #284 が OPEN だったため利用者が統合し、分岐を早送りで 8aefdce3 へ合わせた（tasks/T-2026-11-02-hostdiff-bengio/audit.md「0. 始める」）
+- [x] 2026-11-02 [cc] プリフライト P2 cuda_ext_loaded の FAIL（.venv に fvcore が無い）は記録して続けた。利用者が決めた（audit.md「0. 始める」）
+- [x] 2026-11-02 [cc] 「一度に走らせる学習は一本」と手本の並行の手順は、手本どおり並行にした（塔の run を同時に 2 本走らせない）。利用者が決めた（audit.md Task A）
 - [x] 2026-11-03 [cc] 利用者の指示で、測定の途中に終わった run の記録を commit・push した。PR はそのとき作らず、全 run の後に #286 を作った（audit.md C・D）
+- [x] 2026-11-03 [cc] PR の前に origin/phase0（#286 の統合後）を取り込み、scripts/ の 3 ファイルは phase0 の版を採った。bengio の run が使った版は 22ce24b2。利用者が決めた（audit.md「phase0 の取り込み」）
 
