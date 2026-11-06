@@ -33,6 +33,9 @@
                          g_pred_noCF_{part}.npz・g_pred_CF_{part}.npz・g_shuffle_{part}.npz（frame_ids、x (N, 14)、flag）
 GA は epoch ごとの界面の重みの絶対値の最大と L2 ノルムを logs/history.json に書く。
 
+契約 T-2026-11-06-grasp-pilot-arms（SPEC §3.1）で足した引数。渡さなければ従来の経路（旗あり 30 次元）のまま:
+    --grasp-no-flag   GA の x(t) を旗なしの 28 次元［予測の 14｜正解の 14］にする（train と identity）。信号のファイルの flag は読まない
+
 契約 T-2026-11-01-stage2-w23-bengio（SPEC §3.1）で足した学習範囲。渡さなければ（既定 W1）従来の経路のまま:
     --scope W2   界面 ＋ 時間ヘッドの最後の段（refine_stages の最後の要素の全体）を学ぶ（train と identity）
     --scope W3   界面 ＋ 時間ヘッドの全体を学ぶ
@@ -81,6 +84,7 @@ TYPES = {
 G30_HALF = 14 + 1                                          # g の 14 と旗。予測の半分が先、正解の半分が後
 GRASP_DIR = None                                           # --grasp-signal-dir（GA のときだけ）
 GRASP_PRED_DIR = None                                      # --grasp-pred-dir（GA の予測の腕のときだけ）
+GRASP_NO_FLAG = False                                      # --grasp-no-flag（GA を旗なしの 28 次元にする）
 X32_HALF = NT + 1                                          # 15 と旗。予測の半分が先、正解の半分が後
 ARMS = ("empty", "pred_noCF", "gt", "pred_CF", "gtpred_CF", "shuffle")
 # 止め方の規則（DP・W1）。最初の腕を回す前に固定する
@@ -144,8 +148,10 @@ class Signals:
         self.srcs = sources(type_name, arm, part, variant)
         self.loaded = [(load_npz(p), is_gt) for p, is_gt in self.srcs]
         if self.kind == "g30":
-            self.flags = [_load_flag(p) for p, _ in self.srcs]
-            self.dim = 2 * G30_HALF
+            self.no_flag = GRASP_NO_FLAG
+            self.half = 14 if self.no_flag else G30_HALF
+            self.flags = [None] * len(self.srcs) if self.no_flag else [_load_flag(p) for p, _ in self.srcs]
+            self.dim = 2 * self.half
             self.pred_dim = None
             return
         pred_path = FINAL / f"{inst_name(pred, variant)}_{part}.npz"
@@ -162,11 +168,13 @@ class Signals:
         return [{"path": str(p), "sha256": C.sha256(p), "gt": g} for p, g in self.srcs]
 
     def layout_g30(self):
-        """x(t) の 30 次元の各半分の出所（GA だけ）。旗は信号のファイルの flag。"""
-        halves = {"pred": {"cols": [0, G30_HALF], "source": None, "flag": "0"},
-                  "gt": {"cols": [G30_HALF, 2 * G30_HALF], "source": None, "flag": "0"}}
+        """x(t) の 30 次元（旗なしは 28 次元）の各半分の出所（GA だけ）。旗は信号のファイルの flag。"""
+        h, flag0 = self.half, ("none (no flag column)" if self.no_flag else "0")
+        halves = {"pred": {"cols": [0, h], "source": None, "flag": flag0},
+                  "gt": {"cols": [h, 2 * h], "source": None, "flag": flag0}}
         for p, is_gt in self.srcs:
-            halves["gt" if is_gt else "pred"].update(source=str(p), flag="file flag (annotated frame = 1)")
+            halves["gt" if is_gt else "pred"].update(
+                source=str(p), flag=flag0 if self.no_flag else "file flag (annotated frame = 1)")
         return halves
 
     def layout(self):
@@ -181,10 +189,11 @@ class Signals:
         if self.kind == "g30":
             out = np.zeros((len(frames), self.dim), np.float32)
             for ((ix, x, _), is_gt), flag in zip(self.loaded, self.flags):
-                off = G30_HALF if is_gt else 0
+                off = self.half if is_gt else 0
                 rows = [ix[f] for f in frames]
                 out[:, off:off + 14] = x[rows]
-                out[:, off + 14] = flag[rows]
+                if flag is not None:
+                    out[:, off + 14] = flag[rows]
             return torch.from_numpy(out), None
         if self.kind == "x32":
             out = np.zeros((len(frames), self.dim), np.float32)
@@ -417,6 +426,8 @@ def cmd_train(a):
     if sig_tr.kind == "g30":
         cfg.update(x_layout={"train": sig_tr.layout_g30(), "val": sig_va.layout_g30()}, trainable=trainable_report(model),
                    grasp_signal_dir=str(GRASP_DIR), grasp_pred_dir=str(GRASP_PRED_DIR))
+        if GRASP_NO_FLAG:
+            cfg.update(grasp_no_flag=True)
     if sig_tr.kind == "x32":
         cfg.update(x_layout={"train": sig_tr.layout(), "val": sig_va.layout()}, trainable=trainable_report(model))
     if a.scope != "W1":
@@ -427,7 +438,7 @@ def cmd_train(a):
                                    + "), eval (dropout off)")
         if not sc["equal"]:
             raise SystemExit(f"学ぶ集合が定義と一致しない: {a.scope}")
-    desc =f"{a.type}_{a.arm}" + (f"_ep{fixed}" if fixed else "") + ("_smoke" if a.max_epochs or a.smoke else "")
+    desc =f"{a.type}{'-noflag' if GRASP_NO_FLAG else ''}_{a.arm}" + (f"_ep{fixed}" if fixed else "") + ("_smoke" if a.max_epochs or a.smoke else "")
     manager = ExperimentManager(C.ROOT / "experiments", "phase1", a.exp_prefix, desc, a.seed)
     manager.setup(cfg)
     run = tracking.init(manager.exp_id, config=cfg, group=a.task_id, job_type=a.exp_prefix, exp_dir=manager.exp_dir)
@@ -521,7 +532,8 @@ def cmd_train(a):
         f"受け取り手は確定塔の時間ヘッド（eval、dropout なし）。界面と時間ヘッドの"
         f"{'最後の段' if a.scope == 'W2' else '全体'}を学ぶ（{a.scope}、受け取り手の学習率 {RECEIVER['lr']}）。")
     (manager.exp_dir / "notes.md").write_text(
-        f"# 非公式（{a.task_id}） DP {a.type} {a.arm} seed {a.seed}{'' if a.scope == 'W1' else ' ' + a.scope}\n\n"
+        f"# 非公式（{a.task_id}） DP {a.type}{'（旗なし 28 次元）' if GRASP_NO_FLAG else ''} {a.arm} seed {a.seed}"
+        f"{'' if a.scope == 'W1' else ' ' + a.scope}\n\n"
         f"{scope_text}{how}test は通していない。\n"
         f"{'result' if fixed else 'best'} epoch {best['epoch']} / val macro Jaccard {best['phase_jaccard']} / "
         f"accuracy {best['phase_accuracy']}\n"
@@ -582,6 +594,7 @@ def main():
     i.add_argument("--grasp-pred-dir", default=None, help="GA の予測の g の置き場")
     i.add_argument("--arms", nargs="+", choices=ARMS, default=None, help="調べる腕を並べる（--arm より優先）")
     i.add_argument("--scope", choices=SCOPES, default="W1", help="学習範囲（学ぶ集合を記録する。出力は変えない）")
+    i.add_argument("--grasp-no-flag", action="store_true", help="GA を旗なしの 28 次元にする（既定は旗あり 30 次元）")
     s = sub.add_parser("scopes")
     s.add_argument("--types", nargs="+", choices=list(TYPES), default=None)
     s.add_argument("--scopes", nargs="+", choices=SCOPES, default=list(SCOPES))
@@ -602,10 +615,14 @@ def main():
     t.add_argument("--grasp-pred-dir", default=None, help="GA の予測の g の置き場")
     t.add_argument("--scope", choices=SCOPES, default="W1",
                    help="学習範囲。W2 = 界面 ＋ 時間ヘッドの最後の段、W3 = 界面 ＋ 時間ヘッドの全体（既定 W1 = 界面だけ）")
+    t.add_argument("--grasp-no-flag", action="store_true", help="GA を旗なしの 28 次元にする（既定は旗あり 30 次元）")
     a = ap.parse_args()
-    global GRASP_DIR, GRASP_PRED_DIR
+    global GRASP_DIR, GRASP_PRED_DIR, GRASP_NO_FLAG
     GRASP_DIR = getattr(a, "grasp_signal_dir", None)
     GRASP_PRED_DIR = getattr(a, "grasp_pred_dir", None)
+    GRASP_NO_FLAG = bool(getattr(a, "grasp_no_flag", False))
+    if GRASP_NO_FLAG and TYPES[a.type][1] != "g30":
+        raise SystemExit("--grasp-no-flag は GA だけに使う")
     if a.cmd == "train" and a.scope != "W1" and not a.fixed_epochs:
         raise SystemExit("--scope W2・W3 は --fixed-epochs と組で使う")
     if a.cmd == "train" and a.fixed_epochs and a.max_epochs:
