@@ -14,6 +14,9 @@ meta:
     - date: "2026-11-06"
       reason: "利用者の追加の指示で Task B0 に bf16 を足した。mmcv 2.1.0 の変形注意（ms_deform_attn_forward_cuda）が bf16 の実装を持たず全水準が 1 ステップ目で止まったため、利用者の決定（選択肢 1）で、変形注意の入力が bf16 のときだけ fp32 に変換して計算し出力を bf16 に戻す。ほかは bf16 のまま。仮想環境と third_party は変えない"
       diff: "§3.0 の水準に batch 2・4・6・8・12・16 × bf16（変形注意だけ fp32、scripts/grasppilot/g5_train.py の patch_msda_bf16）の 6 水準を足し、fp32・fp16 と同じ量を測って表に「bf16（変形注意だけ fp32）」と明記し、再び止まって諮る。Task C で bf16 を選んだ場合は学習でも同じ形をそのまま使う"
+    - date: "2026-11-06"
+      reason: "SPEC §4 は run の置き場を experiments/phase1/grasptower_ で始まる名前とするが、allow_write に含まれず、forbidden-check が本契約の run の記録 27 件を違反とした（契約の内部の矛盾）。利用者の決定（選択肢 1）で allow_write に run の置き場を足し、run の記録を版管理に残す（二本目・三本目と同じ形）"
+      diff: "contract.allow_write に experiments/phase1/grasptower を足した"
 intent:
   question: "把持関係 5 クラスだけを学び左右反転でラベルを入れ替える G は、折り A の val で 5 クラスの mask mAP をどこまで出すか。その G から作った案 A の信号・案 B の把持のマスク・案 D の標的は、一本目の正解とどれだけ合うか。非公式の測定であり、関門の判定にも設計の判断（案の採否を含む）にも使わない"
   decision_at_stake: "二本目の G の設計の誤りで無効になった腕（案 A・B の予測の腕、案 C・D の教師の腕）を回し直すための信号を作る。案の採否は結果で決めない"
@@ -31,7 +34,7 @@ contract:
   conventions_rev: "2d946b07a57abebc4a8f66150d6dbaf2ccd22186"
   prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
   verbatim_forbidden: true
-  allow_write: ["experiments/analysis/grasp_tower_rebuild", "runindex/"]
+  allow_write: ["experiments/analysis/grasp_tower_rebuild", "experiments/phase1/grasptower", "runindex/"]
 plan:
   phases:
     - {id: A, name: "開始状態。分岐、前提の統合、bengio の他プロセス、記憶領域、試験の失敗の名前、仮想環境の要約値、電力の上限", gpu: false, est: "1h"}

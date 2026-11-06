@@ -1758,3 +1758,19 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
 - `scripts/` の変更（未設定のときの挙動は変えない）: `tower_search_common.py` の識別子を `TOWER_SEARCH_TASK` で上書きでき、`TOWER_SEARCH_OBSERVER` の観測器を読み込む。`run_ptower_search.py` の公開先を `TOWER_SEARCH_PHASE_PUBLISH` で上書きできる。`train_relation_detr_search.py` の W&B に書く seed を `TOWER_SEARCH_SEED` で上書きできる。試験 `tests/test_tower_search_overrides.py`（8 件）
 - 管理と検査の台本は `tasks/T-2026-11-02-hostdiff-andrew/`（`run_hostdiff.py`、`tools/` の観測器・照合・集計・検査）。checkpoint・特徴・ログは版管理の外 `~/m2-scratch/T-2026-11-02-hostdiff-andrew/`
 - 結果（2026-11-03）: 工程塔の J_mean は seed 42 0.5903・seed 123 0.6189、検出塔の val mAP は 42a 0.7157・42b 0.7286・seed 123 0.7242。5 本とも収束規則で停止（上限 36 に未到達）、本契約以外の GPU の使用 0。G1・G2 pass。PR #286
+
+### 把持塔 G の作り直し（2026-11-06、bengio）
+
+契約 `T-2026-11-05-grasp-tower-rebuild`（analysis。**非公式の測定。関門の判定と設計の判断に使わない**）。**二本目 `T-2026-11-01-grasp-pilot-g` の G を置き換える**
+（二本目の G は 38 クラスを一つの頭で分類し、左右反転でラベルを入れ替えなかった）。andrew 版は利用者の指示で中止し、bengio で一からやり直した（PR #289）。
+結果は `experiments/analysis/grasp_tower_rebuild/REPORT.md`、batch と精度の計測は `batch_probe.md`、**腕の契約が写す信号と標的の目録は `signals_manifest.json`**、記録は `tasks/T-2026-11-05-grasp-tower-rebuild/`。
+
+- 新しいスクリプト（二本目・三本目の既存スクリプトの既定の挙動は変えていない）: `scripts/grasppilot/g5_build.py`（把持関係 5 クラスの注釈）、`g5_train.py`
+  （5 クラスの頭、反転で 1↔2・3↔4 を入れ替える `G5Flip`、学習の中の打ち切り、`--batch`・`--amp none|bf16`）、`g5_flip_test.py`、`g5_signals.py`（infer・merge・assemble・flipcheck・evalval）、
+  `g5_batch_probe.py`（batch と数値精度の計測）
+- **bf16（変形注意だけ fp32）**: mmcv 2.1.0 の `ms_deform_attn_forward_cuda` に bf16 の実装が無いので、`g5_train.patch_msda_bf16` が入力が bf16 のときだけ fp32 で計算する（仮想環境と third_party は変えない）
+- 大きな生成物（5 クラスの注釈、G の重み、信号、標的、計測の記録）は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/`
+- 結果（非公式。1 折り・val 2 動画・seed 1 つ）: G を GPU ごとの batch 8・bf16（変形注意だけ fp32）・学習率 1e-4 で学んだ（利用者の決定）。
+  val の 5 クラスの mask mAP は確定 0.6460（epoch 3）・H1 0.5939・H2 0.5814（学習前 0.0060）。反転の整合（入れ替えて比べる soft IoU）0.693、入れ替えない対照 0.118（二本目の G は 0.134・0.787）。
+  **二本目（batch 2・fp32）との差は、頭のクラス数・反転のラベル・学ぶフレーム・batch と精度が重なったもの**で、どれか一つの効果とは読まない。
+  案 D の q は約半数の枠で行の和が 1 を超え、和で割って正規化した。案 C の t は作っていない。G1・G2・G2b・G3 pass
