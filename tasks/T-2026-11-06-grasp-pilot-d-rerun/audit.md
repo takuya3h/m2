@@ -191,3 +191,67 @@
 - 契約の停止条件（Task A-3・§9）に当たるため GPU の作業を止めて利用者に諮った。選択肢は「観測しながら続行／終わるまで待つ／中止」。
   **利用者の決定: 外部の使用が終わるまで待つ**（回答は 01:2x JST）。両 GPU が 100 MiB 以下を 3 分間続けて保つのを見張る（`$S/logs/gpu_wait.csv`、01:28 JST から）。
   01:28〜01:30 JST の観測: GPU0 8,247 MiB・利用率 100 %・220 W、GPU1 7,208〜8,004 MiB・100 %・218 W（本格的な学習とみられる。終わる時刻は UNKNOWN）
+
+## 外部の使用の終了と Task C の開始（2026-11-07 03:55 JST）
+
+- 待機の見張り（`$S/logs/gpu_wait.csv`）は、外部の学習（02:28 JST ごろから両 GPU が約 25 GiB・利用率 100 %）が終わった後、**03:51:57 JST が最後の外部の観測**で、
+  03:55 JST に「両 GPU が 100 MiB 以下（39・37 MiB）を 3 分間維持」の基準を満たした（`$S/logs/external_gpu_clear.txt`）。compute 一覧は 0 件、利用率 0 %
+- 学習中の見張り `experiments/analysis/grasp_pilot_d_rerun/taskD/gpu_watch.sh` を 03:55 JST に起動した（60 秒ごと、`$S/logs/gpu_watch.csv`）
+
+## Task C — 確かめ（G3）
+
+台本は `experiments/analysis/grasp_pilot_d_rerun/taskC/`。GPU 0・1 を並行（03:55〜04:25 JST）。記録 `$S/logs/c_gpu{0,1}.log`
+
+### C-1 案 D の確かめ（`taskC/c1_check.json`、`run_caseD_check.sh`。道具 `d_check.py` を変えずに使った。標的は目録の q、sha256 ab5dc79e…）
+
+    $ CUDA_VISIBLE_DEVICES=0 python scripts/grasppilot/d_check.py --q $RB/q_CF_train.npz --out taskC/c1_check.json   （重ねの BODY、rc 0、ms_deform_attn_ext True）
+    data_identical True（64 項目で元の CocoDetection と画像・枠・ラベルが一致）、q_matches_table True（64/64、反転 33 件は左右を入れ替えた値）、
+    flip_probe_controls True（p=1 で 20/20、p=0 で 0/20）
+    init_equal True、coco_changed_params True
+    w0_total_equal_base True（重み 0 の全損失・全項が頭の無い元の模型と一致。4 batch）、w0_max_abs_diff 0.0、w0_max_abs_diff_plain_same_instance 0.0、base_repeat_max_abs_diff 0.0
+    w0_head_grad_zero True、w03_aux_enters True（全損失 − 検出の損失 = 0.3972、0.3811、0.3611、0.3507）、w03_head_grad_positive True（2.293、2.084、2.734、2.590）
+    matched_eq_n_gt True（対応づいた枠 = 正解の枠: 7、4、9、10）、indices_eq_recomputed True
+
+- **COCO の重みを読んだ記録**: `load_record`（`c1_check.json`）で要約値 d2586acb… → 6a26aac9…（changed true、missing は `grasp_head.weight`・`grasp_head.bias` だけ、unexpected なし）。三本目と同じ値
+- 空振りでないことの確認: 0.3 で 全損失 − 検出の損失 が 0 でない（上の 4 値）。重み 0 の一致は「頭の勾配 0」と「元の模型の二度の実行の差 0.0」とあわせて見ている
+
+### C-1 main.py を通した試走（`experiments/phase1/graspd2_smoke*`。腕に数えない。train 8 枚・val 4 枚の注釈 `$S/smoke_ann/`）
+
+| 試走 | 内容 | 結果 |
+|---|---|---|
+| `graspd2_smoke`（GPU 0） | 重み 0.3、12 epoch、目録の q | rc 0。`load pretrained from …/s2fix-bengio-body/…coco_1x.pth` 1 行。lr（歩 0）: epoch 0 は 3.3e-05（warmup）、1〜9 は 1e-4、10・11 は 1e-5。歩ごとの記録 48 行、各歩の特徴のフックは 2 回、対応づいた枠 = 正解の枠（全歩）、重み 0.3、補助損失（重みの前）1.318 → 0.926。`d_finalize_rerun.py` も rc 0 |
+| `graspd2_smoke_nococo`（GPU 1） | 陽性対照。COCO の経路を `/nonexistent/…` にし、`GRASP_ALLOW_MISSING_COCO=1` で設定の停止を外す。1 epoch | rc 0。`load pretrained` の行 0、`load_record.jsonl` が無い（**読み込みの記録が消える**） |
+
+- コードの写し `$S/code/9b1ecd5fa432ea69/`（`code_sha256.txt` は 653faeb5…・aa019384…・2edc8879…。三本目と同じ中身の要約値）
+
+### C-2 案 B の恒等性（`taskC/caseB/identity_*.json`、`run_caseB_identity.sh`、道具 `pd_grasp_eval.py`。基準は B-2 の塔単独の予測 seed 42）
+
+| 腕 | 学習前の mAP | score の差の最大・枠の差の最大・ラベルの食い違い | 学ぶ集合 |
+|---|---|---|---|
+| 空（`--mode zero`） | 0.7273450248 | 0.0・0.0 px・0 | `phase_iface.weight` 10,240。外のパラメータを一つ混ぜると不一致 |
+| 正解（`--mode gt`） | 0.7273450248 | 0.0・0.0 px・0 | 同 |
+
+| 陽性対照（界面の重み N(0, 0.05²)） | 界面の重みの絶対値の最大 | mAP | score の差の最大 | ラベルの食い違い |
+|---|---|---|---|---|
+| 正解（判定に使う） | 0.2034 | 0.7278873 | **0.3827** | **329,465** |
+| 空（記録だけ。判定に使わない） | 0.2034 | 0.7273450 | 0.0 | 0 |
+
+- 空の腕は入力が零のため、重みを変えても出力が変わらない（SPEC のとおり。記録のみ）。正解の腕では出力が変わる
+- 凍結部の要約値 `non_interface_digest` は 4 件とも 4fed8516…（四本目の値と同じ）
+
+### C-3 案 B の台本の試走（`$S/smoke/grasparms_B_{gt,empty}_ep4_seed42_smoke`。腕に数えない）
+
+- `gt`（GPU 0）: rc 0、`ms_deform_attn_ext True`、`code_sha256.txt` が B-4 の 7 件と一致、`phase_grad=True init_mAP=0.8917 => PASS`。台本に足した `gt` の腕が通る
+- `empty`（GPU 1）: **rc 2。`phase_grad=False … => FAIL`**。試走の判定（界面の重みに勾配が届くか）は、入力が全零の空の腕では勾配が 0 で原理的に満たされない
+  （四本目の起票者の誤り 3 と同じ性質）。台本の欠陥ではなく、`--smoke` を付けない本番の学習には使われない判定。`code_sha256.txt` は一致
+- 記憶の山（5 秒ごとの観測 `$S/logs/c_mem.csv`、384 点）: GPU0 最大 15,448 MiB（案 D の試走・確かめ）、GPU1 最大 14,356 MiB（案 B の評価の恒等性）。
+  案 D 本番の実測は三本目で 12.9 GiB、案 B 本番は四本目で 1 本 7.4〜8.3 GiB。**1 枚に案 D 1 本 + 案 B 1 本で 約 24 GiB（48 GiB の半分）と見込む**
+
+**G3: pass**（案 D: 重み 0 で一致・0.3 で入る・対応づいた枠 = 正解の枠・COCO を読んだ記録と消える対照。案 B: 空と正解で学習前の出力が塔単独と一致、正解で重みを変えると出力が変わる）
+
+### 載せ方の決定（SPEC §3.3「記憶の実測で決め、記録する」）
+
+- 案 D の 2 本は 1 枚ずつ。案 B の 2 本は、**案 D と同じ枚に 1 本ずつ載せる**（GPU 0: 案 D G を教師 + 案 B 空、GPU 1: 案 D 入れ替えた教師 + 案 B 正解）。
+  山の見込みは 1 枚 約 24 GiB で 48 GiB に収まる。案 D の後に回すと全体が 約 4〜5 時間延びる。2 枚で対称にして腕の間の載せ方の差を小さくする
+- ただし 1 枚に 2 本載せると、案 D の 1 本の所要が三本目（単独 10 時間 05 分〜10 時間 26 分）より延びうる。値は seed と設定で決まり、載せ方では変わらない設計だが、
+  GPU の共有による数値の揺れの有無は UNKNOWN（四本目は 1 枚 3 本並行だった）
