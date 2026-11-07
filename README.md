@@ -1808,3 +1808,13 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
 - 結果（非公式。1 折り・val 2 動画・seed 1 つ。W1、4 epoch の固定の長さ）: 12 本すべて完走。案 B の予測-noCF は標的群 AP の Δ空 +0.0095、Δ入替 +0.0053、
   二本目の正解との差 −0.0061。術具だけ（誰の手かを落とす）は Δ空 +0.0031、Δ入替 +0.0014、案 B の予測-noCF との差 −0.0064。
   案 A の予測-noCF は Δ空 が Jaccard −0.0069（dressing の当たり外れ）・accuracy +0.0092・6 工程の平均 +0.0052、Δ入替 は 6 工程の平均 −0.0006。G1・G2・G3 pass
+
+### 検出塔の batch の探索（2026-11-06〜07、andrew）
+
+契約 `T-2026-11-06-dtower-batch-search`（exp）。探索の 1 位（12 番。学習率 3.07e-4、max_norm 0.059、縮みの量 S 4.976e-3）の設定で、検出塔の GPU ごとの batch 2・4・6（2 枚で実効 4・8・12）を折り A・seed 42 と 123 で各 1 本、計 6 本学んだ。
+結果は `experiments/analysis/dtower_batch_search/{REPORT.md,summary.json,tables.md}`、run の記録は `experiments/baselines/stage1_dtower_batch/`、記録は `tasks/T-2026-11-06-dtower-batch-search/`。
+
+- weight decay は S を揃える換算（b2 3.37e-4、b4 6.7428e-4、b6 1.01058e-3）。同点幅 0.0076（runindex の `baselines/dcoco_foldA` の mAP_sstd の 2 倍）。どちらも学習の前の改訂（`meta.amendments`）
+- 結果: val mAP の 2 本の平均は b2 0.7285、b4 0.7297、b6 0.7357。3 水準とも同点幅の内で、prereg §3 の規則（同点なら大きい batch）により **b6（GPU ごとの batch 6）** を選んだ。標的群 AP の平均の最良も b6（食い違いなし）。発散・非数・溢れは 0 件。値は処方の効果として読まない（折り A の 2 本の平均で、3 水準の最大を取るので上振れする）
+- 道具は `experiments/analysis/dtower_batch_search/tools/`（実行器 `run_batch.py`、点を水準の値に差し替える包み `train_level.py`、観測器 `observer.py` を `TOWER_SEARCH_OBSERVER` で読ませる、集計 `summarize.py`、`procs.py`・`digests.py`・`make_det_config.py`・`env_capture.py` は前の契約の写し、`check_card.py`・`check_inputs.py`）。**既存のスクリプト・設定・third_party は変えていない。** batch と worker 数は `train_search.py` の写し（2 行だけを環境変数にしたもの）を repo の外に置いて渡した
+- checkpoint と生の記録は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-batch-search/`

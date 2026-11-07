@@ -1,0 +1,116 @@
+{
+  "arm": "unknown",
+  "attributes": {
+    "best_is_init": false,
+    "result_selection": "final_epoch"
+  },
+  "command": "#!/usr/bin/env bash\n# 自動生成: この run を起動したコマンドの記録\n# 生成日時: 2026-11-02T03:06:04+00:00\npython scripts/train_t1b.py --seed 42 --trainable w2 --task-id T-2026-11-01-stage2-w23-andrew --run-name w23a_pd_DX_W2_pred_noCF_ep4_seed42 --det-ckpt /home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth --signal-train /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P0_train.npz --signal-val /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P0_val.npz --epochs 4 --fixed-epochs --amp bf16 --save-predictions-all --ckpt-dir /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-stage2-w23-andrew/pd_ckpt/w23a_pd_DX_W2_pred_noCF_ep4_seed42 --save-trainable-only --print-freq 500\n",
+  "commit": "f7babc2658ce0a5c13245ac279d70fedea9c9bbe",
+  "config_path": "experiments/phase1/w23a_pd_DX_W2_pred_noCF_ep4_seed42/config.yaml",
+  "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
+  "description": "w23a_pd_DX_W2_pred_noCF_ep4",
+  "duplicate_bare_keys": [],
+  "epoch": 3,
+  "eval_recipe": null,
+  "eval_recipe_id": null,
+  "evidence_completeness": "full",
+  "excluded": false,
+  "exclusion_reason": null,
+  "experiment_id": "phase1/w23a_pd_DX_W2_pred_noCF_ep4/w23a_pd_DX_W2_pred_noCF_ep4@val",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_seed_declared": null,
+  "frozen_source_tag": null,
+  "gpu": null,
+  "group": "phase1",
+  "harvest_warnings": [
+    "run 名に seq (3 桁連番) が無い別系統の命名: w23a_pd_DX_W2_pred_noCF_ep4_seed42。step には description を充てた。"
+  ],
+  "host": "andrew",
+  "host_raw": "andrew",
+  "ledger_key": "phase1__w23a_pd_DX_W2_pred_noCF_ep4_seed42",
+  "metrics": {
+    "delta_detection": -0.0002192819864994533,
+    "final_epoch": 3,
+    "final_mAP": 0.7271257428533434,
+    "init_mAP": 0.7273450248398429,
+    "mAP": 0.7271257428533434
+  },
+  "metrics_by_split": {
+    "unknown": {
+      "delta_detection": -0.0002192819864994533,
+      "final_epoch": 3,
+      "final_mAP": 0.7271257428533434,
+      "init_mAP": 0.7273450248398429,
+      "mAP": 0.7271257428533434
+    }
+  },
+  "metrics_nested": {
+    "artifacts": {
+      "checkpoints": "andrew:/home/ubuntu/slocal2/m2/experiments/phase1/w23a_pd_DX_W2_pred_noCF_ep4_seed42/checkpoints",
+      "logs": "andrew:/home/ubuntu/slocal2/m2/experiments/phase1/w23a_pd_DX_W2_pred_noCF_ep4_seed42/logs",
+      "predictions": "andrew:/home/ubuntu/slocal2/m2/experiments/phase1/w23a_pd_DX_W2_pred_noCF_ep4_seed42/predictions",
+      "run_dir": "andrew:/home/ubuntu/slocal2/m2/experiments/phase1/w23a_pd_DX_W2_pred_noCF_ep4_seed42"
+    }
+  },
+  "metrics_primary_split": null,
+  "metrics_source": "metrics_json",
+  "notes": "# 非公式（T-2026-11-01-stage2-w23-andrew） PD decoder-xattn W2 pred_noCF seed 42\n\n**非公式の測定。関門の判定と設計の判断に使わない。**\n\n受け取り手は D*-COCO 折り A seed 42 の検出塔。学習範囲 W2（--trainable w2、学ぶ要素 1892697、うち界面 210374）。4 epoch 学習し途中で止めない。結果は 4 epoch 目（epoch 3）の状態で、最良の回を選ばない。val（動画 09・10）だけで評価した。test は通していない。\n\n- overall mAP 0.727126、AP50 0.853229、標的群 AP 0.795024、陰性対照群 AP 0.673362\n- 学習前 mAP 0.727345、学習前の塔単独との出力の差 {'comparable': True, 'max_abs_score_diff': 0.0, 'max_abs_bbox_diff_px': 0.0, 'label_mismatch': 0}\n- epoch ごとの val（−1 は学習前）: {-1: (0.727345, 0.795075), 0: (0.728929, 0.799824), 1: (0.727542, 0.794996), 2: (0.728659, 0.799117), 3: (0.727126, 0.795024)}\n- epoch ごとのゲート・界面の重み: {-1: {'tanh_alpha': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]}, 0: {'tanh_alpha': [-0.04838535189628601, 0.041852597147226334, -0.05231020227074623, -0.030495386570692062, -0.020857475697994232, 7.741668378002942e-05]}, 1: {'tanh_alpha': [-0.05727585777640343, 0.06362801790237427, -0.06516129523515701, -0.03438716009259224, -0.020640220493078232, -0.0018751502502709627]}, 2: {'tanh_alpha': [-0.06240036338567734, 0.08016924560070038, -0.08302471041679382, -0.058166466653347015, -0.04033908620476723, 0.0009350704494863749]}, 3: {'tanh_alpha': [-0.06375253945589066, 0.08574672043323517, -0.09688930213451385, -0.05763256177306175, -0.04347381368279457, 0.003624878590926528]}}\n- 受け取り手の動いた量（L2、相対）: 11.3893、0.1395835165326642\n- 動画ごとの mAP: {'09': 0.7027207181180901, '10': 0.6463874761425323}\n- 通した動画: train ['01', '02', '03', '06', '08', '11', '12', '13', '14', '15']、val ['09', '10']、test との共通 []\n- 凍結部の要約値の前後一致: True\n",
+  "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
+  "path": "experiments/phase1/w23a_pd_DX_W2_pred_noCF_ep4_seed42",
+  "per_class": {
+    "Bipolar Forceps": 0.7963524296981703,
+    "Electric Cautery": 0.9575614347993694,
+    "Forceps": 0.3567493426586844,
+    "Gauze": 0.27622889856760546,
+    "Hook": 0.6377161186890185,
+    "Mouth Gag": 0.7987450075918612,
+    "Needle Holders": 0.8449798212195746,
+    "Raspatory": 0.7869690396190568,
+    "Retractor": null,
+    "Scalpel": 0.9020551673972437,
+    "Scissors": 0.7141817458644336,
+    "Skewer": 0.9526249518635237,
+    "Suction Cannula": 0.8300866213595146,
+    "Syringe": 0.5371203610065589,
+    "Tweezers": 0.7883894596121915
+  },
+  "per_class_kind": "tool",
+  "per_class_metric": "AP",
+  "per_class_nan_classes": [
+    "Retractor"
+  ],
+  "per_class_source": "experiments/phase1/w23a_pd_DX_W2_pred_noCF_ep4_seed42/per_class_ap.json",
+  "per_class_valid_count": 14,
+  "provenance": {
+    "aux_token": "no_aux_token",
+    "commit": "from_git_commit_txt",
+    "epoch": "from_metrics_json",
+    "host": "from_server_txt",
+    "name": "from_dirname_desc_seed_no_seq",
+    "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
+    "seed": "from_dirname_verified_by_command_sh_and_config_yaml",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "from_plan_section_16_7",
+    "step": "from_dirname"
+  },
+  "run_id": "w23a_pd_DX_W2_pred_noCF_ep4_seed42",
+  "seed": 42,
+  "seed_agreement": "agree",
+  "seed_command": 42,
+  "seed_config": 42,
+  "seed_detector": null,
+  "seed_phase": null,
+  "seq": null,
+  "split": "val",
+  "step": "w23a_pd_DX_W2_pred_noCF_ep4",
+  "subgroup": null,
+  "task_id": "T-2026-11-01-stage2-w23-andrew",
+  "wandb_run_id": null,
+  "wandb_run_url": null
+}

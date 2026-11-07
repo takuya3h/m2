@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+/home/ubuntu/slocal2/m2/.venv-relation-detr/bin/accelerate launch --multi_gpu --num_processes 2 --main_process_port 29801 /home/ubuntu/slocal2/m2/experiments/analysis/dtower_batch_search/tools/train_level.py --config-file /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-batch-search/config/train_search_batch.py --seed 42 --mixed-precision fp16 --convergence-schedule --max-epochs 36

@@ -1,0 +1,139 @@
+{
+  "arm": "unknown",
+  "attributes": {
+    "best_epoch": 4,
+    "early_stopped_epoch": null,
+    "iface_ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-stage2-w23-bengio/dp_ckpt/w23b_dp_W3_022_D3-L1_shuffle_ep4_seed42.pth",
+    "iface_ckpt_sha256": "dd8cde07e9cbd154f1456aba22873ef6a7c223ba8a7be8128bb5bc9e86bd0ed9",
+    "reached_epoch_cap": true,
+    "receiver_outside_scope_unchanged": true,
+    "receiver_trained_changed": true,
+    "receiver_unchanged": false,
+    "result_selection": "final_epoch",
+    "scope": "W3"
+  },
+  "command": "#!/usr/bin/env bash\n# 自動生成: この実験を起動したコマンドの記録\n# 生成日時: 2026-11-01T16:12:04+00:00\npython scripts/stage2pilot/dp_train.py train --type D3-L1 --arm shuffle --seed 42 --inst-variant uq --fixed-epochs 4 --scope W3 --task-id T-2026-11-01-stage2-w23-bengio --exp-prefix w23b_dp_W3\n",
+  "commit": "392cf287615b45f76829c7fa7f4e5cb39d4444c5",
+  "config_path": "experiments/phase1/w23b_dp_W3_022_D3-L1_shuffle_ep4_seed42/config.yaml",
+  "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
+  "description": "D3-L1_shuffle_ep4",
+  "duplicate_bare_keys": [],
+  "epoch": null,
+  "eval_recipe": {
+    "test_cfg": {
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "split": "val",
+      "task": "phase"
+    }
+  },
+  "eval_recipe_id": "dc7cd36509d5",
+  "evidence_completeness": "full",
+  "excluded": false,
+  "exclusion_reason": null,
+  "experiment_id": "phase1/w23b_dp_W3/D3-L1_shuffle_ep4@val",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_seed_declared": null,
+  "frozen_source_tag": null,
+  "gpu": null,
+  "group": "phase1",
+  "harvest_warnings": [],
+  "host": "bengio",
+  "host_raw": "bengio",
+  "ledger_key": "phase1__w23b_dp_W3_022_D3-L1_shuffle_ep4_seed42",
+  "metrics": {
+    "accuracy": 0.8864686468646865,
+    "elapsed_seconds": 6.969406191259623,
+    "epochs_run": 4,
+    "iface_params": 266944,
+    "init_phase_accuracy": 0.8712871287128713,
+    "init_phase_jaccard": 0.7762185528074379,
+    "jaccard": 0.6517195265498271,
+    "macro_f1": 0.7245990308122866,
+    "receiver_outside_scope_n": 0,
+    "result_epoch": 4,
+    "steps_without_grad": 0
+  },
+  "metrics_by_split": {
+    "unknown": {
+      "elapsed_seconds": 6.969406191259623,
+      "epochs_run": 4,
+      "iface_params": 266944,
+      "init_phase_accuracy": 0.8712871287128713,
+      "init_phase_jaccard": 0.7762185528074379,
+      "receiver_outside_scope_n": 0,
+      "result_epoch": 4,
+      "steps_without_grad": 0
+    },
+    "val": {
+      "accuracy": 0.8864686468646865,
+      "jaccard": 0.6517195265498271,
+      "macro_f1": 0.7245990308122866
+    }
+  },
+  "metrics_nested": {
+    "per_video": {
+      "09": {
+        "phase_accuracy": 0.9517374517374517,
+        "phase_jaccard": 0.9266455791863227
+      },
+      "10": {
+        "phase_accuracy": 0.8525576730190572,
+        "phase_jaccard": 0.5599514147980457
+      }
+    }
+  },
+  "metrics_primary_split": "val",
+  "metrics_source": "metrics_json",
+  "notes": "# 非公式（T-2026-11-01-stage2-w23-bengio） DP D3-L1 shuffle seed 42 W3\n\n受け取り手は確定塔の時間ヘッド（eval、dropout なし）。界面と時間ヘッドの全体を学ぶ（W3、受け取り手の学習率 0.0005）。4 epoch 学習し途中で止めない。結果は 4 epoch 目の状態（最良の回を選ばない）。test は通していない。\nresult epoch 4 / val macro Jaccard 0.6517195265498271 / accuracy 0.8864686468646865\nepochs 4（停止 None）、学習前 Jaccard 0.7762185528074379\n",
+  "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
+  "path": "experiments/phase1/w23b_dp_W3_022_D3-L1_shuffle_ep4_seed42",
+  "per_class": {
+    "anesthesia": 0.9797979797979798,
+    "closure": 0.8325123152709359,
+    "design": 0.8292682926829268,
+    "disinfection": 0.0,
+    "dissection": 0.8104906937394247,
+    "dressing": 0.0,
+    "hemostasis": 0.3283582089552239,
+    "incision": 0.7816091954022989,
+    "irrigation": 0.0
+  },
+  "per_class_kind": "phase",
+  "per_class_metric": "F1",
+  "per_class_nan_classes": [],
+  "per_class_source": "experiments/phase1/w23b_dp_W3_022_D3-L1_shuffle_ep4_seed42/per_class_ap.json",
+  "per_class_valid_count": 9,
+  "provenance": {
+    "aux_token": "no_aux_token",
+    "commit": "from_git_commit_txt",
+    "epoch": "not_determinable",
+    "host": "from_server_txt",
+    "name": "from_dirname_step_seq_desc_seed",
+    "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
+    "seed": "from_dirname_verified_by_command_sh_and_config_yaml",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "from_metric_key_prefix",
+    "step": "from_dirname"
+  },
+  "run_id": "w23b_dp_W3_022_D3-L1_shuffle_ep4_seed42",
+  "seed": 42,
+  "seed_agreement": "agree",
+  "seed_command": 42,
+  "seed_config": 42,
+  "seed_detector": null,
+  "seed_phase": null,
+  "seq": 22,
+  "split": "val",
+  "step": "w23b_dp_W3",
+  "subgroup": null,
+  "task_id": "T-2026-11-01-stage2-w23-bengio",
+  "wandb_run_id": "ymyqb541",
+  "wandb_run_url": null
+}

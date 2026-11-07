@@ -1,0 +1,1269 @@
+{
+ "runs": [
+  {
+   "name": "dtowerbatch_b2_dcoco_foldA_seed42",
+   "level": "b2",
+   "seed": 42,
+   "status": "done",
+   "config": {
+    "task_id": "T-2026-11-06-dtower-batch-search",
+    "level": "b2",
+    "batch_per_gpu": 2,
+    "effective_batch": 4,
+    "seed": 42,
+    "point_id": 12,
+    "lr": 0.000307,
+    "weight_decay": 0.000337,
+    "max_norm": 0.059,
+    "S": 0.0049763779,
+    "fold": "A",
+    "kind": "detector",
+    "gpus": "0,1",
+    "host": "andrew",
+    "work": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-batch-search/runs/dtowerbatch_b2_dcoco_foldA_seed42",
+    "epochs": 36,
+    "mixed_precision": "fp16",
+    "num_workers": 4,
+    "config_copy": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-batch-search/config/train_search_batch.py",
+    "train_entry": "/home/ubuntu/slocal2/m2/experiments/analysis/dtower_batch_search/tools/train_level.py"
+   },
+   "mAP": 0.7301027812500287,
+   "AP_target": 0.8139165049614077,
+   "AP_negative": 0.6708530566350017,
+   "train_mAP": 0.8489352368658037,
+   "train_val_mAP_gap": 0.11883245561577505,
+   "best_epoch": 17,
+   "epochs_completed": 22,
+   "reached_epoch_cap": false,
+   "decayed_epoch": 11,
+   "stopped_epoch": 21,
+   "final_epoch": 21,
+   "final_val_mAP": 0.7247214603816524,
+   "final_AP_target": 0.8126721568470199,
+   "best_epoch_AP_target_in_training": 0.8142937297268908,
+   "val_mAP_per_epoch": [
+    0.5826640725135803,
+    0.6469413638114929,
+    0.6482605934143066,
+    0.6772890090942383,
+    0.6878746747970581,
+    0.6642392873764038,
+    0.6809394359588623,
+    0.6953065395355225,
+    0.6825596690177917,
+    0.6828069686889648,
+    0.6655715107917786,
+    0.6945284008979797,
+    0.7245709896087646,
+    0.7199893593788147,
+    0.7258414030075073,
+    0.7260750532150269,
+    0.7233483791351318,
+    0.7300188541412354,
+    0.7219684720039368,
+    0.7243115901947021,
+    0.7216798663139343,
+    0.7247214317321777
+   ],
+   "AP_target_per_epoch": [
+    0.605632392122898,
+    0.6886199727150129,
+    0.679650854493949,
+    0.7476700106686834,
+    0.785071384489852,
+    0.7259629182435845,
+    0.7353583667254886,
+    0.7855896289842315,
+    0.7647580461976589,
+    0.7570067669928713,
+    0.7479140353177329,
+    0.7563136369390573,
+    0.8064131901976754,
+    0.8021018571705486,
+    0.8116720602937034,
+    0.8089534100501773,
+    0.8071821735832133,
+    0.8142937297268908,
+    0.8038211975753832,
+    0.8136319907378914,
+    0.8086540569610889,
+    0.8126721568470199
+   ],
+   "warmup_first_step_at_target": 1001,
+   "warmup_steps": 1000,
+   "steps_in_epoch0": 2405,
+   "steps_per_epoch": 2405,
+   "total_updates": 52910,
+   "frames_per_step_set": [
+    2
+   ],
+   "gradient_nonfinite_steps": 27,
+   "gradient_norm_quantiles_5_50_95": [
+    44.429756546020506,
+    68.68058013916016,
+    124.320506286621
+   ],
+   "clipping_fraction": 0.9995463995463996,
+   "groups": [
+    {
+     "group": 0,
+     "lr": 0.000307,
+     "weight_decay": 0.000337,
+     "parameters": 24384000
+    },
+    {
+     "group": 1,
+     "lr": 3.07e-05,
+     "weight_decay": 0.000337,
+     "parameters": 23232512
+    },
+    {
+     "group": 2,
+     "lr": 3.07e-05,
+     "weight_decay": 0.0,
+     "parameters": 0
+    },
+    {
+     "group": 3,
+     "lr": 3.07e-05,
+     "weight_decay": 0.000337,
+     "parameters": 786432
+    },
+    {
+     "group": 4,
+     "lr": 3.07e-05,
+     "weight_decay": 0.0,
+     "parameters": 3072
+    },
+    {
+     "group": 5,
+     "lr": 0.000307,
+     "weight_decay": 0.0,
+     "parameters": 65184
+    }
+   ],
+   "train_epoch_seconds_mean_rank0": 1008.9009452076544,
+   "eval_epoch_seconds_mean": 71.21365322849967,
+   "peak_memory_bytes_per_rank": {
+    "0": 13430133248,
+    "1": 13456368128
+   },
+   "timings": {
+    "train": {
+     "start_utc": "2026-11-05T22:51:55Z",
+     "wall_seconds": 23850.078907489777,
+     "returncode": 0
+    },
+    "eval_val": {
+     "start_utc": "2026-11-06T05:29:25Z",
+     "wall_seconds": 90.0007734298706,
+     "returncode": 0
+    },
+    "eval_train": {
+     "start_utc": "2026-11-06T05:30:55Z",
+     "wall_seconds": 510.0021321773529,
+     "returncode": 0
+    },
+    "records": {
+     "start_utc": "2026-11-06T05:39:25Z",
+     "wall_seconds": 30.00054693222046,
+     "returncode": 0
+    }
+   },
+   "evaluated_splits": [
+    "train",
+    "val"
+   ],
+   "eval_batches_per_rank": {
+    "train": [
+     4818,
+     4820
+    ],
+    "val": [
+     754,
+     756
+    ]
+   },
+   "videos_read": {
+    "01": 20089,
+    "02": 10077,
+    "03": 23963,
+    "06": 30100,
+    "08": 30808,
+    "09": 11418,
+    "10": 21934,
+    "11": 16545,
+    "12": 13381,
+    "13": 18021,
+    "14": 39499,
+    "15": 9157
+   }
+  },
+  {
+   "name": "dtowerbatch_b2_dcoco_foldA_seed123",
+   "level": "b2",
+   "seed": 123,
+   "status": "done",
+   "config": {
+    "task_id": "T-2026-11-06-dtower-batch-search",
+    "level": "b2",
+    "batch_per_gpu": 2,
+    "effective_batch": 4,
+    "seed": 123,
+    "point_id": 12,
+    "lr": 0.000307,
+    "weight_decay": 0.000337,
+    "max_norm": 0.059,
+    "S": 0.0049763779,
+    "fold": "A",
+    "kind": "detector",
+    "gpus": "0,1",
+    "host": "andrew",
+    "work": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-batch-search/runs/dtowerbatch_b2_dcoco_foldA_seed123",
+    "epochs": 36,
+    "mixed_precision": "fp16",
+    "num_workers": 4,
+    "config_copy": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-batch-search/config/train_search_batch.py",
+    "train_entry": "/home/ubuntu/slocal2/m2/experiments/analysis/dtower_batch_search/tools/train_level.py"
+   },
+   "mAP": 0.7268956177320343,
+   "AP_target": 0.81108467308724,
+   "AP_negative": 0.6665073459265876,
+   "train_mAP": 0.8384966814868577,
+   "train_val_mAP_gap": 0.11160106375482348,
+   "best_epoch": 13,
+   "epochs_completed": 18,
+   "reached_epoch_cap": false,
+   "decayed_epoch": 9,
+   "stopped_epoch": 17,
+   "final_epoch": 17,
+   "final_val_mAP": 0.7251759112205961,
+   "final_AP_target": 0.8203503941376014,
+   "best_epoch_AP_target_in_training": 0.8108331537312609,
+   "val_mAP_per_epoch": [
+    0.606728732585907,
+    0.6429449319839478,
+    0.6786425113677979,
+    0.6468774676322937,
+    0.6743113398551941,
+    0.6977136731147766,
+    0.6883096098899841,
+    0.6418901681900024,
+    0.6634677648544312,
+    0.6718833446502686,
+    0.7159393429756165,
+    0.7239510416984558,
+    0.722271203994751,
+    0.7266721725463867,
+    0.7165651917457581,
+    0.7215021848678589,
+    0.7227619290351868,
+    0.7251759171485901
+   ],
+   "AP_target_per_epoch": [
+    0.6357670046941266,
+    0.7056793236180936,
+    0.7640659356755932,
+    0.7209895795449274,
+    0.7404606194596395,
+    0.7733654850496007,
+    0.7853521050107695,
+    0.6875388005982042,
+    0.717915508246428,
+    0.7460073554653062,
+    0.7930622798057698,
+    0.8100661933670457,
+    0.812821206668344,
+    0.8108331537312609,
+    0.8006862952240053,
+    0.8097853080726717,
+    0.805270839596138,
+    0.8203503941376014
+   ],
+   "warmup_first_step_at_target": 1001,
+   "warmup_steps": 1000,
+   "steps_in_epoch0": 2405,
+   "steps_per_epoch": 2405,
+   "total_updates": 43290,
+   "frames_per_step_set": [
+    2
+   ],
+   "gradient_nonfinite_steps": 21,
+   "gradient_norm_quantiles_5_50_95": [
+    45.21688232421875,
+    70.28697204589844,
+    127.02721099853511
+   ],
+   "clipping_fraction": 0.9995610995610995,
+   "groups": [
+    {
+     "group": 0,
+     "lr": 0.000307,
+     "weight_decay": 0.000337,
+     "parameters": 24384000
+    },
+    {
+     "group": 1,
+     "lr": 3.07e-05,
+     "weight_decay": 0.000337,
+     "parameters": 23232512
+    },
+    {
+     "group": 2,
+     "lr": 3.07e-05,
+     "weight_decay": 0.0,
+     "parameters": 0
+    },
+    {
+     "group": 3,
+     "lr": 3.07e-05,
+     "weight_decay": 0.000337,
+     "parameters": 786432
+    },
+    {
+     "group": 4,
+     "lr": 3.07e-05,
+     "weight_decay": 0.0,
+     "parameters": 3072
+    },
+    {
+     "group": 5,
+     "lr": 0.000307,
+     "weight_decay": 0.0,
+     "parameters": 65184
+    }
+   ],
+   "train_epoch_seconds_mean_rank0": 994.3337004480677,
+   "eval_epoch_seconds_mean": 69.79263140095605,
+   "peak_memory_bytes_per_rank": {
+    "0": 13434163200,
+    "1": 13235288064
+   },
+   "timings": {
+    "train": {
+     "start_utc": "2026-11-06T05:39:55Z",
+     "wall_seconds": 19230.059326410294,
+     "returncode": 0
+    },
+    "eval_val": {
+     "start_utc": "2026-11-06T11:00:25Z",
+     "wall_seconds": 90.00080132484436,
+     "returncode": 0
+    },
+    "eval_train": {
+     "start_utc": "2026-11-06T11:01:55Z",
+     "wall_seconds": 510.0027298927307,
+     "returncode": 0
+    },
+    "records": {
+     "start_utc": "2026-11-06T11:10:25Z",
+     "wall_seconds": 30.000514030456543,
+     "returncode": 0
+    }
+   },
+   "evaluated_splits": [
+    "train",
+    "val"
+   ],
+   "eval_batches_per_rank": {
+    "train": [
+     4824,
+     4825
+    ],
+    "val": [
+     751,
+     754
+    ]
+   },
+   "videos_read": {
+    "01": 16436,
+    "02": 8245,
+    "03": 19607,
+    "06": 24628,
+    "08": 25208,
+    "09": 9342,
+    "10": 17946,
+    "11": 13537,
+    "12": 10948,
+    "13": 14744,
+    "14": 32316,
+    "15": 7491
+   }
+  },
+  {
+   "name": "dtowerbatch_b4_dcoco_foldA_seed42",
+   "level": "b4",
+   "seed": 42,
+   "status": "done",
+   "config": {
+    "task_id": "T-2026-11-06-dtower-batch-search",
+    "level": "b4",
+    "batch_per_gpu": 4,
+    "effective_batch": 8,
+    "seed": 42,
+    "point_id": 12,
+    "lr": 0.000307,
+    "weight_decay": 0.00067428,
+    "max_norm": 0.059,
+    "S": 0.0049763779,
+    "fold": "A",
+    "kind": "detector",
+    "gpus": "0,1",
+    "host": "andrew",
+    "work": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-batch-search/runs/dtowerbatch_b4_dcoco_foldA_seed42",
+    "epochs": 36,
+    "mixed_precision": "fp16",
+    "num_workers": 4,
+    "config_copy": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-batch-search/config/train_search_batch.py",
+    "train_entry": "/home/ubuntu/slocal2/m2/experiments/analysis/dtower_batch_search/tools/train_level.py"
+   },
+   "mAP": 0.7283163350617211,
+   "AP_target": 0.8234411916329819,
+   "AP_negative": 0.6689113274394992,
+   "train_mAP": 0.8635832777211544,
+   "train_val_mAP_gap": 0.1352669426594333,
+   "best_epoch": 20,
+   "epochs_completed": 25,
+   "reached_epoch_cap": false,
+   "decayed_epoch": 11,
+   "stopped_epoch": 24,
+   "final_epoch": 24,
+   "final_val_mAP": 0.7187428125437296,
+   "final_AP_target": 0.8021857149855105,
+   "best_epoch_AP_target_in_training": 0.8227520036409051,
+   "val_mAP_per_epoch": [
+    0.6069730520248413,
+    0.6754043102264404,
+    0.6694079637527466,
+    0.6848534941673279,
+    0.6996765732765198,
+    0.6697605848312378,
+    0.7068796753883362,
+    0.7099465727806091,
+    0.7037591338157654,
+    0.6963066458702087,
+    0.6970540881156921,
+    0.6832284927368164,
+    0.7245028614997864,
+    0.7253057360649109,
+    0.7216489911079407,
+    0.7244008183479309,
+    0.7260928750038147,
+    0.7248951196670532,
+    0.720606803894043,
+    0.7259756326675415,
+    0.7279471755027771,
+    0.7262476682662964,
+    0.7188189029693604,
+    0.7196587324142456,
+    0.7187427878379822
+   ],
+   "AP_target_per_epoch": [
+    0.61717395982917,
+    0.7227159949366304,
+    0.75094260380584,
+    0.7672108614522479,
+    0.7860715910264737,
+    0.745766759031286,
+    0.7908370203591701,
+    0.8053435343160033,
+    0.7960287627588941,
+    0.7727329053085018,
+    0.7621858228319396,
+    0.7557060204483481,
+    0.8184723578778105,
+    0.8150721611116867,
+    0.8110613718332731,
+    0.8127745110996456,
+    0.8163771406605992,
+    0.8101548831383312,
+    0.8014161397409687,
+    0.8119776853827521,
+    0.8227520036409051,
+    0.8140220547412446,
+    0.800578808219765,
+    0.8012181512343961,
+    0.8021857149855105
+   ],
+   "warmup_first_step_at_target": 1001,
+   "warmup_steps": 1000,
+   "steps_in_epoch0": 1202,
+   "steps_per_epoch": 1202,
+   "total_updates": 30050,
+   "frames_per_step_set": [
+    4
+   ],
+   "gradient_nonfinite_steps": 19,
+   "gradient_norm_quantiles_5_50_95": [
+    36.57451629638672,
+    53.80674743652344,
+    88.72285079956055
+   ],
+   "clipping_fraction": 0.9994342762063227,
+   "groups": [
+    {
+     "group": 0,
+     "lr": 0.000307,
+     "weight_decay": 0.00067428,
+     "parameters": 24384000
+    },
+    {
+     "group": 1,
+     "lr": 3.07e-05,
+     "weight_decay": 0.00067428,
+     "parameters": 23232512
+    },
+    {
+     "group": 2,
+     "lr": 3.07e-05,
+     "weight_decay": 0.0,
+     "parameters": 0
+    },
+    {
+     "group": 3,
+     "lr": 3.07e-05,
+     "weight_decay": 0.00067428,
+     "parameters": 786432
+    },
+    {
+     "group": 4,
+     "lr": 3.07e-05,
+     "weight_decay": 0.0,
+     "parameters": 3072
+    },
+    {
+     "group": 5,
+     "lr": 0.000307,
+     "weight_decay": 0.0,
+     "parameters": 65184
+    }
+   ],
+   "train_epoch_seconds_mean_rank0": 821.8340334658698,
+   "eval_epoch_seconds_mean": 65.52873322486877,
+   "peak_memory_bytes_per_rank": {
+    "0": 25756376576,
+    "1": 26178163200
+   },
+   "timings": {
+    "train": {
+     "start_utc": "2026-11-06T11:10:55Z",
+     "wall_seconds": 22290.06815123558,
+     "returncode": 0
+    },
+    "eval_val": {
+     "start_utc": "2026-11-06T17:22:25Z",
+     "wall_seconds": 90.00075554847717,
+     "returncode": 0
+    },
+    "eval_train": {
+     "start_utc": "2026-11-06T17:23:55Z",
+     "wall_seconds": 510.0031843185425,
+     "returncode": 0
+    },
+    "records": {
+     "start_utc": "2026-11-06T17:32:25Z",
+     "wall_seconds": 30.00049662590027,
+     "returncode": 0
+    }
+   },
+   "evaluated_splits": [
+    "train",
+    "val"
+   ],
+   "eval_batches_per_rank": {
+    "train": [
+     4823,
+     4819
+    ],
+    "val": [
+     755,
+     747
+    ]
+   },
+   "videos_read": {
+    "01": 22821,
+    "02": 11449,
+    "03": 27221,
+    "06": 34193,
+    "08": 34993,
+    "09": 12975,
+    "10": 24925,
+    "11": 18796,
+    "12": 15194,
+    "13": 20473,
+    "14": 44862,
+    "15": 10398
+   }
+  },
+  {
+   "name": "dtowerbatch_b4_dcoco_foldA_seed123",
+   "level": "b4",
+   "seed": 123,
+   "status": "done",
+   "config": {
+    "task_id": "T-2026-11-06-dtower-batch-search",
+    "level": "b4",
+    "batch_per_gpu": 4,
+    "effective_batch": 8,
+    "seed": 123,
+    "point_id": 12,
+    "lr": 0.000307,
+    "weight_decay": 0.00067428,
+    "max_norm": 0.059,
+    "S": 0.0049763779,
+    "fold": "A",
+    "kind": "detector",
+    "gpus": "0,1",
+    "host": "andrew",
+    "work": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-batch-search/runs/dtowerbatch_b4_dcoco_foldA_seed123",
+    "epochs": 36,
+    "mixed_precision": "fp16",
+    "num_workers": 4,
+    "config_copy": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-batch-search/config/train_search_batch.py",
+    "train_entry": "/home/ubuntu/slocal2/m2/experiments/analysis/dtower_batch_search/tools/train_level.py"
+   },
+   "mAP": 0.7311333510362473,
+   "AP_target": 0.8175662201152921,
+   "AP_negative": 0.6629282301971317,
+   "train_mAP": 0.8372079446005023,
+   "train_val_mAP_gap": 0.10607459356425497,
+   "best_epoch": 11,
+   "epochs_completed": 16,
+   "reached_epoch_cap": false,
+   "decayed_epoch": 9,
+   "stopped_epoch": 15,
+   "final_epoch": 15,
+   "final_val_mAP": 0.7266029349942109,
+   "final_AP_target": 0.8153026524920343,
+   "best_epoch_AP_target_in_training": 0.8176163908687013,
+   "val_mAP_per_epoch": [
+    0.5624000430107117,
+    0.632856547832489,
+    0.6830034255981445,
+    0.6712194085121155,
+    0.6938188672065735,
+    0.7007362842559814,
+    0.6997050046920776,
+    0.6876821517944336,
+    0.6869330406188965,
+    0.6723450422286987,
+    0.7267349362373352,
+    0.7312546968460083,
+    0.7302261590957642,
+    0.7257043719291687,
+    0.7287580966949463,
+    0.7266029119491577
+   ],
+   "AP_target_per_epoch": [
+    0.4993713638626113,
+    0.6637931362247768,
+    0.7606918114731912,
+    0.7478996218523369,
+    0.793542790768752,
+    0.7859515202965672,
+    0.7683890511370997,
+    0.7507717377711562,
+    0.760303534963502,
+    0.7001585254588049,
+    0.813541244381852,
+    0.8176163908687013,
+    0.8190559868845518,
+    0.8139534084624156,
+    0.8207573504524929,
+    0.8153026524920343
+   ],
+   "warmup_first_step_at_target": 1001,
+   "warmup_steps": 1000,
+   "steps_in_epoch0": 1202,
+   "steps_per_epoch": 1202,
+   "total_updates": 19232,
+   "frames_per_step_set": [
+    4
+   ],
+   "gradient_nonfinite_steps": 14,
+   "gradient_norm_quantiles_5_50_95": [
+    37.47238636016846,
+    57.12321472167969,
+    92.69258766174309
+   ],
+   "clipping_fraction": 0.9993240432612313,
+   "groups": [
+    {
+     "group": 0,
+     "lr": 0.000307,
+     "weight_decay": 0.00067428,
+     "parameters": 24384000
+    },
+    {
+     "group": 1,
+     "lr": 3.07e-05,
+     "weight_decay": 0.00067428,
+     "parameters": 23232512
+    },
+    {
+     "group": 2,
+     "lr": 3.07e-05,
+     "weight_decay": 0.0,
+     "parameters": 0
+    },
+    {
+     "group": 3,
+     "lr": 3.07e-05,
+     "weight_decay": 0.00067428,
+     "parameters": 786432
+    },
+    {
+     "group": 4,
+     "lr": 3.07e-05,
+     "weight_decay": 0.0,
+     "parameters": 3072
+    },
+    {
+     "group": 5,
+     "lr": 0.000307,
+     "weight_decay": 0.0,
+     "parameters": 65184
+    }
+   ],
+   "train_epoch_seconds_mean_rank0": 819.8971100655617,
+   "eval_epoch_seconds_mean": 62.60720917582512,
+   "peak_memory_bytes_per_rank": {
+    "0": 26202584064,
+    "1": 26139817472
+   },
+   "timings": {
+    "train": {
+     "start_utc": "2026-11-06T17:32:55Z",
+     "wall_seconds": 14190.041725873947,
+     "returncode": 0
+    },
+    "eval_val": {
+     "start_utc": "2026-11-06T21:29:26Z",
+     "wall_seconds": 90.00064277648926,
+     "returncode": 0
+    },
+    "eval_train": {
+     "start_utc": "2026-11-06T21:30:56Z",
+     "wall_seconds": 510.00179862976074,
+     "returncode": 0
+    },
+    "records": {
+     "start_utc": "2026-11-06T21:39:26Z",
+     "wall_seconds": 30.000463724136353,
+     "returncode": 0
+    }
+   },
+   "evaluated_splits": [
+    "train",
+    "val"
+   ],
+   "eval_batches_per_rank": {
+    "train": [
+     4823,
+     4831
+    ],
+    "val": [
+     749,
+     753
+    ]
+   },
+   "videos_read": {
+    "01": 14605,
+    "02": 7326,
+    "03": 17419,
+    "06": 21884,
+    "08": 22399,
+    "09": 8304,
+    "10": 15952,
+    "11": 12030,
+    "12": 9722,
+    "13": 13102,
+    "14": 28715,
+    "15": 6654
+   }
+  },
+  {
+   "name": "dtowerbatch_b6_dcoco_foldA_seed42",
+   "level": "b6",
+   "seed": 42,
+   "status": "done",
+   "config": {
+    "task_id": "T-2026-11-06-dtower-batch-search",
+    "level": "b6",
+    "batch_per_gpu": 6,
+    "effective_batch": 12,
+    "seed": 42,
+    "point_id": 12,
+    "lr": 0.000307,
+    "weight_decay": 0.00101058,
+    "max_norm": 0.059,
+    "S": 0.0049763779,
+    "fold": "A",
+    "kind": "detector",
+    "gpus": "0,1",
+    "host": "andrew",
+    "work": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-batch-search/runs/dtowerbatch_b6_dcoco_foldA_seed42",
+    "epochs": 36,
+    "mixed_precision": "fp16",
+    "num_workers": 4,
+    "config_copy": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-batch-search/config/train_search_batch.py",
+    "train_entry": "/home/ubuntu/slocal2/m2/experiments/analysis/dtower_batch_search/tools/train_level.py"
+   },
+   "mAP": 0.7384689855086581,
+   "AP_target": 0.8267340386847082,
+   "AP_negative": 0.6729685512400588,
+   "train_mAP": 0.8343311992439324,
+   "train_val_mAP_gap": 0.09586221373527426,
+   "best_epoch": 10,
+   "epochs_completed": 15,
+   "reached_epoch_cap": false,
+   "decayed_epoch": 7,
+   "stopped_epoch": 14,
+   "final_epoch": 14,
+   "final_val_mAP": 0.7307941682740093,
+   "final_AP_target": 0.8263747805045043,
+   "best_epoch_AP_target_in_training": 0.8264796559231173,
+   "val_mAP_per_epoch": [
+    0.5651282668113708,
+    0.6761077642440796,
+    0.6906847953796387,
+    0.6973057985305786,
+    0.6958437561988831,
+    0.6905968189239502,
+    0.6661463379859924,
+    0.6952685117721558,
+    0.7372143268585205,
+    0.7379389405250549,
+    0.7384071946144104,
+    0.7350732684135437,
+    0.7354424595832825,
+    0.7352322936058044,
+    0.7307941913604736
+   ],
+   "AP_target_per_epoch": [
+    0.5236360807225228,
+    0.7200550389012983,
+    0.7694807204100413,
+    0.777814336619558,
+    0.7838208836021485,
+    0.7738609506181569,
+    0.7126162017758395,
+    0.7724428465483673,
+    0.8224403423120009,
+    0.822805470075403,
+    0.8264796559231173,
+    0.8229779511179551,
+    0.8249434121731083,
+    0.8305401057537424,
+    0.8263747805045043
+   ],
+   "warmup_first_step_at_target": 802,
+   "warmup_steps": 801,
+   "steps_in_epoch0": 802,
+   "steps_per_epoch": 802,
+   "total_updates": 12030,
+   "frames_per_step_set": [
+    6
+   ],
+   "gradient_nonfinite_steps": 12,
+   "gradient_norm_quantiles_5_50_95": [
+    33.87111988067627,
+    49.46551513671875,
+    77.73250999450683
+   ],
+   "clipping_fraction": 0.9990856192851205,
+   "groups": [
+    {
+     "group": 0,
+     "lr": 0.000307,
+     "weight_decay": 0.00101058,
+     "parameters": 24384000
+    },
+    {
+     "group": 1,
+     "lr": 3.07e-05,
+     "weight_decay": 0.00101058,
+     "parameters": 23232512
+    },
+    {
+     "group": 2,
+     "lr": 3.07e-05,
+     "weight_decay": 0.0,
+     "parameters": 0
+    },
+    {
+     "group": 3,
+     "lr": 3.07e-05,
+     "weight_decay": 0.00101058,
+     "parameters": 786432
+    },
+    {
+     "group": 4,
+     "lr": 3.07e-05,
+     "weight_decay": 0.0,
+     "parameters": 3072
+    },
+    {
+     "group": 5,
+     "lr": 0.000307,
+     "weight_decay": 0.0,
+     "parameters": 65184
+    }
+   ],
+   "train_epoch_seconds_mean_rank0": 788.9913485501582,
+   "eval_epoch_seconds_mean": 56.71795409520467,
+   "peak_memory_bytes_per_rank": {
+    "0": 37994235392,
+    "1": 38681872384
+   },
+   "timings": {
+    "train": {
+     "start_utc": "2026-11-06T21:39:56Z",
+     "wall_seconds": 12780.038502931595,
+     "returncode": 0
+    },
+    "eval_val": {
+     "start_utc": "2026-11-07T01:12:56Z",
+     "wall_seconds": 90.00067448616028,
+     "returncode": 0
+    },
+    "eval_train": {
+     "start_utc": "2026-11-07T01:14:26Z",
+     "wall_seconds": 510.00254487991333,
+     "returncode": 0
+    },
+    "records": {
+     "start_utc": "2026-11-07T01:22:56Z",
+     "wall_seconds": 30.00095796585083,
+     "returncode": 0
+    }
+   },
+   "evaluated_splits": [
+    "train",
+    "val"
+   ],
+   "eval_batches_per_rank": {
+    "train": [
+     4823,
+     4830
+    ],
+    "val": [
+     753,
+     747
+    ]
+   },
+   "videos_read": {
+    "01": 13702,
+    "02": 6874,
+    "03": 16344,
+    "06": 20531,
+    "08": 21018,
+    "09": 7785,
+    "10": 14955,
+    "11": 11286,
+    "12": 9125,
+    "13": 12295,
+    "14": 26939,
+    "15": 6246
+   }
+  },
+  {
+   "name": "dtowerbatch_b6_dcoco_foldA_seed123",
+   "level": "b6",
+   "seed": 123,
+   "status": "done",
+   "config": {
+    "task_id": "T-2026-11-06-dtower-batch-search",
+    "level": "b6",
+    "batch_per_gpu": 6,
+    "effective_batch": 12,
+    "seed": 123,
+    "point_id": 12,
+    "lr": 0.000307,
+    "weight_decay": 0.00101058,
+    "max_norm": 0.059,
+    "S": 0.0049763779,
+    "fold": "A",
+    "kind": "detector",
+    "gpus": "0,1",
+    "host": "andrew",
+    "work": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-batch-search/runs/dtowerbatch_b6_dcoco_foldA_seed123",
+    "epochs": 36,
+    "mixed_precision": "fp16",
+    "num_workers": 4,
+    "config_copy": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-batch-search/config/train_search_batch.py",
+    "train_entry": "/home/ubuntu/slocal2/m2/experiments/analysis/dtower_batch_search/tools/train_level.py"
+   },
+   "mAP": 0.7328353118838492,
+   "AP_target": 0.815542964817688,
+   "AP_negative": 0.6760889281667364,
+   "train_mAP": 0.8471839024146696,
+   "train_val_mAP_gap": 0.11434859053082036,
+   "best_epoch": 13,
+   "epochs_completed": 18,
+   "reached_epoch_cap": false,
+   "decayed_epoch": 9,
+   "stopped_epoch": 17,
+   "final_epoch": 17,
+   "final_val_mAP": 0.7237476303468633,
+   "final_AP_target": 0.810362360111457,
+   "best_epoch_AP_target_in_training": 0.8159397728760489,
+   "val_mAP_per_epoch": [
+    0.606821596622467,
+    0.6454321146011353,
+    0.6775424480438232,
+    0.6975458860397339,
+    0.683867871761322,
+    0.7191351652145386,
+    0.7147465944290161,
+    0.6956636905670166,
+    0.7049508690834045,
+    0.676885724067688,
+    0.7282980680465698,
+    0.7273140549659729,
+    0.7262150049209595,
+    0.7329117655754089,
+    0.7273523211479187,
+    0.7284669876098633,
+    0.7257687449455261,
+    0.7237476110458374
+   ],
+   "AP_target_per_epoch": [
+    0.6505546782796418,
+    0.7028756278649656,
+    0.7396567018786501,
+    0.7884151287919327,
+    0.7382068060775954,
+    0.8164196481974141,
+    0.8205314495517445,
+    0.7862795671229313,
+    0.7868799637011143,
+    0.7413282430269333,
+    0.8139005636296865,
+    0.8052003014616007,
+    0.8025772624058185,
+    0.8159397728760489,
+    0.8096361559369128,
+    0.8154461372834735,
+    0.8086688156340254,
+    0.810362360111457
+   ],
+   "warmup_first_step_at_target": 802,
+   "warmup_steps": 801,
+   "steps_in_epoch0": 802,
+   "steps_per_epoch": 802,
+   "total_updates": 14436,
+   "frames_per_step_set": [
+    6
+   ],
+   "gradient_nonfinite_steps": 12,
+   "gradient_norm_quantiles_5_50_95": [
+    33.49292526245117,
+    48.99530029296875,
+    76.88400993347166
+   ],
+   "clipping_fraction": 0.9992380160709338,
+   "groups": [
+    {
+     "group": 0,
+     "lr": 0.000307,
+     "weight_decay": 0.00101058,
+     "parameters": 24384000
+    },
+    {
+     "group": 1,
+     "lr": 3.07e-05,
+     "weight_decay": 0.00101058,
+     "parameters": 23232512
+    },
+    {
+     "group": 2,
+     "lr": 3.07e-05,
+     "weight_decay": 0.0,
+     "parameters": 0
+    },
+    {
+     "group": 3,
+     "lr": 3.07e-05,
+     "weight_decay": 0.00101058,
+     "parameters": 786432
+    },
+    {
+     "group": 4,
+     "lr": 3.07e-05,
+     "weight_decay": 0.0,
+     "parameters": 3072
+    },
+    {
+     "group": 5,
+     "lr": 0.000307,
+     "weight_decay": 0.0,
+     "parameters": 65184
+    }
+   ],
+   "train_epoch_seconds_mean_rank0": 789.5456577673451,
+   "eval_epoch_seconds_mean": 57.028447879685295,
+   "peak_memory_bytes_per_rank": {
+    "0": 38732411904,
+    "1": 38035283456
+   },
+   "timings": {
+    "train": {
+     "start_utc": "2026-11-07T01:23:26Z",
+     "wall_seconds": 15330.051097154617,
+     "returncode": 0
+    },
+    "eval_val": {
+     "start_utc": "2026-11-07T05:38:56Z",
+     "wall_seconds": 90.00070858001709,
+     "returncode": 0
+    },
+    "eval_train": {
+     "start_utc": "2026-11-07T05:40:26Z",
+     "wall_seconds": 510.0022141933441,
+     "returncode": 0
+    },
+    "records": {
+     "start_utc": "2026-11-07T05:48:56Z",
+     "wall_seconds": 30.000688314437866,
+     "returncode": 0
+    }
+   },
+   "evaluated_splits": [
+    "train",
+    "val"
+   ],
+   "eval_batches_per_rank": {
+    "train": [
+     4817,
+     4819
+    ],
+    "val": [
+     751,
+     755
+    ]
+   },
+   "videos_read": {
+    "01": 16440,
+    "02": 8246,
+    "03": 19614,
+    "06": 24638,
+    "08": 25220,
+    "09": 9342,
+    "10": 17946,
+    "11": 13542,
+    "12": 10955,
+    "13": 14754,
+    "14": 32329,
+    "15": 7494
+   }
+  }
+ ],
+ "levels": {
+  "b2": {
+   "candidate": true,
+   "runs": [
+    "dtowerbatch_b2_dcoco_foldA_seed42",
+    "dtowerbatch_b2_dcoco_foldA_seed123"
+   ],
+   "mAP_values": [
+    0.7301027812500287,
+    0.7268956177320343
+   ],
+   "mAP_mean": 0.7284991994910315,
+   "AP_target_values": [
+    0.8139165049614077,
+    0.81108467308724
+   ],
+   "AP_target_mean": 0.8125005890243238,
+   "AP_negative_values": [
+    0.6708530566350017,
+    0.6665073459265876
+   ],
+   "AP_negative_mean": 0.6686802012807946,
+   "train_val_mAP_gap_values": [
+    0.11883245561577505,
+    0.11160106375482348
+   ],
+   "train_val_mAP_gap_mean": 0.11521675968529926,
+   "mAP_seed_difference_42_minus_123": 0.003207163517994438,
+   "difference_from_max": -0.007152949205222248,
+   "difference_from_b2": 0.0
+  },
+  "b4": {
+   "candidate": true,
+   "runs": [
+    "dtowerbatch_b4_dcoco_foldA_seed42",
+    "dtowerbatch_b4_dcoco_foldA_seed123"
+   ],
+   "mAP_values": [
+    0.7283163350617211,
+    0.7311333510362473
+   ],
+   "mAP_mean": 0.7297248430489842,
+   "AP_target_values": [
+    0.8234411916329819,
+    0.8175662201152921
+   ],
+   "AP_target_mean": 0.820503705874137,
+   "AP_negative_values": [
+    0.6689113274394992,
+    0.6629282301971317
+   ],
+   "AP_negative_mean": 0.6659197788183154,
+   "train_val_mAP_gap_values": [
+    0.1352669426594333,
+    0.10607459356425497
+   ],
+   "train_val_mAP_gap_mean": 0.12067076811184413,
+   "mAP_seed_difference_42_minus_123": -0.0028170159745262158,
+   "difference_from_max": -0.00592730564726951,
+   "difference_from_b2": 0.001225643557952738
+  },
+  "b6": {
+   "candidate": true,
+   "runs": [
+    "dtowerbatch_b6_dcoco_foldA_seed42",
+    "dtowerbatch_b6_dcoco_foldA_seed123"
+   ],
+   "mAP_values": [
+    0.7384689855086581,
+    0.7328353118838492
+   ],
+   "mAP_mean": 0.7356521486962537,
+   "AP_target_values": [
+    0.8267340386847082,
+    0.815542964817688
+   ],
+   "AP_target_mean": 0.8211385017511981,
+   "AP_negative_values": [
+    0.6729685512400588,
+    0.6760889281667364
+   ],
+   "AP_negative_mean": 0.6745287397033977,
+   "train_val_mAP_gap_values": [
+    0.09586221373527426,
+    0.11434859053082036
+   ],
+   "train_val_mAP_gap_mean": 0.10510540213304731,
+   "mAP_seed_difference_42_minus_123": 0.0056336736248089325,
+   "difference_from_max": 0.0,
+   "difference_from_b2": 0.007152949205222248
+  }
+ },
+ "selection": {
+  "tie_width": 0.0076,
+  "max_mean": 0.7356521486962537,
+  "tied": [
+   "b2",
+   "b4",
+   "b6"
+  ],
+  "selected": "b6",
+  "selected_batch_per_gpu": 6,
+  "co_primary_best": "b6",
+  "co_primary_disagrees": false
+ },
+ "test_evaluated_runs": [],
+ "test_video_read_runs": []
+}
