@@ -1780,6 +1780,35 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
 - 結果（RTX A6000 × 2、300 W）: batch 2 × 2 プロセスの一歩 0.3905 s のうち、読み込みの待ち 0.0010 s、順伝播 0.139 s、損失と対応づけ 0.043 s、逆伝播 0.191 s、最適化器 0.011 s、残り 0.006 s。歩の区間だけの GPU 使用率は 77〜92 %（使用率 0 の標本 0 個）。worker 数 4・8・16 の一歩は 0.3905・0.3938・0.3920 s
 - 生の記録は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-step-profile/`
 
+### 把持塔 G の作り直し（2026-11-06、bengio）
+
+契約 `T-2026-11-05-grasp-tower-rebuild`（analysis。**非公式の測定。関門の判定と設計の判断に使わない**）。**二本目 `T-2026-11-01-grasp-pilot-g` の G を置き換える**
+（二本目の G は 38 クラスを一つの頭で分類し、左右反転でラベルを入れ替えなかった）。andrew 版は利用者の指示で中止し、bengio で一からやり直した（PR #289）。
+結果は `experiments/analysis/grasp_tower_rebuild/REPORT.md`、batch と精度の計測は `batch_probe.md`、**腕の契約が写す信号と標的の目録は `signals_manifest.json`**、記録は `tasks/T-2026-11-05-grasp-tower-rebuild/`。
+
+- 新しいスクリプト（二本目・三本目の既存スクリプトの既定の挙動は変えていない）: `scripts/grasppilot/g5_build.py`（把持関係 5 クラスの注釈）、`g5_train.py`
+  （5 クラスの頭、反転で 1↔2・3↔4 を入れ替える `G5Flip`、学習の中の打ち切り、`--batch`・`--amp none|bf16`）、`g5_flip_test.py`、`g5_signals.py`（infer・merge・assemble・flipcheck・evalval）、
+  `g5_batch_probe.py`（batch と数値精度の計測）
+- **bf16（変形注意だけ fp32）**: mmcv 2.1.0 の `ms_deform_attn_forward_cuda` に bf16 の実装が無いので、`g5_train.patch_msda_bf16` が入力が bf16 のときだけ fp32 で計算する（仮想環境と third_party は変えない）
+- 大きな生成物（5 クラスの注釈、G の重み、信号、標的、計測の記録）は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-05-grasp-tower-rebuild/`
+- 結果（非公式。1 折り・val 2 動画・seed 1 つ）: G を GPU ごとの batch 8・bf16（変形注意だけ fp32）・学習率 1e-4 で学んだ（利用者の決定）。
+  val の 5 クラスの mask mAP は確定 0.6460（epoch 3）・H1 0.5939・H2 0.5814（学習前 0.0060）。反転の整合（入れ替えて比べる soft IoU）0.693、入れ替えない対照 0.118（二本目の G は 0.134・0.787）。
+  **二本目（batch 2・fp32）との差は、頭のクラス数・反転のラベル・学ぶフレーム・batch と精度が重なったもの**で、どれか一つの効果とは読まない。
+  案 D の q は約半数の枠で行の和が 1 を超え、和で割って正規化した。案 C の t は作っていない。G1・G2・G2b・G3 pass
+
+### 把持の信号の予備測定の四本目: 作り直した G の信号で案 A・案 B・術具だけの腕（2026-11-06、bengio）
+
+契約 `T-2026-11-06-grasp-pilot-arms`（analysis。**非公式の測定。関門の判定と設計の判断に使わない**）。**二本目 `T-2026-11-01-grasp-pilot-g` の無効な腕を置き換える**
+（作り直した G の信号は `experiments/analysis/grasp_tower_rebuild/signals_manifest.json`）。結果は `experiments/analysis/grasp_pilot_arms/REPORT.md`、記録は `tasks/T-2026-11-06-grasp-pilot-arms/`。
+
+- 変更: `scripts/stage2pilot/dp_train.py` に `--grasp-no-flag`（案 A の旗なし 28 次元。**渡さなければ旗あり 30 次元のまま**。起点の版と出力が一致することを確かめた）
+- 新しいスクリプト: `scripts/grasppilot/arms_check_inputs.py`（材料の照合）、`arms_tool_only.py`（術具だけの信号）、`run_pd_grasparms.sh`（案 B の起動。二本目の台本の写しで置き場と腕だけ変えた）、
+  `arms_aggregate.py`（集計・検算・test 不使用の確かめ）。案 B の学習のコード 7 件（`pd_grasp*.py`・`grasp_signals.py`・`train_t1b.py`・設定 3 本）は変えていない
+- 大きな生成物（術具だけの地図、学ぶ部分の重み、記録）は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-grasp-pilot-arms/`
+- 結果（非公式。1 折り・val 2 動画・seed 1 つ。W1、4 epoch の固定の長さ）: 12 本すべて完走。案 B の予測-noCF は標的群 AP の Δ空 +0.0095、Δ入替 +0.0053、
+  二本目の正解との差 −0.0061。術具だけ（誰の手かを落とす）は Δ空 +0.0031、Δ入替 +0.0014、案 B の予測-noCF との差 −0.0064。
+  案 A の予測-noCF は Δ空 が Jaccard −0.0069（dressing の当たり外れ）・accuracy +0.0092・6 工程の平均 +0.0052、Δ入替 は 6 工程の平均 −0.0006。G1・G2・G3 pass
+
 ### 検出塔の batch の探索（2026-11-06〜07、andrew）
 
 契約 `T-2026-11-06-dtower-batch-search`（exp）。探索の 1 位（12 番。学習率 3.07e-4、max_norm 0.059、縮みの量 S 4.976e-3）の設定で、検出塔の GPU ごとの batch 2・4・6（2 枚で実効 4・8・12）を折り A・seed 42 と 123 で各 1 本、計 6 本学んだ。

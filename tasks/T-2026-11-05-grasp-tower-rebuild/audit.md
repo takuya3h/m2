@@ -183,3 +183,272 @@
 - `g5_train.patch_msda_bf16()` を足した（mmcv の `multi_scale_deform_attn` モジュールが名前で引く `MultiScaleDeformableAttnFunction` を、この過程の中だけ包みに差し替える）。確かめ（`$S/b0/msda_patch_check.txt`）:
   包まない bf16 → not implemented、fp32・fp16 は素通しでビット一致、bf16 の出力は bf16・fp32 との差の最大 0.0041、勾配は bf16 で有限
 - 2 回目（02:38〜02:43 JST、commit 61c364bd）: batch 2〜12 は収まり非数 0、batch 16 は 1 ステップ目で溢れた。表は `batch_probe.md`。再び止まって諮る
+
+### C-1 本番の 3 本（2 回目。利用者の回答の後。起動 2026-11-06 02:5x JST、commit ff954d9f）
+
+- 利用者の回答: batch 8、bf16（変形注意だけ fp32）、学習率 1e-4 のまま。GPU 0 に確定、GPU 1 に H1 の後 H2
+- `g5_train.py` に `--batch`・`--amp none|bf16` を足した（既定は batch 2・単精度で従来どおり）。評価は単精度・batch 2 のまま
+- 試走（`$S/logs/c0_smoke_b8bf16.txt`）: 1 epoch 1,169 ステップ、20 ステップの後の val 10 枚 0.5576、最大確保 25,634,898,432 B、COCO の重み 608 / 610、非数なし
+- 起動前: 本契約以外の compute 0 件（数えた 1 件は確かめの命令の python 自身）、GPU 0・1 とも 39・37 MiB、run の置き場は空
+
+      CUDA_VISIBLE_DEVICES=0 python scripts/grasppilot/g5_train.py --run-dir experiments/phase1/grasptower_G_all_seed42 --ckpt-dir $S/g/ckpt/all --ann-dir $S/g/ann --videos all --batch 8 --amp bf16
+      CUDA_VISIBLE_DEVICES=1 （H1 → H2 の順）... --run-dir experiments/phase1/grasptower_G_{H1,H2}_seed42 --ckpt-dir $S/g/ckpt/{H1,H2} --videos {H1,H2} --batch 8 --amp bf16
+
+### C-1 の途中: GPU 1 の共有（本契約の外、使用者は不明）
+
+- 03:24 JST（ホストの時計 18:24 UTC）に気づいた: GPU 1 の全体の使用 47,250 MiB・使用率 100%・218 W に対し、本契約の H1 は 26,152 MiB。
+  約 21 GB を `nvidia-smi` のプロセスの一覧に出ない使用者が使っている。起動の時点（02:53 JST）の GPU 1 は 37 MiB だった
+- この機械から見える root のプロセスは 2 件だけ（コンテナか別の名前空間の中とみる）。使用者は UNKNOWN。
+  `experiments/analysis/tower_batch_probe/tools/`（別の契約、同期で届いた。最終更新 02:30 JST、GPU の指定を含む）との関係も UNKNOWN
+- 影響: H1 の 1 ステップが epoch 1 の 1.23 秒から epoch 2 は 2.27 秒（約 1.8 倍）。GPU 0 の確定の G は 1.27 秒で影響なし。値は変わらない見込み（記憶の領域は分かれ、cudnn.benchmark は無効）。記憶の余裕は約 1.9 GB
+- 契約の停止の条件（本契約以外の compute プロセス）に当たるため、相手を止めずに利用者に諮った → **利用者の決定（03:5x JST）: このまま続ける**
+- 監視（Monitor）は 2 回、出力を一件も届けずに切れた（`cut` のため込み、次に背景の部分シェル）。一本の `tail -F | awk`（fflush）に直した
+
+### C-1 の結果（3 本、batch 8・bf16（変形注意だけ fp32）・学習率 1e-4）
+
+| run | 選んだ epoch | 5 クラス mask mAP | 学習前 | 止まった epoch | 所要 | 最大確保 | COCO の重み | 最良の重みの sha256 |
+|---|---:|---:|---:|---:|---:|---:|---|---|
+| grasptower_G_all_seed42 | 3 | 0.6460 | 0.0060 | 7 | 11664 秒 | 25,634,898,432 B | 608 / 610 | 5ea2cbf479254d78330664415e639929a86f704e5fe8b5ac8a485c7d3d9964d1 |
+| grasptower_G_H1_seed42 | 3 | 0.5939 | 0.0060 | 7 | 7240 秒 | 25,634,898,432 B | 608 / 610 | 5cfa055cbc72329ca1eb8f0bd8a487b64af8eaa88daac5657067cba7b9cd17c7 |
+| grasptower_G_H2_seed42 | 6 | 0.5814 | 0.0060 | 10 | 10069 秒 | 25,634,898,432 B | 608 / 610 | efdefccd4484fc6af0238e14044c89ec3010a83744db455734a019702377098b |
+
+- 3 本とも終了コード 0、収束規則（最良が 4 epoch 更新されなければ打ち切り）で止まり、上限 36 に達していない。epoch ごとの記録は REPORT §2
+- 起動 02:53 JST。H1 は 04:55 JST に終わり、続けて H2 を起動、H2 は 07:49 JST に終わった。確定の G は 06:08 JST ごろに終わった
+
+### C-3 反転の整合（`$S/flip/c3_flip_*.json`、val 40 フレーム、seed 42）
+
+    python scripts/grasppilot/g5_signals.py flipcheck --ckpt coco --label pre_coco ...
+    python scripts/grasppilot/g5_signals.py flipcheck --ckpt $S/inputs/g2_ckpt/all/best.pth --num-classes 38 --label second_G_all ...
+    python scripts/grasppilot/g5_signals.py flipcheck --ckpt $S/g/ckpt/all/best.pth --label after_all ...
+
+| G | 入れ替えて比べる（soft IoU、クラス平均） | 入れ替えずに比べる（陽性対照） |
+|---|---:|---:|
+| 学習前 | 0.439 | 0.633 |
+| 二本目の確定の G | 0.134 | 0.787 |
+| 本契約の確定の G（epoch 3） | 0.693 | 0.118 |
+
+### C-2・C-4 val の評価（`$S/evalval/*.json`、`g5_signals.py evalval`）
+
+- 印を除いた値（1,514 フレーム）と、val の印のフレーム `10_1_0595` を注釈なしの画像として足した値（1,515）。確定 0.6460 / 0.6459、H1 0.5939 / 0.5937、H2 0.5814 / 0.5813、学習前 0.0060 / 0.0060
+- 印を除いた値は 3 本とも学習中の記録と一致した
+
+**G3: pass**
+
+## Task D — 信号と標的
+
+### D-1 推論（`$S/signals/raw/`、`g5_signals.py infer`、GPU 0、評価は単精度）
+
+| 出力 | G | split | 動画 | フレーム | 枠 | 所要 | g の値の範囲 |
+|---|---|---|---|---:|---:|---:|---|
+| all_val | all（epoch 3、5ea2cbf479254d78…） | val | 09,10 | 1,515 | 4,707 | 282 秒 | [0.000, 0.995] |
+| H1_on_H2 | H1（epoch 3、5cfa055cbc72329c…） | train | 02,03,08,13,14 | 5,582 | 18,071 | 1024 秒 | [0.000, 0.995] |
+| all_train | all（epoch 3、5ea2cbf479254d78…） | train | 01,02,03,06,08,11,12,13,14,15 | 9,657 | 32,272 | 1700 秒 | [0.000, 0.996] |
+| H2_on_H1 | H2（epoch 6、efdefccd4484fc6a…） | train | 01,06,11,12,15 | 4,075 | 14,201 | 697 秒 | [0.000, 0.997] |
+
+### D-2 正解との比べ（`$S/compare/*.json`、二本目の `g_signals.py compare` をそのまま使った）
+
+- 確定の G・val、H1→H2・train、H2→H1・train、確定の G・train（交差適合なし。conventions#crossfit の「交差適合版と非適用版の両方を記録」）。値は REPORT §5
+
+### D-3〜D-6 組み立て（`g5_signals.py assemble`、08:09〜08:10 JST）
+
+    python scripts/grasppilot/g5_signals.py assemble --raw $S/signals/raw --out $S/signals --manifest experiments/analysis/grasp_tower_rebuild/signals_manifest.json --g-run <3 本の config.json>
+
+- 交差適合: train 9,657 フレームの外れ 0 件。動画ごとに作った G は 01・06・11・12・15 が H2、02・03・08・13・14 が H1（どれもその動画を学んでいない）。
+  対照: 確定の G で作った信号を 5 フレーム混ぜた写しで外れ 5 件。val 1,515 フレームは確定の G（外れ 0 件）
+- test 不使用: 各段（G の学習 3 本、推論 4 つ）の動画の集合と {04, 05, 07} の共通は 0 件。対照: 04 を混ぜた入力で共通 1 件
+- q の確かめ: 3 つの表（交差適合の train、確定の G の train、確定の G の val）で、枠の欠け 0・余り 0・行の和の誤差の最大 4.5e-8・値の最小 0。対照: 値を一つ変えた写しで和の誤差 0.25、`ok: false`
+- q の正規化（行の和が 1 を超えた枠を 4 値の和で割った）: 交差適合の train 16,021 / 32,272 枠（最大の和 1.546）、確定の G の train 16,089 / 32,272（1.634）、val 2,327 / 4,707（1.219）
+- 入れ替え（g と m、split ごと、seed 42）: train は元と同じフレーム 0.000・同じ動画 0.115、val は 0.001・0.556。対照の seed 43: train 0.0001・0.118、val 0.0007・0.554（並べ替えの要約値も違う）
+- 入れ替え（q、同じフレームの枠の間、seed 42）: 元と同じ枠の割合は train 0.300（枠が 2 個以上のフレームで 0.287）、val 0.318（0.289）。対照の seed 43: 0.284・0.284
+- 目録 `experiments/analysis/grasp_tower_rebuild/signals_manifest.json`（host Bengio）
+
+## Task E — 集計・検証
+
+- 試験（`$S/final/pytest_end.txt`）: 11 failed・980 passed・5 skipped。失敗の名前の集合は A-5 と同じ（`diff` で差なし）
+- 仮想環境の要約値: `.venv` 9c7be5c9…、`.venv-relation-detr` a74c9c78…。A-5 と一致
+- `make forbidden-check TASK=T-2026-11-05-grasp-tower-rebuild`（作業ツリー、08:2x JST）: status fail、changed 64・violations 51
+  - 24 件は同期で届いた別の契約のファイル（`experiments/analysis/dtower_batch_search/tools/`・`dtower_step_profile/tools/`・`tower_batch_probe/tools/`）。触れていない
+  - 27 件は本契約の run の記録（`experiments/phase1/grasptower_G_*_seed42/`）。契約の `allow_write` に `experiments/phase1/grasptower` が無い（SPEC §4 と食い違う。起票者の誤り）。扱いを利用者に諮った
+- 利用者の決定（選択肢 1）: `allow_write` に `experiments/phase1/grasptower` を足し、`meta.amendments` に記録した。validate OK
+- 足した後の `make forbidden-check`（作業ツリー）: status fail、changed 67・violations 24・permitted 30。違反はすべて別の契約のファイル（dtower_batch_search 10・dtower_step_profile 7・tower_batch_probe 7）。本契約の経路（run の記録 27 件と `experiments/analysis/grasp_tower_rebuild/` の 3 件）は permitted
+
+## 送出
+
+- commit 959f8143 を push（遠隔の先頭と一致）
+- 分岐の HEAD の写し（`git clone --shared` を作業用の場所へ、origin/phase0 89fe4a41 を取得）で `tools/check_forbidden.py --task T-2026-11-05-grasp-tower-rebuild` → status pass、changed 43・checked 43・violations []
+- PR #289 は 2026-11-06 03:39 JST（18:39:53 UTC）に利用者（takuya3h）が統合済みだった（head ff954d9f、merge commit 6e28c49d）。残りの commit を PR #295 で起票した（base phase0、Draft でない）
+- `git merge-tree --write-tree origin/phase0 HEAD` → README.md と docs/experiment_log.md が衝突。phase0 側の T-2026-11-06-tower-batch-probe・T-2026-11-06-dtower-step-profile（andrew）の末尾の追記と、本契約の末尾の追記。分岐では解いていない
+
+## 解決された参照（手順書 3、`contract.inject_verbatim` の原文）
+
+`context/conventions.md` の blob ceb7ef0f（`git log -1 -- context/conventions.md` = 2d946b07 = 契約の `conventions_rev`）から、6 節を原文のまま写す。denominator・frozen_source・sigma_policy の参照は契約に無い。
+
+### conventions#prohibitions（98〜108 行）
+
+> <a id="prohibitions"></a>
+> ## prohibitions
+>
+> | id | 禁止事項 |
+> |---|---|
+> | `no_split_redefine` | split を再定義しない |
+> | `no_raw_write` | `data/raw` `data/external` に書き込まない |
+> | `no_frozen_change` | 凍結源を変更しない |
+> | `no_estimated_values` | 未測定の値を書かない。未測定は UNKNOWN |
+> | `no_runindex_hand_edit` | `runindex/` を手で編集しない |
+
+### conventions#issuer_cautions（154〜192 行）
+
+> <a id="issuer_cautions"></a>
+> ## issuer_cautions
+>
+> **起票者が書いた検査も誤り得る。静的検査を通過したことは正しさを保証しない。**
+> 実装・実環境・対象集合を確認し、**契約の前提と実測が食い違う場合は変更前に停止して記録すること。**
+>
+> | # | 注意 |
+> |---|---|
+> | 1 | **起票者が「確定」と書いた値も、実測と食い違えば実測を正とする** |
+> | 2 | 一致 0 件なら別の異質な方法でも確認する |
+> | 3 | **対照は両方向で取る。** 片方向では「常に 0 を返す壊れ方」と区別できない |
+> | 4 | 仕組みの挙動は実装を読んでから信じる |
+> | 5 | **終了コードを件数と呼ばない。** 数えるなら `grep -c` |
+> | 6 | **プロセスは `/proc/PID/exe` で絞る。** 部分一致は実行基盤の包み込みを拾う |
+> | 7 | **丸めた表示を実数として扱わない** |
+> | 8 | **秘匿検査は形で判定し、検査自身が値を出力しない。** 要るのは長さと有無だけ |
+> | 9 | 無変更は要約値で確かめる。表示属性では足りない |
+> | 10 | 記録作成と表示用の切り詰めを同じ流れにしない |
+> | 11 | 測定の副作用が禁止領域へ触れないか確かめる |
+> | 12 | **判断の前に、いま見ているものが最新かを確かめる** |
+> | 13 | **要素の階層を見ずに検索しない。** ひな型と実体を取り違える |
+> | 14 | **規則の字面に複数の読みがあるとき、狭い読みを既定にしない。** 読みの候補を列挙して利用者に諮る |
+>
+> **注意 12 の実測**: 古い版管理の状態で見たため「道具が存在しない」と 3 件報告されたが、
+> 確かめると 3 件とも実在した。
+>
+> **注意 3 の実測**: 陽性対照が実際に落ちて検査器の欠陥を検出した
+> （`${(P)var}` を bash が解釈できず、照合が黙って飛んでいた）。
+>
+> **注意 6 の実測**: 否定対照 `zzz_no_such_token` が 1 を返した
+> （自分の命令行にその語が含まれるため）。
+>
+> **注意 14 の実測**: 「初期化は ImageNet か中立 SSL」を「凍結」「COCO 排除」と二度狭く読み、比較する塔の非対称を二周した。
+>
+> **シェルの前提**: 対話シェルは zsh。配列添字で終了コードを取れない。単語分割が起きない。
+> 一致しないグロブはコマンド自体を実行させない。**実装を評価するなら実装が指すシェルで行う。**
+>
+> **命令ごとに新しいシェルが起きる実装系がある。** `make` を含む命令には読み込みを同じ命令に含める。
+
+### conventions#env_p0（109〜120 行）
+
+> <a id="env_p0"></a>
+> ## env_p0
+>
+> 学習・評価スクリプトを起動する前に、必ず対象の venv を activate すること。
+> activate を省略すると CUDA 拡張が読み込まれず、無言で CPU 実装へフォールバックし、
+> 数値が変わったまま完走する。
+>
+>     source .venv-relation-detr/bin/activate   # 検出系
+>     source .venv/bin/activate                 # 解析・工程系
+>
+> 拡張のロード確認をログに残すこと。
+
+### conventions#folds（297〜366 行）
+
+> <a id="folds"></a>
+> ## folds
+>
+> 動画単位の 5-fold。**正本は `docs/stage0/A1_fold_table.md`**（契約 `T-2026-09-17-fold-table` が確定）。
+> 本節はその表と同じ値を持つ。数値が食い違ったら正本を正とする。
+>
+> | 折り | test（3） | val（2） |
+> |---|---|---|
+> | A | 04, 05, 07 | 09, 10 |
+> | B | 01, 03, 14 | 02, 08 |
+> | C | 02, 08, 11 | 06, 12 |
+> | D | 06, 13, 15 | 04, 05 |
+> | E | 09, 10, 12 | 07, 15 |
+>
+> train はその折りの test と val を除いた 10 本である。
+> **折り A は公式分割そのもの**（`conventions#split` の test と val に一致）。
+> 各動画は test にちょうど一度現れ、val は全折りを通じて高々一度しか使わない。
+>
+> ### 追加 6 動画
+>
+> 工程の注釈がある追加動画は次の 6 本である。
+>
+>     17, 18, 19, 20, 21, 22
+>
+> **22 はフレーム画像が無く使えない。工程塔に足すのは 17〜21 の 5 本で、その塔を P\*-20 と呼ぶ。**
+> 旧称は P\*-21。古い記録の P\*-21 は P\*-20 と読み替える。
+> 出所: 利用者の確認と決定 2026-09-27（契約 `T-2026-10-19-conventions-and-defect-records` SPEC §2）、
+> `tasks/T-2026-09-27-stage1-ptower-20/audit.md` の `verify_folds` の記録。
+>
+> **用途は訓練のみである。どの折りの test にも val にも現れない。**
+> 15 動画との重複 0 件、公式 test との重複 0 件（陽性対照つきで実測。正本の「追加 6 動画」節）。
+>
+> ### 規律
+>
+> **選定・early stopping・ハイパラ・界面の型の選択は、すべてその折りの val で行う。
+> test は腕ごとに一度だけ触る。** 折りをまたいで val を使い回さない。
+>
+> 出所: `docs/stage0/A1_fold_table.md`、契約 `T-2026-09-17-fold-table`。
+>
+> ### val と test の重なり
+>
+> 各折りの val 2 本（計 10 本）は、どれもほかの折りの test に現れる。上の表から読める対応は次のとおり。
+>
+> | val の動画 | val に使う折り | test に持つ折り |
+> |---|---|---|
+> | 09, 10 | A | E |
+> | 02, 08 | B | C |
+> | 06 | C | D |
+> | 12 | C | E |
+> | 04, 05 | D | A |
+> | 07 | E | A |
+> | 15 | E | D |
+>
+> **val に一度も入らないのは 01・03・11・13・14 の 5 本**である。test としては折り B に 3 本（01・03・14）、
+> C に 1 本（11）、D に 1 本（13）、A と E には 0 本。
+>
+> val で設定・処方・構造・型・止め方を選ぶ段（両塔の学び直しと Stage 2 以降）では、次の三つを守る。
+>
+> 1. この重なりを prereg と報告に明記する
+> 2. test の値を報告するときは、val に一度も入らない 5 動画だけで集計した値を副次として添える。
+>    各動画の値は、その動画を test に持つ折りのモデルが出す。集計の仕方は prereg に書く
+> 3. 副次の値は、判定・関門・選定のどれにも使わない
+>
+> 選ぶ規則（規律の小節。その折りの val で選ぶ）は変えない。
+>
+> 出所: 利用者の決定 2026-10-19（契約 `T-2026-10-21-ops-taskstart-resume-folds-val` SPEC §2）、上の折りの表、
+> `docs/stage1/design_val_subsets.md` 223 行。
+>
+> ---
+
+### conventions#split（12〜23 行）
+
+> <a id="split"></a>
+> ## split
+>
+> 論文準拠 split の動画 ID は次のとおり。
+>
+> - train: `01`, `02`, `03`, `06`, `08`, `11`, `12`, `13`, `14`, `15`
+> - val: `09`, `10`
+> - test: `04`, `05`, `07`
+>
+> 転記元: `data/splits/ego_train.txt`, `data/splits/ego_val.txt`, `data/splits/ego_test.txt`。
+> 実装側の対応値は `src/egosurgery/utils/eval_recipe.py` の `PAPER_SPLIT_VIDEOS`。
+
+### conventions#crossfit（457〜469 行）
+
+> <a id="crossfit"></a>
+> ## crossfit
+>
+> 送り手の積み重ね漏れ（stacking leakage）の扱い。研究方針 v2 §9.4。閾値は利用者の決定（2026-09-27）。
+>
+> - 送り手が学習した train 動画で送り手が出す予測は過学習している。界面をその予測で学習すると、train と val・test で信号の質が違う
+> - **送り手の train 動画と val 動画の主指標の差が 3pt を超えれば、交差適合を適用する**
+> - 交差適合: 各折りの train 動画を動画単位で 2 分割し、一方で学習した送り手が他方に予測を出す。両方向で train 動画すべての予測を作る。
+>   val・test への予測は train 全体で学習した確定塔が出す
+> - 適用は送り手掃引の全点で統一する。主送り手だけに適用しない
+> - 交差適合版と非適用版の送り手の主指標を両方記録する
+> - 実測: 検出塔の送り手の差は約 11pt（Stage 0 の凍結検出器 1 本の値。確定塔 D\* の差は未測定）。工程塔の送り手の差は 20 件すべてで 3pt を超え、最小 +0.1254（`tasks/T-2026-09-27-stage1-ptower-20/RESULT.md` §4「送り手の train と val の差」）
+

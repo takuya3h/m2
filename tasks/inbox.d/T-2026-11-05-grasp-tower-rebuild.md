@@ -3,3 +3,7 @@
 - [ ] 2026-11-06 [cc] 退避した run_ptower_search.log（0 B）は ~/m2-evacuated/T-2026-11-05-grasp-tower-rebuild/。戻すかを利用者に確かめる
 - [ ] 2026-11-06 [cc] bengio 版: 利用者の決定で andrew の分岐と PR #289 を使い続け、実験は bengio で一からやり直す。台帳の改訂版（Task B0）を「読み直し」の指示で取り込んだ（eb4c4925）
 - [ ] 2026-11-06 [cc] Task B0 の回答: GPU ごとの batch 8、bf16（変形注意だけ fp32。mmcv 2.1.0 に bf16 の実装が無く、利用者の決定で入力が bf16 のときだけ fp32 で計算）、学習率 1e-4 のまま。GPU 0 に確定、GPU 1 に H1 の後 H2。二本目との差は batch と精度の重なりとして書く（experiments/analysis/grasp_tower_rebuild/batch_probe.md）
+- [ ] 2026-11-06 [cc] G の学習の途中で GPU 1 を本契約の外のプロセス（約 21 GB、使用者は不明）と共有した。H1・H2 の所要が延びる。利用者の決定でそのまま続けた（audit.md C-1 の途中）
+- [ ] 2026-11-06 [cc] 契約の allow_write に run の置き場が無く（SPEC §4 と矛盾）、利用者の決定で experiments/phase1/grasptower を足して run の記録を commit した（meta.amendments）。run の置き場を作る契約は allow_write に含めて起票する
+- [ ] 2026-11-06 [cc] 案 D の q は約半数の枠で行の和が 1 を超え、和で割って正規化した（二本目は 11 枠）。和を超えた枠では「なし」が 0 になる。案 D の契約の起票で標的の性質を考える（experiments/analysis/grasp_tower_rebuild/REPORT.md §6）
+- [ ] 2026-11-06 [cc] 腕の回し直しは experiments/analysis/grasp_tower_rebuild/signals_manifest.json の信号と標的を写す。G は batch 8・bf16（変形注意だけ fp32）で学んだ。案 C の t は案 C の契約で定義する

@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（748 件）
+## 未処理（756 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -754,11 +754,19 @@
 - [ ] 2026-11-06 [cc] 退避した run_ptower_search.log（0 B）は ~/m2-evacuated/T-2026-11-05-grasp-tower-rebuild/。戻すかを利用者に確かめる
 - [ ] 2026-11-06 [cc] bengio 版: 利用者の決定で andrew の分岐と PR #289 を使い続け、実験は bengio で一からやり直す。台帳の改訂版（Task B0）を「読み直し」の指示で取り込んだ（eb4c4925）
 - [ ] 2026-11-06 [cc] Task B0 の回答: GPU ごとの batch 8、bf16（変形注意だけ fp32。mmcv 2.1.0 に bf16 の実装が無く、利用者の決定で入力が bf16 のときだけ fp32 で計算）、学習率 1e-4 のまま。GPU 0 に確定、GPU 1 に H1 の後 H2。二本目との差は batch と精度の重なりとして書く（experiments/analysis/grasp_tower_rebuild/batch_probe.md）
+- [ ] 2026-11-06 [cc] G の学習の途中で GPU 1 を本契約の外のプロセス（約 21 GB、使用者は不明）と共有した。H1・H2 の所要が延びる。利用者の決定でそのまま続けた（audit.md C-1 の途中）
+- [ ] 2026-11-06 [cc] 契約の allow_write に run の置き場が無く（SPEC §4 と矛盾）、利用者の決定で experiments/phase1/grasptower を足して run の記録を commit した（meta.amendments）。run の置き場を作る契約は allow_write に含めて起票する
+- [ ] 2026-11-06 [cc] 案 D の q は約半数の枠で行の和が 1 を超え、和で割って正規化した（二本目は 11 枠）。和を超えた枠では「なし」が 0 になる。案 D の契約の起票で標的の性質を考える（experiments/analysis/grasp_tower_rebuild/REPORT.md §6）
+- [ ] 2026-11-06 [cc] 腕の回し直しは experiments/analysis/grasp_tower_rebuild/signals_manifest.json の信号と標的を写す。G は batch 8・bf16（変形注意だけ fp32）で学んだ。案 C の t は案 C の契約で定義する
 - [ ] 2026-11-06 [cc] 検出塔の GPU 使用率は、歩の区間だけで平均すると 77〜92 %（使用率 0 の標本 0 個）。PR 290 の 43〜69 % は起動と止めの間を含む窓での平均だった。使用率を比べるときは平均の窓を揃えること（experiments/analysis/dtower_step_profile/REPORT.md §5.3）
 - [ ] 2026-11-06 [cc] 検出塔の一歩の読み込みの待ちは 0.001〜0.005 s。worker 数 4・8・16 で一歩は 0.3905・0.3938・0.3920 s（sd 0.021〜0.032 s）。batch と読み込み・プロセス数の設定の採否は利用者が決める（T-2026-11-06-dtower-step-profile）
 - [ ] 2026-11-06 [cc] 読み込み無しの水準の一歩が短い理由（入力の大きさか、読み込みか）は分けていない。入力の tensor の形を記録していないため（T-2026-11-06-dtower-step-profile）
 - [ ] 2026-11-06 [cc] 手順 0 で退避した空の run_ptower_search.log（PR 290 の工程塔の起動で Hydra が作ったもの）が ~/m2-evacuated/T-2026-11-06-dtower-step-profile/ に在る。戻すか消すかは利用者の判断
 - [ ] 2026-11-06 [cc] 版管理の外の生の記録 /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-step-profile/（重みなし）を残した。片付けは利用者の判断
+- [ ] 2026-11-06 [cc] 開始時の作業ツリーに別の契約 T-2026-11-06-dtower-batch-search の未 commit の道具 10 件（experiments/analysis/dtower_batch_search/tools/*.py）が同期で届いていた。利用者の決定で移さず消さず、.git/info/exclude に経路を 1 行足して task-start を通した。その契約が統合されたら除外の行を外すかを利用者に確かめる
+- [ ] 2026-11-06 [cc] 案 B の空と正解の腕は二本目の andrew の run の値（code_sha256 7 件は一致）。正解との差（標的群 −0.0061）にホストの差を含めないなら、正解の腕を bengio で回す契約を起票する（tasks/T-2026-11-06-grasp-pilot-arms/RESULT.md §4-4）
+- [ ] 2026-11-06 [cc] 案 A の予測の腕は Jaccard の Δ空 が負・accuracy と 6 工程の平均の Δ空 が正（dressing 0.769 → 0.690）。案 A の読みには 6 工程の平均と accuracy を必ず並べる（experiments/analysis/grasp_pilot_arms/REPORT.md §1）
+- [ ] 2026-11-06 [cc] SPEC §1 の二本目の案 B の正解の標的群 0.8067 は記録 0.8107035 の誤り（Δ空 +0.0156 は記録と合う）。参考の表は記録の値を使った
 - [ ] 2026-11-06 [cc] 工程塔の 1 epoch の歩数は manifest で変わる（旧 phase_manifest 604 歩、探索の phase_manifest_all_phase 662 歩。GPU ごと 8 × 2 枚）。塔の選び直しの所要は使う manifest の歩数で見込むこと（experiments/analysis/tower_batch_probe/REPORT.md §3）
 - [ ] 2026-11-06 [cc] 検出塔の train_search.py には batch を点ごとに渡す口が無い。batch の軸を足すなら、口を足すか写しを使うかを決める（T-2026-11-06-tower-batch-probe）
 - [ ] 2026-11-06 [cc] 版管理の外の生の記録 /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-tower-batch-probe/（重みなし）を残した。片付けは利用者の判断（T-2026-11-06-tower-batch-probe）
