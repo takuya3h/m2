@@ -78,4 +78,4 @@ andrew の A6000 × 2 で、探索の 12 番の設定のまま GPU ごとの bat
 ## 送出
 
 - PR: #299（base phase0、isDraft false、head feat/dtower-batch-search。内容の commit d3e319ac）
-- `make task-report`: 未実行（送出後に記録する）
+- `make task-report`: 終了コード 0（78497b91 の版を送った。verdict pass、n_issuer_defects 5、report_sha256 58fdc049…、8,872 bytes）
