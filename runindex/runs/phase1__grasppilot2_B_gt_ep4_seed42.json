@@ -1,0 +1,116 @@
+{
+  "arm": "unknown",
+  "attributes": {
+    "best_is_init": false,
+    "result_selection": "final_epoch"
+  },
+  "command": "#!/usr/bin/env bash\n# 自動生成: この run を起動したコマンドの記録\n# 生成日時: 2026-10-31T22:45:55+00:00\npython scripts/train_t1b.py --seed 42 --trainable film --task-id T-2026-11-01-grasp-pilot-g --run-name grasppilot2_B_gt_ep4_seed42 --det-ckpt /home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth --grasp-map gt --epochs 4 --fixed-epochs --amp bf16 --ckpt-dir /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-grasp-pilot-g/pd_ckpt/grasppilot2_B_gt_ep4_seed42 --save-trainable-only --print-freq 500\n",
+  "commit": "164ca2c55bdb4a5dda635ba149e52f79c9aa461d",
+  "config_path": "experiments/phase1/grasppilot2_B_gt_ep4_seed42/config.yaml",
+  "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
+  "description": "grasppilot2_B_gt_ep4",
+  "duplicate_bare_keys": [],
+  "epoch": 3,
+  "eval_recipe": null,
+  "eval_recipe_id": null,
+  "evidence_completeness": "full",
+  "excluded": false,
+  "exclusion_reason": null,
+  "experiment_id": "phase1/grasppilot2_B_gt_ep4/grasppilot2_B_gt_ep4@val",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_seed_declared": null,
+  "frozen_source_tag": null,
+  "gpu": null,
+  "group": "phase1",
+  "harvest_warnings": [
+    "run 名に seq (3 桁連番) が無い別系統の命名: grasppilot2_B_gt_ep4_seed42。step には description を充てた。"
+  ],
+  "host": "andrew",
+  "host_raw": "andrew",
+  "ledger_key": "phase1__grasppilot2_B_gt_ep4_seed42",
+  "metrics": {
+    "delta_detection": 0.009103031693279307,
+    "final_epoch": 3,
+    "final_mAP": 0.7364480565331222,
+    "init_mAP": 0.7273450248398429,
+    "mAP": 0.7364480565331222
+  },
+  "metrics_by_split": {
+    "unknown": {
+      "delta_detection": 0.009103031693279307,
+      "final_epoch": 3,
+      "final_mAP": 0.7364480565331222,
+      "init_mAP": 0.7273450248398429,
+      "mAP": 0.7364480565331222
+    }
+  },
+  "metrics_nested": {
+    "artifacts": {
+      "checkpoints": "andrew:/home/ubuntu/slocal2/m2/experiments/phase1/grasppilot2_B_gt_ep4_seed42/checkpoints",
+      "logs": "andrew:/home/ubuntu/slocal2/m2/experiments/phase1/grasppilot2_B_gt_ep4_seed42/logs",
+      "predictions": "andrew:/home/ubuntu/slocal2/m2/experiments/phase1/grasppilot2_B_gt_ep4_seed42/predictions",
+      "run_dir": "andrew:/home/ubuntu/slocal2/m2/experiments/phase1/grasppilot2_B_gt_ep4_seed42"
+    }
+  },
+  "metrics_primary_split": null,
+  "metrics_source": "metrics_json",
+  "notes": "# 非公式（T-2026-11-01-grasp-pilot-g） 案 B（把持の地図を C5 に足す型） gt seed 42\n\n受け取り手は D*-COCO 折り A seed 42 の検出塔（学習範囲 film、界面だけを学ぶ W1）。4 epoch 学習し途中で止めない。結果は 4 epoch 目（epoch 3）の状態で、最良の回を選ばない。val（動画 09・10）だけで評価した。test は通していない。\n\n- overall mAP 0.736448、標的群 AP 0.810703、陰性対照群 AP 0.676333\n- 学習前 mAP 0.727345\n- epoch ごとの val mAP（−1 は学習前）: {-1: 0.7273450248398429, 0: 0.7341892356583145, 1: 0.7347556408095092, 2: 0.7356814115235818, 3: 0.7364480565331222}\n- epoch ごとの界面の重み: {-1: {'iface_max_abs': 0.0, 'iface_l2': 0.0}, 0: {'iface_max_abs': 0.21431507170200348, 'iface_l2': 4.900234222412109}, 1: {'iface_max_abs': 0.30591365694999695, 'iface_l2': 7.107229709625244}, 2: {'iface_max_abs': 0.38687634468078613, 'iface_l2': 8.765179634094238}, 3: {'iface_max_abs': 0.3965856730937958, 'iface_l2': 9.718179702758789}}\n- 動画ごとの mAP: {'09': 0.7150633443369818, '10': 0.6518581403600751}\n- 凍結部の要約値の前後一致: True\n",
+  "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
+  "path": "experiments/phase1/grasppilot2_B_gt_ep4_seed42",
+  "per_class": {
+    "Bipolar Forceps": 0.8123951466483176,
+    "Electric Cautery": 0.9660891657295704,
+    "Forceps": 0.3614707983848127,
+    "Gauze": 0.28673641031647545,
+    "Hook": 0.6421786909963672,
+    "Mouth Gag": 0.7996093930279299,
+    "Needle Holders": 0.8551293132839838,
+    "Raspatory": 0.8139839707464165,
+    "Retractor": null,
+    "Scalpel": 0.9178551305924605,
+    "Scissors": 0.726557169252526,
+    "Skewer": 0.9479830774242992,
+    "Suction Cannula": 0.8323425207049189,
+    "Syringe": 0.5613000003503338,
+    "Tweezers": 0.7866420040052995
+  },
+  "per_class_kind": "tool",
+  "per_class_metric": "AP",
+  "per_class_nan_classes": [
+    "Retractor"
+  ],
+  "per_class_source": "experiments/phase1/grasppilot2_B_gt_ep4_seed42/per_class_ap.json",
+  "per_class_valid_count": 14,
+  "provenance": {
+    "aux_token": "no_aux_token",
+    "commit": "from_git_commit_txt",
+    "epoch": "from_metrics_json",
+    "host": "from_server_txt",
+    "name": "from_dirname_desc_seed_no_seq",
+    "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
+    "seed": "from_dirname_verified_by_command_sh_and_config_yaml",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "from_plan_section_16_7",
+    "step": "from_dirname"
+  },
+  "run_id": "grasppilot2_B_gt_ep4_seed42",
+  "seed": 42,
+  "seed_agreement": "agree",
+  "seed_command": 42,
+  "seed_config": 42,
+  "seed_detector": null,
+  "seed_phase": null,
+  "seq": null,
+  "split": "val",
+  "step": "grasppilot2_B_gt_ep4",
+  "subgroup": null,
+  "task_id": "T-2026-11-01-grasp-pilot-g",
+  "wandb_run_id": null,
+  "wandb_run_url": null
+}

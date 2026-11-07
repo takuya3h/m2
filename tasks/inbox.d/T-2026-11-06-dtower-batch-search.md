@@ -1,3 +1,6 @@
 - [ ] 2026-11-06 [user] 検出塔の batch の探索の同点幅は 0.0076（runindex の baselines/dcoco_foldA/dcoco_foldA@val の mAP_sstd 0.0038 の 2 倍。prereg の定義どおり）。起票時の 0.0106 は二周目の 3 本だけの SD の 2 倍で、起票者の誤り（T-2026-11-06-dtower-batch-search の meta.amendments）
 - [ ] 2026-11-06 [user] 縮みの量 S は 12 番の実際の値 4.976e-3（3.07e-4 × 3.37e-4 × 48,100）。weight decay は b2 を 3.37e-4 のまま、b4・b6 は 1 epoch の歩数の比で換算する（6.7428e-4・1.01058e-3。同 amendments）
 - [ ] 2026-11-06 [cc] 同じ識別子の一度目の着手は、カードが四版のため G1 の前で中止した（学習 0 本）。利用者の指示で「実行しなかった扱い」とし、記録と分岐を消した。五版が phase0 に入った後に二度目の着手をした
+- [ ] 2026-11-07 [cc] 検出塔の batch は prereg §3 の規則で **GPU ごとの 6**（実効 12、weight decay 1.01058e-3）に決まった。val mAP の 2 本の平均 b2 0.7285・b4 0.7297・b6 0.7357 で 3 水準とも同点幅 0.0076 の内、最も大きい batch を取った。回し直しの契約はこれを固定の項目として引く。予測 1・2 は外れ（T-2026-11-06-dtower-batch-search）
+- [ ] 2026-11-07 [cc] runindex の検証 C5 が別の契約の 3 run（phase1__grasppilot2_G_*）で落ち、forbidden-check は学習の最中に同期で届いた別の契約の未追跡 13 件で落ちた。どちらも本契約の分は 0 件で、他の契約の記録には触れていない（T-2026-11-06-dtower-batch-search の RESULT の逸脱）
+- [ ] 2026-11-07 [user] runindex の C5 の FAIL と forbidden-check の fail（どちらも別の契約の分）を逸脱として記録したまま、収穫ごと送出してよい（T-2026-11-06-dtower-batch-search の完了判定 j）

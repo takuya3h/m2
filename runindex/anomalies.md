@@ -8,15 +8,17 @@
 **明文化されていない**。以下はディレクトリ名の意味からの判断であり、
 規約に基づくものではない。**除外規約の明文化を推奨する。**
 
-除外 48 run / 全 2363 run（削除ではなくフラグ）
+除外 82 run / 全 2623 run（削除ではなくフラグ）
 
 | exclusion_reason | runs | 対象 |
 |---|---:|---|
-| `failed_run` | 6 | `experiments/phase0/_failed_s3_weighted` |
+| `aborted_run` | 4 | `experiments/baselines/_aborted_codetr_no_config`, `experiments/baselines/_aborted_s0_cuda_visible_misconfig` |
+| `failed_run` | 11 | `experiments/baselines/_failed_num_workers_zero`, `experiments/phase0/_failed_s3_weighted` |
 | `identity_check` | 24 | `experiments/hand2det_dev`, `experiments/transfer` |
 | `known_bad_split` | 6 | `experiments/baselines/_wrong_split_8_2_3` |
 | `mislabeled_arm_all_not_film` | 2 | `experiments/transfer` |
-| `smoke_test` | 7 | `experiments/_smoke_prior`, `experiments/baselines/_smoke_ddq` |
+| `smoke_test` | 26 | `experiments/_smoke_prior`, `experiments/baselines/_smoke_ddq`, `experiments/baselines/_smoke_e3`, `experiments/baselines/_smoke_prior_simplehead`, `experiments/baselines/_smoke_v2_part3`, `experiments/phase0/_pre_redo_s0_smoke` |
+| `superseded` | 6 | `experiments/phase0/_prior_no_eval_recipe` |
 | `wrong_frozen_source` | 3 | `experiments/phase1` |
 
 ### 1.1 `phase0/_failed_s3_weighted/` の 6 run — 運用上の欠陥
@@ -35,12 +37,12 @@
 
 指標キーの接頭辞から split を確定できない run。**推測していない**。
 
-確定不能 43 run / 全 2363 run
+確定不能 52 run / 全 2623 run
 
 | split_provenance | runs |
 |---|---:|
 | `not_determinable_no_eval_recipe` | 29 |
-| `not_determinable` | 14 |
+| `not_determinable` | 23 |
 
 残るのは **`metrics.json` が空 `{}` の run** である。指標が 1 つも無いため
 「どの split で評価したか」が原理的に存在しない。正本 §16.7 の既定（§13）も
@@ -48,6 +50,15 @@
 
 | path | excluded | exclusion_reason |
 |---|---|---|
+| `experiments/baselines/_aborted_codetr_no_config/s0_007_codetr_bbox_seed42` | True | `aborted_run` |
+| `experiments/baselines/_aborted_codetr_no_config/s0_008_codetr_bbox_seed123` | True | `aborted_run` |
+| `experiments/baselines/_aborted_codetr_no_config/s0_009_codetr_bbox_seed456` | True | `aborted_run` |
+| `experiments/baselines/_aborted_s0_cuda_visible_misconfig/s0_001_maskdino_bbox_seed42` | True | `aborted_run` |
+| `experiments/baselines/_failed_num_workers_zero/s0_001_maskdino_bbox_seed42` | True | `failed_run` |
+| `experiments/baselines/_failed_num_workers_zero/s0_002_maskdino_bbox_seed123` | True | `failed_run` |
+| `experiments/baselines/_failed_num_workers_zero/s0_003_maskdino_bbox_seed456` | True | `failed_run` |
+| `experiments/baselines/_failed_num_workers_zero/s0_005_varifocanet_bbox_seed42` | True | `failed_run` |
+| `experiments/baselines/_failed_num_workers_zero/s0_006_varifocanet_bbox_seed123` | True | `failed_run` |
 | `experiments/phase0/_failed_s3_weighted/_004_partial` | True | `failed_run` |
 | `experiments/phase0/_failed_s3_weighted/_005_partial` | True | `failed_run` |
 | `experiments/phase0/_failed_s3_weighted/_006_partial` | True | `failed_run` |
@@ -94,13 +105,14 @@
 
 ## 3. host を確定できなかった run
 
-確定不能 329 run
+確定不能 369 run
 
 | host_raw | runs | 理由 |
 |---|---:|---|
 | `dlsta` | 260 | host_aliases.json に無い値 |
-| `None` | 59 | server.txt 欠損かつ eval_recipe.server_name 無し |
-| `aolab` | 10 | philip / ilya の双方が返すコンテナ内 hostname のため一意に特定不能 |
+| `None` | 77 | server.txt 欠損かつ eval_recipe.server_name 無し |
+| `aolab` | 28 | philip / ilya の双方が返すコンテナ内 hostname のため一意に特定不能 |
+| `Bengio` | 4 | host_aliases.json に無い値 |
 
 ## 4. per_class_ap.json のクラス体系が 2 種類ある
 
@@ -113,14 +125,26 @@
 
 | per_class_kind | per_class_metric | runs | 内容 | 根拠 |
 |---|---|---:|---|---|
-| `phase` | `F1` | 1535 | 9 クラスの工程別 **F1**（AP ではない） | `scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が `best.get("phase_per_class_f1", {})` を `log_per_class_ap()` に渡している |
-| `unknown` | `unknown` | 446 | 既知の 2 体系のいずれとも一致しない | 確定不能 |
-| `None` | `None` | 208 | `per_class_ap.json` が無い・空・パース失敗 | — |
-| `tool` | `AP` | 153 | 15 クラスの術具 AP | `per_class_coco_map` / `COCOeval.precision` 由来 |
+| `phase` | `F1` | 1700 | 9 クラスの工程別 **F1**（AP ではない） | `scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が `best.get("phase_per_class_f1", {})` を `log_per_class_ap()` に渡している |
+| `unknown` | `unknown` | 467 | 既知の 2 体系のいずれとも一致しない | 確定不能 |
+| `None` | `None` | 221 | `per_class_ap.json` が無い・空・パース失敗 | — |
+| `tool` | `AP` | 214 | 15 クラスの術具 AP | `per_class_coco_map` / `COCOeval.precision` 由来 |
 | `coco_map` | `AP` | 21 |  |  |
 
-### metric を確定できなかった run: 446
+### metric を確定できなかった run: 467
 
+- `experiments/baselines/stage1_dtower_batch/dtowerbatch_b2_dcoco_foldA_seed123`（14 クラス）
+- `experiments/baselines/stage1_dtower_batch/dtowerbatch_b2_dcoco_foldA_seed42`（14 クラス）
+- `experiments/baselines/stage1_dtower_batch/dtowerbatch_b4_dcoco_foldA_seed123`（14 クラス）
+- `experiments/baselines/stage1_dtower_batch/dtowerbatch_b4_dcoco_foldA_seed42`（14 クラス）
+- `experiments/baselines/stage1_dtower_batch/dtowerbatch_b6_dcoco_foldA_seed123`（14 クラス）
+- `experiments/baselines/stage1_dtower_batch/dtowerbatch_b6_dcoco_foldA_seed42`（14 クラス）
+- `experiments/baselines/stage1_dtower_hostdiff_andrew/point00_dcoco_foldA_seed123`（14 クラス）
+- `experiments/baselines/stage1_dtower_hostdiff_andrew/point00_dcoco_foldA_seed42a`（14 クラス）
+- `experiments/baselines/stage1_dtower_hostdiff_andrew/point00_dcoco_foldA_seed42b`（14 クラス）
+- `experiments/baselines/stage1_dtower_hostdiff_bengio/123_dcoco_foldA_seed123`（14 クラス）
+- `experiments/baselines/stage1_dtower_hostdiff_bengio/42a_dcoco_foldA_seed42`（14 クラス）
+- `experiments/baselines/stage1_dtower_hostdiff_bengio/42b_dcoco_foldA_seed42`（14 クラス）
 - `experiments/baselines/stage1_dtower_search/point00_dcoco_foldA_seed42`（14 クラス）
 - `experiments/baselines/stage1_dtower_search/point01_dcoco_foldA_seed42`（14 クラス）
 - `experiments/baselines/stage1_dtower_search/point02_dcoco_foldA_seed42`（14 クラス）
@@ -141,6 +165,15 @@
 - `experiments/baselines/stage1_dtower_search/point17_dcoco_foldA_seed42`（14 クラス）
 - `experiments/baselines/stage1_dtower_search/point18_dcoco_foldA_seed42`（14 クラス）
 - `experiments/baselines/stage1_dtower_search/point19_dcoco_foldA_seed42`（14 クラス）
+- `experiments/phase0/_pre_redo_s0_smoke/s2_001_hand_detection_seed42`（19 クラス）
+- `experiments/phase0/_pre_redo_s0_smoke/s2_002_hand_detection_seed123`（19 クラス）
+- `experiments/phase0/_pre_redo_s0_smoke/s2_003_hand_detection_seed456`（19 クラス）
+- `experiments/phase0/_prior_no_eval_recipe/s2_001_hand_detection_seed42`（19 クラス）
+- `experiments/phase0/_prior_no_eval_recipe/s2_002_hand_detection_seed123`（19 クラス）
+- `experiments/phase0/_prior_no_eval_recipe/s2_003_hand_detection_seed456`（19 クラス）
+- `experiments/phase1/grasppilot2_G_H1_seed42`（38 クラス）
+- `experiments/phase1/grasppilot2_G_H2_seed42`（38 クラス）
+- `experiments/phase1/grasppilot2_G_all_seed42`（38 クラス）
 - `experiments/phase1/s4_grasp_injection_001_frozen_tecno_grasp_inference_ctrl_seed42`（5 クラス）
 - `experiments/phase1/s4_grasp_injection_002_frozen_tecno_grasp_inference_inj_seed42`（5 クラス）
 - `experiments/phase1/s4_grasp_injection_003_frozen_tecno_grasp_inference_ctrl_seed123`（5 クラス）
@@ -590,9 +623,9 @@
 
 | NaN のクラス | runs | 該当群 |
 |---|---:|---|
-| `Retractor` | 139 | `experiments/baselines`, `experiments/baselines/_legacy_score_thr_0`, `experiments/baselines/_smoke_ddq`, `experiments/baselines/stage1_dtower`, `experiments/baselines/stage1_dtower_r2`, `experiments/hand2det_dev`, `experiments/phase1`, `experiments/transfer`, `transfer` |
-| `Mouth Gag`, `Skewer` | 6 | `experiments/baselines/_wrong_split_8_2_3` |
-| `Bipolar Forceps`, `Electric Cautery`, `Forceps`, `Gauze`, `Hook`, `Mouth Gag`, `Needle Holders`, `Raspatory`, `Retractor`, `Scalpel`, `Scissors`, `Suction Cannula`, `Syringe`, `Tweezers` | 5 | `experiments/analysis/stage2_pilot_four/andrew/smoke_DX_gt`, `experiments/phase1` |
+| `Retractor` | 193 | `experiments/baselines`, `experiments/baselines/_legacy_score_thr_0`, `experiments/baselines/_smoke_ddq`, `experiments/baselines/_smoke_e3`, `experiments/baselines/_smoke_v2_part3`, `experiments/baselines/stage1_dtower`, `experiments/baselines/stage1_dtower_r2`, `experiments/hand2det_dev`, `experiments/phase1`, `experiments/transfer`, `transfer` |
+| `Mouth Gag`, `Skewer` | 12 | `experiments/baselines/_wrong_split_8_2_3`, `experiments/phase0/_pre_redo_s0_smoke`, `experiments/phase0/_prior_no_eval_recipe` |
+| `Bipolar Forceps`, `Electric Cautery`, `Forceps`, `Gauze`, `Hook`, `Mouth Gag`, `Needle Holders`, `Raspatory`, `Retractor`, `Scalpel`, `Scissors`, `Suction Cannula`, `Syringe`, `Tweezers` | 6 | `experiments/analysis/stage2_pilot_four/andrew/smoke_DX_gt`, `experiments/phase1` |
 | `Electric Cautery`, `Hook` | 4 | `experiments/baselines/stage1_dtower`, `experiments/baselines/stage1_dtower_r2` |
 | `Electric Cautery`, `Mouth Gag` | 4 | `experiments/baselines/stage1_dtower`, `experiments/baselines/stage1_dtower_r2` |
 
@@ -603,12 +636,15 @@
 
 ## 6. 命名規約から外れた run
 
-`<step>_<seq3>_<desc>_seed<N>` に一致しない run: 88
+`<step>_<seq3>_<desc>_seed<N>` に一致しない run: 92
 
 - `experiments/analysis/stage2_pilot_four/andrew/smoke_DX_gt/run`
+- `experiments/baselines/stage1_dtower_hostdiff_andrew/point00_dcoco_foldA_seed42a`
+- `experiments/baselines/stage1_dtower_hostdiff_andrew/point00_dcoco_foldA_seed42b`
 - `experiments/phase0/_failed_s3_weighted/_004_partial`
 - `experiments/phase0/_failed_s3_weighted/_005_partial`
 - `experiments/phase0/_failed_s3_weighted/_006_partial`
+- `experiments/phase1/grasppilot3_d_smoke2`
 - `experiments/phase1/stage2fix_pd_P1-W1_shuffle_ep4_seed42_smoke`
 - `experiments/phase1/stage2fix_pd_P3_gt_ep4_seed42_smoke`
 - `experiments/phase1/stage2four_pd_DX_gt_ep4_seed42_smoke`
@@ -617,6 +653,7 @@
 - `experiments/phase1/stage2pilot_pd_P1-W2_gt_seed42_smoke`
 - `experiments/phase1/stage2pilot_pd_P2L_gt_seed42_smoke`
 - `experiments/phase1/stage2pilot_pd_P3_gt_seed42_smoke`
+- `experiments/phase1/w23b_pd_P1-W3_gt_ep4_seed42_smoke`
 - `experiments/selection_noise_2026-07-29/runs/base_seed123_rep1`
 - `experiments/selection_noise_2026-07-29/runs/base_seed123_rep2`
 - `experiments/selection_noise_2026-07-29/runs/base_seed123_rep3`
@@ -812,24 +849,26 @@ adapter を書けば貴重な追加ソースになる。
 |---|---:|
 | 複数 split の指標が同一 run に共存: ['...', '...']。split は null にした。metrics には <split>__<metric> として split 名を残したまま入れる。 | 426 |
 | per_class_ap.json のクラス集合が既知の 2 体系のいずれとも一致しない (5 クラス) -> metric を確定できないため unknown | 426 |
-| host_aliases.json に無い値: '...'。host は null にした。 | 260 |
-| per_class_ap.json が空 ({...}) | 125 |
+| host_aliases.json に無い値: '...'。host は null にした。 | 264 |
+| per_class_ap.json が空 ({...}) | 138 |
+| run 名が命名規約 <step>_<seq3>_<desc>_seed<N> に一致しない | 92 |
 | val と test の指標が共存する。primary（best 選択元）は val。test 側は metrics_by_split['...'] に保持している。 | 89 |
-| run 名が命名規約 <step>_<seq3>_<desc>_seed<N> に一致しない | 88 |
 | per_class_ap.json が存在しない | 75 |
+| per_class_ap.json のクラス集合が既知の 2 体系のいずれとも一致しない (14 クラス) -> metric を確定できないため unknown | 32 |
+| host '...' は実サーバーを一意に特定できない。host は null にした。 | 28 |
 | ディレクトリ名の p010 は seed ではない。command.sh が --tool-noise-rate を渡しており、ノイズ率 0.01 を指す。seed_phase には入れない。 | 24 |
 | ディレクトリ名の p020 は seed ではない。command.sh が --tool-noise-rate を渡しており、ノイズ率 0.02 を指す。seed_phase には入れない。 | 24 |
 | ディレクトリ名の p030 は seed ではない。command.sh が --tool-noise-rate を渡しており、ノイズ率 0.03 を指す。seed_phase には入れない。 | 24 |
-| per_class_ap.json のクラス集合が既知の 2 体系のいずれとも一致しない (14 クラス) -> metric を確定できないため unknown | 20 |
+| metrics.json が空 ({...}) | 23 |
 | config.yaml のパースに失敗: ConstructorError | 15 |
-| metrics.json が空 ({...}) | 14 |
-| host '...' は実サーバーを一意に特定できない。host は null にした。 | 10 |
+| 同一 (group, step, description, split) 内で eval_recipe_id が 3 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #None で分離した。 | 12 |
 | run 名に seq (3 桁連番) が無い別系統の命名: base_seed<N>。step には description を充てた。 | 9 |
 | run 名に seq (3 桁連番) が無い別系統の命名: bboxROI_seed<N>。step には description を充てた。 | 9 |
-| 同一 (group, step, description, split) 内で eval_recipe_id が 2 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #None で分離した。 | 6 |
-| 同一 (group, step, description, split) 内で eval_recipe_id が 2 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #a63aecae で分離した。 | 6 |
+| 同一 (group, step, description, split) 内で eval_recipe_id が 3 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #93cb3159 で分離した。 | 6 |
+| 同一 (group, step, description, split) 内で eval_recipe_id が 3 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #a63aecae で分離した。 | 6 |
 | run 名に seq (3 桁連番) が無い別系統の命名: dcoco_foldA_seed<N>。step には description を充てた。 | 6 |
 | run 名に seq (3 桁連番) が無い別系統の命名: dimagenet_foldA_seed<N>。step には description を充てた。 | 6 |
+| per_class_ap.json のクラス集合が既知の 2 体系のいずれとも一致しない (19 クラス) -> metric を確定できないため unknown | 6 |
 | ディレクトリ名の p0 が末尾 seed<N> と一致せず、command.sh にノイズ引数も無い。seed か否かを確定できないため seed_phase は null にした。 | 6 |
 | run 名に seq (3 桁連番) が無い別系統の命名: t1b_ca_seed<N>。step には description を充てた。 | 4 |
 | config.yaml のパースに失敗: ParserError | 3 |
@@ -847,6 +886,7 @@ adapter を書けば貴重な追加ソースになる。
 | run 名に seq (3 桁連番) が無い別系統の命名: _identity_inj_4ch_real_seed<N>。step には description を充てた。 | 3 |
 | run 名に seq (3 桁連番) が無い別系統の命名: _identity_inj_4ch_seed<N>。step には description を充てた。 | 3 |
 | run 名に seq (3 桁連番) が無い別系統の命名: _identity_inj_5ch_seed<N>。step には description を充てた。 | 3 |
+| per_class_ap.json のクラス集合が既知の 2 体系のいずれとも一致しない (38 クラス) -> metric を確定できないため unknown | 3 |
 | run 名に seq (3 桁連番) が無い別系統の命名: _p0_identity_ctrl_seed<N>。step には description を充てた。 | 3 |
 | run 名に seq (3 桁連番) が無い別系統の命名: _p0_identity_inj_seed<N>。step には description を充てた。 | 3 |
 | run 名に seq (3 桁連番) が無い別系統の命名: hc_seed<N>。step には description を充てた。 | 3 |
@@ -864,7 +904,14 @@ adapter を書けば貴重な追加ソースになる。
 | run 名に seq (3 桁連番) が無い別系統の命名: dimagenet_foldC_seed<N>。step には description を充てた。 | 2 |
 | run 名に seq (3 桁連番) が無い別系統の命名: dimagenet_foldD_seed<N>。step には description を充てた。 | 2 |
 | run 名に seq (3 桁連番) が無い別系統の命名: dimagenet_foldE_seed<N>。step には description を充てた。 | 2 |
-| run 名に seq (3 桁連番) が無い別系統の命名: point00_dcoco_foldA_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: dtowerbatch_b2_dcoco_foldA_seed<N>。step には description を充てた。 | 2 |
+| run 名に seq (3 桁連番) が無い別系統の命名: dtowerbatch_b4_dcoco_foldA_seed<N>。step には description を充てた。 | 2 |
+| run 名に seq (3 桁連番) が無い別系統の命名: dtowerbatch_b6_dcoco_foldA_seed<N>。step には description を充てた。 | 2 |
+| run 名に seq (3 桁連番) が無い別系統の命名: point00_dcoco_foldA_seed<N>。step には description を充てた。 | 2 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasppilot3x_pd_B_gt_ep4_seed<N>。step には description を充てた。 | 2 |
+| run 名に seq (3 桁連番) が無い別系統の命名: 123_dcoco_foldA_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: 42a_dcoco_foldA_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: 42b_dcoco_foldA_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: point01_dcoco_foldA_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: point02_dcoco_foldA_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: point03_dcoco_foldA_seed<N>。step には description を充てた。 | 1 |
@@ -887,6 +934,21 @@ adapter を書けば貴重な追加ソースになる。
 | run 名に seq (3 桁連番) が無い別系統の命名: hand2det_1ep_4ch_all_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: hand2det_1ep_4ch_film_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: hand2det_4ch_film_inj_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasppilot2_B_empty_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasppilot2_B_gt_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasppilot2_B_gtpred_CF_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasppilot2_B_pred_CF_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasppilot2_B_pred_noCF_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasppilot2_B_shuffle_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasppilot2_G_H1_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasppilot2_G_H2_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasppilot2_G_all_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasppilot3_d_gteach_ep15_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasppilot3_d_none_ep15_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasppilot3_d_shuf_ep15_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasppilot3x_pd_B_gt_ep12_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasppilot_pd_B_empty_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasppilot_pd_B_gt_ep4_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: stage2fix_pd_P1-W1_empty_ep4_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: stage2fix_pd_P1-W1_pred_noCF_ep4_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: stage2fix_pd_P1-W1_shuffle_ep4_seed<N>。step には description を充てた。 | 1 |
@@ -933,6 +995,38 @@ adapter を書けば貴重な追加ソースになる。
 | run 名に seq (3 桁連番) が無い別系統の命名: stage2pilot_pd_P3_gtpred_CF_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: stage2pilot_pd_P3_pred_CF_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: stage2pilot_pd_P3_pred_noCF_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23a_pd_B_W2_empty_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23a_pd_B_W2_gt_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23a_pd_B_W2_pred_noCF_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23a_pd_B_W2_shuffle_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23a_pd_B_W3_empty_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23a_pd_B_W3_gt_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23a_pd_B_W3_pred_noCF_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23a_pd_B_W3_shuffle_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23a_pd_DX_W2_empty_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23a_pd_DX_W2_gt_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23a_pd_DX_W2_pred_noCF_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23a_pd_DX_W2_shuffle_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23a_pd_DX_W3_empty_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23a_pd_DX_W3_gt_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23a_pd_DX_W3_pred_noCF_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23a_pd_DX_W3_shuffle_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23b_pd_P1-W3_empty_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23b_pd_P1-W3_gt_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23b_pd_P1-W3_pred_noCF_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23b_pd_P1-W3_shuffle_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23b_pd_P2L-W2_empty_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23b_pd_P2L-W2_gt_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23b_pd_P2L-W2_pred_noCF_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23b_pd_P2L-W2_shuffle_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23b_pd_P2L-W3_empty_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23b_pd_P2L-W3_gt_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23b_pd_P2L-W3_pred_noCF_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23b_pd_P2L-W3_shuffle_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23b_pd_P3-W3_empty_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23b_pd_P3-W3_gt_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23b_pd_P3-W3_pred_noCF_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w23b_pd_P3-W3_shuffle_ep4_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: pd_refin_both_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: pd_refin_empty_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: pd_refin_oracle_seed<N>。step には description を充てた。 | 1 |
@@ -980,10 +1074,22 @@ dummy Trainer の削除またはガード追加は別タスクで検討するこ
 mAP 系の指標を持つのに術具 per-class（15 クラス）を持たない run は、
 どちらの検査でも判定できない。**個別確認が要る対象**として列挙する。
 
-該当 62 run
+該当 83 run
 
 | path | mAP 系のキー | entrypoint | commit |
 |---|---|---|---|
+| `experiments/baselines/stage1_dtower_batch/dtowerbatch_b2_dcoco_foldA_seed123` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `e5dd9a3652` |
+| `experiments/baselines/stage1_dtower_batch/dtowerbatch_b2_dcoco_foldA_seed42` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `e5dd9a3652` |
+| `experiments/baselines/stage1_dtower_batch/dtowerbatch_b4_dcoco_foldA_seed123` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `e5dd9a3652` |
+| `experiments/baselines/stage1_dtower_batch/dtowerbatch_b4_dcoco_foldA_seed42` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `e5dd9a3652` |
+| `experiments/baselines/stage1_dtower_batch/dtowerbatch_b6_dcoco_foldA_seed123` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `e5dd9a3652` |
+| `experiments/baselines/stage1_dtower_batch/dtowerbatch_b6_dcoco_foldA_seed42` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `e5dd9a3652` |
+| `experiments/baselines/stage1_dtower_hostdiff_andrew/point00_dcoco_foldA_seed123` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `d406f9a66c` |
+| `experiments/baselines/stage1_dtower_hostdiff_andrew/point00_dcoco_foldA_seed42a` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `7e6a4035ac` |
+| `experiments/baselines/stage1_dtower_hostdiff_andrew/point00_dcoco_foldA_seed42b` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `7e6a4035ac` |
+| `experiments/baselines/stage1_dtower_hostdiff_bengio/123_dcoco_foldA_seed123` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `bb44ba6413` |
+| `experiments/baselines/stage1_dtower_hostdiff_bengio/42a_dcoco_foldA_seed42` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `22ce24b268` |
+| `experiments/baselines/stage1_dtower_hostdiff_bengio/42b_dcoco_foldA_seed42` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `22ce24b268` |
 | `experiments/baselines/stage1_dtower_search/point00_dcoco_foldA_seed42` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `bce323bc8c` |
 | `experiments/baselines/stage1_dtower_search/point01_dcoco_foldA_seed42` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `11ab37479e` |
 | `experiments/baselines/stage1_dtower_search/point02_dcoco_foldA_seed42` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `11ab37479e` |
@@ -1024,6 +1130,15 @@ mAP 系の指標を持つのに術具 per-class（15 クラス）を持たない
 | `experiments/hand2det_dev/_identity_inj_5ch_seed456` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_hand2det.py` | `0ea33cac65` |
 | `experiments/hand2det_dev/hand2det_1ep_4ch_all_seed42` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_hand2det.py` | `0ea33cac65` |
 | `experiments/hand2det_dev/hand2det_4ch_film_inj_seed42` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_hand2det.py` | `0ea33cac65` |
+| `experiments/phase0/_pre_redo_s0_smoke/s2_001_hand_detection_seed42` | `mAP`, `mAP_50`, `mAP_75` | `/home/ubuntu/slocal2/egosurgery_multitask/src/egosurgery/train.py` | `d1bcc8a3ca` |
+| `experiments/phase0/_pre_redo_s0_smoke/s2_002_hand_detection_seed123` | `mAP`, `mAP_50`, `mAP_75` | `/home/ubuntu/slocal2/egosurgery_multitask/src/egosurgery/train.py` | `d1bcc8a3ca` |
+| `experiments/phase0/_pre_redo_s0_smoke/s2_003_hand_detection_seed456` | `mAP`, `mAP_50`, `mAP_75` | `/home/ubuntu/slocal2/egosurgery_multitask/src/egosurgery/train.py` | `d1bcc8a3ca` |
+| `experiments/phase0/_prior_no_eval_recipe/s2_001_hand_detection_seed42` | `mAP`, `mAP_50`, `mAP_75` | `/home/ubuntu/slocal2/egosurgery_multitask/src/egosurgery/train.py` | `d1bcc8a3ca` |
+| `experiments/phase0/_prior_no_eval_recipe/s2_002_hand_detection_seed123` | `mAP`, `mAP_50`, `mAP_75` | `/home/ubuntu/slocal2/egosurgery_multitask/src/egosurgery/train.py` | `d1bcc8a3ca` |
+| `experiments/phase0/_prior_no_eval_recipe/s2_003_hand_detection_seed456` | `mAP`, `mAP_50`, `mAP_75` | `/home/ubuntu/slocal2/egosurgery_multitask/src/egosurgery/train.py` | `d1bcc8a3ca` |
+| `experiments/phase1/grasppilot2_G_H1_seed42` | `best_grasp5_mAP`, `best_segm_mAP`, `pre_grasp5_mAP`, `pre_segm_mAP` | `scripts/grasppilot/g_train.py` | `d67875b73c` |
+| `experiments/phase1/grasppilot2_G_H2_seed42` | `best_grasp5_mAP`, `best_segm_mAP`, `pre_grasp5_mAP`, `pre_segm_mAP` | `scripts/grasppilot/g_train.py` | `d67875b73c` |
+| `experiments/phase1/grasppilot2_G_all_seed42` | `best_grasp5_mAP`, `best_segm_mAP`, `pre_grasp5_mAP`, `pre_segm_mAP` | `scripts/grasppilot/g_train.py` | `d67875b73c` |
 | `experiments/phase1/stage2fix_pd_P2F_shuffle_ep4_seed42` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_t1b.py` | `40a8146e89` |
 | `experiments/phase1/stage2pilot_pd_P2F_gt_seed42` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_t1b.py` | `00560d62d5` |
 | `experiments/phase1/stage2pilot_pd_P2F_pred_seed42` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_t1b.py` | `1fa5fa5833` |
@@ -1100,7 +1215,7 @@ mAP 系の指標を持つのに術具 per-class（15 クラス）を持たない
 ## 12. experiments/README.md と実態の乖離
 
 README は step 識別子を **s0〜s9 / a1〜a7（17 種）** と規定しているが、
-実測は **348 種**。README に無い以下の系統が存在する。
+実測は **410 種**。README に無い以下の系統が存在する。
 
 | 系統 | step 識別子の種類 | run 合計 | 例 |
 |---|---:|---:|---|
@@ -1133,11 +1248,23 @@ M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 �
 これを split の既定値とし、`provenance.split = from_plan_section_16_7` を記録する。
 ただし **指標が 1 つもない run には適用しない**（評価されていないため null のまま）。
 
-既定を適用した run: 690
+既定を適用した run: 753
 
 | path | 指標キー |
 |---|---|
 | `experiments/analysis/stage2_pilot_four/andrew/smoke_DX_gt/run` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/baselines/stage1_dtower_batch/dtowerbatch_b2_dcoco_foldA_seed123` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
+| `experiments/baselines/stage1_dtower_batch/dtowerbatch_b2_dcoco_foldA_seed42` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
+| `experiments/baselines/stage1_dtower_batch/dtowerbatch_b4_dcoco_foldA_seed123` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
+| `experiments/baselines/stage1_dtower_batch/dtowerbatch_b4_dcoco_foldA_seed42` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
+| `experiments/baselines/stage1_dtower_batch/dtowerbatch_b6_dcoco_foldA_seed123` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
+| `experiments/baselines/stage1_dtower_batch/dtowerbatch_b6_dcoco_foldA_seed42` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
+| `experiments/baselines/stage1_dtower_hostdiff_andrew/point00_dcoco_foldA_seed123` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
+| `experiments/baselines/stage1_dtower_hostdiff_andrew/point00_dcoco_foldA_seed42a` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
+| `experiments/baselines/stage1_dtower_hostdiff_andrew/point00_dcoco_foldA_seed42b` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
+| `experiments/baselines/stage1_dtower_hostdiff_bengio/123_dcoco_foldA_seed123` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
+| `experiments/baselines/stage1_dtower_hostdiff_bengio/42a_dcoco_foldA_seed42` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
+| `experiments/baselines/stage1_dtower_hostdiff_bengio/42b_dcoco_foldA_seed42` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
 | `experiments/baselines/stage1_dtower_search/point00_dcoco_foldA_seed42` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
 | `experiments/baselines/stage1_dtower_search/point01_dcoco_foldA_seed42` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
 | `experiments/baselines/stage1_dtower_search/point02_dcoco_foldA_seed42` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
@@ -1179,6 +1306,20 @@ M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 �
 | `experiments/hand2det_dev/hand2det_1ep_4ch_all_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
 | `experiments/hand2det_dev/hand2det_1ep_4ch_film_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
 | `experiments/hand2det_dev/hand2det_4ch_film_inj_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/grasppilot2_B_empty_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/grasppilot2_B_gt_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/grasppilot2_B_gtpred_CF_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/grasppilot2_B_pred_CF_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/grasppilot2_B_pred_noCF_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/grasppilot2_B_shuffle_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/grasppilot2_G_H1_seed42` | `best_grasp5_mAP`, `best_segm_mAP`, `early_stopped_epoch`, `elapsed_seconds`, `epochs_completed`, `lr_lowered_epoch` |
+| `experiments/phase1/grasppilot2_G_H2_seed42` | `best_grasp5_mAP`, `best_segm_mAP`, `early_stopped_epoch`, `elapsed_seconds`, `epochs_completed`, `lr_lowered_epoch` |
+| `experiments/phase1/grasppilot2_G_all_seed42` | `best_grasp5_mAP`, `best_segm_mAP`, `early_stopped_epoch`, `elapsed_seconds`, `epochs_completed`, `lr_lowered_epoch` |
+| `experiments/phase1/grasppilot3x_pd_B_gt_ep12_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/grasppilot3x_pd_B_gt_ep4_seed123` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/grasppilot3x_pd_B_gt_ep4_seed456` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/grasppilot_pd_B_empty_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/grasppilot_pd_B_gt_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
 | `experiments/phase1/s4_grasp_injection_001_frozen_tecno_grasp_inference_ctrl_seed42` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
 | `experiments/phase1/s4_grasp_injection_002_frozen_tecno_grasp_inference_inj_seed42` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
 | `experiments/phase1/s4_grasp_injection_003_frozen_tecno_grasp_inference_ctrl_seed123` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
@@ -1621,6 +1762,10 @@ M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 �
 | `experiments/phase1/stage1_ptower_20_034_features_imagenet_lr0.0001_foldC_seed42` | `elapsed_seconds`, `frames` |
 | `experiments/phase1/stage1_ptower_20_035_features_imagenet_lr0.0001_foldD_seed42` | `elapsed_seconds`, `frames` |
 | `experiments/phase1/stage1_ptower_20_049_features_imagenet_lr0.0001_foldE_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_hostdiff_andrew/stage1_ptower_search_002_features_coco_lr0.0001_foldA_point00_seed123` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_hostdiff_andrew/stage1_ptower_search_002_features_coco_lr0.0001_foldA_point00_seed42` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_hostdiff_bengio/stage1_ptower_search_002_features_coco_lr0.0001_foldA_point00_seed123` | `elapsed_seconds`, `frames` |
+| `experiments/phase1/stage1_ptower_hostdiff_bengio/stage1_ptower_search_002_features_coco_lr0.0001_foldA_point00_seed42` | `elapsed_seconds`, `frames` |
 | `experiments/phase1/stage1_ptower_r2_014_features_lr0.0001_foldA_seed42` | `elapsed_seconds`, `frames` |
 | `experiments/phase1/stage1_ptower_r2_015_features_lr0.0001_foldA_seed123` | `elapsed_seconds`, `frames` |
 | `experiments/phase1/stage1_ptower_r2_016_features_lr0.0001_foldA_seed456` | `elapsed_seconds`, `frames` |
@@ -1739,6 +1884,39 @@ M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 �
 | `experiments/phase1/stage2pilot_pd_P3_gtpred_CF_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
 | `experiments/phase1/stage2pilot_pd_P3_pred_CF_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
 | `experiments/phase1/stage2pilot_pd_P3_pred_noCF_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23a_pd_B_W2_empty_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23a_pd_B_W2_gt_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23a_pd_B_W2_pred_noCF_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23a_pd_B_W2_shuffle_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23a_pd_B_W3_empty_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23a_pd_B_W3_gt_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23a_pd_B_W3_pred_noCF_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23a_pd_B_W3_shuffle_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23a_pd_DX_W2_empty_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23a_pd_DX_W2_gt_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23a_pd_DX_W2_pred_noCF_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23a_pd_DX_W2_shuffle_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23a_pd_DX_W3_empty_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23a_pd_DX_W3_gt_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23a_pd_DX_W3_pred_noCF_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23a_pd_DX_W3_shuffle_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23b_pd_P1-W3_empty_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23b_pd_P1-W3_gt_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23b_pd_P1-W3_gt_ep4_seed42_smoke` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23b_pd_P1-W3_pred_noCF_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23b_pd_P1-W3_shuffle_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23b_pd_P2L-W2_empty_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23b_pd_P2L-W2_gt_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23b_pd_P2L-W2_pred_noCF_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23b_pd_P2L-W2_shuffle_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23b_pd_P2L-W3_empty_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23b_pd_P2L-W3_gt_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23b_pd_P2L-W3_pred_noCF_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23b_pd_P2L-W3_shuffle_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23b_pd_P3-W3_empty_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23b_pd_P3-W3_gt_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23b_pd_P3-W3_pred_noCF_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w23b_pd_P3-W3_shuffle_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
 | `experiments/selection_noise_2026-07-29/runs/base_seed123_rep1` | `rep` |
 | `experiments/selection_noise_2026-07-29/runs/base_seed123_rep2` | `rep` |
 | `experiments/selection_noise_2026-07-29/runs/base_seed123_rep3` | `rep` |
@@ -1999,25 +2177,30 @@ run_id 単位の 3 分類（記録漏れ / 成果物消失 / 数値の食い違�
 
 ## 15. run_id の衝突
 
-`run_id`（ディレクトリ名）は **26 種が複数箇所で衝突**する。
+`run_id`（ディレクトリ名）は **49 種が複数箇所で衝突**する。
 スキーマは `runs/<run_id>.json` を指定しているが、そのままではファイルが
 上書きされるため、パス由来の `ledger_key` をファイル名に使い、
 `run_id` はフィールドとして保持した。
 
 | run_id | 箇所数 |
 |---|---:|
+| `s0_001_maskdino_bbox_seed42` | 7 |
+| `s0_002_maskdino_bbox_seed123` | 6 |
+| `s0_003_maskdino_bbox_seed456` | 6 |
+| `s0_004_varifocanet_bbox_seed42` | 5 |
+| `s0_005_varifocanet_bbox_seed123` | 5 |
+| `s0_006_varifocanet_bbox_seed456` | 5 |
 | `base_seed123` | 3 |
 | `base_seed42` | 3 |
 | `base_seed456` | 3 |
 | `bboxROI_seed123` | 3 |
 | `bboxROI_seed42` | 3 |
 | `bboxROI_seed456` | 3 |
-| `s0_001_maskdino_bbox_seed42` | 3 |
-| `s0_002_maskdino_bbox_seed123` | 3 |
-| `s0_003_maskdino_bbox_seed456` | 3 |
-| `s0_004_varifocanet_bbox_seed42` | 3 |
-| `s0_005_varifocanet_bbox_seed123` | 3 |
-| `s0_006_varifocanet_bbox_seed456` | 3 |
+| `s3_001_phase_frame_seed42` | 3 |
+| `s3_002_phase_frame_seed123` | 3 |
+| `s3_003_phase_frame_seed456` | 3 |
+| `stage1_ptower_search_001_ft_coco_lr0.0001_foldA_point00_seed42` | 3 |
+| `stage1_ptower_search_002_features_coco_lr0.0001_foldA_point00_seed42` | 3 |
 | `dcoco_foldA_seed123` | 2 |
 | `dcoco_foldA_seed42` | 2 |
 | `dcoco_foldA_seed456` | 2 |
@@ -2032,6 +2215,24 @@ run_id 単位の 3 分類（記録漏れ / 成果物消失 / 数値の食い違�
 | `dimagenet_foldC_seed42` | 2 |
 | `dimagenet_foldD_seed42` | 2 |
 | `dimagenet_foldE_seed42` | 2 |
+| `s0_007_codetr_bbox_seed42` | 2 |
+| `s0_008_codetr_bbox_seed123` | 2 |
+| `s0_009_codetr_bbox_seed456` | 2 |
+| `s2_001_hand_detection_seed42` | 2 |
+| `s2_002_hand_detection_seed123` | 2 |
+| `s2_003_hand_detection_seed456` | 2 |
+| `stage1_ptower_search_001_ft_coco_lr0.0001_foldA_point00_seed123` | 2 |
+| `stage1_ptower_search_002_features_coco_lr0.0001_foldA_point00_seed123` | 2 |
+| `stage1_ptower_search_003_P15_A_L6_w0.0_h30_foldA_point00_seed42` | 2 |
+| `stage1_ptower_search_004_P15_A_L8_w0.0_h30_foldA_point00_seed42` | 2 |
+| `stage1_ptower_search_005_P15_B_L6_w0.0_h30_foldA_point00_seed42` | 2 |
+| `stage1_ptower_search_006_P15_B_L6_w0.0_h60_foldA_point00_seed42` | 2 |
+| `stage1_ptower_search_007_P15_C_L6_w0.15_h30_foldA_point00_seed42` | 2 |
+| `stage1_ptower_search_008_P15_C_L6_w0.3_h30_foldA_point00_seed42` | 2 |
+| `stage1_ptower_search_009_P15_B_L8_w0.0_h30_foldA_point00_seed42` | 2 |
+| `stage1_ptower_search_010_P15_B_L8_w0.0_h60_foldA_point00_seed42` | 2 |
+| `stage1_ptower_search_011_P15_C_L8_w0.15_h30_foldA_point00_seed42` | 2 |
+| `stage1_ptower_search_012_P15_C_L8_w0.3_h30_foldA_point00_seed42` | 2 |
 
 ## 16. 🔴 修正済み: primary 指標に test の値が入っていた
 
@@ -2112,16 +2313,16 @@ _FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
 **したがって `frozen_source_tag` はキャッシュのパスからのみ導き、
 `frozen_source.seed` と `notes.md` の記述は採用していない。**
 
-- 実験数: **1130** / run 数 2363
-- `experiment_id` を付けられなかった run: 88
+- 実験数: **1305** / run 数 2623
+- `experiment_id` を付けられなかった run: 92
   （run 名が命名規約に一致しない run）
-- `eval_recipe_id` の食い違いで分離した base: 12
-  - `baselines/s0/maskdino_bbox@val` -> ['None', 'a63aecae1158']
-  - `baselines/s0/maskdino_bbox@val` -> ['None', 'a63aecae1158']
-  - `baselines/s0/maskdino_bbox@val` -> ['None', 'a63aecae1158']
-  - `baselines/s0/varifocanet_bbox@val` -> ['None', 'a63aecae1158']
-  - `baselines/s0/varifocanet_bbox@val` -> ['None', 'a63aecae1158']
-  - `baselines/s0/varifocanet_bbox@val` -> ['None', 'a63aecae1158']
+- `eval_recipe_id` の食い違いで分離した base: 24
+  - `baselines/s0/maskdino_bbox@val` -> ['93cb3159bea1', 'None', 'a63aecae1158']
+  - `baselines/s0/maskdino_bbox@val` -> ['93cb3159bea1', 'None', 'a63aecae1158']
+  - `baselines/s0/maskdino_bbox@val` -> ['93cb3159bea1', 'None', 'a63aecae1158']
+  - `baselines/s0/varifocanet_bbox@val` -> ['93cb3159bea1', 'None', 'a63aecae1158']
+  - `baselines/s0/varifocanet_bbox@val` -> ['93cb3159bea1', 'None', 'a63aecae1158']
+  - `baselines/s0/varifocanet_bbox@val` -> ['93cb3159bea1', 'None', 'a63aecae1158']
 
 ### 17.1 🔴 限界: 名前が条件を一意に表さない実験がある
 
@@ -2143,13 +2344,65 @@ _FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
 `description` / `split` / `frozen_source_tag` が一致しているのに `step` だけが違う組を
 機械的に検出した結果が次である。**同一条件が分裂している候補**として扱うこと。
 
-該当 **25 組**
+該当 **77 組**
 
 | group / description / split / frozen_source | 分裂した experiment_id |
 |---|---|
-| `baselines` / `maskdino_bbox` / `val` / `None` | `baselines/s0/maskdino_bbox@val#None`<br>`baselines/s0/maskdino_bbox@val#a63aecae` |
-| `baselines` / `varifocanet_bbox` / `val` / `None` | `baselines/s0/varifocanet_bbox@val#None`<br>`baselines/s0/varifocanet_bbox@val#a63aecae` |
+| `baselines` / `maskdino_bbox` / `val` / `None` | `baselines/s0/maskdino_bbox@val#93cb3159`<br>`baselines/s0/maskdino_bbox@val#None`<br>`baselines/s0/maskdino_bbox@val#a63aecae` |
+| `baselines` / `varifocanet_bbox` / `val` / `None` | `baselines/s0/varifocanet_bbox@val#93cb3159`<br>`baselines/s0/varifocanet_bbox@val#None`<br>`baselines/s0/varifocanet_bbox@val#a63aecae` |
+| `phase1` / `D1-L1_empty_ep4` / `val` / `None` | `phase1/stage2fix_dp/D1-L1_empty_ep4@val`<br>`phase1/w23b_dp_W2/D1-L1_empty_ep4@val`<br>`phase1/w23b_dp_W3/D1-L1_empty_ep4@val` |
+| `phase1` / `D1-L1_gt_ep1_smoke` / `val` / `None` | `phase1/w23b_chk_dpnew/D1-L1_gt_ep1_smoke@val`<br>`phase1/w23b_chk_dpold/D1-L1_gt_ep1_smoke@val` |
+| `phase1` / `D1-L1_gt_ep4` / `val` / `None` | `phase1/stage2fix_dp/D1-L1_gt_ep4@val`<br>`phase1/w23b_dp_W2/D1-L1_gt_ep4@val`<br>`phase1/w23b_dp_W3/D1-L1_gt_ep4@val` |
+| `phase1` / `D1-L1_gtpred_CF_ep4` / `val` / `None` | `phase1/stage2fix_dp/D1-L1_gtpred_CF_ep4@val`<br>`phase1/w23b_dp_W2/D1-L1_gtpred_CF_ep4@val`<br>`phase1/w23b_dp_W3/D1-L1_gtpred_CF_ep4@val` |
+| `phase1` / `D1-L1_pred_CF_ep4` / `val` / `None` | `phase1/stage2fix_dp/D1-L1_pred_CF_ep4@val`<br>`phase1/w23b_dp_W2/D1-L1_pred_CF_ep4@val`<br>`phase1/w23b_dp_W3/D1-L1_pred_CF_ep4@val` |
+| `phase1` / `D1-L1_pred_noCF_ep4` / `val` / `None` | `phase1/stage2fix_dp/D1-L1_pred_noCF_ep4@val`<br>`phase1/w23b_dp_W2/D1-L1_pred_noCF_ep4@val`<br>`phase1/w23b_dp_W3/D1-L1_pred_noCF_ep4@val` |
+| `phase1` / `D1-L1_shuffle_ep4` / `val` / `None` | `phase1/stage2fix_dp/D1-L1_shuffle_ep4@val`<br>`phase1/w23b_dp_W2/D1-L1_shuffle_ep4@val`<br>`phase1/w23b_dp_W3/D1-L1_shuffle_ep4@val` |
+| `phase1` / `D1-L2_empty_ep4` / `val` / `None` | `phase1/stage2fix_dp/D1-L2_empty_ep4@val`<br>`phase1/w23b_dp_W2/D1-L2_empty_ep4@val`<br>`phase1/w23b_dp_W3/D1-L2_empty_ep4@val` |
+| `phase1` / `D1-L2_pred_CF_ep4` / `val` / `None` | `phase1/stage2fix_dp/D1-L2_pred_CF_ep4@val`<br>`phase1/w23b_dp_W2/D1-L2_pred_CF_ep4@val`<br>`phase1/w23b_dp_W3/D1-L2_pred_CF_ep4@val` |
+| `phase1` / `D1-L2_pred_noCF_ep4` / `val` / `None` | `phase1/stage2fix_dp/D1-L2_pred_noCF_ep4@val`<br>`phase1/w23b_dp_W2/D1-L2_pred_noCF_ep4@val`<br>`phase1/w23b_dp_W3/D1-L2_pred_noCF_ep4@val` |
+| `phase1` / `D1-L2_shuffle_ep4` / `val` / `None` | `phase1/stage2fix_dp/D1-L2_shuffle_ep4@val`<br>`phase1/w23b_dp_W2/D1-L2_shuffle_ep4@val`<br>`phase1/w23b_dp_W3/D1-L2_shuffle_ep4@val` |
+| `phase1` / `D2_empty_ep4` / `val` / `None` | `phase1/stage2fix_dp/D2_empty_ep4@val`<br>`phase1/w23b_dp_W2/D2_empty_ep4@val`<br>`phase1/w23b_dp_W3/D2_empty_ep4@val` |
+| `phase1` / `D2_gt_ep4` / `val` / `None` | `phase1/stage2fix_dp/D2_gt_ep4@val`<br>`phase1/w23b_dp_W2/D2_gt_ep4@val`<br>`phase1/w23b_dp_W3/D2_gt_ep4@val` |
+| `phase1` / `D2_gtpred_CF_ep4` / `val` / `None` | `phase1/stage2fix_dp/D2_gtpred_CF_ep4@val`<br>`phase1/w23b_dp_W2/D2_gtpred_CF_ep4@val`<br>`phase1/w23b_dp_W3/D2_gtpred_CF_ep4@val` |
+| `phase1` / `D2_pred_CF_ep4` / `val` / `None` | `phase1/stage2fix_dp/D2_pred_CF_ep4@val`<br>`phase1/w23b_dp_W2/D2_pred_CF_ep4@val`<br>`phase1/w23b_dp_W3/D2_pred_CF_ep4@val` |
+| `phase1` / `D2_pred_noCF_ep4` / `val` / `None` | `phase1/stage2fix_dp/D2_pred_noCF_ep4@val`<br>`phase1/w23b_dp_W2/D2_pred_noCF_ep4@val`<br>`phase1/w23b_dp_W3/D2_pred_noCF_ep4@val` |
+| `phase1` / `D2_shuffle_ep4` / `val` / `None` | `phase1/stage2fix_dp/D2_shuffle_ep4@val`<br>`phase1/w23b_dp_W2/D2_shuffle_ep4@val`<br>`phase1/w23b_dp_W3/D2_shuffle_ep4@val` |
+| `phase1` / `D3-L1_empty_ep4` / `val` / `None` | `phase1/stage2fix_dp/D3-L1_empty_ep4@val`<br>`phase1/w23b_dp_W2/D3-L1_empty_ep4@val`<br>`phase1/w23b_dp_W3/D3-L1_empty_ep4@val` |
+| `phase1` / `D3-L1_gt_ep4` / `val` / `None` | `phase1/stage2fix_dp/D3-L1_gt_ep4@val`<br>`phase1/w23b_dp_W2/D3-L1_gt_ep4@val`<br>`phase1/w23b_dp_W3/D3-L1_gt_ep4@val` |
+| `phase1` / `D3-L1_gtpred_CF_ep4` / `val` / `None` | `phase1/stage2fix_dp/D3-L1_gtpred_CF_ep4@val`<br>`phase1/w23b_dp_W2/D3-L1_gtpred_CF_ep4@val`<br>`phase1/w23b_dp_W3/D3-L1_gtpred_CF_ep4@val` |
+| `phase1` / `D3-L1_pred_CF_ep4` / `val` / `None` | `phase1/stage2fix_dp/D3-L1_pred_CF_ep4@val`<br>`phase1/w23b_dp_W2/D3-L1_pred_CF_ep4@val`<br>`phase1/w23b_dp_W3/D3-L1_pred_CF_ep4@val` |
+| `phase1` / `D3-L1_pred_noCF_ep4` / `val` / `None` | `phase1/stage2fix_dp/D3-L1_pred_noCF_ep4@val`<br>`phase1/w23b_dp_W2/D3-L1_pred_noCF_ep4@val`<br>`phase1/w23b_dp_W3/D3-L1_pred_noCF_ep4@val` |
+| `phase1` / `D3-L1_shuffle_ep4` / `val` / `None` | `phase1/stage2fix_dp/D3-L1_shuffle_ep4@val`<br>`phase1/w23b_dp_W2/D3-L1_shuffle_ep4@val`<br>`phase1/w23b_dp_W3/D3-L1_shuffle_ep4@val` |
+| `phase1` / `D3-L2_empty_ep4` / `val` / `None` | `phase1/stage2fix_dp/D3-L2_empty_ep4@val`<br>`phase1/w23b_dp_W2/D3-L2_empty_ep4@val`<br>`phase1/w23b_dp_W3/D3-L2_empty_ep4@val` |
+| `phase1` / `D3-L2_pred_CF_ep4` / `val` / `None` | `phase1/stage2fix_dp/D3-L2_pred_CF_ep4@val`<br>`phase1/w23b_dp_W2/D3-L2_pred_CF_ep4@val`<br>`phase1/w23b_dp_W3/D3-L2_pred_CF_ep4@val` |
+| `phase1` / `D3-L2_pred_noCF_ep4` / `val` / `None` | `phase1/stage2fix_dp/D3-L2_pred_noCF_ep4@val`<br>`phase1/w23b_dp_W2/D3-L2_pred_noCF_ep4@val`<br>`phase1/w23b_dp_W3/D3-L2_pred_noCF_ep4@val` |
+| `phase1` / `D3-L2_shuffle_ep4` / `val` / `None` | `phase1/stage2fix_dp/D3-L2_shuffle_ep4@val`<br>`phase1/w23b_dp_W2/D3-L2_shuffle_ep4@val`<br>`phase1/w23b_dp_W3/D3-L2_shuffle_ep4@val` |
+| `phase1` / `GA_empty_ep4` / `val` / `None` | `phase1/grasppilot2_dp/GA_empty_ep4@val`<br>`phase1/grasppilot_dp/GA_empty_ep4@val`<br>`phase1/w23b_dp_W2/GA_empty_ep4@val`<br>`phase1/w23b_dp_W3/GA_empty_ep4@val` |
+| `phase1` / `GA_gt_ep4` / `val` / `None` | `phase1/grasppilot2_dp/GA_gt_ep4@val`<br>`phase1/grasppilot3x_dp/GA_gt_ep4@val`<br>`phase1/grasppilot_dp/GA_gt_ep4@val`<br>`phase1/w23b_dp_W2/GA_gt_ep4@val`<br>`phase1/w23b_dp_W3/GA_gt_ep4@val` |
+| `phase1` / `GA_gtpred_CF_ep4` / `val` / `None` | `phase1/grasppilot2_dp/GA_gtpred_CF_ep4@val`<br>`phase1/w23b_dp_W2/GA_gtpred_CF_ep4@val`<br>`phase1/w23b_dp_W3/GA_gtpred_CF_ep4@val` |
+| `phase1` / `GA_pred_CF_ep4` / `val` / `None` | `phase1/grasppilot2_dp/GA_pred_CF_ep4@val`<br>`phase1/w23b_dp_W2/GA_pred_CF_ep4@val`<br>`phase1/w23b_dp_W3/GA_pred_CF_ep4@val` |
+| `phase1` / `GA_pred_noCF_ep4` / `val` / `None` | `phase1/grasppilot2_dp/GA_pred_noCF_ep4@val`<br>`phase1/w23b_dp_W2/GA_pred_noCF_ep4@val`<br>`phase1/w23b_dp_W3/GA_pred_noCF_ep4@val` |
+| `phase1` / `GA_shuffle_ep4` / `val` / `None` | `phase1/grasppilot2_dp/GA_shuffle_ep4@val`<br>`phase1/w23b_dp_W2/GA_shuffle_ep4@val`<br>`phase1/w23b_dp_W3/GA_shuffle_ep4@val` |
+| `phase1` / `LC_empty_ep4` / `val` / `None` | `phase1/stage2four_dp/LC_empty_ep4@val`<br>`phase1/w23b_dp_W2/LC_empty_ep4@val`<br>`phase1/w23b_dp_W3/LC_empty_ep4@val` |
+| `phase1` / `LC_gt_ep4` / `val` / `None` | `phase1/stage2four_dp/LC_gt_ep4@val`<br>`phase1/w23b_dp_W2/LC_gt_ep4@val`<br>`phase1/w23b_dp_W3/LC_gt_ep4@val` |
+| `phase1` / `LC_gtpred_CF_ep4` / `val` / `None` | `phase1/stage2four_dp/LC_gtpred_CF_ep4@val`<br>`phase1/w23b_dp_W2/LC_gtpred_CF_ep4@val`<br>`phase1/w23b_dp_W3/LC_gtpred_CF_ep4@val` |
+| `phase1` / `LC_pred_CF_ep4` / `val` / `None` | `phase1/stage2four_dp/LC_pred_CF_ep4@val`<br>`phase1/w23b_dp_W2/LC_pred_CF_ep4@val`<br>`phase1/w23b_dp_W3/LC_pred_CF_ep4@val` |
+| `phase1` / `LC_pred_noCF_ep4` / `val` / `None` | `phase1/stage2four_dp/LC_pred_noCF_ep4@val`<br>`phase1/w23b_dp_W2/LC_pred_noCF_ep4@val`<br>`phase1/w23b_dp_W3/LC_pred_noCF_ep4@val` |
+| `phase1` / `LC_shuffle_ep4` / `val` / `None` | `phase1/stage2four_dp/LC_shuffle_ep4@val`<br>`phase1/w23b_dp_W2/LC_shuffle_ep4@val`<br>`phase1/w23b_dp_W3/LC_shuffle_ep4@val` |
 | `phase1` / `P15_C_L8_w0.3_h30_foldA_coco_lr0.0001` / `val` / `None` | `phase1/stage1_ptower_20/P15_C_L8_w0.3_h30_foldA_coco_lr0.0001@val`<br>`phase1/stage1_ptower_r3/P15_C_L8_w0.3_h30_foldA_coco_lr0.0001@val` |
+| `phase1` / `TH-NG_empty_ep4` / `val` / `None` | `phase1/stage2four_dp/TH-NG_empty_ep4@val`<br>`phase1/w23b_dp_W2/TH-NG_empty_ep4@val`<br>`phase1/w23b_dp_W3/TH-NG_empty_ep4@val` |
+| `phase1` / `TH-NG_gt_ep4` / `val` / `None` | `phase1/stage2four_dp/TH-NG_gt_ep4@val`<br>`phase1/w23b_dp_W2/TH-NG_gt_ep4@val`<br>`phase1/w23b_dp_W3/TH-NG_gt_ep4@val` |
+| `phase1` / `TH-NG_gtpred_CF_ep4` / `val` / `None` | `phase1/stage2four_dp/TH-NG_gtpred_CF_ep4@val`<br>`phase1/w23b_dp_W2/TH-NG_gtpred_CF_ep4@val`<br>`phase1/w23b_dp_W3/TH-NG_gtpred_CF_ep4@val` |
+| `phase1` / `TH-NG_pred_CF_ep4` / `val` / `None` | `phase1/stage2four_dp/TH-NG_pred_CF_ep4@val`<br>`phase1/w23b_dp_W2/TH-NG_pred_CF_ep4@val`<br>`phase1/w23b_dp_W3/TH-NG_pred_CF_ep4@val` |
+| `phase1` / `TH-NG_pred_noCF_ep4` / `val` / `None` | `phase1/stage2four_dp/TH-NG_pred_noCF_ep4@val`<br>`phase1/w23b_dp_W2/TH-NG_pred_noCF_ep4@val`<br>`phase1/w23b_dp_W3/TH-NG_pred_noCF_ep4@val` |
+| `phase1` / `TH-NG_shuffle_ep4` / `val` / `None` | `phase1/stage2four_dp/TH-NG_shuffle_ep4@val`<br>`phase1/w23b_dp_W2/TH-NG_shuffle_ep4@val`<br>`phase1/w23b_dp_W3/TH-NG_shuffle_ep4@val` |
+| `phase1` / `TH_empty_ep4` / `val` / `None` | `phase1/stage2four_dp/TH_empty_ep4@val`<br>`phase1/w23b_dp_W2/TH_empty_ep4@val`<br>`phase1/w23b_dp_W3/TH_empty_ep4@val` |
+| `phase1` / `TH_gt_ep1_smoke` / `val` / `None` | `phase1/w23b_chk_dpnew/TH_gt_ep1_smoke@val`<br>`phase1/w23b_chk_dpold/TH_gt_ep1_smoke@val` |
+| `phase1` / `TH_gt_ep4` / `val` / `None` | `phase1/stage2four_dp/TH_gt_ep4@val`<br>`phase1/w23b_dp_W2/TH_gt_ep4@val`<br>`phase1/w23b_dp_W3/TH_gt_ep4@val` |
+| `phase1` / `TH_gtpred_CF_ep4` / `val` / `None` | `phase1/stage2four_dp/TH_gtpred_CF_ep4@val`<br>`phase1/w23b_dp_W2/TH_gtpred_CF_ep4@val`<br>`phase1/w23b_dp_W3/TH_gtpred_CF_ep4@val` |
+| `phase1` / `TH_pred_CF_ep4` / `val` / `None` | `phase1/stage2four_dp/TH_pred_CF_ep4@val`<br>`phase1/w23b_dp_W2/TH_pred_CF_ep4@val`<br>`phase1/w23b_dp_W3/TH_pred_CF_ep4@val` |
+| `phase1` / `TH_pred_noCF_ep4` / `val` / `None` | `phase1/stage2four_dp/TH_pred_noCF_ep4@val`<br>`phase1/w23b_dp_W2/TH_pred_noCF_ep4@val`<br>`phase1/w23b_dp_W3/TH_pred_noCF_ep4@val` |
+| `phase1` / `TH_shuffle_ep4` / `val` / `None` | `phase1/stage2four_dp/TH_shuffle_ep4@val`<br>`phase1/w23b_dp_W2/TH_shuffle_ep4@val`<br>`phase1/w23b_dp_W3/TH_shuffle_ep4@val` |
 | `phase1` / `features_coco_lr0.0001_foldA` / `val` / `None` | `phase1/stage1_ptower_20/features_coco_lr0.0001_foldA@val`<br>`phase1/stage1_ptower_r3/features_coco_lr0.0001_foldA@val` |
 | `phase1` / `features_coco_lr0.0001_foldB` / `val` / `None` | `phase1/stage1_ptower_20/features_coco_lr0.0001_foldB@val`<br>`phase1/stage1_ptower_r3/features_coco_lr0.0001_foldB@val` |
 | `phase1` / `features_coco_lr0.0001_foldC` / `val` / `None` | `phase1/stage1_ptower_20/features_coco_lr0.0001_foldC@val`<br>`phase1/stage1_ptower_r3/features_coco_lr0.0001_foldC@val` |
@@ -2238,7 +2491,7 @@ delta:
 
 | 分類 | run 数 |
 |---|---:|
-| `no_denominator_declared` | 1837 |
+| `no_denominator_declared` | 2097 |
 | `injection_from_config_yaml` | 512 |
 | `baseline` | 17 |
 | `denominator_unresolvable` | 12 |
@@ -2285,8 +2538,8 @@ seed ごとに 1 本ずつ対応させることができない。
 per-class の値は 573 個の JSON に分散していて横断分析に使えなかったため、
 `runindex/per_class.csv` に long 形式（1 行 = 1 run × 1 クラス）で 1 ファイル化した。
 
-- `per_class_kind=tool` : 153 run × 15 クラス（術具 **AP**）
-- `per_class_kind=phase`: 1535 run × 9 クラス（工程 **F1**）
+- `per_class_kind=tool` : 214 run × 15 クラス（術具 **AP**）
+- `per_class_kind=phase`: 1700 run × 9 クラス（工程 **F1**）
 
 **この 2 つを混ぜて集計してはならない。** 指標の種類が違う（AP と F1）。
 ファイル名は両方とも `per_class_ap.json` なので、名前では判別できない。
@@ -2644,9 +2897,9 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 
 | seed_agreement | run 数 | 意味 |
 |---|---:|---|
-| `agree` | 2243 | ディレクトリ名と他証拠が一致 |
-| `unverified_no_other_evidence` | 32 | `command.sh` も `config.yaml` も無い（g2_* 群） |
-| `no_seed_in_dirname` | 88 | 命名規約外 |
+| `agree` | 2496 | ディレクトリ名と他証拠が一致 |
+| `unverified_no_other_evidence` | 35 | `command.sh` も `config.yaml` も無い（g2_* 群） |
+| `no_seed_in_dirname` | 92 | 命名規約外 |
 | **`conflict`** | **0** | **食い違い** |
 
 **食い違いは 0 件。** したがって Δ の seed 対応が誤っている可能性は排除できる。
@@ -2897,7 +3150,7 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 
 ### 26.1 🔴 決定的になり得る学習スクリプトは **1 本も無い**
 
-監査 44 スクリプト / うち CUDA を使う **20** 本 / 
+監査 46 スクリプト / うち CUDA を使う **20** 本 / 
 `can_be_deterministic = True` は **1** 本。
 
 | 制御項目 | 設定している本数 |
@@ -2924,7 +3177,7 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 
 | seed_setup_via | 本数 | 意味 |
 |---|---:|---|
-| `direct` | 19 | ファイル内で直接 seed を張る（`scripts/train_*.py` 系）|
+| `direct` | 20 | ファイル内で直接 seed を張る（`scripts/train_*.py` 系）|
 | `seed_everything` | 1 | `src/egosurgery/utils/seed.py` のヘルパ経由 |
 | `seed_everything+delegates_to_engines` | 3 | ヘルパを呼びつつ更に委譲もする |
 | `delegates_to_engines` | 1 | 自分では触らず trainer に委譲（`src/egosurgery/train.py`）|
@@ -2943,15 +3196,15 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 一方 `scripts/train_*.py` 系（**`direct`**、run 数で見て大半）は
 CPU 側 3 種のみで **GPU 側の制御が 1 つも無い**。
 
-影響を受ける run: **1216**（CUDA 学習スクリプトが entrypoint の run）
+影響を受ける run: **1372**（CUDA 学習スクリプトが entrypoint の run）
 
 | スクリプト | run 数 | 欠落している必須項目 |
 |---|---:|---|
 | `scripts/train_grasp_phase_injection_variants.py` | 420 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_b2a.py` | 350 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
+| `scripts/stage2pilot/dp_train.py` | 228 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_t1a.py` | 132 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
-| `scripts/stage2pilot/dp_train.py` | 116 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
-| `scripts/train_t1b.py` | 66 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
+| `scripts/train_t1b.py` | 110 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_s4_tecno.py` | 61 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_hand2det.py` | 21 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_haux.py` | 18 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
@@ -2970,6 +3223,7 @@ CPU 側 3 種のみで **GPU 側の制御が 1 つも無い**。
 | `src/egosurgery/engines/stage_c_trainer.py` | `empty` | 0 |
 | `src/egosurgery/engines/stage_d_trainer.py` | `empty` | 0 |
 | `src/egosurgery/engines/validator.py` | `empty` | 0 |
+| `home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-stage2-w23-bengio/check/dp_train_old.py` | `missing` | 3 |
 | `tmp/queue_runner/train_s4_tecno_aligndetr.py` | `missing` | 3 |
 | `tools/train.py` | `missing` | 1 |
 | `tools/train_net_egosurgery.py` | `missing` | 3 |
@@ -3007,9 +3261,9 @@ Relation-DETR 経路の状況である。
 
 全件は `anomalies/within_vs_between_seed.csv`（1 行 = 1 実験 × 1 指標）。
 
-- 反復がある (実験 × 指標) の組: **235**
-- そのうち **within > between**: **62**
-  - 条件混在の交絡あり: 51
+- 反復がある (実験 × 指標) の組: **386**
+- そのうち **within > between**: **94**
+  - 条件混在の交絡あり: 83
   - 交絡なし（純粋に非決定性）: **11**
 
 **⚠️ 単純に「47 件で within が上回る」と読んではいけない。**

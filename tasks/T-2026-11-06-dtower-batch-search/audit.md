@@ -194,3 +194,140 @@
   - 各水準の設定が optimizer の群と DataLoader に届き、陽性対照で値が変わった
   - 立ち上げの歩数の記録の口が働く
   - 既存スクリプトの既定の挙動が変わっていない（default の対照。要約値で scripts は無変更）
+
+## 5. Phase C（学習 6 本）
+
+- 起動 2026-11-06 07:51:55 JST（`run_batch.py train`、PID 1948459、`setsid` で切り離し）。記録は `$STORE/runs.log`
+
+### C-1 dtowerbatch_b2_dcoco_foldA_seed42
+
+- 学習 rc 0、壁時計 23,850 s（6.6 h、壁時計の問い合わせ 18 h の内側）。終了 2026-11-06 14:39:55 JST
+- 22 epoch で止まった（best epoch 17、減衰 epoch 11、上限 36 に未達）
+- val mAP 0.7301、標的群 AP 0.8139、陰性対照群 AP 0.6709、train mAP 0.8489（差 0.1188）
+- 立ち上げ: `first_step_at_target` = 1,001（立ち上げ 1,000 歩、期待どおり）。第 0 epoch 2,405 歩
+- DataLoader: 両 rank とも batch 2、長さ 2,405、全 22 epoch で 1 歩 2 枚
+- 勾配の非数の歩 27（fp16 の scaler が飛ばした歩。損失の非数は無し。探索の 12 番は 24）
+- 読んだ動画は train の 10 本と val の 09・10（04・05・07 は 0 件）
+
+### C-2 dtowerbatch_b2_dcoco_foldA_seed123
+
+- 学習 rc 0、壁時計 19,230 s（5.3 h）。終了 2026-11-06 20:10:55 JST
+- 18 epoch で止まった（best epoch 13、上限 36 に未達）
+- val mAP 0.7269、標的群 AP 0.8111、陰性対照群 AP 0.6665、train mAP 0.8385（差 0.1116）
+- 立ち上げ: `first_step_at_target` = 1,001、第 0 epoch 2,405 歩
+- DataLoader: 両 rank とも batch 2、長さ 2,405、全 18 epoch で 1 歩 2 枚
+- 勾配の非数の歩 21（損失の非数は無し）
+
+### C-3 dtowerbatch_b4_dcoco_foldA_seed42
+
+- 学習 rc 0、壁時計 22,290 s（6.2 h）。終了 2026-11-07 02:32:55 JST
+- 25 epoch で止まった（best epoch 20、減衰 epoch 11、上限 36 に未達）
+- val mAP 0.7283、標的群 AP 0.8234、陰性対照群 AP 0.6689、train mAP 0.8636（差 0.1353）
+- 立ち上げ: `first_step_at_target` = 1,001、第 0 epoch 1,202 歩
+- DataLoader: 両 rank とも batch 4、長さ 1,202、全 25 epoch で 1 歩 4 枚
+- 勾配の非数の歩 19（損失の非数は無し）
+- 読んだ動画は train の 10 本と val の 09・10（04・05・07 は 0 件）
+
+### C-4 dtowerbatch_b4_dcoco_foldA_seed123
+
+- 学習 rc 0、壁時計 14,190 s（3.9 h）。終了 2026-11-07 06:39:56 JST
+- 16 epoch で止まった（best epoch 11、減衰 epoch 9、上限 36 に未達）
+- val mAP 0.7311、標的群 AP 0.8176、陰性対照群 AP 0.6629、train mAP 0.8372（差 0.1061）
+- 立ち上げ: `first_step_at_target` = 1,001、第 0 epoch 1,202 歩
+- DataLoader: 両 rank とも batch 4、長さ 1,202、全 16 epoch で 1 歩 4 枚
+- 勾配の非数の歩 14（損失の非数は無し）
+- 読んだ動画は train の 10 本と val の 09・10（04・05・07 は 0 件）
+- b6・seed 42 は 06:39:56 JST に始まり、初期重みを読んだ。GPU のメモリは 36.9 GB・35.0 GB（溢れ無し）
+
+### C-5 dtowerbatch_b6_dcoco_foldA_seed42
+
+- 学習 rc 0、壁時計 12,780 s（3.6 h）。終了 2026-11-07 10:23:26 JST。溢れ（OOM）は無し
+- 15 epoch で止まった（best epoch 10、減衰 epoch 7、上限 36 に未達）
+- val mAP 0.7385、標的群 AP 0.8267、陰性対照群 AP 0.6730、train mAP 0.8343（差 0.0959）
+- 立ち上げ: `first_step_at_target` = 802（立ち上げ 801 歩、B-3 の期待どおり）、第 0 epoch 802 歩
+- DataLoader: 両 rank とも batch 6、長さ 802、全 15 epoch で 1 歩 6 枚
+- 勾配の非数の歩 12（損失の非数は無し）
+- 読んだ動画は train の 10 本と val の 09・10（04・05・07 は 0 件）
+
+### C-6 dtowerbatch_b6_dcoco_foldA_seed123
+
+- 学習 rc 0、壁時計 15,330 s（4.3 h）。終了 2026-11-07 14:49:26 JST。溢れ（OOM）は無し
+- 18 epoch で止まった（best epoch 13、減衰 epoch 9、上限 36 に未達）
+- val mAP 0.7328、標的群 AP 0.8155、陰性対照群 AP 0.6761、train mAP 0.8472（差 0.1143）
+- 立ち上げ: `first_step_at_target` = 802（立ち上げ 801 歩）、第 0 epoch 802 歩
+- DataLoader: 両 rank とも batch 6、長さ 802、全 18 epoch で 1 歩 6 枚
+- 勾配の非数の歩 12（損失の非数は無し）
+- 読んだ動画は train の 10 本と val の 09・10（04・05・07 は 0 件）
+- `ALL_DONE` 2026-11-07 14:49:26 JST。実行器と学習のプロセスは 0 件、GPU は 2 枚とも 16 MiB・0 %
+
+### G3
+
+- **G3: pass**。6 本すべて完走（rc 0）。損失の非数は 0 件（`STOP nonfinite_loss` 無し、学習ログに `Loss is` 無し）。6 本とも学習ログに `load pretrained from` が在り、`initialization_rank0/1.json` の要約値が COCO の checkpoint と一致した（`run_batch.py` の検査で通過。外れれば `STOP coco_initialization`）
+- 評価は 6 本とも rc 0 で、`skip loading` と `State dict is None` は無い。最良 epoch の学習中の val mAP と、checkpoint を読み直した評価の val mAP が一致する（例: b2・seed 42 は 0.73002 と 0.73010）
+- b6 の溢れは 0 件（OVERFLOW 無し）。壁時計の最大は 23,850 s（6.6 h）で、問い合わせの 18 h の内側
+
+## 6. Phase D（集計・規則による選択・照合）
+
+### D-1 集計
+
+- 命令: `.venv/bin/python experiments/analysis/dtower_batch_search/tools/summarize.py --out experiments/analysis/dtower_batch_search/summary.json --md experiments/analysis/dtower_batch_search/tables.md`（rc 0）
+- 水準ごとの 2 本の val mAP の平均（全桁）: b2 0.7284992、b4 0.7297248、b6 0.7356521
+- 最大は b6。最大との差: b2 −0.0071529、b4 −0.0059273。同点幅 0.0076 の内で、3 水準とも同点
+  - b2 は同点幅まで 0.0004 の余り（0.0076 − 0.0071529 = 0.0004471）。丸めた値ではなく全桁の平均で判定した
+- **規則により b6（GPU ごとの batch 6、実効 12）を選んだ**
+- 標的群 AP の平均: b2 0.8125、b4 0.8205、b6 0.8211。最良は b6 で、co-primary の食い違いは**なし**
+- 2 本の差（42 − 123）: b2 +0.0032、b4 −0.0028、b6 +0.0056
+- b2 の平均 0.7285 と探索の 12 番（dlsta、0.7374）の差は −0.0089（記録だけ。ホストが違うので比べない）
+
+### D-2 選択の陽性対照
+
+- `--tie 0`: 選択は b6 のまま（同点は b6 だけ）。実データでは最大の平均と最大の batch が同じ b6 なので、**この対照は同点の規則を見分けない**
+- 合成した入力で `select()` を直接呼んだ（b2 0.740、b4 0.735、b6 0.730）: 同点幅 0.0076 で同点 {b2, b4} → b4 を選ぶ。同点幅 0 で b2 を選ぶ。同点の規則が選択を変えることはこちらで示した
+- 平均と差を各 run の `metrics.json` から別の経路で計算し直し、道具の値と全桁で一致した
+
+### D-3 test 不使用
+
+- 評価した区分の集合は 6 本とも {train, val}。読んだ動画は train の 10 本と val の 09・10 で、04・05・07 は 0 件
+- 陽性対照 `--inject-test`: 6 本すべてが外れとして出た（`test_evaluated_runs` 6 件）
+- 評価の反復数（rank ごと。ログの `Test: Total time` ÷ 秒/反復の概算で、裏付けにだけ使う）: val 747〜756（期待 758）、train 4,817〜4,831（期待 4,809）
+
+### D-4 集計の道具の修正（学習の後、2 回）
+
+- 1 回目: 区分を評価のログの `instances_<split>.json` から読んでいたが、ログに注釈の名前が出ず、train の評価を数え落とした（集合が {val}）。区分は環境変数 `DTOWER_EVAL_SPLIT` で渡り、出力の名前 `eval_<split>.json` に現れるので、そこから読むように直した
+- 2 回目: `eval_*.json` の glob が `eval_<split>.timing.json` にも当たって止まった。名前の完全一致（`eval_[a-z]+.json`）に限った
+- 選択の計算（`select()`）は変えていない。修正の前後で選択と平均は同じ
+
+### D-5 要約値と試験
+
+- 学習の後の要約値（`$STORE/D/digests_after.json`）は、学習の前（`$STORE/A/digests_before.json`）と 82 項目すべて一致（third_party、data/raw、COCO の重み、折りの注釈、既存の run・解析、scripts と configs、2 つの仮想環境、凍結源）
+
+### D-6 runindex の収穫
+
+- 命令: `make runindex`。make の rc 2（検証の 1 項目が FAIL）
+- `[FAIL] C5 per_class.csv の整合`: value が空欄なのに is_nan が False の行が 51 件。3 本とも別の契約の run（`phase1__grasppilot2_G_H1_seed42`・`G_H2`・`G_all`、各 17 行）
+  - 本契約の run には 0 件。commit 済みの runindex（68befc3b で収穫）にはこの 3 本が無く、食い違いは 0 件。3 本は 68befc3b の後に phase0 へ統合された（c076e2a2）。phase0 の上で収穫しても同じく落ちる
+  - 他の契約の記録は変えない（禁止事項）。直していない
+- 収穫の差分が大きいのは、commit 済みの runindex が 68befc3b 以降に収穫されていないため（その後に統合された run がまとめて入った）
+- 同期で届いた未追跡の別の契約の記録（`experiments/phase1/grasparms_*/logs/`）は runindex に入っていない（index の grasparms の行は 0 件）
+- 本契約の 6 本は `index.csv` に task_id `T-2026-11-06-dtower-batch-search`、host andrew、split val で現れた。`experiments.csv` に 3 experiment（各 2 run・2 seed）。`per_class.csv` に 1 本 14 行
+
+### D-7 L1・L2 の検証
+
+- `make task-validate TASK=T-2026-11-06-dtower-batch-search`: rc 0、`OK`、`1 task(s), 0 failed`
+- WARN `[L2-8]` 3 件: index.csv 2363 → 2623、experiments.csv 1130 → 1305、verdicts.csv 1736 → 1947（分母が動いた）。本契約の収穫で、68befc3b 以降に統合された run がまとめて入ったため。分母 `baselines/dcoco_foldA/dcoco_foldA@val` の mAP_sstd は同点幅の出所で、改訂の時点で 0.0037965 を読んだ（§1）
+
+### D-8 禁止領域の検査
+
+- `make forbidden-check TASK=T-2026-11-06-dtower-batch-search`: **status fail**（make の rc 2）。changed 402、permitted 382、**violations 13**
+  - 13 件はすべて別の契約の未追跡のファイル（`experiments/analysis/grasp_pilot_arms/taskC/compare_default.py` と `experiments/phase1/grasparms_B_*_ep4_seed42/logs/{eval_meta_val,val_metrics_by_epoch}.json` の 12 件）
+  - 着手の時点の未追跡は 0 件（§3 A-4）。13 件の時刻は 2026-11-06 16:05〜21:41 JST で、学習の最中に同期で届いた。phase0 に同じ経路は無い（`git ls-tree origin/phase0` で 0 件）
+  - 禁止事項 9 により消さない・動かさない。無視の一覧にも足していない。commit しない
+- 状態を変えずに、道具の `check()` を、追跡外の一覧からこの 13 件だけを除く形で呼んだ（`$STORE/D/forbidden_without_synced13.json`）: **status pass**、changed 389、permitted 382、violations 0
+  - 382 件は本契約の置き場（`experiments/baselines/stage1_dtower_batch/`、`experiments/analysis/dtower_batch_search/`、`runindex/`）の新しいファイルで、道具が本契約の変更を拾ったうえで allow_write で許可した
+
+### D-9 試験の後の値
+
+- 学習の後の試験（2026-11-07 14:54:43〜15:25 JST、1,834 s）
+  - 命令: `PYTHONPATH=src PYTHONDONTWRITEBYTECODE=1 python -m pytest tests/ -q -p no:cacheprovider --junitxml=$STORE/D/pytest_after.xml`
+  - 結果: **7 failed, 989 passed**、rc 1
+  - 失敗の名前（`$STORE/D/pytest_after_failed.json`）は学習の前（§3 A-7）の 7 件と同じ集合（増えていない）

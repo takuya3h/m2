@@ -1779,3 +1779,13 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
 - 道具は `experiments/analysis/dtower_step_profile/tools/`（実行器 `run_level.py`、観測器 `observer.py` を `TOWER_SEARCH_OBSERVER` で読ませる、集計 `summarize.py`・`derive.py`、`procs.py`・`digests.py` は PR 290 の写し）。**既存のスクリプト・設定・third_party は変えていない。** batch と worker 数は `train_search.py` の写し（2 行だけを環境変数にしたもの）を repo の外に置いて渡した
 - 結果（RTX A6000 × 2、300 W）: batch 2 × 2 プロセスの一歩 0.3905 s のうち、読み込みの待ち 0.0010 s、順伝播 0.139 s、損失と対応づけ 0.043 s、逆伝播 0.191 s、最適化器 0.011 s、残り 0.006 s。歩の区間だけの GPU 使用率は 77〜92 %（使用率 0 の標本 0 個）。worker 数 4・8・16 の一歩は 0.3905・0.3938・0.3920 s
 - 生の記録は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-step-profile/`
+
+### 検出塔の batch の探索（2026-11-06〜07、andrew）
+
+契約 `T-2026-11-06-dtower-batch-search`（exp）。探索の 1 位（12 番。学習率 3.07e-4、max_norm 0.059、縮みの量 S 4.976e-3）の設定で、検出塔の GPU ごとの batch 2・4・6（2 枚で実効 4・8・12）を折り A・seed 42 と 123 で各 1 本、計 6 本学んだ。
+結果は `experiments/analysis/dtower_batch_search/{REPORT.md,summary.json,tables.md}`、run の記録は `experiments/baselines/stage1_dtower_batch/`、記録は `tasks/T-2026-11-06-dtower-batch-search/`。
+
+- weight decay は S を揃える換算（b2 3.37e-4、b4 6.7428e-4、b6 1.01058e-3）。同点幅 0.0076（runindex の `baselines/dcoco_foldA` の mAP_sstd の 2 倍）。どちらも学習の前の改訂（`meta.amendments`）
+- 結果: val mAP の 2 本の平均は b2 0.7285、b4 0.7297、b6 0.7357。3 水準とも同点幅の内で、prereg §3 の規則（同点なら大きい batch）により **b6（GPU ごとの batch 6）** を選んだ。標的群 AP の平均の最良も b6（食い違いなし）。発散・非数・溢れは 0 件。値は処方の効果として読まない（折り A の 2 本の平均で、3 水準の最大を取るので上振れする）
+- 道具は `experiments/analysis/dtower_batch_search/tools/`（実行器 `run_batch.py`、点を水準の値に差し替える包み `train_level.py`、観測器 `observer.py` を `TOWER_SEARCH_OBSERVER` で読ませる、集計 `summarize.py`、`procs.py`・`digests.py`・`make_det_config.py`・`env_capture.py` は前の契約の写し、`check_card.py`・`check_inputs.py`）。**既存のスクリプト・設定・third_party は変えていない。** batch と worker 数は `train_search.py` の写し（2 行だけを環境変数にしたもの）を repo の外に置いて渡した
+- checkpoint と生の記録は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-batch-search/`
