@@ -1,0 +1,95 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-11-07-dtower-rerun"
+  kind: exp
+  title: "検出塔の回し直し（andrew）。探索の 1 位（12 番）の設定と batch の探索で決めた GPU ごとの batch 6 で、5 折り × seed 42・123 の 10 本を学び、seed 42 の塔を凍結して使う。0 番（現行の処方）も同じ batch と縮みの量 S の換算で 10 本学び、記録だけ。選定は行わない（カード五版 §7）"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-11-07T09:30:00Z"
+  created_from:
+    runindex_commit: "d3e319ac0a5b58930dc092ef85ef6976241cc004"
+    counts: {index: 2623, experiments: 1305, verdicts: 1947}
+  depends_on: [T-2026-11-06-dtower-batch-search, T-2026-10-22-tower-reselect-search-dlsta, T-2026-11-06-tower-batch-probe, T-2026-11-06-dtower-step-profile]
+  amendments:
+    - date: "2026-11-07"
+      reason: "利用者の決定（2026-11-07、/task の指示）。0 番の weight decay を S の換算の値にし、全折りで S を 0 番 4.81e-4（1e-4 × 1e-4 × 48,100）・12 番 4.976e-3（3.07e-4 × 3.37e-4 × 48,100）にちょうど揃える。起票時の 3.0e-4 は折り A の換算 4.81e-4 ÷ (1e-4 × 20 × 802) = 2.9987531e-4 を丸めた値で、S が 4.812e-4 になっていた（起票者の誤り）。学習は weight decay = S ÷ (学習率 × 20 × 実測の 1 epoch の歩数) を丸めずに使う。prereg の commit の前、学習の前"
+      diff: "prereg §2.1 の表と §4 の weight decay の行: 0 番 3.0e-4 -> 2.998753e-4。SPEC §2 の batch 6 の weight decay の行と §4 Task B-5、本ファイルの acceptance d を同じく書き換えた"
+    - date: "2026-11-07"
+      reason: "Task A-8 の実測。meta.created_from は 2026-10-29 の 68befc3b を指していたが、起票（2026-11-07T09:30Z）の時点で origin/phase0 の runindex を最後に変えた commit は d3e319ac（PR 299 の収穫、2026-11-07T08:05Z）で、行数は index 2623・experiments 1305・verdicts 1947。L2-8 の WARN 3 件はこの食い違いによる。分母 baselines/dcoco_foldA/dcoco_foldA@val の値は両 commit で同じ（mAP_sstd 0.0037964726778790692、n_seeds 3、split val）。conventions_rev 2d946b07 は実測と一致"
+      diff: "meta.created_from: runindex_commit 68befc3b -> d3e319ac、counts {2363, 1130, 1736} -> {2623, 1305, 1947}"
+intent:
+  question: "探索の 1 位（12 番）の設定と GPU ごとの batch 6 で 5 折り × 2 種の検出塔を学ぶと、各折りの val mAP と標的群 AP はどの値になり、同じ batch で学んだ 0 番の 10 本との平均の差と seed 間の SD はどれだけか。塔の採用は性能で決めない（F 2026-10-17）。問いは記録のためで、yes か no の判定は置かない（カード五版 V2）"
+  decision_at_stake: "Stage 2 以降で使う検出塔（D\\*-COCO の後継）の確定。12 番の seed 42 の塔を折りごとに凍結する。選定は無い"
+  hypothesis: "12 番の 10 本の val mAP の平均は 0 番の 10 本の平均より大きい（探索の折り A の差は results_dtower.csv の difference_from_0 の rank 1 の値）。折り A の 12 番の 2 本は batch の探索の b6 の 2 本と同点幅の内。予測の当たり外れは F の較正の記録に積む"
+  proposal_card: "docs/proposals/2026-10-21-tower-reselect-search.md"
+  related:
+    backlog: []
+inputs:
+  denominator:
+    ref: "exp:baselines/dcoco_foldA/dcoco_foldA@val"
+    metric: "mAP"
+    require: {n_seeds: ">=3", sigma: present, split: val}
+  data:
+    dataset: "EgoSurgery の術具注釈のあるフレーム（15,437）。5 折り A〜E（conventions#folds。正本は docs/stage0/A1_fold_table.md）。各折りの train 動画 10 本で学び、その折りの val 2 本で checkpoint を選ぶ。test は各 run で学習の後に一度だけ評価し、副次として記録する（conventions#folds の val と test の重なりの規律）"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt", "data/splits/ego_test.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/run_tower_search.py", "scripts/train_relation_detr_search.py", "configs/detector_relation_detr/train_search.py", "scripts/eval_relation_detr_map.py", "tools/preflight_task.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#proposal_gate, conventions#folds, conventions#split, conventions#eval_recipe, conventions#symmetry, conventions#det_groups, conventions#precision, conventions#sigma, conventions#env_p0]
+  conventions_rev: "2d946b07a57abebc4a8f66150d6dbaf2ccd22186"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/baselines/stage1_dtower_rerun/", "experiments/analysis/dtower_rerun/", "runindex/"]
+plan:
+  phases:
+    - {id: A, name: "prereg の commit。開始状態。カードの版。前提の PR の内容。入力（5 折りの注釈、画像、COCO の重み）と道具と記憶領域の実在。環境の記録", gpu: false, est: "2h"}
+    - {id: B, name: "点ごとの値（学習率、weight decay、max_norm、batch）を渡す口の確認（batch の探索の包みの前例）。設定が optimizer の群と DataLoader に届くことの対照。折り B〜E の注釈の読み込みの確認", gpu: true, est: "3h"}
+    - {id: C, name: "20 本の学習（12 番 10 本、0 番 10 本。2 枚を占有して順に）と、各 run の val と test の評価", gpu: true, est: "90h"}
+    - {id: D, name: "表、記録する量、凍結する塔の要約値、報告、PR", gpu: false, est: "4h"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0。prereg の commit が学習の前。カードが五版である。前提の PR（299）の内容が起点に在る。5 折りの注釈・画像・COCO の checkpoint が在り要約値が記録と一致。andrew に本契約以外の compute プロセスが無い。記憶領域の空きが見込みの 2 倍以上", on_fail: stop}
+    - {id: G2, after: B, check: "両方の点の設定（学習率、weight decay、max_norm、batch 6）が optimizer の群と DataLoader に届く（陽性対照で値が変わる）。折り B〜E の注釈が train と val の動画の集合どおりに読める。既存スクリプトの既定の挙動が変わっていない", on_fail: stop}
+    - {id: G3, after: C, check: "20 本の完走または発散の記録。発散・非数・溢れが 1 本も無い。各 run の記録に COCO の重みを読んだ行が在る", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, gpu_free]
+  resources: {server: andrew, gpu: 2, est_hours: 100, runs: 20}
+prereg:
+  prediction: "12 番の 10 本の val mAP の平均は 0 番の 10 本の平均より大きい。折り A の 12 番の 2 本の val mAP は batch の探索の b6 の 2 本（PR 299 の RESULT の値）と差の絶対値が同点幅（prereg の記録の規則の節）の内。発散・非数・溢れは無い。当たり外れは F の較正の記録に積む"
+  primary_endpoint: "各 run の val mAP（conventions#eval_recipe の NMS-free の規約。checkpoint は val mAP が最良の epoch）。co-primary は val 標的群 AP（conventions#det_groups）。陰性対照群 AP も記録。test は副次（prereg の test の扱いの節）"
+  decision_rule: "選定は行わない（カード五版 §7 の 4）。12 番の seed 42 の塔を折りごとに凍結して Stage 2 以降で使う。記録: 12 番と 0 番の 10 本の平均の差（真の差と読まない）、折りごとの差、seed 間の SD（診断）。発散・非数・溢れが 1 本でも出たら停止して諮り、値を補わない"
+  stop_conditions:
+    - "COCO の重みを読んだ行が無い、または読んだ重みの要約値が COCO の checkpoint と違う: 停止して諮る"
+    - "評価の道具が checkpoint を読まずに値を返した（読み込みを飛ばした記録、または AP が零）: 停止して諮る"
+    - "設定（学習率、weight decay、max_norm、batch）が optimizer の群か DataLoader に届かない: 停止して諮る"
+    - "発散・非数が 1 本でも出た: 停止して諮る（値を補わない）"
+    - "GPU の記憶が溢れた（batch 6 の最大確保は PR 299 の RESULT の実測）: 停止して諮る（batch を落として続けない）"
+    - "折りの注釈の train・val・test の動画の集合が conventions#folds の表と違う: 停止して諮る"
+    - "記憶領域の空きが見込みの 2 倍を下回る、または 1 本の壁時計が見込みの上限（9 時間）の 2 倍を超える: 諮る"
+  committed_at: null
+  commit: null
+outputs:
+  expected_runs: 20
+  must_have: [metrics.json, config.yaml, notes.md]
+  destination: "experiments/baselines/stage1_dtower_rerun/"
+  stamp: {task_id_in: config.yaml}
+  acceptance:
+    - "a: prereg.md が学習の開始より前に commit され、spec の prereg.commit と committed_at が実測で埋まっている"
+    - "b: 開始状態（分岐、起点、作業ツリー、GPU の使用量と所有者、版、試験の前の値、カードの版、PR 299 の内容）と環境（driver、CUDA、cuDNN、NCCL、torch、torchvision、accelerate、TF32 の設定、電力の上限）が記録されている"
+    - "c: 入力（5 折りの注釈、画像、COCO の checkpoint）と道具の実在と要約値が記録と一致し、各折りの train・val・test の動画の集合が conventions#folds の表と一致し、記憶領域の空きが見込みの 2 倍以上"
+    - "d: 両方の点の設定（12 番: 学習率 3.07e-4、max_norm 0.059、weight decay 1.01058e-3。0 番: 学習率 1e-4、max_norm 0.1、weight decay 2.998753e-4。GPU ごとの batch 6）が optimizer の群と DataLoader に届いたことが各 run の記録に在り、陽性対照で値が変わった。既存スクリプトと設定の既定の挙動を変えていない"
+    - "e: 20 本すべてが完走または発散として記録され、各 run の config.yaml に task_id・点・折り・batch・seed・設定の値が刻まれている"
+    - "f: 各 run に記録する量（学習率を下げた epoch、打ち切り、上限到達、checkpoint の epoch、総 epoch、主指標と co-primary と陰性対照群、train と val の差、立ち上げの歩数、1 epoch の歩数と更新回数、時間と記憶量、群ごとの実際の値、勾配のノルムの分位点）が在る。測れなかった量は UNKNOWN と理由"
+    - "g: 点ごと・折りごとの val の表、10 本の平均と差、seed 間の SD、折り A の 12 番と batch の探索の b6 との差が表にあり、選定を行っていない"
+    - "h: test の評価が各 run で一度だけ行われ、val に一度も入らない 5 動画（01・03・11・13・14）だけで集計した副次の値が prereg の集計の仕方で記録され、判定に使われていない"
+    - "i: 対称性の表が prereg に在り UNKNOWN が零件"
+    - "j: 凍結する塔（12 番 seed 42、5 折り）の checkpoint の経路と sha256 と val の値が一覧にあり、checkpoint は同期の対象の経路の外に在る"
+    - "k: 収穫後の runindex に本契約の全 run が task_id で現れる。試験の失敗の名前の集合が増えていない。forbidden-check の違反のうち本契約の経路のものが 0 件。既存の run・checkpoint・凍結源・既存の仮想環境・third_party を変えていない"
+    - "l: PR が存在し、base が phase0、分岐が feat/dtower-rerun、Draft でない"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if: ["denominator_moved", "COCO の重みを読まずに学習が進んだ", "評価の道具が checkpoint を読まずに値を返した", "設定が optimizer の群か DataLoader に届かない", "発散・非数が出た", "GPU の記憶が溢れた", "折りの注釈の動画の集合が規約の表と違う", "カードが五版でない", "andrew に本契約以外の compute プロセスがある", "記憶領域の空きが見込みの 2 倍を下回る", "1 本の壁時計が見込みの上限の 2 倍を超える"]
