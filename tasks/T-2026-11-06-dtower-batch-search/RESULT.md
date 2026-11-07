@@ -25,7 +25,7 @@ andrew の A6000 × 2 で、探索の 12 番の設定のまま GPU ごとの bat
 | h | 対称性 | prereg の表に UNKNOWN 0 件。P13 PASS（表 1 個、**23 行**。SPEC は 24 行と書く → 起票者の誤り） |
 | i | test 不使用と置き場 | 評価した区分は 6 本とも {train, val}、test の動画の読み 0 件。test を足した写しで 6 本とも外れ（audit:288-292）。checkpoint は同期の外 `$STORE/runs/` |
 | j | 収穫と無変更 | runindex に 6 本が task_id つきで現れた。ただし検証の C5 が別の契約の 3 run で FAIL（audit:304-312）。要約値は 82 項目すべて一致（audit:300-302）。試験は後も 7 failed / 989 passed で失敗の名前は同じ 7 件（audit:328-333）。forbidden-check は同期で届いた別の契約の 13 件で fail、13 件を除くと pass（audit:319-326） |
-| k | PR | 送出の節 |
+| k | PR | #299、base phase0、isDraft false、head feat/dtower-batch-search |
 
 ## 実測
 
@@ -77,5 +77,5 @@ andrew の A6000 × 2 で、探索の 12 番の設定のまま GPU ごとの bat
 
 ## 送出
 
-- PR: 未作成（作成後に記録する）
+- PR: #299（base phase0、isDraft false、head feat/dtower-batch-search。内容の commit d3e319ac）
 - `make task-report`: 未実行（送出後に記録する）
