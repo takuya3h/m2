@@ -206,3 +206,26 @@
   - 両方の点の設定（学習率、weight decay、max_norm、batch 6）が optimizer の群と DataLoader に届き、陽性対照（changed）で値が変わった。照合（wd_mismatch）と枚数の検査（batch_mismatch）は外れで止まった
   - 折り B〜E の注釈が train と val の動画の集合どおりに読める（A-5 の照合、B-2 の学習のデータセットの集合）。test の動画を混ぜた写しで外れる
   - 既存スクリプトの既定の挙動が変わっていない（default の対照）
+
+## 5. Phase C（学習 20 本）
+
+- 起動 2026-11-07T11:05:51Z（20:05:51 JST）。命令 `source scripts/load_env.sh && PYTHONDONTWRITEBYTECODE=1 setsid nohup .venv/bin/python experiments/analysis/dtower_rerun/tools/run_rerun.py train >> $STORE/runs.log`。実行器 PID 2255389（`setsid` で切り離し）。記録は `$STORE/runs.log`
+- 順（prereg §2.1）: 12 番 seed 42 の A→E、12 番 seed 123 の A→E、0 番 seed 42 の A→E、0 番 seed 123 の A→E
+- 道具の commit: 10b1961d（起動時の HEAD。各 run の `git_commit.txt` に記録される）
+
+### C-1 1 本目（`dtowerrerun_p12_dcoco_foldA_seed42`）の記録の確かめ（15:24〜15:40Z）
+
+- 学習 11:05:51Z〜15:07:21Z（rc 0、14,490 s）、評価と写し 15:07:21Z〜15:24:21Z。続く run（折り B）は 15:24:22Z に始まった
+- 最良 epoch 12、観測 17 epoch（11 epoch 目で ×0.1、16 epoch 目で停止）、上限 36 に届かない。学習中の val AP の最良 0.72014、最良の checkpoint を評価し直した val mAP **0.7196251153088346**（AP_target 0.8044、AP_negative 0.6782）、train mAP 0.8406、test mAP（副次、1 回）0.5140285941561032
+  - 学習中の値と評価し直した値の差 −5.2e-4（評価の経路の違い。記録だけ）
+- 写した記録に在る: config.yaml（task_id・点・折り・seed・batch・lr・weight decay・max_norm・S・実測の歩数 802）、metrics.json、per_class_ap(_test).json、per_video_val/test.json、eval_val/train/test.json、eval_timing.json、test_access.json（`evaluations: 1`、動画 04・05・07）、warmup_rank0.json（`first_step_at_target` 802 = `steps_in_epoch0` 802）、initialization_rank0.json（`matched: true`、sha `2d2c19a7…`）、load_digest_rank0/1.json、loader_rank0/1.json、notes.md、command.sh、git_commit.txt
+- 評価の壁時計は val 120 s、train 600 s、test 270 s。**30 s 刻み**（実行器が 30 s ごとに見回るため）。それより細かい精度は無い
+- **集計の道具（`summarize.py`、未 commit）の試し**: 1 本で回した。表・凍結の記録（sha256 `4c542a8b5977…`、epoch 12）・恒等性の確かめを出す
+- **恒等性の確かめで差が出た → 原因を特定して確かめを直した**:
+  - 自分の 3 動画をプールした AP 0.5142559856 と run の test AP 0.5140285942 の差は +2.27e-4
+  - 原因: どの annotation ファイル（5 折り × val/test/train の 15 個）にも `id: 0` の注釈が 1 つある。pycocotools の COCOeval は一致した GT の id を `dtm` に入れ、0 を「一致なし」と読む。このため run 自身の評価では、その注釈に一致した検出が誤検出に数えられる。プールの関数は注釈の id を 1 から振り直すため、この影響が無い
+  - 確かめ: 生の test の GT で注釈の id だけを +1 ずらし、run の検出で評価し直すと 0.5142559856169862 になった。プールの値と全桁で一致した
+  - 確かめを直した: 恒等性は「プールの値 = 注釈の id だけを +1 ずらした生の GT での値」で見る（完全一致を求める。1 本目は差 0.0、`exact: true`）。run の test AP との差（`run_minus_shifted`）を並べて書く
+  - 副次の test の値（prereg §2.4）は、プールも動画ごとも id を振り直した評価で出す。評価器の GT による動画ごとの値は `per_video_evaluator_gt` として並べる
+  - 各 run の val・train・test の値（評価器の値）は変えない。前例と同じ経路で、前例とも全桁で一致している（B-5）。id 0 の影響は、すべての評価で注釈 1 つ分だけ一様にかかる
+  - 副次の 5 動画のうち、注釈 id 0 が入るのは動画 01（折り B の test の `train/01/01_1_0124.jpg`）だけである。折り C の id 0 は動画 02、折り D の id 0 は動画 06 で、どちらも副次の集合の外にある
