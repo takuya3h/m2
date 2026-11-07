@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 155 件）。
-ここに出ない 150 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 156 件）。
+ここに出ない 151 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-11-06-tower-batch-probe
 
@@ -137,6 +137,53 @@
 - 同期を入れない写しの run での内訳（§6.11 との衝突で回していない）
 - 同期を入れたことの一歩への影響（PR 290 とは窓と乱択の入力が違う）
 
+## T-2026-11-06-dtower-batch-search
+
+状態 `pass` / ホスト `andrew` / 起票 `299` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 分岐 feat/dtower-batch-search、起点 origin/phase0 9d45351b、PR 290・292 の内容が起点に在る。prereg の commit b71ffafd（2026-11-05T22:08:51Z）は最初の学習（22:51:55Z）の前。カードは五版（check_card rc 0、四版の写しで rc 1）。入力 13 件の sha256 が一致（1 バイト変えた写しで不一致 1）。compute プロセス 0 件（対照 1/0/0）。空き 1,644,097,175,552 bytes ≥ 見込み 19.2 GB の 2 倍
+- `G2` pass — 7 本の対照（各 5 歩）で、optimizer の 6 群と DataLoader の batch が水準の値になった。changed（batch 3、wd 5e-4）で値が変わり、wd_mismatch と batch_mismatch は rc 1 で止まり、default は batch 2・lr 1e-4・wd 1e-4 のまま。DataLoader の長さ 2,405・1,202・802 は prereg §2.1 と一致。立ち上げの記録の口が働く（対照で first_step_at_target 5）
+- `G3` pass — 6 本とも学習 rc 0。損失の非数 0 件、b6 の溢れ 0 件、壁時計の最大 23,850 s。6 本とも学習ログに load pretrained from が 1 行在り、initialization_rank0/1.json の source_sha256 が COCO の checkpoint と一致。評価は rc 0 で skip loading・State dict is None は 0 件
+
+### 起票者の誤り
+
+- `self_contradiction` — prereg §3 の同点幅 0.0106 は、二周目の 3 本だけの標本 SD 0.0053 の 2 倍で、本文が定義に引く runindex の mAP_sstd（0.0037965、一周目と二周目の 6 本）の 2 倍 0.0076 と食い違った。利用者の決定で学習の前に 0.0076 へ改訂（meta.amendments）
+- `asserted_without_measuring` — prereg §2.1 の weight decay の表は丸めた S 5.0e-3 から換算しており、b2 が『12 番の設定』と書く一方で 12 番の 3.37e-4 と 0.5 % 違った（3.386e-4）。利用者の決定で S を 4.976e-3 とし、b2 3.37e-4、b4・b6 は歩数の比で換算する形に改訂
+- `asserted_without_measuring` — SPEC §1 は『train_relation_detr_search.py が点ごとの学習率・weight decay・max_norm を受ける』と書くが、同じスクリプトは epoch 0 で群を points.csv の 12 番と 1e-15 で照合するので、weight decay を変える b4・b6 はそのままでは止まる。口の在りかを読んだが照合を読んでいない
+- `asserted_without_measuring` — SPEC §5 h は空振りでないことの確認に P13 の PASS の件数『表 1 個、行 24』を置くが、prereg §4 の対称性の表は 23 行で、P13 も『23 行に UNKNOWN と理由欠落は無い』と 23 行を検査した。期待の行数を表から数えずに書いている
+- `check_does_not_check` — SPEC §5 g の空振りの確認『同点幅を 0 にした写しで選択が「最大の平均」に変わる（同点が在った場合）』は、最大の平均の水準が最大の batch でもあるとき（今回の b6）選択が変わらず、同点の規則を見分けない。合成の入力で select() を呼んで代えた
+
+### 逸脱
+
+- `spec_defect` — train_search.py は batch_size = 2 と num_workers = 4 を固定し口が無い。この 2 行だけを環境変数 PROBE_BATCH_SIZE・PROBE_NUM_WORKERS にした写しを repo の外（$STORE/config/train_search_batch.py）に置いて渡した（SPEC Task B-1 が許す方法）。原本は無変更（要約値が前後で一致）
+- `spec_defect` — scripts/train_relation_detr_search.py は epoch 0 で optimizer の群を load_point(TOWER_SEARCH_POINT)（dlsta の points.csv、12 番の wd 3.37e-4）と 1e-15 で照合するため、b4・b6 は値が届いても止まる。包み tools/train_level.py で探索のスクリプトを import し、load_point だけを prereg の値の JSON（DTOWER_LEVEL_POINT）を読む関数に差し替えた。照合は働いたまま（wd_mismatch の対照で rc 1）
+- `judgement` — 観測器 tools/observer.py を既存の TOWER_SEARCH_OBSERVER で読ませ、DataLoader の batch と長さ、各歩の枚数、第 0 epoch の各歩の学習率、epoch ごとの評価の時間と組ごとの AP、読んだ動画を記録した。PROBE_EXPECT_BATCH と枚数が違えば最初の歩で止める。更新・ファイル・既定の挙動は変えていない
+- `judgement` — prereg の『発散・非数』は探索と同じく『損失が非数になり学習が止まる』（engine の Loss is …）で数えた。fp16 の scaler が更新を飛ばした歩（gradient_nonfinite_steps、6 本で 12〜27。探索の 12 番は 24）は記録する量として残し、停止の根拠にしていない
+- `judgement` — 要約値の経路に、前の契約の解析（dtower_step_profile）・探索の run（stage1_dtower_search）・評価と記録の scripts の 6 本を足した
+- `judgement` — 同じ識別子の一度目の着手（2026-11-05T21:56Z）は、カードが四版のため G1 の前で中止した（学習 0 本）。利用者の指示で『実行しなかった扱い』とし、記録・分岐・置き場を消した。五版が phase0 に入った後に二度目の着手をした
+- `judgement` — 集計の道具 summarize.py を学習の後に 2 回直した。(1) 評価した区分をログの instances_<split>.json から読んでいたが、ログに名前が出ず train を数え落とした。出力の名前 eval_<split>.json から読むようにした。(2) glob が eval_<split>.timing.json にも当たったので名前の完全一致に限った。select() は変えていない
+- `environment` — 学習の最中（2026-11-06 16:05〜21:41 JST）に別の契約の未追跡のファイル 13 件（experiments/analysis/grasp_pilot_arms/taskC/compare_default.py と experiments/phase1/grasparms_B_*_ep4_seed42/logs/ の 12 件）が同期で届き、make forbidden-check が violations 13 で fail した。禁止事項 9 により消さず、無視の一覧にも足していない。状態を変えずに道具の check() をこの 13 件だけ除いて呼ぶと pass（violations 0）
+- `environment` — make runindex の検証 C5 が FAIL（value 空欄と is_nan が食い違う行 51、すべて phase1__grasppilot2_G_H1・G_H2・G_all の 3 本）。本契約の run には 0 件。3 本は commit 済みの runindex（68befc3b）の後に phase0 へ統合されたもので、phase0 の上で収穫しても同じく落ちる。他の契約の記録は変えず、収穫の結果をそのまま commit した
+- `environment` — 前のセッションが終わったときに、run の終わりを知らせる待ち（背景の命令）も止まり、2 本目の終わりは知らせなしで過ぎた。学習は setsid で切り離していたので影響はない（runs.log と各 run の記録で確かめた）
+
+### 申し送り
+
+- 規則（prereg §3）の結果: val mAP の 2 本の平均 b2 0.7284992・b4 0.7297248・b6 0.7356521。3 水準とも最大との差が同点幅 0.0076 以下で同点、最も大きい batch の b6 を選んだ。標的群 AP の平均 0.8125・0.8205・0.8211 で最良も b6（食い違いなし）。予測 1・2 は外れ、3 は当たり（F の較正に積む）
+- 選んだ batch 6（GPU ごと、実効 12、weight decay 1.01058e-3、学習率 3.07e-4、max_norm 0.059）を、回し直し（上位 1 件と 0 番、5 折り × seed 42・123、andrew）の契約で検出塔の固定の項目として引く
+- runindex の検証 C5 が phase1__grasppilot2_G_H1・G_H2・G_all の per_class（value 空欄・is_nan False の 51 行）で落ちる。その契約の記録か収穫器の扱いを直す契約が要る
+- 同期で届いた統合前の他の契約の未追跡のファイルは、契約の途中でも forbidden-check を落とす。検査が同期の分を扱う方法（起票時の一覧との差など）が要る
+- runindex の本契約の行の eval_recipe_id が空欄。収穫器が検出塔の探索系の run の評価の recipe を引けていない
+- 版管理の外の生の記録と checkpoint（/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-batch-search/、19 GB）を残した。片付けは利用者の判断
+- 前の契約で退避した ~/m2-evacuated/T-2026-11-06-dtower-step-profile/run_ptower_search.log は、利用者の指示でそのまま
+
+### 断定できなかったこと
+
+- 停止条件（COCO の重みを読まない・評価が checkpoint を読まない）の検査を壊した入力で働かせていない
+- b6 の最大確保 38.0〜38.7 GB が PR 290 の 34.6 GB（数歩）より大きい理由
+- runindex の本契約の行の eval_recipe_id が空欄の理由
+
 ## T-2026-11-05-grasp-tower-rebuild
 
 状態 `pass` / ホスト `bengio` / 起票 `295` / 様式 `v3`
@@ -185,43 +232,4 @@
 - q の行の和が約半数の枠で 1 を超える理由の切り分け
 - 同じ seed の run の間のビットの非決定性の大きさ
 - fp16 の非数が長く学んだときにどうなるか、bf16（変形注意だけ fp32）の学習の質と fp32 との比べ
-
-## T-2026-11-02-hostdiff-bengio
-
-状態 `pass` / ホスト `bengio` / 起票 `288` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 分岐 feat/hostdiff-bengio、起点 origin/phase0 8aefdce3。Relation-DETR source 142/2f08e521・all 155/20f15c06 が andrew main と同じ。image_input_lock 32,670 経路の不一致 0、manifest 4 件と折り A の注釈と COCO の重み 2d2c19a7 が記録と同じ。起動の設定 27/27 が許した違いの他で同じ。GPU 0・1 は 39・20 MiB、compute 0
-- `G2` pass — 工程塔の backbone を +control_frames=3200 ft_epochs=1 で二度。rank0・rank1 とも micro-step 200・optimizer step 50 の損失の列が bit 単位で一致（rank0 3cd3c19c…、rank1 4a89babb…）
-
-### 起票者の誤り
-
-- `check_does_not_check` — プリフライト P2 cuda_ext_loaded は sys.executable（契約の env.venv .venv）で検出器を import するが、検出器は .venv-relation-detr で動く。指示どおり回すと .venv に fvcore が無いため FAIL になり、検出の拡張が読み込めるかを確かめていない（.venv-relation-detr では読み込める）
-- `asserted_without_measuring` — SPEC §1 は #284 が phase0 に統合済みであることを前提に置いたが、起票の時点で #284 は OPEN だった。指示どおり task-start から始めると分岐の起点が #284 を含まず、揃えた後の bengio を測れない。利用者が統合して解消した
-- `self_contradiction` — 契約は「一度に走らせる学習は一本」とし、同時に手本と同じ手順（backbone の後の記録の評価と特徴の取り出しを GPU 2 枚で並行、時間ヘッドを 2 本ずつ）を求めた。字面どおりでは両方を満たせず、どちらかを破る。利用者の判断で手本どおりにした
-
-### 逸脱
-
-- `spec_defect` — 利用者の指示で、5 本の後に origin/phase0（#286 hostdiff-andrew の統合後、89fe4a41）を取り込んだ（merge c518bf6d）。scripts/run_ptower_search.py・tower_search_common.py・train_relation_detr_search.py は phase0 の版を採った。bengio の 5 本の run が使った版は commit 22ce24b2。両方の契約が同じ scripts/ を別々に変えてよい形だったため衝突した
-- `judgement` — 取り込みは検出塔 123 の評価と記録（学習の後に起動し、その時点の scripts/ を読む）が終わってから行った
-- `judgement` — 道具の試験 test_defaults.py は取り込みの後、22ce24b2 を repo の外へ展開して回した（4 passed）。分岐の先頭の scripts/ に向けると 3 failed（bengio の仕掛けが無い）
-- `judgement` — 工程塔 seed42 の backbone の git_commit.txt は 8aefdce3。起動の 69 秒後に道具の変更を 22ce24b2 として commit したため。変更の最後は起動の前で、動いた内容は 22ce24b2 と同じ
-- `judgement` — 時間ヘッドの公開名は 10 本とも 001_P15_…（手本は 003〜012）。1 本ずつ別の作業場で回すため連番が振り直された。起動の引数は照合済み
-- `judgement` — 契約の「一度に走らせる学習は一本」と手本の並行の手順の関係を利用者に諮り、手本どおり並行にした（塔の run を同時に 2 本走らせない）
-- `judgement` — プリフライト P2 cuda_ext_loaded の FAIL は利用者の判断で記録して続けた。拡張と COCO の重みの読み込みは各 run の記録で確かめた
-- `judgement` — 一歩ごとの時刻を取るため scripts/ の道具に TOWER_SEARCH_STEP_LOG があるときだけ働く記録を足し、起動の照合では許した違いに数えた
-- `environment` — 本測定の前の検出塔の 12 ステップの確かめで optimizer.step の差し替えが util/engine.py の LinearLR を壊した。記録の位置を勾配のクリップへ移して直した
-- `environment` — SPEC §1 の前提の #284 が OPEN だった。利用者が統合し、分岐を git merge --ff-only で 8aefdce3 へ早送りした
-
-### 申し送り
-
-- 分岐の先頭の scripts/ は phase0（andrew 側の版）であり、bengio の 5 本の run が使った版は 22ce24b2。bengio の run を再現するときは 22ce24b2 の scripts/ を使う
-- test_stage1_ptower_heads::test_existing_candidates_match_baseline の 4 件は CPU の float 出力のバイトの要約値を比べるため bengio で落ちる。ホストに依らない比べ方にするかを決める
-- 並行する二つの契約が同じ scripts/ を別々に変えてよい形は衝突を生む。次の対の契約では道具の変更を一方に寄せるか、先に共通の版を統合する
-
-### 断定できなかったこと
-
-- COCO の重みの経路を存在しない経路にしたときの読み込みの行の挙動（本契約では回していない）
-- 同じ seed の検出塔 42a と 42b の差（mAP 0.7264 と 0.7318）がホストの差の比べにどう効くか。§6.2 の比べで扱う
 
