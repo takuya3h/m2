@@ -323,3 +323,8 @@
 
 - `git status --porcelain --untracked-files=all`: 追跡ファイルの**削除 0 件**。変更は本契約の `audit.md`・`tools/summarize.py`、`README.md`・`docs/experiment_log.md`（契約の Task D-4）、`runindex/` の 6 ファイル（allow_write）だけ。前例の道具 10 件は復元済みで差分に出ない
 - 未追跡: 本契約の出力（REPORT・summary・tables・frozen_towers、run の記録 2 本 × 28、RESULT・result.yaml・inbox.d）、runindex/runs/ の 24 件（本契約 7、同期の別の契約 17）、同期で届いた `experiments/analysis/grasp_cards_survey/tools/` 8 件（commit しない）
+
+## 7. 送出
+
+- push: `origin/feat/dtower-rerun` = b524173e。PR **#305**（`gh pr view 305`: base phase0、head feat/dtower-rerun、isDraft false、state OPEN）
+- RESULT.md・result.yaml に PR 番号を入れ、result.yaml を `tasks/_schema/result.schema.json` で検証して合格

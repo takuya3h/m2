@@ -36,7 +36,7 @@ andrew の A6000 × 2 で、探索の 12 番（学習率 3.07e-4、max_norm 0.05
 | i | 対称性 | prereg の表 26 行に UNKNOWN 0 件。P13 PASS。壊した写しで FAIL（audit:311-314） |
 | j | 凍結する塔 | 5 本の経路・sha256・epoch・val（`frozen_towers.json`）。repo の外に在り、同期の対象の下の `.pth` は 0 件。1 バイト変えた写しで不一致（audit:290-297） |
 | k | 収穫と無変更 | runindex に完了した 7 本が task_id つき（20 本ではない）。C5 は別の契約の 3 run で FAIL（audit:305-310）。要約値 21 根・仮想環境・凍結源が一致（audit:298-304）。試験は後も 7 failed / 989 passed で失敗の名前は同じ 7 件（audit:317-320）。forbidden-check の本契約の経路の違反 0 |
-| l | PR | #PR_NUMBER、base phase0、Draft でない、head feat/dtower-rerun |
+| l | PR | #305、base phase0、Draft でない、head feat/dtower-rerun |
 
 ## 実測
 
@@ -92,5 +92,5 @@ andrew の A6000 × 2 で、探索の 12 番（学習率 3.07e-4、max_norm 0.05
 
 ## 送出
 
-- PR: #PR_NUMBER（base phase0、isDraft false、head feat/dtower-rerun）
+- PR: #305（base phase0、isDraft false、head feat/dtower-rerun）
 - `make task-report`: TASK_REPORT_RC
