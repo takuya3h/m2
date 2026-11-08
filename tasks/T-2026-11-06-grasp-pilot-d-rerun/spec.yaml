@@ -1,0 +1,75 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-11-06-grasp-pilot-d-rerun"
+  kind: analysis
+  title: "把持の信号の予備測定の五本目（bengio）。作り直した把持塔 G の標的 q で案 D（把持の状態を教師にした検出塔の学び直し）の G を教師・入れ替えた教師の 2 腕を回し直し、三本目の無効な腕を置き換える。あわせて案 B（把持のマスク 5 チャネルを検出塔の C5 へ）の空と正解の 2 腕を bengio で回し、四本目の予測の腕とホストを揃える"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-11-06T15:00:00Z"
+  created_from:
+    runindex_commit: "68befc3b62ffc071077cca446df5d3c83b8c38b9"
+    counts: {index: 2363, experiments: 1130, verdicts: 1736}
+  depends_on: [T-2026-11-05-grasp-tower-rebuild, T-2026-11-06-grasp-pilot-arms, T-2026-11-01-grasp-pilot-d, T-2026-10-31-grasp-pilot-probe]
+  amendments: []
+intent:
+  question: "作り直した G の標的 q を教師にした案 D の検出塔は、補助損失なしの腕（三本目の有効な値）と入れ替えた教師の腕と比べてどれだけ動くか。案 B の空と正解の腕を bengio で回すと、四本目の予測の腕と同じホストでの Δ空 と正解との差はどれだけか。非公式の測定であり、関門の判定にも設計の判断にも使わない"
+  decision_at_stake: "進捗報告の材料。把持の案を正式に進めるかを利用者が考える手がかり。案の採否は結果で決めない"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery の術具注釈のあるフレーム、折り A（conventions#folds）。train 動画 10 本で学び、val 動画 09・10 で測る。標的と信号は T-2026-11-05-grasp-tower-rebuild の目録のものを読むだけ。折り A の test の動画のフレームは学習と評価のどれにも通さない"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/grasppilot/run_d_arm.sh", "scripts/grasppilot/grasp_aux_d.py", "scripts/grasppilot/d_model_config.py", "scripts/grasppilot/d_train_config.py", "scripts/grasppilot/d_aggregate.py", "scripts/grasppilot/run_pd_grasparms.sh", "scripts/grasppilot/pd_grasp.py", "scripts/grasppilot/arms_aggregate.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#env_p0, conventions#folds, conventions#split, conventions#eval_recipe, conventions#det_groups, conventions#crossfit]
+  conventions_rev: "2d946b07a57abebc4a8f66150d6dbaf2ccd22186"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/analysis/grasp_pilot_d_rerun", "experiments/phase1/graspd2", "experiments/phase1/grasparms", "runindex/"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。分岐、前提の統合、bengio の GPU の使用（nvidia-smi の全体の使用量との差）、記憶領域、失敗の名前、仮想環境の要約値、重ねの BODY の照合、電力の上限", gpu: false, est: "1h"}
+    - {id: B, name: "材料。目録の q と案 B の信号と G の重みの要約値の照合、塔単独の val の再現、三本目の補助損失なしの腕と四本目の経路の code_sha256 の照合、禁止の場所の開始時の要約値", gpu: true, est: "2h"}
+    - {id: C, name: "確かめ。案 D の試走（重み 0 と 0.3、主経路、COCO の読み込み）、案 B の恒等性と陽性対照", gpu: true, est: "2h"}
+    - {id: D, name: "学習（案 D 2 本、案 B 2 本）", gpu: true, est: "16h"}
+    - {id: E, name: "集計、検証、報告", gpu: false, est: "2h"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、PR 295 と PR 297 の内容が起点に在り、bengio の GPU に本契約以外の使用が無く、重ねの BODY が三本目の記録と一致し、記憶領域と失敗の名前と仮想環境の要約値と電力の上限を記録した", on_fail: stop}
+    - {id: G2, after: B, check: "目録の q と案 B の信号と G の重みの sha256 が一致し、塔単独の val が許容差の中で再現し、三本目の補助損失なしの腕の code_sha256 が本契約の案 D の経路と一致し、四本目の案 B の経路の code_sha256 が本契約の案 B の経路と一致し、禁止の場所の開始時の要約値を取った", on_fail: stop}
+    - {id: G3, after: C, check: "案 D で重み 0 のとき頭の無い経路と損失が一致し、0.3 で補助損失が入り主経路の照合の枠だけを取り、COCO を読んだ。案 B で学習前の出力が塔単独と一致し、陽性対照で出力が変わる", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, gpu_free]
+  resources: {server: bengio, gpu: 2, est_hours: 23, runs: 4}
+outputs:
+  must_have: [REPORT.md, RESULT.md, result.yaml, audit.md]
+  destination: "experiments/analysis/grasp_pilot_d_rerun/"
+  acceptance:
+    - "a: 開始状態として、分岐、起点、PR 295 と PR 297 の内容が起点に在ること、開始前から在る未追跡、bengio の GPU の使用量と一覧（nvidia-smi）、記憶領域の空き、試験の失敗の名前、既存の仮想環境の一覧の要約値、重ねの BODY の照合、GPU ごとの電力の上限と装置の型が記録されている"
+    - "b: 目録 signals_manifest.json の D_q（q と入れ替えの q）と B_m と G の重みの sha256 が一致し、q の枠の数と行の和の範囲が目録と一致し、塔単独の val（overall mAP と標的群 AP と陰性対照群 AP）が SPEC の許容差の中で再現されているか、超えて停止した記録がある"
+    - "c: 三本目の補助損失なしの腕の code_sha256 が本契約の案 D の経路と一致し、四本目の案 B の経路の code_sha256 が本契約の案 B の経路と一致する。違えばその腕を回し直した記録がある"
+    - "d: 案 D の確かめとして、重み 0 で頭の無い経路と全損失が一致し、0.3 で補助損失が入り頭に勾配が届き、対応づいた枠の数が主経路の正解の枠の数と一致し、COCO の重みを読んだことが読み込みの記録と要約値の変化で示されている"
+    - "e: 案 B の 2 腕で学習前の出力が塔単独と一致し、正解の腕で interface の重みを零でない値にすると出力が変わり、空の腕では入力が零のため変わらないことが記録されている"
+    - "f: run の表の 4 本が固定の長さで回り、epoch ごとの val の値と、案 D は補助損失の推移が記録されている。測れなかった run は理由つきで UNKNOWN"
+    - "g: 案 D は overall mAP と標的群 AP と陰性対照群 AP とクラス別 AP と動画ごとの値について、G を教師 − 補助損失なし、入れ替えた教師 − 補助損失なし、G を教師 − 入れ替えた教師が表にあり、三本目の値（無効な腕を含む）と並べた参考の表がある。案 B は空と正解と四本目の予測の 6 腕を同じ表に並べ、Δ空、Δ入替、正解との差が bengio の値だけで計算し直されている。SPEC の読み方の規則で記述されている"
+    - "h: test の動画のフレームを学習と評価に一度も通していないことが、通した動画の集合で示されている"
+    - "i: 禁止の場所の要約値が開始時と終了時で一致し、仮想環境の要約値が一致し、試験の失敗の名前が増えておらず、forbidden-check の違反のうち本契約の経路のものが 0 件"
+    - "j: PR が Draft でなく存在し、base が phase0、分岐が feat/grasp-pilot-d-rerun"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "bengio の GPU に本契約以外の使用がある場合（止めずに利用者に諮る）"
+    - "PR 295 か PR 297 の内容が起点に無い場合"
+    - "目録の q か信号か G の重みが無い、または sha256 が目録と食い違う場合"
+    - "塔単独の val が許容差を超えて食い違う場合"
+    - "重ねの BODY が三本目の記録と一致しない場合"
+    - "COCO の重みを読まずに学習が進んだ場合"
+    - "案 D の確かめで重み 0 の損失が頭の無い経路と一致しない場合"
+    - "記憶領域が足りない場合"
+    - "実行基盤が書き込み、移動、削除を拒む場合"
