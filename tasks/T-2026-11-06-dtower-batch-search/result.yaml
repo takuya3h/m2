@@ -1,0 +1,74 @@
+result_version: 3
+task_id: "T-2026-11-06-dtower-batch-search"
+status: pass
+host: "andrew"
+branch: "feat/dtower-batch-search"
+pr: 299
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "分岐 feat/dtower-batch-search、起点 origin/phase0 9d45351b、PR 290・292 の内容が起点に在る。prereg の commit b71ffafd（2026-11-05T22:08:51Z）は最初の学習（22:51:55Z）の前。カードは五版（check_card rc 0、四版の写しで rc 1）。入力 13 件の sha256 が一致（1 バイト変えた写しで不一致 1）。compute プロセス 0 件（対照 1/0/0）。空き 1,644,097,175,552 bytes ≥ 見込み 19.2 GB の 2 倍"}
+  - {id: G2, verdict: pass, note: "7 本の対照（各 5 歩）で、optimizer の 6 群と DataLoader の batch が水準の値になった。changed（batch 3、wd 5e-4）で値が変わり、wd_mismatch と batch_mismatch は rc 1 で止まり、default は batch 2・lr 1e-4・wd 1e-4 のまま。DataLoader の長さ 2,405・1,202・802 は prereg §2.1 と一致。立ち上げの記録の口が働く（対照で first_step_at_target 5）"}
+  - {id: G3, verdict: pass, note: "6 本とも学習 rc 0。損失の非数 0 件、b6 の溢れ 0 件、壁時計の最大 23,850 s。6 本とも学習ログに load pretrained from が 1 行在り、initialization_rank0/1.json の source_sha256 が COCO の checkpoint と一致。評価は rc 0 で skip loading・State dict is None は 0 件"}
+
+tests:
+  before_failed: 7
+  after_failed: 7
+  after_passed: 989
+
+deviations:
+  - {type: spec_defect, note: "train_search.py は batch_size = 2 と num_workers = 4 を固定し口が無い。この 2 行だけを環境変数 PROBE_BATCH_SIZE・PROBE_NUM_WORKERS にした写しを repo の外（$STORE/config/train_search_batch.py）に置いて渡した（SPEC Task B-1 が許す方法）。原本は無変更（要約値が前後で一致）"}
+  - {type: spec_defect, note: "scripts/train_relation_detr_search.py は epoch 0 で optimizer の群を load_point(TOWER_SEARCH_POINT)（dlsta の points.csv、12 番の wd 3.37e-4）と 1e-15 で照合するため、b4・b6 は値が届いても止まる。包み tools/train_level.py で探索のスクリプトを import し、load_point だけを prereg の値の JSON（DTOWER_LEVEL_POINT）を読む関数に差し替えた。照合は働いたまま（wd_mismatch の対照で rc 1）"}
+  - {type: judgement, note: "観測器 tools/observer.py を既存の TOWER_SEARCH_OBSERVER で読ませ、DataLoader の batch と長さ、各歩の枚数、第 0 epoch の各歩の学習率、epoch ごとの評価の時間と組ごとの AP、読んだ動画を記録した。PROBE_EXPECT_BATCH と枚数が違えば最初の歩で止める。更新・ファイル・既定の挙動は変えていない"}
+  - {type: judgement, note: "prereg の『発散・非数』は探索と同じく『損失が非数になり学習が止まる』（engine の Loss is …）で数えた。fp16 の scaler が更新を飛ばした歩（gradient_nonfinite_steps、6 本で 12〜27。探索の 12 番は 24）は記録する量として残し、停止の根拠にしていない"}
+  - {type: judgement, note: "要約値の経路に、前の契約の解析（dtower_step_profile）・探索の run（stage1_dtower_search）・評価と記録の scripts の 6 本を足した"}
+  - {type: judgement, note: "同じ識別子の一度目の着手（2026-11-05T21:56Z）は、カードが四版のため G1 の前で中止した（学習 0 本）。利用者の指示で『実行しなかった扱い』とし、記録・分岐・置き場を消した。五版が phase0 に入った後に二度目の着手をした"}
+  - {type: judgement, note: "集計の道具 summarize.py を学習の後に 2 回直した。(1) 評価した区分をログの instances_<split>.json から読んでいたが、ログに名前が出ず train を数え落とした。出力の名前 eval_<split>.json から読むようにした。(2) glob が eval_<split>.timing.json にも当たったので名前の完全一致に限った。select() は変えていない"}
+  - {type: environment, note: "学習の最中（2026-11-06 16:05〜21:41 JST）に別の契約の未追跡のファイル 13 件（experiments/analysis/grasp_pilot_arms/taskC/compare_default.py と experiments/phase1/grasparms_B_*_ep4_seed42/logs/ の 12 件）が同期で届き、make forbidden-check が violations 13 で fail した。禁止事項 9 により消さず、無視の一覧にも足していない。状態を変えずに道具の check() をこの 13 件だけ除いて呼ぶと pass（violations 0）"}
+  - {type: environment, note: "make runindex の検証 C5 が FAIL（value 空欄と is_nan が食い違う行 51、すべて phase1__grasppilot2_G_H1・G_H2・G_all の 3 本）。本契約の run には 0 件。3 本は commit 済みの runindex（68befc3b）の後に phase0 へ統合されたもので、phase0 の上で収穫しても同じく落ちる。他の契約の記録は変えず、収穫の結果をそのまま commit した"}
+  - {type: environment, note: "前のセッションが終わったときに、run の終わりを知らせる待ち（背景の命令）も止まり、2 本目の終わりは知らせなしで過ぎた。学習は setsid で切り離していたので影響はない（runs.log と各 run の記録で確かめた）"}
+
+issuer_defects:
+  - {type: self_contradiction, note: "prereg §3 の同点幅 0.0106 は、二周目の 3 本だけの標本 SD 0.0053 の 2 倍で、本文が定義に引く runindex の mAP_sstd（0.0037965、一周目と二周目の 6 本）の 2 倍 0.0076 と食い違った。利用者の決定で学習の前に 0.0076 へ改訂（meta.amendments）"}
+  - {type: asserted_without_measuring, note: "prereg §2.1 の weight decay の表は丸めた S 5.0e-3 から換算しており、b2 が『12 番の設定』と書く一方で 12 番の 3.37e-4 と 0.5 % 違った（3.386e-4）。利用者の決定で S を 4.976e-3 とし、b2 3.37e-4、b4・b6 は歩数の比で換算する形に改訂"}
+  - {type: asserted_without_measuring, note: "SPEC §1 は『train_relation_detr_search.py が点ごとの学習率・weight decay・max_norm を受ける』と書くが、同じスクリプトは epoch 0 で群を points.csv の 12 番と 1e-15 で照合するので、weight decay を変える b4・b6 はそのままでは止まる。口の在りかを読んだが照合を読んでいない"}
+  - {type: asserted_without_measuring, note: "SPEC §5 h は空振りでないことの確認に P13 の PASS の件数『表 1 個、行 24』を置くが、prereg §4 の対称性の表は 23 行で、P13 も『23 行に UNKNOWN と理由欠落は無い』と 23 行を検査した。期待の行数を表から数えずに書いている"}
+  - {type: check_does_not_check, note: "SPEC §5 g の空振りの確認『同点幅を 0 にした写しで選択が「最大の平均」に変わる（同点が在った場合）』は、最大の平均の水準が最大の batch でもあるとき（今回の b6）選択が変わらず、同点の規則を見分けない。合成の入力で select() を呼んで代えた"}
+
+positive_controls:
+  - {judgement: "a: P13 が対称性の表の UNKNOWN を検出する", breaking_input: "prereg の写しの『数値精度』の行を UNKNOWN にする", observed: "FAIL（23 行を検査。UNKNOWN 1 行: 数値精度）"}
+  - {judgement: "a: P14 がカードの不在を検出する", breaking_input: "intent.proposal_card を docs/proposals/zzz_no_such_card.md にした spec", observed: "FAIL（提案カードが無い）"}
+  - {judgement: "b: カードの版の検査が四版を拒む", breaking_input: "カードの 3 行の『版:』を四版にした写し", observed: "version=四版、rc 1（本物は五版、rc 0）"}
+  - {judgement: "b: プロセスの列挙が /proc/PID/exe と argv の完全一致で働く", breaking_input: "自分のシェルから bash -c 'sleep 25; true' probe_self_marker_9931 を起こす。部分一致 probe_self_marker_993。存在しない /nonexistent/zzz_no_such_exe", observed: "1 件・0 件・0 件"}
+  - {judgement: "c: 入力の sha256 の照合が変化を検出する", breaking_input: "instances_val.json の 1 バイトを変えた写しを --override で読ませる", observed: "不一致 1、rc 1"}
+  - {judgement: "d: 設定が optimizer の群と DataLoader に届く", breaking_input: "batch 3・wd 5e-4 の写し（changed）", observed: "群の wd が 5e-4、DataLoader の batch 3・長さ 1,603、各歩 3 枚"}
+  - {judgement: "d: 点の照合が prereg と違う設定を止める", breaking_input: "点の JSON は 3.37e-4、DTOWER_WEIGHT_DECAY は 6.7428e-4（wd_mismatch）", observed: "rc 1（detector optimizer groups differ from the preregistered point）"}
+  - {judgement: "d: 枚数の検査が batch の食い違いを止める", breaking_input: "batch 2 で PROBE_EXPECT_BATCH=4（batch_mismatch）", observed: "rc 1（frames per step 2 differ from the level batch 4）、1 歩で停止"}
+  - {judgement: "d: 既定の挙動が変わっていない", breaking_input: "既存のスクリプトと既存の設定、TOWER_SEARCH_POINT=0（default）", observed: "batch 2・長さ 2,405、群 (1e-4, 1e-4)…(1e-4, 0)（探索の値のまま）"}
+  - {judgement: "e: run の数え方が存在しない run を数えない", breaking_input: "存在しない dtowerbatch_b8_dcoco_foldA_seed42", observed: "0 件（No such file or directory）"}
+  - {judgement: "f: 立ち上げの記録が歩数を区別する", breaking_input: "5 歩の対照（立ち上げ 4 歩）と、第 0 epoch が 802 歩の b6", observed: "対照で first_step_at_target 5。本番で b2・b4 は 1,001、b6 は 802（立ち上げ 801 歩）"}
+  - {judgement: "g: 同点の規則が選択を変える", breaking_input: "合成の入力 b2 0.740・b4 0.735・b6 0.730 で select() を呼ぶ（同点幅 0.0076 と 0）", observed: "0.0076 で同点 {b2, b4} → b4、0 で b2"}
+  - {judgement: "g: 実データで同点幅を 0 にする", breaking_input: "summarize.py --tie 0", observed: "選択は b6 のまま（最大の平均が最大の batch でもあるため、この対照は見分けない）"}
+  - {judgement: "i: test 不使用の検査が test の評価を検出する", breaking_input: "summarize.py --inject-test（評価した区分の集合に test を足す）", observed: "6 本すべてが外れ（本物は 0 件）"}
+  - {judgement: "j: forbidden-check が本契約の新しいファイルを変更として拾う", breaking_input: "本契約の run の記録・解析・runindex の収穫", observed: "changed 389（同期で届いた 13 件を除く）、うち 382 件が allow_write で permitted、violations 0"}
+  - {judgement: "停止条件: COCO の重みを読まない・評価が checkpoint を読まない", breaking_input: "初期化の記録の無い run、読み込みを飛ばした評価", observed: "UNKNOWN（壊した入力では働かせていない。本番の 6 本で検査を通った記録だけが在る）"}
+
+followups:
+  - "規則（prereg §3）の結果: val mAP の 2 本の平均 b2 0.7284992・b4 0.7297248・b6 0.7356521。3 水準とも最大との差が同点幅 0.0076 以下で同点、最も大きい batch の b6 を選んだ。標的群 AP の平均 0.8125・0.8205・0.8211 で最良も b6（食い違いなし）。予測 1・2 は外れ、3 は当たり（F の較正に積む）"
+  - "選んだ batch 6（GPU ごと、実効 12、weight decay 1.01058e-3、学習率 3.07e-4、max_norm 0.059）を、回し直し（上位 1 件と 0 番、5 折り × seed 42・123、andrew）の契約で検出塔の固定の項目として引く"
+  - "runindex の検証 C5 が phase1__grasppilot2_G_H1・G_H2・G_all の per_class（value 空欄・is_nan False の 51 行）で落ちる。その契約の記録か収穫器の扱いを直す契約が要る"
+  - "同期で届いた統合前の他の契約の未追跡のファイルは、契約の途中でも forbidden-check を落とす。検査が同期の分を扱う方法（起票時の一覧との差など）が要る"
+  - "runindex の本契約の行の eval_recipe_id が空欄。収穫器が検出塔の探索系の run の評価の recipe を引けていない"
+  - "版管理の外の生の記録と checkpoint（/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-batch-search/、19 GB）を残した。片付けは利用者の判断"
+  - "前の契約で退避した ~/m2-evacuated/T-2026-11-06-dtower-step-profile/run_ptower_search.log は、利用者の指示でそのまま"
+
+unknowns:
+  - "停止条件（COCO の重みを読まない・評価が checkpoint を読まない）の検査を壊した入力で働かせていない"
+  - "b6 の最大確保 38.0〜38.7 GB が PR 290 の 34.6 GB（数歩）より大きい理由"
+  - "runindex の本契約の行の eval_recipe_id が空欄の理由"
+
+commits:
+  - "b71ffafd"
+  - "a141077e"
+  - "e5dd9a36"
+  - "d3e319ac"

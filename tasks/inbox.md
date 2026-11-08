@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（756 件）
+## 未処理（766 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -758,6 +758,9 @@
 - [ ] 2026-11-06 [cc] 契約の allow_write に run の置き場が無く（SPEC §4 と矛盾）、利用者の決定で experiments/phase1/grasptower を足して run の記録を commit した（meta.amendments）。run の置き場を作る契約は allow_write に含めて起票する
 - [ ] 2026-11-06 [cc] 案 D の q は約半数の枠で行の和が 1 を超え、和で割って正規化した（二本目は 11 枠）。和を超えた枠では「なし」が 0 になる。案 D の契約の起票で標的の性質を考える（experiments/analysis/grasp_tower_rebuild/REPORT.md §6）
 - [ ] 2026-11-06 [cc] 腕の回し直しは experiments/analysis/grasp_tower_rebuild/signals_manifest.json の信号と標的を写す。G は batch 8・bf16（変形注意だけ fp32）で学んだ。案 C の t は案 C の契約で定義する
+- [ ] 2026-11-06 [user] 検出塔の batch の探索の同点幅は 0.0076（runindex の baselines/dcoco_foldA/dcoco_foldA@val の mAP_sstd 0.0038 の 2 倍。prereg の定義どおり）。起票時の 0.0106 は二周目の 3 本だけの SD の 2 倍で、起票者の誤り（T-2026-11-06-dtower-batch-search の meta.amendments）
+- [ ] 2026-11-06 [user] 縮みの量 S は 12 番の実際の値 4.976e-3（3.07e-4 × 3.37e-4 × 48,100）。weight decay は b2 を 3.37e-4 のまま、b4・b6 は 1 epoch の歩数の比で換算する（6.7428e-4・1.01058e-3。同 amendments）
+- [ ] 2026-11-06 [cc] 同じ識別子の一度目の着手は、カードが四版のため G1 の前で中止した（学習 0 本）。利用者の指示で「実行しなかった扱い」とし、記録と分岐を消した。五版が phase0 に入った後に二度目の着手をした
 - [ ] 2026-11-06 [cc] 検出塔の GPU 使用率は、歩の区間だけで平均すると 77〜92 %（使用率 0 の標本 0 個）。PR 290 の 43〜69 % は起動と止めの間を含む窓での平均だった。使用率を比べるときは平均の窓を揃えること（experiments/analysis/dtower_step_profile/REPORT.md §5.3）
 - [ ] 2026-11-06 [cc] 検出塔の一歩の読み込みの待ちは 0.001〜0.005 s。worker 数 4・8・16 で一歩は 0.3905・0.3938・0.3920 s（sd 0.021〜0.032 s）。batch と読み込み・プロセス数の設定の採否は利用者が決める（T-2026-11-06-dtower-step-profile）
 - [ ] 2026-11-06 [cc] 読み込み無しの水準の一歩が短い理由（入力の大きさか、読み込みか）は分けていない。入力の tensor の形を記録していないため（T-2026-11-06-dtower-step-profile）
@@ -771,6 +774,13 @@
 - [ ] 2026-11-06 [cc] 検出塔の train_search.py には batch を点ごとに渡す口が無い。batch の軸を足すなら、口を足すか写しを使うかを決める（T-2026-11-06-tower-batch-probe）
 - [ ] 2026-11-06 [cc] 版管理の外の生の記録 /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-tower-batch-probe/（重みなし）を残した。片付けは利用者の判断（T-2026-11-06-tower-batch-probe）
 - [ ] 2026-11-06 [cc] 工程塔の起動で Hydra が repo 直下に空の run_ptower_search.log を作る（hydra.run.dir が .）。本契約の分も残してある。消すか、無視の一覧に足すかは利用者の判断（T-2026-11-06-tower-batch-probe）
+- [ ] 2026-11-07 [cc] 検出塔の batch は prereg §3 の規則で **GPU ごとの 6**（実効 12、weight decay 1.01058e-3）に決まった。val mAP の 2 本の平均 b2 0.7285・b4 0.7297・b6 0.7357 で 3 水準とも同点幅 0.0076 の内、最も大きい batch を取った。回し直しの契約はこれを固定の項目として引く。予測 1・2 は外れ（T-2026-11-06-dtower-batch-search）
+- [ ] 2026-11-07 [cc] runindex の検証 C5 が別の契約の 3 run（phase1__grasppilot2_G_*）で落ち、forbidden-check は学習の最中に同期で届いた別の契約の未追跡 13 件で落ちた。どちらも本契約の分は 0 件で、他の契約の記録には触れていない（T-2026-11-06-dtower-batch-search の RESULT の逸脱）
+- [ ] 2026-11-07 [user] runindex の C5 の FAIL と forbidden-check の fail（どちらも別の契約の分）を逸脱として記録したまま、収穫ごと送出してよい（T-2026-11-06-dtower-batch-search の完了判定 j）
+- [ ] 2026-11-08 [cc] 開始時に同期で届いた未統合の T-2026-11-07-dtower-rerun の出力 12 件（experiments/analysis/dtower_rerun/tools/）で task-start が止まり、利用者の選択「4 で無視に足す」で .git/info/exclude にフォルダを 1 行足した。dtower-rerun が phase0 に統合されたら、その行を外してよい（audit.md 0.）
+- [ ] 2026-11-08 [cc] 工程の「工程注釈のあるフレーム」は二つの集合がある。工程塔の目録（phase_manifest）は術具注釈のフレームと同じ集合で、CSV にだけある行には画像が無い。カードの #15 で「工程フレーム」と書くときはどちらかを明記する（REPORT §S2）
+- [ ] 2026-11-08 [cc] 確定の工程塔 P*-15 の初期化は COCO の鎖（init: coco）で、SPEC §1 の「ImageNet の初期化」とは違う。S6 は SPEC どおり ImageNet の重みで形を確かめた。案 6 の契約では P*-15 と同じ COCO の鎖から作るかを決める（RESULT.md 起票者の誤り）
+- [ ] 2026-11-08 [cc] S5 の G の確定と H1 の相関は層で 0.255〜0.821（中央）と大きく違う。案 2 の「交差適合の半分は基底が違う」は取り出す層を決めてから読む（REPORT §S5）
 
 ## 処理済み（21 件）
 

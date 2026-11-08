@@ -1,0 +1,74 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-11-08-grasp-cards-survey"
+  kind: analysis
+  title: "把持塔の出力を使う第二回の提案カード 6 案の #15（対称性の実測）と #10（費用）を埋めるための調査（bengio）。工程塔の空間特徴の取り出し、把持の注釈の密度、術具注釈フレームの時間間隔、検出塔の出力の形と較正、把持塔の中間特徴の取り出し口、工程塔の入力層の変更の可否と費用を測る。学習は行わない"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-11-08T11:00:00Z"
+  created_from:
+    runindex_commit: "d3e319ac0a5b58930dc092ef85ef6976241cc004"
+    counts: {index: 2623, experiments: 1305, verdicts: 1947}
+  depends_on: [T-2026-11-05-grasp-tower-rebuild, T-2026-10-31-grasp-pilot-probe, T-2026-11-06-grasp-pilot-arms]
+  amendments:
+    - date: "2026-11-08"
+      reason: "Task A-4。起票時の値は 2026-10-29 の runindex の版（68befc3b）とその件数で、起点 origin/phase0（a68672f1）の git log -1 -- runindex/ と件数（見出し行を除く）が食い違ったため実測で差し替えた。conventions_rev 2d946b07 は一致"
+      diff: "meta.created_from.runindex_commit: 68befc3b… -> d3e319ac… / counts: {2363, 1130, 1736} -> {2623, 1305, 1947}"
+intent:
+  question: "提案カード 6 案（検出の再採点、関係の蒸留、把持領域トークン、関係グラフ、遷移の符号化、入力層の条件付け）の対称性の表と費用を埋めるのに要る環境の実測値は何か。各案が今の塔・信号・道具でそのまま書けるか、何が足りないか"
+  decision_at_stake: "批判会話へ回す前の #15 の UNKNOWN の解消と #10 の見積もり。案の採否は決めない（判定は利用者）"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery 折り A（conventions#folds）の train と val。術具注釈のあるフレーム、工程注釈のあるフレーム、EgoSurgery-HTS の把持関係の注釈（hand_tool_seg の train と val）。test の動画（04、05、07）のフレームは一切読まない"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/stage2pilot/common.py", "scripts/stage2pilot/dp_train.py", "scripts/stage1_ptower_r3.py", "scripts/eval_relation_detr_map.py", "scripts/grasppilot/g5_signals.py", "scripts/stage2pilot/extract_det_signals.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#env_p0, conventions#folds, conventions#eval_recipe, conventions#det_groups, conventions#symmetry]
+  conventions_rev: "2d946b07a57abebc4a8f66150d6dbaf2ccd22186"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/analysis/grasp_cards_survey", "runindex/"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。bengio の GPU の使用（nvidia-smi の全体量との差）、記憶領域、失敗の名前、仮想環境の要約値、禁止の場所の要約値", gpu: false, est: "1h"}
+    - {id: B, name: "記録と注釈だけから測るもの（S2・S3・S4 の一部・S7）", gpu: false, est: "2h"}
+    - {id: C, name: "モデルを動かして測るもの（S1 の空間特徴、S4 の較正、S5 の中間特徴、S6 の入力層の数歩）", gpu: true, est: "3h"}
+    - {id: D, name: "表、検証、報告", gpu: false, est: "1h"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、bengio の GPU に本契約以外の使用が無く、記憶領域と失敗の名前と仮想環境の要約値と禁止の場所の要約値を記録した", on_fail: stop}
+    - {id: G2, after: B, check: "S2・S3・S7 の表が、対照（test の動画を混ぜた集合で件数が変わる、存在しない動画で 0 件）つきで埋まっている", on_fail: stop}
+    - {id: G3, after: C, check: "S1・S4・S5・S6 が測れたか、測れなかった理由が記録されている。学習を一歩も行っていない（重みの要約値が前後で一致）", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, gpu_free]
+  resources: {server: bengio, gpu: 1, est_hours: 7, runs: 0}
+outputs:
+  must_have: [REPORT.md, RESULT.md, result.yaml, audit.md]
+  destination: "experiments/analysis/grasp_cards_survey/"
+  acceptance:
+    - "a: 開始状態として、分岐、起点、開始前から在る未追跡、bengio の GPU の使用量と一覧（nvidia-smi）、記憶領域の空き、試験の失敗の名前、仮想環境の一覧の要約値、禁止の場所の開始時の要約値が記録されている"
+    - "b: S1 工程塔の空間特徴: Stage 2 の経路が読む特徴の形（次元・空間の有無）と出所の層が記録され、空間の地図（fine-tune した backbone の最終段）を 1 動画ぶん取り出した形・大きさ・1 フレームの時間・保存の大きさが記録され、取り出した地図の空間平均が既存のキャッシュの特徴と一致する（対照つき）"
+    - "c: S2 把持の注釈の密度: 折り A の train と val について、術具注釈のあるフレーム数、そのうち把持関係の注釈があるフレーム数、構造的欠落（loss_mask）のあるフレーム数、工程注釈のあるフレーム数との関係が、動画ごとに表にある"
+    - "d: S3 術具注釈フレームの時間間隔: 折り A の各動画で、術具注釈のある連続するフレームの時間差の分布（最小・中央・最大・5 と 95 パーセンタイル）と、工程注釈のフレーム（0.5 fps）との対応が記録されている"
+    - "e: S4 検出塔の出力の形と較正: 評価の経路が NMS を使わないことが実装の該当箇所で示され、1 フレームあたりの query 数、得点の分布、train の一部と val での較正（ECE。得点の区間 10）が記録されている"
+    - "f: S5 把持塔の中間特徴: 作り直した G（確定・H1・H2）の、マスクの出力より前の層のうち取り出せる候補が、層の名前・次元・空間の大きさ・1 フレームの時間とともに 2 つ以上記録され、確定と H1 の同じ層の特徴の基底が一致しない（対応する次元の相関が低い）ことが示されている"
+    - "g: S6 工程塔の入力層の変更の可否: fine-tune の台本が入力チャネル数の変更を受けるか、stem（conv1・bn1）が凍結であること、8 チャネルにした写しで数歩（学習ではなく順伝播と逆伝播の形の確認）が通るか、1 epoch の見込み時間が記録の値から引かれている"
+    - "h: S7 費用の単価: 四本目・五本目・三本目・三周目の記録から、工程塔側の界面の学習（W1）1 本、工程塔の時間ヘッドの学習（W2・W3 相当）1 本、検出塔側の界面の学習（W1）1 本、検出塔の学び直し（S2）1 本、工程塔の fine-tune（backbone）1 本の壁時計と GPU の使い方が、出所の経路つきで表にある"
+    - "i: test の動画（04、05、07）のフレームを一度も読んでいないことが、読んだ動画の集合で示されている"
+    - "j: 既存の run・保存先・注釈・凍結源・checkpoint・仮想環境・third_party・重ねの BODY を変えていない（要約値の前後の一致）。学習を行っていない。forbidden-check の本契約の経路の違反 0 件"
+    - "k: PR が Draft でなく存在し、base が phase0、分岐が feat/grasp-cards-survey"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "bengio の GPU に本契約以外の使用がある場合（止めずに利用者に諮る。読み取りだけの測定は共有のまま進めてよいが、記録する）"
+    - "空間特徴の取り出しが fine-tune の checkpoint の読み込みを変えないと作れない場合"
+    - "測定の副作用が禁止の場所（重ねの BODY を含む）に書く場合（RELDETR_EVIDENCE_DIR などの出力先を本契約の置き場へ向けられないとき）"
+    - "記憶領域が足りない場合"
+    - "実行基盤が書き込み、移動、削除を拒む場合"

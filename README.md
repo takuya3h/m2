@@ -1809,6 +1809,29 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
   二本目の正解との差 −0.0061。術具だけ（誰の手かを落とす）は Δ空 +0.0031、Δ入替 +0.0014、案 B の予測-noCF との差 −0.0064。
   案 A の予測-noCF は Δ空 が Jaccard −0.0069（dressing の当たり外れ）・accuracy +0.0092・6 工程の平均 +0.0052、Δ入替 は 6 工程の平均 −0.0006。G1・G2・G3 pass
 
+### 検出塔の batch の探索（2026-11-06〜07、andrew）
+
+契約 `T-2026-11-06-dtower-batch-search`（exp）。探索の 1 位（12 番。学習率 3.07e-4、max_norm 0.059、縮みの量 S 4.976e-3）の設定で、検出塔の GPU ごとの batch 2・4・6（2 枚で実効 4・8・12）を折り A・seed 42 と 123 で各 1 本、計 6 本学んだ。
+結果は `experiments/analysis/dtower_batch_search/{REPORT.md,summary.json,tables.md}`、run の記録は `experiments/baselines/stage1_dtower_batch/`、記録は `tasks/T-2026-11-06-dtower-batch-search/`。
+
+- weight decay は S を揃える換算（b2 3.37e-4、b4 6.7428e-4、b6 1.01058e-3）。同点幅 0.0076（runindex の `baselines/dcoco_foldA` の mAP_sstd の 2 倍）。どちらも学習の前の改訂（`meta.amendments`）
+- 結果: val mAP の 2 本の平均は b2 0.7285、b4 0.7297、b6 0.7357。3 水準とも同点幅の内で、prereg §3 の規則（同点なら大きい batch）により **b6（GPU ごとの batch 6）** を選んだ。標的群 AP の平均の最良も b6（食い違いなし）。発散・非数・溢れは 0 件。値は処方の効果として読まない（折り A の 2 本の平均で、3 水準の最大を取るので上振れする）
+- 道具は `experiments/analysis/dtower_batch_search/tools/`（実行器 `run_batch.py`、点を水準の値に差し替える包み `train_level.py`、観測器 `observer.py` を `TOWER_SEARCH_OBSERVER` で読ませる、集計 `summarize.py`、`procs.py`・`digests.py`・`make_det_config.py`・`env_capture.py` は前の契約の写し、`check_card.py`・`check_inputs.py`）。**既存のスクリプト・設定・third_party は変えていない。** batch と worker 数は `train_search.py` の写し（2 行だけを環境変数にしたもの）を repo の外に置いて渡した
+- checkpoint と生の記録は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-batch-search/`
+
+### 把持塔の出力を使う提案カード 6 案の調査（2026-11-08、bengio）
+
+契約 `T-2026-11-08-grasp-cards-survey`（analysis。学習なし。**案の採否・推奨は扱わない**）。カードの #15（対称性の実測）と #10（費用）を埋めるため、環境の事実（S1〜S7）を折り A で測った。
+結果は `experiments/analysis/grasp_cards_survey/REPORT.md`（`tools/make_report.py` が記録から作る）、記録は `tasks/T-2026-11-08-grasp-cards-survey/`、大きな生成物は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-08-grasp-cards-survey/`。
+
+- S1: Stage 2 が読む工程塔の特徴（`all_gap.npz`）は (15437, 2048) で空間の軸が無い。layer4 の地図は 2048×25×45（入力 800×1422 の 1/32）、1 動画 518 フレームで fp16 2.39 GB。空間平均はキャッシュと相対 7.2e-7 で一致
+- S2・S3: 工程塔の目録のフレームは術具注釈のフレームと同じ集合（train 9,657・val 1,515）。工程の CSV の全行（10,580・1,904）のうち使える把持の注釈が無いのは 11.6%・20.5%で、その行には画像が無い。術具注釈フレームの間隔はクリップの中で中央 2 秒・95% 4 秒・最大 508 秒
+- S4: 検出塔は NMS なしで 900 query から上位 300。ECE（全出力、10 区間）は val 0.0185・train 1,000 フレーム 0.0183
+- S5: G の確定と H1 の同じ層の対応する次元の相関の中央は、decoder の query 0.255・backbone C5 0.493・pixel decoder 0.68〜0.82（確定どうしは 1）
+- S6: fine-tune の台本は入力チャネル数を受けない（RGB・3 チャネルの正規化・stem 凍結）。8 チャネルの写しで順伝播と逆伝播が通り、7 チャネルは止まる
+- S7: 単価の表は REPORT §S7（工程側 W1 12〜187 秒、検出側 W1 5.3〜5.5 時間〔3 本並行〕、検出塔の学び直し 10.1〜10.4 時間〔単独〕、工程塔の fine-tune 4.47 時間〔efros〕）
+- 道具は `experiments/analysis/grasp_cards_survey/tools/`。**既存のスクリプト・設定・third_party・重ねの BODY・仮想環境は変えていない**（要約値の前後一致）
+
 ### 把持の信号の予備測定の五本目: 案 D の教師の 2 腕を作り直した G の標的で回し直し、案 B の空と正解を bengio で回す（2026-11-07、bengio）
 
 契約 `T-2026-11-06-grasp-pilot-d-rerun`（analysis。**非公式の測定。関門の判定と設計の判断に使わない**）。**三本目 `T-2026-11-01-grasp-pilot-d` の無効な腕（G を教師・入れ替えた教師）を置き換え**、

@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（740 件）
+## 申し送り（751 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1184,6 +1184,16 @@
 - G は batch 8・bf16（変形注意だけ fp32）で学んだ。二本目（batch 2・fp32）との差は batch と精度を含む設計の違いが重なったもので、どれか一つの効果とは読まない
 - 契約の allow_write に run の置き場（experiments/phase1/grasptower）が無かった。run の置き場を作る契約は allow_write に含める
 
+### T-2026-11-06-dtower-batch-search
+
+- 規則（prereg §3）の結果: val mAP の 2 本の平均 b2 0.7284992・b4 0.7297248・b6 0.7356521。3 水準とも最大との差が同点幅 0.0076 以下で同点、最も大きい batch の b6 を選んだ。標的群 AP の平均 0.8125・0.8205・0.8211 で最良も b6（食い違いなし）。予測 1・2 は外れ、3 は当たり（F の較正に積む）
+- 選んだ batch 6（GPU ごと、実効 12、weight decay 1.01058e-3、学習率 3.07e-4、max_norm 0.059）を、回し直し（上位 1 件と 0 番、5 折り × seed 42・123、andrew）の契約で検出塔の固定の項目として引く
+- runindex の検証 C5 が phase1__grasppilot2_G_H1・G_H2・G_all の per_class（value 空欄・is_nan False の 51 行）で落ちる。その契約の記録か収穫器の扱いを直す契約が要る
+- 同期で届いた統合前の他の契約の未追跡のファイルは、契約の途中でも forbidden-check を落とす。検査が同期の分を扱う方法（起票時の一覧との差など）が要る
+- runindex の本契約の行の eval_recipe_id が空欄。収穫器が検出塔の探索系の run の評価の recipe を引けていない
+- 版管理の外の生の記録と checkpoint（/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-batch-search/、19 GB）を残した。片付けは利用者の判断
+- 前の契約で退避した ~/m2-evacuated/T-2026-11-06-dtower-step-profile/run_ptower_search.log は、利用者の指示でそのまま
+
 ### T-2026-11-06-dtower-step-profile
 
 - 検出塔の GPU 使用率は歩の区間だけで平均すると 77〜92 %（使用率 0 の標本 0 個）。PR 290 の 43〜69 % は起動と止めを含む窓での平均だった。使用率を比べるときは平均の窓を揃えること
@@ -1207,7 +1217,14 @@
 - repo 直下の空の run_ptower_search.log（本契約の工程塔の起動で Hydra が作った）を消すかは利用者の判断
 - 版管理の外の生の記録 /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-tower-batch-probe/ を残した（重みは無い）。片付けは利用者の判断
 
-## 断定できなかった事項（473 件）
+### T-2026-11-08-grasp-cards-survey
+
+- S5 の G の確定と H1 の相関は層で 0.255〜0.821（中央）と違う。案 2 の「交差適合の半分は基底が違う」は取り出す層を決めてから読む
+- 確定の P*-15 は COCO の鎖（init: coco）。案 6 の契約では入力層の写しを同じ COCO の鎖から作るかを決める（本契約の S6 は SPEC どおり ImageNet で形だけ確かめた）
+- 工程の CSV にだけある行（train 923・val 389）は画像が無い。工程のフレームを分母にする案の #15 では、目録と CSV のどちらの集合かを明記する
+- T-2026-11-07-dtower-rerun が phase0 に統合されたら、.git/info/exclude に足した experiments/analysis/dtower_rerun/tools/ の行を外してよい
+
+## 断定できなかった事項（480 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -2090,6 +2107,12 @@
 - 同じ seed の run の間のビットの非決定性の大きさ
 - fp16 の非数が長く学んだときにどうなるか、bf16（変形注意だけ fp32）の学習の質と fp32 との比べ
 
+### T-2026-11-06-dtower-batch-search
+
+- 停止条件（COCO の重みを読まない・評価が checkpoint を読まない）の検査を壊した入力で働かせていない
+- b6 の最大確保 38.0〜38.7 GB が PR 290 の 34.6 GB（数歩）より大きい理由
+- runindex の本契約の行の eval_recipe_id が空欄の理由
+
 ### T-2026-11-06-dtower-step-profile
 
 - 入力の tensor の形（乱択の解像度）。読み込み無しの一歩が短い理由は分けていない
@@ -2111,18 +2134,25 @@
 - 検出塔の GPU 使用率が低い理由
 - val・評価・起動を含めた 1 epoch の時間と、61 歩より先の歩で溢れるかどうか
 
-## 起票者の誤りの型（443 件）
+### T-2026-11-08-grasp-cards-survey
+
+- 他の折りの注釈の密度・間隔（折り A だけを測った）
+- S6 の 8 チャネルの写しで学習が収束するか、stem を学ぶ形と追加チャネルだけを学ぶ形のどちらが良いか、train（BN の統計の更新）での挙動
+- bengio の 1 GPU で確定の P*-15 と同じ設定の fine-tune 1 本の壁時計（記録は efros 1 GPU と bengio 2 GPU の別データだけ）
+- S4 の得点の較正の直し（温度の調整など）の効き
+
+## 起票者の誤りの型（452 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 117 |
-| `asserted_without_measuring` | 186 |
-| `self_contradiction` | 115 |
+| `check_does_not_check` | 118 |
+| `asserted_without_measuring` | 193 |
+| `self_contradiction` | 116 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 4 |
 | `rule_read_narrowly` | 2 |
 
-合計 443 件（対を持つ契約 155 件から）
+合計 452 件（対を持つ契約 157 件から）
 
