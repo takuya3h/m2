@@ -93,4 +93,4 @@ andrew の A6000 × 2 で、探索の 12 番（学習率 3.07e-4、max_norm 0.05
 ## 送出
 
 - PR: #305（base phase0、isDraft false、head feat/dtower-rerun）
-- `make task-report`: TASK_REPORT_RC
+- `make task-report`: 終了コード 0（d2f38e32 の版を送った。verdict partial、n_issuer_defects 4、report_sha256 43909f07…、10,041 bytes）

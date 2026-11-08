@@ -328,3 +328,4 @@
 
 - push: `origin/feat/dtower-rerun` = b524173e。PR **#305**（`gh pr view 305`: base phase0、head feat/dtower-rerun、isDraft false、state OPEN）
 - RESULT.md・result.yaml に PR 番号を入れ、result.yaml を `tasks/_schema/result.schema.json` で検証して合格
+- `make task-report`（d2f38e32 の版）: 終了コード 0。verdict partial、n_issuer_defects 4、report_sha256 `43909f07b66bdc188bc1ed512a5eec122f4bcd7606ac2c3afb57ef29bfcc828b`、10,041 bytes、replaced_blocks 0
