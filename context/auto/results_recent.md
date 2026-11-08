@@ -6,8 +6,8 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 157 件）。
-ここに出ない 152 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 158 件）。
+ここに出ない 153 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
 
 ## T-2026-11-08-grasp-cards-survey
 
@@ -91,6 +91,47 @@
 - COCO の重みを読まないときの記憶（§6 b・c の対照）
 - 検出塔の GPU 使用率が低い理由
 - val・評価・起動を含めた 1 epoch の時間と、61 歩より先の歩で溢れるかどうか
+
+## T-2026-11-06-grasp-pilot-d-rerun
+
+状態 `partial` / ホスト `bengio` / 起票 `301` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 本契約以外の compute 0 件（GPU 39/37 MiB）、起点に PR 295・297 の内容が在る、重ねの BODY の source_tree 2f08e521…・all_tree 20f15c06… が三本目の記録と一致、空き 1,291,676,147,712 B、試験の失敗 11 件の名前、仮想環境の一覧の要約値、220 W × 2、禁止の場所の内容ハッシュを 13 根で開始時に取得（読み取りエラー 0）
+- `G2` pass — 目録の信号・G の重み 26/26 一致（破損の写しで 25/26）、D_q の q と入れ替えの sha256・枠 32,272・行の和・値の範囲が一致し欠け 0・余り 0、入れ替えを規則から作り直して最大差 0.0、塔単独の val は overall 0.7273450248・標的群 0.7950748009 で差 +2.5e-8・+8.6e-10、別 seed 123 は標的群 +0.0284、三本目の案 D 3 件と四本目の案 B 8 run の code_sha256 が現行の経路と一致
+- `G3` pass — 案 D: 重み 0 で頭の無い経路と全損失が差 0.0、0.3 で 全損失 − 検出の損失 0.35〜0.40・頭の勾配 2.1〜2.7・対応づいた枠 = 正解の枠、COCO 読み込みで要約値 d2586acb→6a26aac9、経路を存在しない経路にすると読み込みの記録が消える。案 B: 空・正解の学習前の出力が塔単独と一致（score 差 0.0・枠 0.0 px・ラベル 0）、正解で重みを変えると score 差 0.383
+
+### 起票者の誤り
+
+- `self_contradiction` — §7-5 と §8-i は重ねの BODY を変えず要約値を一致させると求めるが、§3.1 が写せと指す三本目の台本は学習エンジンが実行時の作業ディレクトリ（重ねの BODY）へ per_class_coco_map を書く経路を持つ。指示どおり実行すると必ず 15 件を上書きし、要約値の一致は満たせない
+- `check_does_not_check` — §8-i の forbidden-check は git の作業ツリーだけを見るので、版管理の外の重ねの BODY の変更を拾えず、同期で届く他契約の未追跡（今回 experiments/analysis/dtower_rerun/tools の 12 件）で本契約と無関係に fail する。本契約の経路の違反 0 件の確認としてしか働かない
+- `asserted_without_measuring` — §1 は二本目（andrew）の案 B の空を 0.7268 / 0.7911 とするが、記録 grasppilot2_B_empty_ep4_seed42 は 0.7273450 / 0.7950748 で塔単独と同値。そのまま参考の表に並べると記録と食い違うため、記録の値を使った
+- `asymmetric_comparison` — §3.1 は補助損失なしを三本目の値で済ませる条件を同じホスト・同じ GPU の使い方としたが、三本目は GPU 単独で、本契約の 2 本は案 B と同居（§3.3 が許す）かつ外部の使用と共有した。比べる腕の間で GPU の共有の有無が違い、差を処置の差として読めない
+
+### 逸脱
+
+- `environment` — 案 D の 2 本が重ねの BODY の third_party/Relation-DETR/per_class_coco_map/epoch_000〜014.json（15 件）を上書きした。学習エンジンが RELDETR_EVIDENCE_DIR（未設定なら実行時の作業ディレクトリ）へ書くのに、台本の写しで設定しなかった自分の過失。ソースの木は不変、15 件は測定の入力ではないが、開始時の中身（三本目の出力）は戻せない
+- `environment` — 学習中に本契約以外の GPU の使用が現れた（11-07 17:20〜17:29 JST に数分ずつ、23:18 JST〜11-08 09:12 JST は両 GPU で約 26 GiB）。見張りの閾値を 46 GiB にして鳴らず、40 GiB を自分の確保量の増加と誤読したため学習の完了後まで気づかず、その場で諮れなかった。他のプロセスは止めていない。OOM は無し
+- `judgement` — 利用者に諮り「両 GPU が連続 6 時間空くまで待つ」の決定を得たが来ず、利用者の「あいた」を合図に連続 466 秒の空きで起動した。載せ方は 1 枚に案 D 1 本 + 案 B 1 本（Task C の記憶の実測 約 24 GiB の見込み）
+- `judgement` — 禁止の場所の開始時の要約値は全ファイルの内容ハッシュを取る道具 rerun_digest.py を書いて 13 根で取った。台本・確認の道具は原本を変えず写しを新設。基準の BODY は三本目の重ねの BODY（四本目の m2 本体と中身の要約値が同じ）
+- `judgement` — 試走の empty が rc 2 だったのは、試走の判定（界面に勾配が届くか）が全零の入力で満たされないため。台本の欠陥ではなく腕に数えない。status は pass にせず partial とした
+- `environment` — 見張りの Monitor の台本が zsh で単語分割されず案 B の完了を通知できなかった（bash の台本に直し、終わった run で陽性対照）。前のセッションが一度終わり見張りが止まった。index.lock が commit のとき数回残った（数秒で消えた）
+
+### 申し送り
+
+- 次の案 D の契約は、台本で RELDETR_EVIDENCE_DIR を run の置き場へ向ける（重ねの BODY に書かせない）。SPEC の §7-5・§8-i と台本を合わせる。
+- 学習の見張りは絶対量でなく『自分の run だけの見込みからの増加』を閾値にし、案 B 同居などで使用量が変わる時刻をずらして記録する。
+- 案 D の差（G を教師 − 補助損失なし overall +0.0061、入れ替えた教師 − 補助損失なし +0.0128、標的群は符号が分かれる）は 1 本ずつ・seed 1 つで、補助損失なしは GPU 単独の三本目の run。教師の中身を区別する差としては読めない。seed を増やす契約を起票するかは利用者が決める。
+- 案 B の空は塔単独と完全に同値で、四本目の Δ空 は書き直しても変わらない。変わったのは正解の腕とそれを基準にした差（予測-noCF の正解との差 標的群 −0.0061118 → −0.0069499）。
+- 別の契約の experiments/analysis/dtower_rerun/tools の未追跡 12 件と dtower_batch_search/tools/summarize.py の更新が学習中に同期で届いた。本契約の PR には含めない。
+
+### 断定できなかったこと
+
+- 外部の GPU 使用の主（別セッションか他の利用者か）、GPU の共有による案 D の数値の揺れの有無、案 D の所要の延び（16 時間台）の内訳（案 B 同居と外部の使用）。
+- 重ねの BODY の per_class_coco_map 15 件の開始時の中身（sha256 だけ残っている）。
+- 案 D の差が seed 間の揺れの内か外か（seed は 1 つ）。G の左のクラスの AP が右より低い理由（前契約から）。
+- status が partial の理由: 禁止事項 §7-5 を破ったこと（deviations の 1 件目）。測定自体は 4 本とも完走し、G1〜G3 は pass。
 
 ## T-2026-11-06-grasp-pilot-arms
 
@@ -177,51 +218,4 @@
 - 逆伝播の区間の中の勾配の all_reduce の量
 - 同期を入れない写しの run での内訳（§6.11 との衝突で回していない）
 - 同期を入れたことの一歩への影響（PR 290 とは窓と乱択の入力が違う）
-
-## T-2026-11-06-dtower-batch-search
-
-状態 `pass` / ホスト `andrew` / 起票 `299` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 分岐 feat/dtower-batch-search、起点 origin/phase0 9d45351b、PR 290・292 の内容が起点に在る。prereg の commit b71ffafd（2026-11-05T22:08:51Z）は最初の学習（22:51:55Z）の前。カードは五版（check_card rc 0、四版の写しで rc 1）。入力 13 件の sha256 が一致（1 バイト変えた写しで不一致 1）。compute プロセス 0 件（対照 1/0/0）。空き 1,644,097,175,552 bytes ≥ 見込み 19.2 GB の 2 倍
-- `G2` pass — 7 本の対照（各 5 歩）で、optimizer の 6 群と DataLoader の batch が水準の値になった。changed（batch 3、wd 5e-4）で値が変わり、wd_mismatch と batch_mismatch は rc 1 で止まり、default は batch 2・lr 1e-4・wd 1e-4 のまま。DataLoader の長さ 2,405・1,202・802 は prereg §2.1 と一致。立ち上げの記録の口が働く（対照で first_step_at_target 5）
-- `G3` pass — 6 本とも学習 rc 0。損失の非数 0 件、b6 の溢れ 0 件、壁時計の最大 23,850 s。6 本とも学習ログに load pretrained from が 1 行在り、initialization_rank0/1.json の source_sha256 が COCO の checkpoint と一致。評価は rc 0 で skip loading・State dict is None は 0 件
-
-### 起票者の誤り
-
-- `self_contradiction` — prereg §3 の同点幅 0.0106 は、二周目の 3 本だけの標本 SD 0.0053 の 2 倍で、本文が定義に引く runindex の mAP_sstd（0.0037965、一周目と二周目の 6 本）の 2 倍 0.0076 と食い違った。利用者の決定で学習の前に 0.0076 へ改訂（meta.amendments）
-- `asserted_without_measuring` — prereg §2.1 の weight decay の表は丸めた S 5.0e-3 から換算しており、b2 が『12 番の設定』と書く一方で 12 番の 3.37e-4 と 0.5 % 違った（3.386e-4）。利用者の決定で S を 4.976e-3 とし、b2 3.37e-4、b4・b6 は歩数の比で換算する形に改訂
-- `asserted_without_measuring` — SPEC §1 は『train_relation_detr_search.py が点ごとの学習率・weight decay・max_norm を受ける』と書くが、同じスクリプトは epoch 0 で群を points.csv の 12 番と 1e-15 で照合するので、weight decay を変える b4・b6 はそのままでは止まる。口の在りかを読んだが照合を読んでいない
-- `asserted_without_measuring` — SPEC §5 h は空振りでないことの確認に P13 の PASS の件数『表 1 個、行 24』を置くが、prereg §4 の対称性の表は 23 行で、P13 も『23 行に UNKNOWN と理由欠落は無い』と 23 行を検査した。期待の行数を表から数えずに書いている
-- `check_does_not_check` — SPEC §5 g の空振りの確認『同点幅を 0 にした写しで選択が「最大の平均」に変わる（同点が在った場合）』は、最大の平均の水準が最大の batch でもあるとき（今回の b6）選択が変わらず、同点の規則を見分けない。合成の入力で select() を呼んで代えた
-
-### 逸脱
-
-- `spec_defect` — train_search.py は batch_size = 2 と num_workers = 4 を固定し口が無い。この 2 行だけを環境変数 PROBE_BATCH_SIZE・PROBE_NUM_WORKERS にした写しを repo の外（$STORE/config/train_search_batch.py）に置いて渡した（SPEC Task B-1 が許す方法）。原本は無変更（要約値が前後で一致）
-- `spec_defect` — scripts/train_relation_detr_search.py は epoch 0 で optimizer の群を load_point(TOWER_SEARCH_POINT)（dlsta の points.csv、12 番の wd 3.37e-4）と 1e-15 で照合するため、b4・b6 は値が届いても止まる。包み tools/train_level.py で探索のスクリプトを import し、load_point だけを prereg の値の JSON（DTOWER_LEVEL_POINT）を読む関数に差し替えた。照合は働いたまま（wd_mismatch の対照で rc 1）
-- `judgement` — 観測器 tools/observer.py を既存の TOWER_SEARCH_OBSERVER で読ませ、DataLoader の batch と長さ、各歩の枚数、第 0 epoch の各歩の学習率、epoch ごとの評価の時間と組ごとの AP、読んだ動画を記録した。PROBE_EXPECT_BATCH と枚数が違えば最初の歩で止める。更新・ファイル・既定の挙動は変えていない
-- `judgement` — prereg の『発散・非数』は探索と同じく『損失が非数になり学習が止まる』（engine の Loss is …）で数えた。fp16 の scaler が更新を飛ばした歩（gradient_nonfinite_steps、6 本で 12〜27。探索の 12 番は 24）は記録する量として残し、停止の根拠にしていない
-- `judgement` — 要約値の経路に、前の契約の解析（dtower_step_profile）・探索の run（stage1_dtower_search）・評価と記録の scripts の 6 本を足した
-- `judgement` — 同じ識別子の一度目の着手（2026-11-05T21:56Z）は、カードが四版のため G1 の前で中止した（学習 0 本）。利用者の指示で『実行しなかった扱い』とし、記録・分岐・置き場を消した。五版が phase0 に入った後に二度目の着手をした
-- `judgement` — 集計の道具 summarize.py を学習の後に 2 回直した。(1) 評価した区分をログの instances_<split>.json から読んでいたが、ログに名前が出ず train を数え落とした。出力の名前 eval_<split>.json から読むようにした。(2) glob が eval_<split>.timing.json にも当たったので名前の完全一致に限った。select() は変えていない
-- `environment` — 学習の最中（2026-11-06 16:05〜21:41 JST）に別の契約の未追跡のファイル 13 件（experiments/analysis/grasp_pilot_arms/taskC/compare_default.py と experiments/phase1/grasparms_B_*_ep4_seed42/logs/ の 12 件）が同期で届き、make forbidden-check が violations 13 で fail した。禁止事項 9 により消さず、無視の一覧にも足していない。状態を変えずに道具の check() をこの 13 件だけ除いて呼ぶと pass（violations 0）
-- `environment` — make runindex の検証 C5 が FAIL（value 空欄と is_nan が食い違う行 51、すべて phase1__grasppilot2_G_H1・G_H2・G_all の 3 本）。本契約の run には 0 件。3 本は commit 済みの runindex（68befc3b）の後に phase0 へ統合されたもので、phase0 の上で収穫しても同じく落ちる。他の契約の記録は変えず、収穫の結果をそのまま commit した
-- `environment` — 前のセッションが終わったときに、run の終わりを知らせる待ち（背景の命令）も止まり、2 本目の終わりは知らせなしで過ぎた。学習は setsid で切り離していたので影響はない（runs.log と各 run の記録で確かめた）
-
-### 申し送り
-
-- 規則（prereg §3）の結果: val mAP の 2 本の平均 b2 0.7284992・b4 0.7297248・b6 0.7356521。3 水準とも最大との差が同点幅 0.0076 以下で同点、最も大きい batch の b6 を選んだ。標的群 AP の平均 0.8125・0.8205・0.8211 で最良も b6（食い違いなし）。予測 1・2 は外れ、3 は当たり（F の較正に積む）
-- 選んだ batch 6（GPU ごと、実効 12、weight decay 1.01058e-3、学習率 3.07e-4、max_norm 0.059）を、回し直し（上位 1 件と 0 番、5 折り × seed 42・123、andrew）の契約で検出塔の固定の項目として引く
-- runindex の検証 C5 が phase1__grasppilot2_G_H1・G_H2・G_all の per_class（value 空欄・is_nan False の 51 行）で落ちる。その契約の記録か収穫器の扱いを直す契約が要る
-- 同期で届いた統合前の他の契約の未追跡のファイルは、契約の途中でも forbidden-check を落とす。検査が同期の分を扱う方法（起票時の一覧との差など）が要る
-- runindex の本契約の行の eval_recipe_id が空欄。収穫器が検出塔の探索系の run の評価の recipe を引けていない
-- 版管理の外の生の記録と checkpoint（/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-batch-search/、19 GB）を残した。片付けは利用者の判断
-- 前の契約で退避した ~/m2-evacuated/T-2026-11-06-dtower-step-profile/run_ptower_search.log は、利用者の指示でそのまま
-
-### 断定できなかったこと
-
-- 停止条件（COCO の重みを読まない・評価が checkpoint を読まない）の検査を壊した入力で働かせていない
-- b6 の最大確保 38.0〜38.7 GB が PR 290 の 34.6 GB（数歩）より大きい理由
-- runindex の本契約の行の eval_recipe_id が空欄の理由
 

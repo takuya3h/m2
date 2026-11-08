@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（751 件）
+## 申し送り（756 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1210,6 +1210,14 @@
 - 案 C（工程塔の学び直しの教師）と案 D（検出塔の学び直しの教師）の教師の腕は別の契約で回す（SPEC §0）
 - 契約の禁止の場所の前後の比べを完了判定に置くときは、Task A に開始時の要約値の取得を書く
 
+### T-2026-11-06-grasp-pilot-d-rerun
+
+- 次の案 D の契約は、台本で RELDETR_EVIDENCE_DIR を run の置き場へ向ける（重ねの BODY に書かせない）。SPEC の §7-5・§8-i と台本を合わせる。
+- 学習の見張りは絶対量でなく『自分の run だけの見込みからの増加』を閾値にし、案 B 同居などで使用量が変わる時刻をずらして記録する。
+- 案 D の差（G を教師 − 補助損失なし overall +0.0061、入れ替えた教師 − 補助損失なし +0.0128、標的群は符号が分かれる）は 1 本ずつ・seed 1 つで、補助損失なしは GPU 単独の三本目の run。教師の中身を区別する差としては読めない。seed を増やす契約を起票するかは利用者が決める。
+- 案 B の空は塔単独と完全に同値で、四本目の Δ空 は書き直しても変わらない。変わったのは正解の腕とそれを基準にした差（予測-noCF の正解との差 標的群 −0.0061118 → −0.0069499）。
+- 別の契約の experiments/analysis/dtower_rerun/tools の未追跡 12 件と dtower_batch_search/tools/summarize.py の更新が学習中に同期で届いた。本契約の PR には含めない。
+
 ### T-2026-11-06-tower-batch-probe
 
 - 工程塔の歩数は manifest で変わる（旧 phase_manifest 604 歩、phase_manifest_all_phase 662 歩、GPU ごと 8 × 2 枚）。塔の選び直しの所要の見込みは、使う manifest の歩数で計算すること
@@ -1224,7 +1232,7 @@
 - 工程の CSV にだけある行（train 923・val 389）は画像が無い。工程のフレームを分母にする案の #15 では、目録と CSV のどちらの集合かを明記する
 - T-2026-11-07-dtower-rerun が phase0 に統合されたら、.git/info/exclude に足した experiments/analysis/dtower_rerun/tools/ の行を外してよい
 
-## 断定できなかった事項（480 件）
+## 断定できなかった事項（484 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -2127,6 +2135,13 @@
 - G の左のクラスの AP が右より低い理由（前契約から）
 - 案 A の予測の腕で dressing のクラス別 Jaccard が下がった理由の切り分け
 
+### T-2026-11-06-grasp-pilot-d-rerun
+
+- 外部の GPU 使用の主（別セッションか他の利用者か）、GPU の共有による案 D の数値の揺れの有無、案 D の所要の延び（16 時間台）の内訳（案 B 同居と外部の使用）。
+- 重ねの BODY の per_class_coco_map 15 件の開始時の中身（sha256 だけ残っている）。
+- 案 D の差が seed 間の揺れの内か外か（seed は 1 つ）。G の左のクラスの AP が右より低い理由（前契約から）。
+- status が partial の理由: 禁止事項 §7-5 を破ったこと（deviations の 1 件目）。測定自体は 4 本とも完走し、G1〜G3 は pass。
+
 ### T-2026-11-06-tower-batch-probe
 
 - det_b8 の rank 0 の torch の最大確保と予約
@@ -2141,18 +2156,18 @@
 - bengio の 1 GPU で確定の P*-15 と同じ設定の fine-tune 1 本の壁時計（記録は efros 1 GPU と bengio 2 GPU の別データだけ）
 - S4 の得点の較正の直し（温度の調整など）の効き
 
-## 起票者の誤りの型（452 件）
+## 起票者の誤りの型（456 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
-| `check_does_not_check` | 118 |
-| `asserted_without_measuring` | 193 |
-| `self_contradiction` | 116 |
+| `check_does_not_check` | 119 |
+| `asserted_without_measuring` | 194 |
+| `self_contradiction` | 117 |
 | `shell_assumption` | 19 |
-| `asymmetric_comparison` | 4 |
+| `asymmetric_comparison` | 5 |
 | `rule_read_narrowly` | 2 |
 
-合計 452 件（対を持つ契約 157 件から）
+合計 456 件（対を持つ契約 158 件から）
 
