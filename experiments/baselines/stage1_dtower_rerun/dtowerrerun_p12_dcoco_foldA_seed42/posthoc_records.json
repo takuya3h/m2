@@ -1,0 +1,1981 @@
+{
+  "metrics": {
+    "mAP": 0.7196251153088346,
+    "AP_target": 0.8044361925485836,
+    "AP_negative": 0.6781756533491893,
+    "train_mAP": 0.8405858198545687,
+    "train_val_mAP_gap": 0.12096070454573415,
+    "best_epoch": 12,
+    "epochs_completed": 17,
+    "reached_epoch_cap": false
+  },
+  "convergence": {
+    "patience": 4,
+    "factor": 0.1,
+    "best_ap": 0.7201416492462158,
+    "best_epoch": 12,
+    "decayed_epoch": 11,
+    "stopped_epoch": 16,
+    "observed_epochs": 17,
+    "val_ap_per_epoch": [
+      0.5750686526298523,
+      0.6578870415687561,
+      0.686582088470459,
+      0.6887363195419312,
+      0.6799042224884033,
+      0.6954031586647034,
+      0.6769813299179077,
+      0.7045364379882812,
+      0.6990422606468201,
+      0.6762020587921143,
+      0.6870476603507996,
+      0.6912265419960022,
+      0.7201416492462158,
+      0.7178118228912354,
+      0.7159087657928467,
+      0.7184290885925293,
+      0.7135664820671082
+    ]
+  },
+  "last_val_mAP": 0.7135664884636186,
+  "optimizer": {
+    "point": {
+      "point": 12,
+      "lr": 0.000307,
+      "detector_weight_decay": 0.0010105798004987532,
+      "max_norm": 0.059,
+      "batch_per_gpu": 6,
+      "epoch_steps": 802,
+      "detector_S": 0.0049763779000000005
+    },
+    "groups": [
+      {
+        "group": 0,
+        "lr": 0.000307,
+        "weight_decay": 0.0010105798004987532,
+        "parameters": 24384000
+      },
+      {
+        "group": 1,
+        "lr": 3.07e-05,
+        "weight_decay": 0.0010105798004987532,
+        "parameters": 23232512
+      },
+      {
+        "group": 2,
+        "lr": 3.07e-05,
+        "weight_decay": 0.0,
+        "parameters": 0
+      },
+      {
+        "group": 3,
+        "lr": 3.07e-05,
+        "weight_decay": 0.0010105798004987532,
+        "parameters": 786432
+      },
+      {
+        "group": 4,
+        "lr": 3.07e-05,
+        "weight_decay": 0.0,
+        "parameters": 3072
+      },
+      {
+        "group": 5,
+        "lr": 0.000307,
+        "weight_decay": 0.0,
+        "parameters": 65184
+      }
+    ],
+    "initial_weight_norms": [
+      822.0500067555837,
+      144.74479486500115,
+      0.0,
+      5.963011416293655,
+      131.45882143805133,
+      105.29548831828212
+    ],
+    "parameter_names": [
+      [
+        "neck.convs.0.0.weight",
+        "neck.convs.0.1.weight",
+        "neck.convs.1.0.weight",
+        "neck.convs.1.1.weight",
+        "neck.convs.2.0.weight",
+        "neck.convs.2.1.weight",
+        "neck.convs.3.0.weight",
+        "neck.convs.3.1.weight",
+        "transformer.level_embeds",
+        "transformer.enc_output.weight",
+        "transformer.encoder.layers.0.self_attn.attention_weights.weight",
+        "transformer.encoder.layers.0.self_attn.value_proj.weight",
+        "transformer.encoder.layers.0.self_attn.output_proj.weight",
+        "transformer.encoder.layers.0.linear1.weight",
+        "transformer.encoder.layers.0.linear2.weight",
+        "transformer.encoder.layers.1.self_attn.attention_weights.weight",
+        "transformer.encoder.layers.1.self_attn.value_proj.weight",
+        "transformer.encoder.layers.1.self_attn.output_proj.weight",
+        "transformer.encoder.layers.1.linear1.weight",
+        "transformer.encoder.layers.1.linear2.weight",
+        "transformer.encoder.layers.2.self_attn.attention_weights.weight",
+        "transformer.encoder.layers.2.self_attn.value_proj.weight",
+        "transformer.encoder.layers.2.self_attn.output_proj.weight",
+        "transformer.encoder.layers.2.linear1.weight",
+        "transformer.encoder.layers.2.linear2.weight",
+        "transformer.encoder.layers.3.self_attn.attention_weights.weight",
+        "transformer.encoder.layers.3.self_attn.value_proj.weight",
+        "transformer.encoder.layers.3.self_attn.output_proj.weight",
+        "transformer.encoder.layers.3.linear1.weight",
+        "transformer.encoder.layers.3.linear2.weight",
+        "transformer.encoder.layers.4.self_attn.attention_weights.weight",
+        "transformer.encoder.layers.4.self_attn.value_proj.weight",
+        "transformer.encoder.layers.4.self_attn.output_proj.weight",
+        "transformer.encoder.layers.4.linear1.weight",
+        "transformer.encoder.layers.4.linear2.weight",
+        "transformer.encoder.layers.5.self_attn.attention_weights.weight",
+        "transformer.encoder.layers.5.self_attn.value_proj.weight",
+        "transformer.encoder.layers.5.self_attn.output_proj.weight",
+        "transformer.encoder.layers.5.linear1.weight",
+        "transformer.encoder.layers.5.linear2.weight",
+        "transformer.encoder.memory_fusion.0.weight",
+        "transformer.encoder.memory_fusion.2.weight",
+        "transformer.encoder.memory_fusion.3.weight",
+        "transformer.decoder.layers.0.cross_attn.attention_weights.weight",
+        "transformer.decoder.layers.0.cross_attn.value_proj.weight",
+        "transformer.decoder.layers.0.cross_attn.output_proj.weight",
+        "transformer.decoder.layers.0.self_attn.in_proj_weight",
+        "transformer.decoder.layers.0.self_attn.out_proj.weight",
+        "transformer.decoder.layers.0.linear1.weight",
+        "transformer.decoder.layers.0.linear2.weight",
+        "transformer.decoder.layers.1.cross_attn.attention_weights.weight",
+        "transformer.decoder.layers.1.cross_attn.value_proj.weight",
+        "transformer.decoder.layers.1.cross_attn.output_proj.weight",
+        "transformer.decoder.layers.1.self_attn.in_proj_weight",
+        "transformer.decoder.layers.1.self_attn.out_proj.weight",
+        "transformer.decoder.layers.1.linear1.weight",
+        "transformer.decoder.layers.1.linear2.weight",
+        "transformer.decoder.layers.2.cross_attn.attention_weights.weight",
+        "transformer.decoder.layers.2.cross_attn.value_proj.weight",
+        "transformer.decoder.layers.2.cross_attn.output_proj.weight",
+        "transformer.decoder.layers.2.self_attn.in_proj_weight",
+        "transformer.decoder.layers.2.self_attn.out_proj.weight",
+        "transformer.decoder.layers.2.linear1.weight",
+        "transformer.decoder.layers.2.linear2.weight",
+        "transformer.decoder.layers.3.cross_attn.attention_weights.weight",
+        "transformer.decoder.layers.3.cross_attn.value_proj.weight",
+        "transformer.decoder.layers.3.cross_attn.output_proj.weight",
+        "transformer.decoder.layers.3.self_attn.in_proj_weight",
+        "transformer.decoder.layers.3.self_attn.out_proj.weight",
+        "transformer.decoder.layers.3.linear1.weight",
+        "transformer.decoder.layers.3.linear2.weight",
+        "transformer.decoder.layers.4.cross_attn.attention_weights.weight",
+        "transformer.decoder.layers.4.cross_attn.value_proj.weight",
+        "transformer.decoder.layers.4.cross_attn.output_proj.weight",
+        "transformer.decoder.layers.4.self_attn.in_proj_weight",
+        "transformer.decoder.layers.4.self_attn.out_proj.weight",
+        "transformer.decoder.layers.4.linear1.weight",
+        "transformer.decoder.layers.4.linear2.weight",
+        "transformer.decoder.layers.5.cross_attn.attention_weights.weight",
+        "transformer.decoder.layers.5.cross_attn.value_proj.weight",
+        "transformer.decoder.layers.5.cross_attn.output_proj.weight",
+        "transformer.decoder.layers.5.self_attn.in_proj_weight",
+        "transformer.decoder.layers.5.self_attn.out_proj.weight",
+        "transformer.decoder.layers.5.linear1.weight",
+        "transformer.decoder.layers.5.linear2.weight",
+        "transformer.decoder.ref_point_head.layers.0.weight",
+        "transformer.decoder.ref_point_head.layers.1.weight",
+        "transformer.decoder.query_scale.layers.0.weight",
+        "transformer.decoder.query_scale.layers.1.weight",
+        "transformer.decoder.class_head.0.weight",
+        "transformer.decoder.class_head.1.weight",
+        "transformer.decoder.class_head.2.weight",
+        "transformer.decoder.class_head.3.weight",
+        "transformer.decoder.class_head.4.weight",
+        "transformer.decoder.class_head.5.weight",
+        "transformer.decoder.bbox_head.0.layers.0.weight",
+        "transformer.decoder.bbox_head.0.layers.1.weight",
+        "transformer.decoder.bbox_head.0.layers.2.weight",
+        "transformer.decoder.bbox_head.1.layers.0.weight",
+        "transformer.decoder.bbox_head.1.layers.1.weight",
+        "transformer.decoder.bbox_head.1.layers.2.weight",
+        "transformer.decoder.bbox_head.2.layers.0.weight",
+        "transformer.decoder.bbox_head.2.layers.1.weight",
+        "transformer.decoder.bbox_head.2.layers.2.weight",
+        "transformer.decoder.bbox_head.3.layers.0.weight",
+        "transformer.decoder.bbox_head.3.layers.1.weight",
+        "transformer.decoder.bbox_head.3.layers.2.weight",
+        "transformer.decoder.bbox_head.4.layers.0.weight",
+        "transformer.decoder.bbox_head.4.layers.1.weight",
+        "transformer.decoder.bbox_head.4.layers.2.weight",
+        "transformer.decoder.bbox_head.5.layers.0.weight",
+        "transformer.decoder.bbox_head.5.layers.1.weight",
+        "transformer.decoder.bbox_head.5.layers.2.weight",
+        "transformer.decoder.position_relation_embedding.pos_proj.0.weight",
+        "transformer.tgt_embed.weight",
+        "transformer.encoder_class_head.weight",
+        "transformer.encoder_bbox_head.layers.0.weight",
+        "transformer.encoder_bbox_head.layers.1.weight",
+        "transformer.encoder_bbox_head.layers.2.weight",
+        "transformer.hybrid_tgt_embed.weight",
+        "transformer.hybrid_class_head.weight",
+        "transformer.hybrid_bbox_head.layers.0.weight",
+        "transformer.hybrid_bbox_head.layers.1.weight",
+        "transformer.hybrid_bbox_head.layers.2.weight",
+        "denoising_generator.label_encoder.weight"
+      ],
+      [
+        "backbone.layer2.0.conv1.weight",
+        "backbone.layer2.0.conv2.weight",
+        "backbone.layer2.0.conv3.weight",
+        "backbone.layer2.0.downsample.0.weight",
+        "backbone.layer2.1.conv1.weight",
+        "backbone.layer2.1.conv2.weight",
+        "backbone.layer2.1.conv3.weight",
+        "backbone.layer2.2.conv1.weight",
+        "backbone.layer2.2.conv2.weight",
+        "backbone.layer2.2.conv3.weight",
+        "backbone.layer2.3.conv1.weight",
+        "backbone.layer2.3.conv2.weight",
+        "backbone.layer2.3.conv3.weight",
+        "backbone.layer3.0.conv1.weight",
+        "backbone.layer3.0.conv2.weight",
+        "backbone.layer3.0.conv3.weight",
+        "backbone.layer3.0.downsample.0.weight",
+        "backbone.layer3.1.conv1.weight",
+        "backbone.layer3.1.conv2.weight",
+        "backbone.layer3.1.conv3.weight",
+        "backbone.layer3.2.conv1.weight",
+        "backbone.layer3.2.conv2.weight",
+        "backbone.layer3.2.conv3.weight",
+        "backbone.layer3.3.conv1.weight",
+        "backbone.layer3.3.conv2.weight",
+        "backbone.layer3.3.conv3.weight",
+        "backbone.layer3.4.conv1.weight",
+        "backbone.layer3.4.conv2.weight",
+        "backbone.layer3.4.conv3.weight",
+        "backbone.layer3.5.conv1.weight",
+        "backbone.layer3.5.conv2.weight",
+        "backbone.layer3.5.conv3.weight",
+        "backbone.layer4.0.conv1.weight",
+        "backbone.layer4.0.conv2.weight",
+        "backbone.layer4.0.conv3.weight",
+        "backbone.layer4.0.downsample.0.weight",
+        "backbone.layer4.1.conv1.weight",
+        "backbone.layer4.1.conv2.weight",
+        "backbone.layer4.1.conv3.weight",
+        "backbone.layer4.2.conv1.weight",
+        "backbone.layer4.2.conv2.weight",
+        "backbone.layer4.2.conv3.weight"
+      ],
+      [],
+      [
+        "transformer.encoder.layers.0.self_attn.sampling_offsets.weight",
+        "transformer.encoder.layers.1.self_attn.sampling_offsets.weight",
+        "transformer.encoder.layers.2.self_attn.sampling_offsets.weight",
+        "transformer.encoder.layers.3.self_attn.sampling_offsets.weight",
+        "transformer.encoder.layers.4.self_attn.sampling_offsets.weight",
+        "transformer.encoder.layers.5.self_attn.sampling_offsets.weight",
+        "transformer.decoder.layers.0.cross_attn.sampling_offsets.weight",
+        "transformer.decoder.layers.1.cross_attn.sampling_offsets.weight",
+        "transformer.decoder.layers.2.cross_attn.sampling_offsets.weight",
+        "transformer.decoder.layers.3.cross_attn.sampling_offsets.weight",
+        "transformer.decoder.layers.4.cross_attn.sampling_offsets.weight",
+        "transformer.decoder.layers.5.cross_attn.sampling_offsets.weight"
+      ],
+      [
+        "transformer.encoder.layers.0.self_attn.sampling_offsets.bias",
+        "transformer.encoder.layers.1.self_attn.sampling_offsets.bias",
+        "transformer.encoder.layers.2.self_attn.sampling_offsets.bias",
+        "transformer.encoder.layers.3.self_attn.sampling_offsets.bias",
+        "transformer.encoder.layers.4.self_attn.sampling_offsets.bias",
+        "transformer.encoder.layers.5.self_attn.sampling_offsets.bias",
+        "transformer.decoder.layers.0.cross_attn.sampling_offsets.bias",
+        "transformer.decoder.layers.1.cross_attn.sampling_offsets.bias",
+        "transformer.decoder.layers.2.cross_attn.sampling_offsets.bias",
+        "transformer.decoder.layers.3.cross_attn.sampling_offsets.bias",
+        "transformer.decoder.layers.4.cross_attn.sampling_offsets.bias",
+        "transformer.decoder.layers.5.cross_attn.sampling_offsets.bias"
+      ],
+      [
+        "neck.convs.0.1.bias",
+        "neck.convs.1.1.bias",
+        "neck.convs.2.1.bias",
+        "neck.convs.3.1.bias",
+        "transformer.enc_output.bias",
+        "transformer.enc_output_norm.weight",
+        "transformer.enc_output_norm.bias",
+        "transformer.encoder.layers.0.self_attn.attention_weights.bias",
+        "transformer.encoder.layers.0.self_attn.value_proj.bias",
+        "transformer.encoder.layers.0.self_attn.output_proj.bias",
+        "transformer.encoder.layers.0.norm1.weight",
+        "transformer.encoder.layers.0.norm1.bias",
+        "transformer.encoder.layers.0.linear1.bias",
+        "transformer.encoder.layers.0.linear2.bias",
+        "transformer.encoder.layers.0.norm2.weight",
+        "transformer.encoder.layers.0.norm2.bias",
+        "transformer.encoder.layers.1.self_attn.attention_weights.bias",
+        "transformer.encoder.layers.1.self_attn.value_proj.bias",
+        "transformer.encoder.layers.1.self_attn.output_proj.bias",
+        "transformer.encoder.layers.1.norm1.weight",
+        "transformer.encoder.layers.1.norm1.bias",
+        "transformer.encoder.layers.1.linear1.bias",
+        "transformer.encoder.layers.1.linear2.bias",
+        "transformer.encoder.layers.1.norm2.weight",
+        "transformer.encoder.layers.1.norm2.bias",
+        "transformer.encoder.layers.2.self_attn.attention_weights.bias",
+        "transformer.encoder.layers.2.self_attn.value_proj.bias",
+        "transformer.encoder.layers.2.self_attn.output_proj.bias",
+        "transformer.encoder.layers.2.norm1.weight",
+        "transformer.encoder.layers.2.norm1.bias",
+        "transformer.encoder.layers.2.linear1.bias",
+        "transformer.encoder.layers.2.linear2.bias",
+        "transformer.encoder.layers.2.norm2.weight",
+        "transformer.encoder.layers.2.norm2.bias",
+        "transformer.encoder.layers.3.self_attn.attention_weights.bias",
+        "transformer.encoder.layers.3.self_attn.value_proj.bias",
+        "transformer.encoder.layers.3.self_attn.output_proj.bias",
+        "transformer.encoder.layers.3.norm1.weight",
+        "transformer.encoder.layers.3.norm1.bias",
+        "transformer.encoder.layers.3.linear1.bias",
+        "transformer.encoder.layers.3.linear2.bias",
+        "transformer.encoder.layers.3.norm2.weight",
+        "transformer.encoder.layers.3.norm2.bias",
+        "transformer.encoder.layers.4.self_attn.attention_weights.bias",
+        "transformer.encoder.layers.4.self_attn.value_proj.bias",
+        "transformer.encoder.layers.4.self_attn.output_proj.bias",
+        "transformer.encoder.layers.4.norm1.weight",
+        "transformer.encoder.layers.4.norm1.bias",
+        "transformer.encoder.layers.4.linear1.bias",
+        "transformer.encoder.layers.4.linear2.bias",
+        "transformer.encoder.layers.4.norm2.weight",
+        "transformer.encoder.layers.4.norm2.bias",
+        "transformer.encoder.layers.5.self_attn.attention_weights.bias",
+        "transformer.encoder.layers.5.self_attn.value_proj.bias",
+        "transformer.encoder.layers.5.self_attn.output_proj.bias",
+        "transformer.encoder.layers.5.norm1.weight",
+        "transformer.encoder.layers.5.norm1.bias",
+        "transformer.encoder.layers.5.linear1.bias",
+        "transformer.encoder.layers.5.linear2.bias",
+        "transformer.encoder.layers.5.norm2.weight",
+        "transformer.encoder.layers.5.norm2.bias",
+        "transformer.encoder.memory_fusion.0.bias",
+        "transformer.encoder.memory_fusion.2.bias",
+        "transformer.encoder.memory_fusion.3.bias",
+        "transformer.decoder.layers.0.cross_attn.attention_weights.bias",
+        "transformer.decoder.layers.0.cross_attn.value_proj.bias",
+        "transformer.decoder.layers.0.cross_attn.output_proj.bias",
+        "transformer.decoder.layers.0.norm1.weight",
+        "transformer.decoder.layers.0.norm1.bias",
+        "transformer.decoder.layers.0.self_attn.in_proj_bias",
+        "transformer.decoder.layers.0.self_attn.out_proj.bias",
+        "transformer.decoder.layers.0.norm2.weight",
+        "transformer.decoder.layers.0.norm2.bias",
+        "transformer.decoder.layers.0.linear1.bias",
+        "transformer.decoder.layers.0.linear2.bias",
+        "transformer.decoder.layers.0.norm3.weight",
+        "transformer.decoder.layers.0.norm3.bias",
+        "transformer.decoder.layers.1.cross_attn.attention_weights.bias",
+        "transformer.decoder.layers.1.cross_attn.value_proj.bias",
+        "transformer.decoder.layers.1.cross_attn.output_proj.bias",
+        "transformer.decoder.layers.1.norm1.weight",
+        "transformer.decoder.layers.1.norm1.bias",
+        "transformer.decoder.layers.1.self_attn.in_proj_bias",
+        "transformer.decoder.layers.1.self_attn.out_proj.bias",
+        "transformer.decoder.layers.1.norm2.weight",
+        "transformer.decoder.layers.1.norm2.bias",
+        "transformer.decoder.layers.1.linear1.bias",
+        "transformer.decoder.layers.1.linear2.bias",
+        "transformer.decoder.layers.1.norm3.weight",
+        "transformer.decoder.layers.1.norm3.bias",
+        "transformer.decoder.layers.2.cross_attn.attention_weights.bias",
+        "transformer.decoder.layers.2.cross_attn.value_proj.bias",
+        "transformer.decoder.layers.2.cross_attn.output_proj.bias",
+        "transformer.decoder.layers.2.norm1.weight",
+        "transformer.decoder.layers.2.norm1.bias",
+        "transformer.decoder.layers.2.self_attn.in_proj_bias",
+        "transformer.decoder.layers.2.self_attn.out_proj.bias",
+        "transformer.decoder.layers.2.norm2.weight",
+        "transformer.decoder.layers.2.norm2.bias",
+        "transformer.decoder.layers.2.linear1.bias",
+        "transformer.decoder.layers.2.linear2.bias",
+        "transformer.decoder.layers.2.norm3.weight",
+        "transformer.decoder.layers.2.norm3.bias",
+        "transformer.decoder.layers.3.cross_attn.attention_weights.bias",
+        "transformer.decoder.layers.3.cross_attn.value_proj.bias",
+        "transformer.decoder.layers.3.cross_attn.output_proj.bias",
+        "transformer.decoder.layers.3.norm1.weight",
+        "transformer.decoder.layers.3.norm1.bias",
+        "transformer.decoder.layers.3.self_attn.in_proj_bias",
+        "transformer.decoder.layers.3.self_attn.out_proj.bias",
+        "transformer.decoder.layers.3.norm2.weight",
+        "transformer.decoder.layers.3.norm2.bias",
+        "transformer.decoder.layers.3.linear1.bias",
+        "transformer.decoder.layers.3.linear2.bias",
+        "transformer.decoder.layers.3.norm3.weight",
+        "transformer.decoder.layers.3.norm3.bias",
+        "transformer.decoder.layers.4.cross_attn.attention_weights.bias",
+        "transformer.decoder.layers.4.cross_attn.value_proj.bias",
+        "transformer.decoder.layers.4.cross_attn.output_proj.bias",
+        "transformer.decoder.layers.4.norm1.weight",
+        "transformer.decoder.layers.4.norm1.bias",
+        "transformer.decoder.layers.4.self_attn.in_proj_bias",
+        "transformer.decoder.layers.4.self_attn.out_proj.bias",
+        "transformer.decoder.layers.4.norm2.weight",
+        "transformer.decoder.layers.4.norm2.bias",
+        "transformer.decoder.layers.4.linear1.bias",
+        "transformer.decoder.layers.4.linear2.bias",
+        "transformer.decoder.layers.4.norm3.weight",
+        "transformer.decoder.layers.4.norm3.bias",
+        "transformer.decoder.layers.5.cross_attn.attention_weights.bias",
+        "transformer.decoder.layers.5.cross_attn.value_proj.bias",
+        "transformer.decoder.layers.5.cross_attn.output_proj.bias",
+        "transformer.decoder.layers.5.norm1.weight",
+        "transformer.decoder.layers.5.norm1.bias",
+        "transformer.decoder.layers.5.self_attn.in_proj_bias",
+        "transformer.decoder.layers.5.self_attn.out_proj.bias",
+        "transformer.decoder.layers.5.norm2.weight",
+        "transformer.decoder.layers.5.norm2.bias",
+        "transformer.decoder.layers.5.linear1.bias",
+        "transformer.decoder.layers.5.linear2.bias",
+        "transformer.decoder.layers.5.norm3.weight",
+        "transformer.decoder.layers.5.norm3.bias",
+        "transformer.decoder.ref_point_head.layers.0.bias",
+        "transformer.decoder.ref_point_head.layers.1.bias",
+        "transformer.decoder.query_scale.layers.0.bias",
+        "transformer.decoder.query_scale.layers.1.bias",
+        "transformer.decoder.class_head.0.bias",
+        "transformer.decoder.class_head.1.bias",
+        "transformer.decoder.class_head.2.bias",
+        "transformer.decoder.class_head.3.bias",
+        "transformer.decoder.class_head.4.bias",
+        "transformer.decoder.class_head.5.bias",
+        "transformer.decoder.bbox_head.0.layers.0.bias",
+        "transformer.decoder.bbox_head.0.layers.1.bias",
+        "transformer.decoder.bbox_head.0.layers.2.bias",
+        "transformer.decoder.bbox_head.1.layers.0.bias",
+        "transformer.decoder.bbox_head.1.layers.1.bias",
+        "transformer.decoder.bbox_head.1.layers.2.bias",
+        "transformer.decoder.bbox_head.2.layers.0.bias",
+        "transformer.decoder.bbox_head.2.layers.1.bias",
+        "transformer.decoder.bbox_head.2.layers.2.bias",
+        "transformer.decoder.bbox_head.3.layers.0.bias",
+        "transformer.decoder.bbox_head.3.layers.1.bias",
+        "transformer.decoder.bbox_head.3.layers.2.bias",
+        "transformer.decoder.bbox_head.4.layers.0.bias",
+        "transformer.decoder.bbox_head.4.layers.1.bias",
+        "transformer.decoder.bbox_head.4.layers.2.bias",
+        "transformer.decoder.bbox_head.5.layers.0.bias",
+        "transformer.decoder.bbox_head.5.layers.1.bias",
+        "transformer.decoder.bbox_head.5.layers.2.bias",
+        "transformer.decoder.norm.weight",
+        "transformer.decoder.norm.bias",
+        "transformer.decoder.position_relation_embedding.pos_proj.0.bias",
+        "transformer.encoder_class_head.bias",
+        "transformer.encoder_bbox_head.layers.0.bias",
+        "transformer.encoder_bbox_head.layers.1.bias",
+        "transformer.encoder_bbox_head.layers.2.bias",
+        "transformer.hybrid_class_head.bias",
+        "transformer.hybrid_bbox_head.layers.0.bias",
+        "transformer.hybrid_bbox_head.layers.1.bias",
+        "transformer.hybrid_bbox_head.layers.2.bias"
+      ]
+    ],
+    "max_norm": 0.059,
+    "runtime": {
+      "tf32_matmul": false,
+      "tf32_cudnn": true,
+      "deterministic_algorithms": false,
+      "cudnn_deterministic": false,
+      "cudnn_benchmark": false,
+      "cuda_visible_devices": "0,1"
+    },
+    "autocast": "fp16"
+  },
+  "final_weight_norms": [
+    828.9411112112144,
+    145.331333448688,
+    0.0,
+    6.923252612041508,
+    131.46698808947355,
+    105.87261193331967
+  ],
+  "weight_norm_changes": [
+    6.891104455630739,
+    0.5865385836868597,
+    0.0,
+    0.9602411957478525,
+    0.008166651422214954,
+    0.57712361503755
+  ],
+  "gradient_norm_quantiles_5_50_95": [
+    34.394866943359375,
+    51.184906005859375,
+    80.36083221435547
+  ],
+  "gradient_nonfinite_steps": 13,
+  "clipping_fraction": 0.999119847440223,
+  "last_four_val_slope": null,
+  "per_rank_epochs": [
+    {
+      "epoch": 0,
+      "seconds": 781.6248729433864,
+      "peak_memory_bytes": 36615266304,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 0.000307,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.07e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.07e-05,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.07e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.07e-05,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 0.000307,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 0,
+      "seconds": 781.6229238696396,
+      "peak_memory_bytes": 36061790720,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 0.000307,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.07e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.07e-05,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.07e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.07e-05,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 0.000307,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 1,
+      "seconds": 782.9481315268204,
+      "peak_memory_bytes": 35950137344,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 1,
+      "seconds": 782.9477827996016,
+      "peak_memory_bytes": 37445650432,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 2,
+      "seconds": 788.8090079938993,
+      "peak_memory_bytes": 36681630720,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 2,
+      "seconds": 788.8089863341302,
+      "peak_memory_bytes": 38022957056,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 3,
+      "seconds": 785.7362197581679,
+      "peak_memory_bytes": 36765531136,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 3,
+      "seconds": 785.7334832781926,
+      "peak_memory_bytes": 35893075456,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 4,
+      "seconds": 787.5561624215916,
+      "peak_memory_bytes": 35971729408,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 4,
+      "seconds": 786.7941187536344,
+      "peak_memory_bytes": 35925872640,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 5,
+      "seconds": 787.2478412594646,
+      "peak_memory_bytes": 36647535104,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 5,
+      "seconds": 787.2475063502789,
+      "peak_memory_bytes": 37391635968,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 6,
+      "seconds": 785.5478303842247,
+      "peak_memory_bytes": 36736070144,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 6,
+      "seconds": 785.5478408038616,
+      "peak_memory_bytes": 37330074624,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 7,
+      "seconds": 791.7863692464307,
+      "peak_memory_bytes": 37294230016,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 7,
+      "seconds": 791.5489331660792,
+      "peak_memory_bytes": 36762311168,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 8,
+      "seconds": 790.7278034240007,
+      "peak_memory_bytes": 37994235392,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 8,
+      "seconds": 790.7281205225736,
+      "peak_memory_bytes": 36628965888,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 9,
+      "seconds": 790.0053690262139,
+      "peak_memory_bytes": 35900642816,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 9,
+      "seconds": 789.9375869361684,
+      "peak_memory_bytes": 35217670656,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 10,
+      "seconds": 792.5507152732462,
+      "peak_memory_bytes": 37399358464,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 10,
+      "seconds": 792.5513371033594,
+      "peak_memory_bytes": 37338867200,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 11,
+      "seconds": 794.1792495604604,
+      "peak_memory_bytes": 37893155328,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 11,
+      "seconds": 794.1791931912303,
+      "peak_memory_bytes": 38681872384,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.070000000000004e-05,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 0.0003070000000000002,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 12,
+      "seconds": 789.9365219883621,
+      "peak_memory_bytes": 37410589696,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 3.070000000000002e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 3.070000000000002e-05,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 12,
+      "seconds": 789.9357929220423,
+      "peak_memory_bytes": 37197817344,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 3.070000000000002e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 3.070000000000002e-05,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 13,
+      "seconds": 792.9860291397199,
+      "peak_memory_bytes": 37402219008,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 3.070000000000002e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 3.070000000000002e-05,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 13,
+      "seconds": 792.9859055187553,
+      "peak_memory_bytes": 37398827008,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 3.070000000000002e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 3.070000000000002e-05,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 14,
+      "seconds": 793.0282315015793,
+      "peak_memory_bytes": 37956786688,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 3.070000000000002e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 3.070000000000002e-05,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 14,
+      "seconds": 792.9443422984332,
+      "peak_memory_bytes": 37933126144,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 3.070000000000002e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 3.070000000000002e-05,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 15,
+      "seconds": 793.076464808546,
+      "peak_memory_bytes": 35806049792,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 3.070000000000002e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 3.070000000000002e-05,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 15,
+      "seconds": 793.0752771971747,
+      "peak_memory_bytes": 37884542464,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 3.070000000000002e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 3.070000000000002e-05,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 16,
+      "seconds": 793.6354871187359,
+      "peak_memory_bytes": 38026177024,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 3.070000000000002e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 3.070000000000002e-05,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    },
+    {
+      "epoch": 16,
+      "seconds": 793.637845152989,
+      "peak_memory_bytes": 36036146688,
+      "groups": [
+        {
+          "group": 0,
+          "lr": 3.070000000000002e-05,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 24384000
+        },
+        {
+          "group": 1,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 23232512
+        },
+        {
+          "group": 2,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0,
+          "parameters": 0
+        },
+        {
+          "group": 3,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0010105798004987532,
+          "parameters": 786432
+        },
+        {
+          "group": 4,
+          "lr": 3.0700000000000045e-06,
+          "weight_decay": 0.0,
+          "parameters": 3072
+        },
+        {
+          "group": 5,
+          "lr": 3.070000000000002e-05,
+          "weight_decay": 0.0,
+          "parameters": 65184
+        }
+      ]
+    }
+  ]
+}
