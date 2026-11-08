@@ -308,3 +308,63 @@
   警告の閾値を 46 GiB にしていたため 40 GiB では警告が鳴らなかった。気づいたのは 11-08 10:0x JST に時系列を出したとき（学習の完了後）。**学習の途中で利用者に諮る機会を逃した**
 - **影響**: 案 D の所要が三本目（単独 10 時間 05〜26 分）より長い（gteach 16 時間 51 分、shuf 16 時間 20 分）。案 B と同居した最初の約 4 時間と、外部と同居した約 9〜10 時間が含まれる。
   損失・乱数の経路は GPU の共有で変わらない設計だが、共有による数値の揺れの有無は UNKNOWN。三本目の補助損失なしの値との差は、この違いを含む
+
+## Task E — 集計・検証（2026-11-08 10:00 JST〜）
+
+### E-1 集計と検算（`scripts/grasppilot/rerun_aggregate.py`、`experiments/analysis/grasp_pilot_d_rerun/{summary.json,tables.md,verify.json,testcheck.json,REPORT.md}`）
+
+    $ rerun_aggregate.py aggregate --out summary.json --tables tables.md
+    {"missing_D": [], "missing_B": [], "predictions": {"1": true, "2": true, "3": true, "4": true}}
+    $ rerun_aggregate.py verify --summary summary.json --out verify.json
+    n_runs_in_summary 11、n_runs_present 11、n_fake_runs_present 0（存在しない run の名前 2 つで 0 件）
+    recompute_equal true（差を各 run の記録のファイルから別の経路で計算し直して一致）
+    preds_recompute_equal_D: none・gteach・shuf とも true（保存した予測から det_metrics.summary で計算し直して一致）
+    対照: 案 B の差を 1e-6 ずらした写し・案 D の差を 1e-6 ずらした写しの両方で不一致を検出（control_detects true）
+    $ rerun_aggregate.py testcheck --out testcheck.json
+    union 01・02・03・06・08・09・10・11・12・13・14・15、test との共通 []、04 を混ぜた対照で ["04"]
+    $ rerun_make_report.py   → REPORT.md（数値は summary.json のみから作る）
+
+- 案 D の学習の動画: 案 D の注釈は train 10 本 + val {09, 10}（`metrics.json` の `videos_passed`、`test_overlap` は []）。案 B の train は注釈 `instances_train.json`、val は `logs/eval_meta_val.json` の画像 id から
+- 試走の dry-run（三本目の run で道具を試した）は scratchpad だけに書いた。本番の集計の前に案 D の値が三本目の記録（0.7227621 / 0.7265707 / 0.7263878）と一致することを確かめた
+
+### E-2 禁止の場所と試験・仮想環境（`$S/end/`）
+
+- **終了時の要約値**（`end/digest_end/`、取得は 10:02 JST に開始、`rerun_digest.py snapshot`。開始時と同じ 13 根・同じ除外）と `compare`（`end/digest_compare.json`）。
+  許可する追加は本契約の `allow_write` の経路（`experiments/analysis/grasp_pilot_d_rerun`・`experiments/phase1/graspd2_*`・`grasparms_B_{empty,gt}_*`）と本契約の新しいスクリプト 7 件だけ:
+
+| 根 | 開始 | 終了 | 変更 | 消失 | 追加（許可 / 想定外） |
+|---|---:|---:|---:|---:|---|
+| data / third_party / .venv / .venv-relation-detr / stage2pilot_store / runindex / tasks / context / src / configs | 同じ | 同じ | 0 | 0 | 0 / 0 |
+| scripts | 370 | 376 | 0 | 0 | 6 / 0（`rerun_make_report.py` は取得の後に追加したので終了の表には無い） |
+| experiments | 28,870 | 29,015 | 1 | 0 | 133 / 12 |
+| **重ねの BODY（$OV）** | 174 | 174 | **15** | 0 | 0 / 0 |
+
+- **重ねの BODY の変更 15 件は本契約の過失**: すべて `third_party/Relation-DETR/per_class_coco_map/epoch_000〜014.json`。学習エンジン（`util/engine.py` 203〜204 行）が `RELDETR_EVIDENCE_DIR`（未設定なら実行時の作業ディレクトリ `.`）の下へ
+  epoch ごとのクラス別 mAP を書く。三本目の台本の写し `run_d_arm_rerun.sh` はこの環境変数を設定せず、作業ディレクトリが重ねの BODY（`cd $OV/third_party/Relation-DETR`）なので、**案 D の 2 本が同じ 15 件を上書きした**
+  （最終書き込み 2026-11-08 00:56:15 UTC。2 本が同じパスに書くので epoch ごとに後から終わった方の値）。開始時にあった 15 件は三本目の出力で、**中身は戻せない**（開始時の要約値は sha256 だけ）。
+  - 影響: **ソースの木は不変**（`reldetr_digest.py`: source 142 件 `2f08e521…`、all 155 件 `20f15c06…` が三本目の記録と開始時の値と同じ。この道具は `per_class_coco_map` を除く）。この 15 件は本契約の測定の入力ではない（報告の数値は `d_finalize_rerun.py` の `pd_eval.py` と各 run の `metrics.json` から取っている）
+  - 防げた誤り: エンジンの出力先を台本の写しを作る前に読んでいれば、`RELDETR_EVIDENCE_DIR` を run の置き場へ向けられた（経路だけの変更で、三本目の規律「違うのは重みと標的の経路と置き場だけ」の範囲）。読まなかった
+  - 契約の側の欠陥: SPEC §7-5・§8-i は「重ねの BODY を変えない・要約値が一致」を求めるが、指定した台本の元（三本目）は必ずここへ書く。三本目の A-5 の要約値は `per_class_coco_map` を除く道具だったので気づけなかった
+- **他の契約のファイル（本契約が書いたものではない）**: `experiments/analysis/dtower_rerun/tools/*.py` の 12 件（想定外の追加）と `dtower_batch_search/tools/summarize.py` の 1 件の更新（11-07 05:52 UTC）は、学習中に同期で届いた。SPEC §7 の冒頭「同期処理による配布を含まない」のとおり。
+  mtime は 11-07 10:15 UTC など、本契約のプロセスが触らない経路。`.sync-pause` は `m2-sync.sh`（git の統合）を止めるもので、ファイルの同期（syncthing）は止めない
+- 対照（要約値の道具が空振りでないこと）: 小さな木で 1 バイト追記・削除・想定外の追加を検出（Task A-7）。本番でも上の 15 件と 13 件を実際に検出した
+- **BODY の照合の対照**: `$OV/third_party/Relation-DETR` のソース 142 件を写し（`end/tamper/copy`）、変更なしで `source_tree_sha256` が原本 `2f08e5213cb5c377…` と一致、`main.py` に 1 行足すと `bc5d786042ab1a6b…` で不一致
+- `make forbidden-check TASK=T-2026-11-06-grasp-pilot-d-rerun` → status fail、changed 154・checked 154、permitted 130、violations 12。**12 件すべて `experiments/analysis/dtower_rerun/tools/*.py`（他の契約の同期で届いた未追跡）。本契約の経路の違反は 0 件**（`end/e_forbidden_full.txt`）。
+  forbidden-check は git の作業ツリーだけを見るので、版管理の外の重ねの BODY の変更は拾えない（要約値の比べで拾った）
+- 試験: `11 failed, 980 passed, 5 skipped`（307.98 s。要約値の取得とディスクを取り合って遅かった）。失敗の名前の集合は開始時と同じ 11 件（`end/e_fail_names.txt`）
+- 仮想環境の一覧の要約値: `.venv` 9c7be5c9…、`.venv-relation-detr` a74c9c78…（開始時と一致、`end/e_pkgs_*.txt`）
+
+### E-3 完了判定（SPEC §8）の実測
+
+| # | 判定 | 実測 |
+|---|---|---|
+| a | 開始状態 | Task A のとおり。存在しない GPU 7 で `No devices were found`（rc 6）、`proc_enum` は zsh 9 件・存在しない exe 0 件、BODY の照合は 1 行足した写しで不一致 → 満たした |
+| b | 材料と再現 | 26/26 一致（破損の写しで 25/26）、D_q の sha256・枠 32,272・行の和・値の範囲が一致、塔単独の差 +2.5e-8 / +8.6e-10、別 seed 123 で標的群 +0.0284 → 満たした |
+| c | 経路の一致 | 案 D 3 件・案 B 8 run が一致、1 文字変えた写しで不一致 → 満たした |
+| d | 案 D の確かめ | 重み 0 で一致（差 0.0）、0.3 で 全損失 − 検出の損失 0.35〜0.40、対応づいた枠 = 正解の枠、COCO の読み込みの記録（d2586acb… → 6a26aac9…）、経路を無くすと記録が消える → 満たした |
+| e | 案 B の恒等性 | 空・正解とも学習前の出力が塔単独と一致（score 差 0.0・枠 0.0 px・ラベル 0）、正解で重みを変えると score 差 0.383・ラベル 329,465 件変わる、空は変わらない（記録のみ）→ 満たした |
+| f | 学習 | 4 本とも rc 0 で固定の長さ（案 D 15 epoch、案 B 4 epoch）、epoch ごとの val と案 D の補助損失を記録（`tables.md`）、存在しない run の名前で 0 件 → 満たした |
+| g | 記述 | `REPORT.md`・`tables.md`。差を別の経路で計算し直して一致、1e-6 ずらした写しで不一致 → 満たした |
+| h | test 不使用 | 通した動画 01・02・03・06・08・09・10・11・12・13・14・15、{04, 05, 07} との共通 0 件、04 を混ぜると 1 件 → 満たした |
+| i | 書き込みと試験 | **満たさなかった部分あり**: 重ねの BODY の `per_class_coco_map/` 15 件が変わった（上記）。仮想環境の要約値は一致、失敗の名前は増えず、forbidden-check の本契約の経路の違反は 0 件 |
+| j | PR | 下の送出の節 |
