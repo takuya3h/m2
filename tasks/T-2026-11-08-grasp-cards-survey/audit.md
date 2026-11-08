@@ -286,3 +286,13 @@
 
 - 読んだ動画の集合（各道具の `read_videos`）: S1 {09}、S4 val {09,10}、S4 train {01,02,03,06,08,11,12,13,14,15}、S5 {09,10}、S6 {09}、S2・S3 は画像 0 枚。和集合と {04,05,07} の共通 0 件
 - この対照は bytecode を書かない設定で走らせ、`scripts/` に新しいファイルが無いことを `find -newer` で確かめた
+
+## 送出
+
+    $ git push -u origin feat/grasp-cards-survey      （93834768）
+    $ gh pr create --base phase0 --head feat/grasp-cards-survey …   → https://github.com/takuya3h/m2/pull/302
+    $ gh pr view 302 --json number,isDraft,baseRefName,headRefName,state
+    {"baseRefName":"phase0","headRefName":"feat/grasp-cards-survey","isDraft":false,"number":302,"state":"OPEN"}
+    $ source scripts/load_env.sh && make task-report TASK=T-2026-11-08-grasp-cards-survey
+    {"task_id": "T-2026-11-08-grasp-cards-survey", "verdict": "pass", "n_issuer_defects": 4, "report_sha256": "5a74125d545b067d23a165f27d6859ff15ac989f67889f7e0a1d803e51aecf70", "report_bytes": 9998, "replaced_blocks": 0}
+    終了コード 0

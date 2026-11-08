@@ -73,4 +73,4 @@
 ## 7. 送出
 
 - PR: #302（https://github.com/takuya3h/m2/pull/302）、Draft でない、base phase0、分岐 feat/grasp-cards-survey（`gh pr view 302 --json` で確認）
-- `make task-report`: 送出後に記入
+- `make task-report`: 終了コード 0（2026-11-08 JST、verdict pass、起票者の誤り 4 件、report_sha256 5a74125d…、9,998 B、replaced_blocks 0）
