@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（747 件）
+## 申し送り（751 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1217,7 +1217,14 @@
 - repo 直下の空の run_ptower_search.log（本契約の工程塔の起動で Hydra が作った）を消すかは利用者の判断
 - 版管理の外の生の記録 /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-tower-batch-probe/ を残した（重みは無い）。片付けは利用者の判断
 
-## 断定できなかった事項（476 件）
+### T-2026-11-08-grasp-cards-survey
+
+- S5 の G の確定と H1 の相関は層で 0.255〜0.821（中央）と違う。案 2 の「交差適合の半分は基底が違う」は取り出す層を決めてから読む
+- 確定の P*-15 は COCO の鎖（init: coco）。案 6 の契約では入力層の写しを同じ COCO の鎖から作るかを決める（本契約の S6 は SPEC どおり ImageNet で形だけ確かめた）
+- 工程の CSV にだけある行（train 923・val 389）は画像が無い。工程のフレームを分母にする案の #15 では、目録と CSV のどちらの集合かを明記する
+- T-2026-11-07-dtower-rerun が phase0 に統合されたら、.git/info/exclude に足した experiments/analysis/dtower_rerun/tools/ の行を外してよい
+
+## 断定できなかった事項（480 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -2127,18 +2134,25 @@
 - 検出塔の GPU 使用率が低い理由
 - val・評価・起動を含めた 1 epoch の時間と、61 歩より先の歩で溢れるかどうか
 
-## 起票者の誤りの型（448 件）
+### T-2026-11-08-grasp-cards-survey
+
+- 他の折りの注釈の密度・間隔（折り A だけを測った）
+- S6 の 8 チャネルの写しで学習が収束するか、stem を学ぶ形と追加チャネルだけを学ぶ形のどちらが良いか、train（BN の統計の更新）での挙動
+- bengio の 1 GPU で確定の P*-15 と同じ設定の fine-tune 1 本の壁時計（記録は efros 1 GPU と bengio 2 GPU の別データだけ）
+- S4 の得点の較正の直し（温度の調整など）の効き
+
+## 起票者の誤りの型（452 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 118 |
-| `asserted_without_measuring` | 189 |
+| `asserted_without_measuring` | 193 |
 | `self_contradiction` | 116 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 4 |
 | `rule_read_narrowly` | 2 |
 
-合計 448 件（対を持つ契約 156 件から）
+合計 452 件（対を持つ契約 157 件から）
 
