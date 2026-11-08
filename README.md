@@ -1818,3 +1818,16 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
 - 結果: val mAP の 2 本の平均は b2 0.7285、b4 0.7297、b6 0.7357。3 水準とも同点幅の内で、prereg §3 の規則（同点なら大きい batch）により **b6（GPU ごとの batch 6）** を選んだ。標的群 AP の平均の最良も b6（食い違いなし）。発散・非数・溢れは 0 件。値は処方の効果として読まない（折り A の 2 本の平均で、3 水準の最大を取るので上振れする）
 - 道具は `experiments/analysis/dtower_batch_search/tools/`（実行器 `run_batch.py`、点を水準の値に差し替える包み `train_level.py`、観測器 `observer.py` を `TOWER_SEARCH_OBSERVER` で読ませる、集計 `summarize.py`、`procs.py`・`digests.py`・`make_det_config.py`・`env_capture.py` は前の契約の写し、`check_card.py`・`check_inputs.py`）。**既存のスクリプト・設定・third_party は変えていない。** batch と worker 数は `train_search.py` の写し（2 行だけを環境変数にしたもの）を repo の外に置いて渡した
 - checkpoint と生の記録は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-batch-search/`
+
+### 把持塔の出力を使う提案カード 6 案の調査（2026-11-08、bengio）
+
+契約 `T-2026-11-08-grasp-cards-survey`（analysis。学習なし。**案の採否・推奨は扱わない**）。カードの #15（対称性の実測）と #10（費用）を埋めるため、環境の事実（S1〜S7）を折り A で測った。
+結果は `experiments/analysis/grasp_cards_survey/REPORT.md`（`tools/make_report.py` が記録から作る）、記録は `tasks/T-2026-11-08-grasp-cards-survey/`、大きな生成物は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-08-grasp-cards-survey/`。
+
+- S1: Stage 2 が読む工程塔の特徴（`all_gap.npz`）は (15437, 2048) で空間の軸が無い。layer4 の地図は 2048×25×45（入力 800×1422 の 1/32）、1 動画 518 フレームで fp16 2.39 GB。空間平均はキャッシュと相対 7.2e-7 で一致
+- S2・S3: 工程塔の目録のフレームは術具注釈のフレームと同じ集合（train 9,657・val 1,515）。工程の CSV の全行（10,580・1,904）のうち使える把持の注釈が無いのは 11.6%・20.5%で、その行には画像が無い。術具注釈フレームの間隔はクリップの中で中央 2 秒・95% 4 秒・最大 508 秒
+- S4: 検出塔は NMS なしで 900 query から上位 300。ECE（全出力、10 区間）は val 0.0185・train 1,000 フレーム 0.0183
+- S5: G の確定と H1 の同じ層の対応する次元の相関の中央は、decoder の query 0.255・backbone C5 0.493・pixel decoder 0.68〜0.82（確定どうしは 1）
+- S6: fine-tune の台本は入力チャネル数を受けない（RGB・3 チャネルの正規化・stem 凍結）。8 チャネルの写しで順伝播と逆伝播が通り、7 チャネルは止まる
+- S7: 単価の表は REPORT §S7（工程側 W1 12〜187 秒、検出側 W1 5.3〜5.5 時間〔3 本並行〕、検出塔の学び直し 10.1〜10.4 時間〔単独〕、工程塔の fine-tune 4.47 時間〔efros〕）
+- 道具は `experiments/analysis/grasp_cards_survey/tools/`。**既存のスクリプト・設定・third_party・重ねの BODY・仮想環境は変えていない**（要約値の前後一致）
