@@ -75,4 +75,4 @@
 ## 7. 送出
 
 - PR: #301（https://github.com/takuya3h/m2/pull/301、base phase0、Draft でない、OPEN、head `feat/grasp-pilot-d-rerun`）
-- `make task-report`: （送信後に記録する）
+- `make task-report`: 終了コード 0（verdict partial、n_issuer_defects 4、本文 10,464 B、report_sha256 18aef8f3…ca02e1。この行は送信の後に足した）
