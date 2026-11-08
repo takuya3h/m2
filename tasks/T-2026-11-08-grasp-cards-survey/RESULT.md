@@ -25,7 +25,7 @@
 | h | S7 | 単価の表（REPORT §S7）と出所の経路 | 値が四本目・五本目・三周目の RESULT の記載と一致（四本目 63 行、五本目 47 行、三周目 51 行） |
 | i | test 不使用 | 画像を読んだ動画 {01,02,03,06,08,09,10,11,12,13,14,15}、{04,05,07} との共通 0 件 | 各道具が呼ぶ `common.assert_no_test` に 04 を混ぜた入力で `RuntimeError: test の動画が混入: ['04']`（09・10 だけなら通る。`$S/final/i_control.txt`） |
 | j | 無変更・学習なし | 27 項目のうち 25 が一致。tasks は inbox.d の 1 件（契約の求め）、scripts は S5 の .pyc 1 件 → 利用者の決定で消して一致を確認（audit D-1・D-2）。forbidden-check pass・違反 0 | 許可を読まない同じ道具で本契約の 9 件が違反 |
-| k | PR | §7 | 分岐名 `feat/grasp-cards-survey` |
+| k | PR | #302、Draft でない、base phase0（§7） | 分岐名 `feat/grasp-cards-survey`（`gh pr view 302`） |
 
 ## 3. 実測（カードの #15・#10 に写す形。詳細は REPORT）
 
@@ -72,5 +72,5 @@
 
 ## 7. 送出
 
-- PR: 起票後に記入
+- PR: #302（https://github.com/takuya3h/m2/pull/302）、Draft でない、base phase0、分岐 feat/grasp-cards-survey（`gh pr view 302 --json` で確認）
 - `make task-report`: 送出後に記入
