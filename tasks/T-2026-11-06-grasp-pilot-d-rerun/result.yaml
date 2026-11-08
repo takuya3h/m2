@@ -1,0 +1,69 @@
+# 完了報告の構造化された対（版 3）。RESULT.md と同じ結果を事実だけで書く。
+result_version: 3
+task_id: "T-2026-11-06-grasp-pilot-d-rerun"
+status: partial   # 4 本は完走し G1〜G3 pass。禁止事項 §7-5（重ねの BODY を変えない）を破ったため pass にしない（unknowns・deviations 参照）
+host: "bengio"
+branch: "feat/grasp-pilot-d-rerun"
+pr: null
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "本契約以外の compute 0 件（GPU 39/37 MiB）、起点に PR 295・297 の内容が在る、重ねの BODY の source_tree 2f08e521…・all_tree 20f15c06… が三本目の記録と一致、空き 1,291,676,147,712 B、試験の失敗 11 件の名前、仮想環境の一覧の要約値、220 W × 2、禁止の場所の内容ハッシュを 13 根で開始時に取得（読み取りエラー 0）"}
+  - {id: G2, verdict: pass, note: "目録の信号・G の重み 26/26 一致（破損の写しで 25/26）、D_q の q と入れ替えの sha256・枠 32,272・行の和・値の範囲が一致し欠け 0・余り 0、入れ替えを規則から作り直して最大差 0.0、塔単独の val は overall 0.7273450248・標的群 0.7950748009 で差 +2.5e-8・+8.6e-10、別 seed 123 は標的群 +0.0284、三本目の案 D 3 件と四本目の案 B 8 run の code_sha256 が現行の経路と一致"}
+  - {id: G3, verdict: pass, note: "案 D: 重み 0 で頭の無い経路と全損失が差 0.0、0.3 で 全損失 − 検出の損失 0.35〜0.40・頭の勾配 2.1〜2.7・対応づいた枠 = 正解の枠、COCO 読み込みで要約値 d2586acb→6a26aac9、経路を存在しない経路にすると読み込みの記録が消える。案 B: 空・正解の学習前の出力が塔単独と一致（score 差 0.0・枠 0.0 px・ラベル 0）、正解で重みを変えると score 差 0.383"}
+
+tests:
+  before_failed: 11
+  after_failed: 11
+  after_passed: 980
+
+deviations:
+  - {type: environment, note: "案 D の 2 本が重ねの BODY の third_party/Relation-DETR/per_class_coco_map/epoch_000〜014.json（15 件）を上書きした。学習エンジンが RELDETR_EVIDENCE_DIR（未設定なら実行時の作業ディレクトリ）へ書くのに、台本の写しで設定しなかった自分の過失。ソースの木は不変、15 件は測定の入力ではないが、開始時の中身（三本目の出力）は戻せない"}
+  - {type: environment, note: "学習中に本契約以外の GPU の使用が現れた（11-07 17:20〜17:29 JST に数分ずつ、23:18 JST〜11-08 09:12 JST は両 GPU で約 26 GiB）。見張りの閾値を 46 GiB にして鳴らず、40 GiB を自分の確保量の増加と誤読したため学習の完了後まで気づかず、その場で諮れなかった。他のプロセスは止めていない。OOM は無し"}
+  - {type: judgement, note: "利用者に諮り「両 GPU が連続 6 時間空くまで待つ」の決定を得たが来ず、利用者の「あいた」を合図に連続 466 秒の空きで起動した。載せ方は 1 枚に案 D 1 本 + 案 B 1 本（Task C の記憶の実測 約 24 GiB の見込み）"}
+  - {type: judgement, note: "禁止の場所の開始時の要約値は全ファイルの内容ハッシュを取る道具 rerun_digest.py を書いて 13 根で取った。台本・確認の道具は原本を変えず写しを新設。基準の BODY は三本目の重ねの BODY（四本目の m2 本体と中身の要約値が同じ）"}
+  - {type: judgement, note: "試走の empty が rc 2 だったのは、試走の判定（界面に勾配が届くか）が全零の入力で満たされないため。台本の欠陥ではなく腕に数えない。status は pass にせず partial とした"}
+  - {type: environment, note: "見張りの Monitor の台本が zsh で単語分割されず案 B の完了を通知できなかった（bash の台本に直し、終わった run で陽性対照）。前のセッションが一度終わり見張りが止まった。index.lock が commit のとき数回残った（数秒で消えた）"}
+
+issuer_defects:
+  - {type: self_contradiction, note: "§7-5 と §8-i は重ねの BODY を変えず要約値を一致させると求めるが、§3.1 が写せと指す三本目の台本は学習エンジンが実行時の作業ディレクトリ（重ねの BODY）へ per_class_coco_map を書く経路を持つ。指示どおり実行すると必ず 15 件を上書きし、要約値の一致は満たせない"}
+  - {type: check_does_not_check, note: "§8-i の forbidden-check は git の作業ツリーだけを見るので、版管理の外の重ねの BODY の変更を拾えず、同期で届く他契約の未追跡（今回 experiments/analysis/dtower_rerun/tools の 12 件）で本契約と無関係に fail する。本契約の経路の違反 0 件の確認としてしか働かない"}
+  - {type: asserted_without_measuring, note: "§1 は二本目（andrew）の案 B の空を 0.7268 / 0.7911 とするが、記録 grasppilot2_B_empty_ep4_seed42 は 0.7273450 / 0.7950748 で塔単独と同値。そのまま参考の表に並べると記録と食い違うため、記録の値を使った"}
+  - {type: asymmetric_comparison, note: "§3.1 は補助損失なしを三本目の値で済ませる条件を同じホスト・同じ GPU の使い方としたが、三本目は GPU 単独で、本契約の 2 本は案 B と同居（§3.3 が許す）かつ外部の使用と共有した。比べる腕の間で GPU の共有の有無が違い、差を処置の差として読めない"}
+
+positive_controls:
+  - {judgement: "b 材料の照合", breaking_input: "信号の 1 バイトを反転した写し・q の 1 バイト反転・ann_id を 1 つずらした写し・入れ替えを別 seed で作った表", observed: "信号の照合は 25/26 で不一致を検出。q は読み込み失敗・欠け 1 余り 1・sha256 不一致とも ok false。本番は ok true"}
+  - {judgement: "b 塔単独の再現", breaking_input: "別 seed（123）の検出塔", observed: "標的群 AP が +0.0284 で許容差 0.005 を超えた。seed 42 は +8.6e-10"}
+  - {judgement: "c code_sha256 の一致", breaking_input: "先頭の 1 文字を変えた写し", observed: "不一致として検出した"}
+  - {judgement: "d COCO の読み込み", breaking_input: "COCO の経路を存在しない経路にして 1 epoch 回す", observed: "load pretrained の行が 0、load_record.jsonl が無い（読み込みの記録が消えた）。本番では要約値 d2586acb→6a26aac9 の変化あり"}
+  - {judgement: "d 補助損失が入ること", breaking_input: "重み 0.3 にする（0 なら全損失 − 検出の損失は 0 のはず）", observed: "全損失 − 検出の損失が 0.397・0.381・0.361・0.351 で 0 でない。重み 0 では 0.0"}
+  - {judgement: "e 案 B の恒等性", breaking_input: "正解の腕で界面の重みを N(0, 0.05²) にする", observed: "score の差 0.383・ラベルの食い違い 329,465 件で出力が変わった。空の腕は 0.0（入力が零のため。記録のみ）"}
+  - {judgement: "g 差の計算", breaking_input: "案 B の差と案 D の差をそれぞれ 1e-6 ずらした写し", observed: "両方で不一致を検出。存在しない run の名前 2 つで 0 件"}
+  - {judgement: "h test 不使用", breaking_input: "通した動画の集合に 04 を混ぜた入力", observed: "{04, 05, 07} との共通が 1 件（04）になった。本番は 0 件"}
+  - {judgement: "i 禁止の場所の要約値", breaking_input: "ファイルの内容が変わる・消える・想定外に増える", observed: "小さな木で 1 バイト追記・削除・想定外の追加を検出。本番でも重ねの BODY の 15 件と他契約の experiments 13 件を実際に検出した"}
+  - {judgement: "a BODY の照合・GPU の列挙", breaking_input: "ソースの 1 行を足した写し・存在しない GPU 番号・存在しない exe", observed: "source_tree が 2f08e521… から bc5d7860… に変わり不一致。GPU 7 は No devices were found（rc 6）。存在しない exe の列挙は 0 件"}
+
+followups:
+  - "次の案 D の契約は、台本で RELDETR_EVIDENCE_DIR を run の置き場へ向ける（重ねの BODY に書かせない）。SPEC の §7-5・§8-i と台本を合わせる。"
+  - "学習の見張りは絶対量でなく『自分の run だけの見込みからの増加』を閾値にし、案 B 同居などで使用量が変わる時刻をずらして記録する。"
+  - "案 D の差（G を教師 − 補助損失なし overall +0.0061、入れ替えた教師 − 補助損失なし +0.0128、標的群は符号が分かれる）は 1 本ずつ・seed 1 つで、補助損失なしは GPU 単独の三本目の run。教師の中身を区別する差としては読めない。seed を増やす契約を起票するかは利用者が決める。"
+  - "案 B の空は塔単独と完全に同値で、四本目の Δ空 は書き直しても変わらない。変わったのは正解の腕とそれを基準にした差（予測-noCF の正解との差 標的群 −0.0061118 → −0.0069499）。"
+  - "別の契約の experiments/analysis/dtower_rerun/tools の未追跡 12 件と dtower_batch_search/tools/summarize.py の更新が学習中に同期で届いた。本契約の PR には含めない。"
+
+unknowns:
+  - "外部の GPU 使用の主（別セッションか他の利用者か）、GPU の共有による案 D の数値の揺れの有無、案 D の所要の延び（16 時間台）の内訳（案 B 同居と外部の使用）。"
+  - "重ねの BODY の per_class_coco_map 15 件の開始時の中身（sha256 だけ残っている）。"
+  - "案 D の差が seed 間の揺れの内か外か（seed は 1 つ）。G の左のクラスの AP が右より低い理由（前契約から）。"
+  - "status が partial の理由: 禁止事項 §7-5 を破ったこと（deviations の 1 件目）。測定自体は 4 本とも完走し、G1〜G3 は pass。"
+
+commits:
+  - "70ec2eda"
+  - "4b946c10"
+  - "a6a3d998"
+  - "18723d12"
+  - "35061a7c"
+  - "8fcc8303"
+  - "892559fa"
+  - "b0e7d6e7"
+  - "1656041d"
+  - "d5465fe5"
