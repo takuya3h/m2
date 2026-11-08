@@ -221,17 +221,26 @@ def main():
     for f in FOLDS:
         for p in POINTS:
             pair = [val.get((p, f, s)) for s in SEEDS]
-            table[f"{p}_{f}"] = {"seed42": pair[0], "seed123": pair[1], "mean": mean(pair),
-                                 "seed_abs_diff": abs(pair[0] - pair[1]) if None not in pair else None,
-                                 "AP_target_mean": mean([target.get((p, f, s)) for s in SEEDS])}
+            tpair = [target.get((p, f, s)) for s in SEEDS]
+            both = None not in pair  # a fold mean only when both seeds are done (otherwise UNKNOWN)
+            table[f"{p}_{f}"] = {"seed42": pair[0], "seed123": pair[1], "mean": mean(pair) if both else None,
+                                 "seed_abs_diff": abs(pair[0] - pair[1]) if both else None,
+                                 "AP_target_mean": mean(tpair) if both else None}
         a, b = table[f"12_{f}"]["mean"], table[f"0_{f}"]["mean"]
         diffs[f] = a - b if None not in (a, b) else None
-    point_mean = {p: mean([val.get((p, f, s)) for f in FOLDS for s in SEEDS]) for p in POINTS}
     point_n = {p: sum((p, f, s) in val for f in FOLDS for s in SEEDS) for p in POINTS}
-    pooled_sd = {}
+    # the ten-run mean only when all ten are done (otherwise UNKNOWN)
+    point_mean = {p: mean([val.get((p, f, s)) for f in FOLDS for s in SEEDS]) if point_n[p] == 10 else None
+                  for p in POINTS}
+    seed_mean = {f"{p}_{s}": mean([val[(p, f, s)] for f in FOLDS]) if all((p, f, s) in val for f in FOLDS)
+                 else None for p in POINTS for s in SEEDS}  # five-fold mean of one seed, when complete
+    pooled_sd, pooled_sd_partial = {}, {}
     for p in POINTS:
         d = [table[f"{p}_{f}"]["seed_abs_diff"] for f in FOLDS]
         pooled_sd[p] = math.sqrt(sum(x * x for x in d) / (2 * len(d))) if None not in d else None
+        have = {f: x for f, x in zip(FOLDS, d) if x is not None}
+        pooled_sd_partial[p] = {"folds": sorted(have), "pairs": len(have),
+                                "sd": math.sqrt(sum(x * x for x in have.values()) / (2 * len(have))) if have else None}
     fold_a = {}
     for s in SEEDS:
         v = val.get((12, "A", s))
@@ -280,7 +289,11 @@ def main():
                        "val_mAP": r["val_mAP"], "val_AP_target": r["val_AP_target"],
                        "val_AP_negative": r["val_AP_negative"],
                        "outside_synced_paths": not str(ckpt).startswith(str(ROOT))})
+    not_run = [{"point": p, "fold": f, "seed": s, "name": name(p, f, s)} for (p, f, s), r in records.items()
+               if r["status"] != "done"]
     summary = {"task_id": TASK, "runs_done": len(done), "runs_expected": len(records), "extra_runs": extra,
+               "runs_not_done": not_run, "seed_five_fold_mean": seed_mean,
+               "pooled_within_fold_seed_sd_available_folds": pooled_sd_partial,
                "records": {r["name"]: r for r in records.values()}, "table": table, "difference_12_minus_0": {
                    "per_fold": diffs, "ten_run_mean": (point_mean[12] - point_mean[0])
                    if None not in point_mean.values() else None},
@@ -296,13 +309,19 @@ def main():
              "|---|---|---|---|---|---|---|---|---|"]
 
     def fmt(x):
-        return "—" if x is None else f"{x:.4f}"
+        return "UNKNOWN" if x is None else f"{x:.4f}"
     for f in FOLDS:
         a, b = table[f"12_{f}"], table[f"0_{f}"]
         lines.append(f"| {f} | {fmt(a['seed42'])} | {fmt(a['seed123'])} | {fmt(a['mean'])} | {fmt(b['seed42'])} | "
                      f"{fmt(b['seed123'])} | {fmt(b['mean'])} | {fmt(diffs[f])} | {fmt(reference[f])} |")
-    lines += ["", f"- 10 本の平均: 12 番 {fmt(point_mean[12])}（n={point_n[12]}）、0 番 {fmt(point_mean[0])}（n={point_n[0]}）",
-              f"- seed 間の SD（折り内の対からの合算）: 12 番 {fmt(pooled_sd[12])}、0 番 {fmt(pooled_sd[0])}",
+    lines += ["", f"- 10 本の平均: 12 番 {fmt(point_mean[12])}（完了 {point_n[12]} 本）、0 番 {fmt(point_mean[0])}（完了 {point_n[0]} 本）",
+              "- 5 折りが揃った seed の平均: " + "、".join(f"{k.replace('_', ' 番 seed ')} {fmt(v)}"
+                                                 for k, v in seed_mean.items()),
+              f"- seed 間の SD（5 折りの対からの合算）: 12 番 {fmt(pooled_sd[12])}、0 番 {fmt(pooled_sd[0])}",
+              "- seed 間の SD（揃った折りの対だけから）: " + "、".join(
+                  f"{p} 番 {fmt(v['sd'])}（折り {'・'.join(v['folds']) or 'なし'}、{v['pairs']} 対）"
+                  for p, v in pooled_sd_partial.items()),
+              f"- 回していない run: {len(not_run)} 本",
               "- 選定: なし"]
     Path(args.md).write_text("\n".join(lines) + "\n")
     print(json.dumps({"runs_done": len(done), "extra_runs": extra, "point_mean": point_mean}, indent=1))

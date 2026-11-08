@@ -1818,3 +1818,14 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
 - 結果: val mAP の 2 本の平均は b2 0.7285、b4 0.7297、b6 0.7357。3 水準とも同点幅の内で、prereg §3 の規則（同点なら大きい batch）により **b6（GPU ごとの batch 6）** を選んだ。標的群 AP の平均の最良も b6（食い違いなし）。発散・非数・溢れは 0 件。値は処方の効果として読まない（折り A の 2 本の平均で、3 水準の最大を取るので上振れする）
 - 道具は `experiments/analysis/dtower_batch_search/tools/`（実行器 `run_batch.py`、点を水準の値に差し替える包み `train_level.py`、観測器 `observer.py` を `TOWER_SEARCH_OBSERVER` で読ませる、集計 `summarize.py`、`procs.py`・`digests.py`・`make_det_config.py`・`env_capture.py` は前の契約の写し、`check_card.py`・`check_inputs.py`）。**既存のスクリプト・設定・third_party は変えていない。** batch と worker 数は `train_search.py` の写し（2 行だけを環境変数にしたもの）を repo の外に置いて渡した
 - checkpoint と生の記録は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-dtower-batch-search/`
+
+### 検出塔の回し直し（2026-11-07〜09、andrew。7/20 本で停止）
+
+契約 `T-2026-11-07-dtower-rerun`（exp、status partial）。探索の 12 番（学習率 3.07e-4、max_norm 0.059、S 4.976e-3）と 0 番（1e-4、0.1、S 4.81e-4）を GPU ごとの batch 6 で 5 折り × seed 42・123（20 本）学ぶ契約。**利用者の決定で 7 本目（12 番 seed 123 の折り B）の後に止めた。** 完了は 12 番の 7 本（seed 42 の 5 折りと seed 123 の折り A・B）、0 番は 0 本。残り 13 本は続きの契約で回す。
+結果は `experiments/analysis/dtower_rerun/{REPORT.md,summary.json,tables.md,frozen_towers.json,INTERIM.md}`、run の記録は `experiments/baselines/stage1_dtower_rerun/`、記録は `tasks/T-2026-11-07-dtower-rerun/`。
+
+- weight decay は S ÷ (学習率 × 20 × 実測の 1 epoch の歩数) を折りごとに丸めずに使う（歩数 A 802・B 805・C 894・D 851・E 924）。0 番の折り A は 2.998753e-4（学習の前の改訂）
+- 結果: 12 番の val mAP は A 0.7196 / 0.7366、B 0.4755 / 0.4897、C・D・E は seed 42 だけで 0.4428・0.5063・0.5226。12 − 0・10 本の平均・5 折りの seed 間の SD は UNKNOWN。折り A の seed 42 は batch の探索の b6（同じ設定と seed）と −0.0188 違った（同点幅 0.0076 の外）。選定は行わない
+- **凍結する塔（12 番 seed 42 の 5 本）は揃った。** 経路・sha256・epoch・val は `frozen_towers.json`。checkpoint は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-07-dtower-rerun/runs/<run>/best_ap.pth`。登録は別の契約
+- 道具は `experiments/analysis/dtower_rerun/tools/`（実行器 `run_rerun.py`、評価の包み `eval_dump.py`（動画ごとの値と予測を書く）、動画の集合の照合 `check_folds.py`、集計 `summarize.py`、ほかは前例の写し）。**既存のスクリプト・設定・third_party は変えていない**
+- 注意: どの注釈ファイルにも `id: 0` の注釈が 1 つあり、pycocotools はそれに一致した検出を誤検出に数える。評価器の値はこの 1 注釈分を含む（全 run と前例に一様）

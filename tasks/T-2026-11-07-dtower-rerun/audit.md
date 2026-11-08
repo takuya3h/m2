@@ -243,3 +243,83 @@
 - 5 本で `summarize.py` を回した（作業用の場所へ出力。commit しない）。恒等性の確かめは 5 本とも `exact: true`（差 0.0）。run の test AP − 注釈 id を +1 ずらした値: A −2.27e-4、B −1.65e-3、C −7.08e-5、D −4.87e-3、E −2.74e-4（id 0 の注釈のクラスと、それに当たる検出の数で大きさが変わる）
 - 副次の 5 動画のうち動画 01 だけ、評価器の GT の値（0.6514634）と振り直した値（0.6571886）が違う。ほかの 4 動画は一致した（C-1 の予想どおり）
 - 凍結する 5 つの checkpoint の sha256 を `sha256sum` で測り、`summarize.py` の値と一致した。`experiments/analysis/dtower_rerun/INTERIM.md` に書いた（Task C-4）
+
+### C-x 前例の道具が作業ツリーから消えた（気づいたのは 2026-11-08T10:32Z）
+
+- `git status` に、追跡下の 10 個（`experiments/analysis/dtower_batch_search/tools/*.py`：check_card・check_inputs・digests・env_capture・make_det_config・observer・procs・run_batch・summarize・train_level）の未ステージの削除が出た。フォルダの更新時刻は 2026-11-08T01:45:54Z（10:45:54 JST）。残っているのは `__pycache__/summarize.cpython-311.pyc`（11-07 05:51Z）だけ
+- その時刻、この台で動いていたのは本契約の実行器（折り D の学習中）だけである。実行器と道具はこの場所に書かない（`run_rerun.py` は書き込み先として `$STORE` と `experiments/baselines/stage1_dtower_rerun/` しか持たない）
+- `.stignore` には `!experiments/**/*.py` の行がある。`experiments/` の下の `.py` は git とは別に Syncthing で全台に配られるので、別の台での削除が届いたものと見ている。**他の台には接続していないため確かめていない**
+- 本契約の対応: 前例の場所なので**戻さない**（契約の禁止事項。戻すと同期が他の台へ配る）。commit にも入れていない（`git add` は経路を名指しした）。利用者に伝えた
+- 影響: A-7 の要約値の根に `experiments/analysis/dtower_batch_search` が入っているため、Task D の比較でこの根は変わって出る。原因はこの項に書いたとおりで、本契約の操作ではない
+- 本契約の道具 `experiments/analysis/dtower_rerun/tools/*.py` も同じ規則で同期の対象である。10:32Z の時点では消えていない（`git status` に出ない）。実行器は run ごとに `train_level.py` と `eval_dump.py` を起こすので、消えればその run の起動で止まる
+- **復元（利用者の指示、2026-11-08T11:15:55Z = 20:15:55 JST）**: 10 個は origin/phase0 で追跡されており、HEAD と origin/phase0 のどちらにも削除の commit は無い（`git log --diff-filter=D` が 0 件）。作業ツリーの削除は同期で届いたものと読み、`git checkout HEAD -- experiments/analysis/dtower_batch_search/tools/` で分岐の HEAD の blob から戻した。HEAD の blob と origin/phase0 の blob は同じ（`ls-tree` が一致）
+  - 復元後の sha256（= HEAD の blob の sha256、10 個とも一致）: check_card `e0140eeb5cdc…`、check_inputs `b9315bd2a54b…`、digests `c6f7b525c868…`、env_capture `6ae0891feab2…`、make_det_config `3c705f9970e6…`、observer `4afbaf9b57de…`、procs `92c77add35cf…`、run_batch `b289457e9c8c…`、summarize `cce5ecb22057…`、train_level `361355eb4c78…`
+  - 復元後の `git status`: 追跡ファイルの削除・変更は 0 件（本契約の audit.md の変更を除く）。削除も復元も PR の差分に入らない
+  - 復元は Syncthing で他の台にも配られる。中身は phase0 と同じである
+  - RESULT の逸脱（environment）に書く。完了判定 k（既存を変えていない）は、復元後の要約値で確かめる。学習はこの場所を読まないため、学習の結果には影響しない
+- 同じころ、未追跡のフォルダ `experiments/analysis/grasp_cards_survey/`（11:07:38Z に作られ、無視されていない）が現れた。別の契約の生成物が同期で届いたものと見ている。**触らない・commit しない**
+
+### C-y 利用者の決定で学習を止める（2026-11-09 02:2x JST に受けた）
+
+- 決定: 進行中の #7（`dtowerrerun_p12_dcoco_foldB_seed123`）が終わった所で学習を止める。新しい run を始めない。#7 は捨てずに完走させる。残りの run は後日、続きの契約で回す。Task D は完了した run だけで行う。status は partial
+- 止める位置の確かめ: 指示の文面に「12 番の 10 本」「14〜15/20 本」もあり、「#7 の後」と同時には成り立たないため、利用者に選択肢で確かめた。答えは「#7 の後で止める（7/20）」
+- 止め方: 実行器には「今の run の後で止める」口が無い。`train_one` は始めに作業フォルダを `mkdir(exist_ok=False)` で作るので、次の run（#8 `dtowerrerun_p12_dcoco_foldC_seed123`）の作業フォルダ `$STORE/runs/dtowerrerun_p12_dcoco_foldC_seed123/` を 2026-11-08T18:13:43Z に空で作った。#7 の評価と写しの後、#8 は GPU の確かめと起動の前に `FileExistsError` で止まる（何も起動しない）
+- 実行器の停止: #7 は 2026-11-08T18:52:22Z に `RUN_DONE`（val mAP 0.4897、test 0.4434）。実行器は 18:52:51Z に #8 の `work.mkdir` で `FileExistsError` を出して終わった（`runs.log` の末尾）。#8 の作業フォルダは空のまま。#8 の置き場（`experiments/baselines/stage1_dtower_rerun/` の下）は作られていない。GPU は 2 枚とも 16 MiB・0 %、compute のアプリ 0 件
+- 空の作業フォルダ `$STORE/runs/dtowerrerun_p12_dcoco_foldC_seed123/` は残した（消さない。続きの契約は別の置き場を使う。同じ置き場で続けるなら、先に外す必要がある）
+- `runs.log` の `STOP` の行は 0 件
+
+## 6. Phase D（7 本で集計、2026-11-08T18:53Z〜）
+
+### G3（完了した 7 本について）
+
+- 7 本とも学習 rc 0、`RUN_DONE` あり。学習の記録に `load pretrained from` が在り、`initialization_rank0.json` は `matched: true`（sha `2d2c19a7…`）
+- 損失の非数で止まった run 0 件（`STOP nonfinite_loss` 0 件。学習の記録の `nan` は 0 件）
+- GPU の記憶の溢れ 0 件（`STOP overflow` 0 件）。学習の記録の「overflow」の 3 件は、どの run でもビルド設定の行の `-Wno-strict-overflow`・`-Wno-stringop-overflow`（2 回）である
+- 勾配が非有限の歩（fp16 の scaler が飛ばした歩。学習は止まらない）: A42 13、A123 12、B42 13、B123 11、C42 11、D42 13、E42 12。前例 b6 は 12・12（`stage1_dtower_batch/*/posthoc_records.json`）。最初の数歩（scaler の立ち上がり）と、ときどき後の epoch に出る
+- 13 本は回していない（利用者の決定、§5 C-y）。**G3: 完了した 7 本について pass。20 本の完了は満たさない → status partial**
+
+### D-1 集計（`summarize.py`、出力 `experiments/analysis/dtower_rerun/summary.json`・`tables.md`・`frozen_towers.json`）
+
+- 揃わない所を UNKNOWN にするよう集計の道具を直した: 折りの平均と |差| は 2 seed が揃う折りだけ、10 本の平均は 10 本が揃う点だけ。揃った所の記述として、5 折りが揃った seed の平均（12 番 seed 42）と、揃った折りの対だけからの seed 間 SD を件数つきで足した。回していない run の一覧（13 本）を `runs_not_done` に出す
+- 結果: 12 番の折り A 0.7196 / 0.7366（平均 0.7281）、B 0.4755 / 0.4897（平均 0.4826）、C・D・E は seed 42 だけ（0.4428・0.5063・0.5226）。0 番は 0 本。12 − 0 はすべて UNKNOWN
+- 12 番 seed 42 の 5 折りの平均 0.5333659205939725。seed 間の SD（折り A・B の 2 対から）0.011086676598913502。5 折りの合算は UNKNOWN
+- 折り A と b6: seed 42 −0.018843870199823587（同点幅 0.0076 の外）、seed 123 +0.0038106348457985773（内）
+- 副次の test（12 番 seed 42 だけ。ほかは B・C・D の run が揃わず UNKNOWN）: 5 動画を一つにまとめた AP 0.4354845117002228（5,388 枚、注釈 18,006、検出 1,616,400）。動画ごと 01 0.6572、03 0.3471、11 0.5959、13 0.5889、14 0.3142（注釈の id を振り直した評価。評価器の GT では 01 だけ 0.6515）
+- 恒等性の確かめ: 7 本とも `exact: true`
+
+### D-2 陽性対照
+
+- 副次を 6 動画（15 を足す）にした写し: 0.4354845117 → 0.4579923925（5,808 枚）。値が変わる
+- 表の値を `metrics.json` から別の命令で計算し直した: 22 マス、不一致 0（全桁）
+- 存在しない名前: `dtowerrerun_p05_*` 0 件、`*foldF*` 0 件（`p12` は 7 件）。`run_record(5, A, 42)` と `run_record(12, F, 42)` は `missing`
+- 凍結する塔の sha256: 折り A の checkpoint の写しの 1,001 バイト目を 0x00 に変えると sha256 `2e7d47d0…` になり、`frozen_towers.json` の `4c542a8b…` と一致しない（本物は一致）
+- 同期の対象: `experiments/baselines/stage1_dtower_rerun/` と `experiments/analysis/dtower_rerun/` の下の `.pth` は 0 件。凍結する 5 本の checkpoint はすべて repo の外（`/home/ubuntu/slocal2/stage2pilot_store/`、Syncthing の同期フォルダの外）
+
+### D-3 無変更と環境
+
+- 禁止の場所の要約値（`$STORE/D/digests_after.json`、19:08:10〜19:11:34Z）: 根 21 件・仮想環境 2 件・凍結源がすべて A-7 と一致。`experiments/analysis/dtower_batch_search` は復元後の値で `7eb7e23c…`（開始時と同じ）
+- 環境（`$STORE/D/env_relation_detr.json`・`env_body.json`）: 両方とも 22 項目で A-6 と差 0
+- `make forbidden-check TASK=T-2026-11-07-dtower-rerun`: changed 254、permitted 242、**violations 8**、status fail。8 件はすべて同期で届いた別の契約の未追跡 `experiments/analysis/grasp_cards_survey/tools/*.py`（§5 C-x の終わり）。本契約の経路の違反は 0 件。8 件は消さず、無視の一覧にも足していない
+- `make task-validate`: `OK`、rc 0。WARN 3 件（L2-8: index.csv 2623 → 2647、experiments.csv 1305 → 1327、verdicts.csv 1947 → 1977。runindex を作り直したため）
+
+### D-4 runindex
+
+- `make runindex`: 書き出し runs/*.json 2,647、index.csv 2,647 行。検証は C1〜C4・C6〜C9 PASS、**C5 FAIL**（value 空欄と is_nan が食い違う行 51。すべて `phase1__grasppilot2_G_H1_seed42`・`G_H2_seed42`・`G_all_seed42` の各 17 行。本契約の行は 0）。rc 2
+- index.csv に本契約の 7 本が task_id つきで現れた
+- 作り直しは、同期で届いた統合前の別の契約の run（`phase1__grasparms_*` など 17 件の新しい runs/*.json）も拾った。利用者に諮り「全体を commit（前例どおり）」の決定を受けた
+
+### D-5 P13・P14 の陽性対照（`tools/preflight_task.py` の関数を直に呼んだ。写しは作業用の場所に置き、repo は変えていない）
+
+- P13: 本物は PASS（`対称性の表 1 個 / 26 行に UNKNOWN と理由欠落は無い`）。写しの prereg の「数値精度」の行の判定を UNKNOWN にすると **FAIL**（`26 行を検査。UNKNOWN 1 行: 数値精度`）
+- P14: 本物は PASS（`docs/proposals/2026-10-21-tower-reselect-search.md は検出 0 件（カード 16 件 / 禁止語 15 語を検査）`）。`intent.proposal_card` を `docs/proposals/zzz_no_such_card.md` にした spec では **FAIL**（`提案カードが無い`）
+- 規約: `context/conventions.md` の最後の変更は 2d946b07（`conventions_rev` と同じ）、`git diff 2d946b07 HEAD -- context/conventions.md` は空。`inject_verbatim` の 11 節（prohibitions・issuer_cautions・proposal_gate・folds・split・eval_recipe・symmetry・det_groups・precision・sigma・env_p0）のアンカーはどれも 1 件在る
+
+### D-6 終わりの試験（19:07:45〜19:38:22Z、30 分 34 秒、`$STORE/D/pytest_after.{xml,log}`）
+
+- 命令は開始前と同じ（`PYTHONPATH=src PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest tests/ -q -p no:cacheprovider --junitxml=$STORE/D/pytest_after.xml`）
+- 結果: **7 failed, 989 passed**、rc 1。失敗の名前（`$STORE/D/pytest_after_failed.json`）は開始前の 7 件と同じ集合（増えていない）
+
+### D-7 commit の前の作業ツリー（2026-11-08T19:4xZ）
+
+- `git status --porcelain --untracked-files=all`: 追跡ファイルの**削除 0 件**。変更は本契約の `audit.md`・`tools/summarize.py`、`README.md`・`docs/experiment_log.md`（契約の Task D-4）、`runindex/` の 6 ファイル（allow_write）だけ。前例の道具 10 件は復元済みで差分に出ない
+- 未追跡: 本契約の出力（REPORT・summary・tables・frozen_towers、run の記録 2 本 × 28、RESULT・result.yaml・inbox.d）、runindex/runs/ の 24 件（本契約 7、同期の別の契約 17）、同期で届いた `experiments/analysis/grasp_cards_survey/tools/` 8 件（commit しない）
