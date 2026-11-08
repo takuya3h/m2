@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（762 件）
+## 未処理（766 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -777,6 +777,10 @@
 - [ ] 2026-11-07 [cc] 検出塔の batch は prereg §3 の規則で **GPU ごとの 6**（実効 12、weight decay 1.01058e-3）に決まった。val mAP の 2 本の平均 b2 0.7285・b4 0.7297・b6 0.7357 で 3 水準とも同点幅 0.0076 の内、最も大きい batch を取った。回し直しの契約はこれを固定の項目として引く。予測 1・2 は外れ（T-2026-11-06-dtower-batch-search）
 - [ ] 2026-11-07 [cc] runindex の検証 C5 が別の契約の 3 run（phase1__grasppilot2_G_*）で落ち、forbidden-check は学習の最中に同期で届いた別の契約の未追跡 13 件で落ちた。どちらも本契約の分は 0 件で、他の契約の記録には触れていない（T-2026-11-06-dtower-batch-search の RESULT の逸脱）
 - [ ] 2026-11-07 [user] runindex の C5 の FAIL と forbidden-check の fail（どちらも別の契約の分）を逸脱として記録したまま、収穫ごと送出してよい（T-2026-11-06-dtower-batch-search の完了判定 j）
+- [ ] 2026-11-08 [cc] 開始時に同期で届いた未統合の T-2026-11-07-dtower-rerun の出力 12 件（experiments/analysis/dtower_rerun/tools/）で task-start が止まり、利用者の選択「4 で無視に足す」で .git/info/exclude にフォルダを 1 行足した。dtower-rerun が phase0 に統合されたら、その行を外してよい（audit.md 0.）
+- [ ] 2026-11-08 [cc] 工程の「工程注釈のあるフレーム」は二つの集合がある。工程塔の目録（phase_manifest）は術具注釈のフレームと同じ集合で、CSV にだけある行には画像が無い。カードの #15 で「工程フレーム」と書くときはどちらかを明記する（REPORT §S2）
+- [ ] 2026-11-08 [cc] 確定の工程塔 P*-15 の初期化は COCO の鎖（init: coco）で、SPEC §1 の「ImageNet の初期化」とは違う。S6 は SPEC どおり ImageNet の重みで形を確かめた。案 6 の契約では P*-15 と同じ COCO の鎖から作るかを決める（RESULT.md 起票者の誤り）
+- [ ] 2026-11-08 [cc] S5 の G の確定と H1 の相関は層で 0.255〜0.821（中央）と大きく違う。案 2 の「交差適合の半分は基底が違う」は取り出す層を決めてから読む（REPORT §S5）
 
 ## 処理済み（21 件）
 
