@@ -74,5 +74,5 @@
 
 ## 7. 送出
 
-- PR: （起票後に記録する）
+- PR: #301（https://github.com/takuya3h/m2/pull/301、base phase0、Draft でない、OPEN、head `feat/grasp-pilot-d-rerun`）
 - `make task-report`: （送信後に記録する）
