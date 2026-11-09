@@ -6,7 +6,7 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 本文は要約せずに転記している。編集は各契約の `result.yaml` で行う。
 
-## 申し送り（756 件）
+## 申し送り（764 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -1225,6 +1225,17 @@
 - repo 直下の空の run_ptower_search.log（本契約の工程塔の起動で Hydra が作った）を消すかは利用者の判断
 - 版管理の外の生の記録 /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-tower-batch-probe/ を残した（重みは無い）。片付けは利用者の判断
 
+### T-2026-11-07-dtower-rerun
+
+- 残りの 13 本（12 番 seed 123 の折り C・D・E、0 番 seed 42 の A〜E、0 番 seed 123 の A〜E）を続きの契約で回す。道具は experiments/analysis/dtower_rerun/tools/run_rerun.py（終わった run は RUN_DONE で飛ばす）。同じ置き場で続けるなら、空の作業フォルダ $STORE/runs/dtowerrerun_p12_dcoco_foldC_seed123/ を先に外す必要がある
+- 凍結する塔（12 番 seed 42 の 5 本）の登録（scripts/stage2pilot/common.py の要約値の差し替えなど）を別の契約で行う。経路と sha256 は experiments/analysis/dtower_rerun/frozen_towers.json
+- どの注釈ファイルにも id 0 の注釈が 1 つあり、pycocotools がそれに一致した検出を誤検出に数える。評価器の値への影響は test で 7.1e-5〜4.9e-3。注釈の id を 1 から振るか、評価の扱いを決める契約が要る（変えると前例と値が変わる）
+- 折り A の 12 番 seed 42 が同じ設定・同じ seed の b6 と 0.0188 違った。同じ設定の繰り返しの幅を測る契約があると、1 本の値の差の読み方が決まる
+- experiments/**/*.py が Syncthing で全台に配られるため、別の台での削除が追跡下の道具を作業ツリーから消した。同期の規則と git の追跡の二重管理を見直す契約が要る
+- runindex の検証 C5 が phase1__grasppilot2_G_* の 3 本で落ちる（前例から続く）
+- .git/info/exclude の 20・21 行（grasparms の 2 フォルダ）を戻すかを利用者に確かめる
+- 版管理の外の生の記録と checkpoint（/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-07-dtower-rerun/）を残した。片付けは利用者の判断
+
 ### T-2026-11-08-grasp-cards-survey
 
 - S5 の G の確定と H1 の相関は層で 0.255〜0.821（中央）と違う。案 2 の「交差適合の半分は基底が違う」は取り出す層を決めてから読む
@@ -1232,7 +1243,7 @@
 - 工程の CSV にだけある行（train 923・val 389）は画像が無い。工程のフレームを分母にする案の #15 では、目録と CSV のどちらの集合かを明記する
 - T-2026-11-07-dtower-rerun が phase0 に統合されたら、.git/info/exclude に足した experiments/analysis/dtower_rerun/tools/ の行を外してよい
 
-## 断定できなかった事項（484 件）
+## 断定できなかった事項（487 件）
 
 ### T-2026-08-11-artifact-merge-and-pause
 
@@ -2149,6 +2160,12 @@
 - 検出塔の GPU 使用率が低い理由
 - val・評価・起動を含めた 1 epoch の時間と、61 歩より先の歩で溢れるかどうか
 
+### T-2026-11-07-dtower-rerun
+
+- 回していない 13 本に関わる値: 12 − 0（折りごと・10 本）、点ごとの 10 本の平均、5 折りの seed 間の SD、12 番 seed 123 と 0 番の副次の test、予測 1・3
+- 折り A で b6 と 0.0188 違った非決定性の由来
+- 要約値の検査が、前例の道具が消えた状態を検出したか（消えた状態では測っていない）
+
 ### T-2026-11-08-grasp-cards-survey
 
 - 他の折りの注釈の密度・間隔（折り A だけを測った）
@@ -2156,18 +2173,18 @@
 - bengio の 1 GPU で確定の P*-15 と同じ設定の fine-tune 1 本の壁時計（記録は efros 1 GPU と bengio 2 GPU の別データだけ）
 - S4 の得点の較正の直し（温度の調整など）の効き
 
-## 起票者の誤りの型（456 件）
+## 起票者の誤りの型（460 件）
 
 **これは起票者の改善のための記録である。件数を隠さない。**
 
 | 型 | 件数 |
 |---|---:|
 | `check_does_not_check` | 119 |
-| `asserted_without_measuring` | 194 |
+| `asserted_without_measuring` | 198 |
 | `self_contradiction` | 117 |
 | `shell_assumption` | 19 |
 | `asymmetric_comparison` | 5 |
 | `rule_read_narrowly` | 2 |
 
-合計 456 件（対を持つ契約 158 件から）
+合計 460 件（対を持つ契約 159 件から）
 
