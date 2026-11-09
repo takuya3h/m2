@@ -3,7 +3,7 @@ task_id: "T-2026-11-09-stage2-pd-w3-lowlr-andrew"
 status: pass
 host: "andrew"
 branch: "feat/stage2-pd-w3-lowlr-andrew"
-pr: null
+pr: 311
 merged: false
 
 gates:
@@ -78,9 +78,12 @@ followups:
   - "1e-5 で学習を長くする、1e-4 と 1e-5 の間の学習率、seed を増やすことは、本契約の表に無い。検出塔の選び直しが進んでいるため、塔が替われば本契約の値は旧い塔での測定になる"
 
 unknowns:
+  - "PR #311 は GitHub の判定で CONFLICTING（README.md と docs/experiment_log.md の末尾で、起点の後に phase0 へ入った #307・#309 の節と衝突）。契約は分岐への統合を禁じるため解消していない。解消するかは利用者の判断"
   - "P1 の 4 腕が epoch 3 → 4 で約 0.01 下がった理由（非数 0 件、学習率は一定、ほかの型には出ていない）"
   - "前回の bengio の 3 型の受け取り手の動いた量（前回の記録に無い）"
   - "前回との差のうち、ホストの違い（bengio 1 枚 4 本と andrew 1 枚 3 本）の寄与"
 
 commits:
   - "3dc8b512"
+  - "036d6a60"
+  - "d12b19ec"

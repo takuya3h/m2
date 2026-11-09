@@ -30,7 +30,7 @@
 | f | 型ごとの 4 腕の値、Δ空・Δ入替・Δ塔、動画ごと、クラス別 AP、前回の W3 と W2 の参考の表、§6.2 の記述（REPORT §1・§A〜D）。epoch 3 の予測から計算し直した値との差は最大 0.0（16 本）。前回の W3 を記録から計算し直した値は SPEC §1 と全件一致（audit:249-269） | P1 正解の記録に P1 空の予測を当てると overall −0.012471。DX 正解に DX 入れ替えを当てると +0.000167 |
 | g | 通した動画は {01 02 03 06 08 09 10 11 12 13 14 15}、{04, 05, 07} との共通 0 件 | 04 を混ぜると共通 1 件 |
 | h | 材料 14 本の sha256 が終了時も一致した。起点からの差分は本契約の経路の外で空。仮想環境の要約値は開始時と一致。失敗は同じ 6 件（6 failed / 985 passed）。forbidden-check の本契約の経路の違反 0 件。作業ツリーでは同期で届いた `grasp_pilot_converge/` の 9 件が違反、分岐の HEAD の写しは違反 0 件（audit:271-305） | 同じ diff が本契約の `tools/` の新しいファイルを `A` として出した |
-| i | PR #（起票後に記入）、base phase0、Draft でない、分岐 `feat/stage2-pd-w3-lowlr-andrew` | 分岐名を `git branch --show-current` で確かめた |
+| i | PR #311、base phase0、Draft でない（`gh pr view 311` の isDraft false）、分岐 `feat/stage2-pd-w3-lowlr-andrew`。GitHub の判定は CONFLICTING（下の §7） | 分岐名を `git branch --show-current` と PR の headRefName で確かめた |
 
 ## 3. 実測
 
@@ -117,5 +117,8 @@
 
 ## 7. 送出
 
-- PR #（起票後に記入）（base phase0、Draft でない）
+- PR #311（base phase0、Draft でない、OPEN）
+  - GitHub の判定は CONFLICTING。`git merge-tree` で読むと、衝突は `README.md` と `docs/experiment_log.md` の 2 つだけ
+  - 原因は、起点の後に phase0 へ入った別の契約（#307・#309）が同じ末尾に節を足したこと。runindex は行の統合で衝突しない
+  - 契約は分岐への統合を禁じるため、解消していない（利用者の判断を待つ）
 - `make task-report` の終了コード: （送出後に記入）
