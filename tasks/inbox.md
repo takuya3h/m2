@@ -13,7 +13,7 @@
 このファイルが併合で衝突した場合は、`make inbox` で再生成すれば解消する。
 書式と面の一覧は `tasks/README.md` の「判断の受け皿」を参照。
 
-## 未処理（771 件）
+## 未処理（778 件）
 
 - [ ] 2026-08-08 [human] inbox を開設した（T-2026-08-08-session-durability）
 - [ ] 2026-08-08 [cc] 検査コマンドが対象を検査できない誤りが 4 task 連続で出ている。陽性と陰性の両方を投げる作法を tasks/README.md へ記した。次の起票からは SPEC 側でも対を要求したい（T-2026-08-08-session-durability）
@@ -777,15 +777,22 @@
 - [ ] 2026-11-07 [cc] 検出塔の batch は prereg §3 の規則で **GPU ごとの 6**（実効 12、weight decay 1.01058e-3）に決まった。val mAP の 2 本の平均 b2 0.7285・b4 0.7297・b6 0.7357 で 3 水準とも同点幅 0.0076 の内、最も大きい batch を取った。回し直しの契約はこれを固定の項目として引く。予測 1・2 は外れ（T-2026-11-06-dtower-batch-search）
 - [ ] 2026-11-07 [cc] runindex の検証 C5 が別の契約の 3 run（phase1__grasppilot2_G_*）で落ち、forbidden-check は学習の最中に同期で届いた別の契約の未追跡 13 件で落ちた。どちらも本契約の分は 0 件で、他の契約の記録には触れていない（T-2026-11-06-dtower-batch-search の RESULT の逸脱）
 - [ ] 2026-11-07 [user] runindex の C5 の FAIL と forbidden-check の fail（どちらも別の契約の分）を逸脱として記録したまま、収穫ごと送出してよい（T-2026-11-06-dtower-batch-search の完了判定 j）
+- [ ] 2026-11-07 [user] 0 番の weight decay は換算の値 2.998753e-4 を使い、全折りで S を 0 番 4.81e-4・12 番 4.976e-3 にちょうど揃える。折り B〜E は DataLoader の長さを実測して換算する（T-2026-11-07-dtower-rerun の meta.amendments）
+- [ ] 2026-11-07 [user] task-start を止めた同期で届いた 2 件（bengio の T-2026-11-06-grasp-pilot-d-rerun の生成物）は触らず、2 つのフォルダを .git/info/exclude に書いて task-start をやり直す。戻すかは報告の後に確かめる
 - [ ] 2026-11-08 [cc] 案 D の学習エンジンは `per_class_coco_map/epoch_XXX.json` を `RELDETR_EVIDENCE_DIR`（未設定なら実行時の作業ディレクトリ）へ毎 epoch 書く。三本目の台本の写し（run_d_arm_rerun.sh）は未設定で、作業ディレクトリが重ねの BODY（s2fix-bengio-body）なので、本契約の 2 本が同じ 15 件を上書きした（開始時の中身は三本目の出力で戻せない。ソースの木は不変）。次の案 D の契約は台本で RELDETR_EVIDENCE_DIR を run の置き場へ向ける。SPEC §7-5・§8-i の「重ねの BODY を変えない・要約値が一致」はこの台本のままでは満たせない（tasks/T-2026-11-06-grasp-pilot-d-rerun/audit.md D-3 の後の E-1）
 - [ ] 2026-11-08 [cc] 学習中（11-07 23:18〜11-08 09:12 JST）に bengio の両 GPU で本契約以外の使用 約 26 GiB が現れたが、見張りの閾値を 46 GiB にしていたため鳴らず、40 GiB を自分の確保量の増加と誤読して諮れなかった。以後は「自分の run だけの見込みからの増加」を閾値にする。外部の使用者の特定は UNKNOWN（利用者の調整が要るなら起票）
 - [ ] 2026-11-08 [cc] 作業ツリーに別の契約の experiments/analysis/dtower_rerun/tools/*.py（未追跡 12 件）と dtower_batch_search/tools/summarize.py の更新が学習中に同期で届いた。本契約の forbidden-check の違反 12 件はすべてこれ。その契約が統合されるまで本契約の PR には含めない
 - [ ] 2026-11-08 [cc] 案 D の差（G を教師 − 補助損失なし overall +0.0061、入れ替えた教師 − 補助損失なし +0.0128、標的群は符号が分かれる）は 1 本ずつ・seed 1 つ。補助損失なしは三本目の GPU 単独の run で、本契約の 2 本は GPU を共有した。教師の中身を区別する差としては読めない。seed を増やす契約を起票するかは利用者が決める（experiments/analysis/grasp_pilot_d_rerun/REPORT.md §1・§7）
 - [ ] 2026-11-08 [cc] 案 B の空（bengio）は塔単独と完全に同値（界面の重みが 0 のまま）。四本目の Δ空 は書き直しても同じ値で、変わるのは正解の腕とそれを基準にした差だけ（予測-noCF の正解との差 標的群 −0.0061118 → −0.0069499）
+- [ ] 2026-11-08 [user] 同期で作業ツリーから消えた前例の道具 dtower_batch_search/tools/*.py 10 件は HEAD の blob から戻し、PR の差分に入れない。逸脱（environment）として RESULT に書く
 - [ ] 2026-11-08 [cc] 開始時に同期で届いた未統合の T-2026-11-07-dtower-rerun の出力 12 件（experiments/analysis/dtower_rerun/tools/）で task-start が止まり、利用者の選択「4 で無視に足す」で .git/info/exclude にフォルダを 1 行足した。dtower-rerun が phase0 に統合されたら、その行を外してよい（audit.md 0.）
 - [ ] 2026-11-08 [cc] 工程の「工程注釈のあるフレーム」は二つの集合がある。工程塔の目録（phase_manifest）は術具注釈のフレームと同じ集合で、CSV にだけある行には画像が無い。カードの #15 で「工程フレーム」と書くときはどちらかを明記する（REPORT §S2）
 - [ ] 2026-11-08 [cc] 確定の工程塔 P*-15 の初期化は COCO の鎖（init: coco）で、SPEC §1 の「ImageNet の初期化」とは違う。S6 は SPEC どおり ImageNet の重みで形を確かめた。案 6 の契約では P*-15 と同じ COCO の鎖から作るかを決める（RESULT.md 起票者の誤り）
 - [ ] 2026-11-08 [cc] S5 の G の確定と H1 の相関は層で 0.255〜0.821（中央）と大きく違う。案 2 の「交差適合の半分は基底が違う」は取り出す層を決めてから読む（REPORT §S5）
+- [ ] 2026-11-09 [user] 学習は 7 本目（12 番 seed 123 の折り B）の後で止める（7/20 本）。残りの 13 本（12 番 seed 123 の C・D・E、0 番の 10 本）は続きの契約で回す。Task D は完了した run だけで行い、status は partial
+- [ ] 2026-11-09 [user] make runindex が拾った同期の別の契約の run も含め、作り直した runindex 全体を commit する（前例どおり）
+- [ ] 2026-11-09 [cc] 凍結する塔（12 番 seed 42、5 折り）は揃い、checkpoint の sha256 と val を experiments/analysis/dtower_rerun/frozen_towers.json に記録した。折り A の 12 番 seed 42 は同じ設定の b6 と −0.0188 違った（非決定性の目安）
+- [ ] 2026-11-09 [cc] どの注釈ファイルにも id 0 の注釈が 1 つあり、pycocotools がそれに一致した検出を誤検出に数える（評価器の値への影響は test で 7e-5〜4.9e-3）。評価の経路は変えず、全 run と前例に一様にかかるものとして記録した
 
 ## 処理済み（21 件）
 
