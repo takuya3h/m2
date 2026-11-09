@@ -1,0 +1,48 @@
+{
+  "best_epoch": 4,
+  "early_stopped_epoch": null,
+  "elapsed_seconds": 1.9324725801125169,
+  "epochs_run": 4,
+  "eval_recipe": {
+    "test_cfg": {
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "split": "val",
+      "task": "phase"
+    }
+  },
+  "iface_ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-09-grasp-roitoken-transition-pilot/dp_ckpt/grasprt_tw_046_TW-W3-b-K64_empty_ep4_seed42.pth",
+  "iface_ckpt_sha256": "f9e3f07829c0a727010539af3e6477f31e102f1c288bad3db94dfa6add3361a2",
+  "iface_params": 279424,
+  "init_phase_accuracy": 0.8712871287128713,
+  "init_phase_jaccard": 0.7762185528074379,
+  "negative_control": {
+    "max_abs_logit_diff": 0.02269268035888672,
+    "other_arm": "t1",
+    "pred_signal_jaccard": 0.6491573957581876,
+    "unchanged": false,
+    "zero_signal_jaccard": 0.6491573957581876
+  },
+  "per_video": {
+    "09": {
+      "phase_accuracy": 0.9498069498069498,
+      "phase_jaccard": 0.9210156188688623
+    },
+    "10": {
+      "phase_accuracy": 0.8525576730190572,
+      "phase_jaccard": 0.5573256866151634
+    }
+  },
+  "phase_accuracy": 0.8858085808580858,
+  "phase_jaccard": 0.6491573957581876,
+  "phase_macro_f1": 0.7242501257122391,
+  "reached_epoch_cap": true,
+  "receiver_outside_scope_n": 0,
+  "receiver_outside_scope_unchanged": true,
+  "receiver_trained_changed": true,
+  "receiver_unchanged": false,
+  "result_epoch": 4,
+  "result_selection": "final_epoch",
+  "scope": "W3",
+  "steps_without_grad": 0
+}
