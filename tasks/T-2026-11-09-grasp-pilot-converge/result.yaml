@@ -1,0 +1,83 @@
+result_version: 3
+task_id: "T-2026-11-09-grasp-pilot-converge"
+status: partial
+host: "bengio"
+branch: "feat/grasp-pilot-converge"
+pr: 309
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "受け取り時の起点 129e79b0 に PR 307 が無く（PR 307 OPEN、dp_model.py に roitoken・transwin が 0 件）停止して諮った。利用者が統合した後、自分の commit を持たない分岐を origin/phase0 26722ffd へ早送りし、RoiTokens・TransWindow と前の予備の記録が起点に在ることを確かめた。GPU 0・1 の全体 42・40 MiB と一覧 0 件、空き 1,078,491,328,512 B、試験の失敗 11 件、仮想環境の一覧の要約値（前の契約と一致）、禁止の場所 157 根の開始時の要約値を記録した"}
+  - {id: G2, verdict: ask, note: "前の予備の材料 48・目録の信号 20・P の重み 3 の sha256 が 71/71 一致、塔単独の差 0.0、収束規則の対照（一定で epoch 9 に落とし 17 で止まる、増え続けると上限 120）、既定の挙動と --fixed-epochs の RT・TW の回し直しが全記録一致、恒等性 162 件で差 0.0。殺し実験の陽性対照は C 1.0・0.1・1e-3・1e-4 で val J 0.637・0.683・0.657・0.643 で 0.9 に届かず、利用者の決定で学習へ進んだ"}
+  - {id: G3, verdict: ask, note: "学習前の出力は全腕で塔単独と一致。checkpoint の出力射影の重みの最大の絶対値が前の予備の最大 0.021 を超えたのは 48/127 本（RT 10/56、TW W1 12/28、W2 6/20、W3 20/20、GA 0/3）。超えない 79 本は、学ぶほど val の J が下がり（最終 − 最良の中央 −0.0203）規則が早い epoch を選んだため。GA の空は入力が零で 0.0。利用者の決定「このまま報告へ進む」"}
+
+tests:
+  before_failed: 11
+  after_failed: 11
+  after_passed: 980
+
+deviations:
+  - {type: judgement, note: "利用者の決定（2026-11-09）: 起点に PR 307 が無く Task A-1 で停止して諮った。利用者「mergeした」の後、分岐 feat/grasp-pilot-converge は自分の commit を持たない（git log origin/phase0..HEAD 0 件）ので git merge --ff-only origin/phase0 で早送りし、新しい起点から作ったのと同じ状態にした"}
+  - {type: judgement, note: "利用者の決定（2026-11-09）: 殺し実験の候補 1・2（C 1.0・0.1）が陽性対照で 0.9 に届かず escalate で諮った。利用者「1のあと、学習にすすんで」で候補 3・4（C 1e-3・1e-4）を足して試し、届かずに学習へ進んだ。陰性対照と案 3・5 の殺し実験は、陽性対照が働く処方が無いので回していない"}
+  - {type: judgement, note: "利用者の決定（2026-11-09）: G3（on_fail ask）で checkpoint のノルムが前の予備を超えない 79 本を理由つきで示して諮った。利用者「このまま報告へ進む」。収束規則の値と checkpoint の選び方は SPEC §6-11 により変えていない"}
+  - {type: judgement, note: "殺し実験の候補は、L2 つきの多項ロジスティック回帰（sklearn LogisticRegression、lbfgs、class_weight balanced、train の平均・標準偏差で標準化、max_iter 3000）とした。前の予備の c_kill.py を読み込み、線形の層の当て方（fit_eval）だけを差し替え、行・特徴・殺す条件は前の予備のまま。sklearn は .venv に既に在る（1.8.0）"}
+  - {type: judgement, note: "収束規則の対照のケース 3 の期待を「+5e-5 ずつ上がる記録で epoch 9 に落とし 17 で止まる」と誤って書いた。規則（最良を 1e-4 以上上回れば改善）どおりなら累積で 1e-4 を超えるたびに改善と数えるので期待の誤りで、ケースを「最良から 1e-4 未満の揺れ」に直し、累積の記録は 3b（落とさず上限まで）として残した。規則は変えていない"}
+  - {type: judgement, note: "--fixed-epochs の経路が変わらないことを、前の予備の RT（grasprt_rt_002）と TW（grasprt_tw_031）の run を本契約の識別子と接頭辞で回し直して確かめた。前の予備の識別子で回すと界面の重みを前の予備の保存先に書くことになり §6-2 に触れるため。config の違いは task_id と unofficial の 2 欄だけ"}
+  - {type: judgement, note: "確かめの run 5 本（grasprc_chk_dpold・dpnew・rt・tw・conv）は腕に数えない。runindex は生成物なので契約の分岐では作り直していない。集計の道具は途中の状態で試したとき走っている途中の run で止まったので、記録の無い run を数えないよう直し、全本の終了の後に回した"}
+  - {type: environment, note: "起動の直前に GPU 0 の全体量 309 MiB と compute の一覧 0 件の差が約 270 MiB あった。測り直すと本契約の起動中の 1 本（一覧に出る前）の分で、落ち着いた後は全体量 − 一覧の和 = 63・61 MiB（開始時の常駐分 42・40 MiB と同じ程度）。本契約以外の使用は無かった"}
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "SPEC §0 は前の予備を「PR 307、統合済み」とするが、契約の受け取り時点で PR 307 は OPEN で、起点 origin/phase0 129e79b0 の dp_model.py に roitoken・transwin が 0 件だった。指示どおり Task A-1 を行うと起点に PR 307 の内容が無く停止する。利用者の統合の後に早送りして進めた"
+  - type: asserted_without_measuring
+    note: "SPEC §3.2 は「one-hot を含む線形の層は、学べば val でほぼ正解に届く。届かないのは学習が足りない（歩数・学習率・正則化）ため」とするが、P の train の特徴だけで train の正解率が 1.0 になり、one-hot の重みの割合は 22〜26%。正則化を C 1.0〜1e-4 で変えても val J 0.64〜0.68 で 0.9 に届かない。原因は学習の量ではなく、train で fine-tune した塔の train の特徴の側にあった"
+  - type: asserted_without_measuring
+    note: "SPEC §0・intent は収束規則で「界面が学ばれた状態」になるとするが、checkpoint を val の最良にする規則では W1 の最良の epoch の中央が 2（20 歩）で、学ぶほど val の J が下がった（最終 − 最良の中央 −0.0203）。checkpoint の出力射影は前の予備（40 歩）との比の中央 0.76 で、127 本のうち 79 本が前の予備の最大 0.021 を超えなかった。学ぶほど val が下がるかを確かめずに規則を置いた"
+
+positive_controls:
+  - judgement: "a GPU の外の使用の見え方"
+    breaking_input: "存在しない GPU 番号 7 で nvidia-smi を問う。proc_enum を /usr/bin/zsh と存在しない経路で問う"
+    observed: "No devices were found（rc 6）。zsh 9 件、存在しない経路 0 件"
+  - judgement: "b 材料の sha256 の照合"
+    breaking_input: "見取りの json を写して 100 バイト目を 1 ビット反転した写し"
+    observed: "不一致（本物は 71/71 一致）"
+  - judgement: "b 塔単独の再現の許容差"
+    breaking_input: "別 seed 123 の工程塔の記録"
+    observed: "許容差 1e-6 を超え within false（本物は差 0.0・0.0）"
+  - judgement: "c 収束規則"
+    breaking_input: "改善しない人工の記録。patience を 9 にした規則"
+    observed: "一定の記録で epoch 9 に落とし 17 で止まる。patience 9 では 10・19 にずれる。実際の学習（GA の空）でも optimizer の群の学習率が epoch 9 の後 5e-4 → 5e-5、epoch 17 で止まった"
+  - judgement: "c 既定の挙動"
+    breaking_input: "新しい版の metrics の Jaccard を 1e-9 ずらした写し"
+    observed: "不一致として検出（本物は identity の差 0 件、試走・RT・TW の回し直しの全記録一致）"
+  - judgement: "d 殺し実験の陽性対照"
+    breaking_input: "P の特徴に正解の工程の one-hot を足す（届けば J 0.9 以上のはず）"
+    observed: "4 候補で val J 0.637〜0.683（届かない）。one-hot だけの層では J 1.0 で評価の経路は働く。この判定は使えない"
+  - judgement: "e 恒等性"
+    breaking_input: "出力射影の重みと bias を N(0, 0.05²) にする"
+    observed: "GA の空以外の全件で 0.060 以上変わる（GA の空は入力が零で 0.0）"
+  - judgement: "f run の数え上げ"
+    breaking_input: "存在しない run の名前 2 つ"
+    observed: "0・0 件（本物は 127/127）"
+  - judgement: "g 差の計算し直し"
+    breaking_input: "TG − T0 の J を 1e-6 ずらした写し"
+    observed: "不一致として検出（本物は 708 個の差のずれの最大 0.0）"
+  - judgement: "h test 不使用"
+    breaking_input: "通した動画の集合に 04 を混ぜた入力"
+    observed: "test との共通 [04] の 1 件（本物は 0 件）"
+  - judgement: "i forbidden-check"
+    breaking_input: "本契約の新しいファイル（許可の内側）"
+    observed: "変更 1,072 件のうち 1,068 件を allow_write による許可として名指し、違反 0 件。許可を読まない場合の検出は UNKNOWN（回していない）"
+
+followups:
+  - "checkpoint を val の最良にする収束規則では、W1 の界面は 1〜2 epoch で選ばれ、学ぶほど val が下がる。界面を学ばせた状態の差を見るなら、checkpoint の選び方（最終の状態、train の損失の収束など）を処方として決め直すかを起票者が決める"
+  - "案 5 の W1 の S_W − S_0・S_W − S_1 は、前の処方（40 歩）で 4/4 設定とも正だったが、収束規則では 0/4（すべて 0 以下）になった。前の予備の小さな正の差は処方で消える程度だった"
+  - "殺し実験の線形の層は、P の train の特徴だけで train が分け切れるため、陽性対照が働かない（正則化を変えても J 0.64〜0.68）。殺し実験を続けるなら、交差適合の特徴か train の外で当てる形を候補にするかを起票者が決める"
+
+unknowns:
+  - "案 3・案 5 の殺し実験の判定（直した処方で）: 陽性対照が働く処方が無く測っていない"
+  - "最終の状態（最も学んだ状態）の腕の差: val の確率は最良の epoch の分だけ保存しており、測っていない（history の J だけ）"
+  - "seed を変えたときの差の揺れ・GPU の並行の影響: 測っていない"
+
+commits:
+  - "adcdbc4a"

@@ -1875,3 +1875,15 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
 - その後、利用者の依頼で案 5 も掃引した（型 TW を同じく足す形で追加、K 64、W1・W2・W3 の 68 本）。W1 の S_W − S_0 は 6 工程の平均 +0.004〜+0.008（4/4 で正）、
   W2・W3 では同じ W の中の差が −0.010〜+0.007 で符号が分かれる。並べ替えの対照は弱い（TW は時点を注意で束ね、順は小さいまま育たない相対時刻の埋め込みからしか入らない）
 - 道具は `experiments/analysis/grasp_roitoken_transition_pilot/tools/`。third_party・重ねの BODY・仮想環境は変えていない（要約値の前後一致）
+
+### 工程塔側の把持の界面を収束規則で学んで回し直す予備測定（2026-11-09、bengio）
+
+契約 `T-2026-11-09-grasp-pilot-converge`（analysis。**非公式の予備測定。関門の判定と案の採否に使わない**）。**前の予備（PR 307、4 epoch 固定 = 40 歩）の処方の直し**として、
+案 3 RT・案 5 TW・案 A GA の 127 本を収束規則で回し直した。結果は `experiments/analysis/grasp_pilot_converge/REPORT.md`（`tools/make_report.py` が記録から作る）、
+記録は `tasks/T-2026-11-09-grasp-pilot-converge/`、界面の重みと記録は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-09-grasp-pilot-converge/`。
+
+- 変更: `scripts/stage2pilot/dp_train.py` に `--converge`（`ConvergeRule`: val の macro Jaccard が 8 epoch 改善しなければ学習率 × 0.1 を一度、さらに 8 epoch で打ち切り、
+  上限 120、checkpoint は val の最良）を**足す形**で追加。**渡さなければ従来の経路のまま**（起点の版と、前の予備の RT・TW の run と全記録が一致することを確かめた）
+- 結果: **val の最良を選ぶ規則では、W1 の界面は 1〜2 epoch で選ばれ、学ぶほど val が下がった**（最終 − 最良の中央 −0.020）。checkpoint の界面は前の予備より大きくならない run が 79/127。
+  案 5 の W1 の S_W − S_0 は前の処方の 4/4 正から 0/4 に変わった。殺し実験の線形の層は、P の train の特徴だけで train が分け切れるため、正則化を変えても陽性対照が J 0.64〜0.68 で働かない
+- 道具は `experiments/analysis/grasp_pilot_converge/tools/`。前の予備の材料（空間特徴・トークン・窓の列）は読むだけで作り直していない
