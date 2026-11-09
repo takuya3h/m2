@@ -8,7 +8,7 @@
 **明文化されていない**。以下はディレクトリ名の意味からの判断であり、
 規約に基づくものではない。**除外規約の明文化を推奨する。**
 
-除外 82 run / 全 2623 run（削除ではなくフラグ）
+除外 82 run / 全 2647 run（削除ではなくフラグ）
 
 | exclusion_reason | runs | 対象 |
 |---|---:|---|
@@ -37,7 +37,7 @@
 
 指標キーの接頭辞から split を確定できない run。**推測していない**。
 
-確定不能 52 run / 全 2623 run
+確定不能 52 run / 全 2647 run
 
 | split_provenance | runs |
 |---|---:|
@@ -105,12 +105,12 @@
 
 ## 3. host を確定できなかった run
 
-確定不能 369 run
+確定不能 372 run
 
 | host_raw | runs | 理由 |
 |---|---:|---|
 | `dlsta` | 260 | host_aliases.json に無い値 |
-| `None` | 77 | server.txt 欠損かつ eval_recipe.server_name 無し |
+| `None` | 80 | server.txt 欠損かつ eval_recipe.server_name 無し |
 | `aolab` | 28 | philip / ilya の双方が返すコンテナ内 hostname のため一意に特定不能 |
 | `Bengio` | 4 | host_aliases.json に無い値 |
 
@@ -125,13 +125,13 @@
 
 | per_class_kind | per_class_metric | runs | 内容 | 根拠 |
 |---|---|---:|---|---|
-| `phase` | `F1` | 1700 | 9 クラスの工程別 **F1**（AP ではない） | `scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が `best.get("phase_per_class_f1", {})` を `log_per_class_ap()` に渡している |
-| `unknown` | `unknown` | 467 | 既知の 2 体系のいずれとも一致しない | 確定不能 |
+| `phase` | `F1` | 1708 | 9 クラスの工程別 **F1**（AP ではない） | `scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が `best.get("phase_per_class_f1", {})` を `log_per_class_ap()` に渡している |
+| `unknown` | `unknown` | 475 | 既知の 2 体系のいずれとも一致しない | 確定不能 |
+| `tool` | `AP` | 222 | 15 クラスの術具 AP | `per_class_coco_map` / `COCOeval.precision` 由来 |
 | `None` | `None` | 221 | `per_class_ap.json` が無い・空・パース失敗 | — |
-| `tool` | `AP` | 214 | 15 クラスの術具 AP | `per_class_coco_map` / `COCOeval.precision` 由来 |
 | `coco_map` | `AP` | 21 |  |  |
 
-### metric を確定できなかった run: 467
+### metric を確定できなかった run: 475
 
 - `experiments/baselines/stage1_dtower_batch/dtowerbatch_b2_dcoco_foldA_seed123`（14 クラス）
 - `experiments/baselines/stage1_dtower_batch/dtowerbatch_b2_dcoco_foldA_seed42`（14 クラス）
@@ -145,6 +145,11 @@
 - `experiments/baselines/stage1_dtower_hostdiff_bengio/123_dcoco_foldA_seed123`（14 クラス）
 - `experiments/baselines/stage1_dtower_hostdiff_bengio/42a_dcoco_foldA_seed42`（14 クラス）
 - `experiments/baselines/stage1_dtower_hostdiff_bengio/42b_dcoco_foldA_seed42`（14 クラス）
+- `experiments/baselines/stage1_dtower_rerun/dtowerrerun_p12_dcoco_foldA_seed123`（14 クラス）
+- `experiments/baselines/stage1_dtower_rerun/dtowerrerun_p12_dcoco_foldA_seed42`（14 クラス）
+- `experiments/baselines/stage1_dtower_rerun/dtowerrerun_p12_dcoco_foldB_seed123`（13 クラス）
+- `experiments/baselines/stage1_dtower_rerun/dtowerrerun_p12_dcoco_foldB_seed42`（13 クラス）
+- `experiments/baselines/stage1_dtower_rerun/dtowerrerun_p12_dcoco_foldE_seed42`（13 クラス）
 - `experiments/baselines/stage1_dtower_search/point00_dcoco_foldA_seed42`（14 クラス）
 - `experiments/baselines/stage1_dtower_search/point01_dcoco_foldA_seed42`（14 クラス）
 - `experiments/baselines/stage1_dtower_search/point02_dcoco_foldA_seed42`（14 クラス）
@@ -174,6 +179,9 @@
 - `experiments/phase1/grasppilot2_G_H1_seed42`（38 クラス）
 - `experiments/phase1/grasppilot2_G_H2_seed42`（38 クラス）
 - `experiments/phase1/grasppilot2_G_all_seed42`（38 クラス）
+- `experiments/phase1/grasptower_G_H1_seed42`（5 クラス）
+- `experiments/phase1/grasptower_G_H2_seed42`（5 クラス）
+- `experiments/phase1/grasptower_G_all_seed42`（5 クラス）
 - `experiments/phase1/s4_grasp_injection_001_frozen_tecno_grasp_inference_ctrl_seed42`（5 クラス）
 - `experiments/phase1/s4_grasp_injection_002_frozen_tecno_grasp_inference_inj_seed42`（5 クラス）
 - `experiments/phase1/s4_grasp_injection_003_frozen_tecno_grasp_inference_ctrl_seed123`（5 クラス）
@@ -623,7 +631,7 @@
 
 | NaN のクラス | runs | 該当群 |
 |---|---:|---|
-| `Retractor` | 193 | `experiments/baselines`, `experiments/baselines/_legacy_score_thr_0`, `experiments/baselines/_smoke_ddq`, `experiments/baselines/_smoke_e3`, `experiments/baselines/_smoke_v2_part3`, `experiments/baselines/stage1_dtower`, `experiments/baselines/stage1_dtower_r2`, `experiments/hand2det_dev`, `experiments/phase1`, `experiments/transfer`, `transfer` |
+| `Retractor` | 199 | `experiments/baselines`, `experiments/baselines/_legacy_score_thr_0`, `experiments/baselines/_smoke_ddq`, `experiments/baselines/_smoke_e3`, `experiments/baselines/_smoke_v2_part3`, `experiments/baselines/stage1_dtower`, `experiments/baselines/stage1_dtower_r2`, `experiments/hand2det_dev`, `experiments/phase1`, `experiments/transfer`, `transfer` |
 | `Mouth Gag`, `Skewer` | 12 | `experiments/baselines/_wrong_split_8_2_3`, `experiments/phase0/_pre_redo_s0_smoke`, `experiments/phase0/_prior_no_eval_recipe` |
 | `Bipolar Forceps`, `Electric Cautery`, `Forceps`, `Gauze`, `Hook`, `Mouth Gag`, `Needle Holders`, `Raspatory`, `Retractor`, `Scalpel`, `Scissors`, `Suction Cannula`, `Syringe`, `Tweezers` | 6 | `experiments/analysis/stage2_pilot_four/andrew/smoke_DX_gt`, `experiments/phase1` |
 | `Electric Cautery`, `Hook` | 4 | `experiments/baselines/stage1_dtower`, `experiments/baselines/stage1_dtower_r2` |
@@ -847,14 +855,14 @@ adapter を書けば貴重な追加ソースになる。
 
 | 警告 | 件数 |
 |---|---:|
+| per_class_ap.json のクラス集合が既知の 2 体系のいずれとも一致しない (5 クラス) -> metric を確定できないため unknown | 429 |
 | 複数 split の指標が同一 run に共存: ['...', '...']。split は null にした。metrics には <split>__<metric> として split 名を残したまま入れる。 | 426 |
-| per_class_ap.json のクラス集合が既知の 2 体系のいずれとも一致しない (5 クラス) -> metric を確定できないため unknown | 426 |
 | host_aliases.json に無い値: '...'。host は null にした。 | 264 |
 | per_class_ap.json が空 ({...}) | 138 |
 | run 名が命名規約 <step>_<seq3>_<desc>_seed<N> に一致しない | 92 |
 | val と test の指標が共存する。primary（best 選択元）は val。test 側は metrics_by_split['...'] に保持している。 | 89 |
 | per_class_ap.json が存在しない | 75 |
-| per_class_ap.json のクラス集合が既知の 2 体系のいずれとも一致しない (14 クラス) -> metric を確定できないため unknown | 32 |
+| per_class_ap.json のクラス集合が既知の 2 体系のいずれとも一致しない (14 クラス) -> metric を確定できないため unknown | 34 |
 | host '...' は実サーバーを一意に特定できない。host は null にした。 | 28 |
 | ディレクトリ名の p010 は seed ではない。command.sh が --tool-noise-rate を渡しており、ノイズ率 0.01 を指す。seed_phase には入れない。 | 24 |
 | ディレクトリ名の p020 は seed ではない。command.sh が --tool-noise-rate を渡しており、ノイズ率 0.02 を指す。seed_phase には入れない。 | 24 |
@@ -864,6 +872,7 @@ adapter を書けば貴重な追加ソースになる。
 | 同一 (group, step, description, split) 内で eval_recipe_id が 3 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #None で分離した。 | 12 |
 | run 名に seq (3 桁連番) が無い別系統の命名: base_seed<N>。step には description を充てた。 | 9 |
 | run 名に seq (3 桁連番) が無い別系統の命名: bboxROI_seed<N>。step には description を充てた。 | 9 |
+| ディレクトリ名の p12 が末尾 seed<N> と一致せず、command.sh にノイズ引数も無い。seed か否かを確定できないため seed_phase は null にした。 | 7 |
 | 同一 (group, step, description, split) 内で eval_recipe_id が 3 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #93cb3159 で分離した。 | 6 |
 | 同一 (group, step, description, split) 内で eval_recipe_id が 3 通りに食い違う。評価条件が違う run を束ねないため experiment_id を #a63aecae で分離した。 | 6 |
 | run 名に seq (3 桁連番) が無い別系統の命名: dcoco_foldA_seed<N>。step には description を充てた。 | 6 |
@@ -872,6 +881,7 @@ adapter を書けば貴重な追加ソースになる。
 | ディレクトリ名の p0 が末尾 seed<N> と一致せず、command.sh にノイズ引数も無い。seed か否かを確定できないため seed_phase は null にした。 | 6 |
 | run 名に seq (3 桁連番) が無い別系統の命名: t1b_ca_seed<N>。step には description を充てた。 | 4 |
 | config.yaml のパースに失敗: ParserError | 3 |
+| per_class_ap.json のクラス集合が既知の 2 体系のいずれとも一致しない (13 クラス) -> metric を確定できないため unknown | 3 |
 | run 名に seq (3 桁連番) が無い別系統の命名: shuffleROI_seed<N>。step には description を充てた。 | 3 |
 | run 名に seq (3 桁連番) が無い別系統の命名: bboxROI_handROIbbox2_seed<N>。step には description を充てた。 | 3 |
 | run 名に seq (3 桁連番) が無い別系統の命名: handPresence_seed<N>。step には description を充てた。 | 3 |
@@ -908,10 +918,15 @@ adapter を書けば貴重な追加ソースになる。
 | run 名に seq (3 桁連番) が無い別系統の命名: dtowerbatch_b4_dcoco_foldA_seed<N>。step には description を充てた。 | 2 |
 | run 名に seq (3 桁連番) が無い別系統の命名: dtowerbatch_b6_dcoco_foldA_seed<N>。step には description を充てた。 | 2 |
 | run 名に seq (3 桁連番) が無い別系統の命名: point00_dcoco_foldA_seed<N>。step には description を充てた。 | 2 |
+| run 名に seq (3 桁連番) が無い別系統の命名: dtowerrerun_p12_dcoco_foldA_seed<N>。step には description を充てた。 | 2 |
+| run 名に seq (3 桁連番) が無い別系統の命名: dtowerrerun_p12_dcoco_foldB_seed<N>。step には description を充てた。 | 2 |
 | run 名に seq (3 桁連番) が無い別系統の命名: grasppilot3x_pd_B_gt_ep4_seed<N>。step には description を充てた。 | 2 |
 | run 名に seq (3 桁連番) が無い別系統の命名: 123_dcoco_foldA_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: 42a_dcoco_foldA_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: 42b_dcoco_foldA_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: dtowerrerun_p12_dcoco_foldC_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: dtowerrerun_p12_dcoco_foldD_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: dtowerrerun_p12_dcoco_foldE_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: point01_dcoco_foldA_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: point02_dcoco_foldA_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: point03_dcoco_foldA_seed<N>。step には description を充てた。 | 1 |
@@ -934,6 +949,12 @@ adapter を書けば貴重な追加ソースになる。
 | run 名に seq (3 桁連番) が無い別系統の命名: hand2det_1ep_4ch_all_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: hand2det_1ep_4ch_film_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: hand2det_4ch_film_inj_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasparms_B_gtpred_CF_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasparms_B_pred_CF_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasparms_B_pred_noCF_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasparms_B_shuffle_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasparms_B_toolonly_pred_noCF_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasparms_B_toolonly_shuffle_ep4_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: grasppilot2_B_empty_ep4_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: grasppilot2_B_gt_ep4_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: grasppilot2_B_gtpred_CF_ep4_seed<N>。step には description を充てた。 | 1 |
@@ -949,6 +970,9 @@ adapter を書けば貴重な追加ソースになる。
 | run 名に seq (3 桁連番) が無い別系統の命名: grasppilot3x_pd_B_gt_ep12_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: grasppilot_pd_B_empty_ep4_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: grasppilot_pd_B_gt_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasptower_G_H1_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasptower_G_H2_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasptower_G_all_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: stage2fix_pd_P1-W1_empty_ep4_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: stage2fix_pd_P1-W1_pred_noCF_ep4_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: stage2fix_pd_P1-W1_shuffle_ep4_seed<N>。step には description を充てた。 | 1 |
@@ -1074,7 +1098,7 @@ dummy Trainer の削除またはガード追加は別タスクで検討するこ
 mAP 系の指標を持つのに術具 per-class（15 クラス）を持たない run は、
 どちらの検査でも判定できない。**個別確認が要る対象**として列挙する。
 
-該当 83 run
+該当 91 run
 
 | path | mAP 系のキー | entrypoint | commit |
 |---|---|---|---|
@@ -1090,6 +1114,11 @@ mAP 系の指標を持つのに術具 per-class（15 クラス）を持たない
 | `experiments/baselines/stage1_dtower_hostdiff_bengio/123_dcoco_foldA_seed123` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `bb44ba6413` |
 | `experiments/baselines/stage1_dtower_hostdiff_bengio/42a_dcoco_foldA_seed42` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `22ce24b268` |
 | `experiments/baselines/stage1_dtower_hostdiff_bengio/42b_dcoco_foldA_seed42` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `22ce24b268` |
+| `experiments/baselines/stage1_dtower_rerun/dtowerrerun_p12_dcoco_foldA_seed123` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `e7f378973e` |
+| `experiments/baselines/stage1_dtower_rerun/dtowerrerun_p12_dcoco_foldA_seed42` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `10b1961d2e` |
+| `experiments/baselines/stage1_dtower_rerun/dtowerrerun_p12_dcoco_foldB_seed123` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `bcebb70265` |
+| `experiments/baselines/stage1_dtower_rerun/dtowerrerun_p12_dcoco_foldB_seed42` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `10b1961d2e` |
+| `experiments/baselines/stage1_dtower_rerun/dtowerrerun_p12_dcoco_foldE_seed42` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `e7f378973e` |
 | `experiments/baselines/stage1_dtower_search/point00_dcoco_foldA_seed42` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `bce323bc8c` |
 | `experiments/baselines/stage1_dtower_search/point01_dcoco_foldA_seed42` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `11ab37479e` |
 | `experiments/baselines/stage1_dtower_search/point02_dcoco_foldA_seed42` | `mAP`, `train_mAP`, `train_val_mAP_gap` | — | `11ab37479e` |
@@ -1139,6 +1168,9 @@ mAP 系の指標を持つのに術具 per-class（15 クラス）を持たない
 | `experiments/phase1/grasppilot2_G_H1_seed42` | `best_grasp5_mAP`, `best_segm_mAP`, `pre_grasp5_mAP`, `pre_segm_mAP` | `scripts/grasppilot/g_train.py` | `d67875b73c` |
 | `experiments/phase1/grasppilot2_G_H2_seed42` | `best_grasp5_mAP`, `best_segm_mAP`, `pre_grasp5_mAP`, `pre_segm_mAP` | `scripts/grasppilot/g_train.py` | `d67875b73c` |
 | `experiments/phase1/grasppilot2_G_all_seed42` | `best_grasp5_mAP`, `best_segm_mAP`, `pre_grasp5_mAP`, `pre_segm_mAP` | `scripts/grasppilot/g_train.py` | `d67875b73c` |
+| `experiments/phase1/grasptower_G_H1_seed42` | `best_segm_mAP`, `pre_segm_mAP` | `scripts/grasppilot/g5_train.py` | `ff954d9f40` |
+| `experiments/phase1/grasptower_G_H2_seed42` | `best_segm_mAP`, `pre_segm_mAP` | `scripts/grasppilot/g5_train.py` | `7b56c945fa` |
+| `experiments/phase1/grasptower_G_all_seed42` | `best_segm_mAP`, `pre_segm_mAP` | `scripts/grasppilot/g5_train.py` | `ff954d9f40` |
 | `experiments/phase1/stage2fix_pd_P2F_shuffle_ep4_seed42` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_t1b.py` | `40a8146e89` |
 | `experiments/phase1/stage2pilot_pd_P2F_gt_seed42` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_t1b.py` | `00560d62d5` |
 | `experiments/phase1/stage2pilot_pd_P2F_pred_seed42` | `final_mAP`, `init_mAP`, `mAP` | `scripts/train_t1b.py` | `1fa5fa5833` |
@@ -1215,7 +1247,7 @@ mAP 系の指標を持つのに術具 per-class（15 クラス）を持たない
 ## 12. experiments/README.md と実態の乖離
 
 README は step 識別子を **s0〜s9 / a1〜a7（17 種）** と規定しているが、
-実測は **410 種**。README に無い以下の系統が存在する。
+実測は **427 種**。README に無い以下の系統が存在する。
 
 | 系統 | step 識別子の種類 | run 合計 | 例 |
 |---|---:|---:|---|
@@ -1248,7 +1280,7 @@ M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 �
 これを split の既定値とし、`provenance.split = from_plan_section_16_7` を記録する。
 ただし **指標が 1 つもない run には適用しない**（評価されていないため null のまま）。
 
-既定を適用した run: 753
+既定を適用した run: 769
 
 | path | 指標キー |
 |---|---|
@@ -1265,6 +1297,13 @@ M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 �
 | `experiments/baselines/stage1_dtower_hostdiff_bengio/123_dcoco_foldA_seed123` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
 | `experiments/baselines/stage1_dtower_hostdiff_bengio/42a_dcoco_foldA_seed42` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
 | `experiments/baselines/stage1_dtower_hostdiff_bengio/42b_dcoco_foldA_seed42` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
+| `experiments/baselines/stage1_dtower_rerun/dtowerrerun_p12_dcoco_foldA_seed123` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
+| `experiments/baselines/stage1_dtower_rerun/dtowerrerun_p12_dcoco_foldA_seed42` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
+| `experiments/baselines/stage1_dtower_rerun/dtowerrerun_p12_dcoco_foldB_seed123` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
+| `experiments/baselines/stage1_dtower_rerun/dtowerrerun_p12_dcoco_foldB_seed42` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
+| `experiments/baselines/stage1_dtower_rerun/dtowerrerun_p12_dcoco_foldC_seed42` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
+| `experiments/baselines/stage1_dtower_rerun/dtowerrerun_p12_dcoco_foldD_seed42` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
+| `experiments/baselines/stage1_dtower_rerun/dtowerrerun_p12_dcoco_foldE_seed42` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
 | `experiments/baselines/stage1_dtower_search/point00_dcoco_foldA_seed42` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
 | `experiments/baselines/stage1_dtower_search/point01_dcoco_foldA_seed42` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
 | `experiments/baselines/stage1_dtower_search/point02_dcoco_foldA_seed42` | `AP_negative`, `AP_target`, `epochs_completed`, `mAP`, `train_mAP`, `train_val_mAP_gap` |
@@ -1306,6 +1345,12 @@ M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 �
 | `experiments/hand2det_dev/hand2det_1ep_4ch_all_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
 | `experiments/hand2det_dev/hand2det_1ep_4ch_film_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
 | `experiments/hand2det_dev/hand2det_4ch_film_inj_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/grasparms_B_gtpred_CF_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/grasparms_B_pred_CF_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/grasparms_B_pred_noCF_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/grasparms_B_shuffle_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/grasparms_B_toolonly_pred_noCF_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/grasparms_B_toolonly_shuffle_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
 | `experiments/phase1/grasppilot2_B_empty_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
 | `experiments/phase1/grasppilot2_B_gt_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
 | `experiments/phase1/grasppilot2_B_gtpred_CF_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
@@ -1320,6 +1365,9 @@ M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 �
 | `experiments/phase1/grasppilot3x_pd_B_gt_ep4_seed456` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
 | `experiments/phase1/grasppilot_pd_B_empty_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
 | `experiments/phase1/grasppilot_pd_B_gt_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/grasptower_G_H1_seed42` | `best_segm_mAP`, `coco_weights_loaded`, `coco_weights_total`, `early_stopped_epoch`, `elapsed_seconds`, `epochs_completed` |
+| `experiments/phase1/grasptower_G_H2_seed42` | `best_segm_mAP`, `coco_weights_loaded`, `coco_weights_total`, `early_stopped_epoch`, `elapsed_seconds`, `epochs_completed` |
+| `experiments/phase1/grasptower_G_all_seed42` | `best_segm_mAP`, `coco_weights_loaded`, `coco_weights_total`, `early_stopped_epoch`, `elapsed_seconds`, `epochs_completed` |
 | `experiments/phase1/s4_grasp_injection_001_frozen_tecno_grasp_inference_ctrl_seed42` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
 | `experiments/phase1/s4_grasp_injection_002_frozen_tecno_grasp_inference_inj_seed42` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
 | `experiments/phase1/s4_grasp_injection_003_frozen_tecno_grasp_inference_ctrl_seed123` | `elapsed_seconds`, `grasp_accuracy_left_hand`, `grasp_accuracy_left_hand_tool`, `grasp_accuracy_right_hand`, `grasp_accuracy_right_hand_tool`, `grasp_accuracy_two_hands_tool` |
@@ -2313,7 +2361,7 @@ _FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
 **したがって `frozen_source_tag` はキャッシュのパスからのみ導き、
 `frozen_source.seed` と `notes.md` の記述は採用していない。**
 
-- 実験数: **1305** / run 数 2623
+- 実験数: **1327** / run 数 2647
 - `experiment_id` を付けられなかった run: 92
   （run 名が命名規約に一致しない run）
 - `eval_recipe_id` の食い違いで分離した base: 24
@@ -2344,7 +2392,7 @@ _FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
 `description` / `split` / `frozen_source_tag` が一致しているのに `step` だけが違う組を
 機械的に検出した結果が次である。**同一条件が分裂している候補**として扱うこと。
 
-該当 **77 組**
+該当 **78 組**
 
 | group / description / split / frozen_source | 分裂した experiment_id |
 |---|---|
@@ -2378,6 +2426,7 @@ _FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
 | `phase1` / `D3-L2_pred_noCF_ep4` / `val` / `None` | `phase1/stage2fix_dp/D3-L2_pred_noCF_ep4@val`<br>`phase1/w23b_dp_W2/D3-L2_pred_noCF_ep4@val`<br>`phase1/w23b_dp_W3/D3-L2_pred_noCF_ep4@val` |
 | `phase1` / `D3-L2_shuffle_ep4` / `val` / `None` | `phase1/stage2fix_dp/D3-L2_shuffle_ep4@val`<br>`phase1/w23b_dp_W2/D3-L2_shuffle_ep4@val`<br>`phase1/w23b_dp_W3/D3-L2_shuffle_ep4@val` |
 | `phase1` / `GA_empty_ep4` / `val` / `None` | `phase1/grasppilot2_dp/GA_empty_ep4@val`<br>`phase1/grasppilot_dp/GA_empty_ep4@val`<br>`phase1/w23b_dp_W2/GA_empty_ep4@val`<br>`phase1/w23b_dp_W3/GA_empty_ep4@val` |
+| `phase1` / `GA_gt_ep1_smoke` / `val` / `None` | `phase1/grasparms_chk_dpnew/GA_gt_ep1_smoke@val`<br>`phase1/grasparms_chk_dpold/GA_gt_ep1_smoke@val` |
 | `phase1` / `GA_gt_ep4` / `val` / `None` | `phase1/grasppilot2_dp/GA_gt_ep4@val`<br>`phase1/grasppilot3x_dp/GA_gt_ep4@val`<br>`phase1/grasppilot_dp/GA_gt_ep4@val`<br>`phase1/w23b_dp_W2/GA_gt_ep4@val`<br>`phase1/w23b_dp_W3/GA_gt_ep4@val` |
 | `phase1` / `GA_gtpred_CF_ep4` / `val` / `None` | `phase1/grasppilot2_dp/GA_gtpred_CF_ep4@val`<br>`phase1/w23b_dp_W2/GA_gtpred_CF_ep4@val`<br>`phase1/w23b_dp_W3/GA_gtpred_CF_ep4@val` |
 | `phase1` / `GA_pred_CF_ep4` / `val` / `None` | `phase1/grasppilot2_dp/GA_pred_CF_ep4@val`<br>`phase1/w23b_dp_W2/GA_pred_CF_ep4@val`<br>`phase1/w23b_dp_W3/GA_pred_CF_ep4@val` |
@@ -2491,7 +2540,7 @@ delta:
 
 | 分類 | run 数 |
 |---|---:|
-| `no_denominator_declared` | 2097 |
+| `no_denominator_declared` | 2121 |
 | `injection_from_config_yaml` | 512 |
 | `baseline` | 17 |
 | `denominator_unresolvable` | 12 |
@@ -2538,8 +2587,8 @@ seed ごとに 1 本ずつ対応させることができない。
 per-class の値は 573 個の JSON に分散していて横断分析に使えなかったため、
 `runindex/per_class.csv` に long 形式（1 行 = 1 run × 1 クラス）で 1 ファイル化した。
 
-- `per_class_kind=tool` : 214 run × 15 クラス（術具 **AP**）
-- `per_class_kind=phase`: 1700 run × 9 クラス（工程 **F1**）
+- `per_class_kind=tool` : 222 run × 15 クラス（術具 **AP**）
+- `per_class_kind=phase`: 1708 run × 9 クラス（工程 **F1**）
 
 **この 2 つを混ぜて集計してはならない。** 指標の種類が違う（AP と F1）。
 ファイル名は両方とも `per_class_ap.json` なので、名前では判別できない。
@@ -2897,8 +2946,8 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 
 | seed_agreement | run 数 | 意味 |
 |---|---:|---|
-| `agree` | 2496 | ディレクトリ名と他証拠が一致 |
-| `unverified_no_other_evidence` | 35 | `command.sh` も `config.yaml` も無い（g2_* 群） |
+| `agree` | 2517 | ディレクトリ名と他証拠が一致 |
+| `unverified_no_other_evidence` | 38 | `command.sh` も `config.yaml` も無い（g2_* 群） |
 | `no_seed_in_dirname` | 92 | 命名規約外 |
 | **`conflict`** | **0** | **食い違い** |
 
@@ -3150,7 +3199,7 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 
 ### 26.1 🔴 決定的になり得る学習スクリプトは **1 本も無い**
 
-監査 46 スクリプト / うち CUDA を使う **20** 本 / 
+監査 48 スクリプト / うち CUDA を使う **20** 本 / 
 `can_be_deterministic = True` は **1** 本。
 
 | 制御項目 | 設定している本数 |
@@ -3177,7 +3226,7 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 
 | seed_setup_via | 本数 | 意味 |
 |---|---:|---|
-| `direct` | 20 | ファイル内で直接 seed を張る（`scripts/train_*.py` 系）|
+| `direct` | 21 | ファイル内で直接 seed を張る（`scripts/train_*.py` 系）|
 | `seed_everything` | 1 | `src/egosurgery/utils/seed.py` のヘルパ経由 |
 | `seed_everything+delegates_to_engines` | 3 | ヘルパを呼びつつ更に委譲もする |
 | `delegates_to_engines` | 1 | 自分では触らず trainer に委譲（`src/egosurgery/train.py`）|
@@ -3196,15 +3245,15 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 一方 `scripts/train_*.py` 系（**`direct`**、run 数で見て大半）は
 CPU 側 3 種のみで **GPU 側の制御が 1 つも無い**。
 
-影響を受ける run: **1372**（CUDA 学習スクリプトが entrypoint の run）
+影響を受ける run: **1385**（CUDA 学習スクリプトが entrypoint の run）
 
 | スクリプト | run 数 | 欠落している必須項目 |
 |---|---:|---|
 | `scripts/train_grasp_phase_injection_variants.py` | 420 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_b2a.py` | 350 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
-| `scripts/stage2pilot/dp_train.py` | 228 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
+| `scripts/stage2pilot/dp_train.py` | 235 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_t1a.py` | 132 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
-| `scripts/train_t1b.py` | 110 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
+| `scripts/train_t1b.py` | 116 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_s4_tecno.py` | 61 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_hand2det.py` | 21 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_haux.py` | 18 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
@@ -3224,6 +3273,7 @@ CPU 側 3 種のみで **GPU 側の制御が 1 つも無い**。
 | `src/egosurgery/engines/stage_d_trainer.py` | `empty` | 0 |
 | `src/egosurgery/engines/validator.py` | `empty` | 0 |
 | `home/ubuntu/slocal2/stage2pilot_store/T-2026-11-01-stage2-w23-bengio/check/dp_train_old.py` | `missing` | 3 |
+| `home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-grasp-pilot-arms/check/dp_train_old.py` | `missing` | 1 |
 | `tmp/queue_runner/train_s4_tecno_aligndetr.py` | `missing` | 3 |
 | `tools/train.py` | `missing` | 1 |
 | `tools/train_net_egosurgery.py` | `missing` | 3 |

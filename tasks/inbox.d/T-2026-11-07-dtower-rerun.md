@@ -1,0 +1,7 @@
+- [ ] 2026-11-07 [user] 0 番の weight decay は換算の値 2.998753e-4 を使い、全折りで S を 0 番 4.81e-4・12 番 4.976e-3 にちょうど揃える。折り B〜E は DataLoader の長さを実測して換算する（T-2026-11-07-dtower-rerun の meta.amendments）
+- [ ] 2026-11-07 [user] task-start を止めた同期で届いた 2 件（bengio の T-2026-11-06-grasp-pilot-d-rerun の生成物）は触らず、2 つのフォルダを .git/info/exclude に書いて task-start をやり直す。戻すかは報告の後に確かめる
+- [ ] 2026-11-08 [user] 同期で作業ツリーから消えた前例の道具 dtower_batch_search/tools/*.py 10 件は HEAD の blob から戻し、PR の差分に入れない。逸脱（environment）として RESULT に書く
+- [ ] 2026-11-09 [user] 学習は 7 本目（12 番 seed 123 の折り B）の後で止める（7/20 本）。残りの 13 本（12 番 seed 123 の C・D・E、0 番の 10 本）は続きの契約で回す。Task D は完了した run だけで行い、status は partial
+- [ ] 2026-11-09 [user] make runindex が拾った同期の別の契約の run も含め、作り直した runindex 全体を commit する（前例どおり）
+- [ ] 2026-11-09 [cc] 凍結する塔（12 番 seed 42、5 折り）は揃い、checkpoint の sha256 と val を experiments/analysis/dtower_rerun/frozen_towers.json に記録した。折り A の 12 番 seed 42 は同じ設定の b6 と −0.0188 違った（非決定性の目安）
+- [ ] 2026-11-09 [cc] どの注釈ファイルにも id 0 の注釈が 1 つあり、pycocotools がそれに一致した検出を誤検出に数える（評価器の値への影響は test で 7e-5〜4.9e-3）。評価の経路は変えず、全 run と前例に一様にかかるものとして記録した

@@ -1,0 +1,1545 @@
+{
+ "task_id": "T-2026-11-07-dtower-rerun",
+ "runs_done": 7,
+ "runs_expected": 20,
+ "extra_runs": [],
+ "runs_not_done": [
+  {
+   "point": 12,
+   "fold": "C",
+   "seed": 123,
+   "name": "dtowerrerun_p12_dcoco_foldC_seed123"
+  },
+  {
+   "point": 12,
+   "fold": "D",
+   "seed": 123,
+   "name": "dtowerrerun_p12_dcoco_foldD_seed123"
+  },
+  {
+   "point": 12,
+   "fold": "E",
+   "seed": 123,
+   "name": "dtowerrerun_p12_dcoco_foldE_seed123"
+  },
+  {
+   "point": 0,
+   "fold": "A",
+   "seed": 42,
+   "name": "dtowerrerun_p00_dcoco_foldA_seed42"
+  },
+  {
+   "point": 0,
+   "fold": "A",
+   "seed": 123,
+   "name": "dtowerrerun_p00_dcoco_foldA_seed123"
+  },
+  {
+   "point": 0,
+   "fold": "B",
+   "seed": 42,
+   "name": "dtowerrerun_p00_dcoco_foldB_seed42"
+  },
+  {
+   "point": 0,
+   "fold": "B",
+   "seed": 123,
+   "name": "dtowerrerun_p00_dcoco_foldB_seed123"
+  },
+  {
+   "point": 0,
+   "fold": "C",
+   "seed": 42,
+   "name": "dtowerrerun_p00_dcoco_foldC_seed42"
+  },
+  {
+   "point": 0,
+   "fold": "C",
+   "seed": 123,
+   "name": "dtowerrerun_p00_dcoco_foldC_seed123"
+  },
+  {
+   "point": 0,
+   "fold": "D",
+   "seed": 42,
+   "name": "dtowerrerun_p00_dcoco_foldD_seed42"
+  },
+  {
+   "point": 0,
+   "fold": "D",
+   "seed": 123,
+   "name": "dtowerrerun_p00_dcoco_foldD_seed123"
+  },
+  {
+   "point": 0,
+   "fold": "E",
+   "seed": 42,
+   "name": "dtowerrerun_p00_dcoco_foldE_seed42"
+  },
+  {
+   "point": 0,
+   "fold": "E",
+   "seed": 123,
+   "name": "dtowerrerun_p00_dcoco_foldE_seed123"
+  }
+ ],
+ "seed_five_fold_mean": {
+  "12_42": 0.5333659205939725,
+  "12_123": null,
+  "0_42": null,
+  "0_123": null
+ },
+ "pooled_within_fold_seed_sd_available_folds": {
+  "12": {
+   "folds": [
+    "A",
+    "B"
+   ],
+   "pairs": 2,
+   "sd": 0.011086676598913502
+  },
+  "0": {
+   "folds": [],
+   "pairs": 0,
+   "sd": null
+  }
+ },
+ "records": {
+  "dtowerrerun_p12_dcoco_foldA_seed42": {
+   "name": "dtowerrerun_p12_dcoco_foldA_seed42",
+   "point": 12,
+   "fold": "A",
+   "seed": 42,
+   "status": "done",
+   "val_mAP": 0.7196251153088346,
+   "val_AP_target": 0.8044361925485836,
+   "val_AP_negative": 0.6781756533491893,
+   "train_mAP": 0.8405858198545687,
+   "train_val_mAP_gap": 0.12096070454573415,
+   "best_epoch": 12,
+   "epochs_completed": 17,
+   "reached_epoch_cap": false,
+   "decayed_epoch": 11,
+   "stopped_epoch": 16,
+   "best_epoch_val_mAP_during_training": 0.7201416785007466,
+   "best_epoch_AP_target_during_training": 0.8050986332209709,
+   "last_epoch_val_mAP": 0.7135664884636186,
+   "last_epoch_AP_target": 0.7934868787010376,
+   "warmup_first_step_at_target": 802,
+   "steps_in_epoch0": 802,
+   "steps_per_epoch": [
+    802,
+    802
+   ],
+   "total_updates_rank0": 13634,
+   "frames_per_step": [
+    6
+   ],
+   "batch_sampler_batch_size": [
+    6,
+    6
+   ],
+   "weight_decay_config": 0.0010105798004987532,
+   "lr_config": 0.000307,
+   "max_norm_config": 0.059,
+   "groups": [
+    [
+     0.000307,
+     0.0010105798004987532
+    ],
+    [
+     3.07e-05,
+     0.0010105798004987532
+    ],
+    [
+     3.07e-05,
+     0.0
+    ],
+    [
+     3.07e-05,
+     0.0010105798004987532
+    ],
+    [
+     3.07e-05,
+     0.0
+    ],
+    [
+     0.000307,
+     0.0
+    ]
+   ],
+   "max_norm_seen": 0.059,
+   "gradient_norm_quantiles_5_50_95": [
+    34.394866943359375,
+    51.184906005859375,
+    80.36083221435547
+   ],
+   "gradient_nonfinite_steps": 13,
+   "clipping_fraction": 0.999119847440223,
+   "train_seconds_per_epoch_rank0": [
+    781.6248729433864,
+    782.9481315268204,
+    788.8090079938993,
+    785.7362197581679,
+    787.5561624215916,
+    787.2478412594646,
+    785.5478303842247,
+    791.7863692464307,
+    790.7278034240007,
+    790.0053690262139,
+    792.5507152732462,
+    794.1792495604604,
+    789.9365219883621,
+    792.9860291397199,
+    793.0282315015793,
+    793.076464808546,
+    793.6354871187359
+   ],
+   "eval_seconds_per_epoch": [
+    53.08281755447388,
+    53.97751426696777,
+    53.96560597419739,
+    53.16934943199158,
+    54.20604467391968,
+    55.327770948410034,
+    55.288727045059204,
+    57.29860186576843,
+    57.171969413757324,
+    57.922932386398315,
+    59.190961599349976,
+    59.525121212005615,
+    59.80975270271301,
+    58.949156761169434,
+    60.22608208656311,
+    60.36603760719299,
+    60.37477445602417
+   ],
+   "peak_memory_bytes_per_rank": {
+    "0": 38026177024,
+    "1": 38681872384
+   },
+   "train_wall": {
+    "start_utc": "2026-11-07T11:05:51Z",
+    "end_utc": "2026-11-07T15:07:21Z",
+    "wall_seconds": 14490.04813694954,
+    "returncode": 0
+   },
+   "eval_timing": {
+    "val": 120.0007631778717,
+    "train": 600.0021023750305,
+    "test": 270.00122356414795
+   },
+   "test_access": {
+    "run": "dtowerrerun_p12_dcoco_foldA_seed42",
+    "evaluations": 1,
+    "start_utc": "2026-11-07T15:19:51Z",
+    "end_utc": "2026-11-07T15:24:21Z",
+    "videos": [
+     "04",
+     "05",
+     "07"
+    ],
+    "checkpoint": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-07-dtower-rerun/runs/dtowerrerun_p12_dcoco_foldA_seed42/best_ap.pth"
+   },
+   "videos_read_in_training": [
+    "01",
+    "02",
+    "03",
+    "06",
+    "08",
+    "09",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15"
+   ],
+   "test_mAP": 0.5140285941561032,
+   "per_video_val": {
+    "09": 0.7004126230024695,
+    "10": 0.642447931694366
+   },
+   "per_video_test": {
+    "04": 0.3574439817850903,
+    "05": 0.6250706248315748,
+    "07": 0.5053603899163619
+   },
+   "checkpoint": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-07-dtower-rerun/runs/dtowerrerun_p12_dcoco_foldA_seed42/best_ap.pth"
+  },
+  "dtowerrerun_p12_dcoco_foldA_seed123": {
+   "name": "dtowerrerun_p12_dcoco_foldA_seed123",
+   "point": 12,
+   "fold": "A",
+   "seed": 123,
+   "status": "done",
+   "val_mAP": 0.7366459467296478,
+   "val_AP_target": 0.8232531043251893,
+   "val_AP_negative": 0.6875247071324495,
+   "train_mAP": 0.8481519587538984,
+   "train_val_mAP_gap": 0.11150601202425059,
+   "best_epoch": 13,
+   "epochs_completed": 18,
+   "reached_epoch_cap": false,
+   "decayed_epoch": 10,
+   "stopped_epoch": 17,
+   "best_epoch_val_mAP_during_training": 0.7364674880419826,
+   "best_epoch_AP_target_during_training": 0.8235005432760112,
+   "last_epoch_val_mAP": 0.7158543715894135,
+   "last_epoch_AP_target": 0.7824803562190649,
+   "warmup_first_step_at_target": 802,
+   "steps_in_epoch0": 802,
+   "steps_per_epoch": [
+    802,
+    802
+   ],
+   "total_updates_rank0": 14436,
+   "frames_per_step": [
+    6
+   ],
+   "batch_sampler_batch_size": [
+    6,
+    6
+   ],
+   "weight_decay_config": 0.0010105798004987532,
+   "lr_config": 0.000307,
+   "max_norm_config": 0.059,
+   "groups": [
+    [
+     0.000307,
+     0.0010105798004987532
+    ],
+    [
+     3.07e-05,
+     0.0010105798004987532
+    ],
+    [
+     3.07e-05,
+     0.0
+    ],
+    [
+     3.07e-05,
+     0.0010105798004987532
+    ],
+    [
+     3.07e-05,
+     0.0
+    ],
+    [
+     0.000307,
+     0.0
+    ]
+   ],
+   "max_norm_seen": 0.059,
+   "gradient_norm_quantiles_5_50_95": [
+    33.293715476989746,
+    49.53278732299805,
+    76.7541820526123
+   ],
+   "gradient_nonfinite_steps": 12,
+   "clipping_fraction": 0.9992380160709338,
+   "train_seconds_per_epoch_rank0": [
+    783.6594456974417,
+    783.7279908694327,
+    788.2757004071027,
+    787.8268504785374,
+    787.7277595093474,
+    789.3568614376709,
+    788.4802277786657,
+    788.4204777870327,
+    791.6894374061376,
+    792.3936654226854,
+    793.4813149282709,
+    792.3264107303694,
+    792.3918071174994,
+    791.4481250168756,
+    797.7652003150433,
+    791.9542367784306,
+    791.829633615911,
+    795.6102647185326
+   ],
+   "eval_seconds_per_epoch": [
+    52.9307541847229,
+    52.354798793792725,
+    53.095104932785034,
+    53.00851821899414,
+    53.4329514503479,
+    54.43949007987976,
+    54.5858371257782,
+    55.62317728996277,
+    55.96817350387573,
+    57.91246509552002,
+    58.19341969490051,
+    59.129271268844604,
+    58.71985697746277,
+    59.30662298202515,
+    59.69638538360596,
+    60.83438324928284,
+    59.78803467750549,
+    60.33584475517273
+   ],
+   "peak_memory_bytes_per_rank": {
+    "0": 38732411904,
+    "1": 38035283456
+   },
+   "train_wall": {
+    "start_utc": "2026-11-08T10:25:52Z",
+    "end_utc": "2026-11-08T14:41:22Z",
+    "wall_seconds": 15330.050250291824,
+    "returncode": 0
+   },
+   "eval_timing": {
+    "val": 120.0011088848114,
+    "train": 600.0021095275879,
+    "test": 270.0012843608856
+   },
+   "test_access": {
+    "run": "dtowerrerun_p12_dcoco_foldA_seed123",
+    "evaluations": 1,
+    "start_utc": "2026-11-08T14:53:52Z",
+    "end_utc": "2026-11-08T14:58:22Z",
+    "videos": [
+     "04",
+     "05",
+     "07"
+    ],
+    "checkpoint": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-07-dtower-rerun/runs/dtowerrerun_p12_dcoco_foldA_seed123/best_ap.pth"
+   },
+   "videos_read_in_training": [
+    "01",
+    "02",
+    "03",
+    "06",
+    "08",
+    "09",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15"
+   ],
+   "test_mAP": 0.5132048234244332,
+   "per_video_val": {
+    "09": 0.7038495379764664,
+    "10": 0.6532728779795511
+   },
+   "per_video_test": {
+    "04": 0.33343640440555455,
+    "05": 0.6223021353086011,
+    "07": 0.5181016361596362
+   },
+   "checkpoint": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-07-dtower-rerun/runs/dtowerrerun_p12_dcoco_foldA_seed123/best_ap.pth"
+  },
+  "dtowerrerun_p12_dcoco_foldB_seed42": {
+   "name": "dtowerrerun_p12_dcoco_foldB_seed42",
+   "point": 12,
+   "fold": "B",
+   "seed": 42,
+   "status": "done",
+   "val_mAP": 0.47550934444327253,
+   "val_AP_target": 0.4900046103604324,
+   "val_AP_negative": 0.625057972877569,
+   "train_mAP": 0.8618127105265072,
+   "train_val_mAP_gap": 0.3863033660832347,
+   "best_epoch": 17,
+   "epochs_completed": 22,
+   "reached_epoch_cap": false,
+   "decayed_epoch": 14,
+   "stopped_epoch": 21,
+   "best_epoch_val_mAP_during_training": 0.47524573984601437,
+   "best_epoch_AP_target_during_training": 0.48996450371169037,
+   "last_epoch_val_mAP": 0.4630232780301451,
+   "last_epoch_AP_target": 0.47391521605342835,
+   "warmup_first_step_at_target": 805,
+   "steps_in_epoch0": 805,
+   "steps_per_epoch": [
+    805,
+    805
+   ],
+   "total_updates_rank0": 17710,
+   "frames_per_step": [
+    6
+   ],
+   "batch_sampler_batch_size": [
+    6,
+    6
+   ],
+   "weight_decay_config": 0.0010068136645962733,
+   "lr_config": 0.000307,
+   "max_norm_config": 0.059,
+   "groups": [
+    [
+     0.000307,
+     0.0010068136645962733
+    ],
+    [
+     3.07e-05,
+     0.0010068136645962733
+    ],
+    [
+     3.07e-05,
+     0.0
+    ],
+    [
+     3.07e-05,
+     0.0010068136645962733
+    ],
+    [
+     3.07e-05,
+     0.0
+    ],
+    [
+     0.000307,
+     0.0
+    ]
+   ],
+   "max_norm_seen": 0.059,
+   "gradient_norm_quantiles_5_50_95": [
+    33.81395950317383,
+    48.62673568725586,
+    75.31028289794924
+   ],
+   "gradient_nonfinite_steps": 13,
+   "clipping_fraction": 0.9992659514398645,
+   "train_seconds_per_epoch_rank0": [
+    786.5858264015988,
+    785.2417637677863,
+    790.7629507463425,
+    788.309251579456,
+    788.1395334098488,
+    789.6420286353678,
+    788.2967344177887,
+    793.1578458631411,
+    791.8970753792673,
+    790.4020054414868,
+    796.0934171173722,
+    797.3188629969954,
+    793.0823449250311,
+    793.9431244051084,
+    796.2015753611922,
+    795.879814574495,
+    795.8327984521165,
+    795.2366662025452,
+    793.4953184723854,
+    793.4406978152692,
+    795.8793318644166,
+    793.7306954963133
+   ],
+   "eval_seconds_per_epoch": [
+    65.34852886199951,
+    65.08590483665466,
+    65.34538245201111,
+    65.08129906654358,
+    64.6431097984314,
+    67.65626382827759,
+    67.35078763961792,
+    68.61465239524841,
+    69.30878615379333,
+    69.34936428070068,
+    71.42560291290283,
+    70.63813924789429,
+    71.46723771095276,
+    73.18098068237305,
+    72.25674271583557,
+    72.98389983177185,
+    73.99804592132568,
+    72.71452450752258,
+    74.94835090637207,
+    74.94778490066528,
+    74.94414448738098,
+    75.09825658798218
+   ],
+   "peak_memory_bytes_per_rank": {
+    "0": 38029850624,
+    "1": 38725581824
+   },
+   "train_wall": {
+    "start_utc": "2026-11-07T15:24:22Z",
+    "end_utc": "2026-11-07T20:42:22Z",
+    "wall_seconds": 19080.06213068962,
+    "returncode": 0
+   },
+   "eval_timing": {
+    "val": 120.00123715400696,
+    "train": 600.0024693012238,
+    "test": 270.0011694431305
+   },
+   "test_access": {
+    "run": "dtowerrerun_p12_dcoco_foldB_seed42",
+    "evaluations": 1,
+    "start_utc": "2026-11-07T20:54:52Z",
+    "end_utc": "2026-11-07T20:59:22Z",
+    "videos": [
+     "01",
+     "03",
+     "14"
+    ],
+    "checkpoint": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-07-dtower-rerun/runs/dtowerrerun_p12_dcoco_foldB_seed42/best_ap.pth"
+   },
+   "videos_read_in_training": [
+    "02",
+    "04",
+    "05",
+    "06",
+    "07",
+    "08",
+    "09",
+    "10",
+    "11",
+    "12",
+    "13",
+    "15"
+   ],
+   "test_mAP": 0.41482994310089777,
+   "per_video_val": {
+    "02": 0.6231719225664908,
+    "08": 0.43959240515253034
+   },
+   "per_video_test": {
+    "01": 0.6514633699169582,
+    "03": 0.34707166927702304,
+    "14": 0.3141700296742642
+   },
+   "checkpoint": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-07-dtower-rerun/runs/dtowerrerun_p12_dcoco_foldB_seed42/best_ap.pth"
+  },
+  "dtowerrerun_p12_dcoco_foldB_seed123": {
+   "name": "dtowerrerun_p12_dcoco_foldB_seed123",
+   "point": 12,
+   "fold": "B",
+   "seed": 123,
+   "status": "done",
+   "val_mAP": 0.4897202166818032,
+   "val_AP_target": 0.4755590118932516,
+   "val_AP_negative": 0.644302696180725,
+   "train_mAP": 0.8367647846020468,
+   "train_val_mAP_gap": 0.34704456792024363,
+   "best_epoch": 10,
+   "epochs_completed": 15,
+   "reached_epoch_cap": false,
+   "decayed_epoch": 9,
+   "stopped_epoch": 14,
+   "best_epoch_val_mAP_during_training": 0.4901871453211778,
+   "best_epoch_AP_target_during_training": 0.4774933058320873,
+   "last_epoch_val_mAP": 0.4862530052823779,
+   "last_epoch_AP_target": 0.4782833128959069,
+   "warmup_first_step_at_target": 805,
+   "steps_in_epoch0": 805,
+   "steps_per_epoch": [
+    805,
+    805
+   ],
+   "total_updates_rank0": 12075,
+   "frames_per_step": [
+    6
+   ],
+   "batch_sampler_batch_size": [
+    6,
+    6
+   ],
+   "weight_decay_config": 0.0010068136645962733,
+   "lr_config": 0.000307,
+   "max_norm_config": 0.059,
+   "groups": [
+    [
+     0.000307,
+     0.0010068136645962733
+    ],
+    [
+     3.07e-05,
+     0.0010068136645962733
+    ],
+    [
+     3.07e-05,
+     0.0
+    ],
+    [
+     3.07e-05,
+     0.0010068136645962733
+    ],
+    [
+     3.07e-05,
+     0.0
+    ],
+    [
+     0.000307,
+     0.0
+    ]
+   ],
+   "max_norm_seen": 0.059,
+   "gradient_norm_quantiles_5_50_95": [
+    34.084473037719725,
+    50.224931716918945,
+    77.40705108642578
+   ],
+   "gradient_nonfinite_steps": 11,
+   "clipping_fraction": 0.9990890269151139,
+   "train_seconds_per_epoch_rank0": [
+    784.6788960201666,
+    785.4845559047535,
+    790.7536410903558,
+    789.4588654413819,
+    790.5755953108892,
+    790.0937462588772,
+    792.7042041253299,
+    790.6014204919338,
+    795.6220235284418,
+    792.9485216541216,
+    795.5836098371074,
+    791.4583336487412,
+    796.0817307876423,
+    794.5508119370788,
+    798.4573427410796
+   ],
+   "eval_seconds_per_epoch": [
+    65.46075940132141,
+    64.05593228340149,
+    65.82359647750854,
+    65.8365433216095,
+    67.05509519577026,
+    67.87534427642822,
+    68.7943639755249,
+    69.47184371948242,
+    71.61430764198303,
+    72.07924914360046,
+    72.07961559295654,
+    72.75995588302612,
+    73.9688708782196,
+    74.92609071731567,
+    74.53977584838867
+   ],
+   "peak_memory_bytes_per_rank": {
+    "0": 38721912832,
+    "1": 38027214848
+   },
+   "train_wall": {
+    "start_utc": "2026-11-08T14:58:22Z",
+    "end_utc": "2026-11-08T18:35:22Z",
+    "wall_seconds": 13020.042293310165,
+    "returncode": 0
+   },
+   "eval_timing": {
+    "val": 120.00083684921265,
+    "train": 600.0022222995758,
+    "test": 270.0015387535095
+   },
+   "test_access": {
+    "run": "dtowerrerun_p12_dcoco_foldB_seed123",
+    "evaluations": 1,
+    "start_utc": "2026-11-08T18:47:52Z",
+    "end_utc": "2026-11-08T18:52:22Z",
+    "videos": [
+     "01",
+     "03",
+     "14"
+    ],
+    "checkpoint": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-07-dtower-rerun/runs/dtowerrerun_p12_dcoco_foldB_seed123/best_ap.pth"
+   },
+   "videos_read_in_training": [
+    "02",
+    "04",
+    "05",
+    "06",
+    "07",
+    "08",
+    "09",
+    "10",
+    "11",
+    "12",
+    "13",
+    "15"
+   ],
+   "test_mAP": 0.4433517295225232,
+   "per_video_val": {
+    "02": 0.6330246433462492,
+    "08": 0.46996910781422124
+   },
+   "per_video_test": {
+    "01": 0.7158605068066743,
+    "03": 0.3563791660130372,
+    "14": 0.3147443078394999
+   },
+   "checkpoint": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-07-dtower-rerun/runs/dtowerrerun_p12_dcoco_foldB_seed123/best_ap.pth"
+  },
+  "dtowerrerun_p12_dcoco_foldC_seed42": {
+   "name": "dtowerrerun_p12_dcoco_foldC_seed42",
+   "point": 12,
+   "fold": "C",
+   "seed": 42,
+   "status": "done",
+   "val_mAP": 0.44277074165260766,
+   "val_AP_target": 0.5353496851190982,
+   "val_AP_negative": 0.5068293267015456,
+   "train_mAP": 0.8494577369110923,
+   "train_val_mAP_gap": 0.4066869952584846,
+   "best_epoch": 11,
+   "epochs_completed": 16,
+   "reached_epoch_cap": false,
+   "decayed_epoch": 9,
+   "stopped_epoch": 15,
+   "best_epoch_val_mAP_during_training": 0.4424438213991047,
+   "best_epoch_AP_target_during_training": 0.5350327614088186,
+   "last_epoch_val_mAP": 0.4277334037768076,
+   "last_epoch_AP_target": 0.523789400846722,
+   "warmup_first_step_at_target": 894,
+   "steps_in_epoch0": 894,
+   "steps_per_epoch": [
+    894,
+    894
+   ],
+   "total_updates_rank0": 14304,
+   "frames_per_step": [
+    6
+   ],
+   "batch_sampler_batch_size": [
+    6,
+    6
+   ],
+   "weight_decay_config": 0.0009065827740492169,
+   "lr_config": 0.000307,
+   "max_norm_config": 0.059,
+   "groups": [
+    [
+     0.000307,
+     0.0009065827740492169
+    ],
+    [
+     3.07e-05,
+     0.0009065827740492169
+    ],
+    [
+     3.07e-05,
+     0.0
+    ],
+    [
+     3.07e-05,
+     0.0009065827740492169
+    ],
+    [
+     3.07e-05,
+     0.0
+    ],
+    [
+     0.000307,
+     0.0
+    ]
+   ],
+   "max_norm_seen": 0.059,
+   "gradient_norm_quantiles_5_50_95": [
+    33.2268669128418,
+    49.223445892333984,
+    76.29751281738281
+   ],
+   "gradient_nonfinite_steps": 11,
+   "clipping_fraction": 0.9993008948545862,
+   "train_seconds_per_epoch_rank0": [
+    870.5266707809642,
+    873.6085125282407,
+    877.1570657482371,
+    873.4387233313173,
+    875.2195630362257,
+    876.781081748195,
+    877.178610201925,
+    880.1369979484007,
+    877.1941727269441,
+    882.469061087817,
+    882.6934347618371,
+    879.7309427075088,
+    882.6191351031885,
+    884.3804808910936,
+    885.3177094757557,
+    882.666819203645
+   ],
+   "eval_seconds_per_epoch": [
+    70.02751088142395,
+    69.73718523979187,
+    69.22648000717163,
+    70.60836744308472,
+    72.91593098640442,
+    73.81518411636353,
+    74.69474840164185,
+    76.37769746780396,
+    77.9849066734314,
+    77.72840666770935,
+    77.24302315711975,
+    78.38321733474731,
+    79.03789615631104,
+    79.43746304512024,
+    79.76412510871887,
+    80.74479150772095
+   ],
+   "peak_memory_bytes_per_rank": {
+    "0": 38041350144,
+    "1": 38703932416
+   },
+   "train_wall": {
+    "start_utc": "2026-11-07T20:59:22Z",
+    "end_utc": "2026-11-08T01:15:22Z",
+    "wall_seconds": 15360.049258947372,
+    "returncode": 0
+   },
+   "eval_timing": {
+    "val": 150.00084042549133,
+    "train": 660.0025770664215,
+    "test": 180.00111317634583
+   },
+   "test_access": {
+    "run": "dtowerrerun_p12_dcoco_foldC_seed42",
+    "evaluations": 1,
+    "start_utc": "2026-11-08T01:29:22Z",
+    "end_utc": "2026-11-08T01:32:22Z",
+    "videos": [
+     "02",
+     "08",
+     "11"
+    ],
+    "checkpoint": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-07-dtower-rerun/runs/dtowerrerun_p12_dcoco_foldC_seed42/best_ap.pth"
+   },
+   "videos_read_in_training": [
+    "01",
+    "03",
+    "04",
+    "05",
+    "06",
+    "07",
+    "09",
+    "10",
+    "12",
+    "13",
+    "14",
+    "15"
+   ],
+   "test_mAP": 0.4888533894057257,
+   "per_video_val": {
+    "06": 0.4646568686329604,
+    "12": 0.340114324525171
+   },
+   "per_video_test": {
+    "02": 0.6306986165989495,
+    "08": 0.42101269136653496,
+    "11": 0.5959059733875955
+   },
+   "checkpoint": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-07-dtower-rerun/runs/dtowerrerun_p12_dcoco_foldC_seed42/best_ap.pth"
+  },
+  "dtowerrerun_p12_dcoco_foldC_seed123": {
+   "name": "dtowerrerun_p12_dcoco_foldC_seed123",
+   "point": 12,
+   "fold": "C",
+   "seed": 123,
+   "status": "missing"
+  },
+  "dtowerrerun_p12_dcoco_foldD_seed42": {
+   "name": "dtowerrerun_p12_dcoco_foldD_seed42",
+   "point": 12,
+   "fold": "D",
+   "seed": 42,
+   "status": "done",
+   "val_mAP": 0.5062879069526125,
+   "val_AP_target": 0.7086117215383636,
+   "val_AP_negative": 0.5581371026240767,
+   "train_mAP": 0.8482971023942629,
+   "train_val_mAP_gap": 0.3420091954416504,
+   "best_epoch": 12,
+   "epochs_completed": 17,
+   "reached_epoch_cap": false,
+   "decayed_epoch": 9,
+   "stopped_epoch": 16,
+   "best_epoch_val_mAP_during_training": 0.5065326626500117,
+   "best_epoch_AP_target_during_training": 0.7090242515996379,
+   "last_epoch_val_mAP": 0.5000823134799868,
+   "last_epoch_AP_target": 0.7002522581494952,
+   "warmup_first_step_at_target": 851,
+   "steps_in_epoch0": 851,
+   "steps_per_epoch": [
+    851,
+    851
+   ],
+   "total_updates_rank0": 14467,
+   "frames_per_step": [
+    6
+   ],
+   "batch_sampler_batch_size": [
+    6,
+    6
+   ],
+   "weight_decay_config": 0.000952391304347826,
+   "lr_config": 0.000307,
+   "max_norm_config": 0.059,
+   "groups": [
+    [
+     0.000307,
+     0.000952391304347826
+    ],
+    [
+     3.07e-05,
+     0.000952391304347826
+    ],
+    [
+     3.07e-05,
+     0.0
+    ],
+    [
+     3.07e-05,
+     0.000952391304347826
+    ],
+    [
+     3.07e-05,
+     0.0
+    ],
+    [
+     0.000307,
+     0.0
+    ]
+   ],
+   "max_norm_seen": 0.059,
+   "gradient_norm_quantiles_5_50_95": [
+    32.72826290130615,
+    49.116111755371094,
+    79.1529037475586
+   ],
+   "gradient_nonfinite_steps": 13,
+   "clipping_fraction": 0.9991014031934748,
+   "train_seconds_per_epoch_rank0": [
+    830.4246786097065,
+    830.9708544453606,
+    837.2112842267379,
+    836.9589482359588,
+    835.9772370234132,
+    836.8842818895355,
+    836.4698353968561,
+    840.2567178579047,
+    838.564906116575,
+    838.5852812016383,
+    847.3098161090165,
+    840.4650850454345,
+    842.0588409323245,
+    844.261402563192,
+    844.3378618201241,
+    843.6951935552061,
+    845.3711161846295
+   ],
+   "eval_seconds_per_epoch": [
+    90.07834529876709,
+    89.04465937614441,
+    88.73138928413391,
+    90.03587675094604,
+    93.91975021362305,
+    96.13460445404053,
+    96.31162524223328,
+    97.65013360977173,
+    97.92962718009949,
+    98.90095734596252,
+    100.37332010269165,
+    101.92550706863403,
+    102.17544984817505,
+    103.14436626434326,
+    103.75127792358398,
+    102.23403239250183,
+    103.4278302192688
+   ],
+   "peak_memory_bytes_per_rank": {
+    "0": 38034974720,
+    "1": 38707454464
+   },
+   "train_wall": {
+    "start_utc": "2026-11-08T01:32:22Z",
+    "end_utc": "2026-11-08T05:59:22Z",
+    "wall_seconds": 16020.054316282272,
+    "returncode": 0
+   },
+   "eval_timing": {
+    "val": 180.0008955001831,
+    "train": 630.0024316310883,
+    "test": 180.0015208721161
+   },
+   "test_access": {
+    "run": "dtowerrerun_p12_dcoco_foldD_seed42",
+    "evaluations": 1,
+    "start_utc": "2026-11-08T06:13:22Z",
+    "end_utc": "2026-11-08T06:16:22Z",
+    "videos": [
+     "06",
+     "13",
+     "15"
+    ],
+    "checkpoint": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-07-dtower-rerun/runs/dtowerrerun_p12_dcoco_foldD_seed42/best_ap.pth"
+   },
+   "videos_read_in_training": [
+    "01",
+    "02",
+    "03",
+    "04",
+    "05",
+    "07",
+    "08",
+    "09",
+    "10",
+    "11",
+    "12",
+    "14"
+   ],
+   "test_mAP": 0.56292614205869,
+   "per_video_val": {
+    "04": 0.3515123424652112,
+    "05": 0.6095175461647525
+   },
+   "per_video_test": {
+    "06": 0.4926681612922005,
+    "13": 0.5888781416288292,
+    "15": 0.5411810574616357
+   },
+   "checkpoint": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-07-dtower-rerun/runs/dtowerrerun_p12_dcoco_foldD_seed42/best_ap.pth"
+  },
+  "dtowerrerun_p12_dcoco_foldD_seed123": {
+   "name": "dtowerrerun_p12_dcoco_foldD_seed123",
+   "point": 12,
+   "fold": "D",
+   "seed": 123,
+   "status": "missing"
+  },
+  "dtowerrerun_p12_dcoco_foldE_seed42": {
+   "name": "dtowerrerun_p12_dcoco_foldE_seed42",
+   "point": 12,
+   "fold": "E",
+   "seed": 42,
+   "status": "done",
+   "val_mAP": 0.5226364946125351,
+   "val_AP_target": 0.6778409426769461,
+   "val_AP_negative": 0.4792722561465094,
+   "train_mAP": 0.7634241094215753,
+   "train_val_mAP_gap": 0.2407876148090402,
+   "best_epoch": 5,
+   "epochs_completed": 14,
+   "reached_epoch_cap": false,
+   "decayed_epoch": 9,
+   "stopped_epoch": 13,
+   "best_epoch_val_mAP_during_training": 0.5223220068223197,
+   "best_epoch_AP_target_during_training": 0.6766164758173666,
+   "last_epoch_val_mAP": 0.507257847318061,
+   "last_epoch_AP_target": 0.6829279823366253,
+   "warmup_first_step_at_target": 924,
+   "steps_in_epoch0": 924,
+   "steps_per_epoch": [
+    924,
+    924
+   ],
+   "total_updates_rank0": 12936,
+   "frames_per_step": [
+    6
+   ],
+   "batch_sampler_batch_size": [
+    6,
+    6
+   ],
+   "weight_decay_config": 0.0008771482683982684,
+   "lr_config": 0.000307,
+   "max_norm_config": 0.059,
+   "groups": [
+    [
+     0.000307,
+     0.0008771482683982684
+    ],
+    [
+     3.07e-05,
+     0.0008771482683982684
+    ],
+    [
+     3.07e-05,
+     0.0
+    ],
+    [
+     3.07e-05,
+     0.0008771482683982684
+    ],
+    [
+     3.07e-05,
+     0.0
+    ],
+    [
+     0.000307,
+     0.0
+    ]
+   ],
+   "max_norm_seen": 0.059,
+   "gradient_norm_quantiles_5_50_95": [
+    34.84860820770264,
+    51.989810943603516,
+    79.74413757324211
+   ],
+   "gradient_nonfinite_steps": 12,
+   "clipping_fraction": 0.9990723562152134,
+   "train_seconds_per_epoch_rank0": [
+    900.4596489518881,
+    900.8800409305841,
+    906.0233006598428,
+    904.0785169405863,
+    905.6416133344173,
+    906.7661423049867,
+    910.1328572081402,
+    909.4142062896863,
+    912.0323371496052,
+    916.09506786149,
+    912.0129551161081,
+    914.6731903776526,
+    915.5665852604434,
+    916.0924233710393
+   ],
+   "eval_seconds_per_epoch": [
+    75.71716165542603,
+    75.0245316028595,
+    74.75477075576782,
+    74.96555757522583,
+    79.04280090332031,
+    80.69662547111511,
+    80.86963486671448,
+    80.64481258392334,
+    83.15581941604614,
+    83.16192889213562,
+    85.36967253684998,
+    86.57874417304993,
+    87.13900852203369,
+    85.91203093528748
+   ],
+   "peak_memory_bytes_per_rank": {
+    "0": 38032826880,
+    "1": 38721783296
+   },
+   "train_wall": {
+    "start_utc": "2026-11-08T06:16:22Z",
+    "end_utc": "2026-11-08T10:08:52Z",
+    "wall_seconds": 13950.04365491867,
+    "returncode": 0
+   },
+   "eval_timing": {
+    "val": 150.0009617805481,
+    "train": 690.0026588439941,
+    "test": 150.00114178657532
+   },
+   "test_access": {
+    "run": "dtowerrerun_p12_dcoco_foldE_seed42",
+    "evaluations": 1,
+    "start_utc": "2026-11-08T10:23:22Z",
+    "end_utc": "2026-11-08T10:25:52Z",
+    "videos": [
+     "09",
+     "10",
+     "12"
+    ],
+    "checkpoint": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-07-dtower-rerun/runs/dtowerrerun_p12_dcoco_foldE_seed42/best_ap.pth"
+   },
+   "videos_read_in_training": [
+    "01",
+    "02",
+    "03",
+    "04",
+    "05",
+    "06",
+    "07",
+    "08",
+    "11",
+    "13",
+    "14",
+    "15"
+   ],
+   "test_mAP": 0.5789070429933292,
+   "per_video_val": {
+    "07": 0.5136859051693785,
+    "15": 0.506718697510445
+   },
+   "per_video_test": {
+    "09": 0.6915749093131792,
+    "10": 0.6203678788344787,
+    "12": 0.32744241474538427
+   },
+   "checkpoint": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-07-dtower-rerun/runs/dtowerrerun_p12_dcoco_foldE_seed42/best_ap.pth"
+  },
+  "dtowerrerun_p12_dcoco_foldE_seed123": {
+   "name": "dtowerrerun_p12_dcoco_foldE_seed123",
+   "point": 12,
+   "fold": "E",
+   "seed": 123,
+   "status": "missing"
+  },
+  "dtowerrerun_p00_dcoco_foldA_seed42": {
+   "name": "dtowerrerun_p00_dcoco_foldA_seed42",
+   "point": 0,
+   "fold": "A",
+   "seed": 42,
+   "status": "missing"
+  },
+  "dtowerrerun_p00_dcoco_foldA_seed123": {
+   "name": "dtowerrerun_p00_dcoco_foldA_seed123",
+   "point": 0,
+   "fold": "A",
+   "seed": 123,
+   "status": "missing"
+  },
+  "dtowerrerun_p00_dcoco_foldB_seed42": {
+   "name": "dtowerrerun_p00_dcoco_foldB_seed42",
+   "point": 0,
+   "fold": "B",
+   "seed": 42,
+   "status": "missing"
+  },
+  "dtowerrerun_p00_dcoco_foldB_seed123": {
+   "name": "dtowerrerun_p00_dcoco_foldB_seed123",
+   "point": 0,
+   "fold": "B",
+   "seed": 123,
+   "status": "missing"
+  },
+  "dtowerrerun_p00_dcoco_foldC_seed42": {
+   "name": "dtowerrerun_p00_dcoco_foldC_seed42",
+   "point": 0,
+   "fold": "C",
+   "seed": 42,
+   "status": "missing"
+  },
+  "dtowerrerun_p00_dcoco_foldC_seed123": {
+   "name": "dtowerrerun_p00_dcoco_foldC_seed123",
+   "point": 0,
+   "fold": "C",
+   "seed": 123,
+   "status": "missing"
+  },
+  "dtowerrerun_p00_dcoco_foldD_seed42": {
+   "name": "dtowerrerun_p00_dcoco_foldD_seed42",
+   "point": 0,
+   "fold": "D",
+   "seed": 42,
+   "status": "missing"
+  },
+  "dtowerrerun_p00_dcoco_foldD_seed123": {
+   "name": "dtowerrerun_p00_dcoco_foldD_seed123",
+   "point": 0,
+   "fold": "D",
+   "seed": 123,
+   "status": "missing"
+  },
+  "dtowerrerun_p00_dcoco_foldE_seed42": {
+   "name": "dtowerrerun_p00_dcoco_foldE_seed42",
+   "point": 0,
+   "fold": "E",
+   "seed": 42,
+   "status": "missing"
+  },
+  "dtowerrerun_p00_dcoco_foldE_seed123": {
+   "name": "dtowerrerun_p00_dcoco_foldE_seed123",
+   "point": 0,
+   "fold": "E",
+   "seed": 123,
+   "status": "missing"
+  }
+ },
+ "table": {
+  "12_A": {
+   "seed42": 0.7196251153088346,
+   "seed123": 0.7366459467296478,
+   "mean": 0.7281355310192412,
+   "seed_abs_diff": 0.01702083142081323,
+   "AP_target_mean": 0.8138446484368864
+  },
+  "0_A": {
+   "seed42": null,
+   "seed123": null,
+   "mean": null,
+   "seed_abs_diff": null,
+   "AP_target_mean": null
+  },
+  "12_B": {
+   "seed42": 0.47550934444327253,
+   "seed123": 0.4897202166818032,
+   "mean": 0.48261478056253787,
+   "seed_abs_diff": 0.01421087223853068,
+   "AP_target_mean": 0.48278181112684204
+  },
+  "0_B": {
+   "seed42": null,
+   "seed123": null,
+   "mean": null,
+   "seed_abs_diff": null,
+   "AP_target_mean": null
+  },
+  "12_C": {
+   "seed42": 0.44277074165260766,
+   "seed123": null,
+   "mean": null,
+   "seed_abs_diff": null,
+   "AP_target_mean": null
+  },
+  "0_C": {
+   "seed42": null,
+   "seed123": null,
+   "mean": null,
+   "seed_abs_diff": null,
+   "AP_target_mean": null
+  },
+  "12_D": {
+   "seed42": 0.5062879069526125,
+   "seed123": null,
+   "mean": null,
+   "seed_abs_diff": null,
+   "AP_target_mean": null
+  },
+  "0_D": {
+   "seed42": null,
+   "seed123": null,
+   "mean": null,
+   "seed_abs_diff": null,
+   "AP_target_mean": null
+  },
+  "12_E": {
+   "seed42": 0.5226364946125351,
+   "seed123": null,
+   "mean": null,
+   "seed_abs_diff": null,
+   "AP_target_mean": null
+  },
+  "0_E": {
+   "seed42": null,
+   "seed123": null,
+   "mean": null,
+   "seed_abs_diff": null,
+   "AP_target_mean": null
+  }
+ },
+ "difference_12_minus_0": {
+  "per_fold": {
+   "A": null,
+   "B": null,
+   "C": null,
+   "D": null,
+   "E": null
+  },
+  "ten_run_mean": null
+ },
+ "point_mean": {
+  "12": null,
+  "0": null
+ },
+ "point_n": {
+  "12": 7,
+  "0": 0
+ },
+ "pooled_within_fold_seed_sd": {
+  "12": null,
+  "0": null
+ },
+ "fold_A_vs_b6": {
+  "42": {
+   "rerun": 0.7196251153088346,
+   "b6_published": 0.7385,
+   "b6_full": 0.7384689855086581,
+   "diff_vs_b6_full": -0.018843870199823587,
+   "within_tie": false
+  },
+  "123": {
+   "rerun": 0.7366459467296478,
+   "b6_published": 0.7328,
+   "b6_full": 0.7328353118838492,
+   "diff_vs_b6_full": 0.0038106348457985773,
+   "within_tie": true
+  }
+ },
+ "tie_width": 0.0076,
+ "secondary_test": {
+  "12_42": {
+   "videos": [
+    "01",
+    "03",
+    "11",
+    "13",
+    "14"
+   ],
+   "pooled": {
+    "AP": 0.4354845117002228,
+    "images": 5388,
+    "annotations": 18006,
+    "detections": 1616400
+   },
+   "per_video": {
+    "01": 0.6571885911106377,
+    "03": 0.34707166927702304,
+    "11": 0.5959059733875955,
+    "13": 0.5888781416288292,
+    "14": 0.3141700296742642
+   },
+   "per_video_evaluator_gt": {
+    "01": 0.6514633699169582,
+    "03": 0.34707166927702304,
+    "11": 0.5959059733875955,
+    "13": 0.5888781416288292,
+    "14": 0.3141700296742642
+   }
+  },
+  "12_123": null,
+  "0_42": null,
+  "0_123": null
+ },
+ "pooling_identity_check": {
+  "dtowerrerun_p12_dcoco_foldA_seed42": {
+   "pooled_own_three": 0.5142559856169862,
+   "raw_gt_ann_ids_plus_1": 0.5142559856169862,
+   "diff": 0.0,
+   "exact": true,
+   "run_test_mAP": 0.5140285941561032,
+   "run_minus_shifted": -0.00022739146088290862
+  },
+  "dtowerrerun_p12_dcoco_foldA_seed123": {
+   "pooled_own_three": 0.5133815307675484,
+   "raw_gt_ann_ids_plus_1": 0.5133815307675484,
+   "diff": 0.0,
+   "exact": true,
+   "run_test_mAP": 0.5132048234244332,
+   "run_minus_shifted": -0.0001767073431152566
+  },
+  "dtowerrerun_p12_dcoco_foldB_seed42": {
+   "pooled_own_three": 0.41647898665199967,
+   "raw_gt_ann_ids_plus_1": 0.41647898665199967,
+   "diff": 0.0,
+   "exact": true,
+   "run_test_mAP": 0.41482994310089777,
+   "run_minus_shifted": -0.001649043551101903
+  },
+  "dtowerrerun_p12_dcoco_foldB_seed123": {
+   "pooled_own_three": 0.4449377069651964,
+   "raw_gt_ann_ids_plus_1": 0.4449377069651964,
+   "diff": 0.0,
+   "exact": true,
+   "run_test_mAP": 0.4433517295225232,
+   "run_minus_shifted": -0.001585977442673192
+  },
+  "dtowerrerun_p12_dcoco_foldC_seed42": {
+   "pooled_own_three": 0.48892414403853396,
+   "raw_gt_ann_ids_plus_1": 0.48892414403853396,
+   "diff": 0.0,
+   "exact": true,
+   "run_test_mAP": 0.4888533894057257,
+   "run_minus_shifted": -7.075463280825645e-05
+  },
+  "dtowerrerun_p12_dcoco_foldD_seed42": {
+   "pooled_own_three": 0.5677965547974737,
+   "raw_gt_ann_ids_plus_1": 0.5677965547974737,
+   "diff": 0.0,
+   "exact": true,
+   "run_test_mAP": 0.56292614205869,
+   "run_minus_shifted": -0.004870412738783747
+  },
+  "dtowerrerun_p12_dcoco_foldE_seed42": {
+   "pooled_own_three": 0.5791809322077069,
+   "raw_gt_ann_ids_plus_1": 0.5791809322077069,
+   "diff": 0.0,
+   "exact": true,
+   "run_test_mAP": 0.5789070429933292,
+   "run_minus_shifted": -0.0002738892143777649
+  }
+ },
+ "reference_r2_seed42_val_mAP": {
+  "A": 0.7273450248398429,
+  "B": 0.4556529799606346,
+  "C": 0.4339169971657927,
+  "D": 0.5116990234460894,
+  "E": 0.5311553079337102
+ },
+ "selection": "none (prereg \u00a73)"
+}

@@ -1,0 +1,77 @@
+result_version: 3
+task_id: "T-2026-11-07-dtower-rerun"
+status: partial
+host: "andrew"
+branch: "feat/dtower-rerun"
+pr: 305
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "分岐 feat/dtower-rerun、起点 origin/phase0 a68672f1、PR 294・299 の内容が起点に在る。prereg の commit df18070d（2026-11-07T10:13:18Z）は最初の学習（11:05:51Z）の前。カードは五版（四版の写しで rc 1）。入力 25 件の sha256 が一致（1 バイト変えた写しで不一致 1）。5 折りの動画の集合が規約の表と一致（test を混ぜた写しで不一致 1）。compute プロセス 0 件（対照 1/0/0）。空き 1.62 TB ≥ 見込み 66.5 GB の 2 倍"}
+  - {id: G2, verdict: pass, note: "各 5 歩の対照で、12 番・0 番とも optimizer の 6 群と DataLoader の batch 6 が水準の値になった。changed（batch 3、lr 2e-4、wd 5e-4、max_norm 0.07）で値が変わり、wd_mismatch と batch_mismatch は rc 1 で止まり、default は batch 2・lr 1e-4・wd 1e-4 のまま。実測の 1 epoch の歩数 A 802・B 805・C 894・D 851・E 924 から weight decay を換算。coco_missing は起動で止まる"}
+  - {id: G3, verdict: ask, note: "on_fail ask。利用者の決定で 7 本目の後に止め、Task D を完了した run だけで行うことになった。完了した 7 本（12 番 seed 42 の A〜E、seed 123 の A・B）は学習 rc 0、損失の非数 0 件、GPU の記憶の溢れ 0 件、7 本とも load pretrained from と initialization の matched true（sha 2d2c19a7…）が在る。利用者の決定で 7 本目の後に止めたため、20 本の完了は満たさない（13 本は未実施）"}
+
+tests:
+  before_failed: 7
+  after_failed: 7
+  after_passed: 989
+
+deviations:
+  - {type: judgement, note: "利用者の決定で 14〜15/20 本で停止、と指示を受けたが、同じ指示の『進行中の #7 が終わった所で止める』と同時には成り立たないため止める位置を確かめ、利用者の選択により #7（12 番 seed 123 の折り B）の後、7/20 本で停止した。残りの 13 本（12 番 seed 123 の C・D・E、0 番 seed 42 の A〜E、0 番 seed 123 の A〜E）は続きの契約で回す。checkpoint と記録は保存先に残した"}
+  - {type: judgement, note: "実行器に『今の run の後で止める』口が無いため、次の run（dtowerrerun_p12_dcoco_foldC_seed123）の作業フォルダを $STORE/runs/ に空で先に作った。#7 の評価と写しの後、実行器は #8 の work.mkdir(exist_ok=False) で FileExistsError を出し、GPU の確かめと起動の前に終わった。空のフォルダは残した"}
+  - {type: judgement, note: "Task B-5 で評価の包みの test の口を確かめるため、前例（PR 299、test を使わない契約）の b6 seed 42 の checkpoint で折り A の test を一度評価した（AP 0.5099）。本契約の腕ではなく、判定・選定・表のどれにも使わない。本来は本契約の run の中で確かめるべきだった"}
+  - {type: judgement, note: "集計の道具 summarize.py を学習の途中と後に直した。(1) 1 本目の試しでプールの恒等性が 2.3e-4 ずれ、原因が注釈 id 0 の pycocotools の扱いと分かったので、恒等性を『注釈の id を +1 ずらした生の GT での値』との完全一致に改め、副次の test は id を振り直した評価で出す（評価器の GT の動画ごとの値も並べる）。(2) 停止の決定を受け、揃わない所（2 seed が揃わない折りの平均、10 本の平均、5 折りの seed 間の SD）を UNKNOWN にし、揃った所の記述（5 折りが揃った seed の平均、揃った折りの対だけからの SD）と回していない run の一覧を足した。各 run の評価器の値は変えていない"}
+  - {type: spec_defect, note: "学習の設定は Search never evaluates test で test を拒み、評価の道具 scripts/eval_relation_detr_map.py は動画ごとの値を出さない。包み tools/eval_dump.py で evaluate_acc を差し替えて評価器の集約済みの予測から動画ごとの COCO の値と予測を書き、test は評価の道具の --split test で評価した。既存のファイルは変えていない（val の値は前例と全桁で一致、計算し直しとの差 0.0）"}
+  - {type: environment, note: "学習の最中（2026-11-08T01:45:54Z）に、前例の道具 experiments/analysis/dtower_batch_search/tools/*.py の 10 件（追跡下）が作業ツリーから消えた。.stignore の !experiments/**/*.py で Syncthing が全台に配るため、別の台での削除が届いたと見ている（他の台には接続していない）。利用者の指示で HEAD の blob から戻し（2026-11-08T11:15:55Z）、10 件とも sha256 が HEAD と origin/phase0 の blob に一致。削除も復元も PR の差分に入れていない（commit の前の git status で追跡ファイルの削除・変更 0 件）。学習はこの場所を読まない"}
+  - {type: environment, note: "同期で届いた別の契約の未追跡 experiments/analysis/grasp_cards_survey/tools/*.py 8 件（2026-11-08T11:07Z〜）で make forbidden-check が violations 8 で fail。本契約の経路の違反は 0 件。8 件は消さず、無視の一覧にも足していない"}
+  - {type: environment, note: "make runindex の検証 C5 が FAIL（value 空欄と is_nan が食い違う行 51、すべて phase1__grasppilot2_G_H1・G_H2・G_all）。本契約の行は 0。作り直しは同期で届いた統合前の別の契約の run（phase1__grasparms_* など 17 件）も拾った。利用者の決定で、前例どおり作り直した runindex 全体を commit した"}
+  - {type: environment, note: "task-start を止めた同期の 2 件（bengio の T-2026-11-06-grasp-pilot-d-rerun の生成物）について、利用者の指示で 2 つのフォルダを .git/info/exclude の 20・21 行に書いた。戻すかは報告の後に利用者に確かめる"}
+  - {type: environment, note: "事後の評価の時間（val・train・test）は実行器の 30 秒ごとの見回りで測ったため 30 秒刻みでしか分からない"}
+
+issuer_defects:
+  - {type: asserted_without_measuring, note: "prereg §2.1 の 0 番の weight decay 3.0e-4 は、S を揃える定義（S ÷ (学習率 × 20 × 802)）から出る 2.998753e-4 を丸めた値で、S が 0.04 % ずれる。利用者の決定で学習の前に改訂（meta.amendments）"}
+  - {type: asserted_without_measuring, note: "meta.created_from は runindex_commit 68befc3b・counts {2363, 1130, 1736} で、起票時の phase0 の runindex（d3e319ac・{2623, 1305, 1947}）を測っていない。L2-8 の WARN の原因。改訂（meta.amendments）"}
+  - {type: asserted_without_measuring, note: "prereg §2.3 は動画ごとの val mAP を測る量に置き、§2.4 は動画ごとの test を求めるが、inputs.code の評価の道具 eval_relation_detr_map.py は動画ごとの値を出さない。口の在りかを読まずに書いている"}
+  - {type: asserted_without_measuring, note: "SPEC Task C-2 は各 run の checkpoint で test を評価すると書くが、学習の設定 train_search.py は Search never evaluates test で test を拒む。評価の道具の --split test を使うことは書かれていない"}
+
+positive_controls:
+  - {judgement: "a: P13 が対称性の表の UNKNOWN を検出する", breaking_input: "prereg の写しの『数値精度』の行の判定を UNKNOWN にする", observed: "FAIL（26 行を検査。UNKNOWN 1 行: 数値精度）。本物は PASS"}
+  - {judgement: "a: P14 がカードの不在を検出する", breaking_input: "intent.proposal_card を docs/proposals/zzz_no_such_card.md にした spec", observed: "FAIL（提案カードが無い）。本物は PASS"}
+  - {judgement: "b: カードの版の検査が四版を拒む", breaking_input: "最初の『版: 五版』を四版にした写し", observed: "version=四版、rc 1（本物は五版、rc 0）"}
+  - {judgement: "b: プロセスの列挙が実行ファイルと引数の完全一致で働く", breaking_input: "自分のシェルから起こした bash -c 'sleep 25; true' probe_self_marker_7741。部分一致 probe_self_marker_774。存在しない /nonexistent/zzz_no_such_exe", observed: "1 件・0 件・0 件"}
+  - {judgement: "c: 入力の sha256 の照合が変化を検出する", breaking_input: "折り C の instances_val.json の末尾に 1 バイト足した写しを --override で読ませる", observed: "不一致 1、rc 1"}
+  - {judgement: "c: 動画の集合の照合が test の混入を検出する", breaking_input: "check_folds.py --inject-test C（折り C の val に test の 02 を足す）", observed: "不一致 1"}
+  - {judgement: "d: 設定が optimizer の群と DataLoader に届く", breaking_input: "batch 3・lr 2e-4・wd 5e-4・max_norm 0.07 の写し（changed）", observed: "群 (2e-4, 5e-4)…、max_norm 0.07、DataLoader の batch 3・長さ 1,603"}
+  - {judgement: "d: 点の照合が prereg と違う設定を止める", breaking_input: "点の JSON は 12 番、DTOWER_WEIGHT_DECAY は 0 番の値（wd_mismatch）", observed: "rc 1（detector optimizer groups differ from the preregistered point）"}
+  - {judgement: "d: 枚数の検査が batch の食い違いを止める", breaking_input: "batch 6 で PROBE_EXPECT_BATCH=4（batch_mismatch）", observed: "rc 1（frames per step 6 differ from the level batch 4）"}
+  - {judgement: "d: 既定の挙動が変わっていない", breaking_input: "既存のスクリプトと既存の設定、TOWER_SEARCH_POINT=0（default）", observed: "batch 2・長さ 2,405、群 (1e-4, 1e-4)…（前例の default と同じ）"}
+  - {judgement: "停止条件: COCO の重みを読まない", breaking_input: "RELDETR_COCO_CKPT=/nonexistent/zzz_no_such_coco_checkpoint.pth（coco_missing）", observed: "rc 1、設定の読み込みで FileNotFoundError。load pretrained from の行・初期化の記録・要約値の記録が無い"}
+  - {judgement: "e: run の数え方が存在しない run を数えない", breaking_input: "dtowerrerun_p05_*、*foldF*、run_record(5, A, 42)、run_record(12, F, 42)", observed: "0 件・0 件・missing・missing（p12 は 7 件）"}
+  - {judgement: "g: 表が metrics.json の値どおり", breaking_input: "表の 22 マスを別の命令で metrics.json から計算し直す", observed: "不一致 0（全桁）"}
+  - {judgement: "h: 副次の集計が動画の集合に依存する", breaking_input: "--secondary-videos 01,03,11,13,14,15（6 動画）", observed: "0.4354845117 → 0.4579923925（5,388 → 5,808 枚）"}
+  - {judgement: "h: プールの評価の恒等性", breaking_input: "各 run の自分の 3 動画をプールし、注釈の id を +1 ずらした生の GT での評価と比べる", observed: "7 本とも完全一致（差 0.0）。評価器の値との差は id 0 の注釈による −7.1e-5〜−4.9e-3"}
+  - {judgement: "j: 凍結する塔の sha256 の照合が変化を検出する", breaking_input: "折り A の checkpoint の写しの 1,001 バイト目を 0x00 にする", observed: "sha256 2e7d47d0… で frozen_towers.json の 4c542a8b… と不一致（本物は一致）"}
+  - {judgement: "k: forbidden-check が本契約の新しいファイルを変更として拾う", breaking_input: "本契約の run の記録・解析・runindex の収穫", observed: "changed 254、permitted 242（本契約の allow_write）、violations 8（すべて同期で届いた別の契約の grasp_cards_survey）"}
+  - {judgement: "k: 要約値が変化を検出する", breaking_input: "前例の道具 10 件が同期で消えた状態", observed: "UNKNOWN（消えた状態では要約値を測らず、復元の後に測った。復元後は 21 根すべて開始時と一致）"}
+
+followups:
+  - "残りの 13 本（12 番 seed 123 の折り C・D・E、0 番 seed 42 の A〜E、0 番 seed 123 の A〜E）を続きの契約で回す。道具は experiments/analysis/dtower_rerun/tools/run_rerun.py（終わった run は RUN_DONE で飛ばす）。同じ置き場で続けるなら、空の作業フォルダ $STORE/runs/dtowerrerun_p12_dcoco_foldC_seed123/ を先に外す必要がある"
+  - "凍結する塔（12 番 seed 42 の 5 本）の登録（scripts/stage2pilot/common.py の要約値の差し替えなど）を別の契約で行う。経路と sha256 は experiments/analysis/dtower_rerun/frozen_towers.json"
+  - "どの注釈ファイルにも id 0 の注釈が 1 つあり、pycocotools がそれに一致した検出を誤検出に数える。評価器の値への影響は test で 7.1e-5〜4.9e-3。注釈の id を 1 から振るか、評価の扱いを決める契約が要る（変えると前例と値が変わる）"
+  - "折り A の 12 番 seed 42 が同じ設定・同じ seed の b6 と 0.0188 違った。同じ設定の繰り返しの幅を測る契約があると、1 本の値の差の読み方が決まる"
+  - "experiments/**/*.py が Syncthing で全台に配られるため、別の台での削除が追跡下の道具を作業ツリーから消した。同期の規則と git の追跡の二重管理を見直す契約が要る"
+  - "runindex の検証 C5 が phase1__grasppilot2_G_* の 3 本で落ちる（前例から続く）"
+  - ".git/info/exclude の 20・21 行（grasparms の 2 フォルダ）を戻すかを利用者に確かめる"
+  - "版管理の外の生の記録と checkpoint（/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-07-dtower-rerun/）を残した。片付けは利用者の判断"
+
+unknowns:
+  - "回していない 13 本に関わる値: 12 − 0（折りごと・10 本）、点ごとの 10 本の平均、5 折りの seed 間の SD、12 番 seed 123 と 0 番の副次の test、予測 1・3"
+  - "折り A で b6 と 0.0188 違った非決定性の由来"
+  - "要約値の検査が、前例の道具が消えた状態を検出したか（消えた状態では測っていない）"
+
+commits:
+  - "df18070d"
+  - "e2fd7502"
+  - "10b1961d"
+  - "e7f37897"
+  - "bcebb702"
