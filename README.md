@@ -1860,3 +1860,16 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
 - **凍結する塔（12 番 seed 42 の 5 本）は揃った。** 経路・sha256・epoch・val は `frozen_towers.json`。checkpoint は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-07-dtower-rerun/runs/<run>/best_ap.pth`。登録は別の契約
 - 道具は `experiments/analysis/dtower_rerun/tools/`（実行器 `run_rerun.py`、評価の包み `eval_dump.py`（動画ごとの値と予測を書く）、動画の集合の照合 `check_folds.py`、集計 `summarize.py`、ほかは前例の写し）。**既存のスクリプト・設定・third_party は変えていない**
 - 注意: どの注釈ファイルにも `id: 0` の注釈が 1 つあり、pycocotools はそれに一致した検出を誤検出に数える。評価器の値はこの 1 注釈分を含む（全 run と前例に一様）
+
+### 把持塔の出力を工程塔へ渡す新しい二つの形の予備測定: 案 3 把持領域トークン・案 5 遷移の符号化（2026-11-09、bengio）
+
+契約 `T-2026-11-09-grasp-roitoken-transition-pilot`（analysis。**非公式の予備測定。関門の判定と案の採否に使わない**）。対象は**第二回の提案カード第三版の案 3（grasp-phase-roitoken）と案 5（grasp-phase-transition）**。
+結果は `experiments/analysis/grasp_roitoken_transition_pilot/REPORT.md`（`tools/make_report.py` が記録から作る）、記録は `tasks/T-2026-11-09-grasp-roitoken-transition-pilot/`、
+大きな生成物（工程塔の空間特徴 layer4・layer3 153 GB、枠・トークン・窓の列、界面の重み）は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-09-grasp-roitoken-transition-pilot/`。
+
+- 変更: `scripts/stage2pilot/dp_model.py` に型 `roitoken`（`RoiTokens`）、`dp_train.py` に型 RT・腕 `geo`・`union`・引数 `--rt-dir --rt-layer --rt-content --rt-k` を**足す形**で書いた。
+  **渡さなければ従来の経路のまま**（起点の版と GA 旗なし・D1-L1 の identity と試走の全記録が一致することを確かめた）
+- 殺し実験（カード #9、線形の層）: **案 5 は殺す条件に当たった**（境界の前後の事象の率の比 0.80・0.83 が並べ替えの null の区間の中、窓の特徴を足した差 −0.010・−0.004）。
+  **案 3 は当たらない**（正解の枠の ROI で J +0.029・acc +0.020、G の予測の枠で +0.025・+0.013）。ただし陽性対照（正解の工程を足す）が J +0.016・acc −0.001 と弱い
+- 利用者の決定で案 3 だけ掃引した（8 設定 × 7 腕 = 56 本、W1、4 epoch 固定）。TG − T0 は設定で符号が分かれ、6 工程の平均で 3/8 設定が正（−0.017〜+0.019）。案 5 の型 TW と 68 本は回していない
+- 道具は `experiments/analysis/grasp_roitoken_transition_pilot/tools/`。third_party・重ねの BODY・仮想環境は変えていない（要約値の前後一致）

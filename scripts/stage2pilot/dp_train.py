@@ -43,6 +43,17 @@ GA は epoch ごとの界面の重みの絶対値の最大と L2 ノルムを lo
                  --fixed-epochs と組で使う。界面の重みの置き場に受け取り手の状態も書く
     scopes       学ぶパラメータの名前の集合を型と学習範囲ごとに出し、SPEC §3.1 の定義（名前の接頭辞）と比べる（学習しない）
     identity --arms   調べる腕を並べる（--arm より優先）
+
+契約 T-2026-11-09-grasp-roitoken-transition-pilot（SPEC §3.2、案 3）で足した型。渡さなければ従来の経路のまま:
+    RT roitoken（dp_model.RoiTokens）。x(t) は J 個のトークン ×［ROI の平均 C｜幾何 6｜有無 1］
+    --rt-dir       材料の置き場（tok/tok_<源>_<層>_<part>.npy、b4/boxes_<源>_<part>.npz・frame_ids・shuffle_idx・has_gt）
+    --rt-layer     layer4（C 2048）か layer3（C 1024）
+    --rt-content   roi_geo（ROI ＋ 幾何）か roi（ROI だけ）
+    --rt-k         K（注意の次元）
+    腕: empty = T0（5 個とも空）、pred_CF = TG（train は pred_CF、val は確定）、geo = TGeo（ROI を 0）、union = TU（器具の和集合の
+        枠 1 個、残り 4 個は空）、shuffle = TRand（目録の mapping の枠でこのフレームの特徴を切る）、gt = 参照段 正解、
+        gtpred_CF = 参照段 正解 ⊕ 予測（10 個、正解が先）。参照段の 2 腕は把持の注釈のある行でだけ学び（交差エントロピー）評価する
+        （平滑化の項は全行のまま）。RT は epoch ごとの界面の重みの L2 ノルムと出力射影の絶対値の最大を logs/history.json に書く
 """
 from __future__ import annotations
 
@@ -80,13 +91,15 @@ TYPES = {
     "TH": ("tool_hist", "x32", "D0", "D-GT", None),
     "TH-NG": ("tool_hist_nogate", "x32", "D0", "D-GT", None),
     "GA": ("concat", "g30", None, "GRASP-GT", None),
+    "RT": ("roitoken", "rt", None, None, None),
 }
 G30_HALF = 14 + 1                                          # g の 14 と旗。予測の半分が先、正解の半分が後
 GRASP_DIR = None                                           # --grasp-signal-dir（GA のときだけ）
 GRASP_PRED_DIR = None                                      # --grasp-pred-dir（GA の予測の腕のときだけ）
 GRASP_NO_FLAG = False                                      # --grasp-no-flag（GA を旗なしの 28 次元にする）
+RT = {"dir": None, "layer": None, "content": None, "k": None}  # --rt-*（RT のときだけ）
 X32_HALF = NT + 1                                          # 15 と旗。予測の半分が先、正解の半分が後
-ARMS = ("empty", "pred_noCF", "gt", "pred_CF", "gtpred_CF", "shuffle")
+ARMS = ("empty", "pred_noCF", "gt", "pred_CF", "gtpred_CF", "shuffle", "geo", "union")
 # 止め方の規則（DP・W1）。最初の腕を回す前に固定する
 STOP = {"lr": 5e-4, "weight_decay": 0.01, "patience": 10, "max_epochs": 100, "smoothing_weight": 0.3}
 SCOPES = ("W1", "W2", "W3")
@@ -145,6 +158,9 @@ class Signals:
 
     def __init__(self, type_name, arm, part, variant):
         self.iface, self.kind, pred, _, self.tok_base = TYPES[type_name]
+        if self.kind == "rt":
+            self._init_rt(arm, part)
+            return
         self.srcs = sources(type_name, arm, part, variant)
         self.loaded = [(load_npz(p), is_gt) for p, is_gt in self.srcs]
         if self.kind == "g30":
@@ -163,6 +179,62 @@ class Signals:
         else:
             self.dim = (sum(x.shape[-1] for (_, x, _), _ in self.loaded) or self.pred_dim) if self.kind == "vec" \
                 else self.tok_base + 1
+
+    def _init_rt(self, arm, part):
+        """RT の腕の x(t)（N, J, C + 7）と、参照段の行の印（把持の注釈のある行）。"""
+        if None in RT.values():
+            raise SystemExit("RT は --rt-dir・--rt-layer・--rt-content・--rt-k を渡す")
+        base, layer = Path(RT["dir"]), RT["layer"]
+        if arm == "pred_noCF" and part == "train":
+            raise SystemExit("RT の train の予測は pred_CF（交差適合）だけ")
+        self.srcs = []
+
+        def load(path):
+            self.srcs.append((path, "gt" in path.name))
+            return np.load(path)
+        frames = [str(f) for f in load(base / f"b4/frame_ids_{part}.npy")]
+        self.ix = {f: i for i, f in enumerate(frames)}
+
+        def slots(src, shuffle=False, roi=True):
+            tok = load(base / f"tok/tok_{'shuffle' if shuffle else src}_{layer}_{part}.npy").astype(np.float32)
+            bx = load(base / f"b4/boxes_{src}_{part}.npz")
+            geom, pres = bx["geom"], bx["present"].astype(np.float32)
+            if shuffle:
+                sidx = load(base / f"b4/shuffle_idx_{part}.npy")
+                geom, pres = geom[sidx], pres[sidx]
+            return np.concatenate([tok if roi else np.zeros_like(tok), geom, pres[..., None]], -1)
+        n = len(frames)
+        self.tok_dim = 2048 if layer == "layer4" else 1024
+        self.rowmask = None
+        if arm == "empty":
+            x = np.zeros((n, 5, self.tok_dim + 7), np.float32)
+        elif arm in ("pred_CF", "pred_noCF"):
+            x = slots("pred")
+        elif arm == "geo":
+            x = slots("pred", roi=False)
+        elif arm == "shuffle":
+            x = slots("pred", shuffle=True)
+        elif arm == "union":
+            tok = load(base / f"tok/tok_union_{layer}_{part}.npy").astype(np.float32)
+            bx = load(base / f"b4/boxes_pred_{part}.npz")
+            x = np.zeros((n, 5, self.tok_dim + 7), np.float32)
+            x[:, :1] = np.concatenate([tok, bx["ugeom"], bx["upresent"].astype(np.float32)[..., None]], -1)
+        elif arm in ("gt", "gtpred_CF"):
+            x = slots("gt")
+            if arm == "gtpred_CF":
+                x = np.concatenate([x, slots("pred")], 1)
+            self.rowmask = load(base / f"b4/has_gt_{part}.npy").astype(bool)
+        else:
+            raise SystemExit(f"RT に腕 {arm} は無い")
+        self.x_rt = x
+        self.slots = x.shape[1]
+        self.dim = self.tok_dim + 7
+        self.pred_dim = None
+
+    def model_kwargs(self):
+        if self.kind != "rt":
+            return {}
+        return {"rt": {"tok_dim": self.tok_dim, "slots": self.slots, "use_geo": RT["content"] == "roi_geo", "k": RT["k"]}}
 
     def files(self):
         return [{"path": str(p), "sha256": C.sha256(p), "gt": g} for p, g in self.srcs]
@@ -186,6 +258,10 @@ class Signals:
         return halves
 
     def for_frames(self, frames):
+        if self.kind == "rt":
+            rows = [self.ix[f] for f in frames]
+            m = None if self.rowmask is None else torch.from_numpy(self.rowmask[rows])
+            return torch.from_numpy(self.x_rt[rows]), m
         if self.kind == "g30":
             out = np.zeros((len(frames), self.dim), np.float32)
             for ((ix, x, _), is_gt), flag in zip(self.loaded, self.flags):
@@ -245,9 +321,13 @@ def evaluate(model, data, names):
     for video, x, s, m, y in data:
         out = model(x, s, m)[-1][0]                        # (9, T)
         pred = out.argmax(0).cpu().numpy()
-        ev.update(pred, y.cpu().numpy(), video_id=video)
+        yy = y.cpu().numpy()
+        if getattr(model, "iface_type", None) == "roitoken" and m is not None:
+            keep = m.cpu().numpy()                         # RT の参照段: 把持の注釈のある行でだけ評価する
+            pred, yy = pred[keep], yy[keep]
+        ev.update(pred, yy, video_id=video)
         one = PhaseEvaluator(num_classes=len(names), class_names=names)
-        one.update(pred, y.cpu().numpy(), video_id=video)
+        one.update(pred, yy, video_id=video)
         r = one.compute()
         per_video[video] = {"phase_jaccard": r["phase_jaccard"], "phase_accuracy": r["phase_accuracy"]}
         probs[video] = torch.softmax(out, 0).T.cpu().numpy()
@@ -336,7 +416,7 @@ def cmd_identity(a):
     for arm in arms:
         sig = Signals(a.type, arm, "val", a.inst_variant)
         torch.manual_seed(0)
-        model = DPReceiver(head, TYPES[a.type][0], sig.dim).cuda()
+        model = DPReceiver(head, TYPES[a.type][0], sig.dim, **sig.model_kwargs()).cuda()
         apply_scope(model, a.scope)
         data = build_data(split["val"], sig, feats, "cuda")
         base_res, _ = evaluate(model, data, names)
@@ -344,6 +424,11 @@ def cmd_identity(a):
         extra = {}
         if sig.kind == "g30":
             extra = {"x_layout": sig.layout_g30(), "trainable": trainable_report(model),
+                     "perturbed_params": [n for n, p in model.named_parameters()
+                                          if any(p is q for q in model.iface_last_params())]}
+        if sig.kind == "rt":
+            extra = {"rt": {**RT, **sig.model_kwargs()["rt"]}, "trainable": trainable_report(model),
+                     "rowmask_rows": None if sig.rowmask is None else int(sig.rowmask.sum()),
                      "perturbed_params": [n for n, p in model.named_parameters()
                                           if any(p is q for q in model.iface_last_params())]}
         if sig.kind == "x32":
@@ -391,7 +476,7 @@ def cmd_train(a):
     assert sig_tr.dim == sig_va.dim
     tr_videos = C.assert_no_test(split["train"], "dp_train/train")
     va_videos = C.assert_no_test(split["val"], "dp_train/val")
-    model = DPReceiver(head, TYPES[a.type][0], sig_tr.dim).cuda()
+    model = DPReceiver(head, TYPES[a.type][0], sig_tr.dim, **sig_tr.model_kwargs()).cuda()
     train_data = build_data(split["train"], sig_tr, feats, "cuda")
     val_data = build_data(split["val"], sig_va, feats, "cuda")
     weights, counts = class_weights(train_data, len(names))
@@ -430,6 +515,10 @@ def cmd_train(a):
             cfg.update(grasp_no_flag=True)
     if sig_tr.kind == "x32":
         cfg.update(x_layout={"train": sig_tr.layout(), "val": sig_va.layout()}, trainable=trainable_report(model))
+    if sig_tr.kind == "rt":
+        cfg.update(rt={**RT, **sig_tr.model_kwargs()["rt"]}, trainable=trainable_report(model),
+                   rowmask_rows={"train": None if sig_tr.rowmask is None else int(sig_tr.rowmask.sum()),
+                                 "val": None if sig_va.rowmask is None else int(sig_va.rowmask.sum())})
     if a.scope != "W1":
         sc = scope_report(model, a.scope)
         cfg.update(scope=a.scope, scope_check=sc, receiver_optim={**RECEIVER, "optimizer": "AdamW（界面と別の群）"},
@@ -438,7 +527,8 @@ def cmd_train(a):
                                    + "), eval (dropout off)")
         if not sc["equal"]:
             raise SystemExit(f"学ぶ集合が定義と一致しない: {a.scope}")
-    desc =f"{a.type}{'-noflag' if GRASP_NO_FLAG else ''}_{a.arm}" + (f"_ep{fixed}" if fixed else "") + ("_smoke" if a.max_epochs or a.smoke else "")
+    rt_desc = f"-{RT['layer']}-{RT['content']}-K{RT['k']}" if sig_tr.kind == "rt" else ""
+    desc =f"{a.type}{rt_desc}{'-noflag' if GRASP_NO_FLAG else ''}_{a.arm}" + (f"_ep{fixed}" if fixed else "") + ("_smoke" if a.max_epochs or a.smoke else "")
     manager = ExperimentManager(C.ROOT / "experiments", "phase1", a.exp_prefix, desc, a.seed)
     manager.setup(cfg)
     run = tracking.init(manager.exp_id, config=cfg, group=a.task_id, job_type=a.exp_prefix, exp_dir=manager.exp_dir)
@@ -458,7 +548,10 @@ def cmd_train(a):
         for i in order:
             _, x, s, m, y = train_data[i]
             outs = model(x, s, m)
-            loss = sum(ce(o[0].T, y) for o in outs)
+            if sig_tr.kind == "rt" and m is not None:     # RT の参照段: 把持の注釈のある行でだけ学ぶ
+                loss = sum(ce(o[0].T[m], y[m]) for o in outs)
+            else:
+                loss = sum(ce(o[0].T, y) for o in outs)
             for o in outs:
                 logp = F.log_softmax(o, dim=1)
                 loss = loss + STOP["smoothing_weight"] * F.mse_loss(
@@ -481,6 +574,9 @@ def cmd_train(a):
         if sig_tr.kind == "g30":
             w = model.iface.weight.detach()
             history[-1].update(iface_max_abs=float(w.abs().max()), iface_l2=float(w.norm()))
+        if sig_tr.kind == "rt":
+            history[-1].update(iface_l2=float(torch.sqrt(sum((p.detach() ** 2).sum() for p in model.iface.parameters()))),
+                               iface_out_max_abs=float(model.iface.out.weight.detach().abs().max()))
         tracking.log({"train/loss": total / len(order), "val/jaccard": score, "val/accuracy": val["phase_accuracy"],
                       **({f"gate/{k}": v for k, v in gate.items()} if gate else {})}, step=epoch)
         # --fixed-epochs: 最良の回を選ばず、最後の epoch の状態を結果にする（界面の重みと確率もその状態）
@@ -563,7 +659,7 @@ def cmd_scopes(a):
     """型と学習範囲ごとの学ぶパラメータの名前の集合（Task C-2・C-4。学習しない、特徴も読まない）。"""
     head = C.load_ptower_head(device="cpu")
     out = {"task_id": a.task_id, "types": {}}
-    for t in a.types or list(TYPES):
+    for t in a.types or [t for t in TYPES if TYPES[t][1] != "rt"]:
         dim = Signals(t, "empty", "val", "uq").dim
         row = {"signal_dim": dim}
         for scope in a.scopes:
@@ -578,6 +674,13 @@ def cmd_scopes(a):
     print(json.dumps({t: {s: (r[s]["equal"], r[s]["equal_with_one_outside_mixed"], r[s]["n_trainable"],
                               r[s].get("equals_trainable_report")) for s in a.scopes}
                       for t, r in out["types"].items()}, ensure_ascii=False))
+
+
+def add_rt_args(p):
+    p.add_argument("--rt-dir", default=None, help="RT の材料の置き場（tok/ と b4/）")
+    p.add_argument("--rt-layer", choices=["layer4", "layer3"], default=None)
+    p.add_argument("--rt-content", choices=["roi_geo", "roi"], default=None)
+    p.add_argument("--rt-k", type=int, default=None)
 
 
 def main():
@@ -595,6 +698,7 @@ def main():
     i.add_argument("--arms", nargs="+", choices=ARMS, default=None, help="調べる腕を並べる（--arm より優先）")
     i.add_argument("--scope", choices=SCOPES, default="W1", help="学習範囲（学ぶ集合を記録する。出力は変えない）")
     i.add_argument("--grasp-no-flag", action="store_true", help="GA を旗なしの 28 次元にする（既定は旗あり 30 次元）")
+    add_rt_args(i)
     s = sub.add_parser("scopes")
     s.add_argument("--types", nargs="+", choices=list(TYPES), default=None)
     s.add_argument("--scopes", nargs="+", choices=SCOPES, default=list(SCOPES))
@@ -616,11 +720,14 @@ def main():
     t.add_argument("--scope", choices=SCOPES, default="W1",
                    help="学習範囲。W2 = 界面 ＋ 時間ヘッドの最後の段、W3 = 界面 ＋ 時間ヘッドの全体（既定 W1 = 界面だけ）")
     t.add_argument("--grasp-no-flag", action="store_true", help="GA を旗なしの 28 次元にする（既定は旗あり 30 次元）")
+    add_rt_args(t)
     a = ap.parse_args()
     global GRASP_DIR, GRASP_PRED_DIR, GRASP_NO_FLAG
     GRASP_DIR = getattr(a, "grasp_signal_dir", None)
     GRASP_PRED_DIR = getattr(a, "grasp_pred_dir", None)
     GRASP_NO_FLAG = bool(getattr(a, "grasp_no_flag", False))
+    RT.update(dir=getattr(a, "rt_dir", None), layer=getattr(a, "rt_layer", None), content=getattr(a, "rt_content", None),
+              k=getattr(a, "rt_k", None))
     if GRASP_NO_FLAG and TYPES[a.type][1] != "g30":
         raise SystemExit("--grasp-no-flag は GA だけに使う")
     if a.cmd == "train" and a.scope != "W1" and not a.fixed_epochs:
