@@ -113,6 +113,39 @@ def case5(w, s5):
     w("")
 
 
+def speed(w, sm, s5, S):
+    """所要と学習の短さ（利用者の問い「終わるの早くね？」への答え。値はすべて記録から）。"""
+    import torch
+    r3 = [x for r in sm["settings"].values() for x in r["arms"].values()]
+    r5 = list(s5["runs"].values())
+    b3 = {p: json.loads((S / f"feat/b3_record_{p}.json").read_text())["seconds_total"] for p in ("train", "val")}
+    rel = [float(torch.load(S / f"dp_ckpt/{x['run']}.pth", map_location="cpu")["iface"]["rel"].std()) for x in r5]
+    w("## 8. 所要と学習の短さ")
+    w("")
+    w("契約の見積もりは 20 時間（spec の resources.est_hours、学習の Task E は 8 時間）だったが、学習 1 本は数秒で終わった。重いのは空間特徴の取り出しだけで、一度で済んだ。")
+    w("")
+    w("| 項目 | 案 3（56 本） | 案 5（68 本） |")
+    w("|---|---|---|")
+    for lab, f in (("学習 1 本の秒（metrics の elapsed_seconds。4 回の val の評価を含む）", lambda rs: f"{min(x['elapsed_seconds'] for x in rs):.2f}〜{max(x['elapsed_seconds'] for x in rs):.2f}"),
+                   ("1 歩あたり（上の秒 ÷ 40 歩。評価を含む）", lambda rs: f"{min(x['elapsed_seconds'] for x in rs) / 40 * 1000:.0f}〜{max(x['elapsed_seconds'] for x in rs) / 40 * 1000:.0f} ms"),
+                   ("界面のパラメータ数", lambda rs: f"{min(x['iface_params'] for x in rs):,}〜{max(x['iface_params'] for x in rs):,}"),
+                   ("4 epoch 目の出力射影の絶対値の最大（零から始まる）", lambda rs: f"{min(x['history'][-1]['iface_out_max_abs'] for x in rs):.4f}〜{max(x['history'][-1]['iface_out_max_abs'] for x in rs):.4f}")):
+        w(f"| {lab} | {f(r3)} | {f(r5)} |")
+    w("")
+    w("- 1 本の中身: 学ぶのは時間ヘッド（2 段・8 層・64 マップの 1 次元畳み込み）の前に置いた小さな界面だけ（W2・W3 は時間ヘッドの一部か全体も）。"
+      "画像の backbone は通さず、前もって取り出した特徴とトークン・窓の列を読む。1 歩は train の動画 1 本の列で、4 epoch × 10 本 = 40 歩")
+    w(f"- 重い処理は空間特徴の取り出し（train {b3['train']:.0f} s・val {b3['val']:.0f} s、GPU 2 枚で並行）で、ROI-Align もトークンにして一度だけ行った")
+    w("- 同じ桁の前例: PR 302（T-2026-11-08-grasp-cards-survey）の単価の表で、工程側の W2・W3（時間ヘッド）は 1 本 1.4〜10.0 s、工程側の W1 は 11.9〜187.2 s")
+    w("- 学習が回った証拠: 全本で 4 epoch の val の値が history に在る。出力射影は零から上の値まで育った。W2・W3 の時間ヘッドの重みは 4 epoch で L2 "
+      f"{min(x['history'][-1]['head_delta_l2'] for x in r5 if 'head_delta_l2' in x['history'][-1]):.2f}〜"
+      f"{max(x['history'][-1]['head_delta_l2'] for x in r5 if 'head_delta_l2' in x['history'][-1]):.2f} 動いた")
+    w(f"- **学習の短さが結果を弱くしている可能性**: 40 歩で界面が育ち切っているかは確かめていない。案 5 の相対時刻の埋め込みの標準偏差は 4 epoch 目で {min(rel):.4f}〜{max(rel):.4f}"
+      "（初期 0.02）で初期からほとんど動いておらず、順の情報を使えていないとみる（S_W と S_W-perm の argmax が 4 設定で一致した一因とみる）。案 3 の出力射影も上の大きさに留まる")
+    w("- 処方（4 epoch 固定・最後の状態）は契約の規定で、前の契約（四本目・T-2026-11-01-stage2-w23-bengio）とそろえるための値。本契約では変えていない。"
+      "長くすると結果が変わるかは測っていない（UNKNOWN）")
+    w("")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--store", required=True)
@@ -283,6 +316,7 @@ def main():
     w("")
     if s5:
         case5(w, s5)
+        speed(w, sm, s5, S)
     Path(a.out).write_text("\n".join(L) + "\n")
     print(f"wrote {a.out} {len(L)} lines")
 
