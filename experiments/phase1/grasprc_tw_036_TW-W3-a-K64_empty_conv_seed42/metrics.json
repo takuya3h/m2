@@ -1,0 +1,72 @@
+{
+  "best_epoch": 28,
+  "converge": {
+    "lr_factor": 0.1,
+    "max_epochs": 120,
+    "min_delta": 0.0001,
+    "patience": 8
+  },
+  "early_stopped_epoch": 44,
+  "elapsed_seconds": 156.07622652407736,
+  "epochs_run": 44,
+  "eval_recipe": {
+    "test_cfg": {
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "split": "val",
+      "task": "phase"
+    }
+  },
+  "iface_ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-09-grasp-pilot-converge/dp_ckpt/grasprc_tw_036_TW-W3-a-K64_empty_conv_seed42.pth",
+  "iface_ckpt_sha256": "128783c43d3c278be0dedd69778e894c1f891fb9e1cc547b8ad1931d4cac561c",
+  "iface_params": 297408,
+  "init_phase_accuracy": 0.8712871287128713,
+  "init_phase_jaccard": 0.7762185528074379,
+  "lr_drop_epoch": 36,
+  "negative_control": {
+    "max_abs_logit_diff": 0.19329357147216797,
+    "other_arm": "t1",
+    "pred_signal_jaccard": 0.6756668265397049,
+    "unchanged": false,
+    "zero_signal_jaccard": 0.6749369214665931
+  },
+  "norms": {
+    "best": {
+      "out_w_l2": 3.653225898742676,
+      "out_w_max_abs": 0.04279118403792381,
+      "rel_std": 0.027510343119502068
+    },
+    "final": {
+      "out_w_l2": 4.133050441741943,
+      "out_w_max_abs": 0.048850394785404205,
+      "rel_std": 0.028860218822956085
+    },
+    "init": {
+      "out_w_l2": 0.0,
+      "out_w_max_abs": 0.0,
+      "rel_std": 0.019644884392619133
+    }
+  },
+  "per_video": {
+    "09": {
+      "phase_accuracy": 0.9864864864864865,
+      "phase_jaccard": 0.9749888915509448
+    },
+    "10": {
+      "phase_accuracy": 0.831494483450351,
+      "phase_jaccard": 0.6347312120881916
+    }
+  },
+  "phase_accuracy": 0.8844884488448845,
+  "phase_jaccard": 0.687325380484335,
+  "phase_macro_f1": 0.7459766940218256,
+  "reached_epoch_cap": false,
+  "receiver_outside_scope_n": 0,
+  "receiver_outside_scope_unchanged": true,
+  "receiver_trained_changed": true,
+  "receiver_unchanged": false,
+  "result_epoch": 28,
+  "result_selection": "best_val_jaccard",
+  "scope": "W3",
+  "steps_without_grad": 0
+}

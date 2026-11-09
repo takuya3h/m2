@@ -64,6 +64,13 @@ GA は epoch ごとの界面の重みの絶対値の最大と L2 ノルムを lo
     腕: empty = S_0（k = 1 の空の列）、t1 = S_1（時刻 t だけ）、pred_CF = S_W（窓の列。train は pred_CF、val は確定）、
         perm = S_W-perm、union = S_W-U、shuffle = S_W-R、gt = 参照段 正解、gtpred_CF = 参照段 正解 ⊕ 予測（各時点で正解が先）。
         参照段の扱いは RT と同じ。W2・W3 では epoch ごとに時間ヘッドの重みの変化の L2 ノルムも logs/history.json に書く
+
+契約 T-2026-11-09-grasp-pilot-converge（SPEC §3.1）で足した学習の長さの規則。渡さなければ従来の経路のまま:
+    --converge   収束規則（ConvergeRule、CONVERGE の値）。各 epoch の val の macro Jaccard を主指標にし、最良を min_delta 以上
+                 上回れば改善。patience epoch 改善が無ければ全群の学習率を lr_factor 倍に一度、さらに patience epoch 改善が
+                 無ければ打ち切る。上限 max_epochs。結果と界面の重み（checkpoint）は val の Jaccard が最良の epoch の状態。
+                 epoch ごとに学習率と、界面の出力射影の重み（RT・TW は iface.out.weight、GA は iface.weight）の絶対値の最大と
+                 L2、TW の相対時刻の埋め込みの標準偏差を logs/history.json に書く。W2・W3 でも --fixed-epochs の代わりに使える
 """
 from __future__ import annotations
 
@@ -117,6 +124,50 @@ STOP = {"lr": 5e-4, "weight_decay": 0.01, "patience": 10, "max_epochs": 100, "sm
 SCOPES = ("W1", "W2", "W3")
 # W2・W3 の受け取り手（時間ヘッド）の学習率と重み減衰（契約 T-2026-11-01-stage2-w23-bengio、SPEC §3.1・§2）
 RECEIVER = {"lr": 5e-4, "weight_decay": 0.01}
+# 収束規則（契約 T-2026-11-09-grasp-pilot-converge、SPEC §3.1。結果を見て変えない）
+CONVERGE = {"patience": 8, "lr_factor": 0.1, "max_epochs": 120, "min_delta": 1e-4}
+
+
+class ConvergeRule:
+    """SPEC §3.1 の収束規則。step(score) は (改善したか, 行動) を返す。行動は None・"drop"（学習率を落とす）・"stop"。
+
+    学習（cmd_train）と規則の対照（人工の記録）が同じこの実装を通る。
+    """
+
+    def __init__(self, patience=CONVERGE["patience"], min_delta=CONVERGE["min_delta"]):
+        self.patience, self.min_delta = patience, min_delta
+        self.best, self.stale, self.dropped, self.epoch = -float("inf"), 0, None, 0
+
+    def step(self, score):
+        self.epoch += 1
+        improved = score > self.best + self.min_delta
+        if improved:
+            self.best, self.stale = score, 0
+        else:
+            self.stale += 1
+        action = None
+        if self.stale >= self.patience:
+            action = "stop" if self.dropped is not None else "drop"
+            if action == "drop":
+                self.dropped, self.stale = self.epoch, 0
+        return improved, action
+
+
+def out_weight(model):
+    """界面の出力射影の重み（RT・TW は iface.out.weight、GA などの concat は iface.weight）。持たない型は None。"""
+    if hasattr(model.iface, "out"):
+        return model.iface.out.weight
+    if isinstance(model.iface, nn.Conv1d):
+        return model.iface.weight
+    return None
+
+
+def iface_norms(model):
+    w = out_weight(model)
+    out = {} if w is None else {"out_w_max_abs": float(w.detach().abs().max()), "out_w_l2": float(w.detach().norm())}
+    if hasattr(model.iface, "rel"):
+        out["rel_std"] = float(model.iface.rel.detach().std())
+    return out
 
 
 def inst_name(base, variant):
@@ -554,6 +605,14 @@ def cmd_train(a):
     if fixed:
         stop_rule = {**STOP, "patience": None, "max_epochs": fixed, "fixed_epochs": fixed, "lr_schedule": "constant",
                      "selection": f"none (state after epoch {fixed})"}
+    rule = None
+    if a.converge:
+        max_epochs = CONVERGE["max_epochs"]
+        rule = ConvergeRule()
+        stop_rule = {**STOP, "patience": None, "converge": CONVERGE, "max_epochs": max_epochs,
+                     "lr_schedule": f"constant, × {CONVERGE['lr_factor']} once after {CONVERGE['patience']} epochs without improvement",
+                     "stop": f"{CONVERGE['patience']} more epochs without improvement after the drop, or max_epochs",
+                     "selection": "best val macro Jaccard (improvement = above best + min_delta)"}
     cfg = {"task_id": a.task_id, "unofficial": f"非公式（{a.task_id}）", "direction": "DP",
            "type": a.type, "interface": TYPES[a.type][0], "arm": a.arm, "seed": a.seed, "scope": "W1",
            "inst_variant": a.inst_variant, "signal_dim": sig_tr.dim,
@@ -590,7 +649,7 @@ def cmd_train(a):
     rt_desc = f"-{RT['layer']}-{RT['content']}-K{RT['k']}" if sig_tr.kind == "rt" else ""
     if sig_tr.kind == "tw":
         rt_desc = f"-{a.scope}-{TW['form']}" + ("" if a.arm in ("empty", "t1") else f"-L{TW['L']}") + f"-K{TW['k']}"
-    desc =f"{a.type}{rt_desc}{'-noflag' if GRASP_NO_FLAG else ''}_{a.arm}" + (f"_ep{fixed}" if fixed else "") + ("_smoke" if a.max_epochs or a.smoke else "")
+    desc =f"{a.type}{rt_desc}{'-noflag' if GRASP_NO_FLAG else ''}_{a.arm}" + (f"_ep{fixed}" if fixed else "") + ("_conv" if a.converge else "") + ("_smoke" if a.max_epochs or a.smoke else "")
     manager = ExperimentManager(C.ROOT / "experiments", "phase1", a.exp_prefix, desc, a.seed)
     manager.setup(cfg)
     run = tracking.init(manager.exp_id, config=cfg, group=a.task_id, job_type=a.exp_prefix, exp_dir=manager.exp_dir)
@@ -598,6 +657,8 @@ def cmd_train(a):
         raise RuntimeError("W&B tracking could not start; no experiment executed")
     init_res, _ = evaluate(model, val_data, names)
     init_gate = model.gate_values()
+    init_norms = iface_norms(model) if rule else None
+    lr_drop_epoch = None
     best, best_score, stale, stopped, history, no_grad_steps = None, -1.0, 0, None, [], 0
     started = time.monotonic()
     ckpt = C.STORE.parent / a.task_id / "dp_ckpt" / f"{manager.exp_id}.pth"
@@ -645,8 +706,11 @@ def cmd_train(a):
                                iface_out_max_abs=float(model.iface.out.weight.detach().abs().max()))
         tracking.log({"train/loss": total / len(order), "val/jaccard": score, "val/accuracy": val["phase_accuracy"],
                       **({f"gate/{k}": v for k, v in gate.items()} if gate else {})}, step=epoch)
+        if rule:
+            improved, action = rule.step(score)
+            history[-1].update(lr=[g["lr"] for g in opt.param_groups], improved=improved, **iface_norms(model))
         # --fixed-epochs: 最良の回を選ばず、最後の epoch の状態を結果にする（界面の重みと確率もその状態）
-        if (epoch == fixed) if fixed else score > best_score:
+        if improved if rule else ((epoch == fixed) if fixed else score > best_score):
             best_score, stale = score, 0
             best = {**val, "epoch": epoch}
             best_probs = probs
@@ -655,9 +719,20 @@ def cmd_train(a):
             if a.scope != "W1":
                 state.update(scope=a.scope, receiver=model.head.state_dict())
             torch.save(state, ckpt)
+            if rule:
+                best_norms = iface_norms(model)
         else:
             stale += 1
-        if not fixed and stale >= STOP["patience"]:
+        if rule:
+            if action == "drop":
+                for g in opt.param_groups:
+                    g["lr"] *= CONVERGE["lr_factor"]
+                lr_drop_epoch = epoch
+                history[-1].update(lr_after=[g["lr"] for g in opt.param_groups])
+            elif action == "stop":
+                stopped = epoch
+                break
+        elif not fixed and stale >= STOP["patience"]:
             stopped = epoch
             break
     head_unchanged = all(torch.equal(v, model.head.state_dict()[k]) for k, v in head_state0.items())
@@ -672,6 +747,9 @@ def cmd_train(a):
                "iface_params": cfg["iface_params"], "iface_ckpt": str(ckpt), "iface_ckpt_sha256": C.sha256(ckpt)}
     if init_gate:
         metrics.update(init_gate=init_gate, gate_by_epoch={h["epoch"]: h["gate"] for h in history})
+    if rule:
+        metrics.update(result_selection="best_val_jaccard", result_epoch=best["epoch"], lr_drop_epoch=lr_drop_epoch,
+                       converge=CONVERGE, norms={"init": init_norms, "best": best_norms, "final": iface_norms(model)})
     if a.scope != "W1":
         trained = {n[len("head."):] for n in cfg["scope_check"]["trainable_names"] if n.startswith("head.")}
         now = model.head.state_dict()
@@ -690,6 +768,9 @@ def cmd_train(a):
              **{v: p.astype(np.float32) for v, p in best_probs.items()})
     how = (f"{fixed} epoch 学習し途中で止めない。結果は {fixed} epoch 目の状態（最良の回を選ばない）。" if fixed
            else "val だけで評価し選ぶ。")
+    if rule:
+        how = (f"収束規則（停滞 {CONVERGE['patience']} epoch で学習率 × {CONVERGE['lr_factor']} を一度、再停滞で打ち切り、上限 "
+               f"{CONVERGE['max_epochs']}）。結果は val の Jaccard が最良の epoch {best['epoch']}（学習率を落とした epoch {lr_drop_epoch}）。")
     scope_text = "受け取り手は確定塔の時間ヘッド（凍結）。界面だけを学ぶ（W1）。" if a.scope == "W1" else (
         f"受け取り手は確定塔の時間ヘッド（eval、dropout なし）。界面と時間ヘッドの"
         f"{'最後の段' if a.scope == 'W2' else '全体'}を学ぶ（{a.scope}、受け取り手の学習率 {RECEIVER['lr']}）。")
@@ -798,6 +879,8 @@ def main():
     t.add_argument("--grasp-no-flag", action="store_true", help="GA を旗なしの 28 次元にする（既定は旗あり 30 次元）")
     add_rt_args(t)
     add_tw_args(t)
+    t.add_argument("--converge", action="store_true",
+                   help="収束規則（CONVERGE）で学ぶ。結果は val の Jaccard が最良の epoch（契約 T-2026-11-09-grasp-pilot-converge）")
     a = ap.parse_args()
     global GRASP_DIR, GRASP_PRED_DIR, GRASP_NO_FLAG
     GRASP_DIR = getattr(a, "grasp_signal_dir", None)
@@ -809,8 +892,10 @@ def main():
               k=getattr(a, "rt_k", None))
     if GRASP_NO_FLAG and TYPES[a.type][1] != "g30":
         raise SystemExit("--grasp-no-flag は GA だけに使う")
-    if a.cmd == "train" and a.scope != "W1" and not a.fixed_epochs:
+    if a.cmd == "train" and a.scope != "W1" and not (a.fixed_epochs or a.converge):
         raise SystemExit("--scope W2・W3 は --fixed-epochs と組で使う")
+    if a.cmd == "train" and a.converge and (a.fixed_epochs or a.max_epochs):
+        raise SystemExit("--converge は --fixed-epochs・--max-epochs と組み合わせない")
     if a.cmd == "train" and a.fixed_epochs and a.max_epochs:
         raise SystemExit("--fixed-epochs と --max-epochs は組み合わせない")
     if a.cmd == "train" and a.smoke and not a.fixed_epochs:

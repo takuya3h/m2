@@ -1,0 +1,116 @@
+task_id: T-2026-11-09-grasp-pilot-converge
+unofficial: 非公式（T-2026-11-09-grasp-pilot-converge）
+direction: DP
+type: TW
+interface: transwin
+arm: pred_CF
+seed: 42
+scope: W1
+inst_variant: null
+signal_dim: 40
+signals_train:
+- path: /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-09-grasp-roitoken-transition-pilot/seq/seq_SW_k16_train.npz
+  sha256: 5f0c3d475aef9bac6e64060ba774caac69de9fb22ad3c2bdbc3f19dc5e79d889
+  gt: false
+signals_val:
+- path: /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-09-grasp-roitoken-transition-pilot/seq/seq_SW_k16_val.npz
+  sha256: c873db0f9f0285558fd2fd55bd988cc395cabf9688e2056260e4b29606e490dd
+  gt: false
+receiver:
+  head: /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/efros_ptower/experiments/phase1/stage1_ptower_20_009_P15_C_L8_w0.3_h30_foldA_coco_lr0.0001_seed42/checkpoints/best.pth
+  head_sha256: 0d76d446796f855a51640d756d6d3436573ff40ed600915980021c5f4cc6ad6d
+  cache: /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/efros_ptower/data/processed/stage1_features/p15ctl_coco_lr0.0001_foldA_seed42/all_gap.npz
+  cache_sha256: c402e214d28d32c68b396fe84bbefefffdf7577d9550c421364543af78f172da
+  mode: frozen, eval (dropout off)
+stop_rule:
+  lr: 0.0005
+  weight_decay: 0.01
+  patience: null
+  max_epochs: 120
+  smoothing_weight: 0.3
+  converge:
+    patience: 8
+    lr_factor: 0.1
+    max_epochs: 120
+    min_delta: 0.0001
+  lr_schedule: constant, × 0.1 once after 8 epochs without improvement
+  stop: 8 more epochs without improvement after the drop, or max_epochs
+  selection: best val macro Jaccard (improvement = above best + min_delta)
+class_counts:
+- 281
+- 3595
+- 245
+- 11
+- 3832
+- 12
+- 825
+- 763
+- 93
+class_weights:
+- 0.1636632981864376
+- 0.012792597160052564
+- 0.18771178281791417
+- 4.180853344580815
+- 0.012001405738619249
+- 3.8324488991990804
+- 0.05574471126107754
+- 0.06027442567547702
+- 0.49450953538052655
+videos:
+  train:
+  - '01'
+  - '02'
+  - '03'
+  - '06'
+  - '08'
+  - '11'
+  - '12'
+  - '13'
+  - '14'
+  - '15'
+  val:
+  - '09'
+  - '10'
+smoke: false
+iface_params: 280384
+tw:
+  dir: /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-09-grasp-roitoken-transition-pilot
+  form: b
+  L: 32
+  k: 64
+  slots: 16
+  in_dim: 40
+trainable:
+  trainable_names:
+  - iface.k.bias
+  - iface.k.weight
+  - iface.mlp.0.bias
+  - iface.mlp.0.weight
+  - iface.mlp.2.bias
+  - iface.mlp.2.weight
+  - iface.out.bias
+  - iface.out.weight
+  - iface.q.bias
+  - iface.q.weight
+  - iface.rel
+  - iface.v.bias
+  - iface.v.weight
+  iface_names:
+  - iface.k.bias
+  - iface.k.weight
+  - iface.mlp.0.bias
+  - iface.mlp.0.weight
+  - iface.mlp.2.bias
+  - iface.mlp.2.weight
+  - iface.out.bias
+  - iface.out.weight
+  - iface.q.bias
+  - iface.q.weight
+  - iface.rel
+  - iface.v.bias
+  - iface.v.weight
+  equal: true
+  equal_with_one_head_param_mixed: false
+rowmask_rows:
+  train: null
+  val: null
