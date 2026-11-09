@@ -121,4 +121,4 @@
   - GitHub の判定は CONFLICTING。`git merge-tree` で読むと、衝突は `README.md` と `docs/experiment_log.md` の 2 つだけ
   - 原因は、起点の後に phase0 へ入った別の契約（#307・#309）が同じ末尾に節を足したこと。runindex は行の統合で衝突しない
   - 契約は分岐への統合を禁じるため、解消していない（利用者の判断を待つ）
-- `make task-report` の終了コード: （送出後に記入）
+- `make task-report` の終了コード 0（11-10、verdict pass、n_issuer_defects 4、report_sha256 0cc115ff…、11,129 B。b0cc00b3 の版を送った）

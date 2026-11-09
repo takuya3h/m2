@@ -317,3 +317,12 @@ B-4 の前回との照合（`tools/w3lra_scopes.py`、`$A/identity/scopes_vs_pre
     $ git worktree remove --force $SCRATCH/wt_fc; git worktree prune
 
 同期で届いた `grasp_pilot_converge/` は版管理に入っていないので、写しには現れない。**本契約の分岐の内容は違反 0 件**
+
+## 送出（11-10）
+
+- PR #311（base phase0、Draft でない、OPEN）。GitHub の判定は CONFLICTING
+  - `git merge-tree --write-tree --name-only HEAD origin/phase0` で読むと、衝突は `README.md`・`docs/experiment_log.md` の 2 つだけ
+  - 原因は、起点の後に phase0 へ入った #307（db9b7b46・99a20548）と #309（adcdbc4a）が、同じ末尾に節を足したこと
+  - 契約は分岐への統合を禁じるため、解消していない
+- `source scripts/load_env.sh && make task-report TASK=T-2026-11-09-stage2-pd-w3-lowlr-andrew`（b0cc00b3 の版）→ rc 0
+  - verdict pass、n_issuer_defects 4、report_sha256 0cc115ff6d533c12e705ba83794dc63f4672e9144bed2474f9ddada91f5e70f6、11,129 B、replaced_blocks 0
