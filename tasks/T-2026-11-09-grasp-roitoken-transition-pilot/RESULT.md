@@ -95,5 +95,5 @@
 
 ## 7. 送出
 
-- PR: （起票の後に記録）
+- PR: #307（https://github.com/takuya3h/m2/pull/307、base phase0、Draft でない、OPEN、head `feat/grasp-roitoken-transition-pilot`。`gh pr view 307 --json` で確認）
 - `make task-report`: （送信の後に記録）
