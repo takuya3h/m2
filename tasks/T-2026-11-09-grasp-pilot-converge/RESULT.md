@@ -95,4 +95,4 @@
 ## 7. 送出
 
 - PR: #309（https://github.com/takuya3h/m2/pull/309、base phase0、Draft でない、OPEN、head `feat/grasp-pilot-converge`。`gh pr view 309 --json` で確認）
-- `make task-report`: （送信の後に記録）
+- `make task-report`: 終了コード 0（2026-11-09 JST、verdict partial、起票者の誤り 3 件、report_sha256 a5053ee6…、10,990 B、replaced_blocks 0。この行は送信の後に足した）
