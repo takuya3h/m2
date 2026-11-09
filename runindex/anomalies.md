@@ -8,7 +8,7 @@
 **明文化されていない**。以下はディレクトリ名の意味からの判断であり、
 規約に基づくものではない。**除外規約の明文化を推奨する。**
 
-除外 82 run / 全 2647 run（削除ではなくフラグ）
+除外 82 run / 全 2668 run（削除ではなくフラグ）
 
 | exclusion_reason | runs | 対象 |
 |---|---:|---|
@@ -37,7 +37,7 @@
 
 指標キーの接頭辞から split を確定できない run。**推測していない**。
 
-確定不能 52 run / 全 2647 run
+確定不能 52 run / 全 2668 run
 
 | split_provenance | runs |
 |---|---:|
@@ -105,14 +105,14 @@
 
 ## 3. host を確定できなかった run
 
-確定不能 372 run
+確定不能 375 run
 
 | host_raw | runs | 理由 |
 |---|---:|---|
 | `dlsta` | 260 | host_aliases.json に無い値 |
 | `None` | 80 | server.txt 欠損かつ eval_recipe.server_name 無し |
 | `aolab` | 28 | philip / ilya の双方が返すコンテナ内 hostname のため一意に特定不能 |
-| `Bengio` | 4 | host_aliases.json に無い値 |
+| `Bengio` | 7 | host_aliases.json に無い値 |
 
 ## 4. per_class_ap.json のクラス体系が 2 種類ある
 
@@ -127,7 +127,7 @@
 |---|---|---:|---|---|
 | `phase` | `F1` | 1708 | 9 クラスの工程別 **F1**（AP ではない） | `scripts/train_{b2a,t1a,s4_tecno,haux,taux,t1a_boundary,t1a_regiontraj}.py` が `best.get("phase_per_class_f1", {})` を `log_per_class_ap()` に渡している |
 | `unknown` | `unknown` | 475 | 既知の 2 体系のいずれとも一致しない | 確定不能 |
-| `tool` | `AP` | 222 | 15 クラスの術具 AP | `per_class_coco_map` / `COCOeval.precision` 由来 |
+| `tool` | `AP` | 243 | 15 クラスの術具 AP | `per_class_coco_map` / `COCOeval.precision` 由来 |
 | `None` | `None` | 221 | `per_class_ap.json` が無い・空・パース失敗 | — |
 | `coco_map` | `AP` | 21 |  |  |
 
@@ -631,11 +631,12 @@
 
 | NaN のクラス | runs | 該当群 |
 |---|---:|---|
-| `Retractor` | 199 | `experiments/baselines`, `experiments/baselines/_legacy_score_thr_0`, `experiments/baselines/_smoke_ddq`, `experiments/baselines/_smoke_e3`, `experiments/baselines/_smoke_v2_part3`, `experiments/baselines/stage1_dtower`, `experiments/baselines/stage1_dtower_r2`, `experiments/hand2det_dev`, `experiments/phase1`, `experiments/transfer`, `transfer` |
+| `Retractor` | 219 | `experiments/baselines`, `experiments/baselines/_legacy_score_thr_0`, `experiments/baselines/_smoke_ddq`, `experiments/baselines/_smoke_e3`, `experiments/baselines/_smoke_v2_part3`, `experiments/baselines/stage1_dtower`, `experiments/baselines/stage1_dtower_r2`, `experiments/hand2det_dev`, `experiments/phase1`, `experiments/transfer`, `transfer` |
 | `Mouth Gag`, `Skewer` | 12 | `experiments/baselines/_wrong_split_8_2_3`, `experiments/phase0/_pre_redo_s0_smoke`, `experiments/phase0/_prior_no_eval_recipe` |
 | `Bipolar Forceps`, `Electric Cautery`, `Forceps`, `Gauze`, `Hook`, `Mouth Gag`, `Needle Holders`, `Raspatory`, `Retractor`, `Scalpel`, `Scissors`, `Suction Cannula`, `Syringe`, `Tweezers` | 6 | `experiments/analysis/stage2_pilot_four/andrew/smoke_DX_gt`, `experiments/phase1` |
 | `Electric Cautery`, `Hook` | 4 | `experiments/baselines/stage1_dtower`, `experiments/baselines/stage1_dtower_r2` |
 | `Electric Cautery`, `Mouth Gag` | 4 | `experiments/baselines/stage1_dtower`, `experiments/baselines/stage1_dtower_r2` |
+| `Bipolar Forceps`, `Electric Cautery`, `Forceps`, `Raspatory`, `Retractor`, `Scalpel`, `Syringe` | 1 | `experiments/phase1` |
 
 ### 平均の取り方への含意
 
@@ -644,7 +645,7 @@
 
 ## 6. 命名規約から外れた run
 
-`<step>_<seq3>_<desc>_seed<N>` に一致しない run: 92
+`<step>_<seq3>_<desc>_seed<N>` に一致しない run: 93
 
 - `experiments/analysis/stage2_pilot_four/andrew/smoke_DX_gt/run`
 - `experiments/baselines/stage1_dtower_hostdiff_andrew/point00_dcoco_foldA_seed42a`
@@ -652,6 +653,7 @@
 - `experiments/phase0/_failed_s3_weighted/_004_partial`
 - `experiments/phase0/_failed_s3_weighted/_005_partial`
 - `experiments/phase0/_failed_s3_weighted/_006_partial`
+- `experiments/phase1/graspd2_smoke`
 - `experiments/phase1/grasppilot3_d_smoke2`
 - `experiments/phase1/stage2fix_pd_P1-W1_shuffle_ep4_seed42_smoke`
 - `experiments/phase1/stage2fix_pd_P3_gt_ep4_seed42_smoke`
@@ -857,9 +859,9 @@ adapter を書けば貴重な追加ソースになる。
 |---|---:|
 | per_class_ap.json のクラス集合が既知の 2 体系のいずれとも一致しない (5 クラス) -> metric を確定できないため unknown | 429 |
 | 複数 split の指標が同一 run に共存: ['...', '...']。split は null にした。metrics には <split>__<metric> として split 名を残したまま入れる。 | 426 |
-| host_aliases.json に無い値: '...'。host は null にした。 | 264 |
+| host_aliases.json に無い値: '...'。host は null にした。 | 267 |
 | per_class_ap.json が空 ({...}) | 138 |
-| run 名が命名規約 <step>_<seq3>_<desc>_seed<N> に一致しない | 92 |
+| run 名が命名規約 <step>_<seq3>_<desc>_seed<N> に一致しない | 93 |
 | val と test の指標が共存する。primary（best 選択元）は val。test 側は metrics_by_split['...'] に保持している。 | 89 |
 | per_class_ap.json が存在しない | 75 |
 | per_class_ap.json のクラス集合が既知の 2 体系のいずれとも一致しない (14 クラス) -> metric を確定できないため unknown | 34 |
@@ -949,12 +951,16 @@ adapter を書けば貴重な追加ソースになる。
 | run 名に seq (3 桁連番) が無い別系統の命名: hand2det_1ep_4ch_all_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: hand2det_1ep_4ch_film_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: hand2det_4ch_film_inj_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasparms_B_empty_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: grasparms_B_gt_ep4_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: grasparms_B_gtpred_CF_ep4_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: grasparms_B_pred_CF_ep4_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: grasparms_B_pred_noCF_ep4_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: grasparms_B_shuffle_ep4_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: grasparms_B_toolonly_pred_noCF_ep4_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: grasparms_B_toolonly_shuffle_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: graspd2_gteach_ep15_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: graspd2_shuf_ep15_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: grasppilot2_B_empty_ep4_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: grasppilot2_B_gt_ep4_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: grasppilot2_B_gtpred_CF_ep4_seed<N>。step には description を充てた。 | 1 |
@@ -1051,6 +1057,22 @@ adapter を書けば貴重な追加ソースになる。
 | run 名に seq (3 桁連番) が無い別系統の命名: w23b_pd_P3-W3_gt_ep4_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: w23b_pd_P3-W3_pred_noCF_ep4_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: w23b_pd_P3-W3_shuffle_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w3lra_pd_DX_W3_empty_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w3lra_pd_DX_W3_gt_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w3lra_pd_DX_W3_pred_noCF_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w3lra_pd_DX_W3_shuffle_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w3lra_pd_P1_W3_empty_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w3lra_pd_P1_W3_gt_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w3lra_pd_P1_W3_pred_noCF_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w3lra_pd_P1_W3_shuffle_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w3lra_pd_P2L_W3_empty_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w3lra_pd_P2L_W3_gt_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w3lra_pd_P2L_W3_pred_noCF_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w3lra_pd_P2L_W3_shuffle_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w3lra_pd_P3_W3_empty_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w3lra_pd_P3_W3_gt_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w3lra_pd_P3_W3_pred_noCF_ep4_seed<N>。step には description を充てた。 | 1 |
+| run 名に seq (3 桁連番) が無い別系統の命名: w3lra_pd_P3_W3_shuffle_ep4_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: pd_refin_both_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: pd_refin_empty_seed<N>。step には description を充てた。 | 1 |
 | run 名に seq (3 桁連番) が無い別系統の命名: pd_refin_oracle_seed<N>。step には description を充てた。 | 1 |
@@ -1247,7 +1269,7 @@ mAP 系の指標を持つのに術具 per-class（15 クラス）を持たない
 ## 12. experiments/README.md と実態の乖離
 
 README は step 識別子を **s0〜s9 / a1〜a7（17 種）** と規定しているが、
-実測は **427 種**。README に無い以下の系統が存在する。
+実測は **447 種**。README に無い以下の系統が存在する。
 
 | 系統 | step 識別子の種類 | run 合計 | 例 |
 |---|---:|---:|---|
@@ -1280,7 +1302,7 @@ M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 �
 これを split の既定値とし、`provenance.split = from_plan_section_16_7` を記録する。
 ただし **指標が 1 つもない run には適用しない**（評価されていないため null のまま）。
 
-既定を適用した run: 769
+既定を適用した run: 787
 
 | path | 指標キー |
 |---|---|
@@ -1345,6 +1367,8 @@ M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 �
 | `experiments/hand2det_dev/hand2det_1ep_4ch_all_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
 | `experiments/hand2det_dev/hand2det_1ep_4ch_film_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
 | `experiments/hand2det_dev/hand2det_4ch_film_inj_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/grasparms_B_empty_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/grasparms_B_gt_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
 | `experiments/phase1/grasparms_B_gtpred_CF_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
 | `experiments/phase1/grasparms_B_pred_CF_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
 | `experiments/phase1/grasparms_B_pred_noCF_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
@@ -1965,6 +1989,22 @@ M2研究計画 §16.7（優先度 A 検証結果, 2026/05/29 追加）§16.7.1 �
 | `experiments/phase1/w23b_pd_P3-W3_gt_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
 | `experiments/phase1/w23b_pd_P3-W3_pred_noCF_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
 | `experiments/phase1/w23b_pd_P3-W3_shuffle_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w3lra_pd_DX_W3_empty_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w3lra_pd_DX_W3_gt_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w3lra_pd_DX_W3_pred_noCF_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w3lra_pd_DX_W3_shuffle_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w3lra_pd_P1_W3_empty_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w3lra_pd_P1_W3_gt_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w3lra_pd_P1_W3_pred_noCF_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w3lra_pd_P1_W3_shuffle_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w3lra_pd_P2L_W3_empty_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w3lra_pd_P2L_W3_gt_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w3lra_pd_P2L_W3_pred_noCF_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w3lra_pd_P2L_W3_shuffle_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w3lra_pd_P3_W3_empty_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w3lra_pd_P3_W3_gt_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w3lra_pd_P3_W3_pred_noCF_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
+| `experiments/phase1/w3lra_pd_P3_W3_shuffle_ep4_seed42` | `delta_detection`, `final_epoch`, `final_mAP`, `init_mAP`, `mAP` |
 | `experiments/selection_noise_2026-07-29/runs/base_seed123_rep1` | `rep` |
 | `experiments/selection_noise_2026-07-29/runs/base_seed123_rep2` | `rep` |
 | `experiments/selection_noise_2026-07-29/runs/base_seed123_rep3` | `rep` |
@@ -2361,8 +2401,8 @@ _FROZEN_SRC = os.environ.get("RELDETR_FROZEN_TAG", "relation_detr_seed42")
 **したがって `frozen_source_tag` はキャッシュのパスからのみ導き、
 `frozen_source.seed` と `notes.md` の記述は採用していない。**
 
-- 実験数: **1327** / run 数 2647
-- `experiment_id` を付けられなかった run: 92
+- 実験数: **1347** / run 数 2668
+- `experiment_id` を付けられなかった run: 93
   （run 名が命名規約に一致しない run）
 - `eval_recipe_id` の食い違いで分離した base: 24
   - `baselines/s0/maskdino_bbox@val` -> ['93cb3159bea1', 'None', 'a63aecae1158']
@@ -2540,7 +2580,7 @@ delta:
 
 | 分類 | run 数 |
 |---|---:|
-| `no_denominator_declared` | 2121 |
+| `no_denominator_declared` | 2142 |
 | `injection_from_config_yaml` | 512 |
 | `baseline` | 17 |
 | `denominator_unresolvable` | 12 |
@@ -2587,7 +2627,7 @@ seed ごとに 1 本ずつ対応させることができない。
 per-class の値は 573 個の JSON に分散していて横断分析に使えなかったため、
 `runindex/per_class.csv` に long 形式（1 行 = 1 run × 1 クラス）で 1 ファイル化した。
 
-- `per_class_kind=tool` : 222 run × 15 クラス（術具 **AP**）
+- `per_class_kind=tool` : 243 run × 15 クラス（術具 **AP**）
 - `per_class_kind=phase`: 1708 run × 9 クラス（工程 **F1**）
 
 **この 2 つを混ぜて集計してはならない。** 指標の種類が違う（AP と F1）。
@@ -2946,9 +2986,9 @@ unpaired の σ は paired-σ より大きく出る保守的な推定なので�
 
 | seed_agreement | run 数 | 意味 |
 |---|---:|---|
-| `agree` | 2517 | ディレクトリ名と他証拠が一致 |
+| `agree` | 2537 | ディレクトリ名と他証拠が一致 |
 | `unverified_no_other_evidence` | 38 | `command.sh` も `config.yaml` も無い（g2_* 群） |
-| `no_seed_in_dirname` | 92 | 命名規約外 |
+| `no_seed_in_dirname` | 93 | 命名規約外 |
 | **`conflict`** | **0** | **食い違い** |
 
 **食い違いは 0 件。** したがって Δ の seed 対応が誤っている可能性は排除できる。
@@ -3199,7 +3239,7 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 
 ### 26.1 🔴 決定的になり得る学習スクリプトは **1 本も無い**
 
-監査 48 スクリプト / うち CUDA を使う **20** 本 / 
+監査 49 スクリプト / うち CUDA を使う **20** 本 / 
 `can_be_deterministic = True` は **1** 本。
 
 | 制御項目 | 設定している本数 |
@@ -3230,7 +3270,7 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 | `seed_everything` | 1 | `src/egosurgery/utils/seed.py` のヘルパ経由 |
 | `seed_everything+delegates_to_engines` | 3 | ヘルパを呼びつつ更に委譲もする |
 | `delegates_to_engines` | 1 | 自分では触らず trainer に委譲（`src/egosurgery/train.py`）|
-| `none` | 11 | seed を張らない |
+| `none` | 12 | seed を張らない |
 
 **`seed_everything()` は 6 項目を設定している**
 （`random` / `PYTHONHASHSEED` / `numpy` / `torch.manual_seed` /
@@ -3245,7 +3285,7 @@ torch.manual_seed(args.seed)      # ← CPU 側のみ
 一方 `scripts/train_*.py` 系（**`direct`**、run 数で見て大半）は
 CPU 側 3 種のみで **GPU 側の制御が 1 つも無い**。
 
-影響を受ける run: **1385**（CUDA 学習スクリプトが entrypoint の run）
+影響を受ける run: **1387**（CUDA 学習スクリプトが entrypoint の run）
 
 | スクリプト | run 数 | 欠落している必須項目 |
 |---|---:|---|
@@ -3253,7 +3293,7 @@ CPU 側 3 種のみで **GPU 側の制御が 1 つも無い**。
 | `scripts/train_b2a.py` | 350 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/stage2pilot/dp_train.py` | 235 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_t1a.py` | 132 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
-| `scripts/train_t1b.py` | 116 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
+| `scripts/train_t1b.py` | 118 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_s4_tecno.py` | 61 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_hand2det.py` | 21 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |
 | `scripts/train_haux.py` | 18 | `cuda_manual_seed,use_deterministic_algorithms,cudnn_deterministic` |

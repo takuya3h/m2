@@ -1,0 +1,116 @@
+{
+  "arm": "unknown",
+  "attributes": {
+    "best_is_init": false,
+    "result_selection": "final_epoch"
+  },
+  "command": "#!/usr/bin/env bash\n# 自動生成: この run を起動したコマンドの記録\n# 生成日時: 2026-11-09T01:53:40+00:00\npython /home/ubuntu/slocal2/m2/experiments/analysis/stage2_pd_w3_lowlr_andrew/tools/w3lra_lrwrap.py --seed 42 --trainable all --lr 1e-5 --film-lr 5e-4 --task-id T-2026-11-09-stage2-pd-w3-lowlr-andrew --run-name w3lra_pd_P1_W3_pred_noCF_ep4_seed42 --det-ckpt /home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth --signal-train /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P0_train.npz --signal-val /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-18-stage2-pilot-folda/signals/final/P0_val.npz --epochs 4 --fixed-epochs --amp bf16 --save-predictions-all --ckpt-dir /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-09-stage2-pd-w3-lowlr-andrew/pd_ckpt/w3lra_pd_P1_W3_pred_noCF_ep4_seed42 --save-trainable-only --print-freq 500\n",
+  "commit": "3dc8b512aa7cbec20e69da3e0c201c39ee46a675",
+  "config_path": "experiments/phase1/w3lra_pd_P1_W3_pred_noCF_ep4_seed42/config.yaml",
+  "conflicting_bare_keys": [],
+  "control_note_value": null,
+  "control_of": null,
+  "delta_declaration": null,
+  "description": "w3lra_pd_P1_W3_pred_noCF_ep4",
+  "duplicate_bare_keys": [],
+  "epoch": 3,
+  "eval_recipe": null,
+  "eval_recipe_id": null,
+  "evidence_completeness": "full",
+  "excluded": false,
+  "exclusion_reason": null,
+  "experiment_id": "phase1/w3lra_pd_P1_W3_pred_noCF_ep4/w3lra_pd_P1_W3_pred_noCF_ep4@val",
+  "experiment_id_provenance": "from_run_name",
+  "frozen_source_seed_declared": null,
+  "frozen_source_tag": null,
+  "gpu": null,
+  "group": "phase1",
+  "harvest_warnings": [
+    "run 名に seq (3 桁連番) が無い別系統の命名: w3lra_pd_P1_W3_pred_noCF_ep4_seed42。step には description を充てた。"
+  ],
+  "host": "andrew",
+  "host_raw": "andrew",
+  "ledger_key": "phase1__w3lra_pd_P1_W3_pred_noCF_ep4_seed42",
+  "metrics": {
+    "delta_detection": -0.0075726236479970455,
+    "final_epoch": 3,
+    "final_mAP": 0.7197724011918458,
+    "init_mAP": 0.7273450248398429,
+    "mAP": 0.7197724011918458
+  },
+  "metrics_by_split": {
+    "unknown": {
+      "delta_detection": -0.0075726236479970455,
+      "final_epoch": 3,
+      "final_mAP": 0.7197724011918458,
+      "init_mAP": 0.7273450248398429,
+      "mAP": 0.7197724011918458
+    }
+  },
+  "metrics_nested": {
+    "artifacts": {
+      "checkpoints": "andrew:/home/ubuntu/slocal2/m2/experiments/phase1/w3lra_pd_P1_W3_pred_noCF_ep4_seed42/checkpoints",
+      "logs": "andrew:/home/ubuntu/slocal2/m2/experiments/phase1/w3lra_pd_P1_W3_pred_noCF_ep4_seed42/logs",
+      "predictions": "andrew:/home/ubuntu/slocal2/m2/experiments/phase1/w3lra_pd_P1_W3_pred_noCF_ep4_seed42/predictions",
+      "run_dir": "andrew:/home/ubuntu/slocal2/m2/experiments/phase1/w3lra_pd_P1_W3_pred_noCF_ep4_seed42"
+    }
+  },
+  "metrics_primary_split": null,
+  "metrics_source": "metrics_json",
+  "notes": "# 非公式（T-2026-11-09-stage2-pd-w3-lowlr-andrew） PD FiLM（P1） W3 pred_noCF seed 42\n\n**非公式の測定。関門の判定と設計の判断に使わない。**\n\n受け取り手は D*-COCO 折り A seed 42 の検出塔。受け取り手の学習率 1e-05（比 0.1 の群はその 0.1 倍）、界面 0.0005。学習範囲 W3（--trainable all、学ぶ要素 48738080、うち界面 266880）。4 epoch 学習し途中で止めない。結果は 4 epoch 目（epoch 3）の状態で、最良の回を選ばない。val（動画 09・10）だけで評価した。test は通していない。\n\n- overall mAP 0.719772、AP50 0.846626、標的群 AP 0.791328、陰性対照群 AP 0.666043\n- 学習前 mAP 0.727345、学習前の塔単独との出力の差 {'comparable': True, 'max_abs_score_diff': 0.0, 'max_abs_bbox_diff_px': 0.0, 'label_mismatch': 0}\n- epoch ごとの val（−1 は学習前）: {-1: (0.727345, 0.795075), 0: (0.728023, 0.799614), 1: (0.729102, 0.808775), 2: (0.731402, 0.80586), 3: (0.719772, 0.791328)}\n- epoch ごとのゲート・界面の重み: {-1: None, 0: None, 1: None, 2: None, 3: None}\n- 受け取り手の動いた量（L2、相対）: 6.31403、0.007385537357070855\n- 動画ごとの mAP: {'09': 0.6998343102654613, '10': 0.6390782496446616}\n- 通した動画: train ['01', '02', '03', '06', '08', '11', '12', '13', '14', '15']、val ['09', '10']、test との共通 []\n- 凍結部の要約値の前後一致: True\n- 群の学習率（epoch ごと、記録 lr_groups.json）: {0: {'other': 1e-05, 'backbone': 1.0000000000000002e-06, 'backbone_norm': 1.0000000000000002e-06, 'linear_projection': 1.0000000000000002e-06, 'linear_projection_norm': 1.0000000000000002e-06, 'other_norm': 1e-05, 'phase': 0.0005}, 1: {'other': 1e-05, 'backbone': 1.0000000000000002e-06, 'backbone_norm': 1.0000000000000002e-06, 'linear_projection': 1.0000000000000002e-06, 'linear_projection_norm': 1.0000000000000002e-06, 'other_norm': 1e-05, 'phase': 0.0005}, 2: {'other': 1e-05, 'backbone': 1.0000000000000002e-06, 'backbone_norm': 1.0000000000000002e-06, 'linear_projection': 1.0000000000000002e-06, 'linear_projection_norm': 1.0000000000000002e-06, 'other_norm': 1e-05, 'phase': 0.0005}, 3: {'other': 1e-05, 'backbone': 1.0000000000000002e-06, 'backbone_norm': 1.0000000000000002e-06, 'linear_projection': 1.0000000000000002e-06, 'linear_projection_norm': 1.0000000000000002e-06, 'other_norm': 1e-05, 'phase': 0.0005}}\n",
+  "notion_page_id": null,
+  "pairing_provenance": "not_determinable",
+  "path": "experiments/phase1/w3lra_pd_P1_W3_pred_noCF_ep4_seed42",
+  "per_class": {
+    "Bipolar Forceps": 0.7197085393151721,
+    "Electric Cautery": 0.9633462642434649,
+    "Forceps": 0.3382062250233934,
+    "Gauze": 0.25560421936296807,
+    "Hook": 0.6233426681325659,
+    "Mouth Gag": 0.8047528437130964,
+    "Needle Holders": 0.8437982058141789,
+    "Raspatory": 0.8104010822726438,
+    "Retractor": null,
+    "Scalpel": 0.9111814045983508,
+    "Scissors": 0.6873096817113541,
+    "Skewer": 0.954883340950465,
+    "Suction Cannula": 0.8297919621961914,
+    "Syringe": 0.5604631782464143,
+    "Tweezers": 0.7740240011055833
+  },
+  "per_class_kind": "tool",
+  "per_class_metric": "AP",
+  "per_class_nan_classes": [
+    "Retractor"
+  ],
+  "per_class_source": "experiments/phase1/w3lra_pd_P1_W3_pred_noCF_ep4_seed42/per_class_ap.json",
+  "per_class_valid_count": 14,
+  "provenance": {
+    "aux_token": "no_aux_token",
+    "commit": "from_git_commit_txt",
+    "epoch": "from_metrics_json",
+    "host": "from_server_txt",
+    "name": "from_dirname_desc_seed_no_seq",
+    "per_class": "from_per_class_ap_json",
+    "per_class_metric": "from_class_set_and_writer_script",
+    "seed": "from_dirname_verified_by_command_sh_and_config_yaml",
+    "seed_detector": "not_determinable",
+    "seed_phase": "not_determinable",
+    "split": "from_plan_section_16_7",
+    "step": "from_dirname"
+  },
+  "run_id": "w3lra_pd_P1_W3_pred_noCF_ep4_seed42",
+  "seed": 42,
+  "seed_agreement": "agree",
+  "seed_command": 42,
+  "seed_config": 42,
+  "seed_detector": null,
+  "seed_phase": null,
+  "seq": null,
+  "split": "val",
+  "step": "w3lra_pd_P1_W3_pred_noCF_ep4",
+  "subgroup": null,
+  "task_id": "T-2026-11-09-stage2-pd-w3-lowlr-andrew",
+  "wandb_run_id": null,
+  "wandb_run_url": null
+}

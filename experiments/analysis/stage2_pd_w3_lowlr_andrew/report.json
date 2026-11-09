@@ -1,0 +1,6433 @@
+{
+ "task_id": "T-2026-11-09-stage2-pd-w3-lowlr-andrew",
+ "unofficial": true,
+ "tower": {
+  "AP": 0.7273450248398429,
+  "target_AP": 0.7950748008550897,
+  "control_AP": 0.6726631817581498,
+  "AP50": 0.851807431425236,
+  "per_video_AP": {
+   "09": 0.704273483949694,
+   "10": 0.6420973291237674
+  },
+  "per_class_ap": {
+   "Bipolar Forceps": 0.7898794444235409,
+   "Electric Cautery": 0.9687812331789367,
+   "Forceps": 0.3561239611642256,
+   "Gauze": 0.26918130139973323,
+   "Hook": 0.6365377594169036,
+   "Mouth Gag": 0.799206245873842,
+   "Needle Holders": 0.845680655120691,
+   "Raspatory": 0.803773438439878,
+   "Retractor": NaN,
+   "Scalpel": 0.9005223036860694,
+   "Scissors": 0.7096800075689964,
+   "Skewer": 0.9443283539032797,
+   "Suction Cannula": 0.8348758163714836,
+   "Syringe": 0.5368704638226811,
+   "Tweezers": 0.7873893633875403
+  }
+ },
+ "tables": {
+  "P1": {
+   "empty": {
+    "run": "w3lra_pd_P1_W3_empty_ep4_seed42",
+    "measured": true,
+    "AP": 0.7137979575475046,
+    "target_AP": 0.7775206505589095,
+    "control_AP": 0.6636551857916307,
+    "AP50": 0.8418578799287353,
+    "per_video_AP": {
+     "09": 0.692067577838213,
+     "10": 0.6331453944004739
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.720564690145936,
+     "Electric Cautery": 0.9656052662889687,
+     "Forceps": 0.3419678283000357,
+     "Gauze": 0.25077728005693334,
+     "Hook": 0.6141989006444415,
+     "Mouth Gag": 0.7990436051730011,
+     "Needle Holders": 0.8421121777420936,
+     "Raspatory": 0.809212004580738,
+     "Retractor": NaN,
+     "Scalpel": 0.8788371390298038,
+     "Scissors": 0.6870632367284554,
+     "Skewer": 0.9387330515137106,
+     "Suction Cannula": 0.8286506926112801,
+     "Syringe": 0.540256367524359,
+     "Tweezers": 0.7761491653253084
+    },
+    "per_epoch": {
+     "-1": {
+      "AP": 0.7273450248398429,
+      "AP50": 0.851807431425236,
+      "target_AP": 0.7950748008550897,
+      "control_AP": 0.6726631817581498,
+      "per_video_AP": {
+       "09": 0.704273483949694,
+       "10": 0.6420973291237674
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "0": {
+      "AP": 0.7259605485866254,
+      "AP50": 0.8524602742465464,
+      "target_AP": 0.7910149808064575,
+      "control_AP": 0.6800935627927736,
+      "per_video_AP": {
+       "09": 0.7000780432030207,
+       "10": 0.6366548183646947
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "1": {
+      "AP": 0.7224269681990506,
+      "AP50": 0.8484207588490884,
+      "target_AP": 0.7913319988622612,
+      "control_AP": 0.6693793412648896,
+      "per_video_AP": {
+       "09": 0.6985213053403644,
+       "10": 0.6348792519075711
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "2": {
+      "AP": 0.7245047548508139,
+      "AP50": 0.8510482464664677,
+      "target_AP": 0.7907597433466877,
+      "control_AP": 0.6768271703052517,
+      "per_video_AP": {
+       "09": 0.7008542888811918,
+       "10": 0.6434563187127474
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "3": {
+      "AP": 0.7137979575475046,
+      "AP50": 0.8418578799287353,
+      "target_AP": 0.7775206505589095,
+      "control_AP": 0.6636551857916307,
+      "per_video_AP": {
+       "09": 0.692067577838213,
+       "10": 0.6331453944004739
+      },
+      "target_missing": [],
+      "control_missing": []
+     }
+    },
+    "receiver_rel_delta": 0.007382859875698628,
+    "receiver_delta_l2": 6.3117367999760035,
+    "init_diff_vs_tower": {
+     "comparable": true,
+     "max_abs_score_diff": 0.0,
+     "max_abs_bbox_diff_px": 0.0,
+     "label_mismatch": 0
+    },
+    "frozen_unchanged": true,
+    "total_trainable": 48738080,
+    "videos": {
+     "train": [
+      "01",
+      "02",
+      "03",
+      "06",
+      "08",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15"
+     ],
+     "val_evaluated": [
+      "09",
+      "10"
+     ],
+     "test_overlap": []
+    },
+    "server": "andrew",
+    "lr_record": {
+     "groups": [
+      {
+       "label": "other",
+       "lr_given": 1e-05,
+       "weight_decay_given": null,
+       "n_tensors": 125,
+       "n_elements": 24384000
+      },
+      {
+       "label": "backbone",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 42,
+       "n_elements": 23232512
+      },
+      {
+       "label": "backbone_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 0,
+       "n_elements": 0
+      },
+      {
+       "label": "linear_projection",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 12,
+       "n_elements": 786432
+      },
+      {
+       "label": "linear_projection_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 12,
+       "n_elements": 3072
+      },
+      {
+       "label": "other_norm",
+       "lr_given": 1e-05,
+       "weight_decay_given": 0,
+       "n_tensors": 181,
+       "n_elements": 65184
+      },
+      {
+       "label": "phase",
+       "lr_given": 0.0005,
+       "weight_decay_given": null,
+       "n_tensors": 4,
+       "n_elements": 266880
+      }
+     ],
+     "init": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "after_step_1": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "by_epoch": {
+      "0": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "1": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "2": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "3": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      }
+     },
+     "constant_over_snapshots": true,
+     "n_snapshots": 7,
+     "opt_steps_at_last_eval": 19236
+    },
+    "lr_arg": 1e-05,
+    "film_lr_arg": 0.0005,
+    "wall_seconds": 20697.0,
+    "result_epoch": 3,
+    "d_empty": {
+     "AP": 0.0,
+     "target_AP": 0.0,
+     "control_AP": 0.0,
+     "AP50": 0.0
+    },
+    "d_shuffle": {
+     "AP": -0.003547454089975255,
+     "target_AP": -0.007388914688267967,
+     "control_AP": 0.00020158476744247533,
+     "AP50": -0.0007264483453319759
+    },
+    "d_tower": {
+     "AP": -0.013547067292338233,
+     "target_AP": -0.017554150296180238,
+     "control_AP": -0.009007995966519022,
+     "AP50": -0.009949551496500675
+    },
+    "per_video_d": {
+     "empty": {
+      "09": 0.0,
+      "10": 0.0
+     },
+     "shuffle": {
+      "09": -0.0024882205741175722,
+      "10": -0.004547410244468697
+     },
+     "tower": {
+      "09": -0.01220590611148098,
+      "10": -0.008951934723293475
+     }
+    }
+   },
+   "pred_noCF": {
+    "run": "w3lra_pd_P1_W3_pred_noCF_ep4_seed42",
+    "measured": true,
+    "AP": 0.7197724011918458,
+    "target_AP": 0.7913275090766093,
+    "control_AP": 0.6660432565944598,
+    "AP50": 0.8466264254195962,
+    "per_video_AP": {
+     "09": 0.6998343102654613,
+     "10": 0.6390782496446616
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.7197085393151721,
+     "Electric Cautery": 0.9633462642434649,
+     "Forceps": 0.3382062250233934,
+     "Gauze": 0.25560421936296807,
+     "Hook": 0.6233426681325659,
+     "Mouth Gag": 0.8047528437130964,
+     "Needle Holders": 0.8437982058141789,
+     "Raspatory": 0.8104010822726438,
+     "Retractor": NaN,
+     "Scalpel": 0.9111814045983508,
+     "Scissors": 0.6873096817113541,
+     "Skewer": 0.954883340950465,
+     "Suction Cannula": 0.8297919621961914,
+     "Syringe": 0.5604631782464143,
+     "Tweezers": 0.7740240011055833
+    },
+    "per_epoch": {
+     "-1": {
+      "AP": 0.7273450248398429,
+      "AP50": 0.851807431425236,
+      "target_AP": 0.7950748008550897,
+      "control_AP": 0.6726631817581498,
+      "per_video_AP": {
+       "09": 0.704273483949694,
+       "10": 0.6420973291237674
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "0": {
+      "AP": 0.7280232806000758,
+      "AP50": 0.8538750145044057,
+      "target_AP": 0.7996141460652927,
+      "control_AP": 0.677923127134675,
+      "per_video_AP": {
+       "09": 0.6999444818830671,
+       "10": 0.6402336202424762
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "1": {
+      "AP": 0.7291022506382646,
+      "AP50": 0.8547543249363604,
+      "target_AP": 0.808774617187443,
+      "control_AP": 0.6691127455309113,
+      "per_video_AP": {
+       "09": 0.7043072278013743,
+       "10": 0.6424307737373252
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "2": {
+      "AP": 0.7314022629968611,
+      "AP50": 0.8572995021669859,
+      "target_AP": 0.8058604795237937,
+      "control_AP": 0.6785906506210163,
+      "per_video_AP": {
+       "09": 0.7063876312098433,
+       "10": 0.6502710529035857
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "3": {
+      "AP": 0.7197724011918458,
+      "AP50": 0.8466264254195962,
+      "target_AP": 0.7913275090766093,
+      "control_AP": 0.6660432565944598,
+      "per_video_AP": {
+       "09": 0.6998343102654613,
+       "10": 0.6390782496446616
+      },
+      "target_missing": [],
+      "control_missing": []
+     }
+    },
+    "receiver_rel_delta": 0.007385537357070855,
+    "receiver_delta_l2": 6.314025825908076,
+    "init_diff_vs_tower": {
+     "comparable": true,
+     "max_abs_score_diff": 0.0,
+     "max_abs_bbox_diff_px": 0.0,
+     "label_mismatch": 0
+    },
+    "frozen_unchanged": true,
+    "total_trainable": 48738080,
+    "videos": {
+     "train": [
+      "01",
+      "02",
+      "03",
+      "06",
+      "08",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15"
+     ],
+     "val_evaluated": [
+      "09",
+      "10"
+     ],
+     "test_overlap": []
+    },
+    "server": "andrew",
+    "lr_record": {
+     "groups": [
+      {
+       "label": "other",
+       "lr_given": 1e-05,
+       "weight_decay_given": null,
+       "n_tensors": 125,
+       "n_elements": 24384000
+      },
+      {
+       "label": "backbone",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 42,
+       "n_elements": 23232512
+      },
+      {
+       "label": "backbone_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 0,
+       "n_elements": 0
+      },
+      {
+       "label": "linear_projection",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 12,
+       "n_elements": 786432
+      },
+      {
+       "label": "linear_projection_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 12,
+       "n_elements": 3072
+      },
+      {
+       "label": "other_norm",
+       "lr_given": 1e-05,
+       "weight_decay_given": 0,
+       "n_tensors": 181,
+       "n_elements": 65184
+      },
+      {
+       "label": "phase",
+       "lr_given": 0.0005,
+       "weight_decay_given": null,
+       "n_tensors": 4,
+       "n_elements": 266880
+      }
+     ],
+     "init": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "after_step_1": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "by_epoch": {
+      "0": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "1": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "2": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "3": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      }
+     },
+     "constant_over_snapshots": true,
+     "n_snapshots": 7,
+     "opt_steps_at_last_eval": 19236
+    },
+    "lr_arg": 1e-05,
+    "film_lr_arg": 0.0005,
+    "wall_seconds": 21059.0,
+    "result_epoch": 3,
+    "d_empty": {
+     "AP": 0.0059744436443411875,
+     "target_AP": 0.013806858517699805,
+     "control_AP": 0.002388070802829101,
+     "AP50": 0.00476854549086092
+    },
+    "d_shuffle": {
+     "AP": 0.0024269895543659326,
+     "target_AP": 0.006417943829431838,
+     "control_AP": 0.0025896555702715762,
+     "AP50": 0.0040420971455289445
+    },
+    "d_tower": {
+     "AP": -0.0075726236479970455,
+     "target_AP": -0.0037472917784804327,
+     "control_AP": -0.0066199251636899215,
+     "AP50": -0.0051810060056397544
+    },
+    "per_video_d": {
+     "empty": {
+      "09": 0.007766732427248235,
+      "10": 0.00593285524418774
+     },
+     "shuffle": {
+      "09": 0.005278511853130663,
+      "10": 0.0013854449997190432
+     },
+     "tower": {
+      "09": -0.0044391736842327445,
+      "10": -0.003019079479105735
+     }
+    }
+   },
+   "gt": {
+    "run": "w3lra_pd_P1_W3_gt_ep4_seed42",
+    "measured": true,
+    "AP": 0.726269015203149,
+    "target_AP": 0.8076587207945399,
+    "control_AP": 0.6639102604725461,
+    "AP50": 0.8529380206752917,
+    "per_video_AP": {
+     "09": 0.6956436437366951,
+     "10": 0.6513991737751601
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.7928253412365236,
+     "Electric Cautery": 0.9643505708237025,
+     "Forceps": 0.33222641205184356,
+     "Gauze": 0.2490789614946566,
+     "Hook": 0.6260140681753725,
+     "Mouth Gag": 0.7993720552648999,
+     "Needle Holders": 0.8464155021709163,
+     "Raspatory": 0.8283408637192935,
+     "Retractor": NaN,
+     "Scalpel": 0.9157549971600059,
+     "Scissors": 0.7048250137593655,
+     "Skewer": 0.9468495515857993,
+     "Suction Cannula": 0.8301151423521632,
+     "Syringe": 0.5545228502710777,
+     "Tweezers": 0.7770748827784649
+    },
+    "per_epoch": {
+     "-1": {
+      "AP": 0.7273450248398429,
+      "AP50": 0.851807431425236,
+      "target_AP": 0.7950748008550897,
+      "control_AP": 0.6726631817581498,
+      "per_video_AP": {
+       "09": 0.704273483949694,
+       "10": 0.6420973291237674
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "0": {
+      "AP": 0.7327263022797113,
+      "AP50": 0.8586864914340969,
+      "target_AP": 0.8090898106426316,
+      "control_AP": 0.6769384756860222,
+      "per_video_AP": {
+       "09": 0.6991905479387696,
+       "10": 0.6477853558027002
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "1": {
+      "AP": 0.7339531894130452,
+      "AP50": 0.8594852747043565,
+      "target_AP": 0.8217274311263628,
+      "control_AP": 0.6696611727033043,
+      "per_video_AP": {
+       "09": 0.7027410164248978,
+       "10": 0.6523553337419004
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "2": {
+      "AP": 0.7362990312065298,
+      "AP50": 0.8624472191579371,
+      "target_AP": 0.8189796453600193,
+      "control_AP": 0.6764920527465914,
+      "per_video_AP": {
+       "09": 0.7080195041003983,
+       "10": 0.6586869591515498
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "3": {
+      "AP": 0.726269015203149,
+      "AP50": 0.8529380206752917,
+      "target_AP": 0.8076587207945399,
+      "control_AP": 0.6639102604725461,
+      "per_video_AP": {
+       "09": 0.6956436437366951,
+       "10": 0.6513991737751601
+      },
+      "target_missing": [],
+      "control_missing": []
+     }
+    },
+    "receiver_rel_delta": 0.0073802805384060866,
+    "receiver_delta_l2": 6.309531679144377,
+    "init_diff_vs_tower": {
+     "comparable": true,
+     "max_abs_score_diff": 0.0,
+     "max_abs_bbox_diff_px": 0.0,
+     "label_mismatch": 0
+    },
+    "frozen_unchanged": true,
+    "total_trainable": 48738080,
+    "videos": {
+     "train": [
+      "01",
+      "02",
+      "03",
+      "06",
+      "08",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15"
+     ],
+     "val_evaluated": [
+      "09",
+      "10"
+     ],
+     "test_overlap": []
+    },
+    "server": "andrew",
+    "lr_record": {
+     "groups": [
+      {
+       "label": "other",
+       "lr_given": 1e-05,
+       "weight_decay_given": null,
+       "n_tensors": 125,
+       "n_elements": 24384000
+      },
+      {
+       "label": "backbone",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 42,
+       "n_elements": 23232512
+      },
+      {
+       "label": "backbone_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 0,
+       "n_elements": 0
+      },
+      {
+       "label": "linear_projection",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 12,
+       "n_elements": 786432
+      },
+      {
+       "label": "linear_projection_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 12,
+       "n_elements": 3072
+      },
+      {
+       "label": "other_norm",
+       "lr_given": 1e-05,
+       "weight_decay_given": 0,
+       "n_tensors": 181,
+       "n_elements": 65184
+      },
+      {
+       "label": "phase",
+       "lr_given": 0.0005,
+       "weight_decay_given": null,
+       "n_tensors": 4,
+       "n_elements": 266880
+      }
+     ],
+     "init": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "after_step_1": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "by_epoch": {
+      "0": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "1": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "2": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "3": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      }
+     },
+     "constant_over_snapshots": true,
+     "n_snapshots": 7,
+     "opt_steps_at_last_eval": 19236
+    },
+    "lr_arg": 1e-05,
+    "film_lr_arg": 0.0005,
+    "wall_seconds": 20723.0,
+    "result_epoch": 3,
+    "d_empty": {
+     "AP": 0.01247105765564438,
+     "target_AP": 0.03013807023563042,
+     "control_AP": 0.0002550746809153459,
+     "AP50": 0.011080140746556388
+    },
+    "d_shuffle": {
+     "AP": 0.008923603565669125,
+     "target_AP": 0.022749155547362454,
+     "control_AP": 0.00045665944835782124,
+     "AP50": 0.010353692401224412
+    },
+    "d_tower": {
+     "AP": -0.0010760096366938532,
+     "target_AP": 0.012583919939450183,
+     "control_AP": -0.008752921285603676,
+     "AP50": 0.0011305892500557135
+    },
+    "per_video_d": {
+     "empty": {
+      "09": 0.003576065898482028,
+      "10": 0.018253779374686196
+     },
+     "shuffle": {
+      "09": 0.001087845324364456,
+      "10": 0.0137063691302175
+     },
+     "tower": {
+      "09": -0.008629840212998952,
+      "10": 0.009301844651392721
+     }
+    }
+   },
+   "shuffle": {
+    "run": "w3lra_pd_P1_W3_shuffle_ep4_seed42",
+    "measured": true,
+    "AP": 0.7173454116374799,
+    "target_AP": 0.7849095652471775,
+    "control_AP": 0.6634536010241883,
+    "AP50": 0.8425843282740673,
+    "per_video_AP": {
+     "09": 0.6945557984123306,
+     "10": 0.6376928046449426
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.7332856242090003,
+     "Electric Cautery": 0.9637244640133735,
+     "Forceps": 0.337990503578457,
+     "Gauze": 0.24442253887524465,
+     "Hook": 0.6259035092610873,
+     "Mouth Gag": 0.8003172756560728,
+     "Needle Holders": 0.8433955773321261,
+     "Raspatory": 0.8080601984910973,
+     "Retractor": NaN,
+     "Scalpel": 0.8840494841543245,
+     "Scissors": 0.6934594784070343,
+     "Skewer": 0.937677941692416,
+     "Suction Cannula": 0.8319923468593822,
+     "Syringe": 0.5614745776890494,
+     "Tweezers": 0.7770822427060537
+    },
+    "per_epoch": {
+     "-1": {
+      "AP": 0.7273450248398429,
+      "AP50": 0.851807431425236,
+      "target_AP": 0.7950748008550897,
+      "control_AP": 0.6726631817581498,
+      "per_video_AP": {
+       "09": 0.704273483949694,
+       "10": 0.6420973291237674
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "0": {
+      "AP": 0.7250400832721646,
+      "AP50": 0.8490931048412305,
+      "target_AP": 0.7912081626341954,
+      "control_AP": 0.6770856157150771,
+      "per_video_AP": {
+       "09": 0.6992961651031898,
+       "10": 0.6392222632257168
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "1": {
+      "AP": 0.7213620476703938,
+      "AP50": 0.8470602681970038,
+      "target_AP": 0.7916425247713091,
+      "control_AP": 0.6682418566419545,
+      "per_video_AP": {
+       "09": 0.6977435465515207,
+       "10": 0.6353320357053531
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "2": {
+      "AP": 0.728667825507765,
+      "AP50": 0.8544133333087105,
+      "target_AP": 0.797003461093609,
+      "control_AP": 0.6784027850343305,
+      "per_video_AP": {
+       "09": 0.7048085059009016,
+       "10": 0.6442580677877986
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "3": {
+      "AP": 0.7173454116374799,
+      "AP50": 0.8425843282740673,
+      "target_AP": 0.7849095652471775,
+      "control_AP": 0.6634536010241883,
+      "per_video_AP": {
+       "09": 0.6945557984123306,
+       "10": 0.6376928046449426
+      },
+      "target_missing": [],
+      "control_missing": []
+     }
+    },
+    "receiver_rel_delta": 0.007386008623294109,
+    "receiver_delta_l2": 6.31442871969368,
+    "init_diff_vs_tower": {
+     "comparable": true,
+     "max_abs_score_diff": 0.0,
+     "max_abs_bbox_diff_px": 0.0,
+     "label_mismatch": 0
+    },
+    "frozen_unchanged": true,
+    "total_trainable": 48738080,
+    "videos": {
+     "train": [
+      "01",
+      "02",
+      "03",
+      "06",
+      "08",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15"
+     ],
+     "val_evaluated": [
+      "09",
+      "10"
+     ],
+     "test_overlap": []
+    },
+    "server": "andrew",
+    "lr_record": {
+     "groups": [
+      {
+       "label": "other",
+       "lr_given": 1e-05,
+       "weight_decay_given": null,
+       "n_tensors": 125,
+       "n_elements": 24384000
+      },
+      {
+       "label": "backbone",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 42,
+       "n_elements": 23232512
+      },
+      {
+       "label": "backbone_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 0,
+       "n_elements": 0
+      },
+      {
+       "label": "linear_projection",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 12,
+       "n_elements": 786432
+      },
+      {
+       "label": "linear_projection_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 12,
+       "n_elements": 3072
+      },
+      {
+       "label": "other_norm",
+       "lr_given": 1e-05,
+       "weight_decay_given": 0,
+       "n_tensors": 181,
+       "n_elements": 65184
+      },
+      {
+       "label": "phase",
+       "lr_given": 0.0005,
+       "weight_decay_given": null,
+       "n_tensors": 4,
+       "n_elements": 266880
+      }
+     ],
+     "init": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "after_step_1": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "by_epoch": {
+      "0": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "1": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "2": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "3": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      }
+     },
+     "constant_over_snapshots": true,
+     "n_snapshots": 7,
+     "opt_steps_at_last_eval": 19236
+    },
+    "lr_arg": 1e-05,
+    "film_lr_arg": 0.0005,
+    "wall_seconds": 21060.0,
+    "result_epoch": 3,
+    "d_empty": {
+     "AP": 0.003547454089975255,
+     "target_AP": 0.007388914688267967,
+     "control_AP": -0.00020158476744247533,
+     "AP50": 0.0007264483453319759
+    },
+    "d_shuffle": {
+     "AP": 0.0,
+     "target_AP": 0.0,
+     "control_AP": 0.0,
+     "AP50": 0.0
+    },
+    "d_tower": {
+     "AP": -0.009999613202362978,
+     "target_AP": -0.01016523560791227,
+     "control_AP": -0.009209580733961498,
+     "AP50": -0.009223103151168699
+    },
+    "per_video_d": {
+     "empty": {
+      "09": 0.0024882205741175722,
+      "10": 0.004547410244468697
+     },
+     "shuffle": {
+      "09": 0.0,
+      "10": 0.0
+     },
+     "tower": {
+      "09": -0.009717685537363407,
+      "10": -0.004404524478824778
+     }
+    }
+   }
+  },
+  "P2L": {
+   "empty": {
+    "run": "w3lra_pd_P2L_W3_empty_ep4_seed42",
+    "measured": true,
+    "AP": 0.7160966558432276,
+    "target_AP": 0.7739161895627167,
+    "control_AP": 0.6707908606944025,
+    "AP50": 0.841143021546063,
+    "per_video_AP": {
+     "09": 0.6997855147756469,
+     "10": 0.6330215480415703
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.6964155588144282,
+     "Electric Cautery": 0.9632522693549433,
+     "Forceps": 0.3539800330004568,
+     "Gauze": 0.2624693339368374,
+     "Hook": 0.6270900245315304,
+     "Mouth Gag": 0.8093066974611397,
+     "Needle Holders": 0.847801543351795,
+     "Raspatory": 0.7887097405315465,
+     "Retractor": NaN,
+     "Scalpel": 0.8765100971635313,
+     "Scissors": 0.6804849209752671,
+     "Skewer": 0.9429897742559801,
+     "Suction Cannula": 0.8334371335982366,
+     "Syringe": 0.564955777048097,
+     "Tweezers": 0.7779502777813961
+    },
+    "per_epoch": {
+     "-1": {
+      "AP": 0.7273450248398429,
+      "AP50": 0.851807431425236,
+      "target_AP": 0.7950748008550897,
+      "control_AP": 0.6726631817581498,
+      "per_video_AP": {
+       "09": 0.704273483949694,
+       "10": 0.6420973291237674
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "0": {
+      "AP": 0.7255340956121878,
+      "AP50": 0.8474362265447657,
+      "target_AP": 0.7955905677720696,
+      "control_AP": 0.6760847588920282,
+      "per_video_AP": {
+       "09": 0.7040742765114325,
+       "10": 0.6421017059793723
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "1": {
+      "AP": 0.7207278977119361,
+      "AP50": 0.8468761096129145,
+      "target_AP": 0.7849186318893383,
+      "control_AP": 0.6693568385756211,
+      "per_video_AP": {
+       "09": 0.7030319052879608,
+       "10": 0.6400678468052083
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "2": {
+      "AP": 0.7164030407805271,
+      "AP50": 0.8437500713003623,
+      "target_AP": 0.7800381907089589,
+      "control_AP": 0.6666041460516456,
+      "per_video_AP": {
+       "09": 0.6974628853278031,
+       "10": 0.6347254499648404
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "3": {
+      "AP": 0.7160966558432276,
+      "AP50": 0.841143021546063,
+      "target_AP": 0.7739161895627167,
+      "control_AP": 0.6707908606944025,
+      "per_video_AP": {
+       "09": 0.6997855147756469,
+       "10": 0.6330215480415703
+      },
+      "target_missing": [],
+      "control_missing": []
+     }
+    },
+    "receiver_rel_delta": 0.007373473416401553,
+    "receiver_delta_l2": 6.303712150779852,
+    "init_diff_vs_tower": {
+     "comparable": true,
+     "max_abs_score_diff": 0.0,
+     "max_abs_bbox_diff_px": 0.0,
+     "label_mismatch": 0
+    },
+    "frozen_unchanged": true,
+    "total_trainable": 48471350,
+    "videos": {
+     "train": [
+      "01",
+      "02",
+      "03",
+      "06",
+      "08",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15"
+     ],
+     "val_evaluated": [
+      "09",
+      "10"
+     ],
+     "test_overlap": []
+    },
+    "server": "andrew",
+    "lr_record": {
+     "groups": [
+      {
+       "label": "other",
+       "lr_given": 1e-05,
+       "weight_decay_given": null,
+       "n_tensors": 125,
+       "n_elements": 24384000
+      },
+      {
+       "label": "backbone",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 42,
+       "n_elements": 23232512
+      },
+      {
+       "label": "backbone_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 0,
+       "n_elements": 0
+      },
+      {
+       "label": "linear_projection",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 12,
+       "n_elements": 786432
+      },
+      {
+       "label": "linear_projection_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 12,
+       "n_elements": 3072
+      },
+      {
+       "label": "other_norm",
+       "lr_given": 1e-05,
+       "weight_decay_given": 0,
+       "n_tensors": 181,
+       "n_elements": 65184
+      },
+      {
+       "label": "phase",
+       "lr_given": 0.0005,
+       "weight_decay_given": null,
+       "n_tensors": 2,
+       "n_elements": 150
+      }
+     ],
+     "init": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "after_step_1": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "by_epoch": {
+      "0": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "1": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "2": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "3": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      }
+     },
+     "constant_over_snapshots": true,
+     "n_snapshots": 7,
+     "opt_steps_at_last_eval": 19236
+    },
+    "lr_arg": 1e-05,
+    "film_lr_arg": 0.0005,
+    "wall_seconds": 20719.0,
+    "result_epoch": 3,
+    "d_empty": {
+     "AP": 0.0,
+     "target_AP": 0.0,
+     "control_AP": 0.0,
+     "AP50": 0.0
+    },
+    "d_shuffle": {
+     "AP": -0.0006344661492532211,
+     "target_AP": -0.002470238587130913,
+     "control_AP": -0.00011623273445382498,
+     "AP50": -0.0005408929253823969
+    },
+    "d_tower": {
+     "AP": -0.011248368996615299,
+     "target_AP": -0.021158611292373064,
+     "control_AP": -0.0018723210637472398,
+     "AP50": -0.010664409879172942
+    },
+    "per_video_d": {
+     "empty": {
+      "09": 0.0,
+      "10": 0.0
+     },
+     "shuffle": {
+      "09": -0.0035260266035788135,
+      "10": -0.001882382738889632
+     },
+     "tower": {
+      "09": -0.004487969174047146,
+      "10": -0.009075781082197087
+     }
+    }
+   },
+   "pred_noCF": {
+    "run": "w3lra_pd_P2L_W3_pred_noCF_ep4_seed42",
+    "measured": true,
+    "AP": 0.7203447780416712,
+    "target_AP": 0.7844581804055217,
+    "control_AP": 0.6721845322630075,
+    "AP50": 0.8454989247483672,
+    "per_video_AP": {
+     "09": 0.7028309601225312,
+     "10": 0.6407824347198285
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.7100405880347888,
+     "Electric Cautery": 0.963270435037983,
+     "Forceps": 0.3590115031966364,
+     "Gauze": 0.26655234444436116,
+     "Hook": 0.6221722212905837,
+     "Mouth Gag": 0.8080635731951911,
+     "Needle Holders": 0.848100632771417,
+     "Raspatory": 0.7901098587711027,
+     "Retractor": NaN,
+     "Scalpel": 0.9018814477853847,
+     "Scissors": 0.6812430692071386,
+     "Skewer": 0.9465934313570317,
+     "Suction Cannula": 0.8359094351340761,
+     "Syringe": 0.5736655760793002,
+     "Tweezers": 0.7782127762784014
+    },
+    "per_epoch": {
+     "-1": {
+      "AP": 0.7273450248398429,
+      "AP50": 0.851807431425236,
+      "target_AP": 0.7950748008550897,
+      "control_AP": 0.6726631817581498,
+      "per_video_AP": {
+       "09": 0.704273483949694,
+       "10": 0.6420973291237674
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "0": {
+      "AP": 0.7268930608483761,
+      "AP50": 0.848837102535876,
+      "target_AP": 0.7979781863105465,
+      "control_AP": 0.676640819350025,
+      "per_video_AP": {
+       "09": 0.7058799590762507,
+       "10": 0.6449944094687884
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "1": {
+      "AP": 0.7218234823978612,
+      "AP50": 0.8478333356720898,
+      "target_AP": 0.7841566832150633,
+      "control_AP": 0.671387535393384,
+      "per_video_AP": {
+       "09": 0.7058385830542613,
+       "10": 0.6403457416115499
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "2": {
+      "AP": 0.7187200096700388,
+      "AP50": 0.8465245376829984,
+      "target_AP": 0.7850168588692453,
+      "control_AP": 0.667554648147578,
+      "per_video_AP": {
+       "09": 0.6997393228477422,
+       "10": 0.6368450369781493
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "3": {
+      "AP": 0.7203447780416712,
+      "AP50": 0.8454989247483672,
+      "target_AP": 0.7844581804055217,
+      "control_AP": 0.6721845322630075,
+      "per_video_AP": {
+       "09": 0.7028309601225312,
+       "10": 0.6407824347198285
+      },
+      "target_missing": [],
+      "control_missing": []
+     }
+    },
+    "receiver_rel_delta": 0.007404635787617605,
+    "receiver_delta_l2": 6.330353410195636,
+    "init_diff_vs_tower": {
+     "comparable": true,
+     "max_abs_score_diff": 0.0,
+     "max_abs_bbox_diff_px": 0.0,
+     "label_mismatch": 0
+    },
+    "frozen_unchanged": true,
+    "total_trainable": 48471350,
+    "videos": {
+     "train": [
+      "01",
+      "02",
+      "03",
+      "06",
+      "08",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15"
+     ],
+     "val_evaluated": [
+      "09",
+      "10"
+     ],
+     "test_overlap": []
+    },
+    "server": "andrew",
+    "lr_record": {
+     "groups": [
+      {
+       "label": "other",
+       "lr_given": 1e-05,
+       "weight_decay_given": null,
+       "n_tensors": 125,
+       "n_elements": 24384000
+      },
+      {
+       "label": "backbone",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 42,
+       "n_elements": 23232512
+      },
+      {
+       "label": "backbone_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 0,
+       "n_elements": 0
+      },
+      {
+       "label": "linear_projection",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 12,
+       "n_elements": 786432
+      },
+      {
+       "label": "linear_projection_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 12,
+       "n_elements": 3072
+      },
+      {
+       "label": "other_norm",
+       "lr_given": 1e-05,
+       "weight_decay_given": 0,
+       "n_tensors": 181,
+       "n_elements": 65184
+      },
+      {
+       "label": "phase",
+       "lr_given": 0.0005,
+       "weight_decay_given": null,
+       "n_tensors": 2,
+       "n_elements": 150
+      }
+     ],
+     "init": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "after_step_1": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "by_epoch": {
+      "0": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "1": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "2": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "3": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      }
+     },
+     "constant_over_snapshots": true,
+     "n_snapshots": 7,
+     "opt_steps_at_last_eval": 19236
+    },
+    "lr_arg": 1e-05,
+    "film_lr_arg": 0.0005,
+    "wall_seconds": 21036.0,
+    "result_epoch": 3,
+    "d_empty": {
+     "AP": 0.004248122198443616,
+     "target_AP": 0.010541990842805049,
+     "control_AP": 0.0013936715686049261,
+     "AP50": 0.004355903202304168
+    },
+    "d_shuffle": {
+     "AP": 0.0036136560491903946,
+     "target_AP": 0.008071752255674136,
+     "control_AP": 0.0012774388341511012,
+     "AP50": 0.003815010276921771
+    },
+    "d_tower": {
+     "AP": -0.007000246798171683,
+     "target_AP": -0.010616620449568015,
+     "control_AP": -0.0004786494951423137,
+     "AP50": -0.006308506676868775
+    },
+    "per_video_d": {
+     "empty": {
+      "09": 0.0030454453468843345,
+      "10": 0.00776088667825825
+     },
+     "shuffle": {
+      "09": -0.00048058125669447893,
+      "10": 0.005878503939368618
+     },
+     "tower": {
+      "09": -0.0014425238271628116,
+      "10": -0.0013148944039388377
+     }
+    }
+   },
+   "gt": {
+    "run": "w3lra_pd_P2L_W3_gt_ep4_seed42",
+    "measured": true,
+    "AP": 0.7238204741090982,
+    "target_AP": 0.792605975117947,
+    "control_AP": 0.6730017945155693,
+    "AP50": 0.8469168502058089,
+    "per_video_AP": {
+     "09": 0.7036678442917842,
+     "10": 0.6488198080929093
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.7326006778015833,
+     "Electric Cautery": 0.9628072938173808,
+     "Forceps": 0.3523909256161496,
+     "Gauze": 0.26263580158539457,
+     "Hook": 0.6193351245576751,
+     "Mouth Gag": 0.8095677935177118,
+     "Needle Holders": 0.851534290825821,
+     "Raspatory": 0.7930103801059739,
+     "Retractor": NaN,
+     "Scalpel": 0.9119962589883265,
+     "Scissors": 0.692381949058338,
+     "Skewer": 0.947232938771049,
+     "Suction Cannula": 0.838441099633645,
+     "Syringe": 0.5781896199228015,
+     "Tweezers": 0.7813624833255262
+    },
+    "per_epoch": {
+     "-1": {
+      "AP": 0.7273450248398429,
+      "AP50": 0.851807431425236,
+      "target_AP": 0.7950748008550897,
+      "control_AP": 0.6726631817581498,
+      "per_video_AP": {
+       "09": 0.704273483949694,
+       "10": 0.6420973291237674
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "0": {
+      "AP": 0.7284067578935081,
+      "AP50": 0.850295954459117,
+      "target_AP": 0.8026480888433468,
+      "control_AP": 0.6755601632068428,
+      "per_video_AP": {
+       "09": 0.7039607538602921,
+       "10": 0.6499740281742752
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "1": {
+      "AP": 0.7261784940194655,
+      "AP50": 0.8506246328992884,
+      "target_AP": 0.7949972029585294,
+      "control_AP": 0.672311021938734,
+      "per_video_AP": {
+       "09": 0.7087803080752809,
+       "10": 0.6463337993025263
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "2": {
+      "AP": 0.7234256169338328,
+      "AP50": 0.8519177674126731,
+      "target_AP": 0.7925586248621902,
+      "control_AP": 0.6679938290113329,
+      "per_video_AP": {
+       "09": 0.7023280477851694,
+       "10": 0.6456810196077104
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "3": {
+      "AP": 0.7238204741090982,
+      "AP50": 0.8469168502058089,
+      "target_AP": 0.792605975117947,
+      "control_AP": 0.6730017945155693,
+      "per_video_AP": {
+       "09": 0.7036678442917842,
+       "10": 0.6488198080929093
+      },
+      "target_missing": [],
+      "control_missing": []
+     }
+    },
+    "receiver_rel_delta": 0.007394943519923345,
+    "receiver_delta_l2": 6.322067320020412,
+    "init_diff_vs_tower": {
+     "comparable": true,
+     "max_abs_score_diff": 0.0,
+     "max_abs_bbox_diff_px": 0.0,
+     "label_mismatch": 0
+    },
+    "frozen_unchanged": true,
+    "total_trainable": 48471350,
+    "videos": {
+     "train": [
+      "01",
+      "02",
+      "03",
+      "06",
+      "08",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15"
+     ],
+     "val_evaluated": [
+      "09",
+      "10"
+     ],
+     "test_overlap": []
+    },
+    "server": "andrew",
+    "lr_record": {
+     "groups": [
+      {
+       "label": "other",
+       "lr_given": 1e-05,
+       "weight_decay_given": null,
+       "n_tensors": 125,
+       "n_elements": 24384000
+      },
+      {
+       "label": "backbone",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 42,
+       "n_elements": 23232512
+      },
+      {
+       "label": "backbone_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 0,
+       "n_elements": 0
+      },
+      {
+       "label": "linear_projection",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 12,
+       "n_elements": 786432
+      },
+      {
+       "label": "linear_projection_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 12,
+       "n_elements": 3072
+      },
+      {
+       "label": "other_norm",
+       "lr_given": 1e-05,
+       "weight_decay_given": 0,
+       "n_tensors": 181,
+       "n_elements": 65184
+      },
+      {
+       "label": "phase",
+       "lr_given": 0.0005,
+       "weight_decay_given": null,
+       "n_tensors": 2,
+       "n_elements": 150
+      }
+     ],
+     "init": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "after_step_1": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "by_epoch": {
+      "0": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "1": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "2": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "3": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      }
+     },
+     "constant_over_snapshots": true,
+     "n_snapshots": 7,
+     "opt_steps_at_last_eval": 19236
+    },
+    "lr_arg": 1e-05,
+    "film_lr_arg": 0.0005,
+    "wall_seconds": 20654.0,
+    "result_epoch": 3,
+    "d_empty": {
+     "AP": 0.007723818265870652,
+     "target_AP": 0.018689785555230265,
+     "control_AP": 0.0022109338211667717,
+     "AP50": 0.00577382865974585
+    },
+    "d_shuffle": {
+     "AP": 0.007089352116617431,
+     "target_AP": 0.016219546968099352,
+     "control_AP": 0.0020947010867129467,
+     "AP50": 0.005232935734363453
+    },
+    "d_tower": {
+     "AP": -0.0035245507307446466,
+     "target_AP": -0.002468825737142799,
+     "control_AP": 0.0003386127574195319,
+     "AP50": -0.0048905812194270926
+    },
+    "per_video_d": {
+     "empty": {
+      "09": 0.0038823295161373172,
+      "10": 0.015798260051338997
+     },
+     "shuffle": {
+      "09": 0.00035630291255850377,
+      "10": 0.013915877312449365
+     },
+     "tower": {
+      "09": -0.0006056396579098289,
+      "10": 0.0067224789691419096
+     }
+    }
+   },
+   "shuffle": {
+    "run": "w3lra_pd_P2L_W3_shuffle_ep4_seed42",
+    "measured": true,
+    "AP": 0.7167311219924808,
+    "target_AP": 0.7763864281498476,
+    "control_AP": 0.6709070934288563,
+    "AP50": 0.8416839144714454,
+    "per_video_AP": {
+     "09": 0.7033115413792257,
+     "10": 0.6349039307804599
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.6842538257622172,
+     "Electric Cautery": 0.9617564349401112,
+     "Forceps": 0.3506589195290527,
+     "Gauze": 0.2605240128603123,
+     "Hook": 0.6241801846382686,
+     "Mouth Gag": 0.8066516622650617,
+     "Needle Holders": 0.8489858392640982,
+     "Raspatory": 0.7831515010378427,
+     "Retractor": NaN,
+     "Scalpel": 0.8948183826606226,
+     "Scissors": 0.6830938150585368,
+     "Skewer": 0.9446760886014904,
+     "Suction Cannula": 0.8356717370251043,
+     "Syringe": 0.5750323426870653,
+     "Tweezers": 0.780780961564947
+    },
+    "per_epoch": {
+     "-1": {
+      "AP": 0.7273450248398429,
+      "AP50": 0.851807431425236,
+      "target_AP": 0.7950748008550897,
+      "control_AP": 0.6726631817581498,
+      "per_video_AP": {
+       "09": 0.704273483949694,
+       "10": 0.6420973291237674
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "0": {
+      "AP": 0.7252709532472897,
+      "AP50": 0.8470924572013356,
+      "target_AP": 0.7946607208717793,
+      "control_AP": 0.6776712037374434,
+      "per_video_AP": {
+       "09": 0.7042431118695097,
+       "10": 0.6409341640936213
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "1": {
+      "AP": 0.7206552553325899,
+      "AP50": 0.8473171565510663,
+      "target_AP": 0.7845579231262639,
+      "control_AP": 0.6687675110400738,
+      "per_video_AP": {
+       "09": 0.7048541192725433,
+       "10": 0.6372880575454355
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "2": {
+      "AP": 0.7146284246773414,
+      "AP50": 0.8421964473904482,
+      "target_AP": 0.773404992260067,
+      "control_AP": 0.6669285602031456,
+      "per_video_AP": {
+       "09": 0.6961945690010507,
+       "10": 0.6329741736939989
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "3": {
+      "AP": 0.7167311219924808,
+      "AP50": 0.8416839144714454,
+      "target_AP": 0.7763864281498476,
+      "control_AP": 0.6709070934288563,
+      "per_video_AP": {
+       "09": 0.7033115413792257,
+       "10": 0.6349039307804599
+      },
+      "target_missing": [],
+      "control_missing": []
+     }
+    },
+    "receiver_rel_delta": 0.007374791837756567,
+    "receiver_delta_l2": 6.304839292392238,
+    "init_diff_vs_tower": {
+     "comparable": true,
+     "max_abs_score_diff": 0.0,
+     "max_abs_bbox_diff_px": 0.0,
+     "label_mismatch": 0
+    },
+    "frozen_unchanged": true,
+    "total_trainable": 48471350,
+    "videos": {
+     "train": [
+      "01",
+      "02",
+      "03",
+      "06",
+      "08",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15"
+     ],
+     "val_evaluated": [
+      "09",
+      "10"
+     ],
+     "test_overlap": []
+    },
+    "server": "andrew",
+    "lr_record": {
+     "groups": [
+      {
+       "label": "other",
+       "lr_given": 1e-05,
+       "weight_decay_given": null,
+       "n_tensors": 125,
+       "n_elements": 24384000
+      },
+      {
+       "label": "backbone",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 42,
+       "n_elements": 23232512
+      },
+      {
+       "label": "backbone_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 0,
+       "n_elements": 0
+      },
+      {
+       "label": "linear_projection",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 12,
+       "n_elements": 786432
+      },
+      {
+       "label": "linear_projection_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 12,
+       "n_elements": 3072
+      },
+      {
+       "label": "other_norm",
+       "lr_given": 1e-05,
+       "weight_decay_given": 0,
+       "n_tensors": 181,
+       "n_elements": 65184
+      },
+      {
+       "label": "phase",
+       "lr_given": 0.0005,
+       "weight_decay_given": null,
+       "n_tensors": 2,
+       "n_elements": 150
+      }
+     ],
+     "init": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "after_step_1": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "by_epoch": {
+      "0": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "1": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "2": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "3": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      }
+     },
+     "constant_over_snapshots": true,
+     "n_snapshots": 7,
+     "opt_steps_at_last_eval": 19236
+    },
+    "lr_arg": 1e-05,
+    "film_lr_arg": 0.0005,
+    "wall_seconds": 20982.0,
+    "result_epoch": 3,
+    "d_empty": {
+     "AP": 0.0006344661492532211,
+     "target_AP": 0.002470238587130913,
+     "control_AP": 0.00011623273445382498,
+     "AP50": 0.0005408929253823969
+    },
+    "d_shuffle": {
+     "AP": 0.0,
+     "target_AP": 0.0,
+     "control_AP": 0.0,
+     "AP50": 0.0
+    },
+    "d_tower": {
+     "AP": -0.010613902847362078,
+     "target_AP": -0.01868837270524215,
+     "control_AP": -0.0017560883292934149,
+     "AP50": -0.010123516953790546
+    },
+    "per_video_d": {
+     "empty": {
+      "09": 0.0035260266035788135,
+      "10": 0.001882382738889632
+     },
+     "shuffle": {
+      "09": 0.0,
+      "10": 0.0
+     },
+     "tower": {
+      "09": -0.0009619425704683326,
+      "10": -0.0071933983433074555
+     }
+    }
+   }
+  },
+  "P3": {
+   "empty": {
+    "run": "w3lra_pd_P3_W3_empty_ep4_seed42",
+    "measured": true,
+    "AP": 0.7191820083836801,
+    "target_AP": 0.7916042984664717,
+    "control_AP": 0.6630991306839984,
+    "AP50": 0.8444366080808959,
+    "per_video_AP": {
+     "09": 0.6952351452376737,
+     "10": 0.6339713341904074
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.750150003853219,
+     "Electric Cautery": 0.9653650181114092,
+     "Forceps": 0.347767553028124,
+     "Gauze": 0.27058787290021585,
+     "Hook": 0.621440032821777,
+     "Mouth Gag": 0.787929457099904,
+     "Needle Holders": 0.8301609152539781,
+     "Raspatory": 0.8235657360458093,
+     "Retractor": NaN,
+     "Scalpel": 0.8905709547820913,
+     "Scissors": 0.6933965830878791,
+     "Skewer": 0.9458549935808556,
+     "Suction Cannula": 0.8234227921040348,
+     "Syringe": 0.5478798040703836,
+     "Tweezers": 0.770456400631839
+    },
+    "per_epoch": {
+     "-1": {
+      "AP": 0.7273450248398429,
+      "AP50": 0.851807431425236,
+      "target_AP": 0.7950748008550897,
+      "control_AP": 0.6726631817581498,
+      "per_video_AP": {
+       "09": 0.704273483949694,
+       "10": 0.6420973291237674
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "0": {
+      "AP": 0.7233710948551665,
+      "AP50": 0.8487181933246682,
+      "target_AP": 0.7927655934506526,
+      "control_AP": 0.6716697931442251,
+      "per_video_AP": {
+       "09": 0.6994169488185743,
+       "10": 0.6398972695330741
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "1": {
+      "AP": 0.7269845874893595,
+      "AP50": 0.8505649637740498,
+      "target_AP": 0.797603911699736,
+      "control_AP": 0.6692990765107278,
+      "per_video_AP": {
+       "09": 0.704312332470164,
+       "10": 0.6378684803047224
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "2": {
+      "AP": 0.7196022789889233,
+      "AP50": 0.8453446302044976,
+      "target_AP": 0.7902781200360244,
+      "control_AP": 0.6639414248948021,
+      "per_video_AP": {
+       "09": 0.7012753133431633,
+       "10": 0.6324838760733301
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "3": {
+      "AP": 0.7191820083836801,
+      "AP50": 0.8444366080808959,
+      "target_AP": 0.7916042984664717,
+      "control_AP": 0.6630991306839984,
+      "per_video_AP": {
+       "09": 0.6952351452376737,
+       "10": 0.6339713341904074
+      },
+      "target_missing": [],
+      "control_missing": []
+     }
+    },
+    "receiver_rel_delta": 0.007405704079529048,
+    "receiver_delta_l2": 6.331266711745997,
+    "init_diff_vs_tower": {
+     "comparable": true,
+     "max_abs_score_diff": 0.0,
+     "max_abs_bbox_diff_px": 0.0,
+     "label_mismatch": 0
+    },
+    "frozen_unchanged": true,
+    "total_trainable": 48473760,
+    "videos": {
+     "train": [
+      "01",
+      "02",
+      "03",
+      "06",
+      "08",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15"
+     ],
+     "val_evaluated": [
+      "09",
+      "10"
+     ],
+     "test_overlap": []
+    },
+    "server": "andrew",
+    "lr_record": {
+     "groups": [
+      {
+       "label": "other",
+       "lr_given": 1e-05,
+       "weight_decay_given": null,
+       "n_tensors": 125,
+       "n_elements": 24384000
+      },
+      {
+       "label": "backbone",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 42,
+       "n_elements": 23232512
+      },
+      {
+       "label": "backbone_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 0,
+       "n_elements": 0
+      },
+      {
+       "label": "linear_projection",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 12,
+       "n_elements": 786432
+      },
+      {
+       "label": "linear_projection_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 12,
+       "n_elements": 3072
+      },
+      {
+       "label": "other_norm",
+       "lr_given": 1e-05,
+       "weight_decay_given": 0,
+       "n_tensors": 181,
+       "n_elements": 65184
+      },
+      {
+       "label": "phase",
+       "lr_given": 0.0005,
+       "weight_decay_given": null,
+       "n_tensors": 2,
+       "n_elements": 2560
+      }
+     ],
+     "init": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "after_step_1": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "by_epoch": {
+      "0": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "1": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "2": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "3": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      }
+     },
+     "constant_over_snapshots": true,
+     "n_snapshots": 7,
+     "opt_steps_at_last_eval": 19236
+    },
+    "lr_arg": 1e-05,
+    "film_lr_arg": 0.0005,
+    "wall_seconds": 20655.0,
+    "result_epoch": 3,
+    "d_empty": {
+     "AP": 0.0,
+     "target_AP": 0.0,
+     "control_AP": 0.0,
+     "AP50": 0.0
+    },
+    "d_shuffle": {
+     "AP": -0.002663392037859702,
+     "target_AP": -0.006002860338786942,
+     "control_AP": -0.0011259451271169452,
+     "AP50": -0.004086900336589094
+    },
+    "d_tower": {
+     "AP": -0.008163016456162797,
+     "target_AP": -0.003470502388618013,
+     "control_AP": -0.00956405107415137,
+     "AP50": -0.007370823344340027
+    },
+    "per_video_d": {
+     "empty": {
+      "09": 0.0,
+      "10": 0.0
+     },
+     "shuffle": {
+      "09": -0.004372697370296663,
+      "10": -0.00032036228787879484
+     },
+     "tower": {
+      "09": -0.00903833871202031,
+      "10": -0.00812599493335997
+     }
+    }
+   },
+   "pred_noCF": {
+    "run": "w3lra_pd_P3_W3_pred_noCF_ep4_seed42",
+    "measured": true,
+    "AP": 0.7206966203570296,
+    "target_AP": 0.7939576560007549,
+    "control_AP": 0.665353682292799,
+    "AP50": 0.8465103253987433,
+    "per_video_AP": {
+     "09": 0.6976048319282736,
+     "10": 0.6341134647218205
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.7558759321520488,
+     "Electric Cautery": 0.9657393561231036,
+     "Forceps": 0.3390990980097892,
+     "Gauze": 0.27036688858082,
+     "Hook": 0.6258016140843431,
+     "Mouth Gag": 0.7930178565681393,
+     "Needle Holders": 0.8350536216042267,
+     "Raspatory": 0.8225685416442376,
+     "Retractor": NaN,
+     "Scalpel": 0.8882121998241242,
+     "Scissors": 0.6928559860019813,
+     "Skewer": 0.9484514380681244,
+     "Suction Cannula": 0.8244181038378681,
+     "Syringe": 0.5546801683152394,
+     "Tweezers": 0.7736118801843689
+    },
+    "per_epoch": {
+     "-1": {
+      "AP": 0.7273450248398429,
+      "AP50": 0.851807431425236,
+      "target_AP": 0.7950748008550897,
+      "control_AP": 0.6726631817581498,
+      "per_video_AP": {
+       "09": 0.704273483949694,
+       "10": 0.6420973291237674
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "0": {
+      "AP": 0.7242262344309923,
+      "AP50": 0.8486026693359111,
+      "target_AP": 0.793802451990306,
+      "control_AP": 0.671959028916932,
+      "per_video_AP": {
+       "09": 0.7025210352854592,
+       "10": 0.6398714617419461
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "1": {
+      "AP": 0.725635214507482,
+      "AP50": 0.8501396433937833,
+      "target_AP": 0.7958478803886349,
+      "control_AP": 0.6699616600293569,
+      "per_video_AP": {
+       "09": 0.7030347614595114,
+       "10": 0.6373911168342724
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "2": {
+      "AP": 0.7183740101161784,
+      "AP50": 0.8431940693413599,
+      "target_AP": 0.7888936344140692,
+      "control_AP": 0.662585793630916,
+      "per_video_AP": {
+       "09": 0.6991863916872801,
+       "10": 0.6346495036335493
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "3": {
+      "AP": 0.7206966203570296,
+      "AP50": 0.8465103253987433,
+      "target_AP": 0.7939576560007549,
+      "control_AP": 0.665353682292799,
+      "per_video_AP": {
+       "09": 0.6976048319282736,
+       "10": 0.6341134647218205
+      },
+      "target_missing": [],
+      "control_missing": []
+     }
+    },
+    "receiver_rel_delta": 0.007402997819713343,
+    "receiver_delta_l2": 6.328953082616273,
+    "init_diff_vs_tower": {
+     "comparable": true,
+     "max_abs_score_diff": 0.0,
+     "max_abs_bbox_diff_px": 0.0,
+     "label_mismatch": 0
+    },
+    "frozen_unchanged": true,
+    "total_trainable": 48473760,
+    "videos": {
+     "train": [
+      "01",
+      "02",
+      "03",
+      "06",
+      "08",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15"
+     ],
+     "val_evaluated": [
+      "09",
+      "10"
+     ],
+     "test_overlap": []
+    },
+    "server": "andrew",
+    "lr_record": {
+     "groups": [
+      {
+       "label": "other",
+       "lr_given": 1e-05,
+       "weight_decay_given": null,
+       "n_tensors": 125,
+       "n_elements": 24384000
+      },
+      {
+       "label": "backbone",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 42,
+       "n_elements": 23232512
+      },
+      {
+       "label": "backbone_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 0,
+       "n_elements": 0
+      },
+      {
+       "label": "linear_projection",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 12,
+       "n_elements": 786432
+      },
+      {
+       "label": "linear_projection_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 12,
+       "n_elements": 3072
+      },
+      {
+       "label": "other_norm",
+       "lr_given": 1e-05,
+       "weight_decay_given": 0,
+       "n_tensors": 181,
+       "n_elements": 65184
+      },
+      {
+       "label": "phase",
+       "lr_given": 0.0005,
+       "weight_decay_given": null,
+       "n_tensors": 2,
+       "n_elements": 2560
+      }
+     ],
+     "init": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "after_step_1": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "by_epoch": {
+      "0": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "1": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "2": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "3": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      }
+     },
+     "constant_over_snapshots": true,
+     "n_snapshots": 7,
+     "opt_steps_at_last_eval": 19236
+    },
+    "lr_arg": 1e-05,
+    "film_lr_arg": 0.0005,
+    "wall_seconds": 21002.0,
+    "result_epoch": 3,
+    "d_empty": {
+     "AP": 0.0015146119733495667,
+     "target_AP": 0.002353357534283118,
+     "control_AP": 0.0022545516088006146,
+     "AP50": 0.0020737173178473345
+    },
+    "d_shuffle": {
+     "AP": -0.0011487800645101354,
+     "target_AP": -0.0036495028045038236,
+     "control_AP": 0.0011286064816836694,
+     "AP50": -0.00201318301874176
+    },
+    "d_tower": {
+     "AP": -0.0066484044828132305,
+     "target_AP": -0.001117144854334895,
+     "control_AP": -0.007309499465350755,
+     "AP50": -0.005297106026492693
+    },
+    "per_video_d": {
+     "empty": {
+      "09": 0.0023696866905998926,
+      "10": 0.00014213053141309828
+     },
+     "shuffle": {
+      "09": -0.0020030106796967706,
+      "10": -0.00017823175646569656
+     },
+     "tower": {
+      "09": -0.006668652021420418,
+      "10": -0.007983864401946872
+     }
+    }
+   },
+   "gt": {
+    "run": "w3lra_pd_P3_W3_gt_ep4_seed42",
+    "measured": true,
+    "AP": 0.7186724842870063,
+    "target_AP": 0.7926099953487485,
+    "control_AP": 0.6631713737968534,
+    "AP50": 0.8452509051795185,
+    "per_video_AP": {
+     "09": 0.693623461723813,
+     "10": 0.6369814003208042
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.7446879421892774,
+     "Electric Cautery": 0.9667388819914329,
+     "Forceps": 0.342483908740167,
+     "Gauze": 0.2652734691480653,
+     "Hook": 0.6140213927033431,
+     "Mouth Gag": 0.7909992586421577,
+     "Needle Holders": 0.8320768886386558,
+     "Raspatory": 0.8256463150773083,
+     "Retractor": NaN,
+     "Scalpel": 0.8884860946850542,
+     "Scissors": 0.6903582360133332,
+     "Skewer": 0.9488284602365971,
+     "Suction Cannula": 0.8235580053231548,
+     "Syringe": 0.5554011645555061,
+     "Tweezers": 0.7728547620740358
+    },
+    "per_epoch": {
+     "-1": {
+      "AP": 0.7273450248398429,
+      "AP50": 0.851807431425236,
+      "target_AP": 0.7950748008550897,
+      "control_AP": 0.6726631817581498,
+      "per_video_AP": {
+       "09": 0.704273483949694,
+       "10": 0.6420973291237674
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "0": {
+      "AP": 0.7243621496834342,
+      "AP50": 0.8504970514027926,
+      "target_AP": 0.7945180673986567,
+      "control_AP": 0.670368741022697,
+      "per_video_AP": {
+       "09": 0.7010627348254316,
+       "10": 0.6402022789971704
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "1": {
+      "AP": 0.7246692393324521,
+      "AP50": 0.8490335847360366,
+      "target_AP": 0.7955746856194711,
+      "control_AP": 0.6665986194770225,
+      "per_video_AP": {
+       "09": 0.7040936555067446,
+       "10": 0.6376872338340279
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "2": {
+      "AP": 0.7171708899271066,
+      "AP50": 0.8449995090671982,
+      "target_AP": 0.7854733945343239,
+      "control_AP": 0.6616040957872086,
+      "per_video_AP": {
+       "09": 0.7025053449480309,
+       "10": 0.6277570404230716
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "3": {
+      "AP": 0.7186724842870063,
+      "AP50": 0.8452509051795185,
+      "target_AP": 0.7926099953487485,
+      "control_AP": 0.6631713737968534,
+      "per_video_AP": {
+       "09": 0.693623461723813,
+       "10": 0.6369814003208042
+      },
+      "target_missing": [],
+      "control_missing": []
+     }
+    },
+    "receiver_rel_delta": 0.007435335904294933,
+    "receiver_delta_l2": 6.35659948007347,
+    "init_diff_vs_tower": {
+     "comparable": true,
+     "max_abs_score_diff": 0.0,
+     "max_abs_bbox_diff_px": 0.0,
+     "label_mismatch": 0
+    },
+    "frozen_unchanged": true,
+    "total_trainable": 48473760,
+    "videos": {
+     "train": [
+      "01",
+      "02",
+      "03",
+      "06",
+      "08",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15"
+     ],
+     "val_evaluated": [
+      "09",
+      "10"
+     ],
+     "test_overlap": []
+    },
+    "server": "andrew",
+    "lr_record": {
+     "groups": [
+      {
+       "label": "other",
+       "lr_given": 1e-05,
+       "weight_decay_given": null,
+       "n_tensors": 125,
+       "n_elements": 24384000
+      },
+      {
+       "label": "backbone",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 42,
+       "n_elements": 23232512
+      },
+      {
+       "label": "backbone_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 0,
+       "n_elements": 0
+      },
+      {
+       "label": "linear_projection",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 12,
+       "n_elements": 786432
+      },
+      {
+       "label": "linear_projection_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 12,
+       "n_elements": 3072
+      },
+      {
+       "label": "other_norm",
+       "lr_given": 1e-05,
+       "weight_decay_given": 0,
+       "n_tensors": 181,
+       "n_elements": 65184
+      },
+      {
+       "label": "phase",
+       "lr_given": 0.0005,
+       "weight_decay_given": null,
+       "n_tensors": 2,
+       "n_elements": 2560
+      }
+     ],
+     "init": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "after_step_1": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "by_epoch": {
+      "0": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "1": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "2": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "3": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      }
+     },
+     "constant_over_snapshots": true,
+     "n_snapshots": 7,
+     "opt_steps_at_last_eval": 19236
+    },
+    "lr_arg": 1e-05,
+    "film_lr_arg": 0.0005,
+    "wall_seconds": 20669.0,
+    "result_epoch": 3,
+    "d_empty": {
+     "AP": -0.000509524096673819,
+     "target_AP": 0.0010056968822768075,
+     "control_AP": 7.224311285503049e-05,
+     "AP50": 0.0008142970986225739
+    },
+    "d_shuffle": {
+     "AP": -0.003172916134533521,
+     "target_AP": -0.004997163456510134,
+     "control_AP": -0.0010537020142619147,
+     "AP50": -0.0032726032379665204
+    },
+    "d_tower": {
+     "AP": -0.008672540552836616,
+     "target_AP": -0.0024648055063412055,
+     "control_AP": -0.009491807961296339,
+     "AP50": -0.006556526245717453
+    },
+    "per_video_d": {
+     "empty": {
+      "09": -0.0016116835138607621,
+      "10": 0.0030100661303967824
+     },
+     "shuffle": {
+      "09": -0.005984380884157425,
+      "10": 0.0026897038425179876
+     },
+     "tower": {
+      "09": -0.010650022225881073,
+      "10": -0.005115928802963188
+     }
+    }
+   },
+   "shuffle": {
+    "run": "w3lra_pd_P3_W3_shuffle_ep4_seed42",
+    "measured": true,
+    "AP": 0.7218454004215398,
+    "target_AP": 0.7976071588052587,
+    "control_AP": 0.6642250758111153,
+    "AP50": 0.848523508417485,
+    "per_video_AP": {
+     "09": 0.6996078426079704,
+     "10": 0.6342916964782862
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.7571497950027596,
+     "Electric Cautery": 0.9642331150257887,
+     "Forceps": 0.3500177735469385,
+     "Gauze": 0.26858961428960987,
+     "Hook": 0.6221699418092027,
+     "Mouth Gag": 0.7898319572482413,
+     "Needle Holders": 0.8306820185535829,
+     "Raspatory": 0.8225752078159235,
+     "Retractor": NaN,
+     "Scalpel": 0.8975818968384818,
+     "Scissors": 0.6937966596952879,
+     "Skewer": 0.9478124052508601,
+     "Suction Cannula": 0.824739806322048,
+     "Syringe": 0.5629164891182683,
+     "Tweezers": 0.7737389253845621
+    },
+    "per_epoch": {
+     "-1": {
+      "AP": 0.7273450248398429,
+      "AP50": 0.851807431425236,
+      "target_AP": 0.7950748008550897,
+      "control_AP": 0.6726631817581498,
+      "per_video_AP": {
+       "09": 0.704273483949694,
+       "10": 0.6420973291237674
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "0": {
+      "AP": 0.7230037824556723,
+      "AP50": 0.8485821794921399,
+      "target_AP": 0.7922817965761527,
+      "control_AP": 0.668926609296677,
+      "per_video_AP": {
+       "09": 0.7024923518688244,
+       "10": 0.638076254509
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "1": {
+      "AP": 0.72508981883993,
+      "AP50": 0.8494380330614338,
+      "target_AP": 0.796478039895488,
+      "control_AP": 0.6677824576290514,
+      "per_video_AP": {
+       "09": 0.7041172886298758,
+       "10": 0.6355709390980595
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "2": {
+      "AP": 0.7202315161672788,
+      "AP50": 0.846723052560377,
+      "target_AP": 0.7903543640020911,
+      "control_AP": 0.6642989133977343,
+      "per_video_AP": {
+       "09": 0.7025402506332658,
+       "10": 0.633517005896545
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "3": {
+      "AP": 0.7218454004215398,
+      "AP50": 0.848523508417485,
+      "target_AP": 0.7976071588052587,
+      "control_AP": 0.6642250758111153,
+      "per_video_AP": {
+       "09": 0.6996078426079704,
+       "10": 0.6342916964782862
+      },
+      "target_missing": [],
+      "control_missing": []
+     }
+    },
+    "receiver_rel_delta": 0.0073838731449828165,
+    "receiver_delta_l2": 6.312603061714269,
+    "init_diff_vs_tower": {
+     "comparable": true,
+     "max_abs_score_diff": 0.0,
+     "max_abs_bbox_diff_px": 0.0,
+     "label_mismatch": 0
+    },
+    "frozen_unchanged": true,
+    "total_trainable": 48473760,
+    "videos": {
+     "train": [
+      "01",
+      "02",
+      "03",
+      "06",
+      "08",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15"
+     ],
+     "val_evaluated": [
+      "09",
+      "10"
+     ],
+     "test_overlap": []
+    },
+    "server": "andrew",
+    "lr_record": {
+     "groups": [
+      {
+       "label": "other",
+       "lr_given": 1e-05,
+       "weight_decay_given": null,
+       "n_tensors": 125,
+       "n_elements": 24384000
+      },
+      {
+       "label": "backbone",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 42,
+       "n_elements": 23232512
+      },
+      {
+       "label": "backbone_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 0,
+       "n_elements": 0
+      },
+      {
+       "label": "linear_projection",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 12,
+       "n_elements": 786432
+      },
+      {
+       "label": "linear_projection_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 12,
+       "n_elements": 3072
+      },
+      {
+       "label": "other_norm",
+       "lr_given": 1e-05,
+       "weight_decay_given": 0,
+       "n_tensors": 181,
+       "n_elements": 65184
+      },
+      {
+       "label": "phase",
+       "lr_given": 0.0005,
+       "weight_decay_given": null,
+       "n_tensors": 2,
+       "n_elements": 2560
+      }
+     ],
+     "init": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "after_step_1": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "by_epoch": {
+      "0": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "1": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "2": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "3": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      }
+     },
+     "constant_over_snapshots": true,
+     "n_snapshots": 7,
+     "opt_steps_at_last_eval": 19236
+    },
+    "lr_arg": 1e-05,
+    "film_lr_arg": 0.0005,
+    "wall_seconds": 21002.0,
+    "result_epoch": 3,
+    "d_empty": {
+     "AP": 0.002663392037859702,
+     "target_AP": 0.006002860338786942,
+     "control_AP": 0.0011259451271169452,
+     "AP50": 0.004086900336589094
+    },
+    "d_shuffle": {
+     "AP": 0.0,
+     "target_AP": 0.0,
+     "control_AP": 0.0,
+     "AP50": 0.0
+    },
+    "d_tower": {
+     "AP": -0.005499624418303095,
+     "target_AP": 0.0025323579501689286,
+     "control_AP": -0.008438105947034424,
+     "AP50": -0.003283923007750933
+    },
+    "per_video_d": {
+     "empty": {
+      "09": 0.004372697370296663,
+      "10": 0.00032036228787879484
+     },
+     "shuffle": {
+      "09": 0.0,
+      "10": 0.0
+     },
+     "tower": {
+      "09": -0.0046656413417236475,
+      "10": -0.007805632645481175
+     }
+    }
+   }
+  },
+  "DX": {
+   "empty": {
+    "run": "w3lra_pd_DX_W3_empty_ep4_seed42",
+    "measured": true,
+    "AP": 0.724813428023506,
+    "target_AP": 0.7885058384198873,
+    "control_AP": 0.6766975829560478,
+    "AP50": 0.8491243764773688,
+    "per_video_AP": {
+     "09": 0.70221751282026,
+     "10": 0.6344898691479655
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.7628048868806558,
+     "Electric Cautery": 0.9678146876921303,
+     "Forceps": 0.3587929938285156,
+     "Gauze": 0.283195857922416,
+     "Hook": 0.6225795994461721,
+     "Mouth Gag": 0.8027344226187311,
+     "Needle Holders": 0.8404328253206282,
+     "Raspatory": 0.8113850714165859,
+     "Retractor": NaN,
+     "Scalpel": 0.8843043937137025,
+     "Scissors": 0.7084483621180119,
+     "Skewer": 0.941009414190756,
+     "Suction Cannula": 0.8356141257974624,
+     "Syringe": 0.5430254258977361,
+     "Tweezers": 0.7852459254855817
+    },
+    "per_epoch": {
+     "-1": {
+      "AP": 0.7273450248398429,
+      "AP50": 0.851807431425236,
+      "target_AP": 0.7950748008550897,
+      "control_AP": 0.6726631817581498,
+      "per_video_AP": {
+       "09": 0.704273483949694,
+       "10": 0.6420973291237674
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "0": {
+      "AP": 0.7206058134576718,
+      "AP50": 0.8448826190661411,
+      "target_AP": 0.7908400944588738,
+      "control_AP": 0.6706197619014109,
+      "per_video_AP": {
+       "09": 0.6910679152095587,
+       "10": 0.6440024805661076
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "1": {
+      "AP": 0.7223908769180387,
+      "AP50": 0.8468025622873774,
+      "target_AP": 0.7966648785566993,
+      "control_AP": 0.6679380096312416,
+      "per_video_AP": {
+       "09": 0.6975433940726546,
+       "10": 0.6379072411891509
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "2": {
+      "AP": 0.7261180088876839,
+      "AP50": 0.8511866096049695,
+      "target_AP": 0.7981816025022292,
+      "control_AP": 0.6728147793546723,
+      "per_video_AP": {
+       "09": 0.7000611328659757,
+       "10": 0.6422061627839588
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "3": {
+      "AP": 0.724813428023506,
+      "AP50": 0.8491243764773688,
+      "target_AP": 0.7885058384198873,
+      "control_AP": 0.6766975829560478,
+      "per_video_AP": {
+       "09": 0.70221751282026,
+       "10": 0.6344898691479655
+      },
+      "target_missing": [],
+      "control_missing": []
+     }
+    },
+    "receiver_rel_delta": 0.007392853635507357,
+    "receiver_delta_l2": 6.320280641064266,
+    "init_diff_vs_tower": {
+     "comparable": true,
+     "max_abs_score_diff": 0.0,
+     "max_abs_bbox_diff_px": 0.0,
+     "label_mismatch": 0
+    },
+    "frozen_unchanged": true,
+    "total_trainable": 48681574,
+    "videos": {
+     "train": [
+      "01",
+      "02",
+      "03",
+      "06",
+      "08",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15"
+     ],
+     "val_evaluated": [
+      "09",
+      "10"
+     ],
+     "test_overlap": []
+    },
+    "server": "andrew",
+    "lr_record": {
+     "groups": [
+      {
+       "label": "other",
+       "lr_given": 1e-05,
+       "weight_decay_given": null,
+       "n_tensors": 125,
+       "n_elements": 24384000
+      },
+      {
+       "label": "backbone",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 42,
+       "n_elements": 23232512
+      },
+      {
+       "label": "backbone_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 0,
+       "n_elements": 0
+      },
+      {
+       "label": "linear_projection",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 12,
+       "n_elements": 786432
+      },
+      {
+       "label": "linear_projection_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 12,
+       "n_elements": 3072
+      },
+      {
+       "label": "other_norm",
+       "lr_given": 1e-05,
+       "weight_decay_given": 0,
+       "n_tensors": 181,
+       "n_elements": 65184
+      },
+      {
+       "label": "phase",
+       "lr_given": 0.0005,
+       "weight_decay_given": null,
+       "n_tensors": 41,
+       "n_elements": 210374
+      }
+     ],
+     "init": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "after_step_1": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "by_epoch": {
+      "0": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "1": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "2": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "3": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      }
+     },
+     "constant_over_snapshots": true,
+     "n_snapshots": 7,
+     "opt_steps_at_last_eval": 19236
+    },
+    "lr_arg": 1e-05,
+    "film_lr_arg": 0.0005,
+    "wall_seconds": 14350.0,
+    "result_epoch": 3,
+    "d_empty": {
+     "AP": 0.0,
+     "target_AP": 0.0,
+     "control_AP": 0.0,
+     "AP50": 0.0
+    },
+    "d_shuffle": {
+     "AP": 0.0016721663833370037,
+     "target_AP": 0.0006644567288723868,
+     "control_AP": 0.003910923999552174,
+     "AP50": -0.001091743930896505
+    },
+    "d_tower": {
+     "AP": -0.0025315968163368563,
+     "target_AP": -0.006568962435202441,
+     "control_AP": 0.0040344011978979966,
+     "AP50": -0.002683054947867136
+    },
+    "per_video_d": {
+     "empty": {
+      "09": 0.0,
+      "10": 0.0
+     },
+     "shuffle": {
+      "09": 0.004464682640558326,
+      "10": -0.0009525967641978994
+     },
+     "tower": {
+      "09": -0.002055971129434009,
+      "10": -0.007607459975801922
+     }
+    }
+   },
+   "pred_noCF": {
+    "run": "w3lra_pd_DX_W3_pred_noCF_ep4_seed42",
+    "measured": true,
+    "AP": 0.7229423371484477,
+    "target_AP": 0.7867813516276951,
+    "control_AP": 0.6722736654883253,
+    "AP50": 0.8493915382308291,
+    "per_video_AP": {
+     "09": 0.6969351868848802,
+     "10": 0.6351178574323627
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.7562856254918635,
+     "Electric Cautery": 0.9657449855951235,
+     "Forceps": 0.3535033905637541,
+     "Gauze": 0.2750026533783807,
+     "Hook": 0.6285043416370548,
+     "Mouth Gag": 0.7997023054439649,
+     "Needle Holders": 0.8457471414329809,
+     "Raspatory": 0.8087664056131587,
+     "Retractor": NaN,
+     "Scalpel": 0.8893715782323289,
+     "Scissors": 0.7046914407575757,
+     "Skewer": 0.9454640923686832,
+     "Suction Cannula": 0.8314005400138736,
+     "Syringe": 0.5340190564324417,
+     "Tweezers": 0.7829891631170821
+    },
+    "per_epoch": {
+     "-1": {
+      "AP": 0.7273450248398429,
+      "AP50": 0.851807431425236,
+      "target_AP": 0.7950748008550897,
+      "control_AP": 0.6726631817581498,
+      "per_video_AP": {
+       "09": 0.704273483949694,
+       "10": 0.6420973291237674
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "0": {
+      "AP": 0.7222115886984715,
+      "AP50": 0.8465093111358869,
+      "target_AP": 0.7939682595019943,
+      "control_AP": 0.6704817258539724,
+      "per_video_AP": {
+       "09": 0.693710160320616,
+       "10": 0.6457265743155854
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "1": {
+      "AP": 0.7231599511344756,
+      "AP50": 0.8482842098243322,
+      "target_AP": 0.7959299369153175,
+      "control_AP": 0.6682924969209085,
+      "per_video_AP": {
+       "09": 0.7023124842518593,
+       "10": 0.6377810308510622
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "2": {
+      "AP": 0.7244569703287533,
+      "AP50": 0.8493827329143118,
+      "target_AP": 0.796594415305481,
+      "control_AP": 0.6728021613363568,
+      "per_video_AP": {
+       "09": 0.7003988830834842,
+       "10": 0.6411132814651163
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "3": {
+      "AP": 0.7229423371484477,
+      "AP50": 0.8493915382308291,
+      "target_AP": 0.7867813516276951,
+      "control_AP": 0.6722736654883253,
+      "per_video_AP": {
+       "09": 0.6969351868848802,
+       "10": 0.6351178574323627
+      },
+      "target_missing": [],
+      "control_missing": []
+     }
+    },
+    "receiver_rel_delta": 0.007394570737976753,
+    "receiver_delta_l2": 6.321748622175636,
+    "init_diff_vs_tower": {
+     "comparable": true,
+     "max_abs_score_diff": 0.0,
+     "max_abs_bbox_diff_px": 0.0,
+     "label_mismatch": 0
+    },
+    "frozen_unchanged": true,
+    "total_trainable": 48681574,
+    "videos": {
+     "train": [
+      "01",
+      "02",
+      "03",
+      "06",
+      "08",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15"
+     ],
+     "val_evaluated": [
+      "09",
+      "10"
+     ],
+     "test_overlap": []
+    },
+    "server": "andrew",
+    "lr_record": {
+     "groups": [
+      {
+       "label": "other",
+       "lr_given": 1e-05,
+       "weight_decay_given": null,
+       "n_tensors": 125,
+       "n_elements": 24384000
+      },
+      {
+       "label": "backbone",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 42,
+       "n_elements": 23232512
+      },
+      {
+       "label": "backbone_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 0,
+       "n_elements": 0
+      },
+      {
+       "label": "linear_projection",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 12,
+       "n_elements": 786432
+      },
+      {
+       "label": "linear_projection_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 12,
+       "n_elements": 3072
+      },
+      {
+       "label": "other_norm",
+       "lr_given": 1e-05,
+       "weight_decay_given": 0,
+       "n_tensors": 181,
+       "n_elements": 65184
+      },
+      {
+       "label": "phase",
+       "lr_given": 0.0005,
+       "weight_decay_given": null,
+       "n_tensors": 41,
+       "n_elements": 210374
+      }
+     ],
+     "init": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "after_step_1": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "by_epoch": {
+      "0": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "1": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "2": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "3": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      }
+     },
+     "constant_over_snapshots": true,
+     "n_snapshots": 7,
+     "opt_steps_at_last_eval": 19236
+    },
+    "lr_arg": 1e-05,
+    "film_lr_arg": 0.0005,
+    "wall_seconds": 14560.0,
+    "result_epoch": 3,
+    "d_empty": {
+     "AP": -0.0018710908750583233,
+     "target_AP": -0.0017244867921921703,
+     "control_AP": -0.004423917467722416,
+     "AP50": 0.0002671617534603099
+    },
+    "d_shuffle": {
+     "AP": -0.00019892449172131954,
+     "target_AP": -0.0010600300633197834,
+     "control_AP": -0.0005129934681702419,
+     "AP50": -0.000824582177436195
+    },
+    "d_tower": {
+     "AP": -0.00440268769139518,
+     "target_AP": -0.008293449227394611,
+     "control_AP": -0.0003895162698244192,
+     "AP50": -0.0024158931944068263
+    },
+    "per_video_d": {
+     "empty": {
+      "09": -0.005282325935379806,
+      "10": 0.0006279882843972517
+     },
+     "shuffle": {
+      "09": -0.0008176432948214796,
+      "10": -0.00032460847980064766
+     },
+     "tower": {
+      "09": -0.007338297064813815,
+      "10": -0.006979471691404671
+     }
+    }
+   },
+   "gt": {
+    "run": "w3lra_pd_DX_W3_gt_ep4_seed42",
+    "measured": true,
+    "AP": 0.7229741387127525,
+    "target_AP": 0.7873471991666079,
+    "control_AP": 0.6705627614402433,
+    "AP50": 0.8500000458006313,
+    "per_video_AP": {
+     "09": 0.6980264430186957,
+     "10": 0.6343043418034484
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.7650104738404887,
+     "Electric Cautery": 0.9658863189160892,
+     "Forceps": 0.35726666136008006,
+     "Gauze": 0.27265656581390413,
+     "Hook": 0.6254888910888953,
+     "Mouth Gag": 0.7977889945317215,
+     "Needle Holders": 0.8438872401385908,
+     "Raspatory": 0.8115140441042759,
+     "Retractor": NaN,
+     "Scalpel": 0.8820497132802799,
+     "Scissors": 0.7101217888808671,
+     "Skewer": 0.9446158886400543,
+     "Suction Cannula": 0.8303541232184223,
+     "Syringe": 0.5335458759679411,
+     "Tweezers": 0.7814513621969255
+    },
+    "per_epoch": {
+     "-1": {
+      "AP": 0.7273450248398429,
+      "AP50": 0.851807431425236,
+      "target_AP": 0.7950748008550897,
+      "control_AP": 0.6726631817581498,
+      "per_video_AP": {
+       "09": 0.704273483949694,
+       "10": 0.6420973291237674
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "0": {
+      "AP": 0.7200424746541882,
+      "AP50": 0.8437112573918796,
+      "target_AP": 0.7892598021778285,
+      "control_AP": 0.6696190921948205,
+      "per_video_AP": {
+       "09": 0.6911586709049972,
+       "10": 0.6432321360425626
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "1": {
+      "AP": 0.7208258831428371,
+      "AP50": 0.8467313497963891,
+      "target_AP": 0.7911053857009582,
+      "control_AP": 0.6673476382148791,
+      "per_video_AP": {
+       "09": 0.6989535865648251,
+       "10": 0.635018478892214
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "2": {
+      "AP": 0.7247783356055492,
+      "AP50": 0.8497212017048386,
+      "target_AP": 0.7948823726674646,
+      "control_AP": 0.6715335639701284,
+      "per_video_AP": {
+       "09": 0.7001909198587035,
+       "10": 0.6398691663450226
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "3": {
+      "AP": 0.7229741387127525,
+      "AP50": 0.8500000458006313,
+      "target_AP": 0.7873471991666079,
+      "control_AP": 0.6705627614402433,
+      "per_video_AP": {
+       "09": 0.6980264430186957,
+       "10": 0.6343043418034484
+      },
+      "target_missing": [],
+      "control_missing": []
+     }
+    },
+    "receiver_rel_delta": 0.007401403007407214,
+    "receiver_delta_l2": 6.327589649517023,
+    "init_diff_vs_tower": {
+     "comparable": true,
+     "max_abs_score_diff": 0.0,
+     "max_abs_bbox_diff_px": 0.0,
+     "label_mismatch": 0
+    },
+    "frozen_unchanged": true,
+    "total_trainable": 48681574,
+    "videos": {
+     "train": [
+      "01",
+      "02",
+      "03",
+      "06",
+      "08",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15"
+     ],
+     "val_evaluated": [
+      "09",
+      "10"
+     ],
+     "test_overlap": []
+    },
+    "server": "andrew",
+    "lr_record": {
+     "groups": [
+      {
+       "label": "other",
+       "lr_given": 1e-05,
+       "weight_decay_given": null,
+       "n_tensors": 125,
+       "n_elements": 24384000
+      },
+      {
+       "label": "backbone",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 42,
+       "n_elements": 23232512
+      },
+      {
+       "label": "backbone_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 0,
+       "n_elements": 0
+      },
+      {
+       "label": "linear_projection",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 12,
+       "n_elements": 786432
+      },
+      {
+       "label": "linear_projection_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 12,
+       "n_elements": 3072
+      },
+      {
+       "label": "other_norm",
+       "lr_given": 1e-05,
+       "weight_decay_given": 0,
+       "n_tensors": 181,
+       "n_elements": 65184
+      },
+      {
+       "label": "phase",
+       "lr_given": 0.0005,
+       "weight_decay_given": null,
+       "n_tensors": 41,
+       "n_elements": 210374
+      }
+     ],
+     "init": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "after_step_1": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "by_epoch": {
+      "0": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "1": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "2": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "3": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      }
+     },
+     "constant_over_snapshots": true,
+     "n_snapshots": 7,
+     "opt_steps_at_last_eval": 19236
+    },
+    "lr_arg": 1e-05,
+    "film_lr_arg": 0.0005,
+    "wall_seconds": 14348.0,
+    "result_epoch": 3,
+    "d_empty": {
+     "AP": -0.0018392893107535002,
+     "target_AP": -0.0011586392532794143,
+     "control_AP": -0.006134821515804467,
+     "AP50": 0.0008756693232624402
+    },
+    "d_shuffle": {
+     "AP": -0.00016712292741649648,
+     "target_AP": -0.0004941825244070275,
+     "control_AP": -0.0022238975162522934,
+     "AP50": -0.00021607460763406472
+    },
+    "d_tower": {
+     "AP": -0.0043708861270903565,
+     "target_AP": -0.0077276016884818555,
+     "control_AP": -0.0021004203179064707,
+     "AP50": -0.001807385624604696
+    },
+    "per_video_d": {
+     "empty": {
+      "09": -0.004191069801564362,
+      "10": -0.00018552734451704467
+     },
+     "shuffle": {
+      "09": 0.00027361283899396405,
+      "10": -0.001138124108714944
+     },
+     "tower": {
+      "09": -0.006247040930998371,
+      "10": -0.007792987320318967
+     }
+    }
+   },
+   "shuffle": {
+    "run": "w3lra_pd_DX_W3_shuffle_ep4_seed42",
+    "measured": true,
+    "AP": 0.723141261640169,
+    "target_AP": 0.7878413816910149,
+    "control_AP": 0.6727866589564956,
+    "AP50": 0.8502161204082653,
+    "per_video_AP": {
+     "09": 0.6977528301797017,
+     "10": 0.6354424659121634
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.7678049607410486,
+     "Electric Cautery": 0.9647831860016846,
+     "Forceps": 0.3587370904163662,
+     "Gauze": 0.2772220835105017,
+     "Hook": 0.6221764869553466,
+     "Mouth Gag": 0.7970186859075903,
+     "Needle Holders": 0.8404388682022816,
+     "Raspatory": 0.8149620326814402,
+     "Retractor": NaN,
+     "Scalpel": 0.8731517071263313,
+     "Scissors": 0.7074884871056317,
+     "Skewer": 0.9429566797535386,
+     "Suction Cannula": 0.8350799726355752,
+     "Syringe": 0.5403315281527158,
+     "Tweezers": 0.7818258937723152
+    },
+    "per_epoch": {
+     "-1": {
+      "AP": 0.7273450248398429,
+      "AP50": 0.851807431425236,
+      "target_AP": 0.7950748008550897,
+      "control_AP": 0.6726631817581498,
+      "per_video_AP": {
+       "09": 0.704273483949694,
+       "10": 0.6420973291237674
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "0": {
+      "AP": 0.7196236522475302,
+      "AP50": 0.8446566348070846,
+      "target_AP": 0.7900875655303543,
+      "control_AP": 0.6680961786698245,
+      "per_video_AP": {
+       "09": 0.690041471701918,
+       "10": 0.6435304864060678
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "1": {
+      "AP": 0.7218590977366103,
+      "AP50": 0.8474600380233429,
+      "target_AP": 0.7927806351969773,
+      "control_AP": 0.6678844244456037,
+      "per_video_AP": {
+       "09": 0.6992254697919379,
+       "10": 0.6367626160964837
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "2": {
+      "AP": 0.7243865563896529,
+      "AP50": 0.8469358507895494,
+      "target_AP": 0.7958401102200046,
+      "control_AP": 0.6703436021656257,
+      "per_video_AP": {
+       "09": 0.699682811922669,
+       "10": 0.6413488366451641
+      },
+      "target_missing": [],
+      "control_missing": []
+     },
+     "3": {
+      "AP": 0.723141261640169,
+      "AP50": 0.8502161204082653,
+      "target_AP": 0.7878413816910149,
+      "control_AP": 0.6727866589564956,
+      "per_video_AP": {
+       "09": 0.6977528301797017,
+       "10": 0.6354424659121634
+      },
+      "target_missing": [],
+      "control_missing": []
+     }
+    },
+    "receiver_rel_delta": 0.007413051071835231,
+    "receiver_delta_l2": 6.337547784729748,
+    "init_diff_vs_tower": {
+     "comparable": true,
+     "max_abs_score_diff": 0.0,
+     "max_abs_bbox_diff_px": 0.0,
+     "label_mismatch": 0
+    },
+    "frozen_unchanged": true,
+    "total_trainable": 48681574,
+    "videos": {
+     "train": [
+      "01",
+      "02",
+      "03",
+      "06",
+      "08",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15"
+     ],
+     "val_evaluated": [
+      "09",
+      "10"
+     ],
+     "test_overlap": []
+    },
+    "server": "andrew",
+    "lr_record": {
+     "groups": [
+      {
+       "label": "other",
+       "lr_given": 1e-05,
+       "weight_decay_given": null,
+       "n_tensors": 125,
+       "n_elements": 24384000
+      },
+      {
+       "label": "backbone",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 42,
+       "n_elements": 23232512
+      },
+      {
+       "label": "backbone_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 0,
+       "n_elements": 0
+      },
+      {
+       "label": "linear_projection",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": null,
+       "n_tensors": 12,
+       "n_elements": 786432
+      },
+      {
+       "label": "linear_projection_norm",
+       "lr_given": 1.0000000000000002e-06,
+       "weight_decay_given": 0,
+       "n_tensors": 12,
+       "n_elements": 3072
+      },
+      {
+       "label": "other_norm",
+       "lr_given": 1e-05,
+       "weight_decay_given": 0,
+       "n_tensors": 181,
+       "n_elements": 65184
+      },
+      {
+       "label": "phase",
+       "lr_given": 0.0005,
+       "weight_decay_given": null,
+       "n_tensors": 41,
+       "n_elements": 210374
+      }
+     ],
+     "init": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "after_step_1": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+     },
+     "by_epoch": {
+      "0": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "1": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "2": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      },
+      "3": {
+       "other": 1e-05,
+       "backbone": 1.0000000000000002e-06,
+       "backbone_norm": 1.0000000000000002e-06,
+       "linear_projection": 1.0000000000000002e-06,
+       "linear_projection_norm": 1.0000000000000002e-06,
+       "other_norm": 1e-05,
+       "phase": 0.0005
+      }
+     },
+     "constant_over_snapshots": true,
+     "n_snapshots": 7,
+     "opt_steps_at_last_eval": 19236
+    },
+    "lr_arg": 1e-05,
+    "film_lr_arg": 0.0005,
+    "wall_seconds": 14547.0,
+    "result_epoch": 3,
+    "d_empty": {
+     "AP": -0.0016721663833370037,
+     "target_AP": -0.0006644567288723868,
+     "control_AP": -0.003910923999552174,
+     "AP50": 0.001091743930896505
+    },
+    "d_shuffle": {
+     "AP": 0.0,
+     "target_AP": 0.0,
+     "control_AP": 0.0,
+     "AP50": 0.0
+    },
+    "d_tower": {
+     "AP": -0.00420376319967386,
+     "target_AP": -0.007233419164074828,
+     "control_AP": 0.00012347719834582271,
+     "AP50": -0.0015913110169706313
+    },
+    "per_video_d": {
+     "empty": {
+      "09": -0.004464682640558326,
+      "10": 0.0009525967641978994
+     },
+     "shuffle": {
+      "09": 0.0,
+      "10": 0.0
+     },
+     "tower": {
+      "09": -0.006520653769992335,
+      "10": -0.006654863211604023
+     }
+    }
+   }
+  }
+ },
+ "prev_W3": {
+  "P1": {
+   "empty": {
+    "run": "w23b_pd_P1-W3_empty_ep4_seed42",
+    "measured": true,
+    "AP": 0.6695064067493597,
+    "target_AP": 0.7247535352398087,
+    "control_AP": 0.6376211494160522,
+    "AP50": 0.8061539095885112,
+    "per_video_AP": {
+     "09": 0.6238465147715901,
+     "10": 0.6092187118144644
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.6284569155089603,
+     "Electric Cautery": 0.9588029611275943,
+     "Forceps": 0.22330030737479203,
+     "Gauze": 0.24117624646093766,
+     "Hook": 0.597600153880156,
+     "Mouth Gag": 0.7707325946288671,
+     "Needle Holders": 0.8035889915279155,
+     "Raspatory": 0.8106160621968252,
+     "Retractor": NaN,
+     "Scalpel": 0.9034783360275397,
+     "Scissors": 0.615545006717326,
+     "Skewer": 0.9069527003934963,
+     "Suction Cannula": 0.8006357069604901,
+     "Syringe": 0.37426366207222195,
+     "Tweezers": 0.7379400496139139
+    },
+    "server": "bengio",
+    "result_epoch": 3,
+    "receiver_rel_delta": null,
+    "source": "w23b_pd_P1-W3_empty_ep4_seed42/w23_metrics.json",
+    "d_empty": {
+     "AP": 0.0,
+     "target_AP": 0.0,
+     "control_AP": 0.0,
+     "AP50": 0.0
+    },
+    "d_shuffle": {
+     "AP": -0.0191003158553118,
+     "target_AP": -0.04807324359578413,
+     "control_AP": -0.0016440474002233918,
+     "AP50": -0.018222138971014656
+    },
+    "d_tower": {
+     "AP": -0.057838618090483185,
+     "target_AP": -0.07032126561528107,
+     "control_AP": -0.03504203234209757,
+     "AP50": -0.045653521836724775
+    },
+    "per_video_d": {
+     "empty": {
+      "09": 0.0,
+      "10": 0.0
+     },
+     "shuffle": {
+      "09": -0.04944441665055488,
+      "10": -0.0002578265341518504
+     },
+     "tower": {
+      "09": -0.08042696917810388,
+      "10": -0.03287861730930297
+     }
+    }
+   },
+   "pred_noCF": {
+    "run": "w23b_pd_P1-W3_pred_noCF_ep4_seed42",
+    "measured": true,
+    "AP": 0.6941439165258269,
+    "target_AP": 0.7819374904503824,
+    "control_AP": 0.6382812588856861,
+    "AP50": 0.8385391805396708,
+    "per_video_AP": {
+     "09": 0.6714153063782782,
+     "10": 0.61618309757925
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.7473313289742032,
+     "Electric Cautery": 0.9600867560779832,
+     "Forceps": 0.26796022936398417,
+     "Gauze": 0.258472195321437,
+     "Hook": 0.5648555860033555,
+     "Mouth Gag": 0.7579445788089832,
+     "Needle Holders": 0.7968084597092652,
+     "Raspatory": 0.7854033877022353,
+     "Retractor": NaN,
+     "Scalpel": 0.8937740028070835,
+     "Scissors": 0.665491312412333,
+     "Skewer": 0.9514835202914635,
+     "Suction Cannula": 0.799442996333701,
+     "Syringe": 0.5316952124769265,
+     "Tweezers": 0.7372652650786231
+    },
+    "server": "bengio",
+    "result_epoch": 3,
+    "receiver_rel_delta": null,
+    "source": "w23b_pd_P1-W3_pred_noCF_ep4_seed42/w23_metrics.json",
+    "d_empty": {
+     "AP": 0.02463750977646717,
+     "target_AP": 0.057183955210573734,
+     "control_AP": 0.0006601094696339072,
+     "AP50": 0.03238527095115962
+    },
+    "d_shuffle": {
+     "AP": 0.00553719392115537,
+     "target_AP": 0.009110711614789602,
+     "control_AP": -0.0009839379305894846,
+     "AP50": 0.01416313198014496
+    },
+    "d_tower": {
+     "AP": -0.033201108314016015,
+     "target_AP": -0.013137310404707336,
+     "control_AP": -0.034381922872463666,
+     "AP50": -0.013268250885565158
+    },
+    "per_video_d": {
+     "empty": {
+      "09": 0.04756879160668803,
+      "10": 0.006964385764785641
+     },
+     "shuffle": {
+      "09": -0.0018756250438668465,
+      "10": 0.006706559230633791
+     },
+     "tower": {
+      "09": -0.03285817757141585,
+      "10": -0.02591423154451733
+     }
+    }
+   },
+   "gt": {
+    "run": "w23b_pd_P1-W3_gt_ep4_seed42",
+    "measured": true,
+    "AP": 0.7028505203044184,
+    "target_AP": 0.7884216703367988,
+    "control_AP": 0.6404231425561839,
+    "AP50": 0.8398145150737375,
+    "per_video_AP": {
+     "09": 0.6595746819001714,
+     "10": 0.6307274177109565
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.7867192371968157,
+     "Electric Cautery": 0.9614592094355615,
+     "Forceps": 0.30386546517094987,
+     "Gauze": 0.22359952638394864,
+     "Hook": 0.5875720062719922,
+     "Mouth Gag": 0.7736835433621219,
+     "Needle Holders": 0.8204807750342923,
+     "Raspatory": 0.8087951373223938,
+     "Retractor": NaN,
+     "Scalpel": 0.9269712403110095,
+     "Scissors": 0.6627289064403316,
+     "Skewer": 0.9484278502882095,
+     "Suction Cannula": 0.827920968542061,
+     "Syringe": 0.4711948865655657,
+     "Tweezers": 0.7364885319366041
+    },
+    "server": "bengio",
+    "result_epoch": 3,
+    "receiver_rel_delta": null,
+    "source": "w23b_pd_P1-W3_gt_ep4_seed42/w23_metrics.json",
+    "d_empty": {
+     "AP": 0.03334411355505873,
+     "target_AP": 0.0636681350969901,
+     "control_AP": 0.002801993140131742,
+     "AP50": 0.033660605485226314
+    },
+    "d_shuffle": {
+     "AP": 0.01424379769974693,
+     "target_AP": 0.015594891501205965,
+     "control_AP": 0.0011579457399083504,
+     "AP50": 0.015438466514211657
+    },
+    "d_tower": {
+     "AP": -0.024494504535424455,
+     "target_AP": -0.006653130518290973,
+     "control_AP": -0.03224003920196583,
+     "AP50": -0.011992916351498462
+    },
+    "per_video_d": {
+     "empty": {
+      "09": 0.03572816712858129,
+      "10": 0.02150870589649212
+     },
+     "shuffle": {
+      "09": -0.01371624952197359,
+      "10": 0.02125087936234027
+     },
+     "tower": {
+      "09": -0.04469880204952259,
+      "10": -0.011369911412810851
+     }
+    }
+   },
+   "shuffle": {
+    "run": "w23b_pd_P1-W3_shuffle_ep4_seed42",
+    "measured": true,
+    "AP": 0.6886067226046715,
+    "target_AP": 0.7728267788355928,
+    "control_AP": 0.6392651968162756,
+    "AP50": 0.8243760485595258,
+    "per_video_AP": {
+     "09": 0.673290931422145,
+     "10": 0.6094765383486163
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.7481851892026589,
+     "Electric Cautery": 0.9631708205231292,
+     "Forceps": 0.27561350961833625,
+     "Gauze": 0.23518417616512244,
+     "Hook": 0.48163621127138617,
+     "Mouth Gag": 0.7629963175119819,
+     "Needle Holders": 0.8194214356136125,
+     "Raspatory": 0.7351279173475862,
+     "Retractor": NaN,
+     "Scalpel": 0.886143137785398,
+     "Scissors": 0.6794574579958713,
+     "Skewer": 0.9380981329835597,
+     "Suction Cannula": 0.8226872748393637,
+     "Syringe": 0.5565795168587611,
+     "Tweezers": 0.7361930187486342
+    },
+    "server": "bengio",
+    "result_epoch": 3,
+    "receiver_rel_delta": null,
+    "source": "w23b_pd_P1-W3_shuffle_ep4_seed42/w23_metrics.json",
+    "d_empty": {
+     "AP": 0.0191003158553118,
+     "target_AP": 0.04807324359578413,
+     "control_AP": 0.0016440474002233918,
+     "AP50": 0.018222138971014656
+    },
+    "d_shuffle": {
+     "AP": 0.0,
+     "target_AP": 0.0,
+     "control_AP": 0.0,
+     "AP50": 0.0
+    },
+    "d_tower": {
+     "AP": -0.038738302235171385,
+     "target_AP": -0.022248022019496938,
+     "control_AP": -0.03339798494187418,
+     "AP50": -0.02743138286571012
+    },
+    "per_video_d": {
+     "empty": {
+      "09": 0.04944441665055488,
+      "10": 0.0002578265341518504
+     },
+     "shuffle": {
+      "09": 0.0,
+      "10": 0.0
+     },
+     "tower": {
+      "09": -0.030982552527549,
+      "10": -0.03262079077515112
+     }
+    }
+   }
+  },
+  "P2L": {
+   "empty": {
+    "run": "w23b_pd_P2L-W3_empty_ep4_seed42",
+    "measured": true,
+    "AP": 0.6900963078998631,
+    "target_AP": 0.7515158046067962,
+    "control_AP": 0.6546235629735502,
+    "AP50": 0.8175675530221075,
+    "per_video_AP": {
+     "09": 0.6728613138762733,
+     "10": 0.6088178220362882
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.7337343790805325,
+     "Electric Cautery": 0.9522711822165293,
+     "Forceps": 0.310684500863661,
+     "Gauze": 0.24950690259570868,
+     "Hook": 0.521368979407903,
+     "Mouth Gag": 0.7926202876970192,
+     "Needle Holders": 0.8351833892992476,
+     "Raspatory": 0.6200343961627204,
+     "Retractor": NaN,
+     "Scalpel": 0.9088526899756258,
+     "Scissors": 0.6657669838825618,
+     "Skewer": 0.9347238101624613,
+     "Suction Cannula": 0.8341233696000102,
+     "Syringe": 0.5602337476526407,
+     "Tweezers": 0.7422436920014626
+    },
+    "server": "bengio",
+    "result_epoch": 3,
+    "receiver_rel_delta": null,
+    "source": "w23b_pd_P2L-W3_empty_ep4_seed42/w23_metrics.json",
+    "d_empty": {
+     "AP": 0.0,
+     "target_AP": 0.0,
+     "control_AP": 0.0,
+     "AP50": 0.0
+    },
+    "d_shuffle": {
+     "AP": 0.012085961643020338,
+     "target_AP": 0.015179183967344412,
+     "control_AP": 0.00166088732273173,
+     "AP50": 0.014540974896856684
+    },
+    "d_tower": {
+     "AP": -0.037248716939979776,
+     "target_AP": -0.04355899624829351,
+     "control_AP": -0.018039618784599587,
+     "AP50": -0.034239878403128476
+    },
+    "per_video_d": {
+     "empty": {
+      "09": 0.0,
+      "10": 0.0
+     },
+     "shuffle": {
+      "09": -0.0074224201018942,
+      "10": 0.009700011152768084
+     },
+     "tower": {
+      "09": -0.031412170073420675,
+      "10": -0.033279507087479177
+     }
+    }
+   },
+   "pred_noCF": {
+    "run": "w23b_pd_P2L-W3_pred_noCF_ep4_seed42",
+    "measured": true,
+    "AP": 0.6718983105693322,
+    "target_AP": 0.7389296985107144,
+    "control_AP": 0.6367267508673693,
+    "AP50": 0.8010152507505219,
+    "per_video_AP": {
+     "09": 0.6399529842060873,
+     "10": 0.6004625234836247
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.735719242546738,
+     "Electric Cautery": 0.952975541744901,
+     "Forceps": 0.2794161291148429,
+     "Gauze": 0.19639152577392183,
+     "Hook": 0.4692318310196463,
+     "Mouth Gag": 0.7937118486475508,
+     "Needle Holders": 0.8262651705785935,
+     "Raspatory": 0.5978630301143086,
+     "Retractor": NaN,
+     "Scalpel": 0.8848873932632197,
+     "Scissors": 0.637132179489618,
+     "Skewer": 0.959193467196537,
+     "Suction Cannula": 0.8194973360083188,
+     "Syringe": 0.5169853594327687,
+     "Tweezers": 0.7373062930396854
+    },
+    "server": "bengio",
+    "result_epoch": 3,
+    "receiver_rel_delta": null,
+    "source": "w23b_pd_P2L-W3_pred_noCF_ep4_seed42/w23_metrics.json",
+    "d_empty": {
+     "AP": -0.018197997330530846,
+     "target_AP": -0.012586106096081795,
+     "control_AP": -0.01789681210618088,
+     "AP50": -0.01655230227158555
+    },
+    "d_shuffle": {
+     "AP": -0.006112035687510509,
+     "target_AP": 0.002593077871262617,
+     "control_AP": -0.01623592478344915,
+     "AP50": -0.0020113273747288662
+    },
+    "d_tower": {
+     "AP": -0.05544671427051062,
+     "target_AP": -0.05614510234437531,
+     "control_AP": -0.03593643089078047,
+     "AP50": -0.05079218067471403
+    },
+    "per_video_d": {
+     "empty": {
+      "09": -0.03290832967018609,
+      "10": -0.008355298552663482
+     },
+     "shuffle": {
+      "09": -0.04033074977208029,
+      "10": 0.0013447126001046028
+     },
+     "tower": {
+      "09": -0.06432049974360676,
+      "10": -0.04163480564014266
+     }
+    }
+   },
+   "gt": {
+    "run": "w23b_pd_P2L-W3_gt_ep4_seed42",
+    "measured": true,
+    "AP": 0.6834930944552231,
+    "target_AP": 0.7471824724238834,
+    "control_AP": 0.6399811602596823,
+    "AP50": 0.8178532822980391,
+    "per_video_AP": {
+     "09": 0.6719066992949531,
+     "10": 0.6051563747326356
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.7456815832960679,
+     "Electric Cautery": 0.9582891420106974,
+     "Forceps": 0.3264319355118916,
+     "Gauze": 0.19911858902022161,
+     "Hook": 0.5145940022659325,
+     "Mouth Gag": 0.7966049360940041,
+     "Needle Holders": 0.8200692026711872,
+     "Raspatory": 0.598288190941481,
+     "Retractor": NaN,
+     "Scalpel": 0.9035520441358857,
+     "Scissors": 0.6536820367552683,
+     "Skewer": 0.9337293142349447,
+     "Suction Cannula": 0.8294500051133197,
+     "Syringe": 0.5546612295110374,
+     "Tweezers": 0.7347511108111839
+    },
+    "server": "bengio",
+    "result_epoch": 3,
+    "receiver_rel_delta": null,
+    "source": "w23b_pd_P2L-W3_gt_ep4_seed42/w23_metrics.json",
+    "d_empty": {
+     "AP": -0.006603213444639988,
+     "target_AP": -0.004333332182912875,
+     "control_AP": -0.014642402713867853,
+     "AP50": 0.00028572927593162323
+    },
+    "d_shuffle": {
+     "AP": 0.0054827481983803494,
+     "target_AP": 0.010845851784431537,
+     "control_AP": -0.012981515391136123,
+     "AP50": 0.014826704172788308
+    },
+    "d_tower": {
+     "AP": -0.043851930384619764,
+     "target_AP": -0.04789232843120639,
+     "control_AP": -0.03268202149846744,
+     "AP50": -0.03395414912719685
+    },
+    "per_video_d": {
+     "empty": {
+      "09": -0.00095461458132029,
+      "10": -0.0036614473036525874
+     },
+     "shuffle": {
+      "09": -0.00837703468321449,
+      "10": 0.006038563849115497
+     },
+     "tower": {
+      "09": -0.032366784654740965,
+      "10": -0.036940954391131764
+     }
+    }
+   },
+   "shuffle": {
+    "run": "w23b_pd_P2L-W3_shuffle_ep4_seed42",
+    "measured": true,
+    "AP": 0.6780103462568428,
+    "target_AP": 0.7363366206394518,
+    "control_AP": 0.6529626756508184,
+    "AP50": 0.8030265781252508,
+    "per_video_AP": {
+     "09": 0.6802837339781675,
+     "10": 0.5991178108835201
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.6978957604544125,
+     "Electric Cautery": 0.9468295046004441,
+     "Forceps": 0.26702244816207493,
+     "Gauze": 0.23013779450746627,
+     "Hook": 0.4891948828582339,
+     "Mouth Gag": 0.8201065845957858,
+     "Needle Holders": 0.814869668405431,
+     "Raspatory": 0.6042619816700598,
+     "Retractor": NaN,
+     "Scalpel": 0.8824953927509748,
+     "Scissors": 0.6806945377690805,
+     "Skewer": 0.9253160350746088,
+     "Suction Cannula": 0.8160702565607123,
+     "Syringe": 0.5717139332472032,
+     "Tweezers": 0.7455360669393096
+    },
+    "server": "bengio",
+    "result_epoch": 3,
+    "receiver_rel_delta": null,
+    "source": "w23b_pd_P2L-W3_shuffle_ep4_seed42/w23_metrics.json",
+    "d_empty": {
+     "AP": -0.012085961643020338,
+     "target_AP": -0.015179183967344412,
+     "control_AP": -0.00166088732273173,
+     "AP50": -0.014540974896856684
+    },
+    "d_shuffle": {
+     "AP": 0.0,
+     "target_AP": 0.0,
+     "control_AP": 0.0,
+     "AP50": 0.0
+    },
+    "d_tower": {
+     "AP": -0.04933467858300011,
+     "target_AP": -0.058738180215637925,
+     "control_AP": -0.019700506107331317,
+     "AP50": -0.04878085329998516
+    },
+    "per_video_d": {
+     "empty": {
+      "09": 0.0074224201018942,
+      "10": -0.009700011152768084
+     },
+     "shuffle": {
+      "09": 0.0,
+      "10": 0.0
+     },
+     "tower": {
+      "09": -0.023989749971526475,
+      "10": -0.04297951824024726
+     }
+    }
+   }
+  },
+  "P3": {
+   "empty": {
+    "run": "w23b_pd_P3-W3_empty_ep4_seed42",
+    "measured": true,
+    "AP": 0.6981189733091626,
+    "target_AP": 0.785253421262454,
+    "control_AP": 0.6525643270816421,
+    "AP50": 0.8311540728067494,
+    "per_video_AP": {
+     "09": 0.6741576613861315,
+     "10": 0.6299489903700531
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.7646914187710073,
+     "Electric Cautery": 0.9506554851201399,
+     "Forceps": 0.2976752513563147,
+     "Gauze": 0.2533035054808741,
+     "Hook": 0.49099342335914387,
+     "Mouth Gag": 0.8017548586191857,
+     "Needle Holders": 0.8135705117606773,
+     "Raspatory": 0.7903296474821861,
+     "Retractor": NaN,
+     "Scalpel": 0.8599218409271813,
+     "Scissors": 0.6842465400931639,
+     "Skewer": 0.9387289740643348,
+     "Suction Cannula": 0.813650283070089,
+     "Syringe": 0.5725952250675609,
+     "Tweezers": 0.7415486611564198
+    },
+    "server": "bengio",
+    "result_epoch": 3,
+    "receiver_rel_delta": null,
+    "source": "w23b_pd_P3-W3_empty_ep4_seed42/w23_metrics.json",
+    "d_empty": {
+     "AP": 0.0,
+     "target_AP": 0.0,
+     "control_AP": 0.0,
+     "AP50": 0.0
+    },
+    "d_shuffle": {
+     "AP": 0.0011220700915961501,
+     "target_AP": 0.01060762990884867,
+     "control_AP": 0.00688420714281146,
+     "AP50": -0.0014289120715720305
+    },
+    "d_tower": {
+     "AP": -0.029226051530680253,
+     "target_AP": -0.009821379592635737,
+     "control_AP": -0.020098854676507627,
+     "AP50": -0.020653358618486606
+    },
+    "per_video_d": {
+     "empty": {
+      "09": 0.0,
+      "10": 0.0
+     },
+     "shuffle": {
+      "09": -0.014066786975499901,
+      "10": 0.00911911795710807
+     },
+     "tower": {
+      "09": -0.03011582256356249,
+      "10": -0.012148338753714238
+     }
+    }
+   },
+   "pred_noCF": {
+    "run": "w23b_pd_P3-W3_pred_noCF_ep4_seed42",
+    "measured": true,
+    "AP": 0.6980227999663459,
+    "target_AP": 0.7758024258486544,
+    "control_AP": 0.6467305398820679,
+    "AP50": 0.8308047736693721,
+    "per_video_AP": {
+     "09": 0.6689390310685376,
+     "10": 0.6247554371067933
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.794681602358494,
+     "Electric Cautery": 0.9525510800552663,
+     "Forceps": 0.31537594828526216,
+     "Gauze": 0.2533329770674179,
+     "Hook": 0.5441029214898809,
+     "Mouth Gag": 0.796917938552137,
+     "Needle Holders": 0.8074809423403025,
+     "Raspatory": 0.7612688442595005,
+     "Retractor": NaN,
+     "Scalpel": 0.8759520023623162,
+     "Scissors": 0.6868740185865858,
+     "Skewer": 0.9417663069105253,
+     "Suction Cannula": 0.7888269375559471,
+     "Syringe": 0.5053433733524362,
+     "Tweezers": 0.7478443063527694
+    },
+    "server": "bengio",
+    "result_epoch": 3,
+    "receiver_rel_delta": null,
+    "source": "w23b_pd_P3-W3_pred_noCF_ep4_seed42/w23_metrics.json",
+    "d_empty": {
+     "AP": -9.617334281675216e-05,
+     "target_AP": -0.009450995413799568,
+     "control_AP": -0.005833787199574281,
+     "AP50": -0.00034929913737724583
+    },
+    "d_shuffle": {
+     "AP": 0.001025896748779398,
+     "target_AP": 0.0011566344950491025,
+     "control_AP": 0.0010504199432371797,
+     "AP50": -0.0017782112089492763
+    },
+    "d_tower": {
+     "AP": -0.029322224873497005,
+     "target_AP": -0.019272375006435305,
+     "control_AP": -0.025932641876081908,
+     "AP50": -0.02100265775586385
+    },
+    "per_video_d": {
+     "empty": {
+      "09": -0.005218630317593953,
+      "10": -0.005193553263259876
+     },
+     "shuffle": {
+      "09": -0.019285417293093854,
+      "10": 0.003925564693848194
+     },
+     "tower": {
+      "09": -0.03533445288115644,
+      "10": -0.017341892016974114
+     }
+    }
+   },
+   "gt": {
+    "run": "w23b_pd_P3-W3_gt_ep4_seed42",
+    "measured": true,
+    "AP": 0.6918815397445995,
+    "target_AP": 0.7721895963330565,
+    "control_AP": 0.6387447698973298,
+    "AP50": 0.8295831909441627,
+    "per_video_AP": {
+     "09": 0.6676082475170311,
+     "10": 0.6109458852547937
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.7269402643392905,
+     "Electric Cautery": 0.9568442438519036,
+     "Forceps": 0.28972124662864335,
+     "Gauze": 0.23267961562229136,
+     "Hook": 0.5868076075144077,
+     "Mouth Gag": 0.7795683688119424,
+     "Needle Holders": 0.7840159702021996,
+     "Raspatory": 0.7810415252187289,
+     "Retractor": NaN,
+     "Scalpel": 0.8428286469012392,
+     "Scissors": 0.6530254269726381,
+     "Skewer": 0.9336625405604014,
+     "Suction Cannula": 0.7948450902346528,
+     "Syringe": 0.5764750046456227,
+     "Tweezers": 0.7478860049204322
+    },
+    "server": "bengio",
+    "result_epoch": 3,
+    "receiver_rel_delta": null,
+    "source": "w23b_pd_P3-W3_gt_ep4_seed42/w23_metrics.json",
+    "d_empty": {
+     "AP": -0.006237433564563077,
+     "target_AP": -0.013063824929397505,
+     "control_AP": -0.013819557184312381,
+     "AP50": -0.0015708818625866927
+    },
+    "d_shuffle": {
+     "AP": -0.005115363472966927,
+     "target_AP": -0.0024561950205488348,
+     "control_AP": -0.006935350041500921,
+     "AP50": -0.002999793934158723
+    },
+    "d_tower": {
+     "AP": -0.03546348509524333,
+     "target_AP": -0.022885204522033242,
+     "control_AP": -0.03391841186082001,
+     "AP50": -0.0222242404810733
+    },
+    "per_video_d": {
+     "empty": {
+      "09": -0.006549413869100462,
+      "10": -0.01900310511525949
+     },
+     "shuffle": {
+      "09": -0.020616200844600363,
+      "10": -0.00988398715815142
+     },
+     "tower": {
+      "09": -0.03666523643266295,
+      "10": -0.031151443868973727
+     }
+    }
+   },
+   "shuffle": {
+    "run": "w23b_pd_P3-W3_shuffle_ep4_seed42",
+    "measured": true,
+    "AP": 0.6969969032175665,
+    "target_AP": 0.7746457913536053,
+    "control_AP": 0.6456801199388307,
+    "AP50": 0.8325829848783214,
+    "per_video_AP": {
+     "09": 0.6882244483616314,
+     "10": 0.6208298724129451
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.6876271807939556,
+     "Electric Cautery": 0.9531061338292331,
+     "Forceps": 0.337129159843193,
+     "Gauze": 0.23997798088336267,
+     "Hook": 0.5738076004271667,
+     "Mouth Gag": 0.7988615446366084,
+     "Needle Holders": 0.7739489168147938,
+     "Raspatory": 0.7815416892490767,
+     "Retractor": NaN,
+     "Scalpel": 0.8869182279134324,
+     "Scissors": 0.6640153976081927,
+     "Skewer": 0.9245572452878346,
+     "Suction Cannula": 0.7938909907746748,
+     "Syringe": 0.5925846135237275,
+     "Tweezers": 0.7499899634606767
+    },
+    "server": "bengio",
+    "result_epoch": 3,
+    "receiver_rel_delta": null,
+    "source": "w23b_pd_P3-W3_shuffle_ep4_seed42/w23_metrics.json",
+    "d_empty": {
+     "AP": -0.0011220700915961501,
+     "target_AP": -0.01060762990884867,
+     "control_AP": -0.00688420714281146,
+     "AP50": 0.0014289120715720305
+    },
+    "d_shuffle": {
+     "AP": 0.0,
+     "target_AP": 0.0,
+     "control_AP": 0.0,
+     "AP50": 0.0
+    },
+    "d_tower": {
+     "AP": -0.030348121622276403,
+     "target_AP": -0.020429009501484408,
+     "control_AP": -0.026983061819319087,
+     "AP50": -0.019224446546914575
+    },
+    "per_video_d": {
+     "empty": {
+      "09": 0.014066786975499901,
+      "10": -0.00911911795710807
+     },
+     "shuffle": {
+      "09": 0.0,
+      "10": 0.0
+     },
+     "tower": {
+      "09": -0.016049035588062588,
+      "10": -0.021267456710822308
+     }
+    }
+   }
+  },
+  "DX": {
+   "empty": {
+    "run": "w23a_pd_DX_W3_empty_ep4_seed42",
+    "measured": true,
+    "AP": 0.6946585699386387,
+    "target_AP": 0.7562644383492014,
+    "control_AP": 0.6648993112449004,
+    "AP50": 0.8265052990386565,
+    "per_video_AP": {
+     "09": 0.6839491262839261,
+     "10": 0.6122726709485737
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.6957494313553669,
+     "Electric Cautery": 0.9664803933223456,
+     "Forceps": 0.2732723140608331,
+     "Gauze": 0.29378350349857885,
+     "Hook": 0.5781818895953494,
+     "Mouth Gag": 0.8011591976719715,
+     "Needle Holders": 0.8233043935288108,
+     "Raspatory": 0.6971898240491422,
+     "Retractor": NaN,
+     "Scalpel": 0.889709886370902,
+     "Scissors": 0.6430615519079954,
+     "Skewer": 0.9361743361834263,
+     "Suction Cannula": 0.8093101781920464,
+     "Syringe": 0.5624987137871698,
+     "Tweezers": 0.7553443656170047
+    },
+    "server": "andrew",
+    "result_epoch": 3,
+    "receiver_rel_delta": 0.05516507552798446,
+    "source": "w23a_pd_DX_W3_empty_ep4_seed42/w23a_metrics.json",
+    "d_empty": {
+     "AP": 0.0,
+     "target_AP": 0.0,
+     "control_AP": 0.0,
+     "AP50": 0.0
+    },
+    "d_shuffle": {
+     "AP": -0.022411908501770217,
+     "target_AP": -0.027040571655144396,
+     "control_AP": -0.014311396443608793,
+     "AP50": -0.015280303053566757
+    },
+    "d_tower": {
+     "AP": -0.03268645490120414,
+     "target_AP": -0.03881036250588832,
+     "control_AP": -0.007763870513249338,
+     "AP50": -0.025302132386579412
+    },
+    "per_video_d": {
+     "empty": {
+      "09": 0.0,
+      "10": 0.0
+     },
+     "shuffle": {
+      "09": -0.01626419834127102,
+      "10": 0.004155073066874793
+     },
+     "tower": {
+      "09": -0.0203243576657679,
+      "10": -0.02982465817519364
+     }
+    }
+   },
+   "pred_noCF": {
+    "run": "w23a_pd_DX_W3_pred_noCF_ep4_seed42",
+    "measured": true,
+    "AP": 0.7066243694365948,
+    "target_AP": 0.7668730692833503,
+    "control_AP": 0.6818033513358698,
+    "AP50": 0.8428969545070496,
+    "per_video_AP": {
+     "09": 0.688130531029279,
+     "10": 0.6258977983285243
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.7063269511617072,
+     "Electric Cautery": 0.9488459378317771,
+     "Forceps": 0.3232714519258037,
+     "Gauze": 0.33368561802401214,
+     "Hook": 0.5687344363239354,
+     "Mouth Gag": 0.7950176389138834,
+     "Needle Holders": 0.818766573487251,
+     "Raspatory": 0.7216174933938188,
+     "Retractor": NaN,
+     "Scalpel": 0.9113718056083098,
+     "Scissors": 0.6715440207833299,
+     "Skewer": 0.9399460965188584,
+     "Suction Cannula": 0.8284438574491463,
+     "Syringe": 0.5551029997340574,
+     "Tweezers": 0.770066290956437
+    },
+    "server": "andrew",
+    "result_epoch": 3,
+    "receiver_rel_delta": 0.055184729563205005,
+    "source": "w23a_pd_DX_W3_pred_noCF_ep4_seed42/w23a_metrics.json",
+    "d_empty": {
+     "AP": 0.011965799497956064,
+     "target_AP": 0.010608630934148877,
+     "control_AP": 0.016904040090969352,
+     "AP50": 0.01639165546839305
+    },
+    "d_shuffle": {
+     "AP": -0.010446109003814152,
+     "target_AP": -0.01643194072099552,
+     "control_AP": 0.0025926436473605596,
+     "AP50": 0.0011113524148262943
+    },
+    "d_tower": {
+     "AP": -0.02072065540324808,
+     "target_AP": -0.02820173157173944,
+     "control_AP": 0.009140169577720014,
+     "AP50": -0.00891047691818636
+    },
+    "per_video_d": {
+     "empty": {
+      "09": 0.00418140474535289,
+      "10": 0.013625127379950586
+     },
+     "shuffle": {
+      "09": -0.012082793595918129,
+      "10": 0.017780200446825378
+     },
+     "tower": {
+      "09": -0.01614295292041501,
+      "10": -0.016199530795243056
+     }
+    }
+   },
+   "gt": {
+    "run": "w23a_pd_DX_W3_gt_ep4_seed42",
+    "measured": true,
+    "AP": 0.7092066643477292,
+    "target_AP": 0.7882146341382695,
+    "control_AP": 0.6665835444564121,
+    "AP50": 0.8489746396385573,
+    "per_video_AP": {
+     "09": 0.6818982317765626,
+     "10": 0.6293445562044105
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.785661095279013,
+     "Electric Cautery": 0.9543717735203644,
+     "Forceps": 0.2895883261695629,
+     "Gauze": 0.31567215516944674,
+     "Hook": 0.544485408139139,
+     "Mouth Gag": 0.7798626586658515,
+     "Needle Holders": 0.8429050897852091,
+     "Raspatory": 0.7631252704385744,
+     "Retractor": NaN,
+     "Scalpel": 0.8989317773671066,
+     "Scissors": 0.6901353547369379,
+     "Skewer": 0.9481127227863971,
+     "Suction Cannula": 0.8056109188213987,
+     "Syringe": 0.5452423048202567,
+     "Tweezers": 0.7651884451689515
+    },
+    "server": "andrew",
+    "result_epoch": 3,
+    "receiver_rel_delta": 0.055160724431174105,
+    "source": "w23a_pd_DX_W3_gt_ep4_seed42/w23a_metrics.json",
+    "d_empty": {
+     "AP": 0.01454809440909044,
+     "target_AP": 0.0319501957890681,
+     "control_AP": 0.0016842332115116765,
+     "AP50": 0.0224693405999008
+    },
+    "d_shuffle": {
+     "AP": -0.007863814092679777,
+     "target_AP": 0.004909624133923707,
+     "control_AP": -0.012627163232097116,
+     "AP50": 0.007189037546334043
+    },
+    "d_tower": {
+     "AP": -0.018138360492113703,
+     "target_AP": -0.006860166716820215,
+     "control_AP": -0.0060796373017376615,
+     "AP50": -0.0028327917866786123
+    },
+    "per_video_d": {
+     "empty": {
+      "09": -0.00205089450736351,
+      "10": 0.017071885255836805
+     },
+     "shuffle": {
+      "09": -0.01831509284863453,
+      "10": 0.021226958322711598
+     },
+     "tower": {
+      "09": -0.02237525217313141,
+      "10": -0.012752772919356836
+     }
+    }
+   },
+   "shuffle": {
+    "run": "w23a_pd_DX_W3_shuffle_ep4_seed42",
+    "measured": true,
+    "AP": 0.7170704784404089,
+    "target_AP": 0.7833050100043458,
+    "control_AP": 0.6792107076885092,
+    "AP50": 0.8417856020922233,
+    "per_video_AP": {
+     "09": 0.7002133246251971,
+     "10": 0.608117597881699
+    },
+    "per_class_ap": {
+     "Bipolar Forceps": 0.807451806458411,
+     "Electric Cautery": 0.9495308622469775,
+     "Forceps": 0.32048630402152584,
+     "Gauze": 0.311406756187679,
+     "Hook": 0.6223690375713387,
+     "Mouth Gag": 0.7973076407099282,
+     "Needle Holders": 0.8348182921619037,
+     "Raspatory": 0.7149976306749746,
+     "Retractor": NaN,
+     "Scalpel": 0.872064561347986,
+     "Scissors": 0.6784143213882127,
+     "Skewer": 0.9137903529014729,
+     "Suction Cannula": 0.8233256277316133,
+     "Syringe": 0.6082206986388848,
+     "Tweezers": 0.784802806124816
+    },
+    "server": "andrew",
+    "result_epoch": 3,
+    "receiver_rel_delta": 0.05510347774845105,
+    "source": "w23a_pd_DX_W3_shuffle_ep4_seed42/w23a_metrics.json",
+    "d_empty": {
+     "AP": 0.022411908501770217,
+     "target_AP": 0.027040571655144396,
+     "control_AP": 0.014311396443608793,
+     "AP50": 0.015280303053566757
+    },
+    "d_shuffle": {
+     "AP": 0.0,
+     "target_AP": 0.0,
+     "control_AP": 0.0,
+     "AP50": 0.0
+    },
+    "d_tower": {
+     "AP": -0.010274546399433926,
+     "target_AP": -0.011769790850743922,
+     "control_AP": 0.006547525930359455,
+     "AP50": -0.010021829333012655
+    },
+    "per_video_d": {
+     "empty": {
+      "09": 0.01626419834127102,
+      "10": -0.004155073066874793
+     },
+     "shuffle": {
+      "09": 0.0,
+      "10": 0.0
+     },
+     "tower": {
+      "09": -0.0040601593244968814,
+      "10": -0.033979731242068434
+     }
+    }
+   }
+  }
+ },
+ "W2_reference": {
+  "P2L": {
+   "source": "前回の W2 の run の記録",
+   "rows": {
+    "empty": {
+     "run": "w23b_pd_P2L-W2_empty_ep4_seed42",
+     "measured": true,
+     "AP": 0.7208069187956349,
+     "target_AP": 0.7826240535493947,
+     "control_AP": 0.671386098486517,
+     "AP50": 0.8459569675695211,
+     "per_video_AP": {
+      "09": 0.7009795713017831,
+      "10": 0.6385725117695936
+     },
+     "per_class_ap": {
+      "Bipolar Forceps": 0.7479502624884709,
+      "Electric Cautery": 0.9635087713046753,
+      "Forceps": 0.35379718600208304,
+      "Gauze": 0.2701497910825606,
+      "Hook": 0.6319697019142863,
+      "Mouth Gag": 0.7994610972150648,
+      "Needle Holders": 0.8446265764869914,
+      "Raspatory": 0.7890104049620401,
+      "Retractor": NaN,
+      "Scalpel": 0.8915761660063497,
+      "Scissors": 0.6987299657378105,
+      "Skewer": 0.9476468760941181,
+      "Suction Cannula": 0.8270937854338064,
+      "Syringe": 0.5369365581959945,
+      "Tweezers": 0.7888397202146361
+     },
+     "server": "bengio",
+     "result_epoch": 3,
+     "receiver_rel_delta": null,
+     "source": "w23b_pd_P2L-W2_empty_ep4_seed42/w23_metrics.json",
+     "d_empty": {
+      "AP": 0.0,
+      "target_AP": 0.0,
+      "control_AP": 0.0,
+      "AP50": 0.0
+     },
+     "d_shuffle": {
+      "AP": -0.0012438177369266112,
+      "target_AP": -0.002252157093445173,
+      "control_AP": -4.707175117102391e-05,
+      "AP50": -0.0012813756199794302
+     },
+     "d_tower": {
+      "AP": -0.006538106044208014,
+      "target_AP": -0.012450747305695065,
+      "control_AP": -0.001277083271632784,
+      "AP50": -0.00585046385571486
+     },
+     "per_video_d": {
+      "empty": {
+       "09": 0.0,
+       "10": 0.0
+      },
+      "shuffle": {
+       "09": -0.0005609378073978544,
+       "10": -3.6465962248377615e-05
+      },
+      "tower": {
+       "09": -0.0032939126479109015,
+       "10": -0.0035248173541737593
+      }
+     }
+    },
+    "pred_noCF": {
+     "run": "w23b_pd_P2L-W2_pred_noCF_ep4_seed42",
+     "measured": true,
+     "AP": 0.7247257097422923,
+     "target_AP": 0.7926912732795472,
+     "control_AP": 0.6728293102938323,
+     "AP50": 0.8509725657332488,
+     "per_video_AP": {
+      "09": 0.7043157178115684,
+      "10": 0.6455965717360111
+     },
+     "per_class_ap": {
+      "Bipolar Forceps": 0.7590883044349188,
+      "Electric Cautery": 0.9620832378046316,
+      "Forceps": 0.3530737809639461,
+      "Gauze": 0.27618336735285365,
+      "Hook": 0.6329355472100372,
+      "Mouth Gag": 0.7988352983468966,
+      "Needle Holders": 0.8413571026149039,
+      "Raspatory": 0.7936106010133924,
+      "Retractor": NaN,
+      "Scalpel": 0.9146427281050419,
+      "Scissors": 0.7019366602255104,
+      "Skewer": 0.9511389164410372,
+      "Suction Cannula": 0.8277716684806218,
+      "Syringe": 0.5449758164033457,
+      "Tweezers": 0.788526906994957
+     },
+     "server": "bengio",
+     "result_epoch": 3,
+     "receiver_rel_delta": null,
+     "source": "w23b_pd_P2L-W2_pred_noCF_ep4_seed42/w23_metrics.json",
+     "d_empty": {
+      "AP": 0.00391879094665748,
+      "target_AP": 0.010067219730152566,
+      "control_AP": 0.0014432118073153255,
+      "AP50": 0.0050155981637276525
+     },
+     "d_shuffle": {
+      "AP": 0.0026749732097308687,
+      "target_AP": 0.007815062636707393,
+      "control_AP": 0.0013961400561443016,
+      "AP50": 0.0037342225437482224
+     },
+     "d_tower": {
+      "AP": -0.002619315097550534,
+      "target_AP": -0.002383527575542499,
+      "control_AP": 0.0001661285356825415,
+      "AP50": -0.0008348656919872077
+     },
+     "per_video_d": {
+      "empty": {
+       "09": 0.0033361465097853094,
+       "10": 0.0070240599664175285
+      },
+      "shuffle": {
+       "09": 0.002775208702387455,
+       "10": 0.006987594004169151
+      },
+      "tower": {
+       "09": 4.223386187440781e-05,
+       "10": 0.003499242612243769
+      }
+     }
+    },
+    "gt": {
+     "run": "w23b_pd_P2L-W2_gt_ep4_seed42",
+     "measured": true,
+     "AP": 0.7298230608920799,
+     "target_AP": 0.8045520022272517,
+     "control_AP": 0.6720696020291088,
+     "AP50": 0.8559675168764601,
+     "per_video_AP": {
+      "09": 0.7045027572752444,
+      "10": 0.6524535444563627
+     },
+     "per_class_ap": {
+      "Bipolar Forceps": 0.8015684947256649,
+      "Electric Cautery": 0.9639992629376375,
+      "Forceps": 0.35336770629382785,
+      "Gauze": 0.2747902004006523,
+      "Hook": 0.6336311548517192,
+      "Mouth Gag": 0.7994024266808474,
+      "Needle Holders": 0.8494697339062771,
+      "Raspatory": 0.8034936150995327,
+      "Retractor": NaN,
+      "Scalpel": 0.9227066576000159,
+      "Scissors": 0.7060165752469648,
+      "Skewer": 0.9515272148808815,
+      "Suction Cannula": 0.8248684365911897,
+      "Syringe": 0.543464028830163,
+      "Tweezers": 0.7892173444437457
+     },
+     "server": "bengio",
+     "result_epoch": 3,
+     "receiver_rel_delta": null,
+     "source": "w23b_pd_P2L-W2_gt_ep4_seed42/w23_metrics.json",
+     "d_empty": {
+      "AP": 0.009016142096445079,
+      "target_AP": 0.021927948677856968,
+      "control_AP": 0.0006835035425918345,
+      "AP50": 0.01001054930693901
+     },
+     "d_shuffle": {
+      "AP": 0.007772324359518468,
+      "target_AP": 0.019675791584411795,
+      "control_AP": 0.0006364317914208106,
+      "AP50": 0.00872917368695958
+     },
+     "d_tower": {
+      "AP": 0.002478036052237065,
+      "target_AP": 0.009477201372161903,
+      "control_AP": -0.0005935797290409495,
+      "AP50": 0.004160085451224149
+     },
+     "per_video_d": {
+      "empty": {
+       "09": 0.0035231859734612403,
+       "10": 0.013881032686769101
+      },
+      "shuffle": {
+       "09": 0.002962248166063386,
+       "10": 0.013844566724520724
+      },
+      "tower": {
+       "09": 0.00022927332555033875,
+       "10": 0.010356215332595342
+      }
+     }
+    },
+    "shuffle": {
+     "run": "w23b_pd_P2L-W2_shuffle_ep4_seed42",
+     "measured": true,
+     "AP": 0.7220507365325615,
+     "target_AP": 0.7848762106428399,
+     "control_AP": 0.671433170237688,
+     "AP50": 0.8472383431895005,
+     "per_video_AP": {
+      "09": 0.701540509109181,
+      "10": 0.638608977731842
+     },
+     "per_class_ap": {
+      "Bipolar Forceps": 0.7603962933638239,
+      "Electric Cautery": 0.9626835704513941,
+      "Forceps": 0.35747786907763773,
+      "Gauze": 0.2692778958298907,
+      "Hook": 0.6343358120869446,
+      "Mouth Gag": 0.798932121354638,
+      "Needle Holders": 0.8428605584253034,
+      "Raspatory": 0.7918139930087179,
+      "Retractor": NaN,
+      "Scalpel": 0.8883654449310071,
+      "Scissors": 0.7012387672496302,
+      "Skewer": 0.9483352738106593,
+      "Suction Cannula": 0.827889211841663,
+      "Syringe": 0.5354700480999911,
+      "Tweezers": 0.7896334519245604
+     },
+     "server": "bengio",
+     "result_epoch": 3,
+     "receiver_rel_delta": null,
+     "source": "w23b_pd_P2L-W2_shuffle_ep4_seed42/w23_metrics.json",
+     "d_empty": {
+      "AP": 0.0012438177369266112,
+      "target_AP": 0.002252157093445173,
+      "control_AP": 4.707175117102391e-05,
+      "AP50": 0.0012813756199794302
+     },
+     "d_shuffle": {
+      "AP": 0.0,
+      "target_AP": 0.0,
+      "control_AP": 0.0,
+      "AP50": 0.0
+     },
+     "d_tower": {
+      "AP": -0.005294288307281403,
+      "target_AP": -0.010198590212249892,
+      "control_AP": -0.00123001152046176,
+      "AP50": -0.00456908823573543
+     },
+     "per_video_d": {
+      "empty": {
+       "09": 0.0005609378073978544,
+       "10": 3.6465962248377615e-05
+      },
+      "shuffle": {
+       "09": 0.0,
+       "10": 0.0
+      },
+      "tower": {
+       "09": -0.002732974840513047,
+       "10": -0.0034883513919253817
+      }
+     }
+    }
+   }
+  },
+  "DX": {
+   "source": "前回の W2 の run の記録",
+   "rows": {
+    "empty": {
+     "run": "w23a_pd_DX_W2_empty_ep4_seed42",
+     "measured": true,
+     "AP": 0.7265292364382419,
+     "target_AP": 0.7945220334953811,
+     "control_AP": 0.6729654927755018,
+     "AP50": 0.852362347888799,
+     "per_video_AP": {
+      "09": 0.7031513901194146,
+      "10": 0.6461030373455205
+     },
+     "per_class_ap": {
+      "Bipolar Forceps": 0.7950112759524427,
+      "Electric Cautery": 0.958218658149514,
+      "Forceps": 0.3537915196546049,
+      "Gauze": 0.2784350196408929,
+      "Hook": 0.6389718179135547,
+      "Mouth Gag": 0.7989780422047384,
+      "Needle Holders": 0.8476782701197728,
+      "Raspatory": 0.7857910786595418,
+      "Retractor": NaN,
+      "Scalpel": 0.9021161985893315,
+      "Scissors": 0.7082769057190265,
+      "Skewer": 0.9501333528092654,
+      "Suction Cannula": 0.8249993062524336,
+      "Syringe": 0.5395582614663242,
+      "Tweezers": 0.7894496030039423
+     },
+     "server": "andrew",
+     "result_epoch": 3,
+     "receiver_rel_delta": 0.13997144497768502,
+     "source": "w23a_pd_DX_W2_empty_ep4_seed42/w23a_metrics.json",
+     "d_empty": {
+      "AP": 0.0,
+      "target_AP": 0.0,
+      "control_AP": 0.0,
+      "AP50": 0.0
+     },
+     "d_shuffle": {
+      "AP": 0.00024705066386709884,
+      "target_AP": 0.00132883118538496,
+      "control_AP": -3.709682535291137e-05,
+      "AP50": -2.9715226559146046e-05
+     },
+     "d_tower": {
+      "AP": -0.0008157884016010142,
+      "target_AP": -0.0005527673597086613,
+      "control_AP": 0.00030231101735200827,
+      "AP50": 0.0005549164635630932
+     },
+     "per_video_d": {
+      "empty": {
+       "09": 0.0,
+       "10": 0.0
+      },
+      "shuffle": {
+       "09": 0.0002320855142234901,
+       "10": 0.00035706612740527
+      },
+      "tower": {
+       "09": -0.0011220938302793915,
+       "10": 0.004005708221753168
+      }
+     }
+    },
+    "pred_noCF": {
+     "run": "w23a_pd_DX_W2_pred_noCF_ep4_seed42",
+     "measured": true,
+     "AP": 0.7271257428533434,
+     "target_AP": 0.7950243899169107,
+     "control_AP": 0.6733624967827931,
+     "AP50": 0.8532293067383853,
+     "per_video_AP": {
+      "09": 0.7027207181180901,
+      "10": 0.6463874761425323
+     },
+     "per_class_ap": {
+      "Bipolar Forceps": 0.7963524296981703,
+      "Electric Cautery": 0.9575614347993694,
+      "Forceps": 0.3567493426586844,
+      "Gauze": 0.27622889856760546,
+      "Hook": 0.6377161186890185,
+      "Mouth Gag": 0.7987450075918612,
+      "Needle Holders": 0.8449798212195746,
+      "Raspatory": 0.7869690396190568,
+      "Retractor": NaN,
+      "Scalpel": 0.9020551673972437,
+      "Scissors": 0.7141817458644336,
+      "Skewer": 0.9526249518635237,
+      "Suction Cannula": 0.8300866213595146,
+      "Syringe": 0.5371203610065589,
+      "Tweezers": 0.7883894596121915
+     },
+     "server": "andrew",
+     "result_epoch": 3,
+     "receiver_rel_delta": 0.1395835165326642,
+     "source": "w23a_pd_DX_W2_pred_noCF_ep4_seed42/w23a_metrics.json",
+     "d_empty": {
+      "AP": 0.0005965064151015609,
+      "target_AP": 0.0005023564215296261,
+      "control_AP": 0.0003970040072913683,
+      "AP50": 0.000866958849586208
+     },
+     "d_shuffle": {
+      "AP": 0.0008435570789686597,
+      "target_AP": 0.001831187606914586,
+      "control_AP": 0.00035990718193845694,
+      "AP50": 0.0008372436230270619
+     },
+     "d_tower": {
+      "AP": -0.0002192819864994533,
+      "target_AP": -5.041093817903519e-05,
+      "control_AP": 0.0006993150246433766,
+      "AP50": 0.0014218753131493012
+     },
+     "per_video_d": {
+      "empty": {
+       "09": -0.0004306720013245169,
+       "10": 0.00028443879701178787
+      },
+      "shuffle": {
+       "09": -0.00019858648710102678,
+       "10": 0.0006415049244170579
+      },
+      "tower": {
+       "09": -0.0015527658316039084,
+       "10": 0.004290147018764956
+      }
+     }
+    },
+    "gt": {
+     "run": "w23a_pd_DX_W2_gt_ep4_seed42",
+     "measured": true,
+     "AP": 0.7308673320956884,
+     "target_AP": 0.8022542039505073,
+     "control_AP": 0.673266576164433,
+     "AP50": 0.8559957404001691,
+     "per_video_AP": {
+      "09": 0.7036193194661253,
+      "10": 0.6512435353258175
+     },
+     "per_class_ap": {
+      "Bipolar Forceps": 0.8041934462147743,
+      "Electric Cautery": 0.9628730508904805,
+      "Forceps": 0.3561945629549059,
+      "Gauze": 0.2772428308629069,
+      "Hook": 0.644504778870513,
+      "Mouth Gag": 0.7980165398427267,
+      "Needle Holders": 0.8498025443757953,
+      "Raspatory": 0.8064273565884517,
+      "Retractor": NaN,
+      "Scalpel": 0.9088636919790047,
+      "Scissors": 0.7144303878376755,
+      "Skewer": 0.9539175524044949,
+      "Suction Cannula": 0.8278932298676491,
+      "Syringe": 0.5378689725658106,
+      "Tweezers": 0.789913704084449
+     },
+     "server": "andrew",
+     "result_epoch": 3,
+     "receiver_rel_delta": 0.13976772003094207,
+     "source": "w23a_pd_DX_W2_gt_ep4_seed42/w23a_metrics.json",
+     "d_empty": {
+      "AP": 0.004338095657446583,
+      "target_AP": 0.007732170455126197,
+      "control_AP": 0.00030108338893120035,
+      "AP50": 0.0036333925113700705
+     },
+     "d_shuffle": {
+      "AP": 0.004585146321313682,
+      "target_AP": 0.009061001640511157,
+      "control_AP": 0.000263986563578289,
+      "AP50": 0.0036036772848109244
+     },
+     "d_tower": {
+      "AP": 0.0035223072558455693,
+      "target_AP": 0.007179403095417536,
+      "control_AP": 0.0006033944062832086,
+      "AP50": 0.004188308974933164
+     },
+     "per_video_d": {
+      "empty": {
+       "09": 0.00046792934671069375,
+       "10": 0.005140497980296921
+      },
+      "shuffle": {
+       "09": 0.0007000148609341839,
+       "10": 0.005497564107702191
+      },
+      "tower": {
+       "09": -0.0006541644835686977,
+       "10": 0.009146206202050089
+      }
+     }
+    },
+    "shuffle": {
+     "run": "w23a_pd_DX_W2_shuffle_ep4_seed42",
+     "measured": true,
+     "AP": 0.7262821857743748,
+     "target_AP": 0.7931932023099961,
+     "control_AP": 0.6730025896008547,
+     "AP50": 0.8523920631153582,
+     "per_video_AP": {
+      "09": 0.7029193046051911,
+      "10": 0.6457459712181153
+     },
+     "per_class_ap": {
+      "Bipolar Forceps": 0.790670818573009,
+      "Electric Cautery": 0.9583524587870457,
+      "Forceps": 0.3571277847729396,
+      "Gauze": 0.2773650048033443,
+      "Hook": 0.6376317889399029,
+      "Mouth Gag": 0.7991977943775784,
+      "Needle Holders": 0.8464529429757716,
+      "Raspatory": 0.7857525535691078,
+      "Retractor": NaN,
+      "Scalpel": 0.9019938286427193,
+      "Scissors": 0.710409255412188,
+      "Skewer": 0.9517198376488298,
+      "Suction Cannula": 0.8265052237541479,
+      "Syringe": 0.5358289731163143,
+      "Tweezers": 0.7889423354683481
+     },
+     "server": "andrew",
+     "result_epoch": 3,
+     "receiver_rel_delta": 0.13993721026515685,
+     "source": "w23a_pd_DX_W2_shuffle_ep4_seed42/w23a_metrics.json",
+     "d_empty": {
+      "AP": -0.00024705066386709884,
+      "target_AP": -0.00132883118538496,
+      "control_AP": 3.709682535291137e-05,
+      "AP50": 2.9715226559146046e-05
+     },
+     "d_shuffle": {
+      "AP": 0.0,
+      "target_AP": 0.0,
+      "control_AP": 0.0,
+      "AP50": 0.0
+     },
+     "d_tower": {
+      "AP": -0.001062839065468113,
+      "target_AP": -0.0018815985450936212,
+      "control_AP": 0.00033940784270491964,
+      "AP50": 0.0005846316901222393
+     },
+     "per_video_d": {
+      "empty": {
+       "09": -0.0002320855142234901,
+       "10": -0.00035706612740527
+      },
+      "shuffle": {
+       "09": 0.0,
+       "10": 0.0
+      },
+      "tower": {
+       "09": -0.0013541793445028816,
+       "10": 0.003648642094347898
+      }
+     }
+    }
+   }
+  },
+  "P1": {
+   "source": "experiments/analysis/stage2_pilot_fix/report.json の tables.P1-W2",
+   "rows": {
+    "empty": {
+     "measured": true,
+     "AP": 0.7199105717447102,
+     "target_AP": 0.7841048747432146,
+     "control_AP": 0.6690346744999388,
+     "AP50": null,
+     "per_video_AP": {
+      "09": 0.6975032306625497,
+      "10": 0.6381931511735015
+     },
+     "run": "stage2fix_pd_P1-W2_empty_ep4_seed42",
+     "source": "stage2_pilot_fix/report.json の stage2fix_pd_P1-W2_empty_ep4_seed42（直しの契約の記載: 回し直し（本契約。4 epoch 目の状態））",
+     "d_empty": {
+      "AP": 0.0,
+      "target_AP": 0.0,
+      "control_AP": 0.0,
+      "AP50": null
+     },
+     "d_shuffle": {
+      "AP": 0.0011947991592065055,
+      "target_AP": 0.004422511007648233,
+      "control_AP": 0.00029933994801423225,
+      "AP50": null
+     },
+     "d_tower": {
+      "AP": -0.007434453095132687,
+      "target_AP": -0.010969926111875195,
+      "control_AP": -0.0036285072582109557,
+      "AP50": null
+     },
+     "per_video_d": {
+      "empty": {
+       "09": 0.0,
+       "10": 0.0
+      },
+      "shuffle": {
+       "09": 0.0033325069935024043,
+       "10": 0.0012254439550055674
+      },
+      "tower": {
+       "09": -0.006770253287144312,
+       "10": -0.0039041779502658747
+      }
+     }
+    },
+    "pred_noCF": {
+     "measured": true,
+     "AP": 0.724381607738798,
+     "target_AP": 0.7945913895733675,
+     "control_AP": 0.6679413623789424,
+     "AP50": null,
+     "run": "stage2pilot_pd_P1-W2_pred_noCF_seed42",
+     "source": "stage2_pilot_fix/report.json の stage2pilot_pd_P1-W2_pred_noCF_seed42（直しの契約の記載: 前回の記録 val_metrics_by_epoch.json の epoch 3）",
+     "d_empty": {
+      "AP": 0.004471035994087824,
+      "target_AP": 0.010486514830152949,
+      "control_AP": -0.0010933121209963925,
+      "AP50": null
+     },
+     "d_shuffle": {
+      "AP": 0.00566583515329433,
+      "target_AP": 0.014909025837801182,
+      "control_AP": -0.0007939721729821603,
+      "AP50": null
+     },
+     "d_tower": {
+      "AP": -0.002963417101044863,
+      "target_AP": -0.0004834112817222458,
+      "control_AP": -0.004721819379207348,
+      "AP50": null
+     }
+    },
+    "gt": {
+     "measured": true,
+     "AP": 0.7312076026629839,
+     "target_AP": 0.8110960143021695,
+     "control_AP": 0.6675830935576779,
+     "AP50": null,
+     "run": "stage2pilot_pd_P1-W2_gt_seed42",
+     "source": "stage2_pilot_fix/report.json の stage2pilot_pd_P1-W2_gt_seed42（直しの契約の記載: 前回の記録 val_metrics_by_epoch.json の epoch 3）",
+     "d_empty": {
+      "AP": 0.01129703091827372,
+      "target_AP": 0.026991139558954935,
+      "control_AP": -0.0014515809422609438,
+      "AP50": null
+     },
+     "d_shuffle": {
+      "AP": 0.012491830077480226,
+      "target_AP": 0.03141365056660317,
+      "control_AP": -0.0011522409942467116,
+      "AP50": null
+     },
+     "d_tower": {
+      "AP": 0.0038625778231410335,
+      "target_AP": 0.01602121344707974,
+      "control_AP": -0.0050800882004718995,
+      "AP50": null
+     }
+    },
+    "shuffle": {
+     "measured": true,
+     "AP": 0.7187157725855037,
+     "target_AP": 0.7796823637355663,
+     "control_AP": 0.6687353345519246,
+     "AP50": null,
+     "per_video_AP": {
+      "09": 0.6941707236690473,
+      "10": 0.6369677072184959
+     },
+     "run": "stage2fix_pd_P1-W2_shuffle_ep4_seed42",
+     "source": "stage2_pilot_fix/report.json の stage2fix_pd_P1-W2_shuffle_ep4_seed42（直しの契約の記載: 回し直し（本契約。4 epoch 目の状態））",
+     "d_empty": {
+      "AP": -0.0011947991592065055,
+      "target_AP": -0.004422511007648233,
+      "control_AP": -0.00029933994801423225,
+      "AP50": null
+     },
+     "d_shuffle": {
+      "AP": 0.0,
+      "target_AP": 0.0,
+      "control_AP": 0.0,
+      "AP50": null
+     },
+     "d_tower": {
+      "AP": -0.008629252254339193,
+      "target_AP": -0.015392437119523428,
+      "control_AP": -0.003927847206225188,
+      "AP50": null
+     },
+     "per_video_d": {
+      "empty": {
+       "09": -0.0033325069935024043,
+       "10": -0.0012254439550055674
+      },
+      "shuffle": {
+       "09": 0.0,
+       "10": 0.0
+      },
+      "tower": {
+       "09": -0.010102760280646716,
+       "10": -0.005129621905271442
+      }
+     }
+    }
+   }
+  },
+  "P3": {
+   "source": "回していない（P3 の W2 は W1 と同じ集合。前回 bengio の REPORT §3.1）",
+   "rows": null
+  }
+ },
+ "predictions": {
+  "1": {
+   "text": "全型で空の腕の Δ塔（overall）の絶対値が前回の W3 より小さい",
+   "by_type": {
+    "P1": {
+     "now": -0.013547067292338233,
+     "prev": -0.057838618090483185,
+     "holds": true
+    },
+    "P2L": {
+     "now": -0.011248368996615299,
+     "prev": -0.037248716939979776,
+     "holds": true
+    },
+    "P3": {
+     "now": -0.008163016456162797,
+     "prev": -0.029226051530680253,
+     "holds": true
+    },
+    "DX": {
+     "now": -0.0025315968163368563,
+     "prev": -0.03268645490120414,
+     "holds": true
+    }
+   },
+   "holds": true
+  },
+  "2": {
+   "text": "P1 の正解の Δ空（overall）は正で、前回の W3 の値より小さい",
+   "now": 0.01247105765564438,
+   "prev": 0.03334411355505873,
+   "holds": true
+  },
+  "3": {
+   "text": "P2L・P3 の正解の Δ空 の符号は前回の W3 と変わる（負から正か零）",
+   "by_type": {
+    "P2L": {
+     "now": 0.007723818265870652,
+     "prev": -0.006603213444639988,
+     "holds": true
+    },
+    "P3": {
+     "now": -0.000509524096673819,
+     "prev": -0.006237433564563077,
+     "holds": false
+    }
+   },
+   "holds": false
+  }
+ },
+ "acceptance_e": {
+  "expected": 16,
+  "measured": 16,
+  "hosts": [
+   "andrew"
+  ],
+  "unmeasured": [],
+  "n_epochs_recorded": [
+   5
+  ],
+  "lr_by_epoch_all_constant": true,
+  "control_nonexistent_name_count": 0
+ },
+ "acceptance_g": {
+  "videos_used": [
+   "01",
+   "02",
+   "03",
+   "06",
+   "08",
+   "09",
+   "10",
+   "11",
+   "12",
+   "13",
+   "14",
+   "15"
+  ],
+  "test": [
+   "04",
+   "05",
+   "07"
+  ],
+  "overlap": [],
+  "control_overlap_with_04": [
+   "04"
+  ]
+ },
+ "identity_in_training": {
+  "w3lra_pd_P1_W3_empty_ep4_seed42": {
+   "comparable": true,
+   "max_abs_score_diff": 0.0,
+   "max_abs_bbox_diff_px": 0.0,
+   "label_mismatch": 0
+  },
+  "w3lra_pd_P1_W3_pred_noCF_ep4_seed42": {
+   "comparable": true,
+   "max_abs_score_diff": 0.0,
+   "max_abs_bbox_diff_px": 0.0,
+   "label_mismatch": 0
+  },
+  "w3lra_pd_P1_W3_gt_ep4_seed42": {
+   "comparable": true,
+   "max_abs_score_diff": 0.0,
+   "max_abs_bbox_diff_px": 0.0,
+   "label_mismatch": 0
+  },
+  "w3lra_pd_P1_W3_shuffle_ep4_seed42": {
+   "comparable": true,
+   "max_abs_score_diff": 0.0,
+   "max_abs_bbox_diff_px": 0.0,
+   "label_mismatch": 0
+  },
+  "w3lra_pd_P2L_W3_empty_ep4_seed42": {
+   "comparable": true,
+   "max_abs_score_diff": 0.0,
+   "max_abs_bbox_diff_px": 0.0,
+   "label_mismatch": 0
+  },
+  "w3lra_pd_P2L_W3_pred_noCF_ep4_seed42": {
+   "comparable": true,
+   "max_abs_score_diff": 0.0,
+   "max_abs_bbox_diff_px": 0.0,
+   "label_mismatch": 0
+  },
+  "w3lra_pd_P2L_W3_gt_ep4_seed42": {
+   "comparable": true,
+   "max_abs_score_diff": 0.0,
+   "max_abs_bbox_diff_px": 0.0,
+   "label_mismatch": 0
+  },
+  "w3lra_pd_P2L_W3_shuffle_ep4_seed42": {
+   "comparable": true,
+   "max_abs_score_diff": 0.0,
+   "max_abs_bbox_diff_px": 0.0,
+   "label_mismatch": 0
+  },
+  "w3lra_pd_P3_W3_empty_ep4_seed42": {
+   "comparable": true,
+   "max_abs_score_diff": 0.0,
+   "max_abs_bbox_diff_px": 0.0,
+   "label_mismatch": 0
+  },
+  "w3lra_pd_P3_W3_pred_noCF_ep4_seed42": {
+   "comparable": true,
+   "max_abs_score_diff": 0.0,
+   "max_abs_bbox_diff_px": 0.0,
+   "label_mismatch": 0
+  },
+  "w3lra_pd_P3_W3_gt_ep4_seed42": {
+   "comparable": true,
+   "max_abs_score_diff": 0.0,
+   "max_abs_bbox_diff_px": 0.0,
+   "label_mismatch": 0
+  },
+  "w3lra_pd_P3_W3_shuffle_ep4_seed42": {
+   "comparable": true,
+   "max_abs_score_diff": 0.0,
+   "max_abs_bbox_diff_px": 0.0,
+   "label_mismatch": 0
+  },
+  "w3lra_pd_DX_W3_empty_ep4_seed42": {
+   "comparable": true,
+   "max_abs_score_diff": 0.0,
+   "max_abs_bbox_diff_px": 0.0,
+   "label_mismatch": 0
+  },
+  "w3lra_pd_DX_W3_pred_noCF_ep4_seed42": {
+   "comparable": true,
+   "max_abs_score_diff": 0.0,
+   "max_abs_bbox_diff_px": 0.0,
+   "label_mismatch": 0
+  },
+  "w3lra_pd_DX_W3_gt_ep4_seed42": {
+   "comparable": true,
+   "max_abs_score_diff": 0.0,
+   "max_abs_bbox_diff_px": 0.0,
+   "label_mismatch": 0
+  },
+  "w3lra_pd_DX_W3_shuffle_ep4_seed42": {
+   "comparable": true,
+   "max_abs_score_diff": 0.0,
+   "max_abs_bbox_diff_px": 0.0,
+   "label_mismatch": 0
+  }
+ },
+ "acceptance_f": {
+  "recompute_max_abs_diff": 0.0,
+  "recompute_per_video_max_abs_diff": 0.0,
+  "n": 16,
+  "by_run": {
+   "w3lra_pd_P1_W3_empty_ep4_seed42": {
+    "AP": 0.0,
+    "target_AP": 0.0,
+    "control_AP": 0.0,
+    "AP50": 0.0,
+    "per_video": {
+     "09": 0.0,
+     "10": 0.0
+    }
+   },
+   "w3lra_pd_P1_W3_pred_noCF_ep4_seed42": {
+    "AP": 0.0,
+    "target_AP": 0.0,
+    "control_AP": 0.0,
+    "AP50": 0.0,
+    "per_video": {
+     "09": 0.0,
+     "10": 0.0
+    }
+   },
+   "w3lra_pd_P1_W3_gt_ep4_seed42": {
+    "AP": 0.0,
+    "target_AP": 0.0,
+    "control_AP": 0.0,
+    "AP50": 0.0,
+    "per_video": {
+     "09": 0.0,
+     "10": 0.0
+    }
+   },
+   "w3lra_pd_P1_W3_shuffle_ep4_seed42": {
+    "AP": 0.0,
+    "target_AP": 0.0,
+    "control_AP": 0.0,
+    "AP50": 0.0,
+    "per_video": {
+     "09": 0.0,
+     "10": 0.0
+    }
+   },
+   "w3lra_pd_P2L_W3_empty_ep4_seed42": {
+    "AP": 0.0,
+    "target_AP": 0.0,
+    "control_AP": 0.0,
+    "AP50": 0.0,
+    "per_video": {
+     "09": 0.0,
+     "10": 0.0
+    }
+   },
+   "w3lra_pd_P2L_W3_pred_noCF_ep4_seed42": {
+    "AP": 0.0,
+    "target_AP": 0.0,
+    "control_AP": 0.0,
+    "AP50": 0.0,
+    "per_video": {
+     "09": 0.0,
+     "10": 0.0
+    }
+   },
+   "w3lra_pd_P2L_W3_gt_ep4_seed42": {
+    "AP": 0.0,
+    "target_AP": 0.0,
+    "control_AP": 0.0,
+    "AP50": 0.0,
+    "per_video": {
+     "09": 0.0,
+     "10": 0.0
+    }
+   },
+   "w3lra_pd_P2L_W3_shuffle_ep4_seed42": {
+    "AP": 0.0,
+    "target_AP": 0.0,
+    "control_AP": 0.0,
+    "AP50": 0.0,
+    "per_video": {
+     "09": 0.0,
+     "10": 0.0
+    }
+   },
+   "w3lra_pd_P3_W3_empty_ep4_seed42": {
+    "AP": 0.0,
+    "target_AP": 0.0,
+    "control_AP": 0.0,
+    "AP50": 0.0,
+    "per_video": {
+     "09": 0.0,
+     "10": 0.0
+    }
+   },
+   "w3lra_pd_P3_W3_pred_noCF_ep4_seed42": {
+    "AP": 0.0,
+    "target_AP": 0.0,
+    "control_AP": 0.0,
+    "AP50": 0.0,
+    "per_video": {
+     "09": 0.0,
+     "10": 0.0
+    }
+   },
+   "w3lra_pd_P3_W3_gt_ep4_seed42": {
+    "AP": 0.0,
+    "target_AP": 0.0,
+    "control_AP": 0.0,
+    "AP50": 0.0,
+    "per_video": {
+     "09": 0.0,
+     "10": 0.0
+    }
+   },
+   "w3lra_pd_P3_W3_shuffle_ep4_seed42": {
+    "AP": 0.0,
+    "target_AP": 0.0,
+    "control_AP": 0.0,
+    "AP50": 0.0,
+    "per_video": {
+     "09": 0.0,
+     "10": 0.0
+    }
+   },
+   "w3lra_pd_DX_W3_empty_ep4_seed42": {
+    "AP": 0.0,
+    "target_AP": 0.0,
+    "control_AP": 0.0,
+    "AP50": 0.0,
+    "per_video": {
+     "09": 0.0,
+     "10": 0.0
+    }
+   },
+   "w3lra_pd_DX_W3_pred_noCF_ep4_seed42": {
+    "AP": 0.0,
+    "target_AP": 0.0,
+    "control_AP": 0.0,
+    "AP50": 0.0,
+    "per_video": {
+     "09": 0.0,
+     "10": 0.0
+    }
+   },
+   "w3lra_pd_DX_W3_gt_ep4_seed42": {
+    "AP": 0.0,
+    "target_AP": 0.0,
+    "control_AP": 0.0,
+    "AP50": 0.0,
+    "per_video": {
+     "09": 0.0,
+     "10": 0.0
+    }
+   },
+   "w3lra_pd_DX_W3_shuffle_ep4_seed42": {
+    "AP": 0.0,
+    "target_AP": 0.0,
+    "control_AP": 0.0,
+    "AP50": 0.0,
+    "per_video": {
+     "09": 0.0,
+     "10": 0.0
+    }
+   }
+  }
+ }
+}

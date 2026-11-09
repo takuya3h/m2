@@ -226,3 +226,85 @@ B-4 の前回との照合（`tools/w3lra_scopes.py`、`$A/identity/scopes_vs_pre
 
 信号と checkpoint の要約値が記録と一致し、塔単独の val が差 0.0 で再現し、受け取り手の学習率 1e-5 が optimizer の群に届き（比 0.1 の群は 1e-6）、
 界面の群が 5e-4 のままであることを試走の記録から示した。学ぶ集合は前回の W3 と一致し、全腕で学習前の出力が塔単独と一致した。**通過。**
+
+## Task C — 学習（10:53:32 起動）
+
+- 起動の直前: `nvidia-smi --query-compute-apps` 0 件。`proc_enum.py` をパイプで受けた数えは 1 件だったが、起動の後にファイル経由（30 件 = 学習 6 本 ＋ DataLoader の worker 24 本）と
+  パイプ経由（31 件）を比べ、差の 1 件は数えを受け取る `python3` 自身と確かめた（前回の andrew の契約と同じ。`$S/start/c_launch_procs.json`）
+- 起動時の commit 3dc8b512（push 済み。各 run の `code_commit.txt`）。待ち行列 `tools/run_queue.sh`（GPU ごとに `xargs -P 3`、列 `queue/gpu{0,1}.txt` 各 8 本、
+  出力 `queue/gpu{0,1}.out`）を `setsid nohup` で切り離して起動
+- 最初の巡: GPU 0 に P1 空・P1 正解・P2L 空、GPU 1 に P1 予測-noCF・P1 入れ替え・P2L 予測-noCF
+- 監視: 16 本の終了か、train.log・finalize.log の異常（Traceback・溢れ・非数・Killed・RuntimeError）か、rc ≠ 0 で通知する待ちのループ（2 分ごと）
+- 点検 11:08: 最初の 6 本とも epoch 0 の 500/4,809 step、約 1.0 it/s（前回の andrew の本番の最初の巡と同じ速さ）。GPU 0・1 とも使用率 100 %、記憶 38,191・38,182 MiB / 49,140 MiB、電力 283・288 W。
+  見積もり: 1 本 = 4 × 4,809 step ÷ 1.0 it/s ≈ 5.3 時間 ＋ 評価 5 回 ≈ 6 時間。1 枚 8 本を 3・3・2 本の巡で回すので 6 ＋ 6 ＋ 約 4.5 ≈ 16.5 時間、終了は 11-10 03:00〜04:00 JST 頃
+- 終了 11-10 02:37:00（最後の run の `end.txt` 17:37:00 UTC）。待ちのループは「16 本終了」で抜けた（異常の通知 0 件）
+  - 16 本とも `exit_code.txt` 0、train.log に非数の出現 0 件、溢れ・発散で止まった run 0 本（`$S/aborted/` は作っていない）
+  - 総所要 15 時間 43 分 28 秒（01:53:32〜17:37:00 UTC）。1 本の所要: P1・P2L・P3 は 5.74〜5.85 時間（1 枚 3 本）、DX は 3.99〜4.04 時間（最後の巡で 1 枚 2 本）
+  - 巡の実際: GPU 0 は P1 空・P1 正解・P2L 空 → P2L 正解・P3 空・P3 正解 → DX 空・DX 正解、GPU 1 は P1 予測-noCF・P1 入れ替え・P2L 予測-noCF → P2L 入れ替え・P3 予測-noCF・P3 入れ替え → DX 予測-noCF・DX 入れ替え
+  - 終了の後: `nvidia-smi --query-compute-apps` 0 件、GPU 0・1 とも電力の上限 300.00 W（`$S/end/gpu_end.csv`）
+  - 保存先 `$S` 4,115,274,944 B、run の置き場 16 本 1,217,994,153 B（A-4 の見積もり ≤ 6 GB の中）。W&B は `$S/wandb/wandb/` に offline の run 16 件
+
+## Task D — 集計・検証・報告（11-10 02:37〜）
+
+### D-1 集計（`$A/report.json`、道具 `tools/w3lra_aggregate.py --recompute`、表 `tools/w3lra_report.py` → `report_tables.md`）
+
+前回の andrew の `scripts/w23/w23a_aggregate.py`・`w23a_report.py` を `A/tools/` に写し、型（P1・P2L・P3・DX）と参考の表（前回の W3・W2）を変えた。
+
+    $ PYTHONPATH=src:scripts .venv/bin/python $A/tools/w3lra_aggregate.py --out $A/report.json --recompute   （出力 $A/aggregate.log）
+    acceptance_e: expected 16, measured 16, hosts [andrew], unmeasured [], n_epochs_recorded [5]（学習前 ＋ 4 epoch）,
+                  lr_by_epoch_all_constant true, control_nonexistent_name_count 0
+    acceptance_g: videos_used 01 02 03 06 08 09 10 11 12 13 14 15、overlap []、control_overlap_with_04 ["04"]
+    acceptance_f: recompute_max_abs_diff 0.0、recompute_per_video_max_abs_diff 0.0（16 本。epoch 3 の予測 val_*_ep3.json.gz から M.summary で計算し直した値と後処理の記録の差）
+    predictions: 1 当たり（4 型とも |Δ塔| が縮んだ）、2 当たり（P1 +0.0125、前回 +0.0333）、3 外れ（P2L −0.0066 → +0.0077、P3 −0.0062 → −0.0005）
+    $ python3 $A/tools/w3lra_report.py $A/report.json > $A/report_tables.md   （434 行）
+
+- 前回の W3 の値は SPEC §1 から写さず、前回の各 run の記録（`w23b_pd_<型>-W3_<腕>_ep4_seed42/w23_metrics.json`、`w23a_pd_DX_W3_<腕>_ep4_seed42/w23a_metrics.json`）から
+  同じ関数で Δ を計算した。SPEC §1 の表の値（P1 −0.0578 / −0.0703、+0.0333 / +0.0637、+0.0055 / +0.0091、P2L −0.0372 / −0.0436、−0.0066 / −0.0043、−0.0061 / +0.0026、
+  P3 −0.0292 / −0.0098、−0.0062 / −0.0131、+0.0010 / +0.0012、DX −0.0327、+0.0145、−0.0104）と小数 4 桁で全件一致
+- W2 の参考: P2L は bengio の `w23b_pd_P2L-W2_*`、DX は andrew の `w23a_pd_DX_W2_*`、P1 は直しの契約の `stage2_pilot_fix/report.json` の `tables.P1-W2`、
+  P3 は W2 を回していない（W1 と同じ集合。前回 bengio の REPORT §3.1）
+- 完了判定 f の陽性対照: P1 正解の記録に P1 空の epoch 3 の予測から計算した値を突き合わせると差 overall −0.012471・標的群 −0.030138・陰性対照群 −0.000255。
+  DX 正解の記録に DX 入れ替えの予測を突き合わせると overall +0.000167・標的群 +0.000494・陰性対照群 +0.002224（どちらも 0 でない）
+- epoch ごとの overall（学習前 → epoch 1〜4）は `report_tables.md` の各型の表。P1 は 4 腕とも epoch 3 → 4 で −0.0100〜−0.0116 下がった。
+  P2L・P3 は −0.0004〜+0.0023、DX は −0.0012〜−0.0018。学習率は 4 epoch で一定（`lr_groups.json` の eval_1〜eval_4 の記録）なので学習率の変化では説明できない。理由は測っていない
+
+### D-1 終了時の試験と仮想環境（`$S/end/`）
+
+    $ CUDA_VISIBLE_DEVICES="" PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider -rfE --continue-on-collection-errors
+    6 failed, 985 passed, 5 skipped, 26 warnings in 29.60s
+    $ diff $S/start/a5_fail_names.txt $S/end/fail_names.txt   → 差なし（失敗の名前は開始時と同じ 6 件）
+    $ uv pip list --python <venv>/bin/python --format freeze | sha256sum
+    .venv 108 行 9c7be5c9…、.venv-relation-detr 72 行 a74c9c78…（開始時と一致）
+
+### D-1 禁止の場所の不変
+
+- 材料の照合を終了時にもう一度回した（`$S/end/material_end.json`）: 信号 6 本・検出塔の重み 2 本・設定 4 本・学習のコード 2 本の 14 本の sha256 が開始時と記録の全件で一致。
+  陽性対照: 1000 バイト目を反転した複製は不一致、変えない複製は一致
+- `git diff --name-status 129e79b0 -- . ':!tasks/T-2026-11-09-stage2-pd-w3-lowlr-andrew' ':!experiments/analysis/stage2_pd_w3_lowlr_andrew' ':!experiments/phase1/w3lra_*'` → 空
+  （README.md・docs/experiment_log.md を書く前）。陽性対照: 同じ命令で `experiments/analysis/stage2_pd_w3_lowlr_andrew/tools` を指すと、本契約の新しいファイルが `A` として出る
+- `third_party/`・`data/raw`・`data/external`・注釈・凍結源・既存の checkpoint・既存の仮想環境・前回までの契約の run の置き場と保存先は触れていない（上の diff と要約値で確かめた。読むことだけをした）
+
+### D-1 forbidden-check（作業ツリー）
+
+    $ source .venv/bin/activate && make forbidden-check TASK=T-2026-11-09-stage2-pd-w3-lowlr-andrew
+    status fail、changed 434、violations 9
+
+違反 9 件はすべて `experiments/analysis/grasp_pilot_converge/tools/`（同期で届いた別の契約の出力。フォルダの mtime 11-09 12:44 JST。本契約は触れていない・動かしていない）。
+**本契約の経路の違反 0 件。** 分岐の HEAD の写しでの結果は下に足す
+
+### D-2 README.md・docs/experiment_log.md
+
+両方の末尾に本契約の節を足した（どちらにも「非公式の測定」と明記）。SPEC D-2 の指示で、`allow_write` の外（起票者の誤り self_contradiction）
+
+### D-3 make runindex（03:3x）
+
+    $ source .venv/bin/activate && make runindex
+    runs/*.json = 2668, index.csv = 2668 行（起点 2647 から +21）
+    [FAIL] C5 per_class.csv の整合 — value 空欄と is_nan が食い違う行: 51（phase1__grasppilot2_G_{H1,H2,all}_seed42 の 17 行ずつ）
+    ほかの C1〜C9 は PASS
+
+- 足された 21 行: 本契約の 16 本（`index.csv`・`experiments.csv` に task_id つきで各 16 行）と、起点の版管理に在るが索引に載っていなかった
+  別の契約の 5 本（`grasparms_B_{empty,gt}_ep4_seed42`・`graspd2_{gteach_ep15_seed42,shuf_ep15_seed42,smoke}`。どれも `git ls-tree origin/phase0` に在る）
+- C5 の FAIL は起点でも同じ: 起点 129e79b0 の写しの作業ツリー（`git worktree add --detach`）で `tools/verify_runindex.py` を回すと同じ 51 行で FAIL。本契約の run は含まない
+- 前例（T-2026-11-07-dtower-rerun、利用者の決定）どおり、作り直した runindex 全体を commit する。手では編集していない
+- 補足: `.git/info/exclude` の 20・21 行（`grasparms_B_{empty,gt}_ep4_seed42/`）の 2 本は起点の版管理に入った。追跡下のファイルには無視の一覧が効かないので、この 2 行はもう働いていない

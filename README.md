@@ -1860,3 +1860,24 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
 - **凍結する塔（12 番 seed 42 の 5 本）は揃った。** 経路・sha256・epoch・val は `frozen_towers.json`。checkpoint は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-07-dtower-rerun/runs/<run>/best_ap.pth`。登録は別の契約
 - 道具は `experiments/analysis/dtower_rerun/tools/`（実行器 `run_rerun.py`、評価の包み `eval_dump.py`（動画ごとの値と予測を書く）、動画の集合の照合 `check_folds.py`、集計 `summarize.py`、ほかは前例の写し）。**既存のスクリプト・設定・third_party は変えていない**
 - 注意: どの注釈ファイルにも `id: 0` の注釈が 1 つあり、pycocotools はそれに一致した検出を誤検出に数える。評価器の値はこの 1 注釈分を含む（全 run と前例に一様）
+
+### 工程から検出の W3 を受け取り手の学習率 1e-5 で回し直す予備測定（2026-11-09〜10、andrew）
+
+契約 `T-2026-11-09-stage2-pd-w3-lowlr-andrew`（analysis。**非公式の測定。関門の判定と設計の判断に使わない**）。
+結果は `experiments/analysis/stage2_pd_w3_lowlr_andrew/REPORT.md`、run の記録は `experiments/phase1/w3lra_pd_*`、記録は `tasks/T-2026-11-09-stage2-pd-w3-lowlr-andrew/`。
+
+- 前回の W3（P1・P2L・P3 は bengio、DX は andrew。受け取り手 1e-4）と同じ処方で、**受け取り手の学習率だけ 1e-5**（比 0.1 の群は 1e-6、界面 5e-4 のまま）にして、4 型 × 空・予測-noCF・正解・入れ替えの 16 本を andrew で回した
+- 道具は `experiments/analysis/stage2_pd_w3_lowlr_andrew/tools/`
+  - 起動 `run_w3lra.sh`（前回の andrew の台本の写し。`--lr 1e-5 --film-lr 5e-4` を明示して渡す）
+  - 群の学習率の記録の包み `w3lra_lrwrap.py`（`train_t1b.py` を変えずに optimizer の群の学習率を `lr_groups.json` に書く）
+  - 後処理・恒等性・材料・腕・集合の照合（`w3lra_finalize.py`、`w3lra_identity.py`、`w3lra_material.py`、`w3lra_armcheck.py`、`w3lra_scopes.py`）
+  - 集計 `w3lra_aggregate.py`、表 `w3lra_report.py`
+  - **既存のスクリプト・設定・third_party は変えていない**（`train_t1b.py` の `--lr` の既定 1e-4 もそのまま）
+- 大きな生成物（重み、試走、W&B の offline の記録）は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-09-stage2-pd-w3-lowlr-andrew/`
+- 結果（非公式。1 折り・val 2 動画・seed 1 つの 1 本ずつの差。overall / 標的群）
+  - 空の腕の Δ塔 は 4 型とも前回より零に近い: P1 −0.0578 → −0.0135、P2L −0.0372 → −0.0112、P3 −0.0292 → −0.0082、DX −0.0327 → −0.0025（overall）
+  - 正解の腕の Δ空: P1 +0.0125 / +0.0301、P2L +0.0077 / +0.0187、P3 −0.0005 / +0.0010、DX −0.0018 / −0.0012
+  - 予測-noCF の Δ入替: P1 +0.0024、P2L +0.0036、P3 −0.0011、DX −0.0002（overall）
+  - 事前登録の予測は 1・2 が当たり、3 は外れ（P3 の正解の Δ空 が負のまま）
+  - P1 は 4 腕とも epoch 3 → 4 で overall が約 0.01 下がった（学習率は一定。理由は未測定）
+  - G1・G2 pass、16 本すべて完了（学習 15.7 時間）
