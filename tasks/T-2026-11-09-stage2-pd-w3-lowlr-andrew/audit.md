@@ -308,3 +308,12 @@ B-4 の前回との照合（`tools/w3lra_scopes.py`、`$A/identity/scopes_vs_pre
 - C5 の FAIL は起点でも同じ: 起点 129e79b0 の写しの作業ツリー（`git worktree add --detach`）で `tools/verify_runindex.py` を回すと同じ 51 行で FAIL。本契約の run は含まない
 - 前例（T-2026-11-07-dtower-rerun、利用者の決定）どおり、作り直した runindex 全体を commit する。手では編集していない
 - 補足: `.git/info/exclude` の 20・21 行（`grasparms_B_{empty,gt}_ep4_seed42/`）の 2 本は起点の版管理に入った。追跡下のファイルには無視の一覧が効かないので、この 2 行はもう働いていない
+
+### D-1 forbidden-check（分岐の HEAD 036d6a60 の写し）
+
+    $ git worktree add --detach $SCRATCH/wt_fc HEAD; cd $SCRATCH/wt_fc
+    $ /home/ubuntu/slocal2/m2/.venv/bin/python tools/check_forbidden.py --task T-2026-11-09-stage2-pd-w3-lowlr-andrew    （make は写しに .venv が無いため Makefile の行を直接）
+    rc 0、status pass、changed 462、permitted 454、violations 0
+    $ git worktree remove --force $SCRATCH/wt_fc; git worktree prune
+
+同期で届いた `grasp_pilot_converge/` は版管理に入っていないので、写しには現れない。**本契約の分岐の内容は違反 0 件**
