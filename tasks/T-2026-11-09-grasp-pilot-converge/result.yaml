@@ -3,7 +3,7 @@ task_id: "T-2026-11-09-grasp-pilot-converge"
 status: partial
 host: "bengio"
 branch: "feat/grasp-pilot-converge"
-pr: null
+pr: 309
 merged: false
 
 gates:
@@ -79,4 +79,5 @@ unknowns:
   - "最終の状態（最も学んだ状態）の腕の差: val の確率は最良の epoch の分だけ保存しており、測っていない（history の J だけ）"
   - "seed を変えたときの差の揺れ・GPU の並行の影響: 測っていない"
 
-commits: []
+commits:
+  - "adcdbc4a"
