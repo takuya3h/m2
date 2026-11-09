@@ -118,3 +118,4 @@
 - PR: #307（https://github.com/takuya3h/m2/pull/307、base phase0、Draft でない、OPEN、head `feat/grasp-roitoken-transition-pilot`。`gh pr view 307 --json` で確認）
 - `make task-report`: 終了コード 0（2026-11-09 JST、verdict partial、起票者の誤り 6 件、report_sha256 eedf411b…、11,839 B、replaced_blocks 0。この行は送信の後に足した）
 - 案 5 の追加の後: PR #307 に commit db9b7b46 ほかを積んだ（同じ分岐）。`make task-report` の送り直し: 終了コード 0（verdict pass、起票者の誤り 6 件、report_sha256 291bdc34…、15,145 B、replaced_blocks 1。この行は送信の後に足した）
+- 所要と学習の短さを足した後（commit a7af7091）: `make task-report` 終了コード 0（verdict pass、report_sha256 78c12122…、15,943 B、replaced_blocks 1。この行は送信の後に足した）
