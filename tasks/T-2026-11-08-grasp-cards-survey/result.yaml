@@ -1,0 +1,95 @@
+result_version: 3
+task_id: "T-2026-11-08-grasp-cards-survey"
+status: pass
+host: "bengio"
+branch: "feat/grasp-cards-survey"
+pr: 302
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "分岐 feat/grasp-cards-survey の起点が origin/phase0 a68672f1。開始前の未追跡 12 件（同期で届いた T-2026-11-07-dtower-rerun の出力）は利用者の選択で .git/info/exclude に入れ触れていない。nvidia-smi の全体 39/37 MiB と compute の一覧 0 件（存在しない GPU 7 で No devices were found）、空き 1,250,936,692,736 B、試験の失敗 11 件の名前、venv 108 行 9c7be5c9…・72 行 a74c9c78…、禁止の場所 19 根・重ねの BODY・重み 6 件の要約値、電力の上限 220 W × 2 を記録した"}
+  - {id: G2, verdict: pass, note: "S2（動画ごとの術具注釈・把持の注釈・loss_mask・工程の目録と CSV の件数と欠けの連）、S3（クリップの中の間隔の分布と CSV との対応）、S7（11 組の単価と出所）を記録から埋めた。test の 04 を混ぜると術具 11,172 → 12,501、存在しない 99 で全列 0、1 ずらすと CSV との対応が全動画で下がった"}
+  - {id: G3, verdict: pass, note: "S1（P の layer4 の地図、val 09）、S4（D の出力と ECE、val 1,515・train 1,000）、S5（G 4 本の中間特徴 4 層と相関、val 100）、S6（8 チャネルの写しの順伝播と逆伝播）を測った。optimizer を作らず、P・D・G 4 本・写しの state_dict の要約値が前後で一致した"}
+
+tests:
+  before_failed: 11
+  after_failed: 11
+  after_passed: 980
+
+deviations:
+  - {type: judgement, note: "task-start が同期で届いた他の契約（T-2026-11-07-dtower-rerun、未統合）の未追跡 12 件で止まり、利用者の選択「4 で無視に足す」で .git/info/exclude にフォルダを 1 行足した。消していない・動かしていない"}
+  - {type: judgement, note: "S2 の「工程注釈のあるフレーム」に二つの集合（工程塔の目録＝術具注釈のフレームと同じ、工程の CSV の全行）があったため、両方を表にした。CSV にだけある行には data/raw/ego に画像が無い"}
+  - {type: judgement, note: "S2 の対照で test の 04 の件数を数えるため、test の術具・把持の注釈の目録の画像名と loss_mask/test.txt を開いた（SPEC §5-1 の動画番号を混ぜるだけの対照）。test の工程の目録・CSV と画像は開いていない"}
+  - {type: judgement, note: "S4 の ECE は全出力（各フレーム 300）では得点 0.1 未満が 97% を占めるので、得点 ≥ 0.05 の ECE を併記した。S5 の候補の層・相関の数え方・並べ替えを見る最大の |r| は実行者が実装を読んで決めた。S6 は BN の統計を動かさないため eval で逆伝播した"}
+  - {type: environment, note: "S5 の道具が g5_signals を import して scripts/grasppilot/__pycache__/g5_signals.cpython-311.pyc（59,349 B）を書いた（自分の過失。bytecode を止めていなかった）。終了時の要約値で見つけて停止して諮り、利用者の決定「1 消して測り直す」で sha256 を残して消し、scripts の要約値が開始時と一致することを確かめた"}
+  - {type: judgement, note: "S7 の五本目（T-2026-11-06-grasp-pilot-d-rerun）は phase0 に未統合なので origin/feat/grasp-pilot-d-rerun の版から git show で読んだ。bengio の P の fine-tune は T-2026-11-02-hostdiff-bengio の記録（2 GPU、phase_manifest_all_phase）で、確定の塔の設定とは違う"}
+  - {type: spec_defect, note: "meta.created_from の runindex の版と件数が古い値だったため Task A-4 に従い実測で差し替え meta.amendments に記録した。PT_FT_CKPT の写しの経路が bengio に無く、repo の同じ相対経路の sha256 一致の checkpoint を読んだ"}
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "meta.created_from の runindex_commit 68befc3b と件数 2,363/1,130/1,736 は 2026-10-29 の版の値で、起点 a68672f1 の git log -1 -- runindex/ は d3e319ac・件数 2,623/1,305/1,947 だった。そのまま進めると契約が今の索引と違う版を指す。Task A-4 に従い差し替えて meta.amendments に記録した"
+  - type: asserted_without_measuring
+    note: "SPEC §1 と S1-2 は fine-tune の checkpoint を common.py の PT_FT_CKPT（stage2pilot_store の efros_ptower の写し）から読むとするが、bengio のその経路には checkpoint が無く写しは 009 の頭とキャッシュだけだった。指示どおりに読むと FileNotFoundError で止まる。repo の同じ相対経路に sha256 79c2c478… のものが在り、それを読んだ"
+  - type: asserted_without_measuring
+    note: "SPEC §1 は工程塔の fine-tune を「ResNet-50（ImageNet の初期化、COCO 系統は別の鎖）」とするが、確定の P*-15（stage1_ptower_20_005_ft_coco）の config は init: coco で D* の COCO の重みから出発している。S6-2 の「RGB の 3 チャネルは ImageNet の重みのまま」は確定の塔と違う鎖の写しになり、形の確認には影響しないが案 6 の初期化の行の対称性の表に写すと誤る"
+  - type: asserted_without_measuring
+    note: "完了判定 f は「確定と H1 の同じ層の特徴の基底が一致しない（対応する次元の相関が低い）ことが示されている」を条件にし、測る前に結果を書いている。実測では対応する次元の r の中央が pixel decoder の mask_features 0.821・memory 0.682 と高く、decoder の query 0.255 だけが低い。条件をそのまま満たすには層を選ぶ必要があり、測った値をそのまま書いた"
+
+positive_controls:
+  - judgement: "a GPU の他の使用の検出"
+    breaking_input: "存在しない GPU 番号 7 で nvidia-smi を引く"
+    observed: "No devices were found（rc 6）、数字で始まる行 0 件。本物は 2 枚・一覧 0 件・全体 39/37 MiB"
+  - judgement: "a compute プロセスの列挙"
+    breaking_input: "自分のシェルの /usr/bin/zsh と存在しない /nonexistent/bin/python9 で列挙する"
+    observed: "zsh 9 件、存在しない経路 0 件"
+  - judgement: "b 地図の空間平均とキャッシュの一致"
+    breaking_input: "1 つずらしたフレームのキャッシュの特徴と比べる"
+    observed: "相対 L2 最小 0.0912・中央 0.2979（1e-3 以下 0 件）。同じフレームは最大 7.23e-7"
+  - judgement: "c 件数の関数が動画の集合に従う"
+    breaking_input: "test の 04 を集合に混ぜる、存在しない 99 を渡す"
+    observed: "術具 11,172 → 12,501、把持 10,870 → 12,189、loss_mask 302 → 312。99 は全列 0"
+  - judgement: "d 術具注釈フレームと工程の CSV の対応"
+    breaking_input: "術具注釈フレームの番号を 1 ずらした写し"
+    observed: "CSV に在る数と工程の名前の一致が全 12 動画で下がった（例 01: 913 → 884・877、10: 997 → 958・957）"
+  - judgement: "e ECE の計算"
+    breaking_input: "得点をすべて 1 にした写し／得点を対応の 0/1 にした写し"
+    observed: "val 0.9898・0.0、train 0.9890・0.0（本物は 0.0185・0.0183）"
+  - judgement: "e 検出塔の経路が評価の経路と同じ"
+    breaking_input: "val の出力を COCO の評価器に通し記録の mAP と比べる"
+    observed: "0.7273450248398429 と記録 0.7273450248398429、差 0。違う経路の入力は測っていない（UNKNOWN）"
+  - judgement: "f 相関の計算"
+    breaking_input: "確定の G を別に読んだ同じ重みの写し（all2）と比べる"
+    observed: "4 層とも対応する次元の r の最小 1.000000（確定と H1 は中央 0.255〜0.821）"
+  - judgement: "g 8 チャネルの写しの形"
+    breaking_input: "7 チャネルの入力を渡す"
+    observed: "RuntimeError: weight of size [64, 8, 7, 7], expected input[2, 7, 800, 1422] to have 8 channels, but got 7 channels instead"
+  - judgement: "g 追加チャネルが零の写し"
+    breaking_input: "追加の 5 チャネルが 0 の 8 チャネルの写しと元の 3 チャネルの出力を比べる"
+    observed: "最大の差 0.0"
+  - judgement: "h 費用の単価の出所"
+    breaking_input: "記録から引いた値を各契約の報告の記載と照らす"
+    observed: "四本目 RESULT 63 行、五本目 RESULT 47 行、三周目 RESULT 51 行の値と一致。記録の無い run 名では値なし（None）"
+  - judgement: "i test 不使用"
+    breaking_input: "common.assert_no_test に 04 のフレームを混ぜる"
+    observed: "RuntimeError: test の動画が混入: ['04']（09・10 だけなら通る）"
+  - judgement: "j 禁止領域の検査"
+    breaking_input: "契約の許可を読まずに tools/check_forbidden.py を回す"
+    observed: "status fail、違反 9 件（本契約の REPORT.md と tools/ の 8 件）。許可つきでは pass・違反 0"
+  - judgement: "j 無変更の要約値"
+    breaking_input: "本契約が書いた tasks/inbox.d の 1 件と、S5 が書いた .pyc 1 件"
+    observed: "tasks と scripts の 2 根だけ要約値が変わり、差の大きさが 1,271 B と 59,349 B でちょうど一致した。.pyc を消した後の scripts は開始時と一致"
+
+followups:
+  - "S5 の G の確定と H1 の相関は層で 0.255〜0.821（中央）と違う。案 2 の「交差適合の半分は基底が違う」は取り出す層を決めてから読む"
+  - "確定の P*-15 は COCO の鎖（init: coco）。案 6 の契約では入力層の写しを同じ COCO の鎖から作るかを決める（本契約の S6 は SPEC どおり ImageNet で形だけ確かめた）"
+  - "工程の CSV にだけある行（train 923・val 389）は画像が無い。工程のフレームを分母にする案の #15 では、目録と CSV のどちらの集合かを明記する"
+  - "T-2026-11-07-dtower-rerun が phase0 に統合されたら、.git/info/exclude に足した experiments/analysis/dtower_rerun/tools/ の行を外してよい"
+
+unknowns:
+  - "他の折りの注釈の密度・間隔（折り A だけを測った）"
+  - "S6 の 8 チャネルの写しで学習が収束するか、stem を学ぶ形と追加チャネルだけを学ぶ形のどちらが良いか、train（BN の統計の更新）での挙動"
+  - "bengio の 1 GPU で確定の P*-15 と同じ設定の fine-tune 1 本の壁時計（記録は efros 1 GPU と bengio 2 GPU の別データだけ）"
+  - "S4 の得点の較正の直し（温度の調整など）の効き"
+
+commits:
+  - "93834768"
