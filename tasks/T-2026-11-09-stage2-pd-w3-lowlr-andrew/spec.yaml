@@ -1,0 +1,74 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-11-09-stage2-pd-w3-lowlr-andrew"
+  kind: analysis
+  title: "工程から検出の界面の型（P1・P2L・P3・decoder-xattn）を W3（界面と検出塔の全体を学ぶ）で回し直す非公式の予備測定。変えるのは受け取り手の学習率だけ（1e-4 から 1e-5。検出塔が収束のときに居た値）。四腕、andrew"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-11-09T01:30:00Z"
+  created_from:
+    runindex_commit: "b524173e7a2812ae5261ec7601fb629d1a97b60a"
+    counts: {index: 2647, experiments: 1327, verdicts: 1977}
+  depends_on: [T-2026-11-01-stage2-w23-bengio, T-2026-11-01-stage2-w23-andrew, T-2026-11-02-bengio-align-andrew]
+  amendments:
+    - date: "2026-11-09"
+      reason: "Task A-7 の実測。meta.created_from は d3e319ac（2026-11-07T08:05Z）を指していたが、起票（2026-11-09T01:30Z）の時点で origin/phase0（129e79b0）の runindex を最後に変えた commit は b524173e（PR 305 で 2026-11-09T00:50Z に統合）で、行数（見出しを除く）は index 2647・experiments 1327・verdicts 1977。本契約は分母を宣言しないため L2-8 は WARN を出さない。conventions_rev 2d946b07 は実測と一致"
+      diff: "meta.created_from: runindex_commit d3e319ac -> b524173e、counts {2623, 1305, 1947} -> {2647, 1327, 1977}"
+intent:
+  question: "前回の W3（受け取り手の学習率 1e-4）は工程から検出の全型で空の腕まで塔単独を下回った（値は SPEC §1 の表）。受け取り手の学習率を、検出塔が収束のときに居た 1e-5 にすると、空の腕は塔単独の近くに留まるか。その上で同じ型・同じ W の空の腕と入れ替えの腕との差はどうなるか。非公式の測定であり、関門の判定にも設計の判断（型の採否を含む）にも使わない"
+  decision_at_stake: "前回の W3 の下がり方が学習率によるものかの手がかりと、本番の W3 の学習設定を事前登録するときの材料。型の採否は結果で決めない"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery の動画 01 から 15 のうち、折り A の train と val の動画（conventions#folds）の術具注釈のあるフレーム。信号は前回までの契約が作ったものを読むだけ。折り A の test の動画のフレームは学習と評価のどれにも通さない"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/train_t1b.py", "scripts/stage2pilot/pd_model.py", "scripts/w23/run_pd_w23_bengio.sh", "scripts/w23/run_pd_w23_andrew.sh"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#env_p0, conventions#folds, conventions#split, conventions#eval_recipe, conventions#det_groups]
+  conventions_rev: "2d946b07a57abebc4a8f66150d6dbaf2ccd22186"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/analysis/stage2_pd_w3_lowlr_andrew", "experiments/phase1/w3lra_", "runindex/"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。分岐、前提の統合、andrew の他プロセス、記憶領域、試験の失敗の名前、仮想環境の要約値、電力の上限", gpu: false, est: "1h"}
+    - {id: B, name: "材料と再現。信号と checkpoint の要約値、塔単独の val の再現、学習率が群に届くことの対照", gpu: true, est: "2h"}
+    - {id: C, name: "学習（4 型 × 4 腕 = 16 本）", gpu: true, est: "48h"}
+    - {id: D, name: "集計、検証、報告", gpu: false, est: "2h"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、前提の統合が起点に在り、本契約以外の compute プロセスが無く、記憶領域と失敗の名前と仮想環境の要約値と電力の上限を記録した", on_fail: stop}
+    - {id: G2, after: B, check: "使う信号と checkpoint の要約値が記録と一致し、塔単独の val が許容差の中で再現し、受け取り手の学習率 1e-5 が optimizer の群に届き（比 0.1 の群は 1e-6）、界面の学習率が 5e-4 のままであることを記録から示した", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, gpu_free]
+  resources: {server: andrew, gpu: 2, est_hours: 48, runs: 16}
+outputs:
+  must_have: [REPORT.md, RESULT.md, result.yaml, audit.md]
+  destination: "experiments/analysis/stage2_pd_w3_lowlr_andrew/"
+  acceptance:
+    - "a: 開始状態として、分岐、起点、前提の統合が起点に在ること、開始前から在る未追跡、compute プロセスの一覧、記憶領域の空き、試験の失敗の名前、既存の仮想環境のパッケージの一覧の要約値、GPU ごとの電力の上限と装置の型が記録されている"
+    - "b: 使う信号と checkpoint の要約値が前回の契約の記録と一致し、塔単独の val が SPEC の許容差の中で再現されているか、超えて停止した記録がある"
+    - "c: 受け取り手の学習率 1e-5 が optimizer の全群に届き（比 0.1 の群は 1e-6）、界面の群が 5e-4 であることが学習の記録から示され、前回の W3 と学ぶパラメータの名前の集合が型ごとに一致する"
+    - "d: 全腕で学習前の出力が塔単独と一致し、界面の重みを零でない値にすると出力が変わる"
+    - "e: run の表の 16 本が固定の長さで回り、epoch ごとの val の値と学習率が記録されている。測れなかった run は理由つきで UNKNOWN と書かれている"
+    - "f: 型ごとに、4 epoch 目の値、Δ空、Δ入替、Δ塔、動画ごとの差、クラス別 AP が表にあり、前回の W3（学習率 1e-4）と W2 の値を並べた参考の表があり、SPEC の読み方の規則で記述されている"
+    - "g: test の動画のフレームを学習と評価に一度も通していないことが、通した動画の集合で示されている"
+    - "h: 前回までの契約の run の置き場・集計・保存先、data の raw と external と注釈、凍結源、既存の checkpoint、third_party、既存の仮想環境を変えていない。試験の失敗が増えていない。forbidden-check の違反のうち本契約の経路のものが 0 件"
+    - "i: PR が Draft でなく存在し、base が phase0、分岐が feat/stage2-pd-w3-lowlr-andrew"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "本契約以外の compute プロセスがある場合（止めずに利用者に諮る）"
+    - "前提の統合が起点に無い場合"
+    - "信号か checkpoint が andrew に無い、または要約値が記録と食い違う場合（他の台から写さず、諮る）"
+    - "塔単独の val が許容差を超えて食い違う場合"
+    - "学習率を、既存スクリプトの既定の挙動か third_party を変えないと渡せない場合"
+    - "学習前の出力が塔単独と一致しない場合"
+    - "記憶領域が足りない場合"
+    - "実行基盤が書き込み、移動、削除を拒む場合"
