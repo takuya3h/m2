@@ -35,13 +35,12 @@ def main():
     a = ap.parse_args()
     import stage1_ptower as base
     base.deterministic(42)
+    import stage1_ptower_r3 as r3
     import torch
     from PIL import Image
+    from stage2pilot import common as C
     from torch import nn
     from torch.utils.data import DataLoader, Dataset
-
-    import stage1_ptower_r3 as r3
-    from stage2pilot import common as C
 
     split = C.fold_a()
     videos = C.assert_no_test(split[a.part], "b3_pmaps")

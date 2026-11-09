@@ -265,7 +265,7 @@ T-2026-11-08 の digests.py の写し（根の一覧・重み・自分の tasks 
 ### F-2 無変更・試験・禁止領域（`$S/end/`）
 
     $ python $A/tools/digests.py --out $S/end/digests_end.json --files $S/end/digests_end_files.json   → rc=0
-    25 根のうち 23 が開始時と一致。違う 2 根: scripts（stage2pilot/dp_model.py・dp_train.py の 2 件だけ。本契約の型の追加）、
+    24 根のうち 22 が開始時と一致。違う 2 根: scripts（stage2pilot/dp_model.py・dp_train.py の 2 件だけ。本契約の型の追加）、
     tasks（inbox.d/T-2026-11-09-grasp-roitoken-transition-pilot.md の 1 件の追加だけ。本契約の判断の受け皿）。重み 6 件・仮想環境 2 つは一致
     $ CUDA_VISIBLE_DEVICES="" PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider -rfE --continue-on-collection-errors
     11 failed, 980 passed, 5 skipped（失敗の名前は開始時と diff 0 行）
@@ -274,3 +274,74 @@ T-2026-11-08 の digests.py の写し（根の一覧・重み・自分の tasks 
 
 - 終了の検査の時点で、別の契約の道具 6 件（`experiments/analysis/stage2_pd_w3_lowlr_andrew/tools/w3lra_*.py`、mtime 2026-11-09 10:10〜10:28 JST）が同期で届いていた。
   `git ls-tree origin/phase0` で phase0 に無い（0 件）ことを確かめ、`.git/info/exclude` に `experiments/analysis/stage2_pd_w3_lowlr_andrew/` を 1 行足した。消さず動かさず
+
+## 追加: 案 5 の掃引（利用者の依頼 2026-11-09「案5、追加でやって」）
+
+完了の手続き（PR #307・task-report・`task-release: RELEASED`）の後に、利用者が案 5 の掃引を追加で求めた。同じ契約・分岐・PR に積む。
+
+### X-0 再開（2026-11-09 JST）
+
+- 目印は task-start を経ずに置き直した（手順書「5. 実行する」の例外。所有の記録つき）:
+  `printf 'task_id=%s\nbranch=%s\n' T-2026-11-09-grasp-roitoken-transition-pilot feat/grasp-roitoken-transition-pilot > .sync-pause`
+- 外していた間に分岐は動いていない: `git rev-parse HEAD origin/feat/grasp-roitoken-transition-pilot` → どちらも 07323d1f。`origin/phase0` は 129e79b0 のまま。
+  `~/claude-sync/sync-alerts.log` に本分岐の auto-merge・auto-push の行は無い
+- 同期で別の契約の run 6 件（`experiments/phase1/w3lra_*`）が届いていた。phase0 に無い（`git ls-tree` 0 件）ことを確かめ、`.git/info/exclude` に
+  `experiments/phase1/w3lra_*/` を 1 行足した。消さず動かさず
+
+### X-1 実装（型 TW）
+
+- `dp_model.py` に型 `transwin`（`TransWindow`: 時点ごとの MLP（D + 1 → 64 → 64）＋ 相対時刻の埋め込み、x(t) を問い合わせにした 4 head の注意、
+  零初期化の 64 → 2048 の射影を x(t) に足す）、`dp_train.py` に型 TW・腕 `t1`・`perm`・引数 `--tw-dir --tw-form --tw-L --tw-k` を足す形で書いた
+- K = 64: Stage 2 の D1 concat は隠れ次元を持たない（`Conv1d(S, conv_in.out_channels, 1)`）。`conv_in.out_channels = num_f_maps = 64` を読んだ値とした
+- 入力: B-5 の列（`$S/seq/`）。無い時点は 0 と印 0 のまま入れる（注意で隠さない）。S_0 は k = 1 の 0 の列、S_1 は k = 1 の時刻 t の列
+- 腕の名前: empty = S_0、t1 = S_1、pred_CF = S_W、perm = S_W-perm、union = S_W-U、shuffle = S_W-R、gt = 参照段 正解、gtpred_CF = 正解 ⊕ 予測（各時点で正解が先）
+
+### X-2 恒等性と既定の挙動（`$A/tools/run_d2_check.sh`、`$S/d2/`、GPU 0）
+
+    $ bash $A/tools/run_d2_check.sh 0     → 全行 rc=0
+    $ python $A/tools/compare_default.py $S/d2 grasprt_chk2_dpold_001_… grasprt_rt_002_RT-layer4-roi_geo-K16_pred_CF_ep4_seed42 \
+        --new-runs grasprt_chk2_dpnew_001_… grasprt_chk2_rt_001_RT-layer4-roi_geo-K16_pred_CF_ep4_seed42 --out $S/d2/compare_default.json
+    identity GA・D1-L1 の差 0 件、GA の試走の全記録一致。案 3 の RT の 1 本を TW を足した版で回し直すと、metrics・history・config・確率・
+    界面の重みの全テンソルが学習済みの run と一致（J 0.773103）。all_equal: true
+
+- TW の identity: W1・W2・W3 × 形 a・b × L 8・32 の 12 件 × 8 腕 = 96 件で学習前のロジットと塔単独の差の最大 0.0。学ぶ範囲の集合は W ごとの定義と一致
+  （受け取り手の学ぶパラメータ W1 0・W2 36・W3 72 個）。出力射影を N(0, 0.05²) にすると 96 件すべてで差 0.080〜0.213
+- 界面のパラメータ数: 形 a 297,408（k = 1）〜298,368（k = 16）、形 b 279,424〜280,384
+- TW の W2 の試走 `grasprt_chk2_tw_001_TW-W2-b-L32-K64_pred_CF_ep1_smoke_seed42`（腕に数えない）: rc 0
+
+**G3（案 5）: pass**
+
+### X-3 学習（`$A/tools/run_e5.sh`、`$S/e5/`）
+
+    $ for w in 0..5: bash $A/tools/run_e5.sh $((w % 2)) $w 6 &     （GPU 0・1 に 3 本ずつ）
+    1 巡目 2026-11-09 11:22:20〜11:24:43 JST: 64 本 rc=0、4 本 rc=1（TW-W1-a・W1-b・W2-a・W2-b の S_0）
+
+- 止まった原因: 空の腕の学習の後に回る陰性対照（`negative_control`）が相手の腕を `pred_noCF` にしていて、TW では窓の L を要するため SystemExit で止まった。
+  学習そのものは 4 epoch 済みだった。W3 の S_0 の 2 本は直した後に始まったので通った
+- 直し: `negative_control` の相手を TW では `t1`（S_1、k = 1 で S_0 と同じ形）にした（`dp_train.py`。空の腕でしか呼ばれない関数で、ほかの腕・型の経路は変わらない）
+- 止まった 4 本の実験フォルダと界面の重みと起動のログを保存先の `$S/aborted/{phase1,dp_ckpt}/` へ移した（SPEC Task E-2）
+- 回し直し 11:25:06〜11:25:30 JST（GPU 0 で 4 本、ほかは「実験フォルダが在る」で飛ばした）: 4 本とも rc=0
+- 68 本がそろった。学習 1 本 1.48〜9.19 s（metrics の elapsed_seconds）。W2・W3 の時間ヘッドの重みの変化の L2 は 4 epoch 目で 1.50〜2.02（summary5.json の history から）
+
+### X-4 集計と検証（`$A/tools/f_aggregate5.py`、`$S/f/summary5.json`、REPORT §7）
+
+- g: run 68/68（無い 0）、全本 4 epoch・最後の状態、存在しない run の名前 2 つで 0・0 件
+- W1 の 28 本は受け取り手不変。W2・W3 の 40 本は学ぶ範囲が変わり（true）、範囲の外は不変（true）
+- h: 差 216 個を確率から測り直してずれの最大 0.0、1e-6 ずらした写しを検出
+- i: 通した動画は案 3 と同じ 12 本、{04, 05, 07} との共通 0 件、04 を混ぜると [04]
+- **腕の間で指標がちょうど同じになる所が多い**（例: S_W と S_W-perm が W1-a-L32・W1-b-L32・W2-a-L8・W2-a-L32 で同じ、W2-b-L8 で S_W-perm・S_W-U・S_W-R が同じ）。
+  確率を比べると腕ごとに違い（最大差 0.0003〜0.037）、argmax だけが全フレームで一致した。並べ替えの列は元の列と val 1,319 行で違う（入力は変わっている）。
+  TW は時点を注意で束ねるので、順の情報は相対時刻の埋め込みからしか入らず、その埋め込みが 4 epoch で初期の大きさ（標準偏差 0.022）からほとんど育っていない
+- 道具の `ruff --fix` が `b12_inputs.py`・`b3_pmaps.py`・`c_kill.py`・`f_aggregate.py`・`make_report.py` の import の並びと f-string を書き換えた（実行の後。動作は変わらない）
+
+**案 5 の結果（REPORT §7）**: W1 の S_W − S_0 は 6 工程の平均 +0.0044〜+0.0076（4/4 で正）、S_W − S_1 は +0.0025〜+0.0058（4/4 で正）。
+W2・W3 の差は −0.010〜+0.007 で符号が分かれる。§5.2 の予測 3 は外れ（4 設定のうち 3 設定で 0.005 未満）、予測 4 は当たり（S_0 が塔単独から +0.024・+0.024・−0.011・−0.020）
+
+### X-5 終わりの検査（案 5 の追加の後、`$S/end2/`）
+
+    $ python $A/tools/digests.py --out $S/end2/digests_end.json --files $S/end2/digests_end_files.json   → rc=0
+    24 根のうち 22 が開始時と一致。違う 2 根は scripts（stage2pilot/dp_model.py・dp_train.py だけ）と tasks（inbox.d の本契約の 1 件の追加だけ）。重み 6 件・仮想環境 2 つ一致
+    $ pytest（A-4 と同じ命令） → 11 failed, 980 passed, 5 skipped（失敗の名前は開始時と diff 0 行）
+    $ make forbidden-check TASK=T-2026-11-09-grasp-roitoken-transition-pilot → status pass、changed 1,075、permitted 1,065、違反 0 件
+
+- 根の数は 24（開始時の A-5 の表も 24 根。F-2 に「25 根」と書いたのは数え違い）

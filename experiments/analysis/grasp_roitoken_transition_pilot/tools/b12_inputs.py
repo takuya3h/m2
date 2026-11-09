@@ -69,10 +69,10 @@ def check_inputs(scratch):
 
 
 def tower_alone():
+    import stage1_ptower as base
     import torch
 
     from egosurgery.metrics.phase import PhaseEvaluator
-    import stage1_ptower as base
     base.deterministic(42)
     names = C.phase_names()
     split = C.fold_a()

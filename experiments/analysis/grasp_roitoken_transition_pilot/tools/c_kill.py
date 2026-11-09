@@ -33,8 +33,9 @@ from torch import nn
 ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "src"))
-from egosurgery.metrics.phase import PhaseEvaluator  # noqa: E402
 from stage2pilot import common as C  # noqa: E402
+
+from egosurgery.metrics.phase import PhaseEvaluator  # noqa: E402
 
 FIT = {"lr": 1e-3, "weight_decay": 1e-4, "batch": 512, "epochs": 100, "seed": 42}
 KILL = 0.001

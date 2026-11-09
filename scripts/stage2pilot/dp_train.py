@@ -54,6 +54,16 @@ GA は epoch ごとの界面の重みの絶対値の最大と L2 ノルムを lo
         枠 1 個、残り 4 個は空）、shuffle = TRand（目録の mapping の枠でこのフレームの特徴を切る）、gt = 参照段 正解、
         gtpred_CF = 参照段 正解 ⊕ 予測（10 個、正解が先）。参照段の 2 腕は把持の注釈のある行でだけ学び（交差エントロピー）評価する
         （平滑化の項は全行のまま）。RT は epoch ごとの界面の重みの L2 ノルムと出力射影の絶対値の最大を logs/history.json に書く
+
+同じ契約（SPEC §3.3、案 5）で足した型。渡さなければ従来の経路のまま:
+    TW transwin（dp_model.TransWindow）。x(t) は窓の k 個の時点 ×［特徴 D｜有無 1］
+    --tw-dir       材料の置き場（seq/seq_<腕>_k<k>_<part>.npz、b4/has_gt_<part>.npy）
+    --tw-form      a（5 チャネルの地図を 8×8 に縮めた 320 次元）か b（変化の特徴 39 次元）
+    --tw-L         窓の秒（8 → k = 4、32 → k = 16）。S_0（empty）と S_1（t1）は L に依らない
+    --tw-k         K（注意の次元）
+    腕: empty = S_0（k = 1 の空の列）、t1 = S_1（時刻 t だけ）、pred_CF = S_W（窓の列。train は pred_CF、val は確定）、
+        perm = S_W-perm、union = S_W-U、shuffle = S_W-R、gt = 参照段 正解、gtpred_CF = 参照段 正解 ⊕ 予測（各時点で正解が先）。
+        参照段の扱いは RT と同じ。W2・W3 では epoch ごとに時間ヘッドの重みの変化の L2 ノルムも logs/history.json に書く
 """
 from __future__ import annotations
 
@@ -92,14 +102,16 @@ TYPES = {
     "TH-NG": ("tool_hist_nogate", "x32", "D0", "D-GT", None),
     "GA": ("concat", "g30", None, "GRASP-GT", None),
     "RT": ("roitoken", "rt", None, None, None),
+    "TW": ("transwin", "tw", None, None, None),
 }
 G30_HALF = 14 + 1                                          # g の 14 と旗。予測の半分が先、正解の半分が後
 GRASP_DIR = None                                           # --grasp-signal-dir（GA のときだけ）
 GRASP_PRED_DIR = None                                      # --grasp-pred-dir（GA の予測の腕のときだけ）
 GRASP_NO_FLAG = False                                      # --grasp-no-flag（GA を旗なしの 28 次元にする）
 RT = {"dir": None, "layer": None, "content": None, "k": None}  # --rt-*（RT のときだけ）
+TW = {"dir": None, "form": None, "L": None, "k": None}  # --tw-*（TW のときだけ）
 X32_HALF = NT + 1                                          # 15 と旗。予測の半分が先、正解の半分が後
-ARMS = ("empty", "pred_noCF", "gt", "pred_CF", "gtpred_CF", "shuffle", "geo", "union")
+ARMS = ("empty", "pred_noCF", "gt", "pred_CF", "gtpred_CF", "shuffle", "geo", "union", "t1", "perm")
 # 止め方の規則（DP・W1）。最初の腕を回す前に固定する
 STOP = {"lr": 5e-4, "weight_decay": 0.01, "patience": 10, "max_epochs": 100, "smoothing_weight": 0.3}
 SCOPES = ("W1", "W2", "W3")
@@ -160,6 +172,9 @@ class Signals:
         self.iface, self.kind, pred, _, self.tok_base = TYPES[type_name]
         if self.kind == "rt":
             self._init_rt(arm, part)
+            return
+        if self.kind == "tw":
+            self._init_tw(arm, part)
             return
         self.srcs = sources(type_name, arm, part, variant)
         self.loaded = [(load_npz(p), is_gt) for p, is_gt in self.srcs]
@@ -231,7 +246,43 @@ class Signals:
         self.dim = self.tok_dim + 7
         self.pred_dim = None
 
+    def _init_tw(self, arm, part):
+        """TW の腕の x(t)（N, k, D + 1）と、参照段の行の印（把持の注釈のある行）。"""
+        if None in (TW["dir"], TW["form"], TW["k"]) or (TW["L"] is None and arm not in ("empty", "t1")):
+            raise SystemExit("TW は --tw-dir・--tw-form・--tw-k（S_0・S_1 以外は --tw-L も）を渡す")
+        base = Path(TW["dir"])
+        self.srcs = []
+        k = {8: 4, 32: 16}.get(TW["L"])
+
+        def load(name):
+            path = base / f"seq/seq_{name}_{part}.npz"
+            self.srcs.append((path, name.startswith("GT")))
+            with np.load(path) as d:
+                return np.concatenate([d[TW["form"]].astype(np.float32), d["flag"].astype(np.float32)[..., None]], -1)
+        frames = [str(f) for f in np.load(base / f"b4/frame_ids_{part}.npy")]
+        self.ix = {f: i for i, f in enumerate(frames)}
+        self.rowmask = None
+        if arm == "empty":
+            x = np.zeros_like(load("S1_k1"))
+        elif arm == "t1":
+            x = load("S1_k1")
+        elif arm in ("pred_CF", "perm", "union", "shuffle", "gt", "gtpred_CF"):
+            name = {"pred_CF": "SW", "perm": "SWperm", "union": "SWU", "shuffle": "SWR", "gt": "GT", "gtpred_CF": "GT"}[arm]
+            x = load(f"{name}_k{k}")
+            if arm == "gtpred_CF":
+                x = np.concatenate([x, load(f"SW_k{k}")], -1)
+            if arm in ("gt", "gtpred_CF"):
+                self.rowmask = np.load(base / f"b4/has_gt_{part}.npy").astype(bool)
+        else:
+            raise SystemExit(f"TW に腕 {arm} は無い")
+        self.x_rt = x
+        self.slots = x.shape[1]
+        self.dim = x.shape[2]
+        self.pred_dim = None
+
     def model_kwargs(self):
+        if self.kind == "tw":
+            return {"tw": {"slots": self.slots, "k": TW["k"]}}
         if self.kind != "rt":
             return {}
         return {"rt": {"tok_dim": self.tok_dim, "slots": self.slots, "use_geo": RT["content"] == "roi_geo", "k": RT["k"]}}
@@ -258,7 +309,7 @@ class Signals:
         return halves
 
     def for_frames(self, frames):
-        if self.kind == "rt":
+        if self.kind in ("rt", "tw"):
             rows = [self.ix[f] for f in frames]
             m = None if self.rowmask is None else torch.from_numpy(self.rowmask[rows])
             return torch.from_numpy(self.x_rt[rows]), m
@@ -322,7 +373,7 @@ def evaluate(model, data, names):
         out = model(x, s, m)[-1][0]                        # (9, T)
         pred = out.argmax(0).cpu().numpy()
         yy = y.cpu().numpy()
-        if getattr(model, "iface_type", None) == "roitoken" and m is not None:
+        if getattr(model, "iface_type", None) in ("roitoken", "transwin") and m is not None:
             keep = m.cpu().numpy()                         # RT の参照段: 把持の注釈のある行でだけ評価する
             pred, yy = pred[keep], yy[keep]
         ev.update(pred, yy, video_id=video)
@@ -431,6 +482,11 @@ def cmd_identity(a):
                      "rowmask_rows": None if sig.rowmask is None else int(sig.rowmask.sum()),
                      "perturbed_params": [n for n, p in model.named_parameters()
                                           if any(p is q for q in model.iface_last_params())]}
+        if sig.kind == "tw":
+            extra = {"tw": {**TW, **sig.model_kwargs()["tw"], "in_dim": sig.dim}, "trainable": trainable_report(model),
+                     "rowmask_rows": None if sig.rowmask is None else int(sig.rowmask.sum()),
+                     "perturbed_params": [n for n, p in model.named_parameters()
+                                          if any(p is q for q in model.iface_last_params())]}
         if sig.kind == "x32":
             extra = {"x_layout": sig.layout(), "trainable": trainable_report(model), "gate_init": model.gate_values(),
                      "perturbed_params": [n for n, p in model.named_parameters()
@@ -515,6 +571,10 @@ def cmd_train(a):
             cfg.update(grasp_no_flag=True)
     if sig_tr.kind == "x32":
         cfg.update(x_layout={"train": sig_tr.layout(), "val": sig_va.layout()}, trainable=trainable_report(model))
+    if sig_tr.kind == "tw":
+        cfg.update(tw={**TW, **sig_tr.model_kwargs()["tw"], "in_dim": sig_tr.dim}, trainable=trainable_report(model),
+                   rowmask_rows={"train": None if sig_tr.rowmask is None else int(sig_tr.rowmask.sum()),
+                                 "val": None if sig_va.rowmask is None else int(sig_va.rowmask.sum())})
     if sig_tr.kind == "rt":
         cfg.update(rt={**RT, **sig_tr.model_kwargs()["rt"]}, trainable=trainable_report(model),
                    rowmask_rows={"train": None if sig_tr.rowmask is None else int(sig_tr.rowmask.sum()),
@@ -528,6 +588,8 @@ def cmd_train(a):
         if not sc["equal"]:
             raise SystemExit(f"学ぶ集合が定義と一致しない: {a.scope}")
     rt_desc = f"-{RT['layer']}-{RT['content']}-K{RT['k']}" if sig_tr.kind == "rt" else ""
+    if sig_tr.kind == "tw":
+        rt_desc = f"-{a.scope}-{TW['form']}" + ("" if a.arm in ("empty", "t1") else f"-L{TW['L']}") + f"-K{TW['k']}"
     desc =f"{a.type}{rt_desc}{'-noflag' if GRASP_NO_FLAG else ''}_{a.arm}" + (f"_ep{fixed}" if fixed else "") + ("_smoke" if a.max_epochs or a.smoke else "")
     manager = ExperimentManager(C.ROOT / "experiments", "phase1", a.exp_prefix, desc, a.seed)
     manager.setup(cfg)
@@ -548,7 +610,7 @@ def cmd_train(a):
         for i in order:
             _, x, s, m, y = train_data[i]
             outs = model(x, s, m)
-            if sig_tr.kind == "rt" and m is not None:     # RT の参照段: 把持の注釈のある行でだけ学ぶ
+            if sig_tr.kind in ("rt", "tw") and m is not None:     # RT・TW の参照段: 把持の注釈のある行でだけ学ぶ
                 loss = sum(ce(o[0].T[m], y[m]) for o in outs)
             else:
                 loss = sum(ce(o[0].T, y) for o in outs)
@@ -574,7 +636,11 @@ def cmd_train(a):
         if sig_tr.kind == "g30":
             w = model.iface.weight.detach()
             history[-1].update(iface_max_abs=float(w.abs().max()), iface_l2=float(w.norm()))
-        if sig_tr.kind == "rt":
+        if sig_tr.kind == "tw" and a.scope != "W1":
+            now = model.head.state_dict()
+            history[-1].update(head_delta_l2=float(torch.sqrt(sum(((now[k2].float() - v.float()) ** 2).sum()
+                                                                    for k2, v in head_state0.items()))))
+        if sig_tr.kind in ("rt", "tw"):
             history[-1].update(iface_l2=float(torch.sqrt(sum((p.detach() ** 2).sum() for p in model.iface.parameters()))),
                                iface_out_max_abs=float(model.iface.out.weight.detach().abs().max()))
         tracking.log({"train/loss": total / len(order), "val/jaccard": score, "val/accuracy": val["phase_accuracy"],
@@ -645,6 +711,8 @@ def negative_control(a, model, ckpt, head, split, feats, names):
     model.iface.load_state_dict(state["iface"])
     zero = build_data(split["val"], Signals(a.type, "empty", "val", a.inst_variant), feats, "cuda")
     other = "gt" if TYPES[a.type][1] == "g30" else "pred_noCF"           # GA は予測の腕が無いので正解を入れる
+    if TYPES[a.type][1] == "tw":
+        other = "t1"                                                       # TW の S_0 は k = 1 なので、同じ形の S_1 を入れる
     real = build_data(split["val"], Signals(a.type, other, "val", a.inst_variant), feats, "cuda")
     rz, _ = evaluate(model, zero, names)
     rr, _ = evaluate(model, real, names)
@@ -659,7 +727,7 @@ def cmd_scopes(a):
     """型と学習範囲ごとの学ぶパラメータの名前の集合（Task C-2・C-4。学習しない、特徴も読まない）。"""
     head = C.load_ptower_head(device="cpu")
     out = {"task_id": a.task_id, "types": {}}
-    for t in a.types or [t for t in TYPES if TYPES[t][1] != "rt"]:
+    for t in a.types or [t for t in TYPES if TYPES[t][1] not in ("rt", "tw")]:
         dim = Signals(t, "empty", "val", "uq").dim
         row = {"signal_dim": dim}
         for scope in a.scopes:
@@ -683,6 +751,13 @@ def add_rt_args(p):
     p.add_argument("--rt-k", type=int, default=None)
 
 
+def add_tw_args(p):
+    p.add_argument("--tw-dir", default=None, help="TW の材料の置き場（seq/ と b4/）")
+    p.add_argument("--tw-form", choices=["a", "b"], default=None)
+    p.add_argument("--tw-L", type=int, choices=[8, 32], default=None)
+    p.add_argument("--tw-k", type=int, default=None)
+
+
 def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -699,6 +774,7 @@ def main():
     i.add_argument("--scope", choices=SCOPES, default="W1", help="学習範囲（学ぶ集合を記録する。出力は変えない）")
     i.add_argument("--grasp-no-flag", action="store_true", help="GA を旗なしの 28 次元にする（既定は旗あり 30 次元）")
     add_rt_args(i)
+    add_tw_args(i)
     s = sub.add_parser("scopes")
     s.add_argument("--types", nargs="+", choices=list(TYPES), default=None)
     s.add_argument("--scopes", nargs="+", choices=SCOPES, default=list(SCOPES))
@@ -721,11 +797,14 @@ def main():
                    help="学習範囲。W2 = 界面 ＋ 時間ヘッドの最後の段、W3 = 界面 ＋ 時間ヘッドの全体（既定 W1 = 界面だけ）")
     t.add_argument("--grasp-no-flag", action="store_true", help="GA を旗なしの 28 次元にする（既定は旗あり 30 次元）")
     add_rt_args(t)
+    add_tw_args(t)
     a = ap.parse_args()
     global GRASP_DIR, GRASP_PRED_DIR, GRASP_NO_FLAG
     GRASP_DIR = getattr(a, "grasp_signal_dir", None)
     GRASP_PRED_DIR = getattr(a, "grasp_pred_dir", None)
     GRASP_NO_FLAG = bool(getattr(a, "grasp_no_flag", False))
+    TW.update(dir=getattr(a, "tw_dir", None), form=getattr(a, "tw_form", None), L=getattr(a, "tw_L", None),
+              k=getattr(a, "tw_k", None))
     RT.update(dir=getattr(a, "rt_dir", None), layer=getattr(a, "rt_layer", None), content=getattr(a, "rt_content", None),
               k=getattr(a, "rt_k", None))
     if GRASP_NO_FLAG and TYPES[a.type][1] != "g30":

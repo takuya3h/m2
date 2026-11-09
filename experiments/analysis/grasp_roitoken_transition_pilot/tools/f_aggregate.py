@@ -26,8 +26,9 @@ import yaml
 ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "src"))
-from egosurgery.metrics.phase import PhaseEvaluator  # noqa: E402
 from stage2pilot import common as C  # noqa: E402
+
+from egosurgery.metrics.phase import PhaseEvaluator  # noqa: E402
 
 LAYERS, CONTENTS, KS = ("layer4", "layer3"), ("roi_geo", "roi"), (16, 64)
 ARMS = {"empty": "T0", "pred_CF": "TG", "geo": "TGeo", "union": "TU", "shuffle": "TRand", "gt": "REF_GT", "gtpred_CF": "REF_GTP"}
