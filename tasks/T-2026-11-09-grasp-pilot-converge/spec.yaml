@@ -1,0 +1,73 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-11-09-grasp-pilot-converge"
+  kind: analysis
+  title: "工程塔側の把持の界面（案 3 把持領域トークン RT、案 5 遷移の符号化 TW、第一回の案 A の連結 GA）を、4 epoch 固定ではなく収束規則で学んで回し直す予備測定（bengio、折り A、seed 42、非公式）。前の予備（T-2026-11-09-grasp-roitoken-transition-pilot）は 40 歩で界面の重みがほぼ零のまま終わり、腕の間で指標が同じになった。殺し実験の線形の層も陽性対照が働く処方に直す"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-11-09T04:00:00Z"
+  created_from:
+    runindex_commit: "b524173e7a2812ae5261ec7601fb629d1a97b60a"
+    counts: {index: 2647, experiments: 1327, verdicts: 1977}
+  depends_on: [T-2026-11-09-grasp-roitoken-transition-pilot, T-2026-11-06-grasp-pilot-arms, T-2026-11-08-grasp-cards-survey]
+  amendments: []
+intent:
+  question: "界面が学ばれた状態（val の主指標の停滞で学習率を落とし、再停滞で止める収束規則）で、案 3・案 5・案 A の腕の差（同じ界面の空・入れ替え・同時刻だけ との差）はどうなるか。前の予備（40 歩）の差は界面が育っていないための揺れだったか。非公式の測定であり、関門の判定にも案の採否にも使わない"
+  decision_at_stake: "工程塔側の界面の予備測定の処方（学習の長さ）を、以後の予備で何にするか。案の採否は結果で決めない"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery 折り A（conventions#folds）。前の予備と同じ行の集合（工程の目録の行 train 9,657・val 1,515。G の出力と同じ）。空間特徴・トークン・窓の列・殺し実験の材料は前の予備の保存先を読むだけ。test の動画（04・05・07）のフレームは学習と評価のどれにも通さない"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/stage2pilot/dp_train.py", "scripts/stage2pilot/dp_model.py", "scripts/stage2pilot/common.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#env_p0, conventions#folds, conventions#split, conventions#crossfit]
+  conventions_rev: "2d946b07a57abebc4a8f66150d6dbaf2ccd22186"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/analysis/grasp_pilot_converge", "experiments/phase1/grasprc", "runindex/"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。GPU の使用、記憶領域、失敗の名前、仮想環境の要約値、禁止の場所の要約値", gpu: false, est: "1h"}
+    - {id: B, name: "材料の照合（前の予備の保存先の特徴・トークン・列・信号の sha256）、塔単独の再現、収束規則の口の確認と対照、殺し実験の線形の層の処方の直し", gpu: true, est: "2h"}
+    - {id: C, name: "学習（案 3 56 本、案 5 68 本、案 A 3 本）と、界面の重みの大きさの記録", gpu: true, est: "4h"}
+    - {id: D, name: "集計、前の予備との並べ、検証、報告", gpu: false, est: "2h"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、PR 307 の内容（型 RT・TW、前の予備の記録）が起点に在り、bengio の GPU に本契約以外の使用が無く、要約値を記録した", on_fail: stop}
+    - {id: G2, after: B, check: "前の予備の材料の sha256 が一致し、塔単独の val が再現し、収束規則が働くこと（停滞で学習率が落ち、再停滞で止まる）が対照で示され、殺し実験の陽性対照（正解の工程の one-hot）で macro Jaccard が 0.9 以上に届く", on_fail: stop}
+    - {id: G3, after: C, check: "全腕で学習前の出力が塔単独と一致し、学習後の界面の出力射影の重みのノルムが前の予備の値（最大 0.021）より大きいことが記録されている（大きくならない腕は理由つきで記録）", on_fail: ask}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, gpu_free]
+  resources: {server: bengio, gpu: 2, est_hours: 9, runs: 127}
+outputs:
+  must_have: [REPORT.md, RESULT.md, result.yaml, audit.md]
+  destination: "experiments/analysis/grasp_pilot_converge/"
+  acceptance:
+    - "a: 開始状態として、分岐、起点、PR 307 の内容が起点に在ること、未追跡、bengio の GPU の使用量と一覧、記憶領域、試験の失敗の名前、仮想環境の一覧の要約値、禁止の場所の開始時の要約値が記録されている"
+    - "b: 前の予備の保存先の材料（空間特徴、トークン、窓の列、G の信号、正解の把持）の sha256 が前の予備の記録と一致し、塔単独の val（Jaccard・accuracy）が差 1e-6 以内で再現されている"
+    - "c: 収束規則（val の macro Jaccard が SPEC の停滞の epoch 数だけ改善しなければ学習率を 0.1 倍に一度、さらに同じ数だけ停滞したら打ち切り、上限の epoch 数、checkpoint は val の Jaccard が最良の epoch）が dp_train の既定の挙動を変えずに足され、対照（改善しない人工の記録で学習率が落ちて止まる、改善し続ける記録では上限まで走る）がある"
+    - "d: 殺し実験の線形の層の処方が直され、陽性対照（P の全体の特徴に正解の工程の one-hot を連結）で val の macro Jaccard が 0.9 以上に届く。その処方で案 3（正解の枠・G の枠の ROI の平均）と案 5（窓 8 秒・32 秒の遷移の特徴）の殺し実験を測り直し、殺す条件（m を仮に 0.2 pt とした m/2）に対する結果が記録されている。殺す条件に当たっても止めずに学習へ進む（利用者の決定）"
+    - "e: 全腕で学習前の出力が塔単独と一致し、学習後の界面の出力射影の重みのノルム（最大の絶対値と L2）と、案 5 の相対時刻の埋め込みの標準偏差が各 run で記録され、前の予備の値と並べてある"
+    - "f: run の表の全本（案 3 の 8 設定 × 7 腕 = 56、案 5 の 12 設定 × 4 腕 ＋ 6 設定 × 2 腕 ＋ 参照段 8 = 68、案 A の W1 旗なしの 空・予測-noCF・入れ替え = 3）が収束規則で回り、各 run の総 epoch・学習率を落とした epoch・checkpoint の epoch・epoch ごとの val が記録されている"
+    - "g: 案 3 は TG − T0・TG − TRand・TG − TGeo・TG − TU・参照段 − T0、案 5 は同じ W の中の S_W − S_0・S_W − S_1・S_W − S_W-perm・S_W − S_W-R・S_W − S_W-U、案 A は 予測-noCF − 空・予測-noCF − 入れ替え が、macro Jaccard・accuracy・dressing を除く 6 工程の平均・クラス別・動画ごとで表にあり、前の予備（4 epoch 固定）の同じ差と並べてあり、腕の間で指標が同じになった回数（argmax が一致した割合）が記録されている"
+    - "h: test の動画のフレームを学習と評価に一度も通していないことが、通した動画の集合で示されている"
+    - "i: 前の予備の保存先・run・注釈・凍結源・checkpoint・third_party・重ねの BODY・既存の仮想環境を変えていない（要約値の前後の一致）。試験の失敗が増えていない。forbidden-check の本契約の経路の違反 0 件"
+    - "j: PR が Draft でなく存在し、base が phase0、分岐が feat/grasp-pilot-converge"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "bengio の GPU に本契約以外の使用がある場合（止めずに利用者に諮る）"
+    - "PR 307 の内容が起点に無い場合"
+    - "前の予備の材料が無い、または sha256 が記録と食い違う場合"
+    - "塔単独の val が許容差を超えて食い違う場合"
+    - "収束規則を dp_train の既定の挙動を変えないと足せない場合"
+    - "殺し実験の陽性対照が処方を直しても 0.9 に届かない場合（処方の候補を 2 つ試した後）"
+    - "学習前の出力が塔単独と一致しない場合"
+    - "実行基盤が書き込み、移動、削除を拒む場合"

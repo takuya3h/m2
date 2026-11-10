@@ -1,0 +1,58 @@
+{
+  "best_epoch": 2,
+  "converge": {
+    "lr_factor": 0.1,
+    "max_epochs": 120,
+    "min_delta": 0.0001,
+    "patience": 8
+  },
+  "early_stopped_epoch": 18,
+  "elapsed_seconds": 59.00990774296224,
+  "epochs_run": 18,
+  "eval_recipe": {
+    "test_cfg": {
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "split": "val",
+      "task": "phase"
+    }
+  },
+  "iface_ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-09-grasp-pilot-converge/dp_ckpt/grasprc_rt_041_RT-layer3-roi_geo-K64_pred_CF_conv_seed42.pth",
+  "iface_ckpt_sha256": "bca4d536ee012b7876628816f66eed2244681b9745fab1b099d003ebabbcd02a",
+  "iface_params": 339264,
+  "init_phase_accuracy": 0.8712871287128713,
+  "init_phase_jaccard": 0.7762185528074379,
+  "lr_drop_epoch": 10,
+  "norms": {
+    "best": {
+      "out_w_l2": 0.9581722021102905,
+      "out_w_max_abs": 0.00964830070734024
+    },
+    "final": {
+      "out_w_l2": 2.204864025115967,
+      "out_w_max_abs": 0.04059116169810295
+    },
+    "init": {
+      "out_w_l2": 0.0,
+      "out_w_max_abs": 0.0
+    }
+  },
+  "per_video": {
+    "09": {
+      "phase_accuracy": 0.9922779922779923,
+      "phase_jaccard": 0.9834459138640237
+    },
+    "10": {
+      "phase_accuracy": 0.8194583751253761,
+      "phase_jaccard": 0.6906113296695596
+    }
+  },
+  "phase_accuracy": 0.8785478547854786,
+  "phase_jaccard": 0.7638460198102411,
+  "phase_macro_f1": 0.8486079428184466,
+  "reached_epoch_cap": false,
+  "receiver_unchanged": true,
+  "result_epoch": 2,
+  "result_selection": "best_val_jaccard",
+  "steps_without_grad": 0
+}

@@ -1,0 +1,37 @@
+{
+  "best_epoch": 4,
+  "early_stopped_epoch": null,
+  "elapsed_seconds": 8.116039780899882,
+  "epochs_run": 4,
+  "eval_recipe": {
+    "test_cfg": {
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "split": "val",
+      "task": "phase"
+    }
+  },
+  "iface_ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-09-grasp-roitoken-transition-pilot/dp_ckpt/grasprt_rt_016_RT-layer4-roi_geo-K64_union_ep4_seed42.pth",
+  "iface_ckpt_sha256": "d399756932be02dc102f2debc4ab7b2ce8a1b332bff7a3a49fa7980859ab1f56",
+  "iface_params": 404800,
+  "init_phase_accuracy": 0.8712871287128713,
+  "init_phase_jaccard": 0.7762185528074379,
+  "per_video": {
+    "09": {
+      "phase_accuracy": 0.9961389961389961,
+      "phase_jaccard": 0.9931717398646169
+    },
+    "10": {
+      "phase_accuracy": 0.8214643931795386,
+      "phase_jaccard": 0.6594332813598995
+    }
+  },
+  "phase_accuracy": 0.8811881188118812,
+  "phase_jaccard": 0.7595971149329944,
+  "phase_macro_f1": 0.8476206138710298,
+  "reached_epoch_cap": true,
+  "receiver_unchanged": true,
+  "result_epoch": 4,
+  "result_selection": "final_epoch",
+  "steps_without_grad": 0
+}

@@ -1861,6 +1861,33 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
 - 道具は `experiments/analysis/dtower_rerun/tools/`（実行器 `run_rerun.py`、評価の包み `eval_dump.py`（動画ごとの値と予測を書く）、動画の集合の照合 `check_folds.py`、集計 `summarize.py`、ほかは前例の写し）。**既存のスクリプト・設定・third_party は変えていない**
 - 注意: どの注釈ファイルにも `id: 0` の注釈が 1 つあり、pycocotools はそれに一致した検出を誤検出に数える。評価器の値はこの 1 注釈分を含む（全 run と前例に一様）
 
+### 把持塔の出力を工程塔へ渡す新しい二つの形の予備測定: 案 3 把持領域トークン・案 5 遷移の符号化（2026-11-09、bengio）
+
+契約 `T-2026-11-09-grasp-roitoken-transition-pilot`（analysis。**非公式の予備測定。関門の判定と案の採否に使わない**）。対象は**第二回の提案カード第三版の案 3（grasp-phase-roitoken）と案 5（grasp-phase-transition）**。
+結果は `experiments/analysis/grasp_roitoken_transition_pilot/REPORT.md`（`tools/make_report.py` が記録から作る）、記録は `tasks/T-2026-11-09-grasp-roitoken-transition-pilot/`、
+大きな生成物（工程塔の空間特徴 layer4・layer3 153 GB、枠・トークン・窓の列、界面の重み）は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-09-grasp-roitoken-transition-pilot/`。
+
+- 変更: `scripts/stage2pilot/dp_model.py` に型 `roitoken`（`RoiTokens`）、`dp_train.py` に型 RT・腕 `geo`・`union`・引数 `--rt-dir --rt-layer --rt-content --rt-k` を**足す形**で書いた。
+  **渡さなければ従来の経路のまま**（起点の版と GA 旗なし・D1-L1 の identity と試走の全記録が一致することを確かめた）
+- 殺し実験（カード #9、線形の層）: **案 5 は殺す条件に当たった**（境界の前後の事象の率の比 0.80・0.83 が並べ替えの null の区間の中、窓の特徴を足した差 −0.010・−0.004）。
+  **案 3 は当たらない**（正解の枠の ROI で J +0.029・acc +0.020、G の予測の枠で +0.025・+0.013）。ただし陽性対照（正解の工程を足す）が J +0.016・acc −0.001 と弱い
+- 利用者の決定で案 3 だけ掃引した（8 設定 × 7 腕 = 56 本、W1、4 epoch 固定）。TG − T0 は設定で符号が分かれ、6 工程の平均で 3/8 設定が正（−0.017〜+0.019）
+- その後、利用者の依頼で案 5 も掃引した（型 TW を同じく足す形で追加、K 64、W1・W2・W3 の 68 本）。W1 の S_W − S_0 は 6 工程の平均 +0.004〜+0.008（4/4 で正）、
+  W2・W3 では同じ W の中の差が −0.010〜+0.007 で符号が分かれる。並べ替えの対照は弱い（TW は時点を注意で束ね、順は小さいまま育たない相対時刻の埋め込みからしか入らない）
+- 道具は `experiments/analysis/grasp_roitoken_transition_pilot/tools/`。third_party・重ねの BODY・仮想環境は変えていない（要約値の前後一致）
+
+### 工程塔側の把持の界面を収束規則で学んで回し直す予備測定（2026-11-09、bengio）
+
+契約 `T-2026-11-09-grasp-pilot-converge`（analysis。**非公式の予備測定。関門の判定と案の採否に使わない**）。**前の予備（PR 307、4 epoch 固定 = 40 歩）の処方の直し**として、
+案 3 RT・案 5 TW・案 A GA の 127 本を収束規則で回し直した。結果は `experiments/analysis/grasp_pilot_converge/REPORT.md`（`tools/make_report.py` が記録から作る）、
+記録は `tasks/T-2026-11-09-grasp-pilot-converge/`、界面の重みと記録は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-09-grasp-pilot-converge/`。
+
+- 変更: `scripts/stage2pilot/dp_train.py` に `--converge`（`ConvergeRule`: val の macro Jaccard が 8 epoch 改善しなければ学習率 × 0.1 を一度、さらに 8 epoch で打ち切り、
+  上限 120、checkpoint は val の最良）を**足す形**で追加。**渡さなければ従来の経路のまま**（起点の版と、前の予備の RT・TW の run と全記録が一致することを確かめた）
+- 結果: **val の最良を選ぶ規則では、W1 の界面は 1〜2 epoch で選ばれ、学ぶほど val が下がった**（最終 − 最良の中央 −0.020）。checkpoint の界面は前の予備より大きくならない run が 79/127。
+  案 5 の W1 の S_W − S_0 は前の処方の 4/4 正から 0/4 に変わった。殺し実験の線形の層は、P の train の特徴だけで train が分け切れるため、正則化を変えても陽性対照が J 0.64〜0.68 で働かない
+- 道具は `experiments/analysis/grasp_pilot_converge/tools/`。前の予備の材料（空間特徴・トークン・窓の列）は読むだけで作り直していない
+
 ### 工程から検出の W3 を受け取り手の学習率 1e-5 で回し直す予備測定（2026-11-09〜10、andrew）
 
 契約 `T-2026-11-09-stage2-pd-w3-lowlr-andrew`（analysis。**非公式の測定。関門の判定と設計の判断に使わない**）。

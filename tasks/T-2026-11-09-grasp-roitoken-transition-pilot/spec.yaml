@@ -1,0 +1,80 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-11-09-grasp-roitoken-transition-pilot"
+  kind: analysis
+  title: "把持塔 G の出力を工程塔へ渡す新しい二つの形の予備測定（bengio、折り A、seed 42、非公式）。案 3 把持領域トークン（G のマスクの外接矩形で工程塔の凍結した空間特徴を切り出し、注意で束ねて時間ヘッドの入力に足す。W1）と、案 5 遷移の符号化（過去の窓の G の出力の列を因果的に符号化して足す。W1・W2・W3）。各案の最安の殺し実験を先に行い、設定の掃引と対照の腕を回す"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-11-09T00:00:00Z"
+  created_from:
+    runindex_commit: "b524173e7a2812ae5261ec7601fb629d1a97b60a"
+    counts: {index: 2647, experiments: 1327, verdicts: 1977}
+  depends_on: [T-2026-11-08-grasp-cards-survey, T-2026-11-05-grasp-tower-rebuild, T-2026-11-06-grasp-pilot-arms, T-2026-11-01-stage2-w23-bengio]
+  amendments:
+    - date: "2026-11-09"
+      reason: "Task A-5。起票時の値は d3e319ac（2026-11-07）とその件数で、起点 origin/phase0（129e79b0）の git log -1 -- runindex/ と件数（見出し行を除く、csv.DictReader）が食い違ったため実測で差し替えた。conventions_rev 2d946b07 は一致"
+      diff: "meta.created_from.runindex_commit: d3e319ac… -> b524173e… / counts: {2623, 1305, 1947} -> {2647, 1327, 1977}"
+intent:
+  question: "工程塔の凍結した空間特徴を把持塔のマスクの領域で切り出したトークン（案 3）と、把持塔の出力の過去の窓の列を因果的に符号化した信号（案 5）を、工程塔の時間ヘッドの入力に足したとき、同じ界面の空の腕・入れ替えの腕・同時刻だけの腕と比べてどれだけ動くか。非公式の測定であり、関門の判定にも設計の判断（案の採否）にも使わない"
+  decision_at_stake: "二つの案を正式（5 折り × 5 seed、回し直した塔）に進めるかを利用者が考える手がかり。採否は結果で決めない"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery 折り A（conventions#folds）。train 動画 10 本で界面を学び、val 2 本（09・10）で測る。工程注釈のある行のうち画像のある行（PR 302 S2: train 9,356・val 1,514）。G の出力は術具注釈フレーム（train 9,657・val 1,515）にだけ在り、無い行は空の信号。test の動画（04・05・07）のフレームは学習と評価のどれにも通さない"
+    split_files: ["data/splits/ego_train.txt", "data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints: ["scripts/stage2pilot/dp_train.py", "scripts/stage2pilot/dp_model.py", "scripts/stage2pilot/common.py", "scripts/stage1_ptower_r3.py", "scripts/grasppilot/g5_signals.py"]
+contract:
+  inject_verbatim: [conventions#prohibitions, conventions#issuer_cautions, conventions#env_p0, conventions#folds, conventions#split, conventions#crossfit, conventions#symmetry]
+  conventions_rev: "2d946b07a57abebc4a8f66150d6dbaf2ccd22186"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values, no_runindex_hand_edit]
+  verbatim_forbidden: true
+  allow_write: ["experiments/analysis/grasp_roitoken_transition_pilot", "experiments/phase1/grasprt", "runindex/"]
+plan:
+  phases:
+    - {id: A, name: "開始状態。bengio の GPU の使用、記憶領域、失敗の名前、仮想環境の要約値、禁止の場所と重ねの BODY の要約値", gpu: false, est: "1h"}
+    - {id: B, name: "材料。G の信号と P の重みの照合、塔単独の再現、空間特徴の取り出し（layer4 と layer3）、把持の正解のマスク、窓の列の作成、G の出力の間隔の記録", gpu: true, est: "4h"}
+    - {id: C, name: "殺し実験（案 3 の #9、案 5 の #9）。学習なしの関連と線形の層", gpu: true, est: "3h"}
+    - {id: D, name: "恒等性と対照。新しい二つの界面の型の既定の挙動の不変、学習前の出力が塔単独と一致、陽性対照", gpu: true, est: "2h"}
+    - {id: E, name: "学習（案 3 W1 64 本、案 5 W1〜W3 68 本）", gpu: true, est: "8h"}
+    - {id: F, name: "集計、検証、報告", gpu: false, est: "2h"}
+  gates:
+    - {id: G1, after: A, check: "分岐が feat/ で始まり起点が origin/phase0 で、PR 302 の内容が起点に在り、bengio の GPU に本契約以外の使用が無く、記憶領域（空間特徴の見込み約 150 GB の 2 倍以上）と要約値を記録した", on_fail: stop}
+    - {id: G2, after: B, check: "G の信号と P の重みの sha256 が一致し、塔単独の val が許容差の中で再現し、空間特徴の空間平均がキャッシュと一致し、窓の列が規則どおりに作られ、把持の正解のマスクが注釈と一致する", on_fail: stop}
+    - {id: G3, after: D, check: "既存の型の既定の挙動が変わらず、新しい二つの型で全腕の学習前の出力が塔単独と一致し、陽性対照で変わる（空の腕は入力が零で変わらないことを記録）", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, gpu_free]
+  resources: {server: bengio, gpu: 2, est_hours: 20, runs: 132}
+outputs:
+  must_have: [REPORT.md, RESULT.md, result.yaml, audit.md]
+  destination: "experiments/analysis/grasp_roitoken_transition_pilot/"
+  acceptance:
+    - "a: 開始状態として、分岐、起点、PR 302 の内容が起点に在ること、開始前から在る未追跡、bengio の GPU の使用量と一覧、記憶領域の空き、試験の失敗の名前、仮想環境の一覧の要約値、禁止の場所と重ねの BODY の開始時の要約値が記録されている"
+    - "b: 目録の G の信号（マスクの見取り、確定と交差適合、入れ替え）と P の重み（fine-tune と時間ヘッド）の sha256 が記録と一致し、塔単独の val（macro Jaccard と accuracy）が許容差の中で再現されている"
+    - "c: 空間特徴（layer4 と layer3）が折り A の画像のある全行で取り出され、形・大きさ・sha256 が記録され、layer4 の空間平均が既存のキャッシュと相対 1e-3 で一致する（別フレームでは不一致）"
+    - "d: 案 3 の 5 個のトークン（クラスごとのマスクの外接矩形の ROI-Align と幾何）と、案 5 の窓の列（秒で定義、クリップの境で切る、足りない時点は 0 と印）が規則どおりに作られ、対照（マスクを 1 画素ずらすと枠が変わる、窓を境の外へ伸ばした写しで時点数が変わる）がある。G の出力の最小の間隔が記録され、2 秒と同じなら間隔の水準を落としたことが記録されている"
+    - "e: 殺し実験（案 3: 正解の把持の枠の ROI の平均を P の全体の特徴に連結した線形の層。案 5: 遷移の事象と工程の境界の関連、窓の遷移の特徴を連結した線形の層）が行われ、カードの殺す条件に対する結果（m は仮に 0.2 pt）が記録されている。殺す条件に当たった場合は停止して諮った記録がある"
+    - "f: 既存の型（GA・D1・D2 など）の既定の挙動が変わらず、新しい二つの型（RT・TW）で全腕の学習前の出力が塔単独と一致し、界面の重みを零でない値にすると出力が変わる（空の腕は入力が零で変わらないことを記録のみ）"
+    - "g: run の表の全本（案 3: 8 設定 × 6 腕 ＋ 参照段 2 腕 × 8。案 5: W 3 × 窓 2 × 形 2 の 12 設定で S_W・S_W-perm・S_W-U・S_W-R、W 3 × 形 2 の 6 設定で S_0・S_1、参照段 2 腕 × W1 の 4 設定）が固定の長さで回り、epoch ごとの val の値が記録されている。測れなかった run は理由つきで UNKNOWN"
+    - "h: 案 3 は TG − T0、TG − TRand、TG − TGeo、TG − TU、参照段 − T0 が、案 5 は同じ W の中の S_W − S_0、S_W − S_1、S_W − S_W-perm、S_W − S_W-R、S_W − S_W-U と、W1 の S_W − P 単独 が、macro Jaccard・accuracy・dressing を除く 6 工程の平均・クラス別・動画ごとで表にあり、SPEC の読み方の規則で記述されている。W2・W3 では塔単独との差を書かない"
+    - "i: test の動画のフレームを学習と評価に一度も通していないことが、通した動画の集合で示されている"
+    - "j: 前回までの契約の run の置き場・保存先、注釈、凍結源、既存の checkpoint、third_party、重ねの BODY、既存の仮想環境を変えていない（要約値の前後の一致）。試験の失敗が増えていない。forbidden-check の違反のうち本契約の経路のものが 0 件"
+    - "k: PR が Draft でなく存在し、base が phase0、分岐が feat/grasp-roitoken-transition-pilot"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "bengio の GPU に本契約以外の使用がある場合（止めずに利用者に諮る）"
+    - "PR 302 の内容が起点に無い場合"
+    - "G の信号か P の重みが無い、または sha256 が記録と食い違う場合"
+    - "塔単独の val が許容差を超えて食い違う場合"
+    - "殺し実験でカードの殺す条件に当たった場合（結果を記録して停止し、掃引に進むかを利用者に諮る）"
+    - "新しい型を既存スクリプトの既定の挙動か third_party を変えないと足せない場合"
+    - "空間特徴の保存に記憶領域が足りない場合（fp16 でも足りないとき）"
+    - "学習前の出力が塔単独と一致しない場合"
+    - "実行基盤が書き込み、移動、削除を拒む場合"

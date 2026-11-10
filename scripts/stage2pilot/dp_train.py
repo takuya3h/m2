@@ -43,6 +43,34 @@ GA は epoch ごとの界面の重みの絶対値の最大と L2 ノルムを lo
                  --fixed-epochs と組で使う。界面の重みの置き場に受け取り手の状態も書く
     scopes       学ぶパラメータの名前の集合を型と学習範囲ごとに出し、SPEC §3.1 の定義（名前の接頭辞）と比べる（学習しない）
     identity --arms   調べる腕を並べる（--arm より優先）
+
+契約 T-2026-11-09-grasp-roitoken-transition-pilot（SPEC §3.2、案 3）で足した型。渡さなければ従来の経路のまま:
+    RT roitoken（dp_model.RoiTokens）。x(t) は J 個のトークン ×［ROI の平均 C｜幾何 6｜有無 1］
+    --rt-dir       材料の置き場（tok/tok_<源>_<層>_<part>.npy、b4/boxes_<源>_<part>.npz・frame_ids・shuffle_idx・has_gt）
+    --rt-layer     layer4（C 2048）か layer3（C 1024）
+    --rt-content   roi_geo（ROI ＋ 幾何）か roi（ROI だけ）
+    --rt-k         K（注意の次元）
+    腕: empty = T0（5 個とも空）、pred_CF = TG（train は pred_CF、val は確定）、geo = TGeo（ROI を 0）、union = TU（器具の和集合の
+        枠 1 個、残り 4 個は空）、shuffle = TRand（目録の mapping の枠でこのフレームの特徴を切る）、gt = 参照段 正解、
+        gtpred_CF = 参照段 正解 ⊕ 予測（10 個、正解が先）。参照段の 2 腕は把持の注釈のある行でだけ学び（交差エントロピー）評価する
+        （平滑化の項は全行のまま）。RT は epoch ごとの界面の重みの L2 ノルムと出力射影の絶対値の最大を logs/history.json に書く
+
+同じ契約（SPEC §3.3、案 5）で足した型。渡さなければ従来の経路のまま:
+    TW transwin（dp_model.TransWindow）。x(t) は窓の k 個の時点 ×［特徴 D｜有無 1］
+    --tw-dir       材料の置き場（seq/seq_<腕>_k<k>_<part>.npz、b4/has_gt_<part>.npy）
+    --tw-form      a（5 チャネルの地図を 8×8 に縮めた 320 次元）か b（変化の特徴 39 次元）
+    --tw-L         窓の秒（8 → k = 4、32 → k = 16）。S_0（empty）と S_1（t1）は L に依らない
+    --tw-k         K（注意の次元）
+    腕: empty = S_0（k = 1 の空の列）、t1 = S_1（時刻 t だけ）、pred_CF = S_W（窓の列。train は pred_CF、val は確定）、
+        perm = S_W-perm、union = S_W-U、shuffle = S_W-R、gt = 参照段 正解、gtpred_CF = 参照段 正解 ⊕ 予測（各時点で正解が先）。
+        参照段の扱いは RT と同じ。W2・W3 では epoch ごとに時間ヘッドの重みの変化の L2 ノルムも logs/history.json に書く
+
+契約 T-2026-11-09-grasp-pilot-converge（SPEC §3.1）で足した学習の長さの規則。渡さなければ従来の経路のまま:
+    --converge   収束規則（ConvergeRule、CONVERGE の値）。各 epoch の val の macro Jaccard を主指標にし、最良を min_delta 以上
+                 上回れば改善。patience epoch 改善が無ければ全群の学習率を lr_factor 倍に一度、さらに patience epoch 改善が
+                 無ければ打ち切る。上限 max_epochs。結果と界面の重み（checkpoint）は val の Jaccard が最良の epoch の状態。
+                 epoch ごとに学習率と、界面の出力射影の重み（RT・TW は iface.out.weight、GA は iface.weight）の絶対値の最大と
+                 L2、TW の相対時刻の埋め込みの標準偏差を logs/history.json に書く。W2・W3 でも --fixed-epochs の代わりに使える
 """
 from __future__ import annotations
 
@@ -80,18 +108,66 @@ TYPES = {
     "TH": ("tool_hist", "x32", "D0", "D-GT", None),
     "TH-NG": ("tool_hist_nogate", "x32", "D0", "D-GT", None),
     "GA": ("concat", "g30", None, "GRASP-GT", None),
+    "RT": ("roitoken", "rt", None, None, None),
+    "TW": ("transwin", "tw", None, None, None),
 }
 G30_HALF = 14 + 1                                          # g の 14 と旗。予測の半分が先、正解の半分が後
 GRASP_DIR = None                                           # --grasp-signal-dir（GA のときだけ）
 GRASP_PRED_DIR = None                                      # --grasp-pred-dir（GA の予測の腕のときだけ）
 GRASP_NO_FLAG = False                                      # --grasp-no-flag（GA を旗なしの 28 次元にする）
+RT = {"dir": None, "layer": None, "content": None, "k": None}  # --rt-*（RT のときだけ）
+TW = {"dir": None, "form": None, "L": None, "k": None}  # --tw-*（TW のときだけ）
 X32_HALF = NT + 1                                          # 15 と旗。予測の半分が先、正解の半分が後
-ARMS = ("empty", "pred_noCF", "gt", "pred_CF", "gtpred_CF", "shuffle")
+ARMS = ("empty", "pred_noCF", "gt", "pred_CF", "gtpred_CF", "shuffle", "geo", "union", "t1", "perm")
 # 止め方の規則（DP・W1）。最初の腕を回す前に固定する
 STOP = {"lr": 5e-4, "weight_decay": 0.01, "patience": 10, "max_epochs": 100, "smoothing_weight": 0.3}
 SCOPES = ("W1", "W2", "W3")
 # W2・W3 の受け取り手（時間ヘッド）の学習率と重み減衰（契約 T-2026-11-01-stage2-w23-bengio、SPEC §3.1・§2）
 RECEIVER = {"lr": 5e-4, "weight_decay": 0.01}
+# 収束規則（契約 T-2026-11-09-grasp-pilot-converge、SPEC §3.1。結果を見て変えない）
+CONVERGE = {"patience": 8, "lr_factor": 0.1, "max_epochs": 120, "min_delta": 1e-4}
+
+
+class ConvergeRule:
+    """SPEC §3.1 の収束規則。step(score) は (改善したか, 行動) を返す。行動は None・"drop"（学習率を落とす）・"stop"。
+
+    学習（cmd_train）と規則の対照（人工の記録）が同じこの実装を通る。
+    """
+
+    def __init__(self, patience=CONVERGE["patience"], min_delta=CONVERGE["min_delta"]):
+        self.patience, self.min_delta = patience, min_delta
+        self.best, self.stale, self.dropped, self.epoch = -float("inf"), 0, None, 0
+
+    def step(self, score):
+        self.epoch += 1
+        improved = score > self.best + self.min_delta
+        if improved:
+            self.best, self.stale = score, 0
+        else:
+            self.stale += 1
+        action = None
+        if self.stale >= self.patience:
+            action = "stop" if self.dropped is not None else "drop"
+            if action == "drop":
+                self.dropped, self.stale = self.epoch, 0
+        return improved, action
+
+
+def out_weight(model):
+    """界面の出力射影の重み（RT・TW は iface.out.weight、GA などの concat は iface.weight）。持たない型は None。"""
+    if hasattr(model.iface, "out"):
+        return model.iface.out.weight
+    if isinstance(model.iface, nn.Conv1d):
+        return model.iface.weight
+    return None
+
+
+def iface_norms(model):
+    w = out_weight(model)
+    out = {} if w is None else {"out_w_max_abs": float(w.detach().abs().max()), "out_w_l2": float(w.detach().norm())}
+    if hasattr(model.iface, "rel"):
+        out["rel_std"] = float(model.iface.rel.detach().std())
+    return out
 
 
 def inst_name(base, variant):
@@ -145,6 +221,12 @@ class Signals:
 
     def __init__(self, type_name, arm, part, variant):
         self.iface, self.kind, pred, _, self.tok_base = TYPES[type_name]
+        if self.kind == "rt":
+            self._init_rt(arm, part)
+            return
+        if self.kind == "tw":
+            self._init_tw(arm, part)
+            return
         self.srcs = sources(type_name, arm, part, variant)
         self.loaded = [(load_npz(p), is_gt) for p, is_gt in self.srcs]
         if self.kind == "g30":
@@ -163,6 +245,98 @@ class Signals:
         else:
             self.dim = (sum(x.shape[-1] for (_, x, _), _ in self.loaded) or self.pred_dim) if self.kind == "vec" \
                 else self.tok_base + 1
+
+    def _init_rt(self, arm, part):
+        """RT の腕の x(t)（N, J, C + 7）と、参照段の行の印（把持の注釈のある行）。"""
+        if None in RT.values():
+            raise SystemExit("RT は --rt-dir・--rt-layer・--rt-content・--rt-k を渡す")
+        base, layer = Path(RT["dir"]), RT["layer"]
+        if arm == "pred_noCF" and part == "train":
+            raise SystemExit("RT の train の予測は pred_CF（交差適合）だけ")
+        self.srcs = []
+
+        def load(path):
+            self.srcs.append((path, "gt" in path.name))
+            return np.load(path)
+        frames = [str(f) for f in load(base / f"b4/frame_ids_{part}.npy")]
+        self.ix = {f: i for i, f in enumerate(frames)}
+
+        def slots(src, shuffle=False, roi=True):
+            tok = load(base / f"tok/tok_{'shuffle' if shuffle else src}_{layer}_{part}.npy").astype(np.float32)
+            bx = load(base / f"b4/boxes_{src}_{part}.npz")
+            geom, pres = bx["geom"], bx["present"].astype(np.float32)
+            if shuffle:
+                sidx = load(base / f"b4/shuffle_idx_{part}.npy")
+                geom, pres = geom[sidx], pres[sidx]
+            return np.concatenate([tok if roi else np.zeros_like(tok), geom, pres[..., None]], -1)
+        n = len(frames)
+        self.tok_dim = 2048 if layer == "layer4" else 1024
+        self.rowmask = None
+        if arm == "empty":
+            x = np.zeros((n, 5, self.tok_dim + 7), np.float32)
+        elif arm in ("pred_CF", "pred_noCF"):
+            x = slots("pred")
+        elif arm == "geo":
+            x = slots("pred", roi=False)
+        elif arm == "shuffle":
+            x = slots("pred", shuffle=True)
+        elif arm == "union":
+            tok = load(base / f"tok/tok_union_{layer}_{part}.npy").astype(np.float32)
+            bx = load(base / f"b4/boxes_pred_{part}.npz")
+            x = np.zeros((n, 5, self.tok_dim + 7), np.float32)
+            x[:, :1] = np.concatenate([tok, bx["ugeom"], bx["upresent"].astype(np.float32)[..., None]], -1)
+        elif arm in ("gt", "gtpred_CF"):
+            x = slots("gt")
+            if arm == "gtpred_CF":
+                x = np.concatenate([x, slots("pred")], 1)
+            self.rowmask = load(base / f"b4/has_gt_{part}.npy").astype(bool)
+        else:
+            raise SystemExit(f"RT に腕 {arm} は無い")
+        self.x_rt = x
+        self.slots = x.shape[1]
+        self.dim = self.tok_dim + 7
+        self.pred_dim = None
+
+    def _init_tw(self, arm, part):
+        """TW の腕の x(t)（N, k, D + 1）と、参照段の行の印（把持の注釈のある行）。"""
+        if None in (TW["dir"], TW["form"], TW["k"]) or (TW["L"] is None and arm not in ("empty", "t1")):
+            raise SystemExit("TW は --tw-dir・--tw-form・--tw-k（S_0・S_1 以外は --tw-L も）を渡す")
+        base = Path(TW["dir"])
+        self.srcs = []
+        k = {8: 4, 32: 16}.get(TW["L"])
+
+        def load(name):
+            path = base / f"seq/seq_{name}_{part}.npz"
+            self.srcs.append((path, name.startswith("GT")))
+            with np.load(path) as d:
+                return np.concatenate([d[TW["form"]].astype(np.float32), d["flag"].astype(np.float32)[..., None]], -1)
+        frames = [str(f) for f in np.load(base / f"b4/frame_ids_{part}.npy")]
+        self.ix = {f: i for i, f in enumerate(frames)}
+        self.rowmask = None
+        if arm == "empty":
+            x = np.zeros_like(load("S1_k1"))
+        elif arm == "t1":
+            x = load("S1_k1")
+        elif arm in ("pred_CF", "perm", "union", "shuffle", "gt", "gtpred_CF"):
+            name = {"pred_CF": "SW", "perm": "SWperm", "union": "SWU", "shuffle": "SWR", "gt": "GT", "gtpred_CF": "GT"}[arm]
+            x = load(f"{name}_k{k}")
+            if arm == "gtpred_CF":
+                x = np.concatenate([x, load(f"SW_k{k}")], -1)
+            if arm in ("gt", "gtpred_CF"):
+                self.rowmask = np.load(base / f"b4/has_gt_{part}.npy").astype(bool)
+        else:
+            raise SystemExit(f"TW に腕 {arm} は無い")
+        self.x_rt = x
+        self.slots = x.shape[1]
+        self.dim = x.shape[2]
+        self.pred_dim = None
+
+    def model_kwargs(self):
+        if self.kind == "tw":
+            return {"tw": {"slots": self.slots, "k": TW["k"]}}
+        if self.kind != "rt":
+            return {}
+        return {"rt": {"tok_dim": self.tok_dim, "slots": self.slots, "use_geo": RT["content"] == "roi_geo", "k": RT["k"]}}
 
     def files(self):
         return [{"path": str(p), "sha256": C.sha256(p), "gt": g} for p, g in self.srcs]
@@ -186,6 +360,10 @@ class Signals:
         return halves
 
     def for_frames(self, frames):
+        if self.kind in ("rt", "tw"):
+            rows = [self.ix[f] for f in frames]
+            m = None if self.rowmask is None else torch.from_numpy(self.rowmask[rows])
+            return torch.from_numpy(self.x_rt[rows]), m
         if self.kind == "g30":
             out = np.zeros((len(frames), self.dim), np.float32)
             for ((ix, x, _), is_gt), flag in zip(self.loaded, self.flags):
@@ -245,9 +423,13 @@ def evaluate(model, data, names):
     for video, x, s, m, y in data:
         out = model(x, s, m)[-1][0]                        # (9, T)
         pred = out.argmax(0).cpu().numpy()
-        ev.update(pred, y.cpu().numpy(), video_id=video)
+        yy = y.cpu().numpy()
+        if getattr(model, "iface_type", None) in ("roitoken", "transwin") and m is not None:
+            keep = m.cpu().numpy()                         # RT の参照段: 把持の注釈のある行でだけ評価する
+            pred, yy = pred[keep], yy[keep]
+        ev.update(pred, yy, video_id=video)
         one = PhaseEvaluator(num_classes=len(names), class_names=names)
-        one.update(pred, y.cpu().numpy(), video_id=video)
+        one.update(pred, yy, video_id=video)
         r = one.compute()
         per_video[video] = {"phase_jaccard": r["phase_jaccard"], "phase_accuracy": r["phase_accuracy"]}
         probs[video] = torch.softmax(out, 0).T.cpu().numpy()
@@ -336,7 +518,7 @@ def cmd_identity(a):
     for arm in arms:
         sig = Signals(a.type, arm, "val", a.inst_variant)
         torch.manual_seed(0)
-        model = DPReceiver(head, TYPES[a.type][0], sig.dim).cuda()
+        model = DPReceiver(head, TYPES[a.type][0], sig.dim, **sig.model_kwargs()).cuda()
         apply_scope(model, a.scope)
         data = build_data(split["val"], sig, feats, "cuda")
         base_res, _ = evaluate(model, data, names)
@@ -344,6 +526,16 @@ def cmd_identity(a):
         extra = {}
         if sig.kind == "g30":
             extra = {"x_layout": sig.layout_g30(), "trainable": trainable_report(model),
+                     "perturbed_params": [n for n, p in model.named_parameters()
+                                          if any(p is q for q in model.iface_last_params())]}
+        if sig.kind == "rt":
+            extra = {"rt": {**RT, **sig.model_kwargs()["rt"]}, "trainable": trainable_report(model),
+                     "rowmask_rows": None if sig.rowmask is None else int(sig.rowmask.sum()),
+                     "perturbed_params": [n for n, p in model.named_parameters()
+                                          if any(p is q for q in model.iface_last_params())]}
+        if sig.kind == "tw":
+            extra = {"tw": {**TW, **sig.model_kwargs()["tw"], "in_dim": sig.dim}, "trainable": trainable_report(model),
+                     "rowmask_rows": None if sig.rowmask is None else int(sig.rowmask.sum()),
                      "perturbed_params": [n for n, p in model.named_parameters()
                                           if any(p is q for q in model.iface_last_params())]}
         if sig.kind == "x32":
@@ -391,7 +583,7 @@ def cmd_train(a):
     assert sig_tr.dim == sig_va.dim
     tr_videos = C.assert_no_test(split["train"], "dp_train/train")
     va_videos = C.assert_no_test(split["val"], "dp_train/val")
-    model = DPReceiver(head, TYPES[a.type][0], sig_tr.dim).cuda()
+    model = DPReceiver(head, TYPES[a.type][0], sig_tr.dim, **sig_tr.model_kwargs()).cuda()
     train_data = build_data(split["train"], sig_tr, feats, "cuda")
     val_data = build_data(split["val"], sig_va, feats, "cuda")
     weights, counts = class_weights(train_data, len(names))
@@ -413,6 +605,14 @@ def cmd_train(a):
     if fixed:
         stop_rule = {**STOP, "patience": None, "max_epochs": fixed, "fixed_epochs": fixed, "lr_schedule": "constant",
                      "selection": f"none (state after epoch {fixed})"}
+    rule = None
+    if a.converge:
+        max_epochs = CONVERGE["max_epochs"]
+        rule = ConvergeRule()
+        stop_rule = {**STOP, "patience": None, "converge": CONVERGE, "max_epochs": max_epochs,
+                     "lr_schedule": f"constant, × {CONVERGE['lr_factor']} once after {CONVERGE['patience']} epochs without improvement",
+                     "stop": f"{CONVERGE['patience']} more epochs without improvement after the drop, or max_epochs",
+                     "selection": "best val macro Jaccard (improvement = above best + min_delta)"}
     cfg = {"task_id": a.task_id, "unofficial": f"非公式（{a.task_id}）", "direction": "DP",
            "type": a.type, "interface": TYPES[a.type][0], "arm": a.arm, "seed": a.seed, "scope": "W1",
            "inst_variant": a.inst_variant, "signal_dim": sig_tr.dim,
@@ -430,6 +630,14 @@ def cmd_train(a):
             cfg.update(grasp_no_flag=True)
     if sig_tr.kind == "x32":
         cfg.update(x_layout={"train": sig_tr.layout(), "val": sig_va.layout()}, trainable=trainable_report(model))
+    if sig_tr.kind == "tw":
+        cfg.update(tw={**TW, **sig_tr.model_kwargs()["tw"], "in_dim": sig_tr.dim}, trainable=trainable_report(model),
+                   rowmask_rows={"train": None if sig_tr.rowmask is None else int(sig_tr.rowmask.sum()),
+                                 "val": None if sig_va.rowmask is None else int(sig_va.rowmask.sum())})
+    if sig_tr.kind == "rt":
+        cfg.update(rt={**RT, **sig_tr.model_kwargs()["rt"]}, trainable=trainable_report(model),
+                   rowmask_rows={"train": None if sig_tr.rowmask is None else int(sig_tr.rowmask.sum()),
+                                 "val": None if sig_va.rowmask is None else int(sig_va.rowmask.sum())})
     if a.scope != "W1":
         sc = scope_report(model, a.scope)
         cfg.update(scope=a.scope, scope_check=sc, receiver_optim={**RECEIVER, "optimizer": "AdamW（界面と別の群）"},
@@ -438,7 +646,10 @@ def cmd_train(a):
                                    + "), eval (dropout off)")
         if not sc["equal"]:
             raise SystemExit(f"学ぶ集合が定義と一致しない: {a.scope}")
-    desc =f"{a.type}{'-noflag' if GRASP_NO_FLAG else ''}_{a.arm}" + (f"_ep{fixed}" if fixed else "") + ("_smoke" if a.max_epochs or a.smoke else "")
+    rt_desc = f"-{RT['layer']}-{RT['content']}-K{RT['k']}" if sig_tr.kind == "rt" else ""
+    if sig_tr.kind == "tw":
+        rt_desc = f"-{a.scope}-{TW['form']}" + ("" if a.arm in ("empty", "t1") else f"-L{TW['L']}") + f"-K{TW['k']}"
+    desc =f"{a.type}{rt_desc}{'-noflag' if GRASP_NO_FLAG else ''}_{a.arm}" + (f"_ep{fixed}" if fixed else "") + ("_conv" if a.converge else "") + ("_smoke" if a.max_epochs or a.smoke else "")
     manager = ExperimentManager(C.ROOT / "experiments", "phase1", a.exp_prefix, desc, a.seed)
     manager.setup(cfg)
     run = tracking.init(manager.exp_id, config=cfg, group=a.task_id, job_type=a.exp_prefix, exp_dir=manager.exp_dir)
@@ -446,6 +657,8 @@ def cmd_train(a):
         raise RuntimeError("W&B tracking could not start; no experiment executed")
     init_res, _ = evaluate(model, val_data, names)
     init_gate = model.gate_values()
+    init_norms = iface_norms(model) if rule else None
+    lr_drop_epoch = None
     best, best_score, stale, stopped, history, no_grad_steps = None, -1.0, 0, None, [], 0
     started = time.monotonic()
     ckpt = C.STORE.parent / a.task_id / "dp_ckpt" / f"{manager.exp_id}.pth"
@@ -458,7 +671,10 @@ def cmd_train(a):
         for i in order:
             _, x, s, m, y = train_data[i]
             outs = model(x, s, m)
-            loss = sum(ce(o[0].T, y) for o in outs)
+            if sig_tr.kind in ("rt", "tw") and m is not None:     # RT・TW の参照段: 把持の注釈のある行でだけ学ぶ
+                loss = sum(ce(o[0].T[m], y[m]) for o in outs)
+            else:
+                loss = sum(ce(o[0].T, y) for o in outs)
             for o in outs:
                 logp = F.log_softmax(o, dim=1)
                 loss = loss + STOP["smoothing_weight"] * F.mse_loss(
@@ -481,10 +697,20 @@ def cmd_train(a):
         if sig_tr.kind == "g30":
             w = model.iface.weight.detach()
             history[-1].update(iface_max_abs=float(w.abs().max()), iface_l2=float(w.norm()))
+        if sig_tr.kind == "tw" and a.scope != "W1":
+            now = model.head.state_dict()
+            history[-1].update(head_delta_l2=float(torch.sqrt(sum(((now[k2].float() - v.float()) ** 2).sum()
+                                                                    for k2, v in head_state0.items()))))
+        if sig_tr.kind in ("rt", "tw"):
+            history[-1].update(iface_l2=float(torch.sqrt(sum((p.detach() ** 2).sum() for p in model.iface.parameters()))),
+                               iface_out_max_abs=float(model.iface.out.weight.detach().abs().max()))
         tracking.log({"train/loss": total / len(order), "val/jaccard": score, "val/accuracy": val["phase_accuracy"],
                       **({f"gate/{k}": v for k, v in gate.items()} if gate else {})}, step=epoch)
+        if rule:
+            improved, action = rule.step(score)
+            history[-1].update(lr=[g["lr"] for g in opt.param_groups], improved=improved, **iface_norms(model))
         # --fixed-epochs: 最良の回を選ばず、最後の epoch の状態を結果にする（界面の重みと確率もその状態）
-        if (epoch == fixed) if fixed else score > best_score:
+        if improved if rule else ((epoch == fixed) if fixed else score > best_score):
             best_score, stale = score, 0
             best = {**val, "epoch": epoch}
             best_probs = probs
@@ -493,9 +719,20 @@ def cmd_train(a):
             if a.scope != "W1":
                 state.update(scope=a.scope, receiver=model.head.state_dict())
             torch.save(state, ckpt)
+            if rule:
+                best_norms = iface_norms(model)
         else:
             stale += 1
-        if not fixed and stale >= STOP["patience"]:
+        if rule:
+            if action == "drop":
+                for g in opt.param_groups:
+                    g["lr"] *= CONVERGE["lr_factor"]
+                lr_drop_epoch = epoch
+                history[-1].update(lr_after=[g["lr"] for g in opt.param_groups])
+            elif action == "stop":
+                stopped = epoch
+                break
+        elif not fixed and stale >= STOP["patience"]:
             stopped = epoch
             break
     head_unchanged = all(torch.equal(v, model.head.state_dict()[k]) for k, v in head_state0.items())
@@ -510,6 +747,9 @@ def cmd_train(a):
                "iface_params": cfg["iface_params"], "iface_ckpt": str(ckpt), "iface_ckpt_sha256": C.sha256(ckpt)}
     if init_gate:
         metrics.update(init_gate=init_gate, gate_by_epoch={h["epoch"]: h["gate"] for h in history})
+    if rule:
+        metrics.update(result_selection="best_val_jaccard", result_epoch=best["epoch"], lr_drop_epoch=lr_drop_epoch,
+                       converge=CONVERGE, norms={"init": init_norms, "best": best_norms, "final": iface_norms(model)})
     if a.scope != "W1":
         trained = {n[len("head."):] for n in cfg["scope_check"]["trainable_names"] if n.startswith("head.")}
         now = model.head.state_dict()
@@ -528,6 +768,9 @@ def cmd_train(a):
              **{v: p.astype(np.float32) for v, p in best_probs.items()})
     how = (f"{fixed} epoch 学習し途中で止めない。結果は {fixed} epoch 目の状態（最良の回を選ばない）。" if fixed
            else "val だけで評価し選ぶ。")
+    if rule:
+        how = (f"収束規則（停滞 {CONVERGE['patience']} epoch で学習率 × {CONVERGE['lr_factor']} を一度、再停滞で打ち切り、上限 "
+               f"{CONVERGE['max_epochs']}）。結果は val の Jaccard が最良の epoch {best['epoch']}（学習率を落とした epoch {lr_drop_epoch}）。")
     scope_text = "受け取り手は確定塔の時間ヘッド（凍結）。界面だけを学ぶ（W1）。" if a.scope == "W1" else (
         f"受け取り手は確定塔の時間ヘッド（eval、dropout なし）。界面と時間ヘッドの"
         f"{'最後の段' if a.scope == 'W2' else '全体'}を学ぶ（{a.scope}、受け取り手の学習率 {RECEIVER['lr']}）。")
@@ -549,6 +792,8 @@ def negative_control(a, model, ckpt, head, split, feats, names):
     model.iface.load_state_dict(state["iface"])
     zero = build_data(split["val"], Signals(a.type, "empty", "val", a.inst_variant), feats, "cuda")
     other = "gt" if TYPES[a.type][1] == "g30" else "pred_noCF"           # GA は予測の腕が無いので正解を入れる
+    if TYPES[a.type][1] == "tw":
+        other = "t1"                                                       # TW の S_0 は k = 1 なので、同じ形の S_1 を入れる
     real = build_data(split["val"], Signals(a.type, other, "val", a.inst_variant), feats, "cuda")
     rz, _ = evaluate(model, zero, names)
     rr, _ = evaluate(model, real, names)
@@ -563,7 +808,7 @@ def cmd_scopes(a):
     """型と学習範囲ごとの学ぶパラメータの名前の集合（Task C-2・C-4。学習しない、特徴も読まない）。"""
     head = C.load_ptower_head(device="cpu")
     out = {"task_id": a.task_id, "types": {}}
-    for t in a.types or list(TYPES):
+    for t in a.types or [t for t in TYPES if TYPES[t][1] not in ("rt", "tw")]:
         dim = Signals(t, "empty", "val", "uq").dim
         row = {"signal_dim": dim}
         for scope in a.scopes:
@@ -578,6 +823,20 @@ def cmd_scopes(a):
     print(json.dumps({t: {s: (r[s]["equal"], r[s]["equal_with_one_outside_mixed"], r[s]["n_trainable"],
                               r[s].get("equals_trainable_report")) for s in a.scopes}
                       for t, r in out["types"].items()}, ensure_ascii=False))
+
+
+def add_rt_args(p):
+    p.add_argument("--rt-dir", default=None, help="RT の材料の置き場（tok/ と b4/）")
+    p.add_argument("--rt-layer", choices=["layer4", "layer3"], default=None)
+    p.add_argument("--rt-content", choices=["roi_geo", "roi"], default=None)
+    p.add_argument("--rt-k", type=int, default=None)
+
+
+def add_tw_args(p):
+    p.add_argument("--tw-dir", default=None, help="TW の材料の置き場（seq/ と b4/）")
+    p.add_argument("--tw-form", choices=["a", "b"], default=None)
+    p.add_argument("--tw-L", type=int, choices=[8, 32], default=None)
+    p.add_argument("--tw-k", type=int, default=None)
 
 
 def main():
@@ -595,6 +854,8 @@ def main():
     i.add_argument("--arms", nargs="+", choices=ARMS, default=None, help="調べる腕を並べる（--arm より優先）")
     i.add_argument("--scope", choices=SCOPES, default="W1", help="学習範囲（学ぶ集合を記録する。出力は変えない）")
     i.add_argument("--grasp-no-flag", action="store_true", help="GA を旗なしの 28 次元にする（既定は旗あり 30 次元）")
+    add_rt_args(i)
+    add_tw_args(i)
     s = sub.add_parser("scopes")
     s.add_argument("--types", nargs="+", choices=list(TYPES), default=None)
     s.add_argument("--scopes", nargs="+", choices=SCOPES, default=list(SCOPES))
@@ -616,15 +877,25 @@ def main():
     t.add_argument("--scope", choices=SCOPES, default="W1",
                    help="学習範囲。W2 = 界面 ＋ 時間ヘッドの最後の段、W3 = 界面 ＋ 時間ヘッドの全体（既定 W1 = 界面だけ）")
     t.add_argument("--grasp-no-flag", action="store_true", help="GA を旗なしの 28 次元にする（既定は旗あり 30 次元）")
+    add_rt_args(t)
+    add_tw_args(t)
+    t.add_argument("--converge", action="store_true",
+                   help="収束規則（CONVERGE）で学ぶ。結果は val の Jaccard が最良の epoch（契約 T-2026-11-09-grasp-pilot-converge）")
     a = ap.parse_args()
     global GRASP_DIR, GRASP_PRED_DIR, GRASP_NO_FLAG
     GRASP_DIR = getattr(a, "grasp_signal_dir", None)
     GRASP_PRED_DIR = getattr(a, "grasp_pred_dir", None)
     GRASP_NO_FLAG = bool(getattr(a, "grasp_no_flag", False))
+    TW.update(dir=getattr(a, "tw_dir", None), form=getattr(a, "tw_form", None), L=getattr(a, "tw_L", None),
+              k=getattr(a, "tw_k", None))
+    RT.update(dir=getattr(a, "rt_dir", None), layer=getattr(a, "rt_layer", None), content=getattr(a, "rt_content", None),
+              k=getattr(a, "rt_k", None))
     if GRASP_NO_FLAG and TYPES[a.type][1] != "g30":
         raise SystemExit("--grasp-no-flag は GA だけに使う")
-    if a.cmd == "train" and a.scope != "W1" and not a.fixed_epochs:
+    if a.cmd == "train" and a.scope != "W1" and not (a.fixed_epochs or a.converge):
         raise SystemExit("--scope W2・W3 は --fixed-epochs と組で使う")
+    if a.cmd == "train" and a.converge and (a.fixed_epochs or a.max_epochs):
+        raise SystemExit("--converge は --fixed-epochs・--max-epochs と組み合わせない")
     if a.cmd == "train" and a.fixed_epochs and a.max_epochs:
         raise SystemExit("--fixed-epochs と --max-epochs は組み合わせない")
     if a.cmd == "train" and a.smoke and not a.fixed_epochs:

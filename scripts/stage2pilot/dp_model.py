@@ -15,6 +15,14 @@
     tool_hist         z′ = z + tanh(α) W_o h、h = GRU(W_in x + b_in) を動画の先頭から因果的に流す（α は 0 から）。
                       z は最後の段の conv_out に入る特徴
     tool_hist_nogate  z′ = z + W_o h（W_o を零初期化。ゲートを置かない版）
+
+契約 T-2026-11-09-grasp-roitoken-transition-pilot（SPEC §3.2、案 3）で足した型:
+    roitoken  把持領域トークン。各フレームの J 個（5、正解 ⊕ 予測は 10）のトークン = 枠位置の埋め込み ＋
+              （枠が在れば ROI の平均の線形写像 ＋ 幾何 6 の線形写像（幾何を使う設定だけ）、無ければ学ぶ空トークン）。
+              特徴 x(t)（2048）を問い合わせにした 1 層の多頭注意（4 head、K 次元）で束ね、零初期化の出力射影（K → 2048）で特徴に足す
+    transwin  遷移の符号化（SPEC §3.3、案 5）。窓の k 個の時点の入力［特徴 D｜有無 1］を時点ごとの小さな MLP（D + 1 → K → K）
+              ＋ 相対時刻の埋め込みで K 次元にし、x(t) を問い合わせにした 1 層の多頭注意（4 head）で束ね、零初期化の出力射影
+              （K → 2048）で特徴に足す。無い時点は 0 と印 0 のまま入れる（隠さない）。k = 1 でも同じ界面
 """
 from __future__ import annotations
 
@@ -22,7 +30,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-TYPES = ("concat", "film", "attn", "logit_corr", "tool_hist", "tool_hist_nogate")
+TYPES = ("concat", "film", "attn", "logit_corr", "tool_hist", "tool_hist_nogate", "roitoken", "transwin")
 LAST_STAGE_TYPES = ("logit_corr", "tool_hist", "tool_hist_nogate")
 
 
@@ -68,6 +76,64 @@ class SetAttention(nn.Module):
         return x + self.out(o) * any_tok[:, None]
 
 
+class RoiTokens(nn.Module):
+    """SPEC §3.2。s (T, J, C + 7) = ［ROI の平均 C｜幾何 6｜有無 1］。無いトークンは学ぶ空トークン（枠位置ごと）。"""
+
+    def __init__(self, tok_dim: int, slots: int, use_geo: bool, dim: int = 2048, k: int = 64, heads: int = 4):
+        super().__init__()
+        self.c, self.h, self.dh = tok_dim, heads, k // heads
+        self.content = nn.Linear(tok_dim, k)
+        self.geo = nn.Linear(6, k) if use_geo else None
+        self.slot = nn.Parameter(torch.randn(slots, k) * 0.02)
+        self.empty = nn.Parameter(torch.randn(slots, k) * 0.02)
+        self.q = nn.Linear(dim, k)
+        self.k = nn.Linear(k, k)
+        self.v = nn.Linear(k, k)
+        self.out = nn.Linear(k, dim)
+        nn.init.zeros_(self.out.weight)
+        nn.init.zeros_(self.out.bias)
+
+    def forward(self, x, s):                      # x (T, 2048), s (T, J, C + 7)
+        t, j = s.shape[0], s.shape[1]
+        e = self.content(s[..., :self.c])
+        if self.geo is not None:
+            e = e + self.geo(s[..., self.c:self.c + 6])
+        present = s[..., self.c + 6:self.c + 7] > 0.5
+        tok = torch.where(present, e, self.empty[None]) + self.slot[None]
+        q = self.q(x).view(t, self.h, self.dh)
+        kk = self.k(tok).view(t, j, self.h, self.dh)
+        vv = self.v(tok).view(t, j, self.h, self.dh)
+        w = torch.softmax(torch.einsum("thd,tjhd->thj", q, kk) / self.dh ** 0.5, dim=-1)
+        o = torch.einsum("thj,tjhd->thd", w, vv).reshape(t, -1)
+        return x + self.out(o)
+
+
+class TransWindow(nn.Module):
+    """SPEC §3.3。s (T, k, D + 1) = 窓の各時点の［特徴 D｜有無 1］（時点 0 が t、1 が t − Δ、…）。"""
+
+    def __init__(self, in_dim: int, slots: int, dim: int = 2048, k: int = 64, heads: int = 4):
+        super().__init__()
+        self.h, self.dh = heads, k // heads
+        self.mlp = nn.Sequential(nn.Linear(in_dim, k), nn.ReLU(inplace=True), nn.Linear(k, k))
+        self.rel = nn.Parameter(torch.randn(slots, k) * 0.02)
+        self.q = nn.Linear(dim, k)
+        self.k = nn.Linear(k, k)
+        self.v = nn.Linear(k, k)
+        self.out = nn.Linear(k, dim)
+        nn.init.zeros_(self.out.weight)
+        nn.init.zeros_(self.out.bias)
+
+    def forward(self, x, s):                      # x (T, 2048), s (T, k, D + 1)
+        t, j = s.shape[0], s.shape[1]
+        tok = self.mlp(s) + self.rel[None]
+        q = self.q(x).view(t, self.h, self.dh)
+        kk = self.k(tok).view(t, j, self.h, self.dh)
+        vv = self.v(tok).view(t, j, self.h, self.dh)
+        w = torch.softmax(torch.einsum("thd,tjhd->thj", q, kk) / self.dh ** 0.5, dim=-1)
+        o = torch.einsum("thj,tjhd->thd", w, vv).reshape(t, -1)
+        return x + self.out(o)
+
+
 class LogitCorrection(nn.Module):
     """SPEC §3.3。u = GELU(W_in x + W_p softmax(ℓ0) + b) ∈ ℝ^32、Δℓ = W_out u（W_out と bias を零初期化）。"""
 
@@ -111,7 +177,7 @@ class ToolHistory(nn.Module):
 
 
 class DPReceiver(nn.Module):
-    def __init__(self, head, iface_type: str, sig_dim: int, d: int = 64, heads: int = 4, hidden: int = 64):
+    def __init__(self, head, iface_type: str, sig_dim: int, d: int = 64, heads: int = 4, hidden: int = 64, rt=None, tw=None):
         super().__init__()
         if iface_type not in TYPES:
             raise ValueError(iface_type)
@@ -134,6 +200,11 @@ class DPReceiver(nn.Module):
             self.iface = FiLM(sig_dim, head.stage1.conv_in.in_channels, hidden)
         elif iface_type == "attn":
             self.iface = SetAttention(sig_dim, head.stage1.conv_in.in_channels, d, heads)
+        elif iface_type == "roitoken":
+            self.iface = RoiTokens(rt["tok_dim"], rt["slots"], rt["use_geo"], head.stage1.conv_in.in_channels,
+                                   rt["k"], heads)
+        elif iface_type == "transwin":
+            self.iface = TransWindow(sig_dim, tw["slots"], head.stage1.conv_in.in_channels, tw["k"], heads)
         elif iface_type == "logit_corr":
             self.iface = LogitCorrection(sig_dim, self.last_stage().conv_out.out_channels, 32)
         else:
@@ -160,6 +231,8 @@ class DPReceiver(nn.Module):
             x = self.iface(x, s)
         elif self.iface_type == "attn" and s is not None:
             x = self.iface(x, s, mask)
+        elif self.iface_type in ("roitoken", "transwin") and s is not None:
+            x = self.iface(x, s)                  # mask は行の印（参照段の学ぶ・測る行）で、界面は使わない
         st = self.head.stage1
         out = st.conv_in(x.T[None])
         if self.iface_type == "concat" and s is not None:

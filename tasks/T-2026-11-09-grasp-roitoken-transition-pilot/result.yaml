@@ -1,0 +1,127 @@
+result_version: 3
+task_id: "T-2026-11-09-grasp-roitoken-transition-pilot"
+status: pass
+host: "bengio"
+branch: "feat/grasp-roitoken-transition-pilot"
+pr: 307
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "分岐 feat/grasp-roitoken-transition-pilot、起点 origin/phase0 129e79b0 = HEAD、PR 302 の merge 5f61c389 が祖先で REPORT・RESULT・s1_pmap.py が起点に在る。nvidia-smi の全体 39・37 MiB と compute の一覧 0 件、空き 1,241,149,272,064 B（見込み 150 GB の 2 倍以上）、試験の失敗 11 件の名前、仮想環境の一覧の要約値（9c7be5c9…・a74c9c78…、前の契約と一致）、禁止の場所 24 根・重み 6 件の開始時の要約値を記録した"}
+  - {id: G2, verdict: pass, note: "目録の B_m の見取りと地図 16 件・P の fine-tune・時間ヘッド・キャッシュの sha256 が 19/19 一致（1 ビット反転の写しで不一致）。塔単独の val は Jaccard 0.7762185528・accuracy 0.8712871287 で記録との差 0.0。layer4 の空間平均とキャッシュの相対 L2 最大 4.2e-5（train・val、1e-3 超 0 件）、1 つずらすと最小 0.053。窓は境で切り、伸ばした写しで時点数が変わる。正解の地図は注釈から作り直した 200/200 フレームで一致"}
+  - {id: G3-case5, verdict: pass, note: "利用者の依頼で追加した型 TW: 足した版でも起点の版と GA 旗なし・D1-L1 の identity の差 0 件・試走の全記録一致、案 3 の RT の 1 本を回し直して全記録一致（all_equal true）。TW の W1・W2・W3 × 形 2 × L 2 の 12 件 × 8 腕 = 96 件で学習前のロジットの差 0.0、学ぶ範囲が定義と一致、出力射影を N(0, 0.05²) にすると 0.080〜0.213 変わる"}
+  - {id: G3, verdict: pass, note: "起点の版の dp_train.py・dp_model.py と GA 旗なし・D1-L1 の identity の差 0 件、1 epoch の試走の metrics・history・config・確率・界面の重みが全て一致（all_equal true）。型 RT の 8 設定 × 7 腕で学習前のロジットと塔単独の差の最大 0.0。出力射影を N(0, 0.05²) にすると 56 件すべてで差 0.060〜0.642（T0 も学ぶ空トークンがあるので変わる）"}
+
+tests:
+  before_failed: 11
+  after_failed: 11
+  after_passed: 980
+
+deviations:
+  - {type: judgement, note: "利用者の決定（2026-11-09）: 殺し実験で案 5 が殺す条件に当たり、案 3 は当たらなかったため停止して諮った。返事「案3だけ進める」で案 3 の 56 本を回し、PR・task-report・task-release まで済ませた"}
+  - {type: judgement, note: "利用者の依頼（同日「案5、追加でやって」）: 完了の手続きの後に案 5 の型 TW と 68 本を同じ契約・分岐・PR に追加した。目印は所有の記録つきで置き直し、外していた間に分岐の先頭（07323d1f）と origin/phase0（129e79b0）が動いていないことを確かめた。status は全本がそろったので pass"}
+  - {type: judgement, note: "型 TW の設計: 窓の各時点の［特徴 D｜有無 1］を時点ごとの MLP（D + 1 → 64 → 64）＋ 相対時刻の埋め込みで 64 次元にし、x(t) を問い合わせにした 4 head の注意で束ね、零初期化の 64 → 2048 の射影を x(t) に足す。無い時点は隠さず 0 と印 0 で入れ、S_0 は k = 1 の 0 の列。K = 64 は D1 concat の conv_in.out_channels。順は相対時刻の埋め込みからしか入らない"}
+  - {type: environment, note: "実行者の誤り: TW の空の腕の学習の後に回る陰性対照の相手が窓の L を要する腕で、S_0 の W1・W2 の 4 本が SystemExit で止まった。相手を S_1 に直し、4 本の実験フォルダ・界面の重み・ログを保存先の aborted/ へ移して回し直した（4 本とも rc 0）"}
+  - {type: environment, note: "実行者の誤り: 道具に ruff --fix を当て、実行済みの b12_inputs.py・b3_pmaps.py・c_kill.py・f_aggregate.py・make_report.py の import の並びと f-string を書き換えた（動作は変わらない）。audit に案 5 の所要と時間ヘッドの変化を記録を読む前に書いて誤り、記録の値（1.48〜9.19 s、1.50〜2.02）に直した"}
+  - {type: judgement, note: "1 回目の /task は task-start が配布台帳の取り込みで止まり（置き換え済みの行 1 件）、利用者の判断で中止した。同じ識別子の 2 回目で取り込めた。巻き戻しは task-start が行い、分岐と目印は残らなかった"}
+  - {type: judgement, note: "殺し実験の線形の層の処方（標準化、Linear、クラスの重みつき交差エントロピー、AdamW lr 1e-3・wd 1e-4、batch 512、100 epoch、seed 42、最後の状態）は実行者が決めて測る前に固定した。陽性対照（正解の工程の one-hot）が J +0.016・acc −0.001 と弱かったが、結果を見た後に処方は変えていない"}
+  - {type: judgement, note: "案 5 の殺す条件「率の比の区間が 1 を含む」を、動画ごとに工程の区間の並びを並べ替えて（2,000 回、seed 42）作った null の比の 95% 区間に観測の比が入ること（null の区間は 1 を含む）と読んだ。事象は出現・消失・持ち替え・両手の開始終了を同じ区間の直前のフレームとの比べで作った"}
+  - {type: judgement, note: "案 5 の窓の境を SPEC §3.3 の字面どおり「クリップが変わるか隣接の間隔が 2 秒を超える所」とした。区間の長さは val 中央 5・train 中央 10 で、L = 32 秒の窓が埋まり切るのは val 243/1,515。並べ替えの腕は窓の中の在る時点の中身だけを seed 42 で並べ替え（恒等なら引き直し）、印と相対時刻は元の位置のまま"}
+  - {type: judgement, note: "型 RT の設計: 各トークン = 枠位置の埋め込み ＋（枠が在れば ROI の平均の線形写像 ＋ 幾何の線形写像〔幾何を使う設定〕、無ければ枠位置ごとの学ぶ空トークン）。x(t) を問い合わせにした 4 head・K 次元の注意で束ね、零初期化の K → 2048 の射影を x(t) に足す（D3 attn と同じ位置）。TU は器具の和集合の枠を 1 つ目の位置に置き残り 4 個を空にした"}
+  - {type: judgement, note: "参照段の 2 腕は動画の全体の列を時間ヘッドに通し、交差エントロピーを把持の注釈のある行（train 9,356）だけで取り、評価も val 1,514 行に絞った。平滑化の項とクラスの重みは全行のまま（全腕で同じ）。参照段 − T0 は T0 の val の確率を同じ 1,514 行に絞って測り直した値と比べた"}
+  - {type: judgement, note: "TRand の train は目録の shuffle_CF の見取り（pred_CF の地図）の mapping、val は shuffle の mapping を使った（二つの mapping が同じことを確かめた）。誰の手かを落とした対照の和集合は器具の 3 チャネルの画素ごとの最大（四本目と同じ）"}
+  - {type: judgement, note: "「dressing を除く 6 工程」を val に現れる 7 工程（disinfection・irrigation は val に 0 フレーム）から dressing を除いた anesthesia・closure・design・dissection・hemostasis・incision とした（四本目と同じ）"}
+  - {type: judgement, note: "確かめの試走 grasprt_chk_dpold_001・grasprt_chk_dpnew_001（既定の挙動）と grasprt_chk_rt_001（RT の試走）の 3 本は腕に数えない。runindex は生成物なので契約の分岐では作り直していない"}
+  - {type: environment, note: "実行者の誤り: b4_boxes.py の記録 b4_record.json の正解の地図の統計（鍵 gt）を後の枠の統計で上書きした。地図と枠のファイルは正しく、b4_gtcheck.py で件数・loss_mask との一致・sha256 を測り直し、注釈から独立に作り直した地図と 200/200 一致を確かめた"}
+  - {type: environment, note: "終了の検査の時点で、別の契約の道具 6 件（experiments/analysis/stage2_pd_w3_lowlr_andrew/tools/w3lra_*.py）が同期で届いていた。消さず動かさず、phase0 に無いことを確かめて .git/info/exclude にフォルダで 1 行足した（SPEC Task A-2 の前例）"}
+  - {type: environment, note: "W&B は手元だけ（WANDB_MODE=offline、仮の鍵、資格情報は読み込まない）。裏で起こした命令の終了コード 1 が 2 回あったが、どちらも最後の表示の命令（zsh の tail の書き方、失敗の行が 0 件の grep）によるもので、記録は全て rc 0"}
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "meta.created_from の runindex の版 d3e319ac と件数 2,623/1,305/1,947 は 2026-11-07 の値で、起点 129e79b0 の git log -1 -- runindex/（b524173e）と件数 2,647/1,327/1,977 と食い違った。Task A-5 に従い実測で差し替えて meta.amendments に記録し、task-validate は通った"
+  - type: self_contradiction
+    note: "inputs.data は使う行を「工程注釈のある行のうち画像のある行（train 9,356・val 1,514）」とし、§3.1 は G の出力の無い行を空の信号にするとするが、工程の目録の行は術具注釈フレームと同じ 9,657・1,515 で、9,356・1,514 は把持の注釈のある行の数。指示どおり読むと主の腕の行の集合が二通りになる。目録の行で回し、G の出力の無い行は 0 件だった"
+  - type: asserted_without_measuring
+    note: "§3.1 と §3.2 は入れ替えの mapping を「別の動画の同じ相対時刻」とするが、目録の shuffle の見取りは split 全体の一つの並べ替え（make_mapping、seed 42）で、同じ動画への対応が val 55.6%・train 11.5%、自分自身への対応が val 2 件。TRand は別の動画の枠とは限らない。目録の mapping をそのまま使った"
+  - type: asserted_without_measuring
+    note: "Task D-3 と §7 f は「空の腕（T0・S_0）は入力が零で変わらないので記録のみ」とするが、型 RT の T0 は学ぶ空トークンを持ち、問い合わせ x(t) に依る注意の出力が零でない。出力射影を N(0, 0.05²) にすると T0 も差 0.085〜0.206 で変わり、T0 の学習後の値も P 単独から J で約 −0.02 動いた。T0 は入力零の腕として働かない"
+  - type: self_contradiction
+    note: "§6-11 は「並べ替えを新しく作らない（目録の mapping を使う）」とするが、§3.3 の腕 S_W-perm は窓の中の時点の順を並べ替える腕で、目録の mapping では作れない。指示どおりに進めるとこの腕を作れない。窓の中の在る時点だけを seed 42 で並べ替える規則を実行者が決めて列を作った（案 5 は殺し実験で止めたので学習には使っていない）"
+  - type: self_contradiction
+    note: "§3.2 は案 3 を「計 8 × 6 ＋ 8 × 2 = 64 本（P 単独は学習なし）」とし acceptance g も 64 本を求めるが、6 腕の一つの P 単独は学習しない塔の値で設定に依らないため、学習する run は 8 × 5 ＋ 16 = 56 本。64 本の run は存在しえない。56 本を回し、P 単独は塔の値を 1 回だけ記録した"
+
+positive_controls:
+  - judgement: "a GPU の外の使用の見え方"
+    breaking_input: "存在しない GPU 番号 7 で nvidia-smi を問う。proc_enum を自分のシェル /usr/bin/zsh と存在しない経路で問う"
+    observed: "No devices were found（rc 6）。zsh 9 件、存在しない経路 0 件"
+  - judgement: "b 材料の sha256 の照合"
+    breaking_input: "見取りの json（B_pred_noCF_val.json）を写して 100 バイト目を 1 ビット反転した写し"
+    observed: "a889b72b…（記録 6e639261… と不一致）"
+  - judgement: "b 塔単独の再現の許容差"
+    breaking_input: "別 seed 123 の工程塔の記録（stage1_ptower_r3_064_…_seed123）"
+    observed: "差 J +0.0879・accuracy −0.0205、許容差 1e-6 を超え within false"
+  - judgement: "c 空間特徴の空間平均とキャッシュの一致"
+    breaking_input: "1 つずらしたフレームのキャッシュと比べる"
+    observed: "相対 L2 の最小 train 0.0530・val 0.0795（1e-3 以下 0 件。同じフレームは最大 4.2e-5）"
+  - judgement: "c 全体の枠の ROI と地図の空間平均の近さ"
+    breaking_input: "別のフレームの地図の空間平均と比べる"
+    observed: "layer4 val 別のフレームの最小 0.103 に対し同じフレームの最大 0.156 で重なる（layer3 も 0.081 と 0.089）。この対照は弱い"
+  - judgement: "d 外接矩形の規則"
+    breaking_input: "マスクを x 方向に 1 画素ずらす"
+    observed: "枠が変わる 予測 train 34,980/34,980・val 6,195/6,195、正解 train 32,293/32,302・val 5,633/5,635（残りは端の回り込み）"
+  - judgement: "d 窓を境で切る規則"
+    breaking_input: "境を無視して伸ばした写し"
+    observed: "時点の数が k=4 train 35,177 → 38,622・val 4,973 → 6,054、k=16 train 101,211 → 154,392・val 10,638 → 24,120（k=1 は変わらない）"
+  - judgement: "d 正解の地図と注釈の一致"
+    breaking_input: "作り直した地図を一つ隣のフレームの保存した地図と比べる"
+    observed: "一致 0/200（同じフレームは 200/200）"
+  - judgement: "e 殺し実験の線形の層の感度"
+    breaking_input: "P の特徴に正解の工程の one-hot を足す"
+    observed: "差 J +0.0160・accuracy −0.0013・6 工程 −0.0022。大きく正にならず、この判定は空振りしうる"
+  - judgement: "f 既定の挙動の比べ"
+    breaking_input: "新しい版の metrics の Jaccard を 1e-9 ずらした写し"
+    observed: "不一致として検出（positive_control_detects true。本物は差 0 件）"
+  - judgement: "f 恒等性"
+    breaking_input: "出力射影の重みと bias を N(0, 0.05²) にする"
+    observed: "8 設定 × 7 腕の 56 件すべてでロジットの差 0.060〜0.642（学習前は 0.0）"
+  - judgement: "g run の数え上げ"
+    breaking_input: "存在しない run の名前 2 つ（RT-layer9-roi-K7_empty、no_such_arm）"
+    observed: "在る 0 件・0 件（本物は 56/56）"
+  - judgement: "h 表の差の計算し直し"
+    breaking_input: "TG − T0 の J を 1e-6 ずらした写し"
+    observed: "不一致として検出（本物は 144 個の差のずれの最大 0.0）"
+  - judgement: "i test 不使用"
+    breaking_input: "通した動画の集合に 04 を混ぜた入力"
+    observed: "test との共通 [04] の 1 件（本物は 0 件）"
+  - judgement: "案 5 の並べ替えの腕が入力を変えている"
+    breaking_input: "並べ替えの列と元の列を比べる。並べ替えた run と元の run の val の確率を比べる"
+    observed: "列は val 1,319 行で違う（a・b とも最大差 0.996・1.0）。確率の差の最大 0.0003〜0.0055 で argmax は全フレーム一致（W1-a-L32 など 4 設定で指標の差 0.0）。界面が順に鈍感で、この対照は弱い"
+  - judgement: "案 5 の恒等性"
+    breaking_input: "TW の出力射影の重みと bias を N(0, 0.05²) にする"
+    observed: "96 件すべてでロジットの差 0.080〜0.213（学習前は 0.0）"
+  - judgement: "案 5 の run の数え上げと差の計算し直し"
+    breaking_input: "存在しない run の名前 2 つ。S_W − S_0 の J を 1e-6 ずらした写し"
+    observed: "0・0 件（本物は 68/68）。写しは不一致として検出（本物は 216 個の差のずれの最大 0.0）"
+  - judgement: "j forbidden-check"
+    breaking_input: "本契約の新しいファイル（許可の内側）"
+    observed: "変更 490 件のうち 484 件を allow_write による許可として名指し、違反 0 件。許可を読まない場合の検出は UNKNOWN（本契約では回していない）"
+
+followups:
+  - "学習は 1 本 40 歩（4 epoch × train 10 本）で、1 本 1.4〜9.4 s で終わった。出力射影は零から最大 0.010〜0.021、案 5 の相対時刻の埋め込みは標準偏差 0.019〜0.025（初期 0.02）に留まる。学習の長さ（epoch 数）を処方として決め直してから正式に回すかを起票者が決める（REPORT §8）"
+  - "案 5 の型 TW は時点を注意で束ねるため順に鈍感で、S_W-perm の対照が弱い（4 設定で S_W と argmax が全フレーム一致、相対時刻の埋め込みは 4 epoch で標準偏差 0.022 のまま）。正式に回すなら順を明示的に符号化する界面（因果的な畳み込みや GRU）を候補にするかを起票者が決める"
+  - "案 5 の W1 の S_W − S_0・S_W − S_1 は 6 工程の平均で 4/4 設定とも正（+0.0044〜+0.0076・+0.0025〜+0.0058）だが大きさは 0.005 前後で、W2・W3 では符号が分かれた"
+  - "案 3 は殺し実験で殺す条件に当たらなかったが、掃引の TG − T0 は 8 設定で符号が分かれた（6 工程の平均 −0.0173〜+0.0187、正 3/8）。正式（5 折り × 5 seed、回し直した塔）に進めるかは利用者が考える"
+  - "殺し実験の線形の層は陽性対照（正解の工程）で J +0.016・acc −0.001 しか動かず感度が低い。案 5 の「当たる」と案 3 の「当たらない」はどちらもこの処方の上の判定で、陽性対照が働く処方で測り直すかは起票者が決める"
+  - "型 RT の T0 は学ぶ空トークンと注意を持ち、P 単独から J で約 −0.02 動く。T0 を「信号なし」の基準として使うなら、空トークンを学ばない腕（出力が零の腕）を足すかを起票者が決める"
+  - "案 5 の窓は境（間隔 > 2 秒）で切ると短い（val 中央 5 フレーム）。案 5 を測り直すなら、時刻で窓の時点を置き、欠けた時点だけを「無し」にする定義を検討する"
+  - "同期で届いた別の契約の道具 experiments/analysis/stage2_pd_w3_lowlr_andrew/ を .git/info/exclude に足した。その契約が統合されたら除外の行を外すかを利用者に確かめる"
+
+unknowns:
+  - "学習を長くすると案 3・案 5 の差が変わるか: 測っていない（処方の 4 epoch 固定だけ）"
+  - "seed を変えたときの案 3 の差の揺れ: 測っていない（seed 1 つ）"
+  - "GPU 1 枚に 3 本を並行で学んだことによる値の違い: 測っていない"
+  - "forbidden-check が許可を読まないときに本契約のファイルを違反として拾うか: 回していない"
+
+commits:
+  - "99a20548"
+  - "db9b7b46"
