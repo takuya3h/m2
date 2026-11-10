@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# 自動生成: この run を起動したコマンドの記録
+# 生成日時: 2026-11-09T13:34:38+00:00
+python /home/ubuntu/slocal2/m2/experiments/analysis/stage2_pd_w3_lowlr_andrew/tools/w3lra_lrwrap.py --seed 42 --trainable all --lr 1e-5 --film-lr 5e-4 --task-id T-2026-11-09-stage2-pd-w3-lowlr-andrew --run-name w3lra_pd_DX_W3_shuffle_ep4_seed42 --det-ckpt /home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth --signal-train /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/signals/shuffle/P0_train.npz --signal-val /home/ubuntu/slocal2/stage2pilot_store/T-2026-10-19-stage2-pilot-fix-epoch4-shuffle/signals/shuffle/P0_val.npz --epochs 4 --fixed-epochs --amp bf16 --save-predictions-all --ckpt-dir /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-09-stage2-pd-w3-lowlr-andrew/pd_ckpt/w3lra_pd_DX_W3_shuffle_ep4_seed42 --save-trainable-only --print-freq 500

@@ -1,0 +1,293 @@
+{
+  "AP": 0.7218454004215398,
+  "AP50": 0.848523508417485,
+  "per_class_ap": {
+    "Bipolar Forceps": 0.7571497950027596,
+    "Electric Cautery": 0.9642331150257887,
+    "Forceps": 0.3500177735469385,
+    "Gauze": 0.26858961428960987,
+    "Hook": 0.6221699418092027,
+    "Mouth Gag": 0.7898319572482413,
+    "Needle Holders": 0.8306820185535829,
+    "Raspatory": 0.8225752078159235,
+    "Retractor": NaN,
+    "Scalpel": 0.8975818968384818,
+    "Scissors": 0.6937966596952879,
+    "Skewer": 0.9478124052508601,
+    "Suction Cannula": 0.824739806322048,
+    "Syringe": 0.5629164891182683,
+    "Tweezers": 0.7737389253845621
+  },
+  "n_images": 1515,
+  "target_AP": 0.7976071588052587,
+  "target_missing": [],
+  "control_AP": 0.6642250758111153,
+  "control_missing": [],
+  "per_video_AP": {
+    "09": 0.6996078426079704,
+    "10": 0.6342916964782862
+  },
+  "task_id": "T-2026-11-09-stage2-pd-w3-lowlr-andrew",
+  "unofficial": true,
+  "type": "P3",
+  "type_name": "P3",
+  "w": "W3",
+  "arm": "shuffle",
+  "trainable_arg": "all",
+  "result_selection": "final_epoch",
+  "result_epoch": 3,
+  "eval_detection_mAP": 0.7218454004215398,
+  "diff_vs_eval_detection_mAP": 0.0,
+  "init": {
+    "AP": 0.7273450248398429,
+    "AP50": 0.851807431425236,
+    "target_AP": 0.7950748008550897,
+    "control_AP": 0.6726631817581498,
+    "per_video_AP": {
+      "09": 0.704273483949694,
+      "10": 0.6420973291237674
+    },
+    "target_missing": [],
+    "control_missing": []
+  },
+  "init_diff_vs_tower": {
+    "comparable": true,
+    "max_abs_score_diff": 0.0,
+    "max_abs_bbox_diff_px": 0.0,
+    "label_mismatch": 0
+  },
+  "per_epoch": {
+    "-1": {
+      "AP": 0.7273450248398429,
+      "AP50": 0.851807431425236,
+      "target_AP": 0.7950748008550897,
+      "control_AP": 0.6726631817581498,
+      "per_video_AP": {
+        "09": 0.704273483949694,
+        "10": 0.6420973291237674
+      },
+      "target_missing": [],
+      "control_missing": []
+    },
+    "0": {
+      "AP": 0.7230037824556723,
+      "AP50": 0.8485821794921399,
+      "target_AP": 0.7922817965761527,
+      "control_AP": 0.668926609296677,
+      "per_video_AP": {
+        "09": 0.7024923518688244,
+        "10": 0.638076254509
+      },
+      "target_missing": [],
+      "control_missing": []
+    },
+    "1": {
+      "AP": 0.72508981883993,
+      "AP50": 0.8494380330614338,
+      "target_AP": 0.796478039895488,
+      "control_AP": 0.6677824576290514,
+      "per_video_AP": {
+        "09": 0.7041172886298758,
+        "10": 0.6355709390980595
+      },
+      "target_missing": [],
+      "control_missing": []
+    },
+    "2": {
+      "AP": 0.7202315161672788,
+      "AP50": 0.846723052560377,
+      "target_AP": 0.7903543640020911,
+      "control_AP": 0.6642989133977343,
+      "per_video_AP": {
+        "09": 0.7025402506332658,
+        "10": 0.633517005896545
+      },
+      "target_missing": [],
+      "control_missing": []
+    },
+    "3": {
+      "AP": 0.7218454004215398,
+      "AP50": 0.848523508417485,
+      "target_AP": 0.7976071588052587,
+      "control_AP": 0.6642250758111153,
+      "per_video_AP": {
+        "09": 0.6996078426079704,
+        "10": 0.6342916964782862
+      },
+      "target_missing": [],
+      "control_missing": []
+    }
+  },
+  "last_epoch_matches_best_preds": true,
+  "per_epoch_eval_detection_mAP": {
+    "-1": 0.7273450248398429,
+    "0": 0.7230037824556723,
+    "1": 0.72508981883993,
+    "2": 0.7202315161672788,
+    "3": 0.7218454004215398
+  },
+  "gates_by_epoch": {
+    "-1": null,
+    "0": null,
+    "1": null,
+    "2": null,
+    "3": null
+  },
+  "receiver_motion": {
+    "iface_l2_by_param": {
+      "phase_iface.weight": 1.9700462818145752,
+      "phase_iface.bias": 0.48161008954048157
+    },
+    "receiver_keys": 372,
+    "receiver_elements": 48471200,
+    "receiver_delta_l2": 6.312603061714269,
+    "receiver_l2": 854.9175937568142,
+    "receiver_rel_delta": 0.0073838731449828165,
+    "keys_not_in_det_ckpt": [],
+    "ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-09-stage2-pd-w3-lowlr-andrew/pd_ckpt/w3lra_pd_P3_W3_shuffle_ep4_seed42/best_t1b.pth",
+    "ckpt_sha256": "3d975254b933d282b439f99685427738a6735636f5a3b41aed4893d3c5c206ef"
+  },
+  "total_trainable": 48473760,
+  "phase_params": 2560,
+  "frozen_unchanged": true,
+  "videos": {
+    "train": [
+      "01",
+      "02",
+      "03",
+      "06",
+      "08",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15"
+    ],
+    "val_evaluated": [
+      "09",
+      "10"
+    ],
+    "test_overlap": []
+  },
+  "server": "andrew",
+  "lr_record": {
+    "groups": [
+      {
+        "label": "other",
+        "lr_given": 1e-05,
+        "weight_decay_given": null,
+        "n_tensors": 125,
+        "n_elements": 24384000
+      },
+      {
+        "label": "backbone",
+        "lr_given": 1.0000000000000002e-06,
+        "weight_decay_given": null,
+        "n_tensors": 42,
+        "n_elements": 23232512
+      },
+      {
+        "label": "backbone_norm",
+        "lr_given": 1.0000000000000002e-06,
+        "weight_decay_given": 0,
+        "n_tensors": 0,
+        "n_elements": 0
+      },
+      {
+        "label": "linear_projection",
+        "lr_given": 1.0000000000000002e-06,
+        "weight_decay_given": null,
+        "n_tensors": 12,
+        "n_elements": 786432
+      },
+      {
+        "label": "linear_projection_norm",
+        "lr_given": 1.0000000000000002e-06,
+        "weight_decay_given": 0,
+        "n_tensors": 12,
+        "n_elements": 3072
+      },
+      {
+        "label": "other_norm",
+        "lr_given": 1e-05,
+        "weight_decay_given": 0,
+        "n_tensors": 181,
+        "n_elements": 65184
+      },
+      {
+        "label": "phase",
+        "lr_given": 0.0005,
+        "weight_decay_given": null,
+        "n_tensors": 2,
+        "n_elements": 2560
+      }
+    ],
+    "init": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+    },
+    "after_step_1": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+    },
+    "by_epoch": {
+      "0": {
+        "other": 1e-05,
+        "backbone": 1.0000000000000002e-06,
+        "backbone_norm": 1.0000000000000002e-06,
+        "linear_projection": 1.0000000000000002e-06,
+        "linear_projection_norm": 1.0000000000000002e-06,
+        "other_norm": 1e-05,
+        "phase": 0.0005
+      },
+      "1": {
+        "other": 1e-05,
+        "backbone": 1.0000000000000002e-06,
+        "backbone_norm": 1.0000000000000002e-06,
+        "linear_projection": 1.0000000000000002e-06,
+        "linear_projection_norm": 1.0000000000000002e-06,
+        "other_norm": 1e-05,
+        "phase": 0.0005
+      },
+      "2": {
+        "other": 1e-05,
+        "backbone": 1.0000000000000002e-06,
+        "backbone_norm": 1.0000000000000002e-06,
+        "linear_projection": 1.0000000000000002e-06,
+        "linear_projection_norm": 1.0000000000000002e-06,
+        "other_norm": 1e-05,
+        "phase": 0.0005
+      },
+      "3": {
+        "other": 1e-05,
+        "backbone": 1.0000000000000002e-06,
+        "backbone_norm": 1.0000000000000002e-06,
+        "linear_projection": 1.0000000000000002e-06,
+        "linear_projection_norm": 1.0000000000000002e-06,
+        "other_norm": 1e-05,
+        "phase": 0.0005
+      }
+    },
+    "constant_over_snapshots": true,
+    "n_snapshots": 7,
+    "opt_steps_at_last_eval": 19236
+  },
+  "lr_arg": 1e-05,
+  "film_lr_arg": 0.0005,
+  "seconds_to_finalize": 21001.382807,
+  "wandb": {
+    "mode": "offline",
+    "run_id": "8j2mipbr",
+    "dir": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-09-stage2-pd-w3-lowlr-andrew/wandb/wandb/offline-run-20261109_133433-8j2mipbr"
+  }
+}
