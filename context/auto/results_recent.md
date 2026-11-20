@@ -6,8 +6,50 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 161 件）。
-ここに出ない 156 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 162 件）。
+ここに出ない 157 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-11-09-stage2-pd-w3-lowlr-andrew
+
+状態 `pass` / ホスト `andrew` / 起票 `311` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 分岐 feat/stage2-pd-w3-lowlr-andrew、起点 origin/phase0 129e79b0 に tasks/T-2026-11-01-stage2-w23-bengio・tasks/T-2026-11-01-stage2-w23-andrew・scripts/w23 が在る。proc_enum で本契約以外の compute プロセス 0 件（zsh で 5 件、存在しない経路で 0 件）、空き 1,600,333,713,408 B、試験の失敗 6 件、.venv 108 行 9c7be5c9…・.venv-relation-detr 72 行 a74c9c78…、GPU 0・1 は RTX A6000・電力の上限 300 W。conventions_rev は実測と一致、created_from は食い違い差し替えた
+- `G2` pass — 信号 6・検出塔 2・設定 4・コード 2 の 14 本の sha256 が前回の記録と全件一致。塔単独の val は overall 0.7273450・標的群 0.7950748・陰性対照群 0.6726632 で記録との差 0.0。試走で受け取り手の群 1e-5・比 0.1 の群 1e-6・界面 5e-4。学ぶ名前の集合は P1 376・P2L 374・P3 374・DX 413 で前回の W3 と一致。16 腕とも学習前の出力が塔単独と score・box・ラベルで差 0
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — meta.created_from は d3e319ac・{index 2623, experiments 1305, verdicts 1947} だったが、起点 129e79b0 での実測は runindex を最後に変えた commit b524173e・{2647, 1327, 1977}。差し替えて meta.amendments に記録した
+- `asserted_without_measuring` — SPEC §9 の停止条件は「bengio に本契約以外の compute プロセスがある（Task A-3）」とするが、本契約のホストは andrew で、Task A-3 も andrew の compute プロセスを列挙させる。andrew の列挙で読み替えた
+- `asserted_without_measuring` — meta.created_at 2026-11-09T01:30:00Z（10:30 JST）は、本契約を取り込んだ task-start の完了（2026-11-09 10:02 JST 前後、audit.md §0）より約 28 分後の時刻であり、起票の時刻として成り立たない。内容の判断には使わない値なので差し替えず、記録だけした
+- `self_contradiction` — Task D-2 は README.md と docs/experiment_log.md に書かせるが、contract.allow_write は experiments/analysis/stage2_pd_w3_lowlr_andrew・experiments/phase1/w3lra_・runindex/ だけでこの二つを含まない。D-2 に従い、二つのファイルの末尾に本契約の節を足した
+
+### 逸脱
+
+- `judgement` — task-start の分類が、同期で届いた別の契約のファイル experiments/analysis/grasp_roitoken_transition_pilot/tools/digests.py（起点に無い）で止めた。利用者の指示（/task の引数「bengio の生成物のせいで止まったら .git/info/exclude において」）と SPEC A-2 に従い、.git/info/exclude の 22 行目にフォルダで足した。ファイルは消していない・動かしていない
+- `judgement` — train_t1b.py は optimizer の群の学習率を記録に出さず、既存のファイルは変えられないため、読み込んだ後の関数を元を呼んでから記録するものに差し替える包み tools/w3lra_lrwrap.py を通して全 run を起動した。学習の計算は変えていない（学習前の出力が 16 腕とも塔単独と差 0、学習の経路の中でも 16 本とも差 0）
+- `judgement` — allow_write が scripts/ を含まないため、前回の台本と道具の写し（run_w3lra.sh・w3lra_identity.py・w3lra_finalize.py・w3lra_aggregate.py・w3lra_report.py ほか）を experiments/analysis/stage2_pd_w3_lowlr_andrew/tools/ に置いた。既存のスクリプトは変えていない
+- `judgement` — 設定 P1・P2L・P3 と seed 123 の検出塔は前回の記録に sha256 が無かった（bengio の run の git_commit.txt は unknown、code_sha256.txt は設定を含まない）。前回の andrew の W3 の run の版 6edae0e9 の版管理の中身と、前の契約（grasp_pilot_arms・grasp_pilot_d）の repro の sha256 の記録を照合の記録に足した
+- `judgement` — 前回の W3 の値は SPEC §1 から写さず、前回の各 run の記録（w23b_pd_<型>-W3_<腕>/w23_metrics.json、w23a_pd_DX_W3_<腕>/w23a_metrics.json）から同じ関数で計算した。SPEC §1 の表と小数 4 桁で全件一致した
+- `environment` — 作業ツリーの make forbidden-check は、同期で届いた別の契約の出力 experiments/analysis/grasp_pilot_converge/tools/ の 9 件を違反として fail を返す。本契約の経路の違反は 0 件で、届いたファイルには触れていない。分岐の HEAD の写しで同じ検査器を回して違反 0 件を確かめた
+- `environment` — train_t1b.py は W&B を配線していない（既存のファイルは変えない）。後処理 w3lra_finalize.py が epoch ごとの val を wandb.init(mode=offline, dir=$S/wandb) で手元に記録した（16 件）。資格情報は読み込んでいない
+
+### 申し送り
+
+- 受け取り手の学習率を 1e-4 から 1e-5 にすると、W3 の空の腕の Δ塔（overall）は P1 −0.0578 → −0.0135、P2L −0.0372 → −0.0112、P3 −0.0292 → −0.0082、DX −0.0327 → −0.0025 になり、同じ型の 4 腕の幅も縮んだ（P1 0.0333 → 0.0125、DX 0.0224 → 0.0019）。受け取り手の動いた量（相対の L2）は 16 本とも 0.0074 で、前回の DX の 0.0552 より小さい。差が小さいのは動ける幅が小さいためとも読める（SPEC §6.4）
+- 正解の腕の Δ空（overall / 標的群）は P1 +0.0125 / +0.0301、P2L +0.0077 / +0.0187、P3 −0.0005 / +0.0010、DX −0.0018 / −0.0012。P1・P2L では正解と予測-noCF の腕が空と入れ替えの両方より高い。P3・DX では overall の Δ空・Δ入替 がどの腕も ±0.004 以内
+- 事前登録の予測は 1・2 が当たり、3 は外れた（P2L の正解の Δ空 は −0.0066 → +0.0077、P3 は −0.0062 → −0.0005 で負のまま）
+- P1 は 4 腕とも epoch 3 → 4 で overall が −0.0100〜−0.0116 下がった（正解 0.7363 → 0.7263）。ほかの型は ±0.0023 以内。学習率は一定。4 epoch 目の状態を結果にする規則のため、P1 の値はこの下がりを含む
+- 前回の P1・P2L・P3 は bengio、本契約は andrew で回した。並べた差には、学習率のほかにホストの違いが入りうる
+- 1e-5 で学習を長くする、1e-4 と 1e-5 の間の学習率、seed を増やすことは、本契約の表に無い。検出塔の選び直しが進んでいるため、塔が替われば本契約の値は旧い塔での測定になる
+
+### 断定できなかったこと
+
+- PR #311 は GitHub の判定で CONFLICTING（README.md と docs/experiment_log.md の末尾で、起点の後に phase0 へ入った #307・#309 の節と衝突）。契約は分岐への統合を禁じるため解消していない。解消するかは利用者の判断
+- P1 の 4 腕が epoch 3 → 4 で約 0.01 下がった理由（非数 0 件、学習率は一定、ほかの型には出ていない）
+- 前回の bengio の 3 型の受け取り手の動いた量（前回の記録に無い）
+- 前回との差のうち、ホストの違い（bengio 1 枚 4 本と andrew 1 枚 3 本）の寄与
 
 ## T-2026-11-09-grasp-roitoken-transition-pilot
 
@@ -193,46 +235,4 @@
 - 回していない 13 本に関わる値: 12 − 0（折りごと・10 本）、点ごとの 10 本の平均、5 折りの seed 間の SD、12 番 seed 123 と 0 番の副次の test、予測 1・3
 - 折り A で b6 と 0.0188 違った非決定性の由来
 - 要約値の検査が、前例の道具が消えた状態を検出したか（消えた状態では測っていない）
-
-## T-2026-11-06-tower-batch-probe
-
-状態 `pass` / ホスト `andrew` / 起票 `290` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 分岐 feat/tower-batch-probe、merge-base = origin/phase0 = HEAD = 89fe4a41。/proc/PID/exe の完全一致で compute プロセス 0 件（陽性対照 1、部分一致 0、存在しない経路 0）、nvidia-smi の compute 0。空き 1,644,111,155,200 bytes、試験の失敗 7 件の名前、.venv の freeze f6c43729…・.venv-relation-detr d0724876…、両 GPU の power.limit 300.00 W を記録
-- `G2` pass — 検出塔の batch 2・4・6 は 61 歩を完走し記憶と歩 11〜60 の一歩の平均・sd を記録、8 は rank 1 が歩 38 で OOM（最大確保 44,484,340,736 bytes）。全水準・全 rank で各歩の枚数の集合が {2}・{4}・{6}・{8}。COCO の重みの読み込みはログ行と initialization_rank*.json（matched、596 テンソル）
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — SPEC §3.3 は『train_search.py の batch_size を点ごとに渡す口があるので、それを使う』と書くが、実装は batch_size = 2 の固定で口が無い。指示どおり口を探すと見つからず、括弧の但し書き（写しを repo の外に置く）に従って写しを作ることになった
-- `asserted_without_measuring` — SPEC §2 は工程塔の二枚の道の 1 epoch を 604 歩とするが、それは旧 phase_manifest（9,657 フレーム）の値である。§3.3 が指す探索と同じ起動の形（phase_manifest_all_phase、10,580 フレーム）で回すと 662 歩になり、§2 の値とは一致しない
-- `self_contradiction` — §6 b・c の空振りの確認『重みを読まない写しで記憶が変わる』は §3.1 に無い run を足すことを要し、§7.11『§3.1 に無い水準を足さない』と衝突する。字面どおり両方は満たせないので、本契約は対照を回さず UNKNOWN と記録した
-
-### 逸脱
-
-- `spec_defect` — SPEC §3.3 の『train_search.py の batch_size を点ごとに渡す口』は無かったので、batch_size の 1 行だけを環境変数 PROBE_BATCH_SIZE にした写しを repo の外（$STORE/config/train_search_batch.py）に置いて渡した。原本は無変更
-- `judgement` — 工程塔には歩数で止める口が無く、既存の観測口 TOWER_SEARCH_OBSERVER に tools/observer.py を渡して 61 歩目の後（val と checkpoint の保存の前）に SystemExit(0) で止めた。repo への公開は既存の +control_only=true で止めた。scripts/ は無変更
-- `judgement` — 一歩の時間は、検出塔ではモデルの forward に入った時刻の間隔、工程塔では前の歩の GPU 処理を torch.cuda.synchronize() で待ってから次の batch を受け取った時刻の間隔とした。どちらも読み込みの待ちを含む。定常は歩 11〜60 の 50 歩
-- `judgement` — 工程塔は探索と同じ manifest（phase_manifest_all_phase、折り A の train 10,580 フレーム）で測った。dlsta の 604 歩は旧 phase_manifest（9,657 フレーム）の値で、本契約は 662 歩。並べるときは別の値として書いた
-- `judgement` — §6 b・c の対照『重みを読まない写しで記憶が変わる』は §3.1 に無い run を要し §7.11 と衝突するので回さなかった（positive_controls で UNKNOWN）
-- `judgement` — 起動の失敗 3 回: 実行器が自分の PID を compute として数えて拒んだ（--exclude-pid を足した）、load_env.sh を読まずに W&B の追跡が起きなかった、zsh で for lv in 'ph2 8' の $lv が分かれず 6 本とも IndexError。前二つの記録は消さず $STORE/refused_det_b2_try1/ と $STORE/failed_det_b2_try2_no_env/ へ移した
-- `judgement` — W&B の追跡を起こすため load_env.sh で資格情報を読み込んだが、WANDB_MODE=offline で手元（作業場所）にだけ書き、送っていない
-- `judgement` — 要約値に工程塔が読む画像の置き場 data/raw/OpenSurgery_Dataset/01_frames/initial_videos を加えるため、計測の前に基準を取り直した（digests_before2.json）。一度目と重なる項目は全項目同じ
-- `judgement` — 工程塔の起動で Hydra（run.dir が . ）が repo 直下に空の run_ptower_search.log（0 bytes、2026-11-05T17:21:03Z、ph2_b8 の起動時刻）を作った。本契約の置き場の外だが禁止領域ではない。ファイルの削除は無断で行わない規則なので残し、commit していない
-- `environment` — det_b8 では rank 1 の OOM で rank 0 が止められ、rank 0 の torch の記憶の記録が書かれなかった（UNKNOWN。nvidia-smi の最大 48,150 MiB は在る）
-
-### 申し送り
-
-- 工程塔の歩数は manifest で変わる（旧 phase_manifest 604 歩、phase_manifest_all_phase 662 歩、GPU ごと 8 × 2 枚）。塔の選び直しの所要の見込みは、使う manifest の歩数で計算すること
-- 検出塔の GPU 使用率の平均は b2〜b6 で 43〜69 % と低く、学習ログの data_time は 0.01 s 未満だった。律速の箇所は切り分けていない
-- repo 直下の空の run_ptower_search.log（本契約の工程塔の起動で Hydra が作った）を消すかは利用者の判断
-- 版管理の外の生の記録 /home/ubuntu/slocal2/stage2pilot_store/T-2026-11-06-tower-batch-probe/ を残した（重みは無い）。片付けは利用者の判断
-
-### 断定できなかったこと
-
-- det_b8 の rank 0 の torch の最大確保と予約
-- COCO の重みを読まないときの記憶（§6 b・c の対照）
-- 検出塔の GPU 使用率が低い理由
-- val・評価・起動を含めた 1 epoch の時間と、61 歩より先の歩で溢れるかどうか
 
