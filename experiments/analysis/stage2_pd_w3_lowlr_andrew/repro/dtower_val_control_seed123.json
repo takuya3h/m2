@@ -1,0 +1,54 @@
+{
+  "task_id": "T-2026-10-18-stage2-pilot-folda",
+  "cfg": "plain",
+  "det_ckpt": "/home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed123/work/best_ap.pth",
+  "det_ckpt_sha256": "5842a2ae11999e610ff8d92f1fe32f2f669a62c4836830da0f791f88b0cf9f8a",
+  "iface_state": null,
+  "fixed_table": null,
+  "perturb": false,
+  "signal_val": null,
+  "zero_ctx": true,
+  "dim": 9,
+  "videos": [
+    "09",
+    "10"
+  ],
+  "eval_detection_mAP": 0.728863105195762,
+  "load_report": {
+    "missing_from_ckpt": [],
+    "unexpected_in_ckpt": [],
+    "missing_are_interface_only": true
+  },
+  "non_interface_digest": "90cd2fe93168c096e2b8dd216412c70cbb87e332bd8dfaf938088214d8c3d20e",
+  "interface_params": 0,
+  "metrics": {
+    "AP": 0.728863105195762,
+    "AP50": 0.85167484955022,
+    "per_class_ap": {
+      "Bipolar Forceps": 0.8049210586204265,
+      "Electric Cautery": 0.9478328282963757,
+      "Forceps": 0.34270765826116617,
+      "Gauze": 0.28009552834928964,
+      "Hook": 0.5802199428400445,
+      "Mouth Gag": 0.8028339426383383,
+      "Needle Holders": 0.8509927954947708,
+      "Raspatory": 0.8411043033062571,
+      "Retractor": NaN,
+      "Scalpel": 0.8962086509858449,
+      "Scissors": 0.6844590942550872,
+      "Skewer": 0.9338421021543039,
+      "Suction Cannula": 0.8205225144769323,
+      "Syringe": 0.6410842377020615,
+      "Tweezers": 0.7772588153597684
+    },
+    "n_images": 1515,
+    "target_AP": 0.8234320705537787,
+    "target_missing": [],
+    "control_AP": 0.6701777002060821,
+    "control_missing": [],
+    "per_video_AP": {
+      "09": 0.697344665870463,
+      "10": 0.6581516828826168
+    }
+  }
+}

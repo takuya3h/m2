@@ -1,0 +1,295 @@
+{
+  "AP": 0.7197724011918458,
+  "AP50": 0.8466264254195962,
+  "per_class_ap": {
+    "Bipolar Forceps": 0.7197085393151721,
+    "Electric Cautery": 0.9633462642434649,
+    "Forceps": 0.3382062250233934,
+    "Gauze": 0.25560421936296807,
+    "Hook": 0.6233426681325659,
+    "Mouth Gag": 0.8047528437130964,
+    "Needle Holders": 0.8437982058141789,
+    "Raspatory": 0.8104010822726438,
+    "Retractor": NaN,
+    "Scalpel": 0.9111814045983508,
+    "Scissors": 0.6873096817113541,
+    "Skewer": 0.954883340950465,
+    "Suction Cannula": 0.8297919621961914,
+    "Syringe": 0.5604631782464143,
+    "Tweezers": 0.7740240011055833
+  },
+  "n_images": 1515,
+  "target_AP": 0.7913275090766093,
+  "target_missing": [],
+  "control_AP": 0.6660432565944598,
+  "control_missing": [],
+  "per_video_AP": {
+    "09": 0.6998343102654613,
+    "10": 0.6390782496446616
+  },
+  "task_id": "T-2026-11-09-stage2-pd-w3-lowlr-andrew",
+  "unofficial": true,
+  "type": "P1",
+  "type_name": "FiLM（P1）",
+  "w": "W3",
+  "arm": "pred_noCF",
+  "trainable_arg": "all",
+  "result_selection": "final_epoch",
+  "result_epoch": 3,
+  "eval_detection_mAP": 0.7197724011918458,
+  "diff_vs_eval_detection_mAP": 0.0,
+  "init": {
+    "AP": 0.7273450248398429,
+    "AP50": 0.851807431425236,
+    "target_AP": 0.7950748008550897,
+    "control_AP": 0.6726631817581498,
+    "per_video_AP": {
+      "09": 0.704273483949694,
+      "10": 0.6420973291237674
+    },
+    "target_missing": [],
+    "control_missing": []
+  },
+  "init_diff_vs_tower": {
+    "comparable": true,
+    "max_abs_score_diff": 0.0,
+    "max_abs_bbox_diff_px": 0.0,
+    "label_mismatch": 0
+  },
+  "per_epoch": {
+    "-1": {
+      "AP": 0.7273450248398429,
+      "AP50": 0.851807431425236,
+      "target_AP": 0.7950748008550897,
+      "control_AP": 0.6726631817581498,
+      "per_video_AP": {
+        "09": 0.704273483949694,
+        "10": 0.6420973291237674
+      },
+      "target_missing": [],
+      "control_missing": []
+    },
+    "0": {
+      "AP": 0.7280232806000758,
+      "AP50": 0.8538750145044057,
+      "target_AP": 0.7996141460652927,
+      "control_AP": 0.677923127134675,
+      "per_video_AP": {
+        "09": 0.6999444818830671,
+        "10": 0.6402336202424762
+      },
+      "target_missing": [],
+      "control_missing": []
+    },
+    "1": {
+      "AP": 0.7291022506382646,
+      "AP50": 0.8547543249363604,
+      "target_AP": 0.808774617187443,
+      "control_AP": 0.6691127455309113,
+      "per_video_AP": {
+        "09": 0.7043072278013743,
+        "10": 0.6424307737373252
+      },
+      "target_missing": [],
+      "control_missing": []
+    },
+    "2": {
+      "AP": 0.7314022629968611,
+      "AP50": 0.8572995021669859,
+      "target_AP": 0.8058604795237937,
+      "control_AP": 0.6785906506210163,
+      "per_video_AP": {
+        "09": 0.7063876312098433,
+        "10": 0.6502710529035857
+      },
+      "target_missing": [],
+      "control_missing": []
+    },
+    "3": {
+      "AP": 0.7197724011918458,
+      "AP50": 0.8466264254195962,
+      "target_AP": 0.7913275090766093,
+      "control_AP": 0.6660432565944598,
+      "per_video_AP": {
+        "09": 0.6998343102654613,
+        "10": 0.6390782496446616
+      },
+      "target_missing": [],
+      "control_missing": []
+    }
+  },
+  "last_epoch_matches_best_preds": true,
+  "per_epoch_eval_detection_mAP": {
+    "-1": 0.7273450248398429,
+    "0": 0.7280232806000758,
+    "1": 0.7291022506382646,
+    "2": 0.7314022629968611,
+    "3": 0.7197724011918458
+  },
+  "gates_by_epoch": {
+    "-1": null,
+    "0": null,
+    "1": null,
+    "2": null,
+    "3": null
+  },
+  "receiver_motion": {
+    "iface_l2_by_param": {
+      "phase_iface.mlp.0.weight": 4.82141637802124,
+      "phase_iface.mlp.0.bias": 1.4773460626602173,
+      "phase_iface.mlp.2.weight": 18.472782135009766,
+      "phase_iface.mlp.2.bias": 3.284041404724121
+    },
+    "receiver_keys": 372,
+    "receiver_elements": 48471200,
+    "receiver_delta_l2": 6.314025825908076,
+    "receiver_l2": 854.9175937568142,
+    "receiver_rel_delta": 0.007385537357070855,
+    "keys_not_in_det_ckpt": [],
+    "ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-09-stage2-pd-w3-lowlr-andrew/pd_ckpt/w3lra_pd_P1_W3_pred_noCF_ep4_seed42/best_t1b.pth",
+    "ckpt_sha256": "6c9fe615a76212cff3e4c5af4754f1e0e804f7314ff6435d6aad93874aba1dc7"
+  },
+  "total_trainable": 48738080,
+  "phase_params": 266880,
+  "frozen_unchanged": true,
+  "videos": {
+    "train": [
+      "01",
+      "02",
+      "03",
+      "06",
+      "08",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15"
+    ],
+    "val_evaluated": [
+      "09",
+      "10"
+    ],
+    "test_overlap": []
+  },
+  "server": "andrew",
+  "lr_record": {
+    "groups": [
+      {
+        "label": "other",
+        "lr_given": 1e-05,
+        "weight_decay_given": null,
+        "n_tensors": 125,
+        "n_elements": 24384000
+      },
+      {
+        "label": "backbone",
+        "lr_given": 1.0000000000000002e-06,
+        "weight_decay_given": null,
+        "n_tensors": 42,
+        "n_elements": 23232512
+      },
+      {
+        "label": "backbone_norm",
+        "lr_given": 1.0000000000000002e-06,
+        "weight_decay_given": 0,
+        "n_tensors": 0,
+        "n_elements": 0
+      },
+      {
+        "label": "linear_projection",
+        "lr_given": 1.0000000000000002e-06,
+        "weight_decay_given": null,
+        "n_tensors": 12,
+        "n_elements": 786432
+      },
+      {
+        "label": "linear_projection_norm",
+        "lr_given": 1.0000000000000002e-06,
+        "weight_decay_given": 0,
+        "n_tensors": 12,
+        "n_elements": 3072
+      },
+      {
+        "label": "other_norm",
+        "lr_given": 1e-05,
+        "weight_decay_given": 0,
+        "n_tensors": 181,
+        "n_elements": 65184
+      },
+      {
+        "label": "phase",
+        "lr_given": 0.0005,
+        "weight_decay_given": null,
+        "n_tensors": 4,
+        "n_elements": 266880
+      }
+    ],
+    "init": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+    },
+    "after_step_1": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+    },
+    "by_epoch": {
+      "0": {
+        "other": 1e-05,
+        "backbone": 1.0000000000000002e-06,
+        "backbone_norm": 1.0000000000000002e-06,
+        "linear_projection": 1.0000000000000002e-06,
+        "linear_projection_norm": 1.0000000000000002e-06,
+        "other_norm": 1e-05,
+        "phase": 0.0005
+      },
+      "1": {
+        "other": 1e-05,
+        "backbone": 1.0000000000000002e-06,
+        "backbone_norm": 1.0000000000000002e-06,
+        "linear_projection": 1.0000000000000002e-06,
+        "linear_projection_norm": 1.0000000000000002e-06,
+        "other_norm": 1e-05,
+        "phase": 0.0005
+      },
+      "2": {
+        "other": 1e-05,
+        "backbone": 1.0000000000000002e-06,
+        "backbone_norm": 1.0000000000000002e-06,
+        "linear_projection": 1.0000000000000002e-06,
+        "linear_projection_norm": 1.0000000000000002e-06,
+        "other_norm": 1e-05,
+        "phase": 0.0005
+      },
+      "3": {
+        "other": 1e-05,
+        "backbone": 1.0000000000000002e-06,
+        "backbone_norm": 1.0000000000000002e-06,
+        "linear_projection": 1.0000000000000002e-06,
+        "linear_projection_norm": 1.0000000000000002e-06,
+        "other_norm": 1e-05,
+        "phase": 0.0005
+      }
+    },
+    "constant_over_snapshots": true,
+    "n_snapshots": 7,
+    "opt_steps_at_last_eval": 19236
+  },
+  "lr_arg": 1e-05,
+  "film_lr_arg": 0.0005,
+  "seconds_to_finalize": 21058.353515,
+  "wandb": {
+    "mode": "offline",
+    "run_id": "m3lcvtkw",
+    "dir": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-09-stage2-pd-w3-lowlr-andrew/wandb/wandb/offline-run-20261109_074430-m3lcvtkw"
+  }
+}
