@@ -1,0 +1,93 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-11-20-grasp-hand-graph-pilot"
+  kind: analysis
+  title: "把持塔を 3 クラスに作り直し、手の塔（4 クラス）を新しく作り、検出塔・把持塔・手の塔（自分の手だけ）の予測から術具と手のグラフを作って工程塔へ渡す非公式の予備測定（andrew、Fold A、seed 42、W1・W2・W3、収束規則）"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-11-20T05:00:00Z"
+  created_from:
+    runindex_commit: "b524173e"
+    counts: {index: 2647, experiments: 1327, verdicts: 1977}
+  depends_on:
+    - T-2026-10-18-stage2-pilot-folda
+    - T-2026-11-05-grasp-tower-rebuild
+    - T-2026-11-08-grasp-cards-survey
+    - T-2026-11-09-grasp-roitoken-transition-pilot
+    - T-2026-11-09-grasp-pilot-converge
+  amendments: []
+intent:
+  question: "自分の手ごとの把持（器具のクラスだけにした把持塔）、自分の左右の手の位置（手の塔）、術具の種類と位置（検出塔）を一つのグラフにして工程塔の時間ヘッドの入力へ渡すと、同じ学習範囲の空の腕と、送り手を減らした腕に対して、工程の val の値がどう動くか。あわせて、器具のクラスだけにした把持塔の器具のクラスの AP が、同じホストで学んだ手のクラスを含む把持塔の器具のクラスの AP と比べてどうか"
+  decision_at_stake: "グラフで把持・手・術具の予測を工程塔へ渡す形を、次の予備や提案カードに進めるかを利用者が考える材料。非公式の予備測定で、関門の判定と設計の判断（案の採否を含む）には使わない"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery の動画 01〜15。Fold A（conventions#folds）の train と val だけを使い、test の動画 04・05・07 は一度も通さない。把持塔は hand_tool_seg の器具の 3 クラス、手の塔は hand_seg の 4 クラスの注釈で学ぶ。工程塔と検出塔は前回までの予備測定と同じ凍結した塔"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints:
+      - "scripts/stage2pilot/dp_train.py"
+      - "scripts/stage2pilot/dp_model.py"
+contract:
+  inject_verbatim:
+    - conventions#prohibitions
+    - conventions#issuer_cautions
+    - conventions#env_p0
+    - conventions#folds
+    - conventions#split
+    - conventions#crossfit
+    - conventions#symmetry
+  conventions_rev: "2d946b07"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values]
+  verbatim_forbidden: true
+  allow_write:
+    - "experiments/analysis/grasp_hand_graph_pilot/"
+    - "experiments/phase1/grasp_hand_graph_"
+plan:
+  phases:
+    - {id: A, name: "開始状態と入力の実在の確認", gpu: false, est: "1 時間"}
+    - {id: B, name: "3 クラスの把持塔・4 クラスの手の塔・同じホストの 5 クラスの対照の学習", gpu: true, est: "14〜20 時間"}
+    - {id: C, name: "塔の出力（信号）の作成とグラフの作成", gpu: true, est: "2〜4 時間"}
+    - {id: D, name: "グラフの interface の腕を W1・W2・W3 で学ぶ", gpu: true, est: "1〜3 時間"}
+    - {id: E, name: "集計・報告・PR", gpu: false, est: "2 時間"}
+  gates:
+    - {id: G1, after: A, check: "起点に前提の道具と材料があり、andrew に本契約以外の compute が無く、保存先の空きが足りる", on_fail: stop}
+    - {id: G2, after: B, check: "三種の塔が収束規則で止まり、選んだ回の val の mask mAP が学習前の値を上回り、左右反転でラベルが入れ替わっている", on_fail: stop}
+    - {id: G3, after: C, check: "正解の腕のグラフが注釈と一致し、学習前の出力が全腕で塔単独と一致し、陽性対照で変わる", on_fail: stop}
+    - {id: G4, after: D, check: "表の全本が収束規則で終わり、記録がそろっている", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, gpu_free]
+  resources: {server: andrew, gpu: 2, est_hours: 30, runs: 103}
+outputs:
+  must_have: [REPORT.md, RESULT.md, result.yaml, audit.md]
+  destination: "experiments/analysis/grasp_hand_graph_pilot/"
+  acceptance:
+    - "a: 開始状態（分岐、起点、前提の道具の在否、未追跡、compute プロセスの一覧、保存先の空き、試験の失敗の名前、既存の仮想環境の要約値、GPU ごとの電力の上限）が記録されている"
+    - "b: 3 クラスの把持塔 G3 の 3 本（確定と交差適合の半分 H1・H2）、4 クラスの手の塔 H4 の 3 本、5 クラスの把持塔の対照 G5r の 1 本が SPEC の学習設定と止め方で学ばれ、epoch ごとの val の mask mAP とクラス別 AP、止まった回、選んだ回、所要が記録されている"
+    - "c: 左右反転でラベルが入れ替わることが、G3 と H4 の両方で、入れ替えない写しとの対照つきで示されている"
+    - "d: G3 の器具 3 クラスの AP と G5r の器具 3 クラスの AP が並べてあり、bengio の G の値は参考として別欄にある"
+    - "e: 信号（G3・H4 の出力）が train は交差適合の半分から、val は確定の塔から作られ、要約値・フレーム数・被覆が目録に記録されている"
+    - "f: グラフが SPEC §4 の定義どおりに作られ、正解の腕のグラフの持ち手が注釈と一致し、腕ごとの節と特徴の在否が SPEC §5 の表と一致している"
+    - "g: 腕の全本が SPEC §5 の表どおりに収束規則で回り、学習前の出力が全腕で塔単独と一致し、最良の回と最後の回の val の確率が保存されている"
+    - "h: 同じ W・同じ設定の中の差が SPEC §7 の読み方で表にあり、6 工程の Jaccard、frame accuracy、工程別、動画ごとが並んでいる"
+    - "i: test の動画 04・05・07 を塔の学習・信号の作成・グラフの作成・腕の学習・評価のどこにも通していないことが、各段で通した動画の集合で示されている"
+    - "j: 前回までの予備測定の出力と保存先の既存の中身、data の raw と external と注釈、凍結した塔、既存の checkpoint、third_party、既存の仮想環境を変えていない。試験の失敗が増えていない"
+    - "k: PR が Draft でなく存在し、base が phase0、分岐が feat/grasp-hand-graph-pilot"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required:
+    - "停止条件に当たったときの続け方（実行者は決めない）"
+    - "グラフの定義（SPEC §4）を変えないと実装できない場合の変え方"
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "andrew に本契約以外の compute プロセスがある場合（止めずに利用者に諮る）"
+    - "前提の道具・材料（SPEC §1.3）が起点や保存先に無い場合"
+    - "塔の学習が発散する、または上限の 36 epoch で止まらない場合"
+    - "塔の選んだ回の val の mask mAP が学習前の値を上回らない場合"
+    - "グラフの interface を、既存の道具の既定の挙動や third_party を変えないと実装できない場合"
+    - "保存先の空きが足りない場合"
+    - "実行基盤が書き込み、移動、削除、外部の取得を拒む場合"
