@@ -8,7 +8,7 @@ merged: false
 
 gates:
   - {id: G1, verdict: pass, note: "前提の道具 7 件が起点 89b9406d に在り、本契約以外の compute は 0 件（容器の中。GPU 全体の使用量と一覧の差 0）、空き 1,578,110,177,280 B。SPEC §1.3 の $S/inputs/（G の入力の写し）が andrew に無く停止して諮った。利用者の選択で COCO の重みの原本を 10-31 の保存先から $O/inputs/coco/ へ写し、sha256 41b088b62838c986…de06879 が原本と一致。塔の注釈は本契約で組み直した"}
-  - {id: G2, verdict: pass, note: "塔 7 本（G3 確定・H1・H2、H4 確定・H1・H2、G5r）が忍耐 4 で止まり（止まった回 6〜15、上限 36 に届かず）、選んだ回の val の mask mAP 0.4955〜0.6560 が学習前 0.0050〜0.0060 を上回る。学習後の反転の整合（左右のクラスの soft IoU）は入れ替え 0.650・0.736・0.795、入れ替えない写し 0.022・0.193・0.019（G3・H4・G5r）。反転の取り出しは三種とも 24/24 でラベルが入れ替わる"}
+  - {id: G2, verdict: pass, note: "塔 7 本（G3 確定・H1・H2、H4 確定・H1・H2、G5r）が early stopping の patience 4 で止まり（止まった回 6〜15、上限 36 に届かず）、選んだ回の val の mask mAP 0.4955〜0.6560 が学習前 0.0050〜0.0060 を上回る。学習後の反転の整合（左右のクラスの soft IoU）は入れ替え 0.650・0.736・0.795、入れ替えない写し 0.022・0.193・0.019（G3・H4・G5r）。反転の取り出しは三種とも 24/24 でラベルが入れ替わる"}
   - {id: G3, verdict: pass, note: "正解の腕の持ち手の argmax と注釈の把持の一致 train 20,433/21,021（0.972）・val 3,610/3,807（0.948）。腕ごとの節・持ち手・手・辺の在否の外れ 0（7 腕 × 2 part）。学習前の出力が 4 設定 × W1・W2・W3 × 8 腕の 96 組み合わせで塔単独と一致（ロジットの差の最大 0.0、J 0.7762185528074379）。W2・W3 の学ぶ範囲の名前が定義と一致"}
   - {id: G4, verdict: pass, note: "腕 96 本が rc 0 で、すべて収束規則の打ち切りで止まった（総 epoch 17〜51、上限 120 に届いた本 0）。96 本とも config.yaml・command.sh・git_commit.txt・metrics.json・metrics_last.json・per_class_ap.json・notes.md・history・val_probs_best/last が在り、config の task_id は本契約、git_commit は 096d56b9"}
 
