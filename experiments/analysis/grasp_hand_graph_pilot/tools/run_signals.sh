@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # G3・H4 の信号（推論）と学習後の反転の整合（非公式 T-2026-11-20-grasp-hand-graph-pilot、Task C）。
 # 塔ごとに確定・H1・H2 の 3 本の記録（metrics.json）がそろうのを待ち、その塔の G2 の部分（打ち切りで止まった・選んだ回が学習前を上回る）を
-# 確かめてから推論する。G3 は GPU 0、H4 は GPU 1（学習中の塔と分け合う。推論は 1 本 8 GB 程度）。
+# 確かめ、学習後の反転の整合（§3.4）で左右のクラスの入れ替えが働いていることを確かめてから推論する。外れたら $O/logs/STOP_<塔> を置いて止まる。G3 は GPU 0、H4 は GPU 1（学習中の塔と分け合う。推論は 1 本 8 GB 程度）。
 #   train: 確定の塔を train 全体（noCF の腕）、H1 の塔を H2 の動画、H2 の塔を H1 の動画（交差適合）。val: 確定の塔
 #   bash experiments/analysis/grasp_hand_graph_pilot/tools/run_signals.sh G3 0   （塔、GPU）
 set -u
@@ -13,10 +13,15 @@ GPU=$2
 RAW=$O/signals/raw
 mkdir -p "$RAW" "$O/flip" "$O/logs"
 EV=$O/logs/signals_events.log
-for v in all H1 H2; do
-  until [ -s "experiments/phase1/grasp_hand_graph_tower_${T}_${v}_seed42/metrics.json" ]; do sleep 60; done
+for v in all H1 H2; do   # 塔が失敗して記録が出ないときは、塔の待ち行列の rc を見て止まる
+  until [ -s "experiments/phase1/grasp_hand_graph_tower_${T}_${v}_seed42/metrics.json" ]; do
+    if grep -q "end grasp_hand_graph_tower_${T}_${v}_seed42 rc=[1-9]" "$O/queues/towers/events.log" 2>/dev/null; then
+      echo "$(date '+%F %T %Z') $T $v の学習が失敗。推論しない" >> "$EV"; touch "$O/logs/STOP_${T}"; exit 2
+    fi
+    sleep 60
+  done
 done
-python - "$T" <<'EOF' >> "$EV" 2>&1 || { echo "$(date '+%F %T %Z') $T G2 部分の外れ。推論しない" >> "$EV"; exit 3; }
+python - "$T" <<'EOF' >> "$EV" 2>&1 || { echo "$(date '+%F %T %Z') $T G2 部分の外れ。推論しない" >> "$EV"; touch "$O/logs/STOP_${T}"; exit 3; }
 import json, sys
 t = sys.argv[1]
 bad = []
@@ -27,6 +32,21 @@ for v in ("all", "H1", "H2"):
     bad += [] if ok else [v]
 sys.exit(1 if bad else 0)
 EOF
+# G2 の反転の部分（§3.4）: 学習後の整合を推論より前に測り、左右のクラスで入れ替えた一致が入れ替えない写しを上回らなければ止まる
+for L in final coco; do
+  CK=$O/ckpt/${T}_all/best.pth
+  [ $L = coco ] && CK=coco
+  CUDA_VISIBLE_DEVICES=$GPU python scripts/grasppilot/ghg_tower.py flipmodel --tower "$T" --ann-dir "$O/ann" --ckpt "$CK" --label $L \
+    --out "$O/flip/flipmodel_${T}_${L}.json" > "$O/logs/flipmodel_${T}_${L}.log" 2>&1
+  echo "$(date '+%F %T %Z') flipmodel $T $L rc=$?" >> "$EV"
+done
+python - "$O/flip/flipmodel_${T}_final.json" <<'PY' >> "$EV" 2>&1 || { echo "$(date '+%F %T %Z') $T G2 反転の外れ。推論しない" >> "$EV"; touch "$O/logs/STOP_${T}"; exit 4; }
+import json, sys
+d = json.load(open(sys.argv[1]))
+sw, no = d["swap_soft_iou_mean_over_lr_classes"], d["noswap_soft_iou_mean_over_lr_classes"]
+print(f"G2flip {d['tower']} swap={sw} noswap={no} ok={sw is not None and no is not None and sw > no}")
+sys.exit(0 if (sw is not None and no is not None and sw > no) else 1)
+PY
 TRAIN=01,02,03,06,08,11,12,13,14,15
 run() {   # 名前 重み 当てる塔 part 動画
   echo "$(date '+%F %T %Z') start $1" >> "$EV"
@@ -38,11 +58,4 @@ run "${T}_all_val" "$O/ckpt/${T}_all/best.pth" all val 09,10
 run "${T}_H1_train" "$O/ckpt/${T}_H1/best.pth" H1 train 02,03,08,13,14
 run "${T}_H2_train" "$O/ckpt/${T}_H2/best.pth" H2 train 01,06,11,12,15
 run "${T}_all_train" "$O/ckpt/${T}_all/best.pth" all train $TRAIN
-for L in final coco; do
-  CK=$O/ckpt/${T}_all/best.pth
-  [ $L = coco ] && CK=coco
-  CUDA_VISIBLE_DEVICES=$GPU python scripts/grasppilot/ghg_tower.py flipmodel --tower "$T" --ann-dir "$O/ann" --ckpt "$CK" --label $L \
-    --out "$O/flip/flipmodel_${T}_${L}.json" > "$O/logs/flipmodel_${T}_${L}.log" 2>&1
-  echo "$(date '+%F %T %Z') flipmodel $T $L rc=$?" >> "$EV"
-done
 echo "$(date '+%F %T %Z') $T signals done" >> "$EV"

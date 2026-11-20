@@ -152,6 +152,12 @@ def main():
                              "init_phase_jaccard": m["init_phase_jaccard"], "receiver_unchanged": m.get("receiver_unchanged"),
                              "norms": m.get("norms"), "negative_control": m.get("negative_control"),
                              "iface_params": m["iface_params"], "history_val_jaccard": [h["val_jaccard"] for h in hist]}
+    # 完了判定 g の空振りの対照: 存在しない腕の名前で 0 件、在る run の名前で 1 件になること（SPEC §8 Task D）
+    end_check = {"expected_runs": len(SCOPES) * len(SETTINGS) * len(ARMS), "found_runs": len(runs),
+                 "nonexistent_arm_hits": len(find_run("W1", 10, 1, "NO_SUCH_ARM")),
+                 "known_run_hits": len(find_run("W1", 10, 1, "DGH")),
+                 "all_converged": all(r["early_stopped_epoch"] is not None or r["reached_cap"] for r in runs.values()),
+                 "reached_cap": [k for k, r in runs.items() if r["reached_cap"]]}
     diffs = []
     for sc in SCOPES:
         for s, n, layers in SETTINGS:
@@ -200,7 +206,8 @@ def main():
     if hand:
         pred["p4_h4_own_gt_other"] = {"own": hand["own_mean"], "other": hand["other_mean"], "hit": hand["own_mean"] > hand["other_mean"]}
     summary = {"task_id": TASK, "unofficial": True, "present_phases": ctx.present, "towers": tw, "tower_compare": cmp, "hands": hand,
-               "tower_alone": alone, "runs": runs, "n_runs": len(runs), "missing": missing, "recompute_checks": checks,
+               "tower_alone": alone, "runs": runs, "n_runs": len(runs), "missing": missing, "end_check": end_check,
+               "recompute_checks": checks,
                "recompute_max_dev": max((c["max_dev"] for c in checks), default=None),
                "recompute_control_all_detected": all(c["control_shift_detected"] for c in checks),
                "j7_equals_phase_jaccard_all": all(c["j7_equals_phase_jaccard"] for c in checks),
@@ -208,6 +215,7 @@ def main():
                "n_diffs_best": len(best_rows), "n_metrics_identical_best": sum(d["metrics_identical"] for d in best_rows),
                "n_unreadable_best": sum(not d["readable"] for d in best_rows)}
     C.write_json(a.out, summary)
+    print(json.dumps(end_check, ensure_ascii=False))
     print(json.dumps({k: summary[k] for k in ("n_runs", "recompute_max_dev", "recompute_control_all_detected", "j7_equals_phase_jaccard_all",
                                               "n_diffs_best", "n_metrics_identical_best", "n_unreadable_best")}, ensure_ascii=False))
     print("missing", len(missing), missing[:3])
