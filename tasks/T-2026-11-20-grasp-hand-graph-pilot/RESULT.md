@@ -104,5 +104,5 @@ W2 = 界面 ＋ 末端の refine、W3 = 界面 ＋ head 全体。収束規則は
 
 ## 7. 送出
 
-- PR: 未（起票の後に書く）
+- PR: 312（https://github.com/takuya3h/m2/pull/312、base phase0、Draft でない、OPEN、head `feat/grasp-hand-graph-pilot`。`gh pr view 312 --json` で確認）
 - `make task-report`: 未（送信の後に書く）
