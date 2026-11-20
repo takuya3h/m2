@@ -1887,3 +1887,19 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
 - 結果: **val の最良を選ぶ規則では、W1 の界面は 1〜2 epoch で選ばれ、学ぶほど val が下がった**（最終 − 最良の中央 −0.020）。checkpoint の界面は前の予備より大きくならない run が 79/127。
   案 5 の W1 の S_W − S_0 は前の処方の 4/4 正から 0/4 に変わった。殺し実験の線形の層は、P の train の特徴だけで train が分け切れるため、正則化を変えても陽性対照が J 0.64〜0.68 で働かない
 - 道具は `experiments/analysis/grasp_pilot_converge/tools/`。前の予備の材料（空間特徴・トークン・窓の列）は読むだけで作り直していない
+
+### 把持と手のグラフを工程塔へ渡す予備測定（2026-11-20、andrew）
+
+契約 `T-2026-11-20-grasp-hand-graph-pilot`（analysis。**非公式の予備測定。関門の判定と設計の判断に使わない**）。把持塔を器具 3 クラスの G3 に組み直し、
+自分の手を含む 4 クラスの手の塔 H4 と、同じホストの 5 クラスの対照 G5r を学んだ（Mask2Former R50、COCO の重みから、塔 7 本）。検出塔・G3・H4 の予測から
+フレームごとの術具と自分の手のグラフ（辺は左・右・両手の 3 種）を作り、零初期化の界面（型 GR）で工程塔の時間ヘッドの入力へ足して、8 腕 × 4 設定 × W1・W2・W3 の 96 本を収束規則で回した。
+結果は `experiments/analysis/grasp_hand_graph_pilot/REPORT.md`（`tools/make_report.py` が記録から作る）、信号とグラフの目録は同じ場所の `signals_manifest.json`、
+記録は `tasks/T-2026-11-20-grasp-hand-graph-pilot/`、塔の重み・信号・グラフ・界面の重みは版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/grasp_hand_graph/`。
+
+- 変更: `scripts/grasppilot/ghg_tower.py`（三種の塔の注釈・反転・学習・推論）と `ghg_graph.py`（グラフの材料と組み立て）を新しく足した。
+  `scripts/stage2pilot/dp_model.py` に型 `graph`（`ToolHandGraph`）、`dp_train.py` に型 GR・腕 D・DG・DH・DGH・DGH-U・DGH-noCF・DGH-GT・引数 `--gr-dir --gr-N --gr-L --ckpt-dir --save-last-probs` を**足す形**で書いた。
+  **渡さなければ従来の経路のまま**（前回の run `stage2pilot_dp_009` の回し直しと、W3・収束規則の起点の版との比べで全記録一致）
+- 塔: val の mask mAP は G3 0.5737（器具 3 クラス）、H4 0.6045、G5r 0.6560（5 クラス。器具 3 クラスの平均 0.5907）。学習後の反転で左右のクラスが入れ替わる
+- 腕: 学習前の出力は 96 組み合わせで塔単独と一致。同じ W・同じ設定の中の差は 96 個のうち 66 個が 6 工程の平均で ±0.015 の中。DGH-GT − A0 は W1 +0.019〜+0.024、
+  W2 +0.075〜+0.080、W3 +0.011〜+0.023。辺の無い腕（A0・D・DG・DH）は L1 と L2 で val の確率まで一致した
+- 道具は `experiments/analysis/grasp_hand_graph_pilot/tools/`。third_party・注釈・前回の材料・仮想環境は変えていない（要約値の前後一致）

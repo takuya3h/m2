@@ -313,11 +313,20 @@ denominator・frozen_source・sigma_policy の参照は無い。`inputs.data.spl
     $ uv pip list ... | sha256sum   → .venv 9c7be5c9…、.venv-relation-detr a74c9c78…（A-5 と一致）
     $ sha256sum 工程塔の best.pth・特徴のキャッシュ all_gap.npz・COCO の重みの写し
     0d76d446…6ad6d・c402e214…172da・41b088b6…de06879（A-8・G1 と一致）
+    $ find data/annotations data/raw data/external third_party $S/T-2026-10-18-stage2-pilot-folda $S/T-2026-11-05-grasp-tower-rebuild $S/T-2026-10-31-grasp-pilot-probe -newer $O/start/a1.txt
+    （0 件。開始の記録より後に書き換わったファイルは無い。検出塔の上位 300 の 4 ファイルの大きさは A-8 と一致、注釈 4 ファイルの更新は 2026-10-06・07）
+    $ git diff --stat origin/phase0 -- data third_party   → 差 0
     $ git diff --numstat origin/phase0 -- scripts/ src/ tests/ configs/
     ghg_graph.py +504・ghg_tower.py +670（新規）、dp_model.py +67 −3、dp_train.py +75 −5（消した 8 行は型・腕の組や分岐の条件に要素を足した行の旧版）
     $ make forbidden-check TASK=T-2026-11-20-grasp-hand-graph-pilot
     status pass、changed 987、permitted 979、violations 0、effective_allowances 2（allow_write の 2 経路）
     対照: TASK を渡さないと status fail・本契約の経路が違反として名指される（許可を読まないと拾う）
+
+### E-3 腕の学習・評価の段の test（完了判定 i の残り）
+
+    96 本の config.yaml の videos: train 01,02,03,06,08,11,12,13,14,15・val 09,10（96/96 同じ）、{04, 05, 07} との共通 0
+    （dp_train は実行時に `C.assert_no_test` で共通 1 件以上なら止まる）。対照: 同じ数え方に 04 を混ぜた集合で共通 1
+- 塔・推論・検出・グラフの段は C-6（20 段とも 0、04 のフレームを混ぜた対照で 1）
 
 ## 逸脱と判断の控え（RESULT へ写す）
 
@@ -331,4 +340,4 @@ denominator・frozen_source・sigma_policy の参照は無い。`inputs.data.spl
 - judgement: G3・H4 の推論（Task C）は、その塔の 3 本の G2 の部分（打ち切り・学習前を上回る・反転の整合）を確かめた後、残りの塔（H4 の半分・G5r）の学習と並行して始める
 - environment: ruff の指摘が新しい道具に 4 件（import の並び 3、変数名 `O` 1）。学習中の塔の記録に要約値が入っている `ghg_tower.py` は書き換えていない
 - judgement: G5r の学習後の反転の整合は §3.4（G3・H4）の外だが、G2 の「三種の塔」に合わせて同じ道具で測った（B-4）
-- self_defect: `ghg_graph.py assemble` の誤り 2 件を直して回し直した（C-6。一致の関数の KeyError、試験の動画の検査がフレームの識別子を見ていた）。グラフの出力は直す前後で要約値が一致
+- judgement（実行者の道具の誤り）: `ghg_graph.py assemble` の誤り 2 件を直して回し直した（C-6。一致の関数の KeyError、試験の動画の検査がフレームの識別子を見ていた）。グラフの出力は直す前後で要約値が一致
