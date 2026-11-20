@@ -23,6 +23,12 @@
     transwin  遷移の符号化（SPEC §3.3、案 5）。窓の k 個の時点の入力［特徴 D｜有無 1］を時点ごとの小さな MLP（D + 1 → K → K）
               ＋ 相対時刻の埋め込みで K 次元にし、x(t) を問い合わせにした 1 層の多頭注意（4 head）で束ね、零初期化の出力射影
               （K → 2048）で特徴に足す。無い時点は 0 と印 0 のまま入れる（隠さない）。k = 1 でも同じ界面
+
+契約 T-2026-11-20-grasp-hand-graph-pilot（SPEC §4）で足した型:
+    graph     術具と自分の手のグラフ（ToolHandGraph）。s (T, N + 2, 27) の行 0..N−1 が術具の節［有無 1｜特徴 23｜辺の重み 3］、
+              行 N・N + 1 が自分の左手・右手の節［有無 1｜特徴 8｜0］。節の種類ごとの MLP（→ K → K）で K 次元に写し、
+              辺の種類（左・右・両手）ごとに別の重みで L 段伝播し、種類ごとの平均と最大で読み出した 4K 次元を、
+              零初期化の線形層（4K → 2048）で特徴に足す。節の無いフレームは読み出しが 0
 """
 from __future__ import annotations
 
@@ -30,7 +36,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-TYPES = ("concat", "film", "attn", "logit_corr", "tool_hist", "tool_hist_nogate", "roitoken", "transwin")
+TYPES = ("concat", "film", "attn", "logit_corr", "tool_hist", "tool_hist_nogate", "roitoken", "transwin", "graph")
 LAST_STAGE_TYPES = ("logit_corr", "tool_hist", "tool_hist_nogate")
 
 
@@ -134,6 +140,61 @@ class TransWindow(nn.Module):
         return x + self.out(o)
 
 
+class ToolHandGraph(nn.Module):
+    """SPEC §4.3（契約 T-2026-11-20-grasp-hand-graph-pilot）。s (T, N + 2, 27)。
+
+    術具の行 = ［有無 1｜クラス 15・得点 1・枠 4・持ち手 3｜辺の重み 3（左・右・両手の種類）］、手の行 = ［有無 1｜側 2・得点 1・枠 4・面積 1｜0］。
+    辺の種類 e の隣接 A_e (T, N, 2): 左は術具 → 左手、右は術具 → 右手、両手は術具 → 左手と右手の両方。手の無い側の辺は 0。
+    伝播（L 段）: h_t ← (h_t + ReLU(Σ_e A_e W^{ht}_e h_h))、h_h ← (h_h + ReLU(Σ_e A_eᵀ W^{th}_e h_t))、無い節は 0 のまま。
+    読み出し: 術具・手それぞれの在る節の平均と最大（無ければ 0）を並べた 4K。出力射影（4K → 2048）は零初期化。
+    """
+
+    TOOL_F, HAND_F, EDGE_T = 23, 8, 3
+
+    def __init__(self, n_tools: int, layers: int, dim: int = 2048, k: int = 64):
+        super().__init__()
+        self.n, self.layers, self.k = n_tools, layers, k
+        self.enc_t = nn.Sequential(nn.Linear(self.TOOL_F, k), nn.ReLU(inplace=True), nn.Linear(k, k))
+        self.enc_h = nn.Sequential(nn.Linear(self.HAND_F, k), nn.ReLU(inplace=True), nn.Linear(k, k))
+        self.ht = nn.ModuleList([nn.ModuleList([nn.Linear(k, k) for _ in range(self.EDGE_T)]) for _ in range(layers)])
+        self.th = nn.ModuleList([nn.ModuleList([nn.Linear(k, k) for _ in range(self.EDGE_T)]) for _ in range(layers)])
+        self.out = nn.Linear(4 * k, dim)
+        nn.init.zeros_(self.out.weight)
+        nn.init.zeros_(self.out.bias)
+
+    @staticmethod
+    def _readout(h, present):                     # h (T, M, K)、present (T, M) bool → (T, 2K)
+        p = present[..., None].to(h.dtype)
+        cnt = p.sum(1).clamp_min(1.0)
+        mean = (h * p).sum(1) / cnt
+        mx = torch.where(present[..., None], h, torch.full_like(h, float("-inf"))).amax(1)
+        mx = torch.where(present.any(1)[:, None], mx, torch.zeros_like(mx))
+        return torch.cat([mean, mx], -1)
+
+    def adjacency(self, s):
+        """辺の種類ごとの隣接 (T, 3, N, 2)。術具・手の有無で切る。"""
+        n = self.n
+        tp, hp = s[:, :n, 0] > 0.5, s[:, n:n + 2, 0] > 0.5
+        e = s[:, :n, 1 + self.TOOL_F:1 + self.TOOL_F + self.EDGE_T] * tp[..., None].to(s.dtype)     # (T, N, 3)
+        z = torch.zeros_like(e[..., :1])
+        a = torch.stack([torch.cat([e[..., 0:1], z], -1), torch.cat([z, e[..., 1:2]], -1),
+                         torch.cat([e[..., 2:3], e[..., 2:3]], -1)], 1)                             # (T, 3, N, 2)
+        return a * hp[:, None, None, :].to(s.dtype), tp, hp
+
+    def forward(self, x, s):                      # x (T, 2048)、s (T, N + 2, 27)
+        n = self.n
+        a, tp, hp = self.adjacency(s)
+        ht = self.enc_t(s[:, :n, 1:1 + self.TOOL_F]) * tp[..., None].to(x.dtype)
+        hh = self.enc_h(s[:, n:n + 2, 1:1 + self.HAND_F]) * hp[..., None].to(x.dtype)
+        for layer in range(self.layers):
+            mt = sum(torch.einsum("tns,tsk->tnk", a[:, e], self.ht[layer][e](hh)) for e in range(self.EDGE_T))
+            mh = sum(torch.einsum("tns,tnk->tsk", a[:, e], self.th[layer][e](ht)) for e in range(self.EDGE_T))
+            ht = (ht + F.relu(mt)) * tp[..., None].to(x.dtype)
+            hh = (hh + F.relu(mh)) * hp[..., None].to(x.dtype)
+        r = torch.cat([self._readout(ht, tp), self._readout(hh, hp)], -1)
+        return x + self.out(r)
+
+
 class LogitCorrection(nn.Module):
     """SPEC §3.3。u = GELU(W_in x + W_p softmax(ℓ0) + b) ∈ ℝ^32、Δℓ = W_out u（W_out と bias を零初期化）。"""
 
@@ -177,7 +238,8 @@ class ToolHistory(nn.Module):
 
 
 class DPReceiver(nn.Module):
-    def __init__(self, head, iface_type: str, sig_dim: int, d: int = 64, heads: int = 4, hidden: int = 64, rt=None, tw=None):
+    def __init__(self, head, iface_type: str, sig_dim: int, d: int = 64, heads: int = 4, hidden: int = 64, rt=None, tw=None,
+                 gr=None):
         super().__init__()
         if iface_type not in TYPES:
             raise ValueError(iface_type)
@@ -205,6 +267,8 @@ class DPReceiver(nn.Module):
                                    rt["k"], heads)
         elif iface_type == "transwin":
             self.iface = TransWindow(sig_dim, tw["slots"], head.stage1.conv_in.in_channels, tw["k"], heads)
+        elif iface_type == "graph":
+            self.iface = ToolHandGraph(gr["n_tools"], gr["layers"], head.stage1.conv_in.in_channels, gr["k"])
         elif iface_type == "logit_corr":
             self.iface = LogitCorrection(sig_dim, self.last_stage().conv_out.out_channels, 32)
         else:
@@ -231,7 +295,7 @@ class DPReceiver(nn.Module):
             x = self.iface(x, s)
         elif self.iface_type == "attn" and s is not None:
             x = self.iface(x, s, mask)
-        elif self.iface_type in ("roitoken", "transwin") and s is not None:
+        elif self.iface_type in ("roitoken", "transwin", "graph") and s is not None:
             x = self.iface(x, s)                  # mask は行の印（参照段の学ぶ・測る行）で、界面は使わない
         st = self.head.stage1
         out = st.conv_in(x.T[None])
