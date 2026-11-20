@@ -15,7 +15,10 @@ meta:
     - T-2026-11-08-grasp-cards-survey
     - T-2026-11-09-grasp-roitoken-transition-pilot
     - T-2026-11-09-grasp-pilot-converge
-  amendments: []
+  amendments:
+    - date: "2026-11-20"
+      reason: "preflight P6 が未回答 2 件で FAIL し、利用者に二つの項目を示した。利用者の回答「両方その都度諮る」（2026-11-20）。停止条件に当たったら止めて報告し、続け方は利用者がその都度決める。§4 を変えないと実装できなければ変えずに止め、変え方は利用者がその都度決める"
+      diff: "governance.decisions_required: [停止条件に当たったときの続け方（実行者は決めない）, グラフの定義（SPEC §4）を変えないと実装できない場合の変え方] -> []（回答は本項の reason）"
 intent:
   question: "自分の手ごとの把持（器具のクラスだけにした把持塔）、自分の左右の手の位置（手の塔）、術具の種類と位置（検出塔）を一つのグラフにして工程塔の時間ヘッドの入力へ渡すと、同じ学習範囲の空の腕と、送り手を減らした腕に対して、工程の val の値がどう動くか。あわせて、器具のクラスだけにした把持塔の器具のクラスの AP が、同じホストで学んだ手のクラスを含む把持塔の器具のクラスの AP と比べてどうか"
   decision_at_stake: "グラフで把持・手・術具の予測を工程塔へ渡す形を、次の予備や提案カードに進めるかを利用者が考える材料。非公式の予備測定で、関門の判定と設計の判断（案の採否を含む）には使わない"
@@ -78,9 +81,7 @@ outputs:
     - "k: PR が Draft でなく存在し、base が phase0、分岐が feat/grasp-hand-graph-pilot"
   report_to: [notion_run_ledger]
 governance:
-  decisions_required:
-    - "停止条件に当たったときの続け方（実行者は決めない）"
-    - "グラフの定義（SPEC §4）を変えないと実装できない場合の変え方"
+  decisions_required: []
   deviations_required: true
   integrity: [no_fabrication, unknown_if_unmeasured]
   escalate_if:
