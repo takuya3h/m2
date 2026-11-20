@@ -80,7 +80,7 @@ def main():
                          f"{v['labels_swapped']}/{d['frames']} | {v['labels_unchanged']}/{d['frames']} |")
     L += ["", "学習後の整合（val の 40 フレーム、soft IoU。入れ替えた一致 / 入れ替えない写し）:", "",
           "| 塔 | 重み | 全クラス swap | 全クラス noswap | 左右のクラス swap | 左右のクラス noswap |", "|---|---|---|---|---|---|"]
-    for t in ("G3", "H4"):
+    for t in ("G3", "H4", "G5r"):   # G5r は §3.4 の外。G2 の「三種の塔」に合わせて測った
         for lab in ("final", "coco"):
             d = load(O / f"flip/flipmodel_{t}_{lab}.json")
             if d:
@@ -188,7 +188,7 @@ def main():
         sc, st, arm = k.split("|")
         L.append(f"| {sc} | {st} | {'A0' if arm == 'empty' else arm} | {r['epochs_run']} | {r['lr_drop_epoch']} | {r['best_epoch']} | {r['reached_cap']} | "
                  f"{r['elapsed_seconds']:.1f} | {f4(r['best']['six_phase_mean'])} |")
-    L += ["", f"- run {s['n_runs']} 本、欠け {len(s['missing'])} 件", ""]
+    L += ["", f"- run {s['n_runs']} 本、欠け {len(s['missing'])} 件。並行は GPU 2 枚 × 4 本（`tools/run_arms.sh` の NW = 8）", ""]
     # 予測
     p = s["predictions"]
     L += ["## 7. 予測の当たり外れ（SPEC §7.1）", ""]

@@ -1,0 +1,58 @@
+{
+  "best_epoch": 8,
+  "converge": {
+    "lr_factor": 0.1,
+    "max_epochs": 120,
+    "min_delta": 0.0001,
+    "patience": 8
+  },
+  "early_stopped_epoch": 24,
+  "elapsed_seconds": 84.76458427030593,
+  "epochs_run": 24,
+  "eval_recipe": {
+    "test_cfg": {
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "split": "val",
+      "task": "phase"
+    }
+  },
+  "iface_ckpt": "/home/ubuntu/slocal2/stage2pilot_store/grasp_hand_graph/dp_ckpt/grasp_hand_graph_arm_017_GR-W1-N10-L2_DGH-GT_conv_seed42.pth",
+  "iface_ckpt_sha256": "57bf6d6779c84e4dd2aeebc37ad2c215798aa7297c69df5a38fee9978451585f",
+  "iface_params": 586688,
+  "init_phase_accuracy": 0.8712871287128713,
+  "init_phase_jaccard": 0.7762185528074379,
+  "lr_drop_epoch": 16,
+  "norms": {
+    "best": {
+      "out_w_l2": 5.111683368682861,
+      "out_w_max_abs": 0.03630774840712547
+    },
+    "final": {
+      "out_w_l2": 7.912224292755127,
+      "out_w_max_abs": 0.06954820454120636
+    },
+    "init": {
+      "out_w_l2": 0.0,
+      "out_w_max_abs": 0.0
+    }
+  },
+  "per_video": {
+    "09": {
+      "phase_accuracy": 0.9942084942084942,
+      "phase_jaccard": 0.9862965091521769
+    },
+    "10": {
+      "phase_accuracy": 0.835506519558676,
+      "phase_jaccard": 0.7347097903488882
+    }
+  },
+  "phase_accuracy": 0.8897689768976897,
+  "phase_jaccard": 0.783721140833986,
+  "phase_macro_f1": 0.8634224588232043,
+  "reached_epoch_cap": false,
+  "receiver_unchanged": true,
+  "result_epoch": 8,
+  "result_selection": "best_val_jaccard",
+  "steps_without_grad": 0
+}

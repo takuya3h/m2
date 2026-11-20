@@ -1,0 +1,35 @@
+{
+  "best_epoch": 6,
+  "early_stopped_epoch": 16,
+  "elapsed_seconds": 27.594776230864227,
+  "epochs_run": 16,
+  "eval_recipe": {
+    "test_cfg": {
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "split": "val",
+      "task": "phase"
+    }
+  },
+  "iface_ckpt": "/home/ubuntu/slocal2/stage2pilot_store/grasp_hand_graph/repro/dp_ckpt/grasp_hand_graph_repro_001_D1-L1_pred_noCF_seed42.pth",
+  "iface_ckpt_sha256": "c6bcb3dae19f30347a4f1accfdb9247d47e039ee50f82b42d34b4fff8129cef0",
+  "iface_params": 960,
+  "init_phase_accuracy": 0.8712871287128713,
+  "init_phase_jaccard": 0.7762185528074379,
+  "per_video": {
+    "09": {
+      "phase_accuracy": 0.9961389961389961,
+      "phase_jaccard": 0.9931717398646169
+    },
+    "10": {
+      "phase_accuracy": 0.8224674022066198,
+      "phase_jaccard": 0.6954072624538401
+    }
+  },
+  "phase_accuracy": 0.8818481848184818,
+  "phase_jaccard": 0.785115373498492,
+  "phase_macro_f1": 0.8642645618554197,
+  "reached_epoch_cap": false,
+  "receiver_unchanged": true,
+  "steps_without_grad": 0
+}

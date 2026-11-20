@@ -274,6 +274,51 @@ denominator・frozen_source・sigma_policy の参照は無い。`inputs.data.spl
 - 不合格 0 件（`bad: []`）。界面の大きさ L1 561,728・L2 586,688（N によらない）
 - **G3 は通る**（C-6 の正解のグラフと注釈の一致、C-7 の恒等性と陽性対照）。2026-11-21 JST
 
+## Task D — 腕（G4）
+
+### D-1 96 本（`experiments/phase1/grasp_hand_graph_arm_{001..096}_*`、`tools/run_arms.sh`、記録 `$O/logs/arms/events.log`）
+
+    2026-11-21 04:38:41 JST 開始、05:00:30 JST 終わり（21 分 49 秒）。GPU 2 枚 × 4 本並行（NW = 8）
+    rc=0 96 本、rc≠0 0 本、飛ばし 0 本。1 本 4.3〜182.8 s
+
+- 収束規則: 96 本とも打ち切りで止まった（上限 120 に届いた本 0）。総 epoch 17〜51、選んだ回 1〜35
+- 証拠: 96 本とも config.yaml・command.sh・git_commit.txt・metrics.json・metrics_last.json・per_class_ap.json・notes.md・logs/history.json・
+  predictions/val_probs_{best,last}.npz が在る。config の task_id は 96/96 で本契約、git_commit は 96/96 で 096d56b9
+- 受け取り手: W1 の 32 本は `receiver_unchanged` が True（W2・W3 の 64 本は学ぶので False）
+- 終わりの確かめ（`tools/aggregate.py` の end_check）: 期待 96・見つけた 96、存在しない腕の名前で 0 件、在る run の名前で 1 件
+- **G4 は通る**
+
+### D-2 腕の間でちょうど同じになったもの（確率で確かめた）
+
+- 辺の無い腕（A0・D・DG・DH）は、同じ W・同じ N で L1 と L2 の val の確率が一致した（12 組とも差 0・argmax の違い 0、選んだ回も同じ）。
+  辺が無いと伝播の層に流れるものが無く、L の層は出力に効かない。辺の在る DGH は L で変わる（確率の差 0.201〜0.724、argmax の違い 17〜72 フレーム）。
+  A0 はさらに N にもよらない（入力が空）。SPEC §5 の「A0 は interface の大きさが設定で変わるので設定ごとに回す」は、W ごとに 4 本とも同じ値になった
+- W2 の N10（L1・L2）の DG − D は指標がちょうど同じ（2 個）。確率は最大 0.0146 違うが、argmax が全フレームで一致した
+
+## Task E — 集計・報告
+
+### E-1 集計（`$O/e/summary.json`、`tools/aggregate.py`）と REPORT（`experiments/analysis/grasp_hand_graph_pilot/REPORT.md`、`tools/make_report.py`、477 行）
+
+    {"expected_runs": 96, "found_runs": 96, "nonexistent_arm_hits": 0, "known_run_hits": 1, "all_converged": true, "reached_cap": []}
+    {"n_runs": 96, "recompute_max_dev": 0.0, "recompute_control_all_detected": true, "j7_equals_phase_jaccard_all": true,
+     "n_diffs_best": 96, "n_metrics_identical_best": 2, "n_unreadable_best": 66}
+
+- 測り直し: 96 本の最良と最後の回の val の確率から J・acc・工程別 J を測り直し、記録とのずれの最大 0.0。1e-6 ずらした写しは 96/96 で検出
+- `make_report.py` に G5r の反転の行と並行の数を足した（集計の前）
+
+### E-2 変えていないこと（完了判定 j。`$O/end/`）
+
+    $ CUDA_VISIBLE_DEVICES="" PYTHONPATH=src .venv/bin/python -m pytest -q -p no:cacheprovider -rfE --continue-on-collection-errors
+    6 failed, 985 passed, 5 skipped（30.89 s）。失敗の名前は開始時（A-5）と diff で一致
+    $ uv pip list ... | sha256sum   → .venv 9c7be5c9…、.venv-relation-detr a74c9c78…（A-5 と一致）
+    $ sha256sum 工程塔の best.pth・特徴のキャッシュ all_gap.npz・COCO の重みの写し
+    0d76d446…6ad6d・c402e214…172da・41b088b6…de06879（A-8・G1 と一致）
+    $ git diff --numstat origin/phase0 -- scripts/ src/ tests/ configs/
+    ghg_graph.py +504・ghg_tower.py +670（新規）、dp_model.py +67 −3、dp_train.py +75 −5（消した 8 行は型・腕の組や分岐の条件に要素を足した行の旧版）
+    $ make forbidden-check TASK=T-2026-11-20-grasp-hand-graph-pilot
+    status pass、changed 987、permitted 979、violations 0、effective_allowances 2（allow_write の 2 経路）
+    対照: TASK を渡さないと status fail・本契約の経路が違反として名指される（許可を読まないと拾う）
+
 ## 逸脱と判断の控え（RESULT へ写す）
 
 - judgement: `meta.created_from`・`contract.conventions_rev` は起点の実測と一致し、§0 の「差し替えて amendments に記録」は差し替えるものが無かった（起票者は食い違いを想定）
