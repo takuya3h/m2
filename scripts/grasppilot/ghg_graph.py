@@ -318,7 +318,7 @@ def grasp_agreement(gt, frames, hold_by_frame, swap=False):
     for f in frames:
         g = gt.grasp(f)
         tl = gt.tools(f)
-        if g is None or tl is None or not len(g[0]):
+        if g is None or tl is None or not len(g[0]) or not len(tl[0]):   # 正解の器具の枠が 0 個のフレームは数える枠が無い
             continue
         im = gt.hts_img[f]
         h, w = im["height"], im["width"]
@@ -452,7 +452,7 @@ def cmd_assemble(a):
                       "val_from": sorted({s["G3"] for s in src["cf"].values()}) if part == "val" else None}
         agree = grasp_agreement(gt, frames, gt_hold) if part == "val" or a.agree_train else None
         agree_swap = grasp_agreement(gt, frames, gt_hold, swap=True) if agree is not None else None
-        rep["parts"][part] = {"frames": F, "videos": videos_check(frames), "counts": dict(cnt), "gt_stats": dict(gt.stats),
+        rep["parts"][part] = {"frames": F, "videos": videos_check(sorted({C.video_of(f) for f in frames})), "counts": dict(cnt), "gt_stats": dict(gt.stats),
                               "files": files, "table_check": tc, "table_check_control_wrong_arm": tc_ctrl,
                               "provenance": prov[part], "gt_grasp_agreement": agree, "gt_grasp_agreement_control_swapLR": agree_swap,
                               "flags": {arm: flags_all[f"{arm}_{part}"] for arm in ARMS}}
@@ -466,7 +466,7 @@ def cmd_assemble(a):
     stage_videos.update({f"det_{k}": json.loads((O / "signals/det/det_report.json").read_text())[k]["videos"] for k in DET_SRC})
     stage_videos.update({f"graph_{p}": rep["parts"][p]["videos"]["videos"] for p in ("train", "val")})
     rep["i_test_unused"] = {k: videos_check(v) for k, v in stage_videos.items()}
-    rep["i_control_04_mixed"] = videos_check(list(stage_videos["graph_train"]) + ["04"])
+    rep["i_control_04_mixed"] = videos_check(sorted({C.video_of(f) for f in seqs["train"] + ["04_1_0001"]}))   # 対照: train のフレームに試験の動画のフレームを 1 つ混ぜ、同じ経路（フレーム → 動画）に通す
     if any(x["n_overlap"] for x in rep["i_test_unused"].values()):
         raise RuntimeError("test の動画が混入")
     man = {"task_id": TASK, "unofficial": True, "host": os.uname().nodename,
