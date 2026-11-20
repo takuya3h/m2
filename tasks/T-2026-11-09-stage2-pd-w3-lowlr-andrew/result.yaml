@@ -1,0 +1,89 @@
+result_version: 3
+task_id: "T-2026-11-09-stage2-pd-w3-lowlr-andrew"
+status: pass
+host: "andrew"
+branch: "feat/stage2-pd-w3-lowlr-andrew"
+pr: 311
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "分岐 feat/stage2-pd-w3-lowlr-andrew、起点 origin/phase0 129e79b0 に tasks/T-2026-11-01-stage2-w23-bengio・tasks/T-2026-11-01-stage2-w23-andrew・scripts/w23 が在る。proc_enum で本契約以外の compute プロセス 0 件（zsh で 5 件、存在しない経路で 0 件）、空き 1,600,333,713,408 B、試験の失敗 6 件、.venv 108 行 9c7be5c9…・.venv-relation-detr 72 行 a74c9c78…、GPU 0・1 は RTX A6000・電力の上限 300 W。conventions_rev は実測と一致、created_from は食い違い差し替えた"}
+  - {id: G2, verdict: pass, note: "信号 6・検出塔 2・設定 4・コード 2 の 14 本の sha256 が前回の記録と全件一致。塔単独の val は overall 0.7273450・標的群 0.7950748・陰性対照群 0.6726632 で記録との差 0.0。試走で受け取り手の群 1e-5・比 0.1 の群 1e-6・界面 5e-4。学ぶ名前の集合は P1 376・P2L 374・P3 374・DX 413 で前回の W3 と一致。16 腕とも学習前の出力が塔単独と score・box・ラベルで差 0"}
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 985
+
+deviations:
+  - {type: judgement, note: "task-start の分類が、同期で届いた別の契約のファイル experiments/analysis/grasp_roitoken_transition_pilot/tools/digests.py（起点に無い）で止めた。利用者の指示（/task の引数「bengio の生成物のせいで止まったら .git/info/exclude において」）と SPEC A-2 に従い、.git/info/exclude の 22 行目にフォルダで足した。ファイルは消していない・動かしていない"}
+  - {type: judgement, note: "train_t1b.py は optimizer の群の学習率を記録に出さず、既存のファイルは変えられないため、読み込んだ後の関数を元を呼んでから記録するものに差し替える包み tools/w3lra_lrwrap.py を通して全 run を起動した。学習の計算は変えていない（学習前の出力が 16 腕とも塔単独と差 0、学習の経路の中でも 16 本とも差 0）"}
+  - {type: judgement, note: "allow_write が scripts/ を含まないため、前回の台本と道具の写し（run_w3lra.sh・w3lra_identity.py・w3lra_finalize.py・w3lra_aggregate.py・w3lra_report.py ほか）を experiments/analysis/stage2_pd_w3_lowlr_andrew/tools/ に置いた。既存のスクリプトは変えていない"}
+  - {type: judgement, note: "設定 P1・P2L・P3 と seed 123 の検出塔は前回の記録に sha256 が無かった（bengio の run の git_commit.txt は unknown、code_sha256.txt は設定を含まない）。前回の andrew の W3 の run の版 6edae0e9 の版管理の中身と、前の契約（grasp_pilot_arms・grasp_pilot_d）の repro の sha256 の記録を照合の記録に足した"}
+  - {type: judgement, note: "前回の W3 の値は SPEC §1 から写さず、前回の各 run の記録（w23b_pd_<型>-W3_<腕>/w23_metrics.json、w23a_pd_DX_W3_<腕>/w23a_metrics.json）から同じ関数で計算した。SPEC §1 の表と小数 4 桁で全件一致した"}
+  - {type: environment, note: "作業ツリーの make forbidden-check は、同期で届いた別の契約の出力 experiments/analysis/grasp_pilot_converge/tools/ の 9 件を違反として fail を返す。本契約の経路の違反は 0 件で、届いたファイルには触れていない。分岐の HEAD の写しで同じ検査器を回して違反 0 件を確かめた"}
+  - {type: environment, note: "train_t1b.py は W&B を配線していない（既存のファイルは変えない）。後処理 w3lra_finalize.py が epoch ごとの val を wandb.init(mode=offline, dir=$S/wandb) で手元に記録した（16 件）。資格情報は読み込んでいない"}
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "meta.created_from は d3e319ac・{index 2623, experiments 1305, verdicts 1947} だったが、起点 129e79b0 での実測は runindex を最後に変えた commit b524173e・{2647, 1327, 1977}。差し替えて meta.amendments に記録した"
+  - type: asserted_without_measuring
+    note: "SPEC §9 の停止条件は「bengio に本契約以外の compute プロセスがある（Task A-3）」とするが、本契約のホストは andrew で、Task A-3 も andrew の compute プロセスを列挙させる。andrew の列挙で読み替えた"
+  - type: asserted_without_measuring
+    note: "meta.created_at 2026-11-09T01:30:00Z（10:30 JST）は、本契約を取り込んだ task-start の完了（2026-11-09 10:02 JST 前後、audit.md §0）より約 28 分後の時刻であり、起票の時刻として成り立たない。内容の判断には使わない値なので差し替えず、記録だけした"
+  - type: self_contradiction
+    note: "Task D-2 は README.md と docs/experiment_log.md に書かせるが、contract.allow_write は experiments/analysis/stage2_pd_w3_lowlr_andrew・experiments/phase1/w3lra_・runindex/ だけでこの二つを含まない。D-2 に従い、二つのファイルの末尾に本契約の節を足した"
+
+positive_controls:
+  - judgement: "a（compute プロセスの列挙）"
+    breaking_input: "存在する実行ファイル（/usr/bin/zsh）と存在しない経路（/nonexistent/bin/python9）を渡す"
+    observed: "zsh で 5 件（自分のシェルを含む）、存在しない経路で 0 件"
+  - judgement: "b（材料の要約値の照合）"
+    breaking_input: "P0_val.npz の複製の 1000 バイト目を反転する"
+    observed: "反転した複製は sha256 286564a6… で記録と不一致（変えない複製は一致）。開始時と終了時の両方で同じ"
+  - judgement: "b（塔単独の再現の許容差）"
+    breaking_input: "別 seed（123）の検出塔を評価する"
+    observed: "overall の差 +0.0015 は許容差の中だが、標的群 AP の差 +0.0284 で許容差 0.005 を超えた"
+  - judgement: "c（学習率が群に届くこと）"
+    breaking_input: "受け取り手の学習率を 1e-4 にした数歩の写し（P1 正解）"
+    observed: "受け取り手の群が 1e-4、比 0.1 の群が 1e-5 に変わり、界面の群は 5e-4 のまま（1e-5 の写しは 1e-5・1e-6・5e-4）"
+  - judgement: "c（学ぶ集合の照合）"
+    breaking_input: "本契約の集合に定義の外の名前を 1 個足して前回の W3 の集合と比べる"
+    observed: "4 型のすべての前回の集合（bengio の pd_scopes*.json、andrew の identity）と不一致になった"
+  - judgement: "c（腕と信号の対応の照合）"
+    breaking_input: "正解と予測-noCF の腕の前回の run を入れ替えて照合する"
+    observed: "16 件中 8 件が不一致になった（入れ替えない照合は 16/16 一致）"
+  - judgement: "d（学習前の恒等性）"
+    breaking_input: "界面の最後の層の weight と bias を N(0, 0.05²) にする（正解の腕、4 型）"
+    observed: "4 型とも出力が変わった（score の差の最大 P1 0.511、P2L 0.0461、P3 0.333、DX 0.00701）"
+  - judgement: "e（run の本数）"
+    breaking_input: "存在しない run の名前 w3lra_pd_ZZ_W9_none_ep4_seed42 を数える"
+    observed: "0 件"
+  - judgement: "f（表の差の再計算）"
+    breaking_input: "P1 正解の記録に P1 空の epoch 3 の予測から計算した値を突き合わせる。DX 正解の記録に DX 入れ替えの予測を突き合わせる"
+    observed: "差は P1 で overall −0.012471・標的群 −0.030138、DX で overall +0.000167・陰性対照群 +0.002224（0 でない）。正しい対応では 16 本とも差 0.0"
+  - judgement: "g（test の動画の不使用）"
+    breaking_input: "通した動画の集合に 04 を混ぜる"
+    observed: "test との共通が 1 件になった（混ぜない集合は 0 件）"
+  - judgement: "h（既存のファイルの不変）"
+    breaking_input: "同じ git diff の対象を本契約の tools/ にする"
+    observed: "本契約の新しいファイルが追加（A）として出た（本契約の経路を除いた起点からの差分は空）"
+
+followups:
+  - "受け取り手の学習率を 1e-4 から 1e-5 にすると、W3 の空の腕の Δ塔（overall）は P1 −0.0578 → −0.0135、P2L −0.0372 → −0.0112、P3 −0.0292 → −0.0082、DX −0.0327 → −0.0025 になり、同じ型の 4 腕の幅も縮んだ（P1 0.0333 → 0.0125、DX 0.0224 → 0.0019）。受け取り手の動いた量（相対の L2）は 16 本とも 0.0074 で、前回の DX の 0.0552 より小さい。差が小さいのは動ける幅が小さいためとも読める（SPEC §6.4）"
+  - "正解の腕の Δ空（overall / 標的群）は P1 +0.0125 / +0.0301、P2L +0.0077 / +0.0187、P3 −0.0005 / +0.0010、DX −0.0018 / −0.0012。P1・P2L では正解と予測-noCF の腕が空と入れ替えの両方より高い。P3・DX では overall の Δ空・Δ入替 がどの腕も ±0.004 以内"
+  - "事前登録の予測は 1・2 が当たり、3 は外れた（P2L の正解の Δ空 は −0.0066 → +0.0077、P3 は −0.0062 → −0.0005 で負のまま）"
+  - "P1 は 4 腕とも epoch 3 → 4 で overall が −0.0100〜−0.0116 下がった（正解 0.7363 → 0.7263）。ほかの型は ±0.0023 以内。学習率は一定。4 epoch 目の状態を結果にする規則のため、P1 の値はこの下がりを含む"
+  - "前回の P1・P2L・P3 は bengio、本契約は andrew で回した。並べた差には、学習率のほかにホストの違いが入りうる"
+  - "1e-5 で学習を長くする、1e-4 と 1e-5 の間の学習率、seed を増やすことは、本契約の表に無い。検出塔の選び直しが進んでいるため、塔が替われば本契約の値は旧い塔での測定になる"
+
+unknowns:
+  - "PR #311 は GitHub の判定で CONFLICTING（README.md と docs/experiment_log.md の末尾で、起点の後に phase0 へ入った #307・#309 の節と衝突）。契約は分岐への統合を禁じるため解消していない。解消するかは利用者の判断"
+  - "P1 の 4 腕が epoch 3 → 4 で約 0.01 下がった理由（非数 0 件、学習率は一定、ほかの型には出ていない）"
+  - "前回の bengio の 3 型の受け取り手の動いた量（前回の記録に無い）"
+  - "前回との差のうち、ホストの違い（bengio 1 枚 4 本と andrew 1 枚 3 本）の寄与"
+
+commits:
+  - "3dc8b512"
+  - "036d6a60"
+  - "d12b19ec"

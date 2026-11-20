@@ -1,0 +1,3 @@
+- [ ] 2026-11-09 [user] task-start を止めた同期で届いた別の契約のファイル（experiments/analysis/grasp_roitoken_transition_pilot/）は触らず、フォルダで .git/info/exclude に書いて task-start を通す（/task の引数の指示）。20〜22 行を残すか戻すかは報告の後に確かめる
+- [ ] 2026-11-10 [cc] 受け取り手の学習率を 1e-5 にすると、W3 の空の腕の Δ塔（overall）は 4 型とも前回の約 1/3〜1/13 になり（P1 −0.0578 → −0.0135、DX −0.0327 → −0.0025）、4 腕の幅も縮んだ。受け取り手の動いた量は相対 0.0074 で、差が小さいのは動ける幅が小さいためとも読める（experiments/analysis/stage2_pd_w3_lowlr_andrew/REPORT.md §1）
+- [ ] 2026-11-10 [cc] 事前登録の予測 3 は外れた（P3 の正解の Δ空 −0.0062 → −0.0005 で負のまま）。P1 は 4 腕とも epoch 3 → 4 で overall が約 0.01 下がり、理由は測っていない（tasks/T-2026-11-09-stage2-pd-w3-lowlr-andrew/RESULT.md §3・§6）

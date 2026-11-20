@@ -1,0 +1,377 @@
+{
+  "AP": 0.724813428023506,
+  "AP50": 0.8491243764773688,
+  "per_class_ap": {
+    "Bipolar Forceps": 0.7628048868806558,
+    "Electric Cautery": 0.9678146876921303,
+    "Forceps": 0.3587929938285156,
+    "Gauze": 0.283195857922416,
+    "Hook": 0.6225795994461721,
+    "Mouth Gag": 0.8027344226187311,
+    "Needle Holders": 0.8404328253206282,
+    "Raspatory": 0.8113850714165859,
+    "Retractor": NaN,
+    "Scalpel": 0.8843043937137025,
+    "Scissors": 0.7084483621180119,
+    "Skewer": 0.941009414190756,
+    "Suction Cannula": 0.8356141257974624,
+    "Syringe": 0.5430254258977361,
+    "Tweezers": 0.7852459254855817
+  },
+  "n_images": 1515,
+  "target_AP": 0.7885058384198873,
+  "target_missing": [],
+  "control_AP": 0.6766975829560478,
+  "control_missing": [],
+  "per_video_AP": {
+    "09": 0.70221751282026,
+    "10": 0.6344898691479655
+  },
+  "task_id": "T-2026-11-09-stage2-pd-w3-lowlr-andrew",
+  "unofficial": true,
+  "type": "DX",
+  "type_name": "decoder-xattn",
+  "w": "W3",
+  "arm": "empty",
+  "trainable_arg": "all",
+  "result_selection": "final_epoch",
+  "result_epoch": 3,
+  "eval_detection_mAP": 0.724813428023506,
+  "diff_vs_eval_detection_mAP": 0.0,
+  "init": {
+    "AP": 0.7273450248398429,
+    "AP50": 0.851807431425236,
+    "target_AP": 0.7950748008550897,
+    "control_AP": 0.6726631817581498,
+    "per_video_AP": {
+      "09": 0.704273483949694,
+      "10": 0.6420973291237674
+    },
+    "target_missing": [],
+    "control_missing": []
+  },
+  "init_diff_vs_tower": {
+    "comparable": true,
+    "max_abs_score_diff": 0.0,
+    "max_abs_bbox_diff_px": 0.0,
+    "label_mismatch": 0
+  },
+  "per_epoch": {
+    "-1": {
+      "AP": 0.7273450248398429,
+      "AP50": 0.851807431425236,
+      "target_AP": 0.7950748008550897,
+      "control_AP": 0.6726631817581498,
+      "per_video_AP": {
+        "09": 0.704273483949694,
+        "10": 0.6420973291237674
+      },
+      "target_missing": [],
+      "control_missing": []
+    },
+    "0": {
+      "AP": 0.7206058134576718,
+      "AP50": 0.8448826190661411,
+      "target_AP": 0.7908400944588738,
+      "control_AP": 0.6706197619014109,
+      "per_video_AP": {
+        "09": 0.6910679152095587,
+        "10": 0.6440024805661076
+      },
+      "target_missing": [],
+      "control_missing": []
+    },
+    "1": {
+      "AP": 0.7223908769180387,
+      "AP50": 0.8468025622873774,
+      "target_AP": 0.7966648785566993,
+      "control_AP": 0.6679380096312416,
+      "per_video_AP": {
+        "09": 0.6975433940726546,
+        "10": 0.6379072411891509
+      },
+      "target_missing": [],
+      "control_missing": []
+    },
+    "2": {
+      "AP": 0.7261180088876839,
+      "AP50": 0.8511866096049695,
+      "target_AP": 0.7981816025022292,
+      "control_AP": 0.6728147793546723,
+      "per_video_AP": {
+        "09": 0.7000611328659757,
+        "10": 0.6422061627839588
+      },
+      "target_missing": [],
+      "control_missing": []
+    },
+    "3": {
+      "AP": 0.724813428023506,
+      "AP50": 0.8491243764773688,
+      "target_AP": 0.7885058384198873,
+      "control_AP": 0.6766975829560478,
+      "per_video_AP": {
+        "09": 0.70221751282026,
+        "10": 0.6344898691479655
+      },
+      "target_missing": [],
+      "control_missing": []
+    }
+  },
+  "last_epoch_matches_best_preds": true,
+  "per_epoch_eval_detection_mAP": {
+    "-1": 0.7273450248398429,
+    "0": 0.7206058134576718,
+    "1": 0.7223908769180387,
+    "2": 0.7261180088876839,
+    "3": 0.724813428023506
+  },
+  "gates_by_epoch": {
+    "-1": {
+      "tanh_alpha": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "0": {
+      "tanh_alpha": [
+        -0.0007488816627301276,
+        0.002877425402402878,
+        -0.005333205685019493,
+        0.0002324337256141007,
+        -0.0014875479973852634,
+        0.009631510823965073
+      ]
+    },
+    "1": {
+      "tanh_alpha": [
+        -0.006493896711617708,
+        -0.011773625388741493,
+        -0.0013800833839923143,
+        -0.0012346163857728243,
+        0.00667088758200407,
+        0.0023903821129351854
+      ]
+    },
+    "2": {
+      "tanh_alpha": [
+        0.0017639272846281528,
+        -0.006525751668959856,
+        0.009790749289095402,
+        0.0008418271318078041,
+        -0.002804515417665243,
+        -0.00010848685633391142
+      ]
+    },
+    "3": {
+      "tanh_alpha": [
+        -0.0018272160086780787,
+        -0.0014460037928074598,
+        -0.0017421512166038156,
+        -0.0012717560166493058,
+        -0.0002285075024701655,
+        -0.004235068801790476
+      ]
+    }
+  },
+  "receiver_motion": {
+    "iface_l2_by_param": {
+      "phase_iface.alpha": 0.005298146512359381,
+      "phase_iface.token.weight": 9.219010353088379,
+      "phase_iface.token.bias": 1.5585390329360962,
+      "phase_iface.norm.0.weight": 15.972722053527832,
+      "phase_iface.norm.0.bias": 0.012894080020487309,
+      "phase_iface.norm.1.weight": 15.976783752441406,
+      "phase_iface.norm.1.bias": 0.00949427392333746,
+      "phase_iface.norm.2.weight": 15.977706909179688,
+      "phase_iface.norm.2.bias": 0.006960053462535143,
+      "phase_iface.norm.3.weight": 15.980062484741211,
+      "phase_iface.norm.3.bias": 0.004728532861918211,
+      "phase_iface.norm.4.weight": 15.98079776763916,
+      "phase_iface.norm.4.bias": 0.0029788617976009846,
+      "phase_iface.norm.5.weight": 15.981467247009277,
+      "phase_iface.norm.5.bias": 0.002682132413610816,
+      "phase_iface.q.0.weight": 4.628068447113037,
+      "phase_iface.q.0.bias": 0.2622177302837372,
+      "phase_iface.q.1.weight": 4.643550395965576,
+      "phase_iface.q.1.bias": 0.27677327394485474,
+      "phase_iface.q.2.weight": 4.635223865509033,
+      "phase_iface.q.2.bias": 0.2787027060985565,
+      "phase_iface.q.3.weight": 4.627457141876221,
+      "phase_iface.q.3.bias": 0.2768672704696655,
+      "phase_iface.q.4.weight": 4.60622501373291,
+      "phase_iface.q.4.bias": 0.26607149839401245,
+      "phase_iface.q.5.weight": 4.621036052703857,
+      "phase_iface.q.5.bias": 0.27977854013442993,
+      "phase_iface.out.0.weight": 9.244794845581055,
+      "phase_iface.out.0.bias": 1.1268950700759888,
+      "phase_iface.out.1.weight": 9.155462265014648,
+      "phase_iface.out.1.bias": 1.2168687582015991,
+      "phase_iface.out.2.weight": 9.21359920501709,
+      "phase_iface.out.2.bias": 1.1922967433929443,
+      "phase_iface.out.3.weight": 9.236703872680664,
+      "phase_iface.out.3.bias": 1.198241114616394,
+      "phase_iface.out.4.weight": 9.223404884338379,
+      "phase_iface.out.4.bias": 1.2130656242370605,
+      "phase_iface.out.5.weight": 9.209847450256348,
+      "phase_iface.out.5.bias": 1.1190242767333984,
+      "phase_iface.adapter.weight": 3.3358678817749023,
+      "phase_iface.adapter.bias": 0.6968690156936646
+    },
+    "receiver_keys": 372,
+    "receiver_elements": 48471200,
+    "receiver_delta_l2": 6.320280641064266,
+    "receiver_l2": 854.9175937568142,
+    "receiver_rel_delta": 0.007392853635507357,
+    "keys_not_in_det_ckpt": [],
+    "ckpt": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-09-stage2-pd-w3-lowlr-andrew/pd_ckpt/w3lra_pd_DX_W3_empty_ep4_seed42/best_t1b.pth",
+    "ckpt_sha256": "22efc28a08cc43fbf14cc274e58c159c1ecf622df7922cafb4be46cc0097e0e6"
+  },
+  "total_trainable": 48681574,
+  "phase_params": 210374,
+  "frozen_unchanged": true,
+  "videos": {
+    "train": [
+      "01",
+      "02",
+      "03",
+      "06",
+      "08",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15"
+    ],
+    "val_evaluated": [
+      "09",
+      "10"
+    ],
+    "test_overlap": []
+  },
+  "server": "andrew",
+  "lr_record": {
+    "groups": [
+      {
+        "label": "other",
+        "lr_given": 1e-05,
+        "weight_decay_given": null,
+        "n_tensors": 125,
+        "n_elements": 24384000
+      },
+      {
+        "label": "backbone",
+        "lr_given": 1.0000000000000002e-06,
+        "weight_decay_given": null,
+        "n_tensors": 42,
+        "n_elements": 23232512
+      },
+      {
+        "label": "backbone_norm",
+        "lr_given": 1.0000000000000002e-06,
+        "weight_decay_given": 0,
+        "n_tensors": 0,
+        "n_elements": 0
+      },
+      {
+        "label": "linear_projection",
+        "lr_given": 1.0000000000000002e-06,
+        "weight_decay_given": null,
+        "n_tensors": 12,
+        "n_elements": 786432
+      },
+      {
+        "label": "linear_projection_norm",
+        "lr_given": 1.0000000000000002e-06,
+        "weight_decay_given": 0,
+        "n_tensors": 12,
+        "n_elements": 3072
+      },
+      {
+        "label": "other_norm",
+        "lr_given": 1e-05,
+        "weight_decay_given": 0,
+        "n_tensors": 181,
+        "n_elements": 65184
+      },
+      {
+        "label": "phase",
+        "lr_given": 0.0005,
+        "weight_decay_given": null,
+        "n_tensors": 41,
+        "n_elements": 210374
+      }
+    ],
+    "init": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+    },
+    "after_step_1": {
+      "other": 1e-05,
+      "backbone": 1.0000000000000002e-06,
+      "backbone_norm": 1.0000000000000002e-06,
+      "linear_projection": 1.0000000000000002e-06,
+      "linear_projection_norm": 1.0000000000000002e-06,
+      "other_norm": 1e-05,
+      "phase": 0.0005
+    },
+    "by_epoch": {
+      "0": {
+        "other": 1e-05,
+        "backbone": 1.0000000000000002e-06,
+        "backbone_norm": 1.0000000000000002e-06,
+        "linear_projection": 1.0000000000000002e-06,
+        "linear_projection_norm": 1.0000000000000002e-06,
+        "other_norm": 1e-05,
+        "phase": 0.0005
+      },
+      "1": {
+        "other": 1e-05,
+        "backbone": 1.0000000000000002e-06,
+        "backbone_norm": 1.0000000000000002e-06,
+        "linear_projection": 1.0000000000000002e-06,
+        "linear_projection_norm": 1.0000000000000002e-06,
+        "other_norm": 1e-05,
+        "phase": 0.0005
+      },
+      "2": {
+        "other": 1e-05,
+        "backbone": 1.0000000000000002e-06,
+        "backbone_norm": 1.0000000000000002e-06,
+        "linear_projection": 1.0000000000000002e-06,
+        "linear_projection_norm": 1.0000000000000002e-06,
+        "other_norm": 1e-05,
+        "phase": 0.0005
+      },
+      "3": {
+        "other": 1e-05,
+        "backbone": 1.0000000000000002e-06,
+        "backbone_norm": 1.0000000000000002e-06,
+        "linear_projection": 1.0000000000000002e-06,
+        "linear_projection_norm": 1.0000000000000002e-06,
+        "other_norm": 1e-05,
+        "phase": 0.0005
+      }
+    },
+    "constant_over_snapshots": true,
+    "n_snapshots": 7,
+    "opt_steps_at_last_eval": 19236
+  },
+  "lr_arg": 1e-05,
+  "film_lr_arg": 0.0005,
+  "seconds_to_finalize": 14349.64338,
+  "wandb": {
+    "mode": "offline",
+    "run_id": "qz008m8b",
+    "dir": "/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-09-stage2-pd-w3-lowlr-andrew/wandb/wandb/offline-run-20261109_172153-qz008m8b"
+  }
+}
