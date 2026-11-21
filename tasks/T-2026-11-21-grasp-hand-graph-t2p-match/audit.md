@@ -276,3 +276,12 @@ T→P の学習設定が W ごとに型の間で一つに決まる（B-3）。
 
 - 既存の道具は dp_train.py に足す形だけ（C-2）。既定の挙動は前回のグラフ 1 本・T→P 1 本の回し直しで記録と完全に一致（C-3）
 - `b_check.py` は B-1 で回した後に、使っていない変数 `O` を一行消した（ruff E741）。照合の中身は変わらず、E-3 でやり直して同じ結果
+
+## 送出
+
+    $ gh pr view 315 --json number,baseRefName,headRefName,isDraft,state
+    315 base=phase0 head=feat/grasp-hand-graph-t2p-match draft=false state=OPEN（https://github.com/takuya3h/m2/pull/315）
+    $ source scripts/load_env.sh && make task-report TASK=T-2026-11-21-grasp-hand-graph-t2p-match   （HEAD = origin = b6cb6417 の後）
+    {"task_id": "T-2026-11-21-grasp-hand-graph-t2p-match", "verdict": "pass", "n_issuer_defects": 1,
+     "report_sha256": "965e1a9b7c943d064a6ee5f6d2fc7b13c30318d7c4d511aa72eb4fcde5fe9600", "report_bytes": 14442, "replaced_blocks": 0}   終了コード 0
+

@@ -100,4 +100,4 @@ W1 は andrew の前回の run、W2・W3 は bengio の前回の run。ホスト
 ## 7. 送出
 
 - PR: takuya3h/m2#315（base phase0、head feat/grasp-hand-graph-t2p-match、Draft でない。`gh pr view 315` で確かめた）
-- `make task-report`: 送信後に記入する（commit 1c500fce・d4d982ff・52eedc96 と本行の commit の後に送る）
+- `make task-report`: 終了コード 0（verdict pass、report_sha256 965e1a9b…、14,442 B、replaced_blocks 0。commit b6cb6417 の後に送った。応答は audit.md の送出）
