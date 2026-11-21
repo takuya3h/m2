@@ -312,3 +312,12 @@ IRN では手のトークンの有無で確率がほとんど変わらない（W
   残りの 5 件は禁止領域の外（`scripts/stage2pilot/dp_model.py`・`dp_train.py`、`tasks/<本契約>/` の 3 件）。
   対照: TASK を渡さないと status fail、本契約の 2,288 件が違反として名指される
 - 本契約の保存先 `$T` は 565 MB（界面の重み・恒等性・確かめの出力）。run の記録は `experiments/phase1/grasp_hand_irn_hice_htt_*` の 253 フォルダ（248 本・回し直し 2・試走 3）
+
+## 送出
+
+    $ git push -u origin feat/grasp-hand-irn-hice-htt-pilot → [new branch]（e1fdb5c8・eddaaa3c・0f386e3b）
+    $ gh pr create --base phase0 --head feat/grasp-hand-irn-hice-htt-pilot ... → https://github.com/takuya3h/m2/pull/317
+    $ gh pr view 317 --json number,state,isDraft,baseRefName,headRefName,url
+    {"baseRefName":"phase0","headRefName":"feat/grasp-hand-irn-hice-htt-pilot","isDraft":false,"number":317,"state":"OPEN","url":"https://github.com/takuya3h/m2/pull/317"}
+
+- アプリの PR の連携（`mcp__ccd_pr__get_status`）は PreToolUse hook の応答待ちで実行されなかった
