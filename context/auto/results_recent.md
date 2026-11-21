@@ -6,8 +6,45 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 163 件）。
-ここに出ない 158 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 164 件）。
+ここに出ない 159 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-11-21-grasp-hand-graph-t2p-match
+
+状態 `pass` / ホスト `andrew` / 起票 `315` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 起点 origin/phase0 ce9c4094 に PR 312 の道具（90a12ab0 で統合）と前提の契約 5 件の RESULT.md・result.yaml が在る。本契約以外の compute は 0 件（proc_enum の n_compute 0、nvidia-smi の compute の行 0、全体の使用量 16 MiB × 2 と一覧の差 0）、空き 1,573,500,612,608 B
+- `G2` pass — 前回のグラフの目録 signals_manifest.json（24d9139d…）とそれが名指す 26 ファイル、T→P の元の信号と入れ替えた信号 12、対応表 2、T→P の run 36 本の入力（信号・受け取り手の重み 0d76d446…・特徴のキャッシュ c402e214…）の sha256 がすべて記録と一致。塔単独の val は J 0.7762185528074379・acc 0.8712871287128713 で記録と差 0.0。T→P の学習設定は W ごとに 4 型で食い違い 0（界面 5e-4・0.01、W2・W3 の受け取り手 5e-4・0.01、constant、fixed 4）
+- `G3` pass — 入れ替えたグラフ 5 腕 × train・val で値の集合が元と同じ・逆の並べ替えで元に戻る。15 腕 × 2 part の表と出どころの外れ 0。学習前の出力が 240 組（グラフ 204・T→P 36）で塔単独とロジットの差 0.0。陽性対照で変わるのは 231/240（0.105〜3.135）。変わらない 9 組は T→P の D1・D3 の空の腕で、入力が全部 0 のため構造上変わらず、同じ型の予測-noCF・入れ替えの腕では変わる（0.258〜2.726）
+- `G4` pass — 189 本が rc 0（10:18:11〜10:40:52 JST、GPU 2 枚 × 4 本並行）。189/189 本で記録する epoch（続けた run は 4・8・12・16、確かめは 4）の metrics_ep<E>.json と val_probs_ep<E>.npz、config の optim_groups がそろう
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — SPEC §9 f と G3 は、interface の出力の射影を N(0, 0.05²) にすると全腕（グラフと T→P）で学習前の出力が変わると求めた。しかし T→P の D1 の零初期化の層は bias の無い Conv1d で、D3 の空の腕はトークンが 0 個なので、空の腕では入力が全部 0 になり、その層をどう変えても出力は構造上変わらない。指示どおりに全腕で求めると 9 組（3 型 × 3 W）が必ず落ちる
+
+### 逸脱
+
+- `judgement` — 利用者の回答（2026-11-21）「とにかく進めてくれ しばらく見れないからなんとかしてとにかく実験回して」を判断の委任と読み、preflight P6 の 3 件を前もって決めて meta.amendments に記録した。停止は gate の FAIL・捏造の禁止・allow_write の外・他の契約の compute に限ると決めた。どれにも当たらなかった
+- `judgement` — 利用者の指示「汚れはgit info excludeへ」は、task_start_classify の分類で汚れが 0 件（通す）だったため使っていない。.git/info/exclude は変えていない
+- `judgement` — 恒等性の陽性対照で変わらない 9 組（T→P の D1-L1・D1-L2・D3-L2 の空の腕 × 3 W）は、同じ型の予測-noCF・入れ替えの腕で変わることで検査が空振りでないことを示したと読み、G3 を pass とした
+- `judgement` — 組み直した CF の 5 腕と DGH-noCF が前回の $O/graph の配列と train・val ともビットまで一致したので書き直さず、前回のファイルを指す記号のリンクを $T/graph/ に置いた。新しく書いたのは D・DG・DH・DGH-U の noCF と 5 腕の入れ替えの 18 ファイル
+- `judgement` — 4 epoch で止める確かめ 6 本と続けた run を同時に回した（続けた run は比べの結果によらず副次に要る）。比べは 6/6 で val の確率まで一致し、主の値は続けた run の 4 epoch 目から取った。4 epoch で止める run の全腕（ep4all）は回していない
+- `judgement` — SPEC §7 の差の表では、辺の無い 9 腕の s2・s4 と A0 の s2〜s4 に省いた先の値を使った（§5.3 の確かめで一致）。RESULT §3 の範囲と ±0.015 の外の数は重ならない 14 組で数えた
+- `environment` — ruff の指摘が新しい道具に 2 件残る（tower_alone.py の import の並びは前回の道具の写しのまま、c_graphs.py の変数名 O は前回の ghg_graph の名前に合わせた）。b_check.py は B-1 の後に使っていない変数を 1 行消し、E-3 でやり直して同じ結果を得た
+
+### 申し送り
+
+- 主の差 c-noCF − c-S（4 epoch 目）は W1 で 14 組とも ±0.015 の中、W2 で 1 組・W3 で 3 組が外。同じ条件の T→P の予測-noCF − 入れ替えは D1-L2・D3-L2 が 3 W とも +0.020〜+0.085。16 epoch 目ではグラフの主の差が W1・W2 で 10/14 組外に出た。seed 42 の 1 本ずつで揺れは測っていないので、次に進めるかは利用者が決める
+- T→P の W2・W3 を bengio から andrew に移しても 4 epoch 目の値と val の確率が 36/36 で前回と完全に一致した。同じ処方の run はこの 2 台の間で持ち替えられる
+- 空の腕の陽性対照は、入力が全部 0 になる型（bias の無い D1、トークン 0 個の D3）では構造上働かない。次に恒等性を求める契約では、空の腕の代わりに同じ型の別の腕で示すかを起票者が決める
+
+### 断定できなかったこと
+
+- seed を変えたときの差の揺れ: 測っていない（seed 42 の 1 本ずつ）
+- 16 epoch 目より先で差がどう動くか: 測っていない（記録したのは 4・8・12・16）
+- W2 の DGH-GT が 4 設定（N10・N30 × L1・L2）とも 4 epoch 目の値が同じになった理由: 調べていない
 
 ## T-2026-11-20-grasp-hand-graph-pilot
 
@@ -183,45 +220,4 @@
 - 案 3・案 5 の殺し実験の判定（直した処方で）: 陽性対照が働く処方が無く測っていない
 - 最終の状態（最も学んだ状態）の腕の差: val の確率は最良の epoch の分だけ保存しており、測っていない（history の J だけ）
 - seed を変えたときの差の揺れ・GPU の並行の影響: 測っていない
-
-## T-2026-11-08-grasp-cards-survey
-
-状態 `pass` / ホスト `bengio` / 起票 `302` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 分岐 feat/grasp-cards-survey の起点が origin/phase0 a68672f1。開始前の未追跡 12 件（同期で届いた T-2026-11-07-dtower-rerun の出力）は利用者の選択で .git/info/exclude に入れ触れていない。nvidia-smi の全体 39/37 MiB と compute の一覧 0 件（存在しない GPU 7 で No devices were found）、空き 1,250,936,692,736 B、試験の失敗 11 件の名前、venv 108 行 9c7be5c9…・72 行 a74c9c78…、禁止の場所 19 根・重ねの BODY・重み 6 件の要約値、電力の上限 220 W × 2 を記録した
-- `G2` pass — S2（動画ごとの術具注釈・把持の注釈・loss_mask・工程の目録と CSV の件数と欠けの連）、S3（クリップの中の間隔の分布と CSV との対応）、S7（11 組の単価と出所）を記録から埋めた。test の 04 を混ぜると術具 11,172 → 12,501、存在しない 99 で全列 0、1 ずらすと CSV との対応が全動画で下がった
-- `G3` pass — S1（P の layer4 の地図、val 09）、S4（D の出力と ECE、val 1,515・train 1,000）、S5（G 4 本の中間特徴 4 層と相関、val 100）、S6（8 チャネルの写しの順伝播と逆伝播）を測った。optimizer を作らず、P・D・G 4 本・写しの state_dict の要約値が前後で一致した
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — meta.created_from の runindex_commit 68befc3b と件数 2,363/1,130/1,736 は 2026-10-29 の版の値で、起点 a68672f1 の git log -1 -- runindex/ は d3e319ac・件数 2,623/1,305/1,947 だった。そのまま進めると契約が今の索引と違う版を指す。Task A-4 に従い差し替えて meta.amendments に記録した
-- `asserted_without_measuring` — SPEC §1 と S1-2 は fine-tune の checkpoint を common.py の PT_FT_CKPT（stage2pilot_store の efros_ptower の写し）から読むとするが、bengio のその経路には checkpoint が無く写しは 009 の頭とキャッシュだけだった。指示どおりに読むと FileNotFoundError で止まる。repo の同じ相対経路に sha256 79c2c478… のものが在り、それを読んだ
-- `asserted_without_measuring` — SPEC §1 は工程塔の fine-tune を「ResNet-50（ImageNet の初期化、COCO 系統は別の鎖）」とするが、確定の P*-15（stage1_ptower_20_005_ft_coco）の config は init: coco で D* の COCO の重みから出発している。S6-2 の「RGB の 3 チャネルは ImageNet の重みのまま」は確定の塔と違う鎖の写しになり、形の確認には影響しないが案 6 の初期化の行の対称性の表に写すと誤る
-- `asserted_without_measuring` — 完了判定 f は「確定と H1 の同じ層の特徴の基底が一致しない（対応する次元の相関が低い）ことが示されている」を条件にし、測る前に結果を書いている。実測では対応する次元の r の中央が pixel decoder の mask_features 0.821・memory 0.682 と高く、decoder の query 0.255 だけが低い。条件をそのまま満たすには層を選ぶ必要があり、測った値をそのまま書いた
-
-### 逸脱
-
-- `judgement` — task-start が同期で届いた他の契約（T-2026-11-07-dtower-rerun、未統合）の未追跡 12 件で止まり、利用者の選択「4 で無視に足す」で .git/info/exclude にフォルダを 1 行足した。消していない・動かしていない
-- `judgement` — S2 の「工程注釈のあるフレーム」に二つの集合（工程塔の目録＝術具注釈のフレームと同じ、工程の CSV の全行）があったため、両方を表にした。CSV にだけある行には data/raw/ego に画像が無い
-- `judgement` — S2 の対照で test の 04 の件数を数えるため、test の術具・把持の注釈の目録の画像名と loss_mask/test.txt を開いた（SPEC §5-1 の動画番号を混ぜるだけの対照）。test の工程の目録・CSV と画像は開いていない
-- `judgement` — S4 の ECE は全出力（各フレーム 300）では得点 0.1 未満が 97% を占めるので、得点 ≥ 0.05 の ECE を併記した。S5 の候補の層・相関の数え方・並べ替えを見る最大の |r| は実行者が実装を読んで決めた。S6 は BN の統計を動かさないため eval で逆伝播した
-- `environment` — S5 の道具が g5_signals を import して scripts/grasppilot/__pycache__/g5_signals.cpython-311.pyc（59,349 B）を書いた（自分の過失。bytecode を止めていなかった）。終了時の要約値で見つけて停止して諮り、利用者の決定「1 消して測り直す」で sha256 を残して消し、scripts の要約値が開始時と一致することを確かめた
-- `judgement` — S7 の五本目（T-2026-11-06-grasp-pilot-d-rerun）は phase0 に未統合なので origin/feat/grasp-pilot-d-rerun の版から git show で読んだ。bengio の P の fine-tune は T-2026-11-02-hostdiff-bengio の記録（2 GPU、phase_manifest_all_phase）で、確定の塔の設定とは違う
-- `spec_defect` — meta.created_from の runindex の版と件数が古い値だったため Task A-4 に従い実測で差し替え meta.amendments に記録した。PT_FT_CKPT の写しの経路が bengio に無く、repo の同じ相対経路の sha256 一致の checkpoint を読んだ
-
-### 申し送り
-
-- S5 の G の確定と H1 の相関は層で 0.255〜0.821（中央）と違う。案 2 の「交差適合の半分は基底が違う」は取り出す層を決めてから読む
-- 確定の P*-15 は COCO の鎖（init: coco）。案 6 の契約では入力層の写しを同じ COCO の鎖から作るかを決める（本契約の S6 は SPEC どおり ImageNet で形だけ確かめた）
-- 工程の CSV にだけある行（train 923・val 389）は画像が無い。工程のフレームを分母にする案の #15 では、目録と CSV のどちらの集合かを明記する
-- T-2026-11-07-dtower-rerun が phase0 に統合されたら、.git/info/exclude に足した experiments/analysis/dtower_rerun/tools/ の行を外してよい
-
-### 断定できなかったこと
-
-- 他の折りの注釈の密度・間隔（折り A だけを測った）
-- S6 の 8 チャネルの写しで学習が収束するか、stem を学ぶ形と追加チャネルだけを学ぶ形のどちらが良いか、train（BN の統計の更新）での挙動
-- bengio の 1 GPU で確定の P*-15 と同じ設定の fine-tune 1 本の壁時計（記録は efros 1 GPU と bengio 2 GPU の別データだけ）
-- S4 の得点の較正の直し（温度の調整など）の効き
 
