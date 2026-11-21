@@ -6,8 +6,44 @@
 **このファイルは `tasks/*/result.yaml` から生成される。手で編集しない。**
 記述は要約せずに転記している。直したいときは各契約の `result.yaml` を直す。
 
-新しい順に 5 件を載せる（対を持つ契約は全 162 件）。
-ここに出ない 157 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+新しい順に 5 件を載せる（対を持つ契約は全 163 件）。
+ここに出ない 158 件は各契約の `tasks/<task_id>/result.yaml` と `context/auto/tasks_summary.csv` にある。**失われてはいない。**
+
+## T-2026-11-20-grasp-hand-graph-pilot
+
+状態 `pass` / ホスト `andrew` / 起票 `312` / 様式 `v3`
+
+### ゲート
+
+- `G1` pass — 前提の道具 7 件が起点 89b9406d に在り、本契約以外の compute は 0 件（容器の中。GPU 全体の使用量と一覧の差 0）、空き 1,578,110,177,280 B。SPEC §1.3 の $S/inputs/（G の入力の写し）が andrew に無く停止して諮った。利用者の選択で COCO の重みの原本を 10-31 の保存先から $O/inputs/coco/ へ写し、sha256 41b088b62838c986…de06879 が原本と一致。塔の注釈は本契約で組み直した
+- `G2` pass — 塔 7 本（G3 確定・H1・H2、H4 確定・H1・H2、G5r）が early stopping の patience 4 で止まり（止まった回 6〜15、上限 36 に届かず）、選んだ回の val の mask mAP 0.4955〜0.6560 が学習前 0.0050〜0.0060 を上回る。学習後の反転の整合（左右のクラスの soft IoU）は入れ替え 0.650・0.736・0.795、入れ替えない写し 0.022・0.193・0.019（G3・H4・G5r）。反転の取り出しは三種とも 24/24 でラベルが入れ替わる
+- `G3` pass — 正解の腕の持ち手の argmax と注釈の把持の一致 train 20,433/21,021（0.972）・val 3,610/3,807（0.948）。腕ごとの節・持ち手・手・辺の在否の外れ 0（7 腕 × 2 part）。学習前の出力が 4 設定 × W1・W2・W3 × 8 腕の 96 組み合わせで塔単独と一致（ロジットの差の最大 0.0、J 0.7762185528074379）。W2・W3 の学ぶ範囲の名前が定義と一致
+- `G4` pass — 腕 96 本が rc 0 で、すべて収束規則の打ち切りで止まった（総 epoch 17〜51、上限 120 に届いた本 0）。96 本とも config.yaml・command.sh・git_commit.txt・metrics.json・metrics_last.json・per_class_ap.json・notes.md・history・val_probs_best/last が在り、config の task_id は本契約、git_commit は 096d56b9
+
+### 起票者の誤り
+
+- `asserted_without_measuring` — SPEC §1.3 は保存先 $S に G の入力の写し（$S/inputs/）が在るとするが、andrew には $S/inputs も $S/T-2026-11-05-grasp-tower-rebuild/inputs も無く、11-05 の保存先に G の重みと信号も無かった。指示どおり Task A を行うと G1 で止まる。g5_train.py も COCO の重みを 11-05 の inputs/coco/ に決め打ちしており、andrew ではそのままでは塔を学べない。利用者の選択で 10-31 の保存先の原本を写して進めた
+
+### 逸脱
+
+- `judgement` — 利用者の決定（2026-11-20）: 開始時の作業ツリーの汚れ（同期で届いた他の作業の出力 2 フォルダ 782 件、すべて experiments/ の下で phase0 に無い）を、選択「1 で除外に足す」で .git/info/exclude に注記つきで足して task-start を通した。消さず移していない
+- `judgement` — 利用者の決定（2026-11-20）: preflight P6 の未回答 2 件に「両方その都度諮る」。G1 で COCO の重みを本契約の保存先へ写す。§4 の読み 3 点（辺は左・右・両手の 3 種で重みを分ける、DGH-U の持ち手は [u, u, u] で辺も 3 種とも u、正解の手の節は同じ側の複数のマスクの和集合）。meta.amendments に記録した
+- `judgement` — G3 のインスタンスの無いフレーム（train 192・val 6。把持の注釈は在り器具のクラスが無い）は「持つ器具なし」として学ぶ。H4 は hand_tool_seg の欠落の印のフレーム（train 271・val 1）も学ぶ（README §4 は印を hand_tool_seg タスクの loss=0 とする）。正解の枠が N を超える train の 1 フレーム（11 個）は得点がすべて 1 で順が決まらないので注釈の順に先頭 N 個を取る
+- `judgement` — 確かめの run（grasp_hand_graph_chk_001・002、repro_001、cmp_old_001・cmp_new_001）は腕に数えない。cmp の 2 本は界面の重みを本契約の保存先の下へ置くため、識別子を grasp_hand_graph/repro_cmp にして回した。契約の版と created_from は実測と一致し差し替えていない。split_files は参照していない
+- `judgement` — G3・H4 の推論は、その塔の 3 本の G2 の部分（打ち切り・学習前を上回る・学習後の反転の整合）を確かめてから、残りの塔の学習と並行して始めた。G5r の学習後の反転の整合は SPEC §3.4（G3・H4）の外だが、G2 の「三種の塔」に合わせて同じ道具で測った
+- `judgement` — 実行者の道具 ghg_graph.py assemble の誤り 2 件を直して回し直した。1 つは一致の関数が正解の器具の枠が 0 個のフレーム（02_1_0141）で KeyError を出した。もう 1 つは試験の動画の検査にフレームの識別子を渡しており、動画と照らさないため働いていなかった（対照も同じ経路を通っていなかった）。グラフの 14 の出力は直す前後で sha256 が一致
+- `environment` — ruff の指摘が新しい道具に 4 件（import の並び 3、変数名 O 1）残る。学習中の塔の記録に要約値が入っている ghg_tower.py は書き換えていない
+
+### 申し送り
+
+- 辺の無い腕（A0・D・DG・DH）は L1 と L2 で val の確率まで一致し、A0 は W ごとに 4 設定とも同じ値になった。§4 の伝播の層は辺の在る腕（DGH・DGH-U・DGH-noCF・DGH-GT）にしか効かないので、次に設定を掃引する契約では辺の無い腕の L の掃引を省けるかを起票者が決める
+- W2 の差は W1・W3 より大きく出た（DGH − A0 +0.0176〜+0.0521、DGH-GT − A0 +0.0745〜+0.0801。W1 の DGH-GT − A0 は +0.0193〜+0.0235、W3 は +0.0110〜+0.0233）。受け取り手が自分の train 動画でほぼ誤らない問題（SPEC §11）の材料として記録する。seed 42 の 1 本ずつで揺れは測っていない
+- G3 の器具 3 クラスの平均 0.5737 は目標 0.80 に −0.2263。G5r の器具 3 クラスの平均 0.5907 との差 −0.0170（予測 3 の ±0.03 の中）
+
+### 断定できなかったこと
+
+- seed を変えたとき・GPU の並行を変えたときの腕の差の揺れ: 測っていない（seed 42 の 1 本ずつ）
+- 空のマスクのインスタンス（枠 0）と得点の関係: 測っていない
 
 ## T-2026-11-09-stage2-pd-w3-lowlr-andrew
 
@@ -188,51 +224,4 @@
 - S6 の 8 チャネルの写しで学習が収束するか、stem を学ぶ形と追加チャネルだけを学ぶ形のどちらが良いか、train（BN の統計の更新）での挙動
 - bengio の 1 GPU で確定の P*-15 と同じ設定の fine-tune 1 本の壁時計（記録は efros 1 GPU と bengio 2 GPU の別データだけ）
 - S4 の得点の較正の直し（温度の調整など）の効き
-
-## T-2026-11-07-dtower-rerun
-
-状態 `partial` / ホスト `andrew` / 起票 `305` / 様式 `v3`
-
-### ゲート
-
-- `G1` pass — 分岐 feat/dtower-rerun、起点 origin/phase0 a68672f1、PR 294・299 の内容が起点に在る。prereg の commit df18070d（2026-11-07T10:13:18Z）は最初の学習（11:05:51Z）の前。カードは五版（四版の写しで rc 1）。入力 25 件の sha256 が一致（1 バイト変えた写しで不一致 1）。5 折りの動画の集合が規約の表と一致（test を混ぜた写しで不一致 1）。compute プロセス 0 件（対照 1/0/0）。空き 1.62 TB ≥ 見込み 66.5 GB の 2 倍
-- `G2` pass — 各 5 歩の対照で、12 番・0 番とも optimizer の 6 群と DataLoader の batch 6 が水準の値になった。changed（batch 3、lr 2e-4、wd 5e-4、max_norm 0.07）で値が変わり、wd_mismatch と batch_mismatch は rc 1 で止まり、default は batch 2・lr 1e-4・wd 1e-4 のまま。実測の 1 epoch の歩数 A 802・B 805・C 894・D 851・E 924 から weight decay を換算。coco_missing は起動で止まる
-- `G3` ask — on_fail ask。利用者の決定で 7 本目の後に止め、Task D を完了した run だけで行うことになった。完了した 7 本（12 番 seed 42 の A〜E、seed 123 の A・B）は学習 rc 0、損失の非数 0 件、GPU の記憶の溢れ 0 件、7 本とも load pretrained from と initialization の matched true（sha 2d2c19a7…）が在る。利用者の決定で 7 本目の後に止めたため、20 本の完了は満たさない（13 本は未実施）
-
-### 起票者の誤り
-
-- `asserted_without_measuring` — prereg §2.1 の 0 番の weight decay 3.0e-4 は、S を揃える定義（S ÷ (学習率 × 20 × 802)）から出る 2.998753e-4 を丸めた値で、S が 0.04 % ずれる。利用者の決定で学習の前に改訂（meta.amendments）
-- `asserted_without_measuring` — meta.created_from は runindex_commit 68befc3b・counts {2363, 1130, 1736} で、起票時の phase0 の runindex（d3e319ac・{2623, 1305, 1947}）を測っていない。L2-8 の WARN の原因。改訂（meta.amendments）
-- `asserted_without_measuring` — prereg §2.3 は動画ごとの val mAP を測る量に置き、§2.4 は動画ごとの test を求めるが、inputs.code の評価の道具 eval_relation_detr_map.py は動画ごとの値を出さない。口の在りかを読まずに書いている
-- `asserted_without_measuring` — SPEC Task C-2 は各 run の checkpoint で test を評価すると書くが、学習の設定 train_search.py は Search never evaluates test で test を拒む。評価の道具の --split test を使うことは書かれていない
-
-### 逸脱
-
-- `judgement` — 利用者の決定で 14〜15/20 本で停止、と指示を受けたが、同じ指示の『進行中の #7 が終わった所で止める』と同時には成り立たないため止める位置を確かめ、利用者の選択により #7（12 番 seed 123 の折り B）の後、7/20 本で停止した。残りの 13 本（12 番 seed 123 の C・D・E、0 番 seed 42 の A〜E、0 番 seed 123 の A〜E）は続きの契約で回す。checkpoint と記録は保存先に残した
-- `judgement` — 実行器に『今の run の後で止める』口が無いため、次の run（dtowerrerun_p12_dcoco_foldC_seed123）の作業フォルダを $STORE/runs/ に空で先に作った。#7 の評価と写しの後、実行器は #8 の work.mkdir(exist_ok=False) で FileExistsError を出し、GPU の確かめと起動の前に終わった。空のフォルダは残した
-- `judgement` — Task B-5 で評価の包みの test の口を確かめるため、前例（PR 299、test を使わない契約）の b6 seed 42 の checkpoint で折り A の test を一度評価した（AP 0.5099）。本契約の腕ではなく、判定・選定・表のどれにも使わない。本来は本契約の run の中で確かめるべきだった
-- `judgement` — 集計の道具 summarize.py を学習の途中と後に直した。(1) 1 本目の試しでプールの恒等性が 2.3e-4 ずれ、原因が注釈 id 0 の pycocotools の扱いと分かったので、恒等性を『注釈の id を +1 ずらした生の GT での値』との完全一致に改め、副次の test は id を振り直した評価で出す（評価器の GT の動画ごとの値も並べる）。(2) 停止の決定を受け、揃わない所（2 seed が揃わない折りの平均、10 本の平均、5 折りの seed 間の SD）を UNKNOWN にし、揃った所の記述（5 折りが揃った seed の平均、揃った折りの対だけからの SD）と回していない run の一覧を足した。各 run の評価器の値は変えていない
-- `spec_defect` — 学習の設定は Search never evaluates test で test を拒み、評価の道具 scripts/eval_relation_detr_map.py は動画ごとの値を出さない。包み tools/eval_dump.py で evaluate_acc を差し替えて評価器の集約済みの予測から動画ごとの COCO の値と予測を書き、test は評価の道具の --split test で評価した。既存のファイルは変えていない（val の値は前例と全桁で一致、計算し直しとの差 0.0）
-- `environment` — 学習の最中（2026-11-08T01:45:54Z）に、前例の道具 experiments/analysis/dtower_batch_search/tools/*.py の 10 件（追跡下）が作業ツリーから消えた。.stignore の !experiments/**/*.py で Syncthing が全台に配るため、別の台での削除が届いたと見ている（他の台には接続していない）。利用者の指示で HEAD の blob から戻し（2026-11-08T11:15:55Z）、10 件とも sha256 が HEAD と origin/phase0 の blob に一致。削除も復元も PR の差分に入れていない（commit の前の git status で追跡ファイルの削除・変更 0 件）。学習はこの場所を読まない
-- `environment` — 同期で届いた別の契約の未追跡 experiments/analysis/grasp_cards_survey/tools/*.py 8 件（2026-11-08T11:07Z〜）で make forbidden-check が violations 8 で fail。本契約の経路の違反は 0 件。8 件は消さず、無視の一覧にも足していない
-- `environment` — make runindex の検証 C5 が FAIL（value 空欄と is_nan が食い違う行 51、すべて phase1__grasppilot2_G_H1・G_H2・G_all）。本契約の行は 0。作り直しは同期で届いた統合前の別の契約の run（phase1__grasparms_* など 17 件）も拾った。利用者の決定で、前例どおり作り直した runindex 全体を commit した
-- `environment` — task-start を止めた同期の 2 件（bengio の T-2026-11-06-grasp-pilot-d-rerun の生成物）について、利用者の指示で 2 つのフォルダを .git/info/exclude の 20・21 行に書いた。戻すかは報告の後に利用者に確かめる
-- `environment` — 事後の評価の時間（val・train・test）は実行器の 30 秒ごとの見回りで測ったため 30 秒刻みでしか分からない
-
-### 申し送り
-
-- 残りの 13 本（12 番 seed 123 の折り C・D・E、0 番 seed 42 の A〜E、0 番 seed 123 の A〜E）を続きの契約で回す。道具は experiments/analysis/dtower_rerun/tools/run_rerun.py（終わった run は RUN_DONE で飛ばす）。同じ置き場で続けるなら、空の作業フォルダ $STORE/runs/dtowerrerun_p12_dcoco_foldC_seed123/ を先に外す必要がある
-- 凍結する塔（12 番 seed 42 の 5 本）の登録（scripts/stage2pilot/common.py の要約値の差し替えなど）を別の契約で行う。経路と sha256 は experiments/analysis/dtower_rerun/frozen_towers.json
-- どの注釈ファイルにも id 0 の注釈が 1 つあり、pycocotools がそれに一致した検出を誤検出に数える。評価器の値への影響は test で 7.1e-5〜4.9e-3。注釈の id を 1 から振るか、評価の扱いを決める契約が要る（変えると前例と値が変わる）
-- 折り A の 12 番 seed 42 が同じ設定・同じ seed の b6 と 0.0188 違った。同じ設定の繰り返しの幅を測る契約があると、1 本の値の差の読み方が決まる
-- experiments/**/*.py が Syncthing で全台に配られるため、別の台での削除が追跡下の道具を作業ツリーから消した。同期の規則と git の追跡の二重管理を見直す契約が要る
-- runindex の検証 C5 が phase1__grasppilot2_G_* の 3 本で落ちる（前例から続く）
-- .git/info/exclude の 20・21 行（grasparms の 2 フォルダ）を戻すかを利用者に確かめる
-- 版管理の外の生の記録と checkpoint（/home/ubuntu/slocal2/stage2pilot_store/T-2026-11-07-dtower-rerun/）を残した。片付けは利用者の判断
-
-### 断定できなかったこと
-
-- 回していない 13 本に関わる値: 12 − 0（折りごと・10 本）、点ごとの 10 本の平均、5 折りの seed 間の SD、12 番 seed 123 と 0 番の副次の test、予測 1・3
-- 折り A で b6 と 0.0188 違った非決定性の由来
-- 要約値の検査が、前例の道具が消えた状態を検出したか（消えた状態では測っていない）
 
