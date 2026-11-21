@@ -107,4 +107,4 @@ HTT 142,208 / 146,368 / 142,208 / 146,368（グラフの型は 561,728 / 586,688
 ## 7. 送出
 
 - PR: 317（https://github.com/takuya3h/m2/pull/317、base phase0、Draft でない、OPEN、head `feat/grasp-hand-irn-hice-htt-pilot`。`gh pr view 317 --json` で確認。audit の「送出」）
-- `make task-report`: （送信の後に足す）
+- `make task-report`: 終了コード 0（2026-11-21 JST、verdict pass、起票者の誤り 1 件、report_sha256 a064b775…、13,808 B、replaced_blocks 0。この行は送信の後に足した）

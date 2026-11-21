@@ -321,3 +321,7 @@ IRN では手のトークンの有無で確率がほとんど変わらない（W
     {"baseRefName":"phase0","headRefName":"feat/grasp-hand-irn-hice-htt-pilot","isDraft":false,"number":317,"state":"OPEN","url":"https://github.com/takuya3h/m2/pull/317"}
 
 - アプリの PR の連携（`mcp__ccd_pr__get_status`）は PreToolUse hook の応答待ちで実行されなかった
+
+    $ source scripts/load_env.sh && make task-report TASK=T-2026-11-21-grasp-hand-irn-hice-htt-pilot → 終了コード 0
+    {"task_id": "T-2026-11-21-grasp-hand-irn-hice-htt-pilot", "verdict": "pass", "n_issuer_defects": 1,
+     "report_sha256": "a064b775b523fe36c2e606a3cfe99031bcb6259a59cfe4ff7afd1284d61bf932", "report_bytes": 13808, "replaced_blocks": 0}
