@@ -99,5 +99,5 @@ W1 は andrew の前回の run、W2・W3 は bengio の前回の run。ホスト
 
 ## 7. 送出
 
-- PR: （起票後に記入）
-- `make task-report`: （送信後に記入）
+- PR: takuya3h/m2#315（base phase0、head feat/grasp-hand-graph-t2p-match、Draft でない。`gh pr view 315` で確かめた）
+- `make task-report`: 送信後に記入する（commit 1c500fce・d4d982ff・52eedc96 と本行の commit の後に送る）
