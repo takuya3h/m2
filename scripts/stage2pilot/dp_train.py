@@ -81,6 +81,12 @@ GA は epoch ごとの界面の重みの絶対値の最大と L2 ノルムを lo
         参照段の行の絞りは無い（全行で学び評価する）。epoch ごとに界面の L2 と出力射影の絶対値の最大を logs/history.json に書く
     --ckpt-dir         界面の重みの置き場（既定は従来どおり stage2pilot_store/<task-id>/dp_ckpt）
     --save-last-probs  最後の epoch の val の確率（predictions/val_probs_last.npz）と値（metrics の last）も保存する
+
+契約 T-2026-11-21-grasp-hand-graph-t2p-match（SPEC §3.1・§5.1・§6）で足した腕と引数。渡さなければ従来の経路のまま:
+    GR の腕   D・DG・DH・DGH・DGH-U の -noCF・-CF・-S（入れ替え）。材料のファイル名がそのまま腕の名前（DGH-noCF は従来の名前）
+    --record-epochs E ...   --fixed-epochs と組で使う。epoch E ごとに val の確率（predictions/val_probs_ep<E>.npz）と値・界面の零初期化の
+                            層の大きさ・optimizer の群ごとの学習率（metrics_ep<E>.json）を保存し、optimizer の群ごとの学習率・weight decay・
+                            パラメータの名前を config の optim_groups に書く
 """
 from __future__ import annotations
 
@@ -130,9 +136,12 @@ RT = {"dir": None, "layer": None, "content": None, "k": None}  # --rt-*（RT の
 TW = {"dir": None, "form": None, "L": None, "k": None}  # --tw-*（TW のときだけ）
 GR = {"dir": None, "N": None, "L": None, "k": 64}      # --gr-*（GR のときだけ。K は SPEC §4.3 の 64）
 GR_ARMS = ("D", "DG", "DH", "DGH", "DGH-U", "DGH-noCF", "DGH-GT")
+# 契約 T-2026-11-21-grasp-hand-graph-t2p-match の腕（noCF・CF・入れ替え S）。DGH-noCF は GR_ARMS に在る
+GR_ARMS_T2P = tuple(f"{c}-{s}" for c in ("D", "DG", "DH", "DGH", "DGH-U") for s in ("noCF", "CF", "S")
+                    if f"{c}-{s}" not in GR_ARMS)
 GR_ROWS = 30                                               # 材料の術具の行の数（N の上限）。手の行は 30・31
 X32_HALF = NT + 1                                          # 15 と旗。予測の半分が先、正解の半分が後
-ARMS = ("empty", "pred_noCF", "gt", "pred_CF", "gtpred_CF", "shuffle", "geo", "union", "t1", "perm") + GR_ARMS
+ARMS = ("empty", "pred_noCF", "gt", "pred_CF", "gtpred_CF", "shuffle", "geo", "union", "t1", "perm") + GR_ARMS + GR_ARMS_T2P
 # 止め方の規則（DP・W1）。最初の腕を回す前に固定する
 STOP = {"lr": 5e-4, "weight_decay": 0.01, "patience": 10, "max_epochs": 100, "smoothing_weight": 0.3}
 SCOPES = ("W1", "W2", "W3")
@@ -182,6 +191,34 @@ def iface_norms(model):
     if hasattr(model.iface, "rel"):
         out["rel_std"] = float(model.iface.rel.detach().std())
     return out
+
+
+def optim_groups(model, opt):
+    """optimizer の群ごとの学習率・weight decay・パラメータの名前（--record-epochs のとき config に書く）。"""
+    name = {id(p): n for n, p in model.named_parameters()}
+    return [{"lr": g["lr"], "weight_decay": g["weight_decay"], "n_tensors": len(g["params"]),
+             "n_params": int(sum(p.numel() for p in g["params"])), "names": sorted(name[id(p)] for p in g["params"])}
+            for g in opt.param_groups]
+
+
+def last_norms(model):
+    """界面の零初期化の層（陽性対照で乱数にする層）の大きさ。"""
+    name = {id(p): n for n, p in model.named_parameters()}
+    ps = [p.detach() for p in model.iface_last_params()]
+    return {"last_params": [name[id(p)] for p in model.iface_last_params()],
+            "last_l2": float(torch.sqrt(sum((p.float() ** 2).sum() for p in ps))),
+            "last_weight_l2": float(ps[0].float().norm()), "last_weight_max_abs": float(ps[0].abs().max())}
+
+
+def record_epoch(exp_dir, epoch, val, probs, model, opt):
+    """--record-epochs: その epoch の val の確率と値、零初期化の層の大きさ、群ごとの学習率を保存する。"""
+    (exp_dir / "predictions").mkdir(parents=True, exist_ok=True)
+    np.savez(exp_dir / f"predictions/val_probs_ep{epoch}.npz", **{v: p.astype(np.float32) for v, p in probs.items()})
+    C.write_json(exp_dir / f"metrics_ep{epoch}.json",
+                 {"epoch": epoch, "phase_jaccard": val["phase_jaccard"], "phase_accuracy": val["phase_accuracy"],
+                  "phase_macro_f1": val["phase_macro_f1"], "phase_per_class_jaccard": val["phase_per_class_jaccard"],
+                  "per_video": val["per_video"], "iface_last": last_norms(model),
+                  "optim_lr": [g["lr"] for g in opt.param_groups], "optim_weight_decay": [g["weight_decay"] for g in opt.param_groups]})
 
 
 def inst_name(base, variant):
@@ -352,7 +389,7 @@ class Signals:
         """GR の腕の x(t)（F, N + 2, 27）。空の腕（A0）は D の材料と同じフレームで全部 0。"""
         if None in (GR["dir"], GR["N"], GR["L"]):
             raise SystemExit("GR は --gr-dir・--gr-N・--gr-L を渡す")
-        if arm != "empty" and arm not in GR_ARMS:
+        if arm != "empty" and arm not in GR_ARMS + GR_ARMS_T2P:
             raise SystemExit(f"GR に腕 {arm} は無い")
         path = Path(GR["dir"]) / "graph" / f"{'D' if arm == 'empty' else arm}_{part}.npz"
         self.srcs = [] if arm == "empty" else [(path, arm == "DGH-GT")]
@@ -694,6 +731,9 @@ def cmd_train(a):
                                    + "), eval (dropout off)")
         if not sc["equal"]:
             raise SystemExit(f"学ぶ集合が定義と一致しない: {a.scope}")
+    if a.record_epochs:
+        cfg.update(record_epochs=sorted(set(a.record_epochs)), steps_per_epoch=len(train_data),
+                   optim_groups=optim_groups(model, opt), iface_last_init=last_norms(model))
     rt_desc = f"-{RT['layer']}-{RT['content']}-K{RT['k']}" if sig_tr.kind == "rt" else ""
     if sig_tr.kind == "tw":
         rt_desc = f"-{a.scope}-{TW['form']}" + ("" if a.arm in ("empty", "t1") else f"-L{TW['L']}") + f"-K{TW['k']}"
@@ -754,6 +794,8 @@ def cmd_train(a):
         if sig_tr.kind in ("rt", "tw", "gr"):
             history[-1].update(iface_l2=float(torch.sqrt(sum((p.detach() ** 2).sum() for p in model.iface.parameters()))),
                                iface_out_max_abs=float(model.iface.out.weight.detach().abs().max()))
+        if a.record_epochs and epoch in a.record_epochs:
+            record_epoch(manager.exp_dir, epoch, val, probs, model, opt)
         tracking.log({"train/loss": total / len(order), "val/jaccard": score, "val/accuracy": val["phase_accuracy"],
                       **({f"gate/{k}": v for k, v in gate.items()} if gate else {})}, step=epoch)
         if rule:
@@ -950,7 +992,11 @@ def main():
     t.add_argument("--ckpt-dir", default=None, help="界面の重みの置き場（既定は stage2pilot_store/<task-id>/dp_ckpt）")
     t.add_argument("--save-last-probs", action="store_true",
                    help="最後の epoch の val の確率と値も保存する（契約 T-2026-11-20-grasp-hand-graph-pilot）")
+    t.add_argument("--record-epochs", type=int, nargs="+", default=None,
+                   help="--fixed-epochs と組で、この epoch ごとの val の確率と値を保存する（契約 T-2026-11-21-grasp-hand-graph-t2p-match）")
     a = ap.parse_args()
+    if a.cmd == "train" and a.record_epochs and not (a.fixed_epochs and all(1 <= e <= a.fixed_epochs for e in a.record_epochs)):
+        raise SystemExit("--record-epochs は --fixed-epochs と組で、1 以上 fixed-epochs 以下の epoch を渡す")
     global GRASP_DIR, GRASP_PRED_DIR, GRASP_NO_FLAG
     GRASP_DIR = getattr(a, "grasp_signal_dir", None)
     GRASP_PRED_DIR = getattr(a, "grasp_pred_dir", None)
