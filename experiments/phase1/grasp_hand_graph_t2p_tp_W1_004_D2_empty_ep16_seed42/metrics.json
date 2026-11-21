@@ -1,0 +1,44 @@
+{
+  "best_epoch": 16,
+  "early_stopped_epoch": null,
+  "elapsed_seconds": 54.0992447482422,
+  "epochs_run": 16,
+  "eval_recipe": {
+    "test_cfg": {
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "split": "val",
+      "task": "phase"
+    }
+  },
+  "iface_ckpt": "/home/ubuntu/slocal2/stage2pilot_store/grasp_hand_graph_t2p/dp_ckpt/grasp_hand_graph_t2p_tp_W1_004_D2_empty_ep16_seed42.pth",
+  "iface_ckpt_sha256": "37475ec366742a034c92d0faf24f9597a3380661cad5160bfa3a37d3d587a72c",
+  "iface_params": 267264,
+  "init_phase_accuracy": 0.8712871287128713,
+  "init_phase_jaccard": 0.7762185528074379,
+  "negative_control": {
+    "max_abs_logit_diff": 0.06884419918060303,
+    "other_arm": "pred_noCF",
+    "pred_signal_jaccard": 0.7515141244579774,
+    "unchanged": false,
+    "zero_signal_jaccard": 0.7544588878576661
+  },
+  "per_video": {
+    "09": {
+      "phase_accuracy": 0.9922779922779923,
+      "phase_jaccard": 0.9817103230139588
+    },
+    "10": {
+      "phase_accuracy": 0.8214643931795386,
+      "phase_jaccard": 0.6799221155513672
+    }
+  },
+  "phase_accuracy": 0.8798679867986798,
+  "phase_jaccard": 0.7544588878576661,
+  "phase_macro_f1": 0.841979870334416,
+  "reached_epoch_cap": true,
+  "receiver_unchanged": true,
+  "result_epoch": 16,
+  "result_selection": "final_epoch",
+  "steps_without_grad": 0
+}
