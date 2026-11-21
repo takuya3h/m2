@@ -1888,6 +1888,22 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
   案 5 の W1 の S_W − S_0 は前の処方の 4/4 正から 0/4 に変わった。殺し実験の線形の層は、P の train の特徴だけで train が分け切れるため、正則化を変えても陽性対照が J 0.64〜0.68 で働かない
 - 道具は `experiments/analysis/grasp_pilot_converge/tools/`。前の予備の材料（空間特徴・トークン・窓の列）は読むだけで作り直していない
 
+### 把持・手・術具の予測を三つの渡し方（IRN・HiCE・HTT）で工程塔へ渡す予備測定（2026-11-21、andrew）
+
+契約 `T-2026-11-21-grasp-hand-irn-hice-htt-pilot`（analysis。**非公式の予備測定。関門の判定と設計の判断に使わない**）。前回のグラフの予備と同じ送り手の予測
+（検出塔・把持塔 G3・手の塔 H4 から作った術具・自分の手のトークンと持ち手の特徴。前回の組み立ての配列をそのまま読む）を、先行研究の三つの渡し方
+（IRN = 手が問い合わせ・術具が鍵、HiCE = フレームの特徴が問い合わせ・手が鍵、HTT = フレームごとの一つのトークン）で工程塔の時間ヘッドの入力へ足し、
+8 腕 × 4 設定 × W1〜W3 を収束規則で回した（248 本と回し直し 2 本。塔は学ばない）。
+結果は `experiments/analysis/grasp_hand_irn_hice_htt_pilot/REPORT.md` と `diffs.csv`（`tools/make_report.py` が記録から作る）、記録は `tasks/T-2026-11-21-grasp-hand-irn-hice-htt-pilot/`、
+界面の重み・確かめの出力は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/grasp_hand_irn_hice_htt/`。
+
+- 変更: `scripts/stage2pilot/dp_model.py` に `IRNIface`・`HiCEIface`・`HTTIface`（と共通の `masked_attention`・`CrossAttention`）、`dp_train.py` に型 `IRN`・`HiCE`・`HTT`
+  （入力・腕・引数は GR と同じ `--gr-dir`・`--gr-N`・`--gr-L`）を**足す形**で書いた。**渡さなければ従来の経路のまま**（前回のグラフの run 1 本と T→P の run 1 本の回し直しで記録と完全に一致）
+- 三つの型とも零初期化の線形層で r_t を足す。値と注意の出力の射影は bias なし（学ぶ定数を値に入れない）。学習前の出力は 288 組み合わせで塔単独と一致
+- DGH − A0（6 工程、最良の回）は W1 で 3 型とも 4 設定すべて ±0.015 の中、W2 で HiCE +0.0230〜+0.0316・HTT +0.0072〜+0.0276・IRN +0.0117〜+0.0148。
+  各型の A0 はグラフの型の A0 と val の確率まで一致。IRN は手のトークンの効きがごく小さい（W1 の D と DH の確率の差 7.4e-6）
+- 道具は `experiments/analysis/grasp_hand_irn_hice_htt_pilot/tools/`。前回の材料・run・third_party・注釈・仮想環境は変えていない（開始時の一覧 246,201 件と一致）
+
 ### 把持と手のグラフを T→P と同じ条件で回し直す予備測定（2026-11-21、andrew）
 
 契約 `T-2026-11-21-grasp-hand-graph-t2p-match`（analysis。**非公式の予備測定。関門の判定と設計の判断に使わない**）。前回のグラフの腕（型 GR）を、

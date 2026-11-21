@@ -1,0 +1,95 @@
+result_version: 3
+task_id: "T-2026-11-21-grasp-hand-irn-hice-htt-pilot"
+status: pass
+host: "andrew"
+branch: "feat/grasp-hand-irn-hice-htt-pilot"
+pr: null
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "起点 origin/phase0 4cb85a02 に PR 312（90a12ab0）と PR 315（be49c44f）が統合され、前回の道具・記録・目録と前提の契約 4 件の RESULT.md・result.yaml が在る。目録 24d9139d… と目録が名指す 26 ファイル、組み立ての報告 1e0f052f…、工程塔の重み 0d76d446…・キャッシュ c402e214… が一致。本契約以外の compute 0 件、空き 1,572,432,932,864 B"}
+  - {id: G2, verdict: pass, note: "前回の組み立ての配列をそのまま読む。4 型 × 8 腕 × N 10・30 × train・val の 128 組で型に渡る配列が npz の行とビットまで一致。正解の腕の持ち手の一致 train 20,433/21,021・val 3,610/3,807 が前回の報告と同じ。腕の表の外れ 0、test の動画との共通 0"}
+  - {id: G3, verdict: pass, note: "型の定義の検査 96 行（3 型 × 8 腕 × 4 設定、float64）: 入力の無いフレームで r_t = 0、HiCE の A0・D の鍵 0、中身を零にした入力で g_t を替えた差の最大 8.3e-17、持たれていない術具の中身を変えた差 0.0。回し直し 2 本（グラフの型 W3・N30・L2・DGH と T→P D1-L1）が値と val の確率まで記録と一致。学習前の出力が 288 組み合わせで塔単独と差 0.0、out を N(0, 0.05²) にすると 288/288 で変わる"}
+  - {id: G4, verdict: pass, note: "248 本が rc 0（15:10:32〜16:04:16 JST、GPU 2 枚 × 4 本並行）で収束規則の打ち切りで止まり、上限 120 は 0 本。248/248 で最良と最後の val の確率と metrics_last.json が在る。確かめ 14 組（A0 の s4 と s1 × 3、HiCE の D と A0、HiCE の DH の s3 と s1、各型の A0 とグラフの型の A0 × 9）とも val の確率まで一致"}
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 985
+
+deviations:
+  - {type: judgement, note: "preflight P6 の未回答 3 件を利用者に選択式で示し、回答（2026-11-21）「前回と同じく任せる」「最小の変更で進める」「省いた run を回して埋める」を meta.amendments に記録して decisions_required を [] にした。停止は gate の FAIL・捏造の禁止・allow_write の外・他の契約の compute に限った。どれにも当たらなかった"}
+  - {type: judgement, note: "meta.created_from を起点で測って差し替えた（runindex 036d6a60、index 2668・experiments 1347・verdicts 2067）。contract.conventions_rev は 2d946b07 のまま"}
+  - {type: judgement, note: "型 TW の材料が andrew に無いので、型 TW の回し直しの代わりに andrew で回し材料の在る T→P の stage2fix_dp_004_D1-L1_pred_noCF_ep4_seed42 を回し直した。グラフの型は受け取り手の全体を学ぶ経路・N 30・L 2・辺を通る grasp_hand_graph_arm_093_GR-W3-N30-L2_DGH_conv_seed42 を選んだ。2 本とも記録と完全に一致"}
+  - {type: judgement, note: "トークンは前回の組み立ての配列をそのまま読み、作り直していない（SPEC §3 が許す）。三つの型は辺の重みの 3 列を使わない"}
+  - {type: judgement, note: "SPEC §4.1 が実行者に任せたものを決めた: 4 head、値と注意の出力の射影は bias なし、段ごとに問い合わせへ注意の出力を足す残差、r_t は各段の出力の和、正規化の層なし、HiCE の ω は正規化しない、HiCE の側の鍵は手のトークンが在るか Σ_i w_is > 0 のときだけ置く、HTT の MLP は（線形 → ReLU）× L ＋ 線形 64 → 64。定義は変えていない（利用者の回答 (2) は使っていない）"}
+  - {type: judgement, note: "完了判定 c の「送り手の中身を零にした入力」は在否の列 0 を残して列 1..26 を 0 にした入力と読み、g_t を替えても変わらないの判定の上限を float64 で 1e-9 と先に決めた。実測の最大 8.3e-17"}
+  - {type: judgement, note: "確かめ 14 組がすべて一致したので、SPEC §5.2 のとおり 44 組み合わせ（A0 の s2〜s4 27、HiCE の D 11、HiCE の DH の s3・s4 6）に流用先の値を使った。HiCE の D の s1・W1 は確かめの run をその組み合わせの値として使い、A0 の s4・HiCE の DH の s3 の確かめ 4 本は比べにだけ使った"}
+  - {type: environment, note: "試走の最初の引数（--max-epochs 3 と --scope W3）が dp_train の組み合わせの検査で 3 本とも rc 1 になり、何も書かずに終わった。--fixed-epochs 3 --smoke に直して回し直した"}
+  - {type: environment, note: "ruff の指摘が新しい道具に 1 件残る（tower_alone.py の import の並び。前回の道具の写しのまま）。変数名 O の 3 件は名前を改め、改めた版でトークンと型の確かめを回し直して同じ値を得た"}
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "SPEC §5.2 と表 2 は回し直しに「型 TW の run 1 本」を andrew で求めるが、型 TW の run 138 本はすべて bengio で回したもので、材料の置き場 $S/T-2026-11-09-grasp-roitoken-transition-pilot/seq/ が andrew に無い。指示どおりに回すと材料が無く dp_train の Signals が読めずに止まる"
+
+positive_controls:
+  - judgement: "a compute プロセスの列挙"
+    breaking_input: "存在しない GPU 番号 7 で nvidia-smi を問う。proc_enum を存在しない実行ファイルの経路で問う"
+    observed: "No devices were found。存在しない経路で 0 件（/usr/bin/zsh では 5 件）"
+  - judgement: "a 保存先の信号と目録の照合"
+    breaking_input: "$O/graph/D_val.npz の写しを 1 バイト変える"
+    observed: "外れ 1（本物は 26/26 一致）"
+  - judgement: "b トークンの中身が前回の配列と一致"
+    breaking_input: "1 フレームの術具のトークンの得点を 1e-6 ずらした写し"
+    observed: "128/128 で不一致を出す（本物は 128/128 でビットまで一致）"
+  - judgement: "b 正解の腕の持ち手の一致"
+    breaking_input: "持ち手の左右を入れ替えた写し"
+    observed: "train 20,433 → 1,933、val 3,610 → 424"
+  - judgement: "b 腕の表"
+    breaking_input: "D に DH の配列（手のトークンが在る）を置いた写し"
+    observed: "外れ 4（2 part × 2 N で各 1。本物は 0）"
+  - judgement: "c 入力の無いフレームで r_t = 0"
+    breaking_input: "A0 の型に DGH の入力を入れる"
+    observed: "r_t の最大 0.048〜2.33（本物の A0 は完全に 0）"
+  - judgement: "c 送り手の中身を零にした入力で g_t によらない"
+    breaking_input: "注意の値に e_s を足した写し（IRN は統合の値 z_s、HiCE は側の値 v_s）"
+    observed: "中身を零にしても鍵が残る 48 行とも 3.47e-5〜5.60e-5 変わる（本物の最大 8.3e-17）。HTT は g_t を使わないので写しを作っていない"
+  - judgement: "c HiCE が持たれていない術具を使わない"
+    breaking_input: "持ち手の重みに 1 を足して持たれていない術具も鍵に入れた写し"
+    observed: "持たれていない術具の中身に乱数を足すと r_t が 0.361〜2.030 変わる（本物は 0.0）"
+  - judgement: "d 既定の挙動が変わらない"
+    breaking_input: "回し直した run の val の確率を 1 か所 1e-6 ずらした写し、記録の J を 1e-6 ずらした値"
+    observed: "どちらも一致しない（本物は 2 本とも値と確率が完全に一致）"
+  - judgement: "e 学習前の一致"
+    breaking_input: "零初期化の線形層 out の重みと bias を N(0, 0.05²) にする"
+    observed: "288/288 で出力が変わる（0.121〜0.656）。入力の無い A0 でも bias で変わる"
+  - judgement: "f run の終わりの数え上げ"
+    breaking_input: "存在しない腕の名前（IRN-W1-N10-L1_NO_SUCH_ARM_conv）で run を探す"
+    observed: "0 件（在る名前で 1 件、表の全体で 248/248）"
+  - judgement: "g 確かめの run の一致"
+    breaking_input: "val の確率を 1 か所 1e-6 ずらした写しを同じ検査にかける"
+    observed: "14/14 で一致しない（本物は 14/14 で差 0.0）"
+  - judgement: "h 差の測り直し"
+    breaking_input: "測り直した J を 1e-6 ずらした写し"
+    observed: "340/340 で検出（本物は記録とのずれの最大 0.0）"
+  - judgement: "i test を通さない"
+    breaking_input: "train のフレームに動画 04 のフレームを 1 つ混ぜた入力"
+    observed: "共通 1 件 [04]（本物は 0 件）"
+  - judgement: "j 既存の中身を変えていない"
+    breaking_input: "今の一覧に本契約の新しいファイルを一つ加えた写し"
+    observed: "追加 1 として拾う（本物は変更・削除・追加とも 0）"
+  - judgement: "j forbidden-check"
+    breaking_input: "TASK を渡さずに回す（allow_write を読まない）"
+    observed: "status fail で本契約の 2,288 件が違反として名指される。TASK つきでは pass・違反 0・許可 2,288 件"
+
+followups:
+  - "型の中の DGH − A0（6 工程、最良の回）は W1 で 3 型とも 4 設定すべて ±0.015 の中、W2 で HiCE 4/4・HTT 3/4 が +0.015 を上回り IRN は 0/4（+0.0117〜+0.0148）。W1 の DGH − グラフの型の DGH は 3 型とも全設定で ±0.015 の中。seed 42 の 1 本ずつで揺れは測っていないので、次に進めるかは利用者が決める"
+  - "IRN は手のトークンの効きがごく小さい（W1 の D と DH の確率の差 7.4e-6）。初期化で注意の重みがほぼ一様なためと読むが、長く学ぶと効くかは測っていない。IRN を次に使うなら起票者が考える"
+  - "型 TW の材料は andrew に無い。次の契約で型 TW の回し直しを求めるなら bengio で回すか、別の型で示すかを起票者が決める"
+
+unknowns:
+  - "seed を変えたときの差の揺れ: 測っていない（seed 42 の 1 本ずつ）"
+  - "W1 の IRN・HTT で val の最良が epoch 1 に来る run が多い（IRN 26・HTT 24）理由: 調べていない"
+  - "IRN で手のトークンが学習を長くすると効くか: 測っていない"
+
+commits: []
