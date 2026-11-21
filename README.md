@@ -1888,6 +1888,21 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
   案 5 の W1 の S_W − S_0 は前の処方の 4/4 正から 0/4 に変わった。殺し実験の線形の層は、P の train の特徴だけで train が分け切れるため、正則化を変えても陽性対照が J 0.64〜0.68 で働かない
 - 道具は `experiments/analysis/grasp_pilot_converge/tools/`。前の予備の材料（空間特徴・トークン・窓の列）は読むだけで作り直していない
 
+### 把持と手のグラフを T→P と同じ条件で回し直す予備測定（2026-11-21、andrew）
+
+契約 `T-2026-11-21-grasp-hand-graph-t2p-match`（analysis。**非公式の予備測定。関門の判定と設計の判断に使わない**）。前回のグラフの腕（型 GR）を、
+検出塔から工程塔へ渡す型（T→P = D1-L1・D1-L2・D2・D3-L2）と同じ条件（4 epoch の固定、交差適合なし noCF・あり CF・入れ替え S、同じホスト）で回し直し、
+T→P の空・予測-noCF・入れ替えも andrew で W1〜W3 回し直して並べた（189 本、塔は学ばない）。
+結果は `experiments/analysis/grasp_hand_graph_t2p/REPORT.md` と `diffs.csv`（`tools/make_report.py` が記録から作る）、記録は `tasks/T-2026-11-21-grasp-hand-graph-t2p-match/`、
+グラフの材料・界面の重み・確かめの出力は版管理の外 `/home/ubuntu/slocal2/stage2pilot_store/grasp_hand_graph_t2p/`。
+
+- 変更: `scripts/stage2pilot/dp_train.py` に GR の腕 D・DG・DH・DGH・DGH-U の `-noCF`・`-CF`・`-S` と、引数 `--record-epochs`（`--fixed-epochs` と組。epoch ごとの val の確率・値・
+  零初期化の層の大きさ・optimizer の群を保存）を**足す形**で書いた。**渡さなければ従来の経路のまま**（前回のグラフの run 1 本と T→P の run 1 本の回し直しで記録と完全に一致）
+- 材料: noCF と入れ替えのグラフは前回の信号から組んだ（CF の 5 腕と DGH-noCF は前回とビットまで一致）。入れ替えは T→P の対応表（seed 42）をそのまま使った
+- 主（4 epoch 目）の c-noCF − c-S（6 工程）は W1 で 14 組とも ±0.015 の中、W2 で 1 組・W3 で 3 組が外。T→P の予測-noCF − 入れ替えは D1-L2 +0.0371〜+0.0852・D3-L2 +0.0200〜+0.0665（3 W）。
+  T→P の回し直しは 36/36 で前回（W1 andrew・W2/W3 bengio）と val の確率まで一致。続けた run の 4 epoch 目は 4 epoch で止めた run と 6/6 で一致
+- 道具は `experiments/analysis/grasp_hand_graph_t2p/tools/`。前回の材料・run・third_party・注釈・仮想環境は変えていない（開始時の一覧 241,412 件と一致）
+
 ### 把持と手のグラフを工程塔へ渡す予備測定（2026-11-20、andrew）
 
 契約 `T-2026-11-20-grasp-hand-graph-pilot`（analysis。**非公式の予備測定。関門の判定と設計の判断に使わない**）。把持塔を器具 3 クラスの G3 に組み直し、

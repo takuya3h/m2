@@ -1,0 +1,41 @@
+{
+  "best_epoch": 16,
+  "early_stopped_epoch": null,
+  "elapsed_seconds": 58.124360613524914,
+  "epochs_run": 16,
+  "eval_recipe": {
+    "test_cfg": {
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "split": "val",
+      "task": "phase"
+    }
+  },
+  "iface_ckpt": "/home/ubuntu/slocal2/stage2pilot_store/grasp_hand_graph_t2p/dp_ckpt/grasp_hand_graph_t2p_gr_134_GR-W3-N30-L2_DGH-U-noCF_ep16_seed42.pth",
+  "iface_ckpt_sha256": "1c1cce4040123408c35c48da39d948c5ed5e8f1f5ce5f54fbafcd1d0f5b874b6",
+  "iface_params": 586688,
+  "init_phase_accuracy": 0.8712871287128713,
+  "init_phase_jaccard": 0.7762185528074379,
+  "per_video": {
+    "09": {
+      "phase_accuracy": 0.9884169884169884,
+      "phase_jaccard": 0.9738196682708582
+    },
+    "10": {
+      "phase_accuracy": 0.8144433299899699,
+      "phase_jaccard": 0.610929651355673
+    }
+  },
+  "phase_accuracy": 0.8739273927392739,
+  "phase_jaccard": 0.6716100551200868,
+  "phase_macro_f1": 0.7327302257388242,
+  "reached_epoch_cap": true,
+  "receiver_outside_scope_n": 0,
+  "receiver_outside_scope_unchanged": true,
+  "receiver_trained_changed": true,
+  "receiver_unchanged": false,
+  "result_epoch": 16,
+  "result_selection": "final_epoch",
+  "scope": "W3",
+  "steps_without_grad": 0
+}

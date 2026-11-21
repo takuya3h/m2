@@ -1,0 +1,93 @@
+result_version: 3
+task_id: "T-2026-11-21-grasp-hand-graph-t2p-match"
+status: pass
+host: "andrew"
+branch: "feat/grasp-hand-graph-t2p-match"
+pr: 315
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "起点 origin/phase0 ce9c4094 に PR 312 の道具（90a12ab0 で統合）と前提の契約 5 件の RESULT.md・result.yaml が在る。本契約以外の compute は 0 件（proc_enum の n_compute 0、nvidia-smi の compute の行 0、全体の使用量 16 MiB × 2 と一覧の差 0）、空き 1,573,500,612,608 B"}
+  - {id: G2, verdict: pass, note: "前回のグラフの目録 signals_manifest.json（24d9139d…）とそれが名指す 26 ファイル、T→P の元の信号と入れ替えた信号 12、対応表 2、T→P の run 36 本の入力（信号・受け取り手の重み 0d76d446…・特徴のキャッシュ c402e214…）の sha256 がすべて記録と一致。塔単独の val は J 0.7762185528074379・acc 0.8712871287128713 で記録と差 0.0。T→P の学習設定は W ごとに 4 型で食い違い 0（界面 5e-4・0.01、W2・W3 の受け取り手 5e-4・0.01、constant、fixed 4）"}
+  - {id: G3, verdict: pass, note: "入れ替えたグラフ 5 腕 × train・val で値の集合が元と同じ・逆の並べ替えで元に戻る。15 腕 × 2 part の表と出どころの外れ 0。学習前の出力が 240 組（グラフ 204・T→P 36）で塔単独とロジットの差 0.0。陽性対照で変わるのは 231/240（0.105〜3.135）。変わらない 9 組は T→P の D1・D3 の空の腕で、入力が全部 0 のため構造上変わらず、同じ型の予測-noCF・入れ替えの腕では変わる（0.258〜2.726）"}
+  - {id: G4, verdict: pass, note: "189 本が rc 0（10:18:11〜10:40:52 JST、GPU 2 枚 × 4 本並行）。189/189 本で記録する epoch（続けた run は 4・8・12・16、確かめは 4）の metrics_ep<E>.json と val_probs_ep<E>.npz、config の optim_groups がそろう"}
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 985
+
+deviations:
+  - {type: judgement, note: "利用者の回答（2026-11-21）「とにかく進めてくれ しばらく見れないからなんとかしてとにかく実験回して」を判断の委任と読み、preflight P6 の 3 件を前もって決めて meta.amendments に記録した。停止は gate の FAIL・捏造の禁止・allow_write の外・他の契約の compute に限ると決めた。どれにも当たらなかった"}
+  - {type: judgement, note: "利用者の指示「汚れはgit info excludeへ」は、task_start_classify の分類で汚れが 0 件（通す）だったため使っていない。.git/info/exclude は変えていない"}
+  - {type: judgement, note: "恒等性の陽性対照で変わらない 9 組（T→P の D1-L1・D1-L2・D3-L2 の空の腕 × 3 W）は、同じ型の予測-noCF・入れ替えの腕で変わることで検査が空振りでないことを示したと読み、G3 を pass とした"}
+  - {type: judgement, note: "組み直した CF の 5 腕と DGH-noCF が前回の $O/graph の配列と train・val ともビットまで一致したので書き直さず、前回のファイルを指す記号のリンクを $T/graph/ に置いた。新しく書いたのは D・DG・DH・DGH-U の noCF と 5 腕の入れ替えの 18 ファイル"}
+  - {type: judgement, note: "4 epoch で止める確かめ 6 本と続けた run を同時に回した（続けた run は比べの結果によらず副次に要る）。比べは 6/6 で val の確率まで一致し、主の値は続けた run の 4 epoch 目から取った。4 epoch で止める run の全腕（ep4all）は回していない"}
+  - {type: judgement, note: "SPEC §7 の差の表では、辺の無い 9 腕の s2・s4 と A0 の s2〜s4 に省いた先の値を使った（§5.3 の確かめで一致）。RESULT §3 の範囲と ±0.015 の外の数は重ならない 14 組で数えた"}
+  - {type: environment, note: "ruff の指摘が新しい道具に 2 件残る（tower_alone.py の import の並びは前回の道具の写しのまま、c_graphs.py の変数名 O は前回の ghg_graph の名前に合わせた）。b_check.py は B-1 の後に使っていない変数を 1 行消し、E-3 でやり直して同じ結果を得た"}
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "SPEC §9 f と G3 は、interface の出力の射影を N(0, 0.05²) にすると全腕（グラフと T→P）で学習前の出力が変わると求めた。しかし T→P の D1 の零初期化の層は bias の無い Conv1d で、D3 の空の腕はトークンが 0 個なので、空の腕では入力が全部 0 になり、その層をどう変えても出力は構造上変わらない。指示どおりに全腕で求めると 9 組（3 型 × 3 W）が必ず落ちる"
+
+positive_controls:
+  - judgement: "a compute プロセスの列挙"
+    breaking_input: "存在しない GPU 番号 7 で nvidia-smi を問う。proc_enum を存在しない実行ファイルの経路で問う"
+    observed: "No devices were found。存在しない経路で 0 件（/usr/bin/zsh では 5 件）"
+  - judgement: "b 材料の要約値の照合"
+    breaking_input: "グラフ D_val と入れ替えた D0_val を 1 バイト変えた写し、対応表の一組を入れ替えた写し"
+    observed: "3/3 で食い違い（95a6cd20… → 5e459fdd…、ee6c21da… → db93a588…、ad9dec09… → a86651b3…）"
+  - judgement: "c 学習設定が optimizer に届いた"
+    breaking_input: "実際の run（grasp_hand_graph_t2p_ep4chk_002_GR-W2-N10-L1_DGH-noCF_ep4_seed42）の optimizer の群の受け取り手の学習率だけ 5e-5 にした写し"
+    observed: "検査を通らない（本物は 189/189 で通る）"
+  - judgement: "d 入れ替えたグラフ"
+    breaking_input: "恒等の並べ替え"
+    observed: "元と同じフレームに来る割合 1.0（本物は train 0.0・val 0.00132）"
+  - judgement: "e 腕の表"
+    breaking_input: "D-noCF に DH-noCF の配列を置いた写し"
+    observed: "外れ 1（本物は 0）"
+  - judgement: "e 信号の出どころ"
+    breaking_input: "DG-noCF の train の先頭 965 フレームに CF の信号を混ぜた写し"
+    observed: "外れ 2（tool_rows・holder。本物は 0）"
+  - judgement: "f 恒等性"
+    breaking_input: "零初期化の層を N(0, 0.05²) にする"
+    observed: "231/240 で出力が変わる（0.105〜3.135）。D1・D3 の空の腕 9 組は構造上変わらない（issuer_defects）"
+  - judgement: "g 省いた run"
+    breaking_input: "違う腕どうし（D-noCF s1 と DG-noCF s1）の確率を同じ検査にかける"
+    observed: "3 W とも差が出る（本物の確かめ 6 組は 4 epoch とも一致）"
+  - judgement: "h 4 epoch で止めた run と続けた run"
+    breaking_input: "続けた run の 4 epoch 目と 8 epoch 目の確率を同じ検査にかける"
+    observed: "6/6 で差が出る（0.052〜0.855。本物の比べは 6/6 で差 0.0）"
+  - judgement: "h run の終わりの数え上げ"
+    breaking_input: "存在しない腕の名前（GR-W1-N10-L1_NO_SUCH_ARM）で run を探す"
+    observed: "0 件（在る名前で 1 件、全体で 189/189）"
+  - judgement: "i 差の測り直し"
+    breaking_input: "測り直した J を 1e-6 ずらした写し"
+    observed: "732/732 で検出（本物は記録とのずれの最大 0.0）"
+  - judgement: "j test を通さない"
+    breaking_input: "train のフレームに動画 04 のフレームを 1 つ混ぜた入力（グラフの段）、run の動画の集合に 04 を加えた集合（腕の段）"
+    observed: "共通 1 件 [04]（本物は 0 件）"
+  - judgement: "k 既定の挙動が変わらない"
+    breaking_input: "回し直した run の val の確率を 1 か所 1e-6 ずらした写し、記録の J を 1e-6 ずらした値"
+    observed: "どちらも一致しない（本物は前回のグラフ 1 本・T→P 1 本とも値と確率が完全に一致）"
+  - judgement: "k 既存の中身を変えていない"
+    breaking_input: "今の一覧に本契約の新しいファイルを一つ加えた写し"
+    observed: "追加 1 として拾う（本物は変更・削除・追加とも 0）"
+  - judgement: "k forbidden-check"
+    breaking_input: "TASK を渡さずに回す（allow_write を読まない）"
+    observed: "status fail で本契約の経路が違反として名指される。TASK つきでは pass・違反 0・許可 2,279 件"
+
+followups:
+  - "主の差 c-noCF − c-S（4 epoch 目）は W1 で 14 組とも ±0.015 の中、W2 で 1 組・W3 で 3 組が外。同じ条件の T→P の予測-noCF − 入れ替えは D1-L2・D3-L2 が 3 W とも +0.020〜+0.085。16 epoch 目ではグラフの主の差が W1・W2 で 10/14 組外に出た。seed 42 の 1 本ずつで揺れは測っていないので、次に進めるかは利用者が決める"
+  - "T→P の W2・W3 を bengio から andrew に移しても 4 epoch 目の値と val の確率が 36/36 で前回と完全に一致した。同じ処方の run はこの 2 台の間で持ち替えられる"
+  - "空の腕の陽性対照は、入力が全部 0 になる型（bias の無い D1、トークン 0 個の D3）では構造上働かない。次に恒等性を求める契約では、空の腕の代わりに同じ型の別の腕で示すかを起票者が決める"
+
+unknowns:
+  - "seed を変えたときの差の揺れ: 測っていない（seed 42 の 1 本ずつ）"
+  - "16 epoch 目より先で差がどう動くか: 測っていない（記録したのは 4・8・12・16）"
+  - "W2 の DGH-GT が 4 設定（N10・N30 × L1・L2）とも 4 epoch 目の値が同じになった理由: 調べていない"
+
+commits:
+  - "1c500fce"
+  - "d4d982ff"
+  - "52eedc96"
