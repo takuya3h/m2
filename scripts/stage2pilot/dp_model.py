@@ -29,6 +29,18 @@
               行 N・N + 1 が自分の左手・右手の節［有無 1｜特徴 8｜0］。節の種類ごとの MLP（→ K → K）で K 次元に写し、
               辺の種類（左・右・両手）ごとに別の重みで L 段伝播し、種類ごとの平均と最大で読み出した 4K 次元を、
               零初期化の線形層（4K → 2048）で特徴に足す。節の無いフレームは読み出しが 0
+
+契約 T-2026-11-21-grasp-hand-irn-hice-htt-pilot（SPEC §4）で足した型。入力は graph と同じ s (T, N + 2, 27)（辺の重みの 3 列は使わない）。
+どれも時刻 t の 1 本のベクトル r_t（K = 64）を作り、零初期化の線形層 out（K → 2048、bias つき）で特徴に足す。入力の無いフレームは r_t = 0。
+注意は 4 head。値と注意の出力の射影は bias なし（学ぶ定数を値と r_t に入れない、SPEC §4.1）。段ごとに問い合わせへ注意の出力を足し（残差）、
+r_t（IRN は z_s）は各段の注意の出力の和。正規化の層は置かない。
+    irn   手が問い合わせ、術具が鍵（SPEC §4.2）。q_s = e_s ＋ 手のトークン s の埋め込み、術具のトークンの埋め込みを鍵と値に L 段、
+          z_s = 各段の出力の和。g_t（線形で K 次元）を問い合わせ、{z_左, z_右} を鍵と値に 1 段の出力を r_t とする
+    hice  フレームが問い合わせ、手が鍵（SPEC §4.3）。ω_s = Σ_i w_is m(術具 i)（w_is = 持ち手の側 s ＋ 両手、正規化しない）、
+          値 v_s = 手のトークン s の埋め込み ＋ W_ω ω_s（W_ω は bias なし）、鍵 k_s = e_s ＋ v_s。側 s の鍵は手のトークン s が在るか
+          Σ_i w_is > 0 のときだけ置く。g_t を問い合わせに L 段、r_t = 各段の出力の和
+    htt   フレームごとの一つのトークン（SPEC §4.4）。x_t（76）= ［術具の在否 15｜左手 8｜右手 8｜持つ器具のクラス 左・右・両手 各 15］を、
+          隠れ層 L 段・幅 K の MLP（最後に K → K の線形）で写して r_t。術具のトークンも手のトークンも無いフレームは r_t = 0
 """
 from __future__ import annotations
 
@@ -36,7 +48,9 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-TYPES = ("concat", "film", "attn", "logit_corr", "tool_hist", "tool_hist_nogate", "roitoken", "transwin", "graph")
+TYPES = ("concat", "film", "attn", "logit_corr", "tool_hist", "tool_hist_nogate", "roitoken", "transwin", "graph",
+         "irn", "hice", "htt")
+TOKEN_TYPES = ("irn", "hice", "htt")                     # 契約 T-2026-11-21-grasp-hand-irn-hice-htt-pilot の型（入力は graph と同じ）
 LAST_STAGE_TYPES = ("logit_corr", "tool_hist", "tool_hist_nogate")
 
 
@@ -195,6 +209,158 @@ class ToolHandGraph(nn.Module):
         return x + self.out(r)
 
 
+def masked_attention(q, k, v, mask, heads):
+    """多頭の注意の重みつきの和。q (T, Q, K)、k・v (T, M, K)、mask (T, M) bool → (T, Q, K)。鍵の無いフレームは 0（非数を出さない）。"""
+    t, nq, kd = q.shape
+    m = k.shape[1]
+    if m == 0:
+        return q.new_zeros(t, nq, kd)
+    dh = kd // heads
+    att = torch.einsum("tqhd,tmhd->tqhm", q.view(t, nq, heads, dh), k.view(t, m, heads, dh)) / dh ** 0.5
+    att = att.masked_fill(~mask[:, None, None, :], float("-inf"))
+    any_k = mask.any(1)[:, None, None, None]
+    att = torch.where(any_k, att, torch.zeros_like(att))
+    w = torch.softmax(att, dim=-1) * any_k.to(q.dtype)
+    return torch.einsum("tqhm,tmhd->tqhd", w, v.view(t, m, heads, dh)).reshape(t, nq, kd)
+
+
+class CrossAttention(nn.Module):
+    """cross attention 1 段。値と出力の射影は bias なし（SPEC §4.1: 学ぶ定数を注意の値と r_t に入れない）。"""
+
+    def __init__(self, k: int, heads: int):
+        super().__init__()
+        self.heads = heads
+        self.q = nn.Linear(k, k)
+        self.k = nn.Linear(k, k)
+        self.v = nn.Linear(k, k, bias=False)
+        self.o = nn.Linear(k, k, bias=False)
+
+    def forward(self, q, key, value, mask):
+        return self.o(masked_attention(self.q(q), self.k(key), self.v(value), mask, self.heads))
+
+
+def _mlp(i, k):
+    return nn.Sequential(nn.Linear(i, k), nn.ReLU(inplace=True), nn.Linear(k, k))
+
+
+class _TokenIface(nn.Module):
+    """irn・hice・htt の共通部分。s (T, N + 2, 27) の列: 術具の行 ［有無 0｜クラス 1..15・得点 16・枠 17..20・持ち手 21..23（左・右・両手）｜辺 24..26］、
+    手の行 ［有無 0｜側 1..2・得点 3・枠 4..7・面積 8｜0］。出力射影 out（K → 2048）は零初期化。"""
+
+    TOOL_F, HAND_F = 23, 8
+
+    def __init__(self, n_tools: int, dim: int, k: int):
+        super().__init__()
+        self.n, self.k = n_tools, k
+        self.out = nn.Linear(k, dim)
+        nn.init.zeros_(self.out.weight)
+        nn.init.zeros_(self.out.bias)
+
+    def parts(self, s):
+        n = self.n
+        tp, hp = s[:, :n, 0] > 0.5, s[:, n:n + 2, 0] > 0.5
+        return tp, hp, s[:, :n, 1:1 + self.TOOL_F], s[:, n:n + 2, 1:1 + self.HAND_F]
+
+    def forward(self, x, s):                      # x (T, 2048)、s (T, N + 2, 27)
+        return x + self.out(self.readout(x, s))
+
+
+class IRNIface(_TokenIface):
+    """SPEC §4.2（手が問い合わせ、術具が鍵）。"""
+
+    def __init__(self, n_tools: int, layers: int, dim: int = 2048, k: int = 64, heads: int = 4):
+        super().__init__(n_tools, dim, k)
+        self.enc_t = _mlp(self.TOOL_F, k)
+        self.enc_h = _mlp(self.HAND_F, k)
+        self.side = nn.Parameter(torch.randn(2, k) * 0.02)          # e_s（左・右）
+        self.inter = nn.ModuleList([CrossAttention(k, heads) for _ in range(layers)])
+        self.g = nn.Linear(dim, k)
+        self.agg = CrossAttention(k, heads)
+
+    def counts(self, s):
+        tp, _, _, _ = self.parts(s)
+        return {"queries": torch.full_like(tp[:, 0], 2, dtype=torch.long), "keys": tp.sum(1),
+                "agg_queries": torch.ones_like(tp[:, 0], dtype=torch.long), "agg_keys": 2 * tp.any(1).long()}
+
+    def readout(self, x, s):
+        tp, hp, tf, hf = self.parts(s)
+        ht = self.enc_t(tf) * tp[..., None].to(x.dtype)
+        q = self.side[None] + self.enc_h(hf) * hp[..., None].to(x.dtype)            # (T, 2, K)
+        z = torch.zeros_like(q)
+        for blk in self.inter:
+            a = blk(q, ht, ht, tp)                                                  # 術具が無いフレームは 0
+            q, z = q + a, z + a
+        zmask = tp.any(1)[:, None].expand(-1, 2)
+        return self.agg(self.g(x)[:, None], z, z, zmask)[:, 0]
+
+
+class HiCEIface(_TokenIface):
+    """SPEC §4.3（フレームが問い合わせ、手が鍵）。"""
+
+    def __init__(self, n_tools: int, layers: int, dim: int = 2048, k: int = 64, heads: int = 4):
+        super().__init__(n_tools, dim, k)
+        self.m = _mlp(self.TOOL_F - 3, k)                           # 持ち手を除いた術具のトークン（クラス・得点・枠）
+        self.enc_h = _mlp(self.HAND_F, k)
+        self.w_omega = nn.Linear(k, k, bias=False)                  # ω_s の埋め込み（ω = 0 なら 0）
+        self.side = nn.Parameter(torch.randn(2, k) * 0.02)          # e_s（左・右）
+        self.g = nn.Linear(dim, k)
+        self.blocks = nn.ModuleList([CrossAttention(k, heads) for _ in range(layers)])
+
+    def keys(self, s):
+        """側の値 v_s (T, 2, K) と鍵の在否 (T, 2)。"""
+        tp, hp, tf, hf = self.parts(s)
+        hold = tf[..., 20:23] * tp[..., None].to(s.dtype)
+        w = torch.stack([hold[..., 0] + hold[..., 2], hold[..., 1] + hold[..., 2]], -1)     # (T, N, 2)
+        omega = torch.einsum("tns,tnk->tsk", w, self.m(tf[..., :20]) * tp[..., None].to(s.dtype))
+        value = self.enc_h(hf) * hp[..., None].to(s.dtype) + self.w_omega(omega)
+        return value, hp | (w.sum(1) > 0)
+
+    def counts(self, s):
+        _, kp = self.keys(s)
+        return {"queries": torch.ones_like(kp[:, 0], dtype=torch.long), "keys": kp.sum(1)}
+
+    def readout(self, x, s):
+        value, kp = self.keys(s)
+        key = self.side[None] + value
+        u = self.g(x)[:, None]
+        r = torch.zeros_like(u)
+        for blk in self.blocks:
+            a = blk(u, key, value, kp)
+            u, r = u + a, r + a
+        return r[:, 0]
+
+
+class HTTIface(_TokenIface):
+    """SPEC §4.4（フレームごとの一つのトークン）。"""
+
+    IN = 76
+
+    def __init__(self, n_tools: int, layers: int, dim: int = 2048, k: int = 64):
+        super().__init__(n_tools, dim, k)
+        mods, i = [], self.IN
+        for _ in range(layers):
+            mods += [nn.Linear(i, k), nn.ReLU(inplace=True)]
+            i = k
+        self.mlp = nn.Sequential(*mods, nn.Linear(k, k))
+
+    def vector(self, s):
+        """x_t (T, 76) と入力の在否 (T,)。"""
+        tp, hp, tf, hf = self.parts(s)
+        onehot = tf[..., :15] * tp[..., None].to(s.dtype)
+        p = (onehot * tf[..., 15:16]).amax(1)                                       # クラスごとの得点の最大
+        c = (onehot[..., None] * tf[:, :, None, 20:23]).amax(1)                     # (T, 15, 3) クラスごとの持ち手の側 s の最大
+        hands = (hf * hp[..., None].to(s.dtype)).reshape(len(s), -1)                # 左 8・右 8
+        return torch.cat([p, hands, c[..., 0], c[..., 1], c[..., 2]], -1), tp.any(1) | hp.any(1)
+
+    def counts(self, s):
+        v, present = self.vector(s)
+        return {"dim": torch.full_like(present, v.shape[1], dtype=torch.long), "present": present.long()}
+
+    def readout(self, x, s):
+        v, present = self.vector(s)
+        return self.mlp(v) * present[:, None].to(x.dtype)
+
+
 class LogitCorrection(nn.Module):
     """SPEC §3.3。u = GELU(W_in x + W_p softmax(ℓ0) + b) ∈ ℝ^32、Δℓ = W_out u（W_out と bias を零初期化）。"""
 
@@ -269,6 +435,11 @@ class DPReceiver(nn.Module):
             self.iface = TransWindow(sig_dim, tw["slots"], head.stage1.conv_in.in_channels, tw["k"], heads)
         elif iface_type == "graph":
             self.iface = ToolHandGraph(gr["n_tools"], gr["layers"], head.stage1.conv_in.in_channels, gr["k"])
+        elif iface_type in ("irn", "hice"):
+            cls = IRNIface if iface_type == "irn" else HiCEIface
+            self.iface = cls(gr["n_tools"], gr["layers"], head.stage1.conv_in.in_channels, gr["k"], heads)
+        elif iface_type == "htt":
+            self.iface = HTTIface(gr["n_tools"], gr["layers"], head.stage1.conv_in.in_channels, gr["k"])
         elif iface_type == "logit_corr":
             self.iface = LogitCorrection(sig_dim, self.last_stage().conv_out.out_channels, 32)
         else:
@@ -295,7 +466,7 @@ class DPReceiver(nn.Module):
             x = self.iface(x, s)
         elif self.iface_type == "attn" and s is not None:
             x = self.iface(x, s, mask)
-        elif self.iface_type in ("roitoken", "transwin", "graph") and s is not None:
+        elif self.iface_type in ("roitoken", "transwin", "graph") + TOKEN_TYPES and s is not None:
             x = self.iface(x, s)                  # mask は行の印（参照段の学ぶ・測る行）で、界面は使わない
         st = self.head.stage1
         out = st.conv_in(x.T[None])
