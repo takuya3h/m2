@@ -1,0 +1,99 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-11-21-grasp-hand-graph-t2p-match"
+  kind: analysis
+  title: "術具と手のグラフを工程塔へ渡す予備測定を、前回の予備測定の検出塔から工程塔へ渡す型と同じ条件（固定の長さ、交差適合なしと入れ替えの腕、同じホスト）で回し直し、その型の参照の腕も andrew で回し直して並べる（非公式、andrew、Fold A、seed 42、W1・W2・W3）"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-11-20T22:30:00Z"
+  created_from:
+    runindex_commit: "036d6a60"
+    counts: {index: 2668, experiments: 1347, verdicts: 2067}
+  depends_on:
+    - T-2026-11-20-grasp-hand-graph-pilot
+    - T-2026-10-19-stage2-pilot-fix-epoch4-shuffle
+    - T-2026-11-01-stage2-w23-bengio
+    - T-2026-10-18-stage2-pilot-folda
+    - T-2026-11-09-grasp-pilot-converge
+  amendments:
+    - date: "2026-11-21"
+      reason: "preflight P6 が未回答 3 件で FAIL し、利用者に 3 項目を示した。利用者の回答「とにかく進めてくれ しばらく見れないからなんとかしてとにかく実験回して」（2026-11-21）。判断を実行者に委ねた回答と読み、次のとおり前もって決めた。(1) 停止条件: 読みの曖昧さや手順の選択は実行者が決め、逸脱として記録して続ける。gate の FAIL（on_fail: stop）、捏造の禁止と未測定の UNKNOWN、allow_write の外への書き込み、他の契約の compute を止めることは委ねられたものに含めず、当たれば止める（他の契約の compute が在れば止めずに空くのを待つ）。(2) T→P の型の間で学習設定が食い違えば、W ごとにその W の T→P の run（W1 は stage2fix_*、W2・W3 は w23b_*）の記録の値を写し、食い違いを報告に書く。(3) グラフの定義は変えない。入れ替えはフレームごとの行の並べ替えで、定義を変えずに作れる。変えないと作れない場合は止める"
+      diff: "governance.decisions_required: [停止条件に当たったときの続け方（実行者は決めない）, T→P の型の間で学習設定が食い違うときに、どれを写すか, グラフの定義（前回の SPEC §4）を変えないと入れ替えの腕や noCF・CF の腕を作れない場合の変え方] -> []（回答は本項の reason）"
+    - date: "2026-11-21"
+      reason: "SPEC §0 のとおり起点（origin/phase0 ce9c4094、PR 312 の統合 90a12ab0 の後）で測って差し替えた。runindex_commit は git log -1 -- runindex/、件数は csv.DictReader（見出し行を除く）。contract.conventions_rev は git log -1 -- context/conventions.md で 2d946b07 のまま（差し替えなし）"
+      diff: "meta.created_from: {runindex_commit: b524173e, counts: {index: 2647, experiments: 1327, verdicts: 1977}} -> {runindex_commit: 036d6a60, counts: {index: 2668, experiments: 1347, verdicts: 2067}}"
+intent:
+  question: "術具と手のグラフを工程塔の時間ヘッドの入力へ渡す腕を、前回の予備測定の検出塔から工程塔へ渡す型と同じ条件（固定の長さの最後の状態、交差適合なしの信号、フレームとの対応だけを壊した入れ替えの腕、同じホスト）で回すと、同じ学習範囲の中で、交差適合なしの予測と入れ替えの差（信号の中身による差）がどう出るか。同じ条件で同じホストで回し直した検出塔から工程塔へ渡す型の同じ差と並べるとどうか"
+  decision_at_stake: "グラフで把持・手・術具の予測を工程塔へ渡す形を、検出塔から工程塔へ渡すほかの型と並べて、次の予備や提案カードに進めるかを利用者が考える材料。非公式の予備測定で、関門の判定と設計の判断（案の採否を含む）には使わない"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery の動画 01〜15。Fold A（conventions#folds）の train と val だけを使い、test の動画 04・05・07 は一度も通さない。塔は学ばない。前回の契約が作った検出塔・把持塔 G3・手の塔 H4 の信号とグラフ、前回までの予備測定の検出塔の信号と入れ替えた信号、工程塔の特徴のキャッシュを読むだけにする"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints:
+      - "scripts/stage2pilot/dp_train.py"
+      - "scripts/stage2pilot/dp_model.py"
+contract:
+  inject_verbatim:
+    - conventions#prohibitions
+    - conventions#issuer_cautions
+    - conventions#env_p0
+    - conventions#folds
+    - conventions#split
+    - conventions#crossfit
+    - conventions#symmetry
+  conventions_rev: "2d946b07"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values]
+  verbatim_forbidden: true
+  allow_write:
+    - "experiments/analysis/grasp_hand_graph_t2p/"
+    - "experiments/phase1/grasp_hand_graph_t2p_"
+plan:
+  phases:
+    - {id: A, name: "開始状態と前提の実在の確認", gpu: false, est: "1 時間"}
+    - {id: B, name: "材料の照合と、T→P の学習設定の写し", gpu: true, est: "1〜2 時間"}
+    - {id: C, name: "入れ替えたグラフ、全腕の noCF と CF、固定の長さの記録、恒等性と重複の確かめ", gpu: true, est: "2〜4 時間"}
+    - {id: D, name: "グラフの腕と T→P の参照の型の腕を W1・W2・W3 で学ぶ", gpu: true, est: "1〜3 時間"}
+    - {id: E, name: "集計・報告・PR", gpu: false, est: "2 時間"}
+  gates:
+    - {id: G1, after: A, check: "起点に PR 312 の道具と前提の契約の記録があり、andrew に本契約以外の compute が無く、保存先の空きが足りる", on_fail: stop}
+    - {id: G2, after: B, check: "前回のグラフと信号、T→P の信号と入れ替えた信号、工程塔の特徴の要約値が記録と一致し、塔単独の val が記録と一致し、T→P の学習設定が型の間で一つに決まる", on_fail: stop}
+    - {id: G3, after: C, check: "入れ替えたグラフの値の集合が元と同じで、腕ごとの節と特徴と辺の在否が表と一致し、学習前の出力が全腕で塔単独と一致し、陽性対照で変わる", on_fail: stop}
+    - {id: G4, after: D, check: "表の全本が終わり、固定の epoch の記録と val の確率がそろっている", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, gpu_free]
+  resources: {server: andrew, gpu: 2, est_hours: 10, runs: 189}
+outputs:
+  must_have: [REPORT.md, RESULT.md, result.yaml, audit.md]
+  destination: "experiments/analysis/grasp_hand_graph_t2p/"
+  acceptance:
+    - "a: 開始状態（分岐、起点、前提の道具と記録の在否、未追跡、compute プロセスの一覧、保存先の空き、試験の失敗の名前、既存の仮想環境の要約値、GPU ごとの電力の上限）が記録されている"
+    - "b: 前回のグラフと信号の目録、T→P の信号と入れ替えた信号、工程塔の特徴のキャッシュの要約値が記録と一致し、塔単独の val が記録と一致している"
+    - "c: T→P の記録から写した学習設定（interface と受け取り手の学習率と weight decay、optimizer、1 歩の単位、学習範囲ごとの学ぶパラメータの名前の集合）が、グラフの腕と T→P の参照の型の腕の両方で optimizer に届いている"
+    - "d: 入れ替えたグラフが SPEC §4 の定義どおりで、値の集合が元と同じ、元と同じフレームに同じグラフが来る割合と同じ動画から来た割合が記録されている"
+    - "e: 腕ごとの節・持ち手・手・辺の在否と信号の出どころ（noCF・CF・入れ替え・正解）が SPEC §5 の表と一致している"
+    - "f: 学習前の出力が全腕で塔単独と一致し、interface の出力の射影を乱数にすると変わる"
+    - "g: 省いた run（辺の無い腕の L、空の腕の N）と、確かめに回した run の val の確率が一致している。一致しなかったときは省いた run をすべて回している"
+    - "h: 表の全本が終わり、4 epoch 目（主）と、回した場合は 8・12・16 epoch 目の val の値と確率、interface の出力の射影の大きさがそろっている。4 epoch だけの run と続けた run の 4 epoch 目の状態の比べがある"
+    - "i: SPEC §7 の差が、全 W・全設定・記録した epoch で、6 工程の Jaccard、frame accuracy、7 工程の Jaccard、工程別、動画ごとで表にあり、前回の値（T→P の前回の記録、前回のグラフの最良の回）が参考の列に並んでいる"
+    - "j: test の動画 04・05・07 を、入れ替えの作成・グラフの作成・腕の学習・評価のどこにも通していないことが、各段で通した動画の集合で示されている"
+    - "k: 前回までの予備測定の出力と保存先の既存の中身、data の raw と external と注釈、凍結した塔、既存の checkpoint、third_party、既存の仮想環境を変えていない。試験の失敗が増えていない"
+    - "l: PR が Draft でなく存在し、base が phase0、分岐が feat/grasp-hand-graph-t2p-match"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "andrew に本契約以外の compute プロセスがある場合（止めずに停止して利用者に尋ねる）"
+    - "起点に PR 312 の道具（グラフの組み立てと interface）や前提の契約の記録が無い場合"
+    - "前回のグラフ・信号・入れ替えた信号・工程塔の特徴の要約値が記録と一致しない、または在るべきものが無い場合"
+    - "塔単独の val が記録と 0.005 を超えて違う場合"
+    - "T→P の型の間で学習設定（interface の学習率・weight decay・optimizer・受け取り手の学習率・学ぶ範囲）が食い違う場合"
+    - "入れ替えの腕や noCF・CF の腕を、既存の道具の既定の挙動や third_party を変えないと実装できない場合"
+    - "保存先の空きが足りない場合"
+    - "実行基盤が書き込み、移動、削除、外部の取得を拒む場合"
