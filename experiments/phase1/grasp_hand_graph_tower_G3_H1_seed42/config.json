@@ -1,0 +1,124 @@
+{
+  "task_id": "T-2026-11-20-grasp-hand-graph-pilot",
+  "unofficial": true,
+  "run": "grasp_hand_graph_tower_G3_H1_seed42",
+  "tower": "G3",
+  "videos": "H1",
+  "train_videos": [
+    "01",
+    "06",
+    "11",
+    "12",
+    "15"
+  ],
+  "val_videos": [
+    "09",
+    "10"
+  ],
+  "train_frames": 3913,
+  "train_instances": 6716,
+  "train_frames_without_instance": 73,
+  "val_frames": 1514,
+  "classes": 3,
+  "class_names": [
+    "Left Hand Tool",
+    "Right Hand Tool",
+    "Two Hands Tool"
+  ],
+  "source": "hand_tool_seg",
+  "source_ids": [
+    3,
+    4,
+    5
+  ],
+  "ann_sha256": {
+    "train": "d74fb812fee646791a0dea05afa1729ff2b0e3b28aeba18cefa63e13d60dd29b",
+    "val": "ed0f6d72f2e841ffc5eb6f3c168381e8c564d3e2e8c742cd7b99190b937d510a"
+  },
+  "loss_mask_frames_in_data": 0,
+  "loss_mask_note": "hand_tool_seg の欠落の印の一覧を照合（学ぶフレームに 0 件）",
+  "model": "mmdet Mask2Former R50 (mask2former_r50_8xb2-lsj-50e_coco)",
+  "init": {
+    "checkpoint": "/home/ubuntu/slocal2/stage2pilot_store/grasp_hand_graph/inputs/coco/mask2former_r50_8xb2-lsj-50e_coco_20220506_191028-41b088b6.pth",
+    "sha256": "41b088b62838c986004f94bab2870395b669ec6bd11b6590369b838b0de06879",
+    "n_checkpoint": 610,
+    "loaded": 608,
+    "skipped_shape": [
+      "panoptic_head.cls_embed.bias",
+      "panoptic_head.cls_embed.weight"
+    ],
+    "absent_in_model": [],
+    "model_params_not_loaded": [
+      "panoptic_head.cls_embed.bias",
+      "panoptic_head.cls_embed.weight"
+    ]
+  },
+  "input": "短辺 800・長辺 1333 まで（双線形）、学習は左右反転 0.5 でラベルを入れ替える、batch_augments なし、32 の倍数へ詰める",
+  "flip_label_swap": {
+    "1": 2,
+    "2": 1,
+    "3": 3
+  },
+  "batch": 8,
+  "val_batch": 2,
+  "optim_wrapper": {
+    "type": "AmpOptimWrapper",
+    "optimizer": {
+      "type": "AdamW",
+      "lr": 0.0001,
+      "weight_decay": 0.05,
+      "eps": 1e-08,
+      "betas": [
+        0.9,
+        0.999
+      ]
+    },
+    "paramwise_cfg": {
+      "custom_keys": {
+        "backbone": {
+          "lr_mult": 0.1,
+          "decay_mult": 1.0
+        },
+        "query_embed": {
+          "lr_mult": 1.0,
+          "decay_mult": 0.0
+        },
+        "query_feat": {
+          "lr_mult": 1.0,
+          "decay_mult": 0.0
+        },
+        "level_embed": {
+          "lr_mult": 1.0,
+          "decay_mult": 0.0
+        }
+      },
+      "norm_decay_mult": 0.0
+    },
+    "clip_grad": {
+      "max_norm": 0.01,
+      "norm_type": 2
+    },
+    "loss_scale": "dynamic",
+    "dtype": "bfloat16"
+  },
+  "amp": "bf16",
+  "msda_fp32_for_bf16": true,
+  "eval_precision": "fp32",
+  "max_epochs": 36,
+  "patience": 4,
+  "lr_decay": null,
+  "selection": "val のその塔の全クラスの mask mAP（pycocotools segm、元の解像度、上位 100）。改善 = 最良を厳密に上回る",
+  "stop_rule": "最良が 4 epoch 更新されなければ打ち切り、上限 36、学習率は下げない",
+  "seed": 42,
+  "smoke": false,
+  "wandb_mode": "offline",
+  "git_commit": "9595d869f2b5d7a4ee7998a7fd1b5744e794b307",
+  "code_sha256": {
+    "scripts/grasppilot/ghg_tower.py": "1ba1326cc5a15f271c35639df56f24f8a0da0dc86ed637c89236f44ccde29542",
+    "scripts/grasppilot/g_train.py": "ed1897807c2bbb4d48ce52bc5eb22dd2bf0420e0f347f88f5473c993db9f452f",
+    "scripts/grasppilot/g_bench.py": "356550c85a7d88f54dd3bffaf033b5f4193867e3da73f719f0ca7353886732cb",
+    "scripts/grasppilot/g5_train.py": "6ef59077c0aca58e3d347df52dde151c6ef57ffe331f5eeb2668713bc6c1183c"
+  },
+  "host": "Andrew",
+  "cuda_visible_devices": "1"
+}

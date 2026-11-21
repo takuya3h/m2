@@ -1,0 +1,95 @@
+result_version: 3
+task_id: "T-2026-11-20-grasp-hand-graph-pilot"
+status: pass
+host: "andrew"
+branch: "feat/grasp-hand-graph-pilot"
+pr: 312
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "前提の道具 7 件が起点 89b9406d に在り、本契約以外の compute は 0 件（容器の中。GPU 全体の使用量と一覧の差 0）、空き 1,578,110,177,280 B。SPEC §1.3 の $S/inputs/（G の入力の写し）が andrew に無く停止して諮った。利用者の選択で COCO の重みの原本を 10-31 の保存先から $O/inputs/coco/ へ写し、sha256 41b088b62838c986…de06879 が原本と一致。塔の注釈は本契約で組み直した"}
+  - {id: G2, verdict: pass, note: "塔 7 本（G3 確定・H1・H2、H4 確定・H1・H2、G5r）が early stopping の patience 4 で止まり（止まった回 6〜15、上限 36 に届かず）、選んだ回の val の mask mAP 0.4955〜0.6560 が学習前 0.0050〜0.0060 を上回る。学習後の反転の整合（左右のクラスの soft IoU）は入れ替え 0.650・0.736・0.795、入れ替えない写し 0.022・0.193・0.019（G3・H4・G5r）。反転の取り出しは三種とも 24/24 でラベルが入れ替わる"}
+  - {id: G3, verdict: pass, note: "正解の腕の持ち手の argmax と注釈の把持の一致 train 20,433/21,021（0.972）・val 3,610/3,807（0.948）。腕ごとの節・持ち手・手・辺の在否の外れ 0（7 腕 × 2 part）。学習前の出力が 4 設定 × W1・W2・W3 × 8 腕の 96 組み合わせで塔単独と一致（ロジットの差の最大 0.0、J 0.7762185528074379）。W2・W3 の学ぶ範囲の名前が定義と一致"}
+  - {id: G4, verdict: pass, note: "腕 96 本が rc 0 で、すべて収束規則の打ち切りで止まった（総 epoch 17〜51、上限 120 に届いた本 0）。96 本とも config.yaml・command.sh・git_commit.txt・metrics.json・metrics_last.json・per_class_ap.json・notes.md・history・val_probs_best/last が在り、config の task_id は本契約、git_commit は 096d56b9"}
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 985
+
+deviations:
+  - {type: judgement, note: "利用者の決定（2026-11-20）: 開始時の作業ツリーの汚れ（同期で届いた他の作業の出力 2 フォルダ 782 件、すべて experiments/ の下で phase0 に無い）を、選択「1 で除外に足す」で .git/info/exclude に注記つきで足して task-start を通した。消さず移していない"}
+  - {type: judgement, note: "利用者の決定（2026-11-20）: preflight P6 の未回答 2 件に「両方その都度諮る」。G1 で COCO の重みを本契約の保存先へ写す。§4 の読み 3 点（辺は左・右・両手の 3 種で重みを分ける、DGH-U の持ち手は [u, u, u] で辺も 3 種とも u、正解の手の節は同じ側の複数のマスクの和集合）。meta.amendments に記録した"}
+  - {type: judgement, note: "G3 のインスタンスの無いフレーム（train 192・val 6。把持の注釈は在り器具のクラスが無い）は「持つ器具なし」として学ぶ。H4 は hand_tool_seg の欠落の印のフレーム（train 271・val 1）も学ぶ（README §4 は印を hand_tool_seg タスクの loss=0 とする）。正解の枠が N を超える train の 1 フレーム（11 個）は得点がすべて 1 で順が決まらないので注釈の順に先頭 N 個を取る"}
+  - {type: judgement, note: "確かめの run（grasp_hand_graph_chk_001・002、repro_001、cmp_old_001・cmp_new_001）は腕に数えない。cmp の 2 本は界面の重みを本契約の保存先の下へ置くため、識別子を grasp_hand_graph/repro_cmp にして回した。契約の版と created_from は実測と一致し差し替えていない。split_files は参照していない"}
+  - {type: judgement, note: "G3・H4 の推論は、その塔の 3 本の G2 の部分（打ち切り・学習前を上回る・学習後の反転の整合）を確かめてから、残りの塔の学習と並行して始めた。G5r の学習後の反転の整合は SPEC §3.4（G3・H4）の外だが、G2 の「三種の塔」に合わせて同じ道具で測った"}
+  - {type: judgement, note: "実行者の道具 ghg_graph.py assemble の誤り 2 件を直して回し直した。1 つは一致の関数が正解の器具の枠が 0 個のフレーム（02_1_0141）で KeyError を出した。もう 1 つは試験の動画の検査にフレームの識別子を渡しており、動画と照らさないため働いていなかった（対照も同じ経路を通っていなかった）。グラフの 14 の出力は直す前後で sha256 が一致"}
+  - {type: environment, note: "ruff の指摘が新しい道具に 4 件（import の並び 3、変数名 O 1）残る。学習中の塔の記録に要約値が入っている ghg_tower.py は書き換えていない"}
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "SPEC §1.3 は保存先 $S に G の入力の写し（$S/inputs/）が在るとするが、andrew には $S/inputs も $S/T-2026-11-05-grasp-tower-rebuild/inputs も無く、11-05 の保存先に G の重みと信号も無かった。指示どおり Task A を行うと G1 で止まる。g5_train.py も COCO の重みを 11-05 の inputs/coco/ に決め打ちしており、andrew ではそのままでは塔を学べない。利用者の選択で 10-31 の保存先の原本を写して進めた"
+
+positive_controls:
+  - judgement: "a compute プロセスの列挙"
+    breaking_input: "存在しない GPU 番号 7 で nvidia-smi を問う。proc_enum を存在しない実行ファイルの経路で問う"
+    observed: "No devices were found。存在しない経路で 0 件（/usr/bin/zsh では 6 件）"
+  - judgement: "b 塔が学んだ"
+    breaking_input: "学習前（COCO の重み）の val の mask mAP"
+    observed: "0.0050〜0.0060。選んだ回の 0.4955〜0.6560 と違う"
+  - judgement: "c 反転でラベルが入れ替わる（学習後の整合）"
+    breaking_input: "入れ替えない写し、および左右を学んでいない COCO の重み"
+    observed: "入れ替えない写しで 0.022・0.193・0.019 に下がる。COCO の重みでは大小が逆（G3 swap 0.516 / noswap 0.774、H4 0.408 / 0.676、G5r 0.363 / 0.606）"
+  - judgement: "c 反転の取り出し"
+    breaking_input: "ラベルを入れ替えない取り出しの写し"
+    observed: "三種とも入れ替わり 0/24・変わらない 24/24（本物は 24/24 入れ替わる）"
+  - judgement: "d G5r の 5 クラスの値と器具 3 クラスの値を分ける"
+    breaking_input: "G5r の 5 クラスの mask mAP を器具 3 クラスの値として使う"
+    observed: "5 クラス 0.6560 と器具 3 クラスの平均 0.5907 が別の値として出る"
+  - judgement: "e 信号の交差適合"
+    breaking_input: "train の G3 の信号の出所に確定の塔を 5 フレーム混ぜた写し"
+    observed: "外れ 5（本物は検出・G3・H4 とも 0/9,657）"
+  - judgement: "f 正解の持ち手と注釈の一致"
+    breaking_input: "正解の持ち手の左右を入れ替えた写し"
+    observed: "train 0.092・val 0.111 に下がる（本物は 0.972・0.948）"
+  - judgement: "f 腕の表の検査"
+    breaking_input: "D に手の節を入れた写し（表と違う腕を 1 つ作る）"
+    observed: "外れ 1（本物は 0）"
+  - judgement: "g 恒等性"
+    breaking_input: "零初期化の出力射影を N(0, 0.05²) にする"
+    observed: "96/96 組み合わせで学習前の出力が変わる（ロジットの差 0.116〜3.135）。本物は 96/96 で差 0.0"
+  - judgement: "g 学ぶ範囲"
+    breaking_input: "W2・W3 は範囲の外の名前を、W1 は head の名前を 1 つ混ぜる"
+    observed: "一致しない（本物は定義と一致）"
+  - judgement: "g run の終わりの数え上げ"
+    breaking_input: "存在しない腕の名前で run を探す"
+    observed: "0 件（在る run の名前で 1 件、全体で 96/96）"
+  - judgement: "h 差の測り直し"
+    breaking_input: "測り直した J を 1e-6 ずらした写し"
+    observed: "96/96 で検出（本物は最良・最後の回とも記録とのずれの最大 0.0）"
+  - judgement: "i test を通さない"
+    breaking_input: "train のフレームに動画 04 のフレームを 1 つ混ぜた入力（腕の段は 04 を混ぜた動画の集合）"
+    observed: "共通 1 件 [04]（本物は塔・推論・検出・グラフの 20 段と腕の学習・評価の段で 0 件）。直す前の道具ではフレームの識別子を比べていて、この対照が同じ経路を通っていなかった"
+  - judgement: "j forbidden-check"
+    breaking_input: "TASK を渡さずに回す（allow_write を読まない）"
+    observed: "status fail で本契約の経路が違反として名指される。TASK つきでは pass・違反 0・許可 979 件"
+  - judgement: "j 既定の挙動が変わらない（前回の run の回し直し stage2pilot_dp_009 と、W3・収束規則の起点の版との比べ。本物はどちらも確率の差 0.0・記録の違い 0）"
+    breaking_input: "比べる側の記録か確率を 1 か所ずらした写し（比べの道具が違いを拾うか）"
+    observed: "UNKNOWN（回していない）"
+
+followups:
+  - "辺の無い腕（A0・D・DG・DH）は L1 と L2 で val の確率まで一致し、A0 は W ごとに 4 設定とも同じ値になった。§4 の伝播の層は辺の在る腕（DGH・DGH-U・DGH-noCF・DGH-GT）にしか効かないので、次に設定を掃引する契約では辺の無い腕の L の掃引を省けるかを起票者が決める"
+  - "W2 の差は W1・W3 より大きく出た（DGH − A0 +0.0176〜+0.0521、DGH-GT − A0 +0.0745〜+0.0801。W1 の DGH-GT − A0 は +0.0193〜+0.0235、W3 は +0.0110〜+0.0233）。受け取り手が自分の train 動画でほぼ誤らない問題（SPEC §11）の材料として記録する。seed 42 の 1 本ずつで揺れは測っていない"
+  - "G3 の器具 3 クラスの平均 0.5737 は目標 0.80 に −0.2263。G5r の器具 3 クラスの平均 0.5907 との差 −0.0170（予測 3 の ±0.03 の中）"
+
+unknowns:
+  - "seed を変えたとき・GPU の並行を変えたときの腕の差の揺れ: 測っていない（seed 42 の 1 本ずつ）"
+  - "空のマスクのインスタンス（枠 0）と得点の関係: 測っていない"
+
+commits:
+  - "9305f087"
+  - "7d631391"
+  - "ad0e32ea"
+  - "9595d869"
+  - "096d56b9"
+  - "8d102948"

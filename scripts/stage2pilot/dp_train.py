@@ -71,6 +71,16 @@ GA は epoch ごとの界面の重みの絶対値の最大と L2 ノルムを lo
                  無ければ打ち切る。上限 max_epochs。結果と界面の重み（checkpoint）は val の Jaccard が最良の epoch の状態。
                  epoch ごとに学習率と、界面の出力射影の重み（RT・TW は iface.out.weight、GA は iface.weight）の絶対値の最大と
                  L2、TW の相対時刻の埋め込みの標準偏差を logs/history.json に書く。W2・W3 でも --fixed-epochs の代わりに使える
+
+契約 T-2026-11-20-grasp-hand-graph-pilot（SPEC §4・§5・§6）で足した型と引数。渡さなければ従来の経路のまま:
+    GR graph（dp_model.ToolHandGraph）。x(t) は［術具の節 N 行｜自分の左手・右手の節 2 行］× 27（有無・特徴・辺の重み）
+    --gr-dir        材料の置き場（graph/<腕>_<part>.npz: frame_ids、x (F, 32, 27)。術具の行は得点の高い順に 30 まで、手の行は 30・31）
+    --gr-N          術具の節の上限 N（10 か 30。x の先頭 N 行を使う）
+    --gr-L          伝播の段数 L（1 か 2）
+    腕: empty = A0（節なし）、D・DG・DH・DGH・DGH-U・DGH-noCF・DGH-GT（SPEC §5 の表。材料のファイル名がそのまま腕の名前）。
+        参照段の行の絞りは無い（全行で学び評価する）。epoch ごとに界面の L2 と出力射影の絶対値の最大を logs/history.json に書く
+    --ckpt-dir         界面の重みの置き場（既定は従来どおり stage2pilot_store/<task-id>/dp_ckpt）
+    --save-last-probs  最後の epoch の val の確率（predictions/val_probs_last.npz）と値（metrics の last）も保存する
 """
 from __future__ import annotations
 
@@ -110,6 +120,7 @@ TYPES = {
     "GA": ("concat", "g30", None, "GRASP-GT", None),
     "RT": ("roitoken", "rt", None, None, None),
     "TW": ("transwin", "tw", None, None, None),
+    "GR": ("graph", "gr", None, None, None),
 }
 G30_HALF = 14 + 1                                          # g の 14 と旗。予測の半分が先、正解の半分が後
 GRASP_DIR = None                                           # --grasp-signal-dir（GA のときだけ）
@@ -117,8 +128,11 @@ GRASP_PRED_DIR = None                                      # --grasp-pred-dir（
 GRASP_NO_FLAG = False                                      # --grasp-no-flag（GA を旗なしの 28 次元にする）
 RT = {"dir": None, "layer": None, "content": None, "k": None}  # --rt-*（RT のときだけ）
 TW = {"dir": None, "form": None, "L": None, "k": None}  # --tw-*（TW のときだけ）
+GR = {"dir": None, "N": None, "L": None, "k": 64}      # --gr-*（GR のときだけ。K は SPEC §4.3 の 64）
+GR_ARMS = ("D", "DG", "DH", "DGH", "DGH-U", "DGH-noCF", "DGH-GT")
+GR_ROWS = 30                                               # 材料の術具の行の数（N の上限）。手の行は 30・31
 X32_HALF = NT + 1                                          # 15 と旗。予測の半分が先、正解の半分が後
-ARMS = ("empty", "pred_noCF", "gt", "pred_CF", "gtpred_CF", "shuffle", "geo", "union", "t1", "perm")
+ARMS = ("empty", "pred_noCF", "gt", "pred_CF", "gtpred_CF", "shuffle", "geo", "union", "t1", "perm") + GR_ARMS
 # 止め方の規則（DP・W1）。最初の腕を回す前に固定する
 STOP = {"lr": 5e-4, "weight_decay": 0.01, "patience": 10, "max_epochs": 100, "smoothing_weight": 0.3}
 SCOPES = ("W1", "W2", "W3")
@@ -227,6 +241,9 @@ class Signals:
         if self.kind == "tw":
             self._init_tw(arm, part)
             return
+        if self.kind == "gr":
+            self._init_gr(arm, part)
+            return
         self.srcs = sources(type_name, arm, part, variant)
         self.loaded = [(load_npz(p), is_gt) for p, is_gt in self.srcs]
         if self.kind == "g30":
@@ -331,7 +348,30 @@ class Signals:
         self.dim = x.shape[2]
         self.pred_dim = None
 
+    def _init_gr(self, arm, part):
+        """GR の腕の x(t)（F, N + 2, 27）。空の腕（A0）は D の材料と同じフレームで全部 0。"""
+        if None in (GR["dir"], GR["N"], GR["L"]):
+            raise SystemExit("GR は --gr-dir・--gr-N・--gr-L を渡す")
+        if arm != "empty" and arm not in GR_ARMS:
+            raise SystemExit(f"GR に腕 {arm} は無い")
+        path = Path(GR["dir"]) / "graph" / f"{'D' if arm == 'empty' else arm}_{part}.npz"
+        self.srcs = [] if arm == "empty" else [(path, arm == "DGH-GT")]
+        with np.load(path) as d:
+            frames = [str(f) for f in d["frame_ids"]]
+            x = d["x"].astype(np.float32)
+        assert x.shape[1] == GR_ROWS + 2 and x.shape[2] == 27, x.shape
+        n = GR["N"]
+        x = np.concatenate([x[:, :n], x[:, GR_ROWS:GR_ROWS + 2]], 1)
+        if arm == "empty":
+            x = np.zeros_like(x)
+        self.ix = {f: i for i, f in enumerate(frames)}
+        self.rowmask = None
+        self.x_rt = x
+        self.slots, self.dim, self.pred_dim = x.shape[1], x.shape[2], None
+
     def model_kwargs(self):
+        if self.kind == "gr":
+            return {"gr": {"n_tools": GR["N"], "layers": GR["L"], "k": GR["k"]}}
         if self.kind == "tw":
             return {"tw": {"slots": self.slots, "k": TW["k"]}}
         if self.kind != "rt":
@@ -360,7 +400,7 @@ class Signals:
         return halves
 
     def for_frames(self, frames):
-        if self.kind in ("rt", "tw"):
+        if self.kind in ("rt", "tw", "gr"):
             rows = [self.ix[f] for f in frames]
             m = None if self.rowmask is None else torch.from_numpy(self.rowmask[rows])
             return torch.from_numpy(self.x_rt[rows]), m
@@ -538,6 +578,11 @@ def cmd_identity(a):
                      "rowmask_rows": None if sig.rowmask is None else int(sig.rowmask.sum()),
                      "perturbed_params": [n for n, p in model.named_parameters()
                                           if any(p is q for q in model.iface_last_params())]}
+        if sig.kind == "gr":
+            extra = {"gr": {**GR, **sig.model_kwargs()["gr"], "in_dim": sig.dim, "slots": sig.slots},
+                     "trainable": trainable_report(model),
+                     "perturbed_params": [n for n, p in model.named_parameters()
+                                          if any(p is q for q in model.iface_last_params())]}
         if sig.kind == "x32":
             extra = {"x_layout": sig.layout(), "trainable": trainable_report(model), "gate_init": model.gate_values(),
                      "perturbed_params": [n for n, p in model.named_parameters()
@@ -634,6 +679,9 @@ def cmd_train(a):
         cfg.update(tw={**TW, **sig_tr.model_kwargs()["tw"], "in_dim": sig_tr.dim}, trainable=trainable_report(model),
                    rowmask_rows={"train": None if sig_tr.rowmask is None else int(sig_tr.rowmask.sum()),
                                  "val": None if sig_va.rowmask is None else int(sig_va.rowmask.sum())})
+    if sig_tr.kind == "gr":
+        cfg.update(gr={**GR, **sig_tr.model_kwargs()["gr"], "in_dim": sig_tr.dim, "slots": sig_tr.slots},
+                   trainable=trainable_report(model))
     if sig_tr.kind == "rt":
         cfg.update(rt={**RT, **sig_tr.model_kwargs()["rt"]}, trainable=trainable_report(model),
                    rowmask_rows={"train": None if sig_tr.rowmask is None else int(sig_tr.rowmask.sum()),
@@ -649,6 +697,8 @@ def cmd_train(a):
     rt_desc = f"-{RT['layer']}-{RT['content']}-K{RT['k']}" if sig_tr.kind == "rt" else ""
     if sig_tr.kind == "tw":
         rt_desc = f"-{a.scope}-{TW['form']}" + ("" if a.arm in ("empty", "t1") else f"-L{TW['L']}") + f"-K{TW['k']}"
+    if sig_tr.kind == "gr":
+        rt_desc = f"-{a.scope}-N{GR['N']}-L{GR['L']}"
     desc =f"{a.type}{rt_desc}{'-noflag' if GRASP_NO_FLAG else ''}_{a.arm}" + (f"_ep{fixed}" if fixed else "") + ("_conv" if a.converge else "") + ("_smoke" if a.max_epochs or a.smoke else "")
     manager = ExperimentManager(C.ROOT / "experiments", "phase1", a.exp_prefix, desc, a.seed)
     manager.setup(cfg)
@@ -661,7 +711,7 @@ def cmd_train(a):
     lr_drop_epoch = None
     best, best_score, stale, stopped, history, no_grad_steps = None, -1.0, 0, None, [], 0
     started = time.monotonic()
-    ckpt = C.STORE.parent / a.task_id / "dp_ckpt" / f"{manager.exp_id}.pth"
+    ckpt = (Path(a.ckpt_dir) if a.ckpt_dir else C.STORE.parent / a.task_id / "dp_ckpt") / f"{manager.exp_id}.pth"
     ckpt.parent.mkdir(parents=True, exist_ok=True)
     for epoch in range(1, max_epochs + 1):
         model.train()
@@ -701,7 +751,7 @@ def cmd_train(a):
             now = model.head.state_dict()
             history[-1].update(head_delta_l2=float(torch.sqrt(sum(((now[k2].float() - v.float()) ** 2).sum()
                                                                     for k2, v in head_state0.items()))))
-        if sig_tr.kind in ("rt", "tw"):
+        if sig_tr.kind in ("rt", "tw", "gr"):
             history[-1].update(iface_l2=float(torch.sqrt(sum((p.detach() ** 2).sum() for p in model.iface.parameters()))),
                                iface_out_max_abs=float(model.iface.out.weight.detach().abs().max()))
         tracking.log({"train/loss": total / len(order), "val/jaccard": score, "val/accuracy": val["phase_accuracy"],
@@ -766,6 +816,12 @@ def cmd_train(a):
     C.write_json(manager.exp_dir / "logs/history.json", history)
     np.savez(manager.exp_dir / "predictions/val_probs_best.npz",
              **{v: p.astype(np.float32) for v, p in best_probs.items()})
+    if a.save_last_probs:
+        # 最後の epoch の状態（学習を終えた時点）の val の確率と値。metrics.json は best の値のまま、last を足す
+        np.savez(manager.exp_dir / "predictions/val_probs_last.npz", **{v: p.astype(np.float32) for v, p in probs.items()})
+        last = {"epoch": epoch, "phase_jaccard": val["phase_jaccard"], "phase_accuracy": val["phase_accuracy"],
+                "phase_per_class_jaccard": val["phase_per_class_jaccard"], "per_video": val["per_video"]}
+        C.write_json(manager.exp_dir / "metrics_last.json", last)
     how = (f"{fixed} epoch 学習し途中で止めない。結果は {fixed} epoch 目の状態（最良の回を選ばない）。" if fixed
            else "val だけで評価し選ぶ。")
     if rule:
@@ -794,6 +850,8 @@ def negative_control(a, model, ckpt, head, split, feats, names):
     other = "gt" if TYPES[a.type][1] == "g30" else "pred_noCF"           # GA は予測の腕が無いので正解を入れる
     if TYPES[a.type][1] == "tw":
         other = "t1"                                                       # TW の S_0 は k = 1 なので、同じ形の S_1 を入れる
+    if TYPES[a.type][1] == "gr":
+        other = "DGH"                                                      # GR の A0 は同じ形の DGH の材料を入れる
     real = build_data(split["val"], Signals(a.type, other, "val", a.inst_variant), feats, "cuda")
     rz, _ = evaluate(model, zero, names)
     rr, _ = evaluate(model, real, names)
@@ -808,7 +866,7 @@ def cmd_scopes(a):
     """型と学習範囲ごとの学ぶパラメータの名前の集合（Task C-2・C-4。学習しない、特徴も読まない）。"""
     head = C.load_ptower_head(device="cpu")
     out = {"task_id": a.task_id, "types": {}}
-    for t in a.types or [t for t in TYPES if TYPES[t][1] not in ("rt", "tw")]:
+    for t in a.types or [t for t in TYPES if TYPES[t][1] not in ("rt", "tw", "gr")]:
         dim = Signals(t, "empty", "val", "uq").dim
         row = {"signal_dim": dim}
         for scope in a.scopes:
@@ -839,6 +897,12 @@ def add_tw_args(p):
     p.add_argument("--tw-k", type=int, default=None)
 
 
+def add_gr_args(p):
+    p.add_argument("--gr-dir", default=None, help="GR の材料の置き場（graph/）")
+    p.add_argument("--gr-N", type=int, choices=[10, 30], default=None)
+    p.add_argument("--gr-L", type=int, choices=[1, 2], default=None)
+
+
 def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -856,6 +920,7 @@ def main():
     i.add_argument("--grasp-no-flag", action="store_true", help="GA を旗なしの 28 次元にする（既定は旗あり 30 次元）")
     add_rt_args(i)
     add_tw_args(i)
+    add_gr_args(i)
     s = sub.add_parser("scopes")
     s.add_argument("--types", nargs="+", choices=list(TYPES), default=None)
     s.add_argument("--scopes", nargs="+", choices=SCOPES, default=list(SCOPES))
@@ -881,6 +946,10 @@ def main():
     add_tw_args(t)
     t.add_argument("--converge", action="store_true",
                    help="収束規則（CONVERGE）で学ぶ。結果は val の Jaccard が最良の epoch（契約 T-2026-11-09-grasp-pilot-converge）")
+    add_gr_args(t)
+    t.add_argument("--ckpt-dir", default=None, help="界面の重みの置き場（既定は stage2pilot_store/<task-id>/dp_ckpt）")
+    t.add_argument("--save-last-probs", action="store_true",
+                   help="最後の epoch の val の確率と値も保存する（契約 T-2026-11-20-grasp-hand-graph-pilot）")
     a = ap.parse_args()
     global GRASP_DIR, GRASP_PRED_DIR, GRASP_NO_FLAG
     GRASP_DIR = getattr(a, "grasp_signal_dir", None)
@@ -890,6 +959,7 @@ def main():
               k=getattr(a, "tw_k", None))
     RT.update(dir=getattr(a, "rt_dir", None), layer=getattr(a, "rt_layer", None), content=getattr(a, "rt_content", None),
               k=getattr(a, "rt_k", None))
+    GR.update(dir=getattr(a, "gr_dir", None), N=getattr(a, "gr_N", None), L=getattr(a, "gr_L", None))
     if GRASP_NO_FLAG and TYPES[a.type][1] != "g30":
         raise SystemExit("--grasp-no-flag は GA だけに使う")
     if a.cmd == "train" and a.scope != "W1" and not (a.fixed_epochs or a.converge):
