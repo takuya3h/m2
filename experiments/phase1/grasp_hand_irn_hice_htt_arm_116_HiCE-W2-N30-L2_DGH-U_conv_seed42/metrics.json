@@ -1,0 +1,62 @@
+{
+  "best_epoch": 3,
+  "converge": {
+    "lr_factor": 0.1,
+    "max_epochs": 120,
+    "min_delta": 0.0001,
+    "patience": 8
+  },
+  "early_stopped_epoch": 19,
+  "elapsed_seconds": 66.14339749980718,
+  "epochs_run": 19,
+  "eval_recipe": {
+    "test_cfg": {
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "split": "val",
+      "task": "phase"
+    }
+  },
+  "iface_ckpt": "/home/ubuntu/slocal2/stage2pilot_store/grasp_hand_irn_hice_htt/dp_ckpt/grasp_hand_irn_hice_htt_arm_116_HiCE-W2-N30-L2_DGH-U_conv_seed42.pth",
+  "iface_ckpt_sha256": "5b1228e042e73f51f99089aad35e90ff8a3dfa3b4cd3d7f604d55283fa655492",
+  "iface_params": 311744,
+  "init_phase_accuracy": 0.8712871287128713,
+  "init_phase_jaccard": 0.7762185528074379,
+  "lr_drop_epoch": 11,
+  "norms": {
+    "best": {
+      "out_w_l2": 1.0387046337127686,
+      "out_w_max_abs": 0.012165388092398643
+    },
+    "final": {
+      "out_w_l2": 2.382312536239624,
+      "out_w_max_abs": 0.04562032222747803
+    },
+    "init": {
+      "out_w_l2": 0.0,
+      "out_w_max_abs": 0.0
+    }
+  },
+  "per_video": {
+    "09": {
+      "phase_accuracy": 0.9922779922779923,
+      "phase_jaccard": 0.9817103230139588
+    },
+    "10": {
+      "phase_accuracy": 0.8405215646940822,
+      "phase_jaccard": 0.612523951423747
+    }
+  },
+  "phase_accuracy": 0.8924092409240925,
+  "phase_jaccard": 0.6903055514161304,
+  "phase_macro_f1": 0.7526955395385299,
+  "reached_epoch_cap": false,
+  "receiver_outside_scope_n": 36,
+  "receiver_outside_scope_unchanged": true,
+  "receiver_trained_changed": true,
+  "receiver_unchanged": false,
+  "result_epoch": 3,
+  "result_selection": "best_val_jaccard",
+  "scope": "W2",
+  "steps_without_grad": 0
+}
