@@ -1,0 +1,41 @@
+{
+  "best_epoch": 3,
+  "early_stopped_epoch": null,
+  "elapsed_seconds": 0.9791703391820192,
+  "epochs_run": 3,
+  "eval_recipe": {
+    "test_cfg": {
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "split": "val",
+      "task": "phase"
+    }
+  },
+  "iface_ckpt": "/home/ubuntu/slocal2/stage2pilot_store/grasp_hand_irn_hice_htt/smoke/dp_ckpt/grasp_hand_irn_hice_htt_smoke_002_HiCE-W3-N30-L2_DGH_ep3_smoke_seed42.pth",
+  "iface_ckpt_sha256": "3c1a4180d842d13e2501a9f5ab123bac0e6f122f106e5806539957618eb40a0a",
+  "iface_params": 311744,
+  "init_phase_accuracy": 0.8712871287128713,
+  "init_phase_jaccard": 0.7762185528074379,
+  "per_video": {
+    "09": {
+      "phase_accuracy": 0.971042471042471,
+      "phase_jaccard": 0.9247180382081297
+    },
+    "10": {
+      "phase_accuracy": 0.7683049147442327,
+      "phase_jaccard": 0.5643697041997455
+    }
+  },
+  "phase_accuracy": 0.8376237623762376,
+  "phase_jaccard": 0.6541910466271582,
+  "phase_macro_f1": 0.7492855526959813,
+  "reached_epoch_cap": true,
+  "receiver_outside_scope_n": 0,
+  "receiver_outside_scope_unchanged": true,
+  "receiver_trained_changed": true,
+  "receiver_unchanged": false,
+  "result_epoch": 3,
+  "result_selection": "final_epoch",
+  "scope": "W3",
+  "steps_without_grad": 0
+}
