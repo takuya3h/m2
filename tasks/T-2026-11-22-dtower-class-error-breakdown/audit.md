@@ -209,6 +209,10 @@ commit: 8a911bd2（道具と記録、$O の 64 件）、5ad66fa5（契約・RESU
     status pass、changed 72、permitted 64（$O の版管理下の 64 件と一致）、violations 0
     $ make forbidden-check   （対照: TASK なし）
     status fail、violations 64（すべて $O の中。$O の外の違反 0）
+    $ source scripts/load_env.sh && make task-report TASK=T-2026-11-22-dtower-class-error-breakdown   → rc 0
+    {"task_id": "T-2026-11-22-dtower-class-error-breakdown", "verdict": "pass", "n_issuer_defects": 1,
+     "report_sha256": "bed82062420915bc20543ff446c3e3624c0137f6a452b8b249c73a59f17bf2b8", "report_bytes": 17706, "replaced_blocks": 0}
+    （送った本文は commit a537d578 の RESULT.md・result.yaml。この記録の commit は送った後）
 
 ## 付録 規約の原文（contract.inject_verbatim、context/conventions.md 2d946b07）
 

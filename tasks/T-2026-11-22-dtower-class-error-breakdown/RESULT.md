@@ -131,4 +131,4 @@ Fold ごとの 4 クラス（train の box / 動画、val の box / 動画、塔
 ## 7. 送出
 
 - PR: 319
-- task-report: （送った後に書く）
+- task-report: 終了コード 0（verdict pass）
