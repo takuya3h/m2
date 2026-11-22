@@ -87,6 +87,10 @@ GA は epoch ごとの界面の重みの絶対値の最大と L2 ノルムを lo
     --record-epochs E ...   --fixed-epochs と組で使う。epoch E ごとに val の確率（predictions/val_probs_ep<E>.npz）と値・界面の零初期化の
                             層の大きさ・optimizer の群ごとの学習率（metrics_ep<E>.json）を保存し、optimizer の群ごとの学習率・weight decay・
                             パラメータの名前を config の optim_groups に書く
+
+契約 T-2026-11-21-grasp-hand-irn-hice-htt-pilot（SPEC §4・§5）で足した型。渡さなければ従来の経路のまま:
+    IRN irn・HiCE hice・HTT htt（dp_model.IRNIface・HiCEIface・HTTIface）。入力・腕・引数は GR と同じ（--gr-dir・--gr-N・--gr-L、
+        x(t) は GR と同じ材料の配列）。--gr-L は IRN では相互作用の注意の段数、HiCE では注意の段数、HTT では MLP の隠れ層の数
 """
 from __future__ import annotations
 
@@ -127,6 +131,9 @@ TYPES = {
     "RT": ("roitoken", "rt", None, None, None),
     "TW": ("transwin", "tw", None, None, None),
     "GR": ("graph", "gr", None, None, None),
+    "IRN": ("irn", "gr", None, None, None),
+    "HiCE": ("hice", "gr", None, None, None),
+    "HTT": ("htt", "gr", None, None, None),
 }
 G30_HALF = 14 + 1                                          # g の 14 と旗。予測の半分が先、正解の半分が後
 GRASP_DIR = None                                           # --grasp-signal-dir（GA のときだけ）
