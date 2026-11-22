@@ -1,0 +1,2 @@
+- [ ] 2026-11-22 [cc] (e) の工程の正解（data/processed/phase_manifest）は Fold B〜E で公式の test の動画 04・05・07 の注釈を含む test.json が要るため選択肢を示し、利用者が「test.json も開く」（Fold ごとにその Fold の train と val の動画の項目だけを使う）を選んだ。spec.yaml の meta.amendments に記録
+- [ ] 2026-11-22 [cc] 読み 1 と読み 2 で取り違えの件数が大きく違う（同じ枠が別のクラスで並ぶ GT が全対象で 3,000 件超）。低いクラスを上げる打ち手のどれを次の探索の方向にするかは利用者が決める

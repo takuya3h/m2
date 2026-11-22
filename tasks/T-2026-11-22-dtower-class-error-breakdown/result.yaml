@@ -1,0 +1,86 @@
+result_version: 3
+task_id: "T-2026-11-22-dtower-class-error-breakdown"
+status: pass
+host: "andrew"
+branch: "feat/dtower-class-error-breakdown"
+pr: null
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "塔 1（T-2026-11-07-dtower-rerun の 12 番・seed 42）の Fold A〜E と塔 2（D*-COCO・seed 42）の Fold A の val の予測の保存がすべて在り、塔 1 の run のフォルダの名前と checkpoint の置き場が frozen_towers.json と一致。読んだ材料の一覧（reads.jsonl）に検出の test の予測と注釈が 0 件"}
+  - {id: G2, verdict: pass, note: "6 対象とも、保存済みの予測の全件から計算し直した overall mAP・signature class の AP・negative control の AP・クラス別 AP が記録と小数第 4 位で一致。差の最大は塔 1 の 5 本が 0.0、塔 2 が 2.5e-8（記録は SPEC §1.1 の 7 桁の表示）"}
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 985
+
+deviations:
+  - {type: judgement, note: "SPEC §4.5 (e) の工程の正解の出所（data/processed/phase_manifest）は公式分割ごとのファイルで、Fold B〜E では公式の test の動画 04・05・07 の注釈（test.json）が要る。選択肢を示し、利用者の回答（2026-11-22、選択式）「test.json も開く」に従い、Fold ごとにその Fold の train と val の動画の項目だけを使った（scripts/stage1_ptower.py の load_fold と同じ読み方）。各 Fold の test の動画の項目は使っていない。spec.yaml の meta.amendments に記録。回答の前の 1 回目は Fold B〜E の (e) を UNKNOWN にした（c_fix_run1.log）"}
+  - {type: judgement, note: "§4.2 の読み 1 で IoU も score も同じ予測が複数あれば保存の並びで先のものを取る（全対象で該当 0 件）。§4.4 の対応づけは COCOeval の evaluateImg と同じ選び方（未対応の GT のうち IoU 最大、同じ IoU なら後の GT）、区分 2 の相手は IoU が最大の別のクラスの GT（同じ IoU なら先の GT）"}
+  - {type: judgement, note: "§4.5 (a)〜(c) の「クラスを問わず IoU が最大の GT」が同値で二つ以上あれば注釈の並びで先の GT を取った（塔 1 Fold D の 11 件、ほかは 0 件）。(c) は枠を置き換えた後に IoU 最大の GT を測り直してから (a) を当てた。(a) で同じ score の予測が並べば保存の並びで先を残した"}
+  - {type: judgement, note: "§4.5 (e) の「train の動画で工程 p のフレームにクラス c が写らない」は、train の注釈の画像（検出の注釈が付いたフレーム）で数えると読んだ（前回の P2F の表と同じ数え方。Fold A は工程の数・共起の数まで一致）。p は train の注釈の画像に一度でも現れる工程に限った"}
+  - {type: judgement, note: "SPEC が求める値に加えて、直し方の AP75 の差、動画ごとのクラス別 AP50、(e) で除いた組に当たる val の GT の box の数、score の中央値を出した。閾値と定義は足していない（AP75 は COCO の定義）"}
+  - {type: judgement, note: "分解では注釈の id 0 の一つも通常の GT として扱った。AP の類は記録と同じ COCOeval に通したので、id 0 の注釈に一致した検出を誤検出に数える影響は直す前と後の両方に同じく入る"}
+  - {type: judgement, note: "CLAUDE.md の求めで README.md と docs/experiment_log.md を書いた（allow_write の外だが禁止領域の外。前回までの契約と同じ扱い）。tasks/<id>/ の RESULT.md・result.yaml・audit.md と tasks/inbox.d/ も同じ"}
+  - {type: environment, note: "新しい道具に ruff の指摘 6 件（変数名 O 2、置き換えの無い f 文字列 3、not in の書き方 1）。直してから直し方・報告・実測の表を回し直し、出力がバイトまで同じことを cmp で確かめた"}
+
+issuer_defects:
+  - type: self_contradiction
+    note: "SPEC §4.5 (e) を全 Fold で求め、§1.2 で工程の正解を前回の予備測定の正解の腕と同じ出所にすると決めながら、§2 で test の動画の注釈を読まないとした。その出所 data/processed/phase_manifest は公式分割ごとのファイルで、Fold B〜E では公式の test の動画 04・05・07 の注釈（test.json）が train か val に要り、前回の読み方（scripts/stage2pilot/common.py の phase_sequences）は 04・05・07 で止まる。§2 の禁止の一覧は検出の test のファイルだけを名指していた"
+
+positive_controls:
+  - judgement: "a pycocotools の在否の検査"
+    breaking_input: "存在しない仮想環境の経路 /nonexistent/zzz_no_such_venv"
+    observed: "python 無し、pycocotools null（.venv と .venv-relation-detr は 2.0.11）"
+  - judgement: "b 材料の hash の照合"
+    breaking_input: "塔 1 Fold A の予測の写しの末尾から 100 バイト目を反転"
+    observed: "sha256 が食い違う（本物は一致）"
+  - judgement: "b run の名前の照合"
+    breaking_input: "存在しない run の名前 dtowerrerun_p12_dcoco_foldZ_seed42"
+    observed: "frozen_towers.json で 0 件、runs/ で 0 件（本物の名前は 1 件）"
+  - judgement: "c 再現の比べ"
+    breaking_input: "塔 1 Fold A の画像 id 0 の 300 件の score の並びを逆にした写し"
+    observed: "小数第 4 位の一致が False、差の最大 0.0092、食い違い 8 行（AP・AP50・AP75・signature・negative・AP の記録・Gauze・Skewer）"
+  - judgement: "d GT の側の分解"
+    breaking_input: "作り物（画像 3 枚・GT 5 個）: GT と同じ枠とクラスの予測／クラスを一つ変える／枠を 60 px ずらす（IoU ≈ 0.14）／予測を一つ除く"
+    observed: "全件正解 5（両方の読み）／取り違え 1／位置のずれ 1／見落とし 1"
+  - judgement: "e 予測の側の分解"
+    breaking_input: "作り物: 同じ枠の予測を二つ／GT から離れた予測を足す"
+    observed: "重複 1／背景 1"
+  - judgement: "f AP75"
+    breaking_input: "塔 1 Fold A の予測の枠を一律に x へ 8 px ずらした写し"
+    observed: "AP75 の平均 0.7703 → 0.7395（14 クラス中 10 クラスで下がる）。AP50 ≥ AP は 6 対象の全クラスで成り立つ"
+  - judgement: "g 直し方"
+    breaking_input: "作り物（画像 4 枚・GT 7 個・工程 2）: GT をそのまま予測／クラスだけを回す／在否の違う画像に予測を足す／工程で在り得ない組の予測を足す"
+    observed: "五つとも差 0.0／(b) だけ +1.0／(d) +0.25 で (c) 0.0／(e) +0.111"
+  - judgement: "g 直す前の値"
+    breaking_input: "UNKNOWN（直す前と Task B の値の一致は 6 対象で True。壊した入力では測っていない）"
+    observed: "UNKNOWN"
+  - judgement: "h box の数と動画の集合"
+    breaking_input: "Fold A の val の注釈から一つ除いた写し／Fold B の val の動画 02 の画像を混ぜた写し"
+    observed: "Skewer 103 → 102／動画の集合 [02, 09, 10] が表と不一致"
+  - judgement: "(e) の工程の出所"
+    breaking_input: "UNKNOWN（壊した入力は作っていない。代わりに Fold A の共起の数え上げを前回の P2F の表と照合）"
+    observed: "工程の数・共起の数・工程の並び・train のフレーム数 9657 が P2F の表と一致"
+  - judgement: "i test を読まない"
+    breaking_input: "読んだ一覧の写しに instances_test.json を混ぜる／Fold A の val の動画に 04 を混ぜる"
+    observed: "1 件／共通 [04]（本物は 0 件・共通 0）"
+  - judgement: "j 変えていない"
+    breaking_input: "TASK を渡さずに forbidden-check を回す（allow_write を読まない）"
+    observed: "status fail で本契約の 65 件が違反として名指される（TASK つきは pass・違反 0・許可 65）"
+  - judgement: "k PR"
+    breaking_input: "UNKNOWN（PR の起票の後に書く）"
+    observed: "UNKNOWN"
+
+followups:
+  - "低いクラス（Forceps・Gauze・Hook・Scissors）を上げる打ち手（検出塔の側、工程の信号の渡し方の側、工程より細かい信号の側）のどれを次の探索の方向にするかは利用者が決める（SPEC §0）。本契約は値だけを出した"
+  - "同じ枠が別のクラスで並ぶ GT が全対象で 3,000 件を超え、読み 1 と読み 2 で取り違えの件数が大きく違う（塔 1 Fold A の Forceps 49 と 22）。次の契約で取り違えを数えるなら、どちらの読みを使うかを起票者が決める"
+  - "工程の正解を Fold B〜E で使う契約では、phase_manifest の test.json（公式の test の動画 04・05・07）を開くかを起票の時点で決めておく（本契約は利用者が「開く」を選んだ）"
+
+unknowns:
+  - "seed の間の揺れ: 測っていない（seed 1 本）"
+  - "(a) 重複を除くで全クラスの平均 AP が 6 対象とも下がった（−0.0054〜−0.0033）理由: 定義から直接言えるのは score 最大の一つを残すこと（AP50 は上がり AP75 が下がる対象がある）まで。それ以上は調べていない"
+  - "(e) で Fold E の平均 AP が下がった（−0.0040）ことの、除いた組に当たる val の GT（Hook 49・Forceps 34・Bipolar Forceps 5）以外の寄与: 調べていない"
+
+commits: []
