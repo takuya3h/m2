@@ -1,0 +1,13 @@
+T1 A per_video_vs_record {'values_compared': 24, 'max_abs_diff': 0.0} AP50>=AP True
+T1 B per_video_vs_record {'values_compared': 23, 'max_abs_diff': 0.0} AP50>=AP True
+T1 C per_video_vs_record {'values_compared': 27, 'max_abs_diff': 0.0} AP50>=AP True
+T1 D per_video_vs_record {'values_compared': 26, 'max_abs_diff': 0.0} AP50>=AP True
+T1 E per_video_vs_record {'values_compared': 22, 'max_abs_diff': 0.0} AP50>=AP True
+T2 A per_video_vs_record {'values_compared': 2, 'max_abs_diff': 0.0} AP50>=AP True
+A train/val videos match True True test_overlap [] counts_match_index True
+B train/val videos match True True test_overlap [] counts_match_index True
+C train/val videos match True True test_overlap [] counts_match_index True
+D train/val videos match True True test_overlap [] counts_match_index True
+E train/val videos match True True test_overlap [] counts_match_index True
+controls {"h": {"removed_class": "Skewer", "count_before": 103, "count_after": 102, "mixed_video_set": ["02", "09", "10"], "mixed_matches_fold_table": false}, "f": {"shift_px": 8.0, "AP75_mean_before": 0.7702824486565685, "AP75_mean_after": 0.7395116199385933, "AP75_lower_classes": 10, "classes": 14}}
+.venv/bin/python $D/tools/c_tables.py  81.54s user 4.66s system 101% cpu 1:25.08 total
