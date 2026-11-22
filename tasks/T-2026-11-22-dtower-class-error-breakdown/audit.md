@@ -186,15 +186,29 @@ Fold A の共起の数え上げは前回の P2F の表（`experiments/analysis/s
 試験（終了時、`$O/d/pytest_end.txt`）: 6 failed, 985 passed, 5 skipped（32.32 s）。失敗の名前は開始時と同じ（`diff` 空）。
 
     $ source .venv/bin/activate && make forbidden-check TASK=T-2026-11-22-dtower-class-error-breakdown
-    status pass、changed 65、permitted 65（すべて「契約の allow_write experiments/analysis/dtower_class_error_breakdown/ により許可」）、violations 0
+    status pass、changed 65（うち tasks/<id>/ の SPEC.md・spec.yaml の 2 件は禁止領域の外）、permitted 63（すべて「契約の allow_write
+    experiments/analysis/dtower_class_error_breakdown/ により許可」）、violations 0
     $ make forbidden-check   （対照: TASK なし）
-    status fail、本契約の 65 件が「禁止領域 experiments/ の内側」として名指される
+    status fail、本契約の 63 件が「禁止領域 experiments/ の内側」として名指される
 
-（README.md・docs/experiment_log.md・tasks/ の記録は禁止領域の外。最後の commit の前に同じ検査を回し直した結果は「送出」に置く）
+（README.md・docs/experiment_log.md・tasks/ の記録は禁止領域の外。commit の後に同じ検査を回し直した結果は「送出」に置く。
+最初の記録で changed の 65 を permitted と書き誤ったので、表示の件数に直した）
 
 ## 送出
 
-（commit・push・PR・task-report の後に追記する）
+commit: 8a911bd2（道具と記録、$O の 64 件）、5ad66fa5（契約・RESULT・result.yaml・audit・README・実験記録・判断の受け皿）。
+
+    $ git push -u origin feat/dtower-class-error-breakdown
+     * [new branch]        feat/dtower-class-error-breakdown -> feat/dtower-class-error-breakdown
+    $ git ls-remote --heads origin refs/heads/feat/dtower-class-error-breakdown   → 5ad66fa5f934…（= HEAD）
+    $ gh pr create --base phase0 --head feat/dtower-class-error-breakdown ...   → https://github.com/takuya3h/m2/pull/319
+    $ gh pr view feat/dtower-class-error-breakdown --json number,isDraft,baseRefName,headRefName,state
+    {"baseRefName":"phase0","headRefName":"feat/dtower-class-error-breakdown","isDraft":false,"number":319,"state":"OPEN"}
+    アプリの PR 連携（get_status）: PR 319 が結びついている。mergeable MERGEABLE、CI の検査 0 件
+    $ make forbidden-check TASK=T-2026-11-22-dtower-class-error-breakdown   （commit の後）
+    status pass、changed 72、permitted 64（$O の版管理下の 64 件と一致）、violations 0
+    $ make forbidden-check   （対照: TASK なし）
+    status fail、violations 64（すべて $O の中。$O の外の違反 0）
 
 ## 付録 規約の原文（contract.inject_verbatim、context/conventions.md 2d946b07）
 

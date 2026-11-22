@@ -11,7 +11,7 @@
 | G2（B の後） | **pass** | 6 対象とも overall mAP・signature class・negative control・クラス別 AP が小数第 4 位で一致。差の最大は塔 1 が 0.0、塔 2 が 2.5e-8（記録が 7 桁の表示）（audit 89-107） |
 
 参照の解決（audit 36-44）: created_from（runindex 036d6a60、2668・1347・2067）と conventions_rev 2d946b07 は起点で測って契約と同じ。
-`inputs.data.split_files` は参照しなかった。注入する 7 節の原文は audit 199 行以降。プリフライトの SKIP は P2・P3・P4・P5・P11・P12・P13・P14（audit 25-34）。
+`inputs.data.split_files` は参照しなかった。注入する 7 節の原文は audit 213 行以降。プリフライトの SKIP は P2・P3・P4・P5・P11・P12・P13・P14（audit 25-34）。
 
 ## 2. 完了判定
 
@@ -26,8 +26,8 @@
 | g | 五つの直し方の直す前と後と差（REPORT §6）。直す前 = Task B（6 対象 True）（audit 129-154） | 作り物: GT をそのまま予測で差 0.0 × 5。クラスだけ変えると (b) だけ +1.0。在否の違う画像に足すと (d) +0.25・(c) 0.0 |
 | h | §4.6 の表（REPORT §7）。box の数は二通りの数え上げで一致、動画の集合は正本と conventions#folds に一致（audit 156-163） | 注釈を一つ除いた写しで 103 → 102。別の Fold の動画を混ぜた写しで不一致 |
 | i | 検出の test のファイル 0 件。マニフェストの test.json は Fold B〜E の (e) だけ。各 Fold の使った動画と test の共通 0（audit 177-187） | 一覧に instances_test.json を混ぜると 1 件。動画 04 を混ぜると共通 [04] |
-| j | 読んだ 36 件（$S の 16 件を含む）の sha256 が開始時と一致。試験 6 failed / 985 passed で失敗の名前は同じ。forbidden-check pass・違反 0・許可 65（audit 177-193） | TASK なしの forbidden-check は fail で本契約の 65 件を違反として名指す |
-| k | PR（送出の節） | `gh pr view` の分岐名と base（送出の節） |
+| j | 読んだ 36 件（$S の 16 件を含む）の sha256 が開始時と一致。試験 6 failed / 985 passed で失敗の名前は同じ。forbidden-check pass・違反 0・許可 64（audit 177-196、208-211） | TASK なしの forbidden-check は fail で本契約の 64 件を違反として名指す |
+| k | PR 319（OPEN、Draft でない）（audit 197-211） | `gh pr view`: headRefName feat/dtower-class-error-breakdown、baseRefName phase0、isDraft false |
 
 ## 3. 実測
 
@@ -130,4 +130,5 @@ Fold ごとの 4 クラス（train の box / 動画、val の box / 動画、塔
 
 ## 7. 送出
 
-（commit・push・PR・task-report の後に書く）
+- PR: 319
+- task-report: （送った後に書く）
