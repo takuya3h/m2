@@ -182,3 +182,11 @@ E+1 からが初期値の 0.1 倍であることの全部。
 ### C-4 ruff
 
     $ .venv/bin/ruff check $O/tools/ → All checks passed!
+
+## 送出
+
+    $ git push -u origin feat/conv-epoch-history-extract → [new branch]
+    $ gh pr create --base phase0 --head feat/conv-epoch-history-extract → https://github.com/takuya3h/m2/pull/321
+    $ gh pr view feat/conv-epoch-history-extract --json number,headRefName,baseRefName,isDraft,state
+    {"baseRefName":"phase0","headRefName":"feat/conv-epoch-history-extract","isDraft":false,"number":321,"state":"OPEN"}
+    commit: 528883e5（道具と出力）、a212d3ea（契約の記録・README・実験の記録・判断の受け皿）

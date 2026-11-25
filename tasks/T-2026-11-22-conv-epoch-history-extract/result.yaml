@@ -3,7 +3,7 @@ task_id: "T-2026-11-22-conv-epoch-history-extract"
 status: pass
 host: "andrew"
 branch: "feat/conv-epoch-history-extract"
-pr: null
+pr: 321
 merged: false
 
 gates:
@@ -66,7 +66,7 @@ positive_controls:
     observed: "status fail で本契約の置き場の 18 件が違反として名指される（TASK つきは pass・違反 0・許可 18。commit の前の回）"
   - judgement: "i PR"
     breaking_input: "gh pr view feat/conv-epoch-history-extract で分岐名・base・Draft を読む（違えば不一致として出る）"
-    observed: "UNKNOWN（起票の後に追記する）"
+    observed: "headRefName feat/conv-epoch-history-extract、baseRefName phase0、isDraft false、state OPEN（PR 321）"
 
 followups:
   - "一致の確かめが通ったので、収束規則の集合の 1〜8 epoch 目は固定の長さの run と同じ学び方の値として読める（72/72 組、4・8 epoch 目）。12・16 epoch 目は学習率を下げた後の run（80 本・145 本）が混じり、その対は一致しない"
@@ -78,4 +78,6 @@ unknowns:
   - "16 epoch 目に学習率を下げた後なのに固定の長さと値が同じだった W1 の A0 の 2 対の理由: 調べていない"
   - "常駐の同期処理が本契約の間に回ったか: 確かめていない（記録の最後の「一時停止中」は 2026-11-21）"
 
-commits: []
+commits:
+  - "528883e5"
+  - "a212d3ea"

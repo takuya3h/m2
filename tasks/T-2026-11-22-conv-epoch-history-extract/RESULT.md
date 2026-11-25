@@ -28,7 +28,7 @@ P6 の 2 件は利用者が選択式で回答した（停止条件は「当た�
 | f | §5.2〜§5.4 の表が 4・8・12・16 epoch 目にあり、† が下げた後の値に付く（REPORT）。history.json と metrics_ep から測り直したずれ 0.0（3,888 値）（audit 144-166） | 表の写しの差を 1e-6 ずらすと 1.0e-6 のずれを検出 |
 | g | 流用の確かめ 20 組（irn-hice-htt-pilot 5＋参考 9、graph-t2p-match 6）が 4・8・12・16 epoch 目の 80 行すべて一致、差 0.0（audit 125-136） | 確かめの片方の 4 epoch 目を 1e-6 ずらすと不一致 |
 | h | 読んだ 3,188 ファイルの hash が開始時と一致（追加・削除・変更 0）。印より新しいファイル 0 件。試験 6 failed / 985 passed で失敗の名前は同じ。forbidden-check pass・違反 0・許可 18（audit 168-180） | 目録に新しいファイルを一つ足すと追加 1。TASK なしの forbidden-check は fail で本契約の 18 件を違反として名指す |
-| i | PR（§7） | `gh pr view` の headRefName・baseRefName・isDraft（§7） |
+| i | PR 321（OPEN、Draft でない）（audit 186-190） | `gh pr view`: headRefName feat/conv-epoch-history-extract、baseRefName phase0、isDraft false |
 
 ## 3. 実測（次の契約で使う値）
 
@@ -81,5 +81,5 @@ IRN −0.0306〜−0.0175、HiCE −0.0300〜−0.0237、HTT −0.0316〜−0.01
 
 ## 7. 送出
 
-- PR: 未起票（起票後に追記する）
+- PR: https://github.com/takuya3h/m2/pull/321（commit 528883e5・a212d3ea）
 - task-report: 未送信（送信後に追記する）
