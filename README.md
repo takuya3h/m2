@@ -1888,6 +1888,18 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
   案 5 の W1 の S_W − S_0 は前の処方の 4/4 正から 0/4 に変わった。殺し実験の線形の層は、P の train の特徴だけで train が分け切れるため、正則化を変えても陽性対照が J 0.64〜0.68 で働かない
 - 道具は `experiments/analysis/grasp_pilot_converge/tools/`。前の予備の材料（空間特徴・トークン・窓の列）は読むだけで作り直していない
 
+### 収束規則の run の途中の epoch の値の取り出しと、固定の長さの run との並べ（2026-11-25、andrew）
+
+契約 `T-2026-11-22-conv-epoch-history-extract`（analysis。**非公式の記録の分析。関門の判定と設計の判断に使わない**）。グラフの予備（GR）と IRN・HiCE・HTT の予備を
+収束規則で回した 344 本の `logs/history.json` から epoch ごとの val の 7 工程の Jaccard と frame accuracy を取り出し、graph-t2p-match が固定の長さで回した
+グラフの型 147 本・T→P 36 本の 4・8・12・16 epoch 目と並べた。**GPU・学習・評価・推論は使っていない。**
+結果は `experiments/analysis/conv_epoch_history_extract/REPORT.md`・`epochs.csv`（`tools/ceh.py` が記録から作る）、記録は `tasks/T-2026-11-22-conv-epoch-history-extract/`。
+
+- 一致の確かめ: config で作った 72 組の対で、4・8 epoch 目の値が 72/72 ちょうど同じ。12・16 epoch 目は学習率を下げる前の対だけが同じ（下げた後は 0/10・2/23）
+- 4・8 epoch 目は 344 本すべて学習率を下げる前。12 epoch 目 80 本、16 epoch 目 145 本が下げた後
+- 6 工程・工程別・動画ごとの値と、入れ替えの腕との差（グラフ以外の型）は epoch ごとの記録に無く作っていない
+- 読んだ記録（3,188 ファイル）の hash は開始時と終了時で一致。既存の道具・記録・仮想環境は変えていない
+
 ### 検出塔のクラス別の誤りの分解と、直した場合の上限の目安（2026-11-22、andrew）
 
 契約 `T-2026-11-22-dtower-class-error-breakdown`（analysis。**非公式の記述。関門の判定と設計の判断に使わない**）。凍結した検出塔（T-2026-11-07-dtower-rerun の
