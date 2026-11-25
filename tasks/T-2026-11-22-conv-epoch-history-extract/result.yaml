@@ -1,0 +1,83 @@
+result_version: 3
+task_id: "T-2026-11-22-conv-epoch-history-extract"
+status: pass
+host: "andrew"
+branch: "feat/conv-epoch-history-extract"
+pr: 321
+merged: false
+
+gates:
+  - {id: G1, verdict: pass, note: "config.yaml の task_id・metrics.json の converge（固定の長さは metrics_ep4.json）・command.sh の --exp-prefix で作った集合が、三つの契約の run の一覧の道具の（接頭辞, 名前）の集合と RESULT の本数に一致（GP 96・IHH 248・T2P グラフ 147・T→P 36、差 0）。収束規則の 344 本すべてに logs/history.json が在り、epoch の数・結果の回と最後の回の J と acc・学習率を下げた回が metrics.json・metrics_last.json と 344/344 で一致"}
+  - {id: G2, verdict: pass, note: "信号の sha256・型・W・N・L で作った対 72 組（config の違いは長さの規則と識別子・経路の欄だけ）の全対で、4・8 epoch 目の 7 工程の Jaccard と frame accuracy が 72/72 ちょうど同じ、最大の差 0.0。12・16 epoch 目は下げる前の対が 62/62・49/49 で同じ、下げた後の対は 0/10・2/23 で同じ"}
+
+tests:
+  before_failed: 6
+  after_failed: 6
+  after_passed: 985
+
+deviations:
+  - {type: judgement, note: "SPEC §3 の集合の作り方（converge の欄、metrics_ep4.json の在否）に command.sh の --exp-prefix の条件を足した。欄だけでは irn-hice-htt-pilot の回し直し repro_gr（収束規則）と graph-t2p-match の 4 epoch で止める確かめ 6 本が入り、249 本・189 本になるため。除いた 16 本と理由は audit に列挙"}
+  - {type: judgement, note: "学習率を下げる前・後の境は dp_train.py の学習の繰り返しを読んで決めた: 下げた回 E（metrics.json の lr_drop_epoch）の評価までが前、E+1 から後。history の lr・lr_after の欄と lr_drop_epoch の食い違いは 344/344 本で無い"}
+  - {type: judgement, note: "流用の確かめ（完了判定 g）に、irn-hice-htt-pilot の流用の根拠の 5 組に加えて、同じ契約の参考の 9 組（3 型の A0 とグラフの型の A0）と、graph-t2p-match の流用の確かめ 6 組（空の s4 と s1、D-noCF の s2 と s1）を入れた。80 行すべて一致"}
+  - {type: judgement, note: "追加の確かめとして、固定の長さの run の logs/history.json の 4・8・12・16 epoch 目が metrics_ep*.json と一致することを見た（72/72）。主の比べは SPEC のとおり metrics_ep*.json を使った"}
+  - {type: judgement, note: "開始時の記録（試験の出力・失敗の名前・仮想環境の一覧・読む記録の目録・予測の写し）は保存先ではなく allow_write の experiments/analysis/conv_epoch_history_extract/start/ に置いた。終了時の目録は scratchpad に置いて比べた"}
+  - {type: judgement, note: "CLAUDE.md の求めで README.md と docs/experiment_log.md に短く書いた（allow_write の外だが禁止領域の外。前回までの契約と同じ扱い）。tasks/<id>/ の RESULT.md・result.yaml・audit.md、spec.yaml の amendments、tasks/inbox.d/ も同じ"}
+  - {type: judgement, note: "preflight P6 の未回答 2 件を利用者に選択式で示し、回答（停止条件は「当たったら止めて尋ねる」、不一致の読み方は「SPEC §5.5 のとおり」）を spec.yaml の meta.amendments に写して decisions_required を空にした。実行者は決めていない"}
+
+issuer_defects:
+  - type: asserted_without_measuring
+    note: "SPEC §3 は収束規則の集合を metrics.json に converge を持つ腕と確かめの run、固定の長さの集合を metrics_ep4.json を持つ run として作り、本数が記録（248・147+36）と一致すると書いた。欄だけで集めると irn-hice-htt-pilot は回し直しの repro_gr も収束規則なので 249 本、固定の長さは 4 epoch で止める確かめ 6 本も metrics_ep4.json を持つので 189 本になり、指示どおりでは G1 の本数の比べが一致しない"
+  - type: check_does_not_check
+    note: "SPEC §8 の完了判定 a の対照「存在しない実行ファイルの経路で、列挙が 0 件になることを示す」は、a が求める記録の項目（分岐・起点・未追跡・試験の失敗の名前・仮想環境の hash）のどれも検査しない。前の契約の compute の列挙の対照が残ったものと読み、その道具（proc_enum.py）で回したが、a の項目そのものが空振りしていないことはこの対照では確かめられない"
+
+positive_controls:
+  - judgement: "a 列挙の道具（proc_enum.py --match-exe）"
+    breaking_input: "存在しない実行ファイルの経路 /nonexistent/bin/python9"
+    observed: "0 件（/usr/bin/zsh は 6 件）"
+  - judgement: "b 集合と記録の比べ"
+    breaking_input: "観測した集合に存在しない run の名前 GR-W9-N10-L1_DGH_conv を一つ足す"
+    observed: "GP の equal が false になり、only_observed にその 1 件が出る（本物は 4 群とも equal）"
+  - judgement: "b history.json の在否"
+    breaking_input: "収束規則の run の写しのうち 1 本の history を外す"
+    observed: "欠け 1 件（本物は 0 件）"
+  - judgement: "c history と版管理の中の記録の突き合わせ"
+    breaking_input: "1 本の history の写しで結果の回の J を 1e-6 ずらす／最後の回の acc を 1e-6 ずらす／epoch を一行足す"
+    observed: "result_jaccard・last_accuracy・n_epochs がそれぞれ false（本物は 8 項目とも true）"
+  - judgement: "d 下げる前・後の印"
+    breaking_input: "下げた回を 3 にした写し"
+    observed: "4 epoch 目が post と印付けされ、学習率の欄との突き合わせが false（本物は pre・true）"
+  - judgement: "e 一致の確かめ"
+    breaking_input: "固定の長さの run の写しの 4 epoch 目の J を 1e-6 ずらす"
+    observed: "ちょうど同じ対が 72 → 71"
+  - judgement: "e 対の作り方"
+    breaking_input: "違う W の run（収束規則の W1 の DGH s1 と固定の長さの W2 の DGH-CF s1）を対にする"
+    observed: "4 epoch 目の ΔJ +0.0570・Δacc −0.0013、config の違いが長さと識別子の欄の外に 18 欄。対の一覧には入っていない"
+  - judgement: "f 表の値"
+    breaking_input: "表の写しの §5.3 の差を 1e-6 ずらす"
+    observed: "1.0e-6 のずれを検出（本物は history.json と metrics_ep から測り直して 3,888 値でずれ 0.0、epochs.csv と history.json のずれも 0.0）"
+  - judgement: "g 流用の確かめ"
+    breaking_input: "確かめの片方（IRN の A0 の s4・W1）の 4 epoch 目の J を 1e-6 ずらす"
+    observed: "一致が false（本物は 80/80 行が一致）"
+  - judgement: "h 読んだ記録の目録"
+    breaking_input: "目録の写しに新しいファイルを一つ足す"
+    observed: "追加 1（開始と終了の比べは追加・削除・変更とも 0）"
+  - judgement: "h forbidden-check"
+    breaking_input: "TASK を渡さずに回す（allow_write を読まない）"
+    observed: "status fail で本契約の置き場の 18 件が違反として名指される（TASK つきは pass・違反 0・許可 18。commit の前の回）"
+  - judgement: "i PR"
+    breaking_input: "gh pr view feat/conv-epoch-history-extract で分岐名・base・Draft を読む（違えば不一致として出る）"
+    observed: "headRefName feat/conv-epoch-history-extract、baseRefName phase0、isDraft false、state OPEN（PR 321）"
+
+followups:
+  - "一致の確かめが通ったので、収束規則の集合の 1〜8 epoch 目は固定の長さの run と同じ学び方の値として読める（72/72 組、4・8 epoch 目）。12・16 epoch 目は学習率を下げた後の run（80 本・145 本）が混じり、その対は一致しない"
+  - "入れ替えの腕との差（信号の中身の差）と 6 工程の値は本契約では作れない。要るなら、irn-hice-htt-pilot の型を graph-t2p-match と同じ条件（固定の長さ、--record-epochs、入れ替えの腕あり）で回す。回すかは利用者が決める（SPEC §10）"
+  - "契約の集合を記録の欄で作るときは、回し直しや確かめの run が同じ欄を持つかを起票の時点で測っておく（本契約は --exp-prefix を足した）"
+
+unknowns:
+  - "±0.015 の幅は 6 工程の平均で測った値の流用で、7 工程の Jaccard と frame accuracy の幅は測っていない。seed は 1 本で揺れは分からない"
+  - "16 epoch 目に学習率を下げた後なのに固定の長さと値が同じだった W1 の A0 の 2 対の理由: 調べていない"
+  - "常駐の同期処理が本契約の間に回ったか: 確かめていない（記録の最後の「一時停止中」は 2026-11-21）"
+
+commits:
+  - "528883e5"
+  - "a212d3ea"

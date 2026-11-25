@@ -1,0 +1,80 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-11-22-conv-epoch-history-extract"
+  kind: analysis
+  title: "収束規則で回したグラフ・IRN・HiCE・HTT の run の epoch ごとの val の記録から 4・8・12・16 epoch 目の値を取り出し、4 epoch 固定で回したグラフの型と T→P の値と並べる非公式の分析（andrew、GPU を使わない、学習も評価もしない）"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-11-22T03:00:00Z"
+  created_from:
+    runindex_commit: "036d6a60"
+    counts: {index: 2668, experiments: 1347, verdicts: 2067}
+  depends_on:
+    - T-2026-11-20-grasp-hand-graph-pilot
+    - T-2026-11-21-grasp-hand-graph-t2p-match
+    - T-2026-11-21-grasp-hand-irn-hice-htt-pilot
+  amendments:
+    - date: "2026-11-25"
+      reason: "preflight P6 が未回答 2 件で FAIL し、利用者に 2 項目を選択式で示した。利用者の回答（2026-11-25、選択式）: (1) 停止条件に当たったときの続け方 →「当たったら止めて尋ねる」= escalate_if と gate の FAIL に当たった時点で停止し、利用者に報告して判断を仰ぐ。(2) 4・8 epoch 目が一致しなかった場合の表の読み方 →「SPEC §5.5 のとおり」= 表はすべて作り、一致しなかった W・腕に印を付け、その収束規則の値は固定の長さと同じ学び方の値として読まない。読み方をそれ以上変えない"
+      diff: "governance.decisions_required: [停止条件に当たったときの続け方（実行者は決めない）, 収束規則の run と固定の長さの run の 4・8 epoch 目が一致しなかった場合に、表の読み方を変えるか] -> []（回答は本項の reason）。meta.created_from と contract.conventions_rev は起点 origin/phase0 8395be39 で測り直して一致（036d6a60、2668・1347・2067、2d946b07）、差し替えなし"
+intent:
+  question: "収束規則で回した run の途中の epoch の val の値は、同じ型・同じ腕・同じ設定を固定の長さで回した run の同じ epoch の値と一致するか。一致するなら、IRN・HiCE・HTT とグラフの型の途中の epoch の差は、固定の長さで回した T→P の型の差と同じ表でどう並ぶか"
+  decision_at_stake: "把持・手・術具の予測を工程塔へ渡す型と、検出塔だけを渡す T→P の型を、同じ学習の長さで比べる材料。次の予備（入れ替えの腕を足して回すか）を利用者が考える材料。非公式で、関門の判定と設計の判断には使わない"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "新しいデータは読まない。読むのは前回までの三つの契約の run の記録（版管理の中の記録と、andrew の各 run の logs の下の epoch ごとの記録）だけ"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints:
+      - "scripts/stage2pilot/dp_train.py"
+contract:
+  inject_verbatim:
+    - conventions#prohibitions
+    - conventions#issuer_cautions
+    - conventions#env_p0
+    - conventions#folds
+    - conventions#symmetry
+  conventions_rev: "2d946b07"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values]
+  verbatim_forbidden: true
+  allow_write:
+    - "experiments/analysis/conv_epoch_history_extract/"
+plan:
+  phases:
+    - {id: A, name: "開始状態と、読む記録の実在と中身の確かめ", gpu: false, est: "1 時間"}
+    - {id: B, name: "epoch ごとの値の取り出しと、固定の長さの run との一致の確かめ", gpu: false, est: "1 時間"}
+    - {id: C, name: "差と並べの表、報告、PR", gpu: false, est: "2 時間"}
+  gates:
+    - {id: G1, after: A, check: "読む run の集合が三つの契約の記録と一致し、すべての run に epoch ごとの記録が在り、その記録が run の結果の記録と一致する", on_fail: stop}
+    - {id: G2, after: B, check: "固定の長さの run と対になる収束規則の run の 4・8 epoch 目の一致と不一致が、全対で記録されている", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+  resources: {server: andrew, gpu: 0, est_hours: 4, runs: 0}
+outputs:
+  must_have: [REPORT.md, RESULT.md, result.yaml, audit.md]
+  destination: "experiments/analysis/conv_epoch_history_extract/"
+  acceptance:
+    - "a: 開始状態（分岐、起点、未追跡、試験の失敗の名前、既存の仮想環境の hash）が記録されている"
+    - "b: 読む収束規則の run の集合（グラフの予備と IRN・HiCE・HTT の予備）と固定の長さの run の集合が、三つの契約の記録と集合として一致し、収束規則の run のすべてに epoch ごとの記録が在る"
+    - "c: epoch ごとの記録の epoch の数、結果に選ばれた回の値、最後の回の値、学習率を下げた回が、各 run の版管理の中の記録と一致している"
+    - "d: 各 run の各 epoch に、学習率を下げる前か後かの印が付き、4・8 epoch 目がすべての run で下げる前であることが示されている"
+    - "e: 対になる収束規則の run と固定の長さの run の 4・8 epoch 目の 7 工程の Jaccard と frame accuracy の一致と不一致、最大の差が、全対で記録されている"
+    - "f: SPEC の表が、4・8・12・16 epoch 目について記録から道具で作られ、学習率を下げた後の値に印が付いている"
+    - "g: 前回の契約が値を流用した組み合わせについて、確かめの run の 4・8 epoch 目の一致と不一致が記録されている"
+    - "h: 読んだ記録と既存の中身を変えていない（hash が開始時と一致）。試験の失敗が増えていない。forbidden-check の本契約の経路の違反が 0"
+    - "i: PR が Draft でなく存在し、base が phase0、分岐が feat/conv-epoch-history-extract"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "読む run の集合が三つの契約の記録と一致しない場合"
+    - "収束規則の run の epoch ごとの記録が一件でも無い場合（Syncthing で消えた場合を含む）"
+    - "epoch ごとの記録が、その run の版管理の中の結果の記録と食い違う場合"
+    - "表を作るために学習・評価・推論のどれかが要ると分かった場合"
+    - "実行基盤が書き込み、移動、削除、外部の取得を拒む場合"
