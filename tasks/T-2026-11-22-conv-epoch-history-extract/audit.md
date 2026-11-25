@@ -190,3 +190,6 @@ E+1 からが初期値の 0.1 倍であることの全部。
     $ gh pr view feat/conv-epoch-history-extract --json number,headRefName,baseRefName,isDraft,state
     {"baseRefName":"phase0","headRefName":"feat/conv-epoch-history-extract","isDraft":false,"number":321,"state":"OPEN"}
     commit: 528883e5（道具と出力）、a212d3ea（契約の記録・README・実験の記録・判断の受け皿）
+    $ source scripts/load_env.sh && make task-report TASK=T-2026-11-22-conv-epoch-history-extract（commit 39dbfbf9 の後）
+    {"task_id": "T-2026-11-22-conv-epoch-history-extract", "verdict": "pass", "n_issuer_defects": 2,
+     "report_sha256": "041de1c636047c0eadd71e1bf9f5e1fbdb608188f352fe59a139a888f21aee44", "report_bytes": 10528, "replaced_blocks": 0}

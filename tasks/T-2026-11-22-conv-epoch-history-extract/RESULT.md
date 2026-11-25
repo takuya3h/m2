@@ -82,4 +82,4 @@ IRN −0.0306〜−0.0175、HiCE −0.0300〜−0.0237、HTT −0.0316〜−0.01
 ## 7. 送出
 
 - PR: https://github.com/takuya3h/m2/pull/321（commit 528883e5・a212d3ea）
-- task-report: 未送信（送信後に追記する）
+- task-report: 送信済み（verdict pass、n_issuer_defects 2、report_sha256 041de1c6…、10,528 バイト。audit の「送出」）
