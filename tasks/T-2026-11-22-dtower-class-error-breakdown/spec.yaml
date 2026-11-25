@@ -1,0 +1,86 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-11-22-dtower-class-error-breakdown"
+  kind: analysis
+  title: "検出塔の保存済みの val の予測から、クラス別の誤りの分解・取り違えの相手・クラス別の AP50 と AP75・直した場合の上限の目安・Fold と動画ごとの値を出す（非公式、andrew、GPU を使わない、学習も推論もしない）"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-11-22T03:30:00Z"
+  created_from:
+    runindex_commit: "036d6a60"
+    counts: {index: 2668, experiments: 1347, verdicts: 2067}
+  depends_on:
+    - T-2026-11-07-dtower-rerun
+    - T-2026-10-19-stage2-pilot-fix-epoch4-shuffle
+  amendments:
+    - date: "2026-11-22"
+      reason: "SPEC §4.5 (e) の工程の正解の出所（§1.2 のとおり前回の予備測定の正解の腕と同じ data/processed/phase_manifest。scripts/stage2pilot/common.py の phase_sequences）は公式分割ごとのファイルである。Fold B〜E では公式の test の動画 04・05・07 の工程の注釈（test.json）が train か val に要り、train.json・val.json には各 Fold の test の動画の項目も入る。実行者が選択肢（test.json も開く／Fold A だけで (e) を出す／clip ごとの CSV を使う）を示し、利用者が選んだ（2026-11-22、選択式）: 「test.json も開く」= Fold ごとにその Fold の train と val の動画の項目だけを使い（scripts/stage1_ptower.py の load_fold と同じ読み方）、各 Fold の test の動画の項目は使わず、そのことを読んだファイルの一覧と audit に書く。Fold A は train.json と val.json だけを開く"
+      diff: "本文の変更なし（SPEC §2 の「test の動画の予測と注釈を読まない」を、Fold ごとにその Fold の test の動画の項目を使わない意味で読むと決めた。検出の test のファイル（eval_test.*、instances_test.json、per_class_ap_test.json、eval_test.json）は従来どおり開かない）"
+intent:
+  question: "検出塔の val でクラス別 AP が低いクラス（Forceps、Gauze、Hook、Scissors）の誤りは、クラスの取り違え・位置のずれ・見落とし・重複・背景への誤検出のどれが多いか。取り違えの相手はどのクラスか。クラスだけ、枠だけ、在否だけ、工程で在り得ないクラスだけを正解に合わせて直すと、クラス別 AP はそれぞれどれだけ上がるか。これらは Fold と動画でどう変わるか"
+  decision_at_stake: "低いクラスを上げる打ち手（検出塔の側、工程の信号の渡し方の側、工程より細かい信号の側）のどれを次の探索の方向にするかを利用者が考える材料。非公式の記述で、関門の判定と設計の判断（案の採否を含む）には使わない"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery の動画 01〜15。各 Fold（conventions#folds）の val の予測と val の注釈、train の注釈（box の数と工程との共起の計算だけ）を読む。test の動画の予測と注釈は一度も読まない。塔は学ばず、推論もしない"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints:
+      - "scripts/eval_relation_detr_map.py"
+      - "experiments/analysis/dtower_rerun/tools/eval_dump.py"
+contract:
+  inject_verbatim:
+    - conventions#prohibitions
+    - conventions#issuer_cautions
+    - conventions#env_p0
+    - conventions#folds
+    - conventions#split
+    - conventions#eval_recipe
+    - conventions#det_groups
+  conventions_rev: "2d946b07"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values]
+  verbatim_forbidden: true
+  allow_write:
+    - "experiments/analysis/dtower_class_error_breakdown/"
+plan:
+  phases:
+    - {id: A, name: "開始状態と、保存済みの予測・注釈の実在の確認", gpu: false, est: "1 時間"}
+    - {id: B, name: "保存済みの予測から記録の値を再現する", gpu: false, est: "1 時間"}
+    - {id: C, name: "クラス別の分解・取り違えの表・AP50 と AP75・上限の目安・Fold と動画ごとの表", gpu: false, est: "2〜4 時間"}
+    - {id: D, name: "集計・報告・PR", gpu: false, est: "1〜2 時間"}
+  gates:
+    - {id: G1, after: A, check: "凍結した塔の Fold A の val の予測の保存が在り、読んだ材料の一覧に test の予測と注釈が無い", on_fail: stop}
+    - {id: G2, after: B, check: "保存済みの予測から計算し直した overall mAP とクラス別 AP が、対象のすべての塔と Fold で記録と表示の桁で一致する", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active]
+  resources: {server: andrew, gpu: 0, est_hours: 8, runs: 0}
+outputs:
+  must_have: [REPORT.md, RESULT.md, result.yaml, audit.md]
+  destination: "experiments/analysis/dtower_class_error_breakdown/"
+  acceptance:
+    - "a: 開始状態（分岐、起点、前提の道具と記録の在否、未追跡、使った仮想環境と pycocotools の在否、試験の失敗の名前）が記録されている"
+    - "b: 対象の塔と Fold ごとに、保存済みの val の予測の経路・hash・画像数・予測数が記録され、無いものは理由つきで UNKNOWN になっている"
+    - "c: 保存済みの予測から計算し直した overall mAP・クラス別 AP・signature class の AP・negative control の AP が、記録と表示の桁で一致している"
+    - "d: SPEC §4.2 と §4.3 の GT の側の分解と取り違えの表が、対象の塔と Fold ごと・クラスごとにあり、区分の件数の和がクラスごとの GT の数と一致している"
+    - "e: SPEC §4.4 の予測の側の分解が、対象の塔と Fold ごと・クラスごとにあり、区分の件数の和が足切りを通った予測の数と一致している"
+    - "f: クラス別の AP・AP50・AP75 が、対象の塔と Fold ごとにある"
+    - "g: SPEC §4.5 の五つの直し方それぞれで、直す前と後のクラス別 AP・AP50 と差が、対象の塔と Fold ごとにある。直す前の値が完了判定 c の値と一致している"
+    - "h: SPEC §4.6 の Fold ごと・動画ごとの表（クラス別の train の box の数と動画の数、val の box の数、AP、AP50）がある"
+    - "i: test の動画の予測と注釈を、どの段でも読んでいないことが、読んだファイルの一覧で示されている"
+    - "j: 保存先の既存の中身、前回までの契約の出力、data の注釈、凍結した塔の重み、third_party、既存の仮想環境を変えていない。試験の失敗が増えていない"
+    - "k: PR が Draft でなく存在し、base が phase0、分岐が feat/dtower-class-error-breakdown"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "凍結した塔の Fold A の val の予測の保存が無い場合（推論し直さずに停止して利用者に尋ねる）"
+    - "保存済みの予測から計算し直した値が、記録と表示の桁で一致しない場合"
+    - "pycocotools がどの既存の仮想環境にも無い場合（導入せずに停止して利用者に尋ねる）"
+    - "SPEC §4 の定義を字面のままでは実装できない場合、または複数の読みがあって結果が変わり、両方の読みの値を並べて出せない場合（読みの候補を示して利用者に尋ねる）"
+    - "作業の途中で GPU・学習・推論が要ると分かった場合"
+    - "実行基盤が書き込み、移動、削除、外部の取得を拒む場合"

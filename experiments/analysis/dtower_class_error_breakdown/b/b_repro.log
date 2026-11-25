@@ -1,0 +1,9 @@
+T1 A equal_4dp True max_abs_diff 0.0 AP 0.7196251 sig 0.8044362 neg 0.6781757 missing ['Retractor']
+control {"image_id": 0, "predictions_changed": 300, "all_equal_4dp": false, "max_abs_diff": 0.00922804353670803, "rows_not_equal": ["AP", "AP50", "signature", "negative", "AP_eval_val_json", "AP75", "class:Gauze", "class:Skewer"], "abs_diff_AP": 0.0002953650130906871}
+T1 B equal_4dp True max_abs_diff 0.0 AP 0.4755093 sig 0.4900046 neg 0.625058 missing ['Electric Cautery', 'Hook']
+T1 C equal_4dp True max_abs_diff 0.0 AP 0.4427707 sig 0.5353497 neg 0.5068293 missing []
+T1 D equal_4dp True max_abs_diff 0.0 AP 0.5062879 sig 0.7086117 neg 0.5581371 missing []
+T1 E equal_4dp True max_abs_diff 0.0 AP 0.5226365 sig 0.6778409 neg 0.4792723 missing ['Electric Cautery', 'Mouth Gag']
+T2 A equal_4dp True max_abs_diff 2.4839842849289084e-08 AP 0.727345 sig 0.7950748 neg 0.6726632 missing ['Retractor']
+G2_pass True max_abs_diff_over_all 2.4839842849289084e-08
+.venv/bin/python $D/tools/b_repro.py  80.01s user 5.08s system 101% cpu 1:23.74 total

@@ -1888,6 +1888,19 @@ GPUの投入判定は、対象ペアに計算プロセスがなく、使用率0�
   案 5 の W1 の S_W − S_0 は前の処方の 4/4 正から 0/4 に変わった。殺し実験の線形の層は、P の train の特徴だけで train が分け切れるため、正則化を変えても陽性対照が J 0.64〜0.68 で働かない
 - 道具は `experiments/analysis/grasp_pilot_converge/tools/`。前の予備の材料（空間特徴・トークン・窓の列）は読むだけで作り直していない
 
+### 検出塔のクラス別の誤りの分解と、直した場合の上限の目安（2026-11-22、andrew）
+
+契約 `T-2026-11-22-dtower-class-error-breakdown`（analysis。**非公式の記述。関門の判定と設計の判断に使わない**）。凍結した検出塔（T-2026-11-07-dtower-rerun の
+12 番・seed 42、Fold A〜E）と前回までの予備測定の検出塔（D*-COCO・seed 42、Fold A）の**保存済みの val の予測だけ**を読み、GT の側の分解（正解・取り違え・
+位置のずれ・見落とし。読み 2 通り）、取り違えの相手、予測の側の分解（当たり・重複・取り違え・位置のずれ・背景・その他）、クラス別の AP・AP50・AP75、
+五つの直し方（重複・クラス・枠・在否・工程で在り得ないクラス）の AP の差、Fold・動画ごとの表を出した。**GPU・学習・推論は使っていない。**
+結果は `experiments/analysis/dtower_class_error_breakdown/REPORT.md`・`csv/`（`tools/make_report.py` が記録から作る）、記録は `tasks/T-2026-11-22-dtower-class-error-breakdown/`。
+
+- 道具は `experiments/analysis/dtower_class_error_breakdown/tools/`（本体の `.venv`、numpy と pycocotools だけ）。既存の道具・材料・注釈・仮想環境は変えていない
+- 再現: 6 対象とも overall mAP・signature class・negative control・クラス別 AP が記録と小数第 4 位で一致（塔 1 は差 0.0）
+- 読み 1（IoU 最大の予測）と読み 2（同じクラスを優先）で取り違えの件数が大きく違う（例: 塔 1 Fold A の Forceps 49 → 22）。同じ枠が別のクラスで並ぶ GT が全対象で 3,000 件を超える
+- (e) の工程の正解は `data/processed/phase_manifest`（前回の正解の腕と同じ出所）。Fold B〜E は利用者の判断（2026-11-22）で test.json も開き、各 Fold の test の動画の項目は使っていない
+
 ### 把持・手・術具の予測を三つの渡し方（IRN・HiCE・HTT）で工程塔へ渡す予備測定（2026-11-21、andrew）
 
 契約 `T-2026-11-21-grasp-hand-irn-hice-htt-pilot`（analysis。**非公式の予備測定。関門の判定と設計の判断に使わない**）。前回のグラフの予備と同じ送り手の予測
