@@ -147,8 +147,10 @@ GR_ARMS = ("D", "DG", "DH", "DGH", "DGH-U", "DGH-noCF", "DGH-GT")
 GR_ARMS_T2P = tuple(f"{c}-{s}" for c in ("D", "DG", "DH", "DGH", "DGH-U") for s in ("noCF", "CF", "S")
                     if f"{c}-{s}" not in GR_ARMS)
 GR_ROWS = 30                                               # 材料の術具の行の数（N の上限）。手の行は 30・31
+VLM_DIR = None                                             # --vlm-dir（VLM キャプション信号の置き場。既定 None で従来経路）
+VLM_ARMS = ("vlm_ko", "vlm_otsu", "vlm_hei", "vlm_ko_shuf", "vlm_otsu_shuf", "vlm_hei_shuf")
 X32_HALF = NT + 1                                          # 15 と旗。予測の半分が先、正解の半分が後
-ARMS = ("empty", "pred_noCF", "gt", "pred_CF", "gtpred_CF", "shuffle", "geo", "union", "t1", "perm") + GR_ARMS + GR_ARMS_T2P
+ARMS = ("empty", "pred_noCF", "gt", "pred_CF", "gtpred_CF", "shuffle", "geo", "union", "t1", "perm") + GR_ARMS + GR_ARMS_T2P + VLM_ARMS
 # 止め方の規則（DP・W1）。最初の腕を回す前に固定する
 STOP = {"lr": 5e-4, "weight_decay": 0.01, "patience": 10, "max_epochs": 100, "smoothing_weight": 0.3}
 SCOPES = ("W1", "W2", "W3")
@@ -279,6 +281,10 @@ class Signals:
 
     def __init__(self, type_name, arm, part, variant):
         self.iface, self.kind, pred, _, self.tok_base = TYPES[type_name]
+        self.is_vlm = False
+        if VLM_DIR is not None:
+            self._init_vlm(type_name, arm, part)
+            return
         if self.kind == "rt":
             self._init_rt(arm, part)
             return
@@ -413,6 +419,33 @@ class Signals:
         self.x_rt = x
         self.slots, self.dim, self.pred_dim = x.shape[1], x.shape[2], None
 
+    def _init_vlm(self, type_name, arm, part):
+        """VLM キャプション信号（--vlm-dir）。D1-L2/D2 は vec (N, 3128)、D3-L2 は tok (N, 4, 1024) + mask (N, 4)。"""
+        if type_name not in ("D1-L2", "D2", "D3-L2"):
+            raise SystemExit(f"--vlm-dir は D1-L2/D2/D3-L2 のみ対応: {type_name}")
+        if arm != "empty" and arm not in VLM_ARMS:
+            raise SystemExit(f"--vlm-dir に腕 {arm} は無い")
+        prefix = "tok" if self.kind == "tok" else "vec"
+        name_map = {
+            "empty": "ko",
+            "vlm_ko": "ko", "vlm_otsu": "otsu", "vlm_hei": "hei",
+            "vlm_ko_shuf": "ko_shuffle", "vlm_otsu_shuf": "otsu_shuffle", "vlm_hei_shuf": "hei_shuffle",
+        }
+        path = Path(VLM_DIR) / f"{prefix}_{name_map[arm]}_{part}.npz"
+        self.is_vlm = True
+        self.vlm_empty = (arm == "empty")
+        self.srcs = [] if self.vlm_empty else [(path, False)]
+        with np.load(path) as d:
+            ids = [str(f) for f in d["frame_ids"]]
+            x = d["x"].astype(np.float32)
+            mask = d["mask"].astype(bool) if "mask" in d else None
+        self.vlm_ix = {f: i for i, f in enumerate(ids)}
+        self.vlm_x = None if self.vlm_empty else x
+        self.vlm_mask = None if self.vlm_empty else mask
+        self.dim = int(x.shape[-1])
+        self.pred_dim = self.dim if self.kind == "vec" else None
+        self.rowmask = None
+
     def model_kwargs(self):
         if self.kind == "gr":
             return {"gr": {"n_tools": GR["N"], "layers": GR["L"], "k": GR["k"]}}
@@ -444,6 +477,15 @@ class Signals:
         return halves
 
     def for_frames(self, frames):
+        if getattr(self, "is_vlm", False):
+            rows = [self.vlm_ix[f] for f in frames]
+            if self.vlm_empty:
+                if self.kind == "vec":
+                    return torch.zeros(len(frames), self.dim), None
+                return torch.zeros(len(frames), 0, self.dim), torch.zeros(len(frames), 0, dtype=torch.bool)
+            if self.kind == "vec":
+                return torch.from_numpy(self.vlm_x[rows]), None
+            return torch.from_numpy(self.vlm_x[rows]), torch.from_numpy(self.vlm_mask[rows])
         if self.kind in ("rt", "tw", "gr"):
             rows = [self.ix[f] for f in frames]
             m = None if self.rowmask is None else torch.from_numpy(self.rowmask[rows])
@@ -730,6 +772,8 @@ def cmd_train(a):
         cfg.update(rt={**RT, **sig_tr.model_kwargs()["rt"]}, trainable=trainable_report(model),
                    rowmask_rows={"train": None if sig_tr.rowmask is None else int(sig_tr.rowmask.sum()),
                                  "val": None if sig_va.rowmask is None else int(sig_va.rowmask.sum())})
+    if VLM_DIR is not None:
+        cfg.update(vlm_dir=str(VLM_DIR))
     if a.scope != "W1":
         sc = scope_report(model, a.scope)
         cfg.update(scope=a.scope, scope_check=sc, receiver_optim={**RECEIVER, "optimizer": "AdamW（界面と別の群）"},
@@ -901,6 +945,8 @@ def negative_control(a, model, ckpt, head, split, feats, names):
         other = "t1"                                                       # TW の S_0 は k = 1 なので、同じ形の S_1 を入れる
     if TYPES[a.type][1] == "gr":
         other = "DGH"                                                      # GR の A0 は同じ形の DGH の材料を入れる
+    if VLM_DIR is not None:
+        other = "vlm_ko"                                                   # VLM の empty は同じ形の vlm_ko を入れる
     real = build_data(split["val"], Signals(a.type, other, "val", a.inst_variant), feats, "cuda")
     rz, _ = evaluate(model, zero, names)
     rr, _ = evaluate(model, real, names)
@@ -970,11 +1016,13 @@ def main():
     add_rt_args(i)
     add_tw_args(i)
     add_gr_args(i)
+    i.add_argument("--vlm-dir", default=None, help="VLM キャプション信号（vec_*/tok_*）の置き場")
     s = sub.add_parser("scopes")
     s.add_argument("--types", nargs="+", choices=list(TYPES), default=None)
     s.add_argument("--scopes", nargs="+", choices=SCOPES, default=list(SCOPES))
     s.add_argument("--out", required=True)
     s.add_argument("--task-id", default=C.TASK_ID, help="記録に書く契約の識別子")
+    s.add_argument("--vlm-dir", default=None, help="VLM キャプション信号の置き場")
     t = sub.add_parser("train")
     t.add_argument("--type", required=True, choices=list(TYPES))
     t.add_argument("--arm", required=True, choices=ARMS)
@@ -1001,13 +1049,15 @@ def main():
                    help="最後の epoch の val の確率と値も保存する（契約 T-2026-11-20-grasp-hand-graph-pilot）")
     t.add_argument("--record-epochs", type=int, nargs="+", default=None,
                    help="--fixed-epochs と組で、この epoch ごとの val の確率と値を保存する（契約 T-2026-11-21-grasp-hand-graph-t2p-match）")
+    t.add_argument("--vlm-dir", default=None, help="VLM キャプション信号（vec_*/tok_*）の置き場")
     a = ap.parse_args()
     if a.cmd == "train" and a.record_epochs and not (a.fixed_epochs and all(1 <= e <= a.fixed_epochs for e in a.record_epochs)):
         raise SystemExit("--record-epochs は --fixed-epochs と組で、1 以上 fixed-epochs 以下の epoch を渡す")
-    global GRASP_DIR, GRASP_PRED_DIR, GRASP_NO_FLAG
+    global GRASP_DIR, GRASP_PRED_DIR, GRASP_NO_FLAG, VLM_DIR
     GRASP_DIR = getattr(a, "grasp_signal_dir", None)
     GRASP_PRED_DIR = getattr(a, "grasp_pred_dir", None)
     GRASP_NO_FLAG = bool(getattr(a, "grasp_no_flag", False))
+    VLM_DIR = getattr(a, "vlm_dir", None)
     TW.update(dir=getattr(a, "tw_dir", None), form=getattr(a, "tw_form", None), L=getattr(a, "tw_L", None),
               k=getattr(a, "tw_k", None))
     RT.update(dir=getattr(a, "rt_dir", None), layer=getattr(a, "rt_layer", None), content=getattr(a, "rt_content", None),
@@ -1023,7 +1073,7 @@ def main():
         raise SystemExit("--fixed-epochs と --max-epochs は組み合わせない")
     if a.cmd == "train" and a.smoke and not a.fixed_epochs:
         raise SystemExit("--smoke は --fixed-epochs と組で使う（従来の試走は --max-epochs）")
-    if a.cmd == "train" and TYPES[a.type][1] == "tok" and a.inst_variant is None:
+    if a.cmd == "train" and TYPES[a.type][1] == "tok" and a.inst_variant is None and VLM_DIR is None:
         raise SystemExit("D3 の型は --inst-variant（literal か uq）を渡す")
     {"identity": cmd_identity, "train": cmd_train, "scopes": cmd_scopes}[a.cmd](a)
 

@@ -1,0 +1,103 @@
+spec_version: 2
+meta:
+  task_id: "T-2026-11-26-vlm-caption-signal-pilot"
+  kind: analysis
+  title: "公開重みの VLM（Qwen3.8-27B）に Fold A の train と val のフレームの記述を書かせ、術具と工程の名前を伏せる範囲を三通りに変えた信号を、工程塔（D1-L2・D2・D3-L2）と検出塔（P1・P2L）へ渡す予備測定（非公式、ilya、Fold A、seed 42、W1・W2・W3、空・予測・入れ替え、4 epoch 固定が主で 8・12・16 は副次）"
+  origin: claude-app
+  chat_url: ""
+  created_at: "2026-11-26T10:40:00Z"
+  created_from:
+    runindex_commit: "036d6a60"
+    counts: {index: 2668, experiments: 1347, verdicts: 2067}
+  depends_on:
+    - T-2026-11-21-grasp-hand-graph-t2p-match
+    - T-2026-10-19-stage2-pilot-fix-epoch4-shuffle
+    - T-2026-11-01-stage2-w23-bengio
+    - T-2026-11-01-stage2-w23-andrew
+    - T-2026-11-09-stage2-pd-w3-lowlr-andrew
+    - T-2026-10-18-stage2-pilot-folda
+  amendments:
+    - date: "2026-11-27"
+      reason: "利用者が andrew を他者が利用中のため本契約を ilya で実行し、不足する材料を rsync で取得するよう指示した。"
+      diff: "実行ホストは ilya、GPU は RTX 6000 Ada Generation 2 枚。現行の実行・画像と記述の保管・空き確認はすべて ilya に読み替える。andrew の既報値と過去の参照元は原記録のままとする。"
+intent:
+  question: "公開重みの VLM がフレームごとに書いた記述（創の状態、組織への作用、術野の表面と、閉じた選択肢の属性）を、術具の種類と工程の名前を伏せたうえで数値の信号にし、凍結した工程塔と検出塔へ interface で渡すと、同じ学習範囲・同じ固定の長さの中で、予測の腕と入れ替えの腕の差（フレームに対応した信号の中身による差）はどう出るか。名前を伏せる範囲（名前だけ、同じ語幹まで、作用の記述まで）を広げると差はどう変わるか"
+  decision_at_stake: "VLM の記述を術具検出と工程認識の補助信号として次の予備や提案カードに進めるかを利用者が考える材料。非公式の予備測定で、関門の判定と設計の判断（案の採否を含む）には使わない"
+  related:
+    backlog: []
+inputs:
+  data:
+    dataset: "EgoSurgery の動画 01〜15。Fold A（conventions#folds）の train と val のフレームだけを VLM に通し、塔の受け取り手の学習と評価にも使う。test の動画 04・05・07 は一度も通さない。追加動画 17〜21 のフレームは出力の形式の確かめにだけ少数を通す。塔は学ばない"
+    split_files: ["data/splits/ego_val.txt"]
+  caches: []
+  code:
+    entrypoints:
+      - "scripts/stage2pilot/dp_train.py"
+      - "scripts/stage2pilot/dp_model.py"
+      - "scripts/train_t1b.py"
+      - "scripts/w23/run_pd_w23_andrew.sh"
+      - "scripts/w23/run_pd_w23_bengio.sh"
+contract:
+  inject_verbatim:
+    - conventions#prohibitions
+    - conventions#issuer_cautions
+    - conventions#env_p0
+    - conventions#folds
+    - conventions#split
+    - conventions#symmetry
+    - conventions#det_groups
+  conventions_rev: "2d946b07"
+  prohibitions: [no_split_redefine, no_raw_write, no_frozen_change, no_estimated_values]
+  verbatim_forbidden: true
+  allow_write:
+    - "experiments/analysis/vlm_caption_signal_pilot/"
+    - "experiments/phase1/vlm_caption_signal_pilot_"
+plan:
+  phases:
+    - {id: A, name: "開始状態、前提の実在、重みの取得と置き場の確かめ", gpu: false, est: "2〜4 時間"}
+    - {id: B, name: "材料の照合と学習設定の写し、出力の形式の確かめ（追加動画のフレームだけ）", gpu: true, est: "2〜4 時間"}
+    - {id: C, name: "Fold A の train と val の全フレームの記述の生成、伏せ字と数値の信号の作成、入れ替えた信号", gpu: true, est: "UNKNOWN（Task B の速度の実測で見積もる）"}
+    - {id: D, name: "道具の拡張と確かめ（既定の挙動、恒等性、陽性対照）", gpu: true, est: "2〜4 時間"}
+    - {id: E, name: "工程塔へ渡す腕を W1・W2・W3 で学ぶ", gpu: true, est: "1〜2 時間"}
+    - {id: F, name: "検出塔へ渡す腕を W1・W2・W3 で学ぶ", gpu: true, est: "UNKNOWN（記録からの起票者の外挿では 5〜8 日）"}
+    - {id: G, name: "集計・報告・PR", gpu: false, est: "3 時間"}
+  gates:
+    - {id: G1, after: A, check: "起点に前提の道具と記録があり、ilya に本契約以外の compute が無く、重みが取得でき、重みと仮想環境の置き場が同期の対象の外にあり、空きが足りる", on_fail: stop}
+    - {id: G2, after: B, check: "前回の材料の要約値と塔単独の val が記録と一致し、学習設定が型の間で一つに決まり、VLM が ilya の GPU 二枚で記述を返す", on_fail: stop}
+    - {id: G3, after: C, check: "train と val の全フレームに記述と三通りの信号があり、test の動画を一度も通しておらず、入れ替えた信号の値の集合が元と同じ", on_fail: stop}
+    - {id: G4, after: D, check: "既定の挙動が変わらず、学習前の出力が全腕で塔単独と一致し、陽性対照で変わる", on_fail: stop}
+    - {id: G5, after: E, check: "工程塔へ渡す表の全本が終わり、記録する epoch の値と確率がそろう", on_fail: stop}
+    - {id: G6, after: F, check: "検出塔へ渡す表の全本が終わり、記録する epoch の予測と値がそろう", on_fail: stop}
+  env:
+    venv: ".venv"
+    preflight: [venv_active, gpu_free]
+  resources: {server: ilya, gpu: 2, est_hours: 180, runs: 110}
+outputs:
+  must_have: [REPORT.md, RESULT.md, result.yaml, audit.md]
+  destination: "experiments/analysis/vlm_caption_signal_pilot/"
+  acceptance:
+    - "a: 開始状態（分岐、起点、前提の道具と記録の在否、未追跡、compute プロセスの一覧、保存先と重みの置き場の空き、同期の対象のフォルダの一覧、試験の失敗の名前、既存の仮想環境の要約値、GPU ごとの電力の上限）が記録されている"
+    - "b: VLM と文埋め込みの重みの取得元・版・ファイルの要約値・ライセンスの表記と、生成に使った道具の版が記録され、重みと新しい仮想環境が同期の対象の外にある"
+    - "c: 前回の材料（工程塔の特徴のキャッシュ、入れ替えの対応表、検出塔の checkpoint）の要約値が記録と一致し、塔単独の val が記録と一致し、型ごとの学習設定が写されている"
+    - "d: 出力の形式の確かめが追加動画のフレームだけで行われ、形式の直しがあればその前後の文と理由が記録され、プロンプトの要約値が本番の生成の前に固定されている"
+    - "e: Fold A の train と val の全フレームの記述が保存され、解析の失敗・応答の拒否・伏せた語の数・同じ文の数・同じ画像での繰り返しの一致が数えられている"
+    - "f: 三通りの信号（甲・乙・丙）が SPEC §4 の定義どおりで、次元が三通りで同じ、入れ替えた信号の値の集合が元と同じで、元と同じフレームに来る割合と同じ動画から来た割合が記録されている"
+    - "g: 学習前の出力が全腕で塔単独と一致し、interface の零から始まる層を乱数にすると変わる（空の腕は同じ型の入力のある腕で示す）。既定の挙動の比べが記録と一致する"
+    - "h: 工程塔へ渡す表と検出塔へ渡す表の全本が終わり、4 epoch 目（主）と、回した場合は 8・12・16 epoch 目の値と確率（または予測）がそろい、4 epoch で止めた run と続けた run の 4 epoch 目の比べがある"
+    - "i: SPEC §7 の差が、全型・全 W・記録した epoch で表にあり、前回の予備測定の同じ型の値が参考の列に並んでいる"
+    - "j: test の動画 04・05・07 を、記述の生成・信号の作成・入れ替え・腕の学習・評価のどこにも通していないことが、各段で通した動画の集合で示されている"
+    - "k: 前回までの予備測定の出力と保存先の既存の中身、data の raw と external と注釈、凍結した塔、既存の checkpoint、third_party、既存の仮想環境を変えていない。試験の失敗が増えていない。画像と記述を ilya の外の計算機やサービスへ送っていない"
+    - "l: PR が Draft でなく存在し、base が phase0、分岐が feat/vlm-caption-signal-pilot"
+  report_to: [notion_run_ledger]
+governance:
+  decisions_required: []
+  deviations_required: true
+  integrity: [no_fabrication, unknown_if_unmeasured]
+  escalate_if:
+    - "ilya に本契約以外の compute プロセスがある場合（止めずに停止して利用者に尋ねる）"
+    - "ilya から重みの配布元に届かない、または重みと仮想環境を同期の対象の外に置けない、または空きが足りない場合"
+    - "Qwen3.8-27B が ilya の GPU 二枚に BF16 で載らない、または記述を返さない場合（別のモデルや量子化に替えない）"
+    - "前回の材料の要約値が記録と一致しない、塔単独の val が記録と 0.005 を超えて違う、または在るべきものが無い場合"
+    - "同じ方向の型の間で学習設定（interface と受け取り手の学習率・weight decay・optimizer・学ぶ範囲）が食い違う場合"
+    - "腕を、既存の道具の既定の挙動や third_party を変えないと実装できない場合"
+    - "実行基盤が書き込み、移動、削除、外部の取得を拒む場合"

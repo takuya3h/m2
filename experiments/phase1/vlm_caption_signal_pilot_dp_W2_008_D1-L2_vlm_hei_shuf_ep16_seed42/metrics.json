@@ -1,0 +1,41 @@
+{
+  "best_epoch": 16,
+  "early_stopped_epoch": null,
+  "elapsed_seconds": 40.67485162895173,
+  "epochs_run": 16,
+  "eval_recipe": {
+    "test_cfg": {
+      "inference_protocol": "online_causal",
+      "jaccard_mode": "strict",
+      "split": "val",
+      "task": "phase"
+    }
+  },
+  "iface_ckpt": "/home/ubuntu/slocal2/stage2pilot_store/vlm_caption_signal_pilot/dp_ckpt/vlm_caption_signal_pilot_dp_W2_008_D1-L2_vlm_hei_shuf_ep16_seed42.pth",
+  "iface_ckpt_sha256": "039b91d308dd19ad5dc7c8f7a012ab9c8caba95a36f4a51a8ffdb10666ad4ac5",
+  "iface_params": 200192,
+  "init_phase_accuracy": 0.8712871287128713,
+  "init_phase_jaccard": 0.7762185528074379,
+  "per_video": {
+    "09": {
+      "phase_accuracy": 0.9864864864864865,
+      "phase_jaccard": 0.9704069053679792
+    },
+    "10": {
+      "phase_accuracy": 0.8194583751253761,
+      "phase_jaccard": 0.609738429890459
+    }
+  },
+  "phase_accuracy": 0.8765676567656766,
+  "phase_jaccard": 0.6755366129931472,
+  "phase_macro_f1": 0.7402570303525265,
+  "reached_epoch_cap": true,
+  "receiver_outside_scope_n": 36,
+  "receiver_outside_scope_unchanged": true,
+  "receiver_trained_changed": true,
+  "receiver_unchanged": false,
+  "result_epoch": 16,
+  "result_selection": "final_epoch",
+  "scope": "W2",
+  "steps_without_grad": 0
+}
