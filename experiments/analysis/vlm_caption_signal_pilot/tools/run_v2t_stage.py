@@ -43,9 +43,16 @@ def main():
     jobs = []
     if a.include_ep4_check and a.w == "W1":
         jobs.append({"type": "P1", "w": "W1", "arm": "vlm_ko", "epochs": 4})
-    for typ in TYPES:
-        for arm in ARMS:
-            jobs.append({"type": typ, "w": a.w, "arm": arm, "epochs": 16})
+    subset_file = STORE / f"task_f/{a.w.lower()}_ilya_subset.json"
+    if subset_file.exists():
+        subset = json.loads(subset_file.read_text())
+        for item in subset:
+            jobs.append({"type": item["type"], "w": a.w, "arm": item["arm"], "epochs": 16})
+        print(f"[run_v2t_stage] loaded subset from {subset_file}: {len(subset)} jobs", flush=True)
+    else:
+        for typ in TYPES:
+            for arm in ARMS:
+                jobs.append({"type": typ, "w": a.w, "arm": arm, "epochs": 16})
 
     total_workers = 2 * a.workers_per_gpu
     print(f"[run_v2t_stage] W={a.w} jobs={len(jobs)} workers={total_workers}", flush=True)
@@ -60,15 +67,17 @@ def main():
             gpu_q.put(0)
             gpu_q.put(1)
 
-        def wrapped(j):
+        def wrapped(j, delay):
+            if delay > 0:
+                time.sleep(delay)
             gid = gpu_q.get()
             try:
                 return run_one(j, gid)
             finally:
                 gpu_q.put(gid)
 
-        for job in jobs:
-            futs[pool.submit(wrapped, job)] = job
+        for idx, job in enumerate(jobs):
+            futs[pool.submit(wrapped, job, idx * 3 if idx < total_workers else 0)] = job
         for fut in as_completed(futs):
             results.append(fut.result())
 

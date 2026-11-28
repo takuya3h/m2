@@ -396,3 +396,23 @@ Fold A の対象動画ディレクトリで画像名を列挙した。train は 
 - 確率からの再計算検証（`aggregate_report.py`）: 全 63 本 × 4 epoch = 252 組で最大ずれ `0.0`、`1e-6` シフト陽性対照 252/252 検出。
 - 途中版集計 `experiments/analysis/vlm_caption_signal_pilot/REPORT.md` と `diffs.csv` を生成し、分岐 `feat/vlm-caption-signal-pilot` へ commit・push。
 - Gate G5: PASS（63/63 本＋確かめ 3 本終了、4・8・12・16 epoch の値・確率・零初期化層 L2 がすべて揃う）。
+
+## Task F: V→T 学習の 2 ホスト分割方針（2026-11-27 11:08 JST 利用者指示）
+
+- 利用者指示により、空いた andrew（RTX A6000 × 2、compute-apps 0 件）と ilya（RTX 6000 Ada × 2）の 2 ホストで V→T（42 本＋4 epoch 止め確かめ 1 本 = 43 本）を分割並列実行する。
+- `conventions#symmetry`（比べる腕と分母は同じホスト・同じ装置型で揃える）および SPEC §7（同じ型・同じ W・同じ epoch の中だけで比べる）を厳守するため、W 単位でホストを完全に揃える分割を採用した:
+  - **ilya（RTX 6000 Ada × 2、各 2 本 = 4 並列）**: W1（P1・P2L 各 7 腕＋P1 ep4 確かめ 1 本 = 15 本）および W3（P1・P2L 各 7 腕 = 14 本）、計 29 本。
+  - **andrew（RTX A6000 × 2、各 2 本 = 4 並列）**: W2（P1・P2L 各 7 腕 = 14 本）。
+- 転送したファイルは数値化済みの埋め込み信号 `vec_*.npz`（12 ファイル）・基準予測 `plain_val_preds.json.gz`・新 config 2 本・実行スクリプトのみ（画像・生の記述は送っていない）。andrew 側も `WANDB_MODE=offline` で外部送信なし。
+- 同じ `(型, W)` の 7 腕は全 6 ブロックとも 100% 同一ホスト・同一装置型で揃う。W1・W3 と W2 の間はホストが異なることを REPORT・RESULT の対称性表と逸脱に明記する。
+- **追記（2026-11-28 14:47 JST 利用者決定）**: 利用者より「同一ホストで揃えるの無視して良い」との明示承認を受け、全体完了を約 5〜7 時間短縮するため W3（14 本）を以下のとおり ilya 10 本・andrew 4 本に分割した（W1 15 本は ilya、W2 14 本は andrew のまま変更なし）。
+  - W3 ilya 担当（10 本、`task_f/w3_ilya_subset.json`）: P1 `empty, vlm_ko, vlm_otsu, vlm_hei`（4 本）、P2L `vlm_ko, vlm_otsu, vlm_hei, vlm_ko_shuf, vlm_otsu_shuf, vlm_hei_shuf`（6 本）。
+  - W3 andrew 担当（4 本、`auto_w3_andrew.sh`）: P1 `vlm_ko_shuf, vlm_otsu_shuf, vlm_hei_shuf`（3 本）、P2L `empty`（1 本）。
+  - W3 では同一 `(型, W)` 内に ilya と andrew の混在が生じるため、REPORT・RESULT の対称性表および逸脱に本決定と各腕の実行ホストを明記する。
+- **インシデント・復旧記録（2026-11-28 18:40–18:49 JST）**: 2026-11-28 14:44 JST 頃に `run_v2t_one.sh` へ `flock` / GPU 空き待ちガードをインプレース編集で追記した影響により、編集前から稼働していた ilya 上の bash プロセス（`P2L W1 vlm_otsu_shuf`, 03:09 UTC 起動）が `v2t_wrap.py` の全 16 epoch 学習正常終了（09:35 UTC）後に読込オフセットずれを起こし、`train.log` を上書きして `v2t_finalize.py` 未実行のまま `exit_code=127` で終了した。全 16 epoch 予測（`val_inj_ep-1.json.gz`〜`ep15.json.gz`, `val_inj_best.json.gz`）・`t1b_result.json`・`v2t_wrap.json`・`logs/val_metrics_by_epoch.json`・`best_t1b.pth` が完全出力されていたことを確認の上、`v2t_finalize.py` を手動実行して `v2t_metrics.json`（ep4 AP=0.726190 / target=0.793042、final AP=0.724808 / target=0.790252、init_diff=0.0）を生成し `exit_code.txt=0` へ復旧した。なお andrew 側は `rsync` によるアトミック置換のため既存 4 プロセスは旧 inode `(deleted)` を保持しており影響なしを確認済み。
+- **インシデント・復旧記録 2 および W1 全 15 本完了（2026-11-28 19:49–19:56 JST）**: 同じ編集前世代の `P2L W1 vlm_hei_shuf`（04:16 UTC 起動）も 10:43 UTC（19:43 JST）に全 16 epoch 学習を正常終了後、同一の読込オフセットずれで `exit_code=127` 終了したため、全予測・結果 JSON・チェックポイントの完全出力を確認の上で `v2t_finalize.py` を手動実行し、`v2t_metrics.json`（ep4 AP=0.726382 / target=0.792612、final AP=0.725307 / target=0.790927、init_diff=0.0）生成・`exit_code.txt=0` へ復旧した。これにより **V→T W1 全 15 本（本番 14 本＋4 epoch 止め確かめ 1 本）が完了**。
+- **V→T 4 epoch 止め確かめ（`v2t_ep4_compare.py`, `task_f/v2t_ep4_compare.json`）**:
+  - `P1 W1 予測-甲`（`--fixed-epochs` のため `train_t1b.py:L399-400` で `sched=None`・学習率完全一定）の 4 epoch 止め vs 16 epoch 学習の 4 epoch 目を比較。
+  - `ep4` (`AP=0.729509`, `target_AP=0.799557`, `control_AP=0.675232`) vs `ep16@ep4` (`AP=0.728867`, `target_AP=0.798505`, `control_AP=0.675529`) の差は `AP +0.000642`, `target_AP +0.001052`, `control_AP -0.000296`（Task D で実証済みの CUDA backward 非決定性による実行間揺らぎの範囲内）。
+  - 陽性対照（4 epoch vs 8 epoch）の差は `AP +0.005381`, `target_AP +0.006853`, `control_AP +0.004038` と約 6〜10 倍大きく、epoch 差を確実に検出。
+- **W1 完了時点途中版レポート**: `aggregate_report.py --stage-label "V→T W1 完了時点（途中版）"` で `REPORT.md`（150 行）・`diffs.csv`（484 行）を更新（SPEC §7.1 予測 4「V→T W1 の 2 型で `予測-甲−入替-甲 < 前回 P→T`」は 2/2）。同時に ilya で `run_v2t_stage.py --w W3 --workers-per-gpu 2`（10 本サブセット）を `setsid nohup` 起動（全 4 スロット稼働）。

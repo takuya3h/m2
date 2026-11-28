@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# 自動生成: この run を起動したコマンドの記録
+# 生成日時: 2026-11-27T21:41:35+00:00
+python experiments/analysis/vlm_caption_signal_pilot/tools/v2t_wrap.py --seed 42 --trainable film --lr 1e-4 --film-lr 5e-4 --task-id T-2026-11-26-vlm-caption-signal-pilot --run-name vlm_caption_signal_pilot_pd_P2L_W1_vlm_hei_ep16_seed42 --det-ckpt /home/ubuntu/slocal2/m2/experiments/baselines/stage1_dtower_r2/dcoco_foldA_seed42/work/best_ap.pth --signal-train /home/ubuntu/slocal2/stage2pilot_store/vlm_caption_signal_pilot/signals/vec_hei_train.npz --signal-val /home/ubuntu/slocal2/stage2pilot_store/vlm_caption_signal_pilot/signals/vec_hei_val.npz --epochs 16 --fixed-epochs --amp bf16 --save-predictions-all --ckpt-dir /home/ubuntu/slocal2/stage2pilot_store/vlm_caption_signal_pilot/pd_ckpt/vlm_caption_signal_pilot_pd_P2L_W1_vlm_hei_ep16_seed42 --save-trainable-only --print-freq 1000

@@ -41,9 +41,21 @@ done
 
 RUN="vlm_caption_signal_pilot_pd_${TYPE}_${W}_${ARM}_ep${EPOCHS}_seed${SEED}"
 WORK=$M/experiments/phase1/$RUN
+mkdir -p "$WORK"
+exec 9>"$WORK/.run.lock"
+flock 9
 if [ -f "$WORK/v2t_metrics.json" ] && [ "$(cat "$WORK/exit_code.txt" 2>/dev/null || echo 1)" = "0" ]; then
   echo "[run_v2t_one] SKIP already completed: $RUN"
   exit 0
+fi
+
+# 同一 GPU で v2t_wrap.py が 2 本以上稼働中なら空きを待つ（先発起動との OOM 競合防止）
+if [ -n "${CUDA_VISIBLE_DEVICES:-}" ]; then
+  while true; do
+    N_ON_GPU=$(nvidia-smi -i "$CUDA_VISIBLE_DEVICES" --query-compute-apps=pid --format=csv,noheader 2>/dev/null | sed '/^$/d' | wc -l)
+    [ "${N_ON_GPU:-0}" -lt 2 ] && break
+    sleep 30
+  done
 fi
 
 cd "$M"
